@@ -421,8 +421,7 @@ websrv_add_session( struct web_connection *conn )
                 "Set-Cookie: vscp-web-sid=%s; max-age=3600; http-only\r\n"
                 "Location: /\r\n"
                 "Content-Length: 0r\n\r\n",
-                pSession->m_sid,
-                (const char *)user.mbc_str() );
+                pSession->m_sid );
 
     pSession->m_pUserItem = gpobj->m_userList.getUser( wxString::FromAscii( user ) );
     pSession->lastActiveTime = time( NULL );
@@ -636,9 +635,9 @@ vscp_mainpage( struct web_connection *conn, void *cbdata )
 
     web_printf( conn, WEB_COMMON_HEAD, "VSCP - Control" );
     web_printf( conn, WEB_STYLE_START );
-    web_printf( conn, WEB_COMMON_CSS );     // CSS style Code
+    web_write( conn, WEB_COMMON_CSS, strlen( WEB_COMMON_CSS ) );     // CSS style Code
     web_printf( conn, WEB_STYLE_END );
-    web_printf( conn, WEB_COMMON_JS );      // Common Javascript code
+    web_write( conn, WEB_COMMON_JS, strlen( WEB_COMMON_JS ) );      // Common Javascript code
 
     web_printf( conn, WEB_COMMON_HEAD_END_BODY_START );
     // Insert server url into navigation menu
@@ -778,9 +777,9 @@ todo( struct web_connection *conn, void *cbdata )
         
         web_printf( conn, WEB_COMMON_HEAD, "VSCP - Admin interface" );
         web_printf( conn, WEB_STYLE_START );
-        web_printf( conn, WEB_COMMON_CSS );     // CSS style Code
-        web_printf( conn, WEB_STYLE_END );
-        web_printf( conn, WEB_COMMON_JS );      // Common Javascript code
+        web_write( conn, WEB_COMMON_CSS, strlen( WEB_COMMON_CSS ) );     // CSS style Code
+        web_write( conn, WEB_STYLE_END, strlen( WEB_STYLE_END ) );
+        web_printf( conn, WEB_COMMON_JS, strlen( WEB_COMMON_JS ) );      // Common Javascript code
 
         web_printf( conn, WEB_COMMON_HEAD_END_BODY_START );
         // Insert server url into navigation menu
@@ -807,9 +806,9 @@ vscp_settings( struct web_connection *conn, void *cbdata )
         
         web_printf( conn, WEB_COMMON_HEAD, "Settings" );
         web_printf( conn, WEB_STYLE_START );
-        web_printf( conn, WEB_COMMON_CSS );     // CSS style Code
+        web_write( conn, WEB_COMMON_CSS, strlen( WEB_COMMON_CSS ) );     // CSS style Code
         web_printf( conn, WEB_STYLE_END );
-        web_printf( conn, WEB_COMMON_JS );      // Common Javascript code
+        web_write( conn, WEB_COMMON_JS, strlen( WEB_COMMON_JS ) );      // Common Javascript code
 
         web_printf( conn, WEB_COMMON_HEAD_END_BODY_START );
         // Insert server url into navigation menu
@@ -917,9 +916,9 @@ static int vscp_interface( struct web_connection *conn, void *cbdata )
     
     web_printf( conn, WEB_COMMON_HEAD, "VSCP - Control" );
     web_printf( conn, WEB_STYLE_START );
-    web_printf( conn, WEB_COMMON_CSS );     // CSS style Code
+    web_write( conn, WEB_COMMON_CSS, strlen( WEB_COMMON_CSS ) );     // CSS style Code
     web_printf( conn, WEB_STYLE_END );
-    web_printf( conn, WEB_COMMON_JS );      // Common Javascript code
+    web_write( conn, WEB_COMMON_JS, strlen( WEB_COMMON_JS ) );      // Common Javascript code
 
     web_printf( conn, WEB_COMMON_HEAD_END_BODY_START );
     // Insert server url into navigation menu
@@ -957,19 +956,20 @@ static int vscp_interface( struct web_connection *conn, void *cbdata )
         web_printf( conn, WEB_IFLIST_TD_GUID);
         web_printf( conn, strGUID.Left(23).mbc_str() );
         web_printf( conn, "<br>");
-        web_printf( conn, strGUID.Right(23).mbc_str() );
+        web_printf( conn, (const char *)strGUID.Right(23).mbc_str() );
         web_printf( conn, "</td>");
 
         // Interface name
         web_printf( conn, "<td>");
         web_printf( conn, 
-                pItem->m_strDeviceName.Left( 
-                    pItem->m_strDeviceName.Length()-30).mbc_str() );
+             (const char *)pItem->m_strDeviceName.Left( 
+                                pItem->m_strDeviceName.Length()-30 ).mbc_str() );
         web_printf( conn, "</td>");
 
         // Start date
         web_printf( conn, "<td>");
-        web_printf( conn, pItem->m_strDeviceName.Right(19).mbc_str() );
+        web_printf( conn, 
+                        (const char *)pItem->m_strDeviceName.Right(19).mbc_str() );
         web_printf( conn, "</td>");
 
         web_printf( conn, "</tr>");
@@ -1036,9 +1036,9 @@ static int vscp_interface_info( struct web_connection *conn, void *cbdata )
     
     web_printf( conn, WEB_COMMON_HEAD, "VSCP - Control" );
     web_printf( conn, WEB_STYLE_START );
-    web_printf( conn, WEB_COMMON_CSS );     // CSS style Code
+    web_write( conn, WEB_COMMON_CSS, strlen( WEB_COMMON_CSS ) );     // CSS style Code
     web_printf( conn, WEB_STYLE_END );
-    web_printf( conn, WEB_COMMON_JS );      // Common Javascript code
+    web_write( conn, WEB_COMMON_JS, strlen( WEB_COMMON_JS ) );      // Common Javascript code
 
     web_printf( conn, WEB_COMMON_HEAD_END_BODY_START );
     // Insert server url into navigation menu
@@ -1161,9 +1161,9 @@ static int vscp_dm_list( struct web_connection *conn, void *cbdata )
                     WEB_COMMON_HEAD,
                     "VSCP - Decision Matrix" );
     web_printf( conn, WEB_STYLE_START );
-    web_printf( conn, WEB_COMMON_CSS );     // CSS style Code
+    web_write( conn, WEB_COMMON_CSS, strlen( WEB_COMMON_CSS ) );     // CSS style Code
     web_printf( conn, WEB_STYLE_END );
-    web_printf( conn, WEB_COMMON_JS );      // Common Javascript code
+    web_write( conn, WEB_COMMON_JS, strlen( WEB_COMMON_JS ) );      // Common Javascript code
     web_printf( conn, WEB_COMMON_HEAD_END_BODY_START );
 
     web_printf( conn, WEB_COMMON_MENU );
@@ -1236,12 +1236,12 @@ static int vscp_dm_list( struct web_connection *conn, void *cbdata )
 
             // Group
             web_printf( conn, "<b>Group:</b> ");
-            web_printf( conn, pElement->m_strGroupID.mbc_str() );
+            web_printf( conn, (const char *)pElement->m_strGroupID.mbc_str() );
             web_printf( conn, "<br>");
 
             web_printf( conn, "<b>Comment:</b> ");
-            web_printf( conn, pElement->m_comment.mbc_str() );
-            web_printf( conn, "<br><hr width=\"90%\">");
+            web_printf( conn, (const char *)pElement->m_comment.mbc_str() );
+            web_printf( conn, "<br><hr width=\"90%%\">");
 
             web_printf( conn, "<b>Control:</b> ");
 
@@ -1304,7 +1304,7 @@ static int vscp_dm_list( struct web_connection *conn, void *cbdata )
 
                 web_printf( conn, " <b>Filter_GUID: </b>" );
                 vscp_writeGuidArrayToString(pElement->m_vscpfilter.filter_GUID, strGUID );
-                web_printf( conn,  strGUID.mbc_str() );
+                web_printf( conn,  (const char *)strGUID.mbc_str() );
 
                 web_printf( conn, "<br>" );
 
@@ -1325,7 +1325,7 @@ static int vscp_dm_list( struct web_connection *conn, void *cbdata )
 
                 web_printf( conn, "<b>Mask_GUID: </b>");
                 vscp_writeGuidArrayToString(pElement->m_vscpfilter.mask_GUID, strGUID);
-                web_printf( conn,  strGUID.mbc_str() );
+                web_printf( conn,  (const char *)strGUID.mbc_str() );
 
                 web_printf( conn, "<br>");
 
@@ -1351,9 +1351,9 @@ static int vscp_dm_list( struct web_connection *conn, void *cbdata )
                 web_printf( conn, "<br>");
 
                 web_printf( conn, "<b>Allowed from:</b> ");
-                web_printf( conn, pElement->m_timeAllow.m_fromTime.FormatISODate().mbc_str() );
+                web_printf( conn, (const char *)pElement->m_timeAllow.m_fromTime.FormatISODate().mbc_str() );
                 web_printf( conn, " ");
-                web_printf( conn, pElement->m_timeAllow.m_fromTime.FormatISOTime().mbc_str() );
+                web_printf( conn, (const char *)pElement->m_timeAllow.m_fromTime.FormatISOTime().mbc_str() );
 
                 web_printf( conn, " <b>Allowed to:</b> ");
                 web_printf( conn, pElement->m_timeAllow.m_endTime.FormatISODate().mbc_str() );
@@ -1361,11 +1361,11 @@ static int vscp_dm_list( struct web_connection *conn, void *cbdata )
                 web_printf( conn, pElement->m_timeAllow.m_endTime.FormatISOTime().mbc_str() );
 
                 web_printf( conn, " <b>Weekdays:</b> ");
-                web_printf( conn, pElement->m_timeAllow.getWeekDays().mbc_str() );
+                web_printf( conn, (const char *)pElement->m_timeAllow.getWeekDays().mbc_str() );
                 web_printf( conn, "<br>");
 
                 web_printf( conn, "<b>Allowed time:</b> ");
-                web_printf( conn, pElement->m_timeAllow.getActionTimeAsString().mbc_str() );
+                web_printf( conn, (const char *)pElement->m_timeAllow.getActionTimeAsString().mbc_str() );
                 web_printf( conn, "<br>");
 
             } // mini
@@ -1376,7 +1376,7 @@ static int vscp_dm_list( struct web_connection *conn, void *cbdata )
                             pElement->m_actionCode );
 
             web_printf( conn, " <b>Action parameters:</b> ");
-            web_printf( conn, pElement->m_actionparam.mbc_str() );
+            web_printf( conn, (const char *)pElement->m_actionparam.mbc_str() );
             web_printf( conn, "<br>");
 
             if (!bLight) {
@@ -1393,7 +1393,7 @@ static int vscp_dm_list( struct web_connection *conn, void *cbdata )
                 web_printf( conn, "<br>");
 
                 web_printf( conn, "<b>Last Error String:</b> ");
-                web_printf( conn, pElement->m_strLastError.mbc_str());
+                web_printf( conn, (const char *)pElement->m_strLastError.mbc_str());
 
             } // mini
 
@@ -1654,7 +1654,7 @@ static int vscp_dm_edit( struct web_connection *conn, void *cbdata  )
                         "Class:</td><td class=\"invisable\"><textarea "
                         "cols=\"10\" rows=\"1\" name=\"filter_vscpclass\">" );
         if ( bNew ) {
-            web_printf( conn, "");;
+            web_printf( conn, " ");
         }
         else {
             web_printf( conn, "%d", pElement->m_vscpfilter.filter_class );
@@ -1681,7 +1681,7 @@ static int vscp_dm_edit( struct web_connection *conn, void *cbdata  )
                         "Type:</td><td class=\"invisable\"><textarea cols=\"10\" "
                         "rows=\"1\" name=\"filter_vscptype\">");
         if ( bNew ) {
-            web_printf( conn, "");;
+            web_printf( conn, " ");
         }
         else {
             web_printf( conn,"%d", pElement->m_vscpfilter.filter_type );
@@ -1693,7 +1693,7 @@ static int vscp_dm_edit( struct web_connection *conn, void *cbdata  )
                         "#72A4D2;\" cols=\"10\" rows=\"1\" "
                         "name=\"mask_vscptype\">");
         if ( bNew ) {
-            web_printf( conn, "0xFFFF");;
+            web_printf( conn, "0xFFFF");
         }
         else {
             web_printf( conn,"0x%04x", pElement->m_vscpfilter.mask_type );
@@ -1738,7 +1738,7 @@ static int vscp_dm_edit( struct web_connection *conn, void *cbdata  )
                         "Index:</td><td class=\"invisable\"><textarea "
                         "cols=\"10\" rows=\"1\" name=\"vscpindex\">");
         if ( bNew ) {
-            web_printf( conn, "");
+            web_printf( conn, " ");
         }
         else {
             web_printf( conn, "%d", pElement->m_index );
@@ -1750,7 +1750,7 @@ static int vscp_dm_edit( struct web_connection *conn, void *cbdata  )
                         "&nbsp;&nbsp;<input name=\"check_measurementindex\" "
                         "value=\"true\" ");
         if ( bNew ) {
-            web_printf( conn, "");
+            web_printf( conn, " ");
         }
         else {
             web_printf( conn, "%s",
@@ -1794,7 +1794,7 @@ static int vscp_dm_edit( struct web_connection *conn, void *cbdata  )
         // Enable row
         web_printf( conn, "<input name=\"check_enablerow\" value=\"true\" ");
         if ( bNew ) {
-            web_printf( conn, "");
+            web_printf( conn, " ");
         }
         else {
             web_printf( conn, "%s",
@@ -1806,7 +1806,7 @@ static int vscp_dm_edit( struct web_connection *conn, void *cbdata  )
         // Check Index
         web_printf( conn, "<input name=\"check_index\" value=\"true\"");
         if ( bNew ) {
-            web_printf( conn, "");
+            web_printf( conn, " ");
         }
         else {
             web_printf( conn, 
@@ -1819,7 +1819,7 @@ static int vscp_dm_edit( struct web_connection *conn, void *cbdata  )
         // Check Zone
         web_printf( conn, "<input name=\"check_zone\" value=\"true\"");
         if ( bNew ) {
-            web_printf( conn, "");
+            web_printf( conn, " ");
         }
         else {
             web_printf( conn, 
@@ -1832,7 +1832,7 @@ static int vscp_dm_edit( struct web_connection *conn, void *cbdata  )
         // Check subzone
         web_printf( conn, "<input name=\"check_subzone\" value=\"true\"");
         if ( bNew ) {
-            web_printf( conn, "");
+            web_printf( conn, " ");
         }
         else {
             web_printf( conn,
@@ -1851,10 +1851,10 @@ static int vscp_dm_edit( struct web_connection *conn, void *cbdata  )
         }
         else {
             web_printf( conn, 
-                        pElement->m_timeAllow.m_fromTime.FormatISODate().mbc_str() );
+                        (const char *)pElement->m_timeAllow.m_fromTime.FormatISODate().mbc_str() );
             web_printf( conn, " ");
             web_printf( conn, 
-                        pElement->m_timeAllow.m_fromTime.FormatISOTime().mbc_str() );
+                        (const char *)pElement->m_timeAllow.m_fromTime.FormatISOTime().mbc_str() );
         }
         web_printf( conn, "</textarea>");
 
@@ -1866,10 +1866,10 @@ static int vscp_dm_edit( struct web_connection *conn, void *cbdata  )
         }
         else {
             web_printf( conn, 
-                        pElement->m_timeAllow.m_endTime.FormatISODate().mbc_str() );
+                        (const char *)pElement->m_timeAllow.m_endTime.FormatISODate().mbc_str() );
             web_printf( conn, " ");
             web_printf( conn, 
-                        pElement->m_timeAllow.m_endTime.FormatISOTime().mbc_str() );
+                        (const char *)pElement->m_timeAllow.m_endTime.FormatISOTime().mbc_str() );
         }
         web_printf( conn, "</textarea>");
 
@@ -1881,7 +1881,7 @@ static int vscp_dm_edit( struct web_connection *conn, void *cbdata  )
         }
         else {
             web_printf( conn, 
-                        pElement->m_timeAllow.getActionTimeAsString().mbc_str() );
+                        (const char *)pElement->m_timeAllow.getActionTimeAsString().mbc_str() );
         }
         web_printf( conn, "</textarea>");
 
@@ -2166,13 +2166,13 @@ static int vscp_dm_edit( struct web_connection *conn, void *cbdata  )
 
         web_printf( conn, "<h4>Action parameter:</h4>");
         web_printf( conn, "<textarea cols=\"80\" rows=\"5\" name=\"actionparameter\">");
-        if ( !bNew ) web_printf( conn, pElement->m_actionparam.mbc_str() );
+        if ( !bNew ) web_printf( conn, (const char *)pElement->m_actionparam.mbc_str() );
         web_printf( conn, "</textarea>");
 
 
         web_printf( conn, "<h4>Comment:</h4>");
         web_printf( conn, "<textarea cols=\"80\" rows=\"5\" name=\"comment\">");
-        if ( !bNew ) web_printf( conn, pElement->m_comment.mbc_str() );
+        if ( !bNew ) web_printf( conn, (const char *)pElement->m_comment.mbc_str() );
         web_printf( conn, "</textarea>");
     }
     else {
@@ -2644,7 +2644,7 @@ static int vscp_dm_post( struct web_connection *conn, void *cbdata )
         web_printf( conn, navstr.Left( pos ).mbc_str() );
         navstr = navstr.Right(navstr.Length() - pos - 2);
     }
-    web_printf( conn, navstr.mbc_str() );
+    web_printf( conn, (const char *)navstr.mbc_str() );
 
     web_printf( conn, WEB_DMPOST_BODY_START);
 
@@ -2750,25 +2750,25 @@ static int vscp_dm_post( struct web_connection *conn, void *cbdata )
                 //gpobj->m_dm.saveToXML();
 
                 web_printf( conn, 
-                                "<br><br>DM Entry has been saved. id=%d", 
-                                id);
+                                "<br><br>DM Entry has been saved. id=%ld", 
+                                id );
             }
             else {
                 web_printf( conn, 
-                                "<br><br>Memory problem id=%d. Unable to save record", 
+                                "<br><br>Memory problem id=%ld. Unable to save record", 
                                 id);
             }
 
         } 
         else {
             web_printf( conn, 
-                            "<br><br>Record id=%d is to large. Unable to save record",
+                            "<br><br>Record id=%ld is to large. Unable to save record",
                             id );
         }
     } 
     else {
         web_printf( conn, 
-                        "<br><br>Record id=%d is wrong. Unable to save record", 
+                        "<br><br>Record id=%ld is wrong. Unable to save record", 
                         id );
     }
 
@@ -2843,9 +2843,9 @@ static int vscp_dm_delete( struct web_connection *conn, void *cbdata  )
     web_printf( conn, WEB_COMMON_JS);      // Common Javascript code
     web_printf( conn, "<meta http-equiv=\"refresh\" content=\"2;url=/vscp/dm");
     web_printf( conn, 
-                    "?from=%d&count=%d", 
+                    "?from=%ld&count=%ld", 
                     nFrom, 
-                    nCount );
+                    (long)nCount );
     web_printf( conn, "\">");
     web_printf( conn, WEB_COMMON_HEAD_END_BODY_START);
 
@@ -2856,14 +2856,14 @@ static int vscp_dm_delete( struct web_connection *conn, void *cbdata  )
 
     if ( gpobj->m_dm.removeMemoryElement( id ) ) {
         web_printf( conn, 
-                        "<br>Deleted record id = %d", 
+                        "<br>Deleted record id = %ld", 
                         id );
         // Save decision matrix
         gpobj->m_dm.saveToXML();
     }
     else {
         web_printf( conn, 
-                        "<br>Failed to remove record id = %d", 
+                        "<br>Failed to remove record id = %ld", 
                         id );
     }
 
@@ -2973,9 +2973,9 @@ static int vscp_variable_list( struct web_connection *conn, void *cbdata  )
 
     web_printf( conn, WEB_COMMON_HEAD, "VSCP - Variables" );
     web_printf( conn, WEB_STYLE_START );
-    web_printf( conn, WEB_COMMON_CSS );     // CSS style Code
+    web_write( conn, WEB_COMMON_CSS, strlen( WEB_COMMON_CSS ) );     // CSS style Code
     web_printf( conn, WEB_STYLE_END );
-    web_printf( conn, WEB_COMMON_JS );      // Common Javascript code
+    web_write( conn, WEB_COMMON_JS, strlen( WEB_COMMON_JS ) );      // Common Javascript code
     web_printf( conn, WEB_COMMON_HEAD_END_BODY_START );
 
     // Navigation menu
@@ -3033,7 +3033,7 @@ static int vscp_variable_list( struct web_connection *conn, void *cbdata  )
                                         (long)nFrom, 
                                         (long)nCount );
             wxString str = wxString::Format(_(WEB_COMMON_TR_CLICKABLE_ROW),
-                                                url_dmedit.mbc_str() );
+                                                (const char *)url_dmedit.mbc_str() );
             web_printf( conn, str.mbc_str() );
             
         }
@@ -3181,7 +3181,7 @@ static int vscp_variable_list( struct web_connection *conn, void *cbdata  )
         web_printf(conn, "<div id=\"small\">");
 
         web_printf(conn, "<h4>");
-        web_printf(conn, variable.getName().MakeLower().mbc_str() );
+        web_printf(conn, (const char *)variable.getName().MakeLower().mbc_str() );
         web_printf(conn, "</h4>");
 
         wxString strValue;
@@ -3363,9 +3363,9 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
 
     web_printf( conn, WEB_COMMON_HEAD, "VSCP - Variable Edit" );    
     web_printf( conn, WEB_STYLE_START );
-    web_printf( conn, WEB_COMMON_CSS );     // CSS style Code
+    web_write( conn, WEB_COMMON_CSS, strlen( WEB_COMMON_CSS ) );     // CSS style Code
     web_printf( conn, WEB_STYLE_END );
-    web_printf( conn, WEB_COMMON_JS );      // Common JavaScript code
+    web_write( conn, WEB_COMMON_JS, strlen( WEB_COMMON_JS ) );      // Common JavaScript code
     //web_printf( conn, "<script>document.getElementById(\"ve1\").onsubmit "
     //                  "= function() { alert(\"Hi\"); };</script>" );
     web_printf( conn, WEB_COMMON_HEAD_END_BODY_START ) ;
@@ -3402,7 +3402,7 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
     } 
     else {
         web_printf( conn,
-                        "<br><span id=\"optiontext\">Record = %d.</span><br>",
+                        "<br><span id=\"optiontext\">Record = %ld.</span><br>",
                         id );
     }
   
@@ -3411,7 +3411,7 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
 
     // Hidden from
     web_printf( conn,
-                    "<input name=\"from\" value=\"%d\" type=\"hidden\">",
+                    "<input name=\"from\" value=\"%ld\" type=\"hidden\">",
                     nFrom );
 
     // Hidden count
@@ -3421,7 +3421,7 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
 
     // Hidden id
     web_printf( conn,
-                    "<input name=\"id\" value=\"%d\" type=\"hidden\">",
+                    "<input name=\"id\" value=\"%ld\" type=\"hidden\">",
                     id );
 
     if ( bNew ) {
@@ -3452,7 +3452,7 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         web_printf( conn, (const char *)variable.getName().MakeLower().mbc_str() );
         web_printf( conn, "</div>" );
         web_printf( conn, "<input name=\"value_name\" value=\"");
-        web_printf( conn, variable.getName().mbc_str());
+        web_printf( conn, (const char *)variable.getName().mbc_str());
         web_printf( conn, "\" type=\"hidden\">");
     } 
     else {
@@ -3471,7 +3471,7 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         web_printf(conn, "<textarea cols=\"50\" rows=\"10\" id=\"strval\" name=\"value\">");
         
         if ( bNew ) {
-            web_printf(conn, "");
+            web_printf(conn, " ");
         } 
         else {
             wxString str;
@@ -3515,7 +3515,7 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
                          "name=\"value\">");
         
         if ( bNew ) {
-            web_printf(conn, "");
+            web_printf(conn, " ");
         } 
         else {
             wxString str;
@@ -4367,9 +4367,9 @@ static int vscp_variable_post( struct web_connection *conn, void *cbdata )
                     WEB_COMMON_HEAD, 
                     "VSCP - Variable Post" );
     web_printf( conn, WEB_STYLE_START );
-    web_printf( conn, WEB_COMMON_CSS );     // CSS style Code
+    web_write( conn, WEB_COMMON_CSS, strlen( WEB_COMMON_CSS ) );     // CSS style Code
     web_printf( conn, WEB_STYLE_END );
-    web_printf( conn, WEB_COMMON_JS );      // Common JavaScript code
+    web_write( conn, WEB_COMMON_JS, strlen( WEB_COMMON_JS ) );      // Common JavaScript code
     web_printf( conn, "<meta http-equiv=\"refresh\" content=\"1;url=/vscp/varlist");
     web_printf( conn, "?from=%ld&count=%ld", 
                         (long)nFrom, 
@@ -4524,9 +4524,9 @@ static int vscp_variable_new( struct web_connection *conn, void *cbdata )
                     WEB_COMMON_HEAD, 
                     "VSCP - New variable" );
     web_printf( conn, WEB_STYLE_START );
-    web_printf( conn, WEB_COMMON_CSS );     // CSS style Code
+    web_write( conn, WEB_COMMON_CSS, strlen( WEB_COMMON_CSS ) );     // CSS style Code
     web_printf( conn, WEB_STYLE_END );
-    web_printf( conn, WEB_COMMON_JS );      // Common Javascript code
+    web_write( conn, WEB_COMMON_JS, strlen( WEB_COMMON_JS ) );      // Common Javascript code
     web_printf( conn, WEB_COMMON_HEAD_END_BODY_START );
 
     // Navigation menu
@@ -4667,9 +4667,9 @@ vscp_variable_delete( struct web_connection *conn, void *cbdata )
                     WEB_COMMON_HEAD, 
                     "VSCP - Variable Delete" );
     web_printf( conn, WEB_STYLE_START );
-    web_printf( conn, WEB_COMMON_CSS );     // CSS style Code
+    web_write( conn, WEB_COMMON_CSS, strlen( WEB_COMMON_CSS ) );     // CSS style Code
     web_printf( conn, WEB_STYLE_END );
-    web_printf( conn, WEB_COMMON_JS );      // Common Javascript code
+    web_write( conn, WEB_COMMON_JS, strlen( WEB_COMMON_JS ) );      // Common Javascript code
     web_printf( conn, "<meta http-equiv=\"refresh\" content=\"2;url=/vscp/varlist" ) ;
     web_printf( conn, 
                     "?from=%d&count=%d", 
@@ -5407,9 +5407,9 @@ static int bootload( struct web_connection *conn, void *cbdata  )
                     WEB_COMMON_HEAD, 
                     "VSCP - Device discovery" );
     web_printf( conn, WEB_STYLE_START );
-    web_printf( conn, WEB_COMMON_CSS );     // CSS style Code
+    web_write( conn, WEB_COMMON_CSS, strlen( WEB_COMMON_CSS ) );     // CSS style Code
     web_printf( conn, WEB_STYLE_END );
-    web_printf( conn, WEB_COMMON_JS );      // Common Javascript code
+    web_write( conn, WEB_COMMON_JS, strlen( WEB_COMMON_JS ) );      // Common Javascript code
     web_printf( conn, "<meta http-equiv=\"refresh\" content=\"5;url=/vscp" );
     web_printf( conn, "\">" );
     web_printf( conn, WEB_COMMON_HEAD_END_BODY_START );
@@ -5658,9 +5658,9 @@ static int tablelist( struct web_connection *conn, void *cbdata  )
                     WEB_COMMON_HEAD, 
                     "VSCP - Table List" );
     web_printf( conn, WEB_STYLE_START );
-    web_printf( conn, WEB_COMMON_CSS );     // CSS style Code
+    web_write( conn, WEB_COMMON_CSS, strlen( WEB_COMMON_CSS ) );     // CSS style Code
     web_printf( conn, WEB_STYLE_END );
-    web_printf( conn, WEB_COMMON_JS );      // Common Javascript code
+    web_write( conn, WEB_COMMON_JS, strlen( WEB_COMMON_JS ) );      // Common Javascript code
     web_printf( conn, WEB_COMMON_HEAD_END_BODY_START );
 
     // navigation menu
@@ -5844,9 +5844,9 @@ static int vscp_log_pre( struct web_connection *conn, void *cbdata )
                     WEB_COMMON_HEAD, 
                     "VSCP Server - Log" );
     web_printf( conn, WEB_STYLE_START );
-    web_printf( conn, WEB_COMMON_CSS );     // CSS style Code
+    web_write( conn, WEB_COMMON_CSS, strlen( WEB_COMMON_CSS ) );     // CSS style Code
     web_printf( conn, WEB_STYLE_END );
-    web_printf( conn, WEB_COMMON_JS );      // Common Javascript code
+    web_write( conn, WEB_COMMON_JS, strlen( WEB_COMMON_JS ) );      // Common Javascript code
     web_printf( conn, WEB_COMMON_HEAD_END_BODY_START );
 
     // Navigation menu
@@ -6060,9 +6060,9 @@ vscp_log_list( struct web_connection *conn, void *cbdata )
 
     web_printf( conn, WEB_COMMON_HEAD, "VSCP Server - log" );
     web_printf( conn, WEB_STYLE_START );
-    web_printf( conn, WEB_COMMON_CSS );     // CSS style Code
+    web_write( conn, WEB_COMMON_CSS, strlen( WEB_COMMON_CSS ) );     // CSS style Code
     web_printf( conn, WEB_STYLE_END );
-    web_printf( conn, WEB_COMMON_JS );      // Common Javascript code
+    web_write( conn, WEB_COMMON_JS, strlen( WEB_COMMON_JS ) );      // Common Javascript code
     web_printf( conn, WEB_COMMON_HEAD_END_BODY_START );
 
     // Navigation menu
@@ -6222,9 +6222,9 @@ vscp_log_delete( struct web_connection *conn, void *cbdata )
 
     web_printf( conn, WEB_COMMON_HEAD, "VSCP Server- delete" );
     web_printf( conn, WEB_STYLE_START );
-    web_printf( conn, WEB_COMMON_CSS );     // CSS style Code
+    web_write( conn, WEB_COMMON_CSS, strlen( WEB_COMMON_CSS ) );     // CSS style Code
     web_printf( conn, WEB_STYLE_END );
-    web_printf( conn, WEB_COMMON_JS );      // Common Javascript code
+    web_write( conn, WEB_COMMON_JS, strlen( WEB_COMMON_JS ) );      // Common Javascript code
     web_printf( conn, WEB_COMMON_HEAD_END_BODY_START );
 
     // Navigation menu
@@ -6408,9 +6408,9 @@ vscp_log_do_delete( struct web_connection *conn, void *cbdata )
 
     web_printf( conn, WEB_COMMON_HEAD, "VSCP Server- delete" );
     web_printf( conn, WEB_STYLE_START );
-    web_printf( conn, WEB_COMMON_CSS );     // CSS style Code
+    web_write( conn, WEB_COMMON_CSS, strlen( WEB_COMMON_CSS ) );     // CSS style Code
     web_printf( conn, WEB_STYLE_END );
-    web_printf( conn, WEB_COMMON_JS );      // Common Javascript code
+    web_write( conn, WEB_COMMON_JS, strlen( WEB_COMMON_JS ) );      // Common Javascript code
     web_printf( conn, WEB_COMMON_HEAD_END_BODY_START );
 
     // Navigation menu
