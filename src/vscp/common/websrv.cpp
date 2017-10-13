@@ -968,7 +968,7 @@ static int vscp_interface( struct web_connection *conn, void *cbdata )
 
         // Start date
         web_printf( conn, "<td>");
-        web_printf( conn, 
+        web_printf( conn, "%s",
                         (const char *)pItem->m_strDeviceName.Right(19).mbc_str() );
         web_printf( conn, "</td>");
 
@@ -1236,11 +1236,11 @@ static int vscp_dm_list( struct web_connection *conn, void *cbdata )
 
             // Group
             web_printf( conn, "<b>Group:</b> ");
-            web_printf( conn, (const char *)pElement->m_strGroupID.mbc_str() );
+            web_printf( conn, "%s", (const char *)pElement->m_strGroupID.mbc_str() );
             web_printf( conn, "<br>");
 
             web_printf( conn, "<b>Comment:</b> ");
-            web_printf( conn, (const char *)pElement->m_comment.mbc_str() );
+            web_printf( conn, "%s", (const char *)pElement->m_comment.mbc_str() );
             web_printf( conn, "<br><hr width=\"90%%\">");
 
             web_printf( conn, "<b>Control:</b> ");
@@ -1304,7 +1304,7 @@ static int vscp_dm_list( struct web_connection *conn, void *cbdata )
 
                 web_printf( conn, " <b>Filter_GUID: </b>" );
                 vscp_writeGuidArrayToString(pElement->m_vscpfilter.filter_GUID, strGUID );
-                web_printf( conn,  (const char *)strGUID.mbc_str() );
+                web_printf( conn,  "%s",(const char *)strGUID.mbc_str() );
 
                 web_printf( conn, "<br>" );
 
@@ -1325,7 +1325,7 @@ static int vscp_dm_list( struct web_connection *conn, void *cbdata )
 
                 web_printf( conn, "<b>Mask_GUID: </b>");
                 vscp_writeGuidArrayToString(pElement->m_vscpfilter.mask_GUID, strGUID);
-                web_printf( conn,  (const char *)strGUID.mbc_str() );
+                web_printf( conn, "%s", (const char *)strGUID.mbc_str() );
 
                 web_printf( conn, "<br>");
 
@@ -1351,21 +1351,21 @@ static int vscp_dm_list( struct web_connection *conn, void *cbdata )
                 web_printf( conn, "<br>");
 
                 web_printf( conn, "<b>Allowed from:</b> ");
-                web_printf( conn, (const char *)pElement->m_timeAllow.m_fromTime.FormatISODate().mbc_str() );
+                web_printf( conn, "%s",(const char *)pElement->m_timeAllow.m_fromTime.FormatISODate().mbc_str() );
                 web_printf( conn, " ");
-                web_printf( conn, (const char *)pElement->m_timeAllow.m_fromTime.FormatISOTime().mbc_str() );
+                web_printf( conn, "%s",(const char *)pElement->m_timeAllow.m_fromTime.FormatISOTime().mbc_str() );
 
                 web_printf( conn, " <b>Allowed to:</b> ");
-                web_printf( conn, pElement->m_timeAllow.m_endTime.FormatISODate().mbc_str() );
+                web_printf( conn,"%s", (const char *)pElement->m_timeAllow.m_endTime.FormatISODate().mbc_str() );
                 web_printf( conn, " ");
-                web_printf( conn, pElement->m_timeAllow.m_endTime.FormatISOTime().mbc_str() );
+                web_printf( conn, "%s",(const char *)pElement->m_timeAllow.m_endTime.FormatISOTime().mbc_str() );
 
                 web_printf( conn, " <b>Weekdays:</b> ");
-                web_printf( conn, (const char *)pElement->m_timeAllow.getWeekDays().mbc_str() );
+                web_printf( conn, "%s",(const char *)pElement->m_timeAllow.getWeekDays().mbc_str() );
                 web_printf( conn, "<br>");
 
                 web_printf( conn, "<b>Allowed time:</b> ");
-                web_printf( conn, (const char *)pElement->m_timeAllow.getActionTimeAsString().mbc_str() );
+                web_printf( conn, "%s",(const char *)pElement->m_timeAllow.getActionTimeAsString().mbc_str() );
                 web_printf( conn, "<br>");
 
             } // mini
@@ -1376,7 +1376,7 @@ static int vscp_dm_list( struct web_connection *conn, void *cbdata )
                             pElement->m_actionCode );
 
             web_printf( conn, " <b>Action parameters:</b> ");
-            web_printf( conn, (const char *)pElement->m_actionparam.mbc_str() );
+            web_printf( conn, "%s",(const char *)pElement->m_actionparam.mbc_str() );
             web_printf( conn, "<br>");
 
             if (!bLight) {
@@ -1393,7 +1393,7 @@ static int vscp_dm_list( struct web_connection *conn, void *cbdata )
                 web_printf( conn, "<br>");
 
                 web_printf( conn, "<b>Last Error String:</b> ");
-                web_printf( conn, (const char *)pElement->m_strLastError.mbc_str());
+                web_printf( conn, "%s",(const char *)pElement->m_strLastError.mbc_str());
 
             } // mini
 
@@ -1505,9 +1505,9 @@ static int vscp_dm_edit( struct web_connection *conn, void *cbdata  )
                     WEB_COMMON_HEAD, 
                     "VSCP - Decision Matrix Edit" );
     web_printf( conn, WEB_STYLE_START);
-    web_printf( conn, WEB_COMMON_CSS);     // CSS style Code
+    web_write( conn, WEB_COMMON_CSS, sizeof(WEB_COMMON_CSS) );     // CSS style Code
     web_printf( conn, WEB_STYLE_END);
-    web_printf( conn, WEB_COMMON_JS);      // Common Javascript code
+    web_write( conn, WEB_COMMON_JS, sizeof(WEB_COMMON_JS) );      // Common Javascript code
     web_printf( conn, WEB_COMMON_HEAD_END_BODY_START);
 
     web_printf( conn, WEB_COMMON_MENU);;
@@ -1576,7 +1576,7 @@ static int vscp_dm_edit( struct web_connection *conn, void *cbdata  )
 
         web_printf( conn, "<h4>Group id:</h4>");
         web_printf( conn, "<textarea cols=\"20\" rows=\"1\" name=\"groupid\">");
-        if ( !bNew ) web_printf( conn, pElement->m_strGroupID.mbc_str() );
+        if ( !bNew ) web_printf( conn, "%s", (const char *)pElement->m_strGroupID.mbc_str() );
         web_printf( conn, "</textarea><br>");
 
 
@@ -1850,10 +1850,10 @@ static int vscp_dm_edit( struct web_connection *conn, void *cbdata  )
             web_printf( conn, "yyyy-mm-dd hh:mm:ss");
         }
         else {
-            web_printf( conn, 
+            web_printf( conn, "%s",
                         (const char *)pElement->m_timeAllow.m_fromTime.FormatISODate().mbc_str() );
             web_printf( conn, " ");
-            web_printf( conn, 
+            web_printf( conn, "%s",
                         (const char *)pElement->m_timeAllow.m_fromTime.FormatISOTime().mbc_str() );
         }
         web_printf( conn, "</textarea>");
@@ -1865,10 +1865,10 @@ static int vscp_dm_edit( struct web_connection *conn, void *cbdata  )
             web_printf( conn, "yyyy-mm-dd hh:mm:ss");
         }
         else {
-            web_printf( conn, 
+            web_printf( conn, "%s",
                         (const char *)pElement->m_timeAllow.m_endTime.FormatISODate().mbc_str() );
             web_printf( conn, " ");
-            web_printf( conn, 
+            web_printf( conn, "%s",
                         (const char *)pElement->m_timeAllow.m_endTime.FormatISOTime().mbc_str() );
         }
         web_printf( conn, "</textarea>");
@@ -1880,7 +1880,7 @@ static int vscp_dm_edit( struct web_connection *conn, void *cbdata  )
             web_printf( conn, "yyyy-mm-dd hh:mm:ss");
         }
         else {
-            web_printf( conn, 
+            web_printf( conn, "%s",
                         (const char *)pElement->m_timeAllow.getActionTimeAsString().mbc_str() );
         }
         web_printf( conn, "</textarea>");
@@ -2166,13 +2166,13 @@ static int vscp_dm_edit( struct web_connection *conn, void *cbdata  )
 
         web_printf( conn, "<h4>Action parameter:</h4>");
         web_printf( conn, "<textarea cols=\"80\" rows=\"5\" name=\"actionparameter\">");
-        if ( !bNew ) web_printf( conn, (const char *)pElement->m_actionparam.mbc_str() );
+        if ( !bNew ) web_printf( conn, "%s", (const char *)pElement->m_actionparam.mbc_str() );
         web_printf( conn, "</textarea>");
 
 
         web_printf( conn, "<h4>Comment:</h4>");
         web_printf( conn, "<textarea cols=\"80\" rows=\"5\" name=\"comment\">");
-        if ( !bNew ) web_printf( conn, (const char *)pElement->m_comment.mbc_str() );
+        if ( !bNew ) web_printf( conn, "%s", (const char *)pElement->m_comment.mbc_str() );
         web_printf( conn, "</textarea>");
     }
     else {
@@ -2627,9 +2627,9 @@ static int vscp_dm_post( struct web_connection *conn, void *cbdata )
                     WEB_COMMON_HEAD, 
                     "VSCP - Decision Matrix Post" );
     web_printf( conn, WEB_STYLE_START);
-    web_printf( conn, WEB_COMMON_CSS);     // CSS style Code
+    web_write( conn, WEB_COMMON_CSS, sizeof(WEB_COMMON_CSS) );  // CSS style Code
     web_printf( conn, WEB_STYLE_END);
-    web_printf( conn, WEB_COMMON_JS);      // Common Javascript code
+    web_write( conn, WEB_COMMON_JS, sizeof(WEB_COMMON_JS) );        // Common Javascript code
     web_printf( conn, "<meta http-equiv=\"refresh\" content=\"2;url=/vscp/dm");
     web_printf( conn, "?from=%ld&count=%ld", 
                     (long)nFrom, 
@@ -2641,10 +2641,10 @@ static int vscp_dm_post( struct web_connection *conn, void *cbdata )
     wxString navstr = _(WEB_COMMON_MENU);
     int pos;
     while ( wxNOT_FOUND != ( pos = navstr.Find(_("%s")))) {
-        web_printf( conn, navstr.Left( pos ).mbc_str() );
+        web_printf( conn, "%s", (const char *)navstr.Left( pos ).mbc_str() );
         navstr = navstr.Right(navstr.Length() - pos - 2);
     }
-    web_printf( conn, (const char *)navstr.mbc_str() );
+    web_printf( conn, "%s", (const char *)navstr.mbc_str() );
 
     web_printf( conn, WEB_DMPOST_BODY_START);
 
@@ -2838,9 +2838,9 @@ static int vscp_dm_delete( struct web_connection *conn, void *cbdata  )
                     WEB_COMMON_HEAD, 
                     "VSCP - Decision Matrix Delete" );
     web_printf( conn, WEB_STYLE_START);
-    web_printf( conn, WEB_COMMON_CSS);     // CSS style Code
+    web_write( conn, WEB_COMMON_CSS, sizeof(WEB_COMMON_CSS) );     // CSS style Code
     web_printf( conn, WEB_STYLE_END);
-    web_printf( conn, WEB_COMMON_JS);      // Common Javascript code
+    web_write( conn, WEB_COMMON_JS, sizeof(WEB_COMMON_JS) );      // Common Javascript code
     web_printf( conn, "<meta http-equiv=\"refresh\" content=\"2;url=/vscp/dm");
     web_printf( conn, 
                     "?from=%ld&count=%ld", 
@@ -3034,7 +3034,7 @@ static int vscp_variable_list( struct web_connection *conn, void *cbdata  )
                                         (long)nCount );
             wxString str = wxString::Format(_(WEB_COMMON_TR_CLICKABLE_ROW),
                                                 (const char *)url_dmedit.mbc_str() );
-            web_printf( conn, str.mbc_str() );
+            web_printf( conn, "%s", (const char *)str.mbc_str() );
             
         }
 
@@ -3181,7 +3181,7 @@ static int vscp_variable_list( struct web_connection *conn, void *cbdata  )
         web_printf(conn, "<div id=\"small\">");
 
         web_printf(conn, "<h4>");
-        web_printf(conn, (const char *)variable.getName().MakeLower().mbc_str() );
+        web_printf(conn, "%s", (const char *)variable.getName().MakeLower().mbc_str() );
         web_printf(conn, "</h4>");
 
         wxString strValue;
@@ -3449,10 +3449,10 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
     
     if ( !bNew ) {
         web_printf( conn, "<div style=\"font-weight: bold;\" >" );
-        web_printf( conn, (const char *)variable.getName().MakeLower().mbc_str() );
+        web_printf( conn, "%s", (const char *)variable.getName().MakeLower().mbc_str() );
         web_printf( conn, "</div>" );
         web_printf( conn, "<input name=\"value_name\" value=\"");
-        web_printf( conn, (const char *)variable.getName().mbc_str());
+        web_printf( conn, "%s", (const char *)variable.getName().mbc_str());
         web_printf( conn, "\" type=\"hidden\">");
     } 
     else {
@@ -3476,7 +3476,7 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         else {
             wxString str;
             variable.writeValueToString( str, true );
-            web_printf( conn, (const char *)str.mbc_str() );
+            web_printf( conn, "%s", (const char *)str.mbc_str() );
         }
 
         web_printf(conn, "</textarea>");
@@ -3520,7 +3520,7 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         else {
             wxString str;
             variable.writeValueToString( str );
-            web_printf( conn, (const char *)str.mbc_str() );
+            web_printf( conn, "%s", (const char *)str.mbc_str() );
         }
 
         web_printf(conn, "</textarea>");
@@ -3534,12 +3534,12 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         web_printf(conn, "<textarea cols=\"10\" rows=\"1\" name=\"value\">");
         
         if ( bNew ) {
-            web_printf(conn, "");
+            web_printf(conn, "%s", " ");
         } 
         else {
             wxString str;
             variable.writeValueToString( str );
-            web_printf( conn, (const char *)str.mbc_str() );
+            web_printf( conn, "%s", (const char *)str.mbc_str() );
         }
 
         web_printf(conn, "</textarea>");
@@ -3553,12 +3553,12 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         web_printf(conn, "<textarea cols=\"10\" rows=\"1\" name=\"value\">");
         
         if ( bNew ) {
-            web_printf(conn, "");
+            web_printf(conn, "%s", " ");
         } 
         else {
             wxString str;
             variable.writeValueToString( str );
-            web_printf( conn, (const char *)str.mbc_str() );
+            web_printf( conn, "%s", (const char *)str.mbc_str() );
         }
 
         web_printf(conn, "</textarea>");
@@ -3572,12 +3572,12 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         web_printf(conn, "<textarea cols=\"50\" rows=\"1\" name=\"value\">");
         
         if ( bNew ) {
-            web_printf(conn, "");
+            web_printf(conn, "%s", " ");
         } 
         else {
             wxString str;
             variable.writeValueToString( str );
-            web_printf( conn, (const char *)str.mbc_str() );
+            web_printf( conn, "%s", (const char *)str.mbc_str() );
         }
 
         web_printf(conn, "</textarea>");
@@ -3590,12 +3590,12 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         web_printf(conn, "<textarea cols=\"50\" rows=\"1\" name=\"value\">");
         
         if ( bNew ) {
-            web_printf(conn, "");
+            web_printf(conn, "%s"," ");
         } 
         else {
             wxString str;
             variable.writeValueToString( str );
-            web_printf( conn, (const char *)str.mbc_str() );
+            web_printf( conn, "%s", (const char *)str.mbc_str() );
         }
 
         web_printf(conn, "</textarea>");
@@ -3610,12 +3610,12 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         web_printf(conn, "<textarea cols=\"50\" rows=\"1\" name=\"value\">");        
         
         if (bNew) {
-            web_printf(conn, "");
+            web_printf(conn, "%s", " ");
         } 
         else {
             wxString str;
             variable.writeValueToString( str );
-            web_printf( conn, (const char *)str.mbc_str() );
+            web_printf( conn, "%s", (const char *)str.mbc_str() );
         }
 
         web_printf(conn, "</textarea>");
@@ -3629,12 +3629,12 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         web_printf(conn, "<textarea cols=\"50\" rows=\"5\" name=\"value\">");
         
         if ( bNew ) {
-            web_printf(conn, "");
+            web_printf(conn, "%s", " ");
         } 
         else {
             wxString str;
             variable.writeValueToString( str );
-            web_printf( conn, (const char *)str.mbc_str() );
+            web_printf( conn, "%s", (const char *)str.mbc_str() );
         }
 
         web_printf(conn, "</textarea>");
@@ -3648,12 +3648,12 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         web_printf(conn, "<textarea cols=\"10\" rows=\"1\" name=\"value\">");
         
         if ( bNew ) {
-            web_printf(conn, "");
+            web_printf(conn, "%s", " ");
         } 
         else {
             wxString str;
             variable.writeValueToString( str );
-            web_printf( conn, (const char *)str.mbc_str() );
+            web_printf( conn, "%s", (const char *)str.mbc_str() );
         }
 
         web_printf(conn, "</textarea>");
@@ -3667,12 +3667,12 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         web_printf(conn, "<textarea cols=\"10\" rows=\"1\" name=\"value\">");
         
         if ( bNew ) {
-            web_printf(conn, "");
+            web_printf(conn, "%s", " ");
         } 
         else {
             wxString str;
             variable.writeValueToString( str );
-            web_printf( conn, (const char *)str.mbc_str() );
+            web_printf( conn, "%s", (const char *)str.mbc_str() );
         }
 
         web_printf(conn, "</textarea>");
@@ -3686,12 +3686,12 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         web_printf(conn, "<textarea cols=\"10\" rows=\"1\" name=\"value\">");
         
         if ( bNew ) {
-            web_printf(conn, "");
+            web_printf(conn, "%s", " ");
         } 
         else {
             wxString str;
             variable.writeValueToString( str );
-            web_printf( conn, (const char *)str.mbc_str() );
+            web_printf( conn, "%s", (const char *)str.mbc_str() );
         }
 
         web_printf(conn, "</textarea>");
@@ -3705,12 +3705,12 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         web_printf(conn, "<textarea cols=\"20\" rows=\"1\" name=\"value\">");
         
         if ( bNew ) {
-            web_printf(conn, "");
+            web_printf(conn, "%s", " ");
         } 
         else {
             wxString str;
             variable.writeValueToString( str );
-            web_printf( conn, (const char *)str.mbc_str() );
+            web_printf( conn, "%s", (const char *)str.mbc_str() );
         }
 
         web_printf(conn, "</textarea>");
@@ -3724,12 +3724,12 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         web_printf(conn, "<textarea cols=\"20\" rows=\"1\" name=\"value\">");
         
         if ( bNew ) {
-            web_printf(conn, "");
+            web_printf(conn, "%s", " ");
         } 
         else {
             wxString str;
             variable.writeValueToString( str );
-            web_printf( conn, (const char *)str.mbc_str() );
+            web_printf( conn, "%s", (const char *)str.mbc_str() );
         }
 
         web_printf(conn, "</textarea>");
@@ -3743,12 +3743,12 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         web_printf(conn, "<textarea cols=\"20\" rows=\"1\" name=\"value\">");
         
         if ( bNew ) {
-            web_printf(conn, "");
+            web_printf(conn, "%s", " ");
         } 
         else {
             wxString str;
             variable.writeValueToString( str );
-            web_printf( conn, (const char *)str.mbc_str() );
+            web_printf( conn, "%s", (const char *)str.mbc_str() );
         }
 
         web_printf(conn, "</textarea>");
@@ -3762,12 +3762,12 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         web_printf(conn, "<textarea cols=\"20\" rows=\"10\" name=\"value\">");
         
         if ( bNew ) {
-            web_printf(conn, "");
+            web_printf(conn, "%s", " ");
         } 
         else {
             wxString str;
             variable.writeValueToString( str );
-            web_printf( conn, (const char *)str.mbc_str() );
+            web_printf( conn, "%s", (const char *)str.mbc_str() );
         }
 
         web_printf(conn, "</textarea>");
@@ -3780,12 +3780,12 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         web_printf(conn, "<textarea cols=\"20\" rows=\"1\" name=\"value\">");
         
         if ( bNew ) {
-            web_printf(conn, "");
+            web_printf(conn, "%s", " ");
         } 
         else {
             wxString str;
             variable.writeValueToString( str, true );
-            web_printf( conn, (const char *)str.mbc_str() );
+            web_printf( conn, "%s", (const char *)str.mbc_str() );
         }
 
         web_printf(conn, "</textarea>");
@@ -3798,12 +3798,12 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         web_printf(conn, "<textarea cols=\"10\" rows=\"1\" name=\"value\">");
         
         if ( bNew ) {
-            web_printf(conn, "");
+            web_printf(conn, "%s", " ");
         } 
         else {
             wxString str;
             variable.writeValueToString( str, true );
-            web_printf( conn, (const char *)str.mbc_str() );
+            web_printf( conn, "%s", (const char *)str.mbc_str() );
         }
 
         web_printf(conn, "</textarea>");
@@ -3816,12 +3816,12 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         web_printf(conn, "<textarea cols=\"20\" rows=\"10\" name=\"value\">");
         
         if ( bNew ) {
-            web_printf(conn, "");
+            web_printf(conn, "%s", " ");
         } 
         else {
             wxString str;
             variable.writeValueToString( str, true );
-            web_printf( conn, (const char *)str.mbc_str() );
+            web_printf( conn, "%s", (const char *)str.mbc_str() );
         }
 
         web_printf(conn, "</textarea>");
@@ -3834,12 +3834,12 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         web_printf(conn, "<textarea cols=\"20\" rows=\"10\" name=\"value\">");
         
         if ( bNew ) {
-            web_printf(conn, "");
+            web_printf(conn, "%s", " ");
         } 
         else {
             wxString str;
             variable.writeValueToString( str, true );
-            web_printf( conn, (const char *)str.mbc_str() );
+            web_printf( conn, "%s", (const char *)str.mbc_str() );
         }
 
         web_printf(conn, "</textarea>");
@@ -3852,12 +3852,12 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         web_printf(conn, "<textarea cols=\"20\" rows=\"10\" name=\"value\">");
         
         if ( bNew ) {
-            web_printf(conn, "");
+            web_printf(conn, "%s", " ");
         } 
         else {
             wxString str;
             variable.writeValueToString( str, true );
-            web_printf( conn, (const char *)str.mbc_str() );
+            web_printf( conn, "%s", (const char *)str.mbc_str() );
         }
 
         web_printf(conn, "</textarea>");
@@ -3870,12 +3870,12 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         web_printf(conn, "<textarea cols=\"20\" rows=\"10\" name=\"value\">");
         
         if ( bNew ) {
-            web_printf(conn, "");
+            web_printf(conn, "%s", " ");
         } 
         else {
             wxString str;
             variable.writeValueToString( str, true );
-            web_printf( conn, (const char *)str.mbc_str() );
+            web_printf( conn, "%s", (const char *)str.mbc_str() );
         }
 
         web_printf(conn, "</textarea>");
@@ -3888,12 +3888,12 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         web_printf(conn, "<textarea cols=\"20\" rows=\"10\" name=\"value\">");
         
         if ( bNew ) {
-            web_printf(conn, "");
+            web_printf(conn, "%s", " ");
         } 
         else {
             wxString str;
             variable.writeValueToString( str, true );
-            web_printf( conn, (const char *)str.mbc_str() );
+            web_printf( conn, "%s", (const char *)str.mbc_str() );
         }
 
         web_printf(conn, "</textarea>");
@@ -3905,12 +3905,12 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         web_printf(conn, "<textarea cols=\"20\" rows=\"10\" name=\"value\">");
         
         if ( bNew ) {
-            web_printf(conn, "");
+            web_printf(conn, "%s", " ");
         } 
         else {
             wxString str;
             variable.writeValueToString( str, true );
-            web_printf( conn, (const char *)str.mbc_str() );
+            web_printf( conn, "%s", (const char *)str.mbc_str() );
         }
 
         web_printf(conn, "</textarea>");
@@ -3922,12 +3922,12 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         web_printf(conn, "<textarea cols=\"20\" rows=\"10\" name=\"value\">");
         
         if ( bNew ) {
-            web_printf(conn, "");
+            web_printf(conn, "%s", " ");
         } 
         else {
             wxString str;
             variable.writeValueToString( str, true );
-            web_printf( conn, (const char *)str.mbc_str() );
+            web_printf( conn, "%s", (const char *)str.mbc_str() );
         }
 
         web_printf(conn, "</textarea>");
@@ -3939,12 +3939,12 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         web_printf(conn, "<textarea cols=\"20\" rows=\"1\" name=\"value\">");
         
         if ( bNew ) {
-            web_printf(conn, "");
+            web_printf(conn, "%s", " ");
         } 
         else {
             wxString str;
             variable.writeValueToString( str, true );
-            web_printf( conn, (const char *)str.mbc_str() );
+            web_printf( conn, "%s", (const char *)str.mbc_str() );
         }
 
         web_printf(conn, "</textarea>");
@@ -3957,12 +3957,12 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         web_printf(conn, "<textarea cols=\"20\" rows=\"1\" name=\"value\">");
         
         if ( bNew ) {
-            web_printf(conn, "");
+            web_printf(conn, "%s", " ");
         } 
         else {
             wxString str;
             variable.writeValueToString( str, true );
-            web_printf( conn, (const char *)str.mbc_str() );
+            web_printf( conn, "%s", (const char *)str.mbc_str() );
         }
 
         web_printf(conn, "</textarea>");
@@ -3975,12 +3975,12 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         web_printf(conn, "<textarea cols=\"20\" rows=\"1\" name=\"value\">");
         
         if ( bNew ) {
-            web_printf(conn, "");
+            web_printf(conn, "%s", " ");
         } 
         else {
             wxString str;
             variable.writeValueToString( str, true );
-            web_printf( conn, (const char *)str.mbc_str() );
+            web_printf( conn, "%s", (const char *)str.mbc_str() );
         }
 
         web_printf(conn, "</textarea>");
@@ -3992,12 +3992,12 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         web_printf(conn, "<textarea cols=\"20\" rows=\"1\" name=\"value\">");
         
         if ( bNew ) {
-            web_printf(conn, "");
+            web_printf(conn, "%s", " ");
         } 
         else {
             wxString str;
             variable.writeValueToString( str, true );
-            web_printf( conn, (const char *)str.mbc_str() );
+            web_printf( conn, "%s", (const char *)str.mbc_str() );
         }
 
         web_printf(conn, "</textarea>");
@@ -4159,12 +4159,12 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
     web_printf( conn, "<textarea cols=\"50\" rows=\"5\" name=\"note\">");
     
     if ( bNew ) {
-        web_printf(conn, "");
+        web_printf(conn, "%s", " ");
     } 
     else { 
         wxString str;
         variable.getNote( str, true );
-        web_printf(conn, str.mbc_str());
+        web_printf(conn, "%s", (const char *)str.mbc_str() );
     }
 
     web_printf(conn, "</textarea>" );
@@ -4175,8 +4175,7 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
  
     web_printf( conn,
                     WEB_VAREDIT_SUBMIT,
-                    "/vscp/varpost",
-                    "/vscp" );
+                    "/vscp/varpost" );
 
     web_printf( conn, "</form>" );
     web_printf( conn, WEB_COMMON_END );     // Common end code
@@ -4381,7 +4380,7 @@ static int vscp_variable_post( struct web_connection *conn, void *cbdata )
     web_printf( conn, WEB_COMMON_MENU );
     web_printf( conn, WEB_VARPOST_BODY_START );
             
-    web_printf( conn, msg );
+    web_printf( conn, "%s", (const char *)msg );
    
     if ( bNew ) {
         
@@ -4406,9 +4405,9 @@ static int vscp_variable_post( struct web_connection *conn, void *cbdata )
             // Variable was not found
             
             web_printf( conn, 
-                            "<br><br>Unknown variable!. Unable to save record", 
+                            "<br><br>Unknown variable!. Unable to save record. id = %ld", 
                             id );
-            web_printf( conn, WEB_COMMON_END); // Common end code
+            web_printf( conn, "%s", WEB_COMMON_END ); // Common end code
             return 1;
             
         }
@@ -4461,7 +4460,7 @@ static int vscp_variable_post( struct web_connection *conn, void *cbdata )
 
     if ( !bCancel && bOK ) {
         web_printf( conn, 
-                        "<font color=\"blue\">Variable has been saved. id=%d '%s'</font>", 
+                        "<font color=\"blue\">Variable has been saved. id=%ld '%s'</font>", 
                         id,
                         (const char *)variable.getName().mbc_str() );
     }
@@ -4541,11 +4540,11 @@ static int vscp_variable_new( struct web_connection *conn, void *cbdata )
     web_printf( conn, "\" name=\"varnewstep1\">");
 
     web_printf( conn, 
-                    "<input name=\"from\" value=\"%d\" type=\"hidden\">", 
+                    "<input name=\"from\" value=\"%ld\" type=\"hidden\">", 
                     nFrom );
     web_printf( conn, 
-                    "<input name=\"count\" value=\"%d\" type=\"hidden\">", 
-                    nCount );
+                    "<input name=\"count\" value=\"%ld\" type=\"hidden\">", 
+                    (long)nCount );
 
     web_printf( conn, "<input name=\"new\" value=\"true\" type=\"hidden\">");
 
@@ -4672,10 +4671,10 @@ vscp_variable_delete( struct web_connection *conn, void *cbdata )
     web_write( conn, WEB_COMMON_JS, strlen( WEB_COMMON_JS ) );      // Common Javascript code
     web_printf( conn, "<meta http-equiv=\"refresh\" content=\"2;url=/vscp/varlist" ) ;
     web_printf( conn, 
-                    "?from=%d&count=%d", 
+                    "?from=%ld&count=%ld", 
                     nFrom, 
-                    nCount );
-    web_printf( conn, "\">" );
+                    (long)nCount );
+    web_printf( conn, "%s", "\">" );
     web_printf( conn, WEB_COMMON_HEAD_END_BODY_START );
 
     // navigation menu
@@ -4686,9 +4685,9 @@ vscp_variable_delete( struct web_connection *conn, void *cbdata )
     if ( !gpobj->m_variables.find( strName, variable ) ) {
             // Variable was not found            
             web_printf( conn, 
-                            "<br><br>Unknown variable!. Unable to delete record", 
+                            "<br><br>Unknown variable!. Unable to delete record. id=%ld", 
                             id );
-            web_printf( conn, WEB_COMMON_END ); // Common end code
+            web_printf( conn, "%s", WEB_COMMON_END ); // Common end code
             return 1;            
     }
 
@@ -4701,7 +4700,7 @@ vscp_variable_delete( struct web_connection *conn, void *cbdata )
         //gpobj->m_VSCP_Variables.save();
     }
     else {
-        web_printf( conn, "<br>Failed to remove record id = %d", id);
+        web_printf( conn, "<br>Failed to remove record id = %ld", id);
     }
     
     web_printf( conn, WEB_COMMON_END);     // Common end code
@@ -4733,9 +4732,9 @@ vscp_discovery( struct web_connection *conn, void *cbdata  )
                     WEB_COMMON_HEAD, 
                     "VSCP - Device discovery" );
     web_printf( conn, WEB_STYLE_START);
-    web_printf( conn, WEB_COMMON_CSS);     // CSS style Code
-    web_printf( conn, WEB_STYLE_END);
-    web_printf( conn, WEB_COMMON_JS);      // Common Javascript code
+    web_write( conn, WEB_COMMON_CSS, sizeof(WEB_COMMON_CSS) );     // CSS style Code
+    web_printf( conn, "%s", WEB_STYLE_END );
+    web_write( conn, WEB_COMMON_JS, sizeof(WEB_COMMON_JS) );      // Common Javascript code
     web_printf( conn, "<meta http-equiv=\"refresh\" content=\"5;url=/vscp");
     web_printf( conn, "\">");
     web_printf( conn, WEB_COMMON_HEAD_END_BODY_START);
@@ -4770,9 +4769,9 @@ vscp_client( struct web_connection *conn, void *cbdata )
                     WEB_COMMON_HEAD, 
                     "VSCP - Session" );
     web_printf( conn, WEB_STYLE_START);
-    web_printf( conn, WEB_COMMON_CSS);     // CSS style Code
+    web_write( conn, WEB_COMMON_CSS, sizeof(WEB_COMMON_CSS) );     // CSS style Code
     web_printf( conn, WEB_STYLE_END);
-    web_printf( conn, WEB_COMMON_JS);      // Common Javascript code
+    web_write( conn, WEB_COMMON_JS, sizeof(WEB_COMMON_JS) );      // Common Javascript code
     web_printf( conn, "<meta http-equiv=\"refresh\" content=\"5;url=/vscp");
     web_printf( conn, "\">");
     web_printf( conn, WEB_COMMON_HEAD_END_BODY_START);
@@ -4807,9 +4806,9 @@ vscp_configure( struct web_connection *conn, void *cbdata )
                     WEB_COMMON_HEAD, 
                     "VSCP - Configuration" );
     web_printf( conn, WEB_STYLE_START);
-    web_printf( conn, WEB_COMMON_CSS);     // CSS style Code
+    web_write( conn, WEB_COMMON_CSS, sizeof(WEB_COMMON_CSS) );     // CSS style Code
     web_printf( conn, WEB_STYLE_END);
-    web_printf( conn, WEB_COMMON_JS);      // Common JavaScript code
+    web_write( conn, WEB_COMMON_JS, sizeof(WEB_COMMON_JS) );      // Common JavaScript code
     web_printf( conn, WEB_COMMON_HEAD_END_BODY_START);
 
     // navigation menu
@@ -4826,7 +4825,7 @@ vscp_configure( struct web_connection *conn, void *cbdata )
     web_printf( conn, "<br>");
 
     web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Operating system:</b> ");
-    web_printf( conn, wxGetOsDescription().mbc_str() );
+    web_printf( conn, "%s", (const char *)wxGetOsDescription().mbc_str() );
     if ( wxIsPlatform64Bit() ) {
         web_printf( conn, " 64-bit ");
     }
@@ -4861,12 +4860,12 @@ vscp_configure( struct web_connection *conn, void *cbdata )
     wxMemorySize memsize;
     if ( -1 != ( memsize = wxGetFreeMemory() ) ) {
         web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Free memory:</b> ");
-        web_printf( conn, memsize.ToString().mbc_str() );
+        web_printf( conn, "%s", (const char *)memsize.ToString().mbc_str() );
         web_printf( conn, " bytes<br>");
     }
 
     web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Hostname:</b> ");
-    web_printf( conn, wxGetFullHostName().mbc_str() );
+    web_printf( conn, "%s", (const char *)wxGetFullHostName().mbc_str() );
     web_printf( conn, "<br>");
     
     // Debuglevel
@@ -4893,7 +4892,7 @@ vscp_configure( struct web_connection *conn, void *cbdata )
     // Server GUID
     web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Server GUID:</b> ");
     gpobj->m_guid.toString( str );
-    web_printf( conn, str.mbc_str() );
+    web_printf( conn, "%s", (const char *)str.mbc_str() );
     web_printf( conn, "<br> ");
 
     // Client buffer size
@@ -4918,20 +4917,20 @@ vscp_configure( struct web_connection *conn, void *cbdata )
     web_printf( conn, "<br>");
 
     web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Mongoose version:</b> ");
-    web_printf( conn, wxString::FromUTF8( MG_VERSION 
-                                                " Copyright (c) 2013-2017 Cesanta Software Limited" ).mbc_str() );
+    web_printf( conn, "%s", (const char *)wxString::FromUTF8( MG_VERSION 
+           " Copyright (c) 2013-2017 Cesanta Software Limited" ).mbc_str() );
     web_printf( conn, "<br>");
     
     if ( gpobj->m_variables.find( _("vscp.openssl.version.str"), variable ) ) {
         str = variable.getValue();
         vscp_base64_wxdecode( str );
         web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Openssl version:</b> ");
-        web_printf( conn, (const char *)str.mbc_str() );
+        web_printf( conn, "%s", (const char *)str.mbc_str() );
         web_printf( conn, " - " );
         if ( gpobj->m_variables.find( _("vscp.openssl.copyright"), variable ) ) {
             str = variable.getValue();
             vscp_base64_wxdecode( str );
-            web_printf( conn, (const char *)str.mbc_str() );
+            web_printf( conn, "%s", (const char *)str.mbc_str() );
         }
         web_printf( conn, "<br>");
     }
@@ -4940,12 +4939,12 @@ vscp_configure( struct web_connection *conn, void *cbdata )
         str = variable.getValue();
         vscp_base64_wxdecode( str );
         web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Duktape version:</b> ");
-        web_printf( conn, (const char *)str.mbc_str() );
+        web_printf( conn, "%s", (const char *)str.mbc_str() );
         web_printf( conn, " - " );
         if ( gpobj->m_variables.find( _("vscp.duktape.copyright"), variable ) ) {
             str = variable.getValue();
             vscp_base64_wxdecode( str );
-            web_printf( conn, (const char *)str.mbc_str() );
+            web_printf( conn, "%s", (const char *)str.mbc_str() );
         }
         web_printf( conn, "<br>");
     }
@@ -4954,12 +4953,12 @@ vscp_configure( struct web_connection *conn, void *cbdata )
         str = variable.getValue();
         vscp_base64_wxdecode( str );
         web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Lua version:</b> ");
-        web_printf( conn, (const char *)str.mbc_str() );
+        web_printf( conn, "%s", (const char *)str.mbc_str() );
         web_printf( conn, " - " );
         if ( gpobj->m_variables.find( _("vscp.lua.copyright"), variable ) ) {
             str = variable.getValue();
             vscp_base64_wxdecode( str );
-            web_printf( conn, (const char *)str.mbc_str() );
+            web_printf( conn, "%s", (const char *)str.mbc_str() );
         }
         web_printf( conn, "<br>");
     }    
@@ -4968,12 +4967,12 @@ vscp_configure( struct web_connection *conn, void *cbdata )
         str = variable.getValue();
         vscp_base64_wxdecode( str );
         web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Sqlite3 version:</b> ");
-        web_printf( conn, (const char *)str.mbc_str() );
+        web_printf( conn, "%s", (const char *)str.mbc_str() );
         web_printf( conn, " - " );
         if ( gpobj->m_variables.find( _("vscp.sqlite.copyright"), variable ) ) {
             str = variable.getValue();
             vscp_base64_wxdecode( str );
-            web_printf( conn, (const char *)str.mbc_str() );
+            web_printf( conn, "%s", (const char *)str.mbc_str() );
         }
         web_printf( conn, "<br>");
     }    
@@ -4983,7 +4982,7 @@ vscp_configure( struct web_connection *conn, void *cbdata )
         str = variable.getValue();
         vscp_base64_wxdecode( str );
         web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Civetweb copyright:</b> ");
-        web_printf( conn, (const char *)str.mbc_str() );
+        web_printf( conn, "%s", (const char *)str.mbc_str() );
         web_printf( conn, "<br>");
     }
     
@@ -4996,7 +4995,7 @@ vscp_configure( struct web_connection *conn, void *cbdata )
     // TCP/IP interface
     web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>TCP/IP interface:</b> ");
     web_printf( conn, "enabled on <b>interface:</b> '");
-    web_printf( conn, gpobj->m_strTcpInterfaceAddress.mbc_str() );
+    web_printf( conn, "%s", (const char *)gpobj->m_strTcpInterfaceAddress.mbc_str() );
     web_printf( conn, "'");
     web_printf( conn, "<br>");
 
@@ -5009,7 +5008,7 @@ vscp_configure( struct web_connection *conn, void *cbdata )
     web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>UDP interface:</b> ");
     if ( gpobj->m_udpInfo.m_bEnable ) {
         web_printf( conn, "enabled on <b>interface:</b> '");
-        web_printf( conn, gpobj->m_udpInfo.m_interface.mbc_str() );
+        web_printf( conn, "%s", (const char *)gpobj->m_udpInfo.m_interface.mbc_str() );
         web_printf( conn, "'");
     }
     else {
@@ -5048,9 +5047,12 @@ vscp_configure( struct web_connection *conn, void *cbdata )
                     gpobj->m_automation.getIntervalHeartbeat() ); 
 
     web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Heartbeat last sent @</b>: " );
-    web_printf( conn, gpobj->m_automation.getHeartbeatSent().FormatISODate().mbc_str() + _( " " ) );
-    web_printf( conn, gpobj->m_automation.getHeartbeatSent().FormatISOTime().mbc_str() + _( "<br>" ) );
-
+    web_printf( conn, "%s", 
+        (const char *)gpobj->m_automation.getHeartbeatSent().FormatISODate().mbc_str()  );
+    web_write( conn, + " ", 1 );
+    web_printf( conn, "%s", 
+        (const char *)gpobj->m_automation.getHeartbeatSent().FormatISOTime().mbc_str() );
+    web_write( conn, + "<br>", 4 );
 
 
     if ( gpobj->m_automation.isSendSegmentControllerHeartbeat() ) {
@@ -5066,13 +5068,12 @@ vscp_configure( struct web_connection *conn, void *cbdata )
             gpobj->m_automation.getIntervalSegmentControllerHeartbeat() );
 
     web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Segment controller heartbeat last sent @</b>: " );
-    web_printf( conn, 
-        gpobj->m_automation.getSegmentControllerHeartbeatSent().FormatISODate().mbc_str() +
-        _( " " ) );
-    web_printf( conn, 
-        gpobj->m_automation.getSegmentControllerHeartbeatSent().FormatISOTime().mbc_str() + 
-        _( "<br>" ) );
-
+    web_printf( conn, "%s", (const char *)
+        gpobj->m_automation.getSegmentControllerHeartbeatSent().FormatISODate().mbc_str() );
+    web_write( conn, " ", 1 );
+    web_printf( conn, "%s", (const char *)
+        gpobj->m_automation.getSegmentControllerHeartbeatSent().FormatISOTime().mbc_str()  );
+    web_write( conn, "<br>", 4 );
 
 
     web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Longitude</b>: " );
@@ -5104,12 +5105,12 @@ vscp_configure( struct web_connection *conn, void *cbdata )
                     gpobj->m_automation.getSunMaxAltitude() );
 
     web_printf( conn,  "&nbsp;&nbsp;&nbsp;&nbsp;<b>Last Calculation</b>: " );
-    web_printf( conn, 
-                gpobj->m_automation.getLastCalculation().FormatISODate().mbc_str()  + 
-                _( " " ) );
-    web_printf( conn, 
-                gpobj->m_automation.getLastCalculation().FormatISOTime().mbc_str() + 
-                _("<br>") );
+    web_printf( conn, "%s",
+                (const char *)gpobj->m_automation.getLastCalculation().FormatISODate().mbc_str() );
+    web_write( conn, " ", 1 );
+    web_printf( conn, "%s",
+                (const char *)gpobj->m_automation.getLastCalculation().FormatISOTime().mbc_str() );
+    web_write( conn, "<br>", 4 );
 
     if ( gpobj->m_automation.isSendSunriseTwilightEvent() ) {
         web_printf( conn,  "&nbsp;&nbsp;&nbsp;&nbsp;Sunrise twilight event will be sent.<br>" );
@@ -5119,18 +5120,17 @@ vscp_configure( struct web_connection *conn, void *cbdata )
     }
 
     web_printf( conn,  "&nbsp;&nbsp;&nbsp;&nbsp;<b>Civil Twilight Sunrise Time</b>: " );
-    web_printf( conn, 
-            gpobj->m_automation.getCivilTwilightSunriseTime().FormatISOTime().mbc_str() + _
-            ( "<br>" ) );
+    web_printf( conn, "%s",
+            (const char *)gpobj->m_automation.getCivilTwilightSunriseTime().FormatISOTime().mbc_str()  );
+    web_write( conn, "<br>", 4 );
 
     web_printf( conn,  "&nbsp;&nbsp;&nbsp;&nbsp;<b>Civil Twilight Sunrise Time sent @</b>: " );
-    web_printf( conn, 
-        gpobj->m_automation.getCivilTwilightSunriseTimeSent().FormatISODate().mbc_str() + 
-        _( " " ) );
-    web_printf( conn, 
-        gpobj->m_automation.getCivilTwilightSunriseTimeSent().FormatISOTime().mbc_str() + 
-        _( "<br>" ) );
-
+    web_printf( conn, "%s",
+        (const char *)gpobj->m_automation.getCivilTwilightSunriseTimeSent().FormatISODate().mbc_str()  );
+    web_write( conn, " ", 1 );
+    web_printf( conn, "%s",
+        (const char *)gpobj->m_automation.getCivilTwilightSunriseTimeSent().FormatISOTime().mbc_str()  );
+    web_write( conn, "<br>", 4 );
 
 
     if ( gpobj->m_automation.isSendSunriseEvent() ) {
@@ -5141,18 +5141,17 @@ vscp_configure( struct web_connection *conn, void *cbdata )
     }
 
     web_printf( conn,  "&nbsp;&nbsp;&nbsp;&nbsp;<b>Civil Sunrise Time</b>: " );
-    web_printf( conn, 
-        gpobj->m_automation.getSunriseTime().FormatISOTime().mbc_str() + 
-       _( "<br>" ) );
+    web_printf( conn, "%s",
+        (const char *)gpobj->m_automation.getSunriseTime().FormatISOTime().mbc_str() );
+    web_write( conn, "<br>", 4 );
 
     web_printf( conn,  "&nbsp;&nbsp;&nbsp;&nbsp;<b>Civil Sunrise Time sent @</b>: " );
-    web_printf( conn, 
-        gpobj->m_automation.getSunriseTimeSent().FormatISODate().mbc_str() + 
-        _( " " ) );
-    web_printf( conn, 
-        gpobj->m_automation.getSunriseTimeSent().FormatISOTime().mbc_str() + 
-        _( "<br>" ) );
-
+    web_printf( conn, "%s",
+        (const char *)gpobj->m_automation.getSunriseTimeSent().FormatISODate().mbc_str()  );
+    web_write( conn, " ", 1 );
+    web_printf( conn, "%s",
+        (const char *)gpobj->m_automation.getSunriseTimeSent().FormatISOTime().mbc_str()  );
+    web_write( conn, "<br>", 4 );
 
     if ( gpobj->m_automation.isSendSunsetEvent() ) {
         web_printf( conn,  
@@ -5165,15 +5164,18 @@ vscp_configure( struct web_connection *conn, void *cbdata )
 
     web_printf( conn,  
         "&nbsp;&nbsp;&nbsp;&nbsp;<b>Civil Sunset Time</b>: " );
-    web_printf( conn, 
-        gpobj->m_automation.getSunsetTime().FormatISOTime().mbc_str() + _( "<br>" ) );
+    web_printf( conn, "%s", 
+        (const char *)gpobj->m_automation.getSunsetTime().FormatISOTime().mbc_str() );
+    web_write( conn, "<br>", 4 );
 
     web_printf( conn,  
         "&nbsp;&nbsp;&nbsp;&nbsp;<b>Civil Sunset Time sent @</b>: " );
-    web_printf( conn, 
-        gpobj->m_automation.getSunsetTimeSent().FormatISODate().mbc_str() + _( " " ) );
-    web_printf( conn, 
-        gpobj->m_automation.getSunsetTimeSent().FormatISOTime().mbc_str() + _( "<br>" ) );
+    web_printf( conn, "%s",
+        (const char *)gpobj->m_automation.getSunsetTimeSent().FormatISODate().mbc_str() );
+    web_write( conn, " ", 1 );
+    web_printf( conn, "%s",
+        (const char *)gpobj->m_automation.getSunsetTimeSent().FormatISOTime().mbc_str() );
+    web_write( conn, "<br>", 4 );
 
 
 
@@ -5185,18 +5187,17 @@ vscp_configure( struct web_connection *conn, void *cbdata )
     }
 
     web_printf( conn,  "&nbsp;&nbsp;&nbsp;&nbsp;<b>Civil Twilight Sunset Time</b>: " );
-    web_printf( conn, 
-        gpobj->m_automation.getCivilTwilightSunsetTime().FormatISOTime().mbc_str() + 
-        _( "<br>" ) );
+    web_printf( conn, "%s",
+        (const char *)gpobj->m_automation.getCivilTwilightSunsetTime().FormatISOTime().mbc_str()  );
+    web_write( conn, "<br>", 4 );
 
     web_printf( conn,  "&nbsp;&nbsp;&nbsp;&nbsp;<b>Civil Twilight Sunset Time sent @</b>: " );
-    web_printf( conn, 
-        gpobj->m_automation.getCivilTwilightSunsetTimeSent().FormatISODate().mbc_str() + 
-        _( " " ) );
-    web_printf( conn, 
-        gpobj->m_automation.getCivilTwilightSunsetTimeSent().FormatISOTime().mbc_str() + 
-        _( "<br>" ) );
-
+    web_printf( conn, "%s",
+        (const char *)gpobj->m_automation.getCivilTwilightSunsetTimeSent().FormatISODate().mbc_str()  );
+    web_write( conn, " ", 1 );
+    web_printf( conn, "%s",
+        (const char *)gpobj->m_automation.getCivilTwilightSunsetTimeSent().FormatISOTime().mbc_str()  );
+    web_write( conn, "<br>", 4 );
 
     if ( gpobj->m_automation.isSendCalculatedNoonEvent() ) {
         web_printf( conn,  
@@ -5208,18 +5209,18 @@ vscp_configure( struct web_connection *conn, void *cbdata )
     }
 
     web_printf( conn,  "&nbsp;&nbsp;&nbsp;&nbsp;<b>Calculated Noon Time</b>: " );
-    web_printf( conn, 
-        gpobj->m_automation.getNoonTime().FormatISOTime().mbc_str() + 
-        _( "<br>" ) );
+    web_printf( conn, "%s",
+        (const char *)gpobj->m_automation.getNoonTime().FormatISOTime().mbc_str() );
+    web_write( conn, "<br>", 4 );
 
     web_printf( conn,  
         "&nbsp;&nbsp;&nbsp;&nbsp;<b>Calculated Noon Time sent @</b>: " );
-    web_printf( conn, 
-        gpobj->m_automation.getNoonTimeSent().FormatISODate().mbc_str() + 
-        _(" ") );
-    web_printf( conn, 
-        gpobj->m_automation.getNoonTimeSent().FormatISOTime().mbc_str() + 
-        _("<br>") );
+    web_printf( conn, "%s",
+        (const char *)gpobj->m_automation.getNoonTimeSent().FormatISODate().mbc_str()  );
+    web_write( conn, " ", 1 );
+    web_printf( conn, "%s",
+        (const char *)gpobj->m_automation.getNoonTimeSent().FormatISOTime().mbc_str()  );
+    web_write( conn, "<br>", 4 );
 
 
     web_printf( conn, "<hr>");
@@ -5230,46 +5231,46 @@ vscp_configure( struct web_connection *conn, void *cbdata )
     web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Web server <b>interface:</b></b> ");
 
     web_printf( conn, "enabled on interface '");
-    web_printf( conn, gpobj->m_strWebServerInterfaceAddress.mbc_str());
+    web_printf( conn, "%s", (const char *)gpobj->m_strWebServerInterfaceAddress.mbc_str());
     web_printf( conn, "<br>");
     web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Rootfolder:</b> ");
-    web_printf( conn, wxString::FromUTF8( gpobj->m_pathWebRoot ).mbc_str() );
+    web_printf( conn, "%s", (const char *)wxString::FromUTF8( gpobj->m_pathWebRoot ).mbc_str() );
     web_printf( conn, "<br>");
     web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Authdomain:</b> ");
-    web_printf( conn, wxString::FromUTF8( gpobj->m_authDomain ).mbc_str() );
+    web_printf( conn, "%s", (const char *)wxString::FromUTF8( gpobj->m_authDomain ).mbc_str() );
     if ( 0 == strlen( gpobj->m_authDomain ) ) {
         web_printf( conn, "Set to default.");
     }
     web_printf( conn, "<br>");
     web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Path certs:</b> ");
-    web_printf( conn, wxString::FromUTF8( gpobj->m_pathCert ).mbc_str() );
+    web_printf( conn, "%s", (const char *)wxString::FromUTF8( gpobj->m_pathCert ).mbc_str() );
     web_printf( conn, "<br>");
     web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>ExtraMimeTypes:</b> ");
-    web_printf( conn, wxString::FromUTF8( gpobj->m_extraMimeTypes ).mbc_str() );
+    web_printf( conn, "%s", (const char *)wxString::FromUTF8( gpobj->m_extraMimeTypes ).mbc_str() );
     if ( 0 == strlen( gpobj->m_extraMimeTypes ) ) {
         web_printf( conn, "Set to default.");
     }
     web_printf( conn, "<br>");
     web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>CgiInterpreter:</b> ");
-    web_printf( conn, wxString::FromUTF8( gpobj->m_cgiInterpreter ).mbc_str() );
+    web_printf( conn, "%s", (const char *)wxString::FromUTF8( gpobj->m_cgiInterpreter ).mbc_str() );
     if ( 0 == strlen( gpobj->m_cgiInterpreter ) ) {
         web_printf( conn, "Set to default.");
     }
     web_printf( conn, "<br>");
     web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>CgiPattern:</b> ");
-    web_printf( conn, wxString::FromUTF8( gpobj->m_cgiPattern ).mbc_str() );
+    web_printf( conn, "%s", (const char *)wxString::FromUTF8( gpobj->m_cgiPattern ).mbc_str() );
     if ( 0 == strlen( gpobj->m_cgiPattern ) ) {
         web_printf( conn, "Set to default.");
     }
     web_printf( conn, "<br>");
     web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>HiddenFilePatterns:</b> ");
-    web_printf( conn, wxString::FromUTF8( gpobj->m_hideFilePatterns ).mbc_str() );
+    web_printf( conn, "%s", (const char *)wxString::FromUTF8( gpobj->m_hideFilePatterns ).mbc_str() );
     if ( 0 == strlen( gpobj->m_hideFilePatterns ) ) {
         web_printf( conn, "Set to default.");
     }
     web_printf( conn, "<br>");
     web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>IndexFiles:</b> ");
-    web_printf( conn, wxString::FromUTF8( gpobj->m_indexFiles ).mbc_str() );
+    web_printf( conn, "%s", (const char *)wxString::FromUTF8( gpobj->m_indexFiles ).mbc_str() );
     if ( 0 == strlen( gpobj->m_indexFiles ) ) {
         web_printf( conn, "Set to default.");
     }
@@ -5282,7 +5283,7 @@ vscp_configure( struct web_connection *conn, void *cbdata )
     }
     web_printf( conn, "<br>");
     web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>UrlReqrites:</b> ");
-    web_printf( conn, wxString::FromUTF8( gpobj->m_urlRewrites ).mbc_str() );
+    web_printf( conn, "%s", (const char *)wxString::FromUTF8( gpobj->m_urlRewrites ).mbc_str() );
     if ( 0 == strlen( gpobj->m_urlRewrites ) ) {
        web_printf( conn, "Set to default.");
     }
@@ -5307,7 +5308,7 @@ vscp_configure( struct web_connection *conn, void *cbdata )
     web_printf( conn, "enabled.");
     web_printf( conn, "<br>");
     web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Path to DM XML file:</b> ");
-    web_printf( conn, gpobj->m_dm.m_staticXMLPath.mbc_str() );
+    web_printf( conn, "%s", (const char *)gpobj->m_dm.m_staticXMLPath.mbc_str() );
     web_printf( conn, "<br>");
 
     web_printf( conn, "<hr>");
@@ -5319,7 +5320,7 @@ vscp_configure( struct web_connection *conn, void *cbdata )
     web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Variable handling :</b> ");
     web_printf( conn, "<br>");
     web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Path to variables:</b> ");
-    web_printf( conn, gpobj->m_variables.m_xmlPath.mbc_str() );
+    web_printf( conn, "%s", (const char *)gpobj->m_variables.m_xmlPath.mbc_str() );
 
     web_printf( conn, "<hr>");
     
@@ -5341,13 +5342,13 @@ vscp_configure( struct web_connection *conn, void *cbdata )
               ( VSCP_DRIVER_LEVEL1 == pDeviceItem->m_driverLevel ) &&
               pDeviceItem->m_bEnable ) {
             web_printf( conn, "<b>Name:</b> ");
-            web_printf( conn, pDeviceItem->m_strName.mbc_str() );
+            web_printf( conn, "%s", (const char *)pDeviceItem->m_strName.mbc_str() );
             web_printf( conn, "<br>");
             web_printf( conn, "<b>Config:</b> ");
-            web_printf( conn, pDeviceItem->m_strParameter.mbc_str() );
+            web_printf( conn, "%s", (const char *)pDeviceItem->m_strParameter.mbc_str() );
             web_printf( conn, "<br>");
             web_printf( conn, "<b>Path:</b> ");
-            web_printf( conn, pDeviceItem->m_strPath.mbc_str() );
+            web_printf( conn, "%s", (const char *)pDeviceItem->m_strPath.mbc_str() );
             web_printf( conn, "<br>");
         }
     }
@@ -5370,13 +5371,13 @@ vscp_configure( struct web_connection *conn, void *cbdata )
               ( VSCP_DRIVER_LEVEL2 == pDeviceItem->m_driverLevel ) &&
               pDeviceItem->m_bEnable ) {
             web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Name:</b> ");
-            web_printf( conn, pDeviceItem->m_strName.mbc_str() );
+            web_printf( conn, "%s", (const char *)pDeviceItem->m_strName.mbc_str() );
             web_printf( conn, "<br>");
             web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Config:</b> ");
-            web_printf( conn, pDeviceItem->m_strParameter.mbc_str() );
+            web_printf( conn, "%s", (const char *)pDeviceItem->m_strParameter.mbc_str() );
             web_printf( conn, "<br>");
             web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Driver path:</b> ");
-            web_printf( conn, pDeviceItem->m_strPath.mbc_str() );
+            web_printf( conn, "%s", (const char *)pDeviceItem->m_strPath.mbc_str() );
             web_printf( conn, "<br>");
         }
     }
@@ -5861,7 +5862,7 @@ static int vscp_log_pre( struct web_connection *conn, void *cbdata )
     web_printf( conn, "\" name=\"lognextstep1\">");
 
     web_printf( conn, 
-                    "<input name=\"from\" value=\"%d\" type=\"hidden\">", 
+                    "<input name=\"from\" value=\"%ld\" type=\"hidden\">", 
                     nFrom );
     web_printf( conn, 
                     "<input name=\"count\" value=\"%d\" type=\"hidden\">", 
@@ -5872,8 +5873,8 @@ static int vscp_log_pre( struct web_connection *conn, void *cbdata )
     web_printf( conn, "<table>");
     
     web_printf( conn, "<tr>");
-    web_printf( conn, "<tr><td width=\"15%\">Log type:</td>");
-    web_printf( conn, "<td width=\"85%\"><select name=\"type\">");
+    web_printf( conn, "%s", "<tr><td width=\"15%\">Log type:</td>");
+    web_printf( conn, "%s", "<td width=\"85%\"><select name=\"type\">");
     web_printf( conn, "<option value=\"0\">All logs</option>");
     web_printf( conn, "<option value=\"1\">General log</option>");
     web_printf( conn, "<option value=\"2\">Security log</option>");
@@ -5881,8 +5882,8 @@ static int vscp_log_pre( struct web_connection *conn, void *cbdata )
     web_printf( conn, "<option value=\"4\">Decision Matrix log</option>");
     web_printf( conn, "</select></td></tr>");
     
-    web_printf( conn, "<tr><td width=\"15%\">Log level:</td>"); 
-    web_printf( conn, "<td width=\"85%\"><select name=\"level\">");
+    web_printf( conn, "%s", "<tr><td width=\"15%\">Log level:</td>"); 
+    web_printf( conn, "%s", "<td width=\"85%\"><select name=\"level\">");
     web_printf( conn, "<option value=\"0\">All</option>");
     web_printf( conn, "<option value=\"1\">Normal</option>");
     web_printf( conn, "<option value=\"2\">Debug</option>");
@@ -6099,7 +6100,7 @@ vscp_log_list( struct web_connection *conn, void *cbdata )
                                         nLevel );
     wxString str = wxString::Format( _( WEB_COMMON_TR_NON_CLICKABLE_ROW ),
                                         url_logedit.mbc_str() );
-    web_printf( conn, str.mbc_str() );
+    web_printf( conn, "%s", (const char *)str.mbc_str() );
     
     
     
@@ -6126,13 +6127,13 @@ vscp_log_list( struct web_connection *conn, void *cbdata )
         web_printf( conn, "<tr>" );
         
         // date
-        web_printf( conn, "<td id=\"tdcenter\" width=\"20%\"><div id\"small\">" );
-        web_printf( conn, (const char *)sqlite3_column_text( ppStmt, 
+        web_printf( conn, "%s", "<td id=\"tdcenter\" width=\"20%\"><div id\"small\">" );
+        web_printf( conn, "%s", (const char *)sqlite3_column_text( ppStmt, 
                             VSCPDB_ORDINAL_LOG_DATE ));
         web_printf( conn, "</div></td>" );
         
         // Type
-        web_printf( conn, "<td id=\"tdcenter\" width=\"10%\">" );
+        web_printf( conn, "%s", "<td id=\"tdcenter\" width=\"10%\">" );
        
         switch ( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_LOG_TYPE ) ) {
         
@@ -6160,7 +6161,7 @@ vscp_log_list( struct web_connection *conn, void *cbdata )
         web_printf( conn, "</td>" );
         
         // Level
-        web_printf( conn, "<td id=\"tdcenter\" width=\"10%\">" );
+        web_printf( conn, "%s", "<td id=\"tdcenter\" width=\"10%\">" );
        
         switch ( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_LOG_LEVEL ) ) {
             case 1:
@@ -6176,8 +6177,9 @@ vscp_log_list( struct web_connection *conn, void *cbdata )
         web_printf( conn, "</td>" );
         
         // Log message
-        web_printf( conn, "<td width=\"60%\">" );
-        web_printf( conn, (const char *)sqlite3_column_text( ppStmt, 
+        web_printf( conn, "%s", "<td width=\"60%\">" );
+        web_printf( conn, "%s", 
+                (const char *)sqlite3_column_text( ppStmt, 
                             VSCPDB_ORDINAL_LOG_MESSAGE ) );
         web_printf( conn, "</td>" ); 
         
@@ -6242,8 +6244,8 @@ vscp_log_delete( struct web_connection *conn, void *cbdata )
     web_printf( conn, "<table>");
     
     web_printf( conn, "<tr>");
-    web_printf( conn, "<tr><td width=\"15%\">Log type:</td>");
-    web_printf( conn, "<td width=\"85%\"><select name=\"type\">");
+    web_printf( conn, "%s", "<tr><td width=\"15%\">Log type:</td>");
+    web_printf( conn, "%s", "<td width=\"85%\"><select name=\"type\">");
     web_printf( conn, "<option value=\"0\">All logs</option>");
     web_printf( conn, "<option value=\"1\">General log</option>");
     web_printf( conn, "<option value=\"2\">Security log</option>");
@@ -6251,20 +6253,20 @@ vscp_log_delete( struct web_connection *conn, void *cbdata )
     web_printf( conn, "<option value=\"4\">Decision Matrix log</option>");
     web_printf( conn, "</select></td></tr>");
     
-    web_printf( conn, "<tr><td width=\"15%\">Log level:</td>"); 
-    web_printf( conn, "<td width=\"85%\"><select name=\"level\">");
+    web_printf( conn, "%s", "<tr><td width=\"15%\">Log level:</td>"); 
+    web_printf( conn, "%s", "<td width=\"85%\"><select name=\"level\">");
     web_printf( conn, "<option value=\"0\">All</option>");
     web_printf( conn, "<option value=\"1\">Normal</option>");
     web_printf( conn, "<option value=\"2\">Debug</option>");
     web_printf( conn, "</select></td></tr>");
     
-    web_printf( conn, "<tr><td width=\"15%\">From date:</td>"); 
-    web_printf( conn, "<td width=\"85%\">");
+    web_printf( conn, "%s", "<tr><td width=\"15%\">From date:</td>"); 
+    web_printf( conn, "%s", "<td width=\"85%\">");
     web_printf( conn, "<input type=\"text\" name=\"fromdate\"></> "
                       "Leave blank for ''beginning of time'</td></tr>");
     
-    web_printf( conn, "<tr><td width=\"15%\">To date:</td>"); 
-    web_printf( conn, "<td width=\"85%\">");
+    web_printf( conn, "%s", "<tr><td width=\"15%\">To date:</td>"); 
+    web_printf( conn, "%s", "<td width=\"85%\">");
     web_printf( conn, "<input type=\"text\" name=\"todate\"></> "
                       "Leave blank for 'end of time'</td></tr>");
     
@@ -6422,16 +6424,16 @@ vscp_log_do_delete( struct web_connection *conn, void *cbdata )
                                       NULL, 
                                       NULL, 
                                       &zErrMsg ) ) {
-        web_printf( conn, 
-                        wxString::Format( _("Failed to clear data. sql=%s Error = %s"), 
+        web_printf( conn, "%s",
+                        (const char *)wxString::Format( _("Failed to clear data. sql=%s Error = %s"), 
                                           sql, zErrMsg ).mbc_str() );
         web_printf( conn, WEB_COMMON_END);    
         return 1;
     }
     
     int count = sqlite3_changes( gpobj->m_db_vscp_log );
-    web_printf( conn, 
-                    wxString::Format( _("%d records deleted!"), 
+    web_printf( conn, "%s",
+                    (const char *)wxString::Format( _("%d records deleted!"), 
                                       count ).mbc_str() );
     
     web_printf( conn, WEB_COMMON_END);     // Common end code
