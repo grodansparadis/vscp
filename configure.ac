@@ -75,7 +75,7 @@ dnl compile 32-bit/64-bit
 AC_CHECK_SIZEOF([long])
 AS_IF([test "$ac_cv_sizeof_long" -eq 8],
     [AC_DEFINE([OSBIT], 64, [Define to the size of a long in bits.])],
-    [AC_DEFINE([OSBIT], 32, [Define to the size of a long in bits.])]) 
+    [AC_DEFINE([OSBIT], 32, [Define to the size of a long in bits.])])
 
 AC_SUBST(WXLIBS)
 AC_SUBST(EXTRALIBS)
@@ -90,6 +90,21 @@ AC_SUBST(WXGTK_CFLAGS)
 AC_SUBST(WXGTK_LIBS)
 AC_SUBST(WXGTK_STATIC_LIBS)
 AC_SUBST(STATIC)
+AC_SUBST(VSCPDIR)
+
+dnl
+dnl Project base installation folder
+dnl
+
+AC_ARG_VAR(VSCPDIR, Set base folder for installation (/srv/vscp) )
+if test "${VSCPDIR+set}" = set; then
+  echo "variable \$VSCPDIR is set to: $VSCPDIR"
+else
+  VSCPDIR="/srv/vscp"
+  echo "variable \$VSCPDIR is set to: $VSCPDIR"
+fi
+
+
 
 dnl
 dnl Project Sub directories
@@ -111,7 +126,7 @@ PROJ_SUBDIRS="src/vscp/drivers/level1/can4vscp/linux\
  src/vscp/helperlib/linux\
  src/vscp/daemon/linux\
  src/vscp/vscp-mkpasswd src/vscp/uvscpd\
- src/vscp/vscpcmd src/vscp/drivers/level2/sim/linux"  
+ src/vscp/vscpcmd src/vscp/drivers/level2/sim/linux"
 AC_SUBST(PROJ_SUBDIRS)
 PROJ_SUBDIRS_GUI="src/vscp/vscpworks"
 AC_SUBST(PROJ_SUBDIRS_GUI)
@@ -175,13 +190,13 @@ if sh -c "$WX_CONFIG_WITH_ARGS --basename" 2>/dev/null | grep wx_gtk2 >/dev/null
     AC_MSG_RESULT([Found; building GUI apps])
 fi
 
-EXTRALIBS="${EXTRALIBS} ${LIBS}" 
+EXTRALIBS="${EXTRALIBS} ${LIBS}"
 
 if test "${vscp_debug}" = yes ; then
 WXBASE_CPPFLAGS=`$WX_CONFIG_WITH_ARGS -debug --cppflags base`
 WXBASE_CXXFLAGS=`$WX_CONFIG_WITH_ARGS --debug --cxxflags base`
 WXBASE_CFLAGS=`$WX_CONFIG_WITH_ARGS --debug --cflags base`
-WXBASE_LIBS=`$WX_CONFIG_WITH_ARGS --debug --libs base xml net` 
+WXBASE_LIBS=`$WX_CONFIG_WITH_ARGS --debug --libs base xml net`
 WXBASE_STATIC_LIBS=`$WX_CONFIG_WITH_ARGS --debug --static  --libs base xml net`
 WXGTK_CPPFLAGS=`$WX_CONFIG_WITH_ARGS -debug --cppflags`
 WXGTK_CXXFLAGS=`$WX_CONFIG_WITH_ARGS --debug --cxxflags`
@@ -199,7 +214,7 @@ WXGTK_CXXFLAGS=`$WX_CONFIG_WITH_ARGS --cxxflags`
 WXGTK_CFLAGS=`$WX_CONFIG_WITH_ARGS --cflags`
 WXGTK_LIBS=`$WX_CONFIG_WITH_ARGS  --libs`
 WXGTK_STATIC_LIBS=`$WX_CONFIG_WITH_ARGS --static --libs`
-fi 
+fi
 
 if test "${vscp_static}" = yes ; then
 STATIC="yes"
@@ -207,9 +222,9 @@ else
 STATIC="no"
 fi
 
-dnl 
+dnl
 dnl Construct Makefiles
-dnl 
+dnl
 
 AC_CONFIG_FILES([Makefile
          m4/Makefile
@@ -251,12 +266,13 @@ dnl Give user some feedback
 echo
 echo   "           VSCP configuration"
 echo   "--------------------------------------------"
-echo   "VSCP version          : `./echo-version` (${PACKAGE_VERSION})" 
+echo   "VSCP version          : `./echo-version` (${PACKAGE_VERSION})"
 echo   "System                : `uname -a` "
 echo   "Architecture          : $(arch)"
 echo   "VSCP GUI Build        : ${vscp_gui}"
+echo   "VSCP install dir      : ${VSCPDIR}"
 
-if test "${vscp_debug}" = "yes" 
+if test "${vscp_debug}" = "yes"
 then
    echo "build flavour         : debug "
 else
@@ -270,7 +286,7 @@ else
    echo "linking for wxWidgets : shared "
 fi
 
-printf " 
+printf "
 You can tune the compiler flags in vscp-config.
 To build VSCP and friends, type \'make\' followed by \'make install\'
 
@@ -284,4 +300,3 @@ To build VSCP and friends, type \'make\' followed by \'make install\'
 
 "
 dnl vi: set et sts=4 sw=4 com=\:dnl
-

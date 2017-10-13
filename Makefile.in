@@ -7,6 +7,7 @@ INSTALL_PROGRAM = ${INSTALL}
 INSTALL_DATA = ${INSTALL} -m 644
 INSTALL_DIR = /usr/bin/install -c -d
 PROJ_SUBDIRS=@PROJ_SUBDIRS@
+VSCP_PROJ_BASE_DIR=@VSCPDIR@
 IPADDRESS :=  $(shell hostname -I)
 
 all:
@@ -20,10 +21,10 @@ install:
 	@for d in $(PROJ_SUBDIRS); do (echo "====================================================" &&\
 	echo "Building in dir " $$d && echo "====================================================" && cd $$d && $(MAKE) install); done
 #	lsb_release -i
-# startup script	
+# startup script
 	$(INSTALL_PROGRAM) -b -m755 vscpd.startup_script_debian /etc/init.d/vscpd
 	update-rc.d vscpd defaults
-	mkdir -p /etc/vscp	
+	mkdir -p /etc/vscp
 # vscpd config file
 ifneq ("$(wildcard /etc/vscp/vscpd.conf)","")
 	@read -p "Shall the default vscpd.conf file be copied (y/n)? " RESP; if [ "y" = $$RESP -o "Y" = $$RESP  ]; then $(INSTALL_PROGRAM) -b -m744 config_examples/vscpd.conf_unix_distro /etc/vscp/vscpd.conf; fi;
@@ -39,48 +40,48 @@ endif
 	@echo "   or 'vscpd -s' to start the daemon in the  foreground."
 	@echo
 	@echo " - Admin interface is at http://localhost:8080/vscp"
-	@echo "   Username: admin, Password: secret"	
+	@echo "   Username: admin, Password: secret"
 	@echo
 	@echo " - If you have installed the sample content it is located at"
 	@echo "   http://localhost:8080. Remember to change the ip address"
-	@echo "   in the file /srv/vscp/web/testws/settings.js to your local"
+	@echo "   in the file @VSCPDIR@/web/testws/settings.js to your local"
 	@echo "   ip address ($(IPADDRESS)) to be able to access this content from other "
 	@echo "   machines than your local machine."
 	@echo
-	@echo " - You can reach core functionality in the telnet interface on"	
+	@echo " - You can reach core functionality in the telnet interface on"
 	@echo "   this machine at port 9598. Username: admin, Password: secret"
 	@echo
 	@echo " - The configuration file for the VSCP daemon is at /etc/vscd/vscpd.conf and"
 	@echo "   you can read about the different available options here "
 	@echo "   http://www.vscp.org/docs/vscpd/doku.php?id=configuring_the_vscp_daemon"
-	@echo "   Other configuration files is under /srv/vscp"
-	@echo	
+	@echo "   Other configuration files is under @VSCPDIR@"
+	@echo
 	@echo " - Documentation is at http://www.vscp.org/docs/vscpd/doku.php asd more general"
 	@echo "   documentation is at http://www.vscp.org/docs"
 	@echo
 	@echo "   Have fun and remember to always be hungry and stay foolish or the other way"
 	@echo "   around be foolish - stay hungry! There is always a choice."
 config:
-	mkdir -p /srv/vscp/logs
-	mkdir -p /srv/vscp/actions
-	mkdir -p /srv/vscp/scripts
-	mkdir -p /srv/vscp/ux
-	mkdir -p /srv/vscp/web
-	mkdir -p /srv/vscp/certs
-	mkdir -p /srv/vscp/drivers
-	mkdir -p /srv/vscp/level1
-	mkdir -p /srv/vscp/level2
-	mkdir -p /srv/vscp/javascript
-	mkdir -p /srv/vscp/lua
-	mkdir -p /srv/vscp/web/css
-	mkdir -p /srv/vscp/web/images
-	mkdir -p /srv/vscp/web/lib
-	mkdir -p /srv/vscp/web/testws
-	mkdir -p /var/log/vscp
-	mkdir -p /srv/vscp/tables
+	mkdir -p @VSCPDIR@/logs
+	mkdir -p @VSCPDIR@/actions
+	mkdir -p @VSCPDIR@/scripts
+	mkdir -p @VSCPDIR@/ux
+	mkdir -p @VSCPDIR@/web
+	mkdir -p @VSCPDIR@/certs
+	mkdir -p @VSCPDIR@/drivers
+	mkdir -p @VSCPDIR@/level1
+	mkdir -p @VSCPDIR@/level2
+	mkdir -p @VSCPDIR@/javascript
+	mkdir -p @VSCPDIR@/lua
+	mkdir -p @VSCPDIR@/web/css
+	mkdir -p @VSCPDIR@/web/images
+	mkdir -p @VSCPDIR@/web/lib
+	mkdir -p @VSCPDIR@/web/testws
+	mkdir -p @VSCPDIR@/vscp
+	mkdir -p @VSCPDIR@/tables
 	mkdir -p /etc/vscp
-	cp -r config_examples/certs/* /srv/vscp/certs/;
-# startup script	
+	cp -r config_examples/certs/* @VSCPDIR@/certs/;
+# startup script
 	$(INSTALL_PROGRAM) -b -m755 vscpd.startup_script_debian /etc/init.d/vscpd
 	update-rc.d vscpd defaults
 # vscpd config file
@@ -96,31 +97,59 @@ else
 	$(INSTALL_PROGRAM) -b -m744 config_examples/mimetypes.xml_distro /etc/vscp/mimetypes.xml
 endif
 # variables
-ifneq ("$(wildcard /srv/vscp/variables.xml)","")
-	@read -p "Shall the variables.xml file be copied (y/n)? " RESP; if [ "y" = $$RESP -o "Y" = $$RESP  ]; then $(INSTALL_PROGRAM) -b -m744 config_examples/variables.xml_distro /srv/vscp/variables.xml; fi;
+ifneq ("$(wildcard @VSCPDIR@/variables.xml)","")
+	@read -p "Shall the variables.xml file be copied (y/n)? " RESP; if [ "y" = $$RESP -o "Y" = $$RESP  ]; then $(INSTALL_PROGRAM) -b -m744 config_examples/variables.xml_distro @VSCPDIR@/variables.xml; fi;
 else
-	$(INSTALL_PROGRAM) -b -m744 config_examples/variables.xml_distro /srv/vscp/variables.xml
+	$(INSTALL_PROGRAM) -b -m744 config_examples/variables.xml_distro @VSCPDIR@/variables.xml
 endif
 # decision matrix
-ifneq ("$(wildcard /srv/vscp/dm.xml)","")
-	@read -p "Shall the dm.xml file be copied (y/n)? " RESP; if [ "y" = $$RESP -o "Y" = $$RESP  ]; then $(INSTALL_PROGRAM) -b -m744 config_examples/dm.xml_distro /srv/vscp/dm.xml; fi;
+ifneq ("$(wildcard @VSCPDIR@/dm.xml)","")
+	@read -p "Shall the dm.xml file be copied (y/n)? " RESP; if [ "y" = $$RESP -o "Y" = $$RESP  ]; then $(INSTALL_PROGRAM) -b -m744 config_examples/dm.xml_distro @VSCPDIR@/dm.xml; fi;
 else
-	$(INSTALL_PROGRAM) -b -m744 config_examples/dm.xml_distro /srv/vscp/dm.xml
-endif	
+	$(INSTALL_PROGRAM) -b -m744 config_examples/dm.xml_distro @VSCPDIR@/dm.xml
+endif
 
 # simulation data
-ifneq ("$(wildcard /srv/vscp/simtempdata.txt)","")
-	@read -p "Shall the simulation data file be copied (y/n)? " RESP; if [ "y" = $$RESP -o "Y" = $$RESP  ]; then $(INSTALL_PROGRAM) -b -m744 config_examples/simulation/simtempdata.txt /srv/vscp/simtempdata.txt; fi;
+ifneq ("$(wildcard @VSCPDIR@/simtempdata.txt)","")
+	@read -p "Shall the simulation data file be copied (y/n)? " RESP; if [ "y" = $$RESP -o "Y" = $$RESP  ]; then $(INSTALL_PROGRAM) -b -m744 config_examples/simulation/simtempdata.txt @VSCPDIR@/simtempdata.txt; fi;
 else
-	$(INSTALL_PROGRAM) -b -m744 config_examples/simulation/simtempdata.txt /srv/vscp/simtempdata.txt
+	$(INSTALL_PROGRAM) -b -m744 config_examples/simulation/simtempdata.txt @VSCPDIR@/simtempdata.txt
 endif
 # Web content
-	@read -p "Shall default web content be copied (y/n)? " RESP; if [ "y" = $$RESP -o "Y" = $$RESP  ]; then cp -r config_examples/web/* /srv/vscp/web/; fi;
+	@read -p "Shall default web content be copied (y/n)? " RESP; if [ "y" = $$RESP -o "Y" = $$RESP  ]; then cp -r config_examples/web/* @VSCPDIR@/web/; fi;
 
 web-files:
-	mkdir -p /srv/vscp/web
-	mkdir -p /srv/vscp/web/css
-	mkdir -p /srv/vscp/web/images
-	mkdir -p /srv/vscp/web/lib
-	mkdir -p /srv/vscp/web/testws
-	cp -r config_examples/web/* /srv/vscp/web/;
+	mkdir -p @VSCPDIR@/web
+	mkdir -p @VSCPDIR@/web/css
+	mkdir -p @VSCPDIR@/web/images
+	mkdir -p @VSCPDIR@/web/lib
+	mkdir -p @VSCPDIR@/web/testws
+	cp -r config_examples/web/* @VSCPDIR@/web/;
+
+force-conf:
+	mkdir -p @VSCPDIR@/logs
+	mkdir -p @VSCPDIR@/actions
+	mkdir -p @VSCPDIR@/scripts
+	mkdir -p @VSCPDIR@/ux
+	mkdir -p @VSCPDIR@/web
+	mkdir -p @VSCPDIR@/certs
+	mkdir -p @VSCPDIR@/drivers
+	mkdir -p @VSCPDIR@/level1
+	mkdir -p @VSCPDIR@/level2
+	mkdir -p @VSCPDIR@/javascript
+	mkdir -p @VSCPDIR@/lua
+	mkdir -p @VSCPDIR@/web/css
+	mkdir -p @VSCPDIR@/web/images
+	mkdir -p @VSCPDIR@/web/lib
+	mkdir -p @VSCPDIR@/web/testws
+	mkdir -p @VSCPDIR@/vscp
+	mkdir -p @VSCPDIR@/tables
+	mkdir -p /etc/vscp
+	cp -r config_examples/certs/* @VSCPDIR@/certs/;
+	update-rc.d vscpd defaults
+	$(INSTALL_PROGRAM) -b -m744 config_examples/vscpd.conf_unix_distro /etc/vscp/vscpd.conf
+	$(INSTALL_PROGRAM) -b -m744 config_examples/mimetypes.xml_distro /etc/vscp/mimetypes.xml
+	$(INSTALL_PROGRAM) -b -m744 config_examples/variables.xml_distro @VSCPDIR@/variables.xml
+	$(INSTALL_PROGRAM) -b -m744 config_examples/dm.xml_distro @VSCPDIR@/dm.xml
+	$(INSTALL_PROGRAM) -b -m744 config_examples/simulation/simtempdata.txt @VSCPDIR@/simtempdata.txt
+	$(INSTALL_DIR) config_examples/web/* @VSCPDIR@/web/;

@@ -636,6 +636,7 @@ WX_CPPFLAGS
 WX_CONFIG_PATH
 PROJ_SUBDIRS_GUI
 PROJ_SUBDIRS
+VSCPDIR
 STATIC
 WXGTK_STATIC_LIBS
 WXGTK_LIBS
@@ -737,7 +738,8 @@ YACC
 YFLAGS
 CC
 CFLAGS
-CPP'
+CPP
+VSCPDIR'
 
 
 # Initialize some variables set by options.
@@ -1376,6 +1378,7 @@ Some influential environment variables:
   CC          C compiler command
   CFLAGS      C compiler flags
   CPP         C preprocessor
+  VSCPDIR     Set base folder for installation (/srv/vscp)
 
 Use these variables to override the choices made by `configure' or to help
 it to find libraries and programs with nonstandard names/locations.
@@ -6224,6 +6227,18 @@ fi
 
 
 
+
+
+if test "${VSCPDIR+set}" = set; then
+  echo "variable \$VSCPDIR is set to: $VSCPDIR"
+else
+  VSCPDIR="/srv/vscp"
+  echo "variable \$VSCPDIR is set to: $VSCPDIR"
+fi
+
+
+
+
 PROJ_SUBDIRS="src/vscp/drivers/level1/can4vscp/linux\
  src/vscp/drivers/level2/wire1/linux\
  src/vscp/drivers/level1/logger/linux\
@@ -8142,6 +8157,7 @@ echo   "VSCP version          : `./echo-version` (${PACKAGE_VERSION})"
 echo   "System                : `uname -a` "
 echo   "Architecture          : $(arch)"
 echo   "VSCP GUI Build        : ${vscp_gui}"
+echo   "VSCP install dir      : ${VSCPDIR}"
 
 if test "${vscp_debug}" = "yes"
 then
@@ -8170,4 +8186,3 @@ To build VSCP and friends, type \'make\' followed by \'make install\'
  \"make web-files\" -- install/restore web demo content including websocket examples.
 
 "
-
