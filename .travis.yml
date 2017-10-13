@@ -1,5 +1,5 @@
 language: cpp
-install: true
+
 before-install: ./travis/install_deps.sh
 - sudo apt-get -qq update
 - sudo apt-get install -y build-essential 
@@ -8,3 +8,25 @@ before-install: ./travis/install_deps.sh
 - sudo apt-get install -y libpcap0.8-dev 
 - sudo apt-get install -y libcurl4-openssl-dev 
 - sudo apt-get install -y libpcap-dev 
+
+install:
+- if [ "${BUILD_TYPE}" == "Coverage" -a "${TRAVIS_OS_NAME}" == "linux" ]; then
+      PATH=~/.local/bin:${PATH};
+      pip install --user --upgrade pip;
+      pip install --user cpp-coveralls;
+fi
+
+
+before_script:
+  # Check some settings of the build server (operating system, IPv6 availability, directory)
+  - uname -a
+  - ifconfig
+  - pwd
+  - ls -la
+  - if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
+      apt-cache search gcc | grep "GNU C compiler";
+      apt-cache search clang | grep compiler;
+    fi
+- if [[ "${BUILD_TYPE}" == "OSX_OPENSSL_1_1" ]]; then brew install openssl@1.1 ;fi
+
+
