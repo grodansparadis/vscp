@@ -4473,7 +4473,7 @@ void CDM::init( void )
             wxstr.Printf( _("Path=%s error=%s\n"),
                             (const char *)m_path_db_vscp_dm.GetFullPath().mbc_str(),
                             sqlite3_errmsg( m_db_vscp_dm ) );
-            fprintf( stderr, (const char *)wxstr.mbc_str() );
+            fprintf( stderr, "%s", (const char *)wxstr.mbc_str() );
             if ( NULL != m_db_vscp_dm ) sqlite3_close( m_db_vscp_dm  );
             m_db_vscp_dm = NULL;
 
@@ -4487,7 +4487,7 @@ void CDM::init( void )
             // the database is in a read only location.
             fprintf( stderr, "VSCP Daemon DM database does not exist - will be created.\n" );
             wxstr.Printf(_("Path=%s\n"), (const char *)m_path_db_vscp_dm.GetFullPath().mbc_str() );
-            fprintf( stderr, (const char *)wxstr.mbc_str() );
+            fprintf( stderr, "%s", (const char *)wxstr.mbc_str() );
             
             if ( SQLITE_OK == sqlite3_open( (const char *)m_path_db_vscp_dm.GetFullPath().mbc_str(),
                                             &m_db_vscp_dm ) ) {            
@@ -4499,13 +4499,13 @@ void CDM::init( void )
                 wxstr.Printf( _("Path=%s error=%s\n"),
                             (const char *)m_path_db_vscp_dm.GetFullPath().mbc_str(),
                             sqlite3_errmsg( m_db_vscp_dm ) );
-                fprintf( stderr, (const char *)wxstr.mbc_str() );
+                fprintf( stderr, "%s", (const char *)wxstr.mbc_str() );
             }
         }
         else {
             fprintf( stderr, "VSCP DM database path invalid - will not be used.\n" );
             wxstr.Printf(_("Path=%s\n"), (const char *)m_path_db_vscp_dm.GetFullPath().mbc_str() );
-            fprintf( stderr, (const char *)wxstr.mbc_str() );
+            fprintf( stderr, "%s", (const char *)wxstr.mbc_str() );
         }
 
     }

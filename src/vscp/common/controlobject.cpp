@@ -851,7 +851,7 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
         printf("No configuration file. Can't initialize!.");
         fprintf( stderr, "No configuration file. Can't initialize!.\n" );
         str = _("Path = .") + strcfgfile + _("\n");
-        fprintf( stderr, str.mbc_str() );
+        fprintf( stderr, "%s", (const char *)str.mbc_str() );
         return false;
     }
     
@@ -868,7 +868,7 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
     if ( !readXMLConfigurationGeneral( strcfgfile ) ) {
         fprintf( stderr, "General: Unable to open/parse configuration file. Can't initialize!\n" );
         str = _("Path = .") + strcfgfile + _("\n");
-        fprintf( stderr, str.mbc_str() );
+        fprintf( stderr, "%s", (const char *)str.mbc_str() );
         return FALSE;
     }
     
@@ -923,7 +923,7 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
             str.Printf( _("Path=%s error=%s\n"),
                             (const char *)m_path_db_vscp_daemon.GetFullPath().mbc_str(),
                             sqlite3_errmsg( m_db_vscp_daemon ) );
-            fprintf( stderr, str.mbc_str() );
+            fprintf( stderr, "%s", (const char *)str.mbc_str() );
             if ( NULL != m_db_vscp_daemon ) sqlite3_close( m_db_vscp_daemon );
             m_db_vscp_daemon = NULL;
             return false;
@@ -943,7 +943,7 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
             // the database is in a read only location.
             fprintf( stderr, "VSCP Daemon configuration database does not exist - will be created.\n" );
             str.Printf(_("Path=%s\n"), (const char *)m_path_db_vscp_daemon.GetFullPath().mbc_str() );
-            fprintf( stderr, str.mbc_str() );
+            fprintf( stderr, "%s", (const char *)str.mbc_str() );
             
             if ( SQLITE_OK == sqlite3_open( (const char *)m_path_db_vscp_daemon.GetFullPath().mbc_str(),
                                                 &m_db_vscp_daemon ) ) {
@@ -1026,7 +1026,7 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
         else {
             fprintf( stderr, "VSCP Server configuration database path invalid - will exit.\n" );
             str.Printf(_("Path=%s\n"),(const char *)m_path_db_vscp_daemon.GetFullPath().mbc_str() );
-            fprintf( stderr, str.mbc_str() );
+            fprintf( stderr, "%s", (const char *)str.mbc_str() );
             return false;
         }
 
@@ -1053,7 +1053,7 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
             str.Printf( _("Path=%s error=%s\n"),
                             (const char *)m_path_db_vscp_log.GetFullPath().mbc_str(),
                             sqlite3_errmsg( m_db_vscp_log ) );
-            fprintf( stderr, str.mbc_str() );
+            fprintf( stderr, "%s", (const char *)str.mbc_str() );
             if ( NULL != m_db_vscp_log ) sqlite3_close( m_db_vscp_log );
             m_db_vscp_log = NULL;
 
@@ -1067,7 +1067,7 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
             // the database is in a read only location.
             fprintf( stderr, "VSCP Server logging database does not exist - will be created.\n" );
             str.Printf(_("Path=%s\n"), (const char *)m_path_db_vscp_log.GetFullPath().mbc_str() );
-            fprintf( stderr, (const char *)str.mbc_str() );
+            fprintf( stderr, "%s", (const char *)str.mbc_str() );
             
             if ( SQLITE_OK == sqlite3_open( (const char *)m_path_db_vscp_log.GetFullPath().mbc_str(),
                                             &m_db_vscp_log ) ) {            
@@ -1081,7 +1081,7 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
         else {
             fprintf( stderr, "VSCP Server logging database path invalid - will not be used.\n" );
             str.Printf(_("Path=%s\n"), (const char *)m_path_db_vscp_log.GetFullPath().mbc_str() );
-            fprintf( stderr, str.mbc_str() );
+            fprintf( stderr, "%s", (const char *)str.mbc_str() );
         }
 
     }
@@ -1101,7 +1101,7 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
         str.Printf( _("Path=%s error=%s\n"),
                         (const char *)m_path_db_vscp_data.GetFullPath().mbc_str(),
                         sqlite3_errmsg( m_db_vscp_data ) );
-        fprintf( stderr, str.mbc_str() );
+        fprintf( stderr, "%s", (const char *)str.mbc_str() );
         if ( NULL != m_db_vscp_data ) sqlite3_close( m_db_vscp_data );
         m_db_vscp_data = NULL;
 
@@ -1113,13 +1113,13 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
     ////////////////////////////////////////////////////////////////////////////
 
     str = _("Using configuration file: ") + strcfgfile + _("\n");
-    fprintf( stderr, str.mbc_str() );
+    fprintf( stderr, "%s", (const char *)str.mbc_str() );
 
     // Read XML configuration
     if ( !readXMLConfiguration( strcfgfile ) ) {
         fprintf( stderr, "Unable to open/parse configuration file. Can't initialize!\n" );
         str = _("Path = .") + strcfgfile + _("\n");
-        fprintf( stderr, str.mbc_str() );
+        fprintf( stderr, "%s", (const char *)str.mbc_str() );
         return FALSE;
     }   
       

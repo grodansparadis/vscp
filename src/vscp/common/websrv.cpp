@@ -779,7 +779,7 @@ todo( struct web_connection *conn, void *cbdata )
         web_printf( conn, WEB_STYLE_START );
         web_write( conn, WEB_COMMON_CSS, strlen( WEB_COMMON_CSS ) );     // CSS style Code
         web_write( conn, WEB_STYLE_END, strlen( WEB_STYLE_END ) );
-        web_printf( conn, WEB_COMMON_JS, strlen( WEB_COMMON_JS ) );      // Common Javascript code
+        web_write( conn, WEB_COMMON_JS, strlen( WEB_COMMON_JS ) );      // Common Javascript code
 
         web_printf( conn, WEB_COMMON_HEAD_END_BODY_START );
         // Insert server url into navigation menu
@@ -954,14 +954,14 @@ static int vscp_interface( struct web_connection *conn, void *cbdata )
 
         // GUID
         web_printf( conn, WEB_IFLIST_TD_GUID);
-        web_printf( conn, strGUID.Left(23).mbc_str() );
+        web_printf( conn, "%s", (const char *)strGUID.Left(23).mbc_str() );
         web_printf( conn, "<br>");
-        web_printf( conn, (const char *)strGUID.Right(23).mbc_str() );
+        web_printf( conn, "%s", (const char *)strGUID.Right(23).mbc_str() );
         web_printf( conn, "</td>");
 
         // Interface name
         web_printf( conn, "<td>");
-        web_printf( conn, 
+        web_printf( conn, "%s", 
              (const char *)pItem->m_strDeviceName.Left( 
                                 pItem->m_strDeviceName.Length()-30 ).mbc_str() );
         web_printf( conn, "</td>");
