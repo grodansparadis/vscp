@@ -116,7 +116,7 @@ else
 	$(INSTALL_PROGRAM) -b -m744 config_examples/simulation/simtempdata.txt @VSCPDIR@/simtempdata.txt
 endif
 # Web content
-	@read -p "Shall default web content be copied (y/n)? " RESP; if [ "y" = $$RESP -o "Y" = $$RESP  ]; then cp -r config_examples/web/* @VSCPDIR@/web/; fi;
+	@read -p "Shall default web content be copied (y/n)? " RESP; if [ "y" = $$RESP -o "Y" = $$RESP  ]; then cp -rf config_examples/web/* @VSCPDIR@/web/; fi;
 
 web-files:
 	mkdir -p @VSCPDIR@/web
@@ -124,7 +124,7 @@ web-files:
 	mkdir -p @VSCPDIR@/web/images
 	mkdir -p @VSCPDIR@/web/lib
 	mkdir -p @VSCPDIR@/web/testws
-	cp -r config_examples/web/* @VSCPDIR@/web/;
+	cp -rf config_examples/web/* @VSCPDIR@/web/
 
 force-conf:
 	mkdir -p @VSCPDIR@/logs
@@ -145,11 +145,11 @@ force-conf:
 	mkdir -p @VSCPDIR@/vscp
 	mkdir -p @VSCPDIR@/tables
 	mkdir -p /etc/vscp
-	cp -r config_examples/certs/* @VSCPDIR@/certs/;
+	cp -rf config_examples/certs/* @VSCPDIR@/certs/
 	update-rc.d vscpd defaults
 	$(INSTALL_PROGRAM) -b -m744 config_examples/vscpd.conf_unix_distro /etc/vscp/vscpd.conf
 	$(INSTALL_PROGRAM) -b -m744 config_examples/mimetypes.xml_distro /etc/vscp/mimetypes.xml
 	$(INSTALL_PROGRAM) -b -m744 config_examples/variables.xml_distro @VSCPDIR@/variables.xml
 	$(INSTALL_PROGRAM) -b -m744 config_examples/dm.xml_distro @VSCPDIR@/dm.xml
 	$(INSTALL_PROGRAM) -b -m744 config_examples/simulation/simtempdata.txt @VSCPDIR@/simtempdata.txt
-	$(INSTALL_DIR) config_examples/web/* @VSCPDIR@/web/;
+	cp -rf config_examples/web/* @VSCPDIR@/web/
