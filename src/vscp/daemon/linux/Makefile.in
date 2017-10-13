@@ -45,7 +45,7 @@ else
 EXTRALIBS += @WXBASE_LIBS@
 endif
 
-STRIP = strip
+STRIP = strip 
 INSTALL_PROGRAM = ${INSTALL}
 INSTALL_DATA = ${INSTALL} -m 644
 INSTALL_DIR = /usr/bin/install -c -d
