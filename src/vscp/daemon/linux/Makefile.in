@@ -68,7 +68,6 @@ VSCPD_OBJECTS =  vscpd.o \
 	../../common/daemonworker.o \
 	../../common/clientlist.o \
 	../../common/controlobject.o \
-	../../common/vscpeventhelper.o \
 	../../common/tcpipsrv.o \
 	../../common/dm.o \
 	../../common/remotevariable.o \
