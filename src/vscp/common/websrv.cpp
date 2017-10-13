@@ -173,26 +173,59 @@ struct mg_mgr gmgr;
 
 void websrv_sendheader( struct web_connection *conn, 
                             int returncode, 
-                            const char *content )
+                            const char *pcontent )
 {
     char buf[ 2048 ];
     char date[64];
     time_t curtime = time(NULL);
     vscp_getTimeString( date, sizeof(date), &curtime );
+    
+    // Check pointers
+    if ( NULL == pcontent ) return;
 
     web_printf( conn, 
                     "HTTP/1.1 %d OK\r\n" 
                     "Content-Type: %s\r\n"
                     "Date: %s\r"
-                    "Connection: keep-alive\r\n"
-                    /*"Transfer-Encoding: chunked\r\n"*/
-                    "Cache-Control\r\n" 
-                    "max-age=0, post-check=0,\r\n"
-                    "pre-check=0, no-store, no-cache,"
-                    "must-revalidate\r\n\r\n",
+                    "Cache-Control: no-cache\r\n"
+                    "Cache-Control: no-store\r\n"
+                    "Cache-Control: must-revalidate\r\n\r\n",
                     returncode,
-                    content,  
+                    pcontent,  
                     date );
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// websrv_sendSetCookieHeader
+//
+
+void websrv_sendSetCookieHeader( struct web_connection *conn, 
+                                    int returncode, 
+                                    const char *pcontent,
+                                    const char *psid )
+{
+    char buf[ 2048 ];
+    char date[64];
+    time_t curtime = time(NULL);
+    vscp_getTimeString( date, sizeof(date), &curtime );
+    
+    // Check pointers
+    if ( (NULL == pcontent) || (NULL == psid) ) return;
+
+    // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie
+    // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control
+    web_printf( conn, 
+                    "HTTP/1.1 %d OK\r\n" 
+                    "Content-Type: %s\r\n"
+                    "Date: %s\r"
+                    "Set-Cookie: sessionid=%s; http-only; path=/\r\n"
+                    "Cache-Control: no-cache\r\n"
+                    "Cache-Control: no-store\r\n"
+                    "Cache-Control: must-revalidate\r\n\r\n",
+                    returncode,
+                    pcontent,  
+                    date,
+                    psid );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -307,7 +340,7 @@ websrv_get_session( struct web_connection *conn )
     // Get session
     wxString value;
     if ( !websrv_getHeaderElement( valarray, 
-                                    "session",
+                                    "vscp-web-sid",
                                     value ) ) {
         return NULL;
     }
@@ -383,24 +416,9 @@ websrv_add_session( struct web_connection *conn )
     memset( pSession->m_sid, 0, sizeof( pSession->m_sid ) );
     memcpy( pSession->m_sid, hexiv, 32 );
 
-    //char uri[2048];
-    //memset( uri, 0, sizeof(uri) );
-    //strncpy( uri, hm->uri.p, hm->uri.len );
-    /*web_printf( conn,
-                "HTTP/1.1 301 Found\r\n"
-                "Set-Cookie: session=%s; max-age=3600; http-only\r\n"
-                "Set-Cookie: user=%s\r\n"
-                "Set-Cookie: original_url=%s; max-age=3600; allow=yes\r\n"
-                "Location: %s\r\n"
-                "Content-Length: 0r\n\r\n",
-                pSession->m_sid,
-                user,
-                uri,
-                uri );*/
     web_printf( conn,
                 "HTTP/1.1 301 Found\r\n"
-                "Set-Cookie: session=%s; max-age=3600; http-only\r\n"
-                "Set-Cookie: user=%s\r\n"
+                "Set-Cookie: vscp-web-sid=%s; max-age=3600; http-only\r\n"
                 "Location: /\r\n"
                 "Content-Length: 0r\n\r\n",
                 pSession->m_sid,
@@ -408,6 +426,30 @@ websrv_add_session( struct web_connection *conn )
 
     pSession->m_pUserItem = gpobj->m_userList.getUser( wxString::FromAscii( user ) );
     pSession->lastActiveTime = time( NULL );
+    
+    
+    pSession->m_pClientItem = new CClientItem();        // Create client
+    if ( NULL == pSession->m_pClientItem ) {
+        gpobj->logMsg(_("[websrv] New session: Unable to create client object."));
+        delete pSession;
+        return NULL;
+    }
+    pSession->m_pClientItem->bAuthenticated = false;    // Not authenticated in yet
+    vscp_clearVSCPFilter(&pSession->m_pClientItem->m_filterVSCP);    // Clear filter
+
+    // This is an active client
+    pSession->m_pClientItem->m_bOpen = false;
+    pSession->m_pClientItem->m_type = CLIENT_ITEM_INTERFACE_TYPE_CLIENT_WEBSOCKET;
+    pSession->m_pClientItem->m_strDeviceName = _("Internal web server client. ");
+    wxDateTime now = wxDateTime::Now();
+    pSession->m_pClientItem->m_strDeviceName += now.FormatISODate();
+    pSession->m_pClientItem->m_strDeviceName += _(" ");
+    pSession->m_pClientItem->m_strDeviceName += now.FormatISOTime();
+
+    // Add the client to the Client List
+    gpobj->m_wxClientMutex.Lock();
+    gpobj->addClient( pSession->m_pClientItem );
+    gpobj->m_wxClientMutex.Unlock();    
     
     // Add to linked list
     gpobj->m_websrvSessionMutex.Lock();

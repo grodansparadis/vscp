@@ -104,7 +104,7 @@
 #include "web_js.h"
 #include "web_template.h"
 
-#include <canal_macro.h>
+//#include <canal_macro.h>
 #include <vscp.h>
 #include <vscphelper.h>
 #include <vscpeventhelper.h>
@@ -144,7 +144,6 @@ restsrv_doStatus( struct web_connection *conn,
 void
 restsrv_doOpen( struct web_connection *conn,
                         struct restsrv_session *pSession,
-                        CUserItem *pUser,
                         int format );
 
 void
@@ -229,6 +228,7 @@ void
 restsrv_doWriteMeasurement( struct web_connection *conn,
                                     struct restsrv_session *pSession,
                                     int format,
+                                    wxString& strDateTime,
                                     wxString& strGuid,
                                     wxString& strLevel,
                                     wxString& strType,
@@ -294,8 +294,6 @@ const char* rest_errors[][ REST_FORMAT_COUNT + 1 ] = {
 
 };
 
-
-
 //-----------------------------------------------------------------------------
 //            Old compatibility functions from old frozen library.
 //              Copyright (c) 2004-2013 Sergey Lyubka <valenok@gmail.com>
@@ -359,7 +357,7 @@ static int json_emit_unquoted_str(char *buf, int buf_len, const char *str, int l
   return len;
 }
 
-//--------------------  End of TODO -------------------------------------------
+//-------------------------------End of TODO ----------------------------------
 
 
 //-----------------------------------------------------------------------------
@@ -474,35 +472,19 @@ restsrv_sendHeader( struct web_connection *conn,
 //
 
 struct restsrv_session *
-restsrv_get_session( struct web_connection *conn )
+restsrv_get_session( struct web_connection *conn,
+                        wxString& sid )
 {
-    char buf[512]; 
     const struct restsrv_session *pSession = NULL;
-    struct web_context * ctx;
     const struct web_request_info *reqinfo;
     
     // Check pointers
     if ( !conn || 
-         !( ctx = web_get_context( conn ) ) ||
          !( reqinfo = web_get_request_info( conn ) ) ) {
         return NULL;
     }
-
-    // Get the session cookie
-    const char *pheader = web_get_header( conn, "cookie" );
-    if ( NULL == pheader ) return NULL;
-
-    wxArrayString valarray;
-    wxString header = wxString::FromUTF8( pheader );
-    websrv_parseHeader( valarray, header );
     
-    // Get session
-    wxString value;
-    if ( !websrv_getHeaderElement( valarray, 
-                                    "session",
-                                    value ) ) {
-        return NULL;
-    }
+    if ( 0 == sid.Length() ) return NULL;
 
     // find existing session
     gpobj->m_restSessionMutex.Lock();
@@ -511,7 +493,8 @@ restsrv_get_session( struct web_connection *conn )
             iter != gpobj->m_rest_sessions.end(); 
             ++iter ) {
         struct restsrv_session *pSession = *iter;
-        if ( 0 == strcmp( buf, pSession->m_sid ) ) {
+        if ( 0 == strcmp( (const char *)sid.mbc_str(), 
+                            pSession->m_sid ) ) {
             pSession->m_lastActiveTime = time( NULL );
             gpobj->m_restSessionMutex.Unlock();
             return pSession;
@@ -528,23 +511,21 @@ restsrv_get_session( struct web_connection *conn )
 //
 
 restsrv_session *
-restsrv_add_session( struct web_connection *conn )
+restsrv_add_session( struct web_connection *conn, CUserItem *pUserItem )
 {
     char buf[512];
     wxString user;
     struct restsrv_session *pSession;
-    struct web_context * ctx;
     const struct web_request_info *reqinfo;
     
     // Check pointers
     if ( !conn || 
-         !( ctx = web_get_context( conn ) ) ||
          !( reqinfo = web_get_request_info( conn ) )  ) {
         return 0;
     }
 
     // Parse "Authorization:" header, fail fast on parse error
-    const char *pheader = web_get_header( conn, "Authorization" );
+    /*const char *pheader = web_get_header( conn, "Authorization" );
     if ( NULL == pheader ) return NULL;
 
     wxArrayString valarray;
@@ -556,7 +537,7 @@ restsrv_add_session( struct web_connection *conn )
                                 "username",
                                 user ) ) {
         return NULL;
-    }
+    }*/
         
     // Create fresh session
     pSession = new struct restsrv_session;
@@ -575,17 +556,31 @@ restsrv_add_session( struct web_connection *conn )
     memset( pSession->m_sid, 0, sizeof( pSession->m_sid ) );
     memcpy( pSession->m_sid, hexiv, 32 );
 
-    web_printf( conn,
-                "HTTP/1.1 301 Found\r\n"
-                "Set-Cookie: session=%s; max-age=3600; http-only\r\n"
-                "Set-Cookie: user=%s\r\n"
-                "Location: /\r\n"
-                "Content-Length: 0r\n\r\n",
-                pSession->m_sid,
-                (const char *)user.mbc_str() );
-
-    pSession->m_pUserItem = gpobj->m_userList.getUser( wxString::FromAscii( user ) );
     pSession->m_lastActiveTime = time( NULL );
+    
+    pSession->m_pClientItem = new CClientItem();        // Create client
+    if ( NULL == pSession->m_pClientItem ) {
+        gpobj->logMsg(_("[restsrv] New session: Unable to create client object."));
+        delete pSession;
+        return NULL;
+    }
+
+    // Set client data
+    pSession->m_pClientItem->bAuthenticated = true;                 // Authenticated 
+    pSession->m_pClientItem->m_pUserItem = pUserItem;
+    vscp_clearVSCPFilter(&pSession->m_pClientItem->m_filterVSCP);   // Clear filter
+    pSession->m_pClientItem->m_bOpen = false;                       // Start out closed
+    pSession->m_pClientItem->m_type = CLIENT_ITEM_INTERFACE_TYPE_CLIENT_WEBSOCKET;
+    pSession->m_pClientItem->m_strDeviceName = _("Internal REST server client. ");
+    wxDateTime now = wxDateTime::Now();
+    pSession->m_pClientItem->m_strDeviceName += now.FormatISODate();
+    pSession->m_pClientItem->m_strDeviceName += _(" ");
+    pSession->m_pClientItem->m_strDeviceName += now.FormatISOTime();
+
+    // Add the client to the Client List
+    gpobj->m_wxClientMutex.Lock();
+    gpobj->addClient( pSession->m_pClientItem );
+    gpobj->m_wxClientMutex.Unlock();  
     
     // Add to linked list
     gpobj->m_restSessionMutex.Lock();
@@ -595,33 +590,8 @@ restsrv_add_session( struct web_connection *conn )
     return pSession;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// websrv_GetCreateSession
-//
 
-struct restsrv_session *
-restsrv_getCreateSession( struct web_connection *conn )
-{
-    struct restsrv_session *pSession;
-    struct web_context * ctx;
-    const struct web_request_info *reqinfo;
-    
-    // Check pointers
-    if ( !conn || 
-         !( ctx = web_get_context( conn ) ) ||
-         !( reqinfo = web_get_request_info( conn ) )  ) {
-        return NULL;
-    }
 
-    if ( NULL == ( pSession = restsrv_get_session( conn ) ) ) {
-
-        // Add session cookie
-        pSession = restsrv_add_session( conn );
-        
-    }
-
-    return pSession;
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 // websrv_expire_sessions
@@ -887,11 +857,46 @@ websrv_restapi( struct web_connection *conn, void *cbdata )
     if ( 0 < web_get_var( pParams, lenParam, "eventformat", buf, sizeof( buf ) ) ) {
         keypairs[ _( "EVENTFORMAT" ) ] = wxString::FromUTF8( buf );
     }
+    
+    // datetime
+    if ( 0 < web_get_var( pParams, lenParam, "datetime", buf, sizeof( buf ) ) ) {
+        keypairs[ _( "DATETIME" ) ] = wxString::FromUTF8( buf );
+    }
+    
+    // Get format
+    if ( _("PLAIN") == keypairs[_("FORMAT")].Upper() ) {
+        format = REST_FORMAT_PLAIN;
+    }
+    else if ( _("CSV") == keypairs[_("FORMAT")].Upper() ) {
+        format = REST_FORMAT_CSV;
+    }
+    else if ( _("XML") == keypairs[_("FORMAT")].Upper() ) {
+        format = REST_FORMAT_XML;
+    }
+    else if ( _("JSON") == keypairs[_("FORMAT")].Upper() ) {
+        format = REST_FORMAT_JSON;
+    }
+    else if ( _("JSONP") == keypairs[_("FORMAT")].Upper() ) {
+        format = REST_FORMAT_JSONP;
+    }
+    else if ( _("") != keypairs[_("FORMAT")].Upper() ) {
+        keypairs[_("FORMAT")].ToLong( &format );
+    }
+    else {
+        websrv_sendheader( conn, 400, "text/plain" );
+        web_printf( conn, 
+                        REST_PLAIN_ERROR_UNSUPPORTED_FORMAT,
+                        strlen( REST_PLAIN_ERROR_UNSUPPORTED_FORMAT ) );
+        web_printf( conn, "", 0 );   // Terminator
+        return WEB_ERROR;
+    }
 
     // If we have a session key we try to get the session
     if ( _("") != keypairs[_("VSCPSESSION")] ) {
-        pSession = restsrv_getCreateSession( conn );
-        if ( NULL != pSession )  pUserItem = pSession->m_pUserItem;
+ 
+        // Get session
+        pSession = restsrv_get_session( conn, keypairs[_("VSCPSESSION")] );
+        
     }
 
     if ( NULL == pSession ) {
@@ -926,7 +931,6 @@ websrv_restapi( struct web_connection *conn, void *cbdata )
         }
 
         // Is this an authorised user?
-        wxString str3 = keypairs[_("VSCPSECRET")];
         gpobj->m_mutexUserList.Lock();
         CUserItem *pValidUser = 
                 gpobj->m_userList.validateUser( keypairs[_("VSCPUSER")], 
@@ -942,27 +946,56 @@ websrv_restapi( struct web_connection *conn, void *cbdata )
             restsrv_error( conn, pSession, format, REST_ERROR_CODE_INVALID_PASSWORD );
             return WEB_ERROR;
         }
-
-    }
-    else {
-        // check that the origin is valid
-        // Check if remote ip is valid
-        bool bValidHost;
-        gpobj->m_mutexUserList.Lock();
-        bValidHost = 
-                pSession->m_pUserItem->isAllowedToConnect( reqinfo->remote_addr  );
-        gpobj->m_mutexUserList.Unlock();
-        if ( !bValidHost ) {
+        
+        if ( NULL == ( pSession = restsrv_add_session( conn, pUserItem ) ) ) {
+            
+            // Hm,,, did not work out well...
+            
             wxString strErr =
-            wxString::Format( _("[REST Client] Host [%s] NOT allowed to connect. User [%s]\n"),
-                                wxString::FromUTF8( reqinfo->remote_addr  ).mbc_str(),
+            wxString::Format( _("[REST Client] Unable to create new session for user [%s]\n"),
                                 (const char *)keypairs[_("VSCPUSER")].mbc_str() );
-            gpobj->logMsg ( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY );
+            gpobj->logMsg ( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_GENERAL );
+        
             restsrv_error( conn, pSession, format, REST_ERROR_CODE_INVALID_ORIGIN );
             return WEB_ERROR;
         }
-    }
+        
+        // Only the "open" command is allowed here
+        if ( ( _("1") == keypairs[_("OP")] ) || 
+              ( _("OPEN") == keypairs[_("OP")].Upper() ) ) {
+            restsrv_doOpen( conn, pSession, format );
+            return WEB_OK;
+        }
+        
+        // !!! No meaning to go further - end it here !!!
+        
+        wxString strErr =
+        wxString::Format( _("[REST Client] Unable to create new session for user [%s]\n"),
+                                (const char *)keypairs[_("VSCPUSER")].mbc_str() );
+        gpobj->logMsg ( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_GENERAL );
+        
+        restsrv_error( conn, pSession, format, REST_ERROR_CODE_INVALID_ORIGIN );
+        return WEB_ERROR;
 
+    }
+    
+    // check that the origin is valid
+    // Check if remote ip is valid
+    bool bValidHost;
+    gpobj->m_mutexUserList.Lock();
+    bValidHost = 
+        pSession->m_pClientItem->m_pUserItem->isAllowedToConnect( reqinfo->remote_addr  );
+    gpobj->m_mutexUserList.Unlock();
+    if ( !bValidHost ) {
+        wxString strErr =
+        wxString::Format( _("[REST Client] Host [%s] NOT allowed to connect. User [%s]\n"),
+                                wxString::FromUTF8( reqinfo->remote_addr  ).mbc_str(),
+                                (const char *)keypairs[_("VSCPUSER")].mbc_str() );
+        gpobj->logMsg ( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY );
+        restsrv_error( conn, pSession, format, REST_ERROR_CODE_INVALID_ORIGIN );
+        return WEB_ERROR;
+    }
+    
     // ------------------------------------------------------------------------
     //                      * * * User is validated * * *
     // ------------------------------------------------------------------------
@@ -973,32 +1006,7 @@ websrv_restapi( struct web_connection *conn, void *cbdata )
                             wxString::FromUTF8( reqinfo->remote_addr  ).mbc_str() );
         gpobj->logMsg ( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY );
 
-    // Get format
-    if ( _("PLAIN") == keypairs[_("FORMAT")].Upper() ) {
-        format = REST_FORMAT_PLAIN;
-    }
-    else if ( _("CSV") == keypairs[_("FORMAT")].Upper() ) {
-        format = REST_FORMAT_CSV;
-    }
-    else if ( _("XML") == keypairs[_("FORMAT")].Upper() ) {
-        format = REST_FORMAT_XML;
-    }
-    else if ( _("JSON") == keypairs[_("FORMAT")].Upper() ) {
-        format = REST_FORMAT_JSON;
-    }
-    else if ( _("JSONP") == keypairs[_("FORMAT")].Upper() ) {
-        format = REST_FORMAT_JSONP;
-    }
-    else if ( _("") != keypairs[_("FORMAT")].Upper() ) {
-        keypairs[_("FORMAT")].ToLong( &format );
-    }
-    else {
-        websrv_sendheader( conn, 400, "text/plain" );
-        web_printf( conn, REST_PLAIN_ERROR_UNSUPPORTED_FORMAT,
-                                    strlen( REST_PLAIN_ERROR_UNSUPPORTED_FORMAT ) );
-        web_printf( conn, "", 0 );   // Terminator
-        return WEB_ERROR;
-    }
+    
 
     //   *************************************************************
     //   * * * * * * * *  Status (hold session open)   * * * * * * * *
@@ -1013,7 +1021,7 @@ websrv_restapi( struct web_connection *conn, void *cbdata )
     //  ********************************************
     else if ( ( _("1") == keypairs[_("OP")] ) || 
               ( _("OPEN") == keypairs[_("OP")].Upper() ) ) {
-        restsrv_doOpen( conn, pSession, pUserItem, format );
+        restsrv_doOpen( conn, pSession, format );
     }
 
     //   **********************************************
@@ -1036,7 +1044,10 @@ websrv_restapi( struct web_connection *conn, void *cbdata )
         }
         else {
             // Parameter missing - No Event
-            restsrv_error( conn, pSession, format, REST_ERROR_CODE_MISSING_DATA );
+            restsrv_error( conn, 
+                            pSession, 
+                            format, 
+                            REST_ERROR_CODE_MISSING_DATA );
         }
     }
 
@@ -1053,7 +1064,7 @@ websrv_restapi( struct web_connection *conn, void *cbdata )
     }
 
     //   **************************************************
-    //   * * * * * * * *      Set filter    * * * * * * * *
+    //   * * * * * * * *     Set filter    * * * * * * * *
     //   **************************************************
     else if ( ( _("5") == keypairs[_("OP")] ) || 
               ( _("SETFILTER") == keypairs[_("OP")].Upper() ) ) {
@@ -1208,6 +1219,7 @@ websrv_restapi( struct web_connection *conn, void *cbdata )
              ( _("") != keypairs[_("TYPE")]) ) {
 
             restsrv_doWriteMeasurement( conn, pSession, format,
+                                                    keypairs[ _("DATETIME" ) ],
                                                     keypairs[ _("GUID" ) ],
                                                     keypairs[ _("LEVEL") ],
                                                     keypairs[ _("TYPE") ],
@@ -1292,21 +1304,28 @@ websrv_restapi( struct web_connection *conn, void *cbdata )
 
 void
 restsrv_doOpen( struct web_connection *conn,
-                        struct restsrv_session *pSession,
-                        CUserItem *pUser,
-                        int format )
+                    struct restsrv_session *pSession,
+                    int format )
 {
     char buf[ 2048 ];
     char wrkbuf[ 256 ];
-
-    pSession = restsrv_getCreateSession( conn );
+    
     if ( NULL != pSession ) {
 
-        // New session created
+        // OK session
+        
+        // Note activity
+        pSession->m_lastActiveTime = time( NULL );
+        
+        // Mark interface as open
+        pSession->m_pClientItem->m_bOpen = true;
 
         if ( REST_FORMAT_PLAIN == format ) {
 
-            websrv_sendheader( conn, 200, REST_MIME_TYPE_PLAIN );
+            websrv_sendSetCookieHeader( conn, 
+                                            200, 
+                                            REST_MIME_TYPE_PLAIN,
+                                            pSession->m_sid  );
 
 #ifdef WIN32
             int n = _snprintf( wrkbuf,
@@ -1327,7 +1346,10 @@ restsrv_doOpen( struct web_connection *conn,
         }
         else if ( REST_FORMAT_CSV == format ) {
 
-            websrv_sendheader( conn, 200, REST_MIME_TYPE_CSV );
+            websrv_sendSetCookieHeader( conn, 
+                                            200, 
+                                            REST_MIME_TYPE_CSV,
+                                            pSession->m_sid  );
 
 #ifdef WIN32
             int n = _snprintf( wrkbuf,
@@ -1346,7 +1368,10 @@ restsrv_doOpen( struct web_connection *conn,
         }
         else if ( REST_FORMAT_XML == format ) {
 
-            websrv_sendheader( conn, 200, REST_MIME_TYPE_XML );
+            websrv_sendSetCookieHeader( conn, 
+                                            200, 
+                                            REST_MIME_TYPE_XML,
+                                            pSession->m_sid  );
 
 #ifdef WIN32
             int n = _snprintf( wrkbuf,
@@ -1365,7 +1390,10 @@ restsrv_doOpen( struct web_connection *conn,
         }
         else if ( REST_FORMAT_JSON == format ) {
 
-            websrv_sendheader( conn, 200, REST_MIME_TYPE_JSON );
+            websrv_sendSetCookieHeader( conn, 
+                                            200, 
+                                            REST_MIME_TYPE_JSON,
+                                            pSession->m_sid  );
 
 #ifdef WIN32
             int n = _snprintf( wrkbuf,
@@ -1385,7 +1413,10 @@ restsrv_doOpen( struct web_connection *conn,
         }
         else if ( REST_FORMAT_JSONP == format ) {
 
-            websrv_sendheader( conn, 200, REST_MIME_TYPE_JSONP );
+            websrv_sendSetCookieHeader( conn, 
+                                            200, 
+                                            REST_MIME_TYPE_JSONP,
+                                            pSession->m_sid );
 
 #ifdef WIN32
             // typeof handler === 'function' &&
@@ -1437,9 +1468,12 @@ restsrv_doClose( struct web_connection *conn,
         memcpy( sid, pSession->m_sid, sizeof( sid ) );
 
         // We should close the session
+        
+        // Mark as closed
         pSession->m_pClientItem->m_bOpen = false;
-        pSession->m_lastActiveTime = 0;
-        restsrv_expire_sessions( conn );
+        
+        // Note activity
+        pSession->m_lastActiveTime = time( NULL );
 
         if ( REST_FORMAT_PLAIN == format ) {
 
@@ -1528,20 +1562,27 @@ restsrv_doStatus( struct web_connection *conn,
 
     if ( NULL != pSession ) {
 
+        // Note activity
         pSession->m_lastActiveTime = time( NULL );
 
         if ( REST_FORMAT_PLAIN == format ) {
             websrv_sendheader( conn, 200, REST_MIME_TYPE_PLAIN );
-            web_printf( conn, REST_PLAIN_ERROR_SUCCESS, strlen( REST_PLAIN_ERROR_SUCCESS ) );
+            web_printf( conn, 
+                            REST_PLAIN_ERROR_SUCCESS, 
+                            strlen( REST_PLAIN_ERROR_SUCCESS ) );
             memset( buf, 0, sizeof( buf ) );
 #ifdef WIN32
-            int n = _snprintf( wrkbuf, sizeof( wrkbuf ), "vscpsession=%s nEvents=%zd", pSession->sid, pSession->pClientItem->m_clientInputQueue.GetCount() );
+            int n = _snprintf( wrkbuf, 
+                        sizeof( wrkbuf ), 
+                        "vscpsession=%s nEvents=%zd", 
+                        pSession->sid, 
+                        pSession->pClientItem->m_clientInputQueue.GetCount() );
 #else
             int n = snprintf( wrkbuf,
-                              sizeof( wrkbuf ),
-                              "1 1 Success vscpsession=%s nEvents=%lu",
-                              pSession->m_sid,
-                              pSession->m_pClientItem->m_clientInputQueue.GetCount() );
+                        sizeof( wrkbuf ),
+                        "1 1 Success vscpsession=%s nEvents=%lu",
+                        pSession->m_sid,
+                        pSession->m_pClientItem->m_clientInputQueue.GetCount() );
 #endif
             web_printf( conn, wrkbuf, strlen( wrkbuf ) );
             web_printf( conn, "", 0 );  // Terminator
@@ -1642,9 +1683,9 @@ restsrv_doStatus( struct web_connection *conn,
 
 void
 restsrv_doSendEvent( struct web_connection *conn,
-                            struct restsrv_session *pSession,
-                            int format,
-                            vscpEvent *pEvent )
+                        struct restsrv_session *pSession,
+                        int format,
+                        vscpEvent *pEvent )
 {
     bool bSent = false;
 
@@ -1665,7 +1706,7 @@ restsrv_doSendEvent( struct web_connection *conn,
             // the rest of the network as normal
 
             cguid destguid;
-            destguid.getFromArray (pEvent->pdata );
+            destguid.getFromArray( pEvent->pdata );
             destguid.setAt(0,0);
             destguid.setAt(1,0);
 
@@ -1716,9 +1757,9 @@ restsrv_doSendEvent( struct web_connection *conn,
             } // Client found
         }
 
-        if (!bSent) {
+        if ( !bSent ) {
 
-            if (NULL != pSession->m_pClientItem ) {
+            if ( NULL != pSession->m_pClientItem ) {
 
                 // Set client id
                 pEvent->obid = pSession->m_pClientItem->m_clientID;
@@ -1789,7 +1830,8 @@ restsrv_doReceiveEvent( struct web_connection *conn,
             char buf[32000];
             char wrkbuf[32000];
             wxString out;
-            size_t cntAvailable = pSession->m_pClientItem->m_clientInputQueue.GetCount();
+            size_t cntAvailable = 
+                    pSession->m_pClientItem->m_clientInputQueue.GetCount();
 
             // Plain
             if ( REST_FORMAT_PLAIN == format ) {
@@ -2003,6 +2045,14 @@ restsrv_doReceiveEvent( struct web_connection *conn,
                                 strcat((char *)wrkbuf, (const char*) "<obid>");
                                 strcat((char *)wrkbuf, wxString::Format( _("%lu"), pEvent->obid ).mbc_str() );
                                 strcat((char *)wrkbuf, (const char*) "</obid>");
+                                
+                                strcat((char *)wrkbuf, (const char*) "<datetime>");
+                                wxString dt;
+                                vscp_getDateStringFromEvent( pEvent, dt );
+                                strcat( (char *)wrkbuf, 
+                                            wxString::Format( _("%%s"), 
+                                                                (const char *)dt.mbc_str() ) );
+                                strcat((char *)wrkbuf, (const char*) "</datetime>");
 
                                 strcat((char *)wrkbuf, (const char*) "<timestamp>");
                                 strcat((char *)wrkbuf, wxString::Format( _("%lu"), pEvent->timestamp ).mbc_str() );
@@ -2156,6 +2206,19 @@ restsrv_doReceiveEvent( struct web_connection *conn,
                                 p += json_emit_quoted_str(p, &wrkbuf[ sizeof( wrkbuf ) ] - p, "vscptype", 8);
                                 p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ":", 1 );
                                 p += json_emit_long( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, pEvent->vscp_type );
+                                p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ",", 1 );
+                                
+               
+                                // datetime
+                                wxString dt;
+                                vscp_getDateStringFromEvent( pEvent, dt );
+                                                                        
+                                p += json_emit_quoted_str(p, &wrkbuf[ sizeof( wrkbuf ) ] - p, "datetime", 8 );
+                                p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ":", 1 );
+                                p += json_emit_quoted_str(p, 
+                                                &wrkbuf[ sizeof( wrkbuf ) ] - p,
+                                                (const char *)dt.mbc_str(),
+                                                dt.Length() );
                                 p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ",", 1 );
 
                                 // timestamp
@@ -2394,30 +2457,30 @@ restsrv_doCreateVariable( struct web_connection *conn,
 
         // Add the variable
         if ( !gpobj->m_variables.add( strVariable,
-                                                strValue,
-                                                type,
-                                                pSession->m_pUserItem->getUserID(),
-                                                bPersistence,
-                                                accessright,
-                                                strNote ) ) {
+                            strValue,
+                            type,
+                            pSession->m_pClientItem->m_pUserItem->getUserID(),
+                            bPersistence,
+                            accessright,
+                            strNote ) ) {
             restsrv_error( conn,
-                                    pSession,
-                                    format,
-                                    REST_ERROR_CODE_VARIABLE_NOT_CREATED );
+                            pSession,
+                            format,
+                            REST_ERROR_CODE_VARIABLE_NOT_CREATED );
             return;
         }
 
         restsrv_error( conn,
-                                pSession,
-                                format,
-                                REST_ERROR_CODE_SUCCESS );
+                        pSession,
+                        format,
+                        REST_ERROR_CODE_SUCCESS );
 
     }
     else {
         restsrv_error( conn,
-                                pSession,
-                                format,
-                                REST_ERROR_CODE_INVALID_SESSION );
+                        pSession,
+                        format,
+                        REST_ERROR_CODE_INVALID_SESSION );
     }
 
     return;
@@ -3069,6 +3132,7 @@ void
 restsrv_doWriteMeasurement( struct web_connection *conn,
                                     struct restsrv_session *pSession,
                                     int format,
+                                    wxString& strDateTime,
                                     wxString& strGuid,
                                     wxString& strLevel,
                                     wxString& strType,
@@ -3099,13 +3163,24 @@ restsrv_doWriteMeasurement( struct web_connection *conn,
         strValue.Trim();
         strValue.Trim(false);
         strValue.ToDouble( &value );            // Measurement value
+        
         strUnit.ToLong( &unit );                // Measurement unit
+        
         strSensorIdx.ToLong( &sensoridx );      // Sensor index
+        
         strType.ToLong( &vscptype );            // VSCP event type
+        
         strZone.ToLong( &zone );                // VSCP event type
         zone &= 0xff;
+        
         strSubZone.ToLong( &subzone );          // VSCP event type
         subzone &= 0xff;
+        
+        // datetime
+        wxDateTime dt;
+        if ( !dt.ParseISOCombined( strDateTime ) ) {
+            dt = wxDateTime::UNow();
+        }
 
         strLevel.ToLong( &level );              // Level I or Level II (default)
         if ( ( level > 2 ) || ( level < 1 ) ) {
@@ -3168,6 +3243,7 @@ restsrv_doWriteMeasurement( struct web_connection *conn,
                 }
             }
             else {
+                
                 // String
                 vscpEvent *pEvent = new vscpEvent;
                 if ( NULL == pEvent ) {
@@ -3188,6 +3264,7 @@ restsrv_doWriteMeasurement( struct web_connection *conn,
             }
         }
         else {  // Level II
+            
             if ( 0 == eventFormat ) {
 
                 // Floating point

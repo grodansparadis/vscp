@@ -50,7 +50,15 @@ int stop_webserver( void );
  */
 void websrv_sendheader( struct web_connection *conn, 
                             int returncode, 
-                            const char *content );
+                            const char *pcontent );
+
+/*!
+ * Send header set 'sessionid' cookie
+ */
+void websrv_sendSetCookieHeader( struct web_connection *conn, 
+                                    int returncode, 
+                                    const char *pcontent,
+                                    const char *psid );
 
 
 ////////////////////////////////////////////////////////////////////////////////

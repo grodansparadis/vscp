@@ -397,6 +397,7 @@ websock_new_session( const struct web_connection *conn )
     pSession->m_conn = (struct web_connection *)conn;
     pSession->m_conn_state = WEBSOCK_CONN_STATE_CONNECTED;
     pSession->m_version = atoi( ws_version );           // Store protocol version
+    
     pSession->m_pClientItem = new CClientItem();        // Create client
     if ( NULL == pSession->m_pClientItem ) {
         gpobj->logMsg(_("[Websockets] New session: Unable to create client object."));
@@ -1486,7 +1487,7 @@ autherror:
             bVariableExist = true;
         }
         
-        // name can not start with "vscp." that is it is a stock variable
+        // name can not start with "vscp." - reserved for a stock variable
         if ( name.Lower().StartsWith( "vscp.") ) {
             
             wxstr = wxString::Format( _("-;CVAR;%d;%s"),

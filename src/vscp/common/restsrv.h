@@ -45,9 +45,6 @@ struct restsrv_session
     // Client item for this session
     CClientItem *m_pClientItem;
 
-    // User
-    CUserItem *m_pUserItem;
-
     // Remote IP
     char m_remote_addr[48];
       
