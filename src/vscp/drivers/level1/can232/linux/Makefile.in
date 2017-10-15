@@ -81,6 +81,7 @@ ALWAYS_BUILD = ../../../../common/guid.o\
 all: vscpl1_can232drv.so test
 
 install: all
+	$(VSCP_PROJ_BASE_DIR)/drivers/level1
 	$(INSTALL_PROGRAM) vscpl1_can232drv.so $(VSCP_PROJ_BASE_DIR)/drivers/level1
 
 uninstall: 

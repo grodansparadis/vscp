@@ -103,6 +103,7 @@ ALWAYS_BUILD = 	../../../../common/vscpremotetcpif.o\
 all: vscpl2drv_tcpiplink.so test
 
 install: all
+	$(VSCP_PROJ_BASE_DIR)/drivers/level2
 	$(INSTALL_PROGRAM) vscpl2drv_tcpiplink.so $(VSCP_PROJ_BASE_DIR)/drivers/level2
 
 uninstall: 

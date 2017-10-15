@@ -4930,6 +4930,7 @@ bool CControlObject::doCreateUserdefTableTable( void )
 
 bool CControlObject::createFolderStructure( void )
 {
+    // Create folder structure
     wxFileName::Mkdir( m_rootFolder, 0x777, wxPATH_MKDIR_FULL );
     wxFileName::Mkdir( m_rootFolder + _("/logs"), 0x777, wxPATH_MKDIR_FULL );
     wxFileName::Mkdir( m_rootFolder + _("/actions"), 0x777, wxPATH_MKDIR_FULL );
@@ -4949,6 +4950,15 @@ bool CControlObject::createFolderStructure( void )
     wxFileName::Mkdir( m_rootFolder + _("/web/testws"), 0x777, wxPATH_MKDIR_FULL );
     wxFileName::Mkdir( m_rootFolder + _("/web/service"), 0x777, wxPATH_MKDIR_FULL );
     wxFileName::Mkdir( m_rootFolder + _("/tables"), 0x777, wxPATH_MKDIR_FULL );
+    
+    // check if main configuration file is in place
+    // create a new one if not
+    
+    // copy in example cert
+    
+    // dopy inexample dm.xml
+    
+    // copy in example variable.xml file
             
     return true;
 }
