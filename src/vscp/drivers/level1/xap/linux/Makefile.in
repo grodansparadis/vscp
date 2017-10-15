@@ -77,7 +77,7 @@ ALWAYS_BUILD = ../../../../common/guid.o\
 all: vscpl1_xapdrv.so test
 
 install: all
-	$(VSCP_PROJ_BASE_DIR)/drivers/level1
+	mkdir -p $(VSCP_PROJ_BASE_DIR)/drivers/level1
 	$(INSTALL_PROGRAM) vscpl1_xapdrv.so $(VSCP_PROJ_BASE_DIR)/drivers/level1
 
 uninstall: 

@@ -103,7 +103,7 @@ ALWAYS_BUILD = ../../../../common/vscpremotetcpif.o\
 all: vscpl2drv_wire1.so test
 
 install: all
-	$(VSCP_PROJ_BASE_DIR)/drivers/level2
+	mkdir -p $(VSCP_PROJ_BASE_DIR)/drivers/level2
 	$(INSTALL_PROGRAM) vscpl2drv_wire1.so $(VSCP_PROJ_BASE_DIR)/drivers/level2
 
 uninstall: 
