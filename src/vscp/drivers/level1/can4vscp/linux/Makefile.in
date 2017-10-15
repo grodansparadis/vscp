@@ -4,6 +4,7 @@
 
 # STATIC = yes if a static build is requested.
 STATIC=@STATIC@
+VSCP_PROJ_BASE_DIR=@VSCPDIR@
 
 prefix = @prefix@
 exec_prefix = @exec_prefix@
@@ -12,7 +13,6 @@ top_srcdir = @top_srcdir@
 top_wxsrcdir = @top_wxsrcdir@
 top_builddir = @top_builddir@
 top_wxbuilddir = @top_wxbuilddir@
-VSCP_PROJ_BASE_DIR=@VSCPDIR@
 
 CC = @CC@
 CXX = @CXX@
@@ -84,7 +84,7 @@ ALWAYS_BUILD = ../../../../common/guid.o\
 all: vscpl1_can4vscpdrv.so test
 
 install: all
-	$(INSTALL_PROGRAM) vscpl1_can4vscpdrv.so $(VSCP_PROJ_BASE_DIR)
+	$(INSTALL_PROGRAM) vscpl1_can4vscpdrv.so $(VSCP_PROJ_BASE_DIR)/drivers/level1
 
 uninstall: 
 

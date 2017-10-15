@@ -4,6 +4,7 @@
 
 # STATIC = yes if a static build is requested.
 STATIC=@STATIC@
+VSCP_PROJ_BASE_DIR=@VSCPDIR@
 
 prefix = @prefix@
 exec_prefix = @exec_prefix@
@@ -80,7 +81,7 @@ ALWAYS_BUILD = ../../../../common/guid.o\
 all: vscpl1_can232drv.so test
 
 install: all
-	$(INSTALL_PROGRAM) vscpl1_can232drv.so $(libdir)
+	$(INSTALL_PROGRAM) vscpl1_can232drv.so $(VSCP_PROJ_BASE_DIR)/drivers/level1
 
 uninstall: 
 

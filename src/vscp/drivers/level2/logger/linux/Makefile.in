@@ -4,6 +4,7 @@
 
 # STATIC = yes if a static build is requested.
 STATIC=@STATIC@
+VSCP_PROJ_BASE_DIR=@VSCPDIR@
 
 prefix = @prefix@
 exec_prefix = @exec_prefix@
@@ -101,7 +102,7 @@ ALWAYS_BUILD = ../../../../common/vscpremotetcpif.o\
 all: vscpl2drv_logger.so test
 
 install: all
-	$(INSTALL_PROGRAM) vscpl2drv_logger.so $(libdir)
+	$(INSTALL_PROGRAM) vscpl2drv_logger.so $(VSCP_PROJ_BASE_DIR)/drivers/level2
 
 uninstall: 
 
