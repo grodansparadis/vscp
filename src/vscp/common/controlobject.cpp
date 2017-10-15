@@ -4920,7 +4920,38 @@ bool CControlObject::doCreateUserdefTableTable( void )
 }
 
 
+///////////////////////////////////////////////////////////////////////////////
+// createFolderStructure
+//
+// Create the folder structure under the base directory
+// 
+// http://www.vscp.org/docs/vscpd/doku.php?id=files_and_directory_structure
+//
 
+bool CControlObject::createFolderStructure( void )
+{
+    wxFileName::Mkdir( m_rootFolder, 0x777, wxPATH_MKDIR_FULL );
+    wxFileName::Mkdir( m_rootFolder + _("/logs"), 0x777, wxPATH_MKDIR_FULL );
+    wxFileName::Mkdir( m_rootFolder + _("/actions"), 0x777, wxPATH_MKDIR_FULL );
+    wxFileName::Mkdir( m_rootFolder + _("/scripts"), 0x777, wxPATH_MKDIR_FULL );
+    wxFileName::Mkdir( m_rootFolder + _("/scripts/javascript"), 0x777, wxPATH_MKDIR_FULL );
+    wxFileName::Mkdir( m_rootFolder + _("/scripts/lua"), 0x777, wxPATH_MKDIR_FULL );
+    wxFileName::Mkdir( m_rootFolder + _("/upload"), 0x777, wxPATH_MKDIR_FULL );
+    wxFileName::Mkdir( m_rootFolder + _("/ux"), 0x777, wxPATH_MKDIR_FULL );
+    wxFileName::Mkdir( m_rootFolder + _("/web"), 0x777, wxPATH_MKDIR_FULL );
+    wxFileName::Mkdir( m_rootFolder + _("/certs"), 0x777, wxPATH_MKDIR_FULL );
+    wxFileName::Mkdir( m_rootFolder + _("/drivers"), 0x777, wxPATH_MKDIR_FULL );
+    wxFileName::Mkdir( m_rootFolder + _("/drivers/level1"), 0x777, wxPATH_MKDIR_FULL );
+    wxFileName::Mkdir( m_rootFolder + _("/drivers/level2"), 0x777, wxPATH_MKDIR_FULL );
+    wxFileName::Mkdir( m_rootFolder + _("/web/css"), 0x777, wxPATH_MKDIR_FULL );
+    wxFileName::Mkdir( m_rootFolder + _("/web/images"), 0x777, wxPATH_MKDIR_FULL );
+    wxFileName::Mkdir( m_rootFolder + _("/web/lib"), 0x777, wxPATH_MKDIR_FULL );
+    wxFileName::Mkdir( m_rootFolder + _("/web/testws"), 0x777, wxPATH_MKDIR_FULL );
+    wxFileName::Mkdir( m_rootFolder + _("/web/service"), 0x777, wxPATH_MKDIR_FULL );
+    wxFileName::Mkdir( m_rootFolder + _("/tables"), 0x777, wxPATH_MKDIR_FULL );
+            
+    return true;
+}
 
 
 
@@ -5017,6 +5048,8 @@ void clientMsgWorkerThread::OnExit()
 {
     ;
 }
+
+
 
 
 

@@ -524,7 +524,11 @@ public:
      */
     void getSystemKeyMD5( wxString &strKey );
     
-
+    /*!
+     * Create the folder structure that the VSCP daemon is expecting
+     * http://www.vscp.org/docs/vscpd/doku.php?id=files_and_directory_structure
+     */
+    bool createFolderStructure( void );
     
 public:
 
@@ -803,10 +807,6 @@ public:
     /// Mutex to protect variables
     wxMutex m_variableMutex;
 
-
-        
-    
-    
     
 
     //**************************************************************************
