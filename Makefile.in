@@ -51,6 +51,8 @@ install:
 	$(INSTALL_PROGRAM) -b -m744 config_examples/variables.xml_distro @VSCPDIR@/variables.xml
 	$(INSTALL_PROGRAM) -b -m744 config_examples/dm.xml_distro @VSCPDIR@/dm.xml
 	$(INSTALL_PROGRAM) -b -m744 config_examples/simulation/simtempdata.txt @VSCPDIR@/simtempdata.txt
+	$(INSTALL_PROGRAM) -b -m744 config_examples/certs/server.pem @VSCPDIR@/certs
+	$(INSTALL_PROGRAM) -b -m744 config_examples/certs/server.pem @VSCPDIR@/certs
 	@echo
 	@echo
 	@echo "Your VSCP & Friends system is now installed."
