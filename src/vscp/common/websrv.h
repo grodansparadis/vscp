@@ -205,11 +205,11 @@ const char server_cert_pem[] =
 "dBo3xQKBgQCnxheQbozuzPO/6nixAng1GP1GuuB2bVb4e5Z0+0dt2RfI8+MSqnSL\n"
 "q9Yr2+p/fJFkVthrOUYwJkMf7ujhK2uNCJ7aKmwHPSIRztNV3UDGFd9wgpj3Pebx\n"
 "36ahCvDzidTEG+EEra6zPJ1An3KEbPsfXwcy1NVEZ/kFQyzczL0AOw==\n"
-"-----END RSA PRIVATE KEY-----\n"
+"-----END RSA PRIVATE KEY-----\n";
 
 
 const char client_cert_pem[] =
------BEGIN CERTIFICATE-----\n"
+"-----BEGIN CERTIFICATE-----\n"
 "MIIDBjCCAe4CCQCFpskbTEyGpTANBgkqhkiG9w0BAQsFADBFMQswCQYDVQQGEwJB\n"
 "VTETMBEGA1UECAwKU29tZS1TdGF0ZTEhMB8GA1UECgwYSW50ZXJuZXQgV2lkZ2l0\n"
 "cyBQdHkgTHRkMB4XDTE3MDkwMzE5MjIwNVoXDTI3MDkwMTE5MjIwNVowRTELMAkG\n"
@@ -254,7 +254,7 @@ const char client_cert_pem[] =
 "M4BukIECgYAn5n+HhCi5JD3I1VCX70uE5nj8alYyQ85qE57Lopmau1RyVfP4oeCt\n"
 "gMsy0o7vIF+xW1Z2yDxm+mJghOY/myDsbTGX9G8rY7PC7tWE8okjsQT5UoayFzKp\n"
 "mmvrTV8TQBVcTQqn0Jyj7T5MBnuwfioXYN9pKPQlvc4pPmHbqPi7CA==\n"
-"-----END RSA PRIVATE KEY-----\n"
+"-----END RSA PRIVATE KEY-----\n";
 
 
 /**
