@@ -1,1 +1,3 @@
-Shared library for VSCP
+SCP helper library
+
+Shared library for VSCP & Friends with useful communication routines.
