@@ -68,37 +68,30 @@ WX_RELEASE = 3.0
 LIBDIRNAME = $(top_wxbuilddir)lib
 
 VSCPD_OBJECTS =  vscpd.o \
-	../../common/daemonworker.o \
-	../../common/clientlist.o \
-	../../common/controlobject.o \
-	../../common/tcpipsrv.o \
-	../../common/dm.o \
-	../../common/remotevariable.o \
-	../../common/interfacelist.o \
-	../../common/userlist.o \
-	../../common/devicethread.o \
-	../../common/websrv.o \
-	../../common/restsrv.o \
-	../../common/websocketsrv.o \
-	../../common/udpsrv.o \
-	../../common/multicastsrv.o \
-	../../common/tables.o \
-	../../common/automation.o \
-	../../common/knownnodes.o \
-	../../common/duktape_callbacks.o \
-	../../common/vscp_javascript.o \
-        ../../../common/jsonreader.o \
-        ../../../common/jsonwriter.o \
-        ../../../common/jsonval.o \
-	../../../common/vscpweb.o \
-	../../../common/lua/lfs.o \
-	../../../common/lua/lsqlite3.o \
-	../../../common/lua/LuaXML_lib.o \
-	../../../common/lua_all.o
-
-# The following files are built in the local folder to
-# prevent a mix between dll linkage and exe linkage
-VSCPD_SPECIALS = vscphelper.o \
+	daemonworker.o \
+	clientlist.o \
+	controlobject.o \
+	tcpipsrv.o \
+	dm.o \
+	remotevariable.o \
+	interfacelist.o \
+	userlist.o \
+	devicethread.o \
+	websrv.o \
+	restsrv.o \
+	websocketsrv.o \
+	udpsrv.o \
+	multicastsrv.o \
+	tables.o \
+	automation.o \
+	knownnodes.o \
+	duktape_callbacks.o \
+	vscp_javascript.o \
+        jsonreader.o \
+        jsonwriter.o \
+        jsonval.o \
+	vscpweb.o \
+	vscphelper.o \
 	vscpremotetcpif.o \
 	devicelist.o \
 	mdf.o \
@@ -114,96 +107,169 @@ VSCPD_SPECIALS = vscphelper.o \
 	duk_module_node.o \
 	mongoose.o \
 	sqlite3.o \
-	sqlite3math.o\
-	aes.o\
-	fastpbkdf2.o\
-	vscpmd5.o\
-	vscpbase64.o
-
-# Add object files that always should be built here
-ALWAYS_BUILD =
+	sqlite3math.o \
+	aes.o \
+	fastpbkdf2.o \
+	vscpmd5.o \
+	vscpbase64.o \
+	lfs.o \
+	lsqlite3.o \
+	LuaXML_lib.o \
+	lua_all.o
 
 ### Targets: ###
 
 all: vscpd
 
-vscphelper.o: ../../common/vscphelper.o ../../common/vscphelper.h
+vscpd.o: vscpd.cpp vscpd.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c vscpd.cpp -o $@
+
+daemonworker.o: ../../common/daemonworker.cpp ../../common/daemonworker.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/daemonworker.cpp -o $@
+
+clientlist.o: ../../common/clientlist.cpp ../../common/clientlist.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/clientlist.cpp -o $@
+
+controlobject.o: ../../common/controlobject.cpp ../../common/controlobject.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/controlobject.cpp -o $@
+
+tcpipsrv.o: ../../common/tcpipsrv.cpp ../../common/tcpipsrv.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/tcpipsrv.cpp -o $@
+
+dm.o: ../../common/dm.cpp ../../common/dm.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/dm.cpp -o $@
+
+remotevariable.o: ../../common/remotevariable.cpp ../../common/remotevariable.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/remotevariable.cpp -o $@
+
+interfacelist.o: ../../common/interfacelist.cpp ../../common/interfacelist.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/interfacelist.cpp -o $@
+
+userlist.o: ../../common/userlist.cpp ../../common/userlist.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/userlist.cpp -o $@
+
+devicethread.o: ../../common/devicethread.cpp ../../common/devicethread.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/devicethread.cpp -o $@
+
+websrv.o: ../../common/websrv.cpp ../../common/websrv.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/websrv.cpp -o $@
+
+restsrv.o: ../../common/restsrv.cpp ../../common/restsrv.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/restsrv.cpp -o $@
+
+websocketsrv.o: ../../common/websocketsrv.cpp ../../common/websocket.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/websocketsrv.cpp -o $@
+
+udpsrv.o: ../../common/udpsrv.cpp ../../common/udpsrv.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/udpsrv.cpp -o $@
+
+multicastsrv.o: ../../common/multicastsrv.cpp ../../common/multicastsrv.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/multicastsrv.cpp -o $@
+
+tables.o: ../../common/tables.cpp ../../common/tables.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/tables.cpp -o $@
+
+automation.o: ../../common/automation.cpp ../../common/automation.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/automation.cpp -o $@
+
+knownnodes.o: ../../common/knownnodes.cpp ../../common/knownnodes.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/knownnodes.cpp -o $@
+
+duktape_callbacks.o: ../../common/duktape_callbacks.cpp ../../common/duktape_callbacks.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/duktape_callbacks.cpp -o $@
+
+vscp_javascript.o: ../../common/vscp_javascript.cpp ../../common/vscp_javascript.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/vscp_javascript.cpp -o $@
+
+jsonreader.o: ../../../common/jsonreader.cpp ../../../common/wx/jsonreader.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../../common/jsonreader.cpp -o $@
+
+jsonwriter.o: ../../../common/jsonwriter.cpp ../../../common/wx/jsonwriter.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../../common/jsonwriter.cpp -o $@
+
+jsonval.o: ../../../common/jsonval.cpp ../../../common/wx/jsonval.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../../common/jsonval.cpp -o $@
+	
+vscphelper.o: ../../common/vscphelper.cpp ../../common/vscphelper.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/vscphelper.cpp -o $@
 
-vscpremotetcpif.o: ../../common/vscpremotetcpif.o ../../common/vscpremotetcpif.h
+vscpremotetcpif.o: ../../common/vscpremotetcpif.cpp ../../common/vscpremotetcpif.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/vscpremotetcpif.cpp -o $@
 
-devicelist.o: ../../common/devicelist.o ../../common/devicelist.h
+devicelist.o: ../../common/devicelist.cpp ../../common/devicelist.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/devicelist.cpp -o $@
 
-guid.o: ../../common/guid.o ../../common/guid.h
+guid.o: ../../common/guid.cpp ../../common/guid.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/guid.cpp -o $@
 
-mdf.o: ../../common/mdf.o ../../common/mdf.h
+mdf.o: ../../common/mdf.cpp ../../common/mdf.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/mdf.cpp -o $@
 
-register.o: ../../common/register.o ../../common/register.h
+register.o: ../../common/register.cpp ../../common/register.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/register.cpp -o $@
 
-configfile.o: ../../../common/configfile.o ../../../common/configfile.h
+configfile.o: ../../../common/configfile.cpp ../../../common/configfile.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../../common/configfile.cpp -o $@
-
-dllist.o: ../../../common/dllist.o ../../../common/dllist.h
+	
+dllist.o: ../../../common/dllist.c ../../../common/dllist.h
 	$(CC) $(CFLAGS) -c ../../../common/dllist.c  -o $@
 
-aes.o: ../../../common/aes.o ../../../common/aes.h
+aes.o: ../../../common/aes.c ../../../common/aes.h
 	$(CC) $(CFLAGS) -c ../../../common/aes.c -o $@
 
-crc.o: ../../../common/crc.o ../../../common/crc.h
+crc.o: ../../../common/crc.c ../../../common/crc.h
 	$(CC) $(CFLAGS) -c ../../../common/crc.c -o $@
 
-vscpbase64.o: ../../../common/vscpbase64.o ../../../common/vscpbase64.h
+vscpbase64.o: ../../../common/vscpbase64.c ../../../common/vscpbase64.h
 	$(CC) $(CFLAGS) -c ../../../common/vscpbase64.c -o $@
 
-crc8.o: ../../../common/crc8.o ../../../common/crc8.h
+crc8.o: ../../../common/crc8.c ../../../common/crc8.h
 	$(CC) $(CFLAGS) -c ../../../common/crc8.c -o $@
 
-randpassword.o: ../../../common/randpassword.o ../../../common/randpassword.h
+randpassword.o: ../../../common/randpassword.cpp ../../../common/randpassword.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../../common/randpassword.cpp -o $@
 
-mongoose.o: ../../../common/mongoose.o ../../../common/mongoose.h
+mongoose.o: ../../../common/mongoose.c ../../../common/mongoose.h
 	$(CC) $(CFLAGS) $(MONGOOSE_CFLAGS) -c ../../../common/mongoose.c -o $@
 
-duktape.o: ../../../common/duktape.o ../../../common/duktape.h
+duktape.o: ../../../common/duktape.c ../../../common/duktape.h
 	$(CC) $(CFLAGS) -c ../../../common/duktape.c -o $@
 
-duk_module_node.o: ../../../common/duk_module_node.o ../../../common/duk_module_node.h
+duk_module_node.o: ../../../common/duk_module_node.c ../../../common/duk_module_node.h
 	$(CC) $(CFLAGS) -c ../../../common/duk_module_node.c -o $@
 
-frozen.o: ../../../common/frozen.o ../../../common/frozen.h
+frozen.o: ../../../common/frozen.c ../../../common/frozen.h
 	$(CC) $(CFLAGS) -c ../../../common/frozen.c -o $@
 
-sqlite3.o: ../../../common/sqlite3.o
+sqlite3.o: ../../../common/sqlite3.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c  ../../../common/sqlite3.c -o $@
 
-sqlite3math.o: ../../../common/sqlite3math.o
+sqlite3math.o: ../../../common/sqlite3math.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c  ../../../common/sqlite3math.c -o $@
 
-fastpbkdf2.o: ../../../common/fastpbkdf2.o ../../../common/fastpbkdf2.h
+fastpbkdf2.o: ../../../common/fastpbkdf2.c ../../../common/fastpbkdf2.h
 	$(CC) $(CFLAGS) -c ../../../common/fastpbkdf2.c -o $@
 
-vscpmd5.o: ../../../common/vscpmd5.o ../../../common/vscpmd5.h
+vscpmd5.o: ../../../common/vscpmd5.c ../../../common/vscpmd5.h
 	$(CC) $(CFLAGS) -c ../../../common/vscpmd5.c -o $@
 
-vscpweb.o: ../../../common/vscpweb.o ../../../common/vscpweb.h
+vscpweb.o: ../../../common/vscpweb.c ../../../common/vscpweb.h
 	$(CC) $(CFLAGS) -c ../../../common/vscpweb.c -o $@
 
-lsqlite3.o: ../../../common/lua/lsqlite3.o
+lsqlite3.o: ../../../common/lua/lsqlite3.c
 	$(CC) $(CFLAGS) -I../../../common/lua -c ../../../common/lua/lsqlite3.c -o $@
 
-LuaXML_lib.o: ../../../common/lua/LuaXML_lib.o
-	$(CC) (CFLAGS) -I../../../common/lua -c ../../../common/lua/LuaXML_lib.c -o $@
+lfs.o: ../../../common/lua/lfs.c
+	$(CC) $(CFLAGS) -I../../../common/lua -c ../../../common/lua/lfs.c -o $@
+	
+LuaXML_lib.o: ../../../common/lua/LuaXML_lib.c
+	$(CC) $(CFLAGS) -I../../../common/lua -c ../../../common/lua/LuaXML_lib.c -o $@
 
-lua_all.o: ../../../common/lua_all.o
+lua_all.o: ../../../common/lua_all.c
 	$(CC) $(CFLAGS) -I../../../common/lua -c ../../../common/lua_all.c -o $@
 
-vscpd: $(VSCPD_OBJECTS) $(VSCPD_SPECIALS)
-	$(CXX) -o $@ $(VSCPD_OBJECTS) $(VSCPD_SPECIALS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
+vscpd: $(VSCPD_OBJECTS) 
+	$(CXX) -o $@ $(VSCPD_OBJECTS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
 
 install: all
 	$(STRIP) vscpd

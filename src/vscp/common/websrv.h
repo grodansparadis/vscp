@@ -157,7 +157,7 @@ struct websrv_session
 WX_DECLARE_LIST(struct websrv_session, WEBSRVSESSIONLIST);
 
 
-/* Test Certificate */
+// Test Certificate 
 
 const char server_cert_pem[] =
 "-----BEGIN CERTIFICATE-----\n"
