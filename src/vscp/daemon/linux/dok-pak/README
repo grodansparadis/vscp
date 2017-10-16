@@ -1,2 +1,5 @@
+Readme file for the the VSCP & Friends project
+http://www.vscp.org
 
-Helper library that makes it easier to write VSCP software 
+See HISTORY for release information, BUILD_* for how to build the project.
+
