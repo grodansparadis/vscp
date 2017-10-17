@@ -608,7 +608,7 @@ void WizardPageSelecInterface::OnButtonSelectInterfaceClick( wxCommandEvent& eve
 
     DeviceBootloaderwizard *pblw = ( DeviceBootloaderwizard * )GetParent();
 
-    if ( wxID_OK == dlg.ShowModal() ) {
+    if ( wxID_OK == dlg.ShowModal() ) { 
 
         if ( wxNOT_FOUND != ( selidx = dlg.m_ctrlListInterfaces->GetSelection() ) ) {
 
