@@ -4,6 +4,7 @@
 
 # STATIC = yes if a static build is requested.
 STATIC=@STATIC@
+VSCP_PROJ_BASE_DIR=@VSCPDIR@
 
 prefix = @prefix@
 exec_prefix = @exec_prefix@
@@ -121,7 +122,6 @@ VSCPWORKS_OBJECTS =  vscpworks.o \
 	vscpmd5.o \
 	devicebootloaderwizard.o \
 	dlgeventfilter.o \
-#	$(RESOURCEOBJECT)
 
 ### Targets: ###
 

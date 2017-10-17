@@ -4,6 +4,7 @@
 
 # STATIC = yes if a static build is requested.
 STATIC=@STATIC@
+VSCP_PROJ_BASE_DIR=@VSCPDIR@
 
 prefix = @prefix@
 exec_prefix = @exec_prefix@
@@ -29,6 +30,12 @@ WXGTK_CXXFLAGS = @WXGTK_CXXFLAGS@
 WXGTK_CFLAGS = @WXGTK_CFLAGS@
 WXGTK_LIBS = @WXGTK_LIBS@
 WXGTK_STATIC_LIBS = @WXGTK_STATIC_LIBS@
+
+# get version from the version file
+MAJOR_VERSION = `sed '35!d' ../../common/version.h  | cut -b 33-`
+MINOR_VERSION = `sed '36!d' ../../common/version.h  | cut -b 33-`
+RELEASE_VERSION = `sed '37!d' ../../common/version.h  | cut -b 33-`
+BUILD_VERSION = `sed '38!d' ../../common/version.h  | cut -b 33-
 
 MONGOOSE_CFLAGS = -DMG_ENABLE_THREADS -DMG_ENABLE_IPV6 -DMG_ENABLE_SSL -DMG_ENABLE_HTTP_CGI -DMG_ENABLE_HTTP_SSI -DMG_ENABLE_HTTP_SSI_EXEC -DMG_ENABLE_HTTP_WEBDAV -DMG_ENABLE_GETADDRINFO -DMG_ENABLE_HTTP_URL_REWRITES
 CFLAGS = -std=c99 @CFLAGS@ @WXBASE_CFLAGS@ -DCBC -I../common -I../../common  
@@ -63,29 +70,49 @@ DESTDIR =
 WX_RELEASE = 3.0
 LIBDIRNAME = $(top_wxbuilddir)lib
 
-MKPASSWD_OBJECTS =  vscp-mkpasswd.o\
-	../common/vscphelper.o\
-	../common/guid.o\
-	../../common/md5.o\
-	../../common/crc.o\
-	../../common/crc8.o\
-	../../common/aes.o\
-	../../common/vscpmd5.c\
-	../../common/fastpbkdf2.o\
-	../../common/vscpbase64.o
-
-
-ALWAYS_BUILD = ../common/vscphelper.o\
-	../common/guid.o\
-	../../common/md5.o\
-	../../common/crc.o\
-	../../common/crc8.o\
-	../../common/aes.o \
-	../../common/vscpmd5.c\
+MKPASSWD_OBJECTS =  vscp-mkpasswd.o \
+	vscphelper.o \
+	guid.o \
+	crc.o \
+	crc8.o \
+	vscp_aes.o \
+	vscpmd5.o \
+	fastpbkdf2.o \
+	vscpbase64.o
 
 ### Targets: ###
 
 all: vscp-mkpasswd
+
+vscp-mkpasswd.o: vscp-mkpasswd.cpp vscp-mkpasswd.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c vscp-mkpasswd.cpp -o $@
+
+vscphelper.o: ../common/vscphelper.cpp ../common/vscphelper.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../common/vscphelper.cpp -o $@
+
+guid.o: ../common/guid.cpp ../common/guid.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../common/guid.cpp -o $@
+
+vscp_aes.o: ../../common/vscp_aes.c ../../common/vscp_aes.h
+	$(CC) $(CFLAGS) -c ../../common/vscp_aes.c -o $@
+
+vscpbase64.o: ../../common/vscpbase64.c ../../common/vscpbase64.h
+	$(CC) $(CFLAGS) -c ../../common/vscpbase64.c -o $@
+	
+crc.o: ../../common/crc.c ../../common/crc.h
+	$(CC) $(CFLAGS) -c ../../common/crc.c -o $@
+
+crc8.o: ../../common/crc8.c ../../common/crc8.h
+	$(CC) $(CFLAGS) -c ../../common/crc8.c -o $@
+
+fastpbkdf2.o: ../../common/fastpbkdf2.c ../../common/fastpbkdf2.h
+	$(CC) $(CFLAGS) -c ../../common/fastpbkdf2.c -o $@
+
+vscpmd5.o: ../../common/vscpmd5.c ../../common/vscpmd5.h
+	$(CC) $(CFLAGS) -c ../../common/vscpmd5.c -o $@	
+
+vscp-mkpasswd: $(MKPASSWD_OBJECTS)
+	$(CXX) -o $@ $(MKPASSWD_OBJECTS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)	
 
 install: all
 	$(STRIP)  vscp-mkpasswd
@@ -104,8 +131,7 @@ clean:
 distclean: clean
 	rm -f config.cache config.log config.status bk-deps bk-make-pch shared-ld-sh Makefile
 
-vscp-mkpasswd: $(MKPASSWD_OBJECTS)
-	$(CXX) -o $@ $(MKPASSWD_OBJECTS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
+
 
 $(ALWAYS_BUILD):  .FORCE
 

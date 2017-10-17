@@ -45,7 +45,7 @@ NOTE:   String length must be evenly divisible by 16byte (str_len % 16 == 0)
 #include <stdio.h>  // file /dev/urandom
 #include <string.h> // CBC mode, for memset
 #include <stdlib.h> // malloc
-#include "aes.h"
+#include "vscp_aes.h"
 
 /*****************************************************************************/
 /* Defines:                                                                  */
