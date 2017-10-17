@@ -31,8 +31,14 @@ WXGTK_CFLAGS = @WXGTK_CFLAGS@
 WXGTK_LIBS = @WXGTK_LIBS@
 WXGTK_STATIC_LIBS = @WXGTK_STATIC_LIBS@
 
+# get version from the version file
+MAJOR_VERSION = `sed '35!d' ../../../../common/version.h  | cut -b 33-`
+MINOR_VERSION = `sed '36!d' ../../../../common/version.h  | cut -b 33-`
+RELEASE_VERSION = `sed '37!d' ../../../../common/version.h  | cut -b 33-`
+BUILD_VERSION = `sed '38!d' ../../../../common/version.h  | cut -b 33-
+
 MONGOOSE_FLAGS = -DMG_ENABLE_THREADS -DMG_ENABLE_IPV6 -DMG_ENABLE_SSL -DMG_ENABLE_GETADDRINFO
-CFLAGS = -std=c99 @CFLAGS@ @WXBASE_CFLAGS@ -DCBC -I../../../../common -I../../../../../common
+CFLAGS = -std=c99 @CFLAGS@ -fPIC @WXBASE_CFLAGS@ -DCBC -I../../../../common -I../../../../../common
 CXXFLAGS = -D__LINUX__ -fPIC -D_REENTRANT @CXXFLAGS@ @WXBASE_CXXFLAGS@ $(MONGOOSE_FLAGS)
 CPPFLAGS = -D__LINUX__ -fPIC @CPPFLAGS@ @WXBASE_CPPFLAGS@ $(MONGOOSE_FLAGS) -fno-var-tracking-assignments -I../../../../common -I../../../../../common
 
@@ -65,42 +71,66 @@ WX_RELEASE = 3.0
 LIBDIRNAME = $(top_wxbuilddir)lib
 
 VSCPTCPIP_OBJECTS = vscptcpiplink.o\
-	../../../../common/vscpremotetcpif.o\
-	../../../../common/vscphelper.o\
-	../../../../common/guid.o\
-	../../../../../common/crc.o\
-	../../../../../common/crc8.o\
-	../../../../../common/aes.o\
-	../../../../../common/vscpmd5.c\
-	../../../../../common/mongoose.o\
-	../../../../../common/fastpbkdf2.o\
-	../../../../../common/vscpbase64.o
-
-PROJOBJS =  vscptcpiplink.o\
-	../../../../common/vscpremotetcpif.o\
-	../../../../common/vscphelper.o\
-	../../../../common/guid.o\
-	../../../../../common/crc.o\
-	../../../../../common/crc8.o\
-	../../../../../common/aes.o\
-	../../../../../common/vscpmd5.c\
-	../../../../../common/mongoose.o\
-	../../../../../common/fastpbkdf2.o\
-	../../../../../common/vscpbase64.o
-
-ALWAYS_BUILD = 	../../../../common/vscpremotetcpif.o\
-	../../../../common/vscphelper.o\
-	../../../../common/guid.o\
-	../../../../../common/crc.o\
-	../../../../../common/crc8.o\
-	../../../../../common/aes.o\
-	../../../../../common/mongoose.o\
-	../../../../../common/fastpbkdf2.o\
-	../../../../../common/vscpbase64.o
+	vscpremotetcpif.o\
+	vscphelper.o\
+	guid.o\
+	crc.o\
+	crc8.o\
+	vscp_aes.o\
+	vscpmd5.o\
+	mongoose.o\
+	fastpbkdf2.o\
+	vscpbase64.o
 
 ### Targets: ###
 
 all: vscpl2drv_tcpiplink.so test
+
+test:  test.o $(PROJOBJS)
+	$(CXX) -o $@ test.o $(PROJOBJS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
+
+# Build the Linux DL
+vscpl2drv_tcpiplink.so: $(VSCPTCPIP_OBJECTS)
+	$(CXX) -o $@ $(VSCPTCPIP_OBJECTS) $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS) 
+
+vscptcpiplink.o: vscptcpiplink.cpp vscptcpiplink.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c vscptcpiplink.cpp -o $@
+
+vscphelperlib.o: ../../../../vscphelperlib.cpp ../../../../vscphelperlib.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../../../vscphelperlib.cpp -o $@
+
+vscpremotetcpif.o: ../../../../common/vscpremotetcpif.cpp ../../../../common/vscpremotetcpif.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../../../common/vscpremotetcpif.cpp -o $@
+
+vscphelper.o: ../../../../common/vscphelper.cpp ../../../../common/vscphelper.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../../../common/vscphelper.cpp -o $@
+
+guid.o: ../../../../common/guid.cpp ../../../../common/guid.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../../../common/guid.cpp -o $@	
+	
+vscp_aes.o: ../../../../../common/vscp_aes.c ../../../../../common/vscp_aes.h
+	$(CC) $(CFLAGS) -c ../../../../../common/vscp_aes.c -o $@
+
+crc.o: ../../../../../common/crc.c ../../../../../common/crc.h
+	$(CC) $(CFLAGS) -c ../../../../../common/crc.c -o $@
+	
+crc8.o: ../../../../../common/crc8.c ../../../../../common/crc8.h
+	$(CC) $(CFLAGS) -c ../../../../../common/crc8.c -o $@		
+
+vscpbase64.o: ../../../../../common/vscpbase64.c ../../../../../common/vscpbase64.h
+	$(CC) $(CFLAGS) -c ../../../../../common/vscpbase64.c -o $@
+	
+mongoose.o: ../../../../../common/mongoose.c ../../../../../common/mongoose.h
+	$(CC) $(CFLAGS) $(MONGOOSE_CFLAGS) -c ../../../../../common/mongoose.c -o $@
+
+fastpbkdf2.o: ../../../../../common/fastpbkdf2.c ../../../../../common/fastpbkdf2.h
+	$(CC) $(CFLAGS) -c ../../../../../common/fastpbkdf2.c -o $@
+
+vscpmd5.o: ../../../../../common/vscpmd5.c ../../../../../common/vscpmd5.h
+	$(CC) $(CFLAGS) -c ../../../../../common/vscpmd5.c -o $@	
+
+dllist.o: ../../../../../common/dllist.c ../../../../../common/dllist.h
+	$(CC) $(CFLAGS) -c ../../../../../common/dllist.c -o $@	
 
 install: all
 	mkdir -p $(VSCP_PROJ_BASE_DIR)/drivers/level2
@@ -122,14 +152,6 @@ clean:
 
 distclean: clean
 	rm -f config.cache config.log config.status bk-deps bk-make-pch shared-ld-sh Makefile
-
-
-test:  test.o $(PROJOBJS)
-	$(CXX) -o $@ test.o $(PROJOBJS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
-
-# Build the Linux DL
-%.so: %.o $(VSCPTCPIP_OBJECTS)
-	$(CXX) -o $@ vscpl2drv_tcpiplink.o $(VSCPTCPIP_OBJECTS) $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS) 
 
 $(ALWAYS_BUILD):  .FORCE
 

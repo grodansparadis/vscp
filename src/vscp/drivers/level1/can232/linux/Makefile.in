@@ -31,7 +31,13 @@ WXGTK_CFLAGS = @WXGTK_CFLAGS@
 WXGTK_LIBS = @WXGTK_LIBS@
 WXGTK_STATIC_LIBS = @WXGTK_STATIC_LIBS@
 
-CFLAGS = -std=c99 @CFLAGS@ @WXBASE_CFLAGS@ -DCBC -I../../../../common -I../../../../../common
+# get version from the version file
+MAJOR_VERSION = `sed '35!d' ../../common/version.h  | cut -b 33-`
+MINOR_VERSION = `sed '36!d' ../../common/version.h  | cut -b 33-`
+RELEASE_VERSION = `sed '37!d' ../../common/version.h  | cut -b 33-`
+BUILD_VERSION = `sed '38!d' ../../common/version.h  | cut -b 33-
+
+CFLAGS = -std=c99 @CFLAGS@ -fPIC  @WXBASE_CFLAGS@ -DCBC -I../../../../common -I../../../../../common
 CXXFLAGS = -D__LINUX__ -fPIC -D_REENTRANT @CXXFLAGS@ @WXBASE_CXXFLAGS@
 CPPFLAGS = -D__LINUX__ -fPIC @CPPFLAGS@ @WXBASE_CPPFLAGS@ -fno-var-tracking-assignments -I../../../../common -I../../../../../common
 
@@ -65,20 +71,32 @@ LIBDIRNAME = $(top_wxbuilddir)lib
 
 CAN232DRV_OBJECTS = vscpl1_can232drv.o\
 	can232obj.o\
-	../../../../common/guid.o\
-	../../../../../common/dllist.o\
-	../../../../../common/com.o
-
-PROJOBJS = ../../../../common/guid.o\
-	../../../../../common/dllist.o 
-
-ALWAYS_BUILD = ../../../../common/guid.o\
-	../../../../../common/dllist.o\
-	../../../../../common/com.o
+	guid.o\
+	dllist.o\
+	com.o
 
 ### Targets: ###
 
 all: vscpl1_can232drv.so test
+
+
+test:  test.o $(PROJOBJS)
+	$(CXX) -o $@ test.o $(PROJOBJS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
+
+vscpl1_can232drv.so: $(CAN232DRV_OBJECTS)
+	$(CXX) -o $@ $(CAN232DRV_OBJECTS) $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS) 
+
+can232obj.o: can232obj.cpp can232obj.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c can232obj.cpp -o $@
+
+guid.o: ../../../../common/guid.cpp ../../../../common/guid.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../../../common/guid.cpp -o $@
+
+dllist.o: ../../../../../common/dllist.c ../../../../../common/dllist.h
+	$(CC) $(CFLAGS) -c ../../../../../common/dllist.c -o $@
+
+com.o: ../../../../../common/com.cpp ../../../../../common/com.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../../../../common/com.cpp -o $@
 
 install: all
 	mkdir -p $(VSCP_PROJ_BASE_DIR)/drivers/level1
@@ -101,13 +119,6 @@ clean:
 
 distclean: clean
 	rm -f config.cache config.log config.status bk-deps bk-make-pch shared-ld-sh Makefile
-
-test:  test.o $(PROJOBJS)
-	$(CXX) -o $@ test.o $(PROJOBJS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
-
-# Build the Linux DL
-%.so: %.o $(CAN232DRV_OBJECTS)
-	$(CXX) -o $@ $(CAN232DRV_OBJECTS) $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS) 
 
 $(ALWAYS_BUILD):  .FORCE
 

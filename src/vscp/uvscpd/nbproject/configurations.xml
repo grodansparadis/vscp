@@ -28,10 +28,14 @@
       <itemPath>../../common/randpassword.h</itemPath>
       <itemPath>../common/version.h</itemPath>
       <itemPath>../common/vscp.h</itemPath>
+      <itemPath>../../common/vscp_aes.c</itemPath>
+      <itemPath>../../common/vscp_aes.h</itemPath>
       <itemPath>../common/vscp_class.h</itemPath>
       <itemPath>../common/vscp_type.h</itemPath>
+      <itemPath>../../common/vscpbase64.h</itemPath>
       <itemPath>../common/vscphelper.cpp</itemPath>
       <itemPath>../common/vscphelper.h</itemPath>
+      <itemPath>../../common/vscpmd5.h</itemPath>
     </logicalFolder>
     <df root="." name="0">
       <in>base64_enc.c</in>
@@ -82,15 +86,6 @@
             </incDir>
             <preprocessorList>
               <Elem>CBC</Elem>
-              <Elem>MG_ENABLE_GETADDRINFO</Elem>
-              <Elem>MG_ENABLE_HTTP_CGI</Elem>
-              <Elem>MG_ENABLE_HTTP_SSI</Elem>
-              <Elem>MG_ENABLE_HTTP_SSI_EXEC</Elem>
-              <Elem>MG_ENABLE_HTTP_URL_REWRITES</Elem>
-              <Elem>MG_ENABLE_HTTP_WEBDAV</Elem>
-              <Elem>MG_ENABLE_IPV6</Elem>
-              <Elem>MG_ENABLE_SSL</Elem>
-              <Elem>MG_ENABLE_THREADS</Elem>
               <Elem>WXUSINGDLL</Elem>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
               <Elem>_POSIX_SOURCE</Elem>
@@ -107,6 +102,17 @@
       </makefileType>
       <item path="../../common/aes.c" ex="false" tool="0" flavor2="3">
         <cTool flags="1">
+          <preprocessorList>
+            <Elem>MG_ENABLE_GETADDRINFO</Elem>
+            <Elem>MG_ENABLE_HTTP_CGI</Elem>
+            <Elem>MG_ENABLE_HTTP_SSI</Elem>
+            <Elem>MG_ENABLE_HTTP_SSI_EXEC</Elem>
+            <Elem>MG_ENABLE_HTTP_URL_REWRITES</Elem>
+            <Elem>MG_ENABLE_HTTP_WEBDAV</Elem>
+            <Elem>MG_ENABLE_IPV6</Elem>
+            <Elem>MG_ENABLE_SSL</Elem>
+            <Elem>MG_ENABLE_THREADS</Elem>
+          </preprocessorList>
         </cTool>
       </item>
       <item path="../../common/configfile.cpp" ex="false" tool="1" flavor2="4">
@@ -182,6 +188,10 @@
           </preprocessorList>
         </ccTool>
       </item>
+      <item path="../../common/vscp_aes.c" ex="false" tool="0" flavor2="3">
+        <cTool flags="1">
+        </cTool>
+      </item>
       <item path="../common/guid.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
           <incDir>
@@ -216,6 +226,17 @@
       </item>
       <item path="base64_enc.c" ex="false" tool="0" flavor2="3">
         <cTool flags="1">
+          <preprocessorList>
+            <Elem>MG_ENABLE_GETADDRINFO</Elem>
+            <Elem>MG_ENABLE_HTTP_CGI</Elem>
+            <Elem>MG_ENABLE_HTTP_SSI</Elem>
+            <Elem>MG_ENABLE_HTTP_SSI_EXEC</Elem>
+            <Elem>MG_ENABLE_HTTP_URL_REWRITES</Elem>
+            <Elem>MG_ENABLE_HTTP_WEBDAV</Elem>
+            <Elem>MG_ENABLE_IPV6</Elem>
+            <Elem>MG_ENABLE_SSL</Elem>
+            <Elem>MG_ENABLE_THREADS</Elem>
+          </preprocessorList>
         </cTool>
       </item>
       <folder path="common">
@@ -239,6 +260,17 @@
       </item>
       <item path="websocket.c" ex="false" tool="0" flavor2="3">
         <cTool flags="1">
+          <preprocessorList>
+            <Elem>MG_ENABLE_GETADDRINFO</Elem>
+            <Elem>MG_ENABLE_HTTP_CGI</Elem>
+            <Elem>MG_ENABLE_HTTP_SSI</Elem>
+            <Elem>MG_ENABLE_HTTP_SSI_EXEC</Elem>
+            <Elem>MG_ENABLE_HTTP_URL_REWRITES</Elem>
+            <Elem>MG_ENABLE_HTTP_WEBDAV</Elem>
+            <Elem>MG_ENABLE_IPV6</Elem>
+            <Elem>MG_ENABLE_SSL</Elem>
+            <Elem>MG_ENABLE_THREADS</Elem>
+          </preprocessorList>
         </cTool>
       </item>
     </conf>

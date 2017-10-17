@@ -38,7 +38,7 @@
 #endif
 
 #include <crc.h>
-#include <aes.h>
+#include <vscp_aes.h>
 #include <vscp.h>
 #include <tcpipsrv.h>
 #include <canal_win32_ipc.h>

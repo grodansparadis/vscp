@@ -46,7 +46,7 @@
 #endif
 
 #include <vscp.h>
-#include <aes.h>
+#include <vscp_aes.h>
 #include <fastpbkdf2.h>
 #include "vscp-mkpasswd.h"
 

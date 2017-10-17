@@ -4,6 +4,7 @@
 
 # STATIC = yes if a static build is requested.
 STATIC=@STATIC@
+VSCP_PROJ_BASE_DIR=@VSCPDIR@
 
 prefix = @prefix@
 exec_prefix = @exec_prefix@
@@ -36,6 +37,11 @@ CXXFLAGS = @CXXFLAGS@ @WXBASE_CXXFLAGS@
 CPPFLAGS = @CPPFLAGS@ @WXBASE_CPPFLAGS@ -fno-var-tracking-assignments -I../common -I../../common -I../../common/lua -I../../common/lua/src
 CPPFLAGS += $(MONGOOSE_CFLAGS)
 
+# get version from the version file
+MAJOR_VERSION = `sed '35!d' ../../common/version.h  | cut -b 33-`
+MINOR_VERSION = `sed '36!d' ../../common/version.h  | cut -b 33-`
+RELEASE_VERSION = `sed '37!d' ../../common/version.h  | cut -b 33-`
+BUILD_VERSION = `sed '38!d' ../../common/version.h  | cut -b 33-
 
 LDFLAGS = @LDFLAGS@
 EXTRALIBS = @EXTRALIBS@  
@@ -64,32 +70,57 @@ DESTDIR =
 WX_RELEASE = 3.0
 LIBDIRNAME = $(top_wxbuilddir)lib
 
-VSCPCMD_OBJECTS =  vscpcmd.o\
-	../common/vscpremotetcpif.o\
-	../common/vscphelper.o\
-	../../common/crc.o\
-	../../common/crc8.o\
-	../common/guid.o\
-	../../common/aes.o \
-	../../common/vscpmd5.c\
-	../../common/mongoose.o\
-	../../common/fastpbkdf2.o\
-	../../common/vscpbase64.o
-
-ALWAYS_BUILD = ../common/vscpremotetcpif.o\
-	../common/vscphelper.o\
-	../common/guid.o\
-	../../common/crc.o\
-	../../common/crc8.o\
-	../../common/aes.o \
-	../../common/vscpmd5.c\
-	../../common/mongoose.o\
-	../../common/fastpbkdf2.o\
-	../../common/vscpbase64.o
+VSCPCMD_OBJECTS =  vscpcmd.o \
+	vscpremotetcpif.o \
+	vscphelper.o \
+	crc.o \
+	crc8.o \
+	guid.o \
+	vscp_aes.o \
+	vscpmd5.o \
+	mongoose.o \
+	fastpbkdf2.o \
+	vscpbase64.o
 
 ### Targets: ###
 
 all: vscpcmd
+	
+vscpcmd: $(VSCPCMD_OBJECTS)
+	$(CXX) -o $@ $(VSCPCMD_OBJECTS) $(LDFLAGS) -L$(LIBDIRNAME) $(EXTRALIBS)	
+	
+vscphelperlib.o: ../vscphelperlib.cpp ../vscphelperlib.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../vscphelperlib.cpp -o $@
+
+vscpremotetcpif.o: ../common/vscpremotetcpif.cpp ../common/vscpremotetcpif.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../common/vscpremotetcpif.cpp -o $@
+
+vscphelper.o: ../common/vscphelper.cpp ../common/vscphelper.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../common/vscphelper.cpp -o $@
+
+guid.o: ../common/guid.cpp ../common/guid.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../common/guid.cpp -o $@	
+	
+vscp_aes.o: ../../common/vscp_aes.c ../../common/vscp_aes.h
+	$(CC) $(CFLAGS) -c ../../common/vscp_aes.c -o $@
+
+crc.o: ../../common/crc.c ../../common/crc.h
+	$(CC) $(CFLAGS) -c ../../common/crc.c -o $@
+	
+crc8.o: ../../common/crc8.c ../../common/crc8.h
+	$(CC) $(CFLAGS) -c ../../common/crc8.c -o $@		
+
+vscpbase64.o: ../../common/vscpbase64.c ../../common/vscpbase64.h
+	$(CC) $(CFLAGS) -c ../../common/vscpbase64.c -o $@
+	
+mongoose.o: ../../common/mongoose.c ../../common/mongoose.h
+	$(CC) $(CFLAGS) $(MONGOOSE_CFLAGS) -c ../../common/mongoose.c -o $@
+
+fastpbkdf2.o: ../../common/fastpbkdf2.c ../../common/fastpbkdf2.h
+	$(CC) $(CFLAGS) -c ../../common/fastpbkdf2.c -o $@
+
+vscpmd5.o: ../../common/vscpmd5.c ../../common/vscpmd5.h
+	$(CC) $(CFLAGS) -c ../../common/vscpmd5.c -o $@	
 
 install: all
 	$(STRIP) vscpcmd
@@ -108,8 +139,6 @@ clean:
 distclean: clean
 	rm -f config.cache config.log config.status bk-deps bk-make-pch shared-ld-sh Makefile
 
-vscpcmd: $(VSCPCMD_OBJECTS)
-	$(CXX) -o $@ $(VSCPCMD_OBJECTS) $(LDFLAGS) -L$(LIBDIRNAME) $(EXTRALIBS)
 	
 $(ALWAYS_BUILD):  .FORCE
 

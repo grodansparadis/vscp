@@ -116,9 +116,8 @@
 
 #include <sqlite3.h>
 #include <mongoose.h>
-//#include <v7.h>
 
-#include <aes.h>
+#include <vscp_aes.h>
 #include <fastpbkdf2.h>
 
 #include <vscp_debug.h>

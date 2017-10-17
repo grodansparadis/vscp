@@ -62,7 +62,7 @@
 
 #include <crc8.h> 
 #include <crc.h> 
-#include <aes.h>
+#include <vscp_aes.h>
 #include <fastpbkdf2.h>
 #include <vscpbase64.h>
 #include <vscpmd5.h>

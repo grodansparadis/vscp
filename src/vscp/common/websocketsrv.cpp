@@ -106,7 +106,7 @@
 #include <vscp.h>
 #include <vscphelper.h>
 #include <tables.h>
-#include <aes.h>
+#include <vscp_aes.h>
 #include <version.h>
 #include <controlobject.h> 
 #include <variablecodes.h>

@@ -66,7 +66,7 @@
 #include <dllist.h>
 #include <mongoose.h>
 #include <crc8.h>
-#include <aes.h>
+#include <vscp_aes.h>
 #include <guid.h>
 #include <controlobject.h>
 #include "multicastsrv.h"

@@ -106,7 +106,7 @@
 #include "web_template.h"
 
 #include <canal_macro.h>
-#include <aes.h>
+#include <vscp_aes.h>
 #include <vscp.h>
 #include <vscphelper.h>
 #include <tables.h>
