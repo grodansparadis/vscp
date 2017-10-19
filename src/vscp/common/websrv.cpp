@@ -719,11 +719,10 @@ check_admin_authorization( struct web_connection *conn, void *cbdata )
         return WEB_ERROR;
     }
     
-    
     char ha1[33];
     vscpmd5_getDigestFromMultiStrings( ha1,
             (const char *)pUserItem->getUserName().mbc_str(), ":",
-            gpobj->m_authDomain, ":",
+            (const char *)gpobj->m_web_authentication_domain.mbc_str(), ":",
             (const char *)gpobj->m_vscptoken.mbc_str(),
             NULL );
     
@@ -5231,51 +5230,51 @@ vscp_configure( struct web_connection *conn, void *cbdata )
     web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Web server <b>interface:</b></b> ");
 
     web_printf( conn, "enabled on interface '");
-    web_printf( conn, "%s", (const char *)gpobj->m_strWebServerInterfaceAddress.mbc_str());
+    web_printf( conn, "%s", (const char *)gpobj->m_web_listening_ports.mbc_str());
     web_printf( conn, "<br>");
     web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Rootfolder:</b> ");
-    web_printf( conn, "%s", (const char *)wxString::FromUTF8( gpobj->m_pathWebRoot ).mbc_str() );
+    web_printf( conn, "%s", (const char *)wxString::FromUTF8( gpobj->m_web_document_root ).mbc_str() );
     web_printf( conn, "<br>");
     web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Authdomain:</b> ");
-    web_printf( conn, "%s", (const char *)wxString::FromUTF8( gpobj->m_authDomain ).mbc_str() );
-    if ( 0 == strlen( gpobj->m_authDomain ) ) {
-        web_printf( conn, "Set to default.");
+    web_printf( conn, "%s", (const char *)wxString::FromUTF8( gpobj->m_web_authentication_domain ).mbc_str() );
+    if ( 0 == strlen( gpobj->m_web_authentication_domain ) ) {
+        web_printf( conn, "Set to default (mydomain.com).");
     }
     web_printf( conn, "<br>");
     web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Path certs:</b> ");
-    web_printf( conn, "%s", (const char *)wxString::FromUTF8( gpobj->m_pathCert ).mbc_str() );
+    web_printf( conn, "%s", (const char *)wxString::FromUTF8( gpobj->m_web_ssl_certificate  ).mbc_str() );
     web_printf( conn, "<br>");
     web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>ExtraMimeTypes:</b> ");
-    web_printf( conn, "%s", (const char *)wxString::FromUTF8( gpobj->m_extraMimeTypes ).mbc_str() );
-    if ( 0 == strlen( gpobj->m_extraMimeTypes ) ) {
+    web_printf( conn, "%s", (const char *)wxString::FromUTF8( gpobj->m_web_extra_mime_types ).mbc_str() );
+    if ( 0 == strlen( gpobj->m_web_extra_mime_types ) ) {
         web_printf( conn, "Set to default.");
     }
     web_printf( conn, "<br>");
     web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>CgiInterpreter:</b> ");
-    web_printf( conn, "%s", (const char *)wxString::FromUTF8( gpobj->m_cgiInterpreter ).mbc_str() );
-    if ( 0 == strlen( gpobj->m_cgiInterpreter ) ) {
+    web_printf( conn, "%s", (const char *)wxString::FromUTF8( gpobj->m_web_cgi_interpreter ).mbc_str() );
+    if ( 0 == strlen( gpobj->m_web_cgi_interpreter ) ) {
         web_printf( conn, "Set to default.");
     }
     web_printf( conn, "<br>");
     web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>CgiPattern:</b> ");
-    web_printf( conn, "%s", (const char *)wxString::FromUTF8( gpobj->m_cgiPattern ).mbc_str() );
-    if ( 0 == strlen( gpobj->m_cgiPattern ) ) {
+    web_printf( conn, "%s", (const char *)wxString::FromUTF8( gpobj->m_web_cgi_patterns ).mbc_str() );
+    if ( 0 == strlen( gpobj->m_web_cgi_patterns ) ) {
         web_printf( conn, "Set to default.");
     }
     web_printf( conn, "<br>");
     web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>HiddenFilePatterns:</b> ");
-    web_printf( conn, "%s", (const char *)wxString::FromUTF8( gpobj->m_hideFilePatterns ).mbc_str() );
-    if ( 0 == strlen( gpobj->m_hideFilePatterns ) ) {
+    web_printf( conn, "%s", (const char *)wxString::FromUTF8( gpobj->m_web_hide_file_patterns ).mbc_str() );
+    if ( 0 == strlen( gpobj->m_web_hide_file_patterns ) ) {
         web_printf( conn, "Set to default.");
     }
     web_printf( conn, "<br>");
     web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>IndexFiles:</b> ");
-    web_printf( conn, "%s", (const char *)wxString::FromUTF8( gpobj->m_indexFiles ).mbc_str() );
-    if ( 0 == strlen( gpobj->m_indexFiles ) ) {
+    web_printf( conn, "%s", (const char *)wxString::FromUTF8( gpobj->m_web_index_files ).mbc_str() );
+    if ( 0 == strlen( gpobj->m_web_index_files ) ) {
         web_printf( conn, "Set to default.");
     }
     web_printf( conn, "<br>");
-    if ( NULL != strstr( gpobj->m_EnableDirectoryListings, "yes" ) ) {
+    if ( gpobj->m_web_enable_directory_listing ) {
         web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Directory listings</b> is enabled.");
     }
     else {
@@ -5283,8 +5282,8 @@ vscp_configure( struct web_connection *conn, void *cbdata )
     }
     web_printf( conn, "<br>");
     web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>UrlReqrites:</b> ");
-    web_printf( conn, "%s", (const char *)wxString::FromUTF8( gpobj->m_urlRewrites ).mbc_str() );
-    if ( 0 == strlen( gpobj->m_urlRewrites ) ) {
+    web_printf( conn, "%s", (const char *)wxString::FromUTF8( gpobj->m_web_url_rewrite_patterns ).mbc_str() );
+    if ( 0 == strlen( gpobj->m_web_url_rewrite_patterns ) ) {
        web_printf( conn, "Set to default.");
     }
 

@@ -340,7 +340,7 @@ public:
         @param strcfgfile path to configuration file.
         @return Returns true on success false on failure.
      */
-    bool readXMLConfiguration( wxString& strcfgfile );
+    bool readConfigurationXML( wxString& strcfgfile );
 
     /*!
          Save configuration data
@@ -401,7 +401,7 @@ public:
      * been read and will replace duplicate values, if any.
      * @return true on success
      */
-     bool dbReadConfiguration( void );
+     bool readConfigurationDB( void );
           
      /*!
       * Write configuration datapait to configuration database.
@@ -704,76 +704,68 @@ public:
     
     
     //*****************************************************
-    //            websocket/webserver interface
+    //               webserver interface
     //*****************************************************
 
     struct web_context *webctx;
     
     // Enable webserver
-    bool m_bWebServer;
+    bool m_web_bEnable;
 
-    // Path to web root
-    char m_pathWebRoot[ MG_MAX_PATH ];
-
-    // Domain for webserver and other net services
-    char m_authDomain[ MG_MAX_PATH ];
-
-    // Path to SSL certificate
-    char m_pathCert[ MG_MAX_PATH ];
-
-    /// Extra mime types
-    char m_extraMimeTypes[ MG_MAX_PATH ];
-
-    /// Extra mime types on the form "extension1=type1,extension2=type2,..."
-    char m_ssi_pattern[ MG_MAX_PATH ];
-
-    // IP ACL. By default, NULL, meaning all IPs are allowed to connect
-    char m_ip_acl[ MG_MAX_PATH ];
-
-    // CGI interpreter to use
-    char m_cgiInterpreter[ MG_MAX_PATH ];
-
-    // CGI Pattern
-    char m_cgiPattern[ MG_MAX_PATH ];
-
-    // Enable directory listing "yes"/"no"
-    char m_EnableDirectoryListings[ 5 ];
-
-    // Hide file pattern
-    char m_hideFilePatterns[ MG_MAX_PATH ];
-
-    // DAV document root. If NULL, DAV requests are going to fail.
-    char m_dav_document_root[ MG_MAX_PATH ];
-
-    // Index files
-    char m_indexFiles[ MG_MAX_PATH ];
-
-    // URL rewrites
-    char m_urlRewrites[ MG_MAX_PATH ];
-
-    // Leave as NULL to disable authentication.
-    // To enable directory protection with authentication, set this to ".htpasswd"
-    // Then, creating ".htpasswd" file in any directory automatically protects
-    // it with digest authentication.
-    // Use `mongoose` web server binary, or `htdigest` Apache utility to
-    // create/manipulate passwords file.
-    // Make sure `auth_domain` is set to a valid domain name.
-    char m_per_directory_auth_file[ MG_MAX_PATH ];
-
-    // Leave as NULL to disable authentication.
-    // Normally, only selected directories in the document root are protected.
-    // If absolutely every access to the web server needs to be authenticated,
-    // regardless of the URI, set this option to the path to the passwords file.
-    // Format of that file is the same as ".htpasswd" file. Make sure that file
-    // is located outside document root to prevent people fetching it.
-    char m_global_auth_file[ MG_MAX_PATH ];
-
-    // webserver port as port "8080" or address + port "127.0.0.1:8080"
-    // If only port will bind to all interfaces,
-    wxString m_strWebServerInterfaceAddress;   // defaults to "8080"
-
-    // Run as user
-    wxString m_runAsUserWeb;
+    // See http://www.vscp.org/docs/vscpd/doku.php?id=configuring_the_vscp_daemon#webserver
+    wxString m_web_document_root;
+    wxString m_web_listening_ports;
+    wxString m_web_index_files;
+    wxString m_web_authentication_domain;
+    bool m_enable_auth_domain_check;
+    wxString m_web_ssl_certificate;
+    wxString m_web_ssl_certificate_chain;    
+    bool m_web_ssl_verify_peer;   
+    wxString m_web_ssl_ca_path;
+    wxString m_web_ssl_ca_file;
+    uint16_t m_web_ssl_verify_depth;
+    bool m_web_ssl_default_verify_paths;
+    wxString m_web_ssl_cipher_list;
+    uint8_t m_web_ssl_protocol_version;    
+    bool m_web_ssl_short_trust; 
+    wxString m_web_cgi_interpreter;
+    wxString m_web_cgi_patterns;
+    wxString m_web_cgi_environment;
+    wxString m_web_protect_uri;
+    wxString m_web_trottle;
+    bool m_web_enable_directory_listing;    
+    bool m_web_enable_keep_alive;  
+    long m_web_keep_alive_timeout_ms;
+    wxString m_web_access_control_list;
+    wxString m_web_extra_mime_types;
+    int m_web_num_threads;
+    wxString m_web_run_as_user;
+    wxString m_web_url_rewrite_patterns;
+    wxString m_web_hide_file_patterns; 
+    long m_web_request_timeout_ms;
+    long m_web_linger_timeout_ms;    // Set negative to not set
+    bool m_web_decode_url;
+    wxString m_web_global_auth_file;
+    wxString m_web_per_directory_auth_file;
+    wxString m_web_ssi_patterns;
+    wxString m_web_access_control_allow_origin;
+    wxString m_web_access_control_allow_methods;
+    wxString m_web_access_control_allow_headers;
+    wxString m_web_error_pages;
+    long m_web_tcp_nodelay;
+    long m_web_static_file_max_age;
+    long m_web_strict_transport_security_max_age;
+    bool m_web_allow_sendfile_call;
+    wxString m_web_additional_header;
+    long m_web_max_request_size;
+    bool m_web_allow_index_script_resource;
+    wxString m_web_duktape_script_patterns;
+    wxString m_web_lua_preload_file;
+    wxString m_web_lua_script_patterns;
+    wxString m_web_lua_server_page_patterns;
+    wxString m_web_lua_websocket_patterns;
+    wxString m_web_lua_background_script;
+    wxString m_web_lua_background_script_params;
     
     // Protects the web session object
     wxMutex m_websrvSessionMutex; 
@@ -781,12 +773,23 @@ public:
     // Linked list of all active sessions. (webserv.h)
     WEBSRVSESSIONLIST m_web_sessions;
 
+    
+    
     // Protects the REST session object
     wxMutex m_restSessionMutex;  
     
     // Session structure for REST API
     RESTSESSIONLIST m_rest_sessions;
 
+    
+    //**************************************************************************
+    //                              WEBSOCKETS
+    //**************************************************************************
+    
+    bool m_bWebsocketsEnable;   // Enable web socket functionality
+    wxString m_websocket_document_root;
+    long m_websocket_timeout_ms;
+    
     // * * Websockets * *
 
     // Protects the websocket session object

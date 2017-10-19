@@ -103,7 +103,6 @@
 #include <wx/wfstream.h>
 #include <wx/fileconf.h>
 #include <wx/tokenzr.h>
-//#include <wx/listimpl.cpp>
 #include <wx/list.h>
 #include <wx/xml/xml.h>
 #include <wx/mimetype.h>
@@ -137,7 +136,6 @@
 #include <devicelist.h>
 #include <devicethread.h>
 #include <dm.h>
-//#include <vscpeventhelper.h>
 #include <vscpweb.h>
 #include <websrv.h>
 #include <websocket.h>
@@ -241,7 +239,7 @@ CControlObject::CControlObject()
     }
 
     // Local domain
-    strcpy( m_authDomain, "mydomain.com" );
+    m_web_authentication_domain = _( "mydomain.com" );
 
     // Set Default Log Level
     m_logLevel = DAEMON_LOGMSG_NORMAL;
@@ -302,36 +300,71 @@ CControlObject::CControlObject()
     m_pVSCPClientThread = NULL;
     m_pdaemonVSCPThread = NULL;
 
-    // Websocket interface
-    memset( m_pathCert, 0, sizeof( m_pathCert ) );
+    // Web server SSL settings
+    m_web_ssl_certificate = _("/srv/vscp/certs/server.pem");
+    m_web_ssl_certificate_chain = _("");
+    m_web_ssl_verify_peer = false;
+    m_web_ssl_ca_path = _("");
+    m_web_ssl_ca_file = _("");
+    m_web_ssl_verify_depth = 9;
+    m_web_ssl_default_verify_paths = true;
+    m_web_ssl_cipher_list = _("DES-CBC3-SHA:AES128-SHA:AES128-GCM-SHA256");
+    m_web_ssl_protocol_version = 3;
+    m_web_ssl_short_trust = false;
+    
 
     // Webserver interface
-    m_bWebServer = true;
-    m_strWebServerInterfaceAddress = _("tcp://8080");
+    m_web_bEnable = true;
+    m_web_listening_ports = _("[::]:8888r,[::]:8843s,8884");
+    
+    m_web_index_files = _("index.xhtml,index.html,index.htm,"
+                          "index.lp,index.lsp,index.lua,index.cgi,"
+                          "index.shtml,index.php");
 
 #ifdef WIN32
-    //m_pathWebRoot = _("/programdata/vscp/www");
-    strcpy( m_pathWebRoot, "/programdata/vscp/www" );
+    m_web_document_root = _("/programdata/vscp/www");
 #else
-    //m_pathWebRoot = _("/srv/vscp/www");
-    strcpy( m_pathWebRoot, "/srv/vscp/www" );
+    m_web_document_root = _("/srv/vscp/www");
 #endif
 
-    memset( m_cgiInterpreter, 0, sizeof( m_cgiInterpreter ) );
-    memset( m_cgiPattern, 0, sizeof( m_cgiPattern ) );
-    memset( m_hideFilePatterns, 0, sizeof( m_hideFilePatterns ) );
-    memset( m_indexFiles, 0, sizeof( m_indexFiles ) );
-    memset( m_urlRewrites, 0, sizeof( m_urlRewrites ) );
-    memset( m_per_directory_auth_file, 0, sizeof( m_per_directory_auth_file ) );
-    memset( m_global_auth_file, 0, sizeof( m_global_auth_file ) );
-    memset( m_ssi_pattern, 0, sizeof( m_ssi_pattern ) );
-    memset( m_ip_acl, 0, sizeof( m_ip_acl ) );
-    memset( m_dav_document_root, 0, sizeof( m_dav_document_root ) );
-
     // Directory listings on by default
-    strcpy( m_EnableDirectoryListings, "yes" );
+    m_web_enable_directory_listing = true;
+    m_web_enable_keep_alive = false;
+    m_web_keep_alive_timeout_ms = 0;
+    m_web_access_control_list = _("");
+    m_web_extra_mime_types = _("");
+    m_web_num_threads=50;
+    m_web_run_as_user = _("");
+    m_web_url_rewrite_patterns = _("");
+    m_web_hide_file_patterns = _("");
+    m_web_global_auth_file = _("");
+    m_web_per_directory_auth_file = _("");
+    m_web_ssi_patterns = _("");
+    m_web_url_rewrite_patterns = _("");
+    m_web_request_timeout_ms = 10000;
+    m_web_linger_timeout_ms = -1; // Do not set
+    m_web_decode_url = true;
+    m_web_ssi_patterns = _("");
+    m_web_access_control_allow_origin = _("*");
+    m_web_access_control_allow_methods = _("*");
+    m_web_access_control_allow_headers = _("*");
+    m_web_error_pages = _("");
+    m_web_tcp_nodelay = 0;
+    m_web_static_file_max_age = 3600;
+    m_web_strict_transport_security_max_age = -1;
+    m_web_allow_sendfile_call = true;
+    m_web_additional_header = _("");
+    m_web_max_request_size = 16384;
+    m_web_allow_index_script_resource = false;
+    m_web_duktape_script_patterns = _("**.ssjs$");
+    m_web_lua_preload_file = _("");
+    m_web_lua_script_patterns = _("**.lua$");
+    m_web_lua_server_page_patterns = _("**.lp$|**.lsp$");
+    m_web_lua_websocket_patterns = _("**.lua$");
+    m_web_lua_background_script = _("");
+    m_web_lua_background_script_params = _("");
 
-    // Init. web server subsystem - All features
+    // Init. web server subsystem - All features enabled
     if ( 0 == web_init( 0xffff ) ) {
         fprintf(stderr,"Failed to initialize webserver subsystem.\n" );
     }
@@ -520,19 +553,19 @@ bool CControlObject::getVscpCapabilities( uint8_t *pCapability )
     }
         
     // VSCP web server
-    if ( m_bWebServer ) {
+    if ( m_web_bEnable ) {
         pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_WEB/8 ) ] |= 
                     ( 1 << ( VSCP_SERVER_CAPABILITY_WEB % 8 ) );
     }
         
     // VSCP websocket interface
-    if ( m_bWebServer ) {
+    if ( m_web_bEnable ) {
         pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_WEBSOCKET/8 ) ] |= 
                     ( 1 << ( VSCP_SERVER_CAPABILITY_WEBSOCKET % 8 ) );
     }
         
     // VSCP websocket interface
-    if ( m_bWebServer ) {
+    if ( m_web_bEnable ) {
         pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_REST/8 ) ] |= 
                     ( 1 << ( VSCP_SERVER_CAPABILITY_REST % 8 ) );
     }
@@ -820,7 +853,7 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
     m_path_db_vscp_data.Assign( m_rootFolder + _("vscp_data.sqlite3") );
     m_path_db_vscp_log.Assign( m_rootFolder + _("/logs/vscpd_log.sqlite3") );
     wxString strRootwww = m_rootFolder + _("www");
-    strcpy( m_pathWebRoot, (const char *)strRootwww.mbc_str() );
+    m_web_document_root = strRootwww;
     
     //wxLog::AddTraceMask( "wxTRACE_doWorkLoop" );
     //wxLog::AddTraceMask(_("wxTRACE_vscpd_receiveQueue")); // Receive queue
@@ -930,7 +963,7 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
         }
         else {
             // Database is open. Read configuration data from it
-            dbReadConfiguration();
+            readConfigurationDB();
         }
 
     }
@@ -1015,7 +1048,7 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
                 // * * * All created * * *
                 
                 // Database is open. Read configuration data from it
-                if ( !dbReadConfiguration() ) {
+                if ( !readConfigurationDB() ) {
                     fprintf( stderr, "Failed to read configuration from configuration database.\n" );
                 }
             
@@ -1115,7 +1148,7 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
     fprintf( stderr, "%s", (const char *)str.mbc_str() );
 
     // Read XML configuration
-    if ( !readXMLConfiguration( strcfgfile ) ) {
+    if ( !readConfigurationXML( strcfgfile ) ) {
         fprintf( stderr, "Unable to open/parse configuration file. Can't initialize!\n" );
         str = _("Path = .") + strcfgfile + _("\n");
         fprintf( stderr, "%s", (const char *)str.mbc_str() );
@@ -2383,7 +2416,7 @@ bool CControlObject::readXMLConfigurationGeneral( wxString& strcfgfile )
     }
 
     // start processing the XML file
-    if (doc.GetRoot()->GetName() != wxT("vscpconfig")) {
+    if (doc.GetRoot()->GetName() != _("vscpconfig")) {
         logMsg(_("Can't read logfile. Maybe it is invalid!\n")  );
         return false;
     }
@@ -2391,27 +2424,27 @@ bool CControlObject::readXMLConfigurationGeneral( wxString& strcfgfile )
     wxXmlNode *child = doc.GetRoot()->GetChildren();
     while (child) {
 
-        if (child->GetName() == wxT("general")) {
+        if (child->GetName() == _("general")) {
 
             wxXmlNode *subchild = child->GetChildren();
             while ( subchild ) {
 
-                if ( subchild->GetName() == wxT("security") ) {
+                if ( subchild->GetName() == _("security") ) {
                     
-                    m_admin_user = subchild->GetAttribute( wxT("user"), wxT("admin") );
-                    m_admin_password = subchild->GetAttribute( wxT("password"), 
+                    m_admin_user = subchild->GetAttribute( _("user"), _("admin") );
+                    m_admin_password = subchild->GetAttribute( _("password"), 
                             _("450ADCE88F2FDBB20F3318B65E53CA4A;06D3311CC2195E80BE4F8EB12931BFEB5C630F6B154B2D644ABE29CEBDBFB545") );
-                    m_admin_allowfrom = subchild->GetAttribute( wxT("allowfrom"), wxT("*") ); 
-                    m_vscptoken = subchild->GetAttribute( wxT("vscptoken"), 
-                                                            wxT("Carpe diem quam minimum credula postero") );
-                    wxString str = subchild->GetAttribute( wxT("vscpkey"), 
-                                                            wxT("A4A86F7D7E119BA3F0CD06881E371B989B33B6D606A863B633EF529D64544F8E") );
+                    m_admin_allowfrom = subchild->GetAttribute( _("allowfrom"), _("*") ); 
+                    m_vscptoken = subchild->GetAttribute( _("vscptoken"), 
+                                                            _("Carpe diem quam minimum credula postero") );
+                    wxString str = subchild->GetAttribute( _("vscpkey"), 
+                                                            _("A4A86F7D7E119BA3F0CD06881E371B989B33B6D606A863B633EF529D64544F8E") );
                     if ( str.Length() ) {
                         vscp_hexStr2ByteArray( m_systemKey, 32, str );
                     }
                     
                 }
-                else if ( subchild->GetName() == wxT("loglevel") ) {
+                else if ( subchild->GetName() == _("loglevel") ) {
                     
                     wxString str = subchild->GetNodeContent();
                     str.Trim();
@@ -2427,29 +2460,6 @@ bool CControlObject::readXMLConfigurationGeneral( wxString& strcfgfile )
                     else if ( str.IsSameAs(_("DEBUG"), false)) {
                         m_logLevel = DAEMON_LOGMSG_DEBUG;
                     }
-                    /*
-                    // For old deprecated values
-                    else if ( str.IsSameAs(_("INFO"), false)) {
-                        m_logLevel = DAEMON_LOGMSG_NORMAL;
-                    }
-                    else if ( str.IsSameAs(_("NOTICE"), false)) {
-                        m_logLevel = DAEMON_LOGMSG_NORMAL;
-                    }
-                    else if ( str.IsSameAs(_("WARNING"), false)) {
-                        m_logLevel = DAEMON_LOGMSG_NORMAL;
-                    }
-                    else if ( str.IsSameAs(_("ERROR"), false)) {
-                        m_logLevel = DAEMON_LOGMSG_NORMAL;
-                    }
-                    else if ( str.IsSameAs(_("CRITICAL"), false)) {
-                        m_logLevel = DAEMON_LOGMSG_NORMAL;
-                    }
-                    else if ( str.IsSameAs(_("ALERT"), false)) {
-                        m_logLevel = DAEMON_LOGMSG_NORMAL;
-                    }
-                    else if ( str.IsSameAs(_("EMERGENCY"), false)) {
-                        m_logLevel = DAEMON_LOGMSG_NORMAL;
-                    }*/
                     else {
                         m_logLevel = vscp_readStringValue( str );
                         if ( m_logLevel > DAEMON_LOGMSG_DEBUG ) {
@@ -2458,17 +2468,17 @@ bool CControlObject::readXMLConfigurationGeneral( wxString& strcfgfile )
                     }
                     
                 }
-                else if (subchild->GetName() == wxT("runasuser")) {
+                else if ( subchild->GetName() == _("runasuser") ) {
                     
                     m_runAsUser = subchild->GetNodeContent();
                     m_runAsUser.Trim();
                     m_runAsUser.Trim(false);
                     // Also assign to web user
-                    m_runAsUserWeb = m_runAsUser;
+                    m_web_run_as_user = m_runAsUser;
                 }
-                else if (subchild->GetName() == wxT("logsyslog")) {
+                else if ( subchild->GetName() == _("logsyslog") ) {
 
-                    wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("true"));
+                    wxString attribute = subchild->GetAttribute(_("enable"), _("true"));
                     attribute.MakeLower();
                     if (attribute.IsSameAs(_("false"), false)) {
                         m_bLogToSysLog = false;
@@ -2478,18 +2488,18 @@ bool CControlObject::readXMLConfigurationGeneral( wxString& strcfgfile )
                     }
                     
                 } 
-                else if (subchild->GetName() == wxT("guid")) {
+                else if (subchild->GetName() == _("guid")) {
                     
                     wxString str = subchild->GetNodeContent();
                     m_guid.getFromString(str);
                     
                 }
-                else if ( subchild->GetName() == wxT( "servername" ) ) {
+                else if ( subchild->GetName() == _( "servername" ) ) {
                     
                     m_strServerName = subchild->GetNodeContent();
                     
                 }
-                else if (subchild->GetName() == wxT("clientbuffersize")) {
+                else if (subchild->GetName() == _("clientbuffersize")) {
                     
                     wxString str = subchild->GetNodeContent();
                     m_maxItemsInClientReceiveQueue = vscp_readStringValue(str);
@@ -2512,12 +2522,12 @@ bool CControlObject::readXMLConfigurationGeneral( wxString& strcfgfile )
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// readConfiguration
+// readConfigurationXML
 //
 // Read the configuration XML file
 //
 
-bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
+bool CControlObject::readConfigurationXML( wxString& strcfgfile )
 {
     unsigned long val;
     wxString attribute;
@@ -2533,7 +2543,7 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
     }
 
     // start processing the XML file
-    if ( doc.GetRoot()->GetName() != wxT("vscpconfig") ) {
+    if ( doc.GetRoot()->GetName() != _("vscpconfig") ) {
         logMsg(_("Can't read logfile. Maybe it is invalid!\n")  );
         return false;
     }
@@ -2543,10 +2553,10 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
 
         // The "general" settings are read in a pre-step (readXMLConfigurationGeneral) 
         
-        if ( child->GetName() == wxT("tcpip") ) {
+        if ( child->GetName() == _("tcpip") ) {
             
             // Enable
-            wxString attribute = child->GetAttribute(wxT("enable"), wxT("true"));
+            wxString attribute = child->GetAttribute(_("enable"), _("true"));
             attribute.MakeLower();          
             if (attribute.IsSameAs(_("false"), false)) {
                 m_enableTcpip = false; 
@@ -2555,15 +2565,15 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                 m_enableTcpip  = true; 
             }
 
-            m_strTcpInterfaceAddress = child->GetAttribute(wxT("interface"), wxT(""));
+            m_strTcpInterfaceAddress = child->GetAttribute(_("interface"), _(""));
             m_strTcpInterfaceAddress.Trim(true);
             m_strTcpInterfaceAddress.Trim(false);
 
         }
-        else if ( child->GetName() == wxT( "multicast-announce" ) ) {
+        else if ( child->GetName() == _( "multicast-announce" ) ) {
                     
             // Enable
-            wxString attribute = child->GetAttribute(wxT("enable"), wxT("true"));
+            wxString attribute = child->GetAttribute(_("enable"), _("true"));
             attribute.MakeLower();          
             if (attribute.IsSameAs(_("false"), false)) {
                 m_bMulticastAnounce = false; 
@@ -2573,13 +2583,13 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
             }
                     
             // interface
-            m_strMulticastAnnounceAddress = child->GetAttribute( wxT( "interface" ), wxT( "" ) );
+            m_strMulticastAnnounceAddress = child->GetAttribute( _( "interface" ), _( "" ) );
 
             // ttl
-            m_ttlMultiCastAnnounce = vscp_readStringValue( child->GetAttribute( wxT( "ttl" ), wxT( "1" ) ) );
+            m_ttlMultiCastAnnounce = vscp_readStringValue( child->GetAttribute( _( "ttl" ), _( "1" ) ) );
 
         }
-        else if (child->GetName() == wxT("udp")) {
+        else if (child->GetName() == _("udp")) {
    
             m_mutexUDPInfo.Lock();
             
@@ -2587,7 +2597,7 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
             vscp_clearVSCPFilter( &m_udpInfo.m_filter );
                     
             // Enable
-            wxString attribute = child->GetAttribute(wxT("enable"), wxT("true"));
+            wxString attribute = child->GetAttribute(_("enable"), _("true"));
             attribute.MakeLower();          
             if (attribute.IsSameAs(_("false"), false)) {
                 m_udpInfo.m_bEnable = false; 
@@ -2597,7 +2607,7 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
             }
                     
             // Allow insecure connections
-            attribute = child->GetAttribute( wxT("bAllowUnsecure"), wxT("true") );
+            attribute = child->GetAttribute( _("bAllowUnsecure"), _("true") );
             if (attribute.Lower().IsSameAs(_("false"), false)) {
                 m_udpInfo.m_bAllowUnsecure = false; 
             }
@@ -2606,7 +2616,7 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
             }
                     
             // Enable ACK
-            attribute = child->GetAttribute( wxT("bSendAck"), wxT("false") );                    
+            attribute = child->GetAttribute( _("bSendAck"), _("false") );                    
             if (attribute.Lower().IsSameAs(_("false"), false)) {
                 m_udpInfo.m_bAck = false; 
             }
@@ -2655,7 +2665,7 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                     // Default is to let everything come through
                     vscp_clearVSCPFilter( &pudpClient->m_filter );
                                                         
-                    attribute = subchild->GetAttribute( wxT("enable"), wxT("false") );
+                    attribute = subchild->GetAttribute( _("enable"), _("false") );
                     if ( attribute.Lower().IsSameAs(_("false"), false ) ) {
                         pudpClient->m_bEnable = false; 
                     }
@@ -2712,11 +2722,11 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
 
         } // udp
         
-        else if (child->GetName() == wxT("multicast")) {
+        else if (child->GetName() == _("multicast")) {
             
             gpobj->m_mutexMulticastInfo.Lock();
                     
-            attribute = child->GetAttribute(wxT("enable"), wxT("true"));
+            attribute = child->GetAttribute(_("enable"), _("true"));
             attribute.MakeLower();
             if (attribute.IsSameAs(_("false"), false)) {
                 m_multicastInfo.m_bEnable = false;
@@ -2743,7 +2753,7 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                     vscp_clearVSCPFilter( &pChannel->m_rxFilter );
                     
                     // Enable
-                    attribute = subchild->GetAttribute(wxT("enable"), wxT("true"));
+                    attribute = subchild->GetAttribute(_("enable"), _("true"));
                     attribute.MakeLower();
                     if (attribute.IsSameAs(_("false"), false)) {
                         pChannel->m_bEnable = false;
@@ -2753,7 +2763,7 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                     }
                     
                     // bSendAck
-                    attribute = subchild->GetAttribute(wxT("bSendAck"), wxT("false"));
+                    attribute = subchild->GetAttribute(_("bSendAck"), _("false"));
                     attribute.MakeLower();
                     if (attribute.IsSameAs(_("false"), false)) {
                         pChannel->m_bSendAck = false;
@@ -2763,7 +2773,7 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                     }
                     
                     // bAllowUndsecure
-                    attribute = subchild->GetAttribute( wxT("bAllowUnsecure"), wxT("true") );
+                    attribute = subchild->GetAttribute( _("bAllowUnsecure"), _("true") );
                     attribute.MakeLower();
                     if ( attribute.IsSameAs(_("false"), false) ) {
                         pChannel->m_bAllowUnsecure = false;
@@ -2774,24 +2784,24 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                     
                     // Interface
                     pChannel->m_public =
-                            subchild->GetAttribute( wxT("public"), wxT("") );
+                            subchild->GetAttribute( _("public"), _("") );
                     
                     // Interface
                     pChannel->m_port =
-                            vscp_readStringValue( subchild->GetAttribute( wxT("port"), wxT("44444") ) );
+                            vscp_readStringValue( subchild->GetAttribute( _("port"), _("44444") ) );
                     
                     // Group
                     pChannel->m_gropupAddress =
-                            subchild->GetAttribute( wxT("group"), wxT("udp://224.0.23.158:44444") );
+                            subchild->GetAttribute( _("group"), _("udp://224.0.23.158:44444") );
                     
                     // ttl
                     pChannel->m_ttl = 
-                            vscp_readStringValue( subchild->GetAttribute( wxT("ttl"), wxT("1") ) );
+                            vscp_readStringValue( subchild->GetAttribute( _("ttl"), _("1") ) );
                     
                     // guid
                     attribute = 
-                            subchild->GetAttribute( wxT("guid"), 
-                                                    wxT("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00") );
+                            subchild->GetAttribute( _("guid"), 
+                                                    _("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00") );
                     pChannel->m_guid.getFromString( attribute );
                     
                     // TX Filter
@@ -2836,13 +2846,13 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
             
         }
         
-        else if (child->GetName() == wxT("dm")) {
+        else if (child->GetName() == _("dm")) {
                     
             // Should the internal DM be disabled
             wxString attribut;
                     
             // Get the path to the DM file  (Deprecated)
-            attribut = child->GetAttribute( wxT("path"), wxT("") );
+            attribut = child->GetAttribute( _("path"), _("") );
             if ( attribut.Length() ) {
                 m_dm.m_staticXMLPath = attribut;
             }
@@ -2868,26 +2878,26 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                     
         }
         
-        else if (child->GetName() == wxT("variables")) {
+        else if (child->GetName() == _("variables")) {
                     
             // Should the internal DM be disabled
             wxFileName fileName;
             wxString attrib;
 
             // Get the path to the DM file
-            attrib = child->GetAttribute(wxT("path"), wxT(""));
+            attrib = child->GetAttribute(_("path"), _(""));
             fileName.Assign( attrib );
             if ( fileName.IsOk() ) {
                 m_variables.m_xmlPath = fileName.GetFullPath();
             }
                     
-            attrib = child->GetAttribute(wxT("pathxml"), m_rootFolder + _("variable.xml"));
+            attrib = child->GetAttribute(_("pathxml"), m_rootFolder + _("variable.xml"));
             fileName.Assign( attrib );
             if ( fileName.IsOk() ) {
                 m_variables.m_xmlPath = fileName.GetFullPath();
             }
                     
-            attrib = child->GetAttribute(wxT("pathdb"), m_rootFolder + _("variable.sqlite3"));
+            attrib = child->GetAttribute(_("pathdb"), m_rootFolder + _("variable.sqlite3"));
             fileName.Assign( attrib );
             if ( fileName.IsOk() ) {
                 m_variables.m_dbFilename = fileName;
@@ -2895,150 +2905,488 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
  
         }
         
-        else if (child->GetName() == wxT("webserver")) {
+        else if (child->GetName() == _("webserver")) {
 
             wxString attribute;
    
-            attribute = child->GetAttribute( wxT("port"), wxT("8080") );
+            // Enable
+            attribute = child->GetAttribute( _("enable"), _("") );
             attribute.Trim();
             attribute.Trim(false);
             if ( attribute.Length() ) {
-                m_strWebServerInterfaceAddress = attribute;
-            }
-
-            attribute = child->GetAttribute(wxT("extra_mime_types"), wxT(""));
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                strcpy( m_extraMimeTypes, attribute.mbc_str() );
-            }
-
-            attribute = child->GetAttribute(wxT("webrootpath"), wxT(""));
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                strcpy( m_pathWebRoot, attribute.mbc_str() );
-            }
-
-            attribute = child->GetAttribute(wxT("authdoamin"), wxT(""));
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                strcpy( m_authDomain, attribute.mbc_str() );
-            }
-
-            attribute = child->GetAttribute(wxT("pathcert"), wxT(""));
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                strcpy( m_pathCert, attribute.mbc_str() );
-            }
-
-            attribute = child->GetAttribute(wxT("cgi_interpreter"), wxT(""));
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                strcpy( m_cgiInterpreter, attribute.mbc_str() );                    
-            }
-
-            attribute = child->GetAttribute(wxT("cgi_pattern"), wxT(""));
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                strcpy( m_cgiPattern, attribute.mbc_str() );
-            }
-
-            attribute = child->GetAttribute(wxT("enable_directory_listing"), wxT("true"));
-            attribute.Trim();
-            attribute.Trim(false);
-            attribute.MakeUpper();
-            if ( attribute.IsSameAs(_("FALSE"), false ) ) {
-                strcpy( m_EnableDirectoryListings, "no" );
-            }
-
-            attribute = child->GetAttribute(wxT("hide_file_patterns"), wxT(""));
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                strcpy( m_hideFilePatterns, attribute.mbc_str() );
-            }
-
-            attribute = child->GetAttribute(wxT("index_files"), wxT(""));
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                strcpy( m_indexFiles, attribute.mbc_str() );
-            }
-
-            attribute = child->GetAttribute(wxT("url_rewrites"), wxT(""));
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                strcpy( m_urlRewrites, attribute.mbc_str() );
-            }
-
-            attribute = child->GetAttribute(wxT("per_directory_auth_file"), wxT(""));
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                strcpy( m_per_directory_auth_file, attribute.mbc_str() );
-            }
-
-            attribute = child->GetAttribute(wxT("global_auth_file"), wxT(""));
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                strcpy( m_global_auth_file, attribute.mbc_str() );
-            }
-
-            attribute = child->GetAttribute(wxT("ssi_pattern"), wxT(""));
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                strcpy( m_ssi_pattern, attribute.mbc_str() );
-            }
-
-            attribute = child->GetAttribute(wxT("ip_acl"), wxT(""));
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                strcpy( m_ip_acl, attribute.mbc_str() );
-            }
-
-            attribute = child->GetAttribute(wxT("dav_document_root"), wxT(""));
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                strcpy( m_dav_document_root, attribute.mbc_str() );
-            }
-
-            attribute = child->GetAttribute(wxT("run_as_user"), wxT(""));
-            attribute.Trim();
-            attribute.Trim(false);
-            m_runAsUserWeb = attribute;
-
-            // Get webserver sub components
-            wxXmlNode *subchild = child->GetChildren();
-            while ( subchild ) {
-
-                // Deprecated (moved outside of webserver)
-                if (subchild->GetName() == wxT("websockets")) {
-
+                attribute.MakeUpper();
+                if ( attribute.IsSameAs(_("FALSE"), false ) ) {
+                    m_web_bEnable = false;
                 }
+                else {
+                    m_web_bEnable = true;
+                }
+            }
+            
+            attribute = child->GetAttribute(_("document_root"), _(""));
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                m_web_document_root = attribute;
+            }
+            
+            attribute = child->GetAttribute( _("listening_ports"), _("") );
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                m_web_listening_ports = attribute;
+            }
 
-                subchild = subchild->GetNext();
-                    
+            attribute = child->GetAttribute(_("index_files"), _(""));
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                m_web_index_files = attribute;
+            }
+            
+            attribute = child->GetAttribute(_("authentication_domain"), _(""));
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                m_web_authentication_domain = attribute;
+            }
+            
+            attribute = child->GetAttribute( _("enable_auth_domain_check"), _("") );
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                attribute.MakeUpper();
+                if ( attribute.IsSameAs(_("FALSE"), false ) ) {
+                    m_enable_auth_domain_check = false;
+                }
+                else {
+                    m_enable_auth_domain_check = true;
+                }
+            }
+            
+            attribute = child->GetAttribute(_("ssl_certificat"), _(""));
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                m_web_ssl_certificate = attribute;
+            }
+            
+            attribute = child->GetAttribute(_("ssl_certificat_chain"), _(""));
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                m_web_ssl_certificate_chain = attribute;
+            }
+            
+            attribute = child->GetAttribute( _("ssl_verify_peer"), _("") );
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                attribute.MakeUpper();
+                if ( attribute.IsSameAs(_("FALSE"), false ) ) {
+                    m_web_ssl_verify_peer = false;
+                }
+                else {
+                    m_web_ssl_verify_peer = true;
+                }
+            }
+
+            attribute = child->GetAttribute(_("ssl_ca_path"), _(""));
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                m_web_ssl_ca_path = attribute;
+            }
+
+            attribute = child->GetAttribute(_("ssl_ca_file"), _(""));
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                m_web_ssl_ca_file = attribute;
+            }
+
+            attribute = child->GetAttribute(_("ssl_verify_depth"), _(""));
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                m_web_ssl_verify_depth = atoi( (const char *)attribute.mbc_str() );
+            }
+            
+            attribute = child->GetAttribute(_("ssl_default_verify_paths"), _(""));
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                attribute.MakeUpper();
+                if ( attribute.IsSameAs(_("FALSE"), false ) ) {
+                    m_web_ssl_default_verify_paths = false;
+                }
+                else {
+                    m_web_ssl_default_verify_paths = true;
+                }
+            }
+            
+            attribute = child->GetAttribute(_("ssl_cipher_list"), _(""));
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                m_web_ssl_cipher_list = attribute.mbc_str();
+            }
+            
+            attribute = child->GetAttribute(_("ssl_protcol_version"), _(""));
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                m_web_ssl_protocol_version = atoi( (const char *)attribute.mbc_str() );
+            }
+            
+            attribute = child->GetAttribute(_("ssl_short_trust"), _(""));
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                attribute.MakeUpper();
+                if ( attribute.IsSameAs(_("FALSE"), false ) ) {
+                    m_web_ssl_short_trust = false;
+                }
+                else {
+                    m_web_ssl_short_trust = true;
+                }
+            }
+            
+            attribute = child->GetAttribute( _("cgi_interpreter"), _(""));
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                m_web_cgi_interpreter = attribute;                    
+            }
+
+            attribute = child->GetAttribute(_("cgi_pattern"), _(""));
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                m_web_cgi_patterns =attribute;
+            }
+            
+            attribute = child->GetAttribute(_("cgi_environment"), _(""));
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                m_web_cgi_environment = attribute;
+            }
+            
+            attribute = child->GetAttribute(_("protect_uri"), _(""));
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                m_web_protect_uri = attribute;
+            }
+            
+            attribute = child->GetAttribute(_("trottle"), _(""));
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                m_web_trottle = attribute;
+            }
+            
+            attribute = child->GetAttribute( _("enable_directory_listing"), _("") );
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                attribute.MakeUpper();
+                if ( attribute.IsSameAs(_("FALSE"), false ) ) {
+                    m_web_enable_directory_listing = false;
+                }
+                else {
+                    m_web_enable_directory_listing = true;
+                }
+            }
+ 
+            attribute = child->GetAttribute( _("enable_keep_alive"), _("") );
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                attribute.MakeUpper();
+                if ( attribute.IsSameAs(_("FALSE"), false ) ) {
+                    m_web_enable_keep_alive = false;
+                }
+                else {
+                    m_web_enable_keep_alive = true;
+                }
+            }
+            
+            attribute = child->GetAttribute(_("keep_alive_timeout_ms"), _(""));
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                m_web_keep_alive_timeout_ms = atol( (const char *)attribute.mbc_str() );
+            }
+            
+            attribute = child->GetAttribute(_("access_control_list"), _(""));
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                m_web_access_control_list = attribute;
+            }
+            
+            attribute = child->GetAttribute(_("extra_mime_types"), _(""));
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                m_web_extra_mime_types = attribute;
+            }
+            
+            attribute = child->GetAttribute(_("num_threads"), _(""));
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                m_web_num_threads = atoi( (const char *)attribute.mbc_str() );
+            }
+
+            attribute = child->GetAttribute(_("hide_file_pattern"), _(""));
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                m_web_hide_file_patterns = attribute;
+            }
+
+            attribute = child->GetAttribute(_("run_as_user"), _(""));
+            attribute.Trim();
+            attribute.Trim(false);
+            m_web_run_as_user = attribute;
+ 
+            attribute = child->GetAttribute(_("url_rewrite_patterns"), _(""));
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                m_web_url_rewrite_patterns = attribute;
+            }
+            
+            attribute = child->GetAttribute(_("hide_file_patterns"), _(""));
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                m_web_hide_file_patterns = attribute;
+            }
+            
+            attribute = child->GetAttribute(_("request_timeout_ms"), _(""));
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                m_web_request_timeout_ms = atol( (const char *)attribute.mbc_str() );
+            }
+            
+            attribute = child->GetAttribute(_("linger_timeout_ms"), _(""));
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                m_web_linger_timeout_ms = atol( (const char *)attribute.mbc_str() );
+            }
+            
+            attribute = child->GetAttribute( _("decode_url"), _("") );
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                attribute.MakeUpper();
+                if ( attribute.IsSameAs(_("FALSE"), false ) ) {
+                    m_web_decode_url = false;
+                }
+                else {
+                    m_web_decode_url = true;
+                }
+            }
+
+            attribute = child->GetAttribute(_("global_auth_file"), _(""));
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                m_web_global_auth_file = attribute;
+            }
+            
+            attribute = child->GetAttribute(_("web_per_directory_auth_file"), _(""));
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                m_web_per_directory_auth_file = attribute;
+            }
+
+            attribute = child->GetAttribute(_("ssi_pattern"), _(""));
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                m_web_ssi_patterns = attribute;
+            }
+
+            attribute = child->GetAttribute(_("access_control_allow_origin"), _(""));
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                m_web_access_control_allow_origin = attribute;
+            }
+            
+            attribute = child->GetAttribute(_("access_control_allow_methods"), _(""));
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                m_web_access_control_allow_methods = attribute;
+            }
+            
+            attribute = child->GetAttribute(_("access_control_allow_headers"), _(""));
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                m_web_access_control_allow_headers = attribute;
+            }
+
+            attribute = child->GetAttribute(_("error_pages"), _(""));
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                m_web_error_pages = attribute;
+            }
+            
+            attribute = child->GetAttribute(_("tcp_nodelay"), _(""));
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                m_web_linger_timeout_ms = atol( (const char *)attribute.mbc_str() );
+            }
+            
+            attribute = child->GetAttribute(_("static_file_max_age"), _(""));
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                m_web_static_file_max_age = atol( (const char *)attribute.mbc_str() );
+            }
+            
+            attribute = child->GetAttribute(_("strict_transport_security_max_age"), _(""));
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                m_web_strict_transport_security_max_age = atol( (const char *)attribute.mbc_str() );
+            }
+            
+            attribute = child->GetAttribute( _("sendfile_call"), _("") );
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                attribute.MakeUpper();
+                if ( attribute.IsSameAs(_("FALSE"), false ) ) {
+                    m_web_allow_sendfile_call = false;
+                }
+                else {
+                    m_web_allow_sendfile_call = true;
+                }
+            }
+            
+            attribute = child->GetAttribute(_("additional_headers"), _(""));
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                m_web_additional_header = attribute;
+            }
+
+            attribute = child->GetAttribute(_("max_request_size"), _(""));
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                m_web_max_request_size = atol( (const char *)attribute.mbc_str() );
+            }
+            
+            attribute = child->GetAttribute(_("web_allow_index_script_resource"), _("") );
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                attribute.MakeUpper();
+                if ( attribute.IsSameAs(_("FALSE"), false ) ) {
+                    m_web_allow_index_script_resource = false;
+                }
+                else {
+                    m_web_allow_index_script_resource = true;
+                }
+            }
+            
+            attribute = child->GetAttribute(_("duktape_script_patterns"), _(""));
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                m_web_duktape_script_patterns = attribute;
+            }
+            
+            attribute = child->GetAttribute(_("lua_preload_file"), _(""));
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                m_web_lua_preload_file = attribute;
+            }
+            
+            attribute = child->GetAttribute(_("lua_script_patterns"), _(""));
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                m_web_lua_script_patterns = attribute;
+            }
+            
+            attribute = child->GetAttribute(_("lua_server_page_patterns"), _(""));
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                m_web_lua_server_page_patterns = attribute;
+            }
+            
+            attribute = child->GetAttribute(_("lua_websockets_patterns"), _(""));
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                m_web_lua_websocket_patterns = attribute;
+            }
+            
+            attribute = child->GetAttribute(_("lua_background_script"), _(""));
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                m_web_lua_background_script = attribute;
+            }
+            
+            attribute = child->GetAttribute(_("lua_background_script_params"), _(""));
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                m_web_lua_background_script_params = attribute;
             }
 
         }
         
-        else if (child->GetName() == wxT("websockets")) {
+        else if (child->GetName() == _("websockets")) {
 
-          
+            attribute = child->GetAttribute(_("enable"), _("1") );
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                attribute.MakeUpper();
+                if ( attribute.IsSameAs(_("FALSE"), false ) ) {
+                    m_bWebsocketsEnable = false;
+                }
+                else {
+                    m_bWebsocketsEnable = true;
+                }
+            }
+            
+            attribute = child->GetAttribute(_("document_root"), _(""));
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                m_websocket_document_root = attribute;
+            }
+            
+            attribute = child->GetAttribute(_("timeout_ms"), _(""));
+            attribute.Trim();
+            attribute.Trim(false);
+            if ( attribute.Length() ) {
+                m_websocket_timeout_ms = atol( (const char *)attribute.mbc_str() );
+            }
 
         }
         
-        else if ( child->GetName() == wxT("remoteuser") ) {
+        else if ( child->GetName() == _("remoteuser") ) {
 
             wxXmlNode *subchild = child->GetChildren();
             while ( subchild ) {
@@ -3055,77 +3403,77 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
 
                 vscp_clearVSCPFilter(&VSCPFilter); // Allow all frames
 
-                if ( subchild->GetName() == wxT("user") ) {
+                if ( subchild->GetName() == _("user") ) {
 
                     wxXmlNode *subsubchild = subchild->GetChildren();
 
                     while (subsubchild) {
 
-                        if (subsubchild->GetName() == wxT("name")) {
+                        if (subsubchild->GetName() == _("name")) {
                             name = subsubchild->GetNodeContent();
                             bUser = true;
                         }
-                        else if (subsubchild->GetName() == wxT("password")) {
+                        else if (subsubchild->GetName() == _("password")) {
                             md5 = subsubchild->GetNodeContent();
                         }
-                        else if (subsubchild->GetName() == wxT("privilege")) {
+                        else if (subsubchild->GetName() == _("privilege")) {
                             privilege = subsubchild->GetNodeContent();
                         }
-                        else if (subsubchild->GetName() == wxT("filter")) {
+                        else if (subsubchild->GetName() == _("filter")) {
                             bFilterPresent = true;
 
-                            wxString str_vscp_priority = subchild->GetAttribute(wxT("priority"), wxT("0"));
+                            wxString str_vscp_priority = subchild->GetAttribute(_("priority"), _("0"));
 
                             val = 0;
                             str_vscp_priority.ToULong(&val);
                             VSCPFilter.filter_priority = val;
 
-                            wxString str_vscp_class = subchild->GetAttribute(wxT("class"), wxT("0"));
+                            wxString str_vscp_class = subchild->GetAttribute(_("class"), _("0"));
 
                             val = 0;
                             str_vscp_class.ToULong(&val);
                             VSCPFilter.filter_class = val;
 
-                            wxString str_vscp_type = subchild->GetAttribute(wxT("type"), wxT("0"));
+                            wxString str_vscp_type = subchild->GetAttribute(_("type"), _("0"));
 
                             val = 0;
                             str_vscp_type.ToULong(&val);
                             VSCPFilter.filter_type = val;
 
-                            wxString str_vscp_guid = subchild->GetAttribute(wxT("guid"),
-                                                        wxT("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"));
+                            wxString str_vscp_guid = subchild->GetAttribute(_("guid"),
+                                                        _("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"));
                             vscp_getGuidFromStringToArray(VSCPFilter.filter_GUID, str_vscp_guid);
                         }
-                        else if (subsubchild->GetName() == wxT("mask")) {
+                        else if (subsubchild->GetName() == _("mask")) {
 
                             bMaskPresent = true;
 
-                            wxString str_vscp_priority = subchild->GetAttribute(wxT("priority"), wxT("0"));
+                            wxString str_vscp_priority = subchild->GetAttribute(_("priority"), _("0"));
 
                             val = 0;
                             str_vscp_priority.ToULong(&val);
                             VSCPFilter.mask_priority = val;
 
-                            wxString str_vscp_class = subchild->GetAttribute(wxT("class"), wxT("0"));
+                            wxString str_vscp_class = subchild->GetAttribute(_("class"), _("0"));
 
                             val = 0;
                             str_vscp_class.ToULong(&val);
                             VSCPFilter.mask_class = val;
 
-                            wxString str_vscp_type = subchild->GetAttribute(wxT("type"), wxT("0"));
+                            wxString str_vscp_type = subchild->GetAttribute(_("type"), _("0"));
 
                             val = 0;
                             str_vscp_type.ToULong(&val);
                             VSCPFilter.mask_type = val;
 
-                            wxString str_vscp_guid = subchild->GetAttribute(wxT("guid"),
-                                    wxT("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"));
+                            wxString str_vscp_guid = subchild->GetAttribute(_("guid"),
+                                    _("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"));
                             vscp_getGuidFromStringToArray(VSCPFilter.mask_GUID, str_vscp_guid);
                         }
-                        else if (subsubchild->GetName() == wxT("allowfrom")) {
+                        else if (subsubchild->GetName() == _("allowfrom")) {
                             allowfrom = subsubchild->GetNodeContent();
                         }
-                        else if (subsubchild->GetName() == wxT("allowevent")) {
+                        else if (subsubchild->GetName() == _("allowevent")) {
                             allowevent = subsubchild->GetNodeContent();
                         }
 
@@ -3174,7 +3522,7 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
         }
 
         // Level I driver
-        else if ( ( child->GetName() == wxT("canaldriver") ) || ( child->GetName() == wxT("level1driver") ) ) {
+        else if ( ( child->GetName() == _("canaldriver") ) || ( child->GetName() == _("level1driver") ) ) {
 
             wxXmlNode *subchild = child->GetChildren();
             while (subchild) {
@@ -3187,11 +3535,11 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                 bool bEnabled = false;
                 bool bCanalDriver = false;
 
-                if ( subchild->GetName() == wxT("driver") ) {
+                if ( subchild->GetName() == _("driver") ) {
 
                     wxXmlNode *subsubchild = subchild->GetChildren();
 
-                    wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("false"));
+                    wxString attribute = subchild->GetAttribute(_("enable"), _("false"));
 
                     if ( attribute.IsSameAs( _("true"), false ) ) {
                         bEnabled = true;
@@ -3199,7 +3547,7 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
 
                     while (subsubchild) {
 
-                        if ( subsubchild->GetName() == wxT("name") ) {
+                        if ( subsubchild->GetName() == _("name") ) {
                             strName = subsubchild->GetNodeContent();
                             strName.Trim();
                             strName.Trim(false);
@@ -3211,35 +3559,35 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                             }
                             bCanalDriver = true;
                         }
-                        else if ( subsubchild->GetName() == wxT("config") ||
-                                subsubchild->GetName() == wxT("parameter") ) {
+                        else if ( subsubchild->GetName() == _("config") ||
+                                subsubchild->GetName() == _("parameter") ) {
                             strConfig = subsubchild->GetNodeContent();
                             strConfig.Trim();
                             strConfig.Trim(false);
                         }
-                        else if ( subsubchild->GetName() == wxT("path") ) {
+                        else if ( subsubchild->GetName() == _("path") ) {
                             strPath = subsubchild->GetNodeContent();
                             strPath.Trim();
                             strPath.Trim(false);
                         }
-                        else if ( subsubchild->GetName() == wxT("flags") ) {
+                        else if ( subsubchild->GetName() == _("flags") ) {
                             wxString str = subsubchild->GetNodeContent();
                             flags = vscp_readStringValue(str);
                         }
-                        else if ( subsubchild->GetName() == wxT("guid") ) {
+                        else if ( subsubchild->GetName() == _("guid") ) {
                             guid.getFromString( subsubchild->GetNodeContent() );
                         }
-                        else if ( subsubchild->GetName() == wxT( "known-nodes" ) ) {
+                        else if ( subsubchild->GetName() == _( "known-nodes" ) ) {
 
                             wxXmlNode *subsubsubchild = subchild->GetChildren();
 
                             while ( subsubsubchild ) {
 
-                                if ( subsubsubchild->GetName() == wxT( "node" ) ) {
+                                if ( subsubsubchild->GetName() == _( "node" ) ) {
                                     cguid knownguid;
 
-                                    knownguid.getFromString( subchild->GetAttribute( wxT( "guid" ), wxT( "-" ) ) );
-                                    wxString name = subchild->GetAttribute( wxT( "name" ), wxT( "" )  ) ;
+                                    knownguid.getFromString( subchild->GetAttribute( _( "guid" ), _( "-" ) ) );
+                                    wxString name = subchild->GetAttribute( _( "name" ), _( "" )  ) ;
                                     addKnownNode( knownguid, guid, name );
                                 }
 
@@ -3289,7 +3637,7 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
 
         }
         // Level II driver
-        else if ( ( child->GetName() == wxT("vscpdriver") ) || ( child->GetName() == wxT("level2driver") ) ) {
+        else if ( ( child->GetName() == _("vscpdriver") ) || ( child->GetName() == _("level2driver") ) ) {
 
             wxXmlNode *subchild = child->GetChildren();
 
@@ -3302,11 +3650,11 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                 bool bEnabled = false;
                 bool bLevel2Driver = false;
 
-                if ( subchild->GetName() == wxT("driver") ) {
+                if ( subchild->GetName() == _("driver") ) {
 
                     wxXmlNode *subsubchild = subchild->GetChildren();
 
-                    wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("false"));
+                    wxString attribute = subchild->GetAttribute(_("enable"), _("false"));
 
                     if (attribute.IsSameAs(_("true"), false)) {
                         bEnabled = true;
@@ -3314,7 +3662,7 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
 
                     while ( subsubchild ) {
                         
-                        if (subsubchild->GetName() == wxT("name")) {
+                        if (subsubchild->GetName() == _("name")) {
                             
                             strName = subsubchild->GetNodeContent();
                             strName.Trim();
@@ -3329,35 +3677,35 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                             bLevel2Driver = true;
                             
                         }
-                        else if (subsubchild->GetName() == wxT("config") ||
-                                subsubchild->GetName() == wxT("parameter")) {
+                        else if (subsubchild->GetName() == _("config") ||
+                                subsubchild->GetName() == _("parameter")) {
                             
                             strConfig = subsubchild->GetNodeContent();
                             strConfig.Trim();
                             strConfig.Trim(false);
                             
                         }
-                        else if (subsubchild->GetName() == wxT("path")) {
+                        else if (subsubchild->GetName() == _("path")) {
                             
                             strPath = subsubchild->GetNodeContent();
                             strPath.Trim();
                             strPath.Trim(false);
                             
                         }
-                        else if (subsubchild->GetName() == wxT("guid")) {
+                        else if (subsubchild->GetName() == _("guid")) {
                             guid.getFromString( subsubchild->GetNodeContent() );
                         }
-                        else if ( subsubchild->GetName() == wxT( "known-nodes" ) ) {
+                        else if ( subsubchild->GetName() == _( "known-nodes" ) ) {
 
                             wxXmlNode *subsubsubchild = subchild->GetChildren();
 
                             while ( subsubsubchild ) {
 
-                                if ( subsubsubchild->GetName() == wxT( "node" ) ) {
+                                if ( subsubsubchild->GetName() == _( "node" ) ) {
                                     cguid knownguid;
 
-                                    knownguid.getFromString( subchild->GetAttribute( wxT( "guid" ), wxT( "-" ) ) );
-                                    wxString name = subchild->GetAttribute( wxT( "name" ), wxT( "" ) );
+                                    knownguid.getFromString( subchild->GetAttribute( _( "guid" ), _( "-" ) ) );
+                                    wxString name = subchild->GetAttribute( _( "name" ), _( "" ) );
                                     addKnownNode( knownguid, guid, name );
                                 }
 
@@ -3407,27 +3755,27 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
 
         }
         // Tables
-        else if ( child->GetName() == wxT("tables") ) {
+        else if ( child->GetName() == _("tables") ) {
 
             wxXmlNode *subchild = child->GetChildren();
             while ( subchild ) {
 
-                if ( subchild->GetName() == wxT("table") ) {
+                if ( subchild->GetName() == _("table") ) {
                     
                     // Check if enabled
-                    wxString strEnabled = subchild->GetAttribute( wxT("enable"), wxT("true") );
+                    wxString strEnabled = subchild->GetAttribute( _("enable"), _("true") );
                     strEnabled.MakeUpper();
                     if ( wxNOT_FOUND != strEnabled.Find( _("FALSE") ) ) {
                         goto xml_table_error;
                     }
 
                     // Get name of table
-                    wxString name = subchild->GetAttribute( wxT("name"), wxT("") );;
+                    wxString name = subchild->GetAttribute( _("name"), _("") );;
                     
                     // Get type of table
                     vscpTableType type = VSCP_TABLE_DYNAMIC;
                     int size = 0;
-                    wxString attribute = subchild->GetAttribute( wxT("type"), wxT("0") );
+                    wxString attribute = subchild->GetAttribute( _("type"), _("0") );
                     attribute.MakeUpper();
                     if ( wxNOT_FOUND  != attribute.Find(_("DYNAMIC") ) ) {
                         type = VSCP_TABLE_DYNAMIC;
@@ -3437,7 +3785,7 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                         type = VSCP_TABLE_STATIC;
                         
                         // Get size
-                        size = vscp_readStringValue( subchild->GetAttribute( wxT("size"), wxT("0") ) );
+                        size = vscp_readStringValue( subchild->GetAttribute( _("size"), _("0") ) );
                         
                     }
                     else {                       
@@ -3448,7 +3796,7 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                     
                     // Should it be created in memory?
                     bool bMemory = false;
-                    wxString strInMemory = subchild->GetAttribute( wxT("bmemory"), wxT("false") );
+                    wxString strInMemory = subchild->GetAttribute( _("bmemory"), _("false") );
                     strInMemory.MakeUpper();
                     if ( wxNOT_FOUND != strInMemory.Find( _("TRUE") ) ) {
                         bMemory = true;
@@ -3457,27 +3805,27 @@ bool CControlObject::readXMLConfiguration( wxString& strcfgfile )
                     CVSCPTable *pTable = new CVSCPTable( m_rootFolder + _("table/"), name, true, bMemory, type, size );
                     if ( NULL != pTable ) {
                         
-                        if ( !pTable->setTableInfo( subchild->GetAttribute( wxT("owner"), wxT("admin") ),
-                                                vscp_readStringValue( subchild->GetAttribute( wxT("rights"), wxT("0x700") ) ),
-                                                subchild->GetAttribute( wxT("title"), wxT("") ),
-                                                subchild->GetAttribute( wxT("labelx"), wxT("") ),
-                                                subchild->GetAttribute( wxT("labely"), wxT("") ),
-                                                subchild->GetAttribute( wxT("note"), wxT("") ),
-                                                subchild->GetAttribute( wxT("sqlcreate"), wxT("") ),
-                                                subchild->GetAttribute( wxT("sqlinsert"), wxT("") ),
-                                                subchild->GetAttribute( wxT("sqldelete"), wxT("") ),
-                                                subchild->GetAttribute( wxT("description"), wxT("") ) ) ) {
+                        if ( !pTable->setTableInfo( subchild->GetAttribute( _("owner"), _("admin") ),
+                                                vscp_readStringValue( subchild->GetAttribute( _("rights"), _("0x700") ) ),
+                                                subchild->GetAttribute( _("title"), _("") ),
+                                                subchild->GetAttribute( _("labelx"), _("") ),
+                                                subchild->GetAttribute( _("labely"), _("") ),
+                                                subchild->GetAttribute( _("note"), _("") ),
+                                                subchild->GetAttribute( _("sqlcreate"), _("") ),
+                                                subchild->GetAttribute( _("sqlinsert"), _("") ),
+                                                subchild->GetAttribute( _("sqldelete"), _("") ),
+                                                subchild->GetAttribute( _("description"), _("") ) ) ) {
                             logMsg(_("Reading table xml info: Could not set table info!\n"));
                             delete pTable;
                             goto xml_table_error;
                         }
                         
-                        pTable->setTableEventInfo( vscp_readStringValue( subchild->GetAttribute( wxT("vscpclass"), wxT("0") ) ),
-                                vscp_readStringValue( subchild->GetAttribute( wxT("vscptype"), wxT("0") ) ),
-                                vscp_readStringValue( subchild->GetAttribute( wxT("vscpsensorindex"), wxT("0") ) ),
-                                vscp_readStringValue( subchild->GetAttribute( wxT("vscpunit"), wxT("0") ) ),
-                                vscp_readStringValue( subchild->GetAttribute( wxT("vscpzone"), wxT("255") ) ),
-                                vscp_readStringValue( subchild->GetAttribute( wxT("vscpsubzone"), wxT("255") ) )
+                        pTable->setTableEventInfo( vscp_readStringValue( subchild->GetAttribute( _("vscpclass"), _("0") ) ),
+                                vscp_readStringValue( subchild->GetAttribute( _("vscptype"), _("0") ) ),
+                                vscp_readStringValue( subchild->GetAttribute( _("vscpsensorindex"), _("0") ) ),
+                                vscp_readStringValue( subchild->GetAttribute( _("vscpunit"), _("0") ) ),
+                                vscp_readStringValue( subchild->GetAttribute( _("vscpzone"), _("255") ) ),
+                                vscp_readStringValue( subchild->GetAttribute( _("vscpsubzone"), _("255") ) )
                         );
                         
                         if ( !m_userTableObjects.addTable( pTable ) ) {
@@ -3508,9 +3856,9 @@ xml_table_error:
             } // while
 
         }
-        else if ( child->GetName() == wxT("automation") ) {
+        else if ( child->GetName() == _("automation") ) {
 
-            wxString attribut = child->GetAttribute(wxT("enable"), wxT("true"));
+            wxString attribut = child->GetAttribute(_("enable"), _("true"));
             attribut.MakeLower();
             if (attribut.IsSameAs(_("false"), false)) {
                 m_automation.disableAutomation();
@@ -3522,7 +3870,7 @@ xml_table_error:
             wxXmlNode *subchild = child->GetChildren();
             while (subchild) {
 
-                if (subchild->GetName() == wxT("zone")) {
+                if (subchild->GetName() == _("zone")) {
                     
                     long zone;
                     wxString strZone = subchild->GetNodeContent();
@@ -3530,7 +3878,7 @@ xml_table_error:
                     m_automation.setZone( zone );
             
                 }
-                else if (subchild->GetName() == wxT("sub-zone")) {
+                else if (subchild->GetName() == _("sub-zone")) {
                     
                     long subzone;
                     wxString strSubZone = subchild->GetNodeContent();
@@ -3538,7 +3886,7 @@ xml_table_error:
                     m_automation.setSubzone( subzone );
                     
                 }
-                else if (subchild->GetName() == wxT("longitude")) {
+                else if (subchild->GetName() == _("longitude")) {
                     
                     wxString strLongitude = subchild->GetNodeContent();
                     double d;
@@ -3546,7 +3894,7 @@ xml_table_error:
                     m_automation.setLongitude( d );
 
                 }
-                else if (subchild->GetName() == wxT("latitude")) {
+                else if (subchild->GetName() == _("latitude")) {
                     
                     wxString strLatitude = subchild->GetNodeContent();
                     double d;
@@ -3554,10 +3902,10 @@ xml_table_error:
                     m_automation.setLatitude( d );
                     
                 }
-                else if (subchild->GetName() == wxT("sunrise")) {
+                else if (subchild->GetName() == _("sunrise")) {
                     
                     m_automation.enableSunRiseEvent();
-                    wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("true"));
+                    wxString attribute = subchild->GetAttribute(_("enable"), _("true"));
                     if (attribute.IsSameAs(_("false"), false)) {
                         m_automation.disableSunRiseEvent();
                     }
@@ -3565,75 +3913,75 @@ xml_table_error:
                     
                 }
                 
-                else if (subchild->GetName() == wxT("sunrise-twilight")) {
+                else if (subchild->GetName() == _("sunrise-twilight")) {
                     
                     m_automation.enableSunRiseTwilightEvent();
-                    wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("true"));
+                    wxString attribute = subchild->GetAttribute(_("enable"), _("true"));
                     if (attribute.IsSameAs(_("false"), false)) {
                         m_automation.disableSunRiseTwilightEvent();
                     }
 
                     
                 }
-                else if (subchild->GetName() == wxT("sunset")) {
+                else if (subchild->GetName() == _("sunset")) {
                     
                     m_automation.enableSunSetEvent();
-                    wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("true"));
+                    wxString attribute = subchild->GetAttribute(_("enable"), _("true"));
                     if (attribute.IsSameAs(_("false"), false)) {
                         m_automation.disableSunSetEvent();
                     }
                     
                 }
-                else if (subchild->GetName() == wxT("sunset-twilight")) {
+                else if (subchild->GetName() == _("sunset-twilight")) {
                     
                     m_automation.enableSunSetTwilightEvent();
-                    wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("true"));
+                    wxString attribute = subchild->GetAttribute(_("enable"), _("true"));
                     if (attribute.IsSameAs(_("false"), false)) {
                         m_automation.disableSunSetTwilightEvent();
                     }
                     
                 }
-                else if (subchild->GetName() == wxT("segmentcontrol-event")) {
+                else if (subchild->GetName() == _("segmentcontrol-event")) {
                     
                     m_automation.enableSegmentControllerHeartbeat();
-                    wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("true"));
+                    wxString attribute = subchild->GetAttribute(_("enable"), _("true"));
                     if (attribute.IsSameAs(_("false"), false)) {
                         m_automation.disableSegmentControllerHeartbeat();
                     }
 
-                    attribute = subchild->GetAttribute(wxT("interval"), wxT("60"));
+                    attribute = subchild->GetAttribute(_("interval"), _("60"));
                     long interval;
                     attribute.ToLong( &interval );
                     m_automation.setSegmentControllerHeartbeatInterval( interval );
                     
                 }
-                else if (subchild->GetName() == wxT("heartbeat-event")) {
+                else if (subchild->GetName() == _("heartbeat-event")) {
                     
                     m_automation.enableHeartbeatEvent();
                     m_automation.setHeartbeatEventInterval( 30 );
 
-                    wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("true"));
+                    wxString attribute = subchild->GetAttribute(_("enable"), _("true"));
                     if (attribute.IsSameAs(_("false"), false)) {
                         m_automation.disableHeartbeatEvent();
                     }
 
-                    attribute = subchild->GetAttribute(wxT("interval"), wxT("30"));
+                    attribute = subchild->GetAttribute(_("interval"), _("30"));
                     long interval;
                     attribute.ToLong( &interval );
                     m_automation.setHeartbeatEventInterval( interval );
                     
                 }
-                else if (subchild->GetName() == wxT("capabilities-event")) {
+                else if (subchild->GetName() == _("capabilities-event")) {
                     
                     m_automation.enableCapabilitiesEvent();
                     m_automation.setCapabilitiesEventInterval( 60 );
 
-                    wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("true"));
+                    wxString attribute = subchild->GetAttribute(_("enable"), _("true"));
                     if (attribute.IsSameAs(_("false"), false)) {
                         m_automation.disableCapabilitiesEvent();
                     }
 
-                    attribute = subchild->GetAttribute(wxT("interval"), wxT("30"));
+                    attribute = subchild->GetAttribute(_("interval"), _("30"));
                     long interval;
                     attribute.ToLong( &interval );
                     m_automation.setHeartbeatEventInterval( interval );
@@ -3741,6 +4089,9 @@ bool CControlObject::doCreateConfigurationTable( void )
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_TCPIP_ADDR, VSCPDB_CONFIG_DEFAULT_TCPIP_ADDR );
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_ANNOUNCE_ADDR, VSCPDB_CONFIG_DEFAULT_ANNOUNCE_ADDR );
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_ANNOUNCE_TTL, VSCPDB_CONFIG_DEFAULT_ANNOUNCE_TTL );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_PATH_DB_DATA, VSCPDB_CONFIG_DEFAULT_PATH_DB_DATA );
+    
+    // UDP
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_UDP_ENABLE, VSCPDB_CONFIG_DEFAULT_UDP_ENABLE );
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_UDP_ADDR, VSCPDB_CONFIG_DEFAULT_UDP_ADDR );
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_UDP_USER, VSCPDB_CONFIG_DEFAULT_UDP_USER );
@@ -3749,29 +4100,78 @@ bool CControlObject::doCreateConfigurationTable( void )
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_UDP_FILTER, VSCPDB_CONFIG_DEFAULT_UDP_FILTER );
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_UDP_MASK, VSCPDB_CONFIG_DEFAULT_UDP_MASK );
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_UDP_GUID, VSCPDB_CONFIG_DEFAULT_UDP_GUID );
-    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_UDP_ACK_ENABLE, VSCPDB_CONFIG_DEFAULT_UDP_ACK_ENABLE );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_UDP_ACK_ENABLE, VSCPDB_CONFIG_DEFAULT_UDP_ACK_ENABLE );    
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_MULTICAST_ENABLE, VSCPDB_CONFIG_DEFAULT_MULTICAST_ENABLE );
+    
+    // DM
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_DM_PATH_DB, VSCPDB_CONFIG_DEFAULT_DM_PATH_DB );
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_DM_PATH_XML, VSCPDB_CONFIG_DEFAULT_DM_PATH_XML );
+    
+    // Variables
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_VARIABLES_PATH_DB, VSCPDB_CONFIG_DEFAULT_VARIABLES_PATH_DB );
-    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_VARIABLES_PATH_XML, VSCPDB_CONFIG_DEFAULT_VARIABLES_PATH_XML );
-    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_PATH_DB_DATA, VSCPDB_CONFIG_DEFAULT_PATH_DB_DATA );
-    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_PATH_ROOT, VSCPDB_CONFIG_DEFAULT_WEB_PATH_ROOT );
-    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_ADDR, VSCPDB_CONFIG_DEFAULT_WEB_ADDR );
-    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_PATH_CERT, VSCPDB_CONFIG_DEFAULT_WEB_PATH_CERT );
-    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_AUTHDOMAIN, VSCPDB_CONFIG_DEFAULT_WEB_AUTHDOMAIN );
-    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_CGI_INTERPRETER, VSCPDB_CONFIG_DEFAULT_WEB_CGI_INTERPRETER );
-    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_CGI_PATTERN, VSCPDB_CONFIG_DEFAULT_WEB_CGI_PATTERN );
-    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_DIR_LISTING, VSCPDB_CONFIG_DEFAULT_WEB_DIR_LISTING );
-    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_HIDE_FILE_PATTERN, VSCPDB_CONFIG_DEFAULT_WEB_HIDE_FILE_PATTERN );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_VARIABLES_PATH_XML, VSCPDB_CONFIG_DEFAULT_VARIABLES_PATH_XML );    
+    
+    // WEB server
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_ENABLE, VSCPDB_CONFIG_DEFAULT_WEB_ENABLE );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_DOCUMENT_ROOT , VSCPDB_CONFIG_DEFAULT_WEB_DOCUMENT_ROOT );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_LISTENING_PORTS, VSCPDB_CONFIG_DEFAULT_WEB_LISTENING_PORTS );
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_INDEX_FILES, VSCPDB_CONFIG_DEFAULT_WEB_INDEX_FILES );
-    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_MIME_EXTRA, VSCPDB_CONFIG_DEFAULT_WEB_MIME_EXTRA );
-    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_URL_REWRITE, VSCPDB_CONFIG_DEFAULT_WEB_URL_REWRITE );
-    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_SSI_PATTERN, VSCPDB_CONFIG_DEFAULT_WEB_SSI_PATTERN );
-    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_DIR_AUTHFILE, VSCPDB_CONFIG_DEFAULT_WEB_DIR_AUTHFILE );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_AUTHENTICATION_DOMAIN, VSCPDB_CONFIG_DEFAULT_WEB_AUTHENTICATION_DOMAIN );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_ENABLE_AUTH_DOMAIN_CHECK, VSCPDB_CONFIG_DEFAULT_WEB_ENABLE_AUTH_DOMAIN_CHECK );    
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_SSL_CERTIFICAT, VSCPDB_CONFIG_DEFAULT_WEB_SSL_CERTIFICAT );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_SSL_CERTIFICAT_CHAIN, VSCPDB_CONFIG_DEFAULT_WEB_SSL_CERTIFICAT_CHAIN );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_SSL_VERIFY_PEER, VSCPDB_CONFIG_DEFAULT_WEB_SSL_VERIFY_PEER );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_SSL_CA_PATH, VSCPDB_CONFIG_DEFAULT_WEB_SSL_CA_PATH );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_SSL_CA_FILE, VSCPDB_CONFIG_DEFAULT_WEB_SSL_CA_FILE );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_SSL_VERIFY_DEPTH, VSCPDB_CONFIG_DEFAULT_WEB_SSL_VERIFY_DEPTH );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_SSL_DEFAULT_VERIFY_PATHS, VSCPDB_CONFIG_DEFAULT_WEB_SSL_DEFAULT_VERIFY_PATHS );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_SSL_CHIPHER_LIST, VSCPDB_CONFIG_DEFAULT_WEB_SSL_CHIPHER_LIST );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_SSL_PROTOCOL_VERSION, VSCPDB_CONFIG_DEFAULT_WEB_SSL_PROTOCOL_VERSION );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_SSL_SHORT_TRUST, VSCPDB_CONFIG_DEFAULT_WEB_SSL_SHORT_TRUST );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_CGI_PATTERNS, VSCPDB_CONFIG_DEFAULT_WEB_CGI_PATTERNS );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_CGI_INTERPRETER, VSCPDB_CONFIG_DEFAULT_WEB_CGI_INTERPRETER );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_CGI_ENVIRONMENT, VSCPDB_CONFIG_DEFAULT_WEB_CGI_ENVIRONMENT );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_PROTECT_URI, VSCPDB_CONFIG_DEFAULT_WEB_PROTECT_URI );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_TROTTLE, VSCPDB_CONFIG_DEFAULT_WEB_TROTTLE );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_ENABLE_DIRECTORY_LISTING, VSCPDB_CONFIG_DEFAULT_WEB_ENABLE_DIRECTORY_LISTING );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_ENABLE_KEEP_ALIVE, VSCPDB_CONFIG_DEFAULT_WEB_ENABLE_KEEP_ALIVE );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_LIST, VSCPDB_CONFIG_DEFAULT_WEB_ACCESS_CONTROL_LIST );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_MIME_TYPES, VSCPDB_CONFIG_DEFAULT_WEB_MIME_TYPES );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_NUM_THREADS, VSCPDB_CONFIG_DEFAULT_WEB_NUM_THREADS );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_HIDE_FILE_PATTERNS, VSCPDB_CONFIG_DEFAULT_WEB_HIDE_FILE_PATTERNS );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_RUN_AS_USER, VSCPDB_CONFIG_DEFAULT_WEB_RUN_AS_USER );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_URL_REWRITE_PATTERNS, VSCPDB_CONFIG_DEFAULT_WEB_URL_REWRITE_PATTERNS );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_REQUEST_TIMEOUT_MS, VSCPDB_CONFIG_DEFAULT_WEB_REQUEST_TIMEOUT_MS );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_LINGER_TIMEOUT_MS, VSCPDB_CONFIG_DEFAULT_WEB_LINGER_TIMEOUT_MS );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_DECODE_URL, VSCPDB_CONFIG_DEFAULT_WEB_DECODE_URL );
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_GLOBAL_AUTHFILE, VSCPDB_CONFIG_DEFAULT_WEB_GLOBAL_AUTHFILE );
-    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_IP_ACL, VSCPDB_CONFIG_DEFAULT_WEB_IP_ACL );
-    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_ROOT_DAV, VSCPDB_CONFIG_DEFAULT_WEB_ROOT_DAV );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_PER_DIRECTORY_AUTH_FILE, VSCPDB_CONFIG_DEFAULT_WEB_PER_DIRECTORY_AUTH_FILE );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_SSI_PATTERNS, VSCPDB_CONFIG_DEFAULT_WEB_SSI_PATTERNS ); 
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_ALLOW_ORIGIN, VSCPDB_CONFIG_DEFAULT_WEB_ACCESS_CONTROL_ALLOW_ORIGIN );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_ALLOW_METHODS, VSCPDB_CONFIG_DEFAULT_WEB_ACCESS_CONTROL_ALLOW_METHODS );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_ALLOW_HEADERS, VSCPDB_CONFIG_DEFAULT_WEB_ACCESS_CONTROL_ALLOW_HEADERS );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_ERROR_PAGES, VSCPDB_CONFIG_DEFAULT_WEB_ERROR_PAGES );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_TCP_NO_DELAY, VSCPDB_CONFIG_DEFAULT_WEB_TCP_NO_DELAY );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_STATIC_FILE_MAX_AGE, VSCPDB_CONFIG_DEFAULT_WEB_STATIC_FILE_MAX_AGE );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_STRICT_TRANSPORT_SECURITY_MAX_AGE, VSCPDB_CONFIG_DEFAULT_WEB_STRICT_TRANSPORT_SECURITY_MAX_AGE );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_SENDFILE_CALL, VSCPDB_CONFIG_DEFAULT_WEB_SENDFILE_CALL );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_ADDITIONAL_HEADERS, VSCPDB_CONFIG_DEFAULT_WEB_ADDITIONAL_HEADERS );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_MAX_REQUEST_SIZE, VSCPDB_CONFIG_DEFAULT_WEB_MAX_REQUEST_SIZE );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_ALLOW_INDEX_SCRIPT_RESOURCE, VSCPDB_CONFIG_DEFAULT_WEB_ALLOW_INDEX_SCRIPT_RESOURCE );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_DUKTAPE_SCRIPT_PATTERNS, VSCPDB_CONFIG_DEFAULT_WEB_DUKTAPE_SCRIPT_PATTERNS );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_LUA_PRELOAD_FILE, VSCPDB_CONFIG_DEFAULT_WEB_LUA_PRELOAD_FILE );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_LUA_SCRIPT_PATTERNS, VSCPDB_CONFIG_DEFAULT_WEB_LUA_SCRIPT_PATTERNS );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_LUA_SERVER_PAGE_PATTERNS, VSCPDB_CONFIG_DEFAULT_WEB_LUA_SERVER_PAGE_PATTERNS );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_LUA_WEBSOCKET_PATTERNS, VSCPDB_CONFIG_DEFAULT_WEB_LUA_WEBSOCKET_PATTERNS );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_LUA_BACKGROUND_SCRIPT, VSCPDB_CONFIG_DEFAULT_WEB_LUA_BACKGROUND_SCRIPT );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_LUA_BACKGROUND_SCRIPT_PARAMS, VSCPDB_CONFIG_DEFAULT_WEB_LUA_BACKGROUND_SCRIPT_PARAMS );
+
+    // Websockets
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEBSOCKET_ENABLE, VSCPDB_CONFIG_DEFAULT_WEBSOCKET_ENABLE );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEBSOCKET_DOCUMENT_ROOT, VSCPDB_CONFIG_DEFAULT_WEBSOCKET_DOCUMENT_ROOT );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEBSOCKET_TIMEOUT_MS, VSCPDB_CONFIG_DEFAULT_WEBSOCKET_TIMEOUT_MS );
+    
+    // Automation
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_AUTOMATION_ENABLE, VSCPDB_CONFIG_DEFAULT_AUTOMATION_ENABLE );
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_AUTOMATION_ZONE, VSCPDB_CONFIG_DEFAULT_AUTOMATION_ZONE );
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_AUTOMATION_SUBZONE, VSCPDB_CONFIG_DEFAULT_AUTOMATION_SUBZONE );
@@ -3794,7 +4194,7 @@ bool CControlObject::doCreateConfigurationTable( void )
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// dbReadConfiguration
+// readConfigurationDB
 //
 // Read the configuration database record
 //
@@ -3802,7 +4202,7 @@ bool CControlObject::doCreateConfigurationTable( void )
 // is not activated yet.
 //
 
-bool CControlObject::dbReadConfiguration( void ) 
+bool CControlObject::readConfigurationDB( void ) 
 {
     char *pErrMsg = 0;
     const char *psql = VSCPDB_CONFIG_FIND_ALL;
@@ -3980,118 +4380,421 @@ bool CControlObject::dbReadConfiguration( void )
                         VSCPDB_CONFIG_NAME_PATH_DB_DATA )  ) {
             m_path_db_vscp_data.Assign( wxString::FromUTF8( (const char *)pValue ) );
         }
-        // Web server root path
+        
+        
+        // * * * WEB server * * *
+        
+        
+        // Web server enable
         else if ( !vscp_strcasecmp( (const char * )pName, 
-                        VSCPDB_CONFIG_NAME_WEB_PATH_ROOT )  ) {
-            strncpy( m_pathWebRoot, 
-                            (const char *)pValue, 
-                            MIN( strlen( (const char *)pValue ), MG_MAX_PATH ) );
-        }        
-        // Port for web server
-        else if ( !vscp_strcasecmp( (const char * )pName, VSCPDB_CONFIG_NAME_WEB_ADDR )  ) {
-            m_strWebServerInterfaceAddress = wxString::FromUTF8( (const char *)pValue );
-        }
-        // Path to cert file
-        else if ( !vscp_strcasecmp( (const char * )pName, 
-                        VSCPDB_CONFIG_NAME_WEB_PATH_CERT )  ) {
-            strncpy( m_pathCert, 
-                        (const char *)pValue, 
-                        MIN( strlen( (const char *)pValue ), MG_MAX_PATH ) );
-        }
-        // Authdomain
-        else if ( !vscp_strcasecmp( (const char * )pName, 
-                        VSCPDB_CONFIG_NAME_WEB_AUTHDOMAIN )  ) {
-            strncpy( m_authDomain, 
-                        (const char *)pValue, 
-                        MIN( strlen( (const char *)pValue ), MG_MAX_PATH ) );
-        } 
-        // CGI interpreter
-        else if ( !vscp_strcasecmp( (const char * )pName, 
-                        VSCPDB_CONFIG_NAME_WEB_CGI_INTERPRETER )  ) {
-            strncpy( m_cgiInterpreter, 
-                        (const char *)pValue, 
-                        MIN( strlen( (const char *)pValue ), MG_MAX_PATH ) );
-        }        
-        // CGI pattern
-        else if ( !vscp_strcasecmp( (const char * )pName, 
-                        VSCPDB_CONFIG_NAME_WEB_CGI_PATTERN )  ) {
-            strncpy( m_cgiPattern, 
-                        (const char *)pValue, 
-                        MIN( strlen( (const char *)pValue ), MG_MAX_PATH ) );
-        }        
-        // Enable directory listings
-        else if ( !vscp_strcasecmp( (const char * )pName, 
-                        VSCPDB_CONFIG_NAME_WEB_DIR_LISTING )  ) {
+                        VSCPDB_CONFIG_NAME_WEB_ENABLE )  ) {
             if ( atoi( (const char *)pValue ) ) {
-                strcpy( m_EnableDirectoryListings, "yes" );
+                m_web_bEnable = true;
             }
             else {
-                strcpy( m_EnableDirectoryListings, "no" );
+                m_web_bEnable = false;
             }
         }
-        // Hide file patterns
+        
+        // Web server document root
         else if ( !vscp_strcasecmp( (const char * )pName, 
-                        VSCPDB_CONFIG_NAME_WEB_HIDE_FILE_PATTERN )  ) {
-            strncpy( m_hideFilePatterns, 
-                        (const char *)pValue, 
-                        MIN( strlen( (const char *)pValue ), MG_MAX_PATH ) );
+                        VSCPDB_CONFIG_NAME_WEB_DOCUMENT_ROOT )  ) {
+            m_web_document_root = wxString::FromUTF8( (const char *)pValue );
+        }        
+        
+        // listening ports for web server
+        else if ( !vscp_strcasecmp( (const char * )pName, VSCPDB_CONFIG_NAME_WEB_LISTENING_PORTS )  ) {
+            m_web_listening_ports = wxString::FromUTF8( (const char *)pValue );
         }
+        
         // Index files
         else if ( !vscp_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_WEB_INDEX_FILES )  ) {
-            strncpy( m_indexFiles, 
-                        (const char *)pValue, 
-                        MIN( strlen( (const char *)pValue ), MG_MAX_PATH ) );
+            m_web_index_files = wxString::FromUTF8( (const char *)pValue );
         }
+        
+        // Authdomain
+        else if ( !vscp_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_WEB_AUTHENTICATION_DOMAIN )  ) {
+            m_web_authentication_domain = wxString::FromUTF8( (const char *)pValue );
+        }
+        
+        // Enable authdomain check
+        else if ( !vscp_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_WEB_ENABLE_AUTH_DOMAIN_CHECK )  ) {
+            if ( atoi( (const char *)pValue ) ) {
+                m_enable_auth_domain_check = true;
+            }
+            else {
+                m_enable_auth_domain_check = false;
+            }
+        }
+        
+        // Path to cert file
+        else if ( !vscp_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_WEB_CGI_PATTERNS )  ) {
+            m_web_ssl_certificate = wxString::FromUTF8( (const char *)pValue );
+        }
+        
+        // SSL certificate chain
+        else if ( !vscp_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_WEB_SSL_CERTIFICAT_CHAIN )  ) {
+            m_web_ssl_certificate_chain = wxString::FromUTF8( (const char *)pValue );
+        }
+        
+        // SSL verify peer
+        else if ( !vscp_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_WEB_SSL_VERIFY_PEER )  ) {
+            if ( atoi( (const char *)pValue ) ) {
+                m_web_ssl_verify_peer = true;
+            }
+            else {
+                m_web_ssl_verify_peer = false;
+            }
+        } 
+        
+        // SSL CA path
+        else if ( !vscp_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_WEB_SSL_CA_FILE )  ) {
+            m_web_ssl_ca_path = wxString::FromUTF8( (const char *)pValue );
+        }
+        
+        // SSL CA file
+        else if ( !vscp_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_WEB_SSL_CA_FILE )  ) {
+            m_web_ssl_ca_file = wxString::FromUTF8( (const char *)pValue );
+        }
+        
+        // SSL verify depth
+        else if ( !vscp_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_WEB_SSL_VERIFY_DEPTH )  ) {
+            m_web_ssl_verify_depth = atoi( (const char *)pValue );
+        }
+        
+        // SSL default verify path
+        else if ( !vscp_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_WEB_SSL_DEFAULT_VERIFY_PATHS )  ) {
+            if ( atoi( (const char *)pValue ) ) {
+                m_web_ssl_default_verify_paths = true;
+            }
+            else {
+                m_web_ssl_default_verify_paths = false;
+            }
+        }
+        
+        // SSL chipher list
+        else if ( !vscp_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_WEB_SSL_CHIPHER_LIST )  ) {
+            m_web_ssl_cipher_list = wxString::FromUTF8( (const char *)pValue );
+        }
+        
+        // SSL protocol version
+        else if ( !vscp_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_WEB_SSL_PROTOCOL_VERSION )  ) {
+            m_web_ssl_protocol_version = atoi( (const char *)pValue );
+        }
+         
+        // SSL short trust
+        else if ( !vscp_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_WEB_SSL_SHORT_TRUST )  ) {
+            if ( atoi( (const char *)pValue ) ) {
+                m_web_ssl_short_trust = true;
+            }
+            else {
+                m_web_ssl_short_trust = false;
+            }
+        } 
+        
+        // CGI interpreter
+        else if ( !vscp_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_WEB_CGI_INTERPRETER )  ) {
+            m_web_cgi_interpreter = wxString::FromUTF8( (const char *)pValue );
+        }     
+        
+        // CGI pattern
+        else if ( !vscp_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_WEB_CGI_PATTERNS )  ) {
+            m_web_cgi_patterns = wxString::FromUTF8( (const char *)pValue );
+        } 
+        
+        // CGI environment
+        else if ( !vscp_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_WEB_CGI_ENVIRONMENT )  ) {
+            m_web_cgi_environment = wxString::FromUTF8( (const char *)pValue );
+        }
+        
+        // Protect URI
+        else if ( !vscp_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_WEB_PROTECT_URI )  ) {
+            m_web_protect_uri = wxString::FromUTF8( (const char *)pValue );
+        }
+        
+        // Web trottle
+        else if ( !vscp_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_WEB_TROTTLE )  ) {
+            m_web_trottle = wxString::FromUTF8( (const char *)pValue );
+        }
+        
+        // Enable directory listings
+        else if ( !vscp_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_WEB_ENABLE_DIRECTORY_LISTING )  ) {
+            if ( atoi( (const char *)pValue ) ) {
+                m_web_enable_directory_listing = true;
+            }
+            else {
+                m_web_enable_directory_listing = false;
+            }
+        }
+        
+        // Enable keep alive
+        else if ( !vscp_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_WEB_ENABLE_KEEP_ALIVE )  ) {
+            if ( atoi( (const char *)pValue ) ) {
+                m_web_enable_keep_alive = true;
+            }
+            else {
+                m_web_enable_keep_alive = false;
+            }
+        }
+        
+        // Keep alive timout ms
+        else if ( !vscp_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_WEB_KEEP_ALIVE_TIMEOUT_MS )  ) {
+            m_web_keep_alive_timeout_ms = atol( (const char *)pValue );
+        }
+        
+        // IP ACL
+        else if ( !vscp_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_LIST )  ) {
+            m_web_access_control_list = wxString::FromUTF8( (const char *)pValue );
+        } 
+        
         // Extra mime types
         else if ( !vscp_strcasecmp( (const char * )pName, 
-                        VSCPDB_CONFIG_NAME_WEB_MIME_EXTRA )  ) {
-            strncpy( m_extraMimeTypes, 
-                        (const char *)pValue, 
-                        MIN( strlen( (const char *)pValue ), MG_MAX_PATH ) );
-        }        
+                        VSCPDB_CONFIG_NAME_WEB_MIME_TYPES )  ) {
+            m_web_extra_mime_types = wxString::FromUTF8( (const char *)pValue );
+        } 
+        
+        // Number of threads
+        else if ( !vscp_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_WEB_NUM_THREADS )  ) {
+            m_web_num_threads = atoi( (const char *)pValue );
+        }
+        
+        // Hide file patterns
+        else if ( !vscp_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_WEB_HIDE_FILE_PATTERNS )  ) {
+            m_web_hide_file_patterns = wxString::FromUTF8( (const char *)pValue );
+        }
+        
+        // Run as user
+        else if ( !vscp_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_WEB_RUN_AS_USER )  ) {
+            m_web_run_as_user = wxString::FromUTF8( (const char *)pValue );
+        } 
+               
         // URL rewrites
         else if ( !vscp_strcasecmp( (const char * )pName, 
-                        VSCPDB_CONFIG_NAME_WEB_URL_REWRITE )  ) {
-            strncpy( m_urlRewrites, 
-                        (const char *)pValue, 
-                        MIN( strlen( (const char *)pValue ), MG_MAX_PATH ) );
-        }        
-        // SSI patterns
+                        VSCPDB_CONFIG_NAME_WEB_URL_REWRITE_PATTERNS )  ) {
+            m_web_url_rewrite_patterns = wxString::FromUTF8( (const char *)pValue );
+        }  
+        
+        // Hide file patterns
         else if ( !vscp_strcasecmp( (const char * )pName, 
-                        VSCPDB_CONFIG_NAME_WEB_SSI_PATTERN )  ) {
-            strncpy( m_ssi_pattern, 
-                        (const char *)pValue, 
-                        MIN( strlen( (const char *)pValue ), MG_MAX_PATH ) );
-        }        
-        // Per directory auth. file
+                        VSCPDB_CONFIG_NAME_WEB_HIDE_FILE_PATTERNS )  ) {
+            m_web_hide_file_patterns = wxString::FromUTF8( (const char *)pValue );
+        }
+        
+        // web request timout
         else if ( !vscp_strcasecmp( (const char * )pName, 
-                        VSCPDB_CONFIG_NAME_WEB_DIR_AUTHFILE )  ) {
-            strncpy( m_per_directory_auth_file, 
-                        (const char *)pValue, 
-                        MIN( strlen( (const char *)pValue ), MG_MAX_PATH ) );
-        }     
+                        VSCPDB_CONFIG_NAME_WEB_REQUEST_TIMEOUT_MS )  ) {
+            m_web_request_timeout_ms = atol( (const char *)pValue );
+        } 
+        
+        // web linger timout
+        else if ( !vscp_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_WEB_LINGER_TIMEOUT_MS )  ) {
+            m_web_linger_timeout_ms = atol( (const char *)pValue );
+        } 
+        
+        // Decode URL
+        else if ( !vscp_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_WEB_DECODE_URL )  ) {
+            if ( atoi( (const char *)pValue ) ) {
+                m_web_decode_url = true;
+            }
+            else {
+                m_web_decode_url = false;
+            }
+        }
+        
         // Global auth. file
         else if ( !vscp_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_WEB_GLOBAL_AUTHFILE )  ) {
-            strncpy( m_global_auth_file, 
-                        (const char *)pValue, 
-                        MIN( strlen( (const char *)pValue ), MG_MAX_PATH ) );
+            m_web_global_auth_file = wxString::FromUTF8( (const char *)pValue );
         }
-        // IP ACL
+        
+        // Per directory auth. file
         else if ( !vscp_strcasecmp( (const char * )pName, 
-                        VSCPDB_CONFIG_NAME_WEB_IP_ACL )  ) {
-            strncpy( m_ip_acl, 
-                        (const char *)pValue, 
-                        MIN( strlen( (const char *)pValue ), MG_MAX_PATH ) );
-        }        
-        // DAV path
+                        VSCPDB_CONFIG_NAME_WEB_PER_DIRECTORY_AUTH_FILE )  ) {
+            m_web_per_directory_auth_file = wxString::FromUTF8( (const char *)pValue );
+        }
+        
+        // SSI patterns
         else if ( !vscp_strcasecmp( (const char * )pName, 
-                        VSCPDB_CONFIG_NAME_WEB_ROOT_DAV )  ) {
-            strncpy( m_dav_document_root, 
-                        (const char *)pValue, 
-                        MIN( strlen( (const char *)pValue ), MG_MAX_PATH ) );
-        }        
+                        VSCPDB_CONFIG_NAME_WEB_SSI_PATTERNS )  ) {
+            m_web_ssi_patterns = wxString::FromUTF8( (const char *)pValue );
+        } 
+        
+        // Access control allow origin
+        else if ( !vscp_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_ALLOW_ORIGIN )  ) {
+            m_web_access_control_allow_origin = wxString::FromUTF8( (const char *)pValue );
+        } 
+        
+        // Access control allow methods
+        else if ( !vscp_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_ALLOW_METHODS )  ) {
+            m_web_access_control_allow_methods = wxString::FromUTF8( (const char *)pValue );
+        } 
+        
+        // Access control alow heraders
+        else if ( !vscp_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_ALLOW_HEADERS )  ) {
+            m_web_access_control_allow_headers = wxString::FromUTF8( (const char *)pValue );
+        } 
+        
+        // Error pages
+        else if ( !vscp_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_WEB_ERROR_PAGES )  ) {
+            m_web_error_pages = wxString::FromUTF8( (const char *)pValue );
+        }
+        
+        // TCP no delay
+        else if ( !vscp_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_WEB_TCP_NO_DELAY )  ) {
+            m_web_tcp_nodelay = atol( (const char *)pValue );
+        }
+        
+        // File max age
+        else if ( !vscp_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_WEB_STATIC_FILE_MAX_AGE )  ) {
+            m_web_static_file_max_age = atol( (const char *)pValue );
+        }
+        
+        // Transport security max age
+        else if ( !vscp_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_WEB_STRICT_TRANSPORT_SECURITY_MAX_AGE )  ) {
+            m_web_strict_transport_security_max_age = atol( (const char *)pValue );
+        }
+        
+        // Enable sendfile call
+        else if ( !vscp_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_WEB_SENDFILE_CALL )  ) {
+            if ( atoi( (const char *)pValue ) ) {
+                m_web_allow_sendfile_call = true;
+            }
+            else {
+                m_web_allow_sendfile_call = false;
+            }
+        }
+        
+        // Additional headers
+        else if ( !vscp_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_WEB_ADDITIONAL_HEADERS )  ) {
+            m_web_additional_header = wxString::FromUTF8( (const char *)pValue );
+        }
+        
+        // Max request size
+        else if ( !vscp_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_WEB_MAX_REQUEST_SIZE )  ) {
+            m_web_max_request_size = atol( (const char *)pValue );
+        }
+        
+        // Allow index script resource
+        else if ( !vscp_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_WEB_ALLOW_INDEX_SCRIPT_RESOURCE )  ) {
+            if ( atoi( (const char *)pValue ) ) {
+                m_web_allow_index_script_resource = true;
+            }
+            else {
+                m_web_allow_index_script_resource = false;
+            }
+        }
+        
+        // Duktape script patterns
+        else if ( !vscp_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_WEB_DUKTAPE_SCRIPT_PATTERNS )  ) {
+            m_web_duktape_script_patterns = wxString::FromUTF8( (const char *)pValue );
+        }
+        
+        // Lua preload file
+        else if ( !vscp_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_WEB_LUA_PRELOAD_FILE )  ) {
+            m_web_lua_preload_file = wxString::FromUTF8( (const char *)pValue );
+        }
+        
+        // Lua script patterns
+        else if ( !vscp_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_WEB_LUA_SCRIPT_PATTERNS )  ) {
+            m_web_lua_script_patterns = wxString::FromUTF8( (const char *)pValue );
+        }
+        
+        // Lua server page patterns
+        else if ( !vscp_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_WEB_LUA_SERVER_PAGE_PATTERNS )  ) {
+            m_web_lua_server_page_patterns = wxString::FromUTF8( (const char *)pValue );
+        }
+        
+        // Lua websocket patterns
+        else if ( !vscp_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_WEB_LUA_WEBSOCKET_PATTERNS )  ) {
+            m_web_lua_websocket_patterns = wxString::FromUTF8( (const char *)pValue );
+        }
+        
+        // Lua background script
+        else if ( !vscp_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_WEB_LUA_BACKGROUND_SCRIPT )  ) {
+            m_web_lua_background_script = wxString::FromUTF8( (const char *)pValue );
+        }
+        
+        // Lua background script params
+        else if ( !vscp_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_WEB_LUA_BACKGROUND_SCRIPT_PARAMS )  ) {
+            m_web_lua_background_script_params = wxString::FromUTF8( (const char *)pValue );
+        }
+        
+        
+        // * * * Websockets * * *
+        
+        
+        // Web server enable
+        else if ( !vscp_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_WEBSOCKET_ENABLE )  ) {
+            if ( atoi( (const char *)pValue ) ) {
+                m_bWebsocketsEnable = true;
+            }
+            else {
+                m_bWebsocketsEnable = false;
+            }
+        }
+        
+        // Document root for websockets
+        else if ( !vscp_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_WEBSOCKET_DOCUMENT_ROOT )  ) {
+            m_websocket_document_root = wxString::FromUTF8( (const char *)pValue );
+        }
+        
+        // Websocket timeout
+        else if ( !vscp_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_WEBSOCKET_TIMEOUT_MS )  ) {
+            m_websocket_timeout_ms = atol( (const char *)pValue );
+        }
+        
+        
+        // * * * Automation * * *
+                     
+        
         // Enable automation
         else if ( !vscp_strcasecmp( (const char * )pName, 
                         VSCPDB_CONFIG_NAME_AUTOMATION_ENABLE ) ) {

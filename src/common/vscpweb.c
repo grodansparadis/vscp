@@ -21398,10 +21398,10 @@ web_start(const struct web_callbacks *callbacks,
     ctx->auth_nonce_mask =
             (uint64_t) get_random() ^ (uint64_t) (ptrdiff_t) (options);
 
-    if (web_init_called == 0) {
+    if ( 0 == web_init_called ) {
         // Legacy INIT, if web_start is called without web_init_library.
         // Note: This may cause a memory leak 
-        web_init(0);
+        web_init( 0 );
     }
 
     tls.is_master = -1;
@@ -22653,7 +22653,7 @@ web_init( unsigned features )
     unsigned features_to_init = web_check_feature( features & 0xFFu );
     unsigned features_inited = features_to_init;
 
-    if (web_init_called <= 0) {
+    if ( web_init_called <= 0 ) {
         // Not initialized yet 
         if ( 0 != pthread_mutex_init( &global_lock_mutex, NULL ) ) {
             return 0;

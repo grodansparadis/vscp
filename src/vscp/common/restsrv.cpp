@@ -104,7 +104,7 @@
 #include "web_js.h"
 #include "web_template.h"
 
-//#include <canal_macro.h>
+#include <json.hpp>             // Needs C++11  -std=c++11
 #include <vscp.h>
 #include <vscphelper.h>
 #include <vscpeventhelper.h>
@@ -123,6 +123,9 @@
 #include <restsrv.h>
 
 using namespace std;
+
+// https://github.com/nlohmann/json
+using json = nlohmann::json;
 
 #ifndef _CRT_SECURE_NO_WARNINGS
 #define _CRT_SECURE_NO_WARNINGS

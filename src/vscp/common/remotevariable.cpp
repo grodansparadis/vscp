@@ -1844,7 +1844,9 @@ bool CVariableStorage::init( void )
         m_db_vscp_internal_variable = NULL;
     }
     
-    //**************************************************************************        
+    //************************************************************************** 
+    //                    I N I T   S T O C K  V A R I A B L E S
+    //
     // Stock variables is added to the internal variable database for 
     // sorting/listing. !!!! Values are not read or written here !!!!
     //**************************************************************************        
@@ -1857,8 +1859,9 @@ bool CVariableStorage::init( void )
     variable.setLastChangedToNow(); 
     variable.setNote(_(""));
     
+    
     // *************************************************************************
-    //                             Version
+    //                               Version
     // *************************************************************************
        
     variable.init();
@@ -2076,7 +2079,7 @@ bool CVariableStorage::init( void )
     addStockVariable( variable  );
     
     // *************************************************************************
-    //                                 Cicitweb
+    //                                Civitweb
     // *************************************************************************
 
     variable.init();
@@ -2087,7 +2090,7 @@ bool CVariableStorage::init( void )
     addStockVariable( variable  );
     
     // *************************************************************************
-    //                                 LUA
+    //                                 Lua
     // *************************************************************************
     
     variable.init();
@@ -2265,7 +2268,7 @@ bool CVariableStorage::init( void )
 
     
     // *************************************************************************
-    //                             Multicast
+    //                               Multicast
     // *************************************************************************
     
     variable.init();
@@ -2524,116 +2527,414 @@ bool CVariableStorage::init( void )
     
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
-    variable.setName( _("vscp.websrv.address") );
-    variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
-    variable.setNote( _("Address for VSCP daemon web interface."), true );
-    addStockVariable( variable  );
-    
-    variable.init();
-    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
-    variable.setName( _("vscp.websrv.authentication.enable") );
+    variable.setName( _("vscp.websrv.enable") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
-    variable.setNote( _("Flag to enable authentication for VSCP daemon web interface."), true );
+    variable.setNote( _("Enable the VSCP server web interface."), true );
     addStockVariable( variable  );
     
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
-    variable.setName( _("vscp.websrv.root.path") );
+    variable.setName( _("vscp.websrv.document_root") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
-    variable.setNote( _("Root folder for VSCP daemon web interface."), true );
+    variable.setNote( _("Root folder for VSCP server web interface."), true );
     addStockVariable( variable  );
     
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
-    variable.setName( _("vscp.websrv.authdomain") );
+    variable.setName( _("vscp.websrv.listening_ports") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
-    variable.setNote( _("Auth domain for VSCP daemon web interface."), true );
+    variable.setNote( _("VSCP server web interface listening ports."), true );
     addStockVariable( variable  );
     
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
-    variable.setName( _("vscp.websrv.cert.path") );
+    variable.setName( _("vscp.websrv.index_files") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
-    variable.setNote( _("Certification path for VSCP daemon web interface."), true );
+    variable.setNote( _("VSCP server web interface index files."), true );
     addStockVariable( variable  );
-    
+        
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
-    variable.setName( _("vscp.websrv.extramimetypes") );
+    variable.setName( _("vscp.websrv.authentication_domain") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
-    variable.setNote( _("Extra mime types for VSCP daemon web interface."), true );
+    variable.setNote( _("Authentication domain for VSCP server web interface."), true );
     addStockVariable( variable  );
     
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
-    variable.setName( _("vscp.websrv.ssipatterns") );
-    variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
-    variable.setNote( _("SSI patterns for VSCP daemon web interface."), true );
-    addStockVariable( variable  );
-    
-    variable.init();
-    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
-    variable.setName( _("vscp.websrv.ipacl") );
-    variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
-    variable.setNote( _("IP access control list for VSCP daemon web interface."), true );
-    addStockVariable( variable  );
-    
-    variable.init();
-    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
-    variable.setName( _("vscp.websrv.cgi.interpreter") );
-    variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
-    variable.setNote( _("Path to CGI interpreter for VSCP daemon web interface."), true );
-    addStockVariable( variable  );
-    
-    variable.init();
-    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
-    variable.setName( _("vscp.websrv.cgi.pattern") );
-    variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
-    variable.setNote( _("CGI pattern for VSCP daemon web interface."), true );
-    addStockVariable( variable  );
-    
-    variable.init();
-    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
-    variable.setName( _("vscp.websrv.directorylistings.enable") );
+    variable.setName( _("vscp.websrv.enable_auth_domain_check") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
-    variable.setNote( _("Flag to enable directory listings for VSCP daemon web interface."), true );
+    variable.setNote( _("Enable the VSCP server web interface authentication domain check."), true );
     addStockVariable( variable  );
     
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
-    variable.setName( _("vscp.websrv.hidefile.pattern") );
+    variable.setName( _("vscp.websrv.ssl_certificat") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
-    variable.setNote( _("Hide file pattern for VSCP daemon web interface."), true );
+    variable.setNote( _("Path to SSL certification for VSCP server web interface."), true );
     addStockVariable( variable  );
     
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
-    variable.setName( _("vscp.websrv.indexfiles") );
+    variable.setName( _("vscp.websrv.ssl_certificat_chain") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
-    variable.setNote( _("List of indexfiles for VSCP daemon web interface."), true );
+    variable.setNote( _("T.B.D."), true );
     addStockVariable( variable  );
     
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
-    variable.setName( _("vscp.websrv.urlrewrites") );
+    variable.setName( _("vscp.websrv.ssl_verify_peer") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
+    variable.setNote( _("Enable client's certificate verification by the server."), true );
+    addStockVariable( variable  );
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
+    variable.setName( _("vscp.websrv.ssl_ca_path") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
+    variable.setNote( _("Name of a directory containing trusted CA certificates."), true );
+    addStockVariable( variable  );
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
+    variable.setName( _("vscp.websrv.ssl_ca_file") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
+    variable.setNote( _("Path to a .pem file containing trusted certificates."), true );
+    addStockVariable( variable  );
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
+    variable.setName( _("vscp.websrv.ssl_verify_depth") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
+    variable.setNote( _("Sets maximum depth of certificate chain."), true );
+    addStockVariable( variable  );
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
+    variable.setName( _("vscp.websrv.ssl_default_verify_paths") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
+    variable.setNote( _("Loads default trusted certificates locations set at openssl compile time."), true );
+    addStockVariable( variable  );
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
+    variable.setName( _("vscp.websrv.ssl_cipher_list") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
+    variable.setNote( _("List of ciphers to present to the client."), true );
+    addStockVariable( variable  );
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
+    variable.setName( _("vscp.websrv.ssl_protocol_version") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
+    variable.setNote( _("Sets the minimal accepted version of accepted SSL/TLS protocol."), true );
+    addStockVariable( variable  );
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
+    variable.setName( _("vscp.websrv.ssl_short_trust") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
+    variable.setNote( _("Enables the use of short lived certificates."), true );
+    addStockVariable( variable  );
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
+    variable.setName( _("vscp.websrv.cgi_interpreter") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
+    variable.setNote( _("Path to an executable to be used use as an interpreter for all CGI scripts regardless script extension. "), true );
+    addStockVariable( variable  );
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
+    variable.setName( _("vscp.websrv.cgi_pattern") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
+    variable.setNote( _("All files that match cgi_pattern are treated as CGI files."), true );
+    addStockVariable( variable  );
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
+    variable.setName( _("vscp.websrv.cgi_environment") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
+    variable.setNote( _("Set extra variables to be passed to the CGI script in addition to the standard environment variables."), true );
+    addStockVariable( variable  );
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
+    variable.setName( _("vscp.websrv.protect_uri") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
+    variable.setNote( _("This is a comma separated list of URI=PATH pairs, specifying that given URIs must be protected with password files specified by PATH."), true );
+    addStockVariable( variable  );
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
+    variable.setName( _("vscp.websrv.trottle") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
+    variable.setNote( _("Limit download speed for clients."), true );
+    addStockVariable( variable  );
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
+    variable.setName( _("vscp.websrv.enable_directory_listing") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
+    variable.setNote( _("Enable directory listing."), true );
+    addStockVariable( variable  );
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
+    variable.setName( _("vscp.websrv.enable_keep_alive") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
+    variable.setNote( _("Enable connection keep alive."), true );
+    addStockVariable( variable  );
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
+    variable.setName( _("vscp.websrv.keep_alive_timeout_ms") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_LONG );
+    variable.setNote( _("Idle timeout between two requests in one keep-alive connection."), true );
+    addStockVariable( variable  );
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
+    variable.setName( _("vscp.websrv.access_control_list") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
+    variable.setNote( _("Set which remote hosts are allowed to connect."), true );
+    addStockVariable( variable  );
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
+    variable.setName( _("vscp.websrv.extra_mime_types") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
+    variable.setNote( _("Extra mime types to recognize."), true );
+    addStockVariable( variable  );
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
+    variable.setName( _("vscp.websrv.num_threads") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER);
+    variable.setNote( _("Number of worker threads."), true );
+    addStockVariable( variable  );
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
+    variable.setName( _("vscp.websrv.run_as_user") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
+    variable.setNote( _("Switch to given user credentials after startup."), true );
+    addStockVariable( variable  );
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
+    variable.setName( _("vscp.websrv.hide_file_patterns") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
+    variable.setNote( _("A pattern for the files to hide."), true );
+    addStockVariable( variable  );
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
+    variable.setName( _("vscp.websrv.url_rewrite_patterns") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
     variable.setNote( _("URL rewrites for VSCP daemon web interface."), true );
+    addStockVariable( variable  ); 
+
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
+    variable.setName( _("vscp.websrv.global_auth_file") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
+    variable.setNote( _("Path to global authentication file. Leave blank for no authentication."), true );
     addStockVariable( variable  );
     
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
-    variable.setName( _("vscp.websrv.auth.file.directory") );
+    variable.setName( _("vscp.websrv.per_directory_auth_file") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
-    variable.setNote( _("Authentication file directory for VSCP daemon web interface."), true );
+    variable.setNote( _(" To enable directory protection with authentication, set this to “.htpasswd”."), true );
     addStockVariable( variable  );
     
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
-    variable.setName( _("vscp.websrv.auth.file.global") );
+    variable.setName( _("vscp.websrv.url_rewrite_patterns") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
-    variable.setNote( _("Path to global authentication file for VSCP daemon web interface."), true );
+    variable.setNote( _("Comma-separated list of URL rewrites in the form of uri_pattern=file_or_directory_path."), true );
     addStockVariable( variable  );
     
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
+    variable.setName( _("vscp.websrv.ssi_patterns") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
+    variable.setNote( _("All files that match ssi_pattern are treated as Server Side Includes (SSI)."), true );
+    addStockVariable( variable  );
+ 
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
+    variable.setName( _("vscp.websrv.request_timeout_ms") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_LONG);
+    variable.setNote( _("Timeout for network read and network write operations, in milliseconds."), true );
+    addStockVariable( variable  );
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
+    variable.setName( _("vscp.websrv.linger_timeout_ms") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_LONG);
+    variable.setNote( _("Set TCP socket linger timeout before closing sockets (SO_LINGER option)."), true );
+    addStockVariable( variable  );
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
+    variable.setName( _("vscp.websrv.decode_url") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
+    variable.setNote( _("Enable URL encodeding of request strings in the server."), true );
+    addStockVariable( variable  );
+
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
+    variable.setName( _("vscp.websrv.access_control_allow_origin") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
+    variable.setNote( _("Access-Control-Allow-Origin header field."), true );
+    addStockVariable( variable  );
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
+    variable.setName( _("vscp.websrv.access_control_allow_methods") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
+    variable.setNote( _("Access-Control-Allow-Methods header field."), true );
+    addStockVariable( variable  );
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
+    variable.setName( _("vscp.websrv.access_control_allow_headers") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
+    variable.setNote( _("Access-Control-Allow-Methods header field."), true );
+    addStockVariable( variable  );
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
+    variable.setName( _("vscp.websrv.error_pages") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
+    variable.setNote( _("This option may be used to specify a directory for user defined error pages."), true );
+    addStockVariable( variable  );
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
+    variable.setName( _("vscp.websrv.tcp_nodelay") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER);
+    variable.setNote( _("Enable TCP_NODELAY socket option on client connections."), true );
+    addStockVariable( variable  );
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
+    variable.setName( _("vscp.websrv.static_file_max_age") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_LONG);
+    variable.setNote( _("Set the maximum time (in seconds) a cache may store a static files."), true );
+    addStockVariable( variable  );
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
+    variable.setName( _("vscp.websrv.strict_transport_security_max_age") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_LONG);
+    variable.setNote( _("Set the Strict-Transport-Security header, and set the max-age value."), true );
+    addStockVariable( variable  );
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
+    variable.setName( _("vscp.websrv.allow_sendfile_call") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
+    variable.setNote( _("This option can be used to enable or disable the use of the Linux sendfile system call."), true );
+    addStockVariable( variable  );
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
+    variable.setName( _("vscp.websrv.additional_header") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
+    variable.setNote( _("Send additional HTTP response header line for every request."), true );
+    addStockVariable( variable  );
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
+    variable.setName( _("vscp.websrv.max_request_size") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_LONG);
+    variable.setNote( _("Maximum request size URL."), true );
+    addStockVariable( variable  );
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
+    variable.setName( _("vscp.websrv.allow_index_script_resource") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
+    variable.setNote( _("Index scripts (like index.cgi or index.lua) may have script handled resources."), true );
+    addStockVariable( variable  );
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
+    variable.setName( _("vscp.websrv.duktape_script_pattern") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
+    variable.setNote( _("A pattern for files that are interpreted as JavaScripts by the server."), true );
+    addStockVariable( variable  );
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
+    variable.setName( _("vscp.websrv.lua_preload_file") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
+    variable.setNote( _("This configuration option can be used to specify a Lua script file, which is executed before the actual web page script."), true );
+    addStockVariable( variable  );
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
+    variable.setName( _("vscp.websrv.lua_script_patterns") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
+    variable.setNote( _("A pattern for files that are interpreted as Lua scripts by the server."), true );
+    addStockVariable( variable  );
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
+    variable.setName( _("vscp.websrv.lua_server_page_patterns") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
+    variable.setNote( _("Files matching this pattern are treated as Lua server pages."), true );
+    addStockVariable( variable  );
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
+    variable.setName( _("vscp.websrv.lua_websocket_patterns") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
+    variable.setNote( _(""), true );
+    addStockVariable( variable  );
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
+    variable.setName( _("vscp.websrv.lua_background_script") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
+    variable.setNote( _("Run a Lua script in the background, independent from any connection."), true );
+    addStockVariable( variable  );
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
+    variable.setName( _("vscp.websrv.lua_background_script_params") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
+    variable.setNote( _("Used to add dynamic parameters to background script."), true );
+    addStockVariable( variable  );
+    
+    
+    // *************************************************************************
+    //                              Websockets
+    // *************************************************************************
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
+    variable.setName( _("vscp.websockets.enable") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
+    variable.setNote( _("Enable websocket functionality."), true );
+    addStockVariable( variable  );
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
+    variable.setName( _("vscp.websockets.document_root") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
+    variable.setNote( _("Rootfolder for websockets."), true );
+    addStockVariable( variable  );
+    
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
+    variable.setName( _("vscp.websockets.timeout_ms") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
+    variable.setNote( _("Websocket timeout in milliseconds."), true );
+    addStockVariable( variable  );
     
     // *************************************************************************
     //                            Decision Matrix
@@ -3392,7 +3693,9 @@ uint32_t CVariableStorage::getStockVariable( const wxString& name,
     }
     
     if ( lcname.StartsWith( _("vscp.duktape.copyright") ) ) {
-        var.setValue( _("Duktape copyrights are held by its authors. (https://github.com/grodansparadis/vscp/blob/master/src/common/duktape.h)"), 
+        var.setValue( _("Duktape copyrights are held by its authors. "
+                        "(https://github.com/grodansparadis/vscp/blob/"
+                        "master/src/common/duktape.h)"), 
                         true );
         return var.getID();
     }
@@ -3405,7 +3708,9 @@ uint32_t CVariableStorage::getStockVariable( const wxString& name,
     
     
     if ( lcname.StartsWith( _("vscp.civetweb.copyright") ) ) {
-        var.setValue( _("Copyright (c) 2004-2013 Sergey Lyubka, Copyright (c) 2013-2017 the Civetweb developers, Copyright (c) 2017 Ake Hedman, Grodans Paradis AB"),
+        var.setValue( _("Copyright (c) 2004-2013 Sergey Lyubka, Copyright (c) "
+                        "2013-2017 the Civetweb developers, Copyright (c) 2017 "
+                        "Ake Hedman, Grodans Paradis AB"),
                         true );
         return var.getID();
     }
@@ -3441,7 +3746,8 @@ uint32_t CVariableStorage::getStockVariable( const wxString& name,
     }
     
     if ( lcname.StartsWith( _("vscp.os.endiness.str") ) ) {
-        var.setValue( wxIsPlatformLittleEndian() ? _("Little endian") : _("Big endian"), true );
+        var.setValue( wxIsPlatformLittleEndian() 
+                ? _("Little endian") : _("Big endian"), true );
         return var.getID();
     }
     
@@ -3538,13 +3844,373 @@ uint32_t CVariableStorage::getStockVariable( const wxString& name,
     }
     
     // *************************************************************************
-    //                             TCP/IP
+    //                                TCP/IP
     // *************************************************************************
     
     if ( lcname.StartsWith( _("vscp.tcpip.address") ) ) {
         var.setValue( gpobj->m_strTcpInterfaceAddress, true );
         return var.getID();
     }
+    
+    
+
+    // *************************************************************************
+    //                                WEB-Server
+    // *************************************************************************
+
+    if ( lcname.StartsWith( _("vscp.websrv.enable") ) ) {
+        // Boolean
+        var.setValue( gpobj->m_web_document_root );
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.document_root") ) ) {
+        // String
+        var.setValue( gpobj->m_web_document_root, true );
+        return var.getID();
+    }
+
+    if ( lcname.StartsWith( _("vscp.websrv.listening_ports") ) ) {
+        // String
+        var.setValue( gpobj->m_web_listening_ports, true );
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.index_files") ) ) {
+        // String
+        var.setValue( gpobj->m_web_index_files, true );
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.authentication_domain") ) ) {
+        // String
+        var.setValue( gpobj->m_web_authentication_domain, true );
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.enable_auth_domain_check") ) ) {
+        // Boolean
+        var.setValue( gpobj->m_enable_auth_domain_check );
+        return var.getID();
+    }
+            
+    if ( lcname.StartsWith( _("vscp.websrv.ssl_certificate") ) ) {
+        // String
+        var.setValue( gpobj->m_web_ssl_certificate, true );
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.certificate_chain") ) ) {
+        // String
+        var.setValue( gpobj->m_web_ssl_certificate, true );
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.ssl_verify_peer") ) ) {
+        // Boolean
+        var.setValue( gpobj->m_web_ssl_verify_peer );
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.ssl_ca_path") ) ) {
+        // String
+        var.setValue( gpobj->m_web_ssl_ca_path, true );
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.ssl_ca_file") ) ) {
+        // String
+        var.setValue( gpobj->m_web_ssl_ca_file, true );
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.ssl_verify_depth") ) ) {
+        // Integer
+        var.setValue( gpobj->m_web_ssl_verify_depth );
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.ssl_default_verify_paths") ) ) {
+        // Boolean
+        var.setValue( gpobj->m_web_ssl_default_verify_paths );
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.ssl_cipher_list") ) ) {
+        // String
+        var.setValue( gpobj->m_web_ssl_cipher_list, true );
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.ssl_protocol_version") ) ) {
+        // Integer
+        var.setValue( gpobj->m_web_ssl_protocol_version );
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.ssl_short_trust") ) ) {
+        // Boolean
+        var.setValue( gpobj->m_web_ssl_short_trust );
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.cgi_interpreter") ) ) {
+        // String
+        var.setValue( gpobj->m_web_cgi_interpreter, true );
+        return var.getID();
+    }
+
+    if ( lcname.StartsWith( _("vscp.websrv.cgi_patterns") ) ) {
+        // String
+        var.setValue( gpobj->m_web_cgi_patterns, true );
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.cgi_environment") ) ) {
+        // String
+        var.setValue( gpobj->m_web_cgi_environment, true );
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.protect_uri") ) ) {
+        // String
+        var.setValue( gpobj->m_web_protect_uri, true );
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.trottle") ) ) {
+        // String
+        var.setValue( gpobj->m_web_trottle, true );
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.enable_directory_listing") ) ) {
+        // Boolean
+        var.setValue( gpobj->m_web_enable_directory_listing );
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.enable_keep_alive") ) ) {
+        // Boolean
+        var.setValue( gpobj->m_web_enable_keep_alive );
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.keep_alive_timeout_ms") ) ) {
+        // Long
+        var.setValue( gpobj->m_web_keep_alive_timeout_ms );
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.access_control_list") ) ) {
+        // String
+        var.setValue( gpobj->m_web_access_control_list, true );
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.extra_mime_types") ) ) {
+        // String
+        var.setValue( gpobj->m_web_extra_mime_types, true );
+        return var.getID();
+    }
+
+    if ( lcname.StartsWith( _("vscp.websrv.num_threads") ) ) {
+        // Integer
+        var.setValue( gpobj->m_web_num_threads );
+        return var.getID();
+    }
+     
+    if ( lcname.StartsWith( _("vscp.websrv.run_as_user") ) ) {
+        // String
+        var.setValue( gpobj->m_web_run_as_user, true );
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.url_rewrite_patterns") ) ) {
+        // String
+        var.setValue( gpobj->m_web_url_rewrite_patterns, true );
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.hide_file_patterns") ) ) {
+        // String
+        var.setValue( gpobj->m_web_hide_file_patterns, true );
+        return var.getID();
+    }
+
+    if ( lcname.StartsWith( _("vscp.websrv.request_timeout_ms") ) ) {
+        // Long
+        var.setValue( gpobj->m_web_request_timeout_ms );
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.linger_timeout_ms") ) ) {
+        // Long
+        var.setValue( gpobj->m_web_linger_timeout_ms );
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.decode_url") ) ) {
+        // Boolean
+        var.setValue( gpobj->m_web_decode_url );
+        return var.getID();
+    }
+              
+    if ( lcname.StartsWith( _("vscp.websrv.global_auth_file") ) ) {
+        // String
+        var.setValue( gpobj->m_web_global_auth_file, true );
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.per_directory_auth_file") ) ) {
+        // String
+        var.setValue( gpobj->m_web_per_directory_auth_file, true );
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.ssi_patterns") ) ) {
+        // String
+        var.setValue( gpobj->m_web_ssi_patterns, true );
+        return var.getID();
+    }    
+   
+    if ( lcname.StartsWith( _("vscp.websrv.access_control_allow_origin") ) ) {
+        // String
+        var.setValue( gpobj->m_web_access_control_allow_origin, true );
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.access_control_allow_methods") ) ) {
+        // String
+        var.setValue( gpobj->m_web_access_control_allow_methods, true );
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.access_control_allow_headers") ) ) {
+        // String
+        var.setValue( gpobj->m_web_access_control_allow_headers, true );
+        return var.getID();
+    }
+        
+    if ( lcname.StartsWith( _("vscp.websrv.error_pages") ) ) {
+        // String
+        var.setValue( gpobj->m_web_error_pages, true );
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.websrv.tcp_nodelay") ) ) {
+        // Long
+        var.setValue( gpobj->m_web_tcp_nodelay );
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.static_file_max_age") ) ) {
+        // Long
+        var.setValue( gpobj->m_web_static_file_max_age );
+        return var.getID();
+    }
+      
+    if ( lcname.StartsWith( _("vscp.websrv.strict_transport_security_max_age") ) ) {
+        // Long
+        var.setValue( gpobj->m_web_strict_transport_security_max_age );
+        return var.getID();
+    }
+          
+    if ( lcname.StartsWith( _("vscp.websrv.allow_sendfile_call") ) ) {
+        // Boolean
+        var.setValue( gpobj->m_web_allow_sendfile_call );
+        return var.getID();
+    }
+              
+    if ( lcname.StartsWith( _("vscp.websrv.additional_header") ) ) {
+        // String
+        var.setValue( gpobj->m_web_additional_header, true );
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.max_request_size") ) ) {
+        // Long
+        var.setValue( gpobj->m_web_max_request_size );
+        return var.getID();
+    }
+
+    if ( lcname.StartsWith( _("vscp.websrv.allow_index_script_resource") ) ) {
+        // Boolean
+        var.setValue( gpobj->m_web_allow_index_script_resource );
+        return var.getID();
+    }
+              
+    if ( lcname.StartsWith( _("vscp.websrv.duktape_script_patterns") ) ) {
+        // String
+        var.setValue( gpobj->m_web_duktape_script_patterns, true );
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.lua_preload_file") ) ) {
+        // String
+        var.setValue( gpobj->m_web_lua_preload_file, true );
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.lua_script_patterns") ) ) {
+        // String
+        var.setValue( gpobj->m_web_lua_script_patterns, true );
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.lua_server_page_patterns") ) ) {
+        // String
+        var.setValue( gpobj->m_web_lua_server_page_patterns, true );
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.lua_websocket_patterns") ) ) {
+        // String
+        var.setValue( gpobj->m_web_lua_websocket_patterns, true );
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.lua_background_script") ) ) {
+        // String
+        var.setValue( gpobj->m_web_lua_background_script, true );
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.lua_background_script_params") ) ) {
+        // String
+        var.setValue( gpobj->m_web_lua_background_script_params, true );
+        return var.getID();
+    }
+ 
+
+    // *************************************************************************
+    //                            Websocket-Server
+    // *************************************************************************
+
+    if ( lcname.StartsWith( _("vscp.websockets.enable") ) ) {
+        // Boolean
+        var.setValue( gpobj->m_bWebsocketsEnable );
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websockets.dokument_root") ) ) {
+        // String
+        if ( 0 != gpobj->m_websocket_document_root.Trim().Length() ) {
+            var.setValue( gpobj->m_websocket_document_root, true );
+        }
+        else {
+            // If not set webserver uses web document root
+            var.setValue( gpobj->m_web_document_root, true );
+        }
+        return var.getID();
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websockets.timeout_ms") ) ) {
+        // Long
+        var.setValue( (long)gpobj->m_websocket_timeout_ms );
+        return var.getID();
+    }
+    
     
     // *************************************************************************
     //                              Discovery
@@ -3671,7 +4337,8 @@ uint32_t CVariableStorage::getStockVariable( const wxString& name,
     
     
     if ( lcname.StartsWith(  _("vscp.automation.segctrl-heartbeat.enable") ) ) {
-        var.setValue(gpobj->m_automation.isSendSegmentControllerHeartbeat() ? true : false );
+        var.setValue(gpobj->m_automation.isSendSegmentControllerHeartbeat() 
+                                ? true : false );
         return var.getID();
     }
     
@@ -3682,7 +4349,8 @@ uint32_t CVariableStorage::getStockVariable( const wxString& name,
     }
     
     if ( lcname.StartsWith( _("vscp.automation.segctrl-heartbeat.last") ) ) {
-        wxstr = gpobj->m_automation.getSegmentControllerHeartbeatSent().FormatISOCombined();
+        wxstr = 
+            gpobj->m_automation.getSegmentControllerHeartbeatSent().FormatISOCombined();
         var.setValue( wxstr );
         return var.getID();
     }
@@ -3785,101 +4453,6 @@ uint32_t CVariableStorage::getStockVariable( const wxString& name,
         return var.getID();
     }
     
- 
-    
-    // *************************************************************************
-    //                            Websocket-Server
-    // *************************************************************************
-
- 
-
-    // *************************************************************************
-    //                                WEB-Server
-    // *************************************************************************
-
-
-    if ( lcname.StartsWith( _("vscp.websrv.address") ) ) {
-        // String
-        var.setValue( gpobj->m_strWebServerInterfaceAddress, true );
-        return var.getID();
-    }
-    
-    if ( lcname.StartsWith( _("vscp.websrv.authdomain") ) ) {
-        // String
-        var.setValue( gpobj->m_authDomain, true );
-        return var.getID();
-    }
-        
-    if ( lcname.StartsWith( _("vscp.websrv.root.path") ) ) {
-        var.setValue( wxString::FromUTF8( gpobj->m_pathWebRoot ), true );
-        return var.getID();
-    }
-    
-    if ( lcname.StartsWith( _("vscp.websrv.cert.path") ) ) {
-        var.setValue( wxString::FromUTF8( gpobj->m_pathCert ), true );
-        return var.getID();
-    }
-    
-    if ( lcname.StartsWith( _("vscp.websrv.extramimetypes") ) ) {
-        var.setValue( wxString::FromUTF8( gpobj->m_extraMimeTypes ), true );
-        return var.getID();
-    }
-
-    if ( lcname.StartsWith( _("vscp.websrv.ssipatterns") ) ) {
-        var.setValue( wxString::FromUTF8( gpobj->m_ssi_pattern ), true );
-        return var.getID();
-    }
-
-    if ( lcname.StartsWith( _("vscp.websrv.ipacl") ) ) {
-        var.setValue( wxString::FromUTF8( gpobj->m_ip_acl ), true );
-        return var.getID();
-    }
-
-    if ( lcname.StartsWith( _("vscp.websrv.cgi.interpreter") ) ) {
-        var.setValue( wxString::FromUTF8( gpobj->m_cgiInterpreter ), true );
-        return var.getID();
-    }
-
-    if ( lcname.StartsWith( _("vscp.websrv.cgi.pattern") ) ) {
-        var.setValue( wxString::FromUTF8( gpobj->m_cgiPattern ), true );
-        return var.getID();
-    }
-    
-    if ( lcname.StartsWith( _("vscp.websrv.directorylistings.enable") ) ) {
-        var.setValue( ( NULL != 
-            strstr( gpobj->m_EnableDirectoryListings,"yes" ) ) ? _("true") : _("false") );
-        return var.getID();
-    }
-    
-    if ( lcname.StartsWith( _("vscp.websrv.hidefile.pattern") ) ) {
-        var.setValue( wxString::FromUTF8( gpobj->m_hideFilePatterns ), true );
-        return var.getID();
-    }
-    
-    if ( lcname.StartsWith( _("vscp.websrv.indexfiles") ) ) {
-        var.setValue( wxString::FromUTF8( gpobj->m_indexFiles ), true );
-        return var.getID();
-    }
-    
-    if ( lcname.StartsWith( _("vscp.websrv.urlrewrites") ) ) {
-        var.setValue( wxString::FromUTF8( gpobj->m_urlRewrites ), true );
-        return var.getID();
-    }
-    
-    if ( lcname.StartsWith( _("vscp.websrv.auth.file.directory") ) ) {
-        var.setValue( wxString::FromUTF8( gpobj->m_per_directory_auth_file ), true );
-        return var.getID();
-    }
-    
-    if ( lcname.StartsWith( _("vscp.websrv.auth.file.global") ) ) {
-        var.setValue( wxString::FromUTF8( gpobj->m_global_auth_file ), true );
-        return var.getID();
-    }
-
-
-    
-
-
     // *************************************************************************
     //                            Decision Matrix
     // *************************************************************************
@@ -4637,10 +5210,9 @@ bool CVariableStorage::putStockVariable( CVSCPVariable& var,
         return false;   // None writable
     }
 
-// *****************************************************************************
-//                                 LUA
-// *****************************************************************************
-
+    // *************************************************************************
+    //                                 LUA
+    // *************************************************************************
 
     if ( lcname.StartsWith( _("vscp.lua.copyright") ) ) {
         return false;   // None writable
@@ -4663,9 +5235,10 @@ bool CVariableStorage::putStockVariable( CVSCPVariable& var,
     }
 
 
-// *****************************************************************************
-//                                SQLite
-// *****************************************************************************
+    // *************************************************************************
+    //                                SQLite
+    // *************************************************************************
+    
 
     if ( lcname.StartsWith( _("vscp.sqlite.version.major") ) ) {
         return false;   // None writable
@@ -4687,9 +5260,9 @@ bool CVariableStorage::putStockVariable( CVSCPVariable& var,
         return false;   // None writable
     }
 
-// *****************************************************************************
-//                                OPENSSL
-// *****************************************************************************
+    // *************************************************************************
+    //                                OPENSSL
+    // *************************************************************************
     
 #ifndef WIN32
     if ( lcname.StartsWith( _("vscp.openssl.version.str") ) ) {
@@ -4698,9 +5271,9 @@ bool CVariableStorage::putStockVariable( CVSCPVariable& var,
 #endif
     
     
-// *****************************************************************************
-//                                 OS
-// *****************************************************************************    
+    // *************************************************************************
+    //                                 OS
+    // *************************************************************************
     
     
     if ( lcname.StartsWith( _("vscp.os.str") ) ) {
@@ -4731,9 +5304,9 @@ bool CVariableStorage::putStockVariable( CVSCPVariable& var,
         return false;   // None writable
     }
     
-// *****************************************************************************
-//                                 HOST
-// *****************************************************************************    
+    // *************************************************************************
+    //                                 HOST
+    // *************************************************************************
     
     if ( lcname.StartsWith( _("vscp.host.rootpath") ) ) {
         return false;
@@ -4904,171 +5477,360 @@ bool CVariableStorage::putStockVariable( CVSCPVariable& var,
     }
  
 
-// *****************************************************************************
-//                                WEB-Server
-// *****************************************************************************
+    // *************************************************************************
+    //                              WEB-Server
+    // *************************************************************************
 
-
-    if ( lcname.StartsWith( _("vscp.websrv.address") ) ) {
-        wxString strval;
-        strval = var.getValue();
-        gpobj->m_strWebServerInterfaceAddress = strval;
-        return gpobj->updateConfigurationRecordItem( _("vscpd_Webserver_Address"), 
-                                                    strval );
+    if ( lcname.StartsWith( _("vscp.websrv.enable") ) ) {
+        var.getValue( &gpobj->m_web_bEnable );
+        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_ENABLE), 
+                             gpobj->m_web_bEnable ? "1" : "0" );
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.document_root") ) ) {
+        gpobj->m_web_document_root = var.getValue();
+        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_DOCUMENT_ROOT), 
+                                                    var.getValue() );
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.listening_ports") ) ) {
+        gpobj->m_web_listening_ports = var.getValue();
+        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_LISTENING_PORTS), 
+                                                    var.getValue() );
     }
         
-    if ( lcname.StartsWith( _("vscp.websrv.root.path") ) ) {
-        wxString strval;
-        strval = var.getValue();
-        memset( gpobj->m_pathWebRoot, 0, sizeof( gpobj->m_pathWebRoot ) );
-        memcpy( gpobj->m_pathWebRoot, 
-                    (const char *)strval.mbc_str(), 
-                    wxMin( sizeof( gpobj->m_pathWebRoot)-1, strval.Length() ) );
-        return gpobj->updateConfigurationRecordItem( _("vscpd_Webserver_RootPath"), 
-                                                    strval );
+    if ( lcname.StartsWith( _("vscp.websrv.index_files") ) ) {
+        gpobj->m_web_index_files = var.getValue();
+        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_INDEX_FILES), 
+                                                    var.getValue() );
     }
     
-    if ( lcname.StartsWith( _("vscp.websrv.cert.path") ) ) {
-        wxString strval;
-        strval = var.getValue();
-        memset( gpobj->m_pathCert, 0, sizeof( gpobj->m_pathCert ) );
-        memcpy( gpobj->m_pathCert, 
-                    (const char *)strval.mbc_str(), 
-                    wxMin( sizeof( gpobj->m_pathCert)-1, strval.Length() ) );
-        return gpobj->updateConfigurationRecordItem( _("vscpd_Webserver_PathCert"), 
-                                                    strval );
+    if ( lcname.StartsWith( _("vscp.websrv.authentication_domain") ) ) {
+        gpobj->m_web_authentication_domain = var.getValue();
+        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_AUTHENTICATION_DOMAIN), 
+                                                    var.getValue() );
     }
     
-    if ( lcname.StartsWith( _("vscp.websrv.extramimetypes") ) ) {
-        wxString strval;
-        strval = var.getValue();
-        memset( gpobj->m_extraMimeTypes, 0, sizeof( gpobj->m_extraMimeTypes ) );
-        memcpy( gpobj->m_extraMimeTypes, 
-                    (const char *)strval.mbc_str(), 
-                    wxMin( sizeof( gpobj->m_extraMimeTypes)-1, strval.Length() ) );
-        return gpobj->updateConfigurationRecordItem( _("vscpd_Webserver_ExtraMimeTypes"), 
-                                                    strval );
+    if ( lcname.StartsWith( _("vscp.websrv.enable_auth_domain_check") ) ) {
+        var.getValue( &gpobj->m_enable_auth_domain_check );
+        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_ENABLE_AUTH_DOMAIN_CHECK), 
+                             gpobj->m_enable_auth_domain_check ? "1" : "0" );
     }
     
-    if ( lcname.StartsWith( _("vscp.websrv.ssipatterns") ) ) {
-        wxString strval;
-        strval = var.getValue();
-        memset( gpobj->m_ssi_pattern, 0, sizeof( gpobj->m_ssi_pattern ) );
-        memcpy( gpobj->m_ssi_pattern, 
-                    (const char *)strval.mbc_str(), 
-                    wxMin( sizeof( gpobj->m_ssi_pattern)-1, strval.Length() ) );
-        return gpobj->updateConfigurationRecordItem( _("vscpd_Webserver_SSIPattern"), 
-                                                    strval );
+    if ( lcname.StartsWith( _("vscp.websrv.ssl_certificat") ) ) {
+        gpobj->m_web_ssl_certificate = var.getValue();
+        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_SSL_CERTIFICAT), 
+                                                    var.getValue() );
     }
     
-    if ( lcname.StartsWith( _("vscp.websrv.ipacl") ) ) {
-        wxString strval;
-        strval = var.getValue();
-        memset( gpobj->m_ip_acl, 0, sizeof( gpobj->m_ip_acl ) );
-        memcpy( gpobj->m_ip_acl, 
-                    (const char *)strval.mbc_str(), 
-                    wxMin( sizeof( gpobj->m_ip_acl)-1, strval.Length() ) );
-        return gpobj->updateConfigurationRecordItem( _("vscpd_Webserver_IpAcl"), 
-                                                    strval );
+    if ( lcname.StartsWith( _("vscp.websrv.ssl_certificat_chain") ) ) {
+        gpobj->m_web_ssl_certificate_chain = var.getValue();
+        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_SSL_CERTIFICAT_CHAIN), 
+                                                    var.getValue() );
     }
     
-    if ( lcname.StartsWith( _("vscp.websrv.cgi.interpreter") ) ) {
-        wxString strval;
-        strval = var.getValue();
-        memset( gpobj->m_cgiInterpreter, 0, sizeof( gpobj->m_cgiInterpreter ) );
-        memcpy( gpobj->m_cgiInterpreter, 
-                    (const char *)strval.mbc_str(), 
-                    wxMin( sizeof( gpobj->m_cgiInterpreter)-1, strval.Length() ) );
-        return gpobj->updateConfigurationRecordItem( _("vscpd_Webserver_CgiInterpreter"), 
-                                                    strval );
+    if ( lcname.StartsWith( _("vscp.websrv.ssl_verify_peer") ) ) {
+        var.getValue( &gpobj->m_web_ssl_verify_peer );
+        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_SSL_VERIFY_PEER), 
+                             gpobj->m_web_ssl_verify_peer ? "1" : "0" );
     }
     
-    if ( lcname.StartsWith( _("vscp.websrv.cgi.pattern") ) ) {
-        wxString strval;
-        strval = var.getValue();
-        memset( gpobj->m_cgiPattern, 0, sizeof( gpobj->m_cgiPattern ) );
-        memcpy( gpobj->m_cgiPattern, 
-                    (const char *)strval.mbc_str(), 
-                    wxMin( sizeof( gpobj->m_cgiPattern)-1, strval.Length() ) );
-        return gpobj->updateConfigurationRecordItem( _("vscpd_Webserver_CgiPattern"), 
-                                                    strval );
+    if ( lcname.StartsWith( _("vscp.websrv.ssl_ca_path") ) ) {
+        gpobj->m_web_ssl_ca_path = var.getValue();
+        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_SSL_CA_PATH), 
+                                                    var.getValue() );
     }
     
-    if ( lcname.StartsWith( _("vscp.websrv.directorylistings.enable") ) ) {
-        int val;
-        var.getValue( &val );
-        strcpy( gpobj->m_EnableDirectoryListings,
-                val ? "yes" : "no" );
-        return gpobj->updateConfigurationRecordItem( _("vscpd_Webserver_EnableDirectoryListings"), 
-                                                    val ? _("1") : _("0") );
+    if ( lcname.StartsWith( _("vscp.websrv.ssl_ca_file") ) ) {
+        gpobj->m_web_ssl_ca_file = var.getValue();
+        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_SSL_CA_FILE), 
+                                                    var.getValue() );
     }
     
-    if ( lcname.StartsWith( _("vscp.websrv.hidefile.pattern") ) ) {
-        wxString strval;
-        strval = var.getValue();
-        memset( gpobj->m_hideFilePatterns, 0, sizeof( gpobj->m_hideFilePatterns ) );
-        memcpy( gpobj->m_hideFilePatterns, 
-                    (const char *)strval.mbc_str(), 
-                    wxMin( sizeof( gpobj->m_hideFilePatterns)-1, strval.Length() ) );
-        return gpobj->updateConfigurationRecordItem( _("vscpd_Webserver_HideFilePatterns"), 
-                                                    strval );
+    if ( lcname.StartsWith( _("vscp.websrv.ssl_verify_depth") ) ) {
+        gpobj->m_web_ssl_verify_depth = atoi( (const char *)var.getValue().mbc_str() );
+        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_SSL_VERIFY_DEPTH), 
+                                                    var.getValue() );
     }
     
-    if ( lcname.StartsWith( _("vscp.websrv.indexfiles") ) ) {
-        wxString strval;
-        strval = var.getValue();
-        memset( gpobj->m_indexFiles, 0, sizeof( gpobj->m_indexFiles ) );
-        memcpy( gpobj->m_indexFiles, 
-                    (const char *)strval.mbc_str(), 
-                    wxMin( sizeof( gpobj->m_indexFiles)-1, strval.Length() ) );
-        return gpobj->updateConfigurationRecordItem( _("vscpd_Webserver_IndexFiles"), 
-                                                    strval );
+    if ( lcname.StartsWith( _("vscp.websrv.ssl_default_verify_paths") ) ) {
+        var.getValue( &gpobj->m_web_ssl_default_verify_paths );
+        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_SSL_DEFAULT_VERIFY_PATHS), 
+                             gpobj->m_web_ssl_default_verify_paths ? "1" : "0" );
     }
     
-    if ( lcname.StartsWith( _("vscp.websrv.urlrewrites") ) ) {
-        wxString strval;
-        strval = var.getValue();
-        memset( gpobj->m_urlRewrites, 0, sizeof( gpobj->m_urlRewrites ) );
-        memcpy( gpobj->m_urlRewrites, 
-                    (const char *)strval.mbc_str(), 
-                    wxMin( sizeof( gpobj->m_urlRewrites)-1, strval.Length() ) );
-        return gpobj->updateConfigurationRecordItem( _("vscpd_Webserver_UrlRewrites"), 
-                                                    strval );
+    if ( lcname.StartsWith( _("vscp.websrv.ssl_cipher_list") ) ) {
+        gpobj->m_web_ssl_cipher_list = var.getValue();
+        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_SSL_CHIPHER_LIST), 
+                                                    var.getValue() );
     }
     
-    if ( lcname.StartsWith( _("vscp.websrv.auth.file.directory") ) ) {
-        wxString strval;
-        strval = var.getValue();
-        memset( gpobj->m_per_directory_auth_file, 0, sizeof( gpobj->m_per_directory_auth_file ) );
-        memcpy( gpobj->m_per_directory_auth_file, 
-                    (const char *)strval.mbc_str(), 
-                    wxMin( sizeof( gpobj->m_per_directory_auth_file)-1, strval.Length() ) );
-        return gpobj->updateConfigurationRecordItem( _("vscpd_Webserver_PerDirectoryAuthFile"), 
-                                                    strval );
+    if ( lcname.StartsWith( _("vscp.websrv.ssl_protocol_version") ) ) {
+        gpobj->m_web_ssl_protocol_version = atoi( (const char *)var.getValue().mbc_str() );
+        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_SSL_PROTOCOL_VERSION), 
+                                                    var.getValue() );
     }
     
-    if ( lcname.StartsWith( _("vscp.websrv.auth.file.global") ) ) {
-        wxString strval;
-        strval = var.getValue();
-        memset( gpobj->m_global_auth_file, 0, sizeof( gpobj->m_global_auth_file ) );
-        memcpy( gpobj->m_global_auth_file, 
-                    (const char *)strval.mbc_str(), 
-                    wxMin( sizeof( gpobj->m_global_auth_file)-1, strval.Length() ) );
-        return gpobj->updateConfigurationRecordItem( _("vscpd_Webserver_GlobalAuthFile"), 
-                                                    strval );
+    if ( lcname.StartsWith( _("vscp.websrv.ssl_short_trust") ) ) {
+        var.getValue( &gpobj->m_web_ssl_short_trust );
+        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_SSL_SHORT_TRUST), 
+                             gpobj->m_web_ssl_short_trust ? "1" : "0" );
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.cgi_interpreter") ) ) {
+        gpobj->m_web_cgi_interpreter = var.getValue();
+        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_CGI_INTERPRETER), 
+                                                    var.getValue() );
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.cgi_patterns") ) ) {
+        gpobj->m_web_cgi_patterns = var.getValue();
+        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_CGI_PATTERNS), 
+                                                    var.getValue() );
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.cgi_environment") ) ) {
+        gpobj->m_web_cgi_environment = var.getValue();
+        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_CGI_ENVIRONMENT), 
+                                                    var.getValue() );
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.protect_uri") ) ) {
+        gpobj->m_web_protect_uri = var.getValue();
+        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_PROTECT_URI), 
+                                                    var.getValue() );
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.trottle") ) ) {
+        gpobj->m_web_trottle = var.getValue();
+        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_TROTTLE), 
+                                                    var.getValue() );
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.enable_directory_listing") ) ) {
+        var.getValue( &gpobj->m_web_enable_directory_listing );
+        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_ENABLE_DIRECTORY_LISTING), 
+                             gpobj->m_web_enable_directory_listing ? "1" : "0" );
+    }
+ 
+    if ( lcname.StartsWith( _("vscp.websrv.enable_keep_alive") ) ) {
+        var.getValue( &gpobj->m_web_enable_keep_alive );
+        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_ENABLE_KEEP_ALIVE), 
+                             gpobj->m_web_enable_keep_alive ? "1" : "0" );
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.keep_alive_timeout_ms") ) ) {
+        gpobj->m_web_keep_alive_timeout_ms = atol( (const char *)var.getValue().mbc_str() );
+        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_KEEP_ALIVE_TIMEOUT_MS), 
+                                                    var.getValue() );
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.access_control_list") ) ) {
+        gpobj->m_web_access_control_list = var.getValue();
+        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_LIST), 
+                                                    var.getValue() );
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.mime_types") ) ) {
+        gpobj->m_web_extra_mime_types = var.getValue();
+        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_MIME_TYPES), 
+                                                    var.getValue() );
+    }
+        
+    if ( lcname.StartsWith( _("vscp.websrv.num_threads") ) ) {
+        gpobj->m_web_num_threads = atoi( (const char *)var.getValue().mbc_str() );
+        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_NUM_THREADS), 
+                                                    var.getValue() );
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.hide_file_patterns") ) ) {
+        gpobj->m_web_url_rewrite_patterns = var.getValue();
+        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_HIDE_FILE_PATTERNS), 
+                                                    var.getValue() );
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.run_as_user") ) ) {
+        gpobj->m_web_run_as_user = var.getValue();
+        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_RUN_AS_USER), 
+                                                    var.getValue() );
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.url_rewrite_patterns") ) ) {
+        gpobj->m_web_url_rewrite_patterns = var.getValue();
+        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_URL_REWRITE_PATTERNS), 
+                                                    var.getValue() );
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.request_timeout_ms") ) ) {
+        gpobj->m_web_request_timeout_ms = atol( (const char *)var.getValue() );
+        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_REQUEST_TIMEOUT_MS), 
+                                                    var.getValue() );
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.linger_timeout_ms") ) ) {
+        gpobj->m_web_linger_timeout_ms = atol( (const char *)var.getValue() );
+        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_LINGER_TIMEOUT_MS), 
+                                                    var.getValue() );
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.decode_url") ) ) {
+        var.getValue( &gpobj->m_web_decode_url );
+        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_DECODE_URL), 
+                             gpobj->m_web_decode_url ? "1" : "0" );
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.global_authfile") ) ) {
+        gpobj->m_web_global_auth_file = var.getValue();
+        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_GLOBAL_AUTHFILE), 
+                                                    var.getValue() );
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.per_directory_auth_file") ) ) {
+        gpobj->m_web_per_directory_auth_file = var.getValue();
+        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_PER_DIRECTORY_AUTH_FILE), 
+                                                    var.getValue() );
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.ssi_patterns") ) ) {
+        gpobj->m_web_ssi_patterns = var.getValue();
+        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_SSI_PATTERNS), 
+                                                    var.getValue() );
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.access_control_allow_origin") ) ) {
+        gpobj->m_web_access_control_allow_origin = var.getValue();
+        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_ALLOW_ORIGIN), 
+                                                    var.getValue() );
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.access_control_allow_methods") ) ) {
+        gpobj->m_web_access_control_allow_methods = var.getValue();
+        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_ALLOW_METHODS), 
+                                                    var.getValue() );
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.access_control_allow_headers") ) ) {
+        gpobj->m_web_access_control_allow_headers = var.getValue();
+        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_ALLOW_HEADERS), 
+                                                    var.getValue() );
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.error_pages") ) ) {
+        gpobj->m_web_error_pages = var.getValue();
+        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_ERROR_PAGES), 
+                                                    var.getValue() );
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.tcp_nodelay") ) ) {
+        gpobj->m_web_tcp_nodelay = atol( (const char *)var.getValue() );
+        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_TCP_NO_DELAY), 
+                                                    var.getValue() );
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.static_file_max_age") ) ) {
+        gpobj->m_web_static_file_max_age = atol( (const char *)var.getValue() );
+        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_STATIC_FILE_MAX_AGE), 
+                                                    var.getValue() );
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.strict_transport_security_max_age") ) ) {
+        gpobj->m_web_strict_transport_security_max_age = atol( (const char *)var.getValue() );
+        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_STRICT_TRANSPORT_SECURITY_MAX_AGE), 
+                                                    var.getValue() );
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.sendfile_call") ) ) {
+        var.getValue( &gpobj->m_web_allow_sendfile_call );
+        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_SENDFILE_CALL), 
+                             gpobj->m_web_allow_sendfile_call ? "1" : "0" );
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.additional_headers") ) ) {
+        gpobj->m_web_additional_header = var.getValue();
+        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_ADDITIONAL_HEADERS), 
+                                                    var.getValue() );
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.max_request_size") ) ) {
+        gpobj->m_web_max_request_size = atol( (const char *)var.getValue() );
+        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_MAX_REQUEST_SIZE), 
+                                                    var.getValue() );
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.allow_index_script_resource") ) ) {
+        var.getValue( &gpobj->m_web_allow_index_script_resource );
+        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_ALLOW_INDEX_SCRIPT_RESOURCE), 
+                             gpobj->m_web_allow_index_script_resource ? "1" : "0" );
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.duktape_script_patterns") ) ) {
+        gpobj->m_web_duktape_script_patterns = var.getValue();
+        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_DUKTAPE_SCRIPT_PATTERNS), 
+                                                    var.getValue() );
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.lua_preload_file") ) ) {
+        gpobj->m_web_lua_preload_file = var.getValue();
+        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_LUA_PRELOAD_FILE), 
+                                                    var.getValue() );
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.lua_script_patterns") ) ) {
+        gpobj->m_web_lua_script_patterns = var.getValue();
+        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_LUA_SCRIPT_PATTERNS), 
+                                                    var.getValue() );
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.lua_server_page_patterns") ) ) {
+        gpobj->m_web_lua_server_page_patterns = var.getValue();
+        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_LUA_SERVER_PAGE_PATTERNS), 
+                                                    var.getValue() );
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.lua_websockets_patterns") ) ) {
+        gpobj->m_web_lua_websocket_patterns = var.getValue();
+        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_LUA_WEBSOCKET_PATTERNS), 
+                                                    var.getValue() );
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.lua_background_script") ) ) {
+        gpobj->m_web_lua_background_script = var.getValue();
+        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_LUA_BACKGROUND_SCRIPT), 
+                                                    var.getValue() );
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websrv.lua_background_script_params") ) ) {
+        gpobj->m_web_lua_background_script_params = var.getValue();
+        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_LUA_BACKGROUND_SCRIPT_PARAMS), 
+                                                    var.getValue() );
+    }
+    
+
+    // *************************************************************************
+    //                            Websocket-Server
+    // *************************************************************************
+
+    if ( lcname.StartsWith( _("vscp.websockets.enable") ) ) {
+        var.getValue( &gpobj->m_bWebsocketsEnable );
+        return gpobj->updateConfigurationRecordItem( _("websocket_enable"), 
+                             gpobj->m_bWebsocketsEnable ? "1" : "0" );
     }
 
+    if ( lcname.StartsWith( _("vscp.websockets.enable") ) ) {
+        gpobj->m_websocket_document_root = var.getValue();
+        return gpobj->updateConfigurationRecordItem( _("websocket_document_root"), 
+                             gpobj->m_websocket_document_root );
+    }
+    
+    if ( lcname.StartsWith( _("vscp.websockets.enable") ) ) {
+        gpobj->m_websocket_timeout_ms = atol( (const char *)var.getValue().mbc_str() );
+        return gpobj->updateConfigurationRecordItem( _("websocket_timeout_ms"), 
+                             var.getValue() );
+    }
 
-// *****************************************************************************
-//                            Websocket-Server
-// *****************************************************************************
-
-
-
-
-// *****************************************************************************
-//                            Decision Matrix
-// *****************************************************************************
+    // *************************************************************************
+    //                            Decision Matrix
+    // *************************************************************************
 
     
     if ( lcname.StartsWith( _("vscp.dm.xml.path") ) ) {
@@ -5088,9 +5850,9 @@ bool CVariableStorage::putStockVariable( CVSCPVariable& var,
     }
 
 
-// *****************************************************************************
-//                             Variables
-// *****************************************************************************
+    // *************************************************************************
+    //                             Variables
+    // *************************************************************************
 
     if ( lcname.StartsWith( _("vscp.variable.db.path") ) ) {
         wxString strval;
@@ -5109,9 +5871,9 @@ bool CVariableStorage::putStockVariable( CVSCPVariable& var,
     }
 
 
-// *****************************************************************************
-//                              Log files
-// *****************************************************************************
+    // *************************************************************************
+    //                              Log files
+    // *************************************************************************
 
     // Enable syslog logging
     if ( lcname.StartsWith( _("vscp.log.syslog.enable") ) ) {
@@ -5137,9 +5899,9 @@ bool CVariableStorage::putStockVariable( CVSCPVariable& var,
     }
 
     
-// *****************************************************************************
-//                             Databases
-// *****************************************************************************    
+    // *************************************************************************
+    //                             Databases
+    // *************************************************************************
     
     if ( lcname.StartsWith(  _("vscp.database.vscpdata.path") ) ) {
         wxString strval;
@@ -5158,9 +5920,9 @@ bool CVariableStorage::putStockVariable( CVSCPVariable& var,
     }
     
     
-// *****************************************************************************
-//                             Decision Matrix
-// *****************************************************************************
+    // *************************************************************************
+    //                             Decision Matrix
+    // *************************************************************************
     if ( lcname.StartsWith( _("vscp.dm.count") ) ) {
         return false;   // None writable
     }
@@ -5269,8 +6031,8 @@ bool CVariableStorage::putStockVariable( CVSCPVariable& var,
                 }
                 strValue.Format( _("%d"), val );
                 return gpobj->m_dm.updateDatabaseRecordItem( id,
-                                                                    _("maskPriority"),
-                                                                    strValue );
+                                                                _("maskPriority"),
+                                                                strValue );
             }
             else if ( wxstr.StartsWith( _("mask.class") ) ) {
                 
@@ -5284,8 +6046,8 @@ bool CVariableStorage::putStockVariable( CVSCPVariable& var,
                 }
                 strValue.Format( _("%d"), val );
                 return gpobj->m_dm.updateDatabaseRecordItem( id,
-                                                                    _("maskClass"),
-                                                                    strValue );
+                                                                _("maskClass"),
+                                                                strValue );
             }
             else if ( wxstr.StartsWith( _("mask.type") ) ) {
                 
@@ -5299,8 +6061,8 @@ bool CVariableStorage::putStockVariable( CVSCPVariable& var,
                 }
                 strValue.Format( _("%d"), val );
                 return gpobj->m_dm.updateDatabaseRecordItem( id,
-                                                                    _("maskType"),
-                                                                    strValue );
+                                                                _("maskType"),
+                                                                strValue );
             }
             else if ( wxstr.StartsWith( _("mask.guid") ) ) {
                 
@@ -5314,8 +6076,8 @@ bool CVariableStorage::putStockVariable( CVSCPVariable& var,
                     memcpy( pdm->m_vscpfilter.mask_GUID, guid.getGUID(), 16 );
                 }
                 return gpobj->m_dm.updateDatabaseRecordItem( id,
-                                                                    _("maskGUID"),
-                                                                    strValue );
+                                                                _("maskGUID"),
+                                                                strValue );
             }
             else if ( wxstr.StartsWith( _("filter.priority") ) ) {
                 
@@ -5329,8 +6091,8 @@ bool CVariableStorage::putStockVariable( CVSCPVariable& var,
                 }
                 strValue.Format( _("%d"), val );
                 return gpobj->m_dm.updateDatabaseRecordItem( id,
-                                                                    _("filterPriority"),
-                                                                    strValue );
+                                                                _("filterPriority"),
+                                                                strValue );
             }
             else if ( wxstr.StartsWith( _("filter.class") ) ) {
                 
@@ -5344,8 +6106,8 @@ bool CVariableStorage::putStockVariable( CVSCPVariable& var,
                 }
                 strValue.Format( _("%d"), val );
                 return gpobj->m_dm.updateDatabaseRecordItem( id,
-                                                                    _("filterClass"),
-                                                                    strValue );
+                                                                _("filterClass"),
+                                                                strValue );
             }
             else if ( wxstr.StartsWith( _("filter.type") ) ) {
                 
@@ -5359,8 +6121,8 @@ bool CVariableStorage::putStockVariable( CVSCPVariable& var,
                 }
                 strValue.Format( _("%d"), val );
                 return gpobj->m_dm.updateDatabaseRecordItem( id,
-                                                                    _("filterType"),
-                                                                    strValue );
+                                                                _("filterType"),
+                                                                strValue );
             }
             else if ( wxstr.StartsWith( _("filter.guid") ) ) {
                 
@@ -5374,8 +6136,8 @@ bool CVariableStorage::putStockVariable( CVSCPVariable& var,
                     memcpy( pdm->m_vscpfilter.filter_GUID, guid.getGUID(), 16 );
                 }
                 return gpobj->m_dm.updateDatabaseRecordItem( id,
-                                                                    _("filterGUID"),
-                                                                    strValue );
+                                                                _("filterGUID"),
+                                                                strValue );
             }
             else if ( wxstr.StartsWith( _("allowed.start") ) ) {
                 
@@ -5387,8 +6149,8 @@ bool CVariableStorage::putStockVariable( CVSCPVariable& var,
                     pdm->m_timeAllow.m_fromTime.ParseISOCombined( strValue );
                 }
                 return gpobj->m_dm.updateDatabaseRecordItem( id,
-                                                                    _("allowedStart"),
-                                                                    strValue );
+                                                                _("allowedStart"),
+                                                                strValue );
             }
             else if ( wxstr.StartsWith( _("allowed.end") ) ) {
                 
@@ -5400,8 +6162,8 @@ bool CVariableStorage::putStockVariable( CVSCPVariable& var,
                     pdm->m_timeAllow.m_endTime.ParseISOCombined( strValue );
                 }
                 return gpobj->m_dm.updateDatabaseRecordItem( id,
-                                                                    _("allowedEnd"),
-                                                                    strValue );
+                                                            _("allowedEnd"),
+                                                            strValue );
             }
             else if ( wxstr.StartsWith( _("allowed.monday") ) ) {
                 
@@ -5415,8 +6177,8 @@ bool CVariableStorage::putStockVariable( CVSCPVariable& var,
                 }
                 bVal ? strValue=_("1") : _("0");
                 return gpobj->m_dm.updateDatabaseRecordItem( id,
-                                                                    _("allowedMonday"),
-                                                                    strValue );
+                                                            _("allowedMonday"),
+                                                            strValue );
             }
             else if ( wxstr.StartsWith( _("allowed.tuesday") ) ) {
                 
@@ -5430,8 +6192,8 @@ bool CVariableStorage::putStockVariable( CVSCPVariable& var,
                 }
                 bVal ? strValue=_("1") : _("0");
                 return gpobj->m_dm.updateDatabaseRecordItem( id,
-                                                                    _("allowedTuesday"),
-                                                                    strValue );
+                                                            _("allowedTuesday"),
+                                                            strValue );
             }
             else if ( wxstr.StartsWith( _("allowed.wednessday") ) ) {
                 
@@ -5445,8 +6207,8 @@ bool CVariableStorage::putStockVariable( CVSCPVariable& var,
                 }
                 bVal ? strValue=_("1") : _("0");
                 return gpobj->m_dm.updateDatabaseRecordItem( id,
-                                                                    _("allowedWednessday"),
-                                                                    strValue );
+                                                            _("allowedWednessday"),
+                                                            strValue );
             }
             else if ( wxstr.StartsWith( _("allowed.thursday") ) ) {
                 
@@ -5460,8 +6222,8 @@ bool CVariableStorage::putStockVariable( CVSCPVariable& var,
                 }
                 bVal ? strValue=_("1") : _("0");
                 return gpobj->m_dm.updateDatabaseRecordItem( id,
-                                                                    _("allowedThursday"),
-                                                                    strValue );
+                                                            _("allowedThursday"),
+                                                            strValue );
             }
             else if ( wxstr.StartsWith( _("allowed.friday") ) ) {
                 
@@ -5475,8 +6237,8 @@ bool CVariableStorage::putStockVariable( CVSCPVariable& var,
                 }
                 bVal ? strValue=_("1") : _("0");
                 return gpobj->m_dm.updateDatabaseRecordItem( id,
-                                                                    _("allowedFriday"),
-                                                                    strValue );
+                                                                _("allowedFriday"),
+                                                                strValue );
             }
             else if ( wxstr.StartsWith( _("allowed.saturday") ) ) {
                 
@@ -5490,8 +6252,8 @@ bool CVariableStorage::putStockVariable( CVSCPVariable& var,
                 }
                 bVal ? strValue=_("1") : _("0");
                 return gpobj->m_dm.updateDatabaseRecordItem( id,
-                                                                    _("allowedSaturday"),
-                                                                    strValue );
+                                                            _("allowedSaturday"),
+                                                            strValue );
             }
             else if ( wxstr.StartsWith( _("allowed.sunday") ) ) {
                 
@@ -5505,8 +6267,8 @@ bool CVariableStorage::putStockVariable( CVSCPVariable& var,
                 }
                 bVal ? strValue=_("1") : _("0");
                 return gpobj->m_dm.updateDatabaseRecordItem( id,
-                                                                    _("allowedSunday"),
-                                                                    strValue );
+                                                            _("allowedSunday"),
+                                                            strValue );
             }
             else if ( wxstr.StartsWith( _("allowed.time") ) ) {
                 
@@ -5518,8 +6280,8 @@ bool CVariableStorage::putStockVariable( CVSCPVariable& var,
                     pdm->m_timeAllow.parseActionTime( strValue );
                 }
                 return gpobj->m_dm.updateDatabaseRecordItem( id,
-                                                                    _("allowedTime"),
-                                                                    strValue );
+                                                            _("allowedTime"),
+                                                            strValue );
             }
             else if ( wxstr.StartsWith( _("bCheckIndex") ) ) {
                 
@@ -5533,8 +6295,8 @@ bool CVariableStorage::putStockVariable( CVSCPVariable& var,
                 }
                 bVal ? strValue=_("1") : _("0");
                 return gpobj->m_dm.updateDatabaseRecordItem( id,
-                                                                    _("bCheckIndex"),
-                                                                    strValue );
+                                                            _("bCheckIndex"),
+                                                            strValue );
             }
             else if ( wxstr.StartsWith( _("index") ) ) {
                 
@@ -5549,8 +6311,8 @@ bool CVariableStorage::putStockVariable( CVSCPVariable& var,
                 }
                 strValue.Format( _("%d"), val );
                 return gpobj->m_dm.updateDatabaseRecordItem( id,
-                                                                    _("index"),
-                                                                    strValue );
+                                                            _("index"),
+                                                            strValue );
             }
             else if ( wxstr.StartsWith( _("bCheckZone") ) ) {
                 
@@ -5564,8 +6326,8 @@ bool CVariableStorage::putStockVariable( CVSCPVariable& var,
                 }
                 bVal ? strValue=_("1") : _("0");
                 return gpobj->m_dm.updateDatabaseRecordItem( id,
-                                                                    _("bCheckZone"),
-                                                                    strValue );
+                                                            _("bCheckZone"),
+                                                            strValue );
             }
             else if ( wxstr.StartsWith( _("zone") ) ) {
                 
@@ -5579,8 +6341,8 @@ bool CVariableStorage::putStockVariable( CVSCPVariable& var,
                 }
                 strValue.Format( _("%d"), val );
                 return gpobj->m_dm.updateDatabaseRecordItem( id,
-                                                                    _("zone"),
-                                                                    strValue );
+                                                            _("zone"),
+                                                            strValue );
             }
             else if ( wxstr.StartsWith( _("bCheckSubZone") ) ) {
                 
@@ -5594,8 +6356,8 @@ bool CVariableStorage::putStockVariable( CVSCPVariable& var,
                 }
                 bVal ? strValue=_("1") : _("0");
                 return gpobj->m_dm.updateDatabaseRecordItem( id,
-                                                                    _("bCheckSubZone"),
-                                                                    strValue );
+                                                            _("bCheckSubZone"),
+                                                            strValue );
             }
             else if ( wxstr.StartsWith( _("subzone") ) ) {
                 
@@ -5609,8 +6371,8 @@ bool CVariableStorage::putStockVariable( CVSCPVariable& var,
                 }
                 strValue.Format( _("%d"), val );
                 return gpobj->m_dm.updateDatabaseRecordItem( id,
-                                                                    _("subzone"),
-                                                                    strValue );
+                                                            _("subzone"),
+                                                            strValue );
             }
             else if ( wxstr.StartsWith( _("measurement.value") ) ) {
                 
@@ -5624,8 +6386,8 @@ bool CVariableStorage::putStockVariable( CVSCPVariable& var,
                 }
                 strValue.Format( _("%d"), val );
                 return gpobj->m_dm.updateDatabaseRecordItem( id,
-                                                                    _("measurementValue"),
-                                                                    strValue );
+                                                            _("measurementValue"),
+                                                            strValue );
             }
             else if ( wxstr.StartsWith( _("measurement.unit") ) ) {
                 
@@ -5639,8 +6401,8 @@ bool CVariableStorage::putStockVariable( CVSCPVariable& var,
                 }
                 strValue.Format( _("%d"), val );
                 return gpobj->m_dm.updateDatabaseRecordItem( id,
-                                                                    _("measurementUnit"),
-                                                                    strValue );
+                                                            _("measurementUnit"),
+                                                            strValue );
             }
             else if ( wxstr.StartsWith( _("measurement.compare") ) ) {
                 
@@ -5654,8 +6416,8 @@ bool CVariableStorage::putStockVariable( CVSCPVariable& var,
                 }
                 strValue.Format( _("%d"), val );
                 return gpobj->m_dm.updateDatabaseRecordItem( id,
-                                                                    _("measurementCompare"),
-                                                                    strValue );
+                                                                _("measurementCompare"),
+                                                                strValue );
             }
             else if ( wxstr.StartsWith( _("measurement.compare.string") ) ) {
                 return false;
@@ -5670,8 +6432,8 @@ bool CVariableStorage::putStockVariable( CVSCPVariable& var,
                     pdm->m_comment = strValue;
                 }
                 return gpobj->m_dm.updateDatabaseRecordItem( id,
-                                                                    _("comment"),
-                                                                    strValue );
+                                                            _("comment"),
+                                                            strValue );
             }
             else if ( wxstr.StartsWith( _("count.trigger") ) ) {
                 if ( NULL != pdm ) {                
@@ -5683,7 +6445,8 @@ bool CVariableStorage::putStockVariable( CVSCPVariable& var,
                     pdm->m_errorCounter = 0;
                 }
             }
-            else if ( ( wxstr.StartsWith( _("error") ) ) || ( wxstr.StartsWith( _("error.string") ) ) ) {
+            else if ( ( wxstr.StartsWith( _("error") ) ) || 
+                      ( wxstr.StartsWith( _("error.string") ) ) ) {
                 return false;   // None writable
             }
             
@@ -5695,49 +6458,49 @@ bool CVariableStorage::putStockVariable( CVSCPVariable& var,
         }
     }
     
-// *****************************************************************************
-//                              Drivers
-// *****************************************************************************
+    // *************************************************************************
+    //                              Drivers
+    // *************************************************************************
     
     if ( lcname.StartsWith( _("vscp.driver.") ) ) {
         
     }
     
-// *****************************************************************************
-//                             Interfaces
-// ***************************************************************************** 
+    // *************************************************************************
+    //                             Interfaces
+    // *************************************************************************
     
     if ( lcname.StartsWith( _("vscp.interface.") ) ) {
         ;
     }
     
-// *****************************************************************************
-//                              Discovery
-// ***************************************************************************** 
+    // *************************************************************************
+    //                              Discovery
+    // *************************************************************************
     
     if ( lcname.StartsWith( _("vscp.discovery.") ) ) {
         ;
     }
     
-// *****************************************************************************
-//                                 Log
-// *****************************************************************************    
+    // *************************************************************************
+    //                                 Log
+    // *************************************************************************
     
     if ( lcname.StartsWith( _("vscp.log.") ) ) {
         ;
     }
     
-// *****************************************************************************
-//                                Tables
-// *****************************************************************************    
+    // *************************************************************************
+    //                                Tables
+    // *************************************************************************
     
     if ( lcname.StartsWith( _("vscp.table.") ) ) {
         ;
     }
     
-// *****************************************************************************
-//                                Users
-// *****************************************************************************    
+    // *************************************************************************
+    //                                Users
+    // *************************************************************************
       
     if ( lcname.StartsWith( _("vscp.user.") ) ) {
         

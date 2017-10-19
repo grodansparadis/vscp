@@ -894,7 +894,7 @@ bool CUserList::addSuperUser( const wxString& user,
     
     wxString driverhash = user;
     driverhash += _(":");
-    driverhash += wxString::FromUTF8( gpobj->m_authDomain );
+    driverhash += wxString::FromUTF8( gpobj->m_web_authentication_domain );
     driverhash += _(":");
     driverhash += password;
     
@@ -973,7 +973,7 @@ bool CUserList::addUser( const wxString& user,
     // MD5 Token
     wxString driverhash = user;
     driverhash += _(":");
-    driverhash += wxString::FromUTF8( gpobj->m_authDomain );
+    driverhash += wxString::FromUTF8( gpobj->m_web_authentication_domain );
     driverhash += _(":");
     driverhash += password;
     

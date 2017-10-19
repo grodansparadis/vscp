@@ -119,53 +119,184 @@
 #define VSCPDB_CONFIG_NAME_PATH_DB_DATA                 "path_db_data"
 #define VSCPDB_CONFIG_DEFAULT_PATH_DB_DATA              "/srv/vscp/vscp_data.sqlite3"
 
-#define VSCPDB_CONFIG_NAME_WEB_PATH_ROOT                "web_path_root"
-#define VSCPDB_CONFIG_DEFAULT_WEB_PATH_ROOT             "/srv/vscp/web"
 
-#define VSCPDB_CONFIG_NAME_WEB_ADDR                     "web_addr"
-#define VSCPDB_CONFIG_DEFAULT_WEB_ADDR                  "tcp://8080"
 
-#define VSCPDB_CONFIG_NAME_WEB_PATH_CERT                "web_path_cert"
-#define VSCPDB_CONFIG_DEFAULT_WEB_PATH_CERT             "/srv/vscp/certs"
+// WEB server
 
-#define VSCPDB_CONFIG_NAME_WEB_AUTHDOMAIN               "web_authdomain"
-#define VSCPDB_CONFIG_DEFAULT_WEB_AUTHDOMAIN            "mydomain.com"
+#define VSCPDB_CONFIG_NAME_WEB_ENABLE                   "web_enable"
+#define VSCPDB_CONFIG_DEFAULT_WEB_ENABLE                "1"
+
+#define VSCPDB_CONFIG_NAME_WEB_DOCUMENT_ROOT            "web_document_root"
+#define VSCPDB_CONFIG_DEFAULT_WEB_DOCUMENT_ROOT         "/srv/vscp/web"
+
+#define VSCPDB_CONFIG_NAME_WEB_LISTENING_PORTS          "web_listening_ports"
+#define VSCPDB_CONFIG_DEFAULT_WEB_LISTENING_PORTS       "[::]:8888r,[::]:8843s,8884"
+
+#define VSCPDB_CONFIG_NAME_WEB_INDEX_FILES              "web_index_files"
+#define VSCPDB_CONFIG_DEFAULT_WEB_INDEX_FILES           "index.xhtml,index.html,index.htm,index.lp,index.lsp,index.lua,index.cgi,index.shtml,index.php"
+
+#define VSCPDB_CONFIG_NAME_WEB_AUTHENTICATION_DOMAIN    "web_authentication_domain"
+#define VSCPDB_CONFIG_DEFAULT_WEB_AUTHENTICATION_DOMAIN "mydomain.com"
+
+#define VSCPDB_CONFIG_NAME_WEB_ENABLE_AUTH_DOMAIN_CHECK "web_enable_auth_domain_check"
+#define VSCPDB_CONFIG_DEFAULT_WEB_ENABLE_AUTH_DOMAIN_CHECK "0"
+
+#define VSCPDB_CONFIG_NAME_WEB_SSL_CERTIFICAT           "web_ssl_certificat"
+#define VSCPDB_CONFIG_DEFAULT_WEB_SSL_CERTIFICAT        "/srv/vscp/certs/server.pem"
+
+#define VSCPDB_CONFIG_NAME_WEB_SSL_CERTIFICAT_CHAIN     "web_ssl_certificat_chain"
+#define VSCPDB_CONFIG_DEFAULT_WEB_SSL_CERTIFICAT_CHAIN  ""
+
+#define VSCPDB_CONFIG_NAME_WEB_SSL_VERIFY_PEER          "web_ssl_verify_peer"
+#define VSCPDB_CONFIG_DEFAULT_WEB_SSL_VERIFY_PEER       "0"
+
+#define VSCPDB_CONFIG_NAME_WEB_SSL_CA_PATH              "web_ssl_ca_path"
+#define VSCPDB_CONFIG_DEFAULT_WEB_SSL_CA_PATH           ""
+
+#define VSCPDB_CONFIG_NAME_WEB_SSL_CA_FILE              "web_ssl_ca_file"
+#define VSCPDB_CONFIG_DEFAULT_WEB_SSL_CA_FILE           ""
+
+#define VSCPDB_CONFIG_NAME_WEB_SSL_VERIFY_DEPTH         "web_ssl_verify_depth"
+#define VSCPDB_CONFIG_DEFAULT_WEB_SSL_VERIFY_DEPTH      "9"
+
+#define VSCPDB_CONFIG_NAME_WEB_SSL_DEFAULT_VERIFY_PATHS "web_ssl_default_verify_paths"
+#define VSCPDB_CONFIG_DEFAULT_WEB_SSL_DEFAULT_VERIFY_PATHS "1"
+
+#define VSCPDB_CONFIG_NAME_WEB_SSL_CHIPHER_LIST         "web_ssl_cipher_list"
+#define VSCPDB_CONFIG_DEFAULT_WEB_SSL_CHIPHER_LIST      "DES-CBC3-SHA:AES128-SHA:AES128-GCM-SHA256"
+
+#define VSCPDB_CONFIG_NAME_WEB_SSL_PROTOCOL_VERSION     "web_ssl_protocol_version"
+#define VSCPDB_CONFIG_DEFAULT_WEB_SSL_PROTOCOL_VERSION  "3"
+
+#define VSCPDB_CONFIG_NAME_WEB_SSL_SHORT_TRUST          "web_ssl_short_trust"
+#define VSCPDB_CONFIG_DEFAULT_WEB_SSL_SHORT_TRUST       "0"
 
 #define VSCPDB_CONFIG_NAME_WEB_CGI_INTERPRETER          "web_cgi_interpreter"
 #define VSCPDB_CONFIG_DEFAULT_WEB_CGI_INTERPRETER       ""
 
-#define VSCPDB_CONFIG_NAME_WEB_CGI_PATTERN              "web_cgi_pattern"
-#define VSCPDB_CONFIG_DEFAULT_WEB_CGI_PATTERN           ""
+#define VSCPDB_CONFIG_NAME_WEB_CGI_PATTERNS             "web_cgi_patterns"
+#define VSCPDB_CONFIG_DEFAULT_WEB_CGI_PATTERNS          "**.cgi$|**.pl$|**.php|**.py"
+        
+#define VSCPDB_CONFIG_NAME_WEB_CGI_ENVIRONMENT          "web_cgi_environment"
+#define VSCPDB_CONFIG_DEFAULT_WEB_CGI_ENVIRONMENT       ""
 
-#define VSCPDB_CONFIG_NAME_WEB_DIR_LISTING              "web_dir_listing"
-#define VSCPDB_CONFIG_DEFAULT_WEB_DIR_LISTING           "0"
+#define VSCPDB_CONFIG_NAME_WEB_PROTECT_URI              "web_protect_uri"
+#define VSCPDB_CONFIG_DEFAULT_WEB_PROTECT_URI           ""
 
-#define VSCPDB_CONFIG_NAME_WEB_HIDE_FILE_PATTERN        "web_hide_file_pattern"
-#define VSCPDB_CONFIG_DEFAULT_WEB_HIDE_FILE_PATTERN     ""
+#define VSCPDB_CONFIG_NAME_WEB_TROTTLE                  "web_trottle"
+#define VSCPDB_CONFIG_DEFAULT_WEB_TROTTLE               ""
 
-#define VSCPDB_CONFIG_NAME_WEB_INDEX_FILES              "web_index_files"
-#define VSCPDB_CONFIG_DEFAULT_WEB_INDEX_FILES           ""
+#define VSCPDB_CONFIG_NAME_WEB_ENABLE_DIRECTORY_LISTING "web_enable_directory_listing"
+#define VSCPDB_CONFIG_DEFAULT_WEB_ENABLE_DIRECTORY_LISTING "1"
 
-#define VSCPDB_CONFIG_NAME_WEB_MIME_EXTRA               "web_mime_extra"
-#define VSCPDB_CONFIG_DEFAULT_WEB_MIME_EXTRA            ""
+#define VSCPDB_CONFIG_NAME_WEB_ENABLE_KEEP_ALIVE        "web_enable_keep_alive"
+#define VSCPDB_CONFIG_DEFAULT_WEB_ENABLE_KEEP_ALIVE     "0"
 
-#define VSCPDB_CONFIG_NAME_WEB_URL_REWRITE              "web_url_rewrite"
-#define VSCPDB_CONFIG_DEFAULT_WEB_URL_REWRITE           ""
+#define VSCPDB_CONFIG_NAME_WEB_KEEP_ALIVE_TIMEOUT_MS    "web_keep_alive_timeout_ms"
+#define VSCPDB_CONFIG_DEFAULT_WEB_KEEP_ALIVE_TIMEOUT_MS "0"
 
-#define VSCPDB_CONFIG_NAME_WEB_SSI_PATTERN              "web_ssi_pattern"
-#define VSCPDB_CONFIG_DEFAULT_WEB_SSI_PATTERN           ""
+#define VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_LIST      "web_access_control_list"
+#define VSCPDB_CONFIG_DEFAULT_WEB_ACCESS_CONTROL_LIST   ""
 
-#define VSCPDB_CONFIG_NAME_WEB_DIR_AUTHFILE             "web_dir_authfile"
-#define VSCPDB_CONFIG_DEFAULT_WEB_DIR_AUTHFILE          ""
+#define VSCPDB_CONFIG_NAME_WEB_MIME_TYPES               "web_mime_types"
+#define VSCPDB_CONFIG_DEFAULT_WEB_MIME_TYPES            ""
+
+#define VSCPDB_CONFIG_NAME_WEB_NUM_THREADS              "web_num_threads"
+#define VSCPDB_CONFIG_DEFAULT_WEB_NUM_THREADS           "50"
+
+#define VSCPDB_CONFIG_NAME_WEB_HIDE_FILE_PATTERNS       "web_hide_file_patterns"
+#define VSCPDB_CONFIG_DEFAULT_WEB_HIDE_FILE_PATTERNS    ""
+
+#define VSCPDB_CONFIG_NAME_WEB_RUN_AS_USER              "web_run_as_user"
+#define VSCPDB_CONFIG_DEFAULT_WEB_RUN_AS_USER           ""
+
+#define VSCPDB_CONFIG_NAME_WEB_URL_REWRITE_PATTERNS     "web_url_rewrite_patterns"
+#define VSCPDB_CONFIG_DEFAULT_WEB_URL_REWRITE_PATTERNS  ""
+
+#define VSCPDB_CONFIG_NAME_WEB_REQUEST_TIMEOUT_MS       "web_request_timeout_ms"
+#define VSCPDB_CONFIG_DEFAULT_WEB_REQUEST_TIMEOUT_MS    "10000"
+
+#define VSCPDB_CONFIG_NAME_WEB_LINGER_TIMEOUT_MS       "web_linger_timeout_ms"
+#define VSCPDB_CONFIG_DEFAULT_WEB_LINGER_TIMEOUT_MS    "-1"
+
+#define VSCPDB_CONFIG_NAME_WEB_DECODE_URL               "web_decode_url"
+#define VSCPDB_CONFIG_DEFAULT_WEB_DECODE_URL            "1"
 
 #define VSCPDB_CONFIG_NAME_WEB_GLOBAL_AUTHFILE          "web_global_authfile"
 #define VSCPDB_CONFIG_DEFAULT_WEB_GLOBAL_AUTHFILE       ""
 
-#define VSCPDB_CONFIG_NAME_WEB_IP_ACL                   "web_ip_acl"
-#define VSCPDB_CONFIG_DEFAULT_WEB_IP_ACL                ""
+#define VSCPDB_CONFIG_NAME_WEB_PER_DIRECTORY_AUTH_FILE  "web_per_directory_auth_file"
+#define VSCPDB_CONFIG_DEFAULT_WEB_PER_DIRECTORY_AUTH_FILE ""
 
-#define VSCPDB_CONFIG_NAME_WEB_ROOT_DAV                 "web_root_dav"
-#define VSCPDB_CONFIG_DEFAULT_WEB_ROOT_DAV              ""
+#define VSCPDB_CONFIG_NAME_WEB_SSI_PATTERNS             "web_ssi_patterns"
+#define VSCPDB_CONFIG_DEFAULT_WEB_SSI_PATTERNS          ""
+
+#define VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_ALLOW_ORIGIN "web_access_control_allow_origin"
+#define VSCPDB_CONFIG_DEFAULT_WEB_ACCESS_CONTROL_ALLOW_ORIGIN "*"        
+
+#define VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_ALLOW_METHODS "web_access_control_allow_methods"
+#define VSCPDB_CONFIG_DEFAULT_WEB_ACCESS_CONTROL_ALLOW_METHODS "*"                      
+
+#define VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_ALLOW_HEADERS "web_access_control_allow_headers"
+#define VSCPDB_CONFIG_DEFAULT_WEB_ACCESS_CONTROL_ALLOW_HEADERS "*"                      
+
+#define VSCPDB_CONFIG_NAME_WEB_ERROR_PAGES              "web_error_pages"
+#define VSCPDB_CONFIG_DEFAULT_WEB_ERROR_PAGES           ""                      
+
+#define VSCPDB_CONFIG_NAME_WEB_TCP_NO_DELAY             "web_tcp_nodelay"
+#define VSCPDB_CONFIG_DEFAULT_WEB_TCP_NO_DELAY          "-1"                       
+ 
+#define VSCPDB_CONFIG_NAME_WEB_STATIC_FILE_MAX_AGE      "web_static_file_max_age"
+#define VSCPDB_CONFIG_DEFAULT_WEB_STATIC_FILE_MAX_AGE   "3600"                      
+                      
+#define VSCPDB_CONFIG_NAME_WEB_STRICT_TRANSPORT_SECURITY_MAX_AGE   "web_strict_transport_security_max_age"
+#define VSCPDB_CONFIG_DEFAULT_WEB_STRICT_TRANSPORT_SECURITY_MAX_AGE ""                      
+
+#define VSCPDB_CONFIG_NAME_WEB_SENDFILE_CALL            "web_sendfile_call"
+#define VSCPDB_CONFIG_DEFAULT_WEB_SENDFILE_CALL         "1"                      
+
+#define VSCPDB_CONFIG_NAME_WEB_ADDITIONAL_HEADERS       "web_additional_headers"
+#define VSCPDB_CONFIG_DEFAULT_WEB_ADDITIONAL_HEADERS    ""                        
+
+#define VSCPDB_CONFIG_NAME_WEB_MAX_REQUEST_SIZE         "web_max_request_size"
+#define VSCPDB_CONFIG_DEFAULT_WEB_MAX_REQUEST_SIZE      "16384"                       
+
+#define VSCPDB_CONFIG_NAME_WEB_ALLOW_INDEX_SCRIPT_RESOURCE      "web_allow_index_script_resource"
+#define VSCPDB_CONFIG_DEFAULT_WEB_ALLOW_INDEX_SCRIPT_RESOURCE   "0"                       
+
+#define VSCPDB_CONFIG_NAME_WEB_DUKTAPE_SCRIPT_PATTERNS      "web_duktape_script_patterns"
+#define VSCPDB_CONFIG_DEFAULT_WEB_DUKTAPE_SCRIPT_PATTERNS   "**.ssjs$"                       
+
+#define VSCPDB_CONFIG_NAME_WEB_LUA_PRELOAD_FILE         "web_lua_preload_file"
+#define VSCPDB_CONFIG_DEFAULT_WEB_LUA_PRELOAD_FILE      ""                      
+
+#define VSCPDB_CONFIG_NAME_WEB_LUA_SCRIPT_PATTERNS      "web_lua_script_patterns"
+#define VSCPDB_CONFIG_DEFAULT_WEB_LUA_SCRIPT_PATTERNS   "**.lua$"                      
+
+#define VSCPDB_CONFIG_NAME_WEB_LUA_SERVER_PAGE_PATTERNS     "web_lua_server_page_patterns"
+#define VSCPDB_CONFIG_DEFAULT_WEB_LUA_SERVER_PAGE_PATTERNS  "**.lp$|**.lsp$"                       
+
+#define VSCPDB_CONFIG_NAME_WEB_LUA_WEBSOCKET_PATTERNS   "web_lua_websockets_patterns"
+#define VSCPDB_CONFIG_DEFAULT_WEB_LUA_WEBSOCKET_PATTERNS "**.lua$"                      
+
+#define VSCPDB_CONFIG_NAME_WEB_LUA_BACKGROUND_SCRIPT      "web_lua_background_script"
+#define VSCPDB_CONFIG_DEFAULT_WEB_LUA_BACKGROUND_SCRIPT   ""                       
+
+#define VSCPDB_CONFIG_NAME_WEB_LUA_BACKGROUND_SCRIPT_PARAMS     "web_lua_background_script_params"
+#define VSCPDB_CONFIG_DEFAULT_WEB_LUA_BACKGROUND_SCRIPT_PARAMS  ""                      
+
+// Websockets
+
+#define VSCPDB_CONFIG_NAME_WEBSOCKET_ENABLE             "websocket_enable"
+#define VSCPDB_CONFIG_DEFAULT_WEBSOCKET_ENABLE          "1"
+
+#define VSCPDB_CONFIG_NAME_WEBSOCKET_DOCUMENT_ROOT      "websocket_document_root"
+#define VSCPDB_CONFIG_DEFAULT_WEBSOCKET_DOCUMENT_ROOT   "/srv/vscp/web"
+
+#define VSCPDB_CONFIG_NAME_WEBSOCKET_TIMEOUT_MS         "websocket_timeout_ms"
+#define VSCPDB_CONFIG_DEFAULT_WEBSOCKET_TIMEOUT_MS      "30000"
+
+// Automation
 
 #define VSCPDB_CONFIG_NAME_AUTOMATION_ENABLE            "automation_enable"
 #define VSCPDB_CONFIG_DEFAULT_AUTOMATION_ENABLE         "1"
