@@ -1780,11 +1780,14 @@ bool CVariableStorage::init( void )
     // Check filename
     if ( m_dbFilename.IsOk() && m_dbFilename.FileExists() ) {
 
-        if ( SQLITE_OK != sqlite3_open( (const char *)m_dbFilename.GetFullPath().mbc_str(),
+        if ( SQLITE_OK != 
+                sqlite3_open( (const char *)m_dbFilename.GetFullPath().mbc_str(),
                                             &m_db_vscp_external_variable ) ) {
 
             // Failed to open/create the database file
-            fprintf( stderr, "[Variable database init] VSCP Daemon external variable database could not be opened. - Will not be used.\n" );
+            fprintf( stderr, "[Variable database init] VSCP Daemon external "
+                             "variable database could not be opened."
+                             " - Will not be used.\n" );
             wxstr.Printf( _("Path=%s error=%s\n"),
                             (const char *)m_dbFilename.GetFullPath().mbc_str(),
                             sqlite3_errmsg( m_db_vscp_external_variable ) );
@@ -1798,12 +1801,15 @@ bool CVariableStorage::init( void )
             
             // We need to create the database from scratch. This may not work if
             // the database is in a read only location.
-            fprintf( stderr, "[Variable database init] VSCP Daemon external variable database does not exist - will be created.\n" );
-            wxstr.Printf( _("Path=%s\n"), (const char *)m_dbFilename.GetFullPath().mbc_str() );
+            fprintf( stderr, "[Variable database init] VSCP Daemon external "
+                    "variable database does not exist - will be created.\n" );
+            wxstr.Printf( _("Path=%s\n"), 
+                            (const char *)m_dbFilename.GetFullPath().mbc_str() );
             //fprintf( stderr, wxstr.mbc_str() );            
             gpobj->logMsg( wxstr );
             
-            if ( SQLITE_OK == sqlite3_open( (const char *)m_dbFilename.GetFullPath().mbc_str(),
+            if ( SQLITE_OK == 
+                    sqlite3_open( (const char *)m_dbFilename.GetFullPath().mbc_str(),
                                             &m_db_vscp_external_variable ) ) {            
                 // create the table.
                 doCreateExternalVariableTable();
@@ -1812,14 +1818,18 @@ bool CVariableStorage::init( void )
             else {
                 
                 // Failed to create the variable database
-                gpobj->logMsg( wxString::Format( _("[Variable database init] VSCP Daemon external variable database open  Err=%s\n"), sqlite3_errmsg( m_db_vscp_external_variable ) ) );
+                gpobj->logMsg( wxString::Format( _("[Variable database init] VSCP "
+                        "Daemon external variable database open  Err=%s\n"), 
+                        sqlite3_errmsg( m_db_vscp_external_variable ) ) );
             
                 
             }
             
         }
         else {
-            fprintf( stderr, "[Variable database init] VSCP Daemon external variable database path invalid - will not be used.\n" );
+            fprintf( stderr, "[Variable database init] VSCP Daemon external "
+                             "variable database path invalid - "
+                             "will not be used.\n" );
             wxstr.Printf(_("Path=%s\n"), m_dbFilename.GetFullPath().mbc_str() );
             //fprintf( stderr, wxstr.mbc_str() );
             gpobj->logMsg(wxstr);
@@ -1835,12 +1845,15 @@ bool CVariableStorage::init( void )
     }
     else {
         // Failed to open/create the database file
-        fprintf( stderr, "[Variable database init] VSCP Daemon internal variable database could not be opened - Will not be used.\n" );
+        fprintf( stderr, "[Variable database init] VSCP Daemon internal "
+                         "variable database could not be opened - "
+                         "Will not be used.\n" );
         wxstr.Printf( _("Error=%s\n"),
                             sqlite3_errmsg( m_db_vscp_internal_variable ) );
         //fprintf( stderr, wxstr.mbc_str() );
         gpobj->logMsg(wxstr);
-        if ( NULL != m_db_vscp_internal_variable ) sqlite3_close( m_db_vscp_internal_variable );
+        if ( NULL != m_db_vscp_internal_variable ) 
+            sqlite3_close( m_db_vscp_internal_variable );
         m_db_vscp_internal_variable = NULL;
     }
     
@@ -2275,14 +2288,16 @@ bool CVariableStorage::init( void )
     variable.setAccessRights( PERMISSON_ALL_READ  | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.multicast.address") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
-    variable.setNote( _("Address for VSCP daemon multicast TCP/IP interface (Default: 224.0.23.158)."), true );
+    variable.setNote( _("Address for VSCP daemon multicast TCP/IP "
+                        "interface (Default: 224.0.23.158)."), true );
     addStockVariable( variable );
     
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ  | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.multicast.ttl") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
-    variable.setNote( _("TTL for VSCP daemon multicast TCP/IP interface (Default: 224.0.23.158)."), true );
+    variable.setNote( _("TTL for VSCP daemon multicast TCP/IP interface "
+                        "(Default: 224.0.23.158)."), true );
     addStockVariable( variable  );
     
     // *************************************************************************
@@ -2359,7 +2374,8 @@ bool CVariableStorage::init( void )
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.automation.calc.last") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_DATETIME );
-    variable.setNote( _("Date and time for last VSCP daemon automation calculation."), true );
+    variable.setNote( _("Date and time for last VSCP daemon automation "
+                        "calculation."), true );
     addStockVariable( variable  );
     
     variable.init();
@@ -2387,14 +2403,16 @@ bool CVariableStorage::init( void )
     variable.setAccessRights( PERMISSON_ALL_READ  | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.automation.heartbeat.period") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_LONG );
-    variable.setNote( _("Period in seconds for VSCP daemon automation heartbeat event."), true );
+    variable.setNote( _("Period in seconds for VSCP daemon automation heartbeat "
+                        "event."), true );
     addStockVariable( variable  );
     
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.automation.heartbeat.last") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_DATETIME );
-    variable.setNote( _("Date and time for last sent VSCP daemon automation heart beat event."), true );
+    variable.setNote( _("Date and time for last sent VSCP daemon automation "
+                        "heart beat event."), true );
     addStockVariable( variable  );
     
     
@@ -2403,21 +2421,24 @@ bool CVariableStorage::init( void )
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.automation.segctrl-heartbeat.enable") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
-    variable.setNote( _("Enable flag for VSCP daemon automation segment controller heartbeat event."), true );
+    variable.setNote( _("Enable flag for VSCP daemon automation segment "
+                        "controller heartbeat event."), true );
     addStockVariable( variable  );
     
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.automation.segctrl-heartbeat.period") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_LONG );
-    variable.setNote( _("Period in seconds for VSCP daemon automation heart beat event."), true );
+    variable.setNote( _("Period in seconds for VSCP daemon automation heart "
+                        "beat event."), true );
     addStockVariable( variable  );
     
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.automation.segctrl-heartbeat.last") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_DATETIME );
-    variable.setNote( _("Date and time for last sent VSCP daemon automation heart beat event."), true );
+    variable.setNote( _("Date and time for last sent VSCP daemon automation "
+                        "heart beat event."), true );
     addStockVariable( variable  );
     
     variable.init();
@@ -2445,28 +2466,32 @@ bool CVariableStorage::init( void )
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.automation.twilightsunriseevent.enable") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
-    variable.setNote( _("Enable flag for VSCP daemon automation twilight sunrise event."), true );
+    variable.setNote( _("Enable flag for VSCP daemon automation twilight "
+                        "sunrise event."), true );
     addStockVariable( variable  );
        
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.automation.twilightsunriseevent.last") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_DATETIME );
-    variable.setNote( _("Date and time for last sent VSCP daemon automation twilight sunrise event."), true );
+    variable.setNote( _("Date and time for last sent VSCP daemon automation "
+                        "twilight sunrise event."), true );
     addStockVariable( variable  );
     
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.automation.sunriseevent.enable") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
-    variable.setNote( _("Enable flag for VSCP daemon automation sunrise event."), true );
+    variable.setNote( _("Enable flag for VSCP daemon automation sunrise "
+                        "event."), true );
     addStockVariable( variable  );
     
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.automation.sunriseevent.last") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_DATETIME );
-    variable.setNote( _("Date and time for last sent VSCP daemon automation sunrise event."), true );
+    variable.setNote( _("Date and time for last sent VSCP daemon automation "
+                        "sunrise event."), true );
     addStockVariable( variable  );
     
     
@@ -2482,48 +2507,49 @@ bool CVariableStorage::init( void )
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.automation.sunsetevent.last") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_DATETIME );
-    variable.setNote( _("Date and time for last sent VSCP daemon automation sunset event."), true );
+    variable.setNote( _("Date and time for last sent VSCP daemon automation "
+                        "sunset event."), true );
     addStockVariable( variable  );
            
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.automation.twilightsunsetevent.enable") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
-    variable.setNote( _("Enable flag for VSCP daemon automation twilight sunset event."), true );
+    variable.setNote( _("Enable flag for VSCP daemon automation twilight sunset "
+                        "event."), true );
     addStockVariable( variable  );
     
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.automation.twilightsunsetevent.last") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_DATETIME );
-    variable.setNote( _("Date and time for last sent VSCP daemon automation twilight sunset event."), true );
+    variable.setNote( _("Date and time for last sent VSCP daemon automation "
+                        "twilight sunset event."), true );
     addStockVariable( variable  );
        
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.automation.calculatednoonevent.enable") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
-    variable.setNote( _("Enable flag for VSCP daemon automation calculated noon event."), true );
+    variable.setNote( _("Enable flag for VSCP daemon automation calculated "
+                        "noon event."), true );
     addStockVariable( variable  );
     
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ );    
     variable.setName( _("vscp.automation.calculatednoonevent.last") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_DATETIME );
-    variable.setNote( _("Date and time for last sent VSCP daemon automation calculated noon event."), true );
+    variable.setNote( _("Date and time for last sent VSCP daemon automation "
+                        "calculated noon event."), true );
     addStockVariable( variable  );
     
-    
-    // *************************************************************************
-    //                            Websocket-Server
-    // *************************************************************************
-    
-
     
     
     // *************************************************************************
     //                                WEB-Server
     // *************************************************************************
+    
+    
     
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
@@ -2557,21 +2583,25 @@ bool CVariableStorage::init( void )
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.websrv.authentication_domain") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
-    variable.setNote( _("Authentication domain for VSCP server web interface."), true );
+    variable.setNote( _("Authentication domain for VSCP server web interface."), 
+                        true );
     addStockVariable( variable  );
     
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.websrv.enable_auth_domain_check") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
-    variable.setNote( _("Enable the VSCP server web interface authentication domain check."), true );
+    variable.setNote( _("Enable the VSCP server web interface authentication "
+                        "domain check."), true );
     addStockVariable( variable  );
     
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.websrv.ssl_certificat") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
-    variable.setNote( _("Path to SSL certification for VSCP server web interface."), true );
+    variable.setNote( _("Path to SSL certification for VSCP server web "
+                        "interface."), 
+                        true );
     addStockVariable( variable  );
     
     variable.init();
@@ -2585,21 +2615,24 @@ bool CVariableStorage::init( void )
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.websrv.ssl_verify_peer") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
-    variable.setNote( _("Enable client's certificate verification by the server."), true );
+    variable.setNote( _("Enable client's certificate verification by the server."), 
+                        true );
     addStockVariable( variable  );
     
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.websrv.ssl_ca_path") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
-    variable.setNote( _("Name of a directory containing trusted CA certificates."), true );
+    variable.setNote( _("Name of a directory containing trusted CA certificates."), 
+                        true );
     addStockVariable( variable  );
     
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.websrv.ssl_ca_file") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
-    variable.setNote( _("Path to a .pem file containing trusted certificates."), true );
+    variable.setNote( _("Path to a .pem file containing trusted certificates."), 
+                        true );
     addStockVariable( variable  );
     
     variable.init();
@@ -2613,7 +2646,8 @@ bool CVariableStorage::init( void )
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.websrv.ssl_default_verify_paths") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
-    variable.setNote( _("Loads default trusted certificates locations set at openssl compile time."), true );
+    variable.setNote( _("Loads default trusted certificates locations set at "
+                        "openssl compile time."), true );
     addStockVariable( variable  );
     
     variable.init();
@@ -2627,7 +2661,8 @@ bool CVariableStorage::init( void )
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.websrv.ssl_protocol_version") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
-    variable.setNote( _("Sets the minimal accepted version of accepted SSL/TLS protocol."), true );
+    variable.setNote( _("Sets the minimal accepted version of accepted SSL/TLS"
+                        " protocol."), true );
     addStockVariable( variable  );
     
     variable.init();
@@ -2641,28 +2676,35 @@ bool CVariableStorage::init( void )
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.websrv.cgi_interpreter") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
-    variable.setNote( _("Path to an executable to be used use as an interpreter for all CGI scripts regardless script extension. "), true );
+    variable.setNote( _("Path to an executable to be used use as an interpreter "
+                        "for all CGI scripts regardless script extension. "), 
+                        true );
     addStockVariable( variable  );
     
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.websrv.cgi_pattern") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
-    variable.setNote( _("All files that match cgi_pattern are treated as CGI files."), true );
+    variable.setNote( _("All files that match cgi_pattern are treated as CGI "
+                        "files."), true );
     addStockVariable( variable  );
     
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.websrv.cgi_environment") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
-    variable.setNote( _("Set extra variables to be passed to the CGI script in addition to the standard environment variables."), true );
+    variable.setNote( _("Set extra variables to be passed to the CGI script "
+                        "in addition to the standard environment variables."), 
+                        true );
     addStockVariable( variable  );
     
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.websrv.protect_uri") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
-    variable.setNote( _("This is a comma separated list of URI=PATH pairs, specifying that given URIs must be protected with password files specified by PATH."), true );
+    variable.setNote( _("This is a comma separated list of URI=PATH pairs, "
+                        "specifying that given URIs must be protected with "
+                        "password files specified by PATH."), true );
     addStockVariable( variable  );
     
     variable.init();
@@ -2690,7 +2732,8 @@ bool CVariableStorage::init( void )
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.websrv.keep_alive_timeout_ms") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_LONG );
-    variable.setNote( _("Idle timeout between two requests in one keep-alive connection."), true );
+    variable.setNote( _("Idle timeout between two requests in one keep-alive "
+                        "connection."), true );
     addStockVariable( variable  );
     
     variable.init();
@@ -2739,42 +2782,48 @@ bool CVariableStorage::init( void )
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.websrv.global_auth_file") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
-    variable.setNote( _("Path to global authentication file. Leave blank for no authentication."), true );
+    variable.setNote( _("Path to global authentication file. Leave blank for no "
+                        "authentication."), true );
     addStockVariable( variable  );
     
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.websrv.per_directory_auth_file") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
-    variable.setNote( _(" To enable directory protection with authentication, set this to “.htpasswd”."), true );
+    variable.setNote( _(" To enable directory protection with authentication, "
+                        "set this to “.htpasswd”."), true );
     addStockVariable( variable  );
     
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.websrv.url_rewrite_patterns") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
-    variable.setNote( _("Comma-separated list of URL rewrites in the form of uri_pattern=file_or_directory_path."), true );
+    variable.setNote( _("Comma-separated list of URL rewrites in the form of "
+                        "uri_pattern=file_or_directory_path."), true );
     addStockVariable( variable  );
     
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.websrv.ssi_patterns") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
-    variable.setNote( _("All files that match ssi_pattern are treated as Server Side Includes (SSI)."), true );
+    variable.setNote( _("All files that match ssi_pattern are treated as Server "
+                        "Side Includes (SSI)."), true );
     addStockVariable( variable  );
  
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.websrv.request_timeout_ms") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_LONG);
-    variable.setNote( _("Timeout for network read and network write operations, in milliseconds."), true );
+    variable.setNote( _("Timeout for network read and network write operations, "
+                        "in milliseconds."), true );
     addStockVariable( variable  );
     
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.websrv.linger_timeout_ms") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_LONG);
-    variable.setNote( _("Set TCP socket linger timeout before closing sockets (SO_LINGER option)."), true );
+    variable.setNote( _("Set TCP socket linger timeout before closing sockets "
+                        "(SO_LINGER option)."), true );
     addStockVariable( variable  );
     
     variable.init();
@@ -2809,7 +2858,8 @@ bool CVariableStorage::init( void )
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.websrv.error_pages") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
-    variable.setNote( _("This option may be used to specify a directory for user defined error pages."), true );
+    variable.setNote( _("This option may be used to specify a directory for "
+                        "user defined error pages."), true );
     addStockVariable( variable  );
     
     variable.init();
@@ -2823,28 +2873,32 @@ bool CVariableStorage::init( void )
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.websrv.static_file_max_age") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_LONG);
-    variable.setNote( _("Set the maximum time (in seconds) a cache may store a static files."), true );
+    variable.setNote( _("Set the maximum time (in seconds) a cache may store "
+                        "a static files."), true );
     addStockVariable( variable  );
     
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.websrv.strict_transport_security_max_age") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_LONG);
-    variable.setNote( _("Set the Strict-Transport-Security header, and set the max-age value."), true );
+    variable.setNote( _("Set the Strict-Transport-Security header, and set "
+                        "the max-age value."), true );
     addStockVariable( variable  );
     
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.websrv.allow_sendfile_call") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
-    variable.setNote( _("This option can be used to enable or disable the use of the Linux sendfile system call."), true );
+    variable.setNote( _("This option can be used to enable or disable the "
+                        "use of the Linux sendfile system call."), true );
     addStockVariable( variable  );
     
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.websrv.additional_header") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
-    variable.setNote( _("Send additional HTTP response header line for every request."), true );
+    variable.setNote( _("Send additional HTTP response header line for "
+                        "every request."), true );
     addStockVariable( variable  );
     
     variable.init();
@@ -2858,35 +2912,41 @@ bool CVariableStorage::init( void )
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.websrv.allow_index_script_resource") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
-    variable.setNote( _("Index scripts (like index.cgi or index.lua) may have script handled resources."), true );
+    variable.setNote( _("Index scripts (like index.cgi or index.lua) may have "
+                        "script handled resources."), true );
     addStockVariable( variable  );
     
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.websrv.duktape_script_pattern") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
-    variable.setNote( _("A pattern for files that are interpreted as JavaScripts by the server."), true );
+    variable.setNote( _("A pattern for files that are interpreted as "
+                        "JavaScripts by the server."), true );
     addStockVariable( variable  );
     
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.websrv.lua_preload_file") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
-    variable.setNote( _("This configuration option can be used to specify a Lua script file, which is executed before the actual web page script."), true );
+    variable.setNote( _("This configuration option can be used to specify a "
+                        "Lua script file, which is executed before the actual "
+                        "web page script."), true );
     addStockVariable( variable  );
     
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.websrv.lua_script_patterns") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
-    variable.setNote( _("A pattern for files that are interpreted as Lua scripts by the server."), true );
+    variable.setNote( _("A pattern for files that are interpreted as Lua "
+                        "scripts by the server."), true );
     addStockVariable( variable  );
     
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.websrv.lua_server_page_patterns") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
-    variable.setNote( _("Files matching this pattern are treated as Lua server pages."), true );
+    variable.setNote( _("Files matching this pattern are treated as Lua "
+                        "server pages."), true );
     addStockVariable( variable  );
     
     variable.init();
@@ -2900,7 +2960,8 @@ bool CVariableStorage::init( void )
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.websrv.lua_background_script") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
-    variable.setNote( _("Run a Lua script in the background, independent from any connection."), true );
+    variable.setNote( _("Run a Lua script in the background, independent from "
+                        "any connection."), true );
     addStockVariable( variable  );
     
     variable.init();
@@ -2935,6 +2996,8 @@ bool CVariableStorage::init( void )
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
     variable.setNote( _("Websocket timeout in milliseconds."), true );
     addStockVariable( variable  );
+    
+    
     
     // *************************************************************************
     //                            Decision Matrix
@@ -5631,9 +5694,9 @@ bool CVariableStorage::putStockVariable( CVSCPVariable& var,
                                                     var.getValue() );
     }
     
-    if ( lcname.StartsWith( _("vscp.websrv.mime_types") ) ) {
+    if ( lcname.StartsWith( _("vscp.websrv.extra_mime_types") ) ) {
         gpobj->m_web_extra_mime_types = var.getValue();
-        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_MIME_TYPES), 
+        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_EXTRA_MIME_TYPES), 
                                                     var.getValue() );
     }
         
@@ -5739,9 +5802,9 @@ bool CVariableStorage::putStockVariable( CVSCPVariable& var,
                                                     var.getValue() );
     }
     
-    if ( lcname.StartsWith( _("vscp.websrv.sendfile_call") ) ) {
+    if ( lcname.StartsWith( _("vscp.websrv.allow_sendfile_call") ) ) {
         var.getValue( &gpobj->m_web_allow_sendfile_call );
-        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_SENDFILE_CALL), 
+        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_ALLOW_SENDFILE_CALL), 
                              gpobj->m_web_allow_sendfile_call ? "1" : "0" );
     }
     
@@ -5751,11 +5814,12 @@ bool CVariableStorage::putStockVariable( CVSCPVariable& var,
                                                     var.getValue() );
     }
     
-    if ( lcname.StartsWith( _("vscp.websrv.max_request_size") ) ) {
+    if ( lcname.StartsWith( _("vscp.websrv.") + 
+            _(VSCPDB_CONFIG_NAME_WEB_MAX_REQUEST_SIZE + 4) ) ) {
         gpobj->m_web_max_request_size = atol( (const char *)var.getValue() );
         return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_MAX_REQUEST_SIZE), 
                                                     var.getValue() );
-    }
+    } 
     
     if ( lcname.StartsWith( _("vscp.websrv.allow_index_script_resource") ) ) {
         var.getValue( &gpobj->m_web_allow_index_script_resource );

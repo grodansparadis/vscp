@@ -1189,8 +1189,8 @@ char *web_strndup( const char *ptr, size_t len )
 {
     char *p;
 
-    if ( (p = (char *) web_malloc(len + 1)) != NULL ) {
-        vscp_strlcpy(p, ptr, len + 1);
+    if ( ( p = (char *)web_malloc( len + 1 ) ) != NULL ) {
+        vscp_strlcpy( p, ptr, len + 1 );
     }
 
     return p;
@@ -1203,7 +1203,7 @@ char *web_strndup( const char *ptr, size_t len )
 
 char *web_strdup( const char *str )
 {
-    return web_strndup( str, strlen(str) );
+    return web_strndup( str, strlen( str ) );
 }
 
 // This following lines are just meant as a reminder to use the mg-functions
@@ -1614,8 +1614,18 @@ enum
     ADDITIONAL_HEADER,
     MAX_REQUEST_SIZE,
     ALLOW_INDEX_SCRIPT_SUB_RES,
-    NUM_OPTIONS
+    
+    WEB_NUM_OPTIONS
 };
+
+////////////////////////////////////////////////////////////////////////////////
+// web_getOptionCount
+//
+
+int web_getOptionCount( void ) 
+{
+    return WEB_NUM_OPTIONS;
+}
 
 
 // Config option name, config types, default value 
@@ -1758,7 +1768,7 @@ struct web_context
 {
     volatile int stop_flag;             // Should we stop event loop 
     SSL_CTX *ssl_ctx;                   // SSL context 
-    char *config[ NUM_OPTIONS ];        // vscpweb configuration parameters 
+    char *config[ WEB_NUM_OPTIONS ];        // vscpweb configuration parameters 
     struct web_callbacks callbacks;     // User-defined callback function 
     void *user_data;                    // User-defined data 
     int context_type;                   // See CONTEXT_* above
@@ -18219,12 +18229,13 @@ log_access(const struct web_connection *conn)
 
     // Log is written to a file and/or a callback. If both are not set,
     // executing the rest of the function is pointless. 
-    if ((fi.access.fp == NULL) && (conn->ctx->callbacks.log_access == NULL)) {
+    if ( ( NULL == fi.access.fp ) && 
+         ( NULL == conn->ctx->callbacks.log_access ) ) {
         return;
     }
 
-    tm = localtime(&conn->conn_birth_time);
-    if (tm != NULL) {
+    tm = localtime( &conn->conn_birth_time );
+    if ( tm != NULL ) {
         strftime(date, sizeof (date), "%d/%b/%Y:%H:%M:%S %z", tm);
     }
     else {
@@ -18293,36 +18304,39 @@ log_access(const struct web_connection *conn)
 // Return -1 if ACL is malformed, 0 if address is disallowed, 1 if allowed.
 //
 
-static int
-check_acl(struct web_context *ctx, uint32_t remote_ip)
+int
+check_acl( struct web_context *ctx, uint32_t remote_ip )
 {
     int allowed, flag;
     uint32_t net, mask;
     struct vec vec;
 
-    if (ctx) {
+    if ( ctx ) {
+        
         const char *list = ctx->config[ACCESS_CONTROL_LIST];
 
         // If any ACL is set, deny by default 
         allowed = (list == NULL) ? '+' : '-';
 
-        while ((list = next_option(list, &vec, NULL)) != NULL) {
+        while ( ( list = next_option( list, &vec, NULL ) ) != NULL ) {
+            
             flag = vec.ptr[0];
-            if ((flag != '+' && flag != '-')
-                || (parse_net(&vec.ptr[1], &net, &mask) == 0)) {
+            if ( ( flag != '+' && flag != '-') || 
+                 ( 0 == parse_net( &vec.ptr[1], &net, &mask ) ) ) {
                 web_cry(fc(ctx),
                             "%s: subnet must be [+|-]x.x.x.x[/x]",
                             __func__);
                 return -1;
             }
 
-            if (net == (remote_ip & mask)) {
+            if ( net == ( remote_ip & mask ) ) {
                 allowed = flag;
             }
         }
 
         return allowed == '+';
     }
+    
     return -1;
 }
 
@@ -21006,29 +21020,29 @@ accept_new_connection(const struct socket *listener, struct web_context *ctx)
 {
     struct socket so;
     char src_addr[IP_ADDR_STR_LEN];
-    socklen_t len = sizeof (so.rsa);
+    socklen_t len = sizeof( so.rsa );
     int on = 1;
 
     if (!listener) {
         return;
     }
 
-    if ((so.sock = accept(listener->sock, &so.rsa.sa, &len))
-        == INVALID_SOCKET) {
+    if ( INVALID_SOCKET == ( so.sock = accept( listener->sock, &so.rsa.sa, &len ) ) ) {
+        ;
     }
-    else if (!check_acl(ctx, ntohl(*(uint32_t *) & so.rsa.sin.sin_addr))) {
+    else if ( !check_acl( ctx, ntohl( *(uint32_t *)&so.rsa.sin.sin_addr ) ) ) {
         sockaddr_to_string(src_addr, sizeof (src_addr), &so.rsa);
-        web_cry(fc(ctx), "%s: %s is not allowed to connect", __func__, src_addr);
+        web_cry(fc(ctx), "%s: %s is not allowed to connect", __func__, src_addr );
         closesocket(so.sock);
     }
     else {
         // Put so socket structure into the queue 
         DEBUG_TRACE("Accepted socket %d", (int) so.sock);
-        set_close_on_exec(so.sock, fc(ctx));
+        set_close_on_exec( so.sock, fc(ctx) );
         so.is_ssl = listener->is_ssl;
         so.ssl_redir = listener->ssl_redir;
-        if (getsockname(so.sock, &so.lsa.sa, &len) != 0) {
-            web_cry(fc(ctx),
+        if ( getsockname(so.sock, &so.lsa.sa, &len) != 0 ) {
+            web_cry( fc(ctx),
                         "%s: getsockname() failed: %s",
                         __func__,
                         strerror(ERRNO));
@@ -21059,9 +21073,10 @@ accept_new_connection(const struct socket *listener, struct web_context *ctx)
         // when HTTP 1.1 persistent connections are used and the responses
         // are relatively small (eg. less than 1400 bytes).
         //
-        if ((ctx != NULL) && (ctx->config[CONFIG_TCP_NODELAY] != NULL)
-            && (!strcmp(ctx->config[CONFIG_TCP_NODELAY], "1"))) {
-            if (set_tcp_nodelay(so.sock, 1) != 0) {
+        if ( ( ctx != NULL ) && 
+             ( ctx->config[CONFIG_TCP_NODELAY] != NULL ) &&
+             ( !strcmp(ctx->config[CONFIG_TCP_NODELAY], "1" ) ) ) {
+            if ( set_tcp_nodelay(so.sock, 1) != 0 ) {
                 web_cry(fc(ctx),
                             "%s: setsockopt(IPPROTO_TCP TCP_NODELAY) failed: %s",
                             __func__,
@@ -21140,7 +21155,7 @@ master_thread_run(void *thread_func_param)
             pfd[i].events = POLLIN;
         }
 
-        if (poll(pfd, ctx->num_listening_sockets, 200) > 0) {
+        if ( poll( pfd, ctx->num_listening_sockets, 200 ) > 0) {
             for (i = 0; i < ctx->num_listening_sockets; i++) {
                 // NOTE(lsm): on QNX, poll() returns POLLRDNORM after the
                 // successful poll, and POLLIN is defined as
@@ -21271,7 +21286,7 @@ free_context(struct web_context *ctx)
     timers_exit(ctx);
 
     // Deallocate config parameters 
-    for (i = 0; i < NUM_OPTIONS; i++) {
+    for (i = 0; i < WEB_NUM_OPTIONS; i++) {
         if (ctx->config[i] != NULL) {
 #if defined(_MSC_VER)
 #pragma warning(suppress : 6001)
@@ -21390,7 +21405,7 @@ web_start(const struct web_callbacks *callbacks,
 #endif // _WIN32 
 
     // Allocate context and initialize reasonable general case defaults. 
-    if ((ctx = (struct web_context *) web_calloc(1, sizeof (*ctx))) == NULL) {
+    if ( NULL == ( ctx = (struct web_context *)web_calloc( 1, sizeof( *ctx ) ) ) ) {
         return NULL;
     }
 
@@ -21405,82 +21420,91 @@ web_start(const struct web_callbacks *callbacks,
     }
 
     tls.is_master = -1;
-    tls.thread_idx = (unsigned) web_atomic_inc(&thread_idx_max);
+    tls.thread_idx = (unsigned)web_atomic_inc( &thread_idx_max );
 #if defined(_WIN32)  
     tls.pthread_cond_helper_mutex = NULL;
 #endif
-    pthread_setspecific(sTlsKey, &tls);
+    pthread_setspecific( sTlsKey, &tls );
 
-    ok = 0 == pthread_mutex_init(&ctx->thread_mutex, &pthread_mutex_attr);
-    ok &= 0 == pthread_mutex_init(&ctx->nonce_mutex, &pthread_mutex_attr);
-    if (!ok) {
+    ok = 0 == pthread_mutex_init( &ctx->thread_mutex, &pthread_mutex_attr );
+    ok &= 0 == pthread_mutex_init( &ctx->nonce_mutex, &pthread_mutex_attr );
+    if ( !ok ) {
         // Fatal error - abort start. However, this situation should never
         // occur in practice. 
-        web_cry(fc(ctx), "Cannot initialize thread synchronization objects");
+        web_cry( fc(ctx), "Cannot initialize thread synchronization objects" );
         web_free(ctx);
         pthread_setspecific(sTlsKey, NULL);
         return NULL;
     }
 
-    if (callbacks) {
+    if ( callbacks ) {
         ctx->callbacks = *callbacks;
         exit_callback = callbacks->exit_context;
         ctx->callbacks.exit_context = 0;
     }
+    
     ctx->user_data = user_data;
     ctx->handlers = NULL;
     
     ctx->shared_lua_websockets = 0;
 
-    while (options && (name = *options++) != NULL) {
-        if ((idx = get_option_index(name)) == -1) {
-            web_cry(fc(ctx), "Invalid option: %s", name);
-            free_context(ctx);
-            pthread_setspecific(sTlsKey, NULL);
+    while ( options && ( name = *options++ ) != NULL ) {
+        
+        if ( -1 == ( idx = get_option_index( name ) ) ) {
+            web_cry( fc(ctx), "Invalid option: %s", name );
+            free_context( ctx );
+            pthread_setspecific( sTlsKey, NULL );
             return NULL;
         }
-        else if ((value = *options++) == NULL) {
+        else if ( NULL == ( value = *options++ ) ) {
             web_cry(fc(ctx), "%s: option value cannot be NULL", name);
             free_context(ctx);
             pthread_setspecific(sTlsKey, NULL);
             return NULL;
         }
-        if (ctx->config[idx] != NULL) {
-            web_cry(fc(ctx), "warning: %s: duplicate option", name);
-            web_free(ctx->config[idx]);
+        
+        if ( ctx->config[ idx ] != NULL ) {
+            web_cry( fc(ctx), "warning: %s: duplicate option", name );
+            web_free( ctx->config[idx] );
         }
-        ctx->config[idx] = web_strdup(value);
+        
+        ctx->config[ idx ] = web_strdup( value );
         DEBUG_TRACE("[%s] -> [%s]", name, value);
     }
 
     // Set default value if needed 
-    for (i = 0; config_options[i].name != NULL; i++) {
-        default_value = config_options[i].default_value;
-        if ((ctx->config[i] == NULL) && (default_value != NULL)) {
-            ctx->config[i] = web_strdup(default_value);
+    for ( i = 0; config_options[i].name != NULL; i++ ) {
+        
+        default_value = config_options[ i ].default_value;
+        
+        if ( ( NULL == ctx->config[ i ] ) && 
+             ( NULL != default_value ) ) {
+            ctx->config[i] = web_strdup( default_value );
         }
+        
     }
 
-    itmp = atoi(ctx->config[MAX_REQUEST_SIZE]);
+    itmp = atoi( ctx->config[ MAX_REQUEST_SIZE ] );
 
-    if (itmp < 1024) {
-        web_cry(fc(ctx), "max_request_size too small");
-        free_context(ctx);
-        pthread_setspecific(sTlsKey, NULL);
+    if ( itmp < 1024 ) {
+        web_cry( fc(ctx), "max_request_size too small");
+        free_context( ctx );
+        pthread_setspecific( sTlsKey, NULL );
         return NULL;
     }
+    
     ctx->max_request_size = (unsigned) itmp;
 
-    workerthreadcount = atoi(ctx->config[NUM_THREADS]);
+    workerthreadcount = atoi( ctx->config[ NUM_THREADS ] );
 
-    if (workerthreadcount > MAX_WORKER_THREADS) {
+    if ( workerthreadcount > MAX_WORKER_THREADS ) {
         web_cry(fc(ctx), "Too many worker threads");
         free_context(ctx);
         pthread_setspecific(sTlsKey, NULL);
         return NULL;
     }
 
-    if (workerthreadcount <= 0) {
+    if ( workerthreadcount <= 0 ) {
         web_cry(fc(ctx), "Invalid number of worker threads");
         free_context(ctx);
         pthread_setspecific(sTlsKey, NULL);
@@ -21490,12 +21514,12 @@ web_start(const struct web_callbacks *callbacks,
     get_system_name(&ctx->systemName);
 
     // If a Lua background script has been configured, start it. 
-    if (ctx->config[LUA_BACKGROUND_SCRIPT] != NULL) {
+    if ( ctx->config[LUA_BACKGROUND_SCRIPT] != NULL ) {
 	
         char ebuf[256];
 	lua_State *state = (void *)web_prepare_lua_context_script(
                     ctx->config[LUA_BACKGROUND_SCRIPT], ctx, ebuf, sizeof(ebuf));
-	if (!state) {
+	if ( !state ) {
             web_cry(fc(ctx), "lua_background_script error: %s", ebuf);
             free_context(ctx);
             pthread_setspecific(sTlsKey, NULL);
@@ -21508,9 +21532,9 @@ web_start(const struct web_callbacks *callbacks,
 
 	struct vec opt_vec;
 	struct vec eq_vec;
-	const char *sparams = ctx->config[LUA_BACKGROUND_SCRIPT_PARAMS];
+	const char *sparams = ctx->config[ LUA_BACKGROUND_SCRIPT_PARAMS ];
 
-	while ((sparams = next_option(sparams, &opt_vec, &eq_vec)) != NULL) {
+	while ( (sparams = next_option(sparams, &opt_vec, &eq_vec) ) != NULL ) {
             reg_llstring( state, opt_vec.ptr, opt_vec.len, eq_vec.ptr, eq_vec.len);
             if ( 0 == vscp_strncasecmp(sparams, opt_vec.ptr, opt_vec.len ) ) {
 		break;
@@ -21544,21 +21568,21 @@ web_start(const struct web_callbacks *callbacks,
     (void) signal(SIGPIPE, SIG_IGN);
 #endif // !_WIN32  
 
-    ctx->cfg_worker_threads = ((unsigned int) (workerthreadcount));
-    ctx->worker_threadids = (pthread_t *) web_calloc_ctx(ctx->cfg_worker_threads,
+    ctx->cfg_worker_threads = ( (unsigned int)(workerthreadcount) );
+    ctx->worker_threadids = (pthread_t *)web_calloc_ctx(ctx->cfg_worker_threads,
                                                              sizeof (pthread_t),
                                                              ctx);
-    if (ctx->worker_threadids == NULL) {
-        web_cry(fc(ctx), "Not enough memory for worker thread ID array");
+    if ( NULL == ctx->worker_threadids ) {
+        web_cry( fc(ctx), "Not enough memory for worker thread ID array");
         free_context(ctx);
-        pthread_setspecific(sTlsKey, NULL);
+        pthread_setspecific( sTlsKey, NULL );
         return NULL;
     }
     ctx->worker_connections =
-            (struct web_connection *) web_calloc_ctx(ctx->cfg_worker_threads,
+            (struct web_connection *)web_calloc_ctx(ctx->cfg_worker_threads,
                                                              sizeof (struct web_connection),
-                                                             ctx);
-    if (ctx->worker_connections == NULL) {
+                                                             ctx );
+    if ( NULL == ctx->worker_connections ) {
         web_cry(fc(ctx), "Not enough memory for worker thread connection array");
         free_context(ctx);
         pthread_setspecific(sTlsKey, NULL);
@@ -21567,10 +21591,10 @@ web_start(const struct web_callbacks *callbacks,
 
 
     ctx->client_wait_events =
-            (void **) web_calloc_ctx(sizeof (ctx->client_wait_events[0]),
+            (void **)web_calloc_ctx( sizeof (ctx->client_wait_events[0]),
                                          ctx->cfg_worker_threads,
-                                         ctx);
-    if (ctx->client_wait_events == NULL) {
+                                         ctx );
+    if ( NULL == ctx->client_wait_events ) {
         web_cry(fc(ctx), "Not enough memory for worker event array");
         web_free(ctx->worker_threadids);
         free_context(ctx);
@@ -21579,10 +21603,10 @@ web_start(const struct web_callbacks *callbacks,
     }
 
     ctx->client_socks =
-            (struct socket *) web_calloc_ctx(sizeof (ctx->client_socks[0]),
+            (struct socket *)web_calloc_ctx( sizeof (ctx->client_socks[0]),
                                                  ctx->cfg_worker_threads,
                                                  ctx);
-    if (ctx->client_wait_events == NULL) {
+    if ( NULL == ctx->client_wait_events ) {
         web_cry(fc(ctx), "Not enough memory for worker socket array");
         web_free(ctx->client_socks);
         web_free(ctx->worker_threadids);
@@ -21591,9 +21615,10 @@ web_start(const struct web_callbacks *callbacks,
         return NULL;
     }
 
-    for (i = 0; (unsigned) i < ctx->cfg_worker_threads; i++) {
+    for ( i = 0; (unsigned) i < ctx->cfg_worker_threads; i++ ) {
+        
         ctx->client_wait_events[i] = event_create();
-        if (ctx->client_wait_events[i] == 0) {
+        if ( 0 == ctx->client_wait_events[i] ) {
             web_cry(fc(ctx), "Error creating worker event %i", i);
             while (i > 0) {
                 i--;
@@ -21606,7 +21631,6 @@ web_start(const struct web_callbacks *callbacks,
             return NULL;
         }
     }
-
 
     if ( timers_init(ctx) != 0 ) {
         web_cry( fc(ctx), "Error creating timers" );
@@ -21623,12 +21647,11 @@ web_start(const struct web_callbacks *callbacks,
     ctx->callbacks.exit_context = exit_callback;
     ctx->context_type = CONTEXT_SERVER; // server context 
 
-
     // Start master (listening) thread 
     web_start_thread_with_id(master_thread, ctx, &ctx->masterthreadid);
 
     // Start worker threads 
-    for (i = 0; i < ctx->cfg_worker_threads; i++) {
+    for ( i = 0; i < ctx->cfg_worker_threads; i++ ) {
         struct worker_thread_args *wta = (struct worker_thread_args *)
                 web_malloc_ctx(sizeof (struct worker_thread_args), ctx);
         if (wta) {
@@ -21662,9 +21685,10 @@ web_start(const struct web_callbacks *callbacks,
             }
             break;
         }
+        
     }
 
-    pthread_setspecific(sTlsKey, NULL);
+    pthread_setspecific( sTlsKey, NULL );
     return ctx;
 }
 
@@ -22175,7 +22199,7 @@ web_get_context_info_impl( const struct web_context *ctx,
 
 
     // Connections information 
-    if (ctx) {
+    if ( ctx ) {
         web_snprintf( NULL,
                             NULL,
                             block,

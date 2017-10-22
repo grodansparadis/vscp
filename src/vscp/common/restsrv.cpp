@@ -921,7 +921,8 @@ websrv_restapi( struct web_connection *conn, void *cbdata )
         // Check if remote ip is valid
         bool bValidHost;
         gpobj->m_mutexUserList.Lock();
-        bValidHost = pUserItem->isAllowedToConnect( wxString::FromUTF8( reqinfo->remote_addr  ) );
+        //bValidHost = pUserItem->isAllowedToConnect( wxString::FromUTF8( reqinfo->remote_addr  ) );
+        bValidHost = ( 1 == pUserItem->isAllowedToConnect( inet_addr( reqinfo->remote_addr ) ) );
         gpobj->m_mutexUserList.Unlock();
         if (!bValidHost) {
             wxString strErr =
@@ -986,8 +987,10 @@ websrv_restapi( struct web_connection *conn, void *cbdata )
     // Check if remote ip is valid
     bool bValidHost;
     gpobj->m_mutexUserList.Lock();
+    //bValidHost = 
+    //    pSession->m_pClientItem->m_pUserItem->isAllowedToConnect( reqinfo->remote_addr  );
     bValidHost = 
-        pSession->m_pClientItem->m_pUserItem->isAllowedToConnect( reqinfo->remote_addr  );
+            ( 1 == pSession->m_pClientItem->m_pUserItem->isAllowedToConnect( inet_addr( reqinfo->remote_addr ) ) );
     gpobj->m_mutexUserList.Unlock();
     if ( !bValidHost ) {
         wxString strErr =

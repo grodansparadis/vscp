@@ -1,7 +1,7 @@
 <?xml version = "1.0" encoding = "UTF-8" ?>
 
 <!--
-  Version 0.7.3      2017-06-19
+  2017-10-22
   Example configuration file Unix
   Ake Hedman, akhe@grodansparadis.com
   http://www.grodansparadis.com
@@ -20,13 +20,14 @@
 
         <!--
           This is the admin credentials
-          allowfrom="*" allow connections from all hosts
-          A stricter allowfrom can be 127.0.0.1,192.168.1.*
+          allowfrom="" allow connections from all hosts. Can be for
+          a comma separated lite like "-0.0.0.0/0,+192.168/16" where
+          a "+"" before a net is allowed and "-" ins disallowed.
           The VSCP token is used a a key for encryption routines
         -->
         <security admin="admin"
             password="450ADCE88F2FDBB20F3318B65E53CA4A;06D3311CC2195E80BE4F8EB12931BFEB5C630F6B154B2D644ABE29CEBDBFB545"
-            allowfrom="*"
+            allowfrom=""
             vscptoken="Carpe diem quam minimum credula postero"
             vscpkey="A4A86F7D7E119BA3F0CD06881E371B989B33B6D606A863B633EF529D64544F8E"
         />
@@ -87,8 +88,6 @@
     -->
     <tcpip enable="true"
         interface="tcp://9598" />
-
-
 
     <!--
       It is possible to enable/disable the UDP interface
@@ -233,8 +232,8 @@
             <name>user</name>
             <password>D35967DEE4CFFB214124DFEEA7778BB0;582BCA078604C925852CDDEE0A8475556DEAA6DC6EFB004A353094900C97D3DE</password>
             <privilege>user</privilege>
-            <!-- A stricter allowfrom can be 127.0.0.1/192.168.1.* -->
-            <allowfrom>*</allowfrom>
+            <!-- allowfrom is a comma separated list of allowed remotes, see admin above -->
+            <allowfrom></allowfrom>
         </user>
     </remoteuser>
 

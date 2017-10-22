@@ -697,7 +697,8 @@ check_admin_authorization( struct web_connection *conn, void *cbdata )
 
     // Check if remote ip is valid
     gpobj->m_mutexUserList.Lock();
-    bValidHost = pUserItem->isAllowedToConnect( reqinfo->remote_addr );
+    //bValidHost = pUserItem->isAllowedToConnect( reqinfo->remote_addr );
+    bValidHost = ( 1 == pUserItem->isAllowedToConnect( inet_addr( reqinfo->remote_addr ) ) );
     gpobj->m_mutexUserList.Unlock();
     if ( !bValidHost ) {
         // Host is not allowed to connect
@@ -7291,8 +7292,9 @@ init_ssl(void *ssl_context, void *user_data)
 }
 
 
-
-
+static void delete_options( char **opts ) {
+    
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -7333,15 +7335,348 @@ int init_webserver( void )
 
 	"enable_auth_domain_check",
 	"no",
+        
 	0
     };
     
+    // This structure must be larger than the number of options to set
+    const char *web_options[ web_getOptionCount() + 1 ][2];
+    
     struct web_callbacks callbacks;
-    //struct web_context *ctx;
     struct web_server_ports ports[32];
     int port_cnt, n;
     int err = 0;
-
+    
+    // Set setup options from configuration
+    int pos = 0;
+    
+    web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_DOCUMENT_ROOT + 4 );
+    web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_document_root.mbc_str() );
+    pos++;
+    
+    web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_LISTENING_PORTS + 4 );
+    web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_listening_ports.mbc_str() );
+    pos++;
+    
+    web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_INDEX_FILES + 4 );
+    web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_index_files.mbc_str() );
+    pos++;
+    
+    web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_AUTHENTICATION_DOMAIN + 4 );
+    web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_authentication_domain.mbc_str() );
+    pos++;
+    
+    // Set only if not default value
+    if ( !gpobj->m_enable_auth_domain_check ) {
+        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_ENABLE_AUTH_DOMAIN_CHECK + 4 );
+        web_options[pos][1] = web_strdup( "no" );
+        pos++;
+    }
+    
+    web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_SSL_CERTIFICAT + 4 );
+    web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_ssl_certificate.mbc_str() );
+    pos++;
+    
+    web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_SSL_CERTIFICAT_CHAIN + 4 );
+    web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_ssl_certificate_chain.mbc_str() );
+    pos++;
+    
+    // Set only if not default value
+    if ( gpobj->m_web_ssl_verify_peer ) {
+        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_SSL_VERIFY_PEER + 4 );
+        web_options[pos][1] = web_strdup( "yes" );
+        pos++;
+    }
+    
+    if ( gpobj->m_web_ssl_ca_path.Length() ) {
+        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_SSL_CA_PATH + 4 );
+        web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_ssl_ca_path.mbc_str() );   
+        pos++;
+    }
+    
+    if ( gpobj->m_web_ssl_ca_file.Length() ) {
+        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_SSL_CA_FILE + 4 );
+        web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_ssl_ca_file.mbc_str() );   
+        pos++;
+    }
+    
+    if ( gpobj->m_web_ssl_verify_depth != 
+            atoi( VSCPDB_CONFIG_DEFAULT_WEB_SSL_VERIFY_DEPTH ) ) {
+        wxString wxstr = wxString::Format( _("%d"), (int)gpobj->m_web_ssl_verify_depth );
+        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_SSL_VERIFY_DEPTH + 4 );
+        web_options[pos][1] = web_strdup( (const char *)wxstr.mbc_str() );
+        pos++;
+    }
+    
+    if ( !gpobj->m_web_ssl_default_verify_paths ) {
+        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_SSL_DEFAULT_VERIFY_PATHS + 4 );
+        web_options[pos][1] = web_strdup( "no" );
+        pos++;
+    }
+    
+    web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_SSL_CHIPHER_LIST + 4 );
+    web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_ssl_cipher_list.mbc_str() );
+    pos++;
+    
+    if ( gpobj->m_web_ssl_protocol_version != 
+            atoi( VSCPDB_CONFIG_DEFAULT_WEB_SSL_PROTOCOL_VERSION ) ) {
+        wxString wxstr = wxString::Format( _("%d"), (int)gpobj->m_web_ssl_protocol_version );
+        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_SSL_PROTOCOL_VERSION + 4 );
+        web_options[pos][1] = web_strdup( (const char *)wxstr.mbc_str() );
+        pos++;
+    }
+    
+    if ( !gpobj->m_web_ssl_short_trust ) {
+        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_SSL_SHORT_TRUST + 4 );
+        web_options[pos][1] = web_strdup( "yes" );
+        pos++;
+    }
+    
+    if ( gpobj->m_web_cgi_interpreter.Length() ) {
+        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_CGI_INTERPRETER + 4 );
+        web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_cgi_interpreter.mbc_str() );
+        pos++;
+    }
+    
+    if ( gpobj->m_web_cgi_patterns.Length() ) {
+        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_CGI_PATTERNS + 4 );
+        web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_cgi_patterns.mbc_str() );
+        pos++;
+    }
+    
+    if ( gpobj->m_web_cgi_environment.Length() ) {
+        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_CGI_ENVIRONMENT + 4 );
+        web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_cgi_environment.mbc_str() );
+        pos++;
+    }
+    
+    if ( gpobj->m_web_protect_uri.Length() ) {
+        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_PROTECT_URI + 4 );
+        web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_protect_uri.mbc_str() );
+        pos++;
+    }
+    
+    if ( gpobj->m_web_trottle.Length() ) {
+        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_TROTTLE + 4 );
+        web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_trottle.mbc_str() );
+        pos++;
+    }
+    
+    if ( !gpobj->m_web_enable_directory_listing ) {
+        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_ENABLE_DIRECTORY_LISTING + 4 );
+        web_options[pos][1] = web_strdup( "no" );
+        pos++;
+    }
+    
+    if ( gpobj->m_web_enable_keep_alive ) {
+        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_ENABLE_KEEP_ALIVE + 4 );
+        web_options[pos][1] = web_strdup( "yes" );
+        pos++;
+    }
+    
+    if ( gpobj->m_web_keep_alive_timeout_ms != 
+            atol( VSCPDB_CONFIG_DEFAULT_WEB_KEEP_ALIVE_TIMEOUT_MS ) ) {
+        wxString wxstr = wxString::Format( _("%ld"), (long)gpobj->m_web_ssl_protocol_version );
+        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_KEEP_ALIVE_TIMEOUT_MS + 4 );
+        web_options[pos][1] = web_strdup( (const char *)wxstr.mbc_str() );
+        pos++;
+    }
+    
+    if ( gpobj->m_web_access_control_list.Length() ) {
+        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_LIST + 4 );
+        web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_access_control_list.mbc_str() );
+        pos++;
+    }
+    
+    if ( gpobj->m_web_extra_mime_types.Length() ) {
+        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_EXTRA_MIME_TYPES + 4 );
+        web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_extra_mime_types.mbc_str() );
+        pos++;
+    }
+    
+    if ( gpobj->m_web_num_threads != 
+            atoi( VSCPDB_CONFIG_DEFAULT_WEB_NUM_THREADS ) ) {
+        wxString wxstr = wxString::Format( _("%d"), (int)gpobj->m_web_num_threads );
+        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_EXTRA_MIME_TYPES + 4 );
+        web_options[pos][1] = web_strdup( (const char *)wxstr.mbc_str() );
+        pos++;
+    }
+    
+    if ( gpobj->m_web_run_as_user.Length() ) {
+        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_RUN_AS_USER + 4 );
+        web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_run_as_user.mbc_str() );
+        pos++;
+    }
+    
+    if ( gpobj->m_web_url_rewrite_patterns.Length() ) {
+        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_URL_REWRITE_PATTERNS + 4 );
+        web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_url_rewrite_patterns.mbc_str() );
+        pos++;
+    }
+    
+    if ( gpobj->m_web_hide_file_patterns.Length() ) {
+        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_URL_REWRITE_PATTERNS + 4 );
+        web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_hide_file_patterns.mbc_str() );
+        pos++;
+    }
+    
+    if ( gpobj->m_web_request_timeout_ms != 
+            atol( VSCPDB_CONFIG_DEFAULT_WEB_REQUEST_TIMEOUT_MS ) ) {
+        wxString wxstr = wxString::Format( _("%ld"), (long)gpobj->m_web_request_timeout_ms );
+        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_REQUEST_TIMEOUT_MS + 4 );
+        web_options[pos][1] = web_strdup( (const char *)wxstr.mbc_str() );
+        pos++;
+    }
+    
+    if ( -1 != gpobj->m_web_linger_timeout_ms ) {
+        wxString wxstr = wxString::Format( _("%ld"), (long)gpobj->m_web_linger_timeout_ms );
+        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_LINGER_TIMEOUT_MS + 4 );
+        web_options[pos][1] = web_strdup( (const char *)wxstr.mbc_str() );
+        pos++;
+    }
+    
+    if ( !gpobj->m_web_decode_url ) {
+        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_DECODE_URL + 4 );
+        web_options[pos][1] = web_strdup( "no" );
+        pos++;
+    }
+    
+    if ( gpobj->m_web_global_auth_file.Length() ) {
+        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_GLOBAL_AUTHFILE + 4 );
+        web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_global_auth_file.mbc_str() );
+        pos++;
+    }
+    
+    if ( gpobj->m_web_per_directory_auth_file.Length() ) {
+        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_PER_DIRECTORY_AUTH_FILE + 4 );
+        web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_per_directory_auth_file.mbc_str() );
+        pos++;
+    }
+    
+    if ( gpobj->m_web_ssi_patterns.Length() ) {
+        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_SSI_PATTERNS + 4 );
+        web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_ssi_patterns.mbc_str() );
+        pos++;
+    }
+    
+    if ( gpobj->m_web_access_control_allow_origin.Length() ) {
+        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_ALLOW_ORIGIN + 4 );
+        web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_access_control_allow_origin.mbc_str() );
+        pos++;
+    }
+    
+    if ( gpobj->m_web_access_control_allow_methods.Length() ) {
+        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_ALLOW_METHODS + 4 );
+        web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_access_control_allow_methods.mbc_str() );
+        pos++;
+    }
+    
+    if ( gpobj->m_web_access_control_allow_headers.Length() ) {
+        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_ALLOW_HEADERS + 4 );
+        web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_access_control_allow_headers.mbc_str() );
+        pos++;
+    }
+    
+    if ( gpobj->m_web_error_pages.Length() ) {
+        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_ERROR_PAGES + 4 );
+        web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_error_pages.mbc_str() );
+        pos++;
+    }
+    
+    if ( -1 != gpobj->m_web_tcp_nodelay ) {
+        wxString wxstr = wxString::Format( _("%ld"), (long)gpobj->m_web_tcp_nodelay );
+        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_TCP_NO_DELAY + 4 );
+        web_options[pos][1] = web_strdup( (const char *)wxstr.mbc_str() );
+        pos++;
+    }
+    
+    if ( gpobj->m_web_static_file_max_age != 
+            atol( VSCPDB_CONFIG_DEFAULT_WEB_STATIC_FILE_MAX_AGE ) ) {
+        wxString wxstr = wxString::Format( _("%ld"), (long)gpobj->m_web_static_file_max_age );
+        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_STATIC_FILE_MAX_AGE + 4 );
+        web_options[pos][1] = web_strdup( (const char *)wxstr.mbc_str() );
+        pos++;
+    }
+    
+    if ( -1 != gpobj->m_web_strict_transport_security_max_age ) {
+        wxString wxstr = wxString::Format( _("%ld"), (long)gpobj->m_web_strict_transport_security_max_age );
+        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_STRICT_TRANSPORT_SECURITY_MAX_AGE + 4 );
+        web_options[pos][1] = web_strdup( (const char *)wxstr.mbc_str() );
+        pos++;
+    }
+    
+    if ( !gpobj->m_web_allow_sendfile_call ) {
+        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_ALLOW_SENDFILE_CALL + 4 );
+        web_options[pos][1] = web_strdup( "no" );
+        pos++;
+    }
+    
+    if ( gpobj->m_web_additional_header.Length() ) {
+        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_ADDITIONAL_HEADERS + 4 );
+        web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_additional_header.mbc_str() );
+        pos++;
+    }
+    
+    if ( gpobj->m_web_max_request_size != 
+            atol( VSCPDB_CONFIG_DEFAULT_WEB_MAX_REQUEST_SIZE ) ) {
+        wxString wxstr = wxString::Format( _("%ld"), (long)gpobj->m_web_max_request_size );
+        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_MAX_REQUEST_SIZE + 4 );
+        web_options[pos][1] = web_strdup( (const char *)wxstr.mbc_str() );
+        pos++;
+    }
+    
+    if ( gpobj->m_web_allow_index_script_resource ) {
+        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_ALLOW_INDEX_SCRIPT_RESOURCE + 4 );
+        web_options[pos][1] = web_strdup( "yes" );
+        pos++;
+    }
+    
+    if ( gpobj->m_web_duktape_script_patterns.Length() ) {
+        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_DUKTAPE_SCRIPT_PATTERNS + 4 );
+        web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_duktape_script_patterns.mbc_str() );
+        pos++;
+    }
+    
+    if ( gpobj->m_web_lua_preload_file.Length() ) {
+        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_LUA_PRELOAD_FILE + 4 );
+        web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_lua_preload_file.mbc_str() );
+        pos++;
+    }
+    
+    if ( gpobj->m_web_lua_script_patterns.Length() ) {
+        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_LUA_SCRIPT_PATTERNS + 4 );
+        web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_lua_script_patterns.mbc_str() );
+        pos++;
+    }
+    
+    if ( gpobj->m_web_lua_server_page_patterns.Length() ) {
+        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_LUA_SERVER_PAGE_PATTERNS + 4 );
+        web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_lua_server_page_patterns.mbc_str() );
+        pos++;
+    }
+    
+    if ( gpobj->m_web_lua_websocket_patterns.Length() ) {
+        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_LUA_WEBSOCKET_PATTERNS + 4 );
+        web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_lua_websocket_patterns.mbc_str() );
+        pos++;
+    }
+    
+    if ( gpobj->m_web_lua_background_script.Length() ) {
+        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_LUA_BACKGROUND_SCRIPT + 4 );
+        web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_lua_background_script.mbc_str() );
+        pos++;
+    }
+    
+    if ( gpobj->m_web_lua_background_script_params.Length() ) {
+        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_LUA_BACKGROUND_SCRIPT_PARAMS + 4 );
+        web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_lua_background_script_params.mbc_str() );
+        pos++;
+    }
+    
+    // Mark end
+    web_options[pos][0] = NULL;
+    web_options[pos][1] = NULL;
+    
     // Setup callbacks
     memset( &callbacks, 0, sizeof( callbacks ) );
     callbacks.init_ssl = init_ssl;
@@ -7349,10 +7684,10 @@ int init_webserver( void )
     callbacks.log_access = log_access;
 
     // Start server
-    gpobj->webctx = web_start( &callbacks, 0, options );
+    gpobj->m_web_ctx = web_start( &callbacks, 0, options );
 
     // Check return value: 
-    if ( NULL == gpobj->webctx ) {
+    if ( NULL == gpobj->m_web_ctx ) {
         gpobj->logMsg( "websrv: Cannot start webserver - web_start failed.\n", 
                             DAEMON_LOGMSG_NORMAL, 
                             DAEMON_LOGTYPE_GENERAL );
@@ -7364,57 +7699,57 @@ int init_webserver( void )
 #ifdef WEB_EXAMPLES
 
     // Add handler EXAMPLE_URI, to explain the example 
-    web_set_request_handler( gpobj->webctx, EXAMPLE_URI, ExampleHandler, 0);
-    web_set_request_handler( gpobj->webctx, EXIT_URI, ExitHandler, 0);
+    web_set_request_handler( gpobj->m_web_ctx, EXAMPLE_URI, ExampleHandler, 0);
+    web_set_request_handler( gpobj->m_web_ctx, EXIT_URI, ExitHandler, 0);
 
     // Add handler for /A* and special handler for /A/B 
-    web_set_request_handler( gpobj->webctx, "/A", AHandler, 0);
-    web_set_request_handler( gpobj->webctx, "/A/B", ABHandler, 0);
+    web_set_request_handler( gpobj->m_web_ctx, "/A", AHandler, 0);
+    web_set_request_handler( gpobj->m_web_ctx, "/A/B", ABHandler, 0);
 
     // Add handler for /B, /B/A, /B/B but not for /B* 
-    web_set_request_handler( gpobj->webctx, "/B$", BXHandler, (void *) 0);
-    web_set_request_handler( gpobj->webctx, "/B/A$", BXHandler, (void *) 1);
-    web_set_request_handler( gpobj->webctx, "/B/B$", BXHandler, (void *) 2);
+    web_set_request_handler( gpobj->m_web_ctx, "/B$", BXHandler, (void *) 0);
+    web_set_request_handler( gpobj->m_web_ctx, "/B/A$", BXHandler, (void *) 1);
+    web_set_request_handler( gpobj->m_web_ctx, "/B/B$", BXHandler, (void *) 2);
 
     // Add handler for all files with .foo extention 
-    web_set_request_handler( gpobj->webctx, "**.foo$", FooHandler, 0);
+    web_set_request_handler( gpobj->m_web_ctx, "**.foo$", FooHandler, 0);
 
     // Add handler for /close extention 
-    web_set_request_handler( gpobj->webctx, "/close", CloseHandler, 0);
+    web_set_request_handler( gpobj->m_web_ctx, "/close", CloseHandler, 0);
 
     // Add handler for /form  (serve a file outside the document root) 
-    web_set_request_handler( gpobj->webctx,
+    web_set_request_handler( gpobj->m_web_ctx,
                                     "/form",
                                     FileHandler,
                                     (void *) "../../test/form.html");
 
     // Add handler for form data 
-    web_set_request_handler( gpobj->webctx,
+    web_set_request_handler( gpobj->m_web_ctx,
                                     "/handle_form.embedded_c.example.callback",
                                     FormHandler,
                                     (void *)0 );
 
     // Add a file upload handler for parsing files on the fly 
-    web_set_request_handler( gpobj->webctx,
+    web_set_request_handler( gpobj->m_web_ctx,
                                 "/on_the_fly_form",
                                 FileUploadForm,
                                 (void *)"/on_the_fly_form.md5.callback");
-    web_set_request_handler( gpobj->webctx,
+    web_set_request_handler( gpobj->m_web_ctx,
                                 "/on_the_fly_form.md5.callback",
                                 CheckSumHandler,
                                 (void *) 0 );
 
     // Add handler for /cookie example 
-    web_set_request_handler( gpobj->webctx, "/cookie", CookieHandler, 0);
+    web_set_request_handler( gpobj->m_web_ctx, "/cookie", CookieHandler, 0);
 
     // Add handler for /postresponse example 
-    web_set_request_handler( gpobj->webctx, "/postresponse", PostResponser, 0);
+    web_set_request_handler( gpobj->m_web_ctx, "/postresponse", PostResponser, 0);
 
     // Add HTTP site to open a websocket connection 
-    web_set_request_handler( gpobj->webctx, "/websocket", WebSocketStartHandler, 0);
+    web_set_request_handler( gpobj->m_web_ctx, "/websocket", WebSocketStartHandler, 0);
 
     // WS site for the websocket connection 
-    web_set_websocket_handler( gpobj->webctx,
+    web_set_websocket_handler( gpobj->m_web_ctx,
                                     "/websocket",
                                     WebSocketConnectHandler,
                                     WebSocketReadyHandler,
@@ -7424,43 +7759,42 @@ int init_webserver( void )
 #endif  // WEB_EXAMPLES     
     
     // Set authorization handlers
-    web_set_auth_handler( gpobj->webctx, "/vscp", check_admin_authorization, NULL );
-    web_set_auth_handler( gpobj->webctx, "/vscp", check_rest_authorization, NULL );
+    web_set_auth_handler( gpobj->m_web_ctx, "/vscp", check_admin_authorization, NULL );
+    web_set_auth_handler( gpobj->m_web_ctx, "/vscp", check_rest_authorization, NULL );
     
     // WS site for the websocket connection 
-    web_set_websocket_handler( gpobj->webctx,
+    web_set_websocket_handler( gpobj->m_web_ctx,
                                     "/ws1",
                                     ws1_connectHandler,
                                     ws1_readyHandler,
                                     ws1_dataHandler,
                                     ws1_closeHandler,
                                     0 );
-    
-    
+
     // Set page handlers
-    web_set_request_handler( gpobj->webctx, "/vscp",            vscp_mainpage, 0);
-    web_set_request_handler( gpobj->webctx, "/vscp/session",    vscp_client, 0 );
-    web_set_request_handler( gpobj->webctx, "/vscp/configure",  vscp_configure, 0 );
-    web_set_request_handler( gpobj->webctx, "/vscp/interfaces", vscp_interface, 0 );
-    web_set_request_handler( gpobj->webctx, "/vscp/ifinfo",     vscp_interface_info, 0 );
-    web_set_request_handler( gpobj->webctx, "/vscp/settings",   vscp_settings, 0 );
-    web_set_request_handler( gpobj->webctx, "/vscp/varlist",    vscp_variable_list, 0 );
-    web_set_request_handler( gpobj->webctx, "/vscp/varedit",    vscp_variable_edit, 0 );
-    web_set_request_handler( gpobj->webctx, "/vscp/varpost",    vscp_variable_post, 0 );
-    web_set_request_handler( gpobj->webctx, "/vscp/varnew",     vscp_variable_new, 0);
-    web_set_request_handler( gpobj->webctx, "/vscp/vardelete",  vscp_variable_delete, 0 );
-    web_set_request_handler( gpobj->webctx, "/vscp/dm",         vscp_dm_list, 0 );
-    web_set_request_handler( gpobj->webctx, "/vscp/dmedit",     vscp_dm_edit, 0 );
-    web_set_request_handler( gpobj->webctx, "/vscp/dmpost",     vscp_dm_post, 0 );
-    web_set_request_handler( gpobj->webctx, "/vscp/dmdelete",   vscp_dm_delete, 0 );
-    web_set_request_handler( gpobj->webctx, "/vscp/users",      vscp_user_list, 0 );    
-    web_set_request_handler( gpobj->webctx, "/vscp/log",        vscp_log_pre, 0 );
-    web_set_request_handler( gpobj->webctx, "/vscp/loglist",    vscp_log_list, 0 );
-    web_set_request_handler( gpobj->webctx, "/vscp/logdelete",  vscp_log_delete, 0 );
-    web_set_request_handler( gpobj->webctx, "/vscp/logdodelete",vscp_log_do_delete, 0 );
+    web_set_request_handler( gpobj->m_web_ctx, "/vscp",            vscp_mainpage, 0);
+    web_set_request_handler( gpobj->m_web_ctx, "/vscp/session",    vscp_client, 0 );
+    web_set_request_handler( gpobj->m_web_ctx, "/vscp/configure",  vscp_configure, 0 );
+    web_set_request_handler( gpobj->m_web_ctx, "/vscp/interfaces", vscp_interface, 0 );
+    web_set_request_handler( gpobj->m_web_ctx, "/vscp/ifinfo",     vscp_interface_info, 0 );
+    web_set_request_handler( gpobj->m_web_ctx, "/vscp/settings",   vscp_settings, 0 );
+    web_set_request_handler( gpobj->m_web_ctx, "/vscp/varlist",    vscp_variable_list, 0 );
+    web_set_request_handler( gpobj->m_web_ctx, "/vscp/varedit",    vscp_variable_edit, 0 );
+    web_set_request_handler( gpobj->m_web_ctx, "/vscp/varpost",    vscp_variable_post, 0 );
+    web_set_request_handler( gpobj->m_web_ctx, "/vscp/varnew",     vscp_variable_new, 0);
+    web_set_request_handler( gpobj->m_web_ctx, "/vscp/vardelete",  vscp_variable_delete, 0 );
+    web_set_request_handler( gpobj->m_web_ctx, "/vscp/dm",         vscp_dm_list, 0 );
+    web_set_request_handler( gpobj->m_web_ctx, "/vscp/dmedit",     vscp_dm_edit, 0 );
+    web_set_request_handler( gpobj->m_web_ctx, "/vscp/dmpost",     vscp_dm_post, 0 );
+    web_set_request_handler( gpobj->m_web_ctx, "/vscp/dmdelete",   vscp_dm_delete, 0 );
+    web_set_request_handler( gpobj->m_web_ctx, "/vscp/users",      vscp_user_list, 0 );    
+    web_set_request_handler( gpobj->m_web_ctx, "/vscp/log",        vscp_log_pre, 0 );
+    web_set_request_handler( gpobj->m_web_ctx, "/vscp/loglist",    vscp_log_list, 0 );
+    web_set_request_handler( gpobj->m_web_ctx, "/vscp/logdelete",  vscp_log_delete, 0 );
+    web_set_request_handler( gpobj->m_web_ctx, "/vscp/logdodelete",vscp_log_do_delete, 0 );
     
     // REST
-    web_set_request_handler( gpobj->webctx, "/vscp/rest",       websrv_restapi, 0 );
+    web_set_request_handler( gpobj->m_web_ctx, "/vscp/rest",       websrv_restapi, 0 );
 }
 
 
@@ -7470,5 +7804,5 @@ int init_webserver( void )
 
 int stop_webserver( void ) 
 {
-    web_stop( gpobj->webctx );
+    web_stop( gpobj->m_web_ctx );
 }

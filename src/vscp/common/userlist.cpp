@@ -342,9 +342,17 @@ bool CUserItem::setAllowedRemotesFromString( const wxString& strConnect )
         m_listAllowedIPV4Remotes.Clear();
         m_listAllowedIPV6Remotes.Clear();
         
-        wxStringTokenizer tkz( strConnect, wxT("/") );
+        wxStringTokenizer tkz( strConnect, wxT(",") );
         
-        do {
+        while ( tkz.HasMoreTokens() ) {
+            wxString remote = tkz.GetNextToken();
+            remote.Trim();
+            addAllowedRemote( remote );
+        }
+        
+        // TODO handel Ipv6
+        
+        /*do {
             wxString remote = tkz.GetNextToken();
             if ( !remote.IsEmpty() ) {
                 remote.Trim();
@@ -357,7 +365,7 @@ bool CUserItem::setAllowedRemotesFromString( const wxString& strConnect )
                     addAllowedRemote( remote );
                 }
             }
-        } while ( tkz.HasMoreTokens() );
+        } while ( tkz.HasMoreTokens() );*/
         
     }
         
@@ -640,7 +648,7 @@ bool CUserItem::readBackIndexFromDatabase( void )
 // isAllowedToConnect
 //
 
-bool CUserItem::isAllowedToConnect(const wxString& remote)
+/*bool CUserItem::isAllowedToConnect(const wxString& remote)
 {
     unsigned int i;
     wxString wxstr;
@@ -680,6 +688,41 @@ bool CUserItem::isAllowedToConnect(const wxString& remote)
     }
 
     return false;
+}*/
+
+////////////////////////////////////////////////////////////////////////////////
+// check_acl
+//
+//
+
+int 
+CUserItem::isAllowedToConnect( uint32_t remote_ip )
+{
+    int allowed, flag;
+    uint32_t net, mask;
+            
+    remote_ip = htonl( remote_ip );
+    
+    // If the list is empty - allow all
+    allowed = (0 == m_listAllowedIPV4Remotes.Count() ) ? '+' : '-';
+
+    for ( int i = 0; i < m_listAllowedIPV4Remotes.Count(); i++ ) {
+            
+        flag = m_listAllowedIPV4Remotes[i].GetChar( 0 );   //vec.ptr[0];
+        if ( ( flag != '+' && flag != '-') ||                  
+             ( 0 == vscp_parse_ipv4_addr( m_listAllowedIPV4Remotes[i].Right( m_listAllowedIPV4Remotes[i].Length() - 1 ), 
+                                            &net, &mask ) ) ) {
+                return -1;
+        }
+
+        if ( net == ( remote_ip & mask ) ) {
+            allowed = flag;
+        }
+        
+    }
+
+    return ( allowed == '+' );
+
 }
 
 
@@ -998,7 +1041,7 @@ bool CUserList::addUser( const wxString& user,
     // Add to the map
     m_userhashmap[ user ] = pItem;
     
-    // Setf ilter filter
+    // Set filter filter
     if (NULL != pFilter) {
         pItem->setFilter( pFilter );
     }

@@ -449,6 +449,44 @@ bool vscp_decodeBase64IfNeeded( wxString &wxstr, wxString &strResult )
     return true;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// isbyte
+//
+
+static int
+isbyte( int n )
+{
+    return (n >= 0) && (n <= 255);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// vscp_parse_ipv4_addr
+//
+
+int
+vscp_parse_ipv4_addr( const char *addr, uint32_t *net, uint32_t *mask )
+{
+    int n, a, b, c, d, slash = 32, len = 0;
+
+    if ( ( ( 5 == sscanf( addr, "%d.%d.%d.%d/%d%n", &a, &b, &c, &d, &slash, &n ) ) || 
+           ( 4 == sscanf( addr, "%d.%d.%d.%d%n", &a, &b, &c, &d, &n ) ) ) && 
+            isbyte(a) && 
+            isbyte(b) && 
+            isbyte(c) && 
+            isbyte(d) && 
+            (slash >= 0 ) && 
+            (slash < 33) ) {
+        
+        len = n;
+        *net = ((uint32_t) a << 24) | 
+                ((uint32_t) b << 16) | 
+                ((uint32_t) c << 8) | 
+                (uint32_t) d;
+        *mask = slash ? (0xffffffffU << (32 - slash)) : 0;
+    }
+
+    return len;
+}
 
 
 // ***************************************************************************

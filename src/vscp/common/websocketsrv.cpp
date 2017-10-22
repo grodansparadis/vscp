@@ -298,7 +298,7 @@ websock_authentication( struct web_connection *conn,
 
     // Check if remote ip is valid
     bValidHost = 
-        pUserItem->isAllowedToConnect( wxString::FromUTF8( reqinfo->remote_addr ) );
+        pUserItem->isAllowedToConnect( inet_addr( reqinfo->remote_addr ) );
 
     if ( !bValidHost ) {
         // Log valid login

@@ -477,318 +477,6 @@ CControlObject::~CControlObject()
     
 }
 
-
-
-/////////////////////////////////////////////////////////////////////////////
-// generateSessionId
-//
-
-bool CControlObject::generateSessionId( const char *pKey, char *psid )
-{
-    char buf[ 8193 ];
-    
-    // Check pointers
-    if ( NULL == pKey ) return false;
-    if ( NULL == psid ) return false;
-    
-    if ( strlen(pKey) > 256 ) return false;
-    
-    // Generate a random session ID
-    time_t t;
-    t = time( NULL );
-    sprintf( buf,
-                "__%s_%X%X%X%X_be_hungry_stay_foolish_%X%X",
-                pKey,
-                (unsigned int)rand(),
-                (unsigned int)rand(),
-                (unsigned int)rand(),
-                (unsigned int)t,
-                (unsigned int)rand(),
-                1337 );
-
-    vscp_md5( psid, (const unsigned char *)buf, strlen( buf ) );
-
-    return true;
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// getVscpCapabilities
-//
-
-bool CControlObject::getVscpCapabilities( uint8_t *pCapability )
-{
-    // Check pointer
-    if ( NULL == pCapability ) return false;
-    
-    memset( pCapability, 0, 8 );
-    
-    // VSCP Multicast interface
-    if ( m_multicastInfo.m_bEnable ) {
-        pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_MULTICAST_CHANNEL/8 ) ] |= 
-                    ( 1 << ( VSCP_SERVER_CAPABILITY_MULTICAST_CHANNEL % 8 ) );
-    }
-        
-    // VSCP TCP/IP interface
-    if ( m_enableTcpip ) {
-        pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_TCPIP/8 ) ] |= 
-                    ( 1 << ( VSCP_SERVER_CAPABILITY_TCPIP % 8 ) );
-    }
-        
-    // VSCP UDP interface
-    if ( m_udpInfo.m_bEnable ) {
-        pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_UDP/8 ) ] |= 
-                    ( 1 << ( VSCP_SERVER_CAPABILITY_UDP % 8 ) );
-    }
-        
-    // VSCP Multicast announce interface
-    if ( m_bMulticastAnounce ) {
-        pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_MULTICAST_ANNOUNCE/8 ) ] |= 
-                    ( 1 << ( VSCP_SERVER_CAPABILITY_MULTICAST_ANNOUNCE % 8 ) );
-    }
-        
-    // VSCP raw Ethernet interface
-    if ( 1 ) {
-        pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_RAWETH/8 ) ] |= 
-                    ( 1 << ( VSCP_SERVER_CAPABILITY_RAWETH % 8 ) );
-    }
-        
-    // VSCP web server
-    if ( m_web_bEnable ) {
-        pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_WEB/8 ) ] |= 
-                    ( 1 << ( VSCP_SERVER_CAPABILITY_WEB % 8 ) );
-    }
-        
-    // VSCP websocket interface
-    if ( m_web_bEnable ) {
-        pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_WEBSOCKET/8 ) ] |= 
-                    ( 1 << ( VSCP_SERVER_CAPABILITY_WEBSOCKET % 8 ) );
-    }
-        
-    // VSCP websocket interface
-    if ( m_web_bEnable ) {
-        pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_REST/8 ) ] |= 
-                    ( 1 << ( VSCP_SERVER_CAPABILITY_REST % 8 ) );
-    }
-        
-    // IPv6 support
-    if ( 0 ) {
-        pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_IP6/8 ) ] |= 
-                    ( 1 << ( VSCP_SERVER_CAPABILITY_IP6 % 8 ) );
-    }
-        
-    // IPv4 support
-    if ( 0 ) {
-        pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_IP4/8 ) ] |= 
-                    ( 1 << ( VSCP_SERVER_CAPABILITY_IP4 % 8 ) );
-    }
-        
-    // SSL support
-    if ( 1 ) {
-        pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_SSL/8 ) ] |= 
-                    ( 1 << ( VSCP_SERVER_CAPABILITY_SSL % 8 ) );
-    }
-        
-    // +2 tcp/ip connections support
-    if ( m_enableTcpip ) {
-        pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_TWO_CONNECTIONS/8 ) ] |= 
-                    ( 1 << ( VSCP_SERVER_CAPABILITY_TWO_CONNECTIONS % 8 ) );
-    }
-    
-    // AES256
-    pCapability[ 15 ] |= (1<<2);
-    
-    // AES192
-    pCapability[ 15 ] |= (1<<1);
-    
-    // AES128
-    pCapability[ 15 ] |= 1;
-    
-    return true;
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// logMsg
-//
-
-void CControlObject::logMsg(const wxString& msgin, const uint8_t level, const uint8_t nType )
-{
-    wxString msg = msgin;
-    
-    m_mutexLogWrite.Lock();
-    
-    // Add CR if not set.
-    if ( wxNOT_FOUND == msg.find( _("\n") ) ) {
-        msg += _("\n");
-    }
-
-    wxDateTime datetime( wxDateTime::GetTimeNow() );
-    wxString wxdebugmsg;
-
-    wxdebugmsg = datetime.FormatISODate() + _("T") + datetime.FormatISOTime() + _(" - ") + msg;
-
-#ifdef WIN32
-#ifdef BUILD_VSCPD_SERVICE
-
-    const char* ps[3];
-    ps[ 0 ] = wxstr;
-    ps[ 1 ] = NULL;
-    ps[ 2 ] = NULL;
-
-    int iStr = 0;
-    for (int i = 0; i < 3; i++) {
-        if (ps[i] != NULL) {
-            iStr++;
-        }
-    }
-
-    ::ReportEventA(m_hEventSource,
-                    EVENTLOG_INFORMATION_TYPE,
-                    0,
-                    (1L << 30),
-                    NULL, // sid
-                    iStr,
-                    0,
-                    ps,
-                    NULL);
-#endif
-#endif
-
-    // Log to database
-    if ( ( NULL != m_db_vscp_log ) && 
-            ( m_logLevel >= level) ) {
-        
-        
-        char *zErrMsg = NULL;
-                
-        char *sql = sqlite3_mprintf( VSCPDB_LOG_INSERT,
-            nType, 
-            (const char *)(datetime.FormatISODate() + _("T") + datetime.FormatISOTime() ).mbc_str(),
-            level,
-            (const char *)msg.mbc_str() );
-                
-        if ( SQLITE_OK != sqlite3_exec( m_db_vscp_log,  
-                                        sql, NULL, NULL, &zErrMsg)) {
-            wxPrintf( "Failed to write message to log database. Error is: %s Message is: %s\n",
-                        zErrMsg,
-                        (const char *)msg.mbc_str() );
-        }
-
-        sqlite3_free( sql );
-        
-    }
-
-#ifndef WIN32
-
-    // Print to console if there is one
-    if ( m_logLevel >= level ) {
-        wxPrintf( "%s", wxdebugmsg.mbc_str() );
-    }
-
-    if ( m_bLogToSysLog ) {
-        
-        switch (level) {
-
-        case DAEMON_LOGMSG_NORMAL:
-            syslog(LOG_INFO, "%s", (const char *)wxdebugmsg.mbc_str() );
-            break;
-
-        case DAEMON_LOGMSG_DEBUG:
-        default:    
-            syslog(LOG_DEBUG, "%s", (const char *) wxdebugmsg.mbc_str() );
-            break;
-
-        };
-        
-    }
-
-#endif
-
-     m_mutexLogWrite.Unlock();
-
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// getCountRecordsLogDB
-//
-
-long CControlObject::getCountRecordsLogDB( void )
-{
-    long count = 0;
-    sqlite3_stmt *ppStmt;
-        
-    // If not open no records
-    if ( NULL == m_db_vscp_log ) return 0;
-    
-    
-    m_mutexLogWrite.Lock();
-                          
-    if ( SQLITE_OK != sqlite3_prepare( m_db_vscp_log,
-                                        VSCPDB_LOG_COUNT,
-                                        -1,
-                                        &ppStmt,
-                                        NULL ) )  {
-        wxPrintf( "Failed to prepare count for log database. SQL is %s",
-                        VSCPDB_LOG_COUNT  );
-        return 0;
-    }
-    
-    if ( SQLITE_ROW == sqlite3_step( ppStmt ) ) {
-        count = sqlite3_column_int( ppStmt, 0 );
-    }
-        
-    m_mutexLogWrite.Unlock();
-    
-    return count;
-}
-
-
-/////////////////////////////////////////////////////////////////////////////
-// searchLogDB
-//
-
-bool CControlObject::searchLogDB( const char * sql, wxString& strResult )
-{
-    sqlite3_stmt *ppStmt;
-    
-    // If not open no records
-    if ( NULL == m_db_vscp_log ) return 0;
-    
-    
-    m_mutexLogWrite.Lock();
-                          
-    if ( SQLITE_OK != sqlite3_prepare( m_db_vscp_log,
-                                        sql,
-                                        -1,
-                                        &ppStmt,
-                                        NULL ) )  {
-        logMsg( wxString::Format( _("Failed to get records from log database. SQL is %s"),
-                                    sql )  );
-        return false;
-    }
-    
-    while ( SQLITE_ROW == sqlite3_step( ppStmt ) ) {
-        wxString wxstr;
-        wxstr = sqlite3_column_text( ppStmt, 0 );
-        wxstr += _(",");
-        wxstr += sqlite3_column_text( ppStmt, 1 );
-        wxstr += _(",");
-        wxstr += sqlite3_column_text( ppStmt, 2 );
-        wxstr += _(",");
-        wxstr += sqlite3_column_text( ppStmt, 3 );
-        wxstr += _(",");
-        wxstr += sqlite3_column_text( ppStmt, 4 ); 
-        
-        wxstr += _(";");
-        strResult += wxstr;
-    }
-        
-    m_mutexLogWrite.Unlock();
-    
-    return true;
-}
-
-
-
 /////////////////////////////////////////////////////////////////////////////
 // init
 //
@@ -1141,7 +829,7 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
     
     
     ////////////////////////////////////////////////////////////////////////////
-    //                      Read XML configuration
+    //                      Read full XML configuration
     ////////////////////////////////////////////////////////////////////////////
 
     str = _("Using configuration file: ") + strcfgfile + _("\n");
@@ -1165,7 +853,6 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
     //                           Add admin user
     //==========================================================================
     
-    if ( 0 == m_admin_allowfrom.Length() ) m_admin_allowfrom = _("*");
     m_userList.addSuperUser( m_admin_user,
                             m_admin_password,
                             m_admin_allowfrom );          // Remotes allows to connect                                                     
@@ -1200,7 +887,7 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
                             _("System added driver user."), // note
                             NULL,
                             _("driver"),
-                            _("127.0.0.1"),                 // Only local
+                            _("+127.0.0.0/24"),             // Only local
                             _("*:*"),                       // All events
                             VSCP_ADD_USER_FLAG_LOCAL );
 
@@ -1827,6 +1514,315 @@ bool CControlObject::stopDeviceWorkerThreads( void )
 
     }
 
+    return true;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+// generateSessionId
+//
+
+bool CControlObject::generateSessionId( const char *pKey, char *psid )
+{
+    char buf[ 8193 ];
+    
+    // Check pointers
+    if ( NULL == pKey ) return false;
+    if ( NULL == psid ) return false;
+    
+    if ( strlen(pKey) > 256 ) return false;
+    
+    // Generate a random session ID
+    time_t t;
+    t = time( NULL );
+    sprintf( buf,
+                "__%s_%X%X%X%X_be_hungry_stay_foolish_%X%X",
+                pKey,
+                (unsigned int)rand(),
+                (unsigned int)rand(),
+                (unsigned int)rand(),
+                (unsigned int)t,
+                (unsigned int)rand(),
+                1337 );
+
+    vscp_md5( psid, (const unsigned char *)buf, strlen( buf ) );
+
+    return true;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// getVscpCapabilities
+//
+
+bool CControlObject::getVscpCapabilities( uint8_t *pCapability )
+{
+    // Check pointer
+    if ( NULL == pCapability ) return false;
+    
+    memset( pCapability, 0, 8 );
+    
+    // VSCP Multicast interface
+    if ( m_multicastInfo.m_bEnable ) {
+        pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_MULTICAST_CHANNEL/8 ) ] |= 
+                    ( 1 << ( VSCP_SERVER_CAPABILITY_MULTICAST_CHANNEL % 8 ) );
+    }
+        
+    // VSCP TCP/IP interface
+    if ( m_enableTcpip ) {
+        pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_TCPIP/8 ) ] |= 
+                    ( 1 << ( VSCP_SERVER_CAPABILITY_TCPIP % 8 ) );
+    }
+        
+    // VSCP UDP interface
+    if ( m_udpInfo.m_bEnable ) {
+        pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_UDP/8 ) ] |= 
+                    ( 1 << ( VSCP_SERVER_CAPABILITY_UDP % 8 ) );
+    }
+        
+    // VSCP Multicast announce interface
+    if ( m_bMulticastAnounce ) {
+        pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_MULTICAST_ANNOUNCE/8 ) ] |= 
+                    ( 1 << ( VSCP_SERVER_CAPABILITY_MULTICAST_ANNOUNCE % 8 ) );
+    }
+        
+    // VSCP raw Ethernet interface
+    if ( 1 ) {
+        pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_RAWETH/8 ) ] |= 
+                    ( 1 << ( VSCP_SERVER_CAPABILITY_RAWETH % 8 ) );
+    }
+        
+    // VSCP web server
+    if ( m_web_bEnable ) {
+        pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_WEB/8 ) ] |= 
+                    ( 1 << ( VSCP_SERVER_CAPABILITY_WEB % 8 ) );
+    }
+        
+    // VSCP websocket interface
+    if ( m_web_bEnable ) {
+        pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_WEBSOCKET/8 ) ] |= 
+                    ( 1 << ( VSCP_SERVER_CAPABILITY_WEBSOCKET % 8 ) );
+    }
+        
+    // VSCP websocket interface
+    if ( m_web_bEnable ) {
+        pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_REST/8 ) ] |= 
+                    ( 1 << ( VSCP_SERVER_CAPABILITY_REST % 8 ) );
+    }
+        
+    // IPv6 support
+    if ( 0 ) {
+        pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_IP6/8 ) ] |= 
+                    ( 1 << ( VSCP_SERVER_CAPABILITY_IP6 % 8 ) );
+    }
+        
+    // IPv4 support
+    if ( 0 ) {
+        pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_IP4/8 ) ] |= 
+                    ( 1 << ( VSCP_SERVER_CAPABILITY_IP4 % 8 ) );
+    }
+        
+    // SSL support
+    if ( 1 ) {
+        pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_SSL/8 ) ] |= 
+                    ( 1 << ( VSCP_SERVER_CAPABILITY_SSL % 8 ) );
+    }
+        
+    // +2 tcp/ip connections support
+    if ( m_enableTcpip ) {
+        pCapability[ 8 - ( VSCP_SERVER_CAPABILITY_TWO_CONNECTIONS/8 ) ] |= 
+                    ( 1 << ( VSCP_SERVER_CAPABILITY_TWO_CONNECTIONS % 8 ) );
+    }
+    
+    // AES256
+    pCapability[ 15 ] |= (1<<2);
+    
+    // AES192
+    pCapability[ 15 ] |= (1<<1);
+    
+    // AES128
+    pCapability[ 15 ] |= 1;
+    
+    return true;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// logMsg
+//
+
+void CControlObject::logMsg(const wxString& msgin, const uint8_t level, const uint8_t nType )
+{
+    wxString msg = msgin;
+    
+    m_mutexLogWrite.Lock();
+    
+    // Add CR if not set.
+    if ( wxNOT_FOUND == msg.find( _("\n") ) ) {
+        msg += _("\n");
+    }
+
+    wxDateTime datetime( wxDateTime::GetTimeNow() );
+    wxString wxdebugmsg;
+
+    wxdebugmsg = datetime.FormatISODate() + _("T") + datetime.FormatISOTime() + _(" - ") + msg;
+
+#ifdef WIN32
+#ifdef BUILD_VSCPD_SERVICE
+
+    const char* ps[3];
+    ps[ 0 ] = wxstr;
+    ps[ 1 ] = NULL;
+    ps[ 2 ] = NULL;
+
+    int iStr = 0;
+    for (int i = 0; i < 3; i++) {
+        if (ps[i] != NULL) {
+            iStr++;
+        }
+    }
+
+    ::ReportEventA(m_hEventSource,
+                    EVENTLOG_INFORMATION_TYPE,
+                    0,
+                    (1L << 30),
+                    NULL, // sid
+                    iStr,
+                    0,
+                    ps,
+                    NULL);
+#endif
+#endif
+
+    // Log to database
+    if ( ( NULL != m_db_vscp_log ) && 
+            ( m_logLevel >= level) ) {
+        
+        
+        char *zErrMsg = NULL;
+                
+        char *sql = sqlite3_mprintf( VSCPDB_LOG_INSERT,
+            nType, 
+            (const char *)(datetime.FormatISODate() + _("T") + datetime.FormatISOTime() ).mbc_str(),
+            level,
+            (const char *)msg.mbc_str() );
+                
+        if ( SQLITE_OK != sqlite3_exec( m_db_vscp_log,  
+                                        sql, NULL, NULL, &zErrMsg)) {
+            wxPrintf( "Failed to write message to log database. Error is: %s Message is: %s\n",
+                        zErrMsg,
+                        (const char *)msg.mbc_str() );
+        }
+
+        sqlite3_free( sql );
+        
+    }
+
+#ifndef WIN32
+
+    // Print to console if there is one
+    if ( m_logLevel >= level ) {
+        wxPrintf( "%s", wxdebugmsg.mbc_str() );
+    }
+
+    if ( m_bLogToSysLog ) {
+        
+        switch (level) {
+
+        case DAEMON_LOGMSG_NORMAL:
+            syslog(LOG_INFO, "%s", (const char *)wxdebugmsg.mbc_str() );
+            break;
+
+        case DAEMON_LOGMSG_DEBUG:
+        default:    
+            syslog(LOG_DEBUG, "%s", (const char *) wxdebugmsg.mbc_str() );
+            break;
+
+        };
+        
+    }
+
+#endif
+
+     m_mutexLogWrite.Unlock();
+
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// getCountRecordsLogDB
+//
+
+long CControlObject::getCountRecordsLogDB( void )
+{
+    long count = 0;
+    sqlite3_stmt *ppStmt;
+        
+    // If not open no records
+    if ( NULL == m_db_vscp_log ) return 0;
+    
+    
+    m_mutexLogWrite.Lock();
+                          
+    if ( SQLITE_OK != sqlite3_prepare( m_db_vscp_log,
+                                        VSCPDB_LOG_COUNT,
+                                        -1,
+                                        &ppStmt,
+                                        NULL ) )  {
+        wxPrintf( "Failed to prepare count for log database. SQL is %s",
+                        VSCPDB_LOG_COUNT  );
+        return 0;
+    }
+    
+    if ( SQLITE_ROW == sqlite3_step( ppStmt ) ) {
+        count = sqlite3_column_int( ppStmt, 0 );
+    }
+        
+    m_mutexLogWrite.Unlock();
+    
+    return count;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+// searchLogDB
+//
+
+bool CControlObject::searchLogDB( const char * sql, wxString& strResult )
+{
+    sqlite3_stmt *ppStmt;
+    
+    // If not open no records
+    if ( NULL == m_db_vscp_log ) return 0;
+    
+    
+    m_mutexLogWrite.Lock();
+                          
+    if ( SQLITE_OK != sqlite3_prepare( m_db_vscp_log,
+                                        sql,
+                                        -1,
+                                        &ppStmt,
+                                        NULL ) )  {
+        logMsg( wxString::Format( _("Failed to get records from log database. SQL is %s"),
+                                    sql )  );
+        return false;
+    }
+    
+    while ( SQLITE_ROW == sqlite3_step( ppStmt ) ) {
+        wxString wxstr;
+        wxstr = sqlite3_column_text( ppStmt, 0 );
+        wxstr += _(",");
+        wxstr += sqlite3_column_text( ppStmt, 1 );
+        wxstr += _(",");
+        wxstr += sqlite3_column_text( ppStmt, 2 );
+        wxstr += _(",");
+        wxstr += sqlite3_column_text( ppStmt, 3 );
+        wxstr += _(",");
+        wxstr += sqlite3_column_text( ppStmt, 4 ); 
+        
+        wxstr += _(";");
+        strResult += wxstr;
+    }
+        
+    m_mutexLogWrite.Unlock();
+    
     return true;
 }
 
@@ -4136,7 +4132,7 @@ bool CControlObject::doCreateConfigurationTable( void )
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_ENABLE_DIRECTORY_LISTING, VSCPDB_CONFIG_DEFAULT_WEB_ENABLE_DIRECTORY_LISTING );
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_ENABLE_KEEP_ALIVE, VSCPDB_CONFIG_DEFAULT_WEB_ENABLE_KEEP_ALIVE );
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_LIST, VSCPDB_CONFIG_DEFAULT_WEB_ACCESS_CONTROL_LIST );
-    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_MIME_TYPES, VSCPDB_CONFIG_DEFAULT_WEB_MIME_TYPES );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_EXTRA_MIME_TYPES, VSCPDB_CONFIG_DEFAULT_WEB_EXTRA_MIME_TYPES );
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_NUM_THREADS, VSCPDB_CONFIG_DEFAULT_WEB_NUM_THREADS );
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_HIDE_FILE_PATTERNS, VSCPDB_CONFIG_DEFAULT_WEB_HIDE_FILE_PATTERNS );
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_RUN_AS_USER, VSCPDB_CONFIG_DEFAULT_WEB_RUN_AS_USER );
@@ -4154,7 +4150,7 @@ bool CControlObject::doCreateConfigurationTable( void )
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_TCP_NO_DELAY, VSCPDB_CONFIG_DEFAULT_WEB_TCP_NO_DELAY );
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_STATIC_FILE_MAX_AGE, VSCPDB_CONFIG_DEFAULT_WEB_STATIC_FILE_MAX_AGE );
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_STRICT_TRANSPORT_SECURITY_MAX_AGE, VSCPDB_CONFIG_DEFAULT_WEB_STRICT_TRANSPORT_SECURITY_MAX_AGE );
-    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_SENDFILE_CALL, VSCPDB_CONFIG_DEFAULT_WEB_SENDFILE_CALL );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_ALLOW_SENDFILE_CALL, VSCPDB_CONFIG_DEFAULT_WEB_ALLOW_SENDFILE_CALL );
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_ADDITIONAL_HEADERS, VSCPDB_CONFIG_DEFAULT_WEB_ADDITIONAL_HEADERS );
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_MAX_REQUEST_SIZE, VSCPDB_CONFIG_DEFAULT_WEB_MAX_REQUEST_SIZE );
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_ALLOW_INDEX_SCRIPT_RESOURCE, VSCPDB_CONFIG_DEFAULT_WEB_ALLOW_INDEX_SCRIPT_RESOURCE );
@@ -4571,7 +4567,7 @@ bool CControlObject::readConfigurationDB( void )
         
         // Extra mime types
         else if ( !vscp_strcasecmp( (const char * )pName, 
-                        VSCPDB_CONFIG_NAME_WEB_MIME_TYPES )  ) {
+                        VSCPDB_CONFIG_NAME_WEB_EXTRA_MIME_TYPES )  ) {
             m_web_extra_mime_types = wxString::FromUTF8( (const char *)pValue );
         } 
         
@@ -4690,7 +4686,7 @@ bool CControlObject::readConfigurationDB( void )
         
         // Enable sendfile call
         else if ( !vscp_strcasecmp( (const char * )pName, 
-                        VSCPDB_CONFIG_NAME_WEB_SENDFILE_CALL )  ) {
+                        VSCPDB_CONFIG_NAME_WEB_ALLOW_SENDFILE_CALL )  ) {
             if ( atoi( (const char *)pValue ) ) {
                 m_web_allow_sendfile_call = true;
             }

@@ -2096,7 +2096,7 @@ bool VSCPClientThread::handleClientPassword ( struct mg_connection *conn,
     // Check if this user is allowed to connect from this location
     gpobj->m_mutexUserList.Lock();
     bool bValidHost =
-            pClientItem->m_pUserItem->isAllowedToConnect( remoteaddr );
+        ( 1 == pClientItem->m_pUserItem->isAllowedToConnect( cli_addr.sin_addr.s_addr ) );
     gpobj->m_mutexUserList.Unlock();
 
     if ( !bValidHost ) {

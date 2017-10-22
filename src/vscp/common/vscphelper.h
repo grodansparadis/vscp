@@ -186,6 +186,15 @@ extern "C" {
     bool vscp_decodeBase64IfNeeded( wxString &wxstr, wxString &strResult );
     
     
+    /*!
+     * Parse IPv4 address and return net part and mask part
+     * 
+     * @param addr ipv4 address to parse (a.b.c.d/m)
+     * @param net Network part of address
+     * @param mask Mask part of address
+     * return 0 on error, 
+     */
+    int vscp_parse_ipv4_addr( const char *addr, uint32_t *net, uint32_t *mask );
     
     // ***************************************************************************
     //                             Measurement Helpers

@@ -139,7 +139,7 @@
 #define VSCPDB_CONFIG_DEFAULT_WEB_AUTHENTICATION_DOMAIN "mydomain.com"
 
 #define VSCPDB_CONFIG_NAME_WEB_ENABLE_AUTH_DOMAIN_CHECK "web_enable_auth_domain_check"
-#define VSCPDB_CONFIG_DEFAULT_WEB_ENABLE_AUTH_DOMAIN_CHECK "0"
+#define VSCPDB_CONFIG_DEFAULT_WEB_ENABLE_AUTH_DOMAIN_CHECK "1"
 
 #define VSCPDB_CONFIG_NAME_WEB_SSL_CERTIFICAT           "web_ssl_certificat"
 #define VSCPDB_CONFIG_DEFAULT_WEB_SSL_CERTIFICAT        "/srv/vscp/certs/server.pem"
@@ -166,7 +166,7 @@
 #define VSCPDB_CONFIG_DEFAULT_WEB_SSL_CHIPHER_LIST      "DES-CBC3-SHA:AES128-SHA:AES128-GCM-SHA256"
 
 #define VSCPDB_CONFIG_NAME_WEB_SSL_PROTOCOL_VERSION     "web_ssl_protocol_version"
-#define VSCPDB_CONFIG_DEFAULT_WEB_SSL_PROTOCOL_VERSION  "3"
+#define VSCPDB_CONFIG_DEFAULT_WEB_SSL_PROTOCOL_VERSION  "0"
 
 #define VSCPDB_CONFIG_NAME_WEB_SSL_SHORT_TRUST          "web_ssl_short_trust"
 #define VSCPDB_CONFIG_DEFAULT_WEB_SSL_SHORT_TRUST       "0"
@@ -193,19 +193,16 @@
 #define VSCPDB_CONFIG_DEFAULT_WEB_ENABLE_KEEP_ALIVE     "0"
 
 #define VSCPDB_CONFIG_NAME_WEB_KEEP_ALIVE_TIMEOUT_MS    "web_keep_alive_timeout_ms"
-#define VSCPDB_CONFIG_DEFAULT_WEB_KEEP_ALIVE_TIMEOUT_MS "0"
+#define VSCPDB_CONFIG_DEFAULT_WEB_KEEP_ALIVE_TIMEOUT_MS "500"
 
 #define VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_LIST      "web_access_control_list"
 #define VSCPDB_CONFIG_DEFAULT_WEB_ACCESS_CONTROL_LIST   ""
 
-#define VSCPDB_CONFIG_NAME_WEB_MIME_TYPES               "web_mime_types"
-#define VSCPDB_CONFIG_DEFAULT_WEB_MIME_TYPES            ""
+#define VSCPDB_CONFIG_NAME_WEB_EXTRA_MIME_TYPES         "web_extra_mime_types"
+#define VSCPDB_CONFIG_DEFAULT_WEB_EXTRA_MIME_TYPES      ""
 
 #define VSCPDB_CONFIG_NAME_WEB_NUM_THREADS              "web_num_threads"
 #define VSCPDB_CONFIG_DEFAULT_WEB_NUM_THREADS           "50"
-
-#define VSCPDB_CONFIG_NAME_WEB_HIDE_FILE_PATTERNS       "web_hide_file_patterns"
-#define VSCPDB_CONFIG_DEFAULT_WEB_HIDE_FILE_PATTERNS    ""
 
 #define VSCPDB_CONFIG_NAME_WEB_RUN_AS_USER              "web_run_as_user"
 #define VSCPDB_CONFIG_DEFAULT_WEB_RUN_AS_USER           ""
@@ -213,8 +210,11 @@
 #define VSCPDB_CONFIG_NAME_WEB_URL_REWRITE_PATTERNS     "web_url_rewrite_patterns"
 #define VSCPDB_CONFIG_DEFAULT_WEB_URL_REWRITE_PATTERNS  ""
 
+#define VSCPDB_CONFIG_NAME_WEB_HIDE_FILE_PATTERNS       "web_hide_file_patterns"
+#define VSCPDB_CONFIG_DEFAULT_WEB_HIDE_FILE_PATTERNS    ""
+
 #define VSCPDB_CONFIG_NAME_WEB_REQUEST_TIMEOUT_MS       "web_request_timeout_ms"
-#define VSCPDB_CONFIG_DEFAULT_WEB_REQUEST_TIMEOUT_MS    "10000"
+#define VSCPDB_CONFIG_DEFAULT_WEB_REQUEST_TIMEOUT_MS    "30000"
 
 #define VSCPDB_CONFIG_NAME_WEB_LINGER_TIMEOUT_MS       "web_linger_timeout_ms"
 #define VSCPDB_CONFIG_DEFAULT_WEB_LINGER_TIMEOUT_MS    "-1"
@@ -231,14 +231,14 @@
 #define VSCPDB_CONFIG_NAME_WEB_SSI_PATTERNS             "web_ssi_patterns"
 #define VSCPDB_CONFIG_DEFAULT_WEB_SSI_PATTERNS          ""
 
-#define VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_ALLOW_ORIGIN "web_access_control_allow_origin"
-#define VSCPDB_CONFIG_DEFAULT_WEB_ACCESS_CONTROL_ALLOW_ORIGIN "*"        
+#define VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_ALLOW_ORIGIN      "web_access_control_allow_origin"
+#define VSCPDB_CONFIG_DEFAULT_WEB_ACCESS_CONTROL_ALLOW_ORIGIN   ""        
 
-#define VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_ALLOW_METHODS "web_access_control_allow_methods"
-#define VSCPDB_CONFIG_DEFAULT_WEB_ACCESS_CONTROL_ALLOW_METHODS "*"                      
+#define VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_ALLOW_METHODS     "web_access_control_allow_methods"
+#define VSCPDB_CONFIG_DEFAULT_WEB_ACCESS_CONTROL_ALLOW_METHODS  ""                      
 
-#define VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_ALLOW_HEADERS "web_access_control_allow_headers"
-#define VSCPDB_CONFIG_DEFAULT_WEB_ACCESS_CONTROL_ALLOW_HEADERS "*"                      
+#define VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_ALLOW_HEADERS     "web_access_control_allow_headers"
+#define VSCPDB_CONFIG_DEFAULT_WEB_ACCESS_CONTROL_ALLOW_HEADERS  ""                      
 
 #define VSCPDB_CONFIG_NAME_WEB_ERROR_PAGES              "web_error_pages"
 #define VSCPDB_CONFIG_DEFAULT_WEB_ERROR_PAGES           ""                      
@@ -249,11 +249,11 @@
 #define VSCPDB_CONFIG_NAME_WEB_STATIC_FILE_MAX_AGE      "web_static_file_max_age"
 #define VSCPDB_CONFIG_DEFAULT_WEB_STATIC_FILE_MAX_AGE   "3600"                      
                       
-#define VSCPDB_CONFIG_NAME_WEB_STRICT_TRANSPORT_SECURITY_MAX_AGE   "web_strict_transport_security_max_age"
-#define VSCPDB_CONFIG_DEFAULT_WEB_STRICT_TRANSPORT_SECURITY_MAX_AGE ""                      
+#define VSCPDB_CONFIG_NAME_WEB_STRICT_TRANSPORT_SECURITY_MAX_AGE    "web_strict_transport_security_max_age"
+#define VSCPDB_CONFIG_DEFAULT_WEB_STRICT_TRANSPORT_SECURITY_MAX_AGE "-1"                      
 
-#define VSCPDB_CONFIG_NAME_WEB_SENDFILE_CALL            "web_sendfile_call"
-#define VSCPDB_CONFIG_DEFAULT_WEB_SENDFILE_CALL         "1"                      
+#define VSCPDB_CONFIG_NAME_WEB_ALLOW_SENDFILE_CALL      "web_allow_sendfile_call"
+#define VSCPDB_CONFIG_DEFAULT_WEB_ALLOW_SENDFILE_CALL   "1"                      
 
 #define VSCPDB_CONFIG_NAME_WEB_ADDITIONAL_HEADERS       "web_additional_headers"
 #define VSCPDB_CONFIG_DEFAULT_WEB_ADDITIONAL_HEADERS    ""                        

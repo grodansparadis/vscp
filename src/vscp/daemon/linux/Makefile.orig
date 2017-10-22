@@ -1,82 +1,28 @@
 #
 # Makefile for canald 
 #
-# Copyright 2004,2005 by Ake Hedman <akhe@eurosource.se>
+# Copyright 2004 by Ake Hedman <akhe@eurosource.se>
 # See COPYING for GNU Public License
 #
 # Linux/Solaris/FreeBSD/AIX/Other makefile
 #
 
-# * * * Configuration * * *
+VERSION = 0.1.1
 
-# topdir for wxWidgets base 
-top_builddir = /usr/local/lib
- 
-#program version
-VERSION = 0.1.5
+CC	= g++ 
+CFLAGS	= -g -Wall
+LIBS	= -lpthread -ldl -lm -lz
 
-EXTRALIBS = -pthread -lz -ldl -lm
-OPENGLLIBS =
-LDFLAGS_GL =
-LDLIBS = ${APPEXTRALIBS} ${top_builddir}/lib/libwx_based-2.6.a ${EXTRALIBS}
-
-TOOLKIT =
-TOOLKITDIR = base
-
-WXLIB = libwx_base-2.6.a
-WXSHLIB = libwx_base-2.6.so.0.1.1
-WXLIBBASE = wx_base
-
-
-
-########################### VERSION #################################
-
-WX_MAJOR_VERSION_NUMBER = 2
-WX_MINOR_VERSION_NUMBER = 6
-WX_RELEASE_NUMBER = 1
-
-########################### Programs #################################
-
-CXX         = c++
-CC          = gcc
-
-# Compiler for lex/yacc .c programs
-CCLEX       = gcc
-
-LEX         = flex
-YACC        = bison -y
-AR          = ar
-AS          =
-NM          =
-LN_S        = ln -s
-STRIP       = strip
-AROPTIONS   = rcu
-RANLIB      = ranlib
-LD          =
-MAKEINFO    =
-RM          = rm -f
-
-
-########################### Flags #################################
-
-CXXFLAGS = -g -O0 -pthread -I/usr/include/SDL -D_REENTRANT -Wall -Wno-ctor-dtor-privacy
-CPPFLAGS = -D__WXDEBUG__  -I${top_builddir}/wx/include/base-ansi-debug-static-2.6  -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D_LARGEFILE_SOURCE=1
-CFLAGS = ${APPEXTRACFLAGS} ${CPPFLAGS} -O2 -MMD -pthread -Wall
-PICFLAGS =
-
-CANALOBJS = 	../../common/listenthread_unix.o ../../common/clientthread_level1_unix.o ../../common/devicethread_unix.o \
-		../../common/canalshmem_level1_unix.o ../../common/clientlist.o ../../common/controlobject.o \
-		../../common/devicelist.o ../../common/udpreceivethread_unix.o ../../../vscp/common/vscp.o \
-		../../common/clientthread_level2_unix.o ../../common/canalshmem_level2_unix.o \
-		../../common/tcplistenthread.o
-CANALHDRS =	../../common/clientlist.h ../../common/controlobject.h ../../common/devicelist.h \
-		../../common/canal.h ../../common/canaldlldef.h \
-		../../common/version.h ../../common/canal_unix_ipc.h ../../common/CanalShMem_level1_unix.h \
-		../../common/CanalShMem_level2_unix.h ../../common/clientthread_level1_unix.h ../../common/clientthread_level2_unix.h
-PROJOBJS	= ../../../common/dllist.o ../../../common/configfile.o ../../../common/crc.o
-PROJHDRS	= ../../../common/dllist.h ../../../common/configfile.h
-OBJS		= canald.o
-HDRS		= canald.h
+CANALOBJS	=	../common/listenthread.o ../common/clientthread.o ../common/devicethread.o \
+				../common/terminationthread.o \
+				 ../common/clientlist.o ../common/controlobject.o ../common/devicelist.o
+CANALHDRS	=	../common/clientlist.h ../common/controlobject.h ../common/devicelist.h \
+				../common/canal.h ../common/canaldlldef.h ../common/canalpipe.h \
+				../common/version.h
+PROJOBJS	=	../../common/dllist.o ../../common/configfile.o
+PROJHDRS	=	../../common/dllist.h ../../common/configfile.h
+OBJS		=	canald.o
+HDRS		= 	canald.h
 
 
 # !!!!!!!
@@ -112,7 +58,7 @@ all:		canald
 
 # Build the Linux executable
 canald:		$(OBJS) $(HDRS) $(CANALOBJS) $(CANALHDR) $(PROJOBJS) $(PROJHDRS)
-		$(CXX) $(OBJS) $(CANALOBJS) $(PROJOBJS) -o canald $(LIBS) $(LDLIBS)
+		$(CC) $(OBJS) $(CANALOBJS) $(PROJOBJS) -o canald $(LIBS)
 
 # Clean up the object files and the sub-directory for distributions
 clean:
@@ -132,7 +78,7 @@ install:	canald
 
 # Build the archive of everything
 archive:	canald clean sign
-		cd .. ; tar cvzf ../../delivery/canald-$(VERSION).tar.gz * --exclude *.o --exclude *.exe 
+		cd .. ; tar cvzf delivery/canald-$(VERSION).tar.gz * --exclude *.o --exclude *.exe 
 
 # Build the source distribution
 
@@ -142,7 +88,7 @@ dist:		archive
 
 # Build RedHat binary and source RPMs
 rpm:	dist
-	su -c "cp ../../delivery/canald-$(VERSION).tar.gz /usr/src/redhat/SOURCES"
+	su -c "cp ../deliver/canald-$(VERSION).tar.gz /usr/src/redhat/SOURCES"
 	rm -f canald-$(VERSION)-1.spec
 	ln -s canald.spec canald-$(VERSION)-1.spec
 	su -c "rpm -ba -vv canald-$(VERSION)-1.spec"

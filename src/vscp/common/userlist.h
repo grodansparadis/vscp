@@ -147,7 +147,32 @@ public:
         @param remote ip-address for remote machine.
         @return true if the remote machine is allowed to connect.
     */
-    bool isAllowedToConnect( const wxString& remote);
+    //bool isAllowedToConnect( const wxString& remote);
+    
+    /*
+        IP ACL. By default, empty or non defined, meaning all IPs are allowed to 
+        connect.
+
+        An Access Control List (ACL) allows restrictions to be put on the list 
+        of IP addresses which have access to the web server. The ACL is a comma 
+        separated list of IP subnets, where each subnet is pre-pended by either 
+        a - or a + sign. A plus sign means allow, where a minus sign means deny. 
+        If a subnet mask is omitted, such as -1.2.3.4, this means to deny only 
+        that single IP address.
+
+        Subnet masks may vary from 0 to 32, inclusive. The default setting is to 
+        allow all accesses. On each request the full list is traversed, and the 
+        last match wins. Examples:
+
+        "-0.0.0.0/0,+192.168/16" deny all accesses, only allow 192.168/16 subnet
+     
+        Verify given socket address against the ACL.
+     
+        @param remote_ip Remote ip address on network order. 
+        @return -1 if ACL is malformed, 0 if address is disallowed, 1 if allowed.
+     
+     */
+    int isAllowedToConnect( uint32_t remote_ip );
 
     /*!
         Check if use is allowed to send event.
@@ -314,6 +339,8 @@ protected:
     */
     wxArrayString m_listAllowedIPV4Remotes;
     wxArrayString m_listAllowedIPV6Remotes;
+    
+    
     
     /*!
         Filter associated with this user

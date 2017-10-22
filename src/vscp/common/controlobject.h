@@ -707,7 +707,8 @@ public:
     //               webserver interface
     //*****************************************************
 
-    struct web_context *webctx;
+    // Context for web server
+    struct web_context *m_web_ctx;
     
     // Enable webserver
     bool m_web_bEnable;

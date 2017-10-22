@@ -280,7 +280,7 @@ void VSCPMulticastClientThread::ev_handler( struct mg_connection *nc, int ev, vo
                     // Check if this user is allowed to connect from this location
                     gpobj->m_mutexUserList.Lock();
                     bool bValidHost =
-                            pMulticastClientThread->m_pClientItem->m_pUserItem->isAllowedToConnect( remoteaddr );
+                            pMulticastClientThread->m_pClientItem->m_pUserItem->isAllowedToConnect( nc->sa.sin.sin_addr.s_addr );
                     gpobj->m_mutexUserList.Unlock();
 
                     if ( !bValidHost ) {
