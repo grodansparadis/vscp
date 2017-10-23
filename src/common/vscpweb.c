@@ -1012,7 +1012,7 @@ web_calloc_ex( size_t count,
 // web_free_ex
 //
 
-static void
+void
 web_free_ex( void *memory, const char *file, unsigned line )
 {
     void *data = (void *) (((char *) memory) - 2 * sizeof (uintptr_t));

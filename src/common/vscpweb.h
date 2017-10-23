@@ -62,7 +62,8 @@ extern "C" {
     
 // Helpers   
 char *web_strndup(const char *ptr, size_t len);    
-char *web_strdup( const char *str );        
+char *web_strdup( const char *str );
+void web_free_ex( void *memory, const char *file, unsigned line );
 
 #define WEB_OK      1
 #define WEB_ERROR   0

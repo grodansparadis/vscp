@@ -7296,6 +7296,7 @@ static void delete_options( char **opts ) {
     
 }
 
+#define web_free(a) web_free_ex(a, __FILE__, __LINE__);
 
 ///////////////////////////////////////////////////////////////////////////////
 // init_webserver
@@ -7340,7 +7341,7 @@ int init_webserver( void )
     };
     
     // This structure must be larger than the number of options to set
-    const char *web_options[ web_getOptionCount() + 1 ][2];
+    char *web_options[ web_getOptionCount() + 1 ][2];
     
     struct web_callbacks callbacks;
     struct web_server_ports ports[32];
@@ -7685,6 +7686,16 @@ int init_webserver( void )
 
     // Start server
     gpobj->m_web_ctx = web_start( &callbacks, 0, options );
+    
+    // Delete allocated option data
+    pos = 0;
+    while ( NULL != web_options[pos][0] ) {
+        web_free( (void *)web_options[pos][0] );
+        web_options[pos][0] = NULL;
+        web_free( (void *)web_options[pos][1] );
+        web_options[pos][1] = NULL;
+        pos++;
+    }
 
     // Check return value: 
     if ( NULL == gpobj->m_web_ctx ) {
