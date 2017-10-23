@@ -71,7 +71,7 @@
 #include <utime.h>
 #endif
 
-#include "vscpweb.h"
+#include "httpd.h"
 
 #include "lfs.h"
 

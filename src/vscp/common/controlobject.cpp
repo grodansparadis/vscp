@@ -136,7 +136,7 @@
 #include <devicelist.h>
 #include <devicethread.h>
 #include <dm.h>
-#include <vscpweb.h>
+#include <httpd.h>
 #include <websrv.h>
 #include <websocket.h>
 #include <vscpd_caps.h>

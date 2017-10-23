@@ -118,7 +118,7 @@
 #include <devicethread.h> 
 #include <dm.h>
 #include <mdf.h>
-#include <vscpweb.h>
+#include <httpd.h>
 #include <websrv.h>
 #include <restsrv.h>
 

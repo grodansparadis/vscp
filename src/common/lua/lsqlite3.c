@@ -34,7 +34,7 @@
 #include "lauxlib.h"
 #include "lualib.h" 
 
-#include "vscpweb.h"
+#include "httpd.h"
 
 #if LUA_VERSION_NUM > 501
 /*

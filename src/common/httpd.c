@@ -116,7 +116,7 @@ web_static_assert(sizeof(void *) >= sizeof(int), "data type size check");
 #ifndef VSCPWEB_HEADER_INCLUDED
 // Include the header file here, so the vscpweb interface is defined for the
 // entire implementation, including the following forward definitions. 
-#include <vscpweb.h>
+#include <httpd.h>
 #endif
 
 // From vscphelper
@@ -1768,7 +1768,7 @@ struct web_context
 {
     volatile int stop_flag;             // Should we stop event loop 
     SSL_CTX *ssl_ctx;                   // SSL context 
-    char *config[ WEB_NUM_OPTIONS ];        // vscpweb configuration parameters 
+    char *config[ WEB_NUM_OPTIONS ];    // vscpweb configuration parameters 
     struct web_callbacks callbacks;     // User-defined callback function 
     void *user_data;                    // User-defined data 
     int context_type;                   // See CONTEXT_* above

@@ -96,7 +96,7 @@ VSCPD_OBJECTS =  vscpd.o \
         jsonreader.o \
         jsonwriter.o \
         jsonval.o \
-	vscpweb.o \
+	httpd.o \
 	vscphelper.o \
 	vscpremotetcpif.o \
 	devicelist.o \
@@ -259,8 +259,8 @@ fastpbkdf2.o: ../../../common/fastpbkdf2.c ../../../common/fastpbkdf2.h
 vscpmd5.o: ../../../common/vscpmd5.c ../../../common/vscpmd5.h
 	$(CC) $(CFLAGS) -c ../../../common/vscpmd5.c -o $@
 
-vscpweb.o: ../../../common/vscpweb.c ../../../common/vscpweb.h
-	$(CC) $(CFLAGS) -c ../../../common/vscpweb.c -o $@
+httpd.o: ../../../common/httpd.c ../../../common/httpd.h
+	$(CC) $(CFLAGS) -c ../../../common/httpd.c -o $@
 
 lsqlite3.o: ../../../common/lua/lsqlite3.c
 	$(CC) $(CFLAGS) -I../../../common/lua -c ../../../common/lua/lsqlite3.c -o $@

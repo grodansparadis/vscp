@@ -101,7 +101,7 @@
 #include "web_js.h"
 #include "web_template.h"
 
-#include <vscpweb.h>
+#include <httpd.h>
 
 #include <vscp.h>
 #include <vscphelper.h>

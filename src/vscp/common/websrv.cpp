@@ -120,7 +120,7 @@
 #include <mdf.h>
 #include <vscpdb.h>
 #include <vscpmd5.h>
-#include <vscpweb.h>
+#include <httpd.h>
 #include "websrv.h"
 #include "restsrv.h"
 #include "websocket.h"
