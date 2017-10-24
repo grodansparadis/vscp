@@ -4399,7 +4399,8 @@ bool CControlObject::readConfigurationDB( void )
         }        
         
         // listening ports for web server
-        else if ( !vscp_strcasecmp( (const char * )pName, VSCPDB_CONFIG_NAME_WEB_LISTENING_PORTS )  ) {
+        else if ( !vscp_strcasecmp( (const char * )pName, 
+                        VSCPDB_CONFIG_NAME_WEB_LISTENING_PORTS )  ) {
             m_web_listening_ports = wxString::FromUTF8( (const char *)pValue );
         }
         
@@ -4428,7 +4429,7 @@ bool CControlObject::readConfigurationDB( void )
         
         // Path to cert file
         else if ( !vscp_strcasecmp( (const char * )pName, 
-                        VSCPDB_CONFIG_NAME_WEB_CGI_PATTERNS )  ) {
+                        VSCPDB_CONFIG_NAME_WEB_SSL_CERTIFICAT )  ) {
             m_web_ssl_certificate = wxString::FromUTF8( (const char *)pValue );
         }
         

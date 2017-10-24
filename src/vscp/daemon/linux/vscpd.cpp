@@ -175,7 +175,7 @@ int main( int argc, char **argv )
     }
 
     wxLogDebug(_("VSCPD: Deleting the control object."));
-    delete gpobj; 
+    delete gpobj;
 
     wxLogDebug(_("VSCPD: Bye, bye."));
     exit( 0 );
