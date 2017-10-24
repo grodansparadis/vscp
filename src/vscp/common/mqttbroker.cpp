@@ -47,7 +47,7 @@
 #include <dllist.h>
 #include <version.h>
 #include <controlobject.h>
-#include <vscpmqttbroker.h>
+#include <mqttbroker.h>
 
 ///////////////////////////////////////////////////
 //                 GLOBALS
@@ -100,7 +100,7 @@ void *VSCPMQTTBrokerThread::Entry()
 
     // This is now an active Client
     m_pClientItem->m_bOpen = true;
-    m_pClientItem->m_type =  CLIENT_ITEM_INTERFACE_TYPE_CLIENT_UDP;
+    m_pClientItem->m_type = CLIENT_ITEM_INTERFACE_TYPE_CLIENT_MQTT;
     m_pClientItem->m_strDeviceName = _("VSCP MQTT Broker. [");
     m_pClientItem->m_strDeviceName += m_pCtrlObject->m_strMQTTBrokerInterfaceAddress;
     m_pClientItem->m_strDeviceName += _("] Started at ");
@@ -115,6 +115,7 @@ void *VSCPMQTTBrokerThread::Entry()
 
     // Clear the filter (Allow everything )
     vscp_clearVSCPFilter( &m_pClientItem->m_filterVSCP );
+
     mg_mgr_init( &mgr, this );
     mg_mqtt_broker_init( &brk, NULL );
 

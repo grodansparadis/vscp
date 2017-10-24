@@ -4,17 +4,17 @@
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version
 // 2 of the License, or (at your option) any later version.
-// 
-// This file is part of the VSCP (http://www.vscp.org) 
+//
+// This file is part of the VSCP (http://www.vscp.org)
 //
 // Copyright (C) 2000-2017
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
-// 
+//
 // This file is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with this file see the file COPYING.  If not, write to
 // the Free Software Foundation, 59 Temple Place - Suite 330,
@@ -66,13 +66,13 @@
 #define VSCPDB_CONFIG_DEFAULT_PATH_LOGDB                "/srv/vscp/logs/vscpd_log.sqlite3"
 
 #define VSCPDB_CONFIG_NAME_TCPIP_ADDR                   "tcpipinterface_address"
-#define VSCPDB_CONFIG_DEFAULT_TCPIP_ADDR                "tcp://9598"   
+#define VSCPDB_CONFIG_DEFAULT_TCPIP_ADDR                "tcp://9598"
 
 #define VSCPDB_CONFIG_NAME_ANNOUNCE_ADDR                "announceinterface_address"
-#define VSCPDB_CONFIG_DEFAULT_ANNOUNCE_ADDR             "udp://9598"  
+#define VSCPDB_CONFIG_DEFAULT_ANNOUNCE_ADDR             "udp://9598"
 
 #define VSCPDB_CONFIG_NAME_ANNOUNCE_TTL                 "announceinterface_ttl"
-#define VSCPDB_CONFIG_DEFAULT_ANNOUNCE_TTL              "1"  
+#define VSCPDB_CONFIG_DEFAULT_ANNOUNCE_TTL              "1"
 
 #define VSCPDB_CONFIG_NAME_UDP_ENABLE                   "udp_enable"
 #define VSCPDB_CONFIG_DEFAULT_UDP_ENABLE                "1"
@@ -82,7 +82,7 @@
 
 #define VSCPDB_CONFIG_NAME_UDP_USER                     "udp_user"
 #define VSCPDB_CONFIG_DEFAULT_UDP_USER                  ""
-    
+
 #define VSCPDB_CONFIG_NAME_UDP_PASSWORD                 "udp_password"
 #define VSCPDB_CONFIG_DEFAULT_UDP_PASSWORD              ""
 
@@ -176,7 +176,7 @@
 
 #define VSCPDB_CONFIG_NAME_WEB_CGI_PATTERNS             "web_cgi_patterns"
 #define VSCPDB_CONFIG_DEFAULT_WEB_CGI_PATTERNS          "**.cgi$|**.pl$|**.php|**.py"
-        
+
 #define VSCPDB_CONFIG_NAME_WEB_CGI_ENVIRONMENT          "web_cgi_environment"
 #define VSCPDB_CONFIG_DEFAULT_WEB_CGI_ENVIRONMENT       ""
 
@@ -232,58 +232,58 @@
 #define VSCPDB_CONFIG_DEFAULT_WEB_SSI_PATTERNS          ""
 
 #define VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_ALLOW_ORIGIN      "web_access_control_allow_origin"
-#define VSCPDB_CONFIG_DEFAULT_WEB_ACCESS_CONTROL_ALLOW_ORIGIN   ""        
+#define VSCPDB_CONFIG_DEFAULT_WEB_ACCESS_CONTROL_ALLOW_ORIGIN   ""
 
 #define VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_ALLOW_METHODS     "web_access_control_allow_methods"
-#define VSCPDB_CONFIG_DEFAULT_WEB_ACCESS_CONTROL_ALLOW_METHODS  ""                      
+#define VSCPDB_CONFIG_DEFAULT_WEB_ACCESS_CONTROL_ALLOW_METHODS  ""
 
 #define VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_ALLOW_HEADERS     "web_access_control_allow_headers"
-#define VSCPDB_CONFIG_DEFAULT_WEB_ACCESS_CONTROL_ALLOW_HEADERS  ""                      
+#define VSCPDB_CONFIG_DEFAULT_WEB_ACCESS_CONTROL_ALLOW_HEADERS  ""
 
 #define VSCPDB_CONFIG_NAME_WEB_ERROR_PAGES              "web_error_pages"
-#define VSCPDB_CONFIG_DEFAULT_WEB_ERROR_PAGES           ""                      
+#define VSCPDB_CONFIG_DEFAULT_WEB_ERROR_PAGES           ""
 
 #define VSCPDB_CONFIG_NAME_WEB_TCP_NO_DELAY             "web_tcp_nodelay"
-#define VSCPDB_CONFIG_DEFAULT_WEB_TCP_NO_DELAY          "-1"                       
- 
+#define VSCPDB_CONFIG_DEFAULT_WEB_TCP_NO_DELAY          "-1"
+
 #define VSCPDB_CONFIG_NAME_WEB_STATIC_FILE_MAX_AGE      "web_static_file_max_age"
-#define VSCPDB_CONFIG_DEFAULT_WEB_STATIC_FILE_MAX_AGE   "3600"                      
-                      
+#define VSCPDB_CONFIG_DEFAULT_WEB_STATIC_FILE_MAX_AGE   "3600"
+
 #define VSCPDB_CONFIG_NAME_WEB_STRICT_TRANSPORT_SECURITY_MAX_AGE    "web_strict_transport_security_max_age"
-#define VSCPDB_CONFIG_DEFAULT_WEB_STRICT_TRANSPORT_SECURITY_MAX_AGE "-1"                      
+#define VSCPDB_CONFIG_DEFAULT_WEB_STRICT_TRANSPORT_SECURITY_MAX_AGE "-1"
 
 #define VSCPDB_CONFIG_NAME_WEB_ALLOW_SENDFILE_CALL      "web_allow_sendfile_call"
-#define VSCPDB_CONFIG_DEFAULT_WEB_ALLOW_SENDFILE_CALL   "1"                      
+#define VSCPDB_CONFIG_DEFAULT_WEB_ALLOW_SENDFILE_CALL   "1"
 
 #define VSCPDB_CONFIG_NAME_WEB_ADDITIONAL_HEADERS       "web_additional_headers"
-#define VSCPDB_CONFIG_DEFAULT_WEB_ADDITIONAL_HEADERS    ""                        
+#define VSCPDB_CONFIG_DEFAULT_WEB_ADDITIONAL_HEADERS    ""
 
 #define VSCPDB_CONFIG_NAME_WEB_MAX_REQUEST_SIZE         "web_max_request_size"
-#define VSCPDB_CONFIG_DEFAULT_WEB_MAX_REQUEST_SIZE      "16384"                       
+#define VSCPDB_CONFIG_DEFAULT_WEB_MAX_REQUEST_SIZE      "16384"
 
 #define VSCPDB_CONFIG_NAME_WEB_ALLOW_INDEX_SCRIPT_RESOURCE      "web_allow_index_script_resource"
-#define VSCPDB_CONFIG_DEFAULT_WEB_ALLOW_INDEX_SCRIPT_RESOURCE   "0"                       
+#define VSCPDB_CONFIG_DEFAULT_WEB_ALLOW_INDEX_SCRIPT_RESOURCE   "0"
 
 #define VSCPDB_CONFIG_NAME_WEB_DUKTAPE_SCRIPT_PATTERNS      "web_duktape_script_patterns"
-#define VSCPDB_CONFIG_DEFAULT_WEB_DUKTAPE_SCRIPT_PATTERNS   "**.ssjs$"                       
+#define VSCPDB_CONFIG_DEFAULT_WEB_DUKTAPE_SCRIPT_PATTERNS   "**.ssjs$"
 
 #define VSCPDB_CONFIG_NAME_WEB_LUA_PRELOAD_FILE         "web_lua_preload_file"
-#define VSCPDB_CONFIG_DEFAULT_WEB_LUA_PRELOAD_FILE      ""                      
+#define VSCPDB_CONFIG_DEFAULT_WEB_LUA_PRELOAD_FILE      ""
 
 #define VSCPDB_CONFIG_NAME_WEB_LUA_SCRIPT_PATTERNS      "web_lua_script_patterns"
-#define VSCPDB_CONFIG_DEFAULT_WEB_LUA_SCRIPT_PATTERNS   "**.lua$"                      
+#define VSCPDB_CONFIG_DEFAULT_WEB_LUA_SCRIPT_PATTERNS   "**.lua$"
 
 #define VSCPDB_CONFIG_NAME_WEB_LUA_SERVER_PAGE_PATTERNS     "web_lua_server_page_patterns"
-#define VSCPDB_CONFIG_DEFAULT_WEB_LUA_SERVER_PAGE_PATTERNS  "**.lp$|**.lsp$"                       
+#define VSCPDB_CONFIG_DEFAULT_WEB_LUA_SERVER_PAGE_PATTERNS  "**.lp$|**.lsp$"
 
 #define VSCPDB_CONFIG_NAME_WEB_LUA_WEBSOCKET_PATTERNS   "web_lua_websockets_patterns"
-#define VSCPDB_CONFIG_DEFAULT_WEB_LUA_WEBSOCKET_PATTERNS "**.lua$"                      
+#define VSCPDB_CONFIG_DEFAULT_WEB_LUA_WEBSOCKET_PATTERNS "**.lua$"
 
 #define VSCPDB_CONFIG_NAME_WEB_LUA_BACKGROUND_SCRIPT      "web_lua_background_script"
-#define VSCPDB_CONFIG_DEFAULT_WEB_LUA_BACKGROUND_SCRIPT   ""                       
+#define VSCPDB_CONFIG_DEFAULT_WEB_LUA_BACKGROUND_SCRIPT   ""
 
 #define VSCPDB_CONFIG_NAME_WEB_LUA_BACKGROUND_SCRIPT_PARAMS     "web_lua_background_script_params"
-#define VSCPDB_CONFIG_DEFAULT_WEB_LUA_BACKGROUND_SCRIPT_PARAMS  ""                      
+#define VSCPDB_CONFIG_DEFAULT_WEB_LUA_BACKGROUND_SCRIPT_PARAMS  ""
 
 // Websockets
 
@@ -295,6 +295,22 @@
 
 #define VSCPDB_CONFIG_NAME_WEBSOCKET_TIMEOUT_MS         "websocket_timeout_ms"
 #define VSCPDB_CONFIG_DEFAULT_WEBSOCKET_TIMEOUT_MS      "30000"
+
+// MQTT broker
+
+#define VSCPDB_CONFIG_NAME_MQTT_ENABLE                  "mqtt_enable"
+#define VSCPDB_CONFIG_DEFAULT_MQTT_ENABLE               "0"
+
+#define VSCPDB_CONFIG_NAME_MQTT_INTERFACE               "mqtt_interface_address"
+#define VSCPDB_CONFIG_DEFAULT_MQTT_INTERFACE            "tcp://1883"
+
+// COAP broker
+
+#define VSCPDB_CONFIG_NAME_COAP_ENABLE                  "coap_enable"
+#define VSCPDB_CONFIG_DEFAULT_COAP_ENABLE               "0"
+
+#define VSCPDB_CONFIG_NAME_COAP_INTERFACE               "coap_interface_address"
+#define VSCPDB_CONFIG_DEFAULT_COAP_INTERFACE            "udp://5684"
 
 // Automation
 
@@ -340,7 +356,7 @@
 #define VSCPDB_CONFIG_NAME_AUTOMATION_CAPABILITIES_ENABLE       "automation_capabilities_enable"
 #define VSCPDB_CONFIG_DEFAULT_AUTOMATION_CAPABILITIES_ENABLE    "1"
 
-#define VSCPDB_CONFIG_NAME_AUTOMATION_CAPABILITIES_INTERVAL     "automation_apabilities_interval"
+#define VSCPDB_CONFIG_NAME_AUTOMATION_CAPABILITIES_INTERVAL     "automation_capabilities_interval"
 #define VSCPDB_CONFIG_DEFAULT_AUTOMATION_CAPABILITIES_INTERVAL  "60"
 
 
@@ -355,7 +371,7 @@
 	"`level`	INTEGER DEFAULT 0,"\
 	"`message`	TEXT"\
         ");";\
-        
+
 #define VSCPDB_LOG_INSERT "INSERT INTO 'log' "\
                 "(type,date,level,message) VALUES ('%d','%s','%d','%q');"
 
@@ -363,11 +379,11 @@
 
 #define VSCPDB_LOG_CREATE_INDEX "CREATE INDEX `idxdate` ON log ('date');"
 
-#define VSCPDB_ORDINAL_LOG_ID                       0   // 
-#define VSCPDB_ORDINAL_LOG_TYPE                     1   // 
-#define VSCPDB_ORDINAL_LOG_DATE                     2   // 
-#define VSCPDB_ORDINAL_LOG_LEVEL                    3   // 
-#define VSCPDB_ORDINAL_LOG_MESSAGE                  4   // 
+#define VSCPDB_ORDINAL_LOG_ID                       0   //
+#define VSCPDB_ORDINAL_LOG_TYPE                     1   //
+#define VSCPDB_ORDINAL_LOG_DATE                     2   //
+#define VSCPDB_ORDINAL_LOG_LEVEL                    3   //
+#define VSCPDB_ORDINAL_LOG_MESSAGE                  4   //
 
 
 
@@ -379,7 +395,7 @@
 
 /*
  * Defines users
- * 
+ *
  * permissions
  * ===========
  * uuugggooo
@@ -388,11 +404,11 @@
  * ooo - other
  *
  * Each group is rw- and other permissions may be added added in front of this.
- * 
+ *
  * filter a filter for incoming traffic. Default is open.
- * 
+ *
  * permission   - Default user permissions uuugggooo
- * rights       - string with a maximum of six numerical (byte) comma separated 
+ * rights       - string with a maximum of six numerical (byte) comma separated
  *                  fields. Also 'admin', 'driver' and 'user' can be given.
  */
 
@@ -427,15 +443,15 @@
 
 #define VSCPDB_USER_DELETE_USERNAME "DELETE FROM 'user' where username='%s'"
 
-#define VSCPDB_ORDINAL_USER_ID                      0   // 
-#define VSCPDB_ORDINAL_USER_USERNAME                1   // 
-#define VSCPDB_ORDINAL_USER_PASSWORD                2   // 
-#define VSCPDB_ORDINAL_USER_FULLNAME                3   // 
+#define VSCPDB_ORDINAL_USER_ID                      0   //
+#define VSCPDB_ORDINAL_USER_USERNAME                1   //
+#define VSCPDB_ORDINAL_USER_PASSWORD                2   //
+#define VSCPDB_ORDINAL_USER_FULLNAME                3   //
 #define VSCPDB_ORDINAL_USER_FILTER                  4   //
 #define VSCPDB_ORDINAL_USER_RIGHTS                  5   //
 #define VSCPDB_ORDINAL_USER_ALLOWED_EVENTS          6   //
 #define VSCPDB_ORDINAL_USER_ALLOWED_REMOTES         7   //
-#define VSCPDB_ORDINAL_USER_NOTE                    8   // 
+#define VSCPDB_ORDINAL_USER_NOTE                    8   //
 
 
 //*****************************************************************************
@@ -451,7 +467,7 @@
  * configuration Semicolon separated configuration string for driver.
  * path Path to driver dl/dll
  * flags Flags for driver functionality
- * translation Semicolon separated list. Translate Level I events to Level II 
+ * translation Semicolon separated list. Translate Level I events to Level II
  *      (measurements float/string)
  * note Driver notations and/or information.
  */
@@ -472,7 +488,7 @@
 #define VSCPDB_DRIVER_CREATE_INDEX "CREATE INDEX `idxdrivername` "\
                 "ON driver ('name'):"
 
-#define VSCPDB_ORDINAL_DRIVER_ID                    0   // 
+#define VSCPDB_ORDINAL_DRIVER_ID                    0   //
 #define VSCPDB_ORDINAL_DRIVER_ENABLE                1   //
 #define VSCPDB_ORDINAL_DRIVER_LEVEL                 2   //
 #define VSCPDB_ORDINAL_DRIVER_NAME                  3   //
@@ -490,29 +506,29 @@
 
 /*
  * GUID table
- * 
+ *
  * type - describes what this GUID is describing, for example an interface, a node etc.
  * type = 0 - Common GUID.
  * type = 1 - Interface on this machine,
  * type = 2 - Level I hardware. Lives on one of the interfaces of this daemon.
  * type = 3 - Level II hardware. Lives somewhere given by address.
  * Type = 4 – Location.
- * 
+ *
  * GUID - GUID for the type. Level I hardware use the proxy GUID.
- * 
+ *
  * date - date time when discovered in ISO format. YY-MM-DDTHH:MM:SS
- * 
+ *
  * name - Max 64 byte name
- * 
- * link_to_mdf - For a hardware device. 
- * 
+ *
+ * link_to_mdf - For a hardware device.
+ *
  * address - is IPv4/IPv6/BT-UID or other address for a Level II hardware type
- * 
+ *
  * capabilities - see CLASS2.PROTOCOL, Type=20   A 8 byte comma separated list with
  *                the bytes of the capability 64-bit code.
- * 
+ *
  * nonstandard - is one or more nonstandard info as described for CLASS2.PROTOCOL, Type=20
- * 
+ *
  */
 
 #define VSCPDB_GUID_CREATE "CREATE TABLE `guid` ("\
@@ -531,7 +547,7 @@
 #define VSCPDB_GUID_CREATE_INDEX "CREATE INDEX `idxguid` "\
                 "ON guid ('name'):"
 
-#define VSCPDB_ORDINAL_GUID_ID                      0   // 
+#define VSCPDB_ORDINAL_GUID_ID                      0   //
 #define VSCPDB_ORDINAL_GUID_TYPE                    1   //
 #define VSCPDB_ORDINAL_GUID_GUID                    2   //
 #define VSCPDB_ORDINAL_GUID_DATE                    3   //
@@ -541,8 +557,8 @@
 #define VSCPDB_ORDINAL_GUID_CAPABILITIES            7   //
 #define VSCPDB_ORDINAL_GUID_NONSTANDARD             8   //
 #define VSCPDB_ORDINAL_GUID_DESCRIPTION             9   //
-                
-                
+
+
 //*****************************************************************************
 //                                  LOCATION
 //*****************************************************************************
@@ -564,21 +580,21 @@
 #define VSCPDB_LOCATION_CREATE_INDEX "CREATE INDEX `idxlocation` "\
                 "ON location ('name'):"
 
-#define VSCPDB_ORDINAL_LOCATION_ID                  0   //            
+#define VSCPDB_ORDINAL_LOCATION_ID                  0   //
 #define VSCPDB_ORDINAL_LOCATION_LINK_TO_ZONE        1   //
 #define VSCPDB_ORDINAL_LOCATION_LINK_TO_SUBZONE     2   //
 #define VSCPDB_ORDINAL_LOCATION_LINK_TO_GUID        3   //
 #define VSCPDB_ORDINAL_LOCATION_NAME                4   //
-#define VSCPDB_ORDINAL_LOCATION_DESCRIPTION         5   //                
-                
-                
+#define VSCPDB_ORDINAL_LOCATION_DESCRIPTION         5   //
+
+
 //*****************************************************************************
 //                               MDF_CACHE
 //*****************************************************************************
 
 /*
  * Loaded MDF's are cached. This record points to the loaded MDF
- * 
+ *
  * mdf      - The MDF file content.
  * picture  - Picture of device
  * date     - When the MDF was fetched.
@@ -595,7 +611,7 @@
 
 #define VSCPDB_MDF_CACHE_CREATE_INDEX "CREATE INDEX `idxmdf_cache` "\
                 "ON mdf_cache ('url'):"
-                
+
 #define VSCPDB_ORDINAL_MDF_CACHE_ID                 0   //
 #define VSCPDB_ORDINAL_MDF_CACHE_URL                1   //
 #define VSCPDB_ORDINAL_MDF_CACHE_FILE_PATH          2   //
@@ -621,10 +637,10 @@
 
 #define VSCPDB_SIMPLE_UI_CREATE_INDEX "CREATE INDEX `idxsimpleui` "\
                 "ON simpleui ('name'):"
- 
+
 #define VSCPDB_ORDINAL_SIMPLE_UI_NAME               1   //
-#define VSCPDB_ORDINAL_SIMPLE_UI_LINK_TO_OWNER      2   //  
-#define VSCPDB_ORDINAL_SIMPLE_UI_PERMISSION         3   // 
+#define VSCPDB_ORDINAL_SIMPLE_UI_LINK_TO_OWNER      2   //
+#define VSCPDB_ORDINAL_SIMPLE_UI_PERMISSION         3   //
 #define VSCPDB_ORDINAL_SIMPLE_UI_COMMENT            4   //
 
 
@@ -636,7 +652,7 @@
  * Defines a simple UI item
  * param_... defines contents for the row type
  */
-                
+
 #define VSCPDB_SIMPLE_UI_ITEM_CREATE "CREATE TABLE `simpleui_item` ("\
 	"`idx_simpleui_item`	INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
 	"`link_to_simpleui`	INTEGER NOT NULL,"\
@@ -704,7 +720,7 @@
 /*
  * User defined tables with diagram hints
  * Databases are always created in the 'table' sub folder of the server root.
- * 
+ *
  * bmem - Is true of the table is a in-memory database.
  * name - Unique name of table.
  * xname - Text on xaxis.
@@ -714,7 +730,7 @@
  * size - A specific size for a table with a defined size (round robin). Normally
  *          zero for a ever growing table-.
  * sql_create - SQL expression to use to create table
- * sql_insert - SQL expression to insert value. The value should be set as 
+ * sql_insert - SQL expression to insert value. The value should be set as
  *  The SQL expression can contain VSCP decision matrix escapes which are
  *  filled in before the SQL expression is evaluated.
  * sql_delete - SQL expression to delete value.
@@ -780,7 +796,7 @@
 #define VSCPDB_TABLE_GET_COLUMNS "pragma table_info ('vscptable');"
 
 // If the table is a static table we may need to delete the oldest records here
-// to keep the table size constant. 
+// to keep the table size constant.
 // Keep last n
 #define VSCPDB_TABLE_DELETE_STATIC "DELETE FROM 'vscptable' WHERE ROWID IN (SELECT ROWID FROM 'vscptable' ORDER BY ROWID DESC LIMIT -1 OFFSET %lu);"
 
@@ -901,9 +917,9 @@
                 "(bEnable,interface,filter,mask,encryption,bSetBroadcast)"\
                 " VALUES ('%d',%q','%q','%d','%d','%d');"
 
-#define VSCPDB_ORDINAL_UDPNODE_IDX              0   // 
-#define VSCPDB_ORDINAL_UDPNODE_ENABLE           1   // 
-#define VSCPDB_ORDINAL_UDPNODE_INTERFACE        2   //  
+#define VSCPDB_ORDINAL_UDPNODE_IDX              0   //
+#define VSCPDB_ORDINAL_UDPNODE_ENABLE           1   //
+#define VSCPDB_ORDINAL_UDPNODE_INTERFACE        2   //
 #define VSCPDB_ORDINAL_UDPNODE_FILTER           3   //
 #define VSCPDB_ORDINAL_UDPNODE_MASK             4   //
 #define VSCPDB_ORDINAL_UDPNODE_ENCRYPTION       5   //
@@ -930,7 +946,7 @@
         "`bSendAck`         INTEGER DEFAULT 0,"\
         "`bAllowUnsecure`   INTEGER DEFAULT 1"\
         ");";\
-        
+
 #define VSCPDB_MULTICAST_UPDATE "UPDATE 'multicast' "\
                 "SET benable='%d',"\
                 "group='%s',"\
@@ -951,12 +967,12 @@
                 "(bEnable,group,public,port,ttl,guid,txfilter,txmask,rxfilter,rxmask,encryption,bsendack,allowunsecure)"\
                 " VALUES ('%d',%q','%q','%q','%d','%d','%q','%q','%q','%q','%q','%d','%d');"
 
-#define VSCPDB_ORDINAL_MULTICAST_IDX                0   // 
-#define VSCPDB_ORDINAL_MULTICAST_ENABLE             1   // 
-#define VSCPDB_ORDINAL_MULTICAST_GROUP              2   // 
-#define VSCPDB_ORDINAL_MULTICAST_PUBLIC             3   // 
+#define VSCPDB_ORDINAL_MULTICAST_IDX                0   //
+#define VSCPDB_ORDINAL_MULTICAST_ENABLE             1   //
+#define VSCPDB_ORDINAL_MULTICAST_GROUP              2   //
+#define VSCPDB_ORDINAL_MULTICAST_PUBLIC             3   //
 #define VSCPDB_ORDINAL_MULTICAST_PORT               4   //
-#define VSCPDB_ORDINAL_MULTICAST_TTL                5   // 
+#define VSCPDB_ORDINAL_MULTICAST_TTL                5   //
 #define VSCPDB_ORDINAL_MULTICAST_GUID               6   //
 #define VSCPDB_ORDINAL_MULTICAST_TXFILTER           7   //
 #define VSCPDB_ORDINAL_MULTICAST_TXMASK             8   //
@@ -983,7 +999,7 @@
 //*****************************************************************************
 
 //
-// bstock - True for a stock variable. A stock variable is virtual but is 
+// bstock - True for a stock variable. A stock variable is virtual but is
 //          in the database for sorting, searching and listing of variables.
 //              lastchange is always set to program start
 //              value is always  empty
@@ -1032,13 +1048,13 @@
 #define VSCPDB_ORDINAL_VARIABLE_ID              0   //
 #define VSCPDB_ORDINAL_VARIABLE_BSTOCK          1   //
 #define VSCPDB_ORDINAL_VARIABLE_LASTCHANGE      2   //
-#define VSCPDB_ORDINAL_VARIABLE_NAME            3   // 
-#define VSCPDB_ORDINAL_VARIABLE_TYPE            4   // 
-#define VSCPDB_ORDINAL_VARIABLE_VALUE           5   // 
-#define VSCPDB_ORDINAL_VARIABLE_PERSISTENT      6   // 
-#define VSCPDB_ORDINAL_VARIABLE_LINK_TO_USER    7   //  
-#define VSCPDB_ORDINAL_VARIABLE_PERMISSION      8   // 
-#define VSCPDB_ORDINAL_VARIABLE_NOTE            9   // 
+#define VSCPDB_ORDINAL_VARIABLE_NAME            3   //
+#define VSCPDB_ORDINAL_VARIABLE_TYPE            4   //
+#define VSCPDB_ORDINAL_VARIABLE_VALUE           5   //
+#define VSCPDB_ORDINAL_VARIABLE_PERSISTENT      6   //
+#define VSCPDB_ORDINAL_VARIABLE_LINK_TO_USER    7   //
+#define VSCPDB_ORDINAL_VARIABLE_PERMISSION      8   //
+#define VSCPDB_ORDINAL_VARIABLE_NOTE            9   //
 
 
 
@@ -1104,17 +1120,17 @@
                 "'%s','%s','%d','%d','%d','%d','%d','%d','%d',"\
                 "'%d','%s','%d','%d','%d','%d','%d','%d','%d','%d','%d','%s','%d',%f','%d','%s'"\
                 ");"
-                        
+
 #define VSCPDB_DM_UPDATE "UPDATE 'dm' "\
                 "SET GroupID='%s',bEnable='%d',maskPriority='%d',maskClass=%d',maskType=%d',maskGUID=%s',filterPriority=%d',filterClass=%d',filterType=%d',filterGUID=%s',"\
                 "allowedStart=%s',allowedEnd=%s',allowedMonday='%d',allowedTuesday='%d',allowsWednesday='%d',allowedThursday='%d',allowedFriday='%d',allowedSaturday='%d',"\
                 "allowedSunday,allowedTime,bCheckIndex,index,bCheckZone,zone,bCheckSubZone,subzone,bCheckMeasurementIndex,"\
                 "meaurementIndex='%d',actionCode='%d',actionParameter='%s',bCheckMeasurementValue=%d,measurementValue='%f',measurementUnit='%d',measurementCompare='%d'"\
-                " WHERE idx_dm='%d';" 
+                " WHERE idx_dm='%d';"
 
 #define VSCPDB_DM_UPDATE_ITEM "UPDATE 'dm' SET ( %s='%s' ) WHERE id='%d' ;"
 
-#define VSCPDB_ORDINAL_DM_ID                        0   // 
+#define VSCPDB_ORDINAL_DM_ID                        0   //
 #define VSCPDB_ORDINAL_DM_ENABLE                    1   //
 #define VSCPDB_ORDINAL_DM_GROUPID                   2   //
 #define VSCPDB_ORDINAL_DM_MASK_PRIORITY             3   //
@@ -1156,4 +1172,3 @@
 
 #endif  // compile
 
-        

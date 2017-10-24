@@ -221,6 +221,21 @@
     </webserver>
 
     <!--
+        MQTT Broker interface
+    -->
+    <mqtt enable="false"
+            interface="tcp://1883" >
+    </mqtt>
+
+
+    <!--
+        CoAP interface
+    -->
+    <coap enable="false"
+            interface="tcp://1883" >
+    </mqtt>
+
+    <!--
       Holds information about one (at least) or more users
       Use mkpassword to generate a new password
       Privilege is "admin" or "user" or comma seperated list

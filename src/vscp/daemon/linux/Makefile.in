@@ -40,7 +40,7 @@ BUILD_VERSION = `sed '38!d' ../../common/version.h  | cut -b 33-
 WARNINGS_HARD = -Werror -Wall -Wextra -pedantic -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self -Wlogical-op -Wmissing-include-dirs -Wnoexcept -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-promo -Wstrict-null-sentinel -Wstrict-overflow=5 -Wundef -Wno-unused -Wno-variadic-macros -Wno-parentheses -fdiagnostics-show-option
 WARNINGS_MEDIUM = -Wformat-security -Wformat=2
 
-MONGOOSE_CFLAGS = -DMG_ENABLE_THREADS -DMG_ENABLE_IPV6 -DMG_ENABLE_SSL -DMG_ENABLE_HTTP_CGI -DMG_ENABLE_HTTP_SSI -DMG_ENABLE_HTTP_SSI_EXEC -DMG_ENABLE_HTTP_WEBDAV -DMG_ENABLE_GETADDRINFO -DMG_ENABLE_HTTP_URL_REWRITES
+MONGOOSE_CFLAGS = -DMG_ENABLE_THREADS -DMG_ENABLE_IPV6 -DMG_ENABLE_SSL -DMG_ENABLE_HTTP_CGI -DMG_ENABLE_HTTP_SSI -DMG_ENABLE_HTTP_SSI_EXEC -DMG_ENABLE_HTTP_WEBDAV -DMG_ENABLE_GETADDRINFO -DMG_ENABLE_HTTP_URL_REWRITES -DMG_ENABLE_MQTT_BROKER
 CFLAGS = -std=c99 @CFLAGS@ @WXBASE_CFLAGS@ -DCBC -DLUA_USE_POSIX -I../../common -I../../../common -I../../../common/lua -I../../../common/lua/src
 CXXFLAGS = -std=c++11 @CXXFLAGS@  @WXBASE_CXXFLAGS@
 CPPFLAGS = @CPPFLAGS@ @WXBASE_CPPFLAGS@ -fno-var-tracking-assignments -I../../common -I../../../common -I../../../common/lua -I../../../common/lua/src
@@ -88,14 +88,15 @@ VSCPD_OBJECTS =  vscpd.o \
 	websocketsrv.o \
 	udpsrv.o \
 	multicastsrv.o \
+    mqttbroker.o \
 	tables.o \
 	automation.o \
 	knownnodes.o \
 	duktape_callbacks.o \
 	vscp_javascript.o \
-        jsonreader.o \
-        jsonwriter.o \
-        jsonval.o \
+    jsonreader.o \
+    jsonwriter.o \
+    jsonval.o \
 	httpd.o \
 	vscphelper.o \
 	vscpremotetcpif.o \
@@ -172,6 +173,9 @@ udpsrv.o: ../../common/udpsrv.cpp ../../common/udpsrv.h
 multicastsrv.o: ../../common/multicastsrv.cpp ../../common/multicastsrv.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/multicastsrv.cpp -o $@
 
+mqttbroker.o: ../../common/mqttbroker.cpp ../../common/mqttbroker.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(MONGOOSE_CFLAGS) -c ../../common/mqttbroker.cpp -o $@
+
 tables.o: ../../common/tables.cpp ../../common/tables.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/tables.cpp -o $@
 
@@ -195,7 +199,7 @@ jsonwriter.o: ../../../common/jsonwriter.cpp ../../../common/wx/jsonwriter.h
 
 jsonval.o: ../../../common/jsonval.cpp ../../../common/wx/jsonval.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../../common/jsonval.cpp -o $@
-	
+
 vscphelper.o: ../../common/vscphelper.cpp ../../common/vscphelper.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/vscphelper.cpp -o $@
 
@@ -216,7 +220,7 @@ register.o: ../../common/register.cpp ../../common/register.h
 
 configfile.o: ../../../common/configfile.cpp ../../../common/configfile.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../../common/configfile.cpp -o $@
-	
+
 dllist.o: ../../../common/dllist.c ../../../common/dllist.h
 	$(CC) $(CFLAGS) -c ../../../common/dllist.c  -o $@
 
@@ -267,14 +271,14 @@ lsqlite3.o: ../../../common/lua/lsqlite3.c
 
 lfs.o: ../../../common/lua/lfs.c
 	$(CC) $(CFLAGS) -I../../../common/lua -c ../../../common/lua/lfs.c -o $@
-	
+
 LuaXML_lib.o: ../../../common/lua/LuaXML_lib.c
 	$(CC) $(CFLAGS) -I../../../common/lua -c ../../../common/lua/LuaXML_lib.c -o $@
 
 lua_all.o: ../../../common/lua_all.c
 	$(CC) $(CFLAGS) -I../../../common/lua -c ../../../common/lua_all.c -o $@
 
-vscpd: $(VSCPD_OBJECTS) 
+vscpd: $(VSCPD_OBJECTS)
 	$(CXX) -o $@ $(VSCPD_OBJECTS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
 
 install: all
