@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2004-2013 Sergey Lyubka
  * Copyright (c) 2013-2017 the Civetweb developers
  * Copyright (c) 2017 Ake Hedman, Grodans Paradis AB
@@ -21,8 +21,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
-
 
 #ifndef VSCPWEB_HEADER_INCLUDED
 #define VSCPWEB_HEADER_INCLUDED
@@ -59,11 +57,12 @@
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
-    
-// Helpers   
-char *web_strndup(const char *ptr, size_t len);    
+
+// Helpers
+char *web_strndup(const char *ptr, size_t len);
 char *web_strdup( const char *str );
 void web_free_ex( void *memory, const char *file, unsigned line );
+
 
 #define WEB_OK      1
 #define WEB_ERROR   0
@@ -84,7 +83,7 @@ int web_getOptionCount( void );
 // 0-terminate resulting word. Skip the delimiter and following whitespaces.
 // Advance pointer to buffer to the next word. Return found 0-terminated
 // word.
-// Delimiters can be quoted with quotechar. 
+// Delimiters can be quoted with quotechar.
 //
 
 char *
@@ -99,16 +98,16 @@ web_skip_quoted( char **buf,
 // Initialize this library. This should be called once before any other
 // function from this library. This function is not guaranteed to be
 // thread safe.
-//    
+//
 // Parameters:
 //   features: bit mask for features to be initialized.
-//   https://github.com/civetweb/civetweb/blob/master/docs/api/mg_init_library.md    
-//    
+//   https://github.com/civetweb/civetweb/blob/master/docs/api/mg_init_library.md
+//
 // Return value:
 //   initialized features
 //   0: error
 //
-    
+
 VSCPWEB_API unsigned web_init( unsigned features );
 
 
@@ -121,106 +120,106 @@ VSCPWEB_API unsigned web_init( unsigned features );
 //   0: error
 //
 
-VSCPWEB_API unsigned web_exit( void ); 
+VSCPWEB_API unsigned web_exit( void );
 
-struct web_context;    // Handle for the HTTP service itself 
-struct web_connection; // Handle for the individual connection 
+struct web_context;    // Handle for the HTTP service itself
+struct web_connection; // Handle for the individual connection
 
-
-// Maximum number of headers 
+// Maximum number of headers
 #define WEB_MAX_HEADERS (255)
 
 struct web_header {
-    const char *name;  // HTTP header name 
-    const char *value; // HTTP header value 
+    const char *name;  // HTTP header name
+    const char *value; // HTTP header value
 };
 
 ///////////////////////////////////////////////////////////////////////////////
 // web_request_info
 //
-// This structure contains information about the HTTP request. 
+// This structure contains information about the HTTP request.
 //
 
 struct web_request_info {
-    const char *request_method; // "GET", "POST", etc 
-    
+    const char *request_method; // "GET", "POST", etc
+
     const char *request_uri;    // URL-decoded URI (absolute or relative,
-	                        // as in the request) 
-    
+                                // as in the request)
+
     const char *local_uri;      // URL-decoded URI (relative). Can be NULL
-	                        // if the request_uri does not address a
-	                        // resource at the server host. 
-    
-    const char *http_version;   // E.g. "1.0", "1.1" 
-    
+                                // if the request_uri does not address a
+                                // resource at the server host.
+
+    const char *http_version;   // E.g. "1.0", "1.1"
+
     const char *query_string;   // URL part after '?', not including '?', or
-	                        // NULL 
-    
+                                // NULL
+
     const char *remote_user;    // Authenticated user, or NULL if no auth
-	                        // used 
-    
-    char remote_addr[48];       // Client's IP address as a string. 
+                                // used
+
+    char remote_addr[48];       // Client's IP address as a string.
+                                // TODO IPv6 flag
 
     long long content_length;   // Length (in bytes) of the request body,
-	                        // can be -1 if no length was given. 
-    
+                                // can be -1 if no length was given.
+
     int remote_port;            // Client's port
-    
-    int is_ssl;                 // 1 if SSL-ed, 0 if not 
-    
+
+    int is_ssl;                 // 1 if SSL-ed, 0 if not
+
     void *user_data;            // User data pointer passed to web_start()
-    
-    void *conn_data;            // Connection-specific user data 
 
-    int num_headers;            // Number of HTTP headers 
-    
+    void *conn_data;            // Connection-specific user data
+
+    int num_headers;            // Number of HTTP headers
+
     struct web_header
-        http_headers[WEB_MAX_HEADERS];   // Allocate maximum headers 
+        http_headers[ WEB_MAX_HEADERS ];        // Allocate maximum headers
 
-    struct web_client_cert *client_cert;// Client certificate information 
+    struct web_client_cert *client_cert;        // Client certificate information
 
     const char *acceptedWebSocketSubprotocol;   // websocket subprotocol,
-                                                // accepted during handshake 
+                                                // accepted during handshake
 };
 
 ///////////////////////////////////////////////////////////////////////////////
 // web_response_info
 //
-// This structure contains information about the HTTP request. 
-// This structure may be extended in future versions. 
+// This structure contains information about the HTTP request.
+// This structure may be extended in future versions.
 //
 
 struct web_response_info {
-    
-    int status_code;                // E.g. 200 
-    
-    const char *status_text;        // E.g. "OK" 
-    
-    const char *http_version;       // E.g. "1.0", "1.1" 
+
+    int status_code;                // E.g. 200
+
+    const char *status_text;        // E.g. "OK"
+
+    const char *http_version;       // E.g. "1.0", "1.1"
 
     long long content_length;       // Length (in bytes) of the request body,
-                                    // can be -1 if no length was given. 
+                                    // can be -1 if no length was given.
 
-    int num_headers;                // Number of HTTP headers 
-    
+    int num_headers;                // Number of HTTP headers
+
     struct web_header
-        http_headers[WEB_MAX_HEADERS]; // Allocate maximum headers 
-    
+        http_headers[ WEB_MAX_HEADERS ]; // Allocate maximum headers
+
 };
 
 ///////////////////////////////////////////////////////////////////////////////
 // client_cert
 //
-// Client certificate information (part of web_request_info) 
+// Client certificate information (part of web_request_info)
 //
 
 
-// New nomenclature. 
+// New nomenclature.
 struct web_client_cert {
-	const char *subject;
-	const char *issuer;
-	const char *serial;
-	const char *finger;
+    const char *subject;
+    const char *issuer;
+    const char *serial;
+    const char *finger;
 };
 
 
@@ -229,11 +228,11 @@ struct web_client_cert {
 //
 // This structure needs to be passed to web_start(), to let vscpweb know
 //   which callbacks to invoke. For a detailed description, see
-//   https://github.com/civetweb/civetweb/blob/master/docs/UserManual.md 
+//   https://github.com/civetweb/civetweb/blob/master/docs/UserManual.md
 //
 
 struct web_callbacks {
-    
+
         //   Called when vscpweb has received new HTTP request.
         //
         //   If the callback returns one, it must process the request
@@ -249,134 +248,134 @@ struct web_callbacks {
         //     1-999: callback already processed the request. vscpweb will
         //            not send any data after the callback returned. The
         //            return code is stored as a HTTP status code for the
-        //            access log. 
-    
-        int (*begin_request)(struct web_connection *);
+        //            access log.
 
-	// Called when vscpweb has finished processing request. 
-	void (*end_request)(const struct web_connection *, 
+    int (*begin_request)(struct web_connection *);
+
+    // Called when vscpweb has finished processing request.
+    void (*end_request)(const struct web_connection *,
                                 int reply_status_code);
 
-	// Called when vscpweb is about to log a message. If callback returns
-	//   non-zero, vscpweb does not log anything. 
-	int (*log_message)(const struct web_connection *, 
+    // Called when vscpweb is about to log a message. If callback returns
+    //   non-zero, vscpweb does not log anything.
+    int (*log_message)(const struct web_connection *,
                                 const char *message);
 
-	// Called when vscpweb is about to log access. If callback returns
-	//   non-zero, vscpweb does not log anything. 
-	int (*log_access)(const struct web_connection *, 
+    // Called when vscpweb is about to log access. If callback returns
+    //   non-zero, vscpweb does not log anything.
+    int (*log_access)(const struct web_connection *,
                                 const char *message);
 
-	// Called when vscpweb initializes SSL library.
-        //
-	//   Parameters:
-	//     user_data: parameter user_data passed when starting the server.
-        //
-	//   Return value:
-	//     0: vscpweb will set up the SSL certificate.
-	//     1: vscpweb assumes the callback already set up the certificate.
-	//    -1: initializing ssl fails. 
-        
-	int (*init_ssl)(void *ssl_context, void *user_data);
+    // Called when vscpweb initializes SSL library.
+    //
+    //   Parameters:
+    //     user_data: parameter user_data passed when starting the server.
+    //
+    //   Return value:
+    //     0: vscpweb will set up the SSL certificate.
+    //     1: vscpweb assumes the callback already set up the certificate.
+    //    -1: initializing ssl fails.
 
-	// Called when vscpweb is closing a connection.  The per-context mutex is
-	//   locked when this is invoked.
-        //
-	//   Websockets:
-	//   Before web_set_websocket_handler has been added, it was primarily useful
-	//   for noting when a websocket is closing, and used to remove it from any
-	//   application-maintained list of clients.
-	//   Using this callback for websocket connections is deprecated: Use
-	//   web_set_websocket_handler instead.
-        //
-	//   Connection specific data:
-	//   If memory has been allocated for the connection specific user data
-	//   (web_request_info->conn_data, web_get_user_connection_data),
-	//   this is the last chance to free it.
-	
-	void (*connection_close)(const struct web_connection *);
+    int (*init_ssl)(void *ssl_context, void *user_data);
+
+    // Called when vscpweb is closing a connection.  The per-context mutex is
+    //   locked when this is invoked.
+    //
+    //   Websockets:
+    //   Before web_set_websocket_handler has been added, it was primarily useful
+    //   for noting when a websocket is closing, and used to remove it from any
+    //   application-maintained list of clients.
+    //   Using this callback for websocket connections is deprecated: Use
+    //   web_set_websocket_handler instead.
+    //
+    //   Connection specific data:
+    //   If memory has been allocated for the connection specific user data
+    //   (web_request_info->conn_data, web_get_user_connection_data),
+    //   this is the last chance to free it.
+
+    void (*connection_close)(const struct web_connection *);
 
 
-	// Called when vscpweb tries to open a file. Used to intercept file open
-	//   calls, and serve file data from memory instead.
-        //
-	//   Parameters:
-	//      path:     Full path to the file to open.
-	//      data_len: Placeholder for the file size, if file is served from
-	//                memory.
-	//   Return value:
-	//     NULL: do not serve file from memory, proceed with normal file open.
-	//     non-NULL: pointer to the file contents in memory. data_len must be
-	//       initialized with the size of the memory block. 
-        //
-	
-        const char *(*open_file)(const struct web_connection *,
+    // Called when vscpweb tries to open a file. Used to intercept file open
+    //   calls, and serve file data from memory instead.
+    //
+    //   Parameters:
+    //      path:     Full path to the file to open.
+    //      data_len: Placeholder for the file size, if file is served from
+    //                memory.
+    //   Return value:
+    //     NULL: do not serve file from memory, proceed with normal file open.
+    //     non-NULL: pointer to the file contents in memory. data_len must be
+    //       initialized with the size of the memory block.
+    //
+
+    const char *(*open_file)(const struct web_connection *,
                                     const char *path,
                                     size_t *data_len);
 
-	// Called when civetweb is about to serve Lua server page, if
-	//   Lua support is enabled.
-        //
-	//   Parameters:
-	//     lua_context: "lua_State *" pointer. 
-        
-	void (*init_lua)(const struct web_connection *, 
+    // Called when webserver is about to serve Lua server page, if
+    //   Lua support is enabled.
+    //
+    //   Parameters:
+    //     lua_context: "lua_State *" pointer.
+
+    void (*init_lua)(const struct web_connection *,
                                 void *lua_context);
 
-	// Called when vscpweb is about to send HTTP error to the client.
-	//   Implementing this callback allows to create custom error pages.
-        //
-	//   Parameters:
-	//     status: HTTP error status code.
-        //
-	//   Return value:
-	//     1: run vscpweb error handler.
-	//     0: callback already handled the error. 
-        
-	int (*http_error)(struct web_connection *, int status);
+    // Called when vscpweb is about to send HTTP error to the client.
+    //   Implementing this callback allows to create custom error pages.
+    //
+    //   Parameters:
+    //     status: HTTP error status code.
+    //
+    //   Return value:
+    //     1: run vscpweb error handler.
+    //     0: callback already handled the error.
 
-	// Called after vscpweb context has been created, before requests
-	//   are processed.
-        //
-	//   Parameters:
-	//     ctx: context handle 
-        
-	void (*init_context)(const struct web_context *ctx);
+    int (*http_error)(struct web_connection *, int status);
 
-	// Called when a new worker thread is initialized.
-        //
-	//   Parameters:
-	//     ctx: context handle
-	//     thread_type:
-	//       0 indicates the master thread
-	//       1 indicates a worker thread handling client connections
-	//       2 indicates an internal helper thread (timer thread)
-	//  
-        
-	void (*init_thread)(const struct web_context *ctx, int thread_type);
+    // Called after vscpweb context has been created, before requests
+    //   are processed.
+    //
+    //   Parameters:
+    //     ctx: context handle
 
-	// Called when vscpweb context is deleted.
-	//   Parameters:
-	//     ctx: context handle 
-        
-	void (*exit_context)(const struct web_context *ctx);
+    void (*init_context)(const struct web_context *ctx);
 
-	// Called when initializing a new connection object.
-	// Can be used to initialize the connection specific user data
-	// (web_request_info->conn_data, web_get_user_connection_data).
-	// When the callback is called, it is not yet known if a
-	// valid HTTP(S) request will be made.
-        //
-	// Parameters:
-	//   conn: not yet fully initialized connection object
-	//   conn_data: output parameter, set to initialize the
-	//              connection specific user data
-        //
-	// Return value:
-	//   must be 0
-	//   Otherwise, the result is undefined
-	 
-	int (*init_connection)(const struct web_connection *conn, void **conn_data);
+    // Called when a new worker thread is initialized.
+    //
+    //   Parameters:
+    //     ctx: context handle
+    //     thread_type:
+    //       0 indicates the master thread
+    //       1 indicates a worker thread handling client connections
+    //       2 indicates an internal helper thread (timer thread)
+    //
+
+    void (*init_thread)(const struct web_context *ctx, int thread_type);
+
+    // Called when vscpweb context is deleted.
+    //   Parameters:
+    //     ctx: context handle
+
+    void (*exit_context)(const struct web_context *ctx);
+
+    // Called when initializing a new connection object.
+    // Can be used to initialize the connection specific user data
+    // (web_request_info->conn_data, web_get_user_connection_data).
+    // When the callback is called, it is not yet known if a
+    // valid HTTP(S) request will be made.
+    //
+    // Parameters:
+    //   conn: not yet fully initialized connection object
+    //   conn_data: output parameter, set to initialize the
+    //              connection specific user data
+    //
+    // Return value:
+    //   must be 0
+    //   Otherwise, the result is undefined
+
+    int (*init_connection)(const struct web_connection *conn, void **conn_data);
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -406,12 +405,13 @@ struct web_callbacks {
 //   for the list of valid option and their possible values.
 //
 // Return:
-//     web server context, or NULL on error. 
+//     web server context, or NULL on error.
 //
 
-VSCPWEB_API struct web_context *web_start( const struct web_callbacks *callbacks,
-                                                    void *user_data,
-                                                    const char **configuration_options );
+VSCPWEB_API struct web_context *
+web_start( const struct web_callbacks *callbacks,
+            void *user_data,
+            const char **configuration_options );
 
 ///////////////////////////////////////////////////////////////////////////////
 // web_stop
@@ -420,7 +420,7 @@ VSCPWEB_API struct web_context *web_start( const struct web_callbacks *callbacks
 //
 //   Must be called last, when an application wants to stop the web server and
 //   release all associated resources. This function blocks until all vscpweb
-//   threads are stopped. Context pointer becomes invalid. 
+//   threads are stopped. Context pointer becomes invalid.
 //
 
 VSCPWEB_API void web_stop( struct web_context * );
@@ -437,7 +437,7 @@ VSCPWEB_API void web_stop( struct web_context * );
 //   Returns:
 //      0: the handler could not handle the request, so fall through.
 //      1 - 999: the handler processed the request. The return code is
-//               stored as a HTTP status code for the access log. 
+//               stored as a HTTP status code for the access log.
 
 typedef int (*web_request_handler)( struct web_connection *conn, void *cbdata );
 
@@ -461,7 +461,7 @@ typedef int (*web_request_handler)( struct web_connection *conn, void *cbdata );
 //               be removed.
 //               The URI used to remove a handler must match exactly the
 //               one used to register it (not only a pattern match).
-//      cbdata: the callback data to give to the handler when it is called. 
+//      cbdata: the callback data to give to the handler when it is called.
 //
 
 VSCPWEB_API void web_set_request_handler( struct web_context *ctx,
@@ -527,7 +527,7 @@ struct web_websocket_subprotocols {
 // web_set_websocket_handler
 //
 //   Set or remove handler functions for websocket connections.
-//   This function works similar to web_set_request_handler - see there. 
+//   This function works similar to web_set_request_handler - see there.
 //
 
 VSCPWEB_API void
@@ -543,7 +543,7 @@ web_set_websocket_handler( struct web_context *ctx,
 // web_set_websocket_handler
 //
 //   Set or remove handler functions for websocket connections.
-//   This function works similar to web_set_request_handler - see there. 
+//   This function works similar to web_set_request_handler - see there.
 //
 
 VSCPWEB_API void web_set_websocket_handler_with_subprotocols(
@@ -577,7 +577,7 @@ typedef int (*web_authorization_handler)( struct web_connection *conn,
 // web_set_auth_handler
 //
 //   Sets or removes a URI mapping for an authorization handler.
-//   This function works similar to web_set_request_handler - see there. 
+//   This function works similar to web_set_request_handler - see there.
 //
 
 VSCPWEB_API void web_set_auth_handler( struct web_context *ctx,
@@ -593,14 +593,14 @@ VSCPWEB_API void web_set_auth_handler( struct web_context *ctx,
 //   configuration at run time.
 //   If given parameter name is not valid, NULL is returned. For valid
 //   names, return value is guaranteed to be non-NULL. If parameter is not
-//   set, zero-length string is returned. 
+//   set, zero-length string is returned.
 
 VSCPWEB_API const char *web_get_option( const struct web_context *ctx,
-                                                const char *name);
+                                            const char *name);
 
 
 
-// Get context from connection. 
+// Get context from connection.
 
 VSCPWEB_API struct web_context *
 web_get_context( const struct web_connection *conn );
@@ -608,7 +608,7 @@ web_get_context( const struct web_connection *conn );
 ///////////////////////////////////////////////////////////////////////////////
 // web_get_user_data
 //
-// Get user data passed to web_start from context. 
+// Get user data passed to web_start from context.
 //
 
 VSCPWEB_API void *web_get_user_data( const struct web_context *ctx );
@@ -616,16 +616,16 @@ VSCPWEB_API void *web_get_user_data( const struct web_context *ctx );
 ///////////////////////////////////////////////////////////////////////////////
 // web_set_user_connection_data
 //
-// Set user data for the current connection. 
+// Set user data for the current connection.
 //
 
 VSCPWEB_API void web_set_user_connection_data( struct web_connection *conn,
-                                                        void *data);
+                                                void *data);
 
 ///////////////////////////////////////////////////////////////////////////////
 // web_get_user_connection_data
 //
-// Get user data set for the current connection. 
+// Get user data set for the current connection.
 //
 
 VSCPWEB_API void *
@@ -642,13 +642,13 @@ web_get_user_connection_data( const struct web_connection *conn );
 //      buflen: length of the string buffer
 //   Returns:
 //      <0: error
-//      >=0: ok 
+//      >=0: ok
 //
 
 VSCPWEB_API int
-web_get_request_link( const struct web_connection *conn, 
-                                char *buf, 
-                                size_t buflen );
+web_get_request_link( const struct web_connection *conn,
+                        char *buf,
+                        size_t buflen );
 
 
 struct web_option {
@@ -658,15 +658,15 @@ struct web_option {
 };
 
 enum {
-	WEB_CONFIG_TYPE_UNKNOWN = 0x0,
-	WEB_CONFIG_TYPE_NUMBER = 0x1,
-	WEB_CONFIG_TYPE_STRING = 0x2,
-	WEB_CONFIG_TYPE_FILE = 0x3,
-	WEB_CONFIG_TYPE_DIRECTORY = 0x4,
-	WEB_CONFIG_TYPE_BOOLEAN = 0x5,
-	WEB_CONFIG_TYPE_EXT_PATTERN = 0x6,
-	WEB_CONFIG_TYPE_STRING_LIST = 0x7,
-	WEB_CONFIG_TYPE_STRING_MULTILINE = 0x8
+    WEB_CONFIG_TYPE_UNKNOWN = 0x0,
+    WEB_CONFIG_TYPE_NUMBER = 0x1,
+    WEB_CONFIG_TYPE_STRING = 0x2,
+    WEB_CONFIG_TYPE_FILE = 0x3,
+    WEB_CONFIG_TYPE_DIRECTORY = 0x4,
+    WEB_CONFIG_TYPE_BOOLEAN = 0x5,
+    WEB_CONFIG_TYPE_EXT_PATTERN = 0x6,
+    WEB_CONFIG_TYPE_STRING_LIST = 0x7,
+    WEB_CONFIG_TYPE_STRING_MULTILINE = 0x8
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -674,17 +674,17 @@ enum {
 //
 // Return array of struct web_option, representing all valid configuration
 //   options of civetweb.c.
-//   The array is terminated by a NULL name option. 
+//   The array is terminated by a NULL name option.
 //
 
 VSCPWEB_API const struct web_option *web_get_valid_options( void );
 
 
 struct web_server_ports {
-    int protocol;    // 1 = IPv4, 2 = IPv6, 3 = both 
-    int port;        // port number 
-    int is_ssl;      // https port: 0 = no, 1 = yes 
-    int is_redirect; // redirect all requests: 0 = no, 1 = yes 
+    int protocol;       // 1 = IPv4, 2 = IPv6, 3 = both
+    int port;           // port number
+    int is_ssl;         // https port: 0 = no, 1 = yes
+    int is_redirect;    // redirect all requests: 0 = no, 1 = yes
     int _reserved1;
     int _reserved2;
     int _reserved3;
@@ -698,12 +698,12 @@ struct web_server_ports {
 //   The parameter size is the size of the ports array in elements.
 //   The caller is responsibility to allocate the required memory.
 //   This function returns the number of struct web_server_ports elements
-//   filled in, or <0 in case of an error. 
+//   filled in, or <0 in case of an error.
 //
 
 VSCPWEB_API int web_get_server_ports( const struct web_context *ctx,
-                                            int size,
-                                            struct web_server_ports *ports );
+                                        int size,
+                                        struct web_server_ports *ports );
 
 ///////////////////////////////////////////////////////////////////////////////
 // web_modify_passwords_file
@@ -728,9 +728,9 @@ VSCPWEB_API int web_get_server_ports( const struct web_context *ctx,
 //
 
 VSCPWEB_API int web_modify_passwords_file( const char *passwords_file_name,
-                                                    const char *realm,
-                                                    const char *user,
-                                                    const char *password );
+                                            const char *realm,
+                                            const char *user,
+                                            const char *password );
 
 ///////////////////////////////////////////////////////////////////////////////
 // web_get_request_info
@@ -752,7 +752,7 @@ web_get_request_info( const struct web_connection * );
 //
 // Return information associated with a HTTP/HTTPS response.
 // Use this function in a client, to check the response from
-// the server. 
+// the server.
 //
 
 VSCPWEB_API const struct web_response_info *
@@ -765,12 +765,12 @@ web_get_response_info( const struct web_connection * );
 //   Return:
 //    0   when the connection has been closed
 //    -1  on error
-//    >0  number of bytes written on success 
+//    >0  number of bytes written on success
 //
 
-VSCPWEB_API int web_write( struct web_connection *, 
-                                    const void *buf, 
-                                    size_t len );
+VSCPWEB_API int web_write( struct web_connection *,
+                                const void *buf,
+                                size_t len );
 
 ///////////////////////////////////////////////////////////////////////////////
 // web_websocket_write
@@ -786,13 +786,13 @@ VSCPWEB_API int web_write( struct web_connection *,
 //   Return:
 //    0   when the connection has been closed
 //    -1  on error
-//    >0  number of bytes written on success 
+//    >0  number of bytes written on success
 //
 
 VSCPWEB_API int web_websocket_write( struct web_connection *conn,
-                                            int opcode,
-                                            const char *data,
-                                            size_t data_len );
+                                        int opcode,
+                                        const char *data,
+                                        size_t data_len );
 
 ///////////////////////////////////////////////////////////////////////////////
 // web_websocket_client_write
@@ -808,13 +808,13 @@ VSCPWEB_API int web_websocket_write( struct web_connection *conn,
 //   Return:
 //    0   when the connection has been closed
 //    -1  on error
-//    >0  number of bytes written on success 
+//    >0  number of bytes written on success
 //
 
 VSCPWEB_API int web_websocket_client_write( struct web_connection *conn,
-                                                    int opcode,
-                                                    const char *data,
-                                                    size_t data_len );
+                                                int opcode,
+                                                const char *data,
+                                                size_t data_len );
 
 ///////////////////////////////////////////////////////////////////////////////
 // web_lock_connection
@@ -824,7 +824,7 @@ VSCPWEB_API int web_websocket_client_write( struct web_connection *conn,
 //   with websockets only.
 //   Invoke this before web_write or web_printf when communicating with a
 //   websocket if your code has server-initiated communication as well as
-//   communication in direct response to a message. 
+//   communication in direct response to a message.
 
 VSCPWEB_API void web_lock_connection( struct web_connection *conn );
 VSCPWEB_API void web_unlock_connection( struct web_connection *conn );
@@ -833,13 +833,13 @@ VSCPWEB_API void web_unlock_connection( struct web_connection *conn );
 // web_lock_context
 //
 // Lock server context.  This lock may be used to protect resources
-//   that are shared between different connection/worker threads. 
+//   that are shared between different connection/worker threads.
 
 VSCPWEB_API void web_lock_context(struct web_context *ctx);
 VSCPWEB_API void web_unlock_context(struct web_context *ctx);
 
 
-// Opcodes, from http://tools.ietf.org/html/rfc6455 
+// Opcodes, from http://tools.ietf.org/html/rfc6455
 
 enum {
     WEB_WEBSOCKET_OPCODE_CONTINUATION = 0x0,
@@ -850,7 +850,7 @@ enum {
     WEB_WEBSOCKET_OPCODE_PONG = 0xa
 };
 
-// Macros for enabling compiler-specific checks for printf-like arguments. 
+// Macros for enabling compiler-specific checks for printf-like arguments.
 #undef PRINTF_FORMAT_STRING
 #if defined(_MSC_VER) && _MSC_VER >= 1400
 #include <sal.h>
@@ -873,7 +873,7 @@ enum {
 // web_printf
 //
 // Send data to the client using printf() semantics.
-//   Works exactly like web_write(), but allows to do message formatting. 
+//   Works exactly like web_write(), but allows to do message formatting.
 //
 
 VSCPWEB_API int web_printf( struct web_connection *,
@@ -885,7 +885,7 @@ VSCPWEB_API int web_printf( struct web_connection *,
 //
 // Send a part of the message body, if chunked transfer encoding is set.
 // Only use this function after sending a complete HTTP request or response
-// header with "Transfer-Encoding: chunked" set. 
+// header with "Transfer-Encoding: chunked" set.
 //
 
 VSCPWEB_API int web_send_chunk( struct web_connection *conn,
@@ -895,16 +895,16 @@ VSCPWEB_API int web_send_chunk( struct web_connection *conn,
 ///////////////////////////////////////////////////////////////////////////////
 // web_send_file
 //
-// Send contents of the entire file together with HTTP headers. 
+// Send contents of the entire file together with HTTP headers.
 //
 
-VSCPWEB_API void web_send_file( struct web_connection *conn, 
+VSCPWEB_API void web_send_file( struct web_connection *conn,
                                         const char *path );
 
 ///////////////////////////////////////////////////////////////////////////////
 // web_send_http_error
 //
-// Send HTTP error reply. 
+// Send HTTP error reply.
 //
 
 VSCPWEB_API void web_send_http_error( struct web_connection *conn,
@@ -997,7 +997,7 @@ VSCPWEB_API void web_send_mime_file2( struct web_connection *conn,
 ///////////////////////////////////////////////////////////////////////////////
 // web_store_body
 //
-// Store body data into a file. 
+// Store body data into a file.
 //
 // Read entire request body and store it in a file "path".
 //   Return:
@@ -1016,20 +1016,20 @@ VSCPWEB_API long long web_store_body( struct web_connection *conn,
 //   Return:
 //     0     connection has been closed by peer. No more data could be read.
 //     < 0   read error. No more data could be read from the connection.
-//     > 0   number of bytes read into the buffer. 
+//     > 0   number of bytes read into the buffer.
 
-VSCPWEB_API int web_read( struct web_connection *, 
-                                void *buf, 
+VSCPWEB_API int web_read( struct web_connection *,
+                                void *buf,
                                 size_t len );
 
 ///////////////////////////////////////////////////////////////////////////////
 // web_get_header
-// 
+//
 // Get the value of particular HTTP header.
 //
 //   This is a helper function. It traverses request_info->http_headers array,
 //   and if the header is present in the array, returns its value. If it is
-//   not present, NULL is returned. 
+//   not present, NULL is returned.
 
 VSCPWEB_API const char *web_get_header( const struct web_connection *,
                                             const char *name );
@@ -1055,7 +1055,7 @@ VSCPWEB_API const char *web_get_header( const struct web_connection *,
 //            decoded variable).
 //
 //   Destination buffer is guaranteed to be '\0' - terminated if it is not
-//   NULL or zero length. 
+//   NULL or zero length.
 //
 
 VSCPWEB_API int web_get_var( const char *data,
@@ -1089,7 +1089,7 @@ VSCPWEB_API int web_get_var( const char *data,
 //            decoded variable).
 //
 //   Destination buffer is guaranteed to be '\0' - terminated if it is not
-//   NULL or zero length. 
+//   NULL or zero length.
 //
 
 VSCPWEB_API int web_get_var2( const char *data,
@@ -1153,7 +1153,7 @@ web_download( const char *host,
 ///////////////////////////////////////////////////////////////////////////////
 // web_close_connection
 //
-// Close the connection opened by web_download(). 
+// Close the connection opened by web_download().
 //
 
 VSCPWEB_API void web_close_connection( struct web_connection *conn );
@@ -1163,92 +1163,96 @@ VSCPWEB_API void web_close_connection( struct web_connection *conn );
 // web_form_data_handler
 //
 // This structure contains callback functions for handling form fields.
-//   It is used as an argument to web_handle_form_request. 
+//   It is used as an argument to web_handle_form_request.
 //
 
 struct web_form_data_handler {
-	// This callback function is called, if a new field has been found.
-	// The return value of this callback is used to define how the field
-	// should be processed.
-	//
-	// Parameters:
-	//   key: Name of the field ("name" property of the HTML input field).
-	//   filename: Name of a file to upload, at the client computer.
-	//             Only set for input fields of type "file", otherwise NULL.
-	//   path: Output parameter: File name (incl. path) to store the file
-	//         at the server computer. Only used if FORM_FIELD_STORAGE_STORE
-	//         is returned by this callback. Existing files will be
-	//         overwritten.
-	//   pathlen: Length of the buffer for path.
-	//   user_data: Value of the member user_data of web_form_data_handler
-	//
-	// Return value:
-	//   The callback must return the intended storage for this field
-	//   (See FORM_FIELD_STORAGE_*).
-	//
-    
-	int (*field_found)( const char *key,
+    // This callback function is called, if a new field has been found.
+    // The return value of this callback is used to define how the field
+    // should be processed.
+    //
+    // Parameters:
+    //   key: Name of the field ("name" property of the HTML input field).
+    //   filename: Name of a file to upload, at the client computer.
+    //             Only set for input fields of type "file", otherwise NULL.
+    //   path: Output parameter: File name (incl. path) to store the file
+    //         at the server computer. Only used if FORM_FIELD_STORAGE_STORE
+    //         is returned by this callback. Existing files will be
+    //         overwritten.
+    //   pathlen: Length of the buffer for path.
+    //   user_data: Value of the member user_data of web_form_data_handler
+    //
+    // Return value:
+    //   The callback must return the intended storage for this field
+    //   (See FORM_FIELD_STORAGE_*).
+    //
+
+    int (*field_found)( const char *key,
                                 const char *filename,
                                 char *path,
                                 size_t pathlen,
                                 void *user_data );
 
-	// If the "field_found" callback returned FORM_FIELD_STORAGE_GET,
-	// this callback will receive the field data.
-	//
-	// Parameters:
-	//   key: Name of the field ("name" property of the HTML input field).
-	//   value: Value of the input field.
-	//   user_data: Value of the member user_data of web_form_data_handler
-	//
-	// Return value:
-	//   TODO: Needs to be defined.
-	//
-        
-	int (*field_get)( const char *key,
+    // If the "field_found" callback returned FORM_FIELD_STORAGE_GET,
+    // this callback will receive the field data.
+    //
+    // Parameters:
+    //   key: Name of the field ("name" property of the HTML input field).
+    //   value: Value of the input field.
+    //   user_data: Value of the member user_data of web_form_data_handler
+    //
+    // Return value:
+    //   TODO: Needs to be defined.
+    //
+
+    int (*field_get)( const char *key,
                             const char *value,
                             size_t valuelen,
                             void *user_data );
 
-	// If the "field_found" callback returned FORM_FIELD_STORAGE_STORE,
-	// the data will be stored into a file. If the file has been written
-	// successfully, this callback will be called. This callback will
-	// not be called for only partially uploaded files. The
-	// web_handle_form_request function will either store the file completely
-	// and call this callback, or it will remove any partial content and
-	// not call this callback function.
-	//
-	// Parameters:
-	//   path: Path of the file stored at the server.
-	//   file_size: Size of the stored file in bytes.
-	//   user_data: Value of the member user_data of web_form_data_handler
-	//
-	// Return value:
-	//   TODO: Needs to be defined.
-	//
-        
-	int (*field_store)( const char *path, long long file_size, void *user_data );
+    // If the "field_found" callback returned FORM_FIELD_STORAGE_STORE,
+    // the data will be stored into a file. If the file has been written
+    // successfully, this callback will be called. This callback will
+    // not be called for only partially uploaded files. The
+    // web_handle_form_request function will either store the file completely
+    // and call this callback, or it will remove any partial content and
+    // not call this callback function.
+    //
+    // Parameters:
+    //   path: Path of the file stored at the server.
+    //   file_size: Size of the stored file in bytes.
+    //   user_data: Value of the member user_data of web_form_data_handler
+    //
+    // Return value:
+    //   TODO: Needs to be defined.
+    //
 
-	// User supplied argument, passed to all callback functions. 
-	void *user_data;
+    int (*field_store)( const char *path, long long file_size, void *user_data );
+
+    // User supplied argument, passed to all callback functions.
+    void *user_data;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
 //
 //
 // Return values definition for the "field_found" callback in
-// web_form_data_handler. 
+// web_form_data_handler.
 //
 
 enum {
+
     // Skip this field (neither get nor store it). Continue with the
-    // next field. 
+    // next field.
     WEB_FORM_FIELD_STORAGE_SKIP = 0x0,
-    // Get the field value. 
+
+    // Get the field value.
     WEB_FORM_FIELD_STORAGE_GET = 0x1,
-    // Store the field value into a file. 
+
+    // Store the field value into a file.
     WEB_FORM_FIELD_STORAGE_STORE = 0x2,
-    // Stop parsing this request. Skip the remaining fields. 
+
+    // Stop parsing this request. Skip the remaining fields.
     WEB_FORM_FIELD_STORAGE_ABORT = 0x10
 };
 
@@ -1261,7 +1265,7 @@ enum {
 // (e.g., stored into files), before the request handling is stopped with an
 // error. In this case a number < 0 is returned as well.
 // In any case, it is the duty of the caller to remove files once they are
-// no longer required. 
+// no longer required.
 //
 
 VSCPWEB_API int web_handle_form_request( struct web_connection *conn,
@@ -1271,7 +1275,7 @@ VSCPWEB_API int web_handle_form_request( struct web_connection *conn,
 // web_thread_func_t
 //
 // Convenience function -- create detached thread.
-//   Return: 0 on success, non-0 on error. 
+//   Return: 0 on success, non-0 on error.
 //
 
 typedef void *(*web_thread_func_t)(void *);
@@ -1289,17 +1293,17 @@ VSCPWEB_API const char *web_get_builtin_mime_type( const char *file_name );
 ///////////////////////////////////////////////////////////////////////////////
 // web_get_response_code_text
 //
-// Get text representation of HTTP status code. 
+// Get text representation of HTTP status code.
 //
 
 VSCPWEB_API const char *
-web_get_response_code_text( const struct web_connection *conn, 
+web_get_response_code_text( const struct web_connection *conn,
                                 int response_code );
 
 ///////////////////////////////////////////////////////////////////////////////
 // web_version
 //
-// Return CivetWeb version. 
+// Return CivetWeb version.
 //
 
 VSCPWEB_API const char *web_version( void );
@@ -1312,7 +1316,7 @@ VSCPWEB_API const char *web_version( void );
 //   form-url-encoded data differs from URI encoding in a way that it
 //   uses '+' as character for space, see RFC 1866 section 8.2.1
 //   http://ftp.ics.uci.edu/pub/ietf/html/rfc1866.txt
-//   Return: length of the decoded data, or -1 if dst buffer is too small. 
+//   Return: length of the decoded data, or -1 if dst buffer is too small.
 //
 
 VSCPWEB_API int web_url_decode( const char *src,
@@ -1326,11 +1330,11 @@ VSCPWEB_API int web_url_decode( const char *src,
 //
 // URL-encode input buffer into destination buffer.
 //   returns the length of the resulting buffer or -1
-//   is the buffer is too small. 
+//   is the buffer is too small.
 //
 
-VSCPWEB_API int web_url_encode( const char *src, 
-                                        char *dst, 
+VSCPWEB_API int web_url_encode( const char *src,
+                                        char *dst,
                                         size_t dst_len );
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1342,7 +1346,7 @@ VSCPWEB_API int web_url_encode( const char *src,
 //     fmt: format string without the line return
 //     ...: variable argument list
 //   Example:
-//     web_cry(conn,"i like %s", "logging"); 
+//     web_cry(conn,"i like %s", "logging");
 //
 
 VSCPWEB_API void web_cry( const struct web_connection *conn,
@@ -1352,7 +1356,7 @@ VSCPWEB_API void web_cry( const struct web_connection *conn,
 ///////////////////////////////////////////////////////////////////////////////
 // web_strcasecmp
 //
-// utility methods to compare two buffers, case insensitive. 
+// utility methods to compare two buffers, case insensitive.
 // Return zero if equal.
 
 //VSCPWEB_API int web_strcasecmp( const char *s1, const char *s2 );
@@ -1400,7 +1404,7 @@ web_connect_websocket_client( const char *host,
 //
 //   Parameters:
 //     host: host to connect to, i.e. "www.wikipedia.org" or "192.168.1.1" or
-//   "localhost"
+//     "localhost"
 //     port: server port
 //     use_ssl: make a secure connection to server
 //     error_buffer, error_buffer_size: buffer for an error message
@@ -1410,18 +1414,19 @@ web_connect_websocket_client( const char *host,
 //     On error, NULL. Se error_buffer for details.
 //
 
-VSCPWEB_API struct web_connection *web_connect_client( const char *host,
-                                                            int port,
-                                                            int use_ssl,
-                                                            char *error_buffer,
-                                                            size_t error_buffer_size );
+VSCPWEB_API struct web_connection *
+web_connect_client( const char *host,
+                        int port,
+                        int use_ssl,
+                        char *error_buffer,
+                        size_t error_buffer_size );
 
 struct web_client_options {
-	const char *host;
-	int port;
-	const char *client_cert;
-	const char *server_cert;
-	// TODO: add more data 
+    const char *host;
+    int port;
+    const char *client_cert;
+    const char *server_cert;
+    // TODO: add more data
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1469,15 +1474,15 @@ VSCPWEB_API int web_get_response( struct web_connection *conn,
 //   Parameters:
 //     feature: specifies which feature should be checked
 //       The value is a bit mask. The individual bits are defined as:
-//         1  serve files 
-//         2  support HTTPS 
-//         4  support CGI 
-//         8  support IPv6 
-//        16  support WebSocket 
-//        32  support Lua scripts and Lua server pages 
-//        64  support server side JavaScript 
-//       128  support caching 
-//       256  support server statistics 
+//         1  serve files
+//         2  support HTTPS
+//         4  support CGI
+//         8  support IPv6
+//        16  support WebSocket
+//        32  support Lua scripts and Lua server pages
+//        64  support server side JavaScript
+//       128  support caching
+//       256  support server statistics
 //       The result is undefined, if bits are set that do not represent a
 //       defined feature (currently: feature >= 512).
 //       The result is undefined, if no bit is set (feature == 0).
@@ -1530,8 +1535,8 @@ VSCPWEB_API int web_get_system_info( char *buffer, int buflen );
 //
 
 VSCPWEB_API int
-web_get_context_info( const struct web_context *ctx, 
-                            char *buffer, 
+web_get_context_info( const struct web_context *ctx,
+                            char *buffer,
                             int buflen );
 
 
@@ -1563,23 +1568,23 @@ VSCPWEB_API int web_get_connection_info( const struct web_context *ctx,
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// Parsed Authorization header 
+// Parsed Authorization header
 //
 
 struct web_authorization_header
 {
-    char *user, 
-    *uri, 
-    *cnonce, 
-    *response, 
-    *qop, 
-    *nc, 
+    char *user,
+    *uri,
+    *cnonce,
+    *response,
+    *qop,
+    *nc,
     *nonce;
 };
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// web_parse_auth_header 
+// web_parse_auth_header
 //
 // Return 1 on success. Always initializes the ah structure.
 //
@@ -1590,7 +1595,7 @@ VSCPWEB_API int web_parse_auth_header( struct web_connection *conn,
                                         struct web_authorization_header *ah );
 
 ///////////////////////////////////////////////////////////////////////////////
-// www_check_password 
+// www_check_password
 //
 
 VSCPWEB_API int
@@ -1606,7 +1611,7 @@ web_check_password( const char *method,
 #define web_lua_load lua_load
 
 /*!
- * run_lua
+ * Run Lua script in a file.
  */
 int run_lua( const char *file_name );
 

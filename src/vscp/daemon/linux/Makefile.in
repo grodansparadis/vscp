@@ -88,15 +88,15 @@ VSCPD_OBJECTS =  vscpd.o \
 	websocketsrv.o \
 	udpsrv.o \
 	multicastsrv.o \
-    mqttbroker.o \
+    	mqttbroker.o \
 	tables.o \
 	automation.o \
 	knownnodes.o \
-	duktape_callbacks.o \
+	duktape_vscp.o \
 	vscp_javascript.o \
-    jsonreader.o \
-    jsonwriter.o \
-    jsonval.o \
+    	jsonreader.o \
+    	jsonwriter.o \
+    	jsonval.o \
 	httpd.o \
 	vscphelper.o \
 	vscpremotetcpif.o \
@@ -109,9 +109,9 @@ VSCPD_OBJECTS =  vscpd.o \
 	crc.o \
 	crc8.o \
 	randpassword.o \
-	frozen.o  \
 	duktape.o \
 	duk_module_node.o \
+	frozen.o  \	
 	mongoose.o \
 	sqlite3.o \
 	sqlite3math.o \
@@ -185,8 +185,8 @@ automation.o: ../../common/automation.cpp ../../common/automation.h
 knownnodes.o: ../../common/knownnodes.cpp ../../common/knownnodes.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/knownnodes.cpp -o $@
 
-duktape_callbacks.o: ../../common/duktape_callbacks.cpp ../../common/duktape_callbacks.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/duktape_callbacks.cpp -o $@
+duktape_vscp.o: ../../common/duktape_vscp.cpp ../../common/duktape_vscp.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/duktape_vscp.cpp -o $@
 
 vscp_javascript.o: ../../common/vscp_javascript.cpp ../../common/vscp_javascript.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/vscp_javascript.cpp -o $@
@@ -239,6 +239,9 @@ crc8.o: ../../../common/crc8.c ../../../common/crc8.h
 randpassword.o: ../../../common/randpassword.cpp ../../../common/randpassword.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../../common/randpassword.cpp -o $@
 
+frozen.o: ../../../common/frozen.c ../../../common/frozen.h
+	$(CC) $(CFLAGS) -c ../../../common/frozen.c -o $@
+
 mongoose.o: ../../../common/mongoose.c ../../../common/mongoose.h
 	$(CC) $(CFLAGS) $(MONGOOSE_CFLAGS) -c ../../../common/mongoose.c -o $@
 
@@ -247,9 +250,6 @@ duktape.o: ../../../common/duktape.c ../../../common/duktape.h
 
 duk_module_node.o: ../../../common/duk_module_node.c ../../../common/duk_module_node.h
 	$(CC) $(CFLAGS) -c ../../../common/duk_module_node.c -o $@
-
-frozen.o: ../../../common/frozen.c ../../../common/frozen.h
-	$(CC) $(CFLAGS) -c ../../../common/frozen.c -o $@
 
 sqlite3.o: ../../../common/sqlite3.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c  ../../../common/sqlite3.c -o $@

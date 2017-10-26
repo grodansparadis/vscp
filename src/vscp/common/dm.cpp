@@ -59,7 +59,7 @@
 #include <vscpremotetcpif.h>
 #include <vscp_javascript.h>
 #include <duktape.h>
-#include <duktape_callbacks.h>
+#include <duktape_vscp.h>
 #include <duk_module_node.h>
 #include <dm.h>
 

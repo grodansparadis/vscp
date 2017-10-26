@@ -186,10 +186,9 @@ int main( int argc, char **argv )
 
 BOOL VSCPApp::init(wxString& strcfgfile, wxString& rootFolder )
 {
+    pid_t pid, sid;
 
     if ( !gbDontRunAsDaemon ) {
-
-        pid_t pid, sid;
 
         // Fork child
         if (0 > (pid = fork())) {
@@ -202,22 +201,10 @@ BOOL VSCPApp::init(wxString& strcfgfile, wxString& rootFolder )
         }
 
         sid = setsid(); // Become session leader
-        if (sid < 0) {
+        if ( sid < 0 ) {
             // Failure
             gpobj->logMsg(_("Failed to become session leader.\n"));
             return -1;
-        }
-
-        // Write pid to file
-        FILE *pFile;
-        pFile = fopen("/var/run/vscpd/vscpd.pid", "w");
-        if (NULL != pFile) {
-            fprintf(pFile, "%d\n", sid);
-            fclose(pFile);
-        }
-
-        if ( chdir("/") ) { // Change working directory
-            gpobj->logMsg(_("VSCPD: Failed to change dir to rootdir"));
         }
 
         umask(0); // Clear out file mode creation mask
@@ -227,13 +214,27 @@ BOOL VSCPApp::init(wxString& strcfgfile, wxString& rootFolder )
         close(STDOUT_FILENO);
         close(STDERR_FILENO);
 
-        if (open("/", 0)) {
+        if ( open("/", 0 ) ) {
             gpobj->logMsg(_("VSCPD: open / not 0: %m"));
         }
 
         dup2(0, 1);
         dup2(0, 2);
 
+    }
+
+    // Write pid to file
+    FILE *pFile;
+    pFile = fopen("/var/run/vscpd/vscpd.pid", "w");
+    if ( NULL != pFile ) {
+        fprintf( pFile, "%d\n", sid );
+        fclose( pFile );
+    }
+
+    // Change working directory to root folder
+    if ( chdir( (const char *)rootFolder.mbc_str() ) ) {
+        gpobj->logMsg(_("VSCPD: Failed to change dir to rootdir"));
+        chdir("/tmp"); // seurity measure
     }
 
     struct sigaction my_action;

@@ -1,4 +1,9 @@
+// This file is part of the CivetWeb web server.
+// See https://github.com/civetweb/civetweb/
+// (C) 2014-2017 by the CivetWeb authors, MIT license.
 
+#ifndef INCLUDE_HTTDP_TIMERS___H
+#define INCLUDE_HTTDP_TIMERS___H
 
 #include "httpd.h"
 
@@ -69,3 +74,5 @@ int web_timers_init( struct web_context *ctx );
 
 void web_timers_exit( struct web_context *ctx );
 
+
+#endif
