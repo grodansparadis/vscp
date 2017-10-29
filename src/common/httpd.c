@@ -14645,6 +14645,7 @@ web_lua_exit_optional_libraries( void )
 //
 
 #include <duktape.h>
+#include <duk_v1_compat.h>
 #include "httpd_duktape.h"
 
 // TODO: the mg context should be added to duktape as well
@@ -14720,27 +14721,27 @@ duk_itf_write( duk_context *duk_ctx )
     struct web_connection *conn;
     duk_double_t ret;
     duk_size_t len = 0;
-    const char *val = duk_require_lstring(duk_ctx, -1, &len);
+    const char *val = duk_require_lstring(duk_ctx, -1, &len );
 
     //    duk_push_global_stash(duk_ctx);
     //    duk_get_prop_string(duk_ctx, -1, web_conn_id);
     //    conn = (struct web_connection *)duk_to_pointer(duk_ctx, -1);
 
-    duk_push_current_function(duk_ctx);
-    duk_get_prop_string(duk_ctx, -1, web_conn_id);
-    conn = (struct web_connection *) duk_to_pointer(duk_ctx, -1);
+    duk_push_current_function( duk_ctx );
+    duk_get_prop_string( duk_ctx, -1, web_conn_id );
+    conn = (struct web_connection *)duk_to_pointer( duk_ctx, -1 );
 
-    if (!conn) {
-        duk_error(duk_ctx,
-                  DUK_ERR_ERROR,
-                  "function not available without connection object");
+    if ( !conn ) {
+        duk_error( duk_ctx,
+                    DUK_ERR_ERROR,
+                    "function not available without connection object");
         // probably never reached, but satisfies static code analysis
         return DUK_ERR_ERROR;
     }
 
-    ret = web_write(conn, val, len);
+    ret = web_write( conn, val, len );
 
-    duk_push_number(duk_ctx, ret);
+    duk_push_number( duk_ctx, ret );
     return 1;
 }
 
@@ -14755,21 +14756,21 @@ duk_itf_read( duk_context *duk_ctx )
     char buf[1024];
     int len;
 
-    duk_push_global_stash(duk_ctx);
-    duk_get_prop_string(duk_ctx, -1, web_conn_id);
-    conn = (struct web_connection *) duk_to_pointer(duk_ctx, -1);
+    duk_push_global_stash( duk_ctx );
+    duk_get_prop_string( duk_ctx, -1, web_conn_id );
+    conn = (struct web_connection *)duk_to_pointer( duk_ctx, -1 );
 
     if ( !conn ) {
-        duk_error(duk_ctx,
-                  DUK_ERR_ERROR,
-                  "function not available without connection object");
+        duk_error( duk_ctx,
+                    DUK_ERR_ERROR,
+                    "function not available without connection object" );
         // probably never reached, but satisfies static code analysis
         return DUK_ERR_ERROR;
     }
 
-    len = web_read(conn, buf, sizeof (buf));
+    len = web_read( conn, buf, sizeof( buf ) );
 
-    duk_push_lstring(duk_ctx, buf, len);
+    duk_push_lstring(duk_ctx, buf, len );
     return 1;
 }
 
@@ -14834,17 +14835,17 @@ web_exec_duktape_script( struct web_connection *conn,
 
     // Add "conn" object
     duk_push_global_object( duk_ctx );
-    duk_push_object(duk_ctx); // create a new table/object ("conn")
+    duk_push_object( duk_ctx ); // create a new table/object ("conn")
 
-    duk_push_c_function(duk_ctx, duk_itf_write, 1 /* 1 = nargs */);
+    duk_push_c_function( duk_ctx, duk_itf_write, 1 /* 1 = nargs */);
     duk_push_pointer(duk_ctx, (void *) conn);
-    duk_put_prop_string(duk_ctx, -2, web_conn_id);
-    duk_put_prop_string(duk_ctx, -2, "write"); // add function conn.write
+    duk_put_prop_string( duk_ctx, -2, web_conn_id);
+    duk_put_prop_string( duk_ctx, -2, "write"); // add function conn.write
 
-    duk_push_c_function(duk_ctx, duk_itf_read, 0 /* 0 = nargs */);
-    duk_push_pointer(duk_ctx, (void *) conn);
-    duk_put_prop_string(duk_ctx, -2, web_conn_id);
-    duk_put_prop_string(duk_ctx, -2, "read"); // add function conn.read
+    duk_push_c_function( duk_ctx, duk_itf_read, 0 /* 0 = nargs */);
+    duk_push_pointer( duk_ctx, (void *)conn );
+    duk_put_prop_string( duk_ctx, -2, web_conn_id );
+    duk_put_prop_string( duk_ctx, -2, "read" ); // add function conn.read
 
     duk_push_string(duk_ctx, conn->request_info.request_method);
     duk_put_prop_string( duk_ctx,
@@ -14872,9 +14873,9 @@ web_exec_duktape_script( struct web_connection *conn,
     duk_push_int(duk_ctx, ntohs(conn->client.lsa.sin.sin_port));
     duk_put_prop_string(duk_ctx, -2, "server_port");
 
-    duk_push_object(duk_ctx); // subfolder "conn.http_headers"
-    for (i = 0; i < conn->request_info.num_headers; i++) {
-        duk_push_string(duk_ctx, conn->request_info.http_headers[i].value);
+    duk_push_object( duk_ctx ); // subfolder "conn.http_headers"
+    for ( i = 0; i < conn->request_info.num_headers; i++ ) {
+        duk_push_string( duk_ctx, conn->request_info.http_headers[i].value );
         duk_put_prop_string( duk_ctx,
                                 -2,
                                 conn->request_info.http_headers[i].name );
@@ -14884,16 +14885,16 @@ web_exec_duktape_script( struct web_connection *conn,
     duk_put_prop_string(duk_ctx, -2, "conn"); // call the table "conn"
 
     // Add "vscpweb" object
-    duk_push_global_object(duk_ctx);
-    duk_push_object(duk_ctx); // create a new table/object ("conn")
+    duk_push_global_object( duk_ctx );
+    duk_push_object( duk_ctx ); // create a new table/object ("conn")
 
-    duk_push_string(duk_ctx, VSCPD_DISPLAY_VERSION);
-    duk_put_prop_string(duk_ctx, -2, "version");
+    duk_push_string( duk_ctx, VSCPD_DISPLAY_VERSION );
+    duk_put_prop_string( duk_ctx, -2, "version" );
 
-    duk_push_string(duk_ctx, script_name);
-    duk_put_prop_string(duk_ctx, -2, "script_name");
+    duk_push_string( duk_ctx, script_name );
+    duk_put_prop_string( duk_ctx, -2, "script_name" );
 
-    if (conn->ctx != NULL) {
+    if ( conn->ctx != NULL ) {
         duk_push_c_function(duk_ctx, duk_itf_getoption, 1 /* 1 = nargs */);
         duk_push_pointer(duk_ctx, (void *) (conn->ctx));
         duk_put_prop_string(duk_ctx, -2, web_ctx_id);
@@ -14911,15 +14912,15 @@ web_exec_duktape_script( struct web_connection *conn,
                             -2,
                             "vscpweb"); // call the table "vscpweb"
 
-    duk_push_global_stash(duk_ctx);
-    duk_push_pointer(duk_ctx, (void *) conn);
-    duk_put_prop_string(duk_ctx, -2, web_conn_id);
+    duk_push_global_stash( duk_ctx );
+    duk_push_pointer( duk_ctx, (void *) conn );
+    duk_put_prop_string( duk_ctx, -2, web_conn_id );
 
     // TODO AKHE from version 1.1
-    /*if (duk_peval_file(duk_ctx, script_name) != 0) {
-            web_cry(conn, "%s", duk_safe_to_string(duk_ctx, -1));
-            goto exec_duktape_finished;
-    }*/
+    if ( duk_peval_file( duk_ctx, script_name ) != 0 ) {
+        web_cry( conn, "%s", duk_safe_to_string( duk_ctx, -1 ) );
+        goto exec_duktape_finished;
+    }
     duk_pop(duk_ctx); // ignore result
 
 exec_duktape_finished:

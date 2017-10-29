@@ -110,8 +110,9 @@ VSCPD_OBJECTS =  vscpd.o \
 	crc8.o \
 	randpassword.o \
 	duktape.o \
+	duk_v1_compat.o \
 	duk_module_node.o \
-	frozen.o  \	
+	frozen.o  \
 	mongoose.o \
 	sqlite3.o \
 	sqlite3math.o \
@@ -247,6 +248,9 @@ mongoose.o: ../../../common/mongoose.c ../../../common/mongoose.h
 
 duktape.o: ../../../common/duktape.c ../../../common/duktape.h
 	$(CC) $(CFLAGS) -c ../../../common/duktape.c -o $@
+
+duk_v1_compat.o: ../../../common/duk_v1_compat.c ../../../common/duk_v1_compat.h
+	$(CC) $(CFLAGS) -c ../../../common/duk_v1_compat.c -o $@
 
 duk_module_node.o: ../../../common/duk_module_node.c ../../../common/duk_module_node.h
 	$(CC) $(CFLAGS) -c ../../../common/duk_module_node.c -o $@

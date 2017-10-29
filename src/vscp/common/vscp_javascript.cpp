@@ -211,7 +211,9 @@ void *actionThread_JavaScript::Entry()
     // Execute the JavaScript
     duk_push_string( ctx, (const char *)m_wxstrScript.mbc_str() );
     if ( 0 != duk_peval( ctx ) ) {
-        wxString strError = wxString::Format("JavaScript failed to execute: %s\n", duk_safe_to_string(ctx, -1) );
+        wxString strError = 
+                wxString::Format( "JavaScript failed to execute: %s\n", 
+                                    duk_safe_to_string(ctx, -1) );
         gpobj->logMsg( strError, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
     }
     
