@@ -41,7 +41,6 @@
 #include "wx/wx.h"
 #endif
 
-#include "wx/wx.h"
 #include "wx/defs.h"
 #include "wx/app.h"
 #include <wx/xml/xml.h>
@@ -132,7 +131,7 @@ using namespace std;
 #endif
 
 // Uncomment to compile stock test pages
-#define WEB_EXAMPLES
+//#define WEB_EXAMPLES
 #define EXAMPLE_URI "/__test"
 #define EXIT_URI "/__test_exit"
 

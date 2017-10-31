@@ -97,7 +97,7 @@ VSCPApp::VSCPApp()
 int main( int argc, char **argv )
 {
     int arg = 0;
-    wxString rootFolder;    // Folder where VSCP files will be
+    wxString rootFolder;    // Folder where VSCP files & folders  will be located
     wxString strcfgfile;    // Points to XML configuration file
 
     // Ignore return value from defunct processes
