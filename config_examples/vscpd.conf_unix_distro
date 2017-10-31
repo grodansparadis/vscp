@@ -233,7 +233,7 @@
     -->
     <coap enable="false"
             interface="tcp://1883" >
-    </mqtt>
+    </coap>
 
     <!--
       Holds information about one (at least) or more users

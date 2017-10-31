@@ -297,71 +297,6 @@ const char* rest_errors[][ REST_FORMAT_COUNT + 1 ] = {
 
 };
 
-//-----------------------------------------------------------------------------
-//            Old compatibility functions from old frozen library.
-//              Copyright (c) 2004-2013 Sergey Lyubka <valenok@gmail.com>
-//               Copyright (c) 2013 Cesanta Software Limited
-//            TODO: Replace with new frozen code.
-//-----------------------------------------------------------------------------
-
-// TODO remove
- 
-
-static int json_emit_long(char *buf, int buf_len, long int value) {
-  char tmp[20];
-  int n = snprintf(tmp, sizeof(tmp), "%ld", value);
-  strncpy(buf, tmp, buf_len > 0 ? buf_len : 0);
-  return n;
-}
-
-static int json_emit_double(char *buf, int buf_len, double value) {
-  char tmp[20];
-  int n = snprintf(tmp, sizeof(tmp), "%g", value);
-  strncpy(buf, tmp, buf_len > 0 ? buf_len : 0);
-  return n;
-}
-
-static int json_emit_quoted_str(char *s, int s_len, const char *str, int len) {
-  const char *begin = s, *end = s + s_len, *str_end = str + len;
-  char ch;
-
-#define EMIT(x) do { if (s < end) *s = x; s++; } while (0)
-
-  EMIT('"');
-  while (str < str_end) {
-    ch = *str++;
-    switch (ch) {
-      case '"':  EMIT('\\'); EMIT('"'); break;
-      case '\\': EMIT('\\'); EMIT('\\'); break;
-      case '\b': EMIT('\\'); EMIT('b'); break;
-      case '\f': EMIT('\\'); EMIT('f'); break;
-      case '\n': EMIT('\\'); EMIT('n'); break;
-      case '\r': EMIT('\\'); EMIT('r'); break;
-      case '\t': EMIT('\\'); EMIT('t'); break;
-      default: EMIT(ch);
-    }
-  }
-  EMIT('"');
-  if (s < end) {
-    *s = '\0';
-  }
-
-  return s - begin;
-}
-
-static int json_emit_unquoted_str(char *buf, int buf_len, const char *str, int len) {
-  if (buf_len > 0 && len > 0) {
-    int n = len < buf_len ? len : buf_len;
-    memcpy(buf, str, n);
-    if (n < buf_len) {
-      buf[n] = '\0';
-    }
-  }
-  return len;
-}
-
-//-------------------------------End of TODO ----------------------------------
-
 
 //-----------------------------------------------------------------------------
 //                                   REST
@@ -373,9 +308,9 @@ static int json_emit_unquoted_str(char *buf, int buf_len, const char *str, int l
 
 void
 restsrv_error( struct web_connection *conn,
-                        struct restsrv_session *pSession,
-                        int format,
-                        int errorcode)
+                    struct restsrv_session *pSession,
+                    int format,
+                    int errorcode)
 {
     char buf[2048];
     int returncode = 200;
@@ -384,8 +319,8 @@ restsrv_error( struct web_connection *conn,
 
         websrv_sendheader( conn, returncode, REST_MIME_TYPE_PLAIN );
         web_write( conn, 
-                        rest_errors[errorcode][REST_FORMAT_PLAIN], 
-                        strlen( rest_errors[errorcode][REST_FORMAT_PLAIN] )  );
+                    rest_errors[errorcode][REST_FORMAT_PLAIN], 
+                    strlen( rest_errors[errorcode][REST_FORMAT_PLAIN] )  );
         web_write( conn, "", 0 );   // Terminator
         return;
  
@@ -394,8 +329,8 @@ restsrv_error( struct web_connection *conn,
 
         websrv_sendheader( conn, returncode, REST_MIME_TYPE_CSV );
         web_write( conn, 
-                        rest_errors[errorcode][REST_FORMAT_CSV], 
-                        strlen( rest_errors[errorcode][REST_FORMAT_CSV] )  );
+                    rest_errors[errorcode][REST_FORMAT_CSV], 
+                    strlen( rest_errors[errorcode][REST_FORMAT_CSV] )  );
         web_write( conn, "", 0 );   // Terminator
         return;
 
@@ -405,8 +340,8 @@ restsrv_error( struct web_connection *conn,
         websrv_sendheader( conn, returncode, REST_MIME_TYPE_XML );
         web_write( conn, XML_HEADER, strlen( XML_HEADER ) );
         web_write( conn, 
-                        rest_errors[errorcode][REST_FORMAT_XML], 
-                        strlen( rest_errors[errorcode][REST_FORMAT_XML] ) );
+                    rest_errors[errorcode][REST_FORMAT_XML], 
+                    strlen( rest_errors[errorcode][REST_FORMAT_XML] ) );
         web_write( conn, "", 0 );   // Terminator
         return;
 
@@ -920,8 +855,8 @@ websrv_restapi( struct web_connection *conn, void *cbdata )
 
         // Check if remote ip is valid
         bool bValidHost;
+        
         gpobj->m_mutexUserList.Lock();
-        //bValidHost = pUserItem->isAllowedToConnect( wxString::FromUTF8( reqinfo->remote_addr  ) );
         bValidHost = ( 1 == pUserItem->isAllowedToConnect( inet_addr( reqinfo->remote_addr ) ) );
         gpobj->m_mutexUserList.Unlock();
         if (!bValidHost) {
@@ -956,8 +891,8 @@ websrv_restapi( struct web_connection *conn, void *cbdata )
             // Hm,,, did not work out well...
             
             wxString strErr =
-            wxString::Format( _("[REST Client] Unable to create new session for user [%s]\n"),
-                                (const char *)keypairs[_("VSCPUSER")].mbc_str() );
+                wxString::Format( _("[REST Client] Unable to create new session for user [%s]\n"),
+                                    (const char *)keypairs[_("VSCPUSER")].mbc_str() );
             gpobj->logMsg ( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_GENERAL );
         
             restsrv_error( conn, pSession, format, REST_ERROR_CODE_INVALID_ORIGIN );
@@ -983,12 +918,9 @@ websrv_restapi( struct web_connection *conn, void *cbdata )
 
     }
     
-    // check that the origin is valid
     // Check if remote ip is valid
     bool bValidHost;
     gpobj->m_mutexUserList.Lock();
-    //bValidHost = 
-    //    pSession->m_pClientItem->m_pUserItem->isAllowedToConnect( reqinfo->remote_addr  );
     bValidHost = 
             ( 1 == pSession->m_pClientItem->m_pUserItem->isAllowedToConnect( inet_addr( reqinfo->remote_addr ) ) );
     gpobj->m_mutexUserList.Unlock();
@@ -1117,7 +1049,11 @@ websrv_restapi( struct web_connection *conn, void *cbdata )
             bShort = false;
         }
         
-        restsrv_doListVariable( conn, pSession, format, keypairs[_("REGEX")], bShort );
+        restsrv_doListVariable( conn, 
+                                    pSession, 
+                                    format, 
+                                    keypairs[_("REGEX")], 
+                                    bShort );
         
     }    
 
@@ -1128,9 +1064,9 @@ websrv_restapi( struct web_connection *conn, void *cbdata )
               ( _("READVAR") == keypairs[_("OP")].Upper() ) ) {
         if ( _("") != keypairs[_("VARIABLE")] ) {
             restsrv_doReadVariable( conn, 
-                                            pSession, 
-                                            format, 
-                                            keypairs[_("VARIABLE")] );
+                                        pSession, 
+                                        format, 
+                                        keypairs[_("VARIABLE")] );
         }
         else {
             restsrv_error( conn, 
@@ -1360,13 +1296,19 @@ restsrv_doOpen( struct web_connection *conn,
 #ifdef WIN32
             int n = _snprintf( wrkbuf,
                                sizeof( wrkbuf ),
-                               "success-code,error-code,message,description,vscpsession,nEvents\r\n1,1,Success,Success. 1,1,Success,Success,%s,%zd",
-                               pSession->sid, pSession->pClientItem->m_clientInputQueue.GetCount() );
+                               "success-code,error-code,message,description,"
+                               "vscpsession,nEvents\r\n1,1,Success,Success. 1,1"
+                               ",Success,Success,%s,%zd",
+                               pSession->sid, 
+                               pSession->pClientItem->m_clientInputQueue.GetCount() );
 #else
             int n = snprintf( wrkbuf,
                               sizeof( wrkbuf ),
-                              "success-code,error-code,message,description,vscpsession,nEvents\r\n1,1,Success,Success. 1,1,Success,Success,%s,%lu",
-                              pSession->m_sid, pSession->m_pClientItem->m_clientInputQueue.GetCount() );
+                              "success-code,error-code,message,description,"
+                              "vscpsession,nEvents\r\n1,1,Success,Success. 1,1,"
+                              "Success,Success,%s,%lu",
+                              pSession->m_sid, 
+                              pSession->m_pClientItem->m_clientInputQueue.GetCount() );
 #endif
             web_write( conn, wrkbuf, strlen( wrkbuf ) );
             web_write( conn, "", 0 );  // Terminator
@@ -1382,69 +1324,80 @@ restsrv_doOpen( struct web_connection *conn,
 #ifdef WIN32
             int n = _snprintf( wrkbuf,
                                sizeof( wrkbuf ),
-                               "<vscp-rest success = \"true\" code = \"1\" message = \"Success.\" description = \"Success.\" ><vscpsession>%s</vscpsession><nEvents>%zd</nEvents></vscp-rest>",
-                               pSession->sid, pSession->pClientItem->m_clientInputQueue.GetCount() );
+                               "<vscp-rest success = \"true\" code = "
+                               "\"1\" message = \"Success.\" description = "
+                               "\"Success.\" ><vscpsession>%s</vscpsession>"
+                               "<nEvents>%zd</nEvents></vscp-rest>",
+                               pSession->sid, 
+                               pSession->pClientItem->m_clientInputQueue.GetCount() );
 #else
             int n = snprintf( wrkbuf,
                               sizeof( wrkbuf ),
-                              "<vscp-rest success = \"true\" code = \"1\" message = \"Success.\" description = \"Success.\" ><vscpsession>%s</vscpsession><nEvents>%lu</nEvents></vscp-rest>",
-                              pSession->m_sid, pSession->m_pClientItem->m_clientInputQueue.GetCount() );
+                              "<vscp-rest success = \"true\" code = \"1\" "
+                              "message = \"Success.\" description = \"Success.\" "
+                              "><vscpsession>%s</vscpsession><nEvents>%lu"
+                              "</nEvents></vscp-rest>",
+                              pSession->m_sid, 
+                              pSession->m_pClientItem->m_clientInputQueue.GetCount() );
 #endif
             web_write( conn, wrkbuf, strlen( wrkbuf ) );
             web_write( conn, "", 0 );  // Terminator
             return;
         }
         else if ( REST_FORMAT_JSON == format ) {
+            
+            json output;
 
             websrv_sendSetCookieHeader( conn, 
                                             200, 
                                             REST_MIME_TYPE_JSON,
                                             pSession->m_sid  );
 
-#ifdef WIN32
-            int n = _snprintf( wrkbuf,
-                               sizeof( wrkbuf ),
-                               "{\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\",\"vscpsession\":\"%s\",\"nEvents\":%zd}",
-                               pSession->sid,
-                               pSession->pClientItem->m_clientInputQueue.GetCount() );
-#else
-            int n = snprintf( wrkbuf,
-                              sizeof( wrkbuf ),
-                              "{\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\",\"vscpsession\":\"%s\",\"nEvents\":%lu}",
-                              pSession->m_sid, pSession->m_pClientItem->m_clientInputQueue.GetCount() );
-#endif
-            web_write( conn, wrkbuf, strlen( wrkbuf ) );
-            web_write( conn, "", 0 );  // Terminator
+            output["success"] = true;
+            output["code"] = 1;
+            output["message"] = "success";
+            output["description"] = "Success";
+            output["vscpsession"] = pSession->m_sid;
+            output["nEvents"] = pSession->m_pClientItem->m_clientInputQueue.GetCount();
+            std::string s = output.dump();
+            web_write( conn, s.c_str(), s.length() );
+                    
             return;
         }
         else if ( REST_FORMAT_JSONP == format ) {
 
+            json output;
+            
             websrv_sendSetCookieHeader( conn, 
                                             200, 
                                             REST_MIME_TYPE_JSONP,
                                             pSession->m_sid );
 
-#ifdef WIN32
-            // typeof handler === 'function' &&
-            int n = _snprintf( wrkbuf,
-                               sizeof( wrkbuf ),
-                               "typeof handler === 'function' && handler({\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\",\"vscpsession\":\"%s\",\"nEvents\":%zd});",
-                               pSession->sid, pSession->pClientItem->m_clientInputQueue.GetCount() );
-#else
-            int n = snprintf( wrkbuf,
-                              sizeof( wrkbuf ),
-                              "typeof handler === 'function' && handler({\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\",\"vscpsession\":\"%s\",\"nEvents\":%lu});",
-                              pSession->m_sid, pSession->m_pClientItem->m_clientInputQueue.GetCount() );
-#endif
-            web_write( conn, wrkbuf, strlen( wrkbuf ) );
-            web_write( conn, "", 0 ); // Terminator
+            // Write JSONP start block
+            web_write( conn, 
+                        REST_JSONP_START, 
+                        strlen( REST_JSONP_START ) );
+            
+            output["success"] = true;
+            output["code"] = 1;
+            output["message"] = "success";
+            output["description"] = "Success";
+            output["vscpsession"] = pSession->m_sid;
+            output["nEvents"] = pSession->m_pClientItem->m_clientInputQueue.GetCount();
+            std::string s = output.dump();
+            web_write( conn, s.c_str(), s.length() );
+            
+            // Write JSONP end block
+            web_write( conn, 
+                        REST_JSONP_END, 
+                        strlen( REST_JSONP_END ) );            
             return;
         }
         else {
             websrv_sendheader( conn, 400, REST_MIME_TYPE_PLAIN );
-            web_write( conn, REST_PLAIN_ERROR_UNSUPPORTED_FORMAT, strlen( REST_PLAIN_ERROR_UNSUPPORTED_FORMAT ) );
-            web_write( conn, "", 0 ); // Terminator
-
+            web_write( conn, 
+                        REST_PLAIN_ERROR_UNSUPPORTED_FORMAT, 
+                        strlen( REST_PLAIN_ERROR_UNSUPPORTED_FORMAT ) );
             return;
         }
     }
@@ -1514,7 +1467,7 @@ restsrv_doClose( struct web_connection *conn,
             return;
         }
         else if ( REST_FORMAT_JSON == format ) {
-
+            
             websrv_sendheader( conn, 200, REST_MIME_TYPE_JSON );
 #ifdef WIN32
             int n = _snprintf( wrkbuf, sizeof( wrkbuf ), REST_JSON_ERROR_SUCCESS );
@@ -1526,7 +1479,7 @@ restsrv_doClose( struct web_connection *conn,
             return;
         }
         else if ( REST_FORMAT_JSONP == format ) {
-
+            
             websrv_sendheader( conn, 200, REST_MIME_TYPE_JSONP );
 #ifdef WIN32
             int n = _snprintf( wrkbuf, sizeof( wrkbuf ), REST_JSONP_ERROR_SUCCESS );
@@ -1630,42 +1583,41 @@ restsrv_doStatus( struct web_connection *conn,
             web_write( conn, "", 0 );  // Terminator
             return;
         }
-        else if ( REST_FORMAT_JSON == format ) {
+        else if ( ( REST_FORMAT_JSON == format ) ||
+                  ( REST_FORMAT_JSONP == format ) ) {
+            
+            json output;
 
-            websrv_sendheader( conn, 200, REST_MIME_TYPE_JSON );
-#ifdef WIN32
-            int n = _snprintf( wrkbuf,
-                               sizeof( wrkbuf ),
-                               "{\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\",\"vscpsession\":\"%s\",\"nEvents\":%zd}",
-                               pSession->sid,
-                               pSession->pClientItem->m_clientInputQueue.GetCount() );
-#else
-            int n = snprintf( wrkbuf,
-                              sizeof( wrkbuf ),
-                              "{\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\",\"vscpsession\":\"%s\",\"nEvents\":%lu}",
-                              pSession->m_sid, pSession->m_pClientItem->m_clientInputQueue.GetCount() );
-#endif
-            web_write( conn, wrkbuf, strlen( wrkbuf ) );
-            web_write( conn, "", 0 );  // Terminator
-            return;
-        }
-        else if ( REST_FORMAT_JSONP == format ) {
+            if ( REST_FORMAT_JSON == format ) {
+                websrv_sendheader( conn, 200, REST_MIME_TYPE_JSON );
+            }
+            else {
+                
+                websrv_sendheader( conn, 200, REST_MIME_TYPE_JSONP );
+                
+                // Write JSONP start block
+                web_write( conn, 
+                            REST_JSONP_START, 
+                            strlen( REST_JSONP_START ) );
+                
+            }    
+            
+            output["success"] = true;
+            output["code"] = 1;
+            output["message"] = "success";
+            output["description"] = "Success";
+            output["vscpsession"] = pSession->m_sid;
+            output["nEvents"] = pSession->m_pClientItem->m_clientInputQueue.GetCount();
+            std::string s = output.dump();
+            web_write( conn, s.c_str(), s.length() );
+            
+            if ( REST_FORMAT_JSONP == format ) {
+                // Write JSONP end block
+                web_write( conn, 
+                            REST_JSONP_END, 
+                            strlen( REST_JSONP_END ) );
+            }
 
-            websrv_sendheader( conn, 200, REST_MIME_TYPE_JSONP );
-#ifdef WIN32
-            int n = _snprintf( wrkbuf,
-                               sizeof( wrkbuf ),
-                               "typeof handler === 'function' && handler({\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\",\"vscpsession\":\"%s\",\"nEvents\":%zd});",
-                               pSession->sid,
-                               pSession->pClientItem->m_clientInputQueue.GetCount() );
-#else
-            int n = snprintf( wrkbuf,
-                              sizeof( wrkbuf ),
-                              "typeof handler === 'function' && handler({\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\",\"vscpsession\":\"%s\",\"nEvents\":%lu});",
-                              pSession->m_sid, pSession->m_pClientItem->m_clientInputQueue.GetCount() );
-#endif
-            web_write( conn, wrkbuf, strlen( wrkbuf ) );
-            web_write( conn, "", 0 );  // Terminator
             return;
         }
         else {
@@ -1700,7 +1652,7 @@ restsrv_doSendEvent( struct web_connection *conn,
 
     if ( NULL != pSession ) {
 
-        // Level II events between 512-1023 is recognized by the daemon and
+        // Level II events between 512-1023 is recognised by the daemon and
         // sent to the correct interface as Level I events if the interface
         // is addressed by the client.
         if ( ( pEvent->vscp_class <= 1023 ) &&
@@ -1750,7 +1702,7 @@ restsrv_doSendEvent( struct web_connection *conn,
 
                     }
                     else {
-                        // Overun - No room for event
+                        // Overrun - No room for event
                         //vscp_deleteVSCPevent( pEvent );
                         bSent = true;
                     }
@@ -1851,9 +1803,11 @@ restsrv_doReceiveEvent( struct web_connection *conn,
                     web_write( conn, wrkbuf, strlen( wrkbuf ) );
                     sprintf( wrkbuf,
 #if WIN32
-                                "%zd events requested of %zd available (unfiltered) %zu will be retrieved\r\n",
+                                "%zd events requested of %zd available "
+                                "(unfiltered) %zu will be retrieved\r\n",
 #else
-                                "%zd events requested of %zd available (unfiltered) %lu will be retrieved\r\n",
+                                "%zd events requested of %zd available "
+                                "(unfiltered) %lu will be retrieved\r\n",
 #endif
                                 count,
                                 pSession->m_pClientItem->m_clientInputQueue.GetCount(),
@@ -1874,20 +1828,23 @@ restsrv_doReceiveEvent( struct web_connection *conn,
 
                         if (NULL != pEvent) {
 
-                            if ( vscp_doLevel2Filter( pEvent, &pSession->m_pClientItem->m_filterVSCP ) ) {
+                            if ( vscp_doLevel2Filter( pEvent, 
+                                    &pSession->m_pClientItem->m_filterVSCP ) ) {
 
                                 wxString str;
                                 if ( vscp_writeVscpEventToString( pEvent, str ) ) {
 
                                     // Write it out
                                     strcpy((char *) wrkbuf, (const char*) "- ");
-                                    strcat((char *) wrkbuf, (const char*) str.mb_str(wxConvUTF8));
+                                    strcat((char *) wrkbuf, 
+                                            (const char*) str.mb_str(wxConvUTF8));
                                     strcat((char *) wrkbuf, "\r\n" );
                                     web_write( conn, wrkbuf, strlen( wrkbuf) );
 
                                 }
                                 else {
-                                    strcpy((char *) wrkbuf, "- Malformed event (internal error)\r\n" );
+                                    strcpy((char *) wrkbuf, 
+                                            "- Malformed event (internal error)\r\n" );
                                     web_write( conn, wrkbuf, strlen( wrkbuf) );
                                 }
                             }
@@ -1901,7 +1858,8 @@ restsrv_doReceiveEvent( struct web_connection *conn,
 
                         } // Valid pEvent pointer
                         else {
-                            strcpy((char *) wrkbuf, "- Event could not be fetched (internal error)\r\n" );
+                            strcpy((char *) wrkbuf, 
+                                    "- Event could not be fetched (internal error)\r\n" );
                             web_write( conn, wrkbuf, strlen( wrkbuf) );
                         }
                     } // for
@@ -1921,13 +1879,17 @@ restsrv_doReceiveEvent( struct web_connection *conn,
 
                 if ( pSession->m_pClientItem->m_bOpen && cntAvailable ) {
 
-                    sprintf( wrkbuf, "success-code,error-code,message,description,Event\r\n1,1,Success,Success.,NULL\r\n");
+                    sprintf( wrkbuf, "success-code,error-code,message,"
+                                     "description,Event\r\n1,1,Success,Success."
+                                     ",NULL\r\n");
                     web_write( conn, wrkbuf, strlen( wrkbuf) );
                     sprintf( wrkbuf,
 #if WIN32
-                             "1,2,Info,%zd events requested of %d available (unfiltered) %zu will be retrieved,NULL\r\n",
+                             "1,2,Info,%zd events requested of %d available "
+                             "(unfiltered) %zu will be retrieved,NULL\r\n",
 #else
-                             "1,2,Info,%zd events requested of %lu available (unfiltered) %lu will be retrieved,NULL\r\n",
+                             "1,2,Info,%zd events requested of %lu available "
+                             "(unfiltered) %lu will be retrieved,NULL\r\n",
 #endif
                                 count,
                                 (unsigned long)cntAvailable,
@@ -1951,7 +1913,8 @@ restsrv_doReceiveEvent( struct web_connection *conn,
 
                         if ( NULL != pEvent ) {
 
-                            if ( vscp_doLevel2Filter( pEvent, &pSession->m_pClientItem->m_filterVSCP ) ) {
+                            if ( vscp_doLevel2Filter( pEvent, 
+                                    &pSession->m_pClientItem->m_filterVSCP ) ) {
 
                                 wxString str;
                                 if ( vscp_writeVscpEventToString(pEvent, str) ) {
@@ -1965,12 +1928,15 @@ restsrv_doReceiveEvent( struct web_connection *conn,
 
                                 }
                                 else {
-                                    strcpy((char *) wrkbuf, "1,2,Info,Malformed event (internal error)\r\n" );
+                                    strcpy((char *) wrkbuf, 
+                                            "1,2,Info,Malformed event (internal "
+                                            "error)\r\n" );
                                     web_write( conn, wrkbuf, strlen( wrkbuf)  );
                                 }
                             }
                             else {
-                                strcpy((char *) wrkbuf, "1,2,Info,Event filtered out\r\n" );
+                                strcpy((char *) wrkbuf, 
+                                        "1,2,Info,Event filtered out\r\n" );
                                 web_write( conn, wrkbuf, strlen( wrkbuf) );
                             }
 
@@ -1979,7 +1945,9 @@ restsrv_doReceiveEvent( struct web_connection *conn,
 
                         } // Valid pEvent pointer
                         else {
-                            strcpy((char *) wrkbuf, "1,2,Info,Event could not be fetched (internal error)\r\n" );
+                            strcpy((char *) wrkbuf, 
+                                    "1,2,Info,Event could not be fetched "
+                                    "(internal error)\r\n" );
                             web_write( conn, wrkbuf, strlen( wrkbuf) );
                         }
                     } // for
@@ -2002,10 +1970,16 @@ restsrv_doReceiveEvent( struct web_connection *conn,
 
 
                 if ( pSession->m_pClientItem->m_bOpen && cntAvailable ) {
-                    sprintf( wrkbuf, XML_HEADER"<vscp-rest success = \"true\" code = \"1\" message = \"Success\" description = \"Success.\" >");
+                    
+                    
+                    sprintf( wrkbuf, 
+                                XML_HEADER"<vscp-rest success = \"true\" "
+                                "code = \"1\" message = \"Success\" "
+                                "description = \"Success.\" >");
                     web_write( conn, wrkbuf, strlen( wrkbuf) );
                     sprintf( wrkbuf,
-                                "<info>%zd events requested of %lu available (unfiltered) %zu will be retrieved</info>",
+                                "<info>%zd events requested of %lu available "
+                                "(unfiltered) %zu will be retrieved</info>",
                                 count,
                                 cntAvailable,
                                 MIN(count, cntAvailable ) );
@@ -2016,7 +1990,8 @@ restsrv_doReceiveEvent( struct web_connection *conn,
                              MIN( count, cntAvailable ) );
                     web_write( conn, wrkbuf, strlen( wrkbuf ) );
 
-                    for ( unsigned int i=0; i<MIN( (unsigned long)count, cntAvailable ); i++ ) {
+                    for ( unsigned int i=0; i<MIN( (unsigned long)count, 
+                                                    cntAvailable ); i++ ) {
 
                         CLIENTEVENTLIST::compatibility_iterator nodeClient;
                         vscpEvent *pEvent;
@@ -2029,50 +2004,72 @@ restsrv_doReceiveEvent( struct web_connection *conn,
 
                         if (NULL != pEvent) {
 
-                            if (vscp_doLevel2Filter(pEvent, &pSession->m_pClientItem->m_filterVSCP)) {
+                            if ( vscp_doLevel2Filter( pEvent, 
+                                    &pSession->m_pClientItem->m_filterVSCP ) ) {
 
                                 wxString str;
 
                                 // Write it out
-                                strcpy((char *)wrkbuf, (const char*) "<event>");
+                                strcpy( (char *)wrkbuf, (const char*) "<event>");
 
+                                // head
                                 strcat((char *)wrkbuf, (const char*) "<head>");
-                                strcat((char *)wrkbuf, wxString::Format( _("%d"), pEvent->head ).mbc_str() );
+                                strcat((char *)wrkbuf, 
+                                        wxString::Format( _("%d"), 
+                                        pEvent->head ).mbc_str() );
                                 strcat((char *)wrkbuf, (const char*) "</head>");
 
+                                // class
                                 strcat((char *)wrkbuf, (const char*) "<vscpclass>");
-                                strcat((char *)wrkbuf, wxString::Format( _("%d"), pEvent->vscp_class ).mbc_str() );
+                                strcat((char *)wrkbuf, 
+                                        wxString::Format( _("%d"), 
+                                        pEvent->vscp_class ).mbc_str() );
                                 strcat((char *)wrkbuf, (const char*) "</vscpclass>");
 
+                                // type
                                 strcat((char *)wrkbuf, (const char*) "<vscptype>");
-                                strcat((char *)wrkbuf, wxString::Format( _("%d"), pEvent->vscp_type ).mbc_str() );
+                                strcat((char *)wrkbuf, 
+                                        wxString::Format( _("%d"), 
+                                        pEvent->vscp_type ).mbc_str() );
                                 strcat((char *)wrkbuf, (const char*) "</vscptype>");
 
+                                // obid
                                 strcat((char *)wrkbuf, (const char*) "<obid>");
-                                strcat((char *)wrkbuf, wxString::Format( _("%lu"), pEvent->obid ).mbc_str() );
+                                strcat((char *)wrkbuf, 
+                                        wxString::Format( _("%lu"), 
+                                        pEvent->obid ).mbc_str() );
                                 strcat((char *)wrkbuf, (const char*) "</obid>");
                                 
+                                // datetime
                                 strcat((char *)wrkbuf, (const char*) "<datetime>");
                                 wxString dt;
                                 vscp_getDateStringFromEvent( pEvent, dt );
                                 strcat( (char *)wrkbuf, 
                                             wxString::Format( _("%%s"), 
-                                                                (const char *)dt.mbc_str() ) );
+                                                 (const char *)dt.mbc_str() ) );
                                 strcat((char *)wrkbuf, (const char*) "</datetime>");
 
+                                // timestamp
                                 strcat((char *)wrkbuf, (const char*) "<timestamp>");
-                                strcat((char *)wrkbuf, wxString::Format( _("%lu"), pEvent->timestamp ).mbc_str() );
+                                strcat((char *)wrkbuf, 
+                                            wxString::Format( _("%lu"), 
+                                            pEvent->timestamp ).mbc_str() );
                                 strcat((char *)wrkbuf, (const char*) "</timestamp>");
 
+                                // guid
                                 strcat((char *)wrkbuf, (const char*) "<guid>");
                                 vscp_writeGuidToString( pEvent, str);
                                 strcat((char *)wrkbuf, (const char *)str.mbc_str() );
                                 strcat((char *)wrkbuf, (const char*) "</guid>");
 
+                                // sizedate
                                 strcat((char *)wrkbuf, (const char*) "<sizedata>");
-                                strcat((char *)wrkbuf, wxString::Format( _("%d"), pEvent->sizeData ).mbc_str() );
+                                strcat((char *)wrkbuf, 
+                                            wxString::Format( _("%d"), 
+                                            pEvent->sizeData ).mbc_str() );
                                 strcat((char *)wrkbuf, (const char*) "</sizedata>");
 
+                                // data
                                 strcat((char *)wrkbuf, (const char*) "<data>");
                                 vscp_writeVscpDataToString( pEvent, str);
                                 strcat((char *)wrkbuf, (const char *)str.mbc_str() );
@@ -2125,12 +2122,13 @@ restsrv_doReceiveEvent( struct web_connection *conn,
             }
 
             // JSON / JSONP
-            else if ( ( REST_FORMAT_JSON == format ) || ( REST_FORMAT_JSONP == format ) ) {
+            else if ( ( REST_FORMAT_JSON == format ) || 
+                      ( REST_FORMAT_JSONP == format ) ) {
 
                 int sentEvents = 0;
                 int filtered = 0;
                 int errors = 0;
-                char *p;
+                json output;
 
                 // Send header
                 if ( REST_FORMAT_JSONP == format ) {
@@ -2142,37 +2140,23 @@ restsrv_doReceiveEvent( struct web_connection *conn,
 
                 if ( pSession->m_pClientItem->m_bOpen && cntAvailable ) {
 
-                    memset( buf, 0, sizeof( buf ) );
-                    memset( wrkbuf, 0, sizeof( wrkbuf ) );
-                    p = wrkbuf;
-
                     // typeof handler === 'function' &&
                     if ( REST_FORMAT_JSONP == format ) {
-                        p += json_emit_unquoted_str( p,
-                                                       &wrkbuf[ sizeof( wrkbuf ) ] - p,
-                                                       "typeof handler === 'function' && handler(",
-                                                       strlen( "typeof handler === 'function' && handler(" ) );
+                        wxString str = _("typeof handler === 'function' && handler(");
+                        web_write( conn, (const char *)str.mbc_str(), str.Length() );
                     }
-
-                    p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p,
-                        "{\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\",",
-                        strlen("{\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\",") );
-                    p += json_emit_quoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, "info", 4 );
-                    p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ":", 1 );
-                    {
-                        char buf2[200];
-                        sprintf( buf2,
-                                 "\"%zd events requested of %lu available (unfiltered) %zd will be retrieved\"",
+                    
+                    output["success"] = true;
+                    output["code"] = 1;
+                    output["message"] = "success";
+                    output["description"] = "Success";
+                    output["info"] = 
+                            (const char *)wxString::Format( 
+                                 "%zd events requested of %lu available "
+                                 "(unfiltered) %zd will be retrieved",
                                  count,
                                  cntAvailable,
-                                 MIN( count, cntAvailable ) );
-                        p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, buf2, strlen( buf2 ) );
-                    }
-                    p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ",", 1 );
-                    p += json_emit_quoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, "event", 5);
-                    p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ":[", 2 );
-
-                    web_write( conn, wrkbuf, strlen( wrkbuf));
+                                 MIN( count, cntAvailable ) ).mbc_str();
 
                     for ( unsigned int i=0; i<MIN( count, cntAvailable ); i++ ) {
 
@@ -2187,87 +2171,29 @@ restsrv_doReceiveEvent( struct web_connection *conn,
 
                         if ( NULL != pEvent ) {
 
-                            if ( vscp_doLevel2Filter( pEvent, &pSession->m_pClientItem->m_filterVSCP ) ) {
-
-                                memset( buf, 0, sizeof( buf ) );
-                                memset( wrkbuf, 0, sizeof( wrkbuf ) );
-                                p = wrkbuf;
+                            if ( vscp_doLevel2Filter( pEvent, 
+                                    &pSession->m_pClientItem->m_filterVSCP ) ) {
 
                                 wxString str;
-                                p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, "{", 1 );
-
-                                // head
-                                p += json_emit_quoted_str(p, &wrkbuf[ sizeof( wrkbuf ) ] - p, "head", 4 );
-                                p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ":", 1 );
-                                p += json_emit_long( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, pEvent->head );
-                                p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ",", 1 );
-
-                                // class
-                                p += json_emit_quoted_str(p, &wrkbuf[ sizeof( wrkbuf ) ] - p, "vscpclass", 9 );
-                                p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ":", 1 );
-                                p += json_emit_long( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, pEvent->vscp_class );
-                                p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ",", 1 );
-
-                                // type
-                                p += json_emit_quoted_str(p, &wrkbuf[ sizeof( wrkbuf ) ] - p, "vscptype", 8);
-                                p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ":", 1 );
-                                p += json_emit_long( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, pEvent->vscp_type );
-                                p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ",", 1 );
-                                
-               
-                                // datetime
-                                wxString dt;
-                                vscp_getDateStringFromEvent( pEvent, dt );
-                                                                        
-                                p += json_emit_quoted_str(p, &wrkbuf[ sizeof( wrkbuf ) ] - p, "datetime", 8 );
-                                p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ":", 1 );
-                                p += json_emit_quoted_str(p, 
-                                                &wrkbuf[ sizeof( wrkbuf ) ] - p,
-                                                (const char *)dt.mbc_str(),
-                                                dt.Length() );
-                                p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ",", 1 );
-
-                                // timestamp
-                                p += json_emit_quoted_str(p, &wrkbuf[ sizeof( wrkbuf ) ] - p, "timestamp", 9 );
-                                p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ":", 1 );
-                                p += json_emit_long( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, pEvent->timestamp );
-                                p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ",", 1 );
-
-                                // obid
-                                p += json_emit_quoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, "obid", 4 );
-                                p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ":", 1 );
-                                p += json_emit_long( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, pEvent->obid );
-                                p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ",", 1 );
-
-                                // GUID
+                                json ev;
+                                ev["head"] = pEvent->head;
+                                ev["vscpclass"] = pEvent->vscp_class;
+                                ev["vscptype"] = pEvent->vscp_type;
+                                vscp_getDateStringFromEvent( pEvent, str );
+                                ev["datetime"] = (const char *)str.mbc_str();
+                                ev["timestamp"] = pEvent->timestamp;
+                                ev["obid"] = pEvent->obid;
                                 vscp_writeGuidToString( pEvent, str);
-                                p += json_emit_quoted_str(p, &wrkbuf[ sizeof( wrkbuf ) ] - p, "guid", 4 );
-                                p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ":", 1 );
-                                p += json_emit_quoted_str(p, &wrkbuf[ sizeof( wrkbuf ) ] - p, str.mbc_str(), str.Length() );
-                                p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ",", 1 );
-
-                                // SizeData
-                                p += json_emit_quoted_str(p, &wrkbuf[ sizeof( wrkbuf ) ] - p, "sizedata", 8 );
-                                p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ":", 1 );
-                                p += json_emit_long( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, pEvent->sizeData );
-                                p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ",", 1 );
-
-                                // Data
-                                p += json_emit_quoted_str(p, &wrkbuf[ sizeof( wrkbuf ) ] - p, "data", 4);
-                                p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ":[", 2 );
+                                ev["guid"] = (const char *)str.mbc_str();
+                                ev["sizedata"] = pEvent->sizeData;
+                                ev["data"] = json::array();
                                 for ( uint16_t j=0; j<pEvent->sizeData; j++ ) {
-                                    p += json_emit_long( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, pEvent->pdata[j] );
-                                    if (j < ( pEvent->sizeData-1 ) ) {
-                                        p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ",", 1 );
-                                    }
+                                    ev["data"].push_back( pEvent->pdata[j] );
                                 }
-                                p += json_emit_unquoted_str( p, &wrkbuf[sizeof( wrkbuf )] - p, "]}", 2 );
+                                
+                                // Add event to event array
+                                output["event"].push_back( ev );
 
-                                if ( i < ( MIN( count, cntAvailable ) - 1 ) ) {
-                                    p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ",", 1 );
-                                }
-
-                                web_write( conn, wrkbuf, strlen( wrkbuf ) );
                                 sentEvents++;
 
                             }
@@ -2283,39 +2209,20 @@ restsrv_doReceiveEvent( struct web_connection *conn,
                             errors++;
                         }
 
-                        // Buffer overflow
-                        if ( 0 == p ) break;
-
                     } // for
 
-                    memset( buf, 0, sizeof( buf ) );
-                    memset( wrkbuf, 0, sizeof( wrkbuf ) );
-                    p = wrkbuf;
-
+                
                     // Mark end
-                    p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, "],", 2 );
-                    p += json_emit_quoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, "count", 5 );
-                    p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ":", 1 );
-                    p += json_emit_long( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, sentEvents );
-                    p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ",", 1 );
-                    p += json_emit_quoted_str(p, &wrkbuf[ sizeof( wrkbuf ) ] - p, "filtered", 8 );
-                    p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ":", 1 );
-                    p += json_emit_long( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, filtered );
-                    p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ",", 1 );
-                    p += json_emit_quoted_str(p, &wrkbuf[ sizeof( wrkbuf ) ] - p, "errors", 6 );
-                    p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ":", 1 );
-                    p += json_emit_long( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, errors );
-                    p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, "}", 1 );
-
+                    output["count"] = sentEvents;
+                    output["filtered"] = filtered;
+                    output["errors"] = errors;
+                    
+                    std::string s = output.dump();
+                    web_write( conn, s.c_str(), s.length() );
+                    
                     if ( REST_FORMAT_JSONP == format ) {
-                        p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ");", 2 );
+                        web_write( conn, ");", 2 );
                     }
-
-                    web_write( conn, wrkbuf, strlen( wrkbuf ) );
-
-                    memset( buf, 0, sizeof( buf ) );
-                    memset( wrkbuf, 0, sizeof( wrkbuf ) );
-                    p = wrkbuf;
 
                 } // if open and data
                 else {   // no events available
@@ -2362,7 +2269,9 @@ restsrv_doSetFilter( struct web_connection *conn,
     if ( NULL != pSession ) {
 
         pSession->m_pClientItem->m_mutexClientInputQueue.Lock();
-        memcpy( &pSession->m_pClientItem->m_filterVSCP, &vscpfilter, sizeof( vscpEventFilter ) );
+        memcpy( &pSession->m_pClientItem->m_filterVSCP, 
+                &vscpfilter, 
+                sizeof( vscpEventFilter ) );
         pSession->m_pClientItem->m_mutexClientInputQueue.Unlock();
         restsrv_error( conn, pSession, format, REST_ERROR_CODE_SUCCESS );
     }
@@ -2392,8 +2301,9 @@ restsrv_doClearQueue( struct web_connection *conn,
 
         pSession->m_pClientItem->m_mutexClientInputQueue.Lock();
 
-        for (iterVSCP = pSession->m_pClientItem->m_clientInputQueue.begin();
-                iterVSCP != pSession->m_pClientItem->m_clientInputQueue.end(); ++iterVSCP) {
+        for ( iterVSCP = pSession->m_pClientItem->m_clientInputQueue.begin();
+                iterVSCP != pSession->m_pClientItem->m_clientInputQueue.end(); 
+                ++iterVSCP) {
             vscpEvent *pEvent = *iterVSCP;
             vscp_deleteVSCPevent(pEvent);
         }
@@ -2513,7 +2423,10 @@ restsrv_doReadVariable( struct web_connection *conn,
         CVSCPVariable variable;
 
         if ( 0 == gpobj->m_variables.find( strVariableName, variable ) ) {
-            restsrv_error( conn, pSession, format, REST_ERROR_CODE_VARIABLE_NOT_FOUND );
+            restsrv_error( conn, 
+                            pSession, 
+                            format, 
+                            REST_ERROR_CODE_VARIABLE_NOT_FOUND );
             return;
         }
 
@@ -2524,7 +2437,9 @@ restsrv_doReadVariable( struct web_connection *conn,
                 web_write( conn, wrkbuf, strlen( wrkbuf) );
 
                 sprintf( wrkbuf,
-                                "name=%s type=%d user=%lu access-right=%03X persistent=%s last-change='%s' value='%s' note='%s'\r\n",
+                                "name=%s type=%d user=%lu access-right=%03X "
+                                "persistent=%s last-change='%s' value='%s' "
+                                "note='%s'\r\n",
                                 (const char *)variable.getName().mbc_str(),
                                 variable.getType(),
                                 (unsigned long)variable.getOwnerID(),
@@ -2541,7 +2456,9 @@ restsrv_doReadVariable( struct web_connection *conn,
 
             websrv_sendheader( conn, 200, REST_MIME_TYPE_CSV );
             sprintf( wrkbuf,
-                "success-code,error-code,message,description,name,type,user,access-right,persistent,last-change,value,note\r\n1,1,Success,Success.,%s,%d,%lu,%03X,%s,%s,'%s','%s'\r\n",
+                "success-code,error-code,message,description,name,type,user,"
+                "access-right,persistent,last-change,value,note\r\n1,1,Success,"
+                "Success.,%s,%d,%lu,%03X,%s,%s,'%s','%s'\r\n",
                 (const char *)strVariableName.mbc_str(),
                 variable.getType(),
                 (unsigned long)variable.getOwnerID(),
@@ -2556,11 +2473,15 @@ restsrv_doReadVariable( struct web_connection *conn,
         else if ( REST_FORMAT_XML == format ) {
 
             websrv_sendheader( conn, 200, REST_MIME_TYPE_XML );
-            sprintf( wrkbuf, XML_HEADER"<vscp-rest success = \"true\" code = \"1\" message = \"Success\" description = \"Success.\" >");
+            sprintf( wrkbuf, 
+                    XML_HEADER"<vscp-rest success = \"true\" code "
+                    "= \"1\" message = \"Success\" description = \"Success.\" >");
             web_write( conn, wrkbuf, strlen( wrkbuf) );
 
             sprintf( wrkbuf,
-                        "<variable name=\"%s\" typecode=\"%d\" type=\"%s\" user=\"%lu\" access-right=\"%03X\" persistent=\"%s\" last-change=\"%s\" >",
+                        "<variable name=\"%s\" typecode=\"%d\" type=\"%s\" "
+                        "user=\"%lu\" access-right=\"%03X\" persistent=\"%s\" "
+                        "last-change=\"%s\" >",
                         (const char *)variable.getName().mbc_str(),
                         variable.getType(),
                         variable.getVariableTypeAsString( variable.getType() ),
@@ -2586,10 +2507,12 @@ restsrv_doReadVariable( struct web_connection *conn,
             web_write( conn, wrkbuf, strlen( wrkbuf));
 
         }
-        else if ( ( REST_FORMAT_JSON == format ) || ( REST_FORMAT_JSONP == format ) ) {
+        else if ( ( REST_FORMAT_JSON == format ) || 
+                  ( REST_FORMAT_JSONP == format ) ) {
 
             wxString wxstr;
-            char *p = buf;
+            json output;
+            
             if ( REST_FORMAT_JSONP == format ) {
                 websrv_sendheader( conn, 200, REST_MIME_TYPE_JSONP );
             }
@@ -2599,78 +2522,40 @@ restsrv_doReadVariable( struct web_connection *conn,
 
             if ( pSession->m_pClientItem->m_bOpen  ) {
 
-                memset( buf, 0, sizeof( buf ) );
-
                 if ( REST_FORMAT_JSONP == format ) {
-                    p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, "typeof handler === 'function' && handler(", 41 );
+                    // Write JSONP start block
+                    web_write( conn, 
+                            REST_JSONP_START, 
+                            strlen( REST_JSONP_START ) );
                 }
-
-                p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p,
-                    "{\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\",",
-                    strlen( "{\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\"," ) );
-
-                p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "varname", 7 );
-                p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );
-                p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, variable.getName().mbc_str(), variable.getName().Length() );
-                p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
                 
-                p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "vartype", 7 );
-                p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );
-                wxString wxstr = wxString::FromUTF8( variable.getVariableTypeAsString( variable.getType() ) );
-                p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, wxstr.mbc_str(), wxstr.Length() );
-                p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
+                output["success"] = true;
+                output["code"] = 1;
+                output["message"] = "success";
+                output["description"] = "Success";
+                output["varname"] = (const char *)variable.getName().mbc_str();
+                output["vartype"] = variable.getVariableTypeAsString( variable.getType() );
+                output["vartypecode"] = variable.getType();
+                output["varuser"] = variable.getOwnerID();
+                output["varaccessright"] = variable.getAccessRights();
+                output["varpersistence"] = variable.isPersistent();
+                output["varlastchange"] = 
+                        (const char *)variable.getLastChange().FormatISOCombined().mbc_str();
+                output["varvalue"] = (const char *)variable.getValue().mbc_str();
+                output["varnote"] = (const char *)variable.getNote().mbc_str();
+                std::string s = output.dump();
+                web_write( conn, s.c_str(), s.length() );
                 
-                p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "vartypecode", 11 );
-                p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );
-                p += json_emit_long( p, &buf[sizeof(buf)] - p, variable.getType() );
-                p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
-                
-                p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "varuser", 7 );
-                p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );
-                p += json_emit_long( p, &buf[sizeof(buf)] - p, variable.getOwnerID() );
-                p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
-                
-                p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "varaccessright", 14 );
-                p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );
-                p += json_emit_long( p, &buf[sizeof(buf)] - p, variable.getAccessRights() );
-                p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
-                
-                p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "varpersistence", 14 );
-                p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );
-                wxstr = variable.isPersistent() ? _("true") : _("false");
-                p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, wxstr.mbc_str(), wxstr.Length() );
-                p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
-                
-                p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "varlastchange", 13 );
-                p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );
-                wxstr = variable.getLastChange().FormatISOCombined();
-                p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, wxstr.mbc_str(), wxstr.Length() );
-                p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
-
-                p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "varvalue", 8 );
-                p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );
-                p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, variable.getValue().mbc_str(), variable.getValue().Length() );
-                p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
-                
-                p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "varnote", 7 );
-                p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );
-                p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, variable.getNote().mbc_str(), variable.getNote().Length() );
-                p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
-
-                // Mark end
-                p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, "}", 1 );
-
                 if ( REST_FORMAT_JSONP == format ) {
-                    p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ");", 2 );
+                    // Write JSONP end block
+                    web_write( conn, 
+                            REST_JSONP_END, 
+                            strlen( REST_JSONP_END ) );
                 }
-
-                web_write( conn, buf, strlen( buf) );
-
-
+                
             }
+            
         }
-
-        web_write( conn, "", 0 );    // Terminator
 
     }
     else {
@@ -2845,9 +2730,10 @@ restsrv_doListVariable( struct web_connection *conn,
             web_write( conn, wrkbuf, strlen( wrkbuf));
 
         }
-        else if ( ( REST_FORMAT_JSON == format ) || ( REST_FORMAT_JSONP == format ) ) {
+        else if ( ( REST_FORMAT_JSON == format ) || 
+                  ( REST_FORMAT_JSONP == format ) ) {
 
-            char *p = wrkbuf;
+            json output;
             wxString wxstr;
             
             if ( REST_FORMAT_JSONP == format ) {
@@ -2858,173 +2744,76 @@ restsrv_doListVariable( struct web_connection *conn,
             }
 
             if ( pSession->m_pClientItem->m_bOpen  ) {
-
-                memset( wrkbuf, 0, sizeof(  wrkbuf ) );
-                p = wrkbuf;
                 
                 if ( REST_FORMAT_JSONP == format ) {
-                    p += json_emit_unquoted_str( p, &wrkbuf[sizeof(wrkbuf)] - p, "typeof handler === 'function' && handler(", 41 );
+                    // Write JSONP start block
+                    web_write( conn, 
+                            REST_JSONP_START, 
+                            strlen( REST_JSONP_START ) );
                 }
-
-                p += json_emit_unquoted_str( p, &wrkbuf[sizeof(wrkbuf)] - p,
-                    "{\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\",",
-                    strlen( "{\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\"," ) );
-
-                p += json_emit_quoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, "info", 4 );
-                p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ":", 1 );
-                {
-                    char buf2[200];
-                    sprintf( buf2,
-                                "\"%zd variables will be retrieved\"",
-                                variable_array.Count() );
-                    p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, buf2, strlen( buf2 ) );
-                }
-                p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ",", 1 );
-                p += json_emit_quoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, "variable", 8);
-                p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ":[", 2 );
-
-                web_write( conn, wrkbuf, strlen( wrkbuf)); 
-                    
+                
+                output["success"] = true;
+                output["code"] = 1;
+                output["message"] = "success";
+                output["description"] = "Success";
+                output["info"] = 
+                        (const char *)wxString::Format( _("\"%zd variables will be retrieved\""),
+                                                        variable_array.Count() );
+                output["variable"] = json::array();
+                   
                 uint32_t cntVariable = 0;
                 uint32_t cntErrors = 0;
                 for ( unsigned int i=0; i<variable_array.GetCount(); i++ ) {
                     
                     CVSCPVariable variable; 
+                    json var;
                     
                     if ( 0 == gpobj->m_variables.find( variable_array[ i ], variable ) ) {
                         cntErrors++;
                         continue;
                     }
                     
-                    uint32_t lenBuf = 2048 + 
-                            strlen( variable.getName().mbc_str() ) + 1 + 
-                            strlen( variable.getValue().mbc_str() ) + 1 + 
-                            strlen( variable.getNote().mbc_str() ) + 1;
-                                       
-                    char *buf = new char[ lenBuf ];
-                    if ( NULL == buf ) {
-                        restsrv_error( conn, pSession, format, REST_ERROR_CODE_MEMORY );
-                        return;
-                    }
-                    
-                    memset( buf, 0, lenBuf );
-                    p = buf;
-                                       
-                    p += json_emit_unquoted_str( p, &buf[ lenBuf ] - p, "{", 1 );
-                    
-                    // Variable name
-                    p += json_emit_quoted_str( p, &buf[ lenBuf ] - p, "varname", 7 );
-                    p += json_emit_unquoted_str( p, &buf[ lenBuf ] - p, ":", 1 );
-                    p += json_emit_quoted_str( p, &buf[ lenBuf ] - p, 
-                                                    (const char *)variable.getName().mbc_str(), 
-                                                    strlen( (const char *)variable.getName().mbc_str() ) );
-                    p += json_emit_unquoted_str( p, &buf[ lenBuf ] - p, ",", 1 );
-                    
-                    wxLogDebug( wxString::FromUTF8( buf ) );
-                
-                    // Variable type
-                    p += json_emit_quoted_str( p, &buf[ lenBuf ] - p, "vartype", 7 );
-                    p += json_emit_unquoted_str( p, &buf[ lenBuf ] - p, ":", 1 );
-                    wxString wxstr = wxString::FromUTF8( variable.getVariableTypeAsString( variable.getType() ) );
-                    p += json_emit_quoted_str( p, &buf[ lenBuf ] - p, 
-                                                    (const char *)wxstr.mbc_str(), 
-                                                    strlen( (const char *)wxstr.mbc_str() ) );
-                    p += json_emit_unquoted_str( p, &buf[ lenBuf ] - p, ",", 1 );
-                    
-                    // Variable type code
-                    p += json_emit_quoted_str( p, &buf[ lenBuf ] - p, "vartypecode", 11 );
-                    p += json_emit_unquoted_str( p, &buf[ lenBuf ] - p, ":", 1 );
-                    p += json_emit_long( p, &buf[ lenBuf ] - p, variable.getType() );
-                    p += json_emit_unquoted_str( p, &buf[ lenBuf ] - p, ",", 1 );
-                
-                    // Variable user id
-                    p += json_emit_quoted_str( p, &buf[ lenBuf ] - p, "varuser", 7 );
-                    p += json_emit_unquoted_str( p, &buf[ lenBuf ] - p, ":", 1 );
-                    p += json_emit_long( p, &buf[ lenBuf ] - p, variable.getOwnerID() );
-                    p += json_emit_unquoted_str( p, &buf[ lenBuf ] - p, ",", 1 );
-                
-                    // Variable access right
-                    p += json_emit_quoted_str( p, &buf[ lenBuf ] - p, "varaccessright", 14 );
-                    p += json_emit_unquoted_str( p, &buf[ lenBuf ] - p, ":", 1 );
-                    p += json_emit_long( p, &buf[ lenBuf ] - p, variable.getAccessRights() );
-                    p += json_emit_unquoted_str( p, &buf[ lenBuf ] - p, ",", 1 );
-                
-                    // Variable persistence
-                    p += json_emit_quoted_str( p, &buf[ lenBuf ] - p, "varpersistence", 14 );
-                    p += json_emit_unquoted_str( p, &buf[ lenBuf ] - p, ":", 1 );
-                    wxstr = variable.isPersistent() ? _("true") : _("false");
-                    p += json_emit_quoted_str( p, &buf[ lenBuf ] - p, 
-                                                    (const char *)wxstr.mbc_str(), 
-                                                    strlen( (const char *)wxstr.mbc_str() ) );
-                    p += json_emit_unquoted_str( p, &buf[ lenBuf ] - p, ",", 1 );
-                
-                    // Variable last change
-                    p += json_emit_quoted_str( p, &buf[ lenBuf ] - p, "varlastchange", 13 );
-                    p += json_emit_unquoted_str( p, &buf[ lenBuf ] - p, ":", 1 );
-                    wxstr = variable.getLastChange().FormatISOCombined();
-                    p += json_emit_quoted_str( p, &buf[ lenBuf ] - p, 
-                                                    (const char *)wxstr.mbc_str(), 
-                                                    strlen( (const char *)wxstr.mbc_str() ) );
-                    p += json_emit_unquoted_str( p, &buf[ lenBuf ] - p, ",", 1 );
-
+                    var["success"] = true;
+                    var["code"] = 1;
+                    var["message"] = "success";
+                    var["description"] = "Success";
+                    var["varname"] = (const char *)variable.getName().mbc_str();
+                    var["vartype"] = variable.getVariableTypeAsString( variable.getType() );
+                    var["vartypecode"] = variable.getType();
+                    var["varuser"] = variable.getOwnerID();
+                    var["varaccessright"] = variable.getAccessRights();
+                    var["varpersistence"] = variable.isPersistent();
+                    var["varlastchange"] = 
+                            (const char *)variable.getLastChange().FormatISOCombined().mbc_str();
                     if ( !bShort ) {
-                        
-                        // Variable value
-                        p += json_emit_quoted_str( p, &buf[ lenBuf ] - p, "varvalue", 8 );
-                        p += json_emit_unquoted_str( p, &buf[ lenBuf ] - p, ":", 1 );
-                        p += json_emit_quoted_str( p, &buf[ lenBuf ] - p, 
-                                                        (const char *)variable.getValue().mbc_str(), 
-                                                        strlen( (const char *)variable.getValue().mbc_str() ) );
-                        p += json_emit_unquoted_str( p, &buf[ lenBuf ] - p, ",", 1 );                    
-                
-                        // Variable note
-                        p += json_emit_quoted_str( p, &buf[ lenBuf ] - p, "varnote", 7 );
-                        p += json_emit_unquoted_str( p, &buf[ lenBuf ] - p, ":", 1 );
-                        p += json_emit_quoted_str( p, &buf[ lenBuf ] - p, 
-                                                        (const char *)variable.getNote().mbc_str(), 
-                                                        strlen( (const char *)variable.getNote().mbc_str() ) );
-                        p += json_emit_unquoted_str( p, &buf[ lenBuf ] - p, ",", 1 );
-                        
+                        var["varvalue"] = (const char *)variable.getValue().mbc_str();
+                        var["varnote"] = (const char *)variable.getNote().mbc_str();
                     }
                     
-                    p += json_emit_unquoted_str( p, &buf[ lenBuf ] - p, "}", 1 );
+                    // Add event to event array
+                    output["variable"].push_back( var );
 
-                    if ( i < ( variable_array.GetCount() - 1 ) ) {
-                        p += json_emit_unquoted_str( p, &buf[ lenBuf ] - p, ",", 1 );
-                    }
-
-                    web_write( conn, buf, strlen( buf ) );
-                    
                     cntVariable++;
                     
-                    delete [] buf;
-                    
                 } // for                                    
-                
-                memset( wrkbuf, 0, sizeof( wrkbuf ) );
-                p = wrkbuf;
 
                 // Mark end
-                p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, "],", 2 );
-                    p += json_emit_quoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, "count", 5 );
-                    p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ":", 1 );
-                    p += json_emit_long( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, cntVariable );
-                    p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ",", 1 );
-                    p += json_emit_quoted_str(p, &wrkbuf[ sizeof( wrkbuf ) ] - p, "errors", 6 );
-                    p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, ":", 1 );
-                    p += json_emit_long( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, cntErrors );
-                    p += json_emit_unquoted_str( p, &wrkbuf[ sizeof( wrkbuf ) ] - p, "}", 1 );
-
+                output["count"] = cntVariable;
+                output["errors"] = cntErrors;
+                    
+                std::string s = output.dump();
+                web_write( conn, s.c_str(), s.length() );
+                    
                 if ( REST_FORMAT_JSONP == format ) {
-                    p += json_emit_unquoted_str( p, &wrkbuf[sizeof(wrkbuf)] - p, ");", 2 );
+                    // Write JSONP end block
+                    web_write( conn, 
+                            REST_JSONP_END, 
+                            strlen( REST_JSONP_END ) );
                 }
-
-                web_write( conn, wrkbuf, strlen( wrkbuf) );                    
                 
             }
+            
         }
-
-        web_write( conn, "", 0 );    // Terminator
 
     }
     else {
@@ -3069,7 +2858,7 @@ restsrv_doWriteVariable( struct web_connection *conn,
             return;
         }
         
-        if ( gpobj->m_variables.update( variable ) ) {
+        if ( !gpobj->m_variables.update( variable ) ) {
             restsrv_error( conn, pSession, format, REST_ERROR_CODE_VARIABLE_FAIL_UPDATE );
             return;
         }
@@ -3246,7 +3035,10 @@ restsrv_doWriteMeasurement( struct web_connection *conn,
 
                 }
                 else {
-                    restsrv_error( conn, pSession, format, REST_ERROR_CODE_GENERAL_FAILURE );
+                    restsrv_error( conn, 
+                                    pSession, 
+                                    format, 
+                                    REST_ERROR_CODE_GENERAL_FAILURE );
                 }
             }
             else {
@@ -3254,7 +3046,10 @@ restsrv_doWriteMeasurement( struct web_connection *conn,
                 // String
                 vscpEvent *pEvent = new vscpEvent;
                 if ( NULL == pEvent ) {
-                    restsrv_error( conn, pSession, format, REST_ERROR_CODE_GENERAL_FAILURE );
+                    restsrv_error( conn, 
+                                    pSession, 
+                                    format, 
+                                    REST_ERROR_CODE_GENERAL_FAILURE );
                     return;
                 }
                 pEvent->pdata = NULL;
@@ -3266,7 +3061,10 @@ restsrv_doWriteMeasurement( struct web_connection *conn,
 
                 }
                 else {
-                    restsrv_error( conn, pSession, format, REST_ERROR_CODE_GENERAL_FAILURE );
+                    restsrv_error( conn, 
+                                    pSession, 
+                                    format, 
+                                    REST_ERROR_CODE_GENERAL_FAILURE );
                 }
             }
         }
@@ -3277,7 +3075,10 @@ restsrv_doWriteMeasurement( struct web_connection *conn,
                 // Floating point
                 vscpEvent *pEvent = new vscpEvent;
                 if ( NULL == pEvent ) {
-                    restsrv_error( conn, pSession, format, REST_ERROR_CODE_GENERAL_FAILURE );
+                    restsrv_error( conn, 
+                                    pSession, 
+                                    format, 
+                                    REST_ERROR_CODE_GENERAL_FAILURE );
                     return;
                 }
 
@@ -3305,7 +3106,10 @@ restsrv_doWriteMeasurement( struct web_connection *conn,
                 // Copy in data
                 pEvent->pdata = new uint8_t[ 4 + 8 ];
                 if ( NULL == pEvent->pdata ) {
-                    restsrv_error( conn, pSession, format, REST_ERROR_CODE_GENERAL_FAILURE );
+                    restsrv_error( conn, 
+                                    pSession, 
+                                    format, 
+                                    REST_ERROR_CODE_GENERAL_FAILURE );
                     delete pEvent;
                     return;
                 }
@@ -3335,11 +3139,16 @@ restsrv_doWriteMeasurement( struct web_connection *conn,
 
                 pEvent->pdata = new uint8_t[ 4 + strValue.Length() ];
                 if ( NULL == pEvent->pdata ) {
-                    restsrv_error( conn, pSession, format, REST_ERROR_CODE_GENERAL_FAILURE );
+                    restsrv_error( conn, 
+                                    pSession, 
+                                    format, 
+                                    REST_ERROR_CODE_GENERAL_FAILURE );
                     delete pEvent;
                     return;
                 }
-                memcpy( data + 4, strValue.mbc_str(), strValue.Length() ); // copy in double
+                memcpy( data + 4, 
+                            strValue.mbc_str(), 
+                            strValue.Length() ); // copy in double
 
                 restsrv_doSendEvent( conn, pSession, format, pEvent );
             }

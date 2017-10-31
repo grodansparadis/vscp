@@ -52,6 +52,10 @@ struct restsrv_session
 
 WX_DECLARE_LIST(struct restsrv_session, RESTSESSIONLIST);
 
+// Encapsulate a JSON block to make it JSONP
+#define REST_JSONP_START "typeof handler === 'function' && handler("
+#define REST_JSONP_END ");"
+
 enum {
     REST_ERROR_CODE_SUCCESS = 0,
     REST_ERROR_CODE_GENERAL_FAILURE,
@@ -107,7 +111,7 @@ enum {
 #define REST_PLAIN_ERROR_INPUT_QUEUE_EMPTY      "0 -6 Input queue empty \r\n\r\nThe input queue is empty.\r\n"
 #define REST_PLAIN_ERROR_VARIABLE_NOT_FOUND     "0 -7 Variable not found \r\n\r\nVariable could not be found.\r\n"
 #define REST_PLAIN_ERROR_VARIABLE_NOT_CREATED   "0 -8 Variable could not be created \r\n\r\nVariable could not be created.\r\n"
-#define REST_PLAIN_ERROR_VARIABLE_FAIL_UPDATE   "0 -9 Faild to update variable \r\n\r\nFaild to update variable.\r\n"
+#define REST_PLAIN_ERROR_VARIABLE_FAIL_UPDATE   "0 -9 Failed to update variable \r\n\r\nFailed to update variable.\r\n"
 #define REST_PLAIN_ERROR_NO_ROOM                "0 -10 No room in queue \r\n\r\nNo room in queue.\r\n"
 #define REST_PLAIN_ERROR_TABLE_NOT_FOUND        "0 -11 Table does not exist \r\n\r\nA table with that name does not exist.\r\n"
 #define REST_PLAIN_ERROR_TABLE_NO_DATA          "0 -12 No data \r\n\r\nThe table exist but contains no data (in that range).\r\n"
@@ -127,7 +131,7 @@ enum {
 #define REST_CSV_ERROR_INPUT_QUEUE_EMPTY        "success-code,error-code,message,description\r\n0,-6,Input queue empty, The input queue is empty."
 #define REST_CSV_ERROR_VARIABLE_NOT_FOUND       "success-code,error-code,message,description\r\n0,-7,Variable not found, Variable could not be found."
 #define REST_CSV_ERROR_VARIABLE_NOT_CREATED     "success-code,error-code,message,description\r\n0,-8,Variable could not be created, Variable could not be created."
-#define REST_CSV_ERROR_VARIABLE_FAIL_UPDATE      "success-code,error-code,message,description\r\n0,-9,Faild to update variable, Faild to update variable."
+#define REST_CSV_ERROR_VARIABLE_FAIL_UPDATE      "success-code,error-code,message,description\r\n0,-9,Failed to update variable, Failed to update variable."
 #define REST_CSV_ERROR_NO_ROOM                  "success-code,error-code,message,description\r\n0,-10,No room in queue, No room in queue."
 #define REST_CSV_ERROR_TABLE_NOT_FOUND          "success-code,error-code,message,description\r\n0,-11,Table does not exist, A table with that name does not exist."
 #define REST_CSV_ERROR_TABLE_NO_DATA            "success-code,error-code,message,description\r\n0,-12,No data, The table exist but contains no data (in that range)."
@@ -170,7 +174,7 @@ enum {
 #define REST_JSON_ERROR_INPUT_QUEUE_EMPTY       "{\"success\":false,\"code\":-6,\"message\":\"Input queue empty\",\"description\":\"The input queue is empty.\"}"
 #define REST_JSON_ERROR_VARIABLE_NOT_FOUND      "{\"success\":false,\"code\":-7,\"message\":\"Variable not found\",\"description\":\"Variable could not be found.\"}"
 #define REST_JSON_ERROR_VARIABLE_NOT_CREATED    "{\"success\":false,\"code\":-8,\"message\":\"Variable could not be created\",\"description\":\"Variable could not be created.\"}"
-#define REST_JSON_ERROR_VARIABLE_FAIL_UPDATE    "{\"success\":false,\"code\":-9,\"message\":\"Faild to update variable\",\"description\":\"Faild to update variable.\"}"
+#define REST_JSON_ERROR_VARIABLE_FAIL_UPDATE    "{\"success\":false,\"code\":-9,\"message\":\"Failed to update variable\",\"description\":\"Failed to update variable.\"}"
 #define REST_JSON_ERROR_NO_ROOM	                "{\"success\":false,\"code\":-10,\"message\":\"No room in queue\",\"description\":\"No room in queue.\"}"
 #define REST_JSON_ERROR_TABLE_NOT_FOUND         "{\"success\":false,\"code\":-11,\"message\":\"Table does not exist\",\"description\":\"A table with that name does not exist.\"}"
 #define REST_JSON_ERROR_TABLE_NO_DATA           "{\"success\":false,\"code\":-12,\"message\":\"No data\",\"description\":\"The table exist but contains no data (in that range).\"}"
