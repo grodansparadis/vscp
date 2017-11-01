@@ -60,6 +60,9 @@
                            "        <li>"\
                            "            <a href=\"/vscp/tests\">VSCP system tests</a>"\
                            "        </li>"\
+                           "        <li>"\
+                           "            <a href=\"/vscp/password\">User password</a>"\
+                           "        </li>"\
                            "    </ul>"\
                            " </li>"\
                            " <li>"\

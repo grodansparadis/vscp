@@ -106,6 +106,7 @@
 
 #include <canal_macro.h>
 #include <vscp_aes.h>
+#include <fastpbkdf2.h>
 #include <vscp.h>
 #include <vscphelper.h>
 #include <tables.h>
@@ -797,25 +798,117 @@ todo( struct web_connection *conn, void *cbdata )
 static int
 vscp_settings( struct web_connection *conn, void *cbdata )
 {
-	web_printf( conn,
+    // Check pointer
+    if (NULL == conn) return 0;
+    
+    web_printf( conn,
 	          "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n"
                   "Content-Type: text/html; charset=utf-8\r\n"
                   "Connection: close\r\n\r\n");
 
-        web_printf( conn, WEB_COMMON_HEAD, "Settings" );
-        web_printf( conn, WEB_STYLE_START );
-        web_write( conn, WEB_COMMON_CSS, strlen( WEB_COMMON_CSS ) );     // CSS style Code
-        web_printf( conn, WEB_STYLE_END );
-        web_write( conn, WEB_COMMON_JS, strlen( WEB_COMMON_JS ) );      // Common Javascript code
+    web_printf( conn, WEB_COMMON_HEAD, "Settings" );
+    web_printf( conn, WEB_STYLE_START );
+    web_write( conn, WEB_COMMON_CSS, strlen( WEB_COMMON_CSS ) );     // CSS style Code
+    web_printf( conn, WEB_STYLE_END );
+    web_write( conn, WEB_COMMON_JS, strlen( WEB_COMMON_JS ) );      // Common Javascript code
 
-        web_printf( conn, WEB_COMMON_HEAD_END_BODY_START );
-        // Insert server url into navigation menu
-        web_printf( conn, WEB_COMMON_MENU );
+    web_printf( conn, WEB_COMMON_HEAD_END_BODY_START );
+    web_printf( conn, WEB_COMMON_MENU );
 
-        web_printf( conn, WEB_IFLIST_BODY_START );
-        web_printf( conn, WEB_IFLIST_TR_HEAD );
+    //web_printf( conn, WEB_IFLIST_BODY_START );
+    // web_printf( conn, WEB_IFLIST_TR_HEAD );
+    web_printf( conn, "<h1 id=\"header\">Settings</h1>" );
 
-	return WEB_OK;
+    return WEB_OK;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// vscp_passwod
+//
+
+static int
+vscp_password( struct web_connection *conn, void *cbdata )
+{
+    int i;
+    uint8_t salt[16];
+    char buf[512];
+    uint8_t resultbuf[512];
+    
+    memset( buf, 0, sizeof(buf ) );
+    
+    // Check pointer
+    if (NULL == conn) return 0;
+    
+    web_printf( conn,
+	          "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n"
+                  "Content-Type: text/html; charset=utf-8\r\n"
+                  "Connection: close\r\n\r\n");
+
+    web_printf( conn, WEB_COMMON_HEAD, "Password generation" );
+    web_printf( conn, WEB_STYLE_START );
+    web_write( conn, WEB_COMMON_CSS, strlen( WEB_COMMON_CSS ) );    // CSS style Code
+    web_printf( conn, WEB_STYLE_END );
+    web_write( conn, WEB_COMMON_JS, strlen( WEB_COMMON_JS ) );      // Common Javascript code
+    web_printf( conn, "<style>table, th, td { border: 0px solid black;}</style>" );
+    
+    web_printf( conn, WEB_COMMON_HEAD_END_BODY_START );
+    web_printf( conn, WEB_COMMON_MENU );  
+    
+    const struct web_request_info *reqinfo =
+                web_get_request_info( conn );
+    if ( NULL == reqinfo ) return 0;
+
+    // password
+    const char *password;
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,
+                            strlen( reqinfo->query_string ),
+                            "pw",
+                            buf,
+                            sizeof( buf ) ) > 0 ) {
+            password = buf;
+        }
+    }
+
+    web_printf( conn, "<h1 id=\"header\">Password generation</h1><br>" );
+        
+    if ( 0 == strlen( password ) ) {
+        web_printf( conn, "<form action=\"/vscp/password\"><table>" );
+        web_printf( conn, "<tr><td width=\"10%\"><b>Password</b></td><td><input type=\"password\" "
+                          "value=\"\" name=\"pw\"></td><tr>" );
+        web_printf( conn, "<tr><td> <td><input type=\"submit\" value=\"Generate\"></td><tr>" );
+        web_printf( conn, "</table></form>" );
+    }
+    else {
+        
+        // Get random IV
+        if ( 16 != getRandomIV( salt, 16 ) ) {
+            printf("Unable to generate IV. Terminating.\n");
+            return -1;
+        }
+
+        fastpbkdf2_hmac_sha256( (const uint8_t *)password, strlen( password ),
+                                salt, 16,
+                                70000,
+                                resultbuf, 32 );
+        
+        
+        web_printf( conn, "<table>" );
+        web_printf( conn, "</td><tr>" );
+        web_printf( conn, "<tr><td><b>Generated password: </b></td><td>");
+        for (i=0; i<16; i++ ) {
+            web_printf( conn, "%02X", salt[i]);
+        }
+        web_printf( conn, ";");
+        for ( i=0; i<32; i++ ) {
+            web_printf( conn, "%02X", resultbuf[i]);
+        }
+        web_printf( conn, "</td><tr>" );
+        web_printf( conn, "</table>" );
+    }
+
+    return WEB_OK;
 }
 
 
@@ -1032,7 +1125,7 @@ static int vscp_interface_info( struct web_connection *conn, void *cbdata )
                   "Content-Type: text/html; charset=utf-8\r\n"
                   "Connection: close\r\n\r\n");
 
-    web_printf( conn, WEB_COMMON_HEAD, "VSCP - Control" );
+    web_printf( conn, WEB_COMMON_HEAD, "VSCP - Interface information" );
     web_printf( conn, WEB_STYLE_START );
     web_write( conn, WEB_COMMON_CSS, strlen( WEB_COMMON_CSS ) );     // CSS style Code
     web_printf( conn, WEB_STYLE_END );
@@ -1061,7 +1154,6 @@ static int vscp_interface_info( struct web_connection *conn, void *cbdata )
 static int vscp_dm_list( struct web_connection *conn, void *cbdata )
 {
     char buf[256];
-
 
     // Check pointer
     if ( NULL == conn ) return 0;
@@ -4813,7 +4905,7 @@ vscp_configure( struct web_connection *conn, void *cbdata )
     web_printf( conn, WEB_COMMON_MENU);
 
     web_printf( conn, "<br><br><br>");
-    web_printf( conn, "<h1 id=\"header\">VSCP - Configuration</h1>" );
+    web_printf( conn, "<h1 id=\"header\">VSCP - Current configuration</h1>" );
     web_printf( conn, "<br>");
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * ** * * * * * * * *
@@ -6488,7 +6580,7 @@ vscp_log_list( struct web_connection *conn, void *cbdata )
         web_printf( conn, "<tr>" );
 
         // date
-        web_printf( conn, "%s", "<td id=\"tdcenter\" width=\"20%\"><div id\"small\">" );
+        web_printf( conn, "%s", "<td id=\"tdcenter\" width=\"25%\"><div id=\"ssmall\">" );
         web_printf( conn, "%s", (const char *)sqlite3_column_text( ppStmt,
                             VSCPDB_ORDINAL_LOG_DATE ));
         web_printf( conn, "</div></td>" );
@@ -8150,6 +8242,7 @@ int init_webserver( void )
     web_set_request_handler( gpobj->m_web_ctx, "/vscp/interfaces", vscp_interface, 0 );
     web_set_request_handler( gpobj->m_web_ctx, "/vscp/ifinfo",     vscp_interface_info, 0 );
     web_set_request_handler( gpobj->m_web_ctx, "/vscp/settings",   vscp_settings, 0 );
+    web_set_request_handler( gpobj->m_web_ctx, "/vscp/password",   vscp_password, 0 );
     web_set_request_handler( gpobj->m_web_ctx, "/vscp/varlist",    vscp_variable_list, 0 );
     web_set_request_handler( gpobj->m_web_ctx, "/vscp/varedit",    vscp_variable_edit, 0 );
     web_set_request_handler( gpobj->m_web_ctx, "/vscp/varpost",    vscp_variable_post, 0 );

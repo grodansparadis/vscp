@@ -278,3 +278,7 @@ src/vscp/helperlib/linux/libvscphelper-dev_12.29.0-1_amd64.deb
 src/vscp/helperlib/linux/libvscphelper.so.12.29.0
 
 /.metadata/
+.cproject
+.project
+.settings/
+RemoteSystemsTempFiles/
