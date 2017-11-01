@@ -1845,7 +1845,7 @@ enum {
 
 struct web_connection
 {
-    int connection_type;    // see CONNECTION_TYPE_* above
+    int connection_type;        // see CONNECTION_TYPE_* above
 
     struct web_request_info request_info;
     struct web_response_info response_info;
@@ -1899,6 +1899,18 @@ struct web_connection
 
     int thread_index;           // Thread index within ctx
 };
+
+void
+web_set_connection_code( struct web_connection *conn, int code )
+{
+    conn->status_code = code;
+}
+
+void 
+web_set_must_close( struct web_connection *conn )
+{
+    conn->must_close = 1;
+}
 
 // Directory entry
 struct de
@@ -2732,14 +2744,14 @@ sockaddr_to_string(char *buf, size_t len, const union usa *usa)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// gmt_time_string
+// web_gmt_time_string
 //
 // Convert time_t to a string. According to RFC2616, Sec 14.18, this must be
 // included in all responses other than 100, 101, 5xx.
 //
 
-static void
-gmt_time_string(char *buf, size_t buf_len, time_t *t)
+void
+web_gmt_time_string(char *buf, size_t buf_len, time_t *t)
 {
     struct tm *tm;
 
@@ -3448,8 +3460,8 @@ should_decode_url(const struct web_connection *conn)
 // suggest_connection_header
 //
 
-static const char *
-suggest_connection_header(const struct web_connection *conn)
+VSCPWEB_API const char *
+web_suggest_connection_header(const struct web_connection *conn)
 {
     return should_keep_alive(conn) ? "keep-alive" : "close";
 }
@@ -3460,8 +3472,8 @@ suggest_connection_header(const struct web_connection *conn)
 // Send all current and obsolete cache opt-out directives.
 //
 
-static int
-send_no_cache_header(struct web_connection *conn)
+VSCPWEB_API int
+web_send_no_cache_header(struct web_connection *conn)
 {
 
     return web_printf(conn,
@@ -3475,8 +3487,8 @@ send_no_cache_header(struct web_connection *conn)
 // send_static_cache_header
 //
 
-static int
-send_static_cache_header(struct web_connection *conn)
+VSCPWEB_API int
+web_send_static_cache_header(struct web_connection *conn)
 {
     // Read the server config to check how long a file may be cached.
     // The configuration is in seconds. */
@@ -3486,7 +3498,7 @@ send_static_cache_header(struct web_connection *conn)
         // and may be used differently in the future.
         // If a file should not be cached, do not only send
         // max-age=0, but also pragmas and Expires headers.
-        return send_no_cache_header(conn);
+        return web_send_no_cache_header(conn);
     }
 
     // Use "Cache-Control: max-age" instead of "Expires" header.
@@ -3502,11 +3514,11 @@ send_static_cache_header(struct web_connection *conn)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// send_additional_header
+// web_send_additional_header
 //
 
-static int
-send_additional_header(struct web_connection *conn)
+VSCPWEB_API int
+web_send_additional_header(struct web_connection *conn)
 {
     int i = 0;
     const char *header = conn->ctx->config[ADDITIONAL_HEADER];
@@ -3914,15 +3926,15 @@ web_send_http_error(struct web_connection *conn, int status, const char *fmt, ..
         }
 
         // No custom error page. Send default error page.
-        gmt_time_string(date, sizeof (date), &curtime);
+        web_gmt_time_string(date, sizeof (date), &curtime);
 
         // Errors 1xx, 204 and 304 MUST NOT send a body
         has_body = ((status > 199) && (status != 204) && (status != 304));
 
         conn->must_close = 1;
         web_printf(conn, "HTTP/1.1 %d %s\r\n", status, status_text);
-        send_no_cache_header(conn);
-        send_additional_header(conn);
+        web_send_no_cache_header(conn);
+        web_send_additional_header(conn);
 
         if (has_body) {
             web_printf(conn,
@@ -7859,20 +7871,20 @@ check_authorization( struct web_connection *conn,
         if ( !memcmp( conn->request_info.local_uri, uri_vec.ptr, uri_vec.len ) ) {
 
             web_snprintf( conn,
-                                &truncated,
-                                fname,
-                                sizeof (fname),
-                                "%.*s",
-                                (int) filename_vec.len,
-                                filename_vec.ptr);
+                            &truncated,
+                            fname,
+                            sizeof (fname),
+                            "%.*s",
+                            (int) filename_vec.len,
+                            filename_vec.ptr);
 
             if ( truncated || !web_fopen(conn, fname, MG_FOPEN_MODE_READ, &file ) ) {
 
                 web_cry( conn,
-                                "%s: cannot open %s: %s",
-                                __func__,
-                                fname,
-                                strerror(errno) );
+                            "%s: cannot open %s: %s",
+                            __func__,
+                            fname,
+                            strerror(errno) );
 
             }
             break;
@@ -7919,11 +7931,11 @@ send_authorization_request( struct web_connection *conn, const char *realm )
     conn->status_code = 401;
     conn->must_close = 1;
 
-    gmt_time_string(date, sizeof (date), &curtime);
+    web_gmt_time_string(date, sizeof (date), &curtime);
 
     web_printf(conn, "HTTP/1.1 401 Unauthorized\r\n");
-    send_no_cache_header(conn);
-    send_additional_header(conn);
+    web_send_no_cache_header(conn);
+    web_send_additional_header(conn);
     web_printf( conn,
                     "Date: %s\r\n"
                     "Connection: %s\r\n"
@@ -7931,7 +7943,7 @@ send_authorization_request( struct web_connection *conn, const char *realm )
                     "WWW-Authenticate: Digest qop=\"auth\", realm=\"%s\", "
                     "nonce=\"%" UINT64_FMT "\"\r\n\r\n",
                     date,
-                    suggest_connection_header(conn),
+                    web_suggest_connection_header(conn),
                     realm,
                     nonce );
 }
@@ -7945,7 +7957,7 @@ send_authorization_request( struct web_connection *conn, const char *realm )
 
 int
 web_send_digest_access_authentication_request( struct web_connection *conn,
-                                                    const char *realm )
+                                                const char *realm )
 {
     if ( conn && conn->ctx ) {
         send_authorization_request (conn, realm );
@@ -8717,7 +8729,7 @@ handle_directory_request( struct web_connection *conn, const char *dir )
         return;
     }
 
-    gmt_time_string(date, sizeof (date), &curtime);
+    web_gmt_time_string(date, sizeof (date), &curtime);
 
     if ( !conn ) {
         return;
@@ -8730,8 +8742,8 @@ handle_directory_request( struct web_connection *conn, const char *dir )
 
     conn->must_close = 1;
     web_printf(conn, "HTTP/1.1 200 OK\r\n");
-    send_static_cache_header(conn);
-    send_additional_header(conn);
+    web_send_static_cache_header(conn);
+    web_send_additional_header(conn);
     web_printf( conn,
                         "Date: %s\r\n"
                         "Connection: close\r\n"
@@ -9093,8 +9105,8 @@ handle_static_file_request( struct web_connection *conn,
     // Prepare Etag, Date, Last-Modified headers. Must be in UTC,
     // according to
     // http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.3
-    gmt_time_string(date, sizeof (date), &curtime);
-    gmt_time_string(lm, sizeof (lm), &filep->stat.last_modified);
+    web_gmt_time_string(date, sizeof (date), &curtime);
+    web_gmt_time_string(lm, sizeof (lm), &filep->stat.last_modified);
     construct_etag(etag, sizeof (etag), &filep->stat);
 
     // On the fly compression allowed
@@ -9119,8 +9131,8 @@ handle_static_file_request( struct web_connection *conn,
                             cors2,
                             cors3,
                             date );
-    send_static_cache_header( conn );
-    send_additional_header( conn );
+    web_send_static_cache_header( conn );
+    web_send_additional_header( conn );
 
     (void) web_printf( conn,
                             "Last-Modified: %s\r\n"
@@ -9135,7 +9147,7 @@ handle_static_file_request( struct web_connection *conn,
                             (int)mime_vec.len,
                             mime_vec.ptr,
                             cl,
-                            suggest_connection_header( conn ),
+                            web_suggest_connection_header( conn ),
                             range,
                             encoding );
 
@@ -9176,8 +9188,8 @@ handle_not_modified_static_file_request( struct web_connection *conn,
     }
 
     conn->status_code = 304;
-    gmt_time_string(date, sizeof (date), &curtime);
-    gmt_time_string(lm, sizeof (lm), &filep->stat.last_modified);
+    web_gmt_time_string(date, sizeof (date), &curtime);
+    web_gmt_time_string(lm, sizeof (lm), &filep->stat.last_modified);
     construct_etag(etag, sizeof (etag), &filep->stat);
 
     (void) web_printf( conn,
@@ -9187,8 +9199,8 @@ handle_not_modified_static_file_request( struct web_connection *conn,
                             web_get_response_code_text( conn,
                                                                 conn->status_code ),
                             date );
-    send_static_cache_header( conn );
-    send_additional_header( conn );
+    web_send_static_cache_header( conn );
+    web_send_additional_header( conn );
     (void) web_printf( conn,
                             "Last-Modified: %s\r\n"
                             "Etag: %s\r\n"
@@ -9196,7 +9208,7 @@ handle_not_modified_static_file_request( struct web_connection *conn,
                             "\r\n",
                             lm,
                             etag,
-                            suggest_connection_header( conn ) );
+                            web_suggest_connection_header( conn ) );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -10748,18 +10760,18 @@ mkcol( struct web_connection *conn, const char *path)
 
     if (rc == 0) {
         conn->status_code = 201;
-        gmt_time_string( date, sizeof (date), &curtime );
+        web_gmt_time_string( date, sizeof (date), &curtime );
         web_printf( conn,
                             "HTTP/1.1 %d Created\r\n"
                             "Date: %s\r\n",
                             conn->status_code,
                             date );
-        send_static_cache_header(conn);
-        send_additional_header(conn);
+        web_send_static_cache_header(conn);
+        web_send_additional_header(conn);
         web_printf( conn,
                             "Content-Length: 0\r\n"
                             "Connection: %s\r\n\r\n",
-                            suggest_connection_header(conn) );
+                            web_suggest_connection_header(conn) );
     }
     else if (rc == -1) {
         if (errno == EEXIST) {
@@ -10864,19 +10876,19 @@ put_file( struct web_connection *conn, const char *path )
 
     if (rc == 0) {
         // put_dir returns 0 if path is a directory
-        gmt_time_string(date, sizeof (date), &curtime);
+        web_gmt_time_string(date, sizeof (date), &curtime);
         web_printf( conn,
                             "HTTP/1.1 %d %s\r\n",
                             conn->status_code,
                             web_get_response_code_text( NULL, conn->status_code ) );
-        send_no_cache_header( conn );
-        send_additional_header( conn );
+        web_send_no_cache_header( conn );
+        web_send_additional_header( conn );
         web_printf( conn,
                             "Date: %s\r\n"
                             "Content-Length: 0\r\n"
                             "Connection: %s\r\n\r\n",
                             date,
-                            suggest_connection_header(conn) );
+                            web_suggest_connection_header(conn) );
 
         // Request to create a directory has been fulfilled successfully.
         // No need to put a file.
@@ -10941,19 +10953,19 @@ put_file( struct web_connection *conn, const char *path )
         conn->status_code = 507;
     }
 
-    gmt_time_string(date, sizeof (date), &curtime);
+    web_gmt_time_string(date, sizeof (date), &curtime);
     web_printf( conn,
                         "HTTP/1.1 %d %s\r\n",
                         conn->status_code,
                         web_get_response_code_text( NULL, conn->status_code ) );
-    send_no_cache_header( conn );
-    send_additional_header( conn );
+    web_send_no_cache_header( conn );
+    web_send_additional_header( conn );
     web_printf( conn,
                         "Date: %s\r\n"
                         "Content-Length: 0\r\n"
                         "Connection: %s\r\n\r\n",
                         date,
-                        suggest_connection_header( conn ) );
+                        web_suggest_connection_header( conn ) );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -11335,11 +11347,11 @@ handle_ssi_file_request(struct web_connection *conn,
     }
     else {
         conn->must_close = 1;
-        gmt_time_string(date, sizeof (date), &curtime);
+        web_gmt_time_string(date, sizeof (date), &curtime);
         fclose_on_exec(&filep->access, conn);
         web_printf(conn, "HTTP/1.1 200 OK\r\n");
-        send_no_cache_header(conn);
-        send_additional_header(conn);
+        web_send_no_cache_header(conn);
+        web_send_additional_header(conn);
         web_printf( conn,
                             "%s%s%s"
                             "Date: %s\r\n"
@@ -11349,7 +11361,7 @@ handle_ssi_file_request(struct web_connection *conn,
                             cors2,
                             cors3,
                             date,
-                            suggest_connection_header(conn) );
+                            web_suggest_connection_header(conn) );
         send_ssi_file( conn, path, filep, 0 );
         (void)web_fclose( &filep->access ); // Ignore errors for readonly files
     }
@@ -11372,7 +11384,7 @@ send_options( struct web_connection *conn )
 
     conn->status_code = 200;
     conn->must_close = 1;
-    gmt_time_string(date, sizeof (date), &curtime);
+    web_gmt_time_string(date, sizeof (date), &curtime);
 
     // We do not set a "Cache-Control" header here, but leave the default.
     // Since browsers do not send an OPTIONS request, we can not test the
@@ -11385,8 +11397,8 @@ send_options( struct web_connection *conn )
                         "PROPFIND, MKCOL\r\n"
                         "DAV: 1\r\n",
                         date,
-                        suggest_connection_header(conn) );
-    send_additional_header( conn );
+                        web_suggest_connection_header(conn) );
+    web_send_additional_header( conn );
     web_printf( conn, "\r\n" );
 }
 
@@ -11407,7 +11419,7 @@ print_props( struct web_connection *conn,
         return;
     }
 
-    gmt_time_string( mtime, sizeof (mtime), &filep->last_modified );
+    web_gmt_time_string( mtime, sizeof (mtime), &filep->last_modified );
     web_printf( conn,
                         "<d:response>"
                         "<d:href>%s</d:href>"
@@ -11478,7 +11490,7 @@ handle_propfind( struct web_connection *conn,
     char date[64];
     time_t curtime = time(NULL);
 
-    gmt_time_string(date, sizeof (date), &curtime);
+    web_gmt_time_string(date, sizeof (date), &curtime);
 
     if (!conn || !path || !filep || !conn->ctx) {
         return;
@@ -11490,12 +11502,12 @@ handle_propfind( struct web_connection *conn,
                         "HTTP/1.1 207 Multi-Status\r\n"
                         "Date: %s\r\n",
                         date );
-    send_static_cache_header(conn);
-    send_additional_header(conn);
+    web_send_static_cache_header(conn);
+    web_send_additional_header(conn);
     web_printf( conn,
                         "Connection: %s\r\n"
                         "Content-Type: text/xml; charset=utf-8\r\n\r\n",
-                        suggest_connection_header( conn ) );
+                        web_suggest_connection_header( conn ) );
 
     web_printf( conn,
                         "<?xml version=\"1.0\" encoding=\"utf-8\"?>"
@@ -17380,7 +17392,7 @@ handle_request( struct web_connection *conn )
                                ri->num_headers,
                                "Access-Control-Request-Headers");
 
-            gmt_time_string(date, sizeof (date), &curtime);
+            web_gmt_time_string(date, sizeof (date), &curtime);
             web_printf(conn,
                            "HTTP/1.1 200 OK\r\n"
                            "Date: %s\r\n"
@@ -17391,7 +17403,7 @@ handle_request( struct web_connection *conn )
                            date,
                            cors_orig_cfg,
                            ((cors_meth_cfg[0] == '*') ? cors_acrm : cors_meth_cfg),
-                           suggest_connection_header(conn));
+                           web_suggest_connection_header(conn));
 
             if (cors_acrh != NULL) {
                 // CORS request is asking for additional headers
@@ -17655,7 +17667,7 @@ no_callback_resource:
     // 12. Directory uris should end with a slash
     if ( file.stat.is_directory && (uri_len > 0 ) &&
          ( ri->local_uri[uri_len - 1] != '/') ) {
-        gmt_time_string(date, sizeof (date), &curtime);
+        web_gmt_time_string(date, sizeof (date), &curtime);
         web_printf( conn,
                             "HTTP/1.1 301 Moved Permanently\r\n"
                             "Location: %s/\r\n"
@@ -17665,8 +17677,8 @@ no_callback_resource:
                             "Connection: %s\r\n",
                             ri->request_uri,
                             date,
-                            suggest_connection_header(conn) );
-        send_additional_header( conn );
+                            web_suggest_connection_header(conn) );
+        web_send_additional_header( conn );
         web_printf(conn, "\r\n");
         return;
     }
@@ -22313,10 +22325,10 @@ web_get_context_info_impl( const struct web_context *ctx,
         time_t start_time = ctx->start_time;
         time_t now = time(NULL);
 
-        gmt_time_string( start_time_str,
+        web_gmt_time_string( start_time_str,
                             sizeof (start_time_str) - 1,
                             &start_time );
-        gmt_time_string(now_str, sizeof (now_str) - 1, &now);
+        web_gmt_time_string(now_str, sizeof (now_str) - 1, &now);
 
         web_snprintf( NULL,
                             NULL,

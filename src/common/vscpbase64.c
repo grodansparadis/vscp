@@ -95,14 +95,17 @@ b64reverse(char letter)
 //
 
 int
-vscp_base64_decode(const unsigned char *src, int src_len, char *dst, size_t *dst_len)
+vscp_base64_decode( const unsigned char *src, 
+                        int src_len, 
+                        char *dst, 
+                        size_t *dst_len )
 {
     int i;
     unsigned char a, b, c, d;
 
     *dst_len = 0;
 
-    for (i = 0; i < src_len; i += 4) {
+    for ( i = 0; i < src_len; i += 4 ) {
         
         a = b64reverse( src[i] );
         if (a >= 254) {
@@ -125,7 +128,7 @@ vscp_base64_decode(const unsigned char *src, int src_len, char *dst, size_t *dst
         }
 
         dst[(*dst_len)++] = (a << 2) + (b >> 4);
-        if (c != 255) {
+        if ( c != 255 ) {
             dst[(*dst_len)++] = (b << 4) + (c >> 2);
             if (d != 255) {
                 dst[(*dst_len)++] = (c << 6) + d;

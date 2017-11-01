@@ -55,13 +55,19 @@
                            "    <a href=\"#\">Tools</a>"\
                            "    <ul>"\
                            "        <li>"\
+                           "            <a href=\"/vscp/password\">User password</a>"\
+                           "        </li>"\
+                           "        <li>"\
+                           "            <a href=\"/vscp/restart\">Restart</a>"\
+                           "        </li>"\
+                           "        <li>"\
+                           "            <a href=\"/vscp/bootload\">Update firmware</a>"\
+                           "        </li>"\
+                           "        <li>"\
                            "            <a href=\"/vscp/sendevent\">VSCP Send event</a>"\
                            "        </li>"\
                            "        <li>"\
                            "            <a href=\"/vscp/tests\">VSCP system tests</a>"\
-                           "        </li>"\
-                           "        <li>"\
-                           "            <a href=\"/vscp/password\">User password</a>"\
                            "        </li>"\
                            "    </ul>"\
                            " </li>"\
@@ -79,9 +85,6 @@
                            "        </li>"\
                            "        <li>"\
                            "            <a href=\"/vscp/table\">Tables</a>"\
-                           "        </li>"\
-                           "        <li>"\
-                           "            <a href=\"/vscp/bootload\">Update firmware</a>"\
                            "        </li>"\
                            "    </ul>"\
                            " </li>"\

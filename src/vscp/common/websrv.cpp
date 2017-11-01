@@ -104,11 +104,14 @@
 #include "web_js.h"
 #include "web_template.h"
 
+#include <httpd.h>
+
 #include <canal_macro.h>
 #include <vscp_aes.h>
 #include <fastpbkdf2.h>
 #include <vscp.h>
 #include <vscphelper.h>
+#include <vscpbase64.h>
 #include <tables.h>
 #include <version.h>
 #include <controlobject.h>
@@ -659,6 +662,37 @@ vscp_mainpage( struct web_connection *conn, void *cbdata )
     return 1;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// send_basic_authorization_request
+//
+//
+
+void
+send_basic_authorization_request( struct web_connection *conn )
+{
+    char date[64];
+    time_t curtime = time(NULL);
+    
+    //conn->status_code = 401;
+    web_set_connection_code( conn, 401 );
+    //conn->must_close = 1;
+    web_set_must_close( conn );
+
+    web_gmt_time_string( date, sizeof (date), &curtime );
+
+    web_printf(conn, "HTTP/1.1 401 Unauthorized\r\n");
+    web_send_no_cache_header( conn );
+    web_send_additional_header( conn );
+    web_printf( conn,
+                    "Date: %s\r\n"
+                    "Connection: %s\r\n"
+                    "Content-Length: 0\r\n"
+                    "WWW-Authenticate: Basic realm=\"%s\", "
+                    "\r\n\r\n",
+                    date,
+                    web_suggest_connection_header( conn ),
+                    (const char *)gpobj->m_web_authentication_domain.mbc_str() );
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // check_admin_authorization
@@ -669,30 +703,66 @@ vscp_mainpage( struct web_connection *conn, void *cbdata )
 static int
 check_admin_authorization( struct web_connection *conn, void *cbdata )
 {
+    char *name, *value, *p;
+    const char *auth_header;
     char buf[8192];
     struct web_authorization_header ah;
-    CUserItem *pUserItem;
+    CUserItem *pUserItem = NULL;
     bool bValidHost;
     struct web_context * ctx;
     const struct web_request_info *reqinfo;
-
+    
     // Check pointers
     if ( !conn ||
          !( ctx = web_get_context( conn ) ) ||
          !( reqinfo = web_get_request_info( conn ) )  ) {
         return WEB_ERROR;
     }
+    
+    memset( buf, 0, sizeof( buf ) );
 
-    memset( &ah, 0, sizeof( ah ) );
-
-    if ( !web_parse_auth_header( conn, buf, sizeof( buf ), &ah ) ) {
-        web_send_digest_access_authentication_request( conn, NULL );
-        return WEB_ERROR;
+    if ( ( NULL == ( auth_header = web_get_header(conn, "Authorization") ) ) ||
+        vscp_strncasecmp( auth_header, "Basic ", 6) != 0 ) {
+        send_basic_authorization_request( conn );
+        return 401;
     }
-
-    // Check if user is valid
-    pUserItem = gpobj->m_userList.getUser( wxString::FromUTF8( ah.user ) );
-    if ( NULL == pUserItem ) return 0;
+    
+    // Make modifiable copy of the auth header
+    (void)vscp_strlcpy( buf, auth_header + 6, sizeof( buf ) );
+    
+    char decoded[2048];
+    size_t len;
+    memset( decoded, 0, sizeof( decoded ) );
+    if ( -1 == vscp_base64_decode( (const unsigned char *)buf, 
+                                    strlen( buf )+1, 
+                                    decoded, 
+                                    &len ) ) {
+        send_basic_authorization_request( conn );
+        return 401;
+    }
+    
+    wxString str = wxString::FromUTF8( decoded );
+    wxStringTokenizer tkz( str, ":");
+    
+    wxString strUser = tkz.GetNextToken();
+    wxString strPassword = tkz.GetNextToken();
+        
+    gpobj->m_mutexUserList.Lock();
+    pUserItem = 
+            gpobj->m_userList.validateUser( strUser, strPassword );
+    gpobj->m_mutexUserList.Unlock();
+    
+    if ( NULL == pUserItem ) {
+        // Password is not correct
+        wxString strErr =
+            wxString::Format( _("[Webserver Client] Use on host [%s] NOT "
+                                "allowed connect. User [%s]. Wrong user/password\n"),
+                                    reqinfo->remote_addr,
+                                    (const char *)pUserItem->getUserName().mbc_str() );
+            gpobj->logMsg( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY );
+            send_basic_authorization_request( conn );
+            return 401;
+    }
 
     // Check if remote ip is valid
     gpobj->m_mutexUserList.Lock();
@@ -706,42 +776,8 @@ check_admin_authorization( struct web_connection *conn, void *cbdata )
                                     reqinfo->remote_addr,
                                     (const char *)pUserItem->getUserName().mbc_str() );
             gpobj->logMsg( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY );
-            return WEB_ERROR;
-    }
-
-    uint8_t salt[16];   // Stored salt
-    uint8_t hash[32];   // Stored hash
-
-    if ( !vscp_getHashPasswordComponents( salt,
-                                            hash,
-                                            (const char *)pUserItem->getPassword().mbc_str() ) ) {
-        web_send_digest_access_authentication_request( conn, NULL );
-        return WEB_ERROR;
-    }
-
-    char ha1[33];
-    vscpmd5_getDigestFromMultiStrings( ha1,
-            (const char *)pUserItem->getUserName().mbc_str(), ":",
-            (const char *)gpobj->m_web_authentication_domain.mbc_str(), ":",
-            (const char *)gpobj->m_vscptoken.mbc_str(),
-            NULL );
-
-    if ( !web_check_password( reqinfo->request_method,
-                                ha1,
-                                ah.uri,
-                                ah.nonce,
-                                ah.nc,
-                                ah.cnonce,
-                                ah.qop,
-                                ah.response ) ) {
-        // Username/password wrong
-        wxString strErr =
-                wxString::Format(_("[Webserver Client] Host [%s] User [%s] NOT allowed to connect.\n"),
-                reqinfo->remote_addr,
-                (const char *)pUserItem->getUserName().mbc_str());
-        gpobj->logMsg(strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY);
-        web_send_digest_access_authentication_request( conn, NULL );
-        return WEB_ERROR;
+            send_basic_authorization_request( conn );
+            return 401;
     }
 
     return WEB_OK;
@@ -8224,7 +8260,7 @@ int init_webserver( void )
 
     // Set authorization handlers
     web_set_auth_handler( gpobj->m_web_ctx, "/vscp", check_admin_authorization, NULL );
-    web_set_auth_handler( gpobj->m_web_ctx, "/vscp", check_rest_authorization, NULL );
+    web_set_auth_handler( gpobj->m_web_ctx, "/vscp/rest", check_rest_authorization, NULL );
 
     // WS site for the websocket connection
     web_set_websocket_handler( gpobj->m_web_ctx,

@@ -25,6 +25,8 @@
 #ifndef VSCPWEB_HEADER_INCLUDED
 #define VSCPWEB_HEADER_INCLUDED
 
+#include <time.h>   // for time_t
+
 #include <vscp.h>
 #include <version.h>
 
@@ -124,6 +126,9 @@ VSCPWEB_API unsigned web_exit( void );
 
 struct web_context;    // Handle for the HTTP service itself
 struct web_connection; // Handle for the individual connection
+
+void web_set_connection_code( struct web_connection *conn, int code );
+void web_set_must_close( struct web_connection *conn );
 
 // Maximum number of headers
 #define WEB_MAX_HEADERS (255)
@@ -1607,6 +1612,29 @@ web_check_password( const char *method,
                         const char *cnonce,
                         const char *qop,
                         const char *response );
+
+////////////////////////////////////////////////////////////////////////////////
+// web_gmt_time_string
+//
+// Convert time_t to a string. According to RFC2616, Sec 14.18, this must be
+// included in all responses other than 100, 101, 5xx.
+//
+
+void
+web_gmt_time_string(char *buf, size_t buf_len, time_t *t);
+
+VSCPWEB_API int
+web_send_no_cache_header(struct web_connection *conn);
+
+VSCPWEB_API int
+web_send_static_cache_header(struct web_connection *conn);
+
+VSCPWEB_API int
+web_send_additional_header(struct web_connection *conn);
+
+VSCPWEB_API const char *
+web_suggest_connection_header(const struct web_connection *conn);
+
 
 #define web_lua_load lua_load
 
