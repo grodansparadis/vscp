@@ -70,12 +70,18 @@ void help(char *szPrgname);
 
 void _sighandler( int sig )
 {
+    fprintf(stderr, "VSCPD: signal received, forced to stop.\n");
+    syslog( LOG_CRIT, "VSCPD: signal received, forced to stop.: %m");    
+    gpobj->logMsg(_("VSCPD: signal received, forced to stop."));
     gpobj->m_bQuit = true;
     gbStopDaemon = true;
     gbRestart = false;
-    syslog( LOG_CRIT, "[vscpd] signal received, forced to stop.: %m");
-    wxLogError(_("[vscpd] signal received, forced to stop."));
-    gpobj->logMsg(_("[vscpd] signal received, forced to stop."));
+    wxSleep( 1 );
+    fprintf(stderr, "VSCPD: Shutdown in progress 1.\n");
+    wxSleep( 1 );
+    fprintf(stderr, "VSCPD: Shutdown in progress 2.\n");
+    wxSleep( 1 );
+    fprintf(stderr, "VSCPD: Shutdown in progress 3.\n");
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -170,14 +176,14 @@ int main( int argc, char **argv )
     gpobj->logMsg( _("[vscpd] Configfile =") + strcfgfile + _(" \n") );
     if ( !theApp.init( strcfgfile, rootFolder ) ) {
         fprintf(stderr,"[vscpd] Failed to configure. Terminating.\n");
-        wxLogDebug(_("[vscpd] Failed to configure. Terminating.\n"));
+        fprintf( stderr, "VSCPD: Failed to configure. Terminating.\n");
         exit( -1 );
     }
 
-    wxLogDebug(_("VSCPD: Deleting the control object."));
+    fprintf( stderr, "VSCPD: Deleting the control object.\n");
     delete gpobj;
 
-    wxLogDebug(_("VSCPD: Bye, bye."));
+    fprintf( stderr, "VSCPD: Bye, bye.\n");
     exit( 0 );
 }
 
@@ -215,7 +221,7 @@ BOOL VSCPApp::init(wxString& strcfgfile, wxString& rootFolder )
         close(STDERR_FILENO);
 
         if ( open("/", 0 ) ) {
-            gpobj->logMsg(_("VSCPD: open / not 0: %m"));
+            fprintf( stderr, "VSCPD: open / not 0: %m" );
         }
 
         dup2(0, 1);
@@ -234,7 +240,7 @@ BOOL VSCPApp::init(wxString& strcfgfile, wxString& rootFolder )
     // Change working directory to root folder
     if ( chdir( (const char *)rootFolder.mbc_str() ) ) {
         gpobj->logMsg(_("VSCPD: Failed to change dir to rootdir"));
-        chdir("/tmp"); // seurity measure
+        chdir("/tmp"); // security measure
     }
 
     struct sigaction my_action;
@@ -269,38 +275,43 @@ BOOL VSCPApp::init(wxString& strcfgfile, wxString& rootFolder )
 
         gbRestart = false;
 
-        wxLogDebug(_("VSCPD: init."));
+        fprintf( stderr, "VSCPD: init.\n");
         if ( !gpobj->init( strcfgfile, rootFolder ) ) {
             fprintf(stderr, "Can't initialise daemon. Exiting.\n");
             syslog(LOG_CRIT, "Can't initialise daemon. Exiting.");
             return FALSE;
         }
 
-        wxLogDebug(_("VSCPD: run."));
+        fprintf( stderr, "VSCPD: run.\n");
         if ( !gpobj->run() ) {
             fprintf(stderr, "Unable to start the VSCPD application. Exiting.\n");
             syslog(LOG_CRIT, "Unable to start the VSCPD application. Exiting.");
             return FALSE;
         }
 
-        wxLogDebug(_("VSCPD: cleanup"));
+        fprintf( stderr, "VSCPD: cleanup.\n");
         if ( !gpobj->cleanup() ) {
             fprintf(stderr, "Unable to clean up the VSCPD application.\n");
             syslog( LOG_CRIT, "Unable to clean up the VSCPD application.");
             return FALSE;
         }
+        
+        fprintf( stderr, "VSCPD: cleanup done.\n");
 
         if ( gbRestart ) {
-            wxLogDebug(_("VSCPD: Will try to restart."));
+            fprintf( stderr, "VSCPD: Will try to restart.\n" );
         }
         else {
-            wxLogDebug(_("VSCPD: Will end things."));
+            fprintf( stderr, "VSCPD: Will end things.\n" );
         }
 
     } while ( gbRestart );
 
     // Remove the pid file
     unlink("/var/run/vscp/vscpd/vscpd.pid");
+    
+    delete gpobj;
+    gpobj = NULL;
 
     return TRUE;
 }

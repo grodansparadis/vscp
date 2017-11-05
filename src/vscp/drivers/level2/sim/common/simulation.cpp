@@ -120,8 +120,6 @@ static uint32_t getClockMilliseconds()
 }
 
 
-
-
 //////////////////////////////////////////////////////////////////////
 // CSim
 //
@@ -137,6 +135,7 @@ CSim::CSim()
     
     ::wxInitialize();
 }
+
 
 //////////////////////////////////////////////////////////////////////
 // ~CSim
@@ -414,7 +413,10 @@ CWrkTread::CWrkTread()
     m_measurementType = VSCP_TYPE_MEASUREMENT_TEMPERATURE;
     
     for( index = 0; index < SIM_DECISION_MATRIX_ROWS; ++index ) {
-        memcpy( &m_registers[ SIM_USER_REG_DECISION_MATRIX + index * sizeof(gdefaultDM) ], gdefaultDM, sizeof(gdefaultDM) );
+        memcpy( &m_registers[ SIM_USER_REG_DECISION_MATRIX + 
+                    index * sizeof(gdefaultDM) ], 
+                gdefaultDM, 
+                sizeof(gdefaultDM) );
     }
 
     // init standard regs
@@ -983,18 +985,19 @@ dumb_fill_data:
     
 #ifdef WIN32
 #else            
-            syslog( LOG_DEBUG,
-                        "[VSCPSimDrv] %s",
-                        ( const char * ) "Going into worker thread loop." );
+    syslog( LOG_DEBUG,
+                "[VSCPSimDrv] %s",
+                ( const char * )"Going into worker thread loop." );
 #endif    
     
-    while (!TestDestroy() && !m_pObj->m_bQuit) {
+    while ( !TestDestroy() && !m_pObj->m_bQuit ) {
 
         if ( wxSEMA_TIMEOUT == m_pObj->m_semSendQueue.WaitTimeout( 500 ) ) {
          
             // Should a simulated measurement event be sent?
             if ( m_registers[ SIM_USER_REG_INTERVAL ] &&
-                 ( ( ::wxGetLocalTimeMillis() - lastSendEvent ) > ( ( uint32_t )m_registers[ SIM_USER_REG_INTERVAL ] * 1000 ) ) ) {
+                 ( ( ::wxGetLocalTimeMillis() - lastSendEvent ) > 
+                    ( ( uint32_t )m_registers[ SIM_USER_REG_INTERVAL ] * 1000 ) ) ) {
 
                 // Save new time
                 lastSendEvent = ::wxGetLocalTimeMillis();
@@ -1023,10 +1026,10 @@ dumb_fill_data:
                         if ( SIM_CODING_NORMALIZED == m_registers[ SIM_USER_REG_CODING ] ) {
 
                             if ( vscp_convertFloatToNormalizedEventData( eventEx.data,
-                                                                            &eventEx.sizeData,
-                                                                            val,
-                                                                            m_registers[ SIM_USER_REG_UNIT ],
-                                                                            m_registers[ SIM_USER_REG_INDEX ] ) ) {
+                                    &eventEx.sizeData,
+                                    val,
+                                    m_registers[ SIM_USER_REG_UNIT ],
+                                    m_registers[ SIM_USER_REG_INDEX ] ) ) {
 
                                 if ( vscp_convertVSCPfromEx( pEvent, &eventEx ) ) {
 
@@ -1072,9 +1075,9 @@ dumb_fill_data:
                             pEvent->pdata = NULL;
 
                             if ( vscp_makeFloatMeasurementEvent( pEvent,
-                                                                    val,
-                                                                    m_registers[ SIM_USER_REG_UNIT ],
-                                                                    m_registers[ SIM_USER_REG_INDEX ] ) ) {
+                                        val,
+                                        m_registers[ SIM_USER_REG_UNIT ],
+                                        m_registers[ SIM_USER_REG_INDEX ] ) ) {
 
                                 // OK send the event
                                 if ( vscp_doLevel2Filter( pEvent, &m_vscpfilter ) ) {
@@ -1098,10 +1101,12 @@ dumb_fill_data:
                             }
                             
                         }
-                        else if ( SIM_CODING_STRING == m_registers[ SIM_USER_REG_CODING ] ) {
+                        else if ( SIM_CODING_STRING == 
+                                    m_registers[ SIM_USER_REG_CODING ] ) {
 
                             pEvent->head = VSCP_PRIORITY_NORMAL;
-                            memcpy( pEvent->GUID, m_registers + VSCP_STD_REGISTER_GUID, 16 );
+                            memcpy( pEvent->GUID, m_registers + 
+                                    VSCP_STD_REGISTER_GUID, 16 );
                             pEvent->timestamp = vscp_makeTimeStamp();
                             vscp_setEventDateTimeBlockToNow( pEvent );
                             pEvent->sizeData = 0;
@@ -1110,9 +1115,9 @@ dumb_fill_data:
                             pEvent->pdata = NULL;
 
                             if ( vscp_makeStringMeasurementEvent( pEvent,
-                                                                    val,
-                                                                    m_registers[ SIM_USER_REG_UNIT ],
-                                                                    m_registers[ SIM_USER_REG_INDEX ] ) ) {
+                                            val,
+                                            m_registers[ SIM_USER_REG_UNIT ],
+                                            m_registers[ SIM_USER_REG_INDEX ] ) ) {
 
                                 // OK send the event
                                 if ( vscp_doLevel2Filter( pEvent, &m_vscpfilter ) ) {
@@ -1219,7 +1224,9 @@ dumb_fill_data:
                             vscp_setEventExDateTimeBlockToNow( &eventEx );
                             eventEx.sizeData = 2;
                             eventEx.data[ 0 ] = pEvent->pdata[ 1 ];   // Reg
-                            eventEx.data[ 1 ] = writeLevel1Register( pEvent->pdata[ 1 ], pEvent->pdata[ 2 ] );
+                            eventEx.data[ 1 ] = 
+                                    writeLevel1Register( pEvent->pdata[ 1 ], 
+                                                         pEvent->pdata[ 2 ] );
                             eventEx.vscp_class = VSCP_CLASS1_PROTOCOL;
                             eventEx.vscp_type = VSCP_TYPE_PROTOCOL_RW_RESPONSE;
 
@@ -1237,7 +1244,8 @@ dumb_fill_data:
                             uint8_t len = pEvent->pdata[ 2 ];
 
                             for ( i = 0; i < len; i++ ) {
-                                eventEx.data[ ( i % 7 ) + 1 ] = readLevel1Register( offset + i );
+                                eventEx.data[ ( i % 7 ) + 1 ] = 
+                                        readLevel1Register( offset + i );
 
                                 if ( ( i % 7 ) == 6 || i == ( len - 1 ) ) {
                                     uint8_t bytes;
@@ -1370,6 +1378,7 @@ dumb_fill_data:
                         }
                     }
                     else if ( VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_WRITE == pEvent->vscp_type ) {
+                        
                         if ( ( NULL != pEvent->pdata ) &&
                              ( m_guid.getNickname() == pEvent->pdata[ 0 ] ) ) {
 

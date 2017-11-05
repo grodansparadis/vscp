@@ -74,6 +74,7 @@
         <db_vscp_data>/srv/vscp/vscp_data.sqlite3</db_vscp_data>
         <db_vscp_variable>/srv/vscp/variable.sqlite3</db_vscp_variable>
         <db_vscp_dm>/srv/vscp/dm.sqlite3</db_vscp_dm>
+        <db_vscp_log>/srv/vscp/logs/vscpd_log.sqlite3</db_vscp_log>
 
     </general>
 

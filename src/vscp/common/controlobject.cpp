@@ -273,7 +273,7 @@ CControlObject::CControlObject()
     // No databases opened yet
     m_db_vscp_daemon = NULL;
     m_db_vscp_data = NULL;
-
+    m_db_vscp_log = NULL;
 
     // Control UDP Interface
     m_udpInfo.m_bEnable = false;
@@ -448,6 +448,8 @@ ssss = _("1234");
 
 CControlObject::~CControlObject()
 {
+    fprintf( stderr, "ControlObject: Final death starting.\n");
+    
     // Remove objects in Client send queue
     VSCPEventList::iterator iterVSCP;
 
@@ -477,6 +479,8 @@ CControlObject::~CControlObject()
     //gpobj->m_mutexUDPInfo.Unlock();
 
     m_udpInfo.m_remotes.Clear();
+    
+    fprintf( stderr, "ControlObject: Final death ending.\n");
 
 }
 
@@ -653,7 +657,13 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
 
         }
         else {
-            // Database is open. Read configuration data from it
+            
+            // Database is open. 
+            
+            // Add possible missing configuration values
+            addDeafultConfigValues();
+            
+            // Read configuration data
             readConfigurationDB();
         }
 
@@ -786,6 +796,7 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
     else {
 
         if ( m_path_db_vscp_log.IsOk() ) {
+            
             // We need to create the database from scratch. This may not work if
             // the database is in a read only location.
             fprintf( stderr, "VSCP Server logging database does not exist - will be created.\n" );
@@ -793,26 +804,34 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
             fprintf( stderr, "%s", (const char *)str.mbc_str() );
 
             if ( SQLITE_OK == sqlite3_open( (const char *)m_path_db_vscp_log.GetFullPath().mbc_str(),
-                                            &m_db_vscp_log ) ) {
+                                                    &m_db_vscp_log ) ) {
                 // create the config. database.
                 doCreateLogTable();
             }
             else {
-                fprintf( stderr, "Failed to create vscp log database - will not be used.\n" );
+                str.Printf( _("Failed to create vscp log database - will not be used.  Error=%s\n"), 
+                            sqlite3_errmsg( m_db_vscp_log ) );
+                fprintf( stderr, "%s", (const char *)str.mbc_str() );
+                if ( NULL != m_db_vscp_log ) sqlite3_close( m_db_vscp_log );
+                m_db_vscp_log = NULL;
             }
         }
         else {
             fprintf( stderr, "VSCP Server logging database path invalid - will not be used.\n" );
             str.Printf(_("Path=%s\n"), (const char *)m_path_db_vscp_log.GetFullPath().mbc_str() );
             fprintf( stderr, "%s", (const char *)str.mbc_str() );
+            if ( NULL != m_db_vscp_log ) sqlite3_close( m_db_vscp_log );
+            m_db_vscp_log = NULL;
         }
 
     }
 
     // https://www.sqlite.org/wal.html
     // http://stackoverflow.com/questions/3852068/sqlite-insert-very-slow
-    sqlite3_exec( m_db_vscp_log, "PRAGMA journal_mode = WAL", NULL, NULL, NULL );
-    sqlite3_exec( m_db_vscp_log, "PRAGMA synchronous = NORMAL", NULL, NULL, NULL );
+    if ( NULL != m_db_vscp_log ) {
+        sqlite3_exec( m_db_vscp_log, "PRAGMA journal_mode = WAL", NULL, NULL, NULL );
+        sqlite3_exec( m_db_vscp_log, "PRAGMA synchronous = NORMAL", NULL, NULL, NULL );
+    }
 
     // * * * VSCP Server data database - NEVER created * * *
 
@@ -857,8 +876,8 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
     //==========================================================================
 
     m_userList.addSuperUser( m_admin_user,
-                            m_admin_password,
-                            m_admin_allowfrom );          // Remotes allows to connect
+                                m_admin_password,
+                                m_admin_allowfrom ); // Remotes allows to connect
 
 
     //==========================================================================
@@ -1107,7 +1126,7 @@ bool CControlObject::run( void )
     removeClient( pClientItem );
     m_wxClientMutex.Unlock();
 
-    wxLogDebug(_("ControlObject: Done"));
+    fprintf(stderr, "ControlObject: Run - Done\n" );
     return true;
 }
 
@@ -1117,32 +1136,31 @@ bool CControlObject::run( void )
 
 bool CControlObject::cleanup( void )
 {
-    logMsg(_("Giving worker threads time to stop operations..."),DAEMON_LOGMSG_DEBUG);
+    fprintf( stderr, "ControlObject: cleanup - Giving worker threads time to stop operations...\n");
     sleep( 2 ); // Give threads some time to end
 
-    logMsg(_("Stopping VSCP Server worker thread..."),DAEMON_LOGMSG_DEBUG);
+    fprintf( stderr, "ControlObject: cleanup - Stopping VSCP Server worker thread...\n");
     stopDaemonWorkerThread();
 
-    logMsg(_("Stopping client worker thread..."),DAEMON_LOGMSG_DEBUG);
+    fprintf( stderr, "ControlObject: cleanup - Stopping client worker thread...\n");
     stopClientWorkerThread();
 
-    logMsg(_("Stopping device worker thread..."),DAEMON_LOGMSG_DEBUG);
+    fprintf( stderr, "ControlObject: cleanup - Stopping device worker thread...\n");
     stopDeviceWorkerThreads();
 
-    logMsg(_("Stopping TCP/IP worker thread..."),DAEMON_LOGMSG_DEBUG);
+    fprintf( stderr, "ControlObject: cleanup - Stopping TCP/IP worker thread...\n");
     stopTcpWorkerThread();
 
-    logMsg(_("Stopping UDP worker thread..."),DAEMON_LOGMSG_DEBUG);
+    fprintf( stderr, "ControlObject: cleanup - Stopping UDP worker thread...\n");
     stopUDPWorkerThread();
 
-    logMsg(_("Stopping Multicast worker threads..."),DAEMON_LOGMSG_DEBUG);
+    fprintf( stderr, "ControlObject: cleanup - Stopping Multicast worker threads...\n");
     stopMulticastWorkerThreads();
 
-    logMsg(_("Stopping Web Server worker thread..."),DAEMON_LOGMSG_DEBUG);
+    fprintf( stderr, "ControlObject: cleanup - Stopping Web Server worker thread...\n");
     // TODO stop web server
 
-
-    logMsg(_("Closing databases."),DAEMON_LOGMSG_DEBUG);
+    fprintf( stderr, "ControlObject: cleanup - Closing databases.\n");
 
     // Close the VSCP data database
     sqlite3_close( m_db_vscp_data );
@@ -1159,7 +1177,7 @@ bool CControlObject::cleanup( void )
     // Clean up SQLite lib allocations
     sqlite3_shutdown();
 
-    wxLogDebug( _("ControlObject: Cleanup done.") );
+    fprintf( stderr, "ControlObject: Cleanup done.\n");
     return true;
 }
 
@@ -1709,8 +1727,8 @@ void CControlObject::logMsg(const wxString& msgin, const uint8_t level, const ui
             (const char *)msg.mbc_str() );
 
         if ( SQLITE_OK != sqlite3_exec( m_db_vscp_log,
-                                        sql, NULL, NULL, &zErrMsg)) {
-            wxPrintf( "Failed to write message to log database. Error is: %s Message is: %s\n",
+                                        sql, NULL, NULL, &zErrMsg ) ) {
+            wxPrintf( "Failed to write message to log database. Error is: %s -- Message is: %s\n",
                         zErrMsg,
                         (const char *)msg.mbc_str() );
         }
@@ -2407,16 +2425,16 @@ bool CControlObject::readXMLConfigurationGeneral( wxString& strcfgfile )
 
     wxString wxlogmsg = wxString::Format(_("Reading XML GENERAL configuration from [%s]\n"),
                                             (const char *)strcfgfile.c_str() );
-    logMsg( wxlogmsg  );
+    fprintf( stderr, (const char *)wxlogmsg.mbc_str() );
 
-    if (!doc.Load(strcfgfile)) {
-        logMsg(_("Can't load logfile. Is path correct?\n")  );
+    if ( !doc.Load( strcfgfile ) ) {
+        fprintf( stderr, "Can't load logfile. Is path correct?\n" );
         return false;
     }
 
     // start processing the XML file
     if (doc.GetRoot()->GetName() != _("vscpconfig")) {
-        logMsg(_("Can't read logfile. Maybe it is invalid!\n")  );
+        fprintf( stderr, "Can't read logfile. Maybe it is invalid!\n" );
         return false;
     }
 
@@ -2503,6 +2521,36 @@ bool CControlObject::readXMLConfigurationGeneral( wxString& strcfgfile )
                     wxString str = subchild->GetNodeContent();
                     m_maxItemsInClientReceiveQueue = vscp_readStringValue(str);
 
+                }
+                else if (subchild->GetName() == _("db_vscp_daemon")) {
+                    wxString str = subchild->GetNodeContent().Trim();
+                    if ( str.Length() ) {
+                        m_path_db_vscp_daemon.Assign( str );
+                    }
+                }
+                else if (subchild->GetName() == _("db_vscp_data")) {
+                    wxString str = subchild->GetNodeContent().Trim();
+                    if ( str.Length() ) {
+                        m_path_db_vscp_data.Assign( str );
+                    }
+                }
+                else if (subchild->GetName() == _("db_vscp_variable")) {
+                    wxString str = subchild->GetNodeContent().Trim();
+                    if ( str.Length() ) {
+                        m_variables.m_dbFilename.Assign( str );
+                    }
+                }
+                else if (subchild->GetName() == _("db_vscp_dm")) {
+                    wxString str = subchild->GetNodeContent().Trim();
+                    if ( str.Length() ) {
+                        m_dm.m_path_db_vscp_dm.Assign( str );
+                    }
+                }
+                else if (subchild->GetName() == _("db_vscp_log")) {
+                    wxString str = subchild->GetNodeContent().Trim();
+                    if ( str.Length() ) {
+                        m_path_db_vscp_log.Assign( str );
+                    }
                 }
 
                 subchild = subchild->GetNext();
@@ -3560,7 +3608,8 @@ bool CControlObject::readConfigurationXML( wxString& strcfgfile )
         }
 
         // Level I driver
-        else if ( ( child->GetName() == _("canaldriver") ) || ( child->GetName() == _("level1driver") ) ) {
+        else if ( ( child->GetName() == _("canaldriver") ) || 
+                  ( child->GetName() == _("level1driver") ) ) {
 
             wxXmlNode *subchild = child->GetChildren();
             while (subchild) {
@@ -3674,8 +3723,10 @@ bool CControlObject::readConfigurationXML( wxString& strcfgfile )
             }
 
         }
+        
         // Level II driver
-        else if ( ( child->GetName() == _("vscpdriver") ) || ( child->GetName() == _("level2driver") ) ) {
+        else if ( ( child->GetName() == _("vscpdriver") ) || 
+                  ( child->GetName() == _("level2driver") ) ) {
 
             wxXmlNode *subchild = child->GetChildren();
 
@@ -4046,17 +4097,40 @@ xml_table_error:
 bool CControlObject::addConfigurationValueToDatabase( const char *pName,
                                                         const char *pValue )
 {
+    sqlite3_stmt *ppStmt;
     char *pErrMsg = 0;
     char *psql;
 
-    fprintf( stderr, "Add %s = %s to configuration database\n", pName, pValue );
-
     // Check if database is open
     if ( NULL == m_db_vscp_daemon ) return false;
+    
+    // Check if the variable is defined already
+    //      if it is - just return true
+    psql = sqlite3_mprintf( VSCPDB_CONFIG_FIND_ITEM, pName );
+    if ( SQLITE_OK != sqlite3_prepare( m_db_vscp_daemon,
+                                        psql,
+                                        -1,
+                                        &ppStmt,
+                                        NULL ) ) {
+        sqlite3_free( psql );
+        fprintf( stderr, 
+                    "Failed to check if %s = %s is already in configuration database\n", 
+                    pName, 
+                    pValue );
+        return false; 
+    }
 
+    sqlite3_free( psql );
+    
+    if ( SQLITE_ROW  == sqlite3_step( ppStmt ) ) {
+        return true; // Record is there already
+    }
+   
     m_db_vscp_configMutex.Lock();
+    
+    fprintf( stderr, "Add %s = %s to configuration database\n", pName, pValue );
 
-    // Create settings db
+    // Create settings in db
     psql = sqlite3_mprintf( VSCPDB_CONFIG_INSERT, pName, pValue );
 
     if ( SQLITE_OK != sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg ) ) {
@@ -4075,55 +4149,17 @@ bool CControlObject::addConfigurationValueToDatabase( const char *pName,
     return true;
 }
 
-
 ///////////////////////////////////////////////////////////////////////////////
-// doCreateConfiguration
-//
-// Create configuration table.
-//
-// Note that fprintf needs to be used here as the logging mechanism
-// is not activated yet.
+// addDeafultConfigValues
 //
 
-bool CControlObject::doCreateConfigurationTable( void )
+void CControlObject::addDeafultConfigValues( void ) 
 {
-    char *pErrMsg = 0;
-    const char *psql;
-
-    fprintf( stderr, "Creating settings database..\n" );
-
-    // Check if database is open
-    if ( NULL == m_db_vscp_daemon ) return false;
-
-    m_db_vscp_configMutex.Lock();
-
-    // Create settings db
-    psql = VSCPDB_CONFIG_CREATE;
-    if ( SQLITE_OK  !=  sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg ) ) {
-        fprintf( stderr,
-                    "Creation of the VSCP settings database failed with message %s",
-                    pErrMsg );
-        return false;
-    }
-
-    // Create name index
-    psql = VSCPDB_CONFIG_CREATE_INDEX;
-    if ( SQLITE_OK  !=  sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg ) ) {
-        m_db_vscp_configMutex.Unlock();
-        fprintf( stderr,
-                    "Creation of the VSCP settings index failed with message %s",
-                    pErrMsg );
-        return false;
-    }
-
-    fprintf( stderr, "Writing default configuration database content..\n" );
-
     // Add default settings (set as defaults in SQL create expression))
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_DBVERSION, VSCPDB_CONFIG_DEFAULT_DBVERSION );
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_CLIENTBUFFERSIZE, VSCPDB_CONFIG_DEFAULT_CLIENTBUFFERSIZE );
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_GUID, VSCPDB_CONFIG_DEFAULT_GUID );
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_SERVERNAME, VSCPDB_CONFIG_DEFAULT_SERVERNAME );
-    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_PATH_LOGDB, VSCPDB_CONFIG_DEFAULT_PATH_LOGDB );
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_TCPIP_ADDR, VSCPDB_CONFIG_DEFAULT_TCPIP_ADDR );
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_ANNOUNCE_ADDR, VSCPDB_CONFIG_DEFAULT_ANNOUNCE_ADDR );
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_ANNOUNCE_TTL, VSCPDB_CONFIG_DEFAULT_ANNOUNCE_TTL );
@@ -4232,7 +4268,52 @@ bool CControlObject::doCreateConfigurationTable( void )
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_AUTOMATION_HEARTBEAT_ENABLE, VSCPDB_CONFIG_DEFAULT_AUTOMATION_HEARTBEAT_ENABLE );
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_AUTOMATION_CAPABILITIES_ENABLE, VSCPDB_CONFIG_DEFAULT_AUTOMATION_CAPABILITIES_ENABLE );
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_AUTOMATION_CAPABILITIES_INTERVAL, VSCPDB_CONFIG_DEFAULT_AUTOMATION_CAPABILITIES_INTERVAL );
+    
+}
 
+///////////////////////////////////////////////////////////////////////////////
+// doCreateConfiguration
+//
+// Create configuration table.
+//
+// Note that fprintf needs to be used here as the logging mechanism
+// is not activated yet.
+//
+
+bool CControlObject::doCreateConfigurationTable( void )
+{
+    char *pErrMsg = 0;
+    const char *psql;
+
+    fprintf( stderr, "Creating settings database..\n" );
+
+    // Check if database is open
+    if ( NULL == m_db_vscp_daemon ) return false;
+
+    m_db_vscp_configMutex.Lock();
+
+    // Create settings db
+    psql = VSCPDB_CONFIG_CREATE;
+    if ( SQLITE_OK  !=  sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg ) ) {
+        fprintf( stderr,
+                    "Creation of the VSCP settings database failed with message %s",
+                    pErrMsg );
+        return false;
+    }
+
+    // Create name index
+    psql = VSCPDB_CONFIG_CREATE_INDEX;
+    if ( SQLITE_OK  !=  sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg ) ) {
+        m_db_vscp_configMutex.Unlock();
+        fprintf( stderr,
+                    "Creation of the VSCP settings index failed with message %s",
+                    pErrMsg );
+        return false;
+    }
+
+    fprintf( stderr, "Writing default configuration database content..\n" );
+    addDeafultConfigValues();
+    
     m_db_vscp_configMutex.Unlock();
 
     return true;
@@ -4311,11 +4392,6 @@ bool CControlObject::readConfigurationDB( void )
                         VSCPDB_CONFIG_NAME_SERVERNAME ) ) {
             m_strServerName = wxString::FromUTF8( (const char * )pValue );
         }
-        // Path to log db
-        else if ( !vscp_strcasecmp( (const char * )pName,
-                        VSCPDB_CONFIG_NAME_PATH_LOGDB ) ) {
-            m_path_db_vscp_log.Assign( wxString::FromUTF8( (const char * )pValue ) );
-        }
         // TCP/IP interface address
         else if ( !vscp_strcasecmp( (const char * )pName,
                         VSCPDB_CONFIG_NAME_TCPIP_ADDR ) ) {
@@ -4358,28 +4434,32 @@ bool CControlObject::readConfigurationDB( void )
         else if ( !vscp_strcasecmp( (const char * )pName,
                         VSCPDB_CONFIG_NAME_UDP_PASSWORD )  ) {
             gpobj->m_mutexUDPInfo.Lock();
-            m_udpInfo.m_password = wxString::FromUTF8( (const char *)pValue );
+            m_udpInfo.m_password = 
+                    wxString::FromUTF8( (const char *)pValue );
             gpobj->m_mutexUDPInfo.Unlock();
         }
         // UDP un-secure enable
         else if ( !vscp_strcasecmp( (const char * )pName,
                         VSCPDB_CONFIG_NAME_UDP_UNSECURE_ENABLE )  ) {
             gpobj->m_mutexUDPInfo.Lock();
-            m_udpInfo.m_bAllowUnsecure = atoi( (const char *)pValue ) ? true : false;
+            m_udpInfo.m_bAllowUnsecure = 
+                    atoi( (const char *)pValue ) ? true : false;
             gpobj->m_mutexUDPInfo.Unlock();
         }
         // UDP Filter
         else if ( !vscp_strcasecmp( (const char * )pName,
                         VSCPDB_CONFIG_NAME_UDP_FILTER )  ) {
             gpobj->m_mutexUDPInfo.Lock();
-            vscp_readFilterFromString( &m_udpInfo.m_filter, wxString::FromUTF8( (const char *)pValue ) );
+            vscp_readFilterFromString( &m_udpInfo.m_filter, 
+                                        wxString::FromUTF8( (const char *)pValue ) );
             gpobj->m_mutexUDPInfo.Unlock();
         }
         // UDP Mask
         else if ( !vscp_strcasecmp( (const char * )pName,
                         VSCPDB_CONFIG_NAME_UDP_MASK )  ) {
             gpobj->m_mutexUDPInfo.Lock();
-            vscp_readMaskFromString( &m_udpInfo.m_filter, wxString::FromUTF8( (const char *)pValue ) );
+            vscp_readMaskFromString( &m_udpInfo.m_filter, 
+                                        wxString::FromUTF8( (const char *)pValue ) );
             gpobj->m_mutexUDPInfo.Unlock();
         }
         // UDP GUID
@@ -4399,7 +4479,8 @@ bool CControlObject::readConfigurationDB( void )
         // Enable Multicast interface
         else if ( !vscp_strcasecmp( (const char * )pName,
                         VSCPDB_CONFIG_NAME_MULTICAST_ENABLE )  ) {
-            m_multicastInfo.m_bEnable = atoi( (const char *)pValue ) ? true : false;
+            m_multicastInfo.m_bEnable = 
+                    atoi( (const char *)pValue ) ? true : false;
         }
         // Path to DM database file
         else if ( !vscp_strcasecmp( (const char * )pName,

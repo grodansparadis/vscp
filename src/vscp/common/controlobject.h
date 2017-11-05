@@ -412,6 +412,13 @@ public:
                                              const char *pValue );
 
      /*!
+      * Adds default configuration values to the configuration table. If
+      * a configuration value does not exist it is created to make it easy to 
+      * add new values to later software versions
+      */
+     void addDeafultConfigValues( void ); 
+     
+     /*!
       * Create configuration table
       * @return true on success
       */

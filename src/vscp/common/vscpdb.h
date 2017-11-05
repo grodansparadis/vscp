@@ -39,7 +39,7 @@
 #define VSCPDB_CONFIG_CREATE_INDEX "CREATE INDEX `idxname` ON config ('vscpd_name');"
 
 #define VSCPDB_CONFIG_FIND_ALL "SELECT * FROM config;"
-#define VSCPDB_CONFIG_FIND_ITEM "SELECT * FROM config WHERE name='%q';"
+#define VSCPDB_CONFIG_FIND_ITEM "SELECT * FROM config WHERE vscpd_name='%q';"
 #define VSCPDB_CONFIG_UPDATE_ITEM "UPDATE 'config' SET 'vscpd_value' ='%s' WHERE vscpd_name='%q';"
 #define VSCPDB_CONFIG_INSERT "INSERT INTO 'config' (vscpd_name,vscpd_value) VALUES ('%q','%q');"
 
@@ -61,9 +61,6 @@
 
 #define VSCPDB_CONFIG_NAME_SERVERNAME                   "servername"
 #define VSCPDB_CONFIG_DEFAULT_SERVERNAME                "THE-VSCP-DAEMON"
-
-#define VSCPDB_CONFIG_NAME_PATH_LOGDB                   "path_log"
-#define VSCPDB_CONFIG_DEFAULT_PATH_LOGDB                "/srv/vscp/logs/vscpd_log.sqlite3"
 
 #define VSCPDB_CONFIG_NAME_TCPIP_ADDR                   "tcpipinterface_address"
 #define VSCPDB_CONFIG_DEFAULT_TCPIP_ADDR                "tcp://9598"
@@ -138,8 +135,8 @@
 #define VSCPDB_CONFIG_NAME_WEB_AUTHENTICATION_DOMAIN    "web_authentication_domain"
 #define VSCPDB_CONFIG_DEFAULT_WEB_AUTHENTICATION_DOMAIN "mydomain.com"
 
-#define VSCPDB_CONFIG_NAME_WEB_ENABLE_AUTH_DOMAIN_CHECK "web_enable_auth_domain_check"
-#define VSCPDB_CONFIG_DEFAULT_WEB_ENABLE_AUTH_DOMAIN_CHECK "1"
+#define VSCPDB_CONFIG_NAME_WEB_ENABLE_AUTH_DOMAIN_CHECK     "web_enable_auth_domain_check"
+#define VSCPDB_CONFIG_DEFAULT_WEB_ENABLE_AUTH_DOMAIN_CHECK  "1"
 
 #define VSCPDB_CONFIG_NAME_WEB_SSL_CERTIFICAT           "web_ssl_certificat"
 #define VSCPDB_CONFIG_DEFAULT_WEB_SSL_CERTIFICAT        "/srv/vscp/certs/server.pem"
@@ -159,8 +156,8 @@
 #define VSCPDB_CONFIG_NAME_WEB_SSL_VERIFY_DEPTH         "web_ssl_verify_depth"
 #define VSCPDB_CONFIG_DEFAULT_WEB_SSL_VERIFY_DEPTH      "9"
 
-#define VSCPDB_CONFIG_NAME_WEB_SSL_DEFAULT_VERIFY_PATHS "web_ssl_default_verify_paths"
-#define VSCPDB_CONFIG_DEFAULT_WEB_SSL_DEFAULT_VERIFY_PATHS "1"
+#define VSCPDB_CONFIG_NAME_WEB_SSL_DEFAULT_VERIFY_PATHS     "web_ssl_default_verify_paths"
+#define VSCPDB_CONFIG_DEFAULT_WEB_SSL_DEFAULT_VERIFY_PATHS  "1"
 
 #define VSCPDB_CONFIG_NAME_WEB_SSL_CHIPHER_LIST         "web_ssl_cipher_list"
 #define VSCPDB_CONFIG_DEFAULT_WEB_SSL_CHIPHER_LIST      "DES-CBC3-SHA:AES128-SHA:AES128-GCM-SHA256"
@@ -186,8 +183,8 @@
 #define VSCPDB_CONFIG_NAME_WEB_TROTTLE                  "web_trottle"
 #define VSCPDB_CONFIG_DEFAULT_WEB_TROTTLE               ""
 
-#define VSCPDB_CONFIG_NAME_WEB_ENABLE_DIRECTORY_LISTING "web_enable_directory_listing"
-#define VSCPDB_CONFIG_DEFAULT_WEB_ENABLE_DIRECTORY_LISTING "1"
+#define VSCPDB_CONFIG_NAME_WEB_ENABLE_DIRECTORY_LISTING     "web_enable_directory_listing"
+#define VSCPDB_CONFIG_DEFAULT_WEB_ENABLE_DIRECTORY_LISTING  "1"
 
 #define VSCPDB_CONFIG_NAME_WEB_ENABLE_KEEP_ALIVE        "web_enable_keep_alive"
 #define VSCPDB_CONFIG_DEFAULT_WEB_ENABLE_KEEP_ALIVE     "0"
@@ -216,8 +213,8 @@
 #define VSCPDB_CONFIG_NAME_WEB_REQUEST_TIMEOUT_MS       "web_request_timeout_ms"
 #define VSCPDB_CONFIG_DEFAULT_WEB_REQUEST_TIMEOUT_MS    "30000"
 
-#define VSCPDB_CONFIG_NAME_WEB_LINGER_TIMEOUT_MS       "web_linger_timeout_ms"
-#define VSCPDB_CONFIG_DEFAULT_WEB_LINGER_TIMEOUT_MS    "-1"
+#define VSCPDB_CONFIG_NAME_WEB_LINGER_TIMEOUT_MS        "web_linger_timeout_ms"
+#define VSCPDB_CONFIG_DEFAULT_WEB_LINGER_TIMEOUT_MS     "-1"
 
 #define VSCPDB_CONFIG_NAME_WEB_DECODE_URL               "web_decode_url"
 #define VSCPDB_CONFIG_DEFAULT_WEB_DECODE_URL            "1"
@@ -225,8 +222,8 @@
 #define VSCPDB_CONFIG_NAME_WEB_GLOBAL_AUTHFILE          "web_global_authfile"
 #define VSCPDB_CONFIG_DEFAULT_WEB_GLOBAL_AUTHFILE       ""
 
-#define VSCPDB_CONFIG_NAME_WEB_PER_DIRECTORY_AUTH_FILE  "web_per_directory_auth_file"
-#define VSCPDB_CONFIG_DEFAULT_WEB_PER_DIRECTORY_AUTH_FILE ""
+#define VSCPDB_CONFIG_NAME_WEB_PER_DIRECTORY_AUTH_FILE      "web_per_directory_auth_file"
+#define VSCPDB_CONFIG_DEFAULT_WEB_PER_DIRECTORY_AUTH_FILE   ""
 
 #define VSCPDB_CONFIG_NAME_WEB_SSI_PATTERNS             "web_ssi_patterns"
 #define VSCPDB_CONFIG_DEFAULT_WEB_SSI_PATTERNS          ""
@@ -332,8 +329,8 @@
 #define VSCPDB_CONFIG_NAME_AUTOMATION_SUNRISE_ENABLE    "automation_sunrise_enable"
 #define VSCPDB_CONFIG_DEFAULT_AUTOMATION_SUNRISE_ENABLE "1"
 
-#define VSCPDB_CONFIG_NAME_AUTOMATION_SUNSET_ENABLE    "automation_sunset_enable"
-#define VSCPDB_CONFIG_DEFAULT_AUTOMATION_SUNSET_ENABLE "1"
+#define VSCPDB_CONFIG_NAME_AUTOMATION_SUNSET_ENABLE     "automation_sunset_enable"
+#define VSCPDB_CONFIG_DEFAULT_AUTOMATION_SUNSET_ENABLE  "1"
 
 #define VSCPDB_CONFIG_NAME_AUTOMATION_SUNSET_TWILIGHT_ENABLE    "automation_sunset_twilight_enable"
 #define VSCPDB_CONFIG_DEFAULT_AUTOMATION_SUNSET_TWILIGHT_ENABLE "1"

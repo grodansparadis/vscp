@@ -152,7 +152,7 @@ bool CDeviceItem::startDriver( CControlObject *pCtrlObject )
     // *****************************************
 
     m_pdeviceThread = new deviceThread();
-    if (NULL != m_pdeviceThread) {
+    if ( NULL != m_pdeviceThread ) {
 
         m_pdeviceThread->m_pCtrlObject = pCtrlObject;
         m_pdeviceThread->m_pDeviceItem = this;
@@ -169,7 +169,8 @@ bool CDeviceItem::startDriver( CControlObject *pCtrlObject )
 
     }
     else {
-        pCtrlObject->logMsg(_("[Driver] - Unable to allocate memory for DeviceThread.\n") );
+        pCtrlObject->logMsg(_("[Driver] - Unable to allocate memory "
+                              "for DeviceThread.\n") );
     }
     
     pCtrlObject->logMsg(_("[Driver] - Started driver .") + m_strName + _("\n") );
@@ -184,12 +185,59 @@ bool CDeviceItem::startDriver( CControlObject *pCtrlObject )
 bool CDeviceItem::stopDriver()
 {
     if (NULL != m_pdeviceThread) {
+        
+        fprintf( stderr, 
+                 "CDeviceItem: Driver stop. [%s]\n",
+                 (const char *)m_strName.mbc_str() );
+        
         m_mutexdeviceThread.Lock();
-        m_bQuit = true;
-        m_pdeviceThread->Wait();
+        
+        if ( NULL != m_pdeviceThread->m_preceiveThread ) {
+            m_pdeviceThread->m_preceiveThread->m_bQuit = true;
+            fprintf( stderr, 
+                 "CDeviceItem: m_preceiveThread stop. [%s]\n",
+                 (const char *)m_strName.mbc_str() );
+            m_pdeviceThread->m_preceiveThread->Delete();
+            m_pdeviceThread->m_preceiveThread = NULL;
+        }
+        if ( NULL != m_pdeviceThread->m_pwriteThread ) {
+            m_pdeviceThread->m_pwriteThread->m_bQuit = true;
+            fprintf( stderr, 
+                 "CDeviceItem: m_pwriteThread stop. [%s]\n",
+                 (const char *)m_strName.mbc_str() );
+            m_pdeviceThread->m_pwriteThread->Delete(); 
+            m_pdeviceThread->m_pwriteThread = NULL;
+        }
+        if ( NULL != m_pdeviceThread->m_preceiveLevel2Thread ) {
+            m_pdeviceThread->m_preceiveLevel2Thread->m_bQuit = true;
+            fprintf( stderr, 
+                 "CDeviceItem: m_preceiveLevel2Thread stop. [%s]\n",
+                 (const char *)m_strName.mbc_str() );
+            m_pdeviceThread->m_preceiveLevel2Thread->Delete(); 
+            m_pdeviceThread->m_preceiveLevel2Thread = NULL;
+        }
+        if ( NULL != m_pdeviceThread->m_pwriteLevel2Thread ) {
+            m_pdeviceThread->m_pwriteLevel2Thread->m_bQuit = true;
+            fprintf( stderr, 
+                 "CDeviceItem: m_pwriteLevel2Thread stop. [%s]\n",
+                 (const char *)m_strName.mbc_str() );
+            m_pdeviceThread->m_pwriteLevel2Thread->Delete(); 
+            m_pdeviceThread->m_pwriteLevel2Thread = NULL;
+        }
+               
         m_mutexdeviceThread.Unlock();
-        delete m_pdeviceThread;
+        
+        m_bQuit = true;
+        fprintf( stderr, 
+                 "CDeviceItem: Driver asked to stop operation. [%s]\n",
+                 (const char *)m_strName.mbc_str());        
+        m_pdeviceThread->Delete();        
         m_pdeviceThread = NULL;
+        
+        fprintf( stderr, 
+                 "CDeviceItem: Driver stopping. [%s]\n",
+                 (const char *)m_strName.mbc_str());
+        
         return true;
     }
 

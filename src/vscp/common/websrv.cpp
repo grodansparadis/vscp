@@ -135,9 +135,9 @@ using namespace std;
 #endif
 
 // Uncomment to compile stock test pages
-//#define WEB_EXAMPLES
-#define EXAMPLE_URI "/__test"
-#define EXIT_URI "/__test_exit"
+#define WEB_EXAMPLES
+#define EXAMPLE_URI "/civetwebtest"
+#define EXIT_URI "/civetwebtest_exit"
 
 
 //#define USE_SSL_DH
@@ -5810,6 +5810,24 @@ vscp_configure( struct web_connection *conn, void *cbdata )
     web_printf( conn, "%s", (const char *)gpobj->m_variables.m_xmlPath.mbc_str() );
 
     web_printf( conn, "<hr>");
+    
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * ** * * * * * * * *
+
+    web_printf( conn, "<h4 id=\"header\" >&nbsp;Databases</h4> ");
+    
+    web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Path to VSCP server db:</b> ");
+    web_printf( conn, "%s", (const char *)gpobj->m_path_db_vscp_daemon.GetFullPath().mbc_str() );
+    web_printf( conn, "<br>");
+    
+    web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Path to VSCP data db:</b> ");
+    web_printf( conn, "%s", (const char *)gpobj->m_path_db_vscp_data.GetFullPath().mbc_str() );
+    web_printf( conn, "<br>");
+    
+    web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Path to logging db:</b> ");
+    web_printf( conn, "%s", (const char *)gpobj->m_path_db_vscp_log.GetFullPath().mbc_str() );
+    web_printf( conn, "<br>");
+    
+    web_printf( conn, "<hr>");
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * ** * * * * * * * *
 
@@ -7204,7 +7222,7 @@ field_stored(const char *path, long long file_size, void *user_data)
             path,
             (unsigned long) file_size);
 
-    return 0;
+    return WEB_OK;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -7285,7 +7303,7 @@ field_disp_read_on_the_fly( const char *key,
                                 const char *filename,
                                 char *path,
                                 size_t pathlen,
-                            void *user_data) {
+                                void *user_data) {
     struct tfiles_checksums *context = (struct tfiles_checksums *) user_data;
 
     (void)key;

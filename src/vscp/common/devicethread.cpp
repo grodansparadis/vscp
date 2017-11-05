@@ -380,17 +380,17 @@ void *deviceThread::Entry()
             // * * * * Non blocking version * * * *
 
             bool bActivity;
-            while (!TestDestroy() && !m_pDeviceItem->m_bQuit) {
+            while ( !TestDestroy() && !m_pDeviceItem->m_bQuit ) {
 
                 bActivity = false;
                 /////////////////////////////////////////////////////////////////////////////
                 //                           Receive from device						   //
                 /////////////////////////////////////////////////////////////////////////////
                 canalMsg msg;
-                if (m_pDeviceItem->m_proc_CanalDataAvailable(m_pDeviceItem->m_openHandle)) {
+                if ( m_pDeviceItem->m_proc_CanalDataAvailable( m_pDeviceItem->m_openHandle ) ) {
 
-                    if (CANAL_ERROR_SUCCESS ==
-                        m_pDeviceItem->m_proc_CanalReceive(m_pDeviceItem->m_openHandle, &msg)) {
+                    if ( CANAL_ERROR_SUCCESS ==
+                        m_pDeviceItem->m_proc_CanalReceive(m_pDeviceItem->m_openHandle, &msg ) ) {
 
                         bActivity = true;
 
@@ -420,11 +420,11 @@ void *deviceThread::Entry()
 
 
                 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-                //             Send messages (if any) in the outqueue
+                //          Send messages (if any) in the output queue
                 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
                 // Check if there is something to send
-                if (m_pDeviceItem->m_pClientItem->m_clientInputQueue.GetCount()) {
+                if ( m_pDeviceItem->m_pClientItem->m_clientInputQueue.GetCount() ) {
 
                     bActivity = true;
 
@@ -608,7 +608,8 @@ void *deviceThread::Entry()
             wxString prefix = tkz.GetNextToken();
 
             // Check if username is specified in the configuration file            
-            if ( m_pCtrlObject->m_variables.find(m_pDeviceItem->m_strName + _("_username"), variable ) ) {
+            if ( m_pCtrlObject->m_variables.find( m_pDeviceItem->m_strName +
+                                                    _("_username"), variable ) ) {
                 wxString str;
                 if (VSCP_DAEMON_VARIABLE_CODE_STRING == variable.getType()) {
                     str = variable.getValue();
@@ -617,7 +618,8 @@ void *deviceThread::Entry()
             }
 
             // Check if password is specified in the configuration file            
-            if ( m_pCtrlObject->m_variables.find(m_pDeviceItem->m_strName + _("_password"), variable ) ) {
+            if ( m_pCtrlObject->m_variables.find( m_pDeviceItem->m_strName +
+                                                    _("_password"), variable ) ) {
                 wxString str;
                 if (VSCP_DAEMON_VARIABLE_CODE_STRING == variable.getType()) {
                     str = variable.getValue();
@@ -626,7 +628,8 @@ void *deviceThread::Entry()
             }
 
             // Check if host is specified in the configuration file       
-            if ( m_pCtrlObject->m_variables.find(m_pDeviceItem->m_strName + _("_host"), variable ) ) {
+            if ( m_pCtrlObject->m_variables.find( m_pDeviceItem->m_strName + 
+                                                    _("_host"), variable ) ) {
                 wxString str;
                 if (VSCP_DAEMON_VARIABLE_CODE_STRING == variable.getType()) {
                     str = variable.getValue();
@@ -639,15 +642,17 @@ void *deviceThread::Entry()
         // Open up the driver
         m_pDeviceItem->m_openHandle =
             m_pDeviceItem->m_proc_VSCPOpen( m_pCtrlObject->m_driverUsername.mbc_str(),
-                                                ( const char * )m_pCtrlObject->m_driverPassword.mbc_str(),
-                                                ( const char * )strHost.mbc_str(),
-                                                0,
-                                                ( const char * )m_pDeviceItem->m_strName.mbc_str(),
-                                                ( const char * )m_pDeviceItem->m_strParameter.mbc_str() );
+                    ( const char * )m_pCtrlObject->m_driverPassword.mbc_str(),
+                    ( const char * )strHost.mbc_str(),
+                    0,
+                    ( const char * )m_pDeviceItem->m_strName.mbc_str(),
+                    ( const char * )m_pDeviceItem->m_strParameter.mbc_str() );
 
         if ( 0 == m_pDeviceItem->m_openHandle ) {
             // Free the library
-            m_pCtrlObject->logMsg( _( "[Device tread] Unable to open VSCP driver (check username/password/path/rights).\n" ) );
+            m_pCtrlObject->logMsg( _( "[Device tread] Unable to open VSCP "
+                                      "driver (check username/password/path/"
+                                      "rights).\n" ) );
             return NULL;
         }
 
@@ -657,7 +662,7 @@ void *deviceThread::Entry()
 
         m_pwriteLevel2Thread = new deviceLevel2WriteThread;
 
-        if (m_pwriteLevel2Thread) {
+        if ( m_pwriteLevel2Thread ) {
             m_pwriteLevel2Thread->m_pMainThreadObj = this;
             wxThreadError err;
             if (wxTHREAD_NO_ERROR == (err = m_pwriteLevel2Thread->Create())) {
@@ -680,21 +685,24 @@ void *deviceThread::Entry()
 
         m_preceiveLevel2Thread = new deviceLevel2ReceiveThread;
 
-        if (m_preceiveLevel2Thread) {
+        if ( m_preceiveLevel2Thread ) {
             m_preceiveLevel2Thread->m_pMainThreadObj = this;
             wxThreadError err;
             if (wxTHREAD_NO_ERROR == (err = m_preceiveLevel2Thread->Create())) {
                 m_preceiveLevel2Thread->SetPriority(WXTHREAD_MAX_PRIORITY);
                 if (wxTHREAD_NO_ERROR != (err = m_preceiveLevel2Thread->Run())) {
-                    m_pCtrlObject->logMsg(_("Unable to run device receive worker thread."));
+                    m_pCtrlObject->logMsg(_("Unable to run device "
+                                            "receive worker thread."));
                 }
             }
             else {
-                m_pCtrlObject->logMsg(_("Unable to create device receive worker thread.") );
+                m_pCtrlObject->logMsg(_("Unable to create device receive "
+                                        "worker thread.") );
             }
         }
         else {
-            m_pCtrlObject->logMsg(_("Unable to allocate memory for device receive worker thread.") );
+            m_pCtrlObject->logMsg(_("Unable to allocate memory for device "
+                                    "receive worker thread.") );
         }
 
         // Just sit and wait until the end of the world as we know it...
