@@ -116,8 +116,6 @@
 #define VSCPDB_CONFIG_NAME_PATH_DB_DATA                 "path_db_data"
 #define VSCPDB_CONFIG_DEFAULT_PATH_DB_DATA              "/srv/vscp/vscp_data.sqlite3"
 
-
-
 // WEB server
 
 #define VSCPDB_CONFIG_NAME_WEB_ENABLE                   "web_enable"
@@ -483,7 +481,7 @@
         ");"
 
 #define VSCPDB_DRIVER_CREATE_INDEX "CREATE INDEX `idxdrivername` "\
-                "ON driver ('name'):"
+                                   "ON driver ('name'):"
 
 #define VSCPDB_ORDINAL_DRIVER_ID                    0   //
 #define VSCPDB_ORDINAL_DRIVER_ENABLE                1   //
@@ -505,26 +503,27 @@
  * GUID table
  *
  * type - describes what this GUID is describing, for example an interface, a node etc.
- * type = 0 - Common GUID.
- * type = 1 - Interface on this machine,
- * type = 2 - Level I hardware. Lives on one of the interfaces of this daemon.
- * type = 3 - Level II hardware. Lives somewhere given by address.
- * Type = 4 – Location.
+ *   type = 0 - Common GUID.
+ *   type = 1 - Interface on this machine,
+ *   type = 2 - Level I hardware. Lives on one of the interfaces of this daemon.
+ *   type = 3 - Level II hardware. Lives somewhere given by address.
+ *   type = 4 - Location.
  *
  * GUID - GUID for the type. Level I hardware use the proxy GUID.
  *
  * date - date time when discovered in ISO format. YY-MM-DDTHH:MM:SS
  *
- * name - Max 64 byte name
+ * name - Max 64 byte name 
  *
  * link_to_mdf - For a hardware device.
  *
  * address - is IPv4/IPv6/BT-UID or other address for a Level II hardware type
  *
- * capabilities - see CLASS2.PROTOCOL, Type=20   A 8 byte comma separated list with
- *                the bytes of the capability 64-bit code.
+ * capabilities - see CLASS2.PROTOCOL, Type=20   A 8 byte comma separated list 
+ *                with the bytes of the capability 64-bit code.
  *
- * nonstandard - is one or more nonstandard info as described for CLASS2.PROTOCOL, Type=20
+ * nonstandard - is one or more nonstandard info as described for 
+ *               CLASS2.PROTOCOL, Type=20
  *
  */
 

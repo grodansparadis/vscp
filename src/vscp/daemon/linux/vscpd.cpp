@@ -49,9 +49,9 @@
 #include <wx/app.h>
 #include <wx/log.h>
 #include <wx/stdpaths.h>
+#include <wx/dir.h>
 
 #include "vscpd.h"
-//#include <crc.h>
 #include <controlobject.h>
 #include <version.h>
 
@@ -67,6 +67,7 @@ CControlObject *gpobj;
 
 void copyleft(void);
 void help(char *szPrgname);
+void createFolderStuct(wxString& rootFolder);
 
 void _sighandler( int sig )
 {
@@ -236,6 +237,9 @@ BOOL VSCPApp::init(wxString& strcfgfile, wxString& rootFolder )
         fprintf( pFile, "%d\n", sid );
         fclose( pFile );
     }
+    
+    // Create folder structure
+    createFolderStuct( rootFolder );
 
     // Change working directory to root folder
     if ( chdir( (const char *)rootFolder.mbc_str() ) ) {
@@ -363,3 +367,90 @@ void help(char *szPrgname)
     fprintf(stderr, "that should be used (default: /etc/canalworks.conf).\n");
     fprintf(stderr, "\t-g\tPrint the GNU copyleft info.\n");
 }
+
+
+///////////////////////////////////////////////////////////////////////////////
+// createFolderStuct
+//
+
+void createFolderStuct( wxString& rootFolder )
+{
+    if ( !wxDir::Exists( rootFolder + _("/certs") ) ) {
+        wxDir::Make( rootFolder + _("/certs"), 
+                wxS_DIR_DEFAULT,
+                wxPATH_MKDIR_FULL );
+    }
+    
+    if ( !wxDir::Exists( rootFolder + _("/web/images") ) ) {
+        wxDir::Make( rootFolder + _("/web/images"), 
+                wxS_DIR_DEFAULT,
+                wxPATH_MKDIR_FULL );
+    }
+    
+    if ( !wxDir::Exists( rootFolder + _("/web/js") ) ) {
+        wxDir::Make( rootFolder + _("/web/js"), 
+                wxS_DIR_DEFAULT,
+                wxPATH_MKDIR_FULL );
+    }
+    
+    if ( !wxDir::Exists( rootFolder + _("/web/service") ) ) {
+        wxDir::Make( rootFolder + _("/web/service"), 
+                wxS_DIR_DEFAULT,
+                wxPATH_MKDIR_FULL );
+    }
+    
+    if ( !wxDir::Exists( rootFolder + _("/drivers/level1") ) ) {
+        wxDir::Make( rootFolder + _("/drivers/level1"), 
+                wxS_DIR_DEFAULT,
+                wxPATH_MKDIR_FULL );
+    }
+    
+    if ( !wxDir::Exists( rootFolder + _("/drivers/level2") ) ) {
+        wxDir::Make( rootFolder + _("/drivers/level2"), 
+                wxS_DIR_DEFAULT,
+                wxPATH_MKDIR_FULL );
+    }
+    
+    if ( !wxDir::Exists( rootFolder + _("/actions") ) ) {
+        wxDir::Make( rootFolder + _("/actions"), 
+                wxS_DIR_DEFAULT,
+                wxPATH_MKDIR_FULL );
+    }
+    
+    if ( !wxDir::Exists( rootFolder + _("/scripts") ) ) {
+        wxDir::Make( rootFolder + _("/scripts"), 
+                wxS_DIR_DEFAULT,
+                wxPATH_MKDIR_FULL );
+    }
+    
+    if ( !wxDir::Exists( rootFolder + _("/tables") ) ) {
+        wxDir::Make( rootFolder + _("/tables"), 
+                wxS_DIR_DEFAULT,
+                wxPATH_MKDIR_FULL );
+    }
+    
+    if ( !wxDir::Exists( rootFolder + _("/logs") ) ) {
+        wxDir::Make( rootFolder + _("/logs"), 
+                wxS_DIR_DEFAULT,
+                wxPATH_MKDIR_FULL );
+    }
+    
+    if ( !wxDir::Exists( rootFolder + _("/ux") ) ) {
+        wxDir::Make( rootFolder + _("/ux"), 
+                wxS_DIR_DEFAULT,
+                wxPATH_MKDIR_FULL );
+    }
+    
+    if ( !wxDir::Exists( rootFolder + _("/upload") ) ){
+        wxDir::Make( rootFolder + _("/upload"), 
+                wxS_DIR_DEFAULT,
+                wxPATH_MKDIR_FULL );
+    }
+    
+    if ( !wxDir::Exists( rootFolder + _("/mdf") ) ) {
+        wxDir::Make( rootFolder + _("/mdf"), 
+                wxS_DIR_DEFAULT,
+                wxPATH_MKDIR_FULL );
+    }
+    
+}   

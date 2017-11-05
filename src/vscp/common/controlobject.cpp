@@ -586,10 +586,6 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
     //                  Read XML configuration GENERAL section
     ////////////////////////////////////////////////////////////////////////////
 
-    /*
-    str = _("Using configuration file: ") + strcfgfile + _("\n");
-    fprintf( stderr, str.mbc_str() );
-    */
 
     // Read XML configuration
     if ( !readXMLConfigurationGeneral( strcfgfile ) ) {
@@ -615,9 +611,6 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
         }
     }
 #endif
-
-
-
 
     // Initialize the SQLite library
     if ( SQLITE_OK != sqlite3_initialize() ) {
@@ -665,6 +658,7 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
             
             // Read configuration data
             readConfigurationDB();
+            
         }
 
     }
@@ -679,7 +673,7 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
             fprintf( stderr, "%s", (const char *)str.mbc_str() );
 
             if ( SQLITE_OK == sqlite3_open( (const char *)m_path_db_vscp_daemon.GetFullPath().mbc_str(),
-                                                &m_db_vscp_daemon ) ) {
+                                             &m_db_vscp_daemon ) ) {
 
                 // create the configuration database.
                 if ( !doCreateConfigurationTable() ) {
@@ -738,19 +732,20 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
 
                 // Create subzone table
                 if ( !doCreateSubZoneTable() ) {
-                    fprintf( stderr, "Failed to create subzone table.\n" );
+                    fprintf( stderr, "Failed to create sub zone table.\n" );
                 }
 
                 // Create userdef table
                 if ( !doCreateUserdefTableTable() ) {
-                    fprintf( stderr, "Failed to create userdef table.\n" );
+                    fprintf( stderr, "Failed to create user defined table.\n" );
                 }
 
                 // * * * All created * * *
 
                 // Database is open. Read configuration data from it
                 if ( !readConfigurationDB() ) {
-                    fprintf( stderr, "Failed to read configuration from configuration database.\n" );
+                    fprintf( stderr, "Failed to read configuration from "
+                                     "configuration database.\n" );
                 }
 
             }
