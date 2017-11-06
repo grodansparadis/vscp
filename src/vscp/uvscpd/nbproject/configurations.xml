@@ -89,7 +89,6 @@
               <Elem>WXUSINGDLL</Elem>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
               <Elem>_POSIX_SOURCE</Elem>
-              <Elem>_SVID_SOURCE</Elem>
               <Elem>__WXGTK__</Elem>
               <Elem>wxUSE_GUI=0</Elem>
             </preprocessorList>
@@ -112,6 +111,7 @@
             <Elem>MG_ENABLE_IPV6</Elem>
             <Elem>MG_ENABLE_SSL</Elem>
             <Elem>MG_ENABLE_THREADS</Elem>
+            <Elem>_SVID_SOURCE</Elem>
           </preprocessorList>
         </cTool>
       </item>
@@ -133,14 +133,23 @@
       </item>
       <item path="../../common/crc.c" ex="false" tool="0" flavor2="3">
         <cTool flags="1">
+          <preprocessorList>
+            <Elem>_DEFAULT_SOURCE</Elem>
+          </preprocessorList>
         </cTool>
       </item>
       <item path="../../common/crc8.c" ex="false" tool="0" flavor2="3">
         <cTool flags="1">
+          <preprocessorList>
+            <Elem>_DEFAULT_SOURCE</Elem>
+          </preprocessorList>
         </cTool>
       </item>
       <item path="../../common/dllist.c" ex="false" tool="0" flavor2="3">
         <cTool flags="1">
+          <preprocessorList>
+            <Elem>_DEFAULT_SOURCE</Elem>
+          </preprocessorList>
         </cTool>
       </item>
       <item path="../../common/md5.cpp" ex="false" tool="1" flavor2="4">
@@ -190,6 +199,9 @@
       </item>
       <item path="../../common/vscp_aes.c" ex="false" tool="0" flavor2="3">
         <cTool flags="1">
+          <preprocessorList>
+            <Elem>_DEFAULT_SOURCE</Elem>
+          </preprocessorList>
         </cTool>
       </item>
       <item path="../common/guid.cpp" ex="false" tool="1" flavor2="4">
@@ -239,6 +251,13 @@
           </preprocessorList>
         </cTool>
       </item>
+      <folder path="0">
+        <cTool>
+          <preprocessorList>
+            <Elem>_DEFAULT_SOURCE</Elem>
+          </preprocessorList>
+        </cTool>
+      </folder>
       <folder path="common">
         <cTool>
           <incDir>

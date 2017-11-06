@@ -38,7 +38,7 @@ RELEASE_VERSION = `sed '37!d' ../../common/version.h  | cut -b 33-`
 BUILD_VERSION = `sed '38!d' ../../common/version.h  | cut -b 33-
 
 MONGOOSE_CFLAGS = -DMG_ENABLE_THREADS -DMG_ENABLE_IPV6 -DMG_ENABLE_SSL -DMG_ENABLE_HTTP_CGI -DMG_ENABLE_HTTP_SSI -DMG_ENABLE_HTTP_SSI_EXEC -DMG_ENABLE_HTTP_WEBDAV -DMG_ENABLE_GETADDRINFO -DMG_ENABLE_HTTP_URL_REWRITES
-CFLAGS = -std=c99 @CFLAGS@ -D_POSIX_SOURCE -D_SVID_SOURCE @WXBASE_CFLAGS@ -DCBC -I../common -I../../common -I../../common/lua -I../../common/lua/src
+CFLAGS = -std=c99 @CFLAGS@ -D_POSIX_SOURCE -D_DEFAULT_SOURCE @WXBASE_CFLAGS@ -DCBC -I../common -I../../common -I../../common/lua -I../../common/lua/src
 CXXFLAGS = @CXXFLAGS@ @WXBASE_CXXFLAGS@
 CPPFLAGS = @CPPFLAGS@ @WXBASE_CPPFLAGS@ -fno-var-tracking-assignments -I../common -I../../common -I../../common/lua -I../../common/lua/src
 CPPFLAGS += $(MONGOOSE_CFLAGS)

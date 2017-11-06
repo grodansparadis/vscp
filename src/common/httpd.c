@@ -21813,10 +21813,10 @@ web_check_feature(unsigned feature)
 // Return the size of available information.
 //
 
-static int
-web_get_system_info_impl(char *buffer, int buflen)
+int
+web_get_system_info_impl( char *buffer, int buflen )
 {
-    char block[256];
+    char block[ 256 ];
     int system_info_length = 0;
 
 #if defined(_WIN32)
@@ -21826,17 +21826,17 @@ web_get_system_info_impl(char *buffer, int buflen)
 #endif
 
     const char *eoobj = "}";
-    int reserved_len = (int) strlen(eoobj) + (int) strlen(eol);
+    int reserved_len = (int) strlen( eoobj ) + (int)strlen( eol );
 
-    if ((buffer == NULL) || (buflen < 1)) {
+    if ( ( NULL == buffer ) || ( buflen < 1 ) ) {
         buflen = 0;
     }
     else {
         *buffer = 0;
     }
 
-    web_snprintf(NULL, NULL, block, sizeof (block), "{%s", eol);
-    system_info_length += (int) strlen(block);
+    web_snprintf( NULL, NULL, block, sizeof( block ), "{%s", eol );
+    system_info_length += (int)strlen( block );
     if (system_info_length < buflen) {
         strcat0(buffer, block);
     }
@@ -21845,15 +21845,15 @@ web_get_system_info_impl(char *buffer, int buflen)
     {
         const char *version = web_version();
         web_snprintf( NULL,
-                            NULL,
-                            block,
-                            sizeof (block),
-                            "\"version\" : \"%s\",%s",
-                            version,
-                            eol );
-        system_info_length += (int) strlen(block);
-        if (system_info_length < buflen) {
-            strcat0(buffer, block);
+                        NULL,
+                        block,
+                        sizeof (block),
+                        "\"version\" : \"%s\",%s",
+                        version,
+                        eol );
+        system_info_length += (int)strlen( block );
+        if ( system_info_length < buflen ) {
+            strcat0( buffer, block );
         }
     }
 
@@ -21865,7 +21865,7 @@ web_get_system_info_impl(char *buffer, int buflen)
         DWORD dwMinorVersion = 0;
         SYSTEM_INFO si;
 
-        GetSystemInfo(&si);
+        GetSystemInfo( &si );
 
 #ifdef _MSC_VER
 #pragma warning(push)
@@ -21881,50 +21881,50 @@ web_get_system_info_impl(char *buffer, int buflen)
         dwMinorVersion = (DWORD) (HIBYTE(LOWORD(dwVersion)));
 
         web_snprintf( NULL,
-                            NULL,
-                            block,
-                            sizeof (block),
-                            "\"os\" : \"Windows %u.%u\",%s",
-                            (unsigned) dwMajorVersion,
-                            (unsigned) dwMinorVersion,
-                            eol );
+                        NULL,
+                        block,
+                        sizeof( block ),
+                        "\"os\" : \"Windows %u.%u\",%s",
+                        (unsigned) dwMajorVersion,
+                        (unsigned) dwMinorVersion,
+                        eol );
         system_info_length += (int) strlen(block);
-        if (system_info_length < buflen) {
+        if ( system_info_length < buflen ) {
             strcat0(buffer, block);
         }
 
         web_snprintf( NULL,
-                            NULL,
-                            block,
-                            sizeof (block),
-                            "\"cpu\" : \"type %u, cores %u, mask %x\",%s",
-                            (unsigned) si.wProcessorArchitecture,
-                            (unsigned) si.dwNumberOfProcessors,
-                            (unsigned) si.dwActiveProcessorMask,
-                            eol );
-        system_info_length += (int) strlen(block);
-        if (system_info_length < buflen) {
-            strcat0(buffer, block);
+                        NULL,
+                        block,
+                        sizeof( block ),
+                        "\"cpu\" : \"type %u, cores %u, mask %x\",%s",
+                        (unsigned)si.wProcessorArchitecture,
+                        (unsigned)si.dwNumberOfProcessors,
+                        (unsigned)si.dwActiveProcessorMask,
+                        eol );
+        system_info_length += (int)strlen( block );
+        if ( system_info_length < buflen ) {
+            strcat0( buffer, block );
         }
 
 #else
         struct utsname name;
-        memset(&name, 0, sizeof (name));
-        uname(&name);
+        memset( &name, 0, sizeof( name ) );
+        uname( &name );
 
         web_snprintf( NULL,
-                            NULL,
-                            block,
-                            sizeof (block),
-                            "\"os\" : \"%s %s (%s) - %s\",%s",
-                            name.sysname,
-                            name.version,
-                            name.release,
-                            name.machine,
-                            eol );
-        system_info_length += (int) strlen(block);
-        if (system_info_length < buflen) {
-            strcat0(buffer, block);
+                        NULL,
+                        block,
+                        sizeof (block),
+                        "\"os\" : \"%s %s (%s) - %s\",%s",
+                        name.sysname,
+                        name.version,
+                        name.release,
+                        name.machine,
+                        eol );
+        system_info_length += (int)strlen( block );
+        if ( system_info_length < buflen ) {
+            strcat0( buffer, block );
         }
 #endif
     }
@@ -21932,78 +21932,79 @@ web_get_system_info_impl(char *buffer, int buflen)
     // Features
     {
         web_snprintf( NULL,
-                            NULL,
-                            block,
-                            sizeof (block),
-                            "\"features\" : %lu,%s"
-                            "\"feature_list\" : \"Server:%s%s%s%s%s%s%s%s%s\",%s",
-                            (unsigned long) web_check_feature(0xFFFFFFFFu),
-                            eol,
-                            web_check_feature(1) ? " Files" : "",
-                            web_check_feature(2) ? " HTTPS" : "",
-                            web_check_feature(4) ? " CGI" : "",
-                            web_check_feature(8) ? " IPv6" : "",
-                            web_check_feature(16) ? " WebSockets" : "",
-                            web_check_feature(32) ? " Lua" : "",
-                            web_check_feature(64) ? " JavaScript" : "",
-                            web_check_feature(128) ? " Cache" : "",
-                            web_check_feature(256) ? " Stats" : "",
-                            eol );
-        system_info_length += (int) strlen(block);
-        if (system_info_length < buflen) {
+                        NULL,
+                        block,
+                        sizeof (block),
+                        "\"features\" : %lu,%s"
+                        "\"feature_list\" : \"Server:%s%s%s%s%s%s%s%s%s\",%s",
+                        (unsigned long) web_check_feature(0xFFFFFFFFu),
+                        eol,
+                        web_check_feature(1) ? " Files" : "",
+                        web_check_feature(2) ? " HTTPS" : "",
+                        web_check_feature(4) ? " CGI" : "",
+                        web_check_feature(8) ? " IPv6" : "",
+                        web_check_feature(16) ? " WebSockets" : "",
+                        web_check_feature(32) ? " Lua" : "",
+                        web_check_feature(64) ? " JavaScript" : "",
+                        web_check_feature(128) ? " Cache" : "",
+                        web_check_feature(256) ? " Stats" : "",
+                        eol );
+        system_info_length += (int)strlen( block );
+        if ( system_info_length < buflen ) {
             strcat0(buffer, block);
-        }
-
-        web_snprintf(NULL,
-                    NULL,
-                    block,
-                    sizeof(block),
-                    "\"lua_version\" : \"%u (%s)\",%s",
-                    (unsigned)LUA_VERSION_NUM,
-                    LUA_RELEASE,
-                    eol);
-        system_info_length += (int)strlen(block);
-        if (system_info_length < buflen) {
-                strcat0(buffer, block);
         }
 
         web_snprintf( NULL,
-                            NULL,
-                            block,
-                            sizeof (block),
-                            "\"javascript\" : \"Duktape %u.%u.%u\",%s",
-                            (unsigned) DUK_VERSION / 10000,
-                            ((unsigned) DUK_VERSION / 100) % 100,
-                            (unsigned) DUK_VERSION % 100,
-                            eol );
-        system_info_length += (int) strlen(block);
-        if (system_info_length < buflen) {
+                        NULL,
+                        block,
+                        sizeof( block ),
+                        "\"lua_version\" : \"%u (%s)\",%s",
+                        (unsigned)LUA_VERSION_NUM,
+                        LUA_RELEASE,
+                        eol );
+        system_info_length += (int)strlen(block);
+        if ( system_info_length < buflen ) {
             strcat0(buffer, block);
+        }
+
+        web_snprintf( NULL,
+                        NULL,
+                        block,
+                        sizeof( block ),
+                        "\"javascript\" : \"Duktape %u.%u.%u\",%s",
+                        (unsigned)DUK_VERSION / 10000,
+                        ( (unsigned)DUK_VERSION / 100) % 100,
+                        (unsigned)DUK_VERSION % 100,
+                        eol );
+        system_info_length += (int)strlen( block );
+        if ( system_info_length < buflen ) {
+            strcat0( buffer, block );
         }
 
     }
 
+   
     // Build date
     {
 #if defined(__GNUC__)
 #pragma GCC diagnostic push
-        /* Disable bogus compiler warning -Wdate-time */
+        // Disable bogus compiler warning -Wdate-time 
 #pragma GCC diagnostic ignored "-Wall"
-#pragma GCC diagnostic ignored "-Werror"
+//#pragma GCC diagnostic ignored "-Werror"
 #endif
         web_snprintf( NULL,
-                            NULL,
-                            block,
-                            sizeof (block),
-                            "\"build\" : \"%s\",%s",
-                            __DATE__,
-                            eol );
+                        NULL,
+                        block,
+                        sizeof( block ), 
+                        "\"build\" : \"%s\",%s",
+                        __DATE__,
+                        eol );
 
 #if defined(__GNUC__)
 #pragma GCC diagnostic pop
 #endif
 
-        system_info_length += (int) strlen(block);
+        system_info_length += (int)strlen( block );
         if ( system_info_length < buflen ) {
             strcat0(buffer, block);
         }
@@ -22097,7 +22098,7 @@ web_get_system_info_impl(char *buffer, int buflen)
         web_snprintf( NULL,
                             NULL,
                             block,
-                            sizeof (block),
+                            sizeof(block),
                             "\"compiler\" : \"Intel C/C++: %u\",%s",
                             (unsigned) __INTEL_COMPILER,
                             eol );
@@ -22109,7 +22110,7 @@ web_get_system_info_impl(char *buffer, int buflen)
         web_snprintf( NULL,
                             NULL,
                             block,
-                            sizeof (block),
+                            sizeof(block),
                             "\"compiler\" : \"Borland C: 0x%x\",%s",
                             (unsigned) __BORLANDC__,
                             eol );

@@ -834,8 +834,13 @@ todo( struct web_connection *conn, void *cbdata )
 static int
 vscp_settings( struct web_connection *conn, void *cbdata )
 {
+    sqlite3_stmt *ppStmt;
+    
     // Check pointer
     if (NULL == conn) return 0;
+    
+    // If not open no records
+    if ( NULL == gpobj->m_db_vscp_daemon ) return 0;
     
     web_printf( conn,
 	          "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n"
@@ -851,10 +856,35 @@ vscp_settings( struct web_connection *conn, void *cbdata )
     web_printf( conn, WEB_COMMON_HEAD_END_BODY_START );
     web_printf( conn, WEB_COMMON_MENU );
 
-    //web_printf( conn, WEB_IFLIST_BODY_START );
-    // web_printf( conn, WEB_IFLIST_TR_HEAD );
     web_printf( conn, "<h1 id=\"header\">Settings</h1>" );
 
+    if ( SQLITE_OK != sqlite3_prepare( gpobj->m_db_vscp_daemon,
+                                        VSCPDB_CONFIG_FIND_ALL,
+                                        -1,
+                                        &ppStmt, 
+                                        NULL ) )  {
+        web_printf( conn, 
+                        "Failed to prepare configuration database. SQL is %s",
+                        VSCPDB_CONFIG_FIND_ALL  );
+        return 0;
+    }
+    
+    web_printf( conn, "<form><table>"
+                      "<tr><th width=\"15%\">Name</th><th>Value</th><th>Operation</th></tr>");
+    
+    while ( SQLITE_ROW == sqlite3_step( ppStmt ) ) {
+        wxString wxstr;
+        web_printf( conn, "<tr><td><b>");
+        web_printf( conn,  
+                    (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_NAME ) );
+        web_printf( conn, "</b></td><td><input type=\"text\" >");
+        web_printf( conn,  
+                    (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_VALUE ) );
+        web_printf( conn, "</text></td><td></td></tr>");
+    }
+    
+    web_printf( conn, "</table></form>" );
+    
     return WEB_OK;
 }
 

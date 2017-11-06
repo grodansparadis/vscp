@@ -1635,6 +1635,10 @@ web_send_additional_header(struct web_connection *conn);
 VSCPWEB_API const char *
 web_suggest_connection_header(const struct web_connection *conn);
 
+/*!
+ * Get system information
+ */
+int web_get_system_info_impl( char *buffer, int buflen );
 
 #define web_lua_load lua_load
 
