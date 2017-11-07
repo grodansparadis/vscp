@@ -859,31 +859,36 @@ vscp_settings( struct web_connection *conn, void *cbdata )
     web_printf( conn, "<h1 id=\"header\">Settings</h1>" );
 
     if ( SQLITE_OK != sqlite3_prepare( gpobj->m_db_vscp_daemon,
-                                        VSCPDB_CONFIG_FIND_ALL,
+                                        VSCPDB_CONFIG_FIND_ALL_SORT_NAME, 
                                         -1,
                                         &ppStmt, 
-                                        NULL ) )  {
+                                        NULL ) )  { 
         web_printf( conn, 
                         "Failed to prepare configuration database. SQL is %s",
-                        VSCPDB_CONFIG_FIND_ALL  );
+                        VSCPDB_CONFIG_FIND_ALL_SORT_NAME  );
         return 0;
     }
     
-    web_printf( conn, "<form><table>"
-                      "<tr><th width=\"15%\">Name</th><th>Value</th><th>Operation</th></tr>");
+    web_printf( conn, "<table>"
+                      "<tr><th width=\"20%\">Name</th><th>Value</th></tr>");
     
     while ( SQLITE_ROW == sqlite3_step( ppStmt ) ) {
         wxString wxstr;
-        web_printf( conn, "<tr><td><b>");
-        web_printf( conn,  
-                    (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_NAME ) );
-        web_printf( conn, "</b></td><td><input type=\"text\" >");
+        const char * pName = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_NAME );
+        web_printf( conn, "<tr><form action=\"/vscp/settings\" method=\"get\" id=\"%s\"><td><b>",
+                            pName );
+        web_printf( conn, pName );
+        web_printf( conn, "</b></td><td><input type=\"text\" name=\"");
+        web_printf( conn, pName );
+        web_printf( conn, "\" size=\"80\" value=\"");
         web_printf( conn,  
                     (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_VALUE ) );
-        web_printf( conn, "</text></td><td></td></tr>");
+        web_printf( conn, "\"> <button type=\"submit\" form=\"%s\" "
+                          "value=\"Save\">Save</button></form></td></tr>",
+                          pName );
     }
     
-    web_printf( conn, "</table></form>" );
+    web_printf( conn, "</table>" );
     
     return WEB_OK;
 }
