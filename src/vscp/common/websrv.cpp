@@ -832,8 +832,9 @@ todo( struct web_connection *conn, void *cbdata )
 //
 
 static int
-vscp_settings( struct web_connection *conn, void *cbdata )
+vscp_settings( struct web_connection *conn, void *cbdata ) 
 {
+    char buf[32000];
     sqlite3_stmt *ppStmt;
     
     // Check pointer
@@ -842,6 +843,37 @@ vscp_settings( struct web_connection *conn, void *cbdata )
     // If not open no records
     if ( NULL == gpobj->m_db_vscp_daemon ) return 0;
     
+    // Check pointer
+    if (NULL == conn) return 0;
+
+    const struct web_request_info *reqinfo =
+                web_get_request_info( conn );
+    if ( NULL == reqinfo ) return 0;
+
+    // Configuration item name
+    wxString strname;
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,
+                            strlen( reqinfo->query_string ),
+                            "varname",
+                            buf,
+                            sizeof( buf ) ) > 0 ) {
+            strname = wxString::FromUTF8( buf );
+        }
+    }
+    
+    // Configuration item value
+    wxString strvalue;
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,
+                            strlen( reqinfo->query_string ),
+                            "varvalue",
+                            buf,
+                            sizeof( buf ) ) > 0 ) {
+            strvalue = wxString::FromUTF8( buf );
+        }
+    }
+        
     web_printf( conn,
 	          "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n"
                   "Content-Type: text/html; charset=utf-8\r\n"
@@ -856,7 +888,26 @@ vscp_settings( struct web_connection *conn, void *cbdata )
     web_printf( conn, WEB_COMMON_HEAD_END_BODY_START );
     web_printf( conn, WEB_COMMON_MENU );
 
-    web_printf( conn, "<h1 id=\"header\">Settings</h1>" );
+    web_printf( conn, "&nbsp;<h1 id=\"header\">Settings</h1><br>" );
+    
+    // Update the configuration record
+    if ( strname.Length() ) {
+        if ( gpobj->updateConfigurationRecordItem( strname, strvalue ) ) {
+            web_printf( conn, 
+                    "&nbsp;<span style=\"color: green;\">Updated configuration "
+                    "record: <b>%s</b> set to '%s' </span><br><br>",
+                    (const char *)strname.mbc_str(),
+                    (const char *)strvalue.mbc_str() );
+        }
+        else {
+            web_printf( conn, 
+                    "&nbsp;<span style=\"color: red;\"><b>Failed</b> when "
+                    "updating configuration record. "
+                    "<b>%s</b>, value = '%s' </span><br><br>",
+                    (const char *)strname.mbc_str(),
+                    (const char *)strvalue.mbc_str() );
+        }
+    }
 
     if ( SQLITE_OK != sqlite3_prepare( gpobj->m_db_vscp_daemon,
                                         VSCPDB_CONFIG_FIND_ALL_SORT_NAME, 
@@ -878,12 +929,13 @@ vscp_settings( struct web_connection *conn, void *cbdata )
         web_printf( conn, "<tr><form action=\"/vscp/settings\" method=\"get\" id=\"%s\"><td><b>",
                             pName );
         web_printf( conn, pName );
-        web_printf( conn, "</b></td><td><input type=\"text\" name=\"");
-        web_printf( conn, pName );
-        web_printf( conn, "\" size=\"80\" value=\"");
+        web_printf( conn, "</b></td><td><input type=\"text\" name=\"varvalue\" size=\"80\" value=\"");
         web_printf( conn,  
                     (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_VALUE ) );
-        web_printf( conn, "\"> <button type=\"submit\" form=\"%s\" "
+        web_printf( conn, "\" ");        
+        web_printf( conn, "\"> <input type=\"hidden\" name=\"varname\" value=\"" );
+        web_printf( conn, pName );
+        web_printf( conn, "\"><button type=\"submit\" form=\"%s\" "
                           "value=\"Save\">Save</button></form></td></tr>",
                           pName );
     }
@@ -895,7 +947,7 @@ vscp_settings( struct web_connection *conn, void *cbdata )
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// vscp_passwod
+// vscp_password
 //
 
 static int

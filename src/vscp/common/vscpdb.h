@@ -41,7 +41,7 @@
 #define VSCPDB_CONFIG_FIND_ALL "SELECT * FROM config;"
 #define VSCPDB_CONFIG_FIND_ALL_SORT_NAME "SELECT * FROM config ORDER BY vscpd_name;"
 #define VSCPDB_CONFIG_FIND_ITEM "SELECT * FROM config WHERE vscpd_name='%q';"
-#define VSCPDB_CONFIG_UPDATE_ITEM "UPDATE 'config' SET 'vscpd_value' ='%s' WHERE vscpd_name='%q';"
+#define VSCPDB_CONFIG_UPDATE_ITEM "UPDATE 'config' SET 'vscpd_value' ='%q' WHERE vscpd_name='%q';"
 #define VSCPDB_CONFIG_INSERT "INSERT INTO 'config' (vscpd_name,vscpd_value) VALUES ('%q','%q');"
 
 #define VSCPDB_ORDINAL_CONFIG_ID                        0
