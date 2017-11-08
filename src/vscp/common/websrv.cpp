@@ -6934,6 +6934,9 @@ vscp_log_do_delete( struct web_connection *conn, void *cbdata )
                             sizeof( buf ) ) > 0 ) {
             strFrom = wxString::FromUTF8( buf );
             strFrom.Trim();
+            if ( 0 == strFrom.Length() ) {
+                //strFrom = "1900-01-01T00:00:00";
+            }
         }
     }
 
@@ -6947,6 +6950,9 @@ vscp_log_do_delete( struct web_connection *conn, void *cbdata )
                             sizeof( buf ) ) > 0 ) {
             strTo = wxString::FromUTF8( buf );
             strTo.Trim();
+            if ( 0 == strTo.Length() ) {
+                //strTo = "9999-12-32T23:59:59";
+            }
         }
     }
 
@@ -6991,11 +6997,13 @@ vscp_log_do_delete( struct web_connection *conn, void *cbdata )
                                     (const char *)strTo.mbc_str() );
     }
 
-    if ( bWhere ) {
-        sql +=  _(" AND ") + sqldate;
-    }
-    else {
-        sql += _(" WHERE ") + sqldate;
+    if ( sqldate.Length() ) {
+        if ( bWhere ) {
+            sql +=  _(" AND ") + sqldate;
+        }
+        else {
+            sql += _(" WHERE ") + sqldate;
+        }
     }
 
     web_printf(conn,
