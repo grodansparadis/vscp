@@ -90,7 +90,7 @@ int main(int argc, char* argv[])
     // Get version on handle1
     unsigned char majorVer, minorVer, subminorVer;
     if ( VSCP_ERROR_SUCCESS == (rv = vscphlp_getVersion( handle1, &majorVer, &minorVer, &subminorVer ) ) ) {
-        printf( "channel 1: Major version=%d  Minor version=%d  Sub Minor verion=%d\n", 
+        printf( "channel 1: Major version=%d  Minor version=%d  Sub Minor version=%d\n", 
                 majorVer, 
                 minorVer, 
                 subminorVer );

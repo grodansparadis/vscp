@@ -24,12 +24,12 @@ int main(int argc, char* argv[])
     if ( VSCP_ERROR_SUCCESS == vscphlp_open( handle, 
                  				HOST,
                  				"admin",
-    	             			"secret" ) ) {
+    	             			        "secret" ) ) {
 		
 		printf("\a vscphlp_open: Success!\n");
 	
 		if ( VSCP_ERROR_SUCCESS == vscphlp_noop( handle ) ) {
-			printf("vscphlp_noop 1: Success!\n");
+		printf("vscphlp_noop 1: Success!\n");
 		}   
 		else {
 			printf("\a * * * * * *  Failed noop! * * * * * *  v\n");

@@ -58,7 +58,7 @@
 // Undef to get extra debug info
 //#define DEBUG_INNER_COMMUNICTION
 
-// Undef if debug mesages is not wanted
+// Undef if debug messages is not wanted
 //#define DEBUG_LIB_VSCP_HELPER   1
 
 class mg_poll_server;
@@ -93,7 +93,7 @@ clientTcpIpWorkerThread::~clientTcpIpWorkerThread()
 
 void clientTcpIpWorkerThread::ev_handler( struct mg_connection *conn, 
                                             int ev, 
-                                            void *pUser) 
+                                            void *event_data ) 
 {
     char rbuf[ 2048 ];
     int pos4lf = 0;
@@ -107,31 +107,33 @@ void clientTcpIpWorkerThread::ev_handler( struct mg_connection *conn,
 
     if ( NULL == pTcpIfSession ) return;
 
-    switch (ev) {
+    switch ( ev ) {
 
+        // -------------------------------------------------------------------- 
         case MG_EV_CONNECT: // connect() succeeded or failed. int *success_status
-            {
-                int connect_status = 0;
-                if ( NULL == pUser ) return;
-                connect_status = *( int * )pUser;
+        {
+            int connect_status = 0;
+            if ( NULL == event_data ) return;
+            connect_status = *( int *)event_data;
 
-                if (connect_status == 0) {
+            if ( 0 == connect_status ) {
                     
 #ifdef DEBUG_INNER_COMMUNICTION
-                    wxLogDebug( _("ev_handler: TCP/IP connect OK.") );
+                wxLogDebug( _("ev_handler: TCP/IP connect OK.") );
 #endif                    
-                    pTcpIfSession->m_semConnected.Post();
-                    pTcpIfSession->m_bConnected = true;
-                    conn->flags |= MG_F_USER_1;  // We should terminate
-                } 
+                pTcpIfSession->m_semConnected.Post();
+                pTcpIfSession->m_bConnected = true;
+                conn->flags |= MG_F_USER_1;  // We should terminate
+            } 
 #ifdef DEBUG_INNER_COMMUNICTION                
-                else {
-                    wxLogDebug( _("ev_handler: TCP/IP connect fail.") );
-                }
-#endif                
+            else {
+                wxLogDebug( _("ev_handler: TCP/IP connect fail.") );
             }
-            break;
+#endif                
+        }
+        break;
 
+        // --------------------------------------------------------------------    
         case MG_EV_CLOSE:
             
 #ifdef DEBUG_INNER_COMMUNICTION            
@@ -141,17 +143,22 @@ void clientTcpIpWorkerThread::ev_handler( struct mg_connection *conn,
             pTcpIfSession->m_bConnected = false;
             break;
 
+        // --------------------------------------------------------------------     
         case MG_EV_RECV:
             
 #ifdef DEBUG_INNER_COMMUNICTION
-            wxLogDebug( _("ev_handler: TCP/IP receive.") );
+            wxString str = wxString::FromUTF8( conn->recv_mbuf.buf, *((int *)event_data) );
+            wxLogDebug( _("ev_handler: TCP/IP receive [%d, %d] %s."), 
+                        conn->recv_mbuf.len,
+                        *((int *)event_data),
+                        (const char *)str.mbc_str() );
 #endif
             
             // Read new data
             memset( rbuf, 0, sizeof( rbuf ) );
             if ( 0 < io->len ) {
 
-                // Protect rbuf for out of bounce access
+                // Protect rbuf for out of bouds access
                 if ( sizeof( rbuf ) < io->len ) return;
 
                 memcpy( rbuf, io->buf, io->len );
@@ -164,7 +171,8 @@ void clientTcpIpWorkerThread::ev_handler( struct mg_connection *conn,
 #endif                
 
                 // Check if command already is in buffer
-                while ( wxNOT_FOUND != ( pos4lf = pTcpIfSession->m_readBuffer.Find( (const char)0x0a ) ) ) {
+                while ( wxNOT_FOUND != 
+                        ( pos4lf = pTcpIfSession->m_readBuffer.Find( (const char)0x0a ) ) ) {
 
                     wxString strCmdGo = pTcpIfSession->m_readBuffer.Mid( 0, pos4lf );
                     
@@ -515,7 +523,8 @@ int VscpRemoteTcpIf::doCmdOpen( const wxString& strHostname,
     //while ( m_pClientTcpIpWorkerThread->m_mgrTcpIpConnection.active_connections &  )
 
     int rv;
-    if ( wxSEMA_NO_ERROR != ( rv = m_semConnected.WaitTimeout( 10/*3000*/ * (m_responseTimeOut + 1 ) ) ) ) {
+    if ( wxSEMA_NO_ERROR != 
+            ( rv = m_semConnected.WaitTimeout( 10/*3000*/ * (m_responseTimeOut + 1 ) ) ) ) {
         m_pClientTcpIpWorkerThread->m_bRun = false;
 #ifdef DEBUG_LIB_VSCP_HELPER        
         wxString wxlog = wxString::Format(_("Connection failed: Code=%d - "), rv);       

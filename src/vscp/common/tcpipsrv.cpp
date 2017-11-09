@@ -172,7 +172,7 @@ void VSCPClientThread::ev_handler( struct mg_connection *conn,
 
         case MG_EV_ACCEPT:	// New connection accept()-ed. union socket_address *remote_addr
             {
-                pCtrlObject->logMsg(_("[TCP/IP srv] -- Accept.\n") );
+                pCtrlObject->logMsg( _("[TCP/IP srv] -- Accept.\n") );
 
                 // We need to create a clientobject and add this object to the list
                 pClientItem = new CClientItem;
