@@ -156,7 +156,7 @@ using namespace std;
 ///////////////////////////////////////////////////
 
 extern CControlObject *gpobj;
-
+extern bool gbRestart;           // Should be true to restart the VSCP daemon
 
 
 ///////////////////////////////////////////////////
@@ -961,7 +961,7 @@ vscp_password( struct web_connection *conn, void *cbdata )
     memset( buf, 0, sizeof(buf ) );
     
     // Check pointer
-    if (NULL == conn) return 0;
+    if ( NULL == conn ) return 0;
     
     web_printf( conn,
 	          "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n"
@@ -1033,6 +1033,83 @@ vscp_password( struct web_connection *conn, void *cbdata )
 
     return WEB_OK;
 }
+
+
+////////////////////////////////////////////////////////////////////////////////
+// vscp_restart
+//
+
+static int
+vscp_restart( struct web_connection *conn, void *cbdata )
+{
+    int i;
+    uint8_t salt[16];
+    char buf[512];
+    uint8_t resultbuf[512];
+    
+    memset( buf, 0, sizeof(buf ) );
+    
+    // Check pointer
+    if (NULL == conn) return 0;
+    
+    web_printf( conn,
+	          "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n"
+                  "Content-Type: text/html; charset=utf-8\r\n"
+                  "Connection: close\r\n\r\n");
+
+    web_printf( conn, WEB_COMMON_HEAD, "Password generation" );
+    web_printf( conn, WEB_STYLE_START );
+    web_write( conn, WEB_COMMON_CSS, strlen( WEB_COMMON_CSS ) );    // CSS style Code
+    web_printf( conn, WEB_STYLE_END );
+    web_write( conn, WEB_COMMON_JS, strlen( WEB_COMMON_JS ) );      // Common Javascript code
+    web_printf( conn, "<style>table, th, td { border: 0px solid black;}</style>" );
+    
+    web_printf( conn, WEB_COMMON_HEAD_END_BODY_START );
+    web_printf( conn, WEB_COMMON_MENU );  
+    
+    const struct web_request_info *reqinfo =
+                web_get_request_info( conn );
+    if ( NULL == reqinfo ) return 0;
+
+    // restart password
+    const char *password;
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,
+                            strlen( reqinfo->query_string ),
+                            "pw",
+                            buf,
+                            sizeof( buf ) ) > 0 ) {
+            password = buf;
+        }
+    }
+
+    web_printf( conn, "<h1 id=\"header\">Restart the VSCP Server</h1><br>" );
+        
+    if ( 0 == strlen( password ) ) {
+        web_printf( conn, "<form action=\"/vscp/restart\"><table>" );
+        web_printf( conn, "<tr><td width=\"10%\"><b>Restart</b></td><td><input type=\"password\" "
+                          "value=\"\" name=\"pw\"></td><tr>" );
+        web_printf( conn, "<tr><td> <td><input type=\"submit\" value=\"Generate\"></td><tr>" );
+        web_printf( conn, "</table></form>" );
+    }
+    else {
+        
+        gbRestart = true;       // Restart NOT shutdown
+        gpobj->m_bQuit = true;  // Quit main loop
+        
+        web_printf( conn, "<table>" );
+        web_printf( conn, "</td><tr>" );
+        web_printf( conn, "<tr><td><b>VSCP Server will now be restarted... </b></td><td>");
+        web_printf( conn, "</td><tr>" );
+        web_printf( conn, "</td><tr>" );
+        web_printf( conn, "<tr><td><b>This may take a while... </b></td><td>");
+        web_printf( conn, "</td><tr>" );
+        web_printf( conn, "</table>" );
+    }
+
+    return WEB_OK;
+}
+
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -8392,6 +8469,7 @@ int init_webserver( void )
     web_set_request_handler( gpobj->m_web_ctx, "/vscp/ifinfo",     vscp_interface_info, 0 );
     web_set_request_handler( gpobj->m_web_ctx, "/vscp/settings",   vscp_settings, 0 );
     web_set_request_handler( gpobj->m_web_ctx, "/vscp/password",   vscp_password, 0 );
+    web_set_request_handler( gpobj->m_web_ctx, "/vscp/restart",    vscp_restart, 0 );
     web_set_request_handler( gpobj->m_web_ctx, "/vscp/varlist",    vscp_variable_list, 0 );
     web_set_request_handler( gpobj->m_web_ctx, "/vscp/varedit",    vscp_variable_edit, 0 );
     web_set_request_handler( gpobj->m_web_ctx, "/vscp/varpost",    vscp_variable_post, 0 );

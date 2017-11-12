@@ -554,7 +554,7 @@ void frmMain::CreateControls()
     m_pitemStatusBar->SetStatusText( strVersion );
     
     wxBitmap bitmap( itemMainFrame->GetBitmapResource( wxT("vscp_logo_xpm") ) );
-    if ( /*bitmap.LoadFile("splash16.png", wxBITMAP_TYPE_PNG )*/ 1 ) {
+    /*if ( bitmap.LoadFile("splash16.png", wxBITMAP_TYPE_PNG ) ) {
         wxSplashScreen* splash = new wxSplashScreen( GetBitmapResource( _("../../../docs/vscp/logo/vscp_logo.jpg") ),
                                                         wxSPLASH_CENTRE_ON_SCREEN|wxSPLASH_TIMEOUT,
                                                         3000, 
@@ -565,7 +565,7 @@ void frmMain::CreateControls()
                                                         wxBORDER_SIMPLE | wxSTAY_ON_TOP );
     }
     wxYield(); 
-        
+    */    
 }
 
 ////////////////////////////////////////////////////////////////////////////////

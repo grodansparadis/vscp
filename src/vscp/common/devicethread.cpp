@@ -685,7 +685,7 @@ void *deviceThread::Entry()
 
         m_preceiveLevel2Thread = new deviceLevel2ReceiveThread;
 
-        if ( m_preceiveLevel2Thread ) {
+        if ( NULL != m_preceiveLevel2Thread ) {
             m_preceiveLevel2Thread->m_pMainThreadObj = this;
             wxThreadError err;
             if (wxTHREAD_NO_ERROR == (err = m_preceiveLevel2Thread->Create())) {
@@ -714,7 +714,7 @@ void *deviceThread::Entry()
         m_pwriteLevel2Thread->m_bQuit = true;
 
         // Close channel
-        m_pDeviceItem->m_proc_VSCPClose(m_pDeviceItem->m_openHandle);
+        m_pDeviceItem->m_proc_VSCPClose( m_pDeviceItem->m_openHandle );
 
         // Library is unloaded in destructor
 
@@ -1028,7 +1028,7 @@ void *deviceLevel2ReceiveThread::Entry()
     if (NULL == m_pMainThreadObj) return NULL;
 
     int rv;
-    while (!TestDestroy() && !m_bQuit) {
+    while ( !TestDestroy() && !m_bQuit ) {
 
         pEvent = new vscpEvent;
         if (NULL == pEvent) continue;
@@ -1082,8 +1082,8 @@ void *deviceLevel2ReceiveThread::Entry()
         }
 
         // There must be room in the receive queue (even if room (or whisky) has been better)
-        if (m_pMainThreadObj->m_pCtrlObject->m_maxItemsInClientReceiveQueue >
-                m_pMainThreadObj->m_pCtrlObject->m_clientOutputQueue.GetCount()) {
+        if ( m_pMainThreadObj->m_pCtrlObject->m_maxItemsInClientReceiveQueue >
+                m_pMainThreadObj->m_pCtrlObject->m_clientOutputQueue.GetCount() ) {
 
             m_pMainThreadObj->m_pCtrlObject->m_mutexClientOutputQueue.Lock();
             m_pMainThreadObj->m_pCtrlObject->m_clientOutputQueue.Append( pEvent );
@@ -1141,9 +1141,9 @@ deviceLevel2WriteThread::~deviceLevel2WriteThread()
 void *deviceLevel2WriteThread::Entry()
 {
     // Must be a valid main object pointer
-    if (NULL == m_pMainThreadObj) return NULL;
+    if ( NULL == m_pMainThreadObj ) return NULL;
 
-    while (!TestDestroy() && !m_bQuit) {
+    while ( !TestDestroy() && !m_bQuit ) {
 
         // Wait until there is something to send
         if (wxSEMA_TIMEOUT ==

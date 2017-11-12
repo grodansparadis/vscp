@@ -13,7 +13,7 @@
 //
 // This file is part of the VSCP (http://www.vscp.org)
 //
-// Copyright (C) 2000-2017
+// Copyright (C) 2000-2016
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 //
 // This file is distributed in the hope that it will be useful,
@@ -31,6 +31,7 @@
 import getpass
 import sys
 import telnetlib
+import sys
 
 onewire_prefix = "FF:FF:FF:FF:FF:FF:FF:FF:"
 
@@ -43,7 +44,7 @@ host = sys.argv[1]
 user = sys.argv[2]
 password = sys.argv[3]
 
-# Connect to VSCP daemon
+# Connet to VSCP daemon
 tn = telnetlib.Telnet(host, 9598)
 tn.read_until("+OK",2)
 
@@ -60,6 +61,7 @@ for line in sys.stdin:
     guid = onewire_prefix 
     event = "3,"	# Priority=normal
     event += "10,6,"	# Temperature measurement class=10, type=6
+    event += ","	# DateTime
     event += "0,"	# Use interface timestamp
     event += "0,"  	# Use obid of interface
 

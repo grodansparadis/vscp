@@ -1074,7 +1074,7 @@ int VscpRemoteTcpIf::doCmdQuitReceiveLoop( void )
 // doCmdBlockingReceive
 //
 
-int VscpRemoteTcpIf::doCmdBlockingReceive(vscpEvent *pEvent, uint32_t timeout)
+int VscpRemoteTcpIf::doCmdBlockingReceive( vscpEvent *pEvent, uint32_t timeout )
 {
     int rv = VSCP_ERROR_SUCCESS;
     wxString strLine;
@@ -1090,7 +1090,8 @@ int VscpRemoteTcpIf::doCmdBlockingReceive(vscpEvent *pEvent, uint32_t timeout)
 
     if ( !getInputQueueCount() ) {
         // No need to wait for stuff if already there
-        if ( !getInputQueueCount() && (wxSEMA_TIMEOUT == m_psemInputArray->WaitTimeout(timeout) ) ) {
+        if ( !getInputQueueCount() && 
+             ( wxSEMA_TIMEOUT == m_psemInputArray->WaitTimeout(timeout) ) ) {
             return VSCP_ERROR_TIMEOUT;
         }
     }

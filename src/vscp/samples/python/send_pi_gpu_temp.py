@@ -64,6 +64,7 @@ tn.read_until("+OK - Success.",2)
 
 event = "3,"		# Priority=normal
 event += "10,6,"	# Temperature measurement class=10, type=6
+event += ","		# DateTime
 event += "0,"		# Use interface timestamp
 event += "0,"  		# Use obid of interface
 event += guid  + ","	# add GUID to event
