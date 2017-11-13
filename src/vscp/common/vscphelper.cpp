@@ -2529,11 +2529,11 @@ bool vscp_convertVSCPfromEx(vscpEvent *pEvent, const vscpEventEx *pEventEx)
 ////////////////////////////////////////////////////////////////////////////////////
 // copyVSCPEvent
 
-bool vscp_copyVSCPEvent(vscpEvent *pEventTo, const vscpEvent *pEventFrom)
+bool vscp_copyVSCPEvent( vscpEvent *pEventTo, const vscpEvent *pEventFrom )
 {
     // Check pointers
-    if (NULL == pEventTo) return false;
-    if (NULL == pEventFrom) return false;
+    if ( NULL == pEventTo ) return false;
+    if ( NULL == pEventFrom ) return false;
 
     if ( pEventFrom->sizeData > VSCP_LEVEL2_MAXDATA ) return false;
 
@@ -2643,7 +2643,8 @@ bool vscp_getDateStringFromEvent( const vscpEvent *pEvent, wxString& dt )
     dt.Empty();
     
     // Return empty string if all date/time values is zero
-    if ( pEvent->year || pEvent->month || pEvent->day || pEvent->hour || pEvent->minute || pEvent->second ) {   
+    if ( pEvent->year || pEvent->month || pEvent->day || 
+         pEvent->hour || pEvent->minute || pEvent->second ) {   
         dt =  wxString::Format( _("%04d-%02d-%02dT%02d:%02d:%02dZ"),
                                                 (int)pEvent->year,
                                                 (int)pEvent->month,
@@ -2912,7 +2913,7 @@ bool vscp_setEventToNow( vscpEvent *pEvent )
     return true;
 }
 
-////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 // vscp_setEventExToNow
 //
 
@@ -3037,7 +3038,8 @@ void vscp_clearVSCPFilter(vscpEventFilter *pFilter)
 // vscp_copyVSCPFilter
 //
 
-void vscp_copyVSCPFilter( vscpEventFilter *pToFilter, const vscpEventFilter *pFromFilter)
+void vscp_copyVSCPFilter( vscpEventFilter *pToFilter, 
+                            const vscpEventFilter *pFromFilter)
 {
     // Validate pointers
     if (NULL == pToFilter) return;
@@ -3057,7 +3059,8 @@ void vscp_copyVSCPFilter( vscpEventFilter *pToFilter, const vscpEventFilter *pFr
 // readFilterFromString
 //
 
-bool vscp_readFilterFromString(vscpEventFilter *pFilter, const wxString& strFilter)
+bool vscp_readFilterFromString( vscpEventFilter *pFilter, 
+                                    const wxString& strFilter)
 {
     wxString strTok;
 
@@ -3112,7 +3115,8 @@ bool vscp_readFilterFromString(vscpEventFilter *pFilter, const wxString& strFilt
 // vscp_writeFilterToString
 //
 
-bool vscp_writeFilterToString( const vscpEventFilter *pFilter, wxString& strFilter)
+bool vscp_writeFilterToString( const vscpEventFilter *pFilter, 
+                                wxString& strFilter)
 {
     cguid guid;
     
@@ -3189,7 +3193,8 @@ bool vscp_readMaskFromString(vscpEventFilter *pFilter, const wxString& strMask)
 // vscp_writeMaskToString
 //
 
-bool vscp_writeMaskToString( const vscpEventFilter *pFilter, wxString& strFilter)
+bool vscp_writeMaskToString( const vscpEventFilter *pFilter, 
+                                wxString& strFilter)
 {
     cguid guid;
     
@@ -3359,7 +3364,8 @@ bool vscp_convertEventToCanal(canalMsg *pcanalMsg, const vscpEvent *pvscpEvent)
 // convertEventExToCanal
 //
 
-bool vscp_convertEventExToCanal(canalMsg *pcanalMsg, const vscpEventEx *pvscpEventEx)
+bool vscp_convertEventExToCanal( canalMsg *pcanalMsg, 
+                                    const vscpEventEx *pvscpEventEx)
 {
     bool rv;
 
@@ -3499,7 +3505,7 @@ bool vscp_setVscpDataFromString(vscpEvent *pEvent, const wxString& str)
 
 }
 
-//////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 // setVscpDataArrayFromString
 //
 
@@ -3524,7 +3530,7 @@ bool vscp_setVscpDataArrayFromString(uint8_t *pData,
     return true;    
 }
 
-////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 // makeTimeStamp
 //
 
@@ -3555,7 +3561,7 @@ unsigned long vscp_makeTimeStamp( void )
 */
 }
 
-////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 // vscp_setEventDateTimeBlockToNow
 //
 
@@ -3580,7 +3586,7 @@ bool vscp_setEventDateTimeBlockToNow( vscpEvent *pEvent )
     return true;
 }
 
-////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 // vscp_setEventExDateTimeBlockToNow
 //
 
@@ -3600,7 +3606,7 @@ bool vscp_setEventExDateTimeBlockToNow( vscpEventEx *pEventEx )
 }
 
 
-////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 // writeVscpEventToString
 //
 // head,class,type,obid,datetime,timestamp,GUID,data1,data2,data3....
@@ -3637,7 +3643,7 @@ bool vscp_writeVscpEventToString( const vscpEvent *pEvent, wxString& str)
     return true;
 }
 
-////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 // writeVscpEventExToString
 //
 // head,class,type,obid,datetime,timestamp,GUID,data1,data2,data3....
@@ -3658,7 +3664,7 @@ bool vscp_writeVscpEventExToString( const vscpEventEx *pEventEx, wxString& str)
     return true;
 }
 
-////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 // setVscpEventFromString
 //
 // Format: 
@@ -3788,14 +3794,15 @@ bool vscp_setVscpEventFromString(vscpEvent *pEvent, const wxString& strEvent)
     return true;
 }
 
-////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 // setVscpEventExFromString
 //
 // Format: 
 //      head,class,type,obid,timestamp,GUID,data1,data2,data3....
 //
 
-bool vscp_setVscpEventExFromString(vscpEventEx *pEventEx, const wxString& strEvent)
+bool vscp_setVscpEventExFromString( vscpEventEx *pEventEx, 
+                                        const wxString& strEvent)
 {
     bool rv;
     vscpEvent event;

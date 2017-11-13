@@ -37,11 +37,11 @@ BUILD_VERSION = `sed '38!d' ../../common/version.h  | cut -b 33-
 WARNINGS_HARD = -Werror -Wall -Wextra -pedantic -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self -Wlogical-op -Wmissing-include-dirs -Wnoexcept -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-promo -Wstrict-null-sentinel -Wstrict-overflow=5 -Wundef -Wno-unused -Wno-variadic-macros -Wno-parentheses -fdiagnostics-show-option
 WARNINGS_MEDIUM = -Wformat-security -Wformat=2
 
-MONGOOSE_CFLAGS = -DMG_ENABLE_THREADS -DMG_ENABLE_IPV6 -DMG_ENABLE_SSL -DMG_ENABLE_HTTP_CGI -DMG_ENABLE_HTTP_SSI -DMG_ENABLE_HTTP_SSI_EXEC -DMG_ENABLE_HTTP_WEBDAV -DMG_ENABLE_GETADDRINFO -DMG_ENABLE_HTTP_URL_REWRITES
+MONGOOSE_CFLAGS = -DMG_ENABLE_THREADS -DMG_ENABLE_IPV6 -DMG_ENABLE_SSL  -DMG_ENABLE_GETADDRINFO 
 CFLAGS = -std=c99 @CFLAGS@ @WXGTK_CFLAGS@ -DCBC -I../common -I../../common 
 
-CXXFLAGS = @WXGTK_CXXFLAGS@
-CPPFLAGS = @WXGTK_CPPFLAGS@ -DwxUSE_GUI=1 $(MONGOOSE_FLAGS) -I. -I../common -I../../common
+CXXFLAGS = @CXXFLAGS@ @WXGTK_CXXFLAGS@ 
+CPPFLAGS = @CPPFLAGS@ @WXGTK_CPPFLAGS@ -DwxUSE_GUI=1 $(MONGOOSE_CFLAGS) -I. -I../common -I../../common
 LDFLAGS = @LDFLAGS@
 LDFLAGS = @LDFLAGS@
 

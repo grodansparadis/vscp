@@ -1,3 +1,4 @@
+#!/usr/bin/python
 #!usr/bin/env python
 
 """
@@ -14,7 +15,7 @@
 //
 // This file is part of the VSCP (http://www.vscp.org)
 //
-// Copyright (C) 2000-2017
+// Copyright (C) 2000-2016
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 //
 // This file is distributed in the hope that it will be useful,
@@ -41,7 +42,7 @@ password = "secret"
 
 guid = "00:00:00:00:00:00:00:00:00:00:00:00:00:01:00:01"
 
-debug = 1
+debug = 0
 usesockets = 0
 url = "http://tinyurl.com/temperaturLos" #Url to yr.no:s rss-feed
 opener = urllib.FancyURLopener({})
@@ -87,7 +88,7 @@ if ( usesockets ):
         print data
 
     # Send temperature forecast
-    s.send( "SEND 0,10,6,0,0," + guid + ",0x88,0," + str( temp ) + "\r\n" )
+    s.send( "SEND 0,10,6,,0,0," + guid + ",0x88,0," + str( temp ) + "\r\n" )
     data = s.recv( 10000 )
     if (1 == debug):
         print data
@@ -96,7 +97,7 @@ if ( usesockets ):
     # coding = 0b100 =  Normalized integer
     # unit = 0 = m/s
     # sensor = 0
-    s.send( "SEND 0,10,32,0,0," + guid +",0x80,0," + str( wind ) + "\r\n" )
+    s.send( "SEND 0,10,32,,0,0," + guid +",0x80,0," + str( wind ) + "\r\n" )
     data = s.recv( 10000 )
     if (1 == debug):
         print data
@@ -123,7 +124,8 @@ else:
     # *******************************************
 
     event = "3,"	    # Priority=normal
-    event += "10,6,"	# Temperature measurement class=10, type=6
+    event += "10,6,"	    # Temperature measurement class=10, type=6
+    event += ","	    # DataTime
     event += "0,"	    # Use interface timestamp
     event += "0,"  	    # Use obid of interface
     event += guid + ","
@@ -165,10 +167,12 @@ else:
         event += "15,"   # "Hot"    
     else :
         event += "16,"   # "Very hot"    
-    event += "0,"	    # Use interface timestamp
-    event += "0,"  	    # Use obid of interface
+
+    event += ","         # Datettime
+    event += "0,"  	 # Use timestamp of interface
+    event += "0,"        # Use obid of interface
     event += guid + ","
-    event += "0,"	    # IndexError
+    event += "0,"	 # IndexError
     event += "0xff,"	# Zone - all
     event += "0xff,"	# Subzone - all
 
@@ -180,10 +184,11 @@ else:
     #               Wind forecast
     # *******************************************
 
-    event = "3,"	    # Priority=normal
+    event = "3,"	# Priority=normal
     event += "10,32,"	# Speed measurement class=10, type=6
-    event += "0,"	    # Use interface timestamp
-    event += "0,"  	    # Use obid of interface
+    event += ","        # DateTime
+    event += "0,"  	# timestamp
+    event += "0,"       # Use obid of interface
     event += guid + ","
     # datacoding = String format| unit = m/s | sensor = 0
     datacoding = 0x40 | 0 | 0  
@@ -220,10 +225,11 @@ else:
         event += "8,"   # "High wind"
     else :
         event += "9,"   # "Very high wind"    
-    event += "0,"	    # Use interface timestamp
-    event += "0,"  	    # Use obid of interface
+    event += ","        # DateTime
+    event += "0,"       # Timestamp
+    event += "0,"  	# Use obid of interface
     event += guid + ","
-    event += "0,"	    # IndexError
+    event += "0,"	# IndexError
     event += "0xff,"	# Zone - all
     event += "0xff,"	# Subzone - all
 

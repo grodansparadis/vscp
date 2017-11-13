@@ -643,7 +643,8 @@ void dlgNewVSCPSession::OnButtonCloneClick(wxCommandEvent& event)
                     // A new CANAL driver
                     canal_interface *pInfo = new canal_interface;
                     if (NULL != pInfo) {
-                        pInfo->m_strDescription = wxGetTextFromUser(_("Enter new description"));
+                        pInfo->m_strDescription = 
+                                wxGetTextFromUser(_("Enter new description"));
                         pInfo->m_strPath = pBoth->m_pcanalif->m_strPath;
                         pInfo->m_strConfig = pBoth->m_pcanalif->m_strConfig;
                         pInfo->m_flags = pBoth->m_pcanalif->m_flags;
@@ -656,7 +657,8 @@ void dlgNewVSCPSession::OnButtonCloneClick(wxCommandEvent& event)
                     // A new remote host
                     vscp_interface *pInfo = new vscp_interface;
                     if (NULL != pInfo) {
-                        pInfo->m_strDescription = wxGetTextFromUser(_("Enter description"));
+                        pInfo->m_strDescription = 
+                                wxGetTextFromUser(_("Enter description"));
                         pInfo->m_strHost = pBoth->m_pvscpif->m_strHost;
                         pInfo->m_strUser = pBoth->m_pvscpif->m_strUser;
                         pInfo->m_strPassword = pBoth->m_pvscpif->m_strPassword;
@@ -690,7 +692,8 @@ void dlgNewVSCPSession::OnButtonCloneClick(wxCommandEvent& event)
         } // 0 == selidx
     }
     else {
-        wxMessageBox(_("You need to select one interface to edit before this operation can be performed."),
+        wxMessageBox(_("You need to select one interface to edit before "
+                       "this operation can be performed."),
                 _("Edit interface"),
                 wxICON_INFORMATION);
     }

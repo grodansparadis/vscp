@@ -40,7 +40,6 @@
 #include "wx/wx.h"
 #endif
 
-
 #include "wx/defs.h"
 #include "wx/app.h"
 #include <wx/datetime.h>
@@ -301,39 +300,33 @@ void CVSCPAutomation::calcSun( void )
     double d, lambda;
     double obliq, alpha, delta, LL, equation, ha, hb, twx;
     double twilightSunrise, maxAltitude, noonTime, sunsetTime, sunriseTime, twilightSunset;
-    time_t sekunnit;
-    struct tm *p;
-    double tzone = 0;
-  
-    // Adjust for daylight saving time
-    if ( isDaylightSavingTime() ) {
-        tzone = getTimeZoneDiffHours();
-    }
-
+    double tzone = 0;  
+    
     degs = 180.0 / pi;
     rads = pi / 180.0;
 
     // get the date and time from the user
     // read system date and extract the year
 
-    // First get time 
-    time( &sekunnit );
+    // First get time
+    wxDateTime nowLocal = wxDateTime::Now();
+    year = nowLocal.GetYear();
+    month = nowLocal.GetMonth() + 1;
+    day = nowLocal.GetDay();
+    hour = nowLocal.GetHour();
 
-    // Next get local time 
-    p = localtime( &sekunnit );
+    // Set offset from UTC - daytimesaving is taken care of
+    wxDateTime::TimeZone ttt( wxDateTime::Local );
+    tzone = ttt.GetOffset()/3600;
 
-    year = p->tm_year;
-    year += 1900;
-    month = p->tm_mon + 1;
-
-    day = p->tm_mday;
-
-    hour = 12;
-
+    // Adjust for daylight saving time
+    /*if ( isDaylightSavingTime() ) {
+        tzone = getTimeZoneDiffHours();
+    }*/
+    
     d = FNday(year, month, day, hour);
 
-    //   Use FNsun to find the ecliptic longitude of the
-    //   Sun
+    // Use FNsun to find the ecliptic longitude of the Sun
     lambda = FNsun(d);
 
     //   Obliquity of the ecliptic
@@ -367,9 +360,9 @@ void CVSCPAutomation::calcSun( void )
     maxAltitude = 90.0 + delta * degs - m_latitude;
     // Correction for S HS suggested by David Smith
     // to express altitude as degrees from the N horizon
-    if (m_latitude < delta * degs) maxAltitude = 180.0 - maxAltitude;
+    if ( m_latitude < delta * degs ) maxAltitude = 180.0 - maxAltitude;
 
-    twilightSunrise = sunriseTime - twx;   // morning twilight begin
+    twilightSunrise = sunriseTime - twx;    // morning twilight begin
     twilightSunset = sunsetTime + twx;      // evening twilight end
 
     if (sunriseTime > 24.0) sunriseTime -= 24.0;

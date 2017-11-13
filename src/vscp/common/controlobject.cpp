@@ -1665,7 +1665,9 @@ bool CControlObject::getVscpCapabilities( uint8_t *pCapability )
 // logMsg
 //
 
-void CControlObject::logMsg(const wxString& msgin, const uint8_t level, const uint8_t nType )
+void CControlObject::logMsg( const wxString& msgin, 
+                                const uint8_t level, 
+                                const uint8_t nType )
 {
     wxString msg = msgin;
 
@@ -1679,7 +1681,8 @@ void CControlObject::logMsg(const wxString& msgin, const uint8_t level, const ui
     wxDateTime datetime( wxDateTime::GetTimeNow() );
     wxString wxdebugmsg;
 
-    wxdebugmsg = datetime.FormatISODate() + _("T") + datetime.FormatISOTime() + _(" - ") + msg;
+    wxdebugmsg = datetime.FormatISODate() + _("T") + 
+                    datetime.FormatISOTime() + _(" - ") + msg;
 
 #ifdef WIN32
 #ifdef BUILD_VSCPD_SERVICE
@@ -1717,13 +1720,15 @@ void CControlObject::logMsg(const wxString& msgin, const uint8_t level, const ui
 
         char *sql = sqlite3_mprintf( VSCPDB_LOG_INSERT,
             nType,
-            (const char *)(datetime.FormatISODate() + _("T") + datetime.FormatISOTime() ).mbc_str(),
+            (const char *)(datetime.FormatISODate() + _("T") + 
+                datetime.FormatISOTime() ).mbc_str(),
             level,
             (const char *)msg.mbc_str() );
 
         if ( SQLITE_OK != sqlite3_exec( m_db_vscp_log,
                                         sql, NULL, NULL, &zErrMsg ) ) {
-            wxPrintf( "Failed to write message to log database. Error is: %s -- Message is: %s\n",
+            wxPrintf( "Failed to write message to log database. Error is: "
+                      "%s -- Message is: %s\n",
                         zErrMsg,
                         (const char *)msg.mbc_str() );
         }
@@ -1816,7 +1821,8 @@ bool CControlObject::searchLogDB( const char * sql, wxString& strResult )
                                         -1,
                                         &ppStmt,
                                         NULL ) )  {
-        logMsg( wxString::Format( _("Failed to get records from log database. SQL is %s"),
+        logMsg( wxString::Format( _("Failed to get records from log "
+                                    "database. SQL is %s"),
                                     sql )  );
         return false;
     }
@@ -1924,7 +1930,8 @@ void CControlObject::sendEventAllClients( vscpEvent *pEvent,
                     pClientItem->m_clientID);
         }
 
-        if ( ( NULL != pClientItem ) && ( excludeID != pClientItem->m_clientID ) ) {
+        if ( ( NULL != pClientItem ) && 
+             ( excludeID != pClientItem->m_clientID ) ) {
             sendEventToClient( pClientItem, pEvent );
             wxLogTrace(_("wxTRACE_vscpd_receiveQueue"),
                     _(" ControlObject: Sent to client %d"),
@@ -2002,11 +2009,17 @@ bool CControlObject::sendEvent( CClientItem *pClientItem,
             destguid.setAt(1,0);
 
             wxString dbgStr =
-                    wxString::Format( _("Level I event over Level II dest = %d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:"),
-                    destguid.getAt(15),destguid.getAt(14),destguid.getAt(13),destguid.getAt(12),
-                    destguid.getAt(11),destguid.getAt(10),destguid.getAt(9),destguid.getAt(8),
-                    destguid.getAt(7),destguid.getAt(6),destguid.getAt(5),destguid.getAt(4),
-                    destguid.getAt(3),destguid.getAt(2),destguid.getAt(1),destguid.getAt(0) );
+                    wxString::Format( _("Level I event over Level II "
+                                        "dest = %d:%d:%d:%d:%d:%d:%d:%d:"
+                                        "%d:%d:%d:%d:%d:%d:%d:%d:"),
+                    destguid.getAt(15),destguid.getAt(14),
+                    destguid.getAt(13),destguid.getAt(12),
+                    destguid.getAt(11),destguid.getAt(10),
+                    destguid.getAt(9),destguid.getAt(8),
+                    destguid.getAt(7),destguid.getAt(6),
+                    destguid.getAt(5),destguid.getAt(4),
+                    destguid.getAt(3),destguid.getAt(2),
+                    destguid.getAt(1),destguid.getAt(0) );
                     logMsg( dbgStr, DAEMON_LOGMSG_DEBUG );
 
             // Find client
@@ -4086,6 +4099,44 @@ xml_table_error:
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// updateConfigurationRecordItem
+//
+
+bool CControlObject::updateConfigurationRecordItem( const wxString& strName,
+                                                        const wxString& strValue )
+{
+    char *pErrMsg;
+
+    // Database file must be open
+    if ( NULL == m_db_vscp_daemon ) {
+        logMsg( _("Settings update: Update record. Database file is not open.\n") );
+        return false;
+    }
+
+    m_db_vscp_configMutex.Lock();
+
+    char *sql = sqlite3_mprintf( VSCPDB_CONFIG_UPDATE_ITEM,
+                                    (const char *)strValue.mbc_str(),
+                                    (const char *)strName.mbc_str(),
+                                    m_nConfiguration );
+    if ( SQLITE_OK != sqlite3_exec( m_db_vscp_daemon,
+                                            sql, NULL, NULL, &pErrMsg)) {
+        sqlite3_free( sql );
+        m_db_vscp_configMutex.Unlock();
+        fprintf( stderr,
+                    "Failed to update setting with error %s.\n",
+                    pErrMsg );
+        return false;
+    }
+
+    sqlite3_free( sql );
+
+    m_db_vscp_configMutex.Unlock();
+
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // addConfigurationValueToDatabase
 //
 
@@ -5087,43 +5138,7 @@ bool CControlObject::readConfigurationDB( void )
     return true;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// updateConfigurationRecordItem
-//
 
-bool CControlObject::updateConfigurationRecordItem( const wxString& strName,
-                                                        const wxString& strValue )
-{
-    char *pErrMsg;
-
-    // Database file must be open
-    if ( NULL == m_db_vscp_daemon ) {
-        logMsg( _("Settings update: Update record. Database file is not open.\n") );
-        return false;
-    }
-
-    m_db_vscp_configMutex.Lock();
-
-    char *sql = sqlite3_mprintf( VSCPDB_CONFIG_UPDATE_ITEM,
-                                    (const char *)strName.mbc_str(),
-                                    (const char *)strValue.mbc_str(),
-                                    m_nConfiguration );
-    if ( SQLITE_OK != sqlite3_exec( m_db_vscp_daemon,
-                                            sql, NULL, NULL, &pErrMsg)) {
-        sqlite3_free( sql );
-        m_db_vscp_configMutex.Unlock();
-        fprintf( stderr,
-                    "Failed to update setting with error %s.\n",
-                    pErrMsg );
-        return false;
-    }
-
-    sqlite3_free( sql );
-
-    m_db_vscp_configMutex.Unlock();
-
-    return true;
-}
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -5816,6 +5831,7 @@ bool CControlObject::createFolderStructure( void )
     wxFileName::Mkdir( m_rootFolder + _("/web/testws"), 0x777, wxPATH_MKDIR_FULL );
     wxFileName::Mkdir( m_rootFolder + _("/web/service"), 0x777, wxPATH_MKDIR_FULL );
     wxFileName::Mkdir( m_rootFolder + _("/tables"), 0x777, wxPATH_MKDIR_FULL );
+    wxFileName::Mkdir( m_rootFolder + _("/mdf"), 0x777, wxPATH_MKDIR_FULL );
 
     // check if main configuration file is in place
     // create a new one if not

@@ -114,7 +114,9 @@ int main( int argc, char **argv )
 
     wxInitializer initializer;
     if ( !::wxInitialize() ) {
-        fprintf(stderr, "[vscpd] Failed to initialize the wxWindows library, aborting.\n");
+        fprintf( stderr, 
+                    "[vscpd] Failed to initialize the wxWindows library, "
+                    "aborting.\n");
         return -1;
     }
 
@@ -138,27 +140,29 @@ int main( int argc, char **argv )
         switch (arg) {
 
         case 's':
-            wxPrintf(_("Stay Hungry. Stay Foolish.\n"));
-            wxPrintf(_("I will ***NOT*** run as daemon! (ctrl+c to terminate)\n\n"));
+            wxPrintf( _("Stay Hungry. Stay Foolish.\n"));
+            wxPrintf( _("I will ***NOT*** run as daemon! "
+                        "(ctrl+c to terminate)\n\n"));
             gbDontRunAsDaemon = true;
             break;
 
         case 'c':
-            strcfgfile = wxString(optarg, wxConvUTF8);
+            strcfgfile = wxString( optarg, wxConvUTF8 );
             break;
 
         case 'r':
-            rootFolder = wxString(optarg, wxConvUTF8);
+            rootFolder = wxString( optarg, wxConvUTF8 );
             break;
 
         case 'k':
             vscp_hexStr2ByteArray( gpobj->m_systemKey,
                                             32,
-                                            (const char *)wxString( optarg, wxConvUTF8 ).mbc_str() );
+                                            (const char *)wxString( optarg, 
+                                                        wxConvUTF8 ).mbc_str() );
             break;
 
         case 'd':
-            gnDebugLevel = atoi(optarg);
+            gnDebugLevel = atoi( optarg );
             break;
 
         case 'g':
@@ -176,7 +180,7 @@ int main( int argc, char **argv )
 
     gpobj->logMsg( _("[vscpd] Configfile =") + strcfgfile + _(" \n") );
     if ( !theApp.init( strcfgfile, rootFolder ) ) {
-        fprintf(stderr,"[vscpd] Failed to configure. Terminating.\n");
+        fprintf(stderr, "[vscpd] Failed to configure. Terminating.\n");
         fprintf( stderr, "VSCPD: Failed to configure. Terminating.\n");
         exit( -1 );
     }

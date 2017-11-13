@@ -35,7 +35,10 @@
                            "    <a href=\"#\">System</a>"\
                            "    <ul>"\
                            "        <li>"\
-                           "            <a href=\"/vscp/configure\">Configuration</a>"\
+                           "            <a href=\"/vscp/configure\">List configuration</a>"\
+                           "        </li>"\
+                           "        <li>"\
+                           "            <a href=\"/vscp/settings\">Settings</a>"\
                            "        </li>"\
                            "        <li>"\
                            "            <a href=\"/vscp/varlist\">Variable - List</a>"\
