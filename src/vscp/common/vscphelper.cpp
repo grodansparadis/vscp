@@ -2845,7 +2845,7 @@ void vscp_convertEventToHTML( vscpEvent *pEvent, wxString& strHTML )
     
     // datetime,class,type,data-count,data,guid,head,timestamp,obid,note
     strHTML.Printf( VSCP_HTML_EVENT_TEMPLATE,
-                        wxDateTime::Now().FormatISOCombined(),
+                        (const char *)dt.mbc_str(),
                         (unsigned short int)pEvent->vscp_class,
                         (unsigned short int)pEvent->vscp_type,
                         (unsigned short int)pEvent->sizeData,
@@ -2882,7 +2882,7 @@ void vscp_convertEventExToHTML( vscpEventEx *pEventEx, wxString& strHTML )
     
     // datetime,class,type,data-count,data,guid,head,timestamp,obid,note
     strHTML.Printf( VSCP_HTML_EVENT_TEMPLATE,
-                        wxDateTime::Now().FormatISOCombined(),
+                        (const char *)dt.mbc_str(),
                         (unsigned short int)pEventEx->vscp_class,
                         (unsigned short int)pEventEx->vscp_type,
                         (unsigned short int)pEventEx->sizeData,
@@ -3403,7 +3403,7 @@ bool vscp_writeVscpDataToString( const vscpEvent *pEvent,
 
     str.Empty();
 
-    if (bUseHtmlBreak) {
+    if ( bUseHtmlBreak ) {
         strBreak = _("<br>");
     } 
     else {
@@ -3444,7 +3444,7 @@ bool vscp_writeVscpDataWithSizeToString( const uint16_t sizeData,
 
     str.Empty();
 
-    if (bUseHtmlBreak) {
+    if ( bUseHtmlBreak ) {
         strBreak = _("<br>");
     } 
     else {
