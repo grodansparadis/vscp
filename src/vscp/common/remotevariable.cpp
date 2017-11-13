@@ -2683,9 +2683,9 @@ bool CVariableStorage::init( void )
     
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
-    variable.setName( _("vscp.websrv.cgi_pattern") );
+    variable.setName( _("vscp.websrv.cgi_patterns") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
-    variable.setNote( _("All files that match cgi_pattern are treated as CGI "
+    variable.setNote( _("All files that match cgi_patterns are treated as CGI "
                         "files."), true );
     addStockVariable( variable  );
     
@@ -2864,7 +2864,7 @@ bool CVariableStorage::init( void )
     
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
-    variable.setName( _("vscp.websrv.tcp_nodelay") );
+    variable.setName( _(VSCPDB_CONFIG_NAME_WEB_TCP_NO_DELAY) );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER);
     variable.setNote( _("Enable TCP_NODELAY socket option on client connections."), true );
     addStockVariable( variable  );
@@ -2918,7 +2918,7 @@ bool CVariableStorage::init( void )
     
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
-    variable.setName( _("vscp.websrv.duktape_script_pattern") );
+    variable.setName( _("vscp.websrv.duktape_script_patterns") );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
     variable.setNote( _("A pattern for files that are interpreted as "
                         "JavaScripts by the server."), true );
@@ -3957,13 +3957,13 @@ uint32_t CVariableStorage::getStockVariable( const wxString& name,
         return var.getID();
     }
             
-    if ( lcname.StartsWith( _("vscp.websrv.ssl_certificate") ) ) {
+    if ( lcname.StartsWith( _("vscp.websrv.ssl_certificat") ) ) {
         // String
         var.setValue( gpobj->m_web_ssl_certificate, true );
         return var.getID();
     }
     
-    if ( lcname.StartsWith( _("vscp.websrv.certificate_chain") ) ) {
+    if ( lcname.StartsWith( _("vscp.websrv.certificat_chain") ) ) {
         // String
         var.setValue( gpobj->m_web_ssl_certificate, true );
         return var.getID();
@@ -4256,7 +4256,7 @@ uint32_t CVariableStorage::getStockVariable( const wxString& name,
         return var.getID();
     }
     
-    if ( lcname.StartsWith( _("vscp.websockets.dokument_root") ) ) {
+    if ( lcname.StartsWith( _("vscp.websockets.document_root") ) ) {
         // String
         if ( 0 != gpobj->m_websocket_document_root.Trim().Length() ) {
             var.setValue( gpobj->m_websocket_document_root, true );
@@ -5784,7 +5784,7 @@ bool CVariableStorage::putStockVariable( CVSCPVariable& var,
                                                     var.getValue() );
     }
     
-    if ( lcname.StartsWith( _("vscp.websrv.tcp_nodelay") ) ) {
+    if ( lcname.StartsWith( _(VSCPDB_CONFIG_NAME_WEB_TCP_NO_DELAY) ) ) {
         gpobj->m_web_tcp_nodelay = atol( (const char *)var.getValue() );
         return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_TCP_NO_DELAY), 
                                                     var.getValue() );

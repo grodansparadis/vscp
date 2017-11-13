@@ -3476,6 +3476,9 @@ static int vscp_variable_list( struct web_connection *conn, void *cbdata  )
 
         wxString strValue;
         variable.writeValueToString( strValue, true );
+        if ( strValue.Length() > 80 ) {
+            strValue = strValue.Left(80) + _("...");
+        }
         web_printf( conn, "<b>Value:</b> ");
         web_printf( conn, "%s", (const char *)strValue.mbc_str() );
 
@@ -3483,6 +3486,9 @@ static int vscp_variable_list( struct web_connection *conn, void *cbdata  )
         web_printf( conn, "<b>Note:</b> ");
         wxString strNote;
         variable.getNote(strNote, true);
+        if ( strNote.Length() > 80 ) {
+            strNote = strNote.Left( 80 ) + _("...");
+        }
         web_printf( conn, "%s", (const char *)strNote.mbc_str());
 
         web_printf(conn, "<br>");
