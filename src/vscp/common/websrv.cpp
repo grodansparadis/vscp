@@ -5729,7 +5729,7 @@ vscp_configure( struct web_connection *conn, void *cbdata )
     web_printf( conn, "<h4 id=\"header\" >&nbsp;Websockets</h4> ");
 
 
-    web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Web server functionality </b> is ");
+    web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Web sockets functionality </b> is ");
     if (  gpobj->m_web_bEnable &&  gpobj->m_bWebsocketsEnable ) {
         web_printf( conn, "enabled.<br>");
     }
