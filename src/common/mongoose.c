@@ -1936,12 +1936,24 @@ int mg_avprintf(char **buf, size_t size, const char *fmt, va_list ap) {
     *buf = NULL; /* LCOV_EXCL_START */
     while (len < 0) {
       MG_FREE(*buf);
+      if (size == 0) {
+        size = 5;
+      }
       size *= 2;
-      if ((*buf = (char *) MG_MALLOC(size)) == NULL) break;
+      if ((*buf = (char *) MG_MALLOC(size)) == NULL) {
+        len = -1;
+        break;
+      }
       va_copy(ap_copy, ap);
-      len = vsnprintf(*buf, size, fmt, ap_copy);
+      len = vsnprintf(*buf, size - 1, fmt, ap_copy);
       va_end(ap_copy);
     }
+
+    /*
+     * Microsoft version of vsnprintf() is not always null-terminated, so put
+     * the terminator manually
+     */
+    (*buf)[len] = 0;
     /* LCOV_EXCL_STOP */
   } else if (len >= (int) size) {
     /* Standard-compliant code path. Allocate a buffer that is large enough. */
@@ -7003,6 +7015,7 @@ int mg_get_http_var(const struct mg_str *buf, const char *name, char *dst,
    * -1 - src is wrong (NUUL)
    * -2 - dst is wrong (NULL)
    * -3 - failed to decode url or dst is to small
+   * -4 - name does not exist
    */
   if (dst == NULL || dst_len == 0) {
     len = -2;
@@ -7012,7 +7025,7 @@ int mg_get_http_var(const struct mg_str *buf, const char *name, char *dst,
   } else {
     name_len = strlen(name);
     e = buf->p + buf->len;
-    len = 0;
+    len = -4;
     dst[0] = '\0';
 
     for (p = buf->p; p + name_len < e; p++) {

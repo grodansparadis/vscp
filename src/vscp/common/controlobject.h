@@ -58,7 +58,7 @@
 #include <vscp.h>
 
 // Forward declarations
-class VSCPClientThread;
+class TCPClientThread;
 class CVSCPAutomation;
 
 // Log level
@@ -393,7 +393,7 @@ public:
         Get the VSCP TCP/IP thread thread
         @return Pointer to the VSCP TCP/IP thread thread
     */
-    VSCPClientThread *getTCPIPServer( void ) { return m_pVSCPClientThread; };
+    TCPClientThread *getTCPIPServer( void ) { return m_pTCPClientThread; };
 
     /*!
      * Read configuration data from database.
@@ -971,7 +971,7 @@ private:
     /*!
         The server thread for the TCP connection interface
      */
-    VSCPClientThread *m_pVSCPClientThread;
+    TCPClientThread *m_pTCPClientThread;
     wxMutex m_mutexTcpClientListenThread;
 
     /*!

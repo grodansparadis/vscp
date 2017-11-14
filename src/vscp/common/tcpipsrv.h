@@ -109,16 +109,16 @@ typedef struct {
     the vscpd connections on the TCP interface
 */
 
-class VSCPClientThread : public wxThread
+class TCPClientThread : public wxThread
 {
 
 public:
     
     /// Constructor
-    VSCPClientThread();
+    TCPClientThread();
 
     /// Destructor
-    ~VSCPClientThread();
+    ~TCPClientThread();
 
     /*!
         Thread code entry point
