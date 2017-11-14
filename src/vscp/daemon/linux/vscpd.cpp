@@ -118,6 +118,9 @@ int main( int argc, char **argv )
         fprintf( stderr, 
                     "[vscpd] Failed to initialize the wxWindows library, "
                     "aborting.\n");
+        syslog( LOG_CRIT, 
+                    "[vscpd] Failed to initialize the wxWindows library, "
+                    "aborting.\n");
         return -1;
     }
 
@@ -179,7 +182,7 @@ int main( int argc, char **argv )
                 (const char *)strcfgfile.mbc_str() );
     
     if ( !theApp.init( strcfgfile, rootFolder ) ) {
-        fprintf(stderr, "[vscpd] Failed to configure. Terminating.\n");
+        syslog( LOG_CRIT, "[vscpd] Failed to configure. Terminating.\n");
         fprintf( stderr, "VSCPD: Failed to configure. Terminating.\n");
         exit( -1 );
     }
@@ -200,7 +203,7 @@ BOOL VSCPApp::init(wxString& strcfgfile, wxString& rootFolder )
         // Fork child
         if (0 > (pid = fork())) {
             // Failure
-            fprintf( stderr, "Failed to fork.\n" );
+            syslog( LOG_CRIT, "Failed to fork.\n" );
             return -1;
         }
         else if (0 != pid) {
@@ -210,7 +213,7 @@ BOOL VSCPApp::init(wxString& strcfgfile, wxString& rootFolder )
         sid = setsid(); // Become session leader
         if ( sid < 0 ) {
             // Failure
-            fprintf( stderr, "Failed to become session leader.\n" );
+            syslog( LOG_CRIT, "Failed to become session leader.\n" );
             return -1;
         }
 
@@ -222,7 +225,7 @@ BOOL VSCPApp::init(wxString& strcfgfile, wxString& rootFolder )
         close(STDERR_FILENO);
 
         if ( open("/", 0 ) ) {
-            fprintf( stderr, "VSCPD: open / not 0: %m" );
+            syslog( LOG_CRIT, "VSCPD: open / not 0: %m" );
         }
 
         dup2(0, 1);
@@ -234,6 +237,7 @@ BOOL VSCPApp::init(wxString& strcfgfile, wxString& rootFolder )
     FILE *pFile;
     pFile = fopen("/var/run/vscpd/vscpd.pid", "w");
     if ( NULL != pFile ) {
+        syslog( LOG_CRIT, "%d\n", sid );
         fprintf( pFile, "%d\n", sid );
         fclose( pFile );
     }
@@ -243,6 +247,7 @@ BOOL VSCPApp::init(wxString& strcfgfile, wxString& rootFolder )
 
     // Change working directory to root folder
     if ( chdir( (const char *)rootFolder.mbc_str() ) ) {
+        syslog( LOG_CRIT, "VSCPD: Failed to change dir to rootdir" );
         fprintf( stderr, "VSCPD: Failed to change dir to rootdir" );
         chdir("/tmp"); // security measure
     }
@@ -311,12 +316,14 @@ BOOL VSCPApp::init(wxString& strcfgfile, wxString& rootFolder )
         fprintf( stderr, "VSCPD: cleanup done.\n");
 
         if ( gbRestart ) {
+            syslog( LOG_CRIT, "VSCPD: Will try to restart.\n" );
             fprintf( stderr, "VSCPD: Will try to restart.\n" );
         }
         else {
+            syslog( LOG_CRIT, "VSCPD: Will end things.\n" );
             fprintf( stderr, "VSCPD: Will end things.\n" );
         }
-        
+                
         fprintf( stderr, "VSCPD: Deleting the control object.\n");
         delete gpobj;
 

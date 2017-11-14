@@ -1057,11 +1057,11 @@ vscp_restart( struct web_connection *conn, void *cbdata )
                   "Content-Type: text/html; charset=utf-8\r\n"
                   "Connection: close\r\n\r\n");
 
-    web_printf( conn, WEB_COMMON_HEAD, "Password generation" );
+    web_printf( conn, WEB_COMMON_HEAD, "VSCP Server restart" );
     web_printf( conn, WEB_STYLE_START );
     web_write( conn, WEB_COMMON_CSS, strlen( WEB_COMMON_CSS ) );    // CSS style Code
     web_printf( conn, WEB_STYLE_END );
-    web_write( conn, WEB_COMMON_JS, strlen( WEB_COMMON_JS ) );      // Common Javascript code
+    web_write( conn, WEB_COMMON_JS, strlen( WEB_COMMON_JS ) );      // Common JavaScript code
     web_printf( conn, "<style>table, th, td { border: 0px solid black;}</style>" );
     
     web_printf( conn, WEB_COMMON_HEAD_END_BODY_START );
@@ -1086,7 +1086,7 @@ vscp_restart( struct web_connection *conn, void *cbdata )
         
     if ( NULL == password ) {
         web_printf( conn, "<form action=\"/vscp/restart\"><table>" );
-        web_printf( conn, "<tr><td width=\"10%\"><b>Restart</b></td><td><input type=\"password\" "
+        web_printf( conn, "<tr><td width=\"10%\"><b>vscptoken</b></td><td><input type=\"password\" "
                           "value=\"\" name=\"pw\"></td><tr>" );
         web_printf( conn, "<tr><td> <td><input type=\"submit\" value=\"RESTART\"></td><tr>" );
         web_printf( conn, "</table></form>" );
