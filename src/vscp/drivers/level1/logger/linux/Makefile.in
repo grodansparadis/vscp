@@ -95,7 +95,7 @@ dllist.o: ../../../../../common/dllist.c ../../../../../common/dllist.h
 	$(CC) $(CFLAGS) -c ../../../../../common/dllist.c -o $@
 
 install: all
-	$(VSCP_PROJ_BASE_DIR)/drivers/level1
+	mkdir -p $(VSCP_PROJ_BASE_DIR)/drivers/level1
 	$(INSTALL_PROGRAM) vscpl1_loggerdrv.so $(VSCP_PROJ_BASE_DIR)/drivers/level1
 
 uninstall: 

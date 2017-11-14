@@ -6029,13 +6029,13 @@ vscp_configure_list( struct web_connection *conn, void *cbdata )
         if  ( ( NULL != pDeviceItem ) &&
               ( VSCP_DRIVER_LEVEL1 == pDeviceItem->m_driverLevel ) &&
               pDeviceItem->m_bEnable ) {
-            web_printf( conn, "<b>Name:</b> ");
+            web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Name:</b> ");
             web_printf( conn, "%s", (const char *)pDeviceItem->m_strName.mbc_str() );
             web_printf( conn, "<br>");
-            web_printf( conn, "<b>Config:</b> ");
+            web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Config:</b> ");
             web_printf( conn, "%s", (const char *)pDeviceItem->m_strParameter.mbc_str() );
             web_printf( conn, "<br>");
-            web_printf( conn, "<b>Path:</b> ");
+            web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Path:</b> ");
             web_printf( conn, "%s", (const char *)pDeviceItem->m_strPath.mbc_str() );
             web_printf( conn, "<br>");
         }

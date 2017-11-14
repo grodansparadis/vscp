@@ -125,8 +125,6 @@ int main( int argc, char **argv )
         return -1;
     }
 
-    
-
 #ifdef WIN32
     rootFolder = _("/programdata/vscp");
 #else

@@ -282,7 +282,7 @@
         <driver enable="false">
             <name>logger</name>
             <config>/tmp/canallog.txt</config>
-            <path>/srv/vscp/vscpl1_loggerdrv.so</path>
+            <path>/srv/vscp/drivers/level1/vscpl1_loggerdrv.so</path>
             <flags>1</flags>
             <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
         </driver>
@@ -291,7 +291,7 @@
         <driver enable="false" >
             <name>can232</name>
             <config>/dev/ttyS0;19200;0;0;125</config>
-            <path>/srv/vscp/vscpl1_can232drv.so</path>
+            <path>/srv/vscp/drivers/level1/vscpl1_can232drv.so</path>
             <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
             <flags>0</flags>
         </driver>
@@ -313,7 +313,7 @@
         <!-- Level II Logger -->
         <driver enable="false" >
             <name>VSCP Level II Logger Driver A</name>
-            <path>/srv/vscp/vscpl2drv_logger.so</path>
+            <path>/srv/vscp/drivers/level2/vscpl2drv_logger.so</path>
              <config>/tmp/vscp_level2.log</config>
              <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
         </driver>
@@ -321,7 +321,7 @@
         <!-- Level II lmsensors -->
         <driver enable="false" >
             <name>VCCP Level II LM-sensors driver A</name>
-            <path>/srv/vscp/vscpl2drv_lmsensors.so</path>
+            <path>/srv/vscp/drivers/level2/vscpl2drv_lmsensors.so</path>
             <config>2</config>
             <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
         </driver>
@@ -329,7 +329,7 @@
         <!-- Level II socketcan  -->
         <driver enable="false" >
             <name>VSCP Level II SocketCAN Driver A</name>
-            <path>/srv/vscp/vscpl2drv_socketcan.so</path>
+            <path>/srv/vscp/drivers/level2/vscpl2drv_socketcan.so</path>
             <config>can0</config>
             <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
         </driver>
@@ -337,7 +337,7 @@
         <!-- Level II mqtt -->
         <driver enable="false" >
             <name>VSCP Level II MQTT Driver A</name>
-            <path>/srv/vscp/vscpl2drv_mqtt.so</path>
+            <path>/srv/vscp/drivers/level2/vscpl2drv_mqtt.so</path>
             <config>mysession;subscribe;vscp;localhost;1883;;60</config>
             <guid>08:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
         </driver>
@@ -345,7 +345,7 @@
         <!-- Level II tcp/ip link -->
         <driver enable="false" >
             <name>VSCP Level II tcpiplink Driver  A</name>
-            <path>/srv/vscp/vscpl2drv_tcpiplink.so</path>
+            <path>/srv/vscp/drivers/level2/vscpl2drv_tcpiplink.so</path>
             <config>192.168.1.2;9598;admin;secret</config>
             <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
         </driver>
@@ -354,7 +354,7 @@
         <driver enable="false">
             <name>VSCP Level II RawEthernet Driver A</name>
             <config>eth0</config>
-            <path>/srv/vscp/vscpl2drv_raweth.so</path>
+            <path>/srv/vscp/drivers/level2/vscpl2drv_raweth.so</path>
         </driver>
 
        <!-- Level II simulation -->
@@ -362,14 +362,14 @@
             <name>VSCP Level II sim driver</name>  <!-- !!! Do not rename !!! will effect demos -->
             <config>1</config>
             <guid>FF:FF:FF:FF:FF:FF:FF:F7:03:00:00:00:00:00:00:00</guid>
-            <path>/srv/vscp/vscpl2drv_sim.so</path>
+            <path>/srv/vscp/drivers/level2/vscpl2drv_sim.so</path>
         </driver>
 
         <!-- Level II 1-wire driver -->
         <driver enable="false">
-            <name>VSCP Level II 1-wire Driver 1</name>
+            <name>VSCP Level II 1-wire Driver A</name>
             <config>eth0</config>
-            <path>/srv/vscp/vscpl2drv_wire1.so</path>
+            <path>/srv/vscp/drivers/level2/vscpl2drv_wire1.so</path>
         </driver>
 
     </level2driver>

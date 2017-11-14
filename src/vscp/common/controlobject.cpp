@@ -3693,8 +3693,10 @@ bool CControlObject::readConfigurationXML( wxString& strcfgfile )
                                 if ( subsubsubchild->GetName() == _( "node" ) ) {
                                     cguid knownguid;
 
-                                    knownguid.getFromString( subchild->GetAttribute( _( "guid" ), _( "-" ) ) );
-                                    wxString name = subchild->GetAttribute( _( "name" ), _( "" )  ) ;
+                                    knownguid.getFromString( subchild->GetAttribute( _( "guid" ), 
+                                                                                     _( "-" ) ) );
+                                    wxString name = subchild->GetAttribute( _( "name" ), 
+                                                                            _( "" )  ) ;
                                     addKnownNode( knownguid, guid, name );
                                 }
 
@@ -3716,21 +3718,20 @@ bool CControlObject::readConfigurationXML( wxString& strcfgfile )
                 if ( bCanalDriver && bEnabled ) {
 
                     if (!m_deviceList.addItem( strName,
-                                                strConfig,
-                                                strPath,
-                                                flags,
-                                                guid,
-                                                VSCP_DRIVER_LEVEL1,
-                                                bEnabled ) ) {
+                                                    strConfig,
+                                                    strPath,
+                                                    flags,
+                                                    guid,
+                                                    VSCP_DRIVER_LEVEL1,
+                                                    bEnabled ) ) {
                         wxString errMsg = _("Driver not added. Path does not exist. - [ ") +
                                 strPath + _(" ]\n");
-                        logMsg(errMsg);
-                        //wxLogDebug(errMsg);
+                        logMsg( errMsg );
                     }
                     else {
                         wxString errMsg = _("Level I driver added. - [ ") +
                                 strPath + _(" ]\n");
-                        logMsg(errMsg);
+                        logMsg( errMsg );
                     }
 
                     bCanalDriver = false;

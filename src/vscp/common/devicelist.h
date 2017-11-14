@@ -62,7 +62,7 @@
 // In - translation bit definitions
 
 enum _driver_levels {
-    VSCP_DRIVER_LEVEL1 = 0,  
+    VSCP_DRIVER_LEVEL1 = 1,  
     VSCP_DRIVER_LEVEL2
 };
 

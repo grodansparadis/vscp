@@ -314,7 +314,7 @@ bool CDeviceList::addItem(wxString strName,
 
         }
         else {
-            //wxGetApp.logMsg(_("Driver does not exist."), DAEMON_LOGMSG_INFO );
+            // Driver does not exist at this path
             delete pDeviceItem;
             rv = false;
         }
