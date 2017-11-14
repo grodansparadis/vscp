@@ -297,7 +297,7 @@ CControlObject::CControlObject()
     m_udpInfo.m_interface = _("udp://:" + VSCP_DEFAULT_UDP_PORT );
 
     m_pclientMsgWorkerThread = NULL;
-    m_pVSCPClientThread = NULL;
+    m_pTCPClientThread = NULL;
     m_pdaemonVSCPThread = NULL;
 
     // Web server SSL settings
@@ -772,11 +772,14 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
     // Check filename
     if ( m_path_db_vscp_log.IsOk() && m_path_db_vscp_log.FileExists() ) {
 
-        if ( SQLITE_OK != sqlite3_open( (const char *)m_path_db_vscp_log.GetFullPath().mbc_str(),
+        if ( SQLITE_OK != 
+                sqlite3_open( (const char *)m_path_db_vscp_log.GetFullPath().mbc_str(),
                                             &m_db_vscp_log ) ) {
 
             // Failed to open/create the database file
-            fprintf( stderr, "VSCP Server logging database could not be opened. - Will not be used.\n" );
+            fprintf( stderr, 
+                      "VSCP Server logging database could not be "
+                      "opened. - Will not be used.\n" );
             str.Printf( _("Path=%s error=%s\n"),
                             (const char *)m_path_db_vscp_log.GetFullPath().mbc_str(),
                             sqlite3_errmsg( m_db_vscp_log ) );
@@ -793,11 +796,17 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
             
             // We need to create the database from scratch. This may not work if
             // the database is in a read only location.
-            fprintf( stderr, "VSCP Server logging database does not exist - will be created.\n" );
-            str.Printf(_("Path=%s\n"), (const char *)m_path_db_vscp_log.GetFullPath().mbc_str() );
-            fprintf( stderr, "%s", (const char *)str.mbc_str() );
+            fprintf( stderr, 
+                        "VSCP Server logging database does not exist - "
+                        "will be created.\n" );
+            str.Printf(_("Path=%s\n"), 
+                    (const char *)m_path_db_vscp_log.GetFullPath().mbc_str() );
+            fprintf( stderr, 
+                        "%s", 
+                        (const char *)str.mbc_str() );
 
-            if ( SQLITE_OK == sqlite3_open( (const char *)m_path_db_vscp_log.GetFullPath().mbc_str(),
+            if ( SQLITE_OK == 
+                    sqlite3_open( (const char *)m_path_db_vscp_log.GetFullPath().mbc_str(),
                                                     &m_db_vscp_log ) ) {
                 // create the config. database.
                 doCreateLogTable();
@@ -1131,17 +1140,18 @@ bool CControlObject::run( void )
 bool CControlObject::cleanup( void )
 {
     fprintf( stderr, "ControlObject: cleanup - Giving worker threads time to stop operations...\n");
+    
     sleep( 2 ); // Give threads some time to end
+    
+    fprintf( stderr, "ControlObject: cleanup - Stopping device worker thread...\n");
+    stopDeviceWorkerThreads();
 
     fprintf( stderr, "ControlObject: cleanup - Stopping VSCP Server worker thread...\n");
     stopDaemonWorkerThread();
 
     fprintf( stderr, "ControlObject: cleanup - Stopping client worker thread...\n");
     stopClientWorkerThread();
-
-    fprintf( stderr, "ControlObject: cleanup - Stopping device worker thread...\n");
-    stopDeviceWorkerThreads();
-
+    
     fprintf( stderr, "ControlObject: cleanup - Stopping TCP/IP worker thread...\n");
     stopTcpWorkerThread();
 
@@ -1152,7 +1162,7 @@ bool CControlObject::cleanup( void )
     stopMulticastWorkerThreads();
 
     fprintf( stderr, "ControlObject: cleanup - Stopping Web Server worker thread...\n");
-    // TODO stop web server
+    stop_webserver();        
 
     fprintf( stderr, "ControlObject: cleanup - Closing databases.\n");
 
@@ -1241,14 +1251,14 @@ bool CControlObject::startTcpWorkerThread(void)
 
     logMsg(_("Starting TCP/IP interface...\n") );
 
-    m_pVSCPClientThread = new VSCPClientThread;
+    m_pTCPClientThread = new TCPClientThread;
 
-    if ( NULL != m_pVSCPClientThread ) {
+    if ( NULL != m_pTCPClientThread ) {
 
         wxThreadError err;
-        if ( wxTHREAD_NO_ERROR == ( err = m_pVSCPClientThread->Create() ) ) {
+        if ( wxTHREAD_NO_ERROR == ( err = m_pTCPClientThread->Create() ) ) {
                 //m_ptcpListenThread->SetPriority( WXTHREAD_DEFAULT_PRIORITY );
-            if ( wxTHREAD_NO_ERROR != ( err = m_pVSCPClientThread->Run() ) ) {
+            if ( wxTHREAD_NO_ERROR != ( err = m_pTCPClientThread->Run() ) ) {
                 logMsg(_("Unable to run TCP thread.") );
             }
         }
@@ -1272,12 +1282,12 @@ bool CControlObject::startTcpWorkerThread(void)
 
 bool CControlObject::stopTcpWorkerThread( void )
 {
-    if ( NULL != m_pVSCPClientThread ) {
+    if ( NULL != m_pTCPClientThread ) {
         m_mutexTcpClientListenThread.Lock();
-        m_pVSCPClientThread->m_bQuit = true;
-        m_pVSCPClientThread->Wait();
-        delete m_pVSCPClientThread;
-        m_pVSCPClientThread = NULL;
+        m_pTCPClientThread->m_bQuit = true;
+        m_pTCPClientThread->Wait();
+        delete m_pTCPClientThread;
+        m_pTCPClientThread = NULL;
         m_mutexTcpClientListenThread.Unlock();
     }
 
@@ -1332,7 +1342,7 @@ bool CControlObject::stopUDPWorkerThread( void )
         m_mutexVSCPClientnUDPThread.Lock();
         m_pVSCPClientUDPThread->m_bQuit = true;
         m_pVSCPClientUDPThread->Wait();
-        delete m_pVSCPClientThread;
+        delete m_pTCPClientThread;
         m_mutexVSCPClientnUDPThread.Unlock();
     }
 
@@ -2187,6 +2197,9 @@ void CControlObject::addClient( CClientItem *pClientItem,
 
 void CControlObject::removeClient( CClientItem *pClientItem )
 {
+    // Do not try to handle invalid clients
+    if ( NULL == pClientItem ) return;
+    
     // Remove the mapped item
     removeIdFromClientMap( pClientItem->m_clientID );
 

@@ -184,7 +184,7 @@ bool CDeviceItem::startDriver( CControlObject *pCtrlObject )
 
 bool CDeviceItem::stopDriver()
 {
-    if (NULL != m_pdeviceThread) {
+    if ( NULL != m_pdeviceThread ) {
         
         fprintf( stderr, 
                  "CDeviceItem: Driver stop. [%s]\n",
@@ -200,6 +200,7 @@ bool CDeviceItem::stopDriver()
             m_pdeviceThread->m_preceiveThread->Delete();
             m_pdeviceThread->m_preceiveThread = NULL;
         }
+        
         if ( NULL != m_pdeviceThread->m_pwriteThread ) {
             m_pdeviceThread->m_pwriteThread->m_bQuit = true;
             fprintf( stderr, 
@@ -208,6 +209,7 @@ bool CDeviceItem::stopDriver()
             m_pdeviceThread->m_pwriteThread->Delete(); 
             m_pdeviceThread->m_pwriteThread = NULL;
         }
+        
         if ( NULL != m_pdeviceThread->m_preceiveLevel2Thread ) {
             m_pdeviceThread->m_preceiveLevel2Thread->m_bQuit = true;
             fprintf( stderr, 
@@ -216,6 +218,7 @@ bool CDeviceItem::stopDriver()
             m_pdeviceThread->m_preceiveLevel2Thread->Delete(); 
             m_pdeviceThread->m_preceiveLevel2Thread = NULL;
         }
+        
         if ( NULL != m_pdeviceThread->m_pwriteLevel2Thread ) {
             m_pdeviceThread->m_pwriteLevel2Thread->m_bQuit = true;
             fprintf( stderr, 

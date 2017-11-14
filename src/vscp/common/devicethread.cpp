@@ -707,11 +707,11 @@ void *deviceThread::Entry()
 
         // Just sit and wait until the end of the world as we know it...
         while (!TestDestroy() && !m_pDeviceItem->m_bQuit) {
-            wxSleep(200);
+            wxSleep(1);
         }
 
-        m_preceiveLevel2Thread->m_bQuit = true;
-        m_pwriteLevel2Thread->m_bQuit = true;
+        //m_preceiveLevel2Thread->m_bQuit = true;
+        //m_pwriteLevel2Thread->m_bQuit = true;
 
         // Close channel
         m_pDeviceItem->m_proc_VSCPClose( m_pDeviceItem->m_openHandle );

@@ -62,6 +62,7 @@ int gbStopDaemon;
 int gnDebugLevel = 0;
 bool gbDontRunAsDaemon = false;
 bool gbRestart = false;
+wxString systemKey;
 
 CControlObject *gpobj;
 
@@ -120,8 +121,7 @@ int main( int argc, char **argv )
         return -1;
     }
 
-    // Create the control object
-    gpobj = new CControlObject();
+    
 
 #ifdef WIN32
     rootFolder = _("/programdata/vscp");
@@ -155,10 +155,7 @@ int main( int argc, char **argv )
             break;
 
         case 'k':
-            vscp_hexStr2ByteArray( gpobj->m_systemKey,
-                                            32,
-                                            (const char *)wxString( optarg, 
-                                                        wxConvUTF8 ).mbc_str() );
+            systemKey = wxString( optarg, wxConvUTF8 );
             break;
 
         case 'd':
@@ -178,15 +175,14 @@ int main( int argc, char **argv )
 
     }
 
-    gpobj->logMsg( _("[vscpd] Configfile =") + strcfgfile + _(" \n") );
+    fprintf( stderr, "[vscpd] Configfile = %s\n",
+                (const char *)strcfgfile.mbc_str() );
+    
     if ( !theApp.init( strcfgfile, rootFolder ) ) {
         fprintf(stderr, "[vscpd] Failed to configure. Terminating.\n");
         fprintf( stderr, "VSCPD: Failed to configure. Terminating.\n");
         exit( -1 );
     }
-
-    fprintf( stderr, "VSCPD: Deleting the control object.\n");
-    delete gpobj;
 
     fprintf( stderr, "VSCPD: Bye, bye.\n");
     exit( 0 );
@@ -204,7 +200,7 @@ BOOL VSCPApp::init(wxString& strcfgfile, wxString& rootFolder )
         // Fork child
         if (0 > (pid = fork())) {
             // Failure
-            gpobj->logMsg(_("Failed to fork.\n"));
+            fprintf( stderr, "Failed to fork.\n" );
             return -1;
         }
         else if (0 != pid) {
@@ -214,7 +210,7 @@ BOOL VSCPApp::init(wxString& strcfgfile, wxString& rootFolder )
         sid = setsid(); // Become session leader
         if ( sid < 0 ) {
             // Failure
-            gpobj->logMsg(_("Failed to become session leader.\n"));
+            fprintf( stderr, "Failed to become session leader.\n" );
             return -1;
         }
 
@@ -247,7 +243,7 @@ BOOL VSCPApp::init(wxString& strcfgfile, wxString& rootFolder )
 
     // Change working directory to root folder
     if ( chdir( (const char *)rootFolder.mbc_str() ) ) {
-        gpobj->logMsg(_("VSCPD: Failed to change dir to rootdir"));
+        fprintf( stderr, "VSCPD: Failed to change dir to rootdir" );
         chdir("/tmp"); // security measure
     }
 
@@ -282,6 +278,14 @@ BOOL VSCPApp::init(wxString& strcfgfile, wxString& rootFolder )
     do {
 
         gbRestart = false;
+        
+        // Create the control object
+        gpobj = new CControlObject();
+        
+        // Set system key
+        vscp_hexStr2ByteArray( gpobj->m_systemKey,
+                                32,
+                                (const char *)systemKey.mbc_str() );
 
         fprintf( stderr, "VSCPD: init.\n");
         if ( !gpobj->init( strcfgfile, rootFolder ) ) {
@@ -312,6 +316,9 @@ BOOL VSCPApp::init(wxString& strcfgfile, wxString& rootFolder )
         else {
             fprintf( stderr, "VSCPD: Will end things.\n" );
         }
+        
+        fprintf( stderr, "VSCPD: Deleting the control object.\n");
+        delete gpobj;
 
     } while ( gbRestart );
 

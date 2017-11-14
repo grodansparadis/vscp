@@ -123,7 +123,7 @@ public:
     {
         // Check for self-assignment!
         if ( this == &node ) {	// Same object?
-            return *this;		// Yes, so skip assignment, and just return *this.
+            return *this;	// Yes, so skip assignment, and just return *this.
         }
 
         m_bUpdated = node.m_bUpdated;

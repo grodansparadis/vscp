@@ -69,14 +69,14 @@ extern CControlObject *gpobj;
 // to handle client requests
 //
 
-VSCPClientThread::VSCPClientThread()
+TCPClientThread::TCPClientThread()
     : wxThread(wxTHREAD_JOINABLE)
 {
     m_bQuit = false;
 }
 
 
-VSCPClientThread::~VSCPClientThread()
+TCPClientThread::~TCPClientThread()
 {
     ;
 }
@@ -86,7 +86,7 @@ VSCPClientThread::~VSCPClientThread()
 // Entry
 //
 
-void *VSCPClientThread::Entry()
+void *TCPClientThread::Entry()
 {
     // Check pointers
     if ( NULL == gpobj ) return NULL;
@@ -107,7 +107,7 @@ void *VSCPClientThread::Entry()
         // Bind to this interface
         mg_bind( &gpobj->m_mgrTcpIpServer,
                     (const char *)str.mbc_str(),
-                    VSCPClientThread::ev_handler );
+                    TCPClientThread::ev_handler );
 
     }
 
@@ -133,7 +133,7 @@ void *VSCPClientThread::Entry()
 // OnExit
 //
 
-void VSCPClientThread::OnExit()
+void TCPClientThread::OnExit()
 {
     gpobj->logMsg( _("[TCP/IP srv] Exit.\n"), DAEMON_LOGMSG_DEBUG );;
 }
@@ -142,7 +142,7 @@ void VSCPClientThread::OnExit()
 // ev_handler
 //
 
-void VSCPClientThread::ev_handler( struct mg_connection *conn,
+void TCPClientThread::ev_handler( struct mg_connection *conn,
                                     int ev,
                                     void *pUser)
 {
@@ -222,15 +222,21 @@ void VSCPClientThread::ev_handler( struct mg_connection *conn,
         case MG_EV_CLOSE:
 
             // Close client
-            pClientItem->m_bOpen = false;
             conn->flags |= MG_F_CLOSE_IMMEDIATELY;   // Close connection
-
-            // Remove the client from the Client List
-            pCtrlObject->m_wxClientMutex.Lock();
-            pCtrlObject->removeClient( pClientItem );
-            pCtrlObject->m_wxClientMutex.Unlock();
-            // Remove client item
-            conn->user_data = NULL;
+            
+            //      Can be NULL when stoping or starting
+            if ( NULL != pClientItem ) { 
+                
+                pClientItem->m_bOpen = false;
+                
+                // Remove the client from the Client List
+                pCtrlObject->m_wxClientMutex.Lock();
+                pCtrlObject->removeClient( pClientItem );
+                pCtrlObject->m_wxClientMutex.Unlock();
+                // Remove client item
+                conn->user_data = NULL;
+            }
+                   
             break;
 
         case MG_EV_RECV:
@@ -295,7 +301,7 @@ void VSCPClientThread::ev_handler( struct mg_connection *conn,
 //
 
 void
-VSCPClientThread::CommandHandler( struct mg_connection *conn,
+TCPClientThread::CommandHandler( struct mg_connection *conn,
                                     CControlObject *pCtrlObject,
                                     wxString& strCommand )
 {
@@ -701,7 +707,7 @@ REPEAT_COMMAND:
 // dest-guid                Optional destination GUID. For Level I over Level II.
 //
 
-void VSCPClientThread::handleClientMeasurment( struct mg_connection *conn,
+void TCPClientThread::handleClientMeasurment( struct mg_connection *conn,
                                                  CControlObject *pCtrlObject )
 {
     wxString wxstr;
@@ -1144,7 +1150,7 @@ void VSCPClientThread::handleClientMeasurment( struct mg_connection *conn,
 // handleClientCapabilityRequest
 //
 
-void VSCPClientThread::handleClientCapabilityRequest( struct mg_connection *conn,
+void TCPClientThread::handleClientCapabilityRequest( struct mg_connection *conn,
                                                         CControlObject *pCtrlObject )
 {
     wxString wxstr;
@@ -1162,7 +1168,7 @@ void VSCPClientThread::handleClientCapabilityRequest( struct mg_connection *conn
 // isVerified
 //
 
-bool VSCPClientThread::isVerified( struct mg_connection *conn,
+bool TCPClientThread::isVerified( struct mg_connection *conn,
                                         CControlObject *pCtrlObject )
 {
     // Check objects
@@ -1185,7 +1191,7 @@ bool VSCPClientThread::isVerified( struct mg_connection *conn,
 // checkPrivilege
 //
 
-bool VSCPClientThread::checkPrivilege( struct mg_connection *conn,
+bool TCPClientThread::checkPrivilege( struct mg_connection *conn,
                                             CControlObject *pCtrlObject,
                                             unsigned char reqiredPrivilege )
 {
@@ -1220,7 +1226,7 @@ bool VSCPClientThread::checkPrivilege( struct mg_connection *conn,
 // handleClientSend
 //
 
-void VSCPClientThread::handleClientSend( struct mg_connection *conn,
+void TCPClientThread::handleClientSend( struct mg_connection *conn,
                                             CControlObject *pCtrlObject )
 {
     bool bSent = false;
@@ -1576,7 +1582,7 @@ void VSCPClientThread::handleClientSend( struct mg_connection *conn,
 // handleClientReceive
 //
 
-void VSCPClientThread::handleClientReceive ( struct mg_connection *conn,
+void TCPClientThread::handleClientReceive ( struct mg_connection *conn,
                                                 CControlObject *pCtrlObject )
 {
     unsigned short cnt = 0;	// # of messages to read
@@ -1621,7 +1627,7 @@ void VSCPClientThread::handleClientReceive ( struct mg_connection *conn,
 // sendOneEventFromQueue
 //
 
-bool VSCPClientThread::sendOneEventFromQueue( struct mg_connection *conn,
+bool TCPClientThread::sendOneEventFromQueue( struct mg_connection *conn,
                                                 CControlObject *pCtrlObject,
                                                 bool bStatusMsg )
 {
@@ -1672,7 +1678,7 @@ bool VSCPClientThread::sendOneEventFromQueue( struct mg_connection *conn,
 // handleClientDataAvailable
 //
 
-void VSCPClientThread::handleClientDataAvailable ( struct mg_connection *conn,
+void TCPClientThread::handleClientDataAvailable ( struct mg_connection *conn,
                                                     CControlObject *pCtrlObject )
 {
     char outbuf[ 1024 ];
@@ -1698,7 +1704,7 @@ void VSCPClientThread::handleClientDataAvailable ( struct mg_connection *conn,
 // handleClientClearInputQueue
 //
 
-void VSCPClientThread::handleClientClearInputQueue ( struct mg_connection *conn,
+void TCPClientThread::handleClientClearInputQueue ( struct mg_connection *conn,
                                                         CControlObject *pCtrlObject )
 {
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
@@ -1722,7 +1728,7 @@ void VSCPClientThread::handleClientClearInputQueue ( struct mg_connection *conn,
 // handleClientGetStatistics
 //
 
-void VSCPClientThread::handleClientGetStatistics ( struct mg_connection *conn,
+void TCPClientThread::handleClientGetStatistics ( struct mg_connection *conn,
                                                         CControlObject *pCtrlObject )
 {
     char outbuf[ 1024 ];
@@ -1753,7 +1759,7 @@ void VSCPClientThread::handleClientGetStatistics ( struct mg_connection *conn,
 // handleClientGetStatus
 //
 
-void VSCPClientThread::handleClientGetStatus ( struct mg_connection *conn,
+void TCPClientThread::handleClientGetStatus ( struct mg_connection *conn,
                                                     CControlObject *pCtrlObject )
 {
     char outbuf[ 1024 ];
@@ -1781,7 +1787,7 @@ void VSCPClientThread::handleClientGetStatus ( struct mg_connection *conn,
 // handleClientGetChannelID
 //
 
-void VSCPClientThread::handleClientGetChannelID ( struct mg_connection *conn,
+void TCPClientThread::handleClientGetChannelID ( struct mg_connection *conn,
                                                     CControlObject *pCtrlObject )
 {
     char outbuf[ 1024 ];
@@ -1805,7 +1811,7 @@ void VSCPClientThread::handleClientGetChannelID ( struct mg_connection *conn,
 // handleClientSetChannelGUID
 //
 
-void VSCPClientThread::handleClientSetChannelGUID ( struct mg_connection *conn,
+void TCPClientThread::handleClientSetChannelGUID ( struct mg_connection *conn,
                                                         CControlObject *pCtrlObject )
 {
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
@@ -1827,7 +1833,7 @@ void VSCPClientThread::handleClientSetChannelGUID ( struct mg_connection *conn,
 // handleClientGetChannelGUID
 //
 
-void VSCPClientThread::handleClientGetChannelGUID ( struct mg_connection *conn,
+void TCPClientThread::handleClientGetChannelGUID ( struct mg_connection *conn,
                                                         CControlObject *pCtrlObject )
 {
     wxString strBuf;
@@ -1855,7 +1861,7 @@ void VSCPClientThread::handleClientGetChannelGUID ( struct mg_connection *conn,
 // handleClientGetVersion
 //
 
-void VSCPClientThread::handleClientGetVersion ( struct mg_connection *conn,
+void TCPClientThread::handleClientGetVersion ( struct mg_connection *conn,
                                                     CControlObject *pCtrlObject )
 {
     char outbuf[ 1024 ];
@@ -1884,7 +1890,7 @@ void VSCPClientThread::handleClientGetVersion ( struct mg_connection *conn,
 // handleClientSetFilter
 //
 
-void VSCPClientThread::handleClientSetFilter ( struct mg_connection *conn,
+void TCPClientThread::handleClientSetFilter ( struct mg_connection *conn,
                                                     CControlObject *pCtrlObject )
 {
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
@@ -1949,7 +1955,7 @@ void VSCPClientThread::handleClientSetFilter ( struct mg_connection *conn,
 // handleClientSetMask
 //
 
-void VSCPClientThread::handleClientSetMask ( struct mg_connection *conn,
+void TCPClientThread::handleClientSetMask ( struct mg_connection *conn,
                                                 CControlObject *pCtrlObject )
 {
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
@@ -2014,7 +2020,7 @@ void VSCPClientThread::handleClientSetMask ( struct mg_connection *conn,
 // handleClientUser
 //
 
-void VSCPClientThread::handleClientUser ( struct mg_connection *conn,
+void TCPClientThread::handleClientUser ( struct mg_connection *conn,
                                             CControlObject *pCtrlObject )
 {
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
@@ -2040,7 +2046,7 @@ void VSCPClientThread::handleClientUser ( struct mg_connection *conn,
 // handleClientPassword
 //
 
-bool VSCPClientThread::handleClientPassword ( struct mg_connection *conn,
+bool TCPClientThread::handleClientPassword ( struct mg_connection *conn,
                                                 CControlObject *pCtrlObject )
 {
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
@@ -2131,7 +2137,7 @@ bool VSCPClientThread::handleClientPassword ( struct mg_connection *conn,
 // handleChallenge
 //
 
-void VSCPClientThread::handleChallenge( struct mg_connection *conn,
+void TCPClientThread::handleChallenge( struct mg_connection *conn,
                                             CControlObject *pCtrlObject )
 {
     wxString wxstr;
@@ -2158,7 +2164,7 @@ void VSCPClientThread::handleChallenge( struct mg_connection *conn,
 // handleClientRcvLoop
 //
 
-void VSCPClientThread::handleClientRcvLoop( struct mg_connection *conn,
+void TCPClientThread::handleClientRcvLoop( struct mg_connection *conn,
                                                 CControlObject *pCtrlObject  )
 {
 
@@ -2195,7 +2201,7 @@ void VSCPClientThread::handleClientRcvLoop( struct mg_connection *conn,
 // handleClientTest
 //
 
-void VSCPClientThread::handleClientTest ( struct mg_connection *conn,
+void TCPClientThread::handleClientTest ( struct mg_connection *conn,
                                             CControlObject *pCtrlObject )
 {
     mg_send( conn, MSG_OK, strlen ( MSG_OK ) );
@@ -2207,7 +2213,7 @@ void VSCPClientThread::handleClientTest ( struct mg_connection *conn,
 // handleClientRestart
 //
 
-void VSCPClientThread::handleClientRestart ( struct mg_connection *conn,
+void TCPClientThread::handleClientRestart ( struct mg_connection *conn,
                                                     CControlObject *pCtrlObject )
 {
     mg_send( conn, MSG_OK, strlen ( MSG_OK ) );
@@ -2219,7 +2225,7 @@ void VSCPClientThread::handleClientRestart ( struct mg_connection *conn,
 // handleClientShutdown
 //
 
-void VSCPClientThread::handleClientShutdown ( struct mg_connection *conn,
+void TCPClientThread::handleClientShutdown ( struct mg_connection *conn,
                                                 CControlObject *pCtrlObject )
 {
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
@@ -2239,7 +2245,7 @@ void VSCPClientThread::handleClientShutdown ( struct mg_connection *conn,
 // handleClientRemote
 //
 
-void VSCPClientThread::handleClientRemote( struct mg_connection *conn,
+void TCPClientThread::handleClientRemote( struct mg_connection *conn,
                                                 CControlObject *pCtrlObject )
 {
     return;
@@ -2268,7 +2274,7 @@ void VSCPClientThread::handleClientRemote( struct mg_connection *conn,
 // normal   Normal access to interfaces. Full format is INTERFACE NORMAL id
 // close    Close interfaces. Full format is INTERFACE CLOSE id
 
-void VSCPClientThread::handleClientInterface( struct mg_connection *conn, 
+void TCPClientThread::handleClientInterface( struct mg_connection *conn, 
                                                 CControlObject *pCtrlObject )
 {
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
@@ -2293,7 +2299,7 @@ void VSCPClientThread::handleClientInterface( struct mg_connection *conn,
 // handleClientInterface_List
 //
 
-void VSCPClientThread::handleClientInterface_List( struct mg_connection *conn,
+void TCPClientThread::handleClientInterface_List( struct mg_connection *conn,
                                                         CControlObject *pCtrlObject )
 {
     wxString strGUID;
@@ -2330,7 +2336,7 @@ void VSCPClientThread::handleClientInterface_List( struct mg_connection *conn,
 // handleClientInterface_Unique
 //
 
-void VSCPClientThread::handleClientInterface_Unique( struct mg_connection *conn,
+void TCPClientThread::handleClientInterface_Unique( struct mg_connection *conn,
                                                         CControlObject *pCtrlObject )
 {
     unsigned char ifGUID[ 16 ];
@@ -2354,7 +2360,7 @@ void VSCPClientThread::handleClientInterface_Unique( struct mg_connection *conn,
 // handleClientInterface_Normal
 //
 
-void VSCPClientThread::handleClientInterface_Normal( struct mg_connection *conn,
+void TCPClientThread::handleClientInterface_Normal( struct mg_connection *conn,
                                                         CControlObject *pCtrlObject )
 {
     // TODO
@@ -2364,7 +2370,7 @@ void VSCPClientThread::handleClientInterface_Normal( struct mg_connection *conn,
 // handleClientInterface_Close
 //
 
-void VSCPClientThread::handleClientInterface_Close( struct mg_connection *conn,
+void TCPClientThread::handleClientInterface_Close( struct mg_connection *conn,
                                                         CControlObject *pCtrlObject )
 {
     // TODO
@@ -2389,7 +2395,7 @@ void VSCPClientThread::handleClientInterface_Close( struct mg_connection *conn,
 // handleClientUdp
 //
 
-void VSCPClientThread::handleClientUdp( struct mg_connection *conn,
+void TCPClientThread::handleClientUdp( struct mg_connection *conn,
                                             CControlObject *pCtrlObject )
 {
     // TODO
@@ -2420,7 +2426,7 @@ void VSCPClientThread::handleClientUdp( struct mg_connection *conn,
 // handleClientFile
 //
 
-void VSCPClientThread::handleClientFile( struct mg_connection *conn,
+void TCPClientThread::handleClientFile( struct mg_connection *conn,
                                             CControlObject *pCtrlObject )
 {
     // TODO
@@ -2451,7 +2457,7 @@ void VSCPClientThread::handleClientFile( struct mg_connection *conn,
 // handleClientTable
 //
 
-void VSCPClientThread::handleClientTable( struct mg_connection *conn,
+void TCPClientThread::handleClientTable( struct mg_connection *conn,
                                             CControlObject *pCtrlObject )
 {
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
@@ -2565,7 +2571,7 @@ void VSCPClientThread::handleClientTable( struct mg_connection *conn,
 //
 
 
-void VSCPClientThread::handleClientTable_Create( struct mg_connection *conn )
+void TCPClientThread::handleClientTable_Create( struct mg_connection *conn )
 {
     wxString wxstr;
     wxString strName;
@@ -2609,7 +2615,7 @@ void VSCPClientThread::handleClientTable_Create( struct mg_connection *conn )
 //
 
 
-void VSCPClientThread::handleClientTable_Delete( struct mg_connection *conn )
+void TCPClientThread::handleClientTable_Delete( struct mg_connection *conn )
 {
     wxString strTable;
     bool bRemoveFile = false;
@@ -2657,7 +2663,7 @@ void VSCPClientThread::handleClientTable_Delete( struct mg_connection *conn )
 // handleClientTable_List
 //
 
-void VSCPClientThread::handleClientTable_List( struct mg_connection *conn )
+void TCPClientThread::handleClientTable_List( struct mg_connection *conn )
 {
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
     if ( NULL == pClientItem ) return;
@@ -2899,7 +2905,7 @@ void VSCPClientThread::handleClientTable_List( struct mg_connection *conn )
 // get 'table-name' start end ["full"]
 //
 
-void VSCPClientThread::handleClientTable_Get( struct mg_connection *conn )
+void TCPClientThread::handleClientTable_Get( struct mg_connection *conn )
 {
     wxString strTable;
     wxDateTime wxStart;   
@@ -3053,7 +3059,7 @@ void VSCPClientThread::handleClientTable_Get( struct mg_connection *conn )
 // get 'table-name' start end ["full"]
 //
 
-void VSCPClientThread::handleClientTable_GetRaw( struct mg_connection *conn )
+void TCPClientThread::handleClientTable_GetRaw( struct mg_connection *conn )
 {
     wxString strTable;
     wxDateTime wxStart;   
@@ -3198,7 +3204,7 @@ void VSCPClientThread::handleClientTable_GetRaw( struct mg_connection *conn )
 // clear 'table-name' [to,from]
 //
 
-void VSCPClientThread::handleClientTable_Clear( struct mg_connection *conn )
+void TCPClientThread::handleClientTable_Clear( struct mg_connection *conn )
 {    
     wxString strTable;
     wxDateTime wxStart;   
@@ -3303,7 +3309,7 @@ void VSCPClientThread::handleClientTable_Clear( struct mg_connection *conn )
 // records 'table-name' [to,from]
 //
 
-void VSCPClientThread::handleClientTable_NumberOfRecords( struct mg_connection *conn )
+void TCPClientThread::handleClientTable_NumberOfRecords( struct mg_connection *conn )
 {    
     wxString strTable;
     wxDateTime wxStart;   
@@ -3398,7 +3404,7 @@ void VSCPClientThread::handleClientTable_NumberOfRecords( struct mg_connection *
 // firstdate 'table-name' [to,from]
 //
 
-void VSCPClientThread::handleClientTable_FirstDate( struct mg_connection *conn )
+void TCPClientThread::handleClientTable_FirstDate( struct mg_connection *conn )
 {    
     wxString strTable;
     
@@ -3470,7 +3476,7 @@ void VSCPClientThread::handleClientTable_FirstDate( struct mg_connection *conn )
 // lastdate 'table-name' [to,from]
 //
 
-void VSCPClientThread::handleClientTable_LastDate( struct mg_connection *conn )
+void TCPClientThread::handleClientTable_LastDate( struct mg_connection *conn )
 {    
     wxString strTable;
     
@@ -3541,7 +3547,7 @@ void VSCPClientThread::handleClientTable_LastDate( struct mg_connection *conn )
 // sum 'table-name' [to,from]
 //
 
-void VSCPClientThread::handleClientTable_Sum( struct mg_connection *conn )
+void TCPClientThread::handleClientTable_Sum( struct mg_connection *conn )
 {    
     wxString strTable;
     wxDateTime wxStart;   
@@ -3637,7 +3643,7 @@ void VSCPClientThread::handleClientTable_Sum( struct mg_connection *conn )
 // min 'table-name' [to,from]
 //
 
-void VSCPClientThread::handleClientTable_Min( struct mg_connection *conn )
+void TCPClientThread::handleClientTable_Min( struct mg_connection *conn )
 {    
     wxString strTable;
     wxDateTime wxStart;   
@@ -3733,7 +3739,7 @@ void VSCPClientThread::handleClientTable_Min( struct mg_connection *conn )
 // max 'table-name' [to,from]
 //
 
-void VSCPClientThread::handleClientTable_Max( struct mg_connection *conn )
+void TCPClientThread::handleClientTable_Max( struct mg_connection *conn )
 {    
     wxString strTable;
     wxDateTime wxStart;   
@@ -3828,7 +3834,7 @@ void VSCPClientThread::handleClientTable_Max( struct mg_connection *conn )
 // average 'table-name' [to,from]
 //
 
-void VSCPClientThread::handleClientTable_Average( struct mg_connection *conn )
+void TCPClientThread::handleClientTable_Average( struct mg_connection *conn )
 {    
     wxString strTable;
     wxDateTime wxStart;   
@@ -3923,7 +3929,7 @@ void VSCPClientThread::handleClientTable_Average( struct mg_connection *conn )
 // median 'table-name' [to,from]
 //
 
-void VSCPClientThread::handleClientTable_Median( struct mg_connection *conn )
+void TCPClientThread::handleClientTable_Median( struct mg_connection *conn )
 {    
     wxString strTable;
     wxDateTime wxStart;   
@@ -4019,7 +4025,7 @@ void VSCPClientThread::handleClientTable_Median( struct mg_connection *conn )
 // stddev 'table-name' [to,from]
 //
 
-void VSCPClientThread::handleClientTable_StdDev( struct mg_connection *conn )
+void TCPClientThread::handleClientTable_StdDev( struct mg_connection *conn )
 {    
     wxString strTable;
     wxDateTime wxStart;   
@@ -4115,7 +4121,7 @@ void VSCPClientThread::handleClientTable_StdDev( struct mg_connection *conn )
 // variance 'table-name' [to,from]
 //
 
-void VSCPClientThread::handleClientTable_Variance( struct mg_connection *conn )
+void TCPClientThread::handleClientTable_Variance( struct mg_connection *conn )
 {    
     wxString strTable;
     wxDateTime wxStart;   
@@ -4210,7 +4216,7 @@ void VSCPClientThread::handleClientTable_Variance( struct mg_connection *conn )
 // mode 'table-name' [to,from]
 //
 
-void VSCPClientThread::handleClientTable_Mode( struct mg_connection *conn )
+void TCPClientThread::handleClientTable_Mode( struct mg_connection *conn )
 {    
     wxString strTable;
     wxDateTime wxStart;   
@@ -4305,7 +4311,7 @@ void VSCPClientThread::handleClientTable_Mode( struct mg_connection *conn )
 // lowerq 'table-name' [to,from]
 //
 
-void VSCPClientThread::handleClientTable_LowerQ( struct mg_connection *conn )
+void TCPClientThread::handleClientTable_LowerQ( struct mg_connection *conn )
 {    
     wxString strTable;
     wxDateTime wxStart;   
@@ -4400,7 +4406,7 @@ void VSCPClientThread::handleClientTable_LowerQ( struct mg_connection *conn )
 // upperq 'table-name' [to,from]
 //
 
-void VSCPClientThread::handleClientTable_UpperQ( struct mg_connection *conn )
+void TCPClientThread::handleClientTable_UpperQ( struct mg_connection *conn )
 {    
     wxString strTable;
     wxDateTime wxStart;   
@@ -4495,7 +4501,7 @@ void VSCPClientThread::handleClientTable_UpperQ( struct mg_connection *conn )
 // log table-name value [datetime]
 //
 
-void VSCPClientThread::handleClientTable_Log( struct mg_connection *conn )
+void TCPClientThread::handleClientTable_Log( struct mg_connection *conn )
 {
     wxString strTable;
     double value;
@@ -4611,7 +4617,7 @@ void VSCPClientThread::handleClientTable_Log( struct mg_connection *conn )
 // handleClientTable_LogSQL
 //
 
-void VSCPClientThread::handleClientTable_LogSQL( struct mg_connection *conn )
+void TCPClientThread::handleClientTable_LogSQL( struct mg_connection *conn )
 {
     wxString strTable, strSQL;
     
@@ -4703,7 +4709,7 @@ void VSCPClientThread::handleClientTable_LogSQL( struct mg_connection *conn )
 // handleClientVariable
 //
 
-void VSCPClientThread::handleClientVariable( struct mg_connection *conn,
+void TCPClientThread::handleClientVariable( struct mg_connection *conn,
                                                 CControlObject *pCtrlObject )
 {
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
@@ -4765,7 +4771,7 @@ void VSCPClientThread::handleClientVariable( struct mg_connection *conn,
 // variable list test - List all variables with "test" in there name
 //
 
-void VSCPClientThread::handleVariable_List( struct mg_connection *conn,
+void TCPClientThread::handleVariable_List( struct mg_connection *conn,
                                                 CControlObject *pCtrlObject )
 {
     CVSCPVariable variable;
@@ -4846,7 +4852,7 @@ void VSCPClientThread::handleVariable_List( struct mg_connection *conn,
 // test31;string;true;0;0x777;dGhpcyBpcyBhIHRlc3Q=;VGhpcyBpcyBhIG5vdGUgZm9yIGEgdGVzdCB2YXJpYWJsZQ==
 //
 
-void VSCPClientThread::handleVariable_Write( struct mg_connection *conn,
+void TCPClientThread::handleVariable_Write( struct mg_connection *conn,
                                                 CControlObject *pCtrlObject )
 {
     CVSCPVariable variable;
@@ -4893,7 +4899,7 @@ void VSCPClientThread::handleVariable_Write( struct mg_connection *conn,
 // handleVariable_WriteValue
 //
 
-void VSCPClientThread::handleVariable_WriteValue( struct mg_connection *conn,
+void TCPClientThread::handleVariable_WriteValue( struct mg_connection *conn,
                                                     CControlObject *pCtrlObject )
 {
     wxString name;
@@ -4949,7 +4955,7 @@ void VSCPClientThread::handleVariable_WriteValue( struct mg_connection *conn,
 // handleVariable_WriteNote
 //
 
-void VSCPClientThread::handleVariable_WriteNote( struct mg_connection *conn,
+void TCPClientThread::handleVariable_WriteNote( struct mg_connection *conn,
                                                     CControlObject *pCtrlObject )
 {
     wxString str;
@@ -5007,7 +5013,7 @@ void VSCPClientThread::handleVariable_WriteNote( struct mg_connection *conn,
 // handleVariable_Read
 //
 
-void VSCPClientThread::handleVariable_Read( struct mg_connection *conn,
+void TCPClientThread::handleVariable_Read( struct mg_connection *conn,
                                                 CControlObject *pCtrlObject, 
                                                 bool bOKResponse )
 {
@@ -5037,7 +5043,7 @@ void VSCPClientThread::handleVariable_Read( struct mg_connection *conn,
 // handleVariable_ReadVal
 //
 
-void VSCPClientThread::handleVariable_ReadValue( struct mg_connection *conn,
+void TCPClientThread::handleVariable_ReadValue( struct mg_connection *conn,
                                                     CControlObject *pCtrlObject, 
                                                     bool bOKResponse )
 {
@@ -5067,7 +5073,7 @@ void VSCPClientThread::handleVariable_ReadValue( struct mg_connection *conn,
 // handleVariable_ReadNote
 //
 
-void VSCPClientThread::handleVariable_ReadNote( struct mg_connection *conn,
+void TCPClientThread::handleVariable_ReadNote( struct mg_connection *conn,
                                                     CControlObject *pCtrlObject, bool bOKResponse )
 {
     wxString str;
@@ -5095,7 +5101,7 @@ void VSCPClientThread::handleVariable_ReadNote( struct mg_connection *conn,
 // handleVariable_Reset
 //
 
-void VSCPClientThread::handleVariable_Reset( struct mg_connection *conn,
+void TCPClientThread::handleVariable_Reset( struct mg_connection *conn,
                                                 CControlObject *pCtrlObject  )
 {
     wxString str;
@@ -5128,7 +5134,7 @@ void VSCPClientThread::handleVariable_Reset( struct mg_connection *conn,
 // handleVariable_ReadReset
 //
 
-void VSCPClientThread::handleVariable_ReadReset( struct mg_connection *conn,
+void TCPClientThread::handleVariable_ReadReset( struct mg_connection *conn,
                                                     CControlObject *pCtrlObject )
 {
     wxString str;
@@ -5171,7 +5177,7 @@ void VSCPClientThread::handleVariable_ReadReset( struct mg_connection *conn,
 // handleVariable_Remove
 //
 
-void VSCPClientThread::handleVariable_Remove( struct mg_connection *conn,
+void TCPClientThread::handleVariable_Remove( struct mg_connection *conn,
                                                 CControlObject *pCtrlObject )
 {
     wxString str;
@@ -5197,7 +5203,7 @@ void VSCPClientThread::handleVariable_Remove( struct mg_connection *conn,
 // handleVariable_ReadRemove
 //
 
-void VSCPClientThread::handleVariable_ReadRemove( struct mg_connection *conn,
+void TCPClientThread::handleVariable_ReadRemove( struct mg_connection *conn,
                                                     CControlObject *pCtrlObject )
 {
     wxString str;
@@ -5232,7 +5238,7 @@ void VSCPClientThread::handleVariable_ReadRemove( struct mg_connection *conn,
 // handleVariable_Length
 //
 
-void VSCPClientThread::handleVariable_Length( struct mg_connection *conn,
+void TCPClientThread::handleVariable_Length( struct mg_connection *conn,
                                                 CControlObject *pCtrlObject )
 {
     wxString str;
@@ -5264,7 +5270,7 @@ void VSCPClientThread::handleVariable_Length( struct mg_connection *conn,
 // handleVariable_Load
 //
 
-void VSCPClientThread::handleVariable_Load( struct mg_connection *conn,
+void TCPClientThread::handleVariable_Load( struct mg_connection *conn,
                                                 CControlObject *pCtrlObject )
 {
     wxString path;  // Empty to load from default path
@@ -5278,7 +5284,7 @@ void VSCPClientThread::handleVariable_Load( struct mg_connection *conn,
 // handleVariable_Save
 //
 
-void VSCPClientThread::handleVariable_Save( struct mg_connection *conn,
+void TCPClientThread::handleVariable_Save( struct mg_connection *conn,
                                                 CControlObject *pCtrlObject )
 {
     wxString path;
@@ -5313,7 +5319,7 @@ void VSCPClientThread::handleVariable_Save( struct mg_connection *conn,
 // handleClientDm
 //
 
-void VSCPClientThread::handleClientDm( struct mg_connection *conn,
+void TCPClientThread::handleClientDm( struct mg_connection *conn,
                                         CControlObject *pCtrlObject  )
 {
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
@@ -5356,7 +5362,7 @@ void VSCPClientThread::handleClientDm( struct mg_connection *conn,
 // handleDM_Enable
 //
 
-void VSCPClientThread::handleDM_Enable( struct mg_connection *conn,
+void TCPClientThread::handleDM_Enable( struct mg_connection *conn,
                                             CControlObject *pCtrlObject  )
 {
     unsigned short pos;
@@ -5403,7 +5409,7 @@ void VSCPClientThread::handleDM_Enable( struct mg_connection *conn,
 // handleDM_Disable
 //
 
-void VSCPClientThread::handleDM_Disable( struct mg_connection *conn,
+void TCPClientThread::handleDM_Disable( struct mg_connection *conn,
                                             CControlObject *pCtrlObject  )
 {
     unsigned short pos;
@@ -5456,7 +5462,7 @@ void VSCPClientThread::handleDM_Disable( struct mg_connection *conn,
 // handleDM_List
 //
 
-void VSCPClientThread::handleDM_List( struct mg_connection *conn,
+void TCPClientThread::handleDM_List( struct mg_connection *conn,
                                         CControlObject *pCtrlObject  )
 {
     // Valid commands at this point
@@ -5522,7 +5528,7 @@ void VSCPClientThread::handleDM_List( struct mg_connection *conn,
 // handleDM_Add
 //
 
-void VSCPClientThread::handleDM_Add( struct mg_connection *conn,
+void TCPClientThread::handleDM_Add( struct mg_connection *conn,
                                         CControlObject *pCtrlObject  )
 {
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
@@ -5567,7 +5573,7 @@ void VSCPClientThread::handleDM_Add( struct mg_connection *conn,
 // handleDM_Delete
 //
 
-void VSCPClientThread::handleDM_Delete( struct mg_connection *conn,
+void TCPClientThread::handleDM_Delete( struct mg_connection *conn,
                                             CControlObject *pCtrlObject  )
 {
     unsigned short pos;
@@ -5622,7 +5628,7 @@ void VSCPClientThread::handleDM_Delete( struct mg_connection *conn,
 // handleDM_Reset
 //
 
-void VSCPClientThread::handleDM_Reset( struct mg_connection *conn, CControlObject *pCtrlObject  )
+void TCPClientThread::handleDM_Reset( struct mg_connection *conn, CControlObject *pCtrlObject  )
 {
     gpobj->stopDaemonWorkerThread();
     gpobj->startDaemonWorkerThread();
@@ -5634,7 +5640,7 @@ void VSCPClientThread::handleDM_Reset( struct mg_connection *conn, CControlObjec
 // handleDM_Trigger
 //
 
-void VSCPClientThread::handleDM_Trigger( struct mg_connection *conn,
+void TCPClientThread::handleDM_Trigger( struct mg_connection *conn,
                                             CControlObject *pCtrlObject )
 {
     unsigned short pos;
@@ -5670,7 +5676,7 @@ void VSCPClientThread::handleDM_Trigger( struct mg_connection *conn,
 //
 
 
-void VSCPClientThread::handleDM_ClearTriggerCount( struct mg_connection *conn,
+void TCPClientThread::handleDM_ClearTriggerCount( struct mg_connection *conn,
                                                     CControlObject *pCtrlObject )
 {
     unsigned short pos;
@@ -5726,7 +5732,7 @@ void VSCPClientThread::handleDM_ClearTriggerCount( struct mg_connection *conn,
 //
 
 
-void VSCPClientThread::handleDM_ClearErrorCount( struct mg_connection *conn,
+void TCPClientThread::handleDM_ClearErrorCount( struct mg_connection *conn,
                                                     CControlObject *pCtrlObject )
 {
     unsigned short pos;
@@ -5780,7 +5786,7 @@ void VSCPClientThread::handleDM_ClearErrorCount( struct mg_connection *conn,
 // handleClientList
 //
 
-void VSCPClientThread::handleClientList( struct mg_connection *conn,
+void TCPClientThread::handleClientList( struct mg_connection *conn,
                                             CControlObject *pCtrlObject  )
 {
     // TODO
@@ -5792,7 +5798,7 @@ void VSCPClientThread::handleClientList( struct mg_connection *conn,
 // handleClientDriver
 //
 
-void VSCPClientThread::handleClientDriver( struct mg_connection *conn,
+void TCPClientThread::handleClientDriver( struct mg_connection *conn,
                                                 CControlObject *pCtrlObject  )
 {
     // TODO
@@ -5803,7 +5809,7 @@ void VSCPClientThread::handleClientDriver( struct mg_connection *conn,
 // handleClientHelp
 //
 
-void VSCPClientThread::handleClientHelp( struct mg_connection *conn,
+void TCPClientThread::handleClientHelp( struct mg_connection *conn,
                                             CControlObject *pCtrlObject )
 {
     CClientItem *pClientItem = (CClientItem *)conn->user_data;

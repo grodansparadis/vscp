@@ -156,8 +156,8 @@ using namespace std;
 ///////////////////////////////////////////////////
 
 extern CControlObject *gpobj;
-extern bool gbRestart;           // Should be true to restart the VSCP daemon
-
+extern bool gbRestart;           // Should be set true to restart the VSCP daemon
+extern int gbStopDaemon;         // Should be set true to stop the daemon
 
 ///////////////////////////////////////////////////
 //                WEBSERVER
@@ -1050,7 +1050,7 @@ vscp_restart( struct web_connection *conn, void *cbdata )
     memset( buf, 0, sizeof(buf ) );
     
     // Check pointer
-    if (NULL == conn) return 0;
+    if ( NULL == conn ) return 0;
     
     web_printf( conn,
 	          "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n"
@@ -1067,12 +1067,11 @@ vscp_restart( struct web_connection *conn, void *cbdata )
     web_printf( conn, WEB_COMMON_HEAD_END_BODY_START );
     web_printf( conn, WEB_COMMON_MENU );  
     
-    const struct web_request_info *reqinfo =
-                web_get_request_info( conn );
+    const struct web_request_info *reqinfo = web_get_request_info( conn );
     if ( NULL == reqinfo ) return 0;
 
     // restart password
-    const char *password;
+    const char *password = NULL;
     if ( NULL != reqinfo->query_string ) {
         if ( web_get_var( reqinfo->query_string,
                             strlen( reqinfo->query_string ),
@@ -1085,17 +1084,30 @@ vscp_restart( struct web_connection *conn, void *cbdata )
 
     web_printf( conn, "<h1 id=\"header\">Restart the VSCP Server</h1><br>" );
         
-    if ( 0 == strlen( password ) ) {
+    if ( NULL == password ) {
         web_printf( conn, "<form action=\"/vscp/restart\"><table>" );
         web_printf( conn, "<tr><td width=\"10%\"><b>Restart</b></td><td><input type=\"password\" "
                           "value=\"\" name=\"pw\"></td><tr>" );
-        web_printf( conn, "<tr><td> <td><input type=\"submit\" value=\"Generate\"></td><tr>" );
+        web_printf( conn, "<tr><td> <td><input type=\"submit\" value=\"RESTART\"></td><tr>" );
         web_printf( conn, "</table></form>" );
     }
     else {
         
+        if ( gpobj->m_vscptoken != wxString::FromUTF8( password ) ) {
+            fprintf(stderr, "websrv: Passphrase is wrong.\n");
+            web_printf( conn, "Passphrase is wrong - will not restart!<br>");
+            return WEB_OK;
+        }
+        
+        gpobj->m_bQuit = true;  // Quit main loop 
+        gbStopDaemon = true;
         gbRestart = true;       // Restart NOT shutdown
-        gpobj->m_bQuit = true;  // Quit main loop
+        wxSleep( 1 );
+        fprintf(stderr, "websrv: Shutdown in progress 1.\n");
+        wxSleep( 1 );
+        fprintf(stderr, "websrv: Shutdown in progress 2.\n");
+        wxSleep( 1 );
+        fprintf(stderr, "websrv: Shutdown in progress 3.\n");
         
         web_printf( conn, "<table>" );
         web_printf( conn, "</td><tr>" );
@@ -5085,7 +5097,7 @@ vscp_client( struct web_connection *conn, void *cbdata )
 //
 
 static int
-vscp_configure( struct web_connection *conn, void *cbdata )
+vscp_configure_list( struct web_connection *conn, void *cbdata )
 {
     wxString str;
     CVSCPVariable variable;
@@ -8470,7 +8482,7 @@ int init_webserver( void )
     // Set page handlers
     web_set_request_handler( gpobj->m_web_ctx, "/vscp",            vscp_mainpage, 0);
     web_set_request_handler( gpobj->m_web_ctx, "/vscp/session",    vscp_client, 0 );
-    web_set_request_handler( gpobj->m_web_ctx, "/vscp/configure",  vscp_configure, 0 );
+    web_set_request_handler( gpobj->m_web_ctx, "/vscp/configure",  vscp_configure_list, 0 );
     web_set_request_handler( gpobj->m_web_ctx, "/vscp/interfaces", vscp_interface, 0 );
     web_set_request_handler( gpobj->m_web_ctx, "/vscp/ifinfo",     vscp_interface_info, 0 );
     web_set_request_handler( gpobj->m_web_ctx, "/vscp/settings",   vscp_settings, 0 );
