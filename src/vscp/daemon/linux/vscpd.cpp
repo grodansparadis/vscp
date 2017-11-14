@@ -105,13 +105,14 @@ VSCPApp::VSCPApp()
 int main( int argc, char **argv )
 {
     int arg = 0;
-    wxString rootFolder;    // Folder where VSCP files & folders  will be located
+    wxString rootFolder;    // Folder where VSCP files & folders will be located
     wxString strcfgfile;    // Points to XML configuration file
 
+    fprintf( stderr, "Prepare to start vscpd" );
     // Ignore return value from defunct processes
     signal( SIGCHLD, SIG_IGN );
 
-    crcInit();
+    crcInit(); 
 
     wxInitializer initializer;
     if ( !::wxInitialize() ) {
