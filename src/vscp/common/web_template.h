@@ -58,10 +58,7 @@
                            "    <a href=\"#\">Tools</a>"\
                            "    <ul>"\
                            "        <li>"\
-                           "            <a href=\"/vscp/password\">User password</a>"\
-                           "        </li>"\
-                           "        <li>"\
-                           "            <a href=\"/vscp/restart\">Restart</a>"\
+                           "            <a href=\"/vscp/password\">Password generator</a>"\
                            "        </li>"\
                            "        <li>"\
                            "            <a href=\"/vscp/bootload\">Update firmware</a>"\
@@ -71,6 +68,9 @@
                            "        </li>"\
                            "        <li>"\
                            "            <a href=\"/vscp/tests\">VSCP system tests</a>"\
+                           "        </li>"\
+                           "        <li>"\
+                           "            <a href=\"/vscp/restart\">Restart</a>"\
                            "        </li>"\
                            "    </ul>"\
                            " </li>"\
