@@ -1,3 +1,6 @@
+# Dustribution collection
+dist/
+
 # Compiled Object files
 *.slo
 *.lo

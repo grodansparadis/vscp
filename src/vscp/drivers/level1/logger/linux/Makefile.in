@@ -102,6 +102,11 @@ uninstall:
 
 install-strip: install
 
+deb:    all
+	echo "\n" | ./builddist.sh
+	mkdir ../../../../../../dist
+	cp *.deb ../../../../../../dist
+
 clean: 
 	rm -rf ./.deps ./.pch
 	rm -f ./*.o

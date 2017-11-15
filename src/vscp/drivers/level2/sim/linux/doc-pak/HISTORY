@@ -1,0 +1,338 @@
+
+release notes for release 1.0.0 Neon
+========================================
+
+2014-09-39 - AKHE Aded new name parsing for tcp/ip interface of the daemon.
+
+2014-09-26 - AKHE Merged in new code to main. Code compiles and runs on both platforms.
+                  Varaibles in action parameters has been documented as being comma separated
+                  but should be semicolon separated. This infected the code but fixed now.
+2014-09-25 - AKHE Variables with space in there names will have the space replaced with underscore.
+2014-09-20 - AKHE Logfiles for general, access, security and dm actions
+                    Logfiles can be viewed in the web interface
+2014-08-29 - AKHE All VSCP helper lib calls now have "vscp_" ion front of them.
+
+release notes for release 0.4.0 Fluorine
+========================================
+
+2013-11-14 - AKHE VSCP & Friends now compiles with wxWidgets 3.0.0 also, the latest greatest.
+2013-10-21 - AKHE Fixed bug in vscpd that set Level II send GUID's wrong.
+		  Socket CAN driver now send Level I events as expected 
+			instead of class2 Level I events.
+2013-10-18 - AKHE Added getMeasurementDataCoding to helper lib that 
+                    returns the datacoding byte for measurement classes 
+                    that have it. Use the VSCP_DATACODING_TYPE, VSCP_DATACODING_INDEX
+                    and VSCP_DATACODING_UNIT macros to get individual parts in it. 
+                  Added new action parameter escapes
+                    %measurement.index  - index for sensor (0-7)
+                    %measurement.unit   - measurement unit (0-3)
+                    %measurement.coding - datacoding       (0-7)
+                    %measurement.convert.data - which convert all types
+                        of measurement data into a VSCP_CLASS2_MEASUREMENT_STR
+                        data coding which can be easier to directly interpret
+                        without code. Fixes #19
+2013-10-17 - AKHE Added new action parameter escapes. 
+					%event.class.str 	- Class as textstring
+					%event.type.str  	- Type as teststring
+					%measurement.float 	- measurement as a float
+					%measurement.string	- meaurements as a string
+					%eventdata.realtext	- Try to display event data in a
+											human readable form.
+2013-10-15 - AKHE 0.4.0.11
+2013-10-15 - AKHE carambola binary build added.
+2013-10-14 - AKHE Removes a bunch of non-critical warnings in ubuntu builds.
+2013-10-01 - AKHE Fixed compile problem on 64-bit platforms that caused
+                  /usr/bin/ld: ../../../../../common/crc.o: relocation R_X86_64_32S against
+2013-10-01 - AKHE 0.4.0.10
+2013-10-01 - AKHE Fixed problems in install part of main make file
+2013-09-25 - AKHE Fixed bug that caused segfault when adding a new boolean variable in the internal web interface
+2013-09-25 - AKHE Missing comma in conversion of writeVscpEventToString caused problems in websocket.
+2013-09-18 - AKHE Release 0.4.0.9 Fluorine.
+2013-09-10 - AKHE Added help/about to internal webserver internal pages.
+2013-09-10 - AKHE Fixed problem in DM fed that could cause segfault.
+2013-09-10 - AKHE Drivers can now be enabled/disabled in configuration file.
+2013-09-04 - AKHE Added som method to Level II drivers that can be used to
+                    serve driver specific internal web pages. Can be used for custom
+                    configuration etc.
+2013-08-30 - AKHE INternal webserver and web interface in place.
+2013-07-17 - AKHE Loglevel now 0-8. Can use numeric or tectual form.
+                    
+2013-06-29 - AKHE Added clone button to session window in VSCP Works
+2013-05-30 - AKHE Changed writeVscpEventToStringEx to writeVscpEventExToString 
+                  in VSCP helper lib. This will break some software compiles. 
+                  Sorry for that.
+		  All methods now in helper lib for Linux.
+
+			Changed filder helper_dll to helperlib
+2013-05-29 - AKHE Added Level I socketcan driver.
+2013-05-28 - AKHE driver config <parameter> has been changed to <config>
+			Default path for varibles has been moved to /srv/vscp/variable.xml
+			Deafult path for dm has been moved to /srv/vscp/dm.xml
+			rootpath changed to webrootpath in configuration file
+2013-05-20 - AKHE Binary mode removed from TCP/IP interface. The Nova code for the Modtronix SBC68C board still have binary code in it. This code does not work anymore.
+2013-05-20 - AKHE udp broadcast is no longer part of daemon. Use
+			raw Ethernet interface or udp driver
+			instead.
+2013-05-14 - AKHE Removed old code, old boot loader wizard etc
+2012-10-23 - AKHE Fixed problem with link clicks in configuration status window.
+2012-10-23 - AKHE 0.4.0.3
+2012-10-23 - AKHE GUID's can now be saved and loaded in configuration window.
+					Full Level II Works.
+2012-10-22 - AKHE VSCP works now have configuration of register read/write 
+					parameters. Build: 4.0.0.2
+				  Confirm of rx-list delete can now be disabled.
+				  Numerical Base for numbers can now be configured.
+				  Log fle can be configured
+2012-10-17 - AKHE VSCP Works interfaces are now dynamic and stored by name.
+2012-10-01 - AKHE VSCP Works now handle indexed storage for dm and abstractions.
+2012-09-30 - AKHE VSCP Works now handles pages.
+2012-09-18 - AKHE Dinesh Guleria contributed VSCP bootloader support for VSCP Works.
+2012-09-17 - AKHE Deamon local webserver added.
+2012-09-16 - AKHE Websocket interface now works on Linux/Unix to.
+2012-09-15 - AKHE Websocket interface in place.
+
+release notes for release 0.3.3 Oxygen
+======================================
+2012-06-10 - AKHE Fixed problem resulting from wxWidgets parser library problem
+					for unicode builds.
+2012-06-03 - AKHE Improvements of scan intervace in VSCP Works.
+2012-05-24 - AKHE Register configurations can now be saved/loaded in VSCP Works.
+2012-05-06 - AKHE Fixed memory leak in tcp/ip interface. 
+2011-04-20 - AKHE Eurosource change name to Grodans Paradis AB and this is reflected 
+					in copyright messages.
+
+release notes for release 0.3.2 Oxygen
+======================================
+Internal.
+
+release notes for release 0.3.1 Nitrogen
+========================================
+2011-04-20 - AKHE 0.3.1 Nitrogen released.
+2011-04-19 - AKHE bug 3235535  fixed. Minimized session windows on start up in vscpworks.
+2011-04-19 - AKHE bug 2870025 fixed. Reedit of txlines in vscpworks.
+2011-04-19 - AKHE Added DM action escape substitutions for differenet standard system paths. See 15.7.6 for 
+					complete list.
+2011-04-05 - AKHE Helper interface now have full variable handling.
+2011-04-04 - AKHE All Level I drivers moved to drivers/level1. Windows build files changed accordingly.
+2011-03-30 - AKHE Timestamp was missing on internal events. Added for all. 
+2011-03-30 - AKHE Fixed bug in %hour substitution in DM action strings.
+2011-03-24 - AKHE Starting work. 
+
+release notes for release 0.3.0 Carbon
+======================================
+2011-03-08 - AKHE Measurement conversions in place.
+2011-03-08 - AKHE Helpers to get variables from the server in place. 
+2011-03-08 - AKHE VSCP Driver interface (level II) in place.
+2011-03-14 - AKHE Level II logger driver in place.
+2011-03-15 - AKHE Level II bluetooth proximity driver in place.
+2011-03-20 - AKHE Level II raw ethernet driver in place.
+
+release notes for release 0.2.10 Boron
+=========================================
+2010-12-18 - AKHE The internal decision matrix of the daemon is now fully functional.
+
+release notes for release 0.2.9 Beryllium
+=========================================
+2009-10-11 - AKHE Finished variable interface in daemon.
+2009-07-12 - AKHE Fixed bug in udp interface that caused multiple events to
+		be sent. This is also a fix for bug 
+2010-04-15 - AKHE Added bootloader interface to VSCP Works
+2010-05-05 - AKHE Rewrite of cancmd
+
+release notes for release 0.2.8 Lithium
+=======================================
+2009-07-07 - Fixed bug that mae VSCP Work crach.
+2009-07-07 - Added Tellstick CANAL driver 
+
+release notes for release 0.2.7 Helium
+======================================
+2009-03-15 - AKHE Added decision matrix editing to configuration window.
+2009-03-15 - AKHE Fixed bug in MDF parser that made reading of DM data in xml loop forever.
+2009-03-15 - AKHE Fixed problem when reading decission matrix properties in VSCP Works config.
+2009-01-31 - AKHE Fixed memory leeak problem for WIN32 daemon when now configuration file in place.
+2008-12-17 - AKHE Changed defines for standard registers in vscp.h
+2008-12-16 - AKHE Fixed problem crach with VSCP Works configuration when reading unavailabe
+                  registers.
+2008-11-11 - AKHE Fixed problem with UDP receive for the daemon. Also fixed so that events received from the
+			UDP interface is not transmited on UDP. 
+2008-11-11 - AKHE Fixed problem with config that prevented disable of different functions of the dameon. Also
+			fixed switch that is used for disabling of udp daemon sends ("onlyincoming").
+2008-11-30 - AKHE Fixed bug 2327391. Caused burts of oncoming events for unblocked drivers and possible crach 
+            	of the daemon.
+2008-12-17 - AKHE Fixed problem with configuration window in VSCP Works.			
+
+release notes for release 0.2.6 Hydrogen
+=========================================
+2008-08-04 - Symbolic names now used for TX objects.
+2008-08-08 - No errors on missing generation 2 methods in CANAL drivers for daemon. 
+2008-10-22 - VSCP Simple Button - Application that show how to build a small Visual C++ application that send events through the daemon interface. VSCP Simple Lamp - Application that show how to build a small Visual C++ application that receive events through the daemon interface.
+
+release notes for release 0.2.3
+===============================
+2008-06-04 - Daemon now writes pid to /var/run/vscpd.pid on startup and removes it on exit. Also reacts
+			correctly on kill etc signals.
+
+
+release notes for release 0.2.0
+===============================
+2008-05-12 - Changed VSCP filter to include index, zone and subzone.
+2007-12-17 - Build 738 should work OK on mosty systems.
+2007-12-17 - From now on minir changes will be in the subversion comments only
+		only major changes and additions will go here.
+2007-11-16 - Added color init values for VSCP Works
+2007-12-15 - Fixed CW compile problems. Severla fixes in Superwrapper class. App. will
+		be sample from now on and shipped compile for CAN usage.
+2007-12-14 - Setup file for windows in place (NULLSOFT)
+2007-12-11 - Fixed problem with RX/TX indication in VSCP Works 
+2007-12-11 - Fixed CPU eating in TCP/Receive routine for frmvscpsession
+2007-12-11 - Fixed memory leaks for daemon and VSCP Works. 
+2007-12-10 - Driver problems for daemon fixed. 
+2007-11-09 - Memory leak when daemon is shutdown while clients are active on the 
+		TCP/IP interface. Fixed.
+
+
+release notes for release 0.1.8
+===============================
+2007-11-09 - Major rewrite - Skip to 0.2.0
+2007-10-16 - Concept with Level I clients removed.
+2007-10-16 - Daemon UDP interface removed.
+2007-10-05 - Shared memory interfaces removed both for Level I and Level II.
+2007-10-01 - New XML configuration format.
+		Variables added.
+		Multiple interfaces added.
+		Multiple users added.
+2007-06-08 - Now compiles fine under *nix 64-bit systems.
+2007-03-12 - Renamed canaldll.dll to canal.dll 
+		 Renamed canalocx.ocx to canal.ocx
+2007-03-11 - Fixed USB serial adapter problem for CAN4VSCP driver.
+2007-03-10 - Fixed return value problems for drivers and in CanalWorks.
+2007-02-24 - Fixed the problem with shared memory user rights on windows for the daemon. 
+		 Now it is possible to access the shared memory also without a user account
+2007-02-23 - Johan Hedlund contributed Linux DLL and test app. for VSCP Level I /CANAL.
+2007-02-07 - canalworks.conf and vscp.conf are now preserved in install.
+2007-02-07 - CanalWorks now uses canalworks.conf as configuration file both on Unix and WIN32.
+2007-02-07 - 0.1.8  RC1  Build: 271
+2007-02-05 - Updated to compile with wxWidgets 2.8.0
+2006-07-28 - Fixed GUID generation problem for clients.
+2006-07-27 - Event flags added for all message paths. Ready for blocking calls.
+		 Added addressed Level II events.
+		 Changed default interface GUID for client interfaces to be based on the IP address instead of the 
+		 MAC address.
+2006-07-25 - VSCP + CANAL = VSCP  All source files in src/vscp.
+		 canalservice is now vscpservice.
+		 canald is now vscpd.
+2006-06-22 - Fixed WIN32 layout problems for cw.
+2006-06-07 - Added "CLRA" command to TCP/IP interface.
+2006-06-07 - Added vscptcpctrl activex control.
+2006-06-02 - Fixed fast mode problem where positive error frame was not sent as it should.
+2006-05-17 - canaltcpip class: Support for TCP/IP FAST mode
+2006-05-17 - canald TCP/IP interface: FAST mode implemented.
+2006-05-17 - canald TCP/IP interface: If no username/password is used OK is returned when they are sent. Also
+			true if username/password is sent several times after a successfull validation.
+2006-05-11 - canald TCP/IP interface. Changed responsstrings so they are sent in a single TCP 
+			write to make client parsing easier.
+2006-05-10 - clinet counter for canald TCP/IP interface did not count down when clients disconnected. Fixed.
+
+Ake Hedman, eurosource, Los. Sweden 2006-07-28
+
+release notes for release 0.1.7
+===============================
+2005-10-14 - Fixed filter/mask code for canal logger driver.
+2005-12-23 - Optimized the dynamic linked lists.
+2006-03-08 - Changed port from 1681 to the registered 9598.
+2006-03-14 - Added scripts for Digitemp support and first version of O'DIN database.
+2006-03-14 - Moved release files to project root.
+
+Ake Hedman, eurosource, Los. Sweden 2006-03-14
+
+release notes for release 0.1.6
+===============================
+2005-09-22 - Upgraded configuration readings for CanalWorks
+2005-09-26 - Fixed GUID ordering problem in canald.
+2005-09-26 - Fixed problem with clear message list switch in CanalWorks.
+2005-10-04 - Fixed problem in Linux version Level I received thread with invalid count returned for
+		DataAvailable
+
+Ake Hedman, eurosource, Los. Sweden 2005-10-04
+
+readme for release 0.1.5
+===============================
+2005-02-23 AKHE Fixed bug that placed the CRC at wrong positions in outgoing Level II events.
+
+2005-02-23 AKHE Added proper deamon initializing code for the Linux daemon.
+
+2005-03-14 AKHE Fixed bug in Unix Code for client interface communication for
+Level I that did not wait for a command to be done before a new command was issued.
+
+2005-03-15 AKHE Fixed same problem in client interface as above for Level II.
+
+2005-03-15 AKHE Fixed UDP receive problem that resulted in VSCP events not
+received correctly.
+
+2005-06-01 AKHE Moved complete build to wxWidgets 2.6
+
+2005-08-03 AKHE Fixed possible synchronising problems in canaldaemon and now use wxMutex instead 
+of native versions directly.
+
+2005-08-09 AKHE Added error information to canalStatus structure and now show error information in 
+canalworks.
+
+2005-08-24 AKHE Added TCP interface
+
+2005-08-24 AKHE Fixed problem with app. hang with Level II shared memory.
+
+2005-08-09 AKHE Changed canald configuration read to final version wxConfig
+
+2005-08-09 AKHE Raised priorities for driver and interface threads.
+
+2005-09-01 AKHE Unix autoconf stuff now working.
+
+2005-09-14 AKHE mkpasswd to generate password for config fils.
+
+Ake Hedman, eurosource, Los. Sweden 2005-09-14
+
+readme for release 0.1.4
+========================
+2005-01-30
+ixxatvcidrv.dll
+Problems that made it impossible to load the driver when using baudrate over 150kbps fixed.
+
+2005-02-15
+Fixed problem in UDP revceive with read from wrong location.
+
+Other bug fixes.
+
+
+Ake Hedman, eurosource, Los. Sweden 2005-02-15
+
+readme for release 0.1.3
+========================
+
+- AH 2004-12-11 - Fixed byteorder bug in UDP receive routine that failed to receive VSCP messages 
+			due to size interpreted wrong.
+- AH 2004-12-11 - Fixed constant renameing problem that made the Unix code fail to build. :w
+
+- AH 2004-12-11 - Increased the number of clients that can connect to 4096.
+
+- AH 2004-12-11 - Increased the number of devices that can be connected to 4096. Also fixed id uniqueness problem
+			so that a device now have id's starting at 0x00010000 and client have id's starting at 
+			0x00000000 0x00xx0000 is reserved for future types.
+
+- AH 2004-12-16 - Added the m swicth to cancmd to input decimal numbers as normalized integers.
+
+Ake Hedman, eurosource, Los. Sweden 2004-12-13
+
+readme for release 0.1.2
+========================
+- Combined CANAL and VSCP daemon into one program
+
+Ake Hedman, eurosource, Los. Sweden 2004-12-07
+
+readme for release 0.1.1
+========================
+
+- Installation now starts the service after installation.
+- A severe bug was found in the canaldaemon/service which made it not receiving messages from devices. Fixed!
+- Initiated the use of wxWidgets.
+
+Ake Hedman, eurosource, Los. Sweden 2004-09-25
