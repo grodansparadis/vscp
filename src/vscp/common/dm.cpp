@@ -1008,7 +1008,7 @@ wxString dmElement::getAsString( bool bCRLF )
     strRow += m_bCompareMeasurement ? _("true,") : _("false,");
     
     // measurement value
-    strRow += wxString::Format(_("%f,"), m_measurementValue );
+    strRow += wxString::Format(_("%lf,"), m_measurementValue );
     
     // measurement unit
     strRow += wxString::Format(_("%d,"), m_measurementUnit );
@@ -3226,7 +3226,7 @@ bool dmElement::doActionStoreVariable( vscpEvent *pDMEvent )
                     if ( vscp_getVSCPMeasurementAsDouble( pDMEvent, &value ) ) {
                         
                         // (MEASUREMENT|6;true|false;)value;unit;sensor-index;zone;subzone
-                        wxString strValue = wxString::Format( _("%f;%d;%d;%d;%d"), 
+                        wxString strValue = wxString::Format( _("%lf;%d;%d;%d;%d"), 
                                                                     value,
                                                                     unit,
                                                                     sensor_index,
@@ -6458,7 +6458,7 @@ bool CDM::saveToXML( void )
             buf.Printf( _( "unit=\"%d\" " ), pDMitem->m_measurementUnit );
             pFileStream->Write( buf.mb_str(), strlen(buf.mb_str()) );
             
-            buf.Printf( _( "value=\"%f\" " ), pDMitem->m_measurementValue );
+            buf.Printf( _( "value=\"%lf\" " ), pDMitem->m_measurementValue );
             pFileStream->Write( buf.mb_str(), strlen(buf.mb_str()) );
             
             pFileStream->Write( " />\n", strlen ( " />\n" ) );

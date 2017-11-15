@@ -86,7 +86,7 @@ am__include = @am__include@
 am__quote = @am__quote@
 install_sh = @install_sh@
 top_wxbuilddir = @top_wxbuilddir@
-NULL = 
+NULL =
 
 EXTRA_DIST = \
 	codeset.m4 \
@@ -107,8 +107,10 @@ EXTRA_DIST = \
 	stdint_h.m4 \
 	uintmax_t.m4 \
 	ulonglong.m4 \
+	ax_check_enable_debug.m4\
+	ax_check_openssl.m4\
 	vscp.m4 \
-	wxwin.m4 \ 
+	wxwin.m4 \
 	$(NULL)
 
 subdir = m4
