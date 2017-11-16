@@ -1717,7 +1717,7 @@ static struct web_option config_options[] =
 // Check if the config_options and the corresponding enum have compatible
 // sizes.
 web_static_assert((sizeof (config_options) / sizeof (config_options[0]))
-                      == (NUM_OPTIONS + 1),
+                      == (WEB_NUM_OPTIONS + 1),
                       "config_options and enum not sync");
 
 enum
