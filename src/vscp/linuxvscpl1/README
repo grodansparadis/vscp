@@ -1,4 +1,4 @@
-This is an interface to the VSCPD Level I i/f (CAN) in the form of a shared library. 
+This is an interface to the VSCPD Level I i/f (CANAL) in the form of a shared library. 
 The daemon must be started for the routines to work.
 
 

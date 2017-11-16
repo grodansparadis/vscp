@@ -1,1 +1,7 @@
-The VSCP server
+uvscpd
+
+uvscpd is a smaller and less resource intensive version of the full fledge
+VSCP sever.
+
+Copyright (C) 2000-2017 Ake hedman, Grodans Paradis AB, Sweden
+http://www.vscp.org

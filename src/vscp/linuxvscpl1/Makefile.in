@@ -32,10 +32,11 @@ WXGTK_LIBS = @WXGTK_LIBS@
 WXGTK_STATIC_LIBS = @WXGTK_STATIC_LIBS@
 
 # get version from the version file
-MAJOR_VERSION = `sed '35!d' ../../common/version.h  | cut -b 33-`
-MINOR_VERSION = `sed '36!d' ../../common/version.h  | cut -b 33-`
-RELEASE_VERSION = `sed '37!d' ../../common/version.h  | cut -b 33-`
-BUILD_VERSION = `sed '38!d' ../../common/version.h  | cut -b 33-
+MAJOR_VERSION = `sed '35!d' ../common/version.h  | cut -b 33-`
+MINOR_VERSION = `sed '36!d' ../common/version.h  | cut -b 33-`
+RELEASE_VERSION = `sed '37!d' ../common/version.h  | cut -b 33-`
+BUILD_VERSION = `sed '38!d' ../common/version.h  | cut -b 33-
+LIB_PLUS_VER = "libvscpl1.so.$(MAJOR_VERSION).$(MINOR_VERSION).$(RELEASE_VERSION)"
 
 MONGOOSE_CFLAGS = -DMG_ENABLE_THREADS -DMG_ENABLE_IPV6 -DMG_ENABLE_SSL -DMG_ENABLE_HTTP_CGI -DMG_ENABLE_HTTP_SSI -DMG_ENABLE_HTTP_SSI_EXEC -DMG_ENABLE_HTTP_WEBDAV -DMG_ENABLE_GETADDRINFO -DMG_ENABLE_HTTP_URL_REWRITES
 CFLAGS = -std=c99 -fPIC @CFLAGS@ @WXBASE_CFLAGS@ -DCBC -I../common -I../../common
@@ -51,7 +52,7 @@ EXTRALIBS += @WXBASE_LIBS@
 endif
 
 DLFLAGS = -g -shared -fPIC
-TRIP = strip
+STRIP = strip
 INSTALL_PROGRAM = ${INSTALL}
 INSTALL_DATA = ${INSTALL} -m 644
 INSTALL_DIR = /usr/bin/install -c -d
@@ -67,7 +68,7 @@ DLLPREFIX = lib
 
 ### Variables: ###
 
-WX_RELEASE = 2.8
+WX_RELEASE = 3.0
 LIBDIRNAME = $(top_wxbuilddir)lib
 
 VSCPL1_OBJECTS =  vscpl1.o \
@@ -84,12 +85,12 @@ VSCPL1_OBJECTS =  vscpl1.o \
 
 ### Targets: ###
 
-all: vscpl1.so test
+all: libvscpl1.so test
 
 test:  test.o $(PROJOBJS)
 	$(CXX) -o $@ test.o $(PROJOBJS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
 
-vscpl1.so: $(VSCPL1_OBJECTS)
+libvscpl1.so: $(VSCPL1_OBJECTS)
 	$(CXX) -o $@ $(VSCPL1_OBJECTS) $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS) 	
 
 vscpl1.o: vscpl1.cpp vscpl1.h
@@ -132,7 +133,14 @@ dllist.o: ../../common/dllist.c ../../common/dllist.h
 	$(CC) $(CFLAGS) -c ../../common/dllist.c -o $@	
 	
 install: all
-	$(INSTALL_PROGRAM) vscpl1.so $(libdir)
+	$(STRIP) libvscpl1.so
+	cp libvscpl1.so $(LIB_PLUS_VER)
+	$(INSTALL_PROGRAM) $(LIB_PLUS_VER) $(libdir)
+	ln -fs $(libdir)/$(LIB_PLUS_VER) $(libdir)/libvscpl1.so
+	ln -fs $(libdir)/$(LIB_PLUS_VER) $(libdir)/libvscpl1.so.$(MAJOR_VERSION)
+	ln -fs $(libdir)/$(LIB_PLUS_VER) $(libdir)/libvscpl1.so.$(MAJOR_VERSION).$(MINOR_VERSION)
+	$(INSTALL_PROGRAM) vscpl1.h $(includedir)
+#	ar rcs libvscpl1.a libvscpl1.o
 
 uninstall: 
 
@@ -150,7 +158,7 @@ clean:
 	rm -f ../../common/*.o
 	rm -f ../../../common/*.o
 	rm -f ../../../../common/*.o
-	rm -f vscpl1.so
+	rm -f libvscpl1.so
 	rm -f test
 
 distclean: clean
