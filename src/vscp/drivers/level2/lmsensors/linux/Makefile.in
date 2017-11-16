@@ -156,6 +156,8 @@ clean:
 	rm -f ../../../../../common/*.o
 	rm -f vscpl2drv_lmsensors.so
 	rm -f test
+	rm -f *.deb
+	rm -f *.gz
 
 # Include dependency info, if present:
 -include .deps/*.d

@@ -154,6 +154,8 @@ clean:
 	rm -f ../../../../../common/*.o
 	rm -f vscpl2drv-mqtt.so
 	rm -f test
+	rm -f *.deb
+	rm -f *.gz
 
 distclean: clean
 	rm -f config.cache config.log config.status bk-deps bk-make-pch shared-ld-sh Makefile

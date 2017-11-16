@@ -370,6 +370,7 @@ clean:
 	rm -f ../../../common/*.o
 	rm -f ../../../vscp/common/*.o
 	rm -f *.deb
+	rm -f *.gz
 	rm -f vscpd
 
 distclean: clean

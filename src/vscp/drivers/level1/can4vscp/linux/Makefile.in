@@ -124,8 +124,8 @@ clean:
 	rm -f test
 	rm -rf ../common/*~
 	rm -rf *~
-	rm -rf *.gz
-	rm -rf *.deb
+	rm -f *.gz
+	rm -f *.deb
 
 distclean: clean
 	rm -f config.cache config.log config.status bk-deps bk-make-pch shared-ld-sh Makefile
