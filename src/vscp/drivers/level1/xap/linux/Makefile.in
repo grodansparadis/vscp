@@ -76,13 +76,13 @@ XAPDRV_OBJECTS =  vscpl1_xapdrv.o \
 
 ### Targets: ###
 
-all: vscpl1_xapdrv.so test
+all: vscpl1-xapdrv.so test
 
 test:  test.o $(PROJOBJS)
 	$(CXX) -o $@ test.o $(PROJOBJS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
 
 # Build the Linux DL
-vscpl1_xapdrv.so: $(XAPDRV_OBJECTS)
+vscpl1-xapdrv.so: $(XAPDRV_OBJECTS)
 	$(CXX) -o $@ $(XAPDRV_OBJECTS) $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
 	
 vscpl1_xapdrv.o: vscpl1_xapdrv.cpp vscpl1_xapdrv.h
@@ -99,7 +99,7 @@ dllist.o: ../../../../../common/dllist.c ../../../../../common/dllist.h
 
 install: all
 	mkdir -p $(VSCP_PROJ_BASE_DIR)/drivers/level1
-	$(INSTALL_PROGRAM) vscpl1_xapdrv.so $(VSCP_PROJ_BASE_DIR)/drivers/level1
+	$(INSTALL_PROGRAM) vscpl1-xapdrv.so $(VSCP_PROJ_BASE_DIR)/drivers/level1
 
 uninstall: 
 
@@ -107,8 +107,8 @@ install-strip: install
 
 deb:    all
 	echo "\n" | ./builddist.sh
-	mkdir ../../../../../../dist
-	cp *.deb ../../../../../../dist
+	@mkdir -p ../../../../../../dist
+	@cp *.deb ../../../../../../dist
 
 clean: 
 	rm -rf ./.deps ./.pch
@@ -116,7 +116,7 @@ clean:
 	rm -f ../common/*.o
 	rm -f ../../../../common/*.o
 	rm -f ../../../../../common/*.o
-	rm -f vscpl1_xapdrv.so
+	rm -f vscpl1-xapdrv.so
 	rm -f test
 
 distclean: clean

@@ -84,12 +84,12 @@ MQTT_OBJECTS = mqttobj.o\
 
 ### Targets: ###
 
-all: vscpl2drv_mqtt.so test
+all: vscpl2drv-mqtt.so test
 
 test:  test.o $(PROJOBJS)
 	$(CXX) -o $@ test.o $(PROJOBJS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
 
-vscpl2drv_mqtt.so: $(MQTT_OBJECTS)
+vscpl2drv-mqtt.so: $(MQTT_OBJECTS)
 	$(CXX) -o $@ $(MQTT_OBJECTS) $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS) 
 
 mqttobj.o: ../common/mqttobj.cpp ../common/mqttobj.h
@@ -134,7 +134,7 @@ dllist.o: ../../../../../common/dllist.c ../../../../../common/dllist.h
 
 install: all
 	mkdir -p $(VSCP_PROJ_BASE_DIR)/drivers/level2
-	$(INSTALL_PROGRAM) vscpl2drv_mqtt.so $(VSCP_PROJ_BASE_DIR)/drivers/level2
+	$(INSTALL_PROGRAM) vscpl2drv-mqtt.so $(VSCP_PROJ_BASE_DIR)/drivers/level2
 
 uninstall: 
 
@@ -142,8 +142,8 @@ install-strip: install
 
 deb:    all
 	echo "\n" | ./builddist.sh
-	mkdir ../../../../../../dist
-	cp *.deb ../../../../../../dist
+	@mkdir -p ../../../../../../dist
+	@cp *.deb ../../../../../../dist
 
 clean: 
 	rm -rf ./.deps ./.pch
@@ -152,7 +152,7 @@ clean:
 	rm -f ../../../common/*.o
 	rm -f ../../../../common/*.o
 	rm -f ../../../../../common/*.o
-	rm -f vscpl2drv_mqtt.so
+	rm -f vscpl2drv-mqtt.so
 	rm -f test
 
 distclean: clean

@@ -1,4 +1,4 @@
-Copyright (C) 2000-2014 Ake Hedman, Grodans Paradis AB
+Copyright (C) 2000-2017 Ake Hedman, Grodans Paradis AB
 <akhe@grodansparadis.com>
 
 Programs in the VSCP & Friends project use different free
@@ -10,8 +10,8 @@ mean free to use and do whatever you want with. This is typical for
 firmware code. Check the header in each file to be sure. We ask you to
 give credit to the project if you use this code.
 
-Libraries and other development tools are licensed under LGPL
-Full details here http://www.gnu.org/licenses/lgpl-2.1.html
+Libraries and other development tools are licensed under a MIT
+license.
 
 User space software is licensed under GPL. 
 Full details here: http://www.gnu.org/licenses/gpl-2.0.html

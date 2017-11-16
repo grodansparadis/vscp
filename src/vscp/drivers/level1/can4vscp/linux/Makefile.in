@@ -32,10 +32,10 @@ WXGTK_LIBS = @WXGTK_LIBS@
 WXGTK_STATIC_LIBS = @WXGTK_STATIC_LIBS@
 
 # get version from the version file
-MAJOR_VERSION = `sed '35!d' ../../common/version.h  | cut -b 33-`
-MINOR_VERSION = `sed '36!d' ../../common/version.h  | cut -b 33-`
-RELEASE_VERSION = `sed '37!d' ../../common/version.h  | cut -b 33-`
-BUILD_VERSION = `sed '38!d' ../../common/version.h  | cut -b 33-
+MAJOR_VERSION = `sed '35!d' ../../../../common/version.h  | cut -b 33-`
+MINOR_VERSION = `sed '36!d' ../../../../common/version.h  | cut -b 33-`
+RELEASE_VERSION = `sed '37!d' ../../../../common/version.h  | cut -b 33-`
+BUILD_VERSION = `sed '38!d' ../../../../common/version.h  | cut -b 33-
 
 CFLAGS = -std=c99 @CFLAGS@ -fPIC @WXBASE_CFLAGS@ -DCBC -I../../../../common -I../../../../../common
 CXXFLAGS = -D__LINUX__ -fPIC -D_REENTRANT @CXXFLAGS@ @WXBASE_CXXFLAGS@
@@ -111,8 +111,8 @@ install-strip: install
 
 deb:    all
 	echo "\n" | ./builddist.sh
-	mkdir ../../../../../../dist
-	cp *.deb ../../../../../../dist
+	@mkdir -p ../../../../../../dist
+	@cp *.deb ../../../../../../dist
 
 clean:
 	rm -rf ./.deps ./.pch

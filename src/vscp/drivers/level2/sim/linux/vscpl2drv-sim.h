@@ -41,7 +41,7 @@
 #ifdef WIN32
 #include <simdrv.h>
 #else
-#include <vscpl2drv_sim.h>
+//#include <vscpl2drv_sim.h>
 #endif
 
 #ifndef BOOL

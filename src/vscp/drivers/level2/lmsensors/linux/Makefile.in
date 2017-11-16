@@ -84,14 +84,14 @@ LMSENSOROBJ =  lmsensors.o \
 
 ### Targets: ###
 
-all: vscpl2drv_lmsensors.so
+all: vscpl2drv-lmsensors.so
 
 
 distclean: clean
 	rm -f config.cache config.log config.status bk-deps bk-make-pch shared-ld-sh Makefile	
 
 # Build the Linux DL
-vscpl2drv_lmsensors.so: $(LMSENSOROBJ)
+vscpl2drv-lmsensors.so: $(LMSENSOROBJ)
 	$(CXX) -o $@ $(LMSENSOROBJ) $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS) 
 
 lmsensors.o: lmsensors.cpp lmsensors.h
@@ -135,7 +135,7 @@ dllist.o: ../../../../../common/dllist.c ../../../../../common/dllist.h
 
 install: all
 	mkdir -p $(VSCP_PROJ_BASE_DIR)/drivers/level2
-	$(INSTALL_PROGRAM) vscpl2drv_lmsensors.so $(VSCP_PROJ_BASE_DIR)/drivers/level2
+	$(INSTALL_PROGRAM) vscpl2drv-lmsensors.so $(VSCP_PROJ_BASE_DIR)/drivers/level2
 
 uninstall: 
 
@@ -143,8 +143,8 @@ install-strip: install
 
 deb:    all
 	echo "\n" | ./builddist.sh
-	mkdir ../../../../../../dist
-	cp *.deb ../../../../../../dist
+	@mkdir -p ../../../../../../dist
+	@cp *.deb ../../../../../../dist
 
 clean: 
 	rm -rf ./.deps ./.pch

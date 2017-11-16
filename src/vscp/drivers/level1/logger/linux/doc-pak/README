@@ -1,5 +1,5 @@
-Readme file for the the VSCP & Friends project
-http://www.vscp.org
+Readme file for the the vscpl1-loggerdrv Level I driver,  part of VSCP & friends
 
-See HISTORY for release information, BUILD_* for how to build the project.
+You can find the latest relevant information about the vscpl1-loggerdrv Level driver at
+http://www.vscp.org/docs/vscpd/doku.php?id=level1_driver_logger
 

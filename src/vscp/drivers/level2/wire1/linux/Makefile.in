@@ -84,12 +84,12 @@ WIRE1_OBJECTS = wire1.o \
 
 ### Targets: ###
 
-all: vscpl2drv_wire1.so test
+all: vscpl2drv-wire1.so test
 	
 test:  test.o $(PROJOBJS)
 	$(CXX) -o $@ test.o $(PROJOBJS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
 
-vscpl2drv_wire1.so: $(WIRE1_OBJECTS)
+vscpl2drv-wire1.so: $(WIRE1_OBJECTS)
 	$(CXX) -o $@ $(WIRE1_OBJECTS) $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS) 
 	
 wire1.o: wire1.cpp wire1.h
@@ -133,7 +133,7 @@ dllist.o: ../../../../../common/dllist.c ../../../../../common/dllist.h
 	
 install: all
 	mkdir -p $(VSCP_PROJ_BASE_DIR)/drivers/level2
-	$(INSTALL_PROGRAM) vscpl2drv_wire1.so $(VSCP_PROJ_BASE_DIR)/drivers/level2
+	$(INSTALL_PROGRAM) vscpl2drv-wire1.so $(VSCP_PROJ_BASE_DIR)/drivers/level2
 
 uninstall: 
 
@@ -141,8 +141,8 @@ install-strip: install
 
 deb:    all
 	echo "\n" | ./builddist.sh
-	mkdir ../../../../../../dist
-	cp *.deb ../../../../../../dist
+	@mkdir -p ../../../../../../dist
+	@cp *.deb ../../../../../../dist
 
 clean: 
 	rm -rf ./.deps ./.pch
@@ -151,7 +151,7 @@ clean:
 	rm -f ../../../common/*.o
 	rm -f ../../../../common/*.o
 	rm -f ../../../../../common/*.o
-	rm -f vscpl2drv_wire1.so
+	rm -f vscpl2drv-wire1.so
 	rm -f test
 
 distclean: clean

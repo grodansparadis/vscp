@@ -84,13 +84,13 @@ VSCPTCPIP_OBJECTS = vscptcpiplink.o\
 
 ### Targets: ###
 
-all: vscpl2drv_tcpiplink.so test
+all: vscpl2drv-tcpiplink.so test
 
 test:  test.o $(PROJOBJS)
 	$(CXX) -o $@ test.o $(PROJOBJS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
 
 # Build the Linux DL
-vscpl2drv_tcpiplink.so: $(VSCPTCPIP_OBJECTS)
+vscpl2drv-tcpiplink.so: $(VSCPTCPIP_OBJECTS)
 	$(CXX) -o $@ $(VSCPTCPIP_OBJECTS) $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS) 
 
 vscptcpiplink.o: vscptcpiplink.cpp vscptcpiplink.h
@@ -134,7 +134,7 @@ dllist.o: ../../../../../common/dllist.c ../../../../../common/dllist.h
 
 install: all
 	mkdir -p $(VSCP_PROJ_BASE_DIR)/drivers/level2
-	$(INSTALL_PROGRAM) vscpl2drv_tcpiplink.so $(VSCP_PROJ_BASE_DIR)/drivers/level2
+	$(INSTALL_PROGRAM) vscpl2drv-tcpiplink.so $(VSCP_PROJ_BASE_DIR)/drivers/level2
 
 uninstall: 
 
@@ -142,8 +142,8 @@ install-strip: install
 
 deb:    all
 	echo "\n" | ./builddist.sh
-	mkdir ../../../../../../dist
-	cp *.deb ../../../../../../dist
+	@mkdir -p ../../../../../../dist
+	@cp *.deb ../../../../../../dist
 
 clean: 
 	rm -rf ./.deps ./.pch
@@ -152,7 +152,7 @@ clean:
 	rm -f ../../../common/*.o
 	rm -f ../../../../common/*.o
 	rm -f ../../../../../common/*.o
-	rm -f vscpl2drv_tcpiplink.so
+	rm -f vscpl2drv-tcpiplink.so
 	rm -f test
 
 distclean: clean

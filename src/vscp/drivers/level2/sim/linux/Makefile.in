@@ -84,17 +84,17 @@ VSCPSIM_OBJECTS = simulation.o\
 
 ### Targets: ###
 
-all: vscpl2drv_sim.so test
+all: vscpl2drv-sim.so test
 
 test:  test.o $(VSCPSIM_OBJECTS)
 	$(CXX) -o $@ test.o $(VSCPSIM_OBJECTS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
 
 # Build the Linux DL
-vscpl2drv_sim.so: $(VSCPSIM_OBJECTS)
+vscpl2drv-sim.so: $(VSCPSIM_OBJECTS)
 	$(CXX) -o $@ $(VSCPSIM_OBJECTS) $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS) 
 
-vscpl2drv_sim.o: vscpl2drv_sim.cpp vscpl2drv_sim.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c vscpl2drv_sim.cpp -o $@
+vscpl2drv/sim.o: vscpl2drv-sim.cpp vscpl2drv-sim.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c vscpl2drv-sim.cpp -o $@
 
 simulation.o: ../common/simulation.cpp ../common/simulation.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../common/simulation.cpp -o $@
@@ -137,7 +137,7 @@ dllist.o: ../../../../../common/dllist.c ../../../../../common/dllist.h
 
 install: all
 	mkdir -p $(VSCP_PROJ_BASE_DIR)/drivers/level2
-	$(INSTALL_PROGRAM) vscpl2drv_sim.so $(VSCP_PROJ_BASE_DIR)/drivers/level2
+	$(INSTALL_PROGRAM) vscpl2drv-sim.so $(VSCP_PROJ_BASE_DIR)/drivers/level2
 
 uninstall: 
 
@@ -155,7 +155,7 @@ clean:
 	rm -f ../../../common/*.o
 	rm -f ../../../../common/*.o
 	rm -f ../../../../../common/*.o
-	rm -f vscpl2drv_sim.so
+	rm -f vscpl2drv-sim.so
 	rm -f test
 
 distclean: clean
