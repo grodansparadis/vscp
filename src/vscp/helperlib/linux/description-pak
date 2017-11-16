@@ -1,3 +1,7 @@
-VSCP helper library
+libvscphelper
 
-Shared library for VSCP & Friends with useful communication routines.
+libvscphelper is a shared library tha provide a lot of functionality for
+building programs that work with or use VSCP 
+
+Copyright (C) 2000-2017 Ake hedman, Grodans Paradis AB, Sweden
+http://www.vscp.org
