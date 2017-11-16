@@ -1,4 +1,4 @@
-vscpl1-can4vscpdrv
+vscpl1drv-can4vscp
 
 This is a Level I driver for VSCP & Friends that handle the CAN4VSCP serial protocol.
 

@@ -1,4 +1,4 @@
-vscpl1-can232drv
+vscpl1drv-can232
 
 This is a Level I driver for VSCP & Friends that handle the Lawicel serial CAN protocol (SLCAN).
 

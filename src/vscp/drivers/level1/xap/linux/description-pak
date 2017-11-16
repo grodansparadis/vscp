@@ -1,4 +1,4 @@
-vscpl1-xapdrv
+vscpl1drv-xap
 
 This is a Level I driver for VSCP & Friends that handle the XAP serial protocol.
 

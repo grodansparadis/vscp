@@ -1,4 +1,4 @@
-vscpl1-socketcandrv
+vscpl1drv-socketcan
 
 This is a Level I driver for VSCP & Friends that handle Socketcan subsystem.
 

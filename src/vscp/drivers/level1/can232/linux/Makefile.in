@@ -69,7 +69,7 @@ DLLPREFIX = lib
 WX_RELEASE = 3.0
 LIBDIRNAME = $(top_wxbuilddir)lib
 
-CAN232DRV_OBJECTS = vscpl1_can232drv.o\
+CAN232DRV_OBJECTS = vscpl1drv-can232.o\
 	can232obj.o\
 	guid.o\
 	dllist.o\
@@ -77,13 +77,13 @@ CAN232DRV_OBJECTS = vscpl1_can232drv.o\
 
 ### Targets: ###
 
-all: vscpl1_can232drv.so test
+all: vscpl1drv-can232.so test
 
 
 test:  test.o $(PROJOBJS)
 	$(CXX) -o $@ test.o $(PROJOBJS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
 
-vscpl1_can232drv.so: $(CAN232DRV_OBJECTS)
+vscpl1drv-can232.so: $(CAN232DRV_OBJECTS)
 	$(CXX) -o $@ $(CAN232DRV_OBJECTS) $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS) 
 
 can232obj.o: can232obj.cpp can232obj.h
@@ -100,7 +100,7 @@ com.o: ../../../../../common/com.cpp ../../../../../common/com.h
 
 install: all
 	mkdir -p $(VSCP_PROJ_BASE_DIR)/drivers/level1
-	$(INSTALL_PROGRAM) vscpl1_can232drv.so $(VSCP_PROJ_BASE_DIR)/drivers/level1
+	$(INSTALL_PROGRAM) vscpl1drv-can232.so $(VSCP_PROJ_BASE_DIR)/drivers/level1
 
 uninstall: 
 
@@ -117,10 +117,12 @@ clean:
 	rm -f ../common/*.o
 	rm -f ../../../../common/*.o
 	rm -f ../../../../../common/*.o
-	rm -f vscpl1_can232drv.so
+	rm -f vscpl1drv-can232.so
 	rm -f test
 	rm -rf ../common/*~
 	rm -rf *~
+	rm -rf *.tgz
+	rm -rf *.deb
 
 distclean: clean
 	rm -f config.cache config.log config.status bk-deps bk-make-pch shared-ld-sh Makefile

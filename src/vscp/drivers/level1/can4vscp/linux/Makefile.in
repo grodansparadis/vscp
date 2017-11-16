@@ -69,7 +69,7 @@ DLLPREFIX = lib
 WX_RELEASE = 3.0
 LIBDIRNAME = $(top_wxbuilddir)lib
 
-CAN4VSCP_OBJECTS = vscpl1_can4vscpdrv.o\
+CAN4VSCP_OBJECTS = vscpl1drv-can4vscp.o\
 	can4vscpobj.o\
 	guid.o\
 	dllist.o\
@@ -78,12 +78,12 @@ CAN4VSCP_OBJECTS = vscpl1_can4vscpdrv.o\
 
 ### Targets: ###
 
-all: vscpl1_can4vscpdrv.so test
+all: vscpl1drv-can4vscp.so test
 
 test:  test.o $(PROJOBJS)
 	$(CXX) -o $@ test.o $(PROJOBJS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
 
-vscpl1_can4vscpdrv.so: $(CAN4VSCP_OBJECTS)
+vscpl1drv-can4vscp.so: $(CAN4VSCP_OBJECTS)
 	$(CXX) -o $@ $(CAN4VSCP_OBJECTS) $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
 
 can4vscpobj.o: ../common/can4vscpobj.cpp ../common/can4vscpobj.h
@@ -103,7 +103,7 @@ com.o: ../../../../../common/com.cpp ../../../../../common/com.h
 	
 install: all
 	mkdir -p $(VSCP_PROJ_BASE_DIR)/drivers/level1
-	$(INSTALL_PROGRAM) vscpl1_can4vscpdrv.so $(VSCP_PROJ_BASE_DIR)/drivers/level1
+	$(INSTALL_PROGRAM) vscpl1drv-can4vscp.so $(VSCP_PROJ_BASE_DIR)/drivers/level1
 
 uninstall:
 
@@ -120,10 +120,12 @@ clean:
 	rm -f ../common/*.o
 	rm -f ../../../../common/*.o
 	rm -f ../../../../../common/*.o
-	rm -f vscpl1drv_can4vscp.so
+	rm -f vscpl1drv-can4vscp.so
 	rm -f test
 	rm -rf ../common/*~
 	rm -rf *~
+	rm -rf *.gz
+	rm -rf *.deb
 
 distclean: clean
 	rm -f config.cache config.log config.status bk-deps bk-make-pch shared-ld-sh Makefile

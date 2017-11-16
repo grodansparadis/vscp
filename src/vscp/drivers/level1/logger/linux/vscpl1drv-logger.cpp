@@ -29,7 +29,7 @@
 // =====
 // device1 = logger,c:\canal_log,txt,d:\winnr\system32\canallogger.dll,64,64,1
 
-#include "vscpl1_loggerdrv.h"
+#include "vscpl1drv-logger.h"
 #include "stdio.h"
 #include "stdlib.h"
 

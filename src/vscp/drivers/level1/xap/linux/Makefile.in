@@ -69,7 +69,7 @@ DLLPREFIX = lib
 WX_RELEASE = 3.0
 LIBDIRNAME = $(top_wxbuilddir)lib
 
-XAPDRV_OBJECTS =  vscpl1_xapdrv.o \
+XAPDRV_OBJECTS =  vscpl1drv-xap.o \
 	xapobj.o \
 	guid.o \
 	dllist.o 
@@ -85,8 +85,8 @@ test:  test.o $(PROJOBJS)
 vscpl1-xapdrv.so: $(XAPDRV_OBJECTS)
 	$(CXX) -o $@ $(XAPDRV_OBJECTS) $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
 	
-vscpl1_xapdrv.o: vscpl1_xapdrv.cpp vscpl1_xapdrv.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c vscpl1_xapdrv.cpp -o $@
+vscpl1drv-xap.o: vscpl1drv-xap.cpp vscpl1drv-xap.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c vscpl1drv-xap.cpp -o $@
 
 xapobj.o: ../common/xapobj.cpp ../common/xapobj.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../common/xapobj.cpp -o $@
@@ -118,6 +118,8 @@ clean:
 	rm -f ../../../../../common/*.o
 	rm -f vscpl1-xapdrv.so
 	rm -f test
+	rm -f *.gz
+	rm -f *.deb
 
 distclean: clean
 	rm -f config.cache config.log config.status bk-deps bk-make-pch shared-ld-sh Makefile

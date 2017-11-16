@@ -1,4 +1,4 @@
-vscpl1-loggerdrv
+vscpl1drv-logger
 
 This is a Level I driver for VSCP & Friends that handle logging of VSCP level I events..
 

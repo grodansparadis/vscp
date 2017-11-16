@@ -11,7 +11,7 @@ BUILD_VERSION=`sed '38!d' ../../../../common/version.h  | cut -b 33-`
 
 #Build debian
 checkinstall --type="debian" \
---pkgname="vscpl1-can4vscpdrv" \
+--pkgname="vscpl1drv-can4vscp" \
 --install=no \
 --pkgversion="$MAJOR_VERSION.$MINOR_VERSION.$RELEASE_VERSION" \
 --pkgrelease="$BUILD_VERSION" \

@@ -69,20 +69,20 @@ DLLPREFIX = lib
 WX_RELEASE = 3.0
 LIBDIRNAME = $(top_wxbuilddir)lib
 
-CANALLOGGER_OBJECTS =  vscpl1_loggerdrv.o\
+CANALLOGGER_OBJECTS =  vscpl1drv-logger.o\
 	log.o\
 	guid.o\
 	dllist.o 
 
 ### Targets: ###
 
-all: vscpl1_loggerdrv.so test
+all: vscpl1drv-logger.so test
 
 
 test:  test.o $(PROJOBJS)
 	$(CXX) -o $@ test.o $(PROJOBJS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
 
-vscpl1_loggerdrv.so: $(CANALLOGGER_OBJECTS)
+vscpl1drv-logger.so: $(CANALLOGGER_OBJECTS)
 	$(CXX) -o $@ $(CANALLOGGER_OBJECTS) $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS) 
 
 log.o: ../common/log.cpp ../common/log.h
@@ -96,7 +96,7 @@ dllist.o: ../../../../../common/dllist.c ../../../../../common/dllist.h
 
 install: all
 	mkdir -p $(VSCP_PROJ_BASE_DIR)/drivers/level1
-	$(INSTALL_PROGRAM) vscpl1_loggerdrv.so $(VSCP_PROJ_BASE_DIR)/drivers/level1
+	$(INSTALL_PROGRAM) vscpl1drv-logger.so $(VSCP_PROJ_BASE_DIR)/drivers/level1
 
 uninstall: 
 
@@ -113,8 +113,10 @@ clean:
 	rm -f ../common/*.o
 	rm -f ../../../../common/*.o
 	rm -f ../../../../../common/*.o
-	rm -f vscpl1_loggerdrv.so
+	rm -f vscpl1drv-logger.so
 	rm -f test
+	rm -f *.gz
+	rm -f *.deb
 
 distclean: clean
 	rm -f config.cache config.log config.status bk-deps bk-make-pch shared-ld-sh Makefile

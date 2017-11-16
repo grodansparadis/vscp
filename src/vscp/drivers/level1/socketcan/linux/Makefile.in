@@ -69,24 +69,24 @@ DLLPREFIX = lib
 WX_RELEASE = 2.8
 LIBDIRNAME = $(top_wxbuilddir)lib
 
-CANALSOCKETCAN_OBJECTS = vscpl1_socketcandrv.o\
+CANALSOCKETCAN_OBJECTS = vscpl1drv-socketcan.o\
 	socketcanobj.o\
 	guid.o\
 	dllist.o 
 
 ### Targets: ###
 
-all: vscpl1_socketcandrv.so test
+all: vscpl1drv-socketcan.so test
 
 
 test:  test.o $(PROJOBJS)
 	$(CXX) -o $@ test.o $(PROJOBJS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
 
-vscpl1_socketcandrv.so: $(CANALSOCKETCAN_OBJECTS)
+vscpl1drv-socketcan.so: $(CANALSOCKETCAN_OBJECTS)
 	$(CXX) -o $@ $(CANALSOCKETCAN_OBJECTS) $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS) 
 
-vscpl1_socketcandrv.o: vscpl1_socketcandrv.cpp vscpl1_socketcandrv.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c vscpl1_socketcandrv.cpp -o $@
+vscpl1drv-socketcan.o: vscpl1drv-socketcan.cpp vscpl1drv-socketcan.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c vscpl1drv-socketcan.cpp -o $@
 
 socketcanobj.o: socketcanobj.cpp socketcanobj.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c socketcanobj.cpp -o $@
@@ -99,7 +99,7 @@ dllist.o: ../../../../../common/dllist.c ../../../../../common/dllist.h
 	
 install: all
 	mkdir -p $(VSCP_PROJ_BASE_DIR)/drivers/level1	
-	$(INSTALL_PROGRAM) vscpl1_socketcandrv.so $(VSCP_PROJ_BASE_DIR)/drivers/level1
+	$(INSTALL_PROGRAM) vscpl1drv-socketcan.so $(VSCP_PROJ_BASE_DIR)/drivers/level1
 
 uninstall: 
 
@@ -116,10 +116,12 @@ clean:
 	rm -f ../common/*.o
 	rm -f ../../../../common/*.o
 	rm -f ../../../../../common/*.o
-	rm -f vscpl1_socketcandrv.so
+	rm -f vscpl1drv-socketcan.so
 	rm -f test
 	rm -rf ../common/*~
 	rm -rf *~
+	rm -f *.gz
+	rm -f *.deb
 
 distclean: clean
 	rm -f config.cache config.log config.status bk-deps bk-make-pch shared-ld-sh Makefile

@@ -19,11 +19,6 @@
 // the Free Software Foundation, 59 Temple Place - Suite 330,
 // Boston, MA 02111-1307, USA.
 //
-// $RCSfile: xapdrv.cpp,v $                                       
-// $Date: 2005/10/03 15:48:04 $                                  
-// $Author: akhe $                                              
-// $Revision: 1.2 $ 
-//
 // Linux
 // =====
 // device1 = xapdrv,/tmp/canal_log,txt,/usr/local/lib/xapdrv.so,64,64,1
@@ -32,7 +27,7 @@
 // =====
 // device1 = logger,c:\canal_log,txt,d:\winnr\system32\canallogger.dll,64,64,1
 
-#include "vscpl1_xapdrv.h"
+#include "vscpl1drv-xap.h"
 #include "stdio.h"
 #include "stdlib.h"
 

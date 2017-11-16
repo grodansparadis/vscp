@@ -23,7 +23,7 @@
 //
 
 
-#include "vscpl1_can4vscpdrv.h"
+#include "vscpl1drv-can4vscp.h"
 #include "stdio.h"
 #include "stdlib.h"
 
