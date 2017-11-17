@@ -646,7 +646,7 @@ vscp_mainpage( struct web_connection *conn, void *cbdata )
     web_printf( conn, WEB_COMMON_MENU );
 
     web_printf( conn, "<span align=\"center\">" );
-    web_printf( conn, "<h4> Welcome to the VSCP daemon control interface.</h4>" );
+    web_printf( conn, "<h4> Welcome to the VSCP server local control interface.</h4>" );
     web_printf( conn, "</span>");
     web_printf( conn, "<span style=\"text-indent:50px;\"><p>" );
     web_printf( conn, "<img src=\"http://vscp.org/images/vscp_logo.png\" width=\"100\">" );

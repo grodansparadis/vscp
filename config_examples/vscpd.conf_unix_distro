@@ -1,13 +1,16 @@
 <?xml version = "1.0" encoding = "UTF-8" ?>
 
 <!--
-  2017-10-22
+  2017-11-17
   Example configuration file Unix
   Ake Hedman, akhe@grodansparadis.com
   http://www.grodansparadis.com
   Documentation for this configuration file is available
-  in the specification section 14.4 which can be found
-  here http://vscp.org/#documentation
+  here http://www.vscp.org/docs/vscpd/doku.php?id=configuring_the_vscp_daemon
+
+  All settings in this configuration file except enteries in the general section,
+  can be done in the configuration database as well. This allows for easier
+  configuration using the built in administration user interface.
 -->
 
 <vscpconfig>
@@ -282,16 +285,37 @@
         <driver enable="false">
             <name>logger</name>
             <config>/tmp/canallog.txt</config>
-            <path>/srv/vscp/drivers/level1/vscpl1_loggerdrv.so</path>
+            <path>/srv/vscp/drivers/level1/vscpl1drv_logger.so</path>
             <flags>1</flags>
             <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
+        </driver>
+
+        <!-- The can4vscp driver -->
+        <driver enable="false" >
+            <name>can4vscp</name>
+            <config>/dev/ttyS0</config>
+            <path>/srv/vscp/drivers/level1/vscpl1drv_can4vscp.so</path>
+            <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
+            <flags>0</flags>
+        </driver>
+
+        <!--
+            The Level I socketcan driver (You may concider using the
+            Level II version instead)
+        -->
+        <driver enable="false" >
+            <name>socketcanl1</name>
+            <config>vcan0</config>
+            <path>/srv/vscp/drivers/level1/vscpl1drv_socketcan.so</path>
+            <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
+            <flags>0</flags>
         </driver>
 
         <!-- The can232 driver -->
         <driver enable="false" >
             <name>can232</name>
             <config>/dev/ttyS0;19200;0;0;125</config>
-            <path>/srv/vscp/drivers/level1/vscpl1_can232drv.so</path>
+            <path>/srv/vscp/drivers/level1/vscpl1drv_can232.so</path>
             <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
             <flags>0</flags>
         </driver>
@@ -300,7 +324,7 @@
         <driver enable="false" >
             <name>xap</name>
             <config>9598;3639</config>
-            <path>/srv/vscp/vscpl1_xapdrv.so</path>
+            <path>/srv/vscp/drivers/level1/vscpl1drv_xap.so</path>
             <flags>0</flags>
             <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
         </driver>
