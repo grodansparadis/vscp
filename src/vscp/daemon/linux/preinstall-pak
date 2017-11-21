@@ -1,31 +1,37 @@
-#!/bin/sh
+#!/bin/bash
 #
 # This script is run before installation of a debian package
 #
 #
 
-# Stop VSCP server (in case of update operation)
-service vscpd stop
+VSCP_PROJ_BASE_DIR="/srv/vscp"
+INSTALL_PROGRAM="/usr/bin/install -c"
 
 # create folder structure
-mkdir -p /srv/.tmp
-mkdir -p /srv/vscp
-mkdir -p /srv/vscp/logs
-mkdir -p /srv/vscp/actions
-mkdir -p /srv/vscp/scriptsmkdir -p /srv/vscp/scripts/javascript
-mkdir -p /srv/vscp/scripts/lua
-mkdir -p /srv/vscp/ux
-mkdir -p /srv/vscp/web
-mkdir -p /srv/vscp/certs
-mkdir -p /srv/vscp/drivers
-mkdir -p /srv/vscp/drivers/level1
-mkdir -p /srv/vscp/drivers/level2
-mkdir -p /srv/vscp/upload
-mkdir -p /srv/vscp/web/css
-mkdir -p /srv/vscp/web/images
-mkdir -p /srv/vscp/web/lib
-mkdir -p /srv/vscp/web/testws
-mkdir -p /srv/vscp/vscp
-mkdir -p /srv/vscp/tables
-mkdir -p /srv/vscp/mdf
+mkdir -p $VSCP_PROJ_BASE_DIR
+mkdir -p $VSCP_PROJ_BASE_DIR/.tmp
+mkdir -p $VSCP_PROJ_BASE_DIR/logs
+mkdir -p $VSCP_PROJ_BASE_DIR/actions
+mkdir -p $VSCP_PROJ_BASE_DIR/scripts
+mkdir -p $VSCP_PROJ_BASE_DIR/scripts/javascript
+mkdir -p $VSCP_PROJ_BASE_DIR/scripts/lua
+mkdir -p $VSCP_PROJ_BASE_DIR/ux
+mkdir -p $VSCP_PROJ_BASE_DIR/web
+mkdir -p $VSCP_PROJ_BASE_DIR/certs
+mkdir -p $VSCP_PROJ_BASE_DIR/drivers
+mkdir -p $VSCP_PROJ_BASE_DIR/drivers/level1
+mkdir -p $VSCP_PROJ_BASE_DIR/drivers/level2
+mkdir -p $VSCP_PROJ_BASE_DIR/upload
+mkdir -p $VSCP_PROJ_BASE_DIR/web/css
+mkdir -p $VSCP_PROJ_BASE_DIR/web/images
+mkdir -p $VSCP_PROJ_BASE_DIR/web/lib
+mkdir -p $VSCP_PROJ_BASE_DIR/web/testws
+mkdir -p $VSCP_PROJ_BASE_DIR/vscp
+mkdir -p $VSCP_PROJ_BASE_DIR/tables
+mkdir -p $VSCP_PROJ_BASE_DIR/mdf
 mkdir -p /etc/vscp
+
+# Stop VSCP server (in case of update operation)
+if [ -e /var/run/vscpd/vscpd.pid ]; then
+   service vscpd stop
+fi

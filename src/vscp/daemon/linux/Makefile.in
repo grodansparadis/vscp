@@ -281,6 +281,18 @@ lua_all.o: ../../../common/lua_all.c
 vscpd: $(VSCPD_OBJECTS)
 	$(CXX) -o $@ $(VSCPD_OBJECTS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
 
+# Used by checkinstall
+debinst: all
+	$(STRIP) vscpd
+	$(INSTALL_PROGRAM) vscpd /usr/bin
+	@$(INSTALL_PROGRAM) ../../../../config_examples/vscpd.startup_script_debian @VSCPDIR@/.tmp
+	@$(INSTALL_PROGRAM) ../../../../config_examples/vscpd.conf_unix_distro @VSCPDIR@/.tmp
+	@$(INSTALL_PROGRAM) ../../../../config_examples/variables.xml_distro @VSCPDIR@/.tmp
+	@$(INSTALL_PROGRAM) ../../../../config_examples/dm.xml_distro @VSCPDIR@/.tmp
+	@$(INSTALL_PROGRAM) ../../../../config_examples/simulation/simtempdata.txt @VSCPDIR@/.tmp
+	@$(INSTALL_PROGRAM) ../../../../config_examples/certs/server.pem @VSCPDIR@/.tmp
+	@$(INSTALL_PROGRAM) ../../../../config_examples/certs/client.pem @VSCPDIR@/.tmp
+
 install: all
 	$(STRIP) vscpd
 	$(INSTALL_PROGRAM) vscpd $(bindir)
@@ -306,55 +318,48 @@ install: all
 	@mkdir -p @VSCPDIR@/tables
 	@mkdir -p @VSCPDIR@/mdf
 	@mkdir -p @VSCPDIR@/.tmp
-	
+
 	# startup script
-	@$(INSTALL_PROGRAM) ../../../../config_examples/vscpd.startup_script_debian @VSCPDIR@/.tmp
 	@if [ ! -e /etc/init.d/vscpd ]; then\
 	    $(INSTALL_PROGRAM) -b -m755 ../../../../config_examples/vscpd.startup_script_debian /etc/init.d/vscpd;\
 	    update-rc.d vscpd defaults;\
 	fi
-	
+
 	# main configuration file
-	@$(INSTALL_PROGRAM) ../../../../config_examples/vscpd.conf_unix_distro /srv/.tmp
 	@mkdir -p /etc/vscp
 	@if [ ! -e /etc/vscp/vscpd.conf ]; then\
 	    $(INSTALL_PROGRAM) -b -m744 ../../../../config_examples/vscpd.conf_unix_distro /etc/vscp/vscpd.conf;\
 	else\
 	    $(INSTALL_PROGRAM) -b -m744 ../../../../config_examples/vscpd.conf_unix_distro /etc/vscp/vscpd.conf.`date +'%Y%m%d'`;\
 	fi
-	
+
 	# Example variables
-	@$(INSTALL_PROGRAM) ../../../../config_examples/variables.xml_distro @VSCPDIR@/.tmp
 	@if [ ! -e @VSCPDIR@/variables.xml ]; then\
 	    $(INSTALL_PROGRAM) -b -m744 ../../../../config_examples/variables.xml_distro @VSCPDIR@/variables.xml;\
 	else\
 	    $(INSTALL_PROGRAM) -b -m744 ../../../../config_examples/variables.xml_distro @VSCPDIR@/variables.xml.`date +'%Y%m%d'`;\
 	fi
-	
+
 	# Example DM
-	@$(INSTALL_PROGRAM) ../../../../config_examples/dm.xml_distro @VSCPDIR@/.tmp
 	@if [ ! -e @VSCPDIR@/dm.xml ]; then\
 	    $(INSTALL_PROGRAM) -b -m744 ../../../../config_examples/dm.xml_distro @VSCPDIR@/dm.xml;\
 	else\
 	    $(INSTALL_PROGRAM) -b -m744 ../../../../config_examples/dm.xml_distro @VSCPDIR@/dm.xml.`date +'%Y%m%d'`;\
 	fi
-	
+
 	# Sample data for simulation
-	@$(INSTALL_PROGRAM) ../../../../config_examples/simulation/simtempdata.txt @VSCPDIR@/.tmp
 	@if [ ! -e @VSCPDIR@/simtempdata.txt ]; then\
 	    $(INSTALL_PROGRAM) -b -m744 ../../../../config_examples/simulation/simtempdata.txt @VSCPDIR@/simtempdata.txt;\
 	else\
 	    $(INSTALL_PROGRAM) -b -m744 ../../../../config_examples/simulation/simtempdata.txt @VSCPDIR@/simtempdata.txt.`date +'%Y%m%d'`;\
 	fi
-	
+
 	# Server sample certificat
-	@$(INSTALL_PROGRAM) ../../../../config_examples/certs/server.pem @VSCPDIR@/.tmp
 	@if [ ! -e @VSCPDIR@/certs/server.pem ]; then\
             $(INSTALL_PROGRAM) -b -m744 ../../../../config_examples/certs/server.pem @VSCPDIR@/certs;\
 	fi
-	
+
 	# Client sample certificat
-	@$(INSTALL_PROGRAM) ../../../../config_examples/certs/client.pem @VSCPDIR@/.tmp
 	@if [ ! -e @VSCPDIR@/certs/client.pem ]; then\
 	    $(INSTALL_PROGRAM) -b -m744 ../../../../config_examples/certs/client.pem @VSCPDIR@/certs;\
 	fi

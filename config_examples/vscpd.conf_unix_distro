@@ -10,7 +10,8 @@
 
   All settings in this configuration file except enteries in the general section,
   can be done in the configuration database as well. This allows for easier
-  configuration using the built in administration user interface.
+  configuration using the built in administration user interface
+  (http(s)://localhost:port/vscp).
 -->
 
 <vscpconfig>
@@ -199,30 +200,72 @@
     />
 
     <!--
-      Enable disable the webserver interface.
-      Set the port to use for the webserver interface
-      default is 8080.
+      Settings for the internal webserver.
+
+      Documented here
+      http://www.vscp.org/docs/vscpd/doku.php?id=configuring_the_vscp_daemon#webserver
     -->
-    <webserver webrootpath="/srv/vscp/web"
-                port="tcp://8080"
-                path_cert=""
-                authdomain="mydomain.com"
-                cgi_interpreter=""
-                cgi_pattern=""
-                enable_directory_listing="true"
-                hilde_file_patterns=""
-                index_files="index.html,index.htm,index.cgi,index.shtml,index.php"
-                extra_mime_types=""
-                url_rewrites=""
-                run_as_user="" >
 
-        <!--
-          Enable disable the websocket interface.
-          Id auth is set to false not authentication will be done
-        -->
-        <websockets auth="true" />
+    <webserver enable="true"
+        document_root="/srv/vscp/www"
+        listening_ports="[::]:8888r,[::]:8843s,8884"
+        index_files="index.xhtml,index.html,index.htm,index.lp,index.lsp,index.lua,index.cgi,index.shtml,index.php"
+        authentication_domain="mydomain.com"
+        enable_auth_domain_check="false"
+        ssl_certificate="/srv/vscp/serts/server.pem"
+        ssl_certificate_chain=""
+        ssl_verify_peer="false"
+        ssl_ca_path=""
+        ssl_ca_file=""
+        ssl_verify_depth="9"
+        ssl_default_verify_paths="true"
+        ssl_cipher_list="DES-CBC3-SHA:AES128-SHA:AES128-GCM-SHA256"
+        ssl_protocol_version="3"
+        ssl_short_trust="false"
+        cgi_interpreter=""
+        cgi_patterns="**.cgi$|**.pl$|**.php|**.py"
+        cgi_environment=""
+        protect_uri=""
+        trottle=""
+        enable_directory_listing="true"
+        enable_keep_alive="false"
+        keep_alive_timeout_ms="0"
+        access_control_list=""
+        extra_mime_types=""
+        num_threads="50"
+        run_as_user=""
+        url_rewrite_patterns=""
+        hilde_file_patterns=""
+        request_timeout_ms="10000"
+        linger_timeout_ms=""
+        decode_url="true"
+        global_auth_file=""
+        per_directory_auth_file=""
+        ssi_patterns=""
+        access_control_allow_origin="*"
+        access_control_allow_methods="*"
+        access_control_allow_headers="*"
+        error_pages=""
+        tcp_nodelay="0"
+        static_file_max_age="3600"
+        strict_transport_security_max_age=""
+        allow_sendfile_call="true"
+        additional_header=""
+        max_request_size="16384"
+        allow_index_script_resource="false"
+        duktape_script_patterns="**.ssjs$"
+        lua_preload_file=""
+        lua_script_patterns="**.lua$"
+        lua_server_page_patterns="**.lp$|**.lsp$"
+        lua_websocket_patterns="**.lua$"
+        lua_background_script=""
+        lua_background_script_params="" />
 
-    </webserver>
+    <!--
+      Enable disable the websocket interface.
+      Id auth is set to false not authentication will be done
+    -->
+    <websockets enable="true" />
 
     <!--
         MQTT Broker interface
