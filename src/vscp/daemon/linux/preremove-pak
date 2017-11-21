@@ -1,0 +1,10 @@
+#!/bin/sh
+#
+# This script is run before the removal of a debian package
+#
+#
+
+#Shutdown the vscpd server
+service vscpd stop
+
+

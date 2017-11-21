@@ -1,0 +1,5 @@
+#!/bin/sh
+#
+# This script is run after removal of a debian package
+#
+#

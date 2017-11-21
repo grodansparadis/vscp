@@ -1,0 +1,31 @@
+#!/bin/sh
+#
+# This script is run before installation of a debian package
+#
+#
+
+# Stop VSCP server (in case of update operation)
+service vscpd stop
+
+# create folder structure
+mkdir -p /srv/.tmp
+mkdir -p /srv/vscp
+mkdir -p /srv/vscp/logs
+mkdir -p /srv/vscp/actions
+mkdir -p /srv/vscp/scriptsmkdir -p /srv/vscp/scripts/javascript
+mkdir -p /srv/vscp/scripts/lua
+mkdir -p /srv/vscp/ux
+mkdir -p /srv/vscp/web
+mkdir -p /srv/vscp/certs
+mkdir -p /srv/vscp/drivers
+mkdir -p /srv/vscp/drivers/level1
+mkdir -p /srv/vscp/drivers/level2
+mkdir -p /srv/vscp/upload
+mkdir -p /srv/vscp/web/css
+mkdir -p /srv/vscp/web/images
+mkdir -p /srv/vscp/web/lib
+mkdir -p /srv/vscp/web/testws
+mkdir -p /srv/vscp/vscp
+mkdir -p /srv/vscp/tables
+mkdir -p /srv/vscp/mdf
+mkdir -p /etc/vscp
