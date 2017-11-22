@@ -285,7 +285,7 @@ vscpd: $(VSCPD_OBJECTS)
 debinst: all
 	$(STRIP) vscpd
 	$(INSTALL_PROGRAM) vscpd /usr/bin
-	@$(INSTALL_PROGRAM) ../../../../config_examples/vscpd.startup_script_debian @VSCPDIR@/.tmp
+	@$(INSTALL_PROGRAM) ../../../../config_examples/vscpd.startup_script_debian_debinst @VSCPDIR@/.tmp
 	@$(INSTALL_PROGRAM) ../../../../config_examples/vscpd.conf_unix_distro @VSCPDIR@/.tmp
 	@$(INSTALL_PROGRAM) ../../../../config_examples/variables.xml_distro @VSCPDIR@/.tmp
 	@$(INSTALL_PROGRAM) ../../../../config_examples/dm.xml_distro @VSCPDIR@/.tmp

@@ -108,7 +108,7 @@ int main( int argc, char **argv )
     wxString rootFolder;    // Folder where VSCP files & folders will be located
     wxString strcfgfile;    // Points to XML configuration file
 
-    fprintf( stderr, "Prepare to start vscpd" );
+    fprintf( stderr, "Prepare to start vscpd...\n" );
     // Ignore return value from defunct processes
     signal( SIGCHLD, SIG_IGN );
 

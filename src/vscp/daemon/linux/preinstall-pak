@@ -7,6 +7,11 @@
 VSCP_PROJ_BASE_DIR="/srv/vscp"
 INSTALL_PROGRAM="/usr/bin/install -c"
 
+# Stop VSCP server (in case of update operation)
+if [ -e /var/run/vscpd/vscpd.pid ]; then
+   /etc/init.d/vscpd stop
+fi
+
 # create folder structure
 mkdir -p $VSCP_PROJ_BASE_DIR
 mkdir -p $VSCP_PROJ_BASE_DIR/.tmp
@@ -30,8 +35,3 @@ mkdir -p $VSCP_PROJ_BASE_DIR/vscp
 mkdir -p $VSCP_PROJ_BASE_DIR/tables
 mkdir -p $VSCP_PROJ_BASE_DIR/mdf
 mkdir -p /etc/vscp
-
-# Stop VSCP server (in case of update operation)
-if [ -e /var/run/vscpd/vscpd.pid ]; then
-   service vscpd stop
-fi

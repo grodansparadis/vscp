@@ -5,4 +5,4 @@
 #
 
 #Shutdown the vscpd server
-service vscpd stop
+/etc/init.d/vscpd stop
