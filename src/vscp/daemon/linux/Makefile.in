@@ -285,13 +285,15 @@ vscpd: $(VSCPD_OBJECTS)
 debinst: all
 	$(STRIP) vscpd
 	$(INSTALL_PROGRAM) vscpd /usr/bin
-	@cp ../../../../config_examples/vscpd.startup_script_debian_debinst @VSCPDIR@/tmp
-	@cp ../../../../config_examples/vscpd.conf_unix_distro @VSCPDIR@/tmp
-	@cp ../../../../config_examples/variables.xml_distro @VSCPDIR@/tmp
-	@cp ../../../../config_examples/dm.xml_distro @VSCPDIR@/tmp
-	@cp ../../../../config_examples/simulation/simtempdata.txt @VSCPDIR@/tmp
-	@cp ../../../../config_examples/certs/server.pem @VSCPDIR@/tmp
-	@cp ../../../../config_examples/certs/client.pem @VSCPDIR@/tmp
+	@mkdir -p @VSCPDIR@
+	@mkdir -p @VSCPDIR@/tmp
+	@$(INSTALL_PROGRAM) -b ../../../../config_examples/vscpd.startup_script_debian_debinst @VSCPDIR@/tmp/vscpd.startup_script_debian_debinst
+	@$(INSTALL_PROGRAM) -b ../../../../config_examples/vscpd.conf_unix_distro @VSCPDIR@/tmp/vscpd.conf_unix_distro
+	@$(INSTALL_PROGRAM) -b ../../../../config_examples/variables.xml_distro @VSCPDIR@/tmp/variables.xml_distro
+	@$(INSTALL_PROGRAM) -b ../../../../config_examples/dm.xml_distro @VSCPDIR@/tmp/dm.xml_distro
+	@$(INSTALL_PROGRAM) -b ../../../../config_examples/simulation/simtempdata.txt @VSCPDIR@/tmp/simtempdata.txt
+	@$(INSTALL_PROGRAM) -b ../../../../config_examples/certs/server.pem @VSCPDIR@/tmp/server.pem
+	@$(INSTALL_PROGRAM) -b ../../../../config_examples/certs/client.pem @VSCPDIR@/tmp/client.pem
 
 install: all
 	$(STRIP) vscpd
@@ -371,7 +373,7 @@ install-strip: install
 deb:    all
 	echo "\n" | ./builddist.sh
 	@mkdir -p ../../../../dist
-	@cp *.deb ../../../../dist
+	@mv *.deb ../../../../dist
 
 clean:
 	rm -rf ./.deps ./.pch

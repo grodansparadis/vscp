@@ -37,15 +37,15 @@ BUILD_VERSION = `sed '38!d' ../../common/version.h  | cut -b 33-
 WARNINGS_HARD = -Werror -Wall -Wextra -pedantic -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self -Wlogical-op -Wmissing-include-dirs -Wnoexcept -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-promo -Wstrict-null-sentinel -Wstrict-overflow=5 -Wundef -Wno-unused -Wno-variadic-macros -Wno-parentheses -fdiagnostics-show-option
 WARNINGS_MEDIUM = -Wformat-security -Wformat=2
 
-MONGOOSE_CFLAGS = -DMG_ENABLE_THREADS -DMG_ENABLE_IPV6 -DMG_ENABLE_SSL  -DMG_ENABLE_GETADDRINFO 
-CFLAGS = -std=c99 @CFLAGS@ @WXGTK_CFLAGS@ -DCBC -I../common -I../../common 
+MONGOOSE_CFLAGS = -DMG_ENABLE_THREADS -DMG_ENABLE_IPV6 -DMG_ENABLE_SSL  -DMG_ENABLE_GETADDRINFO
+CFLAGS = -std=c99 @CFLAGS@ @WXGTK_CFLAGS@ -DCBC -I../common -I../../common
 
-CXXFLAGS = @CXXFLAGS@ @WXGTK_CXXFLAGS@ 
+CXXFLAGS = @CXXFLAGS@ @WXGTK_CXXFLAGS@
 CPPFLAGS = @CPPFLAGS@ @WXGTK_CPPFLAGS@ -DwxUSE_GUI=1 $(MONGOOSE_CFLAGS) -I. -I../common -I../../common
 LDFLAGS = @LDFLAGS@
 LDFLAGS = @LDFLAGS@
 
-EXTRALIBS = @EXTRALIBS@ 
+EXTRALIBS = @EXTRALIBS@
 ifeq ($(STATIC),yes)
 EXTRALIBS += @WXGTK_STATIC_LIBS@
 else
@@ -67,12 +67,12 @@ DLLPREFIX = lib
 
 ### Variables: ###
 
-DESTDIR = 
+DESTDIR =
 WX_RELEASE = 3.0
 LIBDIRNAME = $(top_wxbuilddir)lib
 
 VSCPWORKS_OBJECTS =  vscpworks.o \
-        dlgvscpmsg.o \
+    dlgvscpmsg.o \
 	frmmain.o \
 	frmvscpsession.o \
 	dlgnewvscpsession.o \
@@ -214,25 +214,25 @@ frmdaemonvariableeditor.o: frmdaemonvariableeditor.cpp frmdaemonvariableeditor.h
 
 frmsimpleuserinterfacegenerator.o: frmsimpleuserinterfacegenerator.cpp frmsimpleuserinterfacegenerator.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c frmsimpleuserinterfacegenerator.cpp -o $@
-	
+
 dlgclasstypeselect.o: dlgclasstypeselect.cpp dlgclasstypeselect.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c dlgclasstypeselect.cpp -o $@
-	
+
 threadvscpwork.o: threadvscpwork.cpp threadvscpwork.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c threadvscpwork.cpp -o $@
-	
+
 dlgsetmanufactdata.o: dlgsetmanufactdata.cpp dlgsetmanufactdata.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c dlgsetmanufactdata.cpp -o $@
 
 vscphelper.o: ../common/vscphelper.cpp ../common/vscphelper.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../common/vscphelper.cpp -o $@
-	
+
 vscpeventhelper.o: ../common/vscpeventhelper.cpp ../common/vscpeventhelper.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../common/vscpeventhelper.cpp -o $@	
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../common/vscpeventhelper.cpp -o $@
 
 vscpremotetcpif.o: ../common/vscpremotetcpif.cpp ../common/vscpremotetcpif.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../common/vscpremotetcpif.cpp -o $@
-	
+
 knownnodes.o: ../common/knownnodes.cpp ../common/knownnodes.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../common/knownnodes.cpp -o $@
 
@@ -246,7 +246,7 @@ dllwrapper.o: ../common/dllwrapper.cpp ../common/dllwrapper.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../common/dllwrapper.cpp -o $@
 
 canalsuperwrapper.o: ../common/canalsuperwrapper.cpp ../common/canalsuperwrapper.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../common/canalsuperwrapper.cpp -o $@	
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../common/canalsuperwrapper.cpp -o $@
 
 devicelist.o: ../common/devicelist.cpp ../common/devicelist.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../common/devicelist.cpp -o $@
@@ -259,7 +259,7 @@ mdf.o: ../common/mdf.cpp ../common/mdf.h
 
 register.o: ../common/register.cpp ../common/register.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../common/register.cpp -o $@
-	
+
 dllist.o: ../../common/dllist.c ../../common/dllist.h
 	$(CC) $(CFLAGS) -c ../../common/dllist.c  -o $@
 
@@ -268,7 +268,7 @@ vscp_aes.o: ../../common/vscp_aes.c ../../common/vscp_aes.h
 
 vscpbase64.o: ../../common/vscpbase64.c ../../common/vscpbase64.h
 	$(CC) $(CFLAGS) -c ../../common/vscpbase64.c -o $@
-	
+
 crc.o: ../../common/crc.c ../../common/crc.h
 	$(CC) $(CFLAGS) -c ../../common/crc.c -o $@
 
@@ -285,12 +285,12 @@ fastpbkdf2.o: ../../common/fastpbkdf2.c ../../common/fastpbkdf2.h
 	$(CC) $(CFLAGS) -c ../../common/fastpbkdf2.c -o $@
 
 vscpmd5.o: ../../common/vscpmd5.c ../../common/vscpmd5.h
-	$(CC) $(CFLAGS) -c ../../common/vscpmd5.c -o $@	
+	$(CC) $(CFLAGS) -c ../../common/vscpmd5.c -o $@
 
 vscpworks: $(VSCPWORKS_OBJECTS)
-	$(CXX) -o $@ $(VSCPWORKS_OBJECTS) $(LDFLAGS) -L$(LIBDIRNAME) $(EXTRALIBS)	
+	$(CXX) -o $@ $(VSCPWORKS_OBJECTS) $(LDFLAGS) -L$(LIBDIRNAME) $(EXTRALIBS)
 
-uninstall: 
+uninstall:
 
 install-strip: install
 
@@ -299,7 +299,7 @@ deb:    all
 	@mkdir -p ../../../dist
 	@cp *.deb ../../../dist
 
-clean: 
+clean:
 	rm -rf ./.deps ./.pch
 	rm -f ./*.o
 	rm -f ../common/*.o
@@ -312,13 +312,12 @@ distclean: clean
 	rm -f config.cache config.log config.status bk-deps bk-make-pch shared-ld-sh Makefile
 
 
-	
+
 $(ALWAYS_BUILD):  .FORCE
 
-.FORCE: 
+.FORCE:
 
 # Include dependency info, if present:
 -include .deps/*.d
 
 .PHONY: all install uninstall clean distclean data .FORCE
-

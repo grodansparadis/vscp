@@ -24,7 +24,9 @@ checkinstall --type="debian" \
 --gzman=yes \
 --pkgsource="https://github.com/grodansparadis/vscp" \
 --maintainer="akhe@grodansparadis.com" \
---requires="libwxbase3.0-0 \(\>=3\) \| libwxgtk3.0-0 \(\>=3\), libssl1.0.0 \| libssl1.0.1\| libssl1.0.2" \
+--backup=no \
+--requires="libwxbase3.0-0 \(\>=3\) \| libwxbase3.1-0 \(\>=3\) \| libwxgtk3.0-0 \
+\(\>=3\) \| libwxgtk3.0-0 \(\>=3\), libssl1.0.0 \| libssl1.0.1\| libssl1.0.2" \
 make debinst
 
 #build rpm
