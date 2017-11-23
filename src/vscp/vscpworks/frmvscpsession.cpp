@@ -951,7 +951,7 @@ void frmVSCPSession::CreateControls()
     m_BtnActivateInterface = new wxToggleButton;
     m_BtnActivateInterface->Create( itemToolBar2, 
                                         ID_TOGGLEBUTTON_CONNECTION_ACTIVATE, 
-                                        _("Connected"), 
+                                        _("Connected     "), 
                                         wxDefaultPosition, 
                                         wxSize(-1, -1), 
                                         0 );
