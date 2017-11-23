@@ -4,5 +4,7 @@
 #
 #
 
-#Shutdown the vscpd server
-/etc/init.d/vscpd stop
+# Shutdown the vscpd server
+if [ -e /var/run/vscpd/vscpd.pid ]; then
+   /etc/init.d/vscpd stop
+fi

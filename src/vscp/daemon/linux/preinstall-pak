@@ -14,7 +14,7 @@ fi
 
 # create folder structure
 mkdir -p $VSCP_PROJ_BASE_DIR
-mkdir -p $VSCP_PROJ_BASE_DIR/.tmp
+mkdir -p $VSCP_PROJ_BASE_DIR/tmp
 mkdir -p $VSCP_PROJ_BASE_DIR/logs
 mkdir -p $VSCP_PROJ_BASE_DIR/actions
 mkdir -p $VSCP_PROJ_BASE_DIR/scripts
