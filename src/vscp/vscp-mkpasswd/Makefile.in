@@ -38,13 +38,13 @@ RELEASE_VERSION = `sed '37!d' ../../common/version.h  | cut -b 33-`
 BUILD_VERSION = `sed '38!d' ../../common/version.h  | cut -b 33-
 
 MONGOOSE_CFLAGS = -DMG_ENABLE_THREADS -DMG_ENABLE_IPV6 -DMG_ENABLE_SSL -DMG_ENABLE_HTTP_CGI -DMG_ENABLE_HTTP_SSI -DMG_ENABLE_HTTP_SSI_EXEC -DMG_ENABLE_HTTP_WEBDAV -DMG_ENABLE_GETADDRINFO -DMG_ENABLE_HTTP_URL_REWRITES
-CFLAGS = -std=c99 @CFLAGS@ @WXBASE_CFLAGS@ -DCBC -I../common -I../../common  
+CFLAGS = -std=c99 @CFLAGS@ @WXBASE_CFLAGS@ -DCBC -I../common -I../../common
 CXXFLAGS = @CXXFLAGS@ @WXBASE_CXXFLAGS@
-CPPFLAGS = @CPPFLAGS@ @WXBASE_CPPFLAGS@ -fno-var-tracking-assignments -I../common -I../../common 
+CPPFLAGS = @CPPFLAGS@ @WXBASE_CPPFLAGS@ -fno-var-tracking-assignments -I../common -I../../common
 CPPFLAGS += $(MONGOOSE_CFLAGS)
 
 LDFLAGS = @LDFLAGS@
-EXTRALIBS = @EXTRALIBS@ 
+EXTRALIBS = @EXTRALIBS@
 ifeq ($(STATIC),yes)
 EXTRALIBS += @WXBASE_STATIC_LIBS@
 else
@@ -98,7 +98,7 @@ vscp_aes.o: ../../common/vscp_aes.c ../../common/vscp_aes.h
 
 vscpbase64.o: ../../common/vscpbase64.c ../../common/vscpbase64.h
 	$(CC) $(CFLAGS) -c ../../common/vscpbase64.c -o $@
-	
+
 crc.o: ../../common/crc.c ../../common/crc.h
 	$(CC) $(CFLAGS) -c ../../common/crc.c -o $@
 
@@ -109,10 +109,10 @@ fastpbkdf2.o: ../../common/fastpbkdf2.c ../../common/fastpbkdf2.h
 	$(CC) $(CFLAGS) -c ../../common/fastpbkdf2.c -o $@
 
 vscpmd5.o: ../../common/vscpmd5.c ../../common/vscpmd5.h
-	$(CC) $(CFLAGS) -c ../../common/vscpmd5.c -o $@	
+	$(CC) $(CFLAGS) -c ../../common/vscpmd5.c -o $@
 
 vscp-mkpasswd: $(MKPASSWD_OBJECTS)
-	$(CXX) -o $@ $(MKPASSWD_OBJECTS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)	
+	$(CXX) -o $@ $(MKPASSWD_OBJECTS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
 
 install: all
 	$(STRIP)  vscp-mkpasswd
@@ -125,7 +125,7 @@ install-strip: install
 deb:    all
 	echo "\n" | ./builddist.sh
 	@mkdir -p ../../../dist
-	@cp *.deb ../../../dist
+	@mv *.deb ../../../dist
 
 clean:
 	rm -rf ./.deps ./.pch

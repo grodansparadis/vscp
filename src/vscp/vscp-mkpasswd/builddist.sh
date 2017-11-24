@@ -21,9 +21,11 @@ checkinstall --type="debian" \
 --stripso=yes \
 --addso=yes \
 --gzman=yes \
+--backup=no \
 --pkgsource="https://github.com/grodansparadis/vscp" \
 --maintainer="akhe@grodansparadis.com" \
---requires="libwxbase3.0-dev \(\>=3.0.0\) \| libwxgtk3.0-dev \(\>=3.0.0\) ,libssl-dev"
+--requires="libwxbase3.0-0 \(\>=3\) \| libwxbase3.1-0 \(\>=3\) \| libwxgtk3.0-0 \
+\(\>=3\) \| libwxgtk3.0-0 \(\>=3\), libssl1.0.0 \| libssl1.0.1\| libssl1.0.2" \
 
 #build rpm
 #checkinstall --type="rpm" --pkgname="vscpd" --pkgversion="$MAJOR_VERSION.$MINOR_VERSION.$RELEASE_VERSION" --pkgrelease="1" --pkglicense="MIT" --pkggroup="developer" --pkgsource="https://github.com/grodansparadis/vscp" --maintainer="akhe@grodansparadis.com" --requires="libwxbase3.0-dev \(\>=3.0.0\) ,libssl-dev"

@@ -22,6 +22,7 @@ checkinstall --type="debian" \
 --stripso=yes \
 --addso=yes \
 --gzman=yes \
+--backup=no \
 --pkgsource="https://github.com/grodansparadis/vscp" \
 --maintainer="akhe@grodansparadis.com" \
 --requires="libwxgtk3.0-0 \(\>=3.0\) \| libwxgtk3.1-0 \(\>=3.1\), libssl1.0.0 \| libssl1.0.1\| libssl1.0.2"

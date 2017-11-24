@@ -43,7 +43,7 @@ CPPFLAGS = -shared -fPIC @CPPFLAGS@ @WXBASE_CPPFLAGS@ -fno-var-tracking-assignme
 CPPFLAGS += $(MONGOOSE_CFLAGS)
 
 LDFLAGS = @LDFLAGS@
-EXTRALIBS = @EXTRALIBS@ 
+EXTRALIBS = @EXTRALIBS@
 ifeq ($(STATIC),yes)
 EXTRALIBS += @WXBASE_STATIC_LIBS@
 else
@@ -91,7 +91,7 @@ VSCPHELPER_OBJECTS =  libvscphelper.o \
 ### Targets: ###
 
 all: libvscphelper.so test lib
-	
+
 lib:	libvscphelper.so
 	ar rcs libvscphelper.a libvscphelper.o
 
@@ -100,11 +100,11 @@ test:	test.o $(PROJOBJS)
 
 # Build the Linux DL
 libvscphelper.so: $(VSCPHELPER_OBJECTS)
-	$(CXX) -o $@ $(VSCPHELPER_OBJECTS) $(DLFLAGS) -L$(LIBDIRNAME) $(EXTRALIBS) 	
+	$(CXX) -o $@ $(VSCPHELPER_OBJECTS) $(DLFLAGS) -L$(LIBDIRNAME) $(EXTRALIBS)
 
 libvscphelper.o: libvscphelper.cpp libvscphelper.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c libvscphelper.cpp -o $@
-	
+
 vscphelperlib.o: ../vscphelperlib.cpp ../vscphelperlib.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../vscphelperlib.cpp -o $@
 
@@ -115,20 +115,20 @@ vscphelper.o: ../../common/vscphelper.cpp ../../common/vscphelper.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/vscphelper.cpp -o $@
 
 guid.o: ../../common/guid.cpp ../../common/guid.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/guid.cpp -o $@	
-	
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/guid.cpp -o $@
+
 vscp_aes.o: ../../../common/vscp_aes.c ../../../common/vscp_aes.h
 	$(CC) $(CFLAGS) -c ../../../common/vscp_aes.c -o $@
 
 crc.o: ../../../common/crc.c ../../../common/crc.h
 	$(CC) $(CFLAGS) -c ../../../common/crc.c -o $@
-	
+
 crc8.o: ../../../common/crc8.c ../../../common/crc8.h
-	$(CC) $(CFLAGS) -c ../../../common/crc8.c -o $@		
+	$(CC) $(CFLAGS) -c ../../../common/crc8.c -o $@
 
 vscpbase64.o: ../../../common/vscpbase64.c ../../../common/vscpbase64.h
 	$(CC) $(CFLAGS) -c ../../../common/vscpbase64.c -o $@
-	
+
 mongoose.o: ../../../common/mongoose.c ../../../common/mongoose.h
 	$(CC) $(CFLAGS) $(MONGOOSE_CFLAGS) -c ../../../common/mongoose.c -o $@
 
@@ -136,7 +136,7 @@ fastpbkdf2.o: ../../../common/fastpbkdf2.c ../../../common/fastpbkdf2.h
 	$(CC) $(CFLAGS) -c ../../../common/fastpbkdf2.c -o $@
 
 vscpmd5.o: ../../../common/vscpmd5.c ../../../common/vscpmd5.h
-	$(CC) $(CFLAGS) -c ../../../common/vscpmd5.c -o $@	
+	$(CC) $(CFLAGS) -c ../../../common/vscpmd5.c -o $@
 
 install: all
 	$(STRIP) libvscphelper.so
@@ -148,16 +148,16 @@ install: all
 	$(INSTALL_PROGRAM) ../vscphelperlib.h $(includedir)
 	ar rcs libvscphelper.a libvscphelper.o
 
-uninstall: 
+uninstall:
 
 install-strip: install
 
 deb:    all
 	echo "\n" | ./builddist.sh
 	@mkdir -p ../../../../dist
-	@cp *.deb ../../../../dist
+	@mv *.deb ../../../../dist
 
-clean: 
+clean:
 	rm -rf ./.deps ./.pch
 	rm -f ./*.o
 	rm -f ./*.a
@@ -173,12 +173,9 @@ distclean: clean
 
 $(ALWAYS_BUILD):  .FORCE
 
-.FORCE: 
+.FORCE:
 
 # Include dependency info, if present:
 -include .deps/*.d
 
 .PHONY: all install uninstall clean distclean data .FORCE
-
-
-
