@@ -13,6 +13,7 @@ LIB_PLUS_VER="libvscphelper.so.$MAJOR_VERSION.$MINOR_VERSION.$RELEASE_VERSION"
 #Build debian
 checkinstall --type="debian" \
 --pkgname="vscp-mkpasswd" \
+--install=no \
 --pkgversion="$MAJOR_VERSION.$MINOR_VERSION.$RELEASE_VERSION" \
 --pkgrelease="$BUILD_VERSION" \
 --pkglicense="GPL2" \
