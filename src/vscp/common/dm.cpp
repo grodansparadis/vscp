@@ -6233,7 +6233,7 @@ bool CDM::loadFromXML( void )
                     pDMitem->m_bCheckIndex = true;
                                            
                     // Attribute checkmeasurementindex
-                    str = subchild->GetAttribute( wxT( "checkmeasurementindex" ), wxT("false") );
+                    str = subchild->GetAttribute( wxT( "checkmeasurement" ), wxT("false") );
                     str.MakeUpper();
                     if ( wxNOT_FOUND != str.Find(_("TRUE"))) {
                         pDMitem->m_bCheckMeasurementIndex = true;
