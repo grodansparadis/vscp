@@ -6229,22 +6229,26 @@ bool CDM::loadFromXML( void )
                 else if ( subchild->GetName() == wxT ( "index" ) ) {
                     
                     wxString str;
-                   
-                    // Attribute bindex
-                    str = subchild->GetAttribute( wxT( "bcheckindex" ), wxT("false") );
-                    str.MakeUpper();
-                    if ( wxNOT_FOUND != str.Find(_("TRUE"))) {
-                         pDMitem->m_bCheckIndex = true;
-                    }
-                   
-                    // Attribute bcheckmeasurementindex
-                    str = subchild->GetAttribute( wxT( "bcheckmeasurementindex" ), wxT("false") );
+                    
+                    pDMitem->m_bCheckIndex = true;
+                                           
+                    // Attribute checkmeasurementindex
+                    str = subchild->GetAttribute( wxT( "checkmeasurementindex" ), wxT("false") );
                     str.MakeUpper();
                     if ( wxNOT_FOUND != str.Find(_("TRUE"))) {
                         pDMitem->m_bCheckMeasurementIndex = true;
+                        pDMitem->m_bCheckIndex = false;
+                        pDMitem->m_index = 0;
                     }
                     
-                    pDMitem->m_index = vscp_readStringValue( subchild->GetNodeContent() );
+                    if ( pDMitem->m_bCheckMeasurementIndex ) {
+                        pDMitem->m_measurementIndex = 
+                                vscp_readStringValue( subchild->GetNodeContent() );
+                    }
+                    else {
+                        pDMitem->m_index = 
+                                vscp_readStringValue( subchild->GetNodeContent() );                        
+                    }
                     
                 }
                 else if ( subchild->GetName() == wxT ( "zone" ) ) {
