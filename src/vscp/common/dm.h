@@ -459,9 +459,11 @@ public:
         Just executes the external action script. The parameter
         is action dependent.
         @param pDMEvent Event that triggered the action
+        @param bCheckExecutable Check if target is an existing file and
+                that it is marked as executable.
         @returns true if all went well.
     */
-    bool doActionExecute( vscpEvent *pDMEvent );
+    bool doActionExecute( vscpEvent *pDMEvent, bool bCheckExecutable = true );
 
     /*!
         Timed exeute the external action script.
@@ -624,9 +626,6 @@ public:
     /// Index should be masked so only the LSB tree bits are checked
     bool m_bCheckMeasurementIndex;
     
-    /// If measurement index should be checked this is the one
-    uint8_t m_measurementIndex;
-
     /// True if zone should be checked
     bool m_bCheckZone;
     

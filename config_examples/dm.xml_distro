@@ -1,67 +1,136 @@
 <?xml version = "1.0" encoding = "UTF-8" ?>
 
 <dm>
-  <row enable="true" groupid="" >
-    <mask  priority="0"  class="65535"  type="65535"  GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:FF" > </mask>
-    <filter  priority="0"  class="10"  type="6"  GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:01" > </filter>
-    <control>0x0</control>
+    
+  <row enable="false" groupid="" >
+    
+    <comment>
+        Log measurements to mysql database
+    </comment>
+        
+    <mask  priority="0"  
+             class="65535"  
+             type="65535"  
+             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:FF" />
+      
+    <filter  priority="0"  
+             class="10"  
+             type="6"  
+             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:01" />    
+    
     <action>0x10</action>
-    <param>C:\mysql-5.6.21-winx64\bin\mysql.exe -uyour-username -pyour-password -hyour-mysql-server your-database -e"INSERT INTO temperature(GUID,SensorIndex,Date,Value) VALUES ('%event.guid',%measurement.index,'%isodate  %isotime', %measurement.float );"</param>
-    <comment></comment>
+    <param>
+        /usr/bin/mysql -uyour-username -pyour-password -hyour-mysql-server your-database -e"INSERT INTO temperature(GUID,SensorIndex,Date,Value) VALUES ('%event.guid',%measurement.index,'%isodate  %isotime', %measurement.float );"
+    </param>
+    
     <allowed_from>0000-01-01 00:00:00</allowed_from>
     <allowed_to>9999-12-31 23:59:59</allowed_to>
     <allowed_weekdays>mtwtfss</allowed_weekdays>
     <allowed_time>*-*-* *:*:*</allowed_time>
-    <index  bMeasurement="true"  > 1</index>
+    
+    <index measurementindex="true">1</index>
     <zone>0</zone>
     <subzone>0</subzone>
+    
   </row>
 
-  <row enable="true" groupid="" >
-    <mask  priority="0"  class="65535"  type="65535"  GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:FF" > </mask>
-    <filter  priority="0"  class="10"  type="6"  GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:01" > </filter>
-    <control>0x20</control>
+
+
+
+  <row enable="false" groupid="" >
+    
+    <comment>
+        Store measurements in table
+    </comment>
+        
+    <mask  priority="0"  
+           class="65535"  
+           type="65535"  
+           GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:FF" /> 
+    
+    <filter  priority="0"  
+             class="10"  
+             type="6"  
+             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:01" /> 
+    
     <action>0x80</action>
     <param>officetemp;%unixtime;%measurement.float</param>
-    <comment></comment>
+    
     <allowed_from>0000-01-01 00:00:00</allowed_from>
     <allowed_to>9999-12-31 23:59:59</allowed_to>
     <allowed_weekdays>mtwtfss</allowed_weekdays>
     <allowed_time>*-*-* *:*:*</allowed_time>
-    <index  bMeasurement="true"  > 2</index>
+    
+    <index measurementindex="true">2</index>
     <zone>0</zone>
     <subzone>0</subzone>
+    
   </row>
 
-  <row enable="true" groupid="" >
-    <mask  priority="0"  class="65535"  type="65535"  GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:FF" > </mask>
-    <filter  priority="0"  class="10"  type="6"  GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:01" > </filter>
-    <control>0x20</control>
+
+
+
+
+  <row enable="false" groupid="" >
+      
+    <comment>
+        
+    </comment>
+      
+    <mask  priority="0"  
+           class="65535"  
+           type="65535"  
+           GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:FF" />         
+    
+    <filter  priority="0"  
+             class="10"  
+             type="6"  
+             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:01" /> 
+    
     <action>0x80</action>
     <param>outsidetemp;%unixtime;%measurement.float</param>
-    <comment></comment>
+    
+    
     <allowed_from>0000-01-01 00:00:00</allowed_from>
     <allowed_to>9999-12-31 23:59:59</allowed_to>
     <allowed_weekdays>mtwtfss</allowed_weekdays>
     <allowed_time>*-*-* *:*:*</allowed_time>
-    <index  bMeasurement="true"  > 1</index>
+    <index measurementindex="true">1</index>
     <zone>0</zone>
     <subzone>0</subzone>
   </row>
 
+
+
+
   <row enable="true" groupid="" >
-    <mask  priority="0"  class="65535"  type="65535"  GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:FF" > </mask>
-    <filter  priority="0"  class="10"  type="6"  GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:01" > </filter>
-    <control>0x20</control>
+  
+      <comment>
+          Store measurements in table
+      </comment>
+        
+      <mask priority="0"  
+            class="65535"  
+            type="65535"  
+            GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:FF" /> 
+    
+    <filter priority="0"  
+            class="10"  
+            type="6"  
+            GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:01" /> 
+    
     <action>0x80</action>
     <param>SOUTHTEMP;%unixtime;%measurement.float</param>
-    <comment></comment>
+    
     <allowed_from>0000-01-01 00:00:00</allowed_from>
     <allowed_to>9999-12-31 23:59:59</allowed_to>
     <allowed_weekdays>mtwtfss</allowed_weekdays>
     <allowed_time>*-*-* *:*:*</allowed_time>
-    <index  bMeasurement="true"  > 1</index>
+    
+    <index measurindexementindex="true">1</index>
     <zone>0</zone>
     <subzone>0</subzone>
+    
   </row>
+  
 </dm>

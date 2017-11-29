@@ -804,7 +804,7 @@
 #define VSCPDB_TABLE_DEFAULT_CREATE "CREATE TABLE 'vscptable' ( `idx` INTEGER NOT NULL PRIMARY KEY UNIQUE, `datetime` TEXT, `value` REAL DEFAULT 0 );"
 
 // Default table insert SQL expression. Use if sqlinsert is empty
-#define VSCPDB_TABLE_DEFAULT_INSERT "INSERT INTO 'vscptable' (datetime,value) VALUES ('%%s','%%f');"
+#define VSCPDB_TABLE_DEFAULT_INSERT "INSERT INTO 'vscptable' (datetime,value) VALUES ('%%s','%%lf');"
 
 // Default table delete SQL expression. Delete all records in vscptable
 #define VSCPDB_TABLE_DEFAULT_DELETE "DELETE FROM vscptable;"
@@ -1098,7 +1098,6 @@
 	"`bCheckSubZone`                INTEGER NOT NULL,"\
 	"`subzone`                      INTEGER NOT NULL,"\
 	"`bCheckMeasurementIndex`	INTEGER NOT NULL,"\
-	"`meaurementIndex`              INTEGER NOT NULL,"\
 	"`actionCode`                   TEXT NOT NULL,"\
 	"`actionParameter`              NUMERIC NOT NULL,"\
         "`bCheckMeasurementValue`	INTEGER NOT NULL,"\
@@ -1112,17 +1111,18 @@
                 "(GroupID,bEnable,maskPriority,maskClass,maskType,maskGUID,filterPriority,filterClass,filterType,filterGUID,"\
                 "allowedStart,allowedEnd,allowedMonday,allowedTuesday,allowsWednesday,allowedThursday,allowedFriday,allowedSaturday,"\
                 "allowedSunday,allowedTime,bCheckIndex,index,bCheckZone,zone,bCheckSubZone,subzone,bCheckMeasurementIndex,"\
-                "meaurementIndex,actionCode,actionParameter,bCheckMeasurementValue,measurementValue,measurementUnit,measurementCompare,comment"\
+                "actionCode,actionParameter,bCheckMeasurementValue,measurementValue,measurementUnit,measurementCompare,comment"\
                 " )VALUES ('%s','%d','%d','%d','%d','%s','%d','%d','%d','%s',"\
-                "'%s','%s','%d','%d','%d','%d','%d','%d','%d',"\
-                "'%d','%s','%d','%d','%d','%d','%d','%d','%d','%d','%d','%s','%d',%f','%d','%s'"\
+                "'%s','%s','%d','%d','%d','%d','%d','%d',"\
+                "'%d','%s','%d','%d','%d','%d','%d','%d','%d',"\
+                "'%d','%s','%d','%lf',%d','%d','%s'"\
                 ");"
 
 #define VSCPDB_DM_UPDATE "UPDATE 'dm' "\
                 "SET GroupID='%s',bEnable='%d',maskPriority='%d',maskClass=%d',maskType=%d',maskGUID=%s',filterPriority=%d',filterClass=%d',filterType=%d',filterGUID=%s',"\
                 "allowedStart=%s',allowedEnd=%s',allowedMonday='%d',allowedTuesday='%d',allowsWednesday='%d',allowedThursday='%d',allowedFriday='%d',allowedSaturday='%d',"\
                 "allowedSunday,allowedTime,bCheckIndex,index,bCheckZone,zone,bCheckSubZone,subzone,bCheckMeasurementIndex,"\
-                "meaurementIndex='%d',actionCode='%d',actionParameter='%s',bCheckMeasurementValue=%d,measurementValue='%f',measurementUnit='%d',measurementCompare='%d'"\
+                "actionCode='%d',actionParameter='%s',bCheckMeasurementValue=%d,measurementValue='%lf',measurementUnit='%d',measurementCompare='%d'"\
                 " WHERE idx_dm='%d';"
 
 #define VSCPDB_DM_UPDATE_ITEM "UPDATE 'dm' SET ( %s='%s' ) WHERE id='%d' ;"
@@ -1155,14 +1155,13 @@
 #define VSCPDB_ORDINAL_DM_CHECK_SUBZONE             25   //
 #define VSCPDB_ORDINAL_DM_SUBZONE                   26   //
 #define VSCPDB_ORDINAL_DM_CHECK_MEASUREMENT_INDEX   27   //
-#define VSCPDB_ORDINAL_DM_MEASUREMENT_INDEX         28   //
-#define VSCPDB_ORDINAL_DM_ACTIONCODE                29   //
-#define VSCPDB_ORDINAL_DM_ACTIONPARAMETER           30   //
-#define VSCPDB_ORDINAL_DM_MEASUREMENT_CHECK_VALUE   31   //
-#define VSCPDB_ORDINAL_DM_MEASUREMENT_VALUE         32   //
-#define VSCPDB_ORDINAL_DM_MEASUREMENT_UNIT          33   //
-#define VSCPDB_ORDINAL_DM_MEASUREMENT_COMPARE       34   //
-#define VSCPDB_ORDINAL_DM_MEASUREMENT_COMMENT       35   //
+#define VSCPDB_ORDINAL_DM_ACTIONCODE                28   //
+#define VSCPDB_ORDINAL_DM_ACTIONPARAMETER           29   //
+#define VSCPDB_ORDINAL_DM_MEASUREMENT_CHECK_VALUE   30   //
+#define VSCPDB_ORDINAL_DM_MEASUREMENT_VALUE         31   //
+#define VSCPDB_ORDINAL_DM_MEASUREMENT_UNIT          32   //
+#define VSCPDB_ORDINAL_DM_MEASUREMENT_COMPARE       33   //
+#define VSCPDB_ORDINAL_DM_MEASUREMENT_COMMENT       34   //
 
 
 

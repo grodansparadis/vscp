@@ -847,7 +847,6 @@ dmElement::dmElement()
     m_index = 0;
     
     m_bCheckMeasurementIndex = false;
-    m_measurementIndex = 0;
     
     m_bCheckZone = false;
     m_zone = 0;
@@ -897,7 +896,6 @@ dmElement& dmElement::operator=( const dmElement& dm)
     m_bCheckIndex = dm.m_bCheckIndex;
     m_index = dm.m_index;
     m_bCheckMeasurementIndex = dm.m_bCheckMeasurementIndex;
-    m_measurementIndex = dm.m_measurementIndex;
     m_bCheckZone = dm.m_bCheckZone;
     m_zone = dm.m_zone;
     m_bCheckSubZone = dm.m_bCheckSubZone;
@@ -988,10 +986,7 @@ wxString dmElement::getAsString( bool bCRLF )
     
     // bMeasurementIndex
     strRow += m_bCheckMeasurementIndex ? _("true,") : _("false,");
-    
-    // measurementindex
-    strRow += wxString::Format(_("%d,"), m_measurementIndex );
-    
+
     // bCheckZone
     strRow += m_bCheckZone ? _("true,") : _("false,");
     
@@ -1368,17 +1363,6 @@ bool dmElement::setFromString( wxString& strDM )
         }
         else {
             m_bCheckMeasurementIndex = false;
-        }
-    }
-    
-    // measurementindex
-    if ( tkz.HasMoreTokens() ) {
-        wxstr = tkz.GetNextToken();
-        if ( wxstr.ToULong( &lval ) ) {
-            m_measurementIndex = lval;
-        }
-        else {
-            m_measurementIndex = 0;
         }
     }
     
@@ -2493,23 +2477,40 @@ bool dmElement::doAction( vscpEvent *pEvent )
 // doActionExecute
 //
 
-bool dmElement::doActionExecute(vscpEvent *pDMEvent)
+bool dmElement::doActionExecute(vscpEvent *pDMEvent, bool bCheckExecutable )
 {
+    
     // Write in possible escapes
     wxString wxstr = m_actionparam;
+    wxstr.Trim(true);
+    wxstr.Trim(false);
     handleEscapes(pDMEvent, wxstr);
+    
+    // Check for bCheckExecutable flag
+    if ( wxstr[0] == '!' ) {
+        wxstr = wxstr.Right( wxstr.Length() - 1 );
+        bCheckExecutable = false;
+    }
+    
+    wxString strfn = m_actionparam;
+    bool bOK = true;
+    
+    if ( bCheckExecutable ) {
+        int pos = m_actionparam.First(' ');
+        if (wxNOT_FOUND != pos) {
+            strfn = m_actionparam.Left(pos);
+        }
+    }
 
     // wxExecute breaks if the path does not exist so we have to
     // check that it does.
-    wxString strfn = m_actionparam;
-    bool bOK = true;
-    int pos = m_actionparam.First(' ');
-    if (wxNOT_FOUND != pos) {
-        strfn = m_actionparam.Left(pos);
-    }
-
-    if (!wxFileName::FileExists(strfn) ||
-            !wxFileName::IsFileExecutable(strfn)) {
+    if ( bCheckExecutable && 
+            ( !wxFileName::FileExists( strfn ) ||
+              !wxFileName::IsFileExecutable( strfn ) ) ) {
+        gpobj->logMsg( _("[DM] Target does not exist or is not executable") + 
+                        _("\n"), 
+                        DAEMON_LOGMSG_DEBUG, 
+                        DAEMON_LOGTYPE_DM);
         bOK = false;
     }
 
@@ -2525,7 +2526,8 @@ bool dmElement::doActionExecute(vscpEvent *pDMEvent)
             wxString wxstr = wxT("[Action] Executed: ");
             wxstr += m_actionparam;
             wxstr += _("\n");
-            gpobj->logMsg( _("[DM] ") + wxstr + _("\n"), DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM);
+            gpobj->logMsg( _("[DM] ") + wxstr + _("\n"), 
+                            DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM);
         }
     }
     else {
@@ -2533,16 +2535,21 @@ bool dmElement::doActionExecute(vscpEvent *pDMEvent)
         m_errorCounter++;
         if ( bOK ) {
             m_strLastError = _("[Action] Failed to execute :");
-            gpobj->logMsg( _("[DM] ") + _("[Action] Failed to execute \n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM);
+            gpobj->logMsg( _("[DM] ") + 
+                           _("[Action] Failed to execute \n"), 
+                            DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM);
         } 
         else {
             m_strLastError = _("File does not exists or is not an executable :");
-            gpobj->logMsg( _("[DM] ") + _("File does not exists or is not an executable \n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM);
+            gpobj->logMsg( _("[DM] ") + 
+                           _("File does not exists or is not an executable \n"), 
+                            DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM);
         }
         
         m_strLastError += m_actionparam;
         m_strLastError += _("\n");
-        gpobj->logMsg( _("[DM] ") + wxstr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+        gpobj->logMsg( _("[DM] ") + wxstr, 
+                            DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
         return false;
     }
 
@@ -5515,7 +5522,6 @@ bool CDM::addDatabaseRecord( dmElement& dm )
                 dm.m_subzone,
                 dm.m_bCheckMeasurementIndex,
                 //--------------------------------------------------------------
-                dm.m_measurementIndex,
                 dm.m_actionCode,
                 (const char *)dm.m_actionparam.mbc_str(),
                 dm.m_bCompareMeasurement,
@@ -5591,7 +5597,6 @@ bool CDM::updateDatabaseRecord( dmElement& dm )
                 dm.m_subzone,
                 dm.m_bCheckMeasurementIndex,
                 //--------------------------------------------------------------
-                dm.m_measurementIndex,
                 dm.m_actionCode,
                 (const char *)dm.m_actionparam.mbc_str(),
                 dm.m_bCompareMeasurement,
@@ -5820,12 +5825,9 @@ bool CDM::getDatabaseRecord( uint32_t idx, dmElement *pDMitem )
             
         // bMeasurementIndex
         pDMitem->m_bCheckMeasurementIndex = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_DM_CHECK_MEASUREMENT_INDEX ) ? true : false;
-            
-        // MeasurementIndex
-        pDMitem->m_measurementIndex = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_DM_MEASUREMENT_INDEX );
-            
+             
         // ActionCode
-        pDMitem->m_actionCode = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_DM_MEASUREMENT_INDEX );
+        pDMitem->m_actionCode = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_DM_ACTIONCODE );
             
         // ActionParamter
         if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ACTIONPARAMETER ) ) ) {
@@ -6033,11 +6035,8 @@ bool CDM::loadFromDatabase( void )
             // bMeasurementIndex
             pDMitem->m_bCheckMeasurementIndex = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_DM_CHECK_MEASUREMENT_INDEX ) ? true : false;
             
-            // MeasurementIndex
-            pDMitem->m_measurementIndex = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_DM_MEASUREMENT_INDEX );
-            
             // ActionCode
-            pDMitem->m_actionCode = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_DM_MEASUREMENT_INDEX );
+            pDMitem->m_actionCode = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_DM_ACTIONCODE );
             
             // ActionParamter
             if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ACTIONPARAMETER ) ) ) {
@@ -6155,8 +6154,9 @@ bool CDM::loadFromXML( void )
                     pDMitem->m_vscpfilter.mask_type = vscp_readStringValue( str );
 
                     wxString strGUID = subchild->GetAttribute( wxT( "GUID" ),
-                                                                wxT("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00") );
-                    vscp_getGuidFromStringToArray( pDMitem->m_vscpfilter.mask_GUID, strGUID );
+                        wxT("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00") );
+                    vscp_getGuidFromStringToArray( pDMitem->m_vscpfilter.mask_GUID, 
+                                                    strGUID );
                 }
                 else if ( subchild->GetName() == wxT ( "filter" ) ) {
                     wxString str;
@@ -6233,28 +6233,22 @@ bool CDM::loadFromXML( void )
                     pDMitem->m_bCheckIndex = true;
                                            
                     // Attribute checkmeasurementindex
-                    str = subchild->GetAttribute( wxT( "checkmeasurement" ), wxT("false") );
+                    str = subchild->GetAttribute( wxT( "measurementindex" ), wxT("false") );
                     str.MakeUpper();
                     if ( wxNOT_FOUND != str.Find(_("TRUE"))) {
                         pDMitem->m_bCheckMeasurementIndex = true;
-                        pDMitem->m_bCheckIndex = false;
-                        pDMitem->m_index = 0;
                     }
                     
-                    if ( pDMitem->m_bCheckMeasurementIndex ) {
-                        pDMitem->m_measurementIndex = 
-                                vscp_readStringValue( subchild->GetNodeContent() );
-                    }
-                    else {
-                        pDMitem->m_index = 
-                                vscp_readStringValue( subchild->GetNodeContent() );                        
-                    }
+                    pDMitem->m_index = 
+                                vscp_readStringValue( subchild->GetNodeContent() );                                            
                     
                 }
                 else if ( subchild->GetName() == wxT ( "zone" ) ) {
+                    pDMitem->m_bCheckZone = true;
                     pDMitem->m_zone = vscp_readStringValue( subchild->GetNodeContent() );
                 }
                 else if ( subchild->GetName() == wxT ( "subzone" ) ) {
+                    pDMitem->m_bCheckSubZone = true;
                     pDMitem->m_subzone = vscp_readStringValue( subchild->GetNodeContent() );
                 }
                 else if ( subchild->GetName() == wxT ( "measurement" ) ) {
