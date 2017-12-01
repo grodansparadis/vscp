@@ -216,16 +216,16 @@ public:
     void writeValueToString( wxString& strValue, bool bBase64=false );
 
     /*!
-        Get variable information as a string value
+        Set variable information from a string value
         Format is: "variable name","type","persistence","user","rights","value","note"
         User can be numeric (userid) or given as a username. It is valid to leave all fields
         blank ";;" except for variablename
         @param str String that will get string representation of variable with all info.
-        @param bBase64 If true value will be BASE64 encoded.
+        @param bBase64 If true value will be BASE64 encoded before it is stored.
         @param strUser User name that is used if user field is empty.
         @return true if the string could be parsed correctly.
      */
-    bool getVariableFromString( const wxString& strVariable, 
+    bool setVariableFromString( const wxString& strVariable, 
                                     const bool bBase64=false,
                                     const wxString& strUser = _("admin") );
 

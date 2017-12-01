@@ -194,9 +194,17 @@ class actionTime
 {
 
 public:
+    
   actionTime();
   ~actionTime();
 
+  /*!
+   * Clear all tables
+   */
+  void clearTables( void );
+  
+
+  
   /*!
     Set the weekdays that the action is allowed to occur at. The
     string is on the form 'mtwtfss'  The day can be replaced with a
@@ -222,6 +230,11 @@ public:
   */
 
   bool setWeekDay( const wxString& strWeekday );
+  
+  /*!
+   * Set data so action is always allowed.
+   */
+  void allowAlways( void );
   
   /*!
     Allow/disallow action to happen on Mondays
@@ -299,25 +312,76 @@ public:
     @return actiontime as a string.
   */
   wxString getActionTimeAsString( void );
+  
+  /*!
+   * Get/set weekday allow
+   */
+  bool getWeekday( char day ) { return m_weekDay[ day & 0x07 ]; };
+  
+  bool setWeekday( char day, bool bAllow = true ) { return m_weekDay[ day & 0x07 ] = bAllow ; };
 
+  /*!
+   * Get/set from time.
+   */
+  void setFromTime( wxString strFrom ) {
+      
+      strFrom.Trim();
+      strFrom.Trim(false);
+      if ( '*' == strFrom ) {
+          strFrom = _("1970-01-01 00:00:00");
+      }
+      
+      m_fromTime.ParseDateTime( strFrom );
+      
+  };
+  
+  void setFromTime( wxDateTime& dt ) { m_fromTime = dt; };
+  
+  wxDateTime& getFromTime( void ) { return m_fromTime; };
+
+  
+
+  /*!
+   * Get/set end time.
+   */
+  void setEndTime( wxString strEnd ) {
+      
+      strEnd.Trim();
+      strEnd.Trim(false);
+      if ( '*' == strEnd ) {
+          strEnd = _("2199-12-31 23:59:59");
+      }
+      
+      m_endTime.ParseDateTime( strEnd );
+      
+  };
+  
+  void setEndTime( wxDateTime& dt ) { m_endTime = dt; };
+  
+  wxDateTime& getEndTime( void ) { return m_endTime; };
+  
+  
+  private:
+  
   /*!
     True if working on that day.
   */
   bool m_weekDay[ 7 ];      // Monday - Sunday
-
+  
   /*!
     This is the time (inclusive) from which this action is
     allowed to occur.
   */
   wxDateTime m_fromTime;
-
+  
   /*!
     This is the time up (inclusive) to which this action is
     allowed to occur.
   */
   wxDateTime m_endTime;
-
-  // If the year/month/day etc is in any of theese arrays it is a positive match
+  
+  // If the year/month/day etc is in any of these arrays it is a positive match
+  // Empty is an all positive match
 
   /// Year when action should be performed, count == 0 is don't care
   ACTIONTIME m_actionYear;

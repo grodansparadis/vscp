@@ -1653,14 +1653,14 @@ static int vscp_dm_list( struct web_connection *conn, void *cbdata )
                 web_printf( conn, "<br>");
 
                 web_printf( conn, "<b>Allowed from:</b> ");
-                web_printf( conn, "%s",(const char *)pElement->m_timeAllow.m_fromTime.FormatISODate().mbc_str() );
+                web_printf( conn, "%s",(const char *)pElement->m_timeAllow.getFromTime().FormatISODate().mbc_str() );
                 web_printf( conn, " ");
-                web_printf( conn, "%s",(const char *)pElement->m_timeAllow.m_fromTime.FormatISOTime().mbc_str() );
+                web_printf( conn, "%s",(const char *)pElement->m_timeAllow.getFromTime().FormatISOTime().mbc_str() );
 
                 web_printf( conn, " <b>Allowed to:</b> ");
-                web_printf( conn,"%s", (const char *)pElement->m_timeAllow.m_endTime.FormatISODate().mbc_str() );
+                web_printf( conn,"%s", (const char *)pElement->m_timeAllow.getEndTime().FormatISODate().mbc_str() );
                 web_printf( conn, " ");
-                web_printf( conn, "%s",(const char *)pElement->m_timeAllow.m_endTime.FormatISOTime().mbc_str() );
+                web_printf( conn, "%s",(const char *)pElement->m_timeAllow.getEndTime().FormatISOTime().mbc_str() );
 
                 web_printf( conn, " <b>Weekdays:</b> ");
                 web_printf( conn, "%s",(const char *)pElement->m_timeAllow.getWeekDays().mbc_str() );
@@ -2153,10 +2153,10 @@ static int vscp_dm_edit( struct web_connection *conn, void *cbdata  )
         }
         else {
             web_printf( conn, "%s",
-                        (const char *)pElement->m_timeAllow.m_fromTime.FormatISODate().mbc_str() );
+                        (const char *)pElement->m_timeAllow.getFromTime().FormatISODate().mbc_str() );
             web_printf( conn, " ");
             web_printf( conn, "%s",
-                        (const char *)pElement->m_timeAllow.m_fromTime.FormatISOTime().mbc_str() );
+                        (const char *)pElement->m_timeAllow.getFromTime().FormatISOTime().mbc_str() );
         }
         web_printf( conn, "</textarea>");
 
@@ -2168,10 +2168,10 @@ static int vscp_dm_edit( struct web_connection *conn, void *cbdata  )
         }
         else {
             web_printf( conn, "%s",
-                        (const char *)pElement->m_timeAllow.m_endTime.FormatISODate().mbc_str() );
+                        (const char *)pElement->m_timeAllow.getEndTime().FormatISODate().mbc_str() );
             web_printf( conn, " ");
             web_printf( conn, "%s",
-                        (const char *)pElement->m_timeAllow.m_endTime.FormatISOTime().mbc_str() );
+                        (const char *)pElement->m_timeAllow.getEndTime().FormatISOTime().mbc_str() );
         }
         web_printf( conn, "</textarea>");
 
@@ -2193,7 +2193,7 @@ static int vscp_dm_edit( struct web_connection *conn, void *cbdata  )
         if ( !bNew ) {
             web_printf( conn,
                             "%s",
-                            pElement->m_timeAllow.m_weekDay[0] ? "checked" : "" );
+                            pElement->m_timeAllow.getWeekday(0) ? "checked" : "" );
         }
         web_printf( conn, " type=\"checkbox\">Monday ");
 
@@ -2201,7 +2201,7 @@ static int vscp_dm_edit( struct web_connection *conn, void *cbdata  )
         if ( !bNew ) {
             web_printf( conn,
                             "%s",
-                            pElement->m_timeAllow.m_weekDay[1] ? "checked" : "" );
+                            pElement->m_timeAllow.getWeekday(1) ? "checked" : "" );
         }
         web_printf( conn, " type=\"checkbox\">Tuesday ");
 
@@ -2209,7 +2209,7 @@ static int vscp_dm_edit( struct web_connection *conn, void *cbdata  )
         if ( !bNew ) {
             web_printf( conn,
                             "%s",
-                            pElement->m_timeAllow.m_weekDay[2] ? "checked" : "" );
+                            pElement->m_timeAllow.getWeekday(2) ? "checked" : "" );
         }
         web_printf( conn, " type=\"checkbox\">Wednesday ");
 
@@ -2217,7 +2217,7 @@ static int vscp_dm_edit( struct web_connection *conn, void *cbdata  )
         if ( !bNew ) {
             web_printf( conn,
                             "%s",
-                            pElement->m_timeAllow.m_weekDay[3] ? "checked" : "" );
+                            pElement->m_timeAllow.getWeekday(3) ? "checked" : "" );
         }
         web_printf( conn, " type=\"checkbox\">Thursday ");
 
@@ -2225,7 +2225,7 @@ static int vscp_dm_edit( struct web_connection *conn, void *cbdata  )
         if ( !bNew ) {
             web_printf( conn,
                             "%s",
-                            pElement->m_timeAllow.m_weekDay[4] ? "checked" : "" );
+                            pElement->m_timeAllow.getWeekday(4) ? "checked" : "" );
         }
         web_printf( conn, " type=\"checkbox\">Friday ");
 
@@ -2233,7 +2233,7 @@ static int vscp_dm_edit( struct web_connection *conn, void *cbdata  )
         if ( !bNew ) {
             web_printf( conn,
                             "%s",
-                            pElement->m_timeAllow.m_weekDay[5] ? "checked" : "" );
+                            pElement->m_timeAllow.getWeekday(5) ? "checked" : "" );
         }
         web_printf( conn, " type=\"checkbox\">Saturday ");
 
@@ -2241,7 +2241,7 @@ static int vscp_dm_edit( struct web_connection *conn, void *cbdata  )
         if ( !bNew ) {
             web_printf( conn,
                             "%s",
-                            pElement->m_timeAllow.m_weekDay[6] ? "checked" : "" );
+                            pElement->m_timeAllow.getWeekday(6) ? "checked" : "" );
         }
         web_printf( conn, " type=\"checkbox\">Sunday ");
         web_printf( conn, "<br>");
@@ -3018,8 +3018,8 @@ static int vscp_dm_post( struct web_connection *conn, void *cbdata )
                 bCheckZone ? pElement->m_bCheckZone = true : pElement->m_bCheckZone = false;
                 bCheckSubZone ? pElement->m_bCheckSubZone = true : pElement->m_bCheckSubZone = false;
 
-                pElement->m_timeAllow.m_fromTime.ParseDateTime( strAllowedFrom );
-                pElement->m_timeAllow.m_endTime.ParseDateTime( strAllowedTo );
+                pElement->m_timeAllow.setFromTime( strAllowedFrom );
+                pElement->m_timeAllow.setEndTime( strAllowedTo );
                 pElement->m_timeAllow.parseActionTime( strAllowedTime );
 
                 wxString weekdays;

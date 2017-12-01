@@ -1304,12 +1304,12 @@ bool CVSCPVariable::getNote( wxString& strNote, bool bBase64 )
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// getVariableFromString
+// setVariableFromString
 //
 // Format is: "variable name";"type";"persistence";"user";"rights";"value";"note"
 //
 
-bool CVSCPVariable::getVariableFromString( const wxString& strVariable, 
+bool CVSCPVariable::setVariableFromString( const wxString& strVariable, 
                                                 const bool bBase64,
                                                 const wxString& strUser )
 {
@@ -2864,7 +2864,7 @@ bool CVariableStorage::init( void )
     
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
-    variable.setName( _(VSCPDB_CONFIG_NAME_WEB_TCP_NO_DELAY) );
+    variable.setName( _("vscp.") + _(VSCPDB_CONFIG_NAME_WEB_TCP_NO_DELAY) );
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER);
     variable.setNote( _("Enable TCP_NODELAY socket option on client connections."), true );
     addStockVariable( variable  );
@@ -4161,7 +4161,7 @@ uint32_t CVariableStorage::getStockVariable( const wxString& name,
         return var.getID();
     }
     
-    if ( lcname.StartsWith( _("vscp.websrv.websrv.tcp_nodelay") ) ) {
+    if ( lcname.StartsWith( _("vscp.websrv.tcp_nodelay") ) ) {
         // Long
         var.setValue( gpobj->m_web_tcp_nodelay );
         return var.getID();
@@ -6210,11 +6210,11 @@ bool CVariableStorage::putStockVariable( CVSCPVariable& var,
                 var.getValue( &strValue );
                 // Change in memory record
                 if ( NULL != pdm ) {                    
-                    pdm->m_timeAllow.m_fromTime.ParseISOCombined( strValue );
+                    pdm->m_timeAllow.setFromTime( strValue );
                 }
                 return gpobj->m_dm.updateDatabaseRecordItem( id,
-                                                                _("allowedStart"),
-                                                                strValue );
+                                                             _("allowedStart"),
+                                                             strValue );
             }
             else if ( wxstr.StartsWith( _("allowed.end") ) ) {
                 
@@ -6223,11 +6223,11 @@ bool CVariableStorage::putStockVariable( CVSCPVariable& var,
                 var.getValue( &strValue );
                 // Change in memory record
                 if ( NULL != pdm ) {
-                    pdm->m_timeAllow.m_endTime.ParseISOCombined( strValue );
+                    pdm->m_timeAllow.setEndTime( strValue );
                 }
                 return gpobj->m_dm.updateDatabaseRecordItem( id,
-                                                            _("allowedEnd"),
-                                                            strValue );
+                                                             _("allowedEnd"),
+                                                             strValue );
             }
             else if ( wxstr.StartsWith( _("allowed.monday") ) ) {
                 

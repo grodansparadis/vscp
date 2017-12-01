@@ -4864,7 +4864,7 @@ void TCPClientThread::handleVariable_Write( struct mg_connection *conn,
     pClientItem->m_currentCommand.Trim(false);
     pClientItem->m_currentCommand.Trim(true);
     
-    if ( !variable.getVariableFromString( pClientItem->m_currentCommand, 
+    if ( !variable.setVariableFromString( pClientItem->m_currentCommand, 
                                                 false, 
                                                 pClientItem->m_UserName ) ) {
         // Failed to parse

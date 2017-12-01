@@ -115,19 +115,7 @@ dmTimer::~dmTimer()
 
 actionTime::actionTime()
 {
-    for ( int i=0; i<7; i++ ) {
-        m_weekDay[ i ] = true;  // Allow for all weekdays
-    }
-
-    // Allow from the beginning of time
-    m_fromTime.ParseDateTime( _("0000-01-01 00:00:00") );
-
-    // to the end of time
-    m_endTime.ParseDateTime( _("9999-12-31 23:59:59") );
-
-    // Just leave the ACTIONTIME lists empty as
-    // that is no care.
-
+    allowAlways();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -135,6 +123,15 @@ actionTime::actionTime()
 //
 
 actionTime::~actionTime()
+{
+    clearTables();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// clearTables
+//
+
+void actionTime::clearTables()
 {
     ACTIONTIME::iterator iter;
     for (iter = m_actionYear.begin(); iter != m_actionYear.end(); ++iter) {
@@ -184,7 +181,25 @@ actionTime::~actionTime()
     }
 
     m_actionSecond.Clear();
+}
 
+///////////////////////////////////////////////////////////////////////////////
+// allowAlways
+//
+
+void actionTime::allowAlways()
+{
+    clearTables();
+    
+    for ( int i=0; i<7; i++ ) {
+        m_weekDay[ i ] = true;  // Allow for all weekdays
+    }
+
+    // Allow from the beginning of time
+    m_fromTime.ParseDateTime( _("*") );
+
+    // to the end of time
+    m_endTime.ParseDateTime( _("*") );    
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -314,21 +329,41 @@ bool actionTime::getMultiItem( const wxString& items, ACTIONTIME *pList )
     pList->Clear();
 
     wxStringTokenizer tkz( items, _("/" ) );
-
+    
     if ( tkz.CountTokens() > 1 ) {
 
         wxString token;
         unsigned long val;
 
         while ( tkz.CountTokens() ) {
+            
             token = tkz.GetNextToken();
-            if ( token.ToULong( &val ) ) {
+            token.Trim();
+            token.Trim(false);
+           
+            // 'n' or 'n-m'  TODO add @2 == every second minute
+            wxStringTokenizer tkzRange( items, _("-" ) );
+            if ( tkzRange.CountTokens() > 1 ) {
+                int from = vscp_readStringValue( tkzRange.GetNextToken() );
+                int to = vscp_readStringValue( tkzRange.GetNextToken() );
+                if ( from < to ) {
+                    for ( int i=from; i<to; i++ ) {
+                        int *pInt = new int;
+                        if ( NULL != pInt ) {
+                            *pInt = i;
+                            pList->Append( pInt );
+                        }
+                    }
+                }
+            }
+            else {
                 int *pInt = new int;
                 if ( NULL != pInt ) {
-                    *pInt = (int)val;
+                    *pInt = (int)vscp_readStringValue( token );
                     pList->Append( pInt );
                 }
             }
+            
         }
     }
     else {
@@ -370,12 +405,18 @@ bool actionTime::parseActionTime( const wxString& actionTime )
 
     buf.Trim();
     buf.Trim(false);
+    
+    // '*' is 'always
+    if ( '*' == buf ) {
+        buf = _("*-*-* *:*:*");
+    }
 
     // Formats:
     // YYYY-MM-SS HH:MM:SS
     // * *
     // *-*-* *:*:*
     // YYYY-0/1/4/5-DD HH:MM:SS or variants of it
+    // n-m  . n, n+1, n+2,...
     wxStringTokenizer tkzFull( buf, _(" ") );
     if ( tkzFull.CountTokens() < 2 ) return false;	// Wrong format
 
@@ -854,10 +895,7 @@ dmElement::dmElement()
     m_bCheckSubZone = false;
     m_subzone = 0;
     
-    m_timeAllow.m_fromTime.ParseDateTime( _("1970-01-01 00:00:00") );
-    m_timeAllow.m_endTime.ParseDateTime( _("2199-12-31 23:59:59") );
-    m_timeAllow.parseActionTime( _("*:*:*" ) );
-    m_timeAllow.setWeekDays(_("mtwtfss"));
+    m_timeAllow.allowAlways();
     
     m_bCompareMeasurement = false;  // No measurement comparison
     m_measurementValue = 0;
@@ -965,12 +1003,12 @@ wxString dmElement::getAsString( bool bCRLF )
     strRow += _(",");
     
     // From time
-    strRow += m_timeAllow.m_fromTime.FormatISODate() + _(" ") +
-                                m_timeAllow.m_fromTime.FormatISOTime() + _(",");
+    strRow += m_timeAllow.getFromTime().FormatISODate() + _(" ") +
+                                m_timeAllow.getFromTime().FormatISOTime() + _(",");
 
     // End time
-    strRow += m_timeAllow.m_endTime.FormatISODate() + _(" ") +
-                                m_timeAllow.m_endTime.FormatISOTime() + _(",");
+    strRow += m_timeAllow.getEndTime().FormatISODate() + _(" ") +
+                                m_timeAllow.getEndTime().FormatISOTime() + _(",");
 
     // Allowed weekdays
     strRow += m_timeAllow.getWeekDays() + _(",");
@@ -3074,7 +3112,7 @@ bool dmElement::doActionStoreVariable( vscpEvent *pDMEvent )
 
         // The form is variable-name; variable-type; persistence; value
         
-        if ( !( var.getVariableFromString( params ) ) ) {
+        if ( !( var.setVariableFromString( params ) ) ) {
             // must be a variable
             wxString wxstrErr = wxT("[Action] Store Variable: Could not set new variable ");
             wxstrErr += params;
@@ -5499,20 +5537,20 @@ bool CDM::addDatabaseRecord( dmElement& dm )
                 (const char *)guid_filter.getAsString().mbc_str(),
                 //--------------------------------------------------------------
 #if wxCHECK_VERSION( 3,0,0 )            
-                (const char *)dm.m_timeAllow.m_fromTime.FormatISOCombined().mbc_str(),
-                (const char *)dm.m_timeAllow.m_endTime.FormatISOCombined().mbc_str(),
+                (const char *)dm.m_timeAllow.getFromTime().FormatISOCombined().mbc_str(),
+                (const char *)dm.m_timeAllow.getEndTime().FormatISOCombined().mbc_str(),
 #else
                 (const char *)( dm.m_timeAllow.m_fromTime.FormatISODate() + _("T") + dm.m_timeAllow.m_fromTime.FormatISOTime() ).mbc_str(),
                 (const char *)( dm.m_timeAllow.m_endTime.FormatISODate() + _("T") + dm.m_timeAllow.m_endTime.FormatISOTime() ).mbc_str(),
 #endif            
-                dm.m_timeAllow.m_weekDay[ 0 ] ? 1 : 0,
-                dm.m_timeAllow.m_weekDay[ 1 ] ? 1 : 0,
-                dm.m_timeAllow.m_weekDay[ 2 ] ? 1 : 0,
-                dm.m_timeAllow.m_weekDay[ 3 ] ? 1 : 0,
-                dm.m_timeAllow.m_weekDay[ 4 ] ? 1 : 0,
-                dm.m_timeAllow.m_weekDay[ 5 ] ? 1 : 0,
+                dm.m_timeAllow.getWeekday(0) ? 1 : 0,
+                dm.m_timeAllow.getWeekday(1) ? 1 : 0,
+                dm.m_timeAllow.getWeekday(2) ? 1 : 0,
+                dm.m_timeAllow.getWeekday(3) ? 1 : 0,
+                dm.m_timeAllow.getWeekday(4) ? 1 : 0,
+                dm.m_timeAllow.getWeekday(5) ? 1 : 0,
                 //--------------------------------------------------------------
-                dm.m_timeAllow.m_weekDay[ 6 ] ? 1 : 0,
+                dm.m_timeAllow.getWeekday(6) ? 1 : 0,
                 (const char *)dm.m_timeAllow.getActionTimeAsString().mbc_str(),
                 dm.m_bCheckIndex ? 1 : 0,
                 dm.m_index,
@@ -5574,20 +5612,20 @@ bool CDM::updateDatabaseRecord( dmElement& dm )
                 (const char *)guid_filter.getAsString().mbc_str(),
                 //--------------------------------------------------------------
 #if wxCHECK_VERSION( 3,0,0 )             
-                (const char *)dm.m_timeAllow.m_fromTime.FormatISOCombined().mbc_str(),
-                (const char *)dm.m_timeAllow.m_endTime.FormatISOCombined().mbc_str(),
+                (const char *)dm.m_timeAllow.getFromTime().FormatISOCombined().mbc_str(),
+                (const char *)dm.m_timeAllow.getEndTime().FormatISOCombined().mbc_str(),
 #else
                 (const char *)( dm.m_timeAllow.m_fromTime.FormatISODate() + _("T") + dm.m_timeAllow.m_fromTime.FormatISOTime() ).mbc_str(),
                 (const char *)( dm.m_timeAllow.m_endTime.FormatISODate() + _("T") + dm.m_timeAllow.m_endTime.FormatISOTime() ).mbc_str(),
 #endif            
-                dm.m_timeAllow.m_weekDay[ 0 ] ? 1 : 0,
-                dm.m_timeAllow.m_weekDay[ 1 ] ? 1 : 0,
-                dm.m_timeAllow.m_weekDay[ 2 ] ? 1 : 0,
-                dm.m_timeAllow.m_weekDay[ 3 ] ? 1 : 0,
-                dm.m_timeAllow.m_weekDay[ 4 ] ? 1 : 0,
-                dm.m_timeAllow.m_weekDay[ 5 ] ? 1 : 0,
+                dm.m_timeAllow.getWeekday(0) ? 1 : 0,
+                dm.m_timeAllow.getWeekday(1) ? 1 : 0,
+                dm.m_timeAllow.getWeekday(2) ? 1 : 0,
+                dm.m_timeAllow.getWeekday(3) ? 1 : 0,
+                dm.m_timeAllow.getWeekday(4) ? 1 : 0,
+                dm.m_timeAllow.getWeekday(5) ? 1 : 0,
                 //--------------------------------------------------------------
-                dm.m_timeAllow.m_weekDay[ 6 ] ? 1 : 0,
+                dm.m_timeAllow.getWeekday(6) ? 1 : 0,
                 (const char *)dm.m_timeAllow.getActionTimeAsString().mbc_str(),
                 dm.m_bCheckIndex ? 1 : 0,
                 dm.m_index,
@@ -5749,12 +5787,12 @@ bool CDM::getDatabaseRecord( uint32_t idx, dmElement *pDMitem )
             
         // Allowed start
         if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ALLOWED_START ) ) ) {
-            pDMitem->m_timeAllow.m_fromTime.ParseDate( wxString::FromUTF8( p ) );
+            pDMitem->m_timeAllow.setFromTime( wxString::FromUTF8( p ) );
         }
             
         // Allowed end
         if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ALLOWED_END ) ) ) {
-            pDMitem->m_timeAllow.m_endTime.ParseDate( wxString::FromUTF8( p ) );
+            pDMitem->m_timeAllow.getEndTime().ParseDate( wxString::FromUTF8( p ) );
         }
             
         // Allowed time
@@ -5958,12 +5996,12 @@ bool CDM::loadFromDatabase( void )
             
             // Allowed from
             if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ALLOWED_START ) ) ) {
-                pDMitem->m_timeAllow.m_fromTime.ParseDate( wxString::FromUTF8( p ) );
+                pDMitem->m_timeAllow.setFromTime( wxString::FromUTF8( p ) );
             }
             
             // Allowed to
             if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ALLOWED_END ) ) ) {
-                pDMitem->m_timeAllow.m_endTime.ParseDate( wxString::FromUTF8( p ) );
+                pDMitem->m_timeAllow.setEndTime( wxString::FromUTF8( p ) );
             }
             
             // Allowed to
@@ -6114,9 +6152,7 @@ bool CDM::loadFromXML( void )
             pDMitem->m_errorCounter = 0;
             pDMitem->m_actionparam.Empty();
             pDMitem->m_comment.Empty();
-            pDMitem->m_timeAllow.m_fromTime = wxDateTime::Now();
-            pDMitem->m_timeAllow.m_endTime = wxDateTime::Now();
-            pDMitem->m_timeAllow.setWeekDays(wxT("mtwtfss"));
+            pDMitem->m_timeAllow.allowAlways();
             pDMitem->m_index = 0;
             pDMitem->m_zone = 0;
             pDMitem->m_subzone = 0;
@@ -6190,20 +6226,20 @@ bool CDM::loadFromXML( void )
                     wxString str = subchild->GetNodeContent();
                     str.Trim();
                     if ( 0 != str.Length() ) {
-                        pDMitem->m_timeAllow.m_fromTime.ParseDateTime(str);
+                        pDMitem->m_timeAllow.getFromTime().ParseDateTime(str);
                     }
                     else {
-                        pDMitem->m_timeAllow.m_fromTime.ParseDateTime( _("1970-01-01 00:00:00") );
+                        pDMitem->m_timeAllow.getFromTime().ParseDateTime( _("1970-01-01 00:00:00") );
                     }
                 }
                 else if ( subchild->GetName() == wxT ( "allowed_to" ) ) {
                     wxString str = subchild->GetNodeContent();
                     str.Trim();
                     if ( 0 != str.Length() ) {
-                        pDMitem->m_timeAllow.m_endTime.ParseDateTime(str);
+                        pDMitem->m_timeAllow.getEndTime().ParseDateTime(str);
                     }
                     else {
-                        pDMitem->m_timeAllow.m_endTime.ParseDateTime( _("2199-12-31 23:59:59") );
+                        pDMitem->m_timeAllow.getEndTime().ParseDateTime( _("2199-12-31 23:59:59") );
                     }
                 }
                 else if ( subchild->GetName() == wxT ( "allowed_weekdays" ) ) {
@@ -6397,16 +6433,16 @@ bool CDM::saveToXML( void )
 
             pFileStream->Write( "    <allowed_from>", strlen ( "    <allowed_from>" ) );
             {
-                wxString str = pDMitem->m_timeAllow.m_fromTime.FormatISODate() + _(" ") +
-                                    pDMitem->m_timeAllow.m_fromTime.FormatISOTime();
+                wxString str = pDMitem->m_timeAllow.getFromTime().FormatISODate() + _(" ") +
+                                    pDMitem->m_timeAllow.getFromTime().FormatISOTime();
                 pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
             }
             pFileStream->Write( "</allowed_from>\n", strlen( "</allowed_from>\n" ) );
 
             pFileStream->Write ( "    <allowed_to>", strlen( "    <allowed_to>" ) );
             {
-                wxString str = pDMitem->m_timeAllow.m_endTime.FormatISODate() + _(" ") +
-                                    pDMitem->m_timeAllow.m_endTime.FormatISOTime();
+                wxString str = pDMitem->m_timeAllow.getEndTime().FormatISODate() + _(" ") +
+                                    pDMitem->m_timeAllow.getEndTime().FormatISOTime();
                 pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
             }
             pFileStream->Write("</allowed_to>\n", strlen ( "</allowed_to>\n" ) );
