@@ -660,6 +660,9 @@ public:
     // Database index for record ( 0 if loaded from XML file)
     uint32_t m_id;
     
+    // This record is loaded from XML file - Can't be edited
+    bool m_bStatic;
+    
     /// True if row is enabled
     bool m_bEnable;
     

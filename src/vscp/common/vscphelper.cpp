@@ -1121,7 +1121,10 @@ int vscp_getVSCPMeasurementUnit( const vscpEvent *pEvent )
              ( VSCP_CLASS1_SETVALUEZONE == pEvent->vscp_class ) ||
              ( VSCP_CLASS2_LEVEL1_SETVALUEZONE == pEvent->vscp_class ) ) {
         
-        if ( ( NULL == pEvent->pdata ) || ( pEvent->sizeData >= (offset + 1) ) ) return VSCP_ERROR_ERROR;
+        if ( ( NULL == pEvent->pdata ) || 
+             ( pEvent->sizeData < (offset + 1) ) ) {
+            return VSCP_ERROR_ERROR;
+        }
         
         return VSCP_DATACODING_UNIT( pEvent->pdata[ offset + 0 ] );
         

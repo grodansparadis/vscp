@@ -872,9 +872,11 @@ wxString actionTime::getActionTimeAsString( void )
 
 
 // Constructor
+
 dmElement::dmElement()
 {
     m_bEnable = false;
+    m_bStatic = false;
     m_id = 0;
     m_strGroupID.Empty();
     vscp_clearVSCPFilter( &m_vscpfilter );
@@ -924,6 +926,7 @@ dmElement& dmElement::operator=( const dmElement& dm)
     }
     
     m_id = dm.m_id;
+    m_bStatic = dm.m_bStatic;
     m_bEnable = dm.m_bEnable;
     m_strGroupID = dm.m_strGroupID;
     memcpy( &m_vscpfilter, &dm.m_vscpfilter, sizeof(vscpEventFilter) );
@@ -1491,43 +1494,43 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
         if ( str.Length() > 1 ) {
 
             // Check for percent i.e. %%
-            if ( str.StartsWith( wxT("%%"), &str ) ) {
-                strResult += wxT("%");                  // add percent
+            if ( str.StartsWith( _("%%"), &str ) ) {
+                strResult += _("%");                  // add percent
             }
             // Check for ';' i.e. %;
-            else if ( str.StartsWith( wxT("%;"), &str ) ) {
-                strResult += wxT(";");                  // add semicolon
+            else if ( str.StartsWith( _("%;"), &str ) ) {
+                strResult += _(";");                  // add semicolon
             }
             // Check for %cr
-            else if ( str.StartsWith( wxT("%cr"), &str ) ) {
-                strResult += wxT("\r");                 // add carrige return
+            else if ( str.StartsWith( _("%cr"), &str ) ) {
+                strResult += _("\r");                 // add carrige return
             }
             // Check for %lf
-            else if ( str.StartsWith( wxT("%cr"), &str ) ) {
-                strResult += wxT("\n");                 // add new line
+            else if ( str.StartsWith( _("%cr"), &str ) ) {
+                strResult += _("\n");                 // add new line
             }
             // Check for %crlf
-            else if ( str.StartsWith( wxT("%crlf"), &str ) ) {
-                strResult += wxT("\r\n");               // add carrige return line feed
+            else if ( str.StartsWith( _("%crlf"), &str ) ) {
+                strResult += _("\r\n");               // add carrige return line feed
             }
             // Check for %tab
-            else if ( str.StartsWith( wxT("%tab"), &str ) ) {
-                strResult += wxT("\t");                 // add tab
+            else if ( str.StartsWith( _("%tab"), &str ) ) {
+                strResult += _("\t");                 // add tab
             }
             // Check for %bell
-            else if ( str.StartsWith( wxT("%bell"), &str ) ) {
-                strResult += wxT("\a");                 // add bell
+            else if ( str.StartsWith( _("%bell"), &str ) ) {
+                strResult += _("\a");                 // add bell
             }
             // Check for %amp.html
-            else if ( str.StartsWith( wxT("%amp.html"), &str ) ) {
-                strResult += wxT("&amp;");              // add bell
+            else if ( str.StartsWith( _("%amp.html"), &str ) ) {
+                strResult += _("&amp;");              // add bell
             }
             // Check for %amp
-            else if ( str.StartsWith( wxT("%amp"), &str ) ) {
-                strResult += wxT("&");                  // add bell
+            else if ( str.StartsWith( _("%amp"), &str ) ) {
+                strResult += _("&");                  // add bell
             }
             // Check for %lt.html
-            else if ( str.StartsWith( wxT("%lt.html"), &str ) ) {
+            else if ( str.StartsWith( _("%lt.html"), &str ) ) {
                 strResult += _T("&lt;");               // add bell
             }
             // Check for %lt
@@ -1561,131 +1564,131 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
                 }
             }
             // Check for class escape
-            else if ( str.StartsWith( wxT("%event.class"), &str ) ) {
-                strResult +=  wxString::Format( wxT("%d"), pEvent->vscp_class );
+            else if ( str.StartsWith( _("%event.class"), &str ) ) {
+                strResult +=  wxString::Format( _("%d"), pEvent->vscp_class );
             }
             // Check for class string  escape
-            else if ( str.StartsWith( wxT("%event.class.str"), &str ) ) {
+            else if ( str.StartsWith( _("%event.class.str"), &str ) ) {
                 //VSCPInformation info;  TODO
                 //strResult +=  info.getClassDescription( pEvent->vscp_class );
             }
             // Check for type escape
-            else if ( str.StartsWith( wxT("%event.type"), &str ) ) {
-                strResult +=  wxString::Format( wxT("%d"), pEvent->vscp_type );
+            else if ( str.StartsWith( _("%event.type"), &str ) ) {
+                strResult +=  wxString::Format( _("%d"), pEvent->vscp_type );
             }
             // Check for type string escape
-            else if ( str.StartsWith( wxT("%event.type.str"), &str ) ) {
+            else if ( str.StartsWith( _("%event.type.str"), &str ) ) {
                 //VSCPInformation info;  TODO
                 //strResult +=  info.getTypeDescription( pEvent->vscp_class,
                 //                                    pEvent->vscp_type );
             }
             // Check for data[n] escape
-            else if ( str.StartsWith( wxT("%event.data["), &str ) ) {
+            else if ( str.StartsWith( _("%event.data["), &str ) ) {
 
                 // Must be data
                 if ( pEvent->sizeData && ( NULL != pEvent->pdata ) ) {
 
                     wxString wxstr = str;
-                    if ( wxNOT_FOUND != ( pos = str.Find( wxT("]") ) ) ) {
+                    if ( wxNOT_FOUND != ( pos = str.Find( _("]") ) ) ) {
                         str = str.Right( str.Length() - pos - 1 );
                     }
 
                     long idx=0;
                     wxstr.ToLong( &idx );
                     if ( idx < pEvent->sizeData ) {
-                        strResult +=  wxString::Format( wxT("%d"), pEvent->pdata[ idx ] );
+                        strResult +=  wxString::Format( _("%d"), pEvent->pdata[ idx ] );
                     }
                     else {
-                        strResult +=  wxT("?");     // invalid index
+                        strResult +=  _("?");     // invalid index
                     }
 
 
                 }
                 else {
                     // Just remove ending ]
-                    if ( wxNOT_FOUND != ( pos = str.Find( wxT("]") ) ) ) {
+                    if ( wxNOT_FOUND != ( pos = str.Find( _("]") ) ) ) {
                         str = str.Right( str.Length() - pos - 1 );
                     }
-                    strResult +=  wxT("");      // No data
+                    strResult +=  _("");      // No data
                 }
             }
             // Check for sizedata escape
-            else if ( str.StartsWith( wxT("%event.sizedata"), &str ) ) {
-                strResult +=  wxString::Format( wxT("%d"), pEvent->sizeData );
+            else if ( str.StartsWith( _("%event.sizedata"), &str ) ) {
+                strResult +=  wxString::Format( _("%d"), pEvent->sizeData );
             }
             // Check for data escape
-            else if ( str.StartsWith( wxT("%event.data"), &str ) ) {
+            else if ( str.StartsWith( _("%event.data"), &str ) ) {
                 if ( pEvent->sizeData && ( NULL != pEvent->pdata ) ) {
                     wxString wxstr;
                     vscp_writeVscpDataToString( pEvent, wxstr, false );
                     strResult +=  wxstr;
                 }
                 else {
-                    strResult +=  wxT("empty");     // No data
+                    strResult +=  _("empty");     // No data
                 }
             }
             // Check for guid escape
-            else if ( str.StartsWith( wxT("%event.guid"), &str ) ) {
+            else if ( str.StartsWith( _("%event.guid"), &str ) ) {
                 wxString strGUID;
                 vscp_writeGuidToString ( pEvent, strGUID );
                 strResult +=  strGUID;
             }
             // Check for nickname escape
-            else if ( str.StartsWith( wxT( "%event.nickname" ), &str ) ) {
-                strResult += wxString::Format( wxT( "%d" ),
+            else if ( str.StartsWith( _( "%event.nickname" ), &str ) ) {
+                strResult += wxString::Format( _( "%d" ),
                                                 pEvent->GUID[ VSCP_GUID_LSB ] );
             }
             // Check for obid escape
-            else if ( str.StartsWith( wxT("%event.obid"), &str ) ) {
-                strResult +=  wxString::Format( wxT("%d"), pEvent->obid );
+            else if ( str.StartsWith( _("%event.obid"), &str ) ) {
+                strResult +=  wxString::Format( _("%d"), pEvent->obid );
             }
             // Check for timestamp escape
-            else if ( str.StartsWith( wxT("%event.timestamp"), &str ) ) {
-                strResult +=  wxString::Format( wxT("%d"), pEvent->timestamp );
+            else if ( str.StartsWith( _("%event.timestamp"), &str ) ) {
+                strResult +=  wxString::Format( _("%d"), pEvent->timestamp );
             }
             // Check for event index escape
-            else if ( str.StartsWith( wxT( "%event.index" ), &str ) ) {
+            else if ( str.StartsWith( _( "%event.index" ), &str ) ) {
                 if ( pEvent->sizeData && ( NULL != pEvent->pdata ) ) {
-                    strResult += wxString::Format( wxT( "%d" ), pEvent->pdata[ 0 ] );
+                    strResult += wxString::Format( _( "%d" ), pEvent->pdata[ 0 ] );
                 }
                 else {
-                    strResult += wxT( "empty" );        // No data
+                    strResult += _( "empty" );        // No data
                 }
             }
             // Check for event zone escape
-            else if ( str.StartsWith( wxT( "%event.zone" ), &str ) ) {
+            else if ( str.StartsWith( _( "%event.zone" ), &str ) ) {
                 if ( pEvent->sizeData && ( NULL != pEvent->pdata ) ) {
-                    strResult += wxString::Format( wxT( "%d" ), pEvent->pdata[ 1 ] );
+                    strResult += wxString::Format( _( "%d" ), pEvent->pdata[ 1 ] );
                 }
                 else {
-                    strResult += wxT( "empty" );        // No data
+                    strResult += _( "empty" );        // No data
                 }
             }
             // Check for event subzone escape
-            else if ( str.StartsWith( wxT( "%event.subzone" ), &str ) ) {
+            else if ( str.StartsWith( _( "%event.subzone" ), &str ) ) {
                 if ( pEvent->sizeData && ( NULL != pEvent->pdata ) ) {
-                    strResult += wxString::Format( wxT( "%d" ), pEvent->pdata[ 2 ] );
+                    strResult += wxString::Format( _( "%d" ), pEvent->pdata[ 2 ] );
                 }
                 else {
-                    strResult += wxT( "empty" );        // No data
+                    strResult += _( "empty" );        // No data
                 }
             }
             // Check for event escape
-            else if ( str.StartsWith( wxT("%event"), &str ) ) {
+            else if ( str.StartsWith( _("%event"), &str ) ) {
                 wxString strEvent;
                 vscp_writeVscpEventToString( pEvent, strEvent );
                 strResult += strEvent;
             }
             // Check for isodate escape
-            else if ( str.StartsWith( wxT("%isodate"), &str ) ) {
+            else if ( str.StartsWith( _("%isodate"), &str ) ) {
                 strResult += wxDateTime::Now().FormatISODate();
             }
             // Check for isotime escape
-            else if ( str.StartsWith( wxT("%isotime"), &str ) ) {
+            else if ( str.StartsWith( _("%isotime"), &str ) ) {
                 strResult += wxDateTime::Now().FormatISOTime();
             }
             // Check for isobothms escape
-            else if ( str.StartsWith( wxT("%isobothms"), &str ) ) {
+            else if ( str.StartsWith( _("%isobothms"), &str ) ) {
                 // Milliseconds  
                 long            ms; // Milliseconds
 #ifdef WIN32  
@@ -1707,185 +1710,185 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
                 strResult += msstr;
             }
             // Check for isoboth escape
-            else if ( str.StartsWith( wxT("%isoboth"), &str ) ) {
+            else if ( str.StartsWith( _("%isoboth"), &str ) ) {
                 strResult += wxDateTime::Now().FormatISODate();
                 strResult += _("T");
                 strResult += wxDateTime::Now().FormatISOTime();
             }            
             // Check for mstime escape
-            else if ( str.StartsWith( wxT("%mstime"), &str ) ) {
-                strResult += wxString::Format( wxT("%d"),
+            else if ( str.StartsWith( _("%mstime"), &str ) ) {
+                strResult += wxString::Format( _("%d"),
                                                 wxDateTime::Now().GetTicks() );
             }
             // Check for unixtime escape
-            else if ( str.StartsWith( wxT("%unixtime"), &str ) ) {
+            else if ( str.StartsWith( _("%unixtime"), &str ) ) {
                 time_t now = time(NULL);    // Get current time
                 uint64_t tnow = now;
-                strResult += wxString::Format( wxT("%llu"), tnow );
+                strResult += wxString::Format( _("%llu"), tnow );
             }
             // Check for hour escape
-            else if ( str.StartsWith( wxT("%hour"), &str ) ) {
-                strResult += wxString::Format( wxT("%d"), wxDateTime::Now().GetHour() );
+            else if ( str.StartsWith( _("%hour"), &str ) ) {
+                strResult += wxString::Format( _("%d"), wxDateTime::Now().GetHour() );
             }
             // Check for minute escape
-            else if ( str.StartsWith( wxT("%minute"), &str ) ) {
-                strResult += wxString::Format( wxT("%d"), wxDateTime::Now().GetMinute() );
+            else if ( str.StartsWith( _("%minute"), &str ) ) {
+                strResult += wxString::Format( _("%d"), wxDateTime::Now().GetMinute() );
             }
             // Check for second escape
-            else if ( str.StartsWith( wxT("%second"), &str ) ) {
-                strResult += wxString::Format( wxT("%d"), wxDateTime::Now().GetSecond() );
+            else if ( str.StartsWith( _("%second"), &str ) ) {
+                strResult += wxString::Format( _("%d"), wxDateTime::Now().GetSecond() );
             }
             // Check for week0 escape
-            else if ( str.StartsWith( wxT("%week0"), &str ) ) {
-                strResult += wxString::Format( wxT("%d"),
+            else if ( str.StartsWith( _("%week0"), &str ) ) {
+                strResult += wxString::Format( _("%d"),
                                                 wxDateTime::Now().GetWeekOfYear(),
                                                 wxDateTime::Sunday_First );
             }
             // Check for week1 escape
-            else if ( str.StartsWith( wxT("%week1"), &str ) ) {
-                strResult += wxString::Format( wxT("%d"),
+            else if ( str.StartsWith( _("%week1"), &str ) ) {
+                strResult += wxString::Format( _("%d"),
                                                 wxDateTime::Now().GetWeekOfYear(),
                                                 wxDateTime::Monday_First );
             }
             // Check for weekdaytxtfull escape
-            else if ( str.StartsWith( wxT("%weekdaytxtfull"), &str ) ) {
+            else if ( str.StartsWith( _("%weekdaytxtfull"), &str ) ) {
                 strResult += wxDateTime::GetWeekDayName(
                         wxDateTime::Now().GetWeekDay(), wxDateTime::Name_Full );
             }
             // Check for weekdaytxt escape
-            else if ( str.StartsWith( wxT("%weekdaytxt"), &str ) ) {
+            else if ( str.StartsWith( _("%weekdaytxt"), &str ) ) {
                 strResult += wxDateTime::GetWeekDayName(
                         wxDateTime::Now().GetWeekDay(), wxDateTime::Name_Abbr );
             }
             // Check for monthtxtfull escape
-            else if ( str.StartsWith( wxT("%monthtxtfull"), &str ) ) {
+            else if ( str.StartsWith( _("%monthtxtfull"), &str ) ) {
                 strResult += wxDateTime::GetMonthName(
                         wxDateTime::Now().GetMonth(), wxDateTime::Name_Full );
             }
             // Check for monthtxt escape
-            else if ( str.StartsWith( wxT("%monthtxt"), &str ) ) {
+            else if ( str.StartsWith( _("%monthtxt"), &str ) ) {
                 strResult += wxDateTime::GetMonthName(
                         wxDateTime::Now().GetMonth(), wxDateTime::Name_Abbr );
             }
             // Check for month escape
-            else if ( str.StartsWith( wxT("%month"), &str ) ) {
-                strResult += wxString::Format( wxT("%d"),
+            else if ( str.StartsWith( _("%month"), &str ) ) {
+                strResult += wxString::Format( _("%d"),
                         wxDateTime::Now().GetMonth() + 1 );
             }
             // Check for year escape
-            else if ( str.StartsWith( wxT("%year"), &str ) ) {
-                strResult += wxString::Format( wxT("%d"),
+            else if ( str.StartsWith( _("%year"), &str ) ) {
+                strResult += wxString::Format( _("%d"),
                         wxDateTime::Now().GetYear() );
             }
             // Check for quarter escape
-            else if ( str.StartsWith( wxT("%quarter"), &str ) ) {
+            else if ( str.StartsWith( _("%quarter"), &str ) ) {
                 if ( wxDateTime::Now().GetMonth() < 4 ) {
-                    strResult += wxT("1");
+                    strResult += _("1");
                 }
                 else if ( wxDateTime::Now().GetMonth() < 7 ) {
-                    strResult += wxT("2");
+                    strResult += _("2");
                 }
                 else if ( wxDateTime::Now().GetMonth() < 10 ) {
-                    strResult += wxT("3");
+                    strResult += _("3");
                 }
                 else {
-                    strResult += wxT("1");
+                    strResult += _("1");
                 }
             }
             // Check for path_config escape
-            else if ( str.StartsWith( wxT("%path.config"), &str ) ) {
+            else if ( str.StartsWith( _("%path.config"), &str ) ) {
                 strResult += wxStandardPaths::Get().GetConfigDir();
             }
             // Check for path_datadir escape
-            else if ( str.StartsWith( wxT("%path.datadir"), &str ) ) {
+            else if ( str.StartsWith( _("%path.datadir"), &str ) ) {
                 strResult += wxStandardPaths::Get().GetDataDir();
             }
             // Check for path_documentsdir escape
-            else if ( str.StartsWith( wxT("%path.documentsdir"), &str ) ) {
+            else if ( str.StartsWith( _("%path.documentsdir"), &str ) ) {
                 strResult += wxStandardPaths::Get().GetDocumentsDir();
             }
             // Check for path_executable escape
-            else if ( str.StartsWith( wxT("%path.executable"), &str ) ) {
+            else if ( str.StartsWith( _("%path.executable"), &str ) ) {
                 strResult += wxStandardPaths::Get().GetExecutablePath();
             }
             // Check for path_localdatadir escape
-            else if ( str.StartsWith( wxT("%path.localdatadir"), &str ) ) {
+            else if ( str.StartsWith( _("%path.localdatadir"), &str ) ) {
                 strResult += wxStandardPaths::Get().GetLocalDataDir();
             }
             // Check for path_pluginsdir escape
-            else if ( str.StartsWith( wxT("%path.pluginsdir"), &str ) ) {
+            else if ( str.StartsWith( _("%path.pluginsdir"), &str ) ) {
                 strResult += wxStandardPaths::Get().GetPluginsDir();
             }
             // Check for path_resourcedir escape
-            else if ( str.StartsWith( wxT("%path.resourcedir"), &str ) ) {
+            else if ( str.StartsWith( _("%path.resourcedir"), &str ) ) {
                 strResult += wxStandardPaths::Get().GetResourcesDir();
             }
             // Check for path_tempdir escape
-            else if ( str.StartsWith( wxT("%path.tempdir"), &str ) ) {
+            else if ( str.StartsWith( _("%path.tempdir"), &str ) ) {
                 strResult += wxStandardPaths::Get().GetTempDir();
             }
             // Check for path_userconfigdir escape
-            else if ( str.StartsWith( wxT("%path.userconfigdir"), &str ) ) {
+            else if ( str.StartsWith( _("%path.userconfigdir"), &str ) ) {
                 strResult += wxStandardPaths::Get().GetUserConfigDir();
             }
             // Check for path_userdatadir escape
-            else if ( str.StartsWith( wxT("%path.userdatadir"), &str ) ) {
+            else if ( str.StartsWith( _("%path.userdatadir"), &str ) ) {
                 strResult += wxStandardPaths::Get().GetUserDataDir();
             }
             // Check for path_localdatadir escape
-            else if ( str.StartsWith( wxT("%path.localdatadir"), &str ) ) {
+            else if ( str.StartsWith( _("%path.localdatadir"), &str ) ) {
                 strResult += wxStandardPaths::Get().GetUserLocalDataDir();
             }
             // Check for toliveafter
-            else if ( str.StartsWith( wxT("%toliveafter1"), &str ) ) {
-                strResult += wxT("Carpe diem quam minimum credula postero.");
+            else if ( str.StartsWith( _("%toliveafter1"), &str ) ) {
+                strResult += _("Carpe diem quam minimum credula postero.");
             }
             // Check for toliveafter
-            else if ( str.StartsWith( wxT("%toliveafter2"), &str ) ) {
-                strResult += wxT("Be Hungry - Stay Foolish.");
+            else if ( str.StartsWith( _("%toliveafter2"), &str ) ) {
+                strResult += _("Be Hungry - Stay Foolish.");
             }
             // Check for toliveafter
-            else if ( str.StartsWith( wxT("%toliveafter3"), &str ) ) {
-                strResult += wxT("Be Foolish - Stay Hungry.");
+            else if ( str.StartsWith( _("%toliveafter3"), &str ) ) {
+                strResult += _("Be Foolish - Stay Hungry.");
             }
             // Check for measurement.index escape
-            else if ( str.StartsWith( wxT("%measurement.index"), &str ) ) {
+            else if ( str.StartsWith( _("%measurement.index"), &str ) ) {
                 uint8_t data_coding_byte = vscp_getMeasurementDataCoding( pEvent );
                 if ( -1 != data_coding_byte ) {
-                    strResult += wxString::Format( wxT("%d"),
+                    strResult += wxString::Format( _("%d"),
                                     VSCP_DATACODING_INDEX( data_coding_byte ) );
                 }
             }
             // Check for measurement.unit escape
-            else if ( str.StartsWith( wxT("%measurement.unit"), &str ) ) {
+            else if ( str.StartsWith( _("%measurement.unit"), &str ) ) {
                 uint8_t data_coding_byte = vscp_getMeasurementDataCoding( pEvent );
                 if ( -1 != data_coding_byte ) {
-                    strResult += wxString::Format( wxT("%d"),
+                    strResult += wxString::Format( _("%d"),
                                     VSCP_DATACODING_UNIT( data_coding_byte ) );
                 }
             }
             // Check for measurement.coding escape
-            else if ( str.StartsWith( wxT("%measurement.coding"), &str ) ) {
+            else if ( str.StartsWith( _("%measurement.coding"), &str ) ) {
                 uint8_t data_coding_byte = vscp_getMeasurementDataCoding( pEvent );
                 if ( -1 != data_coding_byte ) {
-                    strResult += wxString::Format( wxT("%d"),
+                    strResult += wxString::Format( _("%d"),
                                     VSCP_DATACODING_TYPE( data_coding_byte ) );
                 }
             }
             // Check for measurement.float escape
-            else if ( str.StartsWith( wxT("%measurement.float"), &str ) ) {
+            else if ( str.StartsWith( _("%measurement.float"), &str ) ) {
                 wxString str;
                 vscp_getVSCPMeasurementAsString( pEvent, str );
                 strResult += str;
             }
             // Check for measurement.string escape
-            else if ( str.StartsWith( wxT("%measurement.string"), &str ) ) {
+            else if ( str.StartsWith( _("%measurement.string"), &str ) ) {
                 wxString str;
                 vscp_getVSCPMeasurementAsString( pEvent, str );
                 strResult += str;
             }
             // Check for measurement.convert.data escape
-            else if ( str.StartsWith( wxT("%measurement.convert.data"), &str ) ) {
+            else if ( str.StartsWith( _("%measurement.convert.data"), &str ) ) {
                 wxString str;
                 if ( vscp_getVSCPMeasurementAsString(pEvent, str ) ) {
                     for ( unsigned int i=0; i<str.Length(); i++ ) {
@@ -1896,12 +1899,12 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
             }
 
             // Check for eventdata.realtext escape
-            else if ( str.StartsWith( wxT("%eventdata.realtext"), &str ) ) {
+            else if ( str.StartsWith( _("%eventdata.realtext"), &str ) ) {
                 strResult += vscp_getRealTextData( pEvent );
             }
 
             // Check for %variable:[name] (name is name of variable)
-            else if ( str.StartsWith( wxT("%variable:["), &str ) ) {
+            else if ( str.StartsWith( _("%variable:["), &str ) ) {
 
                 str.Trim(); // Trim of leading white space
                 if ( wxNOT_FOUND != ( pos = str.First(']') ) ) {
@@ -1925,7 +1928,7 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
             }
             
             // Check for %variable:[name] (name is name of variable)
-            else if ( str.StartsWith( wxT("%vardecode:["), &str ) ) {
+            else if ( str.StartsWith( _("%vardecode:["), &str ) ) {
                 
                 str.Trim(); // Trim of leading white space
                 if ( wxNOT_FOUND != ( pos = str.First(']') ) ) {
@@ -1958,7 +1961,7 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
             }
             
             // Check for %file:[path] (path is path to file to include)
-            else if ( str.StartsWith( wxT("%file:["), &str ) ) {
+            else if ( str.StartsWith( _("%file:["), &str ) ) {
                 
                 str.Trim(); // Trim of leading white space
                 if ( wxNOT_FOUND != ( pos = str.First(']') ) ) {
@@ -1990,43 +1993,43 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
             //                  VSCP Stock variables
             ////////////////////////////////////////////////////////////////////
 
-            else if (  str.StartsWith( wxT("%vscp.version.major"), &str ) ) {
+            else if (  str.StartsWith( _("%vscp.version.major"), &str ) ) {
                 strResult += wxString::Format( _("%d"), VSCPD_MAJOR_VERSION );
             }
-            else if (  str.StartsWith( wxT("%vscp.version.minor"), &str ) ) {
+            else if (  str.StartsWith( _("%vscp.version.minor"), &str ) ) {
                 strResult += wxString::Format( _("%d"), VSCPD_MINOR_VERSION );
             }
-            else if (  str.StartsWith( wxT("%vscp.version.sub"), &str ) ) {
+            else if (  str.StartsWith( _("%vscp.version.sub"), &str ) ) {
                 strResult += wxString::Format( _("%d"), VSCPD_RELEASE_VERSION );
             }
-            else if (  str.StartsWith( wxT("%vscp.version.build"), &str ) ) {
+            else if (  str.StartsWith( _("%vscp.version.build"), &str ) ) {
                 strResult += wxString::Format( _("%d"), VSCPD_BUILD_VERSION );
             }
-            else if (  str.StartsWith( wxT("%vscp.version.str"), &str ) ) {
+            else if (  str.StartsWith( _("%vscp.version.str"), &str ) ) {
                 strResult += wxString::Format( _("%s"), VSCPD_DISPLAY_VERSION );
             }
-            else if (  str.StartsWith( wxT("%vscp.version.wxwidgets"), &str ) ) {
+            else if (  str.StartsWith( _("%vscp.version.wxwidgets"), &str ) ) {
                 strResult += wxString::Format( _("%s"), wxVERSION_STRING );
             }
-            else if (  str.StartsWith( wxT("%vscp.version.wxwidgets.str"), &str ) ) {
+            else if (  str.StartsWith( _("%vscp.version.wxwidgets.str"), &str ) ) {
                 strResult += wxString::Format( _("%s"), wxVERSION_STRING );
             }
-            else if (  str.StartsWith( wxT("%vscp.copyright"), &str ) ) {
+            else if (  str.StartsWith( _("%vscp.copyright"), &str ) ) {
                 strResult += wxString::Format( _("%s"), VSCPD_COPYRIGHT );
             }
-            else if (  str.StartsWith( wxT("%vscp.copyright.vscp"), &str ) ) {
+            else if (  str.StartsWith( _("%vscp.copyright.vscp"), &str ) ) {
                 strResult += wxString::Format( _("%s"), VSCPD_COPYRIGHT );
             }
-            else if (  str.StartsWith( wxT("%vscp.copyright.wxwidgets"), &str ) ) {
+            else if (  str.StartsWith( _("%vscp.copyright.wxwidgets"), &str ) ) {
                 strResult += wxString::Format( _("%s"), " Copyright (c) 1998-2005 Julian Smart, Robert Roebling et al" );
             }
-            else if (  str.StartsWith( wxT("%vscp.copyright.mongoose"), &str ) ) {
+            else if (  str.StartsWith( _("%vscp.copyright.mongoose"), &str ) ) {
                 strResult += wxString::Format( _("%s"), "Copyright (c) 2013-2015 Cesanta Software Limited" );
             }
-            else if (  str.StartsWith( wxT("%vscp.os.str"), &str ) ) {
+            else if (  str.StartsWith( _("%vscp.os.str"), &str ) ) {
                 strResult += wxGetOsDescription();
             }
-            else if (  str.StartsWith( wxT("%vscp.os.width"), &str ) ) {
+            else if (  str.StartsWith( _("%vscp.os.width"), &str ) ) {
                 if ( wxIsPlatform64Bit() ) {
                     strResult += _("64-bit ");
                 }
@@ -2034,7 +2037,7 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
                     strResult += _("32-bit ");
                 }
             }
-            else if (  str.StartsWith( wxT("%vscp.os.endian"), &str ) ) {
+            else if (  str.StartsWith( _("%vscp.os.endian"), &str ) ) {
                 if ( wxIsPlatformLittleEndian() ) {
                     strResult += _("Little endian ");
                 }
@@ -2042,11 +2045,11 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
                     strResult += _("Big endian ");
                 }
             }
-            else if (  str.StartsWith( wxT("%vscp.memory.free"), &str ) ) {
+            else if (  str.StartsWith( _("%vscp.memory.free"), &str ) ) {
                 wxMemorySize memsize;
                 strResult += memsize.ToString();
             }
-            else if (  str.StartsWith( wxT("%vscp.host.fullname"), &str ) ) {
+            else if (  str.StartsWith( _("%vscp.host.fullname"), &str ) ) {
                 strResult += wxGetFullHostName();
             }
             // ****************  ESCAPE WAS NOT FOUND ****************
@@ -2075,7 +2078,7 @@ bool dmElement::doAction( vscpEvent *pEvent )
     wxString logStr;
 
     // Leave here for test of escapes
-    //handleEscapes( pEvent, wxString( wxT("This is a test %class %type [%sizedata] %data  %data[0] %data[90]") ) );
+    //handleEscapes( pEvent, wxString( _("This is a test %class %type [%sizedata] %data  %data[0] %data[90]") ) );
 
     m_triggCounter++;
 
@@ -2372,7 +2375,7 @@ bool dmElement::doAction( vscpEvent *pEvent )
                 wxString wxstr = m_actionparam;
                 handleEscapes( pEvent, wxstr );
                 
-                wxStringTokenizer tkz( m_actionparam, wxT(";") );
+                wxStringTokenizer tkz( m_actionparam, _(";") );
 
                 if ( !tkz.HasMoreTokens() ) {
                     // Strange action parameter
@@ -2561,7 +2564,7 @@ bool dmElement::doActionExecute(vscpEvent *pDMEvent, bool bCheckExecutable )
     if ( unixVSCPExecute( wxstr ) ) {
 #endif
         if ( gpobj->m_debugFlags1 & VSCP_DEBUG1_DM ) {
-            wxString wxstr = wxT("[Action] Executed: ");
+            wxString wxstr = _("[Action] Executed: ");
             wxstr += m_actionparam;
             wxstr += _("\n");
             gpobj->logMsg( _("[DM] ") + wxstr + _("\n"), 
@@ -2711,7 +2714,7 @@ bool dmElement::doActionSendEvent( vscpEvent *pDMEvent )
     if ( gpobj->m_maxItemsInClientReceiveQueue >
             gpobj->m_clientOutputQueue.GetCount() ) {
 
-            if (  wxNOT_FOUND != ( idx = m_actionparam.Find( wxT(";") ) ) ) {
+            if (  wxNOT_FOUND != ( idx = m_actionparam.Find( _(";") ) ) ) {
                 // There is a variable that we should set to true in
                 // this parameter line. We extract it
                 varName = m_actionparam.Mid( idx + 1 );
@@ -2740,13 +2743,13 @@ bool dmElement::doActionSendEvent( vscpEvent *pDMEvent )
                     if ( gpobj->m_variables.find( varName, variable ) ) {
 
                         // Non existent - add and set to false
-                        gpobj->m_variables.add( varName, wxT("true") );
+                        gpobj->m_variables.add( varName, _("true") );
 
                     }
                     else {
 
                         // Existing - set value to false
-                        variable.setValueFromString( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN, wxT("true") );
+                        variable.setValueFromString( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN, _("true") );
 
                     }
                 }
@@ -2773,7 +2776,7 @@ bool dmElement::doActionSendEventConditional( vscpEvent *pDMEvent )
     wxString wxstr = m_actionparam;
     handleEscapes( pDMEvent, wxstr );
 
-    wxStringTokenizer tkz( wxstr, wxT(";") );
+    wxStringTokenizer tkz( wxstr, _(";") );
 
     // Handle variable
     if ( tkz.HasMoreTokens() ) {
@@ -2783,7 +2786,7 @@ bool dmElement::doActionSendEventConditional( vscpEvent *pDMEvent )
         CVSCPVariable variable; 
         if ( gpobj->m_variables.find( varname, variable ) ) {
             // must be a variable
-            wxString wxstrErr = wxT("[Action] Conditional event: No variable defined ");
+            wxString wxstrErr = _("[Action] Conditional event: No variable defined ");
             wxstrErr += wxstr;
             wxstrErr += _("\n");
             gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
@@ -2793,7 +2796,7 @@ bool dmElement::doActionSendEventConditional( vscpEvent *pDMEvent )
     }
     else {
         // must be a variable
-        wxString wxstrErr = wxT("[Action] Conditional event: No variable defined ");
+        wxString wxstrErr = _("[Action] Conditional event: No variable defined ");
         wxstrErr += wxstr;
         wxstrErr += _("\n");
         gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
@@ -2810,7 +2813,7 @@ bool dmElement::doActionSendEventConditional( vscpEvent *pDMEvent )
 
         if ( !vscp_setVscpEventFromString( pEvent, strEvent ) ) {
             // Could not parse evenet data
-            wxString wxstrErr = wxT("[Action] Conditional event: Unable to parse event ");
+            wxString wxstrErr = _("[Action] Conditional event: Unable to parse event ");
             wxstrErr += wxstr;
             wxstrErr += _("\n");
             gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
@@ -2819,7 +2822,7 @@ bool dmElement::doActionSendEventConditional( vscpEvent *pDMEvent )
     }
     else {
         // must be an event
-        wxString wxstrErr = wxT("[Action] Conditional event: No event defined ");
+        wxString wxstrErr = _("[Action] Conditional event: No event defined ");
         wxstrErr += wxstr;
         wxstrErr += _("\n");
         gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
@@ -2861,7 +2864,7 @@ bool dmElement::doActionSendEventsFromFile( vscpEvent *pDMEvent )
 
     // File must exist
     if ( !wxFile::Exists( wxstr ) ) {
-        wxString wxstrErr = wxT("[Action] Send event from file: Non existent file  ");
+        wxString wxstrErr = _("[Action] Send event from file: Non existent file  ");
         wxstrErr += wxstr;
         wxstrErr += _("\n");
         gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
@@ -2870,7 +2873,7 @@ bool dmElement::doActionSendEventsFromFile( vscpEvent *pDMEvent )
 
     wxXmlDocument doc;
     if ( !doc.Load ( wxstr ) ) {
-        wxString wxstrErr = wxT("[Action] Send event from file: Failed to load event XML file  ");
+        wxString wxstrErr = _("[Action] Send event from file: Failed to load event XML file  ");
         wxstrErr += wxstr;
         wxstrErr += _("\n");
         gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
@@ -2878,8 +2881,8 @@ bool dmElement::doActionSendEventsFromFile( vscpEvent *pDMEvent )
     }
 
     // start processing the XML file
-    if ( doc.GetRoot()->GetName() != wxT ( "vscpevents" ) ) {
-        wxString wxstrErr = wxT("[Action] Send event from file: <vscpevents> tag is missing.");
+    if ( doc.GetRoot()->GetName() != _( "vscpevents" ) ) {
+        wxString wxstrErr = _("[Action] Send event from file: <vscpevents> tag is missing.");
         wxstrErr += _("\n");
         gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
         return false;
@@ -2888,7 +2891,7 @@ bool dmElement::doActionSendEventsFromFile( vscpEvent *pDMEvent )
     wxXmlNode *child = doc.GetRoot()->GetChildren();
     while ( child ) {
 
-        if ( child->GetName() == wxT ( "event" ) ) {
+        if ( child->GetName() == _( "event" ) ) {
 
             // Set defaults for event
             vscpEvent *pEvent = new vscpEvent;
@@ -2906,19 +2909,19 @@ bool dmElement::doActionSendEventsFromFile( vscpEvent *pDMEvent )
                 wxXmlNode *subchild = child->GetChildren();
                 while ( subchild ) {
 
-                    if ( subchild->GetName() == wxT ( "head" ) ) {
+                    if ( subchild->GetName() == _( "head" ) ) {
                         pEvent->head = vscp_readStringValue( subchild->GetNodeContent() );
                     }
-                    else if ( subchild->GetName() == wxT ( "class" ) ) {
+                    else if ( subchild->GetName() == _( "class" ) ) {
                         pEvent->vscp_class = vscp_readStringValue( subchild->GetNodeContent() );
                     }
-                    else if ( subchild->GetName() == wxT ( "type" ) ) {
+                    else if ( subchild->GetName() == _( "type" ) ) {
                         pEvent->vscp_type = vscp_readStringValue( subchild->GetNodeContent() );
                     }
-                    else if ( subchild->GetName() == wxT ( "guid" ) ) {
+                    else if ( subchild->GetName() == _( "guid" ) ) {
                         vscp_getGuidFromString( pEvent, subchild->GetNodeContent() );
                     }
-                    if ( subchild->GetName() == wxT ( "data" ) ) {
+                    if ( subchild->GetName() == _( "data" ) ) {
                         vscp_setVscpDataFromString( pEvent, subchild->GetNodeContent() );
                     }
 
@@ -2973,7 +2976,7 @@ bool dmElement::doActionWriteFile( vscpEvent *pDMEvent )
     wxString wxstr = m_actionparam;
     handleEscapes( pDMEvent, wxstr );
 
-    wxStringTokenizer tkz( wxstr, wxT(";") );
+    wxStringTokenizer tkz( wxstr, _(";") );
 
     // Handle path
     if ( tkz.HasMoreTokens() ) {
@@ -2981,7 +2984,7 @@ bool dmElement::doActionWriteFile( vscpEvent *pDMEvent )
     }
     else {
         // Must have a path
-        wxString wxstrErr = wxT("[Action] Write to file: No path to file given  ");
+        wxString wxstrErr = _("[Action] Write to file: No path to file given  ");
         wxstrErr += _("\n");
         gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
         return false;
@@ -3003,7 +3006,7 @@ bool dmElement::doActionWriteFile( vscpEvent *pDMEvent )
     }
     else {
         // Faild to open file
-        wxString wxstrErr = wxT("[Action] Write to file: Failed to open file ");
+        wxString wxstrErr = _("[Action] Write to file: Failed to open file ");
         wxstrErr += path;
         wxstrErr += _("\n");
         gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
@@ -3023,10 +3026,10 @@ bool dmElement::doActionGetURL( vscpEvent *pDMEvent )
     wxString wxstr = m_actionparam;
     handleEscapes( pDMEvent, wxstr );
 
-    wxStringTokenizer tkz( wxstr, wxT(";") );
+    wxStringTokenizer tkz( wxstr, _(";") );
     if ( !tkz.HasMoreTokens() ) {
         // Action parameter is wrong
-        wxString wxstrErr = wxT("[Action] Get URL: Wrong action parameter (method;URL required");
+        wxString wxstrErr = _("[Action] Get URL: Wrong action parameter (method;URL required");
         wxstrErr += wxstr;
         wxstrErr += _("\n");
         gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
@@ -3037,10 +3040,10 @@ bool dmElement::doActionGetURL( vscpEvent *pDMEvent )
     actionThread_URL::accessmethod_t nAccessMethod = actionThread_URL::GET;
     wxString access = tkz.GetNextToken();
     access.MakeUpper();
-    if ( wxNOT_FOUND != access.Find(wxT("PUT") ) ) {
+    if ( wxNOT_FOUND != access.Find(_("PUT") ) ) {
         nAccessMethod = actionThread_URL::PUT;
     }
-    else if ( wxNOT_FOUND != access.Find(wxT("POST") ) ) {
+    else if ( wxNOT_FOUND != access.Find(_("POST") ) ) {
         nAccessMethod = actionThread_URL::POST;
     }
 
@@ -3051,7 +3054,7 @@ bool dmElement::doActionGetURL( vscpEvent *pDMEvent )
     }
     else {
         // URL is required
-        wxString wxstrErr = wxT("[Action] Get URL: Wrong action parameter (URL required)");
+        wxString wxstrErr = _("[Action] Get URL: Wrong action parameter (URL required)");
         wxstrErr += wxstr;
         wxstrErr += _("\n");
         gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
@@ -3114,7 +3117,7 @@ bool dmElement::doActionStoreVariable( vscpEvent *pDMEvent )
         
         if ( !( var.setVariableFromString( params ) ) ) {
             // must be a variable
-            wxString wxstrErr = wxT("[Action] Store Variable: Could not set new variable ");
+            wxString wxstrErr = _("[Action] Store Variable: Could not set new variable ");
             wxstrErr += params;
             wxstrErr += _("\n");
             gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
@@ -3124,7 +3127,7 @@ bool dmElement::doActionStoreVariable( vscpEvent *pDMEvent )
 
         if ( !gpobj->m_variables.add( var ) ) {
             // must be a variable
-            wxString wxstrErr = wxT("[Action] Store Variable: Could not add variable ");
+            wxString wxstrErr = _("[Action] Store Variable: Could not add variable ");
             wxstrErr += params;
             wxstrErr += _("\n");
             gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
@@ -3170,7 +3173,7 @@ bool dmElement::doActionStoreVariable( vscpEvent *pDMEvent )
         // Add/create the variable
         if ( !gpobj->m_variables.add( var ) ) {
             // must be a variable
-            wxString wxstrErr = wxT("[Action] Store Variable: Could not add variable ");
+            wxString wxstrErr = _("[Action] Store Variable: Could not add variable ");
             wxstrErr += params;
             wxstrErr += _("\n");
             gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
@@ -3186,7 +3189,7 @@ bool dmElement::doActionStoreVariable( vscpEvent *pDMEvent )
                         var.setValue( strValue );
                     }
                     else {
-                        wxString wxstrErr = wxT("[Action] Store Variable: Failed to convert value to string ");
+                        wxString wxstrErr = _("[Action] Store Variable: Failed to convert value to string ");
                         wxstrErr += params;
                         wxstrErr += _("\n");
                         gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
@@ -3202,7 +3205,7 @@ bool dmElement::doActionStoreVariable( vscpEvent *pDMEvent )
                         var.setValue( (int)value );
                     }
                     else {
-                        wxString wxstrErr = wxT("[Action] Store Variable: Failed to convert value to double ");
+                        wxString wxstrErr = _("[Action] Store Variable: Failed to convert value to double ");
                         wxstrErr += params;
                         wxstrErr += _("\n");
                         gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
@@ -3218,7 +3221,7 @@ bool dmElement::doActionStoreVariable( vscpEvent *pDMEvent )
                         var.setValue( (long)value );
                     }
                     else {
-                        wxString wxstrErr = wxT("[Action] Store Variable: Failed to convert value to double ");
+                        wxString wxstrErr = _("[Action] Store Variable: Failed to convert value to double ");
                         wxstrErr += params;
                         wxstrErr += _("\n");
                         gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
@@ -3234,7 +3237,7 @@ bool dmElement::doActionStoreVariable( vscpEvent *pDMEvent )
                         var.setValue( value );
                     }
                     else {
-                        wxString wxstrErr = wxT("[Action] Store Variable: Failed to convert value to double ");
+                        wxString wxstrErr = _("[Action] Store Variable: Failed to convert value to double ");
                         wxstrErr += params;
                         wxstrErr += _("\n");
                         gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
@@ -3280,7 +3283,7 @@ bool dmElement::doActionStoreVariable( vscpEvent *pDMEvent )
                         var.setValue( strValue );
                     }
                     else {
-                        wxString wxstrErr = wxT("[Action] Store Variable: Failed to convert value to double ");
+                        wxString wxstrErr = _("[Action] Store Variable: Failed to convert value to double ");
                         wxstrErr += params;
                         wxstrErr += _("\n");
                         gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
@@ -3463,7 +3466,7 @@ bool dmElement::doActionAddVariable( vscpEvent *pDMEvent )
         var.setPersistent( false );
 
         if ( gpobj->m_variables.add( var ) ) {
-            wxString wxstrErr = wxT("[Action] Add to Variable: Could not add new variable ");
+            wxString wxstrErr = _("[Action] Add to Variable: Could not add new variable ");
             wxstrErr += m_actionparam;
             wxstrErr += _("\n");
             gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
@@ -3475,7 +3478,7 @@ bool dmElement::doActionAddVariable( vscpEvent *pDMEvent )
 
     // Must be a numerical variable
     if ( !variable.isNumerical() ) {
-            wxString wxstrErr = wxT("[Action] Add to Variable: Variable is not numerical ");
+            wxString wxstrErr = _("[Action] Add to Variable: Variable is not numerical ");
             wxstrErr += m_actionparam;
             wxstrErr += _("\n");
             gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
@@ -3541,7 +3544,7 @@ bool dmElement::doActionSubtractVariable( vscpEvent *pDMEvent )
         var.setPersistent( false );
 
         if ( gpobj->m_variables.add( var ) ) {
-            wxString wxstrErr = wxT("[Action] Add to Variable: Could not add new variable ");
+            wxString wxstrErr = _("[Action] Add to Variable: Could not add new variable ");
             wxstrErr += m_actionparam;
             wxstrErr += _("\n");
             gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
@@ -3553,7 +3556,7 @@ bool dmElement::doActionSubtractVariable( vscpEvent *pDMEvent )
 
     // Must be a numerical variable
     if ( !variable.isNumerical() ) {
-            wxString wxstrErr = wxT("[Action] Add to Variable: Variable is not numerical ");
+            wxString wxstrErr = _("[Action] Add to Variable: Variable is not numerical ");
             wxstrErr += m_actionparam;
             wxstrErr += _("\n");
             gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM  );
@@ -3618,7 +3621,7 @@ bool dmElement::doActionMultiplyVariable( vscpEvent *pDMEvent )
         var.setPersistent( false );
 
         if ( gpobj->m_variables.add( var ) ) {
-            wxString wxstrErr = wxT("[Action] Add to Variable: Could not add new variable ");
+            wxString wxstrErr = _("[Action] Add to Variable: Could not add new variable ");
             wxstrErr += m_actionparam;
             wxstrErr += _("\n");
             gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
@@ -3630,7 +3633,7 @@ bool dmElement::doActionMultiplyVariable( vscpEvent *pDMEvent )
 
     // Must be a numerical variable
     if ( !variable.isNumerical() ) {
-            wxString wxstrErr = wxT("[Action] Add to Variable: Variable is not numerical ");
+            wxString wxstrErr = _("[Action] Add to Variable: Variable is not numerical ");
             wxstrErr += m_actionparam;
             wxstrErr += _("\n");
             gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
@@ -3695,7 +3698,7 @@ bool dmElement::doActionDivideVariable( vscpEvent *pDMEvent )
         var.setPersistent( false );
 
         if ( gpobj->m_variables.add( var ) ) {
-            wxString wxstrErr = wxT("[Action] Add to Variable: Could not add new variable ");
+            wxString wxstrErr = _("[Action] Add to Variable: Could not add new variable ");
             wxstrErr += m_actionparam;
             wxstrErr += _("\n");
             gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
@@ -3707,7 +3710,7 @@ bool dmElement::doActionDivideVariable( vscpEvent *pDMEvent )
 
     // Must be a numerical variable
     if ( !variable.isNumerical() ) {
-            wxString wxstrErr = wxT("[Action] Add to Variable: Variable is not numerical ");
+            wxString wxstrErr = _("[Action] Add to Variable: Variable is not numerical ");
             wxstrErr += m_actionparam;
             wxstrErr += _("\n");
             gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
@@ -3760,7 +3763,7 @@ bool dmElement::doActionCheckVariable( vscpEvent *pDMEvent, VariableCheckType ty
     handleEscapes( pDMEvent, params );
 
     // value;unit;operation;variable;flag-variable
-    wxStringTokenizer tkz( params, wxT(";") );
+    wxStringTokenizer tkz( params, _(";") );
     
     // Value
     if ( tkz.HasMoreTokens() ) {
@@ -4051,7 +4054,7 @@ bool dmElement::doActionStoreMin( vscpEvent *pDMEvent )
     vscp_getVSCPMeasurementAsDouble( pDMEvent, &value );
     
     // variable;unit;index;zone;subzone
-    wxStringTokenizer tkz( params, wxT(";") );
+    wxStringTokenizer tkz( params, _(";") );
     
     if ( !tkz.HasMoreTokens() ) {
         wxString wxstr = _("Need variable name. param =") + params;
@@ -4164,7 +4167,7 @@ bool dmElement::doActionStoreMax( vscpEvent *pDMEvent )
     vscp_getVSCPMeasurementAsDouble( pDMEvent, &value );
     
     // variable;unit;index;zone;subzone
-    wxStringTokenizer tkz( params, wxT(";") );
+    wxStringTokenizer tkz( params, _(";") );
     
     if ( !tkz.HasMoreTokens() ) {
         wxString wxstr = _("Need variable name. param =") + params;
@@ -4257,10 +4260,10 @@ bool dmElement::doActionStartTimer( vscpEvent *pDMEvent )
     wxString wxstr = m_actionparam;
     handleEscapes( pDMEvent, wxstr );
 
-    wxStringTokenizer tkz( wxstr, wxT(";") );
+    wxStringTokenizer tkz( wxstr, _(";") );
     if ( !tkz.HasMoreTokens() ) {
         // Strange action parameter
-        wxString wxstrErr = wxT("[Action] Start timer: Wrong action parameter ");
+        wxString wxstrErr = _("[Action] Start timer: Wrong action parameter ");
         wxstrErr += wxstr;
         wxstrErr += _("\n");
         gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
@@ -4272,7 +4275,7 @@ bool dmElement::doActionStartTimer( vscpEvent *pDMEvent )
 
     if ( !tkz.HasMoreTokens() ) {
         // Strange action parameter
-        wxString wxstrErr = wxT("[Action] Start timer: Variable name is missing ");
+        wxString wxstrErr = _("[Action] Start timer: Variable name is missing ");
         wxstrErr += wxstr;
         wxstrErr += _("\n");
         gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
@@ -4284,7 +4287,7 @@ bool dmElement::doActionStartTimer( vscpEvent *pDMEvent )
 
     if ( !tkz.HasMoreTokens() ) {
         // Strange action parameter
-        wxString wxstrErr = wxT("[Action] Start timer: Delay is missing ");
+        wxString wxstrErr = _("[Action] Start timer: Delay is missing ");
         wxstrErr += wxstr;
         wxstrErr += _("\n");
         gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
@@ -4296,7 +4299,7 @@ bool dmElement::doActionStartTimer( vscpEvent *pDMEvent )
 
     if ( !tkz.HasMoreTokens() ) {
         // Strange action parameter
-        wxString wxstrErr = wxT("[Action] Start timer: Setvalue is missing ");
+        wxString wxstrErr = _("[Action] Start timer: Setvalue is missing ");
         wxstrErr += wxstr;
         wxstrErr += _("\n");
         gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
@@ -4306,7 +4309,7 @@ bool dmElement::doActionStartTimer( vscpEvent *pDMEvent )
     bool bSetValue = true;
     wxString str = tkz.GetNextToken();
     str.Upper();
-    if ( str.Find( wxT("FALSE") ) ) {
+    if ( str.Find( _("FALSE") ) ) {
         bSetValue = false;
     }
 
@@ -4325,10 +4328,10 @@ bool dmElement::doActionPauseTimer( vscpEvent *pDMEvent )
     wxString wxstr = m_actionparam;
     handleEscapes( pDMEvent, wxstr );
 
-    wxStringTokenizer tkz( wxstr, wxT(";") );
+    wxStringTokenizer tkz( wxstr, _(";") );
     if ( !tkz.HasMoreTokens() ) {
         // Strange action parameter
-        wxString wxstrErr = wxT("[Action] Stop timer: Wrong action parameter ");
+        wxString wxstrErr = _("[Action] Stop timer: Wrong action parameter ");
         wxstrErr += wxstr;
         wxstrErr += _("\n");
         gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
@@ -4353,10 +4356,10 @@ bool dmElement::doActionResumeTimer( vscpEvent *pDMEvent )
     wxString wxstr = m_actionparam;
     handleEscapes( pDMEvent, wxstr );
 
-    wxStringTokenizer tkz( wxstr, wxT(";") );
+    wxStringTokenizer tkz( wxstr, _(";") );
     if ( !tkz.HasMoreTokens() ) {
         // Strange action parameter
-        wxString wxstrErr = wxT("[Action] Stop timer: Wrong action parameter ");
+        wxString wxstrErr = _("[Action] Stop timer: Wrong action parameter ");
         wxstrErr += wxstr;
         wxstrErr += _("\n");
         gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
@@ -4381,10 +4384,10 @@ bool dmElement::doActionStopTimer( vscpEvent *pDMEvent )
     wxString wxstr = m_actionparam;
     handleEscapes( pDMEvent, wxstr );
 
-    wxStringTokenizer tkz( wxstr, wxT(";") );
+    wxStringTokenizer tkz( wxstr, _(";") );
     if ( !tkz.HasMoreTokens() ) {
         // Strange action parameter
-        wxString wxstrErr = wxT("[Action] Stop timer: Wrong action parameter ");
+        wxString wxstrErr = _("[Action] Stop timer: Wrong action parameter ");
         wxstrErr += wxstr;
         wxstrErr += _("\n");
         gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
@@ -4789,7 +4792,7 @@ bool CDM::feedPeriodicEvent( void )
         EventSecond.pdata = NULL;
         //memcpy( EventSecond.GUID, m_pCtrlObject->m_GUID, 16 ); // Server GUID
         gpobj->m_guid.writeGUID( EventSecond.GUID );
-        wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal second event\n") );
+        wxLogTrace( _("_RACE_vscpd_dm"), _("Internal second event\n") );
         feed( &EventSecond );
 
         // Update timers
@@ -4806,7 +4809,7 @@ bool CDM::feedPeriodicEvent( void )
             EventRandomMinute.pdata = NULL;
             //memcpy( EventRandomMinute.GUID, m_pCtrlObject->m_GUID, 16 ); // Server GUID
             gpobj->m_guid.writeGUID( EventRandomMinute.GUID );
-            wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal random minute event\n")  );
+            wxLogTrace( _("_RACE_vscpd_dm"), _("Internal random minute event\n")  );
             feed( &EventRandomMinute );
 
         }
@@ -4825,7 +4828,7 @@ bool CDM::feedPeriodicEvent( void )
         EventMinute.pdata = NULL;
         //memcpy( EventMinute.GUID, m_pCtrlObject->m_GUID, 16 ); // Server GUID
         gpobj->m_guid.writeGUID( EventMinute.GUID );
-        wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal minute event\n") );
+        wxLogTrace( _("_RACE_vscpd_dm"), _("Internal minute event\n") );
         m_rndMinute = (uint8_t)( (double)rand() / ((double)(RAND_MAX) + (double)(1)) ) * 60;
         feed( &EventMinute );
 
@@ -4840,7 +4843,7 @@ bool CDM::feedPeriodicEvent( void )
             EventRandomHour.pdata = NULL;
             //memcpy( EventRandomHour.GUID, m_pCtrlObject->m_GUID, 16 );    // Server GUID
             gpobj->m_guid.writeGUID( EventRandomHour.GUID );
-            wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal random hour event\n") );
+            wxLogTrace( _("_RACE_vscpd_dm"), _("Internal random hour event\n") );
             feed( &EventRandomHour );
 
         }
@@ -4858,7 +4861,7 @@ bool CDM::feedPeriodicEvent( void )
         EventHour.pdata = NULL;
         //memcpy( EventtHour.GUID, m_pCtrlObject->m_GUID, 16 );             // Server GUID
         gpobj->m_guid.writeGUID( EventHour.GUID );
-        wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal hour event\n") );
+        wxLogTrace( _("_RACE_vscpd_dm"), _("Internal hour event\n") );
         m_rndHour = (uint8_t)( (double)rand() / ((double)(RAND_MAX) + (double)(1)) ) * 24;
         feed( &EventHour );
 
@@ -4874,7 +4877,7 @@ bool CDM::feedPeriodicEvent( void )
             EventRandomDay.pdata = NULL;
             //memcpy( EventRandomDay.GUID, m_pCtrlObject->m_GUID, 16 );     // Server GUID
             gpobj->m_guid.writeGUID( EventRandomDay.GUID );
-            wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal random day event\n") );
+            wxLogTrace( _("_RACE_vscpd_dm"), _("Internal random day event\n") );
             feed( &EventRandomDay );
 
         }
@@ -4892,7 +4895,7 @@ bool CDM::feedPeriodicEvent( void )
         EventDay.pdata = NULL;
         //memcpy( EventDay.GUID, m_pCtrlObject->m_GUID, 16 );   // Server GUID
         gpobj->m_guid.writeGUID( EventDay.GUID );
-        wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal day event\n") );
+        wxLogTrace( _("_RACE_vscpd_dm"), _("Internal day event\n") );
         m_rndDay = (uint8_t)( (double)rand() / ((double)(RAND_MAX) + (double)(1)) ) * 7;
         feed( &EventDay );
 
@@ -4908,7 +4911,7 @@ bool CDM::feedPeriodicEvent( void )
             EventRandomWeek.pdata = NULL;
             //memcpy( EventRandomWeek.GUID, m_pCtrlObject->m_GUID, 16 );// Server GUID
             gpobj->m_guid.writeGUID( EventRandomWeek.GUID );
-            wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal random week event\n") );
+            wxLogTrace( _("_RACE_vscpd_dm"), _("Internal random week event\n") );
             feed( &EventRandomWeek );
 
         }
@@ -4927,7 +4930,7 @@ bool CDM::feedPeriodicEvent( void )
             EventWeek.pdata = NULL;
             //memcpy( EventWeek.GUID, m_pCtrlObject->m_GUID, 16 ); // Server GUID
             gpobj->m_guid.writeGUID( EventWeek.GUID );
-            wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal week event\n") );
+            wxLogTrace( _("_RACE_vscpd_dm"), _("Internal week event\n") );
             m_rndWeek = (uint8_t)( (double)rand() / ((double)(RAND_MAX) + (double)(1)) ) * 52;
             feed( &EventWeek );
 
@@ -4942,7 +4945,7 @@ bool CDM::feedPeriodicEvent( void )
                 EventRandomMonth.pdata = NULL;
                 //memcpy( EventRandomMonth.GUID, m_pCtrlObject->m_GUID, 16 );   // Server GUID
                 gpobj->m_guid.writeGUID( EventRandomMonth.GUID );
-                wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal random month event\n") );
+                wxLogTrace( _("_RACE_vscpd_dm"), _("Internal random month event\n") );
                 feed( &EventRandomMonth );
 
             }
@@ -4960,7 +4963,7 @@ bool CDM::feedPeriodicEvent( void )
         EventMonth.pdata = NULL;
         //memcpy( EventMonth.GUID, m_pCtrlObject->m_GUID, 16 );  // Server GUID
         gpobj->m_guid.writeGUID( EventMonth.GUID );
-        wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal month event\n") );
+        wxLogTrace( _("_RACE_vscpd_dm"), _("Internal month event\n") );
         m_rndMonth = (uint8_t)( (double)rand() / ((double)(RAND_MAX) + (double)(1)) ) * 12;
         feed( &EventMonth );
 
@@ -4975,7 +4978,7 @@ bool CDM::feedPeriodicEvent( void )
             EventRandomYear.pdata = NULL;
             //memcpy( EventRandomYear.GUID, m_pCtrlObject->m_GUID, 16 ); // Server GUID
             gpobj->m_guid.writeGUID( EventRandomYear.GUID );
-            wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal random year event\n") );
+            wxLogTrace( _("_RACE_vscpd_dm"), _("Internal random year event\n") );
             feed( &EventRandomYear );
 
         }
@@ -4993,7 +4996,7 @@ bool CDM::feedPeriodicEvent( void )
         EventYear.pdata = NULL;
         //memcpy( EventYear.GUID, m_pCtrlObject->m_GUID, 16 );        // Server GUID
         gpobj->m_guid.writeGUID( EventYear.GUID );
-        wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal year event\n") );
+        wxLogTrace( _("_RACE_vscpd_dm"), _("Internal year event\n") );
         m_rndYear = (uint8_t)( (double)rand() / ((double)(RAND_MAX) + (double)(1)) ) * 365;
         feed( &EventYear );
 
@@ -5011,7 +5014,7 @@ bool CDM::feedPeriodicEvent( void )
             EventQuarter.pdata = NULL;
             //memcpy( EventQuarter.GUID, m_pCtrlObject->m_GUID, 16 );     // Server GUID
             gpobj->m_guid.writeGUID( EventQuarter.GUID );
-            wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal quarter event\n") );
+            wxLogTrace( _("_RACE_vscpd_dm"), _("Internal quarter event\n") );
             feed( &EventQuarter );
 
     }
@@ -5028,7 +5031,7 @@ bool CDM::feedPeriodicEvent( void )
             EventQuarter.pdata = NULL;
             //memcpy( EventQuarter.GUID, m_pCtrlObject->m_GUID, 16 );   // Server GUID
             gpobj->m_guid.writeGUID( EventQuarter.GUID );
-            wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal quarter event\n") );
+            wxLogTrace( _("_RACE_vscpd_dm"), _("Internal quarter event\n") );
             feed( &EventQuarter );
 
     }
@@ -5045,7 +5048,7 @@ bool CDM::feedPeriodicEvent( void )
             EventQuarter.pdata = NULL;
             //memcpy( EventQuarter.GUID, m_pCtrlObject->m_GUID, 16 );     // Server GUID
             gpobj->m_guid.writeGUID( EventQuarter.GUID );
-            wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal quarter event\n") );
+            wxLogTrace( _("_RACE_vscpd_dm"), _("Internal quarter event\n") );
             feed( &EventQuarter );
 
     }
@@ -5062,7 +5065,7 @@ bool CDM::feedPeriodicEvent( void )
             EventQuarter.pdata = NULL;
             //memcpy( EventQuarter.GUID, m_pCtrlObject->m_GUID, 16 ); // Server GUID
             gpobj->m_guid.writeGUID( EventQuarter.GUID );
-            wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal quarter event\n") );
+            wxLogTrace( _("_RACE_vscpd_dm"), _("Internal quarter event\n") );
             feed( &EventQuarter );
 
     }
@@ -5180,7 +5183,7 @@ int CDM::addTimer( uint16_t id,
                                             (const char *)nameVar.c_str() );
         gpobj->logMsg( _("[DM] ") + logStr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
 
-        if ( gpobj->m_variables.add( nameVar, wxT("false"), 
+        if ( gpobj->m_variables.add( nameVar, _("false"), 
                 VSCP_DAEMON_VARIABLE_CODE_BOOLEAN ) ) {
 
             dmTimer *pTimer = new dmTimer( nameVar,
@@ -5911,8 +5914,9 @@ bool CDM::loadFromDatabase( void )
         return false;
     }
     
-    gpobj->logMsg( wxString::Format( _("[DM] ") + _("Loading decision matrix from database : %s\n"), 
-                                        (const char *)m_path_db_vscp_dm.GetFullPath().mbc_str() ),
+    gpobj->logMsg( wxString::Format( _("[DM] ") + _
+                        ("Loading decision matrix from database : %s\n"), 
+                        (const char *)m_path_db_vscp_dm.GetFullPath().mbc_str() ),
                         DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
     
     m_mutexDM.Lock();
@@ -5936,162 +5940,221 @@ bool CDM::loadFromDatabase( void )
             pDMitem->m_pDM = this;  // Record owner
             
             // id in database
-            if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ID ) ) ) {
+            if ( NULL != 
+                 ( p = (const char *)sqlite3_column_text( ppStmt, 
+                                                    VSCPDB_ORDINAL_DM_ID ) ) ) {
                 pDMitem->m_id = atol( p );
             }
             
             // bEnable
-            if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ENABLE ) ) ) {
+            if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, 
+                                                VSCPDB_ORDINAL_DM_ENABLE ) ) ) {
                 pDMitem->m_bEnable = atoi( p ) ? true : false;
             }
             
             // groupid
-            if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_GROUPID ) ) ) {
+            if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, 
+                                               VSCPDB_ORDINAL_DM_GROUPID ) ) ) {
                 pDMitem->m_strGroupID = wxString::FromUTF8( p );
             }
             
             // Mask priority
-            if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_MASK_PRIORITY ) ) ) {
+            if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, 
+                                         VSCPDB_ORDINAL_DM_MASK_PRIORITY ) ) ) {
                 pDMitem->m_vscpfilter.mask_priority = atoi( p );
             }
             
             // Filter priority
-            if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_FILTER_PRIORITY ) ) ) {
+            if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, 
+                                       VSCPDB_ORDINAL_DM_FILTER_PRIORITY ) ) ) {
                 pDMitem->m_vscpfilter.filter_priority = atoi( p );
             }
             
             // Mask class
-            if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_MASK_CLASS ) ) ) {
+            if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, 
+                                            VSCPDB_ORDINAL_DM_MASK_CLASS ) ) ) {
                 pDMitem->m_vscpfilter.mask_class = atoi( p );
             }
             
             // Filter class
-            if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_FILTER_CLASS ) ) ) {
+            if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, 
+                                          VSCPDB_ORDINAL_DM_FILTER_CLASS ) ) ) {
                 pDMitem->m_vscpfilter.filter_class = atoi( p );
             }
             
             // Mask type
-            if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_MASK_TYPE ) ) ) {
+            if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, 
+                                             VSCPDB_ORDINAL_DM_MASK_TYPE ) ) ) {
                 pDMitem->m_vscpfilter.mask_type = atoi( p );
             }
             
             // Filter type
-            if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_FILTER_TYPE ) ) ) {
+            if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, 
+                                           VSCPDB_ORDINAL_DM_FILTER_TYPE ) ) ) {
                 pDMitem->m_vscpfilter.filter_type = atoi( p );
             }
             
             // Mask GUID
-            if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_MASK_GUID ) ) ) {
-                cguid guid;
-                guid.getFromString( p );
-                memcpy( pDMitem->m_vscpfilter.mask_GUID, guid.getGUID(), 16 );
+            if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, 
+                                             VSCPDB_ORDINAL_DM_MASK_GUID ) ) ) {
+                if ( ( NULL != p ) && ( '*' != *p ) ) {
+                    cguid guid;
+                    guid.getFromString( p );
+                    memcpy( pDMitem->m_vscpfilter.mask_GUID, guid.getGUID(), 16 );
+                }
             }
             
             // Filter GUID
-            if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_FILTER_GUID ) ) ) {
-                cguid guid;
-                guid.getFromString( p );
-                memcpy( pDMitem->m_vscpfilter.filter_GUID, guid.getGUID(), 16 );
+            if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, 
+                                           VSCPDB_ORDINAL_DM_FILTER_GUID ) ) ) {
+                if ( ( NULL != p ) && ( '*' != *p ) ) {
+                    cguid guid;
+                    guid.getFromString( p );
+                    memcpy( pDMitem->m_vscpfilter.filter_GUID, guid.getGUID(), 16 );
+                }
             }
             
             // Allowed from
-            if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ALLOWED_START ) ) ) {
-                pDMitem->m_timeAllow.setFromTime( wxString::FromUTF8( p ) );
+            if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, 
+                                         VSCPDB_ORDINAL_DM_ALLOWED_START ) ) ) {
+                if ( ( NULL != p ) && ( '*' != *p ) ) {
+                    pDMitem->m_timeAllow.setFromTime( wxString::FromUTF8( p ) );
+                }
             }
             
             // Allowed to
-            if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ALLOWED_END ) ) ) {
-                pDMitem->m_timeAllow.setEndTime( wxString::FromUTF8( p ) );
+            if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, 
+                                           VSCPDB_ORDINAL_DM_ALLOWED_END ) ) ) {
+                if ( ( NULL != p ) && ( '*' != *p ) ) {
+                    pDMitem->m_timeAllow.setEndTime( wxString::FromUTF8( p ) );
+                }
             }
             
-            // Allowed to
-            if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ALLOWED_TIME ) ) ) {
-                pDMitem->m_timeAllow.parseActionTime( wxString::FromUTF8( p ) );
+            // Allowed time
+            if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, 
+                                          VSCPDB_ORDINAL_DM_ALLOWED_TIME ) ) ) {
+                if ( ( NULL != p ) && ( '*' != *p ) ) {
+                    pDMitem->m_timeAllow.parseActionTime( wxString::FromUTF8( p ) );
+                }
             }
             
             // Allow Monday
-            if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ALLOWED_MONDAY ) ) ) {
-                atoi( p ) ? pDMitem->m_timeAllow.allowMonday() : pDMitem->m_timeAllow.allowMonday( false );
+            if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, 
+                                        VSCPDB_ORDINAL_DM_ALLOWED_MONDAY ) ) ) {
+                atoi( p ) ? 
+                    pDMitem->m_timeAllow.allowMonday() : 
+                    pDMitem->m_timeAllow.allowMonday( false );
             }
             
             // Allow Tuesday
-            if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ALLOWED_TUESDAY ) ) ) {
-                atoi( p ) ? pDMitem->m_timeAllow.allowTuesday() : pDMitem->m_timeAllow.allowTuesday( false );
+            if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, 
+                                       VSCPDB_ORDINAL_DM_ALLOWED_TUESDAY ) ) ) {
+                atoi( p ) ? 
+                    pDMitem->m_timeAllow.allowTuesday() : 
+                    pDMitem->m_timeAllow.allowTuesday( false );
             }
             
             // Allow Wednesday
-            if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ALLOWED_WEDNESDAY ) ) ) {
-                atoi( p ) ? pDMitem->m_timeAllow.allowWednesday() : pDMitem->m_timeAllow.allowWednesday( false );
+            if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, 
+                                     VSCPDB_ORDINAL_DM_ALLOWED_WEDNESDAY ) ) ) {
+                atoi( p ) ? 
+                    pDMitem->m_timeAllow.allowWednesday() : 
+                    pDMitem->m_timeAllow.allowWednesday( false );
             }
             
             // Allow Thursday
-            if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ALLOWED_THURSDAY ) ) ) {
-                atoi( p ) ? pDMitem->m_timeAllow.allowThursday() : pDMitem->m_timeAllow.allowThursday( false );
+            if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, 
+                                      VSCPDB_ORDINAL_DM_ALLOWED_THURSDAY ) ) ) {
+                atoi( p ) ? 
+                    pDMitem->m_timeAllow.allowThursday() : 
+                    pDMitem->m_timeAllow.allowThursday( false );
             }
             
             // Allow Friday
-            if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ALLOWED_FRIDAY ) ) ) {
-                atoi( p ) ? pDMitem->m_timeAllow.allowFriday() : pDMitem->m_timeAllow.allowFriday( false );
+            if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, 
+                                        VSCPDB_ORDINAL_DM_ALLOWED_FRIDAY ) ) ) {
+                atoi( p ) ? 
+                    pDMitem->m_timeAllow.allowFriday() : 
+                    pDMitem->m_timeAllow.allowFriday( false );
             }
             
             // Allow Saturday
-            if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ALLOWED_SATURDAY ) ) ) {
-                atoi( p ) ? pDMitem->m_timeAllow.allowSaturday() : pDMitem->m_timeAllow.allowSaturday( false );
+            if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, 
+                                     VSCPDB_ORDINAL_DM_ALLOWED_SATURDAY ) ) ) {
+                atoi( p ) ? 
+                    pDMitem->m_timeAllow.allowSaturday() : 
+                    pDMitem->m_timeAllow.allowSaturday( false );
             }
             
             // Allow Sunday
-            if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ALLOWED_SUNDAY ) ) ) {
-                atoi( p ) ? pDMitem->m_timeAllow.allowSunday() : pDMitem->m_timeAllow.allowSunday( false );
+            if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, 
+                                        VSCPDB_ORDINAL_DM_ALLOWED_SUNDAY ) ) ) {
+                atoi( p ) ? 
+                    pDMitem->m_timeAllow.allowSunday() : 
+                    pDMitem->m_timeAllow.allowSunday( false );
             }
 
             // bCheckIndex
-            if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_CHECK_INDEX ) ) ) {
+            if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, 
+                                           VSCPDB_ORDINAL_DM_CHECK_INDEX ) ) ) {
                 pDMitem->m_bCheckIndex = atoi( p ) ? true : false;
             }
             
             // Index
-            if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_INDEX ) ) ) {
+            if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, 
+                                                 VSCPDB_ORDINAL_DM_INDEX ) ) ) {
                 pDMitem->m_index = atoi( p );
             }
             
             // bCheckZone
-            if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_CHECK_ZONE ) ) ) {
+            if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, 
+                                            VSCPDB_ORDINAL_DM_CHECK_ZONE ) ) ) {
                 pDMitem->m_bCheckZone = atoi( p ) ? true : false;
             }
             
             // Zone
-            if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ZONE ) ) ) {
+            if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, 
+                                                  VSCPDB_ORDINAL_DM_ZONE ) ) ) {
                 pDMitem->m_zone = atoi( p );
             }
             
             // bCheckSubZone
-            pDMitem->m_bCheckZone = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_DM_CHECK_SUBZONE ) ? true : false;
+            pDMitem->m_bCheckZone = sqlite3_column_int( ppStmt, 
+                               VSCPDB_ORDINAL_DM_CHECK_SUBZONE ) ? true : false;
             
             // SubZone
-            pDMitem->m_zone = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_DM_SUBZONE );
+            pDMitem->m_zone = sqlite3_column_int( ppStmt, 
+                                                    VSCPDB_ORDINAL_DM_SUBZONE );
             
             // bMeasurementIndex
-            pDMitem->m_bCheckMeasurementIndex = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_DM_CHECK_MEASUREMENT_INDEX ) ? true : false;
+            pDMitem->m_bCheckMeasurementIndex = sqlite3_column_int( ppStmt, 
+                     VSCPDB_ORDINAL_DM_CHECK_MEASUREMENT_INDEX ) ? true : false;
             
             // ActionCode
-            pDMitem->m_actionCode = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_DM_ACTIONCODE );
+            pDMitem->m_actionCode = sqlite3_column_int( ppStmt, 
+                                                 VSCPDB_ORDINAL_DM_ACTIONCODE );
             
             // ActionParamter
-            if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ACTIONPARAMETER ) ) ) {
+            if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, 
+                                       VSCPDB_ORDINAL_DM_ACTIONPARAMETER ) ) ) {
                 pDMitem->m_actionparam = wxString::FromUTF8( p );
             }
             
             // Measurement check value flag
-            pDMitem->m_bCompareMeasurement = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_DM_MEASUREMENT_CHECK_VALUE ) ? true : false;        
+            pDMitem->m_bCompareMeasurement = sqlite3_column_int( ppStmt, 
+                     VSCPDB_ORDINAL_DM_MEASUREMENT_CHECK_VALUE ) ? true : false;        
             
             // Measurement value
-            pDMitem->m_measurementValue = sqlite3_column_double( ppStmt, VSCPDB_ORDINAL_DM_MEASUREMENT_VALUE );
+            pDMitem->m_measurementValue = sqlite3_column_double( ppStmt, 
+                                           VSCPDB_ORDINAL_DM_MEASUREMENT_VALUE );
             
             // Measurement unit
-            pDMitem->m_measurementUnit = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_DM_MEASUREMENT_UNIT );
+            pDMitem->m_measurementUnit = sqlite3_column_int( ppStmt, 
+                                            VSCPDB_ORDINAL_DM_MEASUREMENT_UNIT );
             
             // Measurement compare code
-            pDMitem->m_measurementCompareCode = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_DM_MEASUREMENT_COMPARE );
+            pDMitem->m_measurementCompareCode = sqlite3_column_int( ppStmt, 
+                                         VSCPDB_ORDINAL_DM_MEASUREMENT_COMPARE );
 
             // Add the DM row to the matrix 
            addMemoryElement ( pDMitem );
@@ -6134,7 +6197,7 @@ bool CDM::loadFromXML( void )
     }
 
     // start processing the XML file
-    if ( doc.GetRoot()->GetName() != wxT ( "dm" ) ) {
+    if ( doc.GetRoot()->GetName() != _( "dm" ) ) {
         gpobj->logMsg( _("[DM] ") + _("Failed to load DM. <dm> not found, format is wrong!\n"), 
                         DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
         return false;
@@ -6143,23 +6206,14 @@ bool CDM::loadFromXML( void )
     wxXmlNode *child = doc.GetRoot()->GetChildren();
     while ( child ) {
 
-        if ( child->GetName() == wxT ( "row" ) ) {
+        if ( child->GetName() == _( "row" ) ) {
 
             // Set row default values for row
             dmElement *pDMitem = new dmElement;
-            pDMitem->m_actionCode = 0;
-            pDMitem->m_triggCounter = 0;
-            pDMitem->m_errorCounter = 0;
-            pDMitem->m_actionparam.Empty();
-            pDMitem->m_comment.Empty();
-            pDMitem->m_timeAllow.allowAlways();
-            pDMitem->m_index = 0;
-            pDMitem->m_zone = 0;
-            pDMitem->m_subzone = 0;
-            vscp_clearVSCPFilter( &pDMitem->m_vscpfilter );
+            pDMitem->m_bStatic = true;   // Can not be edited/saved            
 
             // Check if row is enabled
-            wxString strEnabled = child->GetAttribute( wxT( "enable" ), wxT("false") );
+            wxString strEnabled = child->GetAttribute( _( "enable" ), _("false") );
 
             strEnabled.MakeUpper();
             if ( wxNOT_FOUND != strEnabled.Find( _("TRUE") ) ) {
@@ -6170,81 +6224,87 @@ bool CDM::loadFromXML( void )
             }
 
             // Get group id
-            pDMitem->m_strGroupID = child->GetAttribute( wxT( "groupid" ), wxT("") );
+            pDMitem->m_strGroupID = child->GetAttribute( _( "groupid" ), _("") );
 
             // add the DM row to the matrix
-            addMemoryElement ( pDMitem );
+            addMemoryElement( pDMitem );
 
             wxXmlNode *subchild = child->GetChildren();
             while ( subchild ) {
 
-                if ( subchild->GetName() == wxT ( "mask" ) ) {
+                if ( subchild->GetName() == _( "mask" ) ) {
                     wxString str;
-                    str = subchild->GetAttribute( wxT( "priority" ), wxT("0") );
+                    str = subchild->GetAttribute( _( "priority" ), _("0") );
                     pDMitem->m_vscpfilter.mask_priority = vscp_readStringValue( str );
 
-                    str = subchild->GetAttribute( wxT( "class" ), wxT("0") );
+                    str = subchild->GetAttribute( _( "class" ), _("0") );
                     pDMitem->m_vscpfilter.mask_class = vscp_readStringValue( str );
 
-                    str = subchild->GetAttribute( wxT( "type" ), wxT("0") );
+                    str = subchild->GetAttribute( _( "type" ), _("0") );
                     pDMitem->m_vscpfilter.mask_type = vscp_readStringValue( str );
 
-                    wxString strGUID = subchild->GetAttribute( wxT( "GUID" ),
-                        wxT("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00") );
+                    wxString strGUID = subchild->GetAttribute( _( "GUID" ),
+                        _("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00") );
                     vscp_getGuidFromStringToArray( pDMitem->m_vscpfilter.mask_GUID, 
                                                     strGUID );
                 }
-                else if ( subchild->GetName() == wxT ( "filter" ) ) {
+                else if ( subchild->GetName() == _( "filter" ) ) {
                     wxString str;
-                    str = subchild->GetAttribute( wxT( "priority" ), wxT("0") );
+                    str = subchild->GetAttribute( _( "priority" ), _("0") );
                     pDMitem->m_vscpfilter.filter_priority = vscp_readStringValue( str );
 
-                    str = subchild->GetAttribute( wxT( "class" ), wxT("0") );
+                    str = subchild->GetAttribute( _( "class" ), _("0") );
                     pDMitem->m_vscpfilter.filter_class = vscp_readStringValue( str );
 
-                    str = subchild->GetAttribute( wxT( "type" ), wxT("0") );
+                    str = subchild->GetAttribute( _( "type" ), _("0") );
                     pDMitem->m_vscpfilter.filter_type = vscp_readStringValue( str );
 
-                    wxString strGUID = subchild->GetAttribute( wxT( "GUID" ),
-                            wxT("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00") );
+                    wxString strGUID = subchild->GetAttribute( _( "GUID" ),
+                            _("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00") );
                     vscp_getGuidFromStringToArray( pDMitem->m_vscpfilter.filter_GUID, strGUID );
                 }
-                else if ( subchild->GetName() == wxT ( "action" ) ) {
+                else if ( subchild->GetName() == _( "action" ) ) {
                     pDMitem->m_actionCode = vscp_readStringValue( subchild->GetNodeContent() );
                 }
-                else if ( subchild->GetName() == wxT ( "param" ) ){
+                else if ( subchild->GetName() == _( "param" ) ){
                     pDMitem->m_actionparam = subchild->GetNodeContent();
                     pDMitem->m_actionparam = pDMitem->m_actionparam.Trim();
                     pDMitem->m_actionparam = pDMitem->m_actionparam.Trim(false);
                 }
-                else if ( subchild->GetName() == wxT ( "comment" ) ) {
+                else if ( subchild->GetName() == _( "comment" ) ) {
                     pDMitem->m_comment = subchild->GetNodeContent();
                     pDMitem->m_comment = pDMitem->m_comment.Trim();
                     pDMitem->m_comment = pDMitem->m_comment.Trim(false);
                 }
-                else if ( subchild->GetName() == wxT ( "allowed_from" ) ) {
+                else if ( subchild->GetName() == _( "allowed_from" ) ) {
                     wxString str = subchild->GetNodeContent();
                     str.Trim();
+                    str.Trim(false);
+                    
                     if ( 0 != str.Length() ) {
                         pDMitem->m_timeAllow.getFromTime().ParseDateTime(str);
                     }
                     else {
-                        pDMitem->m_timeAllow.getFromTime().ParseDateTime( _("1970-01-01 00:00:00") );
+                        pDMitem->m_timeAllow.getFromTime().ParseDateTime( _("0000-01-01 00:00:00") );
                     }
                 }
-                else if ( subchild->GetName() == wxT ( "allowed_to" ) ) {
+                else if ( subchild->GetName() == _( "allowed_to" ) ) {
                     wxString str = subchild->GetNodeContent();
                     str.Trim();
+                    str.Trim(false);
+                    if ( '*' == str ) str = _("9999-12-31 23:59:59");
                     if ( 0 != str.Length() ) {
                         pDMitem->m_timeAllow.getEndTime().ParseDateTime(str);
                     }
                     else {
-                        pDMitem->m_timeAllow.getEndTime().ParseDateTime( _("2199-12-31 23:59:59") );
+                        pDMitem->m_timeAllow.getEndTime().ParseDateTime( _("9999-12-31 23:59:59") );
                     }
                 }
-                else if ( subchild->GetName() == wxT ( "allowed_weekdays" ) ) {
+                else if ( subchild->GetName() == _( "allowed_weekdays" ) ) {
                     wxString str = subchild->GetNodeContent();
                     str.Trim();
+                    str.Trim(false);
+                    if ( '*' == str ) str = _("mtwtfss");
                     if ( 0 != str.Length() ) {
                         pDMitem->m_timeAllow.setWeekDays(str);
                     }
@@ -6252,24 +6312,26 @@ bool CDM::loadFromXML( void )
                         pDMitem->m_timeAllow.setWeekDays( _("mtwtfss") );
                     }
                 }
-                else if ( subchild->GetName() == wxT ( "allowed_time" ) ) {
+                else if ( subchild->GetName() == _( "allowed_time" ) ) {
                     wxString str = subchild->GetNodeContent();
                     str.Trim();
+                    str.Trim(false);
+                    if ('*' == str ) str = _("*-*-* *:*:*");
                     if ( 0 != str.Length() ) {
                         pDMitem->m_timeAllow.parseActionTime(str);
                     }
                     else {
-                        pDMitem->m_timeAllow.parseActionTime( _("*:*:*" ) );
+                        pDMitem->m_timeAllow.parseActionTime( _("*-*-* *:*:*") );
                     }
                 }
-                else if ( subchild->GetName() == wxT ( "index" ) ) {
+                else if ( subchild->GetName() == _( "index" ) ) {
                     
                     wxString str;
                     
                     pDMitem->m_bCheckIndex = true;
                                            
-                    // Attribute checkmeasurementindex
-                    str = subchild->GetAttribute( wxT( "measurementindex" ), wxT("false") );
+                    // Attribute measurementindex
+                    str = subchild->GetAttribute( _( "measurementindex" ), _("false") );
                     str.MakeUpper();
                     if ( wxNOT_FOUND != str.Find(_("TRUE"))) {
                         pDMitem->m_bCheckMeasurementIndex = true;
@@ -6279,31 +6341,26 @@ bool CDM::loadFromXML( void )
                                 vscp_readStringValue( subchild->GetNodeContent() );                                            
                     
                 }
-                else if ( subchild->GetName() == wxT ( "zone" ) ) {
+                else if ( subchild->GetName() == _( "zone" ) ) {
                     pDMitem->m_bCheckZone = true;
                     pDMitem->m_zone = vscp_readStringValue( subchild->GetNodeContent() );
                 }
-                else if ( subchild->GetName() == wxT ( "subzone" ) ) {
+                else if ( subchild->GetName() == _( "subzone" ) ) {
                     pDMitem->m_bCheckSubZone = true;
                     pDMitem->m_subzone = vscp_readStringValue( subchild->GetNodeContent() );
                 }
-                else if ( subchild->GetName() == wxT ( "measurement" ) ) {
+                else if ( subchild->GetName() == _( "measurement" ) ) {
                     wxString str;
+                                        
+                    pDMitem->m_bCompareMeasurement = true;
                     
-                    pDMitem->m_bCompareMeasurement = false;
-                    str = subchild->GetAttribute( wxT( "enable" ), wxT("false") );
-                    str.MakeUpper();
-                    if ( wxNOT_FOUND != str.Find(_("TRUE"))) {
-                        pDMitem->m_bCompareMeasurement = true;
-                    }
-                    
-                    str = subchild->GetAttribute( wxT( "compare" ), wxT("noop") );
+                    str = subchild->GetAttribute( _( "compare" ), _("noop") );
                     pDMitem->m_measurementCompareCode = getCompareCodeFromToken( str );
                     
-                    str = subchild->GetAttribute( wxT( "unit" ), wxT("0") );
+                    str = subchild->GetAttribute( _( "unit" ), _("0") );
                     pDMitem->m_measurementUnit = vscp_readStringValue( str );
                     
-                    str = subchild->GetAttribute( wxT( "value" ), wxT("0") );
+                    str = subchild->GetAttribute( _( "value" ), _("0") );
                     str.ToCDouble( &pDMitem->m_measurementValue );
                             
                 }
@@ -6712,68 +6769,68 @@ void *actionThread_URL::Entry()
         // Check if access method is GET
         if ( actionThread_URL::GET == m_acessMethod ) {
 
-            wxstr = wxT("GET ");
+            wxstr = _("GET ");
             wxstr += m_url.GetPath();
-            wxstr += wxT("?");
+            wxstr += _("?");
             wxstr += m_url.GetQuery();
-            wxstr += wxT(" ");
-            wxstr += wxT("HTTP/1.1\r\n");
-            wxstr += wxT("Host: ");
+            wxstr += _(" ");
+            wxstr += _("HTTP/1.1\r\n");
+            wxstr += _("Host: ");
             wxstr += m_url.GetServer();
-            wxstr += wxT(":");
+            wxstr += _(":");
             wxstr += m_url.GetPort();
-            wxstr += wxT("\r\n");
-            wxstr += wxString::Format( wxT("User-Agent: VSCPD/%s\r\n"),
+            wxstr += _("\r\n");
+            wxstr += wxString::Format( _("User-Agent: VSCPD/%s\r\n"),
                                         VSCPD_DISPLAY_VERSION );
 
             // Add extra headers if there are any
             if ( m_extraheaders.Length() ) {
                 wxstr += m_extraheaders;
             }
-            wxstr += wxT("\r\n\r\n");
+            wxstr += _("\r\n\r\n");
 
         }
         // OK the access method is POST
         else if ( actionThread_URL::POST == m_acessMethod ) {
 
-            wxstr = wxT("POST ");
+            wxstr = _("POST ");
             wxstr += m_url.GetPath();
-            wxstr += wxT(" ");
-            wxstr += wxT("HTTP/1.1\r\n");
-            wxstr += wxT("Host: ");
+            wxstr += _(" ");
+            wxstr += _("HTTP/1.1\r\n");
+            wxstr += _("Host: ");
             wxstr += m_url.GetServer();
-            wxstr += wxT(":");
+            wxstr += _(":");
             wxstr += m_url.GetPort();
-            wxstr += wxT("\r\n");
-            wxstr += wxString::Format( wxT("User-Agent: VSCPD/%s\r\n"),
+            wxstr += _("\r\n");
+            wxstr += wxString::Format( _("User-Agent: VSCPD/%s\r\n"),
                                         VSCPD_DISPLAY_VERSION );
             // Add extra headers if there are any
             if ( m_extraheaders.Length() ) {
                 wxstr += m_extraheaders;
             }
 
-            wxstr += wxT("Accept: */*\r\n");
-            wxstr += wxT("Content-Type: application/x-www-form-urlencoded\r\n");
-            wxstr += wxT("Content-Length: ");
+            wxstr += _("Accept: */*\r\n");
+            wxstr += _("Content-Type: application/x-www-form-urlencoded\r\n");
+            wxstr += _("Content-Length: ");
             wxstr += wxString::Format(_("%ld"),m_putdata.Length());
-            wxstr += wxT("\r\n\r\n");
+            wxstr += _("\r\n\r\n");
             wxstr += m_putdata;
-            wxstr += wxT("\r\n");
+            wxstr += _("\r\n");
 
         }
         // OK the access method is PUT
         else if ( actionThread_URL::PUT == m_acessMethod ) {
 
-            wxstr = wxT("PUT ");
+            wxstr = _("PUT ");
             wxstr += m_url.GetPath();
-            wxstr += wxT(" ");
-            wxstr += wxT("HTTP/1.1\r\n");
-            wxstr += wxT("Host: ");
+            wxstr += _(" ");
+            wxstr += _("HTTP/1.1\r\n");
+            wxstr += _("Host: ");
             wxstr += m_url.GetServer();
-            wxstr += wxT(":");
+            wxstr += _(":");
             wxstr += m_url.GetPort();
-            wxstr += wxT("\r\n");
-            wxstr += wxString::Format( wxT("User-Agent: VSCPD/%s\r\n"),
+            wxstr += _("\r\n");
+            wxstr += wxString::Format( _("User-Agent: VSCPD/%s\r\n"),
                                         VSCPD_DISPLAY_VERSION );
 
             // Add extra headers if there are any
@@ -6781,12 +6838,12 @@ void *actionThread_URL::Entry()
                 wxstr += m_extraheaders;
             }
 
-            wxstr += wxT("Content-Type: application/x-www-form-urlencoded\r\n");
-            wxstr += wxT("Content-Length: ");
+            wxstr += _("Content-Type: application/x-www-form-urlencoded\r\n");
+            wxstr += _("Content-Length: ");
             wxstr += wxString::Format(_("%ld"),m_putdata.Length());
-            wxstr += wxT("\r\n\r\n");
+            wxstr += _("\r\n\r\n");
             wxstr += m_putdata;
-            wxstr += wxT("\r\n");
+            wxstr += _("\r\n");
 
         }
         else {
@@ -6794,13 +6851,13 @@ void *actionThread_URL::Entry()
             // Invalid method
             gpobj->logMsg( _("[DM] ") + _( "actionThreadURL: Invalid http access method: " ) +
                                 m_url.GetServer() +
-                                wxT(",") +
+                                _(",") +
                                 m_url.GetPort() +
-                                wxT(",") +
+                                _(",") +
                                 m_url.GetPath() +
-                                wxT(",") +
+                                _(",") +
                                 wxString::Format( _("acessMethod = %d" ), m_acessMethod ) +
-                                wxT(" \n"), 
+                                _(" \n"), 
                                 DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM  );
 
         }
@@ -6821,13 +6878,13 @@ void *actionThread_URL::Entry()
             // There was an error
             gpobj->logMsg(_("[DM] ") + _( "actionThreadURL: Error writing request: " ) +
                                 m_url.GetServer() +
-                                wxT(",") +
+                                _(",") +
                                 m_url.GetPort() +
-                                wxT(",") +
+                                _(",") +
                                 m_url.GetPath() +
-                                wxT(",") +
+                                _(",") +
                                 wxString::Format( _("acessMethod = %d" ), m_acessMethod ) +
-                                wxT(" \n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM  );
+                                _(" \n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM  );
         }
 
         // Get the response
@@ -6852,20 +6909,20 @@ void *actionThread_URL::Entry()
             if ( tkz.HasMoreTokens() ) {
 
                 wxString str = tkz.GetNextToken();
-                if ( wxNOT_FOUND != str.Find( wxT("OK") ) ) {
+                if ( wxNOT_FOUND != str.Find( _("OK") ) ) {
 
                     // Something is wrong
                     gpobj->logMsg( _("[DM] ") + _( "actionThreadURL: Error reading response: " ) +
                                         m_url.GetServer() +
-                                        wxT(",") +
+                                        _(",") +
                                         m_url.GetPort() +
-                                        wxT(",") +
+                                        _(",") +
                                         m_url.GetPath() +
-                                        wxT(",") +
+                                        _(",") +
                                         wxString::Format( _("acessMethod = %d" ), m_acessMethod ) +
-                                        wxT(", Response = ") +
+                                        _(", Response = ") +
                                         strReponse +
-                                        wxT(" \n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM  );
+                                        _(" \n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM  );
 
                 }
             }
@@ -6875,13 +6932,13 @@ void *actionThread_URL::Entry()
             // There was an error
             gpobj->logMsg ( _("[DM] ") + _( "actionThreadURL: Error reading response: " ) +
                                 m_url.GetServer() +
-                                wxT(",") +
+                                _(",") +
                                 m_url.GetPort() +
-                                wxT(",") +
+                                _(",") +
                                 m_url.GetPath() +
-                                wxT(",") +
-                                ( m_acessMethod ? wxT("PUT") : wxT("GET") ) +
-                                wxT(" \n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM  );
+                                _(",") +
+                                ( m_acessMethod ? _("PUT") : _("GET") ) +
+                                _(" \n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM  );
         }
 
         // Close the socket
@@ -6892,13 +6949,13 @@ void *actionThread_URL::Entry()
         // There was an error connecting
         gpobj->logMsg( _("[DM] ") + _( "actionThreadURL: Unable to connect: " ) +
                                 m_url.GetServer() +
-                                wxT(",") +
+                                _(",") +
                                 m_url.GetPort() +
-                                wxT(",") +
+                                _(",") +
                                 m_url.GetPath() +
-                                wxT(",") +
+                                _(",") +
                                 wxString::Format( _("acessMethod = %d" ), m_acessMethod ) +
-                                wxT(" \n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM  );
+                                _(" \n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM  );
     }
 
     return NULL;
@@ -6968,7 +7025,7 @@ void *actionThread_VSCPSrv::Entry()
         // Failed to connect
         gpobj->logMsg( _("[DM] ") + _( "actionThreadVSCPSrv: Unable to connect to remote server : " ) +
                                     m_strHostname +
-                                    wxT(" \n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM  );
+                                    _(" \n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM  );
     }
 
     // Connected
@@ -6976,7 +7033,7 @@ void *actionThread_VSCPSrv::Entry()
         // Failed to send event
         gpobj->logMsg( _("[DM] ") + _( "actionThreadVSCPSrv: Unable to send event to remote server : " ) +
                                 m_strHostname +
-                                wxT(" \n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM  );
+                                _(" \n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM  );
     }
 
     return NULL;
@@ -7053,7 +7110,7 @@ void *actionThread_Table::Entry()
     wxString name;          // Table name
     wxString sql;           // sql expression
     
-    wxStringTokenizer tkz( m_strParam, wxT(";") );
+    wxStringTokenizer tkz( m_strParam, _(";") );
 
     if ( !tkz.HasMoreTokens() ) {
         // Strange action parameter
