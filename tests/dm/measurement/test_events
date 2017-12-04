@@ -1,0 +1,15 @@
+**Normalize integer, Temperature, Unit=1 (C), Sensor idx=1,  5.96C**
+
+send 96,10,6,2,,,FF:FF:FF:FF:FF:FF:FF:FE:B8:27:EB:0A:00:02:00:05,0x89,0x82,0x02,0x54
+
+---
+
+**Normalize integer, Temperature, Unit=1 (C), Sensor idx=1,  5.0C**
+
+send 96,10,6,2,,,FF:FF:FF:FF:FF:FF:FF:FE:B8:27:EB:0A:00:02:00:05,0x89,0x82,0x01,0xF4
+
+---
+
+**Normalize integer, Temperature, Unit=1 (C), Sensor idx=1, 4.47 C**
+
+send 96,10,6,2,,,FF:FF:FF:FF:FF:FF:FF:FE:B8:27:EB:0A:00:02:00:05,0x89,0x82,0x01,0xBF

@@ -1,0 +1,225 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+
+<dm>
+  
+    <row enable="true" groupid="" >
+
+    <comment>
+        Test measurement compare:  eq
+    </comment>
+
+    <mask priority="0"  
+             class="0xFFFF"  
+             type="0xFFFF"  
+             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+    <filter  priority="0"  
+             class="10"  
+             type="6"  
+             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+    <action>0x10</action>
+    <param>
+        /srv/vscp/test_measurement.sh "match" %measurement.string  %event
+    </param>
+
+    <index measurementindex="true">1</index>
+
+    <!-- eq|neq|gt|gteq|lt|lteq -->
+    <measurement compare="eq"
+                   unit="1">
+        5.0
+    </measurement>
+
+    <allowed_from>0000-01-01 00:00:00</allowed_from>
+    <allowed_to>9999-12-31 23:59:59</allowed_to>
+    <allowed_weekdays>mtwtfss</allowed_weekdays>
+    <allowed_time>*-*-* *:*:*</allowed_time>
+
+  </row>
+ 
+  <row enable="true" groupid="" >
+
+    <comment>
+        Test measurement compare:  neq
+    </comment>
+
+    <mask priority="0"
+             class="0xFFFF"
+             type="0xFFFF"
+             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+    <filter  priority="0"
+             class="10"
+             type="6"
+             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+    <action>0x10</action>
+    <param>
+        /srv/vscp/test_measurement.sh "no match" %measurement.string  %event
+    </param>
+
+    <index measurementindex="true">1</index>
+
+    <!-- eq|neq|gt|gteq|lt|lteq -->
+    <measurement compare="neq"
+                   unit="1">
+        5.0
+    </measurement>
+
+    <allowed_from>0000-01-01 00:00:00</allowed_from>
+    <allowed_to>9999-12-31 23:59:59</allowed_to>
+    <allowed_weekdays>mtwtfss</allowed_weekdays>
+    <allowed_time>*-*-* *:*:*</allowed_time>
+
+  </row>
+
+  <row enable="true" groupid="" >
+
+    <comment>
+        Test measurement compare:  gt
+    </comment>
+
+    <mask priority="0"
+             class="0xFFFF"
+             type="0xFFFF"
+             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+    <filter  priority="0"
+             class="10"
+             type="6"
+             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+    <action>0x10</action>
+    <param>
+        /srv/vscp/test_measurement.sh "greater than" %measurement.string  %event
+    </param>
+
+    <index measurementindex="true">1</index>
+
+    <!-- eq|neq|gt|gteq|lt|lteq -->
+    <measurement compare="gt"
+                   unit="1">
+        5.0
+    </measurement>
+
+    <allowed_from>0000-01-01 00:00:00</allowed_from>
+    <allowed_to>9999-12-31 23:59:59</allowed_to>
+    <allowed_weekdays>mtwtfss</allowed_weekdays>
+    <allowed_time>*-*-* *:*:*</allowed_time>
+
+  </row>
+
+  <row enable="true" groupid="" >
+
+    <comment>
+        Test measurement compare:  gteq
+    </comment>
+
+    <mask priority="0"
+             class="0xFFFF"
+             type="0xFFFF"
+             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+    <filter  priority="0"
+             class="10"
+             type="6"
+             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+    <action>0x10</action>
+    <param>
+        /srv/vscp/test_measurement.sh "equal or greater than" %measurement.string  %event
+    </param>
+
+    <index measurementindex="true">1</index>
+
+    <!-- eq|neq|gt|gteq|lt|lteq -->
+    <measurement compare="gteq"
+                   unit="1">
+        5.0
+    </measurement>
+
+    <allowed_from>0000-01-01 00:00:00</allowed_from>
+    <allowed_to>9999-12-31 23:59:59</allowed_to>
+    <allowed_weekdays>mtwtfss</allowed_weekdays>
+    <allowed_time>*-*-* *:*:*</allowed_time>
+
+  </row>
+
+  <row enable="true" groupid="" >
+
+    <comment>
+        Test measurement compare:  lt
+    </comment>
+
+    <mask priority="0"
+             class="0xFFFF"
+             type="0xFFFF"
+             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+    <filter  priority="0"
+             class="10"
+             type="6"
+             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+    <action>0x10</action>
+    <param>
+        /srv/vscp/test_measurement.sh "less than" %measurement.string %event
+    </param>
+
+    <index measurementindex="true">1</index>
+
+    <!-- eq|neq|gt|gteq|lt|lteq -->
+    <measurement compare="lt"
+                   unit="1">
+        5.0
+    </measurement>
+
+    <allowed_from>0000-01-01 00:00:00</allowed_from>
+    <allowed_to>9999-12-31 23:59:59</allowed_to>
+    <allowed_weekdays>mtwtfss</allowed_weekdays>
+    <allowed_time>*-*-* *:*:*</allowed_time>
+
+  </row>
+
+
+  <row enable="true" groupid="" >
+
+    <comment>
+        Test measurement compare:  lteq
+    </comment>
+
+    <mask priority="0"
+             class="0xFFFF"
+             type="0xFFFF"
+             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+    <filter  priority="0"
+             class="10"
+             type="6"
+             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+    <action>0x10</action>
+    <param>
+        /srv/vscp/test_measurement.sh "equal or less than" %measurement.string   %event
+    </param>
+
+    <index measurementindex="true">1</index>
+
+    <!-- eq|neq|gt|gteq|lt|lteq -->
+    <measurement compare="lteq"
+                   unit="1">
+        5.0
+    </measurement>
+
+    <allowed_from>0000-01-01 00:00:00</allowed_from>
+    <allowed_to>9999-12-31 23:59:59</allowed_to>
+    <allowed_weekdays>mtwtfss</allowed_weekdays>
+    <allowed_time>*-*-* *:*:*</allowed_time>
+
+  </row>
+
+
+
+</dm>
+ 
