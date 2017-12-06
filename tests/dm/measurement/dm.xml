@@ -2,7 +2,7 @@
 
 <dm>
   
-    <row enable="true" groupid="" >
+    <row enable="true" groupid="measurement_compare_test" >
 
     <comment>
         Test measurement compare:  eq
@@ -27,14 +27,8 @@
 
     <!-- eq|neq|gt|gteq|lt|lteq -->
     <measurement compare="eq"
-                   unit="1">
-        5.0
-    </measurement>
-
-    <allowed_from>0000-01-01 00:00:00</allowed_from>
-    <allowed_to>9999-12-31 23:59:59</allowed_to>
-    <allowed_weekdays>mtwtfss</allowed_weekdays>
-    <allowed_time>*-*-* *:*:*</allowed_time>
+                   unit="1"
+                   value="5.0"/>
 
   </row>
  
@@ -63,14 +57,8 @@
 
     <!-- eq|neq|gt|gteq|lt|lteq -->
     <measurement compare="neq"
-                   unit="1">
-        5.0
-    </measurement>
-
-    <allowed_from>0000-01-01 00:00:00</allowed_from>
-    <allowed_to>9999-12-31 23:59:59</allowed_to>
-    <allowed_weekdays>mtwtfss</allowed_weekdays>
-    <allowed_time>*-*-* *:*:*</allowed_time>
+                   unit="1"
+                   value="5.0" />
 
   </row>
 
@@ -99,14 +87,8 @@
 
     <!-- eq|neq|gt|gteq|lt|lteq -->
     <measurement compare="gt"
-                   unit="1">
-        5.0
-    </measurement>
-
-    <allowed_from>0000-01-01 00:00:00</allowed_from>
-    <allowed_to>9999-12-31 23:59:59</allowed_to>
-    <allowed_weekdays>mtwtfss</allowed_weekdays>
-    <allowed_time>*-*-* *:*:*</allowed_time>
+                   unit="1"
+                   value="5.0" />
 
   </row>
 
@@ -135,14 +117,8 @@
 
     <!-- eq|neq|gt|gteq|lt|lteq -->
     <measurement compare="gteq"
-                   unit="1">
-        5.0
-    </measurement>
-
-    <allowed_from>0000-01-01 00:00:00</allowed_from>
-    <allowed_to>9999-12-31 23:59:59</allowed_to>
-    <allowed_weekdays>mtwtfss</allowed_weekdays>
-    <allowed_time>*-*-* *:*:*</allowed_time>
+                   unit="1"
+                   value="5.0" />
 
   </row>
 
@@ -171,14 +147,8 @@
 
     <!-- eq|neq|gt|gteq|lt|lteq -->
     <measurement compare="lt"
-                   unit="1">
-        5.0
-    </measurement>
-
-    <allowed_from>0000-01-01 00:00:00</allowed_from>
-    <allowed_to>9999-12-31 23:59:59</allowed_to>
-    <allowed_weekdays>mtwtfss</allowed_weekdays>
-    <allowed_time>*-*-* *:*:*</allowed_time>
+                   unit="1"
+                   value="5.0" />
 
   </row>
 
@@ -208,14 +178,8 @@
 
     <!-- eq|neq|gt|gteq|lt|lteq -->
     <measurement compare="lteq"
-                   unit="1">
-        5.0
-    </measurement>
-
-    <allowed_from>0000-01-01 00:00:00</allowed_from>
-    <allowed_to>9999-12-31 23:59:59</allowed_to>
-    <allowed_weekdays>mtwtfss</allowed_weekdays>
-    <allowed_time>*-*-* *:*:*</allowed_time>
+                   unit="1"
+                   value="5.0" />
 
   </row>
 

@@ -328,11 +328,13 @@ public:
       strFrom.Trim();
       strFrom.Trim(false);
       if ( '*' == strFrom ) {
-          strFrom = _("1970-01-01 00:00:00");
+          strFrom = _("0000-01-01 00:00:00");
       }
       
       m_fromTime.ParseDateTime( strFrom );
-      
+      if ( !m_fromTime.IsValid() ) {
+          m_fromTime.ParseDateTime( _("0000-01-01 00:00:00") );
+      }
   };
   
   void setFromTime( wxDateTime& dt ) { m_fromTime = dt; };
@@ -349,10 +351,13 @@ public:
       strEnd.Trim();
       strEnd.Trim(false);
       if ( '*' == strEnd ) {
-          strEnd = _("2199-12-31 23:59:59");
+          strEnd = _("9999-12-31 23:59:59");
       }
       
       m_endTime.ParseDateTime( strEnd );
+      if ( !m_endTime.IsValid() ) {
+          m_endTime.ParseDateTime( _("9999-12-31 23:59:59") );
+      }
       
   };
   

@@ -43,6 +43,7 @@
 #include <sys/times.h>
 #endif 
 
+#include <float.h>
 #include <vscp.h>
 #include <vscp_class.h>
 #include <vscp_type.h>
@@ -87,6 +88,47 @@ extern "C" {
         Return non zero if endiness is big endian
     */
     int vscp_bigEndian( void );
+    
+    /*
+     * Check two floats for equality
+     * @param A Float to compare
+     * @param B Float to compare
+     * @param maxRelDiff Maxdiff (see article)
+     * @return true if same, false if different (sort of)
+     * 
+     * https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/
+     */
+    
+    bool vscp_almostEqualRelativeFloat( float A, float B,
+                                            float maxRelDiff = FLT_EPSILON );
+    
+    /*!
+     * https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/
+     */
+    bool vscp_almostEqualUlpsAndAbsFloat( float A, 
+                                            float B,
+                                            float maxDiff, 
+                                            int maxUlpsDiff );
+    /*!
+     * https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/
+     */
+    bool vscp_almostEqualRelativeAndAbsFloat( float A, 
+                                            float B,
+                                            float maxDiff, 
+                                            float maxRelDiff = FLT_EPSILON );
+    
+    /*
+     * Check two floats for equality
+     * @param A Double to compare
+     * @param B Double to compare
+     * @param maxRelDiff Maxdiff (see article)
+     * @return true if same, false if different (sort of)
+     * 
+     * https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/
+     */
+    
+    bool vscp_almostEqualRelativeDouble( double A, double B,
+                                            double maxRelDiff = DBL_EPSILON );
 
     /*!
         Read a numerical value from a string

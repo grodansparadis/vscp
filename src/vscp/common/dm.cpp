@@ -196,10 +196,13 @@ void actionTime::allowAlways()
     }
 
     // Allow from the beginning of time
-    m_fromTime.ParseDateTime( _("*") );
+    setFromTime( _("*") );
 
     // to the end of time
-    m_endTime.ParseDateTime( _("*") );    
+    setEndTime( _("*") );    
+    
+    
+    parseActionTime( _("*-*-* *:*:*") );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -553,6 +556,10 @@ bool actionTime::ShouldWeDoAction( void )
 {
     bool bMatch;
     wxDateTime now( wxDateTime::Now() );	// Get current date/time
+    
+    // Check that times are valid
+    if ( !m_fromTime.IsValid() ) return false;
+    if ( !m_endTime.IsValid() ) return false;
 
     // for debug
     //wxString s1 = m_fromTime.FormatISODate() + _(" ") + m_fromTime.FormatISOTime();
@@ -4603,6 +4610,12 @@ int CDM::getCompareCodeFromToken( wxString& token )
     if ( token.StartsWith(_("noop")) ) {
         return DM_MEASUREMENT_COMPARE_NOOP;
     } 
+    else if ( token.StartsWith(_("eqgt")) ) {
+        return DM_MEASUREMENT_COMPARE_GTEQ;
+    }
+    else if ( token.StartsWith(_("eqlt")) ) {
+        return DM_MEASUREMENT_COMPARE_LTEQ;
+    }
     else if ( token.StartsWith(_("eq")) ) {
         return DM_MEASUREMENT_COMPARE_EQ;
     } 
@@ -4614,27 +4627,27 @@ int CDM::getCompareCodeFromToken( wxString& token )
     } 
     else if ( token.StartsWith(_("!=")) ) {
         return DM_MEASUREMENT_COMPARE_NEQ;
-    }
-    else if ( token.StartsWith(_("lt")) ) {
-        return DM_MEASUREMENT_COMPARE_LT;
-    } 
+    }     
     else if ( token.StartsWith(_("<")) ) {
         return DM_MEASUREMENT_COMPARE_LT;
-    }
-    else if ( token.StartsWith(_("gt")) ) {
-        return DM_MEASUREMENT_COMPARE_GT;
-    } 
+    }   
     else if ( token.StartsWith(_(">")) ) {
         return DM_MEASUREMENT_COMPARE_GT;
     }
     else if ( token.StartsWith(_("gteq")) ) {
         return DM_MEASUREMENT_COMPARE_GTEQ;
-    } 
+    }
+    else if ( token.StartsWith(_("gt")) ) {
+        return DM_MEASUREMENT_COMPARE_GT;
+    }    
     else if ( token.StartsWith(_(">=")) ) {
         return DM_MEASUREMENT_COMPARE_GTEQ;
     }
     else if ( token.StartsWith(_("lteq")) ) {
         return DM_MEASUREMENT_COMPARE_LTEQ;
+    }
+    else if ( token.StartsWith(_("lt")) ) {
+        return DM_MEASUREMENT_COMPARE_LT;
     }
     else if ( token.StartsWith(_("<=")) ) {
         return DM_MEASUREMENT_COMPARE_LTEQ;
@@ -6282,22 +6295,21 @@ bool CDM::loadFromXML( void )
                     str.Trim(false);
                     
                     if ( 0 != str.Length() ) {
-                        pDMitem->m_timeAllow.getFromTime().ParseDateTime(str);
+                        pDMitem->m_timeAllow.setFromTime( str );
                     }
                     else {
-                        pDMitem->m_timeAllow.getFromTime().ParseDateTime( _("0000-01-01 00:00:00") );
+                        pDMitem->m_timeAllow.setFromTime(_("*"));
                     }
                 }
                 else if ( subchild->GetName() == _( "allowed_to" ) ) {
                     wxString str = subchild->GetNodeContent();
                     str.Trim();
                     str.Trim(false);
-                    if ( '*' == str ) str = _("9999-12-31 23:59:59");
                     if ( 0 != str.Length() ) {
-                        pDMitem->m_timeAllow.getEndTime().ParseDateTime(str);
+                        pDMitem->m_timeAllow.setEndTime(str);
                     }
                     else {
-                        pDMitem->m_timeAllow.getEndTime().ParseDateTime( _("9999-12-31 23:59:59") );
+                        pDMitem->m_timeAllow.setEndTime( _("*") );
                     }
                 }
                 else if ( subchild->GetName() == _( "allowed_weekdays" ) ) {
@@ -6318,7 +6330,7 @@ bool CDM::loadFromXML( void )
                     str.Trim(false);
                     if ('*' == str ) str = _("*-*-* *:*:*");
                     if ( 0 != str.Length() ) {
-                        pDMitem->m_timeAllow.parseActionTime(str);
+                        pDMitem->m_timeAllow.parseActionTime( str );
                     }
                     else {
                         pDMitem->m_timeAllow.parseActionTime( _("*-*-* *:*:*") );
@@ -6646,15 +6658,16 @@ bool CDM::feed( vscpEvent *pEvent )
                         break;
                         
                     case DM_MEASUREMENT_COMPARE_EQ:
-                        if ( value != pDMitem->m_measurementValue ) continue;
+                        if ( !vscp_almostEqualRelativeDouble( value, pDMitem->m_measurementValue ) ) continue;
                         break;   
                         
                     case DM_MEASUREMENT_COMPARE_NEQ:
-                        if ( value == pDMitem->m_measurementValue ) continue;
+                        if ( vscp_almostEqualRelativeDouble( value, pDMitem->m_measurementValue ) ) continue;
                         break;
                         
                     case DM_MEASUREMENT_COMPARE_LT:
-                        if ( value >= pDMitem->m_measurementValue ) continue;
+                        if ( vscp_almostEqualRelativeDouble( value, pDMitem->m_measurementValue ) ||
+                                ( value > pDMitem->m_measurementValue ) ) continue;
                         break;
                         
                     case DM_MEASUREMENT_COMPARE_LTEQ:
@@ -6662,7 +6675,8 @@ bool CDM::feed( vscpEvent *pEvent )
                         break;
                         
                     case DM_MEASUREMENT_COMPARE_GT:                        
-                        if ( value <= pDMitem->m_measurementValue ) continue;
+                        if ( vscp_almostEqualRelativeDouble( value, pDMitem->m_measurementValue ) || 
+                                ( value < pDMitem->m_measurementValue ) ) continue;
                         break;
                         
                     case DM_MEASUREMENT_COMPARE_GTEQ:
