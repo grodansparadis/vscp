@@ -1,6 +1,16 @@
+Ready to copy in events for the VSCP server TCP/IP interface
+
+
+
 **Normalize integer, Temperature, Unit=1 (C), Sensor idx=1,  5.96C**
 
 send 96,10,6,2,,,FF:FF:FF:FF:FF:FF:FF:FE:B8:27:EB:0A:00:02:00:05,0x89,0x82,0x02,0x54
+
+---
+
+String, Temperature, Unit=1 (C), Sensor idx=1, 5.000001C
+
+send 96,10,6,2,,,FF:FF:FF:FF:FF:FF:FF:FE:B8:27:EB:0A:00:02:00:05,0x49,0x35,0x2e,0x30,0x30,0x30,0x30,0x31
 
 ---
 
@@ -8,8 +18,23 @@ send 96,10,6,2,,,FF:FF:FF:FF:FF:FF:FF:FE:B8:27:EB:0A:00:02:00:05,0x89,0x82,0x02,
 
 send 96,10,6,2,,,FF:FF:FF:FF:FF:FF:FF:FE:B8:27:EB:0A:00:02:00:05,0x89,0x82,0x01,0xF4
 
+—
+
+String, Temperature, Unit=1 (C), Sensor idx=1, 5.000000C
+
+send 96,10,6,2,,,FF:FF:FF:FF:FF:FF:FF:FE:B8:27:EB:0A:00:02:00:05,0x49,0x35,0x2e,0x30,0x30,0x30,0x30,0x30
+
 ---
 
 **Normalize integer, Temperature, Unit=1 (C), Sensor idx=1, 4.47 C**
 
 send 96,10,6,2,,,FF:FF:FF:FF:FF:FF:FF:FE:B8:27:EB:0A:00:02:00:05,0x89,0x82,0x01,0xBF
+
+—
+
+String, Temperature, Unit=1 (C), Sensor idx=1, 4.999999C
+
+send 96,10,6,2,,,FF:FF:FF:FF:FF:FF:FF:FE:B8:27:EB:0A:00:02:00:05,0x49,0x34,0x2e,0x39,0x39,0x39,0x39,0x39
+
+
+
