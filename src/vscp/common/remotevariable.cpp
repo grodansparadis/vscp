@@ -975,14 +975,14 @@ bool CVSCPVariable::setValueFromString( int type, const wxString& strValue, bool
         case VSCP_DAEMON_VARIABLE_CODE_INTEGER:
             {
                 long lval;
-                strValue.ToLong( &lval );     // Ignore possible error, get what we get
+                lval = vscp_readStringValue( strValue );
                 m_strValue = wxString::Format(_("%d"), (int)lval );
             }
             break;
             
         case VSCP_DAEMON_VARIABLE_CODE_LONG:
             long lval;
-            strValue.ToLong( &lval );       // Ignore possible error, get what we get
+            lval = vscp_readStringValue( strValue );
             m_strValue = wxString::Format(_("%ld"), lval );
             break;
 
@@ -1310,7 +1310,7 @@ bool CVSCPVariable::getNote( wxString& strNote, bool bBase64 )
 //
 
 bool CVSCPVariable::setVariableFromString( const wxString& strVariable, 
-                                                const bool bBase64,
+                                                bool bBase64,
                                                 const wxString& strUser )
 {
     wxString strRights;             // User rights for variable               
@@ -1418,6 +1418,14 @@ bool CVSCPVariable::setVariableFromString( const wxString& strVariable,
         
         wxString value = tkz.GetNextToken();
         value.Trim();
+        
+        // If the string starts with "Base64" it should be encoded
+        if ( value.Upper().StartsWith( "BASE64:" ) ) {
+            value = value.Right( value.Length() - 7 );
+            value.Trim();
+            bBase64 = true;
+        }
+        
         if ( value.Length() ) {
             setValueFromString( m_type, value, bBase64 );
         }
@@ -1436,7 +1444,15 @@ bool CVSCPVariable::setVariableFromString( const wxString& strVariable,
     if ( tkz.HasMoreTokens() ) {
         
         wxString note = tkz.GetNextToken();
-        setNote( note );
+        
+        // If the string starts with "Base64" it should be encoded
+        if ( note.Upper().StartsWith( "BASE64:" ) ) {
+            note = note.Right( note.Length() - 7 );
+            note.Trim();
+            bBase64 = true;
+        }
+        
+        setNote( note, bBase64 );
 
     }
     

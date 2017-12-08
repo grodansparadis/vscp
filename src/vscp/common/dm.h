@@ -561,6 +561,15 @@ public:
         @returns true if all went well.
     */
     bool doActionSendEventsFromFile( vscpEvent *pDMEvent );
+    
+    /*!
+        Send event to remote VSCP server action 
+        @param pDMEvent Event that triggered the action
+        @param bSecure Should be set to true for a secure connection (SSL)
+        @returns true if all went well.
+    */
+    bool doActionSendEventRemote( vscpEvent *pDMEvent,
+                                    bool bSecure = false );
 
     /*!
         Store in variable action 
@@ -1190,7 +1199,7 @@ private:
     /*!
         Port to access server at
     */
-    short m_port;
+    int m_port;
 
     /*!
         Username to login with  
@@ -1205,7 +1214,7 @@ private:
     /*!
         The event to send  
     */
-    vscpEventEx m_eventThe;
+    vscpEventEx m_eventEx;
 
 };
 

@@ -2117,6 +2117,18 @@ bool dmElement::doAction( vscpEvent *pEvent )
 
             doActionSendEvent( pEvent );
             break;
+            
+        case VSCP_DAEMON_ACTION_CODE_SEND_TO_REMOTE:
+            if ( gpobj->m_debugFlags1 & VSCP_DEBUG1_DM ) {
+                logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_SEND_EVENT.\n") ); // Log
+                gpobj->logMsg( _("[DM] ") + logStr + _("\n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+                gpobj->logMsg(  _("[DM] ") + _("DM = ") + getAsString( false ) + _("\n"), DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
+                vscp_writeVscpEventToString( pEvent, logStr );
+                gpobj->logMsg( _("[DM] ") + _("Event = ") + logStr + _("\n"), DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
+            }
+
+            doActionSendEventRemote( pEvent, false );
+            break;
 
         case VSCP_DAEMON_ACTION_CODE_SEND_EVENT_CONDITIONAL:
             if ( gpobj->m_debugFlags1 & VSCP_DEBUG1_DM ) {
@@ -2969,6 +2981,82 @@ bool dmElement::doActionSendEventsFromFile( vscpEvent *pDMEvent )
 
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+// doActionSendEventRemote
+//
+
+bool dmElement::doActionSendEventRemote( vscpEvent *pDMEvent, bool bSecure )
+{
+    actionThread_VSCPSrv *tread;
+    wxString strHostname;
+    short port;
+    wxString strUsername;
+    wxString strPassword;
+    wxString strEvent;                                        
+    
+    // Write in possible escapes
+    wxString wxstr = m_actionparam;
+    handleEscapes( pDMEvent, wxstr );
+
+    wxStringTokenizer tkz( wxstr, _(";") );
+
+    // Get servername
+    if ( tkz.HasMoreTokens() ) {
+        strHostname = tkz.GetNextToken();
+    }
+    else {
+        return false;
+    }
+    
+    // Get port
+    if ( tkz.HasMoreTokens() ) {
+        port = vscp_readStringValue( tkz.GetNextToken() );
+    }
+    else {
+        return false;
+    }
+    
+    // Get username
+    if ( tkz.HasMoreTokens() ) {
+        strUsername = tkz.GetNextToken();
+    }
+    else {
+        return false;
+    }
+    
+    // Get password
+    if ( tkz.HasMoreTokens() ) {
+        strPassword = tkz.GetNextToken();
+    }
+    else {
+        return false;
+    }
+    
+    // Get event
+    if ( tkz.HasMoreTokens() ) {
+        strEvent = tkz.GetNextToken();
+    }
+    else {
+        return false;
+    }
+    
+    // Go do your work mate
+    actionThread_VSCPSrv *thread =
+            new actionThread_VSCPSrv( gpobj,
+                                        strHostname,
+                                        port,
+                                        strUsername,
+                                        strPassword,
+                                        strEvent );
+    if ( NULL == thread ) return false;
+
+    // Go Go Go
+    thread->Run();
+    
+    return true;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // doActionWriteFile
 //
@@ -3114,11 +3202,10 @@ bool dmElement::doActionStoreVariable( vscpEvent *pDMEvent )
     handleEscapes( pDMEvent, params );
     
     wxStringTokenizer tkz( params, _(";") );
-
     
     CVSCPVariable var;
     
-    if ( tkz.CountTokens() >= 4 ) {
+    if ( tkz.CountTokens() >= 6 ) {
 
         // The form is variable-name; variable-type; persistence; value
         
@@ -3157,7 +3244,7 @@ bool dmElement::doActionStoreVariable( vscpEvent *pDMEvent )
             varType = vscp_readStringValue( tkz.GetString() );
         }
         
-        // Persistens
+        // Persistence
         if ( tkz.HasMoreTokens() ) {
             wxString wxstr = tkz.GetString();
             wxstr.MakeUpper();
@@ -3445,8 +3532,8 @@ bool dmElement::doActionAddVariable( vscpEvent *pDMEvent )
 {
     CVSCPVariable variable;
     wxString strName;
-    long val;
-    double floatval;
+    long val = 0;
+    double floatval = 0.0;
 
     // Write in possible escapes
     wxString wxstr = m_actionparam;
@@ -3458,57 +3545,51 @@ bool dmElement::doActionAddVariable( vscpEvent *pDMEvent )
     // Get the value
     wxString strval = wxstr.AfterFirst( wxChar(';') );
 
-    if ( wxNOT_FOUND == strval.Find( wxChar('.') ) ) {
-        val = vscp_readStringValue( strval );
+    if ( 0 == gpobj->m_variables.find( strName, variable ) ) {
+        wxString wxstrErr = _("[Action] Add to Variable: Variable was not found ");
+        wxstrErr += m_actionparam;
+        wxstrErr += _("\n");
+        gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+        return false;
     }
-    else {
-        strval.ToDouble( &floatval );
-    }
-
-    if ( gpobj->m_variables.find( strName, variable ) ) {
-
-        CVSCPVariable var;
-        var.setName( strName );
-        var.setType( VSCP_DAEMON_VARIABLE_CODE_LONG );
-        var.setPersistent( false );
-
-        if ( gpobj->m_variables.add( var ) ) {
-            wxString wxstrErr = _("[Action] Add to Variable: Could not add new variable ");
-            wxstrErr += m_actionparam;
-            wxstrErr += _("\n");
-            gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
-
-            return false;
-        }
-
-    }
-
+    
     // Must be a numerical variable
     if ( !variable.isNumerical() ) {
-            wxString wxstrErr = _("[Action] Add to Variable: Variable is not numerical ");
-            wxstrErr += m_actionparam;
-            wxstrErr += _("\n");
-            gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
-            return false;
+        wxString wxstrErr = _("[Action] Add to Variable: Variable is not numerical ");
+        wxstrErr += m_actionparam;
+        wxstrErr += _("\n");
+        gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+        return false;
     }
-
-    if ( ( VSCP_DAEMON_VARIABLE_CODE_LONG != variable.getType() ) ) {
+    
+    if ( ( VSCP_DAEMON_VARIABLE_CODE_LONG == variable.getType() ) ) {
         long lval;
+        val = atol( strval );
+        variable.getValue( &lval );        
+        lval += val;
+        variable.setValue( lval );
+    }
+    else if ( ( VSCP_DAEMON_VARIABLE_CODE_INTEGER == variable.getType() ) ) {
+        long lval;
+        val = atol( strval );
         variable.getValue( &lval );
         lval += val;
         variable.setValue( lval );
     }
-    else if ( ( VSCP_DAEMON_VARIABLE_CODE_INTEGER != variable.getType() ) ) {
-        long lval;
-        variable.getValue( &lval );
-        lval += val;
-        variable.setValue( lval );
-    }
-    else if ( ( VSCP_DAEMON_VARIABLE_CODE_DOUBLE != variable.getType() ) ) {
+    else if ( ( VSCP_DAEMON_VARIABLE_CODE_DOUBLE == variable.getType() ) ) {
         double dval;
+        strval.ToDouble( &floatval );
         variable.getValue( &dval );
         dval += floatval;
         variable.setValue( dval );
+    }
+    
+    if ( !gpobj->m_variables.update( variable ) ) {
+        wxString wxstrErr = _("[Action] Add to Variable: Failed to update variable ");
+        wxstrErr += m_actionparam;
+        wxstrErr += _("\n");
+        gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+        return false;
     }
 
     return true;
@@ -3522,8 +3603,8 @@ bool dmElement::doActionSubtractVariable( vscpEvent *pDMEvent )
 {
     CVSCPVariable variable;
     wxString strName;
-    long val;
-    double floatval;
+    long val = 0;
+    double floatval = 0.0;
 
     // Write in possible escapes
     wxString wxstr = m_actionparam;
@@ -3535,58 +3616,51 @@ bool dmElement::doActionSubtractVariable( vscpEvent *pDMEvent )
     // Get the value
     wxString strval = wxstr.AfterFirst( wxChar(';') );
 
-    if ( wxNOT_FOUND == strval.Find( wxChar('.') ) ) {
-        val = vscp_readStringValue( strval );
+    if ( 0 == gpobj->m_variables.find( strName, variable ) ) {
+        wxString wxstrErr = _("[Action] Subtract from Variable: Variable was not found ");
+        wxstrErr += m_actionparam;
+        wxstrErr += _("\n");
+        gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+        return false;
     }
-    else {
-        strval.ToDouble( &floatval );
-    }
-
-    if ( gpobj->m_variables.find( strName, variable ) ) {
-
-        CVSCPVariable var;
-
-        var.setName( strName );
-        var.setType( VSCP_DAEMON_VARIABLE_CODE_LONG );
-        var.setPersistent( false );
-
-        if ( gpobj->m_variables.add( var ) ) {
-            wxString wxstrErr = _("[Action] Add to Variable: Could not add new variable ");
-            wxstrErr += m_actionparam;
-            wxstrErr += _("\n");
-            gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
-
-            return false;
-        }
-
-    }
-
+    
     // Must be a numerical variable
     if ( !variable.isNumerical() ) {
-            wxString wxstrErr = _("[Action] Add to Variable: Variable is not numerical ");
-            wxstrErr += m_actionparam;
-            wxstrErr += _("\n");
-            gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM  );
-            return false;
+        wxString wxstrErr = _("[Action] Subtract from Variable: Variable is not numerical ");
+        wxstrErr += m_actionparam;
+        wxstrErr += _("\n");
+        gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+        return false;
     }
-
-    if ( ( VSCP_DAEMON_VARIABLE_CODE_LONG != variable.getType() ) ) {
+    
+    if ( ( VSCP_DAEMON_VARIABLE_CODE_LONG == variable.getType() ) ) {
         long lval;
+        val = atol( strval );
+        variable.getValue( &lval );        
+        lval -= val;
+        variable.setValue( lval );
+    }
+    else if ( ( VSCP_DAEMON_VARIABLE_CODE_INTEGER == variable.getType() ) ) {
+        long lval;
+        val = atol( strval );
         variable.getValue( &lval );
         lval -= val;
         variable.setValue( lval );
     }
-    else if ( ( VSCP_DAEMON_VARIABLE_CODE_INTEGER != variable.getType() ) ) {
-        long lval;
-        variable.getValue( &lval );
-        lval -= val;
-        variable.setValue( lval );
-    }
-    else if ( ( VSCP_DAEMON_VARIABLE_CODE_DOUBLE != variable.getType() ) ) {
+    else if ( ( VSCP_DAEMON_VARIABLE_CODE_DOUBLE == variable.getType() ) ) {
         double dval;
+        strval.ToDouble( &floatval );
         variable.getValue( &dval );
         dval -= floatval;
         variable.setValue( dval );
+    }
+    
+    if ( !gpobj->m_variables.update( variable ) ) {
+        wxString wxstrErr = _("[Action] Subtract from Variable: Failed to update variable ");
+        wxstrErr += m_actionparam;
+        wxstrErr += _("\n");
+        gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+        return false;
     }
 
     return true;
@@ -3600,8 +3674,8 @@ bool dmElement::doActionMultiplyVariable( vscpEvent *pDMEvent )
 {
     CVSCPVariable variable;
     wxString strName;
-    long val;
-    double floatval;
+    long val = 0;
+    double floatval = 0.0;
 
     // Write in possible escapes
     wxString wxstr = m_actionparam;
@@ -3613,57 +3687,51 @@ bool dmElement::doActionMultiplyVariable( vscpEvent *pDMEvent )
     // Get the value
     wxString strval = wxstr.AfterFirst( wxChar(';') );
 
-    if ( wxNOT_FOUND == strval.Find( wxChar('.') ) ) {
-        val = vscp_readStringValue( strval );
+    if ( 0 == gpobj->m_variables.find( strName, variable ) ) {
+        wxString wxstrErr = _("[Action] Multiply Variable: Variable was not found ");
+        wxstrErr += m_actionparam;
+        wxstrErr += _("\n");
+        gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+        return false;
     }
-    else {
-        strval.ToDouble( &floatval );
-    }
-   
-    if ( gpobj->m_variables.find( strName, variable ) ) {
-
-        CVSCPVariable var;
-        var.setName( strName );
-        var.setType( VSCP_DAEMON_VARIABLE_CODE_LONG );
-        var.setPersistent( false );
-
-        if ( gpobj->m_variables.add( var ) ) {
-            wxString wxstrErr = _("[Action] Add to Variable: Could not add new variable ");
-            wxstrErr += m_actionparam;
-            wxstrErr += _("\n");
-            gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
-
-            return false;
-        }
-
-    }
-
+    
     // Must be a numerical variable
     if ( !variable.isNumerical() ) {
-            wxString wxstrErr = _("[Action] Add to Variable: Variable is not numerical ");
-            wxstrErr += m_actionparam;
-            wxstrErr += _("\n");
-            gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
-            return false;
+        wxString wxstrErr = _("[Action] Multiply Variable: Variable is not numerical ");
+        wxstrErr += m_actionparam;
+        wxstrErr += _("\n");
+        gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+        return false;
     }
-
-    if ( ( VSCP_DAEMON_VARIABLE_CODE_LONG != variable.getType() ) ) {
+    
+    if ( ( VSCP_DAEMON_VARIABLE_CODE_LONG == variable.getType() ) ) {
         long lval;
+        val = atol( strval );
+        variable.getValue( &lval );        
+        lval *= val;
+        variable.setValue( lval );
+    }
+    else if ( ( VSCP_DAEMON_VARIABLE_CODE_INTEGER == variable.getType() ) ) {
+        long lval;
+        val = atol( strval );
         variable.getValue( &lval );
         lval *= val;
         variable.setValue( lval );
     }
-    else if ( ( VSCP_DAEMON_VARIABLE_CODE_INTEGER != variable.getType() ) ) {
-        long lval;
-        variable.getValue( &lval );
-        lval *= val;
-        variable.setValue( lval );
-    }
-    else if ( ( VSCP_DAEMON_VARIABLE_CODE_DOUBLE != variable.getType() ) ) {
+    else if ( ( VSCP_DAEMON_VARIABLE_CODE_DOUBLE == variable.getType() ) ) {
         double dval;
+        strval.ToDouble( &floatval );
         variable.getValue( &dval );
         dval *= floatval;
         variable.setValue( dval );
+    }
+    
+    if ( !gpobj->m_variables.update( variable ) ) {
+        wxString wxstrErr = _("[Action] Multiply Variable: Failed to update variable ");
+        wxstrErr += m_actionparam;
+        wxstrErr += _("\n");
+        gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+        return false;
     }
 
     return true;
@@ -3677,8 +3745,8 @@ bool dmElement::doActionDivideVariable( vscpEvent *pDMEvent )
 {
     CVSCPVariable variable;
     wxString strName;
-    long val;
-    double floatval;
+    long val = 0;
+    double floatval = 0.0;
 
     // Write in possible escapes
     wxString wxstr = m_actionparam;
@@ -3690,63 +3758,72 @@ bool dmElement::doActionDivideVariable( vscpEvent *pDMEvent )
     // Get the value
     wxString strval = wxstr.AfterFirst( wxChar(';') );
 
-    if ( wxNOT_FOUND == strval.Find( wxChar('.') ) ) {
-        val = vscp_readStringValue( strval );
+    if ( 0 == gpobj->m_variables.find( strName, variable ) ) {
+        wxString wxstrErr = _("[Action] Divide Variable: Variable was not found ");
+        wxstrErr += m_actionparam;
+        wxstrErr += _("\n");
+        gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+        return false;
     }
-    else {
-        strval.ToDouble( &floatval );
-    }
-
-    if ( gpobj->m_variables.find( strName, variable )) {
-
-        CVSCPVariable var;
-        var.setName( strName );
-        var.setType( VSCP_DAEMON_VARIABLE_CODE_LONG );
-        var.setPersistent( false );
-
-        if ( gpobj->m_variables.add( var ) ) {
-            wxString wxstrErr = _("[Action] Add to Variable: Could not add new variable ");
-            wxstrErr += m_actionparam;
-            wxstrErr += _("\n");
-            gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
-
-            return false;
-        }
-
-    }
-
+    
     // Must be a numerical variable
     if ( !variable.isNumerical() ) {
-            wxString wxstrErr = _("[Action] Add to Variable: Variable is not numerical ");
+        wxString wxstrErr = _("[Action] Divide Variable: Variable is not numerical ");
+        wxstrErr += m_actionparam;
+        wxstrErr += _("\n");
+        gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+        return false;
+    }
+    
+    if ( ( VSCP_DAEMON_VARIABLE_CODE_LONG == variable.getType() ) ) {
+        long lval;
+        val = atol( strval );
+        if ( 0 == val ) {
+            wxString wxstrErr = _("[Action] Can't divide with zero ");
             wxstrErr += m_actionparam;
             wxstrErr += _("\n");
             gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
-            return false;
-    }
-
-    if ( ( VSCP_DAEMON_VARIABLE_CODE_LONG != variable.getType() ) ) {
-        if ( 0 != val ) {
-            long lval;
-            variable.getValue( &lval );
-            lval /= val;
-            variable.setValue( lval );
+            val = 1;
         }
+        variable.getValue( &lval );        
+        lval /= val;
+        variable.setValue( lval );
     }
-    else if ( ( VSCP_DAEMON_VARIABLE_CODE_INTEGER != variable.getType() ) ) {
-        if ( 0 != val ) {
-            long lval;
-            variable.getValue( &lval );
-            lval /= val;
-            variable.setValue( lval );
+    else if ( ( VSCP_DAEMON_VARIABLE_CODE_INTEGER == variable.getType() ) ) {
+        long lval;
+        val = atol( strval );
+        if ( 0 == val ) {
+            wxString wxstrErr = _("[Action] Can't divide with zero ");
+            wxstrErr += m_actionparam;
+            wxstrErr += _("\n");
+            gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+            val = 1;
         }
+        variable.getValue( &lval );
+        lval /= val;
+        variable.setValue( lval );
     }
-    else if ( ( VSCP_DAEMON_VARIABLE_CODE_DOUBLE != variable.getType() ) ) {
-        if ( 0.0 != floatval) {
-            double dval;
-            variable.getValue( &dval );
-            dval *= floatval;
-            variable.setValue( dval );
+    else if ( ( VSCP_DAEMON_VARIABLE_CODE_DOUBLE == variable.getType() ) ) {
+        double dval;
+        strval.ToDouble( &floatval );
+        if ( 0 == floatval ) {
+            wxString wxstrErr = _("[Action] Can't divide with zero ");
+            wxstrErr += m_actionparam;
+            wxstrErr += _("\n");
+            gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+            floatval = 1;
         }
+        variable.getValue( &dval );
+        dval /= floatval;
+        variable.setValue( dval );
+    }
+    
+    if ( !gpobj->m_variables.update( variable ) ) {
+        wxString wxstrErr = _("[Action] Divide Variable: Failed to update variable ");
+        wxstrErr += m_actionparam;
+        wxstrErr += _("\n");
+        gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+        return false;
     }
 
     return true;
@@ -3760,7 +3837,6 @@ bool dmElement::doActionCheckVariable( vscpEvent *pDMEvent, VariableCheckType ty
 {
     wxString wxstr;
     double value = 0;
-    uint8_t unit = 0;
     uint8_t operation = DM_MEASUREMENT_COMPARE_NOOP;
     CVSCPVariable varCompare;   // Variable to compare
     CVSCPVariable varFlag;      // Variable with flag
@@ -3776,38 +3852,29 @@ bool dmElement::doActionCheckVariable( vscpEvent *pDMEvent, VariableCheckType ty
     if ( tkz.HasMoreTokens() ) {
         wxstr = tkz.GetNextToken();
         if ( !wxstr.ToCDouble( &value ) ) {
-            wxstr = _("Failed to convert to double (set to zero). param =") + params;
+            value = 0;
+            wxstr = _("[Action] Failed to convert to double (set to zero). param = ") + params;
             gpobj->logMsg( _("[DM] ") + wxstr + _("\n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
         }
     }
     else {
-        wxstr = _("Missing needed parameter (value). param =") + params;
+        wxstr = _("[Action] Missing needed parameter (value). param = ") + params;
         gpobj->logMsg( _("[DM] ") + wxstr + _("\n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
         return false;
     }
-    
-    // Unit
-    if ( tkz.HasMoreTokens() ) {
-        unit = vscp_readStringValue( tkz.GetNextToken() );
-    }
-    else {
-        wxstr = _("Missing needed parameter (unit). param =") + params;
-        gpobj->logMsg( _("[DM] ") + wxstr + _("\n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
-        return false;
-    }
-    
+
     // Operation
     if ( tkz.HasMoreTokens() ) {
         wxstr = tkz.GetNextToken();
         operation = CDM::getCompareCodeFromToken( wxstr );
         if ( -1 == operation ) {
-            wxstr = _("Invalid compare operation. param =") + params;
+            wxstr = _("[Action] Invalid compare operation. param = ") + params;
             gpobj->logMsg( _("[DM] ") + wxstr + _("\n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
             operation = DM_MEASUREMENT_COMPARE_NOOP;
         }
     }
     else {
-        wxstr = _("Missing needed parameter (operation). param =") + params;
+        wxstr = _("[Action] Missing needed parameter (operation). param = ") + params;
         gpobj->logMsg( _("[DM] ") + wxstr + _("\n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
         return false;
     }
@@ -3815,24 +3882,26 @@ bool dmElement::doActionCheckVariable( vscpEvent *pDMEvent, VariableCheckType ty
     // Variable to compare
     if ( tkz.HasMoreTokens() ) {
         
+        wxstr = tkz.GetNextToken();
         wxstr.Trim();
+        
         if ( !gpobj->m_variables.find( wxstr, varCompare ) ) {
             // Variable not found
-            wxstr = _("Compare variable was not found. param =") + params;
+            wxstr = _("[Action] Compare variable was not found. param = ") + params;
             gpobj->logMsg( _("[DM] ") + wxstr + _("\n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
             return false;
         }
         
         // The variable must be numerical
-        if ( varCompare.isNumerical() ) {
-            wxstr = _("Compare variable need to be numerical. param =") + params;
+        if ( !varCompare.isNumerical() ) {
+            wxstr = _("[Action] Compare variable need to be numerical. param = ") + params;
             gpobj->logMsg( _("[DM] ") + wxstr + _("\n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
             return false;
         }
         
     }
     else {
-        wxstr = _("Missing needed parameter (variable). param =") + params;
+        wxstr = _("[Action] Missing needed parameter (variable). param = ") + params;
         gpobj->logMsg( _("[DM] ") + wxstr + _("\n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
         return false;
     }
@@ -3840,24 +3909,25 @@ bool dmElement::doActionCheckVariable( vscpEvent *pDMEvent, VariableCheckType ty
     // Variable with flag
     if ( tkz.HasMoreTokens() ) {
         
+        wxstr = tkz.GetNextToken();
         wxstr.Trim();
         if ( !gpobj->m_variables.find( wxstr, varFlag ) ) {
             // Variable not found
-            wxstr = _("Flag variable was not found. param =") + params;
+            wxstr = _("[Action] Flag variable was not found. param = ") + params;
             gpobj->logMsg( _("[DM] ") + wxstr + _("\n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
             return false;
         }
         
         // The variable must be boolean
         if ( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN != varFlag.getType() ) {
-            wxstr = _("Flag variable must be boolean. param =") + params;
+            wxstr = _("[Action] Flag variable must be boolean. param = ") + params;
             gpobj->logMsg( _("[DM] ") + wxstr + _("\n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
             return false;
         }
         
     }
     else {
-        wxstr = _("Missing needed parameter (flag variable). param =") + params;
+        wxstr = _("[Action] Missing needed parameter (flag variable). param =") + params;
         gpobj->logMsg( _("[DM] ") + wxstr + _("\n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
         return false;
     }
@@ -3868,16 +3938,16 @@ bool dmElement::doActionCheckVariable( vscpEvent *pDMEvent, VariableCheckType ty
     switch ( operation ) {
         
         case DM_MEASUREMENT_COMPARE_NOOP:
-            if ( VARIABLE_CHECK_SET_TRUE ==  type ) {
+            if ( VARIABLE_CHECK_SET_TRUE == type ) {
                 varFlag.setValue( true );
             }
-            else if ( VARIABLE_CHECK_SET_FALSE ==  type ) {
+            else if ( VARIABLE_CHECK_SET_FALSE == type ) {
                 varFlag.setValue( false );
             }
             break;
         
         case DM_MEASUREMENT_COMPARE_EQ:
-            if ( value == valCompare ) {
+            if ( vscp_almostEqualRelativeDouble( value, valCompare ) ) {
                 if ( VARIABLE_CHECK_SET_TRUE ==  type ) {
                     varFlag.setValue( true );
                 }
@@ -3896,13 +3966,13 @@ bool dmElement::doActionCheckVariable( vscpEvent *pDMEvent, VariableCheckType ty
                     varFlag.setValue( true );
                 }
                 else if ( VARIABLE_CHECK_SET_OUTCOME ==  type ) {
-                    varFlag.setValue( true );
+                    varFlag.setValue( false );
                 }
             }
             break;
             
         case DM_MEASUREMENT_COMPARE_NEQ:
-            if ( value != valCompare ) {
+            if ( !vscp_almostEqualRelativeDouble( value, valCompare ) ) {
                 if ( VARIABLE_CHECK_SET_TRUE ==  type ) {
                     varFlag.setValue( true );
                 }
@@ -3921,7 +3991,7 @@ bool dmElement::doActionCheckVariable( vscpEvent *pDMEvent, VariableCheckType ty
                     varFlag.setValue( true );
                 }
                 else if ( VARIABLE_CHECK_SET_OUTCOME ==  type ) {
-                    varFlag.setValue( true );
+                    varFlag.setValue( false );
                 }
             }
             break;     
@@ -3946,13 +4016,14 @@ bool dmElement::doActionCheckVariable( vscpEvent *pDMEvent, VariableCheckType ty
                     varFlag.setValue( true );
                 }
                 else if ( VARIABLE_CHECK_SET_OUTCOME ==  type ) {
-                    varFlag.setValue( true );
+                    varFlag.setValue( false );
                 }
             }
             break;
             
         case DM_MEASUREMENT_COMPARE_LTEQ:
-            if ( value <= valCompare ) {
+            if ( ( value < valCompare ) ||
+                    vscp_almostEqualRelativeDouble( value, valCompare ) ) {
                 if ( VARIABLE_CHECK_SET_TRUE ==  type ) {
                     varFlag.setValue( true );
                 }
@@ -3971,7 +4042,7 @@ bool dmElement::doActionCheckVariable( vscpEvent *pDMEvent, VariableCheckType ty
                     varFlag.setValue( true );
                 }
                 else if ( VARIABLE_CHECK_SET_OUTCOME ==  type ) {
-                    varFlag.setValue( true );
+                    varFlag.setValue( false );
                 }
             }
             break;
@@ -3996,13 +4067,14 @@ bool dmElement::doActionCheckVariable( vscpEvent *pDMEvent, VariableCheckType ty
                     varFlag.setValue( true );
                 }
                 else if ( VARIABLE_CHECK_SET_OUTCOME ==  type ) {
-                    varFlag.setValue( true );
+                    varFlag.setValue( false );
                 }
             }
             break;      
             
         case DM_MEASUREMENT_COMPARE_GTEQ:
-            if ( value >= valCompare ) {
+            if ( ( value >= valCompare ) || 
+                    vscp_almostEqualRelativeDouble( value, valCompare ) ) {
                 if ( VARIABLE_CHECK_SET_TRUE ==  type ) {
                     varFlag.setValue( true );
                 }
@@ -4021,11 +4093,19 @@ bool dmElement::doActionCheckVariable( vscpEvent *pDMEvent, VariableCheckType ty
                     varFlag.setValue( true );
                 }
                 else if ( VARIABLE_CHECK_SET_OUTCOME ==  type ) {
-                    varFlag.setValue( true );
+                    varFlag.setValue( false );
                 }
             }
             break;      
             
+    }
+    
+    if ( !gpobj->m_variables.update( varFlag ) ) {
+        wxString wxstrErr = _("[Action] Compare Variable: Failed to update variable ");
+        wxstrErr += m_actionparam;
+        wxstrErr += _("\n");
+        gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+        return false;
     }
     
     return true;
@@ -7014,7 +7094,7 @@ actionThread_VSCPSrv::actionThread_VSCPSrv( CControlObject *pCtrlObject,
     m_port = port;
     m_strUsername = strUsername;
     m_strPassword = strPassword;
-    vscp_setVscpEventExFromString( &m_eventThe, strEvent );
+    vscp_setVscpEventExFromString( &m_eventEx, strEvent );
 }
 
 actionThread_VSCPSrv::~actionThread_VSCPSrv()
@@ -7030,24 +7110,36 @@ actionThread_VSCPSrv::~actionThread_VSCPSrv()
 
 void *actionThread_VSCPSrv::Entry()
 {
-    //m_pCtrlObject->logMsg ( _("[DM] ") + _( "TCP actionThreadURL: Quit.\n" ), DAEMON_LOGMSG_INFO );
+    int rv;
     VscpRemoteTcpIf client;
+    wxString server = wxString::Format( _("tcp://%s:%d"), 
+                                            (const char *)m_strHostname.mbc_str(),
+                                            m_port );
 
-    if ( CANAL_ERROR_SUCCESS != client.doCmdOpen( m_strHostname,
-                                                    m_strUsername,
-                                                    m_strPassword ) ) {
+    if ( CANAL_ERROR_SUCCESS != ( rv = client.doCmdOpen( server,
+                                                            m_strUsername,
+                                                            m_strPassword ) ) ) {       
         // Failed to connect
-        gpobj->logMsg( _("[DM] ") + _( "actionThreadVSCPSrv: Unable to connect to remote server : " ) +
-                                    m_strHostname +
-                                    _(" \n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM  );
+        gpobj->logMsg( _("[DM] ") + 
+            _( "actionThreadVSCPSrv: Unable to connect to remote server : " ) +
+            m_strHostname + 
+            wxString::Format( _("Return code = %d"), rv ) +
+            _(" \n"), 
+                DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM  );
+        
+        return NULL;
     }
 
     // Connected
-    if ( CANAL_ERROR_SUCCESS != client.doCmdSendEx( &m_eventThe ) ) {
+    
+    if ( CANAL_ERROR_SUCCESS != client.doCmdSendEx( &m_eventEx ) ) {
         // Failed to send event
-        gpobj->logMsg( _("[DM] ") + _( "actionThreadVSCPSrv: Unable to send event to remote server : " ) +
-                                m_strHostname +
-                                _(" \n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM  );
+        gpobj->logMsg( _("[DM] ") + 
+          _( "actionThreadVSCPSrv: Unable to send event to remote server : " ) +
+          m_strHostname +
+          _(" \n"), 
+                DAEMON_LOGMSG_NORMAL, 
+                DAEMON_LOGTYPE_DM  );
     }
 
     return NULL;

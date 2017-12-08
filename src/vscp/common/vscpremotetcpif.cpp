@@ -56,7 +56,7 @@
 #include <vscpremotetcpif.h>
 
 // Undef to get extra debug info
-//#define DEBUG_INNER_COMMUNICTION
+//#define DEBUG_INNER_COMMUNICTION 1
 
 // Undef if debug messages is not wanted
 //#define DEBUG_LIB_VSCP_HELPER   1
@@ -346,7 +346,7 @@ bool VscpRemoteTcpIf::checkReturnValue( bool bClear )
             last = i;
 
         }
-
+        
         // Give the server some time to deliver the data
         if ( m_afterCommandSleep ) wxMilliSleep( m_afterCommandSleep );
 

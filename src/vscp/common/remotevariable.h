@@ -226,7 +226,7 @@ public:
         @return true if the string could be parsed correctly.
      */
     bool setVariableFromString( const wxString& strVariable, 
-                                    const bool bBase64=false,
+                                    bool bBase64=false,
                                     const wxString& strUser = _("admin") );
 
     /*!

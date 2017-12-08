@@ -1,0 +1,37 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+
+<dm>
+  
+    <row enable="true" groupid="send_remote_test" >
+
+    <comment>
+        Test action send event
+    </comment>
+
+    <mask priority="0"  
+             class="0xFFFF"  
+             type="0xFFFF"  
+             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+    <filter  priority="0"  
+             class="10"  
+             type="6"  
+             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+    <action>0x43</action>
+    <param>
+        192.168.1.6;9598;admin;secret;%event
+    </param>
+
+    <index measurementindex="true">1</index>
+
+    <!-- eq|neq|gt|gteq|lt|lteq -->
+    <!--
+    <measurement compare="eq"
+                   unit="1"
+                   value="5.0"/>
+   -->
+  </row>
+ 
+</dm>
+ 
