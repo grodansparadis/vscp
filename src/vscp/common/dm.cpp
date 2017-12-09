@@ -2255,7 +2255,7 @@ bool dmElement::doAction( vscpEvent *pEvent )
                 vscp_writeVscpEventToString( pEvent, logStr );
                 gpobj->logMsg( _("[DM] ") + _("Event = ") + logStr + _("\n"), DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
             }
-            // TODO !!!!
+            doActionCheckMeasurement( pEvent );
             break;
             
         case VSCP_DAEMON_ACTION_CODE_STORE_MIN:
@@ -4111,6 +4111,209 @@ bool dmElement::doActionCheckVariable( vscpEvent *pDMEvent, VariableCheckType ty
     return true;
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+// doActionCheckMeasurement
+//
+
+bool dmElement::doActionCheckMeasurement( vscpEvent *pDMEvent )
+{
+    wxString wxstr;
+    int unit = 0;
+    int sensorIndex = 0;
+    double value = 0;
+    double valueMeasurement = 0;
+    uint8_t operation = DM_MEASUREMENT_COMPARE_NOOP;
+    CVSCPVariable varFlag;      // Variable for result flag
+    
+    // Write in possible escapes
+    wxString params = m_actionparam;
+    handleEscapes( pDMEvent, params );
+    
+    // Make sure it is a measurement event
+    if ( !vscp_isVSCPMeasurement( pDMEvent ) ) {
+        wxstr = _("[Action] Must be measurement event. param = ") + params;
+        gpobj->logMsg( _("[DM] ") + wxstr + _("\n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+        return false;
+    }
+    
+    // Get value
+    if ( !vscp_getVSCPMeasurementAsDouble( pDMEvent, &valueMeasurement ) ) {
+        wxstr = _("[Action] Failed to get measurement value. param = ") + params;
+        gpobj->logMsg( _("[DM] ") + wxstr + _("\n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+        return false;
+    }
+    
+    // unit;sendorindex;value;operation;flag-variable
+    wxStringTokenizer tkz( params, _(";") );
+    
+    // unit
+    if ( tkz.HasMoreTokens() ) {
+        unit = vscp_readStringValue( tkz.GetNextToken() );
+        
+        if ( unit != vscp_getVSCPMeasurementUnit( pDMEvent )  ) {
+            // It's another unit
+            wxstr = _("[Action] Different unit. param = ") + params;
+            gpobj->logMsg( _("[DM] ") + wxstr + _("\n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+            return false;
+        }
+                
+    }
+    else {
+        wxstr = _("[Action] Missing needed parameter (unit). param = ") + params;
+        gpobj->logMsg( _("[DM] ") + wxstr + _("\n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+        return false;
+    }
+    
+    // sensor index
+    if ( tkz.HasMoreTokens() ) {
+        sensorIndex = vscp_readStringValue( tkz.GetNextToken() );
+        
+        if ( sensorIndex != vscp_getVSCPMeasurementSensorIndex( pDMEvent )  ) {
+            // It's another unit
+            wxstr = _("[Action] Different sensor index. param = ") + params;
+            gpobj->logMsg( _("[DM] ") + wxstr + _("\n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+            return false;
+        }
+    }
+    else {
+        wxstr = _("[Action] Missing needed parameter (sensor index). param = ") + params;
+        gpobj->logMsg( _("[DM] ") + wxstr + _("\n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+        return false;
+    }
+    
+    // valueCompare
+    if ( tkz.HasMoreTokens() ) {
+        wxstr = tkz.GetNextToken();
+        if ( !wxstr.ToCDouble( &value ) ) {
+            value = 0;
+            wxstr = _("[Action] Failed to convert to double (set to zero). param = ") + params;
+            gpobj->logMsg( _("[DM] ") + wxstr + _("\n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+        }
+    }
+    else {
+        wxstr = _("[Action] Missing needed parameter (value). param = ") + params;
+        gpobj->logMsg( _("[DM] ") + wxstr + _("\n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+        return false;
+    }
+
+    // Operation
+    if ( tkz.HasMoreTokens() ) {
+        wxstr = tkz.GetNextToken();
+        operation = CDM::getCompareCodeFromToken( wxstr );
+        if ( -1 == operation ) {
+            wxstr = _("[Action] Invalid compare operation. param = ") + params;
+            gpobj->logMsg( _("[DM] ") + wxstr + _("\n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+            operation = DM_MEASUREMENT_COMPARE_NOOP;
+        }
+    }
+    else {
+        wxstr = _("[Action] Missing needed parameter (operation). param = ") + params;
+        gpobj->logMsg( _("[DM] ") + wxstr + _("\n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+        return false;
+    }
+    
+    // Variable (flag) for result (Boolean)
+    if ( tkz.HasMoreTokens() ) {
+        
+        wxstr = tkz.GetNextToken();
+        wxstr.Trim();
+        if ( !gpobj->m_variables.find( wxstr, varFlag ) ) {
+            // Variable not found
+            wxstr = _("[Action] Result (flag) variable was not found. param = ") + params;
+            gpobj->logMsg( _("[DM] ") + wxstr + _("\n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+            return false;
+        }
+        
+        // The variable must be boolean
+        if ( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN != varFlag.getType() ) {
+            wxstr = _("[Action] Result (flag) variable must be boolean. param = ") + params;
+            gpobj->logMsg( _("[DM] ") + wxstr + _("\n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+            return false;
+        }
+        
+    }
+    else {
+        wxstr = _("[Action] Missing needed parameter (flag variable). param =") + params;
+        gpobj->logMsg( _("[DM] ") + wxstr + _("\n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+        return false;
+    }
+       
+    switch ( operation ) {
+        
+        case DM_MEASUREMENT_COMPARE_NOOP:
+            break;
+        
+        case DM_MEASUREMENT_COMPARE_EQ:
+            if ( vscp_almostEqualRelativeDouble( value, valueMeasurement ) ) {
+                varFlag.setValue( true );
+            }
+            else {
+                varFlag.setValue( false );
+            }
+            break;
+            
+        case DM_MEASUREMENT_COMPARE_NEQ:
+            if ( !vscp_almostEqualRelativeDouble( value, valueMeasurement ) ) {
+                varFlag.setValue( true );
+            }
+            else {
+                varFlag.setValue( false );
+            }
+            break;     
+            
+        case DM_MEASUREMENT_COMPARE_LT:
+            if ( value < valueMeasurement ) {
+                varFlag.setValue( true );
+            }
+            else {
+                varFlag.setValue( false );
+            }
+            break;
+            
+        case DM_MEASUREMENT_COMPARE_LTEQ:
+            if ( ( value < valueMeasurement ) ||
+                    vscp_almostEqualRelativeDouble( value, valueMeasurement ) ) {
+                varFlag.setValue( true );
+            }
+            else {
+                varFlag.setValue( false );
+            }
+            break;
+            
+        case DM_MEASUREMENT_COMPARE_GT:
+            if ( value > valueMeasurement ) {
+                varFlag.setValue( true );
+            }
+            else {
+                varFlag.setValue( false );
+            }
+            break;      
+            
+        case DM_MEASUREMENT_COMPARE_GTEQ:
+            if ( ( value >= valueMeasurement ) || 
+                    vscp_almostEqualRelativeDouble( value, valueMeasurement ) ) {
+                varFlag.setValue( true );
+            }
+            else {
+               varFlag.setValue( false );
+            }
+            break;      
+            
+    }
+    
+    if ( !gpobj->m_variables.update( varFlag ) ) {
+        wxString wxstrErr = _("[Action] Compare Variable: Failed to update variable ");
+        wxstrErr += m_actionparam;
+        wxstrErr += _("\n");
+        gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+        return false;
+    }
+    
+    return true;
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // doActionStoreMin
 //
@@ -4132,7 +4335,7 @@ bool dmElement::doActionStoreMin( vscpEvent *pDMEvent )
     
     // Event must be measurement
     if ( !vscp_isVSCPMeasurement( pDMEvent ) ) {
-        wxString wxstr = _("Event must be a measurement event. param =") + params;
+        wxString wxstr = _("[Action] Event must be a measurement event. param =") + params;
         gpobj->logMsg( _("[DM] ") + wxstr + _("\n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
         return false;
     }
@@ -4144,7 +4347,7 @@ bool dmElement::doActionStoreMin( vscpEvent *pDMEvent )
     wxStringTokenizer tkz( params, _(";") );
     
     if ( !tkz.HasMoreTokens() ) {
-        wxString wxstr = _("Need variable name. param =") + params;
+        wxString wxstr = _("[Action] Need variable name. param =") + params;
         gpobj->logMsg( _("[DM] ") + wxstr + _("\n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
         return false;
     }
@@ -4154,25 +4357,16 @@ bool dmElement::doActionStoreMin( vscpEvent *pDMEvent )
     varname.Trim();
     
     // Find the variable
-    if ( !gpobj->m_variables.find( varname, variable ) ) {
-        
-        variable.setName( varname );
-        variable.setType( VSCP_DAEMON_VARIABLE_CODE_DOUBLE );
-        variable.setOwnerID( USER_ID_ADMIN );    // Admin user owns variable
-        variable.setPersistent( false );
-        variable.setAccessRights( PERMISSON_ALL_RIGHTS );
-        variable.setValue( DBL_MAX );
-        
-        if ( !gpobj->m_variables.add( variable ) ) {
-            wxString wxstr = _("Unable to add min variable. param =") + params;
-            gpobj->logMsg( _("[DM] ") + wxstr + _("\n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
-            return false;
-        }
+    if ( !gpobj->m_variables.find( varname, variable ) ) {        
+        // Variable not found
+        wxString wxstr = _("[Action] Variable was not found. param = ") + params;
+        gpobj->logMsg( _("[DM] ") + wxstr + _("\n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+        return false;
     }
     
     // Variable must be numerical to be comparable
     if ( !variable.isNumerical() ) {
-        wxString wxstr = _("Can't compare with non numeric variable. param =") + params;
+        wxString wxstr = _("[Action] Can't compare with non numeric variable. param = ") + params;
         gpobj->logMsg( _("[DM] ") + wxstr + _("\n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
         return false;
     }
@@ -4221,6 +4415,14 @@ bool dmElement::doActionStoreMin( vscpEvent *pDMEvent )
         variable.setValue( value );
     }
     
+    if ( !gpobj->m_variables.update( variable ) ) {
+        wxString wxstrErr = _("[Action] Minimum: Failed to update variable ");
+        wxstrErr += m_actionparam;
+        wxstrErr += _("\n");
+        gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+        return false;
+    }
+    
     return true;
 }
 
@@ -4245,7 +4447,7 @@ bool dmElement::doActionStoreMax( vscpEvent *pDMEvent )
     
     // Event must be measurement
     if ( !vscp_isVSCPMeasurement( pDMEvent ) ) {
-        wxString wxstr = _("Event must be a measurement event. param =") + params;
+        wxString wxstr = _("[Action] Event must be a measurement event. param =") + params;
         gpobj->logMsg( _("[DM] ") + wxstr + _("\n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
         return false;
     }
@@ -4257,7 +4459,7 @@ bool dmElement::doActionStoreMax( vscpEvent *pDMEvent )
     wxStringTokenizer tkz( params, _(";") );
     
     if ( !tkz.HasMoreTokens() ) {
-        wxString wxstr = _("Need variable name. param =") + params;
+        wxString wxstr = _("[Action] Need variable name. param =") + params;
         gpobj->logMsg( _("[DM] ") + wxstr + _("\n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
         return false;
     }
@@ -4268,24 +4470,15 @@ bool dmElement::doActionStoreMax( vscpEvent *pDMEvent )
     
     // Find the variable
     if ( !gpobj->m_variables.find( varname, variable ) ) {
-        
-        variable.setName( varname );
-        variable.setType( VSCP_DAEMON_VARIABLE_CODE_DOUBLE );
-        variable.setOwnerID( USER_ID_ADMIN );    // Admin user owns variable
-        variable.setPersistent( false );
-        variable.setAccessRights( PERMISSON_ALL_RIGHTS );
-        variable.setValue( DBL_MIN );
-        
-        if ( !gpobj->m_variables.add( variable ) ) {
-            wxString wxstr = _("Unable to add max variable. param =") + params;
-            gpobj->logMsg( _("[DM] ") + wxstr + _("\n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
-            return false;
-        }
+        // Variable not found
+        wxString wxstr = _("[Action] Variable was not found. param = ") + params;
+        gpobj->logMsg( _("[DM] ") + wxstr + _("\n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+        return false;
     }
     
     // Variable must be numerical to be comparable
     if ( !variable.isNumerical() ) {
-        wxString wxstr = _("Can't compare with non numeric variable. param =") + params;
+        wxString wxstr = _("[Action] Can't compare with non numeric variable. param =") + params;
         gpobj->logMsg( _("[DM] ") + wxstr + _("\n"), DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
         return false;
     }
@@ -4330,8 +4523,16 @@ bool dmElement::doActionStoreMax( vscpEvent *pDMEvent )
             ( sensorindex == vscp_getVSCPMeasurementSensorIndex( pDMEvent ) ) &&
             ( zone == vscp_getVSCPMeasurementZone( pDMEvent ) ) &&
             ( subzone == vscp_getVSCPMeasurementSubZone( pDMEvent ) ) ) {
-        // Store new hightes value
+        // Store new highest value
         variable.setValue( value );
+    }
+    
+    if ( !gpobj->m_variables.update( variable ) ) {
+        wxString wxstrErr = _("[Action] Maximum: Failed to update variable ");
+        wxstrErr += m_actionparam;
+        wxstrErr += _("\n");
+        gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+        return false;
     }
     
     return true;

@@ -1,0 +1,100 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+
+<dm>
+    
+    <row enable="true" groupid="Min/max" >
+
+        <comment>
+            Create variable that hold min
+            when the server is started ( CLASS2.VSCPD, Type=23 ).
+        </comment>
+
+        <mask priority="0"
+              class="0xFFFF"
+              type="0xFFFF"
+              GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <filter  priority="0"
+                class="65535"
+                type="23"
+                GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <action>0x50</action>
+        <param>
+            minimum;float;false;0;0x777;9999999;BASE64:test min
+        </param>
+
+    </row>
+    
+        <row enable="true" groupid="Min/max" >
+
+        <comment>
+            Create variable that hold min
+            when the server is started ( CLASS2.VSCPD, Type=23 ).
+        </comment>
+
+        <mask priority="0"
+              class="0xFFFF"
+              type="0xFFFF"
+              GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <filter  priority="0"
+                class="65535"
+                type="23"
+                GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <action>0x50</action>
+        <param>
+            maximum;float;false;0;0x777;-999999;BASE64:test max
+        </param>
+
+    </row>
+   
+    <row enable="true" groupid="Min/max" >
+
+        <comment>
+            Test for minimum
+        </comment>
+
+        <mask priority="0"  
+              class="0xFFFF"  
+              type="0xFFFF"  
+              GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <filter priority="0"  
+                class="10"  
+                type="6"  
+                GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <action>0x71</action>
+        <param>
+            minimum;1;1
+        </param>
+
+    </row>
+  
+    <row enable="true" groupid="Min/max" >
+
+        <comment>
+            Test for maximum
+        </comment>
+
+        <mask priority="0"  
+              class="0xFFFF"  
+              type="0xFFFF"  
+              GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <filter priority="0"  
+                class="10"  
+                type="6"  
+                GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <action>0x72</action>
+        <param>
+            maximum;1;1
+        </param>
+
+    </row>
+      
+</dm>
+ 

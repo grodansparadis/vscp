@@ -30,7 +30,9 @@
 #include <string.h>
 #include <assert.h>
 
-#include "civetweb_lua.h"
+#define LUA_LIB
+#include "lua.h"
+#include "lauxlib.h"
 
 #if LUA_VERSION_NUM > 501
 /*

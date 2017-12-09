@@ -607,12 +607,19 @@ public:
     bool doActionDivideVariable( vscpEvent *pDMEvent );
     
     /*!
-     * Check variable against measurement
+     * Check variable against constant
      * @param pDMEvent Event that triggered the action
      * @param type Type of check
-       @returns true if all went well.
+     * @returns true if all went well.
      */
     bool doActionCheckVariable( vscpEvent *pDMEvent, VariableCheckType type );
+    
+    /*!
+     * Check variable against measurement
+     * @param pDMEvent Event that triggered the action
+     * @returns true if all went well.
+     */
+    bool doActionCheckMeasurement( vscpEvent *pDMEvent );
     
     /*!
      * Store new minimum of measurement in variable if lower than current.
