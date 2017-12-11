@@ -3034,9 +3034,9 @@ bool dmElement::doActionSendEventsFromFile( vscpEvent *pDMEvent )
     }
 
     // start processing the XML file
-    if ( doc.GetRoot()->GetName() != _( "vscpevents" ) ) {
+    if ( doc.GetRoot()->GetName() != _( "events" ) ) {
         wxString wxstrErr = _("[Action] Send event from file: "
-                              "<vscpevents> tag is missing.");
+                              "<events> tag is missing.");
         wxstrErr += _("\n");
         gpobj->logMsg( _("[DM] ") + wxstrErr, 
                         DAEMON_LOGMSG_NORMAL, 
@@ -3056,6 +3056,8 @@ bool dmElement::doActionSendEventsFromFile( vscpEvent *pDMEvent )
 
                 pEvent->head = 0;
                 pEvent->obid = 0;
+                pEvent->timestamp = 0;
+                vscp_setEventDateTimeBlockToNow( pEvent );
                 pEvent->sizeData = 0;
                 pEvent->pdata = NULL;
                 pEvent->vscp_class = 0;
@@ -3085,6 +3087,8 @@ bool dmElement::doActionSendEventsFromFile( vscpEvent *pDMEvent )
                         vscp_setVscpDataFromString( pEvent, 
                                                      subchild->GetNodeContent() );
                     }
+                    
+                    subchild = subchild->GetNext();
 
                 }
 
@@ -3108,15 +3112,19 @@ bool dmElement::doActionSendEventsFromFile( vscpEvent *pDMEvent )
 
                 }
                 else {
+                    
+                    // Remove the event
+                    vscp_deleteVSCPevent_v2( &pEvent );
+                    
                     m_pDM->m_pClientItem->m_statistics.cntOverruns++;
                 }
+                
 
-                // Remove the event
-                vscp_deleteVSCPevent( pEvent );
-
-            }
+            }                        
 
         }
+        
+        child = child->GetNext();
 
     }
 
