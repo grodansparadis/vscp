@@ -2722,60 +2722,112 @@ bool dmElement::unixVSCPExecute( wxString& argExec )
 
 bool dmElement::doActionSendEvent( vscpEvent *pDMEvent )
 {
-    int idx;
+    //int idx;
+    wxString wxstr;
+    wxString strEvent;
     wxString varName;
 
     // Write in possible escapes
-    wxString wxstr = m_actionparam;
-    handleEscapes( pDMEvent, wxstr );
+    wxString escaped_actionparam = m_actionparam;
+    handleEscapes( pDMEvent, escaped_actionparam );
+    
+    wxStringTokenizer tkz( escaped_actionparam, _(";") );
+
+    // Get event
+    if ( tkz.HasMoreTokens() ) {
+        strEvent = tkz.GetNextToken();
+    }
+    else {
+        // must be an event
+        wxString wxstrErr = 
+                _("[Action] Send event: No event defined. Param = ");
+        wxstrErr += wxstr;
+        wxstrErr += _("\n");
+        gpobj->logMsg( _("[DM] ") + wxstrErr, 
+                        DAEMON_LOGMSG_NORMAL, 
+                        DAEMON_LOGTYPE_DM );
+        return false;
+    }
+    
+    // Get confirmation variable (if any)
+    if ( tkz.HasMoreTokens() ) {
+        varName = tkz.GetNextToken();
+    }
 
     // There must be room in the send queue
     if ( gpobj->m_maxItemsInClientReceiveQueue >
             gpobj->m_clientOutputQueue.GetCount() ) {
 
-            if (  wxNOT_FOUND != ( idx = m_actionparam.Find( _(";") ) ) ) {
-                // There is a variable that we should set to true in
-                // this parameter line. We extract it
-                varName = m_actionparam.Mid( idx + 1 );
-                m_actionparam = m_actionparam.Mid( 0, idx );
+        vscpEvent *pEvent = new vscpEvent;
+        pEvent->pdata = NULL;
+        if ( NULL != pEvent ) {
+
+            if ( !vscp_setVscpEventFromString( pEvent, strEvent ) ) {
+                    
+                vscp_deleteVSCPevent_v2( &pEvent );
+                    
+                // Event has wrong format
+                wxString wxstrErr = 
+                        _("[Action] Send event: Invalid format for "
+                          "event. Param = ");
+                wxstrErr += wxstr;
+                wxstrErr += _("\n");
+                gpobj->logMsg( _("[DM] ") + wxstrErr, 
+                                DAEMON_LOGMSG_NORMAL, 
+                                DAEMON_LOGTYPE_DM );
+                return false;
+                    
             }
 
-            vscpEvent *pEvent = new vscpEvent;
-            if ( NULL != pEvent ) {
+            gpobj->m_mutexClientOutputQueue.Lock();
+            gpobj->m_clientOutputQueue.Append ( pEvent );
+            gpobj->m_semClientOutputQueue.Post();
+            gpobj->m_mutexClientOutputQueue.Unlock();
 
-                vscp_setVscpEventFromString( pEvent, m_actionparam );
-
-                gpobj->m_mutexClientOutputQueue.Lock();
-                gpobj->m_clientOutputQueue.Append ( pEvent );
-                gpobj->m_semClientOutputQueue.Post();
-                gpobj->m_mutexClientOutputQueue.Unlock();
-
-                // TX Statistics
-                m_pDM->m_pClientItem->m_statistics.cntTransmitData +=
+            // TX Statistics
+            m_pDM->m_pClientItem->m_statistics.cntTransmitData +=
                                                             pEvent->sizeData;
-                m_pDM->m_pClientItem->m_statistics.cntTransmitFrames++;
+            m_pDM->m_pClientItem->m_statistics.cntTransmitFrames++;
 
-                // Set the variable to false if it is defined
-                if ( 0 != varName.Length() ) {
+            // Set the condition variable to false if it is defined
+            if ( varName.Length() ) {
 
-                    CVSCPVariable variable;
-                    if ( gpobj->m_variables.find( varName, variable ) ) {
-
-                        // Non existent - add and set to false
-                        gpobj->m_variables.add( varName, _("true") );
-
+                CVSCPVariable variable;
+                if ( gpobj->m_variables.find( varName, variable ) ) {
+                        
+                    // Set it to true
+                    variable.setValue( true );
+                        
+                    // Update the variable
+                    if ( !gpobj->m_variables.update( variable ) ) {
+                        wxString wxstrErr = 
+                                _("[Action] Send event: Failed to update "
+                                  "variable.");
+                        wxstrErr += wxstr;
+                        wxstrErr += _("\n");
+                        gpobj->logMsg( _("[DM] ") + wxstrErr, 
+                                        DAEMON_LOGMSG_NORMAL, 
+                                        DAEMON_LOGTYPE_DM );
+                        return false;
                     }
-                    else {
-
-                        // Existing - set value to false
-                        variable.setValueFromString( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN, _("true") );
-
-                    }
+                        
+                }
+                else {
+                    wxString wxstrErr = 
+                            _("[Action] Send event: Confirmation variable "
+                              "was not found.");
+                    wxstrErr += wxstr;
+                    wxstrErr += _("\n");
+                    gpobj->logMsg( _("[DM] ") + wxstrErr, 
+                                    DAEMON_LOGMSG_NORMAL, 
+                                    DAEMON_LOGTYPE_DM );
+                    return false;
                 }
             }
+        }
 
     }
-    else {
+    else {        
         m_pDM->m_pClientItem->m_statistics.cntOverruns++;
     }
 
@@ -2788,66 +2840,104 @@ bool dmElement::doActionSendEvent( vscpEvent *pDMEvent )
 
 bool dmElement::doActionSendEventConditional( vscpEvent *pDMEvent )
 {
-    vscpEvent *pEvent = NULL;
-    CVSCPVariable *pVar = NULL;
+    bool bTrigger = false;
+    wxString varName;    
 
     // Write in possible escapes
-    wxString wxstr = m_actionparam;
-    handleEscapes( pDMEvent, wxstr );
+    wxString escaped_actionparam = m_actionparam;
+    handleEscapes( pDMEvent, escaped_actionparam );
 
-    wxStringTokenizer tkz( wxstr, _(";") );
-
+    wxStringTokenizer tkz( escaped_actionparam, _(";") );
+    
     // Handle variable
     if ( tkz.HasMoreTokens() ) {
 
         wxString varname = tkz.GetNextToken();
 
         CVSCPVariable variable; 
-        if ( gpobj->m_variables.find( varname, variable ) ) {
+        if ( !gpobj->m_variables.find( varname, variable ) ) {
+            
             // must be a variable
-            wxString wxstrErr = _("[Action] Conditional event: No variable defined ");
-            wxstrErr += wxstr;
+            wxString wxstrErr = 
+                    _("[Action] Conditional send event: No variable defined ");
+            wxstrErr += escaped_actionparam;
             wxstrErr += _("\n");
-            gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+            gpobj->logMsg( _("[DM] ") + wxstrErr, 
+                            DAEMON_LOGMSG_NORMAL, 
+                            DAEMON_LOGTYPE_DM );
             return false;
         }
+        
+        if (  VSCP_DAEMON_VARIABLE_CODE_BOOLEAN != variable.getType() ) {
+            // must be a variable
+            wxString wxstrErr = 
+                    _("[Action] Conditional send event: "
+                      "Condition variable must be boolean ");
+            wxstrErr += escaped_actionparam;
+            wxstrErr += _("\n");
+            gpobj->logMsg( _("[DM] ") + wxstrErr, 
+                            DAEMON_LOGMSG_NORMAL, 
+                            DAEMON_LOGTYPE_DM );
+            return false;
+        }
+        
+        // Get the value
+        variable.getValue( &bTrigger );
+        
+        // if the variable is false we should do nothing
+        if ( !bTrigger ) return false;
 
     }
     else {
-        // must be a variable
-        wxString wxstrErr = _("[Action] Conditional event: No variable defined ");
-        wxstrErr += wxstr;
+        // must be a condition variable
+        wxString wxstrErr = 
+                _("[Action] Conditional send event: No variable defined ");
+        wxstrErr += escaped_actionparam;
         wxstrErr += _("\n");
-        gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+        gpobj->logMsg( _("[DM] ") + wxstrErr, 
+                        DAEMON_LOGMSG_NORMAL, 
+                        DAEMON_LOGTYPE_DM );
         return false;
     }
 
-    // if the variable is false we should do nothing
-    if ( !pVar->isTrue() ) return false;
+    vscpEvent *pEvent = new vscpEvent;
+    pEvent->pdata = NULL;
 
     // We must have an event to send
     if ( tkz.HasMoreTokens() ) {
 
         wxString strEvent = tkz.GetNextToken();
-
+     
         if ( !vscp_setVscpEventFromString( pEvent, strEvent ) ) {
-            // Could not parse evenet data
-            wxString wxstrErr = _("[Action] Conditional event: Unable to parse event ");
-            wxstrErr += wxstr;
+            
+            vscp_deleteVSCPevent_v2( &pEvent );
+            
+            // Could not parse event string
+            wxString wxstrErr = 
+                    _("[Action] Conditional send event: Unable to parse event ");
+            wxstrErr += escaped_actionparam;
             wxstrErr += _("\n");
-            gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+            gpobj->logMsg( _("[DM] ") + wxstrErr, 
+                            DAEMON_LOGMSG_NORMAL, 
+                            DAEMON_LOGTYPE_DM );
             return false;
         }
     }
     else {
         // must be an event
-        wxString wxstrErr = _("[Action] Conditional event: No event defined ");
-        wxstrErr += wxstr;
+        wxString wxstrErr = _("[Action] Conditional send event: No event defined ");
+        wxstrErr += escaped_actionparam;
         wxstrErr += _("\n");
-        gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+        gpobj->logMsg( _("[DM] ") + wxstrErr, 
+                        DAEMON_LOGMSG_NORMAL, 
+                        DAEMON_LOGTYPE_DM );
         return false;
     }
 
+    // Get confirmation variable (if any)
+    if ( tkz.HasMoreTokens() ) {
+        varName = tkz.GetNextToken();
+    }
 
     // There must be room in the send queue
     if ( gpobj->m_maxItemsInClientReceiveQueue >
@@ -2859,11 +2949,48 @@ bool dmElement::doActionSendEventConditional( vscpEvent *pDMEvent )
             gpobj->m_mutexClientOutputQueue.Unlock();
 
             // TX Statistics
-            m_pDM->m_pClientItem->m_statistics.cntTransmitData += pEvent->sizeData;
+            m_pDM->m_pClientItem->m_statistics.cntTransmitData += 
+                                                              pEvent->sizeData;
             m_pDM->m_pClientItem->m_statistics.cntTransmitFrames++;
 
+            // Set the condition variable to false if it is defined
+            if ( varName.Length() ) {
+
+                CVSCPVariable variable;
+                if ( gpobj->m_variables.find( varName, variable ) ) {
+                        
+                    // Set it to true
+                    variable.setValue( true );
+                        
+                    // Update the variable
+                    if ( !gpobj->m_variables.update( variable ) ) {
+                        wxString wxstrErr = 
+                                _("[Action] Send event: Failed to update "
+                                  "variable.");
+                        wxstrErr += escaped_actionparam;
+                        wxstrErr += _("\n");
+                        gpobj->logMsg( _("[DM] ") + wxstrErr, 
+                                        DAEMON_LOGMSG_NORMAL, 
+                                        DAEMON_LOGTYPE_DM );
+                        return false;
+                    }
+                        
+                }
+                else {
+                    wxString wxstrErr = 
+                            _("[Action] Send event: Confirmation variable "
+                              "was not found.");
+                    wxstrErr += escaped_actionparam;
+                    wxstrErr += _("\n");
+                    gpobj->logMsg( _("[DM] ") + wxstrErr, 
+                                    DAEMON_LOGMSG_NORMAL, 
+                                    DAEMON_LOGTYPE_DM );
+                    return false;
+                }
+            }
     }
     else {
+        vscp_deleteVSCPevent_v2( &pEvent );
         m_pDM->m_pClientItem->m_statistics.cntOverruns++;
     }
 
@@ -2883,27 +3010,37 @@ bool dmElement::doActionSendEventsFromFile( vscpEvent *pDMEvent )
 
     // File must exist
     if ( !wxFile::Exists( wxstr ) ) {
-        wxString wxstrErr = _("[Action] Send event from file: Non existent file  ");
+        wxString wxstrErr = 
+                _("[Action] Send event from file: Non existent file  ");
         wxstrErr += wxstr;
         wxstrErr += _("\n");
-        gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+        gpobj->logMsg( _("[DM] ") + wxstrErr, 
+                        DAEMON_LOGMSG_NORMAL, 
+                        DAEMON_LOGTYPE_DM );
         return false;
     }
 
     wxXmlDocument doc;
     if ( !doc.Load ( wxstr ) ) {
-        wxString wxstrErr = _("[Action] Send event from file: Failed to load event XML file  ");
+        wxString wxstrErr = 
+                _("[Action] Send event from file: Failed to load "
+                  "event XML file  ");
         wxstrErr += wxstr;
         wxstrErr += _("\n");
-        gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+        gpobj->logMsg( _("[DM] ") + wxstrErr, 
+                        DAEMON_LOGMSG_NORMAL, 
+                        DAEMON_LOGTYPE_DM );
         return false;
     }
 
     // start processing the XML file
     if ( doc.GetRoot()->GetName() != _( "vscpevents" ) ) {
-        wxString wxstrErr = _("[Action] Send event from file: <vscpevents> tag is missing.");
+        wxString wxstrErr = _("[Action] Send event from file: "
+                              "<vscpevents> tag is missing.");
         wxstrErr += _("\n");
-        gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+        gpobj->logMsg( _("[DM] ") + wxstrErr, 
+                        DAEMON_LOGMSG_NORMAL, 
+                        DAEMON_LOGTYPE_DM );
         return false;
     }
 
@@ -2929,19 +3066,24 @@ bool dmElement::doActionSendEventsFromFile( vscpEvent *pDMEvent )
                 while ( subchild ) {
 
                     if ( subchild->GetName() == _( "head" ) ) {
-                        pEvent->head = vscp_readStringValue( subchild->GetNodeContent() );
+                        pEvent->head = 
+                                vscp_readStringValue( subchild->GetNodeContent() );
                     }
                     else if ( subchild->GetName() == _( "class" ) ) {
-                        pEvent->vscp_class = vscp_readStringValue( subchild->GetNodeContent() );
+                        pEvent->vscp_class = 
+                                vscp_readStringValue( subchild->GetNodeContent() );
                     }
                     else if ( subchild->GetName() == _( "type" ) ) {
-                        pEvent->vscp_type = vscp_readStringValue( subchild->GetNodeContent() );
+                        pEvent->vscp_type = 
+                                vscp_readStringValue( subchild->GetNodeContent() );
                     }
                     else if ( subchild->GetName() == _( "guid" ) ) {
-                        vscp_getGuidFromString( pEvent, subchild->GetNodeContent() );
+                        vscp_getGuidFromString( pEvent, 
+                                                 subchild->GetNodeContent() );
                     }
                     if ( subchild->GetName() == _( "data" ) ) {
-                        vscp_setVscpDataFromString( pEvent, subchild->GetNodeContent() );
+                        vscp_setVscpDataFromString( pEvent, 
+                                                     subchild->GetNodeContent() );
                     }
 
                 }
@@ -2960,7 +3102,8 @@ bool dmElement::doActionSendEventsFromFile( vscpEvent *pDMEvent )
                         gpobj->m_mutexClientOutputQueue.Unlock();
 
                         // TX Statistics
-                        m_pDM->m_pClientItem->m_statistics.cntTransmitData += pEvent->sizeData;
+                        m_pDM->m_pClientItem->m_statistics.cntTransmitData += 
+                                                                pEvent->sizeData;
                         m_pDM->m_pClientItem->m_statistics.cntTransmitFrames++;
 
                 }

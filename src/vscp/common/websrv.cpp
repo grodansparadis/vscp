@@ -3796,7 +3796,7 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
     else if ( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN == nType ) {
 
         bool bValue = false;
-        if (! bNew ) variable.getValue( &bValue );
+        if ( !bNew ) variable.getValue( &bValue );
 
         web_printf(conn, "<input type=\"radio\" name=\"value\" "
                          "value=\"true\" ");
@@ -3807,7 +3807,7 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
             web_printf(conn, ">true ");
         }
 
-        web_printf( conn, "<input type=\"radio\" name=\"value_boolean\" "
+        web_printf( conn, "<input type=\"radio\" name=\"value\" "
                           "value=\"false\" ");
 
         if ( !bNew )

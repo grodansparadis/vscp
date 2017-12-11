@@ -676,6 +676,10 @@ public:
         @returns true if all went well.
     */
     bool doActionGetURL( vscpEvent *pDMEvent );
+    
+    
+    
+    
 
 
     // Database index for record ( 0 if loaded from XML file)
