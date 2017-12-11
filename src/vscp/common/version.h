@@ -35,7 +35,7 @@
 #define VSCPD_MAJOR_VERSION     12
 #define VSCPD_MINOR_VERSION     29
 #define VSCPD_RELEASE_VERSION   2
-#define VSCPD_BUILD_VERSION     23
+#define VSCPD_BUILD_VERSION     24
 
 #define VSCPD_DISPLAY_VERSION "12.29.2.23 Magnesium (Development version)"
 

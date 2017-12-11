@@ -1513,7 +1513,7 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
                 strResult += _("\r");                 // add carrige return
             }
             // Check for %lf
-            else if ( str.StartsWith( _("%cr"), &str ) ) {
+            else if ( str.StartsWith( _("%lf"), &str ) ) {
                 strResult += _("\n");                 // add new line
             }
             // Check for %crlf
@@ -3216,17 +3216,18 @@ bool dmElement::doActionWriteFile( vscpEvent *pDMEvent )
 {
     wxFile f;
     wxString path;
+    wxString strOut;
     bool bAppend = true;
 
     // Write in possible escapes
-    wxString wxstr = m_actionparam;
-    handleEscapes( pDMEvent, wxstr );
+    wxString escaped_param = m_actionparam;
+    handleEscapes( pDMEvent, escaped_param );
 
-    wxStringTokenizer tkz( wxstr, _(";") );
+    wxStringTokenizer tkz( escaped_param, _(";") );
 
     // Handle path
     if ( tkz.HasMoreTokens() ) {
-        wxString path = tkz.GetNextToken();
+        path = tkz.GetNextToken();
     }
     else {
         // Must have a path
@@ -3242,16 +3243,21 @@ bool dmElement::doActionWriteFile( vscpEvent *pDMEvent )
             bAppend = false;
         }
     }
+    
+    // Get string to write
+    if ( tkz.HasMoreTokens() ) {
+        strOut = tkz.GetNextToken();
+    }
 
     if ( f.Open( path, ( bAppend ? wxFile::write_append : wxFile::write ) ) ) {
 
-        f.Write( wxstr );
+        f.Write( strOut );
         f.Flush();
         f.Close();
 
     }
     else {
-        // Faild to open file
+        // Failed to open file
         wxString wxstrErr = _("[Action] Write to file: Failed to open file ");
         wxstrErr += path;
         wxstrErr += _("\n");

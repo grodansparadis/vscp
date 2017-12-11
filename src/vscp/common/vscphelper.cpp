@@ -974,6 +974,7 @@ bool vscp_getVSCPMeasurementAsString( const vscpEvent *pEvent,
     else if ( ( VSCP_CLASS1_MEASUREMENT == pEvent->vscp_class ) ||
               ( VSCP_CLASS1_MEASUREZONE == pEvent->vscp_class ) ||
               ( VSCP_CLASS1_SETVALUEZONE == pEvent->vscp_class ) ||
+              ( VSCP_CLASS1_DATA == pEvent->vscp_class ) ||
               ( VSCP_CLASS2_LEVEL1_MEASUREMENT == pEvent->vscp_class ) ||
               ( VSCP_CLASS2_LEVEL1_MEASUREZONE == pEvent->vscp_class ) ||
               ( VSCP_CLASS2_LEVEL1_SETVALUEZONE == pEvent->vscp_class ) ) {
