@@ -82,71 +82,128 @@ class dmTimer
 
 public:
 
+  /// Constructor
+  dmTimer();
+  
   /*! 
     Constructor
     @param nameVar Name of variable
+    @param id Timer id.
     @param delay Timer value
     @param bStart Run flag for timer
     @param setValue Value to set variable to when timer elapse
   */
-  dmTimer( wxString& nameVar, 
+  dmTimer( wxString& nameVar,
+              uint32_t id,
               uint32_t delay = 0, 
               bool m_bStart = false, 
-              bool setValue = false );
+              bool setValue = false,
+              int reloadLimit = -1 );
 
   /// Destructor
   ~dmTimer();
+  
+  
+  /*! 
+    Init
+    @param nameVar Name of variable
+    @param id Timer id.
+    @param delay Timer value
+    @param bStart Run flag for timer
+    @param setValue Value to set variable to when timer elapse
+    @param reloadLimit Limit for reloads (-1 is no limit)
+  */
+  void init( wxString& nameVar,
+              uint32_t id,
+              uint32_t delay = 0, 
+              bool m_bStart = false, 
+              bool setValue = false,
+              int reloadLimit = -1 );
 
   /*!
     Check if the timer is active
     @returns true if active.
   */
-  bool isActive( void ) { return m_bActive; };
+  bool isActive( void );
 
   /*!
     Set the time active state
     @param bState (default true) which sets te active state.
   */
-  void setActive( bool bState = true ) { m_bActive = bState; };
+  void setActive( bool bState = true );
 
+  /*!
+   * Getter/setter for id
+   */
+  void setId( uint32_t id ) { m_id = id; };
+  uint32_t getId( void ) { return m_id; };
+  
   /*!
     Stop timer
   */
-  void stopTimer( void ) { m_bActive = false; };
+  void stopTimer( void );;
+  
+  /*!
+    Pause timer
+  */
+  void pauseTimer( void );
 
   /*!
     Start timer
   */
-  void startTimer( void ) { m_bActive = true; };
+  void startTimer( void );
+                            
+  /*!
+    Resume timer
+  */
+  void resumeTimer( void );                          
 
   /*!
-    Get timer value
-    @return timer value.
+    Get current timer value
+    @return current timer value.
   */
   uint32_t getDelay( void ) { return m_delay; };
+  
+  /*!
+    Get start timer value
+    @return start timer value.
+  */
+  uint32_t getStartDelay( void ) { return m_delayStart; };
 
   /*!
     Set timer value
     @param timer value.
   */
-  void setDelay( uint32_t delay ) { m_delay = delay; };
+  void setDelay( uint32_t delay ) { m_delayStart = m_delay = delay; };
 
   /*!
-    Get the setvalue
-    @return true if setvalue is true false otherwise
+    Check if timer is of reloading type
+    @return true if reloading, false otherwise
   */
-  bool getSetValue( void ) { return m_bSetValue; };
+  bool isReloading( void ) { return m_bReload; };
 
   /*!
-    Set the setvalue
-    @param setvalue as true or false.
+    Set the reloading functionality
+    @param reload flag
   */
-  void setSetValue( bool setValue ) { m_bSetValue = setValue; };
+  void setReload( bool bReload ) { m_bReload = bReload; };
 
+  /*!
+   * Reload timer
+   */
+  void reload( void ) { m_delay = m_delayStart; m_reloadCounter--; };
+  
+  /// Setter/getters for reloadlimit
+  void setReloadLimit( int limit ) { m_reloadlimit = limit; };
+  int getReloadLimit( void ) { return m_reloadlimit; };
+  bool isReloadLimit( void ) { return ( m_reloadlimit > 0 ); };
+  
+  int getReloadCounter( void ) { return m_reloadCounter; };
+  
   /*!
     Decrement timer if greater than zero
   */
-  uint32_t decTimer( void ) { if ( m_delay ) m_delay-- ;  return m_delay; };
+  uint32_t decTimer( void );
 
   /*!
     Get variable name
@@ -173,16 +230,32 @@ private:
 
   /// Active flag. True if timer should run.
   bool m_bActive;
+  
+  /// id
+  uint32_t m_id;
 
   /// Delay time
   uint32_t m_delay;
+  
+  // Delay start time
+  uint32_t m_delayStart;
 
   /// Name of control variable
   wxString m_nameVariable;
 
-  /// Value to set flag variable to when timer elapses.
-  bool m_bSetValue;
-
+  /// Reload value when timer elapsed 
+  bool m_bReload;
+  
+  // Max number of reload to do.
+  // -1 is no limit.
+  int m_reloadlimit;
+  
+  // Counter used when reload limit is used
+  int m_reloadCounter;
+  
+  // paused is set after a timer has been pauses
+  // it is reseted by a start or a resume
+  bool m_bPaused;
 };
 
 
@@ -954,7 +1027,45 @@ public:
     */
     bool feedPeriodicEvent( void );
 
-
+    /*!
+     * Feed timer started event
+     * @param id Timer id
+     * @param time Start time in ms
+     * return true if event was delivered
+     */
+    bool feedTimerStarted( uint32_t id, uint32_t time );
+    
+    /*!
+     * Feed timer paused event
+     * @param id Timer id
+     * @param time Start time in ms
+     * return true if event was delivered
+     */
+    bool feedTimerPaused( uint32_t id, uint32_t time );
+    
+    /*!
+     * Feed timer resumed event
+     * @param id Timer id
+     * @param time Start time in ms
+     * return true if event was delivered
+     */
+    bool feedTimerResumed( uint32_t id, uint32_t time );
+    
+    /*!
+     * Feed timer stopped event
+     * @param id Timer id
+     * @param time Start time in ms
+     * return true if event was delivered
+     */
+    bool feedTimerStopped( uint32_t id, uint32_t time );
+    
+    /*!
+     * Feed timer elapsed event
+     * @param id Timer id
+     * return true if event was delivered
+     */
+    bool feedTimerElapsed( uint32_t id );
+    
     //------------------------------------
     //              Timers
     //------------------------------------
@@ -973,36 +1084,51 @@ public:
         @param nameVar Name of variable
         @param delay Timer value
         @param bStart Run flag for timer
-        @param setValue Value to set variable to when timer elapse
+        @param bReload True if reload should be done
         @return a timer if > 0 on success
     */
-    int addTimer( uint16_t id,
+    int addTimer( uint32_t id,
                     wxString& nameVar, 
                     uint32_t delay = 0, 
                     bool bStart = false, 
-                    bool setValue = false );
+                    bool bReload = false,
+                    int reloadLimit = -1 );
 
     /*!
         Start an existing timer. Do nothing if timer does not exist.
         @return true on success
     */
-     bool startTimer( int idTimer );
+     bool startTimer( uint32_t idTimer );
 
     /*!
         Start a timer and set 'setvalues' If the timer does not
         exist create it.
         @return timer id or zero on failure
     */
-    int startTimer( uint16_t id, 
+    int startTimer( uint32_t id, 
                         wxString& nameVariable, 
                         uint32_t delay, 
-                        bool bSetValue = false );
+                        bool bSetValue = false,
+                        int reloadLimit = -1 );
 
      /*!
         Stop an existing timer
         @return true on success
     */
-     bool stopTimer( int idTimer );
+     bool stopTimer( uint32_t idTimer );
+     
+     /*!
+        Pause an existing timer
+        @return true on success
+    */
+     bool pauseTimer( uint32_t idTimer );
+     
+     /*!
+        Resume an existing timer
+        @return true on success
+    */
+     bool resumeTimer( uint32_t idTimer );
+     
      
      /*!
       *     Create DM table

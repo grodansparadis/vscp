@@ -434,7 +434,9 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
         m_bCalulationHasBeenDone = true;
         
         int hours, minutes;        
-        m_pCtrlObj->m_automation.convert2HourMinute( m_pCtrlObj->m_automation.getDayLength(), &hours, &minutes );
+        m_pCtrlObj->m_automation.convert2HourMinute( m_pCtrlObj->m_automation.getDayLength(),
+                                                        &hours, 
+                                                        &minutes );
 
         // Send VSCP_CLASS2_VSCPD, Type=30/VSCP2_TYPE_VSCPD_NEW_CALCULATION
         pEventEx->obid = 0;     // IMPORTANT Must be set by caller before event is sent

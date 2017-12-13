@@ -30,3 +30,4 @@
 #define VSCP_DEBUG1_MULTICAST       (1 << 3)
 #define VSCP_DEBUG1_UDP             (1 << 4)
 #define VSCP_DEBUG1_TCP             (1 << 5)
+#define VSCP_DEBUG1_DM_TIMERS       (1 << 6)

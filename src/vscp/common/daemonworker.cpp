@@ -344,6 +344,9 @@ void *daemonVSCPThread::Entry()
                     // We should send a "HIGH END SERVER RESPONSE"
                     vscpEvent *pnewEvent = new vscpEvent;
                     if ( NULL != pnewEvent ) {
+                        
+                        pnewEvent->timestamp = vscp_makeTimeStamp();
+                        vscp_setEventDateTimeBlockToNow( pnewEvent );
                         pnewEvent->obid = pClientItem->m_clientID;
                         pnewEvent->head = 0;
                         pnewEvent->vscp_class = 0;
@@ -944,6 +947,8 @@ bool discoveryVSCPThread::readLevel1Register( uint8_t nodeid,
     vscpEvent *pEvent = new vscpEvent;
     if ( NULL == pEvent ) return false;
 
+    pEvent->timestamp = 0;
+    vscp_setEventDateTimeBlockToNow( pEvent );
     pEvent->vscp_class = VSCP_CLASS1_PROTOCOL;
     pEvent->vscp_type = VSCP_TYPE_PROTOCOL_READ_REGISTER;
     pEvent->sizeData = 2;

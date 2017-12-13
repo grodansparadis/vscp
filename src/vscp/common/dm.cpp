@@ -81,14 +81,33 @@ extern CControlObject *gpobj;
 // Constructor dmTimer
 //
 
-dmTimer::dmTimer( wxString& nameVar, uint32_t delay, bool bStart, bool setValue )
+dmTimer::dmTimer()
 {
     m_pThread = NULL;       // No working thread
 
-    m_bActive = bStart;
-    m_delay = delay;
-    m_bSetValue = setValue;
-    m_nameVariable = nameVar;
+    m_id = 0;
+    m_bActive = false;
+    m_delayStart = 0;
+    m_delay = 0;
+    m_bReload = false;
+    m_nameVariable = _("");
+    m_reloadlimit = -1;
+    m_reloadCounter = -1;
+}
+
+dmTimer::dmTimer( wxString& nameVar, 
+                    uint32_t id, 
+                    uint32_t delay, 
+                    bool bStart, 
+                    bool bReload,
+                    int reloadLimit )
+{
+    init( nameVar, 
+            id, 
+            delay, 
+            bStart, 
+            bReload,
+            reloadLimit ); 
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -99,6 +118,101 @@ dmTimer::~dmTimer()
 {
 
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// init
+//
+
+void dmTimer::init( wxString& nameVar, 
+                    uint32_t id, 
+                    uint32_t delay, 
+                    bool bStart, 
+                    bool bReload,
+                    int reloadLimit )
+{
+    m_bPaused = false;
+    m_pThread = NULL;       // No working thread
+
+    m_id = id;
+    m_bActive = bStart;
+    m_delayStart = m_delay = delay;
+    m_bReload = bReload;
+    m_nameVariable = nameVar;
+    m_reloadCounter = m_reloadlimit = reloadLimit;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// startTimer
+//
+
+void dmTimer::startTimer( void ) { 
+    reload(); 
+    resumeTimer(); 
+};
+
+///////////////////////////////////////////////////////////////////////////////
+// stopTimer
+//
+
+void dmTimer::stopTimer( void ) 
+{ 
+    m_bActive = false; 
+    m_bPaused = false; 
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+// pauseTimer
+//
+
+void dmTimer::pauseTimer( void ) 
+{ 
+    m_bActive = false; 
+    m_bPaused = true; 
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+// resumeTimer
+//
+
+void dmTimer::resumeTimer( void ) { 
+    if ( m_delay ) {
+        m_bActive = true; 
+        m_bPaused = false; 
+        m_reloadCounter = m_reloadlimit;
+    }; 
+};
+
+///////////////////////////////////////////////////////////////////////////////
+// isActive
+//
+
+bool dmTimer::isActive( void ) 
+{ 
+    return m_bActive; 
+};
+
+///////////////////////////////////////////////////////////////////////////////
+// setActive
+//
+
+void dmTimer::setActive( bool bState ) 
+{ 
+    m_bActive = bState; 
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+// decTimer
+//
+
+uint32_t dmTimer::decTimer( void ) 
+{ 
+    if ( m_delay ) m_delay--;      
+    return m_delay; 
+};
+
 
 
 
@@ -1610,6 +1724,401 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
                     }
 
 
+                }
+                else {
+                    // Just remove ending ]
+                    if ( wxNOT_FOUND != ( pos = str.Find( _("]") ) ) ) {
+                        str = str.Right( str.Length() - pos - 1 );
+                    }
+                    strResult +=  _("");      // No data
+                }
+            }
+            // Check for data[n] escape
+            else if ( str.StartsWith( _("%event.hexdata["), &str ) ) {
+
+                // Must be data
+                if ( pEvent->sizeData && ( NULL != pEvent->pdata ) ) {
+
+                    wxString wxstr = str;
+                    if ( wxNOT_FOUND != ( pos = str.Find( _("]") ) ) ) {
+                        str = str.Right( str.Length() - pos - 1 );
+                    }
+
+                    long idx=0;
+                    wxstr.ToLong( &idx );
+                    if ( idx < pEvent->sizeData ) {
+                        strResult +=  wxString::Format( _("%02X"), pEvent->pdata[ idx ] );
+                    }
+                    else {
+                        strResult +=  _("?");     // invalid index
+                    }
+
+
+                }
+                else {
+                    // Just remove ending ]
+                    if ( wxNOT_FOUND != ( pos = str.Find( _("]") ) ) ) {
+                        str = str.Right( str.Length() - pos - 1 );
+                    }
+                    strResult +=  _("");      // No data
+                }
+            }
+            // Check for data.bit[n] escape
+            else if ( str.StartsWith( _("%event.data.bit["), &str ) ) {
+                // Must be data
+                if ( pEvent->sizeData && ( NULL != pEvent->pdata ) ) {
+                    wxString wxstr = str;
+                    if ( wxNOT_FOUND != ( pos = str.Find( _("]") ) ) ) {
+                        str = str.Right( str.Length() - pos - 1 );
+                    }
+                    
+                    long idx=0;
+                    wxstr.ToLong( &idx );
+                    uint8_t byte = idx/8;
+                    uint8_t bit = idx % 8;
+                    if ( byte < pEvent->sizeData ) {
+                        strResult +=  wxString::Format( _("%d"), 
+                                ( pEvent->pdata[ byte ] & (1<<(7-bit) ) ) ? 1 : 0 );
+                    }
+                    else {
+                        strResult +=  _("?");     // invalid index
+                    }
+                }
+                else {
+                    // Just remove ending ]
+                    if ( wxNOT_FOUND != ( pos = str.Find( _("]") ) ) ) {
+                        str = str.Right( str.Length() - pos - 1 );
+                    }
+                    strResult +=  _("");      // No data
+                }
+                 
+            }
+            // Check for data.bool[n] escape
+            else if ( str.StartsWith( _("%event.data.bool["), &str ) ) {
+                // Must be data
+                if ( pEvent->sizeData && ( NULL != pEvent->pdata ) ) {
+                    wxString wxstr = str;
+                    if ( wxNOT_FOUND != ( pos = str.Find( _("]") ) ) ) {
+                        str = str.Right( str.Length() - pos - 1 );
+                    }
+                    
+                    long idx=0;
+                    wxstr.ToLong( &idx );
+                    if ( idx < pEvent->sizeData ) {
+                        strResult +=  wxString::Format( _("%s"), 
+                                    pEvent->pdata[ idx ] ? "true" : "false"  );
+                    }
+                    else {
+                        strResult +=  _("?");     // invalid index
+                    }
+                }
+                else {
+                    // Just remove ending ]
+                    if ( wxNOT_FOUND != ( pos = str.Find( _("]") ) ) ) {
+                        str = str.Right( str.Length() - pos - 1 );
+                    }
+                    strResult +=  _("");      // No data
+                }
+            }            
+            // Check for data.int8[n] escape
+            else if ( str.StartsWith( _("%event.data.int8["), &str ) ) {
+                // Must be data
+                if ( pEvent->sizeData && ( NULL != pEvent->pdata ) ) {
+                    wxString wxstr = str;
+                    if ( wxNOT_FOUND != ( pos = str.Find( _("]") ) ) ) {
+                        str = str.Right( str.Length() - pos - 1 );
+                    }
+                    
+                    long idx=0;
+                    wxstr.ToLong( &idx );
+                    if ( idx < pEvent->sizeData ) {
+                        strResult +=  wxString::Format( _("%d"), 
+                                    (int8_t)pEvent->pdata[ idx ]  );
+                    }
+                    else {
+                        strResult +=  _("?");     // invalid index
+                    }
+                }
+                else {
+                    // Just remove ending ]
+                    if ( wxNOT_FOUND != ( pos = str.Find( _("]") ) ) ) {
+                        str = str.Right( str.Length() - pos - 1 );
+                    }
+                    strResult +=  _("");      // No data
+                }
+            }
+            // Check for data.uint8[n] escape
+            else if ( str.StartsWith( _("%event.data.uint8["), &str ) ) {
+                // Must be data
+                if ( pEvent->sizeData && ( NULL != pEvent->pdata ) ) {
+                    wxString wxstr = str;
+                    if ( wxNOT_FOUND != ( pos = str.Find( _("]") ) ) ) {
+                        str = str.Right( str.Length() - pos - 1 );
+                    }
+                    
+                    long idx=0;
+                    wxstr.ToLong( &idx );
+                    if ( idx < pEvent->sizeData ) {
+                        strResult +=  wxString::Format( _("%d"), 
+                                    (uint8_t)pEvent->pdata[ idx ]  );
+                    }
+                    else {
+                        strResult +=  _("?");     // invalid index
+                    }
+                }
+                else {
+                    // Just remove ending ]
+                    if ( wxNOT_FOUND != ( pos = str.Find( _("]") ) ) ) {
+                        str = str.Right( str.Length() - pos - 1 );
+                    }
+                    strResult +=  _("");      // No data
+                }
+            }
+            // Check for data.uint8[n] escape
+            else if ( str.StartsWith( _("%event.hexdata.uint8["), &str ) ) {
+                // Must be data
+                if ( pEvent->sizeData && ( NULL != pEvent->pdata ) ) {
+                    wxString wxstr = str;
+                    if ( wxNOT_FOUND != ( pos = str.Find( _("]") ) ) ) {
+                        str = str.Right( str.Length() - pos - 1 );
+                    }
+                    
+                    long idx=0;
+                    wxstr.ToLong( &idx );
+                    if ( idx < pEvent->sizeData ) {
+                        strResult +=  wxString::Format( _("%02X"), 
+                                    (uint8_t)pEvent->pdata[ idx ]  );
+                    }
+                    else {
+                        strResult +=  _("?");     // invalid index
+                    }
+                }
+                else {
+                    // Just remove ending ]
+                    if ( wxNOT_FOUND != ( pos = str.Find( _("]") ) ) ) {
+                        str = str.Right( str.Length() - pos - 1 );
+                    }
+                    strResult +=  _("");      // No data
+                }
+            }
+            // Check for data.int16[n] escape
+            else if ( str.StartsWith( _("%event.data.int16["), &str ) ) {
+                // Must be data
+                if ( pEvent->sizeData && ( NULL != pEvent->pdata ) ) {
+                    wxString wxstr = str;
+                    if ( wxNOT_FOUND != ( pos = str.Find( _("]") ) ) ) {
+                        str = str.Right( str.Length() - pos - 1 );
+                    }
+                    
+                    long idx=0;
+                    wxstr.ToLong( &idx );
+                    if ( (idx+1) < pEvent->sizeData ) {
+                        int16_t val = ((int16_t)pEvent->pdata[ idx ] << 8 ) +
+                                      ((int16_t)pEvent->pdata[ idx + 1 ] );
+                        strResult +=  wxString::Format( _("%d"), (int)val  );
+                    }
+                    else {
+                        strResult +=  _("?");     // invalid index
+                    }
+                }
+                else {
+                    // Just remove ending ]
+                    if ( wxNOT_FOUND != ( pos = str.Find( _("]") ) ) ) {
+                        str = str.Right( str.Length() - pos - 1 );
+                    }
+                    strResult +=  _("");      // No data
+                }
+            }
+            // Check for data.uint16[n] escape
+            else if ( str.StartsWith( _("%event.data.uint16["), &str ) ) {
+                // Must be data
+                if ( pEvent->sizeData && ( NULL != pEvent->pdata ) ) {
+                    wxString wxstr = str;
+                    if ( wxNOT_FOUND != ( pos = str.Find( _("]") ) ) ) {
+                        str = str.Right( str.Length() - pos - 1 );
+                    }
+                    
+                    long idx=0;
+                    wxstr.ToLong( &idx );
+                    if ( (idx+1) < pEvent->sizeData ) {
+                        uint16_t val = ((uint16_t)pEvent->pdata[ idx ] << 8 ) +
+                                       ((uint16_t)pEvent->pdata[ idx + 1 ] );
+                        strResult +=  wxString::Format( _("%d"), (int)val  );
+                    }
+                    else {
+                        strResult +=  _("?");     // invalid index
+                    }
+                }
+                else {
+                    // Just remove ending ]
+                    if ( wxNOT_FOUND != ( pos = str.Find( _("]") ) ) ) {
+                        str = str.Right( str.Length() - pos - 1 );
+                    }
+                    strResult +=  _("");      // No data
+                }
+            }// Check for data.uint16[n] escape
+            else if ( str.StartsWith( _("%event.hexdata.uint16["), &str ) ) {
+                // Must be data
+                if ( pEvent->sizeData && ( NULL != pEvent->pdata ) ) {
+                    wxString wxstr = str;
+                    if ( wxNOT_FOUND != ( pos = str.Find( _("]") ) ) ) {
+                        str = str.Right( str.Length() - pos - 1 );
+                    }
+                    
+                    long idx=0;
+                    wxstr.ToLong( &idx );
+                    if ( (idx+1) < pEvent->sizeData ) {
+                        uint16_t val = ((uint16_t)pEvent->pdata[ idx ] << 8) +
+                                       ((uint16_t)pEvent->pdata[ idx + 1 ]);
+                        strResult +=  wxString::Format( _("%04X"), val  );
+                    }
+                    else {
+                        strResult +=  _("?");     // invalid index
+                    }
+                }
+                else {
+                    // Just remove ending ]
+                    if ( wxNOT_FOUND != ( pos = str.Find( _("]") ) ) ) {
+                        str = str.Right( str.Length() - pos - 1 );
+                    }
+                    strResult +=  _("");      // No data
+                }
+            }            
+            // Check for data.int32[n] escape
+            else if ( str.StartsWith( _("%event.data.int32["), &str ) ) {
+                // Must be data
+                if ( pEvent->sizeData && ( NULL != pEvent->pdata ) ) {
+                    wxString wxstr = str;
+                    if ( wxNOT_FOUND != ( pos = str.Find( _("]") ) ) ) {
+                        str = str.Right( str.Length() - pos - 1 );
+                    }
+                    
+                    long idx=0;
+                    wxstr.ToLong( &idx );
+                    if ( (idx+3) < pEvent->sizeData ) {
+                        long val = ((long)pEvent->pdata[ idx ] << 24) +
+                                        ((long)pEvent->pdata[ idx + 1 ] << 16) +
+                                        ((long)pEvent->pdata[ idx + 2 ] << 8) +
+                                        ((long)pEvent->pdata[ idx + 3 ]);
+                        strResult +=  wxString::Format( _("%ld"), val  );
+                    }
+                    else {
+                        strResult +=  _("?");     // invalid index
+                    }
+                }
+                else {
+                    // Just remove ending ]
+                    if ( wxNOT_FOUND != ( pos = str.Find( _("]") ) ) ) {
+                        str = str.Right( str.Length() - pos - 1 );
+                    }
+                    strResult +=  _("");      // No data
+                }
+            }
+            // Check for data.uint32[n] escape
+            else if ( str.StartsWith( _("%event.data.uint32["), &str ) ) {
+                // Must be data
+                if ( pEvent->sizeData && ( NULL != pEvent->pdata ) ) {
+                    wxString wxstr = str;
+                    if ( wxNOT_FOUND != ( pos = str.Find( _("]") ) ) ) {
+                        str = str.Right( str.Length() - pos - 1 );
+                    }
+                    
+                    long idx=0;
+                    wxstr.ToLong( &idx );
+                    if ( (idx+3) < pEvent->sizeData ) {
+                        uint32_t val = ((uint32_t)pEvent->pdata[ idx ] << 24) +
+                                       ((uint32_t)pEvent->pdata[ idx + 1 ] << 16) +
+                                       ((uint32_t)pEvent->pdata[ idx + 2 ] << 8) +
+                                       ((uint32_t)pEvent->pdata[ idx + 3 ]);
+                        strResult +=  wxString::Format( _("%lu"), (unsigned long)val  );
+                    }
+                    else {
+                        strResult +=  _("?");     // invalid index
+                    }
+                }
+                else {
+                    // Just remove ending ]
+                    if ( wxNOT_FOUND != ( pos = str.Find( _("]") ) ) ) {
+                        str = str.Right( str.Length() - pos - 1 );
+                    }
+                    strResult +=  _("");      // No data
+                }
+            }
+            // Check for hexdata.uint32[n] escape
+            else if ( str.StartsWith( _("%event.hexdata.uint32["), &str ) ) {
+                // Must be data
+                if ( pEvent->sizeData && ( NULL != pEvent->pdata ) ) {
+                    wxString wxstr = str;
+                    if ( wxNOT_FOUND != ( pos = str.Find( _("]") ) ) ) {
+                        str = str.Right( str.Length() - pos - 1 );
+                    }
+                    
+                    long idx=0;
+                    wxstr.ToLong( &idx );
+                    if ( (idx+3) < pEvent->sizeData ) {
+                        uint32_t val = ((uint32_t)pEvent->pdata[ idx ] << 24) +
+                                       ((uint32_t)pEvent->pdata[ idx + 1 ] << 16) +
+                                       ((uint32_t)pEvent->pdata[ idx + 2 ] << 8) +
+                                       ((uint32_t)pEvent->pdata[ idx + 3 ]);
+                        strResult +=  wxString::Format( _("%08X"), val  );
+                    }
+                    else {
+                        strResult +=  _("?");     // invalid index
+                    }
+                }
+                else {
+                    // Just remove ending ]
+                    if ( wxNOT_FOUND != ( pos = str.Find( _("]") ) ) ) {
+                        str = str.Right( str.Length() - pos - 1 );
+                    }
+                    strResult +=  _("");      // No data
+                }
+            }
+            // Check for data.float[n] escape
+            else if ( str.StartsWith( _("%event.data.float["), &str ) ) {
+                // Must be data
+                if ( pEvent->sizeData && ( NULL != pEvent->pdata ) ) {
+                    wxString wxstr = str;
+                    if ( wxNOT_FOUND != ( pos = str.Find( _("]") ) ) ) {
+                        str = str.Right( str.Length() - pos - 1 );
+                    }
+                    
+                    long idx=0;
+                    wxstr.ToLong( &idx );
+                    if ( (idx+3) < pEvent->sizeData ) {
+                        float val =  *( (float *)( pEvent->pdata + idx ) );
+                        strResult +=  wxString::Format( _("%f"), val  );
+                    }
+                    else {
+                        strResult +=  _("?");     // invalid index
+                    }
+                }
+                else {
+                    // Just remove ending ]
+                    if ( wxNOT_FOUND != ( pos = str.Find( _("]") ) ) ) {
+                        str = str.Right( str.Length() - pos - 1 );
+                    }
+                    strResult +=  _("");      // No data
+                }
+            }
+            // Check for data.double[n] escape
+            else if ( str.StartsWith( _("%event.data.double["), &str ) ) {
+                // Must be data
+                if ( pEvent->sizeData && ( NULL != pEvent->pdata ) ) {
+                    wxString wxstr = str;
+                    if ( wxNOT_FOUND != ( pos = str.Find( _("]") ) ) ) {
+                        str = str.Right( str.Length() - pos - 1 );
+                    }
+                    
+                    long idx=0;
+                    wxstr.ToLong( &idx );
+                    if ( (idx+7) < pEvent->sizeData ) {
+                        double val =  *( (double *)( pEvent->pdata + idx ) );
+                        strResult +=  wxString::Format( _("%lf"), val  );
+                    }
+                    else {
+                        strResult +=  _("?");     // invalid index
+                    }
                 }
                 else {
                     // Just remove ending ]
@@ -4701,64 +5210,78 @@ bool dmElement::doActionStoreMax( vscpEvent *pDMEvent )
 
 bool dmElement::doActionStartTimer( vscpEvent *pDMEvent )
 {
+    bool bAutoReload = false;
+    wxString strVarName;
+    int reloadLimit = -1;
+    
     // Write in possible escapes
-    wxString wxstr = m_actionparam;
-    handleEscapes( pDMEvent, wxstr );
+    wxString escaped_action = m_actionparam;
+    handleEscapes( pDMEvent, escaped_action );
 
-    wxStringTokenizer tkz( wxstr, _(";") );
+    wxStringTokenizer tkz( escaped_action, _(";") );
+    
+    // Timer id
     if ( !tkz.HasMoreTokens() ) {
         // Strange action parameter
         wxString wxstrErr = _("[Action] Start timer: Wrong action parameter ");
-        wxstrErr += wxstr;
+        wxstrErr += escaped_action;
         wxstrErr += _("\n");
         gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
         return false;
     }
-
+    
     // Get timer id
     uint32_t id = vscp_readStringValue( tkz.GetNextToken() );
 
-    if ( !tkz.HasMoreTokens() ) {
-        // Strange action parameter
-        wxString wxstrErr = _("[Action] Start timer: Variable name is missing ");
-        wxstrErr += wxstr;
-        wxstrErr += _("\n");
-        gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
-        return false;
-    }
-
-    // Get variable
-    wxString strVarName = tkz.GetNextToken();
-
+    
+    // Initial count
     if ( !tkz.HasMoreTokens() ) {
         // Strange action parameter
         wxString wxstrErr = _("[Action] Start timer: Delay is missing ");
-        wxstrErr += wxstr;
+        wxstrErr += escaped_action;
         wxstrErr += _("\n");
         gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
-        return false;
+        return false;        
+    }    
+    
+    // Get initial time
+    uint32_t initialTime = vscp_readStringValue( tkz.GetNextToken() );    
+    
+    
+    
+    // Flag variable   // Can be blank
+    if ( tkz.HasMoreTokens() ) {
+        strVarName = tkz.GetNextToken();
+        strVarName.Trim();
+    }
+    
+    // Auto reload
+    if ( tkz.HasMoreTokens() ) {
+        wxString str = tkz.GetNextToken();
+        str.MakeUpper();
+        if ( wxNOT_FOUND != str.Find( _("TRUE") ) ) {
+            bAutoReload = true;
+        }
+    }
+    
+    //  Reload Limit
+    if ( tkz.HasMoreTokens() ) {
+        reloadLimit = vscp_readStringValue( tkz.GetNextToken() );
+
     }
 
-    // Get delay
-    uint32_t delay = vscp_readStringValue( tkz.GetNextToken() );
-
-    if ( !tkz.HasMoreTokens() ) {
+    if ( 0 == m_pDM->startTimer( id, 
+                                    strVarName, 
+                                    initialTime, 
+                                    bAutoReload, 
+                                    reloadLimit ) ) {
         // Strange action parameter
-        wxString wxstrErr = _("[Action] Start timer: Setvalue is missing ");
-        wxstrErr += wxstr;
+        wxString wxstrErr = _("[Action] Start timer: Failed to start timer ");
+        wxstrErr += escaped_action;
         wxstrErr += _("\n");
         gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
         return false;
     }
-
-    bool bSetValue = true;
-    wxString str = tkz.GetNextToken();
-    str.Upper();
-    if ( str.Find( _("FALSE") ) ) {
-        bSetValue = false;
-    }
-
-    m_pDM->startTimer( id, strVarName, delay, bSetValue );
 
     return true;
 }
@@ -4786,7 +5309,7 @@ bool dmElement::doActionPauseTimer( vscpEvent *pDMEvent )
     // Get timer id
     uint32_t id = vscp_readStringValue( tkz.GetNextToken() );
 
-    m_pDM->stopTimer( id );
+    m_pDM->pauseTimer( id );
 
     return true;
 }
@@ -5238,7 +5761,8 @@ bool CDM::feedPeriodicEvent( void )
         EventSecond.vscp_class = VSCP_CLASS2_VSCPD;
         EventSecond.vscp_type = VSCP2_TYPE_VSCPD_SECOND;    // Internal Second Event
         EventSecond.head = VSCP_PRIORITY_NORMAL;            // Set priority
-        EventSecond.timestamp = vscp_makeTimeStamp();       // Set timestamp
+        EventSecond.timestamp = vscp_makeTimeStamp();       // Set timestamp        
+        vscp_setEventDateTimeBlockToNow( &EventSecond );    // Set time
         EventSecond.sizeData = 0;                           // No data
         EventSecond.pdata = NULL;
         //memcpy( EventSecond.GUID, m_pCtrlObject->m_GUID, 16 ); // Server GUID
@@ -5254,9 +5778,10 @@ bool CDM::feedPeriodicEvent( void )
             vscpEvent EventRandomMinute;
             EventRandomMinute.vscp_class = VSCP_CLASS2_VSCPD;
             EventRandomMinute.vscp_type = VSCP2_TYPE_VSCPD_RANDOM_MINUTE;   // Internal Random-Minute Event
-            EventRandomMinute.head = VSCP_PRIORITY_NORMAL;      // Set priority
-            EventRandomMinute.sizeData = 0;                     // No data
-            EventRandomMinute.timestamp = vscp_makeTimeStamp(); // Set timestamp
+            EventRandomMinute.head = VSCP_PRIORITY_NORMAL;          // Set priority
+            EventRandomMinute.sizeData = 0;                         // No data
+            EventRandomMinute.timestamp = vscp_makeTimeStamp();     // Set timestamp
+            vscp_setEventDateTimeBlockToNow( &EventRandomMinute );  // Set time
             EventRandomMinute.pdata = NULL;
             //memcpy( EventRandomMinute.GUID, m_pCtrlObject->m_GUID, 16 ); // Server GUID
             gpobj->m_guid.writeGUID( EventRandomMinute.GUID );
@@ -5275,6 +5800,7 @@ bool CDM::feedPeriodicEvent( void )
         EventMinute.vscp_type = VSCP2_TYPE_VSCPD_MINUTE;    // Internal Minute Event
         EventMinute.head = VSCP_PRIORITY_NORMAL;            // Set priority
         EventMinute.timestamp = vscp_makeTimeStamp();       // Set timestamp
+        vscp_setEventDateTimeBlockToNow( &EventMinute );     // Set time
         EventMinute.sizeData = 0;                           // No data
         EventMinute.pdata = NULL;
         //memcpy( EventMinute.GUID, m_pCtrlObject->m_GUID, 16 ); // Server GUID
@@ -5290,6 +5816,7 @@ bool CDM::feedPeriodicEvent( void )
             EventRandomHour.vscp_type = VSCP2_TYPE_VSCPD_RANDOM_HOUR;       // Internal Random-Hour Event
             EventRandomHour.head = VSCP_PRIORITY_NORMAL;                    // Set priority
             EventRandomHour.timestamp = vscp_makeTimeStamp();               // Set timestamp
+            vscp_setEventDateTimeBlockToNow( &EventRandomHour );            // Set time
             EventRandomHour.sizeData = 0;                                   // No data
             EventRandomHour.pdata = NULL;
             //memcpy( EventRandomHour.GUID, m_pCtrlObject->m_GUID, 16 );    // Server GUID
@@ -5308,6 +5835,7 @@ bool CDM::feedPeriodicEvent( void )
         EventHour.vscp_type = VSCP2_TYPE_VSCPD_HOUR;                        // Internal Hour Event
         EventHour.head = VSCP_PRIORITY_NORMAL;                              // Set priority
         EventHour.timestamp = vscp_makeTimeStamp();                         // Set timestamp
+        vscp_setEventDateTimeBlockToNow( &EventHour );                       // Set time
         EventHour.sizeData = 0;                                             // No data
         EventHour.pdata = NULL;
         //memcpy( EventtHour.GUID, m_pCtrlObject->m_GUID, 16 );             // Server GUID
@@ -5324,6 +5852,7 @@ bool CDM::feedPeriodicEvent( void )
             EventRandomDay.vscp_type = VSCP2_TYPE_VSCPD_RANDOM_DAY;         // Internal Random-Day Event
             EventRandomDay.head = VSCP_PRIORITY_NORMAL;                     // Set priority
             EventRandomDay.timestamp = vscp_makeTimeStamp();                // Set timestamp
+            vscp_setEventDateTimeBlockToNow( &EventRandomDay );             // Set time
             EventRandomDay.sizeData = 0;                                    // No data
             EventRandomDay.pdata = NULL;
             //memcpy( EventRandomDay.GUID, m_pCtrlObject->m_GUID, 16 );     // Server GUID
@@ -5342,6 +5871,7 @@ bool CDM::feedPeriodicEvent( void )
         EventDay.vscp_type = VSCP2_TYPE_VSCPD_MIDNIGHT;     // Internal Midnight Event
         EventDay.head = VSCP_PRIORITY_NORMAL;               // Set priority
         EventDay.timestamp = vscp_makeTimeStamp();          // Set timestamp
+        vscp_setEventDateTimeBlockToNow( &EventDay );       // Set time
         EventDay.sizeData = 0;                              // No data
         EventDay.pdata = NULL;
         //memcpy( EventDay.GUID, m_pCtrlObject->m_GUID, 16 );   // Server GUID
@@ -5358,6 +5888,7 @@ bool CDM::feedPeriodicEvent( void )
             EventRandomWeek.vscp_type = VSCP2_TYPE_VSCPD_RANDOM_WEEK;   // Internal Random-Week Event
             EventRandomWeek.head = VSCP_PRIORITY_NORMAL;                // Set priority
             EventRandomWeek.timestamp = vscp_makeTimeStamp();           // Set timestamp
+            vscp_setEventDateTimeBlockToNow( &EventRandomWeek );        // Set time
             EventRandomWeek.sizeData = 0;                               // No data
             EventRandomWeek.pdata = NULL;
             //memcpy( EventRandomWeek.GUID, m_pCtrlObject->m_GUID, 16 );// Server GUID
@@ -5377,6 +5908,7 @@ bool CDM::feedPeriodicEvent( void )
             EventWeek.vscp_type = VSCP2_TYPE_VSCPD_WEEK;    // Internal Week Event
             EventWeek.head = VSCP_PRIORITY_NORMAL;          // Set priority
             EventWeek.timestamp = vscp_makeTimeStamp();     // Set timestamp
+            vscp_setEventDateTimeBlockToNow( &EventWeek );   // Set time
             EventWeek.sizeData = 0;                         // No data
             EventWeek.pdata = NULL;
             //memcpy( EventWeek.GUID, m_pCtrlObject->m_GUID, 16 ); // Server GUID
@@ -5392,6 +5924,7 @@ bool CDM::feedPeriodicEvent( void )
                 EventRandomMonth.vscp_type = VSCP2_TYPE_VSCPD_RANDOM_MONTH;     // Internal Random-Month Event
                 EventRandomMonth.head = VSCP_PRIORITY_NORMAL;                   // Set priority
                 EventRandomMonth.timestamp = vscp_makeTimeStamp();              // Set timestamp
+                vscp_setEventDateTimeBlockToNow( &EventRandomMonth );           // Set time
                 EventRandomMonth.sizeData = 0;                                  // No data
                 EventRandomMonth.pdata = NULL;
                 //memcpy( EventRandomMonth.GUID, m_pCtrlObject->m_GUID, 16 );   // Server GUID
@@ -5410,6 +5943,7 @@ bool CDM::feedPeriodicEvent( void )
         EventMonth.vscp_type = VSCP2_TYPE_VSCPD_MONTH;      // Internal Month Event
         EventMonth.head = VSCP_PRIORITY_NORMAL;             // Set priority
         EventMonth.timestamp = vscp_makeTimeStamp();        // Set timestamp
+        vscp_setEventDateTimeBlockToNow( &EventMonth );      // Set time
         EventMonth.sizeData = 0;                            // No data
         EventMonth.pdata = NULL;
         //memcpy( EventMonth.GUID, m_pCtrlObject->m_GUID, 16 );  // Server GUID
@@ -5425,6 +5959,7 @@ bool CDM::feedPeriodicEvent( void )
             EventRandomYear.vscp_type = VSCP2_TYPE_VSCPD_RANDOM_YEAR;   // Internal Random-Minute Event
             EventRandomYear.head = VSCP_PRIORITY_NORMAL;                // Set priority
             EventRandomYear.timestamp = vscp_makeTimeStamp();           // Set timestamp
+            vscp_setEventDateTimeBlockToNow( &EventRandomYear );        // Set time
             EventRandomYear.sizeData = 0;                               // No data
             EventRandomYear.pdata = NULL;
             //memcpy( EventRandomYear.GUID, m_pCtrlObject->m_GUID, 16 ); // Server GUID
@@ -5443,6 +5978,7 @@ bool CDM::feedPeriodicEvent( void )
         EventYear.vscp_type = VSCP2_TYPE_VSCPD_YEAR;            // Internal Year Event
         EventYear.head = VSCP_PRIORITY_NORMAL;                  // Set priority
         EventYear.timestamp = vscp_makeTimeStamp();             // Set timestamp
+        vscp_setEventDateTimeBlockToNow( &EventYear );          // Set time
         EventYear.sizeData = 0;                                 // No data
         EventYear.pdata = NULL;
         //memcpy( EventYear.GUID, m_pCtrlObject->m_GUID, 16 );        // Server GUID
@@ -5461,6 +5997,7 @@ bool CDM::feedPeriodicEvent( void )
             EventQuarter.vscp_type = VSCP2_TYPE_VSCPD_QUARTER;  // Internal Quarter Event
             EventQuarter.head = VSCP_PRIORITY_NORMAL;           // Set priority
             EventQuarter.timestamp = vscp_makeTimeStamp();      // Set timestamp
+            vscp_setEventDateTimeBlockToNow( &EventQuarter );   // Set time
             EventQuarter.sizeData = 0;                          // No data
             EventQuarter.pdata = NULL;
             //memcpy( EventQuarter.GUID, m_pCtrlObject->m_GUID, 16 );     // Server GUID
@@ -5478,6 +6015,7 @@ bool CDM::feedPeriodicEvent( void )
             EventQuarter.vscp_type = VSCP2_TYPE_VSCPD_QUARTER;  // Internal Quarter Event
             EventQuarter.head = VSCP_PRIORITY_NORMAL;           // Set priority
             EventQuarter.timestamp = vscp_makeTimeStamp();      // Set timestamp
+            vscp_setEventDateTimeBlockToNow( &EventQuarter );   // Set time
             EventQuarter.sizeData = 0;                          // No data
             EventQuarter.pdata = NULL;
             //memcpy( EventQuarter.GUID, m_pCtrlObject->m_GUID, 16 );   // Server GUID
@@ -5495,6 +6033,7 @@ bool CDM::feedPeriodicEvent( void )
             EventQuarter.vscp_type = VSCP2_TYPE_VSCPD_QUARTER;  // Internal Quarter Event
             EventQuarter.head = VSCP_PRIORITY_NORMAL;           // Set priority
             EventQuarter.timestamp = vscp_makeTimeStamp();      // Set timestamp
+            vscp_setEventDateTimeBlockToNow( &EventQuarter );   // Set time
             EventQuarter.sizeData = 0;                          // No data
             EventQuarter.pdata = NULL;
             //memcpy( EventQuarter.GUID, m_pCtrlObject->m_GUID, 16 );     // Server GUID
@@ -5512,6 +6051,7 @@ bool CDM::feedPeriodicEvent( void )
             EventQuarter.vscp_type = VSCP2_TYPE_VSCPD_QUARTER;  // Internal Quarter Event
             EventQuarter.head = VSCP_PRIORITY_NORMAL;           // Set priority
             EventQuarter.timestamp = vscp_makeTimeStamp();      // Set timestamp
+            vscp_setEventDateTimeBlockToNow( &EventQuarter );   // Set time
             EventQuarter.sizeData = 0;                          // No data
             EventQuarter.pdata = NULL;
             //memcpy( EventQuarter.GUID, m_pCtrlObject->m_GUID, 16 ); // Server GUID
@@ -5527,7 +6067,142 @@ bool CDM::feedPeriodicEvent( void )
 
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// feedTimerStarted
+//
 
+bool CDM::feedTimerStarted( uint32_t id, uint32_t time )
+{
+    vscpEvent EventTimerStart;
+    EventTimerStart.vscp_class = VSCP_CLASS2_VSCPD;
+    EventTimerStart.vscp_type = VSCP2_TYPE_VSCPD_TIMER_STARTED;   // Internal Random-Minute Event
+    EventTimerStart.head = VSCP_PRIORITY_NORMAL;                // Set priority
+    EventTimerStart.timestamp = vscp_makeTimeStamp();           // Set timestamp
+    vscp_setEventDateTimeBlockToNow( &EventTimerStart );        // Set time
+    EventTimerStart.sizeData = 8;                               // No data
+    uint8_t data[8];
+    data[0] = ( id >> 24 ) & 0xff;
+    data[1] = ( id >> 16 ) & 0xff;
+    data[2] = ( id >> 8 ) & 0xff;
+    data[3] = id & 0xff;
+    data[4] = ( time >> 24 ) & 0xff;
+    data[5] = ( time >> 16 ) & 0xff;
+    data[6] = ( time >> 8 ) & 0xff;
+    data[7] = time & 0xff;
+    EventTimerStart.pdata = data;
+    gpobj->m_guid.writeGUID( EventTimerStart.GUID );
+    
+    return feed( &EventTimerStart );
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// feedTimerPaused
+//
+
+bool CDM::feedTimerPaused( uint32_t id, uint32_t time )
+{
+    vscpEvent EventTimerStart;
+    EventTimerStart.vscp_class = VSCP_CLASS2_VSCPD;
+    EventTimerStart.vscp_type = VSCP2_TYPE_VSCPD_TIMER_PAUSED;  // Internal Random-Minute Event
+    EventTimerStart.head = VSCP_PRIORITY_NORMAL;                // Set priority
+    EventTimerStart.timestamp = vscp_makeTimeStamp();           // Set timestamp
+    vscp_setEventDateTimeBlockToNow( &EventTimerStart );        // Set time
+    EventTimerStart.sizeData = 8;                               // No data
+    uint8_t data[8];
+    data[0] = ( id >> 24 ) & 0xff;
+    data[1] = ( id >> 16 ) & 0xff;
+    data[2] = ( id >> 8 ) & 0xff;
+    data[3] = id & 0xff;
+    data[4] = ( time >> 24 ) & 0xff;
+    data[5] = ( time >> 16 ) & 0xff;
+    data[6] = ( time >> 8 ) & 0xff;
+    data[7] = time & 0xff;
+    EventTimerStart.pdata = data;
+    gpobj->m_guid.writeGUID( EventTimerStart.GUID );
+    
+    return feed( &EventTimerStart );
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// feedTimerResumed
+//
+
+bool CDM::feedTimerResumed( uint32_t id, uint32_t time )
+{
+    vscpEvent EventTimerStart;
+    EventTimerStart.vscp_class = VSCP_CLASS2_VSCPD;
+    EventTimerStart.vscp_type = VSCP2_TYPE_VSCPD_TIMER_RESUMED; // Internal Random-Minute Event
+    EventTimerStart.head = VSCP_PRIORITY_NORMAL;                // Set priority
+    EventTimerStart.timestamp = vscp_makeTimeStamp();           // Set timestamp
+    vscp_setEventDateTimeBlockToNow( &EventTimerStart );        // Set time
+    EventTimerStart.sizeData = 8;                               // No data
+    uint8_t data[8];
+    data[0] = ( id >> 24 ) & 0xff;
+    data[1] = ( id >> 16 ) & 0xff;
+    data[2] = ( id >> 8 ) & 0xff;
+    data[3] = id & 0xff;
+    data[4] = ( time >> 24 ) & 0xff;
+    data[5] = ( time >> 16 ) & 0xff;
+    data[6] = ( time >> 8 ) & 0xff;
+    data[7] = time & 0xff;
+    EventTimerStart.pdata = data;
+    gpobj->m_guid.writeGUID( EventTimerStart.GUID );
+    
+    return feed( &EventTimerStart );
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// feedTimerStopped
+//
+
+bool CDM::feedTimerStopped( uint32_t id, uint32_t time )
+{
+    vscpEvent EventTimerStart;
+    EventTimerStart.vscp_class = VSCP_CLASS2_VSCPD;
+    EventTimerStart.vscp_type = VSCP2_TYPE_VSCPD_TIMER_STOPPED; // Internal Random-Minute Event
+    EventTimerStart.head = VSCP_PRIORITY_NORMAL;                // Set priority
+    EventTimerStart.timestamp = vscp_makeTimeStamp();           // Set timestamp
+    vscp_setEventDateTimeBlockToNow( &EventTimerStart );        // Set time
+    EventTimerStart.sizeData = 8;                               // No data
+    uint8_t data[8];
+    data[0] = ( id >> 24 ) & 0xff;
+    data[1] = ( id >> 16 ) & 0xff;
+    data[2] = ( id >> 8 ) & 0xff;
+    data[3] = id & 0xff;
+    data[4] = ( time >> 24 ) & 0xff;
+    data[5] = ( time >> 16 ) & 0xff;
+    data[6] = ( time >> 8 ) & 0xff;
+    data[7] = time & 0xff;
+    EventTimerStart.pdata = data;
+    gpobj->m_guid.writeGUID( EventTimerStart.GUID );
+    
+    return feed( &EventTimerStart );
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// feedTimerElapsed
+//
+
+bool CDM::feedTimerElapsed( uint32_t id )
+{
+    vscpEvent EventTimerElapsed;
+    EventTimerElapsed.vscp_class = VSCP_CLASS2_VSCPD;
+    EventTimerElapsed.vscp_type = VSCP2_TYPE_VSCPD_TIMER_ELLAPSED;// Internal Random-Minute Event
+    EventTimerElapsed.head = VSCP_PRIORITY_NORMAL;                // Set priority
+    EventTimerElapsed.timestamp = vscp_makeTimeStamp();           // Set timestamp
+    vscp_setEventDateTimeBlockToNow( &EventTimerElapsed );        // Set time
+    EventTimerElapsed.sizeData = 4;                               // No data
+    uint8_t data[4];
+    data[0] = ( id >> 24 ) & 0xff;
+    data[1] = ( id >> 16 ) & 0xff;
+    data[2] = ( id >> 8 ) & 0xff;
+    data[3] = id & 0xff;
+    EventTimerElapsed.pdata = data;
+    gpobj->m_guid.writeGUID( EventTimerElapsed.GUID );
+    
+    return feed( &EventTimerElapsed );
+}
+            
 ///////////////////////////////////////////////////////////////////////////////
 // serviceTimers
 //
@@ -5541,24 +6216,57 @@ void CDM::serviceTimers( void )
 
         dmTimer *pTimer = it->second;
 
-        if ( pTimer->isActive() &&
-            ( gpobj->m_variables.find( pTimer->getVariableName(), variable ) ) ) {
+        if ( pTimer->isActive() ) {
+            
+            if ( !pTimer->decTimer() ) {
 
-                if ( !pTimer->decTimer() ) {
+                // We have reached zero
+                
+                bool bVariableFound = false;
+                if ( gpobj->m_variables.find( pTimer->getVariableName(), variable ) ) {
+                    bVariableFound = true;
+                }
+                
+                // Set variable to true if one was defined
+                if ( bVariableFound ) {
+                    variable.setTrue();
+                    if ( !gpobj->m_variables.update( variable ) ) {
+                        wxString wxstrErr = 
+                                _("[serviceTimers] Maximum: "
+                                  "Failed to update variable ");
+                        wxstrErr += _("\n");
+                        gpobj->logMsg( _("[DM] ") + wxstrErr, 
+                                        DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+                    }
+                }
+                    
+                // Feed timer elapsed event
+                feedTimerElapsed( pTimer->getId() );
 
-                    // We have reached zero
-
-                    pTimer->setActive( false );  // We go inactive
-
-                    // Handle the setvalue
-                    if ( pTimer->getSetValue() ) {
-                        variable.setTrue();
+                if ( pTimer->isReloading() ) {
+                    if ( !pTimer->isReloadLimit() ) {
+                        pTimer->reload();
+                        feedTimerStarted( pTimer->getId(), pTimer->getDelay() * 1000 );
                     }
                     else {
-                        variable.setFalse();
+                        pTimer->reload(); // Reload even if we should stop
+                        if ( pTimer->getReloadCounter() > 0 ) {                            
+                            feedTimerStarted( pTimer->getId(), pTimer->getDelay() * 1000 );
+                        }
+                        else {
+                            pTimer->setActive( false );  // We go inactive
+                            // Feed timer stopped event
+                            feedTimerStopped( pTimer->getId(), pTimer->getDelay() + 1000 );
+                        }
                     }
-
                 }
+                else {
+                    pTimer->setActive( false );  // We go inactive
+                    // Feed timer stopped event
+                    feedTimerStopped( pTimer->getId(), pTimer->getDelay() + 1000 );
+                }
+
+            }
 
         } // Active and variable exists
 
@@ -5570,89 +6278,91 @@ void CDM::serviceTimers( void )
 // addTimer
 //
 
-int CDM::addTimer( uint16_t id,
+int CDM::addTimer( uint32_t id,
                     wxString& nameVar,
                     uint32_t delay,
                     bool bStart,
-                    bool setValue )
+                    bool bReload,
+                    int reloadLimit )
 {
 
     int rv = 0; // Default return value is failure
     dmTimer *pTimer;
 
     // Log
-    if ( gpobj->m_debugFlags1 & VSCP_DEBUG1_DM ) {
-        wxString logStr = wxString::Format(_("Add Timer %s.\n"),
+    if ( gpobj->m_debugFlags1 & VSCP_DEBUG1_DM_TIMERS ) {
+        wxString logStr = wxString::Format(_("[Add timer] Add Timer %s.\n"),
                                             (const char *)nameVar.c_str() );
         gpobj->logMsg( _("[DM] ") + logStr, DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
     }
 
     // Check if the timer already exist - set new values
-    if ( NULL != ( pTimer = m_timerHash[ id ] ) ) {
+    if ( NULL != ( pTimer = m_timerHash[ (int)id ] ) ) {
+        
         pTimer->setVariableName( nameVar );
-        pTimer->setSetValue( setValue );
+        pTimer->setId( id );
+        pTimer->setReload( bReload );
         pTimer->setDelay( delay );
         pTimer->setActive( bStart );
+        pTimer->setReloadLimit( reloadLimit );
 
-        // Log
-        wxString logStr = wxString::Format(_("Timer %d already exist.\n"), id );
-        gpobj->logMsg( _("[DM] ") + logStr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
-        return id;
-    }
-
-    nameVar.Trim( true );
-    nameVar.Trim( false );
-
-    // Check if variable is defined
-    if ( gpobj->m_variables.exist( nameVar ) ) {
-
-        // Log
-        wxString logStr = wxString::Format(_("Variable is not defined %s.\n"),
-                                            (const char *)nameVar.c_str() );
-        gpobj->logMsg( _("[DM] ") + logStr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
-
-        // Create a new timer
-        dmTimer *pTimer = new dmTimer( nameVar,
-            delay,
-            bStart,
-            setValue );
-
-        if ( NULL != pTimer ) {
-
-            // add the timer to the hash table
-            rv = id;
-            m_timerHash[ id ] = pTimer;
-
+        if ( gpobj->m_debugFlags1 & VSCP_DEBUG1_DM_TIMERS ) {
+            wxString logStr = 
+                    wxString::Format(_("[Add timer] Timer %d "
+                                       "already exist.\n"), id );
+            gpobj->logMsg( _("[DM] ") + logStr, 
+                            DAEMON_LOGMSG_NORMAL, 
+                            DAEMON_LOGTYPE_DM );
         }
-
+       
     }
-    // variable is not defined - we do that
     else {
+        // Create the timer
+        dmTimer *pTimer = new dmTimer( nameVar,
+                                        id,
+                                        delay,
+                                        bStart,
+                                        bReload,
+                                        reloadLimit );
 
-        // Log
-        wxString logStr = wxString::Format(_("Variable already defined %s.\n"),
-                                            (const char *)nameVar.c_str() );
-        gpobj->logMsg( _("[DM] ") + logStr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+        if ( NULL == pTimer ) {
+            wxString logStr = 
+                    wxString::Format(_("[Add timer] Timer %d "
+                                       "Could not create.\n"), id );
+            gpobj->logMsg( _("[DM] ") + 
+                            logStr, 
+                            DAEMON_LOGMSG_NORMAL, 
+                            DAEMON_LOGTYPE_DM );
+            return 0;
+        }
+        
+        // add the timer to the hash table
+        rv = id;
+        m_timerHash[ id ] = pTimer;
+        
+    }
 
-        if ( gpobj->m_variables.add( nameVar, _("false"), 
-                VSCP_DAEMON_VARIABLE_CODE_BOOLEAN ) ) {
+    nameVar.Trim(true);
+    nameVar.Trim(false);
 
-            dmTimer *pTimer = new dmTimer( nameVar,
-                delay,
-                bStart,
-                setValue );
+    // Create variable if it does not exist
+    if ( !gpobj->m_variables.exist( nameVar ) ) {
 
-            if ( NULL != pTimer ) {
+        if ( gpobj->m_debugFlags1 & VSCP_DEBUG1_DM_TIMERS ) {
+            wxString logStr = wxString::Format(_("[Add timer] Variable [%s] not defined. Creating it.\n"),
+                                                (const char *)nameVar.c_str() );
+            gpobj->logMsg( _("[DM] ") + logStr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+        }
 
-                // add the timer to the hash table
-                rv = id;
-                m_timerHash[ id ] = pTimer;
-
-            }
-
+        if ( gpobj->m_variables.add( nameVar, 
+                                        _("false"), 
+                                        VSCP_DAEMON_VARIABLE_CODE_BOOLEAN ) ) {
         }
 
     }
+    
+    // Start timer if requested to do so
+    if ( bStart ) startTimer( id );
 
     return rv;
 
@@ -5662,15 +6372,17 @@ int CDM::addTimer( uint16_t id,
 // startTimer
 //
 
-bool CDM::startTimer( int idTimer )
+bool CDM::startTimer( uint32_t idTimer )
 {
     dmTimer *pTimer = m_timerHash[ idTimer ];
     if ( NULL == pTimer ) return false;
 
     pTimer->startTimer();
+    
+    feedTimerStarted( idTimer, pTimer->getDelay()*1000 );
 
     // Log
-    if ( gpobj->m_debugFlags1 & VSCP_DEBUG1_DM ) {
+    if ( gpobj->m_debugFlags1 & VSCP_DEBUG1_DM_TIMERS ) {
         wxString logStr = wxString::Format(_("Timer %d started.\n"), idTimer );
         gpobj->logMsg( _("[DM] ") + logStr, DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM);
     }
@@ -5682,10 +6394,11 @@ bool CDM::startTimer( int idTimer )
 // startTimer
 //
 
-int CDM::startTimer( uint16_t idTimer, 
+int CDM::startTimer( uint32_t idTimer, 
                         wxString& nameVariable, 
                         uint32_t delay,
-                        bool bSetValue )
+                        bool bSetValue,
+                        int reloadLimit )
 {
     uint16_t rv = 0;
 
@@ -5693,21 +6406,22 @@ int CDM::startTimer( uint16_t idTimer,
     if ( NULL == pTimer ) {
 
         // Log
-        if ( gpobj->m_debugFlags1 & VSCP_DEBUG1_DM ) {
+        if ( gpobj->m_debugFlags1 & VSCP_DEBUG1_DM_TIMERS ) {
             wxString logStr = wxString::Format(_("Timer %d created.\n"), idTimer );
             gpobj->logMsg( _("[DM] ") + logStr, DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
         }
 
         // Nonexistent timer - create it
-        addTimer( idTimer,
-                nameVariable,
-                delay,
-                true,
-                bSetValue );
+        rv = addTimer( idTimer,
+                        nameVariable,
+                        delay,
+                        true,
+                        bSetValue,
+                        reloadLimit );
     }
 
     // Log
-    if ( gpobj->m_debugFlags1 & VSCP_DEBUG1_DM ) {
+    if ( gpobj->m_debugFlags1 & VSCP_DEBUG1_DM_TIMERS ) {
         wxString logStr = wxString::Format(_("Timer %d started.\n"), idTimer );
         gpobj->logMsg( _("[DM] ") + logStr, DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
     }
@@ -5719,18 +6433,74 @@ int CDM::startTimer( uint16_t idTimer,
 // stopTimer
 //
 
-bool CDM::stopTimer( int idTimer )
+bool CDM::stopTimer( uint32_t idTimer )
 {
     dmTimer *pTimer = m_timerHash[ idTimer ];
     if ( NULL == pTimer ) return false;
 
+    // Stop it
+    pTimer->stopTimer();
+    
+    // Tell the world that it is stopped
+    feedTimerStopped( idTimer, pTimer->getDelay() );
+    
     // Log
-    if ( gpobj->m_debugFlags1 & VSCP_DEBUG1_DM ) {
+    if ( gpobj->m_debugFlags1 & VSCP_DEBUG1_DM_TIMERS ) {
         wxString logStr = wxString::Format(_("Timer %d stopped.\n"), idTimer );
         gpobj->logMsg( _("[DM] ") + logStr, DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
     }
 
-    pTimer->stopTimer();
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// pauseTimer
+//
+
+bool CDM::pauseTimer( uint32_t idTimer )
+{
+    dmTimer *pTimer = m_timerHash[ idTimer ];
+    if ( NULL == pTimer ) return false;
+    
+    // Pause the timer
+    pTimer->pauseTimer();
+    
+    // Tell the world it is paused
+    feedTimerPaused( idTimer, pTimer->getDelay() );
+
+    // Log
+    if ( gpobj->m_debugFlags1 & VSCP_DEBUG1_DM_TIMERS ) {
+        wxString logStr = wxString::Format(_("Timer %d pused.\n"), idTimer );
+        gpobj->logMsg( _("[DM] ") + logStr, DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
+    }
+
+    
+
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// resumeTimer
+//
+
+bool CDM::resumeTimer( uint32_t idTimer )
+{
+    dmTimer *pTimer = m_timerHash[ idTimer ];
+    if ( NULL == pTimer ) return false;
+
+    // Resume timer
+    pTimer->resumeTimer();
+    
+    // Tell the world
+    feedTimerResumed( idTimer, pTimer->getDelay() );
+    
+    // Log
+    if ( gpobj->m_debugFlags1 & VSCP_DEBUG1_DM_TIMERS ) {
+        wxString logStr = wxString::Format(_("Timer %d resumed.\n"), idTimer );
+        gpobj->logMsg( _("[DM] ") + logStr, DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
+    }
+
+    
 
     return true;
 }

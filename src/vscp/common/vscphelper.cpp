@@ -1129,6 +1129,7 @@ bool vscp_getVSCPMeasurementAsDouble(const vscpEvent *pEvent, double *pvalue)
     if ( NULL == pvalue ) return false;
     
     if ( ( VSCP_CLASS1_MEASUREMENT == pEvent->vscp_class ) || 
+             ( VSCP_CLASS1_DATA == pEvent->vscp_class ) ||
              ( VSCP_CLASS2_LEVEL1_MEASUREMENT == pEvent->vscp_class ) ||
              ( VSCP_CLASS1_MEASUREZONE == pEvent->vscp_class ) || 
              ( VSCP_CLASS1_SETVALUEZONE == pEvent->vscp_class ) ) {
@@ -1241,6 +1242,7 @@ int vscp_getVSCPMeasurementUnit( const vscpEvent *pEvent )
     
     if ( ( VSCP_CLASS1_MEASUREMENT == pEvent->vscp_class ) || 
              ( VSCP_CLASS2_LEVEL1_MEASUREMENT == pEvent->vscp_class ) ||
+             ( VSCP_CLASS1_DATA == pEvent->vscp_class ) ||
              ( VSCP_CLASS1_MEASUREZONE == pEvent->vscp_class ) || 
              ( VSCP_CLASS2_LEVEL1_MEASUREZONE == pEvent->vscp_class ) || 
              ( VSCP_CLASS1_SETVALUEZONE == pEvent->vscp_class ) ||
@@ -1298,6 +1300,7 @@ int vscp_getVSCPMeasurementSensorIndex( const vscpEvent *pEvent )
     }
     
     if ( ( VSCP_CLASS1_MEASUREMENT == pEvent->vscp_class ) || 
+             ( VSCP_CLASS1_DATA == pEvent->vscp_class ) ||
              ( VSCP_CLASS2_LEVEL1_MEASUREMENT == pEvent->vscp_class ) ) {
                 
         return VSCP_DATACODING_INDEX( pEvent->pdata[ offset + 0 ] );
@@ -1356,7 +1359,8 @@ int vscp_getVSCPMeasurementZone( const vscpEvent *pEvent )
     }
     
     if ( ( VSCP_CLASS1_MEASUREMENT == pEvent->vscp_class ) || 
-             ( VSCP_CLASS2_LEVEL1_MEASUREMENT == pEvent->vscp_class )  ) {
+            ( VSCP_CLASS1_DATA == pEvent->vscp_class ) ||
+            ( VSCP_CLASS2_LEVEL1_MEASUREMENT == pEvent->vscp_class )  ) {
                
         return 0;   // Always zero
         
@@ -1414,6 +1418,7 @@ int vscp_getVSCPMeasurementSubZone( const vscpEvent *pEvent )
     }
     
     if ( ( VSCP_CLASS1_MEASUREMENT == pEvent->vscp_class ) || 
+             ( VSCP_CLASS1_DATA == pEvent->vscp_class ) ||
              ( VSCP_CLASS2_LEVEL1_MEASUREMENT == pEvent->vscp_class ) ||
              ( VSCP_CLASS1_MEASUREZONE == pEvent->vscp_class ) || 
              ( VSCP_CLASS2_LEVEL1_MEASUREZONE == pEvent->vscp_class ) || 
@@ -1460,6 +1465,7 @@ int vscp_getVSCPMeasurementSubZone( const vscpEvent *pEvent )
 bool vscp_isVSCPMeasurement( const vscpEvent *pEvent )
 {
     if ( ( VSCP_CLASS1_MEASUREMENT == pEvent->vscp_class ) || 
+         ( VSCP_CLASS1_DATA == pEvent->vscp_class ) ||   
          ( VSCP_CLASS2_LEVEL1_MEASUREMENT == pEvent->vscp_class ) ||
          ( VSCP_CLASS1_MEASUREZONE == pEvent->vscp_class ) || 
          ( VSCP_CLASS2_LEVEL1_MEASUREZONE == pEvent->vscp_class ) || 

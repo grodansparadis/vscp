@@ -126,7 +126,7 @@ typedef struct {
     uint32_t timestamp;             // Relative time stamp for package in microseconds.
                                     // ~71 minutes before roll over
     
-    // CRC should be calculated from here to end + datablock
+    // CRC should be calculated from here to end + data block
     uint16_t head;                  // Bit 15   GUID is IP v.6 address.
                                     // Bit 8-14 = Reserved
                                     // bit 7,6,5 priority => Priority 0-7 where 0 is highest.

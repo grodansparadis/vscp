@@ -1,0 +1,29 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+
+<dm>
+
+ <row enable="true" groupid="" >
+
+<comment>
+ Collect A/D values from node X
+</comment>
+
+<mask priority="0"
+ class="0xFFFF"
+ type="0xFFFF"
+ GUID="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+<filter priority="0"
+ class="65535"
+ type="5"
+ GUID="00:01:02:03:04:05:06:07:08:09:0A:0B:0C:0D:0E:0F" />
+
+<action>0x70</action>
+ <param>
+ /tmp/testfile;1;%isodate %isotime:This decision row is triggered by [%event] %lf 
+ </param>
+
+</row>
+     
+      
+</dm> 
