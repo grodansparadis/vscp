@@ -70,7 +70,8 @@ DLLPREFIX = lib
 WX_RELEASE = 3.0
 LIBDIRNAME = $(top_wxbuilddir)lib
 
-VSCPSIM_OBJECTS = simulation.o\
+VSCPSIM_OBJECTS = vscpl2drv-sim.o\
+	simulation.o\
 	vscpremotetcpif.o\
 	vscphelper.o\
 	guid.o\
