@@ -70,7 +70,8 @@ DLLPREFIX = lib
 WX_RELEASE = 3.0
 LIBDIRNAME = $(top_wxbuilddir)lib
 
-WIRE1_OBJECTS = wire1.o \
+WIRE1_OBJECTS = vscpl2drv_wire1.o\
+	wire1.o \
 	vscpremotetcpif.o \
 	vscphelper.o \
 	guid.o \

@@ -69,7 +69,8 @@ DLLPREFIX = lib
 WX_RELEASE = 3.0
 LIBDIRNAME = $(top_wxbuilddir)lib
 
-VSCPL2LOGGER_OBJECTS =  log.o\
+VSCPL2LOGGER_OBJECTS =  vscpl2drv_logger.o\
+	log.o\
 	vscpremotetcpif.o\
 	vscphelper.o\
 	guid.o\

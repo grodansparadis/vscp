@@ -69,7 +69,8 @@ DLLPREFIX = lib
 WX_RELEASE = 3.0
 LIBDIRNAME = $(top_wxbuilddir)lib
 
-LMSENSOROBJ =  lmsensors.o \
+LMSENSOROBJ =  vscpl2drv_lmsensors.o\
+	lmsensors.o \
 	crc.o\
 	crc8.o\
 	vscp_aes.o\

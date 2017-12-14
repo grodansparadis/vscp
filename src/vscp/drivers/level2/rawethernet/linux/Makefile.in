@@ -69,7 +69,8 @@ DLLPREFIX = lib
 WX_RELEASE = 3.0
 LIBDIRNAME = $(top_wxbuilddir)lib
 
-RAWETH_OBJECTS = dlldrvobj.o\
+RAWETH_OBJECTS = vscpl2drv_raweth.o\
+	dlldrvobj.o\
 	mongoose.o\
 	vscpremotetcpif.o\
 	vscphelper.o\

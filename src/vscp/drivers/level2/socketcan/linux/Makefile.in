@@ -69,7 +69,8 @@ DLLPREFIX = lib
 WX_RELEASE = 3.0
 LIBDIRNAME = $(top_wxbuilddir)lib
 
-SOCKETCAN_OBJECTS = socketcan.o\
+SOCKETCAN_OBJECTS = vscpl2drv_socketcan.o\
+	socketcan.o\
 	vscpremotetcpif.o\
 	vscphelper.o\
 	guid.o\

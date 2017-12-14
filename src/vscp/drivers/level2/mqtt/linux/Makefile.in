@@ -70,7 +70,8 @@ DLLPREFIX = lib
 WX_RELEASE = 3.0
 LIBDIRNAME = $(top_wxbuilddir)lib
 
-MQTT_OBJECTS = mqttobj.o\
+MQTT_OBJECTS = vscpl2drv_mqtt.o\
+	mqttobj.o\
 	vscpremotetcpif.o\
 	vscphelper.o\
 	guid.o\
