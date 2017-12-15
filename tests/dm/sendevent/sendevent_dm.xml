@@ -2,7 +2,7 @@
 
 <dm>
 
-     <row enable="true" groupid="Min/max" >
+     <row enable="true" groupid="send event" >
 
         <comment>
             Create variable that hold flag for sent event

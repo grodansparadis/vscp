@@ -375,6 +375,9 @@
 
 #define VSCPDB_LOG_CREATE_INDEX "CREATE INDEX `idxdate` ON log ('date');"
 
+// Delete records older than n days
+#define VSCPDB_LOG_DELETE_OLD "DELETE FROM log WHERE date < datetime('now', '-%d days');"
+
 #define VSCPDB_ORDINAL_LOG_ID                       0   //
 #define VSCPDB_ORDINAL_LOG_TYPE                     1   //
 #define VSCPDB_ORDINAL_LOG_DATE                     2   //

@@ -63,7 +63,8 @@
 
 enum _driver_levels {
     VSCP_DRIVER_LEVEL1 = 1,  
-    VSCP_DRIVER_LEVEL2
+    VSCP_DRIVER_LEVEL2,
+    VSCP_DRIVER_LEVEL3
 };
 
 class CClientItem;
@@ -85,9 +86,12 @@ public:
 
 
     bool startDriver( CControlObject *pCtrlObject );
-
-
-    bool stopDriver( void );
+    
+    bool pausDriver( void );  // TODO
+    
+    bool resumeDriver( void ); // TODO
+    
+    bool stopDriver( void ); // TODO
 
 
     /*!
@@ -108,7 +112,7 @@ public:
     /*!
         Canal Driver Level
     */
-    uint32_t m_driverLevel;
+    uint8_t m_driverLevel;
     
     /// True if driver should be started.
     bool m_bEnable;

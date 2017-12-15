@@ -76,6 +76,10 @@ enum {
     DAEMON_LOGTYPE_DM
 };
 
+// Number of days a log entry will be kept
+// before it is removed
+#define DEFAULT_LOGDAYS     7
+
 // TTL     Scope
 // ----------------------------------------------------------------------
 // 0       Restricted to the same host.Won't be output by any interface.
@@ -633,10 +637,16 @@ public:
 
 
     /*!
+     * Number of days a log entry will be kept in th system
+     * -1 is always.
+     */
+    int m_logDays;
+    
+    /*!
         Log to syslog
      */
     bool m_bLogToSysLog;
-
+        
 
 
     //**************************************************************************
@@ -822,7 +832,7 @@ public:
     wxString m_strCoapInterfaceAddress;
 
     //**************************************************************************
-    //                               VARIABLES
+    //                             REMOTE VARIABLES
     //**************************************************************************
 
 

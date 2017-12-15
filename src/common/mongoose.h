@@ -591,6 +591,12 @@ typedef struct stat cs_stat_t;
 #define CS_ENABLE_STDIO 1
 #endif
 
+#define inet_ntop(af, src, dst, size)                                          \
+  (((af) == AF_INET) ? ipaddr_ntoa_r((const ip_addr_t *) (src), (dst), (size)) \
+                     : NULL)
+#define inet_pton(af, src, dst) \
+  (((af) == AF_INET) ? ipaddr_aton((src), (ip_addr_t *) (dst)) : 0)
+
 #endif /* CS_PLATFORM == CS_P_ESP8266 */
 #endif /* CS_COMMON_PLATFORMS_PLATFORM_ESP8266_H_ */
 #ifdef MG_MODULE_LINES
@@ -1862,10 +1868,14 @@ struct mg_str {
 };
 
 /*
- * Helper functions for creating mg_str struct from plain C string.
+ * Helper function for creating mg_str struct from plain C string.
  * `NULL` is allowed and becomes `{NULL, 0}`.
  */
 struct mg_str mg_mk_str(const char *s);
+
+/*
+ * Like `mg_mk_str`, but takes string length explicitly.
+ */
 struct mg_str mg_mk_str_n(const char *s, size_t len);
 
 /* Macro for initializing mg_str. */
@@ -1900,9 +1910,19 @@ struct mg_str mg_strdup_nul(const struct mg_str s);
  */
 const char *mg_strchr(const struct mg_str s, int c);
 
+/*
+ * Compare two `mg_str`s; return value is the same as `strcmp`.
+ */
 int mg_strcmp(const struct mg_str str1, const struct mg_str str2);
+
+/*
+ * Like `mg_strcmp`, but compares at most `n` characters.
+ */
 int mg_strncmp(const struct mg_str str1, const struct mg_str str2, size_t n);
 
+/*
+ * Finds the first occurrence of a substring `needle` in the `haystack`.
+ */
 const char *mg_strstr(const struct mg_str haystack, const struct mg_str needle);
 
 #ifdef __cplusplus
@@ -1993,15 +2013,15 @@ void mbuf_trim(struct mbuf *);
 
 #endif /* CS_COMMON_MBUF_H_ */
 #ifdef MG_MODULE_LINES
-#line 1 "common/base64.h"
+#line 1 "common/cs_base64.h"
 #endif
 /*
  * Copyright (c) 2014 Cesanta Software Limited
  * All rights reserved
  */
 
-#ifndef CS_COMMON_BASE64_H_
-#define CS_COMMON_BASE64_H_
+#ifndef CS_COMMON_CS_BASE64_H_
+#define CS_COMMON_CS_BASE64_H_
 
 #ifndef DISABLE_BASE64
 #define DISABLE_BASE64 0
@@ -2040,7 +2060,7 @@ int cs_base64_decode(const unsigned char *s, int len, char *dst, int *dec_len);
 
 #endif /* DISABLE_BASE64 */
 
-#endif /* CS_COMMON_BASE64_H_ */
+#endif /* CS_COMMON_CS_BASE64_H_ */
 #ifdef MG_MODULE_LINES
 #line 1 "common/str_util.h"
 #endif
@@ -2171,10 +2191,24 @@ struct mg_str mg_next_comma_list_entry_n(struct mg_str list, struct mg_str *val,
 
 /*
  * Matches 0-terminated string (mg_match_prefix) or string with given length
- * mg_match_prefix_n against a glob pattern.
- *
+ * mg_match_prefix_n against a glob pattern. Glob syntax:
+ * ```
+ * - * matches zero or more characters until a slash character /
+ * - ** matches zero or more characters
+ * - ? Matches exactly one character which is not a slash /
+ * - | or ,  divides alternative patterns
+ * - any other character matches itself
+ * ```
  * Match is case-insensitive. Returns number of bytes matched, or -1 if no
  * match.
+ * Examples:
+ * ```
+ * mg_match_prefix("a*f", len, "abcdefgh") == 6
+ * mg_match_prefix("a*f", len, "abcdexgh") == -1
+ * mg_match_prefix("a*f|de*,xy", len, "defgh") == 5
+ * mg_match_prefix("?*", len, "abc") == 3
+ * mg_match_prefix("?*", len, "") == -1
+ * ```
  */
 int mg_match_prefix(const char *pattern, int pattern_len, const char *str);
 int mg_match_prefix_n(const struct mg_str pattern, const struct mg_str str);
@@ -4526,6 +4560,30 @@ extern void mg_hash_md5_v(size_t num_msgs, const uint8_t *msgs[],
                           const size_t *msg_lens, uint8_t *digest);
 extern void mg_hash_sha1_v(size_t num_msgs, const uint8_t *msgs[],
                            const size_t *msg_lens, uint8_t *digest);
+
+/*
+ * Flags for `mg_http_is_authorized()`.
+ */
+#define MG_AUTH_FLAG_IS_DIRECTORY (1 << 0)
+#define MG_AUTH_FLAG_IS_GLOBAL_PASS_FILE (1 << 1)
+#define MG_AUTH_FLAG_ALLOW_MISSING_FILE (1 << 2)
+
+/*
+ * Checks whether an http request is authorized. `domain` is the authentication
+ * realm, `passwords_file` is a htdigest file (can be created e.g. with
+ * `htdigest` utility). If either `domain` or `passwords_file` is NULL, this
+ * function always returns 1; otherwise checks the authentication in the
+ * http request and returns 1 only if there is a match; 0 otherwise.
+ */
+int mg_http_is_authorized(struct http_message *hm, struct mg_str path,
+                          const char *domain, const char *passwords_file,
+                          int flags);
+
+/*
+ * Sends 401 Unauthorized response.
+ */
+void mg_http_send_digest_auth_request(struct mg_connection *c,
+                                      const char *domain);
 
 #ifdef __cplusplus
 }

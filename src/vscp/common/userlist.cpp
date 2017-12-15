@@ -1016,7 +1016,7 @@ bool CUserList::addUser( const wxString& user,
     // MD5 Token
     wxString driverhash = user;
     driverhash += _(":");
-    driverhash += wxString::FromUTF8( gpobj->m_web_authentication_domain );
+    driverhash += gpobj->m_web_authentication_domain;
     driverhash += _(":");
     driverhash += password;
     

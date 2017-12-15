@@ -641,8 +641,7 @@ public:
         @param bSecure Should be set to true for a secure connection (SSL)
         @returns true if all went well.
     */
-    bool doActionSendEventRemote( vscpEvent *pDMEvent,
-                                    bool bSecure = false );
+    bool doActionSendEventRemote( vscpEvent *pDMEvent, bool bSecure = false );
 
     /*!
         Store in variable action 

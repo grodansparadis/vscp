@@ -192,196 +192,7 @@ extern "C" {
 
 #endif /* CS_COMMON_MG_MEM_H_ */
 #ifdef MG_MODULE_LINES
-#line 1 "common/cs_dbg.h"
-#endif
-/*
- * Copyright (c) 2014-2016 Cesanta Software Limited
- * All rights reserved
- */
-
-#ifndef CS_COMMON_CS_DBG_H_
-#define CS_COMMON_CS_DBG_H_
-
-/* Amalgamated: #include "common/platform.h" */
-
-#if CS_ENABLE_STDIO
-#include <stdio.h>
-#endif
-
-#ifndef CS_ENABLE_DEBUG
-#define CS_ENABLE_DEBUG 0
-#endif
-
-#ifndef CS_LOG_ENABLE_TS_DIFF
-#define CS_LOG_ENABLE_TS_DIFF 0
-#endif
-
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
-
-enum cs_log_level {
-  LL_NONE = -1,
-  LL_ERROR = 0,
-  LL_WARN = 1,
-  LL_INFO = 2,
-  LL_DEBUG = 3,
-  LL_VERBOSE_DEBUG = 4,
-
-  _LL_MIN = -2,
-  _LL_MAX = 5,
-};
-
-/* Set log level. */
-void cs_log_set_level(enum cs_log_level level);
-
-/* Set log filter. NULL (a default) logs everything. */
-void cs_log_set_filter(const char *source_file_name);
-
-int cs_log_print_prefix(enum cs_log_level level, const char *func,
-                        const char *filename);
-
-extern enum cs_log_level cs_log_threshold;
-
-#if CS_ENABLE_STDIO
-
-void cs_log_set_file(FILE *file);
-void cs_log_printf(const char *fmt, ...)
-#ifdef __GNUC__
-    __attribute__((format(printf, 1, 2)))
-#endif
-    ;
-
-#define LOG(l, x)                                                    \
-  do {                                                               \
-    if (cs_log_print_prefix(l, __func__, __FILE__)) cs_log_printf x; \
-  } while (0)
-
-#ifndef CS_NDEBUG
-
-#define DBG(x) LOG(LL_VERBOSE_DEBUG, x)
-
-#else /* NDEBUG */
-
-#define DBG(x)
-
-#endif
-
-#else /* CS_ENABLE_STDIO */
-
-#define LOG(l, x)
-#define DBG(x)
-
-#endif
-
-#ifdef __cplusplus
-}
-#endif /* __cplusplus */
-
-#endif /* CS_COMMON_CS_DBG_H_ */
-#ifdef MG_MODULE_LINES
-#line 1 "common/cs_dbg.c"
-#endif
-/*
- * Copyright (c) 2014-2016 Cesanta Software Limited
- * All rights reserved
- */
-
-/* Amalgamated: #include "common/cs_dbg.h" */
-
-#include <stdarg.h>
-#include <stdio.h>
-#include <string.h>
-
-/* Amalgamated: #include "common/cs_time.h" */
-/* Amalgamated: #include "common/str_util.h" */
-
-enum cs_log_level cs_log_threshold WEAK =
-#if CS_ENABLE_DEBUG
-    LL_VERBOSE_DEBUG;
-#else
-    LL_ERROR;
-#endif
-
-static char *s_filter_pattern = NULL;
-static size_t s_filter_pattern_len;
-
-#if CS_ENABLE_STDIO
-
-FILE *cs_log_file WEAK = NULL;
-
-#if CS_LOG_ENABLE_TS_DIFF
-double cs_log_ts WEAK;
-#endif
-
-enum cs_log_level cs_log_cur_msg_level WEAK = LL_NONE;
-
-void cs_log_set_filter(const char *str) WEAK;
-void cs_log_set_filter(const char *str) {
-  free(s_filter_pattern);
-  if (str != NULL) {
-    s_filter_pattern = strdup(str);
-    s_filter_pattern_len = strlen(str);
-  } else {
-    s_filter_pattern = NULL;
-    s_filter_pattern_len = 0;
-  }
-}
-
-int cs_log_print_prefix(enum cs_log_level, const char *, const char *) WEAK;
-int cs_log_print_prefix(enum cs_log_level level, const char *func,
-                        const char *filename) {
-  char prefix[21];
-
-  if (level > cs_log_threshold) return 0;
-  if (s_filter_pattern != NULL &&
-      mg_match_prefix(s_filter_pattern, s_filter_pattern_len, func) < 0 &&
-      mg_match_prefix(s_filter_pattern, s_filter_pattern_len, filename) < 0) {
-    return 0;
-  }
-
-  strncpy(prefix, func, 20);
-  prefix[20] = '\0';
-  if (cs_log_file == NULL) cs_log_file = stderr;
-  cs_log_cur_msg_level = level;
-  fprintf(cs_log_file, "%-20s ", prefix);
-#if CS_LOG_ENABLE_TS_DIFF
-  {
-    double now = cs_time();
-    fprintf(cs_log_file, "%7u ", (unsigned int) ((now - cs_log_ts) * 1000000));
-    cs_log_ts = now;
-  }
-#endif
-  return 1;
-}
-
-void cs_log_printf(const char *fmt, ...) WEAK;
-void cs_log_printf(const char *fmt, ...) {
-  va_list ap;
-  va_start(ap, fmt);
-  vfprintf(cs_log_file, fmt, ap);
-  va_end(ap);
-  fputc('\n', cs_log_file);
-  fflush(cs_log_file);
-  cs_log_cur_msg_level = LL_NONE;
-}
-
-void cs_log_set_file(FILE *file) WEAK;
-void cs_log_set_file(FILE *file) {
-  cs_log_file = file;
-}
-
-#endif /* CS_ENABLE_STDIO */
-
-void cs_log_set_level(enum cs_log_level level) WEAK;
-void cs_log_set_level(enum cs_log_level level) {
-  cs_log_threshold = level;
-#if CS_LOG_ENABLE_TS_DIFF && CS_ENABLE_STDIO
-  cs_log_ts = cs_time();
-#endif
-}
-#ifdef MG_MODULE_LINES
-#line 1 "common/base64.c"
+#line 1 "common/cs_base64.c"
 #endif
 /*
  * Copyright (c) 2014 Cesanta Software Limited
@@ -390,7 +201,7 @@ void cs_log_set_level(enum cs_log_level level) {
 
 #ifndef EXCLUDE_COMMON
 
-/* Amalgamated: #include "common/base64.h" */
+/* Amalgamated: #include "common/cs_base64.h" */
 
 #include <string.h>
 
@@ -588,6 +399,195 @@ int cs_base64_decode(const unsigned char *s, int len, char *dst, int *dec_len) {
 }
 
 #endif /* EXCLUDE_COMMON */
+#ifdef MG_MODULE_LINES
+#line 1 "common/cs_dbg.h"
+#endif
+/*
+ * Copyright (c) 2014-2016 Cesanta Software Limited
+ * All rights reserved
+ */
+
+#ifndef CS_COMMON_CS_DBG_H_
+#define CS_COMMON_CS_DBG_H_
+
+/* Amalgamated: #include "common/platform.h" */
+
+#if CS_ENABLE_STDIO
+#include <stdio.h>
+#endif
+
+#ifndef CS_ENABLE_DEBUG
+#define CS_ENABLE_DEBUG 0
+#endif
+
+#ifndef CS_LOG_ENABLE_TS_DIFF
+#define CS_LOG_ENABLE_TS_DIFF 0
+#endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
+enum cs_log_level {
+  LL_NONE = -1,
+  LL_ERROR = 0,
+  LL_WARN = 1,
+  LL_INFO = 2,
+  LL_DEBUG = 3,
+  LL_VERBOSE_DEBUG = 4,
+
+  _LL_MIN = -2,
+  _LL_MAX = 5,
+};
+
+/* Set log level. */
+void cs_log_set_level(enum cs_log_level level);
+
+/* Set log filter. NULL (a default) logs everything. */
+void cs_log_set_filter(const char *source_file_name);
+
+int cs_log_print_prefix(enum cs_log_level level, const char *func,
+                        const char *filename);
+
+extern enum cs_log_level cs_log_threshold;
+
+#if CS_ENABLE_STDIO
+
+void cs_log_set_file(FILE *file);
+void cs_log_printf(const char *fmt, ...)
+#ifdef __GNUC__
+    __attribute__((format(printf, 1, 2)))
+#endif
+    ;
+
+#define LOG(l, x)                                                    \
+  do {                                                               \
+    if (cs_log_print_prefix(l, __func__, __FILE__)) cs_log_printf x; \
+  } while (0)
+
+#ifndef CS_NDEBUG
+
+#define DBG(x) LOG(LL_VERBOSE_DEBUG, x)
+
+#else /* NDEBUG */
+
+#define DBG(x)
+
+#endif
+
+#else /* CS_ENABLE_STDIO */
+
+#define LOG(l, x)
+#define DBG(x)
+
+#endif
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
+
+#endif /* CS_COMMON_CS_DBG_H_ */
+#ifdef MG_MODULE_LINES
+#line 1 "common/cs_dbg.c"
+#endif
+/*
+ * Copyright (c) 2014-2016 Cesanta Software Limited
+ * All rights reserved
+ */
+
+/* Amalgamated: #include "common/cs_dbg.h" */
+
+#include <stdarg.h>
+#include <stdio.h>
+#include <string.h>
+
+/* Amalgamated: #include "common/cs_time.h" */
+/* Amalgamated: #include "common/str_util.h" */
+
+enum cs_log_level cs_log_threshold WEAK =
+#if CS_ENABLE_DEBUG
+    LL_VERBOSE_DEBUG;
+#else
+    LL_ERROR;
+#endif
+
+static char *s_filter_pattern = NULL;
+static size_t s_filter_pattern_len;
+
+#if CS_ENABLE_STDIO
+
+FILE *cs_log_file WEAK = NULL;
+
+#if CS_LOG_ENABLE_TS_DIFF
+double cs_log_ts WEAK;
+#endif
+
+enum cs_log_level cs_log_cur_msg_level WEAK = LL_NONE;
+
+void cs_log_set_filter(const char *str) WEAK;
+void cs_log_set_filter(const char *str) {
+  free(s_filter_pattern);
+  if (str != NULL) {
+    s_filter_pattern = strdup(str);
+    s_filter_pattern_len = strlen(str);
+  } else {
+    s_filter_pattern = NULL;
+    s_filter_pattern_len = 0;
+  }
+}
+
+int cs_log_print_prefix(enum cs_log_level, const char *, const char *) WEAK;
+int cs_log_print_prefix(enum cs_log_level level, const char *func,
+                        const char *filename) {
+  char prefix[21];
+
+  if (level > cs_log_threshold) return 0;
+  if (s_filter_pattern != NULL &&
+      mg_match_prefix(s_filter_pattern, s_filter_pattern_len, func) < 0 &&
+      mg_match_prefix(s_filter_pattern, s_filter_pattern_len, filename) < 0) {
+    return 0;
+  }
+
+  strncpy(prefix, func, 20);
+  prefix[20] = '\0';
+  if (cs_log_file == NULL) cs_log_file = stderr;
+  cs_log_cur_msg_level = level;
+  fprintf(cs_log_file, "%-20s ", prefix);
+#if CS_LOG_ENABLE_TS_DIFF
+  {
+    double now = cs_time();
+    fprintf(cs_log_file, "%7u ", (unsigned int) ((now - cs_log_ts) * 1000000));
+    cs_log_ts = now;
+  }
+#endif
+  return 1;
+}
+
+void cs_log_printf(const char *fmt, ...) WEAK;
+void cs_log_printf(const char *fmt, ...) {
+  va_list ap;
+  va_start(ap, fmt);
+  vfprintf(cs_log_file, fmt, ap);
+  va_end(ap);
+  fputc('\n', cs_log_file);
+  fflush(cs_log_file);
+  cs_log_cur_msg_level = LL_NONE;
+}
+
+void cs_log_set_file(FILE *file) WEAK;
+void cs_log_set_file(FILE *file) {
+  cs_log_file = file;
+}
+
+#endif /* CS_ENABLE_STDIO */
+
+void cs_log_set_level(enum cs_log_level level) WEAK;
+void cs_log_set_level(enum cs_log_level level) {
+  cs_log_threshold = level;
+#if CS_LOG_ENABLE_TS_DIFF && CS_ENABLE_STDIO
+  cs_log_ts = cs_time();
+#endif
+}
 #ifdef MG_MODULE_LINES
 #line 1 "common/cs_dirent.h"
 #endif
@@ -2185,8 +2185,8 @@ void mg_tun_destroy_client(struct mg_tun_client *client);
 /* Amalgamated: #include "mongoose/src/dns.h" */
 /* Amalgamated: #include "mongoose/src/internal.h" */
 /* Amalgamated: #include "mongoose/src/resolv.h" */
-/* Amalgamated: #include "mongoose/src/util.h" */
 /* Amalgamated: #include "mongoose/src/tun.h" */
+/* Amalgamated: #include "mongoose/src/util.h" */
 
 #define MG_MAX_HOST_LEN 200
 
@@ -2703,6 +2703,17 @@ MG_INTERNAL void mg_recv_common(struct mg_connection *nc, void *buf, int len,
     MG_FREE(buf);
   }
   mg_call(nc, NULL, nc->user_data, MG_EV_RECV, &len);
+
+  /* If the buffer is still full after the user callback, fail */
+  if (nc->recv_mbuf_limit > 0 && nc->recv_mbuf.len >= nc->recv_mbuf_limit) {
+    char h1[50], h2[50];
+    int flags = MG_SOCK_STRINGIFY_IP | MG_SOCK_STRINGIFY_PORT;
+    mg_conn_addr_to_str(nc, h1, sizeof(h1), flags);
+    mg_conn_addr_to_str(nc, h2, sizeof(h2), flags | MG_SOCK_STRINGIFY_REMOTE);
+    LOG(LL_ERROR, ("%p %s <-> %s recv buffer %lu bytes, not drained, closing",
+                   nc, h1, h2, (unsigned long) nc->recv_mbuf.len));
+    nc->flags |= MG_F_CLOSE_IMMEDIATELY;
+  }
 }
 
 void mg_if_recv_tcp_cb(struct mg_connection *nc, void *buf, int len, int own) {
@@ -5181,6 +5192,7 @@ static enum mg_ssl_if_result mg_use_cert(struct mg_ssl_if_ctx *ctx,
 }
 
 static const int mg_s_cipher_list[] = {
+#if CS_PLATFORM != CS_P_ESP8266
     MBEDTLS_TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
     MBEDTLS_TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,
     MBEDTLS_TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
@@ -5195,7 +5207,29 @@ static const int mg_s_cipher_list[] = {
     MBEDTLS_TLS_ECDH_RSA_WITH_AES_128_CBC_SHA,
     MBEDTLS_TLS_RSA_WITH_AES_128_GCM_SHA256,
     MBEDTLS_TLS_RSA_WITH_AES_128_CBC_SHA256,
-    MBEDTLS_TLS_RSA_WITH_AES_128_CBC_SHA, 0};
+    MBEDTLS_TLS_RSA_WITH_AES_128_CBC_SHA,
+#else
+    /*
+     * ECDHE is way too slow on ESP8266 w/o cryptochip, this sometimes results
+     * in WiFi STA deauths. Use weaker but faster cipher suites. Sad but true.
+     * Disable DHE completely because it's just hopelessly slow.
+     */
+    MBEDTLS_TLS_RSA_WITH_AES_128_GCM_SHA256,
+    MBEDTLS_TLS_RSA_WITH_AES_128_CBC_SHA256,
+    MBEDTLS_TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
+    MBEDTLS_TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,
+    MBEDTLS_TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+    MBEDTLS_TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,
+    MBEDTLS_TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256,
+    MBEDTLS_TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256,
+    MBEDTLS_TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA,
+    MBEDTLS_TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256,
+    MBEDTLS_TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256,
+    MBEDTLS_TLS_ECDH_RSA_WITH_AES_128_CBC_SHA,
+    MBEDTLS_TLS_RSA_WITH_AES_128_CBC_SHA,
+#endif /* CS_PLATFORM != CS_P_ESP8266 */
+    0,
+};
 
 /*
  * Ciphers can be specified as a colon-separated list of cipher suite names.
@@ -5384,7 +5418,7 @@ int mg_parse_uri(const struct mg_str uri, struct mg_str *scheme,
       case P_USER_INFO:
         ruser_info.p = p;
         for (; p < end; p++) {
-          if (*p == '@' || *p == '[') {
+          if (*p == '@' || *p == '[' || *p == '/') {
             break;
           }
         }
@@ -7340,19 +7374,18 @@ int mg_check_digest_auth(struct mg_str method, struct mg_str uri,
   return 0;
 }
 
-static int mg_http_is_authorized(struct http_message *hm, struct mg_str path,
-                                 int is_directory, const char *domain,
-                                 const char *passwords_file,
-                                 int is_global_pass_file) {
+int mg_http_is_authorized(struct http_message *hm, struct mg_str path,
+                          const char *domain, const char *passwords_file,
+                          int flags) {
   char buf[MG_MAX_PATH];
   const char *p;
   FILE *fp;
   int authorized = 1;
 
   if (domain != NULL && passwords_file != NULL) {
-    if (is_global_pass_file) {
+    if (flags & MG_AUTH_FLAG_IS_GLOBAL_PASS_FILE) {
       fp = mg_fopen(passwords_file, "r");
-    } else if (is_directory) {
+    } else if (flags & MG_AUTH_FLAG_IS_DIRECTORY) {
       snprintf(buf, sizeof(buf), "%.*s%c%s", (int) path.len, path.p, DIRSEP,
                passwords_file);
       fp = mg_fopen(buf, "r");
@@ -7367,25 +7400,24 @@ static int mg_http_is_authorized(struct http_message *hm, struct mg_str path,
     if (fp != NULL) {
       authorized = mg_http_check_digest_auth(hm, domain, fp);
       fclose(fp);
+    } else if (!(flags & MG_AUTH_FLAG_ALLOW_MISSING_FILE)) {
+      authorized = 0;
     }
   }
 
-  LOG(LL_DEBUG,
-      ("%.*s %s %d %d", (int) path.len, path.p,
-       passwords_file ? passwords_file : "", is_global_pass_file, authorized));
+  LOG(LL_DEBUG, ("%.*s %s %x %d", (int) path.len, path.p,
+                 passwords_file ? passwords_file : "", flags, authorized));
   return authorized;
 }
 #else
-static int mg_http_is_authorized(struct http_message *hm,
-                                 const struct mg_str path, int is_directory,
-                                 const char *domain, const char *passwords_file,
-                                 int is_global_pass_file) {
+int mg_http_is_authorized(struct http_message *hm, const struct mg_str path,
+                          const char *domain, const char *passwords_file,
+                          int flags) {
   (void) hm;
   (void) path;
-  (void) is_directory;
   (void) domain;
   (void) passwords_file;
-  (void) is_global_pass_file;
+  (void) flags;
   return 1;
 }
 #endif
@@ -7919,8 +7951,8 @@ MG_INTERNAL int mg_is_not_modified(struct http_message *hm, cs_stat_t *st) {
   }
 }
 
-static void mg_http_send_digest_auth_request(struct mg_connection *c,
-                                             const char *domain) {
+void mg_http_send_digest_auth_request(struct mg_connection *c,
+                                      const char *domain) {
   mg_printf(c,
             "HTTP/1.1 401 Unauthorized\r\n"
             "WWW-Authenticate: Digest qop=\"auth\", "
@@ -7989,12 +8021,16 @@ MG_INTERNAL void mg_send_http_file(struct mg_connection *nc, char *path,
 
   if (is_dav && opts->dav_document_root == NULL) {
     mg_http_send_error(nc, 501, NULL);
-  } else if (!mg_http_is_authorized(hm, mg_mk_str(path), is_directory,
-                                    opts->auth_domain, opts->global_auth_file,
-                                    1) ||
-             !mg_http_is_authorized(hm, mg_mk_str(path), is_directory,
-                                    opts->auth_domain,
-                                    opts->per_directory_auth_file, 0)) {
+  } else if (!mg_http_is_authorized(
+                 hm, mg_mk_str(path), opts->auth_domain, opts->global_auth_file,
+                 ((is_directory ? MG_AUTH_FLAG_IS_DIRECTORY : 0) |
+                  MG_AUTH_FLAG_IS_GLOBAL_PASS_FILE |
+                  MG_AUTH_FLAG_ALLOW_MISSING_FILE)) ||
+             !mg_http_is_authorized(
+                 hm, mg_mk_str(path), opts->auth_domain,
+                 opts->per_directory_auth_file,
+                 ((is_directory ? MG_AUTH_FLAG_IS_DIRECTORY : 0) |
+                  MG_AUTH_FLAG_ALLOW_MISSING_FILE))) {
     mg_http_send_digest_auth_request(nc, opts->auth_domain);
   } else if (is_cgi) {
 #if MG_ENABLE_HTTP_CGI
@@ -8010,11 +8046,14 @@ MG_INTERNAL void mg_send_http_file(struct mg_connection *nc, char *path,
   } else if (!mg_vcmp(&hm->method, "PROPFIND")) {
     mg_handle_propfind(nc, path, &st, hm, opts);
 #if !MG_DISABLE_DAV_AUTH
-  } else if (is_dav && (opts->dav_auth_file == NULL ||
-                        (strcmp(opts->dav_auth_file, "-") != 0 &&
-                         !mg_http_is_authorized(hm, mg_mk_str(path),
-                                                is_directory, opts->auth_domain,
-                                                opts->dav_auth_file, 1)))) {
+  } else if (is_dav &&
+             (opts->dav_auth_file == NULL ||
+              (strcmp(opts->dav_auth_file, "-") != 0 &&
+               !mg_http_is_authorized(
+                   hm, mg_mk_str(path), opts->auth_domain, opts->dav_auth_file,
+                   ((is_directory ? MG_AUTH_FLAG_IS_DIRECTORY : 0) |
+                    MG_AUTH_FLAG_IS_GLOBAL_PASS_FILE |
+                    MG_AUTH_FLAG_ALLOW_MISSING_FILE))))) {
     mg_http_send_digest_auth_request(nc, opts->auth_domain);
 #endif
   } else if (!mg_vcmp(&hm->method, "MKCOL")) {
@@ -8326,6 +8365,7 @@ struct mg_connection *mg_connect_http_opt(
   if (post_data == NULL) post_data = "";
   if (extra_headers == NULL) extra_headers = "";
   if (path.len == 0) path = mg_mk_str("/");
+  if (host.len == 0) host = mg_mk_str("");
 
   mg_printf(nc, "%s %.*s HTTP/1.1\r\nHost: %.*s\r\nContent-Length: %" SIZE_T_FMT
                 "\r\n%.*s%s\r\n%s",
@@ -8423,9 +8463,8 @@ static void mg_http_call_endpoint_handler(struct mg_connection *nc, int ev,
         mg_http_get_endpoint_handler(nc->listener, &hm->uri);
     if (ep != NULL) {
 #if MG_ENABLE_FILESYSTEM && !MG_DISABLE_HTTP_DIGEST_AUTH
-      if (!mg_http_is_authorized(hm, hm->uri, 0 /* is_directory */,
-                                 ep->auth_domain, ep->auth_file,
-                                 1 /* is_global_pass_file */)) {
+      if (!mg_http_is_authorized(hm, hm->uri, ep->auth_domain, ep->auth_file,
+                                 MG_AUTH_FLAG_IS_GLOBAL_PASS_FILE)) {
         mg_http_send_digest_auth_request(nc, ep->auth_domain);
         return;
       }
@@ -9880,7 +9919,7 @@ struct mg_connection *mg_connect_ws(
  * All rights reserved
  */
 
-/* Amalgamated: #include "common/base64.h" */
+/* Amalgamated: #include "common/cs_base64.h" */
 /* Amalgamated: #include "mongoose/src/internal.h" */
 /* Amalgamated: #include "mongoose/src/util.h" */
 
@@ -14724,7 +14763,7 @@ void mg_lwip_mgr_schedule_poll(struct mg_mgr *mgr);
 #include <lwip/pbuf.h>
 #include <lwip/tcp.h>
 #include <lwip/tcpip.h>
-#if LWIP_VERSION >= 0x01050000
+#if ((LWIP_VERSION_MAJOR << 8) | LWIP_VERSION_MINOR) >= 0x0105
 #include <lwip/priv/tcp_priv.h> /* For tcp_seg */
 #else
 #include <lwip/tcp_impl.h>
@@ -14983,7 +15022,7 @@ void mg_lwip_if_connect_tcp(struct mg_connection *nc,
  * Lwip included in the SDKs for nRF5x chips has different type for the
  * callback of `udp_recv()`
  */
-#if LWIP_VERSION >= 0x01050000
+#if ((LWIP_VERSION_MAJOR << 8) | LWIP_VERSION_MINOR) >= 0x0105
 static void mg_lwip_udp_recv_cb(void *arg, struct udp_pcb *pcb, struct pbuf *p,
                                 const ip_addr_t *addr, u16_t port)
 #else
@@ -15001,7 +15040,7 @@ static void mg_lwip_udp_recv_cb(void *arg, struct udp_pcb *pcb, struct pbuf *p,
     return;
   }
   union socket_address *sa = (union socket_address *) sap->payload;
-#if LWIP_VERSION >= 0x01050000
+#if ((LWIP_VERSION_MAJOR << 8) | LWIP_VERSION_MINOR) >= 0x0105
   sa->sin.sin_addr.s_addr = ip_2_ip4(addr)->addr;
 #else
   sa->sin.sin_addr.s_addr = addr->addr;
@@ -15218,8 +15257,8 @@ static void mg_lwip_tcp_write_tcpip(void *arg) {
   size_t len = MIN(tpcb->mss, MIN(ctx->len, tpcb->snd_buf));
   size_t unsent, unacked;
   if (len == 0) {
-    DBG(("%p no buf avail %u %u %u %p %p", tpcb, tpcb->acked, tpcb->snd_buf,
-         tpcb->snd_queuelen, tpcb->unsent, tpcb->unacked));
+    DBG(("%p no buf avail %u %u %p %p", tpcb, tpcb->snd_buf, tpcb->snd_queuelen,
+         tpcb->unsent, tpcb->unacked));
     tcpip_callback(tcp_output_tcpip, tpcb);
     ctx->ret = 0;
     return;
@@ -15727,14 +15766,6 @@ uint32_t mg_lwip_get_poll_delay_ms(struct mg_mgr *mgr) {
 #define MG_LWIP_SSL_IO_SIZE 1024
 #endif
 
-/*
- * Stop processing incoming SSL traffic when recv_mbuf.size is this big.
- * It'a a uick solution for SSL recv pushback.
- */
-#ifndef MG_LWIP_SSL_RECV_MBUF_LIMIT
-#define MG_LWIP_SSL_RECV_MBUF_LIMIT 3072
-#endif
-
 #ifndef MIN
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #endif
@@ -15815,7 +15846,7 @@ void mg_lwip_ssl_recv(struct mg_connection *nc) {
   struct mg_lwip_conn_state *cs = (struct mg_lwip_conn_state *) nc->sock;
   /* Don't deliver data before connect callback */
   if (nc->flags & MG_F_CONNECTING) return;
-  while (nc->recv_mbuf.len < MG_LWIP_SSL_RECV_MBUF_LIMIT) {
+  while (nc->recv_mbuf.len < nc->recv_mbuf_limit) {
     char *buf = (char *) MG_MALLOC(MG_LWIP_SSL_IO_SIZE);
     if (buf == NULL) return;
     int ret = mg_ssl_if_read(nc, buf, MG_LWIP_SSL_IO_SIZE);

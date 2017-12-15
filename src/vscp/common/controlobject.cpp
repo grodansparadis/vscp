@@ -199,6 +199,8 @@ CControlObject::CControlObject()
     //m_debugFlags1 |= VSCP_DEBUG1_MULTICAST;
     //m_debugFlags1 |= VSCP_DEBUG1_UDP;
     //m_debugFlags1 |= VSCP_DEBUG1_TCP;
+    
+    m_logDays = DEFAULT_LOGDAYS;
 
 #if defined(_WIN32)
     m_rootFolder = wxStandardPaths::Get().GetUserDataDir();
@@ -559,7 +561,7 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
     //wxLog::AddTraceMask(_("wxTRACE_vscpd_LevelII"));
     //wxLog::AddTraceMask( _( "wxTRACE_vscpd_dm" ) );
 
-    // Change locale to get the correct decimal point "."
+    // Change locale to get the correct decimal point "." 
     // Set locale
     int sys_lang = wxLocale::GetSystemLanguage();
     if ( sys_lang != wxLANGUAGE_DEFAULT ) {
@@ -1743,7 +1745,13 @@ void CControlObject::logMsg( const wxString& msgin,
         }
 
         sqlite3_free( sql );
-
+        
+        // Clean up old entries
+        if ( -1 != m_logDays ) {
+            sql = sqlite3_mprintf( VSCPDB_LOG_DELETE_OLD, m_logDays );        
+            sqlite3_exec( m_db_vscp_log, sql, NULL, NULL, &zErrMsg );
+            sqlite3_free( sql );
+        }
     }
 
 #ifndef WIN32
@@ -2453,7 +2461,7 @@ bool CControlObject::readXMLConfigurationGeneral( wxString& strcfgfile )
     }
 
     // start processing the XML file
-    if (doc.GetRoot()->GetName() != _("vscpconfig")) {
+    if (doc.GetRoot()->GetName().Lower() != _("vscpconfig")) {
         fprintf( stderr, "Can't read logfile. Maybe it is invalid!\n" );
         return false;
     }
@@ -2461,12 +2469,12 @@ bool CControlObject::readXMLConfigurationGeneral( wxString& strcfgfile )
     wxXmlNode *child = doc.GetRoot()->GetChildren();
     while (child) {
 
-        if (child->GetName() == _("general")) {
+        if (child->GetName().Lower() == _("general")) {
 
             wxXmlNode *subchild = child->GetChildren();
             while ( subchild ) {
 
-                if ( subchild->GetName() == _("security") ) {
+                if ( subchild->GetName().Lower() == _("security") ) {
 
                     m_admin_user = subchild->GetAttribute( _("user"), _("admin") );
                     m_admin_password = subchild->GetAttribute( _("password"),
@@ -2481,7 +2489,7 @@ bool CControlObject::readXMLConfigurationGeneral( wxString& strcfgfile )
                     }
 
                 }
-                else if ( subchild->GetName() == _("loglevel") ) {
+                else if ( subchild->GetName().Lower() == _("loglevel") ) {
 
                     wxString str = subchild->GetNodeContent();
                     str.Trim();
@@ -2505,7 +2513,7 @@ bool CControlObject::readXMLConfigurationGeneral( wxString& strcfgfile )
                     }
 
                 }
-                else if ( subchild->GetName() == _("runasuser") ) {
+                else if ( subchild->GetName().Lower() == _("runasuser") ) {
 
                     m_runAsUser = subchild->GetNodeContent();
                     m_runAsUser.Trim();
@@ -2513,7 +2521,7 @@ bool CControlObject::readXMLConfigurationGeneral( wxString& strcfgfile )
                     // Also assign to web user
                     m_web_run_as_user = m_runAsUser;
                 }
-                else if ( subchild->GetName() == _("logsyslog") ) {
+                else if ( subchild->GetName().Lower() == _("logsyslog") ) {
 
                     wxString attribute = subchild->GetAttribute(_("enable"), _("true"));
                     attribute.MakeLower();
@@ -2525,52 +2533,55 @@ bool CControlObject::readXMLConfigurationGeneral( wxString& strcfgfile )
                     }
 
                 }
-                else if (subchild->GetName() == _("guid")) {
+                else if (subchild->GetName().Lower() == _("guid")) {
 
                     wxString str = subchild->GetNodeContent();
                     m_guid.getFromString(str);
 
                 }
-                else if ( subchild->GetName() == _( "servername" ) ) {
+                else if ( subchild->GetName().Lower() == _( "servername" ) ) {
 
                     m_strServerName = subchild->GetNodeContent();
 
                 }
-                else if (subchild->GetName() == _("clientbuffersize")) {
+                else if (subchild->GetName().Lower() == _("clientbuffersize")) {
 
                     wxString str = subchild->GetNodeContent();
                     m_maxItemsInClientReceiveQueue = vscp_readStringValue(str);
 
                 }
-                else if (subchild->GetName() == _("db_vscp_daemon")) {
+                else if (subchild->GetName().Lower() == _("db_vscp_daemon")) {
                     wxString str = subchild->GetNodeContent().Trim();
                     if ( str.Length() ) {
                         m_path_db_vscp_daemon.Assign( str );
                     }
                 }
-                else if (subchild->GetName() == _("db_vscp_data")) {
+                else if (subchild->GetName().Lower() == _("db_vscp_data")) {
                     wxString str = subchild->GetNodeContent().Trim();
                     if ( str.Length() ) {
                         m_path_db_vscp_data.Assign( str );
                     }
                 }
-                else if (subchild->GetName() == _("db_vscp_variable")) {
+                else if (subchild->GetName().Lower() == _("db_vscp_variable")) {
                     wxString str = subchild->GetNodeContent().Trim();
                     if ( str.Length() ) {
                         m_variables.m_dbFilename.Assign( str );
                     }
                 }
-                else if (subchild->GetName() == _("db_vscp_dm")) {
+                else if (subchild->GetName().Lower() == _("db_vscp_dm")) {
                     wxString str = subchild->GetNodeContent().Trim();
                     if ( str.Length() ) {
                         m_dm.m_path_db_vscp_dm.Assign( str );
                     }
                 }
-                else if (subchild->GetName() == _("db_vscp_log")) {
+                else if (subchild->GetName().Lower() == _("db_vscp_log")) {
                     wxString str = subchild->GetNodeContent().Trim();
                     if ( str.Length() ) {
                         m_path_db_vscp_log.Assign( str );
                     }
+                }
+                else if ( subchild->GetName().Lower() == _("logdays") ) {
+                    m_logDays = vscp_readStringValue( subchild->GetNodeContent() );                    
                 }
 
                 subchild = subchild->GetNext();
@@ -2610,7 +2621,7 @@ bool CControlObject::readConfigurationXML( wxString& strcfgfile )
     }
 
     // start processing the XML file
-    if ( doc.GetRoot()->GetName() != _("vscpconfig") ) {
+    if ( doc.GetRoot()->GetName().Lower() != _("vscpconfig") ) {
         logMsg(_("Can't read logfile. Maybe it is invalid!\n")  );
         return false;
     }
@@ -2620,7 +2631,7 @@ bool CControlObject::readConfigurationXML( wxString& strcfgfile )
 
         // The "general" settings are read in a pre-step (readXMLConfigurationGeneral)
 
-        if ( child->GetName() == _("tcpip") ) {
+        if ( child->GetName().Lower() == _("tcpip") ) {
 
             // Enable
             wxString attribute = child->GetAttribute(_("enable"), _("true"));
@@ -2637,7 +2648,7 @@ bool CControlObject::readConfigurationXML( wxString& strcfgfile )
             m_strTcpInterfaceAddress.Trim(false);
 
         }
-        else if ( child->GetName() == _( "multicast-announce" ) ) {
+        else if ( child->GetName().Lower() == _( "multicast-announce" ) ) {
 
             // Enable
             wxString attribute = child->GetAttribute(_("enable"), _("true"));
@@ -2656,7 +2667,7 @@ bool CControlObject::readConfigurationXML( wxString& strcfgfile )
             m_ttlMultiCastAnnounce = vscp_readStringValue( child->GetAttribute( _( "ttl" ), _( "1" ) ) );
 
         }
-        else if (child->GetName() == _("udp")) {
+        else if (child->GetName().Lower() == _("udp")) {
 
             m_mutexUDPInfo.Lock();
 
@@ -2719,7 +2730,7 @@ bool CControlObject::readConfigurationXML( wxString& strcfgfile )
             wxXmlNode *subchild = child->GetChildren();
             while ( subchild ) {
 
-                if ( subchild->GetName() == _("rxnode") ) {
+                if ( subchild->GetName().Lower() == _("rxnode") ) {
 
                     udpRemoteClientInfo *pudpClient = new udpRemoteClientInfo;
                     if ( NULL == pudpClient ) {
@@ -2789,7 +2800,7 @@ bool CControlObject::readConfigurationXML( wxString& strcfgfile )
 
         } // udp
 
-        else if (child->GetName() == _("multicast")) {
+        else if (child->GetName().Lower() == _("multicast")) {
 
             gpobj->m_mutexMulticastInfo.Lock();
 
@@ -2805,7 +2816,7 @@ bool CControlObject::readConfigurationXML( wxString& strcfgfile )
             wxXmlNode *subchild = child->GetChildren();
             while ( subchild ) {
 
-                if ( subchild->GetName() == _("channel") ) {
+                if ( subchild->GetName().Lower() == _("channel") ) {
 
                     multicastChannelItem *pChannel = new multicastChannelItem;
                     if ( NULL == pChannel ) {
@@ -2913,7 +2924,7 @@ bool CControlObject::readConfigurationXML( wxString& strcfgfile )
 
         }
 
-        else if (child->GetName() == _("dm")) {
+        else if (child->GetName().Lower() == _("dm")) {
 
             // Should the internal DM be disabled
             wxString attribut;
@@ -2945,7 +2956,7 @@ bool CControlObject::readConfigurationXML( wxString& strcfgfile )
 
         }
 
-        else if (child->GetName() == _("variables")) {
+        else if (child->GetName().Lower() == _("variables")) {
 
             // Should the internal DM be disabled
             wxFileName fileName;
@@ -2972,7 +2983,7 @@ bool CControlObject::readConfigurationXML( wxString& strcfgfile )
 
         }
 
-        else if (child->GetName() == _("webserver")) {
+        else if (child->GetName().Lower() == _("webserver")) {
 
             wxString attribute;
 
@@ -3422,7 +3433,7 @@ bool CControlObject::readConfigurationXML( wxString& strcfgfile )
 
         }
 
-        else if (child->GetName() == _("websockets")) {
+        else if (child->GetName().Lower() == _("websockets")) {
 
             attribute = child->GetAttribute(_("enable"), _("1") );
             attribute.Trim();
@@ -3453,7 +3464,7 @@ bool CControlObject::readConfigurationXML( wxString& strcfgfile )
 
         }
 
-        else if (child->GetName() == _("mqtt")) {
+        else if (child->GetName().Lower() == _("mqtt")) {
 
             wxString attribute;
 
@@ -3473,7 +3484,7 @@ bool CControlObject::readConfigurationXML( wxString& strcfgfile )
         }
 
 
-        else if (child->GetName() == _("coap")) {
+        else if (child->GetName().Lower() == _("coap")) {
 
             wxString attribute;
 
@@ -3492,7 +3503,7 @@ bool CControlObject::readConfigurationXML( wxString& strcfgfile )
             }
         }
 
-        else if ( child->GetName() == _("remoteuser") ) {
+        else if ( child->GetName().Lower() == _("remoteuser") ) {
 
             wxXmlNode *subchild = child->GetChildren();
             while ( subchild ) {
@@ -3509,23 +3520,23 @@ bool CControlObject::readConfigurationXML( wxString& strcfgfile )
 
                 vscp_clearVSCPFilter(&VSCPFilter); // Allow all frames
 
-                if ( subchild->GetName() == _("user") ) {
+                if ( subchild->GetName().Lower() == _("user") ) {
 
                     wxXmlNode *subsubchild = subchild->GetChildren();
 
                     while (subsubchild) {
 
-                        if (subsubchild->GetName() == _("name")) {
+                        if (subsubchild->GetName().Lower() == _("name")) {
                             name = subsubchild->GetNodeContent();
                             bUser = true;
                         }
-                        else if (subsubchild->GetName() == _("password")) {
+                        else if (subsubchild->GetName().Lower() == _("password")) {
                             md5 = subsubchild->GetNodeContent();
                         }
-                        else if (subsubchild->GetName() == _("privilege")) {
+                        else if (subsubchild->GetName().Lower() == _("privilege")) {
                             privilege = subsubchild->GetNodeContent();
                         }
-                        else if (subsubchild->GetName() == _("filter")) {
+                        else if (subsubchild->GetName().Lower() == _("filter")) {
                             bFilterPresent = true;
 
                             wxString str_vscp_priority = subchild->GetAttribute(_("priority"), _("0"));
@@ -3550,7 +3561,7 @@ bool CControlObject::readConfigurationXML( wxString& strcfgfile )
                                                         _("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"));
                             vscp_getGuidFromStringToArray(VSCPFilter.filter_GUID, str_vscp_guid);
                         }
-                        else if (subsubchild->GetName() == _("mask")) {
+                        else if (subsubchild->GetName().Lower() == _("mask")) {
 
                             bMaskPresent = true;
 
@@ -3576,10 +3587,10 @@ bool CControlObject::readConfigurationXML( wxString& strcfgfile )
                                     _("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"));
                             vscp_getGuidFromStringToArray(VSCPFilter.mask_GUID, str_vscp_guid);
                         }
-                        else if (subsubchild->GetName() == _("allowfrom")) {
+                        else if (subsubchild->GetName().Lower() == _("allowfrom")) {
                             allowfrom = subsubchild->GetNodeContent();
                         }
-                        else if (subsubchild->GetName() == _("allowevent")) {
+                        else if (subsubchild->GetName().Lower() == _("allowevent")) {
                             allowevent = subsubchild->GetNodeContent();
                         }
 
@@ -3628,8 +3639,8 @@ bool CControlObject::readConfigurationXML( wxString& strcfgfile )
         }
 
         // Level I driver
-        else if ( ( child->GetName() == _("canaldriver") ) || 
-                  ( child->GetName() == _("level1driver") ) ) {
+        else if ( ( child->GetName().Lower() == _("canaldriver") ) || 
+                  ( child->GetName().Lower() == _("level1driver") ) ) {
 
             wxXmlNode *subchild = child->GetChildren();
             while (subchild) {
@@ -3642,7 +3653,7 @@ bool CControlObject::readConfigurationXML( wxString& strcfgfile )
                 bool bEnabled = false;
                 bool bCanalDriver = false;
 
-                if ( subchild->GetName() == _("driver") ) {
+                if ( subchild->GetName().Lower() == _("driver") ) {
 
                     wxXmlNode *subsubchild = subchild->GetChildren();
 
@@ -3654,7 +3665,7 @@ bool CControlObject::readConfigurationXML( wxString& strcfgfile )
 
                     while (subsubchild) {
 
-                        if ( subsubchild->GetName() == _("name") ) {
+                        if ( subsubchild->GetName().Lower() == _("name") ) {
                             strName = subsubchild->GetNodeContent();
                             strName.Trim();
                             strName.Trim(false);
@@ -3666,31 +3677,31 @@ bool CControlObject::readConfigurationXML( wxString& strcfgfile )
                             }
                             bCanalDriver = true;
                         }
-                        else if ( subsubchild->GetName() == _("config") ||
-                                subsubchild->GetName() == _("parameter") ) {
+                        else if ( subsubchild->GetName().Lower() == _("config") ||
+                                subsubchild->GetName().Lower() == _("parameter") ) {
                             strConfig = subsubchild->GetNodeContent();
                             strConfig.Trim();
                             strConfig.Trim(false);
                         }
-                        else if ( subsubchild->GetName() == _("path") ) {
+                        else if ( subsubchild->GetName().Lower() == _("path") ) {
                             strPath = subsubchild->GetNodeContent();
                             strPath.Trim();
                             strPath.Trim(false);
                         }
-                        else if ( subsubchild->GetName() == _("flags") ) {
+                        else if ( subsubchild->GetName().Lower() == _("flags") ) {
                             wxString str = subsubchild->GetNodeContent();
                             flags = vscp_readStringValue(str);
                         }
-                        else if ( subsubchild->GetName() == _("guid") ) {
+                        else if ( subsubchild->GetName().Lower() == _("guid") ) {
                             guid.getFromString( subsubchild->GetNodeContent() );
                         }
-                        else if ( subsubchild->GetName() == _( "known-nodes" ) ) {
+                        else if ( subsubchild->GetName().Lower() == _( "known-nodes" ) ) {
 
                             wxXmlNode *subsubsubchild = subchild->GetChildren();
 
                             while ( subsubsubchild ) {
 
-                                if ( subsubsubchild->GetName() == _( "node" ) ) {
+                                if ( subsubsubchild->GetName().Lower() == _( "node" ) ) {
                                     cguid knownguid;
 
                                     knownguid.getFromString( subchild->GetAttribute( _( "guid" ), 
@@ -3746,8 +3757,8 @@ bool CControlObject::readConfigurationXML( wxString& strcfgfile )
         }
         
         // Level II driver
-        else if ( ( child->GetName() == _("vscpdriver") ) || 
-                  ( child->GetName() == _("level2driver") ) ) {
+        else if ( ( child->GetName().Lower() == _("vscpdriver") ) || 
+                  ( child->GetName().Lower() == _("level2driver") ) ) {
 
             wxXmlNode *subchild = child->GetChildren();
 
@@ -3760,7 +3771,7 @@ bool CControlObject::readConfigurationXML( wxString& strcfgfile )
                 bool bEnabled = false;
                 bool bLevel2Driver = false;
 
-                if ( subchild->GetName() == _("driver") ) {
+                if ( subchild->GetName().Lower() == _("driver") ) {
 
                     wxXmlNode *subsubchild = subchild->GetChildren();
 
@@ -3772,7 +3783,7 @@ bool CControlObject::readConfigurationXML( wxString& strcfgfile )
 
                     while ( subsubchild ) {
 
-                        if (subsubchild->GetName() == _("name")) {
+                        if (subsubchild->GetName().Lower() == _("name")) {
 
                             strName = subsubchild->GetNodeContent();
                             strName.Trim();
@@ -3787,31 +3798,31 @@ bool CControlObject::readConfigurationXML( wxString& strcfgfile )
                             bLevel2Driver = true;
 
                         }
-                        else if (subsubchild->GetName() == _("config") ||
-                                subsubchild->GetName() == _("parameter")) {
+                        else if (subsubchild->GetName().Lower() == _("config") ||
+                                subsubchild->GetName().Lower() == _("parameter")) {
 
                             strConfig = subsubchild->GetNodeContent();
                             strConfig.Trim();
                             strConfig.Trim(false);
 
                         }
-                        else if (subsubchild->GetName() == _("path")) {
+                        else if (subsubchild->GetName().Lower() == _("path")) {
 
                             strPath = subsubchild->GetNodeContent();
                             strPath.Trim();
                             strPath.Trim(false);
 
                         }
-                        else if (subsubchild->GetName() == _("guid")) {
+                        else if (subsubchild->GetName().Lower() == _("guid")) {
                             guid.getFromString( subsubchild->GetNodeContent() );
                         }
-                        else if ( subsubchild->GetName() == _( "known-nodes" ) ) {
+                        else if ( subsubchild->GetName().Lower() == _( "known-nodes" ) ) {
 
                             wxXmlNode *subsubsubchild = subchild->GetChildren();
 
                             while ( subsubsubchild ) {
 
-                                if ( subsubsubchild->GetName() == _( "node" ) ) {
+                                if ( subsubsubchild->GetName().Lower() == _( "node" ) ) {
                                     cguid knownguid;
 
                                     knownguid.getFromString( subchild->GetAttribute( _( "guid" ), _( "-" ) ) );
@@ -3865,12 +3876,12 @@ bool CControlObject::readConfigurationXML( wxString& strcfgfile )
 
         }
         // Tables
-        else if ( child->GetName() == _("tables") ) {
+        else if ( child->GetName().Lower() == _("tables") ) {
 
             wxXmlNode *subchild = child->GetChildren();
             while ( subchild ) {
 
-                if ( subchild->GetName() == _("table") ) {
+                if ( subchild->GetName().Lower() == _("table") ) {
 
                     // Check if enabled
                     wxString strEnabled = subchild->GetAttribute( _("enable"), _("true") );
@@ -3966,7 +3977,7 @@ xml_table_error:
             } // while
 
         }
-        else if ( child->GetName() == _("automation") ) {
+        else if ( child->GetName().Lower() == _("automation") ) {
 
             wxString attribut = child->GetAttribute(_("enable"), _("true"));
             attribut.MakeLower();
@@ -3980,7 +3991,7 @@ xml_table_error:
             wxXmlNode *subchild = child->GetChildren();
             while (subchild) {
 
-                if (subchild->GetName() == _("zone")) {
+                if (subchild->GetName().Lower() == _("zone")) {
 
                     long zone;
                     wxString strZone = subchild->GetNodeContent();
@@ -3988,7 +3999,7 @@ xml_table_error:
                     m_automation.setZone( zone );
 
                 }
-                else if (subchild->GetName() == _("sub-zone")) {
+                else if (subchild->GetName().Lower() == _("sub-zone")) {
 
                     long subzone;
                     wxString strSubZone = subchild->GetNodeContent();
@@ -3996,7 +4007,7 @@ xml_table_error:
                     m_automation.setSubzone( subzone );
 
                 }
-                else if (subchild->GetName() == _("longitude")) {
+                else if (subchild->GetName().Lower() == _("longitude")) {
 
                     wxString strLongitude = subchild->GetNodeContent();
                     double d;
@@ -4004,7 +4015,7 @@ xml_table_error:
                     m_automation.setLongitude( d );
 
                 }
-                else if (subchild->GetName() == _("latitude")) {
+                else if (subchild->GetName().Lower() == _("latitude")) {
 
                     wxString strLatitude = subchild->GetNodeContent();
                     double d;
@@ -4012,7 +4023,7 @@ xml_table_error:
                     m_automation.setLatitude( d );
 
                 }
-                else if (subchild->GetName() == _("sunrise")) {
+                else if (subchild->GetName().Lower() == _("sunrise")) {
 
                     m_automation.enableSunRiseEvent();
                     wxString attribute = subchild->GetAttribute(_("enable"), _("true"));
@@ -4023,7 +4034,7 @@ xml_table_error:
 
                 }
 
-                else if (subchild->GetName() == _("sunrise-twilight")) {
+                else if (subchild->GetName().Lower() == _("sunrise-twilight")) {
 
                     m_automation.enableSunRiseTwilightEvent();
                     wxString attribute = subchild->GetAttribute(_("enable"), _("true"));
@@ -4033,7 +4044,7 @@ xml_table_error:
 
 
                 }
-                else if (subchild->GetName() == _("sunset")) {
+                else if (subchild->GetName().Lower() == _("sunset")) {
 
                     m_automation.enableSunSetEvent();
                     wxString attribute = subchild->GetAttribute(_("enable"), _("true"));
@@ -4042,7 +4053,7 @@ xml_table_error:
                     }
 
                 }
-                else if (subchild->GetName() == _("sunset-twilight")) {
+                else if (subchild->GetName().Lower() == _("sunset-twilight")) {
 
                     m_automation.enableSunSetTwilightEvent();
                     wxString attribute = subchild->GetAttribute(_("enable"), _("true"));
@@ -4051,7 +4062,7 @@ xml_table_error:
                     }
 
                 }
-                else if (subchild->GetName() == _("segmentcontrol-event")) {
+                else if (subchild->GetName().Lower() == _("segmentcontrol-event")) {
 
                     m_automation.enableSegmentControllerHeartbeat();
                     wxString attribute = subchild->GetAttribute(_("enable"), _("true"));
@@ -4065,7 +4076,7 @@ xml_table_error:
                     m_automation.setSegmentControllerHeartbeatInterval( interval );
 
                 }
-                else if (subchild->GetName() == _("heartbeat-event")) {
+                else if (subchild->GetName().Lower() == _("heartbeat-event")) {
 
                     m_automation.enableHeartbeatEvent();
                     m_automation.setHeartbeatEventInterval( 30 );
@@ -4081,7 +4092,7 @@ xml_table_error:
                     m_automation.setHeartbeatEventInterval( interval );
 
                 }
-                else if (subchild->GetName() == _("capabilities-event")) {
+                else if (subchild->GetName().Lower() == _("capabilities-event")) {
 
                     m_automation.enableCapabilitiesEvent();
                     m_automation.setCapabilitiesEventInterval( 60 );
