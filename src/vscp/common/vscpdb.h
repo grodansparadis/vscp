@@ -464,7 +464,7 @@
  * name Name for driver.
  * link_to_guid Pointer to GUID for this driver. All drivers must have a GUID.
  * configuration Semicolon separated configuration string for driver.
- * path Path to driver dl/dll
+ * path Path to driver dl/dll or for level III the url (tcp://127.0.0.1:5005)
  * flags Flags for driver functionality
  * translation Semicolon separated list. Translate Level I events to Level II
  *      (measurements float/string)

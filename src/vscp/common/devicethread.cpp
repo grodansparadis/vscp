@@ -73,6 +73,8 @@ deviceThread::deviceThread() : wxThread(wxTHREAD_JOINABLE)
     m_pCtrlObject = NULL;
     m_preceiveThread = NULL;
     m_pwriteThread = NULL;
+    m_preceiveLevel2Thread = NULL;
+    m_pwriteLevel2Thread = NULL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -104,11 +106,14 @@ void *deviceThread::Entry()
 
     // This is now an active Client
     m_pDeviceItem->m_pClientItem->m_bOpen = true;
-    if ( VSCP_DRIVER_LEVEL2 == m_pDeviceItem->m_driverLevel ) {
+    if ( VSCP_DRIVER_LEVEL1 == m_pDeviceItem->m_driverLevel ) {
+        m_pDeviceItem->m_pClientItem->m_type = CLIENT_ITEM_INTERFACE_TYPE_DRIVER_LEVEL1;
+    }
+    else if ( VSCP_DRIVER_LEVEL2 == m_pDeviceItem->m_driverLevel ) {
         m_pDeviceItem->m_pClientItem->m_type = CLIENT_ITEM_INTERFACE_TYPE_DRIVER_LEVEL2;
     }
-    else {
-        m_pDeviceItem->m_pClientItem->m_type = CLIENT_ITEM_INTERFACE_TYPE_DRIVER_LEVEL1;
+    else if ( VSCP_DRIVER_LEVEL3 == m_pDeviceItem->m_driverLevel ) {
+        m_pDeviceItem->m_pClientItem->m_type = CLIENT_ITEM_INTERFACE_TYPE_DRIVER_LEVEL3;
     }
     m_pDeviceItem->m_pClientItem->m_strDeviceName = m_pDeviceItem->m_strName;
     m_pDeviceItem->m_pClientItem->m_strDeviceName += _(" Started at ");
@@ -124,10 +129,28 @@ void *deviceThread::Entry()
     m_pCtrlObject->addClient(m_pDeviceItem->m_pClientItem);
     m_pCtrlObject->m_wxClientMutex.Unlock();
 
-    // Load dynamic library
-    if (!m_wxdll.Load(m_pDeviceItem->m_strPath, wxDL_LAZY)) {
-        m_pCtrlObject->logMsg(_("Unable to load dynamic library.\n") );
-        return NULL;
+    if ( VSCP_DRIVER_LEVEL3 != m_pDeviceItem->m_driverLevel ) {
+        // Load dynamic library
+        if ( !m_wxdll.Load( m_pDeviceItem->m_strPath, wxDL_LAZY ) ) {
+            m_pCtrlObject->logMsg(_("Unable to load dynamic library.\n") );
+            return NULL;
+        }
+    }
+    else {     // Level II driver
+        
+        //  Startup Level III driver
+        /*wxString executable = m_pDeviceItem->m_strPath;
+
+        if ( 0 == ( m_pDeviceItem->m_pid = wxExecute( executable.mbc_str() ) ) ) {
+            wxString str;
+            str = _("Failed to load level III driver: ");
+            str += m_pDeviceItem->m_strName;
+            str += _("\n");
+            m_pCtrlObject->logMsg(str);
+            wxLogDebug(str);
+            return NULL;
+        }*/
+        
     }
 
     if (VSCP_DRIVER_LEVEL1 == m_pDeviceItem->m_driverLevel) {
@@ -600,7 +623,7 @@ void *deviceThread::Entry()
         wxString strHost(_("127.0.0.1:9598"));
 
         wxStringTokenizer tkz(m_pDeviceItem->m_strParameter, _(";"));
-        if (tkz.HasMoreTokens()) {
+        if ( tkz.HasMoreTokens() ) {
 
             CVSCPVariable variable;
 
@@ -734,7 +757,17 @@ void *deviceThread::Entry()
         }
 
     }
-
+    else if (VSCP_DRIVER_LEVEL3 == m_pDeviceItem->m_driverLevel) {
+        
+        // Just sit and wait until the end of the world as we know it...
+        while ( !m_pDeviceItem->m_bQuit ) {
+            wxSleep(1);
+        }
+        
+        // Send stop to device
+        kill( m_pDeviceItem->m_pid, SIGKILL );
+        
+    }
 
 
 

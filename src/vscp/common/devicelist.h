@@ -158,8 +158,11 @@ public:
 
     // Handle for dll/dl driver interface
     long m_openHandle;
+    
+    // Level III driver pid
+    long m_pid;
 
-        // Level I (CANAL) driver methods
+    // Level I (CANAL) driver methods
     LPFNDLL_CANALOPEN                   m_proc_CanalOpen;
     LPFNDLL_CANALCLOSE                  m_proc_CanalClose;
     LPFNDLL_CANALGETLEVEL               m_proc_CanalGetLevel;

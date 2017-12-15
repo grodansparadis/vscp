@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+import os
+import sys
 import socket
 import threading
 import time
@@ -35,6 +37,12 @@ BUFFER_SIZE = 1024
 
 threadLock = threading.Lock()
 threads = []
+
+#fpid = os.fork()
+#if fpid!=0:
+#  # Running as daemon now. PID is fpid
+#  sys.exit(0)
+
 
 s = socket.socket( socket.AF_INET, socket.SOCK_STREAM )
 s.bind( ( TCP_IP, TCP_PORT ) )

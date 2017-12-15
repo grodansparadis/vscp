@@ -1507,12 +1507,34 @@ bool CControlObject::startDeviceWorkerThreads( void )
         pDeviceItem = *iter;
         if ( NULL != pDeviceItem ) {
 
-            logMsg( _("[Driver] - Preparing: ") + pDeviceItem->m_strName + _("\n") );
+            logMsg( _("[Driver] - Preparing: ") + pDeviceItem->m_strName + _("\n") );            
 
             // Just start if enabled
             if ( !pDeviceItem->m_bEnable ) continue;
+            
+            if ( VSCP_DRIVER_LEVEL3 == pDeviceItem->m_driverLevel ) {
+                        
+                //  Startup Level III driver
+                wxString executable = pDeviceItem->m_strPath;
 
+                if ( 0 == ( pDeviceItem->m_pid = wxExecute( executable.mbc_str() ) ) ) {
+                    wxString str;
+                    str = _("Failed to load level III driver: ");
+                    str += pDeviceItem->m_strName;
+                    str += _("\n");
+                    logMsg(str);
+                    wxLogDebug(str);
+                    return NULL;
+                }
+                else {
+                    
+                }
+                
+            }
+
+            // Start  the driver logic
             pDeviceItem->startDriver( this );
+           
 
         } // Valid device item
 
@@ -3735,7 +3757,8 @@ bool CControlObject::readConfigurationXML( wxString& strcfgfile )
                                                     guid,
                                                     VSCP_DRIVER_LEVEL1,
                                                     bEnabled ) ) {
-                        wxString errMsg = _("Driver not added. Path does not exist. - [ ") +
+                        wxString errMsg = _("Level I driver not added. "
+                                            "Path does not exist. - [ ") +
                                 strPath + _(" ]\n");
                         logMsg( errMsg );
                     }
@@ -3775,7 +3798,8 @@ bool CControlObject::readConfigurationXML( wxString& strcfgfile )
 
                     wxXmlNode *subsubchild = subchild->GetChildren();
 
-                    wxString attribute = subchild->GetAttribute(_("enable"), _("false"));
+                    wxString attribute = subchild->GetAttribute(_("enable"),
+                                                                _("false"));
 
                     if (attribute.IsSameAs(_("true"), false)) {
                         bEnabled = true;
@@ -3825,8 +3849,11 @@ bool CControlObject::readConfigurationXML( wxString& strcfgfile )
                                 if ( subsubsubchild->GetName().Lower() == _( "node" ) ) {
                                     cguid knownguid;
 
-                                    knownguid.getFromString( subchild->GetAttribute( _( "guid" ), _( "-" ) ) );
-                                    wxString name = subchild->GetAttribute( _( "name" ), _( "" ) );
+                                    knownguid.getFromString( subchild->GetAttribute( _( "guid" ), 
+                                                                                     _( "-" ) ) );
+                                    wxString name = 
+                                            subchild->GetAttribute( _( "name" ), 
+                                                                    _( "" ) );
                                     addKnownNode( knownguid, guid, name );
                                 }
 
@@ -3854,7 +3881,8 @@ bool CControlObject::readConfigurationXML( wxString& strcfgfile )
                                                 guid,
                                                 VSCP_DRIVER_LEVEL2,
                                                 bEnabled )) {
-                        wxString errMsg = _("Driver was not added. Path does not exist. - [ ") +
+                        wxString errMsg = _("Level II driver was not added. "
+                                            "Path does not exist. - [ ") +
                                     strPath + _(" ]\n");
                         logMsg(errMsg);
 
@@ -3866,6 +3894,129 @@ bool CControlObject::readConfigurationXML( wxString& strcfgfile )
                     }
 
                     bLevel2Driver = false;
+
+                }
+
+                // Next driver
+                subchild = subchild->GetNext();
+
+            }
+
+        }
+        // Level III driver
+        else if ( child->GetName().Lower() == _("level3driver") ) {
+
+            wxXmlNode *subchild = child->GetChildren();
+
+            while ( subchild ) {
+
+                wxString strName;
+                wxString strConfig;
+                wxString strPath;
+                cguid guid;
+                bool bEnabled = false;
+                bool bLevel3Driver = false;
+
+                if ( subchild->GetName().Lower() == _("driver") ) {
+
+                    wxXmlNode *subsubchild = subchild->GetChildren();
+
+                    wxString attribute = subchild->GetAttribute(_("enable"), 
+                                                                _("false"));
+
+                    if (attribute.IsSameAs(_("true"), false)) {
+                        bEnabled = true;
+                    }
+
+                    while ( subsubchild ) {
+
+                        if (subsubchild->GetName().Lower() == _("name")) {
+
+                            strName = subsubchild->GetNodeContent();
+                            strName.Trim();
+                            strName.Trim(false);
+
+                            // Replace spaces in name with underscore
+                            int pos;
+                            while (wxNOT_FOUND != (pos = strName.Find(_(" ")))) {
+                                strName.SetChar(pos, wxChar('_'));
+                            }
+
+                            bLevel3Driver = true;
+
+                        }
+                        else if (subsubchild->GetName().Lower() == _("config") ||
+                                subsubchild->GetName().Lower() == _("parameter")) {
+
+                            strConfig = subsubchild->GetNodeContent();
+                            strConfig.Trim();
+                            strConfig.Trim(false);
+
+                        }
+                        else if (subsubchild->GetName().Lower() == _("path")) {
+
+                            strPath = subsubchild->GetNodeContent();
+                            strPath.Trim();
+                            strPath.Trim(false);
+
+                        }
+                        else if (subsubchild->GetName().Lower() == _("guid")) {
+                            guid.getFromString( subsubchild->GetNodeContent() );
+                        }
+                        else if ( subsubchild->GetName().Lower() == 
+                                    _( "known-nodes" ) ) {
+
+                            wxXmlNode *subsubsubchild = subchild->GetChildren();
+
+                            while ( subsubsubchild ) {
+
+                                if ( subsubsubchild->GetName().Lower() == _( "node" ) ) {
+                                    cguid knownguid;
+
+                                    knownguid.getFromString( subchild->GetAttribute( _( "guid" ), 
+                                                                                    _( "-" ) ) );
+                                    wxString name = 
+                                            subchild->GetAttribute( _( "name" ), 
+                                                                    _( "" ) );
+                                    addKnownNode( knownguid, guid, name );
+                                }
+
+                                // Next driver item
+                                subsubsubchild = subsubsubchild->GetNext();
+
+                            } // while
+
+                        }
+
+                        // Next driver item
+                        subsubchild = subsubchild->GetNext();
+
+                    }
+
+                }
+
+                // Add the device
+                if ( bLevel3Driver && bEnabled ) {
+
+                    if (!m_deviceList.addItem( strName,
+                                                strConfig,
+                                                strPath,
+                                                0,
+                                                guid,
+                                                VSCP_DRIVER_LEVEL3,
+                                                bEnabled )) {
+                        wxString errMsg = _("Level III driver was not added. Path does not exist. - [ ") +
+                                    strPath + _(" ]\n");
+                        logMsg(errMsg);
+
+                    }
+                    else {
+                        wxString errMsg = _("Level III driver added. - [ ") +
+                                    strPath + _(" ]\n");
+                        logMsg(errMsg);
+                    }
+
+                    bLevel3Driver = false;
 
                 }
 
@@ -5849,6 +6000,7 @@ bool CControlObject::createFolderStructure( void )
     wxFileName::Mkdir( m_rootFolder + _("/drivers"), 0x777, wxPATH_MKDIR_FULL );
     wxFileName::Mkdir( m_rootFolder + _("/drivers/level1"), 0x777, wxPATH_MKDIR_FULL );
     wxFileName::Mkdir( m_rootFolder + _("/drivers/level2"), 0x777, wxPATH_MKDIR_FULL );
+    wxFileName::Mkdir( m_rootFolder + _("/drivers/level3"), 0x777, wxPATH_MKDIR_FULL );
     wxFileName::Mkdir( m_rootFolder + _("/web/css"), 0x777, wxPATH_MKDIR_FULL );
     wxFileName::Mkdir( m_rootFolder + _("/web/images"), 0x777, wxPATH_MKDIR_FULL );
     wxFileName::Mkdir( m_rootFolder + _("/web/lib"), 0x777, wxPATH_MKDIR_FULL );
