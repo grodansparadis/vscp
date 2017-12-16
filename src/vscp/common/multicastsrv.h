@@ -46,7 +46,7 @@ typedef struct {
     uint8_t                     m_index;            // Rolling index
     
     wxMutex                     m_mutexVSCPMulticastThread;     // Protect thread object
-    VSCPMulticastClientThread   *m_pWorkerThread;   // Worker thread
+    VSCPMulticastClientThread   *m_pWorkerThread;               // Worker thread
 } multicastChannelItem;
 
 WX_DECLARE_LIST(multicastChannelItem, MULTICASTCHANNELLIST );

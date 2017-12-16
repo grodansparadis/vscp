@@ -854,7 +854,6 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
 
     }
 
-
     ////////////////////////////////////////////////////////////////////////////
     //                      Read full XML configuration
     ////////////////////////////////////////////////////////////////////////////
@@ -2847,6 +2846,17 @@ bool CControlObject::readConfigurationXML( wxString& strcfgfile )
                         subchild = subchild->GetNext();
                         continue;
                     }
+                    
+                    pChannel->m_bEnable = false;
+                    pChannel->m_bAllowUnsecure = false;
+                    pChannel->m_port = 0;
+                    pChannel->m_ttl = 1;
+                    pChannel->m_nEncryption = 0;
+                    pChannel->m_bSendAck = 0;
+                    pChannel->m_index = 0;
+
+                    // No worker thread started yet
+                    pChannel->m_pWorkerThread = NULL;
 
                     // Default is to let everything come through
                     vscp_clearVSCPFilter( &pChannel->m_txFilter );

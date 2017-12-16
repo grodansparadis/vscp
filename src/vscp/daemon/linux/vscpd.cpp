@@ -107,10 +107,12 @@ int main( int argc, char **argv )
     int arg = 0;
     wxString rootFolder;    // Folder where VSCP files & folders will be located
     wxString strcfgfile;    // Points to XML configuration file
-
+    
     fprintf( stderr, "Prepare to start vscpd...\n" );
+    
     // Ignore return value from defunct processes
     signal( SIGCHLD, SIG_IGN );
+    signal(SIGHUP, _sighandler );
 
     crcInit(); 
 
@@ -231,6 +233,8 @@ BOOL VSCPApp::init(wxString& strcfgfile, wxString& rootFolder )
         dup2(0, 2);
 
     }
+    
+    signal(SIGHUP, _sighandler );
 
     // Write pid to file
     FILE *pFile;
@@ -277,6 +281,11 @@ BOOL VSCPApp::init(wxString& strcfgfile, wxString& rootFolder )
     my_action.sa_handler = _sighandler;
     my_action.sa_flags = SA_RESTART;
     sigaction(SIGTERM, &my_action, NULL);
+    
+    // Redirect SIGHUP
+    my_action.sa_handler = _sighandler;
+    my_action.sa_flags = SA_RESTART;
+    sigaction(SIGHUP, &my_action, NULL);
 
 
     do {
@@ -331,7 +340,8 @@ BOOL VSCPApp::init(wxString& strcfgfile, wxString& rootFolder )
     // Remove the pid file
     unlink("/var/run/vscp/vscpd/vscpd.pid");
     
-    delete gpobj;
+    fprintf( stderr, "VSCPD: Yes we are leaving this world...\n");
+ 
     gpobj = NULL;
 
     return TRUE;
@@ -361,11 +371,9 @@ void copyleft(void)
     wxPrintf(_("but WITHOUT ANY WARRANTY; without even the implied warranty of\n"));
     wxPrintf(_("MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"));
     wxPrintf(_("\n"));
-    wxPrintf(_("GNU General Public License for more details.\n"));
+    wxPrintf(_("Check the MIT license for more details.\n"));
     wxPrintf(_("\n"));
-    wxPrintf(_("You should have received a copy of the GNU General Public License\n"));
-    wxPrintf(_("along with this program; if not, write to the Free Software\n"));
-    wxPrintf(_("Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.\n\n"));
+
 }
 
 
@@ -424,6 +432,12 @@ void createFolderStuct( wxString& rootFolder )
     
     if ( !wxDir::Exists( rootFolder + _("/drivers/level2") ) ) {
         wxDir::Make( rootFolder + _("/drivers/level2"), 
+                wxS_DIR_DEFAULT,
+                wxPATH_MKDIR_FULL );
+    }
+    
+    if ( !wxDir::Exists( rootFolder + _("/drivers/level3") ) ) {
+        wxDir::Make( rootFolder + _("/drivers/level3"), 
                 wxS_DIR_DEFAULT,
                 wxPATH_MKDIR_FULL );
     }
