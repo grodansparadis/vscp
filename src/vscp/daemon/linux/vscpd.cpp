@@ -112,7 +112,6 @@ int main( int argc, char **argv )
     
     // Ignore return value from defunct processes
     signal( SIGCHLD, SIG_IGN );
-    signal(SIGHUP, _sighandler );
 
     crcInit(); 
 

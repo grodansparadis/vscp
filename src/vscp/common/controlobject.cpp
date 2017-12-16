@@ -1516,7 +1516,11 @@ bool CControlObject::startDeviceWorkerThreads( void )
                 //  Startup Level III driver
                 wxString executable = pDeviceItem->m_strPath;
 
-                if ( 0 == ( pDeviceItem->m_pid = wxExecute( executable.mbc_str() ) ) ) {
+                pDeviceItem->m_pDriver3Process = new Driver3Process;
+                if ( 0 == ( pDeviceItem->m_pid = 
+                        wxExecute( executable.mbc_str(),
+                                    wxEXEC_ASYNC,
+                                    pDeviceItem->m_pDriver3Process ) ) ) {
                     wxString str;
                     str = _("Failed to load level III driver: ");
                     str += pDeviceItem->m_strName;

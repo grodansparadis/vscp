@@ -63,6 +63,33 @@
 WX_DEFINE_LIST(Level1MsgOutList);
 WX_DEFINE_LIST(VSCPDEVICELIST);
 
+///////////////////////////////////////////////////
+//                 GLOBALS
+///////////////////////////////////////////////////
+
+extern CControlObject *gpobj;
+
+Driver3Process::Driver3Process( int flags ) 
+                        : wxProcess( flags )
+{
+    ;
+}
+
+Driver3Process::~Driver3Process()
+{
+    ;
+}
+
+void Driver3Process::OnTerminate( int pid, int status )
+{
+    gpobj->logMsg(_("[Diver Level III] - Terminating.\n") );
+}
+
+
+
+
+
+
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction CDeviceList
 //////////////////////////////////////////////////////////////////////
@@ -121,6 +148,10 @@ CDeviceItem::CDeviceItem()
     m_proc_VSCPGetWebPageTemplate = NULL;
     m_proc_VSCPGetWebPageInfo = NULL;
     m_proc_VSCPWebPageupdate = NULL;
+    
+    // VSCP Level III
+    m_pid = 0;
+    m_pDriver3Process = NULL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -128,7 +159,11 @@ CDeviceItem::CDeviceItem()
 
 CDeviceItem::~CDeviceItem(void)
 {
-    ;
+    if ( NULL != m_pDriver3Process ) {
+        m_pDriver3Process->Kill( m_pid );
+        delete m_pDriver3Process;
+        m_pDriver3Process = NULL;
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -231,6 +266,7 @@ bool CDeviceItem::stopDriver()
         m_mutexdeviceThread.Unlock();
         
         m_bQuit = true;
+        wxSleep( 2 );
         fprintf( stderr, 
                  "CDeviceItem: Driver asked to stop operation. [%s]\n",
                  (const char *)m_strName.mbc_str());        

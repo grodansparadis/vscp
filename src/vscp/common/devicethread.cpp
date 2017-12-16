@@ -765,7 +765,8 @@ void *deviceThread::Entry()
         }
         
         // Send stop to device
-        kill( m_pDeviceItem->m_pid, SIGKILL );
+        //kill( m_pDeviceItem->m_pid, SIGKILL );
+        //*** This happens in the item destructor now ***
         
     }
 

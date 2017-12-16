@@ -34,6 +34,7 @@
 #include "wx/wx.h"
 #include "wx/defs.h"
 #include "wx/app.h"
+#include <wx/process.h>
 
 #ifdef WIN32
 
@@ -72,6 +73,24 @@ class cguid;
 
 WX_DECLARE_LIST ( canalMsg, Level1MsgOutList );
 
+
+///////////////////////////////////////////////////////////////////////////////
+// Driver3Process
+//
+
+class Driver3Process : public wxProcess
+{
+
+public:
+    Driver3Process( int flags = wxPROCESS_REDIRECT );
+    ~Driver3Process();
+    
+    void OnTerminate( int pid, int status );
+};
+
+///////////////////////////////////////////////////////////////////////////////
+// CDeviceItem
+//
 
 class CDeviceItem
 {
@@ -161,6 +180,8 @@ public:
     
     // Level III driver pid
     long m_pid;
+    
+    Driver3Process *m_pDriver3Process;
 
     // Level I (CANAL) driver methods
     LPFNDLL_CANALOPEN                   m_proc_CanalOpen;
