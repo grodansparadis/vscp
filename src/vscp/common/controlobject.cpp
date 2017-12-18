@@ -1768,7 +1768,6 @@ void CControlObject::logMsg( const wxString& msgin,
                         zErrMsg,
                         (const char *)msg.mbc_str() );
         }
-
         sqlite3_free( sql );
         
         // Clean up old entries
@@ -1777,6 +1776,7 @@ void CControlObject::logMsg( const wxString& msgin,
             sqlite3_exec( m_db_vscp_log, sql, NULL, NULL, &zErrMsg );
             sqlite3_free( sql );
         }
+        
     }
 
 #ifndef WIN32

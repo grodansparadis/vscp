@@ -2245,7 +2245,7 @@ autherror:
     
         if ( arrayVars.Count() ) {
             
-            // +;LSTVAR;ordinal;name;type;userid;accessrights;persistance;last_change
+            // +;LSTVAR;ordinal;cnt;name;type;userid;accessrights;persistance;last_change
             for ( int i=0; i<arrayVars.Count(); i++ ) {
                 if ( 0 != gpobj->m_variables.find( arrayVars[ i ], variable ) ) {
                     
@@ -2319,338 +2319,2947 @@ autherror:
     ////////////////////////////////////////////////////////////////////////////
     
     
+    
     // ------------------------------------------------------------------------
-    //                             GT/GETTABLE
+    //                               CREATETABLE
     //-------------------------------------------------------------------------
     
-    else if ( ( 0 == strTok.Find(_("GT") ) ) || 
-                ( 0 == strTok.Find(_("GETTABLE") ) ) ) {
-    /*
-        // Format is:
-        //      tablename;from;to
+    else if ( 0 == strTok.Find( _("TBL_CREATE") ) ) {
 
         // Must be authorised to do this
-        if ( !pSession->bAuthenticated ) {
-            mg_printf_websocket_frame( nc,
-                                    WEBSOCKET_OP_TEXT,
-                                    "-;GT;%d;%s",
-                                    WEBSOCK_ERROR_NOT_AUTHORISED,
-                                    WEBSOCK_STR_ERROR_NOT_AUTHORISED );
-            gpobj->logMsg ( _("[Websocket] User/host not authorised to get table.\n"),
+        if ( ( NULL == pSession->m_pClientItem ) || 
+                !pSession->m_pClientItem->bAuthenticated ) {
+            
+            wxstr = wxString::Format( _("-;TBL_CREATE;%d;%s"),
+                                        (int)WEBSOCK_ERROR_NOT_AUTHORISED,
+                                        WEBSOCK_STR_ERROR_NOT_AUTHORISED );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+   
+            gpobj->logMsg ( _("[Websocket] User/host not authorised to "
+                              "create a table.\n"),
                                         DAEMON_LOGMSG_NORMAL,
                                         DAEMON_LOGTYPE_SECURITY );
 
-            return; // We still leave channel open
+            return;     // We still leave channel open
         }
-
+        
         // Check privilege
         if ( (pSession->m_pClientItem->m_pUserItem->getUserRights( 0 ) & 0xf) < 4 ) {
-            mg_printf_websocket_frame( nc,
-                                    WEBSOCKET_OP_TEXT,
-                                    "-;GT;%d;%s",
-                                    WEBSOCK_ERROR_NOT_ALLOWED_TO_DO_THAT,
-                                    WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT );
+            
+            wxstr = wxString::Format( _("-;TBL_CREATE;%d;%s"),
+                                        (int)WEBSOCK_ERROR_NOT_ALLOWED_TO_DO_THAT,
+                                        WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+     
             wxString strErr =
-                        wxString::Format( _("[Websocket] User [%s] not allowed to get table.\n"),
-                                                pSession->m_pClientItem->m_pUserItem->getUser().mbc_str() );
+                        wxString::Format( _("[Websocket] User [%s] not allowed "
+                                            "to create a table.\n"),
+                 pSession->m_pClientItem->m_pUserItem->getUserName().mbc_str() );
 
             gpobj->logMsg ( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY );
-            return; // We still leave channel open
+            return;     // We still leave channel open
         }
-
-        wxString tblName;
-        wxDateTime timeFrom = wxDateTime::Now();
-        wxDateTime timeTo = wxDateTime::Now();
-        int nRange = 0;
-
-        // Get name of table
+        
+        wxString table_create_str;
         if ( tkz.HasMoreTokens() ) {
-            tblName = tkz.GetNextToken();
-            tblName.Trim();
-            tblName.Trim(false);
-            tblName.MakeUpper();
+            table_create_str = tkz.GetNextToken();
         }
         else {
-            // Must have a table name
-            mg_printf_websocket_frame( nc,
-                                    WEBSOCKET_OP_TEXT,
-                                    "-;GT;%d;%s",
-                                    WEBSOCK_ERROR_MUST_HAVE_TABLE_NAME,
-                                    WEBSOCK_STR_ERROR_MUST_HAVE_TABLE_NAME );
-            wxString strErr =
-                      wxString::Format( _("[Websocket] Must have a tablename to read a table.\n") );
-            gpobj->logMsg ( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_GENERAL );
-            return;
+            // Must have XML table create expression
+            wxstr = wxString::Format( _("-;TBL_CREATE;%d;%s"),
+                                        (int)WEBSOCK_ERROR_SYNTAX_ERROR,
+                                        WEBSOCK_STR_ERROR_SYNTAX_ERROR );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+            return;     // We still leave channel open
         }
+        
+        if ( !gpobj->m_userTableObjects.createTableFromString( table_create_str ) ) {
+            wxstr = wxString::Format( _("-;TBL_CREATE;%d;%s"),
+                                        (int)WEBSOCK_ERROR_TABLE_CREATE_FORMAT,
+                                        WEBSOCK_STR_ERROR_TABLE_CREATE_FORMAT );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+        }
+           
+        // New table created OK
+        wxString strResult = _("+;TBL_CREATE;");
+        strResult += strTok;
+        strResult += _( ";" );
+        strResult += _("Table ");
+        strResult += _(" created OK");
+        
+        // Positive reply
+        web_websocket_write( conn, 
+                                WEB_WEBSOCKET_OPCODE_TEXT, 
+                                (const char *)strResult.mbc_str(),
+                                strResult.Length() );        
 
-        // Get from-date for range
+    }
+    
+    // ------------------------------------------------------------------------
+    //                             TBL_DELETE
+    //-------------------------------------------------------------------------
+    
+    else if ( 0 == strTok.Find(_("TBL_DELETE") ) ) {
+        
+        // Must be authorised to do this
+        if ( ( NULL == pSession->m_pClientItem ) || 
+                !pSession->m_pClientItem->bAuthenticated ) {
+            
+            wxstr = wxString::Format( _("-;TBL_DELETE;%d;%s"),
+                                        (int)WEBSOCK_ERROR_NOT_AUTHORISED,
+                                        WEBSOCK_STR_ERROR_NOT_AUTHORISED );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+   
+            gpobj->logMsg ( _("[Websocket] User/host not authorised to delete a table.\n"),
+                                        DAEMON_LOGMSG_NORMAL,
+                                        DAEMON_LOGTYPE_SECURITY );
+
+            return;     // We still leave channel open
+        }
+        
+        wxString strTable;                
         if ( tkz.HasMoreTokens() ) {
-            wxString wxstr = tkz.GetNextToken();
-            timeFrom.ParseDateTime( wxstr );
-            wxstr = timeFrom.FormatISODate() + _(" ") + timeFrom.FormatISOTime();
-            nRange++; // Start date entered
+            strTable = tkz.GetNextToken();
         }
-
-        // Get to-date for range
+        else {
+            // Must have XML table create expression
+            wxstr = wxString::Format( _("-;TBL_DELETE;%d;%s"),
+                                        (int)WEBSOCK_ERROR_SYNTAX_ERROR,
+                                        WEBSOCK_STR_ERROR_SYNTAX_ERROR );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+            return;     // We still leave channel open
+        }
+        
+        // Should table db be removed 
+        bool bRemoveFile = false;
         if ( tkz.HasMoreTokens() ) {
-            wxString wxstr = tkz.GetNextToken();
-            timeTo.ParseDateTime( wxstr);
-            wxstr = timeTo.FormatISODate() + _(" ") + timeTo.FormatISOTime();
-            nRange++; // End date entered
-        }
-
-        if ( (nRange > 1) && timeTo.IsEarlierThan( timeFrom ) ) {
-
-            // To date must be later then from date
-            mg_printf_websocket_frame( nc,
-                                    WEBSOCKET_OP_TEXT,
-                                    "-;GT;%d;%s",
-                                    WEBSOCK_ERROR_END_DATE_IS_WRONG,
-                                    WEBSOCK_STR_ERROR_END_DATE_IS_WRONG );
-            wxString strErr =
-                      wxString::Format( _("[Websocket] The end date must be later than the start date.\n") );
-            gpobj->logMsg ( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_GENERAL );
-            return;
-
-        }
-
-        CVSCPTable *ptblItem = NULL;
-        gpobj->m_mutexTableList.Lock();
-        listVSCPTables::iterator iter;
-        for (iter = gpobj->m_listTables.begin(); iter != gpobj->m_listTables.end(); ++iter) {
-            ptblItem = *iter;
-            if ( tblName== wxString::FromUTF8( ptblItem->m_vscpFileHead.nameTable ) ) {
-                break;
+            wxString str = tkz.GetNextToken();
+            if ( wxNOT_FOUND != str.Upper().Find("TRUE") ) {
+                bRemoveFile = true;
             }
-            ptblItem = NULL;
         }
-        gpobj->m_mutexTableList.Unlock();
-
-        // Did we find it?
-        if ( NULL == ptblItem ) {
-            // nope
-            mg_printf_websocket_frame( nc,
-                                    WEBSOCKET_OP_TEXT,
-                                    "-;GT;%d;%s",
-                                    WEBSOCK_ERROR_TABLE_NOT_FOUND,
-                                    WEBSOCK_STR_ERROR_TABLE_NOT_FOUND );
-            wxString strErr =
-                wxString::Format( _("[Websocket] Table not found. [name=%s]\n"), tblName.wx_str() );
-            gpobj->logMsg( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_GENERAL );
-            return;
+    
+        // Remove the table from the internal system
+        if ( !gpobj->m_userTableObjects.removeTable( strTable ), bRemoveFile ) {
+                
+            wxstr = wxString::Format( _("-;TBL_DLETE;%d;%s"),
+                                        (int)WEBSOCK_ERROR_TABLE_DELETE_FAILED,
+                                        WEBSOCK_STR_ERROR_TABLE_DELETE_FAILED );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
         }
+           
+        // New table created OK
+        wxString strResult = _("+;TBL_DELETE;");
+        strResult += strTok;
+        strResult += _( ";" );
+        strResult += _("Table ");
+        strResult += strTable;
+        strResult += _(" deleted OK");
+        
+        // Positive reply
+        web_websocket_write( conn, 
+                                WEB_WEBSOCKET_OPCODE_TEXT, 
+                                (const char *)strResult.mbc_str(),
+                                strResult.Length() );
+    }
+    
+    // ------------------------------------------------------------------------
+    //                             TBL_LIST
+    //-------------------------------------------------------------------------
+    
+    else if ( 0 == strTok.Find(_("TBL_LIST") ) ) {
+        
+        // Must be authorised to do this
+        if ( ( NULL == pSession->m_pClientItem ) || 
+                !pSession->m_pClientItem->bAuthenticated ) {
+            
+            wxstr = wxString::Format( _("-;TBL_LIST;%d;%s"),
+                                        (int)WEBSOCK_ERROR_NOT_AUTHORISED,
+                                        WEBSOCK_STR_ERROR_NOT_AUTHORISED );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+   
+            gpobj->logMsg ( _("[Websocket] User/host not authorised to list tables.\n"),
+                                        DAEMON_LOGMSG_NORMAL,
+                                        DAEMON_LOGTYPE_SECURITY );
 
-        if ( VSCP_TABLE_DYNAMIC == ptblItem->m_vscpFileHead.type ) {
-
-            uint64_t start,end;
-            if ( 0 == nRange ) {
-                // Neither 'from' or 'to' given
-                // Use value from header
-                start = ptblItem->getTimeStampStart();
-                end = ptblItem->getTimeStampStart();
-            }
-            else if ( 1 == nRange ) {
-                // From given but no end
-                start = timeFrom.GetTicks();
-                end = ptblItem->getTimeStampStart();
-            }
-            else {
-                // range given
-                start = timeFrom.GetTicks();
-                end = timeTo.GetTicks();
-            }
-
-            // Fetch number of records in set
-            ptblItem->m_mutexThisTable.Lock();
-            long nRecords = ptblItem->getRangeOfData(start, end );
-            ptblItem->m_mutexThisTable.Unlock();
-
-            if ( nRecords > 0 ) {
-
-                struct _vscpFileRecord *pRecords = new struct _vscpFileRecord[nRecords];
-
-                if ( NULL == pRecords ) {
-                    mg_printf_websocket_frame( nc,
-                                    WEBSOCKET_OP_TEXT,
-                                    "-;GT;%d;%s",
-                                    WEBSOCK_ERROR_MEMORY_ALLOCATION,
-                                    WEBSOCK_STR_ERROR_MEMORY_ALLOCATION );
-                    wxString strErr =
-                            wxString::Format( _("[Websocket] Having problems to allocate memory. [name=%s]\n"), 
-                                tblName.wx_str() );
-                    gpobj->logMsg ( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_GENERAL );
-                    return;
-                }
-
-                ptblItem->m_mutexThisTable.Lock();
-                long nfetchedRecords = ptblItem->getRangeOfData( start, 
-                                                                    end, 
-                                                                    (void *)pRecords, 
-                                                                    nRecords* 
-                                                                    sizeof(struct _vscpFileRecord )  );
-                ptblItem->m_mutexThisTable.Unlock();
-
-                if ( 0 == nfetchedRecords ) {
-                    mg_printf_websocket_frame( nc,
-                                    WEBSOCKET_OP_TEXT,
-                                    "-;GT;%d;%s",
-                                    WEBSOCK_ERROR_TABLE_ERROR_READING,
-                                    WEBSOCK_STR_ERROR_TABLE_ERROR_READING );
-                    wxString strErr =
-                        wxString::Format( _("[Websocket] Problem when reading table. [name=%s]\n"), 
-                                            tblName.wx_str() );
-                    gpobj->logMsg ( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_GENERAL );
-                    return;
-                }
-                else {
-
-                    wxDateTime dtStart;
-                    dtStart.Set( (time_t)ptblItem->getTimeStampStart() );
-                    wxString strDateTimeStart = dtStart.FormatISODate() + _("T") + dtStart.FormatISOTime();
-
-                    wxDateTime dtEnd;
-                    dtEnd.Set( (time_t)ptblItem->getTimeStampEnd() );
-                    wxString strDateTimeEnd = dtEnd.FormatISODate() + _("T") + dtEnd.FormatISOTime();
-
-                    // First send start post with number if records
-                    wxString wxstr = wxString::Format(_("+;GT;START;%d;%d;%s;%s"),
-                                                nfetchedRecords,
-                                                ptblItem->getNumberOfRecords(),
-                                                strDateTimeStart.wx_str(),
-                                                strDateTimeEnd.wx_str() );
-                    mg_printf_websocket_frame( nc,
-                                    WEBSOCKET_OP_TEXT,
-                                    (const char *)wxstr.mbc_str() );
-
-                    // Then send measurement records
-                    for ( long i=0; i<nfetchedRecords; i++ ) {
-                        wxDateTime dt;
-                        dt.Set( (time_t)pRecords[i].timestamp );
-                        wxString strDateTime = dt.FormatISODate() + _(" ") + dt.FormatISOTime();
-                        wxString wxstr = wxString::Format(_("+;GT;%d;%s;%f"),
-                                                i,
-                                                strDateTime.wx_str(),
-                                                pRecords[i].measurement );
-                        mg_printf_websocket_frame( nc,
-                                    WEBSOCKET_OP_TEXT,
-                                    wxstr.mbc_str() );
+            return;     // We still leave channel open
+        }
+        
+        wxString strTable;                
+        if ( tkz.HasMoreTokens() ) {
+            strTable = tkz.GetNextToken();
+            strTable.Trim();
+        }
+        
+        if ( strTable.Length() ) {
+            
+            // list without argument - list all defined tables
+            
+            wxArrayString arrayTblNames;
+            gpobj->m_mutexUserTables.Lock();
+            if ( gpobj->m_userTableObjects.getTableNames( arrayTblNames ) ) {
+            
+                // OK
+        
+                for ( int i=0; i<arrayTblNames.Count(); i++ ) {
+                
+                    CVSCPTable *pTable = 
+                        gpobj->m_userTableObjects.getTable( arrayTblNames[i] );
+                
+                    wxString str = 
+                            wxString::Format( _("+;%i;%zu;"), 
+                                                i, 
+                                                arrayTblNames.Count() );
+                    str += arrayTblNames[i];
+                    str += _(";");
+                    if ( NULL != pTable ) {
+                    
+                        switch( pTable->getType() ) {
+                            
+                            case VSCP_TABLE_DYNAMIC:
+                                str += _("dynamic");
+                                break;
+                            
+                            case VSCP_TABLE_STATIC:
+                                str += _("static");
+                                break;
+                            
+                            case VSCP_TABLE_MAX:
+                                str += _("max");
+                                break;
+                            
+                            default:
+                                str += _("Error: Invalid type");
+                                break;
+                        }
+                    
                     }
-
-                    // Last send end post with number if records
-                    mg_printf_websocket_frame( nc,
-                                    WEBSOCKET_OP_TEXT,
-                                    "+;GT;END;%d",
-                                    nfetchedRecords );
+                    str += _(";");
+                    if ( NULL != pTable ) {
+                        str += pTable->getDescription();
+                    }
+                    
+                    // Output row
+                    web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)str.mbc_str(),
+                                    str.length() );
+                    
                 }
-
-                // Deallocate storage
-                delete[] pRecords;
-
+                       
             }
             else {
-                if ( 0 == nRecords ) {
-                    mg_printf_websocket_frame( nc,
-                                    WEBSOCKET_OP_TEXT,
-                                    "-;GT;%d;%s",
-                                    WEBSOCK_ERROR_TABLE_NO_DATA,
-                                    WEBSOCK_STR_ERROR_TABLE_NO_DATA );
-                    wxString strErr =
-                         wxString::Format( _("[Websocket] No data in table. [name=%s]\n"), tblName.wx_str() );
-                    gpobj->logMsg ( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_GENERAL );
-                    return;
-                }
-                else {
-                    mg_printf_websocket_frame( nc,
-                                    WEBSOCKET_OP_TEXT,
-                                    "-;GT;%d;%s",
-                                    WEBSOCK_ERROR_TABLE_ERROR_READING,
-                                    WEBSOCK_STR_ERROR_TABLE_ERROR_READING );
-                    wxString strErr =
-                         wxString::Format( _("[Websocket] Problem when reading table. [name=%s]\n"), tblName.wx_str() );
-                    gpobj->logMsg ( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_GENERAL );
-                    return;
-                }
+            
+                // Failed
+                
+                wxstr = wxString::Format( _("-;TBL_LIST;%d;%s"),
+                                            (int)WEBSOCK_ERROR_TABLE_LIST_FAILED,
+                                            WEBSOCK_STR_ERROR_TABLE_LIST_FAILED );
+            
+                web_websocket_write( conn, 
+                                        WEB_WEBSOCKET_OPCODE_TEXT,
+                                        (const char *)wxstr.mbc_str(),
+                                        wxstr.length() );
+                
             }
-
+            
+            gpobj->m_mutexUserTables.Unlock();
+            
         }
-        // OK STATIC table
         else {
-
-            // Fetch number of records in set
-            ptblItem->m_mutexThisTable.Lock();
-            long nRecords = ptblItem->getStaticRequiredBuffSize();
-            ptblItem->m_mutexThisTable.Unlock();
-
-            if ( nRecords > 0 ) {
-
-                struct _vscpFileRecord *pRecords = new struct _vscpFileRecord[nRecords];
-
-                if ( NULL == pRecords ) {
-                        mg_printf_websocket_frame( nc,
-                                    WEBSOCKET_OP_TEXT,
-                                    "-;GT;%d;%s",
-                                    WEBSOCK_ERROR_MEMORY_ALLOCATION,
-                                    WEBSOCK_STR_ERROR_MEMORY_ALLOCATION );
-                        wxString strErr =
-                             wxString::Format( _("[Websocket] Having problems to allocate memory. [name=%s]\n"), tblName.wx_str() );
-                        gpobj->logMsg ( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_GENERAL );
-                        return;
-                }
-
-                // Fetch data
-                long nfetchedRecords = ptblItem->getStaticData( pRecords, sizeof( pRecords ) );
-
-                // First send start post with number if records
-                mg_printf_websocket_frame( nc,
-                                    WEBSOCKET_OP_TEXT,
-                                    "+;GT;START;%d",
-                                    nfetchedRecords );
-
-                // Then send measurement records
-                for ( long i=0; i<nfetchedRecords; i++ ) {
-                    mg_printf_websocket_frame( nc,
-                                    WEBSOCKET_OP_TEXT,
-                                    "+;GT;%d;%d;%f",
-                                    i, pRecords[i].timestamp, pRecords[i].measurement );
-                }
-
-                // Last send end post with number if records
-                mg_printf_websocket_frame( nc,
-                                    WEBSOCKET_OP_TEXT,
-                                    "+;GT;END;%d",
-                                    nfetchedRecords );
-
-               // Deallocate storage
-               delete [] pRecords;
-
-            }
+            
+            // list with argument - list specs for specific table
+            
+            wxArrayString arrayTblInfo;
+            gpobj->m_mutexUserTables.Lock();
+            CVSCPTable *pTable = 
+                gpobj->m_userTableObjects.getTable( strTable );
+            if ( NULL == pTable ) {
+                // Failed
+                wxstr = wxString::Format( _("-;TBL_LIST;%d;%s"),
+                                            (int)WEBSOCK_ERROR_TABLE_LIST_FAILED,
+                                            WEBSOCK_STR_ERROR_TABLE_LIST_FAILED );
+            
+                web_websocket_write( conn, 
+                                        WEB_WEBSOCKET_OPCODE_TEXT,
+                                        (const char *)wxstr.mbc_str(),
+                                        wxstr.length() );
+            }   
             else {
-                if ( 0 == nRecords ) {
-                    mg_printf_websocket_frame( nc,
-                                    WEBSOCKET_OP_TEXT,
-                                    "-;GT;%d;%s",
-                                    WEBSOCK_ERROR_TABLE_NO_DATA,
-                                    WEBSOCK_STR_ERROR_TABLE_NO_DATA );
-                    wxString strErr =
-                         wxString::Format( _("[Websocket] No data in table. [name=%s]\n"), tblName.wx_str() );
-                    gpobj->logMsg ( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_GENERAL );
-                    return;
+            
+                wxString str;                  
+
+                // Name
+                arrayTblInfo.Add( pTable->getTableName() );
+
+                // Enable
+                arrayTblInfo.Add( pTable->isEnabled() ? _("true") : _("false") );
+
+                // Type
+                switch( pTable->getType() ) {
+                    case VSCP_TABLE_DYNAMIC:
+                        str = _("dynamic");
+                        break;
+                            
+                    case VSCP_TABLE_STATIC:
+                        str = _("static");
+                        break;
+                            
+                    case VSCP_TABLE_MAX:
+                        str = _("max");
+                        break;
+                            
+                    default:
+                        str = _("Error: Invalid type");
+                        break;
+                }
+                arrayTblInfo.Add( str );
+            
+                // bMemory
+                arrayTblInfo.Add( pTable->isInMemory() ? _("true") : _("false") );
+                            
+                // Size
+                arrayTblInfo.Add( wxString::Format( _("%lu "), 
+                                           (unsigned long)pTable->getSize() ) );
+            
+                // Owner
+                CUserItem *pUserItem = pTable->getUserItem();
+                if ( NULL == pUserItem ) {
+                    str = _("ERROR");
                 }
                 else {
-                    mg_printf_websocket_frame( nc,
-                                    WEBSOCKET_OP_TEXT,
-                                    "-;GT;%d;%s",
-                                    WEBSOCK_ERROR_TABLE_ERROR_READING,
-                                    WEBSOCK_STR_ERROR_TABLE_ERROR_READING );
-                    wxString strErr =
-                         wxString::Format( _("[Websocket] Problem when reading table. [name=%s]\n"), tblName.wx_str() );
-                    gpobj->logMsg ( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_GENERAL );
-                    return;
+                    str = pUserItem->getUserName();
                 }
+                arrayTblInfo.Add( str );
+            
+                // Access rights
+                arrayTblInfo.Add( wxString::Format( _("0x%0X "), 
+                                    (int)pTable->getRights() ) );
+            
+                // Description
+                arrayTblInfo.Add( pTable->getDescription() );
+            
+                // X-name
+                arrayTblInfo.Add( pTable->getLabelX() );
+            
+                // Y-name
+                arrayTblInfo.Add(  pTable->getLabelY() );
+            
+                // Title
+                arrayTblInfo.Add( pTable->getTitle() );
+            
+                // note
+                arrayTblInfo.Add( pTable->getNote() );
+            
+                // vscp-class
+                arrayTblInfo.Add(  wxString::Format( _("%d"), 
+                                                (int)pTable->getVSCPClass() ) );
+            
+                // vscp-type
+                arrayTblInfo.Add(  wxString::Format( _("%d"), 
+                                                (int)pTable->getVSCPType() ) );
+            
+                // vscp-sensor-index
+                arrayTblInfo.Add(  wxString::Format( _("%d"), 
+                                                (int)pTable->getVSCPSensorIndex() ) );
+            
+                // vscp-unit
+                arrayTblInfo.Add(  wxString::Format( _("%d"), 
+                                                (int)pTable->getVSCPUnit() ) );
+            
+                // vscp-zone
+                arrayTblInfo.Add(  wxString::Format( _("%d"), 
+                                                (int)pTable->getVSCPZone() ) );
+            
+                // vscp-subzone
+                arrayTblInfo.Add(  wxString::Format( _("%d"), 
+                                                (int)pTable->getVSCPSubZone() ) );
+            
+                // SQL-create
+                arrayTblInfo.Add(  pTable->getSQLCreate() );
+            
+                // SQL-insert
+                arrayTblInfo.Add(  pTable->getSQLInsert() ); 
+            
+                // SQL-delete
+                arrayTblInfo.Add(  pTable->getSQLDelete() );
+                        
+                // Send response
+                for ( int i=0; i<arrayTblInfo.Count(); i++  ) {                    
+                    str = wxString::Format( _("+;%i;%zu;"), 
+                                               i, 
+                                               arrayTblInfo.Count() );
+                    str += arrayTblInfo[i];
+                    // Output row
+                    web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)str.mbc_str(),
+                                    str.length() );
+                }
+            
             }
-
+            
+            gpobj->m_mutexUserTables.Unlock();
+            
         }
-    */
+        
+    
+    }
+    
+    // ------------------------------------------------------------------------
+    //                             TBL_GET
+    //-------------------------------------------------------------------------
+    
+    else if ( 0 == strTok.Find(_("TBL_GET") ) ) {
+        
+        // Initialize date range to 'all'
+        wxDateTime start;
+        wxDateTime end;
+        
+        start.ParseISOCombined( _("0000-01-01T00:00:00") );   // The first date
+        end.ParseISOCombined( _("9999-12-31T23:59:59") );     // The last date
+        
+        // Must be authorised to do this
+        if ( ( NULL == pSession->m_pClientItem ) || 
+                !pSession->m_pClientItem->bAuthenticated ) {
+            
+            wxstr = wxString::Format( _("-;TBL_GET;%d;%s"),
+                                        (int)WEBSOCK_ERROR_NOT_AUTHORISED,
+                                        WEBSOCK_STR_ERROR_NOT_AUTHORISED );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+   
+            gpobj->logMsg ( _("[Websocket] User/host not authorised to get data from a table.\n"),
+                                        DAEMON_LOGMSG_NORMAL,
+                                        DAEMON_LOGTYPE_SECURITY );
+
+            return;     // We still leave channel open
+        }
+        
+        // Get table name
+        wxString strTable;                
+        if ( tkz.HasMoreTokens() ) {
+            strTable = tkz.GetNextToken();
+            strTable.Trim();
+        }
+        else {
+            // Error: Need tablename
+            wxstr = wxString::Format( _("-;TBL_GET;%d;%s"),
+                                        (int)WEBSOCK_ERROR_SYNTAX_ERROR,
+                                        WEBSOCK_STR_ERROR_SYNTAX_ERROR );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+        }
+                      
+        if ( tkz.HasMoreTokens() ) {
+            start.ParseISOCombined( tkz.GetNextToken() );        
+            if ( !start.IsValid() ) {
+                // Invalid date time
+                wxstr = wxString::Format( _("-;TBL_GET;%d;%s"),
+                                            (int)WEBSOCK_ERROR_INVALID_DATE,
+                                            WEBSOCK_STR_ERROR_INVALID_DATE );
+            
+                web_websocket_write( conn, 
+                                        WEB_WEBSOCKET_OPCODE_TEXT,
+                                        (const char *)wxstr.mbc_str(),
+                                        wxstr.length() );
+            }
+               
+        }
+        else {
+            wxstr = wxString::Format( _("-;TBL_GET;%d;%s"),
+                                        (int)WEBSOCK_ERROR_SYNTAX_ERROR,
+                                        WEBSOCK_STR_ERROR_SYNTAX_ERROR );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+        }
+                        
+        if ( tkz.HasMoreTokens() ) {
+            end.ParseISOCombined( tkz.GetNextToken() );
+            if ( !end.IsValid() ) {
+                // Invalid date time
+                wxstr = wxString::Format( _("-;TBL_GET;%d;%s"),
+                                            (int)WEBSOCK_ERROR_INVALID_DATE,
+                                            WEBSOCK_STR_ERROR_INVALID_DATE );
+            
+                web_websocket_write( conn, 
+                                        WEB_WEBSOCKET_OPCODE_TEXT,
+                                        (const char *)wxstr.mbc_str(),
+                                        wxstr.length() );
+            }
+        }
+        else {
+            wxstr = wxString::Format( _("-;TBL_GET;%d;%s"),
+                                        (int)WEBSOCK_ERROR_SYNTAX_ERROR,
+                                        WEBSOCK_STR_ERROR_SYNTAX_ERROR );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+        }
+        
+        bool bAll;                
+        if ( tkz.HasMoreTokens() ) {
+            wxString str = tkz.GetNextToken();
+            str.Trim();
+            str.MakeUpper();
+            if ( wxNOT_FOUND != str.Find("FULL") ) {
+                bAll = true;
+            }
+        }
+    
+        gpobj->m_mutexUserTables.Lock();
+    
+        CVSCPTable *pTable = 
+                gpobj->m_userTableObjects.getTable( strTable );
+        if ( NULL == pTable ) {
+            
+            // Failed
+            wxstr = wxString::Format( _("-;TBL_GET;%d;%s"),
+                                        (int)WEBSOCK_ERROR_TABLE_FAILED_TO_GET,
+                                        WEBSOCK_STR_ERROR_TABLE_FAILED_TO_GET );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+        
+            gpobj->m_mutexUserTables.Unlock();
+            return;
+        }   
+
+        sqlite3_stmt *ppStmt;
+        if ( !pTable->prepareRangeOfData( start, end, &ppStmt, bAll ) ) {
+            
+            // Failed
+            wxstr = wxString::Format( _("-;TBL_GET;%d;%s"),
+                                        (int)WEBSOCK_ERROR_TABLE_FAILED_GET_DATA,
+                                        WEBSOCK_STR_ERROR_TABLE_FAILED_GET_DATA );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+        
+            gpobj->m_mutexUserTables.Unlock();
+            return;
+        }
+    
+        wxString str;
+        wxArrayString strArray;
+            while ( pTable->getRowRangeOfData( ppStmt, str ) ) {
+            strArray.Add( str );
+        }
+        
+        if ( strArray.Count() ) {
+            for ( int i=0; i<strArray.Count(); i++ ) {
+                
+                str = wxString::Format(_("+;%d;%zu;"), i, strArray.Count() );
+                str += strArray[i];
+                
+                // Output row
+                web_websocket_write( conn, 
+                                        WEB_WEBSOCKET_OPCODE_TEXT,
+                                        (const char *)str.mbc_str(),
+                                        str.length() );
+            }
+        }    
+    
+        pTable->finalizeRangeOfData( ppStmt );   
+        gpobj->m_mutexUserTables.Unlock();
+                
+    }
+    
+    // ------------------------------------------------------------------------
+    //                             TBL_GETRAW
+    //-------------------------------------------------------------------------
+    
+    else if ( 0 == strTok.Find(_("TBL_GETRAW") ) ) {
+        
+        // Initialize date range to 'all'
+        wxDateTime start;
+        wxDateTime end;
+        
+        start.ParseISOCombined( _("0000-01-01T00:00:00") );   // The first date
+        end.ParseISOCombined( _("9999-12-31T23:59:59") );     // The last date
+        
+        // Must be authorised to do this
+        if ( ( NULL == pSession->m_pClientItem ) || 
+                !pSession->m_pClientItem->bAuthenticated ) {
+            
+            wxstr = wxString::Format( _("-;TBL_GETRAW;%d;%s"),
+                                        (int)WEBSOCK_ERROR_NOT_AUTHORISED,
+                                        WEBSOCK_STR_ERROR_NOT_AUTHORISED );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+   
+            gpobj->logMsg ( _("[Websocket] User/host not authorised to get raw data from a table.\n"),
+                                        DAEMON_LOGMSG_NORMAL,
+                                        DAEMON_LOGTYPE_SECURITY );
+
+            return;     // We still leave channel open
+        }
+        
+        // Get table name
+        wxString strTable;                
+        if ( tkz.HasMoreTokens() ) {
+            strTable = tkz.GetNextToken();
+            strTable.Trim();
+        }
+        else {
+            // Error: Need tablename
+            wxstr = wxString::Format( _("-;TBL_GETRAW;%d;%s"),
+                                        (int)WEBSOCK_ERROR_SYNTAX_ERROR,
+                                        WEBSOCK_STR_ERROR_SYNTAX_ERROR );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+        }
+                      
+        if ( tkz.HasMoreTokens() ) {
+            start.ParseISOCombined( tkz.GetNextToken() );        
+            if ( !start.IsValid() ) {
+                // Invalid date time
+                wxstr = wxString::Format( _("-;TBL_GETRAW;%d;%s"),
+                                            (int)WEBSOCK_ERROR_INVALID_DATE,
+                                            WEBSOCK_STR_ERROR_INVALID_DATE );
+            
+                web_websocket_write( conn, 
+                                        WEB_WEBSOCKET_OPCODE_TEXT,
+                                        (const char *)wxstr.mbc_str(),
+                                        wxstr.length() );
+            }
+               
+        }
+        else {
+            wxstr = wxString::Format( _("-;TBL_GETRAW;%d;%s"),
+                                        (int)WEBSOCK_ERROR_SYNTAX_ERROR,
+                                        WEBSOCK_STR_ERROR_SYNTAX_ERROR );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+        }
+                        
+        if ( tkz.HasMoreTokens() ) {
+            end.ParseISOCombined( tkz.GetNextToken() );
+            if ( !end.IsValid() ) {
+                // Invalid date time
+                wxstr = wxString::Format( _("-;TBL_GETRAW;%d;%s"),
+                                            (int)WEBSOCK_ERROR_INVALID_DATE,
+                                            WEBSOCK_STR_ERROR_INVALID_DATE );
+            
+                web_websocket_write( conn, 
+                                        WEB_WEBSOCKET_OPCODE_TEXT,
+                                        (const char *)wxstr.mbc_str(),
+                                        wxstr.length() );
+            }
+        }
+        else {
+            wxstr = wxString::Format( _("-;TBL_GETRAW;%d;%s"),
+                                        (int)WEBSOCK_ERROR_SYNTAX_ERROR,
+                                        WEBSOCK_STR_ERROR_SYNTAX_ERROR );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+        }
+        
+        bool bAll;                
+        if ( tkz.HasMoreTokens() ) {
+            wxString str = tkz.GetNextToken();
+            str.Trim();
+            str.MakeUpper();
+            if ( wxNOT_FOUND != str.Find("FULL") ) {
+                bAll = true;
+            }
+        }
+    
+        gpobj->m_mutexUserTables.Lock();
+    
+        CVSCPTable *pTable = 
+                gpobj->m_userTableObjects.getTable( strTable );
+        if ( NULL == pTable ) {
+            
+            // Failed
+            wxstr = wxString::Format( _("-;TBL_GETRAW;%d;%s"),
+                                        (int)WEBSOCK_ERROR_TABLE_FAILED_TO_GET,
+                                        WEBSOCK_STR_ERROR_TABLE_FAILED_TO_GET );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+        
+            gpobj->m_mutexUserTables.Unlock();
+            return;
+        }   
+
+        sqlite3_stmt *ppStmt;
+        if ( !pTable->prepareRangeOfData( start, end, &ppStmt, bAll ) ) {
+            
+            // Failed
+            wxstr = wxString::Format( _("-;TBL_GETRAW;%d;%s"),
+                                        (int)WEBSOCK_ERROR_TABLE_FAILED_GET_DATA,
+                                        WEBSOCK_STR_ERROR_TABLE_FAILED_GET_DATA );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+        
+            gpobj->m_mutexUserTables.Unlock();
+            return;
+        }
+    
+        wxString str;
+        wxArrayString strArray;
+            while ( pTable->getRowRangeOfDataRaw( ppStmt, str ) ) {
+            strArray.Add( str );
+        }
+        
+        if ( strArray.Count() ) {
+            for ( int i=0; i<strArray.Count(); i++ ) {
+                
+                str = wxString::Format(_("+;%d;%zu;"), i, strArray.Count() );
+                str += strArray[i];
+                
+                // Output row
+                web_websocket_write( conn, 
+                                        WEB_WEBSOCKET_OPCODE_TEXT,
+                                        (const char *)str.mbc_str(),
+                                        str.length() );
+            }
+        }    
+    
+        pTable->finalizeRangeOfData( ppStmt );   
+        gpobj->m_mutexUserTables.Unlock();
+    
+    }
+    
+    // ------------------------------------------------------------------------
+    //                             TBL_CLEAR
+    //-------------------------------------------------------------------------
+    
+    else if ( 0 == strTok.Find(_("TBL_CLEAR") ) ) {
+        
+        // Initialize date range to 'all'
+        wxDateTime start;
+        wxDateTime end;
+        
+        start.ParseISOCombined( _("0000-01-01T00:00:00") );   // The first date
+        end.ParseISOCombined( _("9999-12-31T23:59:59") );     // The last date
+        
+        // Must be authorised to do this
+        if ( ( NULL == pSession->m_pClientItem ) || 
+                !pSession->m_pClientItem->bAuthenticated ) {
+            
+            wxstr = wxString::Format( _("-;TBL_CLEAR;%d;%s"),
+                                        (int)WEBSOCK_ERROR_NOT_AUTHORISED,
+                                        WEBSOCK_STR_ERROR_NOT_AUTHORISED );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+   
+            gpobj->logMsg ( _("[Websocket] User/host not authorised to log data to a table.\n"),
+                                        DAEMON_LOGMSG_NORMAL,
+                                        DAEMON_LOGTYPE_SECURITY );
+
+            return;     // We still leave channel open
+        }
+        
+        // Get table name
+        wxString strTable;                
+        if ( tkz.HasMoreTokens() ) {
+            strTable = tkz.GetNextToken();
+            strTable.Trim();
+        }
+        else {
+            // Error: Need tablename
+            wxstr = wxString::Format( _("-;TBL_CLEAR;%d;%s"),
+                                        (int)WEBSOCK_ERROR_SYNTAX_ERROR,
+                                        WEBSOCK_STR_ERROR_SYNTAX_ERROR );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+        }
+                      
+        bool bClearAll = true;
+        if ( tkz.HasMoreTokens() ) {
+            bClearAll = false;
+            start.ParseISOCombined( tkz.GetNextToken() );        
+            if ( !start.IsValid() ) {
+                // Invalid date time
+                wxstr = wxString::Format( _("-;TBL_CLEAR;%d;%s"),
+                                            (int)WEBSOCK_ERROR_INVALID_DATE,
+                                            WEBSOCK_STR_ERROR_INVALID_DATE );
+            
+                web_websocket_write( conn, 
+                                        WEB_WEBSOCKET_OPCODE_TEXT,
+                                        (const char *)wxstr.mbc_str(),
+                                        wxstr.length() );
+            }
+               
+        }
+                        
+        if ( tkz.HasMoreTokens() ) {
+            end.ParseISOCombined( tkz.GetNextToken() );
+            if ( !end.IsValid() ) {
+                // Invalid date time
+                wxstr = wxString::Format( _("-;TBL_CLEAR;%d;%s"),
+                                            (int)WEBSOCK_ERROR_INVALID_DATE,
+                                            WEBSOCK_STR_ERROR_INVALID_DATE );
+            
+                web_websocket_write( conn, 
+                                        WEB_WEBSOCKET_OPCODE_TEXT,
+                                        (const char *)wxstr.mbc_str(),
+                                        wxstr.length() );
+            }
+        }
+        
+        
+        gpobj->m_mutexUserTables.Lock();
+    
+        CVSCPTable *pTable = 
+                        gpobj->m_userTableObjects.getTable( strTable );
+    
+        if ( NULL == pTable ) {
+            // Failed
+            wxstr = wxString::Format( _("-;TBL_CLEAR;%d;%s"),
+                                        (int)WEBSOCK_ERROR_TABLE_NOT_FOUND,
+                                        WEBSOCK_STR_ERROR_TABLE_NOT_FOUND );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+        
+            gpobj->m_mutexUserTables.Unlock();
+            return;
+        } 
+    
+        if ( bClearAll ) {
+            if ( !pTable->clearTable() ) {
+                // Failed
+                wxstr = wxString::Format( _("-;TBL_CLEAR;%d;%s"),
+                                        (int)WEBSOCK_ERROR_TABLE_FAILED_CLEAR,
+                                        WEBSOCK_STR_ERROR_TABLE_FAILED_CLEAR );
+            
+                web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+                gpobj->m_mutexUserTables.Unlock();
+                return;
+            }
+        }
+        else {
+            if ( !pTable->clearTableRange( start, end ) ) {
+                // Failed
+                wxstr = wxString::Format( _("-;TBL_CLEAR;%d;%s"),
+                                        (int)WEBSOCK_ERROR_TABLE_FAILED_CLEAR,
+                                        WEBSOCK_STR_ERROR_TABLE_FAILED_CLEAR );
+            
+                web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+                gpobj->m_mutexUserTables.Unlock();
+                return;
+            }
+        }
+            
+        gpobj->m_mutexUserTables.Unlock();
+    
+    }
+    
+    // ------------------------------------------------------------------------
+    //                             TBL_LOG
+    //-------------------------------------------------------------------------
+    
+    else if ( 0 == strTok.Find(_("TBL_LOG") ) ) {
+        
+        // Must be authorised to do this
+        if ( ( NULL == pSession->m_pClientItem ) || 
+                !pSession->m_pClientItem->bAuthenticated ) {
+            
+            wxstr = wxString::Format( _("-;TBL_LOG;%d;%s"),
+                                        (int)WEBSOCK_ERROR_NOT_AUTHORISED,
+                                        WEBSOCK_STR_ERROR_NOT_AUTHORISED );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+   
+            gpobj->logMsg ( _("[Websocket] User/host not authorised to log data to a table.\n"),
+                                        DAEMON_LOGMSG_NORMAL,
+                                        DAEMON_LOGTYPE_SECURITY );
+
+            return;     // We still leave channel open
+        }
+        
+        // Get table name
+        wxString strTable;                
+        if ( tkz.HasMoreTokens() ) {
+            strTable = tkz.GetNextToken();
+            strTable.Trim();
+        }
+        else {
+            // Error: Need tablename
+            wxstr = wxString::Format( _("-;TBL_LOG;%d;%s"),
+                                        (int)WEBSOCK_ERROR_SYNTAX_ERROR,
+                                        WEBSOCK_STR_ERROR_SYNTAX_ERROR );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+        }
+        
+        // Get the value
+        double value;
+        if ( tkz.HasMoreTokens() ) {
+            wxString str = tkz.GetNextToken();
+            if ( !str.ToDouble( &value ) ) {
+                // Problems: The value is not in a valid format
+                wxstr = wxString::Format( _("-;TBL_LOG;%d;%s"),
+                                        (int)WEBSOCK_ERROR_SYNTAX_ERROR,
+                                        WEBSOCK_STR_ERROR_SYNTAX_ERROR );
+            
+                web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+                return;            
+            }
+        }
+        else {
+            // Problems: A value must be given 
+            wxstr = wxString::Format( _("-;TBL_LOG;%d;%s"),
+                                        (int)WEBSOCK_ERROR_TABLE_LOG_MISSING_VALUE,
+                                        WEBSOCK_STR_ERROR_TABLE_LOG_MISSING_VALUE );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+            return;
+        }
+    
+        // Get the datetime if its there
+        wxDateTime dt;
+        if ( tkz.HasMoreTokens() ) {
+        
+            uint32_t ms = 0;
+        
+            wxString str = tkz.GetNextToken();
+            str.Trim(true);
+            str.Trim(false);
+        
+            if ( !dt.ParseISOCombined( str ) ) {
+                // Problems: The value is not in a valid format 
+                wxstr = wxString::Format( _("-;TBL_LOG;%d;%s"),
+                                            (int)WEBSOCK_ERROR_INVALID_DATE,
+                                            WEBSOCK_STR_ERROR_INVALID_DATE );
+            
+                web_websocket_write( conn, 
+                                        WEB_WEBSOCKET_OPCODE_TEXT,
+                                        (const char *)wxstr.mbc_str(),
+                                        wxstr.length() );
+                return;            
+            }
+        
+            // Get possible millisecond part
+            str = str.AfterFirst('.');
+            str.Trim();
+            if ( str.Length() ) {
+                ms = vscp_readStringValue( str );
+            }    
+        
+            dt.SetMillisecond( ms );
+        
+        }
+        else {
+            // Set to now
+            dt = wxDateTime::UNow();
+        }
+    
+    
+        gpobj->m_mutexUserTables.Lock();
+    
+        CVSCPTable *pTable = 
+                    gpobj->m_userTableObjects.getTable( strTable );
+    
+        if ( NULL == pTable ) {
+            // Failed
+            wxstr = wxString::Format( _("-;TBL_LOG;%d;%s"),
+                                            (int)WEBSOCK_ERROR_TABLE_NOT_FOUND,
+                                            WEBSOCK_STR_ERROR_TABLE_NOT_FOUND );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+        
+            gpobj->m_mutexUserTables.Unlock();
+            return;
+        }
+    
+        // Log data
+        if ( !pTable->logData( dt, value ) ) {
+            gpobj->m_mutexUserTables.Unlock();
+            wxstr = wxString::Format( _("-;TBL_LOG;%d;%s"),
+                                            (int)WEBSOCK_ERROR_TABLE_LOG_FAILED,
+                                            WEBSOCK_STR_ERROR_TABLE_LOG_FAILED );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+            return;
+        }
+    
+        gpobj->m_mutexUserTables.Unlock();
+    
+    }
+    
+    // ------------------------------------------------------------------------
+    //                             TBL_LOGSQL
+    //-------------------------------------------------------------------------
+    
+    else if ( 0 == strTok.Find(_("TBL_LOGSQL") ) ) {
+        
+        // Must be authorised to do this
+        if ( ( NULL == pSession->m_pClientItem ) || 
+                !pSession->m_pClientItem->bAuthenticated ) {
+            
+            wxstr = wxString::Format( _("-;TBL_LOGSQL;%d;%s"),
+                                        (int)WEBSOCK_ERROR_NOT_AUTHORISED,
+                                        WEBSOCK_STR_ERROR_NOT_AUTHORISED );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+   
+            gpobj->logMsg ( _("[Websocket] User/host not authorised to log sql data to a table.\n"),
+                                        DAEMON_LOGMSG_NORMAL,
+                                        DAEMON_LOGTYPE_SECURITY );
+
+            return;     // We still leave channel open
+        }
+        
+        // Get table name
+        wxString strTable;                
+        if ( tkz.HasMoreTokens() ) {
+            strTable = tkz.GetNextToken();
+            strTable.Trim();
+        }
+        else {
+            // Error: Need tablename
+            wxstr = wxString::Format( _("-;TBL_LOG;%d;%s"),
+                                        (int)WEBSOCK_ERROR_SYNTAX_ERROR,
+                                        WEBSOCK_STR_ERROR_SYNTAX_ERROR );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+        }
+        
+        // Get SQL expression 
+        wxString strSQL;
+        if ( tkz.HasMoreTokens() ) {
+            strSQL = tkz.GetNextToken();
+            strSQL.Trim(true);
+            strSQL.Trim(false);
+        }
+        else {
+            // Problems: A SQL expression must be given
+            wxstr = wxString::Format( _("-;TBL_LOGSQL;%d;%s"),
+                                        (int)WEBSOCK_ERROR_TABLE_NEED_SQL,
+                                        WEBSOCK_STR_ERROR_TABLE_NEED_SQL );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+            return;
+        }
+
+        gpobj->m_mutexUserTables.Lock();
+    
+        CVSCPTable *pTable = 
+                    gpobj->m_userTableObjects.getTable( strTable );
+    
+        if ( NULL == pTable ) {
+            // Failed
+            wxstr = wxString::Format( _("-;TBL_LOGSQL;%d;%s"),
+                                            (int)WEBSOCK_ERROR_TABLE_NOT_FOUND,
+                                            WEBSOCK_STR_ERROR_TABLE_NOT_FOUND );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+        
+            gpobj->m_mutexUserTables.Unlock();
+            return;
+        }
+    
+        // Log data
+        if ( !pTable->logData( strSQL ) ) {
+            gpobj->m_mutexUserTables.Unlock();
+            wxstr = wxString::Format( _("-;TBL_LOGSQL;%d;%s"),
+                                            (int)WEBSOCK_ERROR_TABLE_LOG_FAILED,
+                                            WEBSOCK_STR_ERROR_TABLE_LOG_FAILED );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+            return;
+        }
+    
+        gpobj->m_mutexUserTables.Unlock();
+    
+    }
+    
+    // ------------------------------------------------------------------------
+    //                             TBL_RECORDS
+    //-------------------------------------------------------------------------
+    
+    else if ( 0 == strTok.Find(_("TBL_RECORDS") ) ) {
+        
+        wxDateTime wxStart;   
+        wxDateTime wxEnd;
+    
+        // Initialize date range to 'all'
+        wxStart.ParseISOCombined( _("0000-01-01T00:00:00") );   // The first date
+        wxEnd.ParseISOCombined( _("9999-12-31T23:59:59") );     // The last date
+        
+        // Must be authorised to do this
+        if ( ( NULL == pSession->m_pClientItem ) || 
+                !pSession->m_pClientItem->bAuthenticated ) {
+            
+            wxstr = wxString::Format( _("-;TBL_RECORDS;%d;%s"),
+                                        (int)WEBSOCK_ERROR_NOT_AUTHORISED,
+                                        WEBSOCK_STR_ERROR_NOT_AUTHORISED );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+   
+            gpobj->logMsg ( _("[Websocket] User/host not authorised to do records on table.\n"),
+                                        DAEMON_LOGMSG_NORMAL,
+                                        DAEMON_LOGTYPE_SECURITY );
+
+            return;     // We still leave channel open
+        }
+        
+        // Get table name
+        wxString strTable;                
+        if ( tkz.HasMoreTokens() ) {
+            strTable = tkz.GetNextToken();
+            strTable.Trim();
+        }
+        else {
+            // Error: Need tablename
+            wxstr = wxString::Format( _("-;TBL_RECORDS;%d;%s"),
+                                        (int)WEBSOCK_ERROR_SYNTAX_ERROR,
+                                        WEBSOCK_STR_ERROR_SYNTAX_ERROR );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+        }
+        
+        // If available get Start data
+        if ( tkz.HasMoreTokens() ) {
+            if ( !wxStart.ParseISOCombined( tkz.GetNextToken() ) ) {
+                wxstr = wxString::Format( _("-;TBL_RECORDS;%d;%s"),
+                                        (int)WEBSOCK_ERROR_INVALID_DATE,
+                                        WEBSOCK_STR_ERROR_INVALID_DATE );
+            
+                web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+            }
+        }
+        
+        // If available get end date
+        if ( tkz.HasMoreTokens() ) {
+            if ( !wxEnd.ParseISOCombined( tkz.GetNextToken() ) ) {
+                wxstr = wxString::Format( _("-;TBL_RECORDS;%d;%s"),
+                                        (int)WEBSOCK_ERROR_INVALID_DATE,
+                                        WEBSOCK_STR_ERROR_INVALID_DATE );
+            
+                web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+            }
+        }
+        
+        gpobj->m_mutexUserTables.Lock();
+    
+        CVSCPTable *pTable = 
+                gpobj->m_userTableObjects.getTable( strTable );
+    
+        if ( NULL == pTable ) {
+            // Failed
+            wxstr = wxString::Format( _("-;TBL_RECORDS;%d;%s"),
+                                            (int)WEBSOCK_ERROR_TABLE_NOT_FOUND,
+                                            WEBSOCK_STR_ERROR_TABLE_NOT_FOUND );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+        
+            gpobj->m_mutexUserTables.Unlock();
+            return;
+        } 
+    
+        double count;
+        if ( !pTable->getNumberOfRecordsForRange( wxStart, wxEnd, &count ) ) { 
+            wxstr = wxString::Format( _("-;TBL_RECORDS;%d;%s"),
+                                            (int)WEBSOCK_ERROR_TABLE_FAILD_COMMAND_RECORDS,
+                                            WEBSOCK_STR_ERROR_TABLE_FAILD_COMMAND_RECORDS );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+            gpobj->m_mutexUserTables.Unlock();
+            return;
+        }
+    
+        gpobj->m_mutexUserTables.Unlock();
+        
+        // Success
+        wxstr = wxString::Format( _("+;TBL_RECORDS;%lf"), count );
+    
+        web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+    
+    }
+    
+    
+    // ------------------------------------------------------------------------
+    //                              TBL_FIRSTDATE
+    //-------------------------------------------------------------------------
+    
+    else if ( 0 == strTok.Find(_("TBL_FIRSTDATE") ) ) {
+        
+        wxDateTime wxStart;   
+        wxDateTime wxEnd;
+    
+        // Initialize date range to 'all'
+        wxStart.ParseISOCombined( _("0000-01-01T00:00:00") );   // The first date
+        wxEnd.ParseISOCombined( _("9999-12-31T23:59:59") );     // The last date
+        
+        // Must be authorised to do this
+        if ( ( NULL == pSession->m_pClientItem ) || 
+                !pSession->m_pClientItem->bAuthenticated ) {
+            
+            wxstr = wxString::Format( _("-;TBL_FIRSTDATE;%d;%s"),
+                                        (int)WEBSOCK_ERROR_NOT_AUTHORISED,
+                                        WEBSOCK_STR_ERROR_NOT_AUTHORISED );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+   
+            gpobj->logMsg ( _("[Websocket] User/host not authorised to do "
+                              "firstdate on table.\n"),
+                                        DAEMON_LOGMSG_NORMAL,
+                                        DAEMON_LOGTYPE_SECURITY );
+
+            return;     // We still leave channel open
+        }
+        
+        // Get table name
+        wxString strTable;                
+        if ( tkz.HasMoreTokens() ) {
+            strTable = tkz.GetNextToken();
+            strTable.Trim();
+        }
+        else {
+            // Error: Need tablename
+            wxstr = wxString::Format( _("-;TBL_FIRSTDATE;%d;%s"),
+                                        (int)WEBSOCK_ERROR_SYNTAX_ERROR,
+                                        WEBSOCK_STR_ERROR_SYNTAX_ERROR );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+        }
+        
+        // If available get Start data
+        if ( tkz.HasMoreTokens() ) {
+            if ( !wxStart.ParseISOCombined( tkz.GetNextToken() ) ) {
+                wxstr = wxString::Format( _("-;TBL_FIRSTDATE;%d;%s"),
+                                        (int)WEBSOCK_ERROR_INVALID_DATE,
+                                        WEBSOCK_STR_ERROR_INVALID_DATE );
+            
+                web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+            }
+        }
+        
+        // If available get end date
+        if ( tkz.HasMoreTokens() ) {
+            if ( !wxEnd.ParseISOCombined( tkz.GetNextToken() ) ) {
+                wxstr = wxString::Format( _("-;TBL_FIRSTDATE;%d;%s"),
+                                        (int)WEBSOCK_ERROR_INVALID_DATE,
+                                        WEBSOCK_STR_ERROR_INVALID_DATE );
+            
+                web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+            }
+        }
+        
+        gpobj->m_mutexUserTables.Lock();
+    
+        CVSCPTable *pTable = 
+                gpobj->m_userTableObjects.getTable( strTable );
+    
+        if ( NULL == pTable ) {
+            // Failed
+            wxstr = wxString::Format( _("-;TBL_FIRSTDATE;%d;%s"),
+                                            (int)WEBSOCK_ERROR_TABLE_NOT_FOUND,
+                                            WEBSOCK_STR_ERROR_TABLE_NOT_FOUND );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+        
+            gpobj->m_mutexUserTables.Unlock();
+            return;
+        } 
+        
+        wxDateTime first;
+        if ( !pTable->getFirstDate( first ) ) {
+            wxstr = wxString::Format( _("-;TBL_FIRSTDATE;%d;%s"),
+                                            (int)WEBSOCK_ERROR_TABLE_FAILD_COMMAND_FIRSTDATE,
+                                            WEBSOCK_STR_ERROR_TABLE_FAILD_COMMAND_FIRSTDATE );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+            gpobj->m_mutexUserTables.Unlock();
+            return;
+        }
+    
+        gpobj->m_mutexUserTables.Unlock();
+    
+        // Success
+        wxstr = wxString::Format( _("+;TBL_FIRSTDATE;%s"), 
+                            (const char *)first.FormatISOCombined().mbc_str() );
+    
+        web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );    
+    }
+    
+    // ------------------------------------------------------------------------
+    //                              TBL_LASTDATE
+    //-------------------------------------------------------------------------
+    
+    else if ( 0 == strTok.Find(_("TBL_LASTDATE") ) ) {
+        
+        wxDateTime wxStart;   
+        wxDateTime wxEnd;
+    
+        // Initialize date range to 'all'
+        wxStart.ParseISOCombined( _("0000-01-01T00:00:00") );   // The first date
+        wxEnd.ParseISOCombined( _("9999-12-31T23:59:59") );     // The last date
+        
+        // Must be authorised to do this
+        if ( ( NULL == pSession->m_pClientItem ) || 
+                !pSession->m_pClientItem->bAuthenticated ) {
+            
+            wxstr = wxString::Format( _("-;TBL_LASTDATE;%d;%s"),
+                                        (int)WEBSOCK_ERROR_NOT_AUTHORISED,
+                                        WEBSOCK_STR_ERROR_NOT_AUTHORISED );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+   
+            gpobj->logMsg ( _("[Websocket] User/host not authorised to do "
+                              "lastdate on table.\n"),
+                                        DAEMON_LOGMSG_NORMAL,
+                                        DAEMON_LOGTYPE_SECURITY );
+
+            return;     // We still leave channel open
+        }
+        
+        // Get table name
+        wxString strTable;                
+        if ( tkz.HasMoreTokens() ) {
+            strTable = tkz.GetNextToken();
+            strTable.Trim();
+        }
+        else {
+            // Error: Need tablename
+            wxstr = wxString::Format( _("-;TBL_LASTDATE;%d;%s"),
+                                        (int)WEBSOCK_ERROR_SYNTAX_ERROR,
+                                        WEBSOCK_STR_ERROR_SYNTAX_ERROR );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+        }
+        
+        // If available get Start data
+        if ( tkz.HasMoreTokens() ) {
+            if ( !wxStart.ParseISOCombined( tkz.GetNextToken() ) ) {
+                wxstr = wxString::Format( _("-;TBL_LASTDATE;%d;%s"),
+                                        (int)WEBSOCK_ERROR_INVALID_DATE,
+                                        WEBSOCK_STR_ERROR_INVALID_DATE );
+            
+                web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+            }
+        }
+        
+        // If available get end date
+        if ( tkz.HasMoreTokens() ) {
+            if ( !wxEnd.ParseISOCombined( tkz.GetNextToken() ) ) {
+                wxstr = wxString::Format( _("-;TBL_LASTDATE;%d;%s"),
+                                        (int)WEBSOCK_ERROR_INVALID_DATE,
+                                        WEBSOCK_STR_ERROR_INVALID_DATE );
+            
+                web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+            }
+        }
+        
+        gpobj->m_mutexUserTables.Lock();
+    
+        CVSCPTable *pTable = 
+                gpobj->m_userTableObjects.getTable( strTable );
+    
+        if ( NULL == pTable ) {
+            // Failed
+            wxstr = wxString::Format( _("-;TBL_LASTDATE;%d;%s"),
+                                            (int)WEBSOCK_ERROR_TABLE_NOT_FOUND,
+                                            WEBSOCK_STR_ERROR_TABLE_NOT_FOUND );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+        
+            gpobj->m_mutexUserTables.Unlock();
+            return;
+        } 
+    
+        wxDateTime last;
+        if ( !pTable->getLastDate( last ) ) {
+            wxstr = wxString::Format( _("-;TBL_LASTDATE;%d;%s"),
+                                            (int)WEBSOCK_ERROR_TABLE_FAILD_COMMAND_LASTDATE,
+                                            WEBSOCK_STR_ERROR_TABLE_FAILD_COMMAND_LASTDATE );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+            gpobj->m_mutexUserTables.Unlock();
+            return;
+        }
+    
+        gpobj->m_mutexUserTables.Unlock();
+    
+        // Success
+        wxstr = wxString::Format( _("+;TBL_LASTDATE;%s"), 
+                            (const char *)last.FormatISOCombined().mbc_str() );
+    
+        web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );  
+    }
+    
+    // ------------------------------------------------------------------------
+    //                              TBL_SUM
+    //-------------------------------------------------------------------------
+    
+    else if ( 0 == strTok.Find(_("TBL_SUM") ) ) {
+        
+        wxDateTime wxStart;   
+        wxDateTime wxEnd;
+    
+        // Initialize date range to 'all'
+        wxStart.ParseISOCombined( _("0000-01-01T00:00:00") );   // The first date
+        wxEnd.ParseISOCombined( _("9999-12-31T23:59:59") );     // The last date
+        
+        // Must be authorised to do this
+        if ( ( NULL == pSession->m_pClientItem ) || 
+                !pSession->m_pClientItem->bAuthenticated ) {
+            
+            wxstr = wxString::Format( _("-;TBL_SUM;%d;%s"),
+                                        (int)WEBSOCK_ERROR_NOT_AUTHORISED,
+                                        WEBSOCK_STR_ERROR_NOT_AUTHORISED );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+   
+            gpobj->logMsg ( _("[Websocket] User/host not authorised to do sum "
+                              "on table.\n"),
+                                        DAEMON_LOGMSG_NORMAL,
+                                        DAEMON_LOGTYPE_SECURITY );
+
+            return;     // We still leave channel open
+        }
+        
+        // Get table name
+        wxString strTable;                
+        if ( tkz.HasMoreTokens() ) {
+            strTable = tkz.GetNextToken();
+            strTable.Trim();
+        }
+        else {
+            // Error: Need tablename
+            wxstr = wxString::Format( _("-;TBL_SUM;%d;%s"),
+                                        (int)WEBSOCK_ERROR_SYNTAX_ERROR,
+                                        WEBSOCK_STR_ERROR_SYNTAX_ERROR );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+        }
+        
+        // If available get Start data
+        if ( tkz.HasMoreTokens() ) {
+            if ( !wxStart.ParseISOCombined( tkz.GetNextToken() ) ) {
+                wxstr = wxString::Format( _("-;TBL_SUM;%d;%s"),
+                                        (int)WEBSOCK_ERROR_INVALID_DATE,
+                                        WEBSOCK_STR_ERROR_INVALID_DATE );
+            
+                web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+            }
+        }
+        
+        // If available get end date
+        if ( tkz.HasMoreTokens() ) {
+            if ( !wxEnd.ParseISOCombined( tkz.GetNextToken() ) ) {
+                wxstr = wxString::Format( _("-;TBL_SUM;%d;%s"),
+                                        (int)WEBSOCK_ERROR_INVALID_DATE,
+                                        WEBSOCK_STR_ERROR_INVALID_DATE );
+            
+                web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+            }
+        }
+        
+        gpobj->m_mutexUserTables.Lock();
+    
+        CVSCPTable *pTable = 
+                gpobj->m_userTableObjects.getTable( strTable );
+    
+        if ( NULL == pTable ) {
+            // Failed
+            wxstr = wxString::Format( _("-;TBL_SUM;%d;%s"),
+                                            (int)WEBSOCK_ERROR_TABLE_NOT_FOUND,
+                                            WEBSOCK_STR_ERROR_TABLE_NOT_FOUND );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+        
+            gpobj->m_mutexUserTables.Unlock();
+            return;
+        } 
+        
+        double sum;
+        if ( !pTable->getSumValue( wxStart, wxEnd, &sum ) ) {
+            wxstr = wxString::Format( _("-;TBL_SUM;%d;%s"),
+                                            (int)WEBSOCK_ERROR_TABLE_FAILD_COMMAND_SUM,
+                                            WEBSOCK_STR_ERROR_TABLE_FAILD_COMMAND_SUM );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+            gpobj->m_mutexUserTables.Unlock();
+            return;
+        }
+    
+        gpobj->m_mutexUserTables.Unlock();
+    
+        // Success
+        wxstr = wxString::Format( _("+;TBL_SUM;%lf"), sum );
+    
+        web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() ); 
+    
+    }
+    
+    // ------------------------------------------------------------------------
+    //                              TBL_MIN
+    //-------------------------------------------------------------------------
+    
+    else if ( 0 == strTok.Find(_("TBL_MIN") ) ) {
+        
+        wxDateTime wxStart;   
+        wxDateTime wxEnd;
+    
+        // Initialize date range to 'all'
+        wxStart.ParseISOCombined( _("0000-01-01T00:00:00") );   // The first date
+        wxEnd.ParseISOCombined( _("9999-12-31T23:59:59") );     // The last date
+        
+        // Must be authorised to do this
+        if ( ( NULL == pSession->m_pClientItem ) || 
+                !pSession->m_pClientItem->bAuthenticated ) {
+            
+            wxstr = wxString::Format( _("-;TBL_MIN;%d;%s"),
+                                        (int)WEBSOCK_ERROR_NOT_AUTHORISED,
+                                        WEBSOCK_STR_ERROR_NOT_AUTHORISED );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+   
+            gpobj->logMsg ( _("[Websocket] User/host not authorised to do min "
+                              "on table.\n"),
+                                        DAEMON_LOGMSG_NORMAL,
+                                        DAEMON_LOGTYPE_SECURITY );
+
+            return;     // We still leave channel open
+        }
+        
+        // Get table name
+        wxString strTable;                
+        if ( tkz.HasMoreTokens() ) {
+            strTable = tkz.GetNextToken();
+            strTable.Trim();
+        }
+        else {
+            // Error: Need tablename
+            wxstr = wxString::Format( _("-;TBL_MIN;%d;%s"),
+                                        (int)WEBSOCK_ERROR_SYNTAX_ERROR,
+                                        WEBSOCK_STR_ERROR_SYNTAX_ERROR );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+        }
+        
+        // If available get Start data
+        if ( tkz.HasMoreTokens() ) {
+            if ( !wxStart.ParseISOCombined( tkz.GetNextToken() ) ) {
+                wxstr = wxString::Format( _("-;TBL_MIN;%d;%s"),
+                                        (int)WEBSOCK_ERROR_INVALID_DATE,
+                                        WEBSOCK_STR_ERROR_INVALID_DATE );
+            
+                web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+            }
+        }
+        
+        // If available get end date
+        if ( tkz.HasMoreTokens() ) {
+            if ( !wxEnd.ParseISOCombined( tkz.GetNextToken() ) ) {
+                wxstr = wxString::Format( _("-;TBL_MIN;%d;%s"),
+                                        (int)WEBSOCK_ERROR_INVALID_DATE,
+                                        WEBSOCK_STR_ERROR_INVALID_DATE );
+            
+                web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+            }
+        }
+        
+        gpobj->m_mutexUserTables.Lock();
+    
+        CVSCPTable *pTable = 
+                gpobj->m_userTableObjects.getTable( strTable );
+    
+        if ( NULL == pTable ) {
+            // Failed
+            wxstr = wxString::Format( _("-;TBL_MIN;%d;%s"),
+                                            (int)WEBSOCK_ERROR_TABLE_NOT_FOUND,
+                                            WEBSOCK_STR_ERROR_TABLE_NOT_FOUND );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+        
+            gpobj->m_mutexUserTables.Unlock();
+            return;
+        } 
+        
+        double min;
+        if ( !pTable->getMinValue( wxStart, wxEnd, &min ) ) {
+            wxstr = wxString::Format( _("-;TBL_MIN;%d;%s"),
+                                            (int)WEBSOCK_ERROR_TABLE_FAILD_COMMAND_MIN,
+                                            WEBSOCK_STR_ERROR_TABLE_FAILD_COMMAND_MIN );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+            gpobj->m_mutexUserTables.Unlock();
+            return;
+        }
+    
+        gpobj->m_mutexUserTables.Unlock();
+    
+        // Success
+        wxstr = wxString::Format( _("+;TBL_MIN;%lf"), min );
+    
+        web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+    
+    }
+    
+    // ------------------------------------------------------------------------
+    //                              TBL_MAX
+    //-------------------------------------------------------------------------
+    
+    else if ( 0 == strTok.Find(_("TBL_MAX") ) ) {
+        
+        wxDateTime wxStart;   
+        wxDateTime wxEnd;
+    
+        // Initialize date range to 'all'
+        wxStart.ParseISOCombined( _("0000-01-01T00:00:00") );   // The first date
+        wxEnd.ParseISOCombined( _("9999-12-31T23:59:59") );     // The last date
+        
+        // Must be authorised to do this
+        if ( ( NULL == pSession->m_pClientItem ) || 
+                !pSession->m_pClientItem->bAuthenticated ) {
+            
+            wxstr = wxString::Format( _("-;TBL_MAX;%d;%s"),
+                                        (int)WEBSOCK_ERROR_NOT_AUTHORISED,
+                                        WEBSOCK_STR_ERROR_NOT_AUTHORISED );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+   
+            gpobj->logMsg ( _("[Websocket] User/host not authorised to do "
+                              "max on table.\n"),
+                                        DAEMON_LOGMSG_NORMAL,
+                                        DAEMON_LOGTYPE_SECURITY );
+
+            return;     // We still leave channel open
+        }
+        
+        // Get table name
+        wxString strTable;                
+        if ( tkz.HasMoreTokens() ) {
+            strTable = tkz.GetNextToken();
+            strTable.Trim();
+        }
+        else {
+            // Error: Need tablename
+            wxstr = wxString::Format( _("-;TBL_MAX;%d;%s"),
+                                        (int)WEBSOCK_ERROR_SYNTAX_ERROR,
+                                        WEBSOCK_STR_ERROR_SYNTAX_ERROR );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+        }
+        
+        // If available get Start data
+        if ( tkz.HasMoreTokens() ) {
+            if ( !wxStart.ParseISOCombined( tkz.GetNextToken() ) ) {
+                wxstr = wxString::Format( _("-;TBL_MAX;%d;%s"),
+                                        (int)WEBSOCK_ERROR_INVALID_DATE,
+                                        WEBSOCK_STR_ERROR_INVALID_DATE );
+            
+                web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+            }
+        }
+        
+        // If available get end date
+        if ( tkz.HasMoreTokens() ) {
+            if ( !wxEnd.ParseISOCombined( tkz.GetNextToken() ) ) {
+                wxstr = wxString::Format( _("-;TBL_MAX;%d;%s"),
+                                        (int)WEBSOCK_ERROR_INVALID_DATE,
+                                        WEBSOCK_STR_ERROR_INVALID_DATE );
+            
+                web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+            }
+        }
+        
+        gpobj->m_mutexUserTables.Lock();
+    
+        CVSCPTable *pTable = 
+                gpobj->m_userTableObjects.getTable( strTable );
+    
+        if ( NULL == pTable ) {
+            // Failed
+            wxstr = wxString::Format( _("-;TBL_MAX;%d;%s"),
+                                            (int)WEBSOCK_ERROR_TABLE_NOT_FOUND,
+                                            WEBSOCK_STR_ERROR_TABLE_NOT_FOUND );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+        
+            gpobj->m_mutexUserTables.Unlock();
+            return;
+        } 
+        
+        double max;
+        if ( !pTable->getMaxValue( wxStart, wxEnd, &max ) ) {
+            wxstr = wxString::Format( _("-;TBL_MAX;%d;%s"),
+                                            (int)WEBSOCK_ERROR_TABLE_FAILD_COMMAND_MAX,
+                                            WEBSOCK_STR_ERROR_TABLE_FAILD_COMMAND_MAX );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+            gpobj->m_mutexUserTables.Unlock();
+            return;
+        }
+    
+        gpobj->m_mutexUserTables.Unlock();
+    
+        // Success
+        wxstr = wxString::Format( _("+;TBL_MAX;%lf"), max );
+    
+        web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() ); 
+    
+    }
+    
+    // ------------------------------------------------------------------------
+    //                              TBL_AVERAGE
+    //-------------------------------------------------------------------------
+    
+    else if ( 0 == strTok.Find(_("TBL_AVERAGE") ) ) {
+        
+        wxDateTime wxStart;   
+        wxDateTime wxEnd;
+    
+        // Initialize date range to 'all'
+        wxStart.ParseISOCombined( _("0000-01-01T00:00:00") );   // The first date
+        wxEnd.ParseISOCombined( _("9999-12-31T23:59:59") );     // The last date
+        
+        // Must be authorised to do this
+        if ( ( NULL == pSession->m_pClientItem ) || 
+                !pSession->m_pClientItem->bAuthenticated ) {
+            
+            wxstr = wxString::Format( _("-;TBL_AVERAGE;%d;%s"),
+                                        (int)WEBSOCK_ERROR_NOT_AUTHORISED,
+                                        WEBSOCK_STR_ERROR_NOT_AUTHORISED );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+   
+            gpobj->logMsg ( _("[Websocket] User/host not authorised to do "
+                              "average on table.\n"),
+                                        DAEMON_LOGMSG_NORMAL,
+                                        DAEMON_LOGTYPE_SECURITY );
+
+            return;     // We still leave channel open
+        }
+        
+        // Get table name
+        wxString strTable;                
+        if ( tkz.HasMoreTokens() ) {
+            strTable = tkz.GetNextToken();
+            strTable.Trim();
+        }
+        else {
+            // Error: Need tablename
+            wxstr = wxString::Format( _("-;TBL_AVERAGE;%d;%s"),
+                                        (int)WEBSOCK_ERROR_SYNTAX_ERROR,
+                                        WEBSOCK_STR_ERROR_SYNTAX_ERROR );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+        }
+        
+        // If available get Start data
+        if ( tkz.HasMoreTokens() ) {
+            if ( !wxStart.ParseISOCombined( tkz.GetNextToken() ) ) {
+                wxstr = wxString::Format( _("-;TBL_AVERAGE;%d;%s"),
+                                        (int)WEBSOCK_ERROR_INVALID_DATE,
+                                        WEBSOCK_STR_ERROR_INVALID_DATE );
+            
+                web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+            }
+        }
+        
+        // If available get end date
+        if ( tkz.HasMoreTokens() ) {
+            if ( !wxEnd.ParseISOCombined( tkz.GetNextToken() ) ) {
+                wxstr = wxString::Format( _("-;TBL_AVERAGE;%d;%s"),
+                                        (int)WEBSOCK_ERROR_INVALID_DATE,
+                                        WEBSOCK_STR_ERROR_INVALID_DATE );
+            
+                web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+            }
+        }
+        
+        gpobj->m_mutexUserTables.Lock();
+    
+        CVSCPTable *pTable = 
+                gpobj->m_userTableObjects.getTable( strTable );
+    
+        if ( NULL == pTable ) {
+            // Failed
+            wxstr = wxString::Format( _("-;TBL_AVERAGE;%d;%s"),
+                                            (int)WEBSOCK_ERROR_TABLE_NOT_FOUND,
+                                            WEBSOCK_STR_ERROR_TABLE_NOT_FOUND );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+        
+            gpobj->m_mutexUserTables.Unlock();
+            return;
+        }
+        
+        double average;
+        if ( !pTable->getSumValue( wxStart, wxEnd, &average ) ) {
+            wxstr = wxString::Format( _("-;TBL_AVERAGE;%d;%s"),
+                                  (int)WEBSOCK_ERROR_TABLE_FAILD_COMMAND_AVERAGE,
+                                  WEBSOCK_STR_ERROR_TABLE_FAILD_COMMAND_AVERAGE );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+            gpobj->m_mutexUserTables.Unlock();
+            return;
+        }
+    
+        gpobj->m_mutexUserTables.Unlock();
+    
+        // Success
+        wxstr = wxString::Format( _("+;TBL_AVERAGE;%lf"), average );
+    
+        web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() ); 
+    
+    }
+    
+    // ------------------------------------------------------------------------
+    //                              TBL_MEDIAN
+    //-------------------------------------------------------------------------
+    
+    else if ( 0 == strTok.Find(_("TBL_MEDIAN") ) ) {
+        
+        wxDateTime wxStart;   
+        wxDateTime wxEnd;
+    
+        // Initialize date range to 'all'
+        wxStart.ParseISOCombined( _("0000-01-01T00:00:00") );   // The first date
+        wxEnd.ParseISOCombined( _("9999-12-31T23:59:59") );     // The last date
+        
+        // Must be authorised to do this
+        if ( ( NULL == pSession->m_pClientItem ) || 
+                !pSession->m_pClientItem->bAuthenticated ) {
+            
+            wxstr = wxString::Format( _("-;TBL_MEDIAN;%d;%s"),
+                                        (int)WEBSOCK_ERROR_NOT_AUTHORISED,
+                                        WEBSOCK_STR_ERROR_NOT_AUTHORISED );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+   
+            gpobj->logMsg ( _("[Websocket] User/host not authorised to do "
+                              "median on table.\n"),
+                                        DAEMON_LOGMSG_NORMAL,
+                                        DAEMON_LOGTYPE_SECURITY );
+
+            return;     // We still leave channel open
+        }
+        
+        // Get table name
+        wxString strTable;                
+        if ( tkz.HasMoreTokens() ) {
+            strTable = tkz.GetNextToken();
+            strTable.Trim();
+        }
+        else {
+            // Error: Need tablename
+            wxstr = wxString::Format( _("-;TBL_MEDIAN;%d;%s"),
+                                        (int)WEBSOCK_ERROR_SYNTAX_ERROR,
+                                        WEBSOCK_STR_ERROR_SYNTAX_ERROR );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+        }
+        
+        // If available get Start data
+        if ( tkz.HasMoreTokens() ) {
+            if ( !wxStart.ParseISOCombined( tkz.GetNextToken() ) ) {
+                wxstr = wxString::Format( _("-;TBL_MEDIAN;%d;%s"),
+                                        (int)WEBSOCK_ERROR_INVALID_DATE,
+                                        WEBSOCK_STR_ERROR_INVALID_DATE );
+            
+                web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+            }
+        }
+        
+        // If available get end date
+        if ( tkz.HasMoreTokens() ) {
+            if ( !wxEnd.ParseISOCombined( tkz.GetNextToken() ) ) {
+                wxstr = wxString::Format( _("-;TBL_MEDIAN;%d;%s"),
+                                        (int)WEBSOCK_ERROR_INVALID_DATE,
+                                        WEBSOCK_STR_ERROR_INVALID_DATE );
+            
+                web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+            }
+        }
+        
+        gpobj->m_mutexUserTables.Lock();
+    
+        CVSCPTable *pTable = 
+                gpobj->m_userTableObjects.getTable( strTable );
+    
+        if ( NULL == pTable ) {
+            // Failed
+            wxstr = wxString::Format( _("-;TBL_MEDIAN;%d;%s"),
+                                            (int)WEBSOCK_ERROR_TABLE_NOT_FOUND,
+                                            WEBSOCK_STR_ERROR_TABLE_NOT_FOUND );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+        
+            gpobj->m_mutexUserTables.Unlock();
+            return;
+        } 
+        
+        double median;
+        if ( !pTable->getMedianValue( wxStart, wxEnd, &median ) ) {
+            wxstr = wxString::Format( _("-;TBL_MEDIAN;%d;%s"),
+                                    (int)WEBSOCK_ERROR_TABLE_FAILD_COMMAND_MEDIAN,
+                                    WEBSOCK_STR_ERROR_TABLE_FAILD_COMMAND_MEDIAN );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+            gpobj->m_mutexUserTables.Unlock();
+            return;
+        }
+    
+        gpobj->m_mutexUserTables.Unlock();
+    
+        // Success
+        wxstr = wxString::Format( _("+;TBL_MEDIAN;%lf"), median );
+    
+        web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() ); 
+    
+    }
+    
+    // ------------------------------------------------------------------------
+    //                              TBL_STDDEV
+    //-------------------------------------------------------------------------
+    
+    else if ( 0 == strTok.Find(_("TBL_STDDEV") ) ) {
+        
+        wxDateTime wxStart;   
+        wxDateTime wxEnd;
+    
+        // Initialize date range to 'all'
+        wxStart.ParseISOCombined( _("0000-01-01T00:00:00") );   // The first date
+        wxEnd.ParseISOCombined( _("9999-12-31T23:59:59") );     // The last date
+        
+        // Must be authorised to do this
+        if ( ( NULL == pSession->m_pClientItem ) || 
+                !pSession->m_pClientItem->bAuthenticated ) {
+            
+            wxstr = wxString::Format( _("-;TBL_STDDEV;%d;%s"),
+                                        (int)WEBSOCK_ERROR_NOT_AUTHORISED,
+                                        WEBSOCK_STR_ERROR_NOT_AUTHORISED );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+   
+            gpobj->logMsg ( _("[Websocket] User/host not authorised to do "
+                              "stddev on table.\n"),
+                                        DAEMON_LOGMSG_NORMAL,
+                                        DAEMON_LOGTYPE_SECURITY );
+
+            return;     // We still leave channel open
+        }
+        
+        // Get table name
+        wxString strTable;                
+        if ( tkz.HasMoreTokens() ) {
+            strTable = tkz.GetNextToken();
+            strTable.Trim();
+        }
+        else {
+            // Error: Need tablename
+            wxstr = wxString::Format( _("-;TBL_STDDEV;%d;%s"),
+                                        (int)WEBSOCK_ERROR_SYNTAX_ERROR,
+                                        WEBSOCK_STR_ERROR_SYNTAX_ERROR );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+        }
+        
+        // If available get Start data
+        if ( tkz.HasMoreTokens() ) {
+            if ( !wxStart.ParseISOCombined( tkz.GetNextToken() ) ) {
+                wxstr = wxString::Format( _("-;TBL_STDDEV;%d;%s"),
+                                        (int)WEBSOCK_ERROR_INVALID_DATE,
+                                        WEBSOCK_STR_ERROR_INVALID_DATE );
+            
+                web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+            }
+        }
+        
+        // If available get end date
+        if ( tkz.HasMoreTokens() ) {
+            if ( !wxEnd.ParseISOCombined( tkz.GetNextToken() ) ) {
+                wxstr = wxString::Format( _("-;TBL_STDDEV;%d;%s"),
+                                        (int)WEBSOCK_ERROR_INVALID_DATE,
+                                        WEBSOCK_STR_ERROR_INVALID_DATE );
+            
+                web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+            }
+        }
+        
+        gpobj->m_mutexUserTables.Lock();
+    
+        CVSCPTable *pTable = 
+                gpobj->m_userTableObjects.getTable( strTable );
+    
+        if ( NULL == pTable ) {
+            // Failed
+            wxstr = wxString::Format( _("-;TBL_STDDEV;%d;%s"),
+                                            (int)WEBSOCK_ERROR_TABLE_NOT_FOUND,
+                                            WEBSOCK_STR_ERROR_TABLE_NOT_FOUND );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+        
+            gpobj->m_mutexUserTables.Unlock();
+            return;
+        } 
+        
+        double stddev;
+        if ( !pTable->getStdevValue( wxStart, wxEnd, &stddev ) ) {
+            wxstr = wxString::Format( _("-;TBL_STDDEV;%d;%s"),
+                                            (int)WEBSOCK_ERROR_TABLE_FAILD_COMMAND_STDDEV,
+                                            WEBSOCK_STR_ERROR_TABLE_FAILD_COMMAND_STDDEV );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+            gpobj->m_mutexUserTables.Unlock();
+            return;
+        }
+    
+        gpobj->m_mutexUserTables.Unlock();
+    
+        // Success
+        wxstr = wxString::Format( _("+;TBL_STDDEV;%lf"), stddev );
+    
+        web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() ); 
+    
+    }
+    
+    // ------------------------------------------------------------------------
+    //                              TBL_VARIANCE
+    //-------------------------------------------------------------------------
+    
+    else if ( 0 == strTok.Find(_("TBL_VARIANCE") ) ) {
+        
+        wxDateTime wxStart;   
+        wxDateTime wxEnd;
+    
+        // Initialize date range to 'all'
+        wxStart.ParseISOCombined( _("0000-01-01T00:00:00") );   // The first date
+        wxEnd.ParseISOCombined( _("9999-12-31T23:59:59") );     // The last date
+        
+        // Must be authorised to do this
+        if ( ( NULL == pSession->m_pClientItem ) || 
+                !pSession->m_pClientItem->bAuthenticated ) {
+            
+            wxstr = wxString::Format( _("-;TBL_VARIANCE;%d;%s"),
+                                        (int)WEBSOCK_ERROR_NOT_AUTHORISED,
+                                        WEBSOCK_STR_ERROR_NOT_AUTHORISED );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+   
+            gpobj->logMsg ( _("[Websocket] User/host not authorised to do "
+                              "variance on table.\n"),
+                                        DAEMON_LOGMSG_NORMAL,
+                                        DAEMON_LOGTYPE_SECURITY );
+
+            return;     // We still leave channel open
+        }
+        
+        // Get table name
+        wxString strTable;                
+        if ( tkz.HasMoreTokens() ) {
+            strTable = tkz.GetNextToken();
+            strTable.Trim();
+        }
+        else {
+            // Error: Need tablename
+            wxstr = wxString::Format( _("-;TBL_VARIANCE;%d;%s"),
+                                        (int)WEBSOCK_ERROR_SYNTAX_ERROR,
+                                        WEBSOCK_STR_ERROR_SYNTAX_ERROR );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+        }
+        
+        // If available get Start data
+        if ( tkz.HasMoreTokens() ) {
+            if ( !wxStart.ParseISOCombined( tkz.GetNextToken() ) ) {
+                wxstr = wxString::Format( _("-;TBL_VARIANCE;%d;%s"),
+                                        (int)WEBSOCK_ERROR_INVALID_DATE,
+                                        WEBSOCK_STR_ERROR_INVALID_DATE );
+            
+                web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+            }
+        }
+        
+        // If available get end date
+        if ( tkz.HasMoreTokens() ) {
+            if ( !wxEnd.ParseISOCombined( tkz.GetNextToken() ) ) {
+                wxstr = wxString::Format( _("-;TBL_VARIANCE;%d;%s"),
+                                        (int)WEBSOCK_ERROR_INVALID_DATE,
+                                        WEBSOCK_STR_ERROR_INVALID_DATE );
+            
+                web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+            }
+        }
+        
+        gpobj->m_mutexUserTables.Lock();
+    
+        CVSCPTable *pTable = 
+                gpobj->m_userTableObjects.getTable( strTable );
+    
+        if ( NULL == pTable ) {
+            // Failed
+            wxstr = wxString::Format( _("-;TBL_VARIANCE;%d;%s"),
+                                            (int)WEBSOCK_ERROR_TABLE_NOT_FOUND,
+                                            WEBSOCK_STR_ERROR_TABLE_NOT_FOUND );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+        
+            gpobj->m_mutexUserTables.Unlock();
+            return;
+        } 
+        
+        double variance;
+        if ( !pTable->getVarianceValue( wxStart, wxEnd, &variance ) ) {
+            wxstr = wxString::Format( _("-;TBL_VARIANCE;%d;%s"),
+                                            (int)WEBSOCK_ERROR_TABLE_FAILD_COMMAND_VARIANCE,
+                                            WEBSOCK_STR_ERROR_TABLE_FAILD_COMMAND_VARIANCE );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+            gpobj->m_mutexUserTables.Unlock();
+            return;
+        }
+    
+        gpobj->m_mutexUserTables.Unlock();
+    
+        // Success
+        wxstr = wxString::Format( _("+;TBL_VARIANCE;%lf"), variance );
+    
+        web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() ); 
+    
+    }
+    
+    // ------------------------------------------------------------------------
+    //                              TBL_MODE
+    //-------------------------------------------------------------------------
+    
+    else if ( 0 == strTok.Find(_("TBL_MODE") ) ) {
+        
+        wxDateTime wxStart;   
+        wxDateTime wxEnd;
+    
+        // Initialize date range to 'all'
+        wxStart.ParseISOCombined( _("0000-01-01T00:00:00") );   // The first date
+        wxEnd.ParseISOCombined( _("9999-12-31T23:59:59") );     // The last date
+        
+        // Must be authorised to do this
+        if ( ( NULL == pSession->m_pClientItem ) || 
+                !pSession->m_pClientItem->bAuthenticated ) {
+            
+            wxstr = wxString::Format( _("-;TBL_MODE;%d;%s"),
+                                        (int)WEBSOCK_ERROR_NOT_AUTHORISED,
+                                        WEBSOCK_STR_ERROR_NOT_AUTHORISED );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+   
+            gpobj->logMsg ( _("[Websocket] User/host not authorised to do "
+                              "mode on table.\n"),
+                                        DAEMON_LOGMSG_NORMAL,
+                                        DAEMON_LOGTYPE_SECURITY );
+
+            return;     // We still leave channel open
+        }
+        
+        // Get table name
+        wxString strTable;                
+        if ( tkz.HasMoreTokens() ) {
+            strTable = tkz.GetNextToken();
+            strTable.Trim();
+        }
+        else {
+            // Error: Need tablename
+            wxstr = wxString::Format( _("-;TBL_MODE;%d;%s"),
+                                        (int)WEBSOCK_ERROR_SYNTAX_ERROR,
+                                        WEBSOCK_STR_ERROR_SYNTAX_ERROR );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+        }
+        
+        // If available get Start data
+        if ( tkz.HasMoreTokens() ) {
+            if ( !wxStart.ParseISOCombined( tkz.GetNextToken() ) ) {
+                wxstr = wxString::Format( _("-;TBL_MODE;%d;%s"),
+                                        (int)WEBSOCK_ERROR_INVALID_DATE,
+                                        WEBSOCK_STR_ERROR_INVALID_DATE );
+            
+                web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+            }
+        }
+        
+        // If available get end date
+        if ( tkz.HasMoreTokens() ) {
+            if ( !wxEnd.ParseISOCombined( tkz.GetNextToken() ) ) {
+                wxstr = wxString::Format( _("-;TBL_MODE;%d;%s"),
+                                        (int)WEBSOCK_ERROR_INVALID_DATE,
+                                        WEBSOCK_STR_ERROR_INVALID_DATE );
+            
+                web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+            }
+        }
+        
+        gpobj->m_mutexUserTables.Lock();
+    
+        CVSCPTable *pTable = 
+                gpobj->m_userTableObjects.getTable( strTable );
+    
+        if ( NULL == pTable ) {
+            // Failed
+            wxstr = wxString::Format( _("-;TBL_MODE;%d;%s"),
+                                            (int)WEBSOCK_ERROR_TABLE_NOT_FOUND,
+                                            WEBSOCK_STR_ERROR_TABLE_NOT_FOUND );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+        
+            gpobj->m_mutexUserTables.Unlock();
+            return;
+        } 
+        
+        double mode;
+        if ( !pTable->getModeValue( wxStart, wxEnd, &mode ) ) {
+            wxstr = wxString::Format( _("-;TBL_MODE;%d;%s"),
+                                            (int)WEBSOCK_ERROR_TABLE_FAILD_COMMAND_MODE,
+                                            WEBSOCK_STR_ERROR_TABLE_FAILD_COMMAND_MODE );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+            gpobj->m_mutexUserTables.Unlock();
+            return;
+        }
+    
+        gpobj->m_mutexUserTables.Unlock();
+    
+        // Success
+        wxstr = wxString::Format( _("+;TBL_MODE;%lf"), mode );
+    
+        web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() ); 
+    
+    }    
+    
+    // ------------------------------------------------------------------------
+    //                              TBL_LOWERQ
+    //-------------------------------------------------------------------------
+    
+    else if ( 0 == strTok.Find(_("TBL_LOWERQ") ) ) {
+        
+        wxDateTime wxStart;   
+        wxDateTime wxEnd;
+    
+        // Initialize date range to 'all'
+        wxStart.ParseISOCombined( _("0000-01-01T00:00:00") );   // The first date
+        wxEnd.ParseISOCombined( _("9999-12-31T23:59:59") );     // The last date
+        
+        // Must be authorised to do this
+        if ( ( NULL == pSession->m_pClientItem ) || 
+                !pSession->m_pClientItem->bAuthenticated ) {
+            
+            wxstr = wxString::Format( _("-;TBL_LOWERQ;%d;%s"),
+                                        (int)WEBSOCK_ERROR_NOT_AUTHORISED,
+                                        WEBSOCK_STR_ERROR_NOT_AUTHORISED );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+   
+            gpobj->logMsg ( _("[Websocket] User/host not authorised to do "
+                              "lowerq on table.\n"),
+                                        DAEMON_LOGMSG_NORMAL,
+                                        DAEMON_LOGTYPE_SECURITY );
+
+            return;     // We still leave channel open
+        }
+        
+        // Get table name
+        wxString strTable;                
+        if ( tkz.HasMoreTokens() ) {
+            strTable = tkz.GetNextToken();
+            strTable.Trim();
+        }
+        else {
+            // Error: Need tablename
+            wxstr = wxString::Format( _("-;TBL_LOWERQ;%d;%s"),
+                                        (int)WEBSOCK_ERROR_SYNTAX_ERROR,
+                                        WEBSOCK_STR_ERROR_SYNTAX_ERROR );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+        }
+        
+        // If available get Start data
+        if ( tkz.HasMoreTokens() ) {
+            if ( !wxStart.ParseISOCombined( tkz.GetNextToken() ) ) {
+                wxstr = wxString::Format( _("-;TBL_LOWERQ;%d;%s"),
+                                        (int)WEBSOCK_ERROR_INVALID_DATE,
+                                        WEBSOCK_STR_ERROR_INVALID_DATE );
+            
+                web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+            }
+        }
+        
+        // If available get end date
+        if ( tkz.HasMoreTokens() ) {
+            if ( !wxEnd.ParseISOCombined( tkz.GetNextToken() ) ) {
+                wxstr = wxString::Format( _("-;TBL_LOWERQ;%d;%s"),
+                                        (int)WEBSOCK_ERROR_INVALID_DATE,
+                                        WEBSOCK_STR_ERROR_INVALID_DATE );
+            
+                web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+            }
+        }
+        
+        gpobj->m_mutexUserTables.Lock();
+    
+        CVSCPTable *pTable = 
+                gpobj->m_userTableObjects.getTable( strTable );
+    
+        if ( NULL == pTable ) {
+            // Failed
+            wxstr = wxString::Format( _("-;TBL_LOWERQ;%d;%s"),
+                                            (int)WEBSOCK_ERROR_TABLE_NOT_FOUND,
+                                            WEBSOCK_STR_ERROR_TABLE_NOT_FOUND );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+        
+            gpobj->m_mutexUserTables.Unlock();
+            return;
+        } 
+        
+        double lowerq;
+        if ( !pTable->getLowerQuartileValue( wxStart, wxEnd, &lowerq ) ) {
+            wxstr = wxString::Format( _("-;TBL_LOWERQ;%d;%s"),
+                                            (int)WEBSOCK_ERROR_TABLE_FAILD_COMMAND_LOWERQ,
+                                            WEBSOCK_STR_ERROR_TABLE_FAILD_COMMAND_LOWERQ );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+            gpobj->m_mutexUserTables.Unlock();
+            return;
+        }
+    
+        gpobj->m_mutexUserTables.Unlock();
+    
+        // Success
+        wxstr = wxString::Format( _("+;TBL_LOWERQ;%lf"), lowerq );
+    
+        web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() ); 
+    
+    }
+    
+    // ------------------------------------------------------------------------
+    //                              TBL_UPPERQ
+    //-------------------------------------------------------------------------
+    
+    else if ( 0 == strTok.Find(_("TBL_UPPERQ") ) ) {
+        
+        wxDateTime wxStart;   
+        wxDateTime wxEnd;
+    
+        // Initialize date range to 'all'
+        wxStart.ParseISOCombined( _("0000-01-01T00:00:00") );   // The first date
+        wxEnd.ParseISOCombined( _("9999-12-31T23:59:59") );     // The last date
+        
+        // Must be authorised to do this
+        if ( ( NULL == pSession->m_pClientItem ) || 
+                !pSession->m_pClientItem->bAuthenticated ) {
+            
+            wxstr = wxString::Format( _("-;TBL_UPPERQ;%d;%s"),
+                                        (int)WEBSOCK_ERROR_NOT_AUTHORISED,
+                                        WEBSOCK_STR_ERROR_NOT_AUTHORISED );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+   
+            gpobj->logMsg ( _("[Websocket] User/host not authorised to do "
+                              "upperq on table.\n"),
+                                        DAEMON_LOGMSG_NORMAL,
+                                        DAEMON_LOGTYPE_SECURITY );
+
+            return;     // We still leave channel open
+        }
+        
+        // Get table name
+        wxString strTable;                
+        if ( tkz.HasMoreTokens() ) {
+            strTable = tkz.GetNextToken();
+            strTable.Trim();
+        }
+        else {
+            // Error: Need tablename
+            wxstr = wxString::Format( _("-;TBL_UPPERQ;%d;%s"),
+                                        (int)WEBSOCK_ERROR_SYNTAX_ERROR,
+                                        WEBSOCK_STR_ERROR_SYNTAX_ERROR );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+        }
+        
+        // If available get Start data
+        if ( tkz.HasMoreTokens() ) {
+            if ( !wxStart.ParseISOCombined( tkz.GetNextToken() ) ) {
+                wxstr = wxString::Format( _("-;TBL_UPPERQ;%d;%s"),
+                                        (int)WEBSOCK_ERROR_INVALID_DATE,
+                                        WEBSOCK_STR_ERROR_INVALID_DATE );
+            
+                web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+            }
+        }
+        
+        // If available get end date
+        if ( tkz.HasMoreTokens() ) {
+            if ( !wxEnd.ParseISOCombined( tkz.GetNextToken() ) ) {
+                wxstr = wxString::Format( _("-;TBL_UPPERQ;%d;%s"),
+                                        (int)WEBSOCK_ERROR_INVALID_DATE,
+                                        WEBSOCK_STR_ERROR_INVALID_DATE );
+            
+                web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+            }
+        }
+        
+        gpobj->m_mutexUserTables.Lock();
+    
+        CVSCPTable *pTable = 
+                gpobj->m_userTableObjects.getTable( strTable );
+    
+        if ( NULL == pTable ) {
+            // Failed
+            wxstr = wxString::Format( _("-;TBL_UPPERQ;%d;%s"),
+                                            (int)WEBSOCK_ERROR_TABLE_NOT_FOUND,
+                                            WEBSOCK_STR_ERROR_TABLE_NOT_FOUND );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+        
+            gpobj->m_mutexUserTables.Unlock();
+            return;
+        } 
+        
+        double upperq;
+        if ( !pTable->getUppeQuartileValue( wxStart, wxEnd, &upperq ) ) {
+            wxstr = wxString::Format( _("-;TBL_UPPERQ;%d;%s"),
+                                            (int)WEBSOCK_ERROR_TABLE_FAILD_COMMAND_UPPERQ,
+                                            WEBSOCK_STR_ERROR_TABLE_FAILD_COMMAND_UPPERQ );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+            gpobj->m_mutexUserTables.Unlock();
+            return;
+        }
+    
+        gpobj->m_mutexUserTables.Unlock();
+    
+        // Success
+        wxstr = wxString::Format( _("+;TBL_UPPERQ;%lf"), upperq );
+    
+        web_websocket_write( conn, 
+                                WEB_WEBSOCKET_OPCODE_TEXT,
+                                (const char *)wxstr.mbc_str(),
+                                wxstr.length() ); 
+    
+    }
+    
+    // ------------------------------------------------------------------------
+    //                              TBL_CLEAR
+    //-------------------------------------------------------------------------
+    
+    else if ( 0 == strTok.Find(_("TBL_CLEAR") ) ) {
+        
+        wxDateTime wxStart;   
+        wxDateTime wxEnd;
+    
+        // Initialize date range to 'all'
+        wxStart.ParseISOCombined( _("0000-01-01T00:00:00") );   // The first date
+        wxEnd.ParseISOCombined( _("9999-12-31T23:59:59") );     // The last date
+        
+        // Must be authorised to do this
+        if ( ( NULL == pSession->m_pClientItem ) || 
+                !pSession->m_pClientItem->bAuthenticated ) {
+            
+            wxstr = wxString::Format( _("-;TBL_CLEAR;%d;%s"),
+                                        (int)WEBSOCK_ERROR_NOT_AUTHORISED,
+                                        WEBSOCK_STR_ERROR_NOT_AUTHORISED );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+   
+            gpobj->logMsg ( _("[Websocket] User/host not authorised to clear "
+                              "table.\n"),
+                                        DAEMON_LOGMSG_NORMAL,
+                                        DAEMON_LOGTYPE_SECURITY );
+
+            return;     // We still leave channel open
+        }
+        
+        // Get table name
+        wxString strTable;                
+        if ( tkz.HasMoreTokens() ) {
+            strTable = tkz.GetNextToken();
+            strTable.Trim();
+        }
+        else {
+            // Error: Need tablename
+            wxstr = wxString::Format( _("-;TBL_CLEAR;%d;%s"),
+                                        (int)WEBSOCK_ERROR_SYNTAX_ERROR,
+                                        WEBSOCK_STR_ERROR_SYNTAX_ERROR );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+        }
+        
+        bool bClearAll = false;
+        
+        // If available get Start data
+        if ( tkz.HasMoreTokens() ) {
+            if ( !wxStart.ParseISOCombined( tkz.GetNextToken() ) ) {
+                wxstr = wxString::Format( _("-;TBL_CLEAR;%d;%s"),
+                                        (int)WEBSOCK_ERROR_INVALID_DATE,
+                                        WEBSOCK_STR_ERROR_INVALID_DATE );
+            
+                web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+            }
+        }
+        else {
+            bClearAll = true;
+        }
+        
+        // If available get end date
+        if ( tkz.HasMoreTokens() ) {
+            if ( !wxEnd.ParseISOCombined( tkz.GetNextToken() ) ) {
+                wxstr = wxString::Format( _("-;TBL_CLEAR;%d;%s"),
+                                            (int)WEBSOCK_ERROR_INVALID_DATE,
+                                            WEBSOCK_STR_ERROR_INVALID_DATE );
+            
+                web_websocket_write( conn, 
+                                        WEB_WEBSOCKET_OPCODE_TEXT,
+                                        (const char *)wxstr.mbc_str(),
+                                        wxstr.length() );
+            }
+        }
+        
+        gpobj->m_mutexUserTables.Lock();
+    
+        CVSCPTable *pTable = 
+                gpobj->m_userTableObjects.getTable( strTable );
+    
+        if ( NULL == pTable ) {
+            // Failed
+            wxstr = wxString::Format( _("-;TBL_CLEAR;%d;%s"),
+                                        (int)WEBSOCK_ERROR_TABLE_NOT_FOUND,
+                                        WEBSOCK_STR_ERROR_TABLE_NOT_FOUND );
+            
+            web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+        
+            gpobj->m_mutexUserTables.Unlock();
+            return;
+        } 
+        
+        if ( bClearAll ) {
+            if ( !pTable->clearTable() ) {
+                wxstr = wxString::Format( _("-;TBL_CLEAR;%d;%s"),
+                                            (int)WEBSOCK_ERROR_TABLE_FAILD_COMMAND_CLEAR,
+                                            WEBSOCK_STR_ERROR_TABLE_FAILD_COMMAND_CLEAR );
+            
+                web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+                gpobj->m_mutexUserTables.Unlock();
+                return;
+            }
+        }
+        else {
+            if ( !pTable->clearTableRange( wxStart, wxEnd ) ) {
+                wxstr = wxString::Format( _("-;TBL_CLEAR;%d;%s"),
+                                            (int)WEBSOCK_ERROR_TABLE_FAILD_COMMAND_CLEAR,
+                                            WEBSOCK_STR_ERROR_TABLE_FAILD_COMMAND_CLEAR );
+            
+                web_websocket_write( conn, 
+                                    WEB_WEBSOCKET_OPCODE_TEXT,
+                                    (const char *)wxstr.mbc_str(),
+                                    wxstr.length() );
+                return;
+            }
+        }
+            
+        gpobj->m_mutexUserTables.Unlock();
+            
+        // Success
+        wxstr = _("+;TBL_CLEAR;%lf");
+    
+        web_websocket_write( conn, 
+                                WEB_WEBSOCKET_OPCODE_TEXT,
+                                (const char *)wxstr.mbc_str(),
+                                wxstr.length() ); 
+    
     }
     
     // ------------------------------------------------------------------------
@@ -2695,24 +5304,5 @@ autherror:
         
     }
 
-    // ------------------------------------------------------------------------
-    //                              TABLE
-    //
-    //  READ, WRITE, ADD, DEL, LIST, LISTALL
-    //-------------------------------------------------------------------------
-    else if ( 0 == strTok.Find( _("TABLE") ) ) {
-        
-    }
-    else {
-        
-            wxstr = wxString::Format( _("-;TABLE;%d;%s"),
-                                        (int)WEBSOCK_ERROR_UNKNOWN_COMMAND,
-                                        WEBSOCK_STR_ERROR_UNKNOWN_COMMAND );
-            
-            web_websocket_write( conn, 
-                                    WEB_WEBSOCKET_OPCODE_TEXT,
-                                    (const char *)wxstr.mbc_str(),
-                                    wxstr.length() );
-    }
-    
+       
 }

@@ -2639,7 +2639,7 @@ void TCPClientThread::handleClientTable_Delete( struct mg_connection *conn )
         return;
     }
     
-    // Get table name 
+    // Should table db be removed 
     if ( tkz.HasMoreTokens() ) {
         wxString str = tkz.GetNextToken();
         if ( wxNOT_FOUND != str.Upper().Find("TRUE") ) {
@@ -2674,24 +2674,24 @@ void TCPClientThread::handleClientTable_List( struct mg_connection *conn )
     if ( 0 == pClientItem->m_currentCommand.Length() ) {
         
         // list without argument - list all defined tables
-        wxArrayString arrayNames;
+        wxArrayString arrayTblNames;
         gpobj->m_mutexUserTables.Lock();
-        if ( gpobj->m_userTableObjects.getTableNames( arrayNames ) ) {
+        if ( gpobj->m_userTableObjects.getTableNames( arrayTblNames ) ) {
             
             // OK
             
             wxString str = wxString::Format( _("%zu rows \r\n"), 
-                                                arrayNames.Count() );
+                                                arrayTblNames.Count() );
             mg_send( conn, 
                         (const char *)str.mbc_str(), 
                         strlen( (const char *)str.mbc_str() ) );
             
-            for ( int i=0; i<arrayNames.Count(); i++ ) {
+            for ( int i=0; i<arrayTblNames.Count(); i++ ) {
                 
                 CVSCPTable *pTable = 
-                    gpobj->m_userTableObjects.getTable( arrayNames[i] );
+                    gpobj->m_userTableObjects.getTable( arrayTblNames[i] );
                 
-                str = arrayNames[i];
+                str = arrayTblNames[i];
                 str += _(";");
                 if ( NULL != pTable ) {
                     
@@ -3304,6 +3304,199 @@ void TCPClientThread::handleClientTable_Clear( struct mg_connection *conn )
 
 
 ///////////////////////////////////////////////////////////////////////////////
+// handleClientTable_Log
+//
+// log table-name value [datetime]
+//
+
+void TCPClientThread::handleClientTable_Log( struct mg_connection *conn )
+{
+    wxString strTable;
+    double value;
+    wxDateTime dt;
+    
+    CClientItem *pClientItem = (CClientItem *)conn->user_data;
+    if ( NULL == pClientItem ) return;    
+    
+    pClientItem->m_currentCommand.Trim(true);
+    pClientItem->m_currentCommand.Trim(false);
+    
+    wxStringTokenizer tkz( pClientItem->m_currentCommand, _(" ") );
+    
+    // Get table name 
+    if ( tkz.HasMoreTokens() ) {
+        strTable = tkz.GetNextToken();
+        strTable.Trim(true);
+        strTable.Trim(false);
+    }
+    else {
+        // Problems: A table name must be given
+        mg_send( conn,
+                    MSG_PARAMETER_ERROR, 
+                    strlen( MSG_PARAMETER_ERROR ) );
+        return;
+    }
+    
+    // Get the value
+    if ( tkz.HasMoreTokens() ) {
+        wxString str = tkz.GetNextToken();
+        if ( !str.ToDouble( &value ) ) {
+            // Problems: The value is not in a valid format
+            mg_send( conn,
+                    MSG_PARAMETER_ERROR, 
+                    strlen( MSG_PARAMETER_ERROR ) );
+            return;            
+        }
+    }
+    else {
+        // Problems: A value must be given
+        mg_send( conn,
+                    MSG_PARAMETER_ERROR, 
+                    strlen( MSG_PARAMETER_ERROR ) );
+        return;
+    }
+    
+    // Get the datetime if its there
+    if ( tkz.HasMoreTokens() ) {
+        
+        uint32_t ms = 0;
+        
+        wxString str = tkz.GetNextToken();
+        str.Trim(true);
+        str.Trim(false);
+        
+        if ( !dt.ParseISOCombined( str ) ) {
+            // Problems: The value is not in a valid format
+            mg_send( conn,
+                    MSG_PARAMETER_ERROR, 
+                    strlen( MSG_PARAMETER_ERROR ) );
+            return;            
+        }
+        
+        // Get possible millisecond part
+        str = str.AfterFirst('.');
+        str.Trim();
+        if ( str.Length() ) {
+            ms = vscp_readStringValue( str );
+        }    
+        
+        dt.SetMillisecond( ms );
+        
+    }
+    else {
+        // Set to now
+        dt = wxDateTime::UNow();
+    }
+    
+    
+    gpobj->m_mutexUserTables.Lock();
+    
+    CVSCPTable *pTable = 
+                gpobj->m_userTableObjects.getTable( strTable );
+    
+    if ( NULL == pTable ) {
+        // Failed
+        mg_send( conn, 
+                    MSG_FAILED_UNKNOWN_TABLE, 
+                    strlen( MSG_FAILED_UNKNOWN_TABLE ) );
+        
+        gpobj->m_mutexUserTables.Unlock();
+        return;
+    }
+    
+    // Log data
+    if ( !pTable->logData( dt, value ) ) {
+        gpobj->m_mutexUserTables.Unlock();
+        mg_send( conn,
+                    MSG_FAILED_TO_WRITE_TABLE,  
+                    strlen( MSG_FAILED_TO_WRITE_TABLE ) );
+        return;
+    }
+    
+    gpobj->m_mutexUserTables.Unlock();
+    
+    mg_send( conn,
+                MSG_OK,  
+                strlen( MSG_OK ) );
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// handleClientTable_LogSQL
+//
+
+void TCPClientThread::handleClientTable_LogSQL( struct mg_connection *conn )
+{
+    wxString strTable, strSQL;
+    
+    CClientItem *pClientItem = (CClientItem *)conn->user_data;
+    if ( NULL == pClientItem ) return;    
+    
+    pClientItem->m_currentCommand.Trim(true);
+    pClientItem->m_currentCommand.Trim(false);
+    
+    wxStringTokenizer tkz( pClientItem->m_currentCommand, _(" ") );
+    
+    // Get table name 
+    if ( tkz.HasMoreTokens() ) {
+        strTable = tkz.GetNextToken();
+        strTable.Trim(true);
+        strTable.Trim(false);
+    }
+    else {
+        // Problems: A table name must be given
+        mg_send( conn,
+                    MSG_PARAMETER_ERROR, 
+                    strlen( MSG_PARAMETER_ERROR ) );
+        return;
+    }
+    
+    
+    // Get SQL expression 
+    if ( tkz.HasMoreTokens() ) {
+        strSQL = tkz.GetNextToken();
+        strSQL.Trim(true);
+        strSQL.Trim(false);
+    }
+    else {
+        // Problems: A SQL expression must be given
+        mg_send( conn,
+                    MSG_PARAMETER_ERROR, 
+                    strlen( MSG_PARAMETER_ERROR ) );
+        return;
+    }
+    
+    
+    gpobj->m_mutexUserTables.Lock();
+    
+    CVSCPTable *pTable = 
+                gpobj->m_userTableObjects.getTable( strTable );
+    
+    if ( NULL == pTable ) {
+        // Failed
+        mg_send( conn, 
+                    MSG_FAILED_UNKNOWN_TABLE, 
+                    strlen( MSG_FAILED_UNKNOWN_TABLE ) );
+        
+        gpobj->m_mutexUserTables.Unlock();
+        return;
+    }
+    
+    // Log data
+    if ( !pTable->logData( strSQL ) ) {
+        gpobj->m_mutexUserTables.Unlock();
+        mg_send( conn,
+                    MSG_FAILED_TO_WRITE_TABLE,  
+                    strlen( MSG_FAILED_TO_WRITE_TABLE ) );
+        return;
+    }
+    
+    gpobj->m_mutexUserTables.Unlock();
+    
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
 // handleClientTable_NumberOfRecords
 //
 // records 'table-name' [to,from]
@@ -3457,7 +3650,8 @@ void TCPClientThread::handleClientTable_FirstDate( struct mg_connection *conn )
     
     gpobj->m_mutexUserTables.Unlock();
     
-    wxString strReply = wxString::Format(_("%s\r\n"), (const char *)first.FormatISOCombined().mbc_str() );
+    wxString strReply = wxString::Format(_("%s\r\n"), 
+                            (const char *)first.FormatISOCombined().mbc_str() );
     mg_send( conn,
                 (const char *)strReply.mbc_str(),  
                 strlen( (const char *)strReply.mbc_str() ) );
@@ -3528,7 +3722,8 @@ void TCPClientThread::handleClientTable_LastDate( struct mg_connection *conn )
     
     gpobj->m_mutexUserTables.Unlock();
     
-    wxString strReply = wxString::Format(_("%s\r\n"), (const char *)last.FormatISOCombined().mbc_str() );
+    wxString strReply = wxString::Format(_("%s\r\n"), 
+                            (const char *)last.FormatISOCombined().mbc_str() );
     mg_send( conn,
                 (const char *)strReply.mbc_str(),  
                 strlen( (const char *)strReply.mbc_str() ) );
@@ -4495,197 +4690,7 @@ void TCPClientThread::handleClientTable_UpperQ( struct mg_connection *conn )
     return;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// handleClientTable_Log
-//
-// log table-name value [datetime]
-//
 
-void TCPClientThread::handleClientTable_Log( struct mg_connection *conn )
-{
-    wxString strTable;
-    double value;
-    wxDateTime dt;
-    
-    CClientItem *pClientItem = (CClientItem *)conn->user_data;
-    if ( NULL == pClientItem ) return;    
-    
-    pClientItem->m_currentCommand.Trim(true);
-    pClientItem->m_currentCommand.Trim(false);
-    
-    wxStringTokenizer tkz( pClientItem->m_currentCommand, _(" ") );
-    
-    // Get table name 
-    if ( tkz.HasMoreTokens() ) {
-        strTable = tkz.GetNextToken();
-        strTable.Trim(true);
-        strTable.Trim(false);
-    }
-    else {
-        // Problems: A table name must be given
-        mg_send( conn,
-                    MSG_PARAMETER_ERROR, 
-                    strlen( MSG_PARAMETER_ERROR ) );
-        return;
-    }
-    
-    // Get the value
-    if ( tkz.HasMoreTokens() ) {
-        wxString str = tkz.GetNextToken();
-        if ( !str.ToDouble( &value ) ) {
-            // Problems: The value is not in a valid format
-            mg_send( conn,
-                    MSG_PARAMETER_ERROR, 
-                    strlen( MSG_PARAMETER_ERROR ) );
-            return;            
-        }
-    }
-    else {
-        // Problems: A value must be given
-        mg_send( conn,
-                    MSG_PARAMETER_ERROR, 
-                    strlen( MSG_PARAMETER_ERROR ) );
-        return;
-    }
-    
-    // Get the datetime if its there
-    if ( tkz.HasMoreTokens() ) {
-        
-        uint32_t ms = 0;
-        
-        wxString str = tkz.GetNextToken();
-        str.Trim(true);
-        str.Trim(false);
-        
-        if ( !dt.ParseISOCombined( str ) ) {
-            // Problems: The value is not in a valid format
-            mg_send( conn,
-                    MSG_PARAMETER_ERROR, 
-                    strlen( MSG_PARAMETER_ERROR ) );
-            return;            
-        }
-        
-        // Get possible millisecond part
-        str = str.AfterFirst('.');
-        str.Trim();
-        if ( str.Length() ) {
-            ms = vscp_readStringValue( str );
-        }    
-        
-        dt.SetMillisecond( ms );
-        
-    }
-    else {
-        // Set to now
-        dt = wxDateTime::UNow();
-    }
-    
-    
-    gpobj->m_mutexUserTables.Lock();
-    
-    CVSCPTable *pTable = 
-                gpobj->m_userTableObjects.getTable( strTable );
-    
-    if ( NULL == pTable ) {
-        // Failed
-        mg_send( conn, 
-                    MSG_FAILED_UNKNOWN_TABLE, 
-                    strlen( MSG_FAILED_UNKNOWN_TABLE ) );
-        
-        gpobj->m_mutexUserTables.Unlock();
-        return;
-    }
-    
-    // Log data
-    if ( !pTable->logData( dt, value ) ) {
-        gpobj->m_mutexUserTables.Unlock();
-        mg_send( conn,
-                    MSG_FAILED_TO_WRITE_TABLE,  
-                    strlen( MSG_FAILED_TO_WRITE_TABLE ) );
-        return;
-    }
-    
-    gpobj->m_mutexUserTables.Unlock();
-    
-    mg_send( conn,
-                MSG_OK,  
-                strlen( MSG_OK ) );
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-// handleClientTable_LogSQL
-//
-
-void TCPClientThread::handleClientTable_LogSQL( struct mg_connection *conn )
-{
-    wxString strTable, strSQL;
-    
-    CClientItem *pClientItem = (CClientItem *)conn->user_data;
-    if ( NULL == pClientItem ) return;    
-    
-    pClientItem->m_currentCommand.Trim(true);
-    pClientItem->m_currentCommand.Trim(false);
-    
-    wxStringTokenizer tkz( pClientItem->m_currentCommand, _(" ") );
-    
-    // Get table name 
-    if ( tkz.HasMoreTokens() ) {
-        strTable = tkz.GetNextToken();
-        strTable.Trim(true);
-        strTable.Trim(false);
-    }
-    else {
-        // Problems: A table name must be given
-        mg_send( conn,
-                    MSG_PARAMETER_ERROR, 
-                    strlen( MSG_PARAMETER_ERROR ) );
-        return;
-    }
-    
-    
-    // Get SQL expression 
-    if ( tkz.HasMoreTokens() ) {
-        strSQL = tkz.GetNextToken();
-        strSQL.Trim(true);
-        strSQL.Trim(false);
-    }
-    else {
-        // Problems: A SQL expression must be given
-        mg_send( conn,
-                    MSG_PARAMETER_ERROR, 
-                    strlen( MSG_PARAMETER_ERROR ) );
-        return;
-    }
-    
-    
-    gpobj->m_mutexUserTables.Lock();
-    
-    CVSCPTable *pTable = 
-                gpobj->m_userTableObjects.getTable( strTable );
-    
-    if ( NULL == pTable ) {
-        // Failed
-        mg_send( conn, 
-                    MSG_FAILED_UNKNOWN_TABLE, 
-                    strlen( MSG_FAILED_UNKNOWN_TABLE ) );
-        
-        gpobj->m_mutexUserTables.Unlock();
-        return;
-    }
-    
-    // Log data
-    if ( !pTable->logData( strSQL ) ) {
-        gpobj->m_mutexUserTables.Unlock();
-        mg_send( conn,
-                    MSG_FAILED_TO_WRITE_TABLE,  
-                    strlen( MSG_FAILED_TO_WRITE_TABLE ) );
-        return;
-    }
-    
-    gpobj->m_mutexUserTables.Unlock();
-    
-}
 
 
 

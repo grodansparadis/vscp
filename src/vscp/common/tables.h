@@ -723,6 +723,36 @@ public:
      */
     bool addTable( CVSCPTable *pTable );
     
+    /*!
+     * Create a table from a semicolon separated string expression
+     * 
+     * @param strCreate String used to create table.
+     * @return True on success and false on failure.
+     * 
+     * Elements below
+     *      name = "test_table2"
+     *      benable = "true"
+     *      binmemory = "false"
+     *      type = "dynamic"
+     *      size = "0"
+     *      owner = "admin"
+     *      rights = "0x777"
+     *      title = "This is a title"
+     *      xname = "This the x-lable"
+     *      yname = "This is the y-label"
+     *      note = "This is a note"
+     *      sqlcreate = "SQL create expression"
+     *      sqlinsert = "SQL insert expression"
+     *      sqldelete = "SQL delete expression"
+     *      description = "This is the description"
+     *      vscpclass = "10"
+     *      vscptype = "6"
+     *      sensorindex = "0"
+     *      unit = "1"
+     *      zone = "0"
+     *      subzone = "0"
+     */
+    bool createTableFromString( const wxString &strCreate );
     
     /*!
      * Create one or more tables from a XML expression
