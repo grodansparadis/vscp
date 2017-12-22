@@ -1996,7 +1996,7 @@ bool CCanalSuperWrapper::getAbstractionString( wxWindow *pwnd,
 
 error:
 
-    if ( NULL != p ) delete p;
+    if ( NULL != p ) delete [] p;
 
     // Restore page
     if ( !bLevel2 ) {
@@ -2296,7 +2296,7 @@ bool CCanalSuperWrapper::getAbstractionBitField( wxWindow *pwnd,
 error:
 
 
-    if ( NULL != p ) delete p;
+    if ( NULL != p ) delete [] p;
 
     // Restore page
     if ( !bLevel2 ) {
@@ -2888,7 +2888,7 @@ bool CCanalSuperWrapper::getAbstraction16bitinteger( wxWindow *pwnd,
 error:
 
     *pval = ( p[0] << 8 ) + p[1];
-    if ( NULL != p ) delete p;
+    if ( NULL != p ) delete [] p;
 
     // Restore page
     if ( !bLevel2 ) {
@@ -3185,7 +3185,7 @@ bool CCanalSuperWrapper::getAbstraction32bitinteger( wxWindow *pwnd,
 
 error:
 
-    if ( NULL != p ) delete p;
+    if ( NULL != p ) delete [] p;
 
     // Restore page
     if ( !bLevel2 ) {
@@ -3465,7 +3465,7 @@ bool CCanalSuperWrapper::getAbstraction64bitinteger( wxWindow *pwnd,
 
 error:
 
-    if ( NULL != p ) delete p;
+    if ( NULL != p ) delete [] p;
 
     // Restore page
     if ( !bLevel2 ) {
@@ -3742,7 +3742,7 @@ bool CCanalSuperWrapper::getAbstractionFloat( wxWindow *pwnd,
 
 error:
 
-    if ( NULL != p ) delete p;
+    if ( NULL != p ) delete [] p;
 
     // Restore page
     if ( !bLevel2 ) {
@@ -4025,7 +4025,7 @@ bool CCanalSuperWrapper::getAbstractionDouble( wxWindow *pwnd,
 
 error:
 
-    if ( NULL != p ) delete p;
+    if ( NULL != p ) delete [] p;
 
     // Restore page
     if ( !bLevel2 ) {
@@ -4309,7 +4309,7 @@ bool CCanalSuperWrapper::getAbstractionDate( wxWindow *pwnd,
 
 error:
 
-    if ( NULL != p ) delete p;
+    if ( NULL != p ) delete [] p;
 
     // Restore page
     if ( !bLevel2 ) {
@@ -4598,7 +4598,7 @@ bool CCanalSuperWrapper::getAbstractionTime( wxWindow *pwnd,
 
 error:
 
-    if ( NULL != p ) delete p;
+    if ( NULL != p ) delete [] p;
 
     // Restore page
     if ( !bLevel2 ) {
@@ -4886,7 +4886,7 @@ bool CCanalSuperWrapper::getAbstractionGUID( wxWindow *pwnd,
     
 error:
 
-    if ( NULL != p ) delete p;
+    if ( NULL != p ) delete [] p;
 
     // Restore page
     if ( !bLevel2 ) {
