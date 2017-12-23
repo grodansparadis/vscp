@@ -1,4 +1,4 @@
-// vscpd.cpp : Defines the class behaviours for the application.
+// vscpd.cpp : Defines the class behaviour for the application.
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -141,9 +141,9 @@ int main( int argc, char **argv )
     while ( ( arg = getopt( argc, argv, "d:c:f:k:hgs" ) ) != EOF ) {
 
         switch (arg) {
-
+ 
         case 's':
-            wxPrintf( _("Stay Hungry. Stay Foolish.\n"));
+            wxPrintf( _("Stay Hungry. Stay Foolish.\n") );
             wxPrintf( _("I will ***NOT*** run as daemon! "
                         "(ctrl+c to terminate)\n\n"));
             gbDontRunAsDaemon = true;

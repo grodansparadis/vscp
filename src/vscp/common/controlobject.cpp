@@ -290,7 +290,7 @@ CControlObject::CControlObject()
     m_strTcpInterfaceAddress = _("tcp://" + VSCP_DEFAULT_TCP_PORT);
 
     // Default multicast announce port
-    m_strMulticastAnnounceAddress = _( "udp://:" + VSCP_ANNNOUNCE_MULTICAST_PORT );
+    m_strMulticastAnnounceAddress = _( "udp://:" + VSCP_ANNOUNCE_MULTICAST_PORT );
 
     // default multicast announce ttl
     m_ttlMultiCastAnnounce = IP_MULTICAST_DEFAULT_TTL;

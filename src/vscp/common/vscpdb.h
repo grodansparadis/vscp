@@ -27,7 +27,7 @@
 #define VSCPDB__INCLUDED_
 
 //*****************************************************************************
-//                               CONFIG
+//                                 CONFIG
 //*****************************************************************************
 
 #define VSCPDB_CONFIG_CREATE "CREATE TABLE 'config' ("\
@@ -466,6 +466,7 @@
  * configuration Semicolon separated configuration string for driver.
  * path Path to driver dl/dll or for level III the url (tcp://127.0.0.1:5005)
  * flags Flags for driver functionality
+ * port - for Level II devices.
  * translation Semicolon separated list. Translate Level I events to Level II
  *      (measurements float/string)
  * note Driver notations and/or information.
@@ -517,7 +518,7 @@
  *
  * date - date time when discovered in ISO format. YY-MM-DDTHH:MM:SS
  *
- * name - Max 64 byte name 
+ * name - Max 64 byte Unicode name 
  *
  * link_to_mdf - For a hardware device.
  *
@@ -545,7 +546,7 @@
         ");"
 
 #define VSCPDB_GUID_CREATE_INDEX "CREATE INDEX `idxguid` "\
-                "ON guid ('name'):"
+                                 "ON guid ('name'):"
 
 #define VSCPDB_ORDINAL_GUID_ID                      0   //
 #define VSCPDB_ORDINAL_GUID_TYPE                    1   //
@@ -586,6 +587,42 @@
 #define VSCPDB_ORDINAL_LOCATION_LINK_TO_GUID        3   //
 #define VSCPDB_ORDINAL_LOCATION_NAME                4   //
 #define VSCPDB_ORDINAL_LOCATION_DESCRIPTION         5   //
+
+
+//*****************************************************************************
+//                                 ZONE
+//*****************************************************************************
+
+#define VSCPDB_ZONE_CREATE "CREATE TABLE 'zone' ("\
+	"`idx_zone`	INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
+	"`name`         TEXT NOT NULL,"\
+	"`description`	TEXT"\
+        ");"
+
+#define VSCPDB_ZONE_CREATE_INDEX "CREATE INDEX `idxzone` "\
+                "ON subzone ('name'):"
+
+#define VSCPDB_ORDINAL_ZONE_ID                   0   //
+#define VSCPDB_ORDINAL_ZONE_NAME                 1   //
+#define VSCPDB_ORDINAL_ZONE_DESCRIPTION          2   //
+
+
+//*****************************************************************************
+//                                 SUBZONE
+//*****************************************************************************
+
+#define VSCPDB_SUBZONE_CREATE "CREATE TABLE `subzone` ("\
+	"`idx_subzone`	INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
+	"`name`         TEXT NOT NULL,"\
+	"`description`	TEXT"\
+        ");"
+
+#define VSCPDB_SUBZONE_CREATE_INDEX "CREATE INDEX `idxsubzone` "\
+                "ON subzone ('name'):"
+
+#define VSCPDB_ORDINAL_SUBZONE_ID               0   //
+#define VSCPDB_ORDINAL_SUBZONE_NAME             1   //
+#define VSCPDB_ORDINAL_SUBZONE_DESCRIPTION      2   //
 
 
 //*****************************************************************************
@@ -677,39 +714,7 @@
 #define VSCPDB_ORDINAL_SIMPLE_UI_ITEM_ROW_TYPE          7   //
 
 
-//*****************************************************************************
-//                                 ZONE
-//*****************************************************************************
 
-#define VSCPDB_ZONE_CREATE "CREATE TABLE 'zone' ("\
-	"`idx_zone`	INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
-	"`name`         TEXT NOT NULL,"\
-	"`description`	TEXT"\
-        ");"
-
-#define VSCPDB_ZONE_CREATE_INDEX "CREATE INDEX `idxzone` "\
-                "ON subzone ('name'):"
-
-#define VSCPDB_ORDINAL_ZONE_ID                   0   //
-#define VSCPDB_ORDINAL_ZONE_NAME                 1   //
-#define VSCPDB_ORDINAL_ZONE_DESCRIPTION          2   //
-
-//*****************************************************************************
-//                                 SUBZONE
-//*****************************************************************************
-
-#define VSCPDB_SUBZONE_CREATE "CREATE TABLE `subzone` ("\
-	"`idx_subzone`	INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
-	"`name`         TEXT NOT NULL,"\
-	"`description`	TEXT"\
-        ");"
-
-#define VSCPDB_SUBZONE_CREATE_INDEX "CREATE INDEX `idxsubzone` "\
-                "ON subzone ('name'):"
-
-#define VSCPDB_ORDINAL_SUBZONE_ID               0   //
-#define VSCPDB_ORDINAL_SUBZONE_NAME             1   //
-#define VSCPDB_ORDINAL_SUBZONE_DESCRIPTION      2   //
 
 
 

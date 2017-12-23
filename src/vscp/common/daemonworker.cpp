@@ -103,7 +103,7 @@ void *daemonVSCPThread::Entry()
 {
     int sock_mc;                    // socket descriptor
     struct sockaddr_in mc_addr;     // socket address structure
-    unsigned short mc_port = VSCP_ANNNOUNCE_MULTICAST_PORT;
+    unsigned short mc_port = VSCP_ANNOUNCE_MULTICAST_PORT;
     unsigned char mc_ttl =
         m_pCtrlObject->m_ttlMultiCastAnnounce; // time to live (hop count) 
     wxString ip;
@@ -175,7 +175,7 @@ void *daemonVSCPThread::Entry()
     memset( &mc_addr, 0, sizeof( mc_addr ) );
     mc_addr.sin_family = AF_INET;
     mc_addr.sin_addr.s_addr = inet_addr( VSCP_MULTICAST_IPV4_ADDRESS_STR );
-    mc_addr.sin_port = htons( VSCP_ANNNOUNCE_MULTICAST_PORT );
+    mc_addr.sin_port = htons( VSCP_ANNOUNCE_MULTICAST_PORT );
 
 #endif
 
@@ -645,7 +645,7 @@ bool daemonVSCPThread::parseInterface( const wxString &ifaddr,
     // If no data return defaults
     if ( 0 == strAddress.Length() ) {
         ip = "";  // INADDR_ANY
-        *pPort = VSCP_ANNNOUNCE_MULTICAST_PORT;
+        *pPort = VSCP_ANNOUNCE_MULTICAST_PORT;
         return true;
     }
     
@@ -663,7 +663,7 @@ bool daemonVSCPThread::parseInterface( const wxString &ifaddr,
     // Check for a.b.c.d  default port used
     else if ( ( wxNOT_FOUND != ( pos = strAddress.Find('.') ) ) ) {
         ip = strAddress;
-        *pPort = VSCP_ANNNOUNCE_MULTICAST_PORT;
+        *pPort = VSCP_ANNOUNCE_MULTICAST_PORT;
     }
     // only port
     else {
@@ -691,7 +691,7 @@ bool daemonVSCPThread::sendMulticastEvent( int sock_mc,
     memset( &mc_addr, 0, sizeof( mc_addr ) );
     mc_addr.sin_family = AF_INET;
     mc_addr.sin_addr.s_addr = inet_addr( VSCP_MULTICAST_IPV4_ADDRESS_STR );
-    mc_addr.sin_port = htons( VSCP_ANNNOUNCE_MULTICAST_PORT );
+    mc_addr.sin_port = htons( VSCP_ANNOUNCE_MULTICAST_PORT );
 
     // Clear buffer
     memset( buf, 0, sizeof( buf ) );
@@ -750,7 +750,7 @@ bool daemonVSCPThread::sendMulticastInformationProxyEvent( int sock,
     memset( &mc_addr, 0, sizeof( mc_addr ) );
     mc_addr.sin_family = AF_INET;
     mc_addr.sin_addr.s_addr = inet_addr( VSCP_MULTICAST_IPV4_ADDRESS_STR );
-    mc_addr.sin_port = htons( VSCP_ANNNOUNCE_MULTICAST_PORT );
+    mc_addr.sin_port = htons( VSCP_ANNOUNCE_MULTICAST_PORT );
 
     // Clear buffer
     memset( buf, 0, sizeof( buf ) );

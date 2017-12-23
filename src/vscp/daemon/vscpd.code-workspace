@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "linux"
+		},
+		{
+			"path": "/home/akhe/development/VSCP/vscp/src/vscp/common"
+		},
+		{
+			"path": "/home/akhe/development/VSCP/vscp/src/common"
+		}
+	],
+    "settings": {}
+}

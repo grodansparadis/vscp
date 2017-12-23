@@ -1527,6 +1527,9 @@ static int vscp_dm_list( struct web_connection *conn, void *cbdata )
                         (long)nFrom + i,
                         (long)nFrom + i + 1,
                         (long)nFrom + i );
+        if ( pElement->m_bStatic ) {
+            web_printf( conn,"<br>XML" );
+        }
         web_printf( conn, "</td>");
 
         // DM entry
@@ -1828,6 +1831,13 @@ static int vscp_dm_edit( struct web_connection *conn, void *cbdata  )
             web_printf( conn,
                         "<span id=\"optiontext\">Record = %ld.</span><br>",
                         id );
+        }
+        
+        if ( pElement->m_bStatic ) {
+            web_printf( conn, "<br><b>NOTE this is a XML record!</b> If you "
+                              "change/save this item it will only be "
+                              "change temporarily as it is loaded again from "
+                              "the XML file on the next server startup.<br>");
         }
 
         web_printf( conn, "<br><form method=\"get\" action=\"");

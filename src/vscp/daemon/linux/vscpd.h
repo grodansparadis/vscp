@@ -21,8 +21,8 @@
 // Boston, MA 02111-1307, USA.
 //
 
-#if !defined(AFX_VSCPD_H__3D1CDB8C_8027_46D5_9284_67750BEA4B7E__INCLUDED_)
-#define AFX_VSCPD_H__3D1CDB8C_8027_46D5_9284_67750BEA4B7E__INCLUDED_
+#if !defined(_VSCPD_H__INCLUDED_)
+#define _VSCPD_H__INCLUDED_
 
 #include <controlobject.h>
 
@@ -51,7 +51,7 @@ public:
 
     
     /*!
-            Initialise the system
+            Initialize the system
      */
     BOOL init( wxString& strcfgfile, wxString& rootFolder );
 

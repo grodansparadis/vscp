@@ -7142,7 +7142,10 @@ bool CDM::updateDatabaseRecord( dmElement& dm )
     char *pErrMsg;
     cguid guid_mask;
     cguid guid_filter;
-            
+    
+    // Can't save to db if loaded from XML
+    if ( dm.m_bStatic ) return false;
+    
     // Database file must be open
     if ( NULL == m_db_vscp_dm ) {
         gpobj->logMsg( _("[DM] ") + _("Add record. Database file is not open.\n"),
