@@ -514,12 +514,13 @@ void vscp_toXMLEscape( char *temp_str )
 
 bool vscp_base64_wxdecode( wxString& str ) 
 {
-    size_t dest_len;
+    size_t dest_len = 0;
+    size_t bufferSize = 2 * str.Length();
     if ( 0 == str.Length() ) return true;   // Nothing to do if empty
     
-    char *pbuf = new char[ 2*str.Length() ];
+    char *pbuf = new char[ bufferSize ];
     if ( NULL == pbuf ) return false;
-    memset( pbuf, 0, sizeof( pbuf) );
+    memset( pbuf, 0, bufferSize );
     
     vscp_base64_decode( (const unsigned char *)( (const char *)str.mbc_str() ), 
                             str.length(), 
@@ -537,9 +538,10 @@ bool vscp_base64_wxdecode( wxString& str )
 
 bool vscp_base64_wxencode( wxString& str ) 
 {
-    char *pbuf = new char[ 2*strlen( (const char *)str.mbc_str() ) ];
+    size_t  bufferSize = 2 * strlen( (const char *)str.mbc_str() );
+    char *pbuf = new char[ bufferSize ];
     if ( NULL == pbuf ) return false;
-    memset( pbuf, 0, sizeof( pbuf ) );
+    memset( pbuf, 0, bufferSize );
     
     vscp_base64_encode( (const unsigned char *)( (const char *)str.mbc_str() ), 
                                     strlen( (const char *)str.mbc_str() ), 
