@@ -2795,6 +2795,10 @@ bool CCanalSuperWrapper::getAbstraction16bitinteger( wxWindow *pwnd,
     uint8_t *p = 0;
     p = new uint8_t[ 2 ];
 
+    if ( NULL == p ) {
+        return false;
+    }
+
     if ( abstraction->m_bIndexed ) {
 
         for ( uint8_t i=0; i<2; i++ ) {
@@ -2888,7 +2892,8 @@ bool CCanalSuperWrapper::getAbstraction16bitinteger( wxWindow *pwnd,
 error:
 
     *pval = ( p[0] << 8 ) + p[1];
-    if ( NULL != p ) delete [] p;
+    delete [] p;
+    p = NULL;
 
     // Restore page
     if ( !bLevel2 ) {
