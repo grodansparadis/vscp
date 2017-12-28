@@ -104,7 +104,8 @@ Csocketcan::open(const char *pUsername,
         const char *pHost,
         short port,
         const char *pPrefix,
-        const char *pConfig) {
+        const char *pConfig) 
+{
     bool rv = true;
     wxString wxstr = wxString::FromAscii(pConfig);
 
@@ -130,10 +131,10 @@ Csocketcan::open(const char *pUsername,
     // First log on to the host and get configuration 
     // variables
 
-    if (VSCP_ERROR_SUCCESS != m_srv.doCmdOpen(m_host,
-            m_username,
-            m_password)) {
-        syslog(LOG_ERR,
+    if (VSCP_ERROR_SUCCESS != m_srv.doCmdOpen( m_host,
+                                                    m_username,
+                                                    m_password ) ) {
+        syslog( LOG_ERR,
                 "%s",
                 (const char *) "Unable to connect to "
                 "VSCP TCP/IP interface. Terminating!");
@@ -211,7 +212,8 @@ Csocketcan::open(const char *pUsername,
 //
 
 void
-Csocketcan::close(void) {
+Csocketcan::close(void) 
+{
     // Do nothing if already terminated
     if (m_bQuit) return;
 
@@ -225,7 +227,8 @@ Csocketcan::close(void) {
 //
 
 bool
-Csocketcan::addEvent2SendQueue(const vscpEvent *pEvent) {
+Csocketcan::addEvent2SendQueue(const vscpEvent *pEvent) 
+{
     m_mutexSendQueue.Lock();
     //m_sendQueue.Append((vscpEvent *)pEvent);
     m_sendList.push_back((vscpEvent *) pEvent);
@@ -240,11 +243,13 @@ Csocketcan::addEvent2SendQueue(const vscpEvent *pEvent) {
 //                Workerthread - CSocketCanWorkerTread
 //////////////////////////////////////////////////////////////////////
 
-CSocketCanWorkerTread::CSocketCanWorkerTread() {
+CSocketCanWorkerTread::CSocketCanWorkerTread() 
+{
     m_pObj = NULL;
 }
 
-CSocketCanWorkerTread::~CSocketCanWorkerTread() {
+CSocketCanWorkerTread::~CSocketCanWorkerTread() 
+{
     ;
 }
 
@@ -254,7 +259,8 @@ CSocketCanWorkerTread::~CSocketCanWorkerTread() {
 //
 
 void *
-CSocketCanWorkerTread::Entry() {
+CSocketCanWorkerTread::Entry() 
+{
     int sock;
     char devname[IFNAMSIZ + 1];
     fd_set rdfs;
@@ -288,7 +294,8 @@ CSocketCanWorkerTread::Entry() {
 
             syslog(LOG_ERR,
                     "%s",
-                    (const char *) "CReadSocketCanTread: Error while opening socket. Terminating!");
+                    (const char *) "CReadSocketCanTread: Error while "
+                    "opening socket. Terminating!");
 
             m_pObj->m_bQuit;
             continue;
@@ -314,7 +321,8 @@ CSocketCanWorkerTread::Entry() {
         if (bind(sock, (struct sockaddr *) &addr, sizeof (addr)) < 0) {
             syslog(LOG_ERR,
                     "%s",
-                    (const char *) "CReadSocketCanTread: Error in socket bind. Terminating!");
+                    (const char *) "CReadSocketCanTread: Error in socket bind. "
+                    "Terminating!");
             close(sock);
             sleep(2);
             continue;
@@ -428,12 +436,14 @@ CSocketCanWorkerTread::Entry() {
                             frame.len = (pEvent->sizeData > 8 ? 8 : pEvent->sizeData);
                             memcpy(frame.data, pEvent->pdata, frame.len);
                         }
-                    } else if (pEvent->vscp_class < 1024) {
+                    } 
+                    else if (pEvent->vscp_class < 1024) {
                         pEvent->vscp_class -= 512;
                         frame.can_id = vscp_getCANALidFromVSCPevent(pEvent);
                         frame.can_id |= CAN_EFF_FLAG; // Always extended
                         if (0 != pEvent->sizeData) {
-                            frame.len = ((pEvent->sizeData - 16) > 8 ? 8 : pEvent->sizeData - 16);
+                            frame.len = 
+                                    ((pEvent->sizeData - 16) > 8 ? 8 : pEvent->sizeData - 16);
                             memcpy(frame.data, pEvent->pdata + 16, frame.len);
                         }
                     }
@@ -466,7 +476,8 @@ CSocketCanWorkerTread::Entry() {
 //
 
 void
-CSocketCanWorkerTread::OnExit() {
+CSocketCanWorkerTread::OnExit() 
+{
     ;
 }
 
