@@ -1430,6 +1430,9 @@ void TCPClientThread::handleClientSend( struct mg_connection *conn,
 
             if ( tkz.HasMoreTokens() ) {
                 mg_send( conn, MSG_PARAMETER_ERROR, strlen( MSG_PARAMETER_ERROR ) );
+
+                delete [] event.pdata;
+                event.pdata = NULL;
                 return;
             }
         }

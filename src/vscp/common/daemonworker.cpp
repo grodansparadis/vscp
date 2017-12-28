@@ -899,11 +899,11 @@ void *discoveryVSCPThread::Entry()
                 newguid.setAt( i, content );
                 break;
             }
+        }
 
-            // Check if we failed
-            if ( error >= 3 ) {
-                goto error_abort;
-            }
+        // Check if we failed
+        if ( error >= 3 ) {
+            goto error_abort;
         }
     }
 

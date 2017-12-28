@@ -1834,7 +1834,7 @@ bool CUserTableObjList::isTableInDB( wxString& name )
         return false;
     }
     
-    int cnt;    
+    int cnt = 0;    
     if ( SQLITE_ROW == sqlite3_step( ppStmt ) ) {
         cnt = sqlite3_column_int( ppStmt, 0 );
     }

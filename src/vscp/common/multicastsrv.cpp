@@ -548,6 +548,7 @@ VSCPMulticastClientThread::replyAckFrame( VSCPMulticastClientThread *pMulticastC
     vscpEventEx ex;
     
     ex.head = ( index & 0xf8 );
+    ex.crc = 0;
     ex.obid = 0;
     ex.timestamp = vscp_makeTimeStamp();
     ex.year = wxDateTime::UNow().GetYear();
@@ -602,6 +603,7 @@ VSCPMulticastClientThread::replyNackFrame( VSCPMulticastClientThread *pMulticast
     vscpEventEx ex;
     
     ex.head = ( index & 0xf8 );
+    ex.crc = 0;
     ex.obid = 0;
     ex.timestamp = vscp_makeTimeStamp();
     ex.year = wxDateTime::UNow().GetYear();

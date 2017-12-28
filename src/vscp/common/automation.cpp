@@ -123,6 +123,10 @@ CVSCPAutomation::CVSCPAutomation( void )
     m_bSunSetTwilightEvent = true;
     m_bCalculatedNoonEvent = true;
 
+    m_declination = 0.0f;
+    m_daylength = 0.0f;
+    m_SunMaxAltitude = 0.0f;
+
     m_bCalulationHasBeenDone = false;   // No calculations has been done yet
 
     // Set to some early date to indicate that they have not been sent
