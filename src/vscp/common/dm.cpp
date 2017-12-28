@@ -51,7 +51,6 @@
 #include <version.h>
 #include <vscp_debug.h>
 #include <vscphelper.h>
-//#include <vscpeventhelper.h>
 #include <actioncodes.h>
 #include <remotevariable.h>
 #include <userlist.h>

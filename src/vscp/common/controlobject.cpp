@@ -199,6 +199,7 @@ CControlObject::CControlObject()
     //m_debugFlags1 |= VSCP_DEBUG1_MULTICAST;
     //m_debugFlags1 |= VSCP_DEBUG1_UDP;
     //m_debugFlags1 |= VSCP_DEBUG1_TCP;
+    //m_debugFlags1 |= VSCP_DEBUG1_DRIVER
     
     m_logDays = DEFAULT_LOGDAYS;
 
@@ -601,7 +602,7 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
 #ifndef WIN32
     if ( m_runAsUser.Length() ) {
         struct passwd *pw;
-        if ( NULL == ( pw = getpwnam(m_runAsUser.mbc_str() ) ) ) {
+        if ( NULL == ( pw = getpwnam( m_runAsUser.mbc_str() ) ) ) {
             fprintf( stderr, "Unknown user.\n" );
         }
         else if (setgid(pw->pw_gid) != 0) {
@@ -2607,6 +2608,30 @@ bool CControlObject::readXMLConfigurationGeneral( wxString& strcfgfile )
                 }
                 else if ( subchild->GetName().Lower() == _("logdays") ) {
                     m_logDays = vscp_readStringValue( subchild->GetNodeContent() );                    
+                }
+                else if ( subchild->GetName().Lower() == _("debugflags1") ) {
+                    m_debugFlags1 = vscp_readStringValue( subchild->GetNodeContent() );                    
+                }
+                else if ( subchild->GetName().Lower() == _("debugflags2") ) {
+                    m_debugFlags2 = vscp_readStringValue( subchild->GetNodeContent() );                    
+                }
+                else if ( subchild->GetName().Lower() == _("debugflags3") ) {
+                    m_debugFlags3 = vscp_readStringValue( subchild->GetNodeContent() );                    
+                }
+                else if ( subchild->GetName().Lower() == _("debugflags4") ) {
+                    m_debugFlags4 = vscp_readStringValue( subchild->GetNodeContent() );                    
+                }
+                else if ( subchild->GetName().Lower() == _("debugflags5") ) {
+                    m_debugFlags5 = vscp_readStringValue( subchild->GetNodeContent() );                    
+                }
+                else if ( subchild->GetName().Lower() == _("debugflags6") ) {
+                    m_debugFlags6 = vscp_readStringValue( subchild->GetNodeContent() );                    
+                }
+                else if ( subchild->GetName().Lower() == _("debugflags7") ) {
+                    m_debugFlags7 = vscp_readStringValue( subchild->GetNodeContent() );                    
+                }
+                else if ( subchild->GetName().Lower() == _("debugflags8") ) {
+                    m_debugFlags8 = vscp_readStringValue( subchild->GetNodeContent() );                    
                 }
 
                 subchild = subchild->GetNext();

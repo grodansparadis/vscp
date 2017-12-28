@@ -55,10 +55,10 @@
 #include <canal_win32_ipc.h>
 #include <canal_macro.h>
 #include <vscp.h>
+#include <vscp_debug.h>
 #include <vscpdlldef.h>
 #include <vscphelper.h>
 #include <dllist.h>
-//#include <md5.h>
 #include <controlobject.h>
 #include "devicethread.h"
 
@@ -332,6 +332,10 @@ void *deviceThread::Entry()
             m_pCtrlObject->logMsg( wxstr );
         }
 
+        if ( m_pCtrlObject->m_debugFlags1 & VSCP_DEBUG1_DRIVER ) {
+            m_pCtrlObject->logMsg(_("[Device tread] Level I Driver open.")); 
+        }
+
         // Get Driver Level
         m_pDeviceItem->m_driverLevel =
                 m_pDeviceItem->m_proc_CanalGetLevel(m_pDeviceItem->m_openHandle);
@@ -343,6 +347,10 @@ void *deviceThread::Entry()
         if (NULL != m_pDeviceItem->m_proc_CanalBlockingReceive) {
 
             // * * * * Blocking version * * * *
+
+            if ( m_pCtrlObject->m_debugFlags1 & VSCP_DEBUG1_DRIVER ) {
+                m_pCtrlObject->logMsg(_("[Device tread] Level I Blocking version.")); 
+            }
 
             /////////////////////////////////////////////////////////////////////////////
             // Device write worker thread
@@ -364,6 +372,10 @@ void *deviceThread::Entry()
             }
             else {
                 m_pCtrlObject->logMsg(_("Unable to allocate memory for device write worker thread.\n") );
+            }
+
+            if ( m_pCtrlObject->m_debugFlags1 & VSCP_DEBUG1_DRIVER ) {
+                m_pCtrlObject->logMsg(_("[Device tread] Level I Write thread started.")); 
             }
 
             /////////////////////////////////////////////////////////////////////////////
@@ -388,9 +400,17 @@ void *deviceThread::Entry()
                 m_pCtrlObject->logMsg(_("Unable to allocate memory for device receive worker thread.\n") );
             }
 
+            if ( m_pCtrlObject->m_debugFlags1 & VSCP_DEBUG1_DRIVER ) {
+                m_pCtrlObject->logMsg(_("[Device tread] Level I Receive thread started.")); 
+            }
+
             // Just sit and wait until the end of the world as we know it...
             while (!m_pDeviceItem->m_bQuit) {
                 wxSleep(1);
+            }
+
+            if ( m_pCtrlObject->m_debugFlags1 & VSCP_DEBUG1_DRIVER ) {
+                m_pCtrlObject->logMsg(_("[Device tread] Level I Work loop ended.")); 
             }
 
             m_preceiveThread->m_bQuit = true;
@@ -401,6 +421,10 @@ void *deviceThread::Entry()
         else {
 
             // * * * * Non blocking version * * * *
+
+            if ( m_pCtrlObject->m_debugFlags1 & VSCP_DEBUG1_DRIVER ) {
+                m_pCtrlObject->logMsg(_("[Device tread] Level I NON Blocking version.")); 
+            }
 
             bool bActivity;
             while ( !TestDestroy() && !m_pDeviceItem->m_bQuit ) {
@@ -494,9 +518,16 @@ void *deviceThread::Entry()
 
         } // if blocking/non blocking
 
+        if ( m_pCtrlObject->m_debugFlags1 & VSCP_DEBUG1_DRIVER ) {
+            m_pCtrlObject->logMsg(_("[Device tread] Level I Work loop ended.")); 
+        }
 
         // Close CANAL channel
         m_pDeviceItem->m_proc_CanalClose(m_pDeviceItem->m_openHandle);
+
+        if ( m_pCtrlObject->m_debugFlags1 & VSCP_DEBUG1_DRIVER ) {
+            m_pCtrlObject->logMsg(_("[Device tread] Level I Closed.")); 
+        }
 
         // Library is unloaded in destructor
 
@@ -616,7 +647,9 @@ void *deviceThread::Entry()
             return NULL;
         }
 
-        m_pCtrlObject->logMsg(_("Discovered all methods\n"));
+        if ( m_pCtrlObject->m_debugFlags1 & VSCP_DEBUG1_DRIVER ) { 
+            m_pCtrlObject->logMsg(_("Discovered all methods\n"));
+        }
 
         // Username, password, host and port can be set in configuration file. Read in them here
         // if they are.
@@ -673,10 +706,15 @@ void *deviceThread::Entry()
 
         if ( 0 == m_pDeviceItem->m_openHandle ) {
             // Free the library
-            m_pCtrlObject->logMsg( _( "[Device tread] Unable to open VSCP "
-                                      "driver (check username/password/path/"
-                                      "rights).\n" ) );
+            m_pCtrlObject->logMsg( _("[Device tread] Unable to open VSCP "
+                                     "driver (check username/password/path/"
+                                     "rights). Possible additional info from driver "
+                                     "in syslog.\n" ) );
             return NULL;
+        }
+
+        if ( m_pCtrlObject->m_debugFlags1 & VSCP_DEBUG1_DRIVER ) {
+            m_pCtrlObject->logMsg(_("[Device tread] Level II Open.")); 
         }
 
         /////////////////////////////////////////////////////////////////////////////
@@ -700,6 +738,10 @@ void *deviceThread::Entry()
         }
         else {
             m_pCtrlObject->logMsg(_("Unable to allocate memory for device write worker thread."));
+        }
+
+        if ( m_pCtrlObject->m_debugFlags1 & VSCP_DEBUG1_DRIVER ) {
+            m_pCtrlObject->logMsg(_("[Device tread] Level II Write thread created.")); 
         }
 
         /////////////////////////////////////////////////////////////////////////////
@@ -728,9 +770,17 @@ void *deviceThread::Entry()
                                     "receive worker thread.") );
         }
 
+        if ( m_pCtrlObject->m_debugFlags1 & VSCP_DEBUG1_DRIVER ) {
+            m_pCtrlObject->logMsg(_("[Device tread] Level II Read thread created.")); 
+        }
+
         // Just sit and wait until the end of the world as we know it...
         while (!TestDestroy() && !m_pDeviceItem->m_bQuit) {
             wxSleep(1);
+        }
+
+        if ( m_pCtrlObject->m_debugFlags1 & VSCP_DEBUG1_DRIVER ) {
+            m_pCtrlObject->logMsg(_("[Device tread] Level II Cloing.")); 
         }
 
         //m_preceiveLevel2Thread->m_bQuit = true;
@@ -738,6 +788,10 @@ void *deviceThread::Entry()
 
         // Close channel
         m_pDeviceItem->m_proc_VSCPClose( m_pDeviceItem->m_openHandle );
+
+        if ( m_pCtrlObject->m_debugFlags1 & VSCP_DEBUG1_DRIVER ) {
+            m_pCtrlObject->logMsg(_("[Device tread] Level II Closed.")); 
+        }
 
         // Library is unloaded in destructor
 
@@ -756,12 +810,24 @@ void *deviceThread::Entry()
             delete m_pwriteLevel2Thread;
         }
 
+        if ( m_pCtrlObject->m_debugFlags1 & VSCP_DEBUG1_DRIVER ) {
+            m_pCtrlObject->logMsg(_("[Device tread] Level II Done waiting for threads.")); 
+        }
+
     }
     else if (VSCP_DRIVER_LEVEL3 == m_pDeviceItem->m_driverLevel) {
         
+        if ( m_pCtrlObject->m_debugFlags1 & VSCP_DEBUG1_DRIVER ) {
+            m_pCtrlObject->logMsg(_("[Device tread] Level III Start server loop.")); 
+        }
+
         // Just sit and wait until the end of the world as we know it...
         while ( !m_pDeviceItem->m_bQuit ) {
             wxSleep(1);
+        }
+
+        if ( m_pCtrlObject->m_debugFlags1 & VSCP_DEBUG1_DRIVER ) {
+            m_pCtrlObject->logMsg(_("[Device tread] Level II End server loop.")); 
         }
         
         // Send stop to device

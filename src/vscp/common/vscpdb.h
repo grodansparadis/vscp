@@ -55,7 +55,7 @@
 #define VSCPDB_CONFIG_DEFAULT_DBVERSION                 "1"
 
 #define VSCPDB_CONFIG_NAME_CLIENTBUFFERSIZE             "client_buffer_size"
-#define VSCPDB_CONFIG_DEFAULT_CLIENTBUFFERSIZE          "8191"
+#define VSCPDB_CONFIG_DEFAULT_CLIENTBUFFERSIZE          "8192"
 
 #define VSCPDB_CONFIG_NAME_GUID                         "guid"
 #define VSCPDB_CONFIG_DEFAULT_GUID                      "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"

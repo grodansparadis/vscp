@@ -47,6 +47,7 @@
 #endif
 
 #include <vscp.h>
+#include <vscp_debug.h>
 #include "tcpipsrv.h"
 #include <vscphelper.h>
 #include <mongoose.h>
@@ -172,7 +173,9 @@ void TCPClientThread::ev_handler( struct mg_connection *conn,
 
         case MG_EV_ACCEPT:	// New connection accept()-ed. union socket_address *remote_addr
             {
-                pCtrlObject->logMsg( _("[TCP/IP srv] -- Accept.\n") );
+                if ( pCtrlObject->m_debugFlags1 & VSCP_DEBUG1_TCP ) {
+                    pCtrlObject->logMsg( _("[TCP/IP srv] -- Accept.\n") );
+                }
 
                 // We need to create a clientobject and add this object to the list
                 pClientItem = new CClientItem;
@@ -378,7 +381,8 @@ REPEAT_COMMAND:
     //                            Password
     //*********************************************************************
 
-    else if ( pClientItem->CommandStartsWith( _("pass") ) ) {                                                        
+    else if ( pClientItem->CommandStartsWith( _("pass") ) ) {    
+
         if ( !handleClientPassword( conn, pCtrlObject ) ) {
             pCtrlObject->logMsg ( _( "[TCP/IP srv] Command: Password. Not authorized.\n" ),
                                     DAEMON_LOGMSG_NORMAL,
@@ -386,6 +390,11 @@ REPEAT_COMMAND:
             conn->flags |= MG_F_CLOSE_IMMEDIATELY;  // Close connection
             return;
         }
+
+        if ( pCtrlObject->m_debugFlags1 & VSCP_DEBUG1_TCP ) {
+            pCtrlObject->logMsg( _( "[TCP/IP srv] Command: Password. PASS\n" ) );
+        }
+
     }
 
     //*********************************************************************
@@ -402,7 +411,9 @@ REPEAT_COMMAND:
 
     else if ( pClientItem->CommandStartsWith( _("quit") ) ) {
         //long test = MG_F_CLOSE_IMMEDIATELY;
-        pCtrlObject->logMsg( _( "[TCP/IP srv] Command: Close.\n" ) );
+        if ( pCtrlObject->m_debugFlags1 & VSCP_DEBUG1_TCP ) {
+            pCtrlObject->logMsg( _( "[TCP/IP srv] Command: Close.\n" ) );
+        }
         mg_send( conn, MSG_GOODBY, strlen ( MSG_GOODBY ) );
         //conn->flags = NSF_FINISHED_SENDING_DATA;    // Close connection
         conn->flags = MG_F_SEND_AND_CLOSE;  // Close connection

@@ -7,7 +7,7 @@
 // 
 // This file is part of the VSCP Project (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2015 Ake Hedman, 
+// Copyright (C) 2000-2017 Ake Hedman, 
 // Grodans Paradis AB, <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
@@ -75,23 +75,21 @@
 // Csocketcan
 //
 
-Csocketcan::Csocketcan()
-{
-	m_bQuit = false;
-	m_pthreadWorker = NULL;
-	m_interface = _("vcan0");
-	vscp_clearVSCPFilter(&m_vscpfilter); // Accept all events
-	::wxInitialize();
+Csocketcan::Csocketcan() {
+    m_bQuit = false;
+    m_pthreadWorker = NULL;
+    m_interface = _("vcan0");
+    vscp_clearVSCPFilter(&m_vscpfilter); // Accept all events
+    ::wxInitialize();
 }
 
 //////////////////////////////////////////////////////////////////////
 // ~Csocketcan
 //
 
-Csocketcan::~Csocketcan()
-{
-	close();
-	::wxUninitialize();
+Csocketcan::~Csocketcan() {
+    close();
+    ::wxUninitialize();
 }
 
 
@@ -102,110 +100,109 @@ Csocketcan::~Csocketcan()
 
 bool
 Csocketcan::open(const char *pUsername,
-		const char *pPassword,
-		const char *pHost,
-		short port,
-		const char *pPrefix,
-		const char *pConfig)
-{
-	bool rv = true;
-	wxString wxstr = wxString::FromAscii(pConfig);
+        const char *pPassword,
+        const char *pHost,
+        short port,
+        const char *pPrefix,
+        const char *pConfig) {
+    bool rv = true;
+    wxString wxstr = wxString::FromAscii(pConfig);
 
-	m_username = wxString::FromAscii(pUsername);
-	m_password = wxString::FromAscii(pPassword);
-	m_host = wxString::FromAscii(pHost);
-	m_port = port;
-	m_prefix = wxString::FromAscii(pPrefix);
+    m_username = wxString::FromAscii(pUsername);
+    m_password = wxString::FromAscii(pPassword);
+    m_host = wxString::FromAscii(pHost);
+    m_port = port;
+    m_prefix = wxString::FromAscii(pPrefix);
 
-	// Parse the configuration string. It should
-	// have the following form
-	// path
-	// 
-	wxStringTokenizer tkz(wxString::FromAscii(pConfig), _(";\n"));
+    // Parse the configuration string. It should
+    // have the following form
+    // path
+    // 
+    wxStringTokenizer tkz(wxString::FromAscii(pConfig), _(";\n"));
 
-	// Check for socketcan interface in configuration string
-	if (tkz.HasMoreTokens()) {
-		// Interface
-		m_interface = tkz.GetNextToken();
-	}
+    // Check for socketcan interface in configuration string
+    if (tkz.HasMoreTokens()) {
+        // Interface
+        m_interface = tkz.GetNextToken();
+    }
 
 
-	// First log on to the host and get configuration 
-	// variables
+    // First log on to the host and get configuration 
+    // variables
 
-	if ( VSCP_ERROR_SUCCESS != m_srv.doCmdOpen(m_host,
-												m_username,
-												m_password ) ) {
-		syslog(LOG_ERR,
-				"%s",
-				(const char *) "Unable to connect to VSCP TCP/IP interface. Terminating!");
-		return false;
-	}
+    if (VSCP_ERROR_SUCCESS != m_srv.doCmdOpen(m_host,
+            m_username,
+            m_password)) {
+        syslog(LOG_ERR,
+                "%s",
+                (const char *) "Unable to connect to "
+                "VSCP TCP/IP interface. Terminating!");
+        return false;
+    }
 
-	// Find the channel id
-	uint32_t ChannelID;
-	m_srv.doCmdGetChannelID(&ChannelID);
-    
-	//m_srv.doCmdGetGUID( m_ifguid );
+    // Find the channel id
+    uint32_t ChannelID;
+    m_srv.doCmdGetChannelID(&ChannelID);
 
-	// The server should hold configuration data for each sensor
-	// we want to monitor.
-	// 
-	// We look for 
-	//
-	//	 _interface - The socketcan interface to use. Typically this 
-	//	 is “can0, can0, can1...
-	//
-	//   _filter - Standard VSCP filter in string form. 
-	//				   1,0x0000,0x0006,
-	//				   ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:00
-	//				as priority,class,type,GUID
-	//				Used to filter what events that is received from 
-	//				the socketcan interface. If not give all events 
-	//				are received.
-	//	 _mask - Standard VSCP mask in string form.
-	//				   1,0x0000,0x0006,
-	//				   ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:00
-	//				as priority,class,type,GUID
-	//				Used to filter what events that is received from 
-	//				the socketcan interface. If not give all events 
-	//				are received. 
-	//
+    //m_srv.doCmdGetGUID( m_ifguid );
 
-	wxString str;
-	wxString strName = m_prefix +
-			wxString::FromAscii("_interface");
-	m_srv.getRemoteVariableValue(strName, m_interface);
+    // The server should hold configuration data for each sensor
+    // we want to monitor.
+    // 
+    // We look for 
+    //
+    //	 _interface - The socketcan interface to use. Typically this 
+    //	 is “can0, can0, can1...
+    //
+    //   _filter - Standard VSCP filter in string form. 
+    //				   1,0x0000,0x0006,
+    //				   ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:00
+    //				as priority,class,type,GUID
+    //				Used to filter what events that is received from 
+    //				the socketcan interface. If not give all events 
+    //				are received.
+    //	 _mask - Standard VSCP mask in string form.
+    //				   1,0x0000,0x0006,
+    //				   ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:00
+    //				as priority,class,type,GUID
+    //				Used to filter what events that is received from 
+    //				the socketcan interface. If not give all events 
+    //				are received. 
+    //
 
-	strName = m_prefix +
-			wxString::FromAscii("_filter");
-	if (m_srv.getRemoteVariableValue(strName, str)) {
-		vscp_readFilterFromString(&m_vscpfilter, str);
-	}
+    wxString str;
+    wxString strName = m_prefix +
+            wxString::FromAscii("_interface");
+    m_srv.getRemoteVariableValue(strName, m_interface);
 
-	strName = m_prefix +
-			wxString::FromAscii("_mask");
-	if (m_srv.getRemoteVariableValue(strName, str)) {
-		vscp_readMaskFromString(&m_vscpfilter, str);
-	}
-	
-	m_srv.doClrInputQueue();
+    strName = m_prefix +
+            wxString::FromAscii("_filter");
+    if (m_srv.getRemoteVariableValue(strName, str)) {
+        vscp_readFilterFromString(&m_vscpfilter, str);
+    }
 
-	// start the workerthread
-	m_pthreadWorker = new CSocketCanWorkerTread();
-	if (NULL != m_pthreadWorker) {
-		m_pthreadWorker->m_pObj = this;
-		m_pthreadWorker->Create();
-		m_pthreadWorker->Run();
-	} 
-	else {
-		rv = false;
-	}
+    strName = m_prefix +
+            wxString::FromAscii("_mask");
+    if (m_srv.getRemoteVariableValue(strName, str)) {
+        vscp_readMaskFromString(&m_vscpfilter, str);
+    }
 
-	// Close the channel
-	m_srv.doCmdClose();
+    m_srv.doClrInputQueue();
 
-	return rv;
+    // start the workerthread
+    m_pthreadWorker = new CSocketCanWorkerTread();
+    if (NULL != m_pthreadWorker) {
+        m_pthreadWorker->m_pObj = this;
+        m_pthreadWorker->Create();
+        m_pthreadWorker->Run();
+    } else {
+        rv = false;
+    }
+
+    // Close the channel
+    m_srv.doCmdClose();
+
+    return rv;
 }
 
 
@@ -214,13 +211,12 @@ Csocketcan::open(const char *pUsername,
 //
 
 void
-Csocketcan::close(void)
-{
-	// Do nothing if already terminated
-	if (m_bQuit) return;
+Csocketcan::close(void) {
+    // Do nothing if already terminated
+    if (m_bQuit) return;
 
-	m_bQuit = true; // terminate the thread
-	wxSleep(1); // Give the thread some time to terminate
+    m_bQuit = true; // terminate the thread
+    wxSleep(1); // Give the thread some time to terminate
 
 }
 
@@ -228,14 +224,13 @@ Csocketcan::close(void)
 // addEvent2SendQueue
 //
 
-bool 
-Csocketcan::addEvent2SendQueue(const vscpEvent *pEvent)
-{
+bool
+Csocketcan::addEvent2SendQueue(const vscpEvent *pEvent) {
     m_mutexSendQueue.Lock();
-	//m_sendQueue.Append((vscpEvent *)pEvent);
-    m_sendList.push_back((vscpEvent *)pEvent);
-	m_semSendQueue.Post();
-	m_mutexSendQueue.Unlock();
+    //m_sendQueue.Append((vscpEvent *)pEvent);
+    m_sendList.push_back((vscpEvent *) pEvent);
+    m_semSendQueue.Post();
+    m_mutexSendQueue.Unlock();
     return true;
 }
 
@@ -245,14 +240,12 @@ Csocketcan::addEvent2SendQueue(const vscpEvent *pEvent)
 //                Workerthread - CSocketCanWorkerTread
 //////////////////////////////////////////////////////////////////////
 
-CSocketCanWorkerTread::CSocketCanWorkerTread()
-{
-	m_pObj = NULL;
+CSocketCanWorkerTread::CSocketCanWorkerTread() {
+    m_pObj = NULL;
 }
 
-CSocketCanWorkerTread::~CSocketCanWorkerTread()
-{
-	;
+CSocketCanWorkerTread::~CSocketCanWorkerTread() {
+    ;
 }
 
 
@@ -261,43 +254,42 @@ CSocketCanWorkerTread::~CSocketCanWorkerTread()
 //
 
 void *
-CSocketCanWorkerTread::Entry()
-{
-	int sock;
-	char devname[IFNAMSIZ + 1];
-	fd_set rdfs;
-	struct timeval tv;
-	struct sockaddr_can addr;
-	struct ifreq ifr;
-	struct cmsghdr *cmsg;
-	struct canfd_frame frame;
-	char ctrlmsg[CMSG_SPACE(sizeof(struct timeval)) + CMSG_SPACE(sizeof(__u32))];
-	const int canfd_on = 1;
+CSocketCanWorkerTread::Entry() {
+    int sock;
+    char devname[IFNAMSIZ + 1];
+    fd_set rdfs;
+    struct timeval tv;
+    struct sockaddr_can addr;
+    struct ifreq ifr;
+    struct cmsghdr *cmsg;
+    struct canfd_frame frame;
+    char ctrlmsg[CMSG_SPACE(sizeof (struct timeval)) + CMSG_SPACE(sizeof (__u32))];
+    const int canfd_on = 1;
 
-	::wxInitialize();
-			
-	// Check pointers
-	if (NULL == m_pObj) return NULL;
+    ::wxInitialize();
 
-	strncpy(devname, m_pObj->m_interface.ToAscii(), sizeof(devname) - 1);
-#if DEBUG	
-	syslog(LOG_ERR, "CWriteSocketCanTread: Interface: %s\n", ifname);
-#endif	
-	
+    // Check pointers
+    if (NULL == m_pObj) return NULL;
+
+    strncpy(devname, m_pObj->m_interface.ToAscii(), sizeof (devname) - 1);
+#if DEBUG 
+    syslog(LOG_ERR, "CWriteSocketCanTread: Interface: %s\n", ifname);
+#endif 
+
     while (!TestDestroy() && !m_pObj->m_bQuit) {
 
         sock = socket(PF_CAN, SOCK_RAW, CAN_RAW);
         if (sock < 0) {
-            
+
             if (ENETDOWN == errno) {
                 sleep(1);
                 continue;
             }
-            
+
             syslog(LOG_ERR,
                     "%s",
                     (const char *) "CReadSocketCanTread: Error while opening socket. Terminating!");
-            
+
             m_pObj->m_bQuit;
             continue;
         }
@@ -317,9 +309,9 @@ CSocketCanWorkerTread::Entry()
                 SOL_CAN_RAW,
                 CAN_RAW_FD_FRAMES,
                 &canfd_on,
-                sizeof(canfd_on));
+                sizeof (canfd_on));
 
-        if (bind(sock, (struct sockaddr *) &addr, sizeof(addr)) < 0) {
+        if (bind(sock, (struct sockaddr *) &addr, sizeof (addr)) < 0) {
             syslog(LOG_ERR,
                     "%s",
                     (const char *) "CReadSocketCanTread: Error in socket bind. Terminating!");
@@ -338,32 +330,30 @@ CSocketCanWorkerTread::Entry()
             tv.tv_usec = 5000; // 5ms timeout 
 
             int ret;
-            if ( ( ret = select(sock + 1, &rdfs, NULL, NULL, &tv ) ) <  0) {
+            if ((ret = select(sock + 1, &rdfs, NULL, NULL, &tv)) < 0) {
                 // Error
                 if (ENETDOWN == errno) {
                     // We try to get contact with the net
                     // again if it goes down
                     bInnerLoop = false;
-                }
-                else {
+                } else {
                     m_pObj->m_bQuit = true;
                 }
                 continue;
             }
 
-            if ( ret ) {
+            if (ret) {
 
                 // There is data to read
 
-                ret = read(sock, &frame, sizeof(struct can_frame));
+                ret = read(sock, &frame, sizeof (struct can_frame));
                 if (ret < 0) {
                     if (ENETDOWN == errno) {
                         // We try to get contact with the net
                         // again if it goes down
                         bInnerLoop = false;
                         sleep(2);
-                    }
-                    else {
+                    } else {
                         m_pObj->m_bQuit = true;
                     }
                     continue;
@@ -456,10 +446,10 @@ CSocketCanWorkerTread::Entry()
 
 
                     // Write the data
-                    int nbytes = write(sock, &frame, sizeof(struct can_frame));
+                    int nbytes = write(sock, &frame, sizeof (struct can_frame));
 
                 } // event to send
-            }  // No data to read
+            } // No data to read
         } // Inner loop
 
         // Close the socket
@@ -467,7 +457,7 @@ CSocketCanWorkerTread::Entry()
 
     } // Outer loop
 
-	return NULL;
+    return NULL;
 
 }
 
@@ -476,9 +466,8 @@ CSocketCanWorkerTread::Entry()
 //
 
 void
-CSocketCanWorkerTread::OnExit()
-{
-	;
+CSocketCanWorkerTread::OnExit() {
+    ;
 }
 
 
