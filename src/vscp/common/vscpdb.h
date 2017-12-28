@@ -524,7 +524,7 @@
  *
  * date - date time when discovered in ISO format. YY-MM-DDTHH:MM:SS
  *
- * name - Max 64 byte Unicode name 
+ * name - Max 64 byte Unicode (UTF8) name set by administrator
  *
  * link_to_mdf - For a hardware device.
  *
@@ -536,6 +536,7 @@
  * nonstandard - is one or more nonstandard info as described for 
  *               CLASS2.PROTOCOL, Type=20
  *
+ * description - Device description in Unicode (UTF8).
  */
 
 #define VSCPDB_GUID_CREATE "CREATE TABLE IF NOT EXISTS `guid` ("\

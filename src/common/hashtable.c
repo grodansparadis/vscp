@@ -1,24 +1,28 @@
 // File: hashtable.c
 //
-// Copyright (C) 2000-2016 Ake Hedman, Grodans Paradis AB, akhe@grodansparadis.com
+// This file is part of the VSCP (http://www.vscp.org) 
 //
-// This software is placed into
-// the public domain and may be used for any purpose.  However, this
-// notice must not be changed or removed and no warranty is either
-// expressed or implied by its publication or distribution.
-//
-// $RCSfile: hashtable.c,v $                                       
-// $Date: 2005/08/30 11:00:13 $                                  
-// $Author: akhe $                                              
-// $Revision: 1.33 $ 
-//
-// akhe@eurosource.se  Sun Feb 3 2002  started this project-file.
-// 020523 AKHE Converted to plain C
-//
-// $RCSfile: hashtable.c,v $                                       
-// $Date: 2005/08/30 11:00:13 $                                  
-// $Author: akhe $                                              
-// $Revision: 1.33 $  
+// The MIT License (MIT)
+// 
+// Copyright (c) 2000-2017 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
+// 
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+// 
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 //
 
 #include <stdlib.h>

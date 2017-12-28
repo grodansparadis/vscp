@@ -194,7 +194,7 @@ public:
     // IP/MAC/... address (if any) associated with the node
     wxString m_address;
 
-    // Node level 0=Level I, 1 = Level II
+    // Node level 1=Level I, 2 = Level II, 3 = Level III
     uint8_t m_level;
 
 };
