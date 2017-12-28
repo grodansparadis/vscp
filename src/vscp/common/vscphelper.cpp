@@ -1936,6 +1936,8 @@ bool vscp_convertLevel1MeasuremenToLevel2Double( vscpEvent *pEvent )
 
             }
             else {
+                delete [] p;
+                p = NULL;
                 return false;   // Not a measurement event, hmmmm.... strange
             }
         }
@@ -2057,6 +2059,8 @@ bool vscp_convertLevel1MeasuremenToLevel2String( vscpEvent *pEvent )
 
             }
             else {
+                delete [] p;
+                p = NULL;
                 return false;   // Not a measurement.... hmm.... strange
             }
         }
