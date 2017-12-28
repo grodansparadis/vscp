@@ -427,7 +427,13 @@ CWrkTread::CWrkTread()
     m_registers[ VSCP_REG_BUFFER_SIZE ] = 8;
     m_registers[ VSCP_REG_PAGES_USED ] = 1;
     memcpy( m_registers + VSCP_REG_GUID, gdefaultGUID, 16 );
-    memcpy( m_registers + VSCP_REG_DEVICE_URL, gdeviceURL, sizeof( gdeviceURL ) );
+    
+    // Prevent out of bounds access
+    if ( 32 < sizeof( gdeviceURL ) ) {
+        m_registers[ VSCP_REG_DEVICE_URL ] = '\0';
+    } else {
+        memcpy( m_registers + VSCP_REG_DEVICE_URL, gdeviceURL, sizeof( gdeviceURL ) );
+    }
 }
 
 CWrkTread::~CWrkTread()

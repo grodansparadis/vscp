@@ -1652,7 +1652,7 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
 
 
             // class filter
-            uint16_t class_filter;
+            uint16_t class_filter = 0;
             if ( saverow[ VSCP_LEVEL1_DM_OFFSET_CLASS_FILTER ] != 
                     vscp_readStringValue( dlg.m_classFilter->GetValue() ) ) {
 
