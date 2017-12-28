@@ -4729,7 +4729,7 @@ uint32_t CVariableStorage::getStockVariable( const wxString& name,
             // Get the remaining sub string
             wxstr = wxstr.Right( wxstr.Length() - pos - 1 );
             
-            dmElement *pElement;
+            dmElement *pElement = NULL;
             if ( !gpobj->m_dm.getDatabaseRecord( id, pElement ) ) return false;
             
             var.setStockVariable();
