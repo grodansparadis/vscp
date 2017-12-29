@@ -323,7 +323,7 @@ bool websrv_getHeaderElement( wxArrayString &valarray,
 struct websrv_session *
 websrv_get_session( struct web_connection *conn )
 {
-    const struct websrv_Session *pSession = NULL;
+    struct websrv_Session *pSession = NULL;
     struct web_context * ctx;
     const struct web_request_info *reqinfo;
 
