@@ -837,7 +837,7 @@ void TCPClientThread::handleClientMeasurment( struct mg_connection *conn,
             return;
         }
         
-        level = l;
+        vscptype = l;
         
     }
     else {
