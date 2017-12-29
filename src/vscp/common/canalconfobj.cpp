@@ -392,14 +392,16 @@ bool CCanalConfObj::runWizard( wxWindow* parent,
     wizard.Run(); 
 
     int pos = 0;
-    while ( ( NULL != wizard.m_pgConfig[ pos ] ) && ( pos < MAX_PARAMETERS ) ) {
+    while ( ( pos < MAX_PARAMETERS ) && ( NULL != wizard.m_pgConfig[ pos ] ) ) {
         resultConfigString += wizard.m_pgConfig[ pos ]->m_strValue;
         pos++;
-        if ( ( NULL != wizard.m_pgConfig[ pos ] ) )  resultConfigString += _( ";" );
+        if ( ( pos < MAX_PARAMETERS ) && ( NULL != wizard.m_pgConfig[ pos ] ) )  {
+            resultConfigString += _( ";" );
+        }
     }
 
     pos = 0;
-    while ( ( NULL != wizard.m_pgConfigFlags[ pos ] ) && ( pos < MAX_FLAGS ) ) {
+    while ( ( pos < MAX_FLAGS ) && ( NULL != wizard.m_pgConfigFlags[ pos ] )  ) {
         *presultConfigFlags |= wizard.m_pgConfigFlags[ pos ]->m_value;
         pos++;
     }
