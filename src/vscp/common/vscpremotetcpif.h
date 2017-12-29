@@ -831,22 +831,21 @@ public:
         Get variable value from VSCP data variable
      
         @param name of variable.
-        @param psizeData pointer to variable that will hold the size of the data array
-        @param pData pointer to VSCP data array variable (unsigned char [8] ) that get the 
-        value of the string variable.
+        @param pData Pointer to data array to get data from.
+        @param pSize Pointer to size of data.
         @return VSCP_ERROR_SUCCESS if the variable is of type VSCP data and the operation
         was successful.
      */
     int getRemoteVariableVSCPdata( const wxString& name, 
-                                        uint8_t *psizeData, 
-                                        uint16_t *pData);
+                                        uint8_t *pData, 
+                                        uint16_t *pSize);
 
     /*!
         set variable value from VSCP data
      
         @param name of variable.
-        @param sizeData Size of data.
         @param pData Pointer to data array to set data from.
+        @param size Size of data.
         @return VSCP_ERROR_SUCCESS if the operation was successful.
      */
     int setRemoteVariableVSCPdata( const wxString& name, uint8_t *pData, uint16_t size);
