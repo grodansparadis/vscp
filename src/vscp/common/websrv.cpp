@@ -922,7 +922,7 @@ vscp_settings( struct web_connection *conn, void *cbdata )
     }
     
     web_printf( conn, "<table>"
-                      "<tr><th width=\"20%\">Name</th><th>Value</th></tr>");
+                      "<tr><th width=\"20%%\">Name</th><th>Value</th></tr>");
     
     while ( SQLITE_ROW == sqlite3_step( ppStmt ) ) {
         wxString wxstr;
@@ -999,7 +999,7 @@ vscp_password( struct web_connection *conn, void *cbdata )
         
     if ( 0 == strlen( password ) ) {
         web_printf( conn, "<form action=\"/vscp/password\"><table>" );
-        web_printf( conn, "<tr><td width=\"10%\"><b>Password</b></td><td><input type=\"password\" "
+        web_printf( conn, "<tr><td width=\"10%%\"><b>Password</b></td><td><input type=\"password\" "
                           "value=\"\" name=\"pw\"></td><tr>" );
         web_printf( conn, "<tr><td> <td><input type=\"submit\" value=\"Generate\"></td><tr>" );
         web_printf( conn, "</table></form>" );
