@@ -2187,8 +2187,8 @@ bool CCanalSuperWrapper::getAbstractionBitField( wxWindow *pwnd,
     }
 
     // Octet width is the number of bytes needed to store the bits
-    uint8_t octetwidth = abstraction->m_nWidth/8 + 
-                            ( abstraction->m_nWidth % 8 ) ? 1 : 0; 
+    uint8_t octetwidth = abstraction->m_nWidth / 8 + 
+                            ( ( abstraction->m_nWidth % 8 ) ? 1 : 0 );
 
     uint8_t *p;
     p = new uint8_t[ octetwidth ];
@@ -2332,8 +2332,8 @@ bool CCanalSuperWrapper::writeAbstractionBitField( wxWindow *pwnd,
     if ( NULL == abstraction) return false;
 
     // Octet width is the number of bytes needed to store the bits
-    uint8_t octetwidth = abstraction->m_nWidth/8 + 
-                            ( abstraction->m_nWidth % 8 ) ? 1 : 0; 
+    uint8_t octetwidth = abstraction->m_nWidth / 8 + 
+                            ( ( abstraction->m_nWidth % 8 ) ? 1 : 0 );
 
     uint8_t *p;
     p = new uint8_t[ octetwidth ];
