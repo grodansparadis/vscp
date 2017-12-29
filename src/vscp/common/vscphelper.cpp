@@ -6012,7 +6012,7 @@ bool vscp_getEventFromUdpFrame( vscpEvent *pEvent,
     
     // CRC check (only if not disabled)
     crc crcnew;
-    if ( !( ( buf[ VSCP_MULTICAST_PACKET0_POS_HEAD_LSB ] | VSCP_HEADER_NO_CRC ) && 
+    if ( !( ( buf[ VSCP_MULTICAST_PACKET0_POS_HEAD_LSB ] & VSCP_HEADER_NO_CRC ) && 
             ( VSCP_NOCRC_CALC_DUMMY_CRC == crcFrame ) ) ) {
         
 #if 0

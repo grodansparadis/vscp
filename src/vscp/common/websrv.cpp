@@ -311,7 +311,7 @@ bool websrv_getHeaderElement( wxArrayString &valarray,
 
 
 ///////////////////////////////////////////////////////////////////////////////
-//                     WEBSERVER SESSION HANDLINO
+//                     WEBSERVER SESSION HANDLING
 ///////////////////////////////////////////////////////////////////////////////
 
 
@@ -323,7 +323,6 @@ bool websrv_getHeaderElement( wxArrayString &valarray,
 struct websrv_session *
 websrv_get_session( struct web_connection *conn )
 {
-    char buf[512];
     const struct websrv_Session *pSession = NULL;
     struct web_context * ctx;
     const struct web_request_info *reqinfo;
@@ -357,16 +356,15 @@ websrv_get_session( struct web_connection *conn )
     for ( iter = gpobj->m_web_sessions.begin();
             iter != gpobj->m_web_sessions.end();
             ++iter ) {
-        struct websrv_session *pSession = *iter;
-        if ( 0 == strcmp( buf, pSession->m_sid ) ) {
+        pSession = *iter;
+        if ( 0 == strcmp( value.mb_str(), pSession->m_sid ) ) {
             pSession->lastActiveTime = time( NULL );
-            gpobj->m_websrvSessionMutex.Unlock();
-            return pSession;
+            break;
         }
     }
     gpobj->m_websrvSessionMutex.Unlock();
 
-    return NULL;
+    return pSession;
 }
 
 
@@ -377,7 +375,6 @@ websrv_get_session( struct web_connection *conn )
 websrv_session *
 websrv_add_session( struct web_connection *conn )
 {
-    char buf[512];
     wxString user;
     struct websrv_session *pSession;
     struct web_context * ctx;
