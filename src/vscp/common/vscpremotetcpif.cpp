@@ -4854,18 +4854,15 @@ VSCPTCPIP_RX_WorkerThread::~VSCPTCPIP_RX_WorkerThread()
 
 void *VSCPTCPIP_RX_WorkerThread::Entry()
 {
+    int rv;
+    VscpRemoteTcpIf tcpifReceive; // TODO
+
     // Must be a valid control object pointer
     if ( NULL == m_pCtrlObject ) return NULL;
     
-
-    int rv;
-    VscpRemoteTcpIf tcpifReceive; // TODO
     //wxCommandEvent eventReceive( wxVSCPTCPIF_RX_EVENT, m_pCtrlObject->m_wndID );
     //wxCommandEvent eventConnectionLost( wxVSCPTCPIF_CONNECTION_LOST_EVENT, m_pCtrlObject->m_wndID );
-  
-    // Must be a valid control object pointer
-    if ( NULL == m_pCtrlObject ) return NULL;
-  
+    
     // Connect to the server with the control interface
     if ( VSCP_ERROR_SUCCESS != 
         tcpifReceive.doCmdOpen( m_pCtrlObject->m_strHost,
@@ -4987,15 +4984,13 @@ VSCPTCPIP_TX_WorkerThread::~VSCPTCPIP_TX_WorkerThread()
 
 void *VSCPTCPIP_TX_WorkerThread::Entry()
 {
+    VscpRemoteTcpIf tcpifTransmit;
+
     // Must be a valid control object pointer
     if ( NULL == m_pCtrlObject ) return NULL;
-    
-     VscpRemoteTcpIf tcpifTransmit;
+     
     //wxCommandEvent eventConnectionLost( wxVSCPTCPIF_CONNECTION_LOST_EVENT, m_pCtrlObject->m_wndID );
-  
-    // Must be a valid control object pointer
-    if ( NULL == m_pCtrlObject ) return NULL;
-  
+    
     // Connect to the server with the control interface
     if ( VSCP_ERROR_SUCCESS != 
         tcpifTransmit.doCmdOpen( m_pCtrlObject->m_strHost,
