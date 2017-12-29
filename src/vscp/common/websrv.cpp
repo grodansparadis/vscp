@@ -929,13 +929,13 @@ vscp_settings( struct web_connection *conn, void *cbdata )
         const char * pName = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_NAME );
         web_printf( conn, "<tr><form action=\"/vscp/settings\" method=\"get\" id=\"%s\"><td><b>",
                             pName );
-        web_printf( conn, pName );
+        web_printf( conn, "%s", pName );
         web_printf( conn, "</b></td><td><input type=\"text\" name=\"varvalue\" size=\"80\" value=\"");
-        web_printf( conn,  
+        web_printf( conn, "%s",
                     (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_CONFIG_VALUE ) );
         web_printf( conn, "\" ");        
         web_printf( conn, "\"> <input type=\"hidden\" name=\"varname\" value=\"" );
-        web_printf( conn, pName );
+        web_printf( conn, "%s", pName );
         web_printf( conn, "\"><button type=\"submit\" form=\"%s\" "
                           "value=\"Save\">Save</button></form></td></tr>",
                           pName );
@@ -1087,7 +1087,7 @@ vscp_restart( struct web_connection *conn, void *cbdata )
         
     if ( NULL == password ) {
         web_printf( conn, "<form action=\"/vscp/restart\"><table>" );
-        web_printf( conn, "<tr><td width=\"10%\"><b>vscptoken</b></td><td><input type=\"password\" "
+        web_printf( conn, "<tr><td width=\"10%%\"><b>vscptoken</b></td><td><input type=\"password\" "
                           "value=\"\" name=\"pw\"></td><tr>" );
         web_printf( conn, "<tr><td> <td><input type=\"submit\" value=\"RESTART\"></td><tr>" );
         web_printf( conn, "</table></form>" );
