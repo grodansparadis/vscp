@@ -744,7 +744,7 @@ bool CUserItem::isUserAllowedToSendEvent( const uint32_t vscp_class,
     if ( m_listAllowedEvents.IsEmpty() ) return true;
 
     // test wildcard *.*
-    wxstr.Printf(_("*:*"), vscp_class);
+    wxstr.Printf(_("*:*"));
     for (i = 0; i < m_listAllowedEvents.GetCount(); i++) {
         if (m_listAllowedEvents[ i ].IsSameAs(wxstr)) return true;
     }
