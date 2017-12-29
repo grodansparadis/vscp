@@ -70,6 +70,7 @@
 //                           Server information
 ///////////////////////////////////////////////////////////////////////////////
 
+
 CVSCPServerInformation::CVSCPServerInformation()
 {
     m_bUpdated = false;
@@ -82,7 +83,7 @@ CVSCPServerInformation::CVSCPServerInformation()
     memset( m_ports, 0, sizeof( m_ports ) );
   
     // Multicast announce port
-    m_ports[ 16 ] = VSCP_ANNNOUNCE_MULTICAST_PORT;
+    m_ports[ 16 ] = VSCP_ANNOUNCE_MULTICAST_PORT;
 
     // VSCP TCP/IP interface
     m_ports[ 15 ] = VSCP_DEFAULT_TCP_PORT;
@@ -91,7 +92,7 @@ CVSCPServerInformation::CVSCPServerInformation()
     m_ports[ 14 ] = VSCP_DEFAULT_UDP_PORT;
 
     // Multicast announce
-    m_ports[ 13 ] = VSCP_ANNNOUNCE_MULTICAST_PORT;
+    m_ports[ 13 ] = VSCP_ANNOUNCE_MULTICAST_PORT;
 
     // Raw Ethernet
     m_ports[ 12 ] = VSCP_DEFAULT_TCP_PORT;  // No port is used - This is the Ethernet frame id

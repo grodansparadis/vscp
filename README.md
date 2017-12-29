@@ -1,6 +1,6 @@
 <h1>VSCP & Friends</h1>
 
-<img src="http://vscp.org/images/vscp_logo.jpg" >
+<img src="http://vscp.org/images/logo.png" width="300">
 
 <p>VSCP (Very Simple Control Protocol) is a framework for IoT/m2m tasks. The framework defines methods to
 have a common device discovery, a common configuration, a common way to interface with remote devices and a

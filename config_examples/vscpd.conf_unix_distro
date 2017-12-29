@@ -400,7 +400,7 @@
         <driver enable="false" >
             <name>VSCP Level II SocketCAN Driver A</name>
             <path>/srv/vscp/drivers/level2/vscpl2drv-socketcan.so</path>
-            <config>can0</config>
+            <config>vcan0</config>
             <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
         </driver>
 

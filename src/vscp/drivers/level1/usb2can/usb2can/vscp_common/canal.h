@@ -4,7 +4,7 @@
 // This file is part is part of CANAL (CAN Abstraction Layer)
 // http://can.sourceforge.net)
 //
-// Copyright (C) 2000-2015 Ake Hedman, Grodans Paradis AB, akhe@grodansparadis.com
+// Copyright (C) 2000-2017 Ake Hedman, Grodans Paradis AB, akhe@grodansparadis.com
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -43,15 +43,15 @@
 #endif
 
 
-#define CAN_MAX_STANDARD_ID		    0x7ff
-#define CAN_MAX_EXTENDED_ID		    0x1fffffff
+#define CAN_MAX_STANDARD_ID		            0x7ff
+#define CAN_MAX_EXTENDED_ID		            0x1fffffff
 
 
 // CANAL version 
 // =============
 // This value is steped for each new version when
 // the i/f is changed. This will hopefully not
-// happen but probably will.
+// happen but still probably will.
 
 #define CANAL_MAIN_VERSION					1
 #define CANAL_MINOR_VERSION					0
@@ -59,13 +59,13 @@
 
 
 // Canal Levels
-#define CANAL_LEVEL_STANDARD					1
+#define CANAL_LEVEL_STANDARD                1
 #define CANAL_LEVEL_USES_TCPIP				2
 
 // VSCP daemon version information positions
 #define POS_VSCPD_MAJOR_VERSION				1
 #define POS_VSCPD_MINOR_VERSION				2
-#define POS_VSCPD_SUB_VERSION					3
+#define POS_VSCPD_SUB_VERSION               3
 
 
 // VSCP Daemon client Open types
@@ -74,19 +74,19 @@
 #define CANAL_COMMAND_OPEN_VSCP_CONTROL		3	  // Daemon Control channel
 
 /// Interprocess success/failure codes
-#define COMMAND_FAILURE			0
-#define COMMAND_SUCCESS			1
+#define COMMAND_FAILURE			            0
+#define COMMAND_SUCCESS			            1
 
 /// Return types
 
-#define PACKAGE_ACK					0
-#define PACKAGE_NACK				1
+#define PACKAGE_ACK				 	        0
+#define PACKAGE_NACK				        1
 
-#define PACKAGE_TIMEOUT			-1
-#define PACKAGE_UNKNOWN			-1
+#define PACKAGE_TIMEOUT			           -1
+#define PACKAGE_UNKNOWN			           -1
 
-#define PACKAGE_FAILURE			0
-#define PACKAGE_SUCCESS			1
+#define PACKAGE_FAILURE			            0
+#define PACKAGE_SUCCESS			            1
 
 #ifdef __cplusplus
 extern "C" {

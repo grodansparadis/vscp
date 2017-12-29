@@ -1,24 +1,28 @@
 // daemonvscp.cpp
 //
-// This program is free software; you can redistribute it and/or
-// modify it under the terms of the GNU General Public License
-// as published by the Free Software Foundation; either version
-// 2 of the License, or (at your option) any later version.
+// This file is part of the VSCP (http://www.vscp.org) 
 //
-// This file is part of the VSCP (http://www.vscp.org)
-//
-// Copyright (C) 2000-2017
-// Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
-//
-// This file is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with this file see the file COPYING.  If not, write to
-// the Free Software Foundation, 59 Temple Place - Suite 330,
-// Boston, MA 02111-1307, USA.
+// The MIT License (MIT)
+// 
+// Copyright (c) 2000-2017 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
+// 
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+// 
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 //
 
 #ifdef WIN32
@@ -103,7 +107,7 @@ void *daemonVSCPThread::Entry()
 {
     int sock_mc;                    // socket descriptor
     struct sockaddr_in mc_addr;     // socket address structure
-    unsigned short mc_port = VSCP_ANNNOUNCE_MULTICAST_PORT;
+    unsigned short mc_port = VSCP_ANNOUNCE_MULTICAST_PORT;
     unsigned char mc_ttl =
         m_pCtrlObject->m_ttlMultiCastAnnounce; // time to live (hop count) 
     wxString ip;
@@ -175,7 +179,7 @@ void *daemonVSCPThread::Entry()
     memset( &mc_addr, 0, sizeof( mc_addr ) );
     mc_addr.sin_family = AF_INET;
     mc_addr.sin_addr.s_addr = inet_addr( VSCP_MULTICAST_IPV4_ADDRESS_STR );
-    mc_addr.sin_port = htons( VSCP_ANNNOUNCE_MULTICAST_PORT );
+    mc_addr.sin_port = htons( VSCP_ANNOUNCE_MULTICAST_PORT );
 
 #endif
 
@@ -645,7 +649,7 @@ bool daemonVSCPThread::parseInterface( const wxString &ifaddr,
     // If no data return defaults
     if ( 0 == strAddress.Length() ) {
         ip = "";  // INADDR_ANY
-        *pPort = VSCP_ANNNOUNCE_MULTICAST_PORT;
+        *pPort = VSCP_ANNOUNCE_MULTICAST_PORT;
         return true;
     }
     
@@ -663,7 +667,7 @@ bool daemonVSCPThread::parseInterface( const wxString &ifaddr,
     // Check for a.b.c.d  default port used
     else if ( ( wxNOT_FOUND != ( pos = strAddress.Find('.') ) ) ) {
         ip = strAddress;
-        *pPort = VSCP_ANNNOUNCE_MULTICAST_PORT;
+        *pPort = VSCP_ANNOUNCE_MULTICAST_PORT;
     }
     // only port
     else {
@@ -691,7 +695,7 @@ bool daemonVSCPThread::sendMulticastEvent( int sock_mc,
     memset( &mc_addr, 0, sizeof( mc_addr ) );
     mc_addr.sin_family = AF_INET;
     mc_addr.sin_addr.s_addr = inet_addr( VSCP_MULTICAST_IPV4_ADDRESS_STR );
-    mc_addr.sin_port = htons( VSCP_ANNNOUNCE_MULTICAST_PORT );
+    mc_addr.sin_port = htons( VSCP_ANNOUNCE_MULTICAST_PORT );
 
     // Clear buffer
     memset( buf, 0, sizeof( buf ) );
@@ -750,7 +754,7 @@ bool daemonVSCPThread::sendMulticastInformationProxyEvent( int sock,
     memset( &mc_addr, 0, sizeof( mc_addr ) );
     mc_addr.sin_family = AF_INET;
     mc_addr.sin_addr.s_addr = inet_addr( VSCP_MULTICAST_IPV4_ADDRESS_STR );
-    mc_addr.sin_port = htons( VSCP_ANNNOUNCE_MULTICAST_PORT );
+    mc_addr.sin_port = htons( VSCP_ANNOUNCE_MULTICAST_PORT );
 
     // Clear buffer
     memset( buf, 0, sizeof( buf ) );

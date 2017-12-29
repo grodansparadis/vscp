@@ -1,37 +1,28 @@
 // ControlObject.cpp: m_path_db_vscp_logimplementation of the CControlObject class.
 //
-// This program is free software; you can redistribute it and/or
-// modify it under the terms of the GNU General Public License
-// as published by the Free Software Foundation; either version
-// 2 of the License, or (at your option) any later version.
+// This file is part of the VSCP (http://www.vscp.org) 
 //
-// This file is part of the VSCP (http://www.vscp.org)
-//
-// Copyright (C) 2000-2017 Ake Hedman, 
-// Grodans Paradis AB, <akhe@grodansparadis.com> 
-//
-// This file is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License#include <udpclientthread.h>
-// along with this file see the file COPYING.  If not, write to
-// the Free Software Foundation, 59 Temple Place - Suite 330,
-// Boston, MA 02111-1307, USA.
-//
-// As a special exception, if other files instantiate templates or use macros
-// or inline functions from this file, or you compile this file and link it
-// with other works to produce a work based on this file, this file does not
-// by itself cause the resulting work to be covered by the GNU General Public
-// License. However the source code for this file must still be made available
-// in accordance with section (3) of the GNU General Public License.
-//
-// This exception does not invalidate any other reasons why a work based on
-// this file might be covered by the GNU General Public License.
-//
-// Alternative licenses for VSCP & Friends may be arranged by contacting
-// Grodans Paradis AB at http://www.grodansparadis.com
+// The MIT License (MIT)
+// 
+// Copyright (c) 2000-2017 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
+// 
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+// 
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 //
 //
 // TraceMasks:
@@ -199,6 +190,7 @@ CControlObject::CControlObject()
     //m_debugFlags1 |= VSCP_DEBUG1_MULTICAST;
     //m_debugFlags1 |= VSCP_DEBUG1_UDP;
     //m_debugFlags1 |= VSCP_DEBUG1_TCP;
+    //m_debugFlags1 |= VSCP_DEBUG1_DRIVER
     
     m_logDays = DEFAULT_LOGDAYS;
 
@@ -290,7 +282,7 @@ CControlObject::CControlObject()
     m_strTcpInterfaceAddress = _("tcp://" + VSCP_DEFAULT_TCP_PORT);
 
     // Default multicast announce port
-    m_strMulticastAnnounceAddress = _( "udp://:" + VSCP_ANNNOUNCE_MULTICAST_PORT );
+    m_strMulticastAnnounceAddress = _( "udp://:" + VSCP_ANNOUNCE_MULTICAST_PORT );
 
     // default multicast announce ttl
     m_ttlMultiCastAnnounce = IP_MULTICAST_DEFAULT_TTL;
@@ -601,7 +593,7 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
 #ifndef WIN32
     if ( m_runAsUser.Length() ) {
         struct passwd *pw;
-        if ( NULL == ( pw = getpwnam(m_runAsUser.mbc_str() ) ) ) {
+        if ( NULL == ( pw = getpwnam( m_runAsUser.mbc_str() ) ) ) {
             fprintf( stderr, "Unknown user.\n" );
         }
         else if (setgid(pw->pw_gid) != 0) {
@@ -2607,6 +2599,30 @@ bool CControlObject::readXMLConfigurationGeneral( wxString& strcfgfile )
                 }
                 else if ( subchild->GetName().Lower() == _("logdays") ) {
                     m_logDays = vscp_readStringValue( subchild->GetNodeContent() );                    
+                }
+                else if ( subchild->GetName().Lower() == _("debugflags1") ) {
+                    m_debugFlags1 = vscp_readStringValue( subchild->GetNodeContent() );                    
+                }
+                else if ( subchild->GetName().Lower() == _("debugflags2") ) {
+                    m_debugFlags2 = vscp_readStringValue( subchild->GetNodeContent() );                    
+                }
+                else if ( subchild->GetName().Lower() == _("debugflags3") ) {
+                    m_debugFlags3 = vscp_readStringValue( subchild->GetNodeContent() );                    
+                }
+                else if ( subchild->GetName().Lower() == _("debugflags4") ) {
+                    m_debugFlags4 = vscp_readStringValue( subchild->GetNodeContent() );                    
+                }
+                else if ( subchild->GetName().Lower() == _("debugflags5") ) {
+                    m_debugFlags5 = vscp_readStringValue( subchild->GetNodeContent() );                    
+                }
+                else if ( subchild->GetName().Lower() == _("debugflags6") ) {
+                    m_debugFlags6 = vscp_readStringValue( subchild->GetNodeContent() );                    
+                }
+                else if ( subchild->GetName().Lower() == _("debugflags7") ) {
+                    m_debugFlags7 = vscp_readStringValue( subchild->GetNodeContent() );                    
+                }
+                else if ( subchild->GetName().Lower() == _("debugflags8") ) {
+                    m_debugFlags8 = vscp_readStringValue( subchild->GetNodeContent() );                    
                 }
 
                 subchild = subchild->GetNext();

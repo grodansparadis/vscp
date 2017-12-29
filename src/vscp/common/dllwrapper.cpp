@@ -1,7 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // DllWrapper.cpp: implementation of the CDllWrapper class.
 //
-//
 // This file is part of the VSCP (http://www.vscp.org) 
 //
 // The MIT License (MIT)

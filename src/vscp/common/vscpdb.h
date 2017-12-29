@@ -1,24 +1,30 @@
 // vscpdb.h
 //
-// This program is free software; you can redistribute it and/or
-// modify it under the terms of the GNU General Public License
-// as published by the Free Software Foundation; either version
-// 2 of the License, or (at your option) any later version.
-//
 // This file is part of the VSCP (http://www.vscp.org)
+//
+// MIT License 
 //
 // Copyright (C) 2000-2017
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 //
-// This file is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
+// Permission is hereby granted, free of charge, to any person 
+// obtaining a copy of this software and associated documentation 
+// files (the "Software"), to deal in the Software without restriction, 
+// including without limitation the rights to use, copy, modify, merge, 
+// publish, distribute, sublicense, and/or sell copies of the Software, 
+// and to permit persons to whom the Software is furnished to do so, 
+// subject to the following conditions:
 //
-// You should have received a copy of the GNU General Public License
-// along with this file see the file COPYING.  If not, write to
-// the Free Software Foundation, 59 Temple Place - Suite 330,
-// Boston, MA 02111-1307, USA.
+// The above copyright notice and this permission notice shall be included 
+// in all copies or substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL 
+// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+// THE SOFTWARE.
 //
 
 // VSCP database ordinals etc is defined in this file
@@ -27,10 +33,10 @@
 #define VSCPDB__INCLUDED_
 
 //*****************************************************************************
-//                               CONFIG
+//                                 CONFIG
 //*****************************************************************************
 
-#define VSCPDB_CONFIG_CREATE "CREATE TABLE 'config' ("\
+#define VSCPDB_CONFIG_CREATE "CREATE TABLE IF NOT EXISTS 'config' ("\
 	"`vscpd_idx_config`               INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
 	"`vscpd_name`                     TEXT NOT NULL,"\
         "`vscpd_value`                    TEXT DEFAULT ''"\
@@ -55,7 +61,7 @@
 #define VSCPDB_CONFIG_DEFAULT_DBVERSION                 "1"
 
 #define VSCPDB_CONFIG_NAME_CLIENTBUFFERSIZE             "client_buffer_size"
-#define VSCPDB_CONFIG_DEFAULT_CLIENTBUFFERSIZE          "8191"
+#define VSCPDB_CONFIG_DEFAULT_CLIENTBUFFERSIZE          "8192"
 
 #define VSCPDB_CONFIG_NAME_GUID                         "guid"
 #define VSCPDB_CONFIG_DEFAULT_GUID                      "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"
@@ -221,11 +227,11 @@
 #define VSCPDB_CONFIG_NAME_WEB_GLOBAL_AUTHFILE          "web_global_authfile"
 #define VSCPDB_CONFIG_DEFAULT_WEB_GLOBAL_AUTHFILE       ""
 
-#define VSCPDB_CONFIG_NAME_WEB_PER_DIRECTORY_AUTH_FILE      "web_per_directory_auth_file"
-#define VSCPDB_CONFIG_DEFAULT_WEB_PER_DIRECTORY_AUTH_FILE   ""
+#define VSCPDB_CONFIG_NAME_WEB_PER_DIRECTORY_AUTH_FILE           "web_per_directory_auth_file"
+#define VSCPDB_CONFIG_DEFAULT_WEB_PER_DIRECTORY_AUTH_FILE       ""
 
-#define VSCPDB_CONFIG_NAME_WEB_SSI_PATTERNS             "web_ssi_patterns"
-#define VSCPDB_CONFIG_DEFAULT_WEB_SSI_PATTERNS          ""
+#define VSCPDB_CONFIG_NAME_WEB_SSI_PATTERNS                     "web_ssi_patterns"
+#define VSCPDB_CONFIG_DEFAULT_WEB_SSI_PATTERNS                  ""
 
 #define VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_ALLOW_ORIGIN      "web_access_control_allow_origin"
 #define VSCPDB_CONFIG_DEFAULT_WEB_ACCESS_CONTROL_ALLOW_ORIGIN   ""
@@ -260,23 +266,23 @@
 #define VSCPDB_CONFIG_NAME_WEB_ALLOW_INDEX_SCRIPT_RESOURCE      "web_allow_index_script_resource"
 #define VSCPDB_CONFIG_DEFAULT_WEB_ALLOW_INDEX_SCRIPT_RESOURCE   "0"
 
-#define VSCPDB_CONFIG_NAME_WEB_DUKTAPE_SCRIPT_PATTERNS      "web_duktape_script_patterns"
-#define VSCPDB_CONFIG_DEFAULT_WEB_DUKTAPE_SCRIPT_PATTERNS   "**.ssjs$"
+#define VSCPDB_CONFIG_NAME_WEB_DUKTAPE_SCRIPT_PATTERNS          "web_duktape_script_patterns"
+#define VSCPDB_CONFIG_DEFAULT_WEB_DUKTAPE_SCRIPT_PATTERNS       "**.ssjs$"
 
-#define VSCPDB_CONFIG_NAME_WEB_LUA_PRELOAD_FILE         "web_lua_preload_file"
-#define VSCPDB_CONFIG_DEFAULT_WEB_LUA_PRELOAD_FILE      ""
+#define VSCPDB_CONFIG_NAME_WEB_LUA_PRELOAD_FILE                 "web_lua_preload_file"
+#define VSCPDB_CONFIG_DEFAULT_WEB_LUA_PRELOAD_FILE              ""
 
-#define VSCPDB_CONFIG_NAME_WEB_LUA_SCRIPT_PATTERNS      "web_lua_script_patterns"
-#define VSCPDB_CONFIG_DEFAULT_WEB_LUA_SCRIPT_PATTERNS   "**.lua$"
+#define VSCPDB_CONFIG_NAME_WEB_LUA_SCRIPT_PATTERNS              "web_lua_script_patterns"
+#define VSCPDB_CONFIG_DEFAULT_WEB_LUA_SCRIPT_PATTERNS           "**.lua$"
 
-#define VSCPDB_CONFIG_NAME_WEB_LUA_SERVER_PAGE_PATTERNS     "web_lua_server_page_patterns"
-#define VSCPDB_CONFIG_DEFAULT_WEB_LUA_SERVER_PAGE_PATTERNS  "**.lp$|**.lsp$"
+#define VSCPDB_CONFIG_NAME_WEB_LUA_SERVER_PAGE_PATTERNS         "web_lua_server_page_patterns"
+#define VSCPDB_CONFIG_DEFAULT_WEB_LUA_SERVER_PAGE_PATTERNS      "**.lp$|**.lsp$"
 
-#define VSCPDB_CONFIG_NAME_WEB_LUA_WEBSOCKET_PATTERNS   "web_lua_websockets_patterns"
-#define VSCPDB_CONFIG_DEFAULT_WEB_LUA_WEBSOCKET_PATTERNS "**.lua$"
+#define VSCPDB_CONFIG_NAME_WEB_LUA_WEBSOCKET_PATTERNS           "web_lua_websockets_patterns"
+#define VSCPDB_CONFIG_DEFAULT_WEB_LUA_WEBSOCKET_PATTERNS        "**.lua$"
 
-#define VSCPDB_CONFIG_NAME_WEB_LUA_BACKGROUND_SCRIPT      "web_lua_background_script"
-#define VSCPDB_CONFIG_DEFAULT_WEB_LUA_BACKGROUND_SCRIPT   ""
+#define VSCPDB_CONFIG_NAME_WEB_LUA_BACKGROUND_SCRIPT            "web_lua_background_script"
+#define VSCPDB_CONFIG_DEFAULT_WEB_LUA_BACKGROUND_SCRIPT         ""
 
 #define VSCPDB_CONFIG_NAME_WEB_LUA_BACKGROUND_SCRIPT_PARAMS     "web_lua_background_script_params"
 #define VSCPDB_CONFIG_DEFAULT_WEB_LUA_BACKGROUND_SCRIPT_PARAMS  ""
@@ -310,26 +316,26 @@
 
 // Automation
 
-#define VSCPDB_CONFIG_NAME_AUTOMATION_ENABLE            "automation_enable"
-#define VSCPDB_CONFIG_DEFAULT_AUTOMATION_ENABLE         "1"
+#define VSCPDB_CONFIG_NAME_AUTOMATION_ENABLE                    "automation_enable"
+#define VSCPDB_CONFIG_DEFAULT_AUTOMATION_ENABLE                 "1"
 
-#define VSCPDB_CONFIG_NAME_AUTOMATION_ZONE              "automation_zone"
-#define VSCPDB_CONFIG_DEFAULT_AUTOMATION_ZONE           "11"
+#define VSCPDB_CONFIG_NAME_AUTOMATION_ZONE                      "automation_zone"
+#define VSCPDB_CONFIG_DEFAULT_AUTOMATION_ZONE                   "11"
 
-#define VSCPDB_CONFIG_NAME_AUTOMATION_SUBZONE           "automation_subzone"
-#define VSCPDB_CONFIG_DEFAULT_AUTOMATION_SUBZONE        "22"
+#define VSCPDB_CONFIG_NAME_AUTOMATION_SUBZONE                   "automation_subzone"
+#define VSCPDB_CONFIG_DEFAULT_AUTOMATION_SUBZONE                "22"
 
-#define VSCPDB_CONFIG_NAME_AUTOMATION_LONGITUDE         "automation_longitude"
-#define VSCPDB_CONFIG_DEFAULT_AUTOMATION_LONGITUDE      "61.7441833"
+#define VSCPDB_CONFIG_NAME_AUTOMATION_LONGITUDE                 "automation_longitude"
+#define VSCPDB_CONFIG_DEFAULT_AUTOMATION_LONGITUDE              "61.7441833"
 
-#define VSCPDB_CONFIG_NAME_AUTOMATION_LATITUDE          "automation_latitude"
-#define VSCPDB_CONFIG_DEFAULT_AUTOMATION_LATITUDE       "15.1604167"
+#define VSCPDB_CONFIG_NAME_AUTOMATION_LATITUDE                  "automation_latitude"
+#define VSCPDB_CONFIG_DEFAULT_AUTOMATION_LATITUDE               "15.1604167"
 
-#define VSCPDB_CONFIG_NAME_AUTOMATION_SUNRISE_ENABLE    "automation_sunrise_enable"
-#define VSCPDB_CONFIG_DEFAULT_AUTOMATION_SUNRISE_ENABLE "1"
+#define VSCPDB_CONFIG_NAME_AUTOMATION_SUNRISE_ENABLE            "automation_sunrise_enable"
+#define VSCPDB_CONFIG_DEFAULT_AUTOMATION_SUNRISE_ENABLE         "1"
 
-#define VSCPDB_CONFIG_NAME_AUTOMATION_SUNSET_ENABLE     "automation_sunset_enable"
-#define VSCPDB_CONFIG_DEFAULT_AUTOMATION_SUNSET_ENABLE  "1"
+#define VSCPDB_CONFIG_NAME_AUTOMATION_SUNSET_ENABLE             "automation_sunset_enable"
+#define VSCPDB_CONFIG_DEFAULT_AUTOMATION_SUNSET_ENABLE          "1"
 
 #define VSCPDB_CONFIG_NAME_AUTOMATION_SUNSET_TWILIGHT_ENABLE    "automation_sunset_twilight_enable"
 #define VSCPDB_CONFIG_DEFAULT_AUTOMATION_SUNSET_TWILIGHT_ENABLE "1"
@@ -360,7 +366,7 @@
 //                                  LOG
 //*****************************************************************************
 
-#define VSCPDB_LOG_CREATE "CREATE TABLE 'log' ("\
+#define VSCPDB_LOG_CREATE "CREATE TABLE IF NOT EXISTS 'log' ("\
 	"`idx_log`	INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
 	"`type`         INTEGER DEFAULT 0,"\
 	"`date`         TEXT,"\
@@ -389,7 +395,7 @@
 
 
 //*****************************************************************************
-//                                 USER
+//                                   USER
 //*****************************************************************************
 
 /*
@@ -411,7 +417,7 @@
  *                  fields. Also 'admin', 'driver' and 'user' can be given.
  */
 
-#define VSCPDB_USER_CREATE  "CREATE TABLE 'user' ("\
+#define VSCPDB_USER_CREATE  "CREATE TABLE IF NOT EXISTS 'user' ("\
 	"`idx_user`             INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
 	"`username`             TEXT NOT NULL UNIQUE,"\
 	"`password`             TEXT NOT NULL,"\
@@ -466,12 +472,13 @@
  * configuration Semicolon separated configuration string for driver.
  * path Path to driver dl/dll or for level III the url (tcp://127.0.0.1:5005)
  * flags Flags for driver functionality
+ * port - for Level II devices.
  * translation Semicolon separated list. Translate Level I events to Level II
  *      (measurements float/string)
  * note Driver notations and/or information.
  */
 
-#define VSCPDB_DRIVER_CREATE "CREATE TABLE `driver` ("\
+#define VSCPDB_DRIVER_CREATE "CREATE TABLE IF NOT EXISTS `driver` ("\
 	"`idx_driver`       INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
 	"`bEnable`          INTEGER NOT NULL,"\
 	"`level`            INTEGER NOT NULL DEFAULT 0,"\
@@ -517,7 +524,7 @@
  *
  * date - date time when discovered in ISO format. YY-MM-DDTHH:MM:SS
  *
- * name - Max 64 byte name 
+ * name - Max 64 byte Unicode (UTF8) name set by administrator
  *
  * link_to_mdf - For a hardware device.
  *
@@ -529,9 +536,10 @@
  * nonstandard - is one or more nonstandard info as described for 
  *               CLASS2.PROTOCOL, Type=20
  *
+ * description - Device description in Unicode (UTF8).
  */
 
-#define VSCPDB_GUID_CREATE "CREATE TABLE `guid` ("\
+#define VSCPDB_GUID_CREATE "CREATE TABLE IF NOT EXISTS `guid` ("\
 	"`idx_guid`	INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
 	"`type`         INTEGER NOT NULL,"\
 	"`guid`         TEXT DEFAULT '00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00',"\
@@ -545,7 +553,7 @@
         ");"
 
 #define VSCPDB_GUID_CREATE_INDEX "CREATE INDEX `idxguid` "\
-                "ON guid ('name'):"
+                                 "ON guid ('name'):"
 
 #define VSCPDB_ORDINAL_GUID_ID                      0   //
 #define VSCPDB_ORDINAL_GUID_TYPE                    1   //
@@ -560,6 +568,43 @@
 
 
 //*****************************************************************************
+//                                 ZONE
+//*****************************************************************************
+
+#define VSCPDB_ZONE_CREATE "CREATE TABLE IF NOT EXISTS 'zone' ("\
+	"`idx_zone`	INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
+	"`name`         TEXT NOT NULL,"\
+	"`description`	TEXT"\
+        ");"
+
+#define VSCPDB_ZONE_CREATE_INDEX "CREATE INDEX `idxzone` "\
+                "ON subzone ('name'):"
+
+#define VSCPDB_ORDINAL_ZONE_ID                   0   //
+#define VSCPDB_ORDINAL_ZONE_NAME                 1   //
+#define VSCPDB_ORDINAL_ZONE_DESCRIPTION          2   //
+
+
+//*****************************************************************************
+//                                 SUBZONE
+//*****************************************************************************
+
+#define VSCPDB_SUBZONE_CREATE "CREATE TABLE IF NOT EXISTS `subzone` ("\
+	"`idx_subzone`	INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
+	"`name`         TEXT NOT NULL,"\
+	"`description`	TEXT"\
+        ");"
+
+#define VSCPDB_SUBZONE_CREATE_INDEX "CREATE INDEX `idxsubzone` "\
+                "ON subzone ('name'):"
+
+#define VSCPDB_ORDINAL_SUBZONE_ID               0   //
+#define VSCPDB_ORDINAL_SUBZONE_NAME             1   //
+#define VSCPDB_ORDINAL_SUBZONE_DESCRIPTION      2   //
+
+
+
+//*****************************************************************************
 //                                  LOCATION
 //*****************************************************************************
 
@@ -568,7 +613,7 @@
  * A GUID can also be used to identify a location. If so link_to_guid points to it.
  */
 
-#define VSCPDB_LOCATION_CREATE "CREATE TABLE `location` ("\
+#define VSCPDB_LOCATION_CREATE "CREATE TABLE IF NOT EXISTS `location` ("\
 	"`idx_location`         INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
 	"`link_to_zone`         INTEGER,"\
 	"`link_to_subzone`	INTEGER,"\
@@ -588,6 +633,9 @@
 #define VSCPDB_ORDINAL_LOCATION_DESCRIPTION         5   //
 
 
+
+
+
 //*****************************************************************************
 //                               MDF_CACHE
 //*****************************************************************************
@@ -600,7 +648,7 @@
  * date     - When the MDF was fetched.
  * guid     - GUID for the device.
  */
-#define VSCPDB_MDF_CACHE_CREATE "CREATE TABLE 'mdf_cache' ("\
+#define VSCPDB_MDF_CACHE_CREATE "CREATE TABLE IF NOT EXISTS 'mdf_cache' ("\
 	"`idx_mdf`	INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
 	"`url`          TEXT NOT NULL UNIQUE,"\
 	"`mdf`          TEXT NOT NULL,"\
@@ -627,7 +675,7 @@
  * Defines a simple UI
  */
 
-#define VSCPDB_SIMPLE_UI_CREATE "CREATE TABLE 'simpleui' ("\
+#define VSCPDB_SIMPLE_UI_CREATE "CREATE TABLE IF NOT EXISTS 'simpleui' ("\
 	"`idx_simpleui`     INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
 	"`name`             TEXT NOT NULL UNIQUE,"\
 	"`link_to_ower`     INTEGER NOT NULL,"\
@@ -653,7 +701,7 @@
  * param_... defines contents for the row type
  */
 
-#define VSCPDB_SIMPLE_UI_ITEM_CREATE "CREATE TABLE `simpleui_item` ("\
+#define VSCPDB_SIMPLE_UI_ITEM_CREATE "CREATE TABLE IF NOT EXISTS `simpleui_item` ("\
 	"`idx_simpleui_item`	INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
 	"`link_to_simpleui`	INTEGER NOT NULL,"\
         "`param_left`           TEXT NOT NULL,"\
@@ -677,39 +725,7 @@
 #define VSCPDB_ORDINAL_SIMPLE_UI_ITEM_ROW_TYPE          7   //
 
 
-//*****************************************************************************
-//                                 ZONE
-//*****************************************************************************
 
-#define VSCPDB_ZONE_CREATE "CREATE TABLE 'zone' ("\
-	"`idx_zone`	INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
-	"`name`         TEXT NOT NULL,"\
-	"`description`	TEXT"\
-        ");"
-
-#define VSCPDB_ZONE_CREATE_INDEX "CREATE INDEX `idxzone` "\
-                "ON subzone ('name'):"
-
-#define VSCPDB_ORDINAL_ZONE_ID                   0   //
-#define VSCPDB_ORDINAL_ZONE_NAME                 1   //
-#define VSCPDB_ORDINAL_ZONE_DESCRIPTION          2   //
-
-//*****************************************************************************
-//                                 SUBZONE
-//*****************************************************************************
-
-#define VSCPDB_SUBZONE_CREATE "CREATE TABLE `subzone` ("\
-	"`idx_subzone`	INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
-	"`name`         TEXT NOT NULL,"\
-	"`description`	TEXT"\
-        ");"
-
-#define VSCPDB_SUBZONE_CREATE_INDEX "CREATE INDEX `idxsubzone` "\
-                "ON subzone ('name'):"
-
-#define VSCPDB_ORDINAL_SUBZONE_ID               0   //
-#define VSCPDB_ORDINAL_SUBZONE_NAME             1   //
-#define VSCPDB_ORDINAL_SUBZONE_DESCRIPTION      2   //
 
 
 
@@ -737,7 +753,7 @@
  * description - User description for table
  */
 
-#define VSCPDB_TABLE_CREATE "CREATE TABLE 'table' ("\
+#define VSCPDB_TABLE_CREATE "CREATE TABLE IF NOT EXISTS 'table' ("\
 	"`idx_table`        INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
         "`bEnable`          INTEGER NOT NULL,"\
         "`bmem`             INTEGER NOT NULL,"\
@@ -894,7 +910,7 @@
 //                               UDP nodes
 //*****************************************************************************
 
-#define VSCPDB_UDPNODE_CREATE "CREATE TABLE 'udpnode' ("\
+#define VSCPDB_UDPNODE_CREATE "CREATE TABLE IF NOT EXISTS 'udpnode' ("\
 	"`idx_udpnode`      INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
         "`bEnable`          INTEGER DEFAULT 0,"\
         "`interface`        TEXT NOT NULL,"\
@@ -930,7 +946,7 @@
 //                               MULTICAST
 //*****************************************************************************
 
-#define VSCPDB_MULTICAST_CREATE "CREATE TABLE 'multicast' ("\
+#define VSCPDB_MULTICAST_CREATE "CREATE TABLE IF NOT EXISTS 'multicast' ("\
 	"`idx_multicast`    INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
         "`bEnable`          INTEGER DEFAULT 0,"\
 	"`group`            TEXT DEFAULT 'udp://224.0.23.158:44444',"\
@@ -1011,7 +1027,7 @@
 //          ONLY!!!!  PERSISTENT  !!!!   no use for persistent variables
 //
 
-#define VSCPDB_VARIABLE_CREATE  "CREATE TABLE 'variable' ("\
+#define VSCPDB_VARIABLE_CREATE  "CREATE TABLE IF NOT EXISTS 'variable' ("\
                         "'idx_variable'     INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
                         "'bstock'           INTEGER NOT NULL DEFAULT 0,"\
                         "'lastchange'       TEXT NOT NULL,"\
@@ -1072,7 +1088,7 @@
 
 
 
-#define VSCPDB_DM_CREATE  "CREATE TABLE 'dm' ("\
+#define VSCPDB_DM_CREATE  "CREATE TABLE IF NOT EXISTS 'dm' ("\
 	"`idx_dm`                       INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
         "`GroupID`                      TEXT NOT NULL,"\
 	"`bEnable`                      INTEGER NOT NULL DEFAULT 0,"\

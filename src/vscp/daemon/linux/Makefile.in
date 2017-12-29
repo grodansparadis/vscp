@@ -88,15 +88,14 @@ VSCPD_OBJECTS =  vscpd.o \
 	websocketsrv.o \
 	udpsrv.o \
 	multicastsrv.o \
-    	mqttbroker.o \
 	tables.o \
 	automation.o \
 	knownnodes.o \
 	duktape_vscp.o \
 	vscp_javascript.o \
-    	jsonreader.o \
-    	jsonwriter.o \
-    	jsonval.o \
+	jsonreader.o \
+	jsonwriter.o \
+	jsonval.o \
 	httpd.o \
 	vscphelper.o \
 	vscpremotetcpif.o \
