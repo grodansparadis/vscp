@@ -454,10 +454,10 @@ public:
     void getAccessRightStr( wxString& strAccessRights  ) 
         { makeAccessRightString( m_accessRights, strAccessRights ); };
     
-    bool isUserWritable( void ) { return ( m_accessRights | 0x02 ) ? true : false; };
+    bool isUserWritable( void ) { return ( m_accessRights & 0x02 ) ? true : false; };
     void makeUserWritable( bool b ) { m_accessRights |= 0x02; };
 
-    bool isOwnerWritable( void ) { return ( m_accessRights | 0x80 ) ? true : false; };
+    bool isOwnerWritable( void ) { return ( m_accessRights & 0x80 ) ? true : false; };
     void makeOwnerWritable( bool b ) { m_accessRights |= 0x80; };
     
     // owner id
