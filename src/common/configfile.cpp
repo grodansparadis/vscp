@@ -62,6 +62,11 @@ Config::~Config()
 
 FILE * Config::open( char *name )
 {
+    // If a configuration file is opened, close it first.
+    if ( NULL != m_fIn ) {
+        fclose( m_fIn );
+    }
+
     return ( m_fIn = fopen( name, "rb" ));	
 }
 
