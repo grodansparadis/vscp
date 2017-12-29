@@ -206,7 +206,6 @@ websock_authentication( struct web_connection *conn,
                             wxString& strIV,
                             wxString& strCrypto )
 {
-    bool rv = false;
     uint8_t buf[2048], secret[2048];
     uint8_t iv[16];
     wxString strUser, strPassword;
@@ -214,8 +213,6 @@ websock_authentication( struct web_connection *conn,
     
     struct web_context * ctx;
     const struct web_request_info *reqinfo;
-    char response[33];
-    char expected_response[33];
     bool bValidHost = false;
     
     // Check pointers
@@ -227,7 +224,7 @@ websock_authentication( struct web_connection *conn,
                           "pointers. "), 
                             DAEMON_LOGMSG_NORMAL, 
                             DAEMON_LOGTYPE_SECURITY );
-        return 0;
+        return false;
     }
     
     if ( -1 == vscp_hexStr2ByteArray( iv, 
@@ -352,7 +349,6 @@ websock_session *
 websock_new_session( const struct web_connection *conn )
 {
     const char *pHeader;
-    char buf[512];
     char ws_version[10];
     char ws_key[33];
     websock_session *pSession = NULL;
@@ -361,17 +357,17 @@ websock_new_session( const struct web_connection *conn )
     if ( NULL == conn ) return NULL;
 
     // user 
+    memset( ws_version, 0, sizeof( ws_version ) );
     if ( NULL != ( pHeader = web_get_header( conn, "Sec-WebSocket-Version" ) ) ) {
-        memset( ws_version, 0, sizeof( ws_version ) );
         strncpy( ws_version, 
                     pHeader, 
-                    MIN( sizeof( pHeader ), sizeof( ws_version ) ) );
+                    MIN( strlen( pHeader ) + 1, sizeof( ws_version ) ) );
     }
+    memset( ws_key, 0, sizeof( ws_key ) );
     if ( NULL != ( pHeader = web_get_header( conn, "Sec-WebSocket-Key" ) ) ) {
-        memset( ws_key, 0, sizeof( ws_key ) );
         strncpy( ws_key, 
                     pHeader, 
-                    MIN( sizeof( pHeader ), sizeof( ws_key ) ) );
+                    MIN( strlen( pHeader ) + 1, sizeof( ws_key ) ) );
     }
 
     // create fresh session
@@ -777,8 +773,10 @@ ws1_connectHandler( const struct web_connection *conn, void *cbdata )
     
     web_lock_context( ctx );
     websock_session *pSession = websock_new_session( conn );
-     
-    reject = 0;
+    
+    if ( NULL != pSession ) {
+        reject = 0;
+    }
     web_unlock_context( ctx );
 
     gpobj->logMsg( wxString::Format( "[Websocket] Connection: client %s\r\n\r\n",
@@ -1142,8 +1140,6 @@ ws1_command( struct web_connection *conn,
                                     wxstr.length() );
         }
         else {
-            
-autherror:  
             
             wxstr = wxString::Format( _("-;AUTH;%d;%s"),
                                         (int)WEBSOCK_ERROR_NOT_AUTHORISED,
