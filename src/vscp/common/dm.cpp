@@ -3486,8 +3486,10 @@ bool dmElement::doActionSendEvent( vscpEvent *pDMEvent )
             gpobj->m_clientOutputQueue.GetCount() ) {
 
         vscpEvent *pEvent = new vscpEvent;
-        pEvent->pdata = NULL;
+        
         if ( NULL != pEvent ) {
+
+            pEvent->pdata = NULL;
 
             if ( !vscp_setVscpEventFromString( pEvent, strEvent ) ) {
                     
@@ -7490,7 +7492,7 @@ bool CDM::loadFromDatabase( void )
         
         // Set row default values for row
         dmElement *pDMitem = new dmElement;
-        if ( NULL == pDMitem ) {
+        if ( NULL != pDMitem ) {
             
             const char *p;
             
