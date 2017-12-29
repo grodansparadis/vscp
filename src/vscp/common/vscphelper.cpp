@@ -1832,8 +1832,8 @@ bool vscp_convertLevel1MeasuremenToLevel2Double( vscpEvent *pEvent )
     double val64;
     
     // Check pointers
-    if ( NULL != pEvent ) return false;
-    if ( NULL != pEvent->pdata ) return false;
+    if ( NULL == pEvent ) return false;
+    if ( NULL == pEvent->pdata ) return false;
     
     // Must be a measurement event
     if ( !vscp_isVSCPMeasurement( pEvent ) ) return false;
@@ -5805,7 +5805,7 @@ wxString vscp_getEncryptionTokenFromCode( uint8_t code )
 size_t vscp_getUDpFrameSizeFromEvent( vscpEvent *pEvent )
 {
     // Check pointer
-    if ( NULL != pEvent ) return false;
+    if ( NULL == pEvent ) return false;
     
     size_t size = 1 +                                       // Packet type
                     VSCP_MULTICAST_PACKET0_HEADER_LENGTH +          
@@ -5821,7 +5821,7 @@ size_t vscp_getUDpFrameSizeFromEvent( vscpEvent *pEvent )
 size_t vscp_getUDpFrameSizeFromEventEx( vscpEventEx *pEventEx )
 {
     // Check pointer
-    if ( NULL != pEventEx ) return false;
+    if ( NULL == pEventEx ) return false;
     
     size_t size = 1 +                                       // Packet type
                     VSCP_MULTICAST_PACKET0_HEADER_LENGTH +          
