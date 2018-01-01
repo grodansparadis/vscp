@@ -2666,7 +2666,7 @@ bool CVariableStorage::init( void )
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.websrv.ssl_default_verify_paths") );
-    variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
     variable.setNote( _("Loads default trusted certificates locations set at "
                         "openssl compile time."), true );
     addStockVariable( variable  );
