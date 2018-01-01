@@ -3014,7 +3014,7 @@ bool CVariableStorage::init( void )
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
     variable.setName( _("vscp.websockets.timeout_ms") );
-    variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_LONG );
     variable.setNote( _("Websocket timeout in milliseconds."), true );
     addStockVariable( variable  );
     
@@ -4649,7 +4649,7 @@ uint32_t CVariableStorage::getStockVariable( const wxString& name,
     
     if ( lcname.StartsWith(  _("vscp.log.general.path") ) ) {
         // String
-        var.setValue( "" ); // TODO
+        var.setValue( "", true ); // TODO
         return var.getID();
     }
     
@@ -4661,7 +4661,7 @@ uint32_t CVariableStorage::getStockVariable( const wxString& name,
     
     if ( lcname.StartsWith(  _("vscp.log.access.path") ) ) {
         // String
-        var.setValue( "" ); // TODO
+        var.setValue( "", true ); // TODO
         return var.getID();
     }
 
@@ -4673,7 +4673,7 @@ uint32_t CVariableStorage::getStockVariable( const wxString& name,
     
     if ( lcname.StartsWith(  _("vscp.log.security.path") ) ) {
         // String
-        var.setValue( "" ); // TODO
+        var.setValue( "", true ); // TODO
         return var.getID();
     }
     
