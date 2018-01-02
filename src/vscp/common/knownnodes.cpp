@@ -98,13 +98,13 @@ CVSCPServerInformation::CVSCPServerInformation()
     m_ports[ 12 ] = VSCP_DEFAULT_TCP_PORT;  // No port is used - This is the Ethernet frame id
 
     // Web server
-    m_ports[ 11 ] = 8080;
+    m_ports[ 11 ] = 8884;
 
     // Websocket interface
-    m_ports[ 10 ] = 8080;
+    m_ports[ 10 ] = 8884;
 
     // REST interface
-    m_ports[ 9 ] = 8080;
+    m_ports[ 9 ] = 8884;
 
     // MQTT interface
     m_ports[ 8 ] = 1883;

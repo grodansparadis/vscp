@@ -581,8 +581,8 @@
                 "ON subzone ('name'):"
 
 #define VSCPDB_ORDINAL_ZONE_ID                   0   //
-#define VSCPDB_ORDINAL_ZONE_NAME                 1   //
-#define VSCPDB_ORDINAL_ZONE_DESCRIPTION          2   //
+#define VSCPDB_ORDINAL_ZONE_NAME                 1   // User names of zone
+#define VSCPDB_ORDINAL_ZONE_DESCRIPTION          2   // User describes of zone
 
 
 //*****************************************************************************
@@ -599,8 +599,8 @@
                 "ON subzone ('name'):"
 
 #define VSCPDB_ORDINAL_SUBZONE_ID               0   //
-#define VSCPDB_ORDINAL_SUBZONE_NAME             1   //
-#define VSCPDB_ORDINAL_SUBZONE_DESCRIPTION      2   //
+#define VSCPDB_ORDINAL_SUBZONE_NAME             1   // User name of subzone
+#define VSCPDB_ORDINAL_SUBZONE_DESCRIPTION      2   // User describes of zone
 
 
 
@@ -619,7 +619,13 @@
 	"`link_to_subzone`	INTEGER,"\
 	"`link_to_guid`         INTEGER,"\
         "`name`                 TEXT NOT NULL UNIQUE,"\
-        "`description`	I       TEXT "\
+        "`description`	I       TEXT,"\
+        "FOREIGN KEY (link_to_zone) REFERENCES zone(idxzone) "\
+        "ON UPDATE SET NULL ON DELETE SET NULL,"\
+        "FOREIGN KEY (link_to_subzone) REFERENCES zone(idxsubzone) "\
+        "ON UPDATE SET NULL ON DELETE SET NULL,"\
+        "FOREIGN KEY (link_to_guid) REFERENCES zone(idxguid) "\
+        "ON UPDATE SET NULL ON DELETE SET NULL"\
         ");"
 
 #define VSCPDB_LOCATION_CREATE_INDEX "CREATE INDEX `idxlocation` "\
