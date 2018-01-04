@@ -1116,16 +1116,16 @@
 	"`allowedSaturday`              NUMERIC NOT NULL,"\
 	"`allowedSunday`                INTEGER NOT NULL,"\
 	"`allowedTime`                  TEXT NOT NULL,"\
-	"`bCheckIndex`                  INTEGER NOT NULL,"\
-	"`index`                        TEXT NOT NULL,"\
-	"`bCheckZone`                   TEXT NOT NULL,"\
-	"`zone`                         INTEGER NOT NULL,"\
-	"`bCheckSubZone`                INTEGER NOT NULL,"\
-	"`subzone`                      INTEGER NOT NULL,"\
-	"`bCheckMeasurementIndex`	INTEGER NOT NULL,"\
-	"`actionCode`                   TEXT NOT NULL,"\
-	"`actionParameter`              NUMERIC NOT NULL,"\
-        "`bCheckMeasurementValue`	INTEGER NOT NULL,"\
+	"`bCheckIndex`                  INTEGER NOT NULL DEFAULT 0,"\
+	"`index`                        INTEGER NOT NULL DEFAULT 0,"\
+	"`bCheckZone`                   INTEGER NOT NULL DEFAULT 0,"\
+	"`zone`                         INTEGER NOT NULL DEFAULT 0,"\
+	"`bCheckSubZone`                INTEGER NOT NULL DEFAULT 0,"\
+	"`subzone`                      INTEGER NOT NULL DEFAULT 0,"\
+	"`bCheckMeasurementIndex`	INTEGER NOT NULL DEFAULT 0,"\
+	"`actionCode`                   INTEGER NOT NULL,"\
+	"`actionParameter`              TEXT NOT NULL,"\
+        "`bCheckMeasurementValue`	INTEGER NOT NULL DEFAULT 0,"\
 	"`measurementValue`             REAL,"\
 	"`measurementUnit`              INTEGER,"\
 	"`measurementCompare`           INTEGER,"\
@@ -1134,27 +1134,27 @@
 
 #define VSCPDB_DM_INSERT "INSERT INTO 'dm' "\
                 "(GroupID,bEnable,maskPriority,maskClass,maskType,maskGUID,filterPriority,filterClass,filterType,filterGUID,"\
-                "allowedStart,allowedEnd,allowedMonday,allowedTuesday,allowsWednesday,allowedThursday,allowedFriday,allowedSaturday,"\
-                "allowedSunday,allowedTime,bCheckIndex,index,bCheckZone,zone,bCheckSubZone,subzone,bCheckMeasurementIndex,"\
+                "allowedFrom,allowedTo,allowedMonday,allowedTuesday,allowsWednesday,allowedThursday,allowedFriday,allowedSaturday,"\
+                "allowedSunday,allowedTime,bCheckIndex,'index',bCheckZone,zone,bCheckSubZone,subzone,bCheckMeasurementIndex,"\
                 "actionCode,actionParameter,bCheckMeasurementValue,measurementValue,measurementUnit,measurementCompare,comment"\
-                " )VALUES ('%s','%d','%d','%d','%d','%s','%d','%d','%d','%s',"\
-                "'%s','%s','%d','%d','%d','%d','%d','%d',"\
-                "'%d','%s','%d','%d','%d','%d','%d','%d','%d',"\
-                "'%d','%s','%d','%lf',%d','%d','%s'"\
+                " )VALUES ('%q','%d','%d','%d','%d','%q','%d','%d','%d','%q',"\
+                "'%q','%q','%d','%d','%d','%d','%d','%d',"\
+                "'%d','%q','%d','%d','%d','%d','%d','%d','%d',"\
+                "'%d','%q','%d','%lf','%d','%d','%q'"\
                 ");"
 
 #define VSCPDB_DM_UPDATE "UPDATE 'dm' "\
-                "SET GroupID='%s',bEnable='%d',maskPriority='%d',maskClass=%d',maskType=%d',maskGUID=%s',filterPriority=%d',filterClass=%d',filterType=%d',filterGUID=%s',"\
-                "allowedStart=%s',allowedEnd=%s',allowedMonday='%d',allowedTuesday='%d',allowsWednesday='%d',allowedThursday='%d',allowedFriday='%d',allowedSaturday='%d',"\
-                "allowedSunday,allowedTime,bCheckIndex,index,bCheckZone,zone,bCheckSubZone,subzone,bCheckMeasurementIndex,"\
-                "actionCode='%d',actionParameter='%s',bCheckMeasurementValue=%d,measurementValue='%lf',measurementUnit='%d',measurementCompare='%d'"\
+                "SET GroupID='%q',bEnable='%d',maskPriority='%d',maskClass='%d',maskType='%d',maskGUID='%q',filterPriority='%d',filterClass='%d',filterType='%d',filterGUID='%q',"\
+                "allowedFrom='%q',allowedTo='%q',allowedMonday='%d',allowedTuesday='%d',allowsWednesday='%d',allowedThursday='%d',allowedFriday='%d',allowedSaturday='%d',"\
+                "allowedSunday='%d',allowedTime='%q',bCheckIndex='%d','index'='%d',bCheckZone='%d',zone='%d',bCheckSubZone='%d',subzone='%d',bCheckMeasurementIndex='%d',"\
+                "actionCode='%d',actionParameter='%q',bCheckMeasurementValue='%d',measurementValue='%lf',measurementUnit='%d',measurementCompare='%d',comment='%q'"\
                 " WHERE idx_dm='%d';"
 
 #define VSCPDB_DM_UPDATE_ITEM "UPDATE 'dm' SET ( %s='%s' ) WHERE id='%d' ;"
 
 #define VSCPDB_ORDINAL_DM_ID                        0   //
-#define VSCPDB_ORDINAL_DM_ENABLE                    1   //
-#define VSCPDB_ORDINAL_DM_GROUPID                   2   //
+#define VSCPDB_ORDINAL_DM_GROUPID                   1   //
+#define VSCPDB_ORDINAL_DM_ENABLE                    2   //
 #define VSCPDB_ORDINAL_DM_MASK_PRIORITY             3   //
 #define VSCPDB_ORDINAL_DM_MASK_CLASS                4   //
 #define VSCPDB_ORDINAL_DM_MASK_TYPE                 5   //
@@ -1186,7 +1186,7 @@
 #define VSCPDB_ORDINAL_DM_MEASUREMENT_VALUE         31   //
 #define VSCPDB_ORDINAL_DM_MEASUREMENT_UNIT          32   //
 #define VSCPDB_ORDINAL_DM_MEASUREMENT_COMPARE       33   //
-#define VSCPDB_ORDINAL_DM_MEASUREMENT_COMMENT       34   //
+#define VSCPDB_ORDINAL_DM_COMMENT                   34   //
 
 
 

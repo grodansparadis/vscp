@@ -811,19 +811,19 @@ todo( struct web_connection *conn, void *cbdata )
 
 	web_printf( conn, "</body></html>\n");
 
-        web_printf( conn, WEB_COMMON_HEAD, "VSCP - Admin interface" );
-        web_printf( conn, WEB_STYLE_START );
-        web_write( conn, WEB_COMMON_CSS, strlen( WEB_COMMON_CSS ) );     // CSS style Code
-        web_write( conn, WEB_STYLE_END, strlen( WEB_STYLE_END ) );
-        web_write( conn, WEB_COMMON_JS, strlen( WEB_COMMON_JS ) );      // Common Javascript code
+    web_printf( conn, WEB_COMMON_HEAD, "VSCP - Admin interface" );
+    web_printf( conn, WEB_STYLE_START );
+    web_write( conn, WEB_COMMON_CSS, strlen( WEB_COMMON_CSS ) );     // CSS style Code
+    web_write( conn, WEB_STYLE_END, strlen( WEB_STYLE_END ) );
+    web_write( conn, WEB_COMMON_JS, strlen( WEB_COMMON_JS ) );      // Common Javascript code
 
-        web_printf( conn, WEB_COMMON_HEAD_END_BODY_START );
-        // Insert server url into navigation menu
-        web_printf( conn, WEB_COMMON_MENU );
+    web_printf( conn, WEB_COMMON_HEAD_END_BODY_START );
+    // Insert server url into navigation menu
+    web_printf( conn, WEB_COMMON_MENU );
 
-        web_printf(conn, "<h2>This functionality is on the TODO list.</h2>");
+    web_printf(conn, "<h2>This functionality is on the TODO list.</h2>");
 
-         web_printf( conn, WEB_COMMON_END );     // Common end code
+    web_printf( conn, WEB_COMMON_END );     // Common end code
 
 	return WEB_OK;
 }
@@ -1629,6 +1629,8 @@ static int vscp_dm_list( struct web_connection *conn, void *cbdata )
                                 "%d ",
                                 pElement->m_vscpfilter.mask_type );
 
+                web_printf( conn, "<br>" );                                
+
                 web_printf( conn, "<b>Mask_GUID: </b>");
                 vscp_writeGuidArrayToString(pElement->m_vscpfilter.mask_GUID, strGUID);
                 web_printf( conn, "%s", (const char *)strGUID.mbc_str() );
@@ -1834,7 +1836,7 @@ static int vscp_dm_edit( struct web_connection *conn, void *cbdata  )
                         id );
         }
         
-        if ( pElement->m_bStatic ) {
+        if ( (NULL != pElement ) && pElement->m_bStatic ) {
             web_printf( conn, "<br><b>NOTE this is a XML record!</b> If you "
                               "change/save this item it will only be "
                               "change temporarily as it is loaded again from "
@@ -2089,7 +2091,8 @@ static int vscp_dm_edit( struct web_connection *conn, void *cbdata  )
         web_printf( conn, "</textarea></td></tr>");
 
         // Subzone
-        web_printf( conn, "<tr class=\"invisable\"><td class=\"invisable\">Subzone:</td><td class=\"invisable\"><textarea cols=\"10\" rows=\"1\" name=\"vscpsubzone\">");
+        web_printf( conn, "<tr class=\"invisable\"><td class=\"invisable\">Subzone:</td><td "
+                          "class=\"invisable\"><textarea cols=\"10\" rows=\"1\" name=\"vscpsubzone\">");
         if ( bNew ) {
             web_printf( conn, "0");
         }
@@ -2971,7 +2974,7 @@ static int vscp_dm_post( struct web_connection *conn, void *cbdata )
 
             if (!bNew) pElement = gpobj->m_dm.getMemoryElementFromRow(id);
 
-            if (NULL != pElement) {
+            if ( NULL != pElement ) {
 
                 if ( bEnableRow ) {
                     pElement->enableRow();
@@ -3054,13 +3057,39 @@ static int vscp_dm_post( struct web_connection *conn, void *cbdata )
                 pElement->m_triggCounter = 0;
                 pElement->m_errorCounter = 0;
 
+                pElement->m_bStatic = false;  // Not XML
+
                 if ( bNew ) {
-                    // add the DM row to the matrix
-                    gpobj->m_dm.addMemoryElement(pElement);
+                    
+                    // Add the DM row to the Database
+                    if ( !gpobj->m_dm.addDatabaseRecord( pElement ) ) {
+                        web_printf( conn,
+                                "<br><br>Failed to save DM Entry to database. id=%ld idx=%lu",
+                                id, pElement->m_id );
+                    }
+                    else  {
+                        // Add the DM row to the matrix
+                        if ( !gpobj->m_dm.addMemoryElement( pElement ) ) {
+                            web_printf( conn,
+                                        "<br><br>Failed to save DM Entry in internal table. id=%ld",
+                                        id );
+                            delete pElement;        
+                        }
+                    }
+                }
+                else {
+
+                    // Update the DM row to the Database
+                    if ( !gpobj->m_dm.updateDatabaseRecord( pElement ) ) {
+                        web_printf( conn,
+                                "<br><br>Failed to update DM Entry to database. id=%ld idx=%lu",
+                                id, pElement->m_id );
+                    }
+
                 }
 
-                // Save decision matrix
-                //gpobj->m_dm.saveToXML();
+                // Save decision matrix static objects
+                //gpobj->m_dm.saveToXML( false );
 
                 web_printf( conn,
                                 "<br><br>DM Entry has been saved. id=%ld",
@@ -3167,17 +3196,30 @@ static int vscp_dm_delete( struct web_connection *conn, void *cbdata  )
 
     web_printf( conn, WEB_DMEDIT_BODY_START);
 
+    // Get db index
+    uint32_t dbidx = gpobj->m_dm.getDbIndexFromRow( id );
+
     if ( gpobj->m_dm.removeMemoryElement( id ) ) {
         web_printf( conn,
                         "<br>Deleted record id = %ld",
                         id );
         // Save decision matrix
-        gpobj->m_dm.saveToXML();
+        gpobj->m_dm.saveToXML( false );  // Only static(XML) records are saved here
     }
     else {
         web_printf( conn,
-                        "<br>Failed to remove record id = %ld",
+                        "<br>Failed to remove record id = %ld <br>",
                         id );
+    }
+
+    // Remove the item from the database 
+    if ( dbidx ) {
+        if ( !gpobj->m_dm.deleteDatabaseRecord( dbidx ) ) {
+            web_printf( conn,
+                        "<br>Failed to remove record id = %ld from database (dbidx=%lu) <br>",
+                        id, 
+                        (unsigned long)dbidx );
+        }
     }
 
     web_printf( conn, WEB_COMMON_END);     // Common end code

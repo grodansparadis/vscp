@@ -914,7 +914,7 @@ public:
     /*!
         Remove Element from matrix
     */
-    bool removeMemoryElement( unsigned short pos );
+    bool removeMemoryElement( unsigned short row );
 
     /*!
         Get number of rows in matrix
@@ -928,6 +928,16 @@ public:
     */
     dmElement *getMemoryElementFromRow( const short row );
     
+    /*!
+        Get database index from row
+        @param row in memory
+        @return Database index or zero if there is no
+            database item for this record. Note that 
+            this can be due to a XML loaded record which
+            all have zero indexes.
+    */
+    uint32_t getDbIndexFromRow( const short row );
+
     /*!
         Get a row from the matrix (from idx )
         @param idx Database index for DM row to fetch 
@@ -949,14 +959,14 @@ public:
         @param dm Reference to DM element with record data.
         @return True if record inserted.
      */
-    bool addDatabaseRecord( dmElement& dm );
+    bool addDatabaseRecord( dmElement *pdm );
     
     /*!
         Update database record
         @param dm Reference to DM element with record data.
         @return True if record found and updated.
      */
-    bool updateDatabaseRecord( dmElement& dm );
+    bool updateDatabaseRecord( dmElement *pdm );
     
     /*
         Update item if database record
@@ -1000,8 +1010,11 @@ public:
 
     /*!
         Save DM to external storage.
+        @param bAll Save all recotds to XML file if true, else
+            only records loaded from XML file.
+        @return true on success, false on failure.    
     */
-    bool saveToXML( void );
+    bool saveToXML( bool bAll = true );
 
     /*!
         Run an event through the matrix

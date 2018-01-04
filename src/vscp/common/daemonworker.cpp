@@ -623,7 +623,7 @@ CNodeInformation * daemonVSCPThread::addNodeIfNotKnown( vscpEvent *pEvent )
     }
     else {
 
-        // This node is known so we don't need to do a thing. Hurray!
+        // This node is known so we don't need to do a thing. Hurray! A la
 
     }
 

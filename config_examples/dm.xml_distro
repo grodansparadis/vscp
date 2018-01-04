@@ -11,12 +11,12 @@
     <mask  priority="0"  
              class="65535"  
              type="65535"  
-             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:FF" />
+             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
       
     <filter  priority="0"  
              class="10"  
              type="6"  
-             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:01" />    
+             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />    
     
     <action>0x10</action>
     <param>
@@ -29,8 +29,6 @@
     <allowed_time>*-*-* *:*:*</allowed_time>
     
     <index measurementindex="true">1</index>
-    <zone>0</zone>
-    <subzone>0</subzone>
     
   </row>
 
@@ -46,12 +44,12 @@
     <mask  priority="0"  
            class="65535"  
            type="65535"  
-           GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:FF" /> 
+           GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" /> 
     
     <filter  priority="0"  
              class="10"  
              type="6"  
-             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:01" /> 
+             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" /> 
     
     <action>0x80</action>
     <param>officetemp;%unixtime;%measurement.float</param>
@@ -62,8 +60,6 @@
     <allowed_time>*-*-* *:*:*</allowed_time>
     
     <index measurementindex="true">2</index>
-    <zone>0</zone>
-    <subzone>0</subzone>
     
   </row>
 
@@ -80,12 +76,12 @@
     <mask  priority="0"  
            class="65535"  
            type="65535"  
-           GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:FF" />         
+           GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />         
     
     <filter  priority="0"  
              class="10"  
              type="6"  
-             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:01" /> 
+             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" /> 
     
     <action>0x80</action>
     <param>outsidetemp;%unixtime;%measurement.float</param>
@@ -96,8 +92,6 @@
     <allowed_weekdays>mtwtfss</allowed_weekdays>
     <allowed_time>*-*-* *:*:*</allowed_time>
     <index measurementindex="true">1</index>
-    <zone>0</zone>
-    <subzone>0</subzone>
   </row>
 
 
@@ -112,12 +106,12 @@
       <mask priority="0"  
             class="65535"  
             type="65535"  
-            GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:FF" /> 
+            GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" /> 
     
     <filter priority="0"  
             class="10"  
             type="6"  
-            GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:01" /> 
+            GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" /> 
     
     <action>0x80</action>
     <param>SOUTHTEMP;%unixtime;%measurement.float</param>
@@ -128,8 +122,6 @@
     <allowed_time>*-*-* *:*:*</allowed_time>
     
     <index measurindexementindex="true">1</index>
-    <zone>0</zone>
-    <subzone>0</subzone>
     
   </row>
   

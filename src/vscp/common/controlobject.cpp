@@ -951,9 +951,13 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
     logMsg(_("Initializing DM.\n") );
     m_dm.init();
 
-    // Load decision matrix if mechanism is enabled
-    logMsg(_("Loading DM.\n") );
+    // Load decision matrix from XML file if mechanism is enabled
+    logMsg(_("Loading DM from XML file.\n") );
     m_dm.loadFromXML();
+
+    // Load decision matrix from db if mechanism is enabled
+    logMsg(_("Loading DM from database.\n") );
+    m_dm.loadFromDatabase();
 
     // Initialize variable storage
     logMsg(_("Initialize variables.\n") );

@@ -980,7 +980,6 @@ wxString actionTime::getActionTimeAsString( void )
 
         }
 
-
     }
     else {
         str += _("*");     // All seconds trigger.
@@ -6016,11 +6015,11 @@ bool CDM::addMemoryElement( dmElement *pItem )
 // removeMemoryElement
 //
 
-bool CDM::removeMemoryElement( unsigned short pos )
+bool CDM::removeMemoryElement( unsigned short row )
 {
-    if ( pos >= m_DMList.GetCount() ) return false;
+    if ( row >= m_DMList.GetCount() ) return false;
 
-    wxDMLISTNode *node = m_DMList.Item( pos );
+    wxDMLISTNode *node = m_DMList.Item( row );
 
     m_mutexDM.Lock();
     m_DMList.DeleteNode(node);
@@ -6039,6 +6038,23 @@ dmElement *CDM::getMemoryElementFromRow( const short row )
     if ( (unsigned short)row >= m_DMList.GetCount() ) return NULL;
 
     return m_DMList.Item( row )->GetData();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getDbIndexFromRow
+//
+
+uint32_t CDM::getDbIndexFromRow( const short row )
+{
+    uint32_t idx = 0;
+
+    dmElement *pElement = m_DMList.Item( row )->GetData();
+
+    if ( idx ) {
+        idx = pElement->m_id;
+    }
+
+    return idx;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -6840,6 +6856,12 @@ bool CDM::resumeTimer( uint32_t idTimer )
     return true;
 }
 
+
+//*****************************************************************************
+//                                Database
+//*****************************************************************************
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // doCreateDMTable
 //
@@ -6864,137 +6886,6 @@ bool CDM::doCreateDMTable( void )
     return true;
 }
 
-/*
- 
- // Internal table still used so this part will probably be removed
- 
-///////////////////////////////////////////////////////////////////////////////
-// doCreateInMemoryDMTable
-//
-// Not used
-//
-
-bool CDM::doCreateInMemoryDMTable( void )
-{
-    char *pErrMsg = 0;
-    const char *psql = VSCPDB_DM_CREATE;
-    
-    // Check if database is open
-    if ( NULL == m_db_vscp_dm_memory ) return false;
-    
-    m_mutexDM.Lock();
-    
-    if ( SQLITE_OK != sqlite3_exec(m_db_vscp_dm_memory, psql, NULL, NULL, &pErrMsg ) ) {
-        m_mutexDM.Unlock();
-        return false;
-    }
-    
-    m_mutexDM.Unlock();
-    
-    return true;
-}
- 
-// Internal table still used so this part will probably be removed
-
-///////////////////////////////////////////////////////////////////////////////
-// doFillMemoryDMTable
-//
-// Not used
-//
-
-bool CDM::doFillMemoryDMTable()
-{  
-    wxString str;
-    sqlite3_stmt *ppStmt;
-    char *pErrMsg;
-    
-    // Check if databases are open
-    if ( NULL == m_db_vscp_dm ) return false;
-    if ( NULL == m_db_vscp_dm_memory ) return false;
-    
-    m_mutexDM.Lock();
-    
-    // Delete all elements in memory database
-    pErrMsg = 0;
-    if ( SQLITE_OK != sqlite3_exec( m_db_vscp_dm_memory, "DELETE * FROM dm;", NULL, NULL, &pErrMsg ) ) {
-        //sqlite3_free( insert_sql );
-    }
-           
-    if ( SQLITE_OK != sqlite3_prepare_v2( m_db_vscp_dm,
-                                            "SELECT * FROM dm;",
-                                            -1,
-                                            &ppStmt,
-                                            NULL ) ) {
-        return false;
-    }
-    
-    while ( SQLITE_ROW == sqlite3_step( ppStmt ) ) {
-        
-        char *insert_sql = sqlite3_mprintf("INSERT INTO 'dm' ("
-                "id,GroupID,bEnable,maskPriority,maskClass,maskType,maskGUID,"
-                "filterPriority,filterClass,filterType,filterGUID,allowedFrom,allowedTo,"
-                "allowedMonday,allowedTuesday,allowsWednesday,allowedThursday,allowedFriday,allowedSaturday,"
-                "allowedSunday,allowedTime,bCheckIndex,index,bCheckZone,zone,"
-                "bCheckSubZone,subzone,bCheckMeasurementIndex,meaurementIndex,"
-                "actionCode,actionParameter,measurementValue,measurementUnit,measurementCompare"
-                ") VALUES ( "
-                "'%s','%s', '%s','%s','%s','%s','%s','%s','%s','%s','%s','%s',"
-                "'%s','%s', '%s','%s','%s','%s','%s','%s','%s','%s','%s','%s',"
-                "'%s','%s', '%s','%s','%s','%s','%s','%s','%s','%s'"
-                ")",
-                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ID ),
-                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_GROUPID ),
-                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ENABLE ),
-                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_MASK_PRIORITY ),
-                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_MASK_CLASS ),
-                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_MASK_FILTER ),
-                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_MASK_GUID ),
-                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_FILTER_PRIORITY ),
-                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_FILTER_CLASS ),
-                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_FILTER_FILTER ),
-                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_FILTER_GUID ),
-                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ALLOWED_FROM ),
-                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ALLOWED_TO ),
-                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ALLOWED_MONDAY ),
-                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ALLOWED_TUESDAY ),
-                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ALLOWED_WEDNESDAY ),
-                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ALLOWED_THURSDAY ),
-                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ALLOWED_FRIDAY ),
-                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ALLOWED_SATURDAY ),
-                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ALLOWED_SUNDAY ),
-                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ALLOWED_TIME ),
-                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_CHECK_INDEX ),
-                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_INDEX ),
-                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_CHECK_ZONE ),
-                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ZONE ),
-                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_CHECK_SUBZONE ),
-                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_SUBZONE ),
-                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_CHECK_MEASUREMENT_INDEX ),
-                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_MEASUREMENT_INDEX ),
-                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ACTIONCODE ),
-                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_ACTIONPARAMETER ),
-                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_MEASUREMENT_VALUE ),
-                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_MEASUREMENT_UNIT ),
-                (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_DM_MEASUREMENT_COMPARE )            
-            ); 
-        
-        // Insert into memory database
-        pErrMsg = 0;
-        if ( SQLITE_OK != sqlite3_exec( m_db_vscp_dm_memory, insert_sql, NULL, NULL, &pErrMsg ) ) {
-            //sqlite3_free( insert_sql );
-        }
-
-        sqlite3_free( insert_sql );
-
-    }
-    
-    sqlite3_finalize( ppStmt );
-    
-    m_mutexDM.Unlock();
-    
-    return true;
-}
-*/
 
 ///////////////////////////////////////////////////////////////////////////////
 // getDatabaseRecordCount
@@ -7050,7 +6941,7 @@ bool CDM::deleteDatabaseRecord( uint32_t idx )
     }
     
     char *sql = sqlite3_mprintf( "DELETE FROM \"dm\" "
-                                        "WHERE id='%d';",
+                                 "WHERE id='%d';",
                                     idx );
         if ( SQLITE_OK != sqlite3_exec( m_db_vscp_dm, sql, NULL, NULL, &pErrMsg ) ) {
             sqlite3_free( sql );
@@ -7067,7 +6958,7 @@ bool CDM::deleteDatabaseRecord( uint32_t idx )
 //
 //
 
-bool CDM::addDatabaseRecord( dmElement& dm )
+bool CDM::addDatabaseRecord( dmElement *pdm )
 {
     char *pErrMsg;
     cguid guid_mask;
@@ -7080,56 +6971,61 @@ bool CDM::addDatabaseRecord( dmElement& dm )
         return false;
     }
     
-    guid_mask.getFromArray( dm.m_vscpfilter.mask_GUID );
-    guid_filter.getFromArray( dm.m_vscpfilter.filter_GUID );
+    guid_mask.getFromArray( pdm->m_vscpfilter.mask_GUID );
+    guid_filter.getFromArray( pdm->m_vscpfilter.filter_GUID );
     
     char *sql = sqlite3_mprintf( VSCPDB_DM_INSERT,
-                (const char *)dm.m_strGroupID.mbc_str(),
-                dm.m_bEnable ? 1 : 0,
-                dm.m_vscpfilter.mask_priority,
-                dm.m_vscpfilter.mask_class,
-                dm.m_vscpfilter.mask_type,
+                (const char *)pdm->m_strGroupID.mbc_str(),
+                pdm->m_bEnable ? 1 : 0,
+                pdm->m_vscpfilter.mask_priority,
+                pdm->m_vscpfilter.mask_class,
+                pdm->m_vscpfilter.mask_type,
                 (const char *)guid_mask.getAsString().mbc_str(),
-                dm.m_vscpfilter.filter_priority,
-                dm.m_vscpfilter.filter_class,
-                dm.m_vscpfilter.filter_type,
+                pdm->m_vscpfilter.filter_priority,
+                pdm->m_vscpfilter.filter_class,
+                pdm->m_vscpfilter.filter_type,
                 (const char *)guid_filter.getAsString().mbc_str(),
+                //--------------------------------------------------------------          
+                (const char *)pdm->m_timeAllow.getFromTime().FormatISOCombined().mbc_str(),
+                (const char *)pdm->m_timeAllow.getEndTime().FormatISOCombined().mbc_str(),
+           
+                pdm->m_timeAllow.getWeekday(0) ? 1 : 0, 
+                pdm->m_timeAllow.getWeekday(1) ? 1 : 0,
+                pdm->m_timeAllow.getWeekday(2) ? 1 : 0,
+                pdm->m_timeAllow.getWeekday(3) ? 1 : 0,
+                pdm->m_timeAllow.getWeekday(4) ? 1 : 0,
+                pdm->m_timeAllow.getWeekday(5) ? 1 : 0,  
                 //--------------------------------------------------------------
-#if wxCHECK_VERSION( 3,0,0 )            
-                (const char *)dm.m_timeAllow.getFromTime().FormatISOCombined().mbc_str(),
-                (const char *)dm.m_timeAllow.getEndTime().FormatISOCombined().mbc_str(),
-#else
-                (const char *)( dm.m_timeAllow.m_fromTime.FormatISODate() + _("T") + dm.m_timeAllow.m_fromTime.FormatISOTime() ).mbc_str(),
-                (const char *)( dm.m_timeAllow.m_endTime.FormatISODate() + _("T") + dm.m_timeAllow.m_endTime.FormatISOTime() ).mbc_str(),
-#endif            
-                dm.m_timeAllow.getWeekday(0) ? 1 : 0,
-                dm.m_timeAllow.getWeekday(1) ? 1 : 0,
-                dm.m_timeAllow.getWeekday(2) ? 1 : 0,
-                dm.m_timeAllow.getWeekday(3) ? 1 : 0,
-                dm.m_timeAllow.getWeekday(4) ? 1 : 0,
-                dm.m_timeAllow.getWeekday(5) ? 1 : 0,
+                pdm->m_timeAllow.getWeekday(6) ? 1 : 0,
+                (const char *)pdm->m_timeAllow.getActionTimeAsString().mbc_str(),
+                pdm->m_bCheckIndex ? 1 : 0,
+                (int)pdm->m_index,
+                pdm->m_bCheckZone ? 1 : 0,
+                (int)pdm->m_zone,
+                pdm->m_bCheckSubZone ? 1 : 0,
+                (int)pdm->m_subzone,
+                pdm->m_bCheckMeasurementIndex ? 1 : 0, 
                 //--------------------------------------------------------------
-                dm.m_timeAllow.getWeekday(6) ? 1 : 0,
-                (const char *)dm.m_timeAllow.getActionTimeAsString().mbc_str(),
-                dm.m_bCheckIndex ? 1 : 0,
-                dm.m_index,
-                dm.m_bCheckZone,
-                dm.m_zone,
-                dm.m_bCheckSubZone,
-                dm.m_subzone,
-                dm.m_bCheckMeasurementIndex,
-                //--------------------------------------------------------------
-                dm.m_actionCode,
-                (const char *)dm.m_actionparam.mbc_str(),
-                dm.m_bCompareMeasurement,
-                dm.m_measurementValue,
-                dm.m_measurementUnit,
-                dm.m_measurementCompareCode
+                (int)pdm->m_actionCode,
+                (const char *)pdm->m_actionparam.mbc_str(),
+                pdm->m_bCompareMeasurement ? 1 : 0,
+                pdm->m_measurementValue,
+                (int)pdm->m_measurementUnit,
+                (int)pdm->m_measurementCompareCode,
+                (const char *)pdm->m_comment.mbc_str()
             );
 
         if ( SQLITE_OK != sqlite3_exec( m_db_vscp_dm, 
-                                            sql, NULL, NULL, &pErrMsg)) {
-            sqlite3_free( sql );
+                                            sql, NULL, NULL, &pErrMsg ) ) {
+            wxString err = 
+                    wxString::Format( _("[DM] addDatabaseRecord failed. SQL = %s, err = %s\n"), 
+                    sql, 
+                    pErrMsg ); 
+            //wxPrintf( "%s", sql );                            
+            gpobj->logMsg( err,
+                            DAEMON_LOGMSG_NORMAL, 
+                            DAEMON_LOGTYPE_DM );
+            sqlite3_free( sql );            
             return false;
         }
 
@@ -7142,14 +7038,14 @@ bool CDM::addDatabaseRecord( dmElement& dm )
 // updateDatabaseRecord
 //
 
-bool CDM::updateDatabaseRecord( dmElement& dm )
+bool CDM::updateDatabaseRecord( dmElement *pdm )
 {
     char *pErrMsg;
     cguid guid_mask;
     cguid guid_filter;
     
     // Can't save to db if loaded from XML
-    if ( dm.m_bStatic ) return false;
+    if ( pdm->m_bStatic ) return false;
     
     // Database file must be open
     if ( NULL == m_db_vscp_dm ) {
@@ -7158,57 +7054,61 @@ bool CDM::updateDatabaseRecord( dmElement& dm )
         return false;
     }
     
-    guid_mask.getFromArray( dm.m_vscpfilter.mask_GUID );
-    guid_filter.getFromArray( dm.m_vscpfilter.filter_GUID );
+    guid_mask.getFromArray( pdm->m_vscpfilter.mask_GUID );
+    guid_filter.getFromArray( pdm->m_vscpfilter.filter_GUID );
+    
+    wxString dtFrom = pdm->m_timeAllow.getFromTime().FormatISOCombined();
+    wxString dtEnd = pdm->m_timeAllow.getEndTime().FormatISOCombined();
     
     char *sql = sqlite3_mprintf( VSCPDB_DM_UPDATE,
-                (const char *)dm.m_strGroupID.mbc_str(),
-                dm.m_bEnable ? 1 : 0,
-                dm.m_vscpfilter.mask_priority,
-                dm.m_vscpfilter.mask_class,
-                dm.m_vscpfilter.mask_type,
+                (const char *)pdm->m_strGroupID.mbc_str(),
+                pdm->m_bEnable ? 1 : 0,
+                pdm->m_vscpfilter.mask_priority,
+                pdm->m_vscpfilter.mask_class,
+                pdm->m_vscpfilter.mask_type,
                 (const char *)guid_mask.getAsString().mbc_str(),
-                dm.m_vscpfilter.filter_priority,
-                dm.m_vscpfilter.filter_class,
-                dm.m_vscpfilter.filter_type,
+                pdm->m_vscpfilter.filter_priority,
+                pdm->m_vscpfilter.filter_class,
+                pdm->m_vscpfilter.filter_type,
                 (const char *)guid_filter.getAsString().mbc_str(),
+                //--------------------------------------------------------------            
+                (const char *)dtFrom.mbc_str(),
+                (const char *)dtFrom.mbc_str(),
+           
+                pdm->m_timeAllow.getWeekday(0) ? 1 : 0,
+                pdm->m_timeAllow.getWeekday(1) ? 1 : 0,
+                pdm->m_timeAllow.getWeekday(2) ? 1 : 0,
+                pdm->m_timeAllow.getWeekday(3) ? 1 : 0,
+                pdm->m_timeAllow.getWeekday(4) ? 1 : 0,
+                pdm->m_timeAllow.getWeekday(5) ? 1 : 0,
                 //--------------------------------------------------------------
-#if wxCHECK_VERSION( 3,0,0 )             
-                (const char *)dm.m_timeAllow.getFromTime().FormatISOCombined().mbc_str(),
-                (const char *)dm.m_timeAllow.getEndTime().FormatISOCombined().mbc_str(),
-#else
-                (const char *)( dm.m_timeAllow.m_fromTime.FormatISODate() + _("T") + dm.m_timeAllow.m_fromTime.FormatISOTime() ).mbc_str(),
-                (const char *)( dm.m_timeAllow.m_endTime.FormatISODate() + _("T") + dm.m_timeAllow.m_endTime.FormatISOTime() ).mbc_str(),
-#endif            
-                dm.m_timeAllow.getWeekday(0) ? 1 : 0,
-                dm.m_timeAllow.getWeekday(1) ? 1 : 0,
-                dm.m_timeAllow.getWeekday(2) ? 1 : 0,
-                dm.m_timeAllow.getWeekday(3) ? 1 : 0,
-                dm.m_timeAllow.getWeekday(4) ? 1 : 0,
-                dm.m_timeAllow.getWeekday(5) ? 1 : 0,
+                pdm->m_timeAllow.getWeekday(6) ? 1 : 0,
+                (const char *)pdm->m_timeAllow.getActionTimeAsString().mbc_str(),
+                pdm->m_bCheckIndex ? 1 : 0,
+                pdm->m_index,
+                pdm->m_bCheckZone,
+                pdm->m_zone,
+                pdm->m_bCheckSubZone,
+                pdm->m_subzone,
+                pdm->m_bCheckMeasurementIndex,
                 //--------------------------------------------------------------
-                dm.m_timeAllow.getWeekday(6) ? 1 : 0,
-                (const char *)dm.m_timeAllow.getActionTimeAsString().mbc_str(),
-                dm.m_bCheckIndex ? 1 : 0,
-                dm.m_index,
-                dm.m_bCheckZone,
-                dm.m_zone,
-                dm.m_bCheckSubZone,
-                dm.m_subzone,
-                dm.m_bCheckMeasurementIndex,
-                //--------------------------------------------------------------
-                dm.m_actionCode,
-                (const char *)dm.m_actionparam.mbc_str(),
-                dm.m_bCompareMeasurement,
-                dm.m_measurementValue,
-                dm.m_measurementUnit,
-                dm.m_measurementCompareCode,
-                dm.m_id     // Where clause
+                pdm->m_actionCode,
+                (const char *)pdm->m_actionparam.mbc_str(),
+                pdm->m_bCompareMeasurement,
+                pdm->m_measurementValue,
+                pdm->m_measurementUnit,
+                pdm->m_measurementCompareCode,
+                (const char *)pdm->m_comment.mbc_str(),
+                pdm->m_id     // Where clause
             );
 
     if ( SQLITE_OK != sqlite3_exec( m_db_vscp_dm, 
                                             sql, NULL, NULL, &pErrMsg)) {
-        sqlite3_free( sql );
+        wxString err = _("[DM] updateDatabaseRecord failed. SQL = %s error=%s\n"); 
+        gpobj->logMsg( wxString::Format( err, sql, pErrMsg ),
+                            DAEMON_LOGMSG_NORMAL, 
+                            DAEMON_LOGTYPE_DM );
+        sqlite3_free( sql );        
         return false;
     }
 
@@ -7229,7 +7129,7 @@ bool CDM::updateDatabaseRecordItem( unsigned long id,
             
     // Database file must be open
     if ( NULL == m_db_vscp_dm ) {
-        gpobj->logMsg( _("[DM] ") + _("Update record. Database file is not open.\n"),
+        gpobj->logMsg( _("[DM] ") + _("Update record item. Database file is not open.\n"),
                         DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
         return false;
     }
@@ -7240,6 +7140,10 @@ bool CDM::updateDatabaseRecordItem( unsigned long id,
                                     id );
     if ( SQLITE_OK != sqlite3_exec( m_db_vscp_dm, 
                                             sql, NULL, NULL, &pErrMsg)) {
+        wxString err = _("[DM] updateDatabaseRecordItem failed. SQL = %s error=%s\n"); 
+        gpobj->logMsg( wxString::Format( err, sql, pErrMsg ),
+                            DAEMON_LOGMSG_NORMAL, 
+                            DAEMON_LOGTYPE_DM );                                                    
         sqlite3_free( sql );
         return false;
     }
@@ -7267,7 +7171,8 @@ bool CDM::getDatabaseRecord( uint32_t idx, dmElement *pDMitem )
     // Database file must be open
     if ( NULL == m_db_vscp_dm ) {
         gpobj->logMsg( _("[DM] ") + _("Get record. Database file is not open.\n"), 
-                        DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+                        DAEMON_LOGMSG_NORMAL, 
+                        DAEMON_LOGTYPE_DM );
         return false;
     }
     
@@ -7278,6 +7183,10 @@ bool CDM::getDatabaseRecord( uint32_t idx, dmElement *pDMitem )
                                             -1,
                                             &ppStmt,
                                             NULL ) ) {
+        wxString err = _("[DM] getDatabaseRecord failed. SQL = %s\n"); 
+        gpobj->logMsg( wxString::Format( err, sql ),
+                            DAEMON_LOGMSG_NORMAL, 
+                            DAEMON_LOGTYPE_DM );                                            
         sqlite3_free( sql );
         return false;
     }
@@ -7481,7 +7390,7 @@ bool CDM::loadFromDatabase( void )
     m_mutexDM.Lock();
     
     if ( SQLITE_OK != sqlite3_prepare_v2( m_db_vscp_dm,
-                                            "SELECT * FROM dm WHERE bEnable='true';",
+                                            "SELECT * FROM dm;",
                                             -1,
                                             &ppStmt,
                                             NULL ) ) {
@@ -7508,7 +7417,7 @@ bool CDM::loadFromDatabase( void )
             // bEnable
             if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, 
                                                 VSCPDB_ORDINAL_DM_ENABLE ) ) ) {
-                pDMitem->m_bEnable = atoi( p ) ? true : false;
+                pDMitem->m_bEnable = atoi( p ) ? true : false; 
             }
             
             // groupid
@@ -7714,6 +7623,12 @@ bool CDM::loadFromDatabase( void )
             // Measurement compare code
             pDMitem->m_measurementCompareCode = sqlite3_column_int( ppStmt, 
                                          VSCPDB_ORDINAL_DM_MEASUREMENT_COMPARE );
+
+            // Comment
+            if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, 
+                                         VSCPDB_ORDINAL_DM_COMMENT ) ) ) {
+                pDMitem->m_comment = wxString::FromUTF8( p );                             
+            }                             
 
             // Add the DM row to the matrix 
            addMemoryElement ( pDMitem );
@@ -7947,7 +7862,7 @@ bool CDM::loadFromXML( void )
 // Write decision matrix to file
 //
 
-bool CDM::saveToXML( void )
+bool CDM::saveToXML( bool bAll )
 {
     wxString strLog;
     wxString buf;
@@ -7985,6 +7900,10 @@ bool CDM::saveToXML( void )
         dmElement *pDMitem = *it;
 
         if ( NULL != pDMitem ) {  // Must be an dmElement to work with  m_strGroupID
+
+            // Static records is loaded from XML file and if bAll is false only
+            // static records should be saved.
+            if ( !bAll && !pDMitem->m_bStatic ) continue;
 
             pFileStream->Write( "  <row enable=\"",strlen ( "  <row enable=\"" ) );
             if ( pDMitem->isEnabled() ) {
@@ -8154,7 +8073,7 @@ bool CDM::feed( vscpEvent *pEvent )
         if ( !pDMitem->isEnabled() ) continue;
 
         if ( vscp_doLevel2Filter( pEvent, &pDMitem->m_vscpfilter ) &&
-                pDMitem->m_timeAllow.ShouldWeDoAction() ) {
+                                            pDMitem->m_timeAllow.ShouldWeDoAction() ) {
 
             if ( pDMitem->isCheckIndexSet() ) {
                 if ( pDMitem->m_bCheckMeasurementIndex ) {
