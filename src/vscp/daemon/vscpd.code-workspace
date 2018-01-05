@@ -10,5 +10,9 @@
 			"path": "/home/akhe/development/VSCP/vscp/src/common"
 		}
 	],
-    "settings": {}
+	"settings": {
+		"terminal.integrated.env.linux": {
+			"PATH": "/home/akhe/.platformio/penv/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games:/usr/local/bin"
+		}
+	}
 }

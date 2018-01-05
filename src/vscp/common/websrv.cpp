@@ -426,7 +426,7 @@ websrv_add_session( struct web_connection *conn )
                 "Content-Length: 0r\n\r\n",
                 pSession->m_sid );
 
-    pSession->m_pUserItem = gpobj->m_userList.getUser( wxString::FromAscii( user ) );
+    pSession->m_pUserItem = gpobj->m_userList.getUser( wxString::FromUTF8( user ) );
     pSession->lastActiveTime = time( NULL );
 
 
@@ -585,7 +585,7 @@ static int websrv_check_if_authorized( const struct web_connection *conn  ) {
             // Username/password wrong
         wxString strErr =
                 wxString::Format( _( "[Webserver Client] Host [%s] User [%s] NOT allowed to connect.\n" ),
-                        wxString::FromAscii( ( const char * )inet_ntoa( conn->sa.sin.sin_addr ) ).wx_str(),
+                        wxString::FromUTF8( ( const char * )inet_ntoa( conn->sa.sin.sin_addr ) ).wx_str(),
                         (const char *)pUserItem->m_user.mbc_str() );
         gpobj->logMsg( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY );
         return 0;
@@ -2576,7 +2576,7 @@ static int vscp_dm_post( struct web_connection *conn, void *cbdata )
                             "groupid",
                             buf,
                             sizeof( buf ) ) > 0 ) {
-            strGroupID = wxString::FromAscii(buf);
+            strGroupID = wxString::FromUTF8( buf );
         }
     }
 
@@ -2587,7 +2587,7 @@ static int vscp_dm_post( struct web_connection *conn, void *cbdata )
                             "filter_priority",
                             buf,
                             sizeof( buf ) ) > 0 ) {
-            filter_priority = vscp_readStringValue( wxString::FromAscii( buf ) );
+            filter_priority = vscp_readStringValue( wxString::FromUTF8( buf ) );
         }
     }
 
@@ -2598,7 +2598,7 @@ static int vscp_dm_post( struct web_connection *conn, void *cbdata )
                             "mask_priority",
                             buf,
                             sizeof( buf ) ) > 0 ) {
-            mask_priority = vscp_readStringValue( wxString::FromAscii( buf ) );
+            mask_priority = vscp_readStringValue( wxString::FromUTF8( buf ) );
         }
     }
 
@@ -2609,7 +2609,7 @@ static int vscp_dm_post( struct web_connection *conn, void *cbdata )
                             "filter_vscpclass",
                             buf,
                             sizeof( buf ) ) > 0 ) {
-            wxString wrkstr = wxString::FromAscii( buf );
+            wxString wrkstr = wxString::FromUTF8( buf );
             filter_vscpclass = vscp_readStringValue( wrkstr );
         }
     }
@@ -2621,7 +2621,7 @@ static int vscp_dm_post( struct web_connection *conn, void *cbdata )
                             "mask_vscpclass",
                             buf,
                             sizeof( buf ) ) > 0 ) {
-            mask_vscpclass = vscp_readStringValue( wxString::FromAscii( buf ) );
+            mask_vscpclass = vscp_readStringValue( wxString::FromUTF8( buf ) );
         }
     }
 
@@ -2632,7 +2632,7 @@ static int vscp_dm_post( struct web_connection *conn, void *cbdata )
                             "filter_vscptype",
                             buf,
                             sizeof( buf ) ) > 0 ) {
-            filter_vscptype = vscp_readStringValue( wxString::FromAscii( buf ) );
+            filter_vscptype = vscp_readStringValue( wxString::FromUTF8( buf ) );
         }
     }
 
@@ -2643,7 +2643,7 @@ static int vscp_dm_post( struct web_connection *conn, void *cbdata )
                             "mask_vscptype",
                             buf,
                             sizeof( buf ) ) > 0 ) {
-            mask_vscptype = vscp_readStringValue( wxString::FromAscii( buf ) );
+            mask_vscptype = vscp_readStringValue( wxString::FromUTF8( buf ) );
         }
     }
 
@@ -2654,7 +2654,7 @@ static int vscp_dm_post( struct web_connection *conn, void *cbdata )
                             "filter_vscpguid",
                             buf,
                             sizeof( buf ) ) > 0 ) {
-            strFilterGuid = wxString::FromAscii( buf );
+            strFilterGuid = wxString::FromUTF8( buf );
             strFilterGuid = strFilterGuid.Trim();
             strFilterGuid = strFilterGuid.Trim(false);
         }
@@ -2667,7 +2667,7 @@ static int vscp_dm_post( struct web_connection *conn, void *cbdata )
                             "mask_vscpguid",
                             buf,
                             sizeof( buf ) ) > 0 ) {
-            strMaskGuid = wxString::FromAscii( buf );
+            strMaskGuid = wxString::FromUTF8( buf );
             strMaskGuid = strMaskGuid.Trim();
             strMaskGuid = strMaskGuid.Trim(false);
         }
@@ -2680,7 +2680,7 @@ static int vscp_dm_post( struct web_connection *conn, void *cbdata )
                             "vscpindex",
                             buf,
                             sizeof( buf ) ) > 0 ) {
-            index = vscp_readStringValue( wxString::FromAscii( buf ) );
+            index = vscp_readStringValue( wxString::FromUTF8( buf ) );
         }
     }
 
@@ -2702,7 +2702,7 @@ static int vscp_dm_post( struct web_connection *conn, void *cbdata )
                             "vscpzone",
                             buf,
                             sizeof( buf ) ) > 0 ) {
-            zone = vscp_readStringValue( wxString::FromAscii( buf ) );
+            zone = vscp_readStringValue( wxString::FromUTF8( buf ) );
         }
     }
 
@@ -2713,7 +2713,7 @@ static int vscp_dm_post( struct web_connection *conn, void *cbdata )
                             "vscpsubzone",
                             buf,
                             sizeof( buf ) ) > 0 ) {
-            subzone = vscp_readStringValue( wxString::FromAscii( buf ) );
+            subzone = vscp_readStringValue( wxString::FromUTF8( buf ) );
         }
     }
 
@@ -2779,7 +2779,7 @@ static int vscp_dm_post( struct web_connection *conn, void *cbdata )
                             "allowedfrom",
                             buf,
                             sizeof( buf ) ) > 0 ) {
-            strAllowedFrom = wxString::FromAscii( buf );
+            strAllowedFrom = wxString::FromUTF8( buf );
             strAllowedFrom.Trim( true );
             strAllowedFrom.Trim( false );
             if ( _("*") == strAllowedFrom ) {
@@ -2795,7 +2795,7 @@ static int vscp_dm_post( struct web_connection *conn, void *cbdata )
                             "allowedto",
                             buf,
                             sizeof( buf ) ) > 0 ) {
-            strAllowedTo = wxString::FromAscii( buf );
+            strAllowedTo = wxString::FromUTF8( buf );
             strAllowedTo.Trim( true );
             strAllowedTo.Trim( false );
             if ( _("*") == strAllowedTo ) {
@@ -2811,7 +2811,7 @@ static int vscp_dm_post( struct web_connection *conn, void *cbdata )
                             "allowedtime",
                             buf,
                             sizeof( buf ) ) > 0 ) {
-            strAllowedTime = wxString::FromAscii( buf );
+            strAllowedTime = wxString::FromUTF8( buf );
             strAllowedTime.Trim( true );
             strAllowedTime.Trim( false );
             if ( _("*") == strAllowedTime ) {
@@ -2907,7 +2907,7 @@ static int vscp_dm_post( struct web_connection *conn, void *cbdata )
                             "action",
                             buf,
                             sizeof( buf ) ) > 0 ) {
-            action = vscp_readStringValue( wxString::FromAscii( buf ) );
+            action = vscp_readStringValue( wxString::FromUTF8( buf ) );
         }
     }
 
@@ -2918,8 +2918,8 @@ static int vscp_dm_post( struct web_connection *conn, void *cbdata )
                             "actionparameter",
                             buf,
                             sizeof( buf ) ) > 0 ) {
-            vscp_toXMLEscape( buf );
-            strActionParameter = wxString::FromAscii( buf );
+            //vscp_toXMLEscape( buf );
+            strActionParameter = wxString::FromUTF8( buf );
         }
     }
 
@@ -2930,8 +2930,8 @@ static int vscp_dm_post( struct web_connection *conn, void *cbdata )
                             "comment",
                             buf,
                             sizeof( buf ) ) > 0 ) {
-            vscp_toXMLEscape( buf );
-            strComment = wxString::FromAscii( buf );
+            //vscp_toXMLEscape( buf );
+            strComment = wxString::FromUTF8( buf );
         }
     }
 
