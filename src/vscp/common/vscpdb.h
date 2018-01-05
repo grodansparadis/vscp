@@ -108,11 +108,16 @@
 #define VSCPDB_CONFIG_NAME_MULTICAST_ENABLE             "muticast_enable"
 #define VSCPDB_CONFIG_DEFAULT_MULTICAST_ENABLE           "0"
 
+// DM
+
 #define VSCPDB_CONFIG_NAME_DM_PATH_DB                   "dm_path_db"
 #define VSCPDB_CONFIG_DEFAULT_DM_PATH_DB                "/srv/vscp/dm.sqlite3"
 
 #define VSCPDB_CONFIG_NAME_DM_PATH_XML                  "dm_path_xml"
 #define VSCPDB_CONFIG_DEFAULT_DM_PATH_XML               "/srv/vscp/dm.xml"
+
+#define VSCPDB_CONFIG_NAME_DM_ALLOW_XML_SAVE            "dm_allow_xml_save"
+#define VSCPDB_CONFIG_DEFAULT_DM_ALLOW_XML_SAVE         "0"
 
 #define VSCPDB_CONFIG_NAME_VARIABLES_PATH_DB            "variable_path_db"
 #define VSCPDB_CONFIG_DEFAULT_VARIABLES_PATH_DB         "/srv/vscp/variable.sqlite3"
@@ -360,6 +365,8 @@
 
 #define VSCPDB_CONFIG_NAME_AUTOMATION_CAPABILITIES_INTERVAL     "automation_capabilities_interval"
 #define VSCPDB_CONFIG_DEFAULT_AUTOMATION_CAPABILITIES_INTERVAL  "60"
+
+
 
 
 //*****************************************************************************

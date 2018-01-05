@@ -3089,7 +3089,9 @@ static int vscp_dm_post( struct web_connection *conn, void *cbdata )
                 }
 
                 // Save decision matrix static objects
-                //gpobj->m_dm.saveToXML( false );
+                if ( gpobj->m_dm.bAllowXMLsave ) {
+                    gpobj->m_dm.saveToXML( false );
+                }
 
                 web_printf( conn,
                                 "<br><br>DM Entry has been saved. id=%ld",
@@ -3204,7 +3206,9 @@ static int vscp_dm_delete( struct web_connection *conn, void *cbdata  )
                         "<br>Deleted record id = %ld",
                         id );
         // Save decision matrix
-        gpobj->m_dm.saveToXML( false );  // Only static(XML) records are saved here
+        if ( gpobj->m_dm.bAllowXMLsave ) {
+            gpobj->m_dm.saveToXML( false );  // Only static(XML) records are saved here
+        }
     }
     else {
         web_printf( conn,

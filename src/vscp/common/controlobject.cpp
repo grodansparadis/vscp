@@ -3003,6 +3003,13 @@ bool CControlObject::readConfigurationXML( wxString& strcfgfile )
                 m_dm.m_path_db_vscp_dm.Assign( attribut );
             }
 
+            // Get the DM XML save flag
+            attribut = child->GetAttribute( _("allowxmlsave"), _("false") );
+            attribute.MakeLower();
+            if ( wxNOT_FOUND != attribute.Find( _("true") ) ) {
+                m_dm.bAllowXMLsave |= VSCP_DEBUG1_DM;
+            }
+
             // Get the DM loglevel
             attribut = child->GetAttribute( _("loglevel"), _("") );
             attribute.MakeLower();
@@ -4435,6 +4442,7 @@ void CControlObject::addDeafultConfigValues( void )
     // DM
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_DM_PATH_DB, VSCPDB_CONFIG_DEFAULT_DM_PATH_DB );
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_DM_PATH_XML, VSCPDB_CONFIG_DEFAULT_DM_PATH_XML );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_DM_ALLOW_XML_SAVE, VSCPDB_CONFIG_DEFAULT_DM_ALLOW_XML_SAVE );
 
     // Variables
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_VARIABLES_PATH_DB, VSCPDB_CONFIG_DEFAULT_VARIABLES_PATH_DB );

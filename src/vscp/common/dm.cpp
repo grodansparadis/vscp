@@ -5731,6 +5731,9 @@ CDM::CDM( CControlObject *ctrlObj )
 #endif
 #endif
 
+    // Not allowed to edit XML content
+    bAllowXMLsave = false;
+
     // Default is to feed all events through the matrix
     vscp_clearVSCPFilter( &m_DM_Table_filter );
 
@@ -5856,29 +5859,6 @@ void CDM::init( void )
 
     }
     
-    // * * * VSCP Daemon internal DM database - Always created in-memory * * *
-    // Internal table still used so this part will probably be removed 
-/*    
-    if ( SQLITE_OK == sqlite3_open( NULL, &m_dm.m_db_vscp_dm_memory ) ) {
-        
-        // Should always be created
-        m_dm.doCreateInMemoryDMTable();
-        
-        // Fill internal DM with data from external
-        m_dm.doFillMemoryDMTable();
-        
-    }
-    else {
-        // Failed to open/create the database file
-        fprintf( stderr, "VSCP Daemon internal DM database could not be opened - Will not be used.\n" );
-        str.Printf( _("Error=%s\n"),
-                            sqlite3_errmsg( m_dm.m_db_vscp_dm_memory ) );
-        fprintf( stderr, str.mbc_str() );
-        if ( NULL != m_dm.m_db_vscp_dm_memory  ) sqlite3_close( m_dm.m_db_vscp_dm_memory  );
-        m_dm.m_db_vscp_dm_memory  = NULL;
-    }
-*/
-
     if ( gpobj->m_debugFlags1 & VSCP_DEBUG1_DM ) {
         wxString wxlogmsg = 
         wxString::Format(_("DM engine started. DM from [%s]\n"),
@@ -6696,7 +6676,8 @@ int CDM::addTimer( uint32_t id,
     if ( !gpobj->m_variables.exist( nameVar ) ) {
 
         if ( gpobj->m_debugFlags1 & VSCP_DEBUG1_DM_TIMERS ) {
-            wxString logStr = wxString::Format(_("[Add timer] Variable [%s] not defined. Creating it.\n"),
+            wxString logStr = wxString::Format(_("[Add timer] Variable [%s] not defined. "
+                                                 "Creating it.\n"),
                                                 (const char *)nameVar.mbc_str() );
             gpobj->logMsg( _("[DM] ") + logStr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
         }
@@ -6704,7 +6685,8 @@ int CDM::addTimer( uint32_t id,
         if ( !gpobj->m_variables.add( nameVar, 
                                         _("false"), 
                                         VSCP_DAEMON_VARIABLE_CODE_BOOLEAN ) ) {
-            wxString logStr = wxString::Format(_("[Add timer] Variable [%s] not defined. Failed to create it.\n"),
+            wxString logStr = wxString::Format(_("[Add timer] Variable [%s] not defined. "
+                                                 "Failed to create it.\n"),
                                                 (const char *)nameVar.mbc_str() );
             gpobj->logMsg( _("[DM] ") + logStr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
             return false;

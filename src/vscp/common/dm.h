@@ -1190,13 +1190,15 @@ public:
 
     /// Path to DM XML file
     wxString m_staticXMLPath;
+
+    /// Allow editing of XML content
+    bool bAllowXMLsave;
     
     // Path to the VSCP DM database
     wxFileName m_path_db_vscp_dm;  
     
     // Databases
     sqlite3 *m_db_vscp_dm;                  // External DM database
-    //sqlite3 *m_db_vscp_dm_memory;         // In-memory DM database
 
     /// DM table filter - Filter for all rows of the table
     vscpEventFilter m_DM_Table_filter;
