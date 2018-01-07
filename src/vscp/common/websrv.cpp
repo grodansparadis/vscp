@@ -1874,6 +1874,9 @@ static int vscp_dm_edit( struct web_connection *conn, void *cbdata  )
                             "<input name=\"count\" value=\"%ld\" type=\"hidden\">",
                             (long)nCount );
 
+            web_printf( conn,
+                            "<input name=\"bstatic\" value=\"0\" type=\"hidden\">" );                
+
         }
         else {
             // Hidden from
@@ -1887,6 +1890,10 @@ static int vscp_dm_edit( struct web_connection *conn, void *cbdata  )
             web_printf( conn,
                             "<input name=\"new\" value=\"false\" "
                             "type=\"hidden\"></input>");
+
+            web_printf( conn,
+                            "<input name=\"bstatic\" value=\"%d\" type=\"hidden\">",
+                            pElement->m_bStatic );                
         }
 
         web_printf( conn, "<h4>Group id:</h4>");

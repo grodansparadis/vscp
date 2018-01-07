@@ -569,7 +569,8 @@ bool CVSCPVariable::setName( const wxString& strName )
     
     if ( str.IsEmpty() ) {
         // Name can't be null
-        gpobj->logMsg( wxString::Format( _("Setting variable name: Variable name can't be empty.\n") ) );
+        gpobj->logMsg( wxString::Format( _("Setting variable name: "
+                                           "Variable name can't be empty.\n") ) );
         return false;
     }
     
@@ -949,10 +950,11 @@ bool CVSCPVariable::setValueFromString( int type, const wxString& strValue, bool
                 m_strValue = _("");
                 char *pbuf = new char[ wxBase64EncodedSize( strlen( strValue.mbc_str() ) ) + 1 ];
                 if ( NULL == pbuf ) return false;
-                size_t len = wxBase64Encode( pbuf, 
-                                                wxBase64EncodedSize( strlen( strValue.mbc_str() ) ), 
-                                                (const char *)strValue.mbc_str(),
-                                                strlen( strValue.mbc_str() ) );
+                size_t len = 
+                    wxBase64Encode( pbuf, 
+                                    wxBase64EncodedSize( strlen( strValue.mbc_str() ) ), 
+                                    (const char *)strValue.mbc_str(),
+                                    strlen( strValue.mbc_str() ) );
                 if ( wxCONV_FAILED == len ) {
                     delete [] pbuf;
                     return false;
@@ -3044,6 +3046,13 @@ bool CVariableStorage::init( void )
     variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
     variable.setNote( _("Path to decision matrix XML file to load at startup."), true );
     addStockVariable( variable  );
+
+    variable.init();
+    variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
+    variable.setName( _("vscp.dm.allow.xml.save") );
+    variable.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
+    variable.setNote( _("Allow write of decision matrix XML file after edit/delete."), true );
+    addStockVariable( variable  );
     
     variable.init();
     variable.setAccessRights( PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE );    
@@ -4538,7 +4547,7 @@ uint32_t CVariableStorage::getStockVariable( const wxString& name,
     }
     
     // *************************************************************************
-    //                            Decision Matrix
+    //                            Decision Matrix (DM)
     // *************************************************************************
 
     
@@ -4549,6 +4558,11 @@ uint32_t CVariableStorage::getStockVariable( const wxString& name,
     
     if ( lcname.StartsWith( _("vscp.dm.xml.path") ) ) {
         var.setValue( gpobj->m_dm.m_staticXMLPath, true ); 
+        return var.getID();
+    }
+
+    if ( lcname.StartsWith( _("vscp.dm.allow.xml.save") ) ) {
+        var.setValue( gpobj->m_dm.bAllowXMLsave ); 
         return var.getID();
     }
     
@@ -5914,24 +5928,20 @@ bool CVariableStorage::putStockVariable( CVSCPVariable& var,
     }
 
     // *************************************************************************
-    //                            Decision Matrix
+    //                            Decision Matrix (DM)
     // *************************************************************************
 
     
     if ( lcname.StartsWith( _("vscp.dm.xml.path") ) ) {
-        wxString strval;
-        strval = var.getValue();
-        var.setValue( gpobj->m_dm.m_staticXMLPath );
+        gpobj->m_dm.m_staticXMLPath = var.getValue();
         return gpobj->updateConfigurationRecordItem( _("vscpd_DM_XML_Path"), 
-                                                    strval );
+                                                     gpobj->m_dm.m_staticXMLPath );
     }
     
-    if ( lcname.StartsWith( _("vscp.dm.db.path") ) ) {
-        wxString strval;
-        strval = var.getValue();
-        var.setValue( gpobj->m_dm.m_staticXMLPath );
+    if ( lcname.StartsWith( _("vscp.dm.allow.xml.save") ) ) {
+        var.getValue( &gpobj->m_dm.bAllowXMLsave );        
         return gpobj->updateConfigurationRecordItem( _("vscpd_DM_DB_Path"), 
-                                                    strval );
+                                                     var.getAsString() );
     }
 
 
