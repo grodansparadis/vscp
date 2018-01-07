@@ -139,10 +139,8 @@ content-type\" /><title>%s</title>"
 #define WEB_COMMON_HEAD_END_BODY_START "</head><body>"
 
 // End with footer
-#define WEB_COMMON_END "<br><br><br><br><div id=\"footer\"> Copyright &copy; \
-2000-2017 VSCP & Friends,<a href=\"mailto:info@paradiseofthefrog.com\">\
-Ake Hedman</a><a href=\"http://www.paradiseofthefrog.com\"> \
-Paradise of the Frog.</a></div></div></body></html>"
+#define WEB_COMMON_END "<br><br><br><br><div id=\"footer\"> %s \
+</div></body></html>"
 
 // List navigation - 
 // Action url           - string
