@@ -56,6 +56,18 @@
                            "        <li>"\
                            "            <a href=\"/vscp/dmedit?new=true\">DM - new element</a>"\
                            "        </li>"\
+                           "        <li>"\
+                           "            <a href=\"/vscp/zone\">Zone - list</a>"\
+                           "        </li>"\
+                           "        <li>"\
+                           "            <a href=\"/vscp/subzone\">Subzone - list</a>"\
+                           "        </li>"\
+                           "        <li>"\
+                           "            <a href=\"/vscp/location\">Location - list</a>"\
+                           "        </li>"\
+                           "        <li>"\
+                           "            <a href=\"/vscp/guid\">GUID - list</a>"\
+                           "        </li>"\
                            "    </ul>"\
                            " </li>"\
                            " <li>"\
@@ -169,6 +181,8 @@ content-type\" /><title>%s</title>"
 #define WEB_COMMON_TR_NON_CLICKABLE_ROW "<tr onmouseover=\"ChangeColor(this, true);\" \
                                         onmouseout=\"ChangeColor(this, false);\" >"
 
+#define WEB_COMMON_TABLE_END "</tbody></table>"
+
 // * * * DM List * * *
 
 // Place after menus
@@ -257,6 +271,113 @@ content-type\" /><title>%s</title>"
 
 // Place before common end
 #define WEB_VAREDIT_TABLE_END "</tbody></table>"
+
+
+// * * * Zone List * * *
+
+// Place after menus
+#define WEB_ZONELIST_BODY_START "<br><div id=\"content\"><div id=\"header\">\
+                                <h1 id=\"header\">VSCP Server - Zones</h1></div>\
+                                <table><tbody>"
+
+// * * * Zone Edit * * *
+
+// Place after menus
+#define WEB_ZONEEDIT_BODY_START "<br><div id=\"content\"><div id=\"header\">\
+                                    <h1 id=\"header\">VSCP - Zone Edit</h1>\
+                                    </div><table><tbody>"
+
+// Table head
+#define WEB_ZONELIST_TR_HEAD "<tr><th>Pos</th><th>Type</th><th>Zones</th>\
+                                <th></th></tr>"
+
+
+
+// * * * Zone Edit * * *
+
+// Place after menus
+#define WEB_ZONEEDIT_BODY_START "<br><div id=\"content\"><div id=\"header\">\
+                                    <h1 id=\"header\">VSCP - Zone Edit</h1>\
+                                    </div><table><tbody>"
+
+// Place before common end
+#define WEB_ZONEEDIT_TABLE_END "</tbody></table>"
+
+
+
+// * * * Subzone List * * *
+
+// Place after menus
+#define WEB_SUBZONELIST_BODY_START "<br><div id=\"content\"><div id=\"header\">\
+                                <h1 id=\"header\">VSCP Server - Subzones</h1></div>\
+                                <table><tbody>"
+
+// Table head
+#define WEB_SUBZONELIST_TR_HEAD "<tr><th>Pos</th><th>Type</th><th>Subzones</th>\
+                                <th></th></tr>"
+
+
+
+// * * * Subzone Edit * * *
+
+// Place after menus
+#define WEB_SUBZONEEDIT_BODY_START "<br><div id=\"content\"><div id=\"header\">\
+                                    <h1 id=\"header\">VSCP - Subzone Edit</h1>\
+                                    </div><table><tbody>"
+
+// Place before common end
+#define WEB_SUBZONEEDIT_TABLE_END "</tbody></table>"
+
+
+
+// * * * GUID List * * *
+
+// Place after menus
+#define WEB_GUIDLIST_BODY_START "<br><div id=\"content\"><div id=\"header\">\
+                                <h1 id=\"header\">VSCP Server - GUID's</h1></div>\
+                                <table><tbody>"
+
+// Table head
+#define WEB_GUIDLIST_TR_HEAD "<tr><th>Pos</th><th>Type</th><th>GUID's</th>\
+                                <th></th></tr>"
+
+
+
+// * * * GUID Edit * * *
+
+// Place after menus
+#define WEB_GUIDEDIT_BODY_START "<br><div id=\"content\"><div id=\"header\">\
+                                    <h1 id=\"header\">VSCP - GUID Edit</h1>\
+                                    </div><table><tbody>"
+
+// Place before common end
+#define WEB_GUIDEDIT_TABLE_END "</tbody></table>"
+
+
+// * * * Location List * * *
+
+// Place after menus
+#define WEB_LOCTIONLIST_BODY_START "<br><div id=\"content\"><div id=\"header\">\
+                                <h1 id=\"header\">VSCP Server - Locations</h1></div>\
+                                <table><tbody>"
+
+// Table head
+#define WEB_LOCATIONLIST_TR_HEAD "<tr><th>Pos</th><th>Type</th><th>Locations</th>\
+                                <th></th></tr>"
+
+
+
+// * * * Location Edit * * *
+
+// Place after menus
+#define WEB_LOCATIONEDIT_BODY_START "<br><div id=\"content\"><div id=\"header\">\
+                                    <h1 id=\"header\">VSCP - Location Edit</h1>\
+                                    </div><table><tbody>"
+
+// Place before common end
+#define WEB_LOCATIONEDIT_TABLE_END "</tbody></table>"
+
+
 
 
 ///////////////////////////////////////////////////////////////////////////////

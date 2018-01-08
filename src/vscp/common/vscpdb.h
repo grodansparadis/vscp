@@ -585,7 +585,11 @@
         ");"
 
 #define VSCPDB_ZONE_CREATE_INDEX "CREATE INDEX `idxzone` "\
-                "ON subzone ('name'):"
+                                 "ON subzone ('name'):"
+#define VSCPDB_ZONE_SELECT_ALL   "SELECT * FROM zone;"
+#define VSCPDB_ZONE_SELECT_PAGE  "SELECT * FROM zone LIMIT %d,%d;"
+#define VSCPDB_ZONE_SELECT_ID    "SELECT * FROM zone WHERE idx_zone=%ld"
+#define VSCPDB_ZONE_UPDATE       "UPDATE zone SET name='%s',description='%s' WHERE idx_zone=%ld"
 
 #define VSCPDB_ORDINAL_ZONE_ID                   0   //
 #define VSCPDB_ORDINAL_ZONE_NAME                 1   // User names of zone
@@ -604,6 +608,10 @@
 
 #define VSCPDB_SUBZONE_CREATE_INDEX "CREATE INDEX `idxsubzone` "\
                 "ON subzone ('name'):"
+#define VSCPDB_SUBZONE_SELECT_ALL   "SELECT * FROM subzone;"
+#define VSCPDB_SUBZONE_SELECT_PAGE  "SELECT * FROM subzone LIMIT %d,%d;"
+#define VSCPDB_SUBZONE_SELECT_ID    "SELECT * FROM subzone WHERE idx_subzone=%ld"
+#define VSCPDB_SUBZONE_UPDATE       "UPDATE subzone SET name='%s',description='%s' WHERE idx_subzone=%ld"
 
 #define VSCPDB_ORDINAL_SUBZONE_ID               0   //
 #define VSCPDB_ORDINAL_SUBZONE_NAME             1   // User name of subzone

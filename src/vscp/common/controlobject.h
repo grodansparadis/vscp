@@ -521,6 +521,11 @@ public:
      * Get current number of records in log database
      */
     long getCountRecordsLogDB( void );
+    
+    /*!
+     * Get number of records in a database table
+     */
+    long getCountRecordsDB( sqlite3 *db, wxString& table );
 
 
     /*!

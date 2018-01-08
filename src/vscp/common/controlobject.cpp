@@ -645,7 +645,7 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
         else {
             
             // Database is open. 
-            
+                        
             // Add possible missing configuration values
             addDeafultConfigValues();
             
@@ -1803,6 +1803,34 @@ void CControlObject::logMsg( const wxString& msgin,
 
      m_mutexLogWrite.Unlock();
 
+}
+
+long CControlObject::getCountRecordsDB( sqlite3 *db, wxString& table )
+{
+    long count = 0;
+    sqlite3_stmt *ppStmt;
+
+    // If not open no records
+    if ( NULL == db ) return 0;
+
+    wxString sql = wxString::Format("SELECT count(*)from %s", 
+                                    (const char *)table.mbc_str() );
+
+    if ( SQLITE_OK != sqlite3_prepare( db,
+                                        (const char *)sql.mbc_str(),
+                                        -1,
+                                        &ppStmt,
+                                        NULL ) )  {
+        wxPrintf( "Failed to prepare count for log database. SQL is %s",
+                        VSCPDB_LOG_COUNT  );
+        return 0;
+    }
+
+    if ( SQLITE_ROW == sqlite3_step( ppStmt ) ) {
+        count = sqlite3_column_int( ppStmt, 0 );
+    }
+
+    return count;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -5465,7 +5493,7 @@ bool CControlObject::readUdpNodes( void )
 
 bool CControlObject::readMulticastChannels( void )
 {
-   char *pErrMsg = 0;
+    char *pErrMsg = 0;
     const char *psql = "SELECT * FROM multicast";
     sqlite3_stmt *ppStmt;
 
@@ -5526,13 +5554,19 @@ bool CControlObject::readMulticastChannels( void )
         }
 
         // ttl
-        pChannel->m_ttl = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_MULTICAST_TTL );
+        pChannel->m_ttl = 
+                sqlite3_column_int( ppStmt, 
+                                    VSCPDB_ORDINAL_MULTICAST_TTL );
 
         // bAck
-        pChannel->m_bSendAck = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_MULTICAST_SENDACK ) ? true : false;
+        pChannel->m_bSendAck = 
+                sqlite3_column_int( ppStmt, 
+                                VSCPDB_ORDINAL_MULTICAST_SENDACK ) ? true : false;
 
         // Allow unsecure
-        pChannel->m_bAllowUnsecure = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_MULTICAST_ALLOW_UNSECURE ) ? true : false;
+        pChannel->m_bAllowUnsecure = 
+                sqlite3_column_int( ppStmt, 
+                                VSCPDB_ORDINAL_MULTICAST_ALLOW_UNSECURE ) ? true : false;
 
         // GUID
         p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_MULTICAST_GUID );
@@ -5545,7 +5579,9 @@ bool CControlObject::readMulticastChannels( void )
         if ( NULL != p ) {
             wxString wxstr = wxString::FromUTF8Unchecked( (const char *)p );
             if ( !vscp_readFilterFromString( &pChannel->m_txFilter, wxstr ) ) {
-                fprintf( stderr, "readMulticastChannels: Failed to set TX filter for multicast channel." );
+                fprintf( stderr, 
+                          "readMulticastChannels: Failed to set TX "
+                          "filter for multicast channel." );
             }
         }
 
@@ -5554,7 +5590,9 @@ bool CControlObject::readMulticastChannels( void )
         if ( NULL != p ) {
             wxString wxstr = wxString::FromUTF8Unchecked( (const char *)p );
             if ( !vscp_readMaskFromString( &pChannel->m_txFilter, wxstr ) ) {
-                fprintf( stderr, "readMulticastChannels: Failed to set TX mask for multicast channel." );
+                fprintf( stderr, 
+                           "readMulticastChannels: Failed to set TX "
+                           "mask for multicast channel." );
             }
         }
 
@@ -5563,7 +5601,9 @@ bool CControlObject::readMulticastChannels( void )
         if ( NULL != p ) {
             wxString wxstr = wxString::FromUTF8Unchecked( (const char *)p );
             if ( !vscp_readFilterFromString( &pChannel->m_rxFilter, wxstr ) ) {
-                fprintf( stderr, "readMulticastChannels: Failed to set RX filter for multicast channel." );
+                fprintf( stderr, 
+                            "readMulticastChannels: Failed to set RX "
+                            "filter for multicast channel." );
             }
         }
 
@@ -5572,7 +5612,9 @@ bool CControlObject::readMulticastChannels( void )
         if ( NULL != p ) {
             wxString wxstr = wxString::FromUTF8Unchecked( (const char *)p );
             if ( !vscp_readMaskFromString( &pChannel->m_rxFilter, wxstr ) ) {
-                fprintf( stderr, "readMulticastChannels: Failed to set RX mask for multicast channel." );
+                fprintf( stderr, 
+                           "readMulticastChannels: Failed to set RX "
+                           "mask for multicast channel." );
             }
         }
 
@@ -5636,7 +5678,6 @@ bool CControlObject::doCreateLogTable( void )
 // doCreateUdpNodeTable
 //
 // Create the UDP node database
-//
 //
 
 bool CControlObject::doCreateUdpNodeTable( void )
@@ -5914,7 +5955,8 @@ bool CControlObject::doCreateSimpleUiItemTable( void )
         return false;
     }
 
-    if ( SQLITE_OK  !=  sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg ) ) {
+    if ( SQLITE_OK  !=  sqlite3_exec( m_db_vscp_daemon, 
+                                        psql, NULL, NULL, &pErrMsg ) ) {
         fprintf( stderr,
                     "Failed to create VSCP simple UI item table with error %s.\n",
                     pErrMsg );
@@ -5928,7 +5970,6 @@ bool CControlObject::doCreateSimpleUiItemTable( void )
 // doCreateZoneTable
 //
 // Create the zone table
-//
 //
 
 bool CControlObject::doCreateZoneTable( void )
@@ -5945,12 +5986,33 @@ bool CControlObject::doCreateZoneTable( void )
         return false;
     }
 
-    if ( SQLITE_OK  !=  sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg ) ) {
+    if ( SQLITE_OK  !=  sqlite3_exec( m_db_vscp_daemon, 
+                                        psql, NULL, NULL, &pErrMsg ) ) {
         fprintf( stderr,
                     "Failed to create VSCP zone table with error %s.\n",
                     pErrMsg );
         return false;
     }
+    
+    // Fill with default info
+    for ( int i=0; i<256; i++ ) {
+        wxString sql = 
+             wxString::Format( _("INSERT INTO 'zone' (idx_zone, name) "
+                                 "VALUES( %d, 'zone%d' );"),
+                                 i, i );
+        if ( SQLITE_OK  !=  sqlite3_exec( m_db_vscp_daemon, 
+                                            (const char *)sql.mbc_str(), 
+                                            NULL, NULL, &pErrMsg ) ) {
+            fprintf( stderr,
+                    "Failed to add VSCP default zone table entry %d. Error %s\n",
+                    i, pErrMsg );
+        }
+        else {
+            fprintf( stderr, "." );
+        }
+    }
+    
+    fprintf( stderr, "\n" );
 
     return true;
 }
@@ -5982,6 +6044,26 @@ bool CControlObject::doCreateSubZoneTable( void )
                     pErrMsg );
         return false;
     }
+        
+    // Fill with default info
+    for ( int i=0; i<256; i++ ) {
+        wxString sql = 
+             wxString::Format( _("INSERT INTO 'subzone' (idx_subzone, name) "
+                                 "VALUES( %d, 'subzone%d' );"),
+                                 i, i );
+        if ( SQLITE_OK  !=  sqlite3_exec( m_db_vscp_daemon, 
+                                            (const char *)sql.mbc_str(), 
+                                            NULL, NULL, &pErrMsg ) ) {
+            fprintf( stderr,
+                    "Failed to add VSCP default subzone table entry %d. Error %s\n",
+                    i, pErrMsg );
+        }
+        else {
+            fprintf( stderr, "." );
+        }
+    }
+    
+    fprintf( stderr, "\n" );
 
     return true;
 }

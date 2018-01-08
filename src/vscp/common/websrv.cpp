@@ -1581,7 +1581,7 @@ static int vscp_dm_list( struct web_connection *conn, void *cbdata )
 
             web_printf( conn, "<br>");
 
-            if (!bLight) {
+            if ( !bLight ) {
 
                 // * Filter
 
@@ -3237,6 +3237,7 @@ static int vscp_dm_delete( struct web_connection *conn, void *cbdata  )
 
     return WEB_OK;
 }
+
 
 //-----------------------------------------------------------------------------
 //                                    Variables
@@ -5119,9 +5120,13 @@ vscp_discovery( struct web_connection *conn, void *cbdata  )
 }
 
 
+
+
 //-----------------------------------------------------------------------------
 //                                    Zones
 //-----------------------------------------------------------------------------
+
+
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -5131,15 +5136,17 @@ vscp_discovery( struct web_connection *conn, void *cbdata  )
 static int vscp_zone_list( struct web_connection *conn, void *cbdata  )
 {
     char buf[80];
-
     unsigned long upperLimit = 50;
+    char *pErrMsg;
+    sqlite3_stmt *ppStmt;
 
     // Check pointer
     if (NULL == conn) return 0;
 
-    // get variable names
-    wxArrayString nameArray;
-    gpobj->m_variables.getVarlistFromRegExp( nameArray );
+    // Get number of records
+    wxString table = wxString( _("zone") );
+    uint32_t cnt_zones = gpobj->getCountRecordsDB( gpobj->m_db_vscp_daemon,
+                                                    table );
 
     const struct web_request_info *reqinfo =
                 web_get_request_info( conn );
@@ -5157,7 +5164,7 @@ static int vscp_zone_list( struct web_connection *conn, void *cbdata  )
         }
     }
 
-
+    
     // Count
     unsigned long nCount = 50;
     if ( NULL != reqinfo->query_string ) {
@@ -5187,21 +5194,21 @@ static int vscp_zone_list( struct web_connection *conn, void *cbdata  )
             else if (NULL != strstr("next", buf)) {
                 nFrom += nCount;
 
-                if ( (unsigned long)nFrom > nameArray.Count()-1 ) {
-                    if ( nameArray.Count() % nCount ) {
-                        nFrom = nameArray.Count()/nCount;
+                if ( (unsigned long)nFrom > cnt_zones-1 ) {
+                    if ( cnt_zones % nCount ) {
+                        nFrom = cnt_zones/nCount;
                     }
                     else {
-                        nFrom = (nameArray.Count()/nCount) - 1;
+                        nFrom = (cnt_zones/nCount) - 1;
                     }
                 }
             }
             else if (NULL != strstr("last", buf)) {
-                 if ( nameArray.Count() % nCount ) {
-                    nFrom = (nameArray.Count()/nCount)*nCount;
+                 if ( cnt_zones % nCount ) {
+                    nFrom = (cnt_zones/nCount)*nCount;
                 }
                 else {
-                    nFrom = ((nameArray.Count()/nCount) - 1)*nCount;
+                    nFrom = ((cnt_zones/nCount) - 1)*nCount;
                 }
             }
             else if (NULL != strstr("first", buf)) {
@@ -5217,26 +5224,25 @@ static int vscp_zone_list( struct web_connection *conn, void *cbdata  )
 	          "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
 	          "close\r\n\r\n");
 
-
-    web_printf( conn, WEB_COMMON_HEAD, "VSCP - Variables" );
+    web_printf( conn, WEB_COMMON_HEAD, "VSCP - Zones" );
     web_printf( conn, WEB_STYLE_START );
-    web_write( conn, WEB_COMMON_CSS, strlen( WEB_COMMON_CSS ) );     // CSS style Code
+    web_write( conn, WEB_COMMON_CSS, strlen( WEB_COMMON_CSS ) );
     web_printf( conn, WEB_STYLE_END );
-    web_write( conn, WEB_COMMON_JS, strlen( WEB_COMMON_JS ) );      // Common Javascript code
+    web_write( conn, WEB_COMMON_JS, strlen( WEB_COMMON_JS ) ); 
     web_printf( conn, WEB_COMMON_HEAD_END_BODY_START );
 
     // Navigation menu
     web_printf( conn, WEB_COMMON_MENU );
-    web_printf( conn, WEB_VARLIST_BODY_START );
+    web_printf( conn, WEB_ZONELIST_BODY_START );
 
     {
-        wxString wxstrurl = _("/vscp/varlist");
+        wxString wxstrurl = _("/vscp/zone");
         web_printf( conn, WEB_COMMON_LIST_NAVIGATION,
                 (const char *)wxstrurl.mbc_str(),
                 (unsigned long)( nFrom + 1 ),
-                ( (unsigned long)(nFrom + nCount) < nameArray.Count() ) ?
-                    nFrom + nCount : nameArray.Count(),
-                (unsigned long)nameArray.Count(),
+                ( (unsigned long)(nFrom + nCount) < cnt_zones ) ?
+                    nFrom + nCount : cnt_zones,
+                (unsigned long)cnt_zones,
                 (unsigned long)nCount,
                 (unsigned long)nFrom,
                 "false" );
@@ -5244,289 +5250,944 @@ static int vscp_zone_list( struct web_connection *conn, void *cbdata  )
     }
 
     wxString strBuf;
+    
+    web_printf( conn, "<tr><th id=\"tdcenter\">Id</th><th>Name</th>"
+                      "<th>Description</th></tr>" );
 
-    // Display Variables List
-
-    if ( 0 == nameArray.Count() ) {
-        web_printf( conn, "<br>Variables list is empty!<br>");
-    }
-    else {
-        web_printf( conn, WEB_VARLIST_TR_HEAD);
-    }
+    // Display Zone List
 
     if ( nFrom < 0 ) nFrom = 0;
+    
+    wxString sql = wxString::Format( VSCPDB_ZONE_SELECT_PAGE, (int)nFrom, (int)nCount );
+    
+    if ( SQLITE_OK != sqlite3_prepare_v2( gpobj->m_db_vscp_daemon,
+                                            (const char *)sql.mbc_str(),
+                                            -1,
+                                            &ppStmt,
+                                            NULL ) ) {
+        web_printf( conn, "<br>Failed to query database!<br>");
+        return false;
+    }
+    
+    int i;
+    while ( SQLITE_ROW == sqlite3_step( ppStmt ) ) {
 
-    for ( unsigned int i=0; i<nCount; i++ ) {
-
-        // Check if we are done
-        if ( ( nFrom + i ) >= nameArray.Count() ) break;
-
-        CVSCPVariable variable;
-        if ( 0 == gpobj->m_variables.find( nameArray[ nFrom + i ],
-                                                    variable ) ) {
-            web_printf( conn,
-                        "Internal error: Non existent variable entry. "
-                        "name = %s idx= %ld<br>",
-                        (const char *)variable.getName().mbc_str(),
-                        (long)(nFrom + i) );
-            continue;
+        // id
+        const char *p;
+        long id = 0;
+        if ( NULL != 
+                 ( p = (const char *)sqlite3_column_text( ppStmt, 
+                                                    VSCPDB_ORDINAL_ZONE_ID ) ) ) {
+            id = atol( p );
         }
 
-        if (  1 || !variable.isStockVariable() ) {
+        wxString url_edit =
+                    wxString::Format( _("/vscp/zoneedit?id=%ld&from=%ld"),
+                                        id,
+                                        (long)nFrom );
+        wxString str = wxString::Format(_(WEB_COMMON_TR_CLICKABLE_ROW),
+                                                (const char *)url_edit.mbc_str() );
+        web_printf( conn, "%s", (const char *)str.mbc_str() );
 
-            wxString url_dmedit =
-                    wxString::Format( _("/vscp/varedit?id=%ld&from=%ld&count=%ld"),
-                                        (long)(nFrom+i),
-                                        (long)nFrom,
-                                        (long)nCount );
-            wxString str = wxString::Format(_(WEB_COMMON_TR_CLICKABLE_ROW),
-                                                (const char *)url_dmedit.mbc_str() );
-            web_printf( conn, "%s", (const char *)str.mbc_str() );
-
-        }
-
-        // variable id
+        // id
         web_printf( conn, WEB_IFLIST_TD_CENTERED );
-        web_printf( conn, "<div style=\"font-weight: bold;\">%ld</div>", nFrom + i + 1 );
+        web_printf( conn, "<div style=\"font-weight: bold;\">%ld</div>", id );
         web_printf( conn, "</td>" );
 
-        // Type
-        web_printf(conn, WEB_IFLIST_TD_CENTERED);
-        switch (variable.getType()) {
-
-            case VSCP_DAEMON_VARIABLE_CODE_UNASSIGNED:
-                web_printf(conn, "<div id=\"small\" style=\"font-weight: bold;\">Unassigned</div>");
-                break;
-
-            case VSCP_DAEMON_VARIABLE_CODE_STRING:
-                web_printf(conn, "<div id=\"small\" style=\"font-weight: bold;\">String</div>");
-                break;
-
-            case VSCP_DAEMON_VARIABLE_CODE_BOOLEAN:
-                web_printf(conn, "<div id=\"small\" style=\"font-weight: bold;\">Boolean</div>");
-                break;
-
-            case VSCP_DAEMON_VARIABLE_CODE_INTEGER:
-                web_printf(conn, "<div id=\"small\" style=\"font-weight: bold;\">Integer</div>");
-                break;
-
-            case VSCP_DAEMON_VARIABLE_CODE_LONG:
-                web_printf(conn, "<div id=\"small\" style=\"font-weight: bold;\">Long</div>");
-                break;
-
-            case VSCP_DAEMON_VARIABLE_CODE_DOUBLE:
-                web_printf(conn, "<div id=\"small\" style=\"font-weight: bold;\">Double</div>");
-                break;
-
-            case VSCP_DAEMON_VARIABLE_CODE_VSCP_MEASUREMENT:
-                web_printf(conn, "<div id=\"small\" style=\"font-weight: bold;\">Measurement</div>");
-                break;
-
-            case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT:
-                web_printf(conn, "<div id=\"small\" style=\"font-weight: bold;\">Event</div>");
-                break;
-
-            case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_GUID:
-                web_printf(conn, "<div id=\"small\" style=\"font-weight: bold;\">GUID</div>");
-                break;
-
-            case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_DATA:
-                web_printf(conn, "<div id=\"small\" style=\"font-weight: bold;\">Event data</div>");
-                break;
-
-            case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_CLASS:
-                web_printf(conn, "<div id=\"small\" style=\"font-weight: bold;\">Event class</div>");
-                break;
-
-            case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TYPE:
-                web_printf(conn, "<div id=\"small\" style=\"font-weight: bold;\">Event type</div>");
-                break;
-
-            case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TIMESTAMP:
-                web_printf(conn, "<div id=\"small\" style=\"font-weight: bold;\">Event timestamp</div>");
-                break;
-
-            case VSCP_DAEMON_VARIABLE_CODE_DATETIME:
-                web_printf(conn, "<div id=\"small\" style=\"font-weight: bold;\">Date and time</div>");
-                break;
-
-            case VSCP_DAEMON_VARIABLE_CODE_DATE:
-                web_printf(conn, "<div id=\"small\" style=\"font-weight: bold;\">Date</div>");
-                break;
-
-            case VSCP_DAEMON_VARIABLE_CODE_TIME:
-                web_printf(conn, "<div id=\"small\" style=\"font-weight: bold;\">Time</div>");
-                break;
-
-            case VSCP_DAEMON_VARIABLE_CODE_BLOB:
-                web_printf(conn, "<div id=\"small\" style=\"font-weight: bold;\">Blob</div>");
-                break;
-
-            case VSCP_DAEMON_VARIABLE_CODE_MIME:
-                web_printf(conn, "<div id=\"small\" style=\"font-weight: bold;\">Mime type</div>");
-                break;
-
-            case VSCP_DAEMON_VARIABLE_CODE_HTML:
-                web_printf(conn, "<div id=\"small\" style=\"font-weight: bold;\">HTML</div>");
-                break;
-
-            case VSCP_DAEMON_VARIABLE_CODE_JAVASCRIPT:
-                web_printf(conn, "<div id=\"small\" style=\"font-weight: bold;\">JavaScript</div>");
-                break;
-
-            case VSCP_DAEMON_VARIABLE_CODE_JSON:
-                web_printf(conn, "<div id=\"small\" style=\"font-weight: bold;\">JSON</div>");
-                break;
-
-            case VSCP_DAEMON_VARIABLE_CODE_XML:
-                web_printf(conn, "<div id=\"small\" style=\"font-weight: bold;\">XML</div>");
-                break;
-
-            case VSCP_DAEMON_VARIABLE_CODE_SQL:
-                web_printf(conn, "<div id=\"small\" style=\"font-weight: bold;\">SQL</div>");
-                break;
-
-            case VSCP_DAEMON_VARIABLE_CODE_LUA:
-                web_printf(conn, "<div id=\"small\" style=\"font-weight: bold;\">Lua</div>");
-                break;
-
-            case VSCP_DAEMON_VARIABLE_CODE_LUA_RESULT:
-                web_printf(conn, "<div id=\"small\" style=\"font-weight: bold;\">Lua result</div>");
-                break;
-
-            case VSCP_DAEMON_VARIABLE_CODE_UX_TYPE1:
-                web_printf(conn, "<div id=\"small\" style=\"font-weight: bold;\">UX type 1</div>");
-                break;
-
-            case VSCP_DAEMON_VARIABLE_CODE_DM_ROW:
-                web_printf(conn, "<div id=\"small\" style=\"font-weight: bold;\">DM row</div>");
-                break;
-
-            case VSCP_DAEMON_VARIABLE_CODE_DRIVER:
-                web_printf(conn, "<div id=\"small\" style=\"font-weight: bold;\">Driver</div>");
-                break;
-
-            case VSCP_DAEMON_VARIABLE_CODE_USER:
-                web_printf(conn, "<div id=\"small\" style=\"font-weight: bold;\">User</div>");
-                break;
-
-            case VSCP_DAEMON_VARIABLE_CODE_FILTER:
-                web_printf(conn, "<div id=\"small\" style=\"font-weight: bold;\">Filter</div>");
-                break;
-
-            default:
-                web_printf(conn, "<div id=\"small\" style=\"font-weight: bold;\">Unknown type</div>");
-                break;
-
+        // Name
+        if ( NULL != 
+                 ( p = (const char *)sqlite3_column_text( ppStmt, 
+                                        VSCPDB_ORDINAL_ZONE_NAME ) ) ) {
+            
         }
-
+        web_printf(conn, "<td>" );
+        web_printf(conn, "%s", p );
         web_printf(conn, "</td>");
 
-        // Variable entry
-        web_printf(conn, "<td>");
-
-        web_printf(conn, "<div id=\"small\">");
-
-        web_printf(conn, "<h4>");
-        web_printf(conn, "%s", (const char *)variable.getName().MakeLower().mbc_str() );
-        web_printf(conn, "</h4>");
-
-        wxString strValue;
-        variable.writeValueToString( strValue, true );
-        if ( strValue.Length() > 80 ) {
-            strValue = strValue.Left(80) + _("...");
+        // Description
+        if ( NULL != 
+                 ( p = (const char *)sqlite3_column_text( ppStmt, 
+                                        VSCPDB_ORDINAL_ZONE_DESCRIPTION ) ) ) {
+            
         }
-        web_printf( conn, "<b>Value:</b> ");
-        web_printf( conn, "%s", (const char *)strValue.mbc_str() );
-
-        web_printf( conn, "<br>");
-        web_printf( conn, "<b>Note:</b> ");
-        wxString strNote;
-        variable.getNote(strNote, true);
-        if ( strNote.Length() > 80 ) {
-            strNote = strNote.Left( 80 ) + _("...");
-        }
-        web_printf( conn, "%s", (const char *)strNote.mbc_str());
-
-        web_printf(conn, "<br>");
-        web_printf(conn, "<b>Persistent: </b> ");
-        if (variable.isPersistent()) {
-            web_printf(conn, "yes");
-        }
-        else {
-            web_printf(conn, "no");
-        }
-
-        // User
-        web_printf(conn, "<br>");
-        web_printf(conn, "<b>Owner: </b> ");
-        web_printf(conn, "id=%X = ", variable.getOwnerID() );
-        CUserItem *pUser = gpobj->m_userList.getUserItemFromOrdinal( variable.getOwnerID() );
-        if ( NULL == pUser ) {
-            web_printf(conn, " Unknow user " );
-        }
-        web_printf(conn,
-                    "%s (%s)",
-                    (const char *)pUser->getUserName().mbc_str(),
-                    (const char *)pUser->getFullname().mbc_str() );
-
-        // Access rights
-        web_printf(conn, "<br>");
-        web_printf(conn, "<b>Access rights: </b> ");
-        web_printf(conn, "%X ", variable.getAccessRights() );
-
-        // Last change
-        web_printf(conn, "<br>");
-        web_printf(conn, "<b>Last changed: </b> ");
-        web_printf(conn, "%s ",
-                (const char *)variable.getLastChange().FormatISOCombined().mbc_str() );
-
-        web_printf(conn, "</div>");
-
-
-        web_printf( conn, "</td>");
-
-        // Delete button
-        web_printf( conn, WEB_IFLIST_TD_CENTERED );
-        if ( variable.isStockVariable() ) {
-            web_printf( conn, "---" );
-        }
-        else {
-            web_printf( conn,
-                            "<form name=\"input\" action=\"/vscp/vardelete?id=%ld\" "
-                            "method=\"get\"><input type=\"submit\" value=\"x\" >"
-                            "<input type=\"hidden\" name=\"id\"value=\"%ld\" >"
-                            "<input type=\"hidden\" name=\"var_name\"value=\"%s\" >"
-                            "</form>",
-                            (long)( nFrom + i ),
-                            (long)( nFrom + i ),
-                            (const char *)variable.getName().mbc_str() );
-        }
-        web_printf( conn, "</td>" );
-
-
+        web_printf(conn, "<td>" );
+        web_printf(conn, "%s", p );
+        web_printf(conn, "</td>");
+        
         web_printf( conn, "</tr>");
 
-    } // for
+    } // records
 
-    web_printf( conn, WEB_DMLIST_TABLE_END);
+    web_printf( conn, WEB_COMMON_TABLE_END );
+    
+    sqlite3_finalize( ppStmt );
 
-    {
-        wxString wxstrurl = _("/vscp/varlist");
-        web_printf( conn,
+    wxString wxstrurl = _("/vscp/zone");
+    web_printf( conn,
                     WEB_COMMON_LIST_NAVIGATION,
                     (const char *)wxstrurl.mbc_str(),
                     (unsigned long)(nFrom+1),
-                    ( (unsigned long)(nFrom + nCount) < nameArray.Count() ) ?
-                        nFrom + nCount : nameArray.Count(),
-                    (unsigned long)nameArray.Count(),
+                    ( (unsigned long)(nFrom + nCount) < cnt_zones ) ?
+                                                    nFrom + nCount : cnt_zones,
+                    (unsigned long)cnt_zones,
                     (unsigned long)nCount,
                     (unsigned long)nFrom,
                     "false" );
+
+    web_printf( conn, WEB_COMMON_END, VSCPD_COPYRIGHT_HTML);
+
+    return WEB_OK;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// vscp_zone_edit
+//
+
+static int vscp_zone_edit( struct web_connection *conn, void *cbdata  )
+{
+    char buf[80];
+    wxString str;
+
+    // Check pointer
+    if (NULL == conn) return 0;
+
+    const struct web_request_info *reqinfo =
+                web_get_request_info( conn );
+    if ( NULL == reqinfo ) return 0;
+
+    // id
+    long id = -1;
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,
+                            strlen( reqinfo->query_string ),
+                            "id",
+                            buf,
+                            sizeof( buf ) ) > 0 ) {
+            id = atoi( buf );
+        }
     }
 
-    web_printf( conn, WEB_COMMON_END, VSCPD_COPYRIGHT_HTML);     // Common end code
+    // From
+    long nFrom = 0;
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,
+                            strlen( reqinfo->query_string ),
+                            "from",
+                            buf,
+                            sizeof( buf ) ) > 0 ) {
+            nFrom = atoi( buf );
+        }
+    }
 
+
+    // Count
+    uint16_t nCount = 50;
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,
+                            strlen( reqinfo->query_string ),
+                            "count",
+                            buf,
+                            sizeof( buf ) ) > 0 ) {
+            nCount = atoi( buf );
+        }
+    }
+
+    web_printf( conn,
+	          "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
+	          "close\r\n\r\n" );
+
+    web_printf( conn, WEB_COMMON_HEAD, "VSCP - Zone Edit" );
+    web_printf( conn, WEB_STYLE_START );
+    web_write( conn, WEB_COMMON_CSS, strlen( WEB_COMMON_CSS ) );     
+    web_printf( conn, WEB_STYLE_END );
+    web_write( conn, WEB_COMMON_JS, strlen( WEB_COMMON_JS ) );      
+    web_printf( conn, WEB_COMMON_HEAD_END_BODY_START ) ;
+
+    // Navigation menu
+    web_printf( conn, WEB_COMMON_MENU );
+
+    web_printf( conn, WEB_ZONEEDIT_BODY_START );
+
+    web_printf( conn, "<br><form name=\"zoneedit\" id=\"ze1\" method=\"get\" " );
+    web_printf(conn, " action=\"/vscp/zonepost\" >");
+
+    // Hidden from
+    web_printf( conn,
+                    "<input name=\"from\" value=\"%ld\" type=\"hidden\">",
+                    nFrom );
+
+    // Hidden count
+    web_printf( conn,
+                    "<input name=\"count\" value=\"%d\" type=\"hidden\">",
+                    nCount );
+
+    // Hidden id
+    web_printf( conn,
+                    "<input name=\"id\" value=\"%ld\" type=\"hidden\">",
+                    id );
+
+    web_printf( conn, "<h3>Zone: %ld</h3> <span id=\"optiontext\"></span><br>",
+                        id );
+    
+    // Check if database is open
+    if ( NULL == gpobj->m_db_vscp_daemon ) {
+        web_printf( conn, "<h4>Failure. database is not open!</h4>" );
+        return WEB_OK;
+    }
+    
+    char *pErrMsg = 0;
+    wxString sql = _(VSCPDB_ZONE_SELECT_ID);
+    sqlite3_stmt *ppStmt;
+    
+    sql = wxString::Format( sql, id );
+    
+    if ( SQLITE_OK != sqlite3_prepare( gpobj->m_db_vscp_daemon,
+                                        (const char *)sql.mbc_str(),
+                                        -1,
+                                        &ppStmt,
+                                        NULL ) ) {
+        web_printf( conn, "<h4>Failure. Failed to get database record!</h4>" );
+        return WEB_OK;
+    }
+    
+    while ( SQLITE_ROW  != sqlite3_step( ppStmt ) ) {
+        web_printf( conn, "<h4>Failure. No database record found!</h4>" );
+        return WEB_OK;
+    }
+    
+    const unsigned char *p;
+    wxString name;
+    p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_ZONE_NAME );
+    if ( NULL != p ) {
+        name = wxString::FromUTF8Unchecked( (const char *)p );
+    }
+    
+    wxString description;
+    p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_ZONE_DESCRIPTION );
+    if ( NULL != p ) {
+        description = wxString::FromUTF8Unchecked( (const char *)p );
+    }
+
+    web_printf( conn, "<table class=\"invisable\"><tbody><tr class=\"invisable\">");
+
+    // Name
+    web_printf( conn, "<td class=\"invisable\"  style=\"font-weight: "
+                      "bold;\">Name:</td><td class=\"invisable\">");
+    web_printf( conn,
+                    "<input name=\"zone_name\" value=\"%s\" type=\"text\">",
+                    (const char *)name.mbc_str() );
+
+    web_printf(conn, "</td></tr>");
+  
+    // Description
+    web_printf( conn, "</tr><tr><td style=\"font-weight: "
+                      "bold;\">Description: </td><td>");
+    web_printf( conn, "<textarea cols=\"50\" rows=\"5\" "
+                      "name=\"zone_description\">");
+
+    web_printf(conn, "%s", (const char *)description.mbc_str() );
+
+    web_printf(conn, "</textarea>" );
+
+    web_printf(conn, "</td></tr>" );
+    web_printf(conn, WEB_COMMON_TABLE_END );
+
+    web_printf( conn,
+                    WEB_VAREDIT_SUBMIT,
+                    "/vscp/zonepost" );
+
+    web_printf( conn, "</form>" );
+    web_printf( conn, WEB_COMMON_END, VSCPD_COPYRIGHT_HTML ); 
+
+    return WEB_OK;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// vscp_zone_post
+//
+
+static int vscp_zone_post( struct web_connection *conn, void *cbdata )
+{
+    char buf[32000];
+    wxString msg;
+
+    // Check pointer
+    if ( NULL == conn ) return 0;
+
+    const struct web_request_info *reqinfo = web_get_request_info( conn );
+    if ( NULL == reqinfo ) return 0;
+
+    // submit
+    bool bCancel = false;
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,
+                            strlen( reqinfo->query_string ),
+                            "btncancel",
+                            buf,
+                            sizeof( buf ) ) > 0 ) {
+            if ( NULL != strstr( "true", buf ) ) bCancel = true;
+        }
+    }
+
+    // id
+    long id = -1;
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,
+                            strlen( reqinfo->query_string ),
+                            "id",
+                            buf,
+                            sizeof( buf ) ) > 0 ) {
+            id = atol( buf );
+        }
+    }
+
+    // Name
+    wxString name;
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,
+                            strlen( reqinfo->query_string ),
+                            "zone_name",
+                            buf,
+                            sizeof( buf ) ) > 0 ) {
+            name = wxString::FromUTF8( buf );
+        }
+    }
+
+    // From
+    long nFrom = 0;
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,
+                            strlen( reqinfo->query_string ),
+                            "from",
+                            buf,
+                            sizeof( buf ) ) > 0 ) {
+            nFrom = atoi( buf );
+        }
+    }
+
+    // Count
+    uint16_t nCount = 50;
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,
+                            strlen( reqinfo->query_string ),
+                            "count",
+                            buf,
+                            sizeof( buf ) ) > 0 ) {
+            nCount = atoi( buf );
+        }
+    }
+
+    // Description
+    wxString description;
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,
+                            strlen( reqinfo->query_string ),
+                            "zone_description",
+                            buf,
+                            sizeof( buf ) ) > 0 ) {
+            description = wxString::FromUTF8( buf );
+        }
+    }
+
+    web_printf(conn,
+	          "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
+	          "close\r\n\r\n");
+
+    web_printf( conn,
+                    WEB_COMMON_HEAD,
+                    "VSCP - Zone Post" );
+    web_printf( conn, WEB_STYLE_START );
+    web_write( conn, WEB_COMMON_CSS, strlen( WEB_COMMON_CSS ) );
+    web_printf( conn, WEB_STYLE_END );
+    web_write( conn, WEB_COMMON_JS, strlen( WEB_COMMON_JS ) );
+    web_printf( conn, "<meta http-equiv=\"refresh\" content=\"1;url=/vscp/zone");
+    web_printf( conn, "?from=%ld&count=%ld",
+                        (long)nFrom,
+                        (long)nCount );
+    web_printf( conn, "\">");
+    web_printf( conn, WEB_COMMON_HEAD_END_BODY_START );
+
+    // Navigation menu
+    web_printf( conn, WEB_COMMON_MENU );
+    web_printf( conn, WEB_VARPOST_BODY_START );
+
+    
+    
+    bool bOK = true;
+    if ( bCancel ) {
+        web_printf( conn, "<h1>Canceled!</h1>" );
+    }
+    else {
+
+        web_printf( conn, "<h1>Saving!</h1>" );
+
+        char *pErrMsg = 0;
+        wxString sql = VSCPDB_ZONE_UPDATE;
+   
+        sql = wxString::Format( sql, 
+                             (const char *)name.mbc_str(), 
+                             (const char *)description.mbc_str(), 
+                             id );
+    
+        if ( SQLITE_OK  !=  sqlite3_exec( gpobj->m_db_vscp_daemon, 
+                                        (const char *)sql.mbc_str(), 
+                                        NULL, NULL, &pErrMsg ) ) {
+            bOK = false;
+            web_printf( conn,
+                         "<font color=\"red\">Failed to update record! "
+                         "Error=%s</font>",
+                         pErrMsg );
+        }
+
+    }
+
+    if ( !bCancel && bOK ) {
+        web_printf( conn,
+                        "<font color=\"blue\">Record has been saved. "
+                        "id = %ld name = '%s'</font>",
+                        id,
+                        (const char *)name.mbc_str() );
+    }
+
+    web_printf( conn, WEB_COMMON_END, VSCPD_COPYRIGHT_HTML ); 
+
+    return WEB_OK;
+}
+
+
+
+
+
+//-----------------------------------------------------------------------------
+//                                    Subzones
+//-----------------------------------------------------------------------------
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+// vscp_subzone_list
+//
+
+static int vscp_subzone_list( struct web_connection *conn, void *cbdata  )
+{
+    char buf[80];
+    unsigned long upperLimit = 50;
+    char *pErrMsg;
+    sqlite3_stmt *ppStmt;
+
+    // Check pointer
+    if (NULL == conn) return 0;
+
+    // Get number of records
+    wxString table = wxString( _("subzone") );
+    uint32_t cnt_subzones = gpobj->getCountRecordsDB( gpobj->m_db_vscp_daemon,
+                                                        table );
+
+    const struct web_request_info *reqinfo =
+                web_get_request_info( conn );
+    if ( NULL == reqinfo ) return 0;
+
+    // From
+    long nFrom = 0;
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,
+                            strlen( reqinfo->query_string ),
+                            "from",
+                            buf,
+                            sizeof( buf ) ) > 0 ) {
+            nFrom = atoi( buf );
+        }
+    }
+
+    
+    // Count
+    unsigned long nCount = 50;
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,
+                            strlen( reqinfo->query_string ),
+                            "count",
+                            buf,
+                            sizeof( buf ) ) > 0 ) {
+            nCount = atoi( buf );
+        }
+    }
+
+
+    // Navigation button
+    if (NULL != reqinfo->query_string) {
+
+        if (web_get_var(reqinfo->query_string,
+                strlen(reqinfo->query_string),
+                "navbtn",
+                buf,
+                sizeof ( buf)) > 0) {
+
+            if (NULL != strstr("previous", buf)) {
+                nFrom -= nCount;
+                if (nFrom < 0) nFrom = 0;
+            }
+            else if (NULL != strstr("next", buf)) {
+                nFrom += nCount;
+
+                if ( (unsigned long)nFrom > cnt_subzones-1 ) {
+                    if ( cnt_subzones % nCount ) {
+                        nFrom = cnt_subzones/nCount;
+                    }
+                    else {
+                        nFrom = (cnt_subzones/nCount) - 1;
+                    }
+                }
+            }
+            else if (NULL != strstr("last", buf)) {
+                 if ( cnt_subzones % nCount ) {
+                    nFrom = (cnt_subzones/nCount)*nCount;
+                }
+                else {
+                    nFrom = ((cnt_subzones/nCount) - 1)*nCount;
+                }
+            }
+            else if (NULL != strstr("first", buf)) {
+                nFrom = 0;
+            }
+        }
+        else { // No vaid navigation value
+            nFrom = 0;
+        }
+    }
+
+    web_printf(conn,
+	          "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
+	          "close\r\n\r\n");
+
+    web_printf( conn, WEB_COMMON_HEAD, "VSCP - Subzones" );
+    web_printf( conn, WEB_STYLE_START );
+    web_write( conn, WEB_COMMON_CSS, strlen( WEB_COMMON_CSS ) );
+    web_printf( conn, WEB_STYLE_END );
+    web_write( conn, WEB_COMMON_JS, strlen( WEB_COMMON_JS ) ); 
+    web_printf( conn, WEB_COMMON_HEAD_END_BODY_START );
+
+    // Navigation menu
+    web_printf( conn, WEB_COMMON_MENU );
+    web_printf( conn, WEB_ZONELIST_BODY_START );
+
+    {
+        wxString wxstrurl = _("/vscp/subzone");
+        web_printf( conn, WEB_COMMON_LIST_NAVIGATION,
+                (const char *)wxstrurl.mbc_str(),
+                (unsigned long)( nFrom + 1 ),
+                ( (unsigned long)(nFrom + nCount) < cnt_subzones ) ?
+                    nFrom + nCount : cnt_subzones,
+                (unsigned long)cnt_subzones,
+                (unsigned long)nCount,
+                (unsigned long)nFrom,
+                "false" );
+        web_printf( conn, "<br>");
+    }
+
+    wxString strBuf;
+    
+    web_printf( conn, "<tr><th id=\"tdcenter\">Id</th><th>Name</th>"
+                      "<th>Description</th></tr>" );
+
+    // Display Subzone List
+
+    if ( nFrom < 0 ) nFrom = 0;
+    
+    wxString sql = wxString::Format( VSCPDB_SUBZONE_SELECT_PAGE, (int)nFrom, (int)nCount );
+    
+    if ( SQLITE_OK != sqlite3_prepare_v2( gpobj->m_db_vscp_daemon,
+                                            (const char *)sql.mbc_str(),
+                                            -1,
+                                            &ppStmt,
+                                            NULL ) ) {
+        web_printf( conn, "<br>Failed to query database!<br>");
+        return false;
+    }
+    
+    int i;
+    while ( SQLITE_ROW == sqlite3_step( ppStmt ) ) {
+
+        // id
+        const char *p;
+        long id = 0;
+        if ( NULL != 
+                 ( p = (const char *)sqlite3_column_text( ppStmt, 
+                                                    VSCPDB_ORDINAL_SUBZONE_ID ) ) ) {
+            id = atol( p );
+        }
+
+        wxString url_edit =
+                    wxString::Format( _("/vscp/subzoneedit?id=%ld&from=%ld"),
+                                        id,
+                                        (long)nFrom );
+        wxString str = wxString::Format(_(WEB_COMMON_TR_CLICKABLE_ROW),
+                                                (const char *)url_edit.mbc_str() );
+        web_printf( conn, "%s", (const char *)str.mbc_str() );
+
+        // id
+        web_printf( conn, WEB_IFLIST_TD_CENTERED );
+        web_printf( conn, "<div style=\"font-weight: bold;\">%ld</div>", id );
+        web_printf( conn, "</td>" );
+
+        // Name
+        if ( NULL != 
+                 ( p = (const char *)sqlite3_column_text( ppStmt, 
+                                        VSCPDB_ORDINAL_SUBZONE_NAME ) ) ) {
+            
+        }
+        web_printf(conn, "<td>" );
+        web_printf(conn, "%s", p );
+        web_printf(conn, "</td>");
+
+        // Description
+        if ( NULL != 
+                 ( p = (const char *)sqlite3_column_text( ppStmt, 
+                                        VSCPDB_ORDINAL_SUBZONE_DESCRIPTION ) ) ) {
+            
+        }
+        web_printf(conn, "<td>" );
+        web_printf(conn, "%s", p );
+        web_printf(conn, "</td>");
+        
+        web_printf( conn, "</tr>");
+
+    } // records
+
+    web_printf( conn, WEB_COMMON_TABLE_END );
+    
+    sqlite3_finalize( ppStmt );
+
+    wxString wxstrurl = _("/vscp/subzone");
+    web_printf( conn,
+                    WEB_COMMON_LIST_NAVIGATION,
+                    (const char *)wxstrurl.mbc_str(),
+                    (unsigned long)(nFrom+1),
+                    ( (unsigned long)(nFrom + nCount) < cnt_subzones ) ?
+                                                    nFrom + nCount : cnt_subzones,
+                    (unsigned long)cnt_subzones,
+                    (unsigned long)nCount,
+                    (unsigned long)nFrom,
+                    "false" );
+
+    web_printf( conn, WEB_COMMON_END, VSCPD_COPYRIGHT_HTML);
+
+    return WEB_OK;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// vscp_subzone_edit
+//
+
+static int vscp_subzone_edit( struct web_connection *conn, void *cbdata  )
+{
+    char buf[80];
+    wxString str;
+
+    // Check pointer
+    if (NULL == conn) return 0;
+
+    const struct web_request_info *reqinfo =
+                web_get_request_info( conn );
+    if ( NULL == reqinfo ) return 0;
+
+    // id
+    long id = -1;
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,
+                            strlen( reqinfo->query_string ),
+                            "id",
+                            buf,
+                            sizeof( buf ) ) > 0 ) {
+            id = atoi( buf );
+        }
+    }
+
+    // From
+    long nFrom = 0;
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,
+                            strlen( reqinfo->query_string ),
+                            "from",
+                            buf,
+                            sizeof( buf ) ) > 0 ) {
+            nFrom = atoi( buf );
+        }
+    }
+
+
+    // Count
+    uint16_t nCount = 50;
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,
+                            strlen( reqinfo->query_string ),
+                            "count",
+                            buf,
+                            sizeof( buf ) ) > 0 ) {
+            nCount = atoi( buf );
+        }
+    }
+
+    web_printf( conn,
+	          "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
+	          "close\r\n\r\n" );
+
+    web_printf( conn, WEB_COMMON_HEAD, "VSCP - Subzone Edit" );
+    web_printf( conn, WEB_STYLE_START );
+    web_write( conn, WEB_COMMON_CSS, strlen( WEB_COMMON_CSS ) );     
+    web_printf( conn, WEB_STYLE_END );
+    web_write( conn, WEB_COMMON_JS, strlen( WEB_COMMON_JS ) );      
+    web_printf( conn, WEB_COMMON_HEAD_END_BODY_START ) ;
+
+    // Navigation menu
+    web_printf( conn, WEB_COMMON_MENU );
+
+    web_printf( conn, WEB_SUBZONEEDIT_BODY_START );
+
+    web_printf( conn, "<br><form name=\"subzoneedit\" id=\"ze1\" method=\"get\" " );
+    web_printf(conn, " action=\"/vscp/subzonepost\" >");
+
+    // Hidden from
+    web_printf( conn,
+                    "<input name=\"from\" value=\"%ld\" type=\"hidden\">",
+                    nFrom );
+
+    // Hidden count
+    web_printf( conn,
+                    "<input name=\"count\" value=\"%d\" type=\"hidden\">",
+                    nCount );
+
+    // Hidden id
+    web_printf( conn,
+                    "<input name=\"id\" value=\"%ld\" type=\"hidden\">",
+                    id );
+
+    web_printf( conn, "<h3>Subzone: %ld</h3> <span id=\"optiontext\"></span><br>",
+                        id );
+    
+    // Check if database is open
+    if ( NULL == gpobj->m_db_vscp_daemon ) {
+        web_printf( conn, "<h4>Failure. database is not open!</h4>" );
+        return WEB_OK;
+    }
+    
+    char *pErrMsg = 0;
+    wxString sql = _(VSCPDB_SUBZONE_SELECT_ID);
+    sqlite3_stmt *ppStmt;
+    
+    sql = wxString::Format( sql, id );
+    
+    if ( SQLITE_OK != sqlite3_prepare( gpobj->m_db_vscp_daemon,
+                                        (const char *)sql.mbc_str(),
+                                        -1,
+                                        &ppStmt,
+                                        NULL ) ) {
+        web_printf( conn, "<h4>Failure. Failed to get database record!</h4>" );
+        return WEB_OK;
+    }
+    
+    while ( SQLITE_ROW  != sqlite3_step( ppStmt ) ) {
+        web_printf( conn, "<h4>Failure. No database record found!</h4>" );
+        return WEB_OK;
+    }
+    
+    const unsigned char *p;
+    wxString name;
+    p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_SUBZONE_NAME );
+    if ( NULL != p ) {
+        name = wxString::FromUTF8Unchecked( (const char *)p );
+    }
+    
+    wxString description;
+    p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_SUBZONE_DESCRIPTION );
+    if ( NULL != p ) {
+        description = wxString::FromUTF8Unchecked( (const char *)p );
+    }
+
+    web_printf( conn, "<table class=\"invisable\"><tbody><tr class=\"invisable\">");
+
+    // Name
+    web_printf( conn, "<td class=\"invisable\"  style=\"font-weight: "
+                      "bold;\">Name:</td><td class=\"invisable\">");
+    web_printf( conn,
+                    "<input name=\"subzone_name\" value=\"%s\" type=\"text\">",
+                    (const char *)name.mbc_str() );
+
+    web_printf(conn, "</td></tr>");
+  
+    // Description
+    web_printf( conn, "</tr><tr><td style=\"font-weight: "
+                      "bold;\">Description: </td><td>");
+    web_printf( conn, "<textarea cols=\"50\" rows=\"5\" "
+                      "name=\"subzone_description\">");
+
+    web_printf(conn, "%s", (const char *)description.mbc_str() );
+
+    web_printf(conn, "</textarea>" );
+
+    web_printf(conn, "</td></tr>" );
+    web_printf(conn, WEB_COMMON_TABLE_END );
+
+    web_printf( conn,
+                    WEB_VAREDIT_SUBMIT,
+                    "/vscp/subzonepost" );
+
+    web_printf( conn, "</form>" );
+    web_printf( conn, WEB_COMMON_END, VSCPD_COPYRIGHT_HTML ); 
+
+    return WEB_OK;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// vscp_subzone_post
+//
+
+static int vscp_subzone_post( struct web_connection *conn, void *cbdata )
+{
+    char buf[32000];
+    wxString msg;
+
+    // Check pointer
+    if ( NULL == conn ) return 0;
+
+    const struct web_request_info *reqinfo = web_get_request_info( conn );
+    if ( NULL == reqinfo ) return 0;
+
+    // submit
+    bool bCancel = false;
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,
+                            strlen( reqinfo->query_string ),
+                            "btncancel",
+                            buf,
+                            sizeof( buf ) ) > 0 ) {
+            if ( NULL != strstr( "true", buf ) ) bCancel = true;
+        }
+    }
+
+    // id
+    long id = -1;
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,
+                            strlen( reqinfo->query_string ),
+                            "id",
+                            buf,
+                            sizeof( buf ) ) > 0 ) {
+            id = atol( buf );
+        }
+    }
+
+    // Name
+    wxString name;
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,
+                            strlen( reqinfo->query_string ),
+                            "subzone_name",
+                            buf,
+                            sizeof( buf ) ) > 0 ) {
+            name = wxString::FromUTF8( buf );
+        }
+    }
+
+    // From
+    long nFrom = 0;
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,
+                            strlen( reqinfo->query_string ),
+                            "from",
+                            buf,
+                            sizeof( buf ) ) > 0 ) {
+            nFrom = atoi( buf );
+        }
+    }
+
+    // Count
+    uint16_t nCount = 50;
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,
+                            strlen( reqinfo->query_string ),
+                            "count",
+                            buf,
+                            sizeof( buf ) ) > 0 ) {
+            nCount = atoi( buf );
+        }
+    }
+
+    // Description
+    wxString description;
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,
+                            strlen( reqinfo->query_string ),
+                            "subzone_description",
+                            buf,
+                            sizeof( buf ) ) > 0 ) {
+            description = wxString::FromUTF8( buf );
+        }
+    }
+
+    web_printf(conn,
+	          "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
+	          "close\r\n\r\n");
+
+    web_printf( conn,
+                    WEB_COMMON_HEAD,
+                    "VSCP - Subzone Post" );
+    web_printf( conn, WEB_STYLE_START );
+    web_write( conn, WEB_COMMON_CSS, strlen( WEB_COMMON_CSS ) );
+    web_printf( conn, WEB_STYLE_END );
+    web_write( conn, WEB_COMMON_JS, strlen( WEB_COMMON_JS ) );
+    web_printf( conn, "<meta http-equiv=\"refresh\" content=\"1;url=/vscp/subzone");
+    web_printf( conn, "?from=%ld&count=%ld",
+                        (long)nFrom,
+                        (long)nCount );
+    web_printf( conn, "\">");
+    web_printf( conn, WEB_COMMON_HEAD_END_BODY_START );
+
+    // Navigation menu
+    web_printf( conn, WEB_COMMON_MENU );
+    web_printf( conn, WEB_VARPOST_BODY_START );
+
+    bool bOK = true;
+    if ( bCancel ) {
+        web_printf( conn, "<h1>Canceled!</h1>" );
+    }
+    else {
+
+        web_printf( conn, "<h1>Saving!</h1>" );
+
+        char *pErrMsg = 0;
+        wxString sql = VSCPDB_SUBZONE_UPDATE;
+   
+        sql = wxString::Format( sql, 
+                             (const char *)name.mbc_str(), 
+                             (const char *)description.mbc_str(), 
+                             id );
+    
+        if ( SQLITE_OK  !=  sqlite3_exec( gpobj->m_db_vscp_daemon, 
+                                        (const char *)sql.mbc_str(), 
+                                        NULL, NULL, &pErrMsg ) ) {
+            bOK = false;
+            web_printf( conn,
+                         "<font color=\"red\">Failed to update record! "
+                         "Error=%s</font>",
+                         pErrMsg );
+        }
+
+    }
+
+    if ( !bCancel && bOK ) {
+        web_printf( conn,
+                        "<font color=\"blue\">Record has been saved. "
+                        "id = %ld name = '%s'</font>",
+                        id,
+                        (const char *)name.mbc_str() );
+    }
+
+    web_printf( conn, WEB_COMMON_END, VSCPD_COPYRIGHT_HTML ); 
 
     return WEB_OK;
 }
@@ -5556,7 +6217,7 @@ vscp_client( struct web_connection *conn, void *cbdata )
     web_printf( conn, WEB_STYLE_START);
     web_write( conn, WEB_COMMON_CSS, sizeof(WEB_COMMON_CSS) );     // CSS style Code
     web_printf( conn, WEB_STYLE_END);
-    web_write( conn, WEB_COMMON_JS, sizeof(WEB_COMMON_JS) );      // Common Javascript code
+    web_write( conn, WEB_COMMON_JS, sizeof(WEB_COMMON_JS) );      // Common JavaScript code
     web_printf( conn, "<meta http-equiv=\"refresh\" content=\"5;url=/vscp");
     web_printf( conn, "\">");
     web_printf( conn, WEB_COMMON_HEAD_END_BODY_START);
@@ -8979,9 +9640,14 @@ int init_webserver( void )
     web_set_request_handler( gpobj->m_web_ctx, "/vscp/loglist",    vscp_log_list, 0 );
     web_set_request_handler( gpobj->m_web_ctx, "/vscp/logdelete",  vscp_log_delete, 0 );
     web_set_request_handler( gpobj->m_web_ctx, "/vscp/logdodelete",vscp_log_do_delete, 0 );
-    web_set_request_handler( gpobj->m_web_ctx, "/vscp/zonelist",   vscp_zone_list, 0 );
-    //web_set_request_handler( gpobj->m_web_ctx, "/vscp/subzonelist",vscp_subzone_list, 0 );
-    //web_set_request_handler( gpobj->m_web_ctx, "/vscp/locationlist",vscp_location_list, 0 );
+    web_set_request_handler( gpobj->m_web_ctx, "/vscp/zone",       vscp_zone_list, 0 );
+    web_set_request_handler( gpobj->m_web_ctx, "/vscp/zoneedit",   vscp_zone_edit, 0 );
+    web_set_request_handler( gpobj->m_web_ctx, "/vscp/zonepost",   vscp_zone_post, 0 );
+    web_set_request_handler( gpobj->m_web_ctx, "/vscp/subzone",    vscp_subzone_list, 0 );
+    web_set_request_handler( gpobj->m_web_ctx, "/vscp/subzoneedit",vscp_subzone_edit, 0 );
+    web_set_request_handler( gpobj->m_web_ctx, "/vscp/subzonepost",vscp_subzone_post, 0 );
+    //web_set_request_handler( gpobj->m_web_ctx, "/vscp/location",vscp_location_list, 0 );
+    //web_set_request_handler( gpobj->m_web_ctx, "/vscp/guid",vscp_guid_list, 0 );
 
     // REST
     web_set_request_handler( gpobj->m_web_ctx, "/vscp/rest",       websrv_restapi, 0 );
