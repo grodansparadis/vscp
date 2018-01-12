@@ -1494,7 +1494,7 @@ static int vscp_dm_list( struct web_connection *conn, void *cbdata )
     // Display DM List
 
     if ( 0 == gpobj->m_dm.getMemoryElementCount() ) {
-        web_printf( conn, "<br>Decision Matrix is empty!<br>");
+        web_printf( conn, "<br><h4>Decision Matrix is empty!</h4><br>");
     }
     else {
         web_printf( conn, WEB_DMLIST_TR_HEAD);
@@ -1519,7 +1519,7 @@ static int vscp_dm_list( struct web_connection *conn, void *cbdata )
         }
 
         // Client id
-        web_printf( conn, WEB_IFLIST_TD_CENTERED);
+        web_printf( conn, WEB_DMLIST_TD_CENTERED);
         web_printf( conn,
                         "<form name=\"input\" action=\"/vscp/dmdelete?id=%ld\" "
                         "method=\"get\"> %ld <input type=\"submit\" "
@@ -3328,8 +3328,8 @@ static int vscp_variable_list( struct web_connection *conn, void *cbdata  )
                 nFrom = 0;
             }
         }
-        else { // No vaid navigation value
-            nFrom = 0;
+        else { // No valid navigation value
+            //nFrom = 0;
         }
     }
 
@@ -4547,7 +4547,7 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
     web_printf(conn, WEB_VAREDIT_TABLE_END );
 
     web_printf( conn,
-                    WEB_VAREDIT_SUBMIT,
+                    WEB_COMMON_SUBMIT,
                     "/vscp/varpost" );
 
     web_printf( conn, "</form>" );
@@ -5214,10 +5214,9 @@ static int vscp_zone_list( struct web_connection *conn, void *cbdata  )
             else if (NULL != strstr("first", buf)) {
                 nFrom = 0;
             }
+            
         }
-        else { // No vaid navigation value
-            nFrom = 0;
-        }
+  
     }
 
     web_printf(conn,
@@ -5248,6 +5247,11 @@ static int vscp_zone_list( struct web_connection *conn, void *cbdata  )
                 "false" );
         web_printf( conn, "<br>");
     }
+    
+    if ( 0 == cnt_zones ) {
+        web_printf( conn, "<br><h4>Database is empty!</h4><br>");
+    }
+    
 
     wxString strBuf;
     
@@ -5266,7 +5270,7 @@ static int vscp_zone_list( struct web_connection *conn, void *cbdata  )
                                             &ppStmt,
                                             NULL ) ) {
         web_printf( conn, "<br>Failed to query database!<br>");
-        return false;
+        return WEB_OK;
     }
     
     int i;
@@ -5494,7 +5498,7 @@ static int vscp_zone_edit( struct web_connection *conn, void *cbdata  )
     web_printf(conn, WEB_COMMON_TABLE_END );
 
     web_printf( conn,
-                    WEB_VAREDIT_SUBMIT,
+                    WEB_COMMON_SUBMIT,
                     "/vscp/zonepost" );
 
     web_printf( conn, "</form>" );
@@ -5611,7 +5615,7 @@ static int vscp_zone_post( struct web_connection *conn, void *cbdata )
 
     // Navigation menu
     web_printf( conn, WEB_COMMON_MENU );
-    web_printf( conn, WEB_VARPOST_BODY_START );
+    web_printf( conn, WEB_ZONE_POST_BODY_START );
 
     
     
@@ -5752,10 +5756,9 @@ static int vscp_subzone_list( struct web_connection *conn, void *cbdata  )
             else if (NULL != strstr("first", buf)) {
                 nFrom = 0;
             }
+      
         }
-        else { // No vaid navigation value
-            nFrom = 0;
-        }
+      
     }
 
     web_printf(conn,
@@ -5771,13 +5774,13 @@ static int vscp_subzone_list( struct web_connection *conn, void *cbdata  )
 
     // Navigation menu
     web_printf( conn, WEB_COMMON_MENU );
-    web_printf( conn, WEB_ZONELIST_BODY_START );
+    web_printf( conn, WEB_SUBZONELIST_BODY_START );
 
     {
-        wxString wxstrurl = _("/vscp/subzone");
+        wxString wxstrurl = _("/vscp/subzone");  
         web_printf( conn, WEB_COMMON_LIST_NAVIGATION,
                 (const char *)wxstrurl.mbc_str(),
-                (unsigned long)( nFrom + 1 ),
+                (unsigned long)( nFrom + 1 ), 
                 ( (unsigned long)(nFrom + nCount) < cnt_subzones ) ?
                     nFrom + nCount : cnt_subzones,
                 (unsigned long)cnt_subzones,
@@ -5786,10 +5789,16 @@ static int vscp_subzone_list( struct web_connection *conn, void *cbdata  )
                 "false" );
         web_printf( conn, "<br>");
     }
+    
+    if ( 0 == cnt_subzones ) {
+        web_printf( conn, "<br><h4>Database is empty!</h4><br>");
+    }
+    
 
     wxString strBuf;
     
-    web_printf( conn, "<tr><th id=\"tdcenter\">Id</th><th>Name</th>"
+    web_printf( conn, "<col width=\"10%%\"><col width=\"70%%\"><col width=\"20%%\">"
+                      "<tr><th id=\"tdcenter\">Id</th><th>Name</th>"
                       "<th>Description</th></tr>" );
 
     // Display Subzone List
@@ -5804,7 +5813,7 @@ static int vscp_subzone_list( struct web_connection *conn, void *cbdata  )
                                             &ppStmt,
                                             NULL ) ) {
         web_printf( conn, "<br>Failed to query database!<br>");
-        return false;
+        return WEB_OK;
     }
     
     int i;
@@ -6032,7 +6041,7 @@ static int vscp_subzone_edit( struct web_connection *conn, void *cbdata  )
     web_printf(conn, WEB_COMMON_TABLE_END );
 
     web_printf( conn,
-                    WEB_VAREDIT_SUBMIT,
+                    WEB_COMMON_SUBMIT,
                     "/vscp/subzonepost" );
 
     web_printf( conn, "</form>" );
@@ -6149,7 +6158,7 @@ static int vscp_subzone_post( struct web_connection *conn, void *cbdata )
 
     // Navigation menu
     web_printf( conn, WEB_COMMON_MENU );
-    web_printf( conn, WEB_VARPOST_BODY_START );
+    web_printf( conn, WEB_SUBZONE_POST_BODY_START );
 
     bool bOK = true;
     if ( bCancel ) {
@@ -6191,6 +6200,809 @@ static int vscp_subzone_post( struct web_connection *conn, void *cbdata )
 
     return WEB_OK;
 }
+
+
+
+
+//-----------------------------------------------------------------------------
+//                                    GUID
+//-----------------------------------------------------------------------------
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+// vscp_guid_list
+//
+
+static int vscp_guid_list( struct web_connection *conn, void *cbdata  )
+{
+    char buf[80];
+    unsigned long upperLimit = 50; 
+    char *pErrMsg;
+    sqlite3_stmt *ppStmt;
+
+    // Check pointer
+    if (NULL == conn) return 0;
+
+    // Get number of records
+    wxString table = wxString( _("guid") );
+    uint32_t cnt_guid = 
+            gpobj->getCountRecordsDB( gpobj->m_db_vscp_daemon, table );
+
+    const struct web_request_info *reqinfo =
+                web_get_request_info( conn );
+    if ( NULL == reqinfo ) return 0;
+
+    // From
+    long nFrom = 0;
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,
+                            strlen( reqinfo->query_string ),
+                            "from",
+                            buf,
+                            sizeof( buf ) ) > 0 ) {
+            nFrom = atoi( buf );
+        }
+    }
+
+    
+    // Count
+    unsigned long nCount = 50;
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,
+                            strlen( reqinfo->query_string ),
+                            "count",
+                            buf,
+                            sizeof( buf ) ) > 0 ) {
+            nCount = atoi( buf );
+        }
+    }
+
+
+    // Navigation button
+    if (NULL != reqinfo->query_string) {
+
+        if (web_get_var(reqinfo->query_string,
+                strlen(reqinfo->query_string),
+                "navbtn",
+                buf,
+                sizeof ( buf)) > 0) {
+
+            if (NULL != strstr("previous", buf)) {
+                nFrom -= nCount;
+                if (nFrom < 0) nFrom = 0;
+            }
+            else if (NULL != strstr("next", buf)) {
+                nFrom += nCount;
+
+                if ( (unsigned long)nFrom > cnt_guid-1 ) {
+                    if ( cnt_guid % nCount ) {
+                        nFrom = cnt_guid/nCount;
+                    }
+                    else {
+                        nFrom = (cnt_guid/nCount) - 1;
+                    }
+                }
+            }
+            else if (NULL != strstr("last", buf)) {
+                 if ( cnt_guid % nCount ) {
+                    nFrom = (cnt_guid/nCount)*nCount;
+                }
+                else {
+                    nFrom = ((cnt_guid/nCount) - 1)*nCount;
+                }
+            }
+            else if (NULL != strstr("first", buf)) {
+                nFrom = 0;
+            }
+        }
+        else { // No valid navigation value
+            nFrom = 0;
+        }
+    }
+
+    web_printf(conn,
+	          "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
+	          "close\r\n\r\n");
+
+    web_printf( conn, WEB_COMMON_HEAD, "VSCP - GUID's" );
+    web_printf( conn, WEB_STYLE_START );
+    web_write( conn, WEB_COMMON_CSS, strlen( WEB_COMMON_CSS ) );
+    web_printf( conn, WEB_STYLE_END );
+    web_write( conn, WEB_COMMON_JS, strlen( WEB_COMMON_JS ) ); 
+    web_printf( conn, WEB_COMMON_HEAD_END_BODY_START );
+
+    // Navigation menu
+    web_printf( conn, WEB_COMMON_MENU );
+    web_printf( conn, WEB_GUIDLIST_BODY_START );
+
+    {
+        wxString wxstrurl = _("/vscp/guid");  
+        web_printf( conn, WEB_COMMON_LIST_NAVIGATION,
+                (const char *)wxstrurl.mbc_str(),
+                (unsigned long)( nFrom + 1 ), 
+                ( (unsigned long)(nFrom + nCount) < cnt_guid ) ?
+                    nFrom + nCount : cnt_guid,
+                (unsigned long)cnt_guid,
+                (unsigned long)nCount,
+                (unsigned long)nFrom,
+                "false" );
+        web_printf( conn, "<br>");
+    }
+
+    if ( 0 == cnt_guid ) {
+        web_printf( conn, "<br><h4>Database is empty!</h4><br>");
+    }
+    
+    wxString strBuf;
+    
+    web_printf( conn, "<tr><th id=\"tdcenter\">Id</th>"
+                      "<th>GUID</th></tr>" );
+
+    // Display GUID List
+
+    if ( nFrom < 0 ) nFrom = 0;
+    
+    wxString sql = wxString::Format( VSCPDB_GUID_SELECT_PAGE, (int)nFrom, (int)nCount );
+    
+    if ( SQLITE_OK != sqlite3_prepare_v2( gpobj->m_db_vscp_daemon,
+                                            (const char *)sql.mbc_str(),
+                                            -1,
+                                            &ppStmt,
+                                            NULL ) ) {
+        web_printf( conn, "<br>Failed to query database!<br>");
+        return WEB_OK;
+    }
+    
+    int i;
+    while ( SQLITE_ROW == sqlite3_step( ppStmt ) ) {
+
+        // id
+        const char *p;
+        long id = 0;
+        if ( NULL != 
+                 ( p = (const char *)sqlite3_column_text( ppStmt, 
+                                                    VSCPDB_ORDINAL_GUID_ID ) ) ) {
+            id = atol( p );
+        }
+
+        wxString url_edit =
+                    wxString::Format( _("/vscp/guidedit?id=%ld&from=%ld"),
+                                        id,
+                                        (long)nFrom );
+        wxString str = wxString::Format(_(WEB_COMMON_TR_CLICKABLE_ROW),
+                                                (const char *)url_edit.mbc_str() );
+        web_printf( conn, "%s", (const char *)str.mbc_str() );
+
+        // id
+        web_printf( conn, WEB_DMLIST_TD_CENTERED);
+        web_printf( conn,
+                        "<form name=\"input\" action=\"/vscp/guiddelete?id=%ld\" "
+                        "method=\"get\"> <div style=\"font-weight: bold;\">%ld</div>"
+                        "<input type=\"submit\" "
+                        "value=\"x\"><input type=\"hidden\" "
+                        "name=\"id\"value=\"%ld\"></form>",
+                        id, id, id );
+        web_printf( conn, "</td>" );
+
+                
+        web_printf(conn, "<td>" );
+        web_printf( conn, "<div id=\"small\">");
+        
+        // Name
+        if ( NULL != 
+                 ( p = (const char *)sqlite3_column_text( ppStmt, 
+                                               VSCPDB_ORDINAL_GUID_NAME ) ) ) {
+            
+        }
+        web_printf(conn, "<b>Name</b>: %s<br>", p );
+        
+        // GUID
+        if ( NULL != 
+                 ( p = (const char *)sqlite3_column_text( ppStmt, 
+                                        VSCPDB_ORDINAL_GUID_GUID ) ) ) {
+            
+        }        
+        web_printf(conn, "<b>GUID</b>: %s<br>", p );
+        
+        web_printf(conn, "<br><hr width=\"90%%\">" );
+        
+        // Type
+        if ( NULL != 
+                 ( p = (const char *)sqlite3_column_text( ppStmt, 
+                                        VSCPDB_ORDINAL_GUID_TYPE ) ) ) {
+            
+        }        
+        web_printf(conn, "<b>Type</b>: %s<br>", p );
+        
+        // Date
+        if ( NULL != 
+                 ( p = (const char *)sqlite3_column_text( ppStmt, 
+                                        VSCPDB_ORDINAL_GUID_DATE ) ) ) {
+            
+        }        
+        web_printf(conn, "<b>Date</b>: %s<br>", p );
+                
+        // Description
+        if ( NULL != 
+                 ( p = (const char *)sqlite3_column_text( ppStmt, 
+                                        VSCPDB_ORDINAL_GUID_DESCRIPTION ) ) ) {
+            
+        }        
+        web_printf(conn, "<b>Description</b>: %s<br>", p );
+        
+        
+        web_printf(conn, "</div>");
+        web_printf(conn, "</td>");
+        
+        
+        web_printf( conn, "</tr>");
+
+    } // records
+
+    web_printf( conn, WEB_COMMON_TABLE_END );
+    
+    sqlite3_finalize( ppStmt );
+
+    wxString wxstrurl = _("/vscp/guid");
+    web_printf( conn,
+                    WEB_COMMON_LIST_NAVIGATION,
+                    (const char *)wxstrurl.mbc_str(),
+                    (unsigned long)(nFrom+1),
+                    ( (unsigned long)(nFrom + nCount) < cnt_guid ) ?
+                                                    nFrom + nCount : cnt_guid,
+                    (unsigned long)cnt_guid,
+                    (unsigned long)nCount,
+                    (unsigned long)nFrom,
+                    "false" );
+
+    web_printf( conn, WEB_COMMON_END, VSCPD_COPYRIGHT_HTML);
+
+    return WEB_OK;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// vscp_guid_edit
+//
+
+static int vscp_guid_edit( struct web_connection *conn, void *cbdata  )
+{
+    char buf[80];
+    wxString str;
+
+    // Check pointer
+    if (NULL == conn) return 0;
+
+    const struct web_request_info *reqinfo =
+                web_get_request_info( conn );
+    if ( NULL == reqinfo ) return 0;
+
+    // id
+    long id = -1;
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,
+                            strlen( reqinfo->query_string ),
+                            "id",
+                            buf,
+                            sizeof( buf ) ) > 0 ) {
+            id = atoi( buf );
+        }
+    }
+
+    // From
+    long nFrom = 0;
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,
+                            strlen( reqinfo->query_string ),
+                            "from",
+                            buf,
+                            sizeof( buf ) ) > 0 ) {
+            nFrom = atoi( buf );
+        }
+    }
+
+
+    // Count
+    uint16_t nCount = 50;
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,
+                            strlen( reqinfo->query_string ),
+                            "count",
+                            buf,
+                            sizeof( buf ) ) > 0 ) {
+            nCount = atoi( buf );
+        }
+    }
+
+    web_printf( conn,
+	          "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
+	          "close\r\n\r\n" );
+
+    web_printf( conn, WEB_COMMON_HEAD, "VSCP - GUID Edit" );
+    web_printf( conn, WEB_STYLE_START );
+    web_write( conn, WEB_COMMON_CSS, strlen( WEB_COMMON_CSS ) );     
+    web_printf( conn, WEB_STYLE_END );
+    web_write( conn, WEB_COMMON_JS, strlen( WEB_COMMON_JS ) );      
+    web_printf( conn, WEB_COMMON_HEAD_END_BODY_START ) ;
+
+    // Navigation menu
+    web_printf( conn, WEB_COMMON_MENU );
+
+    web_printf( conn, WEB_GUIDEDIT_BODY_START );
+
+    web_printf( conn, "<br><form name=\"guidedit\" id=\"ze1\" method=\"get\" " );
+    web_printf(conn, " action=\"/vscp/guidpost\" >");
+
+    // Hidden from
+    web_printf( conn,
+                    "<input name=\"from\" value=\"%ld\" type=\"hidden\">",
+                    nFrom );
+
+    // Hidden count
+    web_printf( conn,
+                    "<input name=\"count\" value=\"%d\" type=\"hidden\">",
+                    nCount );
+
+    // Hidden id
+    web_printf( conn,
+                    "<input name=\"id\" value=\"%ld\" type=\"hidden\">",
+                    id );
+
+    web_printf( conn, "<h3>GUID id: %ld</h3> <span id=\"optiontext\"></span><br>",
+                        id );
+    
+    // Check if database is open
+    if ( NULL == gpobj->m_db_vscp_daemon ) {
+        web_printf( conn, "<h4>Failure. database is not open!</h4>" );
+        return WEB_OK;
+    }
+    
+    char *pErrMsg = 0;
+    wxString sql = _(VSCPDB_GUID_SELECT_ID);
+    sqlite3_stmt *ppStmt;
+    
+    sql = wxString::Format( sql, id );
+    
+    if ( SQLITE_OK != sqlite3_prepare( gpobj->m_db_vscp_daemon,
+                                        (const char *)sql.mbc_str(),
+                                        -1,
+                                        &ppStmt,
+                                        NULL ) ) {
+        web_printf( conn, "<h4>Failure. Failed to get database record!</h4>" );
+        return WEB_OK;
+    }
+    
+    while ( SQLITE_ROW  != sqlite3_step( ppStmt ) ) {
+        web_printf( conn, "<h4>Failure. No database record found!</h4>" );
+        return WEB_OK;
+    }
+    
+    const unsigned char *p;
+    wxString name;
+    p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_GUID_NAME );
+    if ( NULL != p ) {
+        name = wxString::FromUTF8Unchecked( (const char *)p );
+    }
+    
+    cguid guid;
+    p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_GUID_GUID );
+    if ( NULL != p ) {
+        guid.getFromString( p );
+    }
+    
+    int type;
+    type = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_GUID_TYPE );
+
+    wxDateTime dt = dt.UNow();
+    p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_GUID_DATE );
+    if ( NULL != p ) {
+        dt.ParseISOCombined( wxString::FromUTF8Unchecked( (const char *)p ) );
+    }
+    
+    int linktomdf;
+    linktomdf = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_GUID_LINK_TO_MDF );
+    
+    wxString address;
+    p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_GUID_ADDRESS );
+    if ( NULL != p ) {
+        address = wxString::FromUTF8Unchecked( (const char *)p );
+    }
+    
+    wxString caps;
+    p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_GUID_CAPABILITIES );
+    if ( NULL != p ) {
+        caps = wxString::FromUTF8Unchecked( (const char *)p );
+    }
+    
+    wxString nonstandard;
+    p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_GUID_NONSTANDARD );
+    if ( NULL != p ) {
+        nonstandard = wxString::FromUTF8Unchecked( (const char *)p );
+    }
+    
+    wxString description;
+    p = sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_GUID_DESCRIPTION );
+    if ( NULL != p ) {
+        description = wxString::FromUTF8Unchecked( (const char *)p );
+    }
+
+    web_printf( conn, "<table class=\"invisable\"><tbody><tr class=\"invisable\">");
+
+    // Name
+    web_printf( conn, "<td class=\"invisable\"  style=\"font-weight: "
+                      "bold;\">Name:</td><td class=\"invisable\">");
+    web_printf( conn,
+                    "<input name=\"guid_name\" size=\"50\" value=\"%s\" type=\"text\">",
+                    (const char *)name.mbc_str() );
+
+    web_printf(conn, "</td></tr>");
+    
+    // GUID
+    web_printf( conn, "<td class=\"invisable\"  style=\"font-weight: "
+                      "bold;\">GUID:</td><td class=\"invisable\">");
+    web_printf( conn,
+                    "<input name=\"guid_guid\" size=\"50\" value=\"%s\" type=\"text\">",
+                    (const char *)guid.getAsString().mbc_str() );
+
+    web_printf(conn, "</td></tr>");
+    
+    // Type
+    web_printf( conn, "<td class=\"invisable\"  style=\"font-weight: "
+                      "bold;\">Type:</td><td class=\"invisable\">");
+    web_printf( conn, "<select>"  );
+    web_printf( conn, "<option ");
+    if ( 0 == type ) web_printf( conn, "selected ");
+    web_printf( conn, "value=\"0\">Common GUID</option>");
+    web_printf( conn, "<option ");
+    if ( 1 == type ) web_printf( conn, "selected ");
+    web_printf( conn, "value=\"1\">Interface (on this machine)</option>");
+    web_printf( conn, "<option ");
+    if ( 2 == type ) web_printf( conn, "selected ");
+    web_printf( conn, "value=\"2\">Level I hardware.</option>");
+    web_printf( conn, "<option ");
+    if ( 3 == type ) web_printf( conn, "selected ");
+    web_printf( conn, "value=\"3\">Level II hardware.</option>");
+    web_printf( conn, "<option ");
+    if ( 4 == type ) web_printf( conn, "selected ");
+    web_printf( conn, "value=\"4\">User interface component</option>");
+    web_printf( conn, "<option ");
+    if ( 5 == type ) web_printf( conn, "selected ");
+    web_printf( conn, "value=\"5\">Location</option>");
+    web_printf( conn, "</select>"  );
+    web_printf(conn, "</td></tr>");
+    
+    // Date
+    web_printf( conn, "<td class=\"invisable\"  style=\"font-weight: "
+                      "bold;\">Discovery date (UTC):</td><td class=\"invisable\">");
+    web_printf( conn,
+                    "<input name=\"guid_date\" value=\"%s\" type=\"text\">",
+                    (const char *)dt.FormatISOCombined().mbc_str() );
+    web_printf(conn, "</td></tr>");
+    
+    
+    // Link to MDF
+    web_printf( conn, "<td class=\"invisable\"  style=\"font-weight: "
+                      "bold;\">Link to MDF:</td><td class=\"invisable\">");
+    web_printf( conn, "<select>"  );
+    
+    web_printf( conn, "<option ");
+    if ( -1 == linktomdf ) web_printf( conn, "selected ");
+    web_printf( conn, "value=\"0\">-----</option>" );
+    web_printf( conn, "<option ");
+    
+    sqlite3_stmt *ppStmtMDF;
+    if ( SQLITE_OK != sqlite3_prepare( gpobj->m_db_vscp_daemon,
+                                        VSCPDB_MDF_SELECT_ALL_DATE,
+                                        -1,
+                                        &ppStmtMDF,
+                                        NULL ) ) {
+        
+        return WEB_OK;
+    }
+
+    while ( SQLITE_ROW  == sqlite3_step( ppStmtMDF ) ) {
+
+        const unsigned char * pName = NULL; 
+        
+        int id;
+        id = sqlite3_column_int( ppStmtMDF, VSCPDB_ORDINAL_MDF_ID );        
+        pName = sqlite3_column_text( ppStmtMDF, VSCPDB_ORDINAL_MDF_NAME );
+        
+        web_printf( conn, "<option ");
+        if ( id == linktomdf ) web_printf( conn, "selected ");
+        web_printf( conn, "value=\"%d\">%s</option>", id, pName );
+        web_printf( conn, "<option ");
+        
+    }
+    
+    sqlite3_finalize( ppStmtMDF );
+    
+    web_printf( conn, "</select>"  );
+    web_printf(conn, "</td></tr>");
+    
+    // Address
+    web_printf( conn, "<td class=\"invisable\"  style=\"font-weight: "
+                      "bold;\">Address:</td><td class=\"invisable\">");
+    web_printf( conn,
+                    "<input name=\"guid_date\" size=\"50\" value=\"%s\" type=\"text\">",
+                    (const char *)address.mbc_str() );
+    web_printf(conn, "</td></tr>");
+    
+    // Capabilities
+    web_printf( conn, "<td class=\"invisable\"  style=\"font-weight: "
+                      "bold;\">Capabilities:</td><td class=\"invisable\">");
+    web_printf( conn,
+                    "<input name=\"guid_date\" size=\"50\" value=\"%s\" type=\"text\">",
+                    (const char *)caps.mbc_str() );
+    web_printf(conn, "</td></tr>");
+    
+    // non-standard
+    web_printf( conn, "<td class=\"invisable\"  style=\"font-weight: "
+                      "bold;\">Non-standard:</td><td class=\"invisable\">");
+    web_printf( conn,
+                    "<input name=\"guid_date\" size=\"50\" value=\"%s\" type=\"text\">",
+                    (const char *)nonstandard.mbc_str() );
+    web_printf(conn, "</td></tr>");
+    
+    // Description
+    web_printf( conn, "</tr><tr><td style=\"font-weight: "
+                      "bold;\">Description: </td><td>");
+    web_printf( conn, "<textarea cols=\"50\" rows=\"5\" "
+                      "name=\"guid_description\">");
+    web_printf(conn, "%s", (const char *)description.mbc_str() );
+    web_printf(conn, "</textarea>" ); 
+    web_printf(conn, "</td></tr>" );
+    
+    web_printf(conn, WEB_COMMON_TABLE_END );
+
+    web_printf( conn,
+                    WEB_COMMON_SUBMIT,
+                    "/vscp/guidpost" );
+
+    web_printf( conn, "</form>" );
+    web_printf( conn, WEB_COMMON_END, VSCPD_COPYRIGHT_HTML ); 
+
+    return WEB_OK;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// vscp_guid_post
+//
+
+static int vscp_guid_post( struct web_connection *conn, void *cbdata )
+{
+    char buf[32000];
+    wxString msg;
+
+    // Check pointer
+    if ( NULL == conn ) return 0;
+
+    const struct web_request_info *reqinfo = web_get_request_info( conn );
+    if ( NULL == reqinfo ) return 0;
+
+    // submit
+    bool bCancel = false;
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,
+                            strlen( reqinfo->query_string ),
+                            "btncancel",
+                            buf,
+                            sizeof( buf ) ) > 0 ) {
+            if ( NULL != strstr( "true", buf ) ) bCancel = true;
+        }
+    }
+    
+    // From
+    long nFrom = 0;
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,
+                            strlen( reqinfo->query_string ),
+                            "from",
+                            buf,
+                            sizeof( buf ) ) > 0 ) {
+            nFrom = atoi( buf );
+        }
+    }
+    
+    // Count
+    uint16_t nCount = 50;
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,
+                            strlen( reqinfo->query_string ),
+                            "count",
+                            buf,
+                            sizeof( buf ) ) > 0 ) {
+            nCount = atoi( buf );
+        }
+    }
+
+    // id
+    long id = -1;
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,
+                            strlen( reqinfo->query_string ),
+                            "id",
+                            buf,
+                            sizeof( buf ) ) > 0 ) {
+            id = atol( buf );
+        }
+    }
+    
+    // Type
+    int type = -1;
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,
+                            strlen( reqinfo->query_string ),
+                            "guid_name",
+                            buf,
+                            sizeof( buf ) ) > 0 ) {
+            type = atoi( buf );
+        }
+    }    
+
+    // Name
+    wxString name;
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,
+                            strlen( reqinfo->query_string ),
+                            "guid_name",
+                            buf,
+                            sizeof( buf ) ) > 0 ) {
+            name = wxString::FromUTF8( buf );
+        }
+    }
+
+    // GUID
+    cguid guid;
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,
+                            strlen( reqinfo->query_string ),
+                            "guid_guid",
+                            buf,
+                            sizeof( buf ) ) > 0 ) {
+            guid.getFromString( buf );
+        }
+    }
+    
+    // Discovery date
+    wxDateTime dt;
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,
+                            strlen( reqinfo->query_string ),
+                            "guid_guid",
+                            buf,
+                            sizeof( buf ) ) > 0 ) {
+            dt.ParseISOCombined( buf );
+        }
+    }
+    
+    // Lind To MDF
+    wxString linktomdf;
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,
+                            strlen( reqinfo->query_string ),
+                            "guid_linktomdf",
+                            buf,
+                            sizeof( buf ) ) > 0 ) {
+            linktomdf = wxString::FromUTF8( buf );
+        }
+    }
+    
+    // Address
+    wxString address;
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,
+                            strlen( reqinfo->query_string ),
+                            "guid_address",
+                            buf,
+                            sizeof( buf ) ) > 0 ) {
+            address = wxString::FromUTF8( buf );
+        }
+    }
+    
+    // Capabilities
+    wxString capabilities;
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,
+                            strlen( reqinfo->query_string ),
+                            "guid_capabilities",
+                            buf,
+                            sizeof( buf ) ) > 0 ) {
+            capabilities = wxString::FromUTF8( buf );
+        }
+    }
+    
+    // Non standard
+    wxString nonstandard;
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,
+                            strlen( reqinfo->query_string ),
+                            "guid_nonstandard",
+                            buf,
+                            sizeof( buf ) ) > 0 ) {
+            nonstandard = wxString::FromUTF8( buf );
+        }
+    }
+        
+    // Description
+    wxString description;
+    if ( NULL != reqinfo->query_string ) {
+        if ( web_get_var( reqinfo->query_string,
+                            strlen( reqinfo->query_string ),
+                            "guid_description",
+                            buf,
+                            sizeof( buf ) ) > 0 ) {
+            description = wxString::FromUTF8( buf );
+        }
+    }
+
+
+    web_printf(conn,
+	          "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
+	          "close\r\n\r\n");
+
+    web_printf( conn,
+                    WEB_COMMON_HEAD,
+                    "VSCP - GUID Post" );
+    web_printf( conn, WEB_STYLE_START );
+    web_write( conn, WEB_COMMON_CSS, strlen( WEB_COMMON_CSS ) );
+    web_printf( conn, WEB_STYLE_END );
+    web_write( conn, WEB_COMMON_JS, strlen( WEB_COMMON_JS ) );
+    web_printf( conn, "<meta http-equiv=\"refresh\" content=\"1;url=/vscp/guid");
+    web_printf( conn, "?from=%ld&count=%ld",
+                        (long)nFrom,
+                        (long)nCount );
+    web_printf( conn, "\">");
+    web_printf( conn, WEB_COMMON_HEAD_END_BODY_START );
+
+    // Navigation menu
+    web_printf( conn, WEB_COMMON_MENU );
+    web_printf( conn, WEB_GUID_POST_BODY_START );  
+
+    bool bOK = true;
+    if ( bCancel ) {
+        web_printf( conn, "<h1>Canceled!</h1>" );
+    }
+    else {
+
+        web_printf( conn, "<h1>Saving!</h1>" );
+
+        char *pErrMsg = 0;
+        wxString sql = VSCPDB_SUBZONE_UPDATE;
+   
+        sql = wxString::Format( sql, 
+                             (const char *)name.mbc_str(), 
+                             (const char *)description.mbc_str(), 
+                             id );
+    
+        if ( SQLITE_OK  !=  sqlite3_exec( gpobj->m_db_vscp_daemon, 
+                                        (const char *)sql.mbc_str(), 
+                                        NULL, NULL, &pErrMsg ) ) {
+            bOK = false;
+            web_printf( conn,
+                         "<font color=\"red\">Failed to update record! "
+                         "Error=%s</font>",
+                         pErrMsg );
+        }
+
+    }
+
+    if ( !bCancel && bOK ) {
+        web_printf( conn,
+                        "<font color=\"blue\">Record has been saved. "
+                        "id = %ld name = '%s'</font>",
+                        id,
+                        (const char *)name.mbc_str() );
+    }
+
+    web_printf( conn, WEB_COMMON_END, VSCPD_COPYRIGHT_HTML ); 
+
+    return WEB_OK;
+}
+
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -9646,8 +10458,11 @@ int init_webserver( void )
     web_set_request_handler( gpobj->m_web_ctx, "/vscp/subzone",    vscp_subzone_list, 0 );
     web_set_request_handler( gpobj->m_web_ctx, "/vscp/subzoneedit",vscp_subzone_edit, 0 );
     web_set_request_handler( gpobj->m_web_ctx, "/vscp/subzonepost",vscp_subzone_post, 0 );
+    web_set_request_handler( gpobj->m_web_ctx, "/vscp/guid",       vscp_guid_list, 0 );
+    web_set_request_handler( gpobj->m_web_ctx, "/vscp/guidedit",   vscp_guid_edit, 0 );
+    web_set_request_handler( gpobj->m_web_ctx, "/vscp/guidpost",   vscp_guid_post, 0 );
     //web_set_request_handler( gpobj->m_web_ctx, "/vscp/location",vscp_location_list, 0 );
-    //web_set_request_handler( gpobj->m_web_ctx, "/vscp/guid",vscp_guid_list, 0 );
+    
 
     // REST
     web_set_request_handler( gpobj->m_web_ctx, "/vscp/rest",       websrv_restapi, 0 );

@@ -501,6 +501,8 @@
 #define VSCPDB_DRIVER_CREATE_INDEX "CREATE INDEX `idxdrivername` "\
                                    "ON driver ('name'):"
 
+#define VSCPDB_DRIVER_ALL "SELECT * from 'driver'"
+
 #define VSCPDB_ORDINAL_DRIVER_ID                    0   //
 #define VSCPDB_ORDINAL_DRIVER_ENABLE                1   //
 #define VSCPDB_ORDINAL_DRIVER_LEVEL                 2   //
@@ -522,10 +524,11 @@
  *
  * type - describes what this GUID is describing, for example an interface, a node etc.
  *   type = 0 - Common GUID.
- *   type = 1 - Interface on this machine,
+ *   type = 1 - Interface (on this machine),
  *   type = 2 - Level I hardware. Lives on one of the interfaces of this daemon.
  *   type = 3 - Level II hardware. Lives somewhere given by address.
- *   type = 4 - Location.
+ *   type = 4 - User interface component.
+ *   type = 5 - Location.
  *
  * GUID - GUID for the type. Level I hardware use the proxy GUID.
  *
@@ -562,6 +565,11 @@
 #define VSCPDB_GUID_CREATE_INDEX "CREATE INDEX `idxguid` "\
                                  "ON guid ('name'):"
 
+#define VSCPDB_GUID_ALL "SELECT * from 'guid'"
+#define VSCPDB_GUID_SELECT_PAGE  "SELECT * FROM guid LIMIT %d,%d;"
+#define VSCPDB_GUID_SELECT_ID    "SELECT * FROM guid WHERE idx_guid=%ld;"
+#define VSCPDB_GUID_UPDATE       "UPDATE guid SET name='%s',description='%s' WHERE idx_guid=%ld;"
+
 #define VSCPDB_ORDINAL_GUID_ID                      0   //
 #define VSCPDB_ORDINAL_GUID_TYPE                    1   //
 #define VSCPDB_ORDINAL_GUID_GUID                    2   //
@@ -588,8 +596,8 @@
                                  "ON subzone ('name'):"
 #define VSCPDB_ZONE_SELECT_ALL   "SELECT * FROM zone;"
 #define VSCPDB_ZONE_SELECT_PAGE  "SELECT * FROM zone LIMIT %d,%d;"
-#define VSCPDB_ZONE_SELECT_ID    "SELECT * FROM zone WHERE idx_zone=%ld"
-#define VSCPDB_ZONE_UPDATE       "UPDATE zone SET name='%s',description='%s' WHERE idx_zone=%ld"
+#define VSCPDB_ZONE_SELECT_ID    "SELECT * FROM zone WHERE idx_zone=%ld;"
+#define VSCPDB_ZONE_UPDATE       "UPDATE zone SET name='%s',description='%s' WHERE idx_zone=%ld;"
 
 #define VSCPDB_ORDINAL_ZONE_ID                   0   //
 #define VSCPDB_ORDINAL_ZONE_NAME                 1   // User names of zone
@@ -597,7 +605,7 @@
 
 
 //*****************************************************************************
-//                                 SUBZONE
+//                                  SUBZONE
 //*****************************************************************************
 
 #define VSCPDB_SUBZONE_CREATE "CREATE TABLE IF NOT EXISTS `subzone` ("\
@@ -607,11 +615,11 @@
         ");"
 
 #define VSCPDB_SUBZONE_CREATE_INDEX "CREATE INDEX `idxsubzone` "\
-                "ON subzone ('name'):"
+                                    "ON subzone ('name'):"
 #define VSCPDB_SUBZONE_SELECT_ALL   "SELECT * FROM subzone;"
 #define VSCPDB_SUBZONE_SELECT_PAGE  "SELECT * FROM subzone LIMIT %d,%d;"
-#define VSCPDB_SUBZONE_SELECT_ID    "SELECT * FROM subzone WHERE idx_subzone=%ld"
-#define VSCPDB_SUBZONE_UPDATE       "UPDATE subzone SET name='%s',description='%s' WHERE idx_subzone=%ld"
+#define VSCPDB_SUBZONE_SELECT_ID    "SELECT * FROM subzone WHERE idx_subzone=%ld;"
+#define VSCPDB_SUBZONE_UPDATE       "UPDATE subzone SET name='%s',description='%s' WHERE idx_subzone=%ld;"
 
 #define VSCPDB_ORDINAL_SUBZONE_ID               0   //
 #define VSCPDB_ORDINAL_SUBZONE_NAME             1   // User name of subzone
@@ -664,29 +672,34 @@
 /*
  * Loaded MDF's are cached. This record points to the loaded MDF
  *
+ * name     - (first) device name from mdf
  * mdf      - The MDF file content.
  * picture  - Picture of device
  * date     - When the MDF was fetched.
  * guid     - GUID for the device.
  */
-#define VSCPDB_MDF_CACHE_CREATE "CREATE TABLE IF NOT EXISTS 'mdf_cache' ("\
+#define VSCPDB_MDF_CREATE "CREATE TABLE IF NOT EXISTS 'mdf' ("\
 	"`idx_mdf`	INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
-	"`url`          TEXT NOT NULL UNIQUE,"\
-	"`mdf`          TEXT NOT NULL,"\
+        "`name`         TEXT,"\
+        "`date`         TEXT,"\
+	"`url`          TEXT,"\
+	"`mdf`          TEXT,"\
 	"`picture`	BLOB,"\
-	"`date`         TEXT,"\
         "`guid`         TEXT DEFAULT '00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00'"\
         ");"
 
-#define VSCPDB_MDF_CACHE_CREATE_INDEX "CREATE INDEX `idxmdf_cache` "\
-                "ON mdf_cache ('url'):"
+#define VSCPDB_MDF_CREATE_INDEX "CREATE INDEX `idx_mdf` "\
+                                "ON mdf_cache ('url'):"
+#define VSCPDB_MDF_SELECT_ALL   "SELECT * FROM mdf;"
+#define VSCPDB_MDF_SELECT_ALL_DATE   "SELECT * FROM mdf ORDER BY name;"
 
-#define VSCPDB_ORDINAL_MDF_CACHE_ID                 0   //
-#define VSCPDB_ORDINAL_MDF_CACHE_URL                1   //
-#define VSCPDB_ORDINAL_MDF_CACHE_FILE_PATH          2   //
-#define VSCPDB_ORDINAL_MDF_CACHE_PICTURE_PATH       3   //
-#define VSCPDB_ORDINAL_MDF_CACHE_DATE               4   //
-#define VSCPDB_ORDINAL_MDF_CACHE_GUID               5   //
+#define VSCPDB_ORDINAL_MDF_ID                 0   //
+#define VSCPDB_ORDINAL_MDF_NAME               1   //
+#define VSCPDB_ORDINAL_MDF_DATE               2   //
+#define VSCPDB_ORDINAL_MDF_URL                3   //
+#define VSCPDB_ORDINAL_MDF_FILE_PATH          4   //
+#define VSCPDB_ORDINAL_MDF_PICTURE_PATH       5   //
+#define VSCPDB_ORDINAL_MDF_GUID               6   //
 
 //*****************************************************************************
 //                                SIMPLEUI

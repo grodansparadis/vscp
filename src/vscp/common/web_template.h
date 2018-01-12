@@ -183,6 +183,7 @@ content-type\" /><title>%s</title>"
 
 #define WEB_COMMON_TABLE_END "</tbody></table>"
 
+
 // * * * DM List * * *
 
 // Place after menus
@@ -197,7 +198,6 @@ content-type\" /><title>%s</title>"
 #define WEB_DMLIST_TR_HEAD "<tr><th>Pos</th><th>Entry</th></tr>"
 
 #define WEB_DMLIST_TD_CENTERED "<td id=\"tdcenter\">"
-
 
 
 // * * * DM Edit * * *
@@ -303,7 +303,10 @@ content-type\" /><title>%s</title>"
 // Place before common end
 #define WEB_ZONEEDIT_TABLE_END "</tbody></table>"
 
-
+// * * * Post * * *
+#define WEB_ZONE_POST_BODY_START "<br><div id=\"content\"><div id=\"header\">\
+                                    <h1 id=\"header\">VSCP Server - Zone Post</h1>\
+                                    </div>"
 
 // * * * Subzone List * * *
 
@@ -317,7 +320,6 @@ content-type\" /><title>%s</title>"
                                 <th></th></tr>"
 
 
-
 // * * * Subzone Edit * * *
 
 // Place after menus
@@ -328,7 +330,10 @@ content-type\" /><title>%s</title>"
 // Place before common end
 #define WEB_SUBZONEEDIT_TABLE_END "</tbody></table>"
 
-
+// * * * Post * * *
+#define WEB_SUBZONE_POST_BODY_START "<br><div id=\"content\"><div id=\"header\">\
+                                    <h1 id=\"header\">VSCP Server - Subzone Post</h1>\
+                                    </div>"
 
 // * * * GUID List * * *
 
@@ -336,6 +341,13 @@ content-type\" /><title>%s</title>"
 #define WEB_GUIDLIST_BODY_START "<br><div id=\"content\"><div id=\"header\">\
                                 <h1 id=\"header\">VSCP Server - GUID's</h1></div>\
                                 <table><tbody>"
+
+#define WEB_GUIDLIST_TD_CENTERED "<td id=\"tdcenter\">"
+
+
+
+
+
 
 // Table head
 #define WEB_GUIDLIST_TR_HEAD "<tr><th>Pos</th><th>Type</th><th>GUID's</th>\
@@ -352,6 +364,12 @@ content-type\" /><title>%s</title>"
 
 // Place before common end
 #define WEB_GUIDEDIT_TABLE_END "</tbody></table>"
+
+// * * * Post * * *
+#define WEB_GUID_POST_BODY_START "<br><div id=\"content\"><div id=\"header\">\
+                                    <h1 id=\"header\">VSCP Server - GUID Post</h1>\
+                                    </div>"
+
 
 
 // * * * Location List * * *
@@ -401,8 +419,8 @@ content-type\" /><title>%s</title>"
  * };
  */
 
-//  Variable-Edit submit 
-#define WEB_VAREDIT_SUBMIT "<br><div style=\"text-align:center\">\
+//  Common (Variable/zone/subzone/guid)-Edit submit 
+#define WEB_COMMON_SUBMIT "<br><div style=\"text-align:center\">\
                             <button type=\"submit\" \
                                onclick=\"DoNav(%s);\" name=\"btnsave\">Save</button> \
                             <button type=\"reset\" value=\"reset\">Reset</button> \

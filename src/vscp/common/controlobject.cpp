@@ -4585,7 +4585,7 @@ bool CControlObject::doCreateConfigurationTable( void )
 
     // Create settings db
     psql = VSCPDB_CONFIG_CREATE;
-    if ( SQLITE_OK  !=  sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg ) ) {
+    if ( SQLITE_OK  !=  sqlite3_exec( m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg ) ) {
         fprintf( stderr,
                     "Creation of the VSCP settings database failed with message %s",
                     pErrMsg );
@@ -4594,7 +4594,7 @@ bool CControlObject::doCreateConfigurationTable( void )
 
     // Create name index
     psql = VSCPDB_CONFIG_CREATE_INDEX;
-    if ( SQLITE_OK  !=  sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg ) ) {
+    if ( SQLITE_OK  !=  sqlite3_exec( m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg ) ) {
         m_db_vscp_configMutex.Unlock();
         fprintf( stderr,
                     "Creation of the VSCP settings index failed with message %s",
@@ -5661,7 +5661,7 @@ bool CControlObject::doCreateLogTable( void )
 
     m_db_vscp_configMutex.Lock();
 
-    if ( SQLITE_OK  !=  sqlite3_exec(m_db_vscp_log, psql, NULL, NULL, &pErrMsg ) ) {
+    if ( SQLITE_OK  !=  sqlite3_exec( m_db_vscp_log, psql, NULL, NULL, &pErrMsg ) ) {
         fprintf( stderr,
                     "Failed to create VSCP log table with error %s.\n",
                     pErrMsg );
@@ -5696,7 +5696,7 @@ bool CControlObject::doCreateUdpNodeTable( void )
 
     m_db_vscp_configMutex.Lock();
 
-    if ( SQLITE_OK  !=  sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg ) ) {
+    if ( SQLITE_OK  !=  sqlite3_exec( m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg ) ) {
         fprintf( stderr,
                     "Failed to create VSCP udpnode table with error %s.\n",
                     pErrMsg );
@@ -5732,7 +5732,7 @@ bool CControlObject::doCreateMulticastTable( void )
 
     m_db_vscp_configMutex.Lock();
 
-    if ( SQLITE_OK  !=  sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg ) ) {
+    if ( SQLITE_OK  !=  sqlite3_exec( m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg ) ) {
         fprintf( stderr,
                     "Failed to create VSCP multicast table with error %s.\n",
                     pErrMsg );
@@ -5767,7 +5767,7 @@ bool CControlObject::doCreateUserTable( void )
         return false;
     }
 
-    if ( SQLITE_OK  !=  sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg ) ) {
+    if ( SQLITE_OK  !=  sqlite3_exec( m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg ) ) {
         fprintf( stderr,
                     "Failed to create VSCP user table with error %s.\n",
                     pErrMsg );
@@ -5799,7 +5799,7 @@ bool CControlObject::doCreateDriverTable( void )
         return false;
     }
 
-    if ( SQLITE_OK  !=  sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg ) ) {
+    if ( SQLITE_OK  !=  sqlite3_exec( m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg ) ) {
         fprintf( stderr,
                     "Failed to create VSCP driver table with error %s.\n",
                     pErrMsg );
@@ -5821,18 +5821,18 @@ bool CControlObject::doCreateGuidTable( void )
     char *pErrMsg = 0;
     const char *psql = VSCPDB_GUID_CREATE;
 
-    fprintf( stderr, "Creating discovery table..\n" );
+    fprintf( stderr, "Creating GUID discovery table..\n" );
 
     // Check if database is open
     if ( NULL == m_db_vscp_daemon ) {
         fprintf( stderr,
-                    "Failed to create VSCP guid table - closed.\n" );
+                    "Failed to create VSCP GUID table - closed.\n" );
         return false;
     }
 
-    if ( SQLITE_OK  !=  sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg ) ) {
+    if ( SQLITE_OK  !=  sqlite3_exec( m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg ) ) {
         fprintf( stderr,
-                    "Failed to create VSCP guid table with error %s.\n",
+                    "Failed to create VSCP GUID table with error %s.\n",
                     pErrMsg );
         return false;
     }
@@ -5861,7 +5861,7 @@ bool CControlObject::doCreateLocationTable( void )
         return false;
     }
 
-    if ( SQLITE_OK  !=  sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg ) ) {
+    if ( SQLITE_OK  !=  sqlite3_exec( m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg ) ) {
         fprintf( stderr,
                     "Failed to create VSCP location table with error %s.\n",
                     pErrMsg );
@@ -5882,20 +5882,20 @@ bool CControlObject::doCreateLocationTable( void )
 bool CControlObject::doCreateMdfCacheTable( void )
 {
     char *pErrMsg = 0;
-    const char *psql = VSCPDB_MDF_CACHE_CREATE;
+    const char *psql = VSCPDB_MDF_CREATE;
 
-    fprintf( stderr, "Creating MDF cache table..\n" );
+    fprintf( stderr, "Creating MDF table..\n" );
 
     // Check if database is open
     if ( NULL == m_db_vscp_daemon ) {
         fprintf( stderr,
-                    "Failed to create VSCP mdf cache table - closed.\n" );
+                    "Failed to create VSCP mdf table - closed.\n" );
         return false;
     }
 
-    if ( SQLITE_OK  !=  sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg ) ) {
+    if ( SQLITE_OK  !=  sqlite3_exec( m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg ) ) {
         fprintf( stderr,
-                    "Failed to create VSCP mdf cache table with error %s.\n",
+                    "Failed to create VSCP mdf table with error %s.\n",
                     pErrMsg );
         return false;
     }
@@ -5924,7 +5924,7 @@ bool CControlObject::doCreateSimpleUiTable( void )
         return false;
     }
 
-    if ( SQLITE_OK  !=  sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg ) ) {
+    if ( SQLITE_OK  !=  sqlite3_exec( m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg ) ) {
         fprintf( stderr,
                     "Failed to create VSCP simple ui table with error %s.\n",
                     pErrMsg );
@@ -5955,8 +5955,8 @@ bool CControlObject::doCreateSimpleUiItemTable( void )
         return false;
     }
 
-    if ( SQLITE_OK  !=  sqlite3_exec( m_db_vscp_daemon, 
-                                        psql, NULL, NULL, &pErrMsg ) ) {
+    if ( SQLITE_OK != sqlite3_exec( m_db_vscp_daemon, 
+                                       psql, NULL, NULL, &pErrMsg ) ) {
         fprintf( stderr,
                     "Failed to create VSCP simple UI item table with error %s.\n",
                     pErrMsg );
@@ -5986,7 +5986,7 @@ bool CControlObject::doCreateZoneTable( void )
         return false;
     }
 
-    if ( SQLITE_OK  !=  sqlite3_exec( m_db_vscp_daemon, 
+    if ( SQLITE_OK != sqlite3_exec( m_db_vscp_daemon, 
                                         psql, NULL, NULL, &pErrMsg ) ) {
         fprintf( stderr,
                     "Failed to create VSCP zone table with error %s.\n",
@@ -5995,25 +5995,27 @@ bool CControlObject::doCreateZoneTable( void )
     }
     
     // Fill with default info
+    wxString sql = "BEGIN;";
     for ( int i=0; i<256; i++ ) {
-        wxString sql = 
+        sql += 
              wxString::Format( _("INSERT INTO 'zone' (idx_zone, name) "
                                  "VALUES( %d, 'zone%d' );"),
                                  i, i );
-        if ( SQLITE_OK  !=  sqlite3_exec( m_db_vscp_daemon, 
-                                            (const char *)sql.mbc_str(), 
-                                            NULL, NULL, &pErrMsg ) ) {
-            fprintf( stderr,
-                    "Failed to add VSCP default zone table entry %d. Error %s\n",
-                    i, pErrMsg );
-        }
-        else {
-            fprintf( stderr, "." );
-        }
     }
     
-    fprintf( stderr, "\n" );
-
+    sql += wxString::Format( VSCPDB_ZONE_UPDATE,
+                                        "All zones",
+                                        "Zone = 255 represents all zones.",
+                                        255L );
+    sql += "COMMIT;";
+    if ( SQLITE_OK != sqlite3_exec( m_db_vscp_daemon, 
+                                        (const char *)sql.mbc_str(), 
+                                        NULL, NULL, &pErrMsg ) ) {
+        fprintf( stderr,
+                    "Failed to insert last VSCP default zone table entry %d. Error %s\n",
+                    255, pErrMsg );
+    } 
+    
     return true;
 }
 
@@ -6038,7 +6040,7 @@ bool CControlObject::doCreateSubZoneTable( void )
         return false;
     }
 
-    if ( SQLITE_OK  !=  sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg ) ) {
+    if ( SQLITE_OK  !=  sqlite3_exec( m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg ) ) {
         fprintf( stderr,
                     "Failed to create VSCP subzone table with error %s.\n",
                     pErrMsg );
@@ -6046,24 +6048,26 @@ bool CControlObject::doCreateSubZoneTable( void )
     }
         
     // Fill with default info
+    wxString sql = "BEGIN;";
     for ( int i=0; i<256; i++ ) {
-        wxString sql = 
+        sql += 
              wxString::Format( _("INSERT INTO 'subzone' (idx_subzone, name) "
                                  "VALUES( %d, 'subzone%d' );"),
                                  i, i );
-        if ( SQLITE_OK  !=  sqlite3_exec( m_db_vscp_daemon, 
-                                            (const char *)sql.mbc_str(), 
-                                            NULL, NULL, &pErrMsg ) ) {
-            fprintf( stderr,
-                    "Failed to add VSCP default subzone table entry %d. Error %s\n",
-                    i, pErrMsg );
-        }
-        else {
-            fprintf( stderr, "." );
-        }
     }
     
-    fprintf( stderr, "\n" );
+    sql += wxString::Format( VSCPDB_SUBZONE_UPDATE,
+                                        "All subzones",
+                                        "Subzone = 255 represents all subzones of a zone.",
+                                        255L ); 
+    sql += "COMMIT;";
+    if ( SQLITE_OK != sqlite3_exec( m_db_vscp_daemon, 
+                                        (const char *)sql.mbc_str(), 
+                                        NULL, NULL, &pErrMsg ) ) {
+        fprintf( stderr,
+                    "Failed to insert last VSCP default subzone table entry %d. Error %s\n",
+                    255, pErrMsg );
+    }
 
     return true;
 }
@@ -6089,7 +6093,7 @@ bool CControlObject::doCreateUserdefTableTable( void )
         return false;
     }
 
-    if ( SQLITE_OK  !=  sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg ) ) {
+    if ( SQLITE_OK  !=  sqlite3_exec( m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg ) ) {
         fprintf( stderr,
                     "Failed to create VSCP userdef table with error %s.\n",
                     pErrMsg );
