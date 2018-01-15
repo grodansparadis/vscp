@@ -4,7 +4,7 @@
 //
 // The MIT License (MIT)
 // 
-// Copyright (c) 2000-2017 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
+// Copyright (c) 2000-2018 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
 // 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -42,31 +42,25 @@
                            "            <a href=\"/vscp/configure\">List configuration</a>"\
                            "        </li>"\
                            "        <li>"\
-                           "            <a href=\"/vscp/settings\">Settings</a>"\
+                           "            <a href=\"/vscp/settings\">Persistent settings</a>"\
                            "        </li>"\
                            "        <li>"\
-                           "            <a href=\"/vscp/varlist\">Variable - List</a>"\
+                           "            <a href=\"/vscp/varlist\">Variables</a>"\
                            "        </li>"\
                            "        <li>"\
-                           "            <a href=\"/vscp/varnew\">Variable - New</a>"\
+                           "            <a href=\"/vscp/dm\">Decision Matrix</a>"\
                            "        </li>"\
                            "        <li>"\
-                           "            <a href=\"/vscp/dm\">DM - list</a>"\
+                           "            <a href=\"/vscp/zone\">Zones</a>"\
                            "        </li>"\
                            "        <li>"\
-                           "            <a href=\"/vscp/dmedit?new=true\">DM - new element</a>"\
+                           "            <a href=\"/vscp/subzone\">Subzones</a>"\
                            "        </li>"\
                            "        <li>"\
-                           "            <a href=\"/vscp/zone\">Zone - list</a>"\
+                           "            <a href=\"/vscp/location\">Locations</a>"\
                            "        </li>"\
                            "        <li>"\
-                           "            <a href=\"/vscp/subzone\">Subzone - list</a>"\
-                           "        </li>"\
-                           "        <li>"\
-                           "            <a href=\"/vscp/location\">Location - list</a>"\
-                           "        </li>"\
-                           "        <li>"\
-                           "            <a href=\"/vscp/guid\">GUID - list</a>"\
+                           "            <a href=\"/vscp/guid\">GUID's</a>"\
                            "        </li>"\
                            "    </ul>"\
                            " </li>"\

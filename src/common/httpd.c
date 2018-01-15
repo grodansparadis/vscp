@@ -1,7 +1,7 @@
 ﻿/*
  * Copyright (c) 2004-2013 Sergey Lyubka
  * Copyright (c) 2013-2017 the Civetweb developers
- * Copyright (c) 2017 Ake Hedman, Grodans Paradis AB
+ * Copyright (c) 2017-2018 Ake Hedman, Grodans Paradis AB
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal

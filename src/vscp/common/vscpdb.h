@@ -370,7 +370,7 @@
 
 
 //*****************************************************************************
-//                                  LOG
+//                                    LOG
 //*****************************************************************************
 
 #define VSCPDB_LOG_CREATE "CREATE TABLE IF NOT EXISTS 'log' ("\
@@ -467,7 +467,7 @@
 
 
 //*****************************************************************************
-//                                 DRIVER
+//                                  DRIVER
 //*****************************************************************************
 
 /*
@@ -516,7 +516,7 @@
 
 
 //*****************************************************************************
-//                     GUID (Discovery)    . DB:discovery
+//                           GUID (Discovery)    
 //*****************************************************************************
 
 /*
@@ -551,11 +551,11 @@
 
 #define VSCPDB_GUID_CREATE "CREATE TABLE IF NOT EXISTS `guid` ("\
 	"`idx_guid`	INTEGER NOT NULL PRIMARY KEY UNIQUE,"\
-	"`type`         INTEGER NOT NULL,"\
+	"`type`         INTEGER NOT NULL DEFAULT 0,"\
 	"`guid`         TEXT DEFAULT '00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00',"\
         "`date`         TEXT,"\
         "`name`         TEXT,"\
-        "`link_to_mdf`	INTEGER,"\
+        "`link_to_mdf`	INTEGER DEFAULT 0,"\
         "`address`      TEXT,"\
         "`capabilities` TEXT,"\
         "`nonstandard`  TEXT,"\
@@ -568,7 +568,17 @@
 #define VSCPDB_GUID_ALL "SELECT * from 'guid'"
 #define VSCPDB_GUID_SELECT_PAGE  "SELECT * FROM guid LIMIT %d,%d;"
 #define VSCPDB_GUID_SELECT_ID    "SELECT * FROM guid WHERE idx_guid=%ld;"
-#define VSCPDB_GUID_UPDATE       "UPDATE guid SET name='%s',description='%s' WHERE idx_guid=%ld;"
+
+#define VSCPDB_GUID_DELETE_ID  "DELETE FROM 'guid' WHERE idx_guid=%ld"
+
+#define VSCPDB_GUID_INSERT "INSERT INTO 'guid' "\
+                "(type,guid,date,name,link_to_mdf,address,capabilities,nonstandard,description "\
+                " ) VALUES (%d,'%s','%s','%q',%d,'%q','%q','%q','%q' );"
+
+#define VSCPDB_GUID_UPDATE       "UPDATE guid SET type=%d,guid='%s',date='%s',"\
+                                 "name='%q',link_to_mdf=%d,address='%q',"\
+                                 "capabilities='%q',nonstandard='%q',description='%q' "\
+                                 " WHERE idx_guid=%ld;"
 
 #define VSCPDB_ORDINAL_GUID_ID                      0   //
 #define VSCPDB_ORDINAL_GUID_TYPE                    1   //
