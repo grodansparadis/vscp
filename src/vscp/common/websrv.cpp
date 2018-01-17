@@ -6766,18 +6766,6 @@ static int vscp_guid_edit( struct web_connection *conn, void *cbdata  )
                         pguid_types[typeGUID] );
         typeGUID++;
     }
-    /*web_printf( conn, "<option ");
-    if ( 2 == type ) web_printf( conn, "selected ");
-    web_printf( conn, "value=\"2\">Level I hardware.</option>");
-    web_printf( conn, "<option ");
-    if ( 3 == type ) web_printf( conn, "selected ");
-    web_printf( conn, "value=\"3\">Level II hardware.</option>");
-    web_printf( conn, "<option ");
-    if ( 4 == type ) web_printf( conn, "selected ");
-    web_printf( conn, "value=\"4\">User interface component</option>");
-    web_printf( conn, "<option ");
-    if ( 5 == type ) web_printf( conn, "selected ");
-    web_printf( conn, "value=\"5\">Location</option>");*/
     
     web_printf( conn, "</select>"  );
     web_printf(conn, "</td></tr>");

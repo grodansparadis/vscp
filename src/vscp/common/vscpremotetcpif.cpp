@@ -4272,7 +4272,8 @@ int VscpRemoteTcpIf::readLevel2Registers( uint32_t reg,
     e.timestamp = 0;
     doCmdSendEx( &e );
 
-    // We should get thirtytwo response frames back
+    // We should get 32 response frames back
+    // a bit is set in response_flags for each frame
     unsigned long receive_flags = 0;
     unsigned char nPages = count/4;
     unsigned char lastpageCnt = count%4;

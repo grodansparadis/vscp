@@ -14508,9 +14508,9 @@ web_lua_websocket_close( struct web_connection *conn, void *ws_arg )
 
 lua_State *
 web_prepare_lua_context_script( const char *file_name,
-                                struct web_context *ctx,
-                                char *ebuf,
-                                size_t ebuf_len )
+                                    struct web_context *ctx,
+                                    char *ebuf,
+                                    size_t ebuf_len )
 {
     struct lua_State *L;
     int lua_ret;
@@ -14525,20 +14525,20 @@ web_prepare_lua_context_script( const char *file_name,
                         ebuf,
                         ebuf_len,
                         "Error: %s",
-                        "Cannot create Lua state");
+                        "Cannot create Lua state" );
         return 0;
     }
 
     web_open_lua_libs( L );
 
-    lua_ret = luaL_loadfile(L, file_name);
+    lua_ret = luaL_loadfile( L, file_name );
 
     if ( lua_ret != LUA_OK ) {
 
         // Error when loading the file (e.g. file not found,
         // out of memory, ...)
         //
-        lua_err_txt = lua_tostring(L, -1);
+        lua_err_txt = lua_tostring( L, -1 );
         web_snprintf( NULL,
                         NULL, // No truncation check for ebuf
                         ebuf,
@@ -14557,6 +14557,7 @@ web_prepare_lua_context_script( const char *file_name,
                         );
 
     if ( lua_ret != LUA_OK ) {
+        
         // Error when executing the script
         lua_err_txt = lua_tostring(L, -1);
         web_snprintf( NULL,
@@ -14574,12 +14575,86 @@ web_prepare_lua_context_script( const char *file_name,
     return L;
 }
 
+
 ///////////////////////////////////////////////////////////////////////////////
-// web_run_lua
+// web_prepare_lua_context_string
+//
+
+lua_State *
+web_prepare_lua_context_string( const char *pLuaStr,
+                                    struct web_context *ctx,
+                                    char *ebuf,
+                                    size_t ebuf_len )
+{
+    struct lua_State *L;
+    int lua_ret;
+    const char *lua_err_txt;
+
+    (void) ctx;
+
+    L = luaL_newstate();
+    if ( NULL == L ) {
+        web_snprintf( NULL,
+                        NULL, // No truncation check for ebuf
+                        ebuf,
+                        ebuf_len,
+                        "Error: %s",
+                        "Cannot create Lua state" );
+        return 0;
+    }
+
+    web_open_lua_libs( L );
+
+    lua_ret = luaL_loadstring( L, pLuaStr );
+
+    if ( lua_ret != LUA_OK ) {
+
+        // Error when loading the file (e.g. file not found,
+        // out of memory, ...)
+        //
+        lua_err_txt = lua_tostring( L, -1 );
+        web_snprintf( NULL,
+                        NULL, // No truncation check for ebuf
+                        ebuf,
+                        ebuf_len,
+                        "Error loading script %s: %s\n",
+                        pLuaStr,
+                        lua_err_txt );
+        return 0;
+    }
+
+    // The script file is loaded, now call it
+    lua_ret = lua_pcall( L,
+                            0, // no arguments
+                            1, // zero or one return value
+                            0  // errors as strint return value
+                        );
+
+    if ( lua_ret != LUA_OK ) {
+        
+        // Error when executing the script
+        lua_err_txt = lua_tostring(L, -1);
+        web_snprintf( NULL,
+                        NULL, // No truncation check for ebuf
+                        ebuf,
+                        ebuf_len,
+                        "Error running script %s: %s\n",
+                        pLuaStr,
+                        lua_err_txt );
+        return 0;
+    }
+
+    //	lua_close(L); must be done somewhere else
+
+    return L;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// web_run_lua_script
 //
 
 int
-web_run_lua(const char *file_name)
+web_run_lua_script( const char *file_name )
 {
     int func_ret = EXIT_FAILURE;
     char ebuf[512] = {0};
@@ -14609,7 +14684,43 @@ web_run_lua(const char *file_name)
 }
 
 
+///////////////////////////////////////////////////////////////////////////////
+// web_run_lua_script
+//
+
+int
+web_run_lua_string( const char *pStrLua )
+{
+    int func_ret = EXIT_FAILURE;
+    char ebuf[512] = {0};
+    lua_State *L =
+            web_prepare_lua_context_string( pStrLua,
+                                                NULL,
+                                                ebuf,
+                                                sizeof( ebuf ) );
+    if ( L ) {
+
+        // Script executed
+        if (lua_type(L, -1) == LUA_TNUMBER) {
+            func_ret = (int) lua_tonumber(L, -1);
+        }
+        else {
+            func_ret = EXIT_SUCCESS;
+        }
+
+        lua_close(L);
+
+    }
+    else {
+        fprintf(stderr, "%s\n", ebuf);
+    }
+
+    return func_ret;
+}
+
+
 static void *lib_handle_uuid = NULL;
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // web_lua_init_optional_libraries

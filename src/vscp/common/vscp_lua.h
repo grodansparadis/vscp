@@ -1,4 +1,6 @@
-// version.h
+// vscp_lua.h
+//
+// This file is part of the VSCP (http://www.vscp.org) 
 //
 // The MIT License (MIT)
 // 
@@ -21,25 +23,65 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
+//
 
-#ifndef _____VSCP_VERSION_h_____
-#define _____VSCP_VERSION_h_____
-/*
-    MAJOR version with incompatible API changes,
-    MINOR version with add functionality in a backwards-compatible manner, and
-    RELEASE version with backwards-compatible bug fixes.
-    BUILD Just a new build.
-*/
+#if !defined(VSCP_LUA__INCLUDED_)
+#define VSCP_LUA__INCLUDED_
 
-// I M P O T A N T ! ! ! Lines below must be located at line 35/36/37/40/42/43    I M P O T A N T ! ! !
-#define VSCPD_MAJOR_VERSION     12
-#define VSCPD_MINOR_VERSION     29
-#define VSCPD_RELEASE_VERSION   2
-#define VSCPD_BUILD_VERSION     41
 
-#define VSCPD_DISPLAY_VERSION "12.29.2.41 Magnesium (Development version)"
+////////////////////////////////////////////////////////////////////////////////
+// actionThread_Lua
+//
 
-#define VSCPD_COPYRIGHT "Copyright (C) 2000-2018, Grodans Paradis AB, http://www.paradiseofthefrog.com"
-#define VSCPD_COPYRIGHT_HTML "Copyright (C) 2000-2018, <a href=\"mailto:info@paradiseofthefrog.com\">Paradise of the Frog</a>, <a href=\"http://www.paradiseofthefrog.com\">http://www.paradiseofthefrog.com</a>"
+class actionThread_Lua : public wxThread {
+    
+public:
+
+    /// Constructor
+    actionThread_Lua( wxString& strScript,
+                                wxThreadKind kind = wxTHREAD_DETACHED );
+
+    /// Destructor
+    virtual ~actionThread_Lua();
+
+    /*!
+        Thread code entry point
+     */
+    virtual void *Entry();
+
+    /*! 
+        called when the thread exits - whether it terminates normally or is
+        stopped with Delete() (but not when it is Kill()ed!)
+     */
+    virtual void OnExit();
+
+    /*!
+        Termination control
+     */
+    bool m_bQuit;
+    
+    /*!
+     * Script
+     */
+    wxString m_wxstrScript;
+    
+    /// Lua executing id
+    uint64_t m_id;
+    
+    /// Time when script was started
+    wxDateTime m_start;
+    
+    /// Time when script was stopped
+    wxDateTime m_stop;
+    
+    /// Client item for script
+    CClientItem *m_pClientItem;
+    
+    /// Feed event
+    vscpEventEx m_feedEvent;
+    
+};
+
+
 
 #endif

@@ -61,6 +61,7 @@
 #include <controlobject.h>
 #include <vscpremotetcpif.h>
 #include <vscp_javascript.h>
+#include <vscp_lua.h>
 #include <duktape.h>
 #include <duktape_vscp.h>
 #include <duk_module_node.h>
@@ -127,11 +128,11 @@ dmTimer::~dmTimer()
 //
 
 void dmTimer::init( wxString& nameVar, 
-                    uint32_t id, 
-                    uint32_t delay, 
-                    bool bStart, 
-                    bool bReload,
-                    int reloadLimit )
+                        uint32_t id, 
+                        uint32_t delay, 
+                        bool bStart, 
+                        bool bReload,
+                        int reloadLimit )
 {
     m_bPaused = false;
     m_pThread = NULL;       // No working thread
@@ -3078,10 +3079,10 @@ bool dmElement::doAction( vscpEvent *pEvent )
                 wxString wxstrErr;
                 
                 // Write in possible escapes
-                wxString wxstr = m_actionparam;
-                handleEscapes( pEvent, wxstr );
+                wxString strParam = m_actionparam;
+                handleEscapes( pEvent, strParam );
                 
-                wxStringTokenizer tkz( m_actionparam, _(";") );
+                wxStringTokenizer tkz( strParam, _(";") );
 
                 if ( !tkz.HasMoreTokens() ) {
                     // Strange action parameter
@@ -3181,11 +3182,11 @@ bool dmElement::doAction( vscpEvent *pEvent )
             }
             { 
                 // If BASE64 encoded then decode 
-                wxString wxstr = m_actionparam;
-                wxstr.Trim( false );
-                if ( wxstr.StartsWith( _("BASE64:"), &wxstr ) ) {
+                wxString strParam = m_actionparam;
+                strParam.Trim( false );
+                if ( strParam.StartsWith( _("BASE64:"), &strParam ) ) {
                     // Yes should be decoded
-                    size_t len = wxBase64Decode( NULL, 0, wxstr );
+                    size_t len = wxBase64Decode( NULL, 0, strParam );
                     if ( 0 == len ) {
                         gpobj->logMsg( _("[DM] ") + "Failed to decode BASE64 "
                                          "parameter (len=0)\n", 
@@ -3201,16 +3202,16 @@ bool dmElement::doAction( vscpEvent *pEvent )
                                             DAEMON_LOGTYPE_DM );
                         break;
                     }
-                    len = wxBase64Decode( pbuf, len, wxstr );
-                    wxstr = wxString::FromUTF8( (const char *)pbuf, len );
+                    len = wxBase64Decode( pbuf, len, strParam );
+                    strParam = wxString::FromUTF8( (const char *)pbuf, len );
                     delete [] pbuf;
                 }
                 
                 // Write in possible escapes
-                handleEscapes( pEvent, wxstr );
+                handleEscapes( pEvent, strParam );
 
                 actionThread_JavaScript *pThread = 
-                        new actionThread_JavaScript( wxstr );
+                        new actionThread_JavaScript( strParam );
                 if ( NULL == pThread ) return false;
                 
                 vscp_convertVSCPtoEx( &pThread->m_feedEvent, 
@@ -3234,6 +3235,80 @@ bool dmElement::doAction( vscpEvent *pEvent )
 
             }
             break;
+            
+        case VSCP_DAEMON_ACTION_CODE_RUN_LUASCRIPT:
+            
+            if ( gpobj->m_debugFlags1 & VSCP_DEBUG1_DM ) {
+                logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_RUN_LUASCRIPT.\n") ); // Log
+                gpobj->logMsg( _("[DM] ") + logStr + _("\n"), 
+                                DAEMON_LOGMSG_NORMAL, 
+                                DAEMON_LOGTYPE_DM );
+                gpobj->logMsg(  _("[DM] ") + _("DM = ") + getAsString( false ) + 
+                                _("\n"), 
+                                DAEMON_LOGMSG_DEBUG, 
+                                DAEMON_LOGTYPE_DM );
+                vscp_writeVscpEventToString( pEvent, logStr );
+                gpobj->logMsg( _("[DM] ") + _("Event = ") + logStr + _("\n"), 
+                                DAEMON_LOGMSG_DEBUG, 
+                                DAEMON_LOGTYPE_DM );
+            }
+            { 
+                // If BASE64 encoded then decode 
+                wxString strParam = m_actionparam;
+                strParam.Trim( false );
+                if ( strParam.StartsWith( _("BASE64:"), &strParam ) ) {
+                    // Yes should be decoded
+                    size_t len = wxBase64Decode( NULL, 0, strParam );
+                    if ( 0 == len ) {
+                        gpobj->logMsg( _("[DM] ") + "Failed to decode BASE64 "
+                                         "parameter (len=0)\n", 
+                                            DAEMON_LOGMSG_NORMAL, 
+                                            DAEMON_LOGTYPE_DM );
+                        break;
+                    }
+                    uint8_t *pbuf = new uint8_t[len];
+                    if ( NULL == pbuf ) {
+                        gpobj->logMsg( _("[DM] ") + "Failed to decode "
+                                         "BASE64 parameter  pbuf=NULL)\n", 
+                                            DAEMON_LOGMSG_NORMAL, 
+                                            DAEMON_LOGTYPE_DM );
+                        break;
+                    }
+                    len = wxBase64Decode( pbuf, len, strParam );
+                    strParam = wxString::FromUTF8( (const char *)pbuf, len );
+                    delete [] pbuf;
+                }
+                
+                // Write in possible escapes
+                handleEscapes( pEvent, strParam );
+                
+                strParam.Trim( false );
+
+                actionThread_Lua *pThread = 
+                        new actionThread_Lua( strParam );
+                if ( NULL == pThread ) return false;
+                
+                vscp_convertVSCPtoEx( &pThread->m_feedEvent, 
+                                        pEvent );   // Save feed event  
+
+                wxThreadError err;
+                if ( wxTHREAD_NO_ERROR == (err = pThread->Create() ) ) {
+                    pThread->SetPriority( WXTHREAD_DEFAULT_PRIORITY );
+                    if ( wxTHREAD_NO_ERROR != (err = pThread->Run() ) ) {
+                        gpobj->logMsg( _("[DM] ") + _("Unable to run "
+                                         "actionThread_Lua client "
+                                         "thread.\n"),
+                                            DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+                    }
+                }
+                else {
+                    gpobj->logMsg( _("[DM] ") + _("Unable to create "
+                                     "actionThread_Lua client thread.\n"),
+                                       DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+                }
+
+            }
+            break;    
 
         default:
         case VSCP_DAEMON_ACTION_CODE_NOOP:
@@ -8310,16 +8385,19 @@ void *actionThread_URL::Entry()
         else {
 
             // Invalid method
-            gpobj->logMsg( _("[DM] ") + _( "actionThreadURL: Invalid http access method: " ) +
+            gpobj->logMsg( _("[DM] ") + _( "actionThreadURL: Invalid http "
+                                           "access method: " ) +
                                 m_url.GetServer() +
                                 _(",") +
                                 m_url.GetPort() +
                                 _(",") +
                                 m_url.GetPath() +
                                 _(",") +
-                                wxString::Format( _("acessMethod = %d" ), m_acessMethod ) +
+                                wxString::Format( _("acessMethod = %d" ), 
+                                                  m_acessMethod ) +
                                 _(" \n"), 
-                                DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM  );
+                                DAEMON_LOGMSG_NORMAL, 
+                               DAEMON_LOGTYPE_DM  );
 
         }
 
@@ -8435,7 +8513,14 @@ void actionThread_URL::OnExit()
 
 
 
+
+
+
 //------------------------------------------------------------------------------
+//                                 VSCP server
+//------------------------------------------------------------------------------
+
+
 
 
 
@@ -8525,6 +8610,12 @@ void actionThread_VSCPSrv::OnExit()
 
 
 
+
+
+
+
+//------------------------------------------------------------------------------
+//                                     TABLE
 //------------------------------------------------------------------------------
 
 
@@ -8587,10 +8678,13 @@ void *actionThread_Table::Entry()
 
     if ( !tkz.HasMoreTokens() ) {
         // Strange action parameter
-        wxstrErr = _( "[Action] Write Table: Action parameter is not correct. Parameter= ");
+        wxstrErr = _( "[Action] Write Table: Action parameter is not correct. "
+                      "Parameter= ");
         wxstrErr += m_strParam;
         wxstrErr += _("\n");
-        gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+        gpobj->logMsg( _("[DM] ") + wxstrErr, 
+                            DAEMON_LOGMSG_NORMAL, 
+                            DAEMON_LOGTYPE_DM );
         return NULL;
     }
     
@@ -8599,10 +8693,13 @@ void *actionThread_Table::Entry()
     
     if ( !tkz.HasMoreTokens() ) {
         // Missing table name
-        wxstrErr = _( "[Action] Write Table: Action parameter is not correct. No tablename. Parameter= ");
+        wxstrErr = _( "[Action] Write Table: Action parameter is not "
+                      "correct. No tablename. Parameter= ");
         wxstrErr += m_strParam;
         wxstrErr += _("\n");
-        gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+        gpobj->logMsg( _("[DM] ") + wxstrErr, 
+                            DAEMON_LOGMSG_NORMAL, 
+                            DAEMON_LOGTYPE_DM );
         return NULL;
     }
     
@@ -8611,10 +8708,13 @@ void *actionThread_Table::Entry()
     
     // Get table object
     if ( NULL == ( pTable = gpobj->m_userTableObjects.getTable( name ) ) ) {        
-        wxstrErr = _( "[Action] Write Table: A table with that name was not found. Parameter= ");
+        wxstrErr = _( "[Action] Write Table: A table with that name was not "
+                      "found. Parameter= ");
         wxstrErr += m_strParam;
         wxstrErr += _("\n");
-        gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+        gpobj->logMsg( _("[DM] ") + wxstrErr, 
+                            DAEMON_LOGMSG_NORMAL, 
+                            DAEMON_LOGTYPE_DM );
         return NULL;        
     }
     
@@ -8656,7 +8756,9 @@ void *actionThread_Table::Entry()
         
         wxString rowData;
         while ( pTable->getRowRangeOfData( ppStmt, rowData ) ) {
-            gpobj->logMsg( _("[DM] ") + rowData, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+            gpobj->logMsg( _("[DM] ") + rowData, 
+                            DAEMON_LOGMSG_NORMAL, 
+                            DAEMON_LOGTYPE_DM );
         }
         
         pTable->finalizeRangeOfData( ppStmt );
@@ -8670,10 +8772,13 @@ void *actionThread_Table::Entry()
     if ( 0 == type ) {
         
         if ( !tkz.HasMoreTokens() ) {
-            wxstrErr = _( "[Action] Write Table: Action parameter is not correct. Datetime is missing. Parameter= ");
+            wxstrErr = _( "[Action] Write Table: Action parameter is "
+                          "not correct. Datetime is missing. Parameter= ");
             wxstrErr += m_strParam;
             wxstrErr += _("\n");
-            gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+            gpobj->logMsg( _("[DM] ") + wxstrErr, 
+                                DAEMON_LOGMSG_NORMAL, 
+                                DAEMON_LOGTYPE_DM );
             return NULL;
         }
         
@@ -8681,19 +8786,25 @@ void *actionThread_Table::Entry()
         dt.ParseDateTime( tkz.GetNextToken() );
         
         if ( !tkz.HasMoreTokens() ) {
-            wxstrErr = _( "[Action] Write Table: Action parameter is not correct. value is missing. Parameter= ");
+            wxstrErr = _( "[Action] Write Table: Action parameter is not "
+                          "correct. value is missing. Parameter= ");
             wxstrErr += m_strParam;
             wxstrErr += _("\n");
-            gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+            gpobj->logMsg( _("[DM] ") + wxstrErr, 
+                            DAEMON_LOGMSG_NORMAL, 
+                            DAEMON_LOGTYPE_DM );
             return NULL;
         }
         
         // Get value
         if ( !tkz.GetNextToken().ToCDouble( &value ) ) {
-            wxstrErr = _( "[Action] Write Table: Could not get value (invalid?). Parameter= ");
+            wxstrErr = _( "[Action] Write Table: Could not get value "
+                          "(invalid?). Parameter= ");
             wxstrErr += m_strParam;
             wxstrErr += _("\n");
-            gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+            gpobj->logMsg( _("[DM] ") + wxstrErr, 
+                            DAEMON_LOGMSG_NORMAL, 
+                            DAEMON_LOGTYPE_DM );
             return NULL;
         }
         
@@ -8708,7 +8819,8 @@ void *actionThread_Table::Entry()
             // Log the data
             dt.SetMillisecond( m_pFeedEvent->timestamp / 1000 );
             if ( !pTable->logData( dt, value, sql ) ) {
-                gpobj->logMsg( _("[DM] ") + _( "[Action] Write Table: Failed to log data (datetime,value)"), 
+                gpobj->logMsg( _("[DM] ") + _( "[Action] Write Table: "
+                                         "Failed to log data (datetime,value)"), 
                                     DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
             }
         
@@ -8721,7 +8833,8 @@ void *actionThread_Table::Entry()
                         
             wxString strResult;
             if ( !vscp_decodeBase64IfNeeded( sql, strResult ) ) {
-                gpobj->logMsg( _("[DM] ") + _( "[Action] Write Table: Failed to decode SQL string. Will continue anyway."), 
+                gpobj->logMsg( _("[DM] ") + _( "[Action] Write Table: "
+                         "Failed to decode SQL string. Will continue anyway."), 
                                     DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
                 strResult = sql;
             }
@@ -8732,7 +8845,8 @@ void *actionThread_Table::Entry()
             // Log the data
             dt.SetMillisecond( m_pFeedEvent->timestamp / 1000 );
             if ( !pTable->logData( dt, value, strResult ) ) {
-                gpobj->logMsg( _("[DM] ") + _( "[Action] Write Table: Failed to log data (datetime,value,sql)"), 
+                gpobj->logMsg( _("[DM] ") + _( "[Action] Write Table: Failed "
+                                               "to log data (datetime,value,sql)"), 
                                     DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
             }
             
@@ -8743,10 +8857,13 @@ void *actionThread_Table::Entry()
     else if ( 1 == type ) {
         
         if ( !tkz.HasMoreTokens() ) {
-            wxstrErr = _( "[Action] Write Table: Action parameter is not correct. SQL expression is missing. Parameter= ");
+            wxstrErr = _( "[Action] Write Table: Action parameter is not "
+                          "correct. SQL expression is missing. Parameter= ");
             wxstrErr += m_strParam;
             wxstrErr += _("\n");
-            gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+            gpobj->logMsg( _("[DM] ") + wxstrErr, 
+                                DAEMON_LOGMSG_NORMAL, 
+                                DAEMON_LOGTYPE_DM );
             return NULL;
         }
         
@@ -8755,14 +8872,17 @@ void *actionThread_Table::Entry()
             
         wxString strResult;
         if ( !vscp_decodeBase64IfNeeded( sql, strResult ) ) {
-            gpobj->logMsg( _("[DM] ") + _( "[Action] Write Table: Failed to decode sql string. Will continue anyway."), 
+            gpobj->logMsg( _("[DM] ") + _( "[Action] Write Table: Failed to "
+                                           "decode sql string. Will continue "
+                                           "anyway."), 
                                     DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
             strResult = sql;
         }
         
         // Log the data
         if ( !pTable->logData( strResult ) ) {
-            gpobj->logMsg( _("[DM] ") + _( "[Action] Write Table: Failed to log data (sql)"), 
+            gpobj->logMsg( _("[DM] ") + _( "[Action] Write Table: "
+                                           "Failed to log data (sql)"), 
                                     DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
         }
         

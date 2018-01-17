@@ -1643,9 +1643,19 @@ int web_get_system_info_impl( char *buffer, int buflen );
 #define web_lua_load lua_load
 
 /*!
+ * 
  * Run Lua script in a file.
+ * 
  */
 int run_lua( const char *file_name );
+
+/*!
+ *
+ * Run Lua script in string 
+ *
+ */
+int
+web_run_lua_string( const char *pStrLua );
 
 
 #ifdef __cplusplus
