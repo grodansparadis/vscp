@@ -3,8 +3,6 @@
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
     <logicalFolder name="src" displayName="src" projectFiles="true" root="../..">
       <logicalFolder name="common" displayName="common" projectFiles="true">
-        <itemPath>../../common/aes.c</itemPath>
-        <itemPath>../../common/aes.h</itemPath>
         <itemPath>../../common/crc.c</itemPath>
         <itemPath>../../common/crc.h</itemPath>
         <itemPath>../../common/crc8.c</itemPath>
@@ -130,10 +128,6 @@
           <preBuildCommand></preBuildCommand>
         </preBuild>
       </makefileType>
-      <item path="../../common/aes.c" ex="false" tool="0" flavor2="3">
-        <cTool flags="1">
-        </cTool>
-      </item>
       <item path="../../common/crc.c" ex="false" tool="0" flavor2="3">
         <cTool flags="1">
         </cTool>
@@ -182,7 +176,6 @@
       </toolsSet>
       <flagsDictionary>
         <element flagsID="0" commonFlags="-std=c99"/>
-        <element flagsID="1" commonFlags="-std=c99 -g -O2"/>
       </flagsDictionary>
       <codeAssistance>
       </codeAssistance>
@@ -242,21 +235,6 @@
 </preBuildCommand>
         </preBuild>
       </makefileType>
-      <item path="../../common/aes.c" ex="false" tool="0" flavor2="3">
-        <cTool flags="1">
-          <preprocessorList>
-            <Elem>MG_ENABLE_GETADDRINFO</Elem>
-            <Elem>MG_ENABLE_HTTP_CGI</Elem>
-            <Elem>MG_ENABLE_HTTP_SSI</Elem>
-            <Elem>MG_ENABLE_HTTP_SSI_EXEC</Elem>
-            <Elem>MG_ENABLE_HTTP_URL_REWRITES</Elem>
-            <Elem>MG_ENABLE_HTTP_WEBDAV</Elem>
-            <Elem>MG_ENABLE_IPV6</Elem>
-            <Elem>MG_ENABLE_SSL</Elem>
-            <Elem>MG_ENABLE_THREADS</Elem>
-          </preprocessorList>
-        </cTool>
-      </item>
       <item path="../../common/crc.c" ex="false" tool="0" flavor2="3">
         <cTool flags="0">
         </cTool>

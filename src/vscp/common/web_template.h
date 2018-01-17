@@ -57,10 +57,10 @@
                            "            <a href=\"/vscp/subzone\">Subzones</a>"\
                            "        </li>"\
                            "        <li>"\
-                           "            <a href=\"/vscp/location\">Locations</a>"\
+                           "            <a href=\"/vscp/guid\">GUIDs</a>"\
                            "        </li>"\
                            "        <li>"\
-                           "            <a href=\"/vscp/guid\">GUID's</a>"\
+                           "            <a href=\"/vscp/location\">Locations</a>"\
                            "        </li>"\
                            "    </ul>"\
                            " </li>"\
@@ -199,7 +199,7 @@ content-type\" /><title>%s</title>"
 
 // Place after menus
 #define WEB_DMEDIT_BODY_START "<br><div id=\"content\"><div id=\"header\">\
-                                <h1 id=\"header\">VSCP Server - Decision Matrix Edit</h1>\
+                                <h1 id=\"header\">Decision Matrix Edit</h1>\
                                 </div><table><tbody>"
 
 // Place before common end
@@ -214,7 +214,7 @@ content-type\" /><title>%s</title>"
 // * * * DM Post * * *
 
 #define WEB_DMPOST_BODY_START "<br><div id=\"content\"><div id=\"header\">\
-                                <h1 id=\"header\">VSCP Server - Decision Matrix Edit</h1>\
+                                <h1 id=\"header\">Decision Matrix Edit</h1>\
                                 </div><table><tbody>"
 
 
@@ -223,7 +223,7 @@ content-type\" /><title>%s</title>"
 
 // Place after menus
 #define WEB_IFLIST_BODY_START "<br><div id=\"content\"><div id=\"header\">\
-                                  <h1 id=\"header\">VSCP Server - Interfaces</h1></div>\
+                                  <h1 id=\"header\">Interfaces</h1></div>\
                                   <table><tbody>"
 
 // Place before common end
@@ -247,7 +247,7 @@ content-type\" /><title>%s</title>"
 
 // Place after menus
 #define WEB_VARLIST_BODY_START "<br><div id=\"content\"><div id=\"header\">\
-                                <h1 id=\"header\">VSCP Server - Variables</h1></div>\
+                                <h1 id=\"header\">Variables</h1></div>\
                                 <table><tbody>"
 
 // Table head
@@ -271,7 +271,7 @@ content-type\" /><title>%s</title>"
 
 // Place after menus
 #define WEB_ZONELIST_BODY_START "<br><div id=\"content\"><div id=\"header\">\
-                                <h1 id=\"header\">VSCP Server - Zones</h1></div>\
+                                <h1 id=\"header\">Zones</h1></div>\
                                 <table><tbody>"
 
 // * * * Zone Edit * * *
@@ -299,14 +299,14 @@ content-type\" /><title>%s</title>"
 
 // * * * Post * * *
 #define WEB_ZONE_POST_BODY_START "<br><div id=\"content\"><div id=\"header\">\
-                                    <h1 id=\"header\">VSCP Server - Zone Post</h1>\
+                                    <h1 id=\"header\">Zone Post</h1>\
                                     </div>"
 
 // * * * Subzone List * * *
 
 // Place after menus
 #define WEB_SUBZONELIST_BODY_START "<br><div id=\"content\"><div id=\"header\">\
-                                <h1 id=\"header\">VSCP Server - Subzones</h1></div>\
+                                <h1 id=\"header\">Subzones</h1></div>\
                                 <table><tbody>"
 
 // Table head
@@ -326,14 +326,14 @@ content-type\" /><title>%s</title>"
 
 // * * * Post * * *
 #define WEB_SUBZONE_POST_BODY_START "<br><div id=\"content\"><div id=\"header\">\
-                                    <h1 id=\"header\">VSCP Server - Subzone Post</h1>\
+                                    <h1 id=\"header\">Subzone Post</h1>\
                                     </div>"
 
 // * * * GUID List * * *
 
 // Place after menus
 #define WEB_GUIDLIST_BODY_START "<br><div id=\"content\"><div id=\"header\">\
-                                <h1 id=\"header\">VSCP Server - GUID's</h1></div>\
+                                <h1 id=\"header\">GUID</h1></div>\
                                 <table><tbody>"
 
 #define WEB_GUIDLIST_TD_CENTERED "<td id=\"tdcenter\">"
@@ -361,7 +361,7 @@ content-type\" /><title>%s</title>"
 
 // * * * Post * * *
 #define WEB_GUID_POST_BODY_START "<br><div id=\"content\"><div id=\"header\">\
-                                    <h1 id=\"header\">VSCP Server - GUID Post</h1>\
+                                    <h1 id=\"header\">GUID Post</h1>\
                                     </div>"
 
 
@@ -369,8 +369,8 @@ content-type\" /><title>%s</title>"
 // * * * Location List * * *
 
 // Place after menus
-#define WEB_LOCTIONLIST_BODY_START "<br><div id=\"content\"><div id=\"header\">\
-                                <h1 id=\"header\">VSCP Server - Locations</h1></div>\
+#define WEB_LOCATIONLIST_BODY_START "<br><div id=\"content\"><div id=\"header\">\
+                                <h1 id=\"header\">Locations</h1></div>\
                                 <table><tbody>"
 
 // Table head
@@ -390,7 +390,10 @@ content-type\" /><title>%s</title>"
 #define WEB_LOCATIONEDIT_TABLE_END "</tbody></table>"
 
 
-
+// * * * Post * * *
+#define WEB_LOCATION_POST_BODY_START "<br><div id=\"content\"><div id=\"header\">\
+                                    <h1 id=\"header\">GUID Post</h1>\
+                                    </div>"
 
 ///////////////////////////////////////////////////////////////////////////////
 //                              Variable
@@ -426,7 +429,7 @@ content-type\" /><title>%s</title>"
 
 // * * * Variable Post * * *
 #define WEB_VARPOST_BODY_START "<br><div id=\"content\"><div id=\"header\">\
-                                    <h1 id=\"header\">VSCP Server - Variable Post</h1>\
+                                    <h1 id=\"header\">Variable Post</h1>\
                                     </div>"
 
 
@@ -437,7 +440,7 @@ content-type\" /><title>%s</title>"
 
 // Place after menus
 #define WEB_LOG_BODY_START "<br><div id=\"content\"><div id=\"header\">\
-                                <h1 id=\"header\">VSCP Server - Log</h1></div>\
+                                <h1 id=\"header\">Log</h1></div>\
                                 <table><tbody>"
 
 // Table head
@@ -473,7 +476,7 @@ content-type\" /><title>%s</title>"
 
 // Place after menus
 #define WEB_TABLELIST_BODY_START "<br><div id=\"content\"><div id=\"header\">\
-                                    <h1 id=\"header\">VSCP Server - Tables</h1></div>\
+                                    <h1 id=\"header\">Tables</h1></div>\
                                     <table><tbody>"
 
 // Place before common end

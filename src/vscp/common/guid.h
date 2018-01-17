@@ -33,6 +33,8 @@
 
 #include <vscp.h>
 
+
+// GUID
 class cguid  
 {
 

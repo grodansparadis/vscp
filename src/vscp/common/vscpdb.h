@@ -516,7 +516,7 @@
 
 
 //*****************************************************************************
-//                           GUID (Discovery)    
+//                              GUID (Discovery)    
 //*****************************************************************************
 
 /*
@@ -565,7 +565,7 @@
 #define VSCPDB_GUID_CREATE_INDEX "CREATE INDEX `idxguid` "\
                                  "ON guid ('name'):"
 
-#define VSCPDB_GUID_ALL "SELECT * from 'guid'"
+#define VSCPDB_GUID_SELECT_ALL "SELECT * from 'guid'"
 #define VSCPDB_GUID_SELECT_PAGE  "SELECT * FROM guid LIMIT %d,%d;"
 #define VSCPDB_GUID_SELECT_ID    "SELECT * FROM guid WHERE idx_guid=%ld;"
 
@@ -663,6 +663,21 @@
 
 #define VSCPDB_LOCATION_CREATE_INDEX "CREATE INDEX `idxlocation` "\
                 "ON location ('name'):"
+
+#define VSCPDB_LOCATION_ALL          "SELECT * from 'location'"
+#define VSCPDB_LOCATION_SELECT_PAGE  "SELECT * FROM location LIMIT %d,%d;"
+#define VSCPDB_LOCATION_SELECT_ID    "SELECT * FROM location WHERE idx_location=%ld;"
+
+#define VSCPDB_LOCATION_DELETE_ID  "DELETE FROM 'location' WHERE idx_location=%ld"
+
+#define VSCPDB_LOCATION_INSERT "INSERT INTO 'location' "\
+                "(link_to_zone,link_to_subzone,link_to_guid,name,description "\
+                " ) VALUES (%d,%d,%d,'%q','%q' );"
+
+#define VSCPDB_LOCATION_UPDATE   "UPDATE location SET link_to_zone=%d,"\
+                                 "link_to_subzone=%d,link_to_guid=%d,"\
+                                 "name='%q',description='%q' "\
+                                 "WHERE idx_location=%ld;"
 
 #define VSCPDB_ORDINAL_LOCATION_ID                  0   //
 #define VSCPDB_ORDINAL_LOCATION_LINK_TO_ZONE        1   //

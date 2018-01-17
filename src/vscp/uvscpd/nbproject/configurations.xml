@@ -5,8 +5,6 @@
                    displayName="common"
                    projectFiles="true"
                    root="../common">
-      <itemPath>../../common/aes.c</itemPath>
-      <itemPath>../../common/aes.h</itemPath>
       <itemPath>../common/canal.h</itemPath>
       <itemPath>../../common/configfile.cpp</itemPath>
       <itemPath>../../common/configfile.h</itemPath>
@@ -99,22 +97,6 @@
           <preBuildCommand></preBuildCommand>
         </preBuild>
       </makefileType>
-      <item path="../../common/aes.c" ex="false" tool="0" flavor2="3">
-        <cTool flags="1">
-          <preprocessorList>
-            <Elem>MG_ENABLE_GETADDRINFO</Elem>
-            <Elem>MG_ENABLE_HTTP_CGI</Elem>
-            <Elem>MG_ENABLE_HTTP_SSI</Elem>
-            <Elem>MG_ENABLE_HTTP_SSI_EXEC</Elem>
-            <Elem>MG_ENABLE_HTTP_URL_REWRITES</Elem>
-            <Elem>MG_ENABLE_HTTP_WEBDAV</Elem>
-            <Elem>MG_ENABLE_IPV6</Elem>
-            <Elem>MG_ENABLE_SSL</Elem>
-            <Elem>MG_ENABLE_THREADS</Elem>
-            <Elem>_SVID_SOURCE</Elem>
-          </preprocessorList>
-        </cTool>
-      </item>
       <item path="../../common/configfile.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
           <incDir>
