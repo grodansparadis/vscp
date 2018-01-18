@@ -301,17 +301,7 @@ _vscp_safe_clock_gettime(int clk_id, struct timespec *t)
 #include <stdio.h>
 #include <stdint.h>
 
-#ifndef INT64_MAX
-#define INT64_MAX (9223372036854775807)
-#endif
 
-#ifndef MAX_WORKER_THREADS
-#define MAX_WORKER_THREADS (1024 * 64)
-#endif
-
-#ifndef SOCKET_TIMEOUT_QUANTUM  // in ms
-#define SOCKET_TIMEOUT_QUANTUM (2000)
-#endif
 
 #include "httpd_timers.h"   // Timer definitions
 
@@ -13847,22 +13837,26 @@ void
 web_open_lua_libs( lua_State *L )
 {
     {
+        // Standard libs
         extern void luaL_openlibs( lua_State * );
         luaL_openlibs(L);
     }
 
 
     {
+        // sqlite3 support
         extern int luaopen_lsqlite3( lua_State * );
         luaopen_lsqlite3(L);
     }
 
     {
+        // XML support
         extern int luaopen_LuaXML_lib( lua_State * );
         luaopen_LuaXML_lib(L);
     }
 
     {
+        // file handling support
         extern int luaopen_lfs(lua_State *);
         luaopen_lfs(L);
     }
@@ -13873,7 +13867,7 @@ web_open_lua_libs( lua_State *L )
         // Check again with Lua 5.3 later.
         extern int luaopen_binary(lua_State *);
 
-        luaL_requiref(L, "binary", luaopen_binary, 1);
+        luaL_requiref(L, "binary", luaopen_binary, 1); 
         lua_pop(L, 1);
     }
 #endif
@@ -13908,21 +13902,24 @@ web_prepare_lua_environment( struct web_context *ctx,
 
     // Store context in the registry
     if ( ctx != NULL ) {
-        lua_pushlightuserdata(L, (void *) &lua_regkey_ctx);
-        lua_pushlightuserdata(L, (void *) ctx);
-        lua_settable(L, LUA_REGISTRYINDEX);
+        lua_pushlightuserdata( L, (void *)&lua_regkey_ctx );
+        lua_pushlightuserdata( L, (void *)ctx );
+        lua_settable( L, LUA_REGISTRYINDEX );
     }
 
+    // Store connection list in registry
     if ( ws_conn_list != NULL ) {
-        lua_pushlightuserdata(L, (void *) &lua_regkey_connlist);
-        lua_pushlightuserdata(L, (void *) ws_conn_list);
+        lua_pushlightuserdata( L, (void *)&lua_regkey_connlist );
+        lua_pushlightuserdata( L, (void *)ws_conn_list );
         lua_settable(L, LUA_REGISTRYINDEX);
     }
 
     // Lua server pages store the depth of mg.include, in order
     // to detect recursions and prevent stack overflows.
     if ( WEB_LUA_ENV_TYPE_LUA_SERVER_PAGE == lua_env_type ) {
+        
         struct lsp_include_history *h;
+        
         lua_pushlightuserdata(L, (void *) &lua_regkey_lsp_include_history);
         h = (struct lsp_include_history *)
                 lua_newuserdata(L, sizeof (struct lsp_include_history));
@@ -13950,51 +13947,38 @@ web_prepare_lua_environment( struct web_context *ctx,
 
     if ( ( WEB_LUA_ENV_TYPE_LUA_SERVER_PAGE == lua_env_type ) ||
             ( WEB_LUA_ENV_TYPE_PLAIN_LUA_PAGE == lua_env_type ) ) {
-        web_reg_conn_function(L, "cry", web_lsp_cry, conn );
-        web_reg_conn_function(L, "read", web_lsp_read, conn );
-        web_reg_conn_function(L, "write", web_lsp_write, conn );
-        web_reg_conn_function(L, "keep_alive", web_lsp_keep_alive, conn );
-        web_reg_conn_function(L, "send_file", web_lsp_send_file, conn );
+        web_reg_conn_function( L, "cry", web_lsp_cry, conn );
+        web_reg_conn_function( L, "read", web_lsp_read, conn );
+        web_reg_conn_function( L, "write", web_lsp_write, conn );
+        web_reg_conn_function( L, "keep_alive", web_lsp_keep_alive, conn );
+        web_reg_conn_function( L, "send_file", web_lsp_send_file, conn );
     }
 
     if ( WEB_LUA_ENV_TYPE_LUA_SERVER_PAGE == lua_env_type ) {
-        web_reg_conn_function(L, "include", web_lsp_include, conn );
-        web_reg_conn_function(L, "redirect", web_lsp_redirect, conn );
+        web_reg_conn_function( L, "include", web_lsp_include, conn );
+        web_reg_conn_function( L, "redirect", web_lsp_redirect, conn );
     }
 
     if ( WEB_LUA_ENV_TYPE_LUA_WEBSOCKET == lua_env_type ) {
-        web_reg_function(L, "write", web_lwebsock_write );
-        web_reg_function(L, "set_timeout", web_lwebsocket_set_timeout );
-        web_reg_function(L, "set_interval", web_lwebsocket_set_interval );
-        web_reg_conn_function(L, "send_file", web_lsp_send_file, conn );
+        web_reg_function( L, "write", web_lwebsock_write );
+        web_reg_function( L, "set_timeout", web_lwebsocket_set_timeout );
+        web_reg_function( L, "set_interval", web_lwebsocket_set_interval );
+        web_reg_conn_function( L, "send_file", web_lsp_send_file, conn );
     }
 
-    web_reg_function(L, "time",
-                            web_lsp_get_time );
-    web_reg_function(L, "get_var",
-                            web_lsp_get_var );
-    web_reg_function(L, "get_mime_type",
-                            web_lsp_get_mime_type );
-    web_reg_function(L, "get_cookie",
-                            web_lsp_get_cookie );
-    web_reg_function(L, "md5",
-                            web_lsp_md5 );
-    web_reg_function(L, "url_encode",
-                            web_lsp_url_encode );
-    web_reg_function(L, "url_decode",
-                            web_lsp_url_decode );
-    web_reg_function(L, "base64_encode",
-                            web_lsp_base64_encode );
-    web_reg_function(L, "base64_decode",
-                            web_lsp_base64_decode );
-    web_reg_function(L, "get_response_code_text",
-                            web_lsp_get_response_code_text );
-    web_reg_function(L, "random",
-                            web_lsp_random );
-    web_reg_function(L, "get_info",
-                            web_lsp_get_info );
-    web_reg_function(L, "get_option",
-                            web_lsp_get_option );
+    web_reg_function(L, "time", web_lsp_get_time );
+    web_reg_function(L, "get_var", web_lsp_get_var );
+    web_reg_function(L, "get_mime_type", web_lsp_get_mime_type );
+    web_reg_function(L, "get_cookie", web_lsp_get_cookie );
+    web_reg_function(L, "md5", web_lsp_md5 );
+    web_reg_function(L, "url_encode", web_lsp_url_encode );
+    web_reg_function(L, "url_decode", web_lsp_url_decode );
+    web_reg_function(L, "base64_encode", web_lsp_base64_encode );
+    web_reg_function(L, "base64_decode", web_lsp_base64_decode );
+    web_reg_function(L, "get_response_code_text", web_lsp_get_response_code_text );
+    web_reg_function(L, "random", web_lsp_random );
+    web_reg_function(L, "get_info", web_lsp_get_info );
+    web_reg_function(L, "get_option", web_lsp_get_option );
 
     if ( pf_uuid_generate.f ) {
         web_reg_function(L, "uuid", web_lsp_uuid);
@@ -14021,13 +14005,13 @@ web_prepare_lua_environment( struct web_context *ctx,
 
     // Export connection specific info
     if ( conn != NULL ) {
-        web_prepare_lua_request_info(conn, L);
+        web_prepare_lua_request_info( conn, L );
     }
 
     lua_setglobal( L, "vscp" );
 
     // Register default mg.onerror function
-    IGNORE_UNUSED_RESULT( luaL_dostring(L,
+    IGNORE_UNUSED_RESULT( luaL_dostring( L,
                         "vscp.onerror = function(e) vscp.write('\\nLua error:\\n', "
                         "debug.traceback(e, 1)) end"));
 
@@ -14590,7 +14574,7 @@ web_prepare_lua_context_string( const char *pLuaStr,
     int lua_ret;
     const char *lua_err_txt;
 
-    (void) ctx;
+    (void)ctx;
 
     L = luaL_newstate();
     if ( NULL == L ) {
@@ -14666,18 +14650,18 @@ web_run_lua_script( const char *file_name )
     if ( L ) {
 
         // Script executed
-        if (lua_type(L, -1) == LUA_TNUMBER) {
+        if ( lua_type(L, -1) == LUA_TNUMBER ) {
             func_ret = (int) lua_tonumber(L, -1);
         }
         else {
             func_ret = EXIT_SUCCESS;
         }
 
-        lua_close(L);
+        lua_close( L );
 
     }
     else {
-        fprintf(stderr, "%s\n", ebuf);
+        fprintf( stderr, "%s\n", ebuf );
     }
 
     return func_ret;
@@ -14685,7 +14669,7 @@ web_run_lua_script( const char *file_name )
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// web_run_lua_script
+// web_run_lua_string
 //
 
 int
@@ -14757,6 +14741,8 @@ web_lua_exit_optional_libraries( void )
 
 
 // ----------------------------------------------------------- End of mod_lua.inl
+
+
 
 
 // ------------------------------------------------------ Start of mod_duktape.inl
@@ -21680,7 +21666,7 @@ web_start(const struct web_callbacks *callbacks,
 
         char ebuf[256];
 	lua_State *state = (void *)web_prepare_lua_context_script(
-                    ctx->config[LUA_BACKGROUND_SCRIPT], ctx, ebuf, sizeof(ebuf));
+                    ctx->config[LUA_BACKGROUND_SCRIPT], ctx, ebuf, sizeof(ebuf) );
 	if ( !state ) {
             web_cry(fc(ctx), "lua_background_script error: %s", ebuf);
             free_context(ctx);

@@ -45,12 +45,13 @@
 #include <string.h>
 #include <float.h>
 
-/*#define LUA_LIB
+#define LUA_LIB
 #include "lua.h"
 #include "lauxlib.h"
-#include "lualib.h"*/
+#include "lualib.h"
 
 #include "httpd.h"
+#include "httpd_lua.h"
 
 #include <vscp.h>
 #include <vscpdb.h>

@@ -14,6 +14,12 @@
 #define LSP_INCLUDE_MAX_DEPTH (32)
 #endif
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
+
 /**
  * @brief Assign buffer content to the variable 'name' as a string
  * @param L Lua context
@@ -388,8 +394,11 @@ int web_lwebsocket_set_interval( lua_State *L );
 
 enum
 {
+    // web server page
     WEB_LUA_ENV_TYPE_LUA_SERVER_PAGE = 0,
+    // Standard Lua script
     WEB_LUA_ENV_TYPE_PLAIN_LUA_PAGE = 1,
+    // Websockets
     WEB_LUA_ENV_TYPE_LUA_WEBSOCKET = 2,
 };
 
@@ -408,13 +417,13 @@ void web_prepare_lua_request_info( struct web_connection *conn,
 void web_open_lua_libs( lua_State *L );
 
 /**
- * @brief
- * @param ctx
- * @param conn
- * @param ws_conn_list
- * @param L
- * @param script_name
- * @param lua_env_type
+ * @brief Prepare the Lua environment.
+ * @param ctx - web context. Can be NULL
+ * @param conn - Active connection. Can be NULL
+ * @param ws_conn_list - websocket connetions. Can be NULL.
+ * @param L - Lua context
+ * @param script_name - Name for the script
+ * @param lua_env_type - Environment type
  */
 void web_prepare_lua_environment( struct web_context *ctx,
                                     struct web_connection *conn,
@@ -515,9 +524,15 @@ lua_State *web_prepare_lua_context_script( const char *file_name,
 /**
  * @brief
  * @param file_name
+ * @param ctx
+ * @param ebuf
+ * @param ebuf_len
  * @return
  */
-int web_run_lua(const char *file_name);
+lua_State *web_prepare_lua_context_string( const char *pLuaStr,
+                                            struct web_context *ctx,
+                                            char *ebuf,
+                                            size_t ebuf_len );
 
 /**
  * @brief
@@ -530,5 +545,23 @@ void web_lua_init_optional_libraries( void );
 void web_lua_exit_optional_libraries( void );
 
 
+/**
+ * @brief Run Lua script in a file.
+ * @param file_name
+ * @return
+ */
+int web_run_lua( const char *file_name );
+
+/*!
+ *
+ * Run Lua script in string 
+ *
+ */
+int
+web_run_lua_string( const char *pStrLua );
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif

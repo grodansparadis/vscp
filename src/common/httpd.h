@@ -56,6 +56,18 @@
 #include <stdio.h>
 #include <stddef.h>
 
+#ifndef INT64_MAX
+#define INT64_MAX (9223372036854775807)
+#endif
+
+#ifndef MAX_WORKER_THREADS
+#define MAX_WORKER_THREADS (1024 * 64)
+#endif
+
+#ifndef SOCKET_TIMEOUT_QUANTUM  // in ms
+#define SOCKET_TIMEOUT_QUANTUM (2000)
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
@@ -1642,20 +1654,7 @@ int web_get_system_info_impl( char *buffer, int buflen );
 
 #define web_lua_load lua_load
 
-/*!
- * 
- * Run Lua script in a file.
- * 
- */
-int run_lua( const char *file_name );
 
-/*!
- *
- * Run Lua script in string 
- *
- */
-int
-web_run_lua_string( const char *pStrLua );
 
 
 #ifdef __cplusplus
