@@ -41,9 +41,9 @@
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
-#ifndef WX_PRECOMP
+/*#ifndef WX_PRECOMP
 #include "wx/wx.h"
-#endif
+#endif*/
 
 #include "wx/wx.h"
 #include "wx/defs.h"

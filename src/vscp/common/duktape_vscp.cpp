@@ -50,8 +50,6 @@
 #include <string.h>
 #include <float.h>
 
-//#include <v7.h>
-
 #include <wx/jsonreader.h>
 #include <wx/jsonval.h>
 
@@ -432,7 +430,10 @@ duk_ret_t js_vscp_sleep( duk_context *ctx )
         
         uint16_t type;
         if ( duk_is_number(ctx, -1) ) {
-            type = (uint16_t)duk_get_int_default(ctx, -1, VSCP_DAEMON_VARIABLE_CODE_STRING );
+            type = 
+              (uint16_t)duk_get_int_default( ctx, 
+                                                -1, 
+                                                VSCP_DAEMON_VARIABLE_CODE_STRING );
         }
         else if ( duk_is_string(ctx, -1) ) {
             wxString str = duk_get_string_default(ctx, -1, "string");
@@ -500,7 +501,10 @@ duk_ret_t js_vscp_sleep( duk_context *ctx )
         duk_push_string(ctx, "accessrights");
         duk_get_prop(ctx, -2);
         if ( duk_is_number(ctx, -1) ) {
-            accessRights = (uint32_t)duk_get_number_default(ctx, -1, PERMISSON_OWNER_ALL );
+            accessRights = 
+                    (uint32_t)duk_get_number_default( ctx, 
+                                                        -1, 
+                                                        PERMISSON_OWNER_ALL );
         }
         
         duk_pop_n(ctx, 1);

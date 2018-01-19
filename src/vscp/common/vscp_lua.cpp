@@ -45,10 +45,18 @@
 #include <string.h>
 #include <float.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+    
 #define LUA_LIB
 #include "lua.h"
 #include "lauxlib.h"
 #include "lualib.h"
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #include "httpd.h"
 #include "httpd_lua.h"
@@ -66,12 +74,19 @@
 #include <vscpremotetcpif.h>
 #include <vscp_lua.h>
 #include <dm.h>
+#include <lua_vscp.h>
 
 ///////////////////////////////////////////////////
 //                 GLOBALS
 ///////////////////////////////////////////////////
 
 extern CControlObject *gpobj;
+
+///////////////////////////////////////////////////
+//                   KEYS
+///////////////////////////////////////////////////
+static const char lua_vscp__regkey_clientitem = 100;
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // actionThread_Lua
@@ -100,38 +115,46 @@ actionThread_Lua::~actionThread_Lua()
 
 void *actionThread_Lua::Entry()
 {
+    struct lua_State *L;
+    int lua_ret;
+    const char *lua_err_txt;
+    
     m_start = wxDateTime::Now();    // Mark start time
     
     
     // Create new Lua context
-    // lua_State *lua = luaL_newstate();
+    L = luaL_newstate();
     
     // Check if OK
-    /*if ( !lua ) { 
+    if ( !L ) { 
         // Failure
         return NULL; 
-    }*/
+    }
 
-    //luaL_openlibs( lua );
+    //lua_pushlstring( L, const char *s, size_t len);
     
-/*
-
-    // Helpers   
-    duk_push_c_function( ctx, js_vscp_print, 1 );
-    duk_put_global_string(ctx, "print");
+    luaL_openlibs( L );
     
-    // External module support 
-    duk_push_object( ctx );
-    duk_push_c_function( ctx, js_resolve_module, DUK_VARARGS );
-    duk_put_prop_string( ctx, -2, "resolve" );
-    duk_push_c_function( ctx, js_load_module, DUK_VARARGS );
-    duk_put_prop_string( ctx, -2, "load");
-    duk_module_node_init( ctx );
+    web_open_lua_libs( L );
+        
+    lua_newtable( L );
     
-    // Add VSCP methods
-    duk_push_c_function( ctx, js_vscp_log, DUK_VARARGS );
-    duk_put_global_string(ctx, "vscp_log");
+    web_reg_string( L, "lua_type", "script" );
+    web_reg_string( L, "version", VSCPD_DISPLAY_VERSION );
     
+    // From httpd
+    web_reg_function( L, "md5", web_lsp_md5 );
+    web_reg_function( L, "get_time", web_lsp_get_time);
+    web_reg_function( L, "random", web_lsp_random );
+    web_reg_function( L, "uuid", web_lsp_uuid );
+    
+    web_reg_function( L, "print", lua_vscp_print );
+    web_reg_function( L, "log", lua_vscp_log );
+    web_reg_function( L, "sleep", lua_vscp_sleep );
+    
+    web_reg_function( L, "readvariable", lua_vscp_readVariable );
+    
+/*    
     duk_push_c_function( ctx, js_vscp_sleep, 1 );
     duk_put_global_string(ctx, "vscp_sleep");
     
@@ -207,6 +230,10 @@ void *actionThread_Lua::Entry()
 
   */
     
+    if ( pf_uuid_generate.f ) {
+        web_reg_function(L, "uuid", web_lsp_uuid);
+    }
+    
     // Create VSCP client
     m_pClientItem = new CClientItem();
     vscp_clearVSCPFilter( &m_pClientItem->m_filterVSCP );
@@ -228,8 +255,14 @@ void *actionThread_Lua::Entry()
     // Open the channel
     m_pClientItem->m_bOpen = true;
     
+    lua_pushlightuserdata( L, (void *)&lua_vscp__regkey_clientitem );
+    lua_pushlightuserdata( L, (void *)m_pClientItem );
+    lua_settable( L, LUA_REGISTRYINDEX );
+    
+    lua_setglobal( L, "vscp" );
+    
     // Execute the Lua
-    web_run_lua_string( (const char *)m_wxstrScript.mbc_str() );
+    //web_run_lua_string_script( (const char *)m_wxstrScript.mbc_str() );
     //luaL_dostring( lua, (const char *)m_wxstrScript.mbc_str() );
     /*if ( 0 != duk_peval( ctx ) ) {
         wxString strError = 
@@ -237,6 +270,48 @@ void *actionThread_Lua::Entry()
                                     duk_safe_to_string(ctx, -1) );
         gpobj->logMsg( strError, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
     }*/
+    
+    
+    web_open_lua_libs( L );
+
+    lua_ret = luaL_loadstring( L, (const char *)m_wxstrScript.mbc_str() );
+
+    if ( lua_ret != LUA_OK ) {
+
+        wxString strError = 
+                wxString::Format( _("Lua failed to load script from"
+                                    " DM parameter. Script = %s\n"),
+                                    (const char *)m_wxstrScript.mbc_str() );
+        gpobj->logMsg( strError, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+        
+        return NULL;
+    }
+
+    // The script file is loaded, now call it
+    lua_ret = lua_pcall( L,
+                            0, // no arguments
+                            1, // zero or one return value
+                            0  // errors as string return value
+                        );
+
+    if ( lua_ret != LUA_OK ) {
+        
+        // Error when executing the script
+        lua_err_txt = lua_tostring( L, -1 );
+        
+        wxString strError = 
+                wxString::Format( _("Error running Lua script. "
+                                    "Error = %s : Script = %s\n"),
+                                    lua_err_txt,
+                                    (const char *)m_wxstrScript.mbc_str() );
+        gpobj->logMsg( strError, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+        
+        return NULL;
+        
+    }
+
+    //	lua_close(L); must be done somewhere else
+    
     
     // If the script wants to log results it can do so 
     // by itself with the log function

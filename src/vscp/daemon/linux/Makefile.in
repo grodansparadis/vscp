@@ -92,6 +92,7 @@ VSCPD_OBJECTS =  vscpd.o \
 	automation.o \
 	knownnodes.o \
 	duktape_vscp.o \
+	lua_vscp.o\
 	vscp_javascript.o \
 	vscp_lua.o \
 	jsonreader.o \
@@ -187,6 +188,9 @@ knownnodes.o: ../../common/knownnodes.cpp ../../common/knownnodes.h
 
 duktape_vscp.o: ../../common/duktape_vscp.cpp ../../common/duktape_vscp.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/duktape_vscp.cpp -o $@
+
+lua_vscp.o: ../../common/lua_vscp.cpp ../../common/lua_vscp.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/lua_vscp.cpp -o $@
 
 vscp_javascript.o: ../../common/vscp_javascript.cpp ../../common/vscp_javascript.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/vscp_javascript.cpp -o $@

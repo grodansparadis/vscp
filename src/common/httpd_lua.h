@@ -6,9 +6,6 @@
 #ifndef INCLUDE_HTTDP_LUA___H
 #define INCLUDE_HTTDP_LUA___H
 
-// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-// Many of the functions here will be moved back to static so beware.
-// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 #ifndef LSP_INCLUDE_MAX_DEPTH
 #define LSP_INCLUDE_MAX_DEPTH (32)
@@ -19,6 +16,12 @@
 extern "C" {
 #endif /* __cplusplus */
 
+// UUID library and function pointer
+union
+{
+    void *p;
+    void (*f)(unsigned char uuid[16]);
+} pf_uuid_generate;    
 
 /**
  * @brief Assign buffer content to the variable 'name' as a string
@@ -32,13 +35,16 @@ void web_reg_lstring( struct lua_State *L,
                             const void *buffer,
                             size_t buflen );
 
+#define web_reg_string( L, name, val )                                               \
+        web_reg_lstring( L, name, val, val ? strlen( val ) : 0 )
+
 /**
  * @brief Assign buffer2 content to the variable given by buffer1 content
  * as a string
  * @param L
  * @param buffer1 Null terminated string which holds name of the string variable
  * @param buflen1 Length of buffer1
- * @param buffer2 Null terminated string which hilds value of the string variable.
+ * @param buffer2 Null terminated string which holds value of the string variable.
  * @param buflen2 Length of buffer2
  */
 void
@@ -67,10 +73,10 @@ void web_reg_boolean( struct lua_State *L, const char *name, int val );
 
 /**
  * @brief Assign function with connect parameter to 'name'
- * @param L
- * @param name
- * @param func
- * @param conn
+ * @param L Lua context
+ * @param name Name of function
+ * @param func Pointer to function to assign
+ * @param conn Connection pointer
  */
 void web_reg_conn_function( struct lua_State *L,
                             const char *name,
@@ -78,12 +84,27 @@ void web_reg_conn_function( struct lua_State *L,
                             struct web_connection *conn );
 
 /**
- * @brief Assign function to 'name'
- * @param L
- * @param name
- * @param func
+ * @brief Assign function with clientitem parameter to 'name'
+ * @param L Lua context
+ * @param name Name of function
+ * @param func Pointer to function to assign
+ * @param pClient Pointer to clientitem structure.
  */
-void web_reg_function(struct lua_State *L, const char *name, lua_CFunction func );
+void web_reg_vscpclient_function( struct lua_State *L,
+                                    const char *name,
+                                    lua_CFunction func,
+                                    void *pClient );
+
+/**
+ * @brief Assign function to 'name'
+ * @param L Lua context
+ * @param name Name of function
+ * @param func Pointer to function to assign
+ * @param pClient Pointer to client object
+ */
+void web_reg_function( struct lua_State *L, 
+                        const char *name, 
+                        lua_CFunction func );
 
 /**
  * @brief
@@ -449,17 +470,19 @@ int web_lua_error_handler( lua_State *L );
 void *web_lua_allocator( void *ud, void *ptr, size_t osize, size_t nsize );
 
 /**
- * @brief
- * @param conn
- * @param path
- * @param exports
+ * @brief Execute a plain Lua script. Lua in-server module script: a CGI like 
+ * script used to generate the entire reply.
+ * @param conn - Active connection
+ * @param path - Path to script
+ * @param exports - Exported functions
  */
 void web_exec_lua_script( struct web_connection *conn,
                             const char *path,
                             const void **exports );
 
 /**
- * @brief
+ * @brief Lua server page: an SSI like page containing mostly plain html code 
+ * plus some tags with server generated contents.
  * @param conn
  * @param path
  * @param filep
@@ -509,30 +532,30 @@ int web_lua_websocket_ready( struct web_connection *conn, void *ws_arg );
 void web_lua_websocket_close( struct web_connection *conn, void *ws_arg );
 
 /**
- * @brief
- * @param file_name
+ * @brief Run a Lua script in a file
+ * @param file_name File to execute
  * @param ctx
  * @param ebuf
  * @param ebuf_len
  * @return
  */
-lua_State *web_prepare_lua_context_script( const char *file_name,
-                                            struct web_context *ctx,
-                                            char *ebuf,
-                                            size_t ebuf_len );
+lua_State *web_exec_lua_context_file_script( const char *file_name,
+                                                struct web_context *ctx,
+                                                char *ebuf,
+                                                size_t ebuf_len );
 
 /**
- * @brief
- * @param file_name
+ * @brief Run a Lua script in a string
+ * @param pLuaStr String containg Lua scrit to run
  * @param ctx
  * @param ebuf
  * @param ebuf_len
  * @return
  */
-lua_State *web_prepare_lua_context_string( const char *pLuaStr,
-                                            struct web_context *ctx,
-                                            char *ebuf,
-                                            size_t ebuf_len );
+lua_State *web_exec_lua_context_string_script( const char *pLuaStr,
+                                                  struct web_context *ctx,
+                                                  char *ebuf,
+                                                  size_t ebuf_len );
 
 /**
  * @brief
@@ -550,7 +573,7 @@ void web_lua_exit_optional_libraries( void );
  * @param file_name
  * @return
  */
-int web_run_lua( const char *file_name );
+int web_run_lua_file_script( const char *file_name );
 
 /*!
  *
@@ -558,7 +581,7 @@ int web_run_lua( const char *file_name );
  *
  */
 int
-web_run_lua_string( const char *pStrLua );
+web_run_lua_string_script( const char *pStrLua );
 
 #ifdef __cplusplus
 }

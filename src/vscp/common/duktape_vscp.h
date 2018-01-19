@@ -25,6 +25,9 @@
 // SOFTWARE.
 //
 
+#if !defined(VSCP_DUKTAPE_VSCP__INCLUDED_)
+#define VSCP_DUKTAPE_VSCP__INCLUDED_
+
 #define JAVASCRIPT_OK       1
 #define JAVASCRIPT_ERROR    0
 
@@ -46,7 +49,7 @@ duk_ret_t js_vscp_print( duk_context *ctx );
 /*!
  *  Log data
  * 
- * JavaScript Parameter 0: Stringto log.
+ * JavaScript Parameter 0: String to log.
  * JavaScript Parameter 1: level (int)
  * JavaScript Parameter 2: type (int)
  * JavaScript Return: Nothing.
@@ -188,3 +191,6 @@ duk_ret_t js_get_MeasurementZone( duk_context *ctx );
  */
 
 duk_ret_t js_get_MeasurementSubZone( duk_context *ctx );
+
+
+#endif
