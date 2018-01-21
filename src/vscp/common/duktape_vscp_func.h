@@ -1,4 +1,4 @@
-// duktape_vscp.h
+// duktape_vscp_func.h
 //
 // This file is part of the VSCP (http://www.vscp.org) 
 //

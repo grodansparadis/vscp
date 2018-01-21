@@ -72,9 +72,9 @@ extern "C" {
 #include <userlist.h>
 #include <controlobject.h>
 #include <vscpremotetcpif.h>
-#include <vscp_lua.h>
 #include <dm.h>
-#include <lua_vscp.h>
+#include <lua_vscp_wrkthread.h>
+#include <lua_vscp_func.h>
 
 ///////////////////////////////////////////////////
 //                 GLOBALS

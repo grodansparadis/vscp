@@ -91,10 +91,10 @@ VSCPD_OBJECTS =  vscpd.o \
 	tables.o \
 	automation.o \
 	knownnodes.o \
-	duktape_vscp.o \
-	lua_vscp.o\
-	vscp_javascript.o \
-	vscp_lua.o \
+	duktape_vscp_func.o \
+	duktape_vscp_wrkthread.o \
+	lua_vscp_wrkthread.o\
+	lua_vscp_func.o\
 	jsonreader.o \
 	jsonwriter.o \
 	jsonval.o \
@@ -186,17 +186,17 @@ automation.o: ../../common/automation.cpp ../../common/automation.h
 knownnodes.o: ../../common/knownnodes.cpp ../../common/knownnodes.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/knownnodes.cpp -o $@
 
-duktape_vscp.o: ../../common/duktape_vscp.cpp ../../common/duktape_vscp.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/duktape_vscp.cpp -o $@
+duktape_vscp_func.o: ../../common/duktape_vscp_func.cpp ../../common/duktape_vscp_func.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/duktape_vscp_func.cpp -o $@
 
-lua_vscp.o: ../../common/lua_vscp.cpp ../../common/lua_vscp.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/lua_vscp.cpp -o $@
+duktape_vscp_wrkthread.o: ../../common/duktape_vscp_wrkthread.cpp ../../common/duktape_vscp_wrkthread.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/duktape_vscp_wrkthread.cpp -o $@
 
-vscp_javascript.o: ../../common/vscp_javascript.cpp ../../common/vscp_javascript.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/vscp_javascript.cpp -o $@
+lua_vscp_func.o: ../../common/lua_vscp_func.cpp ../../common/lua_vscp_func.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/lua_vscp_func.cpp -o $@
 
-vscp_lua.o: ../../common/vscp_lua.cpp ../../common/vscp_lua.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/vscp_lua.cpp -o $@	
+lua_vscp_wrkthread.o: ../../common/lua_vscp_wrkthread.cpp ../../common/lua_vscp_wrkthread.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/lua_vscp_wrkthread.cpp -o $@	
 
 jsonreader.o: ../../../common/jsonreader.cpp ../../../common/wx/jsonreader.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../../common/jsonreader.cpp -o $@

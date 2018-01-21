@@ -77,7 +77,7 @@ extern "C" {
 }
 #endif /* __cplusplus */
 
-#include <lua_vscp.h>
+#include <lua_vscp_func.h>
 
 
 ///////////////////////////////////////////////////

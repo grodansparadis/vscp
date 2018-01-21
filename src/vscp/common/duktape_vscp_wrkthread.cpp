@@ -1,4 +1,4 @@
-// vscp_javascript.cpp
+// duktape_vscp_wrkthread.cpp
 //
 // This file is part of the VSCP (http://www.vscp.org) 
 //
@@ -56,9 +56,9 @@
 #include <userlist.h>
 #include <controlobject.h>
 #include <vscpremotetcpif.h>
-#include <vscp_javascript.h>
+#include <duktape_vscp_wrkthread.h>
 #include <duktape.h>
-#include <duktape_vscp.h>
+#include <duktape_vscp_func.h>
 #include <duk_module_node.h>
 #include <dm.h>
 

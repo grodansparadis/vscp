@@ -60,10 +60,10 @@
 #include <userlist.h>
 #include <controlobject.h>
 #include <vscpremotetcpif.h>
-#include <vscp_javascript.h>
-#include <vscp_lua.h>
+#include <duktape_vscp_wrkthread.h>
+#include <lua_vscp_wrkthread.h>
 #include <duktape.h>
-#include <duktape_vscp.h>
+#include <duktape_vscp_func.h>
 #include <duk_module_node.h>
 #include <dm.h>
 

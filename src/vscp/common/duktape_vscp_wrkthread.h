@@ -1,4 +1,4 @@
-// vscp_javascript.h
+// duktape_vscp_wrkthread.h
 //
 // This file is part of the VSCP (http://www.vscp.org) 
 //

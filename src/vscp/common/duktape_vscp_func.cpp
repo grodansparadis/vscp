@@ -1,4 +1,4 @@
-// duktape_vscp.c
+// duktape_vscp_func.c
 //
 // This file is part of the VSCP (http://www.vscp.org) 
 //
@@ -65,7 +65,7 @@
 #include <vscpremotetcpif.h>
 #include <duktape.h>
 #include <duk_module_node.h>
-#include <duktape_vscp.h>
+#include <duktape_vscp_func.h>
 
 ///////////////////////////////////////////////////
 //                   GLOBALS
