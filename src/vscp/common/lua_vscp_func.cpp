@@ -50,8 +50,7 @@
 #include <string.h>
 #include <float.h>
 
-#include <wx/jsonreader.h>
-#include <wx/jsonval.h>
+#include <json.hpp>             // Needs C++11  -std=c++11
 
 #include <vscp.h>
 #include <vscpdb.h>
@@ -78,6 +77,14 @@ extern "C" {
 #endif /* __cplusplus */
 
 #include <lua_vscp_func.h>
+
+
+
+using namespace std;
+
+// https://github.com/nlohmann/json
+using json = nlohmann::json;
+
 
 
 ///////////////////////////////////////////////////

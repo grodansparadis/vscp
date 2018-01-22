@@ -95,9 +95,6 @@ VSCPD_OBJECTS =  vscpd.o \
 	duktape_vscp_wrkthread.o \
 	lua_vscp_wrkthread.o\
 	lua_vscp_func.o\
-	jsonreader.o \
-	jsonwriter.o \
-	jsonval.o \
 	httpd.o \
 	vscphelper.o \
 	vscpremotetcpif.o \
@@ -197,15 +194,6 @@ lua_vscp_func.o: ../../common/lua_vscp_func.cpp ../../common/lua_vscp_func.h
 
 lua_vscp_wrkthread.o: ../../common/lua_vscp_wrkthread.cpp ../../common/lua_vscp_wrkthread.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/lua_vscp_wrkthread.cpp -o $@	
-
-jsonreader.o: ../../../common/jsonreader.cpp ../../../common/wx/jsonreader.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../../common/jsonreader.cpp -o $@
-
-jsonwriter.o: ../../../common/jsonwriter.cpp ../../../common/wx/jsonwriter.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../../common/jsonwriter.cpp -o $@
-
-jsonval.o: ../../../common/jsonval.cpp ../../../common/wx/jsonval.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../../common/jsonval.cpp -o $@
 
 vscphelper.o: ../../common/vscphelper.cpp ../../common/vscphelper.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/vscphelper.cpp -o $@
