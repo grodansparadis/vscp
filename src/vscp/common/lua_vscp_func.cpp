@@ -254,10 +254,12 @@ int lua_vscp_sleep( struct lua_State *L )
 ///////////////////////////////////////////////////////////////////////////////
 // lua_vscp_readVariable
 //
-// vscp.readvariable( "name", format )
+// vscp.readvariable( "name"[, format ] )
+//
 //      format = 0 - string
 //      format = 1 - XML
 //      format = 2 - JSON
+//      format = 10 - Just value (always decoded)
 
 int lua_vscp_readVariable( struct lua_State *L )
 {
@@ -274,6 +276,7 @@ int lua_vscp_readVariable( struct lua_State *L )
     }
     else if ( 1 == nArgs ) {
         
+        // variable name
         if ( !lua_isstring( L, 1 ) ) {
             return luaL_error( L, "vscp.readvariable: Argument error, string expected: "
                                   "vscp.readvariable( \"name\"[,format] ) ");
@@ -281,7 +284,7 @@ int lua_vscp_readVariable( struct lua_State *L )
         
         size_t len;
         const char *pstr = lua_tolstring ( L, 1, &len ); 
-        varName = wxString::FromUTF8( pstr, len );
+        varName = wxString::FromUTF8( pstr, len );        
         
     }
     else {
@@ -304,13 +307,80 @@ int lua_vscp_readVariable( struct lua_State *L )
     }
     
     if ( !gpobj->m_variables.find( varName, variable ) ) {
-        return luaL_error( L, "vscp.readvariable: No variable with that name found!");
+        return luaL_error( L, "vscp.readvariable: No variable with that "
+                              "name found!");
     }
     
-    // Get the variable on JSON format
-    wxString varJSON;
-    variable.getAsJSON( varJSON );
+    if ( 0 == format ) {
+        // Get the variable on JSON format
+        wxString varStr;
+        varStr = variable.getAsString( false );
+        lua_pushlstring( L, (const char *)varStr.mbc_str(),
+                            varStr.Length() );
+    }
+    else if ( 1 == format ) {
+        // Get the variable on JSON format
+        wxString varXML;
+        variable.getAsXML( varXML );
+        lua_pushlstring( L, (const char *)varXML.mbc_str(),
+                            varXML.Length() );
+    } 
+    else if ( 2 == format ) {
+        // Get the variable on JSON format
+        wxString varJSON;
+        variable.getAsJSON( varJSON );
+        lua_pushlstring( L, (const char *)varJSON.mbc_str(),
+                            varJSON.Length() );
+    }
+    else if ( 10 == format ) {
+        // Get the variable on JSON format
+        wxString varJSON;
+        variable.getAsJSON( varJSON );
+        lua_pushlstring( L, (const char *)varJSON.mbc_str(),
+                            varJSON.Length() );
+    }
+    else {
+        return luaL_error( L, "vscp.readvariable: Format must be 0=string, "
+                              "1=XML, 2=JSON");
+    }
     
-    lua_pushboolean( L, 1 );
     return 1;
 }
+
+
+///////////////////////////////////////////////////////////////////////////////
+// js_vscp_writeVariable
+//
+// writeVariable("name",value[, format])
+// 
+
+ int lua_vscp_writeVariable( struct lua_State *L ) 
+{    
+    wxString varName;
+    CVSCPVariable variable;
+ 
+    int nArgs = lua_gettop( L );
+    
+    if ( 0 == nArgs) {
+        return luaL_error( L, "vscp.writeVariable: Wrong number of arguments: "
+                              "vscp.writeVariable( \"name\"[,format] ) ");
+    }
+    else if ( 1 == nArgs ) {
+        
+        // variable name
+        if ( !lua_isstring( L, 1 ) ) {
+            return luaL_error( L, "vscp.writeVariable: Argument error, string expected: "
+                                  "vscp.writeVariable( \"name\"[,format] ) ");
+        }
+        
+        size_t len;
+        const char *pstr = lua_tolstring ( L, 1, &len ); 
+        varName = wxString::FromUTF8( pstr, len );        
+        
+    }
+    else if ( 2 == nArgs ) {
+        
+    }
+    
+    return 1;
+ }

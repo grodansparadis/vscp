@@ -256,7 +256,8 @@ duk_ret_t js_load_module(duk_context *ctx)
 	duk_push_string(ctx, "module.exports = require('pig');");
     } 
     else if (strcmp(module_id, "ape.js") == 0) {
-	duk_push_string(ctx, "module.exports = { module: module, __filename: __filename, wasLoaded: module.loaded };");
+	duk_push_string(ctx, "module.exports = { module: module, __filename: "
+                             "__filename, wasLoaded: module.loaded };");
     } 
     else if (strcmp(module_id, "badger.js") == 0) {
 	duk_push_string(ctx, "exports.foo = 123; exports.bar = 234;");
@@ -396,7 +397,7 @@ duk_ret_t js_vscp_sleep( duk_context *ctx )
 ///////////////////////////////////////////////////////////////////////////////
 // js_vscp_writeVariable
 //
-// writeVariable("name",value)
+// writeVariable("name",value )
 // 
 
  duk_ret_t js_vscp_writeVariable( duk_context *ctx ) 

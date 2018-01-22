@@ -319,3 +319,42 @@ void CKnownNodes::load( wxString& path )
     // TODO
 }
 
+
+/*
+ 
+ #include <wx/protocol/http.h>
+#include <wx/XML/xml.h>
+//[...]
+	wxString link;
+	wxHTTP http;
+ 
+	http.SetTimeout(6);
+	http.Connect(_T("example.com"));
+        // PHP file sending XML content
+	wxInputStream *httpStream = http.GetInputStream(_T("/file.php"));
+ 
+	if (http.GetError() == wxPROTO_NOERR)
+	{
+                // will crash here, if xml content is not formatted PERFECTLY
+		wxXmlDocument xml(*httpStream);
+ 
+		wxXmlNode *node = xml.GetRoot()->GetChildren();
+		while (node)
+		{
+			if (node->GetName() == _T("tagname1"))
+				staticText1->SetLabel(node->GetNodeContent());
+			else if(node->GetName() == _T("tagname2"))
+				staticText2->SetLabel(node->GetNodeContent());
+ 
+                        // [...]
+ 
+			node = node->GetNext();
+		}
+	}
+	else
+		wxMessageBox(_T("Can't connect!"));
+ 
+	http.Close();
+	wxDELETE(httpStream);
+ 
+ */

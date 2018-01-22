@@ -13347,6 +13347,7 @@ web_lsp_get_info( lua_State *L )
 
                 return 1;
             }
+            
             return 0;
         }
     }
@@ -13378,7 +13379,7 @@ web_lsp_get_option( lua_State *L )
     if ( 0 == num_args ) {
         const struct web_option *opts = web_get_valid_options();
 
-        if (!opts) {
+        if ( !opts ) {
             return 0;
         }
 
@@ -13395,13 +13396,13 @@ web_lsp_get_option( lua_State *L )
     }
 
     if ( 1 == num_args ) {
-        type1 = lua_type(L, 1);
-        if (type1 == LUA_TSTRING) {
+        type1 = lua_type( L, 1 );
+        if ( type1 == LUA_TSTRING ) {
             arg1 = lua_tostring(L, 1);
             // Get option according to argument
             data = web_get_option(ctx, arg1);
-            if (data) {
-                lua_pushstring(L, data);
+            if ( data ) {
+                lua_pushstring( L, data );
                 return 1;
             }
             return 0;
