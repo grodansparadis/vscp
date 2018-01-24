@@ -43,7 +43,7 @@
 #include <wx/wfstream.h>
 #include <wx/xml/xml.h>
 #include <wx/tokenzr.h>
-//#include <wx/base64.h>
+#include <wx/sstream.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -56,6 +56,8 @@
 #include <sys/times.h>
 #include <sys/types.h>
 #endif
+
+#include <json.hpp>             // Needs C++11  -std=c++11
 
 #include <crc8.h> 
 #include <crc.h> 
@@ -74,6 +76,12 @@
 #include <grp.h>
 #include <dirent.h>
 #define vsnprintf_impl vsnprintf
+
+
+using namespace std;
+
+// https://github.com/nlohmann/json
+using json = nlohmann::json;
 
 
 #define Swap8Bytes(val) \
@@ -2819,13 +2827,13 @@ bool vscp_getDateStringFromEventEx( const vscpEventEx *pEventEx, wxString& dt )
 // vscp_convertEventToJSON
 //
 
-void vscp_convertEventToJSON( vscpEvent *pEvent, wxString& strJSON )
+bool vscp_convertEventToJSON( vscpEvent *pEvent, wxString& strJSON )
 {
     wxString strguid;
     wxString strdata;
     
     // Check pointer
-    if ( NULL == pEvent ) return;
+    if ( NULL == pEvent ) return false;
     
     vscp_writeGuidArrayToString( pEvent->GUID, strguid );   // GUID to string
     vscp_writeVscpDataWithSizeToString( pEvent->sizeData,
@@ -2848,20 +2856,119 @@ void vscp_convertEventToJSON( vscpEvent *pEvent, wxString& strJSON )
                         (const char *)strguid.mbc_str(),
                         (const char *)strdata.mbc_str(),
                         "" );
+    
+    return true;
 }
 
+////////////////////////////////////////////////////////////////////////////////////
+// vscp_convertJSONToEvent
+//
+// {
+//    "head": 2,
+//    "obid"; 123,
+//    "datetime": "2017-01-13T10:16:02",
+//    "timestamp":50817,
+//    "class": 10,
+//    "type": 8,
+//    "guid": "00:00:00:00:00:00:00:00:00:00:00:00:00:01:00:02",
+//    "data": [1,2,3,4,5,6,7]
+// }
+
+bool vscp_convertJSONToEvent( wxString& strJSON, vscpEvent *pEvent )
+{
+    wxString strguid;
+    
+    // Check pointer
+    if ( NULL == pEvent ) return false;
+    
+    try {
+    
+        auto j = json::parse( strJSON.ToStdString() );
+        
+        // Head
+        if (j.find("head") != j.end()) {
+            pEvent->head = j.at("head").get<uint16_t>();
+        }
+        
+        // obid
+        if (j.find("obid") != j.end()) {
+            pEvent->obid = j.at("obid").get<uint32_t>();
+        }
+        
+        // TimeStamp
+        if (j.find("timestamp") != j.end()) {
+            pEvent->timestamp = j.at("timestamp").get<uint32_t>();
+        }
+        
+        // DateTime
+        if (j.find("datetime") != j.end()) {
+            wxString dtStr = j.at("datetime").get<std::string>();
+            wxDateTime dt;
+            dt.ParseISOCombined( dtStr );
+            vscp_setEventDateTime( pEvent, dt ); 
+        }
+        
+        // VSCP class
+        if (j.find("class") != j.end()) {
+            pEvent->vscp_class = j.at("class").get<uint16_t>();
+        }
+        
+        // VSCP type
+        if (j.find("type") != j.end()) {
+            pEvent->vscp_type = j.at("type").get<uint16_t>();
+        }
+        
+        // GUID
+        if (j.find("guid") != j.end()) {
+            wxString guidStr = j.at("guid").get<std::string>();
+            cguid guid;
+            guid.getFromString( guidStr );
+            guid.writeGUID( pEvent->GUID );
+        }
+        
+        pEvent->sizeData = 0;
+        if (j.find("data") != j.end()) {
+            
+            std::vector<std::uint8_t> data_array  = j.at("data");
+            
+            // Check size
+            if (data_array.size() > VSCP_MAX_DATA ) return false;
+            
+            pEvent->sizeData = data_array.size(); 
+            if ( 0 == pEvent->sizeData ) {
+                pEvent->pdata = NULL;
+            }
+            else {
+                pEvent->pdata = new uint8_t[ data_array.size() ];
+                if ( NULL == pEvent->pdata ) return false;
+            
+                //memcpy( pEvent->pdata, &data_array[ 0 ], data_array.size() );
+                // C++11 variant of above
+                memcpy( pEvent->pdata, data_array.data(), data_array.size() );  
+ 
+            }
+            
+        }
+                
+    }
+    catch (... ) {
+        return false;
+    }
+    
+    return true;
+}
 
 ////////////////////////////////////////////////////////////////////////////////////
 // vscp_convertEventExToJSON
 //
 
-void vscp_convertEventExToJSON( vscpEventEx *pEventEx, wxString& strJSON )
+bool vscp_convertEventExToJSON( vscpEventEx *pEventEx, wxString& strJSON )
 {
     wxString strguid;
     wxString strdata;
         
     // Check pointer
-    if ( NULL == pEventEx ) return;
+    if ( NULL == pEventEx ) return false;
     
     vscp_writeGuidArrayToString( pEventEx->GUID, strguid );     // GUID to string
     vscp_writeVscpDataWithSizeToString( pEventEx->sizeData,
@@ -2884,19 +2991,119 @@ void vscp_convertEventExToJSON( vscpEventEx *pEventEx, wxString& strJSON )
                         (const char *)strguid.mbc_str(),
                         (const char *)strdata.mbc_str(),
                         "" );
+    
+    return true;
 }
+
+
+////////////////////////////////////////////////////////////////////////////////////
+// vscp_convertJSONToEvent
+//
+// {
+//    "head": 2,
+//    "obid"; 123,
+//    "datetime": "2017-01-13T10:16:02",
+//    "timestamp":50817,
+//    "class": 10,
+//    "type": 8,
+//    "guid": "00:00:00:00:00:00:00:00:00:00:00:00:00:01:00:02",
+//    "data": [1,2,3,4,5,6,7]
+// }
+
+bool vscp_convertJSONToEventEx( wxString& strJSON, vscpEventEx *pEventEx )
+{
+    wxString strguid;
+    
+    // Check pointer
+    if ( NULL == pEventEx ) return false;
+    
+    try {
+    
+        auto j = json::parse( strJSON.ToStdString() );
+        
+        // Head
+        if (j.find("head") != j.end()) {
+            pEventEx->head = j.at("head").get<uint16_t>();
+        }
+        
+        // obid
+        if (j.find("obid") != j.end()) {
+            pEventEx->obid = j.at("obid").get<uint32_t>();
+        }
+        
+        // TimeStamp
+        if (j.find("timestamp") != j.end()) {
+            pEventEx->timestamp = j.at("timestamp").get<uint32_t>();
+        }
+        
+        // DateTime
+        if (j.find("datetime") != j.end()) {
+            wxString dtStr = j.at("datetime").get<std::string>();
+            wxDateTime dt;
+            dt.ParseISOCombined( dtStr );
+            vscp_setEventExDateTime( pEventEx, dt ); 
+        }
+        
+        // VSCP class
+        if (j.find("class") != j.end()) {
+            pEventEx->vscp_class = j.at("class").get<uint16_t>();
+        }
+        
+        // VSCP type
+        if (j.find("type") != j.end()) {
+            pEventEx->vscp_type = j.at("type").get<uint16_t>();
+        }
+        
+        // GUID
+        if (j.find("guid") != j.end()) {
+            wxString guidStr = j.at("guid").get<std::string>();
+            cguid guid;
+            guid.getFromString( guidStr );
+            guid.writeGUID( pEventEx->GUID );
+        }
+        
+        pEventEx->sizeData = 0;
+        if (j.find("data") != j.end()) {
+            
+            std::vector<std::uint8_t> data_array  = j.at("data");
+            
+            // Check size
+            if (data_array.size() > VSCP_MAX_DATA ) return false;
+            
+            pEventEx->sizeData = data_array.size(); 
+            if ( 0 == pEventEx->sizeData ) {
+                memset( pEventEx->data, 0, sizeof( pEventEx->data ) );
+            }
+            else {
+                
+                //memcpy( pEvent->pdata, &data_array[ 0 ], data_array.size() );
+                // C++11 variant of above
+                memcpy( pEventEx->data, data_array.data(), data_array.size() );  
+ 
+            }
+            
+        }
+                
+    }
+    catch (... ) {
+        return false;
+    }
+    
+    return true;
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////////
 // vscp_convertEventToXML
 //
 
-void vscp_convertEventToXML( vscpEvent *pEvent, wxString& strXML )
+bool vscp_convertEventToXML( vscpEvent *pEvent, wxString& strXML )
 {
     wxString strguid;
     wxString strdata;
         
     // Check pointer
-    if ( NULL == pEvent ) return;
+    if ( NULL == pEvent ) return false;
     
     vscp_writeGuidArrayToString( pEvent->GUID, strguid );   // GUID to string
     vscp_writeVscpDataWithSizeToString( pEvent->sizeData,
@@ -2918,21 +3125,115 @@ void vscp_convertEventToXML( vscpEvent *pEvent, wxString& strXML )
                         (unsigned short int)pEvent->vscp_type,
                         (const char *)strguid.mbc_str(),                        
                         (unsigned short int)pEvent->sizeData,
-                        (const char *)strdata.mbc_str(),
-                        "" );
+                        (const char *)strdata.mbc_str() );
+    
+    return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////////
+// vscp_convertXMLToEvent
+//
+// <event
+//     head = "2"
+//     obid = "123"
+//     datetime = "2017-01-13T10:16:02"
+//     timestamp = "50817"
+//     class = "10"
+//     type = "8"
+//     guid = "00:00:00:00:00:00:00:00:00:00:00:00:00:01:00:02"
+//     data = 1,2,3,4,5,6,7"
+// />
+
+bool vscp_convertXMLToEvent( wxString& strXML, vscpEvent *pEvent )
+{
+    wxString strguid;
+    wxString wxstr;
+    unsigned long lval;
+    wxXmlDocument doc;
+    wxStringInputStream instrstream( strXML );    
+    
+    // Check pointer
+    if ( NULL == pEvent ) return false;        
+    
+    if ( !doc.Load( instrstream ) ) {
+        return false;     
+    }
+    
+    // start processing the XML file
+    if ( doc.GetRoot()->GetName() != _("event") ) {
+        return false;
+    }
+    
+    // head
+    wxstr = doc.GetRoot()->GetAttribute( _("head") );
+    if ( wxEmptyString != wxstr ) {        
+        pEvent->head = vscp_readStringValue( wxstr );
+    }
+    
+    // obid
+    wxstr = doc.GetRoot()->GetAttribute( _("obid") );
+    if ( wxEmptyString != wxstr ) {        
+        pEvent->obid = vscp_readStringValue( wxstr );
+    }
+    
+    // timestamp
+    wxstr = doc.GetRoot()->GetAttribute( _("timestamp") );
+    if ( wxEmptyString != wxstr ) {        
+        pEvent->timestamp = vscp_readStringValue( wxstr );
+    }
+    
+    // datetime
+    wxstr = doc.GetRoot()->GetAttribute( _("datetime") );
+    if ( wxEmptyString != wxstr ) {        
+        wxDateTime dt;
+        dt.ParseISOCombined( wxstr );
+        vscp_setEventDateTime( pEvent, dt ); 
+    }
+    
+    // class
+    wxstr = doc.GetRoot()->GetAttribute( _("class") );
+    if ( wxEmptyString != wxstr ) {        
+        pEvent->vscp_class = vscp_readStringValue( wxstr );
+    }
+    
+    // type
+    wxstr = doc.GetRoot()->GetAttribute( _("type") );
+    if ( wxEmptyString != wxstr ) {        
+        pEvent->vscp_type = vscp_readStringValue( wxstr );
+    }
+    
+    // GUID
+    wxstr = doc.GetRoot()->GetAttribute( _("guid") );
+    if ( wxEmptyString != wxstr ) { 
+        cguid guid;
+        guid.getFromString( wxstr );
+        guid.writeGUID( pEvent->GUID );
+    }
+    
+    // data    
+    wxstr = doc.GetRoot()->GetAttribute( _("data") );
+    if ( wxEmptyString != wxstr ) { 
+        
+        if ( !vscp_setVscpEventDataFromString( pEvent, wxstr ) ) {
+            return false;
+        }
+            
+    }
+       
+    return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
 // vscp_convertEventExToXML
 //
 
-void vscp_convertEventExToXML( vscpEventEx *pEventEx, wxString& strXML )
+bool vscp_convertEventExToXML( vscpEventEx *pEventEx, wxString& strXML )
 {
     wxString strguid;
     wxString strdata;
         
     // Check pointer
-    if ( NULL == pEventEx ) return;
+    if ( NULL == pEventEx ) return false;
     
     vscp_writeGuidArrayToString( pEventEx->GUID, strguid );     // GUID to string
     vscp_writeVscpDataWithSizeToString( pEventEx->sizeData,
@@ -2954,21 +3255,115 @@ void vscp_convertEventExToXML( vscpEventEx *pEventEx, wxString& strXML )
                         (unsigned short int)pEventEx->vscp_type,
                         (const char *)strguid.mbc_str(),                        
                         (unsigned short int)pEventEx->sizeData,
-                        (const char *)strdata.mbc_str(),
-                        "" );
+                        (const char *)strdata.mbc_str() );
+    
+    return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////////
+// vscp_convertXMLToEventEx
+//
+// <event
+//     head = "2"
+//     obid = "123"
+//     datetime = "2017-01-13T10:16:02"
+//     timestamp = "50817"
+//     class = "10"
+//     type = "8"
+//     guid = "00:00:00:00:00:00:00:00:00:00:00:00:00:01:00:02"
+//     data = 1,2,3,4,5,6,7"
+// />
+
+bool vscp_convertXMLToEventEx( wxString& strXML, vscpEventEx *pEventEx )
+{
+    wxString strguid;
+    wxString wxstr;
+    unsigned long lval;
+    wxXmlDocument doc;
+    wxStringInputStream instrstream( strXML );    
+    
+    // Check pointer
+    if ( NULL == pEventEx ) return false;        
+    
+    if ( !doc.Load( instrstream ) ) {
+        return false;     
+    }
+    
+    // start processing the XML file
+    if ( doc.GetRoot()->GetName() != _("event") ) {
+        return false;
+    }
+    
+    // head
+    wxstr = doc.GetRoot()->GetAttribute( _("head") );
+    if ( wxEmptyString != wxstr ) {        
+        pEventEx->head = vscp_readStringValue( wxstr );
+    }
+    
+    // obid
+    wxstr = doc.GetRoot()->GetAttribute( _("obid") );
+    if ( wxEmptyString != wxstr ) {        
+        pEventEx->obid = vscp_readStringValue( wxstr );
+    }
+    
+    // timestamp
+    wxstr = doc.GetRoot()->GetAttribute( _("timestamp") );
+    if ( wxEmptyString != wxstr ) {        
+        pEventEx->timestamp = vscp_readStringValue( wxstr );
+    }
+    
+    // datetime
+    wxstr = doc.GetRoot()->GetAttribute( _("datetime") );
+    if ( wxEmptyString != wxstr ) {        
+        wxDateTime dt;
+        dt.ParseISOCombined( wxstr );
+        vscp_setEventExDateTime( pEventEx, dt ); 
+    }
+    
+    // class
+    wxstr = doc.GetRoot()->GetAttribute( _("class") );
+    if ( wxEmptyString != wxstr ) {        
+        pEventEx->vscp_class = vscp_readStringValue( wxstr );
+    }
+    
+    // type
+    wxstr = doc.GetRoot()->GetAttribute( _("type") );
+    if ( wxEmptyString != wxstr ) {        
+        pEventEx->vscp_type = vscp_readStringValue( wxstr );
+    }
+    
+    // GUID
+    wxstr = doc.GetRoot()->GetAttribute( _("guid") );
+    if ( wxEmptyString != wxstr ) { 
+        cguid guid;
+        guid.getFromString( wxstr );
+        guid.writeGUID( pEventEx->GUID );
+    }
+    
+    // data    
+    wxstr = doc.GetRoot()->GetAttribute( _("data") );
+    if ( wxEmptyString != wxstr ) { 
+        
+        if ( !vscp_setVscpEventExDataFromString( pEventEx, wxstr ) ) {
+            return false;
+        }
+            
+    }
+       
+    return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
 // vscp_convertEventToHTML
 //
 
-void vscp_convertEventToHTML( vscpEvent *pEvent, wxString& strHTML )
+bool vscp_convertEventToHTML( vscpEvent *pEvent, wxString& strHTML )
 {
     wxString strguid;
     wxString strdata;
         
     // Check pointer
-    if ( NULL == pEvent ) return;
+    if ( NULL == pEvent ) return false;
     
     vscp_writeGuidArrayToString( pEvent->GUID, strguid );   // GUID to string
     vscp_writeVscpDataWithSizeToString( pEvent->sizeData,
@@ -2993,19 +3388,21 @@ void vscp_convertEventToHTML( vscpEvent *pEvent, wxString& strHTML )
                         (unsigned long)pEvent->timestamp,
                         (unsigned long)pEvent->obid,                                                                                                
                         "" );
+    
+    return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
 // vscp_convertEventExToHTML
 //
 
-void vscp_convertEventExToHTML( vscpEventEx *pEventEx, wxString& strHTML )
+bool vscp_convertEventExToHTML( vscpEventEx *pEventEx, wxString& strHTML )
 {
     wxString strguid;
     wxString strdata;
         
     // Check pointer
-    if ( NULL == pEventEx ) return;
+    if ( NULL == pEventEx ) return false;
     
     vscp_writeGuidArrayToString( pEventEx->GUID, strguid );     // GUID to string
     vscp_writeVscpDataWithSizeToString( pEventEx->sizeData,
@@ -3030,6 +3427,46 @@ void vscp_convertEventExToHTML( vscpEventEx *pEventEx, wxString& strHTML )
                         (unsigned long)pEventEx->timestamp,
                         (unsigned long)pEventEx->obid,                                                                                                
                         "" );
+    
+    return true;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// vscp_setEventDateTime
+//
+
+bool vscp_setEventDateTime( vscpEvent *pEvent, wxDateTime& dt )
+{
+    if ( NULL == pEvent ) return false;
+    
+    pEvent->year = dt.GetYear();
+    pEvent->month = dt.GetMonth() + 1;
+    pEvent->day = dt.GetDay();
+    pEvent->hour = dt.GetHour();
+    pEvent->minute = dt.GetMinute();
+    pEvent->second = dt.GetSecond();
+    
+    return true;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// vscp_setEventExDateTime
+//
+
+bool vscp_setEventExDateTime( vscpEventEx *pEventEx, wxDateTime& dt )
+{
+    if ( NULL == pEventEx ) return false;
+    
+    pEventEx->year = dt.GetYear();
+    pEventEx->month = dt.GetMonth() + 1;
+    pEventEx->day = dt.GetDay();
+    pEventEx->hour = dt.GetHour();
+    pEventEx->minute = dt.GetMinute();
+    pEventEx->second = dt.GetSecond();
+    
+    return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -3609,10 +4046,10 @@ bool vscp_writeVscpDataWithSizeToString( const uint16_t sizeData,
 
 
 //////////////////////////////////////////////////////////////////////////////
-// setVscpDataFromString
+// setVscpEventDataFromString
 //
 
-bool vscp_setVscpDataFromString(vscpEvent *pEvent, const wxString& str)
+bool vscp_setVscpEventDataFromString(vscpEvent *pEvent, const wxString& str)
 {
     // Check pointers
     if (NULL == pEvent) return false;
@@ -3636,6 +4073,29 @@ bool vscp_setVscpDataFromString(vscpEvent *pEvent, const wxString& str)
     } 
     else {
         pEvent->pdata = NULL;
+    }
+
+    return true;
+
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// vscp_setVscpEventExDataFromString
+//
+
+bool vscp_setVscpEventExDataFromString(vscpEventEx *pEventEx, const wxString& str)
+{
+    // Check pointers
+    if (NULL == pEventEx) return false;
+
+    wxStringTokenizer tkz(str, _(","));
+
+    pEventEx->sizeData = 0;
+    while (tkz.HasMoreTokens()) {
+        wxString token = tkz.GetNextToken();
+        pEventEx->data[ pEventEx->sizeData ] = vscp_readStringValue(token);
+        pEventEx->sizeData++;
+        if (pEventEx->sizeData >= VSCP_MAX_DATA) break;
     }
 
     return true;

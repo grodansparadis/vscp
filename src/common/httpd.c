@@ -11945,6 +11945,22 @@ web_reg_int( struct lua_State *L, const char *name, int val )
     }
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+// web_reg_uint32
+//
+
+void
+web_reg_uint32( struct lua_State *L, const char *name, uint32_t val )
+{
+    if ( name != NULL ) {
+        lua_pushstring (L, name );
+        lua_pushnumber( L, (LUA_NUMBER)val );
+        lua_rawset( L, -3 );
+    }
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // web_reg_boolean
 //

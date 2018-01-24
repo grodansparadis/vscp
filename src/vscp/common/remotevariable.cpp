@@ -43,6 +43,7 @@
 #include <wx/base64.h>
 #include <wx/listimpl.cpp>
 #include <wx/versioninfo.h>
+#include <wx/sstream.h>
 
 #include <openssl/opensslv.h>
 #include <openssl/crypto.h>
@@ -50,6 +51,8 @@
 #include <mongoose.h>
 #include <lua.h>
 #include <duktape.h>
+
+#include <json.hpp>             // Needs C++11  -std=c++11
 
 #include <vscp.h>
 #include <vscpdb.h>
@@ -61,6 +64,17 @@
 #include <variablecodes.h>
 #include <remotevariable.h>
 #include <vscpbase64.h>
+
+
+using namespace std;
+
+// https://github.com/nlohmann/json
+using json = nlohmann::json;
+
+
+///////////////////////////////////////////////////
+//                 GLOBALS
+///////////////////////////////////////////////////
 
 // The global control object
 extern CControlObject *gpobj;
@@ -541,6 +555,65 @@ bool CVSCPVariable::getAsJSON( wxString &strVariable )
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// setFromJSON
+//
+// "head": 2,
+// "obid"; 123,
+// "datetime": "2017-01-13T10:16:02",
+// "timestamp":50817,
+// "class": 10,
+// "type": 8,
+// "guid": "00:00:00:00:00:00:00:00:00:00:00:00:00:01:00:02",
+// "data": [1,2,3,4,5,6,7],
+// "note": "This is some text"
+
+bool CVSCPVariable::setFromJSON( wxString &strVariable )
+{
+    try {
+    
+        auto j = json::parse( strVariable.ToStdString() );
+    
+        // Mark last changed as now
+        setLastChangedToNow();
+    
+        if (j.find("name") != j.end()) {
+            m_name = j.at("name").get<std::string>();
+        }
+
+        if (j.find("type") != j.end()) {
+            m_type = j.at("type").get<uint16_t>();
+        }
+    
+        if (j.find("user") != j.end()) {
+            m_userid = j.at("userid").get<uint32_t>();
+        }
+    
+        if (j.find("accessrights") != j.end()) {
+            m_accessRights = j.at("accessrights").get<uint32_t>();
+        }
+    
+        if (j.find("persistence") != j.end()) {
+            m_bPersistent = j.at("persistence").get<bool>();
+        }
+        
+        if (j.find("value") != j.end()) {
+            m_strValue = j.at("value").get<std::string>();
+        }
+    
+        if (j.find("note") != j.end()) {
+            m_note = j.at("note").get<std::string>();
+        }
+    }
+    catch ( ... ) {
+        gpobj->logMsg( _("Remote variable, setFromJSON: "
+                         "Failed to parse JSON object!") );
+        return false;
+    }
+    
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // getAsXML
 //
 
@@ -555,6 +628,92 @@ bool CVSCPVariable::getAsXML( wxString &strVariable )
                             (const char *)m_lastChanged.FormatISOCombined().mbc_str(),
                             m_strValue,
                             m_note );
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// setFromXML
+//
+
+bool CVSCPVariable::setFromXML( wxString &strVariable )
+{
+    wxString wxstr;
+    unsigned long lval;
+    wxStringInputStream instrstream( strVariable );
+    wxXmlDocument doc;
+    
+    if ( !doc.Load( instrstream ) ) {
+        gpobj->logMsg( _("Remote variable, setFromXML: "
+                         "Failed to parse XML object!") );
+        return false;     
+    }
+    
+    // start processing the XML file
+    if ( doc.GetRoot()->GetName() != _("variable") ) {
+        return false;
+    }
+        
+    // Mark last changed as now
+    setLastChangedToNow();
+                       
+    // type
+    wxstr = doc.GetRoot()->GetAttribute( _("type") );
+    if ( wxEmptyString != wxstr ) {        
+        setType( getVariableTypeFromString( wxstr ) );
+    }
+            
+    // persistence
+    wxstr = doc.GetRoot()->GetAttribute( _("persistent") );
+    if ( wxEmptyString != wxstr ) { 
+        wxstr.MakeUpper();
+        if ( wxNOT_FOUND != wxstr.Find( _("TRUE") ) ) {
+            setPersistent( true ); 
+        }
+        else if ( wxNOT_FOUND != wxstr.Find( _("FALSE") ) ) {
+            setPersistent( false ); 
+        }
+    }
+                    
+    // userid
+    wxstr = doc.GetRoot()->GetAttribute( _("user") );
+    if ( wxEmptyString != wxstr ) {
+        if ( wxstr.ToULong( &lval ) ) {
+            setOwnerID( lval );
+        }
+    }
+            
+    // access-rights 
+    wxstr = doc.GetRoot()->GetAttribute( _("access-rights") );
+    if ( wxEmptyString != wxstr ) {        
+        lval = vscp_readStringValue( wxstr );
+        setAccessRights( lval );
+    }
+            
+    // name
+    wxstr = doc.GetRoot()->GetAttribute( _("name") );
+    if ( wxEmptyString != wxstr ) {
+        wxstr.MakeUpper();
+        wxstr.Trim();
+        wxstr.Trim( false );
+        if ( wxstr.Length() ) {
+            setName( wxstr );
+        }
+    }
+            
+    // value
+    wxstr = doc.GetRoot()->GetAttribute( _("value") );
+    if ( wxEmptyString != wxstr ) {
+        setValueFromString( getType(),
+                            wxstr,
+                            CVSCPVariable::isValueBase64Encoded( getType() ) );
+    }
+            
+    // note
+    wxstr = doc.GetRoot()->GetAttribute( _("note"), _("") );
+    if ( wxEmptyString != wxstr ) {
+        setNote( wxstr, true );
+    }
+    
     return true;
 }
 

@@ -386,8 +386,62 @@ CControlObject::CControlObject()
 
     // Initialize the CRC
     crcInit();
+    
+#if ( 0 )
+// {
+//    "head": 2,
+//    "obid"; 123,
+//    "datetime": "2017-01-13T10:16:02",
+//    "timestamp":50817,
+//    "class": 10,
+//    "type": 8,
+//    "guid": "00:00:00:00:00:00:00:00:00:00:00:00:00:01:00:02",
+//    "data": [1,2,3,4,5,6,7]
+// }    
+    vscpEvent e;
+    wxString strJSON = _("{" 
+            "\"head\": 1,"
+            "\"obid\": 123,"
+            "\"timestamp\": 23488,"
+            "\"datetime\": \"2017-01-13T10:16:02\","
+            "\"class\": 10,"
+            "\"type\": 10,"
+            "\"guid\": \"88:00:00:00:00:00:00:00:00:00:00:00:00:01:00:02\","
+            "\"data\": [11,22,33,44,55]"
+    "}");
+    vscp_convertJSONToEvent( strJSON, &e );
+#endif    
+    
+#if ( 0 )
+    wxString strxml = _("<variable type=\"boolean\" "
+        "name=\"VSCP_LEVEL_II_SIM_DRIVER_BLEVEL20\" "
+        "persistent=\"true\" "
+        "user=\"0\" "
+        " access-rights=\"0x644\" "
+        " value=\"false\" "
+        " note=\"This is not a Level II node.\" />");
+    CVSCPVariable test;
+    wxPrintf( strxml );
+    test.setFromXML( strxml );
+#endif    
+    
+#if ( 0 )    
+    wxString strxml = _("{"
+	"\"name\": \"variable-name\","
+	"\"type\": 1,"
+	"\"user\": 2,"
+	"\"accessrights\": 0x777,"
+        "\"persistence\": true,"
+	"\"lastchange\": \"2018-01-22T14:32:10\","
+	"\"value\": \"This is a test variable\","
+	"\"note\": \"This is a note about this variable\""
+        "}");
+    CVSCPVariable test;
+    wxPrintf( strjson );
+    test.setFromJSON( strjson );
+#endif    
 
-#if (0)
+#if ( 0 )
     CVSCPTable testtable( "c:/tmp/test.tbl" );
 
     testtable.logData( 1, 100 );
@@ -404,7 +458,7 @@ CControlObject::CControlObject()
     size = testtable.GetRangeOfData( 20, 48, NULL, 0 );
 #endif
 
-if ( 0 ) {
+#if ( 0 ) 
     time_t rawtime;
     struct tm *timeinfo;
 
@@ -418,7 +472,7 @@ if ( 0 ) {
     timeinfo->tm_year = 2015;
     time_t ttt = mktime ( timeinfo );
     ttt = ttt + 1;
-}
+#endif
 
 /*
 wxString ssss(_("12345678"));

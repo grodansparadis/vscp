@@ -871,53 +871,68 @@ extern "C" {
     /*!
      * Convert VSCP Event to JSON formated string
      */
-    void vscp_convertEventToJSON( vscpEvent *pEvent, wxString& strJSON );
+    bool vscp_convertEventToJSON( vscpEvent *pEvent, wxString& strJSON );
     
     /*!
      * Convert VSCP EventEx to JSON formated string
      */
-    void vscp_convertEventExToJSON( vscpEventEx *pEventEx, wxString& strJSON );
+    bool vscp_convertEventExToJSON( vscpEventEx *pEventEx, wxString& strJSON );
     
+    /*!
+     * Convert JSON string to event
+     */
+    bool vscp_convertJSONToEvent( wxString& strJSON, vscpEvent *pEvent );
+    
+    /*!
+     * Convert JSON string to eventex
+     */
+    bool vscp_convertJSONToEventEx( wxString& strJSON, vscpEventEx *pEventEx );
 
-
+    
+    
     
     /*!
      * Convert VSCP Event to XML formated string
      */
-    void vscp_convertEventToXML( vscpEvent *pEvent, wxString& strXML );
+    bool vscp_convertEventToXML( vscpEvent *pEvent, wxString& strXML );
+    
+    /*!
+     * Convert XML string to event
+     */
+    bool vscp_convertXMLToEvent( wxString& strXML, vscpEvent *pEvent );
     
     /*!
      * Convert VSCP EventEx to XML formated string
      */
-    void vscp_convertEventExToXML( vscpEventEx *pEventEx, wxString& strXML );
+    bool vscp_convertEventExToXML( vscpEventEx *pEventEx, wxString& strXML );
     
-    
-    
-    
+    /*!
+     * Convert XML string to EventEx
+     */
+    bool vscp_convertXMLToEventEx( wxString& strXML, vscpEventEx *pEventEx );
+   
     
     /*!
      * Convert VSCP Event to HTML formated string
      */
-    void vscp_convertEventToHTML( vscpEvent *pEvent, wxString& strHTML );
+    bool vscp_convertEventToHTML( vscpEvent *pEvent, wxString& strHTML );
     
     /*!
      * Convert VSCP EventEx to HTML formated string
      */
-    void vscp_convertEventExToHTML( vscpEventEx *pEventEx, wxString& strHTML );
+    bool vscp_convertEventExToHTML( vscpEventEx *pEventEx, wxString& strHTML );
+        
     
-    
-    
-    
-    
-     /*!
-     * Convert VSCP Event to XML formated string
-     */
-    void vscp_convertEventToXML( vscpEvent *pEvent, wxString& strXML );
     
     /*!
-     * Convert VSCP EventEx to XML formated string
+     * Set event datetime data from wxDateTime
      */
-    void vscp_convertEventExToXML( vscpEventEx *pEventEx, wxString& strXML );
+    bool vscp_setEventDateTime( vscpEvent *pEvent, wxDateTime& dt );
+    
+    /*!
+     * Set eventex datetime data from wxDateTime
+     */
+    bool vscp_setEventExDateTime( vscpEventEx *pEventEx, wxDateTime& dt );
     
     /*!
      * Set the event date to now
@@ -1097,16 +1112,25 @@ extern "C" {
                                                 bool bBreak = true );
 
     /*!
-      Set VSCP data from a string
+      Set VSCP Event data from a string
       @param pEvent Pointer to a VSCP event to write parsed data to.
       @param str A string with comma or whitespace separated data in decimal
       or hexadecimal form. Data can span multiple lines.
       @return true on success, false on failure.
     */
  
-    bool vscp_setVscpDataFromString(vscpEvent *pEvent, const wxString& str);
+    bool vscp_setVscpEventDataFromString(vscpEvent *pEvent, const wxString& str);
 
-
+    /*!
+      Set VSCP EventEx data from a string
+      @param pEventEx Pointer to a VSCP event to write parsed data to.
+      @param str A string with comma or whitespace separated data in decimal
+      or hexadecimal form. Data can span multiple lines.
+      @return true on success, false on failure.
+    */
+ 
+    bool vscp_setVscpEventExDataFromString(vscpEventEx *pEventEx, const wxString& str);
+    
     /*!
       Set VSCP data from a string
       @param pData Pointer to a unsigned byte array to write parsed data to.

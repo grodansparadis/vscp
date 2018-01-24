@@ -85,7 +85,7 @@ extern CControlObject *gpobj;
 ///////////////////////////////////////////////////
 //                   KEYS
 ///////////////////////////////////////////////////
-static const char lua_vscp__regkey_clientitem = 100;
+const char lua_vscp__regkey_clientitem = 100;
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -255,7 +255,9 @@ void *actionThread_Lua::Entry()
     // Open the channel
     m_pClientItem->m_bOpen = true;
     
-    lua_pushlightuserdata( L, (void *)&lua_vscp__regkey_clientitem );
+    // Register client item object
+    //lua_pushlightuserdata( L, (void *)&lua_vscp__regkey_clientitem );
+    lua_pushlstring( L, "vscp_clientitem", 15 );
     lua_pushlightuserdata( L, (void *)m_pClientItem );
     lua_settable( L, LUA_REGISTRYINDEX );
     

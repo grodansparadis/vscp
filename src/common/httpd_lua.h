@@ -71,6 +71,14 @@ void web_reg_int( struct lua_State *L, const char *name, int val );
  */
 void web_reg_boolean( struct lua_State *L, const char *name, int val );
 
+/*!
+ * @brief Assign uint32_t to the variable 'name'
+ * @param L
+ * @param name
+ * @param val uint32_t value to assign to name
+ */
+void web_reg_uint32( struct lua_State *L, const char *name, uint32_t val );
+
 /**
  * @brief Assign function with connect parameter to 'name'
  * @param L Lua context

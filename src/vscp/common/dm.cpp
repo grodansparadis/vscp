@@ -3925,7 +3925,7 @@ bool dmElement::doActionSendEventsFromFile( vscpEvent *pDMEvent )
                                                  subchild->GetNodeContent() );
                     }
                     if ( subchild->GetName() == _( "data" ) ) {
-                        vscp_setVscpDataFromString( pEvent, 
+                        vscp_setVscpEventDataFromString( pEvent, 
                                                      subchild->GetNodeContent() );
                     }
                     
@@ -4508,8 +4508,7 @@ bool dmElement::doActionStoreVariable( vscpEvent *pDMEvent )
                                                         pDMEvent->vscp_type,
                                                         (const char *)strGUID.mbc_str(),
                                                         pDMEvent->sizeData,
-                                                        (const char *)strData.mbc_str(),
-                                                        "" );
+                                                        (const char *)strData.mbc_str() );
                     var.setValue( wxstr );
                 }
                 break;

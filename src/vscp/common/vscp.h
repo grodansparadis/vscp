@@ -532,31 +532,29 @@ struct vscpMyNode {
  
     data: datetime,head,obid,datetime,timestamp,class,type,guid,sizedata,data,note
   
-<event>    
-    <head>3</head>
-    <obid>1234</obid>
-    <datetime>2017-01-13T10:16:02</datetime>
-    <timestamp>50817</timestamp>
-    <class>10</class>
-    <type>6</type>
-    <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:01:00:02</guid>
-    <sizedata>7</sizedata>
-    <data>0x48,0x34,0x35,0x2E,0x34,0x36,0x34</data>
-    <note></note>
-</event>
+<event    
+     head="3"
+     obid="1234"
+     datetime="2017-01-13T10:16:02"
+     timestamp="50817"
+     class="10"
+     type="6"
+     guid="00:00:00:00:00:00:00:00:00:00:00:00:00:01:00:02"
+     sizedata="7"
+     data="0x48,0x34,0x35,0x2E,0x34,0x36,0x34" />
+
  */
-#define VSCP_XML_EVENT_TEMPLATE "<event>\n"\
-    "<head>%d</head>\n"\
-    "<obid>%lu</obid>\n"\
-    "<datetime>%s</datetime>\n"\
-    "<timestamp>%lu</timestamp>\n"\
-    "<class>%d</class>\n"\
-    "<type>%d</type>\n"\
-    "<guid>%s</guid>\n"\
-    "<sizedata>%d</sizedata>\n"\
-    "<data>%s</data>\n"\
-    "<note>%s</note>\n"\
-"</event>"
+#define VSCP_XML_EVENT_TEMPLATE "<event "\
+    "head=\"%d\" "\
+    "obid=\"%lu\" "\
+    "datetime=\"%s\" "\
+    "timestamp=\"%lu\" "\
+    "class=\"%d\" "\
+    "type=\"%d\" "\
+    "guid=\"%s\" "\
+    "sizedata=\"%d\" "\
+    "data=\"%s\" "\
+    "/>"
 
 
 /*

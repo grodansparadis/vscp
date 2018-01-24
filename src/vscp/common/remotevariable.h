@@ -91,7 +91,7 @@ class wxFFileOutputStream;
 //	"name": "variable-name",
 //	"type": 1,
 //	"user": 2,
-//	"accessrights": 0x777,
+//	"accessrights": 777,
 //      "persistence": true|false,
 //	"lastchange": "YYYYMMDDTHHMMSS",
 //      "bnumerical": true|false,
@@ -254,11 +254,28 @@ public:
     bool getAsJSON( wxString &strVariable );
     
     /*!
+     * Set variable information from a JSON object
+     * 
+     * @param strVariable JSON object
+     * @return true if the string could be parsed correctly.
+     */
+    bool setFromJSON( wxString &strVariable );
+    
+    
+    /*!
      * Get the variable as a XML object
      * @param strVariable Filled in with JSON data
      * @return true of all is OK, false otherwise.
      */
     bool getAsXML( wxString &strVariable );
+    
+    /*!
+     * Set variable information from a XML object
+     * 
+     * @param strVariable XML object
+     * @return true if the string could be parsed correctly.
+     */
+    bool setFromXML( wxString &strVariable );
 
     /*!
         Reset the variable to it's default value

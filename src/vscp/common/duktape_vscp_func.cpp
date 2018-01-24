@@ -73,6 +73,7 @@ using namespace std;
 using json = nlohmann::json;
 
 
+
 ///////////////////////////////////////////////////
 //                   GLOBALS
 ///////////////////////////////////////////////////
@@ -589,11 +590,15 @@ duk_ret_t js_vscp_sleep( duk_context *ctx )
     return JAVASCRIPT_OK;
 }
 
+ // TODO  writevalue 
+ // TODO writeNote
+ 
+ 
 ///////////////////////////////////////////////////////////////////////////////
 // js_vscp_deleteVariable
 //
 
- duk_ret_t js_vscp_deleteVariable( duk_context *ctx ) 
+duk_ret_t js_vscp_deleteVariable( duk_context *ctx ) 
 {
     wxString varName;
     CVSCPVariable variable;
@@ -728,6 +733,8 @@ try_again:
                 
                 wxString strResult;
                 vscp_convertEventToJSON( pEvent, strResult );
+                // Event is not needed anymore
+                vscp_deleteVSCPevent( pEvent );
                 duk_push_string( ctx, (const char *)strResult.mbc_str() );
                 duk_json_decode( ctx, -1 );
                                 
@@ -1351,6 +1358,7 @@ try_again:
  duk_ret_t js_get_MeasurementSubZone( duk_context *ctx ) 
 {
     vscpEventEx ex;
+    
     //  Should be a JSON variable object
     if ( !duk_is_object(ctx, -1) ) {
         duk_push_null(ctx);    // return code false
@@ -1380,29 +1388,29 @@ try_again:
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// js_connect
+// js_tcpip_connect
 //
 // Connect to remote server
 //
 
-duk_ret_t js_connect(duk_context *ctx)
+duk_ret_t js_tcpip_connect(duk_context *ctx)
 {
     return JAVASCRIPT_OK;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// js_connect_ssl
+// js_tcpip_connect_ssl
 //
 // Connect to remote server using SSL
 //
 
-duk_ret_t js_connect_ssl(duk_context *ctx)
+duk_ret_t js_tcpip_connect_ssl(duk_context *ctx)
 {
     return JAVASCRIPT_OK;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// js_connect_info
+// js_tcpip_connect_info
 //
 // Get connection info
 //      remote address
@@ -1412,62 +1420,62 @@ duk_ret_t js_connect_ssl(duk_context *ctx)
 //      bSSL
 //      
 
-duk_ret_t js_connect_info(duk_context *ctx)
+duk_ret_t js_tcpip_connect_info(duk_context *ctx)
 {
     return JAVASCRIPT_OK;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// js_close
+// js_tcpip_close
 //
 // Close connection to remote server
 //
 
-duk_ret_t js_close(duk_context *ctx)
+duk_ret_t js_tcpip_close(duk_context *ctx)
 {
     return JAVASCRIPT_OK;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// js_write
+// js_tcpip_write
 //
 // Write data remote sever
 //
 
-duk_ret_t js_write(duk_context *ctx)
+duk_ret_t js_tcpip_write(duk_context *ctx)
 {
     return JAVASCRIPT_OK;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// js_read
+// js_tcpip_read
 //
 // Read data from remote sever
 //
 
-duk_ret_t js_read(duk_context *ctx)
+duk_ret_t js_tcpip_read(duk_context *ctx)
 {
     return JAVASCRIPT_OK;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// js_get_response
+// js_tcpip_get_response
 //
 // Wait for response from remote sever
 //
 
-duk_ret_t js_get_response(duk_context *ctx)
+duk_ret_t js_tcpip_get_response(duk_context *ctx)
 {
     return JAVASCRIPT_OK;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// js_download
+// js_tcpip_download
 //
 // Download data from remote web server
 //
 
-duk_ret_t js_download(duk_context *ctx)
+duk_ret_t js_tcpip_download(duk_context *ctx)
 {
     return JAVASCRIPT_OK;
 }

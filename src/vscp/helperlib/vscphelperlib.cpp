@@ -3582,7 +3582,7 @@ extern "C" int vscphlp_setVscpDataFromString( vscpEvent *pEvent,
 #endif
 {
     wxString wxstr = wxString::FromUTF8( pstr );
-    return vscp_setVscpDataFromString( pEvent, wxstr ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
+    return vscp_setVscpEventDataFromString( pEvent, wxstr ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
 }
 
 
