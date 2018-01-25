@@ -1477,7 +1477,7 @@ void frmVSCPSession::LoadRXEventList(wxCommandEvent& event)
                     } 
                     else if (subchild->GetName() == wxT("data")) {
                         str = subchild->GetNodeContent();
-                        vscp_setVscpDataFromString(pObj->m_pEvent, str);
+                        vscp_setVscpEventDataFromString(pObj->m_pEvent, str);
                     } 
                     else if (subchild->GetName() == wxT("timestamp")) {
                         str = subchild->GetNodeContent();
@@ -2304,7 +2304,7 @@ void frmVSCPSession::OnTxLoadClick(wxCommandEvent& event)
                     } 
                     else if (subchild->GetName() == wxT("data")) {
                         str = subchild->GetNodeContent();
-                        vscp_setVscpDataFromString(&pObj->m_Event, str);
+                        vscp_setVscpEventDataFromString(&pObj->m_Event, str);
                     } 
                     else if (subchild->GetName() == wxT("count")) {
                         str = subchild->GetNodeContent();
