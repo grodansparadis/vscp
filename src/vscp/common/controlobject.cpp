@@ -2556,7 +2556,7 @@ bool CControlObject::readXMLConfigurationGeneral( wxString& strcfgfile )
 
     wxString wxlogmsg = wxString::Format(_("Reading XML GENERAL configuration from [%s]\n"),
                                             (const char *)strcfgfile.c_str() );
-    fprintf( stderr, (const char *)wxlogmsg.mbc_str() );
+    fprintf( stderr, "%s", (const char *)wxlogmsg.mbc_str() );
 
     if ( !doc.Load( strcfgfile ) ) {
         fprintf( stderr, "Can't load logfile. Is path correct?\n" );
