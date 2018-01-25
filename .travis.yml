@@ -43,6 +43,7 @@ before_script:
   - sudo apt-get install -y libpcap0.8-dev
   - sudo apt-get install -y libcurl4-openssl-dev
   - sudo apt-get install -y libpcap-dev
+  - g++ --version
 
 script: ./configure && make && sudo make install
 
