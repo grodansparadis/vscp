@@ -161,8 +161,7 @@ int lua_vscp_log( struct lua_State *L )
     wxString wxMsg;
     uint8_t level = DAEMON_LOGMSG_NORMAL;
     uint8_t type = DAEMON_LOGTYPE_DM;
-    
-    int nArgs = lua_gettop( L );
+        int nArgs = lua_gettop( L );
     
     if ( 0 == nArgs) {
         return luaL_error( L, "vscp.log: Wrong number of arguments: "
@@ -240,7 +239,7 @@ int lua_vscp_sleep( struct lua_State *L )
     int nArgs = lua_gettop( L );
     
     if ( 0 == nArgs) {
-        return luaL_error( L, "vscp.log: Wrong number of arguments: "
+        return luaL_error( L, "vscp.sleep: Wrong number of arguments: "
                               "vscp.sleep( milliseconds ) ");
     }
     else {
@@ -1657,6 +1656,7 @@ int lua_get_MeasurementSubZone( struct lua_State *L )
 
 int lua_tcpip_connect( struct lua_State *L )
 {
+    // web_connect_client
     return 1;
 }
 
@@ -1668,6 +1668,7 @@ int lua_tcpip_connect( struct lua_State *L )
 
 int lua_tcpip_connect_ssl( struct lua_State *L )
 {
+    // web_connect_client_secure
     return 1;
 }
 

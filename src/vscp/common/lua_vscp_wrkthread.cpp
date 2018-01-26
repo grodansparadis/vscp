@@ -153,53 +153,23 @@ void *actionThread_Lua::Entry()
     web_reg_function( L, "sleep", lua_vscp_sleep );
     
     web_reg_function( L, "readvariable", lua_vscp_readVariable );
+    web_reg_function( L, "writevariable", lua_vscp_writeVariable );
+    web_reg_function( L, "deletevariable", lua_vscp_deleteVariable );
+            
+    web_reg_function( L, "sendevent", lua_vscp_sendEvent );
+    web_reg_function( L, "getevent", lua_vscp_getEvent );
+    web_reg_function( L, "getcountevent", lua_vscp_getCountEvent );
+    web_reg_function( L, "setfilter", lua_vscp_setFilter );
+    
+    web_reg_function( L, "ismeasurement", lua_is_Measurement );
+    web_reg_function( L, "sendmeasurement", lua_send_Measurement );
+    web_reg_function( L, "getmeasurementvalue", lua_get_MeasurementValue );
+    web_reg_function( L, "getmeasurementunit", lua_get_MeasurementUnit );
+    web_reg_function( L, "getmeasurementsensorindex", lua_get_MeasurementSensorIndex );
+    web_reg_function( L, "getmeasurementzone", lua_get_MeasurementZone );
+    web_reg_function( L, "getmeasurementsubzone", lua_get_MeasurementSubZone );      
     
 /*    
-    duk_push_c_function( ctx, js_vscp_sleep, 1 );
-    duk_put_global_string(ctx, "vscp_sleep");
-    
-    duk_push_c_function( ctx, js_vscp_readVariable, 1 );
-    duk_put_global_string(ctx, "vscp_readVariable");
-    
-    duk_push_c_function( ctx, js_vscp_writeVariable, 1 );
-    duk_put_global_string(ctx, "vscp_writeVariable");
-    
-    duk_push_c_function( ctx, js_vscp_deleteVariable, 1 );
-    duk_put_global_string(ctx, "vscp_deleteVariable");
-    
-    duk_push_c_function( ctx, js_vscp_sendEvent, 1 );
-    duk_put_global_string(ctx, "vscp_sendEvent");
-    
-    duk_push_c_function( ctx, js_vscp_getEvent, 1 );
-    duk_put_global_string(ctx, "vscp_receiveEvent");
-    
-    duk_push_c_function( ctx, js_vscp_getCountEvent, 1 );
-    duk_put_global_string(ctx, "vscp_countEvent");
-    
-    duk_push_c_function( ctx, js_vscp_setFilter, 1 );
-    duk_put_global_string(ctx, "vscp_setFilter");
-    
-    duk_push_c_function( ctx, js_is_Measurement, 1 );    
-    duk_put_global_string(ctx, "vscp_isMeasurement");
-    
-    duk_push_c_function( ctx, js_send_Measurement,1  );
-    duk_put_global_string(ctx, "vscp_sendMeasurement");
-    
-    duk_push_c_function( ctx, js_get_MeasurementValue, 1 );
-    duk_put_global_string(ctx, "vscp_getMeasurementValue"); 
-    
-    duk_push_c_function( ctx, js_get_MeasurementUnit, 1 );
-    duk_put_global_string(ctx, "vscp_getMeasurementUnit");
-    
-    duk_push_c_function( ctx, js_get_MeasurementSensorIndex, 1 );
-    duk_put_global_string(ctx, "vscp_getMeasurementSensorIndex");
-    
-    duk_push_c_function( ctx, js_get_MeasurementZone, 1 );
-    duk_put_global_string(ctx, "vscp_getMeasurementZone");
-    
-    duk_push_c_function( ctx, js_get_MeasurementSubZone, 1 );
-    duk_put_global_string(ctx, "vscp_getMeasurementSubZone");
-    
     // Save the DM feed event for easy access
     wxString strEvent;
     vscp_convertEventExToJSON( &m_feedEvent, strEvent );

@@ -61,25 +61,29 @@ int lua_vscp_sleep( struct lua_State *L );
 
 
 /*!
- *  Get variable as a JSON object from it's name. If the variable is
- *  not found a null object is returned.
+ *  Get variable in specific format from it's name.
  *  
- *  Lua Parameter 0: ClientItem
- *  Lua Parameter 1: Name of variable to read
- *  Lua: Return: Variable on JSON format. NULL if no variable with
- *                      that name exists.
+ *  vscp.readvariable( "name"[, format ] )
  * 
- *  @param v7 Pointer to v7 object.
- *  @param res Pointer to JSON object or NULL if variable was not found.
- *  @return True on success or error code.
+ *  Lua Parameter 1: Variable name
+ *  Lua Parameter 2: Optional format
+ *  Lua: Return: Variable in selected format or error. 
+ * 
+ *      format = 0 - string   ***default****
+ *      format = 1 - XML
+ *      format = 2 - JSON
+ *      format = 3 - Just value (can be base64 encoded)
+ *      format = 4 - Just note (always base64 encoded)
  */
 int lua_vscp_readVariable( struct lua_State *L );
 
 /*!
  *  Write a VSCP variable and create it if it does not exist.
  * 
- *  Lua Parameter 0: ClientItem
- *  Lua Parameter 1: Variable as JSON object
+ * vscp.readvariable( "name"[, format ] )
+ * 
+ *  Lua Parameter 1: Variable name
+ *  Lua Parameter 2: Optional format
  *  Lua: Return: True if variable got updated/added. 
  * 
  *  @param v7 Pointer to v7 object.

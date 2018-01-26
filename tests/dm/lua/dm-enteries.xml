@@ -1,0 +1,136 @@
+  <row enable="true" groupid="" >
+    
+    <comment>
+        Run Lua test of vscp.log and vscp.print
+	(once every second)
+    </comment>
+        
+    <mask  priority="0"  
+             class="65535"  
+             type="65535"  
+             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+      
+    <filter  priority="0"  
+             class="65535"  
+             type="5"  
+             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:01" />    
+    
+    <action>0x100</action>
+    <param>
+	local a
+       
+        a = 123
+        vscp.print("This is a test")
+        vscp.log("Test log message", 1, 2 )
+    </param>
+    
+    <allowed_from>*</allowed_from>
+    <allowed_to>*</allowed_to>
+    <allowed_weekdays>*</allowed_weekdays>
+    <allowed_time>*</allowed_time>
+    
+  </row>
+
+
+
+--------------------------------------------------------------------------------------------------------------------------
+
+
+
+   <row enable="true" groupid="lua" >
+    <comment>Test sleep function</comment>
+    <mask  priority="0"  class="65535"  type="65535"  GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" > </mask>
+    <filter  priority="0"  class="65535"  type="23"  GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" > </filter>
+    <action>0x100</action>
+    <param>
+    	vscp.log('Before sleep 1')
+    	vscp.sleep(5000)
+    	vscp.log('After sleep 1')
+    	vscp.sleep(5000)
+    	vscp.log('After sleep 2')
+	vscp.log('THE END')
+    </param>
+
+    <allowed_from>*</allowed_from>
+    <allowed_to>*</allowed_to>
+    <allowed_weekdays>*</allowed_weekdays>
+    <allowed_time>*</allowed_time>
+
+  </row>
+
+
+--------------------------------------------------------------------------------------------------------------------------
+
+
+
+<?xml version = "1.0" encoding = "UTF-8" ?>
+
+<dm>
+    
+  <row enable="true" groupid="" >
+    
+    <comment>
+        Run Lua readvariable test code
+    </comment>
+        
+    <mask  priority="0"  
+             class="65535"  
+             type="65535"  
+             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+      
+    <filter  priority="0"  
+             class="65535"  
+             type="23"  
+             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:01" />    
+    
+    <action>0x100</action>   
+    <param>
+	local str 
+
+	-- String format
+    	vscp.log('Before command - string (default)')
+	str = vscp.readvariable('vscp.version.str')
+        vscp.log( str )
+
+	-- XML format
+    	vscp.log('Before command - XML')
+	str = vscp.readvariable('vscp.version.str',1)
+        vscp.log( str )
+
+	-- JSON format
+    	vscp.log('Before command - JSON')
+	str = vscp.readvariable('vscp.version.str',2)
+        vscp.log( str )
+
+	-- Just value
+    	vscp.log('Before command - just value')
+	str = vscp.readvariable('vscp.version.str',3)
+        vscp.log( str )
+
+        -- Just note
+    	vscp.log('Before command - just note')
+	str = vscp.readvariable('vscp.version.str',4)
+        vscp.log( str )
+
+	vscp.log('THE END')
+    </param>
+
+
+    <allowed_from>*</allowed_from>
+    <allowed_to>*</allowed_to>
+    <allowed_weekdays>*</allowed_weekdays>
+    <allowed_time>*</allowed_time>
+
+  </row>
+  
+
+</dm>
+
+
+
+--------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
