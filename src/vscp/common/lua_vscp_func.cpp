@@ -925,17 +925,21 @@ int lua_vscp_setFilter( struct lua_State *L )
     switch ( format ) {
         
         case 0:
-            if ( !vscp_readFilterFromString( &filter, strFilter) ) {
+            if ( !vscp_readFilterFromString( &filter, strFilter ) ) {
                 luaL_error( L, "vscp.setFilter: Failed to read filter!");
             }
             break;
                     
         case 1:
-            // TODO XML version
+            if ( !vscp_readFilterMaskFromXML( &filter, strFilter ) ) {
+                luaL_error( L, "vscp.setFilter: Failed to read filter!");
+            }
             break;
             
         case 2:
-            // TODO JSON version
+            if ( !vscp_readFilterMaskFromJSON( &filter, strFilter ) ) {
+                luaL_error( L, "vscp.setFilter: Failed to read filter!");
+            }
             break;
             
     }
@@ -950,20 +954,20 @@ int lua_vscp_setFilter( struct lua_State *L )
 ///////////////////////////////////////////////////////////////////////////////
 // lua_send_Measurement
 //
-// {
-//     'level': 1|2, (defaults to 2)
-//     'string': true|false,  (default false, only valid for level II event)
-//     'value': 123.5,
-//     'vscptype': 6,
-//     'unit': 1, (defaults to 0) 
-//     'sensorindex': 0, (defaults to 0)
-//     'zone': 0, (defaults to 0)
-//     'subzone': 0 (defaults to 0)
-// }
+//      level       integer     1 or 2
+//      string      boolean     true or false for string format event
+//      value       double 
+//      guid        string      defaults to "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"
+//      vscptype    integer     
+//      unit        integer     default is 0    optional
+//      sensorindex integer     default is 0    optional
+//      zone        integer     default is 0    optional
+//      subzone     integer     default is 0    optional
 //
 
 int lua_send_Measurement( struct lua_State *L )
 {
+    CClientItem *pClientItem = NULL;
     vscpEvent *pEvent;
     double value;           // Measurement value
     bool bLevel2 = true;    // True if level II
@@ -973,6 +977,242 @@ int lua_send_Measurement( struct lua_State *L )
     int sensoridx = 0;
     int zone = 0;
     int subzone = 0;
+    uint8_t guid[16];
+        
+    int nArgs = lua_gettop( L );
+    
+    // Get the client item
+    lua_pushlstring( L, "vscp_clientitem", 15 );
+    lua_gettable (L, LUA_REGISTRYINDEX );
+    pClientItem = (CClientItem *)lua_touserdata( L, -1 );
+    
+    if ( NULL == pClientItem ) {
+        return luaL_error( L, "vscp.sendMeasurement: VSCP server client not found.");
+    }
+    
+    // Must be at least four args
+    if ( nArgs < 5 ) {
+        return luaL_error( L, "vscp.sendMeasurement: Wrong number of arguments: "
+                              "vscp.sendMeasurement( level, bString, value, GUID, type"
+                              "[unit,index,zone,subzone] ) ");
+    }
+    
+    // level
+    if ( !lua_isinteger( L, 1 ) ) {
+        return luaL_error( L, "vscp.sendMeasurement: Argument error, integer expected: "
+                              "vscp.sendMeasurement( level, bString, value, GUID, type"
+                              "[unit,index,zone,subzone] ) ");
+    }
+        
+    int level = (int)lua_tointeger( L, 1 );
+    if ( 1 == level ) bLevel2 = false;
+    
+    
+    // bString
+    if ( !lua_isboolean( L, 2 ) ) {
+        return luaL_error( L, "vscp.sendMeasurement: Argument error, boolean expected: "
+                              "vscp.sendMeasurement( level, bString, value, GUID, type"
+                              "[unit,index,zone,subzone] ) ");
+    }
+        
+    bString = lua_toboolean( L, 2 ); 
+    
+    // value
+    if ( !lua_isnumber( L, 3 ) ) {
+        return luaL_error( L, "vscp.sendMeasurement: Argument error, number expected: "
+                              "vscp.sendMeasurement( level, bString, value, GUID, type"
+                              "[unit,index,zone,subzone] ) ");
+    }
+        
+    value = lua_tonumber( L, 3 );
+    
+    
+    // GUID
+    if ( !lua_isstring( L, 4 ) ) {
+        return luaL_error( L, "vscp.sendMeasurement: Argument error, string expected: "
+                              "vscp.sendMeasurement( level, bString, value, GUID, type"
+                              "[unit,index,zone,subzone] ) ");
+    }
+        
+    size_t len;
+    const char *pstr = lua_tolstring ( L, 4, &len ); 
+    wxString strGUID = wxString::FromUTF8( pstr, len );
+    if ( !vscp_getGuidFromStringToArray( guid, strGUID ) ) {
+        return luaL_error( L, "vscp.sendMeasurement: Invalid GUID!" );
+    }
+    
+    // vscp type
+    if ( !lua_isinteger( L, 5 ) ) {
+        return luaL_error( L, "vscp.sendMeasurement: Argument error, integer expected: "
+                              "vscp.sendMeasurement( level, bString, value, GUID, type"
+                              "[unit,index,zone,subzone] ) ");
+    }
+        
+    type = (int)lua_tointeger( L, 5 );
+    
+    if ( nArgs >= 5 ) {
+        
+        // unit
+        if ( !lua_isinteger( L, 6 ) ) {
+            return luaL_error( L, "vscp.sendMeasurement: Argument error, integer expected: "
+                                  "vscp.sendMeasurement( level, bString, value, GUID, type"
+                                  "[unit,index,zone,subzone] ) ");
+        }
+        
+        unit = (int)lua_tointeger( L, 6 );
+    
+    }
+    
+    if ( nArgs >= 7 ) {
+        
+        // zone
+        if ( !lua_isinteger( L, 7 ) ) {
+            return luaL_error( L, "vscp.sendMeasurement: Argument error, integer expected: "
+                                  "vscp.sendMeasurement( level, bString, value, GUID, type"
+                                  "[unit,index,zone,subzone] ) ");
+        }
+        
+        zone = (int)lua_tointeger( L, 7 );
+    
+    }
+    
+    
+    if ( nArgs >= 8 ) {
+        
+        // subzone
+        if ( !lua_isinteger( L, 8 ) ) {
+            return luaL_error( L, "vscp.sendMeasurement: Argument error, integer expected: "
+                                  "vscp.sendMeasurement( level, bString, value, GUID, type"
+                                  "[unit,index,zone,subzone] ) ");
+        }
+        
+        subzone = (int)lua_tointeger( L, 8 );
+    
+    }
+    
+    
+    if ( bLevel2 ) {
+        
+        if ( bString ) {
+            
+            pEvent = new vscpEvent;
+            if ( NULL == pEvent ) {
+                return luaL_error( L, "vscp.sendMeasurement: "
+                                      "Event allocation error" );
+            }
+            pEvent->pdata = NULL;
+        
+            // Set GUID
+            memcpy( pEvent->GUID, guid, 16 );
+            
+            if ( !vscp_makeLevel2StringMeasurementEvent( pEvent, 
+                                                            type,
+                                                            value,
+                                                            unit,
+                                                            sensoridx,
+                                                            zone,
+                                                            subzone ) ) {
+                // Failed
+                return luaL_error( L, "vscp.sendMeasurement: Failed to send "
+                                      "measurement event!");
+            }
+            
+        }
+        else {
+            
+            pEvent = new vscpEvent;
+            if ( NULL == pEvent ) {
+                return luaL_error( L, "vscp.sendMeasurement: "
+                                      "Event allocation error" );
+            }
+            pEvent->pdata = NULL;
+        
+            // Set GUID
+            memcpy( pEvent->GUID, guid, 16 );
+                
+            if ( !vscp_makeLevel2FloatMeasurementEvent( pEvent, 
+                                                            type,
+                                                            value,
+                                                            unit,
+                                                            sensoridx,
+                                                            zone,
+                                                            subzone ) ) {
+                // Failed
+                return luaL_error( L, "vscp.sendMeasurement: Failed to construct "
+                                      "float measurement event!");
+            }
+            
+        }
+        
+    }
+    else {
+        
+        // Level I
+        
+        if ( bString ) { 
+            
+            pEvent = new vscpEvent;
+            if ( NULL == pEvent ) {
+                return luaL_error( L, "vscp.sendMeasurement: "
+                                      "Event allocation error!" );
+            }
+                
+            memcpy( pEvent->GUID, guid, 16 );
+            pEvent->vscp_type = type;
+            pEvent->vscp_class = VSCP_CLASS1_MEASUREMENT;
+            pEvent->obid = 0;
+            pEvent->timestamp = 0;                    
+            pEvent->pdata = NULL;
+                
+            if ( !vscp_makeStringMeasurementEvent( pEvent, 
+                                                        value,
+                                                        unit,
+                                                        sensoridx ) ) {
+                vscp_deleteVSCPevent( pEvent );
+                return luaL_error( L, "vscp.sendMeasurement: "
+                                      "String event conversion failed!" );
+            }
+            
+            //
+            
+        }
+        else {
+            
+            pEvent = new vscpEvent;
+            if ( NULL == pEvent ) {
+                return luaL_error( L, "vscp.sendMeasurement: "
+                                      "Event allocation error!" );
+            }
+
+            memcpy( pEvent->GUID, guid, 16 );
+            pEvent->vscp_type = type;
+            pEvent->vscp_class = VSCP_CLASS1_MEASUREMENT;
+            pEvent->obid = 0;
+            pEvent->timestamp = 0; 
+            pEvent->pdata = NULL;
+
+            if ( !vscp_makeFloatMeasurementEvent( pEvent, 
+                                                    value,
+                                                    unit,
+                                                    sensoridx ) ) {
+                vscp_deleteVSCPevent( pEvent );
+                return luaL_error( L, "vscp.sendMeasurement: Failed to send "
+                                      "measurement event!");
+            }
+        
+        }
+        
+    }
+    
+    // Send the event
+    if ( !gpobj->sendEvent( pClientItem, pEvent ) ) {
+        // Failed to send event
+        vscp_deleteVSCPevent( pEvent );
+        return luaL_error( L, "vscp.sendMeasurement: "
+                              "Failed to send event!" );
+    }
+    
+    vscp_deleteVSCPevent( pEvent );
     
     return 1;
 }
@@ -981,11 +1221,75 @@ int lua_send_Measurement( struct lua_State *L )
 ///////////////////////////////////////////////////////////////////////////////
 // lua_is_Measurement
 //
+// event,format
+//
+//      format = 0 - String format.
+//      format = 1 - XML format.
+//      format = 2 - JSON format.
+//
 
 int lua_is_Measurement( struct lua_State *L ) 
 {
     vscpEventEx ex;
+    int format = 0;
+    wxString strEvent;
     
+    int nArgs = lua_gettop( L );
+    
+    // Event
+    if ( !lua_isstring( L, 1 ) ) {
+        return luaL_error( L, "vscp.isMeasurement: Argument error, "
+                              "string expected: "
+                              "vscp.isMeasurement( event[,format] ) ");
+    }
+        
+    size_t len;
+    const char *pstr = lua_tolstring ( L, 1, &len ); 
+    strEvent = wxString::FromUTF8( pstr, len );
+    
+    if ( nArgs >= 2 ) {
+                
+        // format
+        if ( !lua_isnumber( L, 2 ) ) {
+            return luaL_error( L, "vscp.isMeasurement: Argument error, "
+                                  "number expected: "
+                                  "vscp.isMeasurement( event[,format] ) ");
+        }
+        
+        format = (int)lua_tointeger( L, 2 );
+    }
+    
+    if ( 0 == format ) {
+        if ( !vscp_setVscpEventExFromString( &ex, strEvent ) ) {
+            return luaL_error( L, "vscp.isMeasurement: Failed to get VSCP "
+                                  "event from string!");
+        }
+    }
+    else if ( 1 == format ) {
+        if ( !vscp_convertXMLToEventEx( strEvent, &ex ) ) {
+            return luaL_error( L, "vscp.isMeasurement: Failed to get "
+                                  "VSCP event from XML!");
+        }
+    }
+    else if ( 2 == format ) {
+        if ( !vscp_convertJSONToEventEx( strEvent, &ex ) ) {
+            return luaL_error( L, "vscp.isMeasurement: Failed to get "
+                                  "VSCP event from JSON!");
+        }
+    }
+    
+    vscpEvent *pEvent = new vscpEvent;
+    if ( NULL == pEvent ) {
+        return luaL_error( L, "vscp.isMeasurement: Allocation error!" );
+    }
+    
+    pEvent->pdata = NULL;
+    
+    vscp_convertVSCPfromEx( pEvent, &ex );
+    bool bMeasurement = vscp_isVSCPMeasurement( pEvent );
+    vscp_deleteVSCPevent( pEvent );
+    
+    lua_pushboolean( L, bMeasurement ? 1 : 0 );
     return 1;
 }
 
@@ -998,6 +1302,65 @@ int lua_get_MeasurementValue( struct lua_State *L )
 {
     double value;
     vscpEventEx ex;
+    int format = 0;
+    wxString strEvent;
+    
+    int nArgs = lua_gettop( L );
+    
+    // Event
+    if ( !lua_isstring( L, 1 ) ) {
+        return luaL_error( L, "vscp.getMeasurementValue: Argument error, "
+                              "string expected: "
+                              "vscp.getMeasurementValue( event[,format] ) ");
+    }
+        
+    size_t len;
+    const char *pstr = lua_tolstring ( L, 1, &len ); 
+    strEvent = wxString::FromUTF8( pstr, len );
+    
+    if ( nArgs >= 2 ) {
+                
+        // format
+        if ( !lua_isnumber( L, 2 ) ) {
+            return luaL_error( L, "vscp.getMeasurementValue: Argument error, "
+                                  "number expected: "
+                                  "vscp.getMeasurementValue( event[,format] ) ");
+        }
+        
+        format = (int)lua_tointeger( L, 2 );
+    }
+    
+    if ( 0 == format ) {
+        if ( !vscp_setVscpEventExFromString( &ex, strEvent ) ) {
+            return luaL_error( L, "vscp.getMeasurementValue: Failed to get "
+                                  "VSCP event from string!");
+        }
+    }
+    else if ( 1 == format ) {
+        if ( !vscp_convertXMLToEventEx( strEvent, &ex ) ) {
+            return luaL_error( L, "vscp.getMeasurementValue: Failed to get "
+                                  "VSCP event from XML!");
+        }
+    }
+    else if ( 2 == format ) {
+        if ( !vscp_convertJSONToEventEx( strEvent, &ex ) ) {
+            return luaL_error( L, "vscp.getMeasurementValue: Failed to get "
+                                  "VSCP event from JSON!");
+        }
+    }
+    
+    vscpEvent *pEvent = new vscpEvent;
+    if ( NULL == pEvent ) {
+        return luaL_error( L, "vscp.getMeasurementValue: Allocation error!");
+    }
+    
+    pEvent->pdata = NULL;
+    
+    vscp_convertVSCPfromEx( pEvent, &ex );
+    vscp_getVSCPMeasurementAsDouble( pEvent, &value );
+    vscp_deleteVSCPevent( pEvent );
+    
+    lua_pushnumber( L, value );
     
     return 1;
 }
@@ -1010,6 +1373,65 @@ int lua_get_MeasurementValue( struct lua_State *L )
 int lua_get_MeasurementUnit( struct lua_State *L ) 
 {
     vscpEventEx ex;
+    int format = 0;
+    wxString strEvent;
+    
+    int nArgs = lua_gettop( L );
+    
+    // Event
+    if ( !lua_isstring( L, 1 ) ) {
+        return luaL_error( L, "vscp.getMeasurementUnit: Argument error, "
+                              "string expected: "
+                              "vscp.getMeasurementUnit( event[,format] ) ");
+    }
+        
+    size_t len;
+    const char *pstr = lua_tolstring ( L, 1, &len ); 
+    strEvent = wxString::FromUTF8( pstr, len );
+    
+    if ( nArgs >= 2 ) {
+                
+        // format
+        if ( !lua_isnumber( L, 2 ) ) {
+            return luaL_error( L, "vscp.getMeasurementUnit: Argument error, "
+                                  "number expected: "
+                                  "vscp.getMeasurementUnit( event[,format] ) ");
+        }
+        
+        format = (int)lua_tointeger( L, 2 );
+    }
+    
+    if ( 0 == format ) {
+        if ( !vscp_setVscpEventExFromString( &ex, strEvent ) ) {
+            return luaL_error( L, "vscp.getMeasurementUnit: Failed to get "
+                                  "VSCP event from string!");
+        }
+    }
+    else if ( 1 == format ) {
+        if ( !vscp_convertXMLToEventEx( strEvent, &ex ) ) {
+            return luaL_error( L, "vscp.getMeasurementUnit: Failed to get "
+                                  "VSCP event from XML!");
+        }
+    }
+    else if ( 2 == format ) {
+        if ( !vscp_convertJSONToEventEx( strEvent, &ex ) ) {
+            return luaL_error( L, "vscp.getMeasurementUnit: Failed to get "
+                                  "VSCP event from JSON!");
+        }
+    }
+    
+    vscpEvent *pEvent = new vscpEvent;
+    if ( NULL == pEvent ) {
+        return luaL_error( L, "vscp.getMeasurementUnit: Allocation error!");
+    }
+    
+    pEvent->pdata = NULL;
+        
+    vscp_convertVSCPfromEx( pEvent, &ex );
+    int unit = vscp_getVSCPMeasurementUnit( pEvent );
+    vscp_deleteVSCPevent( pEvent );
+    
+    lua_pushinteger( L, unit );
     
     return 1;
 }
@@ -1022,6 +1444,65 @@ int lua_get_MeasurementUnit( struct lua_State *L )
 int lua_get_MeasurementSensorIndex( struct lua_State *L ) 
 {
     vscpEventEx ex;
+    int format = 0;
+    wxString strEvent;
+    
+    int nArgs = lua_gettop( L );
+    
+    // Event
+    if ( !lua_isstring( L, 1 ) ) {
+        return luaL_error( L, "vscp.getMeasuremenSensorIndex: Argument error, "
+                              "string expected: "
+                              "vscp.getMeasuremenSensorIndex( event[,format] ) ");
+    }
+        
+    size_t len;
+    const char *pstr = lua_tolstring ( L, 1, &len ); 
+    strEvent = wxString::FromUTF8( pstr, len );
+    
+    if ( nArgs >= 2 ) {
+                
+        // format
+        if ( !lua_isnumber( L, 2 ) ) {
+            return luaL_error( L, "vscp.getMeasuremenSensorIndex: Argument "
+                                  "error, number expected: "
+                                  "vscp.getMeasuremenSensorIndex( event[,format] ) ");
+        }
+        
+        format = (int)lua_tointeger( L, 2 );
+    }
+    
+    if ( 0 == format ) {
+        if ( !vscp_setVscpEventExFromString( &ex, strEvent ) ) {
+            return luaL_error( L, "vscp.getMeasuremenSensorIndex: Failed to "
+                                  "get VSCP event from string!");
+        }
+    }
+    else if ( 1 == format ) {
+        if ( !vscp_convertXMLToEventEx( strEvent, &ex ) ) {
+            return luaL_error( L, "vscp.getMeasuremenSensorIndex: Failed to get "
+                                  "VSCP event from XML!");
+        }
+    }
+    else if ( 2 == format ) {
+        if ( !vscp_convertJSONToEventEx( strEvent, &ex ) ) {
+            return luaL_error( L, "vscp.getMeasuremenSensorIndex: Failed to get "
+                                  "VSCP event from JSON!");
+        }
+    }
+    
+    vscpEvent *pEvent = new vscpEvent;
+    if ( NULL == pEvent ) {
+        return luaL_error( L, "vscp.getMeasurementUnit: Allocation error!");
+    }
+    
+    pEvent->pdata = NULL;
+        
+    vscp_convertVSCPfromEx( pEvent, &ex );
+    int sensorindex = vscp_getVSCPMeasurementSensorIndex( pEvent );
+    vscp_deleteVSCPevent( pEvent );
+    
+    lua_pushinteger( L, sensorindex );
     
     return 1;
 }
@@ -1034,7 +1515,65 @@ int lua_get_MeasurementSensorIndex( struct lua_State *L )
 int lua_get_MeasurementZone( struct lua_State *L ) 
 {
     vscpEventEx ex;
+    int format = 0;
+    wxString strEvent;
     
+    int nArgs = lua_gettop( L );
+    
+    // Event
+    if ( !lua_isstring( L, 1 ) ) {
+        return luaL_error( L, "vscp.getMeasurementZone: Argument error, "
+                              "string expected: "
+                              "vscp.getMeasurementZone( event[,format] ) ");
+    }
+        
+    size_t len;
+    const char *pstr = lua_tolstring ( L, 1, &len ); 
+    strEvent = wxString::FromUTF8( pstr, len );
+    
+    if ( nArgs >= 2 ) {
+                
+        // format
+        if ( !lua_isnumber( L, 2 ) ) {
+            return luaL_error( L, "vscp.getMeasurementZone: Argument error, "
+                                  "number expected: "
+                                  "vscp.getMeasurementZone( event[,format] ) ");
+        }
+        
+        format = (int)lua_tointeger( L, 2 );
+    }
+    
+    if ( 0 == format ) {
+        if ( !vscp_setVscpEventExFromString( &ex, strEvent ) ) {
+            return luaL_error( L, "vscp.getMeasurementZone: Failed to get "
+                                  "VSCP event from string!");
+        }
+    }
+    else if ( 1 == format ) {
+        if ( !vscp_convertXMLToEventEx( strEvent, &ex ) ) {
+            return luaL_error( L, "vscp.getMeasurementZone: Failed to get "
+                                  "VSCP event from XML!");
+        }
+    }
+    else if ( 2 == format ) {
+        if ( !vscp_convertJSONToEventEx( strEvent, &ex ) ) {
+            return luaL_error( L, "vscp.getMeasurementZone: Failed to get "
+                                  "VSCP event from JSON!");
+        }
+    }
+    
+    vscpEvent *pEvent = new vscpEvent;
+    if ( NULL == pEvent ) {
+        return luaL_error( L, "vscp.getMeasurementZone: Allocation error!");
+    }
+    
+    pEvent->pdata = NULL;
+        
+    vscp_convertVSCPfromEx( pEvent, &ex );
+    int zone = vscp_getVSCPMeasurementZone( pEvent );
+    vscp_deleteVSCPevent( pEvent );
+    
+    lua_pushinteger( L, zone );
     
     return 1;
 }
@@ -1047,6 +1586,65 @@ int lua_get_MeasurementZone( struct lua_State *L )
 int lua_get_MeasurementSubZone( struct lua_State *L ) 
 {
     vscpEventEx ex;
+    int format = 0;
+    wxString strEvent;
+    
+    int nArgs = lua_gettop( L );
+    
+    // Event
+    if ( !lua_isstring( L, 1 ) ) {
+        return luaL_error( L, "vscp.getMeasurementSubZone: Argument error, "
+                              "string expected: "
+                              "vscp.getMeasurementSubZone( event[,format] ) ");
+    }
+        
+    size_t len;
+    const char *pstr = lua_tolstring ( L, 1, &len ); 
+    strEvent = wxString::FromUTF8( pstr, len );
+    
+    if ( nArgs >= 2 ) {
+                
+        // format
+        if ( !lua_isnumber( L, 2 ) ) {
+            return luaL_error( L, "vscp.getMeasurementSubZone: Argument error,"
+                                  " number expected: "
+                                  "vscp.getMeasurementSubZone( event[,format] ) ");
+        }
+        
+        format = (int)lua_tointeger( L, 2 );
+    }
+    
+    if ( 0 == format ) {
+        if ( !vscp_setVscpEventExFromString( &ex, strEvent ) ) {
+            return luaL_error( L, "vscp.getMeasurementSubZone: Failed to get "
+                                  "VSCP event from string!");
+        }
+    }
+    else if ( 1 == format ) {
+        if ( !vscp_convertXMLToEventEx( strEvent, &ex ) ) {
+            return luaL_error( L, "vscp.getMeasurementSubZone: Failed to get "
+                                  "VSCP event from XML!");
+        }
+    }
+    else if ( 2 == format ) {
+        if ( !vscp_convertJSONToEventEx( strEvent, &ex ) ) {
+            return luaL_error( L, "vscp.getMeasurementSubZone: Failed to get "
+                                  "VSCP event from JSON!");
+        }
+    }
+    
+    vscpEvent *pEvent = new vscpEvent;
+    if ( NULL == pEvent ) {
+        return luaL_error( L, "vscp.getMeasurementSubZone: Allocation error!");
+    }
+    
+    pEvent->pdata = NULL;
+        
+    vscp_convertVSCPfromEx( pEvent, &ex );
+    int subzone = vscp_getVSCPMeasurementSubZone( pEvent );
+    vscp_deleteVSCPevent( pEvent );
+    
+    lua_pushinteger( L, subzone );
     
     return 1;
 }

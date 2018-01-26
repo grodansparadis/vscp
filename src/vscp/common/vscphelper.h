@@ -1014,6 +1014,9 @@ extern "C" {
         @return true on success, false on failure.
     */
     bool vscp_writeFilterToString( const vscpEventFilter *pFilter, wxString& strFilter);
+    
+    
+    
 
     /*!
         Read a mask from a string
@@ -1037,7 +1040,49 @@ extern "C" {
     bool vscp_writeMaskToString( const vscpEventFilter *pFilter, wxString& strFilter);
 
     
+    /*!
+     * Read filter from XML coded string
+     * 
+     * <filter 
+     *      mask_priority="number"
+     *      mask_class="number"
+     *      mask_type="number"
+     *      mask_guid="GUID string"
+      *     filter_priority="number"
+     *      filter_class="number"
+     *      filter_type="number"
+     *      filter_guid="GUID string"
+     * />
+     */
+    bool vscp_readFilterMaskFromXML( vscpEventFilter *pFilter, const wxString& strFilter);
     
+    /*!
+     * Write filter to XML coed string
+     */
+    bool vscp_writeFilterMaskToXML( vscpEventFilter *pFilter, wxString& strFilter);
+    
+    
+    /*!
+     * Read filter from JSNOM coded string
+     * 
+     * {
+     *      'mask_priority': number,
+     *      'mask_class': number,
+     *      'mask_type': number,
+     *      'mask_guid': 'string',
+     *      'filter_priority'; number,
+     *      'filter_class': number,
+     *      'filter_type': number,
+     *      'filter_guid' 'string'
+     * }
+     * 
+     */
+    bool vscp_readFilterMaskFromJSON( vscpEventFilter *pFilter, const wxString& strFilter);
+    
+    /*
+     * Write filter to JSON coded string
+     */
+    bool vscp_writeFilterMaskToJSON( vscpEventFilter *pFilter, wxString& strFilter);
     
     
     

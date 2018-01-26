@@ -4,8 +4,7 @@
 
 language: cpp
 
-before-install:
-
+before-install: g++ --version
 
 install:
   - if [ "${BUILD_TYPE}" == "Coverage" -a "${TRAVIS_OS_NAME}" == "linux" ]; then

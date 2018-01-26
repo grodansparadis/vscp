@@ -805,7 +805,7 @@ try_again:
 // js_vscp_setFilter
 //
 // {
-//     'mask_priorit': number,
+//     'mask_priority': number,
 //     'mask_class': number,
 //     'mask_type': number,
 //     'mask_guid': 'string',
@@ -926,6 +926,7 @@ try_again:
 //     'level': 1|2, (defaults to 2)
 //     'string': true|false,  (default false, only valid for level II event)
 //     'value': 123.5,
+//     'guid': FF:FF:80... defaults to "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"
 //     'vscptype': 6,
 //     'unit': 1, (defaults to 0) 
 //     'sensorindex': 0, (defaults to 0)

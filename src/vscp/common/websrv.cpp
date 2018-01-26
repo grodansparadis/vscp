@@ -3089,7 +3089,7 @@ static int vscp_dm_post( struct web_connection *conn, void *cbdata )
                     if ( !gpobj->m_dm.addDatabaseRecord( pElement ) ) {
                         web_printf( conn,
                                 "<br><br>Failed to save DM Entry to database. id=%ld idx=%lu",
-                                id, pElement->m_id );
+                                id, (unsigned long)pElement->m_id );
                     }
                     else  {
                         // Add the DM row to the matrix
@@ -3107,7 +3107,7 @@ static int vscp_dm_post( struct web_connection *conn, void *cbdata )
                     if ( !gpobj->m_dm.updateDatabaseRecord( pElement ) ) {
                         web_printf( conn,
                                 "<br><br>Failed to update DM Entry to database. id=%ld idx=%lu",
-                                id, pElement->m_id );
+                                id, (unsigned long)pElement->m_id );
                     }
 
                 }
@@ -6607,8 +6607,7 @@ static int vscp_guid_edit( struct web_connection *conn, void *cbdata  )
     if ( bNew ) {
         // Hidden new flag
         web_printf( conn,
-                    "<input name=\"new\" value=\"true\" type=\"hidden\">",
-                    id );
+                    "<input name=\"new\" value=\"true\" type=\"hidden\">" );
     }
 
     // Hidden from
@@ -7564,8 +7563,7 @@ static int vscp_location_edit( struct web_connection *conn, void *cbdata  )
     if ( bNew ) {
         // Hidden new flag
         web_printf( conn,
-                    "<input name=\"new\" value=\"true\" type=\"hidden\">",
-                    id );
+                    "<input name=\"new\" value=\"true\" type=\"hidden\">" );
     }
 
     // Hidden from

@@ -3787,6 +3787,212 @@ bool vscp_writeMaskToString( const vscpEventFilter *pFilter,
 }
 
 //////////////////////////////////////////////////////////////////////////////
+// vscp_readFilterMaskFromXML
+//
+
+bool vscp_readFilterMaskFromXML( vscpEventFilter *pFilter, const wxString& strFilter )
+{
+    wxString strguid;
+    wxString wxstr;
+    unsigned long lval;
+    wxXmlDocument doc;
+    wxStringInputStream instrstream( strFilter );    
+    
+    // Check pointer
+    if ( NULL == pFilter ) return false;        
+    
+    if ( !doc.Load( instrstream ) ) {
+        return false;     
+    }
+    
+    // start processing the XML file
+    if ( doc.GetRoot()->GetName() != _("filter") ) {
+        return false;
+    }
+    
+    // mask priority
+    wxstr = doc.GetRoot()->GetAttribute( _("mask_priority") );
+    if ( wxEmptyString != wxstr ) {        
+        pFilter->mask_priority = vscp_readStringValue( wxstr );
+    }
+    
+    // mask class
+    wxstr = doc.GetRoot()->GetAttribute( _("mask_class") );
+    if ( wxEmptyString != wxstr ) {        
+        pFilter->mask_class = vscp_readStringValue( wxstr );
+    }
+    
+    // mask type
+    wxstr = doc.GetRoot()->GetAttribute( _("mask_type") );
+    if ( wxEmptyString != wxstr ) {        
+        pFilter->mask_type = vscp_readStringValue( wxstr );
+    }
+    
+    // mask GUID
+    wxstr = doc.GetRoot()->GetAttribute( _("mask_guid") );
+    if ( wxEmptyString != wxstr ) { 
+        cguid guid;
+        guid.getFromString( wxstr );
+        guid.writeGUID( pFilter->mask_GUID );
+    }
+    
+    // filter priority
+    wxstr = doc.GetRoot()->GetAttribute( _("filter_priority") );
+    if ( wxEmptyString != wxstr ) {        
+        pFilter->filter_priority = vscp_readStringValue( wxstr );
+    }
+    
+    // filter class
+    wxstr = doc.GetRoot()->GetAttribute( _("filter_class") );
+    if ( wxEmptyString != wxstr ) {        
+        pFilter->filter_class = vscp_readStringValue( wxstr );
+    }
+    
+    // filter type
+    wxstr = doc.GetRoot()->GetAttribute( _("filter_type") );
+    if ( wxEmptyString != wxstr ) {        
+        pFilter->filter_type = vscp_readStringValue( wxstr );
+    }
+    
+    // mask GUID
+    wxstr = doc.GetRoot()->GetAttribute( _("filter_guid") );
+    if ( wxEmptyString != wxstr ) { 
+        cguid guid;
+        guid.getFromString( wxstr );
+        guid.writeGUID( pFilter->filter_GUID );
+    }
+    
+    return true;
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+// vscp_writeFilterMaskToXML
+//
+
+bool vscp_writeFilterMaskToXML( vscpEventFilter *pFilter, wxString& strFilter )
+{
+    wxString strmaskguid;
+    wxString strfilterguid;
+    
+    // Check pointer
+    if ( NULL == pFilter ) return false;
+    
+    vscp_writeGuidArrayToString( pFilter->mask_GUID, strmaskguid );
+    vscp_writeGuidArrayToString( pFilter->filter_GUID, strfilterguid );
+            
+    strFilter.Printf( VSCP_XML_FILTER_TEMPLATE,
+                        (int)pFilter->mask_priority,
+                        (int)pFilter->mask_class,
+                        (int)pFilter->mask_type,
+                        (const char *)strmaskguid.mbc_str(),
+                        (int)pFilter->filter_priority,
+                        (int)pFilter->filter_class,
+                        (int)pFilter->filter_type,
+                        (const char *)strfilterguid.mbc_str() );
+    return true;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// vscp_readFilterMaskFromJSON
+//
+
+bool vscp_readFilterMaskFromJSON( vscpEventFilter *pFilter, const wxString& strFilter )
+{
+    wxString strguid;
+    
+    // Check pointer
+    if ( NULL == pFilter ) return false;
+    
+    try {
+    
+        auto j = json::parse( strFilter.ToStdString() );
+        
+        // mask priority
+        if (j.find("mask_priority") != j.end()) {
+            pFilter->filter_priority = j.at("mask_priority").get<uint8_t>();
+        }
+        
+        // mask_class
+        if (j.find("mask_class") != j.end()) {
+            pFilter->mask_class = j.at("mask_class").get<uint16_t>();
+        }
+        
+        // mask_type
+        if (j.find("mask_type") != j.end()) {
+            pFilter->mask_type = j.at("mask_type").get<uint16_t>();
+        }
+        
+        // mask GUID
+        if (j.find("mask_guid") != j.end()) {
+            wxString guidStr = j.at("mask_guid").get<std::string>();
+            cguid guid;
+            guid.getFromString( guidStr );
+            guid.writeGUID( pFilter->mask_GUID );
+        }
+       
+        // filter priority
+        if (j.find("filter_priority") != j.end()) {
+            pFilter->filter_priority = j.at("filter_priority").get<uint8_t>();
+        }
+        
+        // filter_class
+        if (j.find("filter_class") != j.end()) {
+            pFilter->filter_class = j.at("filter_class").get<uint16_t>();
+        }
+        
+        // filter_type
+        if (j.find("filter_type") != j.end()) {
+            pFilter->filter_type = j.at("filter_type").get<uint16_t>();
+        }
+        
+        // filter GUID
+        if (j.find("filter_guid") != j.end()) {
+            wxString guidStr = j.at("filter_guid").get<std::string>();
+            cguid guid;
+            guid.getFromString( guidStr );
+            guid.writeGUID( pFilter->filter_GUID );
+        }        
+                
+    }
+    catch (... ) {
+        return false;
+    }
+    
+    return true;
+}
+
+
+
+//////////////////////////////////////////////////////////////////////////////
+// vscp_writeFilterMaskToJSON
+//
+
+bool vscp_writeFilterMaskToJSON( vscpEventFilter *pFilter, wxString& strFilter )
+{
+    wxString strmaskguid;
+    wxString strfilterguid;
+    
+    // Check pointer
+    if ( NULL == pFilter ) return false;
+    
+    vscp_writeGuidArrayToString( pFilter->mask_GUID, strmaskguid );
+    vscp_writeGuidArrayToString( pFilter->filter_GUID, strfilterguid );
+            
+    strFilter.Printf( VSCP_JSON_FILTER_TEMPLATE,
+                        (int)pFilter->mask_priority,
+                        (int)pFilter->mask_class,
+                        (int)pFilter->mask_type,
+                        (const char *)strmaskguid.mbc_str(),
+                        (int)pFilter->filter_priority,
+                        (int)pFilter->filter_class,
+                        (int)pFilter->filter_type,
+                        (const char *)strfilterguid.mbc_str() );
+    
+    return true;
+}
+
+//////////////////////////////////////////////////////////////////////////////
 // convertCanalToEvent
 //
 
