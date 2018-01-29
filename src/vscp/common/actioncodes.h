@@ -150,7 +150,8 @@
 
 // checkvarsetcond - Check variable set other to logic outcome
 // Format: value;unit;operation;variable;flag-variable
-#define VSCP_DAEMON_ACTION_CODE_CHECK_VARIABLE              0x00000058  // Check variable flase
+#define VSCP_DAEMON_ACTION_CODE_CHECK_VARIABLE              0x00000058  // Check variable 
+                                                                        // set result variable
 
 // checkmeasurement - Check measurement and set variable to logic outcome
 // Format: value;unit;operation;flag-variable
@@ -204,7 +205,7 @@
 // cleartable - Clear table
 // Format: tablename[,optional SQL expression]
 // Example: table1 
-#define VSCP_DAEMON_ACTION_CODE_CLEAR_TABLE	            0x00000081  // Write Table
+#define VSCP_DAEMON_ACTION_CODE_CLEAR_TABLE	            0x00000081  // Clear Table
 
 // runlua - Run LUA script
 // Format: script(params);rv

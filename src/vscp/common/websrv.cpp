@@ -1848,9 +1848,15 @@ static int vscp_dm_edit( struct web_connection *conn, void *cbdata  )
             web_printf( conn, "<span id=\"optiontext\">New record.</span><br>");
         }
         else {
-            web_printf( conn,
-                        "<span id=\"optiontext\">Record = %ld.</span><br>",
-                        id );
+            if ( ( 0 == id ) && pElement->m_bStatic ) {
+                web_printf( conn,
+                            "<span id=\"optiontext\">From XML file.</span><br>" );
+            }
+            else {
+                web_printf( conn,
+                            "<span id=\"optiontext\">Record = %ld.</span><br>",
+                            id );
+            }
         }
         
         if ( (NULL != pElement ) && pElement->m_bStatic ) {
@@ -1921,7 +1927,8 @@ static int vscp_dm_edit( struct web_connection *conn, void *cbdata  )
 
         web_printf( conn, "<h4>Event:</h4> <span id=\"optiontext\">(bluish are masks)</span><br>");
 
-        web_printf( conn, "<table class=\"invisable\"><tbody><tr class=\"invisable\">");
+        web_printf( conn, "<table class=\"invisable\">"
+                          "<tbody><tr class=\"invisable\">");
 
         web_printf( conn, "<td class=\"invisable\">Priority:</td><td class=\"tbalign\">");
 
@@ -2290,7 +2297,9 @@ static int vscp_dm_edit( struct web_connection *conn, void *cbdata  )
         web_printf( conn, "<option value=\"0\" ");
         if (bNew) web_printf( conn, " selected ");
         web_printf( conn, ">No Operation</option>");
-
+        
+// ----------------------------------------------------------------------------
+        
         if ( bNew ) {
             str = _("");
         }
@@ -2301,7 +2310,9 @@ static int vscp_dm_edit( struct web_connection *conn, void *cbdata  )
                         "<option value=\"0x10\" %s>"
                         "Execute external program</option>",
                         (const char *)str.mbc_str() );
-
+        
+// ----------------------------------------------------------------------------
+        
         if ( bNew ) {
             str = _("");
         }
@@ -2312,7 +2323,9 @@ static int vscp_dm_edit( struct web_connection *conn, void *cbdata  )
                         "<option value=\"0x12\" %s>Execute internal "
                         "procedure</option>",
                         (const char *)str.mbc_str() );
-
+        
+// ----------------------------------------------------------------------------
+        
         if ( bNew ) {
             str = _("");
         }
@@ -2323,7 +2336,9 @@ static int vscp_dm_edit( struct web_connection *conn, void *cbdata  )
                         "<option value=\"0x30\" %s>Execute library "
                         "procedure</option>" ,
                         (const char *)str.mbc_str() );
-
+        
+// ----------------------------------------------------------------------------
+        
         if ( bNew ) {
             str = _("");
         }
@@ -2333,7 +2348,9 @@ static int vscp_dm_edit( struct web_connection *conn, void *cbdata  )
         web_printf( conn,
                         "<option value=\"0x40\" %s>Send event</option>",
                         (const char *)str.mbc_str() );
-
+        
+// ----------------------------------------------------------------------------
+        
         if ( bNew ) {
             str = _("");
         }
@@ -2344,7 +2361,9 @@ static int vscp_dm_edit( struct web_connection *conn, void *cbdata  )
                         "<option value=\"0x41\" %s>Send event "
                         "Conditional</option>",
                         (const char *)str.mbc_str() );
-
+        
+// ----------------------------------------------------------------------------
+        
         if ( bNew ) {
             str = _("");
         }
@@ -2355,7 +2374,9 @@ static int vscp_dm_edit( struct web_connection *conn, void *cbdata  )
                         "<option value=\"0x42\" %s>Send event(s) from "
                         "file</option>",
                         (const char *)str.mbc_str() );
-
+        
+// ----------------------------------------------------------------------------
+        
         if ( bNew ) {
             str = _("");
         }
@@ -2366,7 +2387,9 @@ static int vscp_dm_edit( struct web_connection *conn, void *cbdata  )
                         "<option value=\"0x43\" %s>Send event(s) to remote "
                         "VSCP server</option>",
                         (const char *)str.mbc_str() );
-
+        
+// ----------------------------------------------------------------------------
+        
         if ( bNew ) {
             str = _("");
         }
@@ -2376,7 +2399,9 @@ static int vscp_dm_edit( struct web_connection *conn, void *cbdata  )
         web_printf( conn,
                         "<option value=\"0x50\" %s>Store in variable</option>",
                         (const char *)str.mbc_str() );
-
+        
+// ----------------------------------------------------------------------------
+        
         if ( bNew ) {
             str = _("");
         }
@@ -2386,7 +2411,9 @@ static int vscp_dm_edit( struct web_connection *conn, void *cbdata  )
         web_printf( conn,
                         "<option value=\"0x51\" %s>Store in array</option>",
                         (const char *)str.mbc_str() );
-
+        
+// ----------------------------------------------------------------------------
+        
         if ( bNew ) {
             str = _("");
         }
@@ -2396,7 +2423,9 @@ static int vscp_dm_edit( struct web_connection *conn, void *cbdata  )
         web_printf( conn,
                         "<option value=\"0x52\" %s>Add to variable</option>",
                         (const char *)str.mbc_str() );
-
+        
+// ----------------------------------------------------------------------------
+        
         if ( bNew ) {
             str = _("");
         }
@@ -2406,7 +2435,9 @@ static int vscp_dm_edit( struct web_connection *conn, void *cbdata  )
         web_printf( conn,
                         "<option value=\"0x53\" %s>Subtract from variable</option>",
                         (const char *)str.mbc_str() );
-
+        
+// ----------------------------------------------------------------------------
+        
         if ( bNew ) {
             str = _("");
         }
@@ -2416,7 +2447,9 @@ static int vscp_dm_edit( struct web_connection *conn, void *cbdata  )
         web_printf( conn,
                         "<option value=\"0x54\" %s>Multiply variable</option>",
                         (const char *)str.mbc_str() );
-
+        
+// ----------------------------------------------------------------------------
+        
         if ( bNew ) {
             str = _("");
         }
@@ -2426,7 +2459,57 @@ static int vscp_dm_edit( struct web_connection *conn, void *cbdata  )
         web_printf( conn,
                         "<option value=\"0x55\" %s>Divide variable</option>",
                         (const char *)str.mbc_str() );
+        
+// ----------------------------------------------------------------------------
+        
+        if ( bNew ) {
+            str = _("");
+        }
+        else {
+            str = (0x56 == pElement->m_actionCode) ? _("selected") : _(" ");
+        }
+        web_printf( conn,
+                        "<option value=\"0x56\" %s>Check variable true</option>",
+                        (const char *)str.mbc_str() );
+        
+// -----------------------------------------------------------------------------
+        
+        if ( bNew ) {
+            str = _("");
+        }
+        else {
+            str = (0x57 == pElement->m_actionCode) ? _("selected") : _(" ");
+        }
+        web_printf( conn,
+                        "<option value=\"0x57\" %s>Check variable false</option>",
+                        (const char *)str.mbc_str() );
+        
+// -----------------------------------------------------------------------------        
+        
+        if ( bNew ) {
+            str = _("");
+        }
+        else {
+            str = (0x58 == pElement->m_actionCode) ? _("selected") : _(" ");
+        }
+        web_printf( conn,
+                        "<option value=\"0x58\" %sCheck variable - set result variable</option>",
+                        (const char *)str.mbc_str() );        
+        
+// ---------------------------------------------------------------------------
+        
+        if ( bNew ) {
+            str = _("");
+        }
+        else {
+            str = (0x59 == pElement->m_actionCode) ? _("selected") : _(" ");
+        }
+        web_printf( conn,
+                        "<option value=\"0x59\" %s>Check measurement</option>",
+                        (const char *)str.mbc_str() );
 
+// ----------------------------------------------------------------------------        -        
+        
         if ( bNew ) {
             str = _("");
         }
@@ -2436,7 +2519,9 @@ static int vscp_dm_edit( struct web_connection *conn, void *cbdata  )
         web_printf( conn,
                         "<option value=\"0x60\" %s>Start timer</option>",
                         (const char *)str.mbc_str() );
-
+        
+// ----------------------------------------------------------------------------
+        
         if ( bNew ) {
             str = _("");
         }
@@ -2446,7 +2531,9 @@ static int vscp_dm_edit( struct web_connection *conn, void *cbdata  )
         web_printf( conn,
                         "<option value=\"0x61\" %s>Pause timer</option>",
                         (const char *)str.mbc_str() );
-
+        
+// ----------------------------------------------------------------------------
+        
         if ( bNew ) {
             str = _("");
         }
@@ -2456,7 +2543,9 @@ static int vscp_dm_edit( struct web_connection *conn, void *cbdata  )
         web_printf( conn,
                         "<option value=\"0x62\" %s>Stop timer</option>",
                         (const char *)str.mbc_str() );
-
+        
+// ----------------------------------------------------------------------------
+        
         if ( bNew ) {
             str = _("");
         }
@@ -2466,6 +2555,8 @@ static int vscp_dm_edit( struct web_connection *conn, void *cbdata  )
         web_printf( conn,
                         "<option value=\"0x63\" %s>Resume timer</option>",
                         (const char *)str.mbc_str() );
+
+// ----------------------------------------------------------------------------
 
         if ( bNew ) {
             str = _("");
@@ -2477,6 +2568,32 @@ static int vscp_dm_edit( struct web_connection *conn, void *cbdata  )
                         "<option value=\"0x70\" %s>Write file</option>",
                         (const char *)str.mbc_str() );
 
+// ----------------------------------------------------------------------------
+        
+        if ( bNew ) {
+            str = _("");
+        }
+        else {
+            str = (0x71 == pElement->m_actionCode) ? _("selected") : _(" ");
+        }
+        web_printf( conn,
+                        "<option value=\"0x71\" %s>Store if minimum</option>",
+                        (const char *)str.mbc_str() );
+
+// ----------------------------------------------------------------------------
+        
+        if ( bNew ) {
+            str = _("");
+        }
+        else {
+            str = (0x72 == pElement->m_actionCode) ? _("selected") : _(" ");
+        }
+        web_printf( conn,
+                        "<option value=\"0x72\" %s>Store if maximum</option>",
+                        (const char *)str.mbc_str() );
+
+// ----------------------------------------------------------------------------        
+        
         if ( bNew ) {
             str = _("");
         }
@@ -2486,7 +2603,9 @@ static int vscp_dm_edit( struct web_connection *conn, void *cbdata  )
         web_printf( conn,
                         "<option value=\"0x75\" %s>Get/Put/Post URL</option>",
                         (const char *)str.mbc_str() );
-
+        
+// ----------------------------------------------------------------------------
+        
         if ( bNew ) {
             str = _("");
         }
@@ -2496,7 +2615,44 @@ static int vscp_dm_edit( struct web_connection *conn, void *cbdata  )
         web_printf( conn,
                         "<option value=\"0x80\" %s>Write to table</option>",
                         (const char *)str.mbc_str() );
-
+        
+// ----------------------------------------------------------------------------  
+        if ( bNew ) {
+            str = _("");
+        }
+        else {
+            str = (0x81 == pElement->m_actionCode) ? _("selected") : _(" ");
+        }
+        web_printf( conn,
+                        "<option value=\"0x81\" %s>Clear table</option>",
+                        (const char *)str.mbc_str() );
+        
+// ----------------------------------------------------------------------------
+        
+        if ( bNew ) {
+            str = _("");
+        }
+        else {
+            str = (0x100 == pElement->m_actionCode) ? _("selected") : _(" ");
+        }
+        web_printf( conn,
+                        "<option value=\"0x100\" %s>Run Lua script</option>",
+                        (const char *)str.mbc_str() );
+        
+ // ----------------------------------------------------------------------------       
+        
+        if ( bNew ) {
+            str = _("");
+        }
+        else {
+            str = (0x200 == pElement->m_actionCode) ? _("selected") : _(" ");
+        }
+        web_printf( conn,
+                        "<option value=\"0x200\" %s>Run JavaScript</option>",
+                        (const char *)str.mbc_str() );
+        
+ // ----------------------------------------------------------------------------  
+        
         web_printf( conn, "</select>");
 
         web_printf( conn,
