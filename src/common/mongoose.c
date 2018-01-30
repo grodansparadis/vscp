@@ -582,6 +582,8 @@ enum cs_log_level cs_log_threshold WEAK =
 static char *s_filter_pattern = NULL;
 static size_t s_filter_pattern_len;
 
+void cs_log_set_filter(const char *pattern) WEAK;
+
 #if CS_ENABLE_STDIO
 
 FILE *cs_log_file WEAK = NULL;
@@ -592,7 +594,6 @@ double cs_log_ts WEAK;
 
 enum cs_log_level cs_log_cur_msg_level WEAK = LL_NONE;
 
-void cs_log_set_filter(const char *pattern) WEAK;
 void cs_log_set_filter(const char *pattern) {
   free(s_filter_pattern);
   if (pattern != NULL) {
@@ -611,8 +612,8 @@ int cs_log_print_prefix(enum cs_log_level level, const char *func,
 
   if (level > cs_log_threshold) return 0;
   if (s_filter_pattern != NULL &&
-      mg_match_prefix(s_filter_pattern, s_filter_pattern_len, func) < 0 &&
-      mg_match_prefix(s_filter_pattern, s_filter_pattern_len, filename) < 0) {
+      mg_match_prefix(s_filter_pattern, s_filter_pattern_len, func) == 0 &&
+      mg_match_prefix(s_filter_pattern, s_filter_pattern_len, filename) == 0) {
     return 0;
   }
 
@@ -645,6 +646,12 @@ void cs_log_printf(const char *fmt, ...) {
 void cs_log_set_file(FILE *file) WEAK;
 void cs_log_set_file(FILE *file) {
   cs_log_file = file;
+}
+
+#else
+
+void cs_log_set_filter(const char *pattern) {
+  (void) pattern;
 }
 
 #endif /* CS_ENABLE_STDIO */
@@ -1625,9 +1632,9 @@ const char *mg_strstr(const struct mg_str haystack,
 
 #ifndef EXCLUDE_COMMON
 
+/* Amalgamated: #include "common/str_util.h" */
 /* Amalgamated: #include "common/mg_mem.h" */
 /* Amalgamated: #include "common/platform.h" */
-/* Amalgamated: #include "common/str_util.h" */
 
 #ifndef C_DISABLE_BUILTIN_SNPRINTF
 #define C_DISABLE_BUILTIN_SNPRINTF 0
@@ -2083,11 +2090,10 @@ struct mg_str mg_next_comma_list_entry_n(struct mg_str list, struct mg_str *val,
   return list;
 }
 
-int mg_match_prefix_n(const struct mg_str, const struct mg_str) WEAK;
-int mg_match_prefix_n(const struct mg_str pattern, const struct mg_str str) {
+size_t mg_match_prefix_n(const struct mg_str, const struct mg_str) WEAK;
+size_t mg_match_prefix_n(const struct mg_str pattern, const struct mg_str str) {
   const char *or_str;
-  size_t len, i = 0, j = 0;
-  int res;
+  size_t res = 0, len = 0, i = 0, j = 0;
 
   if ((or_str = (const char *) memchr(pattern.p, '|', pattern.len)) != NULL ||
       (or_str = (const char *) memchr(pattern.p, ',', pattern.len)) != NULL) {
@@ -2099,11 +2105,9 @@ int mg_match_prefix_n(const struct mg_str pattern, const struct mg_str str) {
     return mg_match_prefix_n(pstr, str);
   }
 
-  for (; i < pattern.len; i++, j++) {
-    if (pattern.p[i] == '?' && j != str.len) {
+  for (; i < pattern.len && j < str.len; i++, j++) {
+    if (pattern.p[i] == '?') {
       continue;
-    } else if (pattern.p[i] == '$') {
-      return j == str.len ? (int) j : -1;
     } else if (pattern.p[i] == '*') {
       i++;
       if (i < pattern.len && pattern.p[i] == '*') {
@@ -2111,29 +2115,29 @@ int mg_match_prefix_n(const struct mg_str pattern, const struct mg_str str) {
         len = str.len - j;
       } else {
         len = 0;
-        while (j + len != str.len && str.p[j + len] != '/') {
-          len++;
-        }
+        while (j + len < str.len && str.p[j + len] != '/') len++;
       }
-      if (i == pattern.len) {
+      if (i == pattern.len || (pattern.p[i] == '$' && i == pattern.len - 1))
         return j + len;
-      }
       do {
         const struct mg_str pstr = {pattern.p + i, pattern.len - i};
         const struct mg_str sstr = {str.p + j + len, str.len - j - len};
         res = mg_match_prefix_n(pstr, sstr);
-      } while (res == -1 && len-- > 0);
-      return res == -1 ? -1 : (int) (j + res + len);
+      } while (res == 0 && len != 0 && len-- > 0);
+      return res == 0 ? 0 : j + res + len;
     } else if (str_util_lowercase(&pattern.p[i]) !=
                str_util_lowercase(&str.p[j])) {
-      return -1;
+      break;
     }
   }
-  return j;
+  if (i < pattern.len && pattern.p[i] == '$') {
+    return j == str.len ? str.len : 0;
+  }
+  return i == pattern.len ? j : 0;
 }
 
-int mg_match_prefix(const char *, int, const char *) WEAK;
-int mg_match_prefix(const char *pattern, int pattern_len, const char *str) {
+size_t mg_match_prefix(const char *, int, const char *) WEAK;
+size_t mg_match_prefix(const char *pattern, int pattern_len, const char *str) {
   const struct mg_str pstr = {pattern, (size_t) pattern_len};
   struct mg_str s = {str, 0};
   if (str != NULL) s.len = strlen(str);
@@ -6227,7 +6231,7 @@ struct mg_http_endpoint *mg_http_get_endpoint_handler(struct mg_connection *nc,
 
   ep = pd->endpoints;
   while (ep != NULL) {
-    if ((matched = mg_match_prefix_n(ep->uri_pattern, *uri_path)) != -1) {
+    if ((matched = mg_match_prefix_n(ep->uri_pattern, *uri_path)) > 0) {
       if (matched > matched_max) {
         /* Looking for the longest suitable handler */
         ret = ep;
@@ -6428,6 +6432,13 @@ void mg_http_handler(struct mg_connection *nc, int ev,
     else if (hm->message.len > pd->rcvd) {
       /* Not yet received all HTTP body, deliver MG_EV_HTTP_CHUNK */
       deliver_chunk(nc, hm, req_len);
+      if (nc->recv_mbuf_limit > 0 && nc->recv_mbuf.len >= nc->recv_mbuf_limit) {
+        LOG(LL_ERROR, ("%p recv buffer (%lu bytes) exceeds the limit "
+                       "%lu bytes, and not drained, closing",
+                       nc, (unsigned long) nc->recv_mbuf.len,
+                       (unsigned long) nc->recv_mbuf_limit));
+        nc->flags |= MG_F_CLOSE_IMMEDIATELY;
+      }
     } else {
       /* We did receive all HTTP body. */
       int trigger_ev = nc->listener ? MG_EV_HTTP_REQUEST : MG_EV_HTTP_REPLY;
@@ -7277,8 +7288,7 @@ static int mg_is_file_hidden(const char *path,
   }
 
   return (exclude_specials && (!strcmp(path, ".") || !strcmp(path, ".."))) ||
-         (p1 != NULL &&
-          mg_match_prefix(p1, strlen(p1), path) == (int) strlen(p1)) ||
+         (p1 != NULL && mg_match_prefix(p1, strlen(p1), path) == strlen(p1)) ||
          (p2 != NULL && mg_match_prefix(p2, strlen(p2), path) > 0);
 }
 
@@ -7828,7 +7838,7 @@ MG_INTERNAL int mg_uri_to_local_path(struct http_message *hm,
         }
       } else {
         /* Regular rewrite, URI=directory */
-        int match_len = mg_match_prefix_n(a, hm->uri);
+        size_t match_len = mg_match_prefix_n(a, hm->uri);
         if (match_len > 0) {
           file_uri_start = hm->uri.p + match_len;
           if (*file_uri_start == '/' || file_uri_start == cp_end) {
@@ -15011,6 +15021,17 @@ static err_t mg_lwip_tcp_recv_cb(void *arg, struct tcp_pcb *tpcb,
 
 static void mg_lwip_consume_rx_chain_tcp(struct mg_connection *nc) {
   struct mg_lwip_conn_state *cs = (struct mg_lwip_conn_state *) nc->sock;
+  if (cs->rx_chain == NULL) return;
+#if MG_ENABLE_SSL
+  if (nc->flags & MG_F_SSL) {
+    if (nc->flags & MG_F_SSL_HANDSHAKE_DONE) {
+      mg_lwip_ssl_recv(nc);
+    } else {
+      mg_lwip_ssl_do_hs(nc);
+    }
+    return;
+  }
+#endif
   mgos_lock();
   while (cs->rx_chain != NULL && nc->recv_mbuf.len < nc->recv_mbuf_limit) {
     struct pbuf *seg = cs->rx_chain;
@@ -15040,17 +15061,6 @@ static void mg_lwip_consume_rx_chain_tcp(struct mg_connection *nc) {
 }
 
 static void mg_lwip_handle_recv_tcp(struct mg_connection *nc) {
-#if MG_ENABLE_SSL
-  if (nc->flags & MG_F_SSL) {
-    if (nc->flags & MG_F_SSL_HANDSHAKE_DONE) {
-      mg_lwip_ssl_recv(nc);
-    } else {
-      mg_lwip_ssl_do_hs(nc);
-    }
-    return;
-  }
-#endif
-
   mg_lwip_consume_rx_chain_tcp(nc);
 
   if (nc->send_mbuf.len > 0) {

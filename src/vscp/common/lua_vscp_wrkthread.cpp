@@ -135,12 +135,55 @@ void *actionThread_Lua::Entry()
     
     luaL_openlibs( L );
     
+    // Standard libs
+        //      luaopen_base,
+        //      luaopen_package,
+        //      luaopen_coroutine,
+        //      luaopen_table,
+        //      luaopen_io,
+        //      luaopen_os,
+        //      luaopen_string,
+        //      luaopen_math,
+        //      luaopen_utf8,
+        //      luaopen_debug,
+    
+    // lsqlite3 - Sqlite3
+    // LuaXML_lib - XML support
+    // lfs - File system support
     web_open_lua_libs( L );
         
     lua_newtable( L );
     
-    web_reg_string( L, "lua_type", "script" );
+    web_reg_string( L, "lua_type", "dmscript" );
     web_reg_string( L, "version", VSCPD_DISPLAY_VERSION );
+    
+    wxString strFeedEvent;
+    if ( vscp_writeVscpEventExToString( &m_feedEvent, strFeedEvent ) ) {
+        web_reg_string( L, "feedevent_str", (const char *)strFeedEvent.mbc_str() );
+    }
+    else {
+        wxString strError = 
+                wxString::Format( _("Failed to convert Lua feed event to string." ) );
+        gpobj->logMsg( strError, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+    }
+        
+    if ( vscp_convertEventExToJSON( &m_feedEvent, strFeedEvent ) ) {
+        web_reg_string( L, "feedevent_json", (const char *)strFeedEvent.mbc_str() );
+    }
+    else {
+        wxString strError = 
+                wxString::Format( _("Failed to convert Lua feed event to JSON." ) );
+        gpobj->logMsg( strError, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+    }
+    
+    if ( vscp_convertEventExToXML( &m_feedEvent, strFeedEvent ) ) {
+        web_reg_string( L, "feedevent_xml", (const char *)strFeedEvent.mbc_str() );
+    }
+    else {
+        wxString strError = 
+                wxString::Format( _("Failed to conver Lua feed event to XML." ) );
+        gpobj->logMsg( strError, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+    }
     
     // From httpd
     web_reg_function( L, "md5", web_lsp_md5 );
@@ -151,6 +194,9 @@ void *actionThread_Lua::Entry()
     web_reg_function( L, "print", lua_vscp_print );
     web_reg_function( L, "log", lua_vscp_log );
     web_reg_function( L, "sleep", lua_vscp_sleep );
+    
+    web_reg_function( L, "base64encode", lua_vscp_base64_encode );
+    web_reg_function( L, "base64decode", lua_vscp_base64_decode );
     
     web_reg_function( L, "readvariable", lua_vscp_readVariable );
     web_reg_function( L, "writevariable", lua_vscp_writeVariable );

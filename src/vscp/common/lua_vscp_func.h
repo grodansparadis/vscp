@@ -61,6 +61,26 @@ int lua_vscp_sleep( struct lua_State *L );
 
 
 /*!
+ *  Sleep for some milliseconds
+ * 
+ * Lua Parameter 0: String to encode in BASE64 format
+ * Lua Return: Encoded string
+ * 
+ */
+int lua_vscp_base64_encode( struct lua_State *L );
+
+
+/*!
+ * Decode a BASE64 string
+ * 
+ * Lua Parameter 0: BASE64 string to decode.
+ * Return: Decoded string.
+ * 
+ */
+int lua_vscp_base64_decode( struct lua_State *L );
+
+
+/*!
  *  Get variable in specific format from it's name.
  *  
  *  vscp.readvariable( "name"[, format ] )

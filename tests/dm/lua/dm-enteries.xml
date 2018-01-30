@@ -88,27 +88,27 @@
 	local str 
 
 	-- String format
-    	vscp.log('Before command - string (default)')
+    	vscp.log('Before read variable command - string (default)')
 	str = vscp.readvariable('vscp.version.str')
         vscp.log( str )
 
 	-- XML format
-    	vscp.log('Before command - XML')
+    	vscp.log('Before read variable command - XML')
 	str = vscp.readvariable('vscp.version.str',1)
         vscp.log( str )
 
 	-- JSON format
-    	vscp.log('Before command - JSON')
+    	vscp.log('Before read variable command - JSON')
 	str = vscp.readvariable('vscp.version.str',2)
         vscp.log( str )
 
 	-- Just value
-    	vscp.log('Before command - just value')
+    	vscp.log('Before read variable command - just value')
 	str = vscp.readvariable('vscp.version.str',3)
         vscp.log( str )
 
         -- Just note
-    	vscp.log('Before command - just note')
+    	vscp.log('Before read variable command - just note')
 	str = vscp.readvariable('vscp.version.str',4)
         vscp.log( str )
 
@@ -132,5 +132,48 @@
 
 
 
+<?xml version = "1.0" encoding = "UTF-8" ?>
 
+<dm>
+    
+  <row enable="true" groupid="" >
+    
+    <comment>
+        BASE64 encode and decode strings
+    </comment>
+        
+    <mask  priority="0"  
+             class="65535"  
+             type="65535"  
+             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+      
+    <filter  priority="0"  
+             class="65535"  
+             type="23"  
+             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:01" />    
+    
+    <action>0x100</action>   
+    <param>
+	local str 
+
+	str = vscp.base64encode('This is a string');
+	vscp.log(str)
+	str = vscp.base64decode( str );
+	vscp.log(str)
+    </param>
+
+
+    <allowed_from>*</allowed_from>
+    <allowed_to>*</allowed_to>
+    <allowed_weekdays>*</allowed_weekdays>
+    <allowed_time>*</allowed_time>
+
+  </row>
+  
+
+</dm>
+
+
+
+--------------------------------------------------------------------------------------------------------------------------
 

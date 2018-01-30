@@ -140,12 +140,19 @@ int lua_vscp_print( struct lua_State *L )
     size_t len;
     const char *pstr;
     
-    if ( !lua_isstring( L, 1 ) ) {
-        return 0;
+    int nArgs = lua_gettop( L );
+    
+    if ( 0 == nArgs) {
+        return luaL_error( L, "vscp.print: Wrong number of arguments: "
+                              "vscp.print(\"message\") ");
     }
     
-    pstr = lua_tolstring ( L, 1, &len );
-    wxPrintf( "%s\n", pstr );
+    for ( int i=1; i<nArgs+1; i++ ) {
+        pstr = lua_tolstring ( L, i, &len );
+        if ( NULL != pstr ) {
+            wxPrintf( "%s\n", pstr );
+        }
+    }
     
     return 1;
 }
@@ -161,13 +168,15 @@ int lua_vscp_log( struct lua_State *L )
     wxString wxMsg;
     uint8_t level = DAEMON_LOGMSG_NORMAL;
     uint8_t type = DAEMON_LOGTYPE_DM;
-        int nArgs = lua_gettop( L );
+    
+    int nArgs = lua_gettop( L );
     
     if ( 0 == nArgs) {
         return luaL_error( L, "vscp.log: Wrong number of arguments: "
                               "vscp.log(\"message\"[,log-level,log-type]) ");
-    }    
-    else if ( 1 == nArgs ) {        
+    } 
+    
+    if ( nArgs >= 1 ) {        
         if ( !lua_isstring( L, 1 ) ) {
             return luaL_error( L, "vscp.log: Argument error, string expected: "
                                   "vscp.log(\"message\"[,log-level,log-type]) ");
@@ -176,17 +185,9 @@ int lua_vscp_log( struct lua_State *L )
         const char *pstr = lua_tolstring ( L, 1, &len ); 
         wxMsg = wxString::FromUTF8( pstr, len );
     }    
-    else if ( 2 == nArgs ) {
-        
-        if ( !lua_isstring( L, 1 ) ) {
-            return luaL_error( L, "vscp.log: Argument error, string expected: "
-                                  "vscp.log(\"message\"[,log-level,log-type]) ");
-        }
-        
-        size_t len;
-        const char *pstr = lua_tolstring ( L, 1, &len ); 
-        wxMsg = wxString::FromUTF8( pstr, len );
-        
+    
+    if ( nArgs >=2 ) {
+                
         if ( !lua_isnumber( L, 2 ) ) {
             return luaL_error( L, "vscp.log: Argument error, integer expected: "
                                   "vscp.log(\"message\"[,log-level,log-type]) ");
@@ -195,24 +196,9 @@ int lua_vscp_log( struct lua_State *L )
         level = lua_tointeger( L, 2 );
                         
     }
-    else if ( nArgs >= 3 ) {
-        
-        if ( !lua_isstring( L, 1 ) ) {
-            return luaL_error( L, "vscp.log: Argument error, string expected: "
-                                  "vscp.log(\"message\"[,log-level,log-type]) ");
-        }
-        
-        size_t len;
-        const char *pstr = lua_tolstring ( L, 1, &len ); 
-        wxMsg = wxString::FromUTF8( pstr, len );
-        
-        if ( !lua_isnumber( L, 2 ) ) {
-            return luaL_error( L, "vscp.log: Argument error, integer expected: "
-                                  "vscp.log(\"message\"[,log-level,log-type]) ");
-        }
-        
-        level = lua_tointeger( L, 2 );
-        
+    
+    if ( nArgs >= 3 ) {
+                        
         if ( !lua_isnumber( L, 3 ) ) {
             return luaL_error( L, "vscp.log: Argument error, integer expected: "
                                   "vscp.log(\"message\"[,log-level,log-type]) ");
@@ -224,7 +210,6 @@ int lua_vscp_log( struct lua_State *L )
           
     gpobj->logMsg( wxMsg, level, type );
         
-    lua_pushboolean( L, 1 );
     return 1;
 }
 
@@ -254,6 +239,78 @@ int lua_vscp_sleep( struct lua_State *L )
     wxMilliSleep( sleep_ms );
     
     lua_pushboolean( L, 1 );
+    return 1;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// lua_vscp_base64_encode
+//
+// vscp.base64encode(string )
+
+int lua_vscp_base64_encode( struct lua_State *L )
+{
+    wxString str;
+    int nArgs = lua_gettop( L );
+    
+    if ( 0 == nArgs) {
+        return luaL_error( L, "vscp.base64encode: Wrong number of arguments: "
+                              "vscp.base64encode( string_to_encode ) ");
+    }
+        
+    // variable name
+    if ( !lua_isstring( L, 1 ) ) {
+        return luaL_error( L, "vscp.base64encode: Argument error, string expected: "
+                              "vscp.base64encode( string_to_encode ) ");
+    }
+        
+    size_t len;
+    const char *pstr = lua_tolstring ( L, 1, &len );
+    str = wxString::FromUTF8( pstr, len );
+    
+    if ( !vscp_base64_wxencode( str ) ) {
+        return luaL_error( L, "vscp.base64encode: Failed to encode string!");
+    }
+    
+    lua_pushlstring( L, (const char *)str.mbc_str(),
+                        str.Length() );
+    
+    return 1;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// lua_vscp_base64_decode
+//
+// vscp.base64decode(string )
+
+int lua_vscp_base64_decode( struct lua_State *L )
+{
+    wxString str;
+    int nArgs = lua_gettop( L );
+    
+    if ( 0 == nArgs) {
+        return luaL_error( L, "vscp.base64decode: Wrong number of arguments: "
+                              "vscp.base64decode( string_to_encode ) ");
+    }
+        
+    // variable name
+    if ( !lua_isstring( L, 1 ) ) {
+        return luaL_error( L, "vscp.base64decode: Argument error, string expected: "
+                              "vscp.base64decode( string_to_encode ) ");
+    }
+        
+    size_t len;
+    const char *pstr = lua_tolstring ( L, 1, &len );
+    str = wxString::FromUTF8( pstr, len );
+    
+    if ( !vscp_base64_wxdecode( str ) ) {
+        return luaL_error( L, "vscp.base64decode: Failed to decode string!");
+    }
+    
+    lua_pushlstring( L, (const char *)str.mbc_str(),
+                        str.Length() );
+    
     return 1;
 }
 
@@ -378,12 +435,15 @@ int lua_vscp_readVariable( struct lua_State *L )
 //      format = 0 - string
 //      format = 1 - XML
 //      format = 2 - JSON
+//      format = 3 - Value
+//      format = 4 . Note
 //
 
 int lua_vscp_writeVariable( struct lua_State *L ) 
 {    
     size_t len;
     int format = 0;
+    bool bBase64 = false;
     wxString varValue;
     CVSCPVariable variable;
  
@@ -417,6 +477,13 @@ int lua_vscp_writeVariable( struct lua_State *L )
         
         format = (int)lua_tointeger( L, 2 );
     }
+    
+    // Get Base64 flags
+    if ( nArgs >= 3 ) {
+        if ( lua_isboolean( L, 3 ) ) {
+            bBase64 = lua_toboolean( L, 3 ) ? true : false;
+        }
+    }
         
     if ( 0 == format ) {
         // Set variable from string
@@ -439,9 +506,17 @@ int lua_vscp_writeVariable( struct lua_State *L )
                                   " from JSON object.");
         }
     }
+    else if ( 3 == format ) {
+        // Set variable value
+        variable.setValue( varValue, bBase64 );
+    }
+    else if ( 4 == format ) {        
+        // Set variable note
+        variable.setNote( varValue, bBase64 );
+    }
     else {
         return luaL_error( L, "vscp.writevariable: Format must be 0=string, "
-                              "1=XML, 2=JSON");
+                              "1=XML, 2=JSON, 0=value, 3=note");
     }
     
     if ( !gpobj->m_variables.add( variable ) ) {
