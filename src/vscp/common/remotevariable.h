@@ -115,16 +115,15 @@ class wxFFileOutputStream;
 "}"
 
 
-#define VARIABLE_XML_TEMPLATE "<variable>\n"\
-    "<name>'%s'</name>\n"\
-    "<type>%hu</type>\n"\
-    "<user>%lu</user>\n"\
-    "<access-rights>%lu<access-rights>\n"\
-    "<persistence>%s<persistence>\n"\
-    "<last-change>%s<last-change>\n"\
-    "<value>%s</value>\n"\
-    "<note>%s</note>\n"\
-"</variable>"
+#define VARIABLE_XML_TEMPLATE "<variable \n"\
+    "name=\"%s\" \n"\
+    "type=\"%hu\" \n"\
+    "user=\"%lu\" \n"\
+    "access-rights=\"%lu\" \n"\
+    "persistence=\"%s\" \n"\
+    "last-change=\"%s\" \n"\
+    "value=\"%s\" \n"\
+    "note=\"%s\" />"
 
 
 /*

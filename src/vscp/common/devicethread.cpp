@@ -353,7 +353,7 @@ void *deviceThread::Entry()
             // * * * * Blocking version * * * *
 
             if ( m_pCtrlObject->m_debugFlags1 & VSCP_DEBUG1_DRIVER ) {
-                m_pCtrlObject->logMsg(_("[Device tread] Level I Blocking version.")); 
+                m_pCtrlObject->logMsg(_("[Device tread] Level I blocking version.")); 
             }
 
             /////////////////////////////////////////////////////////////////////////////
@@ -379,7 +379,7 @@ void *deviceThread::Entry()
             }
 
             if ( m_pCtrlObject->m_debugFlags1 & VSCP_DEBUG1_DRIVER ) {
-                m_pCtrlObject->logMsg(_("[Device tread] Level I Write thread started.")); 
+                m_pCtrlObject->logMsg(_("[Device tread] Level I write thread started.")); 
             }
 
             /////////////////////////////////////////////////////////////////////////////
@@ -405,7 +405,7 @@ void *deviceThread::Entry()
             }
 
             if ( m_pCtrlObject->m_debugFlags1 & VSCP_DEBUG1_DRIVER ) {
-                m_pCtrlObject->logMsg(_("[Device tread] Level I Receive thread started.")); 
+                m_pCtrlObject->logMsg(_("[Device tread] Level I receive thread started.")); 
             }
 
             // Just sit and wait until the end of the world as we know it...
@@ -414,7 +414,7 @@ void *deviceThread::Entry()
             }
 
             if ( m_pCtrlObject->m_debugFlags1 & VSCP_DEBUG1_DRIVER ) {
-                m_pCtrlObject->logMsg(_("[Device tread] Level I Work loop ended.")); 
+                m_pCtrlObject->logMsg(_("[Device tread] Level I work loop ended.")); 
             }
 
             m_preceiveThread->m_bQuit = true;

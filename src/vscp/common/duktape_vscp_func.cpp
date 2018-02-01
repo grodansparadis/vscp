@@ -653,6 +653,7 @@ duk_ret_t js_vscp_sendEvent( duk_context *ctx )
         duk_push_boolean(ctx,0);    // return code false
         return JAVASCRIPT_OK;
     }
+    
     duk_pop_n(ctx, 1);
     
     // Send the event
@@ -662,6 +663,7 @@ duk_ret_t js_vscp_sendEvent( duk_context *ctx )
         return JAVASCRIPT_OK;
     }
     
+    pEvent->pdata = NULL;
     vscp_convertVSCPfromEx( pEvent, &ex );
     
     duk_push_global_object(ctx);                /* -> stack: [ global ] */

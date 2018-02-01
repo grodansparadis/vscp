@@ -57,7 +57,7 @@
     Default response timeout for communication with the
     tcp/ip interface of the daemon in seconds
  */
-#define TCPIP_DEFAULT_RESPONSE_TIMEOUT          1000
+#define TCPIP_DEFAULT_RESPONSE_TIMEOUT          2000
 
 #define TCPIP_DEFAULT_AFTER_COMMAND_SLEEP       0
 
@@ -71,7 +71,7 @@
     @def TCPIP_DLL_VERSION
     Pseudo version string
  */
-#define TCPIP_DLL_VERSION                       0x0000000B
+#define TCPIP_DLL_VERSION                       0x0000000C
 /*! 
     @def TCPIP_VENDOR_STRING
     Pseudo vendor string

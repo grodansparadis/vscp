@@ -200,11 +200,17 @@ void *actionThread_Lua::Entry()
     
     web_reg_function( L, "readvariable", lua_vscp_readVariable );
     web_reg_function( L, "writevariable", lua_vscp_writeVariable );
+    web_reg_function( L, "writevariablevalue", lua_vscp_writeVariableValue );
     web_reg_function( L, "deletevariable", lua_vscp_deleteVariable );
+    
+    web_reg_function( L, "isVariableBase64Encoded", lua_vscp_isVariableBase64Encoded );
+    web_reg_function( L, "isVariablePersistent", lua_vscp_isVariablePersistent );
+    web_reg_function( L, "isVariableNumerical", lua_vscp_isVariableNumerical );
+    web_reg_function( L, "isStockVariable", lua_vscp_isStockVariable );
             
     web_reg_function( L, "sendevent", lua_vscp_sendEvent );
-    web_reg_function( L, "getevent", lua_vscp_getEvent );
-    web_reg_function( L, "getcountevent", lua_vscp_getCountEvent );
+    web_reg_function( L, "receiveevent", lua_vscp_getEvent );
+    web_reg_function( L, "countevent", lua_vscp_getCountEvent );
     web_reg_function( L, "setfilter", lua_vscp_setFilter );
     
     web_reg_function( L, "ismeasurement", lua_is_Measurement );
@@ -302,7 +308,7 @@ void *actionThread_Lua::Entry()
                                     (const char *)m_wxstrScript.mbc_str() );
         gpobj->logMsg( strError, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
         
-        return NULL;
+         return NULL;
     }
 
     // The script file is loaded, now call it

@@ -466,14 +466,14 @@ bool vscp_getISOTimeString( char *buf, size_t buf_len, time_t *t )
 ///////////////////////////////////////////////////////////////////////////////
 // vscp_toXMLEscape
 //
-// Escape invalid XML characters for insert in XML file.
+// Escape "invalid" XML characters for insert in XML file.
 // Note: Must be room in original buffer for result
 //
 
-void vscp_toXMLEscape( char *temp_str )
+bool vscp_XML_Escape( const char *src, char *dst, size_t dst_len )
 {
-    const char cEscapeChars[6]={'&','\'','\"','>','<','\0'};
-    const char * const pEscapedSeqTable[] =
+    const char escapeCharTbl[ 6 ] = {'&','\'','\"','>','<','\0'};
+    const char * const escapeSeqTbl[] =
                         {
                             "&amp;",
                             "&apos;",
@@ -484,33 +484,41 @@ void vscp_toXMLEscape( char *temp_str )
     
     unsigned int i, j, k;
     unsigned int nRef = 0;
-    unsigned int nEscapeCharsLen = strlen( cEscapeChars );
-    unsigned int str_len = strlen( temp_str );
+    unsigned int nEscapeChars = strlen( escapeCharTbl );
+    unsigned int str_len = strlen( src );
     int nShifts = 0; 
 
-    for ( i=0; i<str_len; i++ ) {
+    // ******  TODO TODP TODO TODO 
+    
+    
+    // Go through string
+    /*for ( i = 0; i<str_len; i++ ) {
         
-        for ( nRef=0; nRef < nEscapeCharsLen; nRef++ ) {
+        // Go through escape chars 
+        for ( nRef = 0; nRef < nEscapeChars; nRef++ ) {
             
-            if ( temp_str[ i ] == cEscapeChars[ nRef ] ) {
+            // Check if char needing to be escaped on this pos
+            if ( temp_str[ i ] == escapeChar[ nRef ] ) {
                 
-                if ( ( nShifts = strlen( pEscapedSeqTable[ nRef ] ) - 1 ) > 0 ) {
+                if ( ( nShifts = strlen( escapeTable[ nRef ] ) - 1 ) > 0 ) {
                     
                     memmove( temp_str + i + nShifts, 
                                 temp_str + i, 
                                 str_len - i + nShifts ); 
                     
                     for ( j=i, k=0; j<=i+nShifts, k<=nShifts; j++,k++ ) {
-                        temp_str[ j ] = pEscapedSeqTable[ nRef ][ k ];
+                        temp_str[ j ] = escapeTable[ nRef ][ k ];
                     }
                     
                     str_len += nShifts;
                 }
             }
         }  
-    }
+    }*/
     
-    temp_str[ str_len ] = '\0';
+    dst[ str_len ] = '\0';
+    
+    return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3041,6 +3049,7 @@ bool vscp_convertJSONToEventEx( wxString& strJSON, vscpEventEx *pEventEx )
             wxString dtStr = j.at("datetime").get<std::string>();
             wxDateTime dt;
             dt.ParseISOCombined( dtStr );
+            
             vscp_setEventExDateTime( pEventEx, dt ); 
         }
         
@@ -3459,6 +3468,11 @@ bool vscp_setEventExDateTime( vscpEventEx *pEventEx, wxDateTime& dt )
 {
     if ( NULL == pEventEx ) return false;
     
+    // If invalid date set to current
+    if ( !dt.IsValid() ) {
+        dt = wxDateTime::UNow();
+    }
+    
     pEventEx->year = dt.GetYear();
     pEventEx->month = dt.GetMonth() + 1;
     pEventEx->day = dt.GetDay();
@@ -3651,7 +3665,7 @@ bool vscp_readFilterFromString( vscpEventFilter *pFilter,
     // Get filter priority
     if (tkz.HasMoreTokens()) {
         strTok = tkz.GetNextToken();
-        pFilter->filter_priority = vscp_readStringValue(strTok);
+        pFilter->filter_priority = vscp_readStringValue( strTok );
     } 
     else {
         return true;
@@ -3660,7 +3674,7 @@ bool vscp_readFilterFromString( vscpEventFilter *pFilter,
     // Get filter class
     if (tkz.HasMoreTokens()) {
         strTok = tkz.GetNextToken();
-        pFilter->filter_class = vscp_readStringValue(strTok);
+        pFilter->filter_class = vscp_readStringValue( strTok );
     } 
     else {
         return true;
@@ -3669,7 +3683,7 @@ bool vscp_readFilterFromString( vscpEventFilter *pFilter,
     // Get filter type
     if (tkz.HasMoreTokens()) {
         strTok = tkz.GetNextToken();
-        pFilter->filter_type = vscp_readStringValue(strTok);
+        pFilter->filter_type = vscp_readStringValue( strTok );
     } 
     else {
         return true;
@@ -3726,7 +3740,7 @@ bool vscp_readMaskFromString(vscpEventFilter *pFilter, const wxString& strMask)
 
     wxStringTokenizer tkz( strMask, _(","));
 
-    // Get filter priority
+    // Get mask priority
     if (tkz.HasMoreTokens()) {
         strTok = tkz.GetNextToken();
         pFilter->mask_priority = vscp_readStringValue(strTok);
@@ -3735,7 +3749,7 @@ bool vscp_readMaskFromString(vscpEventFilter *pFilter, const wxString& strMask)
         return true;
     }
 
-    // Get filter class
+    // Get mask class
     if (tkz.HasMoreTokens()) {
         strTok = tkz.GetNextToken();
         pFilter->mask_class = vscp_readStringValue(strTok);
@@ -3744,7 +3758,7 @@ bool vscp_readMaskFromString(vscpEventFilter *pFilter, const wxString& strMask)
         return true;
     }
 
-    // Get filter type
+    // Get mask type
     if (tkz.HasMoreTokens()) {
         strTok = tkz.GetNextToken();
         pFilter->mask_type = vscp_readStringValue(strTok);
@@ -3753,7 +3767,7 @@ bool vscp_readMaskFromString(vscpEventFilter *pFilter, const wxString& strMask)
         return true;
     }
 
-    // Get filter GUID
+    // Get mask GUID
     if (tkz.HasMoreTokens()) {
         strTok = tkz.GetNextToken();
         vscp_getGuidFromStringToArray(pFilter->mask_GUID,
@@ -3783,6 +3797,94 @@ bool vscp_writeMaskToString( const vscpEventFilter *pFilter,
                 pFilter->mask_type,
                 guid.getAsString().mbc_str() );
 
+    return true;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// vscp_readFilterMaskFromString
+//
+
+bool vscp_readFilterMaskFromString( vscpEventFilter *pFilter,
+                                        const wxString& strFilterMask )
+{
+    wxString strTok;
+
+    // Check pointer
+    if (NULL == pFilter) return false;
+    
+    // Clear filter and mask
+    vscp_clearVSCPFilter( pFilter );
+    
+    wxStringTokenizer tkz(strFilterMask, _(","));
+
+    // Get filter priority
+    if (tkz.HasMoreTokens()) {
+        strTok = tkz.GetNextToken();
+        pFilter->filter_priority = vscp_readStringValue( strTok );
+    } 
+    else {
+        return true;
+    }
+
+    // Get filter class
+    if (tkz.HasMoreTokens()) {
+        strTok = tkz.GetNextToken();
+        pFilter->filter_class = vscp_readStringValue( strTok );
+    } 
+    else {
+        return true;
+    }
+
+    // Get filter type
+    if (tkz.HasMoreTokens()) {
+        strTok = tkz.GetNextToken();
+        pFilter->filter_type = vscp_readStringValue( strTok );
+    } 
+    else {
+        return true;
+    }
+
+    // Get filter GUID
+    if (tkz.HasMoreTokens()) {
+        strTok = tkz.GetNextToken();
+        vscp_getGuidFromStringToArray(pFilter->filter_GUID,
+                                        strTok);
+    } 
+    
+    // Get mask priority
+    if (tkz.HasMoreTokens()) {
+        strTok = tkz.GetNextToken();
+        pFilter->mask_priority = vscp_readStringValue(strTok);
+    } 
+    else {
+        return true;
+    }
+
+    // Get mask class
+    if (tkz.HasMoreTokens()) {
+        strTok = tkz.GetNextToken();
+        pFilter->mask_class = vscp_readStringValue(strTok);
+    } 
+    else {
+        return true;
+    }
+
+    // Get mask type
+    if (tkz.HasMoreTokens()) {
+        strTok = tkz.GetNextToken();
+        pFilter->mask_type = vscp_readStringValue(strTok);
+    } 
+    else {
+        return true;
+    }
+
+    // Get mask GUID
+    if (tkz.HasMoreTokens()) {
+        strTok = tkz.GetNextToken();
+        vscp_getGuidFromStringToArray(pFilter->mask_GUID,
+                                        strTok);
+    }
+    
     return true;
 }
 
@@ -3910,7 +4012,7 @@ bool vscp_readFilterMaskFromJSON( vscpEventFilter *pFilter, const wxString& strF
         
         // mask priority
         if (j.find("mask_priority") != j.end()) {
-            pFilter->filter_priority = j.at("mask_priority").get<uint8_t>();
+            pFilter->mask_priority = j.at("mask_priority").get<uint8_t>();
         }
         
         // mask_class
@@ -4486,9 +4588,9 @@ bool vscp_setVscpEventFromString(vscpEvent *pEvent, const wxString& strEvent)
     wxStringTokenizer tkz(str, _(","));
 
     // Get head
-    if (tkz.HasMoreTokens()) {
+    if ( tkz.HasMoreTokens() ) {
         str = tkz.GetNextToken();
-        pEvent->head = vscp_readStringValue(str);
+        pEvent->head = vscp_readStringValue( str );
     } 
     else {
         return false;
@@ -4514,9 +4616,9 @@ bool vscp_setVscpEventFromString(vscpEvent *pEvent, const wxString& strEvent)
     }
 
     // Get OBID  -  Kept here to be compatible with receive
-    if (tkz.HasMoreTokens()) {
+    if ( tkz.HasMoreTokens() ) {
         str = tkz.GetNextToken();
-        pEvent->obid = vscp_readStringValue(str);
+        pEvent->obid = vscp_readStringValue( str );
     } 
     else {
         return false;
@@ -4611,7 +4713,7 @@ bool vscp_setVscpEventExFromString( vscpEventEx *pEventEx,
     vscpEvent event;
 
     // Parse the string data
-    rv = vscp_setVscpEventFromString(&event, strEvent);
+    rv = vscp_setVscpEventFromString( &event, strEvent );
     vscp_convertVSCPtoEx(pEventEx, &event);
 
     // Remove possible data

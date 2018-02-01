@@ -177,3 +177,911 @@
 
 --------------------------------------------------------------------------------------------------------------------------
 
+
+<?xml version = "1.0" encoding = "UTF-8" ?>
+
+<dm>
+    
+  <row enable="true" groupid="test" >
+    
+    <comment>
+        Create string variable from XML string
+    </comment>
+        
+    <mask  priority="0"  
+             class="65535"  
+             type="65535"  
+             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+      
+    <filter  priority="0"  
+             class="65535"  
+             type="23"  
+             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:01" />    
+    
+    <action>0x100</action>   
+    <param>
+local str 
+
+-- Create two string variables
+vscp.writevariable('aaaaaaaaaa;0x01;false;0;0x777;VGhpcyBpcyBhIHRlc3QgdmFyaWFibGU=;VGhpcyBpcyBhIG5vdGU=')
+vscp.writevariable('bbbbbbbbbb;0x01;false;0;0x777;BASE64:This is a test;BASE64:Supertest')
+
+-- Create variable from XML
+str = '&lt;variable \
+    name="cccccccccccccccccc" \
+    type="1" \
+    user="0"\
+    access-rights="0x777" \
+    persistence="false" \
+    value="This is a test" \
+    note="test" /&gt;'
+vscp.writevariable(str,1)
+
+-- Create floating point variable
+vscp.writevariable('ddddddd;flot;false;0;0x777;3.14;BASE64:Important constant')
+
+
+    </param>
+
+
+    <allowed_from>*</allowed_from>
+    <allowed_to>*</allowed_to>
+    <allowed_weekdays>*</allowed_weekdays>
+    <allowed_time>*</allowed_time>
+
+  </row>
+  
+
+</dm>
+
+
+
+--------------------------------------------------------------------------------------------------------------------------
+
+<?xml version = "1.0" encoding = "UTF-8" ?>
+
+<dm>
+    
+  <row enable="true" groupid="test" >
+    
+    <comment>
+        Create string variable from JSON string
+    </comment>
+        
+    <mask  priority="0"  
+             class="65535"  
+             type="65535"  
+             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+      
+    <filter  priority="0"  
+             class="65535"  
+             type="23"  
+             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:01" />    
+    
+    <action>0x100</action>   
+    <param>
+local str 
+
+-- Create string variable from JSON
+str = '{ \
+    "name": "test_json", \
+    "type": 1, \
+    "user": 0, \
+    "accessrights": 1920, \
+    "persistence": false, \
+    "value": "This is a JSON test", \
+    "note": "Just a comment"\
+}'
+vscp.print( "JSON str =  ", str )
+
+vscp.writevariable(str,2)
+
+
+    </param>
+
+
+    <allowed_from>*</allowed_from>
+    <allowed_to>*</allowed_to>
+    <allowed_weekdays>*</allowed_weekdays>
+    <allowed_time>*</allowed_time>
+
+  </row>
+  
+
+</dm>
+
+
+
+--------------------------------------------------------------------------------------------------------------------------
+
+
+<?xml version = "1.0" encoding = "UTF-8" ?>
+
+<dm>
+    
+  <row enable="true" groupid="test" >
+    
+    <comment>
+        Create ineteger variable from JSON string
+    </comment>
+        
+    <mask  priority="0"  
+             class="65535"  
+             type="65535"  
+             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+      
+    <filter  priority="0"  
+             class="65535"  
+             type="23"  
+             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:01" />    
+    
+    <action>0x100</action>   
+    <param>
+local str 
+
+-- Create integer variable from JSON
+str = '{ \
+    "name": "testint", \
+    "type": 3, \
+    "user": 0, \
+    "accessrights": 1920, \
+    "persistence": false, \
+    "value": 1000, \
+    "note": "This is an integer with intial value set to 1000"\
+}'
+vscp.print( "JSON str =  ", str )
+
+vscp.writevariable(str,2)
+    </param>
+
+
+    <allowed_from>*</allowed_from>
+    <allowed_to>*</allowed_to>
+    <allowed_weekdays>*</allowed_weekdays>
+    <allowed_time>*</allowed_time>
+
+  </row>
+  
+
+</dm>
+
+
+
+--------------------------------------------------------------------------------------------------------------------------
+
+
+<?xml version = "1.0" encoding = "UTF-8" ?>
+
+<dm>
+       
+  <row enable="true" groupid="test" >
+    
+    <comment>
+        Create string variable from string
+    </comment>
+        
+    <mask  priority="0"  
+             class="65535"  
+             type="65535"  
+             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+      
+    <filter  priority="0"  
+             class="65535"  
+             type="23"  
+             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:01" />    
+    
+    <action>0x100</action>   
+    <param>
+local str 
+
+-- Create integer variable from JSON
+str = '{ \
+    "name": "testint", \
+    "type": 3, \
+    "user": 0, \
+    "accessrights": 1920, \
+    "persistence": false, \
+    "value": 1000, \
+    "note": "This is an integer with intial value set to 1000"\
+}'
+vscp.print( "JSON str =  ", str )
+
+vscp.writevariable(str,2)
+    </param>
+
+
+    <allowed_from>*</allowed_from>
+    <allowed_to>*</allowed_to>
+    <allowed_weekdays>*</allowed_weekdays>
+    <allowed_time>*</allowed_time>
+
+</row>
+
+
+
+<row enable="true" groupid="test" >
+    
+    <comment>
+        Add one to integer variable
+    </comment>
+        
+    <mask  priority="0"  
+             class="65535"  
+             type="65535"  
+             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+      
+    <filter  priority="0"  
+             class="65535"  
+             type="5"  
+             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:01" />    
+    
+    <action>0x100</action>   
+    <param>
+local val 
+
+-- Read integer value
+val = vscp.readvariable("testint",3)
+vscp.print("value =", val )
+val = val + 1;
+vscp.writevariable("testint",3,val)
+    </param>
+
+
+    <allowed_from>*</allowed_from>
+    <allowed_to>*</allowed_to>
+    <allowed_weekdays>*</allowed_weekdays>
+    <allowed_time>*</allowed_time>
+
+  </row>
+  
+</dm>
+
+
+
+--------------------------------------------------------------------------------------------------------------------------
+
+
+<?xml version = "1.0" encoding = "UTF-8" ?>
+
+<dm>
+    
+  <row enable="true" groupid="test" >
+    
+    <comment>
+        Send VSCP event from string
+    </comment>
+        
+    <mask  priority="0"  
+             class="65535"  
+             type="65535"  
+             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+      
+    <filter  priority="0"  
+             class="65535"  
+             type="5"  
+             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:01" />    
+    
+    <action>0x100</action>   
+    <param>
+local strevent 
+
+-- Create string event
+strevent = "0,10,6,,,,,0x8A,0x81,0,0xca"
+
+vscp.sendevent(strevent)
+vscp.log("Event sent from Lua script.")
+    </param>
+
+
+    <allowed_from>*</allowed_from>
+    <allowed_to>*</allowed_to>
+    <allowed_weekdays>*</allowed_weekdays>
+    <allowed_time>*</allowed_time>
+
+  </row>
+  
+
+</dm>
+
+
+
+--------------------------------------------------------------------------------------------------------------------------
+
+
+<?xml version = "1.0" encoding = "UTF-8" ?>
+
+<dm>
+    
+  <row enable="true" groupid="test" >
+    
+    <comment>
+        Send VSCP event from XML string
+    </comment>
+        
+    <mask  priority="0"  
+             class="65535"  
+             type="65535"  
+             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+      
+    <filter  priority="0"  
+             class="65535"  
+             type="5"  
+             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:01" />    
+    
+    <action>0x100</action>   
+    <param>
+local strevent 
+
+-- Create string event
+strevent = '&lt;event \
+    head="0" \
+    obid="0" \
+    timestamp="0" \
+    class="10" \
+    type="6" \
+    guid="-" \
+    data="0x8A,0x81,0,0xca" /&gt;'
+    
+vscp.sendevent(strevent,1)
+vscp.log("XML event successfully sent from Lua script.")
+    </param>
+
+
+    <allowed_from>*</allowed_from>
+    <allowed_to>*</allowed_to>
+    <allowed_weekdays>*</allowed_weekdays>
+    <allowed_time>*</allowed_time>
+
+  </row>
+  
+
+</dm>
+
+
+--------------------------------------------------------------------------------------------------------------------------
+
+
+<?xml version = "1.0" encoding = "UTF-8" ?>
+
+<dm>
+    
+  <row enable="true" groupid="test" >
+    
+    <comment>
+        Send VSCP event from JSON string
+    </comment>
+        
+    <mask  priority="0"  
+             class="65535"  
+             type="65535"  
+             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+      
+    <filter  priority="0"  
+             class="65535"  
+             type="5"  
+             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:01" />    
+    
+    <action>0x100</action>   
+    <param>
+local strevent 
+
+-- Create string event
+strevent = '{ \
+    "head": 0, \
+    "obid":  0, \
+    "datetime": "20161102T190032", \
+    "timestamp": 0, \
+    "class": 10, \
+    "type": 6, \
+    "guid": "-", \
+    "data": [138,129,0,202] \
+}'
+    
+vscp.sendevent(strevent,2)
+vscp.log("JSON event successfully sent from Lua script.")
+    </param>
+
+
+    <allowed_from>*</allowed_from>
+    <allowed_to>*</allowed_to>
+    <allowed_weekdays>*</allowed_weekdays>
+    <allowed_time>*</allowed_time>
+
+  </row>
+  
+
+</dm>
+
+
+--------------------------------------------------------------------------------------------------------------------------
+
+
+<?xml version = "1.0" encoding = "UTF-8" ?>
+
+<dm>
+    
+  <row enable="true" groupid="test" >
+    
+    <comment>
+        Send VSCP event from JSON string
+    </comment>
+        
+    <mask  priority="0"  
+             class="65535"  
+             type="65535"  
+             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+      
+    <filter  priority="0"  
+             class="65535"  
+             type="23"  
+             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:01" />    
+    
+    <action>0x100</action>   
+    <param>
+local event   
+local bQuit = false
+
+vscp.log("Waiting for VSCP event")
+
+-- Keep looking until event is available
+while not bQuit do
+
+    -- Fetch event from client queue
+    event = vscp.receiveevent()
+
+    if event then
+
+        vscp.log("VSCP event received. Event = " .. event )
+        bQuit = true
+        
+    else 
+        vscp.sleep( 500 )
+    end
+end
+
+vscp.log("Done!\n")
+    </param>
+
+
+    <allowed_from>*</allowed_from>
+    <allowed_to>*</allowed_to>
+    <allowed_weekdays>*</allowed_weekdays>
+    <allowed_time>*</allowed_time>
+
+  </row>
+  
+
+</dm>
+
+
+--------------------------------------------------------------------------------------------------------------------------
+
+
+<?xml version = "1.0" encoding = "UTF-8" ?>
+
+<dm>
+    
+  <row enable="true" groupid="test" >
+    
+    <comment>
+        Check client queue for number of events waiting
+    </comment>
+        
+    <mask  priority="0"  
+             class="65535"  
+             type="65535"  
+             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+      
+    <filter  priority="0"  
+             class="65535"  
+             type="23"  
+             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:01" />    
+    
+    <action>0x100</action>   
+    <param>
+local cnt   
+
+for i=0,10 do
+    cnt = vscp.countevent()
+    vscp.log("Count = " .. cnt )
+    vscp.sleep( 1000 )
+end
+
+vscp.log("Done!\n")
+    </param>
+
+
+    <allowed_from>*</allowed_from>
+    <allowed_to>*</allowed_to>
+    <allowed_weekdays>*</allowed_weekdays>
+    <allowed_time>*</allowed_time>
+
+  </row>
+  
+
+</dm>
+
+
+--------------------------------------------------------------------------------------------------------------------------
+
+
+<?xml version = "1.0" encoding = "UTF-8" ?>
+
+<dm>
+    
+  <row enable="true" groupid="test" >
+    
+    <comment>
+        Set filter from string
+    </comment>
+        
+    <mask  priority="0"  
+             class="65535"  
+             type="65535"  
+             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+      
+    <filter  priority="0"  
+             class="65535"  
+             type="23"  
+             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:01" />    
+    
+    <action>0x100</action>   
+    <param>
+local filter
+
+filter="0,10,0,-,0,0xffff,0,-"
+vscp.setfilter( filter )
+vscp.log("Done!\n")
+    </param>
+
+
+    <allowed_from>*</allowed_from>
+    <allowed_to>*</allowed_to>
+    <allowed_weekdays>*</allowed_weekdays>
+    <allowed_time>*</allowed_time>
+
+  </row>
+  
+
+</dm>
+
+
+--------------------------------------------------------------------------------------------------------------------------
+
+
+<?xml version = "1.0" encoding = "UTF-8" ?>
+
+<dm>
+    
+  <row enable="true" groupid="test" >
+    
+    <comment>
+        Set filter from XML
+    </comment>
+        
+    <mask  priority="0"  
+             class="65535"  
+             type="65535"  
+             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+      
+    <filter  priority="0"  
+             class="65535"  
+             type="23"  
+             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:01" />    
+    
+    <action>0x100</action>   
+    <param>
+local filter
+
+filter='&lt;filter mask_priority="0"\
+    mask_class="65535"\
+    mask_type="0"\
+    mask_guid="-"\
+    filter_priority="0"\
+    filter_class="10"\
+    filter_type="0"\
+    filter_guid="-" /&gt;'
+vscp.setfilter( filter, 1 )
+vscp.log("Done!\n")
+    </param>
+
+
+    <allowed_from>*</allowed_from>
+    <allowed_to>*</allowed_to>
+    <allowed_weekdays>*</allowed_weekdays>
+    <allowed_time>*</allowed_time>
+
+  </row>
+  
+
+</dm>
+
+
+--------------------------------------------------------------------------------------------------------------------------
+
+
+<?xml version = "1.0" encoding = "UTF-8" ?>
+
+<dm>
+    
+  <row enable="true" groupid="test" >
+    
+    <comment>
+        Set filter from JSON
+    </comment>
+        
+    <mask  priority="0"  
+             class="65535"  
+             type="65535"  
+             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+      
+    <filter  priority="0"  
+             class="65535"  
+             type="23"  
+             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:01" />    
+    
+    <action>0x100</action>   
+    <param>
+-- Allow only CLASS1.MEASUREMENT events, from all, 
+-- with all priorities
+local filter = '{\
+    "mask_priority": 0,\
+    "mask_class": 65535,\
+    "mask_type": 0,\
+    "mask_guid": "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00",\
+    "filter_priority": 0,\
+    "filter_class": 10,\
+    "filter_type": 0,\
+    "filter_guid": "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"\
+}'
+  
+-- Set the filter
+vscp.setfilter( filter,2 )
+vscp_log("Filter set successfully!\n")
+    </param>
+
+
+    <allowed_from>*</allowed_from>
+    <allowed_to>*</allowed_to>
+    <allowed_weekdays>*</allowed_weekdays>
+    <allowed_time>*</allowed_time>
+
+  </row>
+  
+
+</dm>
+
+
+--------------------------------------------------------------------------------------------------------------------------
+
+
+<?xml version = "1.0" encoding = "UTF-8" ?>
+
+<dm>
+    
+  <row enable="true" groupid="test" >
+    
+    <comment>
+        Send measurement (Level I, Temp)
+    </comment>
+        
+    <mask  priority="0"  
+             class="65535"  
+             type="65535"  
+             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+      
+    <filter  priority="0"  
+             class="65535"  
+             type="5"  
+             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:01" />    
+    
+    <action>0x100</action>   
+    <param>
+-- Send a measurement
+-- Level 1, temperature, floating point value
+
+  
+-- Send the measurement
+vscp.sendmeasurement( 1, false, 123.5, "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00", 6, 1 )
+vscp.log("Sent measurement event successfully!\n")
+    </param>
+
+
+    <allowed_from>*</allowed_from>
+    <allowed_to>*</allowed_to>
+    <allowed_weekdays>*</allowed_weekdays>
+    <allowed_time>*</allowed_time>
+
+  </row>
+  
+
+</dm>
+
+
+--------------------------------------------------------------------------------------------------------------------------
+
+
+<?xml version = "1.0" encoding = "UTF-8" ?>
+
+<dm>
+    
+  <row enable="true" groupid="test" >
+    
+    <comment>
+        Send measurement (Level II, Force)
+    </comment>
+        
+    <mask  priority="0"  
+             class="65535"  
+             type="65535"  
+             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+      
+    <filter  priority="0"  
+             class="65535"  
+             type="5"  
+             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:01" />    
+    
+    <action>0x100</action>   
+    <param>
+-- Send a measurement
+-- Level II, force, string
+
+  
+-- Send the meaurement
+vscp.sendmeasurement( 2, true, 0.678956 , "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00", 11, 0 )
+vscp.log("Sent measurement event successfully!\n")
+    </param>
+
+
+    <allowed_from>*</allowed_from>
+    <allowed_to>*</allowed_to>
+    <allowed_weekdays>*</allowed_weekdays>
+    <allowed_time>*</allowed_time>
+
+  </row>
+  
+
+</dm>
+
+
+--------------------------------------------------------------------------------------------------------------------------
+
+
+<?xml version = "1.0" encoding = "UTF-8" ?>
+
+<dm>
+    
+  <row enable="true" groupid="test" >
+    
+    <comment>
+        Check if event is a measurement
+    </comment>
+        
+    <mask  priority="0"  
+             class="65535"  
+             type="65535"  
+             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+      
+    <filter  priority="0"  
+             class="65535"  
+             type="23"  
+             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:01" />    
+    
+    <action>0x100</action>   
+    <param>
+
+vscp.log("Sent measurement event successfully!\n")
+    </param>
+
+
+    <allowed_from>*</allowed_from>
+    <allowed_to>*</allowed_to>
+    <allowed_weekdays>*</allowed_weekdays>
+    <allowed_time>*</allowed_time>
+
+  </row>
+  
+
+</dm>
+
+
+--------------------------------------------------------------------------------------------------------------------------
+
+
+==== Example ====
+
+<code="lua">
+// The JSON text CLASS1.MEASUREMENTL, Type= Temperature,6 sensorindex=0, unit=1 (Celsius) 
+// 45.464 degrees Celsius 
+var eventTxt = "{ 'class': 10, 'type': 6, 'data': [0x48,0x34,0x35,0x2E,0x34,0x36,0x34] }";
+ 
+// Make the JSON object
+var event = JSON.parse( eventTxt );
+
+if ( null != ( value = vscp_getMeasurementValue( event ) ) ) {
+  vscp_log("Measurement event sent successfully! value = " + value.toString() + "\n");
+}
+else {
+  vscp_log("This is not a measurement event!\n");
+}
+</code>
+
+-----------------------------------------
+
+
+==== Example ====
+
+Will output Unit = 1.
+
+<code="lua">
+// The JSON text CLASS1.MEASUREMENTL, Type= Temperature,6 sensorindex=1, unit=1 (Celsius) 
+// 45.464 degrees Celsius 
+var eventTxt = "{ 'class': 10, 'type': 6, 'data': [0x49,0x34,0x35,0x2E,0x34,0x36,0x34] }";
+ 
+// Make the JSON object
+var event = JSON.parse( eventTxt );
+
+vscp_log("Unit = " + vscp_getMeasurementUnit( event ).toString() + "\n");
+</code>
+
+
+------------------------------------------
+
+==== Example ====
+
+Will output sensorindex = 1.
+
+<code="lua">
+// The JSON text CLASS1.MEASUREMENTL, Type= Temperature,6 sensorindex=1, unit=1 (Celsius) 
+// 45.464 degrees Celsius 
+var eventTxt = "{ \"class\": 10, \"type\": 6, \"data\": [0x49,0x34,0x35,0x2E,0x34,0x36,0x34] }";
+ 
+// Make the JSON object
+var event = JSON.parse( eventTxt );
+
+vscp_log("Sensor index = " + vscp_getMeasurementSensorIndex( event ).toString() + "\n");
+</code>
+
+
+--------------------------------------------
+
+
+==== Example ====
+
+Will output Zone = 0.
+
+<code="lua">
+// The JSON text CLASS1.MEASUREMENTL, Type= Temperature,6 sensorindex=1, unit=1 (Celsius) 
+// 45.464 degrees Celsius 
+var eventTxt = "{ \"class\": 10, \"type\": 6, \"data\": [0x49,0x34,0x35,0x2E,0x34,0x36,0x34] }";
+ 
+// Make the JSON object
+var event = JSON.parse( eventTxt );
+
+vscp_log("Zone = " + vscp.getmeasurementzone( event ).toString() + "\n");
+</code>
+
+
+---------------------------------------------
+
+
+==== Example ====
+
+Will output Subzone = 0.
+
+<code="lua">
+// The JSON text CLASS1.MEASUREMENTL, Type= Temperature,6 sensorindex=1, unit=1 (Celsius) 
+// 45.464 degrees Celsius 
+var eventTxt = "{ \"class\": 10, \"type\": 6, \"data\": [0x49,0x34,0x35,0x2E,0x34,0x36,0x34] }";
+ 
+// Make the JSON object
+var event = JSON.parse( eventTxt );
+
+vscp_log("Subzone = " + vscp_getMeasurementSubZone( event ).toString() + "\n");
+</code>
+
+
+
+
+
+

@@ -102,29 +102,42 @@ int lua_vscp_readVariable( struct lua_State *L );
  * 
  * vscp.readvariable( "name"[, format ] )
  * 
- *  Lua Parameter 1: Variable name
+ *  Lua Parameter 1: variable
  *  Lua Parameter 2: Optional format
- *  Lua: Return: True if variable got updated/added. 
+ *  Lua: Return: 1 on success.
  * 
- *  @param v7 Pointer to v7 object.
- *  @param res Pointer to JSON object or NULL if variable was not found.
- *  @return v7 error code.
  */
 int lua_vscp_writeVariable( struct lua_State *L );
+
+/*!
+ * Write remote variable value
+ * 
+ * Lua Parameter 1: variable name
+ * Lua Parameter 2: variable value
+ * Lua Parameter 3: OPTIONAL Flag for BASE64 coding of value.
+ * Lua: Return: 1 on success.
+ * 
+ */
+int lua_vscp_writeVariableValue( struct lua_State *L );
 
 /*!
  *  Delete VSCP variable
  * 
  *  Lua Parameter 0: ClientItem
  *  Lua Parameter 1: Name of variable
- *  Lua: Return: True if variable got deleted.
+ *  Lua: Return: 1 on success.
  * 
- *  @param v7 Pointer to v7 object.
- *  @param res Pointer to JSON object or NULL if variable was not found.
- *  @return v7 error code.
  */
 int lua_vscp_deleteVariable( struct lua_State *L );
 
+
+int lua_vscp_isVariableBase64Encoded( struct lua_State *L ) ;
+
+int lua_vscp_isVariablePersistent( struct lua_State *L );
+
+int lua_vscp_isVariableNumerical( struct lua_State *L );
+
+int lua_vscp_isStockVariable( struct lua_State *L );
 
 /*!
  *  Send VSCP event on the local client queue

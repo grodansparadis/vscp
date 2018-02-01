@@ -196,9 +196,10 @@ uint16_t CVSCPVariable::getVariableTypeFromString( const wxString& strVariableTy
     wxString str = strVariableType;
     long val;
 
-    if ( str.IsNumber() ) {
-        str.ToLong( &val, 10 );
-        type = val;
+    if ( str.IsNumber() || 
+            str.StartsWith(_("0x")) || 
+            str.StartsWith(_("0X")) ) {
+        type = vscp_readStringValue( str );
     }
     else {
         str.Trim();
@@ -585,7 +586,7 @@ bool CVSCPVariable::setFromJSON( wxString &strVariable )
         }
     
         if (j.find("user") != j.end()) {
-            m_userid = j.at("userid").get<uint32_t>();
+            m_userid = j.at("user").get<uint32_t>();
         }
     
         if (j.find("accessrights") != j.end()) {
@@ -597,12 +598,54 @@ bool CVSCPVariable::setFromJSON( wxString &strVariable )
         }
         
         if (j.find("value") != j.end()) {
-            m_strValue = j.at("value").get<std::string>();
+            
+            wxString str;
+                    
+            if ( isNumerical() ) {
+                
+                if ( VSCP_DAEMON_VARIABLE_CODE_INTEGER == getType() ) {
+                    int val = j.at("value").get<int>();
+                    setValue( val );
+                }
+                else if ( VSCP_DAEMON_VARIABLE_CODE_LONG == getType() ) {
+                    long val = j.at("value").get<long>();
+                    setValue( val );
+                }
+                else if ( VSCP_DAEMON_VARIABLE_CODE_DOUBLE == getType() ) {
+                    double val = j.at("value").get<double>();
+                    setValue( val );
+                }                
+                
+            }
+            else {
+                
+                if ( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN == getType() ) {
+                    bool bVal = j.at("value").get<bool>();
+                    setValue( bVal );
+                }
+                else {
+                    str = j.at("value").get<std::string>();
+                    setValue( str, false );
+                }
+                
+            }
+        }
+        
+        if (j.find("valuebase64") != j.end()) {
+            wxString str = j.at("valuebase64").get<std::string>();
+            setValue( str, true );
         }
     
         if (j.find("note") != j.end()) {
-            m_note = j.at("note").get<std::string>();
+            wxString str = j.at("note").get<std::string>();
+            setNote( str, false );
         }
+        
+        if (j.find("notebase64") != j.end()) {
+            wxString str = j.at("notebase64").get<std::string>();
+            setNote( str, true );
+        }
+        
     }
     catch ( ... ) {
         gpobj->logMsg( _("Remote variable, setFromJSON: "
@@ -655,15 +698,29 @@ bool CVSCPVariable::setFromXML( wxString &strVariable )
         
     // Mark last changed as now
     setLastChangedToNow();
-                       
+                   
+    // name
+    wxstr = doc.GetRoot()->GetAttribute( _("name") );
+    if ( wxEmptyString != wxstr ) {
+        wxstr.MakeUpper();
+        wxstr.Trim();
+        wxstr.Trim( false );
+        if ( wxstr.Length() ) {
+            setName( wxstr );
+        }
+    }
+    
     // type
     wxstr = doc.GetRoot()->GetAttribute( _("type") );
     if ( wxEmptyString != wxstr ) {        
         setType( getVariableTypeFromString( wxstr ) );
     }
+    else {
+        setType( VSCP_DAEMON_VARIABLE_CODE_STRING ); // String is default
+    }
             
     // persistence
-    wxstr = doc.GetRoot()->GetAttribute( _("persistent") );
+    wxstr = doc.GetRoot()->GetAttribute( _("persistence") );
     if ( wxEmptyString != wxstr ) { 
         wxstr.MakeUpper();
         if ( wxNOT_FOUND != wxstr.Find( _("TRUE") ) ) {
@@ -681,6 +738,9 @@ bool CVSCPVariable::setFromXML( wxString &strVariable )
             setOwnerID( lval );
         }
     }
+    else {
+        setOwnerID( 0 );
+    }
             
     // access-rights 
     wxstr = doc.GetRoot()->GetAttribute( _("access-rights") );
@@ -688,31 +748,27 @@ bool CVSCPVariable::setFromXML( wxString &strVariable )
         lval = vscp_readStringValue( wxstr );
         setAccessRights( lval );
     }
-            
-    // name
-    wxstr = doc.GetRoot()->GetAttribute( _("name") );
-    if ( wxEmptyString != wxstr ) {
-        wxstr.MakeUpper();
-        wxstr.Trim();
-        wxstr.Trim( false );
-        if ( wxstr.Length() ) {
-            setName( wxstr );
-        }
+    else {
+        setAccessRights( 0x744 );
     }
             
     // value
     wxstr = doc.GetRoot()->GetAttribute( _("value") );
     if ( wxEmptyString != wxstr ) {
-        setValueFromString( getType(),
-                            wxstr,
-                            CVSCPVariable::isValueBase64Encoded( getType() ) );
+        setValue( wxstr, false );
     }
+    
+    // value-base64   Should always be coded
+    wxstr = doc.GetRoot()->GetAttribute( _("value-base64") );
+    setValue( wxstr, true );
             
     // note
     wxstr = doc.GetRoot()->GetAttribute( _("note"), _("") );
-    if ( wxEmptyString != wxstr ) {
-        setNote( wxstr, true );
-    }
+    setNote( wxstr, false );
+    
+    // note-base64  Should always be coded
+    wxstr = doc.GetRoot()->GetAttribute( _("note-base64"), _("") );
+    setNote( wxstr, true );
     
     return true;
 }
@@ -1105,7 +1161,7 @@ bool CVSCPVariable::setValueFromString( int type, const wxString& strValue, bool
 
         case VSCP_DAEMON_VARIABLE_CODE_STRING:
             // Should we do a BASE64 conversion
-            if ( bBase64 ) {
+            if ( bBase64 ) {  // TODO
                 m_strValue = _("");
                 char *pbuf = new char[ wxBase64EncodedSize( strlen( strValue.mbc_str() ) ) + 1 ];
                 if ( NULL == pbuf ) return false;
@@ -1113,7 +1169,7 @@ bool CVSCPVariable::setValueFromString( int type, const wxString& strValue, bool
                     wxBase64Encode( pbuf, 
                                     wxBase64EncodedSize( strlen( strValue.mbc_str() ) ), 
                                     (const char *)strValue.mbc_str(),
-                                    strlen( strValue.mbc_str() ) );
+                                    strlen( strValue.mbc_str() ) ); 
                 if ( wxCONV_FAILED == len ) {
                     delete [] pbuf;
                     return false;
@@ -1198,7 +1254,7 @@ bool CVSCPVariable::setValueFromString( int type, const wxString& strValue, bool
             // Should we do a BASE64 conversion
             if ( bBase64 ) {
                 m_strValue = _("");
-                char *pbuf = new char[ wxBase64EncodedSize( strValue.Length() ) ];
+                char *pbuf = new char[ wxBase64EncodedSize( strValue.Length() ) ]; // TODO
                 if ( NULL == pbuf ) return false;
                 size_t len = wxBase64Encode( pbuf, 
                                                 wxBase64EncodedSize( strValue.Length() ), 
@@ -1228,7 +1284,7 @@ bool CVSCPVariable::setValueFromString( int type, const wxString& strValue, bool
             // Should we do a BASE64 conversion
             if ( bBase64 ) {
                 m_strValue = _("");
-                char *pbuf = new char[ wxBase64EncodedSize( strValue.Length() ) ];
+                char *pbuf = new char[ wxBase64EncodedSize( strValue.Length() ) ]; // TODO
                 if ( NULL == pbuf ) return false;
                 size_t len = wxBase64Encode( pbuf, 
                                                 wxBase64EncodedSize( strValue.Length() ), 
@@ -1250,7 +1306,7 @@ bool CVSCPVariable::setValueFromString( int type, const wxString& strValue, bool
             // Should we do a BASE64 conversion
             if ( bBase64 ) {
                 m_strValue = _("");
-                char *pbuf = new char[ wxBase64EncodedSize( strValue.Length() ) ];
+                char *pbuf = new char[ wxBase64EncodedSize( strValue.Length() ) ]; // TODO
                 if ( NULL == pbuf ) return false;
                 size_t len = wxBase64Encode( pbuf, 
                                                 wxBase64EncodedSize( strValue.Length() ), 
@@ -1272,7 +1328,7 @@ bool CVSCPVariable::setValueFromString( int type, const wxString& strValue, bool
             // Should we do a BASE64 conversion
             if ( bBase64 ) {
                 m_strValue = _("");
-                char *pbuf = new char[ wxBase64EncodedSize( strValue.Length() ) ];
+                char *pbuf = new char[ wxBase64EncodedSize( strValue.Length() ) ]; // TODO
                 if ( NULL == pbuf ) return false;
                 size_t len = wxBase64Encode( pbuf, 
                                                 wxBase64EncodedSize( strValue.Length() ), 
@@ -1294,7 +1350,7 @@ bool CVSCPVariable::setValueFromString( int type, const wxString& strValue, bool
             // Should we do a BASE64 conversion
             if ( bBase64 ) {
                 m_strValue = _("");
-                char *pbuf = new char[ wxBase64EncodedSize( strValue.Length() ) ];
+                char *pbuf = new char[ wxBase64EncodedSize( strValue.Length() ) ]; // TODO
                 if ( NULL == pbuf ) return false;
                 size_t len = wxBase64Encode( pbuf, 
                                                 wxBase64EncodedSize( strValue.Length() ), 
@@ -1316,7 +1372,7 @@ bool CVSCPVariable::setValueFromString( int type, const wxString& strValue, bool
             // Should we do a BASE64 conversion
             if ( bBase64 ) {
                 m_strValue = _("");
-                char *pbuf = new char[ wxBase64EncodedSize( strValue.Length() ) ];
+                char *pbuf = new char[ wxBase64EncodedSize( strValue.Length() ) ]; // TODO
                 if ( NULL == pbuf ) return false;
                 size_t len = wxBase64Encode( pbuf, 
                                                 wxBase64EncodedSize( strValue.Length() ), 
@@ -1338,7 +1394,7 @@ bool CVSCPVariable::setValueFromString( int type, const wxString& strValue, bool
             // Should we do a BASE64 conversion
             if ( bBase64 ) {
                 m_strValue = _("");
-                char *pbuf = new char[ wxBase64EncodedSize( strValue.Length() ) ];
+                char *pbuf = new char[ wxBase64EncodedSize( strValue.Length() ) ];  // TODO
                 if ( NULL == pbuf ) return false;
                 size_t len = wxBase64Encode( pbuf, 
                                                 wxBase64EncodedSize( strValue.Length() ), 
@@ -1360,7 +1416,7 @@ bool CVSCPVariable::setValueFromString( int type, const wxString& strValue, bool
             // Should we do a BASE64 conversion
             if ( bBase64 ) {
                 m_strValue = _("");
-                char *pbuf = new char[ wxBase64EncodedSize( strValue.Length() ) ];
+                char *pbuf = new char[ wxBase64EncodedSize( strValue.Length() ) ];  // TODO
                 if ( NULL == pbuf ) return false;
                 size_t len = wxBase64Encode( pbuf, 
                                                 wxBase64EncodedSize( strValue.Length() ), 
@@ -1382,7 +1438,7 @@ bool CVSCPVariable::setValueFromString( int type, const wxString& strValue, bool
             // Should we do a BASE64 conversion
             if ( bBase64 ) {
                 m_strValue = _("");
-                char *pbuf = new char[ wxBase64EncodedSize( strValue.Length() ) ];
+                char *pbuf = new char[ wxBase64EncodedSize( strValue.Length() ) ];  // TODO
                 if ( NULL == pbuf ) return false;
                 size_t len = wxBase64Encode( pbuf, 
                                                 wxBase64EncodedSize( strValue.Length() ), 
@@ -1404,7 +1460,7 @@ bool CVSCPVariable::setValueFromString( int type, const wxString& strValue, bool
             // Should we do a BASE64 conversion
             if ( bBase64 ) {
                 m_strValue = _("");
-                char *pbuf = new char[ wxBase64EncodedSize( strValue.Length() ) ];
+                char *pbuf = new char[ wxBase64EncodedSize( strValue.Length() ) ];  // TODO
                 if ( NULL == pbuf ) return false;
                 size_t len = wxBase64Encode( pbuf, 
                                                 wxBase64EncodedSize( strValue.Length() ), 
@@ -1426,7 +1482,7 @@ bool CVSCPVariable::setValueFromString( int type, const wxString& strValue, bool
             // Should we do a BASE64 conversion
             if ( bBase64 ) {
                 m_strValue = _("");
-                char *pbuf = new char[ wxBase64EncodedSize( strValue.Length() ) ];
+                char *pbuf = new char[ wxBase64EncodedSize( strValue.Length() ) ];   // TODO
                 if ( NULL == pbuf ) return false;
                 size_t len = wxBase64Encode( pbuf, 
                                                 wxBase64EncodedSize( strValue.Length() ), 
@@ -1476,8 +1532,8 @@ bool CVSCPVariable::getNote( wxString& strNote, bool bBase64 )
 //
 
 bool CVSCPVariable::setVariableFromString( const wxString& strVariable, 
-                                                bool bBase64,
-                                                const wxString& strUser )
+                                             bool bBase64,
+                                             const wxString& strUser )
 {
     wxString strRights;             // User rights for variable               
     bool     bPersistent = false;   // Persistence of variable
@@ -1502,11 +1558,18 @@ bool CVSCPVariable::setVariableFromString( const wxString& strVariable,
     if ( tkz.HasMoreTokens() ) {
         wxString str = tkz.GetNextToken();
         str.Trim();
-        if ( str.Length() ) {
-            m_type = getVariableTypeFromString( str );
+        if ( str.IsNumber() || 
+                str.StartsWith(_("0x") ) ||
+                str.StartsWith(_("0X") ) ) {
+            m_type = vscp_readStringValue( str );
         }
         else {
-            m_type = getVariableTypeFromString( _("STRING") );
+            if ( str.Length() ) {
+                m_type = getVariableTypeFromString( str );
+            }
+            else {
+                m_type = getVariableTypeFromString( _("STRING") );
+            }
         }
     }
     else {
@@ -1585,15 +1648,8 @@ bool CVSCPVariable::setVariableFromString( const wxString& strVariable,
         wxString value = tkz.GetNextToken();
         value.Trim();
         
-        // If the string starts with "Base64" it should be encoded
-        if ( value.Upper().StartsWith( "BASE64:" ) ) {
-            value = value.Right( value.Length() - 7 );
-            value.Trim();
-            bBase64 = true;
-        }
-        
         if ( value.Length() ) {
-            setValueFromString( m_type, value, bBase64 );
+            setValueFromString( m_type, value );
         }
         else {
             // If no value given use RESET value
@@ -1612,13 +1668,10 @@ bool CVSCPVariable::setVariableFromString( const wxString& strVariable,
         wxString note = tkz.GetNextToken();
         
         // If the string starts with "Base64" it should be encoded
-        if ( note.Upper().StartsWith( "BASE64:" ) ) {
-            note = note.Right( note.Length() - 7 );
-            note.Trim();
-            bBase64 = true;
-        }
+        wxString str = note;
+        vscp_decodeBase64IfNeeded( str, note );
         
-        setNote( note, bBase64 );
+        setNote( note );
 
     }
     
@@ -1633,7 +1686,7 @@ bool CVSCPVariable::setVariableFromString( const wxString& strVariable,
 void CVSCPVariable::setValue( wxString value, bool bBase64  ) 
 { 
     if ( bBase64 ) {
-        m_strValue = wxBase64Encode( value, value.Length() );
+        m_strValue = wxBase64Encode( value, value.Length() );  // // TODO
     }
     else {
         m_strValue = value; 
@@ -1648,7 +1701,7 @@ void CVSCPVariable::setNote( const wxString& strNote, bool bBase64 )
 {
     wxString wxstr = strNote;
     if ( bBase64 ) {
-        wxstr = wxBase64Encode( strNote, strNote.Length() );
+        wxstr = wxBase64Encode( strNote, strNote.Length() );  // TODO
     }
     
     m_note = wxstr;
@@ -6773,7 +6826,7 @@ bool CVariableStorage::putStockVariable( CVSCPVariable& var,
             // can be used
             wxstr = var.getValue();  
             
-            size_t len = wxBase64Decode( NULL, 0, wxstr );
+            size_t len = wxBase64Decode( NULL, 0, wxstr );  // TODO
             if ( 0 == len ) return false;
             uint8_t *pbuf = new uint8_t[len];
             if ( NULL == pbuf ) return false;
@@ -6791,7 +6844,7 @@ bool CVariableStorage::putStockVariable( CVSCPVariable& var,
             wxstr = var.getValue();
             
             const char *p = wxstr.mbc_str();
-            size_t len = wxBase64Decode( NULL, 0, wxstr );
+            size_t len = wxBase64Decode( NULL, 0, wxstr );  // TODO
             if ( 0 == len ) return false;
             uint8_t *pbuf = new uint8_t[len];
             if ( NULL == pbuf ) return false;
@@ -6815,7 +6868,7 @@ bool CVariableStorage::putStockVariable( CVSCPVariable& var,
                 // write
                 wxstr = var.getValue();
                 
-                size_t len = wxBase64Decode( NULL, 0, wxstr );
+                size_t len = wxBase64Decode( NULL, 0, wxstr );  // TODO
                 if ( 0 == len ) return false;
                 uint8_t *pbuf = new uint8_t[len];
                 if ( NULL == pbuf ) return false;
@@ -7656,7 +7709,7 @@ bool CVariableStorage::loadFromXML( const wxString& path  )
                 else if (subchild->GetName() == _("note-base64")) {
                     
                     wxstr = subchild->GetNodeContent();
-                    size_t len = wxBase64Decode( NULL, 0, wxstr );
+                    size_t len = wxBase64Decode( NULL, 0, wxstr );  // TODO
                     if ( 0 == len ) return false;
                     uint8_t *pbuf = new uint8_t[len];
                     if ( NULL == pbuf ) return false;

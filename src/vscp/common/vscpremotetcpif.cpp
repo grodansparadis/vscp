@@ -524,7 +524,7 @@ int VscpRemoteTcpIf::doCmdOpen( const wxString& strHostname,
 
     int rv;
     if ( wxSEMA_NO_ERROR != 
-            ( rv = m_semConnected.WaitTimeout( 10/*3000*/ * (m_responseTimeOut + 1 ) ) ) ) {
+            ( rv = m_semConnected.WaitTimeout( 10 * (m_responseTimeOut + 1 ) ) ) ) {
         m_pClientTcpIpWorkerThread->m_bRun = false;
 #ifdef DEBUG_LIB_VSCP_HELPER        
         wxString wxlog = wxString::Format(_("Connection failed: Code=%d - "), rv);       

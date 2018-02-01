@@ -13,7 +13,7 @@
 /* Amalgamated: #include "common/mg_mem.h" */
 
 #ifndef MBUF_REALLOC
-#define MBUF_REALLOC MG_REALLOC
+#define MBUF_REALLOC MG_REALLOC 
 #endif
 
 #ifndef MBUF_FREE
@@ -2834,7 +2834,6 @@ void mg_if_recv_udp_cb(struct mg_connection *nc, void *buf, int len,
   } else {
     /* Drop on the floor. */
     MG_FREE(buf);
-    nc->iface->vtable->recved(nc, len);
   }
 }
 
@@ -3451,8 +3450,11 @@ void mg_socket_if_connect_udp(struct mg_connection *nc) {
   }
   if (nc->flags & MG_F_ENABLE_BROADCAST) {
     int optval = 1;
-    setsockopt(nc->sock, SOL_SOCKET, SO_BROADCAST, (const char *) &optval,
-               sizeof(optval));
+    if (setsockopt(nc->sock, SOL_SOCKET, SO_BROADCAST, (const char *) &optval,
+                   sizeof(optval)) < 0) {
+      nc->err = mg_get_errno() ? mg_get_errno() : 1;
+      return;
+    }
   }
   nc->err = 0;
 }
@@ -3914,10 +3916,16 @@ time_t mg_socket_if_poll(struct mg_iface *iface, int timeout_ms) {
       /* A hack to make sure all our file descriptos fit into FD_SETSIZE. */
       if (nc->sock >= (sock_t) FD_SETSIZE && try_dup) {
         int new_sock = dup(nc->sock);
-        if (new_sock >= 0 && new_sock < (sock_t) FD_SETSIZE) {
-          closesocket(nc->sock);
-          DBG(("new sock %d -> %d", nc->sock, new_sock));
-          nc->sock = new_sock;
+        if (new_sock >= 0) {
+          if (new_sock < (sock_t) FD_SETSIZE) {
+            closesocket(nc->sock);
+            DBG(("new sock %d -> %d", nc->sock, new_sock));
+            nc->sock = new_sock;
+          } else {
+            closesocket(new_sock);
+            DBG(("new sock is still larger than FD_SETSIZE, disregard"));
+            try_dup = 0;
+          }
         } else {
           try_dup = 0;
         }
@@ -8459,9 +8467,11 @@ size_t mg_parse_multipart(const char *buf, size_t buf_len, char *var_name,
                           size_t *data_len) {
   static const char cd[] = "Content-Disposition: ";
   size_t hl, bl, n, ll, pos, cdl = sizeof(cd) - 1;
+  int shl;
 
   if (buf == NULL || buf_len <= 0) return 0;
-  if ((hl = mg_http_get_request_len(buf, buf_len)) <= 0) return 0;
+  if ((shl = mg_http_get_request_len(buf, buf_len)) <= 0) return 0;
+  hl = shl;
   if (buf[0] != '-' || buf[1] != '-' || buf[2] == '\n') return 0;
 
   /* Get boundary length */
@@ -8835,6 +8845,7 @@ static void mg_prepare_cgi_environment(struct mg_connection *nc,
   char *p;
   size_t i;
   char buf[100];
+  size_t path_info_len = path_info != NULL ? path_info->len : 0;
 
   blk->len = blk->nvars = 0;
   blk->nc = nc;
@@ -8866,7 +8877,7 @@ static void mg_prepare_cgi_environment(struct mg_connection *nc,
   mg_conn_addr_to_str(nc, buf, sizeof(buf), MG_SOCK_STRINGIFY_PORT);
   mg_addenv(blk, "SERVER_PORT=%s", buf);
 
-  s = hm->uri.p + hm->uri.len - path_info->len - 1;
+  s = hm->uri.p + hm->uri.len - path_info_len - 1;
   if (*s == '/') {
     const char *base_name = strrchr(prog, DIRSEP);
     mg_addenv(blk, "SCRIPT_NAME=%.*s/%s", (int) (s - hm->uri.p), hm->uri.p,
@@ -10849,8 +10860,7 @@ static void mg_mqtt_broker_handle_connect(struct mg_mqtt_broker *brk,
   /* TODO(mkm): check header (magic and version) */
 
   mg_mqtt_session_init(brk, s, nc);
-  s->user_data = nc->user_data;
-  nc->user_data = s;
+  nc->priv_2 = s;
   mg_mqtt_add_session(s);
 
   mg_mqtt_connack(nc, MG_EV_MQTT_CONNACK_ACCEPTED);
@@ -10858,7 +10868,7 @@ static void mg_mqtt_broker_handle_connect(struct mg_mqtt_broker *brk,
 
 static void mg_mqtt_broker_handle_subscribe(struct mg_connection *nc,
                                             struct mg_mqtt_message *msg) {
-  struct mg_mqtt_session *ss = (struct mg_mqtt_session *) nc->user_data;
+  struct mg_mqtt_session *ss = (struct mg_mqtt_session *) nc->priv_2;
   uint8_t qoss[MG_MQTT_MAX_SESSION_SUBSCRIPTIONS];
   size_t num_subs = 0;
   struct mg_str topic;
@@ -10936,18 +10946,18 @@ void mg_mqtt_broker(struct mg_connection *nc, int ev, void *data) {
   struct mg_mqtt_broker *brk;
 
   if (nc->listener) {
-    brk = (struct mg_mqtt_broker *) nc->listener->user_data;
+    brk = (struct mg_mqtt_broker *) nc->listener->priv_2;
   } else {
-    brk = (struct mg_mqtt_broker *) nc->user_data;
+    brk = (struct mg_mqtt_broker *) nc->priv_2;
   }
 
   switch (ev) {
     case MG_EV_ACCEPT:
       if (nc->proto_data == NULL) mg_set_protocol_mqtt(nc);
-      nc->user_data = NULL; /* Clear up the inherited pointer to broker */
+      nc->priv_2 = NULL; /* Clear up the inherited pointer to broker */
       break;
     case MG_EV_MQTT_CONNECT:
-      if (nc->user_data == NULL) {
+      if (nc->priv_2 == NULL) {
         mg_mqtt_broker_handle_connect(brk, nc);
       } else {
         /* Repeated CONNECT */
@@ -10955,7 +10965,7 @@ void mg_mqtt_broker(struct mg_connection *nc, int ev, void *data) {
       }
       break;
     case MG_EV_MQTT_SUBSCRIBE:
-      if (nc->user_data != NULL) {
+      if (nc->priv_2 != NULL) {
         mg_mqtt_broker_handle_subscribe(nc, msg);
       } else {
         /* Subscribe before CONNECT */
@@ -10963,7 +10973,7 @@ void mg_mqtt_broker(struct mg_connection *nc, int ev, void *data) {
       }
       break;
     case MG_EV_MQTT_PUBLISH:
-      if (nc->user_data != NULL) {
+      if (nc->priv_2 != NULL) {
         mg_mqtt_broker_handle_publish(brk, msg);
       } else {
         /* Publish before CONNECT */
@@ -10971,8 +10981,8 @@ void mg_mqtt_broker(struct mg_connection *nc, int ev, void *data) {
       }
       break;
     case MG_EV_CLOSE:
-      if (nc->listener && nc->user_data != NULL) {
-        mg_mqtt_close_session((struct mg_mqtt_session *) nc->user_data);
+      if (nc->listener && nc->priv_2 != NULL) {
+        mg_mqtt_close_session((struct mg_mqtt_session *) nc->priv_2);
       }
       break;
   }
@@ -11690,6 +11700,8 @@ int mg_resolve_async_opt(struct mg_mgr *mgr, const char *name, int query,
   }
 
   strncpy(req->name, name, sizeof(req->name));
+  req->name[sizeof(req->name) - 1] = '\0';
+
   req->query = query;
   req->callback = cb;
   req->data = data;

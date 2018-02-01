@@ -639,21 +639,21 @@ note: This is a note <br>
     "</p>"
 
 
-#define VSCP_XML_FILTER_TEMPLATE  "<filter mask_head=\"%d\" \n"\
+#define VSCP_XML_FILTER_TEMPLATE  "<filter mask_priority=\"%d\" \n"\
 "mask_class=\"%d\" \n"\
     "mask_type=\"%d\" \n"\
     "mask_guid=\"%s\" \n"\
-    "filter_head=\"%d\" \n"\
+    "filter_priority=\"%d\" \n"\
     "filter_class=\"%d\" \n"\
     "filter_type=\"%d\" \n"\
     "filter_guid=\"%s\" />"
 
 #define VSCP_JSON_FILTER_TEMPLATE "{\n"\
-    "\"mask_head\": %d,\n"\
+    "\"mask_priority\": %d,\n"\
     "\"mask_class\": %d,\n"\
     "\"mask_type\": %d,\n"\
     "\"mask_guid\": \"%s\",\n"\
-    "\"filter_head\": %d,\n"\
+    "\"filter_priority\": %d,\n"\
     "\"filter_class\": %d,\n"\
     "\"filter_type\": %d,\n"\
     "\"filter_guid\": \"%s\",\n"\

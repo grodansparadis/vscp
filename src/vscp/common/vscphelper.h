@@ -205,7 +205,7 @@ extern "C" {
     /*!
         Get ISO GMT datetime
     */
-    bool vscp_getISOTimeString( char *buf, size_t buf_len, time_t *t ); 
+    bool vscp_getISOTimeString( char *buf, size_t buf_len, time_t *t );
         
     
     /*!
@@ -214,7 +214,7 @@ extern "C" {
      *  @param Buffer holding input string. Buffer size must be large enough to
      *          hold expanded result.
      */ 
-    void vscp_toXMLEscape( char *temp_str );
+    bool vscp_XML_Escape( const char *src, char *dst, size_t dst_len );
 
     
     /*!
@@ -1039,6 +1039,17 @@ extern "C" {
     */
     bool vscp_writeMaskToString( const vscpEventFilter *pFilter, wxString& strFilter);
 
+    
+    /*!
+     * Read both filter and mask from string
+     * 
+     * @param pFilter Pointer to VSCP filter structure which will receive filter
+     *                  mask data.
+     * @param strFilter Filter and mask in comma separated list
+     * @return true on success, false on failure.
+     */
+    bool vscp_readFilterMaskFromString( vscpEventFilter *pFilter, 
+                                            const wxString& strFilterMask);
     
     /*!
      * Read filter from XML coded string
