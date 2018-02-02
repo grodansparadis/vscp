@@ -4527,10 +4527,8 @@ void mg_send_websocket_frame(struct mg_connection *nc, int op_and_flags,
                              const void *data, size_t data_len);
 
 /*
- * Sends multiple websocket frames.
- *
- * Like `mg_send_websocket_frame()`, but composes a frame from multiple
- *buffers.
+ * Like `mg_send_websocket_frame()`, but composes a single frame from multiple
+ * buffers.
  */
 void mg_send_websocket_framev(struct mg_connection *nc, int op_and_flags,
                               const struct mg_str *strings, int num_strings);
@@ -5220,7 +5218,7 @@ struct mg_connection *mg_connect_http_opt(
 int mg_http_create_digest_auth_header(char *buf, size_t buf_len,
                                       const char *method, const char *uri,
                                       const char *auth_domain, const char *user,
-                                      const char *passwd);
+                                      const char *passwd, const char *nonce);
 
 #ifdef __cplusplus
 }
