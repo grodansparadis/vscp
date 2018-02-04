@@ -288,3 +288,5 @@ src/vscp/linuxvscpl1/libvscpl1.so.*
 .project
 .settings/
 RemoteSystemsTempFiles/
+/src/vscp/.vs
+/src/vscp/vscp_project.VC.db
