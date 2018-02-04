@@ -1,0 +1,8 @@
+#!/bin/bash
+#
+# This script is run after removal of a debian package
+#
+#
+
+# remove the VSCP folder
+rm -rf /srv/vscp

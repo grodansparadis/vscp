@@ -1,24 +1,28 @@
 // dm.h
 //
-// This program is free software; you can redistribute it and/or
-// modify it under the terms of the GNU General Public License
-// as published by the Free Software Foundation; either version
-// 2 of the License, or (at your option) any later version.
-// 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2017
-// Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
+// The MIT License (MIT)
 // 
-// This file is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
+// Copyright (c) 2000-2018 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
 // 
-// You should have received a copy of the GNU General Public License
-// along with this file see the file COPYING.  If not, write to
-// the Free Software Foundation, 59 Temple Place - Suite 330,
-// Boston, MA 02111-1307, USA.
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+// 
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 //
 
 #if !defined(DM__INCLUDED_)
@@ -29,11 +33,10 @@
 #include <wx/dynlib.h>
 #include <wx/file.h>
 #include <wx/url.h>
-#include <v7.h>
 #include <dllist.h>
 #include <tables.h>
 #include <vscp.h>
-#include <vscpvariable.h>
+#include <remotevariable.h>
 
 class CControlObject;
 class CClientItem;
@@ -83,71 +86,128 @@ class dmTimer
 
 public:
 
+  /// Constructor
+  dmTimer();
+  
   /*! 
     Constructor
     @param nameVar Name of variable
+    @param id Timer id.
     @param delay Timer value
     @param bStart Run flag for timer
     @param setValue Value to set variable to when timer elapse
   */
-  dmTimer( wxString& nameVar, 
+  dmTimer( wxString& nameVar,
+              uint32_t id,
               uint32_t delay = 0, 
               bool m_bStart = false, 
-              bool setValue = false );
+              bool setValue = false,
+              int reloadLimit = -1 );
 
   /// Destructor
   ~dmTimer();
+  
+  
+  /*! 
+    Init
+    @param nameVar Name of variable
+    @param id Timer id.
+    @param delay Timer value
+    @param bStart Run flag for timer
+    @param setValue Value to set variable to when timer elapse
+    @param reloadLimit Limit for reloads (-1 is no limit)
+  */
+  void init( wxString& nameVar,
+              uint32_t id,
+              uint32_t delay = 0, 
+              bool m_bStart = false, 
+              bool setValue = false,
+              int reloadLimit = -1 );
 
   /*!
     Check if the timer is active
     @returns true if active.
   */
-  bool isActive( void ) { return m_bActive; };
+  bool isActive( void );
 
   /*!
     Set the time active state
     @param bState (default true) which sets te active state.
   */
-  void setActive( bool bState = true ) { m_bActive = bState; };
+  void setActive( bool bState = true );
 
+  /*!
+   * Getter/setter for id
+   */
+  void setId( uint32_t id ) { m_id = id; };
+  uint32_t getId( void ) { return m_id; };
+  
   /*!
     Stop timer
   */
-  void stopTimer( void ) { m_bActive = false; };
+  void stopTimer( void );;
+  
+  /*!
+    Pause timer
+  */
+  void pauseTimer( void );
 
   /*!
     Start timer
   */
-  void startTimer( void ) { m_bActive = true; };
+  void startTimer( void );
+                            
+  /*!
+    Resume timer
+  */
+  void resumeTimer( void );                          
 
   /*!
-    Get timer value
-    @return timer value.
+    Get current timer value
+    @return current timer value.
   */
   uint32_t getDelay( void ) { return m_delay; };
+  
+  /*!
+    Get start timer value
+    @return start timer value.
+  */
+  uint32_t getStartDelay( void ) { return m_delayStart; };
 
   /*!
     Set timer value
     @param timer value.
   */
-  void setDelay( uint32_t delay ) { m_delay = delay; };
+  void setDelay( uint32_t delay ) { m_delayStart = m_delay = delay; };
 
   /*!
-    Get the setvalue
-    @return true if setvalue is true false otherwise
+    Check if timer is of reloading type
+    @return true if reloading, false otherwise
   */
-  bool getSetValue( void ) { return m_bSetValue; };
+  bool isReloading( void ) { return m_bReload; };
 
   /*!
-    Set the setvalue
-    @param setvalue as true or false.
+    Set the reloading functionality
+    @param reload flag
   */
-  void setSetValue( bool setValue ) { m_bSetValue = setValue; };
+  void setReload( bool bReload ) { m_bReload = bReload; };
 
+  /*!
+   * Reload timer
+   */
+  void reload( void ) { m_delay = m_delayStart; m_reloadCounter--; };
+  
+  /// Setter/getters for reloadlimit
+  void setReloadLimit( int limit ) { m_reloadlimit = limit; };
+  int getReloadLimit( void ) { return m_reloadlimit; };
+  bool isReloadLimit( void ) { return ( m_reloadlimit > 0 ); };
+  
+  int getReloadCounter( void ) { return m_reloadCounter; };
+  
   /*!
     Decrement timer if greater than zero
   */
-  uint32_t decTimer( void ) { if ( m_delay ) m_delay-- ;  return m_delay; };
+  uint32_t decTimer( void );
 
   /*!
     Get variable name
@@ -174,16 +234,32 @@ private:
 
   /// Active flag. True if timer should run.
   bool m_bActive;
+  
+  /// id
+  uint32_t m_id;
 
   /// Delay time
   uint32_t m_delay;
+  
+  // Delay start time
+  uint32_t m_delayStart;
 
   /// Name of control variable
   wxString m_nameVariable;
 
-  /// Value to set flag variable to when timer elapses.
-  bool m_bSetValue;
-
+  /// Reload value when timer elapsed 
+  bool m_bReload;
+  
+  // Max number of reload to do.
+  // -1 is no limit.
+  int m_reloadlimit;
+  
+  // Counter used when reload limit is used
+  int m_reloadCounter;
+  
+  // paused is set after a timer has been pauses
+  // it is reseted by a start or a resume
+  bool m_bPaused;
 };
 
 
@@ -195,9 +271,17 @@ class actionTime
 {
 
 public:
+    
   actionTime();
   ~actionTime();
 
+  /*!
+   * Clear all tables
+   */
+  void clearTables( void );
+  
+
+  
   /*!
     Set the weekdays that the action is allowed to occur at. The
     string is on the form 'mtwtfss'  The day can be replaced with a
@@ -223,6 +307,11 @@ public:
   */
 
   bool setWeekDay( const wxString& strWeekday );
+  
+  /*!
+   * Set data so action is always allowed.
+   */
+  void allowAlways( void );
   
   /*!
     Allow/disallow action to happen on Mondays
@@ -300,25 +389,81 @@ public:
     @return actiontime as a string.
   */
   wxString getActionTimeAsString( void );
+  
+  /*!
+   * Get/set weekday allow
+   */
+  bool getWeekday( char day ) { return m_weekDay[ day & 0x07 ]; };
+  
+  bool setWeekday( char day, bool bAllow = true ) { return m_weekDay[ day & 0x07 ] = bAllow ; };
 
+  /*!
+   * Get/set from time.
+   */
+  void setFromTime( wxString strFrom ) {
+      
+      strFrom.Trim();
+      strFrom.Trim(false);
+      if ( '*' == strFrom ) {
+          strFrom = _("0000-01-01 00:00:00");
+      }
+      
+      m_fromTime.ParseDateTime( strFrom );
+      if ( !m_fromTime.IsValid() ) {
+          m_fromTime.ParseDateTime( _("0000-01-01 00:00:00") );
+      }
+  };
+  
+  void setFromTime( wxDateTime& dt ) { m_fromTime = dt; };
+  
+  wxDateTime& getFromTime( void ) { return m_fromTime; };
+
+  
+
+  /*!
+   * Get/set end time.
+   */
+  void setEndTime( wxString strEnd ) {
+      
+      strEnd.Trim();
+      strEnd.Trim(false);
+      if ( '*' == strEnd ) {
+          strEnd = _("9999-12-31 23:59:59");
+      }
+      
+      m_endTime.ParseDateTime( strEnd );
+      if ( !m_endTime.IsValid() ) {
+          m_endTime.ParseDateTime( _("9999-12-31 23:59:59") );
+      }
+      
+  };
+  
+  void setEndTime( wxDateTime& dt ) { m_endTime = dt; };
+  
+  wxDateTime& getEndTime( void ) { return m_endTime; };
+  
+  
+  private:
+  
   /*!
     True if working on that day.
   */
   bool m_weekDay[ 7 ];      // Monday - Sunday
-
+  
   /*!
     This is the time (inclusive) from which this action is
     allowed to occur.
   */
   wxDateTime m_fromTime;
-
+  
   /*!
     This is the time up (inclusive) to which this action is
     allowed to occur.
   */
   wxDateTime m_endTime;
-
-  // If the year/month/day etc is in any of theese arrays it is a positive match
+  
+  // If the year/month/day etc is in any of these arrays it is a positive match
+  // Empty is an all positive match
 
   /// Year when action should be performed, count == 0 is don't care
   ACTIONTIME m_actionYear;
@@ -460,9 +605,11 @@ public:
         Just executes the external action script. The parameter
         is action dependent.
         @param pDMEvent Event that triggered the action
+        @param bCheckExecutable Check if target is an existing file and
+                that it is marked as executable.
         @returns true if all went well.
     */
-    bool doActionExecute( vscpEvent *pDMEvent );
+    bool doActionExecute( vscpEvent *pDMEvent, bool bCheckExecutable = true );
 
     /*!
         Timed exeute the external action script.
@@ -491,6 +638,14 @@ public:
         @returns true if all went well.
     */
     bool doActionSendEventsFromFile( vscpEvent *pDMEvent );
+    
+    /*!
+        Send event to remote VSCP server action 
+        @param pDMEvent Event that triggered the action
+        @param bSecure Should be set to true for a secure connection (SSL)
+        @returns true if all went well.
+    */
+    bool doActionSendEventRemote( vscpEvent *pDMEvent, bool bSecure = false );
 
     /*!
         Store in variable action 
@@ -528,12 +683,19 @@ public:
     bool doActionDivideVariable( vscpEvent *pDMEvent );
     
     /*!
-     * Check variable against measurement
+     * Check variable against constant
      * @param pDMEvent Event that triggered the action
      * @param type Type of check
-       @returns true if all went well.
+     * @returns true if all went well.
      */
     bool doActionCheckVariable( vscpEvent *pDMEvent, VariableCheckType type );
+    
+    /*!
+     * Check variable against measurement
+     * @param pDMEvent Event that triggered the action
+     * @returns true if all went well.
+     */
+    bool doActionCheckMeasurement( vscpEvent *pDMEvent );
     
     /*!
      * Store new minimum of measurement in variable if lower than current.
@@ -590,10 +752,17 @@ public:
         @returns true if all went well.
     */
     bool doActionGetURL( vscpEvent *pDMEvent );
+    
+    
+    
+    
 
 
     // Database index for record ( 0 if loaded from XML file)
     uint32_t m_id;
+    
+    // This record is loaded from XML file - Can't be edited
+    bool m_bStatic;
     
     /// True if row is enabled
     bool m_bEnable;
@@ -625,9 +794,6 @@ public:
     /// Index should be masked so only the LSB tree bits are checked
     bool m_bCheckMeasurementIndex;
     
-    /// If measurement index should be checked this is the one
-    uint8_t m_measurementIndex;
-
     /// True if zone should be checked
     bool m_bCheckZone;
     
@@ -748,7 +914,7 @@ public:
     /*!
         Remove Element from matrix
     */
-    bool removeMemoryElement( unsigned short pos );
+    bool removeMemoryElement( unsigned short row );
 
     /*!
         Get number of rows in matrix
@@ -762,6 +928,16 @@ public:
     */
     dmElement *getMemoryElementFromRow( const short row );
     
+    /*!
+        Get database index from row
+        @param row in memory
+        @return Database index or zero if there is no
+            database item for this record. Note that 
+            this can be due to a XML loaded record which
+            all have zero indexes.
+    */
+    uint32_t getDbIndexFromRow( const short row );
+
     /*!
         Get a row from the matrix (from idx )
         @param idx Database index for DM row to fetch 
@@ -783,14 +959,14 @@ public:
         @param dm Reference to DM element with record data.
         @return True if record inserted.
      */
-    bool addDatabaseRecord( dmElement& dm );
+    bool addDatabaseRecord( dmElement *pdm );
     
     /*!
         Update database record
         @param dm Reference to DM element with record data.
         @return True if record found and updated.
      */
-    bool updateDatabaseRecord( dmElement& dm );
+    bool updateDatabaseRecord( dmElement *pdm );
     
     /*
         Update item if database record
@@ -834,8 +1010,11 @@ public:
 
     /*!
         Save DM to external storage.
+        @param bAll Save all recotds to XML file if true, else
+            only records loaded from XML file.
+        @return true on success, false on failure.    
     */
-    bool saveToXML( void );
+    bool saveToXML( bool bAll = true );
 
     /*!
         Run an event through the matrix
@@ -864,7 +1043,45 @@ public:
     */
     bool feedPeriodicEvent( void );
 
-
+    /*!
+     * Feed timer started event
+     * @param id Timer id
+     * @param time Start time in ms
+     * return true if event was delivered
+     */
+    bool feedTimerStarted( uint32_t id, uint32_t time );
+    
+    /*!
+     * Feed timer paused event
+     * @param id Timer id
+     * @param time Start time in ms
+     * return true if event was delivered
+     */
+    bool feedTimerPaused( uint32_t id, uint32_t time );
+    
+    /*!
+     * Feed timer resumed event
+     * @param id Timer id
+     * @param time Start time in ms
+     * return true if event was delivered
+     */
+    bool feedTimerResumed( uint32_t id, uint32_t time );
+    
+    /*!
+     * Feed timer stopped event
+     * @param id Timer id
+     * @param time Start time in ms
+     * return true if event was delivered
+     */
+    bool feedTimerStopped( uint32_t id, uint32_t time );
+    
+    /*!
+     * Feed timer elapsed event
+     * @param id Timer id
+     * return true if event was delivered
+     */
+    bool feedTimerElapsed( uint32_t id );
+    
     //------------------------------------
     //              Timers
     //------------------------------------
@@ -883,36 +1100,51 @@ public:
         @param nameVar Name of variable
         @param delay Timer value
         @param bStart Run flag for timer
-        @param setValue Value to set variable to when timer elapse
+        @param bReload True if reload should be done
         @return a timer if > 0 on success
     */
-    int addTimer( uint16_t id,
+    int addTimer( uint32_t id,
                     wxString& nameVar, 
                     uint32_t delay = 0, 
                     bool bStart = false, 
-                    bool setValue = false );
+                    bool bReload = false,
+                    int reloadLimit = -1 );
 
     /*!
         Start an existing timer. Do nothing if timer does not exist.
         @return true on success
     */
-     bool startTimer( int idTimer );
+     bool startTimer( uint32_t idTimer );
 
     /*!
         Start a timer and set 'setvalues' If the timer does not
         exist create it.
         @return timer id or zero on failure
     */
-    int startTimer( uint16_t id, 
+    int startTimer( uint32_t id, 
                         wxString& nameVariable, 
                         uint32_t delay, 
-                        bool bSetValue = false );
+                        bool bSetValue = false,
+                        int reloadLimit = -1 );
 
      /*!
         Stop an existing timer
         @return true on success
     */
-     bool stopTimer( int idTimer );
+     bool stopTimer( uint32_t idTimer );
+     
+     /*!
+        Pause an existing timer
+        @return true on success
+    */
+     bool pauseTimer( uint32_t idTimer );
+     
+     /*!
+        Resume an existing timer
+        @return true on success
+    */
+     bool resumeTimer( uint32_t idTimer );
+     
      
      /*!
       *     Create DM table
@@ -958,13 +1190,15 @@ public:
 
     /// Path to DM XML file
     wxString m_staticXMLPath;
+
+    /// Allow editing of XML content
+    bool bAllowXMLsave;
     
     // Path to the VSCP DM database
     wxFileName m_path_db_vscp_dm;  
     
     // Databases
     sqlite3 *m_db_vscp_dm;                  // External DM database
-    //sqlite3 *m_db_vscp_dm_memory;         // In-memory DM database
 
     /// DM table filter - Filter for all rows of the table
     vscpEventFilter m_DM_Table_filter;
@@ -1120,7 +1354,7 @@ private:
     /*!
         Port to access server at
     */
-    short m_port;
+    int m_port;
 
     /*!
         Username to login with  
@@ -1135,113 +1369,13 @@ private:
     /*!
         The event to send  
     */
-    vscpEventEx m_eventThe;
-
-};
-
-
-////////////////////////////////////////////////////////////////////////////////
-// actionThread_LUA
-//
-
-class actionThread_LUA : public wxThread {
-    
-public:
-
-    /// Constructor
-    actionThread_LUA( wxString& strScript,
-                          wxThreadKind kind = wxTHREAD_DETACHED );
-
-    /// Destructor
-    virtual ~actionThread_LUA();
-
-    /*!
-        Thread code entry point
-     */
-    virtual void *Entry();
-
-    /*! 
-        called when the thread exits - whether it terminates normally or is
-        stopped with Delete() (but not when it is Kill()ed!)
-     */
-    virtual void OnExit();
-
-    /*!
-        Termination control
-     */
-    bool m_bQuit;
-    
-    /*!
-     * Script
-     */
-    wxString m_wxstrScript;
-    
-    /// JavaScript executing id
-    uint32_t m_id;
-    
-    // Time when script was started
-    wxDateTime m_start;
-    
-    /// Feed event
-    vscpEventEx m_feedEvent;
+    vscpEventEx m_eventEx;
 
 };
 
 
 
 
-////////////////////////////////////////////////////////////////////////////////
-// actionThread_JavaScript
-//
-
-class actionThread_JavaScript : public wxThread {
-    
-public:
-
-    /// Constructor
-    actionThread_JavaScript( wxString& strScript,
-                                wxThreadKind kind = wxTHREAD_DETACHED );
-
-    /// Destructor
-    virtual ~actionThread_JavaScript();
-
-    /*!
-        Thread code entry point
-     */
-    virtual void *Entry();
-
-    /*! 
-        called when the thread exits - whether it terminates normally or is
-        stopped with Delete() (but not when it is Kill()ed!)
-     */
-    virtual void OnExit();
-
-    /*!
-        Termination control
-     */
-    bool m_bQuit;
-    
-    /*!
-     * Script
-     */
-    wxString m_wxstrScript;
-    
-    /// JavaScript executing id
-    uint64_t m_id;
-    
-    /// Time when script was started
-    wxDateTime m_start;
-    
-    /// Time when script was stopped
-    wxDateTime m_stop;
-    
-    /// Client item for script
-    CClientItem *m_pClientItem;
-    
-    /// Feed event
-    vscpEventEx m_feedEvent;
-    
-};
 
 ////////////////////////////////////////////////////////////////////////////////
 // actionThread_Table

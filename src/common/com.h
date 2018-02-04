@@ -1,26 +1,26 @@
-/*! 
- *	\file com.h
- *  \brief interface for the Linux comm class.
- *  \author Ake Hedman, Grodans Paradis AB, 
- *  \author <akhe@grodansparadis.com>
- *  \date   2002-2015
- *
-// Copyright (C) 2000-2015 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
+// This file is part of the VSCP (http://www.vscp.org) 
 //
-// This software is placed into
-// the public domain and may be used for any purpose.  However, this
-// notice must not be changed or removed and no warranty is either
-// expressed or implied by its publication or distribution.
- *
- * This class wraps and extends Minicom.
- * see ftp://ftp.sunsite.unc.edu/pub/Linux/apps/serialcomm/dialout
- *
- * Some changes by akhe@brattberg.com ( www.brattberg.com ) done for the
- * M.U.M.I.N. protocol.
- * 
- * - Sorry no more sysdep. Works only on Linux systems ( maybe on others ).
- *
- */
+// The MIT License (MIT)
+// 
+// Copyright (c) 2000-2018 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
+// 
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+// 
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 
 
 #ifndef H_COM_H

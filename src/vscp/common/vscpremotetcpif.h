@@ -5,7 +5,7 @@
 //
 // The MIT License (MIT)
 // 
-// Copyright (c) 2000-2017 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
+// Copyright (c) 2000-2018 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
 // 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -57,7 +57,7 @@
     Default response timeout for communication with the
     tcp/ip interface of the daemon in seconds
  */
-#define TCPIP_DEFAULT_RESPONSE_TIMEOUT          1000
+#define TCPIP_DEFAULT_RESPONSE_TIMEOUT          2000
 
 #define TCPIP_DEFAULT_AFTER_COMMAND_SLEEP       0
 
@@ -71,7 +71,7 @@
     @def TCPIP_DLL_VERSION
     Pseudo version string
  */
-#define TCPIP_DLL_VERSION                       0x0000000A
+#define TCPIP_DLL_VERSION                       0x0000000C
 /*! 
     @def TCPIP_VENDOR_STRING
     Pseudo vendor string
@@ -94,6 +94,7 @@ WX_DECLARE_LIST(vscpEvent, EVENT_TX_QUEUE);
 class VscpRemoteTcpIf;
 
 class clientTcpIpWorkerThread : public wxThread {
+    
 public:
 
     /// Constructor
@@ -471,11 +472,11 @@ public:
 
     /*!
         Get a VSCP event from a line of data from the server
-        @param strLine String with server event data line
         @param pEvent Pointer to VSCP event.
+        @param strLine String with server event data line        
         @return true on success.
      */
-    bool getEventFromLine(const wxString& strLine, vscpEvent *pEvent);
+    bool getEventFromLine( vscpEvent *pEvent, const wxString& strLine );
 
 
 
@@ -830,22 +831,21 @@ public:
         Get variable value from VSCP data variable
      
         @param name of variable.
-        @param psizeData pointer to variable that will hold the size of the data array
-        @param pData pointer to VSCP data array variable (unsigned char [8] ) that get the 
-        value of the string variable.
+        @param pData Pointer to data array to get data from.
+        @param pSize Pointer to size of data.
         @return VSCP_ERROR_SUCCESS if the variable is of type VSCP data and the operation
         was successful.
      */
     int getRemoteVariableVSCPdata( const wxString& name, 
-                                        uint8_t *psizeData, 
-                                        uint16_t *pData);
+                                        uint8_t *pData, 
+                                        uint16_t *pSize);
 
     /*!
         set variable value from VSCP data
      
         @param name of variable.
-        @param sizeData Size of data.
         @param pData Pointer to data array to set data from.
+        @param size Size of data.
         @return VSCP_ERROR_SUCCESS if the operation was successful.
      */
     int setRemoteVariableVSCPdata( const wxString& name, uint8_t *pData, uint16_t size);
@@ -1618,7 +1618,7 @@ public:
 
     /*! 
         Array that gets filled with input lines as
-        they are receied 
+        they are received 
      */
     wxArrayString m_inputStrArray;
 

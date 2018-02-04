@@ -7,7 +7,7 @@
 // 
 // This file is part of the VSCP Project (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2017 Ake Hedman, 
+// Copyright (C) 2000-2018 Ake Hedman, 
 // Grodans Paradis AB, <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
@@ -173,7 +173,8 @@ static void ev_handler( struct mg_connection *nc, int ev, void *p )
             vscpEventEx eventEx;
             
             eventEx.obid = 0;
-            eventEx.timestamp = 0;
+            eventEx.timestamp = vscp_makeTimeStamp();
+            vscp_setEventExDateTimeBlockToNow( &eventEx );
             eventEx.head = VSCP_PRIORITY_NORMAL;
             memset( eventEx.GUID, 0, 16 );
 

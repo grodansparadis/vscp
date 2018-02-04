@@ -7,7 +7,7 @@
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2015 Ake Hedman, 
+// Copyright (C) 2000-2018 Ake Hedman, 
 // Grodans Paradis AB, <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
@@ -65,8 +65,8 @@ using namespace std;
 
 #define VSCP_LEVEL2_DLL_SOCKETCAN_OBJ_MUTEX "___VSCP__DLL_L2SOCKETCAN_OBJ_MUTEX____"
 
-#define VSCP_SOCKETCAN_LIST_MAX_MSG		2048
-  
+#define VSCP_SOCKETCAN_LIST_MAX_MSG  2048
+
 // Input and output queue
 //WX_DECLARE_LIST(vscpEvent, VSCPEVENTLIST_SEND);
 //WX_DECLARE_LIST(vscpEvent, VSCPEVENTLIST_RECEIVE);
@@ -75,7 +75,6 @@ using namespace std;
 class CSocketCanWorkerTread;
 class VscpRemoteTcpIf;
 class wxFile;
-
 
 class Csocketcan {
 public:
@@ -102,16 +101,16 @@ public:
      */
     void close(void);
 
-	/*!
-		Add event to send queue 
-	 */
-	bool addEvent2SendQueue(const vscpEvent *pEvent);
+    /*!
+            Add event to send queue 
+     */
+    bool addEvent2SendQueue(const vscpEvent *pEvent);
 
 public:
 
     /// Run flag
     bool m_bQuit;
-	
+
     /// Server supplied username
     wxString m_username;
 
@@ -126,45 +125,44 @@ public:
 
     /// Server supplied port
     short m_port;
-    
+
     /// socketcan interface to use
     wxString m_interface;
-    
+
     /// Filter
     vscpEventFilter m_vscpfilter;
-	
-	/// Get GUID for this interface.
-	//cguid m_ifguid;
+
+    /// Get GUID for this interface.
+    //cguid m_ifguid;
 
     /// Pointer to worker threads
     CSocketCanWorkerTread *m_pthreadWorker;
-    
-     /// VSCP server interface
+
+    /// VSCP server interface
     VscpRemoteTcpIf m_srv;
-	
-	// Queue
-	//VSCPEVENTLIST_SEND m_sendQueue;			// Things we should send
-	//VSCPEVENTLIST_RECEIVE m_receiveQueue;		// Thing this driver receive
-	
-	std::list<vscpEvent *> m_sendList;
-	std::list<vscpEvent *> m_receiveList;
-	
-	/*!
-        Event object to indicate that there is an event in the output queue
+
+    // Queue
+    //VSCPEVENTLIST_SEND m_sendQueue;           // Things we should send
+    //VSCPEVENTLIST_RECEIVE m_receiveQueue;	// Thing this driver receive
+
+    std::list<vscpEvent *> m_sendList;
+    std::list<vscpEvent *> m_receiveList;
+
+    /*!
+    Event object to indicate that there is an event in the output queue
      */
-    wxSemaphore m_semSendQueue;			
-	wxSemaphore m_semReceiveQueue;		
-	
-	// Mutex to protect the output queue
-	wxMutex m_mutexSendQueue;		
-	wxMutex m_mutexReceiveQueue;
+    wxSemaphore m_semSendQueue;
+    wxSemaphore m_semReceiveQueue;
+
+    // Mutex to protect the output queue
+    wxMutex m_mutexSendQueue;
+    wxMutex m_mutexReceiveQueue;
 
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-//				                Worker Treads
+//				Worker Treads
 ///////////////////////////////////////////////////////////////////////////////
-
 
 class CSocketCanWorkerTread : public wxThread {
 public:

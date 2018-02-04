@@ -4,17 +4,17 @@
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version
 // 2 of the License, or (at your option) any later version.
-// 
-// This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2014 
+// This file is part of the VSCP (http://www.vscp.org)
+//
+// Copyright (C) 2000-2018
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
-// 
+//
 // This file is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with this file see the file COPYING.  If not, write to
 // the Free Software Foundation, 59 Temple Place - Suite 330,
@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <signal.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -36,6 +37,8 @@
 #include <sys/time.h>
 #include <string.h>
 #include <syslog.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 #include <netdb.h>
 #include <linux/if_packet.h>
 #include <linux/if_ether.h>
@@ -220,7 +223,7 @@ int main(int argc, char **argv)
 
         pid_t pid, sid;
 
-        // Fork child	
+        // Fork child
         if (0 > (pid = fork())) {
             // Failure
             printf("Failed to fork.");
@@ -231,7 +234,7 @@ int main(int argc, char **argv)
 
         sid = setsid(); // Become session leader
         if (sid < 0) {
-            // Failure 
+            // Failure
             printf("Failed to become session leader.");
             return -1;
         }
@@ -247,7 +250,7 @@ int main(int argc, char **argv)
         int rv = chdir("/"); // Change working directory
         umask(0); // Clear out file mode creation mask
 
-        // Close out the standard file descriptors 
+        // Close out the standard file descriptors
         close(STDIN_FILENO);
         close(STDOUT_FILENO);
         close(STDERR_FILENO);
@@ -305,7 +308,7 @@ int main(int argc, char **argv)
     if (listen(listenSocket, 1) == -1) {
         error("listen failed");
     }
-    printf("opened %d:%d\n", inet_ntoa(local.sin_addr), ntohs(local.sin_port));
+    printf("opened %s:%d\n", inet_ntoa(local.sin_addr), ntohs(local.sin_port));
 
     while (TRUE) {
         struct sockaddr_in remote;
@@ -315,7 +318,7 @@ int main(int argc, char **argv)
             error("accept failed");
         }
 
-        printf("connected %d:%d\n", inet_ntoa(remote.sin_addr), ntohs(remote.sin_port));
+        printf("connected %s:%d\n", inet_ntoa(remote.sin_addr), ntohs(remote.sin_port));
         //clientWorker(clientSocket);
         printf("disconnected\n");
     }
@@ -367,7 +370,3 @@ void help(char *szPrgname)
     fprintf(stderr, "that should be used (default: /etc/canalworks.conf).\n");
     fprintf(stderr, "\t-g\tPrint the GNU copyleft info.\n");
 }
-
-
-
-

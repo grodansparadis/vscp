@@ -19,7 +19,8 @@ EXTRA_DIST = \
 	stdint_h.m4 \
 	uintmax_t.m4 \
 	ulonglong.m4 \
+	ax_check_enable_debug.m4\
+	ax_check_openssl.m4\
 	vscp.m4 \
 	wxwin.m4 \
 	$(NULL)
-

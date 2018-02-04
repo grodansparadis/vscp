@@ -4,7 +4,7 @@
 //
 // The MIT License (MIT)
 // 
-// Copyright (c) 2000-2017 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
+// Copyright (c) 2000-2018 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
 // 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -43,6 +43,7 @@
 #include <sys/times.h>
 #endif 
 
+#include <float.h>
 #include <vscp.h>
 #include <vscp_class.h>
 #include <vscp_type.h>
@@ -87,6 +88,47 @@ extern "C" {
         Return non zero if endiness is big endian
     */
     int vscp_bigEndian( void );
+    
+    /*
+     * Check two floats for equality
+     * @param A Float to compare
+     * @param B Float to compare
+     * @param maxRelDiff Maxdiff (see article)
+     * @return true if same, false if different (sort of)
+     * 
+     * https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/
+     */
+    
+    bool vscp_almostEqualRelativeFloat( float A, float B,
+                                            float maxRelDiff = FLT_EPSILON );
+    
+    /*!
+     * https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/
+     */
+    bool vscp_almostEqualUlpsAndAbsFloat( float A, 
+                                            float B,
+                                            float maxDiff, 
+                                            int maxUlpsDiff );
+    /*!
+     * https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/
+     */
+    bool vscp_almostEqualRelativeAndAbsFloat( float A, 
+                                            float B,
+                                            float maxDiff, 
+                                            float maxRelDiff = FLT_EPSILON );
+    
+    /*
+     * Check two floats for equality
+     * @param A Double to compare
+     * @param B Double to compare
+     * @param maxRelDiff Maxdiff (see article)
+     * @return true if same, false if different (sort of)
+     * 
+     * https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/
+     */
+    
+    bool vscp_almostEqualRelativeDouble( double A, double B,
+                                            double maxRelDiff = DBL_EPSILON );
 
     /*!
         Read a numerical value from a string
@@ -96,6 +138,8 @@ extern "C" {
      */
  
     int32_t vscp_readStringValue(const wxString& strval);
+    
+    
 
     /*!
         Convert string to lowercase
@@ -118,18 +162,40 @@ extern "C" {
         @return 0 if strings are the same
     */
     int vscp_strncasecmp(const char *s1, const char *s2, size_t len);
+    
+    void vscp_strlcpy( register char *dst, register const char *src, size_t n );
+    
+    char *vscp_strdup( const char *str );
+    
+    char *vscp_strndup( const char *ptr, size_t len );
+    
+    const char *vscp_strcasestr( const char *big_str, const char *small_str );
+    
+    char* vscp_stristr( char* str1, const char* str2 );
+    
+    char *vscp_trimWhiteSpace( char *str );
+    
+  
 
-
+    
     /*!
-        Stringify binary data. 	
-        @param to Pointer output buffer that holds the result. 
-        Output buffer must be twice as big as input,
-        because each byte takes 2 bytes in string representation
-        @param p Pointer to digest.
-        @param len Digest len
-    /
-    void vscp_bin2str( char *to, const unsigned char *p, size_t len ); 
-
+     * BASE64 decode wx string
+     * 
+     * @param str str to encode.
+     * @return true on success, false on failure.
+     * 
+     */
+    bool vscp_base64_wxdecode( wxString& str );
+    
+    /*!
+     * BASE64 encode wx string
+     * 
+     * @param str str to encode.
+     * @return true on success, false on failure.
+     * 
+     */
+    bool vscp_base64_wxencode( wxString& str );
+    
     /*!
         Get GMT time 
         http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.3
@@ -139,7 +205,7 @@ extern "C" {
     /*!
         Get ISO GMT datetime
     */
-    bool vscp_getISOTimeString( char *buf, size_t buf_len, time_t *t ); 
+    bool vscp_getISOTimeString( char *buf, size_t buf_len, time_t *t );
         
     
     /*!
@@ -148,7 +214,7 @@ extern "C" {
      *  @param Buffer holding input string. Buffer size must be large enough to
      *          hold expanded result.
      */ 
-    void vscp_toXMLEscape( char *temp_str );
+    bool vscp_XML_Escape( const char *src, char *dst, size_t dst_len );
 
     
     /*!
@@ -162,6 +228,15 @@ extern "C" {
     bool vscp_decodeBase64IfNeeded( wxString &wxstr, wxString &strResult );
     
     
+    /*!
+     * Parse IPv4 address and return net part and mask part
+     * 
+     * @param addr ipv4 address to parse (a.b.c.d/m)
+     * @param net Network part of address
+     * @param mask Mask part of address
+     * return 0 on error, 
+     */
+    int vscp_parse_ipv4_addr( const char *addr, uint32_t *net, uint32_t *mask );
     
     // ***************************************************************************
     //                             Measurement Helpers
@@ -796,53 +871,68 @@ extern "C" {
     /*!
      * Convert VSCP Event to JSON formated string
      */
-    void vscp_convertEventToJSON( vscpEvent *pEvent, wxString& strJSON );
+    bool vscp_convertEventToJSON( vscpEvent *pEvent, wxString& strJSON );
     
     /*!
      * Convert VSCP EventEx to JSON formated string
      */
-    void vscp_convertEventExToJSON( vscpEventEx *pEventEx, wxString& strJSON );
+    bool vscp_convertEventExToJSON( vscpEventEx *pEventEx, wxString& strJSON );
     
+    /*!
+     * Convert JSON string to event
+     */
+    bool vscp_convertJSONToEvent( wxString& strJSON, vscpEvent *pEvent );
+    
+    /*!
+     * Convert JSON string to eventex
+     */
+    bool vscp_convertJSONToEventEx( wxString& strJSON, vscpEventEx *pEventEx );
 
-
+    
+    
     
     /*!
      * Convert VSCP Event to XML formated string
      */
-    void vscp_convertEventToXML( vscpEvent *pEvent, wxString& strXML );
+    bool vscp_convertEventToXML( vscpEvent *pEvent, wxString& strXML );
+    
+    /*!
+     * Convert XML string to event
+     */
+    bool vscp_convertXMLToEvent( wxString& strXML, vscpEvent *pEvent );
     
     /*!
      * Convert VSCP EventEx to XML formated string
      */
-    void vscp_convertEventExToXML( vscpEventEx *pEventEx, wxString& strXML );
+    bool vscp_convertEventExToXML( vscpEventEx *pEventEx, wxString& strXML );
     
-    
-    
-    
+    /*!
+     * Convert XML string to EventEx
+     */
+    bool vscp_convertXMLToEventEx( wxString& strXML, vscpEventEx *pEventEx );
+   
     
     /*!
      * Convert VSCP Event to HTML formated string
      */
-    void vscp_convertEventToHTML( vscpEvent *pEvent, wxString& strHTML );
+    bool vscp_convertEventToHTML( vscpEvent *pEvent, wxString& strHTML );
     
     /*!
      * Convert VSCP EventEx to HTML formated string
      */
-    void vscp_convertEventExToHTML( vscpEventEx *pEventEx, wxString& strHTML );
+    bool vscp_convertEventExToHTML( vscpEventEx *pEventEx, wxString& strHTML );
+        
     
-    
-    
-    
-    
-     /*!
-     * Convert VSCP Event to XML formated string
-     */
-    void vscp_convertEventToXML( vscpEvent *pEvent, wxString& strXML );
     
     /*!
-     * Convert VSCP EventEx to XML formated string
+     * Set event datetime data from wxDateTime
      */
-    void vscp_convertEventExToXML( vscpEventEx *pEventEx, wxString& strXML );
+    bool vscp_setEventDateTime( vscpEvent *pEvent, wxDateTime& dt );
+    
+    /*!
+     * Set eventex datetime data from wxDateTime
+     */
+    bool vscp_setEventExDateTime( vscpEventEx *pEventEx, wxDateTime& dt );
     
     /*!
      * Set the event date to now
@@ -924,6 +1014,9 @@ extern "C" {
         @return true on success, false on failure.
     */
     bool vscp_writeFilterToString( const vscpEventFilter *pFilter, wxString& strFilter);
+    
+    
+    
 
     /*!
         Read a mask from a string
@@ -947,7 +1040,60 @@ extern "C" {
     bool vscp_writeMaskToString( const vscpEventFilter *pFilter, wxString& strFilter);
 
     
+    /*!
+     * Read both filter and mask from string
+     * 
+     * @param pFilter Pointer to VSCP filter structure which will receive filter
+     *                  mask data.
+     * @param strFilter Filter and mask in comma separated list
+     * @return true on success, false on failure.
+     */
+    bool vscp_readFilterMaskFromString( vscpEventFilter *pFilter, 
+                                            const wxString& strFilterMask);
     
+    /*!
+     * Read filter from XML coded string
+     * 
+     * <filter 
+     *      mask_priority="number"
+     *      mask_class="number"
+     *      mask_type="number"
+     *      mask_guid="GUID string"
+      *     filter_priority="number"
+     *      filter_class="number"
+     *      filter_type="number"
+     *      filter_guid="GUID string"
+     * />
+     */
+    bool vscp_readFilterMaskFromXML( vscpEventFilter *pFilter, const wxString& strFilter);
+    
+    /*!
+     * Write filter to XML coed string
+     */
+    bool vscp_writeFilterMaskToXML( vscpEventFilter *pFilter, wxString& strFilter);
+    
+    
+    /*!
+     * Read filter from JSNOM coded string
+     * 
+     * {
+     *      'mask_priority': number,
+     *      'mask_class': number,
+     *      'mask_type': number,
+     *      'mask_guid': 'string',
+     *      'filter_priority'; number,
+     *      'filter_class': number,
+     *      'filter_type': number,
+     *      'filter_guid' 'string'
+     * }
+     * 
+     */
+    bool vscp_readFilterMaskFromJSON( vscpEventFilter *pFilter, const wxString& strFilter);
+    
+    /*
+     * Write filter to JSON coded string
+     */
+    bool vscp_writeFilterMaskToJSON( vscpEventFilter *pFilter, wxString& strFilter);
     
     
     
@@ -1002,7 +1148,7 @@ extern "C" {
     bool vscp_writeVscpDataToString(const vscpEvent *pEvent, 
                                         wxString& str, 
                                         bool bUseHtmlBreak = false,
-                                        bool bBreak = true );
+                                        bool bBreak = false );
 
 
     /*!
@@ -1022,16 +1168,25 @@ extern "C" {
                                                 bool bBreak = true );
 
     /*!
-      Set VSCP data from a string
+      Set VSCP Event data from a string
       @param pEvent Pointer to a VSCP event to write parsed data to.
       @param str A string with comma or whitespace separated data in decimal
       or hexadecimal form. Data can span multiple lines.
       @return true on success, false on failure.
     */
  
-    bool vscp_setVscpDataFromString(vscpEvent *pEvent, const wxString& str);
+    bool vscp_setVscpEventDataFromString(vscpEvent *pEvent, const wxString& str);
 
-
+    /*!
+      Set VSCP EventEx data from a string
+      @param pEventEx Pointer to a VSCP event to write parsed data to.
+      @param str A string with comma or whitespace separated data in decimal
+      or hexadecimal form. Data can span multiple lines.
+      @return true on success, false on failure.
+    */
+ 
+    bool vscp_setVscpEventExDataFromString(vscpEventEx *pEventEx, const wxString& str);
+    
     /*!
       Set VSCP data from a string
       @param pData Pointer to a unsigned byte array to write parsed data to.
@@ -1189,8 +1344,8 @@ extern "C" {
      * @return True on success, false on failure.
      */
     bool vscp_writeEventToUdpFrame( uint8_t *frame, 
-                                        size_t len, uint8_t 
-                                        pkttype, 
+                                        size_t len, 
+                                        uint8_t pkttype, 
                                         const vscpEvent *pEvent );
     
     /*!
@@ -1245,15 +1400,15 @@ extern "C" {
      * @param len This is the length of the UDP frame to be encrypted. This 
      *          length includes the packet tye in the first byte.
      * @param key This is a pointer to the secret encryption key. This key should 
-     *          be 128 bytes for AES128, 192 bytes for AES192, 256 bytes for AES256.
+     *          be 128 bits for AES128, 192 bits for AES192, 256 bits for AES256.
      * @param iv Pointer to the initialization vector. Should always point to a 128 bit
      *          content. If NULL the iv will be created from random system data. In both
      *          cases the end result will have the iv appended to the encrypted block.
      * @param nAlgorithm The VSCP defined algorithm to encrypt the frame with.
-     * @return True on success, false on failure.
+     * @return Packet length on success, zero on failure.
      * 
      */
-    bool vscp_encryptVscpUdpFrame( uint8_t *output, 
+    size_t vscp_encryptVscpUdpFrame( uint8_t *output, 
                                         uint8_t *input, 
                                         size_t len,
                                         const uint8_t *key,
@@ -1285,7 +1440,108 @@ extern "C" {
                                         const uint8_t *key,
                                         const uint8_t *iv,
                                         uint8_t nAlgorithm );
+    
+    
+    ///////////////////////////////////////////////////////////////////////////
+    //                         Password/key handling
+    ///////////////////////////////////////////////////////////////////////////
+    
+    
+    /*!
+     * Calculate md5 hex digest for buf
+     * 
+     * @param digest Buffer (33 bytes) that will receive the digest in hex format.
+     * @param buf Data to calculate md5 on.
+     * @param len Len of input data.
+     */
+    void vscp_md5( char *digest, const unsigned char *buf, size_t len );
+    
+       /*!
+        Stringify binary data. 	
+        @param to Pointer output buffer that holds the result. 
+        Output buffer must be twice as big as input,
+        because each byte takes 2 bytes in string representation
+        @param p Pointer to digest.
+        @param len Digest len
+    */
+    void vscp_byteArray2HexStr( char *to, const unsigned char *p, size_t len );
+    
+    /*!
+     * Convert a hext string to a byte array
+     * 
+     * @param array Byte array that will receive result.
+     * @param size Size of byte array.
+     * @param hextstr Hex string that should be converted.
+     * @return Number of bytes written to the byte array.
+     * 
+     */
+    
+    size_t vscp_hexStr2ByteArray( uint8_t *array, 
+                                    size_t size, 
+                                    const char *hexstr );
+    
+    
+    /*!
+     * Get components form a hashed password
+     * 
+     * VSCP passwords is stored as two hex strings separated with a ";"-
+     * The first string is the salt, the second the hashed password.
+     * 
+     * @param pSalt Pointer to a 16 byte buffer that will receive the salt.
+     * @param pHash Pointer to a 32 byte buffer that will receive the salt.
+     * @param stored_pw Stored password on the form salt;hash
+     * @return True on success, false on failure.
+     * 
+     */
+    bool vscp_getHashPasswordComponents( uint8_t *pSalt, 
+                                            uint8_t *pHash, 
+                                            const wxString &stored_pw );
+    
+    /*!
+     * Make password hash with prepended salt from clear text password.
+     * 
+     * @param result Will get hex hash string with random salt prepended separated
+     *          with ";". 
+     * @param password Clear text password to be hashed.
+     * @return true on success, false otherwise.
+     */
+    bool vscp_makePasswordHash( wxString &result, 
+                                    const wxString &password,
+                                    uint8_t *pSalt = NULL );
+    
+    /*!
+     * Validate password
+     * 
+     * @param stored_pw Stored password on the form "salt;hash"
+     * @param password Password to test.
+     * @return true on success, false otherwise.
+     */
 
+    bool vscp_isPasswordValid( const wxString &stored_pw, 
+                                    const wxString &password );
+    
+    
+    /*!
+     * Get salt
+     * 
+     * @param Pointer to byte array to write salt to.
+     * @param len Number of bytes to generate.
+     * @return True on success.
+     * 
+     */
+    bool vscp_getSalt( uint8_t *buf, size_t len );
+    
+    
+    /*!
+     * Get salt as hex string
+     * 
+     * @param strSalt String that will get the salt in hex format.
+     * @param len Number of bytes to generate.
+     * @return True on success.
+     */
+    bool vscp_getSaltHex( wxString &strSalt, size_t len );
+    
+    
 #ifdef __cplusplus
 }
 #endif

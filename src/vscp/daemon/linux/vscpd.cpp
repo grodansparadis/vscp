@@ -1,24 +1,28 @@
-// vscpd.cpp : Defines the class behaviours for the application.
+// vscpd.cpp : Defines the class behaviour for the application.
 //
-// This program is free software; you can redistribute it and/or
-// modify it under the terms of the GNU General Public License
-// as published by the Free Software Foundation; either version
-// 2 of the License, or (at your option) any later version.
+// This file is part of the VSCP (http://www.vscp.org) 
 //
-// This file is part of the VSCP (http://www.vscp.org)
-//
-// Copyright (C) 2000-2017
-// Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
-//
-// This file is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with this file see the file COPYING.  If not, write to
-// the Free Software Foundation, 59 Temple Place - Suite 330,
-// Boston, MA 02111-1307, USA.
+// The MIT License (MIT)
+// 
+// Copyright (c) 2000-2018 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
+// 
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+// 
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 //
 
 #include <stdio.h>
@@ -49,9 +53,9 @@
 #include <wx/app.h>
 #include <wx/log.h>
 #include <wx/stdpaths.h>
+#include <wx/dir.h>
 
 #include "vscpd.h"
-#include <crc.h>
 #include <controlobject.h>
 #include <version.h>
 
@@ -61,23 +65,30 @@
 int gbStopDaemon;
 int gnDebugLevel = 0;
 bool gbDontRunAsDaemon = false;
-bool gbRestart = false;   
+bool gbRestart = false;
+wxString systemKey;
 
 CControlObject *gpobj;
 
 void copyleft(void);
 void help(char *szPrgname);
+void createFolderStuct(wxString& rootFolder);
 
-void _sighandler(int sig)
+void _sighandler( int sig )
 {
+    fprintf(stderr, "VSCPD: signal received, forced to stop.\n");
+    syslog( LOG_CRIT, "VSCPD: signal received, forced to stop.: %m");    
+    gpobj->logMsg(_("VSCPD: signal received, forced to stop."));
     gpobj->m_bQuit = true;
     gbStopDaemon = true;
     gbRestart = false;
-    syslog(LOG_CRIT, "vscpd: signal received, forced to stop.: %m");
-    wxLogError(_("vscpd: signal received, forced to stop."));
-    gpobj->logMsg(_("vscpd: signal received, forced to stop."));
+    wxSleep( 1 );
+    fprintf(stderr, "VSCPD: Shutdown in progress 1.\n");
+    wxSleep( 1 );
+    fprintf(stderr, "VSCPD: Shutdown in progress 2.\n");
+    wxSleep( 1 );
+    fprintf(stderr, "VSCPD: Shutdown in progress 3.\n");
 }
-
 
 /////////////////////////////////////////////////////////////////////////////
 // VSCPApp
@@ -92,61 +103,70 @@ VSCPApp::VSCPApp()
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// The one and only app object
+// The one and only app. object
 //
 
-int main(int argc, char **argv)
+int main( int argc, char **argv )
 {
     int arg = 0;
-    wxString rootFolder;    // Folder where VSCP files will be
+    wxString rootFolder;    // Folder where VSCP files & folders will be located
     wxString strcfgfile;    // Points to XML configuration file
-
+    
+    fprintf( stderr, "Prepare to start vscpd...\n" );
+    
     // Ignore return value from defunct processes
     signal( SIGCHLD, SIG_IGN );
-    
-    crcInit();
+
+    crcInit(); 
 
     wxInitializer initializer;
     if ( !::wxInitialize() ) {
-        fprintf(stderr, "Failed to initialize the wxWindows library, aborting.\n");
+        fprintf( stderr, 
+                    "[vscpd] Failed to initialize the wxWindows library, "
+                    "aborting.\n");
+        syslog( LOG_CRIT, 
+                    "[vscpd] Failed to initialize the wxWindows library, "
+                    "aborting.\n");
         return -1;
     }
 
-    gpobj = new CControlObject();
-    
 #ifdef WIN32
     rootFolder = _("/programdata/vscp");
-#else    
+#else
     rootFolder = _("/srv/vscp/");
-#endif    
+#endif
 
     strcfgfile = wxStandardPaths::Get().GetConfigDir() + _("/vscp/vscpd.conf");
     gbStopDaemon = false;
 
     VSCPApp theApp;
-
     wxSocketBase::Initialize();
 
-    while ((arg = getopt(argc, argv, "d:c:f:hgs")) != EOF) {
+    while ( ( arg = getopt( argc, argv, "d:c:f:k:hgs" ) ) != EOF ) {
 
         switch (arg) {
-
+ 
         case 's':
-            wxPrintf(_("Stay Hungry. Stay Foolish.\n"));
-            wxPrintf(_("I will ***NOT*** run as daemon! (ctrl+c to terminate)\n\n"));
+            wxPrintf( _("Stay Hungry. Stay Foolish.\n") );
+            wxPrintf( _("I will ***NOT*** run as daemon! "
+                        "(ctrl+c to terminate)\n\n"));
             gbDontRunAsDaemon = true;
             break;
 
         case 'c':
-            strcfgfile = wxString(optarg, wxConvUTF8);
+            strcfgfile = wxString( optarg, wxConvUTF8 );
             break;
-            
+
         case 'r':
-            rootFolder = wxString(optarg, wxConvUTF8);
+            rootFolder = wxString( optarg, wxConvUTF8 );
+            break;
+
+        case 'k':
+            systemKey = wxString( optarg, wxConvUTF8 );
             break;
 
         case 'd':
-            gnDebugLevel = atoi(optarg);
+            gnDebugLevel = atoi( optarg );
             break;
 
         case 'g':
@@ -159,39 +179,35 @@ int main(int argc, char **argv)
             help(argv[0]);
             exit(-1);
         }
-        
+
     }
 
-    gpobj->logMsg( _("VSCPD: Configfile =") + strcfgfile + _(" \n") );
+    fprintf( stderr, "[vscpd] Configfile = %s\n",
+                (const char *)strcfgfile.mbc_str() );
+    
     if ( !theApp.init( strcfgfile, rootFolder ) ) {
-        fprintf(stderr,"VSCPD: Failed to configure. Terminating.\n");
-        wxLogDebug(_("VSCP: Failed to configure. Terminating.\n"));
+        syslog( LOG_CRIT, "[vscpd] Failed to configure. Terminating.\n");
+        fprintf( stderr, "VSCPD: Failed to configure. Terminating.\n");
         exit( -1 );
     }
 
-    wxLogDebug(_("VSCPD: Deleting the controlobject."));
-    delete gpobj;
-
-    wxLogDebug(_("VSCPD: Bye, bye."));
+    fprintf( stderr, "VSCPD: Bye, bye.\n");
     exit( 0 );
 }
-
-
 
 /////////////////////////////////////////////////////////////////////////////
 // initialisation
 
 BOOL VSCPApp::init(wxString& strcfgfile, wxString& rootFolder )
 {
-    
-    if ( !gbDontRunAsDaemon ) {
+    pid_t pid, sid;
 
-        pid_t pid, sid;
+    if ( !gbDontRunAsDaemon ) {
 
         // Fork child
         if (0 > (pid = fork())) {
             // Failure
-            gpobj->logMsg(_("Failed to fork.\n"));
+            syslog( LOG_CRIT, "Failed to fork.\n" );
             return -1;
         }
         else if (0 != pid) {
@@ -199,22 +215,10 @@ BOOL VSCPApp::init(wxString& strcfgfile, wxString& rootFolder )
         }
 
         sid = setsid(); // Become session leader
-        if (sid < 0) {
+        if ( sid < 0 ) {
             // Failure
-            gpobj->logMsg(_("Failed to become session leader.\n"));
+            syslog( LOG_CRIT, "Failed to become session leader.\n" );
             return -1;
-        }
-
-        // Write pid to file
-        FILE *pFile;
-        pFile = fopen("/var/run/vscpd/vscpd.pid", "w");
-        if (NULL != pFile) {
-            fprintf(pFile, "%d\n", sid);
-            fclose(pFile);
-        }
-
-        if ( chdir("/") ) { // Change working directory
-            gpobj->logMsg(_("VSCPD: Failed to change dir to rootdir"));
         }
 
         umask(0); // Clear out file mode creation mask
@@ -224,19 +228,38 @@ BOOL VSCPApp::init(wxString& strcfgfile, wxString& rootFolder )
         close(STDOUT_FILENO);
         close(STDERR_FILENO);
 
-        if (open("/", 0)) {
-            gpobj->logMsg(_("VSCPD: open / not 0: %m"));
+        if ( open("/", 0 ) ) {
+            syslog( LOG_CRIT, "VSCPD: open / not 0: %m" );
         }
 
         dup2(0, 1);
         dup2(0, 2);
-        
-    }    
+
+    }
     
+    signal(SIGHUP, _sighandler );
+
+    // Write pid to file
+    FILE *pFile;
+    pFile = fopen("/var/run/vscpd/vscpd.pid", "w");
+    if ( NULL != pFile ) {
+        syslog( LOG_CRIT, "%d\n", sid );
+        fprintf( pFile, "%d\n", sid );
+        fclose( pFile );
+    }
+    
+    // Create folder structure
+    createFolderStuct( rootFolder );
+
+    // Change working directory to root folder
+    if ( chdir( (const char *)rootFolder.mbc_str() ) ) {
+        syslog( LOG_CRIT, "VSCPD: Failed to change dir to rootdir" );
+        fprintf( stderr, "VSCPD: Failed to change dir to rootdir" );
+        chdir("/tmp"); // security measure
+    }
 
     struct sigaction my_action;
 
-        
     // Ignore SIGPIPE
     my_action.sa_handler = SIG_IGN;
     my_action.sa_flags = SA_RESTART;
@@ -261,44 +284,68 @@ BOOL VSCPApp::init(wxString& strcfgfile, wxString& rootFolder )
     my_action.sa_handler = _sighandler;
     my_action.sa_flags = SA_RESTART;
     sigaction(SIGTERM, &my_action, NULL);
+    
+    // Redirect SIGHUP
+    my_action.sa_handler = _sighandler;
+    my_action.sa_flags = SA_RESTART;
+    sigaction(SIGHUP, &my_action, NULL);
 
 
     do {
-        
+
         gbRestart = false;
         
-        wxLogDebug(_("VSCPD: init."));
+        // Create the control object
+        gpobj = new CControlObject();
+        
+        // Set system key
+        vscp_hexStr2ByteArray( gpobj->m_systemKey,
+                                32,
+                                (const char *)systemKey.mbc_str() );
+
+        fprintf( stderr, "VSCPD: init.\n");
         if ( !gpobj->init( strcfgfile, rootFolder ) ) {
             fprintf(stderr, "Can't initialise daemon. Exiting.\n");
             syslog(LOG_CRIT, "Can't initialise daemon. Exiting.");
             return FALSE;
         }
 
-        wxLogDebug(_("VSCPD: run."));
+        fprintf( stderr, "VSCPD: run.\n");
         if ( !gpobj->run() ) {
             fprintf(stderr, "Unable to start the VSCPD application. Exiting.\n");
             syslog(LOG_CRIT, "Unable to start the VSCPD application. Exiting.");
             return FALSE;
         }
 
-        wxLogDebug(_("VSCPD: cleanup"));
+        fprintf( stderr, "VSCPD: cleanup.\n");
         if ( !gpobj->cleanup() ) {
             fprintf(stderr, "Unable to clean up the VSCPD application.\n");
             syslog( LOG_CRIT, "Unable to clean up the VSCPD application.");
             return FALSE;
         }
         
+        fprintf( stderr, "VSCPD: cleanup done.\n");
+
         if ( gbRestart ) {
-            wxLogDebug(_("VSCPD: Will try to restart."));
+            syslog( LOG_CRIT, "VSCPD: Will try to restart.\n" );
+            fprintf( stderr, "VSCPD: Will try to restart.\n" );
         }
         else {
-            wxLogDebug(_("VSCPD: Will end things."));
+            syslog( LOG_CRIT, "VSCPD: Will end things.\n" );
+            fprintf( stderr, "VSCPD: Will end things.\n" );
         }
-        
+                
+        fprintf( stderr, "VSCPD: Deleting the control object.\n");
+        delete gpobj;
+
     } while ( gbRestart );
 
     // Remove the pid file
     unlink("/var/run/vscp/vscpd/vscpd.pid");
+    
+    fprintf( stderr, "VSCPD: Yes we are leaving this world...\n");
+ 
+    gpobj = NULL;
 
     return TRUE;
 }
@@ -327,11 +374,9 @@ void copyleft(void)
     wxPrintf(_("but WITHOUT ANY WARRANTY; without even the implied warranty of\n"));
     wxPrintf(_("MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"));
     wxPrintf(_("\n"));
-    wxPrintf(_("GNU General Public License for more details.\n"));
+    wxPrintf(_("Check the MIT license for more details.\n"));
     wxPrintf(_("\n"));
-    wxPrintf(_("You should have received a copy of the GNU General Public License\n"));
-    wxPrintf(_("along with this program; if not, write to the Free Software\n"));
-    wxPrintf(_("Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.\n\n"));
+
 }
 
 
@@ -340,16 +385,106 @@ void copyleft(void)
 
 void help(char *szPrgname)
 {
-    fprintf(stderr, "Usage: %s [-ahg] [-c command-file] -dn\n", szPrgname);
+    fprintf(stderr, "Usage: %s [-ahg] [-c command-file] [-c key] -dn\n", szPrgname);
     fprintf(stderr, "\t-h\tThis help message.\n");
     fprintf(stderr, "\t-s\tStandalone (don't run as daemon). \n");
     fprintf(stderr, "\t-r\tSpecify VSCP root folder. \n");
     fprintf(stderr, "\t-c\tSpecify a configuration file. \n");
-    fprintf(stderr, "\t-d\tDebug level. 0=None, 99=Don't run as daemon. ");
+    fprintf(stderr, "\t-k\t32 byte encryption key string in hex format. \n");
+    fprintf(stderr, "\t-d\tDebug level (0-2). 0=Default. ");
     fprintf(stderr, "that should be used (default: /etc/canalworks.conf).\n");
     fprintf(stderr, "\t-g\tPrint the GNU copyleft info.\n");
 }
 
 
+///////////////////////////////////////////////////////////////////////////////
+// createFolderStuct
+//
 
-
+void createFolderStuct( wxString& rootFolder )
+{
+    if ( !wxDir::Exists( rootFolder + _("/certs") ) ) {
+        wxDir::Make( rootFolder + _("/certs"), 
+                wxS_DIR_DEFAULT,
+                wxPATH_MKDIR_FULL );
+    }
+    
+    if ( !wxDir::Exists( rootFolder + _("/web/images") ) ) {
+        wxDir::Make( rootFolder + _("/web/images"), 
+                wxS_DIR_DEFAULT,
+                wxPATH_MKDIR_FULL );
+    }
+    
+    if ( !wxDir::Exists( rootFolder + _("/web/js") ) ) {
+        wxDir::Make( rootFolder + _("/web/js"), 
+                wxS_DIR_DEFAULT,
+                wxPATH_MKDIR_FULL );
+    }
+    
+    if ( !wxDir::Exists( rootFolder + _("/web/service") ) ) {
+        wxDir::Make( rootFolder + _("/web/service"), 
+                wxS_DIR_DEFAULT,
+                wxPATH_MKDIR_FULL );
+    }
+    
+    if ( !wxDir::Exists( rootFolder + _("/drivers/level1") ) ) {
+        wxDir::Make( rootFolder + _("/drivers/level1"), 
+                wxS_DIR_DEFAULT,
+                wxPATH_MKDIR_FULL );
+    }
+    
+    if ( !wxDir::Exists( rootFolder + _("/drivers/level2") ) ) {
+        wxDir::Make( rootFolder + _("/drivers/level2"), 
+                wxS_DIR_DEFAULT,
+                wxPATH_MKDIR_FULL );
+    }
+    
+    if ( !wxDir::Exists( rootFolder + _("/drivers/level3") ) ) {
+        wxDir::Make( rootFolder + _("/drivers/level3"), 
+                wxS_DIR_DEFAULT,
+                wxPATH_MKDIR_FULL );
+    }
+    
+    if ( !wxDir::Exists( rootFolder + _("/actions") ) ) {
+        wxDir::Make( rootFolder + _("/actions"), 
+                wxS_DIR_DEFAULT,
+                wxPATH_MKDIR_FULL );
+    }
+    
+    if ( !wxDir::Exists( rootFolder + _("/scripts") ) ) {
+        wxDir::Make( rootFolder + _("/scripts"), 
+                wxS_DIR_DEFAULT,
+                wxPATH_MKDIR_FULL );
+    }
+    
+    if ( !wxDir::Exists( rootFolder + _("/tables") ) ) {
+        wxDir::Make( rootFolder + _("/tables"), 
+                wxS_DIR_DEFAULT,
+                wxPATH_MKDIR_FULL );
+    }
+    
+    if ( !wxDir::Exists( rootFolder + _("/logs") ) ) {
+        wxDir::Make( rootFolder + _("/logs"), 
+                wxS_DIR_DEFAULT,
+                wxPATH_MKDIR_FULL );
+    }
+    
+    if ( !wxDir::Exists( rootFolder + _("/ux") ) ) {
+        wxDir::Make( rootFolder + _("/ux"), 
+                wxS_DIR_DEFAULT,
+                wxPATH_MKDIR_FULL );
+    }
+    
+    if ( !wxDir::Exists( rootFolder + _("/upload") ) ){
+        wxDir::Make( rootFolder + _("/upload"), 
+                wxS_DIR_DEFAULT,
+                wxPATH_MKDIR_FULL );
+    }
+    
+    if ( !wxDir::Exists( rootFolder + _("/mdf") ) ) {
+        wxDir::Make( rootFolder + _("/mdf"), 
+                wxS_DIR_DEFAULT,
+                wxPATH_MKDIR_FULL );
+    }
+    
+}   

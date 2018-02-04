@@ -1,12 +1,12 @@
 // File: vscpmulticast.cpp
 //
-// VSCP Works
+// Receiving multicast frames (VSCP Works)
 //
 // This file is part of the VSCP (http://www.vscp.org) 
 //
 // The MIT License (MIT)
 // 
-// Copyright (c) 2000-2017 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
+// Copyright (c) 2000-2018 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
 // 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -96,7 +96,7 @@ void *worksMulticastThread::Entry()
 
     int sock;                                               // socket descriptor 
     struct sockaddr_in mc_addr;                             // socket address structure  
-    unsigned short port = VSCP_MULTICAST_ANNNOUNCE_PORT;    // multicast port 
+    unsigned short port = VSCP_DEFAULT_MULTICAST_PORT;      // multicast port 
     unsigned char ttl = 1;                                  // time to live (hop count) 
     int flag_on = 1;                                        // socket option flag 
 

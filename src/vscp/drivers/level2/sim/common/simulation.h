@@ -7,7 +7,7 @@
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2017 Ake Hedman, 
+// Copyright (C) 2000-2018 Ake Hedman, 
 // Grodans Paradis AB, <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
@@ -22,8 +22,8 @@
 //
 
 
-#if !defined(AFX_VSCPLOG_H__6F5CD90E_ACF7_459A_9ACB_849A57595639__INCLUDED_)
-#define AFX_VSCPLOG_H__6F5CD90E_ACF7_459A_9ACB_849A57595639__INCLUDED_
+#if !defined(VSCPSIMULATION_H__INCLUDED_)
+#define VSCPSIMULATION_H__INCLUDED_
 
 #ifdef WIN32
 #include <windows.h>

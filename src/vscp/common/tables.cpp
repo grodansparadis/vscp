@@ -1,23 +1,28 @@
 // tables.cpp
 //
-// This program is free software; you can redistribute it and/or
-// modify it under the terms of the GNU General Public License
-// as published by the Free Software Foundation; either version
-// 2 of the License, or (at your option) any later version.
-// 
 // This file is part of the VSCP (http://www.vscp.org) 
-// Copyright (C) 2000-2017 
-// Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
+//
+// The MIT License (MIT)
 // 
-// This file is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
+// Copyright (c) 2000-2018 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
 // 
-// You should have received a copy of the GNU General Public License
-// along with this file see the file COPYING.  If not, write to
-// the Free Software Foundation, 59 Temple Place - Suite 330,
-// Boston, MA 02111-1307, USA.
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+// 
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 //
 
 
@@ -1249,6 +1254,208 @@ bool CUserTableObjList::addTable( CVSCPTable *pTable )
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// createTableFromString
+//
+
+bool CUserTableObjList::createTableFromString( const wxString &strCreate )
+{
+    wxString str;
+    wxString strCreateXML = "<tables><table ";
+    
+    wxStringTokenizer tkz( strCreate, _(";"), wxTOKEN_RET_EMPTY_ALL );
+
+    // name = "test_table2"
+    if (!tkz.HasMoreTokens()) {
+        return false;
+    }
+    
+    str = tkz.GetNextToken();
+    strCreateXML += "name = \""  + str + "\" ";
+    
+    
+    // benable = "true"
+    if (!tkz.HasMoreTokens()) {
+        return false;
+    }
+    
+    str = tkz.GetNextToken();
+    strCreateXML += "benable = \""  + str + "\" ";
+     
+    
+    // binmemory = "false"
+    if (!tkz.HasMoreTokens()) {
+        return false;
+    }
+    
+    str = tkz.GetNextToken();
+    strCreateXML += "binmemory = \""  + str + "\" ";
+     
+    
+    // type = "dynamic"
+    if (!tkz.HasMoreTokens()) {
+        return false;
+    }
+    
+    str = tkz.GetNextToken();
+    strCreateXML += "type = \""  + str + "\" ";
+    
+ 
+    // size = "0"
+    if (!tkz.HasMoreTokens()) {
+        return false;
+    }
+    
+    str = tkz.GetNextToken();
+    strCreateXML += "size = \""  + str + "\" ";
+    
+
+    // owner = "admin"
+    if (!tkz.HasMoreTokens()) {
+        return false;
+    }
+    
+    str = tkz.GetNextToken();
+    strCreateXML += "owner = \""  + str + "\" ";
+    
+    
+    // rights = "0x777"
+    if (!tkz.HasMoreTokens()) {
+        return false;
+    }
+    
+    str = tkz.GetNextToken();
+    strCreateXML += "rights = \""  + str + "\" ";
+    
+    
+    // title = "This is a title"
+    if (!tkz.HasMoreTokens()) {
+        return false;
+    }
+    
+    str = tkz.GetNextToken();
+    strCreateXML += "title = \""  + str + "\" ";
+    
+    
+    // xname = "This the x-lable"
+    if (!tkz.HasMoreTokens()) {
+        return false;
+    }
+    
+    str = tkz.GetNextToken();
+    strCreateXML += "xname = \""  + str + "\" ";
+
+        
+    // yname = "This is the y-label"
+    if (!tkz.HasMoreTokens()) {
+        return false;
+    }
+    
+    str = tkz.GetNextToken();
+    strCreateXML += "yname = \""  + str + "\" ";
+      
+
+    // note = "This is a note"
+    if (!tkz.HasMoreTokens()) {
+        return false;
+    }
+    
+    str = tkz.GetNextToken();
+    strCreateXML += "note = \""  + str + "\" ";
+    
+    
+    // sqlcreate = "SQL create expression"
+    if (!tkz.HasMoreTokens()) {
+        return false;
+    }
+    
+    str = tkz.GetNextToken();
+    strCreateXML += "sqlcreate = \""  + str + "\" ";
+    
+    
+    // sqlinsert = "SQL insert expression"
+    if (!tkz.HasMoreTokens()) {
+        return false;
+    }
+    
+    str = tkz.GetNextToken();
+    strCreateXML += "sqlinsert = \""  + str + "\" ";
+    
+
+    // sqldelete = "SQL delete expression"
+    if (!tkz.HasMoreTokens()) {
+        return false;
+    }
+    
+    str = tkz.GetNextToken();
+    strCreateXML += "sqldelete = \""  + str + "\" ";
+    
+    
+    // description = "This is the description"
+    if (!tkz.HasMoreTokens()) {
+        return false;
+    }
+    
+    str = tkz.GetNextToken();
+    strCreateXML += "description = \""  + str + "\" ";
+    
+    
+    // vscpclass = "10"
+    if (!tkz.HasMoreTokens()) {
+        return false;
+    }
+    
+    str = tkz.GetNextToken();
+    strCreateXML += "vscpclass = \""  + str + "\" ";
+    
+    // vscptype = "6"
+    if (!tkz.HasMoreTokens()) {
+        return false;
+    }
+    
+    str = tkz.GetNextToken();
+    strCreateXML += "vscptype = \""  + str + "\" ";
+    
+    
+    // sensorindex = "0"
+    if (!tkz.HasMoreTokens()) {
+        return false;
+    }
+    
+    str = tkz.GetNextToken();
+    strCreateXML += "sensorindex = \""  + str + "\" ";
+    
+    
+    // unit = "1"
+    if (!tkz.HasMoreTokens()) {
+        return false;
+    }
+    
+    str = tkz.GetNextToken();
+    strCreateXML += "unit = \""  + str + "\" ";
+    
+    // zone = "0"
+    if (!tkz.HasMoreTokens()) {
+        return false;
+    }
+    
+    str = tkz.GetNextToken();
+    strCreateXML += "zone = \""  + str + "\" ";
+    
+    // subzone = "0"
+    if (!tkz.HasMoreTokens()) {
+        return false;
+    }
+    
+    str = tkz.GetNextToken();
+    strCreateXML += "subzone = \""  + str + "\" ";
+    
+    strCreateXML += "/></tables>";
+    
+    return createTableFromXML( strCreateXML );
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
 // createTableFromXML
 //
 
@@ -1632,7 +1839,7 @@ bool CUserTableObjList::isTableInDB( wxString& name )
         return false;
     }
     
-    int cnt;    
+    int cnt = 0;    
     if ( SQLITE_ROW == sqlite3_step( ppStmt ) ) {
         cnt = sqlite3_column_int( ppStmt, 0 );
     }
@@ -1690,7 +1897,8 @@ bool CUserTableObjList::addTableToDB( CVSCPTable& table )
     if ( SQLITE_OK != sqlite3_exec( gpobj->m_db_vscp_daemon, 
                                         psql, NULL, NULL, &zErrMsg ) ) {            
         sqlite3_free(psql);
-        gpobj->logMsg( wxString::Format( _("addTableToDB: Unable to insert record in table. [%s] Err=%s\n"), 
+        gpobj->logMsg( wxString::Format( _("addTableToDB: Unable to insert "
+                                           "record in table. [%s] Err=%s\n"), 
                                             psql, zErrMsg ) ); 
         return false;
     }
@@ -1745,7 +1953,8 @@ bool CUserTableObjList::updateTableToDB( CVSCPTable& table )
     
     if ( SQLITE_OK != sqlite3_exec( gpobj->m_db_vscp_daemon, 
                                         sql.mbc_str(), NULL, NULL, &zErrMsg ) ) {            
-        gpobj->logMsg( wxString::Format( _("updateTableToDB: Unable to update record in table. [%s] Err=%s\n"), 
+        gpobj->logMsg( wxString::Format( _("updateTableToDB: Unable to update "
+                                           "record in table. [%s] Err=%s\n"), 
                                             sql.mbc_str(), zErrMsg ) ); 
         return false;
     }
@@ -1778,7 +1987,8 @@ bool CUserTableObjList::loadTablesFromDB( void )
                                             -1,
                                             &ppStmt,
                                             NULL ) ) {
-        wxstr = wxString::Format( _("Load tables: Error=%s"), sqlite3_errstr( sqlite3_errcode( gpobj->m_db_vscp_daemon ) ) );
+        wxstr = wxString::Format( _("Load tables: Error=%s"), 
+                 sqlite3_errstr( sqlite3_errcode( gpobj->m_db_vscp_daemon ) ) );
         gpobj->logMsg( wxstr );
         m_mutexTableList.Unlock();
         return false;
@@ -1797,7 +2007,8 @@ bool CUserTableObjList::loadTablesFromDB( void )
         uint32_t size;
         
         // link_to_user
-        link_to_user = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_TABLE_LINK_TO_USER );
+        link_to_user = sqlite3_column_int( ppStmt, 
+                                            VSCPDB_ORDINAL_TABLE_LINK_TO_USER );
         pUserItem = gpobj->m_userList.getUser( link_to_user );
         if ( NULL == pUserItem ) {
             gpobj->logMsg( _("Load tables: Links to user that can't be found, skipped.\n") );
@@ -1811,7 +2022,8 @@ bool CUserTableObjList::loadTablesFromDB( void )
         bMemory = sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_TABLE_BMEM ) ? true : false;
         
         // name
-        if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_TABLE_NAME ) ) ) {
+        if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, 
+                                            VSCPDB_ORDINAL_TABLE_NAME ) ) ) {
             name = wxString::FromUTF8( p );
         }        
         
@@ -1835,46 +2047,54 @@ bool CUserTableObjList::loadTablesFromDB( void )
         wxString xname, yname, title, note, sql_create, sql_insert, sql_delete, description;
         
         // xname
-        if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_TABLE_XNAME ) ) ) {
+        if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, 
+                                              VSCPDB_ORDINAL_TABLE_XNAME ) ) ) {
             xname = wxString::FromUTF8( p );
         }
         
         // yname
-        if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_TABLE_YNAME ) ) ) {
+        if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, 
+                                            VSCPDB_ORDINAL_TABLE_YNAME ) ) ) {
             yname = wxString::FromUTF8( p );
         }
         
         // title
-        if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_TABLE_TITLE ) ) ) {
+        if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, 
+                                            VSCPDB_ORDINAL_TABLE_TITLE ) ) ) {
             title = wxString::FromUTF8( p );
         }
         
         // note
-        if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_TABLE_NOTE ) ) ) {
+        if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, 
+                                            VSCPDB_ORDINAL_TABLE_NOTE ) ) ) {
             note = wxString::FromUTF8( p );
         }
         
         // SQL create
-        if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_TABLE_SQL_CREATE ) ) ) {
+        if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, 
+                                        VSCPDB_ORDINAL_TABLE_SQL_CREATE ) ) ) {
             sql_create = wxString::FromUTF8( p );
         }
         
         // SQL insert
-        if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_TABLE_SQL_INSERT ) ) ) {
+        if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, 
+                                        VSCPDB_ORDINAL_TABLE_SQL_INSERT ) ) ) {
             sql_insert = wxString::FromUTF8( p );
         }
         
         // SQL delete
-        if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_TABLE_SQL_DELETE ) ) ) {
+        if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, 
+                                        VSCPDB_ORDINAL_TABLE_SQL_DELETE ) ) ) {
             sql_delete = wxString::FromUTF8( p );
         }
         
         // description
-        if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_TABLE_DESCRIPTION ) ) ) {
+        if ( NULL != ( p = (const char *)sqlite3_column_text( ppStmt, 
+                                        VSCPDB_ORDINAL_TABLE_DESCRIPTION ) ) ) {
             description = wxString::FromUTF8( p );
         }
         
-        if ( !pTable->setTableInfo( pUserItem->getUser(),
+        if ( !pTable->setTableInfo( pUserItem->getUserName(),
                                         rights,
                                         title,
                                         xname, 

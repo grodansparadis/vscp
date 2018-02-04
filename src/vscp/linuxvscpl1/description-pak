@@ -1,0 +1,7 @@
+libvscpl1.so
+
+This is an interface to the VSCPD Level I i/f (CANAL) in the form of a shared library.
+The daemon must be started for the routines to work.
+
+Copyright (C) 2000-2017 Ake hedman, Grodans Paradis AB, Sweden
+http://www.vscp.org

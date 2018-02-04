@@ -5,7 +5,7 @@
 //
 // The MIT License (MIT)
 // 
-// Copyright (c) 2000-2017 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
+// Copyright (c) 2000-2018 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
 // 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,8 @@
 
 #include <vscp.h>
 
+
+// GUID
 class cguid  
 {
 
@@ -133,7 +135,12 @@ public:
     uint8_t getLSB( void ) { return m_id[ 15 ]; };
 
     /*!
-    Get Nickname GUID position
+        Get Nickname GUID position
+    */
+    uint16_t getNicknameID( void ) { return (m_id[14] << 8) + m_id[15]; };
+    
+    /*!
+        Get Byte Nickname GUID position
     */
     uint8_t getNickname( void ) { return m_id[ 15 ]; };
     
@@ -141,13 +148,11 @@ public:
         Fill array with GUID MSB first (STANDARD way)
     */
     void writeGUID( uint8_t *pArray );
-    
 
     /*!
         Fill array with GUID LSB first
     */
-    void writeGUID_reverse( uint8_t *pArray );
-    
+    void writeGUID_reverse( uint8_t *pArray );  
     
     /*!
         Check if same as supplied GUID

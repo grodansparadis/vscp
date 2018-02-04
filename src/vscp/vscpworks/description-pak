@@ -1,0 +1,10 @@
+VSCP Works
+
+VSCP Works is a graphical client that can communicate with local Level I 
+VSCP devices as well as remote Level I/Level II devices. It can be used 
+to detect VSCP devices, configure VSCP devices, update firmware of VSCP 
+devices and much more. VSCP Works is part of the VSCP & Friends package.  
+VSCP stands for Very Simple Control Protocol.
+
+Copyright (C) 2000-2017 Ake hedman, Grodans Paradis AB, Sweden
+http://www.vscp.org

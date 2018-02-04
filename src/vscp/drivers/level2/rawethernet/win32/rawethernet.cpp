@@ -8,7 +8,7 @@
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2015 Ake Hedman, Grodans Paradis AB,
+// Copyright (C) 2000-2017 Ake Hedman, Grodans Paradis AB,
 // <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
@@ -457,7 +457,7 @@ bool CRawEthernet::open( const char *pUsername,
     // We look for 
     //
     //	 _interface - The ethernet interface to use. Typically this 
-    //					is “eth0, eth0, eth1...
+    //					is ï¿½eth0, eth0, eth1...
     //
     //   _localmac - The MAC address for our outgoing frames.
     //					Typically on the form 00:26:55:CA:1F:DA
@@ -646,6 +646,9 @@ void *CWrkReadTread::Entry()
 			vscpEventEx eventex;
 
             eventex.head = pkt_data[ 15 ] & 0xe0; // Priority
+
+			eventex.timestamp = vscp_makeTimeStamp();
+            vscp_setEventExDateTimeBlockToNow( &eventex );
 
             eventex.GUID[ 0 ] = 0xff; // Ethernet predefined  GUID
             eventex.GUID[ 1 ] = 0xff;

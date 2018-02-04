@@ -5,7 +5,7 @@
  * Description: A header file describing the various CRC standards.
  *
  * Notes:       
- *
+ *   http://crcmod.sourceforge.net/crcmod.predefined.html
  * 
  * Copyright (c) 2000 by Michael Barr.  This software is placed into
  * the public domain and may be used for any purpose.  However, this
@@ -13,8 +13,9 @@
  * expressed or implied by its publication or distribution.
  **********************************************************************/
 
-#ifndef _crc_h
-#define _crc_h
+
+#ifndef __crc_h
+#define __crc_h
 
 #ifdef __cplusplus
 extern "C" {

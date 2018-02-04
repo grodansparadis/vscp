@@ -464,7 +464,6 @@ CWrkReceiveTread::Entry()
     // Enter the receive loop
     m_srvRemote.doCmdEnterReceiveLoop();
 
-	//vscpEventEx eventEx;
 	while (!TestDestroy() && !m_pObj->m_bQuit) {
 
 		// Make sure the remote connection is up

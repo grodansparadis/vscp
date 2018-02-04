@@ -1,24 +1,28 @@
 // userlist.h
 //
-// This program is free software; you can redistribute it and/or
-// modify it under the terms of the GNU General Public License
-// as published by the Free Software Foundation; either version
-// 2 of the License, or (at your option) any later version.
-// 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2017 
-// Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
+// The MIT License (MIT)
 // 
-// This file is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
+// Copyright (c) 2000-2018 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
 // 
-// You should have received a copy of the GNU General Public License
-// along with this file see the file COPYING.  If not, write to
-// the Free Software Foundation, 59 Temple Place - Suite 330,
-// Boston, MA 02111-1307, USA.
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+// 
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 //
 
 
@@ -87,14 +91,15 @@
 #define VSCP_USER_RIGHT_PRIORITY0                       0x00000001
 
 #define VSCP_ADD_USER_UNINITIALISED                     -1
-#define VSCP_LOCAL_USER_OFFSET                          -1
+
+// Local users have an id below this value
+#define VSCP_LOCAL_USER_OFFSET                          0x10000
 
 // Add user flags
-#define VSCP_ADD_USER_FLAG_LOCAL                        0x00000001  // Marks local user not in db
-#define VSCP_ADD_USER_FLAG_ADMIN                        0x10000000  // Marks the one and only admin user
+#define VSCP_ADD_USER_FLAG_LOCAL                        0x00000001  // local user
 
 // Users not in db is local
-//#define USER_IS_LOCAL                                 -1          // Never saved to db
+//#define USER_IS_LOCAL                                -1           // Never saved to db
 //#define USER_IS_UNSAVED                               0           // Should be saved to db
 
 #define USER_PRIVILEGE_MASK                             0x0f
@@ -146,7 +151,32 @@ public:
         @param remote ip-address for remote machine.
         @return true if the remote machine is allowed to connect.
     */
-    bool isAllowedToConnect( const wxString& remote);
+    //bool isAllowedToConnect( const wxString& remote);
+    
+    /*
+        IP ACL. By default, empty or non defined, meaning all IPs are allowed to 
+        connect.
+
+        An Access Control List (ACL) allows restrictions to be put on the list 
+        of IP addresses which have access to the web server. The ACL is a comma 
+        separated list of IP subnets, where each subnet is pre-pended by either 
+        a - or a + sign. A plus sign means allow, where a minus sign means deny. 
+        If a subnet mask is omitted, such as -1.2.3.4, this means to deny only 
+        that single IP address.
+
+        Subnet masks may vary from 0 to 32, inclusive. The default setting is to 
+        allow all accesses. On each request the full list is traversed, and the 
+        last match wins. Examples:
+
+        "-0.0.0.0/0,+192.168/16" deny all accesses, only allow 192.168/16 subnet
+     
+        Verify given socket address against the ACL.
+     
+        @param remote_ip Remote ip address on network order. 
+        @return -1 if ACL is malformed, 0 if address is disallowed, 1 if allowed.
+     
+     */
+    int isAllowedToConnect( uint32_t remote_ip );
 
     /*!
         Check if use is allowed to send event.
@@ -222,14 +252,15 @@ public:
     long getUserID( void ) { return m_userID; };
     void setUserID( const long id ) { m_userID = id; };
     
-    wxString getUser( void ) { return m_user; };
-    void setUser( const wxString& strUser ) { m_user = strUser; };
+    wxString getUserName( void ) { return m_user; };
+    void setUserName( const wxString& strUser ) { m_user = strUser; };
     
     wxString getPassword( void ) { return m_password; };
     void setPassword( const wxString& strPassword ) { m_password = strPassword; };
     
     wxString getPasswordDomain( void ) { return m_md5PasswordDomain.Lower(); };
-    void setPasswordDomain( const wxString& strPassword ) { m_md5PasswordDomain = strPassword.Lower(); };
+    void setPasswordDomain( const wxString& strPassword ) 
+                                    { m_md5PasswordDomain = strPassword.Lower(); };
     
     wxString getFullname( void ) { return m_fullName; };
     void setFullname( const wxString& strUser ) { m_fullName = strUser; };
@@ -313,6 +344,8 @@ protected:
     wxArrayString m_listAllowedIPV4Remotes;
     wxArrayString m_listAllowedIPV6Remotes;
     
+    
+    
     /*!
         Filter associated with this user
     */
@@ -340,6 +373,22 @@ public:
     bool loadUsers( void );
 
     /*!
+     * Add the super (admin) user. This can only be the user setup in the
+     * configuration file..
+     * @param user Username for user.
+     * @param password Password.
+     * @param List of allowed remote locations from which the
+     *          super user is allowed to connect to this system. If empty
+     *          the super user can connect form all remote locations.
+     * @param bSystemUser If true this user is a user that should not be saved to the DB
+       @return true on success. false on failure.
+     */
+    bool addSuperUser( const wxString& user,
+                            const wxString& password,
+                            const wxString& allowedRemotes = _(""),
+                            uint32_t bFlags = 0 );
+    
+    /*!
         Add a user to the in memory list. Must saved to database to make persistent.
         The configuration set username is not a valid username.
         @param user Username for user.
@@ -355,7 +404,7 @@ public:
                     Empty list is no restrictions.			
         @param allowedEvents List with allowed events that a remote user is allowed
                     to send.
-        @param bSystemUser If true this user is a user that should not be save to the DB
+        @param bSystemUser If true this user is a user that should not be saved to the DB
         @return true on success. false on failure.	
     */
     bool addUser( const wxString& user,
@@ -481,8 +530,7 @@ protected:
     
 private:
 
-    // Counter for internal user id's (all negative)
-    long m_cntLocaluser;    
+    unsigned short m_cntLocaluser;  // Counter for local user id's
 
 };
 

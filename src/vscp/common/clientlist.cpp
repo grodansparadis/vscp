@@ -7,7 +7,7 @@
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2017 Ake Hedman, 
+// Copyright (c) 2000-2018 Ake Hedman, 
 // Grodans Paradis AB, <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
@@ -18,7 +18,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this file see the file COPYING.  If not, write to
 // the Free Software Foundation, 59 Temple Place - Suite 330,
-// Boston, MA 02111-1307, USA.
+// Boston, MA 02111-1307, USA. 
 //
 
 #ifdef WIN32
@@ -60,6 +60,27 @@
 
 WX_DEFINE_LIST(CLIENTEVENTLIST);
 WX_DEFINE_LIST(VSCPCLIENTLIST);
+
+
+const char *interface_description[] = {
+    "Unknown (you should not see this).",
+    "Internal VSCP server client.",
+    "Level I (CANAL) Driver.",
+    "Level II Driver.", 
+    "TCP/IP Client.",
+    "UDP Client.",
+    "Web Server Client.",
+    "WebSocket Client.",
+    "REST client",
+    "Multicast client",
+    "Multicast channel client",
+    "MQTT client",
+    "COAP client",
+    "Discovery client",
+    "JavaScript client",
+    "Lua client",
+    NULL
+};
 
 
 ///////////////////////////////////////////////////////////////////////////////

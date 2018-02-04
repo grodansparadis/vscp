@@ -4,7 +4,7 @@
 //
 // The MIT License (MIT)
 // 
-// Copyright (c) 2000-2017 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
+// Copyright (c) 2000-2018 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
 // 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -55,14 +55,11 @@
 
 #endif
 
-#include "daemonvscp.h"
-#include "canal_win32_ipc.h"
-#include "canal_macro.h"
+#include "daemonworker.h"
 #include "vscp.h"
 #include "vscphelper.h"
 #include "clientlist.h"
 #include <dllist.h>
-//#include <md5.h>
 #include <crc8.h>
 #include "controlobject.h"
 #include "guid.h"
@@ -72,6 +69,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 //                           Server information
 ///////////////////////////////////////////////////////////////////////////////
+
 
 CVSCPServerInformation::CVSCPServerInformation()
 {
@@ -85,28 +83,28 @@ CVSCPServerInformation::CVSCPServerInformation()
     memset( m_ports, 0, sizeof( m_ports ) );
   
     // Multicast announce port
-    m_ports[ 16 ] = VSCP_MULTICAST_ANNNOUNCE_PORT;
+    m_ports[ 16 ] = VSCP_ANNOUNCE_MULTICAST_PORT;
 
     // VSCP TCP/IP interface
     m_ports[ 15 ] = VSCP_DEFAULT_TCP_PORT;
 
-    // UDP INterface
+    // UDP Interface
     m_ports[ 14 ] = VSCP_DEFAULT_UDP_PORT;
 
     // Multicast announce
-    m_ports[ 13 ] = VSCP_MULTICAST_ANNNOUNCE_PORT;
+    m_ports[ 13 ] = VSCP_ANNOUNCE_MULTICAST_PORT;
 
     // Raw Ethernet
     m_ports[ 12 ] = VSCP_DEFAULT_TCP_PORT;  // No port is used - This is the Ethernet frame id
 
     // Web server
-    m_ports[ 11 ] = 8080;
+    m_ports[ 11 ] = 8884;
 
     // Websocket interface
-    m_ports[ 10 ] = 8080;
+    m_ports[ 10 ] = 8884;
 
     // REST interface
-    m_ports[ 9 ] = 8080;
+    m_ports[ 9 ] = 8884;
 
     // MQTT interface
     m_ports[ 8 ] = 1883;
@@ -321,3 +319,42 @@ void CKnownNodes::load( wxString& path )
     // TODO
 }
 
+
+/*
+ 
+ #include <wx/protocol/http.h>
+#include <wx/XML/xml.h>
+//[...]
+	wxString link;
+	wxHTTP http;
+ 
+	http.SetTimeout(6);
+	http.Connect(_T("example.com"));
+        // PHP file sending XML content
+	wxInputStream *httpStream = http.GetInputStream(_T("/file.php"));
+ 
+	if (http.GetError() == wxPROTO_NOERR)
+	{
+                // will crash here, if xml content is not formatted PERFECTLY
+		wxXmlDocument xml(*httpStream);
+ 
+		wxXmlNode *node = xml.GetRoot()->GetChildren();
+		while (node)
+		{
+			if (node->GetName() == _T("tagname1"))
+				staticText1->SetLabel(node->GetNodeContent());
+			else if(node->GetName() == _T("tagname2"))
+				staticText2->SetLabel(node->GetNodeContent());
+ 
+                        // [...]
+ 
+			node = node->GetNext();
+		}
+	}
+	else
+		wxMessageBox(_T("Can't connect!"));
+ 
+	http.Close();
+	wxDELETE(httpStream);
+ 
+ */

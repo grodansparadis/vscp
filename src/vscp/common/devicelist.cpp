@@ -1,25 +1,28 @@
 // DeviceList.cpp:
 //
-// implementation of the CDeviceList class.
-// This program is free software; you can redistribute it and/or
-// modify it under the terms of the GNU General Public License
-// as published by the Free Software Foundation; either version
-// 2 of the License, or (at your option) any later version.
+// This file is part of the VSCP (http://www.vscp.org) 
 //
-// This file is part of the VSCP (http://www.vscp.org)
-//
-// Copyright (C) 2000-2017
-// Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
-//
-// This file is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with this file see the file COPYING.  If not, write to
-// the Free Software Foundation, 59 Temple Place - Suite 330,
-// Boston, MA 02111-1307, USA.
+// The MIT License (MIT)
+// 
+// Copyright (c) 2000-2018 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
+// 
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+// 
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 //
 
 #ifdef WIN32
@@ -62,6 +65,33 @@
 
 WX_DEFINE_LIST(Level1MsgOutList);
 WX_DEFINE_LIST(VSCPDEVICELIST);
+
+///////////////////////////////////////////////////
+//                 GLOBALS
+///////////////////////////////////////////////////
+
+extern CControlObject *gpobj;
+
+Driver3Process::Driver3Process( int flags ) 
+                        : wxProcess( flags )
+{
+    ;
+}
+
+Driver3Process::~Driver3Process()
+{
+    ;
+}
+
+void Driver3Process::OnTerminate( int pid, int status )
+{
+    gpobj->logMsg(_("[Diver Level III] - Terminating.\n") );
+}
+
+
+
+
+
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction CDeviceList
@@ -121,6 +151,10 @@ CDeviceItem::CDeviceItem()
     m_proc_VSCPGetWebPageTemplate = NULL;
     m_proc_VSCPGetWebPageInfo = NULL;
     m_proc_VSCPWebPageupdate = NULL;
+    
+    // VSCP Level III
+    m_pid = 0;
+    m_pDriver3Process = NULL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -128,7 +162,11 @@ CDeviceItem::CDeviceItem()
 
 CDeviceItem::~CDeviceItem(void)
 {
-    ;
+    if ( NULL != m_pDriver3Process ) {
+        m_pDriver3Process->Kill( m_pid );
+        delete m_pDriver3Process;
+        m_pDriver3Process = NULL;
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -142,14 +180,17 @@ bool CDeviceItem::startDriver( CControlObject *pCtrlObject )
     }
 
     // Just start if enabled
-    if ( !m_bEnable ) return false;
+    if ( !m_bEnable ) {
+        pCtrlObject->logMsg(_("[Driver] - Disabled.\n") );
+        return false;
+    }
 
     // *****************************************
     //  Create the worker thread for the device
     // *****************************************
 
     m_pdeviceThread = new deviceThread();
-    if (NULL != m_pdeviceThread) {
+    if ( NULL != m_pdeviceThread ) {
 
         m_pdeviceThread->m_pCtrlObject = pCtrlObject;
         m_pdeviceThread->m_pDeviceItem = this;
@@ -157,17 +198,20 @@ bool CDeviceItem::startDriver( CControlObject *pCtrlObject )
         wxThreadError err;
         if (wxTHREAD_NO_ERROR == (err = m_pdeviceThread->Create())) {
             if (wxTHREAD_NO_ERROR != (err = m_pdeviceThread->Run())) {
-                pCtrlObject->logMsg(_("Unable to create DeviceThread.") );
+                pCtrlObject->logMsg(_("[Driver] - Unable to create DeviceThread.\n") );
             }
         }
         else {
-            pCtrlObject->logMsg(_("Unable to run DeviceThread.") );
+            pCtrlObject->logMsg(_("[Driver] - Unable to run DeviceThread.\n") );
         }
 
     }
     else {
-        pCtrlObject->logMsg(_("Unable to allocate memory for DeviceThread.") );
+        pCtrlObject->logMsg(_("[Driver] - Unable to allocate memory "
+                              "for DeviceThread.\n") );
     }
+    
+    pCtrlObject->logMsg(_("[Driver] - Started driver .") + m_strName + _("\n") );
 
     return true;
 }
@@ -178,13 +222,64 @@ bool CDeviceItem::startDriver( CControlObject *pCtrlObject )
 
 bool CDeviceItem::stopDriver()
 {
-    if (NULL != m_pdeviceThread) {
+    if ( NULL != m_pdeviceThread ) {
+        
+        fprintf( stderr, 
+                 "CDeviceItem: Driver stop. [%s]\n",
+                 (const char *)m_strName.mbc_str() );
+        
         m_mutexdeviceThread.Lock();
-        m_bQuit = true;
-        m_pdeviceThread->Wait();
+        
+        if ( NULL != m_pdeviceThread->m_preceiveThread ) {
+            m_pdeviceThread->m_preceiveThread->m_bQuit = true;
+            fprintf( stderr, 
+                 "CDeviceItem: m_preceiveThread stop. [%s]\n",
+                 (const char *)m_strName.mbc_str() );
+            m_pdeviceThread->m_preceiveThread->Delete();
+            m_pdeviceThread->m_preceiveThread = NULL;
+        }
+        
+        if ( NULL != m_pdeviceThread->m_pwriteThread ) {
+            m_pdeviceThread->m_pwriteThread->m_bQuit = true;
+            fprintf( stderr, 
+                 "CDeviceItem: m_pwriteThread stop. [%s]\n",
+                 (const char *)m_strName.mbc_str() );
+            m_pdeviceThread->m_pwriteThread->Delete(); 
+            m_pdeviceThread->m_pwriteThread = NULL;
+        }
+        
+        if ( NULL != m_pdeviceThread->m_preceiveLevel2Thread ) {
+            m_pdeviceThread->m_preceiveLevel2Thread->m_bQuit = true;
+            fprintf( stderr, 
+                 "CDeviceItem: m_preceiveLevel2Thread stop. [%s]\n",
+                 (const char *)m_strName.mbc_str() );
+            m_pdeviceThread->m_preceiveLevel2Thread->Delete(); 
+            m_pdeviceThread->m_preceiveLevel2Thread = NULL;
+        }
+        
+        if ( NULL != m_pdeviceThread->m_pwriteLevel2Thread ) {
+            m_pdeviceThread->m_pwriteLevel2Thread->m_bQuit = true;
+            fprintf( stderr, 
+                 "CDeviceItem: m_pwriteLevel2Thread stop. [%s]\n",
+                 (const char *)m_strName.mbc_str() );
+            m_pdeviceThread->m_pwriteLevel2Thread->Delete(); 
+            m_pdeviceThread->m_pwriteLevel2Thread = NULL;
+        }
+               
         m_mutexdeviceThread.Unlock();
-        delete m_pdeviceThread;
+        
+        m_bQuit = true;
+        wxSleep( 2 );
+        fprintf( stderr, 
+                 "CDeviceItem: Driver asked to stop operation. [%s]\n",
+                 (const char *)m_strName.mbc_str());        
+        m_pdeviceThread->Delete();        
         m_pdeviceThread = NULL;
+        
+        fprintf( stderr, 
+                 "CDeviceItem: Driver stopping. [%s]\n",
+                 (const char *)m_strName.mbc_str());
+        
         return true;
     }
 
@@ -258,7 +353,7 @@ bool CDeviceList::addItem(wxString strName,
 
         }
         else {
-            //wxGetApp.logMsg(_("Driver does not exist."), DAEMON_LOGMSG_INFO );
+            // Driver does not exist at this path
             delete pDeviceItem;
             rv = false;
         }

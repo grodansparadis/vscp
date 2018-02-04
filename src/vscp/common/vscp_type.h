@@ -16,7 +16,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2000-2017 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
+ * Copyright (c) 2000-2018 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -928,6 +928,7 @@
 #define VSCP2_TYPE_PROTOCOL_WRITE_REGISTER                  2
 #define VSCP2_TYPE_PROTOCOL_READ_WRITE_RESPONSE             3
 #define VSCP2_TYPE_PROTOCOL_HIGH_END_SERVER_CAPS            20
+#define VSCP2_TYPE_PROTOCOL_WHO_IS_THERE_RESPONSE           32
 
 // Level II Control functionality Class=1025 (0x401)
 #define VSCP2_TYPE_CONTROL_GENERAL                          0

@@ -1,0 +1,274 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+
+<dm>
+  
+    <row enable="true" groupid="Variables" >
+
+        <comment>
+            Test store in variable - The test_variable_float variable is created
+            when the server is started ( CLASS2.VSCPD, Type=23 ).
+        </comment>
+
+        <mask priority="0"  
+              class="0xFFFF"  
+              type="0xFFFF"  
+              GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <filter  priority="0"  
+                class="65535"  
+                type="23"  
+                GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <action>0x50</action>
+        <param>
+            test_variable_float;float;false;0;0x777;4333.56789;BASE64:Test variable float
+        </param>
+
+    </row>
+  
+  
+    <row enable="true" groupid="Variables" >
+
+        <comment>
+            Add five to test_variable_float variable every second
+            ( CLASS2.VSCPD, Type=5 ).
+        </comment>
+
+        <mask priority="0"  
+              class="0xFFFF"  
+              type="0xFFFF"  
+              GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <filter  priority="0"  
+                class="65535"  
+                type="5"  
+                GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <action>0x52</action>
+        <param>
+            test_variable_float;5
+        </param>
+
+    </row>
+    
+    
+    <row enable="true" groupid="Variables" >
+
+        <comment>
+            Test store in variable - The long variable is created
+            when the server is started ( CLASS2.VSCPD, Type=23 ).
+        </comment>
+
+        <mask priority="0"  
+              class="0xFFFF"  
+              type="0xFFFF"  
+              GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <filter  priority="0"  
+                 class="65535"  
+                 type="23"  
+                 GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <action>0x50</action>
+        <param>
+            test_variable_long;long;false;0;0x777;0xffff;BASE64:Test variable long
+        </param>
+
+    </row>    
+
+     <row enable="true" groupid="Variables" >
+
+        <comment>
+            subtract from the test_variable_long variable every second
+            ( CLASS2.VSCPD, Type=5 ).
+        </comment>
+
+        <mask priority="0"  
+              class="0xFFFF"  
+              type="0xFFFF"  
+              GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <filter  priority="0"  
+                class="65535"  
+                type="5"  
+                GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <action>0x53</action>
+        <param>
+            test_variable_long;1
+        </param>
+
+    </row>
+    
+    <row enable="true" groupid="Variables" >
+
+        <comment>
+            Test store in variable - The long variable is created
+            when the server is started ( CLASS2.VSCPD, Type=23 ).
+        </comment>
+
+        <mask priority="0"  
+              class="0xFFFF"  
+              type="0xFFFF"  
+              GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <filter  priority="0"  
+                 class="65535"  
+                 type="23"  
+                 GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <action>0x50</action>
+        <param>
+            test_variable_multiply;long;false;0;0x777;1;BASE64:Test variable long for multiply test
+        </param>
+
+    </row>     
+       
+   
+     <row enable="true" groupid="Variables" >
+
+        <comment>
+            Multiply test_variable_multiply variable with 2 every second
+            ( CLASS2.VSCPD, Type=5 ).
+        </comment>
+
+        <mask priority="0"  
+              class="0xFFFF"  
+              type="0xFFFF"  
+              GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <filter  priority="0"  
+                class="65535"  
+                type="5"  
+                GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <action>0x54</action>
+        <param>
+            test_variable_multiply;2
+        </param>
+
+    </row>   
+   
+    <row enable="true" groupid="Variables" >
+
+        <comment>
+            Test store in variable - The float variable is created
+            when the server is started ( CLASS2.VSCPD, Type=23 ).
+        </comment>
+
+        <mask priority="0"  
+              class="0xFFFF"  
+              type="0xFFFF"  
+              GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <filter  priority="0"  
+                 class="65535"  
+                 type="23"  
+                 GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <action>0x50</action>
+        <param>
+            test_variable_divide;float;false;0;0x777;9999999999;BASE64:Test variable float for divide test
+        </param>
+
+    </row>     
+       
+   
+     <row enable="true" groupid="Variables" >
+
+        <comment>
+            Divide the test_variable_divide with 3 variable every second
+            ( CLASS2.VSCPD, Type=5 ).
+        </comment>
+
+        <mask priority="0"  
+              class="0xFFFF"  
+              type="0xFFFF"  
+              GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <filter  priority="0"  
+                class="65535"  
+                type="5"  
+                GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <action>0x55</action>
+        <param>
+            test_variable_divide;3
+        </param>
+
+    </row>   
+      
+<row enable="true" groupid="Variables" >
+
+        <comment>
+            Test store in variable - The int variable is created
+            when the server is started ( CLASS2.VSCPD, Type=23 ).
+        </comment>
+
+        <mask priority="0"  
+              class="0xFFFF"  
+              type="0xFFFF"  
+              GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <filter  priority="0"  
+                 class="65535"  
+                 type="23"  
+                 GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <action>0x50</action>
+        <param>
+            test_variable_int;int;false;0;0x777;1332;BASE64:Test variable integer
+        </param>
+
+    </row> 
+    
+    <row enable="true" groupid="Variables" >
+
+        <comment>
+            Test store in variable - The string variable is created
+            when the server is started ( CLASS2.VSCPD, Type=23 ).
+        </comment>
+
+        <mask priority="0"  
+              class="0xFFFF"  
+              type="0xFFFF"  
+              GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <filter  priority="0"  
+                 class="65535"  
+                 type="23"  
+                 GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <action>0x50</action>
+        <param>
+            test_variable_string;string;false;0;0x777;BASE64:Be Foolish, Be Hungry;BASE64:Test variable integer
+        </param>
+
+    </row>  
+    
+      <row enable="true" groupid="Variables" >
+
+        <comment>
+            Test store in variable - The string variable is created
+            when the server is started ( CLASS2.VSCPD, Type=23 ).
+        </comment>
+
+        <mask priority="0"  
+              class="0xFFFF"  
+              type="0xFFFF"  
+              GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <filter  priority="0"  
+                 class="65535"  
+                 type="23"  
+                 GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <action>0x50</action>
+        <param>
+            energy_%monthtxtfull_%year;float;false;0;0x777;0
+        </param>
+
+    </row>          
+      
+</dm>
+ 

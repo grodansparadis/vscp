@@ -1,0 +1,6 @@
+vscpl1drv-xap
+
+This is a Level I driver for VSCP & Friends that handle the XAP serial protocol.
+
+Copyright (C) 2000-2017 Ake hedman, Grodans Paradis AB, Sweden
+http://www.vscp.org

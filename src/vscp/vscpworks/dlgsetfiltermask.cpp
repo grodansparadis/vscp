@@ -241,7 +241,8 @@ void DialogSetfiltermask::CreateControls()
             strBuf.Printf( _(" - %d"), key );
             strBuf = value + strBuf;
             int sel = m_wxComboClass->Append( strBuf );
-            m_wxComboClass->SetClientData( sel, (void *)key );  // OK Don't worry I'm a HACKER and this is a HACK
+            m_wxComboClass->SetClientData( sel, 
+                    reinterpret_cast<void*>( key ) );  // OK Don't worry I'm a HACKER and this is a HACK
         }
     }
 
@@ -313,7 +314,8 @@ void DialogSetfiltermask::OnComboboxSelected( wxCommandEvent& event )
                 strBuf.Printf( _(" - %d"), ( key & 0xff ) );
                 strBuf = value + strBuf;
                 int selIdx = m_wxComboType->Append( strBuf );
-                m_wxComboType->SetClientData( selIdx, (void *)key );    // OK Don't worry I'm a HACKER and this is a HACK
+                m_wxComboType->SetClientData( selIdx, 
+                        reinterpret_cast<void*>( key ) );    // OK Don't worry I'm a HACKER and this is a HACK
             }
         }
 
@@ -360,7 +362,8 @@ void DialogSetfiltermask::OnButtonAddEventClick( wxCommandEvent& event )
 #endif
 
         int selidx = m_listboxEvents->Append( strBuf );
-        m_listboxEvents->SetClientData( selidx, (void *)classtype );    // OK Don't worry I'm a HACKER and this is a HACK 
+        m_listboxEvents->SetClientData( selidx, 
+                reinterpret_cast<void*>( classtype ) );    // OK Don't worry I'm a HACKER and this is a HACK 
     }
 
     // Update filter/masks

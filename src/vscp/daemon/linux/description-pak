@@ -1,0 +1,9 @@
+The VSCP server
+
+The VSCP server (previosuly called the VSCP daemon) is a server that 
+provide services to clients and users of a VSCP based system. The 
+VSCP server is part of the VSCP & Friends package. VSCP stands for 
+Very Simple Control Protocol.
+
+Copyright (c) 2000-2018 Ake hedman, Grodans Paradis AB, Sweden
+http://www.vscp.org

@@ -4,7 +4,7 @@
 // This file is part is part of CANAL (CAN Abstraction Layer)
 // http://www.vscp.org)
 //
-// Copyright (C) 2000-2015
+// Copyright (C) 2000-2018
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 //
 // This library is free software; you can redistribute it and/or
@@ -61,16 +61,16 @@ bool socketcanToCanal(char * p, PCANALMSG pMsg);
 
 CSocketcanObj::CSocketcanObj()
 {
-	strcpy(m_socketcanobj.m_devname, "vcan0");
-	dll_init(&m_socketcanobj.m_rcvList, SORT_NONE);
-	dll_init(&m_socketcanobj.m_sndList, SORT_NONE);
+    strcpy(m_socketcanobj.m_devname, "vcan0");
+    dll_init(&m_socketcanobj.m_rcvList, SORT_NONE);
+    dll_init(&m_socketcanobj.m_sndList, SORT_NONE);
 }
 
 CSocketcanObj::~CSocketcanObj()
 {
-	close(); // Close comm channel in case its open
-	dll_removeAllNodes(&m_socketcanobj.m_rcvList);
-	dll_removeAllNodes(&m_socketcanobj.m_sndList);
+    close(); // Close comm channel in case its open
+    dll_removeAllNodes(&m_socketcanobj.m_rcvList);
+    dll_removeAllNodes(&m_socketcanobj.m_sndList);
 }
 
 
@@ -89,10 +89,10 @@ bool CSocketcanObj::open(const char *pDevice, unsigned long flags)
 	//char devname[IFNAMSIZ + 1];
 	fd_set rdfs;
 	struct timeval tv;
-	struct sockaddr_can addr;
+	struct sockaddr_can addr;        
 	struct ifreq ifr;
-	struct cmsghdr *cmsg;
-	struct canfd_frame frame;
+        struct canfd_frame frame;
+	struct cmsghdr *cmsg;	
 	char ctrlmsg[CMSG_SPACE(sizeof(struct timeval)) + CMSG_SPACE(sizeof(__u32))];
 	const int canfd_on = 1;
 	

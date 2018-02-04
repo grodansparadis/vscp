@@ -1,0 +1,126 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+
+<dm>
+
+<row enable="true" groupid="timers" >
+
+<comment>
+ Create timer 1
+</comment>
+
+<mask priority="0"
+ class="0xFFFF"
+ type="0xFFFF"
+ GUID="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+<filter priority="0"
+ class="65535"
+ type="23"
+ GUID="00:01:02:03:04:05:06:07:08:09:0A:0B:0C:0D:0E:0F" />
+
+<action>0x60</action>
+ <param>
+    1;10;timer1flag;true;4
+ </param>
+
+</row>
+
+
+<row enable="true" groupid="timers" >
+
+<comment>   
+    Handle timer started
+</comment>
+
+<mask priority="0"
+ class="0xFFFF"
+ type="0xFFFF"
+ GUID="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+<filter priority="0"
+ class="65535"
+ type="25"
+ GUID="00:01:02:03:04:05:06:07:08:09:0A:0B:0C:0D:0E:0F" />
+
+<action>0x70</action>
+ <param>
+    /srv/vscp/timefile;1;%isoboth: Timer %event.data.int32[0] started value = %event.data.int32[4]  %lf
+ </param>
+
+</row>
+
+
+<row enable="true" groupid="timers" >
+
+<comment>   
+    Handle timer stoped
+</comment>
+
+<mask priority="0"
+ class="0xFFFF"
+ type="0xFFFF"
+ GUID="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+<filter priority="0"
+ class="65535"
+ type="28"
+ GUID="00:01:02:03:04:05:06:07:08:09:0A:0B:0C:0D:0E:0F" />
+
+<action>0x70</action>
+ <param>
+    /srv/vscp/timefile;1;%isoboth: Timer %event.data.int32[0] stopped value = %event.data.int32[4] %lf
+ </param>
+
+</row>
+
+
+<row enable="true" groupid="timers" >
+
+<comment>   
+    Handle timer elapsed
+</comment>
+
+<mask priority="0"
+ class="0xFFFF"
+ type="0xFFFF"
+ GUID="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+<filter priority="0"
+ class="65535"
+ type="29"
+ GUID="00:01:02:03:04:05:06:07:08:09:0A:0B:0C:0D:0E:0F" />
+
+<action>0x70</action>
+ <param>
+    /srv/vscp/timefile;1;%isoboth: Timer %event.data.int32[0] elapsed %lf
+ </param>
+
+</row>
+     
+ 
+     
+<row enable="true" groupid="timers" >
+
+<comment>   
+    Handle timer elapsed
+</comment>
+
+<mask priority="0"
+ class="0xFFFF"
+ type="0xFFFF"
+ GUID="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+<filter priority="0"
+ class="65535"
+ type="25"
+ GUID="00:01:02:03:04:05:06:07:08:09:0A:0B:0C:0D:0E:0F" />
+
+<action>0x70</action>
+ <param>
+    /srv/vscp/escapefile;1; %event.data.bit[0] %event.data.bit[31] %event.data.bool[0] %event.data.bool[3] %lf
+ </param>
+
+</row>         
+                 
+      
+</dm> 

@@ -7,7 +7,7 @@
 // 
 // This file is part of the VSCP Project (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2014 Ake Hedman, 
+// Copyright (C) 2000-2018 Ake Hedman, 
 // Grodans Paradis AB, <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
@@ -467,6 +467,9 @@ CWrkTread::Entry()
                 m_guid.writeGUID(pEvent->GUID);
                 pEvent->vscp_class = m_vscpclass; // VSCP_CLASS1_MEASUREMENT;
                 pEvent->vscp_type = m_vscptype;
+
+				pEvent->timestamp = vscp_makeTimeStamp();
+            	vscp_setEventDateTimeBlockToNow( pEvent );
 
                 if (VSCP_CLASS1_MEASUREMENT == m_vscpclass) {
 

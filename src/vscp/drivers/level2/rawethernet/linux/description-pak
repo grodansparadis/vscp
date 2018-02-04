@@ -1,0 +1,6 @@
+vscpl2drv-raweth
+
+This is a Level II driver for VSCP & Friends that handle raw ethernet
+
+Copyright (C) 2000-2017 Ake hedman, Grodans Paradis AB, Sweden
+http://www.vscp.org

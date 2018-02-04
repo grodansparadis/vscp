@@ -7,7 +7,7 @@
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2017 
+// Copyright (C) 2000-2018 
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
@@ -1674,7 +1674,7 @@ bool CCan4VSCPObj::addToResponseQueue( void )
                     sem_post( &m_transmitAckNackSem  );
 #endif
                 }
-                else if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_ACK == m_bufferMsgRcv[ VSCP_CAN4VSCP_DRIVER_POS_FRAME_TYPE ] ) {
+                else if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_NACK == m_bufferMsgRcv[ VSCP_CAN4VSCP_DRIVER_POS_FRAME_TYPE ] ) {
                     //  Negative things happen to, sometimes
                     msgResponseInfo.bAck = false;
 #ifdef WIN32
@@ -1710,7 +1710,7 @@ bool CCan4VSCPObj::addToResponseQueue( void )
             UNLOCK_MUTEX( m_responseMutex );
 
         }
-        else {									
+        else {
             delete pMsg;
             return false;
         }

@@ -1,3 +1,6 @@
+# Dustribution collection
+dist/
+
 # Compiled Object files
 *.slo
 *.lo
@@ -256,5 +259,32 @@ src/vscp/drivers/level2/sim/linux/vscp2drv_sim/
 nbproject/
 src/vscp/daemon/linux/nbproject/
 src/vscp/vscpworks/nbproject/
+.vscode/
+src/vscp/daemon/linux/1
+src/vscp/daemon/linux/1-shm
+src/vscp/daemon/linux/1-wal
+src/vscp/daemon/linux/60
+src/vscp/daemon/linux/61.744183
+src/vscp/daemon/linux/8080
+src/vscp/daemon/linux/9598
+src/vscp/daemon/linux/node_modules/webpack/
+tests/helperlib/ttt
+tests/multicast/alistener
+tests/multicast/announce-listener
+tests/multicast/compiling_error.txt
+tests/multicast/mclistener
+tests/multicast/mcsender
+tests/multicast/sender
+tests/udp/receive_vscp_udp_frame
+tests/udp/send_vscp_udp_frame
+src/vscp/helperlib/linux/libvscphelper-dev_12.29.0-1_amd64.deb
+src/vscp/helperlib/linux/libvscphelper.so.12.29.0
+src/vscp/vscp-mkpasswd/vscp-mkpasswd
+src/vscp/helperlib/linux/libvscphelper.so.*
+src/vscp/linuxvscpl1/libvscpl1.so.*
 
-
+/.metadata/
+.cproject
+.project
+.settings/
+RemoteSystemsTempFiles/

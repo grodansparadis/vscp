@@ -1,0 +1,10 @@
+#!/bin/bash
+#
+# This script is run before the removal of a debian package
+#
+#
+
+# Shutdown the vscpd server
+if [ -e /var/run/vscpd/vscpd.pid ]; then
+   /etc/init.d/vscpd stop
+fi

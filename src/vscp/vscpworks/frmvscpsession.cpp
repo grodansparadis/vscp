@@ -951,7 +951,7 @@ void frmVSCPSession::CreateControls()
     m_BtnActivateInterface = new wxToggleButton;
     m_BtnActivateInterface->Create( itemToolBar2, 
                                         ID_TOGGLEBUTTON_CONNECTION_ACTIVATE, 
-                                        _("Connected"), 
+                                        _("Connected     "), 
                                         wxDefaultPosition, 
                                         wxSize(-1, -1), 
                                         0 );
@@ -1477,7 +1477,7 @@ void frmVSCPSession::LoadRXEventList(wxCommandEvent& event)
                     } 
                     else if (subchild->GetName() == wxT("data")) {
                         str = subchild->GetNodeContent();
-                        vscp_setVscpDataFromString(pObj->m_pEvent, str);
+                        vscp_setVscpEventDataFromString(pObj->m_pEvent, str);
                     } 
                     else if (subchild->GetName() == wxT("timestamp")) {
                         str = subchild->GetNodeContent();
@@ -2304,7 +2304,7 @@ void frmVSCPSession::OnTxLoadClick(wxCommandEvent& event)
                     } 
                     else if (subchild->GetName() == wxT("data")) {
                         str = subchild->GetNodeContent();
-                        vscp_setVscpDataFromString(&pObj->m_Event, str);
+                        vscp_setVscpEventDataFromString(&pObj->m_Event, str);
                     } 
                     else if (subchild->GetName() == wxT("count")) {
                         str = subchild->GetNodeContent();
@@ -3171,22 +3171,33 @@ void *RXWorkerThread::Entry()
     while (!TestDestroy() && !m_pCtrlObject->m_bQuit && tcpifReceive.isConnected()) {
 
         if (CANAL_ERROR_SUCCESS ==
-                (rv = tcpifReceive.doCmdBlockingReceive(&event, 10))) {
+                ( rv = tcpifReceive.doCmdBlockingReceive( &event, 10 ) ) ) {
 
-            if (NULL != m_pCtrlObject->m_pVSCPSessionWnd) {
+            if ( NULL != m_pCtrlObject->m_pVSCPSessionWnd ) {
 
                 VscpRXObj *pRecord = new VscpRXObj;
 
-                if (NULL != pRecord) {
+                if ( NULL != pRecord ) {
 
                     vscpEvent *pEvent = new vscpEvent;
                     if (NULL != pEvent) {
 
-                        vscp_copyVSCPEvent(pEvent, &event);
+                        vscp_copyVSCPEvent( pEvent, &event );
 
                         pRecord->m_pEvent = pEvent;
                         pRecord->m_wxStrNote.Empty();
-                        pRecord->m_time = wxDateTime::Now();
+                        
+                        wxString dt;
+                        if ( vscp_getDateStringFromEvent( pEvent, dt ) ) {
+                            if (!pRecord->m_time.ParseISOCombined( dt ) )  {
+                                // Set to UTC
+                                pRecord->m_time = wxDateTime::UNow();
+                            }
+                        }
+                        else {
+                            // Set to UTC
+                            pRecord->m_time = wxDateTime::UNow();
+                        }
 
                         if (pEvent->obid == m_pCtrlObject->m_txChannelID) {
                             pRecord->m_nDir = VSCP_EVENT_DIRECTION_TX;
@@ -3754,17 +3765,19 @@ void *deviceReceiveThread::Entry()
     int rv;
     while (!TestDestroy() && !m_bQuit) {
 
-        if (CANAL_ERROR_SUCCESS ==
+        if ( CANAL_ERROR_SUCCESS ==
                 ( rv = m_pMainThreadObj->m_pCtrlObject->m_proc_CanalBlockingReceive(
-                                                         m_pMainThreadObj->m_pCtrlObject->m_openHandle, &msg, 500))) {
+                            m_pMainThreadObj->m_pCtrlObject->m_openHandle,
+                            &msg, 
+                            500 ) ) ) {
 
             vscpEvent *pEvent = new vscpEvent;
             if (NULL != pEvent) {
 
                 // Convert CANAL message to VSCP event
-                vscp_convertCanalToEvent(pEvent,
+                vscp_convertCanalToEvent( pEvent,
                                             &msg,
-                                            m_pMainThreadObj->m_pCtrlObject->m_GUID);
+                                            m_pMainThreadObj->m_pCtrlObject->m_GUID );
 
                 VscpRXObj *pRecord = new VscpRXObj;
                 if (NULL != pRecord) {

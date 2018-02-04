@@ -1,0 +1,430 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+
+<dm>
+    
+    <row enable="true" groupid="Variable compare" >
+
+        <comment>
+            Create flag variable that can get test result
+            when the server is started ( CLASS2.VSCPD, Type=23 ).
+        </comment>
+
+        <mask priority="0"
+              class="0xFFFF"
+              type="0xFFFF"
+              GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <filter  priority="0"
+                class="65535"
+                type="23"
+                GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <action>0x50</action>
+        <param>
+            flag_eq;boolean;false;0;0x777;false;BASE64:test noop
+        </param>
+
+    </row>
+    
+    <row enable="true" groupid="Variable compare" >
+
+        <comment>
+            Create flag variable that can get test result
+            when the server is started ( CLASS2.VSCPD, Type=23 ).
+        </comment>
+
+        <mask priority="0"
+              class="0xFFFF"
+              type="0xFFFF"
+              GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <filter  priority="0"
+                class="65535"
+                type="23"
+                GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <action>0x50</action>
+        <param>
+            flag_eq;boolean;false;0;0x777;false;BASE64:test flag
+        </param>
+
+    </row>
+    
+    <row enable="true" groupid="Variable compare" >
+
+        <comment>
+            Create flag variable that can get test result
+            when the server is started ( CLASS2.VSCPD, Type=23 ).
+        </comment>
+
+        <mask priority="0"
+              class="0xFFFF"
+              type="0xFFFF"
+              GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <filter  priority="0"
+                class="65535"
+                type="23"
+                GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <action>0x50</action>
+        <param>
+            flag_neq;boolean;false;0;0x777;false;BASE64:test flag
+        </param>
+
+    </row>    
+    
+    <row enable="true" groupid="Variable compare" >
+
+        <comment>
+            Create flag variable that can get test result
+            when the server is started ( CLASS2.VSCPD, Type=23 ).
+        </comment>
+
+        <mask priority="0"
+              class="0xFFFF"
+              type="0xFFFF"
+              GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <filter  priority="0"
+                class="65535"
+                type="23"
+                GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <action>0x50</action>
+        <param>
+            flag_lt;boolean;false;0;0x777;false;BASE64:test flag
+        </param>
+
+    </row>    
+    
+    <row enable="true" groupid="Variable compare" >
+
+        <comment>
+            Create flag variable that can get test result
+            when the server is started ( CLASS2.VSCPD, Type=23 ).
+        </comment>
+
+        <mask priority="0"
+              class="0xFFFF"
+              type="0xFFFF"
+              GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <filter  priority="0"
+                class="65535"
+                type="23"
+                GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <action>0x50</action>
+        <param>
+            flag_lteq1;boolean;false;0;0x777;false;BASE64:test flag
+        </param>
+
+    </row>    
+    
+    <row enable="true" groupid="Variable compare" >
+
+        <comment>
+            Create flag variable that can get test result
+            when the server is started ( CLASS2.VSCPD, Type=23 ).
+        </comment>
+
+        <mask priority="0"
+              class="0xFFFF"
+              type="0xFFFF"
+              GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <filter  priority="0"
+                class="65535"
+                type="23"
+                GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <action>0x50</action>
+        <param>
+            flag_lteq2;boolean;false;0;0x777;false;BASE64:test flag
+        </param>
+
+    </row>    
+    
+    <row enable="true" groupid="Variable compare" >
+
+        <comment>
+            Create flag variable that can get test result
+            when the server is started ( CLASS2.VSCPD, Type=23 ).
+        </comment>
+
+        <mask priority="0"
+              class="0xFFFF"
+              type="0xFFFF"
+              GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <filter  priority="0"
+                class="65535"
+                type="23"
+                GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <action>0x50</action>
+        <param>
+            flag_gt;boolean;false;0;0x777;false;BASE64:test flag
+        </param>
+
+    </row>    
+    
+    <row enable="true" groupid="Variable compare" >
+
+        <comment>
+            Create flag variable that can get test result
+            when the server is started ( CLASS2.VSCPD, Type=23 ).
+        </comment>
+
+        <mask priority="0"
+              class="0xFFFF"
+              type="0xFFFF"
+              GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <filter  priority="0"
+                class="65535"
+                type="23"
+                GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <action>0x50</action>
+        <param>
+            flag_gteq1;boolean;false;0;0x777;false;BASE64:test flag
+        </param>
+
+    </row>    
+    
+    <row enable="true" groupid="Variable compare" >
+
+        <comment>
+            Create flag variable that can get test result
+            when the server is started ( CLASS2.VSCPD, Type=23 ).
+        </comment>
+
+        <mask priority="0"
+              class="0xFFFF"
+              type="0xFFFF"
+              GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <filter  priority="0"
+                class="65535"
+                type="23"
+                GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <action>0x50</action>
+        <param>
+            flag_gteq2;boolean;false;0;0x777;false;BASE64:test flag
+        </param>
+
+    </row>    
+    
+  
+    <row enable="true" groupid="Variable measurement compare" >
+
+        <comment>
+            Test.
+        </comment>
+
+        <mask priority="0"  
+              class="0xFFFF"  
+              type="0xFFFF"  
+              GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <filter priority="0"  
+                class="10"  
+                type="6"  
+                GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <action>0x59</action>
+        <param>
+            1;1;5.96;noop;flag_noop
+        </param>
+
+    </row>
+  
+    <row enable="true" groupid="Variable measurement compare" >
+
+        <comment>
+            Test.
+        </comment>
+
+        <mask priority="0"  
+              class="0xFFFF"  
+              type="0xFFFF"  
+              GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <filter priority="0"  
+                class="10"  
+                type="6"  
+                GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <action>0x59</action>
+        <param>
+            1;1;5.96;eq;flag_eq
+        </param>
+
+    </row>
+    
+    <row enable="true" groupid="Variable measurement compare" >
+
+        <comment>
+            Test.
+        </comment>
+
+        <mask priority="0"  
+              class="0xFFFF"  
+              type="0xFFFF"  
+              GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <filter priority="0"  
+                class="10"  
+                type="6"  
+                GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <action>0x59</action>
+        <param>
+            1;1;5.00;neq;flag_neq
+        </param>
+
+    </row>
+    
+    <row enable="true" groupid="Variable measurement compare" >
+
+        <comment>
+            Test.
+        </comment>
+
+        <mask priority="0"  
+              class="0xFFFF"  
+              type="0xFFFF"  
+              GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <filter priority="0"  
+                class="10"  
+                type="6"  
+                GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <action>0x59</action>
+        <param>
+            1;1;5.96;lteq;flag_lteq1
+        </param>
+
+    </row>
+    
+    <row enable="true" groupid="Variable measurement compare" >
+
+        <comment>
+            Test.
+        </comment>
+
+        <mask priority="0"  
+              class="0xFFFF"  
+              type="0xFFFF"  
+              GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <filter priority="0"  
+                class="10"  
+                type="6"  
+                GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <action>0x59</action>
+        <param>
+            1;1;5.96;gteq;flag_gteq1
+        </param>
+
+    </row>
+    
+    <row enable="true" groupid="Variable measurement compare" >
+
+        <comment>
+            Test.
+        </comment>
+
+        <mask priority="0"  
+              class="0xFFFF"  
+              type="0xFFFF"  
+              GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <filter priority="0"  
+                class="10"  
+                type="6"  
+                GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <action>0x59</action>
+        <param>
+            1;1;5.00;lteq;flag_lteq2
+        </param>
+
+    </row>   
+  
+    <row enable="true" groupid="Variable measurement compare" >
+
+        <comment>
+            Test.
+        </comment>
+
+        <mask priority="0"  
+              class="0xFFFF"  
+              type="0xFFFF"  
+              GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <filter priority="0"  
+                class="10"  
+                type="6"  
+                GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <action>0x59</action>
+        <param>
+            1;1;6.00;gteq;flag_gteq2
+        </param>
+
+    </row>
+    
+    <row enable="true" groupid="Variable measurement compare" >
+
+        <comment>
+            Test.
+        </comment>
+
+        <mask priority="0"  
+              class="0xFFFF"  
+              type="0xFFFF"  
+              GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <filter priority="0"  
+                class="10"  
+                type="6"  
+                GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <action>0x59</action>
+        <param>
+            1;1;5.00;lt;flag_lt
+        </param>
+
+    </row>
+    
+    <row enable="true" groupid="Variable measurement compare" >
+
+        <comment>
+            Test.
+        </comment>
+
+        <mask priority="0"  
+              class="0xFFFF"  
+              type="0xFFFF"  
+              GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <filter priority="0"  
+                class="10"  
+                type="6"  
+                GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+        <action>0x59</action>
+        <param>
+            1;1;6.00;gt;flag_gt
+        </param>
+
+    </row>
+      
+</dm>
+ 

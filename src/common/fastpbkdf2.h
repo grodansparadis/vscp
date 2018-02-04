@@ -2,6 +2,8 @@
  * fastpbkdf2 - Faster PBKDF2-HMAC calculation
  * Written in 2015 by Joseph Birr-Pixton <jpixton@gmail.com>
  *
+ * https://github.com/ctz/fastpbkd
+ *
  * To the extent possible under law, the author(s) have dedicated all
  * copyright and related and neighboring rights to this software to the
  * public domain worldwide. This software is distributed without any
@@ -62,7 +64,7 @@ void fastpbkdf2_hmac_sha256(const uint8_t *pw, size_t npw,
 void fastpbkdf2_hmac_sha512(const uint8_t *pw, size_t npw,
                             const uint8_t *salt, size_t nsalt,
                             uint32_t iterations,
-                            uint8_t *out, size_t nout);
+                            uint8_t *out, size_t nout );
 
 #ifdef __cplusplus
 }

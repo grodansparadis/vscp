@@ -14,6 +14,7 @@
       <itemPath>../../common/crc8.h</itemPath>
       <itemPath>../../common/dllist.c</itemPath>
       <itemPath>../../common/dllist.h</itemPath>
+      <itemPath>../../common/fastpbkdf2.h</itemPath>
       <itemPath>../common/guid.cpp</itemPath>
       <itemPath>../common/guid.h</itemPath>
       <itemPath>../../common/md5.cpp</itemPath>
@@ -25,10 +26,14 @@
       <itemPath>../../common/randpassword.h</itemPath>
       <itemPath>../common/version.h</itemPath>
       <itemPath>../common/vscp.h</itemPath>
+      <itemPath>../../common/vscp_aes.c</itemPath>
+      <itemPath>../../common/vscp_aes.h</itemPath>
       <itemPath>../common/vscp_class.h</itemPath>
       <itemPath>../common/vscp_type.h</itemPath>
+      <itemPath>../../common/vscpbase64.h</itemPath>
       <itemPath>../common/vscphelper.cpp</itemPath>
       <itemPath>../common/vscphelper.h</itemPath>
+      <itemPath>../../common/vscpmd5.h</itemPath>
     </logicalFolder>
     <df root="." name="0">
       <in>base64_enc.c</in>
@@ -58,6 +63,7 @@
       </toolsSet>
       <flagsDictionary>
         <element flagsID="0" commonFlags="-O2"/>
+        <element flagsID="1" commonFlags="-std=c99 -g -O2"/>
       </flagsDictionary>
       <codeAssistance>
       </codeAssistance>
@@ -69,17 +75,20 @@
           <executablePath></executablePath>
           <cTool>
             <incDir>
-              <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.1</pElem>
-              <pElem>/usr/local/include/wx-3.1</pElem>
-              <pElem>/usr/include/lua5.2</pElem>
+              <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
+              <pElem>/usr/local/include/wx-3.0</pElem>
               <pElem>../common</pElem>
               <pElem>../../common</pElem>
+              <pElem>../../common/lua</pElem>
+              <pElem>../../common/lua/src</pElem>
             </incDir>
             <preprocessorList>
-              <Elem>VSCP_ENABLE_LUA</Elem>
+              <Elem>CBC</Elem>
               <Elem>WXUSINGDLL</Elem>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
+              <Elem>_POSIX_SOURCE</Elem>
               <Elem>__WXGTK__</Elem>
+              <Elem>wxUSE_GUI=0</Elem>
             </preprocessorList>
           </cTool>
         </makeTool>
@@ -104,11 +113,26 @@
           </preprocessorList>
         </ccTool>
       </item>
-      <item path="../../common/crc.c" ex="false" tool="0" flavor2="2">
+      <item path="../../common/crc.c" ex="false" tool="0" flavor2="3">
+        <cTool flags="1">
+          <preprocessorList>
+            <Elem>_DEFAULT_SOURCE</Elem>
+          </preprocessorList>
+        </cTool>
       </item>
-      <item path="../../common/crc8.c" ex="false" tool="0" flavor2="2">
+      <item path="../../common/crc8.c" ex="false" tool="0" flavor2="3">
+        <cTool flags="1">
+          <preprocessorList>
+            <Elem>_DEFAULT_SOURCE</Elem>
+          </preprocessorList>
+        </cTool>
       </item>
-      <item path="../../common/dllist.c" ex="false" tool="0" flavor2="2">
+      <item path="../../common/dllist.c" ex="false" tool="0" flavor2="3">
+        <cTool flags="1">
+          <preprocessorList>
+            <Elem>_DEFAULT_SOURCE</Elem>
+          </preprocessorList>
+        </cTool>
       </item>
       <item path="../../common/md5.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
@@ -155,7 +179,14 @@
           </preprocessorList>
         </ccTool>
       </item>
-      <item path="../common/guid.cpp" ex="false" tool="1" flavor2="0">
+      <item path="../../common/vscp_aes.c" ex="false" tool="0" flavor2="3">
+        <cTool flags="1">
+          <preprocessorList>
+            <Elem>_DEFAULT_SOURCE</Elem>
+          </preprocessorList>
+        </cTool>
+      </item>
+      <item path="../common/guid.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
           <incDir>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.1</pElem>
@@ -187,8 +218,28 @@
           </preprocessorList>
         </ccTool>
       </item>
-      <item path="base64_enc.c" ex="false" tool="0" flavor2="0">
+      <item path="base64_enc.c" ex="false" tool="0" flavor2="3">
+        <cTool flags="1">
+          <preprocessorList>
+            <Elem>MG_ENABLE_GETADDRINFO</Elem>
+            <Elem>MG_ENABLE_HTTP_CGI</Elem>
+            <Elem>MG_ENABLE_HTTP_SSI</Elem>
+            <Elem>MG_ENABLE_HTTP_SSI_EXEC</Elem>
+            <Elem>MG_ENABLE_HTTP_URL_REWRITES</Elem>
+            <Elem>MG_ENABLE_HTTP_WEBDAV</Elem>
+            <Elem>MG_ENABLE_IPV6</Elem>
+            <Elem>MG_ENABLE_SSL</Elem>
+            <Elem>MG_ENABLE_THREADS</Elem>
+          </preprocessorList>
+        </cTool>
       </item>
+      <folder path="0">
+        <cTool>
+          <preprocessorList>
+            <Elem>_DEFAULT_SOURCE</Elem>
+          </preprocessorList>
+        </cTool>
+      </folder>
       <folder path="common">
         <cTool>
           <incDir>
@@ -204,9 +255,24 @@
       </folder>
       <item path="sha1.c" ex="false" tool="1" flavor2="4">
       </item>
-      <item path="uvscpd.c" ex="false" tool="0" flavor2="2">
+      <item path="uvscpd.c" ex="false" tool="0" flavor2="3">
+        <cTool flags="1">
+        </cTool>
       </item>
-      <item path="websocket.c" ex="false" tool="0" flavor2="0">
+      <item path="websocket.c" ex="false" tool="0" flavor2="3">
+        <cTool flags="1">
+          <preprocessorList>
+            <Elem>MG_ENABLE_GETADDRINFO</Elem>
+            <Elem>MG_ENABLE_HTTP_CGI</Elem>
+            <Elem>MG_ENABLE_HTTP_SSI</Elem>
+            <Elem>MG_ENABLE_HTTP_SSI_EXEC</Elem>
+            <Elem>MG_ENABLE_HTTP_URL_REWRITES</Elem>
+            <Elem>MG_ENABLE_HTTP_WEBDAV</Elem>
+            <Elem>MG_ENABLE_IPV6</Elem>
+            <Elem>MG_ENABLE_SSL</Elem>
+            <Elem>MG_ENABLE_THREADS</Elem>
+          </preprocessorList>
+        </cTool>
       </item>
     </conf>
   </confs>

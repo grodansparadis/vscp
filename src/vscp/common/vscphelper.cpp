@@ -4,7 +4,7 @@
 //
 // The MIT License (MIT)
 // 
-// Copyright (c) 2000-2017 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
+// Copyright (c) 2000-2018 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
 // 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -23,9 +23,6 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-
-// HISTORY:
-//    021107 - AKHE Started this file
 //
 
 
@@ -46,7 +43,7 @@
 #include <wx/wfstream.h>
 #include <wx/xml/xml.h>
 #include <wx/tokenzr.h>
-#include <wx/base64.h>
+#include <wx/sstream.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -60,14 +57,31 @@
 #include <sys/types.h>
 #endif
 
+#include <json.hpp>             // Needs C++11  -std=c++11
+
 #include <crc8.h> 
 #include <crc.h> 
-#include <aes.h>
+#include <vscp_aes.h>
+#include <fastpbkdf2.h>
+#include <vscpbase64.h>
+#include <vscpmd5.h>
 
 #include <vscp.h>
 #include <guid.h>
 #include <mdf.h>
 #include <vscphelper.h>
+
+#include <pwd.h>
+#include <unistd.h>
+#include <grp.h>
+#include <dirent.h>
+#define vsnprintf_impl vsnprintf
+
+
+using namespace std;
+
+// https://github.com/nlohmann/json
+using json = nlohmann::json;
 
 
 #define Swap8Bytes(val) \
@@ -125,12 +139,136 @@ int vscp_bigEndian( void )
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// vscp_almostEqualRelativeFloat
+// 
+
+bool vscp_almostEqualRelativeFloat( float A, float B,
+                                        float maxRelDiff )
+{
+    // Calculate the difference.
+    float diff = fabs(A - B);
+    A = fabs(A);
+    B = fabs(B);
+    
+    // Find the largest
+    float largest = (B > A) ? B : A;
+ 
+    if ( diff <= ( largest * maxRelDiff ) ) {
+        return true;
+    }
+    
+    return false;
+}
+
+union Float_t
+{
+    Float_t(float num = 0.0f) : f(num) {}
+    // Portable extraction of components.
+    bool Negative() const { return i < 0; }
+    int32_t RawMantissa() const { return i & ((1 << 23) - 1); }
+    int32_t RawExponent() const { return (i >> 23) & 0xFF; }
+ 
+    int32_t i;
+    float f;
+#ifdef _DEBUG
+    struct
+    {   // Bitfields for exploration. Do not use in production code.
+        uint32_t mantissa : 23;
+        uint32_t exponent : 8;
+        uint32_t sign : 1;
+    } parts;
+#endif
+};
+
+///////////////////////////////////////////////////////////////////////////////
+// vscp_almostEqualUlpsAndAbs
+//
+
+bool vscp_almostEqualUlpsAndAbsFloat( float A, 
+                                        float B,
+                                        float maxDiff, 
+                                        int maxUlpsDiff )
+{
+    // Check if the numbers are really close -- needed
+    // when comparing numbers near zero.
+    float absDiff = fabs(A - B);
+    if ( absDiff <= maxDiff ) {
+        return true;
+    }
+ 
+    Float_t uA(A);
+    Float_t uB(B);
+ 
+    // Different signs means they do not match.
+    if ( uA.Negative() != uB.Negative() ) {
+        return false;
+    }
+ 
+    // Find the difference in ULPs.
+    int ulpsDiff = abs(uA.i - uB.i);
+    if ( ulpsDiff <= maxUlpsDiff ) {
+        return true;
+    }
+ 
+    return false;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// vscp_almostEqualRelativeAndAbs
+// 
+
+bool vscp_almostEqualRelativeAndAbsFloat( float A, 
+                                            float B,
+                                            float maxDiff, 
+                                            float maxRelDiff )
+{
+    // Check if the numbers are really close -- needed
+    // when comparing numbers near zero.
+    float diff = fabs(A - B);
+    if ( diff <= maxDiff ) {
+        return true;
+    }
+ 
+    A = fabs(A);
+    B = fabs(B);
+    float largest = (B > A) ? B : A;
+ 
+    if ( diff <= ( largest * maxRelDiff ) ) {
+        return true;
+    }
+    
+    return false;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// vscp_almostEqualRelativeDouble
+// 
+
+bool vscp_almostEqualRelativeDouble( double A, double B,
+                                        double maxRelDiff )
+{
+    // Calculate the difference.
+    double diff = fabs(A - B);
+    A = fabs(A);
+    B = fabs(B);
+    
+    // Find the largest
+    double largest = (B > A) ? B : A;
+ 
+    if ( diff <= ( largest * maxRelDiff ) ) {
+        return true;
+    }
+    
+    return false;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // vscp_lowercase
 //
 
 int vscp_lowercase(const char *s) 
 {
-    return tolower(* (const unsigned char *) s);
+    return tolower( *(const unsigned char *) s );
 }
 
 
@@ -166,22 +304,133 @@ int vscp_strncasecmp(const char *s1, const char *s2, size_t len)
     return diff;
 }
 
+// ------- civet
 
-///////////////////////////////////////////////////////////////////////////////
-// vscp_bin2str
+
+////////////////////////////////////////////////////////////////////////////////
+// vscp_strlcpy
 //
 
-void vscp_bin2str(char *to, const unsigned char *p, size_t len  ) 
+void vscp_strlcpy( register char *dst, register const char *src, size_t n )
 {
-    static const char *hex = "0123456789abcdef";
+    for (; *src != '\0' && n > 1; n--) {
+        *dst++ = *src++;
+    }
+    
+    *dst = '\0';
+}
 
-    for (; len--; p++) {
-        *to++ = hex[p[0] >> 4];
-        *to++ = hex[p[0] & 0x0f];
+////////////////////////////////////////////////////////////////////////////////
+// vscp_strndup
+//
+
+char *vscp_strndup( const char *ptr, size_t len )
+{
+    char *p;
+
+    if ( (p = (char *)malloc(len + 1)) != NULL ) {
+        vscp_strlcpy(p, ptr, len + 1);
     }
 
-    *to = '\0';
+    return p;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// vscp_strdup
+//
+
+char *vscp_strdup( const char *str )
+{
+    return vscp_strndup( str, strlen(str) );
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// vscp_strcasestr
+//
+
+const char *vscp_strcasestr( const char *big_str, const char *small_str )
+{
+    size_t i, big_len = strlen(big_str), small_len = strlen( small_str );
+
+    if ( big_len >= small_len ) {
+        
+        for (i = 0; i <= (big_len - small_len); i++) {
+        
+            if ( 0 == vscp_strncasecmp(big_str + i, small_str, small_len ) ) {
+                return big_str + i;
+            }
+            
+        }
+        
+    }
+
+    return NULL;
+}
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+// vscp_stristr
+//
+
+char* vscp_stristr( char* str1, const char* str2 )
+{
+    char* p1 = str1 ;
+    const char* p2 = str2 ;
+    char* r = *p2 == 0 ? str1 : 0 ;
+
+    while( *p1 != 0 && *p2 != 0 ) {
+        if( tolower( *p1 ) == tolower( *p2 ) ) {
+            if( r == 0 ) {
+                r = p1 ;
+            }
+
+            p2++ ;
+        }
+        else {
+            p2 = str2 ;
+            if( tolower( *p1 ) == tolower( *p2 ) ) {
+                r = p1 ;
+                p2++ ;
+            }
+            else {
+                r = 0 ;
+            }
+        }
+
+        p1++ ;
+    }
+
+    return *p2 == 0 ? r : 0 ;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// vscp_trimWhiteSpace
+//
+
+char *vscp_trimWhiteSpace( char *str )
+{
+    char *end;
+
+    // Trim leading space
+    while( isspace(*str) ) str++;
+
+    if( 0 == *str ) {  // All spaces?
+        return str;
+    }
+
+    // Trim trailing space
+    end = str + strlen(str) - 1;
+    while(end > str && isspace(*end)) end--;
+
+    // Write new null terminator
+    *(end+1) = 0;
+
+    return str;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // vscp_getTimeString
@@ -217,14 +466,14 @@ bool vscp_getISOTimeString( char *buf, size_t buf_len, time_t *t )
 ///////////////////////////////////////////////////////////////////////////////
 // vscp_toXMLEscape
 //
-// Escape invalid XML characters for insert in XML file.
+// Escape "invalid" XML characters for insert in XML file.
 // Note: Must be room in original buffer for result
 //
 
-void vscp_toXMLEscape( char *temp_str )
+bool vscp_XML_Escape( const char *src, char *dst, size_t dst_len )
 {
-    const char cEscapeChars[6]={'&','\'','\"','>','<','\0'};
-    const char * const pEscapedSeqTable[] =
+    const char escapeCharTbl[ 6 ] = {'&','\'','\"','>','<','\0'};
+    const char * const escapeSeqTbl[] =
                         {
                             "&amp;",
                             "&apos;",
@@ -235,35 +484,87 @@ void vscp_toXMLEscape( char *temp_str )
     
     unsigned int i, j, k;
     unsigned int nRef = 0;
-    unsigned int nEscapeCharsLen = strlen( cEscapeChars );
-    unsigned int str_len = strlen( temp_str );
+    unsigned int nEscapeChars = strlen( escapeCharTbl );
+    unsigned int str_len = strlen( src );
     int nShifts = 0; 
 
-    for ( i=0; i<str_len; i++ ) {
+    // ******  TODO TODP TODO TODO 
+    
+    
+    // Go through string
+    /*for ( i = 0; i<str_len; i++ ) {
         
-        for ( nRef=0; nRef < nEscapeCharsLen; nRef++ ) {
+        // Go through escape chars 
+        for ( nRef = 0; nRef < nEscapeChars; nRef++ ) {
             
-            if ( temp_str[ i ] == cEscapeChars[ nRef ] ) {
+            // Check if char needing to be escaped on this pos
+            if ( temp_str[ i ] == escapeChar[ nRef ] ) {
                 
-                if ( ( nShifts = strlen( pEscapedSeqTable[ nRef ] ) - 1 ) > 0 ) {
+                if ( ( nShifts = strlen( escapeTable[ nRef ] ) - 1 ) > 0 ) {
                     
                     memmove( temp_str + i + nShifts, 
                                 temp_str + i, 
                                 str_len - i + nShifts ); 
                     
                     for ( j=i, k=0; j<=i+nShifts, k<=nShifts; j++,k++ ) {
-                        temp_str[ j ] = pEscapedSeqTable[ nRef ][ k ];
+                        temp_str[ j ] = escapeTable[ nRef ][ k ];
                     }
                     
                     str_len += nShifts;
                 }
             }
         }  
-    }
+    }*/
     
-    temp_str[ str_len ] = '\0';
+    dst[ str_len ] = '\0';
+    
+    return true;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// vscp_base64_wxdecode
+//
+
+bool vscp_base64_wxdecode( wxString& str ) 
+{
+    size_t dest_len = 0;
+    size_t bufferSize = 2 * str.Length();
+    if ( 0 == str.Length() ) return true;   // Nothing to do if empty
+    
+    char *pbuf = new char[ bufferSize ];
+    if ( NULL == pbuf ) return false;
+    memset( pbuf, 0, bufferSize );
+    
+    vscp_base64_decode( (const unsigned char *)( (const char *)str.mbc_str() ), 
+                            str.length(), 
+                            pbuf, 
+                            &dest_len );
+    str = wxString::FromUTF8( pbuf, dest_len );
+    delete [] pbuf;
+    
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// vscp_base64_wxencode
+//
+
+bool vscp_base64_wxencode( wxString& str ) 
+{
+    size_t  bufferSize = 2 * strlen( (const char *)str.mbc_str() );
+    char *pbuf = new char[ bufferSize ];
+    if ( NULL == pbuf ) return false;
+    memset( pbuf, 0, bufferSize );
+    
+    vscp_base64_encode( (const unsigned char *)( (const char *)str.mbc_str() ), 
+                                    strlen( (const char *)str.mbc_str() ), 
+                                    pbuf );
+    
+    str = wxString::FromUTF8( pbuf );
+    delete [] pbuf;
+    
+    return true;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // decodeBase64IfNeeded
@@ -280,24 +581,50 @@ bool vscp_decodeBase64IfNeeded( wxString &wxstr, wxString &strResult )
     
     if ( wxstr.StartsWith(_("BASE64:"), &wxstr ) ) {
         
-        // Yes should be decoded
-        size_t len = wxBase64Decode( NULL, 0, wxstr );
-        if ( 0 == len ) {
-            return false;
-        }
-        
-        uint8_t *pbuf = new uint8_t[ len ];
-        if ( NULL == pbuf ) {
-            return false;
-        }
-        
-        len = wxBase64Decode( pbuf, len, wxstr );
-        wxstr = wxString::FromUTF8( (const char *) pbuf, len );
-        delete [] pbuf;      
+        vscp_base64_wxdecode( wxstr );     
         
     } 
     
     return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// isbyte
+//
+
+static int
+isbyte( int n )
+{
+    return (n >= 0) && (n <= 255);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// vscp_parse_ipv4_addr
+//
+
+int
+vscp_parse_ipv4_addr( const char *addr, uint32_t *net, uint32_t *mask )
+{
+    int n, a, b, c, d, slash = 32, len = 0;
+
+    if ( ( ( 5 == sscanf( addr, "%d.%d.%d.%d/%d%n", &a, &b, &c, &d, &slash, &n ) ) || 
+           ( 4 == sscanf( addr, "%d.%d.%d.%d%n", &a, &b, &c, &d, &n ) ) ) && 
+            isbyte(a) && 
+            isbyte(b) && 
+            isbyte(c) && 
+            isbyte(d) && 
+            (slash >= 0 ) && 
+            (slash < 33) ) {
+        
+        len = n;
+        *net = ((uint32_t) a << 24) | 
+                ((uint32_t) b << 16) | 
+                ((uint32_t) c << 8) | 
+                (uint32_t) d;
+        *mask = slash ? (0xffffffffU << (32 - slash)) : 0;
+    }
+
+    return len;
 }
 
 
@@ -662,6 +989,7 @@ bool vscp_getVSCPMeasurementAsString( const vscpEvent *pEvent,
     else if ( ( VSCP_CLASS1_MEASUREMENT == pEvent->vscp_class ) ||
               ( VSCP_CLASS1_MEASUREZONE == pEvent->vscp_class ) ||
               ( VSCP_CLASS1_SETVALUEZONE == pEvent->vscp_class ) ||
+              ( VSCP_CLASS1_DATA == pEvent->vscp_class ) ||
               ( VSCP_CLASS2_LEVEL1_MEASUREMENT == pEvent->vscp_class ) ||
               ( VSCP_CLASS2_LEVEL1_MEASUREZONE == pEvent->vscp_class ) ||
               ( VSCP_CLASS2_LEVEL1_SETVALUEZONE == pEvent->vscp_class ) ) {
@@ -695,25 +1023,25 @@ bool vscp_getVSCPMeasurementAsString( const vscpEvent *pEvent,
                 for ( j=7; j>=0; j--) {
 
                     if (pEvent->pdata[ i+offset ] & (1<<j)) {		
-                        strValue += wxT("1");				
+                        strValue += _("1");				
                     } 
                     else {
-                        strValue += wxT("0");
+                        strValue += _("0");
                     }
 
                 }   
-                strValue += wxT(" ");
+                strValue += _(" ");
             }
             break;
 
         case 1: // series of bytes
             for (i = 1; i < (pEvent->sizeData-offset); i++) {
 
-                strValue += wxString::Format( wxT("%d"), 
+                strValue += wxString::Format( _("%d"), 
                                                 pEvent->pdata[ i+offset ]);
         
                 if (i != (pEvent->sizeData - 1 - offset)) {
-                    strValue += wxT(",");
+                    strValue += _(",");
                 }
             }
             break;
@@ -816,6 +1144,7 @@ bool vscp_getVSCPMeasurementAsDouble(const vscpEvent *pEvent, double *pvalue)
     if ( NULL == pvalue ) return false;
     
     if ( ( VSCP_CLASS1_MEASUREMENT == pEvent->vscp_class ) || 
+             ( VSCP_CLASS1_DATA == pEvent->vscp_class ) ||
              ( VSCP_CLASS2_LEVEL1_MEASUREMENT == pEvent->vscp_class ) ||
              ( VSCP_CLASS1_MEASUREZONE == pEvent->vscp_class ) || 
              ( VSCP_CLASS1_SETVALUEZONE == pEvent->vscp_class ) ) {
@@ -928,12 +1257,16 @@ int vscp_getVSCPMeasurementUnit( const vscpEvent *pEvent )
     
     if ( ( VSCP_CLASS1_MEASUREMENT == pEvent->vscp_class ) || 
              ( VSCP_CLASS2_LEVEL1_MEASUREMENT == pEvent->vscp_class ) ||
+             ( VSCP_CLASS1_DATA == pEvent->vscp_class ) ||
              ( VSCP_CLASS1_MEASUREZONE == pEvent->vscp_class ) || 
              ( VSCP_CLASS2_LEVEL1_MEASUREZONE == pEvent->vscp_class ) || 
              ( VSCP_CLASS1_SETVALUEZONE == pEvent->vscp_class ) ||
              ( VSCP_CLASS2_LEVEL1_SETVALUEZONE == pEvent->vscp_class ) ) {
         
-        if ( ( NULL == pEvent->pdata ) || ( pEvent->sizeData >= (offset + 1) ) ) return VSCP_ERROR_ERROR;
+        if ( ( NULL == pEvent->pdata ) || 
+             ( pEvent->sizeData < (offset + 1) ) ) {
+            return VSCP_ERROR_ERROR;
+        }
         
         return VSCP_DATACODING_UNIT( pEvent->pdata[ offset + 0 ] );
         
@@ -982,6 +1315,7 @@ int vscp_getVSCPMeasurementSensorIndex( const vscpEvent *pEvent )
     }
     
     if ( ( VSCP_CLASS1_MEASUREMENT == pEvent->vscp_class ) || 
+             ( VSCP_CLASS1_DATA == pEvent->vscp_class ) ||
              ( VSCP_CLASS2_LEVEL1_MEASUREMENT == pEvent->vscp_class ) ) {
                 
         return VSCP_DATACODING_INDEX( pEvent->pdata[ offset + 0 ] );
@@ -1040,7 +1374,8 @@ int vscp_getVSCPMeasurementZone( const vscpEvent *pEvent )
     }
     
     if ( ( VSCP_CLASS1_MEASUREMENT == pEvent->vscp_class ) || 
-             ( VSCP_CLASS2_LEVEL1_MEASUREMENT == pEvent->vscp_class )  ) {
+            ( VSCP_CLASS1_DATA == pEvent->vscp_class ) ||
+            ( VSCP_CLASS2_LEVEL1_MEASUREMENT == pEvent->vscp_class )  ) {
                
         return 0;   // Always zero
         
@@ -1098,6 +1433,7 @@ int vscp_getVSCPMeasurementSubZone( const vscpEvent *pEvent )
     }
     
     if ( ( VSCP_CLASS1_MEASUREMENT == pEvent->vscp_class ) || 
+             ( VSCP_CLASS1_DATA == pEvent->vscp_class ) ||
              ( VSCP_CLASS2_LEVEL1_MEASUREMENT == pEvent->vscp_class ) ||
              ( VSCP_CLASS1_MEASUREZONE == pEvent->vscp_class ) || 
              ( VSCP_CLASS2_LEVEL1_MEASUREZONE == pEvent->vscp_class ) || 
@@ -1144,6 +1480,7 @@ int vscp_getVSCPMeasurementSubZone( const vscpEvent *pEvent )
 bool vscp_isVSCPMeasurement( const vscpEvent *pEvent )
 {
     if ( ( VSCP_CLASS1_MEASUREMENT == pEvent->vscp_class ) || 
+         ( VSCP_CLASS1_DATA == pEvent->vscp_class ) ||   
          ( VSCP_CLASS2_LEVEL1_MEASUREMENT == pEvent->vscp_class ) ||
          ( VSCP_CLASS1_MEASUREZONE == pEvent->vscp_class ) || 
          ( VSCP_CLASS2_LEVEL1_MEASUREZONE == pEvent->vscp_class ) || 
@@ -1511,8 +1848,8 @@ bool vscp_convertLevel1MeasuremenToLevel2Double( vscpEvent *pEvent )
     double val64;
     
     // Check pointers
-    if ( NULL != pEvent ) return false;
-    if ( NULL != pEvent->pdata ) return false;
+    if ( NULL == pEvent ) return false;
+    if ( NULL == pEvent->pdata ) return false;
     
     // Must be a measurement event
     if ( !vscp_isVSCPMeasurement( pEvent ) ) return false;
@@ -1614,6 +1951,8 @@ bool vscp_convertLevel1MeasuremenToLevel2Double( vscpEvent *pEvent )
 
             }
             else {
+                delete [] p;
+                p = NULL;
                 return false;   // Not a measurement event, hmmmm.... strange
             }
         }
@@ -1735,6 +2074,8 @@ bool vscp_convertLevel1MeasuremenToLevel2String( vscpEvent *pEvent )
 
             }
             else {
+                delete [] p;
+                p = NULL;
                 return false;   // Not a measurement.... hmm.... strange
             }
         }
@@ -2050,7 +2391,7 @@ bool vscp_getGuidFromString(vscpEvent *pEvent, const wxString& strGUID)
         memset(pEvent->GUID, 0, 16);
     } 
     else {
-        wxStringTokenizer tkz(strGUID, wxT(":"));
+        wxStringTokenizer tkz(strGUID, _(":"));
         for (int i = 0; i < 16; i++) {
             tkz.GetNextToken().ToULong(&val, 16);
             pEvent->GUID[ i ] = (uint8_t) val;
@@ -2079,7 +2420,7 @@ bool vscp_getGuidFromStringEx(vscpEventEx *pEvent, const wxString& strGUID)
         memset(pEvent->GUID, 0, 16);
     } 
     else {
-        wxStringTokenizer tkz(strGUID, wxT(":"));
+        wxStringTokenizer tkz(strGUID, _(":"));
         for (int i = 0; i < 16; i++) {
             tkz.GetNextToken().ToULong(&val, 16);
             pEvent->GUID[ i ] = (uint8_t) val;
@@ -2112,7 +2453,7 @@ bool vscp_getGuidFromStringToArray(unsigned char *pGUID, const wxString& strGUID
     }
 
 
-    wxStringTokenizer tkz(strGUID, wxT(":"));
+    wxStringTokenizer tkz(strGUID, _(":"));
     for (int i = 0; i < 16; i++) {
         tkz.GetNextToken().ToULong(&val, 16);
         pGUID[ i ] = (uint8_t) val;
@@ -2305,7 +2646,7 @@ bool vscp_convertVSCPfromEx(vscpEvent *pEvent, const vscpEventEx *pEventEx)
     if ( NULL == pEvent ) return false;
     if ( NULL == pEventEx ) return false;
     
-    if (pEventEx->sizeData > VSCP_LEVEL2_MAXDATA) return false;
+    if ( pEventEx->sizeData > VSCP_LEVEL2_MAXDATA ) return false;
 
     if (pEventEx->sizeData) {
         // Allocate memory for data
@@ -2341,11 +2682,11 @@ bool vscp_convertVSCPfromEx(vscpEvent *pEvent, const vscpEventEx *pEventEx)
 ////////////////////////////////////////////////////////////////////////////////////
 // copyVSCPEvent
 
-bool vscp_copyVSCPEvent(vscpEvent *pEventTo, const vscpEvent *pEventFrom)
+bool vscp_copyVSCPEvent( vscpEvent *pEventTo, const vscpEvent *pEventFrom )
 {
     // Check pointers
-    if (NULL == pEventTo) return false;
-    if (NULL == pEventFrom) return false;
+    if ( NULL == pEventTo ) return false;
+    if ( NULL == pEventFrom ) return false;
 
     if ( pEventFrom->sizeData > VSCP_LEVEL2_MAXDATA ) return false;
 
@@ -2452,19 +2793,20 @@ bool vscp_getDateStringFromEvent( const vscpEvent *pEvent, wxString& dt )
     // Check pointer
     if ( NULL == pEvent ) return false;
     
-    // We just want a two digit year
-    wxString strYear = wxString::Format(_("%d"), (int)pEvent->year );
-    if ( strYear.Length() > 2 ) {
-        strYear = strYear.Right(2);
-    }
+    dt.Empty();
     
-    dt =  wxString::Format( _("%s-%02d-%02dT%02d:%02d:%02dZ"),
-                                                (const char *)strYear.mbc_str(),
+    // Return empty string if all date/time values is zero
+    if ( pEvent->year || pEvent->month || pEvent->day || 
+         pEvent->hour || pEvent->minute || pEvent->second ) {   
+        dt =  wxString::Format( _("%04d-%02d-%02dT%02d:%02d:%02dZ"),
+                                                (int)pEvent->year,
                                                 (int)pEvent->month,
                                                 (int)pEvent->day,
                                                 (int)pEvent->hour,
                                                 (int)pEvent->minute,
                                                 (int)pEvent->second );
+    }
+    
     return true;
 }
 
@@ -2493,13 +2835,13 @@ bool vscp_getDateStringFromEventEx( const vscpEventEx *pEventEx, wxString& dt )
 // vscp_convertEventToJSON
 //
 
-void vscp_convertEventToJSON( vscpEvent *pEvent, wxString& strJSON )
+bool vscp_convertEventToJSON( vscpEvent *pEvent, wxString& strJSON )
 {
     wxString strguid;
     wxString strdata;
     
     // Check pointer
-    if ( NULL == pEvent ) return;
+    if ( NULL == pEvent ) return false;
     
     vscp_writeGuidArrayToString( pEvent->GUID, strguid );   // GUID to string
     vscp_writeVscpDataWithSizeToString( pEvent->sizeData,
@@ -2522,20 +2864,119 @@ void vscp_convertEventToJSON( vscpEvent *pEvent, wxString& strJSON )
                         (const char *)strguid.mbc_str(),
                         (const char *)strdata.mbc_str(),
                         "" );
+    
+    return true;
 }
 
+////////////////////////////////////////////////////////////////////////////////////
+// vscp_convertJSONToEvent
+//
+// {
+//    "head": 2,
+//    "obid"; 123,
+//    "datetime": "2017-01-13T10:16:02",
+//    "timestamp":50817,
+//    "class": 10,
+//    "type": 8,
+//    "guid": "00:00:00:00:00:00:00:00:00:00:00:00:00:01:00:02",
+//    "data": [1,2,3,4,5,6,7]
+// }
+
+bool vscp_convertJSONToEvent( wxString& strJSON, vscpEvent *pEvent )
+{
+    wxString strguid;
+    
+    // Check pointer
+    if ( NULL == pEvent ) return false;
+    
+    try {
+    
+        auto j = json::parse( strJSON.ToStdString() );
+        
+        // Head
+        if (j.find("head") != j.end()) {
+            pEvent->head = j.at("head").get<uint16_t>();
+        }
+        
+        // obid
+        if (j.find("obid") != j.end()) {
+            pEvent->obid = j.at("obid").get<uint32_t>();
+        }
+        
+        // TimeStamp
+        if (j.find("timestamp") != j.end()) {
+            pEvent->timestamp = j.at("timestamp").get<uint32_t>();
+        }
+        
+        // DateTime
+        if (j.find("datetime") != j.end()) {
+            wxString dtStr = j.at("datetime").get<std::string>();
+            wxDateTime dt;
+            dt.ParseISOCombined( dtStr );
+            vscp_setEventDateTime( pEvent, dt ); 
+        }
+        
+        // VSCP class
+        if (j.find("class") != j.end()) {
+            pEvent->vscp_class = j.at("class").get<uint16_t>();
+        }
+        
+        // VSCP type
+        if (j.find("type") != j.end()) {
+            pEvent->vscp_type = j.at("type").get<uint16_t>();
+        }
+        
+        // GUID
+        if (j.find("guid") != j.end()) {
+            wxString guidStr = j.at("guid").get<std::string>();
+            cguid guid;
+            guid.getFromString( guidStr );
+            guid.writeGUID( pEvent->GUID );
+        }
+        
+        pEvent->sizeData = 0;
+        if (j.find("data") != j.end()) {
+            
+            std::vector<std::uint8_t> data_array  = j.at("data");
+            
+            // Check size
+            if (data_array.size() > VSCP_MAX_DATA ) return false;
+            
+            pEvent->sizeData = data_array.size(); 
+            if ( 0 == pEvent->sizeData ) {
+                pEvent->pdata = NULL;
+            }
+            else {
+                pEvent->pdata = new uint8_t[ data_array.size() ];
+                if ( NULL == pEvent->pdata ) return false;
+            
+                //memcpy( pEvent->pdata, &data_array[ 0 ], data_array.size() );
+                // C++11 variant of above
+                memcpy( pEvent->pdata, data_array.data(), data_array.size() );  
+ 
+            }
+            
+        }
+                
+    }
+    catch (... ) {
+        return false;
+    }
+    
+    return true;
+}
 
 ////////////////////////////////////////////////////////////////////////////////////
 // vscp_convertEventExToJSON
 //
 
-void vscp_convertEventExToJSON( vscpEventEx *pEventEx, wxString& strJSON )
+bool vscp_convertEventExToJSON( vscpEventEx *pEventEx, wxString& strJSON )
 {
     wxString strguid;
     wxString strdata;
         
     // Check pointer
-    if ( NULL == pEventEx ) return;
+    if ( NULL == pEventEx ) return false;
     
     vscp_writeGuidArrayToString( pEventEx->GUID, strguid );     // GUID to string
     vscp_writeVscpDataWithSizeToString( pEventEx->sizeData,
@@ -2558,19 +2999,120 @@ void vscp_convertEventExToJSON( vscpEventEx *pEventEx, wxString& strJSON )
                         (const char *)strguid.mbc_str(),
                         (const char *)strdata.mbc_str(),
                         "" );
+    
+    return true;
 }
+
+
+////////////////////////////////////////////////////////////////////////////////////
+// vscp_convertJSONToEvent
+//
+// {
+//    "head": 2,
+//    "obid"; 123,
+//    "datetime": "2017-01-13T10:16:02",
+//    "timestamp":50817,
+//    "class": 10,
+//    "type": 8,
+//    "guid": "00:00:00:00:00:00:00:00:00:00:00:00:00:01:00:02",
+//    "data": [1,2,3,4,5,6,7]
+// }
+
+bool vscp_convertJSONToEventEx( wxString& strJSON, vscpEventEx *pEventEx )
+{
+    wxString strguid;
+    
+    // Check pointer
+    if ( NULL == pEventEx ) return false;
+    
+    try {
+    
+        auto j = json::parse( strJSON.ToStdString() );
+        
+        // Head
+        if (j.find("head") != j.end()) {
+            pEventEx->head = j.at("head").get<uint16_t>();
+        }
+        
+        // obid
+        if (j.find("obid") != j.end()) {
+            pEventEx->obid = j.at("obid").get<uint32_t>();
+        }
+        
+        // TimeStamp
+        if (j.find("timestamp") != j.end()) {
+            pEventEx->timestamp = j.at("timestamp").get<uint32_t>();
+        }
+        
+        // DateTime
+        if (j.find("datetime") != j.end()) {
+            wxString dtStr = j.at("datetime").get<std::string>();
+            wxDateTime dt;
+            dt.ParseISOCombined( dtStr );
+            
+            vscp_setEventExDateTime( pEventEx, dt ); 
+        }
+        
+        // VSCP class
+        if (j.find("class") != j.end()) {
+            pEventEx->vscp_class = j.at("class").get<uint16_t>();
+        }
+        
+        // VSCP type
+        if (j.find("type") != j.end()) {
+            pEventEx->vscp_type = j.at("type").get<uint16_t>();
+        }
+        
+        // GUID
+        if (j.find("guid") != j.end()) {
+            wxString guidStr = j.at("guid").get<std::string>();
+            cguid guid;
+            guid.getFromString( guidStr );
+            guid.writeGUID( pEventEx->GUID );
+        }
+        
+        pEventEx->sizeData = 0;
+        if (j.find("data") != j.end()) {
+            
+            std::vector<std::uint8_t> data_array  = j.at("data");
+            
+            // Check size
+            if (data_array.size() > VSCP_MAX_DATA ) return false;
+            
+            pEventEx->sizeData = data_array.size(); 
+            if ( 0 == pEventEx->sizeData ) {
+                memset( pEventEx->data, 0, sizeof( pEventEx->data ) );
+            }
+            else {
+                
+                //memcpy( pEvent->pdata, &data_array[ 0 ], data_array.size() );
+                // C++11 variant of above
+                memcpy( pEventEx->data, data_array.data(), data_array.size() );  
+ 
+            }
+            
+        }
+                
+    }
+    catch (... ) {
+        return false;
+    }
+    
+    return true;
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////////
 // vscp_convertEventToXML
 //
 
-void vscp_convertEventToXML( vscpEvent *pEvent, wxString& strXML )
+bool vscp_convertEventToXML( vscpEvent *pEvent, wxString& strXML )
 {
     wxString strguid;
     wxString strdata;
         
     // Check pointer
-    if ( NULL == pEvent ) return;
+    if ( NULL == pEvent ) return false;
     
     vscp_writeGuidArrayToString( pEvent->GUID, strguid );   // GUID to string
     vscp_writeVscpDataWithSizeToString( pEvent->sizeData,
@@ -2592,21 +3134,115 @@ void vscp_convertEventToXML( vscpEvent *pEvent, wxString& strXML )
                         (unsigned short int)pEvent->vscp_type,
                         (const char *)strguid.mbc_str(),                        
                         (unsigned short int)pEvent->sizeData,
-                        (const char *)strdata.mbc_str(),
-                        "" );
+                        (const char *)strdata.mbc_str() );
+    
+    return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////////
+// vscp_convertXMLToEvent
+//
+// <event
+//     head = "2"
+//     obid = "123"
+//     datetime = "2017-01-13T10:16:02"
+//     timestamp = "50817"
+//     class = "10"
+//     type = "8"
+//     guid = "00:00:00:00:00:00:00:00:00:00:00:00:00:01:00:02"
+//     data = 1,2,3,4,5,6,7"
+// />
+
+bool vscp_convertXMLToEvent( wxString& strXML, vscpEvent *pEvent )
+{
+    wxString strguid;
+    wxString wxstr;
+    unsigned long lval;
+    wxXmlDocument doc;
+    wxStringInputStream instrstream( strXML );    
+    
+    // Check pointer
+    if ( NULL == pEvent ) return false;        
+    
+    if ( !doc.Load( instrstream ) ) {
+        return false;     
+    }
+    
+    // start processing the XML file
+    if ( doc.GetRoot()->GetName() != _("event") ) {
+        return false;
+    }
+    
+    // head
+    wxstr = doc.GetRoot()->GetAttribute( _("head") );
+    if ( wxEmptyString != wxstr ) {        
+        pEvent->head = vscp_readStringValue( wxstr );
+    }
+    
+    // obid
+    wxstr = doc.GetRoot()->GetAttribute( _("obid") );
+    if ( wxEmptyString != wxstr ) {        
+        pEvent->obid = vscp_readStringValue( wxstr );
+    }
+    
+    // timestamp
+    wxstr = doc.GetRoot()->GetAttribute( _("timestamp") );
+    if ( wxEmptyString != wxstr ) {        
+        pEvent->timestamp = vscp_readStringValue( wxstr );
+    }
+    
+    // datetime
+    wxstr = doc.GetRoot()->GetAttribute( _("datetime") );
+    if ( wxEmptyString != wxstr ) {        
+        wxDateTime dt;
+        dt.ParseISOCombined( wxstr );
+        vscp_setEventDateTime( pEvent, dt ); 
+    }
+    
+    // class
+    wxstr = doc.GetRoot()->GetAttribute( _("class") );
+    if ( wxEmptyString != wxstr ) {        
+        pEvent->vscp_class = vscp_readStringValue( wxstr );
+    }
+    
+    // type
+    wxstr = doc.GetRoot()->GetAttribute( _("type") );
+    if ( wxEmptyString != wxstr ) {        
+        pEvent->vscp_type = vscp_readStringValue( wxstr );
+    }
+    
+    // GUID
+    wxstr = doc.GetRoot()->GetAttribute( _("guid") );
+    if ( wxEmptyString != wxstr ) { 
+        cguid guid;
+        guid.getFromString( wxstr );
+        guid.writeGUID( pEvent->GUID );
+    }
+    
+    // data    
+    wxstr = doc.GetRoot()->GetAttribute( _("data") );
+    if ( wxEmptyString != wxstr ) { 
+        
+        if ( !vscp_setVscpEventDataFromString( pEvent, wxstr ) ) {
+            return false;
+        }
+            
+    }
+       
+    return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
 // vscp_convertEventExToXML
 //
 
-void vscp_convertEventExToXML( vscpEventEx *pEventEx, wxString& strXML )
+bool vscp_convertEventExToXML( vscpEventEx *pEventEx, wxString& strXML )
 {
     wxString strguid;
     wxString strdata;
         
     // Check pointer
-    if ( NULL == pEventEx ) return;
+    if ( NULL == pEventEx ) return false;
     
     vscp_writeGuidArrayToString( pEventEx->GUID, strguid );     // GUID to string
     vscp_writeVscpDataWithSizeToString( pEventEx->sizeData,
@@ -2628,21 +3264,115 @@ void vscp_convertEventExToXML( vscpEventEx *pEventEx, wxString& strXML )
                         (unsigned short int)pEventEx->vscp_type,
                         (const char *)strguid.mbc_str(),                        
                         (unsigned short int)pEventEx->sizeData,
-                        (const char *)strdata.mbc_str(),
-                        "" );
+                        (const char *)strdata.mbc_str() );
+    
+    return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////////
+// vscp_convertXMLToEventEx
+//
+// <event
+//     head = "2"
+//     obid = "123"
+//     datetime = "2017-01-13T10:16:02"
+//     timestamp = "50817"
+//     class = "10"
+//     type = "8"
+//     guid = "00:00:00:00:00:00:00:00:00:00:00:00:00:01:00:02"
+//     data = 1,2,3,4,5,6,7"
+// />
+
+bool vscp_convertXMLToEventEx( wxString& strXML, vscpEventEx *pEventEx )
+{
+    wxString strguid;
+    wxString wxstr;
+    unsigned long lval;
+    wxXmlDocument doc;
+    wxStringInputStream instrstream( strXML );    
+    
+    // Check pointer
+    if ( NULL == pEventEx ) return false;        
+    
+    if ( !doc.Load( instrstream ) ) {
+        return false;     
+    }
+    
+    // start processing the XML file
+    if ( doc.GetRoot()->GetName() != _("event") ) {
+        return false;
+    }
+    
+    // head
+    wxstr = doc.GetRoot()->GetAttribute( _("head") );
+    if ( wxEmptyString != wxstr ) {        
+        pEventEx->head = vscp_readStringValue( wxstr );
+    }
+    
+    // obid
+    wxstr = doc.GetRoot()->GetAttribute( _("obid") );
+    if ( wxEmptyString != wxstr ) {        
+        pEventEx->obid = vscp_readStringValue( wxstr );
+    }
+    
+    // timestamp
+    wxstr = doc.GetRoot()->GetAttribute( _("timestamp") );
+    if ( wxEmptyString != wxstr ) {        
+        pEventEx->timestamp = vscp_readStringValue( wxstr );
+    }
+    
+    // datetime
+    wxstr = doc.GetRoot()->GetAttribute( _("datetime") );
+    if ( wxEmptyString != wxstr ) {        
+        wxDateTime dt;
+        dt.ParseISOCombined( wxstr );
+        vscp_setEventExDateTime( pEventEx, dt ); 
+    }
+    
+    // class
+    wxstr = doc.GetRoot()->GetAttribute( _("class") );
+    if ( wxEmptyString != wxstr ) {        
+        pEventEx->vscp_class = vscp_readStringValue( wxstr );
+    }
+    
+    // type
+    wxstr = doc.GetRoot()->GetAttribute( _("type") );
+    if ( wxEmptyString != wxstr ) {        
+        pEventEx->vscp_type = vscp_readStringValue( wxstr );
+    }
+    
+    // GUID
+    wxstr = doc.GetRoot()->GetAttribute( _("guid") );
+    if ( wxEmptyString != wxstr ) { 
+        cguid guid;
+        guid.getFromString( wxstr );
+        guid.writeGUID( pEventEx->GUID );
+    }
+    
+    // data    
+    wxstr = doc.GetRoot()->GetAttribute( _("data") );
+    if ( wxEmptyString != wxstr ) { 
+        
+        if ( !vscp_setVscpEventExDataFromString( pEventEx, wxstr ) ) {
+            return false;
+        }
+            
+    }
+       
+    return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
 // vscp_convertEventToHTML
 //
 
-void vscp_convertEventToHTML( vscpEvent *pEvent, wxString& strHTML )
+bool vscp_convertEventToHTML( vscpEvent *pEvent, wxString& strHTML )
 {
     wxString strguid;
     wxString strdata;
         
     // Check pointer
-    if ( NULL == pEvent ) return;
+    if ( NULL == pEvent ) return false;
     
     vscp_writeGuidArrayToString( pEvent->GUID, strguid );   // GUID to string
     vscp_writeVscpDataWithSizeToString( pEvent->sizeData,
@@ -2656,7 +3386,7 @@ void vscp_convertEventToHTML( vscpEvent *pEvent, wxString& strHTML )
     
     // datetime,class,type,data-count,data,guid,head,timestamp,obid,note
     strHTML.Printf( VSCP_HTML_EVENT_TEMPLATE,
-                        wxDateTime::Now().FormatISOCombined(),
+                        (const char *)dt.mbc_str(),
                         (unsigned short int)pEvent->vscp_class,
                         (unsigned short int)pEvent->vscp_type,
                         (unsigned short int)pEvent->sizeData,
@@ -2667,19 +3397,21 @@ void vscp_convertEventToHTML( vscpEvent *pEvent, wxString& strHTML )
                         (unsigned long)pEvent->timestamp,
                         (unsigned long)pEvent->obid,                                                                                                
                         "" );
+    
+    return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
 // vscp_convertEventExToHTML
 //
 
-void vscp_convertEventExToHTML( vscpEventEx *pEventEx, wxString& strHTML )
+bool vscp_convertEventExToHTML( vscpEventEx *pEventEx, wxString& strHTML )
 {
     wxString strguid;
     wxString strdata;
         
     // Check pointer
-    if ( NULL == pEventEx ) return;
+    if ( NULL == pEventEx ) return false;
     
     vscp_writeGuidArrayToString( pEventEx->GUID, strguid );     // GUID to string
     vscp_writeVscpDataWithSizeToString( pEventEx->sizeData,
@@ -2693,7 +3425,7 @@ void vscp_convertEventExToHTML( vscpEventEx *pEventEx, wxString& strHTML )
     
     // datetime,class,type,data-count,data,guid,head,timestamp,obid,note
     strHTML.Printf( VSCP_HTML_EVENT_TEMPLATE,
-                        wxDateTime::Now().FormatISOCombined(),
+                        (const char *)dt.mbc_str(),
                         (unsigned short int)pEventEx->vscp_class,
                         (unsigned short int)pEventEx->vscp_type,
                         (unsigned short int)pEventEx->sizeData,
@@ -2704,6 +3436,51 @@ void vscp_convertEventExToHTML( vscpEventEx *pEventEx, wxString& strHTML )
                         (unsigned long)pEventEx->timestamp,
                         (unsigned long)pEventEx->obid,                                                                                                
                         "" );
+    
+    return true;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// vscp_setEventDateTime
+//
+
+bool vscp_setEventDateTime( vscpEvent *pEvent, wxDateTime& dt )
+{
+    if ( NULL == pEvent ) return false;
+    
+    pEvent->year = dt.GetYear();
+    pEvent->month = dt.GetMonth() + 1;
+    pEvent->day = dt.GetDay();
+    pEvent->hour = dt.GetHour();
+    pEvent->minute = dt.GetMinute();
+    pEvent->second = dt.GetSecond();
+    
+    return true;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// vscp_setEventExDateTime
+//
+
+bool vscp_setEventExDateTime( vscpEventEx *pEventEx, wxDateTime& dt )
+{
+    if ( NULL == pEventEx ) return false;
+    
+    // If invalid date set to current
+    if ( !dt.IsValid() ) {
+        dt = wxDateTime::UNow();
+    }
+    
+    pEventEx->year = dt.GetYear();
+    pEventEx->month = dt.GetMonth() + 1;
+    pEventEx->day = dt.GetDay();
+    pEventEx->hour = dt.GetHour();
+    pEventEx->minute = dt.GetMinute();
+    pEventEx->second = dt.GetSecond();
+    
+    return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2714,17 +3491,17 @@ bool vscp_setEventToNow( vscpEvent *pEvent )
 {
     if ( NULL == pEvent ) return false;
     
-    pEvent->year = wxDateTime::Now().GetYear();
-    pEvent->month = wxDateTime::Now().GetMonth();
-    pEvent->day = wxDateTime::Now().GetDay();
-    pEvent->hour = wxDateTime::Now().GetHour();
-    pEvent->minute = wxDateTime::Now().GetMinute();
-    pEvent->second = wxDateTime::Now().GetSecond();
+    pEvent->year = wxDateTime::UNow().GetYear();
+    pEvent->month = wxDateTime::UNow().GetMonth() + 1;
+    pEvent->day = wxDateTime::UNow().GetDay();
+    pEvent->hour = wxDateTime::UNow().GetHour();
+    pEvent->minute = wxDateTime::UNow().GetMinute();
+    pEvent->second = wxDateTime::UNow().GetSecond();
     
     return true;
 }
 
-////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 // vscp_setEventExToNow
 //
 
@@ -2732,12 +3509,12 @@ bool vscp_setEventExToNow( vscpEventEx *pEventEx )
 {
     if ( NULL == pEventEx ) return false;
     
-    pEventEx->year = wxDateTime::Now().GetYear();
-    pEventEx->month = wxDateTime::Now().GetMonth();
-    pEventEx->day = wxDateTime::Now().GetDay();
-    pEventEx->hour = wxDateTime::Now().GetHour();
-    pEventEx->minute = wxDateTime::Now().GetMinute();
-    pEventEx->second = wxDateTime::Now().GetSecond();
+    pEventEx->year = wxDateTime::UNow().GetYear();
+    pEventEx->month = wxDateTime::UNow().GetMonth() + 1;
+    pEventEx->day = wxDateTime::UNow().GetDay();
+    pEventEx->hour = wxDateTime::UNow().GetHour();
+    pEventEx->minute = wxDateTime::UNow().GetMinute();
+    pEventEx->second = wxDateTime::UNow().GetSecond();
     
     return true;
 }
@@ -2849,7 +3626,8 @@ void vscp_clearVSCPFilter(vscpEventFilter *pFilter)
 // vscp_copyVSCPFilter
 //
 
-void vscp_copyVSCPFilter( vscpEventFilter *pToFilter, const vscpEventFilter *pFromFilter)
+void vscp_copyVSCPFilter( vscpEventFilter *pToFilter, 
+                            const vscpEventFilter *pFromFilter)
 {
     // Validate pointers
     if (NULL == pToFilter) return;
@@ -2869,7 +3647,8 @@ void vscp_copyVSCPFilter( vscpEventFilter *pToFilter, const vscpEventFilter *pFr
 // readFilterFromString
 //
 
-bool vscp_readFilterFromString(vscpEventFilter *pFilter, const wxString& strFilter)
+bool vscp_readFilterFromString( vscpEventFilter *pFilter, 
+                                    const wxString& strFilter)
 {
     wxString strTok;
 
@@ -2886,7 +3665,7 @@ bool vscp_readFilterFromString(vscpEventFilter *pFilter, const wxString& strFilt
     // Get filter priority
     if (tkz.HasMoreTokens()) {
         strTok = tkz.GetNextToken();
-        pFilter->filter_priority = vscp_readStringValue(strTok);
+        pFilter->filter_priority = vscp_readStringValue( strTok );
     } 
     else {
         return true;
@@ -2895,7 +3674,7 @@ bool vscp_readFilterFromString(vscpEventFilter *pFilter, const wxString& strFilt
     // Get filter class
     if (tkz.HasMoreTokens()) {
         strTok = tkz.GetNextToken();
-        pFilter->filter_class = vscp_readStringValue(strTok);
+        pFilter->filter_class = vscp_readStringValue( strTok );
     } 
     else {
         return true;
@@ -2904,7 +3683,7 @@ bool vscp_readFilterFromString(vscpEventFilter *pFilter, const wxString& strFilt
     // Get filter type
     if (tkz.HasMoreTokens()) {
         strTok = tkz.GetNextToken();
-        pFilter->filter_type = vscp_readStringValue(strTok);
+        pFilter->filter_type = vscp_readStringValue( strTok );
     } 
     else {
         return true;
@@ -2924,7 +3703,8 @@ bool vscp_readFilterFromString(vscpEventFilter *pFilter, const wxString& strFilt
 // vscp_writeFilterToString
 //
 
-bool vscp_writeFilterToString( const vscpEventFilter *pFilter, wxString& strFilter)
+bool vscp_writeFilterToString( const vscpEventFilter *pFilter, 
+                                wxString& strFilter)
 {
     cguid guid;
     
@@ -2960,7 +3740,7 @@ bool vscp_readMaskFromString(vscpEventFilter *pFilter, const wxString& strMask)
 
     wxStringTokenizer tkz( strMask, _(","));
 
-    // Get filter priority
+    // Get mask priority
     if (tkz.HasMoreTokens()) {
         strTok = tkz.GetNextToken();
         pFilter->mask_priority = vscp_readStringValue(strTok);
@@ -2969,7 +3749,7 @@ bool vscp_readMaskFromString(vscpEventFilter *pFilter, const wxString& strMask)
         return true;
     }
 
-    // Get filter class
+    // Get mask class
     if (tkz.HasMoreTokens()) {
         strTok = tkz.GetNextToken();
         pFilter->mask_class = vscp_readStringValue(strTok);
@@ -2978,7 +3758,7 @@ bool vscp_readMaskFromString(vscpEventFilter *pFilter, const wxString& strMask)
         return true;
     }
 
-    // Get filter type
+    // Get mask type
     if (tkz.HasMoreTokens()) {
         strTok = tkz.GetNextToken();
         pFilter->mask_type = vscp_readStringValue(strTok);
@@ -2987,7 +3767,7 @@ bool vscp_readMaskFromString(vscpEventFilter *pFilter, const wxString& strMask)
         return true;
     }
 
-    // Get filter GUID
+    // Get mask GUID
     if (tkz.HasMoreTokens()) {
         strTok = tkz.GetNextToken();
         vscp_getGuidFromStringToArray(pFilter->mask_GUID,
@@ -3001,7 +3781,8 @@ bool vscp_readMaskFromString(vscpEventFilter *pFilter, const wxString& strMask)
 // vscp_writeMaskToString
 //
 
-bool vscp_writeMaskToString( const vscpEventFilter *pFilter, wxString& strFilter)
+bool vscp_writeMaskToString( const vscpEventFilter *pFilter, 
+                                wxString& strFilter)
 {
     cguid guid;
     
@@ -3016,6 +3797,300 @@ bool vscp_writeMaskToString( const vscpEventFilter *pFilter, wxString& strFilter
                 pFilter->mask_type,
                 guid.getAsString().mbc_str() );
 
+    return true;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// vscp_readFilterMaskFromString
+//
+
+bool vscp_readFilterMaskFromString( vscpEventFilter *pFilter,
+                                        const wxString& strFilterMask )
+{
+    wxString strTok;
+
+    // Check pointer
+    if (NULL == pFilter) return false;
+    
+    // Clear filter and mask
+    vscp_clearVSCPFilter( pFilter );
+    
+    wxStringTokenizer tkz(strFilterMask, _(","));
+
+    // Get filter priority
+    if (tkz.HasMoreTokens()) {
+        strTok = tkz.GetNextToken();
+        pFilter->filter_priority = vscp_readStringValue( strTok );
+    } 
+    else {
+        return true;
+    }
+
+    // Get filter class
+    if (tkz.HasMoreTokens()) {
+        strTok = tkz.GetNextToken();
+        pFilter->filter_class = vscp_readStringValue( strTok );
+    } 
+    else {
+        return true;
+    }
+
+    // Get filter type
+    if (tkz.HasMoreTokens()) {
+        strTok = tkz.GetNextToken();
+        pFilter->filter_type = vscp_readStringValue( strTok );
+    } 
+    else {
+        return true;
+    }
+
+    // Get filter GUID
+    if (tkz.HasMoreTokens()) {
+        strTok = tkz.GetNextToken();
+        vscp_getGuidFromStringToArray(pFilter->filter_GUID,
+                                        strTok);
+    } 
+    
+    // Get mask priority
+    if (tkz.HasMoreTokens()) {
+        strTok = tkz.GetNextToken();
+        pFilter->mask_priority = vscp_readStringValue(strTok);
+    } 
+    else {
+        return true;
+    }
+
+    // Get mask class
+    if (tkz.HasMoreTokens()) {
+        strTok = tkz.GetNextToken();
+        pFilter->mask_class = vscp_readStringValue(strTok);
+    } 
+    else {
+        return true;
+    }
+
+    // Get mask type
+    if (tkz.HasMoreTokens()) {
+        strTok = tkz.GetNextToken();
+        pFilter->mask_type = vscp_readStringValue(strTok);
+    } 
+    else {
+        return true;
+    }
+
+    // Get mask GUID
+    if (tkz.HasMoreTokens()) {
+        strTok = tkz.GetNextToken();
+        vscp_getGuidFromStringToArray(pFilter->mask_GUID,
+                                        strTok);
+    }
+    
+    return true;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// vscp_readFilterMaskFromXML
+//
+
+bool vscp_readFilterMaskFromXML( vscpEventFilter *pFilter, const wxString& strFilter )
+{
+    wxString strguid;
+    wxString wxstr;
+    unsigned long lval;
+    wxXmlDocument doc;
+    wxStringInputStream instrstream( strFilter );    
+    
+    // Check pointer
+    if ( NULL == pFilter ) return false;        
+    
+    if ( !doc.Load( instrstream ) ) {
+        return false;     
+    }
+    
+    // start processing the XML file
+    if ( doc.GetRoot()->GetName() != _("filter") ) {
+        return false;
+    }
+    
+    // mask priority
+    wxstr = doc.GetRoot()->GetAttribute( _("mask_priority") );
+    if ( wxEmptyString != wxstr ) {        
+        pFilter->mask_priority = vscp_readStringValue( wxstr );
+    }
+    
+    // mask class
+    wxstr = doc.GetRoot()->GetAttribute( _("mask_class") );
+    if ( wxEmptyString != wxstr ) {        
+        pFilter->mask_class = vscp_readStringValue( wxstr );
+    }
+    
+    // mask type
+    wxstr = doc.GetRoot()->GetAttribute( _("mask_type") );
+    if ( wxEmptyString != wxstr ) {        
+        pFilter->mask_type = vscp_readStringValue( wxstr );
+    }
+    
+    // mask GUID
+    wxstr = doc.GetRoot()->GetAttribute( _("mask_guid") );
+    if ( wxEmptyString != wxstr ) { 
+        cguid guid;
+        guid.getFromString( wxstr );
+        guid.writeGUID( pFilter->mask_GUID );
+    }
+    
+    // filter priority
+    wxstr = doc.GetRoot()->GetAttribute( _("filter_priority") );
+    if ( wxEmptyString != wxstr ) {        
+        pFilter->filter_priority = vscp_readStringValue( wxstr );
+    }
+    
+    // filter class
+    wxstr = doc.GetRoot()->GetAttribute( _("filter_class") );
+    if ( wxEmptyString != wxstr ) {        
+        pFilter->filter_class = vscp_readStringValue( wxstr );
+    }
+    
+    // filter type
+    wxstr = doc.GetRoot()->GetAttribute( _("filter_type") );
+    if ( wxEmptyString != wxstr ) {        
+        pFilter->filter_type = vscp_readStringValue( wxstr );
+    }
+    
+    // mask GUID
+    wxstr = doc.GetRoot()->GetAttribute( _("filter_guid") );
+    if ( wxEmptyString != wxstr ) { 
+        cguid guid;
+        guid.getFromString( wxstr );
+        guid.writeGUID( pFilter->filter_GUID );
+    }
+    
+    return true;
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+// vscp_writeFilterMaskToXML
+//
+
+bool vscp_writeFilterMaskToXML( vscpEventFilter *pFilter, wxString& strFilter )
+{
+    wxString strmaskguid;
+    wxString strfilterguid;
+    
+    // Check pointer
+    if ( NULL == pFilter ) return false;
+    
+    vscp_writeGuidArrayToString( pFilter->mask_GUID, strmaskguid );
+    vscp_writeGuidArrayToString( pFilter->filter_GUID, strfilterguid );
+            
+    strFilter.Printf( VSCP_XML_FILTER_TEMPLATE,
+                        (int)pFilter->mask_priority,
+                        (int)pFilter->mask_class,
+                        (int)pFilter->mask_type,
+                        (const char *)strmaskguid.mbc_str(),
+                        (int)pFilter->filter_priority,
+                        (int)pFilter->filter_class,
+                        (int)pFilter->filter_type,
+                        (const char *)strfilterguid.mbc_str() );
+    return true;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// vscp_readFilterMaskFromJSON
+//
+
+bool vscp_readFilterMaskFromJSON( vscpEventFilter *pFilter, const wxString& strFilter )
+{
+    wxString strguid;
+    
+    // Check pointer
+    if ( NULL == pFilter ) return false;
+    
+    try {
+    
+        auto j = json::parse( strFilter.ToStdString() );
+        
+        // mask priority
+        if (j.find("mask_priority") != j.end()) {
+            pFilter->mask_priority = j.at("mask_priority").get<uint8_t>();
+        }
+        
+        // mask_class
+        if (j.find("mask_class") != j.end()) {
+            pFilter->mask_class = j.at("mask_class").get<uint16_t>();
+        }
+        
+        // mask_type
+        if (j.find("mask_type") != j.end()) {
+            pFilter->mask_type = j.at("mask_type").get<uint16_t>();
+        }
+        
+        // mask GUID
+        if (j.find("mask_guid") != j.end()) {
+            wxString guidStr = j.at("mask_guid").get<std::string>();
+            cguid guid;
+            guid.getFromString( guidStr );
+            guid.writeGUID( pFilter->mask_GUID );
+        }
+       
+        // filter priority
+        if (j.find("filter_priority") != j.end()) {
+            pFilter->filter_priority = j.at("filter_priority").get<uint8_t>();
+        }
+        
+        // filter_class
+        if (j.find("filter_class") != j.end()) {
+            pFilter->filter_class = j.at("filter_class").get<uint16_t>();
+        }
+        
+        // filter_type
+        if (j.find("filter_type") != j.end()) {
+            pFilter->filter_type = j.at("filter_type").get<uint16_t>();
+        }
+        
+        // filter GUID
+        if (j.find("filter_guid") != j.end()) {
+            wxString guidStr = j.at("filter_guid").get<std::string>();
+            cguid guid;
+            guid.getFromString( guidStr );
+            guid.writeGUID( pFilter->filter_GUID );
+        }        
+                
+    }
+    catch (... ) {
+        return false;
+    }
+    
+    return true;
+}
+
+
+
+//////////////////////////////////////////////////////////////////////////////
+// vscp_writeFilterMaskToJSON
+//
+
+bool vscp_writeFilterMaskToJSON( vscpEventFilter *pFilter, wxString& strFilter )
+{
+    wxString strmaskguid;
+    wxString strfilterguid;
+    
+    // Check pointer
+    if ( NULL == pFilter ) return false;
+    
+    vscp_writeGuidArrayToString( pFilter->mask_GUID, strmaskguid );
+    vscp_writeGuidArrayToString( pFilter->filter_GUID, strfilterguid );
+            
+    strFilter.Printf( VSCP_JSON_FILTER_TEMPLATE,
+                        (int)pFilter->mask_priority,
+                        (int)pFilter->mask_class,
+                        (int)pFilter->mask_type,
+                        (const char *)strmaskguid.mbc_str(),
+                        (int)pFilter->filter_priority,
+                        (int)pFilter->filter_class,
+                        (int)pFilter->filter_type,
+                        (const char *)strfilterguid.mbc_str() );
+    
     return true;
 }
 
@@ -3069,6 +4144,9 @@ bool vscp_convertCanalToEvent(vscpEvent *pvscpEvent,
     // Timestamp
     vscp_setEventDateTimeBlockToNow( pvscpEvent );
     pvscpEvent->timestamp = pcanalMsg->timestamp;
+    
+    // Date/time block
+    vscp_setEventToNow( pvscpEvent );
 
     // Set nickname id
     pvscpEvent->GUID[ 15 ] = (unsigned char) (0xff & pcanalMsg->id);
@@ -3168,7 +4246,8 @@ bool vscp_convertEventToCanal(canalMsg *pcanalMsg, const vscpEvent *pvscpEvent)
 // convertEventExToCanal
 //
 
-bool vscp_convertEventExToCanal(canalMsg *pcanalMsg, const vscpEventEx *pvscpEventEx)
+bool vscp_convertEventExToCanal( canalMsg *pcanalMsg, 
+                                    const vscpEventEx *pvscpEventEx)
 {
     bool rv;
 
@@ -3206,7 +4285,7 @@ bool vscp_writeVscpDataToString( const vscpEvent *pEvent,
 
     str.Empty();
 
-    if (bUseHtmlBreak) {
+    if ( bUseHtmlBreak ) {
         strBreak = _("<br>");
     } 
     else {
@@ -3247,7 +4326,7 @@ bool vscp_writeVscpDataWithSizeToString( const uint16_t sizeData,
 
     str.Empty();
 
-    if (bUseHtmlBreak) {
+    if ( bUseHtmlBreak ) {
         strBreak = _("<br>");
     } 
     else {
@@ -3275,10 +4354,10 @@ bool vscp_writeVscpDataWithSizeToString( const uint16_t sizeData,
 
 
 //////////////////////////////////////////////////////////////////////////////
-// setVscpDataFromString
+// setVscpEventDataFromString
 //
 
-bool vscp_setVscpDataFromString(vscpEvent *pEvent, const wxString& str)
+bool vscp_setVscpEventDataFromString(vscpEvent *pEvent, const wxString& str)
 {
     // Check pointers
     if (NULL == pEvent) return false;
@@ -3309,6 +4388,29 @@ bool vscp_setVscpDataFromString(vscpEvent *pEvent, const wxString& str)
 }
 
 //////////////////////////////////////////////////////////////////////////////
+// vscp_setVscpEventExDataFromString
+//
+
+bool vscp_setVscpEventExDataFromString(vscpEventEx *pEventEx, const wxString& str)
+{
+    // Check pointers
+    if (NULL == pEventEx) return false;
+
+    wxStringTokenizer tkz(str, _(","));
+
+    pEventEx->sizeData = 0;
+    while (tkz.HasMoreTokens()) {
+        wxString token = tkz.GetNextToken();
+        pEventEx->data[ pEventEx->sizeData ] = vscp_readStringValue(token);
+        pEventEx->sizeData++;
+        if (pEventEx->sizeData >= VSCP_MAX_DATA) break;
+    }
+
+    return true;
+
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // setVscpDataArrayFromString
 //
 
@@ -3333,7 +4435,7 @@ bool vscp_setVscpDataArrayFromString(uint8_t *pData,
     return true;    
 }
 
-////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 // makeTimeStamp
 //
 
@@ -3364,7 +4466,7 @@ unsigned long vscp_makeTimeStamp( void )
 */
 }
 
-////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 // vscp_setEventDateTimeBlockToNow
 //
 
@@ -3373,23 +4475,23 @@ bool vscp_setEventDateTimeBlockToNow( vscpEvent *pEvent )
     // Check pointer 
     if ( NULL == pEvent ) return false;
     
-    time_t rawtime;
+    /*time_t rawtime;
     struct tm * ptm;
 
     time( &rawtime );
-    ptm = gmtime( &rawtime );
-    
-    pEvent->year = ptm->tm_year;
-    pEvent->month = ptm->tm_mon;
-    pEvent->day = ptm->tm_mday;
-    pEvent->hour = ptm->tm_hour;
-    pEvent->minute = ptm->tm_min;
-    pEvent->second = ptm->tm_sec;
+    ptm = gmtime( &rawtime );*/
+       
+    pEvent->year = wxDateTime::UNow().GetYear();
+    pEvent->month = wxDateTime::UNow().GetMonth() + 1;
+    pEvent->day = wxDateTime::UNow().GetDay();
+    pEvent->hour = wxDateTime::UNow().GetHour();
+    pEvent->minute = wxDateTime::UNow().GetMinute();
+    pEvent->second = wxDateTime::UNow().GetSecond();
     
     return true;
 }
 
-////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 // vscp_setEventExDateTimeBlockToNow
 //
 
@@ -3398,24 +4500,18 @@ bool vscp_setEventExDateTimeBlockToNow( vscpEventEx *pEventEx )
     // Check pointer 
     if ( NULL == pEventEx ) return false;
     
-    time_t rawtime;
-    struct tm * ptm;
-
-    time( &rawtime );
-    ptm = gmtime( &rawtime );
-    
-    pEventEx->year = ptm->tm_year;
-    pEventEx->month = ptm->tm_mon;
-    pEventEx->day = ptm->tm_mday;
-    pEventEx->hour = ptm->tm_hour;
-    pEventEx->minute = ptm->tm_min;
-    pEventEx->second = ptm->tm_sec;
+    pEventEx->year = wxDateTime::UNow().GetYear();
+    pEventEx->month = wxDateTime::UNow().GetMonth() + 1;
+    pEventEx->day = wxDateTime::UNow().GetDay();
+    pEventEx->hour = wxDateTime::UNow().GetHour();
+    pEventEx->minute = wxDateTime::UNow().GetMinute();
+    pEventEx->second = wxDateTime::UNow().GetSecond();
     
     return true;
 }
 
 
-////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 // writeVscpEventToString
 //
 // head,class,type,obid,datetime,timestamp,GUID,data1,data2,data3....
@@ -3430,7 +4526,7 @@ bool vscp_writeVscpEventToString( const vscpEvent *pEvent, wxString& str)
     vscp_getDateStringFromEvent( pEvent, dt );
     
     //head,class,type,obid,datetime,timestamp
-    str.Printf( _("%hu,%hu,%hu,%lu,%s,%lu"), 
+    str.Printf( _("%hu,%hu,%hu,%lu,%s,%lu,"), 
                             (unsigned short)pEvent->head,
                             (unsigned short)pEvent->vscp_class,
                             (unsigned short)pEvent->vscp_type,
@@ -3442,7 +4538,7 @@ bool vscp_writeVscpEventToString( const vscpEvent *pEvent, wxString& str)
     vscp_writeGuidToString(pEvent, strGUID);
     str += strGUID;
     if (pEvent->sizeData) {
-        str += wxT(",");
+        str += _(",");
 
         wxString strData;
         vscp_writeVscpDataToString(pEvent, strData);
@@ -3452,7 +4548,7 @@ bool vscp_writeVscpEventToString( const vscpEvent *pEvent, wxString& str)
     return true;
 }
 
-////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 // writeVscpEventExToString
 //
 // head,class,type,obid,datetime,timestamp,GUID,data1,data2,data3....
@@ -3460,21 +4556,20 @@ bool vscp_writeVscpEventToString( const vscpEvent *pEvent, wxString& str)
 
 bool vscp_writeVscpEventExToString( const vscpEventEx *pEventEx, wxString& str)
 {
-    vscpEvent Event;
-    Event.pdata = NULL;
+    vscpEvent event;
+    event.pdata = NULL;
 
     // Check pointer
     if (NULL == pEventEx) return false;
 
-    Event.pdata = NULL;
-    vscp_convertVSCPfromEx(&Event, pEventEx);
-    vscp_writeVscpEventToString(&Event, str);
-    if ( NULL != Event.pdata ) delete Event.pdata;
+    vscp_convertVSCPfromEx(&event, pEventEx);
+    vscp_writeVscpEventToString(&event, str);
+    if ( NULL != event.pdata ) delete event.pdata;
 
     return true;
 }
 
-////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 // setVscpEventFromString
 //
 // Format: 
@@ -3493,9 +4588,9 @@ bool vscp_setVscpEventFromString(vscpEvent *pEvent, const wxString& strEvent)
     wxStringTokenizer tkz(str, _(","));
 
     // Get head
-    if (tkz.HasMoreTokens()) {
+    if ( tkz.HasMoreTokens() ) {
         str = tkz.GetNextToken();
-        pEvent->head = vscp_readStringValue(str);
+        pEvent->head = vscp_readStringValue( str );
     } 
     else {
         return false;
@@ -3521,12 +4616,33 @@ bool vscp_setVscpEventFromString(vscpEvent *pEvent, const wxString& strEvent)
     }
 
     // Get OBID  -  Kept here to be compatible with receive
-    if (tkz.HasMoreTokens()) {
+    if ( tkz.HasMoreTokens() ) {
         str = tkz.GetNextToken();
-        pEvent->obid = vscp_readStringValue(str);
+        pEvent->obid = vscp_readStringValue( str );
     } 
     else {
         return false;
+    }
+    
+    // Get datetime
+    if (tkz.HasMoreTokens()) {
+        str = tkz.GetNextToken();
+        str.Trim();
+        if ( str.Length() ) {
+            // Parse and set time
+            wxDateTime dt;
+            dt.ParseISOCombined( str );
+            pEvent->year = dt.GetYear();
+            pEvent->month = dt.GetMonth() + 1;
+            pEvent->day = dt.GetDay();
+            pEvent->hour = dt.GetHour();
+            pEvent->minute = dt.GetMinute();
+            pEvent->second = dt.GetSecond();
+        }
+        else {
+            // Set to now
+            vscp_setEventDateTimeBlockToNow( pEvent );
+        }
     }
 
     // Get Timestamp
@@ -3583,20 +4699,21 @@ bool vscp_setVscpEventFromString(vscpEvent *pEvent, const wxString& strEvent)
     return true;
 }
 
-////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 // setVscpEventExFromString
 //
 // Format: 
 //      head,class,type,obid,timestamp,GUID,data1,data2,data3....
 //
 
-bool vscp_setVscpEventExFromString(vscpEventEx *pEventEx, const wxString& strEvent)
+bool vscp_setVscpEventExFromString( vscpEventEx *pEventEx, 
+                                        const wxString& strEvent)
 {
     bool rv;
     vscpEvent event;
 
     // Parse the string data
-    rv = vscp_setVscpEventFromString(&event, strEvent);
+    rv = vscp_setVscpEventFromString( &event, strEvent );
     vscp_convertVSCPtoEx(pEventEx, &event);
 
     // Remove possible data
@@ -4786,7 +5903,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
             case 0x00: // bit format
             {
                 strValue = _("[bit] = ");
-                strValue += wxString::Format(wxT("%X"),
+                strValue += wxString::Format(_("%X"),
                         (long) vscp_getDataCodingBitArray(pEvent->pdata+offset, 
                         pEvent->sizeData-offset));
             }
@@ -5294,6 +6411,10 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
                 case VSCP2_TYPE_PROTOCOL_HIGH_END_SERVER_CAPS:
                     strOutput += _( "CLASS2 PROTOCOL - High End Server Capabilities.\n" );
                     break;
+                    
+                case VSCP2_TYPE_PROTOCOL_WHO_IS_THERE_RESPONSE:
+                    strOutput += _( "CLASS2 PROTOCOL - Level II who is there response.\n" );
+                    break;    
 
                 default:
                     break;
@@ -5452,7 +6573,7 @@ wxString vscp_getEncryptionTokenFromCode( uint8_t code )
 size_t vscp_getUDpFrameSizeFromEvent( vscpEvent *pEvent )
 {
     // Check pointer
-    if ( NULL != pEvent ) return false;
+    if ( NULL == pEvent ) return false;
     
     size_t size = 1 +                                       // Packet type
                     VSCP_MULTICAST_PACKET0_HEADER_LENGTH +          
@@ -5468,7 +6589,7 @@ size_t vscp_getUDpFrameSizeFromEvent( vscpEvent *pEvent )
 size_t vscp_getUDpFrameSizeFromEventEx( vscpEventEx *pEventEx )
 {
     // Check pointer
-    if ( NULL != pEventEx ) return false;
+    if ( NULL == pEventEx ) return false;
     
     size_t size = 1 +                                       // Packet type
                     VSCP_MULTICAST_PACKET0_HEADER_LENGTH +          
@@ -5490,9 +6611,9 @@ bool vscp_writeEventToUdpFrame( uint8_t *frame,
     // Check pointers
     if ( NULL == frame ) return false;
     if ( NULL == pEvent ) return false;
-    // Can't have datasize with invalid data pointer
+    // Can't have data size with invalid data pointer
     if ( pEvent->sizeData && (NULL == pEvent->pdata ) ) return false;
-    
+       
     size_t calcSize = 1 +                                       // Packet type
                         VSCP_MULTICAST_PACKET0_HEADER_LENGTH +          
                         pEvent->sizeData +                  
@@ -5514,7 +6635,8 @@ bool vscp_writeEventToUdpFrame( uint8_t *frame,
     frame[ VSCP_MULTICAST_PACKET0_POS_TIMESTAMP + 3 ] = pEvent->timestamp & 0xff;
 
     // Date / time block GMT
-    frame[ VSCP_MULTICAST_PACKET0_POS_YEAR ] = pEvent->year;
+    frame[ VSCP_MULTICAST_PACKET0_POS_YEAR_MSB ] = ( pEvent->year >> 8 ) & 0xff;
+    frame[ VSCP_MULTICAST_PACKET0_POS_YEAR_LSB ] = pEvent->year & 0xff;
     frame[ VSCP_MULTICAST_PACKET0_POS_MONTH ] = pEvent->month;
     frame[ VSCP_MULTICAST_PACKET0_POS_DAY ] = pEvent->day;
     frame[ VSCP_MULTICAST_PACKET0_POS_HOUR ] = pEvent->hour;
@@ -5555,7 +6677,22 @@ bool vscp_writeEventToUdpFrame( uint8_t *frame,
                 ( framecrc >> 8 ) & 0xff;
     frame[ 1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + pEvent->sizeData + 1 ] = 
                 framecrc & 0xff;
-
+    
+#if 0
+    wxPrintf("CRC1 %02X %02X\n",
+                frame[ 1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + pEvent->sizeData ],
+                frame[ 1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + pEvent->sizeData + 1 ] );
+    wxPrintf("CRC2 %02X %02X\n",
+                ( framecrc >> 8 ) & 0xff,
+                framecrc & 0xff );
+    crc nnnn = crcFast( frame+1,
+                            VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 
+                            pEvent->sizeData );
+    wxPrintf("CRC3 %02X %02X\n",
+                ( nnnn >> 8 ) & 0xff,
+                nnnn & 0xff );
+    wxPrintf("--------------------------------\n");
+#endif    
     
     return true;
 }
@@ -5594,7 +6731,7 @@ bool vscp_writeEventExToUdpFrame( uint8_t *frame,
 
 bool vscp_getEventFromUdpFrame( vscpEvent *pEvent, 
                                     const uint8_t *buf, 
-                                    size_t len ) 
+                                    size_t len )
 {    
     // Check pointers
     if ( NULL == pEvent ) return false;
@@ -5607,52 +6744,61 @@ bool vscp_getEventFromUdpFrame( vscpEvent *pEvent,
     //  4           Timestamp microseconds
     //  5           Timestamp microseconds
     //  6           Timestamp microseconds LSB
-    //  7           Year
-    //  8           Month
-    //  9           Day
-    //  10          Hour
-    //  11          Minute
-    //  12          Second
-    //  13          CLASS MSB
-    //  14          CLASS LSB
-    //  15          TYPE MSB
-    //  16          TYPE LSB
-    //  17 - 32     ORIGINATING GUID
-    //  33          DATA SIZE MSB
-    //  34          DATA SIZE LSB
-    //  35 - n 	    data limited to max 512 - 25 = 487 bytes
+    //  7           Year MSB
+    //  8           Year LSB
+    //  9           Month
+    //  10           Day
+    //  11          Hour
+    //  12          Minute
+    //  13          Second
+    //  14          CLASS MSB
+    //  15          CLASS LSB
+    //  16          TYPE MSB
+    //  17          TYPE LSB
+    //  18 - 33     ORIGINATING GUID
+    //  34          DATA SIZE MSB
+    //  35          DATA SIZE LSB
+    //  36 - n 	    data limited to max 512 - 25 = 487 bytes
     //  len - 2     CRC MSB( Calculated on HEAD + CLASS + TYPE + ADDRESS + SIZE + DATA )
     //  len - 1     CRC LSB
     // if encrypted with AES128/192/256 16.bytes IV here.
     
+    
+    
     size_t calcFrameSize = 
-            1 +                                          // packet type & encryption                        
+            1 +                                             // packet type & encryption                        
             VSCP_MULTICAST_PACKET0_HEADER_LENGTH +          // header
             2 +                                             // CRC
             ((uint16_t)buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_MSB ] << 8 ) +
-            buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_LSB ];
+                buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_LSB ];
         
     // The buffer must hold a frame
     if ( len < calcFrameSize ) return false;
     
-    crc calcCRC = ((uint16_t)buf[ calcFrameSize - 2 ] << 8 ) +
+    crc crcFrame = ((uint16_t)buf[ calcFrameSize - 2 ] << 8 ) +
                         buf[ calcFrameSize - 1 ];
     
     // CRC check (only if not disabled)
     crc crcnew;
-    if ( !( ( buf[ VSCP_MULTICAST_PACKET0_POS_HEAD_LSB ] | VSCP_HEADER_NO_CRC ) && 
-            ( VSCP_NOCRC_CALC_DUMMY_CRC == calcCRC ) ) ) {
+    if ( !( ( buf[ VSCP_MULTICAST_PACKET0_POS_HEAD_LSB ] & VSCP_HEADER_NO_CRC ) && 
+            ( VSCP_NOCRC_CALC_DUMMY_CRC == crcFrame ) ) ) {
+        
+#if 0
+    int i;
+    wxPrintf("DUMP = ");
+    for ( i=0; i<calcFrameSize; i++ ) {
+        wxPrintf("%02X ", buf[i] );
+    }
+    wxPrintf("\n");
+#endif        
         
         // Calculate & check CRC
         crcnew = crcFast( (unsigned char const *)buf + 1, 
-                    VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 
-                     ((uint16_t)buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_MSB ] << 8 ) +
-                     buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_LSB ] +
-                     2 );
+                            calcFrameSize - 1 ); 
         // CRC is zero if calculated over itself
         if ( crcnew ) return false;
     }
-            
+                
     pEvent->sizeData =  
             ((uint16_t)buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_MSB ] << 8 ) +
                        buf[ VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_LSB ];
@@ -5677,7 +6823,7 @@ bool vscp_getEventFromUdpFrame( vscpEvent *pEvent,
                 pEvent->sizeData ); 
     
     // Set CRC
-    pEvent->crc = calcCRC;
+    pEvent->crc = crcFrame;
     
     // Set timestamp
     pEvent->timestamp = 
@@ -5692,7 +6838,8 @@ bool vscp_getEventFromUdpFrame( vscpEvent *pEvent,
     }
     
     // Date/time
-    pEvent->year = buf[ VSCP_MULTICAST_PACKET0_POS_YEAR ];
+    pEvent->year = ( (uint16_t)buf[ VSCP_MULTICAST_PACKET0_POS_YEAR_MSB ] << 8 ) +
+                               buf[ VSCP_MULTICAST_PACKET0_POS_YEAR_LSB ];
     pEvent->month = buf[ VSCP_MULTICAST_PACKET0_POS_MONTH ];
     pEvent->day = buf[ VSCP_MULTICAST_PACKET0_POS_DAY ];
     pEvent->hour = buf[ VSCP_MULTICAST_PACKET0_POS_HOUR ];
@@ -5708,7 +6855,7 @@ bool vscp_getEventFromUdpFrame( vscpEvent *pEvent,
          ( 0 == pEvent->second ) ) {
         
         pEvent->year = wxDateTime::UNow().GetYear();
-        pEvent->month = wxDateTime::UNow().GetMonth();
+        pEvent->month = wxDateTime::UNow().GetMonth() + 1;
         pEvent->day = wxDateTime::UNow().GetDay();
         pEvent->hour = wxDateTime::UNow().GetHour();
         pEvent->minute = wxDateTime::UNow().GetMinute();
@@ -5763,65 +6910,88 @@ bool vscp_getEventExFromUdpFrame( vscpEventEx *pEventEx,
 // vscp_encryptVscpUdpFrame
 //
 
-bool vscp_encryptVscpUdpFrame( uint8_t *output, 
+size_t vscp_encryptVscpUdpFrame( uint8_t *output, 
                                         uint8_t *input, 
                                         size_t len,
                                         const uint8_t *key,
                                         const uint8_t *iv,
                                         uint8_t nAlgorithm )
-{
-    uint8_t generated_iv[16];
+{    
+    uint8_t generated_iv[ 16 ];
     
-    if ( NULL == output ) return false;
-    if ( NULL == input ) return false;
-    if ( NULL == key ) return false;
+    if ( NULL == output ) return 0;
+    if ( NULL == input ) return 0;
+    if ( NULL == key ) return 0;
+      
+    // If no encryption needed - return
+    if ( VSCP_ENCRYPTION_NONE == nAlgorithm ) {
+        memcpy( output, input, len );
+        return len;
+    }
     
-    // If iv is not give it should be generated
-    if ( NULL == iv ) {        
-        if ( 16 != getRandomIV( generated_iv, 16 ) ) return false;
-    }
-    else {
-        memcpy( generated_iv, iv, 16 );
-    }
+    // Must pad if needed
+    size_t padlen = len - 1;    // Without packet type
+    padlen = len + ( 16 - ( len % 16 ) );    
     
     // The packet type s always un encrypted
     output[0] = input[0];
+        
+    // If iv is not give it should be generated
+    if ( NULL == iv ) {        
+        if ( 16 != getRandomIV( generated_iv, 16 ) ) return 0;
+    }
+    else {
+        memcpy( generated_iv, iv, 16 );
+    }    
     
     switch ( nAlgorithm ) {
                     
         case VSCP_ENCRYPTION_AES192:
             AES_CBC_encrypt_buffer( AES192,
-                                        output+1, 
-                                        input+1,    // Not Packet type byte 
-                                        len-1, 
+                                        output + 1, 
+                                        input + 1,    // Not Packet type byte 
+                                        padlen, 
                                         key, 
                                         (const uint8_t *)generated_iv );
+            // Append iv
+            memcpy( output + 1 + padlen, generated_iv, 16 );
+            padlen += 16;
             break;
             
         case VSCP_ENCRYPTION_AES256:
             AES_CBC_encrypt_buffer( AES256,
-                                        output+1, 
-                                        input+1,    // Not Packet type byte
-                                        len-1, 
+                                        output + 1, 
+                                        input + 1,    // Not Packet type byte
+                                        padlen, 
                                         key, 
                                         (const uint8_t *)generated_iv );
+            // Append iv
+            memcpy( output + 1 + padlen, generated_iv, 16 );
+            padlen += 16;
             break;
-        
-        default:    
+            
         case VSCP_ENCRYPTION_AES128:
             AES_CBC_encrypt_buffer( AES128,
-                                        output+1, 
-                                        input+1,    // Not Packet type byte 
-                                        len-1, 
+                                        output + 1, 
+                                        input + 1,    // Not Packet type byte 
+                                        padlen, 
                                         key, 
                                         (const uint8_t *)generated_iv );
-            break;    
+            // Append iv
+            memcpy( output + 1 + padlen, generated_iv, 16 );
+            padlen += 16;
+            break; 
+            
+        default:    
+        case VSCP_ENCRYPTION_NONE:
+            memcpy( output + 1, input + 1, padlen );
+            break;
+            
     }
     
-    // Append iv
-    memcpy( output + len, generated_iv, 16 );
+    padlen++; // Count packet type byte    
     
-    return true;
+    return padlen;
 }
 
 
@@ -5843,9 +7013,14 @@ bool vscp_decryptVscpUdpFrame( uint8_t *output,
     if ( NULL == input ) return false;
     if ( NULL == key ) return false;
     
+    if ( VSCP_ENCRYPTION_NONE == GET_VSCP_MULTICAST_PACKET_ENCRYPTION( nAlgorithm ) ) {
+        memcpy( output, input, len );
+        return true;
+    }
+    
     // If iv is not given it should be fetched from the end of input (last 16 bytes)
     if ( NULL == iv ) {        
-        memcpy( appended_iv, input - 16, 16 );
+        memcpy( appended_iv, (input + len - 16 ), 16 );
         real_len -= 16; // Adjust frame length accordingly
     }
     else {
@@ -5884,6 +7059,216 @@ bool vscp_decryptVscpUdpFrame( uint8_t *output,
                                         key, 
                                         (const uint8_t *)appended_iv );
             break;    
+    }
+    
+    return true;
+}
+
+
+
+///////////////////////////////////////////////////////////////////////////
+//                           Password/key handling
+///////////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////////////////
+// vscp_md5
+// 
+
+void vscp_md5( char *digest, const unsigned char *buf, size_t len ) 
+{
+    unsigned char hash[16];
+    
+    md5_state_s pms;
+  
+    vscpmd5_init( &pms );
+    vscpmd5_append( &pms, buf, len );
+    vscpmd5_finish( &pms, hash );
+    vscp_byteArray2HexStr( digest, hash, sizeof( hash ) );
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// vscp_bin2str
+//
+// Stringify binary data. Output buffer must be twice as big as input,
+// because each byte takes 2 bytes in string representation 
+//
+
+void vscp_byteArray2HexStr( char *to, const unsigned char *p, size_t len  ) 
+{
+    static const char *hex = "0123456789abcdef";
+
+    for (; len--; p++) {
+        *to++ = hex[p[0] >> 4];
+        *to++ = hex[p[0] & 0x0f];
+    }
+
+    *to = '\0';
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// vscp_hexStr2ByteArray
+//
+
+size_t vscp_hexStr2ByteArray( uint8_t *array, size_t size, const char *hexstr )
+{
+    int slen = strlen( hexstr );
+    int i = 0, j = 0;
+
+    // The output array size is half the hex_str length (rounded up)
+    int nhexsize = ( slen + 1 ) / 2;
+
+    if ( size < nhexsize ) {
+        // Too big for the output array
+        return -1;
+    }
+
+    if ( slen % 2 == 1 ) {
+        // hex_str is an odd length, so assume an implicit "0" prefix
+        if ( sscanf( &(hexstr[0]), "%1hhx", &(array[0])) != 1 ) {
+            return -1;
+        }
+
+        i = j = 1;
+    }
+
+    for (; i < slen; i+=2, j++) {
+        if ( sscanf( &( hexstr[i] ), "%2hhx", &( array[j] ) ) != 1 ) {
+            return -1;
+        }
+    }
+
+    return nhexsize;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// vscp_getHashPasswordComponents
+//
+
+bool vscp_getHashPasswordComponents( uint8_t *pSalt, 
+                                        uint8_t *pHash, 
+                                        const wxString &stored_pw )
+{
+    wxString strSalt;
+    wxString strHash;
+    
+    // Check pointers
+    if ( NULL == pSalt ) return false;
+    if ( NULL == pHash ) return false;
+    
+    wxStringTokenizer tkz( stored_pw, _(";"));
+    if ( 2 != tkz.CountTokens() ) return false;
+    
+    strSalt = tkz.GetNextToken();
+    vscp_hexStr2ByteArray( pSalt, 16, strSalt.mbc_str() );
+            
+    strHash = tkz.GetNextToken();
+    vscp_hexStr2ByteArray( pHash, 32, strHash.mbc_str() );
+    
+    return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// vscp_makePasswordHash
+//
+
+bool vscp_makePasswordHash( wxString &result, 
+                                const wxString &password,
+                                uint8_t *pSalt )
+{
+    int i;
+    uint8_t salt[16];
+    uint8_t buf[32];
+    
+    result.Empty();
+    
+    // Get random IV
+    if ( NULL == pSalt ) {
+        if ( 16 != getRandomIV( salt, 16 ) ) {
+            return false;
+        }
+    }
+    else {
+        memcpy( salt, pSalt, 16 );
+    }
+    
+    uint8_t *p = new uint8_t[ strlen( (const char *)password.mbc_str() ) ];
+    if ( NULL == p ) return false;
+    
+    memcpy( p, (const char *)password.mbc_str(), strlen( (const char *)password.mbc_str() ) );
+    
+    fastpbkdf2_hmac_sha256( p, 
+                            strlen( (const char *)password.mbc_str() ),
+                            salt, 16,
+                            70000,
+                            buf, 32 );
+    delete [] p;
+    
+    for ( i=0; i<16; i++ ) {
+        result += wxString::Format( "%02X", salt[i] );
+    }
+    result += (";");
+    for ( i=0; i<32; i++ ) {
+        result += wxString::Format( "%02X", buf[i] );
+    }
+    
+    return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// vscp_isPasswordValid
+//
+
+bool vscp_isPasswordValid( const wxString &stored_pw, const wxString &password )
+{
+    wxString calcHash;  // Calculated hash
+    uint8_t salt[16];   // Stored salt
+    uint8_t hash[32];   // Stored hash
+    
+    if ( !vscp_getHashPasswordComponents( salt, hash, stored_pw ) ) {
+        return false;
+    }
+    
+    if ( !vscp_makePasswordHash( calcHash, password, salt ) ) {
+        return false;
+    }
+    
+    if ( stored_pw != calcHash ) return false;
+    
+    return true;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// vscp_getSalt
+//
+
+bool vscp_getSalt( uint8_t *buf, size_t len ) 
+{
+    if( !getRandomIV( buf, len ) ) return false;
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// vscp_getSaltHex
+//
+
+bool vscp_getSaltHex( wxString &strSalt, size_t len ) 
+{
+    if ( len ) {
+        uint8_t *pbuf = new uint8_t[ len ];
+        if( len != getRandomIV( pbuf, len ) ) {
+            delete [] pbuf;
+            return false;
+        }
+        
+        strSalt.Empty();
+        for ( int i=0; i<len; i++ ) {
+            strSalt += wxString::Format(_("%02X"), pbuf[i] );
+        }
+        
+        delete [] pbuf;
+        
     }
     
     return true;

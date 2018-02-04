@@ -1,24 +1,28 @@
 // DeviceList.h: interface for the CDeviceList class.
 //
-// This program is free software; you can redistribute it and/or
-// modify it under the terms of the GNU General Public License
-// as published by the Free Software Foundation; either version
-// 2 of the License, or (at your option) any later version.
-// 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2017 
-// Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
+// The MIT License (MIT)
 // 
-// This file is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
+// Copyright (c) 2000-2018 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
 // 
-// You should have received a copy of the GNU General Public License
-// along with this file see the file COPYING.  If not, write to
-// the Free Software Foundation, 59 Temple Place - Suite 330,
-// Boston, MA 02111-1307, USA.
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+// 
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 //
 
 #if !defined(AFX_DEVICELIST_H__0ED35EA7_E9E1_41CD_8A98_5EB3369B3194__INCLUDED_)
@@ -34,6 +38,7 @@
 #include "wx/wx.h"
 #include "wx/defs.h"
 #include "wx/app.h"
+#include <wx/process.h>
 
 #ifdef WIN32
 
@@ -62,8 +67,9 @@
 // In - translation bit definitions
 
 enum _driver_levels {
-    VSCP_DRIVER_LEVEL1 = 0,  
-    VSCP_DRIVER_LEVEL2
+    VSCP_DRIVER_LEVEL1 = 1,  
+    VSCP_DRIVER_LEVEL2,
+    VSCP_DRIVER_LEVEL3
 };
 
 class CClientItem;
@@ -71,6 +77,24 @@ class cguid;
 
 WX_DECLARE_LIST ( canalMsg, Level1MsgOutList );
 
+
+///////////////////////////////////////////////////////////////////////////////
+// Driver3Process
+//
+
+class Driver3Process : public wxProcess
+{
+
+public:
+    Driver3Process( int flags = wxPROCESS_REDIRECT );
+    ~Driver3Process();
+    
+    void OnTerminate( int pid, int status );
+};
+
+///////////////////////////////////////////////////////////////////////////////
+// CDeviceItem
+//
 
 class CDeviceItem
 {
@@ -85,9 +109,12 @@ public:
 
 
     bool startDriver( CControlObject *pCtrlObject );
-
-
-    bool stopDriver( void );
+    
+    bool pausDriver( void );  // TODO
+    
+    bool resumeDriver( void ); // TODO
+    
+    bool stopDriver( void ); // TODO
 
 
     /*!
@@ -108,7 +135,7 @@ public:
     /*!
         Canal Driver Level
     */
-    uint32_t m_driverLevel;
+    uint8_t m_driverLevel;
     
     /// True if driver should be started.
     bool m_bEnable;
@@ -154,8 +181,13 @@ public:
 
     // Handle for dll/dl driver interface
     long m_openHandle;
+    
+    // Level III driver pid
+    long m_pid;
+    
+    Driver3Process *m_pDriver3Process;
 
-        // Level I (CANAL) driver methods
+    // Level I (CANAL) driver methods
     LPFNDLL_CANALOPEN                   m_proc_CanalOpen;
     LPFNDLL_CANALCLOSE                  m_proc_CanalClose;
     LPFNDLL_CANALGETLEVEL               m_proc_CanalGetLevel;

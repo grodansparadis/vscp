@@ -1,0 +1,345 @@
+Make a log entry in the DM log when the VSCP server starts
+
+   <row enable="true" groupid="javascript" >
+    <mask  priority="0"  class="65535"  type="65535"  GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" > </mask>
+    <filter  priority="0"  class="65535"  type="23"  GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" > </filter>
+    <action>0x200</action>
+    <param>
+    vscp_log('* * * * * * * * * * Testing Javascript logging where script is BASE64 encoded * * * * * * * * * * ' + 100 + 99);
+    </param>
+    <comment></comment>
+    <allowed_from>0000-01-01 00:00:00</allowed_from>
+    <allowed_to>9999-12-31 23:59:59</allowed_to>
+    <allowed_weekdays>mtwtfss</allowed_weekdays>
+    <allowed_time>*-*-* *:*:*</allowed_time>
+    <index  bMeasurement="false"  > 0</index>
+    <zone>0</zone>
+    <subzone>0</subzone>
+  </row>
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Make a log entry in the DM log when the VSCP server starts (BASE64 encoded variant)
+
+   <row enable="true" groupid="javascript" >
+    <mask  priority="0"  class="65535"  type="65535"  GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" > </mask>
+    <filter  priority="0"  class="65535"  type="23"  GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" > </filter>
+    <action>0x200</action>
+    <param>
+    BASE64:dnNjcF9sb2coJyogKiAqICogKiAqICogKiAqICogVGVzdGluZyBKYXZhc2NyaXB0IGxvZ2dpbmcgd2hlcmUgc2NyaXB0IGlzIEJBU0U2NCBlbmNvZGVkICogKiAqICogKiAqICogKiAqICogJyk7
+    </param>
+    <comment></comment>
+    <allowed_from>0000-01-01 00:00:00</allowed_from>
+    <allowed_to>9999-12-31 23:59:59</allowed_to>
+    <allowed_weekdays>mtwtfss</allowed_weekdays>
+    <allowed_time>*-*-* *:*:*</allowed_time>
+    <index  bMeasurement="false"  > 0</index>
+    <zone>0</zone>
+    <subzone>0</subzone>
+  </row>
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+Test vscp_sleep
+
+   <row enable="true" groupid="javascript" >
+    <mask  priority="0"  class="65535"  type="65535"  GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" > </mask>
+    <filter  priority="0"  class="65535"  type="23"  GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" > </filter>
+    <action>0x200</action>
+    <param>
+    vscp_log('Before sleep 1' );
+    vscp_sleep(5000);
+    vscp_log('After sleep 1' );
+    vscp_sleep(5000);
+    vscp_log('After sleep 2' );
+    </param>
+    <comment></comment>
+    <allowed_from>0000-01-01 00:00:00</allowed_from>
+    <allowed_to>9999-12-31 23:59:59</allowed_to>
+    <allowed_weekdays>mtwtfss</allowed_weekdays>
+    <allowed_time>*-*-* *:*:*</allowed_time>
+    <index  bMeasurement="false"  > 0</index>
+    <zone>0</zone>
+    <subzone>0</subzone>
+  </row>
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Read variable
+
+  <row enable="true" groupid="javascript" >
+    <mask  priority="0"  class="65535"  type="65535"  GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" > </mask>
+    <filter  priority="0"  class="65535"  type="23"  GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" > </filter>
+    <action>0x200</action>
+    <param>
+      var testvar1 = vscp_readVariable("test1");	                        // Read the VSCP variable with name 'test1' 
+      var note = testvar1.note;                                           // Get the variable note (it's BASE64 encoded)
+      var decnote = Object( Duktape.dec('base64', note ) );               // decode to utf8 array
+      var str = new TextDecoder().decode(decnote);                        // Make string of the array
+      vscp_log('Variable name = ' + testvar1.name + ' - note = ' + str ); // Log
+    </param>
+    <comment></comment>
+    <allowed_from>0000-01-01 00:00:00</allowed_from>
+    <allowed_to>9999-12-31 23:59:59</allowed_to>
+    <allowed_weekdays>mtwtfss</allowed_weekdays>
+    <allowed_time>*-*-* *:*:*</allowed_time>
+    <index  bMeasurement="false"  > 0</index>
+    <zone>0</zone>
+    <subzone>0</subzone>
+  </row>
+
+============================================================  variables.xml
+
+ <variable type="integer">
+    <name>test1</name>
+    <note>This is a simple integer test variable.</note>
+    <value>2</value>
+  </variable>
+
+  <variable type="string">
+    <name>test2</name>
+    <note>This is a simple integer test variable.</note>
+    <value>Carpe Diem är visdom eller är det inte det?</value>
+  </variable>
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Write variable
+
+  <row enable="true" groupid="javascript" >
+    <mask  priority="0"  class="65535"  type="65535"  GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" > </mask>
+    <filter  priority="0"  class="65535"  type="23"  GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" > </filter>
+    <action>0x200</action>
+    <param>
+      var obj = vscp_readVariable("test1");              // Read the remote variable 'test1'
+      obj.value++;                                       // Increase its value 
+      vscp_writeVariable(obj);                           // Write the new value
+      obj = vscp_readVariable("test1");                  // Read back the remote variable
+      vscp_log("Variable value = " + obj.value + "\n" ); // Log 
+    </param>
+    <comment></comment>
+    <allowed_from>0000-01-01 00:00:00</allowed_from>
+    <allowed_to>9999-12-31 23:59:59</allowed_to>
+    <allowed_weekdays>mtwtfss</allowed_weekdays>
+    <allowed_time>*-*-* *:*:*</allowed_time>
+    <index  bMeasurement="false"  > 0</index>
+    <zone>0</zone>
+    <subzone>0</subzone>
+  </row>
+
+============================================================  variables.xml
+
+ <variable type="integer">
+    <name>test1</name>
+    <note>This is a simple integer test variable.</note>
+    <value>2</value>
+  </variable>
+
+  <variable type="string">
+    <name>test2</name>
+    <note>This is a simple integer test variable.</note>
+    <value>Carpe Diem är visdom eller är det inte det?</value>
+  </variable>
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+Create string variable
+
+      /*var obj1 = JSON.parse('{ \
+         "name": "newtestvariable", \
+         "type": 1, \
+         "user": "admin", \
+         "persistence": false, \
+         "value": "VGhpcyBpcyBhIHRlc3QgdmFyaWFibGUgb2YgdHlwZSBzdHJpbmcgKEJBU0U2NCBlbmNvZGVkIGlmIHN0cmluZyk=", \
+         "note": "VGhpcyBpcyBhIG5vdGUgYWJvdXQgdGhpcyB2YXJpYWJsZSAobXVzdCBiZSBCQVNFNjQgZW5jb2RlZCk=" }');
+      */
+      var obj1 = JSON.parse('{ \
+          "name": "newtestvariable", \
+          "type": 1, \
+          "user": "admin", \
+          "accessrights": 777, \
+          "persistence": false }');
+      obj1.note = Duktape.enc('base64',"This is a note that now will be BASE64 encoded");
+      obj1.value = Duktape.enc('base64',"This is a BASE64 encoded string value.");
+      obj1.accessrights = 99
+      vscp_log("* * * JSON variable name = " + obj1.name + "\n" );   
+      vscp_writeVariable(obj1);                                     // Write the new value
+      var obj2 = vscp_readVariable(obj1.name);                      // Read back the remote variable
+      var decvalue = Object( Duktape.dec('base64', obj2.value ) );  // decode to utf8 array
+      var strvalue = new TextDecoder().decode(decvalue);            // Make string of the array
+      vscp_log("* * * JSON Variable value = " + obj2.value + " =  " + strvalue ); 
+      vscp_log("* * * JSON Variable type = " + obj2.type );
+      vscp_log("* * * JSON Variable user = " + obj2.user );
+      vscp_log("* * * JSON Variable accessrights = " + obj2.accessrights );
+      vscp_log("* * * JSON Variable persistence = " + obj2.persistence );
+      vscp_log("* * * JSON Variable lastchange = " + obj2.lastchange );
+      vscp_log("* * * JSON Variable bnumeric = " + obj2.bnumeric );
+      vscp_log("* * * JSON Variable bbase64 = " + obj2.bbase64 );
+      var decnote = Object( Duktape.dec('base64', obj2.note ) );  // decode to utf8 array
+      var strnote = new TextDecoder().decode(decnote);            // Make string of the array
+      vscp_log("* * * JSON Variable note = " + obj2.note + " =  " + strnote );
+
+ ----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Send event
+
+
+      // Send CLASS1.CONTROL, Type=5, TurnOn, Zone=11, Subzone=3
+      var event = { time:"2016-11-02T19:00:32", 
+                head:0, 
+                timestamp:0, 
+                obid:0, 
+                class: 30, 
+                type: 5, 
+                guid: "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00", 
+                data: [0,11,3] };
+
+      if ( vscp_sendEvent(event) ) {
+          vscp_log("TurnOn event sent successfully!");
+      }
+      else {
+          vscp_log("Faild to send TurnOn event!");
+      }              
+
+
+      ----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Receive event  ( set on test every second (5) )
+
+Note!!! Just work if there are heavy traffic as the interface need to get some events
+
+      vscp_sleep( 900 );
+      var event = vscp_receiveEvent( vscp_clientItem );
+      if ( null != vscpEventObj ) {
+          print("Event received.");
+          print("---------------");
+          print("Class = ",vscp_clientItem.class);
+          print("Type = ",vscp_clientItem.type);
+      }
+
+
+      ----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Receive event  ( set on server startup (23) )
+
+var vscpEventObj;       // JSON object containing VSCP event
+var bQuit = false;
+ 
+// Keep on until done
+while ( !bQuit ) {
+ 
+    // Fetch event from client queue
+    vscpEventObj= vscp_receiveEvent();
+ 
+    if ( null != vscpEventObj ) {
+ 
+        vscp_log("VSCP event received: class = " + vscpEventObj.class.toString() + " type = " + vscpEventObj.type.toString() + "\n");
+ 
+        // Event CLASS1.INFORMATION, Type=Stop, 8 terminates the loop
+        if ( 30 == vscpEventObj.class ) {
+            if ( 8 == vscpEventObj.type ) {
+                bQuit = true;
+            }
+        }
+    }
+    else {
+        vscp_sleep( 500 );
+    }
+}
+ 
+vscp_log("Done!\n");
+
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Get event count in queue  ( set on server startup (23) )
+
+for ( i=0; i &lt; 50; i++ ) {
+    var count = vscp_countEvent();
+    vscp_log("Number of VSCP events in client queue is " + count.toString() + " i = " + i.toString() + "\n"  );
+    vscp_sleep( 1000 );
+}
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Set filter  ( set on server startup (23) )
+
+// Allow only CLASS1.MEASUREMENT events, from all, 
+// with all priorities
+var filterTxt = '{\
+    "mask_priority": 0,\
+    "mask_class": 65535,\
+    "mask_type": 0,\
+    "mask_guid": "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00",\
+    "filter_priority": 0,\
+    "filter_class": 10,\
+    "filter_type": 0,\
+    "filter_guid": "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"\
+}';
+ 
+// Make the JSON object
+var filterObj = JSON.parse( filterTxt );
+ 
+// Set the filter
+if ( vscp_setFilter( filterObj ) ) {
+  vscp_log("Filter set successfully!\n");
+}
+else {
+  vscp_log("Faild to set filter!\n");
+}
+
+
+
+
+
+
+
+===============================================================================================
+
+/*
+      var obj1 = JSON.parse('{ \
+          "name": "newtestvariable", \
+          "type": 5, \
+          "user": "admin", \
+          "accessrights": 777, \
+          "persistence": false }');
+      obj1.note = Duktape.enc('base64',"This is a note that now will be BASE64 encoded");
+      obj1.value = 123.4567;
+      obj1.value = obj1.value * 99;
+      obj1.accessrights = 99
+      vscp_log("* * * JSON variable name = " + obj1.name + "\n" );   
+      vscp_writeVariable(obj1);                                     // Write the new value
+      var obj2 = vscp_readVariable(obj1.name);                      // Read back the remote variable
+      vscp_log("* * * JSON Variable value = " + obj2.value  ); 
+      vscp_log("* * * JSON Variable type = " + obj2.type );
+      vscp_log("* * * JSON Variable user = " + obj2.user );
+      vscp_log("* * * JSON Variable accessrights = " + obj2.accessrights );
+      vscp_log("* * * JSON Variable persistence = " + obj2.persistence );
+      vscp_log("* * * JSON Variable lastchange = " + obj2.lastchange );
+      vscp_log("* * * JSON Variable bnumeric = " + obj2.bnumeric );
+      vscp_log("* * * JSON Variable bbase64 = " + obj2.bbase64 );
+      var decnote = Object( Duktape.dec('base64', obj2.note ) );  // decode to utf8 array
+      var strnote = new TextDecoder().decode(decnote);            // Make string of the array
+      vscp_log("* * * JSON Variable note = " + obj2.note + " =  " + strnote );
+
+      vscp_deleteVariable( obj2.name );
+      */
+      /*var jj = JSON.parse('{"p": 567.99}');
+      jj.test = "This is a test"
+      vscp_log("JSON value = " + jj.p + " " + jj.test + "\n" );
+      var obj = vscp_readVariable("test1");              // Read the remote variable 'test1'
+      obj.value++;                                       // Increase its value 
+      vscp_log("Variable value = " + obj.value + "\n" ); // Log
+      //obj.value = "This is a test"  
+      vscp_writeVariable(obj);                           // Write the new value
+      */
+
+===============================================================================================      

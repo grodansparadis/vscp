@@ -7,7 +7,7 @@
 // 
 // This file is part of the VSCP Project (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2017 Ake Hedman, 
+// Copyright (C) 2000-2018 Ake Hedman, 
 // Grodans Paradis AB, <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
@@ -69,7 +69,7 @@
 #ifdef WIN32
 #include <simdrv.h>
 #else
-#include <vscpl2drv_sim.h>
+#include <vscpl2drv-sim.h>
 #endif
 #include "simulation.h"
 
@@ -80,7 +80,7 @@ uint8_t gdefaultGUID[] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
 
-uint8_t gdeviceURL[] = "www.eurosource.se/vscpsim_001.xml";
+uint8_t gdeviceURL[] = "www.eurosource.se/vscpsim_1.xml";
 
 uint8_t gdefaultDM[] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
@@ -120,8 +120,6 @@ static uint32_t getClockMilliseconds()
 }
 
 
-
-
 //////////////////////////////////////////////////////////////////////
 // CSim
 //
@@ -137,6 +135,7 @@ CSim::CSim()
     
     ::wxInitialize();
 }
+
 
 //////////////////////////////////////////////////////////////////////
 // ~CSim
@@ -193,7 +192,7 @@ CSim::open(const char *pUsername,
 #ifndef WIN32
         syslog(LOG_ERR,
                 "%s",
-                (const char *) "Unable to connect to VSCP TCP/IP interface. Terminating!");
+                (const char *) "[VSCPSimDrv]Unable to connect to VSCP TCP/IP interface. Terminating!");
 #endif
         return false;
     }
@@ -319,6 +318,13 @@ CSim::open(const char *pUsername,
                 }
 
             }
+            
+#ifdef WIN32
+#else            
+            syslog( LOG_DEBUG,
+                        "[VSCPSimDrv] %s",
+                        ( const char * ) "Starting worker thread." );
+#endif            
 
             // start the workerthread
             m_pthreadWork[ i ]->m_pObj = this;
@@ -330,7 +336,7 @@ CSim::open(const char *pUsername,
 #ifdef WIN32
 #else
             syslog( LOG_ERR,
-                        "%s prefix=%s i=%d",
+                        "[VSCPSimDrv] %s prefix=%s i=%d",
                         ( const char * ) "Failed to start workerthread.",
                         ( const char * )m_prefix.ToAscii(),                        
                         i );
@@ -407,7 +413,10 @@ CWrkTread::CWrkTread()
     m_measurementType = VSCP_TYPE_MEASUREMENT_TEMPERATURE;
     
     for( index = 0; index < SIM_DECISION_MATRIX_ROWS; ++index ) {
-        memcpy( &m_registers[ SIM_USER_REG_DECISION_MATRIX + index * sizeof(gdefaultDM) ], gdefaultDM, sizeof(gdefaultDM) );
+        memcpy( &m_registers[ SIM_USER_REG_DECISION_MATRIX + 
+                    index * sizeof(gdefaultDM) ], 
+                gdefaultDM, 
+                sizeof(gdefaultDM) );
     }
 
     // init standard regs
@@ -418,7 +427,13 @@ CWrkTread::CWrkTread()
     m_registers[ VSCP_REG_BUFFER_SIZE ] = 8;
     m_registers[ VSCP_REG_PAGES_USED ] = 1;
     memcpy( m_registers + VSCP_REG_GUID, gdefaultGUID, 16 );
-    memcpy( m_registers + VSCP_REG_DEVICE_URL, gdeviceURL, sizeof( gdeviceURL ) );
+    
+    // Prevent out of bounds access
+    if ( 32 < sizeof( gdeviceURL ) ) {
+        m_registers[ VSCP_REG_DEVICE_URL ] = '\0';
+    } else {
+        memcpy( m_registers + VSCP_REG_DEVICE_URL, gdeviceURL, sizeof( gdeviceURL ) );
+    }
 }
 
 CWrkTread::~CWrkTread()
@@ -742,8 +757,8 @@ bool CWrkTread::sendEvent( vscpEventEx& eventEx )
             vscp_deleteVSCPevent( pEvent );
 #ifndef WIN32
             syslog( LOG_ERR,
-                    "%s",
-                    ( const char * ) "Faild to convert event." );
+                    "[VSCPSimDrv] %s",
+                    ( const char * ) "Failed to convert event." );
 #endif
             return false;
         }
@@ -854,7 +869,8 @@ void CWrkTread::doActionReplyTurnOn( vscpEvent *pEvent, uint8_t dmflags, uint8_t
     vscpEventEx eventEx;
     eventEx.head = VSCP_PRIORITY_NORMAL;
     memcpy( eventEx.GUID, m_registers + VSCP_STD_REGISTER_GUID, 16 );
-    eventEx.timestamp = 0;
+    eventEx.timestamp = vscp_makeTimeStamp();
+    vscp_setEventExDateTimeBlockToNow( &eventEx );
     eventEx.sizeData = 3;
     //eventEx.data[ 0 ] = m_registers[ SIM_USER_REG_INDEX ];      // Index
     eventEx.data[ 0 ] = dmparam;
@@ -875,7 +891,8 @@ void CWrkTread::doActionReplyTurnOff( vscpEvent *pEvent, uint8_t dmflags, uint8_
     vscpEventEx eventEx;
     eventEx.head = VSCP_PRIORITY_NORMAL;
     memcpy( eventEx.GUID, m_registers + VSCP_STD_REGISTER_GUID, 16 );
-    eventEx.timestamp = 0;
+    eventEx.timestamp = vscp_makeTimeStamp();
+    vscp_setEventExDateTimeBlockToNow( &eventEx );
     eventEx.sizeData = 3;
     //eventEx.data[ 0 ] = m_registers[ SIM_USER_REG_INDEX ];      // Index
     eventEx.data[ 0 ] = dmparam;
@@ -912,7 +929,7 @@ CWrkTread::Entry()
 
 #ifndef WIN32
         syslog( LOG_ERR,
-                "%s",
+                "[VSCPSimDrv] %s",
                 (const char *) "Error while opening remote VSCP TCP/IP interface. Terminating!");
 #endif
         return NULL;
@@ -923,7 +940,7 @@ CWrkTread::Entry()
         if ( !tfile.Open( m_path ) ) {
 #ifndef WIN32
             syslog( LOG_ERR,
-                    "%s",
+                    "[VSCPSimDrv] %s",
                     ( const char * ) "Unable to load simulation data" );
 #endif
             goto dumb_fill_data;
@@ -972,13 +989,21 @@ dumb_fill_data:
 
     }
     
-    while (!TestDestroy() && !m_pObj->m_bQuit) {
+#ifdef WIN32
+#else            
+    syslog( LOG_DEBUG,
+                "[VSCPSimDrv] %s",
+                ( const char * )"Going into worker thread loop." );
+#endif    
+    
+    while ( !TestDestroy() && !m_pObj->m_bQuit ) {
 
         if ( wxSEMA_TIMEOUT == m_pObj->m_semSendQueue.WaitTimeout( 500 ) ) {
          
             // Should a simulated measurement event be sent?
             if ( m_registers[ SIM_USER_REG_INTERVAL ] &&
-                 ( ( ::wxGetLocalTimeMillis() - lastSendEvent ) > ( ( uint32_t )m_registers[ SIM_USER_REG_INTERVAL ] * 1000 ) ) ) {
+                 ( ( ::wxGetLocalTimeMillis() - lastSendEvent ) > 
+                    ( ( uint32_t )m_registers[ SIM_USER_REG_INTERVAL ] * 1000 ) ) ) {
 
                 // Save new time
                 lastSendEvent = ::wxGetLocalTimeMillis();
@@ -990,7 +1015,8 @@ dumb_fill_data:
 
                 eventEx.head = VSCP_PRIORITY_NORMAL;
                 memcpy( eventEx.GUID, m_registers + VSCP_STD_REGISTER_GUID, 16 );
-                eventEx.timestamp = 0;
+                eventEx.timestamp = vscp_makeTimeStamp();
+                vscp_setEventExDateTimeBlockToNow( &eventEx );
                 eventEx.sizeData = 0;
                 eventEx.vscp_class = m_measurementClass;
                 eventEx.vscp_type = m_measurementType;
@@ -1006,10 +1032,10 @@ dumb_fill_data:
                         if ( SIM_CODING_NORMALIZED == m_registers[ SIM_USER_REG_CODING ] ) {
 
                             if ( vscp_convertFloatToNormalizedEventData( eventEx.data,
-                                                                            &eventEx.sizeData,
-                                                                            val,
-                                                                            m_registers[ SIM_USER_REG_UNIT ],
-                                                                            m_registers[ SIM_USER_REG_INDEX ] ) ) {
+                                    &eventEx.sizeData,
+                                    val,
+                                    m_registers[ SIM_USER_REG_UNIT ],
+                                    m_registers[ SIM_USER_REG_INDEX ] ) ) {
 
                                 if ( vscp_convertVSCPfromEx( pEvent, &eventEx ) ) {
 
@@ -1029,8 +1055,8 @@ dumb_fill_data:
                                     vscp_deleteVSCPevent( pEvent );
 #ifndef WIN32
                                     syslog( LOG_ERR,
-                                            "%s",
-                                            ( const char * ) "Faild to convert event." );
+                                            "[VSCPSimDrv] %s",
+                                            ( const char * ) "Failed to convert event." );
 #endif
                                 }
                             }
@@ -1038,8 +1064,8 @@ dumb_fill_data:
                                 vscp_deleteVSCPevent( pEvent );
 #ifndef WIN32
                                 syslog( LOG_ERR,
-                                        "%s",
-                                        ( const char * ) "Faild to convert data." );
+                                        "[VSCPSimDrv] %s",
+                                        ( const char * ) "Failed to convert data." );
 #endif
                             }
                         }
@@ -1047,16 +1073,17 @@ dumb_fill_data:
 
                             pEvent->head = VSCP_PRIORITY_NORMAL;
                             memcpy( pEvent->GUID, m_registers + VSCP_STD_REGISTER_GUID, 16 );
-                            pEvent->timestamp = 0;
+                            pEvent->timestamp = vscp_makeTimeStamp();
+                            vscp_setEventDateTimeBlockToNow( pEvent );
                             pEvent->sizeData = 0;
                             pEvent->vscp_class = m_measurementClass;
                             pEvent->vscp_type = m_measurementType;
                             pEvent->pdata = NULL;
 
                             if ( vscp_makeFloatMeasurementEvent( pEvent,
-                                                                    val,
-                                                                    m_registers[ SIM_USER_REG_UNIT ],
-                                                                    m_registers[ SIM_USER_REG_INDEX ] ) ) {
+                                        val,
+                                        m_registers[ SIM_USER_REG_UNIT ],
+                                        m_registers[ SIM_USER_REG_INDEX ] ) ) {
 
                                 // OK send the event
                                 if ( vscp_doLevel2Filter( pEvent, &m_vscpfilter ) ) {
@@ -1074,26 +1101,29 @@ dumb_fill_data:
                                 vscp_deleteVSCPevent( pEvent );
 #ifndef WIN32
                                 syslog( LOG_ERR,
-                                        "%s",
-                                        ( const char * ) "Faild to convert data." );
+                                        "[VSCPSimDrv] %s",
+                                        ( const char * ) "Failed to convert data." );
 #endif
                             }
                             
                         }
-                        else if ( SIM_CODING_STRING == m_registers[ SIM_USER_REG_CODING ] ) {
+                        else if ( SIM_CODING_STRING == 
+                                    m_registers[ SIM_USER_REG_CODING ] ) {
 
                             pEvent->head = VSCP_PRIORITY_NORMAL;
-                            memcpy( pEvent->GUID, m_registers + VSCP_STD_REGISTER_GUID, 16 );
-                            pEvent->timestamp = 0;
+                            memcpy( pEvent->GUID, m_registers + 
+                                    VSCP_STD_REGISTER_GUID, 16 );
+                            pEvent->timestamp = vscp_makeTimeStamp();
+                            vscp_setEventDateTimeBlockToNow( pEvent );
                             pEvent->sizeData = 0;
                             pEvent->vscp_class = m_measurementClass;
                             pEvent->vscp_type = m_measurementType;
                             pEvent->pdata = NULL;
 
                             if ( vscp_makeStringMeasurementEvent( pEvent,
-                                                                    val,
-                                                                    m_registers[ SIM_USER_REG_UNIT ],
-                                                                    m_registers[ SIM_USER_REG_INDEX ] ) ) {
+                                            val,
+                                            m_registers[ SIM_USER_REG_UNIT ],
+                                            m_registers[ SIM_USER_REG_INDEX ] ) ) {
 
                                 // OK send the event
                                 if ( vscp_doLevel2Filter( pEvent, &m_vscpfilter ) ) {
@@ -1111,8 +1141,8 @@ dumb_fill_data:
                                 vscp_deleteVSCPevent( pEvent );
 #ifndef WIN32
                                 syslog( LOG_ERR,
-                                        "%s",
-                                        ( const char * ) "Faild to convert data." );
+                                        "[VSCPSimDrv] %s",
+                                        ( const char * ) "Failed to convert data." );
 #endif
                             }
 
@@ -1129,7 +1159,8 @@ dumb_fill_data:
 
                 eventEx.head = VSCP_PRIORITY_NORMAL;
                 memcpy( eventEx.GUID, m_registers + VSCP_STD_REGISTER_GUID, 16 );
-                eventEx.timestamp = 0;
+                eventEx.timestamp = vscp_makeTimeStamp();
+                vscp_setEventExDateTimeBlockToNow( &eventEx );
                 eventEx.sizeData = 3;
                 eventEx.data[ 0 ] = 0;
                 eventEx.data[ 1 ] = m_registers[ SIM_USER_REG_ZONE ];       // Zone
@@ -1179,6 +1210,8 @@ dumb_fill_data:
                                 ( 2 == pEvent->sizeData ) &&
                                 ( m_guid.getNickname() == pEvent->pdata[ 0 ] ) ) {
                             eventEx.head = VSCP_PRIORITY_NORMAL;
+                            eventEx.timestamp = vscp_makeTimeStamp();
+                            vscp_setEventExDateTimeBlockToNow( &eventEx );
                             eventEx.sizeData = 2;
                             eventEx.data[ 0 ] = pEvent->pdata[1];   // Reg
                             eventEx.data[ 1 ] = readLevel1Register( pEvent->pdata[ 1 ] );
@@ -1193,9 +1226,13 @@ dumb_fill_data:
                                 ( 3 == pEvent->sizeData ) &&
                                 ( m_guid.getNickname() == pEvent->pdata[ 0 ] ) ) {
                             eventEx.head = VSCP_PRIORITY_NORMAL;
+                            eventEx.timestamp = vscp_makeTimeStamp();
+                            vscp_setEventExDateTimeBlockToNow( &eventEx );
                             eventEx.sizeData = 2;
                             eventEx.data[ 0 ] = pEvent->pdata[ 1 ];   // Reg
-                            eventEx.data[ 1 ] = writeLevel1Register( pEvent->pdata[ 1 ], pEvent->pdata[ 2 ] );
+                            eventEx.data[ 1 ] = 
+                                    writeLevel1Register( pEvent->pdata[ 1 ], 
+                                                         pEvent->pdata[ 2 ] );
                             eventEx.vscp_class = VSCP_CLASS1_PROTOCOL;
                             eventEx.vscp_type = VSCP_TYPE_PROTOCOL_RW_RESPONSE;
 
@@ -1213,7 +1250,8 @@ dumb_fill_data:
                             uint8_t len = pEvent->pdata[ 2 ];
 
                             for ( i = 0; i < len; i++ ) {
-                                eventEx.data[ ( i % 7 ) + 1 ] = readLevel1Register( offset + i );
+                                eventEx.data[ ( i % 7 ) + 1 ] = 
+                                        readLevel1Register( offset + i );
 
                                 if ( ( i % 7 ) == 6 || i == ( len - 1 ) ) {
                                     uint8_t bytes;
@@ -1225,6 +1263,8 @@ dumb_fill_data:
                                         bytes = ( i % 7 ) + 1;
                                     }
 
+                                    eventEx.timestamp = vscp_makeTimeStamp();
+                                    vscp_setEventExDateTimeBlockToNow( &eventEx );
                                     eventEx.sizeData = bytes + 1;
                                     eventEx.head = VSCP_PRIORITY_NORMAL;
                                     eventEx.vscp_class = VSCP_CLASS1_PROTOCOL;
@@ -1257,6 +1297,8 @@ dumb_fill_data:
                             eventEx.vscp_type = VSCP_TYPE_PROTOCOL_RW_PAGE_RESPONSE;
                             eventEx.data[ 0 ] = 0; // index
                             eventEx.sizeData = len + 1;
+                            eventEx.timestamp = vscp_makeTimeStamp();
+                            vscp_setEventExDateTimeBlockToNow( &eventEx );
 
                             // send the event
                             sendEvent( eventEx );
@@ -1302,6 +1344,9 @@ dumb_fill_data:
                             eventEx.data[ 1 ] = pEvent->pdata[ 1 ]; // mirror page msb
                             eventEx.data[ 2 ] = pEvent->pdata[ 2 ]; // mirror page lsb
 
+                            eventEx.timestamp = vscp_makeTimeStamp();
+                            vscp_setEventExDateTimeBlockToNow( &eventEx );
+
                             do {
                                 // calculate bytes to transfer in this event
                                 if ( ( bytes - byte ) >= 4 ) {
@@ -1339,6 +1384,7 @@ dumb_fill_data:
                         }
                     }
                     else if ( VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_WRITE == pEvent->vscp_type ) {
+                        
                         if ( ( NULL != pEvent->pdata ) &&
                              ( m_guid.getNickname() == pEvent->pdata[ 0 ] ) ) {
 
@@ -1366,6 +1412,8 @@ dumb_fill_data:
 
                             eventEx.head = VSCP_PRIORITY_NORMAL;
                             eventEx.sizeData = 4 + ( pEvent->sizeData - 4 );
+                            eventEx.timestamp = vscp_makeTimeStamp();
+                            vscp_setEventExDateTimeBlockToNow( &eventEx );
                             eventEx.vscp_class = VSCP_CLASS1_PROTOCOL;
                             eventEx.vscp_type = VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_RESPONSE;
                             eventEx.data[ 0 ] = 0; // index of event, this is the first and only
@@ -1387,8 +1435,7 @@ dumb_fill_data:
             }
 
             // We are done with the event
-            vscp_deleteVSCPevent( pEvent );
-            pEvent = NULL;
+            vscp_deleteVSCPevent_v2( &pEvent );
             
         } // Send list size
         

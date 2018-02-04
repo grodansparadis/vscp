@@ -1,0 +1,31 @@
+
+Write out all temperature events 
+
+<row enable="true" groupid="" >
+
+    <comment>
+        Store measurement in variable (see above)
+    </comment>
+
+    <mask priority="0"
+             class="0xFFFF"
+             type="0xFFFF"
+             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+    <filter  priority="0"
+             class="10"
+             type="6"
+             GUID=" 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+
+    <action>0x10</action>
+    <param>
+        /srv/vscp/test.sh %event.string
+    </param>
+
+    <allowed_from>0000-01-01 00:00:00</allowed_from>
+    <allowed_to>9999-12-31 23:59:59</allowed_to>
+    <allowed_weekdays>mtwtfss</allowed_weekdays>
+    <allowed_time>*-*-* *:*:10/30/50</allowed_time>
+
+</row>
+

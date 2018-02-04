@@ -62,8 +62,8 @@ DllExport int WINAPI EXPORT vscphlp_sendEvent( long handle, const vscpEvent *pEv
 DllExport int WINAPI EXPORT vscphlp_sendEventEx( long handle, const vscpEventEx *pEvent );
 DllExport int WINAPI EXPORT vscphlp_receiveEvent( long handle, vscpEvent *pEvent );
 DllExport int WINAPI EXPORT vscphlp_receiveEventEx( long handle, vscpEventEx *pEvent );
-DllExport int WINAPI EXPORT vscphlp_blockingReceiveEvent( long handle, vscpEvent *pEvent );
-DllExport int WINAPI EXPORT vscphlp_blockingReceiveEventEx( long handle, vscpEventEx *pEvent );
+DllExport int WINAPI EXPORT vscphlp_blockingReceiveEvent( long handle, vscpEvent *pEvent, unsigned long timout );
+DllExport int WINAPI EXPORT vscphlp_blockingReceiveEventEx( long handle, vscpEventEx *pEventEx, unsigned long timout );
 DllExport int WINAPI EXPORT vscphlp_enterReceiveLoop(const long handle);
 DllExport int WINAPI EXPORT vscphlp_quitReceiveLoop(const long handle);
 DllExport int WINAPI EXPORT vscphlp_isDataAvailable( long handle, unsigned int *pCount );
@@ -71,11 +71,11 @@ DllExport int WINAPI EXPORT vscphlp_getStatus( long handle, VSCPStatus *pStatus 
 DllExport int WINAPI EXPORT vscphlp_getStatistics( long handle, VSCPStatistics *pStatistics );
 DllExport int WINAPI EXPORT vscphlp_setFilter( long handle, const vscpEventFilter *pFilter );
 DllExport int WINAPI EXPORT vscphlp_getVersion( long handle, unsigned char *pMajorVer,
-                                        unsigned char *pMinorVer,
-                                        unsigned char *pSubMinorVer );
+                                                    unsigned char *pMinorVer,
+                                                    unsigned char *pSubMinorVer );
 DllExport int WINAPI EXPORT vscphlp_getDLLVersion( long handle, unsigned long *pVersion );
 DllExport int WINAPI EXPORT vscphlp_getVendorString( long handle, char *pVendorStr, size_t len );
-DllExport int WINAPI EXPORT vscphlp_getDriverInfo( long handle, char *pVendorStr, size_t len );
+DllExport int WINAPI EXPORT vscphlp_getDriverInfo( long handle, char *pDriverInfoStr, size_t len );
 DllExport int WINAPI EXPORT vscphlp_shutDownServer( long handle );
 
 //-------------------------------------------------------------------------
@@ -387,8 +387,8 @@ int vscphlp_sendEvent( long handle,  const vscpEvent *pEvent );
 int vscphlp_sendEventEx( long handle, const vscpEventEx *pEvent );
 int vscphlp_receiveEvent( long handle, vscpEvent *pEvent );
 int vscphlp_receiveEventEx( long handle, vscpEventEx *pEvent );
-int vscphlp_blockingReceiveEvent( long handle, vscpEvent *pEvent );
-int vscphlp_blockingReceiveEventEx( long handle, vscpEventEx *pEvent );
+int vscphlp_blockingReceiveEvent( long handle, vscpEvent *pEvent, unsigned long timout );
+int vscphlp_blockingReceiveEventEx( long handle, vscpEventEx *pEventEx, unsigned long timout );
 int vscphlp_enterReceiveLoop(const long handle);
 int vscphlp_quitReceiveLoop(const long handle);
 int vscphlp_isDataAvailable( long handle, unsigned int *pCount );
@@ -401,7 +401,7 @@ int vscphlp_getVersion( long handle,
                             unsigned char *pSubMinorVer );
 int vscphlp_getDLLVersion( long handle, unsigned long *pVersion );
 int vscphlp_getVendorString( long handle, char *pVendorStr, size_t len  );
-int vscphlp_getDriverInfo( long handle, char *pVendorStr, size_t len  );
+int vscphlp_getDriverInfo( long handle, char *pDriverInfoStr, size_t len  );
 int vscphlp_serverShutDown( long handle );
 
 //-------------------------------------------------------------------------
@@ -693,6 +693,43 @@ int vscphlp_getISOTimeString( char *buf, size_t buf_len, time_t *t );
 
 int vscphlp_getDateStringFromEvent( char *buf, size_t buf_len, vscpEvent *pEvent );
 int vscphlp_getDateStringFromEventEx( char *buf, size_t buf_len, vscpEventEx *pEventEx );
+
+int vscphlp_setEventToNow( vscpEvent *pEvent  );
+int vscphlp_setEventExToNow( vscpEventEx *pEventEx );
+
+//-------------------------------------------------------------------------
+//                            UDP / Multicast / Encryption
+//-------------------------------------------------------------------------
+
+int vscphlp_getEncryptionCodeFromToken( const char *pToken, int *pEncryptionCode );
+int vscphlp_getEncryptionTokenFromCode( int nEncryptionCode, char *pEncryptionToken, size_t len );
+
+int vscphlp_encryptVscpUdpFrame( unsigned char *output, 
+                                unsigned char *input, 
+                                size_t len,
+                                const unsigned char *key,
+                                const unsigned char *iv,
+                                unsigned char nAlgorithm );
+
+int vscphlp_decryptVscpUdpFrame( unsigned char *output, 
+                                    unsigned char *input, 
+                                    size_t len,
+                                    const unsigned char *key,
+                                    const unsigned char *iv,
+                                    unsigned char nAlgorithm );
+
+size_t vscphlp_getUDpFrameSizeFromEvent( vscpEvent *pEvent );
+size_t vscphlp_getUDpFrameSizeFromEventEx( vscpEvent *pEventEx );
+
+int vscphlp_writeEventToUdpFrame( unsigned char *frame, 
+                                        size_t len, 
+                                        unsigned char pkttype, 
+                                        const vscpEvent *pEvent );
+
+int vscphlp_writeEventExToUdpFrame( unsigned char *frame, 
+                                        size_t len, 
+                                        unsigned char pkttype, 
+                                        const vscpEventEx *pEventEx );
 
 #endif
 

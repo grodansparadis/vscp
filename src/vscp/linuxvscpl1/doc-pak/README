@@ -1,0 +1,11 @@
+Readme file for the the libvscpl1 sharded library part of VSCP & friends
+
+This is an interface to the VSCPD Level I i/f (CANAL) in the form of a shared library.
+The daemon must be started for the routines to work.
+
+
+You can find the latest relevant information about vscpcmd at
+http://www.vscp.org/docs/libvscpl1/doku.php?id=start
+
+Copyright (C) 2007 Johan Hedlund,  <kungjohan@gmail.com>
+

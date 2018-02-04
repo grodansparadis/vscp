@@ -1,0 +1,27 @@
+#!/bin/sh
+
+# Copy this file to the wxWidgets root and run it there. It will create gtk release/debug builds and a base release debug all 
+# in seperate folders. 
+# Before compiling use
+# > PATH=/path/to/static-rel/:$PATH
+# where "/path/to/static-rel" is the pah to the build you wnt to use.
+#
+# PATH=/usr/local/src/wxWidgets3.0.3/vscp_shared-rel-debug-gtk:$PATH
+
+#GTK Shared debug
+# PATH=/usr/local/src/wxWidgets3.0.3/vscp_shared-debug-gtk:$PATH
+mkdir vscp_shared-debug-gtk; cd vscp_shared-debug-gtk; ../configure CPPFLAGS='-O0' CXXFLAGS='-O0' CFLAGS='-O0' --prefix=$(pwd) --enable-debug --with-regex --enable-debug_info --enable-debug_gdb ; make; cd ..
+
+#GTK Static debug
+# PATH=/usr/local/src/wxWidgets3.0.3/vscp_static-debug-gtk:$PATH
+mkdir vscp_static-debug-gtk; cd vscp_static-debug-gtk; ../configure CPPFLAGS='-O0' CXXFLAGS='-O0' CFLAGS='-O0' --prefix=$(pwd) --enable-debug --disable-shared --enable-debug_info --enable-debug_gdb ; make; cd ..
+
+#Base Static release
+# PATH=/usr/local/src/wxWidgets3.0.3/vscp_static-release-base:$PATH
+mkdir vscp_static-release-base; cd vscp_static-release-base; ../configure CPPFLAGS='-fPIC' CXXFLAGS='-fPIC' CFLAGS='-fPIC' --prefix=$(pwd) --disable-gui --disable-shared --disable-debug_flag ; make; cd ..
+
+#Base Shared release
+# PATH=/usr/local/src/wxWidgets3.0.3/vscp_static-release-base:$PATH
+mkdir vscp_shared-release-base; cd vscp_shared-release-base; ../configure CPPFLAGS='-fPIC' CXXFLAGS='-fPIC' CFLAGS='-fPIC' --prefix=$(pwd) --disable-gui  --disable-debug_flag ; make; cd ..
+
+# /usr/local/lib/libwx_baseu_net-3.0.a /usr/local/lib/libwx_baseu_xml-3.0.a /usr/local/lib/libwx_baseu-3.0.a -lexpat -lwxregexu-3.0 -lwxtiff-3.0 -lwxjpeg-3.0 -lz -ldl -lm

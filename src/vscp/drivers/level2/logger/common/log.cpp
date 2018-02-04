@@ -7,7 +7,7 @@
 // 
 // This file is part of the VSCP Project (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2015 Ake Hedman, 
+// Copyright (C) 2000-2018 Ake Hedman, 
 // Grodans Paradis AB, <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
@@ -346,6 +346,13 @@ CVSCPLog::writeEvent(vscpEvent *pEvent)
 		m_pLogStream->Write(str.mbc_str(), strlen(str.mbc_str()));
 		m_pLogStream->Write("</time>\n", strlen("</time>\n"));
 
+		m_pLogStream->Write("<dt>", strlen("<dt>"));
+		if ( !vscp_getDateStringFromEvent( pEvent, str ) ) {
+			str = _("Failed to get date/time.");
+		}
+		m_pLogStream->Write(str.mbc_str(), strlen(str.mbc_str()));
+		m_pLogStream->Write("</dt>\n", strlen("</dt>\n"));
+
 		m_pLogStream->Write("<head>", strlen("<head>"));
 		str.Printf(_("%d"), pEvent->head);
 		m_pLogStream->Write(str.mbc_str(), strlen(str.mbc_str()));
@@ -453,87 +460,86 @@ CVSCPLogWrkTread::~CVSCPLogWrkTread()
 void *
 CVSCPLogWrkTread::Entry()
 {
+    // Check pointers
+    if (NULL == m_pLog) return NULL;
 
-	// Check pointers
-	if (NULL == m_pLog) return NULL;
-
-	// First log on to the host and get configuration 
-	// variables
+    // First log on to the host and get configuration 
+    // variables
 
     if ( VSCP_ERROR_SUCCESS == m_srv.doCmdOpen( m_pLog->m_host,
 		                                            m_pLog->m_username,
 		                                            m_pLog->m_password) <= 0) {
-		return NULL;
-	}
+        return NULL;
+    }
 
-	// Find the channel id
-	uint32_t ChannelID;
-	m_srv.doCmdGetChannelID(&ChannelID);
+    // Find the channel id
+    uint32_t ChannelID;
+    m_srv.doCmdGetChannelID(&ChannelID);
 
-	// It is possible that there is configuration data the server holds 
-	// that we need to read in. 
-	// We look for 
-	//      prefix_filter to find a filter. A string is expected.
-	//      prefix_mask to find a mask. A string is expected.
-	//      prefix_path to overide the file path for the log file. A string is expected.
-	//      prefix_rewrite to override the overwrite flag. A bool is expected.
+    // It is possible that there is configuration data the server holds 
+    // that we need to read in. 
+    // We look for 
+    //      prefix_filter to find a filter. A string is expected.
+    //      prefix_mask to find a mask. A string is expected.
+    //      prefix_path to overide the file path for the log file. A string is expected.
+    //      prefix_rewrite to override the overwrite flag. A bool is expected.
 
 
-	// Get filter data
-	wxString varFilter;
-	wxString varMask;
+    // Get filter data
+    wxString varFilter;
+    wxString varMask;
 
-	wxString strFilter = m_pLog->m_prefix +
+    wxString strFilter = m_pLog->m_prefix +
 		wxString::FromAscii("_filter");
-	wxString strMask = m_pLog->m_prefix +
+    wxString strMask = m_pLog->m_prefix +
 		wxString::FromAscii("_mask");
     if ( ( VSCP_ERROR_SUCCESS == m_srv.getRemoteVariableValue( strFilter, varFilter ) ) &&
          ( VSCP_ERROR_SUCCESS == m_srv.getRemoteVariableValue( strMask, varMask ) ) ) {
-		m_srv.doCmdFilter(varFilter, varMask);
-	}
+        m_srv.doCmdFilter(varFilter, varMask);
+    }
 
-	// get overrided file path
-	wxString strPath = m_pLog->m_prefix +
+    // get overrided file path
+    wxString strPath = m_pLog->m_prefix +
 		wxString::FromAscii("_path");
-	wxString varPath;
+    wxString varPath;
     if ( VSCP_ERROR_SUCCESS == m_srv.getRemoteVariableValue( strPath, varPath ) ) {
-		m_pLog->m_path = varPath;
-	}
+        m_pLog->m_path = varPath;
+    }
 
-	wxString strRewrite = m_pLog->m_prefix +
-		wxString::FromAscii("_rewrite");
-	bool bOverwrite;
+    wxString strRewrite = m_pLog->m_prefix +
+                wxString::FromAscii("_rewrite");
+    bool bOverwrite;
     if ( VSCP_ERROR_SUCCESS == m_srv.getRemoteVariableBool( strRewrite, &bOverwrite ) ) {
-		if (bOverwrite) {
-			m_pLog->m_flags |= LOG_FILE_OVERWRITE;
-		} 
+        if ( bOverwrite ) {
+            m_pLog->m_flags |= LOG_FILE_OVERWRITE;
+	} 
         else {
-			m_pLog->m_flags &= ~LOG_FILE_OVERWRITE;
-		}
-	}
+            m_pLog->m_flags &= ~LOG_FILE_OVERWRITE;
+        }
+    }
 
-	bool bVSCPWorksFormat;
-	wxString strVscpWorkdFmt = m_pLog->m_prefix +
-		wxString::FromAscii("_vscpworksfmt");
+    bool bVSCPWorksFormat;
+    wxString strVscpWorkdFmt = m_pLog->m_prefix +
+    wxString::FromAscii("_vscpworksfmt");
     if ( VSCP_ERROR_SUCCESS == m_srv.getRemoteVariableBool( strVscpWorkdFmt, &bVSCPWorksFormat ) ) {
-		if (bVSCPWorksFormat) {
-			m_pLog->m_flags |= LOG_FILE_VSCP_WORKS;
-		} 
+        if (bVSCPWorksFormat) {
+            m_pLog->m_flags |= LOG_FILE_VSCP_WORKS;
+	} 
         else {
-			m_pLog->m_flags &= ~LOG_FILE_VSCP_WORKS;
-		}
+            m_pLog->m_flags &= ~LOG_FILE_VSCP_WORKS;
 	}
+    }
 
     // Close server connection
     m_srv.doCmdClose();
 
-	// Open the file
-	if (!m_pLog->openFile()) return NULL;
+    // Open the file
+    if (!m_pLog->openFile()) return NULL;
 
-	while (!TestDestroy() && !m_pLog->m_bQuit) {
+    while (!TestDestroy() && !m_pLog->m_bQuit) {
 
-		// Wait for events
-        if ( wxSEMA_TIMEOUT == m_pLog->m_semSendQueue.WaitTimeout(500)) continue;
+    // Wait for events
+    if ( wxSEMA_TIMEOUT == m_pLog->m_semSendQueue.WaitTimeout(500)) continue;
 
         if (m_pLog->m_sendList.size()) {
 
@@ -546,17 +552,17 @@ CVSCPLogWrkTread::Entry()
 
             m_pLog->writeEvent(pEvent);
 
-			vscp_deleteVSCPevent( pEvent );
-			pEvent = NULL;
+            vscp_deleteVSCPevent( pEvent );
+            pEvent = NULL;
 
-		} // Event received
+        } // Event received
 		
-	} // Receive loop
+    } // Receive loop
 
-	// Close the channel
-	m_srv.doCmdClose();
+    // Close the channel
+    m_srv.doCmdClose();
 
-	return NULL;
+    return NULL;
 }
 
 //////////////////////////////////////////////////////////////////////

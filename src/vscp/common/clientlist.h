@@ -7,7 +7,7 @@
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2017 
+// Copyright (c) 2000-2018
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
@@ -22,8 +22,8 @@
 //
 
 
-#if !defined(AFX_CLIENTLIST_H__B0190EE5_E0E8_497F_92A0_A8616296AF3E__INCLUDED_)
-#define AFX_CLIENTLIST_H__B0190EE5_E0E8_497F_92A0_A8616296AF3E__INCLUDED_
+#if !defined(CLIENTLIST_H__B0190EE5_E0E8_497F_92A0_A8616296AF3E__INCLUDED_)
+#define CLIENTLIST_H__B0190EE5_E0E8_497F_92A0_A8616296AF3E__INCLUDED_
 
 #ifdef WIN32
 #if _MSC_VER > 1000
@@ -59,22 +59,26 @@ enum {
 
 enum {
     CLIENT_ITEM_INTERFACE_TYPE_NONE = 0,
-    CLIENT_ITEM_INTERFACE_TYPE_CLIENT_INTERNAL,     // Daemon internal 
-    CLIENT_ITEM_INTERFACE_TYPE_DRIVER_LEVEL1,       // Level I drivers
-    CLIENT_ITEM_INTERFACE_TYPE_DRIVER_LEVEL2,       // Level II drivers
-    CLIENT_ITEM_INTERFACE_TYPE_CLIENT_TCPIP,        // TCP/IP interface
-    CLIENT_ITEM_INTERFACE_TYPE_CLIENT_UDP,          // UDP interface
-    CLIENT_ITEM_INTERFACE_TYPE_CLIENT_WEB,          // WEB interface
-    CLIENT_ITEM_INTERFACE_TYPE_CLIENT_WEBSOCKET,    // Websocket interface
-    CLIENT_ITEM_INTERFACE_TYPE_CLIENT_REST,         // REST interface
-    CLIENT_ITEM_INTERFACE_TYPE_CLIENT_MULTICAST,    // Multicast interface
-    CLIENT_ITEM_INTERFACE_TYPE_CLIENT_MQTT,         // MQTT interface
-    CLIENT_ITEM_INTERFACE_TYPE_CLIENT_COAP,         // COAP interface
-    CLIENT_ITEM_INTERFACE_TYPE_CLIENT_DISCOVERY,    // Discovery interface
-    CLIENT_ITEM_INTERFACE_TYPE_CLIENT_JAVASCRIPT,   // JavaScript interface
-    CLIENT_ITEM_INTERFACE_TYPE_CLIENT_LUA,          // LUA Script interface
+    CLIENT_ITEM_INTERFACE_TYPE_CLIENT_INTERNAL,     // 1 Daemon internal 
+    CLIENT_ITEM_INTERFACE_TYPE_DRIVER_LEVEL1,       // 2 Level I drivers
+    CLIENT_ITEM_INTERFACE_TYPE_DRIVER_LEVEL2,       // 3 Level II drivers
+    CLIENT_ITEM_INTERFACE_TYPE_DRIVER_LEVEL3,       // 3 Level III drivers
+    CLIENT_ITEM_INTERFACE_TYPE_CLIENT_TCPIP,        // 4 TCP/IP interface
+    CLIENT_ITEM_INTERFACE_TYPE_CLIENT_UDP,          // 4 UDP interface
+    CLIENT_ITEM_INTERFACE_TYPE_CLIENT_WEB,          // 5 WEB interface
+    CLIENT_ITEM_INTERFACE_TYPE_CLIENT_WEBSOCKET,    // 6 Websocket interface
+    CLIENT_ITEM_INTERFACE_TYPE_CLIENT_REST,         // 7 REST interface
+    CLIENT_ITEM_INTERFACE_TYPE_CLIENT_MULTICAST,    // 8 Multicast interface
+    CLIENT_ITEM_INTERFACE_TYPE_CLIENT_MULTICAST_CH, // 9 Multicast channel interface
+    CLIENT_ITEM_INTERFACE_TYPE_CLIENT_MQTT,         // 10 MQTT interface
+    CLIENT_ITEM_INTERFACE_TYPE_CLIENT_COAP,         // 11 COAP interface
+    CLIENT_ITEM_INTERFACE_TYPE_CLIENT_DISCOVERY,    // 12 Discovery interface
+    CLIENT_ITEM_INTERFACE_TYPE_CLIENT_JAVASCRIPT,   // 13 JavaScript interface
+    CLIENT_ITEM_INTERFACE_TYPE_CLIENT_LUA,          // 14 LUA Script interface
 };
 
+// Description of each interface type (for web interface etc)
+//const char **interface_description;
 
 // Both the UDP send and receive id clients use this is. This way
 // received UDP events will not be transmitted on the UDP interface. 
@@ -242,7 +246,7 @@ public:
     /// Destructor
     virtual ~CClientList();
 
-    /*1
+    /*!
         Add a client to the list
         @param pClientItem Client to add
         @param id Normally not used but can be used to set a specific id

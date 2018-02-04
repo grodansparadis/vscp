@@ -1595,7 +1595,8 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
                 iter != m_mdf.m_dmInfo.m_list_action.end(); ++iter) {
             CMDF_Action *action = *iter;
             int idx = dlg.m_comboAction->Append( action->m_strName );
-            dlg.m_comboAction->SetClientData (idx, (void *)action->m_nCode ); // OK Don't worry I'm a HACKER and this is a HACK :)
+            dlg.m_comboAction->SetClientData (idx, 
+                    reinterpret_cast<void*>( action->m_nCode ) ); // OK Don't worry I'm a HACKER and this is a HACK :)
             if ( reg == action->m_nCode ) {
                 dlg.m_comboAction->SetSelection( idx );
             }
@@ -1651,7 +1652,7 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
 
 
             // class filter
-            uint16_t class_filter;
+            uint16_t class_filter = 0;
             if ( saverow[ VSCP_LEVEL1_DM_OFFSET_CLASS_FILTER ] != 
                     vscp_readStringValue( dlg.m_classFilter->GetValue() ) ) {
 

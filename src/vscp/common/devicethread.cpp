@@ -1,24 +1,28 @@
 // devicethread.cpp
 //
-// This program is free software; you can redistribute it and/or
-// modify it under the terms of the GNU General Public License
-// as published by the Free Software Foundation; either version
-// 2 of the License, or (at your option) any later version.
+// This file is part of the VSCP (http://www.vscp.org) 
 //
-// This file is part of the VSCP (http://www.vscp.org)
-//
-// Copyright (C) 2000-2017
-// Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
-//
-// This file is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with this file see the file COPYING.  If not, write to
-// the Free Software Foundation, 59 Temple Place - Suite 330,
-// Boston, MA 02111-1307, USA.
+// The MIT License (MIT)
+// 
+// Copyright (c) 2000-2018 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
+// 
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+// 
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 //
 
 #ifdef WIN32
@@ -51,14 +55,14 @@
 #define DWORD unsigned long
 #endif
 
-#include "daemonvscp.h"
+#include "daemonworker.h"
 #include <canal_win32_ipc.h>
 #include <canal_macro.h>
 #include <vscp.h>
+#include <vscp_debug.h>
 #include <vscpdlldef.h>
 #include <vscphelper.h>
 #include <dllist.h>
-//#include <md5.h>
 #include <controlobject.h>
 #include "devicethread.h"
 
@@ -73,6 +77,8 @@ deviceThread::deviceThread() : wxThread(wxTHREAD_JOINABLE)
     m_pCtrlObject = NULL;
     m_preceiveThread = NULL;
     m_pwriteThread = NULL;
+    m_preceiveLevel2Thread = NULL;
+    m_pwriteLevel2Thread = NULL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -104,11 +110,14 @@ void *deviceThread::Entry()
 
     // This is now an active Client
     m_pDeviceItem->m_pClientItem->m_bOpen = true;
-    if ( VSCP_DRIVER_LEVEL2 == m_pDeviceItem->m_driverLevel ) {
+    if ( VSCP_DRIVER_LEVEL1 == m_pDeviceItem->m_driverLevel ) {
+        m_pDeviceItem->m_pClientItem->m_type = CLIENT_ITEM_INTERFACE_TYPE_DRIVER_LEVEL1;
+    }
+    else if ( VSCP_DRIVER_LEVEL2 == m_pDeviceItem->m_driverLevel ) {
         m_pDeviceItem->m_pClientItem->m_type = CLIENT_ITEM_INTERFACE_TYPE_DRIVER_LEVEL2;
     }
-    else {
-        m_pDeviceItem->m_pClientItem->m_type = CLIENT_ITEM_INTERFACE_TYPE_DRIVER_LEVEL1;
+    else if ( VSCP_DRIVER_LEVEL3 == m_pDeviceItem->m_driverLevel ) {
+        m_pDeviceItem->m_pClientItem->m_type = CLIENT_ITEM_INTERFACE_TYPE_DRIVER_LEVEL3;
     }
     m_pDeviceItem->m_pClientItem->m_strDeviceName = m_pDeviceItem->m_strName;
     m_pDeviceItem->m_pClientItem->m_strDeviceName += _(" Started at ");
@@ -124,10 +133,28 @@ void *deviceThread::Entry()
     m_pCtrlObject->addClient(m_pDeviceItem->m_pClientItem);
     m_pCtrlObject->m_wxClientMutex.Unlock();
 
-    // Load dynamic library
-    if (!m_wxdll.Load(m_pDeviceItem->m_strPath, wxDL_LAZY)) {
-        m_pCtrlObject->logMsg(_("Unable to load dynamic library.\n") );
-        return NULL;
+    if ( VSCP_DRIVER_LEVEL3 != m_pDeviceItem->m_driverLevel ) {
+        // Load dynamic library
+        if ( !m_wxdll.Load( m_pDeviceItem->m_strPath, wxDL_LAZY ) ) {
+            m_pCtrlObject->logMsg(_("Unable to load dynamic library.\n") );
+            return NULL;
+        }
+    }
+    else {     // Level II driver
+        
+        //  Startup Level III driver
+        /*wxString executable = m_pDeviceItem->m_strPath;
+
+        if ( 0 == ( m_pDeviceItem->m_pid = wxExecute( executable.mbc_str() ) ) ) {
+            wxString str;
+            str = _("Failed to load level III driver: ");
+            str += m_pDeviceItem->m_strName;
+            str += _("\n");
+            m_pCtrlObject->logMsg(str);
+            wxLogDebug(str);
+            return NULL;
+        }*/
+        
     }
 
     if (VSCP_DRIVER_LEVEL1 == m_pDeviceItem->m_driverLevel) {
@@ -309,6 +336,10 @@ void *deviceThread::Entry()
             m_pCtrlObject->logMsg( wxstr );
         }
 
+        if ( m_pCtrlObject->m_debugFlags1 & VSCP_DEBUG1_DRIVER ) {
+            m_pCtrlObject->logMsg(_("[Device tread] Level I Driver open.")); 
+        }
+
         // Get Driver Level
         m_pDeviceItem->m_driverLevel =
                 m_pDeviceItem->m_proc_CanalGetLevel(m_pDeviceItem->m_openHandle);
@@ -320,6 +351,10 @@ void *deviceThread::Entry()
         if (NULL != m_pDeviceItem->m_proc_CanalBlockingReceive) {
 
             // * * * * Blocking version * * * *
+
+            if ( m_pCtrlObject->m_debugFlags1 & VSCP_DEBUG1_DRIVER ) {
+                m_pCtrlObject->logMsg(_("[Device tread] Level I blocking version.")); 
+            }
 
             /////////////////////////////////////////////////////////////////////////////
             // Device write worker thread
@@ -341,6 +376,10 @@ void *deviceThread::Entry()
             }
             else {
                 m_pCtrlObject->logMsg(_("Unable to allocate memory for device write worker thread.\n") );
+            }
+
+            if ( m_pCtrlObject->m_debugFlags1 & VSCP_DEBUG1_DRIVER ) {
+                m_pCtrlObject->logMsg(_("[Device tread] Level I write thread started.")); 
             }
 
             /////////////////////////////////////////////////////////////////////////////
@@ -365,9 +404,17 @@ void *deviceThread::Entry()
                 m_pCtrlObject->logMsg(_("Unable to allocate memory for device receive worker thread.\n") );
             }
 
+            if ( m_pCtrlObject->m_debugFlags1 & VSCP_DEBUG1_DRIVER ) {
+                m_pCtrlObject->logMsg(_("[Device tread] Level I receive thread started.")); 
+            }
+
             // Just sit and wait until the end of the world as we know it...
             while (!m_pDeviceItem->m_bQuit) {
                 wxSleep(1);
+            }
+
+            if ( m_pCtrlObject->m_debugFlags1 & VSCP_DEBUG1_DRIVER ) {
+                m_pCtrlObject->logMsg(_("[Device tread] Level I work loop ended.")); 
             }
 
             m_preceiveThread->m_bQuit = true;
@@ -379,18 +426,22 @@ void *deviceThread::Entry()
 
             // * * * * Non blocking version * * * *
 
+            if ( m_pCtrlObject->m_debugFlags1 & VSCP_DEBUG1_DRIVER ) {
+                m_pCtrlObject->logMsg(_("[Device tread] Level I NON Blocking version.")); 
+            }
+
             bool bActivity;
-            while (!TestDestroy() && !m_pDeviceItem->m_bQuit) {
+            while ( !TestDestroy() && !m_pDeviceItem->m_bQuit ) {
 
                 bActivity = false;
                 /////////////////////////////////////////////////////////////////////////////
                 //                           Receive from device						   //
                 /////////////////////////////////////////////////////////////////////////////
                 canalMsg msg;
-                if (m_pDeviceItem->m_proc_CanalDataAvailable(m_pDeviceItem->m_openHandle)) {
+                if ( m_pDeviceItem->m_proc_CanalDataAvailable( m_pDeviceItem->m_openHandle ) ) {
 
-                    if (CANAL_ERROR_SUCCESS ==
-                        m_pDeviceItem->m_proc_CanalReceive(m_pDeviceItem->m_openHandle, &msg)) {
+                    if ( CANAL_ERROR_SUCCESS ==
+                        m_pDeviceItem->m_proc_CanalReceive(m_pDeviceItem->m_openHandle, &msg ) ) {
 
                         bActivity = true;
 
@@ -420,11 +471,11 @@ void *deviceThread::Entry()
 
 
                 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-                //             Send messages (if any) in the outqueue
+                //          Send messages (if any) in the output queue
                 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
                 // Check if there is something to send
-                if (m_pDeviceItem->m_pClientItem->m_clientInputQueue.GetCount()) {
+                if ( m_pDeviceItem->m_pClientItem->m_clientInputQueue.GetCount() ) {
 
                     bActivity = true;
 
@@ -471,9 +522,16 @@ void *deviceThread::Entry()
 
         } // if blocking/non blocking
 
+        if ( m_pCtrlObject->m_debugFlags1 & VSCP_DEBUG1_DRIVER ) {
+            m_pCtrlObject->logMsg(_("[Device tread] Level I Work loop ended.")); 
+        }
 
         // Close CANAL channel
         m_pDeviceItem->m_proc_CanalClose(m_pDeviceItem->m_openHandle);
+
+        if ( m_pCtrlObject->m_debugFlags1 & VSCP_DEBUG1_DRIVER ) {
+            m_pCtrlObject->logMsg(_("[Device tread] Level I Closed.")); 
+        }
 
         // Library is unloaded in destructor
 
@@ -593,14 +651,16 @@ void *deviceThread::Entry()
             return NULL;
         }
 
-        m_pCtrlObject->logMsg(_("Discovered all methods\n"));
+        if ( m_pCtrlObject->m_debugFlags1 & VSCP_DEBUG1_DRIVER ) { 
+            m_pCtrlObject->logMsg(_("Discovered all methods\n"));
+        }
 
         // Username, password, host and port can be set in configuration file. Read in them here
         // if they are.
         wxString strHost(_("127.0.0.1:9598"));
 
         wxStringTokenizer tkz(m_pDeviceItem->m_strParameter, _(";"));
-        if (tkz.HasMoreTokens()) {
+        if ( tkz.HasMoreTokens() ) {
 
             CVSCPVariable variable;
 
@@ -608,7 +668,8 @@ void *deviceThread::Entry()
             wxString prefix = tkz.GetNextToken();
 
             // Check if username is specified in the configuration file            
-            if ( m_pCtrlObject->m_VSCP_Variables.find(m_pDeviceItem->m_strName + _("_username"), variable ) ) {
+            if ( m_pCtrlObject->m_variables.find( m_pDeviceItem->m_strName +
+                                                    _("_username"), variable ) ) {
                 wxString str;
                 if (VSCP_DAEMON_VARIABLE_CODE_STRING == variable.getType()) {
                     str = variable.getValue();
@@ -617,7 +678,8 @@ void *deviceThread::Entry()
             }
 
             // Check if password is specified in the configuration file            
-            if ( m_pCtrlObject->m_VSCP_Variables.find(m_pDeviceItem->m_strName + _("_password"), variable ) ) {
+            if ( m_pCtrlObject->m_variables.find( m_pDeviceItem->m_strName +
+                                                    _("_password"), variable ) ) {
                 wxString str;
                 if (VSCP_DAEMON_VARIABLE_CODE_STRING == variable.getType()) {
                     str = variable.getValue();
@@ -626,7 +688,8 @@ void *deviceThread::Entry()
             }
 
             // Check if host is specified in the configuration file       
-            if ( m_pCtrlObject->m_VSCP_Variables.find(m_pDeviceItem->m_strName + _("_host"), variable ) ) {
+            if ( m_pCtrlObject->m_variables.find( m_pDeviceItem->m_strName + 
+                                                    _("_host"), variable ) ) {
                 wxString str;
                 if (VSCP_DAEMON_VARIABLE_CODE_STRING == variable.getType()) {
                     str = variable.getValue();
@@ -639,16 +702,23 @@ void *deviceThread::Entry()
         // Open up the driver
         m_pDeviceItem->m_openHandle =
             m_pDeviceItem->m_proc_VSCPOpen( m_pCtrlObject->m_driverUsername.mbc_str(),
-                                                ( const char * )m_pCtrlObject->m_driverPassword.mbc_str(),
-                                                ( const char * )strHost.mbc_str(),
-                                                0,
-                                                ( const char * )m_pDeviceItem->m_strName.mbc_str(),
-                                                ( const char * )m_pDeviceItem->m_strParameter.mbc_str() );
+                    ( const char * )m_pCtrlObject->m_driverPassword.mbc_str(),
+                    ( const char * )strHost.mbc_str(),
+                    0,
+                    ( const char * )m_pDeviceItem->m_strName.mbc_str(),
+                    ( const char * )m_pDeviceItem->m_strParameter.mbc_str() );
 
         if ( 0 == m_pDeviceItem->m_openHandle ) {
             // Free the library
-            m_pCtrlObject->logMsg( _( "[Device tread] Unable to open VSCP driver (check path/rights).\n" ) );
+            m_pCtrlObject->logMsg( _("[Device tread] Unable to open VSCP "
+                                     "driver (check username/password/path/"
+                                     "rights). Possible additional info from driver "
+                                     "in syslog.\n" ) );
             return NULL;
+        }
+
+        if ( m_pCtrlObject->m_debugFlags1 & VSCP_DEBUG1_DRIVER ) {
+            m_pCtrlObject->logMsg(_("[Device tread] Level II Open.")); 
         }
 
         /////////////////////////////////////////////////////////////////////////////
@@ -657,7 +727,7 @@ void *deviceThread::Entry()
 
         m_pwriteLevel2Thread = new deviceLevel2WriteThread;
 
-        if (m_pwriteLevel2Thread) {
+        if ( m_pwriteLevel2Thread ) {
             m_pwriteLevel2Thread->m_pMainThreadObj = this;
             wxThreadError err;
             if (wxTHREAD_NO_ERROR == (err = m_pwriteLevel2Thread->Create())) {
@@ -674,39 +744,58 @@ void *deviceThread::Entry()
             m_pCtrlObject->logMsg(_("Unable to allocate memory for device write worker thread."));
         }
 
+        if ( m_pCtrlObject->m_debugFlags1 & VSCP_DEBUG1_DRIVER ) {
+            m_pCtrlObject->logMsg(_("[Device tread] Level II Write thread created.")); 
+        }
+
         /////////////////////////////////////////////////////////////////////////////
         // Device read worker thread
         /////////////////////////////////////////////////////////////////////////////
 
         m_preceiveLevel2Thread = new deviceLevel2ReceiveThread;
 
-        if (m_preceiveLevel2Thread) {
+        if ( NULL != m_preceiveLevel2Thread ) {
             m_preceiveLevel2Thread->m_pMainThreadObj = this;
             wxThreadError err;
             if (wxTHREAD_NO_ERROR == (err = m_preceiveLevel2Thread->Create())) {
                 m_preceiveLevel2Thread->SetPriority(WXTHREAD_MAX_PRIORITY);
                 if (wxTHREAD_NO_ERROR != (err = m_preceiveLevel2Thread->Run())) {
-                    m_pCtrlObject->logMsg(_("Unable to run device receive worker thread."));
+                    m_pCtrlObject->logMsg(_("Unable to run device "
+                                            "receive worker thread."));
                 }
             }
             else {
-                m_pCtrlObject->logMsg(_("Unable to create device receive worker thread.") );
+                m_pCtrlObject->logMsg(_("Unable to create device receive "
+                                        "worker thread.") );
             }
         }
         else {
-            m_pCtrlObject->logMsg(_("Unable to allocate memory for device receive worker thread.") );
+            m_pCtrlObject->logMsg(_("Unable to allocate memory for device "
+                                    "receive worker thread.") );
+        }
+
+        if ( m_pCtrlObject->m_debugFlags1 & VSCP_DEBUG1_DRIVER ) {
+            m_pCtrlObject->logMsg(_("[Device tread] Level II Read thread created.")); 
         }
 
         // Just sit and wait until the end of the world as we know it...
         while (!TestDestroy() && !m_pDeviceItem->m_bQuit) {
-            wxSleep(200);
+            wxSleep(1);
         }
 
-        m_preceiveLevel2Thread->m_bQuit = true;
-        m_pwriteLevel2Thread->m_bQuit = true;
+        if ( m_pCtrlObject->m_debugFlags1 & VSCP_DEBUG1_DRIVER ) {
+            m_pCtrlObject->logMsg(_("[Device tread] Level II Cloing.")); 
+        }
+
+        //m_preceiveLevel2Thread->m_bQuit = true;
+        //m_pwriteLevel2Thread->m_bQuit = true;
 
         // Close channel
-        m_pDeviceItem->m_proc_VSCPClose(m_pDeviceItem->m_openHandle);
+        m_pDeviceItem->m_proc_VSCPClose( m_pDeviceItem->m_openHandle );
+
+        if ( m_pCtrlObject->m_debugFlags1 & VSCP_DEBUG1_DRIVER ) {
+            m_pCtrlObject->logMsg(_("[Device tread] Level II Closed.")); 
+        }
 
         // Library is unloaded in destructor
 
@@ -725,8 +814,31 @@ void *deviceThread::Entry()
             delete m_pwriteLevel2Thread;
         }
 
-    }
+        if ( m_pCtrlObject->m_debugFlags1 & VSCP_DEBUG1_DRIVER ) {
+            m_pCtrlObject->logMsg(_("[Device tread] Level II Done waiting for threads.")); 
+        }
 
+    }
+    else if (VSCP_DRIVER_LEVEL3 == m_pDeviceItem->m_driverLevel) {
+        
+        if ( m_pCtrlObject->m_debugFlags1 & VSCP_DEBUG1_DRIVER ) {
+            m_pCtrlObject->logMsg(_("[Device tread] Level III Start server loop.")); 
+        }
+
+        // Just sit and wait until the end of the world as we know it...
+        while ( !m_pDeviceItem->m_bQuit ) {
+            wxSleep(1);
+        }
+
+        if ( m_pCtrlObject->m_debugFlags1 & VSCP_DEBUG1_DRIVER ) {
+            m_pCtrlObject->logMsg(_("[Device tread] Level II End server loop.")); 
+        }
+        
+        // Send stop to device
+        //kill( m_pDeviceItem->m_pid, SIGKILL );
+        //*** This happens in the item destructor now ***
+        
+    }
 
 
 
@@ -1020,7 +1132,7 @@ void *deviceLevel2ReceiveThread::Entry()
     if (NULL == m_pMainThreadObj) return NULL;
 
     int rv;
-    while (!TestDestroy() && !m_bQuit) {
+    while ( !TestDestroy() && !m_bQuit ) {
 
         pEvent = new vscpEvent;
         if (NULL == pEvent) continue;
@@ -1074,11 +1186,11 @@ void *deviceLevel2ReceiveThread::Entry()
         }
 
         // There must be room in the receive queue (even if room (or whisky) has been better)
-        if (m_pMainThreadObj->m_pCtrlObject->m_maxItemsInClientReceiveQueue >
-                m_pMainThreadObj->m_pCtrlObject->m_clientOutputQueue.GetCount()) {
+        if ( m_pMainThreadObj->m_pCtrlObject->m_maxItemsInClientReceiveQueue >
+                m_pMainThreadObj->m_pCtrlObject->m_clientOutputQueue.GetCount() ) {
 
             m_pMainThreadObj->m_pCtrlObject->m_mutexClientOutputQueue.Lock();
-            m_pMainThreadObj->m_pCtrlObject->m_clientOutputQueue.Append(pEvent);
+            m_pMainThreadObj->m_pCtrlObject->m_clientOutputQueue.Append( pEvent );
             m_pMainThreadObj->m_pCtrlObject->m_semClientOutputQueue.Post();
             m_pMainThreadObj->m_pCtrlObject->m_mutexClientOutputQueue.Unlock();
 
@@ -1133,9 +1245,9 @@ deviceLevel2WriteThread::~deviceLevel2WriteThread()
 void *deviceLevel2WriteThread::Entry()
 {
     // Must be a valid main object pointer
-    if (NULL == m_pMainThreadObj) return NULL;
+    if ( NULL == m_pMainThreadObj ) return NULL;
 
-    while (!TestDestroy() && !m_bQuit) {
+    while ( !TestDestroy() && !m_bQuit ) {
 
         // Wait until there is something to send
         if (wxSEMA_TIMEOUT ==
