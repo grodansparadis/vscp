@@ -486,6 +486,7 @@ bool vscp_XML_Escape( const char *src, char *dst, size_t dst_len )
                             "&lt;",
                         };
     
+    /*
     unsigned int i, j, k;
     unsigned int nRef = 0;
     unsigned int nEscapeChars = strlen( escapeCharTbl );
@@ -496,7 +497,7 @@ bool vscp_XML_Escape( const char *src, char *dst, size_t dst_len )
     
     
     // Go through string
-    /*for ( i = 0; i<str_len; i++ ) {
+    for ( i = 0; i<str_len; i++ ) {
         
         // Go through escape chars 
         for ( nRef = 0; nRef < nEscapeChars; nRef++ ) {
@@ -518,9 +519,9 @@ bool vscp_XML_Escape( const char *src, char *dst, size_t dst_len )
                 }
             }
         }  
-    }*/
+    }
     
-    dst[ str_len ] = '\0';
+    dst[ str_len ] = '\0'; */
     
     return true;
 }
@@ -3161,7 +3162,6 @@ bool vscp_convertXMLToEvent( wxString& strXML, vscpEvent *pEvent )
 {
     wxString strguid;
     wxString wxstr;
-    unsigned long lval;
     wxXmlDocument doc;
     wxStringInputStream instrstream( strXML );    
     
@@ -3291,7 +3291,6 @@ bool vscp_convertXMLToEventEx( wxString& strXML, vscpEventEx *pEventEx )
 {
     wxString strguid;
     wxString wxstr;
-    unsigned long lval;
     wxXmlDocument doc;
     wxStringInputStream instrstream( strXML );    
     
@@ -3900,7 +3899,6 @@ bool vscp_readFilterMaskFromXML( vscpEventFilter *pFilter, const wxString& strFi
 {
     wxString strguid;
     wxString wxstr;
-    unsigned long lval;
     wxXmlDocument doc;
     wxStringInputStream instrstream( strFilter );    
     
@@ -6551,22 +6549,22 @@ uint8_t vscp_getEncryptionCodeFromToken( wxString& token )
 // vscp_getEncryptionTokenFromCode
 //
 
-wxString vscp_getEncryptionTokenFromCode( uint8_t code )
+void vscp_getEncryptionTokenFromCode( uint8_t code, wxString& token )
 {
     switch ( code ) {
         
         case VSCP_ENCRYPTION_AES128:
-            return VSCP_ENCRYPTION_TOKEN_1;
+            token = VSCP_ENCRYPTION_TOKEN_1;
             
         case VSCP_ENCRYPTION_AES192:
-            return VSCP_ENCRYPTION_TOKEN_2;
+            token = VSCP_ENCRYPTION_TOKEN_2;
             
         case VSCP_ENCRYPTION_AES256:
-            return VSCP_ENCRYPTION_TOKEN_3;
+            token = VSCP_ENCRYPTION_TOKEN_3;
                     
         default:    
         case VSCP_ENCRYPTION_NONE:
-            return VSCP_ENCRYPTION_TOKEN_0;
+            token = VSCP_ENCRYPTION_TOKEN_0;
     }
 }
 

@@ -359,7 +359,7 @@
       <Optimization>MaxSpeed</Optimization>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>.\;$(OPENSSL64)\include;$(wxwin)\include\msvc;$(WXWIN)\include\;$(LUA64)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;$(OPENSSL64)\include;$(wxwin)\include\msvc;$(WXWIN)\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_WINSOCK_DEPRECATED_NO_WARNINGS;NDEBUG;WIN32;_CONSOLE;WINVER=0x0601;_MT;wxUSE_GUI=0;WXDEBUG=0;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;MG_ENABLE_THREADS;MG_ENABLE_IPV6;MG_ENABLE_SSL;MG_ENABLE_MQTT_BROKER;MG_ENABLE_JAVASCRIPT;MG_ENABLE_HTTP_CGI;MG_ENABLE_HTTP_SSI;MG_ENABLE_HTTP_SSI_EXEC;MG_ENABLE_HTTP_WEBDAV;MG_ENABLE_GETADDRINFO;V7_ENABLE_JS_GETTERS;V7_ENABLE_JS_SETTERS;V7_BUILD_PROFILE=3;V7_ENABLE_CRYPTO;V7_ENABLE_FILE;V7_ENABLE_SOCKET;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <BrowseInformation>true</BrowseInformation>
@@ -391,7 +391,7 @@
       <SubSystem>Console</SubSystem>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <AdditionalLibraryDirectories>$(wxwin)\lib\vc_x64_lib;$(EXPAT64)\bin\$(Configuration);$(OPENSSL64)\lib\VC;$(LUA64);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>ssleay32MT.lib;libeay32MT.lib;libexpat.lib;comctl32.lib;wsock32.lib;netapi32.lib;rpcrt4.lib;msvcrt.lib;lua52.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ssleay32MT.lib;libeay32MT.lib;libexpat.lib;comctl32.lib;wsock32.lib;netapi32.lib;rpcrt4.lib;msvcrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">

@@ -1310,12 +1310,12 @@ extern "C" {
      * Fetch encryption token from code.
      * 
      * @param code Should be a valid encryption code as defined in vscp.h
-     * @return A encryption token is returned if the code is valid. For a
+     * @param token A encryption token is returned if the code is valid. For a
      *         a code == 0 which means no encryption an empty string is 
      *         returned. This is also true for invalid codes.
      */
     
-    wxString vscp_getEncryptionTokenFromCode( uint8_t code );
+    void vscp_getEncryptionTokenFromCode( uint8_t code, wxString& token);
     
     /*!
      * Get UDP frame size from event

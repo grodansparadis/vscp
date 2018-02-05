@@ -1766,8 +1766,6 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
 
     } // DM
 
-error:
-
     event.Skip();
 }
 
@@ -7070,13 +7068,11 @@ bool frmDeviceConfig::readUpdateRegisterRow( uint16_t row,
 
 void frmDeviceConfig::saveAbstractionEdits( bool bShowDialog )
 {
-    uint8_t pos;
     wxString strValue;
     wxString newval;
     wxString strBuf;
     uint8_t val = 0;
     DialogAbstractionEdit dlg(this);
-    uint8_t reg;
     int idx, i;
     wxCommandEvent event;   // dummy
 
@@ -7258,7 +7254,7 @@ void frmDeviceConfig::saveAbstractionEdits( bool bShowDialog )
                             m_gridRegisters->SelectRow( rowRegister );
                             m_gridRegisters->SetCellValue( rowRegister, 
                                                                 2, 
-                                                                wxString::Format(_("%d"), ( val >> 8 ) & 0xff ) );
+                                                                wxString::Format( _("%d"), val ) );
                             m_gridRegisters->SetCellTextColour( rowRegister,
                                                                             2,
                                                                             *wxRED );
@@ -7544,7 +7540,6 @@ void frmDeviceConfig::readValueSelectedAbstractionRow( wxCommandEvent& event )
     wxString strType;
     uint32_t register_page;
     uint32_t register_offset;
-    uint8_t *pRegs;
     int idx;
     
     wxBusyCursor wait;
@@ -7626,10 +7621,8 @@ void frmDeviceConfig::writeValueSelectedAbstractionRow( wxCommandEvent& event )
 {
     wxString strValue;
     wxString strType;
-    uint16_t row;
     uint32_t register_page;
     uint32_t register_offset;
-    uint8_t *pRegs;
     int idx;
     
     wxBusyCursor wait;
@@ -7691,12 +7684,10 @@ void frmDeviceConfig::writeValueSelectedAbstractionRow( wxCommandEvent& event )
     
 void frmDeviceConfig::undoValueSelectedAbstractionRow( wxCommandEvent& event )
 {
-    uint8_t val;
     wxString strValue;
     wxString strType;
     uint32_t register_page;
     uint32_t register_offset;
-    uint8_t *pRegs;
     int idx;
     
     wxBusyCursor wait;
@@ -7781,12 +7772,10 @@ void frmDeviceConfig::undoValueSelectedAbstractionRow( wxCommandEvent& event )
     
 void frmDeviceConfig::defaultValueSelectedAbstractionRow( wxCommandEvent& event )
 {
-    uint8_t val;
     wxString strValue;
     wxString strType;
     uint32_t register_page;
     uint32_t register_offset;
-    uint8_t *pRegs;
     int idx;
     
     wxBusyCursor wait;

@@ -671,8 +671,6 @@ int VscpRemoteTcpIf::doCmdClear( void )
 
 int VscpRemoteTcpIf::doCmdSend( const vscpEvent *pEvent )
 {	
-    uint16_t i;
-    
     if ( !m_bConnected ) return VSCP_ERROR_CONNECTION;
   
     // If receive loop active terminate
@@ -710,7 +708,6 @@ int VscpRemoteTcpIf::doCmdSend( const vscpEvent *pEvent )
 
 int VscpRemoteTcpIf::doCmdSendEx( const vscpEventEx *pEventEx )
 {	
-    uint16_t i;
     wxString strBuf, strWrk, strGUID;
     unsigned char guidsum = 0;
     
@@ -789,101 +786,13 @@ bool VscpRemoteTcpIf::getEventFromLine( vscpEvent *pEvent, const wxString& strLi
     wxStringTokenizer strTokens;
     wxString strWrk;
     wxString strGUID;
-    long val;
   
     // Check pointer
     if ( NULL == pEvent ) return false;
   
     // Read event from string
     if ( !vscp_setVscpEventFromString( pEvent, strLine ) ) return false;
-/*        
-    // Tokinize the string
-    strTokens.SetString( strLine, _(",\r\n") );
 
-    // Get head
-    pEvent->head = 0;
-    if ( strTokens.HasMoreTokens() ) {
-        strWrk = strTokens.GetNextToken();   
-        
-        strWrk.ToLong( &val );
-        pEvent->head = (uint8_t)val; 
-        
-    }
-    
-    // Get Class
-    pEvent->vscp_class = 0;
-    if ( strTokens.HasMoreTokens() ) {
-        
-        strWrk = strTokens.GetNextToken();  
-        
-        strWrk.ToLong( &val );
-        pEvent->vscp_class = (uint16_t)val; 
-        
-    }  
-
-    // Get Type
-    pEvent->vscp_type = 0;
-    if ( strTokens.HasMoreTokens() ) {
-        
-        strWrk = strTokens.GetNextToken();   
-        
-        strWrk.ToLong( &val );
-        pEvent->vscp_type = (uint16_t)val; 
-        
-    }
-
-    // Get OBID
-    pEvent->obid = 0;
-    if ( strTokens.HasMoreTokens() ) {
-        
-        strWrk = strTokens.GetNextToken();
-        
-        strWrk.ToLong( &val );
-        pEvent->obid = (uint16_t)val; 
-        
-    }  
-    
-    // Get Timestamp
-    pEvent->timestamp = 0;
-    if ( strTokens.HasMoreTokens() ) {
-        
-        strWrk = strTokens.GetNextToken();
-        
-        strWrk.ToLong( &val );
-        pEvent->timestamp = (uint16_t)val; 
-        
-    }
-
-    // Get GUID
-    if ( strTokens.HasMoreTokens() ) {
-        strGUID = strTokens.GetNextToken();
-    }
-    
-    // Must have a GUID
-    if ( 0 == strGUID.length() ) return false;  
-                
-    // Handle data
-    pEvent->sizeData = 0;
-    char data[ 512 ];
-
-    while ( strTokens.HasMoreTokens() && ( pEvent->sizeData < 512 ) ) {
-
-        strWrk = strTokens.GetNextToken();
-        data[ pEvent->sizeData ] = vscp_readStringValue( strWrk );
-        pEvent->sizeData++;
-
-    }
-
-    // Continue to handle GUID
-    vscp_getGuidFromString( pEvent, strGUID );
-
-    // Copy in the data
-    pEvent->pdata = new unsigned char[ pEvent->sizeData ];
-    if ( NULL != pEvent->pdata ) {
-        memcpy( pEvent->pdata, data, pEvent->sizeData );
-    }
- */
-  
     return true;
 }
 

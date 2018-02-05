@@ -148,7 +148,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WINVER=0x0601;_CRT_SECURE_NO_WARNINGS;NOPCH;WIN32;__WXMSW__;_WINDOWS;_UNICODE;MG_ENABLE_THREADS;MG_ENABLE_IPV6;MG_ENABLE_SSL;MG_ENABLE_GETADDRINFO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions> %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>.\;$(OPENSSL64)\include;$(WXWIN)/lib/vc_x64_lib/mswu;$(WXWIN)/include;$(WXWIN)/contrib/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;$(OPENSSL64)\include;$(WXWIN)/include;$(WXWIN)/contrib/include;$(wxwin)\include\msvc</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <PrecompiledHeaderOutputFile>.\$(OutDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
@@ -163,7 +163,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalLibraryDirectories>$(WXWIN)\lib\vc_x64_lib;$(OPENSSL64)\lib\VC</AdditionalLibraryDirectories>
-      <AdditionalDependencies>ssleay32MT.lib;libeay32MT.lib;wxmsw31u_xrc.lib;wxmsw31u_richtext.lib;wxmsw31u_aui.lib;wxmsw31u_html.lib;wxmsw31u_stc.lib;wxmsw31u_propgrid.lib;wxmsw31u_ribbon.lib;wxmsw31u_core.lib;wxbase31u.lib;wxtiff.lib;wxjpeg.lib;wxpng.lib;wxzlib.lib;wxregexu.lib;wxmsw31u_adv.lib;wxbase31u_net.lib;wxbase31u_xml.lib;wxexpat.lib;kernel32.lib;user32.lib;gdi32.lib;comdlg32.lib;winspool.lib;winmm.lib;shell32.lib;comctl32.lib;ole32.lib;oleaut32.lib;uuid.lib;rpcrt4.lib;advapi32.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ssleay32MT.lib;libeay32MT.lib;wxexpat.lib;kernel32.lib;user32.lib;gdi32.lib;comdlg32.lib;winspool.lib;winmm.lib;shell32.lib;comctl32.lib;ole32.lib;oleaut32.lib;uuid.lib;rpcrt4.lib;advapi32.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
       <ProfileGuidedDatabase>$(OutDir)$(TargetName).pgd</ProfileGuidedDatabase>
@@ -216,7 +216,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WINVER=0x0601;_CRT_SECURE_NO_WARNINGS;NOPCH;WIN32;__WXMSW__;_WINDOWS;__WXDEBUG__;_DEBUG;_UNICODE;MG_ENABLE_THREADS;MG_ENABLE_IPV6;MG_ENABLE_SSL;MG_ENABLE_GETADDRINFO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions> %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>.\;$(OPENSSL64)\include\;$(WXWIN)/lib/vc_x64_lib/mswud;$(WXWIN)/include;$(WXWIN)/contrib/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;$(OPENSSL64)\include\;$(WXWIN)/lib/vc_x64_lib/mswud;$(WXWIN)/include;$(WXWIN)/contrib/include;$(wxwin)\include\msvc</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeaderOutputFile>.\$(OutDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
@@ -229,7 +229,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(WXWIN)\lib\vc_x64_lib;$(OPENSSL64)\lib\VC</AdditionalLibraryDirectories>
-      <AdditionalDependencies>ssleay32MT.lib;libeay32MT.lib;wxmsw31ud_xrc.lib;wxmsw31ud_richtext.lib;wxmsw31ud_aui.lib;wxmsw31ud_html.lib;wxmsw31ud_stc.lib;wxmsw31ud_propgrid.lib;wxmsw31ud_ribbon.lib;wxmsw31ud_core.lib;wxbase31ud.lib;wxtiffd.lib;wxjpegd.lib;wxpngd.lib;wxzlibd.lib;wxregexud.lib;wxmsw31ud_adv.lib;wxbase31ud_net.lib;wxbase31ud_xml.lib;wxexpatd.lib;kernel32.lib;user32.lib;gdi32.lib;comdlg32.lib;winspool.lib;winmm.lib;shell32.lib;comctl32.lib;ole32.lib;oleaut32.lib;uuid.lib;rpcrt4.lib;advapi32.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ssleay32MT.lib;libeay32MT.lib;kernel32.lib;user32.lib;gdi32.lib;comdlg32.lib;winspool.lib;winmm.lib;shell32.lib;comctl32.lib;ole32.lib;oleaut32.lib;uuid.lib;rpcrt4.lib;advapi32.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <ManifestFile>$(OutDir)$(TargetName).$(TargetExt).intermediate.manifest</ManifestFile>
       <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>

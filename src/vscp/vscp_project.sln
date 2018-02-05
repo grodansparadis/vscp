@@ -1,10 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.24720.0
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2027
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mkpasswd", "mkpasswd\mkpasswd.vcxproj", "{12FA4C2C-0D92-E227-8DE7-F459A6B4551D}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vscpcmd", "vscpcmd\vscpcmd.vcxproj", "{3F188438-0466-3821-2420-ECFA848E3F25}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vscpworks", "vscpworks\vscpworks.vcxproj", "{FAE29035-75E4-4F76-BF2D-B3537B0BF9CC}"
@@ -74,24 +72,6 @@ Global
 		Template|x86 = Template|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{12FA4C2C-0D92-E227-8DE7-F459A6B4551D}.Debug|ARM.ActiveCfg = Debug|Win32
-		{12FA4C2C-0D92-E227-8DE7-F459A6B4551D}.Debug|Win32.ActiveCfg = Debug|Win32
-		{12FA4C2C-0D92-E227-8DE7-F459A6B4551D}.Debug|Win32.Build.0 = Debug|Win32
-		{12FA4C2C-0D92-E227-8DE7-F459A6B4551D}.Debug|Win32.Deploy.0 = Debug|Win32
-		{12FA4C2C-0D92-E227-8DE7-F459A6B4551D}.Debug|x64.ActiveCfg = Debug|x64
-		{12FA4C2C-0D92-E227-8DE7-F459A6B4551D}.Debug|x64.Build.0 = Debug|x64
-		{12FA4C2C-0D92-E227-8DE7-F459A6B4551D}.Debug|x86.ActiveCfg = Debug|Win32
-		{12FA4C2C-0D92-E227-8DE7-F459A6B4551D}.Release|ARM.ActiveCfg = Release|ARM
-		{12FA4C2C-0D92-E227-8DE7-F459A6B4551D}.Release|Win32.ActiveCfg = Release|Win32
-		{12FA4C2C-0D92-E227-8DE7-F459A6B4551D}.Release|Win32.Build.0 = Release|Win32
-		{12FA4C2C-0D92-E227-8DE7-F459A6B4551D}.Release|x64.ActiveCfg = Release|x64
-		{12FA4C2C-0D92-E227-8DE7-F459A6B4551D}.Release|x64.Build.0 = Release|x64
-		{12FA4C2C-0D92-E227-8DE7-F459A6B4551D}.Release|x86.ActiveCfg = Release|Win32
-		{12FA4C2C-0D92-E227-8DE7-F459A6B4551D}.Template|ARM.ActiveCfg = Release|Win32
-		{12FA4C2C-0D92-E227-8DE7-F459A6B4551D}.Template|Win32.ActiveCfg = Debug|Win32
-		{12FA4C2C-0D92-E227-8DE7-F459A6B4551D}.Template|Win32.Build.0 = Debug|Win32
-		{12FA4C2C-0D92-E227-8DE7-F459A6B4551D}.Template|x64.ActiveCfg = Release|Win32
-		{12FA4C2C-0D92-E227-8DE7-F459A6B4551D}.Template|x86.ActiveCfg = Release|Win32
 		{3F188438-0466-3821-2420-ECFA848E3F25}.Debug|ARM.ActiveCfg = Debug|Win32
 		{3F188438-0466-3821-2420-ECFA848E3F25}.Debug|Win32.ActiveCfg = Debug|Win32
 		{3F188438-0466-3821-2420-ECFA848E3F25}.Debug|Win32.Build.0 = Debug|Win32
@@ -503,5 +483,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D1970810-B8F4-4900-9F11-728BC1985BB4}
 	EndGlobalSection
 EndGlobal
