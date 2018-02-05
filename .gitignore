@@ -290,3 +290,15 @@ src/vscp/linuxvscpl1/libvscpl1.so.*
 RemoteSystemsTempFiles/
 /src/vscp/.vs
 /src/vscp/vscp_project.VC.db
+/src/vscp/drivers/level1/zanthic/win32/debug/vscpl1_zanthicdrv.dll
+/src/vscp/drivers/level1/zanthic/win32/debug/vscpl1_zanthicdrv.exp
+/src/vscp/drivers/level1/zanthic/win32/debug/vscpl1_zanthicdrv.lib
+/src/vscp/utils/vscp_bootloader/build-vscp_bootloader-Desktop_Qt_5_2_0_MinGW_32bit-Debug/debug/moc_wndbootloader.cpp
+/src/vscp/utils/vscp_bootloader/build-vscp_bootloader-Desktop_Qt_5_2_0_MinGW_32bit-Debug/debug/vscp_bootloader.exe
+/src/vscp/utils/vscp_bootloader/build-vscp_bootloader-Desktop_Qt_5_2_1_MSVC2010_32bit-Debug/debug/moc_wndbootloader.cpp
+/src/vscp/utils/vscp_bootloader/build-vscp_bootloader-Desktop_Qt_5_2_1_MSVC2010_32bit-Debug/debug/vscp_bootloader.exe
+/src/vscp/utils/vscp_bootloader/build-vscp_bootloader-Desktop_Qt_5_2_1_MSVC2010_32bit-Debug/debug/vscp_bootloader.exe_manifest.rc
+/src/vscp/utils/vscp_bootloader/build-vscp_bootloader-Desktop_Qt_5_2_1_MSVC2010_32bit-Debug/debug/vscp_bootloader.exe_manifest.res
+/src/vscp/utils/vscp_bootloader/build-vscp_bootloader-Desktop_Qt_5_2_1_MSVC2010_32bit-Debug/debug/vscp_bootloader.ilk
+/src/vscp/vscp-mkpasswd/mkpasswd.mak
+/src/vscp/vscpservice/debug/vc120.idb

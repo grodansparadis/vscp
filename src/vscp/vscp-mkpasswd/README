@@ -1,0 +1,2 @@
+mkpasswd
+Make an encrypted password for the canal daemon TCP interface.
