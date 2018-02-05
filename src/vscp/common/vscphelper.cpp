@@ -71,10 +71,14 @@
 #include <mdf.h>
 #include <vscphelper.h>
 
+#ifdef WIN32
+#else
 #include <pwd.h>
 #include <unistd.h>
 #include <grp.h>
 #include <dirent.h>
+#endif
+
 #define vsnprintf_impl vsnprintf
 
 

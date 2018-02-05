@@ -37,7 +37,11 @@
 #ifndef MD5_INCLUDED
 #define MD5_INCLUDED
 
+#ifdef WIN32
+
+#else
 #include <unistd.h>
+#endif
 
 /*
  * This package supports both compile-time and run-time determination of CPU

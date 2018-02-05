@@ -216,7 +216,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WINVER=0x0601;_CRT_SECURE_NO_WARNINGS;NOPCH;WIN32;__WXMSW__;_WINDOWS;__WXDEBUG__;_DEBUG;_UNICODE;MG_ENABLE_THREADS;MG_ENABLE_IPV6;MG_ENABLE_SSL;MG_ENABLE_GETADDRINFO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions> %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>.\;$(OPENSSL64)\include;$(WXWIN)/lib/vc_x64_lib/mswud;$(WXWIN)/include;$(WXWIN)/contrib/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;$(OPENSSL64)\include\;$(WXWIN)/lib/vc_x64_lib/mswud;$(WXWIN)/include;$(WXWIN)/contrib/include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeaderOutputFile>.\$(OutDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
@@ -242,7 +242,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\common\crc.h" />
+    <ClInclude Include="..\..\common\fastpbkdf2.h" />
     <ClInclude Include="..\..\common\mongoose.h" />
+    <ClInclude Include="..\..\common\vscpbase64.h" />
+    <ClInclude Include="..\..\common\vscpmd5.h" />
+    <ClInclude Include="..\..\common\vscp_aes.h" />
     <ClInclude Include="..\common\canal.h" />
     <ClInclude Include="..\common\canalconfobj.h" />
     <ClInclude Include="..\common\canaldlldef.h" />
@@ -303,10 +307,13 @@
     <ClInclude Include="writeregister.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\common\base64-decode.c" />
     <ClCompile Include="..\..\common\crc.c" />
     <ClCompile Include="..\..\common\crc8.c" />
+    <ClCompile Include="..\..\common\fastpbkdf2.c" />
     <ClCompile Include="..\..\common\mongoose.c" />
+    <ClCompile Include="..\..\common\vscpbase64.c" />
+    <ClCompile Include="..\..\common\vscpmd5.c" />
+    <ClCompile Include="..\..\common\vscp_aes.c" />
     <ClCompile Include="..\common\canalconfobj.cpp" />
     <ClCompile Include="..\common\canalsuperwrapper.cpp" />
     <ClCompile Include="..\common\dllwrapper.cpp" />
