@@ -158,7 +158,7 @@ copy  /Y "$(OutDir)/$(TargetName).lib" "$(VSCP_INSTALL)\files\drivers\$(Platform
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>$(wxwin)\include\msvc;$(WXWIN)\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(wxwin)\include\msvc;$(WXWIN)\include\;$(OPENSSL64)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>MG_ENABLE_THREADS;MG_ENABLE_IPV6;MG_ENABLE_GETADDRINFO;wxUSE_GUI=0;WIN32;_CRT_SECURE_NO_WARNINGS;NDEBUG;_WINDOWS;_USRDLL;vscpbtdetect_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -179,14 +179,14 @@ copy  /Y "$(OutDir)/$(TargetName).lib" "$(VSCP_INSTALL)\files\drivers\$(Platform
     <Link>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>$(wxwin)\lib\vc_x64_lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(wxwin)\lib\vc_x64_lib;$(OPENSSL64)\lib\VC;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>.\vscpbtdetect.def</ModuleDefinitionFile>
       <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
-      <AdditionalDependencies>wsock32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>wsock32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;ssleay32MT.lib;libeay32MT.lib;wxexpat.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>copy  /Y "$(OutDir)/$(TargetName)$(TargetExt)" "$(VSCP_INSTALL)\files\drivers\$(PlatformTarget)"
@@ -261,7 +261,7 @@ copy  /Y "$(OutDir)/$(TargetName).lib" "$(VSCP_INSTALL)\files\drivers\$(Platform
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(WXWIN)\include\msvc;$(WXWIN)\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(WXWIN)\include\msvc;$(WXWIN)\include\;$(OPENSSL64)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>MG_ENABLE_THREADS;MG_ENABLE_IPV6;MG_ENABLE_GETADDRINFO;wxUSE_GUI=0;WIN32;_CRT_SECURE_NO_WARNINGS;__WXMSW__;_DEBUG;_WINDOWS;_USRDLL;vscpbtdetect_EXPORTS;_AFXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -282,7 +282,7 @@ copy  /Y "$(OutDir)/$(TargetName).lib" "$(VSCP_INSTALL)\files\drivers\$(Platform
     <Link>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>$(wxwin)\lib\vc_x64_lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(wxwin)\lib\vc_x64_lib;$(OPENSSL64)\lib\VC;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>.\vscpbtdetect.def</ModuleDefinitionFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
@@ -290,7 +290,7 @@ copy  /Y "$(OutDir)/$(TargetName).lib" "$(VSCP_INSTALL)\files\drivers\$(Platform
       <DataExecutionPrevention>
       </DataExecutionPrevention>
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
-      <AdditionalDependencies>wsock32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>wsock32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;ssleay32MT.lib;libeay32MT.lib;wxexpat.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <CustomBuildStep>
       <Command>
@@ -303,7 +303,11 @@ copy  /Y "$(OutDir)/$(TargetName).lib" "$(VSCP_INSTALL)\files\drivers\$(Platform
     <ClCompile Include="..\..\..\..\..\common\crc.c" />
     <ClCompile Include="..\..\..\..\..\common\crc8.c" />
     <ClCompile Include="..\..\..\..\..\common\dllist.c" />
+    <ClCompile Include="..\..\..\..\..\common\fastpbkdf2.c" />
     <ClCompile Include="..\..\..\..\..\common\mongoose.c" />
+    <ClCompile Include="..\..\..\..\..\common\vscpbase64.c" />
+    <ClCompile Include="..\..\..\..\..\common\vscpmd5.c" />
+    <ClCompile Include="..\..\..\..\..\common\vscp_aes.c" />
     <ClCompile Include="..\..\..\..\common\guid.cpp" />
     <ClCompile Include="..\..\..\..\common\vscphelper.cpp" />
     <ClCompile Include="..\..\..\..\common\vscpremotetcpif.cpp" />
@@ -318,7 +322,11 @@ copy  /Y "$(OutDir)/$(TargetName).lib" "$(VSCP_INSTALL)\files\drivers\$(Platform
     <ClInclude Include="..\..\..\..\..\common\crc.h" />
     <ClInclude Include="..\..\..\..\..\common\crc8.h" />
     <ClInclude Include="..\..\..\..\..\common\dllist.h" />
+    <ClInclude Include="..\..\..\..\..\common\fastpbkdf2.h" />
     <ClInclude Include="..\..\..\..\..\common\mongoose.h" />
+    <ClInclude Include="..\..\..\..\..\common\vscpbase64.h" />
+    <ClInclude Include="..\..\..\..\..\common\vscpmd5.h" />
+    <ClInclude Include="..\..\..\..\..\common\vscp_aes.h" />
     <ClInclude Include="..\..\..\..\common\guid.h" />
     <ClInclude Include="..\..\..\..\common\vscp.h" />
     <ClInclude Include="..\..\..\..\common\vscphelper.h" />

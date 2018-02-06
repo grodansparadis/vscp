@@ -141,7 +141,7 @@
     <OutDir>./$(PlatformTarget)\$(Configuration)\</OutDir>
     <IntDir>$(PlatformTarget)\$(Configuration)\</IntDir>
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(VSCP_HOME)/src/vscp/common;$(VSCP_HOME)/src/common;$(IncludePath)</IncludePath>
+    <IncludePath>$(VSCP_HOME)/src/vscp/common;$(VSCP_HOME)/src/common;$(VSCP_HOME)/src/common/lua;$(VSCP_HOME)/src/common/lua/src;$(VSCP_HOME)/src/common/dlfcn-win32;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <LinkIncremental>false</LinkIncremental>
@@ -158,7 +158,7 @@
     <OutDir>./$(PlatformTarget)\$(Configuration)\</OutDir>
     <IntDir>$(PlatformTarget)\$(Configuration)\</IntDir>
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(VSCP_HOME)/src/vscp/common;$(VSCP_HOME)/src/common;$(IncludePath)</IncludePath>
+    <IncludePath>$(VSCP_HOME)/src/vscp/common;$(VSCP_HOME)/src/common;$(VSCP_HOME)/src/common/lua;$(VSCP_HOME)/src/common/lua/src;$(VSCP_HOME)/src/common/dlfcn-win32;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <LinkIncremental>false</LinkIncremental>
@@ -226,7 +226,7 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <WarningLevel>Level3</WarningLevel>
       <AdditionalIncludeDirectories>.\;$(OPENSSL64)\include;$(WXWIN)\include\msvc;$(WXWIN)\include\;$(LUA64)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_WINSOCK_DEPRECATED_NO_WARNINGS;NS_ENABLE_EXCLUDE_COMMON;DEBUG;WIN32;_CONSOLE;WINVER=0x0601;_MT;wxUSE_GUI=0;__WXDEBUG__;WXDEBUG=1;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;MG_ENABLE_THREADS;MG_ENABLE_IPV6;MG_ENABLE_SSL;MG_ENABLE_MQTT_BROKER;MG_ENABLE_JAVASCRIPT;MG_ENABLE_HTTP_CGI;MG_ENABLE_HTTP_SSI;MG_ENABLE_HTTP_SSI_EXEC;MG_ENABLE_HTTP_WEBDAV;MG_ENABLE_GETADDRINFO;V7_ENABLE_JS_GETTERS;V7_ENABLE_JS_SETTERS;V7_BUILD_PROFILE=3;V7_ENABLE_CRYPTO;V7_ENABLE_FILE;V7_ENABLE_SOCKET;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WINSOCK_DEPRECATED_NO_WARNINGS;NS_ENABLE_EXCLUDE_COMMON;DEBUG;WIN32;_CONSOLE;WINVER=0x0601;_MT;wxUSE_GUI=0;__WXDEBUG__;WXDEBUG=1;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;MG_ENABLE_THREADS;MG_ENABLE_IPV6;MG_ENABLE_SSL;MG_ENABLE_GETADDRINFO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <BrowseInformation>true</BrowseInformation>
       <PrecompiledHeaderOutputFile>$(OutDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
@@ -259,7 +259,7 @@
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <AdditionalLibraryDirectories>$(WXWIN)\lib\vc_x64_lib;$(EXPAT64)\bin\$(Configuration);$(OPENSSL64)\lib\VC;$(LUA64);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>ssleay32MT.lib;libeay32MT.lib;libexpat.lib;comctl32.lib;netapi32.lib;rpcrt4.lib;odbc32.lib;odbccp32.lib;MSVCRTD.lib;lua52.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ssleay32MT.lib;libeay32MT.lib;comctl32.lib;netapi32.lib;rpcrt4.lib;odbc32.lib;odbccp32.lib;MSVCRTD.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
@@ -360,7 +360,7 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <WarningLevel>Level3</WarningLevel>
       <AdditionalIncludeDirectories>.\;$(OPENSSL64)\include;$(wxwin)\include\msvc;$(WXWIN)\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_WINSOCK_DEPRECATED_NO_WARNINGS;NDEBUG;WIN32;_CONSOLE;WINVER=0x0601;_MT;wxUSE_GUI=0;WXDEBUG=0;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;MG_ENABLE_THREADS;MG_ENABLE_IPV6;MG_ENABLE_SSL;MG_ENABLE_MQTT_BROKER;MG_ENABLE_JAVASCRIPT;MG_ENABLE_HTTP_CGI;MG_ENABLE_HTTP_SSI;MG_ENABLE_HTTP_SSI_EXEC;MG_ENABLE_HTTP_WEBDAV;MG_ENABLE_GETADDRINFO;V7_ENABLE_JS_GETTERS;V7_ENABLE_JS_SETTERS;V7_BUILD_PROFILE=3;V7_ENABLE_CRYPTO;V7_ENABLE_FILE;V7_ENABLE_SOCKET;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WINSOCK_DEPRECATED_NO_WARNINGS;NDEBUG;WIN32;_CONSOLE;WINVER=0x0601;_MT;wxUSE_GUI=0;WXDEBUG=0;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;MG_ENABLE_THREADS;MG_ENABLE_IPV6;MG_ENABLE_SSL;MG_ENABLE_GETADDRINFO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <BrowseInformation>true</BrowseInformation>
       <PrecompiledHeaderOutputFile>$(OutDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
@@ -391,7 +391,7 @@
       <SubSystem>Console</SubSystem>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <AdditionalLibraryDirectories>$(wxwin)\lib\vc_x64_lib;$(EXPAT64)\bin\$(Configuration);$(OPENSSL64)\lib\VC;$(LUA64);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>ssleay32MT.lib;libeay32MT.lib;libexpat.lib;comctl32.lib;wsock32.lib;netapi32.lib;rpcrt4.lib;msvcrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ssleay32MT.lib;libeay32MT.lib;comctl32.lib;wsock32.lib;netapi32.lib;rpcrt4.lib;msvcrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
@@ -490,16 +490,25 @@
     <CustomBuild Include="wx\msw\watch1.cur" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\common\aes.h" />
     <ClInclude Include="..\..\..\common\crc8.h" />
+    <ClInclude Include="..\..\..\common\dlfcn-win32\dlfcn.h" />
     <ClInclude Include="..\..\..\common\fastpbkdf2.h" />
     <ClInclude Include="..\..\..\common\frozen.h" />
+    <ClInclude Include="..\..\..\common\httpd.h" />
+    <ClInclude Include="..\..\..\common\httpd_duktape.h" />
+    <ClInclude Include="..\..\..\common\httpd_lua.h" />
+    <ClInclude Include="..\..\..\common\httpd_timers.h" />
+    <ClInclude Include="..\..\..\common\json.hpp" />
+    <ClInclude Include="..\..\..\common\lfs.h" />
     <ClInclude Include="..\..\..\common\mongoose.h" />
     <ClInclude Include="..\..\..\common\slre.h" />
     <ClInclude Include="..\..\..\common\sqlite3.h" />
     <ClInclude Include="..\..\..\common\sqlite3ext.h" />
     <ClInclude Include="..\..\..\common\strtokenizer.h" />
     <ClInclude Include="..\..\..\common\v7.h" />
+    <ClInclude Include="..\..\..\common\vscpbase64.h" />
+    <ClInclude Include="..\..\..\common\vscpmd5.h" />
+    <ClInclude Include="..\..\..\common\vscp_aes.h" />
     <ClInclude Include="..\..\common\actioncodes.h" />
     <ClInclude Include="..\..\common\canal.h" />
     <ClInclude Include="..\..\common\canal_macro.h" />
@@ -539,13 +548,14 @@
     <ClInclude Include="vscpd.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\common\aes.c" />
     <ClCompile Include="..\..\..\common\crc8.c" />
+    <ClCompile Include="..\..\..\common\dlfcn-win32\dlfcn.c" />
     <ClCompile Include="..\..\..\common\fastpbkdf2.c" />
-    <ClCompile Include="..\..\..\common\frozen.c" />
-    <ClCompile Include="..\..\..\common\jsonreader.cpp" />
-    <ClCompile Include="..\..\..\common\jsonval.cpp" />
-    <ClCompile Include="..\..\..\common\jsonwriter.cpp" />
+    <ClCompile Include="..\..\..\common\httpd.c" />
+    <ClCompile Include="..\..\..\common\lfs.c" />
+    <ClCompile Include="..\..\..\common\lsqlite3.c" />
+    <ClCompile Include="..\..\..\common\LuaXML_lib.c" />
+    <ClCompile Include="..\..\..\common\lua_all.c" />
     <ClCompile Include="..\..\..\common\mongoose.c">
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EXCLUDE_COMMON;MG_ENABLE_COAP;MG_ENABLE_MQTT_BROKER;_WINSOCK_DEPRECATED_NO_WARNINGS;NS_ENABLE_EXCLUDE_COMMON;DEBUG;WIN32;_CONSOLE;WINVER=0x0601;_MT;wxUSE_GUI=0;__WXDEBUG__;WXDEBUG=1;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">EXCLUDE_COMMON;MG_ENABLE_COAP;MG_ENABLE_MQTT_BROKER;_WINSOCK_DEPRECATED_NO_WARNINGS;NS_ENABLE_SSL;NOEMBED_NET_SKELETON;NDEBUG;WIN32;_CONSOLE;WINVER=0x0601;_MT;wxUSE_GUI=0;WXDEBUG=0;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -555,11 +565,12 @@
     <ClCompile Include="..\..\..\common\randpassword.cpp" />
     <ClCompile Include="..\..\..\common\sqlite3.c" />
     <ClCompile Include="..\..\..\common\sqlite3math.c" />
-    <ClCompile Include="..\..\..\common\v7.c" />
+    <ClCompile Include="..\..\..\common\vscpbase64.c" />
+    <ClCompile Include="..\..\..\common\vscpmd5.c" />
+    <ClCompile Include="..\..\..\common\vscp_aes.c" />
     <ClCompile Include="..\..\common\clientlist.cpp" />
     <ClCompile Include="..\..\common\controlobject.cpp" />
     <ClCompile Include="..\..\..\common\crc.c" />
-    <ClCompile Include="..\..\common\daemonvscp.cpp" />
     <ClCompile Include="..\..\common\devicelist.cpp" />
     <ClCompile Include="..\..\common\devicethread.cpp" />
     <ClCompile Include="..\..\..\common\dllist.c" />
@@ -570,20 +581,14 @@
     <ClCompile Include="..\..\common\mdf.cpp" />
     <ClCompile Include="..\..\common\register.cpp" />
     <ClCompile Include="..\..\common\tables.cpp" />
-    <ClCompile Include="..\..\common\tcpipclientthread.cpp" />
-    <ClCompile Include="..\..\common\udpclientthread.cpp" />
     <ClCompile Include="..\..\common\userlist.cpp" />
-    <ClCompile Include="..\..\common\v7callbacks.cpp" />
-    <ClCompile Include="..\..\common\vscpautomation.cpp" />
     <ClCompile Include="..\..\common\vscpeventhelper.cpp" />
-    <ClCompile Include="..\..\common\vscpmqttbroker.cpp" />
     <ClCompile Include="..\..\common\vscpremotetcpif.cpp" />
-    <ClCompile Include="..\..\common\vscprestserver.cpp" />
-    <ClCompile Include="..\..\common\vscpwebserver.cpp" />
-    <ClCompile Include="..\..\common\vscpwebsocketserver.cpp" />
     <ClCompile Include="vscpd.cpp" />
     <ClCompile Include="..\..\common\vscphelper.cpp" />
-    <ClCompile Include="..\..\common\vscpvariable.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\common\LuaXML.lua" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

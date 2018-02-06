@@ -454,8 +454,6 @@ bool actionTime::getMultiItem( const wxString& items, ACTIONTIME *pList )
     if ( tkz.CountTokens() > 1 ) {
 
         wxString token;
-        unsigned long val;
-
         while ( tkz.CountTokens() ) {
             
             token = tkz.GetNextToken();
@@ -3980,7 +3978,6 @@ bool dmElement::doActionSendEventsFromFile( vscpEvent *pDMEvent )
 
 bool dmElement::doActionSendEventRemote( vscpEvent *pDMEvent, bool bSecure )
 {
-    actionThread_VSCPSrv *tread;
     wxString strHostname;
     short port;
     wxString strUsername;
@@ -4195,7 +4192,6 @@ bool dmElement::doActionGetURL( vscpEvent *pDMEvent )
 bool dmElement::doActionStoreVariable( vscpEvent *pDMEvent )
 {
     // Write in possible escapes
-    CVSCPVariable *pVar;
     wxString params = m_actionparam;
     handleEscapes( pDMEvent, params );
     
@@ -6042,6 +6038,8 @@ wxString CDM::getTokenFromCompareCode( uint8_t code )
             break;
             
     }
+
+    return _("error");
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -6951,7 +6949,6 @@ bool CDM::doCreateDMTable( void )
 uint32_t CDM::getDatabaseRecordCount( void )
 {
     wxString wxstr;
-    char *pErrMsg;
     sqlite3_stmt *ppStmt;
     uint32_t count = 0;
     
@@ -7218,7 +7215,6 @@ bool CDM::updateDatabaseRecordItem( unsigned long id,
 bool CDM::getDatabaseRecord( uint32_t idx, dmElement *pDMitem )
 {
     wxString wxstr;
-    char *pErrMsg;
     sqlite3_stmt *ppStmt;
     
     // Check pointer
@@ -7428,7 +7424,6 @@ bool CDM::getDatabaseRecord( uint32_t idx, dmElement *pDMitem )
 bool CDM::loadFromDatabase( void )
 {
     wxString wxstr;
-    char *pErrMsg;
     sqlite3_stmt *ppStmt;
         
     // Database file must be open
@@ -8890,10 +8885,10 @@ void *actionThread_Table::Entry()
         wxstrErr = _( "[Action] Write Table: Invalid type. Parameter= ");
         wxstrErr += m_strParam;
         wxstrErr += _("\n");
-        gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
-        return NULL;
+        gpobj->logMsg( _("[DM] ") + wxstrErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );        
     }
     
+    return NULL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

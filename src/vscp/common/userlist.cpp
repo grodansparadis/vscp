@@ -984,7 +984,6 @@ bool CUserList::addUser( const wxString& user,
 {
     char buf[ 512 ];
     char *pErrMsg = 0;
-    sqlite3_stmt *ppStmt;
            
     // Cant add user with name that is already defined.
     if ( NULL != m_userhashmap[ user ] ) {

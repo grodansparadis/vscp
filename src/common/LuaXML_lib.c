@@ -37,7 +37,7 @@ THE SOFTWARE.
 extern "C" {
 #endif
 
-#include "civetweb_lua.h"
+#include "httpd_lua.h"
 
 #ifdef __cplusplus
 } // extern "C"

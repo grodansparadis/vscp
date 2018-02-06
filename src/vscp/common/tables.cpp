@@ -697,7 +697,6 @@ bool CVSCPTable::getFirstDate( wxDateTime& dt )
 {
     bool rv = true;
     wxString wxstr;
-    char *pErrMsg;
     sqlite3_stmt *ppStmt;
         
     // Check if database is open
@@ -741,7 +740,6 @@ bool CVSCPTable::getLastDate( wxDateTime& dt )
 {
     bool rv = true;
     wxString wxstr;
-    char *pErrMsg;
     sqlite3_stmt *ppStmt;
         
     // Check if database is open
@@ -784,7 +782,6 @@ bool CVSCPTable::getLastDate( wxDateTime& dt )
 bool CVSCPTable::getNumberOfRecords( uint32_t *pCount )
 {
     wxString wxstr;
-    char *pErrMsg;
     sqlite3_stmt *ppStmt;
     
     // Check pointer
@@ -826,7 +823,6 @@ bool CVSCPTable::getSQLValue( const wxString &sqltemplate,
                                     double *pValue  )
 {
     wxString wxstr;
-    char *pErrMsg;
     sqlite3_stmt *ppStmt;
     
     // Check pointer
@@ -1008,7 +1004,6 @@ bool CVSCPTable::prepareRangeOfData( wxDateTime& wxStart,
 {
     wxString sqlInsert;
     wxString wxstr;
-    char *pErrMsg;
             
     // Database file must be open
     if ( NULL == m_dbTable ) {
@@ -1066,7 +1061,6 @@ bool CVSCPTable::prepareRangeOfData( sqlite3_stmt **ppStmt, bool bAll )
 bool CVSCPTable::prepareRangeOfData( wxString& sql, sqlite3_stmt **ppStmt )
 {
     wxString wxstr;
-    char *pErrMsg;
             
     // Database file must be open
     if ( NULL == m_dbTable ) {
@@ -1969,7 +1963,6 @@ bool CUserTableObjList::updateTableToDB( CVSCPTable& table )
 bool CUserTableObjList::loadTablesFromDB( void )
 {
     wxString wxstr;
-    char *pErrMsg;
     sqlite3_stmt *ppStmt;
         
     // Database file must be open

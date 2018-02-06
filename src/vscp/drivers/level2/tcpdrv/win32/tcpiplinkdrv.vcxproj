@@ -240,7 +240,7 @@ copy  /Y "$(OutDir)/$(TargetName).lib" "$(VSCP_INSTALL)\files\drivers\$(Platform
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
       <AdditionalLibraryDirectories>$(WXWIN)\lib\vc_x64_lib;$(OPENSSL64)\lib\VC;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>ssleay32MT.lib;libeay32MT.lib;wsock32.lib;wpcap.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ssleay32MT.lib;libeay32MT.lib;wsock32.lib;wpcap.lib;odbc32.lib;odbccp32.lib;wxexpat.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>.\tcpiplinkdrv.def</ModuleDefinitionFile>
     </Link>
     <CustomBuildStep>
@@ -402,7 +402,7 @@ copy  /Y "$(OutDir)/$(TargetName).lib" "$(VSCP_INSTALL)\files\drivers\$(Platform
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
       <AdditionalLibraryDirectories>$(WXWIN)\lib\vc_x64_lib;$(OPENSSL64)\lib\VC;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>ssleay32MT.lib;libeay32MT.lib;wsock32.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ssleay32MT.lib;libeay32MT.lib;wsock32.lib;odbc32.lib;odbccp32.lib;wxexpat.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>.\tcpiplinkdrv.def</ModuleDefinitionFile>
     </Link>
     <CustomBuildStep>
@@ -468,7 +468,11 @@ copy  /Y "$(OutDir)/$(TargetName).lib" "$(VSCP_INSTALL)\files\drivers\$(Platform
   <ItemGroup>
     <ClCompile Include="..\..\..\..\..\common\crc.c" />
     <ClCompile Include="..\..\..\..\..\common\crc8.c" />
+    <ClCompile Include="..\..\..\..\..\common\fastpbkdf2.c" />
     <ClCompile Include="..\..\..\..\..\common\mongoose.c" />
+    <ClCompile Include="..\..\..\..\..\common\vscpbase64.c" />
+    <ClCompile Include="..\..\..\..\..\common\vscpmd5.c" />
+    <ClCompile Include="..\..\..\..\..\common\vscp_aes.c" />
     <ClCompile Include="..\..\..\..\common\guid.cpp" />
     <ClCompile Include="..\..\..\..\common\vscphelper.cpp" />
     <ClCompile Include="..\..\..\..\common\vscpremotetcpif.cpp" />
@@ -481,7 +485,11 @@ copy  /Y "$(OutDir)/$(TargetName).lib" "$(VSCP_INSTALL)\files\drivers\$(Platform
   <ItemGroup>
     <ClInclude Include="..\..\..\..\..\common\crc.h" />
     <ClInclude Include="..\..\..\..\..\common\crc8.h" />
+    <ClInclude Include="..\..\..\..\..\common\fastpbkdf2.h" />
     <ClInclude Include="..\..\..\..\..\common\mongoose.h" />
+    <ClInclude Include="..\..\..\..\..\common\vscpbase64.h" />
+    <ClInclude Include="..\..\..\..\..\common\vscpmd5.h" />
+    <ClInclude Include="..\..\..\..\..\common\vscp_aes.h" />
     <ClInclude Include="..\..\..\..\common\guid.h" />
     <ClInclude Include="..\..\..\..\common\vscp.h" />
     <ClInclude Include="..\..\..\..\common\vscphelper.h" />

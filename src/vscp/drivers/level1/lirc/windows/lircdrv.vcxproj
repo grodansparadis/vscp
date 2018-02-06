@@ -163,7 +163,7 @@ copy  /Y "$(OutDir)/$(TargetName).lib" "$(VSCP_INSTALL)\files\drivers\$(Platform
       <Optimization>MaxSpeed</Optimization>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>$(wxwin)\include\msvc;$(WXWIN)\include\;$(EXPAT64)\..\lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(wxwin)\include\msvc;$(WXWIN)\include\;$(EXPAT64)\source\lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CRT_SECURE_NO_WARNINGS;_WINDOWS;_USRDLL;LIRCDRV_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <BrowseInformation>true</BrowseInformation>
@@ -197,8 +197,8 @@ copy  /Y "$(OutDir)/$(TargetName).lib" "$(VSCP_INSTALL)\files\drivers\$(Platform
       <SubSystem>Console</SubSystem>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
-      <AdditionalLibraryDirectories>$(wxwin)\lib\vc_x64_lib;$(EXPAT64)\bin\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libexpat.lib;comctl32.lib;wsock32.lib;netapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(wxwin)\lib\vc_x64_lib;$(EXPAT64)\bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>comctl32.lib;wsock32.lib;netapi32.lib;libexpat.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>.\lircdrv.def</ModuleDefinitionFile>
       <ShowProgress>NotSet</ShowProgress>
     </Link>

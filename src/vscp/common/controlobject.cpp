@@ -2551,7 +2551,6 @@ void CControlObject::getSystemKeyMD5( wxString &strKey )
 
 bool CControlObject::readXMLConfigurationGeneral( wxString& strcfgfile )
 {
-    unsigned long val;
     wxXmlDocument doc;
 
     wxString wxlogmsg = wxString::Format(_("Reading XML GENERAL configuration from [%s]\n"),
@@ -3089,7 +3088,7 @@ bool CControlObject::readConfigurationXML( wxString& strcfgfile )
             attribut = child->GetAttribute( _("allowxmlsave"), _("false") );
             attribute.MakeLower();
             if ( wxNOT_FOUND != attribute.Find( _("true") ) ) {
-                m_dm.bAllowXMLsave |= VSCP_DEBUG1_DM;
+                m_dm.bAllowXMLsave = true;
             }
 
             // Get the DM loglevel

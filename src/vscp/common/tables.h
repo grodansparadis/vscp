@@ -558,9 +558,9 @@ public:
         if ( NULL == m_pUserItemOwner ) {
             return -1; 
         }
-        else {
-            m_pUserItemOwner->getUserID(); 
-        } 
+
+        return m_pUserItemOwner->getUserID(); 
+       
     };
             
     

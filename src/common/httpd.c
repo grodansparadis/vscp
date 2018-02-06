@@ -166,6 +166,7 @@ void vscp_byteArray2HexStr( char *to, const unsigned char *p, size_t len );
 #include <fcntl.h>
 #include <dlfcn.h>
 
+
 #ifdef __clang__
 // When using -Weverything, clang does not accept it's own headers
 // in a release build configuration. Disable what is too much in
@@ -320,6 +321,7 @@ web_static_assert(sizeof(size_t) == 4 || sizeof(size_t) == 8,
 #include <windows.h>
 #include <winsock2.h>   // DTL add for SO_EXCLUSIVE
 #include <ws2tcpip.h>
+#include <stdint.h>
 
 typedef const char *SOCK_OPT_TYPE;
 
@@ -1693,7 +1695,7 @@ static struct web_option config_options[] =
     {"allow_sendfile_call", WEB_CONFIG_TYPE_BOOLEAN, "yes"},
 #endif
 #if defined(_WIN32)
-    {"case_sensitive", CONFIG_TYPE_BOOLEAN, "no"},
+    {"case_sensitive", WEB_CONFIG_TYPE_BOOLEAN, "no"},
 #endif
     {"lua_background_script", WEB_CONFIG_TYPE_FILE, NULL},
     {"lua_background_script_params", WEB_CONFIG_TYPE_STRING_LIST, NULL},

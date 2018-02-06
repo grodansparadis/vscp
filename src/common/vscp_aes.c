@@ -51,8 +51,8 @@ NOTE:   String length must be evenly divisible by 16byte (str_len % 16 == 0)
 /* Defines:                                                                  */
 /*****************************************************************************/
 // The number of columns comprising a state in AES. This is a constant in AES. Value=4
-#define Nb          4
-#define BLOCKLEN    16 //Block length in bytes AES is 128b block only
+#define Nb          4u
+#define BLOCKLEN    16u //Block length in bytes AES is 128b block only
 
 /*#ifdef AES256
     #define Nk 8

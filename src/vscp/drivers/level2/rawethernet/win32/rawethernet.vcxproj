@@ -162,7 +162,7 @@ copy  /Y "$(OutDir)/$(TargetName).lib" "$(VSCP_INSTALL)\files\drivers\$(Platform
       <Optimization>MaxSpeed</Optimization>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>$(wxwin)\include\msvc;$(WXWIN)\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(wxwin)\include\msvc;$(WXWIN)\include\;$(OPENSSL64)\include;$(PCAP)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>MG_ENABLE_THREADS;MG_ENABLE_IPV6;MG_ENABLE_GETADDRINFO;_ALLOW_KEYWORD_MACROS;wxUSE_GUI=0;_WINDLL;WIN32;NDEBUG;_WINDOWS;_USRDLL;TCPIPLINKDRV_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <BrowseInformation>true</BrowseInformation>
@@ -196,8 +196,8 @@ copy  /Y "$(OutDir)/$(TargetName).lib" "$(VSCP_INSTALL)\files\drivers\$(Platform
       <SubSystem>Console</SubSystem>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
-      <AdditionalLibraryDirectories>$(wxwin)\lib\vc_x64_lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>wsock32.lib;wpcap.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(wxwin)\lib\vc_x64_lib;$(OPENSSL64)\lib\VC;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>wsock32.lib;wpcap.lib;odbc32.lib;odbccp32.lib;ssleay32MT.lib;libeay32MT.lib;wxexpat.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>.\rawethernet.def</ModuleDefinitionFile>
     </Link>
     <CustomBuildStep>
@@ -270,7 +270,7 @@ copy  /Y "$(OutDir)/$(TargetName).lib" "$(VSCP_INSTALL)\files\drivers\$(Platform
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(wxwin)\include\msvc;$(WXWIN)\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(wxwin)\include\msvc;$(WXWIN)\include\;$(OPENSSL64)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>MG_ENABLE_THREADS;MG_ENABLE_IPV6;MG_ENABLE_GETADDRINFO;_ALLOW_KEYWORD_MACROS;wxUSE_GUI=0;WIN32;_DEBUG;_WINDOWS;_USRDLL;TCPIPLINKDRV_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <BrowseInformation>true</BrowseInformation>
@@ -302,8 +302,8 @@ copy  /Y "$(OutDir)/$(TargetName).lib" "$(VSCP_INSTALL)\files\drivers\$(Platform
       <SubSystem>Console</SubSystem>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
-      <AdditionalLibraryDirectories>$(wxwin)\lib\vc_x64_lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>wpcap.lib;wsock32.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(wxwin)\lib\vc_x64_lib;$(OPENSSL64)\lib\VC;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>wpcap.lib;wsock32.lib;odbc32.lib;odbccp32.lib;ssleay32MT.lib;libeay32MT.lib;wxexpat.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>.\rawethernet.def</ModuleDefinitionFile>
     </Link>
     <CustomBuildStep>
@@ -316,7 +316,11 @@ copy  /Y "$(OutDir)/$(TargetName).lib" "$(VSCP_INSTALL)\files\drivers\$(Platform
   <ItemGroup>
     <ClCompile Include="..\..\..\..\..\common\crc.c" />
     <ClCompile Include="..\..\..\..\..\common\crc8.c" />
+    <ClCompile Include="..\..\..\..\..\common\fastpbkdf2.c" />
     <ClCompile Include="..\..\..\..\..\common\mongoose.c" />
+    <ClCompile Include="..\..\..\..\..\common\vscpbase64.c" />
+    <ClCompile Include="..\..\..\..\..\common\vscpmd5.c" />
+    <ClCompile Include="..\..\..\..\..\common\vscp_aes.c" />
     <ClCompile Include="..\..\..\..\common\guid.cpp" />
     <ClCompile Include="..\..\..\..\common\vscphelper.cpp" />
     <ClCompile Include="..\..\..\..\common\vscpremotetcpif.cpp" />
@@ -330,7 +334,11 @@ copy  /Y "$(OutDir)/$(TargetName).lib" "$(VSCP_INSTALL)\files\drivers\$(Platform
   <ItemGroup>
     <ClInclude Include="..\..\..\..\..\common\crc.h" />
     <ClInclude Include="..\..\..\..\..\common\crc8.h" />
+    <ClInclude Include="..\..\..\..\..\common\fastpbkdf2.h" />
     <ClInclude Include="..\..\..\..\..\common\mongoose.h" />
+    <ClInclude Include="..\..\..\..\..\common\vscpbase64.h" />
+    <ClInclude Include="..\..\..\..\..\common\vscpmd5.h" />
+    <ClInclude Include="..\..\..\..\..\common\vscp_aes.h" />
     <ClInclude Include="..\..\..\..\common\guid.h" />
     <ClInclude Include="..\..\..\..\common\vscp.h" />
     <ClInclude Include="..\..\..\..\common\vscphelper.h" />

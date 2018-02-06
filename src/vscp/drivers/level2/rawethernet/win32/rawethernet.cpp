@@ -518,7 +518,7 @@ bool CRawEthernet::open( const char *pUsername,
     // We want to use our own Ethernet based GUID for this interface
     wxString strGUID;
     m_localGUIDtx.toString( strGUID );
-    m_srv.doCmdSetGUID( strGUID.mbc_str() );
+    m_srv.doCmdSetGUID( (const unsigned char *)( (const char *)strGUID.mbc_str() ) );
 
     // Close the channel
     m_srv.doCmdClose();
