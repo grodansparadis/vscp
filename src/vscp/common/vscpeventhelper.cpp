@@ -371,6 +371,8 @@ VSCPInformation::VSCPInformation( void )
     m_hashType[ MAKE_CLASSTYPE_LONG( 20, 72 ) ] = _("DATE");
     m_hashType[ MAKE_CLASSTYPE_LONG( 20, 73 ) ] = _("TIME");
     m_hashType[ MAKE_CLASSTYPE_LONG( 20, 74 ) ] = _("WEEKDAY");
+    m_hashType[ MAKE_CLASSTYPE_LONG( 20, 75 ) ] = _("LOCK");
+    m_hashType[ MAKE_CLASSTYPE_LONG( 20, 76 ) ] = _("UNLOCK");
     
     // class 30 (0x1E) -- CONTROL
     m_hashType[ MAKE_CLASSTYPE_LONG(30, 0) ] = _("CONTROL_GENERAL");
@@ -412,6 +414,9 @@ VSCPInformation::VSCPInformation( void )
     m_hashType[ MAKE_CLASSTYPE_LONG(30, 39) ] = _("SHUTTER_PRESET");
     m_hashType[ MAKE_CLASSTYPE_LONG(30, 40) ] = _("ALL_LAMPS_ON");
     m_hashType[ MAKE_CLASSTYPE_LONG(30, 41) ] = _("ALL_LAMPS_OFF");
+    m_hashType[ MAKE_CLASSTYPE_LONG(30, 42) ] = _("LOCK");
+    m_hashType[ MAKE_CLASSTYPE_LONG(30, 43) ] = _("UNLOCK");
+    
 
     // class 40 (0x28) -- MULTIMEDIA
     m_hashType[ MAKE_CLASSTYPE_LONG(40, 0) ] = _("MULTIMEDIA_GENERAL");
