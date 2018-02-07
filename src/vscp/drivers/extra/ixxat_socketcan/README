@@ -1,0 +1,134 @@
+IXXAT Automation GmbH - SocketCAN Driver
+=========================================
+
+
+About SocketCAN Driver
+----------------
+The SocketCAN driver allows you to use IXXAT CAN Interfaces within your own
+socketCAN based applications. For further informations on SocketCAN see 
+
+https://www.kernel.org/doc/Documentation/networking/can.txt
+
+System requirements
+-------------------
+* PC with Linux Kernel 2.6.37 or newer
+* The CAN-FD interfaces need to have at least a Linux Kernel version of 3.19.3
+* IXXAT CAN Interface:
+  - "CAN-IB100/PCIe"
+  - "CAN-IB110/XMC"
+  - "CAN-IB120/PCIe Mini"
+  - "CAN-IB130/PCIe 104"
+  - "CAN-IB200/PCIe"
+  - "CAN-IB210/XMC"
+  - "CAN-IB230/PCIe 104"
+  - "CAN-IB300/PCI"
+  - "CAN-IB310/PMC"
+  - "CAN-IB400/PCI"
+  - "CAN-IB410/PMC
+  - "CAN-IB500/PCIe FD"
+  - "CAN-IB510/XMC FD"
+  - "CAN-IB520/PCIe Mini FD"
+  - "CAN-IB600/PCIe FD"
+  - "CAN-IB610/XMC FD"
+  - "CAN-IB700/PCI FD"
+  - "CAN-IB710/PMC FD"
+  - "CAN-IB800/PCI FD"
+  - "CAN-IB810/PMC FD"
+  - "USB-to-CAN V2 compact"
+  - "USB-to-CAN V2 embedded"
+  - "USB-to-CAN V2 professional"
+  - "USB-to-CAN V2 automotive"
+  - "USB-to-CAN FD compact"
+  - "USB-to-CAN FD professional"
+  - "USB-to-CAN FD automotive"
+
+* Gcc 4.2 and a working kernel build environment
+
+Note: 
+  The driver should work with most Linux distributions running a 2.6.37 or newer, 
+  but was only tested using Debian/Ubuntu and openSUSE Linux up to kernel version 4.4.21. 
+  If using a Raspberry Pi, refer to the Raspberry Pi section below before starting the 
+  steps in Getting started.
+
+
+Getting started
+------------------------------------
+1) Make sure the can-dev module is loaded properly. 
+   You can check this with "lsmod | grep can-dev"
+   If it is not loaded yet you can do this with 
+
+   "sudo modprobe can-dev"
+
+2) Because you need to compile the "ixx_pci" kernel module you need to have
+   have the source code of your operating kernel installed on your
+   system and the kernel configuration file '/usr/src/linux/.config' should 
+   exist. The "linux-headers" package matching your kernel version can also 
+   be sufficient to build the kernel module.
+
+   An easy way to get a working kernel build environment is to use 
+   module-assistant(m-a). You can install it by typing 
+
+   "sudo apt-get install module-assistant". 
+
+   To let module-assistant install the necessary packages for you, you can use
+
+   "sudo module-assistant prepare" 
+
+
+Compiling the Kernel Module
+---------------------------
+1) After you made sure that the can-dev module is loaded
+   and you have a working kernel build environment you 
+   need to compile the IXXAT SocketCAN driver. To do this go 
+   to the drivers directory and run 
+
+   "make"
+
+2) If this was successfull you can install all the usb and pci kernel modules by
+   typing 
+
+   "sudo make install"
+
+   You can check the result with "dmesg". If there are interfaces connected
+   you see i.e. 
+
+   ixx_pci 0000:02:00.0 can0: attached to CAN-IB120/PCIe channel 0 (device HW302475)
+   ixx_pci 0000:02:00.0 can1: attached to CAN-IB120/PCIe channel 1 (device HW302475)
+
+   Now the module is ready to use.
+
+
+Using SocketCAN
+------------------------------------
+1) Before you can send and receive data you need to configure 
+   the interface. To do this you can use the 'ip' tool. For example if you 
+   want to set the bitrate of 1Mbit (1000000 bit) to the can0 interface
+   you can do this with
+
+   "sudo ip link set can0 type can bitrate 1000000"
+
+2) Now the bitrate is set and you can start the interface by typing
+
+   "sudo ip link set can0 up"
+
+3) After this you can send and receive data on can0. At the beginning you may
+   just want to check some small communications. To do this you could use the
+   tools from "can-utils". For example you could try to send data with
+
+   "cansend can0 123#112233"
+   
+   and receive it with 
+   
+   "candump can0"
+   
+   As a prerequisite for this, is a connected and properly configured bus with
+   at least two communication partners.
+
+Raspberry Pi
+------------------------------------
+When using a Raspberry Pi with a standard kernel release, there are no kernel
+or header files available.  This will require that the kernel is recompiled 
+and installed on the device manually to allow the SocketCAN to function.  Refer
+to the instructions provided at: 
+https://www.raspberrypi.org/documentation/linux/kernel/building.md
+

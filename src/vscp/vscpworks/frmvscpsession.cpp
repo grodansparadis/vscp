@@ -3263,7 +3263,7 @@ void RXWorkerThread::OnExit()
 //
 
 deviceThread::deviceThread()
-: wxThread(wxTHREAD_DETACHABLE)
+: wxThread(wxTHREAD_DETACHED)
 {
     m_pCtrlObject = NULL;
     m_preceiveThread = NULL;

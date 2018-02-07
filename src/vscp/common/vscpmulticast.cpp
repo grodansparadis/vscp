@@ -69,7 +69,7 @@
 //
 
 worksMulticastThread::worksMulticastThread()
-    : wxThread(wxTHREAD_DETACHED)
+    : wxThread(wxTHREAD_JOINABLE)
 {
     //m_pApp = NULL;
     m_bQuit = false;
