@@ -1,11 +1,11 @@
 /////////////////////////////////////////////////////////////////////////////
 //  Name:        frmvscpsession.cpp
 //  Purpose:     
-//  Author:      Ake Hedman
+//  Author:      Ake Hedman, eurosource
 //  Modified by: 
 //  Created:     Sat 30 Jun 2007 14:08:14 CEST
 //  RCS-ID:      
-//  Copyright:   (C) 2007-2017                       
+//  Copyright:   (C) 2007-2018                       
 //  Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 //  Licence:     
 //  This program is free software; you can redistribute it and/or  
@@ -404,7 +404,7 @@ bool frmVSCPSession::Create( wxWindow* parent,
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// Dtor
+// Destructor
 //
 
 frmVSCPSession::~frmVSCPSession()
@@ -518,10 +518,10 @@ void frmVSCPSession::startWorkerThreads(frmVSCPSession *pFrm)
         // Load controlobject control handler
         ////////////////////////////////////////////////////////////////////////
         
-        m_pTXWorkerThread = new TXWorkerThread;
+        m_pTXWorkerThread = new TXWorkerThread( this );
 
         if (NULL != m_pTXWorkerThread) {
-            m_CtrlObject.m_pVSCPSessionWnd = (frmVSCPSession *) pFrm;
+            m_CtrlObject.m_pVSCPSessionWnd = (frmVSCPSession *)pFrm;
             m_pTXWorkerThread->m_pCtrlObject = &m_CtrlObject;
             wxThreadError err;
             if (wxTHREAD_NO_ERROR == (err = m_pTXWorkerThread->Create())) {
@@ -546,10 +546,10 @@ void frmVSCPSession::startWorkerThreads(frmVSCPSession *pFrm)
         // Load controlobject client message handler
         /////////////////////////////////////////////////////////////////////////////
 
-        m_pRXWorkerThread = new RXWorkerThread;
+        m_pRXWorkerThread = new RXWorkerThread( this );
 
         if (NULL != m_pRXWorkerThread) {
-            m_CtrlObject.m_pVSCPSessionWnd = (frmVSCPSession *) pFrm;
+            m_CtrlObject.m_pVSCPSessionWnd = (frmVSCPSession *)pFrm;
             m_pRXWorkerThread->m_pCtrlObject = &m_CtrlObject;
             wxThreadError err;
             if (wxTHREAD_NO_ERROR == (err = m_pRXWorkerThread->Create())) {
@@ -612,27 +612,25 @@ void frmVSCPSession::stopWorkerThreads(void)
     m_BtnActivateInterface->Update();
 
     m_CtrlObject.m_bQuit = true;
+    //wxLogNull noError;   
 
     if (INTERFACE_VSCP == m_CtrlObject.m_interfaceType) {
 
         if (NULL != m_pTXWorkerThread) {
-            m_pTXWorkerThread->Wait();
-            delete m_pTXWorkerThread;
-            m_pTXWorkerThread = NULL;
+            m_pTXWorkerThread->Delete();
+            // Thread pointer set to NULL in thread destructor
         }
 
         if (NULL != m_pRXWorkerThread) {
-            m_pRXWorkerThread->Wait();
-            delete m_pRXWorkerThread;
-            m_pRXWorkerThread = NULL;
+            m_pRXWorkerThread->Delete();
+            // Thread pointer set to NULL in thread destructor
         }
 
     } 
     else {
         if (NULL != m_pDeviceWorkerThread) {
             m_pDeviceWorkerThread->Wait();
-            delete m_pDeviceWorkerThread;
-            m_pDeviceWorkerThread = NULL;
+            // Thread pointer set to NULL in thread destructor
         }
     }
 
@@ -2970,10 +2968,11 @@ void frmVSCPSession::OnMenuitemSaveTxCellWidth(wxCommandEvent& event)
 // TXWorkerThread
 //
 
-TXWorkerThread::TXWorkerThread()
-: wxThread(wxTHREAD_JOINABLE)
+TXWorkerThread::TXWorkerThread(frmVSCPSession *pForm)
+: wxThread(wxTHREAD_DETACHED)
 {
     m_pCtrlObject = NULL;
+    m_frmSession = pForm;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2982,7 +2981,7 @@ TXWorkerThread::TXWorkerThread()
 
 TXWorkerThread::~TXWorkerThread()
 {
-
+    m_frmSession->m_pTXWorkerThread = NULL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3007,12 +3006,9 @@ void *TXWorkerThread::Entry()
                                             frmVSCPSession::ID_FRMVSCPSESSION);
     eventStatus.SetInt( STATUSBAR_STATUS_LEFT );
 
-    /// TCP/IP Control
-    VscpRemoteTcpIf tcpifControl;
-
     // Set timing
-    tcpifControl.setResponseTimeout( g_Config.m_TCPIP_ResponseTimeout );
-    tcpifControl.setAfterCommandSleep( g_Config.m_TCPIP_SleepAfterCommand );
+    m_tcpifControl.setResponseTimeout( g_Config.m_TCPIP_ResponseTimeout );
+    m_tcpifControl.setAfterCommandSleep( g_Config.m_TCPIP_SleepAfterCommand );
 
     // Must be a valid control object pointer
     if (NULL == m_pCtrlObject) return NULL;
@@ -3024,7 +3020,7 @@ void *TXWorkerThread::Entry()
 
     // Connect to the server with the control interface
     if ( VSCP_ERROR_SUCCESS != 
-            tcpifControl.doCmdOpen( m_pCtrlObject->m_ifVSCP.m_strHost,
+        m_tcpifControl.doCmdOpen( m_pCtrlObject->m_ifVSCP.m_strHost,
                                         m_pCtrlObject->m_ifVSCP.m_strUser,
                                         m_pCtrlObject->m_ifVSCP.m_strPassword)) {
         ::wxGetApp().logMsg( _( "VSCP TX thread - Unable to connect to server." ), 
@@ -3046,24 +3042,25 @@ void *TXWorkerThread::Entry()
 
     // Get channel ID
     if (CANAL_ERROR_SUCCESS !=
-            tcpifControl.doCmdGetChannelID( (uint32_t *)&m_pCtrlObject->m_txChannelID)) {
+        m_tcpifControl.doCmdGetChannelID( (uint32_t *)&m_pCtrlObject->m_txChannelID)) {
         ::wxGetApp().logMsg( _( "VSCP TX thread - Unable to get channel ID." ), VSCPWORKS_LOGMSG_INFO );
     }
 
-    while (!TestDestroy() && 
-                !m_pCtrlObject->m_bQuit && tcpifControl.isConnected() ) {
+    while ( !TestDestroy() && !m_pCtrlObject->m_bQuit && m_tcpifControl.isConnected() ) {
+
         if (wxSEMA_TIMEOUT == m_pCtrlObject->m_semOutQue.WaitTimeout(500)) continue;
         m_pCtrlObject->m_mutexOutQueue.Lock();
         node = m_pCtrlObject->m_outQueue.GetFirst();
         pEvent = node->GetData();
-        tcpifControl.doCmdSend(pEvent);
+        m_tcpifControl.doCmdSend(pEvent);
         m_pCtrlObject->m_outQueue.DeleteNode(node);
         vscp_deleteVSCPevent(pEvent);
         m_pCtrlObject->m_mutexOutQueue.Unlock();
+
     } // while
 
     // Close the interface
-    tcpifControl.doCmdClose();
+    m_tcpifControl.doCmdClose();
 
     wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventConnectionLost);
 
@@ -3078,7 +3075,7 @@ void *TXWorkerThread::Entry()
 
 void TXWorkerThread::OnExit()
 {
-
+    // Nothing to do
 }
 
 
@@ -3096,10 +3093,11 @@ void TXWorkerThread::OnExit()
 // receiveWorkerThread
 //
 
-RXWorkerThread::RXWorkerThread()
-: wxThread(wxTHREAD_JOINABLE)
+RXWorkerThread::RXWorkerThread(frmVSCPSession *pForm )
+: wxThread(wxTHREAD_DETACHED)
 {
     m_pCtrlObject = NULL;
+    m_frmSession = pForm;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3108,7 +3106,7 @@ RXWorkerThread::RXWorkerThread()
 
 RXWorkerThread::~RXWorkerThread()
 {
-    ;
+    m_frmSession->m_pRXWorkerThread = NULL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3121,11 +3119,11 @@ RXWorkerThread::~RXWorkerThread()
 void *RXWorkerThread::Entry()
 {
     int rv;
-    VscpRemoteTcpIf tcpifReceive;
+    //VscpRemoteTcpIf tcpifReceive;
 
     // Set timing
-    tcpifReceive.setResponseTimeout( g_Config.m_TCPIP_ResponseTimeout );
-    tcpifReceive.setAfterCommandSleep( g_Config.m_TCPIP_SleepAfterCommand );
+    m_tcpifReceive.setResponseTimeout( g_Config.m_TCPIP_ResponseTimeout );
+    m_tcpifReceive.setAfterCommandSleep( g_Config.m_TCPIP_SleepAfterCommand );
 
     wxCommandEvent eventReceive(wxVSCP_IN_EVENT, frmVSCPSession::ID_FRMVSCPSESSION);
     wxCommandEvent eventConnectionLost(wxVSCP_RCV_LOST_EVENT, frmVSCPSession::ID_FRMVSCPSESSION);
@@ -3139,7 +3137,7 @@ void *RXWorkerThread::Entry()
     wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventStatus);
 
     // Connect to the server with the control interface
-    if (VSCP_ERROR_SUCCESS != tcpifReceive.doCmdOpen(m_pCtrlObject->m_ifVSCP.m_strHost,
+    if (VSCP_ERROR_SUCCESS != m_tcpifReceive.doCmdOpen(m_pCtrlObject->m_ifVSCP.m_strHost,
                                                         m_pCtrlObject->m_ifVSCP.m_strUser,
                                                         m_pCtrlObject->m_ifVSCP.m_strPassword)) {
         ::wxGetApp().logMsg( _( "TCP/IP Receive thread - Unable to connect to server." ), VSCPWORKS_LOGMSG_CRITICAL );
@@ -3154,24 +3152,24 @@ void *RXWorkerThread::Entry()
     wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventStatus);
 
     // Find the channel id
-    tcpifReceive.doCmdGetChannelID( (uint32_t *) &m_pCtrlObject->m_rxChannelID );
+    m_tcpifReceive.doCmdGetChannelID( (uint32_t *) &m_pCtrlObject->m_rxChannelID );
 
     // Set filter
     if ( CANAL_ERROR_SUCCESS !=
-            tcpifReceive.doCmdFilter(&m_pCtrlObject->m_ifVSCP.m_vscpfilter)) {
+        m_tcpifReceive.doCmdFilter(&m_pCtrlObject->m_ifVSCP.m_vscpfilter)) {
         ::wxGetApp().logMsg( _( "TCP/IP: (RX) Receive thread - Failed to set filter." ), VSCPWORKS_LOGMSG_INFO );
         eventStatus.SetString(_("TCP/IP: (RX) Receive thread - Failed to set filter."));
         wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventStatus);
     }
 
     // Start Receive Loop
-    tcpifReceive.doCmdEnterReceiveLoop();
+    m_tcpifReceive.doCmdEnterReceiveLoop();
 
     vscpEvent event;
-    while (!TestDestroy() && !m_pCtrlObject->m_bQuit && tcpifReceive.isConnected()) {
+    while ( !TestDestroy() && !m_pCtrlObject->m_bQuit && m_tcpifReceive.isConnected() ) {
 
         if (CANAL_ERROR_SUCCESS ==
-                ( rv = tcpifReceive.doCmdBlockingReceive( &event, 10 ) ) ) {
+                ( rv = m_tcpifReceive.doCmdBlockingReceive( &event, 10 ) ) ) {
 
             if ( NULL != m_pCtrlObject->m_pVSCPSessionWnd ) {
 
@@ -3228,10 +3226,7 @@ void *RXWorkerThread::Entry()
 
     } // while
 
-    // Close the interface
-    tcpifReceive.doCmdClose();
-
-    wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventConnectionLost);
+    //wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventConnectionLost);
 
     return NULL;
 
@@ -3244,7 +3239,8 @@ void *RXWorkerThread::Entry()
 
 void RXWorkerThread::OnExit()
 {
-
+    // Close the interface
+    m_tcpifReceive.doCmdClose();
 }
 
 
@@ -3267,7 +3263,7 @@ void RXWorkerThread::OnExit()
 //
 
 deviceThread::deviceThread()
-: wxThread(wxTHREAD_JOINABLE)
+: wxThread(wxTHREAD_DETACHABLE)
 {
     m_pCtrlObject = NULL;
     m_preceiveThread = NULL;
@@ -3739,7 +3735,7 @@ deviceReceiveThread::deviceReceiveThread()
 
 deviceReceiveThread::~deviceReceiveThread()
 {
-    ;
+    m_pMainThreadObj->m_preceiveThread = NULL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3799,7 +3795,7 @@ void *deviceReceiveThread::Entry()
                 }
 
             }
-        }
+        }        
     }
 
     eventStatus.SetString(_("CANAL: (RX) Terminated."));
@@ -3833,7 +3829,7 @@ void deviceReceiveThread::OnExit()
 //
 
 deviceWriteThread::deviceWriteThread()
-: wxThread(wxTHREAD_JOINABLE)
+: wxThread(wxTHREAD_DETACHED)
 {
     m_pMainThreadObj = NULL;
     m_bQuit = false;
@@ -3841,7 +3837,7 @@ deviceWriteThread::deviceWriteThread()
 
 deviceWriteThread::~deviceWriteThread()
 {
-    ;
+    m_pMainThreadObj->m_pwriteThread = NULL;
 }
 
 

@@ -5,7 +5,7 @@
 // Modified by: 
 // Created:     Sat 30 Jun 2007 14:08:14 CEST
 // RCS-ID:      
-// Copyright:   (C) 2007-2017 
+// Copyright:   (C) 2007-2018 
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 //
 // Licence:     
@@ -220,7 +220,7 @@ class TXWorkerThread : public wxThread
 public:
 	
 	/// Constructor
-	TXWorkerThread();
+	TXWorkerThread(frmVSCPSession *pForm );
 
 	/// Destructor
 	virtual ~TXWorkerThread();
@@ -242,7 +242,11 @@ public:
 	*/
 	ctrlObj *m_pCtrlObject;
 
+    /// TCP/IP Control
+    VscpRemoteTcpIf m_tcpifControl;
 
+    // Session form
+    frmVSCPSession *m_frmSession;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -258,7 +262,7 @@ class RXWorkerThread : public wxThread
 public:
 	
 	/// Constructor
-	RXWorkerThread();
+	RXWorkerThread(frmVSCPSession *pForm );
 
 	/// Destructor
 	virtual ~RXWorkerThread();
@@ -280,6 +284,11 @@ public:
 	*/
 	ctrlObj *m_pCtrlObject;
 
+    /// TCP/IP Control
+    VscpRemoteTcpIf m_tcpifReceive;
+
+    // Session form
+    frmVSCPSession *m_frmSession;
 };
 
 

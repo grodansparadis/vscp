@@ -70,7 +70,8 @@ WX_DEFINE_LIST( EVENT_TX_QUEUE );
 // CTOR
 //
 
-clientTcpIpWorkerThread::clientTcpIpWorkerThread() : wxThread( wxTHREAD_JOINABLE )	
+clientTcpIpWorkerThread::clientTcpIpWorkerThread() : 
+    wxThread(wxTHREAD_DETACHED)
 {
     m_bRun = true;  // Run my friend run
     m_pvscpRemoteTcpIpIf = NULL; 
@@ -266,6 +267,10 @@ void *clientTcpIpWorkerThread::Entry()
 
 void clientTcpIpWorkerThread::OnExit()
 {
+    if (NULL != m_pvscpRemoteTcpIpIf) {
+        m_pvscpRemoteTcpIpIf->m_pClientTcpIpWorkerThread = NULL;
+    }
+
 #ifdef DEBUG_LIB_VSCP_HELPER    
     wxLogDebug( _("clientTcpIpWorkerThread: OnExit") );  
 #endif    
@@ -613,9 +618,7 @@ int VscpRemoteTcpIf::doCmdClose( void )
     if ( NULL != m_pClientTcpIpWorkerThread ) {
         m_pClientTcpIpWorkerThread->m_bRun = false;
         m_pClientTcpIpWorkerThread->Delete();
-        m_pClientTcpIpWorkerThread->Wait();
-        delete m_pClientTcpIpWorkerThread;
-        m_pClientTcpIpWorkerThread = NULL;
+        // Thread pointer set to NULL in thread destructor
 #ifdef DEBUG_LIB_VSCP_HELPER        
         wxLogDebug( _("Thread Deleted") );
 #endif        

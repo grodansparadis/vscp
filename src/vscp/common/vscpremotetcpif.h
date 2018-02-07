@@ -1640,9 +1640,10 @@ public:
     /// Flag for active receive loop
     bool m_bModeReceiveLoop;
 
-protected:
-
+    // The worker thread
     clientTcpIpWorkerThread *m_pClientTcpIpWorkerThread;
+
+protected:
 
     /// Server response timeout in milliseconds
     uint32_t m_responseTimeOut;
@@ -1677,7 +1678,7 @@ private:
 //
 // The following is helper code to make a threaded interface to the above
 // function calls.
-// The thread should be created JOINABLE and be terminated by setting 
+// The thread should be created DETACHABLE and be terminated by setting 
 // to true. Before starting the thread the m_pCtrlObject must be set up 
 // to point to an initialized ctrlObjVscpTcpIf
 //

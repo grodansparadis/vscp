@@ -5,7 +5,7 @@
 // Modified by: 
 // Created:     Mon 23 Apr 2007 21:41:07 CEST
 // RCS-ID:      
-// Copyright:   (C) 2007-2017 
+// Copyright:   (C) 2007-2018 
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // Licence:     
 /////////////////////////////////////////////////////////////////////////////
