@@ -175,6 +175,9 @@ typedef vscpEventEx *PVSCPEVENTEX;
 
 #define VSCP_NO_CRC_CALC                    0x08    // If set no CRC is calculated
 
+#define VSCP_HEADER16_IPV6_GUID		    0x8000  // GUID is IPv6 address
+#define VSCP_HEADER16_DUMB                  0x4000  // This node is dumb
+
 #define VSCP_MASK_PRIORITY                  0xE0
 #define VSCP_MASK_HARDCODED                 0x10
 #define VSCP_MASK_NOCRCCALC                 0x08
