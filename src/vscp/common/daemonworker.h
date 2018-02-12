@@ -39,7 +39,7 @@
 
 class CControlObject;
 class CClientItem;
-class CNodeInformation;
+class CVSCPNode;
 
 // This thread is used for node discovery
 
@@ -164,7 +164,7 @@ public:
         @param pEvent Event that initiated the add
         @return Pointer to new or old information object or NULL if failure.
     */
-    CNodeInformation *addNodeIfNotKnown( vscpEvent *pEvent );
+    CVSCPNode *addNodeIfNotKnown( vscpEvent *pEvent );
 
     /*!
         Send multicast event
@@ -189,7 +189,7 @@ public:
         @return true on success, false on failure
     */
     bool sendMulticastInformationProxyEvent( int sock, 
-                                                CNodeInformation *pNode );
+                                                CVSCPNode *pNode );
 
     /*!
         Termination control

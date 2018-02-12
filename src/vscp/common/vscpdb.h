@@ -520,15 +520,20 @@
 //*****************************************************************************
 
 /*
+ * 
  * GUID table
  *
  * type - describes what this GUID is describing, for example an interface, a node etc.
+ *       Defined in knownnodes.h  (may be old info. here)
  *   type = 0 - Common GUID.
  *   type = 1 - Interface (on this machine),
  *   type = 2 - Level I hardware. Lives on one of the interfaces of this daemon.
  *   type = 3 - Level II hardware. Lives somewhere given by address.
- *   type = 4 - User interface component.
- *   type = 5 - Location.
+ *   type = 4 - Level III hardware.
+ *   type = 5 - Dumb device (no registers, no MDF).
+ *   type = 6 - Driver.
+ *   type = 7 - Location.
+ *   type = 8 - User interface component.
  *
  * GUID - GUID for the type. Level I hardware use the proxy GUID.
  *

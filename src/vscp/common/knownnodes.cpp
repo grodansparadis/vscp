@@ -61,9 +61,18 @@
 #include "clientlist.h"
 #include <dllist.h>
 #include <crc8.h>
+#include <vscpdb.h>
 #include "controlobject.h"
 #include "guid.h"
 #include "knownnodes.h"
+
+
+///////////////////////////////////////////////////
+//                 GLOBALS
+///////////////////////////////////////////////////
+
+extern CControlObject *gpobj;
+
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -71,7 +80,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 
-CVSCPServerInformation::CVSCPServerInformation()
+/*CVSCPServerInformation::CVSCPServerInformation()
 {
     m_bUpdated = false;
     m_capabilities = 0;
@@ -118,6 +127,7 @@ CVSCPServerInformation::~CVSCPServerInformation()
 {
 
 }
+*/
 
 ///////////////////////////////////////////////////////////////////////////////
 //                           Node information
@@ -127,8 +137,9 @@ CVSCPServerInformation::~CVSCPServerInformation()
 // CNodeInformation CTOR
 //
 
-CNodeInformation::CNodeInformation()
+CVSCPNode::CVSCPNode()
 {
+    m_dbId = -1;
     m_bUpdated = false;
     m_bInvestigated = false;
     m_realguid.clear();
@@ -143,10 +154,10 @@ CNodeInformation::CNodeInformation()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// CNodeInformation DTOR
+// CVSCPNode DTOR
 //
 
-CNodeInformation::~CNodeInformation()
+CVSCPNode::~CVSCPNode()
 {
     ;
 }
@@ -177,7 +188,7 @@ CKnownNodes::~CKnownNodes()
         for ( it = m_nodes.begin(); it != m_nodes.end(); ++it )
         {
             wxString key = it->first;
-            CNodeInformation *pNode = it->second;
+            CVSCPNode *pNode = it->second;
             if ( NULL != pNode ) delete pNode;
             pNode = NULL;
         }
@@ -185,26 +196,13 @@ CKnownNodes::~CKnownNodes()
     // Clear the map
     m_nodes.clear();
 
-    // Remove hash content
-    {
-        VSCP_HASH_KNOWN_SERVERS::iterator it;
-        for ( it = m_servers.begin(); it != m_servers.end(); ++it )
-        {
-            wxString key = it->first;
-            CVSCPServerInformation *pNode = it->second;
-            if ( NULL != pNode ) delete pNode;
-            pNode = NULL;
-        }
-    }
-    // Clear the map
-    m_servers.clear();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // findNode
 //
 
-CNodeInformation *CKnownNodes::findNode( cguid& guid )
+CVSCPNode *CKnownNodes::findNode( cguid& guid )
 {
     wxString strGUID;
 
@@ -214,26 +212,14 @@ CNodeInformation *CKnownNodes::findNode( cguid& guid )
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// findServer
-//
-
-CVSCPServerInformation *CKnownNodes::findServer( cguid& guid )
-{
-    wxString strGUID;
-
-    guid.toString( strGUID );
-    return m_servers[ strGUID ];
-}
-
-///////////////////////////////////////////////////////////////////////////////
 // addNode
 //
 
-CNodeInformation *CKnownNodes::addNode( cguid& guid )
+CVSCPNode *CKnownNodes::addNode( cguid& guid )
 {
-    CNodeInformation *pNode = findNode( guid );
+    CVSCPNode *pNode = findNode( guid );
     if ( NULL == pNode ) {
-        pNode = new CNodeInformation;
+        pNode = new CVSCPNode;
         if ( NULL != pNode ) {
             wxString strGUID;
             guid.toString( strGUID );
@@ -244,24 +230,6 @@ CNodeInformation *CKnownNodes::addNode( cguid& guid )
     return pNode;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// addServer
-//
-
-CVSCPServerInformation *CKnownNodes::addServer( cguid& guid )
-{
-    CVSCPServerInformation *pServer = findServer( guid );
-    if ( NULL == pServer ) {
-        pServer = new CVSCPServerInformation;
-        if ( NULL != pServer ) {
-            wxString strGUID;
-            guid.toString( strGUID );
-            m_servers[ strGUID ] = pServer;    // Assign the node
-        }
-    }
-
-    return pServer;
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 // removeNode
@@ -271,7 +239,7 @@ bool CKnownNodes::removeNode( cguid& guid )
 {
     wxString strGUID;
     bool rv = false;
-    CNodeInformation *pNode = findNode( guid );
+    CVSCPNode *pNode = findNode( guid );
     if ( NULL != pNode ) delete pNode;
     pNode = NULL;
     
@@ -282,24 +250,6 @@ bool CKnownNodes::removeNode( cguid& guid )
     return rv;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// removeServer
-//
-
-bool CKnownNodes::removeServer( cguid& guid )
-{
-    wxString strGUID;
-    bool rv = false;
-    CVSCPServerInformation *pServer = findServer( guid );
-    if ( NULL != pServer ) delete pServer;
-    pServer = NULL;
-
-    guid.toString( strGUID );
-    m_servers[ strGUID ] = NULL;
-    m_servers.erase( strGUID );
-
-    return rv;
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 // saveNodes
@@ -314,9 +264,39 @@ void CKnownNodes::save( wxString& path )
 // loadNodes
 //
 
-void CKnownNodes::load( wxString& path )
+bool CKnownNodes::load( void )
 {
-    // TODO
+    char *pErrMsg;
+    sqlite3_stmt *ppStmt;
+    
+    gpobj->m_knownNodes.m_mutexKnownNodes.Lock();
+        
+    if ( SQLITE_OK != sqlite3_prepare_v2( gpobj->m_db_vscp_daemon,
+                                            VSCPDB_GUID_SELECT_ALL,
+                                            -1,
+                                            &ppStmt,
+                                            NULL ) ) {
+        
+        // id
+        const char *p;
+        long id = 0;
+        if ( NULL != 
+                 ( p = (const char *)sqlite3_column_text( ppStmt, 
+                                                    VSCPDB_ORDINAL_GUID_ID ) ) ) {
+            id = atol( p );
+        }
+        
+        return false;
+    }
+    
+    int i;
+    while ( SQLITE_ROW == sqlite3_step( ppStmt ) ) {
+        
+    }
+    
+    gpobj->m_knownNodes.m_mutexKnownNodes.Unlock();
+    
+    return true;
 }
 
 

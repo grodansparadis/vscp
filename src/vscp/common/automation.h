@@ -266,12 +266,7 @@ private:
     /// Sub zone that automation server belongs to
     uint8_t m_subzone;
 
-    /*!
-        Time zone for this computer
-        GMT = 0;
-    */
-    //double m_timezone;
-
+    
     
     //////////////////////////////////////////////
     //       Segment controller heartbeat

@@ -194,7 +194,7 @@ void *daemonVSCPThread::Entry()
     // This is an active client
     pClientItem->m_bOpen = true;
     pClientItem->m_type =  CLIENT_ITEM_INTERFACE_TYPE_CLIENT_INTERNAL;
-    pClientItem->m_strDeviceName = _("Internal VSCP Server Worker Client.");    
+    pClientItem->m_strDeviceName = _("Internal VSCP Daemon Worker Client.");    
     pClientItem->m_strDeviceName += _(" Started at ");
     pClientItem->m_strDeviceName += wxDateTime::Now().FormatISODate();
     pClientItem->m_strDeviceName += _(" ");
@@ -234,7 +234,7 @@ void *daemonVSCPThread::Entry()
     
     
     ////////////////////////////////////////////////////////////////////////////
-    //               * * *  W O R K I N G  L O O P  * * *
+    //                 * * *  W O R K I N G  L O O P  * * *
     ////////////////////////////////////////////////////////////////////////////
 
 
@@ -394,7 +394,7 @@ void *daemonVSCPThread::Entry()
                     ( VSCP_TYPE_PROTOCOL_NEW_NODE_ONLINE == pEvent->vscp_type ) ) {
 
                 // Add node to knows nodes or return info if known
-                CNodeInformation *pNode = addNodeIfNotKnown( pEvent );
+                CVSCPNode *pNode = addNodeIfNotKnown( pEvent );
 
                 if ( NULL != pNode ) {
 
@@ -410,7 +410,7 @@ void *daemonVSCPThread::Entry()
                     ( VSCP_TYPE_INFORMATION_NODE_HEARTBEAT == pEvent->vscp_type ) ) {
 
                 // Add node to knows nodes or return info if known
-                CNodeInformation *pNode = addNodeIfNotKnown( pEvent );
+                CVSCPNode *pNode = addNodeIfNotKnown( pEvent );
 
                 if ( NULL != pNode ) {
 
@@ -465,7 +465,7 @@ void *daemonVSCPThread::Entry()
                 sendMulticastEvent( sock_mc, pEvent );
 
                 // Add node to knows nodes or return info if known
-                CNodeInformation *pNode = addNodeIfNotKnown( pEvent );
+                CVSCPNode *pNode = addNodeIfNotKnown( pEvent );
 
                 if ( NULL != pNode ) {
 
@@ -508,9 +508,9 @@ void daemonVSCPThread::OnExit()
 // addNodeIfNotKnown
 //
 
-CNodeInformation * daemonVSCPThread::addNodeIfNotKnown( vscpEvent *pEvent )
+CVSCPNode * daemonVSCPThread::addNodeIfNotKnown( vscpEvent *pEvent )
 {
-    CNodeInformation *pNode;
+    CVSCPNode *pNode;
     wxString strGUID;
     cguid guid;
 
@@ -528,7 +528,7 @@ CNodeInformation * daemonVSCPThread::addNodeIfNotKnown( vscpEvent *pEvent )
 
         // We have not seen this node before and we will
         // try to collect information from it
-        pNode = new CNodeInformation;
+        pNode = new CVSCPNode;
         if ( NULL != pNode ) {
 
             // Add the node to known nodes
@@ -741,7 +741,7 @@ bool daemonVSCPThread::sendMulticastEventEx( int sock,
 //
 
 bool daemonVSCPThread::sendMulticastInformationProxyEvent( int sock,
-                                                            CNodeInformation *pNode )
+                                                            CVSCPNode *pNode )
 {
     struct sockaddr_in mc_addr;     // socket address structure
     uint8_t buf[ 1024 ];            // frame to send
