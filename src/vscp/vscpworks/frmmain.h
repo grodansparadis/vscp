@@ -119,8 +119,8 @@ public:
 
     clientdatatype m_type;
 
-    CNodeInformation m_nodeInformation;
-    CVSCPServerInformation m_serverInformation;
+    //CNodeInformation m_nodeInformation; TODO
+    //CVSCPServerInformation m_serverInformation; TODO
 };
 
 

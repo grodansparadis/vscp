@@ -111,7 +111,6 @@ VSCPWORKS_OBJECTS =  vscpworks.o \
 	register.o \
 	canalconfobj.o \
 	vscpmulticast.o \
-	knownnodes.o \
 	crc.o \
 	crc8.o \
 	vscp_aes.o \

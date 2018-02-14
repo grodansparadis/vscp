@@ -328,7 +328,7 @@ void *worksMulticastThread::Entry()
                 
                 // This will use the correct GUID as originator 
                 cguid guid;
-
+/* TODO
                 guid.getFromArray( ( unsigned const char * )buf + VSCP_MULTICAST_PACKET0_POS_VSCP_GUID  );
                 CNodeInformation *pNode = m_knownNodes.addNode( guid );
                 if ( NULL != pNode ) {
@@ -362,14 +362,14 @@ void *worksMulticastThread::Entry()
                     pNode->m_address = originatingAddress;
 
                 }
-
+*/
             }
             // Server proxy heart beats
             else if ( ( VSCP_CLASS2_INFORMATION  == vscp_class ) && 
                       ( VSCP2_TYPE_INFORMATION_PROXY_HEART_BEAT == vscp_type ) ) {
 
                 // This will use the correct GUID as originator 
-
+/* TODO
                 // GUID is sending nodes/servers GUID
                 // For a Level I node connected to a server this is the GUID for the server.
                 cguid guid;
@@ -424,7 +424,7 @@ void *worksMulticastThread::Entry()
                     pNode->m_address = originatingAddress;
 
                 }
-                
+  */    
             }
             // Server capabilities
             else if ( ( VSCP_CLASS2_PROTOCOL == vscp_class ) && 
@@ -435,10 +435,10 @@ void *worksMulticastThread::Entry()
                 cguid guid;
 
                 guid.getFromArray( ( unsigned const char * )buf + VSCP_MULTICAST_PACKET0_POS_VSCP_GUID );
-                CVSCPServerInformation *pServer = m_knownNodes.addServer( guid );
+                /*CVSCPServerInformation *pServer = m_knownNodes.addServer( guid );
                 if ( NULL != pServer ) {
 
-                }
+                }  TODO */
 
             }
 

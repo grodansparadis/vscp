@@ -140,6 +140,7 @@ void RenderTimer::Notify()
 {
     bool bRefresh = false;
     
+    /* TODO
     m_multicastThread->m_knownNodes.m_mutexKnownNodes.Lock();
     
     if ( m_nLastKnownNodes < m_multicastThread->m_knownNodes.m_nodes.size() ) {
@@ -243,7 +244,7 @@ void RenderTimer::Notify()
         // Refresh the display
         m_pwnd->Refresh();
     }
-    
+   */
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -643,6 +644,7 @@ void frmMain::OnTreectrlSelChanged( wxTreeEvent& event )
     wxTreeItemId itemId = event.GetItem();
     nodeClientData *item = ( nodeClientData * )m_nodeTree->GetItemData( itemId );
 
+    /* TODO
     if ( item != NULL ) {
 
         wxString str;
@@ -712,7 +714,8 @@ void frmMain::OnTreectrlSelChanged( wxTreeEvent& event )
 
         m_htmlInfoWnd->SetPage( page ); 
     }
-
+    */
+    
     event.Skip();
 }
 

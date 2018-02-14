@@ -65,7 +65,7 @@ public:
 
     // This is the known node information container
     // It is protected by the member m_mutexKnownNodes
-    CKnownNodes m_knownNodes;
+    // CKnownNodes m_knownNodes;  TODO
 
 };
 
