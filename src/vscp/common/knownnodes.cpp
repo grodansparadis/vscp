@@ -76,62 +76,9 @@ extern CControlObject *gpobj;
 
 
 ///////////////////////////////////////////////////////////////////////////////
-//                           Server information
-///////////////////////////////////////////////////////////////////////////////
-
-
-/*CVSCPServerInformation::CVSCPServerInformation()
-{
-    m_bUpdated = false;
-    m_capabilities = 0;
-    m_guid.clear();
-    m_nameOfServer.Empty();
-    m_ipaddress.Empty();
-
-    // Set default ports
-    memset( m_ports, 0, sizeof( m_ports ) );
-  
-    // Multicast announce port
-    m_ports[ 16 ] = VSCP_ANNOUNCE_MULTICAST_PORT;
-
-    // VSCP TCP/IP interface
-    m_ports[ 15 ] = VSCP_DEFAULT_TCP_PORT;
-
-    // UDP Interface
-    m_ports[ 14 ] = VSCP_DEFAULT_UDP_PORT;
-
-    // Multicast announce
-    m_ports[ 13 ] = VSCP_ANNOUNCE_MULTICAST_PORT;
-
-    // Raw Ethernet
-    m_ports[ 12 ] = VSCP_DEFAULT_TCP_PORT;  // No port is used - This is the Ethernet frame id
-
-    // Web server
-    m_ports[ 11 ] = 8884;
-
-    // Websocket interface
-    m_ports[ 10 ] = 8884;
-
-    // REST interface
-    m_ports[ 9 ] = 8884;
-
-    // MQTT interface
-    m_ports[ 8 ] = 1883;
-
-    // CoAP interface
-    m_ports[ 7 ] = 40000;
-
-}
-
-CVSCPServerInformation::~CVSCPServerInformation()
-{
-
-}
-*/
-
-///////////////////////////////////////////////////////////////////////////////
 //                           Node information
 ///////////////////////////////////////////////////////////////////////////////
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // CNodeInformation CTOR
@@ -144,13 +91,31 @@ CVSCPNode::CVSCPNode()
     m_bInvestigated = false;
     m_realguid.clear();
     m_interfaceguid.clear();
-    m_mdfPath.Empty();
+    lint_to_mdf = 0;
     m_lastHeartBeat = wxDateTime::Now();
-    memset( m_stdreg, 0, 0x80 );
     m_strNodeName.Empty();
     m_deviceName.Empty();
     m_clientID = 0;
     m_level = 0;
+        
+    memset( m_ports, 0, sizeof(m_ports) * sizeof(int) );
+    
+    m_ports[15] = VSCP_DEFAULT_TCP_PORT;
+    m_ports[14] = VSCP_DEFAULT_UDP_PORT;    
+    m_ports[13] = VSCP_ANNOUNCE_MULTICAST_PORT;
+    m_ports[12] = 0; // Raw Ethernet, no port.
+    m_ports[11] = 8884; // web.
+    m_ports[10] = 8884; // websocket.
+    m_ports[9] = 8884;  // rest, no port.  
+    m_ports[8] = VSCP_DEFAULT_MULTICAST_PORT;
+    m_ports[7] = 0;  // reserved
+    m_ports[6] = 0;  // IP6, no port.
+    m_ports[5] = 0;  // IP4, no port.
+    m_ports[4] = 0;  // SSL (web/websocket/rest port)
+    m_ports[3] = 0;  // Two connections, no port.
+    m_ports[2] = 0;  // AES256, no port.
+    m_ports[1] = 0;  // AES192, no port.
+    m_ports[0] = 0;  // AES128, no port.
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -163,9 +128,42 @@ CVSCPNode::~CVSCPNode()
 }
 
 
+///////////////////////////////////////////////////////////////////////////////
+// getCapabilitiesFromString
+//
+
+void CVSCPNode::getCapabilitiesFromString( const wxString& strCapabilities )
+{
+    uint64_t caps = 0;
+    wxStringTokenizer tkz( strCapabilities, _(",") );
+    
+    for ( int i=7; i>0; i-- ) {
+        if ( tkz.HasMoreTokens() ) {
+            uint8_t val = vscp_readStringValue( tkz.GetNextToken() );
+            caps |= ( val << ( i*8 ) ); 
+        }
+    }
+    
+    m_capabilities = caps;
+}
 
 
+///////////////////////////////////////////////////////////////////////////////
+// getCapabilitiesFromString
+//
 
+void CVSCPNode::writeCapabilitiesToString( wxString& strCapabilities )
+{
+    strCapabilities.Printf( "%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x",
+                                ( m_capabilities >> 56 ) & 0xff,
+                                ( m_capabilities >> 48 ) & 0xff,
+                                ( m_capabilities >> 40 ) & 0xff,
+                                ( m_capabilities >> 32 ) & 0xff,
+                                ( m_capabilities >> 24 ) & 0xff,
+                                ( m_capabilities >> 16 ) & 0xff,
+                                ( m_capabilities >> 8 ) & 0xff,
+                                m_capabilities & 0xff );
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // CKnownNodes CTOR
@@ -193,6 +191,7 @@ CKnownNodes::~CKnownNodes()
             pNode = NULL;
         }
     }
+    
     // Clear the map
     m_nodes.clear();
 
@@ -251,11 +250,12 @@ bool CKnownNodes::removeNode( cguid& guid )
 }
 
 
+
 ///////////////////////////////////////////////////////////////////////////////
 // saveNodes
 //
 
-void CKnownNodes::save( wxString& path )
+void CKnownNodes::save( void )
 {
     // TODO
 }
@@ -266,31 +266,92 @@ void CKnownNodes::save( wxString& path )
 
 bool CKnownNodes::load( void )
 {
+    const char *p;
     char *pErrMsg;
     sqlite3_stmt *ppStmt;
     
     gpobj->m_knownNodes.m_mutexKnownNodes.Lock();
-        
+    
     if ( SQLITE_OK != sqlite3_prepare_v2( gpobj->m_db_vscp_daemon,
                                             VSCPDB_GUID_SELECT_ALL,
                                             -1,
                                             &ppStmt,
                                             NULL ) ) {
         
-        // id
-        const char *p;
-        long id = 0;
-        if ( NULL != 
-                 ( p = (const char *)sqlite3_column_text( ppStmt, 
-                                                    VSCPDB_ORDINAL_GUID_ID ) ) ) {
-            id = atol( p );
-        }
         
-        return false;
     }
     
     int i;
     while ( SQLITE_ROW == sqlite3_step( ppStmt ) ) {
+        
+        // GUID ( Must be present
+        if ( NULL == 
+                 ( p = (const char *)sqlite3_column_text( ppStmt, 
+                                        VSCPDB_ORDINAL_GUID_GUID ) ) ) {            
+            continue;
+        }
+        
+        cguid guid;
+        guid.getFromString( p );
+        CVSCPNode *pNode = addNode( guid );
+        
+        // id in database
+        if ( NULL != 
+                 ( p = (const char *)sqlite3_column_text( ppStmt, 
+                                                    VSCPDB_ORDINAL_GUID_ID ) ) ) {
+            pNode->m_dbId = atol( p );
+        }
+        
+        // Nodename - Database given name for node
+        if ( NULL != 
+                 ( p = (const char *)sqlite3_column_text( ppStmt, 
+                                               VSCPDB_ORDINAL_GUID_NAME ) ) ) {
+            pNode->m_strNodeName = wxString::FromUTF8( p );
+        }
+        
+        
+        // Type
+        if ( NULL != 
+                 ( p = (const char *)sqlite3_column_text( ppStmt, 
+                                        VSCPDB_ORDINAL_GUID_TYPE ) ) ) {            
+            pNode->m_nodeType = (uint8_t)atoi(p);
+        }
+        
+        // Last heartbeat is set to discovery date here
+        if ( NULL != 
+                 ( p = (const char *)sqlite3_column_text( ppStmt, 
+                                        VSCPDB_ORDINAL_GUID_DATE ) ) ) {
+            pNode->m_lastHeartBeat.ParseISOCombined( p );
+        }        
+                        
+        // MDF link
+        if ( NULL != 
+                 ( p = (const char *)sqlite3_column_text( ppStmt, 
+                                        VSCPDB_ORDINAL_GUID_LINK_TO_MDF ) ) ) {
+           uint32_t lint_to_mdf = (uint32_t)atol( p );
+        }
+        
+        // Address
+        if ( NULL != 
+                 ( p = (const char *)sqlite3_column_text( ppStmt, 
+                                        VSCPDB_ORDINAL_GUID_ADDRESS ) ) ) {
+            pNode->m_address = wxString::FromUTF8( p );
+        }
+        
+        // Capabilities
+        if ( NULL != 
+                 ( p = (const char *)sqlite3_column_text( ppStmt, 
+                                        VSCPDB_ORDINAL_GUID_CAPABILITIES ) ) ) {
+            pNode->getCapabilitiesFromString( p );
+        }
+        
+        // Non-standard ports
+        if ( NULL != 
+                 ( p = (const char *)sqlite3_column_text( ppStmt, 
+                                        VSCPDB_ORDINAL_GUID_NONSTANDARD ) ) ) {
+            wxString str = wxString::FromUTF8( p );
+            //pNode-> ->m_capabilities = wxString::FromUTF8( p );
+        }        
         
     }
     

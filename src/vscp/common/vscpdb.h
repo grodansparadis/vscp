@@ -540,6 +540,8 @@
  * date - date time when discovered in ISO format. YY-MM-DDTHH:MM:SS
  *
  * name - Max 64 byte Unicode (UTF8) name set by administrator
+ * 
+ * devicename - Name set on node in MDF
  *
  * link_to_mdf - For a hardware device.
  *
@@ -548,10 +550,11 @@
  * capabilities - see CLASS2.PROTOCOL, Type=20   A 8 byte comma separated list 
  *                with the bytes of the capability 64-bit code.
  *
- * nonstandard - is one or more nonstandard info as described for 
- *               CLASS2.PROTOCOL, Type=20
+ * nonstandard - is one or more nonstandard port info as described for 
+ *               CLASS2.PROTOCOL, Type=20 in text form in groups of three
+ *               service1,port1-msb,port1-lsb,service2,port2-msb,port2-lsb ...
  *
- * description - Device description in Unicode (UTF8).
+ * description - Device description (UTF8).
  */
 
 #define VSCPDB_GUID_CREATE "CREATE TABLE IF NOT EXISTS `guid` ("\

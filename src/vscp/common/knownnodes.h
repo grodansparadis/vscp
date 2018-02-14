@@ -94,9 +94,8 @@ public:
         m_realguid = node.m_realguid;
         m_interfaceguid = node.m_interfaceguid;
         m_clientID = node.m_clientID;
-        m_mdfPath = node.m_mdfPath;
+        lint_to_mdf = node.lint_to_mdf;
         m_lastHeartBeat = node.m_lastHeartBeat;
-        memcpy( m_stdreg, node.m_stdreg, sizeof( m_stdreg ) );
         m_strNodeName = node.m_strNodeName;
         m_deviceName = node.m_deviceName;
         m_address = node.m_address;
@@ -108,6 +107,20 @@ public:
         
         return *this;
     };
+    
+    /*!
+     * Write capabilities as a comma separated string
+     * @param strCapabilities String to write result to.
+     */
+    void writeCapabilitiesToString( wxString& strCapabilities );
+    
+    /*!
+     * Get node capabilities from a comma separated string
+     * @param strCapabilities Capabilities in a comma separated string.
+     */
+    void getCapabilitiesFromString( const wxString& strCapabilities );
+    
+    
     
     // Database id
     long m_dbId;
@@ -123,7 +136,7 @@ public:
     uint64_t m_capabilities; 
     
     // Ports related to services.
-    int m_ports[ 64 ];
+    uint16_t m_ports[ 64 ];
 
     // True if this node has been checked
     bool m_bInvestigated;
@@ -142,14 +155,11 @@ public:
     // Client id - Used by the VSCP daemon
     uint32_t m_clientID;
 
-    // MDF path for node
-    wxString m_mdfPath;
+    // Link to MDF record
+    uint32_t lint_to_mdf;
 
     // Last heartbeat from this node
     wxDateTime m_lastHeartBeat;
-
-    // Standard registers
-    uint8_t m_stdreg[ 0x80 ];
 
     // This is the name of the node if any.
     // Will be truncated to 64 byte when sent out or reported
@@ -161,7 +171,7 @@ public:
     // IP/MAC/... address (if any) associated with the node
     wxString m_address;
 
-    // Node level 0=Level I, 1 = Level II
+    // Node level 0 = unknown, 1 = Level I, 2 = Level II, 3 = Level III
     uint8_t m_level;    
 };
 
@@ -187,7 +197,7 @@ public:
     /*!
         Find node
         @param guid GUID for node.
-        @return Return CNodeInformation class if found, NULL if not.
+        @return Return CVSCPNode class if found, NULL if not.
     */
     CVSCPNode *findNode( cguid& guid );
 
@@ -195,7 +205,7 @@ public:
     /*!
         Add node
         @param guid GUID for node.
-        @return Return CNodeInformation class if added, NULL if not.
+        @return Return CVSCPNode class if added or existing, NULL if error.
     */
     CVSCPNode *addNode( cguid& guid );
 
@@ -215,12 +225,12 @@ public:
     bool removeServer( cguid& guid );
 
     /*!
-        Save the list of known nodes
+        Save known nodes to database
     */
-    void save( wxString& path );
+    void save( void );
 
     /*!
-        Load the list of known nodes
+        Load known nodes from database
     */
     bool load( void );
 
