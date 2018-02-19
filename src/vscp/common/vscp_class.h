@@ -43,13 +43,14 @@
  */
 
 
- //            !!!!!!!!!!!!!!!!!!!!  W A R N I N G  !!!!!!!!!!!!!!!!!!!!
- // This file may be a copy of the original file. This is because the file is
- // copied to other projects as a convinience. Thus editing the copy will not make
- // it to the original and will be overwritten.
- // The original file can be foud in the vscp software source tree under 
- // src/vscp/common 
-
+ /*
+             !!!!!!!!!!!!!!!!!!!!  W A R N I N G  !!!!!!!!!!!!!!!!!!!!
+  This file may be a copy of the original file. This is because the file is
+  copied to other projects as a convinience. Thus editing the copy will not make
+  it to the original and will be overwritten.
+  The original file can be foud in the vscp software source tree under 
+  src/vscp/common 
+*/
 
 #ifndef VSCP_CLASS_H
 #define VSCP_CLASS_H
@@ -73,7 +74,7 @@
 #define VSCP_CLASS1_DISPLAY                             102
 #define VSCP_CLASS1_REMOTE                              110
 
-// 200-205 has been deprecated & removed
+/* 200-205 has been deprecated & removed */
 
 #define VSCP_CLASS1_GPS                                 206
 #define VSCP_CLASS1_WIRELESS                            212
@@ -83,7 +84,7 @@
 #define VSCP_CLASS1_LAB                                 510
 #define VSCP_CLASS1_LOCAL                               511
 
-// Level I classes on Level II
+/* Level I classes on Level II */
 
 #define VSCP_CLASS2_LEVEL1_PROTOCOL                     ( 512 + 0 )
 #define VSCP_CLASS2_LEVEL1_ALARM                        ( 512 + 1 )
@@ -110,7 +111,7 @@
 #define VSCP_CLASS2_LEVEL1_LAB                          ( 512 + 510 )
 #define VSCP_CLASS2_LEVEL1_LOCAL                        ( 512 + 511 )
 
-// Level II classes
+/* Level II classes */
 #define VSCP_CLASS2_PROTOCOL                            ( 1024 )
 #define VSCP_CLASS2_CONTROL                             ( 1025 )
 #define VSCP_CLASS2_INFORMATION                         ( 1026 )
