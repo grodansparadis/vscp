@@ -516,6 +516,8 @@ CVSCPNode * daemonVSCPThread::addNodeIfNotKnown( vscpEvent *pEvent )
 
     // Check pointer
     if ( NULL == pEvent ) return NULL;
+    
+    return NULL;
 
     guid.getFromArray( pEvent->GUID );
     guid.toString( strGUID );
