@@ -16,7 +16,7 @@
  * VSCP  Very Simple Control Protocol
  * http:#www.vscp.org
  *
- * Copyright  C  1995-2016 Ake Hedman,
+ * Copyright  (C)  1995-2018 Ake Hedman,
  * eurosource, <akhe@eurosource.se>
  *
  * This software is provided 'as-is', without any express or implied
@@ -620,8 +620,8 @@ VSCP_TYPE_WEATHER_WIND_HIGH                  =       8
 VSCP_TYPE_WEATHER_WIND_VERY_HIGH             =       9
 VSCP_TYPE_WEATHER_AIR_FOGGY                  =       10
 VSCP_TYPE_WEATHER_AIR_FREEZING               =       11
-VSCP_TYPE_WEATHER_AIR_VERY_COLD              =       12
-VSCP_TYPE_WEATHER_AIR_COLD                   =       13
+VSCP_TYPE_WEATHER_AIR_COLD                   =       12
+VSCP_TYPE_WEATHER_AIR_VERY_COLD              =       13
 VSCP_TYPE_WEATHER_AIR_NORMAL                 =       14
 VSCP_TYPE_WEATHER_AIR_HOT                    =       15
 VSCP_TYPE_WEATHER_AIR_VERY_HOT               =       16    
@@ -674,8 +674,8 @@ VSCP_TYPE_WEATHER_FORECAST_WIND_HIGH         =       8
 VSCP_TYPE_WEATHER_FORECAST_WIND_VERY_HIGH    =       9
 VSCP_TYPE_WEATHER_FORECAST_AIR_FOGGY         =       10
 VSCP_TYPE_WEATHER_FORECAST_AIR_FREEZING      =       11
-VSCP_TYPE_WEATHER_FORECAST_AIR_VERY_COLD     =       12
-VSCP_TYPE_WEATHER_FORECAST_AIR_COLD          =       13
+VSCP_TYPE_WEATHER_FORECAST_AIR_COLD          =       12
+VSCP_TYPE_WEATHER_FORECAST_AIR_VERY_COLD     =       13
 VSCP_TYPE_WEATHER_FORECAST_AIR_NORMAL        =       14
 VSCP_TYPE_WEATHER_FORECAST_AIR_HOT           =       15
 VSCP_TYPE_WEATHER_FORECAST_AIR_VERY_HOT      =       16    

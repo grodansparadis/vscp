@@ -13,7 +13,7 @@
 //
 // This file is part of the VSCP (http://www.vscp.org)
 //
-// Copyright (C) 2000-2017
+// Copyright (C) 2000-2018
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 //
 // This file is distributed in the hope that it will be useful,
@@ -38,7 +38,7 @@ import os
 if ( len(sys.argv) < 4 ):
 	sys.exit("Wrong number of parameters - aborting")
 
-guid = "-"
+guid = "FF:FF:FF:FF:FF:FF:FF:FE:B8:27:EB:40:59:96:00:02"
 host = sys.argv[1]
 user = sys.argv[2]
 password = sys.argv[3]

@@ -15,7 +15,7 @@
 //
 // This file is part of the VSCP (http://www.vscp.org)
 //
-// Copyright (C) 2000-2016
+// Copyright (C) 2000-2018
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 //
 // This file is distributed in the hope that it will be useful,
@@ -35,12 +35,12 @@ import sys
 import urllib
 import telnetlib
 
-host = "192.168.1.9"
+host = "192.168.1.6"
 port = 9598
 user = "admin"
 password = "secret"
 
-guid = "00:00:00:00:00:00:00:00:00:00:00:00:00:01:00:01"
+guid = "FF:FF:FF:FF:FF:FF:FF:FE:B8:27:EB:40:59:96:00:03"
 
 debug = 0
 usesockets = 0

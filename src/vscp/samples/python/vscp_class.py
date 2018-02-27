@@ -16,7 +16,7 @@
  * VSCP  Very Simple Control Protocol
  * http://www.vscp.org
  *
- * Copyright  C  1995-2016 Ake Hedman,
+ * Copyright  (C)  1995-2018 Ake Hedman,
  * eurosource, <akhe@eurosource.se>
  *
  * This software is provided 'as-is', without any express or implied
