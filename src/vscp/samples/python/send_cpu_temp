@@ -1,0 +1,1 @@
+* * * * * root cd /root;./send_pi_cpu_temp.py 192.168.1.6 admin secret FF:FF:FF:FF:FF:FF:FF:FE:B8:27:EB:40:59:96:00:01

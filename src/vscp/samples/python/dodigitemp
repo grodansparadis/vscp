@@ -1,0 +1,1 @@
+* * * * * root cd /root;digitemp_DS2490 -a -q | ./sendvalues.py 192.168.1.6 admin secret
