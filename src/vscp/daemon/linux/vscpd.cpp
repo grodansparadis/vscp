@@ -114,7 +114,7 @@ int main( int argc, char **argv )
     
     fprintf( stderr, "Prepare to start vscpd...\n" );
     
-    // Ignore return value from defunct processes
+    // Ignore return value from defunct processes d
     signal( SIGCHLD, SIG_IGN );
 
     crcInit(); 

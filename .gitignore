@@ -302,3 +302,6 @@ RemoteSystemsTempFiles/
 /src/vscp/utils/vscp_bootloader/build-vscp_bootloader-Desktop_Qt_5_2_1_MSVC2010_32bit-Debug/debug/vscp_bootloader.ilk
 /src/vscp/vscp-mkpasswd/mkpasswd.mak
 /src/vscp/vscpservice/debug/vc120.idb
+src/vscp/samples/esp8266/vscp_daemon_connect/vscptest
+src/vscp/samples/esp8266/vscp_daemon_connect/vscptest-0x00000.bin
+src/vscp/samples/esp8266/vscp_daemon_connect/vscptest-0x10000.bin

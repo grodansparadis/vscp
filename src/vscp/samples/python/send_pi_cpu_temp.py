@@ -37,7 +37,7 @@ import sys
 if ( len(sys.argv) < 4 ):
 	sys.exit("Wrong number of parameters - aborting")
 
-guid = "FF:FF:FF:FF:FF:FF:FF:FE:B8:27:EB:40:59:96:00:01"
+guid = "-"
 host = sys.argv[1]
 user = sys.argv[2]
 password = sys.argv[3]

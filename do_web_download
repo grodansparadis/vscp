@@ -1,0 +1,28 @@
+#!/bin/sh
+
+echo "This script downloads the latest VSCP UX code and unpacks it into the"
+echo "/srv/vscp/web folder.  You need to have rights to access this folder"
+echo "which usually means you whould have root access. Also curl should be installed"
+echo "on your system.\n\n"
+echo "* * * WARNING * * * This is alpha code!!! - Larger than it need to be.\n\n"
+
+if [ ! -x /usr/bin/curl ] ; then
+    # some extra check if wget is not installed at the usual place                                                                           
+    command -v curl >/dev/null 2>&1 || { echo >&2 "Please install curl or set it in your path. Aborting."; exit 1; }
+fi
+
+echo "Fething archive"
+curl -o/tmp/vscp_web.zip -LOk https://github.com/grodansparadis/vscp-ux/archive/master.zip
+
+echo "Unpacking archive"
+unzip /tmp/vscp_web.zip -d/tmp
+
+echo "Copying files"
+cp -r /tmp/vscp-ux-master/* /srv/vscp/web
+
+echo "Removing zip-file"
+rm /tmp/vscp_web.zip
+rm -rf /tmp/vscp-ux-master
+
+echo "Done! \n\n"
+echo "Test by going to http//localhost:8884 or https//localhost:8843"

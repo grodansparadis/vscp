@@ -91,6 +91,9 @@ install-config:
 	$(INSTALL_PROGRAM) -b -m744 config_examples/certs/server.pem @VSCPDIR@/certs
 	$(INSTALL_PROGRAM) -b -m744 config_examples/certs/client.pem @VSCPDIR@/certs
 
+web-install:
+	sh add do_web_download
+
 delete-all:
 	rm -rf @VSCPDIR@/*
 
