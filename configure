@@ -1362,7 +1362,6 @@ Optional Features:
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --enable-debug[=no]     compile with debugging; one of yes/info/profile/no
-  --enable-debug          debug mode (default disabled)
   --enable-static         static build of wxWidgets (default shared)
 
 Optional Packages:
@@ -6334,16 +6333,11 @@ PROJ_SUBDIRS="src/vscp/drivers/level1/can4vscp/linux\
  src/vscp/vscp-mkpasswd src/vscp/uvscpd\
  src/vscp/vscpcmd src/vscp/drivers/level2/sim/linux"
 
+
 PROJ_SUBDIRS_GUI="src/vscp/vscpworks"
 
 
 
-# Check whether --enable-debug was given.
-if test "${enable_debug+set}" = set; then :
-  enableval=$enable_debug; vscp_debug=yes
-else
-  vscp_debug=no
-fi
 
 
 
@@ -6389,7 +6383,7 @@ fi
 
 reqwx=3.0.0
 
-if test "${vscp_debug}" = yes ; then
+if test "${ax_enable_debug}" = yes ; then
     echo 'checking for debug unicode wx-libs ...'
 
     if test x${WX_CONFIG_NAME+set} != xset ; then
@@ -8230,13 +8224,14 @@ echo   "PROJ_SUBDIRS : ${PROJ_SUBDIRS}"
 echo
 echo   "           VSCP configuration"
 echo   "--------------------------------------------"
-echo   "VSCP version          : `./echo-version` (${PACKAGE_VERSION})"
+echo   "VSCP version          : `sh echo-version` (${PACKAGE_VERSION})"
 echo   "System                : `uname -a` "
 echo   "Architecture          : $(arch)"
 echo   "VSCP GUI Build        : ${vscp_gui}"
 echo   "VSCP install dir      : ${VSCPDIR}"
 
-if test "${vscp_debug}" = "yes"
+echo   "${ax_enable_debug}"
+if test "${ax_enable_debug}" = "yes"
 then
    echo "build flavour         : debug "
 else
@@ -8259,7 +8254,8 @@ To build VSCP and friends, type \'make\' followed by \'make install\'
 
  \"make\" -- builds VSCP & Friends.
  \"make install\" -- builds VSCP & Friends and install system.
- \"make config\" -- install/restore configuration files.
- \"make web-files\" -- install/restore web demo content including websocket examples.
-
+ \"make install-conf\" -- install/restore configuration files.
+ \"make web-install\" -- install/restore web demo content including websocket examples.
+ \"make deb\" -- builds VSCP & Friends Debian install files.
+ \"make clean\" -- clean project.
 "

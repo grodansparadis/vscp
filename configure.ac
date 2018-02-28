@@ -15,7 +15,7 @@ AC_CONFIG_SRCDIR([src/vscp/common/canalsuperwrapper.cpp])
 AC_CONFIG_AUX_DIR(autotools)
 AC_CONFIG_HEADERS([config.h])
 
-AX_CHECK_ENABLE_DEBUG
+AX_CHECK_ENABLE_DEBUG()
 
 # Checks for programs.
 AC_PROG_CXX
@@ -129,6 +129,7 @@ PROJ_SUBDIRS="src/vscp/drivers/level1/can4vscp/linux\
  src/vscp/daemon/linux\
  src/vscp/vscp-mkpasswd src/vscp/uvscpd\
  src/vscp/vscpcmd src/vscp/drivers/level2/sim/linux"
+
 AC_SUBST(PROJ_SUBDIRS)
 PROJ_SUBDIRS_GUI="src/vscp/vscpworks"
 AC_SUBST(PROJ_SUBDIRS_GUI)
@@ -137,9 +138,10 @@ dnl
 dnl  Debugging mode
 dnl
 
-AC_ARG_ENABLE(debug,
-[  --enable-debug          debug mode (default disabled)],
-[vscp_debug=yes],[vscp_debug=no])
+
+dnl AC_ARG_ENABLE(debug,
+dnl [  --enable-debug/--disable-debug          debug mode (default disabled)],
+dnl [vscp_debug=yes],[vscp_debug=no])
 dnl test "${vscp_debug}" != "yes" && vscp_debug="no"
 
 dnl
@@ -158,7 +160,7 @@ dnl
 AM_OPTIONS_WXCONFIG
 reqwx=3.0.0
 
-if test "${vscp_debug}" = yes ; then
+if test "${ax_enable_debug}" = yes ; then
     echo 'checking for debug unicode wx-libs ...'
     AM_PATH_WXCONFIG($reqwx, [wxWin=1], [wxWin=0], --unicode=yes --debug=yes)
 else
@@ -268,13 +270,14 @@ dnl Give user some feedback
 echo
 echo   "           VSCP configuration"
 echo   "--------------------------------------------"
-echo   "VSCP version          : `./echo-version` (${PACKAGE_VERSION})"
+echo   "VSCP version          : `sh echo-version` (${PACKAGE_VERSION})"
 echo   "System                : `uname -a` "
 echo   "Architecture          : $(arch)"
 echo   "VSCP GUI Build        : ${vscp_gui}"
 echo   "VSCP install dir      : ${VSCPDIR}"
 
-if test "${vscp_debug}" = "yes"
+echo   "${ax_enable_debug}"
+if test "${ax_enable_debug}" = "yes"
 then
    echo "build flavour         : debug "
 else
@@ -297,8 +300,9 @@ To build VSCP and friends, type \'make\' followed by \'make install\'
 
  \"make\" -- builds VSCP & Friends.
  \"make install\" -- builds VSCP & Friends and install system.
- \"make config\" -- install/restore configuration files.
- \"make web-files\" -- install/restore web demo content including websocket examples.
-
+ \"make install-conf\" -- install/restore configuration files.
+ \"make web-install\" -- install/restore web demo content including websocket examples.
+ \"make deb\" -- builds VSCP & Friends Debian install files.
+ \"make clean\" -- clean project.
 "
 dnl vi: set et sts=4 sw=4 com=\:dnl
