@@ -11226,7 +11226,7 @@ static void delete_options( char **opts ) {
 
 int init_webserver( void )
 {
-    const char *options[] =
+    /*const char *options[] =
     {
         "document_root",
 	"/srv/vscp/web",
@@ -11260,10 +11260,13 @@ int init_webserver( void )
 	"no",
 
 	0
-    };
+    };*/
+    
+    
+    gpobj->logMsg( _("Starting web server...\n") );
 
     // This structure must be larger than the number of options to set
-    char *web_options[ web_getOptionCount() + 1 ][2];
+    const char **web_options = new const char *[ web_getOptionCount() + 1 ];
 
     struct web_callbacks callbacks;
     struct web_server_ports ports[32];
@@ -11273,332 +11276,279 @@ int init_webserver( void )
     // Set setup options from configuration
     int pos = 0;
 
-    web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_DOCUMENT_ROOT + 4 );
-    web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_document_root.mbc_str() );
-    pos++;
+    web_options[pos++] = web_strdup( VSCPDB_CONFIG_NAME_WEB_DOCUMENT_ROOT + 4 );
+    web_options[pos++] = web_strdup( (const char *)gpobj->m_web_document_root.mbc_str() );
 
-    web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_LISTENING_PORTS + 4 );
-    web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_listening_ports.mbc_str() );
-    pos++;
+    web_options[pos++] = web_strdup( VSCPDB_CONFIG_NAME_WEB_LISTENING_PORTS + 4 );
+    web_options[pos++] = web_strdup( (const char *)gpobj->m_web_listening_ports.mbc_str() );
 
-    web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_INDEX_FILES + 4 );
-    web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_index_files.mbc_str() );
-    pos++;
+    web_options[pos++] = web_strdup( VSCPDB_CONFIG_NAME_WEB_INDEX_FILES + 4 );
+    web_options[pos++] = web_strdup( (const char *)gpobj->m_web_index_files.mbc_str() );
 
-    web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_AUTHENTICATION_DOMAIN + 4 );
-    web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_authentication_domain.mbc_str() );
-    pos++;
+    web_options[pos++] = web_strdup( VSCPDB_CONFIG_NAME_WEB_AUTHENTICATION_DOMAIN + 4 );
+    web_options[pos++] = web_strdup( (const char *)gpobj->m_web_authentication_domain.mbc_str() );
 
     // Set only if not default value
     if ( !gpobj->m_enable_auth_domain_check ) {
-        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_ENABLE_AUTH_DOMAIN_CHECK + 4 );
-        web_options[pos][1] = web_strdup( "no" );
-        pos++;
+        web_options[pos++] = web_strdup( VSCPDB_CONFIG_NAME_WEB_ENABLE_AUTH_DOMAIN_CHECK + 4 );
+        web_options[pos++] = web_strdup( "no" );
     }
 
-    web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_SSL_CERTIFICAT + 4 );
-    web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_ssl_certificate.mbc_str() );
-    pos++;
+    web_options[pos++] = web_strdup( VSCPDB_CONFIG_NAME_WEB_SSL_CERTIFICATE + 4 );
+    web_options[pos++] = web_strdup( (const char *)gpobj->m_web_ssl_certificate.mbc_str() );
 
-    web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_SSL_CERTIFICAT_CHAIN + 4 );
-    web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_ssl_certificate_chain.mbc_str() );
-    pos++;
+    web_options[pos++] = web_strdup( VSCPDB_CONFIG_NAME_WEB_SSL_CERTIFICAT_CHAIN + 4 );
+    web_options[pos++] = web_strdup( (const char *)gpobj->m_web_ssl_certificate_chain.mbc_str() );
 
     // Set only if not default value
     if ( gpobj->m_web_ssl_verify_peer ) {
-        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_SSL_VERIFY_PEER + 4 );
-        web_options[pos][1] = web_strdup( "yes" );
-        pos++;
+        web_options[pos++] = web_strdup( VSCPDB_CONFIG_NAME_WEB_SSL_VERIFY_PEER + 4 );
+        web_options[pos++] = web_strdup( "yes" );
     }
 
     if ( gpobj->m_web_ssl_ca_path.Length() ) {
-        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_SSL_CA_PATH + 4 );
-        web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_ssl_ca_path.mbc_str() );
-        pos++;
+        web_options[pos++] = web_strdup( VSCPDB_CONFIG_NAME_WEB_SSL_CA_PATH + 4 );
+        web_options[pos++] = web_strdup( (const char *)gpobj->m_web_ssl_ca_path.mbc_str() );
     }
 
     if ( gpobj->m_web_ssl_ca_file.Length() ) {
-        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_SSL_CA_FILE + 4 );
-        web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_ssl_ca_file.mbc_str() );
-        pos++;
+        web_options[pos++] = web_strdup( VSCPDB_CONFIG_NAME_WEB_SSL_CA_FILE + 4 );
+        web_options[pos++] = web_strdup( (const char *)gpobj->m_web_ssl_ca_file.mbc_str() );
     }
 
     if ( gpobj->m_web_ssl_verify_depth !=
             atoi( VSCPDB_CONFIG_DEFAULT_WEB_SSL_VERIFY_DEPTH ) ) {
         wxString wxstr = wxString::Format( _("%d"), (int)gpobj->m_web_ssl_verify_depth );
-        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_SSL_VERIFY_DEPTH + 4 );
-        web_options[pos][1] = web_strdup( (const char *)wxstr.mbc_str() );
-        pos++;
+        web_options[pos++] = web_strdup( VSCPDB_CONFIG_NAME_WEB_SSL_VERIFY_DEPTH + 4 );
+        web_options[pos++] = web_strdup( (const char *)wxstr.mbc_str() );
     }
 
     if ( !gpobj->m_web_ssl_default_verify_paths ) {
-        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_SSL_DEFAULT_VERIFY_PATHS + 4 );
-        web_options[pos][1] = web_strdup( "no" );
-        pos++;
+        web_options[pos++] = web_strdup( VSCPDB_CONFIG_NAME_WEB_SSL_DEFAULT_VERIFY_PATHS + 4 );
+        web_options[pos++] = web_strdup( "no" );
     }
 
-    web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_SSL_CHIPHER_LIST + 4 );
-    web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_ssl_cipher_list.mbc_str() );
-    pos++;
+    web_options[pos++] = web_strdup( VSCPDB_CONFIG_NAME_WEB_SSL_CHIPHER_LIST + 4 );
+    web_options[pos++] = web_strdup( (const char *)gpobj->m_web_ssl_cipher_list.mbc_str() );
 
     if ( gpobj->m_web_ssl_protocol_version !=
             atoi( VSCPDB_CONFIG_DEFAULT_WEB_SSL_PROTOCOL_VERSION ) ) {
         wxString wxstr = wxString::Format( _("%d"), (int)gpobj->m_web_ssl_protocol_version );
-        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_SSL_PROTOCOL_VERSION + 4 );
-        web_options[pos][1] = web_strdup( (const char *)wxstr.mbc_str() );
-        pos++;
+        web_options[pos++] = web_strdup( VSCPDB_CONFIG_NAME_WEB_SSL_PROTOCOL_VERSION + 4 );
+        web_options[pos++] = web_strdup( (const char *)wxstr.mbc_str() );
     }
 
     if ( !gpobj->m_web_ssl_short_trust ) {
-        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_SSL_SHORT_TRUST + 4 );
-        web_options[pos][1] = web_strdup( "yes" );
-        pos++;
+        web_options[pos++] = web_strdup( VSCPDB_CONFIG_NAME_WEB_SSL_SHORT_TRUST + 4 );
+        web_options[pos++] = web_strdup( "yes" );
     }
 
     if ( gpobj->m_web_cgi_interpreter.Length() ) {
-        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_CGI_INTERPRETER + 4 );
-        web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_cgi_interpreter.mbc_str() );
-        pos++;
+        web_options[pos++] = web_strdup( VSCPDB_CONFIG_NAME_WEB_CGI_INTERPRETER + 4 );
+        web_options[pos++] = web_strdup( (const char *)gpobj->m_web_cgi_interpreter.mbc_str() );
     }
 
     if ( gpobj->m_web_cgi_patterns.Length() ) {
-        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_CGI_PATTERNS + 4 );
-        web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_cgi_patterns.mbc_str() );
-        pos++;
+        web_options[pos++] = web_strdup( VSCPDB_CONFIG_NAME_WEB_CGI_PATTERN + 4 );
+        web_options[pos++] = web_strdup( (const char *)gpobj->m_web_cgi_patterns.mbc_str() );
     }
 
     if ( gpobj->m_web_cgi_environment.Length() ) {
-        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_CGI_ENVIRONMENT + 4 );
-        web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_cgi_environment.mbc_str() );
-        pos++;
+        web_options[pos++] = web_strdup( VSCPDB_CONFIG_NAME_WEB_CGI_ENVIRONMENT + 4 );
+        web_options[pos++] = web_strdup( (const char *)gpobj->m_web_cgi_environment.mbc_str() );
     }
 
     if ( gpobj->m_web_protect_uri.Length() ) {
-        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_PROTECT_URI + 4 );
-        web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_protect_uri.mbc_str() );
-        pos++;
+        web_options[pos++] = web_strdup( VSCPDB_CONFIG_NAME_WEB_PROTECT_URI + 4 );
+        web_options[pos++] = web_strdup( (const char *)gpobj->m_web_protect_uri.mbc_str() );
     }
 
     if ( gpobj->m_web_trottle.Length() ) {
-        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_TROTTLE + 4 );
-        web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_trottle.mbc_str() );
-        pos++;
+        web_options[pos++] = web_strdup( VSCPDB_CONFIG_NAME_WEB_TROTTLE + 4 );
+        web_options[pos++] = web_strdup( (const char *)gpobj->m_web_trottle.mbc_str() );
     }
 
     if ( !gpobj->m_web_enable_directory_listing ) {
-        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_ENABLE_DIRECTORY_LISTING + 4 );
-        web_options[pos][1] = web_strdup( "no" );
-        pos++;
+        web_options[pos++] = web_strdup( VSCPDB_CONFIG_NAME_WEB_ENABLE_DIRECTORY_LISTING + 4 );
+        web_options[pos++] = web_strdup( "no" );
     }
 
     if ( gpobj->m_web_enable_keep_alive ) {
-        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_ENABLE_KEEP_ALIVE + 4 );
-        web_options[pos][1] = web_strdup( "yes" );
-        pos++;
+        web_options[pos++] = web_strdup( VSCPDB_CONFIG_NAME_WEB_ENABLE_KEEP_ALIVE + 4 );
+        web_options[pos++] = web_strdup( "yes" );
     }
 
     if ( gpobj->m_web_keep_alive_timeout_ms !=
             atol( VSCPDB_CONFIG_DEFAULT_WEB_KEEP_ALIVE_TIMEOUT_MS ) ) {
         wxString wxstr = wxString::Format( _("%ld"), (long)gpobj->m_web_ssl_protocol_version );
-        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_KEEP_ALIVE_TIMEOUT_MS + 4 );
-        web_options[pos][1] = web_strdup( (const char *)wxstr.mbc_str() );
-        pos++;
+        web_options[pos++] = web_strdup( VSCPDB_CONFIG_NAME_WEB_KEEP_ALIVE_TIMEOUT_MS + 4 );
+        web_options[pos++] = web_strdup( (const char *)wxstr.mbc_str() );
     }
 
     if ( gpobj->m_web_access_control_list.Length() ) {
-        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_LIST + 4 );
-        web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_access_control_list.mbc_str() );
-        pos++;
+        web_options[pos++] = web_strdup( VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_LIST + 4 );
+        web_options[pos++] = web_strdup( (const char *)gpobj->m_web_access_control_list.mbc_str() );
     }
 
     if ( gpobj->m_web_extra_mime_types.Length() ) {
-        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_EXTRA_MIME_TYPES + 4 );
-        web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_extra_mime_types.mbc_str() );
-        pos++;
+        web_options[pos++] = web_strdup( VSCPDB_CONFIG_NAME_WEB_EXTRA_MIME_TYPES + 4 );
+        web_options[pos++] = web_strdup( (const char *)gpobj->m_web_extra_mime_types.mbc_str() );
     }
 
     if ( gpobj->m_web_num_threads !=
             atoi( VSCPDB_CONFIG_DEFAULT_WEB_NUM_THREADS ) ) {
         wxString wxstr = wxString::Format( _("%d"), (int)gpobj->m_web_num_threads );
-        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_EXTRA_MIME_TYPES + 4 );
-        web_options[pos][1] = web_strdup( (const char *)wxstr.mbc_str() );
-        pos++;
+        web_options[pos++] = web_strdup( VSCPDB_CONFIG_NAME_WEB_EXTRA_MIME_TYPES + 4 );
+        web_options[pos++] = web_strdup( (const char *)wxstr.mbc_str() );
     }
 
     if ( gpobj->m_web_run_as_user.Length() ) {
-        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_RUN_AS_USER + 4 );
-        web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_run_as_user.mbc_str() );
-        pos++;
+        web_options[pos++] = web_strdup( VSCPDB_CONFIG_NAME_WEB_RUN_AS_USER + 4 );
+        web_options[pos++] = web_strdup( (const char *)gpobj->m_web_run_as_user.mbc_str() );
     }
 
     if ( gpobj->m_web_url_rewrite_patterns.Length() ) {
-        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_URL_REWRITE_PATTERNS + 4 );
-        web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_url_rewrite_patterns.mbc_str() );
-        pos++;
+        web_options[pos++] = web_strdup( VSCPDB_CONFIG_NAME_WEB_URL_REWRITE_PATTERNS + 4 );
+        web_options[pos++] = web_strdup( (const char *)gpobj->m_web_url_rewrite_patterns.mbc_str() );
     }
 
     if ( gpobj->m_web_hide_file_patterns.Length() ) {
-        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_URL_REWRITE_PATTERNS + 4 );
-        web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_hide_file_patterns.mbc_str() );
-        pos++;
+        web_options[pos++] = web_strdup( VSCPDB_CONFIG_NAME_WEB_URL_REWRITE_PATTERNS + 4 );
+        web_options[pos++] = web_strdup( (const char *)gpobj->m_web_hide_file_patterns.mbc_str() );
     }
 
     if ( gpobj->m_web_request_timeout_ms !=
             atol( VSCPDB_CONFIG_DEFAULT_WEB_REQUEST_TIMEOUT_MS ) ) {
         wxString wxstr = wxString::Format( _("%ld"), (long)gpobj->m_web_request_timeout_ms );
-        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_REQUEST_TIMEOUT_MS + 4 );
-        web_options[pos][1] = web_strdup( (const char *)wxstr.mbc_str() );
-        pos++;
+        web_options[pos++] = web_strdup( VSCPDB_CONFIG_NAME_WEB_REQUEST_TIMEOUT_MS + 4 );
+        web_options[pos++] = web_strdup( (const char *)wxstr.mbc_str() );
     }
 
     if ( -1 != gpobj->m_web_linger_timeout_ms ) {
         wxString wxstr = wxString::Format( _("%ld"), (long)gpobj->m_web_linger_timeout_ms );
-        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_LINGER_TIMEOUT_MS + 4 );
-        web_options[pos][1] = web_strdup( (const char *)wxstr.mbc_str() );
-        pos++;
+        web_options[pos++] = web_strdup( VSCPDB_CONFIG_NAME_WEB_LINGER_TIMEOUT_MS + 4 );
+        web_options[pos++] = web_strdup( (const char *)wxstr.mbc_str() );
     }
 
     if ( !gpobj->m_web_decode_url ) {
-        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_DECODE_URL + 4 );
-        web_options[pos][1] = web_strdup( "no" );
-        pos++;
+        web_options[pos++] = web_strdup( VSCPDB_CONFIG_NAME_WEB_DECODE_URL + 4 );
+        web_options[pos++] = web_strdup( "no" );
     }
 
     if ( gpobj->m_web_global_auth_file.Length() ) {
-        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_GLOBAL_AUTHFILE + 4 );
-        web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_global_auth_file.mbc_str() );
-        pos++;
+        web_options[pos++] = web_strdup( VSCPDB_CONFIG_NAME_WEB_GLOBAL_AUTHFILE + 4 );
+        web_options[pos++] = web_strdup( (const char *)gpobj->m_web_global_auth_file.mbc_str() );
     }
 
     if ( gpobj->m_web_per_directory_auth_file.Length() ) {
-        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_PER_DIRECTORY_AUTH_FILE + 4 );
-        web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_per_directory_auth_file.mbc_str() );
-        pos++;
+        web_options[pos++] = web_strdup( VSCPDB_CONFIG_NAME_WEB_PER_DIRECTORY_AUTH_FILE + 4 );
+        web_options[pos++] = web_strdup( (const char *)gpobj->m_web_per_directory_auth_file.mbc_str() );
     }
 
     if ( gpobj->m_web_ssi_patterns.Length() ) {
-        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_SSI_PATTERNS + 4 );
-        web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_ssi_patterns.mbc_str() );
-        pos++;
+        web_options[pos++] = web_strdup( VSCPDB_CONFIG_NAME_WEB_SSI_PATTERNS + 4 );
+        web_options[pos++] = web_strdup( (const char *)gpobj->m_web_ssi_patterns.mbc_str() );
     }
 
     if ( gpobj->m_web_access_control_allow_origin.Length() ) {
-        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_ALLOW_ORIGIN + 4 );
-        web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_access_control_allow_origin.mbc_str() );
-        pos++;
+        web_options[pos++] = web_strdup( VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_ALLOW_ORIGIN + 4 );
+        web_options[pos++] = web_strdup( (const char *)gpobj->m_web_access_control_allow_origin.mbc_str() );
     }
 
     if ( gpobj->m_web_access_control_allow_methods.Length() ) {
-        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_ALLOW_METHODS + 4 );
-        web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_access_control_allow_methods.mbc_str() );
-        pos++;
+        web_options[pos++] = web_strdup( VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_ALLOW_METHODS + 4 );
+        web_options[pos++] = web_strdup( (const char *)gpobj->m_web_access_control_allow_methods.mbc_str() );
     }
 
     if ( gpobj->m_web_access_control_allow_headers.Length() ) {
-        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_ALLOW_HEADERS + 4 );
-        web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_access_control_allow_headers.mbc_str() );
-        pos++;
+        web_options[pos++] = web_strdup( VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_ALLOW_HEADERS + 4 );
+        web_options[pos++] = web_strdup( (const char *)gpobj->m_web_access_control_allow_headers.mbc_str() );
     }
 
     if ( gpobj->m_web_error_pages.Length() ) {
-        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_ERROR_PAGES + 4 );
-        web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_error_pages.mbc_str() );
-        pos++;
+        web_options[pos++] = web_strdup( VSCPDB_CONFIG_NAME_WEB_ERROR_PAGES + 4 );
+        web_options[pos++] = web_strdup( (const char *)gpobj->m_web_error_pages.mbc_str() );
     }
 
     if ( -1 != gpobj->m_web_tcp_nodelay ) {
         wxString wxstr = wxString::Format( _("%ld"), (long)gpobj->m_web_tcp_nodelay );
-        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_TCP_NO_DELAY + 4 );
-        web_options[pos][1] = web_strdup( (const char *)wxstr.mbc_str() );
-        pos++;
+        web_options[pos++] = web_strdup( VSCPDB_CONFIG_NAME_WEB_TCP_NO_DELAY + 4 );
+        web_options[pos++] = web_strdup( (const char *)wxstr.mbc_str() );
     }
 
     if ( gpobj->m_web_static_file_max_age !=
             atol( VSCPDB_CONFIG_DEFAULT_WEB_STATIC_FILE_MAX_AGE ) ) {
         wxString wxstr = wxString::Format( _("%ld"), (long)gpobj->m_web_static_file_max_age );
-        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_STATIC_FILE_MAX_AGE + 4 );
-        web_options[pos][1] = web_strdup( (const char *)wxstr.mbc_str() );
-        pos++;
+        web_options[pos++] = web_strdup( VSCPDB_CONFIG_NAME_WEB_STATIC_FILE_MAX_AGE + 4 );
+        web_options[pos++] = web_strdup( (const char *)wxstr.mbc_str() );
     }
 
     if ( -1 != gpobj->m_web_strict_transport_security_max_age ) {
         wxString wxstr = wxString::Format( _("%ld"), (long)gpobj->m_web_strict_transport_security_max_age );
-        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_STRICT_TRANSPORT_SECURITY_MAX_AGE + 4 );
-        web_options[pos][1] = web_strdup( (const char *)wxstr.mbc_str() );
-        pos++;
+        web_options[pos++] = web_strdup( VSCPDB_CONFIG_NAME_WEB_STRICT_TRANSPORT_SECURITY_MAX_AGE + 4 );
+        web_options[pos++] = web_strdup( (const char *)wxstr.mbc_str() );
     }
 
     if ( !gpobj->m_web_allow_sendfile_call ) {
-        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_ALLOW_SENDFILE_CALL + 4 );
-        web_options[pos][1] = web_strdup( "no" );
-        pos++;
+        web_options[pos++] = web_strdup( VSCPDB_CONFIG_NAME_WEB_ALLOW_SENDFILE_CALL + 4 );
+        web_options[pos++] = web_strdup( "no" );
     }
 
     if ( gpobj->m_web_additional_header.Length() ) {
-        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_ADDITIONAL_HEADERS + 4 );
-        web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_additional_header.mbc_str() );
-        pos++;
+        web_options[pos++] = web_strdup( VSCPDB_CONFIG_NAME_WEB_ADDITIONAL_HEADERS + 4 );
+        web_options[pos++] = web_strdup( (const char *)gpobj->m_web_additional_header.mbc_str() );
     }
 
     if ( gpobj->m_web_max_request_size !=
             atol( VSCPDB_CONFIG_DEFAULT_WEB_MAX_REQUEST_SIZE ) ) {
         wxString wxstr = wxString::Format( _("%ld"), (long)gpobj->m_web_max_request_size );
-        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_MAX_REQUEST_SIZE + 4 );
-        web_options[pos][1] = web_strdup( (const char *)wxstr.mbc_str() );
-        pos++;
+        web_options[pos++] = web_strdup( VSCPDB_CONFIG_NAME_WEB_MAX_REQUEST_SIZE + 4 );
+        web_options[pos++] = web_strdup( (const char *)wxstr.mbc_str() );
     }
 
     if ( gpobj->m_web_allow_index_script_resource ) {
-        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_ALLOW_INDEX_SCRIPT_RESOURCE + 4 );
-        web_options[pos][1] = web_strdup( "yes" );
-        pos++;
+        web_options[pos++] = web_strdup( VSCPDB_CONFIG_NAME_WEB_ALLOW_INDEX_SCRIPT_RESOURCE + 4 );
+        web_options[pos++] = web_strdup( "yes" );
     }
 
     if ( gpobj->m_web_duktape_script_patterns.Length() ) {
-        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_DUKTAPE_SCRIPT_PATTERNS + 4 );
-        web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_duktape_script_patterns.mbc_str() );
-        pos++;
+        web_options[pos++] = web_strdup( VSCPDB_CONFIG_NAME_WEB_DUKTAPE_SCRIPT_PATTERN + 4 );
+        web_options[pos++] = web_strdup( (const char *)gpobj->m_web_duktape_script_patterns.mbc_str() );
     }
 
     if ( gpobj->m_web_lua_preload_file.Length() ) {
-        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_LUA_PRELOAD_FILE + 4 );
-        web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_lua_preload_file.mbc_str() );
-        pos++;
+        web_options[pos++] = web_strdup( VSCPDB_CONFIG_NAME_WEB_LUA_PRELOAD_FILE + 4 );
+        web_options[pos++] = web_strdup( (const char *)gpobj->m_web_lua_preload_file.mbc_str() );
     }
 
     if ( gpobj->m_web_lua_script_patterns.Length() ) {
-        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_LUA_SCRIPT_PATTERNS + 4 );
-        web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_lua_script_patterns.mbc_str() );
-        pos++;
+        web_options[pos++] = web_strdup( VSCPDB_CONFIG_NAME_WEB_LUA_SCRIPT_PATTERN + 4 );
+        web_options[pos++] = web_strdup( (const char *)gpobj->m_web_lua_script_patterns.mbc_str() );
     }
 
     if ( gpobj->m_web_lua_server_page_patterns.Length() ) {
-        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_LUA_SERVER_PAGE_PATTERNS + 4 );
-        web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_lua_server_page_patterns.mbc_str() );
-        pos++;
+        web_options[pos++] = web_strdup( VSCPDB_CONFIG_NAME_WEB_LUA_SERVER_PAGE_PATTERN + 4 );
+        web_options[pos++] = web_strdup( (const char *)gpobj->m_web_lua_server_page_patterns.mbc_str() );
     }
 
     if ( gpobj->m_web_lua_websocket_patterns.Length() ) {
-        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_LUA_WEBSOCKET_PATTERNS + 4 );
-        web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_lua_websocket_patterns.mbc_str() );
-        pos++;
+        web_options[pos++] = web_strdup( VSCPDB_CONFIG_NAME_WEB_LUA_WEBSOCKET_PATTERN + 4 );
+        web_options[pos++] = web_strdup( (const char *)gpobj->m_web_lua_websocket_patterns.mbc_str() );
     }
 
     if ( gpobj->m_web_lua_background_script.Length() ) {
-        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_LUA_BACKGROUND_SCRIPT + 4 );
-        web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_lua_background_script.mbc_str() );
-        pos++;
+        web_options[pos++] = web_strdup( VSCPDB_CONFIG_NAME_WEB_LUA_BACKGROUND_SCRIPT + 4 );
+        web_options[pos++] = web_strdup( (const char *)gpobj->m_web_lua_background_script.mbc_str() );
     }
 
     if ( gpobj->m_web_lua_background_script_params.Length() ) {
-        web_options[pos][0] = web_strdup( VSCPDB_CONFIG_NAME_WEB_LUA_BACKGROUND_SCRIPT_PARAMS + 4 );
-        web_options[pos][1] = web_strdup( (const char *)gpobj->m_web_lua_background_script_params.mbc_str() );
-        pos++;
+        web_options[pos++] = web_strdup( VSCPDB_CONFIG_NAME_WEB_LUA_BACKGROUND_SCRIPT_PARAMS + 4 );
+        web_options[pos++] = web_strdup( (const char *)gpobj->m_web_lua_background_script_params.mbc_str() );
     }
 
     // Mark end
-    web_options[pos][0] = NULL;
-    web_options[pos][1] = NULL;
+    web_options[pos++] = NULL;
+    web_options[pos++] = NULL;
 
     // Setup callbacks
     memset( &callbacks, 0, sizeof( callbacks ) );
@@ -11607,17 +11557,17 @@ int init_webserver( void )
     callbacks.log_access = log_access;
 
     // Start server
-    gpobj->m_web_ctx = web_start( &callbacks, 0, options );
+    gpobj->m_web_ctx = web_start( &callbacks, 0, (const char **)web_options );
 
     // Delete allocated option data
     pos = 0;
-    while ( NULL != web_options[pos][0] ) {
-        web_free( (void *)web_options[pos][0] );
-        web_options[pos][0] = NULL;
-        web_free( (void *)web_options[pos][1] );
-        web_options[pos][1] = NULL;
+    while ( NULL != web_options[pos] ) {
+        web_free( (void *)web_options[pos] );
+        web_options[pos] = NULL;
         pos++;
     }
+    
+    delete [] web_options;
 
     // Check return value:
     if ( NULL == gpobj->m_web_ctx ) {

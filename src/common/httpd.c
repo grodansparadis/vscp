@@ -21648,7 +21648,7 @@ web_start(const struct web_callbacks *callbacks,
             return NULL;
         }
         else if ( NULL == ( value = *options++ ) ) {
-            web_cry(fc(ctx), "%s: option value cannot be NULL", name);
+            web_cry( fc(ctx), "%s: option value cannot be NULL", name );
             free_context(ctx);
             pthread_setspecific(sTlsKey, NULL);
             return NULL;

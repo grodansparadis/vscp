@@ -5829,7 +5829,7 @@ bool CVariableStorage::putStockVariable( CVSCPVariable& var,
     
     if ( lcname.StartsWith( _("vscp.websrv.ssl_certificat") ) ) {
         gpobj->m_web_ssl_certificate = var.getValue();
-        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_SSL_CERTIFICAT), 
+        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_SSL_CERTIFICATE), 
                                                     var.getValue() );
     }
     
@@ -5883,7 +5883,7 @@ bool CVariableStorage::putStockVariable( CVSCPVariable& var,
     
     if ( lcname.StartsWith( _("vscp.websrv.ssl_short_trust") ) ) {
         var.getValue( &gpobj->m_web_ssl_short_trust );
-        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_SSL_SHORT_TRUST), 
+        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_SSL_SHORT_TRUST),
                              gpobj->m_web_ssl_short_trust ? "1" : "0" );
     }
     
@@ -5895,7 +5895,7 @@ bool CVariableStorage::putStockVariable( CVSCPVariable& var,
     
     if ( lcname.StartsWith( _("vscp.websrv.cgi_patterns") ) ) {
         gpobj->m_web_cgi_patterns = var.getValue();
-        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_CGI_PATTERNS), 
+        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_CGI_PATTERN), 
                                                     var.getValue() );
     }
     
@@ -6076,7 +6076,7 @@ bool CVariableStorage::putStockVariable( CVSCPVariable& var,
     
     if ( lcname.StartsWith( _("vscp.websrv.duktape_script_patterns") ) ) {
         gpobj->m_web_duktape_script_patterns = var.getValue();
-        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_DUKTAPE_SCRIPT_PATTERNS), 
+        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_DUKTAPE_SCRIPT_PATTERN), 
                                                     var.getValue() );
     }
     
@@ -6088,19 +6088,19 @@ bool CVariableStorage::putStockVariable( CVSCPVariable& var,
     
     if ( lcname.StartsWith( _("vscp.websrv.lua_script_patterns") ) ) {
         gpobj->m_web_lua_script_patterns = var.getValue();
-        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_LUA_SCRIPT_PATTERNS), 
+        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_LUA_SCRIPT_PATTERN), 
                                                     var.getValue() );
     }
     
     if ( lcname.StartsWith( _("vscp.websrv.lua_server_page_patterns") ) ) {
         gpobj->m_web_lua_server_page_patterns = var.getValue();
-        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_LUA_SERVER_PAGE_PATTERNS), 
+        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_LUA_SERVER_PAGE_PATTERN), 
                                                     var.getValue() );
     }
     
     if ( lcname.StartsWith( _("vscp.websrv.lua_websockets_patterns") ) ) {
         gpobj->m_web_lua_websocket_patterns = var.getValue();
-        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_LUA_WEBSOCKET_PATTERNS), 
+        return gpobj->updateConfigurationRecordItem( _(VSCPDB_CONFIG_NAME_WEB_LUA_WEBSOCKET_PATTERN), 
                                                     var.getValue() );
     }
     

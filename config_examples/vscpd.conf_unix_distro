@@ -210,7 +210,7 @@
     -->
 
     <webserver enable="true"
-        document_root="/srv/vscp/www"
+        document_root="/srv/vscp/web"
         listening_ports="[::]:8888r,[::]:8843s,8884"
         index_files="index.xhtml,index.html,index.htm,index.lp,index.lsp,index.lua,index.cgi,index.shtml,index.php"
         authentication_domain="mydomain.com"

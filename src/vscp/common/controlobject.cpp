@@ -211,9 +211,9 @@ CControlObject::CControlObject()
     m_admin_allowfrom = _("*");
     m_vscptoken = _("Carpe diem quam minimum credula postero");
     vscp_hexStr2ByteArray( m_systemKey,
-                                    32,
-                                    "A4A86F7D7E119BA3F0CD06881E371B989B"
-                                    "33B6D606A863B633EF529D64544F8E" );
+                                32,
+                                "A4A86F7D7E119BA3F0CD06881E371B989B"
+                                "33B6D606A863B633EF529D64544F8E" );
 
     m_nConfiguration = 1;       // Default configuration record is read.
 
@@ -339,7 +339,7 @@ CControlObject::CControlObject()
     m_web_linger_timeout_ms = -1; // Do not set
     m_web_decode_url = true;
     m_web_ssi_patterns = _("");
-    m_web_access_control_allow_origin = _("*");
+    m_web_access_control_allow_origin = _("*"); 
     m_web_access_control_allow_methods = _("*");
     m_web_access_control_allow_headers = _("*");
     m_web_error_pages = _("");
@@ -4536,7 +4536,7 @@ void CControlObject::addDeafultConfigValues( void )
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_INDEX_FILES, VSCPDB_CONFIG_DEFAULT_WEB_INDEX_FILES );
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_AUTHENTICATION_DOMAIN, VSCPDB_CONFIG_DEFAULT_WEB_AUTHENTICATION_DOMAIN );
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_ENABLE_AUTH_DOMAIN_CHECK, VSCPDB_CONFIG_DEFAULT_WEB_ENABLE_AUTH_DOMAIN_CHECK );
-    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_SSL_CERTIFICAT, VSCPDB_CONFIG_DEFAULT_WEB_SSL_CERTIFICAT );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_SSL_CERTIFICATE, VSCPDB_CONFIG_DEFAULT_WEB_SSL_CERTIFICATE );
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_SSL_CERTIFICAT_CHAIN, VSCPDB_CONFIG_DEFAULT_WEB_SSL_CERTIFICAT_CHAIN );
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_SSL_VERIFY_PEER, VSCPDB_CONFIG_DEFAULT_WEB_SSL_VERIFY_PEER );
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_SSL_CA_PATH, VSCPDB_CONFIG_DEFAULT_WEB_SSL_CA_PATH );
@@ -4546,7 +4546,7 @@ void CControlObject::addDeafultConfigValues( void )
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_SSL_CHIPHER_LIST, VSCPDB_CONFIG_DEFAULT_WEB_SSL_CHIPHER_LIST );
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_SSL_PROTOCOL_VERSION, VSCPDB_CONFIG_DEFAULT_WEB_SSL_PROTOCOL_VERSION );
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_SSL_SHORT_TRUST, VSCPDB_CONFIG_DEFAULT_WEB_SSL_SHORT_TRUST );
-    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_CGI_PATTERNS, VSCPDB_CONFIG_DEFAULT_WEB_CGI_PATTERNS );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_CGI_PATTERN, VSCPDB_CONFIG_DEFAULT_WEB_CGI_PATTERN );
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_CGI_INTERPRETER, VSCPDB_CONFIG_DEFAULT_WEB_CGI_INTERPRETER );
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_CGI_ENVIRONMENT, VSCPDB_CONFIG_DEFAULT_WEB_CGI_ENVIRONMENT );
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_PROTECT_URI, VSCPDB_CONFIG_DEFAULT_WEB_PROTECT_URI );
@@ -4576,11 +4576,11 @@ void CControlObject::addDeafultConfigValues( void )
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_ADDITIONAL_HEADERS, VSCPDB_CONFIG_DEFAULT_WEB_ADDITIONAL_HEADERS );
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_MAX_REQUEST_SIZE, VSCPDB_CONFIG_DEFAULT_WEB_MAX_REQUEST_SIZE );
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_ALLOW_INDEX_SCRIPT_RESOURCE, VSCPDB_CONFIG_DEFAULT_WEB_ALLOW_INDEX_SCRIPT_RESOURCE );
-    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_DUKTAPE_SCRIPT_PATTERNS, VSCPDB_CONFIG_DEFAULT_WEB_DUKTAPE_SCRIPT_PATTERNS );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_DUKTAPE_SCRIPT_PATTERN, VSCPDB_CONFIG_DEFAULT_WEB_DUKTAPE_SCRIPT_PATTERN );
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_LUA_PRELOAD_FILE, VSCPDB_CONFIG_DEFAULT_WEB_LUA_PRELOAD_FILE );
-    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_LUA_SCRIPT_PATTERNS, VSCPDB_CONFIG_DEFAULT_WEB_LUA_SCRIPT_PATTERNS );
-    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_LUA_SERVER_PAGE_PATTERNS, VSCPDB_CONFIG_DEFAULT_WEB_LUA_SERVER_PAGE_PATTERNS );
-    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_LUA_WEBSOCKET_PATTERNS, VSCPDB_CONFIG_DEFAULT_WEB_LUA_WEBSOCKET_PATTERNS );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_LUA_SCRIPT_PATTERN, VSCPDB_CONFIG_DEFAULT_WEB_LUA_SCRIPT_PATTERN );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_LUA_SERVER_PAGE_PATTERN, VSCPDB_CONFIG_DEFAULT_WEB_LUA_SERVER_PAGE_PATTERN );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_LUA_WEBSOCKET_PATTERN, VSCPDB_CONFIG_DEFAULT_WEB_LUA_WEBSOCKET_PATTERN );
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_LUA_BACKGROUND_SCRIPT, VSCPDB_CONFIG_DEFAULT_WEB_LUA_BACKGROUND_SCRIPT );
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_WEB_LUA_BACKGROUND_SCRIPT_PARAMS, VSCPDB_CONFIG_DEFAULT_WEB_LUA_BACKGROUND_SCRIPT_PARAMS );
 
@@ -4904,7 +4904,7 @@ bool CControlObject::readConfigurationDB( void )
 
         // Path to cert file
         else if ( !vscp_strcasecmp( (const char * )pName,
-                        VSCPDB_CONFIG_NAME_WEB_SSL_CERTIFICAT )  ) {
+                        VSCPDB_CONFIG_NAME_WEB_SSL_CERTIFICATE )  ) {
             m_web_ssl_certificate = wxString::FromUTF8( (const char *)pValue );
         }
 
@@ -4985,7 +4985,7 @@ bool CControlObject::readConfigurationDB( void )
 
         // CGI pattern
         else if ( !vscp_strcasecmp( (const char * )pName,
-                        VSCPDB_CONFIG_NAME_WEB_CGI_PATTERNS )  ) {
+                        VSCPDB_CONFIG_NAME_WEB_CGI_PATTERN )  ) {
             m_web_cgi_patterns = wxString::FromUTF8( (const char *)pValue );
         }
 
@@ -5196,7 +5196,7 @@ bool CControlObject::readConfigurationDB( void )
 
         // Duktape script patterns
         else if ( !vscp_strcasecmp( (const char * )pName,
-                        VSCPDB_CONFIG_NAME_WEB_DUKTAPE_SCRIPT_PATTERNS )  ) {
+                        VSCPDB_CONFIG_NAME_WEB_DUKTAPE_SCRIPT_PATTERN )  ) {
             m_web_duktape_script_patterns = wxString::FromUTF8( (const char *)pValue );
         }
 
@@ -5208,19 +5208,19 @@ bool CControlObject::readConfigurationDB( void )
 
         // Lua script patterns
         else if ( !vscp_strcasecmp( (const char * )pName,
-                        VSCPDB_CONFIG_NAME_WEB_LUA_SCRIPT_PATTERNS )  ) {
+                        VSCPDB_CONFIG_NAME_WEB_LUA_SCRIPT_PATTERN )  ) {
             m_web_lua_script_patterns = wxString::FromUTF8( (const char *)pValue );
         }
 
         // Lua server page patterns
         else if ( !vscp_strcasecmp( (const char * )pName,
-                        VSCPDB_CONFIG_NAME_WEB_LUA_SERVER_PAGE_PATTERNS )  ) {
+                        VSCPDB_CONFIG_NAME_WEB_LUA_SERVER_PAGE_PATTERN )  ) {
             m_web_lua_server_page_patterns = wxString::FromUTF8( (const char *)pValue );
         }
 
         // Lua websocket patterns
         else if ( !vscp_strcasecmp( (const char * )pName,
-                        VSCPDB_CONFIG_NAME_WEB_LUA_WEBSOCKET_PATTERNS )  ) {
+                        VSCPDB_CONFIG_NAME_WEB_LUA_WEBSOCKET_PATTERN )  ) {
             m_web_lua_websocket_patterns = wxString::FromUTF8( (const char *)pValue );
         }
 
