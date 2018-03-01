@@ -4393,7 +4393,105 @@ xml_table_error:
     }
 
     return true;
+} // XML config
+
+///////////////////////////////////////////////////////////////////////////////
+// isDbTableExist
+//
+
+bool CControlObject::isDbTableExist( sqlite3 *db,
+                                          const wxString& strTblName  )
+{
+    sqlite3_stmt *pSelectStatement = NULL;
+    int iResult = SQLITE_ERROR;
+    bool rv = false;
+    
+    // Database file must be open
+    if ( NULL == db ) {
+        logMsg( _("isDbFieldExistent. Database file is not open.\n") );
+        return false;
+    }
+ 
+    wxString sql = "SELECT name FROM sqlite_master WHERE type='table' AND name='%s'";
+    sql = wxString::Format( sql, (const char *)strTblName.mbc_str() );
+    
+    iResult = sqlite3_prepare16_v2( db, 
+                                    (const char *)sql, 
+                                    -1, 
+                                    &pSelectStatement, 
+                                    0 );
+    
+    if ( ( iResult == SQLITE_OK ) && 
+         ( pSelectStatement != NULL ) ) {                   
+        
+        iResult = sqlite3_step( pSelectStatement );
+
+        // was found?
+        if ( iResult == SQLITE_ROW ) {
+            rv = true;
+            sqlite3_clear_bindings( pSelectStatement );
+            sqlite3_reset( pSelectStatement );
+        }
+    
+        iResult = sqlite3_finalize( pSelectStatement );
+    }
+    
+    return rv;
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// isDbFieldExist
+//
+
+bool CControlObject::isDbFieldExist( sqlite3 *db,
+                                          const wxString& strTblName,
+                                          const wxString& strFieldName )
+{
+    bool rv = false;
+    sqlite3_stmt *ppStmt;
+    char *pErrMsg = 0;
+    
+    // Database file must be open
+    if ( NULL == db ) {
+        logMsg( _("isDbFieldExist. Database file is not open.\n") );
+        return false;
+    }
+ 
+    wxString sql = "PRAGMA table_info(%s);";
+    sql = wxString::Format( sql, (const char *)strTblName.mbc_str() );
+    
+    if ( SQLITE_OK != sqlite3_prepare( m_db_vscp_daemon,
+                                        (const char *)sql.mbc_str(),
+                                        -1,
+                                        &ppStmt,
+                                        NULL ) ) {
+        logMsg( "isDbFieldExist: Failed to read VSCP settings database - prepare query." );
+        return false;
+    }
+
+    while ( SQLITE_ROW  == sqlite3_step( ppStmt ) ) {
+        
+        const unsigned char *p;
+        
+        // Get column name
+        if ( NULL == ( p = sqlite3_column_text( ppStmt, 1 ) ) ) {
+            continue;
+        }
+
+        // database version
+        if ( vscp_strcasecmp( (const char * )p, 
+                                (const char *)strFieldName.mbc_str() ) ) {
+            rv = true;
+            break;
+        }
+        
+    }
+    
+    sqlite3_finalize( ppStmt );
+    
+    return rv;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // updateConfigurationRecordItem

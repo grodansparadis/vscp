@@ -432,7 +432,20 @@ public:
       */
      bool doCreateConfigurationTable( void );
 
+     /*!
+      * Check if db table exists
+      */
+     bool isDbTableExist( sqlite3 *db,
+                                const wxString& strTblName  );
 
+     /*!
+      * Check if a field n the database exist. 
+      * Can be used to updated generations of tables
+      */
+     bool isDbFieldExist( sqlite3 *db,
+                                const wxString& strTblName,
+                                const wxString& strFieldName );
+     
      /*
       * Update field in settings table
       */
