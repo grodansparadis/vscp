@@ -51,7 +51,7 @@
 #define VSCP_ADDRESS_SEGMENT_CONTROLLER	    0x00
 #define VSCP_ADDRESS_NEW_NODE               0xff
 
-#define VSCP_MAX_DATA                       (512-25)    /* 487 bytes */
+#define VSCP_MAX_DATA                       (512)       /* was 487 */
 
 #define VSCP_LEVEL1                         0           /* Changed 151104  Was 1/2 */
 #define VSCP_LEVEL2                         1
@@ -72,11 +72,11 @@ extern "C" {
         
         /* Time block - Always UTC time */
         uint16_t year; 
-        uint8_t month;	/* 1-12 */
-        uint8_t day;	/* 1-31 */
-        uint8_t hour;	/* 0-23 */
-        uint8_t minute;	/* 0-59 */
-        uint8_t second;	/* 0-59 */
+        uint8_t month;	        /* 1-12 */
+        uint8_t day;	        /* 1-31 */
+        uint8_t hour;	        /* 0-23 */
+        uint8_t minute;	        /* 0-59 */
+        uint8_t second;	        /* 0-59 */
         
         uint32_t timestamp;     /* Relative time stamp for package in microseconds */
                                 /* ~71 minutes before roll over */
@@ -84,7 +84,7 @@ extern "C" {
         /* ----- CRC should be calculated from here to end + data block ----  */
         
         uint16_t head;          /* Bit 15   GUID is IP v.6 address. */
-	                            /* Bit 14   This is a dumb node. No MDF, register, nothing. */
+	                        /* Bit 14   This is a dumb node. No MDF, register, nothing. */
                                 /* Bit 8-13 = Reserved */
                                 /* bit 765  priority, Priority 0-7 where 0 is highest. */
                                 /* bit 4 = hard coded, true for a hard coded device. */
@@ -100,7 +100,7 @@ extern "C" {
         uint8_t GUID[ 16 ];     /* Node globally unique id MSB(0) -> LSB(15) */
         uint16_t sizeData;      /* Number of valid data bytes */
         
-        uint8_t *pdata;         /* Pointer to data. Max 487 (512- 25) bytes */
+        uint8_t *pdata;         /* Pointer to data. Max 512 bytes */
         
     } vscpEvent;
 
@@ -122,11 +122,11 @@ typedef struct {
     
     /* Time block - Always UTC time */
     uint16_t year; 
-    uint8_t month;	/* 1-12 */
-    uint8_t day;	/* 1-31 */
-    uint8_t hour;	/* 0-23 */
-    uint8_t minute;	/* 0-59 */
-    uint8_t second;	/* 0-59 */
+    uint8_t month;	            /* 1-12 */
+    uint8_t day;	            /* 1-31 */
+    uint8_t hour;	            /* 0-23 */
+    uint8_t minute;	            /* 0-59 */
+    uint8_t second;	            /* 0-59 */
     
     uint32_t timestamp;             /* Relative time stamp for package in microseconds. */
                                     /* ~71 minutes before roll over */
@@ -149,7 +149,7 @@ typedef struct {
     uint8_t  GUID[ 16 ];            /* Node globally unique id MSB(0) -> LSB(15)    */
     uint16_t sizeData;              /* Number of valid data bytes		            */
 
-    uint8_t  data[VSCP_MAX_DATA];   /* Pointer to data. Max. 487 (512-25) bytes     */
+    uint8_t  data[VSCP_MAX_DATA];   /* Pointer to data. Max. 512 bytes     */
 
 } vscpEventEx;
 
