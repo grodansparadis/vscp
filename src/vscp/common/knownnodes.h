@@ -103,7 +103,7 @@ public:
         
         // Server
         m_capabilities = node.m_capabilities;
-        memcpy( (void *)m_ports, (void *)node.m_ports, 64 * sizeof( int ) );
+        memcpy( (void *)m_ports, (void *)node.m_ports, sizeof( m_ports ) );
         
         return *this;
     };

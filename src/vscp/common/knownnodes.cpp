@@ -98,7 +98,7 @@ CVSCPNode::CVSCPNode()
     m_clientID = 0;
     m_level = 0;
         
-    memset( m_ports, 0, sizeof(m_ports) * sizeof(int) );
+    memset( m_ports, 0, sizeof(m_ports) );
     
     m_ports[15] = VSCP_DEFAULT_TCP_PORT;
     m_ports[14] = VSCP_DEFAULT_UDP_PORT;    
