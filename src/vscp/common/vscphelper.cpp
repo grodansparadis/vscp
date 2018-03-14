@@ -1982,8 +1982,8 @@ bool vscp_convertLevel1MeasuremenToLevel2String( vscpEvent *pEvent )
     wxString strval;
     
     // Check pointers
-    if ( NULL != pEvent ) return false;
-    if ( NULL != pEvent->pdata ) return false;
+    if ( NULL == pEvent ) return false;
+    if ( NULL == pEvent->pdata ) return false;
     
     // Must be a measurement event
     if ( !vscp_isVSCPMeasurement( pEvent ) ) return false;
@@ -6553,18 +6553,26 @@ void vscp_getEncryptionTokenFromCode( uint8_t code, wxString& token )
 {
     switch ( code ) {
         
+        case VSCP_ENCRYPTION_NONE:
+            token = VSCP_ENCRYPTION_TOKEN_0;
+            break;
+
         case VSCP_ENCRYPTION_AES128:
             token = VSCP_ENCRYPTION_TOKEN_1;
+            break;
             
         case VSCP_ENCRYPTION_AES192:
             token = VSCP_ENCRYPTION_TOKEN_2;
+            break;
             
         case VSCP_ENCRYPTION_AES256:
             token = VSCP_ENCRYPTION_TOKEN_3;
+            break;
                     
-        default:    
-        case VSCP_ENCRYPTION_NONE:
+        default:
+            /* No encryption */
             token = VSCP_ENCRYPTION_TOKEN_0;
+            break;
     }
 }
 
