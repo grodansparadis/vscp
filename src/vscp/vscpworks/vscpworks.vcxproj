@@ -81,7 +81,7 @@
     <IncludePath>$(VSCP_HOME)/src/common;$(VSCP_HOME)/src/vscp/common;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
     <LibraryPath>$(LibraryPath)</LibraryPath>
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>./$(PlatformTarget)\$(Configuration)\</OutDir>
+    <OutDir>$(PlatformTarget)\$(Configuration)\</OutDir>
     <IntDir>$(PlatformTarget)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -174,7 +174,7 @@
       <PreprocessorDefinitions>NOPCH;WIN32;__WXMSW__;_WINDOWS;_UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
     <PostBuildEvent>
-      <Command>copy  /Y "$(TargetPath)" "$(VSCP_INSTALL)\files\$(PlatformTarget)"</Command>
+      <Command>copy  /Y "$(TargetPath)" "$(VSCP_INSTALL)\files\x64\vscpworks.exe"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -256,7 +256,6 @@
     <ClInclude Include="..\common\devitem.h" />
     <ClInclude Include="..\common\dllwrapper.h" />
     <ClInclude Include="..\common\guid.h" />
-    <ClInclude Include="..\common\knownnodes.h" />
     <ClInclude Include="..\common\mdf.h" />
     <ClInclude Include="..\common\register.h" />
     <ClInclude Include="..\common\version.h" />
@@ -311,6 +310,7 @@
     <ClCompile Include="..\..\common\crc8.c" />
     <ClCompile Include="..\..\common\fastpbkdf2.c" />
     <ClCompile Include="..\..\common\mongoose.c" />
+    <ClCompile Include="..\..\common\sqlite3.c" />
     <ClCompile Include="..\..\common\vscpbase64.c" />
     <ClCompile Include="..\..\common\vscpmd5.c" />
     <ClCompile Include="..\..\common\vscp_aes.c" />
@@ -318,7 +318,6 @@
     <ClCompile Include="..\common\canalsuperwrapper.cpp" />
     <ClCompile Include="..\common\dllwrapper.cpp" />
     <ClCompile Include="..\common\guid.cpp" />
-    <ClCompile Include="..\common\knownnodes.cpp" />
     <ClCompile Include="..\common\mdf.cpp" />
     <ClCompile Include="..\common\register.cpp" />
     <ClCompile Include="..\common\vscpeventhelper.cpp" />

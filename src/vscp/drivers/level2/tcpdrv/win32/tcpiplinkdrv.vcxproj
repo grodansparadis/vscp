@@ -240,7 +240,7 @@ copy  /Y "$(OutDir)/$(TargetName).lib" "$(VSCP_INSTALL)\files\drivers\$(Platform
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
       <AdditionalLibraryDirectories>$(WXWIN)\lib\vc_x64_lib;$(OPENSSL64)\lib\VC;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>ssleay32MT.lib;libeay32MT.lib;wsock32.lib;wpcap.lib;odbc32.lib;odbccp32.lib;wxexpat.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ssleay32MT.lib;libeay32MT.lib;libcrypto64MT.lib;libssl64MT.lib;wsock32.lib;wpcap.lib;odbc32.lib;odbccp32.lib;wxexpat.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>.\tcpiplinkdrv.def</ModuleDefinitionFile>
     </Link>
     <CustomBuildStep>
