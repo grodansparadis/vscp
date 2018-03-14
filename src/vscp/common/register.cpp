@@ -486,21 +486,11 @@ bool CUserRegisters::abstractionValueFromStringToRegs( CMDF_Abstraction *pAbstra
     switch ( pAbstraction->m_nType ) {
 
     case type_string: 
-        {            
-            uint8_t *pString = new uint8_t[ pAbstraction->m_nWidth ];
-            if ( NULL != pString ) {
-                
-                memset( pString, 0, sizeof( pString ) );
-                        
-                delete [] pString;        
-            }
-        }
+
         break;
 
     case type_boolval:
-        {
-
-        }
+    
         break;
 
     case type_bitfield:
