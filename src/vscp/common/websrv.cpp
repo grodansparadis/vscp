@@ -1545,7 +1545,8 @@ static int vscp_dm_list( struct web_connection *conn, void *cbdata )
                         (long)nFrom + i,
                         (long)nFrom + i + 1,
                         (long)nFrom + i );
-        if ( pElement->m_bStatic ) {
+        if ( ( NULL != pElement ) &&
+             ( pElement->m_bStatic ) ) {
             web_printf( conn,"<br>XML" );
         }
         web_printf( conn, "</td>");
@@ -4565,31 +4566,8 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
 
     if ( bNew ) {
 
-        web_printf(conn, "<input type=\"radio\" name=\"persistent\" value=\"true\" ");
-
-        if ( !bNew ) {
-            web_printf( conn,
-                        "%s",
-                        variable.isPersistent() ?
-                        "checked >Persistent " : ">Persistent ");
-        }
-        else {
-            web_printf (conn, "checked >Persistent ");
-        }
-
-        web_printf( conn, "<input type=\"radio\" name=\"persistent\" value=\"false\" ");
-
-        if ( !bNew ) {
-            web_printf( conn,
-                    "%s",
-                    !variable.isPersistent() ?
-                    "checked >Non persistent " : ">Non persistent ");
-        }
-        else {
-            web_printf( conn, ">Non persistent " );
-        }
-
-
+        web_printf(conn, "<input type=\"radio\" name=\"persistent\" value=\"true\" checked>Persistent ");
+        web_printf(conn, "<input type=\"radio\" name=\"persistent\" value=\"false\">Non persistent ");
     }
     else {
         web_printf( conn,
