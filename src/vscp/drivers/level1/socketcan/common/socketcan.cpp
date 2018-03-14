@@ -515,7 +515,7 @@ bool CCAN232Obj::getStatus( PCANALSTATUS pCanalStatus )
 	*rBuf = 0;
 	m_can232obj.m_comm.readBuf( rBuf, sizeof( rBuf ), -1 );
 	if ( 0x07 != *rBuf ) {
-		int flags;
+		unsigned int flags;
 
 		rBuf[ 3 ] = 0;				
 		sscanf( rBuf, "F%x", &flags );
@@ -761,7 +761,7 @@ void workThread( void *pThreadObject )
 bool can323ToCanal( char * p, PCANALMSG pMsg )
 {
 	bool rv = false;
-	int val;
+	unsigned int val;
 	short data_offset = 0;	// Offset to dlc byte
 	char save;
 
