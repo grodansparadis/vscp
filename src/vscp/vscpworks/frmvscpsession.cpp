@@ -780,7 +780,7 @@ void frmVSCPSession::CreateControls()
     
     wxMenu* itemMenu35 = new wxMenu;
     itemMenu35->Append( ID_MENUITEM_READ_REGISTER, 
-                            _("Read Regiister..."), 
+                            _("Read Register..."), 
                             wxEmptyString, 
                             wxITEM_NORMAL);
     itemMenu35->Append( ID_MENUITEM_WRITE_REGISTER, 
