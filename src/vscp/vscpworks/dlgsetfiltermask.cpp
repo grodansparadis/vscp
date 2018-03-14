@@ -398,60 +398,56 @@ void DialogSetfiltermask::OnButtonRemoveEventClick( wxCommandEvent& event )
 void DialogSetfiltermask::calculateFilterMask( void )
 {
     // Reset filter masks
-    m_classmask = 0;
+    m_classmask = 0xffff;
     m_classfilter = 0;
-    m_typemask = 0;
+    m_typemask = 0xffff;
     m_typefilter = 0;
 
     // Nothing to do if no items
     if ( 0 == m_listboxEvents->GetCount() ) return;
 
-    for ( int i=0; i<16; i++ ) {
+    for ( int i = 0; i < 16; i++ ) {
 
         uint32_t classtype = (uintptr_t)m_listboxEvents->GetClientData( 0 );
-        uint8_t lastClassBit = ( ( ( classtype >> 16 ) & (1<<i) ) >> i );
-        uint8_t lastTypeBit = ( ( ( classtype & 0xff ) & (1<<i) ) >> i );
+        uint8_t lastClassBit = (uint8_t)( ( classtype >> 16 ) & (1 << i ) );
+        uint8_t lastTypeBit  = (uint8_t)( ( classtype >>  0 ) & (1 << i ) );
 
-        for ( unsigned int j=0; j<m_listboxEvents->GetCount(); j++ ) {
+        for ( unsigned int j = 0; j < m_listboxEvents->GetCount(); j++ ) {
             
             classtype = (uintptr_t)m_listboxEvents->GetClientData( j );
-            uint16_t vscp_class = classtype >> 16;
-            uint16_t vscp_type = classtype & 0xff;
+            uint16_t vscp_class = ( classtype >> 16 ) & 0xffff;
+            uint16_t vscp_type  = ( classtype >>  0 ) & 0x00ff;
 
-            // Class
+            // Class mask
             // Is this bit different then the last one?
-            if ( ( vscp_class & ( 1<<i ) ) != lastClassBit ) {
+            if ( ( vscp_class & ( 1 << i ) ) != lastClassBit ) {
                 // Yes they are different. This means this
                 // is a don't care bit for the mask
                 // we set mask to zero
-                m_classmask &= ~( 1<<i );
-                lastClassBit = ~lastClassBit;
-            }
-            else {
-                // The bits are the same. This means this
-                // is a bit we care about. The mask should be 
-                // set to one and the filter to the bit value
-                m_classmask |= ( 1<<i );
-                m_classfilter |= ( vscp_class & ( 1<<i ) );
+                m_classmask &= ~( 1 << i );
             }
 
-            // Type
+            // Type mask
             // Is this bit different then the last one?
             if ( ( vscp_type & ( 1<<i ) ) != lastTypeBit ) {
                 // Yes they are different. This means this
                 // is a don't care bit for the mask
                 // we set mask to zero
-                m_typemask &= ~( 1<<i );
-                lastTypeBit = ~lastTypeBit;
-            }
-            else {
-                // The bits are the same. This means this
-                // is a bit we care about. The mask should be 
-                // set to one and the filter to the bit value
-                m_typemask |= ( 1<<i );
-                m_typefilter |= ( vscp_type & ( 1<<i ) );
+                m_typemask &= ~( 1 << i );
             }
         }
+
+        // Class filter
+        // If the class mask is set, consider the class value in the filter.
+        if ( 0 != ( m_classmask & ( 1 << i ) ) ) {
+            m_classfilter |= lastClassBit;
+        }
+
+        // Type filter
+        // If the type mask is set, consider the type value in the filter.
+        if ( 0 != ( m_typemask & ( 1 << i ) ) ) {
+            m_typefilter |= lastTypeBit;
+        }        
     }
 
     wxString strBuf;
@@ -461,4 +457,3 @@ void DialogSetfiltermask::calculateFilterMask( void )
     m_statusText->SetLabel( strBuf );
 
 }
-
