@@ -542,7 +542,7 @@ const char * CanalGetDriverInfo( void );
 #define CANAL_IFERROR_SEND_STORAGE          137 
 
 
-/*    * * * TCP/IP FAST mode interface constants    '/
+/*    * * * TCP/IP FAST mode interface constants    */
 
 /* FAST mode primary states (deprecated) */
 #define CANAL_BINARY_FRAME_TYPE_VSCP        0           /* VSCP event */
