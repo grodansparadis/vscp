@@ -4779,7 +4779,7 @@ uint32_t CVariableStorage::getStockVariable( const wxString& name,
     }
     
     if ( lcname.StartsWith( _("vscp.dm.loglevel") ) ) {
-        if (gpobj->m_debugFlags1 | VSCP_DEBUG1_DM ) {
+        if (gpobj->m_debugFlags1 & VSCP_DEBUG1_DM ) {
             var.setValue( "debug", true ); 
         }
         else {
@@ -6748,7 +6748,7 @@ bool CVariableStorage::putStockVariable( CVSCPVariable& var,
                 }
             }
             else if ( wxstr.StartsWith( _("count.error") ) ) {
-                if ( NULL == pdm ) {                
+                if ( NULL != pdm ) {                
                     pdm->m_errorCounter = 0;
                 }
             }
@@ -7193,7 +7193,7 @@ bool CVariableStorage::listEnumerationFromRegExp( varQuery *pq,
         
     }
     
-    if ( ( VARIABLE_INTERNAL | pq->tableType ) || ( VARIABLE_STOCK | pq->tableType )  ) {
+    if ( ( VARIABLE_INTERNAL & pq->tableType ) || ( VARIABLE_STOCK & pq->tableType )  ) {
         
         if ( SQLITE_OK != sqlite3_prepare_v2( m_db_vscp_internal_variable,
                                                 VSCPDB_VARIABLE_FIND_ALL,
@@ -7204,7 +7204,7 @@ bool CVariableStorage::listEnumerationFromRegExp( varQuery *pq,
         }
         
     }
-    else if ( VARIABLE_EXTERNAL | pq->tableType ) {
+    else if ( VARIABLE_EXTERNAL & pq->tableType ) {
         
         if ( SQLITE_OK != sqlite3_prepare_v2( m_db_vscp_external_variable,
                                                 VSCPDB_VARIABLE_FIND_ALL,
@@ -7233,7 +7233,7 @@ bool CVariableStorage::listItem( varQuery *pq, CVSCPVariable& variable )
 
  try_again:   
     
-    if ( ( VARIABLE_INTERNAL | pq->tableType ) || ( VARIABLE_STOCK | pq->tableType )  ) {
+    if ( ( VARIABLE_INTERNAL & pq->tableType ) || ( VARIABLE_STOCK & pq->tableType )  ) {
         
         if ( SQLITE_ROW != sqlite3_step( pq->ppStmt ) ) return false; 
                 
@@ -7246,7 +7246,7 @@ bool CVariableStorage::listItem( varQuery *pq, CVSCPVariable& variable )
         }
         
     }
-    else if ( VARIABLE_EXTERNAL | pq->tableType  ) {
+    else if ( VARIABLE_EXTERNAL & pq->tableType  ) {
         
         if ( SQLITE_ROW != sqlite3_step( pq->ppStmt ) ) return false;
         
