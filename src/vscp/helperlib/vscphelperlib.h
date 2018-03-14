@@ -272,7 +272,7 @@ DllExport int WINAPI EXPORT vscphlp_writeVscpDataToString( const vscpEvent *pEve
                                                     char *pstr,
                                                     size_t len,
                                                     int bUseHtmlBreak );
-DllExportint WINAPI EXPORT vscphlp_writeVscpDataWithSizeToString( const unsigned char *pData,
+DllExport int WINAPI EXPORT vscphlp_writeVscpDataWithSizeToString( const unsigned char *pData,
                                                                     const unsigned short sizeData,                                                                    
                                                                     char *pStr,
                                                                     size_t len,
