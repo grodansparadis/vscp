@@ -98,13 +98,18 @@ int Comm::comm_gets(char *Buffer, int max)
 {
     unsigned char c;
     int x = 0;
-    Buffer = NULL;
-    do {
-        ssize_t rv = read(m_fd, &c, 1);
-        Buffer[ x++ ] = c;
+    
+    if ((NULL != Buffer) &&
+        (0 < max)) {
+
+        do {
+            ssize_t rv = read(m_fd, &c, 1);
+            Buffer[ x++ ] = c;
+        }
+        while (isCharReady() && (x < max));
+        Buffer[x - 1] = 0;
     }
-    while (isCharReady() && (x < max));
-    Buffer[x - 1] = 0;
+
     return x;
 }
 

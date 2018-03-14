@@ -46,7 +46,7 @@ void hash_init( struct HashTable *pht )
   // Create the id list
   pht->pidlist = 
     (struct DoubleLinkedList *)malloc( sizeof( struct DoubleLinkedList ) );
-  pht->hashtbl[ i ]->nSortOrder = SORT_NUMERIC;
+  pht->pidlist->nSortOrder = SORT_NUMERIC;
 }
 
 //////////////////////////////////////////////////////////////////////////////

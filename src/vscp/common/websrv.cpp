@@ -996,7 +996,7 @@ vscp_password( struct web_connection *conn, void *cbdata )
     if ( NULL == reqinfo ) return 0;
 
     // password
-    const char *password;
+    const char *password = "";
     if ( NULL != reqinfo->query_string ) {
         if ( web_get_var( reqinfo->query_string,
                             strlen( reqinfo->query_string ),
@@ -9827,11 +9827,11 @@ vscp_log_list( struct web_connection *conn, void *cbdata )
     char buf[80];
     wxString sql = "select * from 'log' ";
     char *zErrMsg = NULL;
-    sqlite3_stmt *ppStmt;
+    sqlite3_stmt *ppStmt = NULL;
     long nFrom = 0;
     unsigned long nCount = 50;
     unsigned long upperLimit = 50;
-    long nTotalCount;
+    long nTotalCount = 0;
 
     // Check pointer
     if (NULL == conn) return 0;

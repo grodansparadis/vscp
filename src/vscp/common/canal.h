@@ -425,7 +425,7 @@ const char * CanalGetDriverInfo( void );
 #define CANAL_IDFLAG_SEND                   0x80000000  /* Reserved for use by application software to indicate send */
 
 /* Communication speeds */
-#define CANAL_BAUD_USER                     0           /* User specified (In CANAL i/f DLL).
+#define CANAL_BAUD_USER                     0           /* User specified (In CANAL i/f DLL). */
 #define CANAL_BAUD_1000                     1           /*   1 Mbit */
 #define CANAL_BAUD_800                      2           /* 800 Kbit */
 #define CANAL_BAUD_500                      3           /* 500 Kbit */
@@ -542,7 +542,7 @@ const char * CanalGetDriverInfo( void );
 #define CANAL_IFERROR_SEND_STORAGE          137 
 
 
-/*    * * * TCP/IP FAST mode interface constants    '/
+/*    * * * TCP/IP FAST mode interface constants    */
 
 /* FAST mode primary states (deprecated) */
 #define CANAL_BINARY_FRAME_TYPE_VSCP        0           /* VSCP event */

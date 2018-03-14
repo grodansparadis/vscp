@@ -125,10 +125,11 @@ enum wsFrameType wsParseHandshake(const uint8_t *inputFrame, size_t inputLength,
             inputPtr += strlen_P(connectionField);
             char *connectionValue = NULL;
             connectionValue = getUptoLinefeed(inputPtr);
-            strtolower(connectionValue);
             assert(connectionValue);
+            strtolower(connectionValue);
             if (strstr_P(connectionValue, upgrade) != NULL)
                 connectionFlag = TRUE;
+            free(connectionValue);
         } else
         if (memcmp_P(inputPtr, upgradeField, strlen_P(upgradeField)) == 0) {
             inputPtr += strlen_P(upgradeField);
@@ -138,6 +139,7 @@ enum wsFrameType wsParseHandshake(const uint8_t *inputFrame, size_t inputLength,
             assert(compare);
             if (memcmp_P(compare, websocket, strlen_P(websocket)) == 0)
                 upgradeFlag = TRUE;
+            free(compare);
         };
 
         inputPtr = strstr_P(inputPtr, rn) + 2;

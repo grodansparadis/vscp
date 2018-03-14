@@ -175,7 +175,7 @@ DllExport int WINAPI EXPORT vscphlp_setRemoteVariableMIME( long handle, const ch
 DllExport int WINAPI EXPORT vscphlp_getRemoteVariableHTML( long handle, const char *pName, char *pValue, size_t len );
 DllExport int WINAPI EXPORT vscphlp_setRemoteVariableHTML( long handle, const char *pName, char *pValue );
 
-DllExport int WINAPI EXPORT vscphlp_getRemoteVariableJavaScript( long handle, const char *pName, char *pValue, size_t len ):
+DllExport int WINAPI EXPORT vscphlp_getRemoteVariableJavaScript( long handle, const char *pName, char *pValue, size_t len );
 DllExport int WINAPI EXPORT vscphlp_setRemoteVariableJavaScript( long handle, const char *pName, char *pValue );
 
 DllExport int WINAPI EXPORT vscphlp_getRemoteVariableLUA( long handle, const char *pName, char *pValue, size_t len );
@@ -272,7 +272,7 @@ DllExport int WINAPI EXPORT vscphlp_writeVscpDataToString( const vscpEvent *pEve
                                                     char *pstr,
                                                     size_t len,
                                                     int bUseHtmlBreak );
-DllExportint WINAPI EXPORT vscphlp_writeVscpDataWithSizeToString( const unsigned char *pData,
+DllExport int WINAPI EXPORT vscphlp_writeVscpDataWithSizeToString( const unsigned char *pData,
                                                                     const unsigned short sizeData,                                                                    
                                                                     char *pStr,
                                                                     size_t len,
