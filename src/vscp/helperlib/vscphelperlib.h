@@ -175,7 +175,7 @@ DllExport int WINAPI EXPORT vscphlp_setRemoteVariableMIME( long handle, const ch
 DllExport int WINAPI EXPORT vscphlp_getRemoteVariableHTML( long handle, const char *pName, char *pValue, size_t len );
 DllExport int WINAPI EXPORT vscphlp_setRemoteVariableHTML( long handle, const char *pName, char *pValue );
 
-DllExport int WINAPI EXPORT vscphlp_getRemoteVariableJavaScript( long handle, const char *pName, char *pValue, size_t len ):
+DllExport int WINAPI EXPORT vscphlp_getRemoteVariableJavaScript( long handle, const char *pName, char *pValue, size_t len );
 DllExport int WINAPI EXPORT vscphlp_setRemoteVariableJavaScript( long handle, const char *pName, char *pValue );
 
 DllExport int WINAPI EXPORT vscphlp_getRemoteVariableLUA( long handle, const char *pName, char *pValue, size_t len );
