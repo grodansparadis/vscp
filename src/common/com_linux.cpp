@@ -240,14 +240,18 @@ void Comm::setParam( char *baud,
 int Comm::comm_gets( char *Buffer, int max )
 {
     unsigned char c;
-    int x=0;
-    Buffer = NULL;
-    do {
-        (void)read( m_fd, &c, 1 );
-        Buffer[ x++ ] = c;
-    } while( isCharReady() && ( x<max ) );
-    
-    Buffer[x-1]=0;
+    int x = 0;
+
+    if ((NULL != Buffer) &&
+        (0 < max)) {
+
+        do {
+            (void)read( m_fd, &c, 1 );
+            Buffer[ x++ ] = c;
+        } while( isCharReady() && ( x < max ) );
+        
+        Buffer[x - 1] = 0;
+    }
     
     return x;
 }
