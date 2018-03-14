@@ -8453,7 +8453,7 @@ vscp_configure_list( struct web_connection *conn, void *cbdata )
 
     web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Mongoose version:</b> ");
     web_printf( conn, "%s", (const char *)wxString::FromUTF8( MG_VERSION
-           " Copyright (c) 2013-2017 Cesanta Software Limited" ).mbc_str() );
+           " Copyright (c) 2013-2018 Cesanta Software Limited" ).mbc_str() );
     web_printf( conn, "<br>");
 
     if ( gpobj->m_variables.find( _("vscp.openssl.version.str"), variable ) ) {

@@ -1,5 +1,5 @@
 Summary
-========
+=======
 
 First of all. You don't need to build this package yourself. Everything here is 
 installed for you in the binary version (see https://sourceforge.net/projects/m2m/files/vscp/).
