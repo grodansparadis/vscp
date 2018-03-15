@@ -1543,7 +1543,7 @@ int VscpRemoteTcpIf::doCmdGetGUID( char *pGUID )
     // If receive loop active terminate
     if ( m_bModeReceiveLoop ) return VSCP_ERROR_PARAMETER;
         
-    wxString strCmd(_("SGID\r\n"));
+    wxString strCmd(_("GGID\r\n"));
     if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
         return VSCP_ERROR_ERROR;
     }
@@ -1593,7 +1593,7 @@ int VscpRemoteTcpIf::doCmdGetGUID( cguid& ifguid )
     // If receive loop active terminate
     if ( m_bModeReceiveLoop ) return VSCP_ERROR_PARAMETER;
         
-    wxString strCmd(_("SGID\r\n"));
+    wxString strCmd(_("GGID\r\n"));
     if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
         return VSCP_ERROR_ERROR;
     }
