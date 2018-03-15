@@ -62,19 +62,19 @@ enum {
     CLIENT_ITEM_INTERFACE_TYPE_CLIENT_INTERNAL,     // 1 Daemon internal 
     CLIENT_ITEM_INTERFACE_TYPE_DRIVER_LEVEL1,       // 2 Level I drivers
     CLIENT_ITEM_INTERFACE_TYPE_DRIVER_LEVEL2,       // 3 Level II drivers
-    CLIENT_ITEM_INTERFACE_TYPE_DRIVER_LEVEL3,       // 3 Level III drivers
-    CLIENT_ITEM_INTERFACE_TYPE_CLIENT_TCPIP,        // 4 TCP/IP interface
-    CLIENT_ITEM_INTERFACE_TYPE_CLIENT_UDP,          // 4 UDP interface
-    CLIENT_ITEM_INTERFACE_TYPE_CLIENT_WEB,          // 5 WEB interface
-    CLIENT_ITEM_INTERFACE_TYPE_CLIENT_WEBSOCKET,    // 6 Websocket interface
-    CLIENT_ITEM_INTERFACE_TYPE_CLIENT_REST,         // 7 REST interface
-    CLIENT_ITEM_INTERFACE_TYPE_CLIENT_MULTICAST,    // 8 Multicast interface
-    CLIENT_ITEM_INTERFACE_TYPE_CLIENT_MULTICAST_CH, // 9 Multicast channel interface
-    CLIENT_ITEM_INTERFACE_TYPE_CLIENT_MQTT,         // 10 MQTT interface
-    CLIENT_ITEM_INTERFACE_TYPE_CLIENT_COAP,         // 11 COAP interface
-    CLIENT_ITEM_INTERFACE_TYPE_CLIENT_DISCOVERY,    // 12 Discovery interface
-    CLIENT_ITEM_INTERFACE_TYPE_CLIENT_JAVASCRIPT,   // 13 JavaScript interface
-    CLIENT_ITEM_INTERFACE_TYPE_CLIENT_LUA,          // 14 LUA Script interface
+    CLIENT_ITEM_INTERFACE_TYPE_DRIVER_LEVEL3,       // 4 Level III drivers
+    CLIENT_ITEM_INTERFACE_TYPE_CLIENT_TCPIP,        // 5 TCP/IP interface
+    CLIENT_ITEM_INTERFACE_TYPE_CLIENT_UDP,          // 6 UDP interface
+    CLIENT_ITEM_INTERFACE_TYPE_CLIENT_WEB,          // 7 WEB interface
+    CLIENT_ITEM_INTERFACE_TYPE_CLIENT_WEBSOCKET,    // 8 Websocket interface
+    CLIENT_ITEM_INTERFACE_TYPE_CLIENT_REST,         // 9 REST interface
+    CLIENT_ITEM_INTERFACE_TYPE_CLIENT_MULTICAST,    // 10 Multicast interface
+    CLIENT_ITEM_INTERFACE_TYPE_CLIENT_MULTICAST_CH, // 11 Multicast channel interface
+    CLIENT_ITEM_INTERFACE_TYPE_CLIENT_MQTT,         // 12 MQTT interface
+    CLIENT_ITEM_INTERFACE_TYPE_CLIENT_COAP,         // 13 COAP interface
+    CLIENT_ITEM_INTERFACE_TYPE_CLIENT_DISCOVERY,    // 14 Discovery interface
+    CLIENT_ITEM_INTERFACE_TYPE_CLIENT_JAVASCRIPT,   // 15 JavaScript interface
+    CLIENT_ITEM_INTERFACE_TYPE_CLIENT_LUA,          // 16 LUA Script interface
 };
 
 // Description of each interface type (for web interface etc)
