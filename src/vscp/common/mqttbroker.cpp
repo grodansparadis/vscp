@@ -107,7 +107,7 @@ void *VSCPMQTTBrokerThread::Entry()
     m_pClientItem->m_type = CLIENT_ITEM_INTERFACE_TYPE_CLIENT_MQTT;
     m_pClientItem->m_strDeviceName = _("VSCP MQTT Broker. [");
     m_pClientItem->m_strDeviceName += m_pCtrlObject->m_strMQTTBrokerInterfaceAddress;
-    m_pClientItem->m_strDeviceName += _("] Started at ");
+    m_pClientItem->m_strDeviceName += _("]|Started at ");
     m_pClientItem->m_strDeviceName += wxDateTime::Now().FormatISODate();
     m_pClientItem->m_strDeviceName += _(" ");
     m_pClientItem->m_strDeviceName += wxDateTime::Now().FormatISOTime();

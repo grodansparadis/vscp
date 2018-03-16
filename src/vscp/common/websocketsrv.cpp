@@ -414,7 +414,8 @@ websock_new_session( const struct web_connection *conn )
     // This is an active client
     pSession->m_pClientItem->m_bOpen = false;
     pSession->m_pClientItem->m_type = CLIENT_ITEM_INTERFACE_TYPE_CLIENT_WEBSOCKET;
-    pSession->m_pClientItem->m_strDeviceName = _("Internal websocket client. ");
+    pSession->m_pClientItem->m_strDeviceName = _("Internal websocket client.");
+    pSession->m_pClientItem->m_strDeviceName += _("|Started at ");
     wxDateTime now = wxDateTime::Now();
     pSession->m_pClientItem->m_strDeviceName += now.FormatISODate();
     pSession->m_pClientItem->m_strDeviceName += _(" ");

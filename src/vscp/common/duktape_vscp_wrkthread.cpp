@@ -198,7 +198,8 @@ void *actionThread_JavaScript::Entry()
     // This is an active client
     m_pClientItem->m_bOpen = false;
     m_pClientItem->m_type = CLIENT_ITEM_INTERFACE_TYPE_CLIENT_JAVASCRIPT;
-    m_pClientItem->m_strDeviceName = _("Internal daemon JavaScript client. ");
+    m_pClientItem->m_strDeviceName = _("Internal daemon JavaScript client.");
+    m_pClientItem->m_strDeviceName += _("|Started at ");
     wxDateTime now = wxDateTime::Now();
     m_pClientItem->m_strDeviceName += now.FormatISODate();
     m_pClientItem->m_strDeviceName += _(" ");

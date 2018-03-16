@@ -120,7 +120,7 @@ void *deviceThread::Entry()
         m_pDeviceItem->m_pClientItem->m_type = CLIENT_ITEM_INTERFACE_TYPE_DRIVER_LEVEL3;
     }
     m_pDeviceItem->m_pClientItem->m_strDeviceName = m_pDeviceItem->m_strName;
-    m_pDeviceItem->m_pClientItem->m_strDeviceName += _(" Started at ");
+    m_pDeviceItem->m_pClientItem->m_strDeviceName += _("|Started at ");
     m_pDeviceItem->m_pClientItem->m_strDeviceName += wxDateTime::Now().FormatISODate();
     m_pDeviceItem->m_pClientItem->m_strDeviceName += _(" ");
     m_pDeviceItem->m_pClientItem->m_strDeviceName += wxDateTime::Now().FormatISOTime();

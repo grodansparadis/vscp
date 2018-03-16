@@ -1265,7 +1265,7 @@ bool frmScanforDevices::fetchIterfaceGUID(void)
 
                 int pos;
                 wxString strName;
-                if (wxNOT_FOUND != (pos = strDescription.Find(_(" ")))) {
+                if (wxNOT_FOUND != (pos = strDescription.Find(_("|")))) {
                     strName = strDescription.Left(pos);
                     strName.Trim();
                 }

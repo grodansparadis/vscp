@@ -513,7 +513,8 @@ restsrv_add_session( struct web_connection *conn, CUserItem *pUserItem )
     vscp_clearVSCPFilter(&pSession->m_pClientItem->m_filterVSCP);   // Clear filter
     pSession->m_pClientItem->m_bOpen = false;                       // Start out closed
     pSession->m_pClientItem->m_type = CLIENT_ITEM_INTERFACE_TYPE_CLIENT_WEBSOCKET;
-    pSession->m_pClientItem->m_strDeviceName = _("Internal REST server client. ");
+    pSession->m_pClientItem->m_strDeviceName = _("Internal REST server client.");
+    pSession->m_pClientItem->m_strDeviceName += _("|Started at ");
     wxDateTime now = wxDateTime::Now();
     pSession->m_pClientItem->m_strDeviceName += now.FormatISODate();
     pSession->m_pClientItem->m_strDeviceName += _(" ");

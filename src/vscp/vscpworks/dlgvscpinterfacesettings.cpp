@@ -608,7 +608,7 @@ void dlgVscpInterfaceSettings::OnButtonGetInterfacesClick( wxCommandEvent& event
                     // Name of interface
                     wxString strifName = tkz.GetNextToken();
                     int pos;
-                    if ( wxNOT_FOUND != ( pos = strifName.Find(_(" ") ) ) ) {
+                    if ( wxNOT_FOUND != ( pos = strifName.Find(_("|") ) ) ) {
                         strifName = strifName.Left( pos );
                         strifName.Trim();
                     }

@@ -197,7 +197,7 @@ void TCPClientThread::ev_handler( struct mg_connection *conn,
                 pClientItem->m_type =  CLIENT_ITEM_INTERFACE_TYPE_CLIENT_TCPIP;
                 pClientItem->m_strDeviceName = _("Remote TCP/IP Server. [");
                 pClientItem->m_strDeviceName += gpobj->m_strTcpInterfaceAddress;
-                pClientItem->m_strDeviceName += _("] Started at ");
+                pClientItem->m_strDeviceName += _("]|Started at ");
                 wxDateTime now = wxDateTime::Now();
                 pClientItem->m_strDeviceName += wxDateTime::Now().FormatISODate();
                 pClientItem->m_strDeviceName += _(" ");

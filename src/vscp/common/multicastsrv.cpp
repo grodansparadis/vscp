@@ -220,7 +220,7 @@ void *VSCPMulticastClientThread::Entry()
     m_pClientItem->m_strDeviceName = _("Multicast channel. [");
     m_pClientItem->m_strDeviceName += m_pChannel->m_gropupAddress;
     m_pClientItem->m_strDeviceName += wxString::Format(_(":%d"), m_pChannel->m_port );
-    m_pClientItem->m_strDeviceName += _("] Started at ");
+    m_pClientItem->m_strDeviceName += _("]|Started at ");
     m_pClientItem->m_strDeviceName += wxDateTime::Now().FormatISODate();
     m_pClientItem->m_strDeviceName += _(" ");
     m_pClientItem->m_strDeviceName += wxDateTime::Now().FormatISOTime();

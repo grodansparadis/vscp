@@ -195,7 +195,7 @@ void *daemonVSCPThread::Entry()
     pClientItem->m_bOpen = true;
     pClientItem->m_type =  CLIENT_ITEM_INTERFACE_TYPE_CLIENT_INTERNAL;
     pClientItem->m_strDeviceName = _("Internal VSCP Daemon Worker Client.");    
-    pClientItem->m_strDeviceName += _(" Started at ");
+    pClientItem->m_strDeviceName += _("|Started at ");
     pClientItem->m_strDeviceName += wxDateTime::Now().FormatISODate();
     pClientItem->m_strDeviceName += _(" ");
     pClientItem->m_strDeviceName += wxDateTime::Now().FormatISOTime();
@@ -879,7 +879,7 @@ void *discoveryVSCPThread::Entry()
     // This is an active client
     m_pClientItem->m_bOpen = true;
     m_pClientItem->m_type =  CLIENT_ITEM_INTERFACE_TYPE_CLIENT_INTERNAL;
-    m_pClientItem->m_strDeviceName = _("VSCP node discovery thread. Started at ");
+    m_pClientItem->m_strDeviceName = _("VSCP node discovery thread.|Started at ");
     wxDateTime now = wxDateTime::Now();
     m_pClientItem->m_strDeviceName += now.FormatISODate();
     m_pClientItem->m_strDeviceName += _(" ");

@@ -454,7 +454,8 @@ websrv_add_session( struct web_connection *conn )
     // This is an active client
     pSession->m_pClientItem->m_bOpen = false;
     pSession->m_pClientItem->m_type = CLIENT_ITEM_INTERFACE_TYPE_CLIENT_WEBSOCKET;
-    pSession->m_pClientItem->m_strDeviceName = _("Internal web server client. ");
+    pSession->m_pClientItem->m_strDeviceName = _("Internal web server client.");
+    pSession->m_pClientItem->m_strDeviceName += _("|Started at ");
     wxDateTime now = wxDateTime::Now();
     pSession->m_pClientItem->m_strDeviceName += now.FormatISODate();
     pSession->m_pClientItem->m_strDeviceName += _(" ");
@@ -1277,9 +1278,15 @@ static int vscp_interface( struct web_connection *conn, void *cbdata )
 
         // Interface name
         web_printf( conn, "<td>");
-        web_printf( conn, "%s",
-             (const char *)pItem->m_strDeviceName.Left(
-                                pItem->m_strDeviceName.Length()-30 ).mbc_str() );
+
+        int pos;
+        wxString strDeviceName;
+        if ( wxNOT_FOUND != ( pos = pItem->m_strDeviceName.Find( _( "|" ) ) ) ) {
+            strDeviceName = pItem->m_strDeviceName.Left( pos );
+            strDeviceName.Trim();
+        }
+
+        web_printf( conn, "%s", (const char *)strDeviceName.mbc_str() );
         web_printf( conn, "</td>");
 
         // Start date
