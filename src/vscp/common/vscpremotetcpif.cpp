@@ -1624,13 +1624,8 @@ int VscpRemoteTcpIf::doCmdSetGUID( const unsigned char *pGUID )
   
     // If receive loop active terminate
     if ( m_bModeReceiveLoop ) return VSCP_ERROR_PARAMETER;
-        
-    if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
-    m_mutexArray.Lock();
-    strLine = m_inputStrArray[ m_inputStrArray.Count() - 2 ];
-    m_mutexArray.Unlock();
     
-    strCmd.Printf( _("SGID %d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d\r\n"), 
+    strCmd.Printf( _("SGID %02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x\r\n"), 
                     pGUID[ 0 ],
                     pGUID[ 1 ],
                     pGUID[ 2 ],
@@ -1652,6 +1647,11 @@ int VscpRemoteTcpIf::doCmdSetGUID( const unsigned char *pGUID )
     if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
         return VSCP_ERROR_ERROR;
     }
+
+    if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
+    m_mutexArray.Lock();
+    strLine = m_inputStrArray[ m_inputStrArray.Count() - 2 ];
+    m_mutexArray.Unlock();
     
     return VSCP_ERROR_SUCCESS;
 }
