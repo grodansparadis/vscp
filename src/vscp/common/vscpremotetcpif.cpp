@@ -1647,11 +1647,6 @@ int VscpRemoteTcpIf::doCmdSetGUID( const unsigned char *pGUID )
     if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
         return VSCP_ERROR_ERROR;
     }
-
-    if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
-    m_mutexArray.Lock();
-    strLine = m_inputStrArray[ m_inputStrArray.Count() - 2 ];
-    m_mutexArray.Unlock();
     
     return VSCP_ERROR_SUCCESS;
 }

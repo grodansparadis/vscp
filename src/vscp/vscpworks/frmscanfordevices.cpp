@@ -1172,7 +1172,7 @@ void frmScanforDevices::openConfiguration( wxCommandEvent& event )
         subframe->m_csw.setInterface( m_vscpif.m_strHost,
                                         m_vscpif.m_strUser,
                                         m_vscpif.m_strPassword );
-        subframe->m_ifguid = m_ifguid;        
+        subframe->m_ifguid = m_ifguid;
 
         // Close our interface
         m_csw.doCmdClose();
@@ -1182,10 +1182,12 @@ void frmScanforDevices::openConfiguration( wxCommandEvent& event )
 
         subframe->m_comboNodeID->SetSelection( pElement->m_nodeid - 1 );
 
+        // Overwrite interface GUID to keep the same as in the previous connection
+        (void)subframe->m_csw.getTcpIpInterface()->doCmdSetGUID(subframe->m_ifguid);
+
         // subframe->OnInterfaceActivate( ev );
         wxCommandEvent ev;
         subframe->OnButtonUpdateClick( ev );
-
 
         // Move window on top
         subframe->Raise();

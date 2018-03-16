@@ -228,7 +228,7 @@ long CCanalSuperWrapper::doCmdOpen( const wxString& strInterface,
                 // We try to get the interface GUID. If we
                 // fail to get it we use the GUID assigned
                 // in the constructor
-                m_vscptcpif.doCmdGetGUID( (char *)m_GUID.m_id );
+                m_vscptcpif.doCmdGetGUID( m_GUID );
 
                 rv = 1661; // pretend to be driver
             }
