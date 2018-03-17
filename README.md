@@ -1,5 +1,10 @@
 <h1>VSCP & Friends</h1>
 
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](http://choosealicense.com/licenses/mit/) 
+[![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-blue.svg)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
+[![Release](https://img.shields.io/github/release/grodansparadis/vscp.svg)](https://github.com/grodansparadis/vscp/releases) 
+[![Travis Build Status](https://api.travis-ci.org/grodansparadis/vscp.svg?branch=master)](https://travis-ci.org/grodansparadis/vscp)  
+
 <img src="http://vscp.org/images/logo.png" width="300">
 
 <p>VSCP (Very Simple Control Protocol) is a framework for IoT/m2m tasks. The framework defines methods to
@@ -26,4 +31,4 @@ Also there is a <a href="https://github.com/grodansparadis/vscp_firmware"firmwar
 <a href="https://github.com/grodansparadis/vscp_html5">HTML5 websocket UI repository</a>.
 </p>
 
-[![Travis Build Status](https://api.travis-ci.org/grodansparadis/vscp.svg?branch=master)](https://travis-ci.org/grodansparadis/vscp)
+
