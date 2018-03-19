@@ -52,7 +52,7 @@ typedef int BOOL;
 #define VSCP_DLL_VERSION	1
 
 // This is the vendor string - Change to your own value
-#define VSCP_DLL_VENDOR "Grodans Paradis AB, Sweden, http://www.grodansparadis.com"
+#define VSCP_DLL_VENDOR "Grodans Paradis AB, Sweden, https://www.grodansparadis.com"
 
 // Max number of open connections
 #define VSCP_LEVEL1_INTERFACE_MAX_OPEN	256

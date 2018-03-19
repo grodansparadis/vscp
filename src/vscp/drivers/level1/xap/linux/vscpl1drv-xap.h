@@ -35,7 +35,7 @@
 #define DLL_VERSION		1
 
 // This is the vendor string - Change to your own value
-#define CANAL_DLL_VENDOR "eurosource, Sweden, http://www.eurosource.se"
+#define CANAL_DLL_VENDOR "eurosource, Sweden, https://www.eurosource.se"
 
 // Max number of open connections
 #define CANAL_XAP_DRIVER_MAX_OPEN	256

@@ -19,15 +19,15 @@
 // Standard connection (a VSCP daemon must be running here)
 #define INTERFACE1_HOST 	"127.0.0.1:9598"
 #define INTERFACE1_USER 	"admin"
-#define INTERFACE1_PASSWORD 	"secret"
+#define INTERFACE1_PASSWORD "secret"
 
 // ALternative connection form (a VSCP daemon must be running here)
-#define INTERFACE2 		"127.0.0.1:9598;admin;secret"
+#define INTERFACE2 		    "127.0.0.1:9598;admin;secret"
 #define INTERFACE2_FLAGS	0
 
 // If TEST_RECEIVE_LOOP is uncommented the rcvloop commands
 // will be tested. Must send five events externally to test
-#define TEST_RECEIVE_LOOP 
+//#define TEST_RECEIVE_LOOP 
 
 // Uncomment to test variable handling
 #define TEST_VARIABLE_HANDLING 
@@ -115,7 +115,7 @@ int main(int argc, char* argv[])
     // Get version on handle1
     unsigned char majorVer, minorVer, subminorVer;
     if ( VSCP_ERROR_SUCCESS == (rv = vscphlp_getVersion( handle1, &majorVer, &minorVer, &subminorVer ) ) ) {
-        if (verbose_info) printf( "channel 1: Major version=%d  Minor version=%d  Sub Minor verion=%d\n", 
+        if (verbose_info) printf( "channel 1: Major version = %d  Minor version = %d  Sub Minor verion = %d\n", 
                                     majorVer, 
                                     minorVer, 
                                     subminorVer );
@@ -131,6 +131,14 @@ int main(int argc, char* argv[])
     e.vscp_class = 10;  // CLASS1.MEASUREMENT
     e.vscp_type = 6;    // Temperature
     e.head = 0;
+    e.obid = 0;
+    e.timestamp = 0;
+    e.year = 2018;
+    e.month = 3;
+    e.day = 17;
+    e.hour = 12;
+    e.minute = 13;
+    e.second = 1;
     e.sizeData = 3;
     e.pdata = malloc( sizeof( unsigned char[3] ) );
     e.pdata[0] = 138;  // Six degrees Celsius from sensor 2
@@ -203,6 +211,13 @@ int main(int argc, char* argv[])
     ex.vscp_class = 10; // CLASS1.MEASUREMENT
     ex.vscp_type = 6;   // Temperature
     ex.head = 0;
+    e.timestamp = 0;
+    e.year = 2018;
+    e.month = 3;
+    e.day = 17;
+    e.hour = 12;
+    e.minute = 13;
+    e.second = 1;
     ex.sizeData = 3;
     ex.data[0] = 138;   // 6 degrees Celsius from sensor 2
     ex.data[1] = 0;
@@ -500,7 +515,7 @@ int main(int argc, char* argv[])
 
     if (verbose_info) {
         printf("* * * * Waiting for five received events on channel 2 * * * * *\n");
-        printf("You should send them. For example \"send 0,2,3,4,,,-\" in the tcp/ip interface will work \n");
+        printf("You should send them. For example \"send 0,20,3,,,,0:1:2:3:4:5:6:7:8:9:10:11:12:13:14:15,0,1,35\" in the tcp/ip interface will work \n");
     }
 
     int cntEvents = 0;

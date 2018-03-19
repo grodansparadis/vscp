@@ -204,8 +204,11 @@ void clientTcpIpWorkerThread::ev_handler( struct mg_connection *conn,
                     // Flag that event is available
                     if ( pTcpIfSession->m_bModeReceiveLoop ) pTcpIfSession->m_psemInputArray->Post(); 
                     
-                    pTcpIfSession->m_readBuffer = 
-                        pTcpIfSession->m_readBuffer.Right( pTcpIfSession->m_readBuffer.Length()-pos4lf-1 );
+                    //pTcpIfSession->m_readBuffer.Trim();
+                    if ( pTcpIfSession->m_readBuffer.Length() ) {
+                        pTcpIfSession->m_readBuffer = 
+                            pTcpIfSession->m_readBuffer.Right( pTcpIfSession->m_readBuffer.Length()-pos4lf-1 );
+                    }
                 }
             }
             break;
@@ -250,7 +253,7 @@ void *clientTcpIpWorkerThread::Entry()
 #ifdef DEBUG_LIB_VSCP_HELPER    
     wxLogDebug( _("clientTcpIpWorkerThread: After loop.") );
 #endif    
-
+    
     // Free resources
     mg_mgr_free( &m_mgrTcpIpConnection );
 

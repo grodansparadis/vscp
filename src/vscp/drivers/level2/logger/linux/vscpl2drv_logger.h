@@ -31,7 +31,7 @@
 #define VSCP_DLL_VERSION        0x000001
 
 // This is the vendor string - Change to your own value
-#define VSCP_DLL_VENDOR "Grodans Paradis AB, Sweden, http://www.grodansparadis.com"
+#define VSCP_DLL_VENDOR "Grodans Paradis AB, Sweden, https://www.grodansparadis.com"
 
 // Driver information.
 #define VSCP_LOGGER_DRIVERINFO "<?xml version = \"1.0\" encoding = \"UTF-8\" ?>" \

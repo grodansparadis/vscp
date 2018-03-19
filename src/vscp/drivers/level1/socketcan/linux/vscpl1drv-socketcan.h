@@ -31,7 +31,7 @@
 #define DLL_VERSION		1
 
 // This is the vendor string - Change to your own value
-#define CANAL_DLL_VENDOR "Grodans Paradis AB, Sweden, http://www.grodansparadis.com"
+#define CANAL_DLL_VENDOR "Grodans Paradis AB, Sweden, https://www.grodansparadis.com"
 
 // Max number of open connections
 #define CANAL_SOCKETCAN_DRIVER_MAX_OPEN	256

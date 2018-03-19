@@ -8587,6 +8587,19 @@ void *actionThread_VSCPSrv::Entry()
                 DAEMON_LOGMSG_NORMAL, 
                 DAEMON_LOGTYPE_DM  );
     }
+    
+    if ( CANAL_ERROR_SUCCESS != client.doCmdClose() ) {
+        // Failed to send event
+        gpobj->logMsg( _("[DM] ") + 
+          _( "actionThreadVSCPSrv: Unable to close connection to remote server : " ) +
+          m_strHostname +
+          _(" \n"), 
+                DAEMON_LOGMSG_NORMAL, 
+                DAEMON_LOGTYPE_DM  );
+    }
+    
+    // Give things some time to react
+    wxSleep( 2000 );
 
     return NULL;
 }
