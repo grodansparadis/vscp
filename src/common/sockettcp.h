@@ -67,8 +67,9 @@
 #define SOCKET_TIMEOUT_QUANTUM      (2000)     // Default read timout in ms
 #endif
 
+#ifndef INVALID_SOCKET
 #define INVALID_SOCKET              (-1)
-
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -149,17 +150,17 @@ struct stcp_context
     struct pollfd *listening_socket_fds;
     unsigned int num_listening_sockets;
 
-    pthread_mutex_t thread_mutex;       // Protects (max|num)_threads
+    // TODO pthread_mutex_t thread_mutex;       // Protects (max|num)_threads
 
     struct socket *client_socks;
     void **client_wait_events;
 
     unsigned int max_request_size;      // The max request size
 
-    pthread_t masterthreadid;           // The master thread ID
+    // TODO pthread_t masterthreadid;           // The master thread ID
     unsigned int
     cfg_worker_threads;                 // The number of configured worker threads.
-    pthread_t *worker_threadids;        // The worker thread IDs
+    // TODO pthread_t *worker_threadids;        // The worker thread IDs
 
     struct ttimers *timers;
     
