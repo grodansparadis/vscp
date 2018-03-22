@@ -92,6 +92,56 @@ typedef const void *SOCK_OPT_TYPE;
 
 #include "sockettcp.h"
 
+#if defined(_WIN32)
+#if !defined(_CRT_SECURE_NO_WARNINGS)
+#define _CRT_SECURE_NO_WARNINGS /* Disable deprecation warning in VS2005 */
+#endif
+#ifndef _WIN32_WINNT /* defined for tdm-gcc so we can use getnameinfo */
+#define _WIN32_WINNT 0x0501
+#endif
+#else
+#if defined(__GNUC__) && !defined(_GNU_SOURCE)
+#define _GNU_SOURCE /* for setgroups() */
+#endif
+#if defined(__linux__) && !defined(_XOPEN_SOURCE)
+#define _XOPEN_SOURCE 600 /* For flockfile() on Linux */
+#endif
+#ifndef _LARGEFILE_SOURCE
+#define _LARGEFILE_SOURCE /* For fseeko(), ftello() */
+#endif
+#ifndef _FILE_OFFSET_BITS
+#define _FILE_OFFSET_BITS 64 /* Use 64-bit file offsets by default */
+#endif
+#ifndef __STDC_FORMAT_MACROS
+#define __STDC_FORMAT_MACROS /* <inttypes.h> wants this for C++ */
+#endif
+#ifndef __STDC_LIMIT_MACROS
+#define __STDC_LIMIT_MACROS /* C++ wants that for INT64_MAX */
+#endif
+#ifdef __sun
+#define __EXTENSIONS__  /* to expose flockfile and friends in stdio.h */
+#define __inline inline /* not recognized on older compiler versions */
+#endif
+#endif
+
+#if defined(_MSC_VER)
+/* 'type cast' : conversion from 'int' to 'HANDLE' of greater size */
+#pragma warning(disable : 4306)
+/* conditional expression is constant: introduced by FD_SET(..) */
+#pragma warning(disable : 4127)
+/* non-constant aggregate initializer: issued due to missing C99 support */
+#pragma warning(disable : 4204)
+/* padding added after data member */
+#pragma warning(disable : 4820)
+/* not defined as a preprocessor macro, replacing with '0' for '#if/#elif' */
+#pragma warning(disable : 4668)
+/* no function prototype given: converting '()' to '(void)' */
+#pragma warning(disable : 4255)
+/* function has been selected for automatic inline expansion */
+#pragma warning(disable : 4711)
+#endif
+
+
 #define SHUTDOWN_RD (0)
 #define SHUTDOWN_WR (1)
 #define SHUTDOWN_BOTH (2)
