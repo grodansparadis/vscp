@@ -56,6 +56,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vscpl2drv_mqtt", "drivers\l
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vscpl1_vectorxldrv", "drivers\level1\vectorxl\win32\vectorxldrv.vcxproj", "{B9CD7757-37BD-4265-B7DB-187966B42712}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vscpd", "daemon\win32\vscpd.vcxproj", "{A56D92F6-9419-42F6-B1A0-CB5874D4D106}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM = Debug|ARM
@@ -493,9 +495,32 @@ Global
 		{B9CD7757-37BD-4265-B7DB-187966B42712}.Template|x64.ActiveCfg = Release|x64
 		{B9CD7757-37BD-4265-B7DB-187966B42712}.Template|x64.Build.0 = Release|x64
 		{B9CD7757-37BD-4265-B7DB-187966B42712}.Template|x86.ActiveCfg = Release|Win32
+		{A56D92F6-9419-42F6-B1A0-CB5874D4D106}.Debug|ARM.ActiveCfg = Debug|Win32
+		{A56D92F6-9419-42F6-B1A0-CB5874D4D106}.Debug|Win32.ActiveCfg = Debug|Win32
+		{A56D92F6-9419-42F6-B1A0-CB5874D4D106}.Debug|Win32.Build.0 = Debug|Win32
+		{A56D92F6-9419-42F6-B1A0-CB5874D4D106}.Debug|x64.ActiveCfg = Debug|Win32
+		{A56D92F6-9419-42F6-B1A0-CB5874D4D106}.Debug|x86.ActiveCfg = Debug|Win32
+		{A56D92F6-9419-42F6-B1A0-CB5874D4D106}.Debug|x86.Build.0 = Debug|Win32
+		{A56D92F6-9419-42F6-B1A0-CB5874D4D106}.Release|ARM.ActiveCfg = Release|Win32
+		{A56D92F6-9419-42F6-B1A0-CB5874D4D106}.Release|Win32.ActiveCfg = Release|Win32
+		{A56D92F6-9419-42F6-B1A0-CB5874D4D106}.Release|Win32.Build.0 = Release|Win32
+		{A56D92F6-9419-42F6-B1A0-CB5874D4D106}.Release|x64.ActiveCfg = Release|Win32
+		{A56D92F6-9419-42F6-B1A0-CB5874D4D106}.Release|x86.ActiveCfg = Release|Win32
+		{A56D92F6-9419-42F6-B1A0-CB5874D4D106}.Release|x86.Build.0 = Release|Win32
+		{A56D92F6-9419-42F6-B1A0-CB5874D4D106}.Template|ARM.ActiveCfg = Release|Win32
+		{A56D92F6-9419-42F6-B1A0-CB5874D4D106}.Template|ARM.Build.0 = Release|Win32
+		{A56D92F6-9419-42F6-B1A0-CB5874D4D106}.Template|Win32.ActiveCfg = Release|Win32
+		{A56D92F6-9419-42F6-B1A0-CB5874D4D106}.Template|Win32.Build.0 = Release|Win32
+		{A56D92F6-9419-42F6-B1A0-CB5874D4D106}.Template|x64.ActiveCfg = Release|Win32
+		{A56D92F6-9419-42F6-B1A0-CB5874D4D106}.Template|x64.Build.0 = Release|Win32
+		{A56D92F6-9419-42F6-B1A0-CB5874D4D106}.Template|x86.ActiveCfg = Release|Win32
+		{A56D92F6-9419-42F6-B1A0-CB5874D4D106}.Template|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{A56D92F6-9419-42F6-B1A0-CB5874D4D106} = {D7D8B881-F3C8-4988-A74E-000C84DD4E77}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D1970810-B8F4-4900-9F11-728BC1985BB4}

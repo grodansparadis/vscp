@@ -309,6 +309,7 @@
     <ClCompile Include="..\..\common\crc.c" />
     <ClCompile Include="..\..\common\crc8.c" />
     <ClCompile Include="..\..\common\fastpbkdf2.c" />
+    <ClCompile Include="..\..\common\httpd.c" />
     <ClCompile Include="..\..\common\mongoose.c" />
     <ClCompile Include="..\..\common\sqlite3.c" />
     <ClCompile Include="..\..\common\vscpbase64.c" />

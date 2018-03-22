@@ -2,18 +2,100 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="resources">
-      <UniqueIdentifier>{7eb92bae-2813-4110-89d1-083bca3dce1e}</UniqueIdentifier>
+      <UniqueIdentifier>{bc0d9b2a-cb49-4f38-a000-d7e6949024a5}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files">
-      <UniqueIdentifier>{d5237a16-9aeb-457b-947f-e41ad78ca7cd}</UniqueIdentifier>
+      <UniqueIdentifier>{a1945085-e51f-4fa2-a86a-02003ab27dce}</UniqueIdentifier>
       <Extensions>h;hpp;hxx;hm;inl</Extensions>
     </Filter>
     <Filter Include="Source Files">
-      <UniqueIdentifier>{c2c9d04c-8bf4-4de3-ba10-5d7909b35fe1}</UniqueIdentifier>
+      <UniqueIdentifier>{e7d613b2-bb28-451b-b643-9ef8081e6a3b}</UniqueIdentifier>
       <Extensions>cpp;c;cxx;rc;def;r;odl;idl;hpj;bat</Extensions>
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <None Include="wx\msw\blank.cur">
+      <Filter>resources</Filter>
+    </None>
+    <None Include="wx\msw\bullseye.cur">
+      <Filter>resources</Filter>
+    </None>
+    <None Include="wx\msw\hand.cur">
+      <Filter>resources</Filter>
+    </None>
+    <None Include="wx\msw\magnif1.cur">
+      <Filter>resources</Filter>
+    </None>
+    <None Include="wx\msw\noentry.cur">
+      <Filter>resources</Filter>
+    </None>
+    <None Include="wx\msw\pbrush.cur">
+      <Filter>resources</Filter>
+    </None>
+    <None Include="wx\msw\pencil.cur">
+      <Filter>resources</Filter>
+    </None>
+    <None Include="wx\msw\pntleft.cur">
+      <Filter>resources</Filter>
+    </None>
+    <None Include="wx\msw\pntright.cur">
+      <Filter>resources</Filter>
+    </None>
+    <None Include="wx\msw\query.cur">
+      <Filter>resources</Filter>
+    </None>
+    <None Include="wx\msw\rightarr.cur">
+      <Filter>resources</Filter>
+    </None>
+    <None Include="wx\msw\roller.cur">
+      <Filter>resources</Filter>
+    </None>
+    <None Include="wx\msw\size.cur">
+      <Filter>resources</Filter>
+    </None>
+    <None Include="wx\msw\watch1.cur">
+      <Filter>resources</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="wx\msw\cdrom.ico">
+      <Filter>resources</Filter>
+    </Image>
+    <Image Include="wx\msw\colours.bmp">
+      <Filter>resources</Filter>
+    </Image>
+    <Image Include="wx\msw\computer.ico">
+      <Filter>resources</Filter>
+    </Image>
+    <Image Include="wx\msw\csquery.bmp">
+      <Filter>resources</Filter>
+    </Image>
+    <Image Include="wx\msw\disable.bmp">
+      <Filter>resources</Filter>
+    </Image>
+    <Image Include="wx\msw\drive.ico">
+      <Filter>resources</Filter>
+    </Image>
+    <Image Include="wx\msw\file1.ico">
+      <Filter>resources</Filter>
+    </Image>
+    <Image Include="wx\msw\floppy.ico">
+      <Filter>resources</Filter>
+    </Image>
+    <Image Include="wx\msw\folder1.ico">
+      <Filter>resources</Filter>
+    </Image>
+    <Image Include="wx\msw\folder2.ico">
+      <Filter>resources</Filter>
+    </Image>
+    <Image Include="wx\msw\removble.ico">
+      <Filter>resources</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\common\actioncodes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\common\canal.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -53,13 +135,22 @@
     <ClInclude Include="..\..\common\interfacelist.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\common\md5.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\common\tcpipclientthread.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\common\udpthread.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\common\userlist.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\variablecodes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\common\version.h">
@@ -68,118 +159,19 @@
     <ClInclude Include="..\..\common\vscp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="vscpd.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\common\mongoose.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\common\strtokenizer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\common\frozen.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\common\slre.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\common\vscpeventhelper.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\common\vscphelper.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\common\webserver.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\common\tables.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\common\actioncodes.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\common\vscpwebserver.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\common\vscpremotetcpif.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\common\udpclientthread.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\common\vscpdlldef.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\common\vscp_class.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\common\vscp_type.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="vscpd.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\vscphelper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\common\vscpvariable.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\common\vscpautomation.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\common\vscpd_caps.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\common\crc8.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\common\guid.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\common\mdf.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\common\register.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\common\knownnodes.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\common\sqlite3.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\common\sqlite3ext.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\common\v7.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\common\fastpbkdf2.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\common\vscp_aes.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\common\vscpbase64.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\common\vscpmd5.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\common\httpd.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\common\httpd_duktape.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\common\httpd_lua.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\common\httpd_timers.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\common\json.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\common\lfs.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\common\dlfcn-win32\dlfcn.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -191,6 +183,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\common\crc.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\common\daemonvscp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\common\devicelist.cpp">
@@ -208,6 +203,15 @@
     <ClCompile Include="..\..\common\interfacelist.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\common\md5.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\common\tcpipclientthread.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\common\udpthread.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\common\userlist.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -217,151 +221,8 @@
     <ClCompile Include="..\..\common\vscphelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\common\guid.cpp">
+    <ClCompile Include="..\..\common\vscpvariable.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\common\randpassword.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\common\vscpeventhelper.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\common\mongoose.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\common\vscpremotetcpif.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\common\tables.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\common\crc8.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\common\mdf.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\common\register.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\common\knownnodes.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\common\sqlite3.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\common\sqlite3math.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\common\fastpbkdf2.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\common\vscp_aes.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\common\vscpbase64.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\common\vscpmd5.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\common\httpd.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\common\lfs.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\common\lsqlite3.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\common\lua_all.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\common\LuaXML_lib.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\common\dlfcn-win32\dlfcn.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <CustomBuild Include="wx\msw\blank.cur">
-      <Filter>resources</Filter>
-    </CustomBuild>
-    <CustomBuild Include="wx\msw\bullseye.cur">
-      <Filter>resources</Filter>
-    </CustomBuild>
-    <CustomBuild Include="wx\msw\cdrom.ico">
-      <Filter>resources</Filter>
-    </CustomBuild>
-    <CustomBuild Include="wx\msw\colours.bmp">
-      <Filter>resources</Filter>
-    </CustomBuild>
-    <CustomBuild Include="wx\msw\computer.ico">
-      <Filter>resources</Filter>
-    </CustomBuild>
-    <CustomBuild Include="wx\msw\csquery.bmp">
-      <Filter>resources</Filter>
-    </CustomBuild>
-    <CustomBuild Include="wx\msw\disable.bmp">
-      <Filter>resources</Filter>
-    </CustomBuild>
-    <CustomBuild Include="wx\msw\drive.ico">
-      <Filter>resources</Filter>
-    </CustomBuild>
-    <CustomBuild Include="wx\msw\file1.ico">
-      <Filter>resources</Filter>
-    </CustomBuild>
-    <CustomBuild Include="wx\msw\floppy.ico">
-      <Filter>resources</Filter>
-    </CustomBuild>
-    <CustomBuild Include="wx\msw\folder1.ico">
-      <Filter>resources</Filter>
-    </CustomBuild>
-    <CustomBuild Include="wx\msw\folder2.ico">
-      <Filter>resources</Filter>
-    </CustomBuild>
-    <CustomBuild Include="wx\msw\hand.cur">
-      <Filter>resources</Filter>
-    </CustomBuild>
-    <CustomBuild Include="wx\msw\magnif1.cur">
-      <Filter>resources</Filter>
-    </CustomBuild>
-    <CustomBuild Include="wx\msw\noentry.cur">
-      <Filter>resources</Filter>
-    </CustomBuild>
-    <CustomBuild Include="wx\msw\pbrush.cur">
-      <Filter>resources</Filter>
-    </CustomBuild>
-    <CustomBuild Include="wx\msw\pencil.cur">
-      <Filter>resources</Filter>
-    </CustomBuild>
-    <CustomBuild Include="wx\msw\pntleft.cur">
-      <Filter>resources</Filter>
-    </CustomBuild>
-    <CustomBuild Include="wx\msw\pntright.cur">
-      <Filter>resources</Filter>
-    </CustomBuild>
-    <CustomBuild Include="wx\msw\query.cur">
-      <Filter>resources</Filter>
-    </CustomBuild>
-    <CustomBuild Include="wx\msw\removble.ico">
-      <Filter>resources</Filter>
-    </CustomBuild>
-    <CustomBuild Include="wx\msw\rightarr.cur">
-      <Filter>resources</Filter>
-    </CustomBuild>
-    <CustomBuild Include="wx\msw\roller.cur">
-      <Filter>resources</Filter>
-    </CustomBuild>
-    <CustomBuild Include="wx\msw\size.cur">
-      <Filter>resources</Filter>
-    </CustomBuild>
-    <CustomBuild Include="wx\msw\watch1.cur">
-      <Filter>resources</Filter>
-    </CustomBuild>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\..\common\LuaXML.lua" />
   </ItemGroup>
 </Project>

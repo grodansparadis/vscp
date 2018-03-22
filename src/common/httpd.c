@@ -25,6 +25,7 @@
  *
  */
 
+
 #if defined(_WIN32)
 #if !defined(_CRT_SECURE_NO_WARNINGS)
 #define _CRT_SECURE_NO_WARNINGS // Disable deprecation warning in VS2005
@@ -165,7 +166,6 @@ void vscp_byteArray2HexStr( char *to, const unsigned char *p, size_t len );
 #include <signal.h>
 #include <fcntl.h>
 #include <dlfcn.h>
-
 
 #ifdef __clang__
 // When using -Weverything, clang does not accept it's own headers
