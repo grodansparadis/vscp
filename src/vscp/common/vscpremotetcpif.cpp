@@ -59,7 +59,7 @@
 //#define DEBUG_INNER_COMMUNICTION 1
 
 // Undef if debug messages is not wanted
-//#define DEBUG_LIB_VSCP_HELPER   1
+#define DEBUG_LIB_VSCP_HELPER   1
 
 class mg_poll_server;
 class mg_poll_server;
@@ -250,9 +250,11 @@ void *clientTcpIpWorkerThread::Entry()
         //wxMilliSleep( 10 );
     }
     
+    //wxSleep( 1000 );
+    
 #ifdef DEBUG_LIB_VSCP_HELPER    
     wxLogDebug( _("clientTcpIpWorkerThread: After loop.") );
-#endif    
+#endif        
     
     // Free resources
     mg_mgr_free( &m_mgrTcpIpConnection );

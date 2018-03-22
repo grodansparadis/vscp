@@ -1,6 +1,4 @@
 ﻿/*
- * Copyright (c) 2004-2013 Sergey Lyubka
- * Copyright (c) 2013-2017 the Civetweb developers
  * Copyright (c) 2017-2018 Ake Hedman, Grodans Paradis AB
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -19821,9 +19819,9 @@ web_connect_client_impl( const struct web_client_options *client_options,
     size_t ctx_size = ((sizeof(struct web_context) + 7) >> 3) << 3;
 
     conn = (struct web_connection *)web_calloc_ctx( 1,
-                                                conn_size + ctx_size
-                                                + max_req_size,
-                                                &common_client_context);
+                                                    conn_size + 
+                                                    ctx_size +
+                                                    max_req_size );
 
     if ( NULL == conn ) {
         web_snprintf( NULL,

@@ -1859,6 +1859,10 @@ void CControlObject::logMsg( const wxString& msgin,
 
 }
 
+/////////////////////////////////////////////////////////////////////////////
+// getCountRecordsDB
+//
+
 long CControlObject::getCountRecordsDB( sqlite3 *db, wxString& table )
 {
     long count = 0;

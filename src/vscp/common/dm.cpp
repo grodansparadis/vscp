@@ -8569,7 +8569,7 @@ void *actionThread_VSCPSrv::Entry()
         gpobj->logMsg( _("[DM] ") + 
             _( "actionThreadVSCPSrv: Unable to connect to remote server : " ) +
             m_strHostname + 
-            wxString::Format( _("Return code = %d"), rv ) +
+            wxString::Format( _(" Return code = %d"), rv ) +
             _(" \n"), 
                 DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM  );
         
@@ -8598,8 +8598,7 @@ void *actionThread_VSCPSrv::Entry()
                 DAEMON_LOGTYPE_DM  );
     }
     
-    // Give things some time to react
-    wxSleep( 2000 );
+    wxPrintf( "OK - Event sent to server %s.\n", (const char *)server.mbc_str() );
 
     return NULL;
 }
@@ -8611,7 +8610,7 @@ void *actionThread_VSCPSrv::Entry()
 
 void actionThread_VSCPSrv::OnExit()
 {
-
+    ;
 }
 
 

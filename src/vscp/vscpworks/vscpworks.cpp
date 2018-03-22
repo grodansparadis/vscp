@@ -102,6 +102,8 @@
 #include <vscp_type.h>
 #include "vscpworks.h"
 
+#include <sockettcp.h>
+
 // Global nodes info
 canal_nodeinfo g_nodesCANAL[ MAX_NUMBER_OF_NODES ];
 vscp_nodeinfo g_nodesVSCP[ MAX_NUMBER_OF_NODES ];
@@ -339,6 +341,26 @@ void VscpworksApp::Init()
     g_Config.bGuidWritable = false;
     g_Config.m_manufacturerId = 0;
     g_Config.m_manufacturerSubId = 0;
+    
+    char errbuf[200];
+    char buf[8192];
+    stcp_connection *conn;
+    conn = stcp_connect_client( "185.144.156.45", 9598, 0, errbuf, sizeof( errbuf ), 5 );
+    if ( NULL != conn ) {
+        
+        stcp_read( conn, buf, sizeof( buf ), 200 );
+        wxPrintf( buf );
+        
+        stcp_write( conn, "user admin\r\n", 12 );
+        stcp_read( conn, buf, sizeof( buf ), 200 );
+        wxPrintf( buf );
+        
+        stcp_write( conn, "pass secret\r\n", 13 );
+        stcp_read( conn, buf, sizeof( buf ), 200 );
+        wxPrintf( buf );
+        
+        stcp_close_connection( conn );
+    }
 }
 
 /*!
