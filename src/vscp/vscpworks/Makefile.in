@@ -111,6 +111,7 @@ VSCPWORKS_OBJECTS =  vscpworks.o \
 	register.o \
 	canalconfobj.o \
 	vscpmulticast.o \
+	sockettcp.o \
 	crc.o \
 	crc8.o \
 	vscp_aes.o \
@@ -268,6 +269,9 @@ vscp_aes.o: ../../common/vscp_aes.c ../../common/vscp_aes.h
 vscpbase64.o: ../../common/vscpbase64.c ../../common/vscpbase64.h
 	$(CC) $(CFLAGS) -c ../../common/vscpbase64.c -o $@
 
+sockettcp.o: ../../common/sockettcp.c ../../common/sockettcp.h
+	$(CC) $(CFLAGS) -c ../../common/sockettcp.c -o $@
+	
 crc.o: ../../common/crc.c ../../common/crc.h
 	$(CC) $(CFLAGS) -c ../../common/crc.c -o $@
 
