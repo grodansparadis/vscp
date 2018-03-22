@@ -32,13 +32,10 @@
 #include <errno.h>
 #include <signal.h>
 #include <fcntl.h>
-#include <dlfcn.h>
 #include <sys/errno.h>
 #include <sys/time.h>
-//#include <mach/clock.h>
-//#include <mach/mach.h>
-//#include <mach/mach_time.h>
-#include <assert.h>
+
+
 #include <time.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -50,9 +47,9 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <stdint.h>
-//#include <process.h>
-//#include <direct.h>
-//#include <io.h>
+
+#if !defined(_WIN32)
+
 #include <sys/wait.h>
 #include <sys/socket.h>
 #include <sys/poll.h>
@@ -72,10 +69,26 @@ typedef const void *SOCK_OPT_TYPE;
 #include <dirent.h>
 #define vsnprintf_impl vsnprintf
 
+#include <dlfcn.h>
+
 #include <poll.h> // AKHE
 
 #include <pthread.h>
 #include <unistd.h>
+
+#if !defined(SSL_LIB)
+#define SSL_LIB "libssl.so"
+#endif
+#if !defined(CRYPTO_LIB)
+#define CRYPTO_LIB "libcrypto.so"
+#endif
+
+#define INVALID_SOCKET (-1)
+#define INT64_FMT PRId64
+#define UINT64_FMT PRIu64
+#define WINCDECL
+
+#endif // unix block
 
 #include <openssl/ssl.h>
 #include <openssl/err.h> 
@@ -92,37 +105,343 @@ typedef const void *SOCK_OPT_TYPE;
 
 #include "sockettcp.h"
 
-#if defined(_WIN32)
-#if !defined(_CRT_SECURE_NO_WARNINGS)
-#define _CRT_SECURE_NO_WARNINGS /* Disable deprecation warning in VS2005 */
+#if defined(_WIN32)  
+
+#include <windows.h>
+#include <winsock2.h> /* DTL add for SO_EXCLUSIVE */
+#include <ws2tcpip.h>
+
+typedef const char *SOCK_OPT_TYPE;
+
+#if !defined(PATH_MAX)
+#define PATH_MAX (MAX_PATH)
 #endif
-#ifndef _WIN32_WINNT /* defined for tdm-gcc so we can use getnameinfo */
-#define _WIN32_WINNT 0x0501
+
+#if !defined(PATH_MAX)
+#define PATH_MAX (4096)
 #endif
+
+#ifndef _IN_PORT_T
+#ifndef in_port_t
+#define in_port_t u_short
+#endif
+#endif
+
+#include <process.h>
+#include <direct.h>
+#include <io.h>
+
+#define MAKEUQUAD(lo, hi)                                                      \
+	((uint64_t)(((uint32_t)(lo)) | ((uint64_t)((uint32_t)(hi))) << 32))
+#define RATE_DIFF (10000000) /* 100 nsecs */
+#define EPOCH_DIFF (MAKEUQUAD(0xd53e8000, 0x019db1de))
+#define SYS2UNIX_TIME(lo, hi)                                                  \
+	((time_t)((MAKEUQUAD((lo), (hi)) - EPOCH_DIFF) / RATE_DIFF))
+
+/* Visual Studio 6 does not know __func__ or __FUNCTION__
+ * The rest of MS compilers use __FUNCTION__, not C99 __func__
+ * Also use _strtoui64 on modern M$ compilers */
+#if defined(_MSC_VER)
+#if (_MSC_VER < 1300)
+#define STRX(x) #x
+#define STR(x) STRX(x)
+#define __func__ __FILE__ ":" STR(__LINE__)
+#define strtoull(x, y, z) ((unsigned __int64)_atoi64(x))
+#define strtoll(x, y, z) (_atoi64(x))
 #else
-#if defined(__GNUC__) && !defined(_GNU_SOURCE)
-#define _GNU_SOURCE /* for setgroups() */
+#define __func__ __FUNCTION__
+#define strtoull(x, y, z) (_strtoui64(x, y, z))
+#define strtoll(x, y, z) (_strtoi64(x, y, z))
 #endif
-#if defined(__linux__) && !defined(_XOPEN_SOURCE)
-#define _XOPEN_SOURCE 600 /* For flockfile() on Linux */
+#endif /* _MSC_VER */
+
+#define ERRNO ((int)(GetLastError()))
+#define NO_SOCKLEN_T
+
+#if defined(_WIN64) || defined(__MINGW64__)
+#define SSL_LIB "ssleay64.dll"
+#define CRYPTO_LIB "libeay64.dll"
+#else
+#define SSL_LIB "ssleay32.dll"
+#define CRYPTO_LIB "libeay32.dll"
 #endif
-#ifndef _LARGEFILE_SOURCE
-#define _LARGEFILE_SOURCE /* For fseeko(), ftello() */
+
+#define O_NONBLOCK (0)
+#ifndef W_OK
+#define W_OK (2) /* http://msdn.microsoft.com/en-us/library/1w06ktdy.aspx */
 #endif
-#ifndef _FILE_OFFSET_BITS
-#define _FILE_OFFSET_BITS 64 /* Use 64-bit file offsets by default */
+#if !defined(EWOULDBLOCK)
+#define EWOULDBLOCK WSAEWOULDBLOCK
+#endif /* !EWOULDBLOCK */
+#define _POSIX_
+#define INT64_FMT "I64d"
+#define UINT64_FMT "I64u"
+
+#define WINCDECL __cdecl
+#define vsnprintf_impl _vsnprintf
+#define access _access
+#define mg_sleep(x) (Sleep(x))
+
+#define pipe(x) _pipe(x, MG_BUF_LEN, _O_BINARY)
+#ifndef popen
+#define popen(x, y) (_popen(x, y))
 #endif
-#ifndef __STDC_FORMAT_MACROS
-#define __STDC_FORMAT_MACROS /* <inttypes.h> wants this for C++ */
+#ifndef pclose
+#define pclose(x) (_pclose(x))
 #endif
-#ifndef __STDC_LIMIT_MACROS
-#define __STDC_LIMIT_MACROS /* C++ wants that for INT64_MAX */
+#define close(x) (_close(x))
+#define dlsym(x, y) (GetProcAddress((HINSTANCE)(x), (y)))
+#define RTLD_LAZY (0)
+#define fseeko(x, y, z) ((_lseeki64(_fileno(x), (y), (z)) == -1) ? -1 : 0)
+#define fdopen(x, y) (_fdopen((x), (y)))
+#define write(x, y, z) (_write((x), (y), (unsigned)z))
+#define read(x, y, z) (_read((x), (y), (unsigned)z))
+#define flockfile(x) (EnterCriticalSection(&global_log_file_lock))
+#define funlockfile(x) (LeaveCriticalSection(&global_log_file_lock))
+#define sleep(x) (Sleep((x)*1000))
+#define rmdir(x) (_rmdir(x))
+#define timegm(x) (_mkgmtime(x))
+
+#if !defined(fileno)
+#define fileno(x) (_fileno(x))
+#endif /* !fileno MINGW #defines fileno */
+
+typedef HANDLE pthread_mutex_t;
+typedef DWORD pthread_key_t;
+typedef HANDLE pthread_t;
+typedef struct {
+	CRITICAL_SECTION threadIdSec;
+	struct mg_workerTLS *waiting_thread; /* The chain of threads */
+} pthread_cond_t;
+
+#ifndef __clockid_t_defined
+typedef DWORD clockid_t;
 #endif
-#ifdef __sun
-#define __EXTENSIONS__  /* to expose flockfile and friends in stdio.h */
-#define __inline inline /* not recognized on older compiler versions */
+#ifndef CLOCK_MONOTONIC
+#define CLOCK_MONOTONIC (1)
+#endif
+#ifndef CLOCK_REALTIME
+#define CLOCK_REALTIME (2)
+#endif
+#ifndef CLOCK_THREAD
+#define CLOCK_THREAD (3)
+#endif
+#ifndef CLOCK_PROCESS
+#define CLOCK_PROCESS (4)
+#endif
+
+
+#if defined(_MSC_VER) && (_MSC_VER >= 1900)
+#define _TIMESPEC_DEFINED
+#endif
+#ifndef _TIMESPEC_DEFINED
+struct timespec {
+	time_t tv_sec; /* seconds */
+	long tv_nsec;  /* nanoseconds */
+};
+#endif
+
+#if !defined(WIN_PTHREADS_TIME_H)
+#define MUST_IMPLEMENT_CLOCK_GETTIME
+#endif
+
+#ifdef MUST_IMPLEMENT_CLOCK_GETTIME
+#define clock_gettime mg_clock_gettime
+static int
+clock_gettime(clockid_t clk_id, struct timespec *tp)
+{
+	FILETIME ft;
+	ULARGE_INTEGER li, li2;
+	BOOL ok = FALSE;
+	double d;
+	static double perfcnt_per_sec = 0.0;
+
+	if (tp) {
+		memset(tp, 0, sizeof(*tp));
+
+		if (clk_id == CLOCK_REALTIME) {
+
+			/* BEGIN: CLOCK_REALTIME = wall clock (date and time) */
+			GetSystemTimeAsFileTime(&ft);
+			li.LowPart = ft.dwLowDateTime;
+			li.HighPart = ft.dwHighDateTime;
+			li.QuadPart -= 116444736000000000; /* 1.1.1970 in filedate */
+			tp->tv_sec = (time_t)(li.QuadPart / 10000000);
+			tp->tv_nsec = (long)(li.QuadPart % 10000000) * 100;
+			ok = TRUE;
+			/* END: CLOCK_REALTIME */
+
+		} else if (clk_id == CLOCK_MONOTONIC) {
+
+			/* BEGIN: CLOCK_MONOTONIC = stopwatch (time differences) */
+			if (perfcnt_per_sec == 0.0) {
+				QueryPerformanceFrequency((LARGE_INTEGER *)&li);
+				perfcnt_per_sec = 1.0 / li.QuadPart;
+			}
+			if (perfcnt_per_sec != 0.0) {
+				QueryPerformanceCounter((LARGE_INTEGER *)&li);
+				d = li.QuadPart * perfcnt_per_sec;
+				tp->tv_sec = (time_t)d;
+				d -= tp->tv_sec;
+				tp->tv_nsec = (long)(d * 1.0E9);
+				ok = TRUE;
+			}
+			/* END: CLOCK_MONOTONIC */
+
+		} else if (clk_id == CLOCK_THREAD) {
+
+			/* BEGIN: CLOCK_THREAD = CPU usage of thread */
+			FILETIME t_create, t_exit, t_kernel, t_user;
+			if (GetThreadTimes(GetCurrentThread(),
+			                   &t_create,
+			                   &t_exit,
+			                   &t_kernel,
+			                   &t_user)) {
+				li.LowPart = t_user.dwLowDateTime;
+				li.HighPart = t_user.dwHighDateTime;
+				li2.LowPart = t_kernel.dwLowDateTime;
+				li2.HighPart = t_kernel.dwHighDateTime;
+				li.QuadPart += li2.QuadPart;
+				tp->tv_sec = (time_t)(li.QuadPart / 10000000);
+				tp->tv_nsec = (long)(li.QuadPart % 10000000) * 100;
+				ok = TRUE;
+			}
+			/* END: CLOCK_THREAD */
+
+		} else if (clk_id == CLOCK_PROCESS) {
+
+			/* BEGIN: CLOCK_PROCESS = CPU usage of process */
+			FILETIME t_create, t_exit, t_kernel, t_user;
+			if (GetProcessTimes(GetCurrentProcess(),
+			                    &t_create,
+			                    &t_exit,
+			                    &t_kernel,
+			                    &t_user)) {
+				li.LowPart = t_user.dwLowDateTime;
+				li.HighPart = t_user.dwHighDateTime;
+				li2.LowPart = t_kernel.dwLowDateTime;
+				li2.HighPart = t_kernel.dwHighDateTime;
+				li.QuadPart += li2.QuadPart;
+				tp->tv_sec = (time_t)(li.QuadPart / 10000000);
+				tp->tv_nsec = (long)(li.QuadPart % 10000000) * 100;
+				ok = TRUE;
+			}
+			/* END: CLOCK_PROCESS */
+
+		} else {
+
+			/* BEGIN: unknown clock */
+			/* ok = FALSE; already set by init */
+			/* END: unknown clock */
+		}
+	}
+
+	return ok ? 0 : -1;
+}
+#endif
+
+
+#define pid_t HANDLE /* MINGW typedefs pid_t to int. Using #define here. */
+
+static int pthread_mutex_lock(pthread_mutex_t *);
+static int pthread_mutex_unlock(pthread_mutex_t *);
+static void path_to_unicode(const struct mg_connection *conn,
+                            const char *path,
+                            wchar_t *wbuf,
+                            size_t wbuf_len);
+
+
+
+#if defined(_WIN32) && !defined(POLLIN)
+#ifndef HAVE_POLL
+struct pollfd {
+	SOCKET fd;
+	short events;
+	short revents;
+};
+#define POLLIN (0x0300)
 #endif
 #endif
+
+/* Mark required libraries */
+#if defined(_MSC_VER)
+#pragma comment(lib, "Ws2_32.lib")
+#endif
+
+#else /* defined(_WIN32) 
+         WINDOWS / UNIX include block */
+
+#include <sys/wait.h>
+#include <sys/socket.h>
+#include <sys/poll.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <sys/time.h>
+#include <sys/utsname.h>
+#include <stdint.h>
+#include <inttypes.h>
+#include <netdb.h>
+#include <netinet/tcp.h>
+typedef const void *SOCK_OPT_TYPE;
+
+
+#include <pwd.h>
+#include <unistd.h>
+#include <grp.h>
+#include <dirent.h>
+#define vsnprintf_impl vsnprintf
+
+#if !defined(NO_SSL_DL) && !defined(NO_SSL)
+#include <dlfcn.h>
+#endif
+#include <pthread.h>
+#if defined(__MACH__)
+#define SSL_LIB "libssl.dylib"
+#define CRYPTO_LIB "libcrypto.dylib"
+#else
+#if !defined(SSL_LIB)
+#define SSL_LIB "libssl.so"
+#endif
+#if !defined(CRYPTO_LIB)
+#define CRYPTO_LIB "libcrypto.so"
+#endif
+#endif
+#ifndef O_BINARY
+#define O_BINARY (0)
+#endif /* O_BINARY */
+#define closesocket(a) (close(a))
+#define mg_mkdir(conn, path, mode) (mkdir(path, mode))
+#define mg_remove(conn, x) (remove(x))
+#define mg_sleep(x) (usleep((x)*1000))
+#define mg_opendir(conn, x) (opendir(x))
+#define mg_closedir(x) (closedir(x))
+#define mg_readdir(x) (readdir(x))
+#define ERRNO (errno)
+#define INVALID_SOCKET (-1)
+#define INT64_FMT PRId64
+#define UINT64_FMT PRIu64
+typedef int SOCKET;
+#define WINCDECL
+
+#if defined(__hpux)
+/* HPUX 11 does not have monotonic, fall back to realtime */
+#ifndef CLOCK_MONOTONIC
+#define CLOCK_MONOTONIC CLOCK_REALTIME
+#endif
+
+/* HPUX defines socklen_t incorrectly as size_t which is 64bit on
+ * Itanium.  Without defining _XOPEN_SOURCE or _XOPEN_SOURCE_EXTENDED
+ * the prototypes use int* rather than socklen_t* which matches the
+ * actual library expectation.  When called with the wrong size arg
+ * accept() returns a zero client inet addr and check_acl() always
+ * fails.  Since socklen_t is widely used below, just force replace
+ * their typedef with int. - DTL
+ */
+#define socklen_t int
+#endif /* hpux */
+
+#endif /* defined(_WIN32) && !defined(__SYMBIAN32__) -                         \
+          WINDOWS / UNIX include block */
 
 #if defined(_MSC_VER)
 /* 'type cast' : conversion from 'int' to 'HANDLE' of greater size */
@@ -139,6 +458,18 @@ typedef const void *SOCK_OPT_TYPE;
 #pragma warning(disable : 4255)
 /* function has been selected for automatic inline expansion */
 #pragma warning(disable : 4711)
+#endif
+
+/* DTL -- including winsock2.h works better if lean and mean */
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+
+#ifdef __clang__
+/* When using -Weverything, clang does not accept it's own headers
+ * in a release build configuration. Disable what is too much in
+ * -Weverything. */
+#pragma clang diagnostic ignored "-Wdisabled-macro-expansion"
 #endif
 
 
