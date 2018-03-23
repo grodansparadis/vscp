@@ -116,7 +116,6 @@ typedef const char *SOCK_OPT_TYPE;
 #define W_PATH_MAX ((PATH_MAX + 2) / 3)
 #endif
 
-
 #ifndef _IN_PORT_T
 #ifndef in_port_t
 #define in_port_t u_short
@@ -126,8 +125,6 @@ typedef const char *SOCK_OPT_TYPE;
 #include <process.h>
 #include <direct.h>
 #include <io.h>
-
-
 
 #define MAKEUQUAD(lo, hi)                                                      \
 	((uint64_t)(((uint32_t)(lo)) | ((uint64_t)((uint32_t)(hi))) << 32))
@@ -342,6 +339,7 @@ clock_gettime(clockid_t clk_id, struct timespec *tp)
 
     return ok ? 0 : -1;
 }
+#endif
 
 #define pid_t HANDLE /* MINGW typedefs pid_t to int. Using #define here. */
 
@@ -446,21 +444,20 @@ typedef const void *SOCK_OPT_TYPE;
 
 #include "sockettcp.h"
 
+
+
 #if defined(_WIN32)  
-
-
-#endif
-
 
 #define pid_t HANDLE /* MINGW typedefs pid_t to int. Using #define here. */
 
 static int pthread_mutex_lock(pthread_mutex_t *);
 static int pthread_mutex_unlock(pthread_mutex_t *);
-static void path_to_unicode(const struct mg_connection *conn,
-                            const char *path,
-                            wchar_t *wbuf,
-                            size_t wbuf_len);
 
+
+static void path_to_unicode( const struct mg_connection *conn,
+                                const char *path,
+                                wchar_t *wbuf,
+                                size_t wbuf_len);
 
 
 #if defined(_WIN32) && !defined(POLLIN)
@@ -479,8 +476,7 @@ struct pollfd {
 #pragma comment(lib, "Ws2_32.lib")
 #endif
 
-#else /* defined(_WIN32) 
-         WINDOWS / UNIX include block */
+#else  /* defined(_WIN32)  WINDOWS / UNIX include block */
 
 #include <sys/wait.h>
 #include <sys/socket.h>
@@ -1030,9 +1026,7 @@ set_blocking_mode(int sock)
     return 0;
 }
 
-static struct pthread_mutex_undefined_struct *pthread_mutex_attr = NULL;
-
-#endif    // windoows vs. unix
+#endif    // windows vs. unix
 
 /* va_copy should always be a macro, C99 and C++11 - DTL */
 #ifndef va_copy
@@ -1307,10 +1301,10 @@ static void strlcpy( register char *dst, register const char *src, size_t n )
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// strndup
+// stcp_strndup
 //
 
-static char *strndup( const char *ptr, size_t len )
+static char *stcp_strndup( const char *ptr, size_t len )
 {
     char *p;
 
