@@ -342,6 +342,10 @@ void VscpworksApp::Init()
     g_Config.m_manufacturerId = 0;
     g_Config.m_manufacturerSubId = 0;
     
+    /*
+     
+     Testblock for sockettcp lib
+     
     char errbuf[200];
     char buf[8192];
     stcp_connection *conn;
@@ -356,11 +360,18 @@ void VscpworksApp::Init()
         wxPrintf( buf );
         
         stcp_write( conn, "pass secret\r\n", 13 );
+        stcp_read( conn, buf, sizeof( buf ), 300 );
+        wxPrintf( buf );
+        
+        stcp_write( conn, "interface list\r\n", 16 );
         stcp_read( conn, buf, sizeof( buf ), 200 );
         wxPrintf( buf );
         
         stcp_close_connection( conn );
+        
+        conn = NULL;
     }
+    */ 
 }
 
 /*!
