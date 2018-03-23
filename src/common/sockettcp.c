@@ -2325,7 +2325,7 @@ stcp_close_socket_gracefully(struct stcp_connection *conn)
     int linger_timeout = -2;
     socklen_t opt_len = sizeof (error_code);
 
-    if (!conn) {
+    if ( NULL != conn ) {
         return;
     }
 
