@@ -611,6 +611,17 @@ struct stcp_workerTLS {
 #define stcp_sleep(x) (usleep((x)*1000))
 
 
+////////////////////////////////////////////////////////////////////////////////
+// stcp_get_current_time_ns
+//
+
+static uint64_t
+stcp_get_current_time_ns(void)
+{
+    struct timespec tsnow;
+    clock_gettime(CLOCK_REALTIME, &tsnow);
+    return (((uint64_t)tsnow.tv_sec) * 1000000000) + (uint64_t)tsnow.tv_nsec;
+}
 
 
 // ****************** Windows specific ******************
@@ -627,6 +638,65 @@ struct pollfd {
 #define POLLIN (0x0300)
 #endif
 #endif
+
+
+void usleep(__int64 usec)
+{
+    HANDLE timer;
+    LARGE_INTEGER ft;
+
+    ft.QuadPart = -(10 * usec); // Convert to 100 nanosecond interval, negative value indicates relative time
+
+    timer = CreateWaitableTimer(NULL, TRUE, NULL);
+    SetWaitableTimer(timer, &ft, 0, NULL, NULL, 0);
+    WaitForSingleObject(timer, INFINITE);
+    CloseHandle(timer);
+}
+
+
+#ifndef HAVE_POLL
+static int
+poll(struct pollfd *pfd, unsigned int n, int milliseconds)
+{
+    struct timeval tv;
+    fd_set set;
+    unsigned int i;
+    int result;
+    SOCKET maxfd = 0;
+
+    memset(&tv, 0, sizeof(tv));
+    tv.tv_sec = milliseconds / 1000;
+    tv.tv_usec = (milliseconds % 1000) * 1000;
+    FD_ZERO(&set);
+
+    for (i = 0; i < n; i++) {
+        FD_SET((SOCKET)pfd[i].fd, &set);
+        pfd[i].revents = 0;
+
+        if (pfd[i].fd > maxfd) {
+            maxfd = pfd[i].fd;
+        }
+    }
+
+    if ((result = select((int)maxfd + 1, &set, NULL, NULL, &tv)) > 0) {
+        for (i = 0; i < n; i++) {
+            if (FD_ISSET(pfd[i].fd, &set)) {
+                pfd[i].revents = POLLIN;
+            }
+        }
+    }
+
+    /* We should subtract the time used in select from remaining
+    * "milliseconds", in particular if called from mg_poll with a
+    * timeout quantum.
+    * Unfortunately, the remaining time is not stored in "tv" in all
+    * implementations, so the result in "tv" must be considered undefined.
+    * See http://man7.org/linux/man-pages/man2/select.2.html */
+
+    return result;
+}
+#endif /* HAVE_POLL */
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // set_blocking_mode
@@ -1076,18 +1146,8 @@ struct mg_workerTLS {
 #endif
 
 
-////////////////////////////////////////////////////////////////////////////////
-// stcp_get_current_time_ns
-//
 
-/*static uint64_t
-stcp_get_current_time_ns( void )
-{
-    struct timespec tsnow;
-    clock_gettime( CLOCK_REALTIME, &tsnow );
-    return ( ( (uint64_t) tsnow.tv_sec) * 1000000000) + (uint64_t) tsnow.tv_nsec;
-}
-*/
+
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2292,7 +2352,7 @@ stcp_close_socket_gracefully(struct stcp_connection *conn)
     // when server decides to close the connection; then when client
     // does recv() it gets no data back.
     do {
-        n = pull_inner( NULL, conn, buf, sizeof( buf ), /* Timeout in s: */ 1.0 );
+        n = stcp_pull_inner( NULL, conn, buf, sizeof( buf ), /* Timeout in s: */ 1.0 );
     }
     while (n > 0);
 #endif
