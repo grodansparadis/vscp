@@ -585,7 +585,7 @@ typedef int SOCKET;
 #define SHUTDOWN_BOTH (2)
 
 // Configuration context
-static struct stcp_context common_client_context;
+//static struct stcp_context common_client_context;
 
 // stcp_init_library counter
 static int stcp_init_called = 0;
@@ -2105,7 +2105,7 @@ stcp_connect_socket( const char *host,
 	}
 
         // failed
-	// TODO: specific error message
+	    // TODO: specific error message
     }
 
     if ( ( 6 == ip_ver ) &&
@@ -2118,8 +2118,8 @@ stcp_connect_socket( const char *host,
             return 1;
         }
 
-	// failed
-	// TODO: specific error message
+	    // failed
+	    // TODO: specific error message
     }
 
     // Not connected
@@ -2134,11 +2134,11 @@ stcp_connect_socket( const char *host,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// stcp_connect_client_impl
+// stcp_connect_remote_impl
 //
 
 static struct stcp_connection *
-stcp_connect_client_impl( const struct stcp_client_options *client_options,
+stcp_connect_remote_impl( const struct stcp_client_options *client_options,
                                 int use_ssl,
                                 char *ebuf,
                                 size_t ebuf_len,
@@ -2269,16 +2269,16 @@ stcp_connect_client_impl( const struct stcp_client_options *client_options,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// stcp_connect_client_secure
+// stcp_connect_remote_secure
 //
 
 struct stcp_connection *
-stcp_connect_client_secure( const struct stcp_client_options *client_options,
+stcp_connect_remote_secure( const struct stcp_client_options *client_options,
                                 char *error_buffer,
                                 size_t error_buffer_size,
                                 int timeout )
 {
-    return stcp_connect_client_impl( client_options,
+    return stcp_connect_remote_impl( client_options,
                                         1,
                                         error_buffer,
                                         error_buffer_size,
@@ -2286,11 +2286,11 @@ stcp_connect_client_secure( const struct stcp_client_options *client_options,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// stcp_connect_client
+// stcp_connect_remote
 //
 
 struct stcp_connection *
-stcp_connect_client( const char *host,
+stcp_connect_remote( const char *host,
                         int port,
                         int use_ssl,
                         char *error_buffer,
@@ -2301,7 +2301,7 @@ stcp_connect_client( const char *host,
     memset(&opts, 0, sizeof (opts));
     opts.host = host;
     opts.port = port;
-    return stcp_connect_client_impl( &opts,
+    return stcp_connect_remote_impl( &opts,
                                         use_ssl,
                                         error_buffer,
                                         error_buffer_size,
@@ -2484,6 +2484,8 @@ stcp_close_connection(struct stcp_connection *conn)
 ////////////////////////////////////////////////////////////////////////////////
 // stcp_poll
 //
+// Use milliseconds -1 to get SOCKET_TIMEOUT_QUANTUM timeout.
+//
 
 static int
 stcp_poll( struct pollfd *pfd,
@@ -2504,6 +2506,7 @@ stcp_poll( struct pollfd *pfd,
             return -2;
         }
 
+        // Set milliseconds to lowest value
         if ( ( milliseconds >= 0 ) &&
              ( milliseconds < ms_now ) ) {
             ms_now = milliseconds;
@@ -2814,29 +2817,28 @@ stcp_pull_inner( FILE *fp,
         }
 
     }
-    else if (conn->ssl != NULL) {
+    else if ( conn->ssl != NULL ) {
 
         struct pollfd pfd[1];
         int pollres;
 
         pfd[0].fd = conn->client.sock;
         pfd[0].events = POLLIN;
-        pollres =
-                stcp_poll( pfd, 1, mstimeout, &(conn->stop_flag) );
+        pollres = stcp_poll( pfd, 1, mstimeout, &(conn->stop_flag) );
 
-        if (conn->stop_flag) {
+        if ( conn->stop_flag ) {
             return -2;
         }
 
-        if (pollres > 0) {
-            nread = SSL_read(conn->ssl, buf, len);
-            if (nread <= 0) {
-                err = SSL_get_error(conn->ssl, nread);
-                if ((err == SSL_ERROR_SYSCALL) && (nread == -1)) {
+        if ( pollres > 0 ) {
+            nread = SSL_read( conn->ssl, buf, len );
+            if ( nread <= 0 ) {
+                err = SSL_get_error( conn->ssl, nread );
+                if ( ( err == SSL_ERROR_SYSCALL ) && ( nread == -1 ) ) {
                     err = errno;
                 }
-                else if ((err == SSL_ERROR_WANT_READ) ||
-                         (err == SSL_ERROR_WANT_WRITE) ) {
+                else if ( ( err == SSL_ERROR_WANT_READ ) ||
+                         ( err == SSL_ERROR_WANT_WRITE ) ) {
                     nread = 0;
                 }
                 else {
@@ -2866,8 +2868,7 @@ stcp_pull_inner( FILE *fp,
 
         pfd[0].fd = conn->client.sock;
         pfd[0].events = POLLIN;
-        pollres =
-                stcp_poll( pfd, 1, mstimeout, &(conn->stop_flag ) );
+        pollres = stcp_poll( pfd, 1, mstimeout, &(conn->stop_flag) );
         if ( conn->stop_flag ) {
             return -2; 
         }
@@ -2895,7 +2896,7 @@ stcp_pull_inner( FILE *fp,
         return -2;
     }
 
-    if ( (nread > 0) || ( (nread == 0) && (len == 0) ) ) {
+    if ( ( nread > 0 ) || ( ( nread == 0 ) && ( len == 0 ) ) ) {
         // some data has been read, or no data was requested
         return nread;
     }
@@ -2927,7 +2928,7 @@ stcp_pull_inner( FILE *fp,
         // blocking in close_socket_gracefully, so we can not distinguish
         // here. We have to wait for the timeout in both cases for now.
 
-        if ((err == EAGAIN) || (err == EWOULDBLOCK) || (err == EINTR)) {
+        if ( ( err == EAGAIN ) || ( err == EWOULDBLOCK ) || ( err == EINTR ) ) {
             // TODO (low): check if this is still required
             // EAGAIN/EWOULDBLOCK:
             // standard case if called from close_socket_gracefully

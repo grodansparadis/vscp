@@ -44,32 +44,36 @@
 #include <openssl/bn.h>
 #include <openssl/opensslv.h>
 
-#define SOCKETTCP_NO_SSL            (0)     // Normal connect
-#define SOCKETTCP_SSL               (1)     // Connect SSL
+#define SOCKETTCP_NO_SSL                (0)     // Normal connect
+#define SOCKETTCP_SSL                   (1)     // Connect SSL
 
 #define SOCKETTCP_CONN_STATE_UNDEFINED  (0)
 #define SOCKETTCP_CONN_STATE_TOCLOSE    (6)
 #define SOCKETTCP_CONN_STATE_CLOSING    (7)
 #define SOCKETTCP_CONN_STATE_CLOSED     (8)
 
-#define SSL_PROTOCOL_VERSION        (0)
-#define SSL_DO_VERIFY_PEER          (0)   // 0 == no, 1 == mandatory, 2 == optional
-#define SSL_DEFAULT_VERIFY_PATHS    (1)   // 1 == yes
-#define SSL_VERIFY_DEPTH            (9)
-#define SSL_CIPHER_LIST             "DES-CBC3-SHA:AES128-SHA:AES128-GCM-SHA256"
-#define SSL_SHORT_TRUST             (0)
+#define SSL_PROTOCOL_VERSION            (0)
+#define SSL_DO_VERIFY_PEER              (0)   // 0 == no, 1 == mandatory, 2 == optional
+#define SSL_DEFAULT_VERIFY_PATHS        (1)   // 1 == yes
+#define SSL_VERIFY_DEPTH                (9)
+#define SSL_CIPHER_LIST                 "DES-CBC3-SHA:AES128-SHA:AES128-GCM-SHA256"
+#define SSL_SHORT_TRUST                 (0)
 
-#define MAX_REQUEST_SIZE            (16384)
-#define WEB_BUF_LEN (               8192)
-#define LINGER_TIMEOUT              (-2)
+#define MAX_REQUEST_SIZE                (16384)
+#define WEB_BUF_LEN (                   8192)
+#define LINGER_TIMEOUT                  (-2)
 
-#ifndef SOCKET_TIMEOUT_QUANTUM  // in ms
-#define SOCKET_TIMEOUT_QUANTUM      (2000)     // Default read timout in ms
-#endif
+#ifndef SOCKET_TIMEOUT_QUANTUM          // in ms
+#define SOCKET_TIMEOUT_QUANTUM          (2000)     // Default read timout in ms
+#endif                                             // Smaller will be used 
 
 #ifndef INVALID_SOCKET
-#define INVALID_SOCKET              (-1)
+#define INVALID_SOCKET                  (-1)
 #endif
+
+// Common error codedes
+#define ERROR_STCP_TIMEOUT              (-1)
+#define ERROR_STCP_STOPPED              (-2)
 
 #ifdef __cplusplus
 extern "C" {
@@ -141,7 +145,7 @@ struct stcp_connection
 };
 
 // Configuration settings
-struct stcp_context
+/*struct stcp_context
 {
     
     SSL_CTX *ssl_ctx;                   // SSL context
@@ -166,14 +170,14 @@ struct stcp_context
     
     //struct stcp_memory_stat ctx_memory;
 
-};
+};*/
 
 
 /*!
- 
+ *  Connect (unsecururely) to remote
  */
 struct stcp_connection *
-stcp_connect_client( const char *host,
+stcp_connect_remote( const char *host,
                         int port,
                         int use_ssl,
                         char *error_buffer,
@@ -181,11 +185,11 @@ stcp_connect_client( const char *host,
                         int timeout );
 
 /*!
- *
+ *  Connect securly to remot
  */
 
 struct stcp_connection *
-stcp_connect_client_secure( const struct stcp_client_options *client_options,
+stcp_connect_remote_secure( const struct stcp_client_options *client_options,
                                 char *error_buffer,
                                 size_t error_buffer_size,
                                 int timeout );
@@ -201,9 +205,26 @@ char
 stcp_getc( struct stcp_connection *conn );
 
 
+/*!
+ * Read data from remote client.
+ * @param conn Connection to read from.
+ * @buf Buffer to read data into.
+ * @len Size of buffer.
+ * @mstimeout Timeout in milliseconds for read (>=0 use timeout -1 - use 
+ *              default timeout.).
+ * @return >= 0 Number of read characters. -1= timeout, -2 = error
+ */
 int
 stcp_read( struct stcp_connection *conn, void *buf, size_t len, int mstimeout );
 
+
+/*!
+ * Write data to remote client
+ * @param conn Connection to read from.
+ * @buf Buffer with data to write.
+ * @len Number of chars to write.
+ * @return 0 on error, otherwise number of characters written.
+ */
 
 int
 stcp_write( struct stcp_connection *conn, const void *buf, size_t len );

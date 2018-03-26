@@ -38,20 +38,40 @@
 int error_cnt = 0;
 
 char errbuf[200];
-char buf[8192];
+char buf[128000];
 struct stcp_connection *conn;
+
+///////////////////////////////////////////////////////////////////////////////
+// current_timestamp
+//
+
+long long current_timestamp() {
+    struct timeval te; 
+    gettimeofday(&te, NULL); // get current time
+    long long milliseconds = te.tv_sec*1000LL + te.tv_usec/1000; // calculate milliseconds
+    // printf("milliseconds: %lld\n", milliseconds);
+    return milliseconds;
+}
 
 int main(int argc, char* argv[])
 {
     int rv;
     long handle1, handle2; 
+    long long t1,t2;
+    char readbuf[2048];
 
     printf("VSCP helperlib test program\n");
     printf("===========================\n");
 
-    conn = stcp_connect_client( "185.144.156.45", 9598, 0, errbuf, sizeof( errbuf ), 5 );
+    // * * * * * * * Test 1
+    t1 = t2 = current_timestamp();
+
+    printf("Raw test with stcp\n");
+
+    conn = stcp_connect_remote( "185.144.156.45", 9598, 0, errbuf, sizeof( errbuf ), 5 );
     if ( NULL != conn ) {
         
+        // Get welcome message
         stcp_read( conn, buf, sizeof( buf ), 200 );
         printf( "%s", buf );
         
@@ -63,8 +83,10 @@ int main(int argc, char* argv[])
         stcp_read( conn, buf, sizeof( buf ), 300 );
         printf( "%s", buf );
         
+        t2 = current_timestamp(); 
+
         stcp_write( conn, "interface list\r\n", 16 );
-        stcp_read( conn, buf, sizeof( buf ), 200 );
+        stcp_read( conn, buf, sizeof( buf ), 300 );
         printf( "%s", buf );
         
         stcp_close_connection( conn );
@@ -72,8 +94,70 @@ int main(int argc, char* argv[])
         conn = NULL;
     }
 
-    return 1;
+    
+    printf( "Time: %d ms\n\n\n", ((int)(t2-t1)) );   
 
+  
+    // * * * * * * * Test 2
+    t1 = t2 = current_timestamp();
+
+    printf("Raw test with stcp and +OK test\n");
+    conn = stcp_connect_remote( "185.144.156.45", 9598, 0, errbuf, sizeof( errbuf ), 5 );
+    if ( NULL != conn ) {
+        
+        int inner_timeout = 0;
+
+        // Get welcome message
+        *buf = 0;
+        while ( 1 ) {
+            stcp_read( conn, readbuf, sizeof( readbuf ), inner_timeout );
+            strcat( buf, readbuf );
+            if ( NULL != strstr( buf, "+OK" ) ) break;
+        }
+        printf( "%s", buf );
+        
+        stcp_write( conn, "user admin\r\n", 12 );
+        *buf = 0;
+        while ( 1 ) {
+            stcp_read( conn, readbuf, sizeof( readbuf ), inner_timeout );
+            strcat( buf, readbuf );
+            if ( NULL != strstr( buf, "+OK" ) ) break;
+        }
+        printf( "%s", buf );
+        
+        stcp_write( conn, "pass secret\r\n", 13 );
+        *buf = 0;
+        while ( 1 ) {
+            stcp_read( conn, readbuf, sizeof( readbuf ), inner_timeout );
+            strcat( buf, readbuf );
+            if ( NULL != strstr( buf, "+OK" ) ) break;
+        }
+        printf( "%s", buf );
+
+        t2 = current_timestamp(); 
+        
+        stcp_write( conn, "interface list\r\n", 16 );
+        *buf = 0;
+        while ( 1 ) {
+            stcp_read( conn, readbuf, sizeof( readbuf ), inner_timeout );
+            strcat( buf, readbuf );
+            if ( NULL != strstr( buf, "+OK" ) ) break;
+        }
+        printf( "%s", buf );
+        
+        stcp_close_connection( conn );
+        
+        conn = NULL;
+    }
+
+    
+    printf( "Time: %d ms\n\n\n", ((int)(t2-t1)) );
+
+
+    // * * * * * * * Test 3
+    t1 = t2 = current_timestamp();
+
+    printf("Test with vscphelp\n");
     handle1 = vscphlp_newSession();
     if (0 != handle1 ) {
         printf( "Handle one OK %ld\n", handle1 );
@@ -83,17 +167,9 @@ int main(int argc, char* argv[])
         error_cnt++;
     }
 
-    handle2 = vscphlp_newSession();
-    if (0 != handle2 ) {
-        printf( "Handle two OK %ld\n", handle2 );
-    }
-    else {
-        printf("\aError: Failed to get handle for channel 2\n");
-    }
-
     // Open Channel 1
     rv=vscphlp_open( handle1, 
-                         "127.0.0.1:9598",
+                         "185.144.156.45:9598",
                          "admin",
                          "secret" ); 
     if ( VSCP_ERROR_SUCCESS == rv ) {
@@ -104,8 +180,21 @@ int main(int argc, char* argv[])
         return -1;
     }
 
+    t2 = current_timestamp(); 
+    printf( "Time: %d ms\n\n\n", ((int)(t2-t1)) );
+
+    return 1; // ----------------------------------------------------------------------------------------- >>>>>
+
+    handle2 = vscphlp_newSession();
+    if (0 != handle2 ) {
+        printf( "Handle two OK %ld\n", handle2 );
+    }
+    else {
+        printf("\aError: Failed to get handle for channel 2\n");
+    }
+
     // OPEN channel 2
-    rv=vscphlp_openInterface( handle2, "127.0.0.1:9598;admin;secret", 0 ); 
+    rv=vscphlp_openInterface( handle2, "185.144.156.45:9598;admin;secret", 0 ); 
     if ( VSCP_ERROR_SUCCESS == rv ) {
         printf("Command success: vscphlp_openInterface on channel 2\n");
     }
@@ -113,6 +202,8 @@ int main(int argc, char* argv[])
         printf("\aCommand error: vscphlp_openInterface on channel 2  Error code=%d\n", rv);
         return -1;
     }
+
+   
 
     // NOOP on handle1
     if ( VSCP_ERROR_SUCCESS == (rv = vscphlp_noop( handle1 ) ) ) {

@@ -42,7 +42,7 @@
 #endif
 
 #ifdef __WXMSW__
-    #include  "wx/ownerdrw.h"
+//    #include  "wx/ownerdrw.h"
 #endif
 
 #include <wx/thread.h>
@@ -59,228 +59,12 @@
 //#define DEBUG_INNER_COMMUNICTION 1
 
 // Undef if debug messages is not wanted
-#define DEBUG_LIB_VSCP_HELPER   1
+//#define DEBUG_LIB_VSCP_HELPER   1
 
-class mg_poll_server;
-class mg_poll_server;
+//class mg_poll_server;
+//class mg_poll_server;
 WX_DEFINE_LIST( EVENT_RX_QUEUE );
 WX_DEFINE_LIST( EVENT_TX_QUEUE );
-
-///////////////////////////////////////////////////////////////////////////////
-// CTOR
-//
-
-clientTcpIpWorkerThread::clientTcpIpWorkerThread() : 
-    wxThread(wxTHREAD_DETACHED)
-{
-    m_bRun = true;  // Run my friend run
-    m_pvscpRemoteTcpIpIf = NULL; 
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-// DTOR
-//
-
-clientTcpIpWorkerThread::~clientTcpIpWorkerThread()
-{
-    m_pvscpRemoteTcpIpIf = NULL;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-// tcpip_event_handler
-//
-
-void clientTcpIpWorkerThread::ev_handler( struct mg_connection *conn, 
-                                            int ev, 
-                                            void *event_data ) 
-{
-    char rbuf[ 2048 ];
-    int pos4lf = 0;
-    struct mbuf *io = NULL;
-    VscpRemoteTcpIf *pTcpIfSession = NULL;
-    
-    if ( NULL == conn ) return;
-
-    io = &conn->recv_mbuf;
-    pTcpIfSession = ( VscpRemoteTcpIf * )conn->mgr->user_data;
-
-    if ( NULL == pTcpIfSession ) return;
-
-    switch ( ev ) {
-
-        // -------------------------------------------------------------------- 
-        case MG_EV_CONNECT: // connect() succeeded or failed. int *success_status
-        {
-            int connect_status = 0;
-            if ( NULL == event_data ) return;
-            connect_status = *( int *)event_data;
-
-            if ( 0 == connect_status ) {
-                    
-#ifdef DEBUG_INNER_COMMUNICTION
-                wxLogDebug( _("ev_handler: TCP/IP connect OK.") );
-#endif                    
-                pTcpIfSession->m_semConnected.Post();
-                pTcpIfSession->m_bConnected = true;
-                conn->flags |= MG_F_USER_1;  // We should terminate
-            } 
-#ifdef DEBUG_INNER_COMMUNICTION                
-            else {
-                wxLogDebug( _("ev_handler: TCP/IP connect fail.") );
-            }
-#endif                
-        }
-        break;
-
-        // --------------------------------------------------------------------    
-        case MG_EV_CLOSE:
-            
-#ifdef DEBUG_INNER_COMMUNICTION            
-            wxLogDebug( _("ev_handler: TCP/IP close.") );
-#endif
-            
-            pTcpIfSession->m_bConnected = false;
-            break;
-
-        // --------------------------------------------------------------------     
-        case MG_EV_RECV:
-            
-#ifdef DEBUG_INNER_COMMUNICTION
-            wxString str = wxString::FromUTF8( conn->recv_mbuf.buf, *((int *)event_data) );
-            wxLogDebug( _("ev_handler: TCP/IP receive [%d, %d] %s."), 
-                        conn->recv_mbuf.len,
-                        *((int *)event_data),
-                        (const char *)str.mbc_str() );
-#endif
-            
-            // Read new data
-            memset( rbuf, 0, sizeof( rbuf ) );
-            if ( 0 < io->len ) {
-
-                // Protect rbuf for out of bouds access
-                if ( sizeof( rbuf ) < io->len ) return;
-
-                memcpy( rbuf, io->buf, io->len );
-                mbuf_remove(io, io->len); 
-
-                pTcpIfSession->m_readBuffer += wxString::FromUTF8( rbuf );
-                
-#ifdef DEBUG_INNER_COMMUNICTION                
-                wxLogDebug( wxString::FromUTF8( rbuf ) );
-#endif                
-
-                // Check if command already is in buffer
-                while ( wxNOT_FOUND != 
-                        ( pos4lf = pTcpIfSession->m_readBuffer.Find( (const char)0x0a ) ) ) {
-
-                    wxString strCmdGo = pTcpIfSession->m_readBuffer.Mid( 0, pos4lf );
-                    
-                    // If in ReceiveLoop we don't store the "+OK"s
-                    if ( pTcpIfSession->m_bModeReceiveLoop ) {
-                        strCmdGo.Trim();
-                        strCmdGo.Trim(false);
-                        if ( _("+OK") == strCmdGo ) {
-                            pTcpIfSession->m_readBuffer = 
-                                pTcpIfSession->m_readBuffer.Right( pTcpIfSession->m_readBuffer.Length()-pos4lf-1 );
-                            continue;
-                        }
-                    
-                    }
-                                         
-#ifdef DEBUG_INNER_COMMUNICTION                     
-                    wxString wxlog = wxString::Format(_("TCP/IP line: %s "), 
-                                            (const char *)strCmdGo.c_str() );
-                   
-                    wxLogDebug( wxlog );
-#endif
-                    
-                    // Add to array
-                    pTcpIfSession->m_mutexArray.Lock();
-                    pTcpIfSession->m_inputStrArray.Add( strCmdGo );
-                    pTcpIfSession->m_mutexArray.Unlock();
-                    
-                    // Flag that event is available
-                    if ( pTcpIfSession->m_bModeReceiveLoop ) pTcpIfSession->m_psemInputArray->Post(); 
-                    
-                    //pTcpIfSession->m_readBuffer.Trim();
-                    if ( pTcpIfSession->m_readBuffer.Length() ) {
-                        pTcpIfSession->m_readBuffer = 
-                            pTcpIfSession->m_readBuffer.Right( pTcpIfSession->m_readBuffer.Length()-pos4lf-1 );
-                    }
-                }
-            }
-            break;
-
-    };
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// Entry
-//
-
-void *clientTcpIpWorkerThread::Entry()
-{    
-    
-#ifdef DEBUG_LIB_VSCP_HELPER     
-    wxLogDebug( _("clientTcpIpWorkerThread: Starting.") );
-#endif    
-    
-    // Set up the net_skeleton communication engine
-    mg_mgr_init( &m_mgrTcpIpConnection, m_pvscpRemoteTcpIpIf );
-    
-    if ( NULL == mg_connect( &m_mgrTcpIpConnection, 
-                                (const char *)m_hostname.mbc_str(),
-                                 clientTcpIpWorkerThread::ev_handler ) ) {
-
-#ifdef DEBUG_LIB_VSCP_HELPER        
-        wxLogDebug( _("clientTcpIpWorkerThread: Connect failed!") );
-#endif        
-        return NULL;
-    }
-
-#ifdef DEBUG_LIB_VSCP_HELPER    
-    wxLogDebug( _("clientTcpIpWorkerThread: Before loop.") );
-#endif    
-
-    // Event loop
-    while ( !TestDestroy() && m_bRun ) {
-        mg_mgr_poll( &m_mgrTcpIpConnection, 10 );
-        //wxMilliSleep( 10 );
-    }
-    
-    //wxSleep( 1000 );
-    
-#ifdef DEBUG_LIB_VSCP_HELPER    
-    wxLogDebug( _("clientTcpIpWorkerThread: After loop.") );
-#endif        
-    
-    // Free resources
-    mg_mgr_free( &m_mgrTcpIpConnection );
-
-#ifdef DEBUG_LIB_VSCP_HELPER    
-    wxLogDebug( _("clientTcpIpWorkerThread: Terminating.") );
-#endif    
-    return NULL;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-// OnExit
-//
-
-void clientTcpIpWorkerThread::OnExit()
-{
-    if (NULL != m_pvscpRemoteTcpIpIf) {
-        m_pvscpRemoteTcpIpIf->m_pClientTcpIpWorkerThread = NULL;
-    }
-
-#ifdef DEBUG_LIB_VSCP_HELPER    
-    wxLogDebug( _("clientTcpIpWorkerThread: OnExit") );  
-#endif    
-}
-
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -288,12 +72,8 @@ void clientTcpIpWorkerThread::OnExit()
 
 VscpRemoteTcpIf::VscpRemoteTcpIf()
 {	
-    m_bConnected = false;
-    m_pClientTcpIpWorkerThread = NULL;
     m_bModeReceiveLoop = false;
     m_responseTimeOut = TCPIP_DEFAULT_RESPONSE_TIMEOUT;
-    m_afterCommandSleep = TCPIP_DEFAULT_AFTER_COMMAND_SLEEP;
-    m_psemInputArray = new wxSemaphore( 0, 1 ); // not signaled, max=1
 
     // Init. register read parameters
     m_registerOpErrorTimeout = TCPIP_REGISTER_READ_ERROR_TIMEOUT;
@@ -305,7 +85,6 @@ VscpRemoteTcpIf::VscpRemoteTcpIf()
 VscpRemoteTcpIf::~VscpRemoteTcpIf()
 {
     doCmdClose();
-    delete m_psemInputArray;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -314,8 +93,9 @@ VscpRemoteTcpIf::~VscpRemoteTcpIf()
 
 bool VscpRemoteTcpIf::checkReturnValue( bool bClear )
 {
-    int last = 0;   // last read pos in array
-    wxString strReply;
+    bool rv = false;
+    char buf[8192];
+    int nRead = -1;
     
 #ifdef DEBUG_INNER_COMMUNICTION
     wxLogDebug( _("------------------------------------------------------------") );
@@ -329,40 +109,49 @@ bool VscpRemoteTcpIf::checkReturnValue( bool bClear )
     if ( bClear ) doClrInputQueue();
 
     wxLongLong start = wxGetLocalTimeMillis();
-    while ( ( wxGetLocalTimeMillis() - start ) < m_responseTimeOut ) {
+    while ( nRead && ( ( wxGetLocalTimeMillis() - start ) < m_responseTimeOut  ) ) {
 
-        for ( uint16_t i=last; i<getInputQueueCount(); i++) {
-
-            m_mutexArray.Lock();
-            strReply = m_inputStrArray[ i ];
-            m_mutexArray.Unlock();
-#ifdef DEBUG_INNER_COMMUNICTION            
-            wxLogDebug(strReply);
-#endif            
-
-            if ( wxNOT_FOUND != strReply.Find(_("+OK")) ) {
-#ifdef DEBUG_INNER_COMMUNICTION                
-                wxLogDebug( _("checkReturnValue: Command success!") );
-#endif                
-                return true;
+        memset( buf,0, sizeof( buf ) );
+        int nRead = stcp_read( m_conn, buf, sizeof( buf ), m_innerResponseTimeout );
+        
+        if ( 0 ==  nRead ) {
+            continue;   // Nothing more to read
+        }
+        else if ( nRead < 0 ) {
+            if ( ERROR_STCP_TIMEOUT == nRead ) {
+                rv = VSCP_ERROR_TIMEOUT;
+                break;
             }
-            else if ( wxNOT_FOUND != strReply.Find(_("-OK")) ) {
-#ifdef DEBUG_INNER_COMMUNICTION                
-                wxLogDebug( _("checkReturnValue: Command failed!") );
-#endif                
-                return false;
+            else if ( ERROR_STCP_STOPPED == nRead ) {
+                rv = VSCP_ERROR_STOPPED;
+                break;
             }
+            break;
+        }
+        else if ( nRead > 0 ) {
+            m_strResponse += wxString::FromUTF8Unchecked( buf, nRead );
+        }
 
-            last = i;
+        // if err abort
+        if ( NULL != strstr( buf, "+ERR" ) ) break;
+
+        // Check if we are done
+        // A line with "+OK bla bla bla bla bla bla blq abla \r\n"
+        // It can be hacked up.
+        if ( wxNOT_FOUND != m_strResponse.Find("+OK")  ) {
+
+            // We check only for "\n" as it also could have been
+            // broken up, even if rare
+            if ( NULL != strstr( buf, "\n" ) ) {
+                rv = true;
+                break;
+            }
 
         }
         
-        // Give the server some time to deliver the data
-        if ( m_afterCommandSleep ) wxMilliSleep( m_afterCommandSleep );
-
     }
 
-    return false;
+    return rv;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -377,14 +166,12 @@ int VscpRemoteTcpIf::doCommand( wxString& cmd )
 #endif  
         
     doClrInputQueue();    
-    if ( NULL != m_pClientTcpIpWorkerThread ) {
-        mg_send( m_pClientTcpIpWorkerThread->m_mgrTcpIpConnection.active_connections,
-                    cmd.mbc_str(),
-                    cmd.Length() );
+
+    int n;
+    if ( 0 == ( n = stcp_write( m_conn, (const char *)cmd.mbc_str(), cmd.Length() ) ) ||
+        n != cmd.Length() ) {
+        return VSCP_ERROR_ERROR;
     }
-    
-    // Give the server some time to deliver data
-    //wxMilliSleep( m_afterCommandSleep  );
     
     /*
     wxLogDebug( _("------------------------------------------------------------") );
@@ -394,13 +181,17 @@ int VscpRemoteTcpIf::doCommand( wxString& cmd )
     }
     wxLogDebug( _("------------------------------------------------------------") );*/
     
-    if ( !checkReturnValue( false ) ) {
+    if ( !checkReturnValue( true ) ) {
 #ifdef DEBUG_INNER_COMMUNICTION        
         wxLogDebug( _("doCommand: checkReturnValue failed") );
 #endif        
         return VSCP_ERROR_ERROR;
     }
-    
+
+/*
+    wxLogDebug( _("------------------------------------------------------------") );
+*/
+
     return VSCP_ERROR_SUCCESS;
 }
 
@@ -500,29 +291,7 @@ int VscpRemoteTcpIf::doCmdOpen( const wxString& strHostname,
 {
     wxString strBuf;
     wxString wxstr;
-   
-    m_pClientTcpIpWorkerThread = new clientTcpIpWorkerThread();
-    if ( NULL == m_pClientTcpIpWorkerThread ) return VSCP_ERROR_MEMORY;
-    m_pClientTcpIpWorkerThread->m_pvscpRemoteTcpIpIf = this;
-    m_pClientTcpIpWorkerThread->m_hostname = strHostname;
-    
-    // Create the worker thread
-    if (wxTHREAD_NO_ERROR != m_pClientTcpIpWorkerThread->Create() ) {
-#ifdef DEBUG_LIB_VSCP_HELPER        
-        wxLogDebug( _("Open: Unable to create thread.") );
-#endif        
-        delete m_pClientTcpIpWorkerThread;
-        return VSCP_ERROR_ERROR;
-    }
-
-    // Start the worker thread
-    if (wxTHREAD_NO_ERROR != m_pClientTcpIpWorkerThread->Run() ) {
-#ifdef DEBUG_LIB_VSCP_HELPER        
-        wxLogDebug( _("Open: Unable to start thread.") );
-#endif        
-        delete m_pClientTcpIpWorkerThread;
-        return VSCP_ERROR_ERROR;
-    }
+    int rv;
 
 #ifdef DEBUG_LIB_VSCP_HELPER    
     wxLogDebug( _("============================================================") );
@@ -530,46 +299,18 @@ int VscpRemoteTcpIf::doCmdOpen( const wxString& strHostname,
     wxLogDebug( _("============================================================") );   
 #endif    
     
-    //while ( m_pClientTcpIpWorkerThread->m_mgrTcpIpConnection.active_connections &  )
 
-    int rv;
-    if ( wxSEMA_NO_ERROR != 
-            ( rv = m_semConnected.WaitTimeout( 10 * (m_responseTimeOut + 1 ) ) ) ) {
-        m_pClientTcpIpWorkerThread->m_bRun = false;
 #ifdef DEBUG_LIB_VSCP_HELPER        
         wxString wxlog = wxString::Format(_("Connection failed: Code=%d - "), rv);       
         wxLogDebug( wxlog+ strHostname );
 #endif        
-        wxMilliSleep( 500 );
-        return VSCP_ERROR_TIMEOUT;
-    }
+ 
     
 #ifdef DEBUG_LIB_VSCP_HELPER    
     wxLogDebug( _("Checking server response") );
-#endif    
-    wxMilliSleep( 200 + m_afterCommandSleep );
-
-    bool bFound = false;
-    for ( int i=0; i<1; i++ ) {	
-        if ( checkReturnValue() ) {
-#ifdef DEBUG_LIB_VSCP_HELPER            
-            wxLogDebug( _("+OK found from server.") );
-#endif            
-            bFound = true;
-            break;
-        }
-
-        wxLogDebug( _("Still waiting... %d"), i );
-    }
-
-    if ( !bFound ) {
-        m_pClientTcpIpWorkerThread->m_bRun = false;
-#ifdef DEBUG_LIB_VSCP_HELPER        
-        wxLogDebug( _("No +OK found ") + strHostname );
 #endif        
-        return VSCP_ERROR_CONNECTION;
-    }
 
+/*
     // Username
     wxstr = strUsername;
     wxstr.Trim(false);
@@ -595,7 +336,7 @@ int VscpRemoteTcpIf::doCmdOpen( const wxString& strHostname,
     wxLogDebug( _("Password OK") );    
     wxLogDebug( _("Successful log in to VSCP server") );
 #endif    
-  
+  */
     return VSCP_ERROR_SUCCESS;  
 }
 
@@ -607,26 +348,9 @@ int VscpRemoteTcpIf::doCmdOpen( const wxString& strHostname,
 
 int VscpRemoteTcpIf::doCmdClose( void )
 {
-    if ( m_bConnected ) {    
+    if ( isConnected() ) {    
         // Try to behave
         wxString strCmd(_("QUIT\r\n"));
-        if ( NULL != m_pClientTcpIpWorkerThread ) {
-            (void)mg_send( m_pClientTcpIpWorkerThread->m_mgrTcpIpConnection.active_connections,
-                               strCmd.mbc_str(),
-                            strCmd.Length() );
-        }
-
-        // We skip the check here as the interfaces closes  
-
-    }
-
-    if ( NULL != m_pClientTcpIpWorkerThread ) {
-        m_pClientTcpIpWorkerThread->m_bRun = false;
-        m_pClientTcpIpWorkerThread->Delete();
-        // Thread pointer set to NULL in thread destructor
-#ifdef DEBUG_LIB_VSCP_HELPER        
-        wxLogDebug( _("Thread Deleted") );
-#endif        
     }
 
     return VSCP_ERROR_SUCCESS;  
@@ -640,7 +364,7 @@ int VscpRemoteTcpIf::doCmdClose( void )
 
 int VscpRemoteTcpIf::doCmdNOOP( void )
 {
-    if ( !m_bConnected ) return VSCP_ERROR_CONNECTION; // The socket is close
+    if ( !isConnected() ) return VSCP_ERROR_CONNECTION; // The socket is close
   
     // If receive loop actived terminate
     if ( m_bModeReceiveLoop ) return VSCP_ERROR_PARAMETER;
@@ -659,7 +383,7 @@ int VscpRemoteTcpIf::doCmdNOOP( void )
 
 int VscpRemoteTcpIf::doCmdClear( void )
 {	
-    if ( !m_bConnected ) return VSCP_ERROR_CONNECTION; 
+    if ( !isConnected() ) return VSCP_ERROR_CONNECTION; 
   
     // If receive loop active terminate
     if ( m_bModeReceiveLoop ) return VSCP_ERROR_PARAMETER;
@@ -679,7 +403,7 @@ int VscpRemoteTcpIf::doCmdClear( void )
 
 int VscpRemoteTcpIf::doCmdSend( const vscpEvent *pEvent )
 {	
-    if ( !m_bConnected ) return VSCP_ERROR_CONNECTION;
+    if ( !isConnected() ) return VSCP_ERROR_CONNECTION;
   
     // If receive loop active terminate
     if ( m_bModeReceiveLoop ) return VSCP_ERROR_PARAMETER;
@@ -719,7 +443,7 @@ int VscpRemoteTcpIf::doCmdSendEx( const vscpEventEx *pEventEx )
     wxString strBuf, strWrk, strGUID;
     unsigned char guidsum = 0;
     
-    if ( !m_bConnected ) return VSCP_ERROR_CONNECTION;
+    if ( !isConnected() ) return VSCP_ERROR_CONNECTION;
   
     // If receive loop active terminate
     if ( m_bModeReceiveLoop ) return VSCP_ERROR_PARAMETER;
@@ -758,7 +482,7 @@ int VscpRemoteTcpIf::doCmdSendLevel1( const canalMsg *pCanalMsg )
 {
     vscpEventEx event;
     
-    if ( !m_bConnected ) return VSCP_ERROR_CONNECTION;
+    if ( !isConnected() ) return VSCP_ERROR_CONNECTION;
   
     // If receive loop active terminate
     if ( m_bModeReceiveLoop ) return VSCP_ERROR_PARAMETER;
@@ -816,7 +540,7 @@ int VscpRemoteTcpIf::doCmdReceive( vscpEvent *pEvent )
     wxString strWrk;
     wxString strGUID;
     
-    if ( !m_bConnected ) return VSCP_ERROR_CONNECTION;   
+    if ( !isConnected() ) return VSCP_ERROR_CONNECTION;   
     if ( NULL == pEvent ) return VSCP_ERROR_PARAMETER;
   
      // If receive loop active terminate
@@ -855,7 +579,7 @@ int VscpRemoteTcpIf::doCmdReceiveEx( vscpEventEx *pEventEx )
     wxString strWrk;
     wxString strGUID;
     
-    if ( !m_bConnected ) return VSCP_ERROR_CONNECTION;
+    if ( !isConnected() ) return VSCP_ERROR_CONNECTION;
     if ( NULL == pEventEx ) return VSCP_ERROR_PARAMETER;
   
     // If receive loop active terminate
@@ -902,7 +626,7 @@ int VscpRemoteTcpIf::doCmdReceiveLevel1( canalMsg *pCanalMsg )
 {
     vscpEventEx event;
 
-    if ( !m_bConnected ) return VSCP_ERROR_CONNECTION;
+    if ( !isConnected() ) return VSCP_ERROR_CONNECTION;
     
     // Must have a valid pointer
     if ( NULL == pCanalMsg ) return VSCP_ERROR_PARAMETER;
@@ -940,7 +664,7 @@ int VscpRemoteTcpIf::doCmdReceiveLevel1( canalMsg *pCanalMsg )
 
 int VscpRemoteTcpIf::doCmdEnterReceiveLoop( void )
 {
-    if ( !m_bConnected ) return VSCP_ERROR_CONNECTION;
+    if ( !isConnected() ) return VSCP_ERROR_CONNECTION;
 
     // If receive loop active terminate
     if ( m_bModeReceiveLoop ) return VSCP_ERROR_SUCCESS;
@@ -967,7 +691,7 @@ int VscpRemoteTcpIf::doCmdEnterReceiveLoop( void )
 
 int VscpRemoteTcpIf::doCmdQuitReceiveLoop( void )
 {
-    if ( !m_bConnected ) return VSCP_ERROR_CONNECTION;
+    if ( !isConnected() ) return VSCP_ERROR_CONNECTION;
 
     // If receive loop active terminate
     if ( !m_bModeReceiveLoop ) return VSCP_ERROR_SUCCESS;
@@ -1000,17 +724,17 @@ int VscpRemoteTcpIf::doCmdBlockingReceive( vscpEvent *pEvent, uint32_t timeout )
     if (NULL == pEvent) return VSCP_ERROR_PARAMETER;
 
     // Must be connected
-    if (!m_bConnected) return VSCP_ERROR_CONNECTION;
+    if (!isConnected()) return VSCP_ERROR_CONNECTION;
 
     // If not receive loop active terminate
     if (!m_bModeReceiveLoop) return VSCP_ERROR_PARAMETER;
 
     if ( !getInputQueueCount() ) {
         // No need to wait for stuff if already there
-        if ( !getInputQueueCount() && 
+        /*if ( !getInputQueueCount() && 
              ( wxSEMA_TIMEOUT == m_psemInputArray->WaitTimeout(timeout) ) ) {
             return VSCP_ERROR_TIMEOUT;
-        }
+        }*/
     }
 
     // We have a possible incoming event
@@ -1048,7 +772,7 @@ int VscpRemoteTcpIf::doCmdBlockingReceive( vscpEventEx *pEventEx, uint32_t timeo
     if ( NULL == pEventEx ) return VSCP_ERROR_PARAMETER;
 
     // Must be connected
-    if ( !m_bConnected ) return VSCP_ERROR_CONNECTION;
+    if ( !isConnected() ) return VSCP_ERROR_CONNECTION;
 
     // If not receive loop active terminate
     if ( !m_bModeReceiveLoop ) return VSCP_ERROR_PARAMETER;
@@ -1086,7 +810,7 @@ int VscpRemoteTcpIf::doCmdDataAvailable( void )
     wxString strLine;
     int nMsg = 0;	
   
-    if ( !m_bConnected ) return VSCP_ERROR_ERROR;
+    if ( !isConnected() ) return VSCP_ERROR_ERROR;
     
     // If receive loop active terminate
     if ( m_bModeReceiveLoop ) return VSCP_ERROR_ERROR;
@@ -1124,7 +848,7 @@ int VscpRemoteTcpIf::doCmdStatus( canalStatus *pStatus )
     wxString strLine;
     wxStringTokenizer strTokens;
 
-    if ( !m_bConnected ) return VSCP_ERROR_CONNECTION;
+    if ( !isConnected() ) return VSCP_ERROR_CONNECTION;
   
     // If receive loop active terminate
     if ( m_bModeReceiveLoop ) return VSCP_ERROR_PARAMETER;
@@ -1193,7 +917,7 @@ int VscpRemoteTcpIf::doCmdStatistics( VSCPStatistics *pStatistics )
     wxString strLine;
     wxStringTokenizer strTokens;
 
-    if ( !m_bConnected ) return VSCP_ERROR_CONNECTION;
+    if ( !isConnected() ) return VSCP_ERROR_CONNECTION;
   
     // If receive loop active terminate
     if ( m_bModeReceiveLoop ) return VSCP_ERROR_PARAMETER;
@@ -1341,7 +1065,7 @@ int VscpRemoteTcpIf::doCmdFilter( const vscpEventFilter *pFilter )
 {
     wxString strCmd;
     
-    if ( !m_bConnected ) return VSCP_ERROR_CONNECTION;
+    if ( !isConnected() ) return VSCP_ERROR_CONNECTION;
   
     // If receive loop active terminate
     if ( m_bModeReceiveLoop ) return VSCP_ERROR_PARAMETER;
@@ -1411,7 +1135,7 @@ int VscpRemoteTcpIf::doCmdFilter( const wxString& filter, const wxString& mask )
 {
     wxString strCmd;
 
-    if ( !m_bConnected ) return VSCP_ERROR_CONNECTION;
+    if ( !isConnected() ) return VSCP_ERROR_CONNECTION;
   
     // If receive loop active terminate
     if ( m_bModeReceiveLoop ) return VSCP_ERROR_PARAMETER;
@@ -1443,7 +1167,7 @@ int VscpRemoteTcpIf::doCmdVersion( uint8_t *pMajorVer,
     wxString strLine;
     wxStringTokenizer strTokens;
       
-    if ( !m_bConnected ) return VSCP_ERROR_CONNECTION;
+    if ( !isConnected() ) return VSCP_ERROR_CONNECTION;
     
     // If receive loop active terminate
     if ( m_bModeReceiveLoop ) return VSCP_ERROR_PARAMETER;
@@ -1543,7 +1267,7 @@ int VscpRemoteTcpIf::doCmdGetGUID( char *pGUID )
     wxString strLine;
     wxStringTokenizer strTokens;
 
-    if ( !m_bConnected ) return VSCP_ERROR_CONNECTION;
+    if ( !isConnected() ) return VSCP_ERROR_CONNECTION;
   
     // If receive loop active terminate
     if ( m_bModeReceiveLoop ) return VSCP_ERROR_PARAMETER;
@@ -1593,7 +1317,7 @@ int VscpRemoteTcpIf::doCmdGetGUID( cguid& ifguid )
     wxString strLine;
     wxStringTokenizer strTokens;
 
-    if ( !m_bConnected ) return VSCP_ERROR_CONNECTION;
+    if ( !isConnected() ) return VSCP_ERROR_CONNECTION;
   
     // If receive loop active terminate
     if ( m_bModeReceiveLoop ) return VSCP_ERROR_PARAMETER;
@@ -1623,7 +1347,7 @@ int VscpRemoteTcpIf::doCmdSetGUID( const unsigned char *pGUID )
     wxString strLine;
     wxString strCmd;
 
-    if ( !m_bConnected ) return VSCP_ERROR_CONNECTION;
+    if ( !isConnected() ) return VSCP_ERROR_CONNECTION;
 
     if ( NULL == pGUID ) return VSCP_ERROR_GENERIC;
   
@@ -1680,7 +1404,7 @@ int VscpRemoteTcpIf::doCmdGetChannelInfo( VSCPChannelInfo *pChannelInfo )
     wxStringTokenizer strTokens;
     wxString strLine;
 
-    if ( !m_bConnected ) return VSCP_ERROR_CONNECTION;
+    if ( !isConnected() ) return VSCP_ERROR_CONNECTION;
     
     // Must have a valid pointer
     if ( NULL == pChannelInfo ) return VSCP_ERROR_PARAMETER;
@@ -1727,7 +1451,7 @@ int VscpRemoteTcpIf::doCmdGetChannelID( uint32_t *pChannelID )
 {
     wxString strLine;
 
-    if ( !m_bConnected ) return VSCP_ERROR_CONNECTION;
+    if ( !isConnected() ) return VSCP_ERROR_CONNECTION;
   
     // Check pointer
     if ( NULL == pChannelID ) return VSCP_ERROR_PARAMETER;
@@ -1758,7 +1482,7 @@ int VscpRemoteTcpIf::doCmdGetChannelID( uint32_t *pChannelID )
 
 int VscpRemoteTcpIf::doCmdInterfaceList( wxArrayString& wxarray )
 {
-    if ( !m_bConnected ) return VSCP_ERROR_CONNECTION;
+    if ( !isConnected() ) return VSCP_ERROR_CONNECTION;
 
     wxString strCmd(_("INTERFACE LIST\r\n"));
     if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
@@ -1786,7 +1510,7 @@ int VscpRemoteTcpIf::doCmdInterfaceList( wxArrayString& wxarray )
 
 int VscpRemoteTcpIf::doCmdShutDown( void )
 {
-    if ( !m_bConnected ) return VSCP_ERROR_CONNECTION;
+    if ( !isConnected() ) return VSCP_ERROR_CONNECTION;
 
     wxString strCmd(_("SHUTDOWN\r\n"));
     if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
@@ -1821,7 +1545,7 @@ int VscpRemoteTcpIf::getRemoteVariableList( wxArrayString& array,
 {
     wxString strCmd;
     
-    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
+    if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
     
     strCmd = _("VAR LIST ") + regexp + _(" ");
     if ( type ) strCmd += wxString::Format( _("%d"), type );
@@ -1854,7 +1578,7 @@ int VscpRemoteTcpIf::saveRemoteVariablesToDisk( const wxString& path,
 {
     wxString strCmd;
     
-    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN;    // Connection closed.
+    if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN;    // Connection closed.
     
     strCmd = _("VAR SAVE ") + path + _(" ");
     strCmd += wxString::Format( _("%d "), select ) + regExp;
@@ -1874,7 +1598,7 @@ int VscpRemoteTcpIf::loadRemoteVariablesFromDisk( const wxString& path )
 {
     wxString strCmd;
     
-    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN;    // Connection closed.
+    if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN;    // Connection closed.
     
     strCmd = _("VAR LOAD ") + path + _("\r\n");
     if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
@@ -1900,7 +1624,7 @@ int VscpRemoteTcpIf::createRemoteVariable( const wxString& name,
 {
     wxString strCmd;
     
-    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN;    // Connection closed.
+    if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN;    // Connection closed.
 
     strCmd = _("VAR WRITE ") + name + _(";");
     strCmd += type + _(";");
@@ -1923,7 +1647,7 @@ int VscpRemoteTcpIf::deleteRemoteVariable( const wxString& name )
 {
     wxString strCmd;
     
-    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
+    if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
     
     strCmd = _("VAR REMOVE ") + name + _("\r\n");
     if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
@@ -1942,7 +1666,7 @@ int VscpRemoteTcpIf::getRemoteVariableLastChange( const wxString& name, wxDateTi
     wxString wxstr;
     wxString strVariable;
     
-    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
+    if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
     
     if ( VSCP_ERROR_SUCCESS != getRemoteVariableAsString( name, strVariable ) ) {
         return VSCP_ERROR_ERROR;
@@ -1978,7 +1702,7 @@ int VscpRemoteTcpIf::getRemoteVariableType( const wxString& name, uint8_t *pType
     wxString wxstr;
     wxString strVariable;
     
-    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
+    if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
     
     if ( VSCP_ERROR_SUCCESS != getRemoteVariableAsString( name, strVariable ) ) {
         return VSCP_ERROR_ERROR;
@@ -2008,7 +1732,7 @@ int VscpRemoteTcpIf::getRemoteVariablePersistence( const wxString& name, bool *p
     wxString wxstr;
     wxString strVariable;
     
-    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
+    if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
     
     if ( VSCP_ERROR_SUCCESS != getRemoteVariableAsString( name, strVariable ) ) {
         return VSCP_ERROR_ERROR;
@@ -2044,7 +1768,7 @@ int VscpRemoteTcpIf::getRemoteVariableOwner( const wxString& name, uint32_t *pOw
     wxString wxstr;
     wxString strVariable;
     
-    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
+    if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
     
     if ( VSCP_ERROR_SUCCESS != getRemoteVariableAsString( name, strVariable ) ) {
         return VSCP_ERROR_ERROR;
@@ -2078,7 +1802,7 @@ int VscpRemoteTcpIf::getRemoteVariableAccessRights( const wxString& name,
     wxString wxstr;
     wxString strVariable;
     
-    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
+    if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
     
     if ( VSCP_ERROR_SUCCESS != getRemoteVariableAsString( name, strVariable ) ) {
         return VSCP_ERROR_ERROR;
@@ -2113,7 +1837,7 @@ int VscpRemoteTcpIf::getRemoteVariableAsString( const wxString& name,
     wxString strLine;
     wxString strCmd;
 
-    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
+    if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
 
     strCmd = _("VAR READ ") + name + _("\r\n");
     if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
@@ -2148,7 +1872,7 @@ int VscpRemoteTcpIf::setRemoteVariableFromString( const wxString& name,
 {
     wxString strCmd; 
     
-    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
+    if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
     
     strCmd = _("VAR WRITE ") + name + _(";STRING;");
     if ( bPersistent ) {
@@ -2176,7 +1900,7 @@ int VscpRemoteTcpIf::getRemoteVariableValue( const wxString& name, wxString& str
     wxString strLine;
     wxString strCmd;
 
-    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
+    if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
     
     strCmd = _("VAR READVALUE ") + name + _("\r\n");
     if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
@@ -2207,7 +1931,7 @@ int VscpRemoteTcpIf::setRemoteVariableValue( const wxString& name, wxString& str
     wxString strLine;
     wxString strCmd;
 
-    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
+    if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
     
     strCmd = _("VAR WRITEVALUE ") + name + _(" ");
     strCmd += strValue;
@@ -3140,7 +2864,7 @@ int VscpRemoteTcpIf::tableCreate( const wxString& defTable )
 {    
     wxString strCmd;
 
-    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
+    if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
     
     strCmd = _("TABLE CREATE ") + defTable;
     strCmd += _("\r\n");
@@ -3161,7 +2885,7 @@ int VscpRemoteTcpIf::tableDelete( const wxString& tblName, bool bDeleteFile )
 {
     wxString strCmd;
 
-    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
+    if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
     
     strCmd = _("TABLE DELETE ") + tblName + _(" ");
     if ( bDeleteFile ) {
@@ -3184,7 +2908,7 @@ int VscpRemoteTcpIf::tableList( wxArrayString &tablesArray )
 {
     wxString strCmd;
     
-    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
+    if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
     
     strCmd = _("TABLE LIST\r\n");
     //if ( type ) strCmd += wxString::Format( _("%d"), type );
@@ -3215,7 +2939,7 @@ int VscpRemoteTcpIf::tableListInfo( const wxString &tblName, wxString &tableInfo
 {
     wxString strCmd;
     
-    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
+    if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
     
     strCmd = _("TABLE LIST ");
     strCmd += tblName + _(" ");
@@ -3254,7 +2978,7 @@ int VscpRemoteTcpIf::tableGet( const wxString& tblName,
 {
     wxString strCmd;
     
-    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
+    if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
     
     strCmd = _("TABLE GET ");
     strCmd += tblName + _(" ");
@@ -3294,7 +3018,7 @@ int VscpRemoteTcpIf::tableGetRaw( const wxString& tblName,
 {
     wxString strCmd;
     
-    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
+    if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
     
     strCmd = _("TABLE GETRAW ");
     strCmd += tblName + _(" ");
@@ -3330,7 +3054,7 @@ int VscpRemoteTcpIf::tableLog( const wxString& tblName,
 {
     wxString strCmd;
 
-    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
+    if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
     
     strCmd = _("TABLE LOG ") + tblName + _(" ");
     strCmd = wxString::Format(_("%f "), value );
@@ -3358,7 +3082,7 @@ int VscpRemoteTcpIf::tableLogSQL( const wxString& tblName, const wxString& sql )
 {
     wxString strCmd;
 
-    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
+    if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
     
     strCmd = _("TABLE LOG ") + tblName + _(" ") + sql;
     strCmd += _("\r\n");
@@ -3382,7 +3106,7 @@ int VscpRemoteTcpIf::tableGetNumRecords( const wxString& tblName,
     wxString strLine;
     wxString strCmd;
 
-    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN;        // Connection closed.
+    if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN;        // Connection closed.
     if ( NULL == pRecords ) return VSCP_ERROR_PARAMETER;    
     
     strCmd = _("TABLE RECORDS ") + tblName + _(" ");
@@ -3418,7 +3142,7 @@ int VscpRemoteTcpIf::tableGetFirstDate( const wxString& tblName,
     wxString strLine;
     wxString strCmd;
 
-    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN;        // Connection closed.   
+    if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN;        // Connection closed.   
     
     strCmd = _("TABLE FIRSTDATE ") + tblName + _(" ");
     strCmd += from.FormatISOCombined() + _(" ");
@@ -3454,7 +3178,7 @@ int VscpRemoteTcpIf::tableGetLastDate( const wxString& tblName,
     wxString strLine;
     wxString strCmd;
 
-    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN;        // Connection closed.   
+    if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN;        // Connection closed.   
     
     strCmd = _("TABLE LASTDATE ") + tblName + _(" ");
     strCmd += from.FormatISOCombined() + _(" ");
@@ -3489,7 +3213,7 @@ int VscpRemoteTcpIf::tableGetSum( const wxString& tblName,
     wxString strLine;
     wxString strCmd;
 
-    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN;        // Connection closed.
+    if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN;        // Connection closed.
     if ( NULL == pSum ) return VSCP_ERROR_PARAMETER;
     
     strCmd = _("TABLE SUM ") + tblName + _(" ");
@@ -3525,7 +3249,7 @@ int VscpRemoteTcpIf::tableGetMin( const wxString& tblName,
     wxString strLine;
     wxString strCmd;
 
-    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN;        // Connection closed.
+    if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN;        // Connection closed.
     if ( NULL == pMin ) return VSCP_ERROR_PARAMETER;
     
     strCmd = _("TABLE MIN ") + tblName + _(" ");
@@ -3562,7 +3286,7 @@ int VscpRemoteTcpIf::tableGetMax( const wxString& tblName,
     wxString strLine;
     wxString strCmd;
 
-    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN;        // Connection closed.
+    if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN;        // Connection closed.
     if ( NULL == pMax ) return VSCP_ERROR_PARAMETER;
     
     strCmd = _("TABLE MAX ") + tblName + _(" ");
@@ -3599,7 +3323,7 @@ int VscpRemoteTcpIf::tableGetAverage( const wxString& tblName,
     wxString strLine;
     wxString strCmd;
 
-    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN;        // Connection closed.
+    if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN;        // Connection closed.
     if ( NULL == pAverage ) return VSCP_ERROR_PARAMETER;
     
     strCmd = _("TABLE AVERAGE ") + tblName + _(" ");
@@ -3636,7 +3360,7 @@ int VscpRemoteTcpIf::tableGetMedian( const wxString& tblName,
     wxString strLine;
     wxString strCmd;
 
-    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN;        // Connection closed.
+    if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN;        // Connection closed.
     if ( NULL == pMedian ) return VSCP_ERROR_PARAMETER;
     
     strCmd = _("TABLE MEDIAN ") + tblName + _(" ");
@@ -3672,7 +3396,7 @@ int VscpRemoteTcpIf::tableGetStdDev( const wxString& tblName,
     wxString strLine;
     wxString strCmd;
 
-    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN;        // Connection closed.
+    if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN;        // Connection closed.
     if ( NULL == pStdDev ) return VSCP_ERROR_PARAMETER;
     
     strCmd = _("TABLE STDDEV ") + tblName + _(" ");
@@ -3708,7 +3432,7 @@ int VscpRemoteTcpIf::tableGetVariance( const wxString& tblName,
     wxString strLine;
     wxString strCmd;
 
-    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN;        // Connection closed.
+    if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN;        // Connection closed.
     if ( NULL == pVariance ) return VSCP_ERROR_PARAMETER;
     
     strCmd = _("TABLE VARIANCE ") + tblName + _(" ");
@@ -3744,7 +3468,7 @@ int VscpRemoteTcpIf::tableGetMode( const wxString& tblName,
     wxString strLine;
     wxString strCmd;
 
-    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN;        // Connection closed.
+    if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN;        // Connection closed.
     if ( NULL == pMode ) return VSCP_ERROR_PARAMETER;
     
     strCmd = _("TABLE MODE ") + tblName + _(" ");
@@ -3780,7 +3504,7 @@ int VscpRemoteTcpIf::tableGetLowerQ( const wxString& tblName,
     wxString strLine;
     wxString strCmd;
 
-    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN;        // Connection closed.
+    if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN;        // Connection closed.
     if ( NULL == pLowerq ) return VSCP_ERROR_PARAMETER;
     
     strCmd = _("TABLE LOWERQ ") + tblName + _(" ");
@@ -3816,7 +3540,7 @@ int VscpRemoteTcpIf::tableGetUpperQ( const wxString& tblName,
     wxString strLine;
     wxString strCmd;
 
-    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN;        // Connection closed.
+    if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN;        // Connection closed.
     if ( NULL == pUpperq ) return VSCP_ERROR_PARAMETER;
     
     strCmd = _("TABLE UPPERQ ") + tblName + _(" ");
@@ -3850,7 +3574,7 @@ int VscpRemoteTcpIf::tableClear( const wxString& tblName,
 {
     wxString strCmd;
 
-    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN;        // Connection closed.
+    if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN;        // Connection closed.
     
     strCmd = _("TABLE CLEAR ") + tblName + _(" ");
     strCmd += from.FormatISOCombined() + _(" ");
@@ -4609,7 +4333,7 @@ int VscpRemoteTcpIf::fetchIterfaceGUID( const wxString& ifName, cguid& guid )
     wxArrayString ifarray;
     uint8_t cnt = 0;
 
-    if ( !m_bConnected ) {
+    if ( !isConnected() ) {
         return VSCP_ERROR_NOT_OPEN;
     }
 

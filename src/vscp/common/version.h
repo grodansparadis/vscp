@@ -39,7 +39,7 @@
 
 #define VSCPD_DISPLAY_VERSION "13.0.0.13 Aluminium"
 
-#define VSCPD_COPYRIGHT "Copyright (C) 2000-2018, Grodans Paradis AB, http://www.paradiseofthefrog.com"
-#define VSCPD_COPYRIGHT_HTML "Copyright (C) 2000-2018, <a href=\"mailto:info@paradiseofthefrog.com\">Paradise of the Frog</a>, <a href=\"http://www.paradiseofthefrog.com\">http://www.paradiseofthefrog.com</a>"
+#define VSCPD_COPYRIGHT "Copyright (C) 2000-2018, Grodans Paradis AB, https://www.grodansparadis.com"
+#define VSCPD_COPYRIGHT_HTML "Copyright (C) 2000-2018, <a href=\"mailto:info@grodansparadis.com\">Paradise of the Frog</a>, <a href=\"http://www.grodansparadis.com\">https://www.grodansparadis.com</a>"
 
 #endif
