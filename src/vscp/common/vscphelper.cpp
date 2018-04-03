@@ -435,6 +435,46 @@ char *vscp_trimWhiteSpace( char *str )
     return str;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// vscp_reverse
+//
+
+char *vscp_reverse(const char * const s)
+{
+  if ( NULL == s ) return NULL;
+  
+  size_t i, len = strlen(s);
+  char *r = (char *)malloc(len + 1);
+
+  for(i = 0; i < len; ++i) {
+    r[i] = s[len - i - 1];
+  }
+  
+  r[len] = 0;
+  return r;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// vscp_rstrstr
+//
+
+char *vscp_rstrstr( const char *s1, const char *s2)
+{
+  size_t  s1len = strlen(s1);
+  size_t  s2len = strlen(s2);
+  char *s;
+
+  if (s2len > s1len) return NULL;
+  
+  for (s = (char *)s1 + s1len - s2len; s >= s1; --s) {
+    if ( 0 == strncmp(s, s2, s2len) ) {
+      return s;
+    }
+  }
+  
+  return NULL;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // vscp_getTimeString

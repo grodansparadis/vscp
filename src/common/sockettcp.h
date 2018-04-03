@@ -72,13 +72,12 @@
 #endif
 
 // Common error codedes
-#define ERROR_STCP_TIMEOUT              (-1)
-#define ERROR_STCP_STOPPED              (-2)
+#define STCP_ERROR_TIMEOUT              (-1)
+#define STCP_ERROR_STOPPED              (-2)
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
-
 
 // Unified socket address. For IPv6 support, add IPv6 address structure in
 // the
@@ -174,7 +173,7 @@ struct stcp_connection
 
 
 /*!
- *  Connect (unsecururely) to remote
+ *  Connect (unsecurely) to remote
  */
 struct stcp_connection *
 stcp_connect_remote( const char *host,
@@ -185,7 +184,7 @@ stcp_connect_remote( const char *host,
                         int timeout );
 
 /*!
- *  Connect securly to remot
+ *  Connect securely to remote
  */
 
 struct stcp_connection *
@@ -206,20 +205,24 @@ stcp_getc( struct stcp_connection *conn );
 
 
 /*!
- * Read data from remote client.
+ * Read data from remote.
+ * 
  * @param conn Connection to read from.
  * @buf Buffer to read data into.
  * @len Size of buffer.
  * @mstimeout Timeout in milliseconds for read (>=0 use timeout -1 - use 
  *              default timeout.).
- * @return >= 0 Number of read characters. -1= timeout, -2 = error
+ * @return    >= 0 Number of read characters. 
+ *            -1= timeout, 
+ *            -2 = stopped.
  */
 int
 stcp_read( struct stcp_connection *conn, void *buf, size_t len, int mstimeout );
 
 
 /*!
- * Write data to remote client
+ * Write data to remote.
+ * 
  * @param conn Connection to read from.
  * @buf Buffer with data to write.
  * @len Number of chars to write.

@@ -175,7 +175,9 @@ extern "C" {
     
     char *vscp_trimWhiteSpace( char *str );
     
-  
+    char *vscp_reverse(const char * const s);
+    
+    char *vscp_rstrstr( const char *s1, const char *s2);
 
     
     /*!

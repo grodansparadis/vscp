@@ -36,8 +36,8 @@ WXGTK_CFLAGS = @WXGTK_CFLAGS@
 WXGTK_LIBS = @WXGTK_LIBS@
 WXGTK_STATIC_LIBS = @WXGTK_STATIC_LIBS@
 
-MONGOOSE_CFLAGS = -DMG_ENABLE_THREADS -DMG_ENABLE_IPV6 -DMG_ENABLE_SSL -DMG_ENABLE_HTTP_CGI -DMG_ENABLE_HTTP_SSI -DMG_ENABLE_HTTP_SSI_EXEC -DMG_ENABLE_HTTP_WEBDAV -DMG_ENABLE_GETADDRINFO -DMG_ENABLE_HTTP_URL_REWRITES
-CFLAGS = -std=c99 -fPIC -D__LINUX__ @CFLAGS@ @WXBASE_CFLAGS@ -DCBC -I../../common -I../../../common -I../../../common/lua -I../../../common/lua/src
+MONGOOSE_CFLAGS = -DMG_ENABLE_THREADS -DMG_ENABLE_IPV6 -DMG_ENABLE_SSL -DMG_ENABLE_GETADDRINFO 
+CFLAGS = -std=c11 -fPIC -D__LINUX__ @CFLAGS@ @WXBASE_CFLAGS@ -DCBC -I../../common -I../../../common -I../../../common/lua -I../../../common/lua/src
 CXXFLAGS = -std=c++11 -shared -fPIC @CXXFLAGS@ @WXBASE_CXXFLAGS@
 CPPFLAGS = -shared -fPIC @CPPFLAGS@ @WXBASE_CPPFLAGS@ -fno-var-tracking-assignments -I../../common -I../../../common -I../../../common/lua -I../../../common/lua/src
 CPPFLAGS += $(MONGOOSE_CFLAGS)
@@ -79,6 +79,7 @@ VSCPHELPER_OBJECTS =  libvscphelper.o \
 	vscphelperlib.o \
 	vscpremotetcpif.o \
 	vscphelper.o \
+	sockettcp.o \
 	guid.o \
 	crc.o \
 	crc8.o \
@@ -113,6 +114,9 @@ vscpremotetcpif.o: ../../common/vscpremotetcpif.cpp ../../common/vscpremotetcpif
 
 vscphelper.o: ../../common/vscphelper.cpp ../../common/vscphelper.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/vscphelper.cpp -o $@
+
+sockettcp.o: ../../../common/sockettcp.c ../../../common/sockettcp.h
+	        $(CC) $(CFLAGS) $(CPPFLAGS) -c ../../../common/sockettcp.c -o $@
 
 guid.o: ../../common/guid.cpp ../../common/guid.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/guid.cpp -o $@

@@ -2481,22 +2481,35 @@ stcp_close_connection(struct stcp_connection *conn)
 
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// stcp_poll
-//
-// Use milliseconds -1 to get SOCKET_TIMEOUT_QUANTUM timeout.
-//
+/*!
+ ****************************************************************************
+ * stcp_poll
+ *
+ * Use milliseconds -1 to get SOCKET_TIMEOUT_QUANTUM timeout.
+ *
+ * @param pfd - Pointer to array with file descriptors.
+ * @param n - Number of file descriptors in the pfd array.
+ * @param milliseconds - Time to wait for data on file decriptor.
+ *   If set too zero SOCKET_TIMEOUT_QUANTUM is used. If timout is
+ * set lower than quantum one timeout is performed. If greater several.
+ * @param stop_server - Pointer to int that can be set externally 
+ *                      to stop the block.
+ *
+ * @return 1 success, -1 timeout, -2 stopped
+ */
 
 static int
 stcp_poll( struct pollfd *pfd,
                 unsigned int n,
-                int milliseconds,
+                int mstimeout,
                 volatile int *stop_server)
 {
     // Call poll, but only for a maximum time of a few seconds.
     // This will allow to stop the server after some seconds, instead
     // of having to wait for a long socket timeout.
     int ms_now = SOCKET_TIMEOUT_QUANTUM; // Sleep quantum in ms
+
+    //printf("Timeout (stcp_poll) %d\n", mstimeout );
 
     do {
         int result;
@@ -2506,26 +2519,27 @@ stcp_poll( struct pollfd *pfd,
             return -2;
         }
 
-        // Set milliseconds to lowest value
-        if ( ( milliseconds >= 0 ) &&
-             ( milliseconds < ms_now ) ) {
-            ms_now = milliseconds;
+        // Set mstimeout to lowest value
+        if ( ( mstimeout >= 0 ) &&
+             ( mstimeout < ms_now ) ) {
+            ms_now = mstimeout;
         }
 
-        result = poll(pfd, n, ms_now);
+        result = poll( pfd, n, ms_now  );
         if ( result != 0 ) {
             // Poll returned either success (1) or error (-1).
             // Forward both to the caller.
+            //printf("DATA\n");
             return result;
         }
 
         // Poll returned timeout (0).
-        if ( milliseconds > 0 ) {
-            milliseconds -= ms_now;
+        if ( mstimeout > 0 ) {
+            mstimeout -= ms_now;
         }
 
     }
-    while ( milliseconds > 0 );
+    while ( mstimeout > 0 );
 
     // timeout: return 0
     return 0;
@@ -2710,8 +2724,6 @@ stcp_push_inner( struct stcp_connection *conn,
 static int64_t
 stcp_push_all( struct stcp_connection *conn,
                 FILE *fp,
-                //int sock,
-                //SSL *ssl,
                 const char *buf,
                 int64_t len )
 {
@@ -2749,7 +2761,7 @@ stcp_push_all( struct stcp_connection *conn,
 // Return value:
 //  >=0 .. number of bytes successfully read
 //   -1 .. timeout
-//   -2 .. error
+//   -2 .. stopped
 //
 
 static int
@@ -2778,13 +2790,13 @@ stcp_pull_inner( FILE *fp,
         // CGI pipe, fread() may block until IO buffer is filled up. We
         // cannot afford to block and must pass all read bytes immediately
         // to the client.
-        nread = (int) read(fileno(fp), buf, (size_t) len);
+        nread = (int) read( fileno(fp), buf, (size_t)len );
         err = (nread < 0) ? errno : 0;
 
         if ( ( 0 == nread ) && ( len > 0 ) ) {
             // Should get data, but got EOL
             return -2;
-	}
+	    }
 
     }
     else if ( ( conn->ssl != NULL) &&
@@ -2869,9 +2881,11 @@ stcp_pull_inner( FILE *fp,
         pfd[0].fd = conn->client.sock;
         pfd[0].events = POLLIN;
         pollres = stcp_poll( pfd, 1, mstimeout, &(conn->stop_flag) );
+
         if ( conn->stop_flag ) {
             return -2; 
         }
+
         if ( pollres > 0 ) {
             
             nread = (int)recv( conn->client.sock, buf, (len_t)len, 0 );
@@ -2933,7 +2947,7 @@ stcp_pull_inner( FILE *fp,
             // EAGAIN/EWOULDBLOCK:
             // standard case if called from close_socket_gracefully
             // => should return -1
-            // or timeout occured
+            // or timeout occurred
             // => the code must stay in the while loop
 
             // EINTR can be generated on a socket with a timeout set even
@@ -2948,14 +2962,15 @@ stcp_pull_inner( FILE *fp,
 #endif
     }
 
-    // Timeout occured, but no data available.
+    // Timeout occurred, but no data available.
     return -1;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // stcp_pull_all
 //
-// Read len bytes withing timout set by conn.timeout
+// Read len bytes within timout set by conn.timeout
+// Will read until timeout or error/abort.
 // 
 // >= 0 Read data
 // < 0 - Error
@@ -2968,6 +2983,7 @@ stcp_pull_all( FILE *fp, struct stcp_connection *conn, char *buf, int len, int m
     int n, nread = 0;
     uint64_t start_time = 0, now = 0, timeout_ns = 0;
 
+    // Set timeout
     if ( mstimeout >= 0 ) {
         start_time = stcp_get_current_time_ns();
         timeout_ns = (uint64_t)((double)mstimeout * 1.0E6);
@@ -2977,13 +2993,13 @@ stcp_pull_all( FILE *fp, struct stcp_connection *conn, char *buf, int len, int m
         
         n = stcp_pull_inner( fp, conn, buf + nread, len, mstimeout );
         
-        if ( n == -2 ) {
-            if (nread == 0) {
+        if ( STCP_ERROR_STOPPED == n ) {
+            if ( 0 == nread ) {
                 nread = -1; // Propagate the error
             }
             break;
         }
-        else if ( n == -1 ) {
+        else if ( STCP_ERROR_TIMEOUT == n ) {
             // timeout
             if ( mstimeout >= 0 ) {
                 now = stcp_get_current_time_ns();
@@ -3037,11 +3053,11 @@ stcp_read_inner( struct stcp_connection *conn, void *buf, size_t len, int mstime
     int64_t len64 =
             (int64_t) ((len > INT_MAX) ? INT_MAX : len); // since the return value is
                                                          // int, we may not read more
-	                                                 // bytes
+	                                                     // bytes
     const char *body;
 
-    if (conn == NULL) {
-        return 0;
+    if ( conn == NULL ) {
+        return -1;
     }
 
     nread = 0;
@@ -3054,7 +3070,7 @@ stcp_read_inner( struct stcp_connection *conn, void *buf, size_t len, int mstime
         nread = ( (nread > 0) ? nread : n);
      }
 
-    return (int) nread;
+    return (int)nread;
 
 }
 
@@ -3090,7 +3106,7 @@ stcp_read( struct stcp_connection *conn, void *buf, size_t len, int mstimeout )
     }
 
     if ( ( conn == NULL ) || ( NULL == buf ) ) {
-        return 0; // TODO really 0?
+        return -1; // TODO really 0?
     }
     
     memset( buf, 0, len );
@@ -3116,8 +3132,6 @@ stcp_write( struct stcp_connection *conn, const void *buf, size_t len )
     
     total = stcp_push_all( conn,
                             NULL,
-                            //conn->client.sock,
-                            //conn->ssl,
                             (const char *)buf,
                             (int64_t)len);
 

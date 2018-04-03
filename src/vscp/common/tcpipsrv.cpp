@@ -1710,7 +1710,7 @@ void TCPClientThread::handleClientDataAvailable ( struct mg_connection *conn,
     }
 
     sprintf ( outbuf,
-        "%zd\r\n%s",
+        "%zd\r\n%s\r\n",
         pClientItem->m_clientInputQueue.GetCount(),
         MSG_OK );
     mg_send( conn,  outbuf, strlen ( outbuf ) );
@@ -1758,7 +1758,7 @@ void TCPClientThread::handleClientGetStatistics ( struct mg_connection *conn,
         return;
     }
 
-    sprintf ( outbuf, "%lu,%lu,%lu,%lu,%lu,%lu,%lu\r\n%s",
+    sprintf ( outbuf, "%lu,%lu,%lu,%lu,%lu,%lu,%lu\r\n%s\r\n",
         pClientItem->m_statistics.cntBusOff,
         pClientItem->m_statistics.cntBusWarnings,
         pClientItem->m_statistics.cntOverruns,
@@ -1789,7 +1789,7 @@ void TCPClientThread::handleClientGetStatus ( struct mg_connection *conn,
         return;
     }
 
-    sprintf ( outbuf, "%lu,%lu,%lu,\"%s\"\r\n%s",
+    sprintf ( outbuf, "%lu,%lu,%lu,\"%s\"\r\n%s\r\n",
         pClientItem->m_status.channel_status,
         pClientItem->m_status.lasterrorcode,
         pClientItem->m_status.lasterrorsubcode,
@@ -1817,7 +1817,7 @@ void TCPClientThread::handleClientGetChannelID ( struct mg_connection *conn,
         return;
     }
 
-    sprintf ( outbuf, "%lu\r\n%s",
+    sprintf ( outbuf, "%lu\r\n%s\r\n",
         (unsigned long)pClientItem->m_clientID, MSG_OK );
 
     mg_send( conn,  outbuf, strlen ( outbuf ) );
@@ -1894,7 +1894,7 @@ void TCPClientThread::handleClientGetVersion ( struct mg_connection *conn,
 
 
     sprintf ( outbuf,
-                "%d,%d,%d\r\n%s",
+                "%d,%d,%d\r\n%s\r\n",
                 VSCPD_MAJOR_VERSION,
                 VSCPD_MINOR_VERSION,
                 VSCPD_RELEASE_VERSION,

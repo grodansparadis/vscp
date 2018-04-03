@@ -22,7 +22,7 @@
 
 #include "../../vscphelperlib.h"
 
-// If TEST_RECEIVE_LOOP is uncommented the rcvloop commands
+// If TEST_RECEIVE_LOOP is uncomented the rcvloop commands
 // will be tested. Must send five events externally to test
 #define TEST_RECEIVE_LOOP 
 
@@ -34,6 +34,16 @@
 
 // Uncomment to test measurement functionality
 //#define TEST_MEASUREMENT
+
+
+#define STCPTEST_USER               "admin"
+#define SCPTEST_PASSWORD            "secret"
+
+//#define STCPPTEST_SERVER            "185.144.156.45"
+#define STCPPTEST_SERVER            "192.168.1.6"
+
+#define STCPPTEST_SERVER_PLUS_PORT  "192.168.1.6:9598"
+//#define STCPPTEST_SERVER_PLUS_PORT  "185.144.156.45:9598"
 
 int error_cnt = 0;
 
@@ -60,20 +70,28 @@ int main(int argc, char* argv[])
     long long t1,t2;
     char readbuf[2048];
 
+    
+    // ------------------------------------------------------------------------
+
+
     printf("VSCP helperlib test program\n");
     printf("===========================\n");
+
+
 
     // * * * * * * * Test 1
     t1 = t2 = current_timestamp();
 
     printf("Raw test with stcp\n");
+    printf("------------------\n");
 
-    conn = stcp_connect_remote( "185.144.156.45", 9598, 0, errbuf, sizeof( errbuf ), 5 );
+    //conn = stcp_connect_remote( "185.144.156.45", 9598, 0, errbuf, sizeof( errbuf ), 5 );
+    conn = stcp_connect_remote( "192.168.1.6", 9598, 0, errbuf, sizeof( errbuf ), 5 );
     if ( NULL != conn ) {
         
         // Get welcome message
         stcp_read( conn, buf, sizeof( buf ), 200 );
-        printf( "%s", buf );
+        printf( "%s", buf ); 
         
         stcp_write( conn, "user admin\r\n", 12 );
         stcp_read( conn, buf, sizeof( buf ), 200 );
@@ -82,27 +100,108 @@ int main(int argc, char* argv[])
         stcp_write( conn, "pass secret\r\n", 13 );
         stcp_read( conn, buf, sizeof( buf ), 300 );
         printf( "%s", buf );
+
+        stcp_write( conn, "noop\r\n", 6 );
+        stcp_read( conn, buf, sizeof( buf ), 300 );
+        printf( "%s", buf );
         
         t2 = current_timestamp(); 
 
+        printf( "Time: %d ms\n\n\n", ((int)(t2-t1)) );
+        
+        /*
         stcp_write( conn, "interface list\r\n", 16 );
+        *buf = 0;
+        while ( 1 ) {
+            stcp_read( conn, readbuf, sizeof( readbuf ), 0 );
+            strcat( buf, readbuf );
+            if ( NULL != strstr( buf, "+OK" ) ) break;
+        }
+        printf( "%s", buf );
+        */
+
+        t2 = current_timestamp();
+        printf( "Time: %d ms\n\n\n", ((int)(t2-t1)) );
+
+        //stcp_read( conn, buf, sizeof( buf ), 1000 ); // Empty data
+
+        t1 = current_timestamp();
+        stcp_write( conn, "interface list\r\n", 16 );
+        for ( int i=0;i<50; i++ ) {
+            stcp_read( conn, buf, sizeof( buf ), 5 );
+            printf( "%s", buf );
+            if ( NULL != strstr( buf, "+OK" ) ) break;
+        }
+        t2 = current_timestamp();
+        printf( "Time (0 ms): %d ms\n", ((int)(t2-t1)) );
+        /*stcp_read( conn, buf, sizeof( buf ), 1000 ); // Empty data
+        t2 = current_timestamp();
+        printf( "Time (0 ms): %d ms\n", ((int)(t2-t1)) );*/
+        printf("\n");
+
+/*
+        t1 = current_timestamp();
+        stcp_write( conn, "noop\r\n", 6 );
+        stcp_read( conn, buf, sizeof( buf ), 100 );
+        printf( "%s", buf );
+        t2 = current_timestamp();
+        printf( "Time (100 ms): %d ms\n", ((int)(t2-t1)) );
+        stcp_read( conn, buf, sizeof( buf ), 1000 ); // Empty data
+        printf("\n");
+
+        t1 = current_timestamp();      
+        stcp_write( conn, "noop\r\n", 6 );
+        stcp_read( conn, buf, sizeof( buf ), 200 );
+        printf( "%s", buf );
+        t2 = current_timestamp();
+        printf( "Time (200 ms): %d ms\n", ((int)(t2-t1)) );
+        stcp_read( conn, buf, sizeof( buf ), 1000 ); // Empty data
+        printf("\n");
+
+        t1 = current_timestamp();       
+        stcp_write( conn, "noop\r\n", 6 );
         stcp_read( conn, buf, sizeof( buf ), 300 );
         printf( "%s", buf );
+        t2 = current_timestamp();
+        printf( "Time (300 ms): %d ms\n", ((int)(t2-t1)) );
+        stcp_read( conn, buf, sizeof( buf ), 1000 ); // Empty data
+        printf("\n");
+
+        t1 = current_timestamp();       
+        stcp_write( conn, "noop\r\n", 6 );
+        stcp_read( conn, buf, sizeof( buf ), 1000 );
+        printf( "%s", buf );
+        t2 = current_timestamp();
+        printf( "Time (1000 ms: %d ms\n", ((int)(t2-t1)) );
+        stcp_read( conn, buf, sizeof( buf ), 1000 ); // Empty data
+        printf("\n");
+
+        t1 = current_timestamp();       
+        stcp_write( conn, "noop\r\n", 6 );
+        stcp_read( conn, buf, sizeof( buf ), 2000 );
+        printf( "%s", buf );
+        t2 = current_timestamp();
+        printf( "Time (2000 ms: %d ms\n", ((int)(t2-t1)) );
+        stcp_read( conn, buf, sizeof( buf ), 1000 ); // Empty data
+        printf("\n");
+ */       
         
         stcp_close_connection( conn );
         
         conn = NULL;
-    }
+    }   
 
     
-    printf( "Time: %d ms\n\n\n", ((int)(t2-t1)) );   
+    // ------------------------------------------------------------------------
 
   
     // * * * * * * * Test 2
     t1 = t2 = current_timestamp();
 
     printf("Raw test with stcp and +OK test\n");
-    conn = stcp_connect_remote( "185.144.156.45", 9598, 0, errbuf, sizeof( errbuf ), 5 );
+    printf("-------------------------------\n");
+
+    conn = stcp_connect_remote( STCPPTEST_SERVER, 9598, 0, errbuf, sizeof( errbuf ), 5 );
     if ( NULL != conn ) {
         
         int inner_timeout = 0;
@@ -134,30 +233,29 @@ int main(int argc, char* argv[])
         }
         printf( "%s", buf );
 
-        t2 = current_timestamp(); 
-        
-        stcp_write( conn, "interface list\r\n", 16 );
-        *buf = 0;
-        while ( 1 ) {
-            stcp_read( conn, readbuf, sizeof( readbuf ), inner_timeout );
-            strcat( buf, readbuf );
-            if ( NULL != strstr( buf, "+OK" ) ) break;
-        }
+        stcp_write( conn, "noop\r\n", 6 );
+        stcp_read( conn, buf, sizeof( buf ), 300 );
         printf( "%s", buf );
-        
+
+        t2 = current_timestamp(); 
+   
         stcp_close_connection( conn );
         
         conn = NULL;
     }
-
     
-    printf( "Time: %d ms\n\n\n", ((int)(t2-t1)) );
+    
+
+
+    // ------------------------------------------------------------------------
 
 
     // * * * * * * * Test 3
     t1 = t2 = current_timestamp();
 
-    printf("Test with vscphelp\n");
+    printf("Test with vscphelp - Channel 1\n");
+    printf("------------------------------\n");
+
     handle1 = vscphlp_newSession();
     if (0 != handle1 ) {
         printf( "Handle one OK %ld\n", handle1 );
@@ -169,7 +267,7 @@ int main(int argc, char* argv[])
 
     // Open Channel 1
     rv=vscphlp_open( handle1, 
-                         "185.144.156.45:9598",
+                         STCPPTEST_SERVER_PLUS_PORT,
                          "admin",
                          "secret" ); 
     if ( VSCP_ERROR_SUCCESS == rv ) {
@@ -180,10 +278,32 @@ int main(int argc, char* argv[])
         return -1;
     }
 
+    // NOOP on handle1
+    if ( VSCP_ERROR_SUCCESS == (rv = vscphlp_noop( handle1 ) ) ) {
+        printf( "Command success: vscphlp_noop on channel 1\n" );
+    }
+    else {
+        printf("\aCommand error: vscphlp_noop on channel 1  Error code=%d\n", rv);
+    }
+
     t2 = current_timestamp(); 
     printf( "Time: %d ms\n\n\n", ((int)(t2-t1)) );
 
-    return 1; // ----------------------------------------------------------------------------------------- >>>>>
+    printf("Waiting for events\n");
+    sleep( 2 );
+    unsigned int pCount;
+    if ( VSCP_ERROR_SUCCESS == ( rv = vscphlp_isDataAvailable( handle1, &pCount ) ) ) {
+        printf("vscphlp_isDataAvailable - Number of events in queue = %d\n", pCount );
+    }
+
+
+    // ------------------------------------------------------------------------
+
+
+    printf("Test with vscphelp - Channel 2\n");
+    printf("------------------------------\n");
+
+    t1 = t2 = current_timestamp();
 
     handle2 = vscphlp_newSession();
     if (0 != handle2 ) {
@@ -203,16 +323,6 @@ int main(int argc, char* argv[])
         return -1;
     }
 
-   
-
-    // NOOP on handle1
-    if ( VSCP_ERROR_SUCCESS == (rv = vscphlp_noop( handle1 ) ) ) {
-        printf( "Command success: vscphlp_noop on channel 1\n" );
-    }
-    else {
-        printf("\aCommand error: vscphlp_noop on channel 1  Error code=%d\n", rv);
-    }
-
     // NOOP on handle2
     if ( VSCP_ERROR_SUCCESS == (rv = vscphlp_noop( handle2 ) ) ) {
         printf( "Command success: vscphlp_noop on channel 2\n" );
@@ -220,6 +330,10 @@ int main(int argc, char* argv[])
     else {
         printf("\aCommand error: vscphlp_noop on channel 2  Error code=%d\n", rv);
     }
+
+    t2 = current_timestamp(); 
+    printf( "Time: %d ms\n\n\n", ((int)(t2-t1)) );
+
 
     // Get version on handle1
     unsigned char majorVer, minorVer, subminorVer;
@@ -231,8 +345,7 @@ int main(int argc, char* argv[])
     }
     else {
         printf("\aCommand error: vscphlp_getVersion on channel 1  Error code=%d\n", rv);
-    }
-
+    }    
 
     // Send event on channel 1
     vscpEvent e;
@@ -252,6 +365,8 @@ int main(int argc, char* argv[])
     else {
         printf("\aCommand error: vscphlp_sendEvent on channel 1  Error code=%d\n", rv);
     }
+
+    //return 1; // ----------------------------------------------------------------------------------------- >>>>>
 
     // Do it again
     if ( VSCP_ERROR_SUCCESS == (rv = vscphlp_sendEvent( handle1, &e ) ) ) {

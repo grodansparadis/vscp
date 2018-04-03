@@ -305,3 +305,5 @@ RemoteSystemsTempFiles/
 src/vscp/samples/esp8266/vscp_daemon_connect/vscptest
 src/vscp/samples/esp8266/vscp_daemon_connect/vscptest-0x00000.bin
 src/vscp/samples/esp8266/vscp_daemon_connect/vscptest-0x10000.bin
+src/vscp/helperlib/linux/examples/send1
+src/vscp/helperlib/linux/examples/stcptest

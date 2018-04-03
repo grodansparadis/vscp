@@ -82,7 +82,7 @@
     Default timeout for inner data check. A Read call will
     always wait this long for data.
 */
-#define TCPIP_DEFAULT_INNER_RESPONSE_TIMEOUT    0
+#define TCPIP_DEFAULT_INNER_RESPONSE_TIMEOUT    20
 
 
 #define TCPIP_DEFAULT_AFTER_COMMAND_SLEEP       0   // TODO remove !!!!!!!!!
@@ -93,6 +93,7 @@
 #define TCPIP_REGISTER_READ_ERROR_TIMEOUT       5000
 #define TCPIP_REGISTER_READ_MAX_TRIES           3
 
+#define TCPIP_DEFAULT_CONNECT_TIMEOUT_SECONDS   5   // Seconds
 /*!
     @def TCPIP_DLL_VERSION
     Pseudo version string
@@ -154,7 +155,9 @@ public:
     /*!
         Set register read/write timings
      */
-    void setRegisterOperationTiming(uint8_t retries, uint32_t resendto, uint32_t errorto) {
+    void setRegisterOperationTiming( uint8_t retries, 
+                                        uint32_t resendto, 
+                                        uint32_t errorto) {
         m_registerOpMaxRetries = retries;
         m_registerOpResendTimeout = resendto;
         m_registerOpErrorTimeout = errorto;
@@ -175,16 +178,14 @@ public:
     /*!
      Returns TRUE if we are connected false otherwise.
      */
-    bool isConnected(void) {
-        return ( NULL != m_conn );
-    };
+    bool isConnected(void) { return ( NULL != m_conn ); };
 
     /*!
         checkReturnValue
         @param bClear Clear the input bugger before starting to wait for received data.
         @return Return false for "-OK" and true for "+OK"
      */
-    bool checkReturnValue(bool bClear = false);
+    bool checkReturnValue( bool bClear = false );
 
     /*!
         Clear the input queue
@@ -192,11 +193,24 @@ public:
     void doClrInputQueue(void);
 
     /*!
-        \brief Send a command to the server allows to send any command to the server.
-        @return Returns VSCP_ERROR_SUCCESS if the command could be sent successfully and
-        a positive respone (+OK) is received.
+        \brief Creates the input string array from a remote client response
+        @return Number of rows in created string array.
+    */
+    size_t addInputStringArrayFromReply( bool bClear = false );
+
+    /*!
+        \brief Send a command to the remote client.
+        @param cmd Commad to issue
+        @return Returns VSCP_ERROR_SUCCESS if the command could be sent successfully.
      */
     int doCommand(wxString& cmd);
+
+    /*!
+        \brief Send a command to the remote client.
+        @param cmd Commad to issue
+        @return Returns VSCP_ERROR_SUCCESS if the command could be sent successfully.
+     */
+    int doCommand( const char *cmd );
 
     /*!
         Open communication interface.
@@ -1607,20 +1621,12 @@ public:
 
 
     /*! 
-        Array that gets filled with input lines as
-        they are received 
+        Array that gets filled with input lines
      */
     wxArrayString m_inputStrArray;
 
     /// Mutex to protect string array
-    wxMutex m_mutexArray;
-
-    /*!
-        Buffer for incoming data on socket. Data sits here
-        until a crlf pair is found when it is transfered to
-        the strArray
-     */
-    wxString m_readBuffer;
+    //wxMutex m_mutexArray;
 
     /// Flag for active receive loop
     bool m_bModeReceiveLoop;
@@ -1664,9 +1670,14 @@ private:
 
     // Last error code
     int m_lastError;
+
+    char m_errbuf[ 8192 ];
     
     /*!
      * This is the last response from a remote node.
+     * It can contain multiple response lines (separated
+     * with \r\n) and will end with a line containg +OK
+     * or -ERR if an error response was receved.
      */            
     wxString m_strResponse;
 };
