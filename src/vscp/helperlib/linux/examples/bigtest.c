@@ -462,7 +462,7 @@ int main(int argc, char* argv[])
 
     // Set VSCP filter
     vscpEventFilter filter;
-    filter.filter_class = 22;   // We are interested  in events with VSCP class=22 only
+    filter.filter_class = 22;           // We are interested  in events with VSCP class=22 only
     filter.mask_class = 0xffff;
     filter.mask_type = 0;               // Any type
     filter.mask_priority = 0;           // Any priority
@@ -640,16 +640,16 @@ int main(int argc, char* argv[])
         return -1;
     }
 
-    printf("* * * * Waiting for five received events on channel 2 * * * * *\n");
+    printf("* * * * Waiting for 200 received events on channel 2 * * * * *\n");
 
     int cntEvents = 0;
     int blockIteration = 0;
-    while ( cntEvents < 50 ) {
+    while ( cntEvents < 200 ) {
         pEvent = malloc( sizeof( vscpEvent ) );
         pEvent->pdata = NULL;   // NULL a must for a successful delete
         if ( VSCP_ERROR_SUCCESS == ( rv = vscphlp_blockingReceiveEvent( handle2, pEvent, 30000 ) ) ) {
-            printf( "vscphlp_blockingReceiveEvent: Success. - Channel 2\n" );
-            printf(" Event: class=%d Type=%d sizeData=%d\n", 
+            printf( "vscphlp_blockingReceiveEvent: Success. - Channel 2 " );
+            printf(" Event: class=%d Type=%d sizeData=%d ", 
                         pEvent->vscp_class,
                         pEvent->vscp_type,
                         pEvent->sizeData );
@@ -696,6 +696,9 @@ int main(int argc, char* argv[])
 #endif
 
     return 0;
+
+
+
 
 #ifdef TEST_VARIABLE_HANDLING
 

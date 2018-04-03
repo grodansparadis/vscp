@@ -270,12 +270,8 @@ size_t VscpRemoteTcpIf::addInputStringArrayFromReply( bool bClear )
     // If readBuffer have a "\r\n" pair at the end it just contains full
     // reply rows. If not we need to leave ending part after "\r\n" pair
     // in the read buffer.
-
-    // Trim off whitespace
-    m_strResponse.Trim();
-    m_strResponse.Trim(false);
     
-    // Get rest string taht shouuld not be handled now
+    // Get rest string that should not be handled now
     wxString tempStr = m_strResponse.AfterLast('\n');
 
     // Get the string that should be parsed for inclusion in the striing array
@@ -285,9 +281,10 @@ size_t VscpRemoteTcpIf::addInputStringArrayFromReply( bool bClear )
     m_strResponse = tempStr;
 
     // Parse the array string
-    wxStringTokenizer tkz( strToArray, _("\r\n") );
+    wxStringTokenizer tkz( strToArray, _("\n") );
     while( tkz.HasMoreTokens() ) {
-        m_inputStrArray.Add( tkz.GetNextToken().Trim() );
+        wxString wxstr = tkz.GetNextToken();
+        m_inputStrArray.Add( wxstr.Trim() );
     }
     
     return m_inputStrArray.GetCount();
@@ -719,8 +716,7 @@ int VscpRemoteTcpIf::doCmdEnterReceiveLoop( void )
     }
   
     addInputStringArrayFromReply();
-    m_inputStrArray.Clear();
-
+    //m_inputStrArray.Clear();
 
     m_bModeReceiveLoop = true;
     
@@ -797,7 +793,7 @@ int VscpRemoteTcpIf::doCmdBlockingReceive( vscpEvent *pEvent, uint32_t mstimeout
         if ( ( nRead = stcp_read( m_conn, buf, sizeof(buf), m_innerResponseTimeout ) ) <= 0 ) {
             if ( STCP_ERROR_STOPPED == nRead ) return  VSCP_ERROR_STOPPED;
             continue;
-        }
+        }        
 
         // Save the response
         m_strResponse += wxString::FromUTF8Unchecked( buf, nRead );
