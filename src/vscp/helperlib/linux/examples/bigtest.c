@@ -38,6 +38,34 @@
 
 int error_cnt = 0;
 
+///////////////////////////////////////////////////////////////////////////////
+// closeAll
+//
+
+void closeAll( int h1, int h2 )
+{
+    if ( VSCP_ERROR_SUCCESS == vscphlp_close( h1 ) ) {
+        printf( "vscphlp_close: Success on channel 1\n" );
+    }
+    else {
+        printf( "vscphlp_close: Error on channel 1\n" );
+    }
+
+    vscphlp_closeSession( h1 );
+    
+    if ( VSCP_ERROR_SUCCESS == vscphlp_close( h2 ) ) {
+        printf( "vscphlp_close: Success on channel 2\n" );
+    }
+    else {
+        printf( "vscphlp_close: Error on channel 2\n" );
+    }
+
+    vscphlp_closeSession( h2 );    
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// main
+//
 
 int main(int argc, char* argv[])
 {
@@ -100,10 +128,7 @@ int main(int argc, char* argv[])
     }
     else {
         printf("vscphlp_noop: Failure - Channel 1, rv = %d\n", rv );
-        vscphlp_close( handle1 );
-        vscphlp_closeSession( handle1 );
-        vscphlp_close( handle2 );
-        vscphlp_closeSession( handle2 );
+        closeAll( handle1, handle2 );
         return -1;
     }
 
@@ -113,10 +138,7 @@ int main(int argc, char* argv[])
     }
     else {
         printf("vscphlp_noop: Failure - Channel 2, rv = %d\n", rv );
-        vscphlp_close( handle1 );
-        vscphlp_closeSession( handle1 );
-        vscphlp_close( handle2 );
-        vscphlp_closeSession( handle2 );        
+        closeAll( handle1, handle2 );
         return -1;
     }
 
@@ -131,10 +153,7 @@ int main(int argc, char* argv[])
     }
     else {
         printf("vscphlp_getVersion: Failure - Channel 1, rv = %d\n", rv );
-        vscphlp_close( handle1 );
-        vscphlp_closeSession( handle1 );
-        vscphlp_close( handle2 );
-        vscphlp_closeSession( handle2 );
+        closeAll( handle1, handle2 );
         return -1;
     }
 
@@ -149,10 +168,7 @@ int main(int argc, char* argv[])
     }
     else {
         printf("vscphlp_getVersion: Failure - Channel 2, rv = %d\n", rv );
-        vscphlp_close( handle1 );
-        vscphlp_closeSession( handle1 );
-        vscphlp_close( handle2 );
-        vscphlp_closeSession( handle2 );
+        closeAll( handle1, handle2 );
         return -1;
     }
 
@@ -181,10 +197,7 @@ int main(int argc, char* argv[])
     }
     else {
         printf("vscphlp_sendEvent: Failure - Try 1, Channel 1, rv = %d\n", rv );
-        vscphlp_close( handle1 );
-        vscphlp_closeSession( handle1 );
-        vscphlp_close( handle2 );
-        vscphlp_closeSession( handle2 );
+        closeAll( handle1, handle2 );
         return -1;
     }
 
@@ -194,10 +207,7 @@ int main(int argc, char* argv[])
     }
     else {
         printf("vscphlp_sendEvent: Failure - Try 2, Channel 1, rv = %d\n", rv );
-        vscphlp_close( handle1 );
-        vscphlp_closeSession( handle1 );
-        vscphlp_close( handle2 );
-        vscphlp_closeSession( handle2 );
+        closeAll( handle1, handle2 );
         return -1;
     }
 
@@ -212,11 +222,8 @@ int main(int argc, char* argv[])
         else if ( count < 2 ) {
             printf( "%u events waiting to be fetched on channel 2.\n", count );
             printf("vscphlp_isDataAvailable: Failure - Number of events in queue should be 2 or greater.\n" );
-            vscphlp_close( handle1 );
-            vscphlp_closeSession( handle1 );
-            vscphlp_close( handle2 );
-            vscphlp_closeSession( handle2 );
-            return -1;
+            closeAll( handle1, handle2 );
+        return -1;
         }
         else {
             printf( "%u events waiting to be fetched on channel 2 [Other source is also sending events].\n", count );
@@ -224,10 +231,7 @@ int main(int argc, char* argv[])
     }
     else {
         printf("vscphlp_isDataAvailable: Failure - Channel 1, rv = %d\n", rv );
-        vscphlp_close( handle1 );
-        vscphlp_closeSession( handle1 );
-        vscphlp_close( handle2 );
-        vscphlp_closeSession( handle2 );
+        closeAll( handle1, handle2 );
         return -1;
     }
 
@@ -238,10 +242,7 @@ int main(int argc, char* argv[])
     }
     else {
         printf("vscphlp_clearDaemonEventQueue: Failure - Channel 2, rv = %d\n", rv );
-        vscphlp_close( handle1 );
-        vscphlp_closeSession( handle1 );
-        vscphlp_close( handle2 );
-        vscphlp_closeSession( handle2 );
+        closeAll( handle1, handle2 );
         return -1;
     }
 
@@ -259,10 +260,7 @@ int main(int argc, char* argv[])
     }
     else {
         printf("vscphlp_isDataAvailable: Failure - Channel 2, rv = %d\n", rv );
-        vscphlp_close( handle1 );
-        vscphlp_closeSession( handle1 );
-        vscphlp_close( handle2 );
-        vscphlp_closeSession( handle2 );
+        closeAll( handle1, handle2 );
         return -1;
     }
 
@@ -289,10 +287,7 @@ int main(int argc, char* argv[])
     }
     else {
         printf("vscphlp_sendEventEx: Failure - 1 Channel 1, rv = %d\n", rv );
-        vscphlp_close( handle1 );
-        vscphlp_closeSession( handle1 );
-        vscphlp_close( handle2 );
-        vscphlp_closeSession( handle2 );
+        closeAll( handle1, handle2 );
         return -1;
     }
 
@@ -306,10 +301,7 @@ int main(int argc, char* argv[])
     }
     else {
         printf("vscphlp_sendEventEx: Failure - 2 Channel 1, rv = %d\n", rv );
-        vscphlp_close( handle1 );
-        vscphlp_closeSession( handle1 );
-        vscphlp_close( handle2 );
-        vscphlp_closeSession( handle2 );
+        closeAll( handle1, handle2 );
         return -1;
     }
 
@@ -324,10 +316,7 @@ int main(int argc, char* argv[])
     }
     else {
         printf("vscphlp_sendEventEx: Failure - 3 Channel 1, rv = %d\n", rv );
-        vscphlp_close( handle1 );
-        vscphlp_closeSession( handle1 );
-        vscphlp_close( handle2 );
-        vscphlp_closeSession( handle2 );
+        closeAll( handle1, handle2 );
         return -1;
     }
 
@@ -339,10 +328,7 @@ int main(int argc, char* argv[])
     }
     else {
         printf("vscphlp_isDataAvailable: Failure - Channel 2, rv = %d\n", rv );
-        vscphlp_close( handle1 );
-        vscphlp_closeSession( handle1 );
-        vscphlp_close( handle2 );
-        vscphlp_closeSession( handle2 );
+        closeAll( handle1, handle2 );
         return -1;
     }
 
@@ -364,10 +350,7 @@ int main(int argc, char* argv[])
     }
     else {
         printf("vscphlp_receiveEvent: Failure - Channel 2, rv = %d\n", rv );
-        vscphlp_close( handle1 );
-        vscphlp_closeSession( handle1 );
-        vscphlp_close( handle2 );
-        vscphlp_closeSession( handle2 );
+        closeAll( handle1, handle2 );
         return -1;
     }
 
@@ -393,10 +376,7 @@ int main(int argc, char* argv[])
     }
     else {
         printf("vscphlp_receiveEvent: Failure - Channel 2, rv = %d\n", rv );
-        vscphlp_close( handle1 );
-        vscphlp_closeSession( handle1 );
-        vscphlp_close( handle2 );
-        vscphlp_closeSession( handle2 );
+        closeAll( handle1, handle2 );
         return -1;
     }
 
@@ -423,10 +403,7 @@ int main(int argc, char* argv[])
     }
     else {
         printf("vscphlp_receiveEventEx: Failure - Channel 2, rv = %d\n", rv );
-        vscphlp_close( handle1 );
-        vscphlp_closeSession( handle1 );
-        vscphlp_close( handle2 );
-        vscphlp_closeSession( handle2 );
+        closeAll( handle1, handle2 );
         return -1;
     }
     
@@ -438,10 +415,7 @@ int main(int argc, char* argv[])
     }
     else {
         printf("vscphlp_getStatus: Failure - Channel 2, rv = %d\n", rv );
-        vscphlp_close( handle1 );
-        vscphlp_closeSession( handle1 );
-        vscphlp_close( handle2 );
-        vscphlp_closeSession( handle2 );
+        closeAll( handle1, handle2 );
         return -1;
     }
 
@@ -453,10 +427,7 @@ int main(int argc, char* argv[])
     }
     else {
         printf("vscphlp_getStatistics: Failure - Channel 2, rv = %d\n", rv );
-        vscphlp_close( handle1 );
-        vscphlp_closeSession( handle1 );
-        vscphlp_close( handle2 );
-        vscphlp_closeSession( handle2 );
+        closeAll( handle1, handle2 );
         return -1;
     }
 
@@ -472,10 +443,7 @@ int main(int argc, char* argv[])
     }
     else {
         printf("vscphlp_setFilter: Failure - Channel 2, rv = %d\n", rv );
-        vscphlp_close( handle1 );
-        vscphlp_closeSession( handle1 );
-        vscphlp_close( handle2 );
-        vscphlp_closeSession( handle2 );
+        closeAll( handle1, handle2 );
         return -1;
     }
 
@@ -487,10 +455,7 @@ int main(int argc, char* argv[])
     }
     else {
         printf("vscphlp_isDataAvailable: Failure - Channel 2, rv = %d\n", rv );
-        vscphlp_close( handle1 );
-        vscphlp_closeSession( handle1 );
-        vscphlp_close( handle2 );
-        vscphlp_closeSession( handle2 );
+        closeAll( handle1, handle2 );
         return -1;
     }
 
@@ -502,10 +467,7 @@ int main(int argc, char* argv[])
     }
     else {
         printf("vscphlp_sendEvent: Failure - Channel 1, rv = %d\n", rv );
-        vscphlp_close( handle1 );
-        vscphlp_closeSession( handle1 );
-        vscphlp_close( handle2 );
-        vscphlp_closeSession( handle2 );
+        closeAll( handle1, handle2 );
         return -1;
     }
 
@@ -517,10 +479,7 @@ int main(int argc, char* argv[])
     }
     else {
         printf("vscphlp_sendEvent: Failure - Channel 1, rv = %d\n", rv );
-        vscphlp_close( handle1 );
-        vscphlp_closeSession( handle1 );
-        vscphlp_close( handle2 );
-        vscphlp_closeSession( handle2 );
+        closeAll( handle1, handle2 );
         return -1;
     }
 
@@ -532,10 +491,7 @@ int main(int argc, char* argv[])
     }
     else {
         printf("vscphlp_isDataAvailable: Failure - Channel 2, rv = %d\n", rv );
-        vscphlp_close( handle1 );
-        vscphlp_closeSession( handle1 );
-        vscphlp_close( handle2 );
-        vscphlp_closeSession( handle2 );
+        closeAll( handle1, handle2 );
         return -1;
     }
 
@@ -547,10 +503,7 @@ int main(int argc, char* argv[])
     }
     else {
         printf("vscphlp_setFilter: Failure - Channel 2, rv = %d\n", rv );
-        vscphlp_close( handle1 );
-        vscphlp_closeSession( handle1 );
-        vscphlp_close( handle2 );
-        vscphlp_closeSession( handle2 );
+        closeAll( handle1, handle2 );
         return -1;
     }
 
@@ -562,10 +515,7 @@ int main(int argc, char* argv[])
     }
     else {
         printf("vscphlp_getVersion: Failure - Channel 2, rv = %d\n", rv );
-        vscphlp_close( handle1 );
-        vscphlp_closeSession( handle1 );
-        vscphlp_close( handle2 );
-        vscphlp_closeSession( handle2 );
+        closeAll( handle1, handle2 );
         return -1;
     }
 
@@ -578,10 +528,7 @@ int main(int argc, char* argv[])
     }
     else {
         printf("vscphlp_getDLLVersion: Failure - Channel 2, rv = %d\n", rv );
-        vscphlp_close( handle1 );
-        vscphlp_closeSession( handle1 );
-        vscphlp_close( handle2 );
-        vscphlp_closeSession( handle2 );
+        closeAll( handle1, handle2 );
         return -1;
     }
 
@@ -594,10 +541,7 @@ int main(int argc, char* argv[])
     }
     else {
         printf("vscphlp_getVendorString: Failure - Channel 2, rv = %d\n", rv );
-        vscphlp_close( handle1 );
-        vscphlp_closeSession( handle1 );
-        vscphlp_close( handle2 );
-        vscphlp_closeSession( handle2 );
+        closeAll( handle1, handle2 );
         return -1;
     }
 
@@ -608,10 +552,7 @@ int main(int argc, char* argv[])
     }
     else {
         printf("vscphlp_getDriverInfo: Failure - Channel 2, rv = %d\n", rv );
-        vscphlp_close( handle1 );
-        vscphlp_closeSession( handle1 );
-        vscphlp_close( handle2 );
-        vscphlp_closeSession( handle2 );
+        closeAll( handle1, handle2 );
         return -1;
     }
 
@@ -633,10 +574,7 @@ int main(int argc, char* argv[])
     }
     else {
         printf("vscphlp_enterReceiveLoop: Failure - Channel 2, rv = %d\n", rv );
-        vscphlp_close( handle1 );
-        vscphlp_closeSession( handle1 );
-        vscphlp_close( handle2 );
-        vscphlp_closeSession( handle2 );
+        closeAll( handle1, handle2 );
         return -1;
     }
 
@@ -671,11 +609,8 @@ int main(int argc, char* argv[])
     			}
     			else {
         			printf("vscphlp_sendEvent: Failure - rv = %d\n", rv );
-        			vscphlp_close( handle1 );
-                    vscphlp_closeSession( handle1 );
-                    vscphlp_close( handle2 );
-                    vscphlp_closeSession( handle2 );
-        			return -1;
+        			closeAll( handle1, handle2 );
+        return -1;
     			}
 		}
 
@@ -704,11 +639,8 @@ int main(int argc, char* argv[])
 	    else  
 	    {
             printf("vscphlp_blockingReceiveEvent: %d Failure - Channel 2, rv = %d\n", blockIteration, rv );
-            vscphlp_close( handle1 );
-            vscphlp_closeSession( handle1 );
-            vscphlp_close( handle2 );
-            vscphlp_closeSession( handle2 );
-            return -1;
+            closeAll( handle1, handle2 );
+        return -1;
 	    }
 
         vscphlp_deleteVSCPevent( pEvent );
@@ -724,18 +656,16 @@ int main(int argc, char* argv[])
     }
     else {
         printf("vscphlp_quitReceiveLoop: %d Failure - Channel 2, rv = %d\n", blockIteration, rv );
-            vscphlp_close( handle1 );
-            vscphlp_closeSession( handle1 );
-            vscphlp_close( handle2 );
-            vscphlp_closeSession( handle2 );
-            return -1;
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
 
 #endif
 
-    return 0;
+    
 
+//                               Variables
 
 
 
@@ -744,6 +674,7 @@ int main(int argc, char* argv[])
     printf("\n\n\n* * * * * Variables  * * * * *\n\n\a");
     
     
+
     printf("\n\n********************************************************************\n");
     printf("               Test string variable reading/writing \n");
     printf("********************************************************************\n\n");
@@ -763,10 +694,12 @@ int main(int argc, char* argv[])
                         0x744,
                         "dGhpcyBpcyB0aGUgdmFsdWUgb2YgdGhlIHN0cmluZyB2YXJpYWJsZSE=",
                         "SnVzdCBhIG5vdGU=")  ) ) {
-        printf( "Command success: vscphlp_createRemoteVariable on channel 1\n" );
+        printf( "vscphlp_createRemoteVariable: Success on channel 1\n" );
     }
     else {
-        printf("\aCommand error: vscphlp_createRemoteVariable on channel 1  Error code=%d\n", rv);
+        printf("vscphlp_createRemoteVariable: Error on channel 1  Error code=%d\n", rv);
+        closeAll( handle1, handle2 );
+        return -1;
     }
     
     // Read a value from a string variable
@@ -776,17 +709,21 @@ int main(int argc, char* argv[])
         memset( strBuf, 0, sizeof( strBuf ) );
         if ( VSCP_ERROR_SUCCESS == 
             (rv = vscphlp_getRemoteVariableString( handle1, "test_string_variable", strBuf, sizeof( strBuf )-1 ) ) ) {
-            printf( "Command success: vscphlp_getRemoteVariableString on channel 1\n" );
+            printf( "vscphlp_getRemoteVariableString: Success on channel 1\n" );
             printf(" Value = [%s] \n", strBuf );
             if ( 0 != strcmp( strBuf, "dGhpcyBpcyB0aGUgdmFsdWUgb2YgdGhlIHN0cmluZyB2YXJpYWJsZSE=" ) ) {
-                printf("\aWritten value does not match read value!\n");
+                printf("vscphlp_getRemoteVariableString: Written value does not match read value!\n");
+                closeAll( handle1, handle2 );
+                return -1;
             }
             else {
                 printf("Written value match read value!\n");
             }
         }
         else {
-            printf("\aCommand error: vscphlp_getRemoteVariableString on channel 1  Error code=%d\n", rv);
+            printf("vscphlp_getRemoteVariableString: Error on channel 1  Error code=%d\n", rv);
+            closeAll( handle1, handle2 );
+            return -1;
         }
     }
 
@@ -800,6 +737,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("\aCommand error: vscphlp_setRemoteVariableString on channel 1  Error code=%d\n", rv);
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
     // Read a value from a string variable
@@ -820,6 +759,8 @@ int main(int argc, char* argv[])
         }
         else {
             printf("\aCommand error: vscphlp_getRemoteVariableString on channel 1  Error code=%d\n", rv);
+            closeAll( handle1, handle2 );
+            return -1;
         }
     }
     
@@ -839,6 +780,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("\aCommand error: vscphlp_deleteRemoteVariable on channel 1  Error code=%d\n", rv);
+        closeAll( handle1, handle2 );
+        return -1;
     }
     
     
@@ -865,6 +808,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("\aCommand error: vscphlp_createRemoteVariable on channel 1  Error code=%d\n", rv);
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
     // Write a value (false) to a boolean variable
@@ -875,6 +820,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("\aCommand error: vscphlp_setRemoteVariableBool on channel 1  Error code=%d\n", rv);
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
 
@@ -888,6 +835,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("\aCommand error: vscphlp_getRemoteVariableBool on channel 1  Error code=%d\n", rv);
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
 
@@ -915,6 +864,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("\aCommand error: vscphlp_createRemoteVariable on channel 1  Error code=%d\n", rv);
+        closeAll( handle1, handle2 );
+        return -1;
     }
     
     // Write a value to an int variable
@@ -925,6 +876,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("\aCommand error: vscphlp_setRemoteVariableInt on channel 1  Error code=%d\n", rv);
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
 
@@ -944,6 +897,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("\aCommand error: vscphlp_getRemoteVariableInt on channel 1  Error code=%d\n", rv);
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
 
@@ -973,6 +928,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("\aCommand error: vscphlp_createRemoteVariable on channel 1  Error code=%d\n", rv);
+        closeAll( handle1, handle2 );
+        return -1;
     }
     
     // Write a value to an long variable
@@ -983,6 +940,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("\aCommand error: vscphlp_setRemoteVariableLong on channel 1  Error code=%d\n", rv);
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
 
@@ -1002,6 +961,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("\aCommand error: vscphlp_getRemoteVariableLong on channel 1  Error code=%d\n", rv);
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
 
@@ -1029,6 +990,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("\aCommand error: vscphlp_createRemoteVariable on channel 1  Error code=%d\n", rv);
+        closeAll( handle1, handle2 );
+        return -1;
     }
     
     // Write a value to an float variable
@@ -1039,6 +1002,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("\aCommand error: vscphlp_setRemoteVariableDouble on channel 1  Error code=%d\n", rv);
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
 
@@ -1058,6 +1023,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("\aCommand error: vscphlp_getRemoteVariableDouble on channel 1  Error code=%d\n", rv);
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
 
@@ -1083,6 +1050,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("\aCommand error: vscphlp_createRemoteVariable on channel 1  Error code=%d\n", rv);
+        closeAll( handle1, handle2 );
+        return -1;
     }
     
     // Write a value to an measurement variable
@@ -1099,6 +1068,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("\aCommand error: vscphlp_setRemoteVariableMeasurement on channel 1  Error code=%d\n", rv);
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
 
@@ -1132,6 +1103,8 @@ int main(int argc, char* argv[])
         }
         else {
             printf("\aCommand error: vscphlp_getRemoteVariableMeasurement on channel 1  Error code=%d\n", rv);
+            closeAll( handle1, handle2 );
+            return -1;
         }
     }
 
@@ -1182,6 +1155,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("\aCommand error: vscphlp_setRemoteVariableEvent on channel 1  Error code=%d\n", rv);
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
 
@@ -1204,6 +1179,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("\aCommand error: vscphlp_getRemoteVariableEvent on channel 1  Error code=%d\n", rv);
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
 
@@ -1233,6 +1210,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("\aCommand error: vscphlp_createRemoteVariable on channel 1  Error code=%d\n", rv);
+        closeAll( handle1, handle2 );
+        return -1;
     }
     
     // Write a value to an event variable
@@ -1256,6 +1235,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("\aCommand error: vscphlp_setRemoteVariableEventEx on channel 1  Error code=%d\n", rv);
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
 
@@ -1278,6 +1259,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("\aCommand error: vscphlp_getRemoteVariableEvent on channel 1  Error code=%d\n", rv);
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
     
@@ -1302,6 +1285,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("\aCommand error: vscphlp_createRemoteVariable on channel 1  Error code=%d\n", rv);
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
     // Write a value to an GUID variable - string type
@@ -1315,6 +1300,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("\aCommand error: vscphlp_setRemoteVariableGUIDString on channel 1  Error code=%d\n", rv);
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
     memset( strGUID, 0, sizeof(strGUID) );
@@ -1334,6 +1321,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("\aCommand error: vscphlp_getRemoteVariableGUIDString on channel 1  Error code=%d\n", rv);
+        closeAll( handle1, handle2 );
+        return -1;
     }
     
     
@@ -1360,6 +1349,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("\aCommand error: vscphlp_createRemoteVariable on channel 1  Error code=%d\n", rv);
+        closeAll( handle1, handle2 );
+        return -1;
     }
     
     // Write a value to an GUID variable - array type
@@ -1376,6 +1367,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("\aCommand error: vscphlp_setRemoteVariableGUIDArray on channel 1  Error code=%d\n", rv);
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
     memset( GUID, 0, 16 );
@@ -1402,6 +1395,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("\aCommand error: vscphlp_getRemoteVariableGUIDArray on channel 1  Error code=%d\n", rv);
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
     
@@ -1428,6 +1423,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("\aCommand error: vscphlp_createRemoteVariable on channel 1  Error code=%d\n", rv);
+        closeAll( handle1, handle2 );
+        return -1;
     }
     
     unsigned char dataArray[10];
@@ -1443,6 +1440,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("\aCommand error: vscphlp_setRemoteVariableVSCPData on channel 1  Error code=%d\n", rv);
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
     unsigned short size;
@@ -1461,6 +1460,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("\aCommand error: vscphlp_getRemoteVariableVSCPData on channel 1  Error code=%d\n", rv);
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
 
@@ -1489,6 +1490,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("\aCommand error: vscphlp_createRemoteVariable on channel 1  Error code=%d\n", rv);
+        closeAll( handle1, handle2 );
+        return -1;
     }
     
     // Write a value for VSCP class type
@@ -1499,6 +1502,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("\aCommand error: vscphlp_setRemoteVariableVSCPClass on channel 1  Error code=%d\n", rv);
+        closeAll( handle1, handle2 );
+        return -1;
     }
    
     unsigned short vscpclass;
@@ -1518,6 +1523,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("\aCommand error: vscphlp_getRemoteVariableVSCPClass on channel 1  Error code=%d\n", rv);
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
     
@@ -1543,6 +1550,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("\aCommand error: vscphlp_createRemoteVariable on channel 1  Error code=%d\n", rv);
+        closeAll( handle1, handle2 );
+        return -1;
     }
     
     // Write a value for VSCP type type
@@ -1553,6 +1562,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("\aCommand error: vscphlp_setRemoteVariableVSCPType on channel 1  Error code=%d\n", rv);
+        closeAll( handle1, handle2 );
+        return -1;
     }
    
     unsigned short vscptype;
@@ -1572,6 +1583,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("\aCommand error: vscphlp_getRemoteVariableVSCPType on channel 1  Error code=%d\n", rv);
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
 
@@ -1598,7 +1611,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("\aCommand error: vscphlp_createRemoteVariable on channel 1  Error code=%d\n", rv);
-        error_cnt++;
+        closeAll( handle1, handle2 );
+        return -1;
     }
     
     // Write a value 
@@ -1609,7 +1623,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("\aCommand error: vscphlp_setRemoteVariableVSCPTimestamp on channel 1  Error code=%d\n", rv);
-        error_cnt++;
+        closeAll( handle1, handle2 );
+        return -1;
     }
    
     unsigned long vscptimestamp;
@@ -1627,12 +1642,14 @@ int main(int argc, char* argv[])
         }
         else {
             printf("\aError: Read value is NOT the same as written\n");
-            error_cnt++;
+            closeAll( handle1, handle2 );
+            return -1;
         }
     }
     else {
         printf("\aCommand error: vscphlp_getRemoteVariableVSCPTimestamp on channel 1  Error code=%d\n", rv);
-        error_cnt++;
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
 
@@ -1664,7 +1681,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("\aCommand error: vscphlp_createRemoteVariable on channel 1  Error code=%d\n", rv);
-        error_cnt++;
+        closeAll( handle1, handle2 );
+        return -1;
     }
     
     // Write a value 
@@ -1675,7 +1693,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("\aCommand error: vscphlp_setRemoteVariableDateTime on channel 1  Error code=%d\n", rv);
-        error_cnt++;
+        closeAll( handle1, handle2 );
+        return -1;
     }
    
     char datetimebuf[80];
@@ -1695,12 +1714,14 @@ int main(int argc, char* argv[])
         }
         else {
             printf("\aError: Read value is NOT the same as written\n");
-            error_cnt++;
+            closeAll( handle1, handle2 );
+            return -1;
         }
     }
     else {
         printf("\aCommand error: vscphlp_getRemoteVariableDate on channel 1  Error code=%d\n", rv);
-        error_cnt++;
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
 
@@ -1735,7 +1756,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("\aCommand error: vscphlp_createRemoteVariable on channel 1  Error code=%d\n", rv);
-        error_cnt++;
+        closeAll( handle1, handle2 );
+        return -1;
     }
     
     // Write a value 
@@ -1746,7 +1768,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("\aCommand error: vscphlp_setRemoteVariableDate on channel 1  Error code=%d\n", rv);
-        error_cnt++;
+        closeAll( handle1, handle2 );
+        return -1;
     }
    
     char datebuf[80];
@@ -1766,12 +1789,14 @@ int main(int argc, char* argv[])
         }
         else {
             printf("\aError: Read value is NOT the same as written\n");
-            error_cnt++;
+            closeAll( handle1, handle2 );
+            return -1;
         }
     }
     else {
         printf("\aCommand error: vscphlp_getRemoteVariableDate on channel 1  Error code=%d\n", rv);
-        error_cnt++;
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
 
@@ -1809,7 +1834,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("\aCommand error: vscphlp_createRemoteVariable on channel 1  Error code=%d\n", rv);
-        error_cnt++;
+        closeAll( handle1, handle2 );
+        return -1;
     }
     
     // Write a value 
@@ -1820,7 +1846,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("\aCommand error: vscphlp_setRemoteVariableTime on channel 1  Error code=%d\n", rv);
-        error_cnt++;
+        closeAll( handle1, handle2 );
+        return -1;
     }
    
     char timebuf[80];
@@ -1840,12 +1867,14 @@ int main(int argc, char* argv[])
         }
         else {
             printf("\aError: Read value is NOT the same as written\n");
-            error_cnt++;
+            closeAll( handle1, handle2 );
+            return -1;
         }
     }
     else {
         printf("\aCommand error: vscphlp_getRemoteVariableTime on channel 1  Error code=%d\n", rv);
-        error_cnt++;
+        closeAll( handle1, handle2 );
+        return -1;
     }
     // Save variables marked as persistent
     /*printf("\n\n===== vscphlp_saveRemoteVariablesToDisk =====\n");
@@ -1871,7 +1900,7 @@ int main(int argc, char* argv[])
 
 
 
-
+return 0;
 
 
 
@@ -1913,6 +1942,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("\aError:  readStringValue = %ld\n", readValue );
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
 
@@ -1922,6 +1953,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("\aError:  readStringValue = %ld\n", readValue );
+        closeAll( handle1, handle2 );
+        return -1;
     }
     
     
@@ -1933,6 +1966,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("\aError: Event priority = %d\n", eventPriority );
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
 
@@ -1941,6 +1976,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("\aError: Get EventEx priority = %d\n", eventPriority );
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
 
@@ -1950,6 +1987,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("\aError: vscphlp_setVscpPriority = %d\n", eventPriority );
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
 
@@ -1959,6 +1998,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("\aError: vscphlp_setVscpPriorityEx = %d\n", eventPriority );
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
     unsigned char vscphead;
@@ -1969,6 +2010,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("\aError: vscphlp_getVSCPheadFromCANALid = %d\n", vscphead );
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
 
@@ -1978,6 +2021,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("\aError: vscphlp_getVSCPclassFromCANALid = %d\n", canal_vscpclass );
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
 
@@ -1987,6 +2032,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("\aError: vscphlp_getVSCPtypeFromCANALid = %d\n", canal_vscptype );
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
     unsigned char canal_nickname = vscphlp_getVSCPnicknameFromCANALid( canalid );
@@ -1995,6 +2042,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("\aError: vscphlp_getVSCPnicknameFromCANALid = %d\n", canal_nickname );
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
     unsigned long constr_canal_id2 = vscphlp_getCANALidFromVSCPdata( 3, 10, 6 ); 
@@ -2003,6 +2052,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("\aError: vscphlp_getVSCPnicknameFromCANALid = %08lX\n", constr_canal_id2 );
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
     constr_canal_id2 = vscphlp_getCANALidFromVSCPevent( pEvent ); 
@@ -2011,6 +2062,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("\aError: vscphlp_getCANALidFromVSCPevent = %08lX\n", constr_canal_id2 );
+        closeAll( handle1, handle2 );
+        return -1;
     }  
 
     constr_canal_id2 = vscphlp_getCANALidFromVSCPeventEx( &ex3 ); 
@@ -2019,6 +2072,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("\aError: vscphlp_getCANALidFromVSCPeventEx = %08lX\n", constr_canal_id2 );
+        closeAll( handle1, handle2 );
+        return -1;
     } 
 
 
@@ -2052,6 +2107,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf( "\aError: vscphlp_writeGuidArrayToString\n");
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
     if ( VSCP_ERROR_SUCCESS == vscphlp_getGuidFromStringEx( &ex3, strguid ) ) {
@@ -2060,6 +2117,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf( "\aError: vscphlp_writeGuidArrayToString\n");
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
     if ( VSCP_ERROR_SUCCESS == vscphlp_writeGuidToString4Rows( pEvent, strguid2, sizeof( strguid2 )-1 ) ) {
@@ -2067,6 +2126,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf( "\aError: vscphlp_writeGuidArrayToString\n");
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
     if ( VSCP_ERROR_SUCCESS == vscphlp_writeGuidToString4RowsEx( &ex3, strguid2, sizeof( strguid2 )-1 ) ) {
@@ -2074,6 +2135,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf( "\aError: vscphlp_writeGuidArrayToString\n");
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
     if ( VSCP_ERROR_SUCCESS == vscphlp_writeGuidArrayToString( GUID2, strguid2, sizeof( strguid2 )-1 ) ) {
@@ -2081,6 +2144,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf( "\aError: vscphlp_writeGuidArrayToString\n");
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
     unsigned char emptyGUID[16];
@@ -2090,6 +2155,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf( "\aError: vscphlp_isGUIDEmpty\n");
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
     if ( vscphlp_isGUIDEmpty( GUID2 ) ) {
@@ -2097,6 +2164,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf( "vscphlp_isGUIDEmpty  - GUID is detected as NOT empty as it should be\n" );
+        closeAll( handle1, handle2 );
+        return -1;
         
     }
 
@@ -2105,6 +2174,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf( "vscphlp_isSameGUID  - Correct, GUIDs are not the same.\n" );
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
     vscphlp_writeGuidArrayToString( GUID2, strguid2, sizeof( strguid2 )-1 );
@@ -2115,6 +2186,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf( "\aError: vscphlp_reverseGUID\n");
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
     if ( VSCP_ERROR_SUCCESS == vscphlp_getGuidFromStringToArray( GUID2, strguid ) ) {
@@ -2123,17 +2196,23 @@ int main(int argc, char* argv[])
     }
     else {
         printf( "\aError: vscphlp_getGuidFromStringToArray\n");
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
     vscpEventEx ex4;
     if ( VSCP_ERROR_SUCCESS != vscphlp_convertVSCPtoEx( &ex4, pEvent ) ) {
         printf( "\aError: vscphlp_getGuidFromStringToArray\n");
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
     vscpEvent *pEvent2 = malloc( sizeof( vscpEvent ) );
     pEvent2->pdata = NULL;
     if ( VSCP_ERROR_SUCCESS != vscphlp_convertVSCPfromEx( pEvent2, &ex4 ) ) {
         printf( "\aError: vscphlp_convertVSCPfromEx\n");
+        closeAll( handle1, handle2 );
+        return -1;
     }
     vscphlp_deleteVSCPevent( pEvent2 );
     pEvent2 = NULL;
@@ -2144,6 +2223,8 @@ int main(int argc, char* argv[])
     if ( VSCP_ERROR_SUCCESS != vscphlp_readFilterFromString( &filter, 
                 "1,0x0000,0x0006,ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:00" ) ) {
         printf( "\aError: vscphlp_readFilterFromString\n");   
+        closeAll( handle1, handle2 );
+        return -1;
     }
     else {
         printf( "OK: vscphlp_readFilterFromString\n");    
@@ -2152,6 +2233,8 @@ int main(int argc, char* argv[])
     if ( VSCP_ERROR_SUCCESS != vscphlp_readMaskFromString( &filter, 
                 "1,0x0000,0x0006,ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:00" ) ) {
         printf( "\aError: vscphlp_readMaskFromString\n");   
+        closeAll( handle1, handle2 );
+        return -1;
     }
     else {
         printf( "OK: vscphlp_readMaskFromString\n");    
@@ -2180,6 +2263,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf( "\aError: vscphlp_convertCanalToEvent\n");
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
     // Free the event
@@ -2194,6 +2279,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf( "\aError: vscphlp_convertCanalToEvent\n");
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
     
@@ -2202,6 +2289,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf( "\aError: vscphlp_convertEventToCanal\n");
+        closeAll( handle1, handle2 );
+        return -1;        
     }
 
     if ( VSCP_ERROR_SUCCESS == vscphlp_convertEventExToCanal( &canalMsg, &ex5 ) ) {
@@ -2209,6 +2298,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf( "\aError: vscphlp_convertEventExToCanal\n");
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
 
@@ -2233,6 +2324,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf( "\aError: vscphlp_copyVSCPEvent\n");
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
 
@@ -2253,6 +2346,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf( "\aError: vscphlp_writeVscpDataToString\n");
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
 
@@ -2270,6 +2365,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf( "\aError: vscphlp_setVscpDataArrayFromString\n");
+        closeAll( handle1, handle2 );
+        return -1;
     }
     
     
@@ -2283,6 +2380,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf( "\aError: vscphlp_setVscpDataFromString\n");
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
 
@@ -2292,6 +2391,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf( "\aError: vscphlp_writeVscpEventToString\n");
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
 
@@ -2300,6 +2401,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf( "\aError: vscphlp_writeVscpEventToString\n");
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
 
@@ -2313,6 +2416,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf( "\aError: vscphlp_setVscpEventFromString\n");
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
     // Free the events
@@ -2328,6 +2433,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf( "\aError: vscphlp_setVscpEventExFromString\n");
+        closeAll( handle1, handle2 );
+        return -1;
     }
     
     vscphlp_deleteVSCPevent( pEvent );
@@ -2371,6 +2478,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("\aError: Data Coding = %d\n", dataCoding );
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
 
@@ -2384,6 +2493,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("\aError: vscphlp_getDataCodingBitArray [%d]\n", dataCoding );
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
     unsigned char normarry[4];
@@ -2397,6 +2508,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("Error - vscphlp_getDataCodingNormalizedInteger value = %f \n", value );
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
     normarry[0] = 0x60; // Data coding byte: Integer, unit=0, sensoridx=0
@@ -2422,6 +2535,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("Error - vscphlp_getDataCodingString value = %s \n", stringbuf );
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
 
@@ -2447,6 +2562,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("Error - vscphlp_getVSCPMeasurementAsString value = %s \n", stringbuf );
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
 
@@ -2464,6 +2581,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("Error - vscphlp_getVSCPMeasurementAsString value = %s \n", stringbuf );
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
 
@@ -2481,6 +2600,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("Error - vscphlp_getVSCPMeasurementAsString value = %s \n", stringbuf );
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
 
@@ -2497,6 +2618,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("Error - vscphlp_getVSCPMeasurementAsString value = %s \n", stringbuf );
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
 
@@ -2512,6 +2635,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("Error - vscphlp_getVSCPMeasurementAsString value = %s \n", stringbuf );
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
 
@@ -2527,6 +2652,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("Error - vscphlp_getVSCPMeasurementAsString value = %s \n", stringbuf );
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
 
@@ -2543,6 +2670,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("Error - vscphlp_getVSCPMeasurementAsString value = %s \n", stringbuf );
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
 
@@ -2556,6 +2685,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("Error - vscphlp_getVSCPMeasurementAsDouble value = %lf \n", value );
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
     vscpEvent *pEventfloat = malloc( sizeof( vscpEvent ) );
@@ -2583,6 +2714,8 @@ int main(int argc, char* argv[])
     }
     else {
         printf("Error - vscphlp_getVSCPMeasurementFloat64AsString value = %s \n", stringbuf );
+        closeAll( handle1, handle2 );
+        return -1;
     }
 
     // Free the event
@@ -2623,8 +2756,8 @@ int main(int argc, char* argv[])
     vscphlp_closeSession( handle1 );
     vscphlp_closeSession( handle2 );
 
-    printf("\n\nHit ENTER to terminate Error Count= %d\n", error_cnt );
-    (void)getchar();
+    //printf("\n\nHit ENTER to terminate Error Count= %d\n", error_cnt );
+    //(void)getchar();
    
     return 0;
 }

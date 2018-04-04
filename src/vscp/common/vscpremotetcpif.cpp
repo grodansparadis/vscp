@@ -53,6 +53,7 @@
 #include <wx/event.h>
 
 #include <vscp.h>
+#include <version.h>
 #include <vscpremotetcpif.h>
 
 // Undef to get extra debug info
@@ -83,6 +84,12 @@ VscpRemoteTcpIf::VscpRemoteTcpIf()
 
     m_lastError = 0;
     memset( m_errbuf, 0, sizeof( m_errbuf ) );
+
+    // Set default version info
+    m_version_major = VSCPD_MAJOR_VERSION;
+    m_version_minor = VSCPD_MINOR_VERSION;
+    m_version_release = VSCPD_RELEASE_VERSION;
+    m_version_build = VSCPD_BUILD_VERSION;
 }
 
 
@@ -225,39 +232,6 @@ void VscpRemoteTcpIf::doClrInputQueue( void )
     m_inputStrArray.Clear();
 }
 
-/*
-char *reverse(const char * const s)
-{
-  if ( NULL == s ) return NULL;
-  
-  size_t i, len = strlen(s);
-  char *r = (char *)malloc(len + 1);
-
-  for(i = 0; i < len; ++i) {
-    r[i] = s[len - i - 1];
-  }
-  
-  r[len] = 0;
-  return r;
-}
-
-char *rstrstr( const char *s1, const char *s2)
-{
-  size_t  s1len = strlen(s1);
-  size_t  s2len = strlen(s2);
-  char *s;
-
-  if (s2len > s1len) return NULL;
-  
-  for (s = (char *)s1 + s1len - s2len; s >= s1; --s) {
-    if ( 0 == strncmp(s, s2, s2len) ) {
-      return s;
-    }
-  }
-  
-  return NULL;
-}
-*/
 
 ///////////////////////////////////////////////////////////////////////////////
 // addInputStringArrayFromReply
@@ -429,6 +403,10 @@ int VscpRemoteTcpIf::doCmdOpen( const wxString& strHostname,
     wxLogDebug( _("Password OK") );    
     wxLogDebug( _("Successful log in to VSCP server") );
 #endif    
+
+    // Get version (for internal versioning)    
+    uint8_t v1,v2,v3; // Not used - stored by method
+    doCmdVersion( &v1, &v2, &v3 );
 
     return VSCP_ERROR_SUCCESS;  
 }
@@ -1229,7 +1207,7 @@ int VscpRemoteTcpIf::doCmdVersion( uint8_t *pMajorVer,
     // Major version
     *pMajorVer = 0;
     if ( ( strTokens.GetNextToken() ).ToLong( &val ) ) {
-        *pMajorVer = (uint8_t)val;
+        m_version_major = *pMajorVer = (uint8_t)val;
     }
     else {
         return VSCP_ERROR_ERROR;
@@ -1238,7 +1216,7 @@ int VscpRemoteTcpIf::doCmdVersion( uint8_t *pMajorVer,
     // Minor version
     *pMinorVer = 0;
     if ( ( strTokens.GetNextToken() ).ToLong( &val ) ) {
-        *pMinorVer = (uint8_t)val;
+        m_version_minor = *pMinorVer = (uint8_t)val;
     }
     else {
         return VSCP_ERROR_ERROR;
@@ -1247,11 +1225,19 @@ int VscpRemoteTcpIf::doCmdVersion( uint8_t *pMajorVer,
     // Sub minor version
     *pSubMinorVer = 0;
     if ( ( strTokens.GetNextToken() ).ToLong( &val ) ) {
-        *pSubMinorVer = (uint8_t)val;
+        m_version_release = *pSubMinorVer = (uint8_t)val;
     }
     else {
         return VSCP_ERROR_ERROR;
     }
+
+    // Build version
+    if ( strTokens.HasMoreTokens() && 
+       ( strTokens.GetNextToken() ).ToLong( &val ) ) {
+        m_version_build = (uint16_t)val;
+    }
+
+    m_version_build = VSCPD_BUILD_VERSION;
 
     return VSCP_ERROR_SUCCESS;
 }

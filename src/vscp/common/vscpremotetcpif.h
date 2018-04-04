@@ -1620,20 +1620,23 @@ public:
 
 
 
+    
+
+
+protected:
+
     /*! 
         Array that gets filled with input lines
      */
     wxArrayString m_inputStrArray;
 
     /// Mutex to protect string array
-    //wxMutex m_mutexArray;
+    //wxMutex m_mutexArray;    
+
+private:
 
     /// Flag for active receive loop
     bool m_bModeReceiveLoop;
-
-
-protected:
-
 
     /// Server response timeout in milliseconds
     uint32_t m_responseTimeOut;
@@ -1647,7 +1650,15 @@ protected:
     /// Number of read/write retries
     uint8_t m_registerOpMaxRetries;
 
-private:
+    /*!
+        Version information is stored whenever the 
+        version command is used (always done when done on 'open').
+        Initialized to the same version as this system on startup.
+    */
+    uint8_t m_version_major;
+    uint8_t m_version_minor;
+    uint8_t m_version_release;
+    uint16_t m_version_build;
     
     /*! 
      * The tcp inner timout. Will always wait this amount of time for data

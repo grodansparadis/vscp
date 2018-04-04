@@ -1894,10 +1894,11 @@ void TCPClientThread::handleClientGetVersion ( struct mg_connection *conn,
 
 
     sprintf ( outbuf,
-                "%d,%d,%d\r\n%s\r\n",
+                "%d,%d,%d,%d\r\n%s\r\n",
                 VSCPD_MAJOR_VERSION,
                 VSCPD_MINOR_VERSION,
                 VSCPD_RELEASE_VERSION,
+                VSCPD_BUILD_VERSION,
                 MSG_OK );
 
     mg_send( conn,  outbuf, strlen ( outbuf ) );
@@ -2185,31 +2186,12 @@ void TCPClientThread::handleChallenge( struct mg_connection *conn,
 void TCPClientThread::handleClientRcvLoop( struct mg_connection *conn,
                                                 CControlObject *pCtrlObject  )
 {
-
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     mg_send( conn,  MSG_RECEIVE_LOOP, strlen ( MSG_RECEIVE_LOOP ) );
     conn->flags |= MG_F_USER_1; // Mark socket as being in receive loop
     
     pClientItem->m_readBuffer.Empty();
-
-    // Loop until the connection is lost
-    /*
-    while ( !TestDestroy() && !m_bQuit && (conn->flags & MG_F_USER_1 ) ) {
-
-        // Wait for event
-        if ( wxSEMA_TIMEOUT ==
-            pClientItem->m_semClientInputQueue.WaitTimeout( 1000 ) ) {
-                mg_send( conn, "+OK\r\n", 5 );
-                continue;
-        }
-        
-        // We must handle the polling here while in the loop
-        mg_mgr_poll( &gpobj->m_mgrTcpIpServer, 50 );
-
-
-    } // While 
-    */
     
     return;
 }
@@ -2408,6 +2390,12 @@ void TCPClientThread::handleClientInterface_Close( struct mg_connection *conn,
 
 
 
+// -----------------------------------------------------------------------------
+//                                  U D P
+// -----------------------------------------------------------------------------
+
+
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // handleClientUdp
@@ -2432,7 +2420,7 @@ void TCPClientThread::handleClientUdp( struct mg_connection *conn,
 
 
 // -----------------------------------------------------------------------------
-//                               F I L E
+//                                 F I L E
 // -----------------------------------------------------------------------------
 
 
@@ -4727,6 +4715,13 @@ void TCPClientThread::handleClientTable_UpperQ( struct mg_connection *conn )
 
 
 
+// -----------------------------------------------------------------------------
+//                            E N D   T A B L E
+// -----------------------------------------------------------------------------
+
+
+
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // handleClientVariable
@@ -5050,7 +5045,7 @@ void TCPClientThread::handleVariable_Read( struct mg_connection *conn,
     if ( 0 != gpobj->m_variables.find( pClientItem->m_currentCommand,variable ) ) {
         
         str = variable.getAsString( false );
-        str = _("+OK - ") + str + _("\r\n");
+        str = str + _("\r\n");
         mg_send( conn,  str.mbc_str(), strlen( str.mbc_str() ) );
 
         mg_send( conn, MSG_OK, strlen ( MSG_OK ) );
@@ -5274,7 +5269,7 @@ void TCPClientThread::handleVariable_Length( struct mg_connection *conn,
     if ( 0 != gpobj->m_variables.find( pClientItem->m_currentCommand, variable ) ) {
         
         str = wxString::Format( _("%zu"), variable.getLength() );
-        str = _("+OK - ") + str + _("\r\n");
+        str = str + _("\r\n");
         mg_send( conn,  str.mbc_str(), strlen( str.mbc_str() ) );
     
         gpobj->m_variables.remove( variable );
