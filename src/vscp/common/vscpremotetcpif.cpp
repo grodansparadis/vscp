@@ -225,6 +225,7 @@ void VscpRemoteTcpIf::doClrInputQueue( void )
     m_inputStrArray.Clear();
 }
 
+/*
 char *reverse(const char * const s)
 {
   if ( NULL == s ) return NULL;
@@ -256,6 +257,7 @@ char *rstrstr( const char *s1, const char *s2)
   
   return NULL;
 }
+*/
 
 ///////////////////////////////////////////////////////////////////////////////
 // addInputStringArrayFromReply

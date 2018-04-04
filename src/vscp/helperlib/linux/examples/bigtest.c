@@ -642,6 +642,45 @@ int main(int argc, char* argv[])
 
     printf("* * * * Waiting for 200 received events on channel 2 * * * * *\n");
 
+    // ----
+
+    // Send event on channel 1
+		vscpEventEx exa;
+    		exa.vscp_class = 10;  // CLASS1.MEASUREMENT
+    		exa.vscp_type = 1;    // Count
+    		exa.head = 0;
+    		exa.year = 1956;
+    		exa.month = 11;
+    		exa.day = 2;
+    		exa.hour = 12;
+    		exa.minute = 10;
+    		exa.second = 3;
+    		exa.sizeData = 2;
+    		exa.timestamp = 0;
+    		exa.data[0] = 0;  
+    		exa.data[1] = 0;
+    		memset(exa.GUID, 0, sizeof(exa.GUID) ); // Setting GUID to all zero tell interface to use it's own GUID
+
+		for ( int i=0; i<200; i++ ) {
+
+			exa.data[0] = (i>>8) & 0xff;
+    			exa.data[1] = i & 0xff;
+
+    			if ( VSCP_ERROR_SUCCESS == (rv = vscphlp_sendEventEx( handle1, &exa ) ) ) {
+        			printf( "vscphlp_sendEvent: Success. %d\n", i );
+    			}
+    			else {
+        			printf("vscphlp_sendEvent: Failure - rv = %d\n", rv );
+        			vscphlp_close( handle1 );
+                    vscphlp_closeSession( handle1 );
+                    vscphlp_close( handle2 );
+                    vscphlp_closeSession( handle2 );
+        			return -1;
+    			}
+		}
+
+    // ----    
+
     int cntEvents = 0;
     int blockIteration = 0;
     while ( cntEvents < 200 ) {

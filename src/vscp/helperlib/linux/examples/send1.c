@@ -85,7 +85,7 @@ int main(int argc, char* argv[])
     		ex.second = 3;
     		ex.sizeData = 2;
     		ex.timestamp = 0;
-    		ex.data[0] = 0;  // Six degrees Celsius from sensor 2
+    		ex.data[0] = 0;  
     		ex.data[1] = 0;
     		memset(ex.GUID, 0, sizeof(ex.GUID) ); // Setting GUID to all zero tell interface to use it's own GUID
 

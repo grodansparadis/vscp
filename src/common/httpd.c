@@ -19821,7 +19821,8 @@ web_connect_client_impl( const struct web_client_options *client_options,
     conn = (struct web_connection *)web_calloc_ctx( 1,
                                                     conn_size + 
                                                     ctx_size +
-                                                    max_req_size );
+                                                    max_req_size,
+                                                    &common_client_context );
 
     if ( NULL == conn ) {
         web_snprintf( NULL,
