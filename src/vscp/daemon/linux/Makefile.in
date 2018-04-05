@@ -205,8 +205,8 @@ vscpremotetcpif.o: ../../common/vscpremotetcpif.cpp ../../common/vscpremotetcpif
 devicelist.o: ../../common/devicelist.cpp ../../common/devicelist.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/devicelist.cpp -o $@
 
-sockettcp.o: ../../common/sockettcp.c ../../common/sockettcp.h
-	$(CC) $(CFLAGS) -c ../../common/sockettcp.c -o $@
+sockettcp.o: ../../../common/sockettcp.c ../../../common/sockettcp.h
+	$(CC) $(CFLAGS) -c ../../../common/sockettcp.c -o $@
 
 guid.o: ../../common/guid.cpp ../../common/guid.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/guid.cpp -o $@
