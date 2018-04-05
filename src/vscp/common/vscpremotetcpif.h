@@ -82,7 +82,7 @@
     Default timeout for inner data check. A Read call will
     always wait this long for data.
 */
-#define TCPIP_DEFAULT_INNER_RESPONSE_TIMEOUT    20
+#define TCPIP_DEFAULT_INNER_RESPONSE_TIMEOUT    1
 
 
 #define TCPIP_DEFAULT_AFTER_COMMAND_SLEEP       0   // TODO remove !!!!!!!!!
@@ -390,6 +390,15 @@ public:
     int doCmdVersion( uint8_t *pMajorVer,
                         uint8_t *pMinorVer,
                         uint8_t *pSubMinorVer);
+
+    /*!
+        Get i/f version including build-version through the interface. 
+        @return CANAL_ERROR_SUCCESS on success and error code if failure.
+     */
+    int doCmdVersion( uint8_t *pMajorVer,
+                        uint8_t *pMinorVer,
+                        uint8_t *pSubMinorVer,
+                        uint16_t *pBuildVer );                        
 
     /*!
         Get interface version
@@ -1650,6 +1659,15 @@ private:
     /// Number of read/write retries
     uint8_t m_registerOpMaxRetries;
 
+    /*! 
+     * The tcp inner timout. Will always wait this amount of time for data
+     * if set to -1 default value 2000 ms will be used.
+     * Min value is 0 == return directly.
+    */
+    int m_innerResponseTimeout;
+
+
+
     /*!
         Version information is stored whenever the 
         version command is used (always done when done on 'open').
@@ -1660,12 +1678,7 @@ private:
     uint8_t m_version_release;
     uint16_t m_version_build;
     
-    /*! 
-     * The tcp inner timout. Will always wait this amount of time for data
-     * if set to -1 default value 2000 ms will be used.
-     * Min value is 0 == return directly.
-    */
-    int m_innerResponseTimeout;
+    
 
     /*!
         Get input queue count

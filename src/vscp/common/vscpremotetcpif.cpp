@@ -1242,6 +1242,25 @@ int VscpRemoteTcpIf::doCmdVersion( uint8_t *pMajorVer,
     return VSCP_ERROR_SUCCESS;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// doCmdVersion
+//
+
+int VscpRemoteTcpIf::doCmdVersion( uint8_t *pMajorVer,
+                                    uint8_t *pMinorVer,
+                                    uint8_t *pSubMinorVer,
+                                    uint16_t *pBuildVer ) {
+    int rv;
+
+    if ( VSCP_ERROR_SUCCESS != 
+        ( rv = doCmdVersion( pMajorVer, pMinorVer, pSubMinorVer ) ) ) {
+            return rv;
+    }
+
+    *pBuildVer = m_version_build;
+
+    return VSCP_ERROR_SUCCESS;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // doCmdDLLVersion
@@ -1842,7 +1861,6 @@ int VscpRemoteTcpIf::getRemoteVariableAccessRights( const wxString& name,
 int VscpRemoteTcpIf::getRemoteVariableAsString( const wxString& name, 
                                                     wxString& strValue )
 {
-    wxString strLine;
     wxString strCmd;
 
     if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
@@ -1854,16 +1872,23 @@ int VscpRemoteTcpIf::getRemoteVariableAsString( const wxString& name,
     
     addInputStringArrayFromReply();
     if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
-    //strLine = m_inputStrArray[ m_inputStrArray.Count() - 2 ];
-    for ( unsigned int i = 0; i <= m_inputStrArray.Count() - 2; i++ ) {
-        strLine += m_inputStrArray[ i ];
-    }
 
-    wxStringTokenizer tkz( strLine, _("\r\n") );
-    if ( !tkz.HasMoreTokens() ) return VSCP_ERROR_ERROR;
-        
-    // Get the string
-    strValue = tkz.GetNextToken();
+    // Get variable data
+    strValue = m_inputStrArray[ 0 ];
+
+    // Reply prior to 13.0.1 was
+    //
+    // +OK - variable-data<CR><LF>
+    // +OK Success.
+    //
+    // After 13.0.1 reply from server is
+    //
+    // variable-data<CR><LF>
+    // +OK Success. 
+
+    if ( VSCP_VERSION( m_version_major, m_version_minor, m_version_release ) < VSCP_VERSION( 13, 0, 1 ) ) { 
+        strValue.StartsWith("+OK - ", &strValue ); // Remove "+OK - " if there
+    }
     
     return VSCP_ERROR_SUCCESS;
 }
@@ -1904,7 +1929,6 @@ int VscpRemoteTcpIf::setRemoteVariableFromString( const wxString& name,
 
 int VscpRemoteTcpIf::getRemoteVariableValue( const wxString& name, wxString& strValue )
 {
-    wxString strLine;
     wxString strCmd;
 
     if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
@@ -1915,14 +1939,10 @@ int VscpRemoteTcpIf::getRemoteVariableValue( const wxString& name, wxString& str
     }
     
     addInputStringArrayFromReply();
-    if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
-    strLine = m_inputStrArray[ m_inputStrArray.Count() - 2 ];
+    if ( m_inputStrArray.GetCount() < 2 ) return VSCP_ERROR_ERROR; 
 
-    wxStringTokenizer tkz( strLine, _("\r\n") );
-    if ( !tkz.HasMoreTokens() ) return VSCP_ERROR_ERROR;
-        
     // Get value
-    strValue = tkz.GetNextToken();
+    strValue = m_inputStrArray[0];
 
     return VSCP_ERROR_SUCCESS;
 }

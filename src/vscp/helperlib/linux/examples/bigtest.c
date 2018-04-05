@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <unistd.h>
+#include <sys/time.h>
 #include "../../vscphelperlib.h"
 
 #define USER            "admin"
@@ -12,16 +14,19 @@
 #define PORT            9598
 
 //#define HOST            "127.0.0.1"
-#define HOST            "185.144.156.45"
-//#define HOST            "192.168.1.6"
+#define HOST            "192.168.1.6"
+//#define HOST            "185.144.156.45"
 
 //#define HOST_PLUS_PORT  "127.0.0.1:9598"
-//#define HOST_PLUS_PORT  "192.168.1.6:9598"
-#define HOST_PLUS_PORT  "185.144.156.45:9598"
+#define HOST_PLUS_PORT  "192.168.1.6:9598"
+//#define HOST_PLUS_PORT  "185.144.156.45:9598"
 
 //#define INTERFACE       "127.0.0.1:9598;admin;secret"
-//#define INTERFACE       "192.168.1.6:9598;admin;secret"
-#define INTERFACE       "185.144.156.45:9598;admin;secret"
+#define INTERFACE       "192.168.1.6:9598;admin;secret"
+//#define INTERFACE       "185.144.156.45:9598;admin;secret"
+
+// Count for number of events sent in burst
+#define BURST_SEND_COUNT    200
 
 // If TEST_RECEIVE_LOOP is uncommented the rcvloop commands
 // will be tested. Must send five events externally to test
@@ -34,9 +39,21 @@
 #define TEST_HELPERS
 
 // Uncomment to test measurement functionality
-#define TEST_MEASUREMENT
+//#define TEST_MEASUREMENT
 
 int error_cnt = 0;
+
+///////////////////////////////////////////////////////////////////////////////
+// current_timestamp
+//
+
+long long current_timestamp() {
+    struct timeval te; 
+    gettimeofday(&te, NULL); // get current time
+    long long milliseconds = te.tv_sec*1000LL + te.tv_usec/1000; // calculate milliseconds
+    // printf("milliseconds: %lld\n", milliseconds);
+    return milliseconds;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // closeAll
@@ -71,6 +88,7 @@ int main(int argc, char* argv[])
 {
     int rv;
     long handle1, handle2; 
+    long long t1,t2;
 
     printf("VSCP helperlib test program\n");
     printf("===========================\n");
@@ -223,7 +241,7 @@ int main(int argc, char* argv[])
             printf( "%u events waiting to be fetched on channel 2.\n", count );
             printf("vscphlp_isDataAvailable: Failure - Number of events in queue should be 2 or greater.\n" );
             closeAll( handle1, handle2 );
-        return -1;
+            return -1;
         }
         else {
             printf( "%u events waiting to be fetched on channel 2 [Other source is also sending events].\n", count );
@@ -583,42 +601,48 @@ int main(int argc, char* argv[])
     // ----
 
     // Send event on channel 1
-		vscpEventEx exa;
-    		exa.vscp_class = 10;  // CLASS1.MEASUREMENT
-    		exa.vscp_type = 1;    // Count
-    		exa.head = 0;
-    		exa.year = 1956;
-    		exa.month = 11;
-    		exa.day = 2;
-    		exa.hour = 12;
-    		exa.minute = 10;
-    		exa.second = 3;
-    		exa.sizeData = 2;
-    		exa.timestamp = 0;
-    		exa.data[0] = 0;  
-    		exa.data[1] = 0;
-    		memset(exa.GUID, 0, sizeof(exa.GUID) ); // Setting GUID to all zero tell interface to use it's own GUID
+	vscpEventEx exa;
+    exa.vscp_class = 10;    // CLASS1.MEASUREMENT
+    exa.vscp_type = 1;      // Count
+    exa.head = 0;
+    exa.year = 1867;        // Marie Curie
+    exa.month = 11;         
+    exa.day = 7;
+    exa.hour = 12;
+    exa.minute = 10;
+    exa.second = 3;
+    exa.sizeData = 2;
+    exa.timestamp = 0;
+    exa.data[0] = 0;  
+    exa.data[1] = 0;
+    memset(exa.GUID, 0, sizeof(exa.GUID) ); // Setting GUID to all zero tell interface to use it's own GUID
 
-		for ( int i=0; i<200; i++ ) {
+    t1 = t2 = current_timestamp();
+	for ( int i=0; i<BURST_SEND_COUNT; i++ ) {
 
-			exa.data[0] = (i>>8) & 0xff;
-    			exa.data[1] = i & 0xff;
+		exa.data[0] = (i>>8) & 0xff;
+    	exa.data[1] = i & 0xff;
 
-    			if ( VSCP_ERROR_SUCCESS == (rv = vscphlp_sendEventEx( handle1, &exa ) ) ) {
-        			printf( "vscphlp_sendEvent: Success. %d\n", i );
-    			}
-    			else {
-        			printf("vscphlp_sendEvent: Failure - rv = %d\n", rv );
-        			closeAll( handle1, handle2 );
-        return -1;
-    			}
-		}
+    	if ( VSCP_ERROR_SUCCESS == (rv = vscphlp_sendEventEx( handle1, &exa ) ) ) {
+        	printf( "vscphlp_sendEvent: Success. %d\n", i );
+    	}
+    	else {
+        	printf("vscphlp_sendEvent: Failure - rv = %d\n", rv );
+        	closeAll( handle1, handle2 );
+            return -1;
+    	}
+	}
+
+    t2 = current_timestamp();
+    printf("Burst send time %d ms\n", (int)(t2-t1) );
 
     // ----    
 
     int cntEvents = 0;
     int blockIteration = 0;
-    while ( cntEvents < 200 ) {
+
+    t1 = t2 = current_timestamp();
+    while ( cntEvents < BURST_SEND_COUNT ) {
         pEvent = malloc( sizeof( vscpEvent ) );
         pEvent->pdata = NULL;   // NULL a must for a successful delete
         if ( VSCP_ERROR_SUCCESS == ( rv = vscphlp_blockingReceiveEvent( handle2, pEvent, 30000 ) ) ) {
@@ -649,6 +673,8 @@ int main(int argc, char* argv[])
 
     }
 
+    t2 = current_timestamp();
+    printf("Burst receive time %d ms\n", (int)(t2-t1) );
 
     // Quit receiveloop
     if ( VSCP_ERROR_SUCCESS == (rv = vscphlp_quitReceiveLoop( handle2 ) ) ) {
@@ -1900,7 +1926,7 @@ int main(int argc, char* argv[])
 
 
 
-return 0;
+//return 0;
 
 
 
@@ -2161,21 +2187,20 @@ return 0;
 
     if ( vscphlp_isGUIDEmpty( GUID2 ) ) {
         printf( "\aError: vscphlp_isGUIDEmpty\n");    
-    }
-    else {
-        printf( "vscphlp_isGUIDEmpty  - GUID is detected as NOT empty as it should be\n" );
         closeAll( handle1, handle2 );
         return -1;
-        
+    }
+    else {
+        printf( "vscphlp_isGUIDEmpty  - GUID is detected as NOT empty as it should be\n" );        
     }
 
     if ( vscphlp_isSameGUID( emptyGUID, GUID2) ) {
         printf( "\aError: vscphlp_isSameGUID\n");
+        closeAll( handle1, handle2 );
+        return -1;
     }
     else {
         printf( "vscphlp_isSameGUID  - Correct, GUIDs are not the same.\n" );
-        closeAll( handle1, handle2 );
-        return -1;
     }
 
     vscphlp_writeGuidArrayToString( GUID2, strguid2, sizeof( strguid2 )-1 );
@@ -2741,6 +2766,32 @@ return 0;
     printf("\n\n\n");
 
 
+
+
+     t1 = t2 = current_timestamp();
+	for ( int i=0; i<BURST_SEND_COUNT; i++ ) {
+
+		exa.data[0] = (i>>8) & 0xff;
+    	exa.data[1] = i & 0xff;
+
+    	if ( VSCP_ERROR_SUCCESS == (rv = vscphlp_noop( handle1 ) ) ) {
+        	printf( "vscphlp_noop: Success. %d\n", i );
+    	}
+    	else {
+        	printf("vscphlp_noop: Failure - rv = %d\n", rv );
+        	closeAll( handle1, handle2 );
+            return -1;
+    	}
+	}
+
+    t2 = current_timestamp();
+    printf("Burst NOOP time %d ms\n", (int)(t2-t1) );
+
+
+
+
+
+
     // free data
     printf("Free 'e' working event data.\n");
     if ( NULL != pEvent) free( e.pdata );
@@ -2758,6 +2809,8 @@ return 0;
 
     //printf("\n\nHit ENTER to terminate Error Count= %d\n", error_cnt );
     //(void)getchar();
+
+   
    
     return 0;
 }
