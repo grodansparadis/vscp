@@ -2594,7 +2594,7 @@ stcp_push_inner( struct stcp_connection *conn,
             n = SSL_write(conn->ssl, buf, len);
             if (n <= 0) {
                 err = SSL_get_error(conn->ssl, n);
-                if ((err == SSL_ERROR_SYSCALL) && (n == -1)) {
+                if ( ( SSL_ERROR_SYSCALL == err ) && ( -1 == n  ) ) {
                     err = errno;
                 }
                 else if (( err == SSL_ERROR_WANT_READ ) ||
@@ -2843,7 +2843,9 @@ stcp_pull_inner( FILE *fp,
         }
 
         if ( pollres > 0 ) {
+
             nread = SSL_read( conn->ssl, buf, len );
+            
             if ( nread <= 0 ) {
                 err = SSL_get_error( conn->ssl, nread );
                 if ( ( err == SSL_ERROR_SYSCALL ) && ( nread == -1 ) ) {
@@ -2873,6 +2875,7 @@ stcp_pull_inner( FILE *fp,
         }
 
     }
+
     // Non SSL read
     else {
         struct pollfd pfd[1];
@@ -2880,7 +2883,7 @@ stcp_pull_inner( FILE *fp,
 
         pfd[0].fd = conn->client.sock;
         pfd[0].events = POLLIN;
-        pollres = stcp_poll( pfd, 1, mstimeout, &(conn->stop_flag) );
+        pollres = stcp_poll( pfd, 1, mstimeout, &( conn->stop_flag ) );
 
         if ( conn->stop_flag ) {
             return -2; 
@@ -2989,8 +2992,8 @@ stcp_pull_all( FILE *fp, struct stcp_connection *conn, char *buf, int len, int m
         timeout_ns = (uint64_t)((double)mstimeout * 1.0E6);
     }
 
-    while ( (len > 0) && ( 0 == conn->stop_flag ) ) {
-        
+    while ( ( len > 0 ) && ( 0 == conn->stop_flag ) ) {
+
         n = stcp_pull_inner( fp, conn, buf + nread, len, mstimeout );
         
         if ( STCP_ERROR_STOPPED == n ) {
@@ -3014,9 +3017,10 @@ stcp_pull_all( FILE *fp, struct stcp_connection *conn, char *buf, int len, int m
         }
         else {
             nread += n;
-            len -= n;
+            len -= n;            
         }
-    }
+
+    } // while
 
     return nread;
 }

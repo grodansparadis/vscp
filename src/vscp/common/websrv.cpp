@@ -8501,12 +8501,12 @@ vscp_configure_list( struct web_connection *conn, void *cbdata )
     if ( gpobj->m_variables.find( _("vscp.civetweb.copyright"), variable ) ) {
         str = variable.getValue();
         vscp_base64_wxdecode( str );
-        web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Civetweb copyright:</b> ");
+        web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Civetweb (Mod.) copyright:</b> ");
         web_printf( conn, "%s", (const char *)str.mbc_str() );
         web_printf( conn, "<br>");
     }
     
-    web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Civetweb contributors:</b> ");
+    web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Civetweb (Orig.) contributors:</b> ");
     web_printf( conn, "%s",
                 "<a href=\"https://github.com/civetweb/civetweb/blob/master/CREDITS.md\">link</a>" );
     web_printf( conn, "<br>");

@@ -82,7 +82,7 @@
     Default timeout for inner data check. A Read call will
     always wait this long for data.
 */
-#define TCPIP_DEFAULT_INNER_RESPONSE_TIMEOUT    1
+#define TCPIP_DEFAULT_INNER_RESPONSE_TIMEOUT    0
 
 
 #define TCPIP_DEFAULT_AFTER_COMMAND_SLEEP       0   // TODO remove !!!!!!!!!
