@@ -348,12 +348,14 @@ int VscpRemoteTcpIf::doCmdOpen( const wxString& strHostname,
     wxLogDebug( _("Connect in progress with server ") + strHostname );
     wxLogDebug( _("============================================================") );   
 #endif    
+
+    wxString strHost = strHostname.Lower();
+    strHost.Trim(false);
+    strHost.StartsWith("tcp://", &strHost ); // Remove "tcp://"
     
-    wxStringTokenizer tkz( strHostname, _(":") );
+    wxStringTokenizer tkz( strHost, _(":") );
     if ( tkz.CountTokens() < 2 ) return VSCP_ERROR_PARAMETER;
     host = tkz.GetNextToken();
-    host.Trim(false);
-    host.StartsWith("tcp://", &host ); // Remove "tcp://"
     port = atoi( (const char *)tkz.GetNextToken().mbc_str() );
 
     m_conn = stcp_connect_remote( (const char *)host.mbc_str(), 
