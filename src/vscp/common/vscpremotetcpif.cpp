@@ -352,6 +352,8 @@ int VscpRemoteTcpIf::doCmdOpen( const wxString& strHostname,
     wxStringTokenizer tkz( strHostname, _(":") );
     if ( tkz.CountTokens() < 2 ) return VSCP_ERROR_PARAMETER;
     host = tkz.GetNextToken();
+    host.Trim(false);
+    host.StartsWith("tcp://", &host ); // Remove "tcp://"
     port = atoi( (const char *)tkz.GetNextToken().mbc_str() );
 
     m_conn = stcp_connect_remote( (const char *)host.mbc_str(), 

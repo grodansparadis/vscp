@@ -1508,7 +1508,7 @@ sslize( struct stcp_connection *conn,
         // Avoid CRYPTO_cleanup_all_ex_data(); See discussion:
         // https://wiki.openssl.org/index.php/Talk:Library_Initialization
 #ifndef OPENSSL_API_1_1
-        ERR_remove_state(0);
+        ERR_remove_state(0);    // deprecated in 1.0.0, solved by going to 1.1.0
 #endif
         return 0;
     }
@@ -1560,7 +1560,7 @@ sslize( struct stcp_connection *conn,
         // Avoid CRYPTO_cleanup_all_ex_data(); See discussion:
         // https://wiki.openssl.org/index.php/Talk:Library_Initialization
 #ifndef OPENSSL_API_1_1
-        ERR_remove_state(0);
+        ERR_remove_state(0);    // deprecated in 1.0.0, solved by going to 1.1.0
 #endif
         return 0;
     }
@@ -1965,7 +1965,7 @@ uninitialize_ssl( void )
         ERR_free_strings();
         EVP_cleanup();
         CRYPTO_cleanup_all_ex_data();
-        ERR_remove_state(0);
+        ERR_remove_state(0);        // deprecated in 1.0.0, solved by going to 1.1.0
 
         for (i = 0; i < CRYPTO_num_locks(); i++) {
             pthread_mutex_destroy(&ssl_mutexes[i]);
@@ -2444,7 +2444,7 @@ close_connection(struct stcp_connection *conn)
         // Avoid CRYPTO_cleanup_all_ex_data(); See discussion:
         // https://wiki.openssl.org/index.php/Talk:Library_Initialization
 #ifndef OPENSSL_API_1_1
-        ERR_remove_state(0);
+        ERR_remove_state(0);        // deprecated in 1.0.0, solved by going to 1.1.0
 #endif
         conn->ssl = NULL;
     }
