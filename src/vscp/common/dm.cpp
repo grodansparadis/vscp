@@ -8558,11 +8558,11 @@ void *actionThread_VSCPSrv::Entry()
 {
     int rv;
     VscpRemoteTcpIf client;
-    wxString server = wxString::Format( _("tcp://%s:%d"), 
+    wxString interface = wxString::Format( _("tcp://%s:%d"), 
                                             (const char *)m_strHostname.mbc_str(),
                                             m_port );
 
-    if ( CANAL_ERROR_SUCCESS != ( rv = client.doCmdOpen( server,
+    if ( CANAL_ERROR_SUCCESS != ( rv = client.doCmdOpen( interface,
                                                             m_strUsername,
                                                             m_strPassword ) ) ) {       
         // Failed to connect

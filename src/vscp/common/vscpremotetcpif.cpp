@@ -283,15 +283,18 @@ int VscpRemoteTcpIf::doCmdOpen( const wxString& strInterface, uint32_t flags )
     wxLogDebug( _("strInterface = ") );
     wxLogDebug( strInterface ); 
 #endif    
-    
-    // Create working copy
-    wxString strBuf = strInterface;
+
+    // Interface can be given as
+    //      tcp://host:port;username;password
+    //      host:port;username;password
     
     wxStringTokenizer tkz( strInterface, _(";") );
 
     // Hostname
     if ( tkz.HasMoreTokens() ) {
         strHostname = tkz.GetNextToken();
+        strHostname.Trim(false);
+        strHostname.StartsWith("tcp://", &strHostname ); // Remove "tcp://"
     }
  
 #ifdef DEBUG_LIB_VSCP_HELPER    
