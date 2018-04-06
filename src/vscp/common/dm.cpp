@@ -8597,8 +8597,6 @@ void *actionThread_VSCPSrv::Entry()
                 DAEMON_LOGMSG_NORMAL, 
                 DAEMON_LOGTYPE_DM  );
     }
-    
-    wxPrintf( "OK - Event sent to server %s.\n", (const char *)server.mbc_str() );
 
     return NULL;
 }
