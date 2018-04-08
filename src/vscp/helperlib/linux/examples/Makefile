@@ -1,6 +1,6 @@
 CFLAGS = -std=c99 -g -O0
 
-all:	example1 send1 bigtest stcptest sockettcp.o
+all:	example1 send1 send_periodic bigtest stcptest sockettcp.o
 
 sockettcp.o: ../../../../common/sockettcp.c ../../../../common/sockettcp.h
 	$(CC) $(CFLAGS) -c ../../../../common/sockettcp.c -o $@ -I../../../common -I../../../../common
@@ -10,6 +10,9 @@ example1:	example1.c
 
 send1:       send1.c
 	        $(CC) $(CFLAGS) send1.c -o send1 -I ../.. -I../../../common -I../../../../common -Wl,-rpath,/home/akhe/development/VSCP/vscp/src/vscp/helperlib/linux -L/home/akhe/development/VSCP/vscp/src//vscp/helperlib/linux -lvscphelper
+
+send_periodic:       send_periodic.c
+	        $(CC) $(CFLAGS) send_periodic.c -o send_periodic -I ../.. -I../../../common -I../../../../common -Wl,-rpath,/home/akhe/development/VSCP/vscp/src/vscp/helperlib/linux -L/home/akhe/development/VSCP/vscp/src//vscp/helperlib/linux -lvscphelper
 
 bigtest:       bigtest.c
 	$(CC) $(CFLAGS) -g -O0 bigtest.c -o bigtest -I../../../common -I../../../../common -L.. -lm -Wl,-rpath,/home/akhe/development/VSCP/vscp/src/vscp/helperlib/linux -L/home/akhe/development/VSCP/vscp/src//vscp/helperlib/linux -lvscphelper

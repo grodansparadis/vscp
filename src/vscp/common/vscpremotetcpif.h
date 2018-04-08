@@ -93,7 +93,7 @@
 #define TCPIP_REGISTER_READ_ERROR_TIMEOUT       5000
 #define TCPIP_REGISTER_READ_MAX_TRIES           3
 
-#define TCPIP_DEFAULT_CONNECT_TIMEOUT_SECONDS   5   // Seconds
+#define TCPIP_DEFAULT_CONNECT_TIMEOUT_SECONDS   15   // Seconds
 /*!
     @def TCPIP_DLL_VERSION
     Pseudo version string

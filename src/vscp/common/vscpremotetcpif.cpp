@@ -434,7 +434,12 @@ int VscpRemoteTcpIf::doCmdClose( void )
         }  
 
         // Try to behave
-        return doCommand("QUIT\r\n");
+        doCommand("QUIT\r\n");
+
+        // Clean up and close physical connection
+        stcp_close_connection( m_conn );
+        m_conn = NULL;
+
     }
 
     return VSCP_ERROR_SUCCESS;  

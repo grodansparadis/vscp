@@ -2298,7 +2298,7 @@ stcp_connect_remote( const char *host,
                         int timeout )
 {
     struct stcp_client_options opts;
-    memset(&opts, 0, sizeof (opts));
+    memset( &opts, 0, sizeof (opts) );
     opts.host = host;
     opts.port = port;
     return stcp_connect_remote_impl( &opts,
@@ -2325,7 +2325,7 @@ stcp_close_socket_gracefully(struct stcp_connection *conn)
     int linger_timeout = -2;
     socklen_t opt_len = sizeof (error_code);
 
-    if ( NULL != conn ) {
+    if ( NULL == conn ) {
         return;
     }
 
@@ -2449,7 +2449,7 @@ close_connection(struct stcp_connection *conn)
         conn->ssl = NULL;
     }
 
-    if (conn->client.sock != INVALID_SOCKET) {
+    if ( conn->client.sock != INVALID_SOCKET ) {
         stcp_close_socket_gracefully( conn );
         conn->client.sock = INVALID_SOCKET;
     }
@@ -2464,7 +2464,7 @@ close_connection(struct stcp_connection *conn)
 void
 stcp_close_connection(struct stcp_connection *conn)
 {
-    if (conn == NULL) {
+    if ( NULL == conn ) {
         return;
     }
 
@@ -2476,7 +2476,7 @@ stcp_close_connection(struct stcp_connection *conn)
 
     // If client free connection data
     if ( CONNECTION_CLIENT == conn->conntype ) {
-	free(conn);
+	    free( conn );
     }
 
 }
