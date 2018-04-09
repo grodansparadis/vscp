@@ -104,10 +104,10 @@ struct socket
 
 
 struct stcp_client_options {
-    const char *host;
-    int port;
-    const char *client_cert;
-    const char *server_cert;
+    const char *hostip;         // Host ip address ip.v4 or ip.v6
+    int port;                   // Host port
+    const char *client_cert;    // Client certificat path
+    const char *server_cert;    // Server certificat path
     // TODO: add more data
 };
 
@@ -176,7 +176,7 @@ struct stcp_connection
  *  Connect (unsecurely) to remote
  */
 struct stcp_connection *
-stcp_connect_remote( const char *host,
+stcp_connect_remote( const char *hostip,
                         int port,
                         int use_ssl,
                         char *error_buffer,
@@ -197,7 +197,7 @@ stcp_connect_remote_secure( const struct stcp_client_options *client_options,
  * Close connection
  */ 
 void
-stcp_close_connection(struct stcp_connection *conn);
+stcp_close_connection( struct stcp_connection *conn );
 
 
 char

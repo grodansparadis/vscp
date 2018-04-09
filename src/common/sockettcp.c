@@ -1618,14 +1618,14 @@ static int cryptolib_users = 0; // Reference counter for crypto library.
 //
 
 static int
-initialize_ssl(char *ebuf, size_t ebuf_len)
+initialize_ssl( char *ebuf, size_t ebuf_len )
 {
 #ifdef OPENSSL_API_1_1
     if (ebuf_len > 0) {
         ebuf[0] = 0;
     }
 
-    if ( stcp_atomic_inc(&cryptolib_users) > 1 ) {
+    if ( stcp_atomic_inc( &cryptolib_users ) > 1 ) {
         return 1;
     }
 
@@ -1633,11 +1633,11 @@ initialize_ssl(char *ebuf, size_t ebuf_len)
     int i;
     size_t size;
 
-    if (ebuf_len > 0) {
+    if ( ebuf_len > 0 ) {
         ebuf[0] = 0;
     }
 
-    if ( atomic_inc(&cryptolib_users) > 1 ) {
+    if ( atomic_inc( &cryptolib_users ) > 1 ) {
         return 1;
     }
 
@@ -1645,28 +1645,27 @@ initialize_ssl(char *ebuf, size_t ebuf_len)
     // http://www.openssl.org/support/faq.html#PROG1
     //
     i = CRYPTO_num_locks();
-    if (i < 0) {
+    if ( i < 0 ) {
         i = 0;
     }
+
     size = sizeof (pthread_mutex_t) * ((size_t) (i));
 
-    if (size == 0) {
+    if ( 0 == size ) {
         ssl_mutexes = NULL;
     }
-    else if ((ssl_mutexes = (pthread_mutex_t *)malloc(size)) == NULL) {
-        report_error("%s: cannot allocate mutexes: %s");
-                         //__func__,
-                         //ssl_error());
-
+    else if ( NULL == ( ssl_mutexes = (pthread_mutex_t *)malloc( size ) ) ) {
+        report_error("%s: cannot allocate mutexes: %s"); //, __func__, ssl_error() );
         return 0;
     }
 
-    for (i = 0; i < CRYPTO_num_locks(); i++) {
+    for ( i = 0; i < CRYPTO_num_locks(); i++ ) {
         pthread_mutex_init( &ssl_mutexes[i], (void *)&pthread_mutex_attr );
     }
 
     CRYPTO_set_locking_callback( &ssl_locking_callback );
     CRYPTO_set_id_callback( &stcp_current_thread_id );
+
 #endif // OPENSSL_API_1_1
 
     return 1;
@@ -1787,7 +1786,7 @@ set_ssl_option( struct stcp_connection *conn,
         chain = NULL;
     }
 
-    if (!initialize_ssl(ebuf, sizeof (ebuf))) {
+    if ( !initialize_ssl( ebuf, sizeof ( ebuf ) ) ) {
         report_error( ebuf );
         return 0;
     }
@@ -1988,6 +1987,55 @@ is_valid_port( unsigned long port )
 }
 
 
+////////////////////////////////////////////////////////////////////////////////
+// stcp_inet_pton
+//
+// af - Address family (AF_INET, AF_INET6)
+// src - host (srv.domain.com)
+// dst - ip-address
+// dstlen - size of buufer for ip-address
+//
+
+static int
+stcp_inet_pton( int af, const char *src, void *dst, size_t dstlen )
+{
+    struct addrinfo hints, *res, *ressave;
+    int func_ret = 0;
+    int gai_ret;
+
+    memset(&hints, 0, sizeof (struct addrinfo));
+    hints.ai_family = af;
+
+    gai_ret = getaddrinfo(src, NULL, &hints, &res);
+    if (gai_ret != 0) {
+
+        // gai_strerror could be used to convert gai_ret to a string
+        // POSIX return values: see
+        // http://pubs.opengroup.org/onlinepubs/9699919799/functions/freeaddrinfo.html
+        //
+        // Windows return values: see
+        // https://msdn.microsoft.com/en-us/library/windows/desktop/ms738520%28v=vs.85%29.aspx
+        //
+        return 0;
+    }
+
+    ressave = res;
+
+    while (res) {
+
+        if (dstlen >= (size_t) res->ai_addrlen) {
+            memcpy(dst, res->ai_addr, res->ai_addrlen);
+            func_ret = 1;
+        }
+
+        res = res->ai_next;
+    }
+
+    freeaddrinfo(ressave);
+
+    return func_ret;
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // set_tcp_nodelay
@@ -2010,13 +2058,12 @@ set_tcp_nodelay(int sock, int nodelay_on)
 }
 
 
-
 ////////////////////////////////////////////////////////////////////////////////
 // stcp_connect_socket
 //
 
 static int
-stcp_connect_socket( const char *host,
+stcp_connect_socket( const char *hostip,
                         int port,
                         int use_ssl,
                         char *ebuf,
@@ -2033,37 +2080,37 @@ stcp_connect_socket( const char *host,
         *ebuf = 0;
     }
 
-    if ( NULL == host ) {
+    if ( NULL == hostip ) {
         report_error( "NULL host" );
         return 0;
     }
 
-    if ((port <= 0) || !is_valid_port((unsigned) port)) {
+    if ( (port <= 0) || !is_valid_port((unsigned) port)) {
         report_error("invalid port");
         return 0;
     }
 
-    (void) use_ssl;
+    (void)use_ssl;
 
 
-    if ( inet_pton(AF_INET, host, &( sa->sin.sin_addr ) ) ) {
+    if ( stcp_inet_pton( AF_INET, hostip, &sa->sin, sizeof( sa->sin ) ) ) { // .sin_addr
         sa->sin.sin_family = AF_INET;
         sa->sin.sin_port = htons((uint16_t) port);
         ip_ver = 4;
     }
-    else if ( inet_pton(AF_INET6, host, &sa->sin6.sin6_addr ) ) {
+    else if ( stcp_inet_pton( AF_INET6, hostip, &sa->sin6, sizeof( sa->sin6 ) ) ) { // .sin6_addr
         sa->sin6.sin6_family = AF_INET6;
         sa->sin6.sin6_port = htons((uint16_t) port);
         ip_ver = 6;
     }
-    else if ( host[0] == '[' ) {
+    else if ( hostip[0] == '[' ) {
         // While getaddrinfo on Windows will work with [::1],
         // getaddrinfo on Linux only works with ::1 (without []).
-        size_t l = strlen(host + 1);
-        char *h = (l > 1) ? strdup(host + 1) : NULL;
+        size_t l = strlen(hostip + 1);
+        char *h = (l > 1) ? strdup(hostip + 1) : NULL;
         if ( h ) {
             h[l - 1] = 0;
-            if ( inet_pton(AF_INET6, h, &sa->sin6.sin6_addr ) ) {
+            if ( stcp_inet_pton(AF_INET6, h, &sa->sin6, sizeof( sa->sin6 ) ) ) { // .sin6_addr
                 sa->sin6.sin6_family = AF_INET6;
                 sa->sin6.sin6_port = htons((uint16_t) port);
                 ip_ver = 6;
@@ -2078,9 +2125,6 @@ stcp_connect_socket( const char *host,
         return 0; 
     }
     
-    char ttt[32];
-    inet_ntop( AF_INET, &(sa->sin.sin_addr), ttt,INET_ADDRSTRLEN  );
-
     if ( 4 == ip_ver ) {
         *sock = socket(PF_INET, SOCK_STREAM, 0);
     }
@@ -2153,7 +2197,7 @@ stcp_connect_remote_impl( const struct stcp_client_options *client_options,
     unsigned max_req_size = MAX_REQUEST_SIZE;
 
     // Size of structures, aligned to 8 bytes
-    size_t conn_size = ((sizeof(struct stcp_connection) + 7) >> 3) << 3;
+    size_t conn_size = ( ( sizeof( struct stcp_connection ) + 7 ) >> 3 ) << 3;
 
     conn = (struct stcp_connection *)calloc( 1, conn_size + max_req_size );
     if ( NULL == conn ) {
@@ -2166,7 +2210,7 @@ stcp_connect_remote_impl( const struct stcp_client_options *client_options,
     conn->buf_size = (int)max_req_size;
     conn->read_timeout = timeout;
 
-    if ( !stcp_connect_socket( client_options->host,
+    if ( !stcp_connect_socket( client_options->hostip,
                                 client_options->port,
                                 use_ssl,
                                 ebuf,
@@ -2227,8 +2271,8 @@ stcp_connect_remote_impl( const struct stcp_client_options *client_options,
 
         if ( client_options->client_cert ) {
             if ( !ssl_use_pem_file( conn,
-                                        client_options->client_cert,
-                                        NULL ) ) {
+                                    client_options->client_cert,
+                                    NULL ) ) {
                 report_error("Can not use SSL client certificate" );
                 SSL_CTX_free( conn->ssl_ctx );
                 close( sock );
@@ -2290,7 +2334,7 @@ stcp_connect_remote_secure( const struct stcp_client_options *client_options,
 //
 
 struct stcp_connection *
-stcp_connect_remote( const char *host,
+stcp_connect_remote( const char *hostip,
                         int port,
                         int use_ssl,
                         char *error_buffer,
@@ -2299,7 +2343,7 @@ stcp_connect_remote( const char *host,
 {
     struct stcp_client_options opts;
     memset( &opts, 0, sizeof (opts) );
-    opts.host = host;
+    opts.hostip = hostip;
     opts.port = port;
     return stcp_connect_remote_impl( &opts,
                                         use_ssl,
@@ -2314,7 +2358,7 @@ stcp_connect_remote( const char *host,
 //
 
 static void
-stcp_close_socket_gracefully(struct stcp_connection *conn)
+stcp_close_socket_gracefully( struct stcp_connection *conn )
 {
 #if defined(_WIN32)
     char buf[WEB_BUF_LEN];
@@ -2428,7 +2472,7 @@ stcp_close_socket_gracefully(struct stcp_connection *conn)
 //
 
 static void
-close_connection(struct stcp_connection *conn)
+close_connection( struct stcp_connection *conn )
 {
     conn->conn_state = SOCKETTCP_CONN_STATE_TOCLOSE; // to close
 
@@ -2462,7 +2506,7 @@ close_connection(struct stcp_connection *conn)
 //
 
 void
-stcp_close_connection(struct stcp_connection *conn)
+stcp_close_connection( struct stcp_connection *conn )
 {
     if ( NULL == conn ) {
         return;

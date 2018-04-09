@@ -8120,6 +8120,11 @@ is_valid_port( unsigned long port )
 ////////////////////////////////////////////////////////////////////////////////
 // web_inet_pton
 //
+// af - Address family (AF_INET, AF_INET6)
+// src - host (srv.domain.com)
+// dst - ip-address
+// dstlen - size of buufer for ip-address
+//
 
 static int
 web_inet_pton( int af, const char *src, void *dst, size_t dstlen )
@@ -8128,11 +8133,11 @@ web_inet_pton( int af, const char *src, void *dst, size_t dstlen )
     int func_ret = 0;
     int gai_ret;
 
-    memset(&hints, 0, sizeof (struct addrinfo));
+    memset( &hints, 0, sizeof( struct addrinfo ) );
     hints.ai_family = af;
 
-    gai_ret = getaddrinfo(src, NULL, &hints, &res);
-    if (gai_ret != 0) {
+    gai_ret = getaddrinfo( src, NULL, &hints, &res );
+    if ( gai_ret != 0 ) {
 
         // gai_strerror could be used to convert gai_ret to a string
         // POSIX return values: see
@@ -8146,17 +8151,17 @@ web_inet_pton( int af, const char *src, void *dst, size_t dstlen )
 
     ressave = res;
 
-    while (res) {
+    while ( res ) {
 
-        if (dstlen >= (size_t) res->ai_addrlen) {
-            memcpy(dst, res->ai_addr, res->ai_addrlen);
+        if ( dstlen >= (size_t) res->ai_addrlen ) {
+            memcpy( dst, res->ai_addr, res->ai_addrlen );
             func_ret = 1;
         }
 
         res = res->ai_next;
     }
 
-    freeaddrinfo(ressave);
+    freeaddrinfo( ressave );
 
     return func_ret;
 }
