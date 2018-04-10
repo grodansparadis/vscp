@@ -7,6 +7,8 @@
 // 
 // Copyright (c) 2004-2013 Sergey Lyubka
 // Copyright (c) 2013-2017 the Civetweb developers
+//
+// Adopted for VSCP
 // Copyright (c) 2018 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
 // 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -60,7 +62,7 @@
 #define SSL_SHORT_TRUST                 (0)
 
 #define MAX_REQUEST_SIZE                (16384)
-#define WEB_BUF_LEN (                   8192)
+#define STCP_BUF_LEN (                   8192)
 #define LINGER_TIMEOUT                  (-2)
 
 #ifndef SOCKET_TIMEOUT_QUANTUM          // in ms
@@ -103,12 +105,16 @@ struct socket
 };
 
 
-struct stcp_client_options {
-    const char *hostip;         // Host ip address ip.v4 or ip.v6
-    int port;                   // Host port
-    const char *client_cert;    // Client certificat path
-    const char *server_cert;    // Server certificat path
-    // TODO: add more data
+struct stcp_secure_client_options {
+    const char *host;           /* Host address ip.v4 or ip.v6 */
+    int port;                   /* Host port */
+    const char *client_cert;    /* Client certificat path */
+    const char *server_cert;    /* Server certificat path */
+    /* ------------------------------------------------------- */
+    char *pem; 
+    char *chain;
+    char *ca_path;
+    char *ca_file;
 };
 
 // Connection types
@@ -124,23 +130,24 @@ struct stcp_connection
     uint8_t conntype;           // Connection type
     uint16_t read_timeout;      // Read timeout in seconds
 
-    SSL *ssl;                   // SSL descriptor
-    SSL_CTX *ssl_ctx;           // SSL context for client connections
     struct socket client;       // Connected client
     
     char *buf;                  // Buffer for received data
-
-    int must_close;             // 1 if connection must be closed
- 
     int buf_size;               // Buffer size
     int data_len;               // Total size of data in a buffer
- 
+
+    int must_close;             // 1 if connection must be closed
     volatile int stop_flag;     // Should we stop event loop
     
     // Request info
     char remote_addr[48];       // Client's IP address as a string.
     int remote_port;            // Client's port
 
+    SSL *ssl;                   // SSL descriptor
+    SSL_CTX *ssl_ctx;           // SSL context for client connections
+
+    // Secure configuration data
+    struct stcp_secure_client_options *secure_opts;
 };
 
 // Configuration settings
@@ -188,7 +195,7 @@ stcp_connect_remote( const char *hostip,
  */
 
 struct stcp_connection *
-stcp_connect_remote_secure( const struct stcp_client_options *client_options,
+stcp_connect_remote_secure( struct stcp_secure_client_options *client_options,
                                 char *error_buffer,
                                 size_t error_buffer_size,
                                 int timeout );

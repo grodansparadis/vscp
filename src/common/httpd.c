@@ -1388,7 +1388,7 @@ DEBUG_TRACE_FUNC( const char *func, unsigned line, const char *fmt, ... )
         nslast = nsnow;
     }
 
-    flockfile(stdout);
+    flockfile(  stdout );
     printf("*** %lu.%09lu %12" INT64_FMT " %lu %s:%u: ",
            (unsigned long) tsnow.tv_sec,
            (unsigned long) tsnow.tv_nsec,
@@ -1396,12 +1396,12 @@ DEBUG_TRACE_FUNC( const char *func, unsigned line, const char *fmt, ... )
            thread_id,
            func,
            line);
-    va_start(args, fmt);
-    vprintf(fmt, args);
-    va_end(args);
+    va_start( args, fmt );
+    vprintf( fmt, args );
+    va_end( args );
     putchar('\n');
-    fflush(stdout);
-    funlockfile(stdout);
+    fflush( stdout );
+    funlockfile( stdout );
     nslast = nsnow;
 }
 
@@ -2565,11 +2565,11 @@ web_snprintf( const struct web_connection *conn,
 //
 
 static int
-get_option_index(const char *name)
+get_option_index( const char *name )
 {
     int i;
 
-    for (i = 0; config_options[i].name != NULL; i++) {
+    for ( i = 0; config_options[i].name != NULL; i++ ) {
 
         if (strcmp(config_options[i].name, name) == 0) {
             return i;
@@ -2586,11 +2586,11 @@ get_option_index(const char *name)
 //
 
 const char *
-web_get_option(const struct web_context *ctx, const char *name)
+web_get_option( const struct web_context *ctx, const char *name )
 {
     int i;
 
-    if ((i = get_option_index(name)) == -1) {
+    if ( ( i = get_option_index(name) ) == -1 ) {
         return NULL;
     }
     else if (!ctx || ctx->config[i] == NULL) {
@@ -2609,7 +2609,7 @@ web_get_option(const struct web_context *ctx, const char *name)
 struct web_context *
 web_get_context(const struct web_connection *conn)
 {
-    return (conn == NULL) ? (struct web_context *) NULL : (conn->ctx);
+    return ( NULL == conn ) ? (struct web_context *) NULL : (conn->ctx);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2617,9 +2617,9 @@ web_get_context(const struct web_connection *conn)
 //
 
 void *
-web_get_user_data(const struct web_context *ctx)
+web_get_user_data( const struct web_context *ctx )
 {
-    return (ctx == NULL) ? NULL : ctx->user_data;
+    return ( NULL == ctx ) ? NULL : ctx->user_data;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2639,9 +2639,9 @@ web_set_user_connection_data(struct web_connection *conn, void *data)
 //
 
 void *
-web_get_user_connection_data(const struct web_connection *conn)
+web_get_user_connection_data( const struct web_connection *conn )
 {
-    if (conn != NULL) {
+    if ( conn != NULL ) {
         return conn->request_info.conn_data;
     }
     return NULL;
@@ -2652,13 +2652,13 @@ web_get_user_connection_data(const struct web_connection *conn)
 //
 
 int
-web_get_server_ports(const struct web_context *ctx,
+web_get_server_ports( const struct web_context *ctx,
                             int size,
-                            struct web_server_ports *ports)
+                            struct web_server_ports *ports )
 {
     int i, cnt = 0;
 
-    if (size <= 0) {
+    if ( size <= 0 ) {
         return -1;
     }
 
@@ -2668,7 +2668,7 @@ web_get_server_ports(const struct web_context *ctx,
         return -1;
     }
 
-    if (!ctx->listening_sockets) {
+    if ( !ctx->listening_sockets ) {
         return -1;
     }
 

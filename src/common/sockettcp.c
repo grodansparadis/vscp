@@ -6,7 +6,9 @@
 // The MIT License (MIT)
 // 
 // Copyright (c) 2004-2013 Sergey Lyubka
-// Copyright (c) 2013-2017 the Civetweb developers
+// Copyright (c) 2013-2017 the Civetweb developers ()
+//
+// Adopted for VSCP
 // Copyright (c) 2018 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
 // 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -579,13 +581,9 @@ typedef int SOCKET;
 #pragma clang diagnostic ignored "-Wdisabled-macro-expansion"
 #endif
 
-
 #define SHUTDOWN_RD (0)
 #define SHUTDOWN_WR (1)
 #define SHUTDOWN_BOTH (2)
-
-// Configuration context
-//static struct stcp_context common_client_context;
 
 // stcp_init_library counter
 static int stcp_init_called = 0;
@@ -612,11 +610,11 @@ struct stcp_workerTLS {
 //
 
 static uint64_t
-stcp_get_current_time_ns(void)
+stcp_get_current_time_ns( void )
 {
     struct timespec tsnow;
     clock_gettime(CLOCK_REALTIME, &tsnow);
-    return (((uint64_t)tsnow.tv_sec) * 1000000000) + (uint64_t)tsnow.tv_nsec;
+    return ( ( (uint64_t)tsnow.tv_sec ) * 1000000000) + (uint64_t)tsnow.tv_nsec;
 }
 
 
@@ -1000,29 +998,30 @@ set_non_blocking_mode(int sock)
 {
     int flags = fcntl(sock, F_GETFL, 0);
 
-    if (flags < 0) {
-	return -1;
+    if ( flags < 0 ) {
+	    return -1;
     }
 
-    if (fcntl(sock, F_SETFL, (flags | O_NONBLOCK)) < 0) {
-	return -1;
+    if ( fcntl( sock, F_SETFL, ( flags | O_NONBLOCK ) ) < 0 ) {
+	    return -1;
     }
 
     return 0;
 }
 
 static int
-set_blocking_mode(int sock)
+set_blocking_mode( int sock )
 {
-    int flags = fcntl(sock, F_GETFL, 0);
+    int flags = fcntl( sock, F_GETFL, 0 );
 
-    if (flags < 0) {
-	return -1;
+    if ( flags < 0 ) {
+	    return -1;
     }
 
-    if (fcntl(sock, F_SETFL, flags & (~(int)(O_NONBLOCK))) < 0) {
-	return -1;
+    if ( fcntl( sock, F_SETFL, flags & (~(int)(O_NONBLOCK ) ) ) < 0 ) {
+	    return -1;
     }
+
     return 0;
 }
 
@@ -1140,18 +1139,28 @@ struct mg_workerTLS {
 #endif
 
 
-
-
+static const char *
+stcp_ssl_error( void );     // Forward declaration
 
 
 ////////////////////////////////////////////////////////////////////////////////
 // report_error
 //
 
+// TODO Make general
+
 static void 
-report_error( char *pStr ) 
+stcp_report_error( const char *fmt, ... ) 
 {
-    ;
+    va_list args;
+
+    flockfile( stdout );
+    va_start( args, fmt );
+    vprintf( fmt, args );
+    va_end( args );
+    putchar('\n');
+    funlockfile( stdout );
+    fflush( stdout );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1343,26 +1352,23 @@ static int
 ssl_use_pem_file(struct stcp_connection *conn, const char *pem, const char *chain)
 {
     if ( SSL_CTX_use_certificate_file(conn->ssl_ctx, pem, 1 ) == 0) {
-        report_error("%s: cannot open certificate file %s: %s");
-                    //__func__,
-                    //pem,
-                    //ssl_error());
+        stcp_report_error( "Cannot open certificate file %s: %s",
+                            pem,
+                            stcp_ssl_error() );
         return 0;
     }
 
     // could use SSL_CTX_set_default_passwd_cb_userdata
     if (SSL_CTX_use_PrivateKey_file(conn->ssl_ctx, pem, 1) == 0) {
-        report_error("%s: cannot open private key file %s: %s");
-                    //__func__,
-                    //pem,
-                    //ssl_error());
+        stcp_report_error( "Cannot open private key file %s: %s",
+                            pem,
+                            stcp_ssl_error() );
         return 0;
     }
 
     if (SSL_CTX_check_private_key(conn->ssl_ctx) == 0) {
-        report_error("%s: certificate and private key do not match: %s");
-                    //__func__,
-                    //pem);
+        stcp_report_error( "Certificate and private key do not match: %s",
+                            pem );
         return 0;
     }
 
@@ -1376,10 +1382,9 @@ ssl_use_pem_file(struct stcp_connection *conn, const char *pem, const char *chai
     //
     if (chain) {
         if ( 0 == SSL_CTX_use_certificate_chain_file(conn->ssl_ctx, chain) ) {
-            report_error("%s: cannot use certificate chain file %s: %s");
-                            //__func__,
-                            //pem,
-                            //ssl_error() );
+            stcp_report_error( "Cannot use certificate chain file %s: %s",
+                                pem,
+                                stcp_ssl_error() );
             return 0;
         }
     }
@@ -1395,7 +1400,7 @@ refresh_trust( struct stcp_connection *conn,
                 const char *pem, 
                 const char *chain,
                 const char *ca_path,
-                const char *ca_file)
+                const char *ca_file )
 {
     static int reload_lock = 0;
     static long int data_check = 0;
@@ -1443,13 +1448,13 @@ refresh_trust( struct stcp_connection *conn,
             if ( SSL_CTX_load_verify_locations( conn->ssl_ctx,
                                                     ca_file,
                                                     ca_path ) != 1) {
-                report_error(
+                stcp_report_error(
                             "SSL_CTX_load_verify_locations error: %s "
                             "ssl_verify_peer requires setting "
                             "either ssl_ca_path or ssl_ca_file. Is any of them "
                             "present in "
-                            "the .conf file?");
-                            //ssl_error());
+                            "the .conf file?",
+                            stcp_ssl_error() );
                 return 0;
             }
         }
@@ -1482,33 +1487,37 @@ sslize( struct stcp_connection *conn,
     int ret, err;
     unsigned i;
 
-    if (!conn) {
+    if ( ( NULL == conn ) || ( NULL == conn->secure_opts ) ) {
         return 0;
     }
 
     if ( SSL_SHORT_TRUST ) {
-        int trust_ret; // = refresh_trust( conn );  TODO
+        int trust_ret = refresh_trust( conn, 
+                                        conn->secure_opts->pem,
+                                        conn->secure_opts->chain,
+                                        conn->secure_opts->ca_path,
+                                        conn->secure_opts->ca_file ); 
         if ( !trust_ret ) {
             return trust_ret;
         }
     }
 
-    conn->ssl = SSL_new(s);
-    if (conn->ssl == NULL) {
+    conn->ssl = SSL_new( s );
+    if ( NULL == conn->ssl ) {
         return 0;
     }
-    SSL_set_app_data(conn->ssl, (char *) conn);
+    SSL_set_app_data( conn->ssl, (char *)conn );
 
-    ret = SSL_set_fd(conn->ssl, conn->client.sock);
-    if (ret != 1) {
-        err = SSL_get_error(conn->ssl, ret);
-        (void) err; // TODO: set some error message
-        SSL_free(conn->ssl);
+    ret = SSL_set_fd( conn->ssl, conn->client.sock );
+    if ( ret != 1 ) {
+        err = SSL_get_error( conn->ssl, ret );
+        (void)err; // TODO: set some error message
+        SSL_free( conn->ssl );
         conn->ssl = NULL;
         // Avoid CRYPTO_cleanup_all_ex_data(); See discussion:
         // https://wiki.openssl.org/index.php/Talk:Library_Initialization
 #ifndef OPENSSL_API_1_1
-        ERR_remove_state(0);    // deprecated in 1.0.0, solved by going to 1.1.0
+        ERR_remove_state( 0 );    // deprecated in 1.0.0, solved by going to 1.1.0
 #endif
         return 0;
     }
@@ -1516,10 +1525,10 @@ sslize( struct stcp_connection *conn,
     // SSL functions may fail and require to be called again:
     // see https://www.openssl.org/docs/manmaster/ssl/SSL_get_error.html
     // Here "func" could be SSL_connect or SSL_accept.
-    for (i = 16; i <= 1024; i *= 2) {
-        ret = func(conn->ssl);
-        if (ret != 1) {
-            err = SSL_get_error(conn->ssl, ret);
+    for ( i = 16; i <= 1024; i *= 2 ) {
+        ret = func( conn->ssl );
+        if  (ret != 1 ) {
+            err = SSL_get_error( conn->ssl, ret );
             if ( ( err == SSL_ERROR_WANT_CONNECT ) ||
                  ( err == SSL_ERROR_WANT_ACCEPT ) ||
                  ( err == SSL_ERROR_WANT_READ ) ||
@@ -1527,18 +1536,18 @@ sslize( struct stcp_connection *conn,
                 // Need to retry the function call "later".
                 // See https://linux.die.net/man/3/ssl_get_error
                 // This is typical for non-blocking sockets.
-                if (*stop_server) {
+                if ( *stop_server ) {
                     // Don't wait if the server is going to be stopped.
                     break;
                 }
-                stcp_sleep(i);
+                stcp_sleep( i );
 
             }
-            else if (err == SSL_ERROR_SYSCALL) {
+            else if ( err == SSL_ERROR_SYSCALL ) {
                 // This is an IO error. Look at errno.
                 err = errno;
                 // TODO: set some error message
-                (void) err;
+                (void)err;
                 break;
             }
             else {
@@ -1554,13 +1563,13 @@ sslize( struct stcp_connection *conn,
         }
     }
 
-    if (ret != 1) {
-        SSL_free(conn->ssl);
+    if ( ret != 1 ) {
+        SSL_free( conn->ssl );
         conn->ssl = NULL;
         // Avoid CRYPTO_cleanup_all_ex_data(); See discussion:
         // https://wiki.openssl.org/index.php/Talk:Library_Initialization
 #ifndef OPENSSL_API_1_1
-        ERR_remove_state(0);    // deprecated in 1.0.0, solved by going to 1.1.0
+        ERR_remove_state( 0 );    // deprecated in 1.0.0, solved by going to 1.1.0
 #endif
         return 0;
     }
@@ -1575,11 +1584,11 @@ sslize( struct stcp_connection *conn,
 //
 
 static const char *
-ssl_error(void)
+stcp_ssl_error( void )
 {
     unsigned long err;
     err = ERR_get_error();
-    return ((err == 0) ? "" : ERR_error_string(err, NULL));
+    return ( ( err == 0 ) ? "" : ERR_error_string( err, NULL ) );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1590,17 +1599,17 @@ ssl_error(void)
 #else
 
 static void
-ssl_locking_callback(int mode, int mutex_num, const char *file, int line)
+ssl_locking_callback( int mode, int mutex_num, const char *file, int line )
 {
-    (void) line;
-    (void) file;
+    (void)line;
+    (void)file;
 
-    if (mode & 1) {
+    if ( mode & 1 ) {
         // 1 is CRYPTO_LOCK
-        (void) pthread_mutex_lock(&ssl_mutexes[mutex_num]);
+        (void)pthread_mutex_lock( &ssl_mutexes[ mutex_num ] );
     }
     else {
-        (void) pthread_mutex_unlock(&ssl_mutexes[mutex_num]);
+        (void)pthread_mutex_unlock( &ssl_mutexes[ mutex_num ] );
     }
 }
 #endif
@@ -1621,7 +1630,7 @@ static int
 initialize_ssl( char *ebuf, size_t ebuf_len )
 {
 #ifdef OPENSSL_API_1_1
-    if (ebuf_len > 0) {
+    if ( ebuf_len > 0 ) {
         ebuf[0] = 0;
     }
 
@@ -1655,7 +1664,7 @@ initialize_ssl( char *ebuf, size_t ebuf_len )
         ssl_mutexes = NULL;
     }
     else if ( NULL == ( ssl_mutexes = (pthread_mutex_t *)malloc( size ) ) ) {
-        report_error("%s: cannot allocate mutexes: %s"); //, __func__, ssl_error() );
+        stcp_report_error( "Cannot allocate mutexes: %s", stcp_ssl_error() );
         return 0;
     }
 
@@ -1706,13 +1715,13 @@ static long
 ssl_get_protocol(int version_id)
 {
     long ret = SSL_OP_ALL;
-    if (version_id > 0)
+    if ( version_id > 0 )
         ret |= SSL_OP_NO_SSLv2;
-    if (version_id > 1)
+    if ( version_id > 1 )
         ret |= SSL_OP_NO_SSLv3;
-    if (version_id > 2)
+    if ( version_id > 2 )
         ret |= SSL_OP_NO_TLSv1;
-    if (version_id > 3)
+    if ( version_id > 3 )
         ret |= SSL_OP_NO_TLSv1_1;
     return ret;
 }
@@ -1731,10 +1740,10 @@ ssl_info_callback(SSL *ssl, int what, int ret)
 {
     (void) ret;
 
-    if (what & SSL_CB_HANDSHAKE_START) {
+    if ( what & SSL_CB_HANDSHAKE_START ) {
         SSL_get_app_data(ssl);
     }
-    if (what & SSL_CB_HANDSHAKE_DONE) {
+    if ( what & SSL_CB_HANDSHAKE_DONE)  {
         // TODO: check for openSSL 1.1
         // #define SSL3_FLAGS_NO_RENEGOTIATE_CIPHERS 0x0001
         // ssl->s3->flags |= SSL3_FLAGS_NO_RENEGOTIATE_CIPHERS;
@@ -1749,10 +1758,11 @@ ssl_info_callback(SSL *ssl, int what, int ret)
 
 static int
 set_ssl_option( struct stcp_connection *conn, 
-                    const char *pem, 
+                    struct stcp_secure_client_options *secure_opts
+                    /*const char *pem, 
                     const char *chain,
                     const char *ca_path,
-                    const char *ca_file )
+                    const char *ca_file*/ )
 {
     //const char *pem;
     //const char *chain;
@@ -1772,22 +1782,22 @@ set_ssl_option( struct stcp_connection *conn,
 
     // If PEM file is not specified and the init_ssl callback
     // is not specified, skip SSL initialization.
-    if (!conn) {
+    if ( ( NULL == conn ) || ( NULL == conn->secure_opts ) ) {
         return 0;
     }
-    if ( NULL == pem ) {
+    if ( NULL == secure_opts->pem ) {
         return 1;
     }
 
-    if (chain == NULL) {
-        chain = pem;
+    if ( NULL == secure_opts->chain ) {
+        secure_opts->chain = secure_opts->pem;
     }
-    if ((chain != NULL) && (*chain == 0)) {
-        chain = NULL;
+    if ( ( secure_opts->chain != NULL ) && (*secure_opts->chain == 0)) {
+        secure_opts->chain = NULL;
     }
 
     if ( !initialize_ssl( ebuf, sizeof ( ebuf ) ) ) {
-        report_error( ebuf );
+        stcp_report_error( ebuf );
         return 0;
     }
 
@@ -1800,7 +1810,7 @@ set_ssl_option( struct stcp_connection *conn,
                      NULL);
 
     if ((ctx->ssl_ctx = SSL_CTX_new(TLS_server_method())) == NULL) {
-        stcp_cry(fc(ctx), "SSL_CTX_new (server) error: %s", ssl_error());
+        stcp_report_error( "SSL_CTX_new (server) error: %s", stcp_ssl_error() );
         return 0;
     }
 #else
@@ -1808,22 +1818,22 @@ set_ssl_option( struct stcp_connection *conn,
     SSL_library_init();
     SSL_load_error_strings();
 
-    if ((conn->ssl_ctx = SSL_CTX_new(SSLv23_server_method())) == NULL) {
-        report_error("SSL_CTX_new (server) error: %s"); // ssl_error());
+    if ( NULL == ( conn->ssl_ctx = SSL_CTX_new(SSLv23_server_method() ) ) ) {
+        stcp_report_error( "SSL_CTX_new (server) error: %s", stcp_ssl_error() );
         return 0;
     }
 #endif // OPENSSL_API_1_1
 
-    SSL_CTX_clear_options(conn->ssl_ctx,
+    SSL_CTX_clear_options( conn->ssl_ctx,
                           SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_NO_TLSv1
                           | SSL_OP_NO_TLSv1_1);
 
-    SSL_CTX_set_options(conn->ssl_ctx, ssl_get_protocol(SSL_PROTOCOL_VERSION));
-    SSL_CTX_set_options(conn->ssl_ctx, SSL_OP_SINGLE_DH_USE);
-    SSL_CTX_set_options(conn->ssl_ctx, SSL_OP_CIPHER_SERVER_PREFERENCE);
-    SSL_CTX_set_options(conn->ssl_ctx,
+    SSL_CTX_set_options( conn->ssl_ctx, ssl_get_protocol(SSL_PROTOCOL_VERSION));
+    SSL_CTX_set_options( conn->ssl_ctx, SSL_OP_SINGLE_DH_USE);
+    SSL_CTX_set_options( conn->ssl_ctx, SSL_OP_CIPHER_SERVER_PREFERENCE);
+    SSL_CTX_set_options( conn->ssl_ctx,
                         SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION);
-    SSL_CTX_set_options(conn->ssl_ctx, SSL_OP_NO_COMPRESSION);
+    SSL_CTX_set_options( conn->ssl_ctx, SSL_OP_NO_COMPRESSION);
 
 #ifdef __clang__
 #pragma clang diagnostic push
@@ -1847,8 +1857,8 @@ set_ssl_option( struct stcp_connection *conn,
 #pragma clang diagnostic pop
 #endif
 
-    if (pem != NULL) {
-        (void) SSL_CTX_use_certificate_chain_file(conn->ssl_ctx, pem);
+    if ( secure_opts->pem != NULL ) {
+        (void)SSL_CTX_use_certificate_chain_file( conn->ssl_ctx, secure_opts->pem );
     }
 
     // Use some UID as session context ID.   TODO
@@ -1866,8 +1876,11 @@ set_ssl_option( struct stcp_connection *conn,
                                    (const unsigned char *) &ssl_context_id,
                                    sizeof (ssl_context_id));
 
-    if ( pem != NULL ) {
-        if (!ssl_use_pem_file(conn, pem, chain)) {
+    if ( secure_opts->pem != NULL ) {
+        
+        if ( !ssl_use_pem_file( conn, 
+                                    secure_opts->pem, 
+                                    secure_opts->chain ) ) {
             return 0;
         }
     }
@@ -1892,15 +1905,17 @@ set_ssl_option( struct stcp_connection *conn,
 
     if ( should_verify_peer ) {
 
-        if ( SSL_CTX_load_verify_locations(conn->ssl_ctx, ca_file, ca_path)
+        if ( SSL_CTX_load_verify_locations( conn->ssl_ctx, 
+                                                secure_opts->ca_file, 
+                                                secure_opts->ca_path )
             != 1) {
-            report_error(
+            stcp_report_error(
                         "SSL_CTX_load_verify_locations error: %s "
                         "ssl_verify_peer requires setting "
                         "either ssl_ca_path or ssl_ca_file. Is any of them "
                         "present in "
-                        "the .conf file?");
-                        //ssl_error());
+                        "the .conf file?",
+                        stcp_ssl_error() );
             return 0;
         }
 
@@ -1916,8 +1931,8 @@ set_ssl_option( struct stcp_connection *conn,
 
         if ( use_default_verify_paths &&
                 ( SSL_CTX_set_default_verify_paths( conn->ssl_ctx ) != 1 ) ) {
-            report_error( "SSL_CTX_set_default_verify_paths error: %s" );
-                        //ssl_error() );
+            stcp_report_error( "SSL_CTX_set_default_verify_paths error: %s",
+                                stcp_ssl_error() );
             return 0;
         }
 
@@ -1926,7 +1941,7 @@ set_ssl_option( struct stcp_connection *conn,
     }
 
     if ( SSL_CTX_set_cipher_list( conn->ssl_ctx, SSL_CIPHER_LIST ) != 1 ) {
-        report_error("SSL_CTX_set_cipher_list error: %s"); // ssl_error());
+        stcp_report_error( "SSL_CTX_set_cipher_list error: %s", stcp_ssl_error() );
     }
 
     return 1;
@@ -2042,7 +2057,7 @@ stcp_inet_pton( int af, const char *src, void *dst, size_t dstlen )
 //
 
 static int
-set_tcp_nodelay(int sock, int nodelay_on)
+set_tcp_nodelay( int sock, int nodelay_on )
 {
     if ( setsockopt( sock,
                         IPPROTO_TCP,
@@ -2081,12 +2096,12 @@ stcp_connect_socket( const char *hostip,
     }
 
     if ( NULL == hostip ) {
-        report_error( "NULL host" );
+        stcp_report_error( "NULL host" );
         return 0;
     }
 
     if ( (port <= 0) || !is_valid_port((unsigned) port)) {
-        report_error("invalid port");
+        stcp_report_error("invalid port");
         return 0;
     }
 
@@ -2121,7 +2136,7 @@ stcp_connect_socket( const char *hostip,
     }
 
     if ( 0 == ip_ver ) {
-        report_error("host not found");
+        stcp_report_error("host not found");
         return 0; 
     }
     
@@ -2133,7 +2148,7 @@ stcp_connect_socket( const char *hostip,
     }
 
     if (*sock == INVALID_SOCKET) {
-        report_error("socket(): %s");
+        stcp_report_error("socket(): %s");
                             // strerror(ERRNO) );
         return 0;
     }
@@ -2167,10 +2182,10 @@ stcp_connect_socket( const char *hostip,
     }
 
     // Not connected
-    report_error("connect(%s:%d): %s");
-                        /*host,
+    stcp_report_error("connect(%s:%d): %s",
+                        hostip,
                         port,
-                        strerror(ERRNO));*/
+                        strerror( ERRNO ) );
     close(*sock);
     *sock = INVALID_SOCKET;
 
@@ -2182,7 +2197,7 @@ stcp_connect_socket( const char *hostip,
 //
 
 static struct stcp_connection *
-stcp_connect_remote_impl( const struct stcp_client_options *client_options,
+stcp_connect_remote_impl( struct stcp_secure_client_options *client_options,
                                 int use_ssl,
                                 char *ebuf,
                                 size_t ebuf_len,
@@ -2209,8 +2224,9 @@ stcp_connect_remote_impl( const struct stcp_client_options *client_options,
     conn->buf = (((char *)conn) + conn_size );
     conn->buf_size = (int)max_req_size;
     conn->read_timeout = timeout;
+    conn->secure_opts = client_options; // Save security options
 
-    if ( !stcp_connect_socket( client_options->hostip,
+    if ( !stcp_connect_socket( client_options->host,
                                 client_options->port,
                                 use_ssl,
                                 ebuf,
@@ -2225,7 +2241,7 @@ stcp_connect_remote_impl( const struct stcp_client_options *client_options,
 
 #ifdef OPENSSL_API_1_1
     if ( use_ssl &&
-            ( NULL == ( conn->ssl_ctx = SSL_CTX_new(TLS_client_method() ) ) ) ) {
+            ( NULL == ( conn->ssl_ctx = SSL_CTX_new( TLS_client_method() ) ) ) ) {
         stcp_snprintf( NULL,
                         NULL, // No truncation check for ebuf
                         ebuf,
@@ -2237,25 +2253,25 @@ stcp_connect_remote_impl( const struct stcp_client_options *client_options,
     }
 #else
     if ( use_ssl &&
-            ( NULL == ( conn->ssl_ctx = SSL_CTX_new(SSLv23_client_method() ) ) ) ) {
-        report_error("SSL_CTX_new error" );
+            ( NULL == ( conn->ssl_ctx = SSL_CTX_new( SSLv23_client_method() ) ) ) ) {
+        stcp_report_error("SSL_CTX_new error" );
         close(sock);
         free(conn);
         return NULL;
     }
 #endif // OPENSSL_API_1_1
 
-    len = (sa.sa.sa_family == AF_INET) ? sizeof (conn->client.rsa.sin)
-                                            : sizeof (conn->client.rsa.sin6);
-    psa = (sa.sa.sa_family == AF_INET)
-            ? (struct sockaddr *) &(conn->client.rsa.sin)
-                : (struct sockaddr *) &(conn->client.rsa.sin6);
+    len = ( sa.sa.sa_family == AF_INET) ? sizeof( conn->client.rsa.sin )
+                                            : sizeof( conn->client.rsa.sin6 );
+    psa = ( sa.sa.sa_family == AF_INET )
+            ? (struct sockaddr *)&( conn->client.rsa.sin )
+                : (struct sockaddr *)&( conn->client.rsa.sin6 );
 
     conn->client.sock = sock;
     conn->client.lsa = sa;
 
     if ( getsockname(sock, psa, &len) != 0 ) {
-        report_error("%s: getsockname() failed: %s"); // __func__, strerror(ERRNO));
+        stcp_report_error( "getsockname() failed: %s", strerror( ERRNO ) );
     }
 
     conn->client.is_ssl = use_ssl ? 1 : 0;
@@ -2273,7 +2289,7 @@ stcp_connect_remote_impl( const struct stcp_client_options *client_options,
             if ( !ssl_use_pem_file( conn,
                                     client_options->client_cert,
                                     NULL ) ) {
-                report_error("Can not use SSL client certificate" );
+                stcp_report_error( "Can not use SSL client certificate" );
                 SSL_CTX_free( conn->ssl_ctx );
                 close( sock );
                 free( conn );
@@ -2317,7 +2333,7 @@ stcp_connect_remote_impl( const struct stcp_client_options *client_options,
 //
 
 struct stcp_connection *
-stcp_connect_remote_secure( const struct stcp_client_options *client_options,
+stcp_connect_remote_secure( struct stcp_secure_client_options *client_options,
                                 char *error_buffer,
                                 size_t error_buffer_size,
                                 int timeout )
@@ -2334,16 +2350,16 @@ stcp_connect_remote_secure( const struct stcp_client_options *client_options,
 //
 
 struct stcp_connection *
-stcp_connect_remote( const char *hostip,
+stcp_connect_remote( const char *host,
                         int port,
                         int use_ssl,
                         char *error_buffer,
                         size_t error_buffer_size,
                         int timeout )
 {
-    struct stcp_client_options opts;
+    struct stcp_secure_client_options opts;
     memset( &opts, 0, sizeof (opts) );
-    opts.hostip = hostip;
+    opts.host = host;
     opts.port = port;
     return stcp_connect_remote_impl( &opts,
                                         use_ssl,
@@ -2438,9 +2454,8 @@ stcp_close_socket_gracefully( struct stcp_connection *conn )
         // Cannot determine if socket is already closed. This should
         // not occur and never did in a test. Log an error message
         // and continue.
-        report_error("%s: getsockopt(SOL_SOCKET SO_ERROR) failed: %s");
-                        //__func__,
-                        //strerror(ERRNO));
+        stcp_report_error("getsockopt(SOL_SOCKET SO_ERROR) failed: %s",
+                            strerror(ERRNO) );
     }
     else if ( error_code == ECONNRESET ) {
         // Socket already closed by client/peer, close socket without linger
@@ -2453,11 +2468,10 @@ stcp_close_socket_gracefully( struct stcp_connection *conn )
                             SO_LINGER,
                             (char *)&linger,
                             sizeof( linger ) ) != 0 ) {
-            report_error("%s: setsockopt(SOL_SOCKET SO_LINGER(%i,%i)) failed: %s");
-                            //__func__,
-                            //linger.l_onoff,
-                            //linger.l_linger,
-                            //strerror(ERRNO) );
+            stcp_report_error("setsockopt(SOL_SOCKET SO_LINGER(%i,%i)) failed: %s",
+                                linger.l_onoff,
+                                linger.l_linger,
+                                strerror( ERRNO ) );
         }
 
     }
@@ -2859,8 +2873,8 @@ stcp_pull_inner( FILE *fp,
             if ((err == SSL_ERROR_SYSCALL) && (nread == -1)) {
                 err = errno;
             }
-            else if ((err == SSL_ERROR_WANT_READ) ||
-                     (err == SSL_ERROR_WANT_WRITE) ) {
+            else if ( ( err == SSL_ERROR_WANT_READ ) ||
+                      ( err == SSL_ERROR_WANT_WRITE ) ) {
                 nread = 0;
             }
             else {
@@ -3069,30 +3083,13 @@ stcp_pull_all( FILE *fp, struct stcp_connection *conn, char *buf, int len, int m
     return nread;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// stcp_discard_unread_request_data
-//
-
-static void
-stcp_discard_unread_request_data( struct stcp_connection *conn )
-{
-    char buf[WEB_BUF_LEN];
-    size_t to_read;
-    int nread;
-
-    if (conn == NULL) {
-        return;
-    }
-
-    to_read = sizeof (buf);
-
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 // stcp_read_inner
 //
 // >= 0 Read data
 // < 0 - Error
+//
 
 static int
 stcp_read_inner( struct stcp_connection *conn, void *buf, size_t len, int mstimeout )
@@ -3154,7 +3151,7 @@ stcp_read( struct stcp_connection *conn, void *buf, size_t len, int mstimeout )
     }
 
     if ( ( conn == NULL ) || ( NULL == buf ) ) {
-        return -1; // TODO really 0?
+        return -1; 
     }
     
     memset( buf, 0, len );
@@ -3187,4 +3184,94 @@ stcp_write( struct stcp_connection *conn, const void *buf, size_t len )
 }
 
 
+// -----------------------------------------------------------------------------
+//                                  S E R V E R
+// -----------------------------------------------------------------------------
 
+
+////////////////////////////////////////////////////////////////////////////////
+// accept_new_connection
+//
+
+static void
+accept_new_connection( const struct socket *listener, struct stcp_connection *conn )
+{
+    struct socket so;
+    char src_addr[IP_ADDR_STR_LEN];
+    socklen_t len = sizeof( so.rsa );
+    int on = 1;
+
+    if ( !listener ) {
+        return;
+    }
+
+    if ( INVALID_SOCKET == ( so.sock = accept( listener->sock, &so.rsa.sa, &len ) ) ) {
+        ;
+    }
+    /*else if ( !check_acl( ctx, ntohl( *(uint32_t *)&so.rsa.sin.sin_addr ) ) ) {
+        sockaddr_to_string(src_addr, sizeof (src_addr), &so.rsa);
+        //web_cry(fc(ctx), "%s: %s is not allowed to connect", __func__, src_addr );
+        closesocket( so.sock );
+    }*/
+    else {
+        // Put so socket structure into the queue
+        //DEBUG_TRACE("Accepted socket %d", (int) so.sock);
+        //set_close_on_exec( so.sock, fc(conn) );
+        so.is_ssl = listener->is_ssl;
+        so.ssl_redir = listener->ssl_redir;
+        if ( getsockname(so.sock, &so.lsa.sa, &len) != 0 ) {
+            /*web_cry( fc(ctx),
+                        "%s: getsockname() failed: %s",
+                        __func__,
+                        strerror(ERRNO));*/
+        }
+
+        // Set TCP keep-alive. This is needed because if HTTP-level
+        // keep-alive
+        // is enabled, and client resets the connection, server won't get
+        // TCP FIN or RST and will keep the connection open forever. With
+        // TCP keep-alive, next keep-alive handshake will figure out that
+        // the client is down and will close the server end.
+        // Thanks to Igor Klopov who suggested the patch.
+        if ( setsockopt( so.sock,
+                            SOL_SOCKET,
+                            SO_KEEPALIVE,
+                            (SOCK_OPT_TYPE) & on,
+                            sizeof (on)) != 0) {
+            /*web_cry(fc(ctx),
+                        "%s: setsockopt(SOL_SOCKET SO_KEEPALIVE) failed: %s",
+                        __func__,
+                        strerror(ERRNO));*/
+        }
+
+        // Disable TCP Nagle's algorithm. Normally TCP packets are coalesced
+        // to effectively fill up the underlying IP packet payload and
+        // reduce the overhead of sending lots of small buffers. However
+        // this hurts the server's throughput (ie. operations per second)
+        // when HTTP 1.1 persistent connections are used and the responses
+        // are relatively small (eg. less than 1400 bytes).
+        //
+        if ( ( conn != NULL ) /*&&
+             ( ctx->config[CONFIG_TCP_NODELAY] != NULL ) &&
+             ( !strcmp(ctx->config[CONFIG_TCP_NODELAY], "1" )  )*/ ) {
+            if ( set_tcp_nodelay(so.sock, 1) != 0 ) {
+                /*web_cry(fc(ctx),
+                            "%s: setsockopt(IPPROTO_TCP TCP_NODELAY) failed: %s",
+                            __func__,
+                            strerror(ERRNO));*/
+            }
+        }
+
+        // We are using non-blocking sockets. Thus, the
+        // set_sock_timeout(so.sock, timeout);
+        // call is no longer required.
+
+        // The "non blocking" property should already be
+        // inherited from the parent socket. Set it for
+	    // non-compliant socket implementations. */
+	    set_non_blocking_mode( so.sock );
+
+        so.in_use = 0;
+        //produce_socket( ctx, &so );
+    }
+}
