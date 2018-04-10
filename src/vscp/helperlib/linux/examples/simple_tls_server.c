@@ -98,7 +98,7 @@ int main(int argc, char **argv)
         struct sockaddr_in addr;
         socklen_t len = sizeof(addr);
         SSL *ssl;
-        const char reply[] = "test\n";
+        const char reply[] = "Be hungry, stay foolish!\n";
 
         int client = accept(sock, (struct sockaddr*)&addr, &len);
         if (client < 0) {

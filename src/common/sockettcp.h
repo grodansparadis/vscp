@@ -59,15 +59,16 @@
 #define SSL_DEFAULT_VERIFY_PATHS        (1)   // 1 == yes
 #define SSL_VERIFY_DEPTH                (9)
 #define SSL_CIPHER_LIST                 "DES-CBC3-SHA:AES128-SHA:AES128-GCM-SHA256"
+//#define SSL_CIPHER_LIST                     "kEECDH:kEDH:kRSA:AESGCM:AES256:AES128:3DES:SHA256:SHA84:SHA1:!aNULL:!eNULL:!EXP:!LOW:!MEDIUM!ADH:!AECDH"
 #define SSL_SHORT_TRUST                 (0)
 
 #define MAX_REQUEST_SIZE                (16384)
 #define STCP_BUF_LEN (                   8192)
 #define LINGER_TIMEOUT                  (-2)
 
-#ifndef SOCKET_TIMEOUT_QUANTUM          // in ms
-#define SOCKET_TIMEOUT_QUANTUM          (2000)     // Default read timout in ms
-#endif                                             // Smaller will be used 
+#ifndef SOCKET_TIMEOUT_QUANTUM                      // in ms
+#define SOCKET_TIMEOUT_QUANTUM          (2000)      // Default read timout in ms
+#endif                                              // Smaller will be used 
 
 #ifndef INVALID_SOCKET
 #define INVALID_SOCKET                  (-1)
@@ -151,7 +152,7 @@ struct stcp_connection
 };
 
 // Configuration settings
-/*struct stcp_context
+/*struct secure_context
 {
     
     SSL_CTX *ssl_ctx;                   // SSL context
@@ -179,13 +180,28 @@ struct stcp_connection
 };*/
 
 
+
+
+
+/*!
+    Init. SSL
+*/
+int
+init_ssl( struct stcp_secure_client_options *secure_opts,
+            SSL_CTX *ssl_ctx );
+
+/*!
+    Clean up SSL 
+*/
+void
+uninit_ssl( void );
+
 /*!
  *  Connect (unsecurely) to remote
  */
 struct stcp_connection *
 stcp_connect_remote( const char *hostip,
                         int port,
-                        int use_ssl,
                         char *error_buffer,
                         size_t error_buffer_size,
                         int timeout );

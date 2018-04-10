@@ -102,6 +102,12 @@
 #include <stdio.h>
 #include <stdint.h>
 
+#include <vscpmd5.h>
+
+/* Flags for SSL usage */
+#define NO_SSL  0
+#define USE_SSL 1
+
 #if defined(_WIN32)
 
 #include <winsock2.h> /* DTL add for SO_EXCLUSIVE */
@@ -1349,9 +1355,9 @@ static pthread_mutex_t *ssl_mutexes;
 //
 
 static int
-ssl_use_pem_file(struct stcp_connection *conn, const char *pem, const char *chain)
+ssl_use_pem_file( SSL_CTX *ssl_ctx, const char *pem, const char *chain )
 {
-    if ( SSL_CTX_use_certificate_file(conn->ssl_ctx, pem, 1 ) == 0) {
+    if ( 0 == SSL_CTX_use_certificate_file( ssl_ctx, pem, 1 ) ) {
         stcp_report_error( "Cannot open certificate file %s: %s",
                             pem,
                             stcp_ssl_error() );
@@ -1359,14 +1365,14 @@ ssl_use_pem_file(struct stcp_connection *conn, const char *pem, const char *chai
     }
 
     // could use SSL_CTX_set_default_passwd_cb_userdata
-    if (SSL_CTX_use_PrivateKey_file(conn->ssl_ctx, pem, 1) == 0) {
+    if ( 0 == SSL_CTX_use_PrivateKey_file( ssl_ctx, pem, 1 ) ) {
         stcp_report_error( "Cannot open private key file %s: %s",
                             pem,
                             stcp_ssl_error() );
         return 0;
     }
 
-    if (SSL_CTX_check_private_key(conn->ssl_ctx) == 0) {
+    if ( 0 == SSL_CTX_check_private_key( ssl_ctx ) ) {
         stcp_report_error( "Certificate and private key do not match: %s",
                             pem );
         return 0;
@@ -1381,13 +1387,14 @@ ssl_use_pem_file(struct stcp_connection *conn, const char *pem, const char *chai
     // an optional chain file for the ssl stack.
     //
     if (chain) {
-        if ( 0 == SSL_CTX_use_certificate_chain_file(conn->ssl_ctx, chain) ) {
+        if ( 0 == SSL_CTX_use_certificate_chain_file( ssl_ctx, chain ) ) {
             stcp_report_error( "Cannot use certificate chain file %s: %s",
                                 pem,
                                 stcp_ssl_error() );
             return 0;
         }
     }
+    
     return 1;
 }
 
@@ -1460,7 +1467,7 @@ refresh_trust( struct stcp_connection *conn,
         }
 
         if ( 1 == atomic_inc( p_reload_lock ) ) {
-            if ( 0 == ssl_use_pem_file( conn, pem, chain ) ) {
+            if ( 0 == ssl_use_pem_file( conn->ssl_ctx, pem, chain ) ) {
                 return 0;
             }
             *p_reload_lock = 0;
@@ -1623,11 +1630,11 @@ static int cryptolib_users = 0; // Reference counter for crypto library.
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// initialize_ssl
+// init_mt_ssl
 //
 
 static int
-initialize_ssl( char *ebuf, size_t ebuf_len )
+init_mt_ssl( char *ebuf, size_t ebuf_len )
 {
 #ifdef OPENSSL_API_1_1
     if ( ebuf_len > 0 ) {
@@ -1658,7 +1665,7 @@ initialize_ssl( char *ebuf, size_t ebuf_len )
         i = 0;
     }
 
-    size = sizeof (pthread_mutex_t) * ((size_t) (i));
+    size = sizeof( pthread_mutex_t ) * ((size_t) (i));
 
     if ( 0 == size ) {
         ssl_mutexes = NULL;
@@ -1712,7 +1719,7 @@ ssl_get_protocol(int version_id)
 //
 
 static long
-ssl_get_protocol(int version_id)
+ssl_get_protocol( int version_id )
 {
     long ret = SSL_OP_ALL;
     if ( version_id > 0 )
@@ -1751,26 +1758,18 @@ ssl_info_callback(SSL *ssl, int what, int ret)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// set_ssl_option
+// init_ssl
 //
 // Dynamically load SSL library.
 //
 
-static int
-set_ssl_option( struct stcp_connection *conn, 
-                    struct stcp_secure_client_options *secure_opts
-                    /*const char *pem, 
-                    const char *chain,
-                    const char *ca_path,
-                    const char *ca_file*/ )
+int
+init_ssl( struct stcp_secure_client_options *secure_opts,
+            SSL_CTX *ssl_ctx )
 {
-    //const char *pem;
-    //const char *chain;
     int callback_ret;
     int should_verify_peer;
     int peer_certificate_optional;
-    //const char *ca_path;
-    //const char *ca_file;
     int use_default_verify_paths;
     int verify_depth;
     time_t now_rt = time(NULL);
@@ -1780,11 +1779,18 @@ set_ssl_option( struct stcp_connection *conn,
     int protocol_ver;
     char ebuf[128];
 
-    // If PEM file is not specified and the init_ssl callback
-    // is not specified, skip SSL initialization.
-    if ( ( NULL == conn ) || ( NULL == conn->secure_opts ) ) {
+
+    
+    /* Must have secure options */
+    if ( NULL == secure_opts ) {
         return 0;
     }
+
+    /* 
+        If PEM file is not specified and the init_ssl callback
+        is not specified, skip SSL initialization.
+    */
+
     if ( NULL == secure_opts->pem ) {
         return 1;
     }
@@ -1796,7 +1802,7 @@ set_ssl_option( struct stcp_connection *conn,
         secure_opts->chain = NULL;
     }
 
-    if ( !initialize_ssl( ebuf, sizeof ( ebuf ) ) ) {
+    if ( !init_mt_ssl( ebuf, sizeof ( ebuf ) ) ) {
         stcp_report_error( ebuf );
         return 0;
     }
@@ -1809,7 +1815,7 @@ set_ssl_option( struct stcp_connection *conn,
                      | OPENSSL_INIT_LOAD_CRYPTO_STRINGS,
                      NULL);
 
-    if ((ctx->ssl_ctx = SSL_CTX_new(TLS_server_method())) == NULL) {
+    if ( NULL == ( ssl_ctx = SSL_CTX_new( TLS_server_method() ) ) ) {
         stcp_report_error( "SSL_CTX_new (server) error: %s", stcp_ssl_error() );
         return 0;
     }
@@ -1818,22 +1824,22 @@ set_ssl_option( struct stcp_connection *conn,
     SSL_library_init();
     SSL_load_error_strings();
 
-    if ( NULL == ( conn->ssl_ctx = SSL_CTX_new(SSLv23_server_method() ) ) ) {
+    if ( NULL == ( ssl_ctx = SSL_CTX_new( SSLv23_server_method() ) ) ) {
         stcp_report_error( "SSL_CTX_new (server) error: %s", stcp_ssl_error() );
         return 0;
     }
 #endif // OPENSSL_API_1_1
 
-    SSL_CTX_clear_options( conn->ssl_ctx,
+    SSL_CTX_clear_options( ssl_ctx,
                           SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_NO_TLSv1
                           | SSL_OP_NO_TLSv1_1);
 
-    SSL_CTX_set_options( conn->ssl_ctx, ssl_get_protocol(SSL_PROTOCOL_VERSION));
-    SSL_CTX_set_options( conn->ssl_ctx, SSL_OP_SINGLE_DH_USE);
-    SSL_CTX_set_options( conn->ssl_ctx, SSL_OP_CIPHER_SERVER_PREFERENCE);
-    SSL_CTX_set_options( conn->ssl_ctx,
+    SSL_CTX_set_options( ssl_ctx, ssl_get_protocol(SSL_PROTOCOL_VERSION));
+    SSL_CTX_set_options( ssl_ctx, SSL_OP_SINGLE_DH_USE);
+    SSL_CTX_set_options( ssl_ctx, SSL_OP_CIPHER_SERVER_PREFERENCE);
+    SSL_CTX_set_options( ssl_ctx,
                         SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION);
-    SSL_CTX_set_options( conn->ssl_ctx, SSL_OP_NO_COMPRESSION);
+    SSL_CTX_set_options( ssl_ctx, SSL_OP_NO_COMPRESSION);
 
 #ifdef __clang__
 #pragma clang diagnostic push
@@ -1851,34 +1857,31 @@ set_ssl_option( struct stcp_connection *conn,
     // Alternative would be a version dependent ssl_info_callback and
     // a const-cast to call 'char *SSL_get_app_data(SSL *ssl)' there.
     //
-    SSL_CTX_set_info_callback(conn->ssl_ctx, (void *) ssl_info_callback);
+    SSL_CTX_set_info_callback( ssl_ctx, (void *)ssl_info_callback );
 
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 
-    if ( secure_opts->pem != NULL ) {
-        (void)SSL_CTX_use_certificate_chain_file( conn->ssl_ctx, secure_opts->pem );
-    }
 
     // Use some UID as session context ID.   TODO
-    /*vscpmd5_init(&md5state);
-    vscpmd5_append(&md5state, (const md5_byte_t *) &now_rt, sizeof (now_rt));
-    clock_gettime(CLOCK_MONOTONIC, &now_mt);
-    vscpmd5_append(&md5state, (const md5_byte_t *) &now_mt, sizeof (now_mt));
-    vscpmd5_append(&md5state,
-               (const md5_byte_t *) ctx->config[LISTENING_PORTS],
-               strlen(conn->config[LISTENING_PORTS]));
-    vscpmd5_append(&md5state, (const md5_byte_t *)conn, sizeof (*conn));
-    vscpmd5_finish(&md5state, ssl_context_id);*/
+    vscpmd5_init( &md5state );
+    vscpmd5_append( &md5state, (const md5_byte_t *)&now_rt, sizeof( now_rt ) );
+    clock_gettime( CLOCK_MONOTONIC, &now_mt );
+    vscpmd5_append( &md5state, (const md5_byte_t *)&now_mt, sizeof( now_mt ) );
+    vscpmd5_append( &md5state,
+                        (const md5_byte_t *)"Stay foolish be hungry",
+                        strlen("Stay foolish be hungry") );
+    vscpmd5_append( &md5state, (const md5_byte_t *)secure_opts, sizeof (*secure_opts) );
+    vscpmd5_finish( &md5state, ssl_context_id );
 
-    SSL_CTX_set_session_id_context(conn->ssl_ctx,
-                                   (const unsigned char *) &ssl_context_id,
-                                   sizeof (ssl_context_id));
+    SSL_CTX_set_session_id_context( ssl_ctx,
+                                    (const unsigned char *)&ssl_context_id,
+                                    sizeof( ssl_context_id ) );
 
     if ( secure_opts->pem != NULL ) {
-        
-        if ( !ssl_use_pem_file( conn, 
+
+        if ( !ssl_use_pem_file( ssl_ctx, 
                                     secure_opts->pem, 
                                     secure_opts->chain ) ) {
             return 0;
@@ -1905,7 +1908,7 @@ set_ssl_option( struct stcp_connection *conn,
 
     if ( should_verify_peer ) {
 
-        if ( SSL_CTX_load_verify_locations( conn->ssl_ctx, 
+        if ( SSL_CTX_load_verify_locations( ssl_ctx, 
                                                 secure_opts->ca_file, 
                                                 secure_opts->ca_path )
             != 1) {
@@ -1919,28 +1922,28 @@ set_ssl_option( struct stcp_connection *conn,
             return 0;
         }
 
-        if (peer_certificate_optional) {
-            SSL_CTX_set_verify( conn->ssl_ctx, SSL_VERIFY_PEER, NULL);
+        if ( peer_certificate_optional ) {
+            SSL_CTX_set_verify( ssl_ctx, SSL_VERIFY_PEER, NULL);
         }
         else {
-            SSL_CTX_set_verify( conn->ssl_ctx,
-                               SSL_VERIFY_PEER
-                               | SSL_VERIFY_FAIL_IF_NO_PEER_CERT,
-                               NULL);
+            SSL_CTX_set_verify( ssl_ctx,
+                                    SSL_VERIFY_PEER |
+                                    SSL_VERIFY_FAIL_IF_NO_PEER_CERT,
+                                    NULL );
         }
 
         if ( use_default_verify_paths &&
-                ( SSL_CTX_set_default_verify_paths( conn->ssl_ctx ) != 1 ) ) {
+                ( SSL_CTX_set_default_verify_paths( ssl_ctx ) != 1 ) ) {
             stcp_report_error( "SSL_CTX_set_default_verify_paths error: %s",
                                 stcp_ssl_error() );
             return 0;
         }
 
-        SSL_CTX_set_verify_depth(conn->ssl_ctx, SSL_VERIFY_DEPTH);
+        SSL_CTX_set_verify_depth( ssl_ctx, SSL_VERIFY_DEPTH );
 
     }
 
-    if ( SSL_CTX_set_cipher_list( conn->ssl_ctx, SSL_CIPHER_LIST ) != 1 ) {
+    if ( SSL_CTX_set_cipher_list( ssl_ctx, SSL_CIPHER_LIST ) != 1 ) {
         stcp_report_error( "SSL_CTX_set_cipher_list error: %s", stcp_ssl_error() );
     }
 
@@ -1948,11 +1951,11 @@ set_ssl_option( struct stcp_connection *conn,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// uninitialize_ssl
+// uninit_ssl
 //
 
-static void
-uninitialize_ssl( void )
+void
+uninit_ssl( void )
 {
 #ifdef OPENSSL_API_1_1
 
@@ -2198,7 +2201,7 @@ stcp_connect_socket( const char *hostip,
 
 static struct stcp_connection *
 stcp_connect_remote_impl( struct stcp_secure_client_options *client_options,
-                                int use_ssl,
+                                int bUseSSL,
                                 char *ebuf,
                                 size_t ebuf_len,
                                 int timeout )
@@ -2226,9 +2229,17 @@ stcp_connect_remote_impl( struct stcp_secure_client_options *client_options,
     conn->read_timeout = timeout;
     conn->secure_opts = client_options; // Save security options
 
+    if ( bUseSSL ) {
+        // Init SSL subsystem
+        if ( 0 == init_ssl( client_options, conn->ssl_ctx ) ) {
+            free( conn );
+            return NULL;
+        }
+    }
+
     if ( !stcp_connect_socket( client_options->host,
                                 client_options->port,
-                                use_ssl,
+                                bUseSSL,
                                 ebuf,
                                 ebuf_len,
                                 &sock,
@@ -2252,9 +2263,11 @@ stcp_connect_remote_impl( struct stcp_secure_client_options *client_options,
         return NULL;
     }
 #else
-    if ( use_ssl &&
+    if ( bUseSSL &&
             ( NULL == ( conn->ssl_ctx = SSL_CTX_new( SSLv23_client_method() ) ) ) ) {
-        stcp_report_error("SSL_CTX_new error" );
+        unsigned long ssl_err = ERR_get_error();
+        const char* const str = ERR_reason_error_string( ssl_err );
+        stcp_report_error("SSL_CTX_new error. %s", str );
         close(sock);
         free(conn);
         return NULL;
@@ -2274,9 +2287,9 @@ stcp_connect_remote_impl( struct stcp_secure_client_options *client_options,
         stcp_report_error( "getsockname() failed: %s", strerror( ERRNO ) );
     }
 
-    conn->client.is_ssl = use_ssl ? 1 : 0;
+    conn->client.is_ssl = bUseSSL ? 1 : 0;
 
-    if ( use_ssl ) {
+    if ( bUseSSL ) {
 
         // TODO: Check ssl_verify_peer and ssl_ca_path here.
         // SSL_CTX_set_verify call is needed to switch off server
@@ -2286,7 +2299,7 @@ stcp_connect_remote_impl( struct stcp_secure_client_options *client_options,
         // SSL_VERIFY_PEER, verify_ssl_server);
 
         if ( client_options->client_cert ) {
-            if ( !ssl_use_pem_file( conn,
+            if ( !ssl_use_pem_file( conn->ssl_ctx,
                                     client_options->client_cert,
                                     NULL ) ) {
                 stcp_report_error( "Can not use SSL client certificate" );
@@ -2307,17 +2320,16 @@ stcp_connect_remote_impl( struct stcp_secure_client_options *client_options,
             SSL_CTX_set_verify( conn->ssl_ctx, SSL_VERIFY_NONE, NULL );
         }
 
-        // TODO !!!!!
-        /*if ( !sslize( conn,
+        if ( !sslize( conn,
                         conn->ssl_ctx,
                         SSL_connect,
-                        &(conn->ssl_ctx->stop_flag ) ) ) {
-            report_error("SSL connection error");
+                        &(conn->stop_flag ) ) ) {
+            stcp_report_error("SSL connection error");
             SSL_CTX_free( conn->ssl_ctx );
             close( sock );
             free( conn );
             return NULL;
-        }*/
+        }
     }
 
     if ( 0 != set_non_blocking_mode( sock ) ) {
@@ -2338,11 +2350,15 @@ stcp_connect_remote_secure( struct stcp_secure_client_options *client_options,
                                 size_t error_buffer_size,
                                 int timeout )
 {
-    return stcp_connect_remote_impl( client_options,
-                                        1,
+    struct stcp_connection *conn;
+
+    conn =  stcp_connect_remote_impl( client_options,
+                                        USE_SSL,
                                         error_buffer,
                                         error_buffer_size,
                                         timeout );
+                                    
+    return conn;                                        
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2352,7 +2368,6 @@ stcp_connect_remote_secure( struct stcp_secure_client_options *client_options,
 struct stcp_connection *
 stcp_connect_remote( const char *host,
                         int port,
-                        int use_ssl,
                         char *error_buffer,
                         size_t error_buffer_size,
                         int timeout )
@@ -2362,7 +2377,7 @@ stcp_connect_remote( const char *host,
     opts.host = host;
     opts.port = port;
     return stcp_connect_remote_impl( &opts,
-                                        use_ssl,
+                                        NO_SSL,
                                         error_buffer,
                                         error_buffer_size,
                                         timeout );

@@ -9,10 +9,13 @@ OUR_CFLAGS = $(CONFIG) -std=c99 -Wall -Wextra -Wconversion -Wformat -Wformat=2 -
 
 CFLAGS = -std=c99 -g -O0
 
-all:	example1 send1 send_periodic bigtest stcptest simple_tls_server simple_tls_client sockettcp.o
+all:	example1 send1 send_periodic bigtest stcptest simple_tls_server simple_tls_client stcp_tls_client sockettcp.o vscpmd5.o
 
 sockettcp.o: ../../../../common/sockettcp.c ../../../../common/sockettcp.h
 	$(CC) $(CFLAGS) -c ../../../../common/sockettcp.c -o $@ -I../../../common -I../../../../common
+
+vscpmd5.o: ../../../../common/vscpmd5.c ../../../../common/vscpmd5.h
+	$(CC) $(CFLAGS) -c ../../../../common/vscpmd5.c -o $@ -I../../../common -I../../../../common
 
 stcptest:      stcptest.c sockettcp.o
 	        $(CC)  $(CFLAGS)  stcptest.c -o stcptest  -I../../../common -I../../../../common -Wl,-rpath,/home/akhe/development/VSCP/vscp/src/vscp/helperlib/linux -L/home/akhe/development/VSCP/vscp/src//vscp/helperlib/linux -lssl -lcrypto  -lm  -lvscphelper
@@ -35,9 +38,9 @@ simple_tls_client:      simple_tls_client.c simple_tls_client.h
 simple_tls_server:      simple_tls_server.c 
 	$(CC)  $(CFLAGS)  simple_tls_server.c -o simple_tls_server  -I../../../common -I../../../../common -Wl,-rpath,/home/akhe/development/VSCP/vscp/src/vscp/helperlib/linux -L/home/akhe/development/VSCP/vscp/src//vscp/helperlib/linux -lssl -lcrypto  -lm  
 
+stcp_tls_client:      stcp_tls_client.c sockettcp.o vscpmd5.o
+	$(CC)  $(CFLAGS)  stcp_tls_client.c sockettcp.o vscpmd5.o -o stcp_tls_client -I ../../../common -I ../../../../common -Wl,-rpath,/home/akhe/development/VSCP/vscp/src/vscp/helperlib/linux -L/home/akhe/development/VSCP/vscp/src//vscp/helperlib/linux -lssl -lcrypto  -lm
 
-
-# sockettcp.o
 
 clean:
 	rm -f example1
@@ -46,4 +49,5 @@ clean:
 	rm -f send1
 	rm -f send_periodic
 	rm -f simple_tls_clinet
-	rm -f simple_tls_server
+	rm -f simple_tls_serverA
+

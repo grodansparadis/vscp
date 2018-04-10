@@ -86,7 +86,7 @@ int main(int argc, char* argv[])
     printf("------------------\n");
 
     //conn = stcp_connect_remote( "185.144.156.45", 9598, 0, errbuf, sizeof( errbuf ), 5 );
-    conn = stcp_connect_remote( "192.168.1.6", 9598, 0, errbuf, sizeof( errbuf ), 5 );
+    conn = stcp_connect_remote( "192.168.1.6", 9598, errbuf, sizeof( errbuf ), 5 );
     if ( NULL != conn ) {
         
         // Get welcome message
@@ -201,7 +201,7 @@ int main(int argc, char* argv[])
     printf("Raw test with stcp and +OK test\n");
     printf("-------------------------------\n");
 
-    conn = stcp_connect_remote( STCPPTEST_SERVER, 9598, 0, errbuf, sizeof( errbuf ), 5 );
+    conn = stcp_connect_remote( STCPPTEST_SERVER, 9598, errbuf, sizeof( errbuf ), 5 );
     if ( NULL != conn ) {
         
         int inner_timeout = 0;

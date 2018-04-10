@@ -11,6 +11,11 @@
 
 #include "simple_tls_client.h"
 
+// uncomment to connect to random.org
+// If defined connet to local server with local certs generated
+// with generate_cocal_cert (simple_tls_server)
+#define LOCAL_TEST
+
 int verify_callback(int preverify, X509_STORE_CTX* x509_ctx);
 
 void init_openssl_library(void);
@@ -21,7 +26,7 @@ void print_error_string(unsigned long err, const char* const label);
 /* Cipher suites, https://www.openssl.org/docs/apps/ciphers.html */
 //const char* const PREFERRED_CIPHERS = "HIGH:!aNULL:!kRSA:!SRP:!PSK:!CAMELLIA:!RC4:!MD5:!DSS";
 
-#if 0
+#if 1
 const char* const PREFERRED_CIPHERS = "kEECDH:kEDH:kRSA:AESGCM:AES256:AES128:3DES:SHA256:SHA84:SHA1:!aNULL:!eNULL:!EXP:!LOW:!MEDIUM!ADH:!AECDH";
 #endif
 
@@ -29,7 +34,7 @@ const char* const PREFERRED_CIPHERS = "kEECDH:kEDH:kRSA:AESGCM:AES256:AES128:3DE
 const char* const PREFERRED_CIPHERS = NULL;
 #endif
 
-#if 1
+#if 0
 const char* PREFERRED_CIPHERS =
 
 /* TLS 1.2 only */
@@ -85,7 +90,7 @@ int main(int argc, char* argv[])
         ssl_err = ERR_get_error();
         
         ASSERT(NULL != method);
-        if(!(NULL != method))
+        if (!(NULL != method))
         {
             print_error_string(ssl_err, "SSLv23_method");
             break; /* failed */
@@ -121,11 +126,11 @@ int main(int argc, char* argv[])
         
         /* http://www.openssl.org/docs/ssl/SSL_CTX_load_verify_locations.html */
         //res = SSL_CTX_load_verify_locations(ctx, "random-org-chain.pem", NULL);
-        res = SSL_CTX_load_verify_locations(ctx, "mycertfile.pem", NULL);
+        res = SSL_CTX_load_verify_locations(ctx, "cert.pem", NULL);
         ssl_err = ERR_get_error();
         
         //ASSERT(1 == res);
-        if(!(1 == res))
+        if( !(1 == res) )
         {
             /* Non-fatal, but something else will probably break later */
             print_error_string( ssl_err, "SSL_CTX_load_verify_locations");
@@ -144,7 +149,8 @@ int main(int argc, char* argv[])
         }
         
         /* https://www.openssl.org/docs/crypto/BIO_s_connect.html */
-        res = BIO_set_conn_hostname(web, HOST_NAME ":" HOST_PORT);
+        //res = BIO_set_conn_hostname(web, HOST_NAME ":" HOST_PORT);
+        res = BIO_set_conn_hostname(web,  "localhost:4433");
         ssl_err = ERR_get_error();
         
         ASSERT(1 == res);

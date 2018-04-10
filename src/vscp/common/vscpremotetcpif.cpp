@@ -359,8 +359,7 @@ int VscpRemoteTcpIf::doCmdOpen( const wxString& strHostname,
     port = atoi( (const char *)tkz.GetNextToken().mbc_str() );
 
     m_conn = stcp_connect_remote( (const char *)host.mbc_str(), 
-                                    port, 
-                                    0,  // ssl
+                                    port,
                                     m_errbuf, sizeof( m_errbuf ), 
                                     TCPIP_DEFAULT_CONNECT_TIMEOUT_SECONDS );
     if ( NULL == m_conn ) {    
