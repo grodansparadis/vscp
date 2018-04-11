@@ -147,6 +147,7 @@ public:
     
     /*!
         GUID to use for driver interface if set
+        four msb should be zero for this GUID
     */
     cguid m_interface_guid;
 

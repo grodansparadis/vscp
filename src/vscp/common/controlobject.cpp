@@ -3791,7 +3791,7 @@ bool CControlObject::readConfigurationXML( wxString& strcfgfile )
                   ( child->GetName().Lower() == _("level1driver") ) ) {
 
             wxXmlNode *subchild = child->GetChildren();
-            while (subchild) {
+            while ( subchild ) {
 
                 wxString strName;
                 wxString strConfig;

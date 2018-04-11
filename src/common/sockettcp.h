@@ -112,10 +112,16 @@ struct stcp_secure_client_options {
     const char *client_cert;    /* Client certificat path */
     const char *server_cert;    /* Server certificat path */
     /* ------------------------------------------------------- */
-    char *pem; 
+    char *pem;                  // Client impined key and cert
     char *chain;
     char *ca_path;
     char *ca_file;
+    int pprotocol_version;      // 0 == default
+    int short_trust;            // 0 == no
+    int verifyPeer;             // 0 == no, 1 == yes, 2 == optional
+    char *default_verify_path;
+    int verify_depth;           // Set to zero fro default
+    char *chipher_list;         // NULL for default
 };
 
 // Connection types
