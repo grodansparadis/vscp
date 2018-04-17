@@ -373,6 +373,8 @@ VSCPInformation::VSCPInformation( void )
     m_hashType[ MAKE_CLASSTYPE_LONG( 20, 74 ) ] = _("WEEKDAY");
     m_hashType[ MAKE_CLASSTYPE_LONG( 20, 75 ) ] = _("LOCK");
     m_hashType[ MAKE_CLASSTYPE_LONG( 20, 76 ) ] = _("UNLOCK");
+    m_hashType[ MAKE_CLASSTYPE_LONG( 20, 77 ) ] = _("DATETIME");
+
     
     // class 30 (0x1E) -- CONTROL
     m_hashType[ MAKE_CLASSTYPE_LONG(30, 0) ] = _("CONTROL_GENERAL");

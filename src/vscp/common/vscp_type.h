@@ -288,6 +288,7 @@
 #define VSCP_TYPE_INFORMATION_WEEKDAY                       74
 #define VSCP_TYPE_INFORMATION_LOCK                          75
 #define VSCP_TYPE_INFORMATION_UNLOCK                        76
+#define VSCP_TYPE_INFORMATION_DATETIME                      77
 
 /* class 30 (0x1E) -- CONTROL */
 #define VSCP_TYPE_CONTROL_GENERAL                           0
