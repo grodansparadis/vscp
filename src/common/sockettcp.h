@@ -34,6 +34,10 @@
 
 #include <stdio.h>
 #include <stddef.h>
+#include <sys/types.h>     
+#include <sys/socket.h>
+#include <netinet/ip.h>
+#include <poll.h>
 
 #include <openssl/ssl.h>
 #include <openssl/err.h>
@@ -46,6 +50,12 @@
 #include <openssl/bn.h>
 #include <openssl/opensslv.h>
 
+/*
+    If multithreading part of  ssl is initialized elsewhere
+    SSL_ALREADY_INITIALIZED should be defined whdn compiling
+    sockettcp.c
+*/
+
 #define SOCKETTCP_NO_SSL                (0)     // Normal connect
 #define SOCKETTCP_SSL                   (1)     // Connect SSL
 
@@ -54,6 +64,12 @@
 #define SOCKETTCP_CONN_STATE_CLOSING    (7)
 #define SOCKETTCP_CONN_STATE_CLOSED     (8)
 
+#define SOCKETTCP_CONFIG_TCP_NODELAY    0       // Set to 1 to enable. If set the socket option will disable 
+                                                // Nagle's algorithm on the connection which means that packets
+                                                // will be sent as soon as possible instead of waiting for a 
+                                                // full buffer or timeout to occur.
+                                                // (Not the same as socket option typedef TCP_NODELAY)
+
 #define SSL_PROTOCOL_VERSION            (0)
 #define SSL_DO_VERIFY_PEER              (0)   // 0 == no, 1 == mandatory, 2 == optional
 #define SSL_DEFAULT_VERIFY_PATHS        (1)   // 1 == yes
@@ -61,6 +77,18 @@
 #define SSL_CIPHER_LIST                 "DES-CBC3-SHA:AES128-SHA:AES128-GCM-SHA256"
 //#define SSL_CIPHER_LIST                     "kEECDH:kEDH:kRSA:AESGCM:AES256:AES128:3DES:SHA256:SHA84:SHA1:!aNULL:!eNULL:!EXP:!LOW:!MEDIUM!ADH:!AECDH"
 #define SSL_SHORT_TRUST                 (0)
+
+/*
+"ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:"
+    "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:"
+    "DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:"
+    "ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:"
+    "ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:"
+    "ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:"
+    "DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:"
+    "DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:"
+    "!aNULL:!eNULL:!EXPORT:!DES:!RC4:!3DES:!MD5:!PSK"
+*/
 
 #define MAX_REQUEST_SIZE                (16384)
 #define STCP_BUF_LEN (                   8192)
@@ -92,6 +120,13 @@ union usa
     struct sockaddr_in6 sin6;
 };
 
+// Describes a string (chunk of memory).
+struct msg
+{
+    const char *ptr;
+    size_t len;
+};
+
 // Describes listening socket, or socket which was accept()-ed by the master
 // thread and queued for future handling by the worker thread.
 struct socket
@@ -106,26 +141,31 @@ struct socket
 };
 
 
-struct stcp_secure_client_options {
+struct stcp_secure_options 
+{
+    /*    
+        * * * Client specific * * *   
+    */
     const char *host;           /* Host address ip.v4 or ip.v6 */
     int port;                   /* Host port */
     const char *client_cert;    /* Client certificat path */
     const char *server_cert;    /* Server certificat path */
     /* ------------------------------------------------------- */
-    char *pem;                  // Client impined key and cert
+    char *pem;                  /* Client key and cert */
     char *chain;
     char *ca_path;
     char *ca_file;
-    int pprotocol_version;      // 0 == default
-    int short_trust;            // 0 == no
-    int verifyPeer;             // 0 == no, 1 == yes, 2 == optional
+    int pprotocol_version;      /* 0 == default */
+    int short_trust;            /* 0 == no */
+    int verifyPeer;             /* 0 == no, 1 == yes, 2 == optional */
     char *default_verify_path;
-    int verify_depth;           // Set to zero fro default
-    char *chipher_list;         // NULL for default
+    int verify_depth;           /* Set to zero fro default */
+    char *chipher_list;         /* NULL for default */
 };
 
 // Connection types
-enum {
+enum 
+{
     CONNECTION_INVALID,
     CONNECTION_CLIENT,
     CONNECTION_SERVER    
@@ -154,7 +194,32 @@ struct stcp_connection
     SSL_CTX *ssl_ctx;           // SSL context for client connections
 
     // Secure configuration data
-    struct stcp_secure_client_options *secure_opts;
+    struct stcp_secure_options *secure_opts;
+};
+
+// Configuration settings
+struct server_context
+{
+    SSL_CTX *ssl_ctx;                   /*! SSL context */
+
+    struct socket listener;             /*! Listening socket */
+    struct pollfd listener_fds;         /*! File descriptor for listening port */
+
+    //struct socket *client_socks;
+    //struct stcp_connection *conn
+
+    int config_max_listen_queue;
+    int config_tcp_nodelay;             /* 
+                                            Deafult = 0
+                                            Set to 1 to enable. If set the socket option will disable 
+                                            Nagle's algorithm on the connection which means that packets
+                                            will be sent as soon as possible instead of waiting for a 
+                                            full buffer or timeout to occur.
+                                            (Not the same as socket option typedef TCP_NODELAY)
+                                        */    
+
+    // Secure configuration data
+    struct stcp_secure_options *secure_opts;                                       
 };
 
 // Configuration settings
@@ -186,21 +251,26 @@ struct stcp_connection
 };*/
 
 
+/*!
+ * Init ssl multithreading locks
+ */
 
+int
+stcp_init_mt_ssl( void );
 
 
 /*!
     Init. SSL
 */
 int
-init_ssl( struct stcp_secure_client_options *secure_opts,
-            SSL_CTX *ssl_ctx );
+stcp_init_ssl( struct stcp_secure_options *secure_opts,
+                SSL_CTX *ssl_ctx );
 
 /*!
     Clean up SSL 
 */
 void
-uninit_ssl( void );
+stcp_uninit_ssl( void );
 
 /*!
  *  Connect (unsecurely) to remote
@@ -208,8 +278,6 @@ uninit_ssl( void );
 struct stcp_connection *
 stcp_connect_remote( const char *hostip,
                         int port,
-                        char *error_buffer,
-                        size_t error_buffer_size,
                         int timeout );
 
 /*!
@@ -217,9 +285,7 @@ stcp_connect_remote( const char *hostip,
  */
 
 struct stcp_connection *
-stcp_connect_remote_secure( struct stcp_secure_client_options *client_options,
-                                char *error_buffer,
-                                size_t error_buffer_size,
+stcp_connect_remote_secure( struct stcp_secure_options *client_options,
                                 int timeout );
 
 /*!
@@ -261,6 +327,34 @@ stcp_read( struct stcp_connection *conn, void *buf, size_t len, int mstimeout );
 int
 stcp_write( struct stcp_connection *conn, const void *buf, size_t len );
 
+
+
+
+// ----------------------------------------------------------------------------
+
+
+
+
+/*!
+ * Set up listening context
+*/
+
+int
+stcp_init_listening( struct server_context *srv_ctx, 
+                        const char *str_listening_port );
+
+/*!
+ * Accept new connection (called after poll)
+ * 
+ * @parm srvctx [in] Server context
+ * @param conn [out] Accepted connection
+ * @return 1 on success, 0 on failure.
+ * 
+ */
+
+int
+accept_new_connection( const struct server_context *srv_ctx, 
+                        struct stcp_connection *conn );                       
 
 
 #ifdef __cplusplus

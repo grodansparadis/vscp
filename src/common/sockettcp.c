@@ -435,7 +435,17 @@ typedef const void *SOCK_OPT_TYPE;
 #define UINT64_FMT PRIu64
 #define WINCDECL
 
-#endif // unix block
+#endif /* unix block */
+
+/* Listen backlog   */
+#if !defined(SOMAXCONN)
+#define SOMAXCONN (100)
+#endif
+
+/* Size of the accepted socket queue */
+#if !defined(MGSQLEN)
+#define MGSQLEN (20)
+#endif
 
 #include <openssl/ssl.h>
 #include <openssl/err.h> 
@@ -985,7 +995,16 @@ event_destroy(void *eventhdl)
     CloseHandle((HANDLE) eventhdl);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// set_close_on_exec
+//
 
+static void
+set_close_on_exec(SOCKET sock, struct web_connection *conn /* may be null */)
+{
+    (void) conn; // Unused.
+    (void) sock;
+}
 
 #else   // windows vs. unix
 
@@ -993,6 +1012,45 @@ event_destroy(void *eventhdl)
 
 // ****************** Unix specific ******************
 
+
+////////////////////////////////////////////////////////////////////////////////
+// report_error
+//
+
+// TODO Make general
+
+static void 
+stcp_report_error( const char *fmt, ... ) 
+{
+    va_list args;
+
+    flockfile( stdout );
+    va_start( args, fmt );
+    vprintf( fmt, args );
+    va_end( args );
+    putchar('\n');
+    funlockfile( stdout );
+    fflush( stdout );
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// set_close_on_exec
+//
+
+static void
+set_close_on_exec(SOCKET fd, struct stcp_connection *conn /* may be null */)
+{
+    if ( fcntl( fd, F_SETFD, FD_CLOEXEC ) != 0 ) {
+
+        if ( conn ) {
+            stcp_report_error( "fcntl(F_SETFD FD_CLOEXEC) failed: %s",
+                                strerror( ERRNO ) );
+        }
+
+    }
+
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1148,26 +1206,39 @@ struct mg_workerTLS {
 static const char *
 stcp_ssl_error( void );     // Forward declaration
 
+static pthread_mutex_t global_lock_mutex;
+
+
+#if defined(_WIN32)
+// Forward declaration for Windows
+FUNCTION_MAY_BE_UNUSED
+static int pthread_mutex_lock(pthread_mutex_t *mutex);
+
+FUNCTION_MAY_BE_UNUSED
+static int pthread_mutex_unlock(pthread_mutex_t *mutex);
+#endif
+
 
 ////////////////////////////////////////////////////////////////////////////////
-// report_error
+// stcp_global_lock
 //
 
-// TODO Make general
-
-static void 
-stcp_report_error( const char *fmt, ... ) 
+static void
+stcp_global_lock(void)
 {
-    va_list args;
-
-    flockfile( stdout );
-    va_start( args, fmt );
-    vprintf( fmt, args );
-    va_end( args );
-    putchar('\n');
-    funlockfile( stdout );
-    fflush( stdout );
+    (void)pthread_mutex_lock( &global_lock_mutex );
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// stcp_global_unlock
+//
+
+static void
+stcp_global_unlock(void)
+{
+    (void)pthread_mutex_unlock( &global_lock_mutex );
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // atomic_inc
@@ -1255,15 +1326,15 @@ stcp_current_thread_id( void )
         // This is the problematic case for CRYPTO_set_id_callback:
         // The OS pthread_t can not be cast to unsigned long.
         struct stcp_workerTLS *tls =
-                (struct stcp_workerTLS *) pthread_getspecific(sTlsKey);
+                (struct stcp_workerTLS *)pthread_getspecific( sTlsKey );
 
-        if (tls == NULL) {
+        if ( NULL == tls ) {
 
             // SSL called from an unknown thread: Create some thread index.
             tls = (struct stcp_workerTLS *)malloc(sizeof (struct stcp_workerTLS));
             tls->is_master = -2; /* -2 means "3rd party thread" */
             tls->thread_idx = (unsigned)atomic_inc(&thread_idx_max);
-            pthread_setspecific(sTlsKey, tls);
+            pthread_setspecific( sTlsKey, tls );
 
         }
 
@@ -1286,6 +1357,7 @@ stcp_current_thread_id( void )
 #endif
 
 #endif
+
 }
 
 /* Darwin prior to 7.0 and Win32 do not have socklen_t */
@@ -1394,7 +1466,7 @@ ssl_use_pem_file( SSL_CTX *ssl_ctx, const char *pem, const char *chain )
             return 0;
         }
     }
-    
+
     return 1;
 }
 
@@ -1482,14 +1554,16 @@ refresh_trust( struct stcp_connection *conn,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// sslize
+// make_ssl
+//
+// Make socket SSL socket
 //
 
 static int
-sslize( struct stcp_connection *conn,
-            SSL_CTX *s,
-            int (*func)(SSL *),
-            volatile int *stop_server )
+make_ssl( struct stcp_connection *conn,
+                    SSL_CTX *s,
+                    int (*func)(SSL *),
+                    volatile int *stop_server )
 {
     int ret, err;
     unsigned i;
@@ -1603,6 +1677,9 @@ stcp_ssl_error( void )
 //
 
 #ifdef OPENSSL_API_1_1
+
+    // Not needed of ror 1.1
+
 #else
 
 static void
@@ -1621,6 +1698,11 @@ ssl_locking_callback( int mode, int mutex_num, const char *file, int line )
 }
 #endif
 
+/*
+    If multithreading part of  ssl is initialized elsewhere
+    SSL_ALREADY_INITIALIZED should be defined whdn compiling
+    sockettcp.c
+*/
 
 #if defined(SSL_ALREADY_INITIALIZED)
 static int cryptolib_users = 1; // Reference counter for crypto library.
@@ -1630,28 +1712,22 @@ static int cryptolib_users = 0; // Reference counter for crypto library.
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// init_mt_ssl
+// stcp_init_mt_ssl
 //
 
-static int
-init_mt_ssl( char *ebuf, size_t ebuf_len )
+int
+stcp_init_mt_ssl( void )
 {
 #ifdef OPENSSL_API_1_1
-    if ( ebuf_len > 0 ) {
-        ebuf[0] = 0;
-    }
 
-    if ( stcp_atomic_inc( &cryptolib_users ) > 1 ) {
+    if ( atomic_inc( &cryptolib_users ) > 1 ) {
         return 1;
     }
 
 #else // not OPENSSL_API_1_1
+
     int i;
     size_t size;
-
-    if ( ebuf_len > 0 ) {
-        ebuf[0] = 0;
-    }
 
     if ( atomic_inc( &cryptolib_users ) > 1 ) {
         return 1;
@@ -1665,7 +1741,7 @@ init_mt_ssl( char *ebuf, size_t ebuf_len )
         i = 0;
     }
 
-    size = sizeof( pthread_mutex_t ) * ((size_t) (i));
+    size = sizeof( pthread_mutex_t ) * ((size_t)(i));
 
     if ( 0 == size ) {
         ssl_mutexes = NULL;
@@ -1758,14 +1834,14 @@ ssl_info_callback(SSL *ssl, int what, int ret)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// init_ssl
+// stcp_init_ssl
 //
 // Dynamically load SSL library.
 //
 
 int
-init_ssl( struct stcp_secure_client_options *secure_opts,
-            SSL_CTX *ssl_ctx )
+stcp_init_ssl( struct stcp_secure_options *secure_opts,
+                SSL_CTX *ssl_ctx )
 {
     int callback_ret;
     int should_verify_peer;
@@ -1779,8 +1855,6 @@ init_ssl( struct stcp_secure_client_options *secure_opts,
     int protocol_ver;
     char ebuf[128];
 
-
-    
     /* Must have secure options */
     if ( NULL == secure_opts ) {
         return 0;
@@ -1802,8 +1876,8 @@ init_ssl( struct stcp_secure_client_options *secure_opts,
         secure_opts->chain = NULL;
     }
 
-    if ( !init_mt_ssl( ebuf, sizeof ( ebuf ) ) ) {
-        stcp_report_error( ebuf );
+    if ( !stcp_init_mt_ssl() ) {
+        stcp_report_error( "Failed to init ssl\n" );
         return 0;
     }
 
@@ -1951,11 +2025,11 @@ init_ssl( struct stcp_secure_client_options *secure_opts,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// uninit_ssl
+// stcp_uninit_ssl
 //
 
 void
-uninit_ssl( void )
+stcp_uninit_ssl( void )
 {
 #ifdef OPENSSL_API_1_1
 
@@ -1985,7 +2059,7 @@ uninit_ssl( void )
         ERR_remove_state(0);        // deprecated in 1.0.0, solved by going to 1.1.0
 
         for (i = 0; i < CRYPTO_num_locks(); i++) {
-            pthread_mutex_destroy(&ssl_mutexes[i]);
+            pthread_mutex_destroy( &ssl_mutexes[i] );
         }
         free(ssl_mutexes);
         ssl_mutexes = NULL;
@@ -2084,8 +2158,6 @@ static int
 stcp_connect_socket( const char *hostip,
                         int port,
                         int use_ssl,
-                        char *ebuf,
-                        size_t ebuf_len,
                         int *sock,          // output: socket, must not be NULL
                         union usa *sa       // output: socket address, must not be NULL
                     )
@@ -2093,10 +2165,6 @@ stcp_connect_socket( const char *hostip,
     int ip_ver = 0;
     *sock = INVALID_SOCKET;
     memset(sa, 0, sizeof (*sa));
-
-    if (ebuf_len > 0) {
-        *ebuf = 0;
-    }
 
     if ( NULL == hostip ) {
         stcp_report_error( "NULL host" );
@@ -2200,10 +2268,8 @@ stcp_connect_socket( const char *hostip,
 //
 
 static struct stcp_connection *
-stcp_connect_remote_impl( struct stcp_secure_client_options *client_options,
+stcp_connect_remote_impl( struct stcp_secure_options *secure_options,
                                 int bUseSSL,
-                                char *ebuf,
-                                size_t ebuf_len,
                                 int timeout )
 {
     struct stcp_connection *conn = NULL;
@@ -2227,21 +2293,19 @@ stcp_connect_remote_impl( struct stcp_secure_client_options *client_options,
     conn->buf = (((char *)conn) + conn_size );
     conn->buf_size = (int)max_req_size;
     conn->read_timeout = timeout;
-    conn->secure_opts = client_options; // Save security options
+    conn->secure_opts = secure_options; // Save security options
 
     if ( bUseSSL ) {
         // Init SSL subsystem
-        if ( 0 == init_ssl( client_options, conn->ssl_ctx ) ) {
+        if ( 0 == stcp_init_ssl( secure_options, conn->ssl_ctx ) ) {
             free( conn );
             return NULL;
         }
     }
 
-    if ( !stcp_connect_socket( client_options->host,
-                                client_options->port,
+    if ( !stcp_connect_socket( secure_options->host,
+                                secure_options->port,
                                 bUseSSL,
-                                ebuf,
-                                ebuf_len,
                                 &sock,
                                 &sa ) ) {
         // ebuf is set by connect_socket,
@@ -2253,11 +2317,7 @@ stcp_connect_remote_impl( struct stcp_secure_client_options *client_options,
 #ifdef OPENSSL_API_1_1
     if ( use_ssl &&
             ( NULL == ( conn->ssl_ctx = SSL_CTX_new( TLS_client_method() ) ) ) ) {
-        stcp_snprintf( NULL,
-                        NULL, // No truncation check for ebuf
-                        ebuf,
-                        ebuf_len,
-                        "SSL_CTX_new error" );
+        stcp_report_error("SSL_CTX_new error");
         close(sock);
         stcp_free(conn);
         return NULL;
@@ -2298,9 +2358,9 @@ stcp_connect_remote_impl( struct stcp_secure_client_options *client_options,
         // TODO: SSL_CTX_set_verify(conn->client_ssl_ctx,
         // SSL_VERIFY_PEER, verify_ssl_server);
 
-        if ( client_options->client_cert ) {
+        if ( secure_options->client_cert ) {
             if ( !ssl_use_pem_file( conn->ssl_ctx,
-                                    client_options->client_cert,
+                                    secure_options->client_cert,
                                     NULL ) ) {
                 stcp_report_error( "Can not use SSL client certificate" );
                 SSL_CTX_free( conn->ssl_ctx );
@@ -2310,9 +2370,9 @@ stcp_connect_remote_impl( struct stcp_secure_client_options *client_options,
             }
         }
 
-        if ( client_options->server_cert ) {
+        if ( secure_options->server_cert ) {
             SSL_CTX_load_verify_locations( conn->ssl_ctx,
-                                            client_options->server_cert,
+                                            secure_options->server_cert,
                                             NULL );
             SSL_CTX_set_verify( conn->ssl_ctx, SSL_VERIFY_PEER, NULL );
         }
@@ -2320,7 +2380,7 @@ stcp_connect_remote_impl( struct stcp_secure_client_options *client_options,
             SSL_CTX_set_verify( conn->ssl_ctx, SSL_VERIFY_NONE, NULL );
         }
 
-        if ( !sslize( conn,
+        if ( !make_ssl( conn,
                         conn->ssl_ctx,
                         SSL_connect,
                         &(conn->stop_flag ) ) ) {
@@ -2330,6 +2390,7 @@ stcp_connect_remote_impl( struct stcp_secure_client_options *client_options,
             free( conn );
             return NULL;
         }
+        
     }
 
     if ( 0 != set_non_blocking_mode( sock ) ) {
@@ -2345,17 +2406,13 @@ stcp_connect_remote_impl( struct stcp_secure_client_options *client_options,
 //
 
 struct stcp_connection *
-stcp_connect_remote_secure( struct stcp_secure_client_options *client_options,
-                                char *error_buffer,
-                                size_t error_buffer_size,
+stcp_connect_remote_secure( struct stcp_secure_options *client_options,
                                 int timeout )
 {
     struct stcp_connection *conn;
 
     conn =  stcp_connect_remote_impl( client_options,
                                         USE_SSL,
-                                        error_buffer,
-                                        error_buffer_size,
                                         timeout );
                                     
     return conn;                                        
@@ -2368,18 +2425,14 @@ stcp_connect_remote_secure( struct stcp_secure_client_options *client_options,
 struct stcp_connection *
 stcp_connect_remote( const char *host,
                         int port,
-                        char *error_buffer,
-                        size_t error_buffer_size,
                         int timeout )
 {
-    struct stcp_secure_client_options opts;
+    struct stcp_secure_options opts;
     memset( &opts, 0, sizeof (opts) );
     opts.host = host;
     opts.port = port;
     return stcp_connect_remote_impl( &opts,
                                         NO_SSL,
-                                        error_buffer,
-                                        error_buffer_size,
                                         timeout );
 }
 
@@ -2952,7 +3005,7 @@ stcp_pull_inner( FILE *fp,
     // Non SSL read
     else {
         struct pollfd pfd[1];
-        int pollres;
+        int pollres; 
 
         pfd[0].fd = conn->client.sock;
         pfd[0].events = POLLIN;
@@ -3204,24 +3257,451 @@ stcp_write( struct stcp_connection *conn, const void *buf, size_t len )
 // -----------------------------------------------------------------------------
 
 
+
+
+////////////////////////////////////////////////////////////////////////////////
+// next_option
+//
+// A helper function for traversing a comma separated list of values.
+// It returns a list pointer shifted to the next value, or NULL if the end
+// of the list found.
+// Value is stored in msg vector. If value has form "x=y", then eq_val
+// vector is initialized to point to the "y" part, and val vector length
+// is adjusted to point only to "x".
+//
+
+/*static const char *
+next_option( const char *list, struct msg *val, struct msg *eq_val )
+{
+    int end;
+
+reparse:
+
+    if (val == NULL || list == NULL || *list == '\0') {
+        // End of the list
+        return NULL;
+    }
+
+    // Skip over leading LWS
+    while (*list == ' ' || *list == '\t') {
+	list++;
+    }
+
+    val->ptr = list;
+    if ( ( list = strchr(val->ptr, ',') ) != NULL ) {
+	// Comma found. Store length and shift the list ptr
+	val->len = ((size_t)(list - val->ptr));
+	list++;
+    }
+    else {
+        // This value is the last one
+	list = val->ptr + strlen(val->ptr);
+	val->len = ((size_t)(list - val->ptr));
+
+        // Adjust length for trailing LWS
+	end = (int)val->len - 1;
+	while ( ( end >= 0 ) &&
+                ( ( val->ptr[end] == ' ' ) ||
+                  ( val->ptr[end] == '\t') ) )
+            end--;
+	val->len = (size_t)(end + 1);
+
+        if ( 0 == val->len ) {
+            // Ignore any empty entries.
+            goto reparse;
+	}
+
+        if ( eq_val != NULL ) {
+            // Value has form "x=y", adjust pointers and lengths
+            // so that val points to "x", and eq_val points to "y".
+            eq_val->len = 0;
+            eq_val->ptr = (const char *)memchr(val->ptr, '=', val->len);
+            if ( eq_val->ptr != NULL ) {
+                eq_val->ptr++; // Skip over '=' character
+                eq_val->len = ((size_t)(val->ptr - eq_val->ptr)) + val->len;
+		val->len = ((size_t)(eq_val->ptr - val->ptr)) - 1;
+            }
+
+        }
+
+    }
+
+    return list;
+}*/
+
+////////////////////////////////////////////////////////////////////////////////
+// parse_port_string
+//
+// Valid listening port specification is: [ip_address:]port[s]
+// Examples for IPv4: 80, 443s, 127.0.0.1:3128, 192.0.2.3:8080s
+// Examples for IPv6: [::]:80, [::1]:80,
+//   [2001:0db8:7654:3210:FEDC:BA98:7654:3210]:443s
+//   see https://tools.ietf.org/html/rfc3513#section-2.2
+// In order to bind to both, IPv4 and IPv6, you can either add
+// both ports using 8080,[::]:8080, or the short form +8080.
+// Both forms differ in detail: 8080,[::]:8080 create two sockets,
+// one only accepting IPv4 the other only IPv6. +8080 creates
+// one socket accepting IPv4 and IPv6. Depending on the IPv6
+// environment, they might work differently, or might not work
+// at all - it must be tested what options work best in the
+// relevant network environment.
+//
+// msg          - [in] A message chunk
+// so           - [out] IP Address
+// ip_version   - [out] Version of IP-address (4/6/0==failure)
+// 
+// Returns: 0 = failure. 1 == success
+
+static int
+parse_port_string( const struct msg *msg, struct socket *so, int *ip_version )
+{
+    unsigned int a, b, c, d, port;
+    int ch, len;
+    const char *cb;
+    char buf[100] = {0};
+
+    // MacOS needs that. If we do not zero it, subsequent bind() will fail.
+    // Also, all-zeroes in the socket address means binding to all addresses
+    // for both IPv4 and IPv6 (INADDR_ANY and IN6ADDR_ANY_INIT).
+    memset( so, 0, sizeof (*so) );
+    so->lsa.sin.sin_family = AF_INET;
+    *ip_version = 0;
+
+    // Initialize port and len as invalid.
+    port = 0;
+    len = 0;
+
+    // Test for different ways to format this string
+    if ( 5 == sscanf( msg->ptr, "%u.%u.%u.%u:%u%n", &a, &b, &c, &d, &port, &len ) ) {
+
+        // Bind to a specific IPv4 address, e.g. 192.168.1.5:8080
+        so->lsa.sin.sin_addr.s_addr = htonl((a << 24) | (b << 16) | (c << 8) | d);
+        so->lsa.sin.sin_port = htons((uint16_t) port);
+        *ip_version = 4;
+
+    }
+    else if ( ( 2 == sscanf( msg->ptr, "[%49[^]]]:%u%n", buf, &port, &len ) ) &&
+                stcp_inet_pton( AF_INET6, buf, &so->lsa.sin6, sizeof(so->lsa.sin6) ) ) {
+
+        // IPv6 address, examples: see above
+        // so->lsa.sin6.sin6_family = AF_INET6; already set by web_inet_pton
+        so->lsa.sin6.sin6_port = htons((uint16_t) port);
+        *ip_version = 6;
+
+    }
+    else if ( ( msg->ptr[0] == '+') &&
+                ( 1 == sscanf(msg->ptr + 1, "%u%n", &port, &len ) ) ) {
+
+        // Port is specified with a +, bind to IPv6 and IPv4, INADDR_ANY
+        // Add 1 to len for the + character we skipped before
+        len++;
+
+        // Set socket family to IPv6, do not use IPV6_V6ONLY
+        so->lsa.sin6.sin6_family = AF_INET6;
+        so->lsa.sin6.sin6_port = htons((uint16_t) port);
+        *ip_version = 4 + 6;
+
+    }
+    else if ( sscanf(msg->ptr, "%u%n", &port, &len ) == 1 ) {
+        // If only port is specified, bind to IPv4, INADDR_ANY
+        so->lsa.sin.sin_port = htons( (uint16_t) port );
+        *ip_version = 4;
+    }
+    else if ( (cb = strchr(msg->ptr, ':')) != NULL ) {
+        // Could be a hostname
+        // Will only work for RFC 952 compliant hostnames,
+        // starting with a letter, containing only letters,
+        // digits and hyphen ('-'). Newer specs may allow
+        // more, but this is not guaranteed here, since it
+        // may interfere with rules for port option lists.
+
+        *(char *)cb = 0;   // Use a const cast here and modify the string.
+		                    // We are going to restore the string later.
+
+        if ( stcp_inet_pton( AF_INET,
+                                    msg->ptr,
+                                    &so->lsa.sin,
+                                    sizeof (so->lsa.sin) ) ) {
+            if ( 1 == sscanf(cb + 1, "%u%n", &port, &len) ) {
+                *ip_version = 4;
+                so->lsa.sin.sin_family = AF_INET;
+                so->lsa.sin.sin_port = htons((uint16_t) port);
+                len += (int) (cb - msg->ptr) + 1;
+            }
+            else {
+                port = 0;
+                len = 0;
+            }
+
+        }
+        else if ( stcp_inet_pton( AF_INET6,
+                                    msg->ptr,
+                                    &so->lsa.sin6,
+                                    sizeof( so->lsa.sin6 ) ) ) {
+            if ( 1 == sscanf( cb + 1, "%u%n", &port, &len ) ) {
+                *ip_version = 6;
+                so->lsa.sin6.sin6_family = AF_INET6;
+                so->lsa.sin.sin_port = htons( (uint16_t)port );
+                len += (int)(cb - msg->ptr) + 1;
+            }
+            else {
+                port = 0;
+                len = 0;
+            }
+
+        }
+
+        *(char *)cb = ':'; // restore the string
+
+    }
+    else {
+        // Parsing failure.  
+    }
+
+    // sscanf and the option splitting code ensure the following condition
+    if ( (len < 0) && ((unsigned) len > (unsigned) msg->len)) {
+        *ip_version = 0;
+        return 0;
+    }
+
+    ch = msg->ptr[len]; /* Next character after the port number */
+    so->is_ssl = (ch == 's');
+    so->ssl_redir = (ch == 'r');
+
+    // Make sure the port is valid and vector ends with 's', 'r' or ','
+    if ( is_valid_port( port ) &&
+            ( (ch == '\0') || (ch == 's') || (ch == 'r') || (ch == ',') ) ) {
+        return 1;
+    }
+
+    // Reset ip_version to 0 of there is an error
+    *ip_version = 0;
+    return 0;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// init_listening_port
+//
+
+int
+stcp_init_listening( struct server_context *srv_ctx, 
+                        const char *str_listening_port )
+{
+    const char *list;
+    int on = 1;
+    int off = 0;
+    struct msg msg;
+
+    struct pollfd *pfd;
+    union usa usa;
+    socklen_t len;
+    int ip_version;
+
+    /* Check pointers */
+    if ( ( NULL == srv_ctx ) || 
+         ( NULL == str_listening_port ) ) {
+        return 0;
+    }
+
+    // Init. defaults
+
+    // Listening queue maximum
+    if ( 0 == srv_ctx->config_max_listen_queue ) {
+        srv_ctx->config_max_listen_queue = SOMAXCONN;
+    }
+
+    memset( &(srv_ctx->listener), 0, sizeof( srv_ctx->listener ) );
+    memset( &usa, 0, sizeof( usa ) );
+    len = sizeof( usa );
+
+    msg.ptr = str_listening_port;
+    msg.len = strlen( str_listening_port );
+
+    if ( !parse_port_string( &msg, &(srv_ctx->listener), &ip_version ) ) {
+        stcp_report_error(
+                        "%.*s: invalid port spec. Expecting list of: %s",
+                        (int) msg.len,
+                        msg.ptr,
+                        "[IP_ADDRESS:]PORT[s]");
+        return 0;
+    }
+
+    if  ( srv_ctx->listener.is_ssl && ( NULL == srv_ctx->ssl_ctx ) ) {
+
+        stcp_report_error(
+                        "Cannot add SSL socket. Is -ssl_certificate "
+                        "option set?" );
+        return 0;
+    }
+
+    if ( INVALID_SOCKET == 
+        ( srv_ctx->listener.sock = 
+            socket( srv_ctx->listener.lsa.sa.sa_family, SOCK_STREAM, 6 ) ) ) {
+
+        stcp_report_error( "cannot create socket" );
+        return 0;
+    }
+
+#ifdef _WIN32
+    // Windows SO_REUSEADDR lets many procs binds to a
+    // socket, SO_EXCLUSIVEADDRUSE makes the bind fail
+    // if someone already has the socket -- DTL */
+    // NOTE: If SO_EXCLUSIVEADDRUSE is used,
+    // Windows might need a few seconds before
+    // the same port can be used again in the
+    // same process, so a short Sleep may be
+    // required between web_stop and web_start.
+    //
+    if ( setsockopt( srv_ctx->listening_socket.sock,
+                        SOL_SOCKET,
+                        SO_EXCLUSIVEADDRUSE,
+                        (SOCK_OPT_TYPE) & on,
+                        sizeof(on) ) != 0) {
+
+        // Set reuse option, but don't abort on errors.
+        stcp_report_error( "cannot set socket option SO_EXCLUSIVEADDRUSE" );
+    }
+#else
+    if ( setsockopt( srv_ctx->listener.sock,
+                        SOL_SOCKET,
+                        SO_REUSEADDR,
+                        (SOCK_OPT_TYPE) & on,
+                        sizeof( on ) ) != 0 ) {
+
+        // Set reuse option, but don't abort on errors.
+        stcp_report_error( "cannot set socket option SO_REUSEADDR (entry %i)" );
+    }
+#endif
+
+    if ( ip_version > 4 ) {
+
+        if ( 6 == ip_version ) {
+
+            if ( ( AF_INET6 == srv_ctx->listener.lsa.sa.sa_family ) &&
+                 ( setsockopt( srv_ctx->listener.sock,
+                                IPPROTO_IPV6,
+                                IPV6_V6ONLY,
+                                (void *)&off,
+                                sizeof( off ) ) != 0 ) ) {
+
+                // Set IPv6 only option, but don't abort on errors.
+                stcp_report_error( "cannot set socket option IPV6_V6ONLY" );
+            }
+        }
+
+    }
+
+    if ( srv_ctx->listener.lsa.sa.sa_family == AF_INET ) {
+
+        len = sizeof( srv_ctx->listener.lsa.sin );
+        if ( bind( srv_ctx->listener.sock, 
+                    &(srv_ctx->listener.lsa.sa), 
+                    len ) != 0) {
+
+            stcp_report_error( "cannot bind to %.*s: %d (%s)",
+                                (int)msg.len,
+                                msg.ptr,
+                                (int)ERRNO,
+                                strerror( errno ) );
+            closesocket( srv_ctx->listener.sock );
+            srv_ctx->listener.sock = INVALID_SOCKET;
+            return 0;
+        }
+    }
+    else if ( srv_ctx->listener.lsa.sa.sa_family == AF_INET6 ) {
+
+        len = sizeof( srv_ctx->listener.lsa.sin6 );
+        if ( bind( srv_ctx->listener.sock, 
+                    &(srv_ctx->listener.lsa.sa), 
+                    len) != 0 ) {
+            stcp_report_error( "cannot bind to IPv6 %.*s: %d (%s)",
+                                (int)msg.len,
+                                msg.ptr,
+                                (int)ERRNO,
+                                strerror( errno ) );
+            closesocket( srv_ctx->listener.sock );
+            srv_ctx->listener.sock = INVALID_SOCKET;
+            return 0;
+        }
+    }
+    else {
+        stcp_report_error( "cannot bind: address family not supported (entry %i)" );
+        closesocket( srv_ctx->listener.sock );
+        srv_ctx->listener.sock = INVALID_SOCKET;
+        return 0;
+    }
+
+    if ( listen( srv_ctx->listener.sock, 
+                    srv_ctx->config_max_listen_queue ) != 0 ) {
+
+        stcp_report_error( "cannot listen to %.*s: %d (%s)",
+                            (int)msg.len,
+                            msg.ptr,
+                            (int)ERRNO,
+                            strerror( errno ) );
+        closesocket( srv_ctx->listener.sock );
+        srv_ctx->listener.sock = INVALID_SOCKET;
+        return 0;
+    }
+
+    if ( ( getsockname( srv_ctx->listener.sock, &(usa.sa), &len ) != 0 ) ||
+         ( usa.sa.sa_family != srv_ctx->listener.lsa.sa.sa_family ) ) {
+
+        int err = (int)ERRNO;
+        stcp_report_error( "call to getsockname failed %.*s: %d (%s)",
+                            (int)msg.len,
+                            msg.ptr,
+                            err,
+                            strerror( errno ) );
+        closesocket( srv_ctx->listener.sock );
+        srv_ctx->listener.sock = INVALID_SOCKET;
+        return 0;
+    }
+
+    /* Update lsa port in case of random free ports */
+    if ( srv_ctx->listener.lsa.sa.sa_family == AF_INET6 ) {
+        srv_ctx->listener.lsa.sin6.sin6_port = usa.sin6.sin6_port;
+    }
+    else {
+        srv_ctx->listener.lsa.sin.sin_port = usa.sin.sin_port;
+    }
+
+    set_close_on_exec( srv_ctx->listener.sock, NULL );
+    memset( &(srv_ctx->listener_fds), 
+                0 , 
+                sizeof( srv_ctx->listener_fds ) );
+    srv_ctx->listener_fds.fd = srv_ctx->listener.sock;
+    srv_ctx->listener_fds.events = POLLIN;
+
+    //close_all_listening_sockets( srvctx );
+    //closesocket( srvctx->listener.sock );
+
+    return 1;
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // accept_new_connection
 //
 
-static void
-accept_new_connection( const struct socket *listener, struct stcp_connection *conn )
+int
+accept_new_connection( const struct server_context *srv_ctx, struct stcp_connection *conn )
 {
     struct socket so;
-    char src_addr[IP_ADDR_STR_LEN];
+    char src_addr[ IP_ADDR_STR_LEN ];
     socklen_t len = sizeof( so.rsa );
     int on = 1;
 
-    if ( !listener ) {
-        return;
+    /* Check pointers and listening socklet */
+    if ( ( NULL == srv_ctx ) || ( NULL == conn ) || !srv_ctx->listener.sock ) {
+        return 0;
     }
 
-    if ( INVALID_SOCKET == ( so.sock = accept( listener->sock, &so.rsa.sa, &len ) ) ) {
-        ;
+    if ( INVALID_SOCKET == 
+       ( so.sock = accept( srv_ctx->listener.sock, &so.rsa.sa, &len ) ) ) {
+        stcp_report_error( "accept() failed: %s",
+                            strerror( ERRNO ) ) ;
+        return 0;                                    
     }
     /*else if ( !check_acl( ctx, ntohl( *(uint32_t *)&so.rsa.sin.sin_addr ) ) ) {
         sockaddr_to_string(src_addr, sizeof (src_addr), &so.rsa);
@@ -3229,34 +3709,32 @@ accept_new_connection( const struct socket *listener, struct stcp_connection *co
         closesocket( so.sock );
     }*/
     else {
+
         // Put so socket structure into the queue
-        //DEBUG_TRACE("Accepted socket %d", (int) so.sock);
-        //set_close_on_exec( so.sock, fc(conn) );
-        so.is_ssl = listener->is_ssl;
-        so.ssl_redir = listener->ssl_redir;
-        if ( getsockname(so.sock, &so.lsa.sa, &len) != 0 ) {
-            /*web_cry( fc(ctx),
-                        "%s: getsockname() failed: %s",
-                        __func__,
-                        strerror(ERRNO));*/
+        if ( fcntl( so.sock, F_SETFD, FD_CLOEXEC ) != 0 ) {
+            // Failed TODO
+        }
+        
+        so.is_ssl = srv_ctx->listener.is_ssl;
+        so.ssl_redir = srv_ctx->listener.ssl_redir;
+        if ( getsockname( so.sock, &so.lsa.sa, &len) != 0 ) {
+            stcp_report_error( "getsockname() failed: %s",
+                                strerror( ERRNO ) ) ;
         }
 
         // Set TCP keep-alive. This is needed because if HTTP-level
-        // keep-alive
-        // is enabled, and client resets the connection, server won't get
-        // TCP FIN or RST and will keep the connection open forever. With
-        // TCP keep-alive, next keep-alive handshake will figure out that
-        // the client is down and will close the server end.
+        // keep-alive is enabled, and client resets the connection, server 
+        // won't get TCP FIN or RST and will keep the connection open 
+        // forever. With TCP keep-alive, next keep-alive handshake will 
+        // figure out that the client is down and will close the server end.
         // Thanks to Igor Klopov who suggested the patch.
         if ( setsockopt( so.sock,
                             SOL_SOCKET,
                             SO_KEEPALIVE,
-                            (SOCK_OPT_TYPE) & on,
-                            sizeof (on)) != 0) {
-            /*web_cry(fc(ctx),
-                        "%s: setsockopt(SOL_SOCKET SO_KEEPALIVE) failed: %s",
-                        __func__,
-                        strerror(ERRNO));*/
+                            (SOCK_OPT_TYPE)&on,
+                            sizeof( on ) ) != 0 ) {
+            stcp_report_error( "setsockopt(SOL_SOCKET SO_KEEPALIVE) failed: %s",
+                                strerror( ERRNO ) );
         }
 
         // Disable TCP Nagle's algorithm. Normally TCP packets are coalesced
@@ -3266,14 +3744,11 @@ accept_new_connection( const struct socket *listener, struct stcp_connection *co
         // when HTTP 1.1 persistent connections are used and the responses
         // are relatively small (eg. less than 1400 bytes).
         //
-        if ( ( conn != NULL ) /*&&
-             ( ctx->config[CONFIG_TCP_NODELAY] != NULL ) &&
-             ( !strcmp(ctx->config[CONFIG_TCP_NODELAY], "1" )  )*/ ) {
-            if ( set_tcp_nodelay(so.sock, 1) != 0 ) {
-                /*web_cry(fc(ctx),
-                            "%s: setsockopt(IPPROTO_TCP TCP_NODELAY) failed: %s",
-                            __func__,
-                            strerror(ERRNO));*/
+        if ( ( conn != NULL ) &&
+             srv_ctx->config_tcp_nodelay ) {
+            if ( set_tcp_nodelay( so.sock, 1) != 0 ) {
+                stcp_report_error( "setsockopt(IPPROTO_TCP TCP_NODELAY) failed: %s",
+                                    strerror( ERRNO ) );
             }
         }
 
@@ -3287,6 +3762,7 @@ accept_new_connection( const struct socket *listener, struct stcp_connection *co
 	    set_non_blocking_mode( so.sock );
 
         so.in_use = 0;
-        //produce_socket( ctx, &so );
     }
+
+    return 1;
 }

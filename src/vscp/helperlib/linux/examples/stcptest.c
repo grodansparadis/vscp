@@ -86,15 +86,15 @@ int main(int argc, char* argv[])
     printf("------------------\n");
 
     //conn = stcp_connect_remote( "185.144.156.45", 9598, 0, errbuf, sizeof( errbuf ), 5 );
-    conn = stcp_connect_remote( "192.168.1.6", 9598, errbuf, sizeof( errbuf ), 5 );
+    conn = stcp_connect_remote( "192.168.1.6", 9598, 5 );
     if ( NULL != conn ) {
         
         // Get welcome message
-        stcp_read( conn, buf, sizeof( buf ), 200 );
+        rv = stcp_read( conn, buf, sizeof( buf ), 200 );
         printf( "%s", buf ); 
         
         stcp_write( conn, "user admin\r\n", 12 );
-        stcp_read( conn, buf, sizeof( buf ), 200 );
+        rv = stcp_read( conn, buf, sizeof( buf ), 200 );
         printf( "%s", buf );
         
         stcp_write( conn, "pass secret\r\n", 13 );
@@ -201,15 +201,16 @@ int main(int argc, char* argv[])
     printf("Raw test with stcp and +OK test\n");
     printf("-------------------------------\n");
 
-    conn = stcp_connect_remote( STCPPTEST_SERVER, 9598, errbuf, sizeof( errbuf ), 5 );
+    conn = stcp_connect_remote( STCPPTEST_SERVER, 9598, 5 );
     if ( NULL != conn ) {
         
         int inner_timeout = 0;
 
         // Get welcome message
         *buf = 0;
-        while ( 1 ) {
-            stcp_read( conn, readbuf, sizeof( readbuf ), inner_timeout );
+	rv = 1;
+        while ( rv > 0) {
+            rv = stcp_read( conn, readbuf, sizeof( readbuf ), inner_timeout );
             strcat( buf, readbuf );
             if ( NULL != strstr( buf, "+OK" ) ) break;
         }
@@ -217,8 +218,9 @@ int main(int argc, char* argv[])
         
         stcp_write( conn, "user admin\r\n", 12 );
         *buf = 0;
-        while ( 1 ) {
-            stcp_read( conn, readbuf, sizeof( readbuf ), inner_timeout );
+	rv = 1;
+        while ( rv > 0) {
+            rv = stcp_read( conn, readbuf, sizeof( readbuf ), inner_timeout );
             strcat( buf, readbuf );
             if ( NULL != strstr( buf, "+OK" ) ) break;
         }
@@ -226,8 +228,9 @@ int main(int argc, char* argv[])
         
         stcp_write( conn, "pass secret\r\n", 13 );
         *buf = 0;
-        while ( 1 ) {
-            stcp_read( conn, readbuf, sizeof( readbuf ), inner_timeout );
+	rv = 1;
+        while ( rv > 0 ) {
+            rv = stcp_read( conn, readbuf, sizeof( readbuf ), inner_timeout );
             strcat( buf, readbuf );
             if ( NULL != strstr( buf, "+OK" ) ) break;
         }
@@ -243,7 +246,9 @@ int main(int argc, char* argv[])
         
         conn = NULL;
     }
-    
+    else {
+	printf("Failed to connect\n");
+    } 
     
 
 

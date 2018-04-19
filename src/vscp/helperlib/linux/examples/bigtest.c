@@ -90,6 +90,7 @@ int main(int argc, char* argv[])
     long long t1,t2;
 
     printf("VSCP helperlib test program\n");
+    printf("VSCP helperlib test program\n");
     printf("===========================\n");
 
     handle1 = vscphlp_newSession();

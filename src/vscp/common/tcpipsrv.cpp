@@ -66,6 +66,51 @@
 extern CControlObject *gpobj;
 
 
+///////////////////////////////////////////////////////////////////////////////
+// TCPListenThread
+//
+// This thread listens for connection on a TCP socket and starts a new thread
+// to handle client requests
+//
+
+TCPListenThread::TCPListenThread()
+    : wxThread( wxTHREAD_DETACHED )
+{
+    ;
+}
+
+
+TCPListenThread::~TCPListenThread()
+{
+    ;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Entry
+//
+
+void *TCPListenThread::Entry()
+{
+    if ( 0 == stcp_init_listening( &m_srvctx, 
+                        (const char *)m_strListeningPort.mbc_str() ) ) {
+        gpobj->logMsg( _("[TCP/IP srv client thread] Failed to onit listening sockett.\n"), 
+                        DAEMON_LOGMSG_NORMAL );                            
+        return NULL;                                    
+    }
+
+    return NULL;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// OnExit
+//
+
+void TCPListenThread::OnExit()
+{
+    gpobj->logMsg( _("[TCP/IP srv client thread] Listenthread Exit.\n"), DAEMON_LOGMSG_DEBUG );
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // VSCPWebServerThread
@@ -75,7 +120,7 @@ extern CControlObject *gpobj;
 //
 
 TCPClientThread::TCPClientThread()
-    : wxThread(wxTHREAD_JOINABLE)
+    : wxThread( wxTHREAD_DETACHED )
 {
     m_bQuit = false;
 }
@@ -100,6 +145,7 @@ void *TCPClientThread::Entry()
 
     // Construct bind interface address
     //[PROTO://][IP_ADDRESS]:PORT where host part is optional
+    // tcp:// or stcp// is valid
     
     wxStringTokenizer tkz( gpobj->m_strTcpInterfaceAddress, _(" ") );
     while ( tkz.HasMoreTokens() ) {
@@ -116,19 +162,19 @@ void *TCPClientThread::Entry()
 
     }
 
-    gpobj->logMsg( _("[TCP/IP srv] Thread started.\n"), DAEMON_LOGMSG_DEBUG  );
+    gpobj->logMsg( _("[TCP/IP srv client thread] Thread started.\n"), DAEMON_LOGMSG_DEBUG  );
 
     while ( !TestDestroy() && !m_bQuit ) {
         mg_mgr_poll( &gpobj->m_mgrTcpIpServer, 50 );
         Yield();
     }
     
-    gpobj->logMsg( _("[TCP/IP srv] Free.\n"), DAEMON_LOGMSG_DEBUG );
+    gpobj->logMsg( _("[TCP/IP srv client thread] Free.\n"), DAEMON_LOGMSG_DEBUG );
 
     // release the server
     mg_mgr_free( &gpobj->m_mgrTcpIpServer );
 
-    gpobj->logMsg( _("[TCP/IP srv] Quit.\n"), DAEMON_LOGMSG_DEBUG );
+    gpobj->logMsg( _("[TCP/IP srv client thread] Quit.\n"), DAEMON_LOGMSG_DEBUG );
 
     return NULL;
 }
@@ -140,7 +186,7 @@ void *TCPClientThread::Entry()
 
 void TCPClientThread::OnExit()
 {
-    gpobj->logMsg( _("[TCP/IP srv] Exit.\n"), DAEMON_LOGMSG_DEBUG );;
+    gpobj->logMsg( _("[TCP/IP srv client thread] Exit.\n"), DAEMON_LOGMSG_DEBUG );;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -1476,7 +1476,7 @@ union usa
 };
 
 // Describes a string (chunk of memory).
-struct vec
+struct msg
 {
     const char *ptr;
     size_t len;
@@ -2859,7 +2859,7 @@ web_cry(const struct web_connection *conn, const char *fmt, ...)
 //
 
 static struct web_connection *
-fc(struct web_context *ctx)
+fc( struct web_context *ctx )
 {
     static struct web_connection fake_connection;
     fake_connection.ctx = ctx;
@@ -3237,7 +3237,7 @@ get_http_version( const struct web_connection *conn )
 //
 
 static const char *
-next_option(const char *list, struct vec *val, struct vec *eq_val)
+next_option(const char *list, struct msg *val, struct msg *eq_val)
 {
     int end;
 
@@ -3307,15 +3307,15 @@ reparse:
 static int
 header_has_option(const char *header, const char *option)
 {
-    struct vec opt_vec;
-    struct vec eq_vec;
+    struct msg opt_msg;
+    struct msg eq_msg;
 
     //assert(option != NULL);
     //assert(option[0] != '\0');
 
-    while ((header = next_option(header, &opt_vec, &eq_vec)) != NULL) {
+    while ((header = next_option(header, &opt_msg, &eq_msg)) != NULL) {
 
-        if ( 0 == vscp_strncasecmp(option, opt_vec.ptr, opt_vec.len) ) {
+        if ( 0 == vscp_strncasecmp(option, opt_msg.ptr, opt_msg.len) ) {
             return 1;
         }
 
@@ -5087,7 +5087,7 @@ set_close_on_exec(SOCKET fd, struct web_connection *conn /* may be null */)
 {
     if ( fcntl(fd, F_SETFD, FD_CLOEXEC) != 0 ) {
 
-        if (conn) {
+        if ( conn ) {
             web_cry( conn,
                         "%s: fcntl(F_SETFD FD_CLOEXEC) failed: %s",
                         __func__,
@@ -6635,7 +6635,7 @@ substitute_index_file( struct web_connection *conn,
                         struct web_file_stat *filestat)
 {
     const char *list = conn->ctx->config[INDEX_FILES];
-    struct vec filename_vec;
+    struct msg filename_msg;
     size_t n = strlen(path);
     int found = 0;
 
@@ -6650,14 +6650,14 @@ substitute_index_file( struct web_connection *conn,
 
     // Traverse index files list. For each entry, append it to the given
     // path and see if the file exists. If it exists, break the loop
-    while ((list = next_option(list, &filename_vec, NULL)) != NULL) {
+    while ((list = next_option(list, &filename_msg, NULL)) != NULL) {
         // Ignore too long entries that may overflow path buffer
-        if (filename_vec.len > (path_len - (n + 2))) {
+        if (filename_msg.len > (path_len - (n + 2))) {
             continue;
         }
 
         // Prepare full path to the index file
-        vscp_strlcpy(path + n + 1, filename_vec.ptr, filename_vec.len + 1);
+        vscp_strlcpy(path + n + 1, filename_msg.ptr, filename_msg.len + 1);
 
         // Does it exist?
         if (web_stat(conn, path, filestat)) {
@@ -6694,7 +6694,7 @@ interpret_uri( struct web_connection *conn,         // in/out: request (must be 
     const char *uri = conn->request_info.local_uri;
     const char *root = conn->ctx->config[DOCUMENT_ROOT];
     const char *rewrite;
-    struct vec a, b;
+    struct msg a, b;
     int match_len;
     char gz_path[PATH_MAX];
     int truncated;
@@ -7279,18 +7279,18 @@ web_get_builtin_mime_type( const char *path )
 //
 
 static void
-get_mime_type( struct web_context *ctx, const char *path, struct vec *vec )
+get_mime_type( struct web_context *ctx, const char *path, struct msg *msg )
 {
-    struct vec ext_vec, mime_vec;
+    struct msg ext_msg, mime_msg;
     const char *list, *ext;
     size_t path_len;
 
     path_len = strlen(path);
 
-    if ( (ctx == NULL) || (vec == NULL) ) {
+    if ( (ctx == NULL) || (msg == NULL) ) {
 
-        if (vec != NULL) {
-            memset(vec, '\0', sizeof (struct vec));
+        if (msg != NULL) {
+            memset(msg, '\0', sizeof (struct msg));
         }
 
         return;
@@ -7299,19 +7299,19 @@ get_mime_type( struct web_context *ctx, const char *path, struct vec *vec )
     // Scan user-defined mime types first, in case user wants to
     // override default mime types.
     list = ctx->config[EXTRA_MIME_TYPES];
-    while ((list = next_option(list, &ext_vec, &mime_vec)) != NULL) {
+    while ((list = next_option(list, &ext_msg, &mime_msg)) != NULL) {
 
         // ext now points to the path suffix */
-        ext = path + path_len - ext_vec.len;
-        if (vscp_strncasecmp(ext, ext_vec.ptr, ext_vec.len) == 0) {
-            *vec = mime_vec;
+        ext = path + path_len - ext_msg.len;
+        if (vscp_strncasecmp(ext, ext_msg.ptr, ext_msg.len) == 0) {
+            *msg = mime_msg;
             return;
         }
 
     }
 
-    vec->ptr = web_get_builtin_mime_type(path);
-    vec->len = strlen(vec->ptr);
+    msg->ptr = web_get_builtin_mime_type(path);
+    msg->len = strlen(msg->ptr);
 }
 
 
@@ -7849,7 +7849,7 @@ check_authorization( struct web_connection *conn,
                         const char *path )
 {
     char fname[PATH_MAX];
-    struct vec uri_vec, filename_vec;
+    struct msg uri_msg, filename_msg;
     const char *list;
     struct web_file file = STRUCT_FILE_INITIALIZER;
     int authorized = 1, truncated;
@@ -7859,17 +7859,17 @@ check_authorization( struct web_connection *conn,
     }
 
     list = conn->ctx->config[ PROTECT_URI ];
-    while ( NULL != ( list = next_option( list, &uri_vec, &filename_vec ) )  ) {
+    while ( NULL != ( list = next_option( list, &uri_msg, &filename_msg ) )  ) {
 
-        if ( !memcmp( conn->request_info.local_uri, uri_vec.ptr, uri_vec.len ) ) {
+        if ( !memcmp( conn->request_info.local_uri, uri_msg.ptr, uri_msg.len ) ) {
 
             web_snprintf( conn,
                             &truncated,
                             fname,
                             sizeof (fname),
                             "%.*s",
-                            (int) filename_vec.len,
-                            filename_vec.ptr);
+                            (int) filename_msg.len,
+                            filename_msg.ptr);
 
             if ( truncated || !web_fopen(conn, fname, MG_FOPEN_MODE_READ, &file ) ) {
 
@@ -8981,7 +8981,7 @@ handle_static_file_request( struct web_connection *conn,
     const char *msg = "OK", *hdr;
     time_t curtime = time(NULL);
     int64_t cl, r1, r2;
-    struct vec mime_vec;
+    struct msg mime_msg;
     int n, truncated;
     char gz_path[PATH_MAX];
     const char *encoding = "";
@@ -8993,11 +8993,11 @@ handle_static_file_request( struct web_connection *conn,
     }
 
     if ( mime_type == NULL ) {
-        get_mime_type(conn->ctx, path, &mime_vec);
+        get_mime_type(conn->ctx, path, &mime_msg);
     }
     else {
-        mime_vec.ptr = mime_type;
-        mime_vec.len = strlen(mime_type);
+        mime_msg.ptr = mime_type;
+        mime_msg.len = strlen(mime_type);
     }
     if ( filep->stat.size > INT64_MAX ) {
         web_send_http_error( conn,
@@ -9142,8 +9142,8 @@ handle_static_file_request( struct web_connection *conn,
                             "%s%s",
                             lm,
                             etag,
-                            (int)mime_vec.len,
-                            mime_vec.ptr,
+                            (int)mime_msg.len,
+                            mime_msg.ptr,
                             cl,
                             web_suggest_connection_header( conn ),
                             range,
@@ -10185,7 +10185,7 @@ prepare_cgi_environment( struct web_connection *conn,
                             struct cgi_environment *env )
 {
     const char *s;
-    struct vec var_vec;
+    struct msg var_msg;
     char *p, src_addr[IP_ADDR_STR_LEN], http_var_name[128];
     int i, truncated, uri_len;
 
@@ -10371,8 +10371,8 @@ prepare_cgi_environment( struct web_connection *conn,
 
     // Add user-specified variables
     s = conn->ctx->config[CGI_ENVIRONMENT];
-    while ((s = next_option(s, &var_vec, NULL)) != NULL) {
-        addenv(env, "%.*s", (int) var_vec.len, var_vec.ptr);
+    while ((s = next_option(s, &var_msg, NULL)) != NULL) {
+        addenv(env, "%.*s", (int) var_msg.len, var_msg.ptr);
     }
 
     env->var[env->varused] = NULL;
@@ -12842,7 +12842,7 @@ int
 web_lsp_get_mime_type( lua_State *L )
 {
     int num_args = lua_gettop(L);
-    struct vec mime_type = {0, 0};
+    struct msg mime_type = {0, 0};
     struct web_context *ctx;
     const char *text;
 
@@ -15821,12 +15821,12 @@ static int
 set_throttle( const char *spec, uint32_t remote_ip, const char *uri )
 {
     int throttle = 0;
-    struct vec vec, val;
+    struct msg msg, val;
     uint32_t net, mask;
     char mult;
     double v;
 
-    while ((spec = next_option(spec, &vec, &val)) != NULL) {
+    while ((spec = next_option(spec, &msg, &val)) != NULL) {
 
         mult = ',';
         if ((val.ptr == NULL) || (sscanf(val.ptr, "%lf%c", &v, &mult) < 1)
@@ -15839,15 +15839,15 @@ set_throttle( const char *spec, uint32_t remote_ip, const char *uri )
                 ? 1024
                 : ((vscp_lowercase(&mult) == 'm') ? 1048576 : 1);
 
-        if (vec.len == 1 && vec.ptr[0] == '*') {
+        if (msg.len == 1 && msg.ptr[0] == '*') {
             throttle = (int) v;
         }
-        else if (parse_net(vec.ptr, &net, &mask) > 0) {
+        else if (parse_net(msg.ptr, &net, &mask) > 0) {
             if ((remote_ip & mask) == net) {
                 throttle = (int) v;
             }
         }
-        else if (match_prefix(vec.ptr, vec.len, uri) > 0) {
+        else if (match_prefix(msg.ptr, msg.len, uri) > 0) {
             throttle = (int) v;
         }
 
@@ -17986,12 +17986,12 @@ close_all_listening_sockets( struct web_context *ctx )
     }
 
     for (i = 0; i < ctx->num_listening_sockets; i++) {
-        closesocket(ctx->listening_sockets[i].sock);
+        closesocket( ctx->listening_sockets[i].sock );
         ctx->listening_sockets[i].sock = INVALID_SOCKET;
     }
-    web_free(ctx->listening_sockets);
+    web_free( ctx->listening_sockets );
     ctx->listening_sockets = NULL;
-    web_free(ctx->listening_socket_fds);
+    web_free( ctx->listening_socket_fds );
     ctx->listening_socket_fds = NULL;
 }
 
@@ -18014,7 +18014,7 @@ close_all_listening_sockets( struct web_context *ctx )
 //
 
 static int
-parse_port_string( const struct vec *vec, struct socket *so, int *ip_version )
+parse_port_string( const struct msg *msg, struct socket *so, int *ip_version )
 {
     unsigned int a, b, c, d, port;
     int ch, len;
@@ -18033,7 +18033,7 @@ parse_port_string( const struct vec *vec, struct socket *so, int *ip_version )
     len = 0;
 
     // Test for different ways to format this string
-    if ( 5 == sscanf(vec->ptr, "%u.%u.%u.%u:%u%n", &a, &b, &c, &d, &port, &len) ) {
+    if ( 5 == sscanf(msg->ptr, "%u.%u.%u.%u:%u%n", &a, &b, &c, &d, &port, &len) ) {
 
         // Bind to a specific IPv4 address, e.g. 192.168.1.5:8080
         so->lsa.sin.sin_addr.s_addr = htonl((a << 24) | (b << 16) | (c << 8) | d);
@@ -18041,7 +18041,7 @@ parse_port_string( const struct vec *vec, struct socket *so, int *ip_version )
         *ip_version = 4;
 
     }
-    else if ( ( 2 == sscanf(vec->ptr, "[%49[^]]]:%u%n", buf, &port, &len ) ) &&
+    else if ( ( 2 == sscanf(msg->ptr, "[%49[^]]]:%u%n", buf, &port, &len ) ) &&
                 web_inet_pton( AF_INET6, buf, &so->lsa.sin6, sizeof(so->lsa.sin6) ) ) {
 
         // IPv6 address, examples: see above
@@ -18050,8 +18050,8 @@ parse_port_string( const struct vec *vec, struct socket *so, int *ip_version )
         *ip_version = 6;
 
     }
-    else if ( (vec->ptr[0] == '+') &&
-                ( 1 == sscanf(vec->ptr + 1, "%u%n", &port, &len ) ) ) {
+    else if ( (msg->ptr[0] == '+') &&
+                ( 1 == sscanf(msg->ptr + 1, "%u%n", &port, &len ) ) ) {
 
         // Port is specified with a +, bind to IPv6 and IPv4, INADDR_ANY
         // Add 1 to len for the + character we skipped before
@@ -18063,13 +18063,13 @@ parse_port_string( const struct vec *vec, struct socket *so, int *ip_version )
         *ip_version = 4 + 6;
 
     }
-    else if (sscanf(vec->ptr, "%u%n", &port, &len) == 1) {
+    else if (sscanf(msg->ptr, "%u%n", &port, &len) == 1) {
         // If only port is specified, bind to IPv4, INADDR_ANY
         so->lsa.sin.sin_port = htons((uint16_t) port);
         *ip_version = 4;
 
     }
-    else if ((cb = strchr(vec->ptr, ':')) != NULL) {
+    else if ((cb = strchr(msg->ptr, ':')) != NULL) {
         // Could be a hostname
         // Will only work for RFC 952 compliant hostnames,
         // starting with a letter, containing only letters,
@@ -18081,14 +18081,14 @@ parse_port_string( const struct vec *vec, struct socket *so, int *ip_version )
 		          // We are going to restore the string later.
 
         if ( web_inet_pton( AF_INET,
-                                    vec->ptr,
+                                    msg->ptr,
                                     &so->lsa.sin,
                                     sizeof (so->lsa.sin) ) ) {
             if ( 1 == sscanf(cb + 1, "%u%n", &port, &len) ) {
                 *ip_version = 4;
                 so->lsa.sin.sin_family = AF_INET;
                 so->lsa.sin.sin_port = htons((uint16_t) port);
-                len += (int) (cb - vec->ptr) + 1;
+                len += (int) (cb - msg->ptr) + 1;
             }
             else {
                 port = 0;
@@ -18097,14 +18097,14 @@ parse_port_string( const struct vec *vec, struct socket *so, int *ip_version )
 
         }
         else if (web_inet_pton(AF_INET6,
-                           vec->ptr,
+                           msg->ptr,
                            &so->lsa.sin6,
                            sizeof (so->lsa.sin6))) {
             if ( 1 == sscanf(cb + 1, "%u%n", &port, &len) ) {
                 *ip_version = 6;
                 so->lsa.sin6.sin6_family = AF_INET6;
                 so->lsa.sin.sin_port = htons((uint16_t) port);
-                len += (int) (cb - vec->ptr) + 1;
+                len += (int) (cb - msg->ptr) + 1;
             }
             else {
                 port = 0;
@@ -18121,16 +18121,16 @@ parse_port_string( const struct vec *vec, struct socket *so, int *ip_version )
     }
 
     // sscanf and the option splitting code ensure the following condition
-    if ( (len < 0) && ((unsigned) len > (unsigned) vec->len)) {
+    if ( (len < 0) && ((unsigned) len > (unsigned) msg->len)) {
         *ip_version = 0;
         return 0;
     }
 
-    ch = vec->ptr[len]; /* Next character after the port number */
+    ch = msg->ptr[len]; /* Next character after the port number */
     so->is_ssl = (ch == 's');
     so->ssl_redir = (ch == 'r');
 
-    // Make sure the port is valid and vector ends with 's', 'r' or ','
+    // Make sure the port is valid and msgtor ends with 's', 'r' or ','
     if ( is_valid_port(port) &&
             ( (ch == '\0') || (ch == 's') || (ch == 'r') || (ch == ',') ) ) {
         return 1;
@@ -18151,7 +18151,7 @@ set_ports_option( struct web_context *ctx )
     const char *list;
     int on = 1;
     int off = 0;
-    struct vec vec;
+    struct msg msg;
     struct socket so, *ptr;
 
     struct pollfd *pfd;
@@ -18171,15 +18171,15 @@ set_ports_option( struct web_context *ctx )
     len = sizeof (usa);
     list = ctx->config[LISTENING_PORTS];
 
-    while ((list = next_option(list, &vec, NULL)) != NULL) {
+    while ((list = next_option(list, &msg, NULL)) != NULL) {
 
         portsTotal++;
 
-        if (!parse_port_string(&vec, &so, &ip_version)) {
+        if (!parse_port_string(&msg, &so, &ip_version)) {
             web_cry(fc(ctx),
                         "%.*s: invalid port spec (entry %i). Expecting list of: %s",
-                        (int) vec.len,
-                        vec.ptr,
+                        (int) msg.len,
+                        msg.ptr,
                         portsTotal,
                         "[IP_ADDRESS:]PORT[s|r]");
             continue;
@@ -18261,8 +18261,8 @@ set_ports_option( struct web_context *ctx )
             if (bind(so.sock, &so.lsa.sa, len) != 0) {
                 web_cry( fc(ctx),
                                 "cannot bind to %.*s: %d (%s)",
-                                (int) vec.len,
-                                vec.ptr,
+                                (int) msg.len,
+                                msg.ptr,
                                 (int) ERRNO,
                                 strerror(errno) );
                 closesocket(so.sock);
@@ -18276,8 +18276,8 @@ set_ports_option( struct web_context *ctx )
             if (bind(so.sock, &so.lsa.sa, len) != 0) {
                 web_cry( fc(ctx),
                                 "cannot bind to IPv6 %.*s: %d (%s)",
-                                (int) vec.len,
-                                vec.ptr,
+                                (int) msg.len,
+                                msg.ptr,
                                 (int) ERRNO,
                                 strerror(errno) );
                 closesocket(so.sock);
@@ -18294,12 +18294,12 @@ set_ports_option( struct web_context *ctx )
             continue;
         }
 
-        if (listen(so.sock, SOMAXCONN) != 0) {
+        if ( listen(so.sock, SOMAXCONN) != 0 ) {
 
             web_cry( fc(ctx),
                             "cannot listen to %.*s: %d (%s)",
-                            (int) vec.len,
-                            vec.ptr,
+                            (int) msg.len,
+                            msg.ptr,
                             (int) ERRNO,
                             strerror(errno) );
             closesocket(so.sock);
@@ -18313,8 +18313,8 @@ set_ports_option( struct web_context *ctx )
             int err = (int) ERRNO;
             web_cry( fc(ctx),
                             "call to getsockname failed %.*s: %d (%s)",
-                            (int) vec.len,
-                            vec.ptr,
+                            (int) msg.len,
+                            msg.ptr,
                             err,
                             strerror(errno) );
             closesocket(so.sock);
@@ -18503,7 +18503,7 @@ check_acl( struct web_context *ctx, uint32_t remote_ip )
 {
     int allowed, flag;
     uint32_t net, mask;
-    struct vec vec;
+    struct msg msg;
 
     if ( ctx ) {
 
@@ -18512,11 +18512,11 @@ check_acl( struct web_context *ctx, uint32_t remote_ip )
         // If any ACL is set, deny by default
         allowed = (list == NULL) ? '+' : '-';
 
-        while ( ( list = next_option( list, &vec, NULL ) ) != NULL ) {
+        while ( ( list = next_option( list, &msg, NULL ) ) != NULL ) {
 
-            flag = vec.ptr[0];
+            flag = msg.ptr[0];
             if ( ( flag != '+' && flag != '-') ||
-                 ( 0 == parse_net( &vec.ptr[1], &net, &mask ) ) ) {
+                 ( 0 == parse_net( &msg.ptr[1], &net, &mask ) ) ) {
                 web_cry(fc(ctx),
                             "%s: subnet must be [+|-]x.x.x.x[/x]",
                             __func__);
@@ -18704,14 +18704,14 @@ static pthread_mutex_t *ssl_mutexes;
 #endif /* OPENSSL_API_1_1 */
 
 ////////////////////////////////////////////////////////////////////////////////
-// sslize
+// make_ssl
 //
 
 static int
-sslize(struct web_connection *conn,
-       SSL_CTX *s,
-       int (*func)(SSL *),
-       volatile int *stop_server)
+make_ssl( struct web_connection *conn,
+            SSL_CTX *s,
+            int (*func)(SSL *),
+            volatile int *stop_server)
 {
     int ret, err;
     int short_trust;
@@ -18971,8 +18971,8 @@ static int cryptolib_users = 0; // Reference counter for crypto library.
 // initialize_ssl
 //
 
-static int
-initialize_ssl(char *ebuf, size_t ebuf_len)
+int
+VSCPWEB_API web_initialize_ssl( char *ebuf, size_t ebuf_len )
 {
 #ifdef OPENSSL_API_1_1
     if (ebuf_len > 0) {
@@ -18991,7 +18991,7 @@ initialize_ssl(char *ebuf, size_t ebuf_len)
         ebuf[0] = 0;
     }
 
-    if ( web_atomic_inc(&cryptolib_users) > 1 ) {
+    if ( web_atomic_inc( &cryptolib_users ) > 1 ) {
         return 1;
     }
 
@@ -19007,7 +19007,8 @@ initialize_ssl(char *ebuf, size_t ebuf_len)
     if (size == 0) {
         ssl_mutexes = NULL;
     }
-    else if ((ssl_mutexes = (pthread_mutex_t *) web_malloc(size)) == NULL) {
+    else if ( ( ssl_mutexes = 
+                    (pthread_mutex_t *) web_malloc(size )) == NULL ) {
         web_snprintf(NULL,
                          NULL, // No truncation check for ebuf
                          ebuf,
@@ -19023,8 +19024,8 @@ initialize_ssl(char *ebuf, size_t ebuf_len)
         pthread_mutex_init(&ssl_mutexes[i], &pthread_mutex_attr);
     }
 
-    CRYPTO_set_locking_callback(&ssl_locking_callback);
-    CRYPTO_set_id_callback(&web_current_thread_id);
+    CRYPTO_set_locking_callback( &ssl_locking_callback );
+    CRYPTO_set_id_callback( &web_current_thread_id );
 #endif // OPENSSL_API_1_1
 
     return 1;
@@ -19180,13 +19181,15 @@ set_ssl_option(struct web_context *ctx)
 
     // If PEM file is not specified and the init_ssl callback
     // is not specified, skip SSL initialization.
-    if (!ctx) {
+    if ( !ctx ) {
         return 0;
     }
-    if ((pem = ctx->config[SSL_CERTIFICATE]) == NULL
-        && ctx->callbacks.init_ssl == NULL) {
+
+    if ( ( NULL == ( pem = ctx->config[SSL_CERTIFICATE] ) ) &&
+         ( NULL == ctx->callbacks.init_ssl ) ) {
         return 1;
     }
+    
     chain = ctx->config[SSL_CERTIFICATE_CHAIN];
     if (chain == NULL) {
         chain = pem;
@@ -19195,7 +19198,7 @@ set_ssl_option(struct web_context *ctx)
         chain = NULL;
     }
 
-    if (!initialize_ssl(ebuf, sizeof (ebuf))) {
+    if ( !web_initialize_ssl(ebuf, sizeof (ebuf) ) ) {
         web_cry(fc(ctx), "%s", ebuf);
         return 0;
     }
@@ -19939,7 +19942,7 @@ web_connect_client_impl( const struct web_client_options *client_options,
             SSL_CTX_set_verify( conn->client_ssl_ctx, SSL_VERIFY_NONE, NULL );
         }
 
-        if ( !sslize( conn,
+        if ( !make_ssl( conn,
                         conn->client_ssl_ctx,
                         SSL_connect,
                         &(conn->ctx->stop_flag ) ) ) {
@@ -20992,18 +20995,18 @@ process_new_connection(struct web_connection *conn)
 //
 
 static void
-produce_socket(struct web_context *ctx, const struct socket *sp)
+produce_socket( struct web_context *ctx, const struct socket *sp )
 {
     unsigned int i;
 
     for (;;) {
 
-        for (i = 0; i < ctx->cfg_worker_threads; i++) {
+        for ( i = 0; i < ctx->cfg_worker_threads; i++ ) {
             // find a free worker slot and signal it
-            if (ctx->client_socks[i].in_use == 0) {
+            if ( 0 == ctx->client_socks[i].in_use ) {
                 ctx->client_socks[i] = *sp;
                 ctx->client_socks[i].in_use = 1;
-                event_signal(ctx->client_wait_events[i]);
+                event_signal( ctx->client_wait_events[i] );
                 return;
             }
         }
@@ -21122,13 +21125,13 @@ worker_thread_run(struct worker_thread_args *thread_args)
 
         conn->request_info.is_ssl = conn->client.is_ssl;
 
-        if (conn->client.is_ssl) {
+        if ( conn->client.is_ssl ) {
 
             // HTTPS connection
-            if (sslize(conn,
-                       conn->ctx->ssl_ctx,
-                       SSL_accept,
-                       &(conn->ctx->stop_flag))) {
+            if ( make_ssl( conn,
+                            conn->ctx->ssl_ctx,
+                            SSL_accept,
+                            &(conn->ctx->stop_flag ) ) ) {
                 // Get SSL client certificate information (if set)
                 ssl_get_client_cert_info(conn);
 
@@ -21730,13 +21733,13 @@ web_start(const struct web_callbacks *callbacks,
 	lua_newtable(state);
 	web_reg_boolean( state, "shutdown", 0 );
 
-	struct vec opt_vec;
-	struct vec eq_vec;
+	struct msg opt_msg;
+	struct msg eq_msg;
 	const char *sparams = ctx->config[ LUA_BACKGROUND_SCRIPT_PARAMS ];
 
-	while ( (sparams = next_option(sparams, &opt_vec, &eq_vec) ) != NULL ) {
-            web_reg_llstring( state, opt_vec.ptr, opt_vec.len, eq_vec.ptr, eq_vec.len);
-            if ( 0 == vscp_strncasecmp(sparams, opt_vec.ptr, opt_vec.len ) ) {
+	while ( (sparams = next_option(sparams, &opt_msg, &eq_msg) ) != NULL ) {
+            web_reg_llstring( state, opt_msg.ptr, opt_msg.len, eq_msg.ptr, eq_msg.len);
+            if ( 0 == vscp_strncasecmp(sparams, opt_msg.ptr, opt_msg.len ) ) {
 		break;
             }
 	}
@@ -22908,7 +22911,7 @@ web_init( unsigned features )
 
     if ( features_to_init & 2 ) {
         if ( !web_ssl_initialized ) {
-            if ( initialize_ssl( ebuf, sizeof( ebuf ) ) ) {
+            if ( web_initialize_ssl( ebuf, sizeof( ebuf ) ) ) {
                 web_ssl_initialized = 1;
             }
             else {

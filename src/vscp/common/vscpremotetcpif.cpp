@@ -82,9 +82,6 @@ VscpRemoteTcpIf::VscpRemoteTcpIf()
     m_registerOpResendTimeout = TCPIP_REGISTER_READ_RESEND_TIMEOUT;
     m_registerOpMaxRetries = TCPIP_REGISTER_READ_MAX_TRIES;
 
-    m_lastError = 0;
-    memset( m_errbuf, 0, sizeof( m_errbuf ) );
-
     // Set default version info
     m_version_major = VSCPD_MAJOR_VERSION;
     m_version_minor = VSCPD_MINOR_VERSION;
@@ -360,7 +357,6 @@ int VscpRemoteTcpIf::doCmdOpen( const wxString& strHostname,
 
     m_conn = stcp_connect_remote( (const char *)host.mbc_str(), 
                                     port,
-                                    m_errbuf, sizeof( m_errbuf ), 
                                     TCPIP_DEFAULT_CONNECT_TIMEOUT_SECONDS );
     if ( NULL == m_conn ) {    
 

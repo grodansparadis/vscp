@@ -64,7 +64,7 @@ int main(int argc, char* argv[])
     printf("Raw TLS test with stcp\n");
     printf("----------------------\n");
 
-    struct stcp_secure_client_options opts;
+    struct stcp_secure_options opts;
     opts.host = "localhost";
     opts.port = 4433;
     opts.client_cert = NULL;
@@ -76,7 +76,7 @@ int main(int argc, char* argv[])
     opts.ca_file = NULL;
 
     //conn = stcp_connect_remote( "localhost", 4433, errbuf, sizeof( errbuf ), 5 );
-    conn = stcp_connect_remote_secure( &opts, errbuf, sizeof( errbuf ), 5 );
+    conn = stcp_connect_remote_secure( &opts, 5 );
     if ( NULL != conn ) {
 
         printf( "Connect OK\n");
@@ -91,7 +91,7 @@ int main(int argc, char* argv[])
         stcp_close_connection( conn );
         conn = NULL;
 
-        uninit_ssl();
+        stcp_uninit_ssl();
     }
     else {
         printf("Failed to open connection\n");

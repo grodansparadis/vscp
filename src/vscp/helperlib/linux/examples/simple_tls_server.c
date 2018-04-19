@@ -100,12 +100,14 @@ int main(int argc, char **argv)
         SSL *ssl;
         const char reply[] = "Be hungry, stay foolish!\n";
 
+	printf("Waiting\n");
         int client = accept(sock, (struct sockaddr*)&addr, &len);
         if (client < 0) {
             perror("Unable to accept");
             exit(EXIT_FAILURE);
         }
 
+	printf("OK\n");
         ssl = SSL_new(ctx);
         SSL_set_fd(ssl, client);
 

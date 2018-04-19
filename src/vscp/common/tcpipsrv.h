@@ -33,6 +33,8 @@
 #include "wx/thread.h"
 //#include "wx/socket.h"
 
+#include <sockettcp.h>
+
 #include "userlist.h"
 #include "controlobject.h"
 
@@ -107,9 +109,56 @@ typedef struct {
 } structCommand;
 
 
-
 /*!
     This class implement the listen thread for
+    the vscpd connections on the TCP interface
+*/
+
+class TCPListenThread : public wxThread
+{
+
+public:
+    
+    /// Constructor
+    TCPListenThread();
+
+    /// Destructor
+    ~TCPListenThread();
+
+    /*!
+        Thread code entry point
+    */
+    virtual void *Entry();
+
+    /*! 
+        called when the thread exits - whether it terminates normally or is
+        stopped with Delete() (but not when it is Kill()ed!)
+    */
+    virtual void OnExit();
+
+    /*!
+        Set listening port
+        Examples for IPv4: 80, 443s, 127.0.0.1:3128, 192.0.2.3:8080s
+        Examples for IPv6: [::]:80, [::1]:80
+    */
+    void setListeningPort( wxString str ) { m_strListeningPort = str; };
+
+private:
+
+    // Listening port
+    wxString m_strListeningPort;
+
+    // Settings for the tcp/ip server
+    server_context m_srvctx;    
+
+};
+
+
+// ----------------------------------------------------------------------------
+
+
+/*!
+    This class implement the worker thread for
     the vscpd connections on the TCP interface
 */
 
