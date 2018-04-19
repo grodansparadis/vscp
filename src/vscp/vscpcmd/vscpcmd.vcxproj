@@ -436,6 +436,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\common\fastpbkdf2.h" />
+    <ClInclude Include="..\..\common\sockettcp.h" />
     <ClInclude Include="..\..\common\vscpbase64.h" />
     <ClInclude Include="..\..\common\vscpmd5.h" />
     <ClInclude Include="..\..\common\vscp_aes.h" />
@@ -446,7 +447,7 @@
     <ClCompile Include="..\..\common\crc.c" />
     <ClCompile Include="..\..\common\crc8.c" />
     <ClCompile Include="..\..\common\fastpbkdf2.c" />
-    <ClCompile Include="..\..\common\mongoose.c" />
+    <ClCompile Include="..\..\common\sockettcp.c" />
     <ClCompile Include="..\..\common\vscpbase64.c" />
     <ClCompile Include="..\..\common\vscpmd5.c" />
     <ClCompile Include="..\..\common\vscp_aes.c" />

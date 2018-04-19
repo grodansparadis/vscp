@@ -34,10 +34,19 @@
 
 #include <stdio.h>
 #include <stddef.h>
-#include <sys/types.h>     
+
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
+#include <sys/types.h>
+#if defined(_WIN32)
+#include <Ws2ipdef.h>
+#else
 #include <sys/socket.h>
 #include <netinet/ip.h>
 #include <poll.h>
+#endif
 
 #include <openssl/ssl.h>
 #include <openssl/err.h>
@@ -49,6 +58,14 @@
 #include <openssl/dh.h>
 #include <openssl/bn.h>
 #include <openssl/opensslv.h>
+
+#if !defined(FALSE)
+#define FALSE   (0)
+#endif
+
+#if !defined(TRUE)
+#define TRUE   (1)
+#endif
 
 /*
     If multithreading part of  ssl is initialized elsewhere
@@ -106,9 +123,6 @@
 #define STCP_ERROR_TIMEOUT              (-1)
 #define STCP_ERROR_STOPPED              (-2)
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
 
 // Unified socket address. For IPv6 support, add IPv6 address structure in
 // the
@@ -256,7 +270,7 @@ struct server_context
  */
 
 int
-stcp_init_mt_ssl( void );
+stcp_init_mt_ssl(void);
 
 
 /*!

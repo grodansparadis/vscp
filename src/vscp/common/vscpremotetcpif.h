@@ -44,6 +44,8 @@
 #include <vscp.h>
 #include <guid.h>
 
+#if defined(_WIN32)
+#else
 #include <unistd.h>
 #include <sys/wait.h>
 #include <sys/socket.h>
@@ -57,6 +59,7 @@
 #include <netdb.h>
 #include <netinet/tcp.h>
 #include <sockettcp.h>
+#endif
 
 #include <sockettcp.h>
 #include <vscphelper.h>

@@ -29,6 +29,38 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#if defined(_WIN32)
+#if !defined(_CRT_SECURE_NO_WARNINGS)
+#define _CRT_SECURE_NO_WARNINGS /* Disable deprecation warning in VS2005 */
+#endif
+#ifndef _WIN32_WINNT /* defined for tdm-gcc so we can use getnameinfo */
+#define _WIN32_WINNT 0x0501
+#endif
+#else
+#if defined(__GNUC__) && !defined(_GNU_SOURCE)
+#define _GNU_SOURCE /* for setgroups() */
+#endif
+#if defined(__linux__) && !defined(_XOPEN_SOURCE)
+#define _XOPEN_SOURCE 600 /* For flockfile() on Linux */
+#endif
+#ifndef _LARGEFILE_SOURCE
+#define _LARGEFILE_SOURCE /* For fseeko(), ftello() */
+#endif
+#ifndef _FILE_OFFSET_BITS
+#define _FILE_OFFSET_BITS 64 /* Use 64-bit file offsets by default */
+#endif
+#ifndef __STDC_FORMAT_MACROS
+#define __STDC_FORMAT_MACROS /* <inttypes.h> wants this for C++ */
+#endif
+#ifndef __STDC_LIMIT_MACROS
+#define __STDC_LIMIT_MACROS /* C++ wants that for INT64_MAX */
+#endif
+#ifdef __sun
+#define __EXTENSIONS__  /* to expose flockfile and friends in stdio.h */
+#define __inline inline /* not recognized on older compiler versions */
+#endif
+#endif
+
 #if defined(__GNUC__) || defined(__MINGW32__)
 /* Disable unused macros warnings - not all defines are required
 * for all systems and all compilers. */
@@ -459,7 +491,6 @@ typedef const void *SOCK_OPT_TYPE;
 #include <openssl/opensslv.h>
 
 #include <vscpmd5.h>
-
 #include "sockettcp.h"
 
 
@@ -493,6 +524,9 @@ struct pollfd {
 #if defined(_MSC_VER)
 #pragma comment(lib, "Ws2_32.lib")
 #endif
+
+
+
 
 #else  /* defined(_WIN32)  WINDOWS / UNIX include block */
 
@@ -1006,6 +1040,28 @@ set_close_on_exec(SOCKET sock, struct web_connection *conn /* may be null */)
     (void) sock;
 }
 
+
+////////////////////////////////////////////////////////////////////////////////
+// report_error
+//
+
+// TODO Make general
+
+static void
+stcp_report_error(const char *fmt, ...)
+{
+    va_list args;
+
+    //flockfile(stdout);   // TODO
+    va_start(args, fmt);
+    vprintf(fmt, args);
+    va_end(args);
+    putchar('\n');
+    //funlockfile(stdout); // TODO
+    fflush(stdout);
+}
+
+
 #else   // windows vs. unix
 
 
@@ -1211,10 +1267,8 @@ static pthread_mutex_t global_lock_mutex;
 
 #if defined(_WIN32)
 // Forward declaration for Windows
-FUNCTION_MAY_BE_UNUSED
 static int pthread_mutex_lock(pthread_mutex_t *mutex);
 
-FUNCTION_MAY_BE_UNUSED
 static int pthread_mutex_unlock(pthread_mutex_t *mutex);
 #endif
 
@@ -2445,7 +2499,7 @@ static void
 stcp_close_socket_gracefully( struct stcp_connection *conn )
 {
 #if defined(_WIN32)
-    char buf[WEB_BUF_LEN];
+    char buf[STCP_BUF_LEN];
     int n;
 #endif
     struct linger linger;
@@ -3552,7 +3606,7 @@ stcp_init_listening( struct server_context *srv_ctx,
     // same process, so a short Sleep may be
     // required between web_stop and web_start.
     //
-    if ( setsockopt( srv_ctx->listening_socket.sock,
+    if ( setsockopt( srv_ctx->listener.sock,
                         SOL_SOCKET,
                         SO_EXCLUSIVEADDRUSE,
                         (SOCK_OPT_TYPE) & on,
@@ -3711,9 +3765,13 @@ accept_new_connection( const struct server_context *srv_ctx, struct stcp_connect
     else {
 
         // Put so socket structure into the queue
+#if defined(_WIN32)
+        (void)SetHandleInformation((HANDLE)(intptr_t)so.sock, HANDLE_FLAG_INHERIT, 0);
+#else
         if ( fcntl( so.sock, F_SETFD, FD_CLOEXEC ) != 0 ) {
             // Failed TODO
         }
+#endif
         
         so.is_ssl = srv_ctx->listener.is_ssl;
         so.ssl_redir = srv_ctx->listener.ssl_redir;

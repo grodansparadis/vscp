@@ -69,6 +69,7 @@
 #include <vscpremotetcpif.h>
 #include <dllwrapper.h>
 #include <canalconfobj.h>
+#include <vscpbase64.h>
 #include "dlgvscpinterfacesettings.h"
 #include "dlgselectdaemoninterface.h"
 #include "dlgvscpfilter.h"
@@ -456,10 +457,10 @@ void dlgVscpInterfaceSettings::OnButtonVscpSetConfigurationClick( wxCommandEvent
     wxCharBuffer wxbuf = strDrvInfo.ToUTF8();
 
     int baselen = strlen( wxbuf.data() );
-    int len = mg_base64_decode( (const unsigned char *)wxbuf.data(), baselen, buf );
-    
-    if ( len != baselen ) {
-        wxMessageBox( _( "The configurationd ata was either in the wrong form (should have been base64 encoded xml) or it was absent." ) );
+    //int len = mg_base64_decode( (const unsigned char *)wxbuf.data(), baselen, buf );
+    size_t len;
+   if ( -1 ==  vscp_base64_decode( (const unsigned char *)wxbuf.data(), baselen, buf, &len ) ) {
+        wxMessageBox( _( "The configuration data was either in the wrong form (should have been base64 encoded xml) or it was absent." ) );
         return;
     }
 
