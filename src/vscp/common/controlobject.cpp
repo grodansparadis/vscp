@@ -41,10 +41,6 @@
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
-/*#ifndef WX_PRECOMP
-#include "wx/wx.h"
-#endif*/
-
 #include "wx/wx.h"
 #include "wx/defs.h"
 #include "wx/app.h"
@@ -359,6 +355,7 @@ CControlObject::CControlObject()
     m_web_lua_background_script_params = _("");
 
     // Init. web server subsystem - All features enabled
+    // ssl mt locks will we initiated here for openssl 1.0
     if ( 0 == web_init( 0xffff ) ) {
         fprintf(stderr,"Failed to initialize webserver subsystem.\n" );
     }
@@ -1024,6 +1021,12 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
     // Start daemon internal client worker thread
     startClientWorkerThread();
 
+    // Start webserver and websockets
+    // IMPORTANT!!!!!!!!
+    // Must be started before the tcp/ip server as
+    // ssl initializarion is done here
+    start_webserver();
+
     // Start TCP/IP interface
     startTcpWorkerThread();
 
@@ -1032,9 +1035,6 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
 
     // Start Multicast interface
     startMulticastWorkerThreads();
-
-    // Start webserver and websockets
-    init_webserver();
 
     // Load drivers
     startDeviceWorkerThreads();
@@ -1201,16 +1201,16 @@ bool CControlObject::cleanup( void )
     stopDaemonWorkerThread();
 
     fprintf( stderr, "ControlObject: cleanup - Stopping client worker thread...\n");
-    stopClientWorkerThread();
-    
-    fprintf( stderr, "ControlObject: cleanup - Stopping TCP/IP worker thread...\n");
-    stopTcpWorkerThread();
+    stopClientWorkerThread();    
 
     fprintf( stderr, "ControlObject: cleanup - Stopping UDP worker thread...\n");
     stopUDPWorkerThread();
 
     fprintf( stderr, "ControlObject: cleanup - Stopping Multicast worker threads...\n");
     stopMulticastWorkerThreads();
+
+    fprintf( stderr, "ControlObject: cleanup - Stopping TCP/IP worker thread...\n");
+    stopTcpWorkerThread();
 
     fprintf( stderr, "ControlObject: cleanup - Stopping Web Server worker thread...\n");
     stop_webserver();        
@@ -1335,8 +1335,7 @@ bool CControlObject::stopTcpWorkerThread( void )
 {
     if ( NULL != m_pTCPClientThread ) {
         m_mutexTcpClientListenThread.Lock();
-        m_pTCPClientThread->m_bQuit = true;
-        m_pTCPClientThread->Wait();
+        
         delete m_pTCPClientThread;
         m_pTCPClientThread = NULL;
         m_mutexTcpClientListenThread.Unlock();

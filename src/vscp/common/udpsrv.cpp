@@ -134,7 +134,6 @@ void *VSCPUDPClientThread::Entry()
     m_pClientItem->m_strDeviceName += wxDateTime::Now().FormatISODate();
     m_pClientItem->m_strDeviceName += _(" ");
     m_pClientItem->m_strDeviceName += wxDateTime::Now().FormatISOTime();
-
     
     // If a user is defined get user item
     if ( gpobj->m_udpInfo.m_user.Trim().Length() ) {

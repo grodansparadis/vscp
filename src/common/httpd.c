@@ -19322,7 +19322,7 @@ set_ssl_option(struct web_context *ctx)
             (ctx->config[SSL_DEFAULT_VERIFY_PATHS] != NULL)
             && (vscp_strcasecmp(ctx->config[SSL_DEFAULT_VERIFY_PATHS], "yes") == 0);
 
-    if (should_verify_peer) {
+    if ( should_verify_peer ) {
         ca_path = ctx->config[SSL_CA_PATH];
         ca_file = ctx->config[SSL_CA_FILE];
         if (SSL_CTX_load_verify_locations(ctx->ssl_ctx, ca_file, ca_path)
@@ -19337,7 +19337,7 @@ set_ssl_option(struct web_context *ctx)
             return 0;
         }
 
-        if (peer_certificate_optional) {
+        if ( peer_certificate_optional ) {
             SSL_CTX_set_verify(ctx->ssl_ctx, SSL_VERIFY_PEER, NULL);
         }
         else {

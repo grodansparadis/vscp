@@ -681,12 +681,14 @@ public:
     //                       TCP/IP
     /////////////////////////////////////////////////////////
 
-    /// net_skeleton structure
-    struct mg_mgr m_mgrTcpIpServer;
+    // Flag read by tcp/ip server thread and which terminates the 
+    // thread when set to true
+    bool m_bQuitTcpIpSrv;
 
+    // Server will be started if set to true (by configuration (db/xml)
     bool m_enableTcpip;
 
-    /// Interface(s) used for TCP/IP connection
+    /// Interface used for TCP/IP connection  (only one)
     wxString m_strTcpInterfaceAddress;
 
 

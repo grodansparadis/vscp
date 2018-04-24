@@ -67,33 +67,37 @@ extern "C" {
 #define TRUE   (1)
 #endif
 
+
+
+
 /*
     If multithreading part of  ssl is initialized elsewhere
-    SSL_ALREADY_INITIALIZED should be defined whdn compiling
+    SSL_ALREADY_INITIALIZED should be defined when compiling
     sockettcp.c
 */
 
-#define SOCKETTCP_NO_SSL                (0)     // Normal connect
-#define SOCKETTCP_SSL                   (1)     // Connect SSL
+#define STCP_NO_SSL                     (0)     // Normal connect
+#define STCP_SSL                        (1)     // Connect SSL
 
-#define SOCKETTCP_CONN_STATE_UNDEFINED  (0)
-#define SOCKETTCP_CONN_STATE_TOCLOSE    (6)
-#define SOCKETTCP_CONN_STATE_CLOSING    (7)
-#define SOCKETTCP_CONN_STATE_CLOSED     (8)
+#define STCP_CONN_STATE_UNDEFINED       (0)
+#define STCP_CONN_STATE_CONNECTED       (3)    
+#define STCP_CONN_STATE_TOCLOSE         (6)
+#define STCP_CONN_STATE_CLOSING         (7)
+#define STCP_CONN_STATE_CLOSED          (8)
 
-#define SOCKETTCP_CONFIG_TCP_NODELAY    0       // Set to 1 to enable. If set the socket option will disable 
+#define SOCKETTCP_CONFIG_TCP_NODELAY    (0)     // Set to 1 to enable. If set the socket option will disable 
                                                 // Nagle's algorithm on the connection which means that packets
                                                 // will be sent as soon as possible instead of waiting for a 
                                                 // full buffer or timeout to occur.
                                                 // (Not the same as socket option typedef TCP_NODELAY)
 
-#define SSL_PROTOCOL_VERSION            (0)
-#define SSL_DO_VERIFY_PEER              (0)   // 0 == no, 1 == mandatory, 2 == optional
-#define SSL_DEFAULT_VERIFY_PATHS        (1)   // 1 == yes
-#define SSL_VERIFY_DEPTH                (9)
-#define SSL_CIPHER_LIST                 "DES-CBC3-SHA:AES128-SHA:AES128-GCM-SHA256"
-//#define SSL_CIPHER_LIST                     "kEECDH:kEDH:kRSA:AESGCM:AES256:AES128:3DES:SHA256:SHA84:SHA1:!aNULL:!eNULL:!EXP:!LOW:!MEDIUM!ADH:!AECDH"
-#define SSL_SHORT_TRUST                 (0)
+#define STCP_SSL_PROTOCOL_VERSION        (0)
+#define STCP_SSL_DO_VERIFY_PEER          (0)   // 0 == no, 1 == mandatory, 2 == optional
+#define STCP_SSL_DEFAULT_VERIFY_PATHS    (1)   // 1 == yes
+#define STCP_SSL_VERIFY_DEPTH            (9)
+#define STCP_SSL_CIPHER_LIST             "DES-CBC3-SHA:AES128-SHA:AES128-GCM-SHA256"
+//#define SOCKETTCP_SSL_CIPHER_LIST            "kEECDH:kEDH:kRSA:AESGCM:AES256:AES128:3DES:SHA256:SHA84:SHA1:!aNULL:!eNULL:!EXP:!LOW:!MEDIUM!ADH:!AECDH"
+#define STCP_SSL_SHORT_TRUST             (0)
 
 /*
 "ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:"
@@ -107,26 +111,29 @@ extern "C" {
     "!aNULL:!eNULL:!EXPORT:!DES:!RC4:!3DES:!MD5:!PSK"
 */
 
-#define MAX_REQUEST_SIZE                (16384)
-#define STCP_BUF_LEN (                   8192)
-#define LINGER_TIMEOUT                  (-2)
+#define STCP_MAX_REQUEST_SIZE           (16384)
+#define STCP_BUF_LEN                    (8192)
+#define STCP_LINGER_TIMEOUT             (-2)
 
-#ifndef SOCKET_TIMEOUT_QUANTUM                      // in ms
-#define SOCKET_TIMEOUT_QUANTUM          (2000)      // Default read timout in ms
-#endif                                              // Smaller will be used 
+#ifndef SOCKET_TIMEOUT_QUANTUM                      /* in ms */
+#define SOCKET_TIMEOUT_QUANTUM          (2000)      /* Default read timout in ms */
+#endif                                              /* Smaller will be used  */
 
 #ifndef INVALID_SOCKET
 #define INVALID_SOCKET                  (-1)
 #endif
 
-// Common error codedes
+/* Common error codedes     */
+#define STCP_OK                         (1)
+#define STCP_ERROR                      (0)
 #define STCP_ERROR_TIMEOUT              (-1)
 #define STCP_ERROR_STOPPED              (-2)
 
 
-// Unified socket address. For IPv6 support, add IPv6 address structure in
-// the
-// union u.
+/*  
+    Unified socket address. For IPv6 support, add IPv6 address structure in
+    the union u.
+*/
 union usa
 {
     struct sockaddr sa;
@@ -164,8 +171,10 @@ struct stcp_secure_options
     int port;                   /* Host port */
     const char *client_cert;    /* Client certificat path */
     const char *server_cert;    /* Server certificat path */
+
     /* ------------------------------------------------------- */
-    char *pem;                  /* Client key and cert */
+    
+    char *pem;                  /* Client/server path to combined key and cert */
     char *chain;
     char *ca_path;
     char *ca_file;
@@ -175,6 +184,10 @@ struct stcp_secure_options
     char *default_verify_path;
     int verify_depth;           /* Set to zero fro default */
     char *chipher_list;         /* NULL for default */
+
+    // Ths flag should be set to non zero if the multi thread 
+    // initialization for openssl 1.0 locks has been done already.
+    int bNOInitMT;
 };
 
 // Connection types
@@ -220,7 +233,7 @@ struct server_context
     struct pollfd listener_fds;         /*! File descriptor for listening port */
 
     //struct socket *client_socks;
-    //struct stcp_connection *conn
+    //struct stcp_connection *conn    
 
     int config_max_listen_queue;
     int config_tcp_nodelay;             /* 
@@ -274,11 +287,14 @@ stcp_init_mt_ssl(void);
 
 
 /*!
-    Init. SSL
+    Init. SSL  (client or server)
+    @param security_opts Settings for ssl
+    @param ssl_ctx ssl context returned here on success    
+    @return Non zero on success, zero on failure.
 */
 int
 stcp_init_ssl( struct stcp_secure_options *secure_opts,
-                SSL_CTX *ssl_ctx );
+                SSL_CTX *ssl_ctx  );
 
 /*!
     Clean up SSL 

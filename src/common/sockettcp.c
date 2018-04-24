@@ -134,11 +134,11 @@
 #include <stdio.h>
 #include <stdint.h>
 
-#include <vscpmd5.h>
+#include "vscpmd5.h"
 
 /* Flags for SSL usage */
-#define NO_SSL  0
-#define USE_SSL 1
+#define NO_SSL          0
+#define USE_SSL         1
 
 #if defined(_WIN32)
 
@@ -1569,10 +1569,10 @@ refresh_trust( struct stcp_connection *conn,
         data_check = t;
 
         should_verify_peer = 0;
-        if ( 1 == SSL_DO_VERIFY_PEER ) {
+        if ( 1 == STCP_SSL_DO_VERIFY_PEER ) {
             should_verify_peer = 1;
         }
-        else if ( 0 == SSL_DO_VERIFY_PEER ) {
+        else if ( 0 == STCP_SSL_DO_VERIFY_PEER ) {
             should_verify_peer = 1;
         }
 
@@ -1626,7 +1626,7 @@ make_ssl( struct stcp_connection *conn,
         return 0;
     }
 
-    if ( SSL_SHORT_TRUST ) {
+    if ( STCP_SSL_SHORT_TRUST ) {
         int trust_ret = refresh_trust( conn, 
                                         conn->secure_opts->pem,
                                         conn->secure_opts->chain,
@@ -1772,6 +1772,7 @@ static int cryptolib_users = 0; // Reference counter for crypto library.
 int
 stcp_init_mt_ssl( void )
 {
+
 #ifdef OPENSSL_API_1_1
 
     if ( atomic_inc( &cryptolib_users ) > 1 ) {
@@ -1895,7 +1896,7 @@ ssl_info_callback(SSL *ssl, int what, int ret)
 
 int
 stcp_init_ssl( struct stcp_secure_options *secure_opts,
-                SSL_CTX *ssl_ctx )
+                SSL_CTX *ssl_ctx  )
 {
     int callback_ret;
     int should_verify_peer;
@@ -1907,7 +1908,6 @@ stcp_init_ssl( struct stcp_secure_options *secure_opts,
     md5_byte_t ssl_context_id[16];
     md5_state_t md5state;
     int protocol_ver;
-    char ebuf[128];
 
     /* Must have secure options */
     if ( NULL == secure_opts ) {
@@ -1926,13 +1926,18 @@ stcp_init_ssl( struct stcp_secure_options *secure_opts,
     if ( NULL == secure_opts->chain ) {
         secure_opts->chain = secure_opts->pem;
     }
-    if ( ( secure_opts->chain != NULL ) && (*secure_opts->chain == 0)) {
+    
+    if ( ( secure_opts->chain != NULL ) && 
+         ( *secure_opts->chain == 0 ) ) {
         secure_opts->chain = NULL;
     }
 
-    if ( !stcp_init_mt_ssl() ) {
-        stcp_report_error( "Failed to init ssl\n" );
-        return 0;
+    /* Init. ssl multithread locks for ssl 1.0 */
+    if ( !(secure_opts->bNOInitMT) ) {
+        if ( !stcp_init_mt_ssl() ) {
+            stcp_report_error( "Failed to init ssl\n" );
+            return 0;
+        }
     }
 
 
@@ -1959,14 +1964,15 @@ stcp_init_ssl( struct stcp_secure_options *secure_opts,
 #endif // OPENSSL_API_1_1
 
     SSL_CTX_clear_options( ssl_ctx,
-                          SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_NO_TLSv1
-                          | SSL_OP_NO_TLSv1_1);
+                            SSL_OP_NO_SSLv2 | 
+                            SSL_OP_NO_SSLv3 | 
+                            SSL_OP_NO_TLSv1 | 
+                            SSL_OP_NO_TLSv1_1 );
 
-    SSL_CTX_set_options( ssl_ctx, ssl_get_protocol(SSL_PROTOCOL_VERSION));
+    SSL_CTX_set_options( ssl_ctx, ssl_get_protocol( STCP_SSL_PROTOCOL_VERSION ) );
     SSL_CTX_set_options( ssl_ctx, SSL_OP_SINGLE_DH_USE);
     SSL_CTX_set_options( ssl_ctx, SSL_OP_CIPHER_SERVER_PREFERENCE);
-    SSL_CTX_set_options( ssl_ctx,
-                        SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION);
+    SSL_CTX_set_options( ssl_ctx, SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION);
     SSL_CTX_set_options( ssl_ctx, SSL_OP_NO_COMPRESSION);
 
 #ifdef __clang__
@@ -2020,19 +2026,19 @@ stcp_init_ssl( struct stcp_secure_options *secure_opts,
     // Default is "no".
     should_verify_peer = 0;
     peer_certificate_optional = 0;
-    if ( 1 == SSL_DO_VERIFY_PEER ) {
+    if ( 1 == STCP_SSL_DO_VERIFY_PEER ) {
         // Mandatory
         should_verify_peer = 1;
         peer_certificate_optional = 0;
     }
-    else if ( 2 == SSL_DO_VERIFY_PEER ) {
+    else if ( 2 == STCP_SSL_DO_VERIFY_PEER ) {
         // Optional
         should_verify_peer = 1;
         peer_certificate_optional = 1;
     }
    
 
-    use_default_verify_paths = SSL_DEFAULT_VERIFY_PATHS;
+    use_default_verify_paths = STCP_SSL_DEFAULT_VERIFY_PATHS;
 
     if ( should_verify_peer ) {
 
@@ -2067,11 +2073,11 @@ stcp_init_ssl( struct stcp_secure_options *secure_opts,
             return 0;
         }
 
-        SSL_CTX_set_verify_depth( ssl_ctx, SSL_VERIFY_DEPTH );
+        SSL_CTX_set_verify_depth( ssl_ctx, STCP_SSL_VERIFY_DEPTH );
 
     }
 
-    if ( SSL_CTX_set_cipher_list( ssl_ctx, SSL_CIPHER_LIST ) != 1 ) {
+    if ( SSL_CTX_set_cipher_list( ssl_ctx, STCP_SSL_CIPHER_LIST ) != 1 ) {
         stcp_report_error( "SSL_CTX_set_cipher_list error: %s", stcp_ssl_error() );
     }
 
@@ -2332,7 +2338,7 @@ stcp_connect_remote_impl( struct stcp_secure_options *secure_options,
     struct sockaddr *psa;
     socklen_t len;
 
-    unsigned max_req_size = MAX_REQUEST_SIZE;
+    unsigned max_req_size = STCP_MAX_REQUEST_SIZE;
 
     // Size of structures, aligned to 8 bytes
     size_t conn_size = ( ( sizeof( struct stcp_connection ) + 7 ) >> 3 ) << 3;
@@ -2452,6 +2458,7 @@ stcp_connect_remote_impl( struct stcp_secure_options *secure_options,
         ;
     }
 
+    conn->conn_state = STCP_CONN_STATE_CONNECTED;
     return conn;
 }
 
@@ -2534,7 +2541,7 @@ stcp_close_socket_gracefully( struct stcp_connection *conn )
 #endif
 
     // Set linger option according to configuration
-    if (LINGER_TIMEOUT >= 0) {
+    if (STCP_LINGER_TIMEOUT >= 0) {
         // Set linger option to avoid socket hanging out after close. This
         // prevent ephemeral port exhaust problem under high QPS.
         linger.l_onoff = 1;
@@ -2565,7 +2572,7 @@ stcp_close_socket_gracefully( struct stcp_connection *conn )
         linger.l_linger = 0;
     }
 
-    if (LINGER_TIMEOUT < -1) {
+    if (STCP_LINGER_TIMEOUT < -1) {
         // Default: don't configure any linger
     }
     else if ( getsockopt( conn->client.sock,
@@ -2610,12 +2617,12 @@ stcp_close_socket_gracefully( struct stcp_connection *conn )
 static void
 close_connection( struct stcp_connection *conn )
 {
-    conn->conn_state = SOCKETTCP_CONN_STATE_TOCLOSE; // to close
+    conn->conn_state = STCP_CONN_STATE_TOCLOSE; // to close
 
     // Set close flag, so keep-alive loops will stop
     conn->must_close = 1;
 
-    conn->conn_state = SOCKETTCP_CONN_STATE_CLOSING; // closing
+    conn->conn_state = STCP_CONN_STATE_CLOSING; // closing
 
     if ( conn->ssl != NULL ) {
         // Run SSL_shutdown twice to ensure complexly close SSL connection
@@ -2634,7 +2641,7 @@ close_connection( struct stcp_connection *conn )
         conn->client.sock = INVALID_SOCKET;
     }
 
-    conn->conn_state = SOCKETTCP_CONN_STATE_CLOSED; // closed
+    conn->conn_state = STCP_CONN_STATE_CLOSED; // closed
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2656,7 +2663,7 @@ stcp_close_connection( struct stcp_connection *conn )
 
     // If client free connection data
     if ( CONNECTION_CLIENT == conn->conntype ) {
-	    free( conn );
+        free( conn );
     }
 
 }
@@ -3557,9 +3564,9 @@ stcp_init_listening( struct server_context *srv_ctx,
         return 0;
     }
 
-    // Init. defaults
+    /* Init. defaults */
 
-    // Listening queue maximum
+    /* Listening queue maximum */
     if ( 0 == srv_ctx->config_max_listen_queue ) {
         srv_ctx->config_max_listen_queue = SOMAXCONN;
     }

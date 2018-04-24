@@ -679,7 +679,6 @@ vscp_mainpage( struct web_connection *conn, void *cbdata )
 ////////////////////////////////////////////////////////////////////////////////
 // send_basic_authorization_request
 //
-//
 
 void
 send_basic_authorization_request( struct web_connection *conn )
@@ -11206,10 +11205,10 @@ static void delete_options( char **opts ) {
 #define web_free(a) web_free_ex(a, __FILE__, __LINE__);
 
 ///////////////////////////////////////////////////////////////////////////////
-// init_webserver
+// start_webserver
 //
 
-int init_webserver( void )
+int start_webserver( void )
 {
     /*const char *options[] =
     {
