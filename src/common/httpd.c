@@ -18238,22 +18238,41 @@ set_ports_option( struct web_context *ctx )
 
         if ( ip_version > 4 ) {
 
-            if ( 6 == ip_version ) {
-                if ( ( AF_INET6 == so.lsa.sa.sa_family ) &&
-                     ( setsockopt( so.sock,
-                                    IPPROTO_IPV6,
-                                    IPV6_V6ONLY,
-                                    (void *) &off,
-                                    sizeof (off) ) != 0 ) ) {
+            if (ip_version > 6) {  /* Could be 6 for IPv6 onlyor 10 (4+6) for IPv4+IPv6 */
+				
+                if ( so.lsa.sa.sa_family == AF_INET6 && 
+                        setsockopt( so.sock,
+                                        IPPROTO_IPV6,
+				        IPV6_V6ONLY,
+				        (void *)&off,
+				        sizeof(off)) != 0 ) {
 
-                    // Set IPv6 only option, but don't abort on errors.
-                    web_cry( fc(ctx),
-                                    "cannot set socket option IPV6_V6ONLY (entry %i)",
-                                    portsTotal );
+                        /* Set IPv6 only option, but don't abort on errors. */
+                        web_cry( fc(ctx),
+                                        "cannot set socket option IPV6_V6ONLY=off (entry %i)",
+					portsTotal);
                 }
-            }
+                
+            } 
+            else {
+              
+                if (so.lsa.sa.sa_family == AF_INET6 && 
+                            setsockopt( so.sock,
+				        IPPROTO_IPV6,
+				        IPV6_V6ONLY,
+				        (void *)&on,
+				        sizeof(on)) != 0 ) {
 
+                            /* Set IPv6 only option, but don't abort on errors. */
+                            web_cry( fc(ctx),
+					    "cannot set socket option IPV6_V6ONLY=on (entry %i)",
+					    portsTotal);
+                }
+
+            }
+        
         }
+        
 
         if (so.lsa.sa.sa_family == AF_INET) {
 

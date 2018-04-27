@@ -62,8 +62,12 @@
 #include <vscp.h>
 
 // Forward declarations
-class TCPClientThread;
+class TCPListenThread;
 class CVSCPAutomation;
+
+// This is a magic value used by a thread to confirm
+// it is quitting.
+#define VSCPD_QUIT_FLAG     0x55AA
 
 // Log level
 enum {
@@ -401,7 +405,7 @@ public:
         Get the VSCP TCP/IP thread thread
         @return Pointer to the VSCP TCP/IP thread thread
     */
-    TCPClientThread *getTCPIPServer( void ) { return m_pTCPClientThread; };
+    //TCPClientThread *getTCPIPServer( void ) { return m_pTCPClientThread; };
 
     /*!
      * Read configuration data from database.
@@ -681,16 +685,20 @@ public:
     //                       TCP/IP
     /////////////////////////////////////////////////////////
 
-    // Flag read by tcp/ip server thread and which terminates the 
-    // thread when set to true
-    bool m_bQuitTcpIpSrv;
-
     // Server will be started if set to true (by configuration (db/xml)
     bool m_enableTcpip;
+
+    // Flag read by tcp/ip server thread and which terminates the 
+    // thread when set to non zero
+    int stopTcpIpSrv;
+    volatile uint16_t m_confirmQuitTcpIpSrv;     // 0x55aa when quiting
 
     /// Interface used for TCP/IP connection  (only one)
     wxString m_strTcpInterfaceAddress;
 
+    // The server thread for the TCP connection interface
+    TCPListenThread *m_pTCPListenThread;
+    wxMutex m_mutexTcpClientListenThread;
 
 
 
@@ -1001,12 +1009,6 @@ private:
      */
     clientMsgWorkerThread *m_pclientMsgWorkerThread;
     wxMutex m_mutexclientMsgWorkerThread;
-
-    /*!
-        The server thread for the TCP connection interface
-     */
-    TCPClientThread *m_pTCPClientThread;
-    wxMutex m_mutexTcpClientListenThread;
 
     /*!
         The server thread for the VSCP daemon

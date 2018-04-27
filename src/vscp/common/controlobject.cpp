@@ -275,7 +275,7 @@ CControlObject::CControlObject()
 
     // Default TCP/IP interface
     m_enableTcpip = true;
-    m_strTcpInterfaceAddress = _("tcp://" + VSCP_DEFAULT_TCP_PORT);
+    m_strTcpInterfaceAddress = _("9598");
 
     // Default multicast announce port
     m_strMulticastAnnounceAddress = _( "udp://:" + VSCP_ANNOUNCE_MULTICAST_PORT );
@@ -287,7 +287,7 @@ CControlObject::CControlObject()
     m_udpInfo.m_interface = _("udp://:" + VSCP_DEFAULT_UDP_PORT );
 
     m_pclientMsgWorkerThread = NULL;
-    m_pTCPClientThread = NULL;
+    m_pTCPListenThread = NULL;
     m_pdaemonVSCPThread = NULL;
 
     // Web server SSL settings
@@ -1302,16 +1302,22 @@ bool CControlObject::startTcpWorkerThread(void)
 
     logMsg(_("Starting TCP/IP interface...\n") );
 
-    m_pTCPClientThread = new TCPClientThread;
+    
+    m_pTCPListenThread = new TCPListenThread;
 
-    if ( NULL != m_pTCPClientThread ) {
+    if ( NULL != m_pTCPListenThread ) {
 
         wxThreadError err;
-        if ( wxTHREAD_NO_ERROR == ( err = m_pTCPClientThread->Create() ) ) {
-                //m_ptcpListenThread->SetPriority( WXTHREAD_DEFAULT_PRIORITY );
-            if ( wxTHREAD_NO_ERROR != ( err = m_pTCPClientThread->Run() ) ) {
+        if ( wxTHREAD_NO_ERROR == ( err = m_pTCPListenThread->Create() ) ) {
+            
+            m_pTCPListenThread->SetPriority( WXTHREAD_DEFAULT_PRIORITY );
+            
+            m_confirmQuitTcpIpSrv = 0;      // Rest quit flag
+
+            if ( wxTHREAD_NO_ERROR != ( err = m_pTCPListenThread->Run() ) ) {
                 logMsg(_("Unable to run TCP thread.") );
             }
+
         }
         else {
             logMsg( _("Unable to create TCP thread.") );
@@ -1333,13 +1339,31 @@ bool CControlObject::startTcpWorkerThread(void)
 
 bool CControlObject::stopTcpWorkerThread( void )
 {
-    if ( NULL != m_pTCPClientThread ) {
-        m_mutexTcpClientListenThread.Lock();
-        
-        delete m_pTCPClientThread;
-        m_pTCPClientThread = NULL;
-        m_mutexTcpClientListenThread.Unlock();
+    // Tell the thread it's time to quit
+    stopTcpIpSrv = 0xff;
+
+    logMsg(_("Terminating TCP thread.") );
+
+    //if ( NULL != m_pTCPClientThread ) {
+
+    // Wait for magic number confirming thread ending
+    int cnt = 0;
+    while ( VSCPD_QUIT_FLAG == m_confirmQuitTcpIpSrv ) {
+        wxSleep( 1 );
+        cnt++;
+        if ( cnt > 5 ) {
+            logMsg(_("No termination confirm from TCP thread. Quiting anyway") );
+            break;
+        }
     }
+
+        //m_mutexTcpClientListenThread.Lock();        
+        //delete m_pTCPClientThread;
+        //m_pTCPClientThread = NULL;
+        //m_mutexTcpClientListenThread.Unlock();
+    //}
+
+    logMsg(_("Terminated TCP thread.") );
 
     return true;
 }
@@ -1392,7 +1416,7 @@ bool CControlObject::stopUDPWorkerThread( void )
         m_mutexVSCPClientnUDPThread.Lock();
         m_pVSCPClientUDPThread->m_bQuit = true;
         m_pVSCPClientUDPThread->Wait();
-        delete m_pTCPClientThread;
+        delete m_pVSCPClientUDPThread;
         m_mutexVSCPClientnUDPThread.Unlock();
     }
 
@@ -2773,6 +2797,7 @@ bool CControlObject::readConfigurationXML( wxString& strcfgfile )
             }
 
             m_strTcpInterfaceAddress = child->GetAttribute(_("interface"), _(""));
+            m_strTcpInterfaceAddress.StartsWith("tcp://", &m_strTcpInterfaceAddress );
             m_strTcpInterfaceAddress.Trim(true);
             m_strTcpInterfaceAddress.Trim(false);
 
@@ -4841,6 +4866,7 @@ bool CControlObject::readConfigurationDB( void )
         else if ( !vscp_strcasecmp( (const char * )pName,
                         VSCPDB_CONFIG_NAME_TCPIP_ADDR ) ) {
             m_strTcpInterfaceAddress = wxString::FromUTF8( (const char *)pValue );
+            m_strTcpInterfaceAddress.StartsWith("tcp://", &m_strTcpInterfaceAddress );
             m_strTcpInterfaceAddress.Trim(true);
             m_strTcpInterfaceAddress.Trim(false);
         }

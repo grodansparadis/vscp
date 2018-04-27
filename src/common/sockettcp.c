@@ -700,7 +700,7 @@ void usleep(__int64 usec)
 
 #ifndef HAVE_POLL
 static int
-poll(struct pollfd *pfd, unsigned int n, int milliseconds)
+stcp_poll(struct pollfd *pfd, unsigned int n, int milliseconds)
 {
     struct timeval tv;
     fd_set set;
@@ -2489,7 +2489,7 @@ stcp_connect_remote( const char *host,
                         int timeout )
 {
     struct stcp_secure_options opts;
-    memset( &opts, 0, sizeof (opts) );
+    memset( &opts, 0, sizeof( opts ) );
     opts.host = host;
     opts.port = port;
     return stcp_connect_remote_impl( &opts,
@@ -2682,23 +2682,22 @@ stcp_close_connection( struct stcp_connection *conn )
  * @param stop_server - Pointer to int that can be set externally 
  *                      to stop the block.
  *
- * @return 1 success, -1 timeout, -2 stopped
+ * @return >0 success, -1 timeout, -2 stopped
  */
 
-static int
+int
 stcp_poll( struct pollfd *pfd,
                 unsigned int n,
                 int mstimeout,
-                volatile int *stop_server)
+                volatile int *stop_server )
 {
     // Call poll, but only for a maximum time of a few seconds.
     // This will allow to stop the server after some seconds, instead
     // of having to wait for a long socket timeout.
     int ms_now = SOCKET_TIMEOUT_QUANTUM; // Sleep quantum in ms
 
-    //printf("Timeout (stcp_poll) %d\n", mstimeout );
-
     do {
+        
         int result;
 
         if ( *stop_server ) {
@@ -2712,13 +2711,15 @@ stcp_poll( struct pollfd *pfd,
             ms_now = mstimeout;
         }
 
-        result = poll( pfd, n, ms_now  );
+        result = poll( pfd, n, ms_now );
         if ( result != 0 ) {
-            // Poll returned either success (1) or error (-1).
-            // Forward both to the caller.
-            //printf("DATA\n");
+            // On success, a positive number is returned; this is the number of
+            // structures which have nonzero revents fields. Negative return value
+            // is error. Forward both to the caller.  (0 == timeout)
             return result;
         }
+        
+        // Poll timed out (==0)
 
         // Poll returned timeout (0).
         if ( mstimeout > 0 ) {
@@ -2747,8 +2748,6 @@ stcp_poll( struct pollfd *pfd,
 static int
 stcp_push_inner( struct stcp_connection *conn,
                     FILE *fp,
-                    //int sock,
-                    //SSL *ssl,
                     const char *buf,
                     int len,
                     double timeout )
@@ -2777,7 +2776,8 @@ stcp_push_inner( struct stcp_connection *conn,
     // shuts down.
     for (;;) {
 
-        if (conn->ssl != NULL) {
+        if ( conn->ssl != NULL ) {
+            
             n = SSL_write(conn->ssl, buf, len);
             if (n <= 0) {
                 err = SSL_get_error(conn->ssl, n);
@@ -3319,6 +3319,25 @@ stcp_write( struct stcp_connection *conn, const void *buf, size_t len )
 
 
 
+static void
+close_all_listening_sockets( struct server_context *srv_ctx )
+{
+    unsigned int i;
+    if ( !srv_ctx ) {
+        return;
+    }
+
+    for ( i = 0; i < srv_ctx->num_listening_sockets; i++ ) {
+        closesocket( srv_ctx->listening_sockets[i].sock );
+	srv_ctx->listening_sockets[i].sock = INVALID_SOCKET;
+    }
+    
+    free( srv_ctx->listening_sockets );
+    srv_ctx->listening_sockets = NULL;
+    free( srv_ctx->listening_socket_fds );
+    srv_ctx->listening_socket_fds = NULL;
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // next_option
@@ -3331,7 +3350,7 @@ stcp_write( struct stcp_connection *conn, const void *buf, size_t len )
 // is adjusted to point only to "x".
 //
 
-/*static const char *
+static const char *
 next_option( const char *list, struct msg *val, struct msg *eq_val )
 {
     int end;
@@ -3388,7 +3407,7 @@ reparse:
     }
 
     return list;
-}*/
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // parse_port_string
@@ -3527,7 +3546,7 @@ parse_port_string( const struct msg *msg, struct socket *so, int *ip_version )
 
     ch = msg->ptr[len]; /* Next character after the port number */
     so->is_ssl = (ch == 's');
-    so->ssl_redir = (ch == 'r');
+    //so->ssl_redir = (ch == 'r');
 
     // Make sure the port is valid and vector ends with 's', 'r' or ','
     if ( is_valid_port( port ) &&
@@ -3552,11 +3571,15 @@ stcp_init_listening( struct server_context *srv_ctx,
     int on = 1;
     int off = 0;
     struct msg msg;
+    struct socket so, *ptr;
 
     struct pollfd *pfd;
     union usa usa;
     socklen_t len;
     int ip_version;
+    
+    int portsTotal = 0;
+    int portsOk = 0;
 
     /* Check pointers */
     if ( ( NULL == srv_ctx ) || 
@@ -3571,173 +3594,214 @@ stcp_init_listening( struct server_context *srv_ctx,
         srv_ctx->config_max_listen_queue = SOMAXCONN;
     }
 
-    memset( &(srv_ctx->listener), 0, sizeof( srv_ctx->listener ) );
+    memset(&so, 0, sizeof(so));
     memset( &usa, 0, sizeof( usa ) );
     len = sizeof( usa );
+    list = str_listening_port;
 
     msg.ptr = str_listening_port;
     msg.len = strlen( str_listening_port );
+    
+    while ( ( list = next_option( list, &msg, NULL)) != NULL ) {
 
-    if ( !parse_port_string( &msg, &(srv_ctx->listener), &ip_version ) ) {
-        stcp_report_error(
-                        "%.*s: invalid port spec. Expecting list of: %s",
-                        (int) msg.len,
-                        msg.ptr,
-                        "[IP_ADDRESS:]PORT[s]");
-        return 0;
-    }
+        portsTotal++;
 
-    if  ( srv_ctx->listener.is_ssl && ( NULL == srv_ctx->ssl_ctx ) ) {
+        if ( !parse_port_string( &msg, &so, &ip_version ) ) {
+            stcp_report_error( "%.*s: invalid port spec. Expecting list of: %s",
+                                (int) msg.len,
+                                msg.ptr,
+                                "[IP_ADDRESS:]PORT[s]");
+            return 0;
+        }
 
-        stcp_report_error(
-                        "Cannot add SSL socket. Is -ssl_certificate "
-                        "option set?" );
-        return 0;
-    }
+        if  ( so.is_ssl && ( NULL == srv_ctx->ssl_ctx ) ) {
+            stcp_report_error( "Cannot add SSL socket. Is -ssl_certificate "
+                               "option set?" );
+            return 0;
+        }
 
-    if ( INVALID_SOCKET == 
-        ( srv_ctx->listener.sock = 
-            socket( srv_ctx->listener.lsa.sa.sa_family, SOCK_STREAM, 6 ) ) ) {
+        if ( INVALID_SOCKET == ( so.sock = 
+                socket( so.lsa.sa.sa_family, SOCK_STREAM, 6 ) ) ) {
 
-        stcp_report_error( "cannot create socket" );
-        return 0;
-    }
+            stcp_report_error( "cannot create socket" );
+            return 0;
+        }
 
 #ifdef _WIN32
-    // Windows SO_REUSEADDR lets many procs binds to a
-    // socket, SO_EXCLUSIVEADDRUSE makes the bind fail
-    // if someone already has the socket -- DTL */
-    // NOTE: If SO_EXCLUSIVEADDRUSE is used,
-    // Windows might need a few seconds before
-    // the same port can be used again in the
-    // same process, so a short Sleep may be
-    // required between web_stop and web_start.
-    //
-    if ( setsockopt( srv_ctx->listener.sock,
+        // Windows SO_REUSEADDR lets many procs binds to a
+        // socket, SO_EXCLUSIVEADDRUSE makes the bind fail
+        // if someone already has the socket -- DTL */
+        // NOTE: If SO_EXCLUSIVEADDRUSE is used,
+        // Windows might need a few seconds before
+        // the same port can be used again in the
+        // same process, so a short Sleep may be
+        // required between web_stop and web_start.
+        //
+        if ( setsockopt( srv_ctx->listener.sock,
                         SOL_SOCKET,
                         SO_EXCLUSIVEADDRUSE,
                         (SOCK_OPT_TYPE) & on,
                         sizeof(on) ) != 0) {
 
-        // Set reuse option, but don't abort on errors.
-        stcp_report_error( "cannot set socket option SO_EXCLUSIVEADDRUSE" );
-    }
+            // Set reuse option, but don't abort on errors.
+            stcp_report_error( "cannot set socket option SO_EXCLUSIVEADDRUSE" );
+        }
 #else
-    if ( setsockopt( srv_ctx->listener.sock,
-                        SOL_SOCKET,
-                        SO_REUSEADDR,
-                        (SOCK_OPT_TYPE) & on,
-                        sizeof( on ) ) != 0 ) {
+        if ( setsockopt( so.sock,
+                            SOL_SOCKET,
+                            SO_REUSEADDR,
+                            ( (SOCK_OPT_TYPE) & on ),
+                            sizeof( on ) ) != 0 ) {
 
-        // Set reuse option, but don't abort on errors.
-        stcp_report_error( "cannot set socket option SO_REUSEADDR (entry %i)" );
-    }
+            // Set reuse option, but don't abort on errors.
+            stcp_report_error( "cannot set socket option SO_REUSEADDR (entry %i)" );
+        }
 #endif
 
-    if ( ip_version > 4 ) {
+        if ( ip_version > 4 ) {  /* Could be 6 for IPv6 only or 10 (4+6) for IPv4+IPv6 */
+            
+            if ( ip_version > 6 ) {
+                
+                if ( ( AF_INET6 == so.lsa.sa.sa_family )  && 
+                        setsockopt( so.sock,
+                                        IPPROTO_IPV6,
+				        IPV6_V6ONLY,
+				        (void *)&off,
+				        sizeof( off ) ) != 0 ) {
 
-        if ( 6 == ip_version ) {
+                        /* Set IPv6 only option, but don't abort on errors. */
+			stcp_report_error( "cannot set socket option IPV6_V6ONLY=off (entry %i)",
+					    portsTotal );
+                }
+            }
+            else {
 
-            if ( ( AF_INET6 == srv_ctx->listener.lsa.sa.sa_family ) &&
-                 ( setsockopt( srv_ctx->listener.sock,
-                                IPPROTO_IPV6,
-                                IPV6_V6ONLY,
-                                (void *)&off,
-                                sizeof( off ) ) != 0 ) ) {
+                if ( ( AF_INET6 == so.lsa.sa.sa_family ) &&
+                    ( setsockopt( so.sock,
+                                    IPPROTO_IPV6,
+                                    IPV6_V6ONLY,
+                                    (void *)&off,
+                                    sizeof( off ) ) != 0 ) ) {
 
-                // Set IPv6 only option, but don't abort on errors.
-                stcp_report_error( "cannot set socket option IPV6_V6ONLY" );
+                    // Set IPv6 only option, but don't abort on errors.
+                    stcp_report_error( "cannot set socket option IPV6_V6ONLY" );
+                }
+                
+            }
+
+        }
+
+        if ( so.lsa.sa.sa_family == AF_INET ) {
+
+            len = sizeof( so.lsa.sin );
+            if ( bind( so.sock, 
+                        &(so.lsa.sa), 
+                        len ) != 0) {
+
+                stcp_report_error( "cannot bind to %.*s: %d (%s)",
+                                    (int)msg.len,
+                                    msg.ptr,
+                                    (int)ERRNO,
+                                    strerror( errno ) );
+                closesocket( so.sock );
+                so.sock = INVALID_SOCKET;
+                return 0;
             }
         }
+        else if ( so.lsa.sa.sa_family == AF_INET6 ) {
 
-    }
+            len = sizeof( so.lsa.sin6 );
+            if ( bind( so.sock, 
+                        &(so.lsa.sa), 
+                        len ) != 0 ) {
+                stcp_report_error( "cannot bind to IPv6 %.*s: %d (%s)",
+                                    (int)msg.len,
+                                    msg.ptr,
+                                    (int)ERRNO,
+                                    strerror( errno ) );
+                closesocket( so.sock );
+                so.sock = INVALID_SOCKET;
+                return 0;
+            }
+        }
+        else {
+            stcp_report_error( "cannot bind: address family not supported (entry %i)" );
+            closesocket( so.sock );
+            so.sock = INVALID_SOCKET;
+            return 0;
+        }
 
-    if ( srv_ctx->listener.lsa.sa.sa_family == AF_INET ) {
+        if ( listen( so.sock, 
+                        srv_ctx->config_max_listen_queue ) != 0 ) {
 
-        len = sizeof( srv_ctx->listener.lsa.sin );
-        if ( bind( srv_ctx->listener.sock, 
-                    &(srv_ctx->listener.lsa.sa), 
-                    len ) != 0) {
-
-            stcp_report_error( "cannot bind to %.*s: %d (%s)",
+            stcp_report_error( "cannot listen to %.*s: %d (%s)",
                                 (int)msg.len,
                                 msg.ptr,
                                 (int)ERRNO,
                                 strerror( errno ) );
-            closesocket( srv_ctx->listener.sock );
-            srv_ctx->listener.sock = INVALID_SOCKET;
+            closesocket( so.sock );
+            so.sock = INVALID_SOCKET;
             return 0;
         }
-    }
-    else if ( srv_ctx->listener.lsa.sa.sa_family == AF_INET6 ) {
 
-        len = sizeof( srv_ctx->listener.lsa.sin6 );
-        if ( bind( srv_ctx->listener.sock, 
-                    &(srv_ctx->listener.lsa.sa), 
-                    len) != 0 ) {
-            stcp_report_error( "cannot bind to IPv6 %.*s: %d (%s)",
+        if ( ( getsockname( so.sock, &(usa.sa), &len ) != 0 ) ||
+             ( usa.sa.sa_family != so.lsa.sa.sa_family ) ) {
+
+            int err = (int)ERRNO;
+            stcp_report_error( "call to getsockname failed %.*s: %d (%s)",
                                 (int)msg.len,
                                 msg.ptr,
-                                (int)ERRNO,
+                                err,
                                 strerror( errno ) );
-            closesocket( srv_ctx->listener.sock );
-            srv_ctx->listener.sock = INVALID_SOCKET;
+            closesocket( so.sock );
+            so.sock = INVALID_SOCKET;
             return 0;
         }
+
+        /* Update lsa port in case of random free ports */
+        if ( AF_INET6 == so.lsa.sa.sa_family ) {
+            so.lsa.sin6.sin6_port = usa.sin6.sin6_port;
+        }
+        else {
+            so.lsa.sin.sin_port = usa.sin.sin_port;
+        }
+        
+        if ( NULL == ( ptr = (struct socket *)realloc( srv_ctx->listening_sockets,
+                                 ( srv_ctx->num_listening_sockets + 1 ) *
+                                 sizeof( srv_ctx->listening_sockets[0] ) ) ) ) {
+
+            stcp_report_error( "Out of memory" );
+            closesocket( so.sock );
+            so.sock = INVALID_SOCKET;
+            continue;
+        }
+
+        if ( NULL == ( pfd = (struct pollfd *)realloc( srv_ctx->listening_socket_fds,
+                                (srv_ctx->num_listening_sockets + 1) *
+		                sizeof(srv_ctx->listening_socket_fds[0]) ) ) ) {
+
+            stcp_report_error( "Out of memory" );
+            closesocket( so.sock );
+            so.sock = INVALID_SOCKET;
+            free(ptr);
+            continue;
+        }
+    
+        //set_close_on_exec( so.sock, fc( srv_ctx ) );   TODO
+        srv_ctx->listening_sockets = ptr;
+        srv_ctx->listening_sockets[srv_ctx->num_listening_sockets] = so;
+        srv_ctx->listening_socket_fds = pfd;
+        srv_ctx->num_listening_sockets++;
+        portsOk++;
+        
+    } // while
+    
+    if (portsOk != portsTotal) {
+        close_all_listening_sockets( srv_ctx );
+        portsOk = 0;
     }
-    else {
-        stcp_report_error( "cannot bind: address family not supported (entry %i)" );
-        closesocket( srv_ctx->listener.sock );
-        srv_ctx->listener.sock = INVALID_SOCKET;
-        return 0;
-    }
-
-    if ( listen( srv_ctx->listener.sock, 
-                    srv_ctx->config_max_listen_queue ) != 0 ) {
-
-        stcp_report_error( "cannot listen to %.*s: %d (%s)",
-                            (int)msg.len,
-                            msg.ptr,
-                            (int)ERRNO,
-                            strerror( errno ) );
-        closesocket( srv_ctx->listener.sock );
-        srv_ctx->listener.sock = INVALID_SOCKET;
-        return 0;
-    }
-
-    if ( ( getsockname( srv_ctx->listener.sock, &(usa.sa), &len ) != 0 ) ||
-         ( usa.sa.sa_family != srv_ctx->listener.lsa.sa.sa_family ) ) {
-
-        int err = (int)ERRNO;
-        stcp_report_error( "call to getsockname failed %.*s: %d (%s)",
-                            (int)msg.len,
-                            msg.ptr,
-                            err,
-                            strerror( errno ) );
-        closesocket( srv_ctx->listener.sock );
-        srv_ctx->listener.sock = INVALID_SOCKET;
-        return 0;
-    }
-
-    /* Update lsa port in case of random free ports */
-    if ( srv_ctx->listener.lsa.sa.sa_family == AF_INET6 ) {
-        srv_ctx->listener.lsa.sin6.sin6_port = usa.sin6.sin6_port;
-    }
-    else {
-        srv_ctx->listener.lsa.sin.sin_port = usa.sin.sin_port;
-    }
-
-    set_close_on_exec( srv_ctx->listener.sock, NULL );
-    memset( &(srv_ctx->listener_fds), 
-                0 , 
-                sizeof( srv_ctx->listener_fds ) );
-    srv_ctx->listener_fds.fd = srv_ctx->listener.sock;
-    srv_ctx->listener_fds.events = POLLIN;
-
-    //close_all_listening_sockets( srvctx );
-    //closesocket( srvctx->listener.sock );
-
-    return 1;
+    
+    return portsOk;
 }
 
 
@@ -3746,28 +3810,27 @@ stcp_init_listening( struct server_context *srv_ctx,
 //
 
 int
-accept_new_connection( const struct server_context *srv_ctx, struct stcp_connection *conn )
+accept_new_connection( struct server_context *srv_ctx, const struct socket *listener, struct socket *psocket )
 {
-    struct socket so;
     char src_addr[ IP_ADDR_STR_LEN ];
-    socklen_t len = sizeof( so.rsa );
+    socklen_t len = sizeof( psocket->rsa );
     int on = 1;
 
     /* Check pointers and listening socklet */
-    if ( ( NULL == srv_ctx ) || ( NULL == conn ) || !srv_ctx->listener.sock ) {
+    if ( ( NULL == listener ) || ( NULL == psocket ) || !listener->sock ) {
         return 0;
     }
 
     if ( INVALID_SOCKET == 
-       ( so.sock = accept( srv_ctx->listener.sock, &so.rsa.sa, &len ) ) ) {
+       ( psocket->sock = accept( listener->sock, &(psocket->rsa.sa), &len ) ) ) {
         stcp_report_error( "accept() failed: %s",
                             strerror( ERRNO ) ) ;
         return 0;                                    
     }
-    /*else if ( !check_acl( ctx, ntohl( *(uint32_t *)&so.rsa.sin.sin_addr ) ) ) {
-        sockaddr_to_string(src_addr, sizeof (src_addr), &so.rsa);
+    /*else if ( !check_acl( ctx, ntohl( *(uint32_t *)&psocket->rsa.sin.sin_addr ) ) ) {
+        sockaddr_to_string(src_addr, sizeof (src_addr), &psocket->rsa);
         //web_cry(fc(ctx), "%s: %s is not allowed to connect", __func__, src_addr );
-        closesocket( so.sock );
+        closesocket( psocket->sock );
     }*/
     else {
 
@@ -3775,14 +3838,14 @@ accept_new_connection( const struct server_context *srv_ctx, struct stcp_connect
 #if defined(_WIN32)
         (void)SetHandleInformation((HANDLE)(intptr_t)so.sock, HANDLE_FLAG_INHERIT, 0);
 #else
-        if ( fcntl( so.sock, F_SETFD, FD_CLOEXEC ) != 0 ) {
+        if ( fcntl( psocket->sock, F_SETFD, FD_CLOEXEC ) != 0 ) {
             // Failed TODO
         }
 #endif
         
-        so.is_ssl = srv_ctx->listener.is_ssl;
-        so.ssl_redir = srv_ctx->listener.ssl_redir;
-        if ( getsockname( so.sock, &so.lsa.sa, &len) != 0 ) {
+        psocket->is_ssl = listener->is_ssl;
+
+        if ( getsockname( psocket->sock, &psocket->lsa.sa, &len) != 0 ) {
             stcp_report_error( "getsockname() failed: %s",
                                 strerror( ERRNO ) ) ;
         }
@@ -3793,7 +3856,7 @@ accept_new_connection( const struct server_context *srv_ctx, struct stcp_connect
         // forever. With TCP keep-alive, next keep-alive handshake will 
         // figure out that the client is down and will close the server end.
         // Thanks to Igor Klopov who suggested the patch.
-        if ( setsockopt( so.sock,
+        if ( setsockopt( psocket->sock,
                             SOL_SOCKET,
                             SO_KEEPALIVE,
                             (SOCK_OPT_TYPE)&on,
@@ -3809,9 +3872,9 @@ accept_new_connection( const struct server_context *srv_ctx, struct stcp_connect
         // when HTTP 1.1 persistent connections are used and the responses
         // are relatively small (eg. less than 1400 bytes).
         //
-        if ( ( conn != NULL ) &&
-             srv_ctx->config_tcp_nodelay ) {
-            if ( set_tcp_nodelay( so.sock, 1) != 0 ) {
+        if ( ( NULL != srv_ctx ) && 
+               srv_ctx->config_tcp_nodelay ) {
+            if ( set_tcp_nodelay( psocket->sock, 1 ) != 0 ) {
                 stcp_report_error( "setsockopt(IPPROTO_TCP TCP_NODELAY) failed: %s",
                                     strerror( ERRNO ) );
             }
@@ -3824,9 +3887,9 @@ accept_new_connection( const struct server_context *srv_ctx, struct stcp_connect
         // The "non blocking" property should already be
         // inherited from the parent socket. Set it for
 	    // non-compliant socket implementations. */
-	    set_non_blocking_mode( so.sock );
+	    set_non_blocking_mode( psocket->sock );
 
-        so.in_use = 0;
+        psocket->in_use = 0;
     }
 
     return 1;

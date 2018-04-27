@@ -156,8 +156,6 @@ struct socket
     union usa lsa;              // Local socket address
     union usa rsa;              // Remote socket address
     unsigned char is_ssl;       // Is port SSL-ed
-    unsigned char ssl_redir;    // Is port supposed to redirect everything to SSL
-                                //   port
     unsigned char in_use;       // Is valid
 };
 
@@ -167,18 +165,19 @@ struct stcp_secure_options
     /*    
         * * * Client specific * * *   
     */
-    const char *host;           /* Host address ip.v4 or ip.v6 */
-    int port;                   /* Host port */
+    const char *host;           /* Host address of remote server ip.v4 or ip.v6 */
+    int port;                   /* Host port of remote server */
+
     const char *client_cert;    /* Client certificat path */
     const char *server_cert;    /* Server certificat path */
 
     /* ------------------------------------------------------- */
     
-    char *pem;                  /* Client/server path to combined key and cert */
-    char *chain;
-    char *ca_path;
-    char *ca_file;
-    int pprotocol_version;      /* 0 == default */
+    const char *pem;                  /* Client/server path to combined key and cert */
+    const char *chain;
+    const char *ca_path;
+    const char *ca_file;
+    int  protocol_version;      /* 0 == default */
     int short_trust;            /* 0 == no */
     int verifyPeer;             /* 0 == no, 1 == yes, 2 == optional */
     char *default_verify_path;
@@ -227,10 +226,14 @@ struct stcp_connection
 // Configuration settings
 struct server_context
 {
-    SSL_CTX *ssl_ctx;                   /*! SSL context */
+    SSL_CTX *ssl_ctx;                   /* SSL context */
 
-    struct socket listener;             /*! Listening socket */
-    struct pollfd listener_fds;         /*! File descriptor for listening port */
+    struct socket *listening_sockets;
+    struct pollfd *listening_socket_fds;
+    unsigned int num_listening_sockets;
+    
+    //struct socket listener;             /* Listening socket */
+    //struct pollfd listener_fds;         /* File descriptor for listening port */
 
     //struct socket *client_socks;
     //struct stcp_connection *conn    
@@ -358,6 +361,20 @@ int
 stcp_write( struct stcp_connection *conn, const void *buf, size_t len );
 
 
+/*!
+ * Poll for action on an array with file descriptors
+ * @param pfd Array with socket descriptors
+ * @param n number of descriptors
+ * @param mstimeout Number of milliseconds to wait or action
+ * @stop_server Pointer to variable that if set to non zero will return
+ *              immediately.
+ * @return >0 success (descriptor causing action), -1 timeout, -2 stopped
+ */
+int
+stcp_poll( struct pollfd *pfd,
+                unsigned int n,
+                int mstimeout,
+                volatile int *stop_server );
 
 
 // ----------------------------------------------------------------------------
@@ -376,15 +393,17 @@ stcp_init_listening( struct server_context *srv_ctx,
 /*!
  * Accept new connection (called after poll)
  * 
- * @parm srvctx [in] Server context
- * @param conn [out] Accepted connection
+ * @parm srv_ctx Pointer to server context (can be NULL)
+ * @parm listening socket to accept
+ * @param socket [out] Accepted connection
  * @return 1 on success, 0 on failure.
  * 
  */
 
 int
-accept_new_connection( const struct server_context *srv_ctx, 
-                        struct stcp_connection *conn );                       
+accept_new_connection( struct server_context *srv_ctx,
+                        const struct socket *listener, 
+                        struct socket *psocket );                 
 
 
 #ifdef __cplusplus
