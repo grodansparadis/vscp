@@ -101,7 +101,7 @@ void *TCPListenThread::Entry()
     struct pollfd *pfd;
     memset( &opts, 0, sizeof( opts ) );
 
-
+    // Init. SSL subsystem
     if ( 0 == stcp_init_ssl( &opts, m_srvctx.ssl_ctx ) ) {
         gpobj->logMsg( _("[TCP/IP srv thread] Failed to init. ssl.\n"), 
                         DAEMON_LOGMSG_NORMAL );       
@@ -111,7 +111,8 @@ void *TCPListenThread::Entry()
 
     m_srvctx.secure_opts = &opts;
 
-    if ( 0 == stcp_init_listening( &m_srvctx, 
+    // Bind to selected interface
+    if ( 0 == stcp_listening( &m_srvctx, 
                         (const char *)gpobj->m_strTcpInterfaceAddress.mbc_str() ) ) {
         gpobj->logMsg( _("[TCP/IP srv thread] Failed to init listening socket.\n"), 
                         DAEMON_LOGMSG_NORMAL ); 
@@ -120,42 +121,47 @@ void *TCPListenThread::Entry()
     }
     
     gpobj->logMsg( _("[TCP/IP srv listen thread] Started.\n"), DAEMON_LOGMSG_DEBUG  );
-    
-    pfd = m_srvctx.listening_socket_fds;
-    while ( !TestDestroy() && !(gpobj->stopTcpIpSrv) ) {
         
-        gpobj->logMsg(_("[TCP/IP srv] Connect.\n") );
- 
-        //struct pollfd pfd[1];
-        int pollres;
-	//pfd[0].fd = conn->client.sock;
-        //pfd[0].events = POLLIN;
+    while ( !TestDestroy() && !(gpobj->stopTcpIpSrv) ) {
+                 
+        pfd = m_srvctx.listening_socket_fds;
+        memset( pfd, 0, sizeof(pfd) );
         for ( i = 0; i < m_srvctx.num_listening_sockets; i++ ) {
             pfd[ i ].fd = m_srvctx.listening_sockets[i].sock;
             pfd[ i ].events = POLLIN;
+            pfd[ i ].revents = 0;
         }
         
+        int pollres;
         if ( ( pollres = stcp_poll( pfd, 
                                         m_srvctx.num_listening_sockets, 
-                                        200, &(gpobj->stopTcpIpSrv) ) ) > 0  ) {
+                                        20000, 
+                                        &(gpobj->stopTcpIpSrv) ) ) > 0  ) {
+        //if ( ( pollres = poll( pfd, m_srvctx.num_listening_sockets, 200 ) ) > 0 )  {
             
-            for ( i = 0; i < m_srvctx.num_listening_sockets; i++) {
-                /* NOTE(lsm): on QNX, poll() returns POLLRDNORM after the
-	         * successful poll, and POLLIN is defined as
-		 * (POLLRDNORM | POLLRDBAND)
-		 * Therefore, we're checking pfd[i].revents & POLLIN, not
-		 * pfd[i].revents == POLLIN. */
-		if ( ( 0 == gpobj->stopTcpIpSrv ) && 
-                     ( pfd[i].revents & POLLIN ) ) {
+            for ( i = 0; i < m_srvctx.num_listening_sockets; i++ ) {
+                
+                // NOTE(lsm): on QNX, poll() returns POLLRDNORM after the
+                // successful poll, and POLLIN is defined as
+                // (POLLRDNORM | POLLRDBAND)
+                // Therefore, we're checking pfd[i].revents & POLLIN, not
+                // pfd[i].revents == POLLIN. 
+                if ( pfd[i].revents & POLLIN ) {
+
                     psocket = new struct socket;    // New socket
-                    if ( accept_new_connection( &m_srvctx, &m_srvctx.listening_sockets[ i ], psocket ) ) {
+                    if ( stcp_accept( &m_srvctx, &m_srvctx.listening_sockets[ i ], psocket ) ) {
                         gpobj->logMsg( _("[TCP/IP srv] -- Accept.\n") );
+                        write( psocket->sock, "Hello\n", 6 );
+                        delete psocket;
+                        psocket = NULL;
                     }
                     else {
                         delete psocket;
                         psocket = NULL;
                     }
-		}
+
+		        }
+
             }
             
             /*if ( accept_new_connection( &m_srvctx, psocket ) ) {
@@ -168,7 +174,9 @@ void *TCPListenThread::Entry()
             
         }
 
-    }
+        pollres = 0;
+
+    } // While
     
     gpobj->logMsg( _("[TCP/IP srv listen thread] Exit.\n"), DAEMON_LOGMSG_DEBUG  );
 

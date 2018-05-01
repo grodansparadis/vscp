@@ -232,13 +232,9 @@ struct server_context
     struct pollfd *listening_socket_fds;
     unsigned int num_listening_sockets;
     
-    //struct socket listener;             /* Listening socket */
-    //struct pollfd listener_fds;         /* File descriptor for listening port */
-
     //struct socket *client_socks;
     //struct stcp_connection *conn    
 
-    int config_max_listen_queue;
     int config_tcp_nodelay;             /* 
                                             Deafult = 0
                                             Set to 1 to enable. If set the socket option will disable 
@@ -387,8 +383,8 @@ stcp_poll( struct pollfd *pfd,
 */
 
 int
-stcp_init_listening( struct server_context *srv_ctx, 
-                        const char *str_listening_port );
+stcp_listening( struct server_context *srv_ctx, 
+                    const char *str_listening_port );
 
 /*!
  * Accept new connection (called after poll)
@@ -401,9 +397,9 @@ stcp_init_listening( struct server_context *srv_ctx,
  */
 
 int
-accept_new_connection( struct server_context *srv_ctx,
-                        const struct socket *listener, 
-                        struct socket *psocket );                 
+stcp_accept( struct server_context *srv_ctx,
+                const struct socket *listener, 
+                struct socket *psocket );                 
 
 
 #ifdef __cplusplus

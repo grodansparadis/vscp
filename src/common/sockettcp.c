@@ -430,6 +430,7 @@ struct pollfd {
 #include <sys/errno.h>
 #include <sys/time.h>
 #include <sys/wait.h>
+//#include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <sys/poll.h>
 #include <netinet/in.h>
@@ -1034,10 +1035,9 @@ event_destroy(void *eventhdl)
 //
 
 static void
-set_close_on_exec(SOCKET sock, struct web_connection *conn /* may be null */)
+set_close_on_exec(SOCKET sock)
 {
-    (void) conn; // Unused.
-    (void) sock;
+    (void)conn; // Unused.
 }
 
 
@@ -1095,15 +1095,10 @@ stcp_report_error( const char *fmt, ... )
 //
 
 static void
-set_close_on_exec(SOCKET fd, struct stcp_connection *conn /* may be null */)
+set_close_on_exec( SOCKET fd )
 {
     if ( fcntl( fd, F_SETFD, FD_CLOEXEC ) != 0 ) {
-
-        if ( conn ) {
-            stcp_report_error( "fcntl(F_SETFD FD_CLOEXEC) failed: %s",
-                                strerror( ERRNO ) );
-        }
-
+        ;
     }
 
 }
@@ -3329,7 +3324,7 @@ close_all_listening_sockets( struct server_context *srv_ctx )
 
     for ( i = 0; i < srv_ctx->num_listening_sockets; i++ ) {
         closesocket( srv_ctx->listening_sockets[i].sock );
-	srv_ctx->listening_sockets[i].sock = INVALID_SOCKET;
+        srv_ctx->listening_sockets[i].sock = INVALID_SOCKET;
     }
     
     free( srv_ctx->listening_sockets );
@@ -3433,7 +3428,9 @@ reparse:
 // Returns: 0 = failure. 1 == success
 
 static int
-parse_port_string( const struct msg *msg, struct socket *so, int *ip_version )
+parse_port_string( const struct msg *msg, 
+                    struct socket *so, 
+                    int *ip_version )
 {
     unsigned int a, b, c, d, port;
     int ch, len;
@@ -3452,16 +3449,20 @@ parse_port_string( const struct msg *msg, struct socket *so, int *ip_version )
     len = 0;
 
     // Test for different ways to format this string
-    if ( 5 == sscanf( msg->ptr, "%u.%u.%u.%u:%u%n", &a, &b, &c, &d, &port, &len ) ) {
+    if ( 5 == sscanf( msg->ptr, 
+                        "%u.%u.%u.%u:%u%n", 
+                        &a, &b, &c, &d, &port, &len ) ) {
 
         // Bind to a specific IPv4 address, e.g. 192.168.1.5:8080
-        so->lsa.sin.sin_addr.s_addr = htonl((a << 24) | (b << 16) | (c << 8) | d);
+        so->lsa.sin.sin_addr.s_addr = htonl((a << 24) | (b << 16) | (c << 8) | d );
         so->lsa.sin.sin_port = htons((uint16_t) port);
         *ip_version = 4;
 
     }
     else if ( ( 2 == sscanf( msg->ptr, "[%49[^]]]:%u%n", buf, &port, &len ) ) &&
-                stcp_inet_pton( AF_INET6, buf, &so->lsa.sin6, sizeof(so->lsa.sin6) ) ) {
+                stcp_inet_pton( AF_INET6, buf, 
+                                    &so->lsa.sin6, 
+                                    sizeof(so->lsa.sin6) ) ) {
 
         // IPv6 address, examples: see above
         // so->lsa.sin6.sin6_family = AF_INET6; already set by web_inet_pton
@@ -3499,9 +3500,9 @@ parse_port_string( const struct msg *msg, struct socket *so, int *ip_version )
 		                    // We are going to restore the string later.
 
         if ( stcp_inet_pton( AF_INET,
-                                    msg->ptr,
-                                    &so->lsa.sin,
-                                    sizeof (so->lsa.sin) ) ) {
+                                msg->ptr,
+                                &so->lsa.sin,
+                                sizeof (so->lsa.sin) ) ) {
             if ( 1 == sscanf(cb + 1, "%u%n", &port, &len) ) {
                 *ip_version = 4;
                 so->lsa.sin.sin_family = AF_INET;
@@ -3564,8 +3565,8 @@ parse_port_string( const struct msg *msg, struct socket *so, int *ip_version )
 //
 
 int
-stcp_init_listening( struct server_context *srv_ctx, 
-                        const char *str_listening_port )
+stcp_listening( struct server_context *srv_ctx, 
+                    const char *str_listening_port )
 {
     const char *list;
     int on = 1;
@@ -3589,11 +3590,6 @@ stcp_init_listening( struct server_context *srv_ctx,
 
     /* Init. defaults */
 
-    /* Listening queue maximum */
-    if ( 0 == srv_ctx->config_max_listen_queue ) {
-        srv_ctx->config_max_listen_queue = SOMAXCONN;
-    }
-
     memset(&so, 0, sizeof(so));
     memset( &usa, 0, sizeof( usa ) );
     len = sizeof( usa );
@@ -3602,7 +3598,7 @@ stcp_init_listening( struct server_context *srv_ctx,
     msg.ptr = str_listening_port;
     msg.len = strlen( str_listening_port );
     
-    while ( ( list = next_option( list, &msg, NULL)) != NULL ) {
+    while ( ( list = next_option( list, &msg, NULL) ) != NULL ) {
 
         portsTotal++;
 
@@ -3620,14 +3616,14 @@ stcp_init_listening( struct server_context *srv_ctx,
             return 0;
         }
 
-        if ( INVALID_SOCKET == ( so.sock = 
-                socket( so.lsa.sa.sa_family, SOCK_STREAM, 6 ) ) ) {
-
+        if ( INVALID_SOCKET == 
+                 ( so.sock = socket( so.lsa.sa.sa_family, SOCK_STREAM, 6 ) ) ) {
             stcp_report_error( "cannot create socket" );
             return 0;
         }
 
 #ifdef _WIN32
+        
         // Windows SO_REUSEADDR lets many procs binds to a
         // socket, SO_EXCLUSIVEADDRUSE makes the bind fail
         // if someone already has the socket -- DTL */
@@ -3650,7 +3646,7 @@ stcp_init_listening( struct server_context *srv_ctx,
         if ( setsockopt( so.sock,
                             SOL_SOCKET,
                             SO_REUSEADDR,
-                            ( (SOCK_OPT_TYPE) & on ),
+                            ( (SOCK_OPT_TYPE)&on ),
                             sizeof( on ) ) != 0 ) {
 
             // Set reuse option, but don't abort on errors.
@@ -3670,8 +3666,8 @@ stcp_init_listening( struct server_context *srv_ctx,
 				        sizeof( off ) ) != 0 ) {
 
                         /* Set IPv6 only option, but don't abort on errors. */
-			stcp_report_error( "cannot set socket option IPV6_V6ONLY=off (entry %i)",
-					    portsTotal );
+			        stcp_report_error( "cannot set socket option IPV6_V6ONLY=off (entry %i)",
+					                    portsTotal );
                 }
             }
             else {
@@ -3690,6 +3686,8 @@ stcp_init_listening( struct server_context *srv_ctx,
             }
 
         }
+        
+        set_non_blocking_mode( so.sock );
 
         if ( so.lsa.sa.sa_family == AF_INET ) {
 
@@ -3731,8 +3729,7 @@ stcp_init_listening( struct server_context *srv_ctx,
             return 0;
         }
 
-        if ( listen( so.sock, 
-                        srv_ctx->config_max_listen_queue ) != 0 ) {
+        if ( listen( so.sock, SOMAXCONN ) != 0 ) {
 
             stcp_report_error( "cannot listen to %.*s: %d (%s)",
                                 (int)msg.len,
@@ -3766,9 +3763,10 @@ stcp_init_listening( struct server_context *srv_ctx,
             so.lsa.sin.sin_port = usa.sin.sin_port;
         }
         
-        if ( NULL == ( ptr = (struct socket *)realloc( srv_ctx->listening_sockets,
-                                 ( srv_ctx->num_listening_sockets + 1 ) *
-                                 sizeof( srv_ctx->listening_sockets[0] ) ) ) ) {
+        if ( NULL == ( ptr = 
+                (struct socket *)realloc( srv_ctx->listening_sockets,
+                                            ( srv_ctx->num_listening_sockets + 1 ) *
+                                            sizeof( srv_ctx->listening_sockets[0] ) ) ) ) {
 
             stcp_report_error( "Out of memory" );
             closesocket( so.sock );
@@ -3776,9 +3774,10 @@ stcp_init_listening( struct server_context *srv_ctx,
             continue;
         }
 
-        if ( NULL == ( pfd = (struct pollfd *)realloc( srv_ctx->listening_socket_fds,
-                                (srv_ctx->num_listening_sockets + 1) *
-		                sizeof(srv_ctx->listening_socket_fds[0]) ) ) ) {
+        if ( NULL == ( pfd = 
+                (struct pollfd *)realloc( srv_ctx->listening_socket_fds,
+                                            ( srv_ctx->num_listening_sockets + 1 ) *
+		                                    sizeof( srv_ctx->listening_socket_fds[0] ) ) ) ) {
 
             stcp_report_error( "Out of memory" );
             closesocket( so.sock );
@@ -3787,16 +3786,16 @@ stcp_init_listening( struct server_context *srv_ctx,
             continue;
         }
     
-        //set_close_on_exec( so.sock, fc( srv_ctx ) );   TODO
+        set_close_on_exec( so.sock );
         srv_ctx->listening_sockets = ptr;
-        srv_ctx->listening_sockets[srv_ctx->num_listening_sockets] = so;
+        srv_ctx->listening_sockets[ srv_ctx->num_listening_sockets ] = so;
         srv_ctx->listening_socket_fds = pfd;
         srv_ctx->num_listening_sockets++;
         portsOk++;
         
     } // while
     
-    if (portsOk != portsTotal) {
+    if ( portsOk != portsTotal ) {
         close_all_listening_sockets( srv_ctx );
         portsOk = 0;
     }
@@ -3810,7 +3809,9 @@ stcp_init_listening( struct server_context *srv_ctx,
 //
 
 int
-accept_new_connection( struct server_context *srv_ctx, const struct socket *listener, struct socket *psocket )
+stcp_accept( struct server_context *srv_ctx, 
+                const struct socket *listener, 
+                struct socket *psocket )
 {
     char src_addr[ IP_ADDR_STR_LEN ];
     socklen_t len = sizeof( psocket->rsa );
@@ -3890,6 +3891,7 @@ accept_new_connection( struct server_context *srv_ctx, const struct socket *list
 	    set_non_blocking_mode( psocket->sock );
 
         psocket->in_use = 0;
+        // TODO add socket to pool
     }
 
     return 1;

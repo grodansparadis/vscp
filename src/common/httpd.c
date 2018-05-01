@@ -18242,14 +18242,14 @@ set_ports_option( struct web_context *ctx )
 				
                 if ( so.lsa.sa.sa_family == AF_INET6 && 
                         setsockopt( so.sock,
-                                        IPPROTO_IPV6,
-				        IPV6_V6ONLY,
-				        (void *)&off,
-				        sizeof(off)) != 0 ) {
+                                    IPPROTO_IPV6,
+				                    IPV6_V6ONLY,
+				                    (void *)&off,
+				                    sizeof(off)) != 0 ) {
 
-                        /* Set IPv6 only option, but don't abort on errors. */
-                        web_cry( fc(ctx),
-                                        "cannot set socket option IPV6_V6ONLY=off (entry %i)",
+                    /* Set IPv6 only option, but don't abort on errors. */
+                     web_cry( fc(ctx),
+                                "cannot set socket option IPV6_V6ONLY=off (entry %i)",
 					portsTotal);
                 }
                 
@@ -18258,10 +18258,10 @@ set_ports_option( struct web_context *ctx )
               
                 if (so.lsa.sa.sa_family == AF_INET6 && 
                             setsockopt( so.sock,
-				        IPPROTO_IPV6,
-				        IPV6_V6ONLY,
-				        (void *)&on,
-				        sizeof(on)) != 0 ) {
+				                            IPPROTO_IPV6,
+				                            IPV6_V6ONLY,
+				                            (void *)&on,
+				                            sizeof(on)) != 0 ) {
 
                             /* Set IPv6 only option, but don't abort on errors. */
                             web_cry( fc(ctx),
@@ -18274,25 +18274,26 @@ set_ports_option( struct web_context *ctx )
         }
         
 
-        if (so.lsa.sa.sa_family == AF_INET) {
+        if ( so.lsa.sa.sa_family == AF_INET ) {
 
             len = sizeof (so.lsa.sin);
-            if (bind(so.sock, &so.lsa.sa, len) != 0) {
+            if ( bind( so.sock, &so.lsa.sa, len) != 0 ) {
                 web_cry( fc(ctx),
-                                "cannot bind to %.*s: %d (%s)",
-                                (int) msg.len,
-                                msg.ptr,
-                                (int) ERRNO,
-                                strerror(errno) );
+                            "cannot bind to %.*s: %d (%s)",
+                            (int) msg.len,
+                            msg.ptr,
+                            (int) ERRNO,
+                            strerror(errno) );
                 closesocket(so.sock);
                 so.sock = INVALID_SOCKET;
                 continue;
             }
+
         }
         else if (so.lsa.sa.sa_family == AF_INET6) {
 
             len = sizeof (so.lsa.sin6);
-            if (bind(so.sock, &so.lsa.sa, len) != 0) {
+            if (bind( so.sock, &so.lsa.sa, len) != 0 ) {
                 web_cry( fc(ctx),
                                 "cannot bind to IPv6 %.*s: %d (%s)",
                                 (int) msg.len,
@@ -18313,7 +18314,7 @@ set_ports_option( struct web_context *ctx )
             continue;
         }
 
-        if ( listen(so.sock, SOMAXCONN) != 0 ) {
+        if ( listen(so.sock, SOMAXCONN ) != 0 ) {
 
             web_cry( fc(ctx),
                             "cannot listen to %.*s: %d (%s)",
@@ -18326,7 +18327,7 @@ set_ports_option( struct web_context *ctx )
             continue;
         }
 
-        if ( (getsockname(so.sock, &(usa.sa), &len) != 0) ||
+        if ( ( getsockname(so.sock, &(usa.sa), &len) != 0 ) ||
              (usa.sa.sa_family != so.lsa.sa.sa_family) ) {
 
             int err = (int) ERRNO;
@@ -21309,11 +21310,11 @@ accept_new_connection(const struct socket *listener, struct web_context *ctx)
 
         // The "non blocking" property should already be
         // inherited from the parent socket. Set it for
-	// non-compliant socket implementations. */
-	set_non_blocking_mode( so.sock );
+	    // non-compliant socket implementations. */
+	    set_non_blocking_mode( so.sock );
 
         so.in_use = 0;
-        produce_socket(ctx, &so);
+        produce_socket( ctx, &so );
     }
 }
 
