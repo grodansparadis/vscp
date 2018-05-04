@@ -58,6 +58,7 @@
 #include <version.h>
 #include <controlobject.h>
 
+WX_DEFINE_LIST( TCPIPCLIENTS );
 
 ///////////////////////////////////////////////////
 //                 GLOBALS
@@ -79,6 +80,7 @@ TCPListenThread::TCPListenThread()
     // Init. the server comtext structure 
     memset( &m_srvctx, 0, sizeof( struct server_context ) );
     
+    m_idCounter = 0;
 }
 
 
@@ -102,14 +104,14 @@ void *TCPListenThread::Entry()
     memset( &opts, 0, sizeof( opts ) );
 
     // Init. SSL subsystem
-    if ( 0 == stcp_init_ssl( &opts, m_srvctx.ssl_ctx ) ) {
+    if ( 0 == stcp_init_ssl( m_srvctx.ssl_ctx, &opts ) ) {
         gpobj->logMsg( _("[TCP/IP srv thread] Failed to init. ssl.\n"), 
                         DAEMON_LOGMSG_NORMAL );       
         gpobj->m_confirmQuitTcpIpSrv = VSCPD_QUIT_FLAG;                                     
         return NULL;
     }
 
-    m_srvctx.secure_opts = &opts;
+    //m_srvctx.secure_opts = &opts;
 
     // Bind to selected interface
     if ( 0 == stcp_listening( &m_srvctx, 
@@ -135,9 +137,8 @@ void *TCPListenThread::Entry()
         int pollres;
         if ( ( pollres = stcp_poll( pfd, 
                                         m_srvctx.num_listening_sockets, 
-                                        20000, 
+                                        200, 
                                         &(gpobj->stopTcpIpSrv) ) ) > 0  ) {
-        //if ( ( pollres = poll( pfd, m_srvctx.num_listening_sockets, 200 ) ) > 0 )  {
             
             for ( i = 0; i < m_srvctx.num_listening_sockets; i++ ) {
                 
@@ -148,12 +149,61 @@ void *TCPListenThread::Entry()
                 // pfd[i].revents == POLLIN. 
                 if ( pfd[i].revents & POLLIN ) {
 
-                    psocket = new struct socket;    // New socket
-                    if ( stcp_accept( &m_srvctx, &m_srvctx.listening_sockets[ i ], psocket ) ) {
-                        gpobj->logMsg( _("[TCP/IP srv] -- Accept.\n") );
-                        write( psocket->sock, "Hello\n", 6 );
-                        delete psocket;
-                        psocket = NULL;
+                    conn = new struct stcp_connection;    // New connection
+                    if ( NULL == conn ) {
+                       gpobj->logMsg( _("[TCP/IP srv] -- Memory problem when creating conn object.\n") );
+                       continue; 
+                    }
+                    memset( conn, 0, sizeof(struct stcp_connection) );
+                    conn->client.id = m_idCounter++;
+
+                    if ( stcp_accept( &m_srvctx, &m_srvctx.listening_sockets[ i ], &(conn->client) ) ) {
+
+                        stcp_init_client_connection( conn, &opts );
+                        
+                        gpobj->logMsg( _("[TCP/IP srv] -- Connection accept.\n") );
+
+                        write( conn->client.sock, "Hello\r\n", 7 );
+
+                        // Create the thread
+                        TCPClientThread *pThread = new TCPClientThread;
+                        if ( NULL == pThread ) {
+                            gpobj->logMsg( _("[TCP/IP srv] -- Memory problem when creating client thread.\n") );
+                            stcp_close_connection( conn );
+                            delete conn;
+                            continue;
+                        }
+
+                        pThread->m_conn = conn;
+                        pThread->m_pParent = this;
+
+                        wxThreadError err;
+                        if ( wxTHREAD_NO_ERROR == ( err = pThread->Create() ) ) {
+            
+                            pThread->SetPriority( WXTHREAD_DEFAULT_PRIORITY );
+            
+                            if ( wxTHREAD_NO_ERROR != ( err = pThread->Run() ) ) {
+                                gpobj->logMsg(_("[TCP/IP srv] -- Unable to run TCP client thread.") );
+                                stcp_close_connection( conn );
+                                delete conn;
+                                delete pThread;
+                                continue;
+                            }
+
+                        }
+                        else {
+                            gpobj->logMsg( _("[TCP/IP srv] -- Unable to create TCP client thread.") );
+                            stcp_close_connection( conn );
+                            delete conn;
+                            delete pThread;
+                            continue;
+                        }
+
+                        // Add conn to list of active connections
+                        gpobj->m_mutexTcpClientList.Lock();
+                        m_clientList.Append( conn );
+                        gpobj->m_mutexTcpClientList.Unlock();
+
                     }
                     else {
                         delete psocket;
@@ -216,12 +266,15 @@ TCPClientThread::TCPClientThread()
     m_strResponse.Empty();  // For clearness
     m_rv = 0;               // No error code
     m_bReceiveLoop = false; // Not in receive loop
+    m_conn = NULL;          // No connection yet
+    m_pParent = NULL;       // No parent yet
 }
 
 
 TCPClientThread::~TCPClientThread()
 {
-    ;
+    m_strResponse.Empty();
+    m_commandList.Clear();
 }
 
 
@@ -278,7 +331,7 @@ void *TCPClientThread::Entry()
    write(  (const char*)str.mbc_str(), str.Length() );
 
     gpobj->logMsg( _("[TCP/IP srv] Ready to serve client.\n"),
-                         DAEMON_LOGMSG_DEBUG);
+                         DAEMON_LOGMSG_DEBUG );
     
         
     // Enter command loop
@@ -287,15 +340,14 @@ void *TCPClientThread::Entry()
         
         // Read possible data from client
         memset( buf, 0, sizeof( buf ) );
-        int nRead = stcp_read( &m_conn, buf, sizeof( buf ), 0 );
+        int nRead = stcp_read( m_conn, buf, sizeof( buf ), 200 );
         
-        if ( 0 ==  nRead ) {
-            continue;   // Nothing more to read
+        if ( 0 == nRead ) {
+            ;   // Nothing more to read
         }
         else if ( nRead < 0 ) {
             if ( STCP_ERROR_TIMEOUT == nRead ) {
                 m_rv = VSCP_ERROR_TIMEOUT;
-                continue;
             }
             else if ( STCP_ERROR_STOPPED == nRead ) {
                 m_rv = VSCP_ERROR_STOPPED;
@@ -307,13 +359,57 @@ void *TCPClientThread::Entry()
             m_strResponse += wxString::FromUTF8Unchecked( buf, nRead );
         }
         
-        
+        // get data up to "\r\n" if any
+        int pos;
+        if ( wxNOT_FOUND != ( pos = m_strResponse.Find("\n"))) {
+            
+            // Get the command
+            wxString strCommand = m_strResponse.Left( pos + 1 );
+            strCommand.Trim();
+            strCommand.Trim(false);
+
+            // Save the unhandled part
+            m_strResponse = m_strResponse.Right( m_strResponse.Length() - pos - 1 );
+
+            // Execute command
+            if ( VSCP_TCPIP_RV_CLOSE == CommandHandler( strCommand ) ) {
+                break;
+            }
+
+        }
+
     }
+
+    // Remove the client from the client queue
+    gpobj->m_mutexTcpClientList.Lock();
+    TCPIPCLIENTS::iterator iter;
+    for ( iter = m_pParent->m_clientList.begin(); 
+            iter != m_pParent->m_clientList.end(); 
+            ++iter ) {
+        
+        struct stcp_connection *stored_conn = *iter;
+        if ( stored_conn->client.id == m_conn->client.id ) {
+            m_pParent->m_clientList.erase( iter );
+            break;
+        }
+    }
+    gpobj->m_mutexTcpClientList.Unlock();
+    
+    // Close the connection
+    stcp_close_connection( m_conn );
+    //delete m_conn;
+    m_conn = NULL;
+
+    // Close the channel
+    m_pClientItem->m_bOpen = false;
     
     // Remove the client from the Client List
     gpobj->m_wxClientMutex.Lock();
     gpobj->removeClient( m_pClientItem );
     gpobj->m_wxClientMutex.Unlock();
+
+    m_pClientItem = NULL;
+    m_pParent = NULL;
     
     gpobj->logMsg( _("[TCP/IP srv client thread] Exit.\n"), DAEMON_LOGMSG_DEBUG );
 
@@ -337,13 +433,13 @@ void TCPClientThread::OnExit()
 bool TCPClientThread::write( wxString& str, bool bAddCRLF )
 {
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return false;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return false;
     
     if ( bAddCRLF ) {
         str += _("\r\n");
     }
     
-    m_rv =write(  (const char*)str.mbc_str(), str.Length() );
+    m_rv = stcp_write( m_conn, (const char*)str.mbc_str(), str.Length() );
     if ( m_rv != str.Length() ) return false;
     
     return true;
@@ -356,9 +452,9 @@ bool TCPClientThread::write( wxString& str, bool bAddCRLF )
 bool TCPClientThread::write( const char *buf, size_t len )
 {
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return false;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return false;
     
-    m_rv =write(  (const char*)buf, len );
+    m_rv = stcp_write( m_conn, (const char*)buf, len );
     if ( m_rv != len ) return false;
     
     return true;
@@ -373,13 +469,15 @@ bool TCPClientThread::read( wxString& str )
     int pos;
     
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return false;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return false;
     
     if ( wxNOT_FOUND != ( pos = m_strResponse.First('\n') ) ) {
+
         // Get the string
         str = m_strResponse.Left( pos + 1 );
-        str.Trim();
+        str.Trim(true);
         str.Trim(false);
+
         // Remove string from buffer
         m_strResponse = m_strResponse.Right( m_strResponse.Length() - pos - 1 );        
     }
@@ -390,24 +488,24 @@ bool TCPClientThread::read( wxString& str )
 // CommandHandler
 //
 
-void
+int
 TCPClientThread::CommandHandler( wxString& strCommand )
 {
     bool repeat = false;
     
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) {
+        return VSCP_TCPIP_RV_ERROR;
+    }
 
     if ( NULL == gpobj ) {
         gpobj->logMsg( _( "[TCP/IP srv] ERROR: Control object pointer is NULL in command handler. \n" )  );
-        stcp_close_connection( &m_conn );    // Close connection
-        return;
+        return VSCP_TCPIP_RV_CLOSE; // Close connection
     }
 
     if ( NULL == m_pClientItem ) {
         gpobj->logMsg( _( "[TCP/IP srv] ERROR: ClientItem pointer is NULL in command handler.\n" )  );
-        stcp_close_connection( &m_conn );    // Close connection
-        return;
+        return VSCP_TCPIP_RV_CLOSE; // Close connection
     }
 
     m_pClientItem->m_currentCommand = strCommand;
@@ -417,7 +515,7 @@ TCPClientThread::CommandHandler( wxString& strCommand )
     // If nothing to handle just return
     if ( 0 == m_pClientItem->m_currentCommand.Length() ) {
         write( MSG_OK, strlen ( MSG_OK ) );
-        return;
+        return VSCP_TCPIP_RV_OK;
     }
 
     // If we are in a receive loop only the quitloop command works
@@ -425,14 +523,12 @@ TCPClientThread::CommandHandler( wxString& strCommand )
         if ( m_pClientItem->CommandStartsWith( _("quitloop") ) ) {
             m_bReceiveLoop = false;
             write(  MSG_QUIT_LOOP, strlen ( MSG_QUIT_LOOP ) );
-            return;
+            return VSCP_TCPIP_RV_OK;
         }
         else {
-            return;
+            return VSCP_TCPIP_RV_OK;
         }
     }
-     
-REPEAT_COMMAND:
 
     //*********************************************************************
     //                            No Operation
@@ -440,6 +536,7 @@ REPEAT_COMMAND:
     
     if ( m_pClientItem->CommandStartsWith( _("noop") ) ) {        
         write(   MSG_OK, strlen ( MSG_OK ) );
+        return VSCP_TCPIP_RV_OK;
     }
 
     //*********************************************************************
@@ -449,7 +546,7 @@ REPEAT_COMMAND:
     else if ( m_pClientItem->CommandStartsWith( _("+") ) ) {
         // Repeat last command
         m_pClientItem->m_currentCommand = m_pClientItem->m_lastCommand;
-        goto REPEAT_COMMAND;
+        //goto REPEAT_COMMAND;
     }
 
     //*********************************************************************
@@ -470,8 +567,7 @@ REPEAT_COMMAND:
             gpobj->logMsg ( _( "[TCP/IP srv] Command: Password. Not authorized.\n" ),
                                     DAEMON_LOGMSG_NORMAL,
                                     DAEMON_LOGTYPE_SECURITY );
-            stcp_close_connection( &m_conn );  // Close connection
-            return;
+            return VSCP_TCPIP_RV_CLOSE;    // Close connection
         }
 
         if ( gpobj->m_debugFlags1 & VSCP_DEBUG1_TCP ) {
@@ -499,9 +595,8 @@ REPEAT_COMMAND:
         }
 
         write(  MSG_GOODBY, strlen ( MSG_GOODBY ) );
-
-        stcp_close_connection( &m_conn );  // Close connection
-        return;
+ 
+        return VSCP_TCPIP_RV_CLOSE; // Close connection
     }
 
     //*********************************************************************
@@ -509,7 +604,7 @@ REPEAT_COMMAND:
     //*********************************************************************
     else if ( m_pClientItem->CommandStartsWith(_("shutdown") ) ) {
         if ( checkPrivilege( 15 ) ) {
-            handleClientShutdown();
+            handleClientShutdown();            
         }
     }
 
@@ -781,8 +876,9 @@ REPEAT_COMMAND:
     }
 
     m_pClientItem->m_lastCommand = m_pClientItem->m_currentCommand;
+    return VSCP_TCPIP_RV_OK;
 
-}
+} // clientcommand
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -826,7 +922,7 @@ void TCPClientThread::handleClientMeasurment( void )
     }
     
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
     
     if ( NULL == m_pClientItem ) {
         write( MSG_INTERNAL_MEMORY_ERROR, strlen( MSG_INTERNAL_MEMORY_ERROR ) );
@@ -1270,7 +1366,7 @@ bool TCPClientThread::isVerified( void )
     }
     
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return false;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return false;
 
     // Must be accredited to do this
     if ( !m_pClientItem->bAuthenticated ) {
@@ -1293,7 +1389,7 @@ bool TCPClientThread::checkPrivilege( unsigned char reqiredPrivilege )
     }
     
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return false;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return false;
 
     // Must be authenticated
     if ( !m_pClientItem->bAuthenticated ) {
@@ -1327,7 +1423,7 @@ void TCPClientThread::handleClientSend( void )
     wxString nameVariable;
     
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
     
     // Set timestamp block for event
     vscp_setEventDateTimeBlockToNow( &event );
@@ -1570,7 +1666,7 @@ void TCPClientThread::handleClientReceive( void )
     unsigned short cnt = 0;	// # of messages to read
     
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
     // Must be accredited to do this
     if ( !m_pClientItem->bAuthenticated ) {
@@ -1616,7 +1712,7 @@ bool TCPClientThread::sendOneEventFromQueue( bool bStatusMsg )
     wxString strOut;
     
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return false;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return false;
 
     CLIENTEVENTLIST::compatibility_iterator nodeClient;
 
@@ -1667,7 +1763,7 @@ void TCPClientThread::handleClientDataAvailable( void )
     char outbuf[ 1024 ];
     
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
     // Must be accredited to do this
     if ( !m_pClientItem->bAuthenticated ) {
@@ -1692,7 +1788,7 @@ void TCPClientThread::handleClientDataAvailable( void )
 void TCPClientThread::handleClientClearInputQueue( void )
 {
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
     // Must be accredited to do this
     if ( !m_pClientItem->bAuthenticated ) {
@@ -1718,7 +1814,7 @@ void TCPClientThread::handleClientGetStatistics( void )
     char outbuf[ 1024 ];
     
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
     // Must be accredited to do this
     if ( !m_pClientItem->bAuthenticated ) {
@@ -1749,7 +1845,7 @@ void TCPClientThread::handleClientGetStatus( void )
     char outbuf[ 1024 ];
     
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
     // Must be accredited to do this
     if ( !m_pClientItem->bAuthenticated ) {
@@ -1778,7 +1874,7 @@ void TCPClientThread::handleClientGetChannelID( void )
     char outbuf[ 1024 ];
     
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
     // Must be accredited to do this
     if ( !m_pClientItem->bAuthenticated ) {
@@ -1801,7 +1897,7 @@ void TCPClientThread::handleClientGetChannelID( void )
 void TCPClientThread::handleClientSetChannelGUID( void )
 {
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
     // Must be accredited to do this
     if ( !m_pClientItem->bAuthenticated ) {
@@ -1825,7 +1921,7 @@ void TCPClientThread::handleClientGetChannelGUID( void )
     wxString strBuf;
     
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
     // Must be accredited to do this
     if ( !m_pClientItem->bAuthenticated ) {
@@ -1850,7 +1946,7 @@ void TCPClientThread::handleClientGetVersion( void )
     char outbuf[ 1024 ];
 
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
     // Must be accredited to do this
     if ( !m_pClientItem->bAuthenticated ) {
@@ -1878,7 +1974,7 @@ void TCPClientThread::handleClientGetVersion( void )
 void TCPClientThread::handleClientSetFilter( void )
 {
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
     // Must be accredited to do this
     if ( !m_pClientItem->bAuthenticated ) {
@@ -1943,7 +2039,7 @@ void TCPClientThread::handleClientSetFilter( void )
 void TCPClientThread::handleClientSetMask( void )
 {
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
     // Must be accredited to do this
     if ( !m_pClientItem->bAuthenticated ) {
@@ -2008,7 +2104,7 @@ void TCPClientThread::handleClientSetMask( void )
 void TCPClientThread::handleClientUser( void )
 {
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
     if ( m_pClientItem->bAuthenticated ) {
         write(   MSG_OK, strlen ( MSG_OK ) );
@@ -2034,7 +2130,7 @@ void TCPClientThread::handleClientUser( void )
 bool TCPClientThread::handleClientPassword( void )
 {
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return false;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return false;
 
     if ( m_pClientItem->bAuthenticated ) {
         write( MSG_OK, strlen ( MSG_OK ) );
@@ -2084,7 +2180,7 @@ bool TCPClientThread::handleClientPassword( void )
     struct sockaddr_in cli_addr;
     socklen_t clilen = 0;
     clilen = sizeof (cli_addr);
-    (void)getpeername( m_conn.client.sock, (struct sockaddr *)&cli_addr, &clilen);
+    (void)getpeername( m_conn->client.sock, (struct sockaddr *)&cli_addr, &clilen);
     wxString remoteaddr = wxString::FromAscii( inet_ntoa( cli_addr.sin_addr ) );
 
     // Check if this user is allowed to connect from this location
@@ -2130,7 +2226,7 @@ void TCPClientThread::handleChallenge( void )
     wxString wxstr;
     
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
     m_pClientItem->m_currentCommand.Trim(true);
     m_pClientItem->m_currentCommand.Trim(false);
@@ -2154,7 +2250,7 @@ void TCPClientThread::handleChallenge( void )
 void TCPClientThread::handleClientRcvLoop( void )
 {
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
     write(   MSG_RECEIVE_LOOP, strlen ( MSG_RECEIVE_LOOP ) );
     m_bReceiveLoop = true; // Mark connection as being in receive loop
@@ -2194,14 +2290,14 @@ void TCPClientThread::handleClientRestart( void )
 void TCPClientThread::handleClientShutdown( void )
 {
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
     if ( !m_pClientItem->bAuthenticated ) {
         write(   MSG_OK, strlen ( MSG_OK ) );
     }
 
     write(   MSG_GOODBY, strlen ( MSG_GOODBY ) );
-    stcp_close_connection( &m_conn );
+    stcp_close_connection( m_conn );
 }
 
 
@@ -2240,7 +2336,7 @@ void TCPClientThread::handleClientRemote( void )
 void TCPClientThread::handleClientInterface( void )
 {
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
     gpobj->logMsg ( m_pClientItem->m_currentCommand, DAEMON_LOGMSG_NORMAL );
 
@@ -2304,7 +2400,7 @@ void TCPClientThread::handleClientInterface_Unique( void )
     memset( ifGUID, 0, 16 );
 
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
     // Get GUID
     m_pClientItem->m_currentCommand.Trim(true);
@@ -2424,7 +2520,7 @@ void TCPClientThread::handleClientFile( void )
 void TCPClientThread::handleClientTable( void )
 {
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
     m_pClientItem->m_currentCommand.Trim(true);
     m_pClientItem->m_currentCommand.Trim(false);    
@@ -2560,7 +2656,7 @@ void TCPClientThread::handleClientTable_Create( void )
     uint8_t subzone = 255;
       
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
     
     if ( !gpobj->m_userTableObjects.createTableFromXML( m_pClientItem->m_currentCommand ) ) {
         write( 
@@ -2584,7 +2680,7 @@ void TCPClientThread::handleClientTable_Delete( void )
     bool bRemoveFile = false;
     
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;   
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;   
         
     wxStringTokenizer tkz( m_pClientItem->m_currentCommand, _(" ") );
     
@@ -2629,7 +2725,7 @@ void TCPClientThread::handleClientTable_Delete( void )
 void TCPClientThread::handleClientTable_List( void )
 {
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
     
     m_pClientItem->m_currentCommand.Trim(true);
     m_pClientItem->m_currentCommand.Trim(false); 
@@ -2880,7 +2976,7 @@ void TCPClientThread::handleClientTable_Get( void )
     wxEnd.ParseISOCombined( _("9999-12-31T23:59:59") );     // The last date
     
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;    
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;    
     
     m_pClientItem->m_currentCommand.Trim(true);
     m_pClientItem->m_currentCommand.Trim(false);
@@ -3033,7 +3129,7 @@ void TCPClientThread::handleClientTable_GetRaw( void )
     wxEnd.ParseISOCombined( _("9999-12-31T23:59:59") );     // The last date
     
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;    
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;    
     
     m_pClientItem->m_currentCommand.Trim(true);
     m_pClientItem->m_currentCommand.Trim(false);
@@ -3171,7 +3267,7 @@ void TCPClientThread::handleClientTable_Clear( void )
     wxEnd.ParseISOCombined( _("9999-12-31T23:59:59") );     // The last date
     
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
     
     m_pClientItem->m_currentCommand.Trim(true);
     m_pClientItem->m_currentCommand.Trim(false);
@@ -3264,7 +3360,7 @@ void TCPClientThread::handleClientTable_Log( void )
     wxDateTime dt;
     
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;    
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;    
     
     m_pClientItem->m_currentCommand.Trim(true);
     m_pClientItem->m_currentCommand.Trim(false);
@@ -3371,7 +3467,7 @@ void TCPClientThread::handleClientTable_LogSQL( void )
     wxString strTable, strSQL;
     
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;    
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;    
     
     m_pClientItem->m_currentCommand.Trim(true);
     m_pClientItem->m_currentCommand.Trim(false);
@@ -3451,7 +3547,7 @@ void TCPClientThread::handleClientTable_NumberOfRecords( void )
     wxEnd.ParseISOCombined( _("9999-12-31T23:59:59") );     // The last date
     
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
     
     m_pClientItem->m_currentCommand.Trim(true);
     m_pClientItem->m_currentCommand.Trim(false);
@@ -3533,7 +3629,7 @@ void TCPClientThread::handleClientTable_FirstDate( void )
     wxString strTable;
     
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
     
     m_pClientItem->m_currentCommand.Trim(true);
     m_pClientItem->m_currentCommand.Trim(false);
@@ -3601,7 +3697,7 @@ void TCPClientThread::handleClientTable_LastDate( void )
     wxString strTable;
     
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
     
     m_pClientItem->m_currentCommand.Trim(true);
     m_pClientItem->m_currentCommand.Trim(false);
@@ -3674,7 +3770,7 @@ void TCPClientThread::handleClientTable_Sum( void )
     wxEnd.ParseISOCombined( _("9999-12-31T23:59:59") );     // The last date
     
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
     
     m_pClientItem->m_currentCommand.Trim(true);
     m_pClientItem->m_currentCommand.Trim(false);
@@ -3763,7 +3859,7 @@ void TCPClientThread::handleClientTable_Min( void )
     wxEnd.ParseISOCombined( _("9999-12-31T23:59:59") );     // The last date
     
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
     
     m_pClientItem->m_currentCommand.Trim(true);
     m_pClientItem->m_currentCommand.Trim(false);
@@ -3852,7 +3948,7 @@ void TCPClientThread::handleClientTable_Max( void )
     wxEnd.ParseISOCombined( _("9999-12-31T23:59:59") );     // The last date
     
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
     
     m_pClientItem->m_currentCommand.Trim(true);
     m_pClientItem->m_currentCommand.Trim(false);
@@ -3940,7 +4036,7 @@ void TCPClientThread::handleClientTable_Average( void )
     wxEnd.ParseISOCombined( _("9999-12-31T23:59:59") );     // The last date
     
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
     
     m_pClientItem->m_currentCommand.Trim(true);
     m_pClientItem->m_currentCommand.Trim(false);
@@ -4028,7 +4124,7 @@ void TCPClientThread::handleClientTable_Median( void )
     wxEnd.ParseISOCombined( _("9999-12-31T23:59:59") );     // The last date
     
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
     
     m_pClientItem->m_currentCommand.Trim(true);
     m_pClientItem->m_currentCommand.Trim(false);
@@ -4117,7 +4213,7 @@ void TCPClientThread::handleClientTable_StdDev( void )
     wxEnd.ParseISOCombined( _("9999-12-31T23:59:59") );     // The last date
     
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
     
     m_pClientItem->m_currentCommand.Trim(true);
     m_pClientItem->m_currentCommand.Trim(false);
@@ -4206,7 +4302,7 @@ void TCPClientThread::handleClientTable_Variance( void )
     wxEnd.ParseISOCombined( _("9999-12-31T23:59:59") );     // The last date
     
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
     
     m_pClientItem->m_currentCommand.Trim(true);
     m_pClientItem->m_currentCommand.Trim(false);
@@ -4294,7 +4390,7 @@ void TCPClientThread::handleClientTable_Mode( void )
     wxEnd.ParseISOCombined( _("9999-12-31T23:59:59") );     // The last date
     
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
     
     m_pClientItem->m_currentCommand.Trim(true);
     m_pClientItem->m_currentCommand.Trim(false);
@@ -4382,7 +4478,7 @@ void TCPClientThread::handleClientTable_LowerQ( void )
     wxEnd.ParseISOCombined( _("9999-12-31T23:59:59") );     // The last date
     
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
     
     m_pClientItem->m_currentCommand.Trim(true);
     m_pClientItem->m_currentCommand.Trim(false);
@@ -4470,7 +4566,7 @@ void TCPClientThread::handleClientTable_UpperQ( void )
     wxEnd.ParseISOCombined( _("9999-12-31T23:59:59") );     // The last date
     
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
     
     m_pClientItem->m_currentCommand.Trim(true);
     m_pClientItem->m_currentCommand.Trim(false);
@@ -4575,7 +4671,7 @@ void TCPClientThread::handleClientTable_UpperQ( void )
 void TCPClientThread::handleClientVariable( void )
 {
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
     m_pClientItem->m_currentCommand.Trim(false);
     m_pClientItem->m_currentCommand.Trim(true);
@@ -4643,7 +4739,7 @@ void TCPClientThread::handleVariable_List( void )
     int type = 0;   // All variables
     
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
     m_pClientItem->m_currentCommand.Trim(false);
     m_pClientItem->m_currentCommand.Trim(true);
@@ -4723,7 +4819,7 @@ void TCPClientThread::handleVariable_Write( void )
     bool bPersistence = false;
     
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
     m_pClientItem->m_currentCommand.Trim(false);
     m_pClientItem->m_currentCommand.Trim(true);
@@ -4769,7 +4865,7 @@ void TCPClientThread::handleVariable_WriteValue( void )
     wxString value;
     
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
     
     m_pClientItem->m_currentCommand.Trim(false);
     m_pClientItem->m_currentCommand.Trim(true);
@@ -4825,7 +4921,7 @@ void TCPClientThread::handleVariable_WriteNote( void )
     wxString str;
     
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
     
     m_pClientItem->m_currentCommand.Trim(false);
     m_pClientItem->m_currentCommand.Trim(true);
@@ -4884,7 +4980,7 @@ void TCPClientThread::handleVariable_Read( bool bOKResponse )
     wxString str;
     
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
     m_pClientItem->m_currentCommand.Trim(false);
     m_pClientItem->m_currentCommand.Trim(true);
@@ -4914,7 +5010,7 @@ void TCPClientThread::handleVariable_ReadValue( bool bOKResponse )
     wxString str;
     
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
     m_pClientItem->m_currentCommand.Trim(false);
     m_pClientItem->m_currentCommand.Trim(true);
@@ -4944,7 +5040,7 @@ void TCPClientThread::handleVariable_ReadNote( bool bOKResponse )
     wxString str;
     
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
     m_pClientItem->m_currentCommand.Trim(false);
     m_pClientItem->m_currentCommand.Trim(true);
@@ -4973,7 +5069,7 @@ void TCPClientThread::handleVariable_Reset( void  )
     wxString str;
     
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
     m_pClientItem->m_currentCommand.Trim(false);
     m_pClientItem->m_currentCommand.Trim(true);
@@ -5007,7 +5103,7 @@ void TCPClientThread::handleVariable_ReadReset( void )
     wxString str;
     
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
     m_pClientItem->m_currentCommand.Trim(false);
     m_pClientItem->m_currentCommand.Trim(true);
@@ -5051,7 +5147,7 @@ void TCPClientThread::handleVariable_Remove( void )
     wxString str;
     
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
     m_pClientItem->m_currentCommand.Trim(false);
     m_pClientItem->m_currentCommand.Trim(true);
@@ -5078,7 +5174,7 @@ void TCPClientThread::handleVariable_ReadRemove( void )
     wxString str;
     
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
     m_pClientItem->m_currentCommand.Trim(false);
     m_pClientItem->m_currentCommand.Trim(true);
@@ -5114,7 +5210,7 @@ void TCPClientThread::handleVariable_Length( void )
     wxString str;
     
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
     m_pClientItem->m_currentCommand.Trim(false);
     m_pClientItem->m_currentCommand.Trim(true);
@@ -5160,7 +5256,7 @@ void TCPClientThread::handleVariable_Save( void )
     wxString path;
     
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
     m_pClientItem->m_currentCommand.Trim(false);
     m_pClientItem->m_currentCommand.Trim(true);
@@ -5194,7 +5290,7 @@ void TCPClientThread::handleVariable_Save( void )
 void TCPClientThread::handleClientDm( void )
 {
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
     gpobj->logMsg ( m_pClientItem->m_currentCommand, DAEMON_LOGMSG_NORMAL );
 
@@ -5239,7 +5335,7 @@ void TCPClientThread::handleDM_Enable( void )
     unsigned short pos;
     
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
     if ( m_pClientItem->CommandStartsWith(_("all") ) ) {
 
@@ -5287,7 +5383,7 @@ void TCPClientThread::handleDM_Disable( void )
     unsigned short pos;
     
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
     if ( m_pClientItem->CommandStartsWith(_("all") ) ) {
 
@@ -5346,7 +5442,7 @@ void TCPClientThread::handleDM_List( void )
     // dm list 1,2,3,4,98
 
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
     m_pClientItem->m_currentCommand.Trim(false);
     m_pClientItem->m_currentCommand.Trim(true);
@@ -5405,7 +5501,7 @@ void TCPClientThread::handleDM_List( void )
 void TCPClientThread::handleDM_Add( void )
 {
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
     
     dmElement *pDMItem = new dmElement;
 
@@ -5453,7 +5549,7 @@ void TCPClientThread::handleDM_Delete( void )
     unsigned short pos;
     
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
     if ( m_pClientItem->CommandStartsWith(_("all") ) ) {
 
@@ -5521,7 +5617,7 @@ void TCPClientThread::handleDM_Trigger( void )
     unsigned short pos;
     
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
     // Get the position
     wxStringTokenizer tkz( m_pClientItem->m_currentCommand, _(",") );
@@ -5558,7 +5654,7 @@ void TCPClientThread::handleDM_ClearTriggerCount( void )
     unsigned short pos;
     
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
     if ( m_pClientItem->CommandStartsWith(_("all") ) ) {
 
@@ -5615,7 +5711,7 @@ void TCPClientThread::handleDM_ClearErrorCount( void )
     unsigned short pos;
     
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
     if ( m_pClientItem->CommandStartsWith(_("all") ) ) {
 
@@ -5689,7 +5785,7 @@ void TCPClientThread::handleClientDriver( void )
 void TCPClientThread::handleClientHelp( void )
 {
     // Must be connected
-    if ( STCP_CONN_STATE_CONNECTED != m_conn.conn_state ) return;
+    if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
     m_pClientItem->m_currentCommand.Trim(true);
     m_pClientItem->m_currentCommand.Trim(false);

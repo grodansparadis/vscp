@@ -21111,9 +21111,9 @@ worker_thread_run(struct worker_thread_args *thread_args)
     conn->ctx = ctx;
     conn->thread_index = thread_args->index;
     conn->request_info.user_data = ctx->user_data;
+
     // Allocate a mutex for this connection to allow communication both
     // within the request handler and from elsewhere in the application
-    //
     (void) pthread_mutex_init(&conn->mutex, &pthread_mutex_attr);
 
     conn->conn_state = 1; // not consumed
@@ -21152,6 +21152,7 @@ worker_thread_run(struct worker_thread_args *thread_args)
                             conn->ctx->ssl_ctx,
                             SSL_accept,
                             &(conn->ctx->stop_flag ) ) ) {
+
                 // Get SSL client certificate information (if set)
                 ssl_get_client_cert_info(conn);
 
@@ -21243,7 +21244,7 @@ accept_new_connection(const struct socket *listener, struct web_context *ctx)
     socklen_t len = sizeof( so.rsa );
     int on = 1;
 
-    if (!listener) {
+    if ( !listener ) {
         return;
     }
 
@@ -21731,7 +21732,7 @@ web_start(const struct web_callbacks *callbacks,
         return NULL;
     }
 
-    get_system_name(&ctx->systemName);
+    get_system_name( &ctx->systemName );
 
     // If a Lua background script has been configured, start it.
     if ( ctx->config[LUA_BACKGROUND_SCRIPT] != NULL ) {
@@ -21853,6 +21854,7 @@ web_start(const struct web_callbacks *callbacks,
             pthread_setspecific(sTlsKey, NULL);
             return NULL;
         }
+        
     }
 
     if ( web_timers_init(ctx) != 0 ) {

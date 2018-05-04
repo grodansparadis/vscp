@@ -1232,7 +1232,7 @@ bool CControlObject::cleanup( void )
     // Clean up SQLite lib allocations
     sqlite3_shutdown();
 
-    fprintf( stderr, "ControlObject: Cleanup done.\n");
+    fprintf( stderr, "Controlobject: ControlObject: Cleanup done.\n");
     return true;
 }
 
@@ -1249,7 +1249,7 @@ bool CControlObject::startClientWorkerThread( void )
     // Load controlobject client message handler
     /////////////////////////////////////////////////////////////////////////////
 
-    logMsg(_("Starting client worker thread...\n") );
+    logMsg(_("Controlobject: Starting client worker thread...\n") );
 
     m_pclientMsgWorkerThread = new clientMsgWorkerThread;
 
@@ -1259,15 +1259,15 @@ bool CControlObject::startClientWorkerThread( void )
         if ( wxTHREAD_NO_ERROR == ( err = m_pclientMsgWorkerThread->Create() ) ) {
             //m_ptcpListenThread->SetPriority( WXTHREAD_DEFAULT_PRIORITY );
             if ( wxTHREAD_NO_ERROR != ( err = m_pclientMsgWorkerThread->Run() ) ) {
-                logMsg( _("Unable to run controlobject client thread.") );
+                logMsg( _("Controlobject: Unable to run controlobject client thread.") );
             }
         }
         else {
-            logMsg( _("Unable to create controlobject client thread.") );
+            logMsg( _("Controlobject: Unable to create controlobject client thread.") );
         }
     }
     else {
-        logMsg( _("Unable to allocate memory for controlobject client thread.") );
+        logMsg( _("Controlobject: Unable to allocate memory for controlobject client thread.") );
     }
 
     return true;
@@ -1300,7 +1300,7 @@ bool CControlObject::startTcpWorkerThread(void)
     // Run the TCP server thread
     /////////////////////////////////////////////////////////////////////////////
 
-    logMsg(_("Starting TCP/IP interface...\n") );
+    logMsg(_("Controlobject: Starting TCP/IP interface...\n") );
 
     
     m_pTCPListenThread = new TCPListenThread;
@@ -1315,17 +1315,17 @@ bool CControlObject::startTcpWorkerThread(void)
             m_confirmQuitTcpIpSrv = 0;      // Rest quit flag
 
             if ( wxTHREAD_NO_ERROR != ( err = m_pTCPListenThread->Run() ) ) {
-                logMsg(_("Unable to run TCP thread.") );
+                logMsg(_("Controlobject: Unable to run TCP thread.") );
             }
 
         }
         else {
-            logMsg( _("Unable to create TCP thread.") );
+            logMsg( _("Controlobject:  Unable to create TCP thread.") );
         }
 
     }
     else {
-        logMsg(_("Unable to allocate memory for TCP thread.") );
+        logMsg(_("Controlobject: Unable to allocate memory for TCP thread.") );
     }
 
 
@@ -1342,7 +1342,7 @@ bool CControlObject::stopTcpWorkerThread( void )
     // Tell the thread it's time to quit
     stopTcpIpSrv = 0xff;
 
-    logMsg(_("Terminating TCP thread.") );
+    logMsg(_("Controlobject: Terminating TCP thread.") );
 
     //if ( NULL != m_pTCPClientThread ) {
 
@@ -1352,7 +1352,7 @@ bool CControlObject::stopTcpWorkerThread( void )
         wxSleep( 1 );
         cnt++;
         if ( cnt > 5 ) {
-            logMsg(_("No termination confirm from TCP thread. Quiting anyway") );
+            logMsg(_("Controlobject: No termination confirm from TCP thread. Quiting anyway") );
             break;
         }
     }
@@ -1363,7 +1363,7 @@ bool CControlObject::stopTcpWorkerThread( void )
         //m_mutexTcpClientListenThread.Unlock();
     //}
 
-    logMsg(_("Terminated TCP thread.") );
+    logMsg(_("Controlobject: Terminated TCP thread.") );
 
     return true;
 }
@@ -1381,7 +1381,7 @@ bool CControlObject::startUDPWorkerThread( void )
     /////////////////////////////////////////////////////////////////////////////
     if ( m_udpInfo.m_bEnable ) {
 
-        logMsg(_("Starting UDP simple interface...\n") );
+        logMsg(_("Controlobject: Starting UDP simple interface...\n") );
 
         m_pVSCPClientUDPThread = new VSCPUDPClientThread;
 
@@ -1390,15 +1390,15 @@ bool CControlObject::startUDPWorkerThread( void )
             if (wxTHREAD_NO_ERROR == (err = m_pVSCPClientUDPThread->Create())) {
                 //m_ptcpListenThread->SetPriority( WXTHREAD_DEFAULT_PRIORITY );
                 if (wxTHREAD_NO_ERROR != (err = m_pVSCPClientUDPThread->Run())) {
-                    logMsg( _("Unable to run UDP client thread.") );
+                    logMsg( _("Controlobject: Unable to run UDP client thread.") );
                 }
             }
             else {
-                logMsg( _("Unable to create UDP client thread.") );
+                logMsg( _("Controlobject: Unable to create UDP client thread.") );
             }
         }
         else {
-            logMsg( _("Unable to allocate memory for UDP client thread.") );
+            logMsg( _("Controlobject: Unable to allocate memory for UDP client thread.") );
         }
     }
 
@@ -1442,11 +1442,11 @@ bool CControlObject::startMulticastWorkerThreads( void )
 
             multicastChannelItem *pChannel = *iter;
             if ( NULL == pChannel ) {
-                logMsg(_("Multicast start channel table invalid entry.\n") );
+                logMsg(_("Controlobject: Multicast start channel table invalid entry.\n") );
                 continue;
             }
 
-            logMsg(_("Starting multicast channel interface thread...\n") );
+            logMsg(_("Controlobject: Starting multicast channel interface thread...\n") );
             pChannel->m_pWorkerThread = new VSCPMulticastClientThread;
 
             if ( NULL != pChannel->m_pWorkerThread) {
@@ -1458,15 +1458,15 @@ bool CControlObject::startMulticastWorkerThreads( void )
                 if (wxTHREAD_NO_ERROR == (err = pChannel->m_pWorkerThread->Create())) {
                     //m_ptcpListenThread->SetPriority( WXTHREAD_DEFAULT_PRIORITY );
                     if (wxTHREAD_NO_ERROR != (err = pChannel->m_pWorkerThread->Run())) {
-                        logMsg( _("Unable to run multicast channel thread.") );
+                        logMsg( _("Controlobject: Unable to run multicast channel thread.") );
                     }
                 }
                 else {
-                    logMsg( _("Unable to create multicast channel thread.") );
+                    logMsg( _("Controlobject: Unable to create multicast channel thread.") );
                 }
             }
             else {
-                logMsg( _("Unable to allocate memory for multicast channel thread.") );
+                logMsg( _("Controlobject: Unable to allocate memory for multicast channel thread.") );
             }
         }
     }
@@ -1487,7 +1487,7 @@ bool CControlObject::stopMulticastWorkerThreads( void )
 
         multicastChannelItem *pChannel = *iter;
         if ( NULL == pChannel ) {
-            logMsg(_("Multicast end channel table invalid entry.\n") );
+            logMsg(_("Controlobject: Multicast end channel table invalid entry.\n") );
             continue;
         }
 
@@ -1518,7 +1518,7 @@ bool CControlObject::startDaemonWorkerThread( void )
     // Run the VSCP daemon thread
     /////////////////////////////////////////////////////////////////////////////
 
-    logMsg(_("Starting VSCP Server worker thread,,.\n") );
+    logMsg(_("Controlobject: Starting VSCP Server worker thread,,.\n") );
 
     m_pdaemonVSCPThread = new daemonVSCPThread;
 
@@ -1529,15 +1529,15 @@ bool CControlObject::startDaemonWorkerThread( void )
         if ( wxTHREAD_NO_ERROR == ( err = m_pdaemonVSCPThread->Create() ) ) {
             m_pdaemonVSCPThread->SetPriority(WXTHREAD_DEFAULT_PRIORITY);
             if ( wxTHREAD_NO_ERROR != ( err = m_pdaemonVSCPThread->Run() ) ) {
-                logMsg( _("Unable to start TCP VSCP Server thread.") );
+                logMsg( _("Controlobject: Unable to start TCP VSCP Server thread.") );
             }
         }
         else {
-            logMsg( _("Unable to create TCP VSCP Server thread.") );
+            logMsg( _("Controlobject: Unable to create TCP VSCP Server thread.") );
         }
     }
     else {
-        logMsg( _("Unable to start VSCP Server thread.") );
+        logMsg( _("Controlobject: Unable to start VSCP Server thread.") );
     }
 
     return true;
@@ -1569,7 +1569,7 @@ bool CControlObject::startDeviceWorkerThreads( void )
 {
     CDeviceItem *pDeviceItem;
 
-    logMsg(_("[Driver] - Starting drivers...\n") );
+    logMsg(_("[Controlobject][Driver] - Starting drivers...\n") );
 
     VSCPDEVICELIST::iterator iter;
     for ( iter = m_deviceList.m_devItemList.begin();
@@ -1579,7 +1579,7 @@ bool CControlObject::startDeviceWorkerThreads( void )
         pDeviceItem = *iter;
         if ( NULL != pDeviceItem ) {
 
-            logMsg( _("[Driver] - Preparing: ") + pDeviceItem->m_strName + _("\n") );            
+            logMsg( _("Controlobject: [Driver] - Preparing: ") + pDeviceItem->m_strName + _("\n") );            
 
             // Just start if enabled
             if ( !pDeviceItem->m_bEnable ) continue;
@@ -1595,7 +1595,7 @@ bool CControlObject::startDeviceWorkerThreads( void )
                                     wxEXEC_ASYNC,
                                     pDeviceItem->m_pDriver3Process ) ) ) {
                     wxString str;
-                    str = _("Failed to load level III driver: ");
+                    str = _("Controlobject: Failed to load level III driver: ");
                     str += pDeviceItem->m_strName;
                     str += _("\n");
                     logMsg(str);

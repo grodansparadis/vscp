@@ -1460,6 +1460,43 @@ static char *stcp_strdup( const char *str )
     return strndup( str, strlen( str ) );
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// sockaddr_to_string
+//
+
+static void
+sockaddr_to_string( char *buf, size_t len, const union usa *usa )
+{
+    buf[0] = '\0';
+
+    if ( !usa ) {
+        return;
+    }
+
+    if ( AF_INET == usa->sa.sa_family ) {
+
+        getnameinfo( &usa->sa,
+                        sizeof( usa->sin ),
+                        buf,
+                        (unsigned)len,
+                        NULL,
+                        0,
+                        NI_NUMERICHOST );
+
+    }
+    else if ( AF_INET6 == usa->sa.sa_family ) {
+
+        getnameinfo( &usa->sa,
+                        sizeof( usa->sin6 ),
+                        buf,
+                        (unsigned)len,
+                        NULL,
+                        0,
+                        NI_NUMERICHOST );
+
+    }
+
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1610,23 +1647,24 @@ refresh_trust( struct stcp_connection *conn,
 
 static int
 make_ssl( struct stcp_connection *conn,
-                    SSL_CTX *s,
-                    int (*func)(SSL *),
-                    volatile int *stop_server )
+            struct stcp_secure_options *secure_opts,
+            SSL_CTX *s,
+            int (*func)(SSL *),
+            volatile int *stop_server )
 {
     int ret, err;
     unsigned i;
 
-    if ( ( NULL == conn ) || ( NULL == conn->secure_opts ) ) {
+    if ( ( NULL == conn ) || ( NULL == secure_opts ) ) {
         return 0;
     }
 
     if ( STCP_SSL_SHORT_TRUST ) {
         int trust_ret = refresh_trust( conn, 
-                                        conn->secure_opts->pem,
-                                        conn->secure_opts->chain,
-                                        conn->secure_opts->ca_path,
-                                        conn->secure_opts->ca_file ); 
+                                        secure_opts->pem,
+                                        secure_opts->chain,
+                                        secure_opts->ca_path,
+                                        secure_opts->ca_file ); 
         if ( !trust_ret ) {
             return trust_ret;
         }
@@ -1636,6 +1674,7 @@ make_ssl( struct stcp_connection *conn,
     if ( NULL == conn->ssl ) {
         return 0;
     }
+
     SSL_set_app_data( conn->ssl, (char *)conn );
 
     ret = SSL_set_fd( conn->ssl, conn->client.sock );
@@ -1656,8 +1695,10 @@ make_ssl( struct stcp_connection *conn,
     // see https://www.openssl.org/docs/manmaster/ssl/SSL_get_error.html
     // Here "func" could be SSL_connect or SSL_accept.
     for ( i = 16; i <= 1024; i *= 2 ) {
+
         ret = func( conn->ssl );
         if  (ret != 1 ) {
+
             err = SSL_get_error( conn->ssl, ret );
             if ( ( err == SSL_ERROR_WANT_CONNECT ) ||
                  ( err == SSL_ERROR_WANT_ACCEPT ) ||
@@ -1670,6 +1711,7 @@ make_ssl( struct stcp_connection *conn,
                     // Don't wait if the server is going to be stopped.
                     break;
                 }
+
                 stcp_sleep( i );
 
             }
@@ -1722,12 +1764,134 @@ stcp_ssl_error( void )
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// hexdump2string
+//
+
+static int
+hexdump2string( void *mem, int memlen, char *buf, int buflen )
+{
+    int i;
+    const char hexdigit[] = "0123456789abcdef";
+
+    if ( ( memlen <= 0 ) || ( buflen <= 0 ) ) {
+        return 0;
+    }
+
+    if ( buflen < (3 * memlen) ) {
+        return 0;
+    }
+
+    for ( i = 0; i < memlen; i++)  {
+        if ( i > 0 ) {
+            buf[3 * i - 1] = ' ';
+        }
+        buf[3 * i] = hexdigit[(((uint8_t *) mem)[i] >> 4) & 0xF];
+        buf[3 * i + 1] = hexdigit[((uint8_t *) mem)[i] & 0xF];
+    }
+    
+    buf[3 * memlen - 1] = 0;
+
+    return 1;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// ssl_get_client_cert_info
+//
+
+static void
+ssl_get_client_cert_info( struct stcp_connection *conn,
+                            struct stcp_secure_options *secure_opts )
+{
+    X509 *cert = SSL_get_peer_certificate( conn->ssl );
+    if ( cert ) {
+        char str_subject[1024];
+        char str_issuer[1024];
+        char str_finger[1024];
+        unsigned char buf[256];
+        char *str_serial = NULL;
+        unsigned int ulen;
+        int ilen;
+        unsigned char *tmp_buf;
+        unsigned char *tmp_p;
+
+        /* Handle to algorithm used for fingerprint */
+        const EVP_MD *digest = EVP_get_digestbyname("sha1");
+
+        /* Get Subject and issuer */
+        X509_NAME *subj = X509_get_subject_name( cert );
+        X509_NAME *iss = X509_get_issuer_name( cert );
+
+        /* Get serial number */
+        ASN1_INTEGER *serial = X509_get_serialNumber( cert );
+
+        /* Translate serial number to a hex string */
+        BIGNUM *serial_bn = ASN1_INTEGER_to_BN( serial, NULL );
+        str_serial = BN_bn2hex( serial_bn );
+        BN_free( serial_bn );
+
+        /* Translate subject and issuer to a string */
+        (void)X509_NAME_oneline( subj, str_subject, (int)sizeof( str_subject ) );
+        (void)X509_NAME_oneline( iss, str_issuer, (int)sizeof( str_issuer ) );
+
+        /* Calculate SHA1 fingerprint and store as a hex string */
+        ulen = 0;
+
+        /* 
+            ASN1_digest is deprecated. Do the calculation manually,
+            using EVP_Digest. 
+        */
+        ilen = i2d_X509( cert, NULL );
+        tmp_buf = (ilen > 0)
+                ? (unsigned char *)malloc( (unsigned)ilen + 1 )
+                : NULL;
+        if ( tmp_buf ) {
+            
+            tmp_p = tmp_buf;
+            (void)i2d_X509( cert, &tmp_p );
+            if ( !EVP_Digest( tmp_buf, (unsigned)ilen, buf, &ulen, digest, NULL ) ) {
+                ulen = 0;
+            }
+
+            free( tmp_buf );
+        }
+
+        if ( !hexdump2string( buf, (int)ulen, str_finger, (int)sizeof( str_finger ) ) ) {
+            *str_finger = 0;
+        }
+
+        secure_opts->srv_client_cert = (struct stcp_srv_client_cert *)
+		                                malloc( sizeof( struct stcp_srv_client_cert ) );
+
+        if ( secure_opts->srv_client_cert ) {
+            secure_opts->srv_client_cert->subject = strdup( str_subject );
+            secure_opts->srv_client_cert->issuer = strdup( str_issuer );
+            secure_opts->srv_client_cert->serial = strdup( str_serial );
+            secure_opts->srv_client_cert->finger = strdup( str_finger );
+        }
+        else {
+            stcp_report_error( "Out of memory: Cannot allocate memory for client "
+                                "certificate" );
+        }
+
+        /* 
+            Strings returned from bn_bn2hex must be freed using OPENSSL_free,
+            see https://linux.die.net/man/3/bn_bn2hex
+        */
+        OPENSSL_free( str_serial );
+
+        /* Free certificate memory */
+        X509_free( cert );
+    }
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
 // ssl_locking_callback
 //
 
 #ifdef OPENSSL_API_1_1
 
-    // Not needed of ror 1.1
+    // Not needed of for 1.1
 
 #else
 
@@ -1890,8 +2054,7 @@ ssl_info_callback(SSL *ssl, int what, int ret)
 //
 
 int
-stcp_init_ssl( struct stcp_secure_options *secure_opts,
-                SSL_CTX *ssl_ctx  )
+stcp_init_ssl( SSL_CTX *ssl_ctx, struct stcp_secure_options *secure_opts )
 {
     int callback_ret;
     int should_verify_peer;
@@ -1922,8 +2085,7 @@ stcp_init_ssl( struct stcp_secure_options *secure_opts,
         secure_opts->chain = secure_opts->pem;
     }
     
-    if ( ( secure_opts->chain != NULL ) && 
-         ( *secure_opts->chain == 0 ) ) {
+    if ( ( secure_opts->chain != NULL ) && ( *secure_opts->chain == 0 ) ) {
         secure_opts->chain = NULL;
     }
 
@@ -2333,26 +2495,15 @@ stcp_connect_remote_impl( struct stcp_secure_options *secure_options,
     struct sockaddr *psa;
     socklen_t len;
 
-    unsigned max_req_size = STCP_MAX_REQUEST_SIZE;
-
-    // Size of structures, aligned to 8 bytes
-    size_t conn_size = ( ( sizeof( struct stcp_connection ) + 7 ) >> 3 ) << 3;
-
-    conn = (struct stcp_connection *)calloc( 1, conn_size + max_req_size );
+    conn = (struct stcp_connection *)calloc( 1, sizeof( struct stcp_connection ) );
     if ( NULL == conn ) {
         // Error
         return NULL;
     }
 
-    conn->conntype = CONNECTION_CLIENT;
-    conn->buf = (((char *)conn) + conn_size );
-    conn->buf_size = (int)max_req_size;
-    conn->read_timeout = timeout;
-    conn->secure_opts = secure_options; // Save security options
-
     if ( bUseSSL ) {
         // Init SSL subsystem
-        if ( 0 == stcp_init_ssl( secure_options, conn->ssl_ctx ) ) {
+        if ( 0 == stcp_init_ssl( conn->ssl_ctx, secure_options ) ) {
             free( conn );
             return NULL;
         }
@@ -2413,9 +2564,9 @@ stcp_connect_remote_impl( struct stcp_secure_options *secure_options,
         // TODO: SSL_CTX_set_verify(conn->client_ssl_ctx,
         // SSL_VERIFY_PEER, verify_ssl_server);
 
-        if ( secure_options->client_cert ) {
+        if ( secure_options->client_cert_path ) {
             if ( !ssl_use_pem_file( conn->ssl_ctx,
-                                    secure_options->client_cert,
+                                    secure_options->client_cert_path,
                                     NULL ) ) {
                 stcp_report_error( "Can not use SSL client certificate" );
                 SSL_CTX_free( conn->ssl_ctx );
@@ -2425,9 +2576,9 @@ stcp_connect_remote_impl( struct stcp_secure_options *secure_options,
             }
         }
 
-        if ( secure_options->server_cert ) {
+        if ( secure_options->server_cert_path ) {
             SSL_CTX_load_verify_locations( conn->ssl_ctx,
-                                            secure_options->server_cert,
+                                            secure_options->server_cert_path,
                                             NULL );
             SSL_CTX_set_verify( conn->ssl_ctx, SSL_VERIFY_PEER, NULL );
         }
@@ -2436,6 +2587,7 @@ stcp_connect_remote_impl( struct stcp_secure_options *secure_options,
         }
 
         if ( !make_ssl( conn,
+                        secure_options,
                         conn->ssl_ctx,
                         SSL_connect,
                         &(conn->stop_flag ) ) ) {
@@ -2657,9 +2809,7 @@ stcp_close_connection( struct stcp_connection *conn )
     }
 
     // If client free connection data
-    if ( CONNECTION_CLIENT == conn->conntype ) {
-        free( conn );
-    }
+    free( conn );
 
 }
 
@@ -2667,12 +2817,12 @@ stcp_close_connection( struct stcp_connection *conn )
  ****************************************************************************
  * stcp_poll
  *
- * Use milliseconds -1 to get SOCKET_TIMEOUT_QUANTUM timeout.
+ * Use milliseconds -1 to get STCP_TIMEOUT_QUANTUM timeout.
  *
  * @param pfd - Pointer to array with file descriptors.
  * @param n - Number of file descriptors in the pfd array.
  * @param milliseconds - Time to wait for data on file decriptor.
- *   If set too zero SOCKET_TIMEOUT_QUANTUM is used. If timout is
+ *   If set too zero STCP_TIMEOUT_QUANTUM is used. If timout is
  * set lower than quantum one timeout is performed. If greater several.
  * @param stop_server - Pointer to int that can be set externally 
  *                      to stop the block.
@@ -2689,7 +2839,7 @@ stcp_poll( struct pollfd *pfd,
     // Call poll, but only for a maximum time of a few seconds.
     // This will allow to stop the server after some seconds, instead
     // of having to wait for a long socket timeout.
-    int ms_now = SOCKET_TIMEOUT_QUANTUM; // Sleep quantum in ms
+    int ms_now = STCP_TIMEOUT_QUANTUM; // Sleep quantum in ms
 
     do {
         
@@ -2749,7 +2899,7 @@ stcp_push_inner( struct stcp_connection *conn,
 {
     uint64_t start = 0, now = 0, timeout_ns = 0;
     int n, err;
-    unsigned ms_wait = SOCKET_TIMEOUT_QUANTUM; // Sleep quantum in ms
+    unsigned ms_wait = STCP_TIMEOUT_QUANTUM; // Sleep quantum in ms
 
 #ifdef _WIN32
     typedef int len_t;
@@ -2757,7 +2907,7 @@ stcp_push_inner( struct stcp_connection *conn,
     typedef size_t len_t;
 #endif
 
-    if (timeout > 0) {
+    if ( timeout > 0 ) {
         now = stcp_get_current_time_ns();
         start = now;
         timeout_ns = (uint64_t) (timeout * 1.0E9);
@@ -2909,14 +3059,11 @@ stcp_push_all( struct stcp_connection *conn,
                 const char *buf,
                 int64_t len )
 {
-    double timeout = -1.0;
     int64_t n, nwritten = 0;
-
-    timeout = conn->read_timeout / 1000.0;
 
     while ( ( len > 0 ) && ( conn->stop_flag == 0 ) ) {
 
-        n = stcp_push_inner( conn, fp, buf + nwritten, (int)len, timeout );
+        n = stcp_push_inner( conn, fp, buf + nwritten, (int)len, STCP_WRITE_TIMEOUT );
 
         if (n < 0) {
             if (nwritten == 0) {
@@ -3034,7 +3181,7 @@ stcp_pull_inner( FILE *fp,
                     err = errno;
                 }
                 else if ( ( err == SSL_ERROR_WANT_READ ) ||
-                         ( err == SSL_ERROR_WANT_WRITE ) ) {
+                          ( err == SSL_ERROR_WANT_WRITE ) ) {
                     nread = 0;
                 }
                 else {
@@ -3844,9 +3991,10 @@ stcp_accept( struct server_context *srv_ctx,
         }
 #endif
         
+        // If listner is ssl this is to
         psocket->is_ssl = listener->is_ssl;
 
-        if ( getsockname( psocket->sock, &psocket->lsa.sa, &len) != 0 ) {
+        if ( getsockname( psocket->sock, &psocket->lsa.sa, &len ) != 0 ) {
             stcp_report_error( "getsockname() failed: %s",
                                 strerror( ERRNO ) ) ;
         }
@@ -3873,8 +4021,7 @@ stcp_accept( struct server_context *srv_ctx,
         // when HTTP 1.1 persistent connections are used and the responses
         // are relatively small (eg. less than 1400 bytes).
         //
-        if ( ( NULL != srv_ctx ) && 
-               srv_ctx->config_tcp_nodelay ) {
+        if ( ( NULL != srv_ctx ) &&  srv_ctx->config_tcp_nodelay ) {
             if ( set_tcp_nodelay( psocket->sock, 1 ) != 0 ) {
                 stcp_report_error( "setsockopt(IPPROTO_TCP TCP_NODELAY) failed: %s",
                                     strerror( ERRNO ) );
@@ -3890,9 +4037,54 @@ stcp_accept( struct server_context *srv_ctx,
 	    // non-compliant socket implementations. */
 	    set_non_blocking_mode( psocket->sock );
 
-        psocket->in_use = 0;
-        // TODO add socket to pool
     }
 
     return 1;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// stcp_init_client_connection
+//
+
+void stcp_init_client_connection( struct stcp_connection *conn,
+                                    struct stcp_secure_options *secure_opts )
+{
+    // Check pointers
+    if ( ( NULL == conn ) || ( NULL == secure_opts ) ) {
+        return;
+    }
+
+    conn->conn_state = STCP_CONN_STATE_CONNECTED;
+
+    conn->birth = time(NULL);
+
+    // Fill in IP, port info early so even if SSL setup below fails,
+    // error handler would have the corresponding info.
+    // Thanks to Johannes Winkelmann for the patch.
+    if ( AF_INET6 == conn->client.rsa.sa.sa_family ) {
+        conn->remote_port = ntohs( conn->client.rsa.sin6.sin6_port );
+    }
+    else {
+        conn->remote_port = ntohs( conn->client.rsa.sin.sin_port );
+    }
+
+    sockaddr_to_string( conn->remote_addr,
+                            sizeof( conn->remote_addr ),
+                            &conn->client.rsa );
+
+    if ( conn->client.is_ssl ) {
+
+        // Secure connection
+        if ( make_ssl( conn,
+                        secure_opts,
+                        conn->ssl_ctx,
+                        SSL_accept,
+                        &(conn->stop_flag ) ) ) {
+
+            // Get SSL client certificate information (if set)
+            ssl_get_client_cert_info( conn, secure_opts );
+
+        }
+
+    }
 }

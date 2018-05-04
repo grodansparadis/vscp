@@ -696,9 +696,12 @@ public:
     /// Interface used for TCP/IP connection  (only one)
     wxString m_strTcpInterfaceAddress;
 
+    /// This mutex protects the clientlist
+    wxMutex m_mutexTcpClientList;
+
     // The server thread for the TCP connection interface
     TCPListenThread *m_pTCPListenThread;
-    wxMutex m_mutexTcpClientListenThread;
+    
 
 
 

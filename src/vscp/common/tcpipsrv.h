@@ -39,6 +39,15 @@
 #include "clientlist.h"
 #include "controlobject.h"
 
+// List with connected clients
+WX_DECLARE_LIST( struct stcp_connection, TCPIPCLIENTS );
+
+#define VSCP_TCPIP_COMMAND_LIST_MAX         200     // Max number of saved old commands
+
+#define VSCP_TCPIP_RV_OK                    0
+#define VSCP_TCPIP_RV_ERROR                 -1
+#define VSCP_TCPIP_RV_CLOSE                 99      // Connection should be closed.
+
 #define VSCP_TCP_MAX_CLIENTS                1024
 
 #define MSG_WELCOME                         "Welcome to the VSCP daemon.\r\n"
@@ -144,14 +153,20 @@ public:
     */
     void setListeningPort( wxString str ) { m_strListeningPort = str; };
 
+
+    // List with active tcp/ip clients
+    TCPIPCLIENTS m_clientList;
+
 private:
 
     // Listening port
     wxString m_strListeningPort;
 
     // Settings for the tcp/ip server
-    server_context m_srvctx;    
+    server_context m_srvctx;        
 
+    // Counter for client id's
+    unsigned long m_idCounter;
 };
 
 
@@ -210,7 +225,7 @@ public:
     /*!
         When a command is received on the TCP/IP interface the command handler is called.
     */
-    void CommandHandler( wxString& strCommand );
+    int CommandHandler( wxString& strCommand );
 
     /*! 
         called when the thread exits - whether it terminates normally or is
@@ -703,11 +718,14 @@ public:
     void handleClientMeasurment( void );
 
 // --- Member variables ---
+
+    // Client connection
+    struct stcp_connection *m_conn;
+
+    /// Parent object
+    TCPListenThread *m_pParent;
     
 private:
-    
-    // Client connection
-    stcp_connection m_conn;
     
     // This is info about the logged in user
     CClientItem *m_pClientItem;
@@ -720,8 +738,11 @@ private:
     // Saved return value for last sockettcp operation
     int m_rv;
     
-    // Flag for receive loop activeness
+    // Flag for receive loop active
     bool m_bReceiveLoop;
+
+    // List of old commands
+    wxArrayString m_commandList;
 };
 
 
