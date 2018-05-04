@@ -742,7 +742,7 @@ private:
     bool m_bReceiveLoop;
 
     // List of old commands
-    wxArrayString m_commandList;
+    wxArrayString m_commandArray;
 };
 
 

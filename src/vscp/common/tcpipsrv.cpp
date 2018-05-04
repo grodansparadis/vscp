@@ -163,8 +163,6 @@ void *TCPListenThread::Entry()
                         
                         gpobj->logMsg( _("[TCP/IP srv] -- Connection accept.\n") );
 
-                        write( conn->client.sock, "Hello\r\n", 7 );
-
                         // Create the thread
                         TCPClientThread *pThread = new TCPClientThread;
                         if ( NULL == pThread ) {
@@ -274,7 +272,7 @@ TCPClientThread::TCPClientThread()
 TCPClientThread::~TCPClientThread()
 {
     m_strResponse.Empty();
-    m_commandList.Clear();
+    m_commandArray.Clear();
 }
 
 
@@ -343,7 +341,7 @@ void *TCPClientThread::Entry()
         int nRead = stcp_read( m_conn, buf, sizeof( buf ), 200 );
         
         if ( 0 == nRead ) {
-            ;   // Nothing more to read
+            ;   // Nothing more to read - Check for command and continue
         }
         else if ( nRead < 0 ) {
             if ( STCP_ERROR_TIMEOUT == nRead ) {
@@ -365,11 +363,59 @@ void *TCPClientThread::Entry()
             
             // Get the command
             wxString strCommand = m_strResponse.Left( pos + 1 );
-            strCommand.Trim();
-            strCommand.Trim(false);
 
             // Save the unhandled part
             m_strResponse = m_strResponse.Right( m_strResponse.Length() - pos - 1 );
+
+            // Remove whitespace
+            strCommand.Trim();
+            strCommand.Trim(false);
+
+            // If nothing to do yepp do nothing
+            if ( 0 == strCommand.Length() ) continue;
+
+            // Check for repeat command
+            // +    - repear last command
+            // +n   - Repeat n-th command
+            // +list
+            if ( m_commandArray.Count() && ( '+' == strCommand[0] ) ) {
+
+                if ( strCommand.StartsWith( "++", &strCommand ) ) {
+                    for ( int i=m_commandArray.Count()-1; i>=0; i-- ) {
+                        wxString str = wxString::Format("%d - %s",
+                                            m_commandArray.Count() - i - 1, 
+                                            m_commandArray[ i ] );
+                        str.Trim();                        
+                        write( str, true );
+                    }
+                    continue;
+                }
+
+                // Get pos
+                unsigned int n = 0;
+                if ( strCommand.Length() > 1 ) {
+                    strCommand = strCommand.Right( strCommand.Length() - 1 );    
+                    n = atoi( strCommand.mbc_str() );
+                }
+
+                // Pos must be within range
+                if ( n > m_commandArray.Count() ) {
+                    n = m_commandArray.Count() - 1; 
+                }
+
+                // Get the command
+                strCommand = m_commandArray[ m_commandArray.Count() - n - 1 ];
+
+                // Write out the command
+                write( strCommand, true );
+
+                
+            }
+
+            m_commandArray.Add( strCommand );    // put at beginning of list
+            if ( m_commandArray.Count() > VSCP_TCPIP_COMMAND_LIST_MAX ) {
+                m_commandArray.RemoveAt( 0 ); // Remove last inserted item
+            }
 
             // Execute command
             if ( VSCP_TCPIP_RV_CLOSE == CommandHandler( strCommand ) ) {
