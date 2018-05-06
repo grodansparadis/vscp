@@ -402,12 +402,6 @@ public:
 
 
     /*!
-        Get the VSCP TCP/IP thread thread
-        @return Pointer to the VSCP TCP/IP thread thread
-    */
-    //TCPClientThread *getTCPIPServer( void ) { return m_pTCPClientThread; };
-
-    /*!
      * Read configuration data from database.
      * The configuration database record is read after the XML file has
      * been read and will replace duplicate values, if any.

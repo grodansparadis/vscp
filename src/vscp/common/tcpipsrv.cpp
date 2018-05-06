@@ -67,6 +67,17 @@ WX_DEFINE_LIST( TCPIPCLIENTS );
 extern CControlObject *gpobj;
 
 
+
+
+
+// ****************************************************************************
+//                               Listen thread
+// ****************************************************************************
+
+
+
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // TCPListenThread
 //
@@ -245,9 +256,14 @@ void TCPListenThread::OnExit()
 
 
 
+
+
 // ****************************************************************************
-//                                   Client
+//                              Client thread
 // ****************************************************************************
+
+
+
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -335,15 +351,35 @@ void *TCPClientThread::Entry()
     // Enter command loop
     char buf[8192];
     while ( !TestDestroy() && !(gpobj->stopTcpIpSrv ) ) {
+
+        // * * * Receiveloop * * *
+        if ( m_bReceiveLoop ) {
+
+            // Wait for data
+            m_pClientItem->m_semClientInputQueue.WaitTimeout( 200 );
+
+            // Send everything in the queue
+            while( sendOneEventFromQueue( false ) );
+
+            // Send '+OK<CR><LF>' every two seconds to indicate that the
+            // link is open
+            if ( ( wxGetUTCTime()-m_pClientItem->m_timeRcvLoop ) > 2 ) {
+                m_pClientItem->m_timeRcvLoop = wxGetUTCTime();
+                write( "+OK\r\n", 5 );
+            }
+                
+        }
         
         // Read possible data from client
         memset( buf, 0, sizeof( buf ) );
-        int nRead = stcp_read( m_conn, buf, sizeof( buf ), 200 );
+        int nRead = stcp_read( m_conn, buf, sizeof( buf ),
+                                ( m_bReceiveLoop ) ? 0 : 200 );
         
         if ( 0 == nRead ) {
             ;   // Nothing more to read - Check for command and continue
         }
         else if ( nRead < 0 ) {
+
             if ( STCP_ERROR_TIMEOUT == nRead ) {
                 m_rv = VSCP_ERROR_TIMEOUT;
             }
@@ -377,7 +413,7 @@ void *TCPClientThread::Entry()
             // Check for repeat command
             // +    - repear last command
             // +n   - Repeat n-th command
-            // +list
+            // ++
             if ( m_commandArray.Count() && ( '+' == strCommand[0] ) ) {
 
                 if ( strCommand.StartsWith( "++", &strCommand ) ) {
@@ -409,12 +445,11 @@ void *TCPClientThread::Entry()
                 // Write out the command
                 write( strCommand, true );
 
-                
             }
 
-            m_commandArray.Add( strCommand );    // put at beginning of list
+            m_commandArray.Add( strCommand );   // put at beginning of list
             if ( m_commandArray.Count() > VSCP_TCPIP_COMMAND_LIST_MAX ) {
-                m_commandArray.RemoveAt( 0 ); // Remove last inserted item
+                m_commandArray.RemoveAt( 0 );   // Remove last inserted item
             }
 
             // Execute command
@@ -443,7 +478,6 @@ void *TCPClientThread::Entry()
     
     // Close the connection
     stcp_close_connection( m_conn );
-    //delete m_conn;
     m_conn = NULL;
 
     // Close the channel
@@ -564,17 +598,6 @@ TCPClientThread::CommandHandler( wxString& strCommand )
         return VSCP_TCPIP_RV_OK;
     }
 
-    // If we are in a receive loop only the quitloop command works
-    if ( m_bReceiveLoop ) {
-        if ( m_pClientItem->CommandStartsWith( _("quitloop") ) ) {
-            m_bReceiveLoop = false;
-            write(  MSG_QUIT_LOOP, strlen ( MSG_QUIT_LOOP ) );
-            return VSCP_TCPIP_RV_OK;
-        }
-        else {
-            return VSCP_TCPIP_RV_OK;
-        }
-    }
 
     //*********************************************************************
     //                            No Operation
@@ -586,17 +609,28 @@ TCPClientThread::CommandHandler( wxString& strCommand )
     }
 
     //*********************************************************************
-    //                        + (repeat last command)
+    //                             Rcvloop
     //*********************************************************************
 
-    else if ( m_pClientItem->CommandStartsWith( _("+") ) ) {
-        // Repeat last command
-        m_pClientItem->m_currentCommand = m_pClientItem->m_lastCommand;
-        //goto REPEAT_COMMAND;
+    else if ( m_pClientItem->CommandStartsWith( _("rcvloop") ) || 
+                m_pClientItem->CommandStartsWith( _("receiveloop") ) ) {
+        if ( checkPrivilege( 2 ) ) {
+            m_pClientItem->m_timeRcvLoop = wxGetUTCTime();
+            handleClientRcvLoop();
+        }
     }
 
     //*********************************************************************
-    //                           Username
+    //                             Quitloop
+    //*********************************************************************
+
+    else if ( m_pClientItem->CommandStartsWith( _("quitloop") ) ) {
+              m_bReceiveLoop = false;
+        write(  MSG_QUIT_LOOP, strlen ( MSG_QUIT_LOOP ) );
+    }
+
+    //*********************************************************************
+    //                             Username
     //*********************************************************************
 
     else if ( m_pClientItem->CommandStartsWith( _("user") ) ) {
@@ -623,7 +657,7 @@ TCPClientThread::CommandHandler( wxString& strCommand )
     }
 
     //*********************************************************************
-    //                           Challenge
+    //                              Challenge
     //*********************************************************************
 
     else if ( m_pClientItem->CommandStartsWith( _("challenge") ) ) {
@@ -782,21 +816,7 @@ TCPClientThread::CommandHandler( wxString& strCommand )
         if ( checkPrivilege( 6 ) ) {
             handleClientSetMask();
         }
-    }
-
-
-    //*********************************************************************
-    //                             Rcvloop
-    //*********************************************************************
-
-    else if ( m_pClientItem->CommandStartsWith( _("rcvloop") ) || 
-                m_pClientItem->CommandStartsWith( _("receiveloop") ) ) {
-        if ( checkPrivilege( 2 ) ) {
-            m_pClientItem->m_timeRcvLoop = wxGetUTCTime();
-            handleClientRcvLoop();
-        }
-    }
-
+    }    
 
     //*********************************************************************
     //                             Help
@@ -5842,6 +5862,8 @@ void TCPClientThread::handleClientHelp( void )
                 str += _("====================================================================\r\n");
                 str += _("To get more information about a specific command issue 'HELP command'\r\n");
                 str += _("+                 - Repeat last command.\r\n");
+                str += _("+n                - Repeat command 'n' (0 is last).\r\n");
+                str += _("++                - List repeatable commands.\r\n");
                 str += _("NOOP              - No operation. Does nothing.\r\n");
                 str += _("QUIT              - Close the connection.\r\n");
                 str += _("USER 'username'   - Username for login. \r\n");
@@ -5849,7 +5871,8 @@ void TCPClientThread::handleClientHelp( void )
                 str += _("CHALLENGE 'token' - Get session id.  \r\n");
                 str += _("SEND 'event'      - Send an event.   \r\n");
                 str += _("RETR 'count'      - Retrive n events from input queue.   \r\n");
-                str += _("RCVLOOP           - Will retrieve events in an endless loop until the connection is closed by the client or QUITLOOP is sent.\r\n");
+                str += _("RCVLOOP           - Will retrieve events in an endless loop until "
+                                              "the connection is closed by the client or QUITLOOP is sent.\r\n");
                 str += _("QUITLOOP          - Terminate RCVLOOP.\r\n");
                 str += _("CDTA/CHKDATA      - Check if there is data in the input queue.\r\n");
                 str += _("CLRA/CLRALL       - Clear input queue.\r\n");

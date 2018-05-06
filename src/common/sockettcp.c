@@ -8,7 +8,7 @@
 // Copyright (c) 2004-2013 Sergey Lyubka
 // Copyright (c) 2013-2017 the Civetweb developers ()
 //
-// Adopted for VSCP
+// Adopted for VSCP, Small changes  additions
 // Copyright (c) 2018 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
 // 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -1461,6 +1461,37 @@ static char *stcp_strdup( const char *str )
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// hexdump2string
+//
+
+static int
+hexdump2string( void *mem, int memlen, char *buf, int buflen )
+{
+    int i;
+    const char hexdigit[] = "0123456789abcdef";
+
+    if ( ( memlen <= 0 ) || ( buflen <= 0 ) ) {
+        return 0;
+    }
+
+    if ( buflen < (3 * memlen) ) {
+        return 0;
+    }
+
+    for ( i = 0; i < memlen; i++)  {
+        if ( i > 0 ) {
+            buf[3 * i - 1] = ' ';
+        }
+        buf[3 * i] = hexdigit[(((uint8_t *) mem)[i] >> 4) & 0xF];
+        buf[3 * i + 1] = hexdigit[((uint8_t *) mem)[i] & 0xF];
+    }
+    
+    buf[3 * memlen - 1] = 0;
+
+    return 1;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // sockaddr_to_string
 //
 
@@ -1763,36 +1794,6 @@ stcp_ssl_error( void )
     return ( ( err == 0 ) ? "" : ERR_error_string( err, NULL ) );
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// hexdump2string
-//
-
-static int
-hexdump2string( void *mem, int memlen, char *buf, int buflen )
-{
-    int i;
-    const char hexdigit[] = "0123456789abcdef";
-
-    if ( ( memlen <= 0 ) || ( buflen <= 0 ) ) {
-        return 0;
-    }
-
-    if ( buflen < (3 * memlen) ) {
-        return 0;
-    }
-
-    for ( i = 0; i < memlen; i++)  {
-        if ( i > 0 ) {
-            buf[3 * i - 1] = ' ';
-        }
-        buf[3 * i] = hexdigit[(((uint8_t *) mem)[i] >> 4) & 0xF];
-        buf[3 * i + 1] = hexdigit[((uint8_t *) mem)[i] & 0xF];
-    }
-    
-    buf[3 * memlen - 1] = 0;
-
-    return 1;
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 // ssl_get_client_cert_info
@@ -3034,7 +3035,7 @@ stcp_push_inner( struct stcp_connection *conn,
             }
         }
 
-        if (timeout > 0) {
+        if  (timeout > 0 ) {
             now = stcp_get_current_time_ns();
             if ( (now - start) > timeout_ns ) {
                 // Timeout
@@ -3043,8 +3044,10 @@ stcp_push_inner( struct stcp_connection *conn,
         }
     }
 
-    (void) err; // Avoid unused warning if NO_SSL is set and DEBUG_TRACE is not
-	        // used
+    (void)err;  /* 
+                    Avoid unused warning if NO_SSL is set and DEBUG_TRACE 
+	                is not used 
+                */
 
     return -1;
 }
@@ -3063,7 +3066,11 @@ stcp_push_all( struct stcp_connection *conn,
 
     while ( ( len > 0 ) && ( conn->stop_flag == 0 ) ) {
 
-        n = stcp_push_inner( conn, fp, buf + nwritten, (int)len, STCP_WRITE_TIMEOUT );
+        n = stcp_push_inner( conn, 
+                                fp, 
+                                buf + nwritten, 
+                                (int)len, 
+                                STCP_WRITE_TIMEOUT );
 
         if (n < 0) {
             if (nwritten == 0) {
@@ -3090,7 +3097,7 @@ stcp_push_all( struct stcp_connection *conn,
 // Return value:
 //  >=0 .. number of bytes successfully read
 //   -1 .. timeout
-//   -2 .. stopped
+//   -2 .. stopped (socket closed by remote)
 //
 
 static int
@@ -3119,7 +3126,7 @@ stcp_pull_inner( FILE *fp,
         // CGI pipe, fread() may block until IO buffer is filled up. We
         // cannot afford to block and must pass all read bytes immediately
         // to the client.
-        nread = (int) read( fileno(fp), buf, (size_t)len );
+        nread = (int)read( fileno(fp), buf, (size_t)len );
         err = (nread < 0) ? errno : 0;
 
         if ( ( 0 == nread ) && ( len > 0 ) ) {
@@ -3185,7 +3192,7 @@ stcp_pull_inner( FILE *fp,
                     nread = 0;
                 }
                 else {
-                    //DEBUG_TRACE("SSL_read() failed, error %d", err);
+                    //DEBUG_TRACE("SSL_read() failed, error %d", err); TODO
                     return -2;
                 }
             }
@@ -3194,7 +3201,7 @@ stcp_pull_inner( FILE *fp,
             }
 
         }
-        else if (pollres < 0) {
+        else if ( pollres < 0 ) {
             // Error
             return -2;
         }

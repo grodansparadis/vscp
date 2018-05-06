@@ -8,7 +8,7 @@
 // Copyright (c) 2004-2013 Sergey Lyubka
 // Copyright (c) 2013-2017 the Civetweb developers
 //
-// Adopted for VSCP
+// Adopted for VSCP, Small changes  additions
 // Copyright (c) 2018 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
 // 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
