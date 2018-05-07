@@ -273,9 +273,21 @@ CControlObject::CControlObject()
     m_udpInfo.m_bAllowUnsecure = false;
     m_udpInfo.m_bAck = false;
 
-    // Default TCP/IP interface
+    // Default TCP/IP interface settings
     m_enableTcpip = true;
     m_strTcpInterfaceAddress = _("9598");
+    m_encryptionTcpip = 0;
+    m_pTCPListenThread = NULL;
+    m_tcpip_ssl_certificate.Empty();
+    m_tcpip_ssl_certificate_chain.Empty();
+    m_tcpip_ssl_verify_peer = 0;    // no=0, optional=1, yes=2
+    m_tcpip_ssl_ca_path.Empty();
+    m_tcpip_ssl_ca_file.Empty();
+    m_tcpip_ssl_verify_depth = 9;
+    m_tcpip_ssl_default_verify_paths = false;
+    m_tcpip_ssl_cipher_list.Empty();
+    m_tcpip_ssl_protocol_version = 0;
+    m_tcpip_ssl_short_trust = false;
 
     // Default multicast announce port
     m_strMulticastAnnounceAddress = _( "udp://:" + VSCP_ANNOUNCE_MULTICAST_PORT );
@@ -698,7 +710,7 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
             // Database is open. 
                         
             // Add possible missing configuration values
-            addDeafultConfigValues();
+            addDefaultConfigValues();
             
             // Read configuration data
             readConfigurationDB();
@@ -2801,6 +2813,49 @@ bool CControlObject::readConfigurationXML( wxString& strcfgfile )
             m_strTcpInterfaceAddress.Trim(true);
             m_strTcpInterfaceAddress.Trim(false);
 
+            m_tcpip_ssl_certificate = child->GetAttribute(_("ssl_certificate"), _(""));
+            m_tcpip_ssl_certificate.Trim(true);
+            m_tcpip_ssl_certificate.Trim(false);
+
+            m_tcpip_ssl_certificate_chain = child->GetAttribute(_("ssl_verify_peer"), _(""));
+            m_tcpip_ssl_certificate_chain.Trim(true);
+            m_tcpip_ssl_certificate_chain.Trim(false);
+
+            m_tcpip_ssl_verify_peer = vscp_readStringValue( child->GetAttribute( _("ssl_certificate_chain"), _("0") ) );
+
+            m_tcpip_ssl_ca_path = child->GetAttribute(_("ssl_ca_path"), _(""));
+            m_tcpip_ssl_ca_path.Trim(true);
+            m_tcpip_ssl_ca_path.Trim(false);
+
+            m_tcpip_ssl_ca_file = child->GetAttribute(_("ssl_ca_file"), _(""));
+            m_tcpip_ssl_ca_file.Trim(true);
+            m_tcpip_ssl_ca_file.Trim(false);
+
+            m_tcpip_ssl_verify_depth = vscp_readStringValue( child->GetAttribute( _("ssl_verify_depth"), _("9") ) );
+
+            attribute = child->GetAttribute(_("ssl_default_verify_paths"), _("true"));
+            attribute.MakeLower();
+            if (attribute.IsSameAs(_("false"), false)) {
+                m_tcpip_ssl_default_verify_paths = false;
+            }
+            else {
+                m_tcpip_ssl_default_verify_paths  = true;
+            }
+
+            m_tcpip_ssl_cipher_list = child->GetAttribute(_("ssl_cipher_list"), _(""));
+            m_tcpip_ssl_cipher_list.Trim(true);
+            m_tcpip_ssl_cipher_list.Trim(false);
+
+            m_tcpip_ssl_protocol_version = vscp_readStringValue( child->GetAttribute( _("ssl_protocol_version"), _("0") ) );
+
+            attribute = child->GetAttribute(_("ssl_short_trust"), _("false"));
+            attribute.MakeLower();
+            if (attribute.IsSameAs(_("false"), false)) {
+                m_tcpip_ssl_short_trust = false;
+            }
+            else {
+                m_tcpip_ssl_short_trust  = true;
+            }
         }
         else if ( child->GetName().Lower() == _( "multicast-announce" ) ) {
 
@@ -4619,17 +4674,16 @@ bool CControlObject::addConfigurationValueToDatabase( const char *pName,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// addDeafultConfigValues
+// addDefaultConfigValues
 //
 
-void CControlObject::addDeafultConfigValues( void ) 
+void CControlObject::addDefaultConfigValues( void ) 
 {
     // Add default settings (set as defaults in SQL create expression))
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_DBVERSION, VSCPDB_CONFIG_DEFAULT_DBVERSION );
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_CLIENTBUFFERSIZE, VSCPDB_CONFIG_DEFAULT_CLIENTBUFFERSIZE );
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_GUID, VSCPDB_CONFIG_DEFAULT_GUID );
-    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_SERVERNAME, VSCPDB_CONFIG_DEFAULT_SERVERNAME );
-    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_TCPIP_ADDR, VSCPDB_CONFIG_DEFAULT_TCPIP_ADDR );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_SERVERNAME, VSCPDB_CONFIG_DEFAULT_SERVERNAME );    
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_ANNOUNCE_ADDR, VSCPDB_CONFIG_DEFAULT_ANNOUNCE_ADDR );
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_ANNOUNCE_TTL, VSCPDB_CONFIG_DEFAULT_ANNOUNCE_TTL );
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_PATH_DB_DATA, VSCPDB_CONFIG_DEFAULT_PATH_DB_DATA );
@@ -4645,6 +4699,20 @@ void CControlObject::addDeafultConfigValues( void )
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_UDP_GUID, VSCPDB_CONFIG_DEFAULT_UDP_GUID );
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_UDP_ACK_ENABLE, VSCPDB_CONFIG_DEFAULT_UDP_ACK_ENABLE );
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_MULTICAST_ENABLE, VSCPDB_CONFIG_DEFAULT_MULTICAST_ENABLE );
+
+    // TCP/IP
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_TCPIP_ADDR, VSCPDB_CONFIG_DEFAULT_TCPIP_ADDR );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_TCPIP_ENCRYPTION, VSCPDB_CONFIG_DEFAULT_TCPIP_ENCRYPTION );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_TCPIP_SSL_CERTIFICATE, VSCPDB_CONFIG_DEFAULT_TCPIP_SSL_CERTIFICATE );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_TCPIP_SSL_CERTIFICAT_CHAIN, VSCPDB_CONFIG_DEFAULT_TCPIP_SSL_CERTIFICAT_CHAIN );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_TCPIP_SSL_VERIFY_PEER, VSCPDB_CONFIG_DEFAULT_TCPIP_SSL_VERIFY_PEER );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_TCPIP_SSL_CA_PATH, VSCPDB_CONFIG_DEFAULT_TCPIP_SSL_CA_PATH );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_TCPIP_SSL_CA_FILE, VSCPDB_CONFIG_DEFAULT_TCPIP_SSL_CA_FILE );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_TCPIP_SSL_VERIFY_DEPTH, VSCPDB_CONFIG_DEFAULT_TCPIP_SSL_VERIFY_DEPTH );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_TCPIP_SSL_DEFAULT_VERIFY_PATHS, VSCPDB_CONFIG_DEFAULT_TCPIP_SSL_DEFAULT_VERIFY_PATHS );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_TCPIP_SSL_CHIPHER_LIST, VSCPDB_CONFIG_DEFAULT_TCPIP_SSL_CHIPHER_LIST );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_TCPIP_SSL_PROTOCOL_VERSION, VSCPDB_CONFIG_DEFAULT_TCPIP_SSL_PROTOCOL_VERSION );
+    addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_TCPIP_SSL_SHORT_TRUST, VSCPDB_CONFIG_DEFAULT_TCPIP_SSL_SHORT_TRUST );
 
     // DM
     addConfigurationValueToDatabase( VSCPDB_CONFIG_NAME_DM_PATH_DB, VSCPDB_CONFIG_DEFAULT_DM_PATH_DB );
@@ -4782,7 +4850,7 @@ bool CControlObject::doCreateConfigurationTable( void )
     }
 
     fprintf( stderr, "Writing default configuration database content..\n" );
-    addDeafultConfigValues();
+    addDefaultConfigValues();
     
     m_db_vscp_configMutex.Unlock();
 
@@ -4869,6 +4937,61 @@ bool CControlObject::readConfigurationDB( void )
             m_strTcpInterfaceAddress.StartsWith("tcp://", &m_strTcpInterfaceAddress );
             m_strTcpInterfaceAddress.Trim(true);
             m_strTcpInterfaceAddress.Trim(false);
+        }
+        // TCP/IP encryption
+        else if ( !vscp_strcasecmp( (const char * )pName,
+                        VSCPDB_CONFIG_NAME_TCPIP_ENCRYPTION ) ) {
+            m_encryptionTcpip = atoi( (const char *)pValue );
+        }
+        // TCP/IP SSL certificat
+        else if ( !vscp_strcasecmp( (const char * )pName,
+                        VSCPDB_CONFIG_NAME_TCPIP_SSL_CERTIFICATE ) ) {
+            m_tcpip_ssl_certificate = wxString::FromUTF8( (const char *)pValue );
+        }
+        // TCP/IP SSL certificat chain
+        else if ( !vscp_strcasecmp( (const char * )pName,
+                        VSCPDB_CONFIG_NAME_TCPIP_SSL_CERTIFICAT_CHAIN ) ) {
+            m_tcpip_ssl_certificate_chain = wxString::FromUTF8( (const char *)pValue );
+        }
+        // TCP/IP SSL verify peer
+        else if ( !vscp_strcasecmp( (const char * )pName,
+                        VSCPDB_CONFIG_NAME_TCPIP_SSL_VERIFY_PEER ) ) {
+            m_tcpip_ssl_verify_peer = atoi( (const char *)pValue );
+        }
+        // TCP/IP SSL CA path
+        else if ( !vscp_strcasecmp( (const char * )pName,
+                        VSCPDB_CONFIG_NAME_TCPIP_SSL_CA_PATH ) ) {
+            m_tcpip_ssl_ca_path = wxString::FromUTF8( (const char *)pValue );
+        }
+        // TCP/IP SSL CA file
+        else if ( !vscp_strcasecmp( (const char * )pName,
+                        VSCPDB_CONFIG_NAME_TCPIP_SSL_CA_FILE ) ) {
+            m_tcpip_ssl_ca_file = wxString::FromUTF8( (const char *)pValue );
+        }
+        // TCP/IP SSL verify depth
+        else if ( !vscp_strcasecmp( (const char * )pName,
+                        VSCPDB_CONFIG_NAME_TCPIP_SSL_VERIFY_DEPTH ) ) {
+            m_tcpip_ssl_verify_depth = atoi( (const char *)pValue );
+        }
+        // TCP/IP SSL verify paths
+        else if ( !vscp_strcasecmp( (const char * )pName,
+                        VSCPDB_CONFIG_NAME_TCPIP_SSL_DEFAULT_VERIFY_PATHS ) ) {
+            m_tcpip_ssl_default_verify_paths = atoi( (const char *)pValue ) ? true : false;
+        }
+        // TCP/IP SSL Chipher list
+        else if ( !vscp_strcasecmp( (const char * )pName,
+                        VSCPDB_CONFIG_NAME_TCPIP_SSL_CHIPHER_LIST ) ) {
+            m_tcpip_ssl_cipher_list = wxString::FromUTF8( (const char *)pValue );
+        }
+        // TCP/IP SSL protocol version
+        else if ( !vscp_strcasecmp( (const char * )pName,
+                        VSCPDB_CONFIG_NAME_TCPIP_SSL_PROTOCOL_VERSION ) ) {
+            m_tcpip_ssl_protocol_version = atoi( (const char *)pValue );
+        }
+        // TCP/IP SSL short trust
+        else if ( !vscp_strcasecmp( (const char * )pName,
+                        VSCPDB_CONFIG_NAME_TCPIP_SSL_SHORT_TRUST ) ) {
+            m_tcpip_ssl_short_trust = atoi( (const char *)pValue ) ? true : false;
         }
         // Announce multicast interface address
         else if ( !vscp_strcasecmp( (const char * )pName,

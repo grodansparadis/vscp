@@ -131,6 +131,7 @@ extern "C" {
 #define STCP_ERROR_TIMEOUT              (-1)
 #define STCP_ERROR_STOPPED              (-2)
 
+
 /*!
     stcp_client_cert
 
@@ -187,25 +188,25 @@ struct stcp_secure_options
     /*    
         * * * Client specific * * *   
     */
-    const char *host;           /* Host address of remote server ip.v4 or ip.v6 */
-    int port;                   /* Host port of remote server */
-
     const char *client_cert_path;    /* Client certificat path */
-    const char *server_cert_path;    /* Server certificat path */
+    const char *server_cert_path;    /* Default locations for trusted CA certificates (file in pem format) */
 
     /* ------------------------------------------------------- */
 
+    /*
+        * * '  Server specific * * * 
+    */
     struct stcp_srv_client_cert *srv_client_cert;
     
     const char *pem;            /* Client/server path to combined key and cert */
-    const char *chain;
-    const char *ca_path;
-    const char *ca_file;
+    const char *chain;          /*  */
+    const char *ca_path;        /* CA cert path for peers */
+    const char *ca_file;        /* CA file fo rpeers */
     int  protocol_version;      /* 0 == default */
     int short_trust;            /* 0 == no */
     int verifyPeer;             /* 0 == no, 1 == yes, 2 == optional */
     char *default_verify_path;
-    int verify_depth;           /* Set to zero fro default */
+    int verify_depth;           /* Set to zero for default */
     char *chipher_list;         /* NULL for default */
 
     /* 
@@ -325,7 +326,9 @@ stcp_connect_remote( const char *hostip,
  */
 
 struct stcp_connection *
-stcp_connect_remote_secure( struct stcp_secure_options *secure_opts,
+stcp_connect_remote_secure( const char *host,
+                                int port,
+                                struct stcp_secure_options *secure_opts,
                                 int timeout );
 
 /*!

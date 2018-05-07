@@ -2,7 +2,7 @@
  *
  * Code from: https://wiki.openssl.org/index.php/SSL/TLS_Client
  * 
- * Get certificats from serber
+ * Get certificats from server
  *      https://superuser.com/questions/97201/how-to-save-a-remote-server-ssl-certificate-locally-as-a-file
  * openssl s_client -showcerts -connect server.edu:443 </dev/null 2>/dev/null|openssl x509 -outform PEM >mycertfile.pem
  *

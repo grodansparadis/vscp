@@ -19240,7 +19240,7 @@ set_ssl_option(struct web_context *ctx)
     SSL_library_init();
     SSL_load_error_strings();
 
-    if ((ctx->ssl_ctx = SSL_CTX_new(SSLv23_server_method())) == NULL) {
+    if ( NULL == ( ctx->ssl_ctx = SSL_CTX_new( SSLv23_server_method() ) ) ) {
         web_cry(fc(ctx), "SSL_CTX_new (server) error: %s", ssl_error());
         return 0;
     }
@@ -19280,42 +19280,40 @@ set_ssl_option(struct web_context *ctx)
 #endif
 
     // If a callback has been specified, call it.
-    callback_ret =
-            (ctx->callbacks.init_ssl == NULL)
-            ? 0
-            : (ctx->callbacks.init_ssl(ctx->ssl_ctx, ctx->user_data));
+    callback_ret = (ctx->callbacks.init_ssl == NULL) ? 0 : 
+                ( ctx->callbacks.init_ssl(ctx->ssl_ctx, ctx->user_data ) );
 
     // If callback returns 0, vscpweb sets up the SSL certificate.
     // If it returns 1, vscpweb assumes the callback already did this.
     // If it returns -1, initializing ssl fails.
-    if (callback_ret < 0) {
+    if ( callback_ret < 0 ) {
         web_cry(fc(ctx), "SSL callback returned error: %i", callback_ret);
         return 0;
     }
-    if (callback_ret > 0) {
+    if ( callback_ret > 0 ) {
         if (pem != NULL) {
-            (void) SSL_CTX_use_certificate_chain_file(ctx->ssl_ctx, pem);
+            (void)SSL_CTX_use_certificate_chain_file( ctx->ssl_ctx, pem );
         }
         return 1;
     }
 
     // Use some UID as session context ID.
-    vscpmd5_init(&md5state);
-    vscpmd5_append(&md5state, (const md5_byte_t *) &now_rt, sizeof (now_rt));
-    clock_gettime(CLOCK_MONOTONIC, &now_mt);
-    vscpmd5_append(&md5state, (const md5_byte_t *) &now_mt, sizeof (now_mt));
-    vscpmd5_append(&md5state,
-               (const md5_byte_t *) ctx->config[LISTENING_PORTS],
-               strlen(ctx->config[LISTENING_PORTS]));
-    vscpmd5_append(&md5state, (const md5_byte_t *) ctx, sizeof (*ctx));
-    vscpmd5_finish(&md5state, ssl_context_id);
+    vscpmd5_init( &md5state);
+    vscpmd5_append( &md5state, (const md5_byte_t *)&now_rt, sizeof( now_rt ) );
+    clock_gettime( CLOCK_MONOTONIC, &now_mt);
+    vscpmd5_append( &md5state, (const md5_byte_t *)&now_mt, sizeof( now_mt ) );
+    vscpmd5_append( &md5state,
+                        (const md5_byte_t *)ctx->config[LISTENING_PORTS],
+                        strlen( ctx->config[LISTENING_PORTS] ) );
+    vscpmd5_append( &md5state, (const md5_byte_t *)ctx, sizeof(*ctx) );
+    vscpmd5_finish( &md5state, ssl_context_id );
 
-    SSL_CTX_set_session_id_context(ctx->ssl_ctx,
-                                   (const unsigned char *) &ssl_context_id,
-                                   sizeof (ssl_context_id));
+    SSL_CTX_set_session_id_context( ctx->ssl_ctx,
+                                        (const unsigned char *)&ssl_context_id,
+                                        sizeof( ssl_context_id ) );
 
     if (pem != NULL) {
-        if (!ssl_use_pem_file(ctx, pem, chain)) {
+        if ( !ssl_use_pem_file( ctx, pem, chain ) ) {
             return 0;
         }
     }
@@ -19324,14 +19322,13 @@ set_ssl_option(struct web_context *ctx)
     // Default is "no".
     should_verify_peer = 0;
     peer_certificate_optional = 0;
-    if (ctx->config[SSL_DO_VERIFY_PEER] != NULL) {
-        if (vscp_strcasecmp(ctx->config[SSL_DO_VERIFY_PEER], "yes") == 0) {
+    if ( ctx->config[SSL_DO_VERIFY_PEER] != NULL ) {
+        if ( 0 == vscp_strcasecmp(ctx->config[SSL_DO_VERIFY_PEER], "yes" ) ) {
             // Yes, they are mandatory
             should_verify_peer = 1;
             peer_certificate_optional = 0;
         }
-        else if (vscp_strcasecmp(ctx->config[SSL_DO_VERIFY_PEER], "optional")
-         == 0) {
+        else if ( 0 == vscp_strcasecmp(ctx->config[SSL_DO_VERIFY_PEER], "optional") ) {
             // Yes, they are optional
             should_verify_peer = 1;
             peer_certificate_optional = 1;
@@ -19345,8 +19342,7 @@ set_ssl_option(struct web_context *ctx)
     if ( should_verify_peer ) {
         ca_path = ctx->config[SSL_CA_PATH];
         ca_file = ctx->config[SSL_CA_FILE];
-        if (SSL_CTX_load_verify_locations(ctx->ssl_ctx, ca_file, ca_path)
-            != 1) {
+        if ( SSL_CTX_load_verify_locations( ctx->ssl_ctx, ca_file, ca_path ) != 1 ) {
             web_cry(fc(ctx),
                         "SSL_CTX_load_verify_locations error: %s "
                         "ssl_verify_peer requires setting "

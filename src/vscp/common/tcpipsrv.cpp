@@ -165,6 +165,7 @@ void *TCPListenThread::Entry()
                        gpobj->logMsg( _("[TCP/IP srv] -- Memory problem when creating conn object.\n") );
                        continue; 
                     }
+
                     memset( conn, 0, sizeof(struct stcp_connection) );
                     conn->client.id = m_idCounter++;
 
@@ -221,21 +222,35 @@ void *TCPListenThread::Entry()
 
 		        }
 
-            }
-            
-            /*if ( accept_new_connection( &m_srvctx, psocket ) ) {
-                gpobj->logMsg( _("[TCP/IP srv] -- Accept.\n") );
-            }
-            else {
-                delete psocket;
-                psocket = NULL;
-            }*/
-            
-        }
+            } // for
+                        
+        } // poll
 
         pollres = 0;
 
     } // While
+
+    gpobj->logMsg( _("[TCP/IP srv listen thread] Preparing Exit.\n"), DAEMON_LOGMSG_DEBUG  );
+
+    // Wait for clients to close terminate
+    int loopCnt = 0;
+    while ( true ) {
+        
+        gpobj->m_mutexTcpClientList.Lock();
+        if ( !m_clientList.GetCount() ) break;
+        gpobj->m_mutexTcpClientList.Unlock();
+        
+        loopCnt++;
+        if ( loopCnt > 5 ) {
+            gpobj->logMsg( _("[TCP/IP srv listen thread] "
+                             "Clients did not end as expected. "
+                             "Terminate anyway.\n") );
+            break;
+        }
+
+        wxSleep( 1 );
+
+    }
     
     gpobj->logMsg( _("[TCP/IP srv listen thread] Exit.\n"), DAEMON_LOGMSG_DEBUG  );
 
@@ -404,10 +419,10 @@ void *TCPClientThread::Entry()
             m_strResponse = m_strResponse.Right( m_strResponse.Length() - pos - 1 );
 
             // Remove whitespace
-            strCommand.Trim();
+            strCommand.Trim(true);
             strCommand.Trim(false);
 
-            // If nothing to do yepp do nothing
+            // If nothing to do do nothing - pretty obious if you think about it
             if ( 0 == strCommand.Length() ) continue;
 
             // Check for repeat command

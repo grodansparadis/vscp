@@ -1842,9 +1842,8 @@ ssl_get_client_cert_info( struct stcp_connection *conn,
             using EVP_Digest. 
         */
         ilen = i2d_X509( cert, NULL );
-        tmp_buf = (ilen > 0)
-                ? (unsigned char *)malloc( (unsigned)ilen + 1 )
-                : NULL;
+        tmp_buf = (ilen > 0) ? (unsigned char *)malloc( (unsigned)ilen + 1 )
+                             : NULL;
         if ( tmp_buf ) {
             
             tmp_p = tmp_buf;
@@ -2486,15 +2485,22 @@ stcp_connect_socket( const char *hostip,
 //
 
 static struct stcp_connection *
-stcp_connect_remote_impl( struct stcp_secure_options *secure_options,
-                                int bUseSSL,
-                                int timeout )
+stcp_connect_remote_impl( const char *host,
+                            int port,
+                            struct stcp_secure_options *secure_options,
+                            int bUseSSL,
+                            int timeout )
 {
     struct stcp_connection *conn = NULL;
     int sock;
     union usa sa;
     struct sockaddr *psa;
     socklen_t len;
+
+    // Need secure options if SSL
+    if ( bUseSSL && ( NULL == secure_options ) ) {
+        return 0;
+    }
 
     conn = (struct stcp_connection *)calloc( 1, sizeof( struct stcp_connection ) );
     if ( NULL == conn ) {
@@ -2510,8 +2516,8 @@ stcp_connect_remote_impl( struct stcp_secure_options *secure_options,
         }
     }
 
-    if ( !stcp_connect_socket( secure_options->host,
-                                secure_options->port,
+    if ( !stcp_connect_socket( host,
+                                port,
                                 bUseSSL,
                                 &sock,
                                 &sa ) ) {
@@ -2577,6 +2583,7 @@ stcp_connect_remote_impl( struct stcp_secure_options *secure_options,
             }
         }
 
+        // Set default locations for trusted CA certificates (file in pem format)
         if ( secure_options->server_cert_path ) {
             SSL_CTX_load_verify_locations( conn->ssl_ctx,
                                             secure_options->server_cert_path,
@@ -2615,12 +2622,16 @@ stcp_connect_remote_impl( struct stcp_secure_options *secure_options,
 //
 
 struct stcp_connection *
-stcp_connect_remote_secure( struct stcp_secure_options *client_options,
+stcp_connect_remote_secure( const char *host,
+                                int port,
+                                struct stcp_secure_options *client_options,
                                 int timeout )
 {
     struct stcp_connection *conn;
 
-    conn =  stcp_connect_remote_impl( client_options,
+    conn =  stcp_connect_remote_impl( host,
+                                        port,
+                                        client_options,
                                         USE_SSL,
                                         timeout );
                                     
@@ -2635,12 +2646,10 @@ struct stcp_connection *
 stcp_connect_remote( const char *host,
                         int port,
                         int timeout )
-{
-    struct stcp_secure_options opts;
-    memset( &opts, 0, sizeof( opts ) );
-    opts.host = host;
-    opts.port = port;
-    return stcp_connect_remote_impl( &opts,
+{ 
+    return stcp_connect_remote_impl( host,
+                                        port,
+                                        NULL,
                                         NO_SSL,
                                         timeout );
 }

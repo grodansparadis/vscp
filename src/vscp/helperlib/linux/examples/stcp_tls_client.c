@@ -65,10 +65,8 @@ int main(int argc, char* argv[])
     printf("----------------------\n");
 
     struct stcp_secure_options opts;
-    opts.host = "localhost";
-    opts.port = 4433;
-    opts.client_cert = NULL;
-    opts.server_cert = NULL;
+    opts.client_cert_path = NULL;
+    opts.server_cert_path = NULL;
     opts.pem = "civitweb_client.pem";
     opts.chain = NULL;
     //"kEECDH:kEDH:kRSA:AESGCM:AES256:AES128:3DES:SHA256:SHA84:SHA1:!aNULL:!eNULL:!EXP:!LOW:!MEDIUM!ADH:!AECDH";
@@ -76,7 +74,7 @@ int main(int argc, char* argv[])
     opts.ca_file = NULL;
 
     //conn = stcp_connect_remote( "localhost", 4433, errbuf, sizeof( errbuf ), 5 );
-    conn = stcp_connect_remote_secure( &opts, 5 );
+    conn = stcp_connect_remote_secure( "localhost", 4433, &opts, 5 );
     if ( NULL != conn ) {
 
         printf( "Connect OK\n");

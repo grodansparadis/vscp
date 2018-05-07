@@ -289,7 +289,6 @@ public:
     */
     bool stopMulticastWorkerThreads( void );
 
-
     /*!
         Starting Client worker thread
         @return true on success
@@ -331,7 +330,6 @@ public:
         @param guid class
      */
     bool getMacAddress( cguid& guid );
-
 
     /*!
         Get the first IP address computer is known under
@@ -378,7 +376,6 @@ public:
      */
     bool sendEvent( CClientItem *pClientItem, vscpEvent *peventToSend );
 
-
     /*!
         Get clientmap index from a client id
      */
@@ -422,7 +419,7 @@ public:
       * a configuration value does not exist it is created to make it easy to 
       * add new values to later software versions
       */
-     void addDeafultConfigValues( void ); 
+     void addDefaultConfigValues( void ); 
      
      /*!
       * Create configuration table
@@ -645,7 +642,7 @@ public:
 
 
     //**************************************************************************
-    //                             Logging
+    //                                Logging
     //**************************************************************************
 
     wxMutex m_mutexLogWrite;
@@ -670,7 +667,7 @@ public:
 
 
     //**************************************************************************
-    //                           Communication
+    //                            Communication
     //**************************************************************************
 
 
@@ -682,21 +679,38 @@ public:
     // Server will be started if set to true (by configuration (db/xml)
     bool m_enableTcpip;
 
+    // Enable encryption on tcp/ip interface if enabled.
+    // 0 = Disabled
+    // 1 = AES-128
+    // 2 = AES-192
+    // 3 = AES-256
+    uint8_t m_encryptionTcpip;
+
     // Flag read by tcp/ip server thread and which terminates the 
     // thread when set to non zero
     int stopTcpIpSrv;
     volatile uint16_t m_confirmQuitTcpIpSrv;     // 0x55aa when quiting
 
-    /// Interface used for TCP/IP connection  (only one)
+    // Interface used for TCP/IP connection  (only one)
     wxString m_strTcpInterfaceAddress;
 
-    /// This mutex protects the clientlist
+    // This mutex protects the clientlist
     wxMutex m_mutexTcpClientList;
 
     // The server thread for the TCP connection interface
     TCPListenThread *m_pTCPListenThread;
     
-
+    // tcp/ip SSL settings
+    wxString m_tcpip_ssl_certificate;
+    wxString m_tcpip_ssl_certificate_chain;
+    uint8_t m_tcpip_ssl_verify_peer;    // no=0, optional=1, yes=2
+    wxString m_tcpip_ssl_ca_path;
+    wxString m_tcpip_ssl_ca_file;
+    uint16_t m_tcpip_ssl_verify_depth;
+    bool m_tcpip_ssl_default_verify_paths;
+    wxString m_tcpip_ssl_cipher_list;
+    uint8_t m_tcpip_ssl_protocol_version;
+    bool m_tcpip_ssl_short_trust;
 
 
 
