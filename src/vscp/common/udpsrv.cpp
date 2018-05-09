@@ -29,7 +29,6 @@
 #include <winsock2.h>
 #endif
 
-//#include "wx/wxprec.h"
 #include "wx/wx.h"
 #include "wx/defs.h"
 #include "wx/app.h"
@@ -104,7 +103,9 @@ void *VSCPUDPClientThread::Entry()
     }
 
     // Bind to this interface
-    if ( NULL == ( nc = mg_bind( &mgr, gpobj->m_udpInfo.m_interface.mbc_str(), VSCPUDPClientThread::ev_handler ) ) ) {
+    if ( NULL == ( nc = mg_bind( &mgr, 
+                                    gpobj->m_udpInfo.m_interface.mbc_str(), 
+                                    VSCPUDPClientThread::ev_handler ) ) ) {
         wxString str = _("UDP Client: Failed to bind to interface. [");
         str += gpobj->m_udpInfo.m_interface;
         str += _("]\n");

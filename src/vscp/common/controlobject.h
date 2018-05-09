@@ -706,7 +706,7 @@ public:
     uint8_t m_tcpip_ssl_verify_peer;    // no=0, optional=1, yes=2
     wxString m_tcpip_ssl_ca_path;
     wxString m_tcpip_ssl_ca_file;
-    uint16_t m_tcpip_ssl_verify_depth;
+    uint8_t m_tcpip_ssl_verify_depth;
     bool m_tcpip_ssl_default_verify_paths;
     wxString m_tcpip_ssl_cipher_list;
     uint8_t m_tcpip_ssl_protocol_version;

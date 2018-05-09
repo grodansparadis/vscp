@@ -20805,11 +20805,11 @@ init_connection(struct web_connection *conn)
 
     // call the init_connection callback if assigned
     if ( conn->ctx->callbacks.init_connection != NULL ) {
-	if ( CONTEXT_SERVER == conn->ctx->context_type ) {
+	    if ( CONTEXT_SERVER == conn->ctx->context_type ) {
             void *conn_data = NULL;
             conn->ctx->callbacks.init_connection(conn, &conn_data);
             web_set_user_connection_data(conn, conn_data);
-	}
+	    }
     }
 
 }
@@ -21074,17 +21074,16 @@ worker_thread_run(struct worker_thread_args *thread_args)
 #endif
 
     // Initialize thread local storage before calling any callback
-    pthread_setspecific(sTlsKey, &tls);
+    pthread_setspecific( sTlsKey, &tls );
 
-    if (ctx->callbacks.init_thread) {
+    if ( ctx->callbacks.init_thread ) {
         // call init_thread for a worker thread (type 1)
         ctx->callbacks.init_thread(ctx, 1);
     }
 
     // Connection structure has been pre-allocated
-    if (((int) thread_args->index < 0)
-        || ((unsigned) thread_args->index
-        >= (unsigned) ctx->cfg_worker_threads)) {
+    if (((int) thread_args->index < 0) || 
+        ((unsigned) thread_args->index >= (unsigned)ctx->cfg_worker_threads)) {
         web_cry(fc(ctx),
                     "Internal error: Invalid worker index %i",
                     (int) thread_args->index);
@@ -21117,7 +21116,8 @@ worker_thread_run(struct worker_thread_args *thread_args)
     // Call consume_socket() even when ctx->stop_flag > 0, to let it
     // signal sq_empty condvar to wake up the master waiting in
     // produce_socket()
-    while (consume_socket(ctx, &conn->client, conn->thread_index)) {
+    while ( consume_socket(ctx, &conn->client, conn->thread_index ) ) {
+
         conn->conn_birth_time = time(NULL);
 
         // Fill in IP, port info early so even if SSL setup below fails,
@@ -21156,7 +21156,7 @@ worker_thread_run(struct worker_thread_args *thread_args)
                 process_new_connection(conn);
 
                 // Free client certificate info
-                if (conn->request_info.client_cert) {
+                if ( conn->request_info.client_cert ) {
                     web_free((void *) (conn->request_info.client_cert->subject));
                     web_free((void *) (conn->request_info.client_cert->issuer));
                     web_free((void *) (conn->request_info.client_cert->serial));

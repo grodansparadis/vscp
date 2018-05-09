@@ -114,6 +114,47 @@ void *TCPListenThread::Entry()
     struct pollfd *pfd;
     memset( &opts, 0, sizeof( opts ) );
 
+
+    // * * * Init. secure options * * *
+
+
+    // Certificate
+    if ( gpobj->m_tcpip_ssl_certificate.Length() ) {
+        opts.pem = strdup( (const char *)gpobj->m_tcpip_ssl_certificate.mbc_str() );
+    }
+
+    // Certificate chain
+    if ( gpobj->m_tcpip_ssl_certificate_chain.Length() ) {
+        opts.chain = strdup( (const char *)gpobj->m_tcpip_ssl_certificate_chain.mbc_str() );
+    }
+
+    opts.verify_peer = gpobj->m_tcpip_ssl_verify_peer;
+
+    // CA path
+    if ( gpobj->m_tcpip_ssl_ca_path.Length() ) {
+        opts.ca_path = strdup( (const char *)gpobj->m_tcpip_ssl_ca_path.mbc_str() );
+    }
+
+    // CA file
+    if ( gpobj->m_tcpip_ssl_ca_file.Length() ) {
+        opts.chain = strdup( (const char *)gpobj->m_tcpip_ssl_ca_file.mbc_str() );
+    }
+
+    opts.verify_depth = gpobj->m_tcpip_ssl_verify_depth;
+
+    opts.default_verify_path =  gpobj->m_tcpip_ssl_default_verify_paths ? 1 : 0;
+
+    opts.protocol_version = gpobj->m_tcpip_ssl_protocol_version;
+
+    // chiper list
+    if ( gpobj->m_tcpip_ssl_cipher_list.Length() ) {
+        opts.chipher_list = strdup( (const char *)gpobj->m_tcpip_ssl_cipher_list.mbc_str() );
+    }
+
+    opts.short_trust = gpobj->m_tcpip_ssl_short_trust ? 1 : 0;
+
+    // --------------------------------------------------------------------------------------
+
     // Init. SSL subsystem
     if ( 0 == stcp_init_ssl( m_srvctx.ssl_ctx, &opts ) ) {
         gpobj->logMsg( _("[TCP/IP srv thread] Failed to init. ssl.\n"), 
@@ -121,8 +162,6 @@ void *TCPListenThread::Entry()
         gpobj->m_confirmQuitTcpIpSrv = VSCPD_QUIT_FLAG;                                     
         return NULL;
     }
-
-    //m_srvctx.secure_opts = &opts;
 
     // Bind to selected interface
     if ( 0 == stcp_listening( &m_srvctx, 
@@ -250,6 +289,33 @@ void *TCPListenThread::Entry()
 
         wxSleep( 1 );
 
+    }
+
+    // * * * Deallocate allocated security options * * *
+
+    if ( NULL != opts.pem ) {
+        delete opts.pem;
+        opts.pem = NULL;
+    }
+
+    if ( NULL != opts.chain ) {
+        delete opts.chain;
+        opts.chain = NULL;
+    }
+
+    if ( NULL != opts.ca_path ) {
+        delete opts.ca_path;
+        opts.ca_path = NULL;
+    }
+
+    if ( NULL != opts.ca_file ) {
+        delete opts.ca_file;
+        opts.ca_file = NULL;
+    }
+
+    if ( NULL != opts.chipher_list ) {
+        delete opts.chipher_list;
+        opts.chipher_list = NULL;
     }
     
     gpobj->logMsg( _("[TCP/IP srv listen thread] Exit.\n"), DAEMON_LOGMSG_DEBUG  );

@@ -642,7 +642,6 @@ static int stcp_init_called = 0;
 static int stcp_ssl_initialized = 0;
 
 static pthread_key_t sTlsKey; // Thread local storage index
-//static int thread_idx_max = 0;
 
 struct stcp_workerTLS {
     int is_master;
@@ -1801,7 +1800,7 @@ stcp_ssl_error( void )
 
 static void
 ssl_get_client_cert_info( struct stcp_connection *conn,
-                            struct stcp_secure_options *secure_opts )
+                            struct stcp_srv_client_cert *client_cert )
 {
     X509 *cert = SSL_get_peer_certificate( conn->ssl );
     if ( cert ) {
@@ -1859,18 +1858,18 @@ ssl_get_client_cert_info( struct stcp_connection *conn,
             *str_finger = 0;
         }
 
-        secure_opts->srv_client_cert = (struct stcp_srv_client_cert *)
+        client_cert = (struct stcp_srv_client_cert *)
 		                                malloc( sizeof( struct stcp_srv_client_cert ) );
 
-        if ( secure_opts->srv_client_cert ) {
-            secure_opts->srv_client_cert->subject = strdup( str_subject );
-            secure_opts->srv_client_cert->issuer = strdup( str_issuer );
-            secure_opts->srv_client_cert->serial = strdup( str_serial );
-            secure_opts->srv_client_cert->finger = strdup( str_finger );
+        if ( client_cert ) {
+            client_cert->subject = strdup( str_subject );
+            client_cert->issuer = strdup( str_issuer );
+            client_cert->serial = strdup( str_serial );
+            client_cert->finger = strdup( str_finger );
         }
         else {
             stcp_report_error( "Out of memory: Cannot allocate memory for client "
-                                "certificate" );
+                               "certificate" );
         }
 
         /* 
@@ -1882,6 +1881,7 @@ ssl_get_client_cert_info( struct stcp_connection *conn,
         /* Free certificate memory */
         X509_free( cert );
     }
+
 }
 
 
@@ -4065,14 +4065,19 @@ stcp_accept( struct server_context *srv_ctx,
 void stcp_init_client_connection( struct stcp_connection *conn,
                                     struct stcp_secure_options *secure_opts )
 {
-    // Check pointers
-    if ( ( NULL == conn ) || ( NULL == secure_opts ) ) {
+    // Check conn pointer
+    if ( NULL == conn ) {
+        return;
+    }
+
+    // If secure then secure options must be set
+    if ( conn->client.is_ssl && ( NULL == secure_opts ) ) {
         return;
     }
 
     conn->conn_state = STCP_CONN_STATE_CONNECTED;
 
-    conn->birth = time(NULL);
+    conn->birth = time( NULL );
 
     // Fill in IP, port info early so even if SSL setup below fails,
     // error handler would have the corresponding info.
@@ -4098,9 +4103,10 @@ void stcp_init_client_connection( struct stcp_connection *conn,
                         &(conn->stop_flag ) ) ) {
 
             // Get SSL client certificate information (if set)
-            ssl_get_client_cert_info( conn, secure_opts );
+            ssl_get_client_cert_info( conn, secure_opts->srv_client_cert );
 
         }
 
     }
+
 }

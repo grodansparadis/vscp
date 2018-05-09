@@ -196,7 +196,7 @@ struct stcp_secure_options
     /*
         * * '  Server specific * * * 
     */
-    struct stcp_srv_client_cert *srv_client_cert;
+    struct stcp_srv_client_cert *srv_client_cert;   /* Certificat for remote client */
     
     const char *pem;            /* Client/server path to combined key and cert */
     const char *chain;          /*  */
@@ -204,8 +204,8 @@ struct stcp_secure_options
     const char *ca_file;        /* CA file fo rpeers */
     int  protocol_version;      /* 0 == default */
     int short_trust;            /* 0 == no */
-    int verifyPeer;             /* 0 == no, 1 == yes, 2 == optional */
-    char *default_verify_path;
+    int verify_peer;            /* 0 == no, 1 == yes, 2 == optional */
+    int default_verify_path;    /* 0 == no, 1 == yes */
     int verify_depth;           /* Set to zero for default */
     char *chipher_list;         /* NULL for default */
 
@@ -259,34 +259,6 @@ struct server_context
                                             (Not the same as socket option typedef TCP_NODELAY)
                                         */                                          
 };
-
-// Configuration settings
-/*struct secure_context
-{
-    
-    SSL_CTX *ssl_ctx;                   // SSL context
-
-    struct socket *listening_sockets;
-    struct pollfd *listening_socket_fds;
-    unsigned int num_listening_sockets;
-
-    // TODO pthread_mutex_t thread_mutex;       // Protects (max|num)_threads
-
-    struct socket *client_socks;
-    void **client_wait_events;
-
-    unsigned int max_request_size;      // The max request size
-
-    // TODO pthread_t masterthreadid;           // The master thread ID
-    unsigned int
-    cfg_worker_threads;                 // The number of configured worker threads.
-    // TODO pthread_t *worker_threadids;        // The worker thread IDs
-
-    struct ttimers *timers;
-    
-    //struct stcp_memory_stat ctx_memory;
-
-};*/
 
 
 /*!

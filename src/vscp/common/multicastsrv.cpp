@@ -317,11 +317,11 @@ void VSCPMulticastClientThread::ev_handler( struct mg_connection *nc, int ev, vo
                                     pMulticastClientThread->m_pClientItem,
                                     &pMulticastClientThread->m_pChannel->m_rxFilter )  ) {
                     
-if ( gpobj->m_debugFlags1 & VSCP_DEBUG1_MULTICAST ) {
-                    gpobj->logMsg( wxString::Format( _( "[Multicast channel] Received Multicast event\n" ) ),
+                    if ( gpobj->m_debugFlags1 & VSCP_DEBUG1_MULTICAST ) {
+                        gpobj->logMsg( wxString::Format( _( "[Multicast channel] Received Multicast event\n" ) ),
                                         DAEMON_LOGMSG_DEBUG,
                                         DAEMON_LOGTYPE_GENERAL );
-}
+                    }
                     
                     if ( pMulticastClientThread->m_pChannel->m_bSendAck ) {
                         replyAckFrame( pMulticastClientThread, 

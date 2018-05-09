@@ -8302,7 +8302,7 @@ vscp_client( struct web_connection *conn, void *cbdata )
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// configure_list
+// vscp_configure_list
 //
 
 static int
@@ -8323,9 +8323,9 @@ vscp_configure_list( struct web_connection *conn, void *cbdata )
                     WEB_COMMON_HEAD,
                     "VSCP - Configuration" );
     web_printf( conn, WEB_STYLE_START);
-    web_write( conn, WEB_COMMON_CSS, sizeof(WEB_COMMON_CSS) );     // CSS style Code
+    web_write( conn, WEB_COMMON_CSS, sizeof(WEB_COMMON_CSS) );      // CSS style Code
     web_printf( conn, WEB_STYLE_END);
-    web_write( conn, WEB_COMMON_JS, sizeof(WEB_COMMON_JS) );      // Common JavaScript code
+    web_write( conn, WEB_COMMON_JS, sizeof(WEB_COMMON_JS) );        // Common JavaScript code
     web_printf( conn, WEB_COMMON_HEAD_END_BODY_START);
 
     // navigation menu
@@ -8523,6 +8523,81 @@ vscp_configure_list( struct web_connection *conn, void *cbdata )
     web_printf( conn, "'");
     web_printf( conn, "<br>");
 
+    web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Encryption:</b> ");
+    switch ( gpobj->m_encryptionTcpip ) {
+        case 1:
+            web_printf( conn, "AES-128" );
+            break;
+
+        case 2:
+            web_printf( conn, "AES-192" );
+            break;
+
+        case 3:
+            web_printf( conn, "AES-256" );
+            break;
+
+        default:
+            web_printf( conn, "none" );
+            break;
+    }
+    web_printf( conn, "<br>");
+
+    web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>SSL certificat:</b> ");
+    web_printf( conn, "%s", (const char *)wxString::FromUTF8( gpobj->m_tcpip_ssl_certificate  ).mbc_str() );
+    if ( !gpobj->m_tcpip_ssl_certificate.Length() ) {
+        web_printf( conn, "%s", "Not defined (probably should be)."  );
+    }
+    web_printf( conn, "<br>");
+
+    web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>SSL certificat chain:</b> ");
+    web_printf( conn, "%s", (const char *)wxString::FromUTF8( gpobj->m_tcpip_ssl_certificate_chain  ).mbc_str() );
+    if ( !gpobj->m_web_ssl_certificate_chain.Length() ) {
+        web_printf( conn, "%s", "Not defined (default)."  );
+    }
+    web_printf( conn, "<br>");
+
+    web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>SSL verify peer:</b> ");
+    web_printf( conn, "%s", gpobj->m_tcpip_ssl_verify_peer ? "true" : "false" );
+    web_printf( conn, "<br>");
+
+    web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>SSL CA path:</b> ");
+    web_printf( conn, "%s", (const char *)wxString::FromUTF8( gpobj->m_tcpip_ssl_ca_path  ).mbc_str() );
+    if ( !gpobj->m_web_ssl_ca_path.Length() ) {
+        web_printf( conn, "%s", "Not defined (default)."  );
+    }
+    web_printf( conn, "<br>");
+
+    web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>SSL CA file:</b> ");
+    web_printf( conn, "%s", (const char *)wxString::FromUTF8( gpobj->m_tcpip_ssl_ca_file  ).mbc_str() );
+    if ( !gpobj->m_web_ssl_ca_file.Length() ) {
+        web_printf( conn, "%s", "Not defined (default)."  );
+    }
+    web_printf( conn, "<br>");
+
+    web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>SSL verify depth:</b> ");
+    web_printf( conn, "%d", (int)gpobj->m_tcpip_ssl_verify_depth );
+    web_printf( conn, "<br>");
+
+    web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>SSL verify paths:</b> ");
+    web_printf( conn, "%s", gpobj->m_tcpip_ssl_default_verify_paths ? "true" : "false" );
+    web_printf( conn, "<br>");
+
+    web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>SSL cipher list:</b> ");
+    web_printf( conn, "%s", (const char *)wxString::FromUTF8( gpobj->m_tcpip_ssl_cipher_list  ).mbc_str() );
+    if ( !gpobj->m_tcpip_ssl_cipher_list.Length() ) {
+        web_printf( conn, "%s", "Not defined (default)."  );
+    }
+    web_printf( conn, "<br>");
+
+    web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>SSL protocol version:</b> ");
+    web_printf( conn, "%d", (int)gpobj->m_tcpip_ssl_protocol_version );
+    web_printf( conn, "<br>");
+
+    web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>SSL short trust:</b> ");
+    web_printf( conn, "%s", gpobj->m_tcpip_ssl_short_trust ? "true" : "false" );
+    web_printf( conn, "<br>");
+
     web_printf( conn, "<hr>");
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * ** * * * * * * * *
@@ -8577,6 +8652,13 @@ vscp_configure_list( struct web_connection *conn, void *cbdata )
 
     web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Index files:</b> ");
     web_printf( conn, "%s", (const char *)wxString::FromUTF8( gpobj->m_web_index_files ).mbc_str() );
+    web_printf( conn, "<br>");
+
+    web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>SSL certificat:</b> ");
+    web_printf( conn, "%s", (const char *)wxString::FromUTF8( gpobj->m_web_ssl_certificate  ).mbc_str() );
+    if ( !gpobj->m_web_ssl_certificate.Length() ) {
+        web_printf( conn, "%s", "Not defined (probably should be)."  );
+    }
     web_printf( conn, "<br>");
 
     web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>SSL certificat chain:</b> ");
