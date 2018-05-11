@@ -2799,7 +2799,7 @@ bool CControlObject::readConfigurationXML( wxString& strcfgfile )
         if ( child->GetName().Lower() == _("tcpip") ) {
 
             // Enable
-            wxString attribute = child->GetAttribute(_("enable"), _("true"));
+            attribute = child->GetAttribute(_("enable"), _("true"));
             attribute.MakeLower();
             if (attribute.IsSameAs(_("false"), false)) {
                 m_enableTcpip = false;
@@ -2842,38 +2842,46 @@ bool CControlObject::readConfigurationXML( wxString& strcfgfile )
                 m_tcpip_ssl_default_verify_paths  = true;
             }
 
-            m_tcpip_ssl_cipher_list = child->GetAttribute(_("ssl_cipher_list"), _(""));
+            m_tcpip_ssl_cipher_list = child->GetAttribute(_("ssl_cipher_list"), m_tcpip_ssl_cipher_list );
             m_tcpip_ssl_cipher_list.Trim(true);
             m_tcpip_ssl_cipher_list.Trim(false);
 
-            m_tcpip_ssl_protocol_version = vscp_readStringValue( child->GetAttribute( _("ssl_protocol_version"), _("0") ) );
-
-            attribute = child->GetAttribute(_("ssl_short_trust"), _("false"));
-            attribute.MakeLower();
-            if (attribute.IsSameAs(_("false"), false)) {
-                m_tcpip_ssl_short_trust = false;
+            if ( child->GetAttribute(_("ssl_protocol_version"), &attribute ) ) {
+                m_tcpip_ssl_protocol_version = vscp_readStringValue( attribute ) ;
             }
-            else {
-                m_tcpip_ssl_short_trust  = true;
+
+            if ( child->GetAttribute(_("ssl_short_trust"), &attribute ) ) {
+                attribute.MakeLower();
+                if (attribute.IsSameAs(_("false"), false)) {
+                    m_tcpip_ssl_short_trust = false;
+                }
+                else {
+                    m_tcpip_ssl_short_trust  = true;
+                }
             }
         }
         else if ( child->GetName().Lower() == _( "multicast-announce" ) ) {
 
             // Enable
-            wxString attribute = child->GetAttribute(_("enable"), _("true"));
-            attribute.MakeLower();
-            if (attribute.IsSameAs(_("false"), false)) {
-                m_bMulticastAnounce = false;
-            }
-            else {
-                m_bMulticastAnounce  = true;
+            if ( child->GetAttribute(_("enable"), &attribute ) ) {
+                attribute.MakeLower();
+                if (attribute.IsSameAs(_("false"), false)) {
+                    m_bMulticastAnounce = false;
+                }
+                else {
+                    m_bMulticastAnounce  = true;
+                }
             }
 
             // interface
-            m_strMulticastAnnounceAddress = child->GetAttribute( _( "interface" ), _( "" ) );
+            if ( child->GetAttribute(_("enable"), &attribute ) ) {
+                m_strMulticastAnnounceAddress = child->GetAttribute( attribute );
+            }
 
             // ttl
-            m_ttlMultiCastAnnounce = vscp_readStringValue( child->GetAttribute( _( "ttl" ), _( "1" ) ) );
+            if ( child->GetAttribute(_("ttl"), &attribute ) ) {
+                m_ttlMultiCastAnnounce = vscp_readStringValue( attribute );
+            }
 
         }
         else if (child->GetName().Lower() == _("udp")) {
@@ -2884,56 +2892,62 @@ bool CControlObject::readConfigurationXML( wxString& strcfgfile )
             vscp_clearVSCPFilter( &m_udpInfo.m_filter );
 
             // Enable
-            wxString attribute = child->GetAttribute(_("enable"), _("true"));
-            attribute.MakeLower();
-            if (attribute.IsSameAs(_("false"), false)) {
-                m_udpInfo.m_bEnable = false;
-            }
-            else {
-                m_udpInfo.m_bEnable  = true;
+            if ( child->GetAttribute(_("enable"), &attribute ) ) { 
+                attribute.MakeLower();
+                if (attribute.IsSameAs(_("false"), false)) {
+                    m_udpInfo.m_bEnable = false;
+                }
+                else {
+                    m_udpInfo.m_bEnable  = true;
+                }
             }
 
             // Allow insecure connections
-            attribute = child->GetAttribute( _("bAllowUnsecure"), _("true") );
-            if (attribute.Lower().IsSameAs(_("false"), false)) {
-                m_udpInfo.m_bAllowUnsecure = false;
-            }
-            else {
-                m_udpInfo.m_bAllowUnsecure  = true;
+            if ( child->GetAttribute(_("bAllowUnsecure"), &attribute ) ) {
+                if (attribute.Lower().IsSameAs(_("false"), false)) {
+                    m_udpInfo.m_bAllowUnsecure = false;
+                }
+                else {
+                    m_udpInfo.m_bAllowUnsecure  = true;
+                }
             }
 
             // Enable ACK
-            attribute = child->GetAttribute( _("bSendAck"), _("false") );
-            if (attribute.Lower().IsSameAs(_("false"), false)) {
-                m_udpInfo.m_bAck = false;
-            }
-            else {
-                m_udpInfo.m_bAck = true;
+            if ( child->GetAttribute(_("bSendAck"), &attribute ) ) {
+                if (attribute.Lower().IsSameAs(_("false"), false)) {
+                    m_udpInfo.m_bAck = false;
+                }
+                else {
+                    m_udpInfo.m_bAck = true;
+                }
             }
 
             // Username
-            m_udpInfo.m_user = child->GetAttribute( _("user"), _("") );
+            m_udpInfo.m_user = child->GetAttribute( _("user"), m_udpInfo.m_user );
 
             // Password
-            m_udpInfo.m_password = child->GetAttribute( _("password"), _(""));
+            m_udpInfo.m_password = child->GetAttribute( _("password"), m_udpInfo.m_password );
 
             // Interface
-            m_udpInfo.m_interface = child->GetAttribute( _("interface"), _("udp://"+VSCP_DEFAULT_UDP_PORT));
+            m_udpInfo.m_interface = child->GetAttribute( _("interface"), m_udpInfo.m_interface );
 
             // GUID
-            attribute = child->GetAttribute( _("guid"), _("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00") );
-            m_udpInfo.m_guid.getFromString( attribute );
+            if ( child->GetAttribute(_("guid"), &attribute ) ) {
+                m_udpInfo.m_guid.getFromString( attribute );
+            }
 
             // Filter
-            attribute = child->GetAttribute( _("filter"), _("") );
-            if ( attribute.Trim().Length() ) {
-                vscp_readFilterFromString( &m_udpInfo.m_filter, attribute );
+            if ( child->GetAttribute(_("filter"), &attribute ) ) {
+                if ( attribute.Trim().Length() ) {
+                    vscp_readFilterFromString( &m_udpInfo.m_filter, attribute );
+                }
             }
 
             // Mask
-            attribute = child->GetAttribute( _("mask"), _("") );
-            if ( attribute.Trim().Length() ) {
-                vscp_readMaskFromString( &m_udpInfo.m_filter, attribute );
+            if ( child->GetAttribute(_("mask"), &attribute ) ) {
+                if ( attribute.Trim().Length() ) {
+                    vscp_readMaskFromString( &m_udpInfo.m_filter, attribute );
+                }
             }
 
             wxXmlNode *subchild = child->GetChildren();
@@ -2952,12 +2966,13 @@ bool CControlObject::readConfigurationXML( wxString& strcfgfile )
                     // Default is to let everything come through
                     vscp_clearVSCPFilter( &pudpClient->m_filter );
 
-                    attribute = subchild->GetAttribute( _("enable"), _("false") );
-                    if ( attribute.Lower().IsSameAs(_("false"), false ) ) {
-                        pudpClient->m_bEnable = false;
-                    }
-                    else {
-                        pudpClient->m_bEnable = true;
+                    if ( subchild->GetAttribute( _("enable"), &attribute ) ) { 
+                        if ( attribute.Lower().IsSameAs(_("false"), false ) ) {
+                            pudpClient->m_bEnable = false;
+                        }
+                        else {
+                            pudpClient->m_bEnable = true;
+                        }
                     }
 
                     if ( !pudpClient->m_bEnable ) {
@@ -2968,32 +2983,36 @@ bool CControlObject::readConfigurationXML( wxString& strcfgfile )
                     }
 
                     // remote address
-                    pudpClient->m_remoteAddress = subchild->GetAttribute( _("interface"), _("") );
+                    pudpClient->m_remoteAddress = subchild->GetAttribute( _("interface"), pudpClient->m_remoteAddress );
 
                     // Filter
-                    attribute = subchild->GetAttribute( _("filter"), _("") );
-                    if ( attribute.Trim().Length() ) {
-                        vscp_readFilterFromString( &pudpClient->m_filter, attribute );
+                    if ( subchild->GetAttribute( _("filter"), &attribute ) ) { 
+                        if ( attribute.Trim().Length() ) {
+                            vscp_readFilterFromString( &pudpClient->m_filter, attribute );
+                        }
                     }
 
                     // Mask
-                    attribute = subchild->GetAttribute( _("mask"), _("") );
-                    if ( attribute.Trim().Length() ) {
-                        vscp_readMaskFromString( &pudpClient->m_filter, attribute );
+                    if ( subchild->GetAttribute( _("mask"), &attribute ) ) {
+                        if ( attribute.Trim().Length() ) {
+                            vscp_readMaskFromString( &pudpClient->m_filter, attribute );
+                        }
                     }
 
                     // broadcast
-                    attribute = subchild->GetAttribute( _("bSetBroadcast"), _("false") );
-                    if ( attribute.Lower().IsSameAs(_("false"), false ) ) {
-                        pudpClient->m_bSetBroadcast = false;
-                    }
-                    else {
-                        pudpClient->m_bSetBroadcast = true;
+                    if ( subchild->GetAttribute( _("bsetbroadcast"), &attribute ) ) {
+                        if ( attribute.Lower().IsSameAs(_("false"), false ) ) {
+                            pudpClient->m_bSetBroadcast = false;
+                        }
+                        else {
+                            pudpClient->m_bSetBroadcast = true;
+                        }
                     }
 
                     // encryption
-                    attribute = subchild->GetAttribute( _("encryption"), _("") );
-                    pudpClient->m_nEncryption = vscp_getEncryptionCodeFromToken( attribute );
+                    if ( subchild->GetAttribute( _("encryption"), &attribute ) ) {
+                        pudpClient->m_nEncryption = vscp_getEncryptionCodeFromToken( attribute );
+                    }
 
                     // add to list
                     pudpClient->m_index = 0;
@@ -3013,13 +3032,14 @@ bool CControlObject::readConfigurationXML( wxString& strcfgfile )
 
             gpobj->m_mutexMulticastInfo.Lock();
 
-            attribute = child->GetAttribute(_("enable"), _("true"));
-            attribute.MakeLower();
-            if (attribute.IsSameAs(_("false"), false)) {
-                m_multicastInfo.m_bEnable = false;
-            }
-            else {
-                m_multicastInfo.m_bEnable = true;
+            if ( child->GetAttribute( _("enable"), &attribute ) ) {
+                attribute.MakeLower();
+                if (attribute.IsSameAs(_("false"), false)) {
+                    m_multicastInfo.m_bEnable = false;
+                }
+                else {
+                    m_multicastInfo.m_bEnable = true;
+                }
             }
 
             wxXmlNode *subchild = child->GetChildren();
@@ -3051,84 +3071,92 @@ bool CControlObject::readConfigurationXML( wxString& strcfgfile )
                     vscp_clearVSCPFilter( &pChannel->m_rxFilter );
 
                     // Enable
-                    attribute = subchild->GetAttribute(_("enable"), _("true"));
-                    attribute.MakeLower();
-                    if (attribute.IsSameAs(_("false"), false)) {
-                        pChannel->m_bEnable = false;
-                    }
-                    else {
-                        pChannel->m_bEnable = true;
+                    if ( subchild->GetAttribute( _("enable"), &attribute ) ) {
+                        attribute.MakeLower();
+                        if (attribute.IsSameAs(_("false"), false)) {
+                            pChannel->m_bEnable = false;
+                        }
+                        else {
+                            pChannel->m_bEnable = true;
+                        }
                     }
 
                     // bSendAck
-                    attribute = subchild->GetAttribute(_("bSendAck"), _("false"));
-                    attribute.MakeLower();
-                    if (attribute.IsSameAs(_("false"), false)) {
-                        pChannel->m_bSendAck = false;
-                    }
-                    else {
-                        pChannel->m_bSendAck = true;
+                    if ( subchild->GetAttribute( _("bsendack"), &attribute ) ) {
+                        attribute.MakeLower();
+                        if (attribute.IsSameAs(_("false"), false)) {
+                            pChannel->m_bSendAck = false;
+                        }
+                        else {
+                            pChannel->m_bSendAck = true;
+                        }
                     }
 
                     // bAllowUndsecure
-                    attribute = subchild->GetAttribute( _("bAllowUnsecure"), _("true") );
-                    attribute.MakeLower();
-                    if ( attribute.IsSameAs(_("false"), false) ) {
-                        pChannel->m_bAllowUnsecure = false;
-                    }
-                    else {
-                        pChannel->m_bAllowUnsecure = true;
+                    if ( subchild->GetAttribute( _("ballowunsecure"), &attribute ) ) {
+                        attribute.MakeLower();
+                        if ( attribute.IsSameAs(_("false"), false) ) {
+                            pChannel->m_bAllowUnsecure = false;
+                        }
+                        else {
+                            pChannel->m_bAllowUnsecure = true;
+                        }
                     }
 
                     // Interface
-                    pChannel->m_public =
-                            subchild->GetAttribute( _("public"), _("") );
+                    subchild->GetAttribute( _("public"), pChannel->m_public );
 
                     // Interface
-                    pChannel->m_port =
-                            vscp_readStringValue( subchild->GetAttribute( _("port"), _("44444") ) );
+                    if ( subchild->GetAttribute( _("ballowunsecure"), &attribute ) ) {
+                        pChannel->m_port =
+                                vscp_readStringValue( attribute );
+                    }
 
                     // Group
-                    pChannel->m_gropupAddress =
-                            subchild->GetAttribute( _("group"), _("udp://224.0.23.158:44444") );
+                    subchild->GetAttribute( _("group"), pChannel->m_gropupAddress );
 
                     // ttl
-                    pChannel->m_ttl =
-                            vscp_readStringValue( subchild->GetAttribute( _("ttl"), _("1") ) );
+                    if ( subchild->GetAttribute( _("ttl"), &attribute ) ) {
+                        pChannel->m_ttl = vscp_readStringValue( attribute );
+                    }
 
                     // guid
-                    attribute =
-                            subchild->GetAttribute( _("guid"),
-                                                    _("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00") );
-                    pChannel->m_guid.getFromString( attribute );
+                    if ( subchild->GetAttribute( _("guid"), &attribute ) ) {                                                    
+                        pChannel->m_guid.getFromString( attribute );
+                    }
 
                     // TX Filter
-                    attribute = subchild->GetAttribute( _("txfilter"), _("") );
-                    if ( attribute.Trim().Length() ) {
-                        vscp_readFilterFromString( &pChannel->m_txFilter, attribute );
+                    if ( subchild->GetAttribute( _("txfilter"), &attribute ) ) {
+                        if ( attribute.Trim().Length() ) {
+                            vscp_readFilterFromString( &pChannel->m_txFilter, attribute );
+                        }
                     }
 
                     // TX Mask
-                    attribute = subchild->GetAttribute( _("txmask"), _("") );
-                    if ( attribute.Trim().Length() ) {
-                        vscp_readMaskFromString( &pChannel->m_txFilter, attribute );
+                    if ( subchild->GetAttribute( _("txmask"), &attribute ) ) {
+                        if ( attribute.Trim().Length() ) {
+                            vscp_readMaskFromString( &pChannel->m_txFilter, attribute );
+                        }
                     }
 
                     // RX Filter
-                    attribute = subchild->GetAttribute( _("rxfilter"), _("") );
-                    if ( attribute.Trim().Length() ) {
-                        vscp_readFilterFromString( &pChannel->m_rxFilter, attribute );
+                    if ( subchild->GetAttribute( _("rxfilter"), &attribute ) ) {
+                        if ( attribute.Trim().Length() ) {
+                            vscp_readFilterFromString( &pChannel->m_rxFilter, attribute );
+                        }
                     }
 
                     // RX Mask
-                    attribute = subchild->GetAttribute( _("rxmask"), _("") );
-                    if ( attribute.Trim().Length() ) {
-                        vscp_readMaskFromString( &pChannel->m_rxFilter, attribute );
+                    if ( subchild->GetAttribute( _("rxmask"), &attribute ) ) {
+                        if ( attribute.Trim().Length() ) {
+                            vscp_readMaskFromString( &pChannel->m_rxFilter, attribute );
+                        }
                     }
 
                     // encryption
-                    attribute = subchild->GetAttribute( _("encryption"), _("") );
-                    pChannel->m_nEncryption = vscp_getEncryptionCodeFromToken( attribute );
+                    if ( subchild->GetAttribute( _("encryption"), &attribute ) ) {
+                        pChannel->m_nEncryption = vscp_getEncryptionCodeFromToken( attribute );
+                    }
 
                     // add to list
                     pChannel->m_index = 0;
@@ -3150,35 +3178,40 @@ bool CControlObject::readConfigurationXML( wxString& strcfgfile )
             wxString attribut;
 
             // Get the path to the DM file  (Deprecated)
-            attribut = child->GetAttribute( _("path"), _("") );
-            if ( attribut.Length() ) {
-                m_dm.m_staticXMLPath = attribut;
+            if ( child->GetAttribute( _("path"), &attribute ) ) {
+                if ( attribut.Length() ) {
+                    m_dm.m_staticXMLPath = attribut;
+                }
             }
 
             // Get the path to the DM file
-            attribut = child->GetAttribute( _("pathxml"), _("") );
-            if ( attribut.Length() ) {
-                m_dm.m_staticXMLPath = attribut;
+            if ( child->GetAttribute( _("pathxml"), &attribute ) ) {
+                if ( attribut.Length() ) {
+                    m_dm.m_staticXMLPath = attribut;
+                }
             }
 
             // Get the path to the DM db file
-            attribut = child->GetAttribute( _("pathdb"), _("") );
-            if ( attribut.Length() ) {
-                m_dm.m_path_db_vscp_dm.Assign( attribut );
+            if ( child->GetAttribute( _("pathdb"), &attribute ) ) {
+                if ( attribut.Length() ) {
+                    m_dm.m_path_db_vscp_dm.Assign( attribut );
+                }
             }
 
             // Get the DM XML save flag
-            attribut = child->GetAttribute( _("allowxmlsave"), _("false") );
-            attribute.MakeLower();
-            if ( wxNOT_FOUND != attribute.Find( _("true") ) ) {
-                m_dm.bAllowXMLsave = true;
+            if ( child->GetAttribute( _("allowxmlsave"), &attribute ) ) {
+                attribute.MakeLower();
+                if ( wxNOT_FOUND != attribute.Find( _("true") ) ) {
+                    m_dm.bAllowXMLsave = true;
+                }
             }
 
             // Get the DM loglevel
-            attribut = child->GetAttribute( _("loglevel"), _("") );
-            attribute.MakeLower();
-            if ( wxNOT_FOUND != attribute.Find( _("debug") ) ) {
-                m_debugFlags1 |= VSCP_DEBUG1_DM;
+            if ( child->GetAttribute( _("loglevel"), &attribute ) ) {
+                attribute.MakeLower();
+                if ( wxNOT_FOUND != attribute.Find( _("debug") ) ) {
+                    m_debugFlags1 |= VSCP_DEBUG1_DM;
+                }
             }
 
         }
@@ -3187,25 +3220,27 @@ bool CControlObject::readConfigurationXML( wxString& strcfgfile )
 
             // Should the internal DM be disabled
             wxFileName fileName;
-            wxString attrib;
 
             // Get the path to the DM file
-            attrib = child->GetAttribute(_("path"), _(""));
-            fileName.Assign( attrib );
-            if ( fileName.IsOk() ) {
-                m_variables.m_xmlPath = fileName.GetFullPath();
+            if ( child->GetAttribute( _("path"), &attribute ) ) {
+                fileName.Assign( attribute );
+                if ( fileName.IsOk() ) {
+                    m_variables.m_xmlPath = fileName.GetFullPath();
+                }
             }
 
-            attrib = child->GetAttribute(_("pathxml"), m_rootFolder + _("variable.xml"));
-            fileName.Assign( attrib );
-            if ( fileName.IsOk() ) {
-                m_variables.m_xmlPath = fileName.GetFullPath();
+            if ( child->GetAttribute( _("pathxml"), &attribute ) ) {
+                fileName.Assign( attribute );
+                if ( fileName.IsOk() ) {
+                    m_variables.m_xmlPath = fileName.GetFullPath();
+                }
             }
 
-            attrib = child->GetAttribute(_("pathdb"), m_rootFolder + _("variable.sqlite3"));
-            fileName.Assign( attrib );
-            if ( fileName.IsOk() ) {
-                m_variables.m_dbFilename = fileName;
+            if ( child->GetAttribute( _("pathdb"), &attribute ) ) {
+                fileName.Assign( attribute );
+                if ( fileName.IsOk() ) {
+                    m_variables.m_dbFilename = fileName;
+                }
             }
 
         }
@@ -3215,478 +3250,536 @@ bool CControlObject::readConfigurationXML( wxString& strcfgfile )
             wxString attribute;
 
             // Enable
-            attribute = child->GetAttribute( _("enable"), _("") );
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                attribute.MakeUpper();
-                if ( attribute.IsSameAs(_("FALSE"), false ) ) {
-                    m_web_bEnable = false;
-                }
-                else {
-                    m_web_bEnable = true;
-                }
-            }
-
-            attribute = child->GetAttribute(_("document_root"), _(""));
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                m_web_document_root = attribute;
-            }
-
-            attribute = child->GetAttribute( _("listening_ports"), _("") );
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                m_web_listening_ports = attribute;
-            }
-
-            attribute = child->GetAttribute(_("index_files"), _(""));
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                m_web_index_files = attribute;
-            }
-
-            attribute = child->GetAttribute(_("authentication_domain"), _(""));
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                m_web_authentication_domain = attribute;
-            }
-
-            attribute = child->GetAttribute( _("enable_auth_domain_check"), _("") );
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                attribute.MakeUpper();
-                if ( attribute.IsSameAs(_("FALSE"), false ) ) {
-                    m_enable_auth_domain_check = false;
-                }
-                else {
-                    m_enable_auth_domain_check = true;
+            if ( child->GetAttribute( _("enable"), &attribute ) ) {
+                attribute.Trim();
+                attribute.Trim(false);
+                if ( attribute.Length() ) {
+                    attribute.MakeUpper();
+                    if ( attribute.IsSameAs(_("FALSE"), false ) ) {
+                        m_web_bEnable = false;
+                    }
+                    else {
+                        m_web_bEnable = true;
+                    }
                 }
             }
 
-            attribute = child->GetAttribute(_("ssl_certificat"), _(""));
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                m_web_ssl_certificate = attribute;
-            }
-
-            attribute = child->GetAttribute(_("ssl_certificat_chain"), _(""));
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                m_web_ssl_certificate_chain = attribute;
-            }
-
-            attribute = child->GetAttribute( _("ssl_verify_peer"), _("") );
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                attribute.MakeUpper();
-                if ( attribute.IsSameAs(_("FALSE"), false ) ) {
-                    m_web_ssl_verify_peer = false;
-                }
-                else {
-                    m_web_ssl_verify_peer = true;
+            if ( child->GetAttribute( _("document_root"), &attribute ) ) {
+                attribute.Trim();
+                attribute.Trim(false);
+                if ( attribute.Length() ) {
+                    m_web_document_root = attribute;
                 }
             }
 
-            attribute = child->GetAttribute(_("ssl_ca_path"), _(""));
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                m_web_ssl_ca_path = attribute;
-            }
-
-            attribute = child->GetAttribute(_("ssl_ca_file"), _(""));
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                m_web_ssl_ca_file = attribute;
-            }
-
-            attribute = child->GetAttribute(_("ssl_verify_depth"), _(""));
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                m_web_ssl_verify_depth = atoi( (const char *)attribute.mbc_str() );
-            }
-
-            attribute = child->GetAttribute(_("ssl_default_verify_paths"), _(""));
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                attribute.MakeUpper();
-                if ( attribute.IsSameAs(_("FALSE"), false ) ) {
-                    m_web_ssl_default_verify_paths = false;
-                }
-                else {
-                    m_web_ssl_default_verify_paths = true;
+            if ( child->GetAttribute( _("listening_ports"), &attribute ) ) {
+                attribute.Trim();
+                attribute.Trim(false);
+                if ( attribute.Length() ) {
+                    m_web_listening_ports = attribute;
                 }
             }
 
-            attribute = child->GetAttribute(_("ssl_cipher_list"), _(""));
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                m_web_ssl_cipher_list = attribute.mbc_str();
-            }
-
-            attribute = child->GetAttribute(_("ssl_protcol_version"), _(""));
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                m_web_ssl_protocol_version = atoi( (const char *)attribute.mbc_str() );
-            }
-
-            attribute = child->GetAttribute(_("ssl_short_trust"), _(""));
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                attribute.MakeUpper();
-                if ( attribute.IsSameAs(_("FALSE"), false ) ) {
-                    m_web_ssl_short_trust = false;
-                }
-                else {
-                    m_web_ssl_short_trust = true;
+            if ( child->GetAttribute( _("index_files"), &attribute ) ) {
+                attribute.Trim();
+                attribute.Trim(false);
+                if ( attribute.Length() ) {
+                    m_web_index_files = attribute;
                 }
             }
 
-            attribute = child->GetAttribute( _("cgi_interpreter"), _(""));
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                m_web_cgi_interpreter = attribute;
-            }
-
-            attribute = child->GetAttribute(_("cgi_pattern"), _(""));
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                m_web_cgi_patterns =attribute;
-            }
-
-            attribute = child->GetAttribute(_("cgi_environment"), _(""));
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                m_web_cgi_environment = attribute;
-            }
-
-            attribute = child->GetAttribute(_("protect_uri"), _(""));
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                m_web_protect_uri = attribute;
-            }
-
-            attribute = child->GetAttribute(_("trottle"), _(""));
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                m_web_trottle = attribute;
-            }
-
-            attribute = child->GetAttribute( _("enable_directory_listing"), _("") );
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                attribute.MakeUpper();
-                if ( attribute.IsSameAs(_("FALSE"), false ) ) {
-                    m_web_enable_directory_listing = false;
-                }
-                else {
-                    m_web_enable_directory_listing = true;
+            if ( child->GetAttribute( _("authentication_domain"), &attribute ) ) {
+                attribute.Trim();
+                attribute.Trim(false);
+                if ( attribute.Length() ) {
+                    m_web_authentication_domain = attribute;
                 }
             }
 
-            attribute = child->GetAttribute( _("enable_keep_alive"), _("") );
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                attribute.MakeUpper();
-                if ( attribute.IsSameAs(_("FALSE"), false ) ) {
-                    m_web_enable_keep_alive = false;
-                }
-                else {
-                    m_web_enable_keep_alive = true;
-                }
-            }
-
-            attribute = child->GetAttribute(_("keep_alive_timeout_ms"), _(""));
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                m_web_keep_alive_timeout_ms = atol( (const char *)attribute.mbc_str() );
-            }
-
-            attribute = child->GetAttribute(_("access_control_list"), _(""));
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                m_web_access_control_list = attribute;
-            }
-
-            attribute = child->GetAttribute(_("extra_mime_types"), _(""));
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                m_web_extra_mime_types = attribute;
-            }
-
-            attribute = child->GetAttribute(_("num_threads"), _(""));
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                m_web_num_threads = atoi( (const char *)attribute.mbc_str() );
-            }
-
-            attribute = child->GetAttribute(_("hide_file_pattern"), _(""));
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                m_web_hide_file_patterns = attribute;
-            }
-
-            attribute = child->GetAttribute(_("run_as_user"), _(""));
-            attribute.Trim();
-            attribute.Trim(false);
-            m_web_run_as_user = attribute;
-
-            attribute = child->GetAttribute(_("url_rewrite_patterns"), _(""));
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                m_web_url_rewrite_patterns = attribute;
-            }
-
-            attribute = child->GetAttribute(_("hide_file_patterns"), _(""));
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                m_web_hide_file_patterns = attribute;
-            }
-
-            attribute = child->GetAttribute(_("request_timeout_ms"), _(""));
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                m_web_request_timeout_ms = atol( (const char *)attribute.mbc_str() );
-            }
-
-            attribute = child->GetAttribute(_("linger_timeout_ms"), _(""));
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                m_web_linger_timeout_ms = atol( (const char *)attribute.mbc_str() );
-            }
-
-            attribute = child->GetAttribute( _("decode_url"), _("") );
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                attribute.MakeUpper();
-                if ( attribute.IsSameAs(_("FALSE"), false ) ) {
-                    m_web_decode_url = false;
-                }
-                else {
-                    m_web_decode_url = true;
+            if ( child->GetAttribute( _("enable_auth_domain_check"), &attribute ) ) {
+                attribute.Trim();
+                attribute.Trim(false);
+                if ( attribute.Length() ) {
+                    attribute.MakeUpper();
+                    if ( attribute.IsSameAs(_("FALSE"), false ) ) {
+                        m_enable_auth_domain_check = false;
+                    }
+                    else {
+                        m_enable_auth_domain_check = true;
+                    }
                 }
             }
 
-            attribute = child->GetAttribute(_("global_auth_file"), _(""));
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                m_web_global_auth_file = attribute;
-            }
-
-            attribute = child->GetAttribute(_("web_per_directory_auth_file"), _(""));
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                m_web_per_directory_auth_file = attribute;
-            }
-
-            attribute = child->GetAttribute(_("ssi_pattern"), _(""));
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                m_web_ssi_patterns = attribute;
-            }
-
-            attribute = child->GetAttribute(_("access_control_allow_origin"), _(""));
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                m_web_access_control_allow_origin = attribute;
-            }
-
-            attribute = child->GetAttribute(_("access_control_allow_methods"), _(""));
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                m_web_access_control_allow_methods = attribute;
-            }
-
-            attribute = child->GetAttribute(_("access_control_allow_headers"), _(""));
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                m_web_access_control_allow_headers = attribute;
-            }
-
-            attribute = child->GetAttribute(_("error_pages"), _(""));
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                m_web_error_pages = attribute;
-            }
-
-            attribute = child->GetAttribute(_("tcp_nodelay"), _(""));
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                m_web_linger_timeout_ms = atol( (const char *)attribute.mbc_str() );
-            }
-
-            attribute = child->GetAttribute(_("static_file_max_age"), _(""));
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                m_web_static_file_max_age = atol( (const char *)attribute.mbc_str() );
-            }
-
-            attribute = child->GetAttribute(_("strict_transport_security_max_age"), _(""));
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                m_web_strict_transport_security_max_age = atol( (const char *)attribute.mbc_str() );
-            }
-
-            attribute = child->GetAttribute( _("sendfile_call"), _("") );
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                attribute.MakeUpper();
-                if ( attribute.IsSameAs(_("FALSE"), false ) ) {
-                    m_web_allow_sendfile_call = false;
-                }
-                else {
-                    m_web_allow_sendfile_call = true;
+            if ( child->GetAttribute( _("ssl_certificat"), &attribute ) ) {
+                attribute.Trim();
+                attribute.Trim(false);
+                if ( attribute.Length() ) {
+                    m_web_ssl_certificate = attribute;
                 }
             }
 
-            attribute = child->GetAttribute(_("additional_headers"), _(""));
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                m_web_additional_header = attribute;
-            }
-
-            attribute = child->GetAttribute(_("max_request_size"), _(""));
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                m_web_max_request_size = atol( (const char *)attribute.mbc_str() );
-            }
-
-            attribute = child->GetAttribute(_("web_allow_index_script_resource"), _("") );
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                attribute.MakeUpper();
-                if ( attribute.IsSameAs(_("FALSE"), false ) ) {
-                    m_web_allow_index_script_resource = false;
-                }
-                else {
-                    m_web_allow_index_script_resource = true;
+            if ( child->GetAttribute( _("ssl_certificat_chain"), &attribute ) ) {
+                attribute.Trim();
+                attribute.Trim(false);
+                if ( attribute.Length() ) {
+                    m_web_ssl_certificate_chain = attribute;
                 }
             }
 
-            attribute = child->GetAttribute(_("duktape_script_patterns"), _(""));
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                m_web_duktape_script_patterns = attribute;
+            if ( child->GetAttribute( _("ssl_verify_peer"), &attribute ) ) {
+                attribute.Trim();
+                attribute.Trim(false);
+                if ( attribute.Length() ) {
+                    attribute.MakeUpper();
+                    if ( attribute.IsSameAs(_("FALSE"), false ) ) {
+                        m_web_ssl_verify_peer = false;
+                    }
+                    else {
+                        m_web_ssl_verify_peer = true;
+                    }
+                }
             }
 
-            attribute = child->GetAttribute(_("lua_preload_file"), _(""));
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                m_web_lua_preload_file = attribute;
+            if ( child->GetAttribute( _("ssl_ca_path"), &attribute ) ) {
+                attribute.Trim();
+                attribute.Trim(false);
+                if ( attribute.Length() ) {
+                    m_web_ssl_ca_path = attribute;
+                }
             }
 
-            attribute = child->GetAttribute(_("lua_script_patterns"), _(""));
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                m_web_lua_script_patterns = attribute;
+            if ( child->GetAttribute( _("ssl_ca_file"), &attribute ) ) {
+                attribute.Trim();
+                attribute.Trim(false);
+                if ( attribute.Length() ) {
+                    m_web_ssl_ca_file = attribute;
+                }
             }
 
-            attribute = child->GetAttribute(_("lua_server_page_patterns"), _(""));
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                m_web_lua_server_page_patterns = attribute;
+            if ( child->GetAttribute( _("ssl_verify_depth"), &attribute ) ) {
+                attribute.Trim();
+                attribute.Trim(false);
+                if ( attribute.Length() ) {
+                    m_web_ssl_verify_depth = atoi( (const char *)attribute.mbc_str() );
+                }
             }
 
-            attribute = child->GetAttribute(_("lua_websockets_patterns"), _(""));
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                m_web_lua_websocket_patterns = attribute;
+            if ( child->GetAttribute( _("ssl_default_verify_paths"), &attribute ) ) {
+                attribute.Trim();
+                attribute.Trim(false);
+                if ( attribute.Length() ) {
+                    attribute.MakeUpper();
+                    if ( attribute.IsSameAs(_("FALSE"), false ) ) {
+                        m_web_ssl_default_verify_paths = false;
+                    }
+                    else {
+                        m_web_ssl_default_verify_paths = true;
+                    }
+                }
             }
 
-            attribute = child->GetAttribute(_("lua_background_script"), _(""));
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                m_web_lua_background_script = attribute;
+            if ( child->GetAttribute( _("ssl_cipher_list"), &attribute ) ) {
+                attribute.Trim();
+                attribute.Trim(false);
+                if ( attribute.Length() ) {
+                    m_web_ssl_cipher_list = attribute.mbc_str();
+                }
             }
 
-            attribute = child->GetAttribute(_("lua_background_script_params"), _(""));
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                m_web_lua_background_script_params = attribute;
+            if ( child->GetAttribute( _("ssl_protcol_version"), &attribute ) ) {
+                attribute.Trim();
+                attribute.Trim(false);
+                if ( attribute.Length() ) {
+                    m_web_ssl_protocol_version = atoi( (const char *)attribute.mbc_str() );
+                }
+            }
+
+            if ( child->GetAttribute( _("ssl_short_trust"), &attribute ) ) {
+                attribute.Trim();
+                attribute.Trim(false);
+                if ( attribute.Length() ) {
+                    attribute.MakeUpper();
+                    if ( attribute.IsSameAs(_("FALSE"), false ) ) {
+                        m_web_ssl_short_trust = false;
+                    }
+                    else {
+                        m_web_ssl_short_trust = true;
+                    }
+                }
+            }
+
+            if ( child->GetAttribute( _("cgi_interpreter"), &attribute ) ) {
+                attribute.Trim();
+                attribute.Trim(false);
+                if ( attribute.Length() ) {
+                    m_web_cgi_interpreter = attribute;
+                }
+            }
+
+            if ( child->GetAttribute( _("cgi_pattern"), &attribute ) ) {
+                attribute.Trim();
+                attribute.Trim(false);
+                if ( attribute.Length() ) {
+                    m_web_cgi_patterns =attribute;
+                }
+            }
+
+            if ( child->GetAttribute( _("cgi_environment"), &attribute ) ) {
+                attribute.Trim();
+                attribute.Trim(false);
+                if ( attribute.Length() ) {
+                    m_web_cgi_environment = attribute;
+                }
+            }
+
+            if ( child->GetAttribute( _("protect_uri"), &attribute ) ) {
+                attribute.Trim();
+                attribute.Trim(false);
+                if ( attribute.Length() ) {
+                    m_web_protect_uri = attribute;
+                }
+            }
+
+            if ( child->GetAttribute( _("trottle"), &attribute ) ) {
+                attribute.Trim();
+                attribute.Trim(false);
+                if ( attribute.Length() ) {
+                    m_web_trottle = attribute;
+                }
+            }
+
+            if ( child->GetAttribute( _("enable_directory_listing"), &attribute ) ) {
+                attribute.Trim();
+                attribute.Trim(false);
+                if ( attribute.Length() ) {
+                    attribute.MakeUpper();
+                    if ( attribute.IsSameAs(_("FALSE"), false ) ) {
+                        m_web_enable_directory_listing = false;
+                    }
+                    else {
+                        m_web_enable_directory_listing = true;
+                    }
+                }
+            }
+
+            if ( child->GetAttribute( _("enable_keep_alive"), &attribute ) ) {
+                attribute.Trim();
+                attribute.Trim(false);
+                if ( attribute.Length() ) {
+                    attribute.MakeUpper();
+                    if ( attribute.IsSameAs(_("FALSE"), false ) ) {
+                        m_web_enable_keep_alive = false;
+                    }
+                    else {
+                        m_web_enable_keep_alive = true;
+                    }
+                }
+            }
+
+            if ( child->GetAttribute( _("keep_alive_timeout_ms"), &attribute ) ) {
+                attribute.Trim();
+                attribute.Trim(false);
+                if ( attribute.Length() ) {
+                    m_web_keep_alive_timeout_ms = atol( (const char *)attribute.mbc_str() );
+                }
+            }
+
+            if ( child->GetAttribute( _("access_control_list"), &attribute ) ) {
+                attribute.Trim();
+                attribute.Trim(false);
+                if ( attribute.Length() ) {
+                    m_web_access_control_list = attribute;
+                }
+            }
+
+            if ( child->GetAttribute( _("extra_mime_types"), &attribute ) ) {
+                attribute.Trim();
+                attribute.Trim(false);
+                if ( attribute.Length() ) {
+                    m_web_extra_mime_types = attribute;
+                }
+            }
+
+            if ( child->GetAttribute( _("num_threads"), &attribute ) ) {
+                attribute.Trim();
+                attribute.Trim(false);
+                if ( attribute.Length() ) {
+                    m_web_num_threads = atoi( (const char *)attribute.mbc_str() );
+                }
+            }
+
+            if ( child->GetAttribute( _("hide_file_pattern"), &attribute ) ) {
+                attribute.Trim();
+                attribute.Trim(false);
+                if ( attribute.Length() ) {
+                    m_web_hide_file_patterns = attribute;
+                }
+            }
+
+            if ( child->GetAttribute( _("run_as_user"), &attribute ) ) {
+                attribute.Trim();
+                attribute.Trim(false);
+                m_web_run_as_user = attribute;
+            }
+
+            if ( child->GetAttribute( _("url_rewrite_patterns"), &attribute ) ) {
+                attribute.Trim();
+                attribute.Trim(false);
+                if ( attribute.Length() ) {
+                    m_web_url_rewrite_patterns = attribute;
+                }
+            }
+
+            if ( child->GetAttribute( _("hide_file_patterns"), &attribute ) ) {
+                attribute.Trim();
+                attribute.Trim(false);
+                if ( attribute.Length() ) {
+                    m_web_hide_file_patterns = attribute;
+                }
+            }
+
+            if ( child->GetAttribute( _("request_timeout_ms"), &attribute ) ) {
+                attribute.Trim();
+                attribute.Trim(false);
+                if ( attribute.Length() ) {
+                    m_web_request_timeout_ms = atol( (const char *)attribute.mbc_str() );
+                }
+            }
+
+            if ( child->GetAttribute( _("linger_timeout_ms"), &attribute ) ) {
+                attribute.Trim();
+                attribute.Trim(false);
+                if ( attribute.Length() ) {
+                    m_web_linger_timeout_ms = atol( (const char *)attribute.mbc_str() );
+                }
+            }
+
+            if ( child->GetAttribute( _("decode_url"), &attribute ) ) {
+                attribute.Trim();
+                attribute.Trim(false);
+                if ( attribute.Length() ) {
+                    attribute.MakeUpper();
+                    if ( attribute.IsSameAs(_("FALSE"), false ) ) {
+                        m_web_decode_url = false;
+                    }
+                    else {
+                        m_web_decode_url = true;
+                    }
+                }
+            }
+
+            if ( child->GetAttribute( _("global_auth_file"), &attribute ) ) {
+                attribute.Trim();
+                attribute.Trim(false);
+                if ( attribute.Length() ) {
+                    m_web_global_auth_file = attribute;
+                }
+            }
+
+            if ( child->GetAttribute( _("web_per_directory_auth_file"), &attribute ) ) {
+                attribute.Trim();
+                attribute.Trim(false);
+                if ( attribute.Length() ) {
+                    m_web_per_directory_auth_file = attribute;
+                }
+            }
+
+            if ( child->GetAttribute( _("ssi_pattern"), &attribute ) ) {
+                attribute.Trim();
+                attribute.Trim(false);
+                if ( attribute.Length() ) {
+                    m_web_ssi_patterns = attribute;
+                }
+            }
+
+            if ( child->GetAttribute( _("access_control_allow_origin"), &attribute ) ) {
+                attribute.Trim();
+                attribute.Trim(false);
+                if ( attribute.Length() ) {
+                    m_web_access_control_allow_origin = attribute;
+                }
+            }
+
+            if ( child->GetAttribute( _("access_control_allow_methods"), &attribute ) ) {
+                attribute.Trim();
+                attribute.Trim(false);
+                if ( attribute.Length() ) {
+                    m_web_access_control_allow_methods = attribute;
+                }
+            }
+
+            if ( child->GetAttribute( _("access_control_allow_headers"), &attribute ) ) {
+                attribute.Trim();
+                attribute.Trim(false);
+                if ( attribute.Length() ) {
+                    m_web_access_control_allow_headers = attribute;
+                }
+            }
+
+            if ( child->GetAttribute( _("error_pages"), &attribute ) ) {
+                attribute.Trim();
+                attribute.Trim(false);
+                if ( attribute.Length() ) {
+                    m_web_error_pages = attribute;
+                }
+            }
+
+            if ( child->GetAttribute( _("tcp_nodelay"), &attribute ) ) {
+                attribute.Trim();
+                attribute.Trim(false);
+                if ( attribute.Length() ) {
+                    m_web_linger_timeout_ms = atol( (const char *)attribute.mbc_str() );
+                }
+            }
+
+            if ( child->GetAttribute( _("static_file_max_age"), &attribute ) ) {
+                attribute.Trim();
+                attribute.Trim(false);
+                if ( attribute.Length() ) {
+                    m_web_static_file_max_age = atol( (const char *)attribute.mbc_str() );
+                }
+            }
+
+            if ( child->GetAttribute( _("strict_transport_security_max_age"), &attribute ) ) {
+                attribute.Trim();
+                attribute.Trim(false);
+                if ( attribute.Length() ) {
+                    m_web_strict_transport_security_max_age = atol( (const char *)attribute.mbc_str() );
+                }
+            }
+
+            if ( child->GetAttribute( _("sendfile_call"), &attribute ) ) {
+                attribute.Trim();
+                attribute.Trim(false);
+                if ( attribute.Length() ) {
+                    attribute.MakeUpper();
+                    if ( attribute.IsSameAs(_("FALSE"), false ) ) {
+                        m_web_allow_sendfile_call = false;
+                    }
+                    else {
+                        m_web_allow_sendfile_call = true;
+                    }
+                }
+            }
+
+            if ( child->GetAttribute( _("additional_headers"), &attribute ) ) {    
+                attribute.Trim();
+                attribute.Trim(false);
+                if ( attribute.Length() ) {
+                    m_web_additional_header = attribute;
+                }
+            }
+
+            if ( child->GetAttribute( _("max_request_size"), &attribute ) ) {
+                attribute.Trim();
+                attribute.Trim(false);
+                if ( attribute.Length() ) {
+                    m_web_max_request_size = atol( (const char *)attribute.mbc_str() );
+                }
+            }
+
+            if ( child->GetAttribute( _("web_allow_index_script_resource"), &attribute ) ) {
+                attribute.Trim();
+                attribute.Trim(false);
+                if ( attribute.Length() ) {
+                    attribute.MakeUpper();
+                    if ( attribute.IsSameAs(_("FALSE"), false ) ) {
+                        m_web_allow_index_script_resource = false;
+                    }
+                    else {
+                        m_web_allow_index_script_resource = true;
+                    }
+                }
+            }
+
+            if ( child->GetAttribute( _("duktape_script_patterns"), &attribute ) ) {
+                attribute.Trim();
+                attribute.Trim(false);
+                if ( attribute.Length() ) {
+                    m_web_duktape_script_patterns = attribute;
+                }
+            }
+
+            if ( child->GetAttribute( _("lua_preload_file"), &attribute ) ) {
+                attribute.Trim();
+                attribute.Trim(false);
+                if ( attribute.Length() ) {
+                    m_web_lua_preload_file = attribute;
+                }
+            }
+
+            if ( child->GetAttribute( _("lua_script_patterns"), &attribute ) ) {
+                attribute.Trim();
+                attribute.Trim(false);
+                if ( attribute.Length() ) {
+                    m_web_lua_script_patterns = attribute;
+                }
+            }
+
+            if ( child->GetAttribute( _("lua_server_page_patterns"), &attribute ) ) {
+                attribute.Trim();
+                attribute.Trim(false);
+                if ( attribute.Length() ) {
+                    m_web_lua_server_page_patterns = attribute;
+                }
+            }
+
+            if ( child->GetAttribute( _("lua_websockets_patterns"), &attribute ) ) {
+                attribute.Trim();
+                attribute.Trim(false);
+                if ( attribute.Length() ) {
+                    m_web_lua_websocket_patterns = attribute;
+                }
+            }
+
+            if ( child->GetAttribute( _("lua_background_script"), &attribute ) ) {
+                attribute.Trim();
+                attribute.Trim(false);
+                if ( attribute.Length() ) {
+                    m_web_lua_background_script = attribute;
+                }
+            }
+
+            if ( child->GetAttribute( _("lua_background_script_params"), &attribute ) ) {
+                attribute.Trim();
+                attribute.Trim(false);
+                if ( attribute.Length() ) {
+                    m_web_lua_background_script_params = attribute;
+                }
             }
 
         }
 
         else if (child->GetName().Lower() == _("websockets")) {
 
-            attribute = child->GetAttribute(_("enable"), _("1") );
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                attribute.MakeUpper();
-                if ( attribute.IsSameAs(_("FALSE"), false ) ) {
-                    m_bWebsocketsEnable = false;
-                }
-                else {
-                    m_bWebsocketsEnable = true;
+            if ( child->GetAttribute( _("enable"), &attribute ) ) {
+                attribute.Trim();
+                attribute.Trim(false);
+                if ( attribute.Length() ) {
+                    attribute.MakeUpper();
+                    if ( attribute.IsSameAs(_("FALSE"), false ) ) {
+                        m_bWebsocketsEnable = false;
+                    }
+                    else {
+                        m_bWebsocketsEnable = true;
+                    }
                 }
             }
 
-            attribute = child->GetAttribute(_("document_root"), _(""));
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                m_websocket_document_root = attribute;
+            if ( child->GetAttribute( _("document_root"), &attribute ) ) {
+                attribute.Trim();
+                attribute.Trim(false);
+                if ( attribute.Length() ) {
+                    m_websocket_document_root = attribute;
+                }
             }
 
-            attribute = child->GetAttribute(_("timeout_ms"), _(""));
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                m_websocket_timeout_ms = atol( (const char *)attribute.mbc_str() );
+            if ( child->GetAttribute( _("timeout_ms"), &attribute ) ) {
+                attribute.Trim();
+                attribute.Trim(false);
+                if ( attribute.Length() ) {
+                    m_websocket_timeout_ms = atol( (const char *)attribute.mbc_str() );
+                }
             }
 
         }
@@ -3697,15 +3790,17 @@ bool CControlObject::readConfigurationXML( wxString& strcfgfile )
 
             // Enable
             attribute = child->GetAttribute( _("enable"), _("") );
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                attribute.MakeUpper();
-                if ( attribute.IsSameAs(_("FALSE"), false ) ) {
-                    m_enableMqttBroker = false;
-                }
-                else {
-                    m_enableMqttBroker = true;
+            if ( child->GetAttribute( _("timeout_ms"), &attribute ) ) {
+                attribute.Trim();
+                attribute.Trim(false);
+                if ( attribute.Length() ) {
+                    attribute.MakeUpper();
+                    if ( attribute.IsSameAs(_("FALSE"), false ) ) {
+                        m_enableMqttBroker = false;
+                    }
+                    else {
+                        m_enableMqttBroker = true;
+                    }
                 }
             }
         }
@@ -3716,16 +3811,17 @@ bool CControlObject::readConfigurationXML( wxString& strcfgfile )
             wxString attribute;
 
             // Enable
-            attribute = child->GetAttribute( _("enable"), _("") );
-            attribute.Trim();
-            attribute.Trim(false);
-            if ( attribute.Length() ) {
-                attribute.MakeUpper();
-                if ( attribute.IsSameAs(_("FALSE"), false ) ) {
-                    m_enableMqttBroker = false;
-                }
-                else {
-                    m_enableMqttBroker = true;
+            if ( child->GetAttribute( _("enable"), &attribute ) ) {
+                attribute.Trim();
+                attribute.Trim(false);
+                if ( attribute.Length() ) {
+                    attribute.MakeUpper();
+                    if ( attribute.IsSameAs(_("FALSE"), false ) ) {
+                        m_enableMqttBroker = false;
+                    }
+                    else {
+                        m_enableMqttBroker = true;
+                    }
                 }
             }
         }
