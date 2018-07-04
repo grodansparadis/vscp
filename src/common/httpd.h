@@ -35,7 +35,7 @@
 #define CIVETWEB_VERSION_MAJOR (1)
 #define CIVETWEB_VERSION_MINOR (10)
 #define CIVETWEB_VERSION_PATCH (0)
-#define CIVETWEB_COPYRIGHT "Copyright (c) 2013-2017 the Civetweb developers"
+#define CIVETWEB_COPYRIGHT "Copyright (c) 2013-2018 the Civetweb developers"
 
 #ifndef VSCPWEB_API
 #if defined(_WIN32)
@@ -1646,6 +1646,17 @@ web_send_additional_header(struct web_connection *conn);
 
 VSCPWEB_API const char *
 web_suggest_connection_header(const struct web_connection *conn);
+
+
+/*!
+ * Initialize SSL multithreading
+ * 
+ * Exported because if other part of the system used SSL
+ * This routine 
+ */
+VSCPWEB_API int
+web_initialize_ssl( char *ebuf, size_t ebuf_len );
+
 
 /*!
  * Get system information

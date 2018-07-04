@@ -69,14 +69,53 @@
 #define VSCPDB_CONFIG_NAME_SERVERNAME                   "servername"
 #define VSCPDB_CONFIG_DEFAULT_SERVERNAME                "THE-VSCP-DAEMON"
 
-#define VSCPDB_CONFIG_NAME_TCPIP_ADDR                   "tcpipinterface_address"
-#define VSCPDB_CONFIG_DEFAULT_TCPIP_ADDR                "tcp://9598"
-
 #define VSCPDB_CONFIG_NAME_ANNOUNCE_ADDR                "announceinterface_address"
 #define VSCPDB_CONFIG_DEFAULT_ANNOUNCE_ADDR             "udp://9598"
 
 #define VSCPDB_CONFIG_NAME_ANNOUNCE_TTL                 "announceinterface_ttl"
 #define VSCPDB_CONFIG_DEFAULT_ANNOUNCE_TTL              "1"
+
+
+// TCP/IP
+
+#define VSCPDB_CONFIG_NAME_TCPIP_ADDR                     "tcpipinterface_address"
+#define VSCPDB_CONFIG_DEFAULT_TCPIP_ADDR                  "9598"
+
+#define VSCPDB_CONFIG_NAME_TCPIP_ENCRYPTION               "tcpip_encryption"
+#define VSCPDB_CONFIG_DEFAULT_TCPIP_ENCRYPTION            ""
+
+#define VSCPDB_CONFIG_NAME_TCPIP_SSL_CERTIFICATE          "tcpip_ssl_certificate"
+#define VSCPDB_CONFIG_DEFAULT_TCPIP_SSL_CERTIFICATE       "/srv/vscp/certs/tcpip_server.pem"
+
+#define VSCPDB_CONFIG_NAME_TCPIP_SSL_CERTIFICAT_CHAIN     "tcpip_ssl_certificate_chain"
+#define VSCPDB_CONFIG_DEFAULT_TCPIP_SSL_CERTIFICAT_CHAIN  ""
+
+#define VSCPDB_CONFIG_NAME_TCPIP_SSL_VERIFY_PEER          "tcpip_ssl_verify_peer"
+#define VSCPDB_CONFIG_DEFAULT_TCPIP_SSL_VERIFY_PEER       "0"
+
+#define VSCPDB_CONFIG_NAME_TCPIP_SSL_CA_PATH              "tcpip_ssl_ca_path"
+#define VSCPDB_CONFIG_DEFAULT_TCPIP_SSL_CA_PATH           ""
+
+#define VSCPDB_CONFIG_NAME_TCPIP_SSL_CA_FILE              "tcpip_ssl_ca_file"
+#define VSCPDB_CONFIG_DEFAULT_TCPIP_SSL_CA_FILE           ""
+
+#define VSCPDB_CONFIG_NAME_TCPIP_SSL_VERIFY_DEPTH         "tcpip_ssl_verify_depth"
+#define VSCPDB_CONFIG_DEFAULT_TCPIP_SSL_VERIFY_DEPTH      "9"
+
+#define VSCPDB_CONFIG_NAME_TCPIP_SSL_DEFAULT_VERIFY_PATHS     "tcpip_ssl_default_verify_paths"
+#define VSCPDB_CONFIG_DEFAULT_TCPIP_SSL_DEFAULT_VERIFY_PATHS  "1"
+
+#define VSCPDB_CONFIG_NAME_TCPIP_SSL_CHIPHER_LIST         "tcpip_ssl_cipher_list"
+#define VSCPDB_CONFIG_DEFAULT_TCPIP_SSL_CHIPHER_LIST      "DES-CBC3-SHA:AES128-SHA:AES128-GCM-SHA256"
+
+#define VSCPDB_CONFIG_NAME_TCPIP_SSL_PROTOCOL_VERSION     "tcpip_ssl_protocol_version"
+#define VSCPDB_CONFIG_DEFAULT_TCPIP_SSL_PROTOCOL_VERSION  "0"
+
+#define VSCPDB_CONFIG_NAME_TCPIP_SSL_SHORT_TRUST          "tcpip_ssl_short_trust"
+#define VSCPDB_CONFIG_DEFAULT_TCPIP_SSL_SHORT_TRUST       "0"
+
+
+// UDP
 
 #define VSCPDB_CONFIG_NAME_UDP_ENABLE                   "udp_enable"
 #define VSCPDB_CONFIG_DEFAULT_UDP_ENABLE                "1"

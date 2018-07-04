@@ -5,7 +5,8 @@
 #include "vscphelperlib.h"
 
 //#define HOST "demo.vscp.org:9598"
-#define HOST "127.0.0.1:9598"
+#define HOST "185.144.156.45:9598"
+//#define HOST "127.0.0.1:9598"
 
 int main(int argc, char* argv[])
 {
@@ -14,49 +15,64 @@ int main(int argc, char* argv[])
     unsigned char v1,v2,v3;
     
     // New session
-    printf("Starting a new session to [" HOST "] ...");
+    printf("Starting a new session to [" HOST "] ...\n");
     handle = vscphlp_newSession();
-    if (handle) printf("OK\n");
+    if ( handle ) {
+		printf("vscphlp_newSession: Success!\n");
+	}
+	else  {
+		printf("vscphlp_newSession: Failed. handle = %ld\n", handle );
+		vscphlp_closeSession( handle );
+		return -1;
+	}
 
     //vscphlp_setAfterCommandSleep( handle, 200 );
 
     printf("Open channel...\n");
     if ( VSCP_ERROR_SUCCESS == vscphlp_open( handle, 
-                 				HOST,
-                 				"admin",
-    	             			        "secret" ) ) {
+                 								HOST,
+                 								"admin",
+    	             							"secret" ) ) {
 		
-		printf("\a vscphlp_open: Success!\n");
+		printf("vscphlp_open: Success!\n");
 	
 		if ( VSCP_ERROR_SUCCESS == vscphlp_noop( handle ) ) {
-		printf("vscphlp_noop 1: Success!\n");
+			printf("vscphlp_noop: 1 Success!\n");
 		}   
 		else {
-			printf("\a * * * * * *  Failed noop! * * * * * *  v\n");
+			printf( "vscphlp_noop: 1 Failure %ld\n", rv );
+			vscphlp_close( handle );
+			vscphlp_closeSession( handle );
+			return -1;
 		}
     
     
 		if ( VSCP_ERROR_SUCCESS == (rv = vscphlp_getVersion( handle, &v1, &v2, &v3 ) ) ) {
-			printf( "----------------------------------------------------------------\n" );
-			printf( "Command success: vscphlp_getVersion\n" );
+			printf( "vscphlp_getVersion: Success\n" );
 			printf( "Version for VSCP daemon is %d.%d.%d\n", v1,v2,v3 );
-			printf( "----------------------------------------------------------------\n" );
 		}
 		else {
-			printf( "----------------------------------------------------------------\n" );
-			printf( "\agetversion failed %ld\n", rv );
-			printf( "----------------------------------------------------------------\n" );
+			printf( "vscphlp_getVersion: Failure %ld\n", rv );
+			vscphlp_close( handle );
+			vscphlp_closeSession( handle );
+			return -1;
 		}
     
 		if ( VSCP_ERROR_SUCCESS == vscphlp_noop( handle ) ) {
-			printf("vscphlp_noop 2: Success!\n");
+			printf("vscphlp_noop: 2 Success!\n");
 		}   
 		else {
-			printf("\a * * * * * *  Failed noop! * * * * * *  v\n");
+			printf( "vscphlp_noop: 2 Failure %ld\n", rv );
+			vscphlp_close( handle );
+			vscphlp_closeSession( handle );
+			return -1;
 		}
 
 		if ( VSCP_ERROR_SUCCESS == vscphlp_close( handle ) ) {
 			printf("vscphlp_close: Success!\n");
+		}
+		else {
+			printf( "vscphlp_close: 2 Failure %ld\n", rv );
 		}
 	
 		vscphlp_closeSession( handle );
@@ -64,12 +80,10 @@ int main(int argc, char* argv[])
 	
     } 
     else {
-        printf("\a * * * * * *  Failed to open connection!  * * * * * * *\n");
-	vscphlp_closeSession( handle ); 
+        printf( "vscphlp_open: Failure. host %s\n", HOST );
+		vscphlp_closeSession( handle ); 
         return -1;
     }
-
-	
    
 	return 0;
 }

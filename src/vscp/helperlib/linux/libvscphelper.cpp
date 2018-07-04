@@ -130,14 +130,15 @@ CVSCPLApp theApp;
 // addDriverObject
 //
 
-long CVSCPLApp::addDriverObject(VscpRemoteTcpIf *pvscpif)
+long CVSCPLApp::addDriverObject( VscpRemoteTcpIf *pvscpif )
 {
     long h = 0;
 
     LOCK_MUTEX(m_objMutex);
+
     for (int i = 0; i < VSCP_INTERFACE_MAX_OPEN; i++) {
 
-        if (NULL == m_pvscpifArray[ i ]) {
+        if ( NULL == m_pvscpifArray[ i ] ) {
 
             m_pvscpifArray[ i ] = pvscpif;
             h = i + 1681;
@@ -177,13 +178,15 @@ void CVSCPLApp::removeDriverObject(long h)
     long idx = h - 1681;
 
     // Check if valid handle
-    if (idx < 0) return;
-    if (idx >= VSCP_INTERFACE_MAX_OPEN) return;
+    if ( idx < 0 ) return;
+    if ( idx >= VSCP_INTERFACE_MAX_OPEN  ) return;
 
-    LOCK_MUTEX(m_objMutex);
-    if (NULL != m_pvscpifArray[ idx ]) delete m_pvscpifArray[ idx ];
+    LOCK_MUTEX( m_objMutex );
+
+    if ( NULL != m_pvscpifArray[ idx ] ) delete m_pvscpifArray[ idx ];
     m_pvscpifArray[ idx ] = NULL;
-    UNLOCK_MUTEX(m_objMutex);
+
+    UNLOCK_MUTEX( m_objMutex );
 }
 
 ///////////////////////////////////////////////////////////////////////////////

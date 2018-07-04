@@ -111,7 +111,8 @@ typedef vscpEvent *PVSCPEVENT;
 
 /* 
     WARNING!!! 
-    This structure is for VSCP Level II with data embedded == big!!! */
+    This structure is for VSCP Level II with data embedded == big!!! 
+ */
 
 typedef struct { 
     
@@ -187,7 +188,7 @@ typedef vscpEventEx *PVSCPEVENTEX;
 #define VSCP_MASK_NOCRCCALC                 0x08
 
 #define VSCP_LEVEL1_MAXDATA                 8
-#define VSCP_LEVEL2_MAXDATA                 (512 - 25)
+#define VSCP_LEVEL2_MAXDATA                 (512)
 
 #define VSCP_NOCRC_CALC_DUMMY_CRC           0xAA55      /* If no CRC cal bit is set the CRC value */
                                                         /* should be set to this value for the CRC  */
@@ -542,6 +543,8 @@ struct vscpMyNode {
 #define VSCP_ERROR_BUFFER_TO_SMALL      43      /* Supplied buffer is to small to fit content */
 #define VSCP_ERROR_UNKNOWN_ITEM         44      /* Requested item (remote variable) is unknown */
 #define VSCP_ERROR_ALREADY_DEFINED      45      /* The name is already in use. */
+#define VSCP_ERROR_WRITE_ERROR          46      /* Error when writing data */
+#define VSCP_ERROR_STOPPED              47      /* Operation stopped or aborted */
 
 /*
     Template for VSCP XML event data

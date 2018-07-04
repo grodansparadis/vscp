@@ -124,8 +124,8 @@
             interface="udp://44444"
             user=""
             password=""
-            bAllowUnsecure="true"
-            bSendAck="true"
+            ballowunsecure="true"
+            bSenack="true"
             filter=""
             mask=""
             guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" >
@@ -136,7 +136,7 @@
             filter=""
             mask=""
             encryption=""
-            bSetBroadcast="false"
+            bSetbroadcast="false"
         />
     </udp>
 

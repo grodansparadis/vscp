@@ -41,7 +41,7 @@ WX_DECLARE_STRING_HASH_MAP( wxString, HashString );
 /*!
  * Init the webserver sub system
  */
-int init_webserver( void );
+int start_webserver( void );
 
 /*!
  * Init the webserver sub system

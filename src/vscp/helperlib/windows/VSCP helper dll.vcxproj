@@ -207,7 +207,7 @@
     </ResourceCompile>
     <Link>
       <AdditionalOptions>/verbose:lib %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>ssleay32MT.lib;libeay32MT.lib;MSVCRTD.lib;libcmtd.lib;comctl32.lib;rpcrt4.lib;winmm.lib;advapi32.lib;wsock32.lib;wxexpat.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ssleay32MT.lib;libeay32MT.lib;libssl64MT.lib;MSVCRTD.lib;libcmtd.lib;comctl32.lib;rpcrt4.lib;winmm.lib;advapi32.lib;wsock32.lib;wxexpat.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <AdditionalLibraryDirectories>$(wxwin)\lib\vc_x64_lib;$(OPENSSL64)\lib\VC;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libcmtd.lib;MSVCRTD.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
@@ -345,7 +345,7 @@ copy  /Y "$(TargetPath)" "$(VSCP_INSTALL)\files\system\$(PlatformTarget)"</Comma
       <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>ssleay32MT.lib;libeay32MT.lib;MSVCRT.lib;libcmt.lib;comctl32.lib;rpcrt4.lib;winmm.lib;advapi32.lib;wsock32.lib;wxexpat.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ssleay32MT.lib;libssl64MT.lib;libeay32MT.lib;MSVCRT.lib;libcmt.lib;comctl32.lib;rpcrt4.lib;winmm.lib;advapi32.lib;wsock32.lib;wxexpat.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <AdditionalLibraryDirectories>$(wxwin)\lib\vc_x64_lib;$(OPENSSL64)\lib\VC;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libcmt.lib;MSVCRT.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
@@ -424,7 +424,7 @@ copy  /Y "$(OutDir)/$(TargetName).lib" "$(VSCP_INSTALL)\files\$(PlatformTarget)"
     <ClCompile Include="..\..\..\common\crc8.c" />
     <ClCompile Include="..\..\..\common\crc.c" />
     <ClCompile Include="..\..\..\common\fastpbkdf2.c" />
-    <ClCompile Include="..\..\..\common\mongoose.c" />
+    <ClCompile Include="..\..\..\common\sockettcp.c" />
     <ClCompile Include="..\..\..\common\vscpbase64.c" />
     <ClCompile Include="..\..\..\common\vscpmd5.c" />
     <ClCompile Include="..\..\..\common\vscp_aes.c" />
@@ -440,7 +440,7 @@ copy  /Y "$(OutDir)/$(TargetName).lib" "$(VSCP_INSTALL)\files\$(PlatformTarget)"
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\common\fastpbkdf2.h" />
-    <ClInclude Include="..\..\..\common\mongoose.h" />
+    <ClInclude Include="..\..\..\common\sockettcp.h" />
     <ClInclude Include="..\..\..\common\vscpbase64.h" />
     <ClInclude Include="..\..\..\common\vscpmd5.h" />
     <ClInclude Include="..\..\..\common\vscp_aes.h" />

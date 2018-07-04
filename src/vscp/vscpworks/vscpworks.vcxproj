@@ -243,7 +243,6 @@
   <ItemGroup>
     <ClInclude Include="..\..\common\crc.h" />
     <ClInclude Include="..\..\common\fastpbkdf2.h" />
-    <ClInclude Include="..\..\common\mongoose.h" />
     <ClInclude Include="..\..\common\sockettcp.h" />
     <ClInclude Include="..\..\common\vscpbase64.h" />
     <ClInclude Include="..\..\common\vscpmd5.h" />
@@ -310,7 +309,6 @@
     <ClCompile Include="..\..\common\crc.c" />
     <ClCompile Include="..\..\common\crc8.c" />
     <ClCompile Include="..\..\common\fastpbkdf2.c" />
-    <ClCompile Include="..\..\common\mongoose.c" />
     <ClCompile Include="..\..\common\sockettcp.c" />
     <ClCompile Include="..\..\common\sqlite3.c" />
     <ClCompile Include="..\..\common\vscpbase64.c" />

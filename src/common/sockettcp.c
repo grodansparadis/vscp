@@ -6,7 +6,9 @@
 // The MIT License (MIT)
 // 
 // Copyright (c) 2004-2013 Sergey Lyubka
-// Copyright (c) 2013-2017 the Civetweb developers
+// Copyright (c) 2013-2017 the Civetweb developers ()
+//
+// Adopted for VSCP, Small changes  additions
 // Copyright (c) 2018 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
 // 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,6 +28,38 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
+
+#if defined(_WIN32)
+#if !defined(_CRT_SECURE_NO_WARNINGS)
+#define _CRT_SECURE_NO_WARNINGS /* Disable deprecation warning in VS2005 */
+#endif
+#ifndef _WIN32_WINNT /* defined for tdm-gcc so we can use getnameinfo */
+#define _WIN32_WINNT 0x0501
+#endif
+#else
+#if defined(__GNUC__) && !defined(_GNU_SOURCE)
+#define _GNU_SOURCE /* for setgroups() */
+#endif
+#if defined(__linux__) && !defined(_XOPEN_SOURCE)
+#define _XOPEN_SOURCE 600 /* For flockfile() on Linux */
+#endif
+#ifndef _LARGEFILE_SOURCE
+#define _LARGEFILE_SOURCE /* For fseeko(), ftello() */
+#endif
+#ifndef _FILE_OFFSET_BITS
+#define _FILE_OFFSET_BITS 64 /* Use 64-bit file offsets by default */
+#endif
+#ifndef __STDC_FORMAT_MACROS
+#define __STDC_FORMAT_MACROS /* <inttypes.h> wants this for C++ */
+#endif
+#ifndef __STDC_LIMIT_MACROS
+#define __STDC_LIMIT_MACROS /* C++ wants that for INT64_MAX */
+#endif
+#ifdef __sun
+#define __EXTENSIONS__  /* to expose flockfile and friends in stdio.h */
+#define __inline inline /* not recognized on older compiler versions */
+#endif
+#endif
 
 #if defined(__GNUC__) || defined(__MINGW32__)
 /* Disable unused macros warnings - not all defines are required
@@ -99,6 +133,12 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdint.h>
+
+#include "vscpmd5.h"
+
+/* Flags for SSL usage */
+#define NO_SSL          0
+#define USE_SSL         1
 
 #if defined(_WIN32)
 
@@ -390,6 +430,7 @@ struct pollfd {
 #include <sys/errno.h>
 #include <sys/time.h>
 #include <sys/wait.h>
+//#include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <sys/poll.h>
 #include <netinet/in.h>
@@ -427,7 +468,17 @@ typedef const void *SOCK_OPT_TYPE;
 #define UINT64_FMT PRIu64
 #define WINCDECL
 
-#endif // unix block
+#endif /* unix block */
+
+/* Listen backlog   */
+#if !defined(SOMAXCONN)
+#define SOMAXCONN (100)
+#endif
+
+/* Size of the accepted socket queue */
+#if !defined(MGSQLEN)
+#define MGSQLEN (20)
+#endif
 
 #include <openssl/ssl.h>
 #include <openssl/err.h> 
@@ -441,7 +492,6 @@ typedef const void *SOCK_OPT_TYPE;
 #include <openssl/opensslv.h>
 
 #include <vscpmd5.h>
-
 #include "sockettcp.h"
 
 
@@ -475,6 +525,9 @@ struct pollfd {
 #if defined(_MSC_VER)
 #pragma comment(lib, "Ws2_32.lib")
 #endif
+
+
+
 
 #else  /* defined(_WIN32)  WINDOWS / UNIX include block */
 
@@ -579,13 +632,9 @@ typedef int SOCKET;
 #pragma clang diagnostic ignored "-Wdisabled-macro-expansion"
 #endif
 
-
 #define SHUTDOWN_RD (0)
 #define SHUTDOWN_WR (1)
 #define SHUTDOWN_BOTH (2)
-
-// Configuration context
-static struct stcp_context common_client_context;
 
 // stcp_init_library counter
 static int stcp_init_called = 0;
@@ -593,7 +642,6 @@ static int stcp_init_called = 0;
 static int stcp_ssl_initialized = 0;
 
 static pthread_key_t sTlsKey; // Thread local storage index
-//static int thread_idx_max = 0;
 
 struct stcp_workerTLS {
     int is_master;
@@ -612,11 +660,11 @@ struct stcp_workerTLS {
 //
 
 static uint64_t
-stcp_get_current_time_ns(void)
+stcp_get_current_time_ns( void )
 {
     struct timespec tsnow;
     clock_gettime(CLOCK_REALTIME, &tsnow);
-    return (((uint64_t)tsnow.tv_sec) * 1000000000) + (uint64_t)tsnow.tv_nsec;
+    return ( ( (uint64_t)tsnow.tv_sec ) * 1000000000) + (uint64_t)tsnow.tv_nsec;
 }
 
 
@@ -652,7 +700,7 @@ void usleep(__int64 usec)
 
 #ifndef HAVE_POLL
 static int
-poll(struct pollfd *pfd, unsigned int n, int milliseconds)
+stcp_poll(struct pollfd *pfd, unsigned int n, int milliseconds)
 {
     struct timeval tv;
     fd_set set;
@@ -981,6 +1029,36 @@ event_destroy(void *eventhdl)
     CloseHandle((HANDLE) eventhdl);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// set_close_on_exec
+//
+
+static void
+set_close_on_exec(SOCKET sock)
+{
+    (void)conn; // Unused.
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// report_error
+//
+
+// TODO Make general
+
+static void
+stcp_report_error(const char *fmt, ...)
+{
+    va_list args;
+
+    //flockfile(stdout);   // TODO
+    va_start(args, fmt);
+    vprintf(fmt, args);
+    va_end(args);
+    putchar('\n');
+    //funlockfile(stdout); // TODO
+    fflush(stdout);
+}
 
 
 #else   // windows vs. unix
@@ -989,6 +1067,40 @@ event_destroy(void *eventhdl)
 
 // ****************** Unix specific ******************
 
+
+////////////////////////////////////////////////////////////////////////////////
+// report_error
+//
+
+// TODO Make general
+
+static void 
+stcp_report_error( const char *fmt, ... ) 
+{
+    va_list args;
+
+    flockfile( stdout );
+    va_start( args, fmt );
+    vprintf( fmt, args );
+    va_end( args );
+    putchar('\n');
+    funlockfile( stdout );
+    fflush( stdout );
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// set_close_on_exec
+//
+
+static void
+set_close_on_exec( SOCKET fd )
+{
+    if ( fcntl( fd, F_SETFD, FD_CLOEXEC ) != 0 ) {
+        ;
+    }
+
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1000,29 +1112,30 @@ set_non_blocking_mode(int sock)
 {
     int flags = fcntl(sock, F_GETFL, 0);
 
-    if (flags < 0) {
-	return -1;
+    if ( flags < 0 ) {
+	    return -1;
     }
 
-    if (fcntl(sock, F_SETFL, (flags | O_NONBLOCK)) < 0) {
-	return -1;
+    if ( fcntl( sock, F_SETFL, ( flags | O_NONBLOCK ) ) < 0 ) {
+	    return -1;
     }
 
     return 0;
 }
 
 static int
-set_blocking_mode(int sock)
+set_blocking_mode( int sock )
 {
-    int flags = fcntl(sock, F_GETFL, 0);
+    int flags = fcntl( sock, F_GETFL, 0 );
 
-    if (flags < 0) {
-	return -1;
+    if ( flags < 0 ) {
+	    return -1;
     }
 
-    if (fcntl(sock, F_SETFL, flags & (~(int)(O_NONBLOCK))) < 0) {
-	return -1;
+    if ( fcntl( sock, F_SETFL, flags & (~(int)(O_NONBLOCK ) ) ) < 0 ) {
+	    return -1;
     }
+
     return 0;
 }
 
@@ -1140,19 +1253,40 @@ struct mg_workerTLS {
 #endif
 
 
+static const char *
+stcp_ssl_error( void );     // Forward declaration
+
+static pthread_mutex_t global_lock_mutex;
 
 
+#if defined(_WIN32)
+// Forward declaration for Windows
+static int pthread_mutex_lock(pthread_mutex_t *mutex);
+
+static int pthread_mutex_unlock(pthread_mutex_t *mutex);
+#endif
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// report_error
+// stcp_global_lock
 //
 
-static void 
-report_error( char *pStr ) 
+static void
+stcp_global_lock(void)
 {
-    ;
+    (void)pthread_mutex_lock( &global_lock_mutex );
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// stcp_global_unlock
+//
+
+static void
+stcp_global_unlock(void)
+{
+    (void)pthread_mutex_unlock( &global_lock_mutex );
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // atomic_inc
@@ -1240,15 +1374,15 @@ stcp_current_thread_id( void )
         // This is the problematic case for CRYPTO_set_id_callback:
         // The OS pthread_t can not be cast to unsigned long.
         struct stcp_workerTLS *tls =
-                (struct stcp_workerTLS *) pthread_getspecific(sTlsKey);
+                (struct stcp_workerTLS *)pthread_getspecific( sTlsKey );
 
-        if (tls == NULL) {
+        if ( NULL == tls ) {
 
             // SSL called from an unknown thread: Create some thread index.
             tls = (struct stcp_workerTLS *)malloc(sizeof (struct stcp_workerTLS));
             tls->is_master = -2; /* -2 means "3rd party thread" */
             tls->thread_idx = (unsigned)atomic_inc(&thread_idx_max);
-            pthread_setspecific(sTlsKey, tls);
+            pthread_setspecific( sTlsKey, tls );
 
         }
 
@@ -1271,6 +1405,7 @@ stcp_current_thread_id( void )
 #endif
 
 #endif
+
 }
 
 /* Darwin prior to 7.0 and Win32 do not have socklen_t */
@@ -1324,6 +1459,74 @@ static char *stcp_strdup( const char *str )
     return strndup( str, strlen( str ) );
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// hexdump2string
+//
+
+static int
+hexdump2string( void *mem, int memlen, char *buf, int buflen )
+{
+    int i;
+    const char hexdigit[] = "0123456789abcdef";
+
+    if ( ( memlen <= 0 ) || ( buflen <= 0 ) ) {
+        return 0;
+    }
+
+    if ( buflen < (3 * memlen) ) {
+        return 0;
+    }
+
+    for ( i = 0; i < memlen; i++)  {
+        if ( i > 0 ) {
+            buf[3 * i - 1] = ' ';
+        }
+        buf[3 * i] = hexdigit[(((uint8_t *) mem)[i] >> 4) & 0xF];
+        buf[3 * i + 1] = hexdigit[((uint8_t *) mem)[i] & 0xF];
+    }
+    
+    buf[3 * memlen - 1] = 0;
+
+    return 1;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// sockaddr_to_string
+//
+
+static void
+sockaddr_to_string( char *buf, size_t len, const union usa *usa )
+{
+    buf[0] = '\0';
+
+    if ( !usa ) {
+        return;
+    }
+
+    if ( AF_INET == usa->sa.sa_family ) {
+
+        getnameinfo( &usa->sa,
+                        sizeof( usa->sin ),
+                        buf,
+                        (unsigned)len,
+                        NULL,
+                        0,
+                        NI_NUMERICHOST );
+
+    }
+    else if ( AF_INET6 == usa->sa.sa_family ) {
+
+        getnameinfo( &usa->sa,
+                        sizeof( usa->sin6 ),
+                        buf,
+                        (unsigned)len,
+                        NULL,
+                        0,
+                        NI_NUMERICHOST );
+
+    }
+
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1340,29 +1543,26 @@ static pthread_mutex_t *ssl_mutexes;
 //
 
 static int
-ssl_use_pem_file(struct stcp_connection *conn, const char *pem, const char *chain)
+ssl_use_pem_file( SSL_CTX *ssl_ctx, const char *pem, const char *chain )
 {
-    if ( SSL_CTX_use_certificate_file(conn->ssl_ctx, pem, 1 ) == 0) {
-        report_error("%s: cannot open certificate file %s: %s");
-                    //__func__,
-                    //pem,
-                    //ssl_error());
+    if ( 0 == SSL_CTX_use_certificate_file( ssl_ctx, pem, 1 ) ) {
+        stcp_report_error( "Cannot open certificate file %s: %s",
+                            pem,
+                            stcp_ssl_error() );
         return 0;
     }
 
     // could use SSL_CTX_set_default_passwd_cb_userdata
-    if (SSL_CTX_use_PrivateKey_file(conn->ssl_ctx, pem, 1) == 0) {
-        report_error("%s: cannot open private key file %s: %s");
-                    //__func__,
-                    //pem,
-                    //ssl_error());
+    if ( 0 == SSL_CTX_use_PrivateKey_file( ssl_ctx, pem, 1 ) ) {
+        stcp_report_error( "Cannot open private key file %s: %s",
+                            pem,
+                            stcp_ssl_error() );
         return 0;
     }
 
-    if (SSL_CTX_check_private_key(conn->ssl_ctx) == 0) {
-        report_error("%s: certificate and private key do not match: %s");
-                    //__func__,
-                    //pem);
+    if ( 0 == SSL_CTX_check_private_key( ssl_ctx ) ) {
+        stcp_report_error( "Certificate and private key do not match: %s",
+                            pem );
         return 0;
     }
 
@@ -1375,14 +1575,14 @@ ssl_use_pem_file(struct stcp_connection *conn, const char *pem, const char *chai
     // an optional chain file for the ssl stack.
     //
     if (chain) {
-        if ( 0 == SSL_CTX_use_certificate_chain_file(conn->ssl_ctx, chain) ) {
-            report_error("%s: cannot use certificate chain file %s: %s");
-                            //__func__,
-                            //pem,
-                            //ssl_error() );
+        if ( 0 == SSL_CTX_use_certificate_chain_file( ssl_ctx, chain ) ) {
+            stcp_report_error( "Cannot use certificate chain file %s: %s",
+                                pem,
+                                stcp_ssl_error() );
             return 0;
         }
     }
+
     return 1;
 }
 
@@ -1395,7 +1595,7 @@ refresh_trust( struct stcp_connection *conn,
                 const char *pem, 
                 const char *chain,
                 const char *ca_path,
-                const char *ca_file)
+                const char *ca_file )
 {
     static int reload_lock = 0;
     static long int data_check = 0;
@@ -1431,10 +1631,10 @@ refresh_trust( struct stcp_connection *conn,
         data_check = t;
 
         should_verify_peer = 0;
-        if ( 1 == SSL_DO_VERIFY_PEER ) {
+        if ( 1 == STCP_SSL_DO_VERIFY_PEER ) {
             should_verify_peer = 1;
         }
-        else if ( 0 == SSL_DO_VERIFY_PEER ) {
+        else if ( 0 == STCP_SSL_DO_VERIFY_PEER ) {
             should_verify_peer = 1;
         }
 
@@ -1443,19 +1643,19 @@ refresh_trust( struct stcp_connection *conn,
             if ( SSL_CTX_load_verify_locations( conn->ssl_ctx,
                                                     ca_file,
                                                     ca_path ) != 1) {
-                report_error(
+                stcp_report_error(
                             "SSL_CTX_load_verify_locations error: %s "
                             "ssl_verify_peer requires setting "
                             "either ssl_ca_path or ssl_ca_file. Is any of them "
                             "present in "
-                            "the .conf file?");
-                            //ssl_error());
+                            "the .conf file?",
+                            stcp_ssl_error() );
                 return 0;
             }
         }
 
         if ( 1 == atomic_inc( p_reload_lock ) ) {
-            if ( 0 == ssl_use_pem_file( conn, pem, chain ) ) {
+            if ( 0 == ssl_use_pem_file( conn->ssl_ctx, pem, chain ) ) {
                 return 0;
             }
             *p_reload_lock = 0;
@@ -1470,11 +1670,14 @@ refresh_trust( struct stcp_connection *conn,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// sslize
+// make_ssl
+//
+// Make socket SSL socket
 //
 
 static int
-sslize( struct stcp_connection *conn,
+make_ssl( struct stcp_connection *conn,
+            struct stcp_secure_options *secure_opts,
             SSL_CTX *s,
             int (*func)(SSL *),
             volatile int *stop_server )
@@ -1482,33 +1685,38 @@ sslize( struct stcp_connection *conn,
     int ret, err;
     unsigned i;
 
-    if (!conn) {
+    if ( ( NULL == conn ) || ( NULL == secure_opts ) ) {
         return 0;
     }
 
-    if ( SSL_SHORT_TRUST ) {
-        int trust_ret; // = refresh_trust( conn );  TODO
+    if ( STCP_SSL_SHORT_TRUST ) {
+        int trust_ret = refresh_trust( conn, 
+                                        secure_opts->pem,
+                                        secure_opts->chain,
+                                        secure_opts->ca_path,
+                                        secure_opts->ca_file ); 
         if ( !trust_ret ) {
             return trust_ret;
         }
     }
 
-    conn->ssl = SSL_new(s);
-    if (conn->ssl == NULL) {
+    conn->ssl = SSL_new( s );
+    if ( NULL == conn->ssl ) {
         return 0;
     }
-    SSL_set_app_data(conn->ssl, (char *) conn);
 
-    ret = SSL_set_fd(conn->ssl, conn->client.sock);
-    if (ret != 1) {
-        err = SSL_get_error(conn->ssl, ret);
-        (void) err; // TODO: set some error message
-        SSL_free(conn->ssl);
+    SSL_set_app_data( conn->ssl, (char *)conn );
+
+    ret = SSL_set_fd( conn->ssl, conn->client.sock );
+    if ( ret != 1 ) {
+        err = SSL_get_error( conn->ssl, ret );
+        (void)err; // TODO: set some error message
+        SSL_free( conn->ssl );
         conn->ssl = NULL;
         // Avoid CRYPTO_cleanup_all_ex_data(); See discussion:
         // https://wiki.openssl.org/index.php/Talk:Library_Initialization
 #ifndef OPENSSL_API_1_1
-        ERR_remove_state(0);
+        ERR_remove_state( 0 );    // deprecated in 1.0.0, solved by going to 1.1.0
 #endif
         return 0;
     }
@@ -1516,10 +1724,12 @@ sslize( struct stcp_connection *conn,
     // SSL functions may fail and require to be called again:
     // see https://www.openssl.org/docs/manmaster/ssl/SSL_get_error.html
     // Here "func" could be SSL_connect or SSL_accept.
-    for (i = 16; i <= 1024; i *= 2) {
-        ret = func(conn->ssl);
-        if (ret != 1) {
-            err = SSL_get_error(conn->ssl, ret);
+    for ( i = 16; i <= 1024; i *= 2 ) {
+
+        ret = func( conn->ssl );
+        if  (ret != 1 ) {
+
+            err = SSL_get_error( conn->ssl, ret );
             if ( ( err == SSL_ERROR_WANT_CONNECT ) ||
                  ( err == SSL_ERROR_WANT_ACCEPT ) ||
                  ( err == SSL_ERROR_WANT_READ ) ||
@@ -1527,18 +1737,19 @@ sslize( struct stcp_connection *conn,
                 // Need to retry the function call "later".
                 // See https://linux.die.net/man/3/ssl_get_error
                 // This is typical for non-blocking sockets.
-                if (*stop_server) {
+                if ( *stop_server ) {
                     // Don't wait if the server is going to be stopped.
                     break;
                 }
-                stcp_sleep(i);
+
+                stcp_sleep( i );
 
             }
-            else if (err == SSL_ERROR_SYSCALL) {
+            else if ( err == SSL_ERROR_SYSCALL ) {
                 // This is an IO error. Look at errno.
                 err = errno;
                 // TODO: set some error message
-                (void) err;
+                (void)err;
                 break;
             }
             else {
@@ -1554,13 +1765,13 @@ sslize( struct stcp_connection *conn,
         }
     }
 
-    if (ret != 1) {
-        SSL_free(conn->ssl);
+    if ( ret != 1 ) {
+        SSL_free( conn->ssl );
         conn->ssl = NULL;
         // Avoid CRYPTO_cleanup_all_ex_data(); See discussion:
         // https://wiki.openssl.org/index.php/Talk:Library_Initialization
 #ifndef OPENSSL_API_1_1
-        ERR_remove_state(0);
+        ERR_remove_state( 0 );    // deprecated in 1.0.0, solved by going to 1.1.0
 #endif
         return 0;
     }
@@ -1575,36 +1786,136 @@ sslize( struct stcp_connection *conn,
 //
 
 static const char *
-ssl_error(void)
+stcp_ssl_error( void )
 {
     unsigned long err;
     err = ERR_get_error();
-    return ((err == 0) ? "" : ERR_error_string(err, NULL));
+    return ( ( err == 0 ) ? "" : ERR_error_string( err, NULL ) );
 }
+
+
+////////////////////////////////////////////////////////////////////////////////
+// ssl_get_client_cert_info
+//
+
+static void
+ssl_get_client_cert_info( struct stcp_connection *conn,
+                            struct stcp_srv_client_cert *client_cert )
+{
+    X509 *cert = SSL_get_peer_certificate( conn->ssl );
+    if ( cert ) {
+        char str_subject[1024];
+        char str_issuer[1024];
+        char str_finger[1024];
+        unsigned char buf[256];
+        char *str_serial = NULL;
+        unsigned int ulen;
+        int ilen;
+        unsigned char *tmp_buf;
+        unsigned char *tmp_p;
+
+        /* Handle to algorithm used for fingerprint */
+        const EVP_MD *digest = EVP_get_digestbyname("sha1");
+
+        /* Get Subject and issuer */
+        X509_NAME *subj = X509_get_subject_name( cert );
+        X509_NAME *iss = X509_get_issuer_name( cert );
+
+        /* Get serial number */
+        ASN1_INTEGER *serial = X509_get_serialNumber( cert );
+
+        /* Translate serial number to a hex string */
+        BIGNUM *serial_bn = ASN1_INTEGER_to_BN( serial, NULL );
+        str_serial = BN_bn2hex( serial_bn );
+        BN_free( serial_bn );
+
+        /* Translate subject and issuer to a string */
+        (void)X509_NAME_oneline( subj, str_subject, (int)sizeof( str_subject ) );
+        (void)X509_NAME_oneline( iss, str_issuer, (int)sizeof( str_issuer ) );
+
+        /* Calculate SHA1 fingerprint and store as a hex string */
+        ulen = 0;
+
+        /* 
+            ASN1_digest is deprecated. Do the calculation manually,
+            using EVP_Digest. 
+        */
+        ilen = i2d_X509( cert, NULL );
+        tmp_buf = (ilen > 0) ? (unsigned char *)malloc( (unsigned)ilen + 1 )
+                             : NULL;
+        if ( tmp_buf ) {
+            
+            tmp_p = tmp_buf;
+            (void)i2d_X509( cert, &tmp_p );
+            if ( !EVP_Digest( tmp_buf, (unsigned)ilen, buf, &ulen, digest, NULL ) ) {
+                ulen = 0;
+            }
+
+            free( tmp_buf );
+        }
+
+        if ( !hexdump2string( buf, (int)ulen, str_finger, (int)sizeof( str_finger ) ) ) {
+            *str_finger = 0;
+        }
+
+        client_cert = (struct stcp_srv_client_cert *)
+		                                malloc( sizeof( struct stcp_srv_client_cert ) );
+
+        if ( client_cert ) {
+            client_cert->subject = strdup( str_subject );
+            client_cert->issuer = strdup( str_issuer );
+            client_cert->serial = strdup( str_serial );
+            client_cert->finger = strdup( str_finger );
+        }
+        else {
+            stcp_report_error( "Out of memory: Cannot allocate memory for client "
+                               "certificate" );
+        }
+
+        /* 
+            Strings returned from bn_bn2hex must be freed using OPENSSL_free,
+            see https://linux.die.net/man/3/bn_bn2hex
+        */
+        OPENSSL_free( str_serial );
+
+        /* Free certificate memory */
+        X509_free( cert );
+    }
+
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // ssl_locking_callback
 //
 
 #ifdef OPENSSL_API_1_1
+
+    // Not needed of for 1.1
+
 #else
 
 static void
-ssl_locking_callback(int mode, int mutex_num, const char *file, int line)
+ssl_locking_callback( int mode, int mutex_num, const char *file, int line )
 {
-    (void) line;
-    (void) file;
+    (void)line;
+    (void)file;
 
-    if (mode & 1) {
+    if ( mode & 1 ) {
         // 1 is CRYPTO_LOCK
-        (void) pthread_mutex_lock(&ssl_mutexes[mutex_num]);
+        (void)pthread_mutex_lock( &ssl_mutexes[ mutex_num ] );
     }
     else {
-        (void) pthread_mutex_unlock(&ssl_mutexes[mutex_num]);
+        (void)pthread_mutex_unlock( &ssl_mutexes[ mutex_num ] );
     }
 }
 #endif
 
+/*
+    If multithreading part of  ssl is initialized elsewhere
+    SSL_ALREADY_INITIALIZED should be defined whdn compiling
+    sockettcp.c
+*/
 
 #if defined(SSL_ALREADY_INITIALIZED)
 static int cryptolib_users = 1; // Reference counter for crypto library.
@@ -1614,30 +1925,25 @@ static int cryptolib_users = 0; // Reference counter for crypto library.
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// initialize_ssl
+// stcp_init_mt_ssl
 //
 
-static int
-initialize_ssl(char *ebuf, size_t ebuf_len)
+int
+stcp_init_mt_ssl( void )
 {
-#ifdef OPENSSL_API_1_1
-    if (ebuf_len > 0) {
-        ebuf[0] = 0;
-    }
 
-    if ( stcp_atomic_inc(&cryptolib_users) > 1 ) {
+#ifdef OPENSSL_API_1_1
+
+    if ( atomic_inc( &cryptolib_users ) > 1 ) {
         return 1;
     }
 
 #else // not OPENSSL_API_1_1
+
     int i;
     size_t size;
 
-    if (ebuf_len > 0) {
-        ebuf[0] = 0;
-    }
-
-    if ( atomic_inc(&cryptolib_users) > 1 ) {
+    if ( atomic_inc( &cryptolib_users ) > 1 ) {
         return 1;
     }
 
@@ -1645,28 +1951,27 @@ initialize_ssl(char *ebuf, size_t ebuf_len)
     // http://www.openssl.org/support/faq.html#PROG1
     //
     i = CRYPTO_num_locks();
-    if (i < 0) {
+    if ( i < 0 ) {
         i = 0;
     }
-    size = sizeof (pthread_mutex_t) * ((size_t) (i));
 
-    if (size == 0) {
+    size = sizeof( pthread_mutex_t ) * ((size_t)(i));
+
+    if ( 0 == size ) {
         ssl_mutexes = NULL;
     }
-    else if ((ssl_mutexes = (pthread_mutex_t *)malloc(size)) == NULL) {
-        report_error("%s: cannot allocate mutexes: %s");
-                         //__func__,
-                         //ssl_error());
-
+    else if ( NULL == ( ssl_mutexes = (pthread_mutex_t *)malloc( size ) ) ) {
+        stcp_report_error( "Cannot allocate mutexes: %s", stcp_ssl_error() );
         return 0;
     }
 
-    for (i = 0; i < CRYPTO_num_locks(); i++) {
+    for ( i = 0; i < CRYPTO_num_locks(); i++ ) {
         pthread_mutex_init( &ssl_mutexes[i], (void *)&pthread_mutex_attr );
     }
 
     CRYPTO_set_locking_callback( &ssl_locking_callback );
     CRYPTO_set_id_callback( &stcp_current_thread_id );
+
 #endif // OPENSSL_API_1_1
 
     return 1;
@@ -1704,16 +2009,16 @@ ssl_get_protocol(int version_id)
 //
 
 static long
-ssl_get_protocol(int version_id)
+ssl_get_protocol( int version_id )
 {
     long ret = SSL_OP_ALL;
-    if (version_id > 0)
+    if ( version_id > 0 )
         ret |= SSL_OP_NO_SSLv2;
-    if (version_id > 1)
+    if ( version_id > 1 )
         ret |= SSL_OP_NO_SSLv3;
-    if (version_id > 2)
+    if ( version_id > 2 )
         ret |= SSL_OP_NO_TLSv1;
-    if (version_id > 3)
+    if ( version_id > 3 )
         ret |= SSL_OP_NO_TLSv1_1;
     return ret;
 }
@@ -1732,10 +2037,10 @@ ssl_info_callback(SSL *ssl, int what, int ret)
 {
     (void) ret;
 
-    if (what & SSL_CB_HANDSHAKE_START) {
+    if ( what & SSL_CB_HANDSHAKE_START ) {
         SSL_get_app_data(ssl);
     }
-    if (what & SSL_CB_HANDSHAKE_DONE) {
+    if ( what & SSL_CB_HANDSHAKE_DONE)  {
         // TODO: check for openSSL 1.1
         // #define SSL3_FLAGS_NO_RENEGOTIATE_CIPHERS 0x0001
         // ssl->s3->flags |= SSL3_FLAGS_NO_RENEGOTIATE_CIPHERS;
@@ -1743,25 +2048,17 @@ ssl_info_callback(SSL *ssl, int what, int ret)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// set_ssl_option
+// stcp_init_ssl
 //
 // Dynamically load SSL library.
 //
 
-static int
-set_ssl_option( struct stcp_connection *conn, 
-                    const char *pem, 
-                    const char *chain,
-                    const char *ca_path,
-                    const char *ca_file )
+int
+stcp_init_ssl( SSL_CTX *ssl_ctx, struct stcp_secure_options *secure_opts )
 {
-    //const char *pem;
-    //const char *chain;
     int callback_ret;
     int should_verify_peer;
     int peer_certificate_optional;
-    //const char *ca_path;
-    //const char *ca_file;
     int use_default_verify_paths;
     int verify_depth;
     time_t now_rt = time(NULL);
@@ -1769,27 +2066,35 @@ set_ssl_option( struct stcp_connection *conn,
     md5_byte_t ssl_context_id[16];
     md5_state_t md5state;
     int protocol_ver;
-    char ebuf[128];
 
-    // If PEM file is not specified and the init_ssl callback
-    // is not specified, skip SSL initialization.
-    if (!conn) {
+    /* Must have secure options */
+    if ( NULL == secure_opts ) {
         return 0;
     }
-    if ( NULL == pem ) {
+
+    /* 
+        If PEM file is not specified and the init_ssl callback
+        is not specified, skip SSL initialization.
+    */
+
+    if ( NULL == secure_opts->pem ) {
         return 1;
     }
 
-    if (chain == NULL) {
-        chain = pem;
+    if ( NULL == secure_opts->chain ) {
+        secure_opts->chain = secure_opts->pem;
     }
-    if ((chain != NULL) && (*chain == 0)) {
-        chain = NULL;
+    
+    if ( ( secure_opts->chain != NULL ) && ( *secure_opts->chain == 0 ) ) {
+        secure_opts->chain = NULL;
     }
 
-    if (!initialize_ssl(ebuf, sizeof (ebuf))) {
-        report_error( ebuf );
-        return 0;
+    /* Init. ssl multithread locks for ssl 1.0 */
+    if ( !(secure_opts->bNOInitMT) ) {
+        if ( !stcp_init_mt_ssl() ) {
+            stcp_report_error( "Failed to init ssl\n" );
+            return 0;
+        }
     }
 
 
@@ -1800,8 +2105,8 @@ set_ssl_option( struct stcp_connection *conn,
                      | OPENSSL_INIT_LOAD_CRYPTO_STRINGS,
                      NULL);
 
-    if ((ctx->ssl_ctx = SSL_CTX_new(TLS_server_method())) == NULL) {
-        stcp_cry(fc(ctx), "SSL_CTX_new (server) error: %s", ssl_error());
+    if ( NULL == ( ssl_ctx = SSL_CTX_new( TLS_server_method() ) ) ) {
+        stcp_report_error( "SSL_CTX_new (server) error: %s", stcp_ssl_error() );
         return 0;
     }
 #else
@@ -1809,22 +2114,23 @@ set_ssl_option( struct stcp_connection *conn,
     SSL_library_init();
     SSL_load_error_strings();
 
-    if ((conn->ssl_ctx = SSL_CTX_new(SSLv23_server_method())) == NULL) {
-        report_error("SSL_CTX_new (server) error: %s"); // ssl_error());
+    if ( NULL == ( ssl_ctx = SSL_CTX_new( SSLv23_server_method() ) ) ) {
+        stcp_report_error( "SSL_CTX_new (server) error: %s", stcp_ssl_error() );
         return 0;
     }
 #endif // OPENSSL_API_1_1
 
-    SSL_CTX_clear_options(conn->ssl_ctx,
-                          SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_NO_TLSv1
-                          | SSL_OP_NO_TLSv1_1);
+    SSL_CTX_clear_options( ssl_ctx,
+                            SSL_OP_NO_SSLv2 | 
+                            SSL_OP_NO_SSLv3 | 
+                            SSL_OP_NO_TLSv1 | 
+                            SSL_OP_NO_TLSv1_1 );
 
-    SSL_CTX_set_options(conn->ssl_ctx, ssl_get_protocol(SSL_PROTOCOL_VERSION));
-    SSL_CTX_set_options(conn->ssl_ctx, SSL_OP_SINGLE_DH_USE);
-    SSL_CTX_set_options(conn->ssl_ctx, SSL_OP_CIPHER_SERVER_PREFERENCE);
-    SSL_CTX_set_options(conn->ssl_ctx,
-                        SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION);
-    SSL_CTX_set_options(conn->ssl_ctx, SSL_OP_NO_COMPRESSION);
+    SSL_CTX_set_options( ssl_ctx, ssl_get_protocol( STCP_SSL_PROTOCOL_VERSION ) );
+    SSL_CTX_set_options( ssl_ctx, SSL_OP_SINGLE_DH_USE);
+    SSL_CTX_set_options( ssl_ctx, SSL_OP_CIPHER_SERVER_PREFERENCE);
+    SSL_CTX_set_options( ssl_ctx, SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION);
+    SSL_CTX_set_options( ssl_ctx, SSL_OP_NO_COMPRESSION);
 
 #ifdef __clang__
 #pragma clang diagnostic push
@@ -1842,33 +2148,33 @@ set_ssl_option( struct stcp_connection *conn,
     // Alternative would be a version dependent ssl_info_callback and
     // a const-cast to call 'char *SSL_get_app_data(SSL *ssl)' there.
     //
-    SSL_CTX_set_info_callback(conn->ssl_ctx, (void *) ssl_info_callback);
+    SSL_CTX_set_info_callback( ssl_ctx, (void *)ssl_info_callback );
 
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 
-    if (pem != NULL) {
-        (void) SSL_CTX_use_certificate_chain_file(conn->ssl_ctx, pem);
-    }
 
     // Use some UID as session context ID.   TODO
-    /*vscpmd5_init(&md5state);
-    vscpmd5_append(&md5state, (const md5_byte_t *) &now_rt, sizeof (now_rt));
-    clock_gettime(CLOCK_MONOTONIC, &now_mt);
-    vscpmd5_append(&md5state, (const md5_byte_t *) &now_mt, sizeof (now_mt));
-    vscpmd5_append(&md5state,
-               (const md5_byte_t *) ctx->config[LISTENING_PORTS],
-               strlen(conn->config[LISTENING_PORTS]));
-    vscpmd5_append(&md5state, (const md5_byte_t *)conn, sizeof (*conn));
-    vscpmd5_finish(&md5state, ssl_context_id);*/
+    vscpmd5_init( &md5state );
+    vscpmd5_append( &md5state, (const md5_byte_t *)&now_rt, sizeof( now_rt ) );
+    clock_gettime( CLOCK_MONOTONIC, &now_mt );
+    vscpmd5_append( &md5state, (const md5_byte_t *)&now_mt, sizeof( now_mt ) );
+    vscpmd5_append( &md5state,
+                        (const md5_byte_t *)"Stay foolish be hungry",
+                        strlen("Stay foolish be hungry") );
+    vscpmd5_append( &md5state, (const md5_byte_t *)secure_opts, sizeof (*secure_opts) );
+    vscpmd5_finish( &md5state, ssl_context_id );
 
-    SSL_CTX_set_session_id_context(conn->ssl_ctx,
-                                   (const unsigned char *) &ssl_context_id,
-                                   sizeof (ssl_context_id));
+    SSL_CTX_set_session_id_context( ssl_ctx,
+                                    (const unsigned char *)&ssl_context_id,
+                                    sizeof( ssl_context_id ) );
 
-    if ( pem != NULL ) {
-        if (!ssl_use_pem_file(conn, pem, chain)) {
+    if ( secure_opts->pem != NULL ) {
+
+        if ( !ssl_use_pem_file( ssl_ctx, 
+                                    secure_opts->pem, 
+                                    secure_opts->chain ) ) {
             return 0;
         }
     }
@@ -1877,68 +2183,70 @@ set_ssl_option( struct stcp_connection *conn,
     // Default is "no".
     should_verify_peer = 0;
     peer_certificate_optional = 0;
-    if ( 1 == SSL_DO_VERIFY_PEER ) {
+    if ( 1 == STCP_SSL_DO_VERIFY_PEER ) {
         // Mandatory
         should_verify_peer = 1;
         peer_certificate_optional = 0;
     }
-    else if ( 2 == SSL_DO_VERIFY_PEER ) {
+    else if ( 2 == STCP_SSL_DO_VERIFY_PEER ) {
         // Optional
         should_verify_peer = 1;
         peer_certificate_optional = 1;
     }
    
 
-    use_default_verify_paths = SSL_DEFAULT_VERIFY_PATHS;
+    use_default_verify_paths = STCP_SSL_DEFAULT_VERIFY_PATHS;
 
     if ( should_verify_peer ) {
 
-        if ( SSL_CTX_load_verify_locations(conn->ssl_ctx, ca_file, ca_path)
+        if ( SSL_CTX_load_verify_locations( ssl_ctx, 
+                                                secure_opts->ca_file, 
+                                                secure_opts->ca_path )
             != 1) {
-            report_error(
+            stcp_report_error(
                         "SSL_CTX_load_verify_locations error: %s "
                         "ssl_verify_peer requires setting "
                         "either ssl_ca_path or ssl_ca_file. Is any of them "
                         "present in "
-                        "the .conf file?");
-                        //ssl_error());
+                        "the .conf file?",
+                        stcp_ssl_error() );
             return 0;
         }
 
-        if (peer_certificate_optional) {
-            SSL_CTX_set_verify( conn->ssl_ctx, SSL_VERIFY_PEER, NULL);
+        if ( peer_certificate_optional ) {
+            SSL_CTX_set_verify( ssl_ctx, SSL_VERIFY_PEER, NULL);
         }
         else {
-            SSL_CTX_set_verify( conn->ssl_ctx,
-                               SSL_VERIFY_PEER
-                               | SSL_VERIFY_FAIL_IF_NO_PEER_CERT,
-                               NULL);
+            SSL_CTX_set_verify( ssl_ctx,
+                                    SSL_VERIFY_PEER |
+                                    SSL_VERIFY_FAIL_IF_NO_PEER_CERT,
+                                    NULL );
         }
 
         if ( use_default_verify_paths &&
-                ( SSL_CTX_set_default_verify_paths( conn->ssl_ctx ) != 1 ) ) {
-            report_error( "SSL_CTX_set_default_verify_paths error: %s" );
-                        //ssl_error() );
+                ( SSL_CTX_set_default_verify_paths( ssl_ctx ) != 1 ) ) {
+            stcp_report_error( "SSL_CTX_set_default_verify_paths error: %s",
+                                stcp_ssl_error() );
             return 0;
         }
 
-        SSL_CTX_set_verify_depth(conn->ssl_ctx, SSL_VERIFY_DEPTH);
+        SSL_CTX_set_verify_depth( ssl_ctx, STCP_SSL_VERIFY_DEPTH );
 
     }
 
-    if ( SSL_CTX_set_cipher_list( conn->ssl_ctx, SSL_CIPHER_LIST ) != 1 ) {
-        report_error("SSL_CTX_set_cipher_list error: %s"); // ssl_error());
+    if ( SSL_CTX_set_cipher_list( ssl_ctx, STCP_SSL_CIPHER_LIST ) != 1 ) {
+        stcp_report_error( "SSL_CTX_set_cipher_list error: %s", stcp_ssl_error() );
     }
 
     return 1;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// uninitialize_ssl
+// stcp_uninit_ssl
 //
 
-static void
-uninitialize_ssl( void )
+void
+stcp_uninit_ssl( void )
 {
 #ifdef OPENSSL_API_1_1
 
@@ -1965,10 +2273,10 @@ uninitialize_ssl( void )
         ERR_free_strings();
         EVP_cleanup();
         CRYPTO_cleanup_all_ex_data();
-        ERR_remove_state(0);
+        ERR_remove_state(0);        // deprecated in 1.0.0, solved by going to 1.1.0
 
         for (i = 0; i < CRYPTO_num_locks(); i++) {
-            pthread_mutex_destroy(&ssl_mutexes[i]);
+            pthread_mutex_destroy( &ssl_mutexes[i] );
         }
         free(ssl_mutexes);
         ssl_mutexes = NULL;
@@ -1988,13 +2296,62 @@ is_valid_port( unsigned long port )
 }
 
 
+////////////////////////////////////////////////////////////////////////////////
+// stcp_inet_pton
+//
+// af - Address family (AF_INET, AF_INET6)
+// src - host (srv.domain.com)
+// dst - ip-address
+// dstlen - size of buufer for ip-address
+//
+
+static int
+stcp_inet_pton( int af, const char *src, void *dst, size_t dstlen )
+{
+    struct addrinfo hints, *res, *ressave;
+    int func_ret = 0;
+    int gai_ret;
+
+    memset(&hints, 0, sizeof (struct addrinfo));
+    hints.ai_family = af;
+
+    gai_ret = getaddrinfo(src, NULL, &hints, &res);
+    if (gai_ret != 0) {
+
+        // gai_strerror could be used to convert gai_ret to a string
+        // POSIX return values: see
+        // http://pubs.opengroup.org/onlinepubs/9699919799/functions/freeaddrinfo.html
+        //
+        // Windows return values: see
+        // https://msdn.microsoft.com/en-us/library/windows/desktop/ms738520%28v=vs.85%29.aspx
+        //
+        return 0;
+    }
+
+    ressave = res;
+
+    while (res) {
+
+        if (dstlen >= (size_t) res->ai_addrlen) {
+            memcpy(dst, res->ai_addr, res->ai_addrlen);
+            func_ret = 1;
+        }
+
+        res = res->ai_next;
+    }
+
+    freeaddrinfo(ressave);
+
+    return func_ret;
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // set_tcp_nodelay
 //
 
 static int
-set_tcp_nodelay(int sock, int nodelay_on)
+set_tcp_nodelay( int sock, int nodelay_on )
 {
     if ( setsockopt( sock,
                         IPPROTO_TCP,
@@ -2010,17 +2367,14 @@ set_tcp_nodelay(int sock, int nodelay_on)
 }
 
 
-
 ////////////////////////////////////////////////////////////////////////////////
 // stcp_connect_socket
 //
 
 static int
-stcp_connect_socket( const char *host,
+stcp_connect_socket( const char *hostip,
                         int port,
                         int use_ssl,
-                        char *ebuf,
-                        size_t ebuf_len,
                         int *sock,          // output: socket, must not be NULL
                         union usa *sa       // output: socket address, must not be NULL
                     )
@@ -2029,41 +2383,37 @@ stcp_connect_socket( const char *host,
     *sock = INVALID_SOCKET;
     memset(sa, 0, sizeof (*sa));
 
-    if (ebuf_len > 0) {
-        *ebuf = 0;
-    }
-
-    if ( NULL == host ) {
-        report_error( "NULL host" );
+    if ( NULL == hostip ) {
+        stcp_report_error( "NULL host" );
         return 0;
     }
 
-    if ((port <= 0) || !is_valid_port((unsigned) port)) {
-        report_error("invalid port");
+    if ( (port <= 0) || !is_valid_port((unsigned) port)) {
+        stcp_report_error("invalid port");
         return 0;
     }
 
-    (void) use_ssl;
+    (void)use_ssl;
 
 
-    if ( inet_pton(AF_INET, host, &( sa->sin.sin_addr ) ) ) {
+    if ( stcp_inet_pton( AF_INET, hostip, &sa->sin, sizeof( sa->sin ) ) ) { // .sin_addr
         sa->sin.sin_family = AF_INET;
         sa->sin.sin_port = htons((uint16_t) port);
         ip_ver = 4;
     }
-    else if ( inet_pton(AF_INET6, host, &sa->sin6.sin6_addr ) ) {
+    else if ( stcp_inet_pton( AF_INET6, hostip, &sa->sin6, sizeof( sa->sin6 ) ) ) { // .sin6_addr
         sa->sin6.sin6_family = AF_INET6;
         sa->sin6.sin6_port = htons((uint16_t) port);
         ip_ver = 6;
     }
-    else if ( host[0] == '[' ) {
+    else if ( hostip[0] == '[' ) {
         // While getaddrinfo on Windows will work with [::1],
         // getaddrinfo on Linux only works with ::1 (without []).
-        size_t l = strlen(host + 1);
-        char *h = (l > 1) ? strdup(host + 1) : NULL;
+        size_t l = strlen(hostip + 1);
+        char *h = (l > 1) ? strdup(hostip + 1) : NULL;
         if ( h ) {
             h[l - 1] = 0;
-            if ( inet_pton(AF_INET6, h, &sa->sin6.sin6_addr ) ) {
+            if ( stcp_inet_pton(AF_INET6, h, &sa->sin6, sizeof( sa->sin6 ) ) ) { // .sin6_addr
                 sa->sin6.sin6_family = AF_INET6;
                 sa->sin6.sin6_port = htons((uint16_t) port);
                 ip_ver = 6;
@@ -2074,13 +2424,10 @@ stcp_connect_socket( const char *host,
     }
 
     if ( 0 == ip_ver ) {
-        report_error("host not found");
+        stcp_report_error("host not found");
         return 0; 
     }
     
-    char ttt[32];
-    inet_ntop( AF_INET, &(sa->sin.sin_addr), ttt,INET_ADDRSTRLEN  );
-
     if ( 4 == ip_ver ) {
         *sock = socket(PF_INET, SOCK_STREAM, 0);
     }
@@ -2089,7 +2436,7 @@ stcp_connect_socket( const char *host,
     }
 
     if (*sock == INVALID_SOCKET) {
-        report_error("socket(): %s");
+        stcp_report_error("socket(): %s");
                             // strerror(ERRNO) );
         return 0;
     }
@@ -2105,7 +2452,7 @@ stcp_connect_socket( const char *host,
 	}
 
         // failed
-	// TODO: specific error message
+	    // TODO: specific error message
     }
 
     if ( ( 6 == ip_ver ) &&
@@ -2118,15 +2465,15 @@ stcp_connect_socket( const char *host,
             return 1;
         }
 
-	// failed
-	// TODO: specific error message
+	    // failed
+	    // TODO: specific error message
     }
 
     // Not connected
-    report_error("connect(%s:%d): %s");
-                        /*host,
+    stcp_report_error("connect(%s:%d): %s",
+                        hostip,
                         port,
-                        strerror(ERRNO));*/
+                        strerror( ERRNO ) );
     close(*sock);
     *sock = INVALID_SOCKET;
 
@@ -2134,15 +2481,15 @@ stcp_connect_socket( const char *host,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// stcp_connect_client_impl
+// stcp_connect_remote_impl
 //
 
 static struct stcp_connection *
-stcp_connect_client_impl( const struct stcp_client_options *client_options,
-                                int use_ssl,
-                                char *ebuf,
-                                size_t ebuf_len,
-                                int timeout )
+stcp_connect_remote_impl( const char *host,
+                            int port,
+                            struct stcp_secure_options *secure_options,
+                            int bUseSSL,
+                            int timeout )
 {
     struct stcp_connection *conn = NULL;
     int sock;
@@ -2150,27 +2497,28 @@ stcp_connect_client_impl( const struct stcp_client_options *client_options,
     struct sockaddr *psa;
     socklen_t len;
 
-    unsigned max_req_size = MAX_REQUEST_SIZE;
+    // Need secure options if SSL
+    if ( bUseSSL && ( NULL == secure_options ) ) {
+        return 0;
+    }
 
-    // Size of structures, aligned to 8 bytes
-    size_t conn_size = ((sizeof(struct stcp_connection) + 7) >> 3) << 3;
-
-    conn = (struct stcp_connection *)calloc( 1, conn_size + max_req_size );
+    conn = (struct stcp_connection *)calloc( 1, sizeof( struct stcp_connection ) );
     if ( NULL == conn ) {
         // Error
         return NULL;
     }
 
-    conn->conntype = CONNECTION_CLIENT;
-    conn->buf = (((char *)conn) + conn_size );
-    conn->buf_size = (int)max_req_size;
-    conn->read_timeout = timeout;
+    if ( bUseSSL ) {
+        // Init SSL subsystem
+        if ( 0 == stcp_init_ssl( conn->ssl_ctx, secure_options ) ) {
+            free( conn );
+            return NULL;
+        }
+    }
 
-    if ( !stcp_connect_socket( client_options->host,
-                                client_options->port,
-                                use_ssl,
-                                ebuf,
-                                ebuf_len,
+    if ( !stcp_connect_socket( host,
+                                port,
+                                bUseSSL,
                                 &sock,
                                 &sa ) ) {
         // ebuf is set by connect_socket,
@@ -2181,42 +2529,40 @@ stcp_connect_client_impl( const struct stcp_client_options *client_options,
 
 #ifdef OPENSSL_API_1_1
     if ( use_ssl &&
-            ( NULL == ( conn->ssl_ctx = SSL_CTX_new(TLS_client_method() ) ) ) ) {
-        stcp_snprintf( NULL,
-                        NULL, // No truncation check for ebuf
-                        ebuf,
-                        ebuf_len,
-                        "SSL_CTX_new error" );
+            ( NULL == ( conn->ssl_ctx = SSL_CTX_new( TLS_client_method() ) ) ) ) {
+        stcp_report_error("SSL_CTX_new error");
         close(sock);
         stcp_free(conn);
         return NULL;
     }
 #else
-    if ( use_ssl &&
-            ( NULL == ( conn->ssl_ctx = SSL_CTX_new(SSLv23_client_method() ) ) ) ) {
-        report_error("SSL_CTX_new error" );
+    if ( bUseSSL &&
+            ( NULL == ( conn->ssl_ctx = SSL_CTX_new( SSLv23_client_method() ) ) ) ) {
+        unsigned long ssl_err = ERR_get_error();
+        const char* const str = ERR_reason_error_string( ssl_err );
+        stcp_report_error("SSL_CTX_new error. %s", str );
         close(sock);
         free(conn);
         return NULL;
     }
 #endif // OPENSSL_API_1_1
 
-    len = (sa.sa.sa_family == AF_INET) ? sizeof (conn->client.rsa.sin)
-                                            : sizeof (conn->client.rsa.sin6);
-    psa = (sa.sa.sa_family == AF_INET)
-            ? (struct sockaddr *) &(conn->client.rsa.sin)
-                : (struct sockaddr *) &(conn->client.rsa.sin6);
+    len = ( sa.sa.sa_family == AF_INET) ? sizeof( conn->client.rsa.sin )
+                                            : sizeof( conn->client.rsa.sin6 );
+    psa = ( sa.sa.sa_family == AF_INET )
+            ? (struct sockaddr *)&( conn->client.rsa.sin )
+                : (struct sockaddr *)&( conn->client.rsa.sin6 );
 
     conn->client.sock = sock;
     conn->client.lsa = sa;
 
     if ( getsockname(sock, psa, &len) != 0 ) {
-        report_error("%s: getsockname() failed: %s"); // __func__, strerror(ERRNO));
+        stcp_report_error( "getsockname() failed: %s", strerror( ERRNO ) );
     }
 
-    conn->client.is_ssl = use_ssl ? 1 : 0;
+    conn->client.is_ssl = bUseSSL ? 1 : 0;
 
-    if ( use_ssl ) {
+    if ( bUseSSL ) {
 
         // TODO: Check ssl_verify_peer and ssl_ca_path here.
         // SSL_CTX_set_verify call is needed to switch off server
@@ -2225,11 +2571,11 @@ stcp_connect_client_impl( const struct stcp_client_options *client_options,
         // TODO: SSL_CTX_set_verify(conn->client_ssl_ctx,
         // SSL_VERIFY_PEER, verify_ssl_server);
 
-        if ( client_options->client_cert ) {
-            if ( !ssl_use_pem_file( conn,
-                                        client_options->client_cert,
-                                        NULL ) ) {
-                report_error("Can not use SSL client certificate" );
+        if ( secure_options->client_cert_path ) {
+            if ( !ssl_use_pem_file( conn->ssl_ctx,
+                                    secure_options->client_cert_path,
+                                    NULL ) ) {
+                stcp_report_error( "Can not use SSL client certificate" );
                 SSL_CTX_free( conn->ssl_ctx );
                 close( sock );
                 free( conn );
@@ -2237,9 +2583,10 @@ stcp_connect_client_impl( const struct stcp_client_options *client_options,
             }
         }
 
-        if ( client_options->server_cert ) {
+        // Set default locations for trusted CA certificates (file in pem format)
+        if ( secure_options->server_cert_path ) {
             SSL_CTX_load_verify_locations( conn->ssl_ctx,
-                                            client_options->server_cert,
+                                            secure_options->server_cert_path,
                                             NULL );
             SSL_CTX_set_verify( conn->ssl_ctx, SSL_VERIFY_PEER, NULL );
         }
@@ -2247,17 +2594,18 @@ stcp_connect_client_impl( const struct stcp_client_options *client_options,
             SSL_CTX_set_verify( conn->ssl_ctx, SSL_VERIFY_NONE, NULL );
         }
 
-        // TODO !!!!!
-        /*if ( !sslize( conn,
+        if ( !make_ssl( conn,
+                        secure_options,
                         conn->ssl_ctx,
                         SSL_connect,
-                        &(conn->ssl_ctx->stop_flag ) ) ) {
-            report_error("SSL connection error");
+                        &(conn->stop_flag ) ) ) {
+            stcp_report_error("SSL connection error");
             SSL_CTX_free( conn->ssl_ctx );
             close( sock );
             free( conn );
             return NULL;
-        }*/
+        }
+        
     }
 
     if ( 0 != set_non_blocking_mode( sock ) ) {
@@ -2265,46 +2613,44 @@ stcp_connect_client_impl( const struct stcp_client_options *client_options,
         ;
     }
 
+    conn->conn_state = STCP_CONN_STATE_CONNECTED;
     return conn;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// stcp_connect_client_secure
+// stcp_connect_remote_secure
 //
 
 struct stcp_connection *
-stcp_connect_client_secure( const struct stcp_client_options *client_options,
-                                char *error_buffer,
-                                size_t error_buffer_size,
+stcp_connect_remote_secure( const char *host,
+                                int port,
+                                struct stcp_secure_options *client_options,
                                 int timeout )
 {
-    return stcp_connect_client_impl( client_options,
-                                        1,
-                                        error_buffer,
-                                        error_buffer_size,
+    struct stcp_connection *conn;
+
+    conn =  stcp_connect_remote_impl( host,
+                                        port,
+                                        client_options,
+                                        USE_SSL,
                                         timeout );
+                                    
+    return conn;                                        
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// stcp_connect_client
+// stcp_connect_remote
 //
 
 struct stcp_connection *
-stcp_connect_client( const char *host,
+stcp_connect_remote( const char *host,
                         int port,
-                        int use_ssl,
-                        char *error_buffer,
-                        size_t error_buffer_size,
                         int timeout )
-{
-    struct stcp_client_options opts;
-    memset(&opts, 0, sizeof (opts));
-    opts.host = host;
-    opts.port = port;
-    return stcp_connect_client_impl( &opts,
-                                        use_ssl,
-                                        error_buffer,
-                                        error_buffer_size,
+{ 
+    return stcp_connect_remote_impl( host,
+                                        port,
+                                        NULL,
+                                        NO_SSL,
                                         timeout );
 }
 
@@ -2314,10 +2660,10 @@ stcp_connect_client( const char *host,
 //
 
 static void
-stcp_close_socket_gracefully(struct stcp_connection *conn)
+stcp_close_socket_gracefully( struct stcp_connection *conn )
 {
 #if defined(_WIN32)
-    char buf[WEB_BUF_LEN];
+    char buf[STCP_BUF_LEN];
     int n;
 #endif
     struct linger linger;
@@ -2325,7 +2671,7 @@ stcp_close_socket_gracefully(struct stcp_connection *conn)
     int linger_timeout = -2;
     socklen_t opt_len = sizeof (error_code);
 
-    if ( NULL != conn ) {
+    if ( NULL == conn ) {
         return;
     }
 
@@ -2352,7 +2698,7 @@ stcp_close_socket_gracefully(struct stcp_connection *conn)
 #endif
 
     // Set linger option according to configuration
-    if (LINGER_TIMEOUT >= 0) {
+    if (STCP_LINGER_TIMEOUT >= 0) {
         // Set linger option to avoid socket hanging out after close. This
         // prevent ephemeral port exhaust problem under high QPS.
         linger.l_onoff = 1;
@@ -2383,7 +2729,7 @@ stcp_close_socket_gracefully(struct stcp_connection *conn)
         linger.l_linger = 0;
     }
 
-    if (LINGER_TIMEOUT < -1) {
+    if (STCP_LINGER_TIMEOUT < -1) {
         // Default: don't configure any linger
     }
     else if ( getsockopt( conn->client.sock,
@@ -2394,9 +2740,8 @@ stcp_close_socket_gracefully(struct stcp_connection *conn)
         // Cannot determine if socket is already closed. This should
         // not occur and never did in a test. Log an error message
         // and continue.
-        report_error("%s: getsockopt(SOL_SOCKET SO_ERROR) failed: %s");
-                        //__func__,
-                        //strerror(ERRNO));
+        stcp_report_error("getsockopt(SOL_SOCKET SO_ERROR) failed: %s",
+                            strerror(ERRNO) );
     }
     else if ( error_code == ECONNRESET ) {
         // Socket already closed by client/peer, close socket without linger
@@ -2409,11 +2754,10 @@ stcp_close_socket_gracefully(struct stcp_connection *conn)
                             SO_LINGER,
                             (char *)&linger,
                             sizeof( linger ) ) != 0 ) {
-            report_error("%s: setsockopt(SOL_SOCKET SO_LINGER(%i,%i)) failed: %s");
-                            //__func__,
-                            //linger.l_onoff,
-                            //linger.l_linger,
-                            //strerror(ERRNO) );
+            stcp_report_error("setsockopt(SOL_SOCKET SO_LINGER(%i,%i)) failed: %s",
+                                linger.l_onoff,
+                                linger.l_linger,
+                                strerror( ERRNO ) );
         }
 
     }
@@ -2428,14 +2772,14 @@ stcp_close_socket_gracefully(struct stcp_connection *conn)
 //
 
 static void
-close_connection(struct stcp_connection *conn)
+close_connection( struct stcp_connection *conn )
 {
-    conn->conn_state = SOCKETTCP_CONN_STATE_TOCLOSE; // to close
+    conn->conn_state = STCP_CONN_STATE_TOCLOSE; // to close
 
     // Set close flag, so keep-alive loops will stop
     conn->must_close = 1;
 
-    conn->conn_state = SOCKETTCP_CONN_STATE_CLOSING; // closing
+    conn->conn_state = STCP_CONN_STATE_CLOSING; // closing
 
     if ( conn->ssl != NULL ) {
         // Run SSL_shutdown twice to ensure complexly close SSL connection
@@ -2444,17 +2788,17 @@ close_connection(struct stcp_connection *conn)
         // Avoid CRYPTO_cleanup_all_ex_data(); See discussion:
         // https://wiki.openssl.org/index.php/Talk:Library_Initialization
 #ifndef OPENSSL_API_1_1
-        ERR_remove_state(0);
+        ERR_remove_state(0);        // deprecated in 1.0.0, solved by going to 1.1.0
 #endif
         conn->ssl = NULL;
     }
 
-    if (conn->client.sock != INVALID_SOCKET) {
+    if ( conn->client.sock != INVALID_SOCKET ) {
         stcp_close_socket_gracefully( conn );
         conn->client.sock = INVALID_SOCKET;
     }
 
-    conn->conn_state = SOCKETTCP_CONN_STATE_CLOSED; // closed
+    conn->conn_state = STCP_CONN_STATE_CLOSED; // closed
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2462,9 +2806,9 @@ close_connection(struct stcp_connection *conn)
 //
 
 void
-stcp_close_connection(struct stcp_connection *conn)
+stcp_close_connection( struct stcp_connection *conn )
 {
-    if (conn == NULL) {
+    if ( NULL == conn ) {
         return;
     }
 
@@ -2475,28 +2819,40 @@ stcp_close_connection(struct stcp_connection *conn)
     }
 
     // If client free connection data
-    if ( CONNECTION_CLIENT == conn->conntype ) {
-	free(conn);
-    }
+    free( conn );
 
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// stcp_poll
-//
+/*!
+ ****************************************************************************
+ * stcp_poll
+ *
+ * Use milliseconds -1 to get STCP_TIMEOUT_QUANTUM timeout.
+ *
+ * @param pfd - Pointer to array with file descriptors.
+ * @param n - Number of file descriptors in the pfd array.
+ * @param milliseconds - Time to wait for data on file decriptor.
+ *   If set too zero STCP_TIMEOUT_QUANTUM is used. If timout is
+ * set lower than quantum one timeout is performed. If greater several.
+ * @param stop_server - Pointer to int that can be set externally 
+ *                      to stop the block.
+ *
+ * @return >0 success, -1 timeout, -2 stopped
+ */
 
-static int
+int
 stcp_poll( struct pollfd *pfd,
                 unsigned int n,
-                int milliseconds,
-                volatile int *stop_server)
+                int mstimeout,
+                volatile int *stop_server )
 {
     // Call poll, but only for a maximum time of a few seconds.
     // This will allow to stop the server after some seconds, instead
     // of having to wait for a long socket timeout.
-    int ms_now = SOCKET_TIMEOUT_QUANTUM; // Sleep quantum in ms
+    int ms_now = STCP_TIMEOUT_QUANTUM; // Sleep quantum in ms
 
     do {
+        
         int result;
 
         if ( *stop_server ) {
@@ -2504,25 +2860,29 @@ stcp_poll( struct pollfd *pfd,
             return -2;
         }
 
-        if ( ( milliseconds >= 0 ) &&
-             ( milliseconds < ms_now ) ) {
-            ms_now = milliseconds;
+        // Set mstimeout to lowest value
+        if ( ( mstimeout >= 0 ) &&
+             ( mstimeout < ms_now ) ) {
+            ms_now = mstimeout;
         }
 
-        result = poll(pfd, n, ms_now);
+        result = poll( pfd, n, ms_now );
         if ( result != 0 ) {
-            // Poll returned either success (1) or error (-1).
-            // Forward both to the caller.
+            // On success, a positive number is returned; this is the number of
+            // structures which have nonzero revents fields. Negative return value
+            // is error. Forward both to the caller.  (0 == timeout)
             return result;
         }
+        
+        // Poll timed out (==0)
 
         // Poll returned timeout (0).
-        if ( milliseconds > 0 ) {
-            milliseconds -= ms_now;
+        if ( mstimeout > 0 ) {
+            mstimeout -= ms_now;
         }
 
     }
-    while ( milliseconds > 0 );
+    while ( mstimeout > 0 );
 
     // timeout: return 0
     return 0;
@@ -2543,15 +2903,13 @@ stcp_poll( struct pollfd *pfd,
 static int
 stcp_push_inner( struct stcp_connection *conn,
                     FILE *fp,
-                    //int sock,
-                    //SSL *ssl,
                     const char *buf,
                     int len,
                     double timeout )
 {
     uint64_t start = 0, now = 0, timeout_ns = 0;
     int n, err;
-    unsigned ms_wait = SOCKET_TIMEOUT_QUANTUM; // Sleep quantum in ms
+    unsigned ms_wait = STCP_TIMEOUT_QUANTUM; // Sleep quantum in ms
 
 #ifdef _WIN32
     typedef int len_t;
@@ -2559,7 +2917,7 @@ stcp_push_inner( struct stcp_connection *conn,
     typedef size_t len_t;
 #endif
 
-    if (timeout > 0) {
+    if ( timeout > 0 ) {
         now = stcp_get_current_time_ns();
         start = now;
         timeout_ns = (uint64_t) (timeout * 1.0E9);
@@ -2573,11 +2931,12 @@ stcp_push_inner( struct stcp_connection *conn,
     // shuts down.
     for (;;) {
 
-        if (conn->ssl != NULL) {
+        if ( conn->ssl != NULL ) {
+            
             n = SSL_write(conn->ssl, buf, len);
             if (n <= 0) {
                 err = SSL_get_error(conn->ssl, n);
-                if ((err == SSL_ERROR_SYSCALL) && (n == -1)) {
+                if ( ( SSL_ERROR_SYSCALL == err ) && ( -1 == n  ) ) {
                     err = errno;
                 }
                 else if (( err == SSL_ERROR_WANT_READ ) ||
@@ -2685,7 +3044,7 @@ stcp_push_inner( struct stcp_connection *conn,
             }
         }
 
-        if (timeout > 0) {
+        if  (timeout > 0 ) {
             now = stcp_get_current_time_ns();
             if ( (now - start) > timeout_ns ) {
                 // Timeout
@@ -2694,8 +3053,10 @@ stcp_push_inner( struct stcp_connection *conn,
         }
     }
 
-    (void) err; // Avoid unused warning if NO_SSL is set and DEBUG_TRACE is not
-	        // used
+    (void)err;  /* 
+                    Avoid unused warning if NO_SSL is set and DEBUG_TRACE 
+	                is not used 
+                */
 
     return -1;
 }
@@ -2707,19 +3068,18 @@ stcp_push_inner( struct stcp_connection *conn,
 static int64_t
 stcp_push_all( struct stcp_connection *conn,
                 FILE *fp,
-                //int sock,
-                //SSL *ssl,
                 const char *buf,
                 int64_t len )
 {
-    double timeout = -1.0;
     int64_t n, nwritten = 0;
-
-    timeout = conn->read_timeout / 1000.0;
 
     while ( ( len > 0 ) && ( conn->stop_flag == 0 ) ) {
 
-        n = stcp_push_inner( conn, fp, buf + nwritten, (int)len, timeout );
+        n = stcp_push_inner( conn, 
+                                fp, 
+                                buf + nwritten, 
+                                (int)len, 
+                                STCP_WRITE_TIMEOUT );
 
         if (n < 0) {
             if (nwritten == 0) {
@@ -2746,7 +3106,7 @@ stcp_push_all( struct stcp_connection *conn,
 // Return value:
 //  >=0 .. number of bytes successfully read
 //   -1 .. timeout
-//   -2 .. error
+//   -2 .. stopped (socket closed by remote)
 //
 
 static int
@@ -2775,13 +3135,13 @@ stcp_pull_inner( FILE *fp,
         // CGI pipe, fread() may block until IO buffer is filled up. We
         // cannot afford to block and must pass all read bytes immediately
         // to the client.
-        nread = (int) read(fileno(fp), buf, (size_t) len);
+        nread = (int)read( fileno(fp), buf, (size_t)len );
         err = (nread < 0) ? errno : 0;
 
         if ( ( 0 == nread ) && ( len > 0 ) ) {
             // Should get data, but got EOL
             return -2;
-	}
+	    }
 
     }
     else if ( ( conn->ssl != NULL) &&
@@ -2800,8 +3160,8 @@ stcp_pull_inner( FILE *fp,
             if ((err == SSL_ERROR_SYSCALL) && (nread == -1)) {
                 err = errno;
             }
-            else if ((err == SSL_ERROR_WANT_READ) ||
-                     (err == SSL_ERROR_WANT_WRITE) ) {
+            else if ( ( err == SSL_ERROR_WANT_READ ) ||
+                      ( err == SSL_ERROR_WANT_WRITE ) ) {
                 nread = 0;
             }
             else {
@@ -2814,33 +3174,34 @@ stcp_pull_inner( FILE *fp,
         }
 
     }
-    else if (conn->ssl != NULL) {
+    else if ( conn->ssl != NULL ) {
 
         struct pollfd pfd[1];
         int pollres;
 
         pfd[0].fd = conn->client.sock;
         pfd[0].events = POLLIN;
-        pollres =
-                stcp_poll( pfd, 1, mstimeout, &(conn->stop_flag) );
+        pollres = stcp_poll( pfd, 1, mstimeout, &(conn->stop_flag) );
 
-        if (conn->stop_flag) {
+        if ( conn->stop_flag ) {
             return -2;
         }
 
-        if (pollres > 0) {
-            nread = SSL_read(conn->ssl, buf, len);
-            if (nread <= 0) {
-                err = SSL_get_error(conn->ssl, nread);
-                if ((err == SSL_ERROR_SYSCALL) && (nread == -1)) {
+        if ( pollres > 0 ) {
+
+            nread = SSL_read( conn->ssl, buf, len );
+            
+            if ( nread <= 0 ) {
+                err = SSL_get_error( conn->ssl, nread );
+                if ( ( err == SSL_ERROR_SYSCALL ) && ( nread == -1 ) ) {
                     err = errno;
                 }
-                else if ((err == SSL_ERROR_WANT_READ) ||
-                         (err == SSL_ERROR_WANT_WRITE) ) {
+                else if ( ( err == SSL_ERROR_WANT_READ ) ||
+                          ( err == SSL_ERROR_WANT_WRITE ) ) {
                     nread = 0;
                 }
                 else {
-                    //DEBUG_TRACE("SSL_read() failed, error %d", err);
+                    //DEBUG_TRACE("SSL_read() failed, error %d", err); TODO
                     return -2;
                 }
             }
@@ -2849,7 +3210,7 @@ stcp_pull_inner( FILE *fp,
             }
 
         }
-        else if (pollres < 0) {
+        else if ( pollres < 0 ) {
             // Error
             return -2;
         }
@@ -2859,18 +3220,20 @@ stcp_pull_inner( FILE *fp,
         }
 
     }
+
     // Non SSL read
     else {
         struct pollfd pfd[1];
-        int pollres;
+        int pollres; 
 
         pfd[0].fd = conn->client.sock;
         pfd[0].events = POLLIN;
-        pollres =
-                stcp_poll( pfd, 1, mstimeout, &(conn->stop_flag ) );
+        pollres = stcp_poll( pfd, 1, mstimeout, &( conn->stop_flag ) );
+
         if ( conn->stop_flag ) {
             return -2; 
         }
+
         if ( pollres > 0 ) {
             
             nread = (int)recv( conn->client.sock, buf, (len_t)len, 0 );
@@ -2895,7 +3258,7 @@ stcp_pull_inner( FILE *fp,
         return -2;
     }
 
-    if ( (nread > 0) || ( (nread == 0) && (len == 0) ) ) {
+    if ( ( nread > 0 ) || ( ( nread == 0 ) && ( len == 0 ) ) ) {
         // some data has been read, or no data was requested
         return nread;
     }
@@ -2927,12 +3290,12 @@ stcp_pull_inner( FILE *fp,
         // blocking in close_socket_gracefully, so we can not distinguish
         // here. We have to wait for the timeout in both cases for now.
 
-        if ((err == EAGAIN) || (err == EWOULDBLOCK) || (err == EINTR)) {
+        if ( ( err == EAGAIN ) || ( err == EWOULDBLOCK ) || ( err == EINTR ) ) {
             // TODO (low): check if this is still required
             // EAGAIN/EWOULDBLOCK:
             // standard case if called from close_socket_gracefully
             // => should return -1
-            // or timeout occured
+            // or timeout occurred
             // => the code must stay in the while loop
 
             // EINTR can be generated on a socket with a timeout set even
@@ -2947,14 +3310,15 @@ stcp_pull_inner( FILE *fp,
 #endif
     }
 
-    // Timeout occured, but no data available.
+    // Timeout occurred, but no data available.
     return -1;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // stcp_pull_all
 //
-// Read len bytes withing timout set by conn.timeout
+// Read len bytes within timout set by conn.timeout
+// Will read until timeout or error/abort.
 // 
 // >= 0 Read data
 // < 0 - Error
@@ -2967,22 +3331,23 @@ stcp_pull_all( FILE *fp, struct stcp_connection *conn, char *buf, int len, int m
     int n, nread = 0;
     uint64_t start_time = 0, now = 0, timeout_ns = 0;
 
+    // Set timeout
     if ( mstimeout >= 0 ) {
         start_time = stcp_get_current_time_ns();
         timeout_ns = (uint64_t)((double)mstimeout * 1.0E6);
     }
 
-    while ( (len > 0) && ( 0 == conn->stop_flag ) ) {
-        
+    while ( ( len > 0 ) && ( 0 == conn->stop_flag ) ) {
+
         n = stcp_pull_inner( fp, conn, buf + nread, len, mstimeout );
         
-        if ( n == -2 ) {
-            if (nread == 0) {
+        if ( STCP_ERROR_STOPPED == n ) {
+            if ( 0 == nread ) {
                 nread = -1; // Propagate the error
             }
             break;
         }
-        else if ( n == -1 ) {
+        else if ( STCP_ERROR_TIMEOUT == n ) {
             // timeout
             if ( mstimeout >= 0 ) {
                 now = stcp_get_current_time_ns();
@@ -2997,37 +3362,21 @@ stcp_pull_all( FILE *fp, struct stcp_connection *conn, char *buf, int len, int m
         }
         else {
             nread += n;
-            len -= n;
+            len -= n;            
         }
-    }
+
+    } // while
 
     return nread;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// stcp_discard_unread_request_data
-//
-
-static void
-stcp_discard_unread_request_data( struct stcp_connection *conn )
-{
-    char buf[WEB_BUF_LEN];
-    size_t to_read;
-    int nread;
-
-    if (conn == NULL) {
-        return;
-    }
-
-    to_read = sizeof (buf);
-
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 // stcp_read_inner
 //
 // >= 0 Read data
 // < 0 - Error
+//
 
 static int
 stcp_read_inner( struct stcp_connection *conn, void *buf, size_t len, int mstimeout )
@@ -3036,11 +3385,11 @@ stcp_read_inner( struct stcp_connection *conn, void *buf, size_t len, int mstime
     int64_t len64 =
             (int64_t) ((len > INT_MAX) ? INT_MAX : len); // since the return value is
                                                          // int, we may not read more
-	                                                 // bytes
+	                                                     // bytes
     const char *body;
 
-    if (conn == NULL) {
-        return 0;
+    if ( conn == NULL ) {
+        return -1;
     }
 
     nread = 0;
@@ -3053,7 +3402,7 @@ stcp_read_inner( struct stcp_connection *conn, void *buf, size_t len, int mstime
         nread = ( (nread > 0) ? nread : n);
      }
 
-    return (int) nread;
+    return (int)nread;
 
 }
 
@@ -3089,7 +3438,7 @@ stcp_read( struct stcp_connection *conn, void *buf, size_t len, int mstimeout )
     }
 
     if ( ( conn == NULL ) || ( NULL == buf ) ) {
-        return 0; // TODO really 0?
+        return -1; 
     }
     
     memset( buf, 0, len );
@@ -3115,8 +3464,6 @@ stcp_write( struct stcp_connection *conn, const void *buf, size_t len )
     
     total = stcp_push_all( conn,
                             NULL,
-                            //conn->client.sock,
-                            //conn->ssl,
                             (const char *)buf,
                             (int64_t)len);
 
@@ -3124,4 +3471,642 @@ stcp_write( struct stcp_connection *conn, const void *buf, size_t len )
 }
 
 
+// -----------------------------------------------------------------------------
+//                                  S E R V E R
+// -----------------------------------------------------------------------------
 
+
+
+static void
+close_all_listening_sockets( struct server_context *srv_ctx )
+{
+    unsigned int i;
+    if ( !srv_ctx ) {
+        return;
+    }
+
+    for ( i = 0; i < srv_ctx->num_listening_sockets; i++ ) {
+        closesocket( srv_ctx->listening_sockets[i].sock );
+        srv_ctx->listening_sockets[i].sock = INVALID_SOCKET;
+    }
+    
+    free( srv_ctx->listening_sockets );
+    srv_ctx->listening_sockets = NULL;
+    free( srv_ctx->listening_socket_fds );
+    srv_ctx->listening_socket_fds = NULL;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// next_option
+//
+// A helper function for traversing a comma separated list of values.
+// It returns a list pointer shifted to the next value, or NULL if the end
+// of the list found.
+// Value is stored in msg vector. If value has form "x=y", then eq_val
+// vector is initialized to point to the "y" part, and val vector length
+// is adjusted to point only to "x".
+//
+
+static const char *
+next_option( const char *list, struct msg *val, struct msg *eq_val )
+{
+    int end;
+
+reparse:
+
+    if (val == NULL || list == NULL || *list == '\0') {
+        // End of the list
+        return NULL;
+    }
+
+    // Skip over leading LWS
+    while (*list == ' ' || *list == '\t') {
+	list++;
+    }
+
+    val->ptr = list;
+    if ( ( list = strchr(val->ptr, ',') ) != NULL ) {
+	// Comma found. Store length and shift the list ptr
+	val->len = ((size_t)(list - val->ptr));
+	list++;
+    }
+    else {
+        // This value is the last one
+	list = val->ptr + strlen(val->ptr);
+	val->len = ((size_t)(list - val->ptr));
+
+        // Adjust length for trailing LWS
+	end = (int)val->len - 1;
+	while ( ( end >= 0 ) &&
+                ( ( val->ptr[end] == ' ' ) ||
+                  ( val->ptr[end] == '\t') ) )
+            end--;
+	val->len = (size_t)(end + 1);
+
+        if ( 0 == val->len ) {
+            // Ignore any empty entries.
+            goto reparse;
+	}
+
+        if ( eq_val != NULL ) {
+            // Value has form "x=y", adjust pointers and lengths
+            // so that val points to "x", and eq_val points to "y".
+            eq_val->len = 0;
+            eq_val->ptr = (const char *)memchr(val->ptr, '=', val->len);
+            if ( eq_val->ptr != NULL ) {
+                eq_val->ptr++; // Skip over '=' character
+                eq_val->len = ((size_t)(val->ptr - eq_val->ptr)) + val->len;
+		val->len = ((size_t)(eq_val->ptr - val->ptr)) - 1;
+            }
+
+        }
+
+    }
+
+    return list;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// parse_port_string
+//
+// Valid listening port specification is: [ip_address:]port[s]
+// Examples for IPv4: 80, 443s, 127.0.0.1:3128, 192.0.2.3:8080s
+// Examples for IPv6: [::]:80, [::1]:80,
+//   [2001:0db8:7654:3210:FEDC:BA98:7654:3210]:443s
+//   see https://tools.ietf.org/html/rfc3513#section-2.2
+// In order to bind to both, IPv4 and IPv6, you can either add
+// both ports using 8080,[::]:8080, or the short form +8080.
+// Both forms differ in detail: 8080,[::]:8080 create two sockets,
+// one only accepting IPv4 the other only IPv6. +8080 creates
+// one socket accepting IPv4 and IPv6. Depending on the IPv6
+// environment, they might work differently, or might not work
+// at all - it must be tested what options work best in the
+// relevant network environment.
+//
+// msg          - [in] A message chunk
+// so           - [out] IP Address
+// ip_version   - [out] Version of IP-address (4/6/0==failure)
+// 
+// Returns: 0 = failure. 1 == success
+
+static int
+parse_port_string( const struct msg *msg, 
+                    struct socket *so, 
+                    int *ip_version )
+{
+    unsigned int a, b, c, d, port;
+    int ch, len;
+    const char *cb;
+    char buf[100] = {0};
+
+    // MacOS needs that. If we do not zero it, subsequent bind() will fail.
+    // Also, all-zeroes in the socket address means binding to all addresses
+    // for both IPv4 and IPv6 (INADDR_ANY and IN6ADDR_ANY_INIT).
+    memset( so, 0, sizeof (*so) );
+    so->lsa.sin.sin_family = AF_INET;
+    *ip_version = 0;
+
+    // Initialize port and len as invalid.
+    port = 0;
+    len = 0;
+
+    // Test for different ways to format this string
+    if ( 5 == sscanf( msg->ptr, 
+                        "%u.%u.%u.%u:%u%n", 
+                        &a, &b, &c, &d, &port, &len ) ) {
+
+        // Bind to a specific IPv4 address, e.g. 192.168.1.5:8080
+        so->lsa.sin.sin_addr.s_addr = htonl((a << 24) | (b << 16) | (c << 8) | d );
+        so->lsa.sin.sin_port = htons((uint16_t) port);
+        *ip_version = 4;
+
+    }
+    else if ( ( 2 == sscanf( msg->ptr, "[%49[^]]]:%u%n", buf, &port, &len ) ) &&
+                stcp_inet_pton( AF_INET6, buf, 
+                                    &so->lsa.sin6, 
+                                    sizeof(so->lsa.sin6) ) ) {
+
+        // IPv6 address, examples: see above
+        // so->lsa.sin6.sin6_family = AF_INET6; already set by web_inet_pton
+        so->lsa.sin6.sin6_port = htons((uint16_t) port);
+        *ip_version = 6;
+
+    }
+    else if ( ( msg->ptr[0] == '+') &&
+                ( 1 == sscanf(msg->ptr + 1, "%u%n", &port, &len ) ) ) {
+
+        // Port is specified with a +, bind to IPv6 and IPv4, INADDR_ANY
+        // Add 1 to len for the + character we skipped before
+        len++;
+
+        // Set socket family to IPv6, do not use IPV6_V6ONLY
+        so->lsa.sin6.sin6_family = AF_INET6;
+        so->lsa.sin6.sin6_port = htons((uint16_t) port);
+        *ip_version = 4 + 6;
+
+    }
+    else if ( sscanf(msg->ptr, "%u%n", &port, &len ) == 1 ) {
+        // If only port is specified, bind to IPv4, INADDR_ANY
+        so->lsa.sin.sin_port = htons( (uint16_t) port );
+        *ip_version = 4;
+    }
+    else if ( (cb = strchr(msg->ptr, ':')) != NULL ) {
+        // Could be a hostname
+        // Will only work for RFC 952 compliant hostnames,
+        // starting with a letter, containing only letters,
+        // digits and hyphen ('-'). Newer specs may allow
+        // more, but this is not guaranteed here, since it
+        // may interfere with rules for port option lists.
+
+        *(char *)cb = 0;   // Use a const cast here and modify the string.
+		                    // We are going to restore the string later.
+
+        if ( stcp_inet_pton( AF_INET,
+                                msg->ptr,
+                                &so->lsa.sin,
+                                sizeof (so->lsa.sin) ) ) {
+            if ( 1 == sscanf(cb + 1, "%u%n", &port, &len) ) {
+                *ip_version = 4;
+                so->lsa.sin.sin_family = AF_INET;
+                so->lsa.sin.sin_port = htons((uint16_t) port);
+                len += (int) (cb - msg->ptr) + 1;
+            }
+            else {
+                port = 0;
+                len = 0;
+            }
+
+        }
+        else if ( stcp_inet_pton( AF_INET6,
+                                    msg->ptr,
+                                    &so->lsa.sin6,
+                                    sizeof( so->lsa.sin6 ) ) ) {
+            if ( 1 == sscanf( cb + 1, "%u%n", &port, &len ) ) {
+                *ip_version = 6;
+                so->lsa.sin6.sin6_family = AF_INET6;
+                so->lsa.sin.sin_port = htons( (uint16_t)port );
+                len += (int)(cb - msg->ptr) + 1;
+            }
+            else {
+                port = 0;
+                len = 0;
+            }
+
+        }
+
+        *(char *)cb = ':'; // restore the string
+
+    }
+    else {
+        // Parsing failure.  
+    }
+
+    // sscanf and the option splitting code ensure the following condition
+    if ( (len < 0) && ((unsigned) len > (unsigned) msg->len)) {
+        *ip_version = 0;
+        return 0;
+    }
+
+    ch = msg->ptr[len]; /* Next character after the port number */
+    so->is_ssl = (ch == 's');
+    //so->ssl_redir = (ch == 'r');
+
+    // Make sure the port is valid and vector ends with 's', 'r' or ','
+    if ( is_valid_port( port ) &&
+            ( (ch == '\0') || (ch == 's') || (ch == 'r') || (ch == ',') ) ) {
+        return 1;
+    }
+
+    // Reset ip_version to 0 of there is an error
+    *ip_version = 0;
+    return 0;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// init_listening_port
+//
+
+int
+stcp_listening( struct server_context *srv_ctx, 
+                    const char *str_listening_port )
+{
+    const char *list;
+    int on = 1;
+    int off = 0;
+    struct msg msg;
+    struct socket so, *ptr;
+
+    struct pollfd *pfd;
+    union usa usa;
+    socklen_t len;
+    int ip_version;
+    
+    int portsTotal = 0;
+    int portsOk = 0;
+
+    /* Check pointers */
+    if ( ( NULL == srv_ctx ) || 
+         ( NULL == str_listening_port ) ) {
+        return 0;
+    }
+
+    /* Init. defaults */
+
+    memset(&so, 0, sizeof(so));
+    memset( &usa, 0, sizeof( usa ) );
+    len = sizeof( usa );
+    list = str_listening_port;
+
+    msg.ptr = str_listening_port;
+    msg.len = strlen( str_listening_port );
+    
+    while ( ( list = next_option( list, &msg, NULL) ) != NULL ) {
+
+        portsTotal++;
+
+        if ( !parse_port_string( &msg, &so, &ip_version ) ) {
+            stcp_report_error( "%.*s: invalid port spec. Expecting list of: %s",
+                                (int) msg.len,
+                                msg.ptr,
+                                "[IP_ADDRESS:]PORT[s]");
+            return 0;
+        }
+
+        if  ( so.is_ssl && ( NULL == srv_ctx->ssl_ctx ) ) {
+            stcp_report_error( "Cannot add SSL socket. Is -ssl_certificate "
+                               "option set?" );
+            return 0;
+        }
+
+        if ( INVALID_SOCKET == 
+                 ( so.sock = socket( so.lsa.sa.sa_family, SOCK_STREAM, 6 ) ) ) {
+            stcp_report_error( "cannot create socket" );
+            return 0;
+        }
+
+#ifdef _WIN32
+        
+        // Windows SO_REUSEADDR lets many procs binds to a
+        // socket, SO_EXCLUSIVEADDRUSE makes the bind fail
+        // if someone already has the socket -- DTL */
+        // NOTE: If SO_EXCLUSIVEADDRUSE is used,
+        // Windows might need a few seconds before
+        // the same port can be used again in the
+        // same process, so a short Sleep may be
+        // required between web_stop and web_start.
+        //
+        if ( setsockopt( srv_ctx->listener.sock,
+                        SOL_SOCKET,
+                        SO_EXCLUSIVEADDRUSE,
+                        (SOCK_OPT_TYPE) & on,
+                        sizeof(on) ) != 0) {
+
+            // Set reuse option, but don't abort on errors.
+            stcp_report_error( "cannot set socket option SO_EXCLUSIVEADDRUSE" );
+        }
+#else
+        if ( setsockopt( so.sock,
+                            SOL_SOCKET,
+                            SO_REUSEADDR,
+                            ( (SOCK_OPT_TYPE)&on ),
+                            sizeof( on ) ) != 0 ) {
+
+            // Set reuse option, but don't abort on errors.
+            stcp_report_error( "cannot set socket option SO_REUSEADDR (entry %i)" );
+        }
+#endif
+
+        if ( ip_version > 4 ) {  /* Could be 6 for IPv6 only or 10 (4+6) for IPv4+IPv6 */
+            
+            if ( ip_version > 6 ) {
+                
+                if ( ( AF_INET6 == so.lsa.sa.sa_family )  && 
+                        setsockopt( so.sock,
+                                        IPPROTO_IPV6,
+				        IPV6_V6ONLY,
+				        (void *)&off,
+				        sizeof( off ) ) != 0 ) {
+
+                        /* Set IPv6 only option, but don't abort on errors. */
+			        stcp_report_error( "cannot set socket option IPV6_V6ONLY=off (entry %i)",
+					                    portsTotal );
+                }
+            }
+            else {
+
+                if ( ( AF_INET6 == so.lsa.sa.sa_family ) &&
+                    ( setsockopt( so.sock,
+                                    IPPROTO_IPV6,
+                                    IPV6_V6ONLY,
+                                    (void *)&off,
+                                    sizeof( off ) ) != 0 ) ) {
+
+                    // Set IPv6 only option, but don't abort on errors.
+                    stcp_report_error( "cannot set socket option IPV6_V6ONLY" );
+                }
+                
+            }
+
+        }
+        
+        set_non_blocking_mode( so.sock );
+
+        if ( so.lsa.sa.sa_family == AF_INET ) {
+
+            len = sizeof( so.lsa.sin );
+            if ( bind( so.sock, 
+                        &(so.lsa.sa), 
+                        len ) != 0) {
+
+                stcp_report_error( "cannot bind to %.*s: %d (%s)",
+                                    (int)msg.len,
+                                    msg.ptr,
+                                    (int)ERRNO,
+                                    strerror( errno ) );
+                closesocket( so.sock );
+                so.sock = INVALID_SOCKET;
+                return 0;
+            }
+        }
+        else if ( so.lsa.sa.sa_family == AF_INET6 ) {
+
+            len = sizeof( so.lsa.sin6 );
+            if ( bind( so.sock, 
+                        &(so.lsa.sa), 
+                        len ) != 0 ) {
+                stcp_report_error( "cannot bind to IPv6 %.*s: %d (%s)",
+                                    (int)msg.len,
+                                    msg.ptr,
+                                    (int)ERRNO,
+                                    strerror( errno ) );
+                closesocket( so.sock );
+                so.sock = INVALID_SOCKET;
+                return 0;
+            }
+        }
+        else {
+            stcp_report_error( "cannot bind: address family not supported (entry %i)" );
+            closesocket( so.sock );
+            so.sock = INVALID_SOCKET;
+            return 0;
+        }
+
+        if ( listen( so.sock, SOMAXCONN ) != 0 ) {
+
+            stcp_report_error( "cannot listen to %.*s: %d (%s)",
+                                (int)msg.len,
+                                msg.ptr,
+                                (int)ERRNO,
+                                strerror( errno ) );
+            closesocket( so.sock );
+            so.sock = INVALID_SOCKET;
+            return 0;
+        }
+
+        if ( ( getsockname( so.sock, &(usa.sa), &len ) != 0 ) ||
+             ( usa.sa.sa_family != so.lsa.sa.sa_family ) ) {
+
+            int err = (int)ERRNO;
+            stcp_report_error( "call to getsockname failed %.*s: %d (%s)",
+                                (int)msg.len,
+                                msg.ptr,
+                                err,
+                                strerror( errno ) );
+            closesocket( so.sock );
+            so.sock = INVALID_SOCKET;
+            return 0;
+        }
+
+        /* Update lsa port in case of random free ports */
+        if ( AF_INET6 == so.lsa.sa.sa_family ) {
+            so.lsa.sin6.sin6_port = usa.sin6.sin6_port;
+        }
+        else {
+            so.lsa.sin.sin_port = usa.sin.sin_port;
+        }
+        
+        if ( NULL == ( ptr = 
+                (struct socket *)realloc( srv_ctx->listening_sockets,
+                                            ( srv_ctx->num_listening_sockets + 1 ) *
+                                            sizeof( srv_ctx->listening_sockets[0] ) ) ) ) {
+
+            stcp_report_error( "Out of memory" );
+            closesocket( so.sock );
+            so.sock = INVALID_SOCKET;
+            continue;
+        }
+
+        if ( NULL == ( pfd = 
+                (struct pollfd *)realloc( srv_ctx->listening_socket_fds,
+                                            ( srv_ctx->num_listening_sockets + 1 ) *
+		                                    sizeof( srv_ctx->listening_socket_fds[0] ) ) ) ) {
+
+            stcp_report_error( "Out of memory" );
+            closesocket( so.sock );
+            so.sock = INVALID_SOCKET;
+            free(ptr);
+            continue;
+        }
+    
+        set_close_on_exec( so.sock );
+        srv_ctx->listening_sockets = ptr;
+        srv_ctx->listening_sockets[ srv_ctx->num_listening_sockets ] = so;
+        srv_ctx->listening_socket_fds = pfd;
+        srv_ctx->num_listening_sockets++;
+        portsOk++;
+        
+    } // while
+    
+    if ( portsOk != portsTotal ) {
+        close_all_listening_sockets( srv_ctx );
+        portsOk = 0;
+    }
+    
+    return portsOk;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// accept_new_connection
+//
+
+int
+stcp_accept( struct server_context *srv_ctx, 
+                const struct socket *listener, 
+                struct socket *psocket )
+{
+    char src_addr[ IP_ADDR_STR_LEN ];
+    socklen_t len = sizeof( psocket->rsa );
+    int on = 1;
+
+    /* Check pointers and listening socklet */
+    if ( ( NULL == listener ) || ( NULL == psocket ) || !listener->sock ) {
+        return 0;
+    }
+
+    if ( INVALID_SOCKET == 
+       ( psocket->sock = accept( listener->sock, &(psocket->rsa.sa), &len ) ) ) {
+        stcp_report_error( "accept() failed: %s",
+                            strerror( ERRNO ) ) ;
+        return 0;                                    
+    }
+    /*else if ( !check_acl( ctx, ntohl( *(uint32_t *)&psocket->rsa.sin.sin_addr ) ) ) {
+        sockaddr_to_string(src_addr, sizeof (src_addr), &psocket->rsa);
+        //web_cry(fc(ctx), "%s: %s is not allowed to connect", __func__, src_addr );
+        closesocket( psocket->sock );
+    }*/
+    else {
+
+        // Put so socket structure into the queue
+#if defined(_WIN32)
+        (void)SetHandleInformation((HANDLE)(intptr_t)so.sock, HANDLE_FLAG_INHERIT, 0);
+#else
+        if ( fcntl( psocket->sock, F_SETFD, FD_CLOEXEC ) != 0 ) {
+            // Failed TODO
+        }
+#endif
+        
+        // If listner is ssl this is to
+        psocket->is_ssl = listener->is_ssl;
+
+        if ( getsockname( psocket->sock, &psocket->lsa.sa, &len ) != 0 ) {
+            stcp_report_error( "getsockname() failed: %s",
+                                strerror( ERRNO ) ) ;
+        }
+
+        // Set TCP keep-alive. This is needed because if HTTP-level
+        // keep-alive is enabled, and client resets the connection, server 
+        // won't get TCP FIN or RST and will keep the connection open 
+        // forever. With TCP keep-alive, next keep-alive handshake will 
+        // figure out that the client is down and will close the server end.
+        // Thanks to Igor Klopov who suggested the patch.
+        if ( setsockopt( psocket->sock,
+                            SOL_SOCKET,
+                            SO_KEEPALIVE,
+                            (SOCK_OPT_TYPE)&on,
+                            sizeof( on ) ) != 0 ) {
+            stcp_report_error( "setsockopt(SOL_SOCKET SO_KEEPALIVE) failed: %s",
+                                strerror( ERRNO ) );
+        }
+
+        // Disable TCP Nagle's algorithm. Normally TCP packets are coalesced
+        // to effectively fill up the underlying IP packet payload and
+        // reduce the overhead of sending lots of small buffers. However
+        // this hurts the server's throughput (ie. operations per second)
+        // when HTTP 1.1 persistent connections are used and the responses
+        // are relatively small (eg. less than 1400 bytes).
+        //
+        if ( ( NULL != srv_ctx ) &&  srv_ctx->config_tcp_nodelay ) {
+            if ( set_tcp_nodelay( psocket->sock, 1 ) != 0 ) {
+                stcp_report_error( "setsockopt(IPPROTO_TCP TCP_NODELAY) failed: %s",
+                                    strerror( ERRNO ) );
+            }
+        }
+
+        // We are using non-blocking sockets. Thus, the
+        // set_sock_timeout(so.sock, timeout);
+        // call is no longer required.
+
+        // The "non blocking" property should already be
+        // inherited from the parent socket. Set it for
+	    // non-compliant socket implementations. */
+	    set_non_blocking_mode( psocket->sock );
+
+    }
+
+    return 1;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// stcp_init_client_connection
+//
+
+void stcp_init_client_connection( struct stcp_connection *conn,
+                                    struct stcp_secure_options *secure_opts )
+{
+    // Check conn pointer
+    if ( NULL == conn ) {
+        return;
+    }
+
+    // If secure then secure options must be set
+    if ( conn->client.is_ssl && ( NULL == secure_opts ) ) {
+        return;
+    }
+
+    conn->conn_state = STCP_CONN_STATE_CONNECTED;
+
+    conn->birth = time( NULL );
+
+    // Fill in IP, port info early so even if SSL setup below fails,
+    // error handler would have the corresponding info.
+    // Thanks to Johannes Winkelmann for the patch.
+    if ( AF_INET6 == conn->client.rsa.sa.sa_family ) {
+        conn->remote_port = ntohs( conn->client.rsa.sin6.sin6_port );
+    }
+    else {
+        conn->remote_port = ntohs( conn->client.rsa.sin.sin_port );
+    }
+
+    sockaddr_to_string( conn->remote_addr,
+                            sizeof( conn->remote_addr ),
+                            &conn->client.rsa );
+
+    if ( conn->client.is_ssl ) {
+
+        // Secure connection
+        if ( make_ssl( conn,
+                        secure_opts,
+                        conn->ssl_ctx,
+                        SSL_accept,
+                        &(conn->stop_flag ) ) ) {
+
+            // Get SSL client certificate information (if set)
+            ssl_get_client_cert_info( conn, secure_opts->srv_client_cert );
+
+        }
+
+    }
+
+}

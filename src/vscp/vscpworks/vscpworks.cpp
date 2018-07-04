@@ -174,6 +174,38 @@ VscpworksApp::VscpworksApp()
     wxSocketBase::Initialize();
 }
 
+char *reverse(const char * const s)
+{
+  if ( NULL == s ) return NULL;
+  
+  size_t i, len = strlen(s);
+  char *r = (char *)malloc(len + 1);
+
+  for(i = 0; i < len; ++i) {
+    r[i] = s[len - i - 1];
+  }
+  
+  r[len] = 0;
+  return r;
+}
+
+char *rstrstr( const char *s1, const char *s2)
+{
+  size_t  s1len = strlen(s1);
+  size_t  s2len = strlen(s2);
+  char *s;
+
+  if (s2len > s1len) return NULL;
+  
+  for (s = (char *)s1 + s1len - s2len; s >= s1; --s) {
+    if ( 0 == strncmp(s, s2, s2len) ) {
+      return s;
+    }
+  }
+  
+  return NULL;
+}
+
 
 /*!
 * Member initialisation
@@ -372,6 +404,19 @@ void VscpworksApp::Init()
         conn = NULL;
     }
     */ 
+    
+    wxString ttt = "test1\r\ntest2\r\ntest3\r\ntest4\r\ntest5\r\ntest6\r\nsuper\r\n";
+    
+    char *p = rstrstr( (const char *)ttt.mbc_str(), "\r\n");
+    p += 2;
+    
+    wxStringTokenizer tkz( ttt, _("\r\n") );
+    while( tkz.HasMoreTokens() ) {
+        ttt = tkz.GetNextToken();
+        wxPrintf( ttt + "\r\n" );
+    }
+    wxPrintf( ttt + "\r\n");
+    
 }
 
 /*!

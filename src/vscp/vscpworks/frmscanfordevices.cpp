@@ -1092,7 +1092,7 @@ void frmScanforDevices::openConfiguration( wxCommandEvent& event )
         }
 
         subframe->m_comboNodeID->SetValue( _("0x01") );
-        subframe->SetTitle( _("VSCP Registers (CANAL) - ") +
+        subframe->SetTitle( _("Scan for nodes (CANAL) - ") +
                                 m_canalif.m_strDescription );
 
         subframe->m_csw.setInterface( m_canalif.m_strDescription,
@@ -1148,7 +1148,7 @@ void frmScanforDevices::openConfiguration( wxCommandEvent& event )
         destguid.toString( str );
         subframe->m_comboNodeID->SetValue(str);
 
-        subframe->SetTitle( _("VSCP Registers (TCP/IP)- ") +
+        subframe->SetTitle( _("Scan for nodes (TCP/IP)- ") +
                                 m_vscpif.m_strDescription);
 
         // If server username is given and no password is entered we ask for it.

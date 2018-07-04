@@ -36,13 +36,32 @@
  */
 
 
-#if !defined(VSCPTCPIF_H__C2A773AD_8886_40F0_96C4_4DCA663402B2__INCLUDED_)
-#define VSCPTCPIF_H__C2A773AD_8886_40F0_96C4_4DCA663402B2__INCLUDED_
+#if !defined(VSCPTCPIF_H__INCLUDED_)
+#define VSCPTCPIF_H__INCLUDED_
 
 
 #include <canal.h>
 #include <vscp.h>
 #include <guid.h>
+
+#if defined(_WIN32)
+#else
+#include <unistd.h>
+#include <sys/wait.h>
+#include <sys/socket.h>
+#include <sys/poll.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <sys/time.h>
+#include <sys/utsname.h>
+#include <stdint.h>
+#include <inttypes.h>
+#include <netdb.h>
+#include <netinet/tcp.h>
+#include <sockettcp.h>
+#endif
+
+#include <sockettcp.h>
 #include <vscphelper.h>
 #include <mongoose.h>
 #include "wx/datetime.h"
@@ -55,11 +74,21 @@
 /*! 
     @def DEFAULT_RESPONSE_TIMEOUT
     Default response timeout for communication with the
-    tcp/ip interface of the daemon in seconds
- */
-#define TCPIP_DEFAULT_RESPONSE_TIMEOUT          2000
+    tcp/ip interface of the daemon in milliseconds.
 
-#define TCPIP_DEFAULT_AFTER_COMMAND_SLEEP       0
+    This is the overal time to wait for a +OK respsone.
+ */
+#define TCPIP_DEFAULT_RESPONSE_TIMEOUT          1000
+
+/*! 
+    @def DEFAULT_INNER_RESPONSE_TIMEOUT
+    Default timeout for inner data check. A Read call will
+    always wait this long for data.
+*/
+#define TCPIP_DEFAULT_INNER_RESPONSE_TIMEOUT    0
+
+
+#define TCPIP_DEFAULT_AFTER_COMMAND_SLEEP       0   // TODO remove !!!!!!!!!
 
 // Default values for read/write register functions
 // used in device config and scan.
@@ -67,11 +96,12 @@
 #define TCPIP_REGISTER_READ_ERROR_TIMEOUT       5000
 #define TCPIP_REGISTER_READ_MAX_TRIES           3
 
+#define TCPIP_DEFAULT_CONNECT_TIMEOUT_SECONDS   15   // Seconds
 /*!
     @def TCPIP_DLL_VERSION
     Pseudo version string
  */
-#define TCPIP_DLL_VERSION                       0x0000000D
+#define TCPIP_DLL_VERSION                       0x00000010
 /*! 
     @def TCPIP_VENDOR_STRING
     Pseudo vendor string
@@ -93,45 +123,6 @@ WX_DECLARE_LIST(vscpEvent, EVENT_TX_QUEUE);
 // Forward declarations
 class VscpRemoteTcpIf;
 
-class clientTcpIpWorkerThread : public wxThread {
-    
-public:
-
-    /// Constructor
-    clientTcpIpWorkerThread();
-
-    /// Destructor
-    ~clientTcpIpWorkerThread();
-
-    /*!
-        Thread code entry point
-     */
-    virtual void *Entry();
-
-    /*!
-        TCP/IP handler
-     */
-    static void ev_handler(struct mg_connection *conn, int ev, void *pUser);
-    
-    /*! 
-        called when the thread exits - whether it terminates normally or is
-        stopped with Delete() (but not when it is Kill()ed!)
-     */
-    virtual void OnExit();
-
-    /// Run as long as true
-    bool m_bRun;
-
-    /// Hostname to connect to
-    wxString m_hostname;
-
-    /// net_skeleton structure
-    struct mg_mgr m_mgrTcpIpConnection;
-
-    /// Pointer to the TCP/IP interface that owns the thread
-    VscpRemoteTcpIf *m_pvscpRemoteTcpIpIf;
-
-};
 
 /*!
     @brief Class for VSCP daemon tcp/ip interface
@@ -160,32 +151,39 @@ public:
         Set after command sleep time (milliseconds)
         @param to Sleep value in milliseconds.
      */
-    void setAfterCommandSleep(uint16_t to) {
-        m_afterCommandSleep = to;
+    void setAfterCommandSleep( uint16_t to ) {
+        to = to; // For backward compability
     }
 
     /*!
         Set register read/write timings
      */
-    void setRegisterOperationTiming(uint8_t retries, uint32_t resendto, uint32_t errorto) {
+    void setRegisterOperationTiming( uint8_t retries, 
+                                        uint32_t resendto, 
+                                        uint32_t errorto) {
         m_registerOpMaxRetries = retries;
         m_registerOpResendTimeout = resendto;
         m_registerOpErrorTimeout = errorto;
     };
+    
+    /*!
+     * Get last response form remote node
+     * @return Last raw response data from remote node
+     */
+    wxString& getLastResponse( void ) { return m_strResponse; };
+    
 
     /*!
      Returns TRUE if we are connected false otherwise.
      */
-    bool isConnected(void) {
-        return m_bConnected;
-    };
+    bool isConnected(void) { return ( NULL != m_conn ); };
 
     /*!
         checkReturnValue
         @param bClear Clear the input bugger before starting to wait for received data.
         @return Return false for "-OK" and true for "+OK"
      */
-    bool checkReturnValue(bool bClear = false);
+    bool checkReturnValue( bool bClear = false );
 
     /*!
         Clear the input queue
@@ -193,11 +191,24 @@ public:
     void doClrInputQueue(void);
 
     /*!
-        \brief Send a command to the server allows to send any command to the server.
-        @return Returns VSCP_ERROR_SUCCESS if the command could be sent successfully and
-        a positive respone (+OK) is received.
+        \brief Creates the input string array from a remote client response
+        @return Number of rows in created string array.
+    */
+    size_t addInputStringArrayFromReply( bool bClear = false );
+
+    /*!
+        \brief Send a command to the remote client.
+        @param cmd Commad to issue
+        @return Returns VSCP_ERROR_SUCCESS if the command could be sent successfully.
      */
     int doCommand(wxString& cmd);
+
+    /*!
+        \brief Send a command to the remote client.
+        @param cmd Commad to issue
+        @return Returns VSCP_ERROR_SUCCESS if the command could be sent successfully.
+     */
+    int doCommand( const char *cmd );
 
     /*!
         Open communication interface.
@@ -374,9 +385,18 @@ public:
         Get i/f version through the interface. 
         @return CANAL_ERROR_SUCCESS on success and error code if failure.
      */
-    int doCmdVersion(uint8_t *pMajorVer,
-            uint8_t *pMinorVer,
-            uint8_t *pSubMinorVer);
+    int doCmdVersion( uint8_t *pMajorVer,
+                        uint8_t *pMinorVer,
+                        uint8_t *pSubMinorVer);
+
+    /*!
+        Get i/f version including build-version through the interface. 
+        @return CANAL_ERROR_SUCCESS on success and error code if failure.
+     */
+    int doCmdVersion( uint8_t *pMajorVer,
+                        uint8_t *pMinorVer,
+                        uint8_t *pSubMinorVer,
+                        uint16_t *pBuildVer );                        
 
     /*!
         Get interface version
@@ -444,24 +464,24 @@ public:
     /*!
         Dummy for Baudrate setting
      */
-    int doCmdSetBaudrate(uint32_t baudrate) {
-        TCPIP_UNUSED(baudrate);
+    int doCmdSetBaudrate( uint32_t baudrate ) {
+                            TCPIP_UNUSED(baudrate);
         return CANAL_ERROR_SUCCESS;
     };
 
     /*!
         Dummy for filter setting
      */
-    int doCmdFilter(uint32_t filter) {
-        TCPIP_UNUSED(filter);
+    int doCmdFilter( uint32_t filter ) {
+                        TCPIP_UNUSED(filter);
         return CANAL_ERROR_SUCCESS;
     };
 
     /*!
         Dummy for mask setting
      */
-    int doCmdMask(uint32_t mask) {
-        TCPIP_UNUSED(mask);
+    int doCmdMask( uint32_t mask ) {
+                    TCPIP_UNUSED(mask);
         return CANAL_ERROR_SUCCESS;
     };
 
@@ -1599,57 +1619,34 @@ public:
 
 
 
-
-
-
     // ------------------------------------------------------------------------
+    
+    
 
 public:
 
 
-    /*!
-        Flag for connection - This flag is true when we are 
-        connected.
-     */
-    volatile bool m_bConnected;
 
-    // Semaphore that is signaled when connected
-    wxSemaphore m_semConnected;
+    
+
+
+protected:
 
     /*! 
-        Array that gets filled with input lines as
-        they are received 
+        Array that gets filled with input lines
      */
     wxArrayString m_inputStrArray;
 
-    /*!
-        Semaphore for input string array
-     */
-    wxSemaphore *m_psemInputArray;
-
     /// Mutex to protect string array
-    wxMutex m_mutexArray;
+    //wxMutex m_mutexArray;    
 
-    /*!
-        Buffer for incoming data on socket. Data sits here
-        until a crlf pair is found when it is transfered to
-        the strArray
-     */
-    wxString m_readBuffer;
+private:
 
     /// Flag for active receive loop
     bool m_bModeReceiveLoop;
 
-    // The worker thread
-    clientTcpIpWorkerThread *m_pClientTcpIpWorkerThread;
-
-protected:
-
     /// Server response timeout in milliseconds
     uint32_t m_responseTimeOut;
-
-    /// Sleep in milliseconds after a command has been given
-    uint16_t m_afterCommandSleep;
 
     /// Error timeout for register read/write operations
     uint32_t m_registerOpErrorTimeout;
@@ -1660,14 +1657,47 @@ protected:
     /// Number of read/write retries
     uint8_t m_registerOpMaxRetries;
 
-private:
+    /*! 
+     * The tcp inner timout. Will always wait this amount of time for data
+     * if set to -1 default value 2000 ms will be used.
+     * Min value is 0 == return directly.
+    */
+    int m_innerResponseTimeout;
+
+
+
+    /*!
+        Version information is stored whenever the 
+        version command is used (always done when done on 'open').
+        Initialized to the same version as this system on startup.
+    */
+    uint8_t m_version_major;
+    uint8_t m_version_minor;
+    uint8_t m_version_release;
+    uint16_t m_version_build;
+    
+    
 
     /*!
         Get input queue count
         @return Number of messages in the queue
      */
-    size_t getInputQueueCount(void);
+    size_t getInputQueueCount( void );
 
+    /*!
+        The connection structure
+        Not NULL if connected.
+    */
+    struct stcp_connection *m_conn;
+
+    
+    /*!
+     * This is the last response from a remote node.
+     * It can contain multiple response lines (separated
+     * with \r\n) and will end with a line containg +OK
+     * or -ERR if an error response was receved.
+     */            
+    wxString m_strResponse;
 };
 
 

@@ -8557,35 +8557,63 @@ actionThread_VSCPSrv::~actionThread_VSCPSrv()
 void *actionThread_VSCPSrv::Entry()
 {
     int rv;
+    int tries = 0;
     VscpRemoteTcpIf client;
-    wxString server = wxString::Format( _("tcp://%s:%d"), 
+    wxString interface = wxString::Format( _("tcp://%s:%d"), 
                                             (const char *)m_strHostname.mbc_str(),
                                             m_port );
 
-    if ( CANAL_ERROR_SUCCESS != ( rv = client.doCmdOpen( server,
-                                                            m_strUsername,
-                                                            m_strPassword ) ) ) {       
-        // Failed to connect
-        gpobj->logMsg( _("[DM] ") + 
-            _( "actionThreadVSCPSrv: Unable to connect to remote server : " ) +
-            m_strHostname + 
-            wxString::Format( _(" Return code = %d"), rv ) +
-            _(" \n"), 
-                DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM  );
+    tries = 5;
+    while ( true ) {
+        if ( CANAL_ERROR_SUCCESS != ( rv = client.doCmdOpen( interface,
+                                                m_strUsername,
+                                                m_strPassword ) ) ) {
+            tries--;
+            if ( tries > 0 ) {
+                wxSleep( 1 );
+                continue;
+            }
+
+            // Failed to connect
+            gpobj->logMsg( _("[DM] ") + 
+                _( "actionThreadVSCPSrv: Unable to connect to remote server : " ) +
+                m_strHostname + 
+                wxString::Format( _(" Return code = %d"), rv ) +
+                _(" \n"), 
+                    DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM  );
         
-        return NULL;
+            return NULL;
+        }
+        else {
+            break;
+        }
     }
 
     // Connected
     
-    if ( CANAL_ERROR_SUCCESS != client.doCmdSendEx( &m_eventEx ) ) {
-        // Failed to send event
-        gpobj->logMsg( _("[DM] ") + 
-          _( "actionThreadVSCPSrv: Unable to send event to remote server : " ) +
-          m_strHostname +
-          _(" \n"), 
+    tries = 5;
+    while ( true ) {
+
+        if ( CANAL_ERROR_SUCCESS != client.doCmdSendEx( &m_eventEx ) ) {
+            
+            tries--;
+            if ( tries > 0 ) {
+                wxSleep( 1 );
+                continue;
+            }
+            
+            // Failed to send event
+            gpobj->logMsg( _("[DM] ") + 
+            _( "actionThreadVSCPSrv: Unable to send event to remote server : " ) +
+            m_strHostname +
+            _(" \n"), 
                 DAEMON_LOGMSG_NORMAL, 
                 DAEMON_LOGTYPE_DM  );
+            break;    
+        }
+        else {
+            break;
+        }
     }
     
     if ( CANAL_ERROR_SUCCESS != client.doCmdClose() ) {
@@ -8597,8 +8625,6 @@ void *actionThread_VSCPSrv::Entry()
                 DAEMON_LOGMSG_NORMAL, 
                 DAEMON_LOGTYPE_DM  );
     }
-    
-    wxPrintf( "OK - Event sent to server %s.\n", (const char *)server.mbc_str() );
 
     return NULL;
 }
