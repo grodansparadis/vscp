@@ -75,7 +75,7 @@ class wxHtmlWindow;
 class scanElement : public wxTreeItemData 
 {
 public:
-    bool m_bLoaded;		// True if registers and info loaded
+    bool m_bLoaded;     // True if registers and info loaded
     uint8_t m_nodeid;	// Node id
     uint8_t m_reg[256]; // Full register space
     wxString m_html;	// Device HTML info page.
