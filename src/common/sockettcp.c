@@ -2250,7 +2250,7 @@ stcp_uninit_ssl( void )
 {
 #ifdef OPENSSL_API_1_1
 
-    if ( 0 == stcp_atomic_dec( &cryptolib_users ) ) {
+    if ( 0 == atomic_dec( &cryptolib_users ) ) {
 
         // Shutdown according to
         // https://wiki.openssl.org/index.php/Library_Initialization#Cleanup
@@ -2528,11 +2528,11 @@ stcp_connect_remote_impl( const char *host,
     }
 
 #ifdef OPENSSL_API_1_1
-    if ( use_ssl &&
+    if ( bUseSSL &&
             ( NULL == ( conn->ssl_ctx = SSL_CTX_new( TLS_client_method() ) ) ) ) {
         stcp_report_error("SSL_CTX_new error");
         close(sock);
-        stcp_free(conn);
+        free(conn);
         return NULL;
     }
 #else

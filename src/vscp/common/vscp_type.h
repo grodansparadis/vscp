@@ -48,14 +48,15 @@
             !!!!!!!!!!!!!!!!!!!!  W A R N I N G  !!!!!!!!!!!!!!!!!!!!
                            This file is auto-generated
                 see https://github.com/grodansparadis/vscp-classes
-('                        Generated:', datetime.datetime(2018, 7, 4, 15, 59, 42, 445720))
+                        Generated: 2018-07-04 22:00:21.445881
 */
  
 #ifndef VSCP_TYPE_H
 #define VSCP_TYPE_H
  
 #define VSCP_TYPE_UNDEFINED                         0
-('\n/* ', 'CLASS1.PROTOCOL', '=', '0', ' - ', 'VSCP Protocol Functionality */')
+    
+/*  CLASS1.PROTOCOL = 0  -  VSCP Protocol Functionality */
 #define VSCP_TYPE_PROTOCOL_GENERAL                  0   /* General event. */
 #define VSCP_TYPE_PROTOCOL_SEGCTRL_HEARTBEAT        1   /* Segment Controller Heartbeat. */
 #define VSCP_TYPE_PROTOCOL_NEW_NODE_ONLINE          2   /* New node on line / Probe. */
@@ -89,7 +90,7 @@
 #define VSCP_TYPE_PROTOCOL_DECREMENT_REGISTER       30  /* Decrement register. */
 #define VSCP_TYPE_PROTOCOL_WHO_IS_THERE             31  /* Who is there? */
 #define VSCP_TYPE_PROTOCOL_WHO_IS_THERE_RESPONSE    32  /* Who is there response. */
-#define VSCP_TYPE_PROTOCOL_WHO_IS_THERE_RESPONSE    33  /* Get decision matrix info. */
+#define VSCP_TYPE_PROTOCOL_GET_MATRIX_INFO          33  /* Get decision matrix info. */
 #define VSCP_TYPE_PROTOCOL_GET_MATRIX_INFO_RESPONSE 34  /* Decision matrix info response. */
 #define VSCP_TYPE_PROTOCOL_GET_EMBEDDED_MDF         35  /* Get embedded MDF. */
 #define VSCP_TYPE_PROTOCOL_GET_EMBEDDED_MDF_RESPONSE 36 /* Embedded MDF response. */
@@ -102,7 +103,8 @@
 #define VSCP_TYPE_PROTOCOL_ACTIVATE_NEW_IMAGE_NACK  49  /* Activate new image NACK. */
 #define VSCP_TYPE_PROTOCOL_START_BLOCK_ACK          50  /* Block data transfer ACK. */
 #define VSCP_TYPE_PROTOCOL_START_BLOCK_NACK         51  /* Block data transfer NACK. */
-('\n/* ', 'CLASS1.ALARM', '=', '1', ' - ', 'Alarm functionality */')
+    
+/*  CLASS1.ALARM = 1  -  Alarm functionality */
 #define VSCP_TYPE_ALARM_GENERAL                     0   /* General event */
 #define VSCP_TYPE_ALARM_WARNING                     1   /* Warning */
 #define VSCP_TYPE_ALARM_ALARM                       2   /* Alarm occurred */
@@ -115,7 +117,8 @@
 #define VSCP_TYPE_ALARM_EMERGENCY_RESUME            9   /* Emergency Resume */
 #define VSCP_TYPE_ALARM_ARM                         10  /* Arm */
 #define VSCP_TYPE_ALARM_DISARM                      11  /* Disarm */
-('\n/* ', 'CLASS1.SECURITY', '=', '2', ' - ', 'Security */')
+    
+/*  CLASS1.SECURITY = 2  -  Security */
 #define VSCP_TYPE_SECURITY_GENERAL                  0   /* General event */
 #define VSCP_TYPE_SECURITY_MOTION                   1   /* Motion Detect */
 #define VSCP_TYPE_SECURITY_GLASS_BREAK              2   /* Glass break */
@@ -137,7 +140,8 @@
 #define VSCP_TYPE_SECURITY_SOUND_DETECTED           18  /* Noise (sound) detected. */
 #define VSCP_TYPE_SECURITY_HARMFUL_SOUND_LEVEL      19  /* Harmful sound levels detected. */
 #define VSCP_TYPE_SECURITY_TAMPER                   20  /* Tamper detected. */
-('\n/* ', 'CLASS1.MEASUREMENT', '=', '10', ' - ', 'Measurement */')
+    
+/*  CLASS1.MEASUREMENT = 10  -  Measurement */
 #define VSCP_TYPE_MEASUREMENT_GENERAL               0   /* General event */
 #define VSCP_TYPE_MEASUREMENT_COUNT                 1   /* Count */
 #define VSCP_TYPE_MEASUREMENT_LENGTH                2   /* Length/Distance */
@@ -199,7 +203,8 @@
 #define VSCP_TYPE_MEASUREMENT_SOUND_PRESSURE        58  /* Sound pressure (acoustic pressure) */
 #define VSCP_TYPE_MEASUREMENT_SOUND_DENSITY         59  /* Sound energy density */
 #define VSCP_TYPE_MEASUREMENT_SOUND_LEVEL           60  /* Sound level */
-('\n/* ', 'CLASS1.DATA', '=', '15', ' - ', 'Data */')
+    
+/*  CLASS1.DATA = 15  -  Data */
 #define VSCP_TYPE_DATA_GENERAL                      0   /* General event */
 #define VSCP_TYPE_DATA_IO                           1   /* I/O value */
 #define VSCP_TYPE_DATA_AD                           2   /* A/D value */
@@ -208,7 +213,8 @@
 #define VSCP_TYPE_DATA_SIGNAL_LEVEL                 5   /* Signal Level */
 #define VSCP_TYPE_DATA_SIGNAL_QUALITY               6   /* Signal Quality */
 #define VSCP_TYPE_DATA_COUNT                        7   /* Count value */
-('\n/* ', 'CLASS1.INFORMATION', '=', '20', ' - ', 'Information */')
+    
+/*  CLASS1.INFORMATION = 20  -  Information */
 #define VSCP_TYPE_INFORMATION_GENERAL               0   /* General event */
 #define VSCP_TYPE_INFORMATION_BUTTON                1   /* Button */
 #define VSCP_TYPE_INFORMATION_MOUSE                 2   /* Mouse */
@@ -287,7 +293,8 @@
 #define VSCP_TYPE_INFORMATION_LOCK                  75  /* Lock */
 #define VSCP_TYPE_INFORMATION_UNLOCK                76  /* Unlock */
 #define VSCP_TYPE_INFORMATION_DATETIME              77  /* DateTime */
-('\n/* ', 'CLASS1.CONTROL', '=', '30', ' - ', 'Control */')
+    
+/*  CLASS1.CONTROL = 30  -  Control */
 #define VSCP_TYPE_CONTROL_GENERAL                   0   /* General event */
 #define VSCP_TYPE_CONTROL_MUTE                      1   /* Mute on/off */
 #define VSCP_TYPE_CONTROL_ALL_LAMPS                 2   /* (All) Lamp(s) on/off */
@@ -332,7 +339,8 @@
 #define VSCP_TYPE_CONTROL_ALL_LAMPS_OFF             41  /* (All) Lamp(s) off */
 #define VSCP_TYPE_CONTROL_LOCK                      42  /* Lock */
 #define VSCP_TYPE_CONTROL_UNLOCK                    43  /* Unlock */
-('\n/* ', 'CLASS1.MULTIMEDIA', '=', '40', ' - ', 'Multimedia */')
+    
+/*  CLASS1.MULTIMEDIA = 40  -  Multimedia */
 #define VSCP_TYPE_MULTIMEDIA_GENERAL                0   /* General event */
 #define VSCP_TYPE_MULTIMEDIA_PLAYBACK               1   /* Playback */
 #define VSCP_TYPE_MULTIMEDIA_NAVIGATOR_KEY_ENG      2   /* NavigatorKey English */
@@ -373,7 +381,8 @@
 #define VSCP_TYPE_MULTIMEDIA_SAVE_ALBUM             55  /* Save Album/Play list */
 #define VSCP_TYPE_MULTIMEDIA_CONTROL                60  /* Multimedia Control */
 #define VSCP_TYPE_MULTIMEDIA_CONTROL_RESPONSE       61  /* Multimedia Control response */
-('\n/* ', 'CLASS1.AOL', '=', '50', ' - ', 'Alert On LAN */')
+    
+/*  CLASS1.AOL = 50  -  Alert On LAN */
 #define VSCP_TYPE_AOL_GENERAL                       0   /* General event */
 #define VSCP_TYPE_AOL_UNPLUGGED_POWER               1   /* System unplugged from power source */
 #define VSCP_TYPE_AOL_UNPLUGGED_LAN                 2   /* System unplugged from network */
@@ -391,15 +400,20 @@
 #define VSCP_TYPE_AOL_REPAIR_OPERATING_SYSTEM       14  /* Repair Operating System */
 #define VSCP_TYPE_AOL_UPDATE_BIOS_IMAGE             15  /* Update BIOS image */
 #define VSCP_TYPE_AOL_UPDATE_DIAGNOSTIC_PROCEDURE   16  /* Update Perform other diagnostic procedures */
-('\n/* ', 'CLASS1.MEASUREMENT64', '=', '60', ' - ', 'Double precision floating point measurement */')
-('/* \tEvent types is the same as ', 'CLASS1.MEASUREMENT', '=', '10', ' - ', 'Measurement */')
-('\n/* ', 'CLASS1.MEASUREZONE', '=', '65', ' - ', 'Measurement with zone */')
-('/* \tEvent types is the same as ', 'CLASS1.MEASUREMENT', '=', '10', ' - ', 'Measurement */')
-('\n/* ', 'CLASS1.MEASUREMENT32', '=', '70', ' - ', 'Single precision floating point measurement */')
-('/* \tEvent types is the same as ', 'CLASS1.MEASUREMENT', '=', '10', ' - ', 'Measurement */')
-('\n/* ', 'CLASS1.SETVALUEZONE', '=', '85', ' - ', 'Set value with zone */')
-('/* \tEvent types is the same as ', 'CLASS1.MEASUREMENT', '=', '10', ' - ', 'Measurement */')
-('\n/* ', 'CLASS1.WEATHER', '=', '90', ' - ', 'Weather */')
+    
+/*  CLASS1.MEASUREMENT64 = 60  -  Double precision floating point measurement */
+/* 	Event types is the same as  CLASS1.MEASUREMENT = 10  -  Measurement */
+    
+/*  CLASS1.MEASUREZONE = 65  -  Measurement with zone */
+/* 	Event types is the same as  CLASS1.MEASUREMENT = 10  -  Measurement */
+    
+/*  CLASS1.MEASUREMENT32 = 70  -  Single precision floating point measurement */
+/* 	Event types is the same as  CLASS1.MEASUREMENT = 10  -  Measurement */
+    
+/*  CLASS1.SETVALUEZONE = 85  -  Set value with zone */
+/* 	Event types is the same as  CLASS1.MEASUREMENT = 10  -  Measurement */
+    
+/*  CLASS1.WEATHER = 90  -  Weather */
 #define VSCP_TYPE_WEATHER_GENERAL                   0   /* General event */
 #define VSCP_TYPE_WEATHER_SEASONS_WINTER            1   /* Season winter */
 #define VSCP_TYPE_WEATHER_SEASONS_SPRING            2   /* Season spring */
@@ -452,9 +466,11 @@
 #define VSCP_TYPE_WEATHER_WARNING_LEVEL4            49  /* Warning level 4 */
 #define VSCP_TYPE_WEATHER_WARNING_LEVEL5            50  /* Warning level 5 */
 #define VSCP_TYPE_WEATHER_ARMAGEDON                 51  /* Armageddon */
-('\n/* ', 'CLASS1.WEATHER_FORECAST', '=', '95', ' - ', 'Weather forecast */')
-('/* \tEvent types is the same as ', 'CLASS1.WEATHER', '=', '90', ' - ', 'Weather */')
-('\n/* ', 'CLASS1.PHONE', '=', '100', ' - ', 'Phone */')
+    
+/*  CLASS1.WEATHER_FORECAST = 95  -  Weather forecast */
+/* 	Event types is the same as  CLASS1.WEATHER = 90  -  Weather */
+    
+/*  CLASS1.PHONE = 100  -  Phone */
 #define VSCP_TYPE_PHONE_GENERAL                     0   /* General event */
 #define VSCP_TYPE_PHONE_INCOMING_CALL               1   /* Incoming call */
 #define VSCP_TYPE_PHONE_OUTGOING_CALL               2   /* Outgoing call */
@@ -464,7 +480,8 @@
 #define VSCP_TYPE_PHONE_GIVEUP                      6   /* Giveup */
 #define VSCP_TYPE_PHONE_TRANSFER                    7   /* Transfer */
 #define VSCP_TYPE_PHONE_DATABASE_INFO               8   /* Database Info */
-('\n/* ', 'CLASS1.DISPLAY', '=', '102', ' - ', 'Display */')
+    
+/*  CLASS1.DISPLAY = 102  -  Display */
 #define VSCP_TYPE_DISPLAY_GENERAL                   0   /* General event */
 #define VSCP_TYPE_DISPLAY_CLEAR_DISPLAY             1   /* Clear Display */
 #define VSCP_TYPE_DISPLAY_POSITION_CURSOR           2   /* Position cursor */
@@ -475,21 +492,25 @@
 #define VSCP_TYPE_DISPLAY_SHOW_TEXT                 32  /* Show Text */
 #define VSCP_TYPE_DISPLAY_SHOW_LED                  48  /* Set LED */
 #define VSCP_TYPE_DISPLAY_SHOW_LED_COLOR            49  /* Set RGB Color */
-('\n/* ', 'CLASS1.IR', '=', '110', ' - ', 'IR Remote I/f */')
+    
+/*  CLASS1.IR = 110  -  IR Remote I/f */
 #define VSCP_TYPE_REMOTE_GENERAL                    0   /* General event */
 #define VSCP_TYPE_REMOTE_RC5                        1   /* RC5 Send/Receive */
 #define VSCP_TYPE_REMOTE_SONY12                     3   /* SONY 12-bit Send/Receive */
 #define VSCP_TYPE_REMOTE_LIRC                       32  /* LIRC (Linux Infrared Remote Control) */
 #define VSCP_TYPE_REMOTE_VSCP                       48  /* VSCP Abstract Remote Format */
 #define VSCP_TYPE_REMOTE_MAPITO                     49  /* MAPito Remote Format */
-('\n/* ', 'CLASS1.GNSS', '=', '206', ' - ', 'Position (GNSS) */')
+    
+/*  CLASS1.GNSS = 206  -  Position (GNSS) */
 #define VSCP_TYPE_GNSS_GENERAL                      0   /* General event */
 #define VSCP_TYPE_GNSS_POSITION                     1   /* Position */
 #define VSCP_TYPE_GNSS_SATELLITES                   2   /* Satellites */
-('\n/* ', 'CLASS1.WIRELESS', '=', '212', ' - ', 'Wireless */')
+    
+/*  CLASS1.WIRELESS = 212  -  Wireless */
 #define VSCP_TYPE_WIRELESS_GENERAL                  0   /* General event */
 #define VSCP_TYPE_WIRELESS_GSM_CELL                 1   /* GSM Cell */
-('\n/* ', 'CLASS1.DIAGNOSTIC', '=', '506', ' - ', 'Diagnostic */')
+    
+/*  CLASS1.DIAGNOSTIC = 506  -  Diagnostic */
 #define VSCP_TYPE_DIAGNOSTIC_GENERAL                0   /* General event */
 #define VSCP_TYPE_DIAGNOSTIC_OVERVOLTAGE            1   /* Overvoltage */
 #define VSCP_TYPE_DIAGNOSTIC_UNDERVOLTAGE           2   /* Undervoltage */
@@ -570,7 +591,8 @@
 #define VSCP_TYPE_DIAGNOSTIC_TX_FAIL                77  /* Transmission failure */
 #define VSCP_TYPE_DIAGNOSTIC_RX_FAIL                78  /* Receiption failure */
 #define VSCP_TYPE_DIAGNOSTIC_EXT_IC_FAIL            79  /* External IC failure */
-('\n/* ', 'CLASS1.ERROR', '=', '508', ' - ', 'Error */')
+    
+/*  CLASS1.ERROR = 508  -  Error */
 #define VSCP_TYPE_ERROR_SUCCESS                     0   /* Success */
 #define VSCP_TYPE_ERROR_ERROR                       1   /* Error */
 #define VSCP_TYPE_ERROR_CHANNEL                     7   /* Channel error */
@@ -606,93 +628,130 @@
 #define VSCP_TYPE_ERROR_BUFFER_SMALL                43  /* Supplied buffer is to small to fit content */
 #define VSCP_TYPE_ERROR_ITEM_UNKNOWN                44  /* Requested item is unknown */
 #define VSCP_TYPE_ERROR_NAME_USED                   45  /* Name is already in use */
-('\n/* ', 'CLASS1.LOG', '=', '509', ' - ', 'Logging */')
+    
+/*  CLASS1.LOG = 509  -  Logging */
 #define VSCP_TYPE_LOG_GENERAL                       0   /* General event */
 #define VSCP_TYPE_LOG_MESSAGE                       1   /* Log event */
 #define VSCP_TYPE_LOG_START                         2   /* Log Start */
 #define VSCP_TYPE_LOG_STOP                          3   /* Log Stop */
 #define VSCP_TYPE_LOG_LEVEL                         4   /* Log Level */
-('\n/* ', 'CLASS1.LABORATORY', '=', '510', ' - ', 'Laboratory use */')
+    
+/*  CLASS1.LABORATORY = 510  -  Laboratory use */
 #define VSCP_TYPE_LABORATORY_GENERAL                0   /* General event */
-('\n/* ', 'CLASS1.LOCAL', '=', '511', ' - ', 'Local use */')
+    
+/*  CLASS1.LOCAL = 511  -  Local use */
 #define VSCP_TYPE_LOCAL_GENERAL                     0   /* General event */
-('\n/* ', 'CLASS2.LEVEL1.PROTOCOL', '=', '512', ' - ', 'Class2 Level I Protocol */')
-('/* \tEvent types is the same as ', 'CLASS1.PROTOCOL', '=', '0', ' - ', 'VSCP Protocol Functionality */')
-('\n/* ', 'CLASS2.LEVEL1.ALARM', '=', '513', ' - ', 'Class2 Level I Alarm */')
-('/* \tEvent types is the same as ', 'CLASS1.ALARM', '=', '1', ' - ', 'Alarm functionality */')
-('\n/* ', 'CLASS2.LEVEL1.SECURITY', '=', '514', ' - ', 'Class2 Level I Security */')
-('/* \tEvent types is the same as ', 'CLASS1.SECURITY', '=', '2', ' - ', 'Security */')
-('\n/* ', 'CLASS2.LEVEL1.MEASURMENT', '=', '522', ' - ', 'Class2 Level I Measurements */')
-('/* \tEvent types is the same as ', 'CLASS1.MEASUREMENT', '=', '10', ' - ', 'Measurement */')
-('\n/* ', 'CLASS2.LEVEL1.DATA', '=', '527', ' - ', 'Class2 Level I Data */')
-('/* \tEvent types is the same as ', 'CLASS1.DATA', '=', '15', ' - ', 'Data */')
-('\n/* ', 'CLASS2.LEVEL1.INFORMATION1', '=', '532', ' - ', 'Class2 Level I Information */')
-('/* \tEvent types is the same as ', 'CLASS1.INFORMATION', '=', '20', ' - ', 'Information */')
-('\n/* ', 'CLASS2.LEVEL1.CONTROL', '=', '542', ' - ', 'Class2 Level I Control */')
-('/* \tEvent types is the same as ', 'CLASS1.CONTROL', '=', '30', ' - ', 'Control */')
-('\n/* ', 'CLASS2.LEVEL1.MULTIMEDIA', '=', '552', ' - ', 'Class2 Level I Multimedia */')
-('/* \tEvent types is the same as ', 'CLASS1.MULTIMEDIA', '=', '40', ' - ', 'Multimedia */')
-('\n/* ', 'CLASS2.LEVEL1.AOL', '=', '562', ' - ', 'Class2 Level I AOL */')
-('/* \tEvent types is the same as ', 'CLASS1.AOL', '=', '50', ' - ', 'Alert On LAN */')
-('\n/* ', 'CLASS2.LEVEL1.MEASURMENT64', '=', '572', ' - ', 'Class2 Level I Measurement64 */')
-('/* \tEvent types is the same as ', 'CLASS1.MEASUREMENT', '=', '10', ' - ', 'Measurement */')
-('\n/* ', 'CLASS2.LEVEL1.MEASUREMENTZONE', '=', '577', ' - ', 'Class2 Level I Measurementzone */')
-('/* \tEvent types is the same as ', 'CLASS1.MEASUREMENT', '=', '10', ' - ', 'Measurement */')
-('\n/* ', 'CLASS2.LEVEL1.MEASUREMENT32', '=', '582', ' - ', 'Class2 Level I Measuremet32 */')
-('/* \tEvent types is the same as ', 'CLASS1.MEASUREMENT', '=', '10', ' - ', 'Measurement */')
-('\n/* ', 'CLASS2.LEVEL1.SETVALUEZONE', '=', '597', ' - ', 'Class2 Level I SetValueZone */')
-('/* \tEvent types is the same as ', 'CLASS1.MEASUREMENT', '=', '10', ' - ', 'Measurement */')
-('\n/* ', 'CLASS2.LEVEL1.WEATHER', '=', '602', ' - ', 'Class2 Level I Weather */')
-('/* \tEvent types is the same as ', 'CLASS1.WEATHER', '=', '90', ' - ', 'Weather */')
-('\n/* ', 'CLASS2.LEVEL1.WEATHERFORECAST', '=', '607', ' - ', 'Class2 Level I Weather Forecast */')
-('/* \tEvent types is the same as ', 'CLASS1.WEATHER', '=', '90', ' - ', 'Weather */')
-('\n/* ', 'CLASS2.LEVEL1.PHONE', '=', '612', ' - ', 'Class2 Level I Phone */')
-('/* \tEvent types is the same as ', 'CLASS1.PHONE', '=', '100', ' - ', 'Phone */')
-('\n/* ', 'CLASS2.LEVEL1.DISPLAY', '=', '614', ' - ', 'Class2 Level I Display */')
-('/* \tEvent types is the same as ', 'CLASS1.DISPLAY', '=', '102', ' - ', 'Display */')
-('\n/* ', 'CLASS2.LEVEL1.IR', '=', '622', ' - ', 'Class2 Level I IR */')
-('/* \tEvent types is the same as ', 'CLASS1.IR', '=', '110', ' - ', 'IR Remote I/f */')
-('\n/* ', 'CLASS2.LEVEL1.GNSS', '=', '718', ' - ', 'Class2 Level I GNSS */')
-('/* \tEvent types is the same as ', 'CLASS1.GNSS', '=', '206', ' - ', 'Position (GNSS) */')
-('\n/* ', 'CLASS2.LEVEL1.WIRELESS', '=', '724', ' - ', 'Class2 Level I Wireless */')
-('/* \tEvent types is the same as ', 'CLASS1.WIRELESS', '=', '212', ' - ', 'Wireless */')
-('\n/* ', 'CLASS2.LEVEL1.DIAGNOSTIC', '=', '1018', ' - ', 'Class2 Level I Diagnostic */')
-('/* \tEvent types is the same as ', 'CLASS1.DIAGNOSTIC', '=', '506', ' - ', 'Diagnostic */')
-('\n/* ', 'CLASS2.LEVEL1.ERROR', '=', '1020', ' - ', 'Class2 Level I Error */')
-('/* \tEvent types is the same as ', 'CLASS1.ERROR', '=', '508', ' - ', 'Error */')
-('\n/* ', 'CLASS2.LEVEL1.LOG', '=', '1021', ' - ', 'Class2 Level I Log */')
-('/* \tEvent types is the same as ', 'CLASS1.LOG', '=', '509', ' - ', 'Logging */')
-('\n/* ', 'CLASS2.LEVEL1.LABORATORY', '=', '1022', ' - ', 'Class2 Level I Laboratory */')
-('/* \tEvent types is the same as ', 'CLASS1.LABORATORY', '=', '510', ' - ', 'Laboratory use */')
-('\n/* ', 'CLASS2.LEVEL1.LOCAL', '=', '1023', ' - ', 'Class2 Level I Local */')
-('/* \tEvent types is the same as ', 'CLASS1.LOCAL', '=', '511', ' - ', 'Local use */')
-('\n/* ', 'CLASS2.PROTOCOL', '=', '1024', ' - ', 'Level II Protocol Functionality */')
+    
+/*  CLASS2.LEVEL1.PROTOCOL = 512  -  Class2 Level I Protocol */
+/* 	Event types is the same as  CLASS1.PROTOCOL = 0  -  VSCP Protocol Functionality */
+    
+/*  CLASS2.LEVEL1.ALARM = 513  -  Class2 Level I Alarm */
+/* 	Event types is the same as  CLASS1.ALARM = 1  -  Alarm functionality */
+    
+/*  CLASS2.LEVEL1.SECURITY = 514  -  Class2 Level I Security */
+/* 	Event types is the same as  CLASS1.SECURITY = 2  -  Security */
+    
+/*  CLASS2.LEVEL1.MEASUREMENT = 522  -  Class2 Level I Measurements */
+/* 	Event types is the same as  CLASS1.MEASUREMENT = 10  -  Measurement */
+    
+/*  CLASS2.LEVEL1.DATA = 527  -  Class2 Level I Data */
+/* 	Event types is the same as  CLASS1.DATA = 15  -  Data */
+    
+/*  CLASS2.LEVEL1.INFORMATION1 = 532  -  Class2 Level I Information */
+/* 	Event types is the same as  CLASS1.INFORMATION = 20  -  Information */
+    
+/*  CLASS2.LEVEL1.CONTROL = 542  -  Class2 Level I Control */
+/* 	Event types is the same as  CLASS1.CONTROL = 30  -  Control */
+    
+/*  CLASS2.LEVEL1.MULTIMEDIA = 552  -  Class2 Level I Multimedia */
+/* 	Event types is the same as  CLASS1.MULTIMEDIA = 40  -  Multimedia */
+    
+/*  CLASS2.LEVEL1.AOL = 562  -  Class2 Level I AOL */
+/* 	Event types is the same as  CLASS1.AOL = 50  -  Alert On LAN */
+    
+/*  CLASS2.LEVEL1.MEASUREMENT64 = 572  -  Class2 Level I Measurement64 */
+/* 	Event types is the same as  CLASS1.MEASUREMENT = 10  -  Measurement */
+    
+/*  CLASS2.LEVEL1.MEASUREZONE = 577  -  Class2 Level I Measurementzone */
+/* 	Event types is the same as  CLASS1.MEASUREMENT = 10  -  Measurement */
+    
+/*  CLASS2.LEVEL1.MEASUREMENT32 = 582  -  Class2 Level I Measuremet32 */
+/* 	Event types is the same as  CLASS1.MEASUREMENT = 10  -  Measurement */
+    
+/*  CLASS2.LEVEL1.SETVALUEZONE = 597  -  Class2 Level I SetValueZone */
+/* 	Event types is the same as  CLASS1.MEASUREMENT = 10  -  Measurement */
+    
+/*  CLASS2.LEVEL1.WEATHER = 602  -  Class2 Level I Weather */
+/* 	Event types is the same as  CLASS1.WEATHER = 90  -  Weather */
+    
+/*  CLASS2.LEVEL1.WEATHERFORECAST = 607  -  Class2 Level I Weather Forecast */
+/* 	Event types is the same as  CLASS1.WEATHER = 90  -  Weather */
+    
+/*  CLASS2.LEVEL1.PHONE = 612  -  Class2 Level I Phone */
+/* 	Event types is the same as  CLASS1.PHONE = 100  -  Phone */
+    
+/*  CLASS2.LEVEL1.DISPLAY = 614  -  Class2 Level I Display */
+/* 	Event types is the same as  CLASS1.DISPLAY = 102  -  Display */
+    
+/*  CLASS2.LEVEL1.IR = 622  -  Class2 Level I IR */
+/* 	Event types is the same as  CLASS1.IR = 110  -  IR Remote I/f */
+    
+/*  CLASS2.LEVEL1.GNSS = 718  -  Class2 Level I GNSS */
+/* 	Event types is the same as  CLASS1.GNSS = 206  -  Position (GNSS) */
+    
+/*  CLASS2.LEVEL1.WIRELESS = 724  -  Class2 Level I Wireless */
+/* 	Event types is the same as  CLASS1.WIRELESS = 212  -  Wireless */
+    
+/*  CLASS2.LEVEL1.DIAGNOSTIC = 1018  -  Class2 Level I Diagnostic */
+/* 	Event types is the same as  CLASS1.DIAGNOSTIC = 506  -  Diagnostic */
+    
+/*  CLASS2.LEVEL1.ERROR = 1020  -  Class2 Level I Error */
+/* 	Event types is the same as  CLASS1.ERROR = 508  -  Error */
+    
+/*  CLASS2.LEVEL1.LOG = 1021  -  Class2 Level I Log */
+/* 	Event types is the same as  CLASS1.LOG = 509  -  Logging */
+    
+/*  CLASS2.LEVEL1.LABORATORY = 1022  -  Class2 Level I Laboratory */
+/* 	Event types is the same as  CLASS1.LABORATORY = 510  -  Laboratory use */
+    
+/*  CLASS2.LEVEL1.LOCAL = 1023  -  Class2 Level I Local */
+/* 	Event types is the same as  CLASS1.LOCAL = 511  -  Local use */
+    
+/*  CLASS2.PROTOCOL = 1024  -  Level II Protocol Functionality */
 #define VSCP2_TYPE_PROTOCOL_GENERAL                 0   /* General event */
 #define VSCP2_TYPE_PROTOCOL_READ_REGISTER           1   /* Read Register */
 #define VSCP2_TYPE_PROTOCOL_WRITE_REGISTER          2   /* Write Register */
 #define VSCP2_TYPE_PROTOCOL_READ_WRITE_RESPONSE     3   /* Read Write Response */
 #define VSCP2_TYPE_PROTOCOL_HIGH_END_SERVER_CAPS    20  /* High end server/service capabilities */
 #define VSCP2_TYPE_PROTOCOL_WHO_IS_THERE_RESPONSE   32  /* Level II who is there response */
-('\n/* ', 'CLASS2.CONTROL', '=', '1025', ' - ', 'Level II Control */')
+    
+/*  CLASS2.CONTROL = 1025  -  Level II Control */
 #define VSCP2_TYPE_CONTROL_GENERAL                  0   /* General event */
-('\n/* ', 'CLASS2.INFORMATION', '=', '1026', ' - ', 'Level II Information */')
+    
+/*  CLASS2.INFORMATION = 1026  -  Level II Information */
 #define VSCP2_TYPE_INFORMATION_GENERAL              0   /* General event */
 #define VSCP2_TYPE_INFORMATION_TOKEN_ACTIVITY       1   /* Token Activity */
 #define VSCP2_TYPE_INFORMATION_HEART_BEAT           2   /* Level II Node Heartbeat */
 #define VSCP2_TYPE_INFORMATION_PROXY_HEART_BEAT     3   /* Level II Proxy Node Heartbeat */
 #define VSCP2_TYPE_INFORMATION_CHANNEL_ANNOUNCE     4   /* Level II Multicast channel announce */
-('\n/* ', 'CLASS2.TEXT2SPEECH', '=', '1027', ' - ', 'Text to speech */')
+    
+/*  CLASS2.TEXT2SPEECH = 1027  -  Text to speech */
 #define VSCP2_TYPE_TEXT2SPEECH_GENERAL              0   /* General event */
 #define VSCP2_TYPE_TEXT2SPEECH_TALK                 1   /* Talk */
-('\n/* ', 'CLASS2.CUSTOM', '=', '1029', ' - ', 'Level II Custom */')
+    
+/*  CLASS2.CUSTOM = 1029  -  Level II Custom */
 #define VSCP2_TYPE_CUSTOM_GENERAL                   0   /* General event */
-('\n/* ', 'CLASS2.DISPLAY', '=', '1030', ' - ', 'Level II Display */')
+    
+/*  CLASS2.DISPLAY = 1030  -  Level II Display */
 #define VSCP2_TYPE_DISPLAY_GENERAL                  0   /* General event */
-('\n/* ', 'CLASS2.MEASUREMENT_STR', '=', '1040', ' - ', 'Measurement string */')
-('/* \tEvent types is the same as ', 'CLASS1.MEASUREMENT', '=', '10', ' - ', 'Measurement */')
-('\n/* ', 'CLASS2.MEASUREMENT_FLOAT', '=', '1060', ' - ', 'Measurement float */')
-('/* \tEvent types is the same as ', 'CLASS1.MEASUREMENT', '=', '10', ' - ', 'Measurement */')
-('\n/* ', 'CLASS2.VSCPD', '=', '65535', ' - ', 'VSCP Daemon internal events */')
+    
+/*  CLASS2.MEASUREMENT_STR = 1040  -  Measurement string */
+/* 	Event types is the same as  CLASS1.MEASUREMENT = 10  -  Measurement */
+    
+/*  CLASS2.MEASUREMENT_FLOAT = 1060  -  Measurement float */
+/* 	Event types is the same as  CLASS1.MEASUREMENT = 10  -  Measurement */
+    
+/*  CLASS2.VSCPD = 65535  -  VSCP Daemon internal events */
 #define VSCP2_TYPE_VSCPD_GENERAL                    0   /* General event */
 #define VSCP2_TYPE_VSCPD_LOOP                       1   /* Loop */
 #define VSCP2_TYPE_VSCPD_PAUSE                      3   /* Pause */

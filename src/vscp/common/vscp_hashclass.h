@@ -2,7 +2,7 @@
             !!!!!!!!!!!!!!!!!!!!  W A R N I N G  !!!!!!!!!!!!!!!!!!!!
                            This file is auto-generated
                 see https://github.com/grodansparadis/vscp-classes
-('                        Generated:', datetime.datetime(2018, 7, 4, 15, 59, 43, 765670))
+                        Generated: 2018-07-04 22:00:22.704662
 */
  
 	m_hashClass[ 0 ] = _("CLASS1_PROTOCOL");
@@ -33,14 +33,14 @@
 	m_hashClass[ 512 ] = _("CLASS2_LEVEL1_PROTOCOL");
 	m_hashClass[ 513 ] = _("CLASS2_LEVEL1_ALARM");
 	m_hashClass[ 514 ] = _("CLASS2_LEVEL1_SECURITY");
-	m_hashClass[ 522 ] = _("CLASS2_LEVEL1_MEASURMENT");
+	m_hashClass[ 522 ] = _("CLASS2_LEVEL1_MEASUREMENT");
 	m_hashClass[ 527 ] = _("CLASS2_LEVEL1_DATA");
 	m_hashClass[ 532 ] = _("CLASS2_LEVEL1_INFORMATION1");
 	m_hashClass[ 542 ] = _("CLASS2_LEVEL1_CONTROL");
 	m_hashClass[ 552 ] = _("CLASS2_LEVEL1_MULTIMEDIA");
 	m_hashClass[ 562 ] = _("CLASS2_LEVEL1_AOL");
-	m_hashClass[ 572 ] = _("CLASS2_LEVEL1_MEASURMENT64");
-	m_hashClass[ 577 ] = _("CLASS2_LEVEL1_MEASUREMENTZONE");
+	m_hashClass[ 572 ] = _("CLASS2_LEVEL1_MEASUREMENT64");
+	m_hashClass[ 577 ] = _("CLASS2_LEVEL1_MEASUREZONE");
 	m_hashClass[ 582 ] = _("CLASS2_LEVEL1_MEASUREMENT32");
 	m_hashClass[ 597 ] = _("CLASS2_LEVEL1_SETVALUEZONE");
 	m_hashClass[ 602 ] = _("CLASS2_LEVEL1_WEATHER");

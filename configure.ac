@@ -1,7 +1,7 @@
 dnl Autoconf settings for VSCP
 dnl $Id: configure.in,v 1.5 2017/10/13 11:22:06 akhe Exp $
 
-AC_INIT( [vscp], [13.0.0], [akhe@grodansparadis.com])
+AC_INIT( [vscp], [13.1.0], [akhe@grodansparadis.com])
 AC_CONFIG_SRCDIR([src/vscp/common/canalsuperwrapper.cpp])
 #AM_INIT_AUTOMAKE
 

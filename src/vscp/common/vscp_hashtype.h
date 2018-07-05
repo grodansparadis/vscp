@@ -2,10 +2,11 @@
             !!!!!!!!!!!!!!!!!!!!  W A R N I N G  !!!!!!!!!!!!!!!!!!!!
                            This file is auto-generated
                 see https://github.com/grodansparadis/vscp-classes
-('                        Generated:', datetime.datetime(2018, 7, 4, 15, 59, 44, 556610))
+                        Generated: 2018-07-04 22:00:23.833957
 */
  
-('\n\t// ', 'CLASS1.PROTOCOL', '=', '0', ' - ', 'VSCP Protocol Functionality')
+
+	//  CLASS1.PROTOCOL = 0  -  VSCP Protocol Functionality
 	m_hashType[ MAKE_CLASSTYPE_LONG(0,0) ] = _("VSCP_TYPE_PROTOCOL_GENERAL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(0,1) ] = _("VSCP_TYPE_PROTOCOL_SEGCTRL_HEARTBEAT");
 	m_hashType[ MAKE_CLASSTYPE_LONG(0,2) ] = _("VSCP_TYPE_PROTOCOL_NEW_NODE_ONLINE");
@@ -39,7 +40,7 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(0,30) ] = _("VSCP_TYPE_PROTOCOL_DECREMENT_REGISTER");
 	m_hashType[ MAKE_CLASSTYPE_LONG(0,31) ] = _("VSCP_TYPE_PROTOCOL_WHO_IS_THERE");
 	m_hashType[ MAKE_CLASSTYPE_LONG(0,32) ] = _("VSCP_TYPE_PROTOCOL_WHO_IS_THERE_RESPONSE");
-	m_hashType[ MAKE_CLASSTYPE_LONG(0,33) ] = _("VSCP_TYPE_PROTOCOL_WHO_IS_THERE_RESPONSE");
+	m_hashType[ MAKE_CLASSTYPE_LONG(0,33) ] = _("VSCP_TYPE_PROTOCOL_GET_MATRIX_INFO");
 	m_hashType[ MAKE_CLASSTYPE_LONG(0,34) ] = _("VSCP_TYPE_PROTOCOL_GET_MATRIX_INFO_RESPONSE");
 	m_hashType[ MAKE_CLASSTYPE_LONG(0,35) ] = _("VSCP_TYPE_PROTOCOL_GET_EMBEDDED_MDF");
 	m_hashType[ MAKE_CLASSTYPE_LONG(0,36) ] = _("VSCP_TYPE_PROTOCOL_GET_EMBEDDED_MDF_RESPONSE");
@@ -52,7 +53,8 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(0,49) ] = _("VSCP_TYPE_PROTOCOL_ACTIVATE_NEW_IMAGE_NACK");
 	m_hashType[ MAKE_CLASSTYPE_LONG(0,50) ] = _("VSCP_TYPE_PROTOCOL_START_BLOCK_ACK");
 	m_hashType[ MAKE_CLASSTYPE_LONG(0,51) ] = _("VSCP_TYPE_PROTOCOL_START_BLOCK_NACK");
-('\n\t// ', 'CLASS1.ALARM', '=', '1', ' - ', 'Alarm functionality')
+
+	//  CLASS1.ALARM = 1  -  Alarm functionality
 	m_hashType[ MAKE_CLASSTYPE_LONG(1,0) ] = _("VSCP_TYPE_ALARM_GENERAL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(1,1) ] = _("VSCP_TYPE_ALARM_WARNING");
 	m_hashType[ MAKE_CLASSTYPE_LONG(1,2) ] = _("VSCP_TYPE_ALARM_ALARM ");
@@ -65,7 +67,8 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(1,9) ] = _("VSCP_TYPE_ALARM_EMERGENCY_RESUME");
 	m_hashType[ MAKE_CLASSTYPE_LONG(1,10) ] = _("VSCP_TYPE_ALARM_ARM ");
 	m_hashType[ MAKE_CLASSTYPE_LONG(1,11) ] = _("VSCP_TYPE_ALARM_DISARM");
-('\n\t// ', 'CLASS1.SECURITY', '=', '2', ' - ', 'Security')
+
+	//  CLASS1.SECURITY = 2  -  Security
 	m_hashType[ MAKE_CLASSTYPE_LONG(2,0) ] = _("VSCP_TYPE_SECURITY_GENERAL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(2,1) ] = _("VSCP_TYPE_SECURITY_MOTION");
 	m_hashType[ MAKE_CLASSTYPE_LONG(2,2) ] = _("VSCP_TYPE_SECURITY_GLASS_BREAK");
@@ -87,7 +90,8 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(2,18) ] = _("VSCP_TYPE_SECURITY_SOUND_DETECTED");
 	m_hashType[ MAKE_CLASSTYPE_LONG(2,19) ] = _("VSCP_TYPE_SECURITY_HARMFUL_SOUND_LEVEL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(2,20) ] = _("VSCP_TYPE_SECURITY_TAMPER");
-('\n\t// ', 'CLASS1.MEASUREMENT', '=', '10', ' - ', 'Measurement')
+
+	//  CLASS1.MEASUREMENT = 10  -  Measurement
 	m_hashType[ MAKE_CLASSTYPE_LONG(10,0) ] = _("VSCP_TYPE_MEASUREMENT_GENERAL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(10,1) ] = _("VSCP_TYPE_MEASUREMENT_COUNT");
 	m_hashType[ MAKE_CLASSTYPE_LONG(10,2) ] = _("VSCP_TYPE_MEASUREMENT_LENGTH");
@@ -149,7 +153,8 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(10,58) ] = _("VSCP_TYPE_MEASUREMENT_SOUND_PRESSURE");
 	m_hashType[ MAKE_CLASSTYPE_LONG(10,59) ] = _("VSCP_TYPE_MEASUREMENT_SOUND_DENSITY");
 	m_hashType[ MAKE_CLASSTYPE_LONG(10,60) ] = _("VSCP_TYPE_MEASUREMENT_SOUND_LEVEL");
-('\n\t// ', 'CLASS1.DATA', '=', '15', ' - ', 'Data')
+
+	//  CLASS1.DATA = 15  -  Data
 	m_hashType[ MAKE_CLASSTYPE_LONG(15,0) ] = _("VSCP_TYPE_DATA_GENERAL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(15,1) ] = _("VSCP_TYPE_DATA_IO");
 	m_hashType[ MAKE_CLASSTYPE_LONG(15,2) ] = _("VSCP_TYPE_DATA_AD");
@@ -158,7 +163,8 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(15,5) ] = _("VSCP_TYPE_DATA_SIGNAL_LEVEL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(15,6) ] = _("VSCP_TYPE_DATA_SIGNAL_QUALITY");
 	m_hashType[ MAKE_CLASSTYPE_LONG(15,7) ] = _("VSCP_TYPE_DATA_COUNT");
-('\n\t// ', 'CLASS1.INFORMATION', '=', '20', ' - ', 'Information')
+
+	//  CLASS1.INFORMATION = 20  -  Information
 	m_hashType[ MAKE_CLASSTYPE_LONG(20,0) ] = _("VSCP_TYPE_INFORMATION_GENERAL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(20,1) ] = _("VSCP_TYPE_INFORMATION_BUTTON");
 	m_hashType[ MAKE_CLASSTYPE_LONG(20,2) ] = _("VSCP_TYPE_INFORMATION_MOUSE");
@@ -237,7 +243,8 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(20,75) ] = _("VSCP_TYPE_INFORMATION_LOCK");
 	m_hashType[ MAKE_CLASSTYPE_LONG(20,76) ] = _("VSCP_TYPE_INFORMATION_UNLOCK");
 	m_hashType[ MAKE_CLASSTYPE_LONG(20,77) ] = _("VSCP_TYPE_INFORMATION_DATETIME");
-('\n\t// ', 'CLASS1.CONTROL', '=', '30', ' - ', 'Control')
+
+	//  CLASS1.CONTROL = 30  -  Control
 	m_hashType[ MAKE_CLASSTYPE_LONG(30,0) ] = _("VSCP_TYPE_CONTROL_GENERAL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(30,1) ] = _("VSCP_TYPE_CONTROL_MUTE");
 	m_hashType[ MAKE_CLASSTYPE_LONG(30,2) ] = _("VSCP_TYPE_CONTROL_ALL_LAMPS");
@@ -282,7 +289,8 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(30,41) ] = _("VSCP_TYPE_CONTROL_ALL_LAMPS_OFF");
 	m_hashType[ MAKE_CLASSTYPE_LONG(30,42) ] = _("VSCP_TYPE_CONTROL_LOCK");
 	m_hashType[ MAKE_CLASSTYPE_LONG(30,43) ] = _("VSCP_TYPE_CONTROL_UNLOCK");
-('\n\t// ', 'CLASS1.MULTIMEDIA', '=', '40', ' - ', 'Multimedia')
+
+	//  CLASS1.MULTIMEDIA = 40  -  Multimedia
 	m_hashType[ MAKE_CLASSTYPE_LONG(40,0) ] = _("VSCP_TYPE_MULTIMEDIA_GENERAL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(40,1) ] = _("VSCP_TYPE_MULTIMEDIA_PLAYBACK");
 	m_hashType[ MAKE_CLASSTYPE_LONG(40,2) ] = _("VSCP_TYPE_MULTIMEDIA_NAVIGATOR_KEY_ENG");
@@ -323,7 +331,8 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(40,55) ] = _("VSCP_TYPE_MULTIMEDIA_SAVE_ALBUM");
 	m_hashType[ MAKE_CLASSTYPE_LONG(40,60) ] = _("VSCP_TYPE_MULTIMEDIA_CONTROL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(40,61) ] = _("VSCP_TYPE_MULTIMEDIA_CONTROL_RESPONSE");
-('\n\t// ', 'CLASS1.AOL', '=', '50', ' - ', 'Alert On LAN')
+
+	//  CLASS1.AOL = 50  -  Alert On LAN
 	m_hashType[ MAKE_CLASSTYPE_LONG(50,0) ] = _("VSCP_TYPE_AOL_GENERAL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(50,1) ] = _("VSCP_TYPE_AOL_UNPLUGGED_POWER");
 	m_hashType[ MAKE_CLASSTYPE_LONG(50,2) ] = _("VSCP_TYPE_AOL_UNPLUGGED_LAN");
@@ -341,8 +350,9 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(50,14) ] = _("VSCP_TYPE_AOL_REPAIR_OPERATING_SYSTEM");
 	m_hashType[ MAKE_CLASSTYPE_LONG(50,15) ] = _("VSCP_TYPE_AOL_UPDATE_BIOS_IMAGE");
 	m_hashType[ MAKE_CLASSTYPE_LONG(50,16) ] = _("VSCP_TYPE_AOL_UPDATE_DIAGNOSTIC_PROCEDURE");
-('\n\t// ', 'CLASS1.MEASUREMENT64', '=', '60', ' - ', 'Double precision floating point measurement')
-('\t// \tEvent types is the same as ', 'CLASS1.MEASUREMENT', '=', '10', ' - ', 'Measurement')
+
+	//  CLASS1.MEASUREMENT64 = 60  -  Double precision floating point measurement
+	// 	Event types is the same as  CLASS1.MEASUREMENT = 10  -  Measurement
 	m_hashType[ MAKE_CLASSTYPE_LONG(60,0) ] = _("VSCP_TYPE_MEASUREMENT_GENERAL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(60,1) ] = _("VSCP_TYPE_MEASUREMENT_COUNT");
 	m_hashType[ MAKE_CLASSTYPE_LONG(60,2) ] = _("VSCP_TYPE_MEASUREMENT_LENGTH");
@@ -404,8 +414,9 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(60,58) ] = _("VSCP_TYPE_MEASUREMENT_SOUND_PRESSURE");
 	m_hashType[ MAKE_CLASSTYPE_LONG(60,59) ] = _("VSCP_TYPE_MEASUREMENT_SOUND_DENSITY");
 	m_hashType[ MAKE_CLASSTYPE_LONG(60,60) ] = _("VSCP_TYPE_MEASUREMENT_SOUND_LEVEL");
-('\n\t// ', 'CLASS1.MEASUREZONE', '=', '65', ' - ', 'Measurement with zone')
-('\t// \tEvent types is the same as ', 'CLASS1.MEASUREMENT', '=', '10', ' - ', 'Measurement')
+
+	//  CLASS1.MEASUREZONE = 65  -  Measurement with zone
+	// 	Event types is the same as  CLASS1.MEASUREMENT = 10  -  Measurement
 	m_hashType[ MAKE_CLASSTYPE_LONG(65,0) ] = _("VSCP_TYPE_MEASUREMENT_GENERAL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(65,1) ] = _("VSCP_TYPE_MEASUREMENT_COUNT");
 	m_hashType[ MAKE_CLASSTYPE_LONG(65,2) ] = _("VSCP_TYPE_MEASUREMENT_LENGTH");
@@ -467,8 +478,9 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(65,58) ] = _("VSCP_TYPE_MEASUREMENT_SOUND_PRESSURE");
 	m_hashType[ MAKE_CLASSTYPE_LONG(65,59) ] = _("VSCP_TYPE_MEASUREMENT_SOUND_DENSITY");
 	m_hashType[ MAKE_CLASSTYPE_LONG(65,60) ] = _("VSCP_TYPE_MEASUREMENT_SOUND_LEVEL");
-('\n\t// ', 'CLASS1.MEASUREMENT32', '=', '70', ' - ', 'Single precision floating point measurement')
-('\t// \tEvent types is the same as ', 'CLASS1.MEASUREMENT', '=', '10', ' - ', 'Measurement')
+
+	//  CLASS1.MEASUREMENT32 = 70  -  Single precision floating point measurement
+	// 	Event types is the same as  CLASS1.MEASUREMENT = 10  -  Measurement
 	m_hashType[ MAKE_CLASSTYPE_LONG(70,0) ] = _("VSCP_TYPE_MEASUREMENT_GENERAL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(70,1) ] = _("VSCP_TYPE_MEASUREMENT_COUNT");
 	m_hashType[ MAKE_CLASSTYPE_LONG(70,2) ] = _("VSCP_TYPE_MEASUREMENT_LENGTH");
@@ -530,8 +542,9 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(70,58) ] = _("VSCP_TYPE_MEASUREMENT_SOUND_PRESSURE");
 	m_hashType[ MAKE_CLASSTYPE_LONG(70,59) ] = _("VSCP_TYPE_MEASUREMENT_SOUND_DENSITY");
 	m_hashType[ MAKE_CLASSTYPE_LONG(70,60) ] = _("VSCP_TYPE_MEASUREMENT_SOUND_LEVEL");
-('\n\t// ', 'CLASS1.SETVALUEZONE', '=', '85', ' - ', 'Set value with zone')
-('\t// \tEvent types is the same as ', 'CLASS1.MEASUREMENT', '=', '10', ' - ', 'Measurement')
+
+	//  CLASS1.SETVALUEZONE = 85  -  Set value with zone
+	// 	Event types is the same as  CLASS1.MEASUREMENT = 10  -  Measurement
 	m_hashType[ MAKE_CLASSTYPE_LONG(85,0) ] = _("VSCP_TYPE_MEASUREMENT_GENERAL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(85,1) ] = _("VSCP_TYPE_MEASUREMENT_COUNT");
 	m_hashType[ MAKE_CLASSTYPE_LONG(85,2) ] = _("VSCP_TYPE_MEASUREMENT_LENGTH");
@@ -593,7 +606,8 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(85,58) ] = _("VSCP_TYPE_MEASUREMENT_SOUND_PRESSURE");
 	m_hashType[ MAKE_CLASSTYPE_LONG(85,59) ] = _("VSCP_TYPE_MEASUREMENT_SOUND_DENSITY");
 	m_hashType[ MAKE_CLASSTYPE_LONG(85,60) ] = _("VSCP_TYPE_MEASUREMENT_SOUND_LEVEL");
-('\n\t// ', 'CLASS1.WEATHER', '=', '90', ' - ', 'Weather')
+
+	//  CLASS1.WEATHER = 90  -  Weather
 	m_hashType[ MAKE_CLASSTYPE_LONG(90,0) ] = _("VSCP_TYPE_WEATHER_GENERAL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(90,1) ] = _("VSCP_TYPE_WEATHER_SEASONS_WINTER");
 	m_hashType[ MAKE_CLASSTYPE_LONG(90,2) ] = _("VSCP_TYPE_WEATHER_SEASONS_SPRING");
@@ -646,8 +660,9 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(90,49) ] = _("VSCP_TYPE_WEATHER_WARNING_LEVEL4");
 	m_hashType[ MAKE_CLASSTYPE_LONG(90,50) ] = _("VSCP_TYPE_WEATHER_WARNING_LEVEL5");
 	m_hashType[ MAKE_CLASSTYPE_LONG(90,51) ] = _("VSCP_TYPE_WEATHER_ARMAGEDON");
-('\n\t// ', 'CLASS1.WEATHER_FORECAST', '=', '95', ' - ', 'Weather forecast')
-('\t// \tEvent types is the same as ', 'CLASS1.WEATHER', '=', '90', ' - ', 'Weather')
+
+	//  CLASS1.WEATHER_FORECAST = 95  -  Weather forecast
+	// 	Event types is the same as  CLASS1.WEATHER = 90  -  Weather
 	m_hashType[ MAKE_CLASSTYPE_LONG(95,0) ] = _("VSCP_TYPE_WEATHER_GENERAL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(95,1) ] = _("VSCP_TYPE_WEATHER_SEASONS_WINTER");
 	m_hashType[ MAKE_CLASSTYPE_LONG(95,2) ] = _("VSCP_TYPE_WEATHER_SEASONS_SPRING");
@@ -700,7 +715,8 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(95,49) ] = _("VSCP_TYPE_WEATHER_WARNING_LEVEL4");
 	m_hashType[ MAKE_CLASSTYPE_LONG(95,50) ] = _("VSCP_TYPE_WEATHER_WARNING_LEVEL5");
 	m_hashType[ MAKE_CLASSTYPE_LONG(95,51) ] = _("VSCP_TYPE_WEATHER_ARMAGEDON");
-('\n\t// ', 'CLASS1.PHONE', '=', '100', ' - ', 'Phone')
+
+	//  CLASS1.PHONE = 100  -  Phone
 	m_hashType[ MAKE_CLASSTYPE_LONG(100,0) ] = _("VSCP_TYPE_PHONE_GENERAL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(100,1) ] = _("VSCP_TYPE_PHONE_INCOMING_CALL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(100,2) ] = _("VSCP_TYPE_PHONE_OUTGOING_CALL");
@@ -710,7 +726,8 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(100,6) ] = _("VSCP_TYPE_PHONE_GIVEUP");
 	m_hashType[ MAKE_CLASSTYPE_LONG(100,7) ] = _("VSCP_TYPE_PHONE_TRANSFER");
 	m_hashType[ MAKE_CLASSTYPE_LONG(100,8) ] = _("VSCP_TYPE_PHONE_DATABASE_INFO");
-('\n\t// ', 'CLASS1.DISPLAY', '=', '102', ' - ', 'Display')
+
+	//  CLASS1.DISPLAY = 102  -  Display
 	m_hashType[ MAKE_CLASSTYPE_LONG(102,0) ] = _("VSCP_TYPE_DISPLAY_GENERAL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(102,1) ] = _("VSCP_TYPE_DISPLAY_CLEAR_DISPLAY");
 	m_hashType[ MAKE_CLASSTYPE_LONG(102,2) ] = _("VSCP_TYPE_DISPLAY_POSITION_CURSOR");
@@ -721,21 +738,25 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(102,32) ] = _("VSCP_TYPE_DISPLAY_SHOW_TEXT");
 	m_hashType[ MAKE_CLASSTYPE_LONG(102,48) ] = _("VSCP_TYPE_DISPLAY_SHOW_LED");
 	m_hashType[ MAKE_CLASSTYPE_LONG(102,49) ] = _("VSCP_TYPE_DISPLAY_SHOW_LED_COLOR");
-('\n\t// ', 'CLASS1.IR', '=', '110', ' - ', 'IR Remote I/f')
+
+	//  CLASS1.IR = 110  -  IR Remote I/f
 	m_hashType[ MAKE_CLASSTYPE_LONG(110,0) ] = _("VSCP_TYPE_REMOTE_GENERAL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(110,1) ] = _("VSCP_TYPE_REMOTE_RC5");
 	m_hashType[ MAKE_CLASSTYPE_LONG(110,3) ] = _("VSCP_TYPE_REMOTE_SONY12");
 	m_hashType[ MAKE_CLASSTYPE_LONG(110,32) ] = _("VSCP_TYPE_REMOTE_LIRC");
 	m_hashType[ MAKE_CLASSTYPE_LONG(110,48) ] = _("VSCP_TYPE_REMOTE_VSCP");
 	m_hashType[ MAKE_CLASSTYPE_LONG(110,49) ] = _("VSCP_TYPE_REMOTE_MAPITO");
-('\n\t// ', 'CLASS1.GNSS', '=', '206', ' - ', 'Position (GNSS)')
+
+	//  CLASS1.GNSS = 206  -  Position (GNSS)
 	m_hashType[ MAKE_CLASSTYPE_LONG(206,0) ] = _("VSCP_TYPE_GNSS_GENERAL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(206,1) ] = _("VSCP_TYPE_GNSS_POSITION");
 	m_hashType[ MAKE_CLASSTYPE_LONG(206,2) ] = _("VSCP_TYPE_GNSS_SATELLITES");
-('\n\t// ', 'CLASS1.WIRELESS', '=', '212', ' - ', 'Wireless')
+
+	//  CLASS1.WIRELESS = 212  -  Wireless
 	m_hashType[ MAKE_CLASSTYPE_LONG(212,0) ] = _("VSCP_TYPE_WIRELESS_GENERAL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(212,1) ] = _("VSCP_TYPE_WIRELESS_GSM_CELL");
-('\n\t// ', 'CLASS1.DIAGNOSTIC', '=', '506', ' - ', 'Diagnostic')
+
+	//  CLASS1.DIAGNOSTIC = 506  -  Diagnostic
 	m_hashType[ MAKE_CLASSTYPE_LONG(506,0) ] = _("VSCP_TYPE_DIAGNOSTIC_GENERAL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(506,1) ] = _("VSCP_TYPE_DIAGNOSTIC_OVERVOLTAGE");
 	m_hashType[ MAKE_CLASSTYPE_LONG(506,2) ] = _("VSCP_TYPE_DIAGNOSTIC_UNDERVOLTAGE");
@@ -816,7 +837,8 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(506,77) ] = _("VSCP_TYPE_DIAGNOSTIC_TX_FAIL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(506,78) ] = _("VSCP_TYPE_DIAGNOSTIC_RX_FAIL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(506,79) ] = _("VSCP_TYPE_DIAGNOSTIC_EXT_IC_FAIL");
-('\n\t// ', 'CLASS1.ERROR', '=', '508', ' - ', 'Error')
+
+	//  CLASS1.ERROR = 508  -  Error
 	m_hashType[ MAKE_CLASSTYPE_LONG(508,0) ] = _("VSCP_TYPE_ERROR_SUCCESS");
 	m_hashType[ MAKE_CLASSTYPE_LONG(508,1) ] = _("VSCP_TYPE_ERROR_ERROR");
 	m_hashType[ MAKE_CLASSTYPE_LONG(508,7) ] = _("VSCP_TYPE_ERROR_CHANNEL");
@@ -852,18 +874,22 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(508,43) ] = _("VSCP_TYPE_ERROR_BUFFER_SMALL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(508,44) ] = _("VSCP_TYPE_ERROR_ITEM_UNKNOWN");
 	m_hashType[ MAKE_CLASSTYPE_LONG(508,45) ] = _("VSCP_TYPE_ERROR_NAME_USED");
-('\n\t// ', 'CLASS1.LOG', '=', '509', ' - ', 'Logging')
+
+	//  CLASS1.LOG = 509  -  Logging
 	m_hashType[ MAKE_CLASSTYPE_LONG(509,0) ] = _("VSCP_TYPE_LOG_GENERAL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(509,1) ] = _("VSCP_TYPE_LOG_MESSAGE");
 	m_hashType[ MAKE_CLASSTYPE_LONG(509,2) ] = _("VSCP_TYPE_LOG_START");
 	m_hashType[ MAKE_CLASSTYPE_LONG(509,3) ] = _("VSCP_TYPE_LOG_STOP");
 	m_hashType[ MAKE_CLASSTYPE_LONG(509,4) ] = _("VSCP_TYPE_LOG_LEVEL");
-('\n\t// ', 'CLASS1.LABORATORY', '=', '510', ' - ', 'Laboratory use')
+
+	//  CLASS1.LABORATORY = 510  -  Laboratory use
 	m_hashType[ MAKE_CLASSTYPE_LONG(510,0) ] = _("VSCP_TYPE_LABORATORY_GENERAL");
-('\n\t// ', 'CLASS1.LOCAL', '=', '511', ' - ', 'Local use')
+
+	//  CLASS1.LOCAL = 511  -  Local use
 	m_hashType[ MAKE_CLASSTYPE_LONG(511,0) ] = _("VSCP_TYPE_LOCAL_GENERAL");
-('\n\t// ', 'CLASS2.LEVEL1.PROTOCOL', '=', '512', ' - ', 'Class2 Level I Protocol')
-('\t// \tEvent types is the same as ', 'CLASS1.PROTOCOL', '=', '0', ' - ', 'VSCP Protocol Functionality')
+
+	//  CLASS2.LEVEL1.PROTOCOL = 512  -  Class2 Level I Protocol
+	// 	Event types is the same as  CLASS1.PROTOCOL = 0  -  VSCP Protocol Functionality
 	m_hashType[ MAKE_CLASSTYPE_LONG(512,0) ] = _("VSCP_TYPE_PROTOCOL_GENERAL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(512,1) ] = _("VSCP_TYPE_PROTOCOL_SEGCTRL_HEARTBEAT");
 	m_hashType[ MAKE_CLASSTYPE_LONG(512,2) ] = _("VSCP_TYPE_PROTOCOL_NEW_NODE_ONLINE");
@@ -897,7 +923,7 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(512,30) ] = _("VSCP_TYPE_PROTOCOL_DECREMENT_REGISTER");
 	m_hashType[ MAKE_CLASSTYPE_LONG(512,31) ] = _("VSCP_TYPE_PROTOCOL_WHO_IS_THERE");
 	m_hashType[ MAKE_CLASSTYPE_LONG(512,32) ] = _("VSCP_TYPE_PROTOCOL_WHO_IS_THERE_RESPONSE");
-	m_hashType[ MAKE_CLASSTYPE_LONG(512,33) ] = _("VSCP_TYPE_PROTOCOL_WHO_IS_THERE_RESPONSE");
+	m_hashType[ MAKE_CLASSTYPE_LONG(512,33) ] = _("VSCP_TYPE_PROTOCOL_GET_MATRIX_INFO");
 	m_hashType[ MAKE_CLASSTYPE_LONG(512,34) ] = _("VSCP_TYPE_PROTOCOL_GET_MATRIX_INFO_RESPONSE");
 	m_hashType[ MAKE_CLASSTYPE_LONG(512,35) ] = _("VSCP_TYPE_PROTOCOL_GET_EMBEDDED_MDF");
 	m_hashType[ MAKE_CLASSTYPE_LONG(512,36) ] = _("VSCP_TYPE_PROTOCOL_GET_EMBEDDED_MDF_RESPONSE");
@@ -910,8 +936,9 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(512,49) ] = _("VSCP_TYPE_PROTOCOL_ACTIVATE_NEW_IMAGE_NACK");
 	m_hashType[ MAKE_CLASSTYPE_LONG(512,50) ] = _("VSCP_TYPE_PROTOCOL_START_BLOCK_ACK");
 	m_hashType[ MAKE_CLASSTYPE_LONG(512,51) ] = _("VSCP_TYPE_PROTOCOL_START_BLOCK_NACK");
-('\n\t// ', 'CLASS2.LEVEL1.ALARM', '=', '513', ' - ', 'Class2 Level I Alarm')
-('\t// \tEvent types is the same as ', 'CLASS1.ALARM', '=', '1', ' - ', 'Alarm functionality')
+
+	//  CLASS2.LEVEL1.ALARM = 513  -  Class2 Level I Alarm
+	// 	Event types is the same as  CLASS1.ALARM = 1  -  Alarm functionality
 	m_hashType[ MAKE_CLASSTYPE_LONG(513,0) ] = _("VSCP_TYPE_ALARM_GENERAL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(513,1) ] = _("VSCP_TYPE_ALARM_WARNING");
 	m_hashType[ MAKE_CLASSTYPE_LONG(513,2) ] = _("VSCP_TYPE_ALARM_ALARM ");
@@ -924,8 +951,9 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(513,9) ] = _("VSCP_TYPE_ALARM_EMERGENCY_RESUME");
 	m_hashType[ MAKE_CLASSTYPE_LONG(513,10) ] = _("VSCP_TYPE_ALARM_ARM ");
 	m_hashType[ MAKE_CLASSTYPE_LONG(513,11) ] = _("VSCP_TYPE_ALARM_DISARM");
-('\n\t// ', 'CLASS2.LEVEL1.SECURITY', '=', '514', ' - ', 'Class2 Level I Security')
-('\t// \tEvent types is the same as ', 'CLASS1.SECURITY', '=', '2', ' - ', 'Security')
+
+	//  CLASS2.LEVEL1.SECURITY = 514  -  Class2 Level I Security
+	// 	Event types is the same as  CLASS1.SECURITY = 2  -  Security
 	m_hashType[ MAKE_CLASSTYPE_LONG(514,0) ] = _("VSCP_TYPE_SECURITY_GENERAL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(514,1) ] = _("VSCP_TYPE_SECURITY_MOTION");
 	m_hashType[ MAKE_CLASSTYPE_LONG(514,2) ] = _("VSCP_TYPE_SECURITY_GLASS_BREAK");
@@ -947,8 +975,9 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(514,18) ] = _("VSCP_TYPE_SECURITY_SOUND_DETECTED");
 	m_hashType[ MAKE_CLASSTYPE_LONG(514,19) ] = _("VSCP_TYPE_SECURITY_HARMFUL_SOUND_LEVEL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(514,20) ] = _("VSCP_TYPE_SECURITY_TAMPER");
-('\n\t// ', 'CLASS2.LEVEL1.MEASURMENT', '=', '522', ' - ', 'Class2 Level I Measurements')
-('\t// \tEvent types is the same as ', 'CLASS1.MEASUREMENT', '=', '10', ' - ', 'Measurement')
+
+	//  CLASS2.LEVEL1.MEASUREMENT = 522  -  Class2 Level I Measurements
+	// 	Event types is the same as  CLASS1.MEASUREMENT = 10  -  Measurement
 	m_hashType[ MAKE_CLASSTYPE_LONG(522,0) ] = _("VSCP_TYPE_MEASUREMENT_GENERAL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(522,1) ] = _("VSCP_TYPE_MEASUREMENT_COUNT");
 	m_hashType[ MAKE_CLASSTYPE_LONG(522,2) ] = _("VSCP_TYPE_MEASUREMENT_LENGTH");
@@ -1010,8 +1039,9 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(522,58) ] = _("VSCP_TYPE_MEASUREMENT_SOUND_PRESSURE");
 	m_hashType[ MAKE_CLASSTYPE_LONG(522,59) ] = _("VSCP_TYPE_MEASUREMENT_SOUND_DENSITY");
 	m_hashType[ MAKE_CLASSTYPE_LONG(522,60) ] = _("VSCP_TYPE_MEASUREMENT_SOUND_LEVEL");
-('\n\t// ', 'CLASS2.LEVEL1.DATA', '=', '527', ' - ', 'Class2 Level I Data')
-('\t// \tEvent types is the same as ', 'CLASS1.DATA', '=', '15', ' - ', 'Data')
+
+	//  CLASS2.LEVEL1.DATA = 527  -  Class2 Level I Data
+	// 	Event types is the same as  CLASS1.DATA = 15  -  Data
 	m_hashType[ MAKE_CLASSTYPE_LONG(527,0) ] = _("VSCP_TYPE_DATA_GENERAL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(527,1) ] = _("VSCP_TYPE_DATA_IO");
 	m_hashType[ MAKE_CLASSTYPE_LONG(527,2) ] = _("VSCP_TYPE_DATA_AD");
@@ -1020,8 +1050,9 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(527,5) ] = _("VSCP_TYPE_DATA_SIGNAL_LEVEL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(527,6) ] = _("VSCP_TYPE_DATA_SIGNAL_QUALITY");
 	m_hashType[ MAKE_CLASSTYPE_LONG(527,7) ] = _("VSCP_TYPE_DATA_COUNT");
-('\n\t// ', 'CLASS2.LEVEL1.INFORMATION1', '=', '532', ' - ', 'Class2 Level I Information')
-('\t// \tEvent types is the same as ', 'CLASS1.INFORMATION', '=', '20', ' - ', 'Information')
+
+	//  CLASS2.LEVEL1.INFORMATION1 = 532  -  Class2 Level I Information
+	// 	Event types is the same as  CLASS1.INFORMATION = 20  -  Information
 	m_hashType[ MAKE_CLASSTYPE_LONG(532,0) ] = _("VSCP_TYPE_INFORMATION_GENERAL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(532,1) ] = _("VSCP_TYPE_INFORMATION_BUTTON");
 	m_hashType[ MAKE_CLASSTYPE_LONG(532,2) ] = _("VSCP_TYPE_INFORMATION_MOUSE");
@@ -1100,8 +1131,9 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(532,75) ] = _("VSCP_TYPE_INFORMATION_LOCK");
 	m_hashType[ MAKE_CLASSTYPE_LONG(532,76) ] = _("VSCP_TYPE_INFORMATION_UNLOCK");
 	m_hashType[ MAKE_CLASSTYPE_LONG(532,77) ] = _("VSCP_TYPE_INFORMATION_DATETIME");
-('\n\t// ', 'CLASS2.LEVEL1.CONTROL', '=', '542', ' - ', 'Class2 Level I Control')
-('\t// \tEvent types is the same as ', 'CLASS1.CONTROL', '=', '30', ' - ', 'Control')
+
+	//  CLASS2.LEVEL1.CONTROL = 542  -  Class2 Level I Control
+	// 	Event types is the same as  CLASS1.CONTROL = 30  -  Control
 	m_hashType[ MAKE_CLASSTYPE_LONG(542,0) ] = _("VSCP_TYPE_CONTROL_GENERAL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(542,1) ] = _("VSCP_TYPE_CONTROL_MUTE");
 	m_hashType[ MAKE_CLASSTYPE_LONG(542,2) ] = _("VSCP_TYPE_CONTROL_ALL_LAMPS");
@@ -1146,8 +1178,9 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(542,41) ] = _("VSCP_TYPE_CONTROL_ALL_LAMPS_OFF");
 	m_hashType[ MAKE_CLASSTYPE_LONG(542,42) ] = _("VSCP_TYPE_CONTROL_LOCK");
 	m_hashType[ MAKE_CLASSTYPE_LONG(542,43) ] = _("VSCP_TYPE_CONTROL_UNLOCK");
-('\n\t// ', 'CLASS2.LEVEL1.MULTIMEDIA', '=', '552', ' - ', 'Class2 Level I Multimedia')
-('\t// \tEvent types is the same as ', 'CLASS1.MULTIMEDIA', '=', '40', ' - ', 'Multimedia')
+
+	//  CLASS2.LEVEL1.MULTIMEDIA = 552  -  Class2 Level I Multimedia
+	// 	Event types is the same as  CLASS1.MULTIMEDIA = 40  -  Multimedia
 	m_hashType[ MAKE_CLASSTYPE_LONG(552,0) ] = _("VSCP_TYPE_MULTIMEDIA_GENERAL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(552,1) ] = _("VSCP_TYPE_MULTIMEDIA_PLAYBACK");
 	m_hashType[ MAKE_CLASSTYPE_LONG(552,2) ] = _("VSCP_TYPE_MULTIMEDIA_NAVIGATOR_KEY_ENG");
@@ -1188,8 +1221,9 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(552,55) ] = _("VSCP_TYPE_MULTIMEDIA_SAVE_ALBUM");
 	m_hashType[ MAKE_CLASSTYPE_LONG(552,60) ] = _("VSCP_TYPE_MULTIMEDIA_CONTROL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(552,61) ] = _("VSCP_TYPE_MULTIMEDIA_CONTROL_RESPONSE");
-('\n\t// ', 'CLASS2.LEVEL1.AOL', '=', '562', ' - ', 'Class2 Level I AOL')
-('\t// \tEvent types is the same as ', 'CLASS1.AOL', '=', '50', ' - ', 'Alert On LAN')
+
+	//  CLASS2.LEVEL1.AOL = 562  -  Class2 Level I AOL
+	// 	Event types is the same as  CLASS1.AOL = 50  -  Alert On LAN
 	m_hashType[ MAKE_CLASSTYPE_LONG(562,0) ] = _("VSCP_TYPE_AOL_GENERAL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(562,1) ] = _("VSCP_TYPE_AOL_UNPLUGGED_POWER");
 	m_hashType[ MAKE_CLASSTYPE_LONG(562,2) ] = _("VSCP_TYPE_AOL_UNPLUGGED_LAN");
@@ -1207,8 +1241,9 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(562,14) ] = _("VSCP_TYPE_AOL_REPAIR_OPERATING_SYSTEM");
 	m_hashType[ MAKE_CLASSTYPE_LONG(562,15) ] = _("VSCP_TYPE_AOL_UPDATE_BIOS_IMAGE");
 	m_hashType[ MAKE_CLASSTYPE_LONG(562,16) ] = _("VSCP_TYPE_AOL_UPDATE_DIAGNOSTIC_PROCEDURE");
-('\n\t// ', 'CLASS2.LEVEL1.MEASURMENT64', '=', '572', ' - ', 'Class2 Level I Measurement64')
-('\t// \tEvent types is the same as ', 'CLASS1.MEASUREMENT', '=', '10', ' - ', 'Measurement')
+
+	//  CLASS2.LEVEL1.MEASUREMENT64 = 572  -  Class2 Level I Measurement64
+	// 	Event types is the same as  CLASS1.MEASUREMENT = 10  -  Measurement
 	m_hashType[ MAKE_CLASSTYPE_LONG(572,0) ] = _("VSCP_TYPE_MEASUREMENT_GENERAL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(572,1) ] = _("VSCP_TYPE_MEASUREMENT_COUNT");
 	m_hashType[ MAKE_CLASSTYPE_LONG(572,2) ] = _("VSCP_TYPE_MEASUREMENT_LENGTH");
@@ -1270,8 +1305,9 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(572,58) ] = _("VSCP_TYPE_MEASUREMENT_SOUND_PRESSURE");
 	m_hashType[ MAKE_CLASSTYPE_LONG(572,59) ] = _("VSCP_TYPE_MEASUREMENT_SOUND_DENSITY");
 	m_hashType[ MAKE_CLASSTYPE_LONG(572,60) ] = _("VSCP_TYPE_MEASUREMENT_SOUND_LEVEL");
-('\n\t// ', 'CLASS2.LEVEL1.MEASUREMENTZONE', '=', '577', ' - ', 'Class2 Level I Measurementzone')
-('\t// \tEvent types is the same as ', 'CLASS1.MEASUREMENT', '=', '10', ' - ', 'Measurement')
+
+	//  CLASS2.LEVEL1.MEASUREZONE = 577  -  Class2 Level I Measurementzone
+	// 	Event types is the same as  CLASS1.MEASUREMENT = 10  -  Measurement
 	m_hashType[ MAKE_CLASSTYPE_LONG(577,0) ] = _("VSCP_TYPE_MEASUREMENT_GENERAL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(577,1) ] = _("VSCP_TYPE_MEASUREMENT_COUNT");
 	m_hashType[ MAKE_CLASSTYPE_LONG(577,2) ] = _("VSCP_TYPE_MEASUREMENT_LENGTH");
@@ -1333,8 +1369,9 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(577,58) ] = _("VSCP_TYPE_MEASUREMENT_SOUND_PRESSURE");
 	m_hashType[ MAKE_CLASSTYPE_LONG(577,59) ] = _("VSCP_TYPE_MEASUREMENT_SOUND_DENSITY");
 	m_hashType[ MAKE_CLASSTYPE_LONG(577,60) ] = _("VSCP_TYPE_MEASUREMENT_SOUND_LEVEL");
-('\n\t// ', 'CLASS2.LEVEL1.MEASUREMENT32', '=', '582', ' - ', 'Class2 Level I Measuremet32')
-('\t// \tEvent types is the same as ', 'CLASS1.MEASUREMENT', '=', '10', ' - ', 'Measurement')
+
+	//  CLASS2.LEVEL1.MEASUREMENT32 = 582  -  Class2 Level I Measuremet32
+	// 	Event types is the same as  CLASS1.MEASUREMENT = 10  -  Measurement
 	m_hashType[ MAKE_CLASSTYPE_LONG(582,0) ] = _("VSCP_TYPE_MEASUREMENT_GENERAL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(582,1) ] = _("VSCP_TYPE_MEASUREMENT_COUNT");
 	m_hashType[ MAKE_CLASSTYPE_LONG(582,2) ] = _("VSCP_TYPE_MEASUREMENT_LENGTH");
@@ -1396,8 +1433,9 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(582,58) ] = _("VSCP_TYPE_MEASUREMENT_SOUND_PRESSURE");
 	m_hashType[ MAKE_CLASSTYPE_LONG(582,59) ] = _("VSCP_TYPE_MEASUREMENT_SOUND_DENSITY");
 	m_hashType[ MAKE_CLASSTYPE_LONG(582,60) ] = _("VSCP_TYPE_MEASUREMENT_SOUND_LEVEL");
-('\n\t// ', 'CLASS2.LEVEL1.SETVALUEZONE', '=', '597', ' - ', 'Class2 Level I SetValueZone')
-('\t// \tEvent types is the same as ', 'CLASS1.MEASUREMENT', '=', '10', ' - ', 'Measurement')
+
+	//  CLASS2.LEVEL1.SETVALUEZONE = 597  -  Class2 Level I SetValueZone
+	// 	Event types is the same as  CLASS1.MEASUREMENT = 10  -  Measurement
 	m_hashType[ MAKE_CLASSTYPE_LONG(597,0) ] = _("VSCP_TYPE_MEASUREMENT_GENERAL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(597,1) ] = _("VSCP_TYPE_MEASUREMENT_COUNT");
 	m_hashType[ MAKE_CLASSTYPE_LONG(597,2) ] = _("VSCP_TYPE_MEASUREMENT_LENGTH");
@@ -1459,8 +1497,9 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(597,58) ] = _("VSCP_TYPE_MEASUREMENT_SOUND_PRESSURE");
 	m_hashType[ MAKE_CLASSTYPE_LONG(597,59) ] = _("VSCP_TYPE_MEASUREMENT_SOUND_DENSITY");
 	m_hashType[ MAKE_CLASSTYPE_LONG(597,60) ] = _("VSCP_TYPE_MEASUREMENT_SOUND_LEVEL");
-('\n\t// ', 'CLASS2.LEVEL1.WEATHER', '=', '602', ' - ', 'Class2 Level I Weather')
-('\t// \tEvent types is the same as ', 'CLASS1.WEATHER', '=', '90', ' - ', 'Weather')
+
+	//  CLASS2.LEVEL1.WEATHER = 602  -  Class2 Level I Weather
+	// 	Event types is the same as  CLASS1.WEATHER = 90  -  Weather
 	m_hashType[ MAKE_CLASSTYPE_LONG(602,0) ] = _("VSCP_TYPE_WEATHER_GENERAL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(602,1) ] = _("VSCP_TYPE_WEATHER_SEASONS_WINTER");
 	m_hashType[ MAKE_CLASSTYPE_LONG(602,2) ] = _("VSCP_TYPE_WEATHER_SEASONS_SPRING");
@@ -1513,8 +1552,9 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(602,49) ] = _("VSCP_TYPE_WEATHER_WARNING_LEVEL4");
 	m_hashType[ MAKE_CLASSTYPE_LONG(602,50) ] = _("VSCP_TYPE_WEATHER_WARNING_LEVEL5");
 	m_hashType[ MAKE_CLASSTYPE_LONG(602,51) ] = _("VSCP_TYPE_WEATHER_ARMAGEDON");
-('\n\t// ', 'CLASS2.LEVEL1.WEATHERFORECAST', '=', '607', ' - ', 'Class2 Level I Weather Forecast')
-('\t// \tEvent types is the same as ', 'CLASS1.WEATHER', '=', '90', ' - ', 'Weather')
+
+	//  CLASS2.LEVEL1.WEATHERFORECAST = 607  -  Class2 Level I Weather Forecast
+	// 	Event types is the same as  CLASS1.WEATHER = 90  -  Weather
 	m_hashType[ MAKE_CLASSTYPE_LONG(607,0) ] = _("VSCP_TYPE_WEATHER_GENERAL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(607,1) ] = _("VSCP_TYPE_WEATHER_SEASONS_WINTER");
 	m_hashType[ MAKE_CLASSTYPE_LONG(607,2) ] = _("VSCP_TYPE_WEATHER_SEASONS_SPRING");
@@ -1567,8 +1607,9 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(607,49) ] = _("VSCP_TYPE_WEATHER_WARNING_LEVEL4");
 	m_hashType[ MAKE_CLASSTYPE_LONG(607,50) ] = _("VSCP_TYPE_WEATHER_WARNING_LEVEL5");
 	m_hashType[ MAKE_CLASSTYPE_LONG(607,51) ] = _("VSCP_TYPE_WEATHER_ARMAGEDON");
-('\n\t// ', 'CLASS2.LEVEL1.PHONE', '=', '612', ' - ', 'Class2 Level I Phone')
-('\t// \tEvent types is the same as ', 'CLASS1.PHONE', '=', '100', ' - ', 'Phone')
+
+	//  CLASS2.LEVEL1.PHONE = 612  -  Class2 Level I Phone
+	// 	Event types is the same as  CLASS1.PHONE = 100  -  Phone
 	m_hashType[ MAKE_CLASSTYPE_LONG(612,0) ] = _("VSCP_TYPE_PHONE_GENERAL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(612,1) ] = _("VSCP_TYPE_PHONE_INCOMING_CALL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(612,2) ] = _("VSCP_TYPE_PHONE_OUTGOING_CALL");
@@ -1578,8 +1619,9 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(612,6) ] = _("VSCP_TYPE_PHONE_GIVEUP");
 	m_hashType[ MAKE_CLASSTYPE_LONG(612,7) ] = _("VSCP_TYPE_PHONE_TRANSFER");
 	m_hashType[ MAKE_CLASSTYPE_LONG(612,8) ] = _("VSCP_TYPE_PHONE_DATABASE_INFO");
-('\n\t// ', 'CLASS2.LEVEL1.DISPLAY', '=', '614', ' - ', 'Class2 Level I Display')
-('\t// \tEvent types is the same as ', 'CLASS1.DISPLAY', '=', '102', ' - ', 'Display')
+
+	//  CLASS2.LEVEL1.DISPLAY = 614  -  Class2 Level I Display
+	// 	Event types is the same as  CLASS1.DISPLAY = 102  -  Display
 	m_hashType[ MAKE_CLASSTYPE_LONG(614,0) ] = _("VSCP_TYPE_DISPLAY_GENERAL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(614,1) ] = _("VSCP_TYPE_DISPLAY_CLEAR_DISPLAY");
 	m_hashType[ MAKE_CLASSTYPE_LONG(614,2) ] = _("VSCP_TYPE_DISPLAY_POSITION_CURSOR");
@@ -1590,25 +1632,29 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(614,32) ] = _("VSCP_TYPE_DISPLAY_SHOW_TEXT");
 	m_hashType[ MAKE_CLASSTYPE_LONG(614,48) ] = _("VSCP_TYPE_DISPLAY_SHOW_LED");
 	m_hashType[ MAKE_CLASSTYPE_LONG(614,49) ] = _("VSCP_TYPE_DISPLAY_SHOW_LED_COLOR");
-('\n\t// ', 'CLASS2.LEVEL1.IR', '=', '622', ' - ', 'Class2 Level I IR')
-('\t// \tEvent types is the same as ', 'CLASS1.IR', '=', '110', ' - ', 'IR Remote I/f')
+
+	//  CLASS2.LEVEL1.IR = 622  -  Class2 Level I IR
+	// 	Event types is the same as  CLASS1.IR = 110  -  IR Remote I/f
 	m_hashType[ MAKE_CLASSTYPE_LONG(622,0) ] = _("VSCP_TYPE_REMOTE_GENERAL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(622,1) ] = _("VSCP_TYPE_REMOTE_RC5");
 	m_hashType[ MAKE_CLASSTYPE_LONG(622,3) ] = _("VSCP_TYPE_REMOTE_SONY12");
 	m_hashType[ MAKE_CLASSTYPE_LONG(622,32) ] = _("VSCP_TYPE_REMOTE_LIRC");
 	m_hashType[ MAKE_CLASSTYPE_LONG(622,48) ] = _("VSCP_TYPE_REMOTE_VSCP");
 	m_hashType[ MAKE_CLASSTYPE_LONG(622,49) ] = _("VSCP_TYPE_REMOTE_MAPITO");
-('\n\t// ', 'CLASS2.LEVEL1.GNSS', '=', '718', ' - ', 'Class2 Level I GNSS')
-('\t// \tEvent types is the same as ', 'CLASS1.GNSS', '=', '206', ' - ', 'Position (GNSS)')
+
+	//  CLASS2.LEVEL1.GNSS = 718  -  Class2 Level I GNSS
+	// 	Event types is the same as  CLASS1.GNSS = 206  -  Position (GNSS)
 	m_hashType[ MAKE_CLASSTYPE_LONG(718,0) ] = _("VSCP_TYPE_GNSS_GENERAL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(718,1) ] = _("VSCP_TYPE_GNSS_POSITION");
 	m_hashType[ MAKE_CLASSTYPE_LONG(718,2) ] = _("VSCP_TYPE_GNSS_SATELLITES");
-('\n\t// ', 'CLASS2.LEVEL1.WIRELESS', '=', '724', ' - ', 'Class2 Level I Wireless')
-('\t// \tEvent types is the same as ', 'CLASS1.WIRELESS', '=', '212', ' - ', 'Wireless')
+
+	//  CLASS2.LEVEL1.WIRELESS = 724  -  Class2 Level I Wireless
+	// 	Event types is the same as  CLASS1.WIRELESS = 212  -  Wireless
 	m_hashType[ MAKE_CLASSTYPE_LONG(724,0) ] = _("VSCP_TYPE_WIRELESS_GENERAL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(724,1) ] = _("VSCP_TYPE_WIRELESS_GSM_CELL");
-('\n\t// ', 'CLASS2.LEVEL1.DIAGNOSTIC', '=', '1018', ' - ', 'Class2 Level I Diagnostic')
-('\t// \tEvent types is the same as ', 'CLASS1.DIAGNOSTIC', '=', '506', ' - ', 'Diagnostic')
+
+	//  CLASS2.LEVEL1.DIAGNOSTIC = 1018  -  Class2 Level I Diagnostic
+	// 	Event types is the same as  CLASS1.DIAGNOSTIC = 506  -  Diagnostic
 	m_hashType[ MAKE_CLASSTYPE_LONG(1018,0) ] = _("VSCP_TYPE_DIAGNOSTIC_GENERAL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(1018,1) ] = _("VSCP_TYPE_DIAGNOSTIC_OVERVOLTAGE");
 	m_hashType[ MAKE_CLASSTYPE_LONG(1018,2) ] = _("VSCP_TYPE_DIAGNOSTIC_UNDERVOLTAGE");
@@ -1689,8 +1735,9 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(1018,77) ] = _("VSCP_TYPE_DIAGNOSTIC_TX_FAIL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(1018,78) ] = _("VSCP_TYPE_DIAGNOSTIC_RX_FAIL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(1018,79) ] = _("VSCP_TYPE_DIAGNOSTIC_EXT_IC_FAIL");
-('\n\t// ', 'CLASS2.LEVEL1.ERROR', '=', '1020', ' - ', 'Class2 Level I Error')
-('\t// \tEvent types is the same as ', 'CLASS1.ERROR', '=', '508', ' - ', 'Error')
+
+	//  CLASS2.LEVEL1.ERROR = 1020  -  Class2 Level I Error
+	// 	Event types is the same as  CLASS1.ERROR = 508  -  Error
 	m_hashType[ MAKE_CLASSTYPE_LONG(1020,0) ] = _("VSCP_TYPE_ERROR_SUCCESS");
 	m_hashType[ MAKE_CLASSTYPE_LONG(1020,1) ] = _("VSCP_TYPE_ERROR_ERROR");
 	m_hashType[ MAKE_CLASSTYPE_LONG(1020,7) ] = _("VSCP_TYPE_ERROR_CHANNEL");
@@ -1726,43 +1773,53 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(1020,43) ] = _("VSCP_TYPE_ERROR_BUFFER_SMALL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(1020,44) ] = _("VSCP_TYPE_ERROR_ITEM_UNKNOWN");
 	m_hashType[ MAKE_CLASSTYPE_LONG(1020,45) ] = _("VSCP_TYPE_ERROR_NAME_USED");
-('\n\t// ', 'CLASS2.LEVEL1.LOG', '=', '1021', ' - ', 'Class2 Level I Log')
-('\t// \tEvent types is the same as ', 'CLASS1.LOG', '=', '509', ' - ', 'Logging')
+
+	//  CLASS2.LEVEL1.LOG = 1021  -  Class2 Level I Log
+	// 	Event types is the same as  CLASS1.LOG = 509  -  Logging
 	m_hashType[ MAKE_CLASSTYPE_LONG(1021,0) ] = _("VSCP_TYPE_LOG_GENERAL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(1021,1) ] = _("VSCP_TYPE_LOG_MESSAGE");
 	m_hashType[ MAKE_CLASSTYPE_LONG(1021,2) ] = _("VSCP_TYPE_LOG_START");
 	m_hashType[ MAKE_CLASSTYPE_LONG(1021,3) ] = _("VSCP_TYPE_LOG_STOP");
 	m_hashType[ MAKE_CLASSTYPE_LONG(1021,4) ] = _("VSCP_TYPE_LOG_LEVEL");
-('\n\t// ', 'CLASS2.LEVEL1.LABORATORY', '=', '1022', ' - ', 'Class2 Level I Laboratory')
-('\t// \tEvent types is the same as ', 'CLASS1.LABORATORY', '=', '510', ' - ', 'Laboratory use')
+
+	//  CLASS2.LEVEL1.LABORATORY = 1022  -  Class2 Level I Laboratory
+	// 	Event types is the same as  CLASS1.LABORATORY = 510  -  Laboratory use
 	m_hashType[ MAKE_CLASSTYPE_LONG(1022,0) ] = _("VSCP_TYPE_LABORATORY_GENERAL");
-('\n\t// ', 'CLASS2.LEVEL1.LOCAL', '=', '1023', ' - ', 'Class2 Level I Local')
-('\t// \tEvent types is the same as ', 'CLASS1.LOCAL', '=', '511', ' - ', 'Local use')
+
+	//  CLASS2.LEVEL1.LOCAL = 1023  -  Class2 Level I Local
+	// 	Event types is the same as  CLASS1.LOCAL = 511  -  Local use
 	m_hashType[ MAKE_CLASSTYPE_LONG(1023,0) ] = _("VSCP_TYPE_LOCAL_GENERAL");
-('\n\t// ', 'CLASS2.PROTOCOL', '=', '1024', ' - ', 'Level II Protocol Functionality')
+
+	//  CLASS2.PROTOCOL = 1024  -  Level II Protocol Functionality
 	m_hashType[ MAKE_CLASSTYPE_LONG(1024,0) ] = _("VSCP2_TYPE_PROTOCOL_GENERAL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(1024,1) ] = _("VSCP2_TYPE_PROTOCOL_READ_REGISTER");
 	m_hashType[ MAKE_CLASSTYPE_LONG(1024,2) ] = _("VSCP2_TYPE_PROTOCOL_WRITE_REGISTER");
 	m_hashType[ MAKE_CLASSTYPE_LONG(1024,3) ] = _("VSCP2_TYPE_PROTOCOL_READ_WRITE_RESPONSE");
 	m_hashType[ MAKE_CLASSTYPE_LONG(1024,20) ] = _("VSCP2_TYPE_PROTOCOL_HIGH_END_SERVER_CAPS");
 	m_hashType[ MAKE_CLASSTYPE_LONG(1024,32) ] = _("VSCP2_TYPE_PROTOCOL_WHO_IS_THERE_RESPONSE");
-('\n\t// ', 'CLASS2.CONTROL', '=', '1025', ' - ', 'Level II Control')
+
+	//  CLASS2.CONTROL = 1025  -  Level II Control
 	m_hashType[ MAKE_CLASSTYPE_LONG(1025,0) ] = _("VSCP2_TYPE_CONTROL_GENERAL");
-('\n\t// ', 'CLASS2.INFORMATION', '=', '1026', ' - ', 'Level II Information')
+
+	//  CLASS2.INFORMATION = 1026  -  Level II Information
 	m_hashType[ MAKE_CLASSTYPE_LONG(1026,0) ] = _("VSCP2_TYPE_INFORMATION_GENERAL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(1026,1) ] = _("VSCP2_TYPE_INFORMATION_TOKEN_ACTIVITY");
 	m_hashType[ MAKE_CLASSTYPE_LONG(1026,2) ] = _("VSCP2_TYPE_INFORMATION_HEART_BEAT");
 	m_hashType[ MAKE_CLASSTYPE_LONG(1026,3) ] = _("VSCP2_TYPE_INFORMATION_PROXY_HEART_BEAT");
 	m_hashType[ MAKE_CLASSTYPE_LONG(1026,4) ] = _("VSCP2_TYPE_INFORMATION_CHANNEL_ANNOUNCE");
-('\n\t// ', 'CLASS2.TEXT2SPEECH', '=', '1027', ' - ', 'Text to speech')
+
+	//  CLASS2.TEXT2SPEECH = 1027  -  Text to speech
 	m_hashType[ MAKE_CLASSTYPE_LONG(1027,0) ] = _("VSCP2_TYPE_TEXT2SPEECH_GENERAL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(1027,1) ] = _("VSCP2_TYPE_TEXT2SPEECH_TALK");
-('\n\t// ', 'CLASS2.CUSTOM', '=', '1029', ' - ', 'Level II Custom')
+
+	//  CLASS2.CUSTOM = 1029  -  Level II Custom
 	m_hashType[ MAKE_CLASSTYPE_LONG(1029,0) ] = _("VSCP2_TYPE_CUSTOM_GENERAL");
-('\n\t// ', 'CLASS2.DISPLAY', '=', '1030', ' - ', 'Level II Display')
+
+	//  CLASS2.DISPLAY = 1030  -  Level II Display
 	m_hashType[ MAKE_CLASSTYPE_LONG(1030,0) ] = _("VSCP2_TYPE_DISPLAY_GENERAL");
-('\n\t// ', 'CLASS2.MEASUREMENT_STR', '=', '1040', ' - ', 'Measurement string')
-('\t// \tEvent types is the same as ', 'CLASS1.MEASUREMENT', '=', '10', ' - ', 'Measurement')
+
+	//  CLASS2.MEASUREMENT_STR = 1040  -  Measurement string
+	// 	Event types is the same as  CLASS1.MEASUREMENT = 10  -  Measurement
 	m_hashType[ MAKE_CLASSTYPE_LONG(1040,0) ] = _("VSCP_TYPE_MEASUREMENT_GENERAL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(1040,1) ] = _("VSCP_TYPE_MEASUREMENT_COUNT");
 	m_hashType[ MAKE_CLASSTYPE_LONG(1040,2) ] = _("VSCP_TYPE_MEASUREMENT_LENGTH");
@@ -1824,8 +1881,9 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(1040,58) ] = _("VSCP_TYPE_MEASUREMENT_SOUND_PRESSURE");
 	m_hashType[ MAKE_CLASSTYPE_LONG(1040,59) ] = _("VSCP_TYPE_MEASUREMENT_SOUND_DENSITY");
 	m_hashType[ MAKE_CLASSTYPE_LONG(1040,60) ] = _("VSCP_TYPE_MEASUREMENT_SOUND_LEVEL");
-('\n\t// ', 'CLASS2.MEASUREMENT_FLOAT', '=', '1060', ' - ', 'Measurement float')
-('\t// \tEvent types is the same as ', 'CLASS1.MEASUREMENT', '=', '10', ' - ', 'Measurement')
+
+	//  CLASS2.MEASUREMENT_FLOAT = 1060  -  Measurement float
+	// 	Event types is the same as  CLASS1.MEASUREMENT = 10  -  Measurement
 	m_hashType[ MAKE_CLASSTYPE_LONG(1060,0) ] = _("VSCP_TYPE_MEASUREMENT_GENERAL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(1060,1) ] = _("VSCP_TYPE_MEASUREMENT_COUNT");
 	m_hashType[ MAKE_CLASSTYPE_LONG(1060,2) ] = _("VSCP_TYPE_MEASUREMENT_LENGTH");
@@ -1887,7 +1945,8 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(1060,58) ] = _("VSCP_TYPE_MEASUREMENT_SOUND_PRESSURE");
 	m_hashType[ MAKE_CLASSTYPE_LONG(1060,59) ] = _("VSCP_TYPE_MEASUREMENT_SOUND_DENSITY");
 	m_hashType[ MAKE_CLASSTYPE_LONG(1060,60) ] = _("VSCP_TYPE_MEASUREMENT_SOUND_LEVEL");
-('\n\t// ', 'CLASS2.VSCPD', '=', '65535', ' - ', 'VSCP Daemon internal events')
+
+	//  CLASS2.VSCPD = 65535  -  VSCP Daemon internal events
 	m_hashType[ MAKE_CLASSTYPE_LONG(65535,0) ] = _("VSCP2_TYPE_VSCPD_GENERAL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(65535,1) ] = _("VSCP2_TYPE_VSCPD_LOOP");
 	m_hashType[ MAKE_CLASSTYPE_LONG(65535,3) ] = _("VSCP2_TYPE_VSCPD_PAUSE");
