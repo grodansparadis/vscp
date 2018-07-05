@@ -1,0 +1,21 @@
+#!/bin/bash
+
+pandoc -s -t man vscpd.8.md -o vscpd.8
+sudo cp vscpd.8 /usr/share/man/man8/
+
+pandoc -s -t man uvscpd.8.md -o uvscpd.8
+sudo cp uvscpd.8 /usr/share/man/man8/
+
+pandoc -s -t man vscpworks.1.md -o vscpworks.1
+sudo cp vscpworks.1 /usr/share/man/man1/
+
+pandoc -s -t man vscpcmd.1.md -o vscpcmd.1
+sudo cp vscpcmd.1 /usr/share/man/man1/
+
+pandoc -s -t man vscp-mkpasswd.1.md -o vscp-mkpasswd.1
+sudo cp vscp-mkpasswd.1 /usr/share/man/man1/
+
+pandoc -s -t man vscphelperlib.1.md -o vscphelperlib.1
+sudo cp vscphelperlib.1 /usr/share/man/man1/
+
+mandb

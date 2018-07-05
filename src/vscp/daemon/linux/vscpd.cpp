@@ -392,8 +392,8 @@ void help(char *szPrgname)
     fprintf(stderr, "\t-c\tSpecify a configuration file. \n");
     fprintf(stderr, "\t-k\t32 byte encryption key string in hex format. \n");
     fprintf(stderr, "\t-d\tDebug level (0-2). 0=Default. ");
-    fprintf(stderr, "that should be used (default: /etc/canalworks.conf).\n");
-    fprintf(stderr, "\t-g\tPrint the GNU copyleft info.\n");
+    fprintf(stderr, "that should be used (default: /etc/vscpd.conf).\n");
+    fprintf(stderr, "\t-g\tPrint MIT license info.\n");
 }
 
 
