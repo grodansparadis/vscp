@@ -106,8 +106,6 @@ else
   echo "variable \$VSCPDIR is set to: $VSCPDIR"
 fi
 
-
-
 dnl
 dnl Project Sub directories
 dnl
@@ -135,9 +133,20 @@ PROJ_SUBDIRS_GUI="src/vscp/vscpworks"
 AC_SUBST(PROJ_SUBDIRS_GUI)
 
 dnl
-dnl  Debugging mode
+dnl  openssl version
 dnl
 
+if sh -c "openssl version | cut -d' ' -f 2 " 2>/dev/null | grep 1.1. >/dev/null; then
+echo "openssl 1.1 libs will be used."
+CFLAGS+=" -DOPENSSL_API_1_1"
+else
+echo "openssl 1.0 libs will be used."
+CFLAGS+=" -DOPENSSL_API_1_0"
+fi
+
+dnl
+dnl  Debugging mode
+dnl      Done automatically now
 
 dnl AC_ARG_ENABLE(debug,
 dnl [  --enable-debug/--disable-debug          debug mode (default disabled)],
@@ -201,23 +210,23 @@ WXBASE_CPPFLAGS=`$WX_CONFIG_WITH_ARGS -debug --cppflags base`
 WXBASE_CXXFLAGS=`$WX_CONFIG_WITH_ARGS --debug --cxxflags base`
 WXBASE_CFLAGS=`$WX_CONFIG_WITH_ARGS --debug --cflags base`
 WXBASE_LIBS=`$WX_CONFIG_WITH_ARGS --debug --libs base xml net`
-WXBASE_STATIC_LIBS=`$WX_CONFIG_WITH_ARGS --debug --static  --libs base xml net`
+dnl WXBASE_STATIC_LIBS=`$WX_CONFIG_WITH_ARGS --debug --static  --libs base xml net`
 WXGTK_CPPFLAGS=`$WX_CONFIG_WITH_ARGS -debug --cppflags`
 WXGTK_CXXFLAGS=`$WX_CONFIG_WITH_ARGS --debug --cxxflags`
 WXGTK_CFLAGS=`$WX_CONFIG_WITH_ARGS --debug --cflags`
 WXGTK_LIBS=`$WX_CONFIG_WITH_ARGS --debug --libs`
-WXGTK_STATIC_LIBS=`$WX_CONFIG_WITH_ARGS --debug --static --libs`
+dnl WXGTK_STATIC_LIBS=`$WX_CONFIG_WITH_ARGS --debug --static --libs`
 else
 WXBASE_CPPFLAGS=`$WX_CONFIG_WITH_ARGS --cppflags base`
 WXBASE_CXXFLAGS=`$WX_CONFIG_WITH_ARGS --cxxflags base`
 WXBASE_CFLAGS=`$WX_CONFIG_WITH_ARGS --cflags base`
 WXBASE_LIBS=`$WX_CONFIG_WITH_ARGS --libs base xml net`
-WXBASE_STATIC_LIBS=`$WX_CONFIG_WITH_ARGS --static  --libs base xml net`
+dnl WXBASE_STATIC_LIBS=`$WX_CONFIG_WITH_ARGS --static  --libs base xml net`
 WXGTK_CPPFLAGS=`$WX_CONFIG_WITH_ARGS --cppflags`
 WXGTK_CXXFLAGS=`$WX_CONFIG_WITH_ARGS --cxxflags`
 WXGTK_CFLAGS=`$WX_CONFIG_WITH_ARGS --cflags`
 WXGTK_LIBS=`$WX_CONFIG_WITH_ARGS  --libs`
-WXGTK_STATIC_LIBS=`$WX_CONFIG_WITH_ARGS --static --libs`
+dnl WXGTK_STATIC_LIBS=`$WX_CONFIG_WITH_ARGS --static --libs`
 fi
 
 if test "${vscp_static}" = yes ; then
@@ -258,13 +267,13 @@ dnl Generate makefiles
 AC_OUTPUT
 
 dnl Output some debugging information
-echo   "LIBS         : ${LIBS}"
-echo   "WXLIBS       : ${WXLIBS}"
-echo   "EXTRALIBS    : ${EXTRALIBS}"
-echo   "CPPFLAGS     : ${CPPFLAGS}"
-echo   "CXXFLAGS     : ${CXXFLAGS}"
-echo   "CFLAGS       : ${CFLAGS}"
-echo   "PROJ_SUBDIRS : ${PROJ_SUBDIRS}"
+echo   "LIBS          : ${LIBS}"
+echo   "WXLIBS        : ${WXLIBS}"
+echo   "EXTRALIBS     : ${EXTRALIBS}"
+echo   "EXTRACPPFLAGS : ${CPPFLAGS}"
+echo   "EXTRACXXFLAGS : ${CXXFLAGS}"
+echo   "EXTRACFLAGS   : ${CFLAGS}"
+echo   "PROJ_SUBDIRS  : ${PROJ_SUBDIRS}"
 
 dnl Give user some feedback
 echo
@@ -276,7 +285,7 @@ echo   "Architecture          : $(arch)"
 echo   "VSCP GUI Build        : ${vscp_gui}"
 echo   "VSCP install dir      : ${VSCPDIR}"
 
-echo   "${ax_enable_debug}"
+dnl echo   "${ax_enable_debug}"
 if test "${ax_enable_debug}" = "yes"
 then
    echo "build flavour         : debug "

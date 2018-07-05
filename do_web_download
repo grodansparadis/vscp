@@ -7,7 +7,7 @@ echo "on your system.\n\n"
 echo "* * * WARNING * * * This is alpha code!!! - Larger than it need to be.\n\n"
 
 if [ ! -x /usr/bin/curl ] ; then
-    # some extra check if wget is not installed at the usual place                                                                           
+    # some extra check if curl is not installed at the usual place                                                                           
     command -v curl >/dev/null 2>&1 || { echo >&2 "Please install curl or set it in your path. Aborting."; exit 1; }
 fi
 
