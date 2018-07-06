@@ -144,6 +144,7 @@ vscpmd5.o: ../../../common/vscpmd5.c ../../../common/vscpmd5.h
 	$(CC) $(CFLAGS) -c ../../../common/vscpmd5.c -o $@
 
 install: all
+	$(INSTALL_PROGRAM) -d $(DESTDIR)$(libdir)
 	$(STRIP) libvscphelper.so
 	cp libvscphelper.so $(LIB_PLUS_VER)
 	$(INSTALL_PROGRAM) $(LIB_PLUS_VER) $(DESTDIR)$(libdir)

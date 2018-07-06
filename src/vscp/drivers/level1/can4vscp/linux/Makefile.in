@@ -103,6 +103,7 @@ com.o: ../../../../../common/com.cpp ../../../../../common/com.h
 	
 install: all
 	mkdir -p $(VSCP_PROJ_BASE_DIR)/drivers/level1
+	$(INSTALL_PROGRAM) -d $(VSCP_PROJ_BASE_DIR)/drivers/level1
 	$(INSTALL_PROGRAM) vscpl1drv-can4vscp.so $(VSCP_PROJ_BASE_DIR)/drivers/level1
 
 uninstall:

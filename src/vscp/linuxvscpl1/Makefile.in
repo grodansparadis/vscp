@@ -134,6 +134,7 @@ dllist.o: ../../common/dllist.c ../../common/dllist.h
 	$(CC) $(CFLAGS) -c ../../common/dllist.c -o $@	
 	
 install: all
+	$(INSTALL_PROGRAM) -d $(DESTDIR)$(libdir)
 	$(STRIP) libvscpl1.so
 	cp libvscpl1.so $(LIB_PLUS_VER)
 	$(INSTALL_PROGRAM) $(LIB_PLUS_VER) $(DESTDIR)$(libdir)
