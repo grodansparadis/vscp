@@ -19,7 +19,7 @@ clean:
 	@for d in $(PROJ_SUBDIRS); do (cd $$d && $(MAKE) clean); done
 
 install:
-	# create folder structure
+# create folder structure
 	mkdir -p @VSCPDIR@
 	mkdir -p @VSCPDIR@/logs
 	mkdir -p @VSCPDIR@/actions
@@ -46,6 +46,16 @@ install:
 # startup script
 	$(INSTALL_PROGRAM) -b -m755 config_examples/vscpd.startup_script_debian /etc/init.d/vscpd
 	update-rc.d vscpd defaults
+# man pages
+	echo "Installing man-pages"
+	$(INSTALL_PROGRAM) -b -m644 man/vscpd.8 /usr/share/man/man8/
+	$(INSTALL_PROGRAM) -b -m644 man/uvscpd.8 /usr/share/man/man8/
+	$(INSTALL_PROGRAM) -b -m644 man/vscpworks.1 /usr/share/man/man1/
+	$(INSTALL_PROGRAM) -b -m644 man/vscpcmd.1 /usr/share/man/man1/
+	$(INSTALL_PROGRAM) -b -m644 man/vscp-mkpasswd.1 /usr/share/man/man1/
+	$(INSTALL_PROGRAM) -b -m644 man/vscphelperlib.1 /usr/share/man/man1/
+	$(INSTALL_PROGRAM) -b -m644 man/vscpdrivers.7 /usr/share/man/man7/
+	mandb	
 	@echo
 	@echo
 	@echo "Your VSCP & Friends system is now installed."
@@ -74,8 +84,8 @@ install:
 	@echo "   http://www.vscp.org/docs/vscpd/doku.php?id=configuring_the_vscp_daemon"
 	@echo "   Other configuration files is under @VSCPDIR@"
 	@echo
-	@echo " - Documentation is at http://www.vscp.org/docs/vscpd/doku.php asd more general"
-	@echo "   documentation is at http://www.vscp.org/docs"
+	@echo " - Documentation is at https://grodansparadis.gitbooks.io/the-vscp-daemon "
+	@echo "   and more general documentation can be found at http://www.vscp.org/docs"
 	@echo
 	@echo "   Have fun and remember to always be hungry and stay foolish or the other way"
 	@echo "   around be foolish - stay hungry! - There is always a choice."
@@ -83,13 +93,13 @@ install:
 install-config:
 	# main configuration file
 	mkdir -p /etc/vscp
-	$(INSTALL_PROGRAM) -b -m744 config_examples/vscpd.conf_unix_distro /etc/vscp/vscpd.conf
+	$(INSTALL_PROGRAM) -b -m644 config_examples/vscpd.conf_unix_distro /etc/vscp/vscpd.conf
 	# example data files
-	$(INSTALL_PROGRAM) -b -m744 config_examples/variables.xml_distro @VSCPDIR@/variables.xml
-	$(INSTALL_PROGRAM) -b -m744 config_examples/dm.xml_distro @VSCPDIR@/dm.xml
-	$(INSTALL_PROGRAM) -b -m744 config_examples/simulation/simtempdata.txt @VSCPDIR@/simtempdata.txt
-	$(INSTALL_PROGRAM) -b -m744 config_examples/certs/server.pem @VSCPDIR@/certs
-	$(INSTALL_PROGRAM) -b -m744 config_examples/certs/client.pem @VSCPDIR@/certs
+	$(INSTALL_PROGRAM) -b -m644 config_examples/variables.xml_distro @VSCPDIR@/variables.xml
+	$(INSTALL_PROGRAM) -b -m644 config_examples/dm.xml_distro @VSCPDIR@/dm.xml
+	$(INSTALL_PROGRAM) -b -m644 config_examples/simulation/simtempdata.txt @VSCPDIR@/simtempdata.txt
+	$(INSTALL_PROGRAM) -b -m644 config_examples/certs/server.pem @VSCPDIR@/certs
+	$(INSTALL_PROGRAM) -b -m644 config_examples/certs/client.pem @VSCPDIR@/certs
 
 web-install:
 	sh add do_web_download

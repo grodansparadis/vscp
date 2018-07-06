@@ -43,10 +43,12 @@ The daemon uses simple to construct, yet very capable, drivers to talk to the re
 
 # SEE ALSO
 
+`uvscpd` (8)
 `vscpworks` (1).
 `vscpcmd` (1).
 `vscp-makepassword` (1).
 `vscphelperlib` (1).
+`vscpdrivers` (7)
 
 The VSCP project homepage is here <https://www.vscp.org>.
 

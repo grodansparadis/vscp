@@ -20,6 +20,7 @@ A tiny VSCP daemon/server for use with the VSCP & Friends m2m/IoT framework.
 `vscpcmd` (1).
 `vscp-makepassword` (1).
 `vscphelperlib` (1).
+`vscpdrivers` (7).
 
 The VSCP project homepage is here <https://www.vscp.org>.
 

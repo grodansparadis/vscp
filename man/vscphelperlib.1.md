@@ -1,4 +1,4 @@
-% VSCPHELPERLIB(1) VSCÅ Helper library
+% VSCPHELPERLIB(1) VSCP Helper library
 % Åke Hedman, Grodans Paradis AB
 % July 4, 2018
 
@@ -16,10 +16,12 @@ A tiny VSCP daemon/server for use with the VSCP & Friends m2m/IoT framework.
 # SEE ALSO
 
 `vscpd` (8).
+`uvscpd` (8)
 `vscpworks` (1).
 `vscpcmd` (1).
 `vscp-makepassword` (1).
 `vscphelperlib` (1).
+`vscpdrivers` (7)
 
 The VSCP project homepage is here <https://www.vscp.org>.
 

@@ -16,10 +16,11 @@ VSCP Works is a toolbox for VSCP developers and users that is available for Linu
 # SEE ALSO
 
 `vscpd` (8).
+`uvscpd` (8)
 `vscpcmd` (1).
 `vscp-makepassword` (1).
 `vscphelperlib` (1).
-`uvscpd` (8).
+`vscpdrivers` (7)
 
 The VSCP project homepage is here <https://www.vscp.org>.
 
