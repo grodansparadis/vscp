@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# get version from the version file
+MAJOR_VERSION=`sed '35!d' src/vscp/common/version.h  | cut -b 33-`
+MINOR_VERSION=`sed '36!d' src/vscp/common/version.h  | cut -b 33-`
+RELEASE_VERSION=`sed '37!d' src/vscp/common/version.h  | cut -b 33-`
+BUILD_VERSION=`sed '38!d' src/vscp/common/version.h  | cut -b 33-`
+TAR_PLUS_VER=vscp_$MAJOR_VERSION.$MINOR_VERSION.$RELEASE_VERSION.tgz
+echo $TAR_PLUS_VER
+make clean
+rm dest/*
+./clean_for_dist
+tar -zcf ../vscp_13.1.0.tgz *
+
