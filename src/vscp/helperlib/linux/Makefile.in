@@ -171,7 +171,10 @@ clean:
 	rm -f ../../common/*.o
 	rm -f ../../../common/*.o
 	rm -f ../../../../common/*.o
+	rm -f *.so
 	rm -f libvscphelper.so
+	rm -f libvscphelper.so.$(MAJOR_VERSION)
+	rm -f libvscphelper.so.$(MAJOR_VERSION).$(MINOR_VERSION)
 	rm -f test
 
 distclean: clean

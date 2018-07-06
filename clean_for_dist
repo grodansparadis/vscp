@@ -68,4 +68,14 @@ rm -rf ./src/vscp/install_win32
 rm -rf ./src/vscp/install_deb
 rm -rf firmware
 rm -rf docs
+rm 'config_examples/certs/client.key.orig'
+rm 'config_examples/certs/server.key.orig'
+rm 'config_examples/certs/server_bkup.key.orig'
+rm 'src/vscp/drivers/level1/candrv/linux/Makefile.orig'
+rm 'src/vscp/drivers/level1/lincan/linux/Makefile.orig'
+rm 'src/vscp/drivers/level1/logger/linux/Makefile.orig'
+rm 'src/vscp/drivers/level2/logger/linux/Makefile.orig'
+rm 'src/vscp/helperlib/linux/Makefile.orig'
+rm -rf autom4te.cache
+rm config.status
 

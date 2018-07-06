@@ -161,6 +161,8 @@ clean:
 	rm -f ../../../common/*.o
 	rm -f ../../../../common/*.o
 	rm -f libvscpl1.so
+	rm -f libvscpl1.so.$(MAJOR_VERSION)
+	rm -f libvscpl1.so.$(MAJOR_VERSION).$(MINOR_VERSION)
 	rm -f test
 	rm -f *.deb
 	rm -f *.gz
