@@ -128,7 +128,7 @@ vscpmd5.o: ../../common/vscpmd5.c ../../common/vscpmd5.h
 
 install: all
 	$(STRIP) vscpcmd
-	$(INSTALL_PROGRAM) vscpcmd $(bindir)
+	$(INSTALL_PROGRAM) vscpcmd $(DESTDIR)$(bindir)
 
 uninstall:
 

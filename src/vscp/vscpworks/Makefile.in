@@ -129,7 +129,7 @@ all: vscpworks
 
 install: all
 	$(STRIP) vscpworks
-	$(INSTALL_PROGRAM) vscpworks $(bindir)
+	$(INSTALL_PROGRAM) vscpworks $(DESTDIR)$(bindir)
 
 vscpworks.o: vscpworks.cpp vscpworks.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c vscpworks.cpp -o $@

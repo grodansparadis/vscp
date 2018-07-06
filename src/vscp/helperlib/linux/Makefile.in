@@ -72,6 +72,7 @@ LIB_PLUS_VER = "libvscphelper.so.$(MAJOR_VERSION).$(MINOR_VERSION).$(RELEASE_VER
 
 ### Variables: ###
 
+DESTDIR =
 WX_RELEASE = 3.0
 LIBDIRNAME = $(top_wxbuilddir)lib
 
@@ -145,11 +146,11 @@ vscpmd5.o: ../../../common/vscpmd5.c ../../../common/vscpmd5.h
 install: all
 	$(STRIP) libvscphelper.so
 	cp libvscphelper.so $(LIB_PLUS_VER)
-	$(INSTALL_PROGRAM) $(LIB_PLUS_VER) $(libdir)
-	ln -fs $(libdir)/$(LIB_PLUS_VER) $(libdir)/libvscphelper.so
-	ln -fs $(libdir)/$(LIB_PLUS_VER) $(libdir)/libvscphelper.so.$(MAJOR_VERSION)
-	ln -fs $(libdir)/$(LIB_PLUS_VER) $(libdir)/libvscphelper.so.$(MAJOR_VERSION).$(MINOR_VERSION)
-	$(INSTALL_PROGRAM) ../vscphelperlib.h $(includedir)
+	$(INSTALL_PROGRAM) $(LIB_PLUS_VER) $(DESTDIR)$(libdir)
+	ln -fs $(libdir)/$(LIB_PLUS_VER) $(DESTDIR)$(libdir)/libvscphelper.so
+	ln -fs $(libdir)/$(LIB_PLUS_VER) $(DESTDIR)$(libdir)/libvscphelper.so.$(MAJOR_VERSION)
+	ln -fs $(libdir)/$(LIB_PLUS_VER) $(DESTDIR)$(libdir)/libvscphelper.so.$(MAJOR_VERSION).$(MINOR_VERSION)
+	$(INSTALL_PROGRAM) ../vscphelperlib.h $(DESTDIR)$(includedir)
 	ar rcs libvscphelper.a libvscphelper.o
 
 uninstall:

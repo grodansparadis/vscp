@@ -68,6 +68,7 @@ DLLPREFIX = lib
 
 ### Variables: ###
 
+DESTDIR =
 WX_RELEASE = 3.0
 LIBDIRNAME = $(top_wxbuilddir)lib
 
@@ -135,11 +136,11 @@ dllist.o: ../../common/dllist.c ../../common/dllist.h
 install: all
 	$(STRIP) libvscpl1.so
 	cp libvscpl1.so $(LIB_PLUS_VER)
-	$(INSTALL_PROGRAM) $(LIB_PLUS_VER) $(libdir)
-	ln -fs $(libdir)/$(LIB_PLUS_VER) $(libdir)/libvscpl1.so
-	ln -fs $(libdir)/$(LIB_PLUS_VER) $(libdir)/libvscpl1.so.$(MAJOR_VERSION)
-	ln -fs $(libdir)/$(LIB_PLUS_VER) $(libdir)/libvscpl1.so.$(MAJOR_VERSION).$(MINOR_VERSION)
-	$(INSTALL_PROGRAM) vscpl1.h $(includedir)
+	$(INSTALL_PROGRAM) $(LIB_PLUS_VER) $(DESTDIR)$(libdir)
+	ln -fs $(libdir)/$(LIB_PLUS_VER) $(DESTDIR)$(libdir)/libvscpl1.so
+	ln -fs $(libdir)/$(LIB_PLUS_VER) $(DESTDIR)$(libdir)/libvscpl1.so.$(MAJOR_VERSION)
+	ln -fs $(libdir)/$(LIB_PLUS_VER) $(DESTDIR)$(libdir)/libvscpl1.so.$(MAJOR_VERSION).$(MINOR_VERSION)
+	$(INSTALL_PROGRAM) vscpl1.h $(DESTDIR)$(includedir)
 #	ar rcs libvscpl1.a libvscpl1.o
 
 uninstall: 

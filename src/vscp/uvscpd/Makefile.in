@@ -126,7 +126,7 @@ dllist.o: ../../common/dllist.c ../../common/dllist.h
 	$(CC) $(CFLAGS) -c ../../common/dllist.c -o $@
 
 install: all
-	$(INSTALL_PROGRAM) uvscpd $(bindir)
+	$(INSTALL_PROGRAM) uvscpd $(DESTDIR)$(bindir)
 
 uninstall:
 

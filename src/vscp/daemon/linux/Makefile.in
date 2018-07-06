@@ -296,7 +296,7 @@ debinst: all
 
 install: all
 	$(STRIP) vscpd
-	$(INSTALL_PROGRAM) vscpd $(bindir)
+	$(INSTALL_PROGRAM) vscpd $(DESTDIR)$(bindir)
 	# create folder structure
 	@mkdir -p @VSCPDIR@
 	@mkdir -p @VSCPDIR@/logs

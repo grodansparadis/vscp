@@ -116,7 +116,7 @@ vscp-mkpasswd: $(MKPASSWD_OBJECTS)
 
 install: all
 	$(STRIP)  vscp-mkpasswd
-	$(INSTALL_PROGRAM) vscp-mkpasswd $(bindir)
+	$(INSTALL_PROGRAM) vscp-mkpasswd $(DESTDIR)$(bindir)
 
 uninstall:
 
