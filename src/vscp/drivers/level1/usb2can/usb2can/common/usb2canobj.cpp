@@ -539,7 +539,7 @@ bool CUsb2canObj::doFilter( canalMsg *pcanalMsg )
     if ( !m_mask ) return true;	// fast escape
 
     // Set bit 32 if extended message
-    if ( pcanalMsg->flags | CANAL_IDFLAG_EXTENDED ) {
+    if ( pcanalMsg->flags & CANAL_IDFLAG_EXTENDED ) {
         msgid &= 0x1fffffff;
         msgid |= 80000000;
     }
@@ -549,7 +549,7 @@ bool CUsb2canObj::doFilter( canalMsg *pcanalMsg )
     }
 
     // Set bit 31 if RTR
-    if ( pcanalMsg->flags | CANAL_IDFLAG_RTR ) {
+    if ( pcanalMsg->flags & CANAL_IDFLAG_RTR ) {
         msgid |= 40000000;
     }
 
@@ -1101,17 +1101,17 @@ Bit 31 - Bus off status.
 ==========================================
 Flag  value  Description
 ===========================================
-CANAL_STATUSMSG_OK        0×00  Normal condition.
-CANAL_STATUSMSG_OVERRUN   0×01  Overrun occured when sending data to CAN bus.
-CANAL_STATUSMSG_BUSLIGHT  0×02  Error counter has reached 96.
-CANAL_STATUSMSG_BUSHEAVY  0×03  Error counter has reached 128.
-CANAL_STATUSMSG_BUSOFF    0×04  Device is in BUSOFF. CANAL_STATUSMSG_OK is sent when returning to operational mode.
-CANAL_STATUSMSG_STUFF     0×20  Stuff Error.
-CANAL_STATUSMSG_FORM      0×21  Form Error.
-CANAL_STATUSMSG_ACK       0×23  Ack Error.
-CANAL_STATUSMSG_BIT0      0×24  Bit1 Error.
-CANAL_STATUSMSG_BIT1      0×25  Bit0 Error.
-CANAL_STATUSMSG_CRC       0×26  CRC Error.
+CANAL_STATUSMSG_OK        0Ã—00  Normal condition.
+CANAL_STATUSMSG_OVERRUN   0Ã—01  Overrun occured when sending data to CAN bus.
+CANAL_STATUSMSG_BUSLIGHT  0Ã—02  Error counter has reached 96.
+CANAL_STATUSMSG_BUSHEAVY  0Ã—03  Error counter has reached 128.
+CANAL_STATUSMSG_BUSOFF    0Ã—04  Device is in BUSOFF. CANAL_STATUSMSG_OK is sent when returning to operational mode.
+CANAL_STATUSMSG_STUFF     0Ã—20  Stuff Error.
+CANAL_STATUSMSG_FORM      0Ã—21  Form Error.
+CANAL_STATUSMSG_ACK       0Ã—23  Ack Error.
+CANAL_STATUSMSG_BIT0      0Ã—24  Bit1 Error.
+CANAL_STATUSMSG_BIT1      0Ã—25  Bit0 Error.
+CANAL_STATUSMSG_CRC       0Ã—26  CRC Error.
 */
 
 /* STATUS
