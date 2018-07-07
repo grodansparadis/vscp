@@ -177,7 +177,7 @@ void *TCPListenThread::Entry()
     while ( !TestDestroy() && !(gpobj->stopTcpIpSrv) ) {
                  
         pfd = m_srvctx.listening_socket_fds;
-        memset( pfd, 0, sizeof(pfd) );
+        memset( pfd, 0, sizeof(*pfd) );
         for ( i = 0; i < m_srvctx.num_listening_sockets; i++ ) {
             pfd[ i ].fd = m_srvctx.listening_sockets[i].sock;
             pfd[ i ].events = POLLIN;
