@@ -2465,7 +2465,7 @@ bool CControlObject::getMacAddress( cguid& guid )
 
         unsigned char *ptr;
         ptr = (unsigned char *) &s.ifr_ifru.ifru_hwaddr.sa_data[ 0 ];
-        logMsg( wxString::Format( _("Ethernet MAC address: %02X:%02X:%02X:%02X:%02X\n"),
+        logMsg( wxString::Format( _("Ethernet MAC address: %02X:%02X:%02X:%02X:%02X:%02X\n"),
                                         (uint8_t)s.ifr_addr.sa_data[ 0 ],
                                         (uint8_t)s.ifr_addr.sa_data[ 1 ],
                                         (uint8_t)s.ifr_addr.sa_data[ 2 ],
