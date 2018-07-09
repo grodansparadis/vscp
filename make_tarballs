@@ -5,15 +5,15 @@ MAJOR_VERSION=`sed '35!d' src/vscp/common/version.h  | cut -b 33-`
 MINOR_VERSION=`sed '36!d' src/vscp/common/version.h  | cut -b 33-`
 RELEASE_VERSION=`sed '37!d' src/vscp/common/version.h  | cut -b 33-`
 BUILD_VERSION=`sed '38!d' src/vscp/common/version.h  | cut -b 33-`
-NAME_PLUS_VER=vscp_$MAJOR_VERSION.$MINOR_VERSION.$RELEASE_VERSION-$BUILD_VERSION
+NAME_PLUS_VER=vscp-$MAJOR_VERSION.$MINOR_VERSION.$RELEASE_VERSION-$BUILD_VERSION
 echo $TAR_PLUS_VER
 make clean
 rm dest/*
 ./clean_for_dist
-tar -zcf ../$NAME_PLUS_VER.tgz *
+tar -zcf ../$NAME_PLUS_VER.tar.gz *
 zip -r ../$NAME_PLUS_VER.zip *
 echo
 echo
-echo $NAME_PLUS_VER.tgz created in folder above this.
+echo $NAME_PLUS_VER.tar.gz created in folder above this.
 echo $NAME_PLUS_VER.zip created in folder above this.
 
