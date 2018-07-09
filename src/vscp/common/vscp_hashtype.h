@@ -2,7 +2,7 @@
             !!!!!!!!!!!!!!!!!!!!  W A R N I N G  !!!!!!!!!!!!!!!!!!!!
                            This file is auto-generated
                 see https://github.com/grodansparadis/vscp-classes
-                        Generated: 2018-07-04 22:00:23.833957
+                        Generated: 2018-07-08 18:01:05.126524
 */
  
 
@@ -57,15 +57,15 @@
 	//  CLASS1.ALARM = 1  -  Alarm functionality
 	m_hashType[ MAKE_CLASSTYPE_LONG(1,0) ] = _("VSCP_TYPE_ALARM_GENERAL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(1,1) ] = _("VSCP_TYPE_ALARM_WARNING");
-	m_hashType[ MAKE_CLASSTYPE_LONG(1,2) ] = _("VSCP_TYPE_ALARM_ALARM ");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1,2) ] = _("VSCP_TYPE_ALARM_ALARM");
 	m_hashType[ MAKE_CLASSTYPE_LONG(1,3) ] = _("VSCP_TYPE_ALARM_SOUND");
 	m_hashType[ MAKE_CLASSTYPE_LONG(1,4) ] = _("VSCP_TYPE_ALARM_LIGHT");
-	m_hashType[ MAKE_CLASSTYPE_LONG(1,5) ] = _("VSCP_TYPE_ALARM_POWER ");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1,5) ] = _("VSCP_TYPE_ALARM_POWER");
 	m_hashType[ MAKE_CLASSTYPE_LONG(1,6) ] = _("VSCP_TYPE_ALARM_EMERGENCY_STOP");
 	m_hashType[ MAKE_CLASSTYPE_LONG(1,7) ] = _("VSCP_TYPE_ALARM_EMERGENCY_PAUSE");
 	m_hashType[ MAKE_CLASSTYPE_LONG(1,8) ] = _("VSCP_TYPE_ALARM_EMERGENCY_RESET");
 	m_hashType[ MAKE_CLASSTYPE_LONG(1,9) ] = _("VSCP_TYPE_ALARM_EMERGENCY_RESUME");
-	m_hashType[ MAKE_CLASSTYPE_LONG(1,10) ] = _("VSCP_TYPE_ALARM_ARM ");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1,10) ] = _("VSCP_TYPE_ALARM_ARM");
 	m_hashType[ MAKE_CLASSTYPE_LONG(1,11) ] = _("VSCP_TYPE_ALARM_DISARM");
 
 	//  CLASS1.SECURITY = 2  -  Security
@@ -941,15 +941,15 @@
 	// 	Event types is the same as  CLASS1.ALARM = 1  -  Alarm functionality
 	m_hashType[ MAKE_CLASSTYPE_LONG(513,0) ] = _("VSCP_TYPE_ALARM_GENERAL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(513,1) ] = _("VSCP_TYPE_ALARM_WARNING");
-	m_hashType[ MAKE_CLASSTYPE_LONG(513,2) ] = _("VSCP_TYPE_ALARM_ALARM ");
+	m_hashType[ MAKE_CLASSTYPE_LONG(513,2) ] = _("VSCP_TYPE_ALARM_ALARM");
 	m_hashType[ MAKE_CLASSTYPE_LONG(513,3) ] = _("VSCP_TYPE_ALARM_SOUND");
 	m_hashType[ MAKE_CLASSTYPE_LONG(513,4) ] = _("VSCP_TYPE_ALARM_LIGHT");
-	m_hashType[ MAKE_CLASSTYPE_LONG(513,5) ] = _("VSCP_TYPE_ALARM_POWER ");
+	m_hashType[ MAKE_CLASSTYPE_LONG(513,5) ] = _("VSCP_TYPE_ALARM_POWER");
 	m_hashType[ MAKE_CLASSTYPE_LONG(513,6) ] = _("VSCP_TYPE_ALARM_EMERGENCY_STOP");
 	m_hashType[ MAKE_CLASSTYPE_LONG(513,7) ] = _("VSCP_TYPE_ALARM_EMERGENCY_PAUSE");
 	m_hashType[ MAKE_CLASSTYPE_LONG(513,8) ] = _("VSCP_TYPE_ALARM_EMERGENCY_RESET");
 	m_hashType[ MAKE_CLASSTYPE_LONG(513,9) ] = _("VSCP_TYPE_ALARM_EMERGENCY_RESUME");
-	m_hashType[ MAKE_CLASSTYPE_LONG(513,10) ] = _("VSCP_TYPE_ALARM_ARM ");
+	m_hashType[ MAKE_CLASSTYPE_LONG(513,10) ] = _("VSCP_TYPE_ALARM_ARM");
 	m_hashType[ MAKE_CLASSTYPE_LONG(513,11) ] = _("VSCP_TYPE_ALARM_DISARM");
 
 	//  CLASS2.LEVEL1.SECURITY = 514  -  Class2 Level I Security

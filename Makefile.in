@@ -18,51 +18,36 @@ all:
 clean:
 	@for d in $(PROJ_SUBDIRS); do (cd $$d && $(MAKE) clean); done
 
+install-all: install install-folders install-startup-script install-config install-sample-data install-sample-cert install-manpages
+
 install:
-# create folder structure
-	mkdir -p @VSCPDIR@
-	mkdir -p @VSCPDIR@/logs
-	mkdir -p @VSCPDIR@/actions
-	mkdir -p @VSCPDIR@/scripts
-	mkdir -p @VSCPDIR@/scripts/javascript
-	mkdir -p @VSCPDIR@/scripts/lua
-	mkdir -p @VSCPDIR@/ux
-	mkdir -p @VSCPDIR@/web
-	mkdir -p @VSCPDIR@/certs
-	mkdir -p @VSCPDIR@/drivers
-	mkdir -p @VSCPDIR@/drivers/level1
-	mkdir -p @VSCPDIR@/drivers/level2
-	mkdir -p @VSCPDIR@/upload
-	mkdir -p @VSCPDIR@/web/css
-	mkdir -p @VSCPDIR@/web/images
-	mkdir -p @VSCPDIR@/web/lib
-	mkdir -p @VSCPDIR@/web/testws
-	mkdir -p @VSCPDIR@/vscp
-	mkdir -p @VSCPDIR@/tables
-	mkdir -p @VSCPDIR@/mdf
 # Install sub components
 	@for d in $(PROJ_SUBDIRS); do (echo "====================================================" &&\
 	echo "Building in dir " $$d && echo "====================================================" && cd $$d && $(MAKE) install); done
-# startup script
-	$(INSTALL_PROGRAM) -b -m755 config_examples/vscpd.startup_script_debian /etc/init.d/vscpd
-	update-rc.d vscpd defaults
-# man pages
-	echo "Installing man-pages"
-	$(INSTALL_PROGRAM) -b -m644 man/vscpd.8 /usr/share/man/man8/
-	$(INSTALL_PROGRAM) -b -m644 man/uvscpd.8 /usr/share/man/man8/
-	$(INSTALL_PROGRAM) -b -m644 man/vscpworks.1 /usr/share/man/man1/
-	$(INSTALL_PROGRAM) -b -m644 man/vscpcmd.1 /usr/share/man/man1/
-	$(INSTALL_PROGRAM) -b -m644 man/vscp-mkpasswd.1 /usr/share/man/man1/
-	$(INSTALL_PROGRAM) -b -m644 man/vscphelperlib.1 /usr/share/man/man1/
-	$(INSTALL_PROGRAM) -b -m644 man/vscpdrivers.7 /usr/share/man/man7/
-	mandb	
 	@echo
 	@echo
 	@echo "Your VSCP & Friends system is now installed."
 	@echo "============================================"
 	@echo 
-	@echo "Now please use 'make install-config' to install default configuration files "
-	@echo "if this is the first install of VSCP & Friends on this system."
+	@echo "If this is the first install of VSCP & Friends on this system issue"
+	@echo "'make install-first' to install data files and configuration files or"
+	@echo "manually do the steps below."
+	@echo
+	@echo "1.) Use 'make install-folders' to construct all folders."
+	@echo
+	@echo "2.) Use 'make install-config' to install default configuration files "
+	@echo
+	@echo "3.) Use 'make install-startup' install startup.script on Debian systems."
+	@echo 
+	@echo "4.) Use 'make install-manpages' to install on-line docs."
+	@echo
+	@echo "5.) Use 'make install-sample-data' to install on-line docs."
+	@echo
+	@echo "6.) Use 'make install-sample-cert' to install on-line docs."
+	@echo
+	@echo "Steps 1-6 can be done with 'make install-system' or 'make install-all'"
+	@echo
+	@echo "Use 'make intall-web-samples' to install sample web-pages."
 	@echo
 	@echo " - Start the VSCP daemon with 'sudo /etc/init.d/vscpd start'"
 	@echo "   or 'vscpd -s' to start the daemon in the  foreground."
@@ -70,18 +55,19 @@ install:
 	@echo " - Admin interface is at http://localhost:8884/vscp"
 	@echo "   Username: admin, Password: secret"
 	@echo
-	@echo " - If you have installed the sample content it is located at"
+	@echo " - If you have installed the web sample pages it is located at"
 	@echo "   http://localhost:8884. Remember to change the ip address"
 	@echo "   in the file @VSCPDIR@/web/testws/settings.js to your local"
 	@echo "   ip address ($(IPADDRESS)) to be able to access this content from other "
 	@echo "   machines than your local machine."
 	@echo
 	@echo " - You can reach core functionality in the telnet interface on"
-	@echo "   this machine ($(IPADDRESS)) at port 9598. Username: admin, Password: secret"
+	@echo "   this machine ($(IPADDRESS)) at port 9598."
+	@echo "   Username: 'admin', Password: 'secret'"
 	@echo
-	@echo " - The configuration file for the VSCP daemon is at /etc/vscd/vscpd.conf and"
+	@echo " - The configuration file for the VSCP daemon is at '/etc/vscd/vscpd.conf' and"
 	@echo "   you can read about the different available options here "
-	@echo "   http://www.vscp.org/docs/vscpd/doku.php?id=configuring_the_vscp_daemon"
+	@echo "   https://grodansparadis.gitbooks.io/the-vscp-daemon/configuring_the_vscp_daemon.html"
 	@echo "   Other configuration files is under @VSCPDIR@"
 	@echo
 	@echo " - Documentation is at https://grodansparadis.gitbooks.io/the-vscp-daemon "
@@ -90,19 +76,107 @@ install:
 	@echo "   Have fun and remember to always be hungry and stay foolish or the other way"
 	@echo "   around be foolish - stay hungry! - There is always a choice."
 
-install-config:
-	# main configuration file
-	mkdir -p /etc/vscp
-	$(INSTALL_PROGRAM) -b -m644 config_examples/vscpd.conf_unix_distro /etc/vscp/vscpd.conf
-	# example data files
-	$(INSTALL_PROGRAM) -b -m644 config_examples/variables.xml_distro @VSCPDIR@/variables.xml
-	$(INSTALL_PROGRAM) -b -m644 config_examples/dm.xml_distro @VSCPDIR@/dm.xml
-	$(INSTALL_PROGRAM) -b -m644 config_examples/simulation/simtempdata.txt @VSCPDIR@/simtempdata.txt
-	$(INSTALL_PROGRAM) -b -m644 config_examples/certs/server.pem @VSCPDIR@/certs
-	$(INSTALL_PROGRAM) -b -m644 config_examples/certs/client.pem @VSCPDIR@/certs
+install-system: install-folders install-startup-script install-config install-sample-data install-sample-cert install-manpages
 
-web-install:
-	sh add do_web_download
+install-folders:
+	@echo "- Creating folders."
+	@mkdir -p @VSCPDIR@
+	@mkdir -p @VSCPDIR@/logs
+	@mkdir -p @VSCPDIR@/actions
+	@mkdir -p @VSCPDIR@/scripts
+	@mkdir -p @VSCPDIR@/scripts/javascript
+	@mkdir -p @VSCPDIR@/scripts/lua
+	@mkdir -p @VSCPDIR@/ux
+	@mkdir -p @VSCPDIR@/web
+	@mkdir -p @VSCPDIR@/certs
+	@mkdir -p @VSCPDIR@/drivers
+	@mkdir -p @VSCPDIR@/drivers/level1
+	@mkdir -p @VSCPDIR@/drivers/level2
+	@mkdir -p @VSCPDIR@/upload
+	@mkdir -p @VSCPDIR@/web/css
+	@mkdir -p @VSCPDIR@/web/images
+	@mkdir -p @VSCPDIR@/web/lib
+	@mkdir -p @VSCPDIR@/web/testws
+	@mkdir -p @VSCPDIR@/vscp
+	@mkdir -p @VSCPDIR@/tables
+	@mkdir -p @VSCPDIR@/mdf
+	@mkdir -p @VSCPDIR@/tmp
+
+install-startup-script:
+	@echo "- Installing startup script."
+	@if [ ! -e /etc/init.d/vscpd ]; then\
+	    $(INSTALL_PROGRAM) -b -m755 ../../../../config_examples/vscpd.startup_script_debian /etc/init.d/vscpd;\
+	    update-rc.d vscpd defaults;\
+	fi
+
+install-config:
+	@echo "- Installing main configuration file."
+	@mkdir -p /etc/vscp
+	@if [ ! -e /etc/vscp/vscpd.conf ]; then\
+	    $(INSTALL_PROGRAM) -b -m744 config_examples/vscpd.conf_unix_distro /etc/vscp/vscpd.conf;\
+	else\
+	    $(INSTALL_PROGRAM) -b -m744 config_examples/vscpd.conf_unix_distro /etc/vscp/vscpd.conf.`date +'%Y%m%d'`;\
+	fi
+
+install-sample-data:
+	@echo "- Installing VSCP event database."
+	$(INSTALL_PROGRAM) -b -m744 database/vscp_data.sqlite3 @VSCPDIR@/
+
+	@echo "- Installing example variables."
+	@if [ ! -e @VSCPDIR@/variables.xml ]; then\
+	    $(INSTALL_PROGRAM) -b -m744 config_examples/variables.xml_distro @VSCPDIR@/variables.xml;\
+	else\
+	    $(INSTALL_PROGRAM) -b -m744 config_examples/variables.xml_distro @VSCPDIR@/variables.xml.`date +'%Y%m%d'`;\
+	fi
+
+	@echo "- Installing example DM."
+	@if [ ! -e @VSCPDIR@/dm.xml ]; then\
+	    $(INSTALL_PROGRAM) -b -m744 config_examples/dm.xml_distro @VSCPDIR@/dm.xml;\
+ 	else\
+ 	    $(INSTALL_PROGRAM) -b -m744 config_examples/dm.xml_distro @VSCPDIR@/dm.xml.`date +'%Y%m%d'`;\
+ 	fi
+
+	@echo "- Installing sample data for simulation."
+	@if [ ! -e @VSCPDIR@/simtempdata.txt ]; then\
+	    $(INSTALL_PROGRAM) -b -m744 config_examples/simulation/simtempdata.txt @VSCPDIR@/simtempdata.txt;\
+ 	else\
+ 	    $(INSTALL_PROGRAM) -b -m744 config_examples/simulation/simtempdata.txt @VSCPDIR@/simtempdata.txt.`date +'%Y%m%d'`;\
+	fi
+
+install-sample-cert:
+	@echo "- Installing server sample certificat."
+	@if [ ! -e @VSCPDIR@/certs/server.pem ]; then\
+	    $(INSTALL_PROGRAM) -b -m744 config_examples/certs/server.pem @VSCPDIR@/certs;\
+	fi
+
+	@echo "Installing client sample certificat."
+	@if [ ! -e @VSCPDIR@/certs/client.pem ]; then\
+	    $(INSTALL_PROGRAM) -b -m744 config_examples/certs/client.pem @VSCPDIR@/certs;\
+	fi
+
+install-manpages:
+	@echo "- Installing man-pages."
+	$(INSTALL_PROGRAM) -b -m644 man/vscpd.8 /usr/share/man/man8/
+	$(INSTALL_PROGRAM) -b -m644 man/uvscpd.8 /usr/share/man/man8/
+	$(INSTALL_PROGRAM) -b -m644 man/vscpworks.1 /usr/share/man/man1/
+	$(INSTALL_PROGRAM) -b -m644 man/vscpcmd.1 /usr/share/man/man1/
+	$(INSTALL_PROGRAM) -b -m644 man/vscp-mkpasswd.1 /usr/share/man/man1/
+	$(INSTALL_PROGRAM) -b -m644 man/vscphelperlib.1 /usr/share/man/man1/
+	$(INSTALL_PROGRAM) -b -m644 man/vscpdrivers.7 /usr/share/man/man7/
+	mandb
+
+install-web-samples:
+	echo "- Installing web-sample pages."
+	sh do_web_download @VSCPDIR@
+
+fetch_event_database:
+	echo "Fetching VSCP event database"
+	rm -f /tmp/vscp_data.sql
+	rm -f /tmp/vscp_data.sqlite3
+	curl -o/tmp/vscp_data.sql -LOk https://www.vscp.org/events/vscp_events.sql
+	cat /tmp/vscp_data.sql | sqlite3 /tmp/vscp_data.sqlite3
+	cp /tmp/vscp_data.sql database/
+	cp /tmp/vscp_data.sqlite3 database/
 
 delete-all:
 	rm -rf @VSCPDIR@/*
