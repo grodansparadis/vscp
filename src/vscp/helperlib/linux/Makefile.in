@@ -175,6 +175,7 @@ clean:
 	rm -f libvscphelper.so
 	rm -f libvscphelper.so.$(MAJOR_VERSION)
 	rm -f libvscphelper.so.$(MAJOR_VERSION).$(MINOR_VERSION)
+	rm -f libvscphelper.so.$(MAJOR_VERSION).$(MINOR_VERSION).$(RELEASE_VERSION)
 	rm -f test
 
 distclean: clean
