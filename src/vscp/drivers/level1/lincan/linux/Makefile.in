@@ -55,7 +55,8 @@ uninstall:
 
 install-strip: install
 
-clean: 
+clean:
+	rm -f Makefile
 	rm -rf ./.deps ./.pch
 	rm -f ./*.o
 	rm -f ../common/*.o

@@ -17,6 +17,9 @@ all:
 
 clean:
 	@for d in $(PROJ_SUBDIRS); do (cd $$d && $(MAKE) clean); done
+	rm -f config.log
+	rm -f config.startup
+	rm -r m4/Makefile
 
 install-all: install install-folders install-startup-script install-config install-sample-data install-sample-cert install-manpages
 
