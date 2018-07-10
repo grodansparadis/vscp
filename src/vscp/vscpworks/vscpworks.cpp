@@ -405,18 +405,6 @@ void VscpworksApp::Init()
     }
     */ 
     
-    wxString ttt = "test1\r\ntest2\r\ntest3\r\ntest4\r\ntest5\r\ntest6\r\nsuper\r\n";
-    
-    char *p = rstrstr( (const char *)ttt.mbc_str(), "\r\n");
-    p += 2;
-    
-    wxStringTokenizer tkz( ttt, _("\r\n") );
-    while( tkz.HasMoreTokens() ) {
-        ttt = tkz.GetNextToken();
-        wxPrintf( ttt + "\r\n" );
-    }
-    wxPrintf( ttt + "\r\n");
-    
 }
 
 /*!
