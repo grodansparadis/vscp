@@ -392,6 +392,7 @@ deb:    all
 	@mv *.deb ../../../../dist
 
 clean:
+	rm -f Makefile
 	rm -rf ./.deps ./.pch
 	rm -f *.o
 	rm -f ./*.o
