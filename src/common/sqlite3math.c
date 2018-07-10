@@ -1953,7 +1953,7 @@ int double_cmp(const void *a, const void *b){
 
 void print_elem(void *e, int64_t c, void* p){
   int ee = *(int*)(e);
-  printf("%d => %lld\n", ee,c);
+  printf("%d => %lld\n", ee, (long long int)c);
 }
 
 #if defined(__cplusplus)
