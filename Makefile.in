@@ -120,7 +120,7 @@ install-config:
 	@echo "- Installing main configuration file."
 	@mkdir -p /etc/vscp
 	@if [ ! -e /etc/vscp/vscpd.conf ]; then\
-	    $(INSTALL_PROGRAM) -b -m744 install_files/unix/vscpd $(DESTDIR)/etc/vscp/vscpd.conf;\
+	    $(INSTALL_PROGRAM) -b -m744 install_files/unix/vscpd.conf $(DESTDIR)/etc/vscp/vscpd.conf;\
 	else\
 	    $(INSTALL_PROGRAM) -b -m744 install_files/unix/vscpd.conf $(DESTDIR)/etc/vscp/vscpd.conf.`date +'%Y%m%d'`;\
 	fi
