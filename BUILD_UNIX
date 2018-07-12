@@ -27,7 +27,7 @@ from here http://mosquitto.org/download/
 
 You also need libssl-dev, and optional libpcap-dev for raw Ethernet support.
 
-Configuration files should be located in /etc/vscp and there are samples of configuration files here in the config_examples folder in the distribution root. You need vscpd.conf. make install will install files in /srv/vscp fir the webserver and for read/write cibfiguration files.
+Configuration files should be located in /etc/vscp and there are samples of configuration files here in the install_files folder in the distribution root. You need vscpd.conf. make install will install files in /srv/vscp fir the webserver and for read/write cibfiguration files.
 
 The names should be vscpd.conf for the daemon and vscpworks.conf for VSCP works. The daemon can be started with a path to a configuration file in another location using the -c switch.
 

@@ -154,7 +154,7 @@ src/vscp/uvscpd/nbproject/private/launcher.properties
 /src/vscp/_UpgradeReport_Files/UpgradeReport.xslt
 /src/vscp/_UpgradeReport_Files/UpgradeReport_Minus.gif
 /src/vscp/_UpgradeReport_Files/UpgradeReport_Plus.gif
-/config_examples/web/old
+/install_files/web/old
 /src/vscp/drivers/level1/peak/win32/testpcan/testpcan.aps
 /src/vscp/drivers/delivery
 src/vscp/drivers/level2/lmsensors/linux/-D__LINUX__
@@ -190,16 +190,16 @@ src/vscp/daemon/linux/core
 src/vscp/drivers/level2/wire1/linux/a.out
 src/vscp/drivers/level2/wire1/linux/test
 vscp-software_1.0.1-1_amd64.deb
-/config_examples/web/testws/google_line_simple - Copy.html
+/install_files/web/testws/google_line_simple - Copy.html
 src/vscp/drivers/level1/can4vscp/linux/test
-/config_examples/simuation/temp1.txt
+/install_files/simuation/temp1.txt
 /src/vscp/helperlib/windows/*.aps
 src/vscp/drivers/level2/sim/linux/nbproject/
 src/vscp/drivers/level2/sim/linux/test
 /src/vscp/daemon/win32/service/vscpsrv.sdf
 /src/vscp/.vs/vscp_project/v14/*.suo
 /src/vscp/*.opendb
-/config_examples/web/browse.VC.db
+/install_files/web/browse.VC.db
 src/vscp/daemon/linux/codelite_vscpd/vscp2drv_sim/
 src/vscp/drivers/level2/sim/linux/vscp2drv_sim/
 /src/vscp/daemon/linux/.codelite/compilation.db
