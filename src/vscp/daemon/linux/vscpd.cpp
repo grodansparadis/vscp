@@ -255,7 +255,7 @@ BOOL VSCPApp::init(wxString& strcfgfile, wxString& rootFolder )
     if ( chdir( (const char *)rootFolder.mbc_str() ) ) {
         syslog( LOG_CRIT, "VSCPD: Failed to change dir to rootdir" );
         fprintf( stderr, "VSCPD: Failed to change dir to rootdir" );
-        chdir("/tmp"); // security measure
+        int n = chdir("/tmp"); // security measure
     }
 
     struct sigaction my_action;
