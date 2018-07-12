@@ -347,39 +347,39 @@ install-config:
 install-sample-data:
 
 	@echo "- Installing VSCP event database."
-	$(INSTALL_PROGRAM) -b -m744 ../../../../database/vscp_data.sqlite3 @VSCPDIR@/
+	$(INSTALL_PROGRAM) -b -m744 ../../../../database/vscp_data.sqlite3 $(DESTDIR)@VSCPDIR@/
 
 	@echo "- Installing example variables."
 	@if [ ! -e @VSCPDIR@/variables.xml ]; then\
-	    $(INSTALL_PROGRAM) -b -m744 ../../../../install_files/variables/variables.xml @VSCPDIR@/variables.xml;\
+	    $(INSTALL_PROGRAM) -b -m744 ../../../../install_files/variables/variables.xml $(DESTDIR)@VSCPDIR@/variables.xml;\
 	else\
-	    $(INSTALL_PROGRAM) -b -m744 ../../../../install_files/variables/variables.xml @VSCPDIR@/variables.xml.`date +'%Y%m%d'`;\
+	    $(INSTALL_PROGRAM) -b -m744 ../../../../install_files/variables/variables.xml $(DESTDIR)@VSCPDIR@/variables.xml.`date +'%Y%m%d'`;\
 	fi
 
 	@echo "- Installing example DM."
 	@if [ ! -e @VSCPDIR@/dm.xml ]; then\
-	    $(INSTALL_PROGRAM) -b -m744 ../../../../install_files/DM/dm.xml @VSCPDIR@/dm.xml;\
+	    $(INSTALL_PROGRAM) -b -m744 ../../../../install_files/DM/dm.xml $(DESTDIR)@VSCPDIR@/dm.xml;\
  	else\
- 	    $(INSTALL_PROGRAM) -b -m744 ../../../../install_files/DM/dm.xml @VSCPDIR@/dm.xml.`date +'%Y%m%d'`;\
+ 	    $(INSTALL_PROGRAM) -b -m744 ../../../../install_files/DM/dm.xml $(DESTDIR)@VSCPDIR@/dm.xml.`date +'%Y%m%d'`;\
  	fi
 
 	@echo "Installing sample data for simulation."
 	@if [ ! -e @VSCPDIR@/simtempdata.txt ]; then\
-	    $(INSTALL_PROGRAM) -b -m744 ../../../../install_files/simulation/simtempdata.txt @VSCPDIR@/simtempdata.txt;\
+	    $(INSTALL_PROGRAM) -b -m744 ../../../../install_files/simulation/simtempdata.txt $(DESTDIR)@VSCPDIR@/simtempdata.txt;\
  	else\
- 	    $(INSTALL_PROGRAM) -b -m744 ../../../../install_files/simulation/simtempdata.txt @VSCPDIR@/simtempdata.txt.`date +'%Y%m%d'`;\
+ 	    $(INSTALL_PROGRAM) -b -m744 ../../../../install_files/simulation/simtempdata.txt $(DESTDIR)@VSCPDIR@/simtempdata.txt.`date +'%Y%m%d'`;\
 	fi
 
 install-sample-cert:
-	@echo "- Installing server sample certificat"
+	@echo "- Installing server sample certificat."
 	@if [ ! -e @VSCPDIR@/certs/server.pem ]; then\
-	    $(INSTALL_PROGRAM) -b -m744 ../../../../install_files/certs/server.pem @VSCPDIR@/certs;\
+	    $(INSTALL_PROGRAM) -b -m744 ../../../../install_files/certs/server.pem $(DESTDIR)@VSCPDIR@/certs;\
 	fi
 
 	@echo "- Installing client sample certificat."
 	@if [ ! -e @VSCPDIR@/certs/client.pem ]; then\
-	    $(INSTALL_PROGRAM) -b -m744 ../../../../install_files/certs/client.pem @VSCPDIR@/certs;\
-	fi
+	    $(INSTALL_PROGRAM) -b -m744 ../../../../install_files/certs/client.pem $(DESTDIR)@VSCPDIR@/certs;\
+		fi
 
 
 

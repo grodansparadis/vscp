@@ -151,14 +151,14 @@ install-sample-data:
 	fi
 
 install-sample-cert:
-	@echo "- Installing server sample certificat."
+	@echo "- Installing server sample certificate."
 	@if [ ! -e @VSCPDIR@/certs/server.pem ]; then\
 	    $(INSTALL_PROGRAM) -b -m744 install_files/certs/server.pem $(DESTDIR)@VSCPDIR@/certs;\
 	fi
 
 	@echo "Installing client sample certificat."
 	@if [ ! -e @VSCPDIR@/certs/client.pem ]; then\
-	    $(INSTALL_PROGRAM) -b -m744 install_files/certs/client.pem $(DESTDIR/@VSCPDIR@/certs;\
+	    $(INSTALL_PROGRAM) -b -m744 install_files/certs/client.pem $(DESTDIR)/@VSCPDIR@/certs;\
 	fi
 
 install-manpages:
