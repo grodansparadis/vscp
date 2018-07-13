@@ -86,40 +86,43 @@ install-system: install-folders install-startup-script install-config install-sa
 
 install-folders:
 	@echo "- Creating folders."
-	@mkdir -p $(DESTDIR)/@VSCPDIR@
-	@mkdir -p $(DESTDIR)/@VSCPDIR@/logs
-	@mkdir -p $(DESTDIR)/@VSCPDIR@/actions
-	@mkdir -p $(DESTDIR)/@VSCPDIR@/scripts
-	@mkdir -p $(DESTDIR)/@VSCPDIR@/scripts/javascript
-	@mkdir -p $(DESTDIR)/@VSCPDIR@/scripts/lua
-	@mkdir -p $(DESTDIR)/@VSCPDIR@/ux
-	@mkdir -p $(DESTDIR)/@VSCPDIR@/web
-	@mkdir -p $(DESTDIR)/@VSCPDIR@/certs
-	@mkdir -p $(DESTDIR)/@VSCPDIR@/drivers
-	@mkdir -p $(DESTDIR)/@VSCPDIR@/drivers/level1
-	@mkdir -p $(DESTDIR)/@VSCPDIR@/drivers/level2
-	@mkdir -p $(DESTDIR)/@VSCPDIR@/drivers/level2
-	@mkdir -p $(DESTDIR)/@VSCPDIR@/upload
-	@mkdir -p $(DESTDIR)/@VSCPDIR@/web/css
-	@mkdir -p $(DESTDIR)/@VSCPDIR@/web/images
-	@mkdir -p $(DESTDIR)/@VSCPDIR@/web/lib
-	@mkdir -p $(DESTDIR)/@VSCPDIR@/web/testws
-	@mkdir -p $(DESTDIR)/@VSCPDIR@/vscp
-	@mkdir -p $(DESTDIR)/@VSCPDIR@/tables
-	@mkdir -p $(DESTDIR)/@VSCPDIR@/mdf
-	@mkdir -p $(DESTDIR)/@VSCPDIR@/tmp
+	@mkdir -p $(DESTDIR)@VSCPDIR@
+	@mkdir -p $(DESTDIR)@VSCPDIR@/logs
+	@mkdir -p $(DESTDIR)@VSCPDIR@/actions
+	@mkdir -p $(DESTDIR)@VSCPDIR@/scripts
+	@mkdir -p $(DESTDIR)@VSCPDIR@/scripts/javascript
+	@mkdir -p $(DESTDIR)@VSCPDIR@/scripts/lua
+	@mkdir -p $(DESTDIR)@VSCPDIR@/ux
+	@mkdir -p $(DESTDIR)@VSCPDIR@/web
+	@mkdir -p $(DESTDIR)@VSCPDIR@/certs
+	@mkdir -p $(DESTDIR)@VSCPDIR@/drivers
+	@mkdir -p $(DESTDIR)@VSCPDIR@/drivers/level1
+	@mkdir -p $(DESTDIR)@VSCPDIR@/drivers/level2
+	@mkdir -p $(DESTDIR)@VSCPDIR@/drivers/level2
+	@mkdir -p $(DESTDIR)@VSCPDIR@/upload
+	@mkdir -p $(DESTDIR)@VSCPDIR@/web/css
+	@mkdir -p $(DESTDIR)@VSCPDIR@/web/images
+	@mkdir -p $(DESTDIR)@VSCPDIR@/web/lib
+	@mkdir -p $(DESTDIR)@VSCPDIR@/web/testws
+	@mkdir -p $(DESTDIR)@VSCPDIR@/vscp
+	@mkdir -p $(DESTDIR)@VSCPDIR@/tables
+	@mkdir -p $(DESTDIR)@VSCPDIR@/mdf
+	@mkdir -p $(DESTDIR)@VSCPDIR@/tmp
 
 install-startup-script:
+	@mkdir -p $(DESTDIR)/etc
+	@mkdir -p $(DESTDIR)/etc/init.d
 	@echo "- Installing startup script."
-	@if [ ! -e /etc/init.d/vscpd ]; then\
+	@if [ ! -e $(DESTDIR)/etc/init.d/vscpd ]; then\
 		$(INSTALL_PROGRAM) -b -m755 install_files/unix/vscpd.startup_script_debian $(DESTDIR)/etc/init.d/vscpd;\
 	    update-rc.d vscpd defaults;\
 	fi
 
 install-config:
 	@echo "- Installing main configuration file."
+	@mkdir -p $(DESTDIR)/etc/
 	@mkdir -p $(DESTDIR)/etc/vscp
-	@if [ ! -e /etc/vscp/vscpd.conf ]; then\
+	@if [ ! -e $(DESTDIR)/etc/vscp/vscpd.conf ]; then\
 	    $(INSTALL_PROGRAM) -b -m744 install_files/unix/vscpd.conf $(DESTDIR)/etc/vscp/vscpd.conf;\
 	else\
 	    $(INSTALL_PROGRAM) -b -m744 install_files/unix/vscpd.conf $(DESTDIR)/etc/vscp/vscpd.conf.`date +'%Y%m%d'`;\
@@ -127,24 +130,24 @@ install-config:
 
 install-sample-data:
 	@echo "- Installing VSCP event database."
-	$(INSTALL_PROGRAM) -b -m744 database/vscp_events.sqlite3 @VSCPDIR@/
+	$(INSTALL_PROGRAM) -b -m744 database/vscp_events.sqlite3 $(DESTDIR)@VSCPDIR@/
 
 	@echo "- Installing example variables."
-	@if [ ! -e @VSCPDIR@/variables.xml ]; then\
+	@if [ ! -e $(DESTDIR)@VSCPDIR@/variables.xml ]; then\
 	    $(INSTALL_PROGRAM) -b -m744 install_files/variables/variables.xml $(DESTDIR)@VSCPDIR@/variables.xml;\
 	else\
 	    $(INSTALL_PROGRAM) -b -m744 install_files/variables/variables.xml $(DESTDIR)@VSCPDIR@/variables.xml.`date +'%Y%m%d'`;\
 	fi
 
 	@echo "- Installing example DM."
-	@if [ ! -e @VSCPDIR@/dm.xml ]; then\
+	@if [ ! -e $(DESTDIR)@VSCPDIR@/dm.xml ]; then\
 	    $(INSTALL_PROGRAM) -b -m744 install_files/DM/dm.xml $(DESTDIR)@VSCPDIR@/dm.xml;\
  	else\
  	    $(INSTALL_PROGRAM) -b -m744 install_files/DM/dm.xml $(DESTDIR)@VSCPDIR@/dm.xml.`date +'%Y%m%d'`;\
  	fi
 
 	@echo "- Installing sample data for simulation."
-	@if [ ! -e @VSCPDIR@/simtempdata.txt ]; then\
+	@if [ ! -e $(DESTDIR)@VSCPDIR@/simtempdata.txt ]; then\
 	    $(INSTALL_PROGRAM) -b -m744 install_files/simulation/simtempdata.txt $(DESTDIR)@VSCPDIR@/simtempdata.txt;\
  	else\
  	    $(INSTALL_PROGRAM) -b -m744 install_files/simulation/simtempdata.txt $(DESTDIR)@VSCPDIR@/simtempdata.txt.`date +'%Y%m%d'`;\
@@ -152,22 +155,22 @@ install-sample-data:
 
 install-sample-certs:
 	@echo "- Installing web server sample certificate."
-	@if [ ! -e @VSCPDIR@/certs/server.pem ]; then\
+	@if [ ! -e $(DESTDIR)@VSCPDIR@/certs/server.pem ]; then\
 	    $(INSTALL_PROGRAM) -b -m744 install_files/certs/server.pem $(DESTDIR)@VSCPDIR@/certs/;\
 	fi
 
 	@echo "- Installing web client sample certificat."
-	@if [ ! -e @VSCPDIR@/certs/client.pem ]; then\
+	@if [ ! -e $(DESTDIR)@VSCPDIR@/certs/client.pem ]; then\
 	    $(INSTALL_PROGRAM) -b -m744 install_files/certs/client.pem $(DESTDIR)@VSCPDIR@/certs/;\
 	fi
 
 	@echo "- Installing tcp/ip server sample certificate."
-	@if [ ! -e @VSCPDIR@/certs/tcpip_server.pem ]; then\
+	@if [ ! -e $(DESTDIR)@VSCPDIR@/certs/tcpip_server.pem ]; then\
 	    $(INSTALL_PROGRAM) -b -m744 install_files/certs/tcpip_server.pem $(DESTDIR)@VSCPDIR@/certs/;\
 	fi
 
 	@echo "- Installing tcp/ip client sample certificat."
-	@if [ ! -e @VSCPDIR@/certs/tcpip_client.pem ]; then\
+	@if [ ! -e $(DESTDIR)@VSCPDIR@/certs/tcpip_client.pem ]; then\
 	    $(INSTALL_PROGRAM) -b -m744 install_files/certs/tcpip_client.pem $(DESTDIR)@VSCPDIR@/certs/;\
 	fi	
 
