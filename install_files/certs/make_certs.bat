@@ -53,3 +53,27 @@ c:\OpenSSL-Win32\bin\openssl.exe x509 -req -days 365 -extensions v3_ca -extfile 
 copy server.crt server.pem
 
 type server.key >> server.pem
+
+
+del tcpip_server.*
+
+c:\OpenSSL-Win32\bin\openssl.exe genrsa -des3 -out tcpip_server.key 4096
+
+c:\OpenSSL-Win32\bin\openssl.exe req -sha256 -new -key tcpip_server.key -out tcpip_server.csr -utf8
+
+copy tcpip_server.key tcpip_server.key.orig
+
+c:\OpenSSL-Win32\bin\openssl.exe rsa -in tcpip_server.key.orig -out tcpip_server.key
+
+echo [ v3_ca ] > server.ext.txt
+echo [ req ] >> tcpip_server.ext.txt
+echo req_extensions = my_extensions >> tcpip_server.ext.txt
+echo [ my_extensions ] >> tcpip_server.ext.txt
+echo extendedKeyUsage=serverAuth >> tcpip_server.ext.txt
+echo crlDistributionPoints=URI:http://localhost/crl.pem >> tcpip_server.ext.txt
+
+c:\OpenSSL-Win32\bin\openssl.exe x509 -req -days 365 -extensions v3_ca -extfile tcpip_server.ext.txt -in tcpip_server.csr -signkey tcpip_server.key -out tcpip_server.crt
+
+copy tcpip_server.crt tcpip_server.pem
+
+type tcpip_server.key >> tcpip_server.pem

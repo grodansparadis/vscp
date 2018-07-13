@@ -128,7 +128,7 @@ deb:    all
 	@mkdir -p ../../../dist
 	@mv *.deb ../../../dist
 
-clean: all
+clean:
 	rm -f Makefile
 	rm -rf ./.deps ./.pch
 	rm -f ./*.o

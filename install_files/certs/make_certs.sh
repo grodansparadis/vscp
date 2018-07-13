@@ -62,3 +62,40 @@ openssl x509 -pubkey < server_bkup.crt | openssl pkey -pubin -outform der | open
 
 cat server_bkup.pin
 
+echo "Generating tcpip client certificate ..."
+
+openssl genrsa -des3 -out tcpip_client.key 2048
+openssl req -new -key tcpip_client.key -out tcpip_client.csr
+
+cp tcpip_client.key tcpip_client.key.orig
+
+openssl rsa -in tcpip_client.key.orig -out tcpip_client.key
+
+openssl x509 -req -days 3650 -in tcpip_client.csr -signkey tcpip_client.key -out tcpip_client.crt
+
+cp tcpip_client.crt tcpip_client.pem
+cat tcpip_client.key >> tcpip_client.pem
+
+openssl pkcs12 -export -inkey tcpip_client.key -in tcpip_client.pem -name ClientName -out tcpip_client.pfx
+
+echo "Generating tcpip server certificate ..."
+
+openssl genrsa -des3 -out tcpip_server.key 2048
+openssl req -new -key tcpip_server.key -out tcpip_server.csr
+
+cp tcpip_server.key tcpip_server.key.orig
+
+openssl rsa -in tcpip_server.key.orig -out tcpip_server.key
+
+openssl x509 -req -days 3650 -in tcpip_server.csr -signkey tcpip_server.key -out tcpip_server.crt
+
+cp tcpip_server.crt tcpip_server.pem
+cat tcpip_server.key >> tcpip_server.pem
+
+openssl pkcs12 -export -inkey tcpip_server.key -in tcpip_server.pem -name ServerName -out tcpip_server.pfx
+
+echo "tcpip server certificate hash for Public-Key-Pins header:"
+
+openssl x509 -pubkey < tcpip_server.crt | openssl pkey -pubin -outform der | openssl dgst -sha256 -binary | base64 > tcpip_server.pin
+
+cat tcpip_server.pin
