@@ -212,8 +212,7 @@ int VscpRemoteTcpIf::doCommand( wxString& cmd )
 
 size_t VscpRemoteTcpIf::getInputQueueCount( void )
 {	
-    wxStringTokenizer tkz( m_strResponse, _("\r\n") );
-    return tkz.CountTokens();
+    return m_inputStrArray.Count();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1517,7 +1516,7 @@ int VscpRemoteTcpIf::doCmdInterfaceList( wxArrayString& wxarray )
         return VSCP_ERROR_ERROR;
     }
     
-    if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
+    if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;
     
     // Handle the data (if any)
     for (unsigned int i=0; i<getInputQueueCount(); i++ ) {
