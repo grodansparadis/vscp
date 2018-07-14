@@ -105,15 +105,6 @@ bool VscpRemoteTcpIf::checkReturnValue( bool bClear )
     char buf[8192];
     int nRead = -1;
     
-#ifdef DEBUG_INNER_COMMUNICTION
-    wxLogDebug( _("------------------------------------------------------------") );
-    wxLogDebug( _("checkReturnValue:  Queue before. Responsetime = %u. "), m_responseTimeOut );
-    for ( uint16_t i=0; i<m_inputStrArray.Count(); i++) {
-        wxLogDebug( "***** {" + m_inputStrArray[ i ] + "} *****" );
-    }
-    wxLogDebug( _("------------------------------------------------------------") );
-#endif    
-
     if ( bClear ) doClrInputQueue();
 
     wxLongLong start = wxGetLocalTimeMillis();
@@ -178,6 +169,7 @@ int VscpRemoteTcpIf::doCommand( const char *cmd )
 
 int VscpRemoteTcpIf::doCommand( wxString& cmd )
 {
+    bool ret = false;
     
 #ifdef DEBUG_INNER_COMMUNICTION    
     wxLogDebug( _("doCommand: ") + cmd );
@@ -190,16 +182,21 @@ int VscpRemoteTcpIf::doCommand( wxString& cmd )
         n != cmd.Length() ) {
         return VSCP_ERROR_ERROR;
     }
+
+    ret = checkReturnValue( true );
+
+    addInputStringArrayFromReply();
     
-    /*
+#ifdef DEBUG_INNER_COMMUNICTION
     wxLogDebug( _("------------------------------------------------------------") );
-    wxLogDebug( _("After command  %u"), m_responseTimeOut );
+    wxLogDebug( _("checkReturnValue:  Queue before. Responsetime = %u. "), m_responseTimeOut );
     for ( uint16_t i=0; i<m_inputStrArray.Count(); i++) {
         wxLogDebug( "***** {" + m_inputStrArray[ i ] + "} *****" );
     }
-    wxLogDebug( _("------------------------------------------------------------") );*/
+    wxLogDebug( _("------------------------------------------------------------") );
+#endif
     
-    if ( !checkReturnValue( true ) ) {
+    if ( !ret ) {
 #ifdef DEBUG_INNER_COMMUNICTION        
         wxLogDebug( _("doCommand: checkReturnValue failed") );
 #endif        
@@ -702,7 +699,6 @@ int VscpRemoteTcpIf::doCmdEnterReceiveLoop( void )
         return VSCP_ERROR_ERROR;
     }
   
-    addInputStringArrayFromReply();
     //m_inputStrArray.Clear();
 
     m_bModeReceiveLoop = true;
@@ -1317,7 +1313,6 @@ int VscpRemoteTcpIf::doCmdGetGUID( char *pGUID )
         return VSCP_ERROR_ERROR;
     }
     
-    addInputStringArrayFromReply();
     if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
     strLine = m_inputStrArray[ m_inputStrArray.Count() - 2 ];
     
@@ -1366,7 +1361,6 @@ int VscpRemoteTcpIf::doCmdGetGUID( cguid& ifguid )
         return VSCP_ERROR_ERROR;
     }
     
-    addInputStringArrayFromReply();
     if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
     strLine = m_inputStrArray[ m_inputStrArray.Count() - 2 ];
     
@@ -1455,7 +1449,6 @@ int VscpRemoteTcpIf::doCmdGetChannelInfo( VSCPChannelInfo *pChannelInfo )
         return VSCP_ERROR_ERROR;
     }
     
-    addInputStringArrayFromReply();
     if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
     strLine = m_inputStrArray[ m_inputStrArray.Count() - 2 ];
 
@@ -1498,7 +1491,6 @@ int VscpRemoteTcpIf::doCmdGetChannelID( uint32_t *pChannelID )
         return VSCP_ERROR_ERROR;
     }
     
-    addInputStringArrayFromReply();
     if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
     strLine = m_inputStrArray[ m_inputStrArray.Count() - 2 ];
 
@@ -1528,7 +1520,6 @@ int VscpRemoteTcpIf::doCmdInterfaceList( wxArrayString& wxarray )
     if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
     
     // Handle the data (if any)
-    addInputStringArrayFromReply();
     for (unsigned int i=0; i<getInputQueueCount(); i++ ) {
         if ( wxNOT_FOUND == m_inputStrArray[ i ].Find( _("+OK") ) ) {            
             wxarray.Add( m_inputStrArray[ i ] );            
@@ -1592,7 +1583,6 @@ int VscpRemoteTcpIf::getRemoteVariableList( wxArrayString& array,
     if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
     
     // Handle the data (if any)
-    addInputStringArrayFromReply();
     for ( unsigned int i=0; i<getInputQueueCount(); i++ ) {
         if ( wxNOT_FOUND == m_inputStrArray[ i ].Find( _("+OK") ) ) { 
             array.Add( m_inputStrArray[ i ] );            
@@ -1877,7 +1867,6 @@ int VscpRemoteTcpIf::getRemoteVariableAsString( const wxString& name,
         return VSCP_ERROR_ERROR;
     }
     
-    addInputStringArrayFromReply();
     if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
 
     // Get variable data
@@ -1945,7 +1934,6 @@ int VscpRemoteTcpIf::getRemoteVariableValue( const wxString& name, wxString& str
         return VSCP_ERROR_ERROR;
     }
     
-    addInputStringArrayFromReply();
     if ( m_inputStrArray.GetCount() < 2 ) return VSCP_ERROR_ERROR; 
 
     // Get value
@@ -2953,7 +2941,6 @@ int VscpRemoteTcpIf::tableList( wxArrayString &tablesArray )
     if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
     
     // Handle the data (if any)
-    addInputStringArrayFromReply();
     for ( unsigned int i=0; i<getInputQueueCount(); i++ ) {
         if ( wxNOT_FOUND == m_inputStrArray[ i ].Find( _("+OK") ) ) { 
             tablesArray.Add( m_inputStrArray[ i ] );            
@@ -2987,7 +2974,6 @@ int VscpRemoteTcpIf::tableListInfo( const wxString &tblName, wxString &tableInfo
     if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
     
     // Handle the data (if any)
-    addInputStringArrayFromReply();
     for ( unsigned int i=0; i<getInputQueueCount(); i++ ) {
         if ( wxNOT_FOUND == m_inputStrArray[ i ].Find( _("+OK") ) ) { 
             tableInfo += m_inputStrArray[ i ];            
@@ -3027,7 +3013,6 @@ int VscpRemoteTcpIf::tableGet( const wxString& tblName,
     if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
     
     // Handle the data (if any)
-    addInputStringArrayFromReply();
     for ( unsigned int i=0; i<getInputQueueCount(); i++ ) {
         if ( wxNOT_FOUND == m_inputStrArray[ i ].Find( _("+OK") ) ) { 
             resultArray.Add( m_inputStrArray[ i ] );            
@@ -3063,7 +3048,6 @@ int VscpRemoteTcpIf::tableGetRaw( const wxString& tblName,
     if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
     
     // Handle the data (if any)
-    addInputStringArrayFromReply();
     for ( unsigned int i=0; i<getInputQueueCount(); i++ ) {
         if ( wxNOT_FOUND == m_inputStrArray[ i ].Find( _("+OK") ) ) { 
             resultArray.Add( m_inputStrArray[ i ] );            
@@ -3147,7 +3131,6 @@ int VscpRemoteTcpIf::tableGetNumRecords( const wxString& tblName,
         return VSCP_ERROR_ERROR;
     }
     
-    addInputStringArrayFromReply();
     if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
     strLine = m_inputStrArray[ m_inputStrArray.Count() - 2 ];
     
@@ -3181,7 +3164,6 @@ int VscpRemoteTcpIf::tableGetFirstDate( const wxString& tblName,
         return VSCP_ERROR_ERROR;
     }
     
-    addInputStringArrayFromReply();
     if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
     strLine = m_inputStrArray[ m_inputStrArray.Count() - 2 ];
     
@@ -3216,7 +3198,6 @@ int VscpRemoteTcpIf::tableGetLastDate( const wxString& tblName,
         return VSCP_ERROR_ERROR;
     }
     
-    addInputStringArrayFromReply();
     if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
     strLine = m_inputStrArray[ m_inputStrArray.Count() - 2 ];
     
@@ -3251,7 +3232,6 @@ int VscpRemoteTcpIf::tableGetSum( const wxString& tblName,
         return VSCP_ERROR_ERROR;
     }
     
-    addInputStringArrayFromReply();
     if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
     strLine = m_inputStrArray[ m_inputStrArray.Count() - 2 ];
     
@@ -3286,7 +3266,6 @@ int VscpRemoteTcpIf::tableGetMin( const wxString& tblName,
         return VSCP_ERROR_ERROR;
     }
     
-    addInputStringArrayFromReply();
     if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
     strLine = m_inputStrArray[ m_inputStrArray.Count() - 2 ];
     
@@ -3322,7 +3301,6 @@ int VscpRemoteTcpIf::tableGetMax( const wxString& tblName,
         return VSCP_ERROR_ERROR;
     }
     
-    addInputStringArrayFromReply();
     if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
     strLine = m_inputStrArray[ m_inputStrArray.Count() - 2 ];
     
@@ -3358,7 +3336,6 @@ int VscpRemoteTcpIf::tableGetAverage( const wxString& tblName,
         return VSCP_ERROR_ERROR;
     }
     
-    addInputStringArrayFromReply();
     if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
     strLine = m_inputStrArray[ m_inputStrArray.Count() - 2 ];
     
@@ -3394,7 +3371,6 @@ int VscpRemoteTcpIf::tableGetMedian( const wxString& tblName,
         return VSCP_ERROR_ERROR;
     }
     
-    addInputStringArrayFromReply();
     if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
     strLine = m_inputStrArray[ m_inputStrArray.Count() - 2 ];
     
@@ -3429,7 +3405,6 @@ int VscpRemoteTcpIf::tableGetStdDev( const wxString& tblName,
         return VSCP_ERROR_ERROR;
     }
     
-    addInputStringArrayFromReply();
     if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
     strLine = m_inputStrArray[ m_inputStrArray.Count() - 2 ];
     
@@ -3464,7 +3439,6 @@ int VscpRemoteTcpIf::tableGetVariance( const wxString& tblName,
         return VSCP_ERROR_ERROR;
     }
     
-    addInputStringArrayFromReply();
     if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
     strLine = m_inputStrArray[ m_inputStrArray.Count() - 2 ];
     
@@ -3499,7 +3473,6 @@ int VscpRemoteTcpIf::tableGetMode( const wxString& tblName,
         return VSCP_ERROR_ERROR;
     }
     
-    addInputStringArrayFromReply();
     if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
     strLine = m_inputStrArray[ m_inputStrArray.Count() - 2 ];
     
@@ -3534,7 +3507,6 @@ int VscpRemoteTcpIf::tableGetLowerQ( const wxString& tblName,
         return VSCP_ERROR_ERROR;
     }
     
-    addInputStringArrayFromReply();
     if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
     strLine = m_inputStrArray[ m_inputStrArray.Count() - 2 ];
     
@@ -3569,7 +3541,6 @@ int VscpRemoteTcpIf::tableGetUpperQ( const wxString& tblName,
         return VSCP_ERROR_ERROR;
     }
     
-    addInputStringArrayFromReply();
     if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
     strLine = m_inputStrArray[ m_inputStrArray.Count() - 2 ];
     
