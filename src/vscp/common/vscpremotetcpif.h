@@ -152,7 +152,7 @@ public:
         @param to Sleep value in milliseconds.
      */
     void setAfterCommandSleep( uint16_t to ) {
-        to = to; // For backward compability
+        TCPIP_UNUSED(to); // For backward compability
     }
 
     /*!
