@@ -86,32 +86,32 @@ install-system: install-folders install-startup-script install-config install-sa
 
 install-folders:
 	@echo "- Creating folders."
-	@mkdir -p $(DESTDIR)@VSCPDIR@
-	@mkdir -p $(DESTDIR)@VSCPDIR@/logs
-	@mkdir -p $(DESTDIR)@VSCPDIR@/actions
-	@mkdir -p $(DESTDIR)@VSCPDIR@/scripts
-	@mkdir -p $(DESTDIR)@VSCPDIR@/scripts/javascript
-	@mkdir -p $(DESTDIR)@VSCPDIR@/scripts/lua
-	@mkdir -p $(DESTDIR)@VSCPDIR@/ux
-	@mkdir -p $(DESTDIR)@VSCPDIR@/web
-	@mkdir -p $(DESTDIR)@VSCPDIR@/certs
-	@mkdir -p $(DESTDIR)@VSCPDIR@/drivers
-	@mkdir -p $(DESTDIR)@VSCPDIR@/drivers/level1
-	@mkdir -p $(DESTDIR)@VSCPDIR@/drivers/level2
-	@mkdir -p $(DESTDIR)@VSCPDIR@/drivers/level2
-	@mkdir -p $(DESTDIR)@VSCPDIR@/upload
-	@mkdir -p $(DESTDIR)@VSCPDIR@/web/css
-	@mkdir -p $(DESTDIR)@VSCPDIR@/web/images
-	@mkdir -p $(DESTDIR)@VSCPDIR@/web/lib
-	@mkdir -p $(DESTDIR)@VSCPDIR@/web/testws
-	@mkdir -p $(DESTDIR)@VSCPDIR@/vscp
-	@mkdir -p $(DESTDIR)@VSCPDIR@/tables
-	@mkdir -p $(DESTDIR)@VSCPDIR@/mdf
-	@mkdir -p $(DESTDIR)@VSCPDIR@/tmp
+	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@
+	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/logs
+	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/actions
+	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/scripts
+	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/scripts/javascript
+	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/scripts/lua
+	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/ux
+	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/web
+	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/certs
+	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/drivers
+	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/drivers/level1
+	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/drivers/level2
+	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/drivers/level2
+	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/upload
+	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/web/css
+	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/web/images
+	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/web/lib
+	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/web/testws
+	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/vscp
+	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/tables
+	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/mdf
+	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/tmp
 
 install-startup-script:
-	@mkdir -p $(DESTDIR)/etc
-	@mkdir -p $(DESTDIR)/etc/init.d
+	@$(INSTALL_PROGRAM) -d $(DESTDIR)/etc
+	$(INSTALL_PROGRAM) -d $(DESTDIR)/etc/init.d
 	@echo "- Installing startup script."
 	@if [ ! -e $(DESTDIR)/etc/init.d/vscpd ]; then\
 	    $(INSTALL_PROGRAM) -b -m755 install_files/unix/vscpd.startup_script_debian $(DESTDIR)/etc/init.d/vscpd;\
@@ -122,8 +122,8 @@ install-startup-script:
 
 install-config:
 	@echo "- Installing main configuration file."
-	@mkdir -p $(DESTDIR)/etc/
-	@mkdir -p $(DESTDIR)/etc/vscp
+	$(INSTALL_PROGRAM) -d $(DESTDIR)/etc/
+	$(INSTALL_PROGRAM) -d $(DESTDIR)/etc/vscp
 	$(INSTALL_PROGRAM) -b -m744 install_files/unix/vscpd.conf $(DESTDIR)/etc/vscp/vscpd.conf
 #	@if [ ! -e $(DESTDIR)/etc/vscp/vscpd.conf ]; then\
 #	$(INSTALL_PROGRAM) -b -m744 install_files/unix/vscpd.conf $(DESTDIR)/etc/vscp/vscpd.conf;\
@@ -157,7 +157,7 @@ install-sample-data:
 	fi
 
 install-sample-certs:
-	@mkdir -p $(DESTDIR)@VSCPDIR@/certs
+	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/certs
 	@echo "- Installing web server sample certificate."
 	@if [ ! -e $(DESTDIR)@VSCPDIR@/certs/server.pem ]; then\
 	    $(INSTALL_PROGRAM) -b -m744 install_files/certs/server.pem $(DESTDIR)@VSCPDIR@/certs/;\
@@ -180,9 +180,9 @@ install-sample-certs:
 
 install-manpages:
 	@echo "- Installing man-pages."
-	@mkdir -p $(DESTDIR)/usr/share/man/man8
-	@mkdir -p $(DESTDIR)/usr/share/man/man7
-	@mkdir -p $(DESTDIR)/usr/share/man/man1
+	$(INSTALL_PROGRAM) -d $(DESTDIR)/usr/share/man/man8
+	$(INSTALL_PROGRAM) -d $(DESTDIR)/usr/share/man/man7
+	$(INSTALL_PROGRAM) -d $(DESTDIR)/usr/share/man/man1
 	$(INSTALL_PROGRAM) -b -m644 man/vscpd.8 $(DESTDIR)/usr/share/man/man8/
 	$(INSTALL_PROGRAM) -b -m644 man/uvscpd.8 $(DESTDIR)/usr/share/man/man8/
 	$(INSTALL_PROGRAM) -b -m644 man/vscpworks.1 $(DESTDIR)/usr/share/man/man1/
