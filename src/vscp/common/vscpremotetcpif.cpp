@@ -356,9 +356,8 @@ int VscpRemoteTcpIf::doCmdOpen( const wxString& strHostname,
                                     TCPIP_DEFAULT_CONNECT_TIMEOUT_SECONDS );
     if ( NULL == m_conn ) {    
 
-#ifdef DEBUG_LIB_VSCP_HELPER            
-        wxString wxlog = wxString::Format(_("Connection failed: Code=%d - "), rv);       
-        wxLogDebug( wxlog+ strHostname );
+#ifdef DEBUG_LIB_VSCP_HELPER
+        wxLogDebug( _("Connection failed.") + strHostname );
 #endif 
         return VSCP_ERROR_TIMEOUT;
     }
@@ -603,7 +602,7 @@ int VscpRemoteTcpIf::doCmdReceive( vscpEvent *pEvent )
         return VSCP_ERROR_ERROR;
     }
   
-     if ( !getEventFromLine( pEvent, m_strResponse ) ) return VSCP_ERROR_PARAMETER;
+    if ( !getEventFromLine( pEvent, m_inputStrArray[ 0 ] ) ) return VSCP_ERROR_PARAMETER;
     
     return VSCP_ERROR_SUCCESS;
 
@@ -629,7 +628,7 @@ int VscpRemoteTcpIf::doCmdReceiveEx( vscpEventEx *pEventEx )
     vscpEvent *pEvent = new vscpEvent;
     if ( NULL == pEvent) return VSCP_ERROR_PARAMETER;
   
-    if ( !getEventFromLine( pEvent, m_strResponse ) ) return VSCP_ERROR_PARAMETER;
+    if ( !getEventFromLine( pEvent, m_inputStrArray[ 0 ] ) ) return VSCP_ERROR_PARAMETER;
   
     if ( !vscp_convertVSCPtoEx( pEventEx, pEvent ) ) {
         vscp_deleteVSCPevent( pEvent );
@@ -872,7 +871,7 @@ int VscpRemoteTcpIf::doCmdDataAvailable( void )
         return VSCP_ERROR_ERROR;
     }
     
-    nMsg = atoi( (const char *)m_strResponse.mbc_str() );
+    nMsg = atoi( (const char *)m_inputStrArray[ 0 ].mbc_str() );
     
     return nMsg;   
 }
@@ -899,7 +898,7 @@ int VscpRemoteTcpIf::doCmdStatus( canalStatus *pStatus )
         return VSCP_ERROR_ERROR;
     }
     
-    wxStringTokenizer tkz( m_strResponse, _(",\r\n") );
+    wxStringTokenizer tkz( m_inputStrArray[ 0 ], _(",\r\n") );
     
     // lasterrorcode
     if ( !tkz.HasMoreTokens() ) return VSCP_ERROR_GENERIC;
@@ -961,7 +960,7 @@ int VscpRemoteTcpIf::doCmdStatistics( VSCPStatistics *pStatistics )
         return VSCP_ERROR_ERROR;
     }
 
-    wxStringTokenizer tkz( m_strResponse, _(",\r\n") );
+    wxStringTokenizer tkz( m_inputStrArray[ 0 ], _(",\r\n") );
 
     // Undefined - Bus off for CAN, no meaning for VSCP L2
     pStatistics->x = 0;
@@ -1204,7 +1203,7 @@ int VscpRemoteTcpIf::doCmdVersion( uint8_t *pMajorVer,
         return VSCP_ERROR_ERROR;
     }
 
-    wxStringTokenizer strTokens( m_strResponse, ",\r\n" );
+    wxStringTokenizer strTokens( m_inputStrArray[ 0 ], ",\r\n" );
 
     // Major version
     *pMajorVer = 0;
