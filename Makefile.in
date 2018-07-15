@@ -114,19 +114,22 @@ install-startup-script:
 	@mkdir -p $(DESTDIR)/etc/init.d
 	@echo "- Installing startup script."
 	@if [ ! -e $(DESTDIR)/etc/init.d/vscpd ]; then\
-		$(INSTALL_PROGRAM) -b -m755 install_files/unix/vscpd.startup_script_debian $(DESTDIR)/etc/init.d/vscpd;\
-	    update-rc.d vscpd defaults;\
+	    $(INSTALL_PROGRAM) -b -m755 install_files/unix/vscpd.startup_script_debian $(DESTDIR)/etc/init.d/vscpd;\
+#	    if [ ! -z "$DESTDIR" ]; then\
+#	        update-rc.d vscpd defaults;\
+#s	    fi;\
 	fi
 
 install-config:
 	@echo "- Installing main configuration file."
 	@mkdir -p $(DESTDIR)/etc/
 	@mkdir -p $(DESTDIR)/etc/vscp
-	@if [ ! -e $(DESTDIR)/etc/vscp/vscpd.conf ]; then\
-	    $(INSTALL_PROGRAM) -b -m744 install_files/unix/vscpd.conf $(DESTDIR)/etc/vscp/vscpd.conf;\
-	else\
-	    $(INSTALL_PROGRAM) -b -m744 install_files/unix/vscpd.conf $(DESTDIR)/etc/vscp/vscpd.conf.`date +'%Y%m%d'`;\
-	fi
+	$(INSTALL_PROGRAM) -b -m744 install_files/unix/vscpd.conf $(DESTDIR)/etc/vscp/vscpd.conf
+#	@if [ ! -e $(DESTDIR)/etc/vscp/vscpd.conf ]; then\
+#	$(INSTALL_PROGRAM) -b -m744 install_files/unix/vscpd.conf $(DESTDIR)/etc/vscp/vscpd.conf;\
+#	else\
+#	    $(INSTALL_PROGRAM) -b -m744 install_files/unix/vscpd.conf $(DESTDIR)/etc/vscp/vscpd.conf.`date +'%Y%m%d'`;\
+#	fi
 
 install-sample-data:
 	@echo "- Installing VSCP event database."
@@ -154,6 +157,7 @@ install-sample-data:
 	fi
 
 install-sample-certs:
+	@mkdir -p $(DESTDIR)@VSCPDIR@/certs
 	@echo "- Installing web server sample certificate."
 	@if [ ! -e $(DESTDIR)@VSCPDIR@/certs/server.pem ]; then\
 	    $(INSTALL_PROGRAM) -b -m744 install_files/certs/server.pem $(DESTDIR)@VSCPDIR@/certs/;\
@@ -176,6 +180,9 @@ install-sample-certs:
 
 install-manpages:
 	@echo "- Installing man-pages."
+	@mkdir -p $(DESTDIR)/usr/share/man/man8
+	@mkdir -p $(DESTDIR)/usr/share/man/man7
+	@mkdir -p $(DESTDIR)/usr/share/man/man1
 	$(INSTALL_PROGRAM) -b -m644 man/vscpd.8 $(DESTDIR)/usr/share/man/man8/
 	$(INSTALL_PROGRAM) -b -m644 man/uvscpd.8 $(DESTDIR)/usr/share/man/man8/
 	$(INSTALL_PROGRAM) -b -m644 man/vscpworks.1 $(DESTDIR)/usr/share/man/man1/
