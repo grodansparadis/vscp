@@ -287,16 +287,25 @@ void frmMDFEditor::CreateControls()
 
     wxImageList* itemImageList = new wxImageList( 16, 16, true, 5 );
     {
-        wxIcon Icon0( Home_xpm );
-        itemImageList->Add( Icon0 );
-        wxIcon Icon1( Folder_Add_xpm );
-        itemImageList->Add( Icon1 );
-        wxIcon Icon2( Info_xpm );
-        itemImageList->Add( Icon2 );
-        wxIcon Icon3( copy_xpm );
-        itemImageList->Add( Icon3 );
-        wxIcon Icon4( copy_xpm );
-        itemImageList->Add( Icon4 );
+        wxImage icon0( Home_xpm );
+        icon0.Rescale( 16, 16 );
+        itemImageList->Add( icon0 );
+        
+        wxImage icon1( Folder_Add_xpm );
+        icon1.Rescale( 16, 16 );
+        itemImageList->Add( icon1 );
+        
+        wxImage icon2( Info_xpm );
+        icon2.Rescale( 16, 16 );
+        itemImageList->Add( icon2 );
+        
+        wxImage icon3( copy_xpm );
+        icon3.Rescale( 16, 16 );
+        itemImageList->Add( icon3 );
+        
+        wxImage icon4( copy_xpm );
+        icon4.Rescale( 16, 16 );
+        itemImageList->Add( icon4 );
     }
 
     m_mdfTree->AssignImageList( itemImageList );
