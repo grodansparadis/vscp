@@ -11,7 +11,7 @@ rm -rf TODO~
 rm -rf BUILD~
 rm -rf BUILD_UNIX~
 rm -rf BUILD_WIN32.txt~
-rm config.status
+rm -f config.status
 
 
 echo Removing Work directories...
@@ -68,14 +68,14 @@ rm -rf ./src/vscp/install_win32
 rm -rf ./src/vscp/install_deb
 rm -rf firmware
 rm -rf docs
-rm 'install_files/certs/client.key.orig'
-rm 'install_files/certs/server.key.orig'
-rm 'install_files/certs/server_bkup.key.orig'
-rm 'src/vscp/drivers/level1/candrv/linux/Makefile.orig'
-rm 'src/vscp/drivers/level1/lincan/linux/Makefile.orig'
-rm 'src/vscp/drivers/level1/logger/linux/Makefile.orig'
-rm 'src/vscp/drivers/level2/logger/linux/Makefile.orig'
-rm 'src/vscp/helperlib/linux/Makefile.orig'
+rm -f 'install_files/certs/client.key.orig'
+rm -f 'install_files/certs/server.key.orig'
+rm -f 'install_files/certs/server_bkup.key.orig'
+rm -f 'src/vscp/drivers/level1/candrv/linux/Makefile.orig'
+rm -f 'src/vscp/drivers/level1/lincan/linux/Makefile.orig'
+rm -f 'src/vscp/drivers/level1/logger/linux/Makefile.orig'
+rm -f 'src/vscp/drivers/level2/logger/linux/Makefile.orig'
+rm -f 'src/vscp/helperlib/linux/Makefile.orig'
 rm -rf autom4te.cache
-rm config.status
+rm -f config.status
 
