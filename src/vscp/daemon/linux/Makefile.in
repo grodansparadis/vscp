@@ -305,33 +305,35 @@ install-system: install-folders install-startup-script install-config install-sa
 
 install-folders:
 	@echo "- Create folder structure."
-	@mkdir -p $(DESTDIR)@VSCPDIR@
-	@mkdir -p $(DESTDIR)@VSCPDIR@/logs
-	@mkdir -p $(DESTDIR)@VSCPDIR@/actions
-	@mkdir -p $(DESTDIR)@VSCPDIR@/scripts
-	@mkdir -p $(DESTDIR)@VSCPDIR@/scripts/javascript
-	@mkdir -p $(DESTDIR)@VSCPDIR@/scripts/lua
-	@mkdir -p $(DESTDIR)@VSCPDIR@/ux
-	@mkdir -p $(DESTDIR)@VSCPDIR@/web
-	@mkdir -p $(DESTDIR)@VSCPDIR@/certs
-	@mkdir -p $(DESTDIR)@VSCPDIR@/drivers
-	@mkdir -p $(DESTDIR)@VSCPDIR@/drivers/level1
-	@mkdir -p $(DESTDIR)@VSCPDIR@/drivers/level2
-	@mkdir -p $(DESTDIR)@VSCPDIR@/drivers/level2
-	@mkdir -p $(DESTDIR)@VSCPDIR@/upload
-	@mkdir -p $(DESTDIR)@VSCPDIR@/web/css
-	@mkdir -p $(DESTDIR)@VSCPDIR@/web/images
-	@mkdir -p $(DESTDIR)@VSCPDIR@/web/lib
-	@mkdir -p $(DESTDIR)@VSCPDIR@/web/testws
-	@mkdir -p $(DESTDIR)@VSCPDIR@/vscp
-	@mkdir -p $(DESTDIR)@VSCPDIR@/tables
-	@mkdir -p $(DESTDIR)@VSCPDIR@/mdf
-	@mkdir -p $(DESTDIR)@VSCPDIR@/tmp
+	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@
+	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/logs
+	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/actions
+	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/scripts
+	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/scripts/javascript
+	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/scripts/lua
+	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/ux
+	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/web
+	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/web/service
+	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/js
+	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/certs
+	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/drivers
+	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/drivers/level1
+	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/drivers/level2
+	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/drivers/level2
+	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/upload
+	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/web/css
+	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/web/images
+	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/web/lib
+	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/web/testws
+	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/vscp
+	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/tables
+	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/mdf
+	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/tmp
 
 install-startup-script:
 	@echo "- Installing startup script."
 	@if [ ! -e /etc/init.d/vscpd ]; then\
-	    $(INSTALL_PROGRAM) -b -m755 ../../../../install_files/unix/vscpd.startup_script_debian /etc/init.d/vscpd;\
+	    $(INSTALL_PROGRAM) -b -m755 ../../../../install_files/unix/vscpd.startup_script_debian $(DESTDIR)/etc/init.d/vscpd;\
 	    update-rc.d vscpd defaults;\
 	fi
 
@@ -339,9 +341,9 @@ install-config:
 	@echo "- Installing main configuration file."
 	@mkdir -p /etc/vscp
 	@if [ ! -e /etc/vscp/vscpd.conf ]; then\
-	    $(INSTALL_PROGRAM) -b -m744 ../../../../install_files/unix/vscpd.conf /etc/vscp/vscpd.conf;\
+	    $(INSTALL_PROGRAM) -b -m744 ../../../../install_files/unix/vscpd.conf $(DESTDIR)/etc/vscp/vscpd.conf;\
 	else\
-	    $(INSTALL_PROGRAM) -b -m744 ../../../../install_files/unix/vscpd.conf /etc/vscp/vscpd.conf.`date +'%Y%m%d'`;\
+	    $(INSTALL_PROGRAM) -b -m744 ../../../../install_files/unix/vscpd.conf $(DESTDIR)/etc/vscp/vscpd.conf.`date +'%Y%m%d'`;\
 	fi
 
 install-sample-data:
@@ -380,8 +382,6 @@ install-sample-cert:
 	@if [ ! -e @VSCPDIR@/certs/client.pem ]; then\
 	    $(INSTALL_PROGRAM) -b -m744 ../../../../install_files/certs/client.pem $(DESTDIR)@VSCPDIR@/certs;\
 		fi
-
-
 
 uninstall:
 
