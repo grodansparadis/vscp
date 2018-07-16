@@ -10,6 +10,7 @@
 # Default-Stop:      0 1 6
 # Short-Description: VSCP daemon init. script
 # Description:       Init. script for the Very Simple Control Protocol (VSCP) 
+# daemon             (vscpd) and should be placed in /etc/init.d
 ### END INIT INFO
 
 
