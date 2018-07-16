@@ -1721,16 +1721,21 @@ void TCPClientThread::handleClientSend( void )
         wxString strGUID;
         if ( tkz.HasMoreTokens() ) {
             strGUID = tkz.GetNextToken();
-
+            
             // Check if i/f GUID should be used
-            if ( ( '-' == strGUID[0] ) || vscp_isGUIDEmpty( event.GUID ) ) {
+            if ( '-' == strGUID[0] ) {
                 // Copy in the i/f GUID
                 m_pClientItem->m_guid.writeGUID( event.GUID );
             }
             else {
                 vscp_getGuidFromString( &event, strGUID );
+                
+                // Check if i/f GUID should be used
+                if ( true == vscp_isGUIDEmpty( event.GUID ) ) {
+                    // Copy in the i/f GUID
+                    m_pClientItem->m_guid.writeGUID( event.GUID );
+                }
             }
-
         }
         else {
             write(   MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
