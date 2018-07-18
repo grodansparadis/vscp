@@ -650,8 +650,12 @@ extern "C" int vscphlp_getGUID( long handle, unsigned char *pGUID )
 
     // Check that we are connected
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
+    
+    cguid GUID;
+    int rv = pvscpif->doCmdGetGUID( GUID );
+    memcpy( pGUID, GUID.getGUID(), 16 );
 
-    return pvscpif->doCmdGetGUID( pGUID );
+    return rv;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -671,7 +675,10 @@ extern "C" int vscphlp_setGUID( long handle, const unsigned char *pGUID )
     // Check that we are connected
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
-    return pvscpif->doCmdSetGUID( pGUID );
+    cguid guid;
+    guid.getFromArray( pGUID );
+    
+    return pvscpif->doCmdSetGUID( guid );
 }
 
 
