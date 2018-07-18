@@ -1295,7 +1295,7 @@ const char * VscpRemoteTcpIf::doCmdGetDriverInfo( void )
 // doCmdGetGUID
 //
 
-int VscpRemoteTcpIf::doCmdGetGUID( char *pGUID )
+int VscpRemoteTcpIf::doCmdGetGUID( unsigned char *pGUID )
 {
     long val;
     wxString strLine;
