@@ -634,6 +634,46 @@ extern "C" int vscphlp_getDriverInfo( long handle, char *pInfoStr, size_t len )
     return VSCP_ERROR_SUCCESS;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// vscphlp_getGUID
+//
+#ifdef WIN32
+extern "C" DllExport int WINAPI EXPORT vscphlp_getGUID( long handle, unsigned char *pGUID )
+#else
+extern "C" int vscphlp_getGUID( long handle, unsigned char *pGUID )
+#endif
+{
+    if ( NULL == pGUID ) return VSCP_ERROR_PARAMETER;
+
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
+    if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
+
+    // Check that we are connected
+    if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
+
+    return pvscpif->doCmdGetGUID( pGUID );
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// vscphlp_setGUID
+//
+#ifdef WIN32
+extern "C" DllExport int WINAPI EXPORT vscphlp_setGUID( long handle, const unsigned char *pGUID )
+#else
+extern "C" int vscphlp_setGUID( long handle, const unsigned char *pGUID )
+#endif
+{
+    if ( NULL == pGUID ) return VSCP_ERROR_PARAMETER;
+
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
+    if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
+
+    // Check that we are connected
+    if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
+
+    return pvscpif->doCmdSetGUID( pGUID );
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // vscphlp_shutDownServer

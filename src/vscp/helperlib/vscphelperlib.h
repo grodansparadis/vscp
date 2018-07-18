@@ -76,6 +76,8 @@ DllExport int WINAPI EXPORT vscphlp_getVersion( long handle, unsigned char *pMaj
 DllExport int WINAPI EXPORT vscphlp_getDLLVersion( long handle, unsigned long *pVersion );
 DllExport int WINAPI EXPORT vscphlp_getVendorString( long handle, char *pVendorStr, size_t len );
 DllExport int WINAPI EXPORT vscphlp_getDriverInfo( long handle, char *pDriverInfoStr, size_t len );
+DllExport int WINAPI EXPORT vscphlp_getGUID( long handle, unsigned char *pGUID );
+DllExport int WINAPI EXPORT vscphlp_setGUID( long handle, const unsigned char *pGUID );
 DllExport int WINAPI EXPORT vscphlp_shutDownServer( long handle );
 
 //-------------------------------------------------------------------------
@@ -402,6 +404,8 @@ int vscphlp_getVersion( long handle,
 int vscphlp_getDLLVersion( long handle, unsigned long *pVersion );
 int vscphlp_getVendorString( long handle, char *pVendorStr, size_t len  );
 int vscphlp_getDriverInfo( long handle, char *pDriverInfoStr, size_t len  );
+int vscphlp_getGUID( long handle, unsigned char *pGUID );
+int vscphlp_setGUID( long handle, const unsigned char *pGUID );
 int vscphlp_serverShutDown( long handle );
 
 //-------------------------------------------------------------------------

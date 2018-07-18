@@ -1295,7 +1295,7 @@ const char * VscpRemoteTcpIf::doCmdGetDriverInfo( void )
 // doCmdGetGUID
 //
 
-int VscpRemoteTcpIf::doCmdGetGUID( char *pGUID )
+int VscpRemoteTcpIf::doCmdGetGUID( unsigned char *pGUID )
 {
     long val;
     wxString strLine;
@@ -1465,7 +1465,7 @@ int VscpRemoteTcpIf::doCmdGetChannelInfo( VSCPChannelInfo *pChannelInfo )
     pChannelInfo->channelType = CANAL_COMMAND_OPEN_VSCP_LEVEL2;
 
     // Get the channel GUID
-    rv = doCmdGetGUID( pChannelInfo->GUID );
+    rv = doCmdGetGUID( (unsigned char*)pChannelInfo->GUID );
 
     return rv;
 
