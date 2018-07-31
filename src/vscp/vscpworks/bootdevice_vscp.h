@@ -51,22 +51,6 @@
 
 #include <wx/string.h>
 
-
-/*
-// Not used anywhere
-typedef struct _bootclientItem {
-    unsigned char m_nickname;       // Nickname for node
-    unsigned char m_bootalgorithm;  // Bootloader algorithm to use
-    unsigned char m_pageMSB;        // MSB of current page
-    unsigned char m_pageLSB;        // LSB of current page
-    unsigned char m_GUID0;          // GUID byte 0
-    unsigned char m_GUID3;          // GUID byte 3
-    unsigned char m_GUID5;          // GUID byte 5
-    unsigned char m_GUID7;          // GUID byte 7
-} bootclientItem;
-
-*/
-
 class CBootDevice_VSCP :
     public CBootDevice
 {
@@ -131,13 +115,6 @@ public:
         @return true on success.
     */
     bool writeFrimwareSector( void );
-
-    /*!
-        Write to device control registry
-        @param addr Address to set as start address
-
-    */
-    bool writeDeviceControlRegs( uint32_t addr );
     
     /*!
     // sendVSCPCommandStartBlock
@@ -196,14 +173,8 @@ public:
 
 private:
 
-    /// Flag for handshake with node
-    bool m_bHandshake;	
-
     /// Internal address pointer
     uint32_t m_pAddr;
-
-    /// memory type
-    uint8_t m_memtype;
     
     /// Current page
     uint32_t m_page;

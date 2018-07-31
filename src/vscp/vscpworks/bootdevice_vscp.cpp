@@ -70,18 +70,18 @@
 
 
 CBootDevice_VSCP::CBootDevice_VSCP( CDllWrapper *pdll, 
-                                        uint8_t nodeid, 
-                                        bool bDeviceFound ) :
-CBootDevice( pdll, nodeid, bDeviceFound )
+                                    uint8_t nodeid, 
+                                    bool bDeviceFound ) :
+    CBootDevice( pdll, nodeid, bDeviceFound )
 {
     init();
 }
 
 CBootDevice_VSCP::CBootDevice_VSCP( VscpRemoteTcpIf *ptcpip, 
-                                        cguid &guid, 
-                                        cguid &ifguid, 
-                                        bool bDeviceFound ) :
-CBootDevice( ptcpip, guid, ifguid, bDeviceFound )
+                                    cguid &guid, 
+                                    cguid &ifguid, 
+                                    bool bDeviceFound ) :
+    CBootDevice( ptcpip, guid, ifguid, bDeviceFound )
 {
     init();
 }
@@ -100,12 +100,8 @@ void CBootDevice_VSCP::init( void )
 {
     // Create buffers
     m_pbufPrg = new unsigned char[ BUFFER_SIZE_PROGRAM_COMMON ];
-    m_pbufCfg = new unsigned char[ BUFFER_SIZE_CONFIG_COMMON ];
-    m_pbufEEPROM = new unsigned char[ BUFFER_SIZE_EEPROM_COMMON ];
 
-    //m_bHandshake = true;		// No handshake as default
     m_pAddr = 0;
-    m_memtype = MEM_TYPE_PROGRAM;
 
     crcInit();
 }
@@ -122,47 +118,26 @@ bool CBootDevice_VSCP::loadBinaryFile(const wxString& path, uint16_t type) {
 #else	
     long err;
 #endif	
-    unsigned long fullAddr = 0;
-    unsigned long highAddr = 0;
-    unsigned long lowAddr = 0;
-    unsigned long cntData = 0;
-    unsigned long recType = 0;
+    unsigned long fullAddr  = 0;
+    unsigned long highAddr  = 0;
+    unsigned long lowAddr   = 0;
+    unsigned long cntData   = 0;
+    unsigned long recType   = 0;
+    
+    FILE* fs = NULL;
 
-
-    // Init. flash memory pointers
-    m_minFlashAddr = 0xffffffff;
-    m_maxFlashAddr = 0;
-    m_totalCntData = 0;
-    m_bPrgData = false;
-    m_bFlashMemory = true; // Flash memory should be programmed
-
+    // Init. program memory pointers
+    m_minFlashAddr  = 0xffffffff;
+    m_maxFlashAddr  = 0;
+    m_totalCntData  = 0;
+    m_bPrgData      = false;
+    m_bFlashMemory  = true; // Program memory should be programmed
 
     // Init program memory buffer
     if (NULL == m_pbufPrg) return false;
+    
     memset(m_pbufPrg, 0xff, BUFFER_SIZE_PROGRAM_COMMON);
 
-
-    // Init. config memory pointers
-    m_minConfigAddr = 0xffffffff;
-    m_maxConfigAddr = 0;
-    m_bConfigData = false;
-    m_bConfigMemory = true; // Config memory should be programmed
-
-    // Init config memory buffer
-    if (NULL == m_pbufCfg) return false;
-    memset(m_pbufCfg, 0xff, BUFFER_SIZE_CONFIG_COMMON);
-
-    // Init. EEPROM memory pointers
-    m_minEEPROMAddr = 0xffffffff;
-    m_maxEEPROMAddr = 0;
-    m_bEEPROMData = false;
-    m_bEEPROMMemory = true; // EEPROM should be programmed
-
-    // Init EEPROM memory buffer
-    if (NULL == m_pbufEEPROM) return false;
-    memset(m_pbufEEPROM, 0xff, BUFFER_SIZE_EEPROM_COMMON);
-
-    FILE* fs;
 #ifdef WIN32	
     if (0 != (err = fopen_s(&fs, path.char_str(), "r"))) {
         return false;
@@ -179,8 +154,7 @@ bool CBootDevice_VSCP::loadBinaryFile(const wxString& path, uint16_t type) {
 
     bool bRun = true;
 
-
-    while (bRun && (NULL != fgets(szLine, MAX_PATH, fs))) {
+    while ((true == bRun) && (NULL != fgets(szLine, MAX_PATH, fs))) {
 
         if (':' == szLine [ 0 ]) {
 
@@ -231,54 +205,26 @@ bool CBootDevice_VSCP::loadBinaryFile(const wxString& path, uint16_t type) {
                         unsigned char val =
                                 (unsigned char) (strtoul(szData, &endptr, 16) & 0xff);
 
-                        if ((fullAddr < MEMREG_PRG_END_COMMON) &&
-                                (fullAddr < BUFFER_SIZE_PROGRAM_COMMON)) {
+                        /* In program memory address space? */
+                        if ((fullAddr >= MEMREG_PRG_START_COMMON) &&
+                            (fullAddr <= MEMREG_PRG_END_COMMON)) {
+                            
+                            /* Avoid program memory buffer overflow. */
+                            if ((fullAddr - MEMREG_PRG_START_COMMON) < BUFFER_SIZE_PROGRAM_COMMON)
+                            {
+                                // Write into program memory buffer
+                                m_pbufPrg[ fullAddr  - MEMREG_PRG_START_COMMON ] = val;
+                                m_bPrgData = true;
+                                
+                                // Set min flash address
+                                if (fullAddr < m_minFlashAddr) m_minFlashAddr = fullAddr;
 
-                            // Write into program memory buffer
-
-                            m_pbufPrg[ fullAddr ] = val;
-                            m_bPrgData = true;
-
-                            // Set min flash address
-                            if (fullAddr < m_minFlashAddr) m_minFlashAddr = fullAddr;
-
-                            // Set max flash address
-                            if (fullAddr > m_maxFlashAddr) m_maxFlashAddr = fullAddr;
-
-                        } 
-                        else if ((fullAddr >= MEMREG_CONFIG_START_COMMON) &&
-                                ((fullAddr < MEMREG_CONFIG_START_COMMON + BUFFER_SIZE_CONFIG_COMMON))) {
-
-                            // Write into config memory buffer
-
-                            m_pbufCfg[ fullAddr - MEMREG_CONFIG_START_COMMON ] = val;
-                            m_bConfigData = true;
-
-                            // Set min config address
-                            if (fullAddr < m_minConfigAddr) m_minConfigAddr = fullAddr;
-
-                            // Set max config address
-                            if (fullAddr > m_maxConfigAddr) m_maxConfigAddr = fullAddr;
-
-                        } 
-                        else if ((fullAddr >= MEMREG_EEPROM_START_COMMON) &&
-                                ((fullAddr <= MEMREG_EEPROM_START_COMMON + BUFFER_SIZE_EEPROM_COMMON))) {
-
-                            // Write into EEPROM memory buffer
-
-                            m_pbufEEPROM[ fullAddr - MEMREG_EEPROM_START_COMMON ] = val;
-                            m_bEEPROMData = true;
-
-                            // Set min EEEPROM address
-                            if (fullAddr < m_minEEPROMAddr) m_minEEPROMAddr = fullAddr;
-
-                            // Set max config address
-                            if (fullAddr > m_maxEEPROMAddr) m_maxEEPROMAddr = fullAddr;
-
+                                // Set max flash address
+                                if (fullAddr > m_maxFlashAddr) m_maxFlashAddr = fullAddr;
+                            }
                         }
 
-                        fullAddr = fullAddr + 1;
-
+                        ++fullAddr;
                     }
                     break;
 
@@ -306,24 +252,10 @@ bool CBootDevice_VSCP::loadBinaryFile(const wxString& path, uint16_t type) {
         }
     }
 
-    rv = true;
-
     // Flash to program if none read
     if (!m_bPrgData) {
         m_bFlashMemory = false;
         m_minFlashAddr = 0x00000000;
-    }
-
-    // Config data to program if none read
-    if (!m_bConfigData) {
-        m_bConfigMemory = false;
-        m_minConfigAddr = 0x00000000;
-    }
-
-    // EEPROM data to program if none read
-    if (!m_bEEPROMData) {
-        m_bEEPROMMemory = false;
-        m_minEEPROMAddr = 0x00000000;
     }
 
     fclose(fs);
@@ -362,64 +294,6 @@ void CBootDevice_VSCP::showInfo(wxHtmlWindow *phtmlWnd) {
     phtmlWnd->AppendToPage(strInfo);
 
     if (m_bFlashMemory) {
-        phtmlWnd->AppendToPage(
-                _("<font color=\"#348017\">Will be programmed</font><br>"));
-    } else {
-        phtmlWnd->AppendToPage(
-                _("<font color=\"#F6358A\">Will not be programmed</font><br>"));
-    }
-
-    phtmlWnd->AppendToPage(
-            _("<br><br>"));
-
-    // * * * Config Memory * * *
-
-    phtmlWnd->AppendToPage(
-            _("<b><u>Config Memory</u></b><br>"));
-
-    phtmlWnd->AppendToPage(
-            _("<b>Start :</b>"));
-
-    strInfo.Printf(_("<font color=\"#005CB9\">0x%08X</font>"), m_minConfigAddr);
-    phtmlWnd->AppendToPage(strInfo);
-
-    phtmlWnd->AppendToPage(
-            _("<b> End :</b>"));
-
-    strInfo.Printf(_("<font color=\"#005CB9\">0x%08X<br></font>"), m_maxConfigAddr);
-    phtmlWnd->AppendToPage(strInfo);
-
-    if (m_bConfigMemory) {
-        phtmlWnd->AppendToPage(
-                _("<font color=\"#348017\">Will be programmed</font><br>"));
-    } else {
-        phtmlWnd->AppendToPage(
-                _("<font color=\"#F6358A\">Will not be programmed</font><br>"));
-    }
-
-    phtmlWnd->AppendToPage(
-            _("<br><br>"));
-
-
-
-    // * * * EEPROM * * *
-
-    phtmlWnd->AppendToPage(
-            _("<b><u>EEPROM Memory</u></b><br>"));
-
-    phtmlWnd->AppendToPage(
-            _("<B>Start :</b>"));
-
-    strInfo.Printf(_("<font color=\"#005CB9\">0x%08X</font>"), m_minEEPROMAddr);
-    phtmlWnd->AppendToPage(strInfo);
-
-    phtmlWnd->AppendToPage(
-            _("<b> End :</b>"));
-
-    strInfo.Printf(_("<font color=\"#005CB9\">0x%08X<br></font>"), m_maxEEPROMAddr);
-    phtmlWnd->AppendToPage(strInfo);
-
-    if (m_bEEPROMMemory) {
         phtmlWnd->AppendToPage(
                 _("<font color=\"#348017\">Will be programmed</font><br>"));
     } else {
@@ -731,11 +605,8 @@ bool CBootDevice_VSCP::doFirmwareLoad( void )
     wxString wxStatusStr;
 
     uint32_t nFlashPackets = 0;
-    uint32_t nConfigPackets = 0;
-    uint32_t nEEPROMPackets = 0;
     
-    // Packet size is always eight byte due to CAN frame 
-    // limitation
+    // Packet size is always eight byte due to CAN frame limitation
     
     // Flash memory
     if ( m_bPrgData ) {
@@ -746,25 +617,7 @@ bool CBootDevice_VSCP::doFirmwareLoad( void )
         }
     }
 
-    // Config
-    if ( m_bConfigData ) {
-        nConfigPackets = (m_maxConfigAddr - m_minConfigAddr) / 8;
-
-        if (0 != ((m_maxConfigAddr - m_minConfigAddr) % 8)) {
-            nConfigPackets++;
-        }
-    }
-
-    // EEPROM
-    if  (m_bEEPROMData ) {
-        nEEPROMPackets = (m_maxEEPROMAddr - m_minEEPROMAddr) / 8;
-
-        if (0 != ((m_maxEEPROMAddr - m_minEEPROMAddr) % 8)) {
-            nEEPROMPackets++;
-        }
-    }
-
-    long nTotalPackets = nFlashPackets + nConfigPackets + nEEPROMPackets;
+    long nTotalPackets = nFlashPackets;
     wxProgressDialog* pDlg = 
             new wxProgressDialog( _T("Boot loading in progress..."),
                                     _T("---"),
@@ -778,136 +631,55 @@ bool CBootDevice_VSCP::doFirmwareLoad( void )
 
     // Initialize checksum
     addr = m_minFlashAddr;
-    if ( !writeDeviceControlRegs( addr ) ) {
-        wxMessageBox(_T("Memory not fall in any category of FLASH , Config, EEPROM."));
-        rv = false;
-        bRun = false;
-    }
 
     // * * * flash memory * * *
 
     if ( rv && m_bPrgData ) {
 
         addr = m_minFlashAddr;
-        if ( writeDeviceControlRegs( addr ) ) {
 
-            // nFlashPackets  = number of 8 byte packets
-            m_blockNumber = 0;
-            for ( uint32_t blk = 0; ( ( blk < nFlashPackets ) && ( true == bRun ) ); blk++) {
+        // nFlashPackets  = number of 8 byte packets
+        m_blockNumber = 0;
+        for ( uint32_t blk = 0; ( ( blk < nFlashPackets ) && ( true == bRun ) ); blk++) {
 
-                // Start block data transfer
-                if ( 0 == ( blk  % ( m_blockSize / 8 ) ) ) {
-                    if ( true != sendVSCPCommandStartBlock( blk * 8 / m_blockSize ) )
-                        wxMessageBox( _T("start Block error") );
-                        bRun = false;
-                }
-                
-                wxStatusStr.Printf( _("Loading flash... %0X"), addr );
-                if (  false == ( bRun = pDlg->Update( progress, wxStatusStr ) ) ) {
-                    wxMessageBox( _T("Aborted by user.") );
-                    rv = false;
+            // Start block data transfer
+            if ( 0 == ( blk  % ( m_blockSize / 8 ) ) ) {
+                if ( true != sendVSCPCommandStartBlock( blk * 8 / m_blockSize ) )
+                    wxMessageBox( _T("start Block error") );
                     bRun = false;
-                }
-                
-                if ( false == writeFrimwareSector() ) {
-                    wxMessageBox( _T("Failed to write flash data to node(s).") );
-                    rv = false;
-                    bRun = false;
-                }
-                
-                /* After a complete block, wait for the block data acknowledge. */
-                if ( 0 == ( ( blk + 1 )  % ( m_blockSize / 8 ) ) ) {
-                
-                    if ( USE_DLL_INTERFACE == m_type ) {
-
-                        flag_crc = sendVSCPCommandSeqenceLevel1();
-                    }
-                    else if ( USE_TCPIP_INTERFACE == m_type ) {
-
-                        flag_crc = sendVSCPCommandSeqenceLevel2();
-                    }
-                    
-                    m_blockNumber++;
-                }
-
-                wxMilliSleep(1);
-                progress++;
-                addr += 8;
             }
-        }
-        else {
-            wxMessageBox(_T("Failed to send control info for flash data to node(s)."));
-            rv = false;
-        }
-    }
-
-    // * * * config memory * * *
-
-    if (rv && m_bConfigData) {
-
-        // Send the start block
-        addr = m_minConfigAddr;
-        if (writeDeviceControlRegs(addr)) {
-
-            for (unsigned long blk = 0; ((blk < nConfigPackets) && bRun); blk++) {
-
-                wxStatusStr.Printf(_("Loading config memory... %0X"), addr);
-                if (!(bRun = pDlg->Update(progress, wxStatusStr))) {
-                    wxMessageBox(_T("Aborted by user."));
-                    rv = false;
-                    bRun = false;
-                }
-
-                if (!writeFrimwareSector()) {
-                    wxMessageBox(_T("Failed to write config data to node(s)."));
-                    rv = false;
-                    bRun = false;
-                }
-
-                wxMilliSleep(1);
-                progress++;
-                addr += 8;
-
+            
+            wxStatusStr.Printf( _("Loading flash... %0X"), addr );
+            if (  false == ( bRun = pDlg->Update( progress, wxStatusStr ) ) ) {
+                wxMessageBox( _T("Aborted by user.") );
+                rv = false;
+                bRun = false;
             }
-        }
-        else {
-            wxMessageBox(_T("Failed to send control info for config data to node(s)."));
-            rv = false;
-        }
-    }
-
-    // * * * EEPROM memory * * *
-
-    if (rv && m_bEEPROMData) {
-
-        // Send the start block
-        addr = m_minEEPROMAddr;
-        if (writeDeviceControlRegs(addr)) {
-
-            for (unsigned long blk = 0; ((blk < nConfigPackets) && bRun); blk++) {
-
-                wxStatusStr.Printf(_("Loading EEPROM memory... %0X"), addr);
-                if (!(bRun = pDlg->Update(progress, wxStatusStr))) {
-                    wxMessageBox(_T("Aborted by user."));
-                    rv = false;
-                    bRun = false;
-                }
-
-                if (!writeFrimwareSector()) {
-                    wxMessageBox(_T("Failed to write EEPROM data to node(s)."));
-                    rv = false;
-                    bRun = false;
-                }
-
-                wxMilliSleep(1);
-                progress++;
-                addr += 8;
-
+            
+            if ( false == writeFrimwareSector() ) {
+                wxMessageBox( _T("Failed to write flash data to node(s).") );
+                rv = false;
+                bRun = false;
             }
-        }
-        else {
-            wxMessageBox(_T("Failed to send control info for EEPROM data to node(s)."));
-            rv = false;
+            
+            /* After a complete block, wait for the block data acknowledge. */
+            if ( 0 == ( ( blk + 1 )  % ( m_blockSize / 8 ) ) ) {
+            
+                if ( USE_DLL_INTERFACE == m_type ) {
+
+                    flag_crc = sendVSCPCommandSeqenceLevel1();
+                }
+                else if ( USE_TCPIP_INTERFACE == m_type ) {
+
+                    flag_crc = sendVSCPCommandSeqenceLevel2();
+                }
+                
+                m_blockNumber++;
+            }
+
+            wxMilliSleep(1);
+            progress++;
+            addr += 8;
         }
     }
 
@@ -972,27 +744,8 @@ bool CBootDevice_VSCP::writeFrimwareSector( void )
     uint8_t b;
     for (int i = 0; i < 8; i++) {
 
-        switch (m_memtype) {
-
-            case MEM_TYPE_PROGRAM:
-                b = m_pbufPrg[ m_pAddr ];
-                m_checksum += m_pbufPrg[ m_pAddr ];
-                break;
-
-            case MEM_TYPE_CONFIG:
-                b = m_pbufCfg[ m_pAddr ];
-                m_checksum += m_pbufCfg[ m_pAddr ];
-                break;
-
-            case MEM_TYPE_EEPROM:
-                b = m_pbufEEPROM[ m_pAddr ];
-                m_checksum += m_pbufEEPROM[ m_pAddr ];
-                break;
-
-            default:
-                b = 0xff;
-                break;
-        }
+        b = m_pbufPrg[ m_pAddr ];
+        m_checksum += m_pbufPrg[ m_pAddr ];
 
         // Write data into frame
         if ( USE_DLL_INTERFACE == m_type ) {
@@ -1022,44 +775,6 @@ bool CBootDevice_VSCP::writeFrimwareSector( void )
 
     return rv;
 }
-
-
-///////////////////////////////////////////////////////////////////////////////
-// writeDeviceControlRegs
-//
-
-bool CBootDevice_VSCP::writeDeviceControlRegs( uint32_t addr ) 
-{
-    // Save the internal addresss
-    m_pAddr = addr;
-
-    if ((m_pAddr < MEMREG_PRG_END_COMMON) && (m_pAddr < BUFFER_SIZE_PROGRAM_COMMON)) {
-
-        // Flash memory
-        m_memtype = MEM_TYPE_PROGRAM;
-        return true;
-
-    } 
-    else if ((m_pAddr >= MEMREG_CONFIG_START_COMMON) &&
-            ((m_pAddr < MEMREG_CONFIG_START_COMMON + BUFFER_SIZE_CONFIG_COMMON))) {
-
-        // Config memory
-        m_memtype = MEM_TYPE_CONFIG;
-        return true;
-
-    } 
-    else if ((m_pAddr >= MEMREG_EEPROM_START_COMMON) &&
-            ((m_pAddr <= MEMREG_EEPROM_START_COMMON + BUFFER_SIZE_EEPROM_COMMON))) {
-
-        // EEPROM
-        m_memtype = MEM_TYPE_EEPROM;
-        return true;
-    } 
-    else {
-        return false;
-    }
-}
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // sendVSCPCommandStartBlock
