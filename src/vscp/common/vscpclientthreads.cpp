@@ -400,8 +400,8 @@ void *RXWorkerThread::Entry()
 
     } // while
 
-  // Close the interface
-  tcpifReceive.doCmdClose();
+    // Close the interface
+    tcpifReceive.doCmdClose();
 
     wxPostEvent( m_pCtrlObject->m_pWnd, eventConnectionLost );
 
