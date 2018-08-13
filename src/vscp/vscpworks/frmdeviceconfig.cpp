@@ -1141,7 +1141,7 @@ bool frmDeviceConfig::enableInterface(void)
             progressDlg.Pulse(_("Checking if interface is working..."));
 
             // Test
-            if (CANAL_ERROR_SUCCESS != m_csw.doCmdNOOP()) {
+            if ( CANAL_ERROR_SUCCESS != m_csw.doCmdNOOP() ) {
                 wxMessageBox(_("Interface test command failed. May not work correctly!"));
                 rv = false;
                 goto error;
@@ -4600,6 +4600,8 @@ read_pageregs1_again:
         // Remote server/device
         else if ( USE_TCPIP_INTERFACE == m_csw.getDeviceType() ) {
 
+            progressDlg.Update( 5, _("Staring...") );
+
             // Read standard registers           
             progressDlg.Update( 10, _( "Reading standard registers of device. [1/8]" ) );
             if ( VSCP_ERROR_SUCCESS !=
@@ -4618,7 +4620,7 @@ read_pageregs1_again:
             if ( !m_chkMdfFromFile->GetValue() ) {
 
                 // Get MDF from device
-                progressDlg.Update( 10, _( "Fetching MDF path from device. [2/8]" ) );
+                progressDlg.Update( 20, _( "Fetching MDF path from device. [2/8]" ) );
 
                 // We need it to continue
                 m_stdRegisters.getMDF( strPath );
@@ -4641,7 +4643,7 @@ read_pageregs1_again:
 
 
             // Load and parse the MDF
-            progressDlg.Update( 20, _( "Loading and parsing MDF. [2/8]" ) );
+            progressDlg.Update( 30, _( "Loading and parsing MDF. [2/8]" ) );
 
             if ( !m_mdf.load( strPath, m_chkMdfFromFile->GetValue() ) ) {
                 // We try to continue anyway
@@ -4670,7 +4672,7 @@ read_pageregs1_again:
             for ( uint32_t i = 0; i<nPage; i++ ) {
 
                 wxString str = wxString::Format( _( "Fetching user registers for page %d. [4/8]" ), pageArray[ i ] );
-                progressDlg.Update( 30, str );
+                progressDlg.Update( 45, str );
 
                 if ( VSCP_ERROR_SUCCESS !=
                      m_csw.getTcpIpInterface()->readLevel2Registers( 0, // From reg=0
@@ -4781,6 +4783,8 @@ read_pageregs1_again:
             // Write status
             progressDlg.Update( 60, _( "Fill standard status information. [6/8]" ) );
             writeStatusInfo();
+
+            m_gridRegisters->AutoSizeColumn( 3 );
 
             m_bFirstRead = false;
         }

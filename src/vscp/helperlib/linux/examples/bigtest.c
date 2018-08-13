@@ -14,8 +14,9 @@
 #define PORT            9598
 
 //#define HOST            "127.0.0.1"
-#define HOST            "192.168.1.6"
+//#define HOST            "192.168.1.6"
 //#define HOST            "185.144.156.45"
+#define HOST		"192.168.1.30"   // pi4
 
 //#define HOST_PLUS_PORT  "127.0.0.1:9598"
 #define HOST_PLUS_PORT  "tcp://192.168.1.6:9598"

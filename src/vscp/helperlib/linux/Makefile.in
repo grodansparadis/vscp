@@ -86,7 +86,6 @@ VSCPHELPER_OBJECTS =  libvscphelper.o \
 	crc8.o \
 	vscp_aes.o \
 	vscpmd5.o \
-	mongoose.o \
 	fastpbkdf2.o \
 	vscpbase64.o
 

@@ -1664,8 +1664,6 @@ private:
     */
     int m_innerResponseTimeout;
 
-
-
     /*!
         Version information is stored whenever the 
         version command is used (always done when done on 'open').
