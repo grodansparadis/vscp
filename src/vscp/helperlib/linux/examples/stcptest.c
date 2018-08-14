@@ -40,10 +40,12 @@
 #define SCPTEST_PASSWORD            "secret"
 
 //#define STCPPTEST_SERVER            "185.144.156.45"
-#define STCPPTEST_SERVER            "192.168.1.6"
+//#define STCPPTEST_SERVER            "192.168.1.6"
+#define STCPPTEST_SERVER            "127.0.0.1"
 
-#define STCPPTEST_SERVER_PLUS_PORT  "192.168.1.6:9598"
 //#define STCPPTEST_SERVER_PLUS_PORT  "185.144.156.45:9598"
+//#define STCPPTEST_SERVER_PLUS_PORT  "192.168.1.6:9598"
+#define STCPPTEST_SERVER_PLUS_PORT  "127.0.0.1:9598"
 
 int error_cnt = 0;
 
@@ -82,27 +84,34 @@ int main(int argc, char* argv[])
     // * * * * * * * Test 1
     t1 = t2 = current_timestamp();
 
-    printf("Raw test with stcp\n");
-    printf("------------------\n");
+    printf("Test 1\n");
+    printf("------\n");
+
+    // Test 1
+    // Test with hard coded wait times for reply ("+OK")
 
     //conn = stcp_connect_remote( "185.144.156.45", 9598, 0, errbuf, sizeof( errbuf ), 5 );
-    conn = stcp_connect_remote( "192.168.1.6", 9598, 5 );
+    conn = stcp_connect_remote( STCPPTEST_SERVER, 9598, 5 );
+   // conn = stcp_connect_remote( "192.168.1.30", 9598, 5 );
     if ( NULL != conn ) {
         
         // Get welcome message
         rv = stcp_read( conn, buf, sizeof( buf ), 200 );
         printf( "%s", buf ); 
         
+        printf("- Send user\n");
         stcp_write( conn, "user admin\r\n", 12 );
-        rv = stcp_read( conn, buf, sizeof( buf ), 200 );
+        rv = stcp_read( conn, buf, sizeof( buf ), 500 );
         printf( "%s", buf );
         
+        printf("- Send pass\n");
         stcp_write( conn, "pass secret\r\n", 13 );
-        stcp_read( conn, buf, sizeof( buf ), 300 );
+        stcp_read( conn, buf, sizeof( buf ), 500 );
         printf( "%s", buf );
 
+        printf("- Send noop\n");
         stcp_write( conn, "noop\r\n", 6 );
-        stcp_read( conn, buf, sizeof( buf ), 300 );
+        stcp_read( conn, buf, sizeof( buf ), 500 );
         printf( "%s", buf );
         
         t2 = current_timestamp(); 
@@ -119,7 +128,7 @@ int main(int argc, char* argv[])
         }
         printf( "%s", buf );
         */
-
+/*
         t2 = current_timestamp();
         printf( "Time: %d ms\n\n\n", ((int)(t2-t1)) );
 
@@ -134,11 +143,11 @@ int main(int argc, char* argv[])
         }
         t2 = current_timestamp();
         printf( "Time (0 ms): %d ms\n", ((int)(t2-t1)) );
-        /*stcp_read( conn, buf, sizeof( buf ), 1000 ); // Empty data
-        t2 = current_timestamp();
-        printf( "Time (0 ms): %d ms\n", ((int)(t2-t1)) );*/
+        //stcp_read( conn, buf, sizeof( buf ), 1000 ); // Empty data
+        //t2 = current_timestamp();
+        //printf( "Time (0 ms): %d ms\n", ((int)(t2-t1)) );
         printf("\n");
-
+*/
 /*
         t1 = current_timestamp();
         stcp_write( conn, "noop\r\n", 6 );
@@ -191,15 +200,15 @@ int main(int argc, char* argv[])
         conn = NULL;
     }   
 
-    
     // ------------------------------------------------------------------------
 
   
     // * * * * * * * Test 2
+    // Test with soft wait times for reply ("+OK")
     t1 = t2 = current_timestamp();
 
-    printf("Raw test with stcp and +OK test\n");
-    printf("-------------------------------\n");
+    printf("test 2\n");
+    printf("------\n");
 
     conn = stcp_connect_remote( STCPPTEST_SERVER, 9598, 5 );
     if ( NULL != conn ) {
@@ -208,19 +217,27 @@ int main(int argc, char* argv[])
 
         // Get welcome message
         *buf = 0;
-	rv = 1;
-        while ( rv > 0) {
+	    rv = 1;
+        while ( rv >= 0) {
             rv = stcp_read( conn, readbuf, sizeof( readbuf ), inner_timeout );
+            if ( rv < 0 ) {
+                printf( "rv=%d\n", rv ); 
+                break;
+            }
             strcat( buf, readbuf );
             if ( NULL != strstr( buf, "+OK" ) ) break;
         }
-        printf( "%s", buf );
+        printf( "Reply=%s\n", buf );
         
         stcp_write( conn, "user admin\r\n", 12 );
         *buf = 0;
-	rv = 1;
-        while ( rv > 0) {
+	    rv = 1;
+        while ( rv >= 0) {
             rv = stcp_read( conn, readbuf, sizeof( readbuf ), inner_timeout );
+            if ( rv < 0 ) {
+                printf( "rv=%d\n", rv ); 
+                break;
+            }
             strcat( buf, readbuf );
             if ( NULL != strstr( buf, "+OK" ) ) break;
         }
@@ -228,29 +245,65 @@ int main(int argc, char* argv[])
         
         stcp_write( conn, "pass secret\r\n", 13 );
         *buf = 0;
-	rv = 1;
-        while ( rv > 0 ) {
+	    rv = 1;
+        while ( rv >= 0 ) {
             rv = stcp_read( conn, readbuf, sizeof( readbuf ), inner_timeout );
+            if ( rv < 0 ) {
+                printf( "rv=%d\n", rv ); 
+                break;
+            }
             strcat( buf, readbuf );
             if ( NULL != strstr( buf, "+OK" ) ) break;
         }
         printf( "%s", buf );
 
         stcp_write( conn, "noop\r\n", 6 );
-        stcp_read( conn, buf, sizeof( buf ), 300 );
+        *buf = 0;
+        rv = 1;
+        while ( rv >= 0 ) {
+            rv = stcp_read( conn, readbuf, sizeof( readbuf ), inner_timeout );
+            if ( rv < 0 ) {
+                printf( "rv=%d\n", rv ); 
+                break;
+            }
+            strcat( buf, readbuf );
+            if ( NULL != strstr( buf, "+OK" ) ) break;
+        }
         printf( "%s", buf );
 
         t2 = current_timestamp(); 
+        printf( "Time: %d ms\n\n\n", ((int)(t2-t1)) );
+
+        t1 = t2 = current_timestamp();
+
+        for (int i=0; i<100; i++ ) {
+            stcp_write( conn, "noop\r\n", 6 );
+            *buf = 0;
+            rv = 1;
+            while ( rv >= 0 ) {
+                rv = stcp_read( conn, readbuf, sizeof( readbuf ), inner_timeout );
+                if ( rv < 0 ) {
+                    printf( "rv=%d\n", rv ); 
+                    break;
+                }
+                strcat( buf, readbuf );
+                if ( NULL != strstr( buf, "+OK" ) ) break;
+            }
+            printf( "%d - %s", i, buf );
+        }
+
+        t2 = current_timestamp();
+        printf( "Time: %d ms\n\n\n", ((int)(t2-t1)) );
    
         stcp_close_connection( conn );
         
         conn = NULL;
     }
     else {
-	printf("Failed to connect\n");
+	    printf("Failed to connect\n");
     } 
     
-
+    //exit(1);
 
     // ------------------------------------------------------------------------
 

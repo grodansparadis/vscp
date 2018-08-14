@@ -14,17 +14,19 @@
 #define PORT            9598
 
 //#define HOST            "127.0.0.1"
-//#define HOST            "192.168.1.6"
+#define HOST            "192.168.1.6"
 //#define HOST            "185.144.156.45"
 #define HOST		"192.168.1.30"   // pi4
 
 //#define HOST_PLUS_PORT  "127.0.0.1:9598"
 #define HOST_PLUS_PORT  "tcp://192.168.1.6:9598"
 //#define HOST_PLUS_PORT  "185.144.156.45:9598"
+#define HOST_PLUS_PORT  "tcp://192.168.1.30:9598"
 
 //#define INTERFACE       "127.0.0.1:9598;admin;secret"
 #define INTERFACE       "tcp://192.168.1.6:9598;admin;secret"
 //#define INTERFACE       "185.144.156.45:9598;admin;secret"
+//#define INTERFACE       "tcp://192.168.1.30:9598;admin;secret"
 
 // Count for number of events sent in burst
 #define BURST_SEND_COUNT    200

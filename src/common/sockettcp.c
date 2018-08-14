@@ -3174,6 +3174,8 @@ stcp_pull_inner( FILE *fp,
         }
 
     }
+
+    // SSL read
     else if ( conn->ssl != NULL ) {
 
         struct pollfd pfd[1];

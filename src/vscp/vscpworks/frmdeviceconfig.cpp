@@ -4403,8 +4403,10 @@ void frmDeviceConfig::doUpdate( void )
                                       100,
                                       this,
                                       wxPD_ELAPSED_TIME |
-                                      wxPD_AUTO_HIDE |
-                                      wxPD_APP_MODAL );
+                                      wxPD_AUTO_HIDE );
+
+        progressDlg.Update( 0, _("Starting...") );
+        wxYield();
 
         // Driver
         if ( USE_DLL_INTERFACE == m_csw.getDeviceType() ) {
@@ -4600,10 +4602,10 @@ read_pageregs1_again:
         // Remote server/device
         else if ( USE_TCPIP_INTERFACE == m_csw.getDeviceType() ) {
 
-            progressDlg.Update( 5, _("Staring...") );
-
             // Read standard registers           
             progressDlg.Update( 10, _( "Reading standard registers of device. [1/8]" ) );
+            wxYield();
+
             if ( VSCP_ERROR_SUCCESS !=
                  m_csw.getTcpIpInterface()->readLevel2Registers( m_bLevel2->GetValue() ? 0xFFFFFF80 : 0x80,
                                                                     0,      // page
@@ -4647,7 +4649,7 @@ read_pageregs1_again:
 
             if ( !m_mdf.load( strPath, m_chkMdfFromFile->GetValue() ) ) {
                 // We try to continue anyway
-                wxMessageBox( _( "Failed to load MDF but will try to continue anyway." ) );
+                wxMessageBox( _("Failed to load MDF but will try to continue anyway.") );
             }
 
             // Get the application registers
@@ -4684,7 +4686,7 @@ read_pageregs1_again:
                                     m_bLevel2->GetValue() ) ) {
                     ::wxMessageBox( _( "Failed to read user registers of device." ), _( "VSCP Works" ), wxICON_ERROR );
                     return;
-                }
+                }                
 
             }
 
@@ -4772,6 +4774,8 @@ read_pageregs1_again:
 
                     // Make all parts of the row visible
                     m_gridRegisters->AutoSizeRow( m_gridRegisters->GetNumberRows() - 1 );
+
+                    m_gridRegisters->AutoSizeColumn( 3 );
 
                 }
             }

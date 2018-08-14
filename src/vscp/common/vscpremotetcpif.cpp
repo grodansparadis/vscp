@@ -57,7 +57,7 @@
 #include <vscpremotetcpif.h>
 
 // Undef to get extra debug info
-//#define DEBUG_INNER_COMMUNICTION 1
+//#define DEBUG_INNER_COMMUNICTION 
 
 // Undef if debug messages is not wanted
 //#define DEBUG_LIB_VSCP_HELPER   1
@@ -3786,8 +3786,12 @@ int VscpRemoteTcpIf::readLevel2Register( uint32_t reg,
             doCmdSendEx( &e );
             resendTime += m_registerOpResendTimeout;
         }
-        
-        wxMilliSleep( 2 );
+             
+#if wxUSE_GUI == 1
+        wxYield();
+#else
+        wxMilliSleep( 2 );        
+#endif        
 
     } // while
 
@@ -3901,20 +3905,38 @@ int VscpRemoteTcpIf::readLevel2Registers( uint32_t reg,
     if ( lastpageCnt ) nPages++;
     unsigned long allRcvValue = pow(2.0,nPages) - 1;
 
-    unsigned long resendTime = m_registerOpResendTimeout;
+    unsigned long resendTime = m_registerOpResendTimeout * (1+ nPages);
     wxLongLong startTime = ::wxGetLocalTimeMillis();
+
+/*
+#ifdef DEBUG_LIB_VSCP_HELPER
+    wxLogDebug("readLevel2Registers: Start");
+#endif
+
+    for ( int i=0; i<100; i++ ) {
+        doCmdNOOP();
+    }
+#ifdef DEBUG_LIB_VSCP_HELPER
+    wxLogDebug("readLevel2Registers: NOOP - End");
+#endif
+*/
 
     while ( allRcvValue != (receive_flags & 0xffffffff ) ) {	// mask for systems where long is > 32 bits
 
-        if ( 0 < doCmdDataAvailable() ) {	// Message available
+        int n;
+        if ( 0 < ( n = doCmdDataAvailable() ) ) {	// Message available
 
-            if ( CANAL_ERROR_SUCCESS == doCmdReceiveEx( &e ) ) {	// Valid event
+            while ( CANAL_ERROR_SUCCESS == doCmdReceiveEx( &e ) ) {	// Valid event
+
+                // Quit if done?
+                if ( ( allRcvValue == (receive_flags & 0xffffffff ) ) ) break;
 
                 // Check for correct reply event
 #ifdef DEBUG_LIB_VSCP_HELPER                
                 {
                     wxString str;
-                    str = wxString::Format(_("Received Event: class=%d type=%d size=%d index=%d page=%d Register=%d content=%d"), 
+                    str = wxString::Format(_("Received Event: count=%d class=%d type=%d size=%d data="), 
+                                                n,
                                                 e.vscp_class, 
                                                 e.vscp_type, 
                                                 e.sizeData, 
@@ -3922,6 +3944,9 @@ int VscpRemoteTcpIf::readLevel2Registers( uint32_t reg,
                                                 (e.data[17]<<8) + e.data[18], // page
                                                 e.data[19],     // register
                                                 e.data[20] );   // content
+                    for ( int i=0; i<e.sizeData; i++ ) {
+                        str += wxString::Format(_("%02X "), e.data[i] );
+                    }                            
                     wxLogDebug(str);
                 }
 #endif                
@@ -4011,24 +4036,41 @@ int VscpRemoteTcpIf::readLevel2Registers( uint32_t reg,
                         }
                     }
                 }
+#if wxUSE_GUI == 1
+                wxYield();
+#endif                
 
-            } // valid event
-                        
+            } // valid event            
+
         } // Data available
 
         if ( ( ::wxGetLocalTimeMillis() - startTime ) >  m_registerOpErrorTimeout ) {
             rv = CANAL_ERROR_TIMEOUT;
+#ifdef DEBUG_LIB_VSCP_HELPER
+            wxLogDebug(_("readLevel2Registers: Timeout"));
+#endif            
             break;
         }
         else if ( ( ::wxGetLocalTimeMillis() - startTime ) > resendTime ) {
             // Send again
             doCmdSendEx( &e );
-            resendTime += m_registerOpResendTimeout;
+            resendTime += m_registerOpResendTimeout * (1+ nPages);
+#ifdef DEBUG_LIB_VSCP_HELPER
+            wxLogDebug(_("readLevel2Registers: Resend "));
+#endif            
         }
-        
-        wxMilliSleep( 20 );
+                
+#if wxUSE_GUI == 1
+        wxYield();
+#else
+        wxMilliSleep( 2 );
+#endif  
 
     } // while
+
+#ifdef DEBUG_LIB_VSCP_HELPER
+    wxLogDebug("readLevel2Registers: End");
+#endif    
 
     // Copy data on success
     if ( CANAL_ERROR_SUCCESS == rv ) {
@@ -4125,7 +4167,8 @@ int VscpRemoteTcpIf::writeLevel2Register( uint32_t reg,
 
     while ( true ) {
 
-        if ( 0 < doCmdDataAvailable() ) {                           // Message available
+        int n;
+        if ( 0 < (n = doCmdDataAvailable() ) ) {                           // Message available
 
             if ( CANAL_ERROR_SUCCESS == doCmdReceiveEx( &e ) ) {    // Valid event
             
@@ -4197,8 +4240,12 @@ int VscpRemoteTcpIf::writeLevel2Register( uint32_t reg,
                 }
             }
         }
-        else {
-            wxMilliSleep( 2 );
+        else {          
+#if wxUSE_GUI == 1
+            wxYield();
+#else
+            wxMilliSleep( 2 );            
+#endif            
         }
 
         if ( ( ::wxGetLocalTimeMillis() - startTime ) >  m_registerOpErrorTimeout ) {

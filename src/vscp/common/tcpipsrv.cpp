@@ -452,12 +452,14 @@ void *TCPClientThread::Entry()
         }
         
         // Read possible data from client
+        //      If in receive loop we know we have delay
+        //      in event waiting above.
         memset( buf, 0, sizeof( buf ) );
         int nRead = stcp_read( m_conn, buf, sizeof( buf ),
                                 ( m_bReceiveLoop ) ? 0 : 200 );
         
         if ( 0 == nRead ) {
-            ;   // Nothing more to read - Check for command and continue
+            ;   // Nothing more to read - Check for command and continue -> below
         }
         else if ( nRead < 0 ) {
 
@@ -540,7 +542,7 @@ void *TCPClientThread::Entry()
 
         }
 
-    }
+    } // while
 
     // Remove the client from the client queue
     gpobj->m_mutexTcpClientList.Lock();
