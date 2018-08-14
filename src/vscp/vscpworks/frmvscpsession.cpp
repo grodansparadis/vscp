@@ -473,6 +473,8 @@ void frmVSCPSession::OnCloseWindow(wxCloseEvent& event)
 {
     wxBusyCursor wait;
     
+    m_BtnActivateInterface->SetValue(false);
+    
     // Save frame size and position
     wxRect rc = GetRect();
     g_Config.m_sizeSessionFrameWidth = rc.width;
@@ -612,6 +614,7 @@ void frmVSCPSession::stopWorkerThreads(void)
     m_BtnActivateInterface->Update();
 
     m_CtrlObject.m_bQuit = true;
+    wxSleep( 1 );
     //wxLogNull noError;   
 
     if (INTERFACE_VSCP == m_CtrlObject.m_interfaceType) {

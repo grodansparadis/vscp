@@ -361,7 +361,6 @@ void VscpworksApp::Init()
     g_Config.m_CANALRegMaxRetries = VSCP_CANAL_MAX_TRIES;
 
     g_Config.m_TCPIP_ResponseTimeout = VSCPWORKS_TCPIP_DEFAULT_RESPONSE_TIMEOUT;
-    g_Config.m_TCPIP_SleepAfterCommand = VSCPWORKS_TCPIP_DEFAULT_SLEEP_AFTER_COMMAND;
     g_Config.m_TCPIPRegMaxRetries = VSCPWORKS_TCPIP_REGISTER_READ_MAX_TRIES;
     g_Config.m_TCPIPRegResendTimeout = VSCPWORKS_TCPIP_REGISTER_READ_RESEND_TIMEOUT;
     g_Config.m_TCPIPRegErrorTimeout = VSCPWORKS_TCPIP_REGISTER_READ_ERROR_TIMEOUT;
@@ -1879,15 +1878,6 @@ bool VscpworksApp::readConfiguration( void )
                     if ( subchild->GetNodeContent().ToULong( &val, 10 ) ) {
                         if ( val < 1000 ) val = VSCPWORKS_TCPIP_DEFAULT_RESPONSE_TIMEOUT;
                         g_Config.m_TCPIP_ResponseTimeout = val;
-                    }
-
-                }
-                else if ( subchild->GetName() == _( "TCPIPSleepAfterCommand" ) ) {
-
-                    unsigned long val;
-                    g_Config.m_TCPIP_SleepAfterCommand = VSCPWORKS_TCPIP_DEFAULT_SLEEP_AFTER_COMMAND;
-                    if ( subchild->GetNodeContent().ToULong( &val, 10 ) ) {
-                        g_Config.m_TCPIP_SleepAfterCommand = val;
                     }
 
                 }
