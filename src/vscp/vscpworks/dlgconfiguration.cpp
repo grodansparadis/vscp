@@ -396,11 +396,6 @@ void dlgConfiguration::CreateControls()
     wxBoxSizer* itemBoxSizerTextSleepAfterCommand = new wxBoxSizer( wxHORIZONTAL );
     itemGridSizerCommunication->Add( itemBoxSizerTextSleepAfterCommand, 0, wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxALL, 1 );
 
-    m_SpinCtrlsleepAfterCommand = new wxSpinCtrl;
-    m_SpinCtrlsleepAfterCommand->Create( itemPanelCommunication, ID_SPINCTRL, wxT( "1" ), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 2000, 200 );
-    itemBoxSizerTextSleepAfterCommand->Add( m_SpinCtrlsleepAfterCommand, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5 );
-
-
 
     // -- Number of retries
     wxStaticText* itemStaticTextTCPIPRetries = new wxStaticText;
@@ -820,7 +815,6 @@ void dlgConfiguration::CreateControls()
 
     // TCPIP communication parameters
     m_SpinCtrlResponseTimeout->SetValue( g_Config.m_TCPIP_ResponseTimeout );
-    m_SpinCtrlsleepAfterCommand->SetValue( g_Config.m_TCPIP_SleepAfterCommand );
     m_SpinCtrlmaxTCPIPRetries->SetValue( g_Config.m_TCPIPRegMaxRetries );
 	m_SpinCtrltcpipReadTimeout->SetValue( g_Config.m_TCPIPRegResendTimeout );
     m_SpinCtrltcpipTotalTimeout->SetValue( g_Config.m_TCPIPRegErrorTimeout );
@@ -851,7 +845,6 @@ bool dlgConfiguration::getDialogData( bool bWriteToConfigFile )
 	g_Config.m_CANALRegErrorTimeout = m_SpinCtrltotalTimeout->GetValue();
 
     g_Config.m_TCPIP_ResponseTimeout = m_SpinCtrlResponseTimeout->GetValue();
-    g_Config.m_TCPIP_SleepAfterCommand = m_SpinCtrlsleepAfterCommand->GetValue();
     g_Config.m_TCPIPRegMaxRetries = m_SpinCtrlmaxTCPIPRetries->GetValue();
     g_Config.m_TCPIPRegResendTimeout = m_SpinCtrltcpipReadTimeout->GetValue();
     g_Config.m_TCPIPRegErrorTimeout = m_SpinCtrltcpipTotalTimeout->GetValue();

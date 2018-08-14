@@ -156,7 +156,6 @@ public:
     wxSpinCtrl* m_SpinCtrltotalTimeout;
     
     wxSpinCtrl* m_SpinCtrlResponseTimeout;
-    wxSpinCtrl* m_SpinCtrlsleepAfterCommand;
     wxSpinCtrl* m_SpinCtrlmaxTCPIPRetries;
     wxSpinCtrl* m_SpinCtrltcpipReadTimeout;
     wxSpinCtrl* m_SpinCtrltcpipTotalTimeout;
