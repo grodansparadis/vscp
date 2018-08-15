@@ -2835,7 +2835,7 @@ stcp_close_connection( struct stcp_connection *conn )
  *   If set too zero STCP_TIMEOUT_QUANTUM is used. If timout is
  * set lower than quantum one timeout is performed. If greater several.
  * @param stop_server - Pointer to int that can be set externally 
- *                      to stop the block.
+ *                      to stop the blocking operation.
  *
  * @return >0 success, -1 timeout, -2 stopped
  */

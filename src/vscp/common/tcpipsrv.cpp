@@ -431,6 +431,7 @@ void *TCPClientThread::Entry()
         
     // Enter command loop
     char buf[8192];
+    struct pollfd fd;
     while ( !TestDestroy() && !(gpobj->stopTcpIpSrv ) ) {
 
         // * * * Receiveloop * * *
@@ -449,6 +450,26 @@ void *TCPClientThread::Entry()
                 write( "+OK\r\n", 5 );
             }
                 
+        }
+        else {
+
+            // Set poll
+            fd.fd = m_conn->client.sock;
+            fd.events = POLLIN;
+            fd.revents = 0;
+            
+            // Wait for data
+            if ( stcp_poll( &fd, 
+                                1, 
+                                500, 
+                                &(gpobj->stopTcpIpSrv) ) < 0  ) {
+                continue;   // Nothing                                 
+            }
+
+            // Data in?
+            if ( !( fd.revents & POLLIN ) ) {
+                continue;
+            }
         }
         
         // Read possible data from client
