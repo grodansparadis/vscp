@@ -728,13 +728,15 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
             
 				progressDlg.Pulse( wxString::Format(_("Found %d"), found_list.size()));
 
-				while ( m_csw.doCmdDataAvailable() ) {           // Message available
+                int n;
+				while ( ( n = m_csw.doCmdDataAvailable() ) ) {           // Message available
 
 					if ( CANAL_ERROR_SUCCESS == m_csw.doCmdReceive( &eventex ) ) { // Valid event                
 #if 0                    
 							{
                                 wxString str;
-                                str = wxString::Format(_("Received Event: class=%d type=%d size=%d data= "), 
+                                str = wxString::Format(_("Received Event: count =%d, class=%d type=%d size=%d data= "), 
+                                                            n,
                                                             eventex.vscp_class, 
                                                             eventex.vscp_type, 
                                                             eventex.sizeData );
@@ -755,32 +757,36 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
 
 						} // valid event
 
-					} // Event is available
+                    wxYield();    
 
-					if ((::wxGetLocalTimeMillis() - resendTime) > 3000 ) {
+				} // Event is available
 
-						// Take away duplicates
-						found_list.unique();
+				if ((::wxGetLocalTimeMillis() - resendTime) > 3000 ) {
+
+					// Take away duplicates
+					found_list.unique();
                 
-						wxTreeItemId newitem;
-						for( std::list<int>::iterator list_iter = found_list.begin(); 
-							    list_iter != found_list.end(); list_iter++) {
+					wxTreeItemId newitem;
+					for( std::list<int>::iterator list_iter = found_list.begin(); 
+					        list_iter != found_list.end(); list_iter++) {
                     
-							newitem = m_DeviceTree->AppendItem(rootItem, wxString::Format(_("Node with nickname=%d"), *list_iter));
-							m_DeviceTree->ExpandAll();
+						newitem = m_DeviceTree->AppendItem(rootItem, wxString::Format(_("Node with nickname=%d"), *list_iter));
+						m_DeviceTree->ExpandAll();
                     
-							scanElement *pElement = new scanElement;
-							if (NULL != pElement) {
-								pElement->m_bLoaded = false;
-								pElement->m_nodeid = *list_iter;
-								pElement->m_html = _("Right click on item to load info about node."); 
-								memset(pElement->m_reg, 0, 256);
-								m_DeviceTree->SetItemData(newitem, pElement);
-							}
+						scanElement *pElement = new scanElement;
+						if (NULL != pElement) {
+							pElement->m_bLoaded = false;
+							pElement->m_nodeid = *list_iter;
+							pElement->m_html = _("Right click on item to load info about node."); 
+							memset(pElement->m_reg, 0, 256);
+							m_DeviceTree->SetItemData(newitem, pElement);
 						}
-						break;
-
 					}
+					break;
+
+				} // Timeout
+
+                wxYield();
 
 			} // while
 
@@ -826,7 +832,7 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
                     goto error;
                 }
 
-                ::wxYield();
+                wxYield();
 			
 			} // for
                 
@@ -846,7 +852,7 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
 
 					if ( CANAL_ERROR_SUCCESS == m_csw.doCmdReceive( &eventex ) ) { // Valid event
                     
-#if 1                    
+#if 0                    
 							{
 							wxString str;
 								str = wxString::Format(_("Received Event: count=%d class=%d type=%d size=%d data=%d %d"), 
@@ -893,7 +899,7 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
 
 					} // valid event
 
-                    ::wxYield();
+                    wxYield();
 
 				} // while: Data is available
 
