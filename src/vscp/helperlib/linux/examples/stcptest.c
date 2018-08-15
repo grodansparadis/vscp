@@ -277,19 +277,25 @@ int main(int argc, char* argv[])
         t1 = t2 = current_timestamp();
 
         for (int i=0; i<100; i++ ) {
+	    long long t3 = current_timestamp();
             stcp_write( conn, "noop\r\n", 6 );
             *buf = 0;
             rv = 1;
             while ( rv >= 0 ) {
+		    
                 rv = stcp_read( conn, readbuf, sizeof( readbuf ), inner_timeout );
-                if ( rv < 0 ) {
+		if ( rv < 0 ) {
                     printf( "rv=%d\n", rv ); 
                     break;
                 }
                 strcat( buf, readbuf );
                 if ( NULL != strstr( buf, "+OK" ) ) break;
+		
             }
+
             printf( "%d - %s", i, buf );
+	    t2 = current_timestamp();
+	    printf( " Command time: %d ms\n\n\n", ((int)(t2-t3)) );
         }
 
         t2 = current_timestamp();
@@ -303,7 +309,7 @@ int main(int argc, char* argv[])
 	    printf("Failed to connect\n");
     } 
     
-    //exit(1);
+    exit(1);
 
     // ------------------------------------------------------------------------
 

@@ -120,11 +120,11 @@ frmScanforDevices::frmScanforDevices()
     Init();
 }
 
-frmScanforDevices::frmScanforDevices( wxWindow* parent, 
-                                        wxWindowID id, 
-                                        const wxString& caption, 
-                                        const wxPoint& pos, 
-                                        const wxSize& size, 
+frmScanforDevices::frmScanforDevices( wxWindow* parent,
+                                        wxWindowID id,
+                                        const wxString& caption,
+                                        const wxPoint& pos,
+                                        const wxSize& size,
                                         long style )
 {
     Init();
@@ -825,6 +825,8 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
                     wxMessageBox( _("No interface specified. Please select one") );   
                     goto error;
                 }
+
+                ::wxYield();
 			
 			} // for
                 
@@ -835,19 +837,20 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
 			std::list<int> found_list;
 			bool bLevel2 = false;
 			uint8_t cnt = 0; 
-			while (true) {
+			while ( true ) {
             
-				progressDlg.Pulse( wxString::Format(_("Found %d"), found_list.size()));
+				progressDlg.Pulse( wxString::Format(_("Found %d"), found_list.size() ) );
 
-                while ( m_csw.doCmdDataAvailable() ) {      // Message available
+                int n;
+                while ( n = ( m_csw.doCmdDataAvailable() ) ) {      // Message available
 
 					if ( CANAL_ERROR_SUCCESS == m_csw.doCmdReceive( &eventex ) ) { // Valid event
                     
-#if 0                    
+#if 1                    
 							{
 							wxString str;
-								str = wxString::Format(_("Received Event: class=%d type=%d size=%d data=%d %d"), 
-									eventex.vscp_class, eventex.vscp_type, eventex.sizeData, eventex.data[15], eventex.data[16] );
+								str = wxString::Format(_("Received Event: count=%d class=%d type=%d size=%d data=%d %d"), 
+									n,eventex.vscp_class, eventex.vscp_type, eventex.sizeData, eventex.data[15], eventex.data[16] );
 								wxLogDebug(str);
 							}
 #endif                    
@@ -860,20 +863,16 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
 								found_list.push_back( eventex.GUID[ 15 ] );
 							} // Check for correct node
 						}                        // Level II 512 Read reply?
-						else if (/*!m_ifguid.isNULL() && !bLevel2 &&*/
-								(VSCP_CLASS2_LEVEL1_PROTOCOL == eventex.vscp_class) &&
-							(VSCP_TYPE_PROTOCOL_RW_RESPONSE == eventex.vscp_type)) {
+						else if ( (VSCP_CLASS2_LEVEL1_PROTOCOL == eventex.vscp_class) &&
+							      (VSCP_TYPE_PROTOCOL_RW_RESPONSE == eventex.vscp_type)) {
 
-							//if ( pdestGUID->isSameGUID( event.GUID ) ) {
-							// Reg we requested?
 							if (0xd0 == eventex.data[ 16 ] ) {
                             
 								// Add nickname to list 
 								found_list.push_back( eventex.GUID[ 15 ] );
 							}
-							//}
 
-						}                        // Level II Read reply?
+						}       // Level II Read reply?
 						else if (m_ifguid.isNULL() && bLevel2 &&
 								(VSCP_CLASS2_PROTOCOL == eventex.vscp_class) &&
 								(VSCP2_TYPE_PROTOCOL_READ_WRITE_RESPONSE == 
@@ -894,9 +893,11 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
 
 					} // valid event
 
-				} //Event is available
+                    ::wxYield();
 
-				if ((::wxGetLocalTimeMillis() - resendTime) > 3000 ) {
+				} // while: Data is available
+
+				if ( (::wxGetLocalTimeMillis() - resendTime) > 6000 ) {
 
 					// Take away duplicates
 					found_list.unique();
@@ -918,10 +919,14 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
 						}
 					}
 					break;
+
+                    wxYield();
             
 				} // while
         
-			}
+                wxYield();
+
+			} // while
         
 		} // TCP/IP i/f     
 		    
@@ -1041,7 +1046,8 @@ void frmScanforDevices::getNodeInfo( wxCommandEvent& event )
 					                        url,
 						                    &mdf );
                 
-			    pElement->m_html = vscp_getDeviceHtmlStatusInfo( pElement->m_reg, bmdf ? &mdf : NULL );
+			    pElement->m_html = vscp_getDeviceHtmlStatusInfo( pElement->m_reg, 
+                                                                    bmdf ? &mdf : NULL );
 			    m_htmlWnd->SetPage(pElement->m_html);
         
 			    // Mark as loaded

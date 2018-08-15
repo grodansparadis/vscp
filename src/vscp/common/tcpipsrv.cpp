@@ -437,7 +437,7 @@ void *TCPClientThread::Entry()
         if ( m_bReceiveLoop ) {
 
             // Wait for data
-            m_pClientItem->m_semClientInputQueue.WaitTimeout( 200 );
+            m_pClientItem->m_semClientInputQueue.WaitTimeout( 20 );
 
             // Send everything in the queue
             while( sendOneEventFromQueue( false ) );
@@ -455,8 +455,9 @@ void *TCPClientThread::Entry()
         //      If in receive loop we know we have delay
         //      in event waiting above.
         memset( buf, 0, sizeof( buf ) );
-        int nRead = stcp_read( m_conn, buf, sizeof( buf ),
-                                ( m_bReceiveLoop ) ? 0 : 200 );
+        int nRead = stcp_read( m_conn, 
+                                buf, sizeof( buf ),
+                                ( m_bReceiveLoop ) ? 0 : 0 );
         
         if ( 0 == nRead ) {
             ;   // Nothing more to read - Check for command and continue -> below
