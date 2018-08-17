@@ -148,7 +148,6 @@ deb:    all
 	@mv *.deb ../../../../../../dist
 
 clean:
-	rm -f Makefile
 	rm -rf ./.deps ./.pch
 	rm -f ./*.o
 	rm -f ../common/*.o
@@ -160,6 +159,9 @@ clean:
 	rm -f test
 	rm -f *.deb
 	rm -f *.gz
+
+distclean: clean
+	rm -f config.cache config.log config.status bk-deps bk-make-pch shared-ld-sh Makefile
 
 # Include dependency info, if present:
 -include .deps/*.d

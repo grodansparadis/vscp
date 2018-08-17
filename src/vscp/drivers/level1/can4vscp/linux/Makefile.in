@@ -116,7 +116,6 @@ deb:    all
 	@mv *.deb ../../../../../../dist
 
 clean:
-	rm -f Makefile
 	rm -rf ./.deps ./.pch
 	rm -f ./*.o
 	rm -f ../common/*.o
@@ -130,7 +129,7 @@ clean:
 	rm -f *.deb
 
 distclean: clean
-	rm -f config.cache config.log config.status bk-deps bk-make-pch shared-ld-sh Makefile
+	rm -f config.cache config.log config.status bk-deps bk-make-pch shared-ld-sh
 
 $(ALWAYS_BUILD):  .FORCE
 
