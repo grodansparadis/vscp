@@ -11769,5 +11769,9 @@ int start_webserver( void )
 
 int stop_webserver( void )
 {
+    // Stop the web server
     web_stop( gpobj->m_web_ctx );
+    
+    // Exit web-server interface
+    web_exit();
 }

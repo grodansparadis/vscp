@@ -891,7 +891,11 @@ public:
     */
     void init( void );
 
-    
+    /*!
+        Cleanup DM resources
+    */
+    void cleanup( void );
+
     /*!
      * Get compare code from token
      * @param token String token for compare operation

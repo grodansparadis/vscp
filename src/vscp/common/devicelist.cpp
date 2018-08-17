@@ -269,7 +269,7 @@ bool CDeviceItem::stopDriver()
         m_mutexdeviceThread.Unlock();
         
         m_bQuit = true;
-        wxSleep( 2 );
+        wxSleep( 1 );
         fprintf( stderr, 
                  "CDeviceItem: Driver asked to stop operation. [%s]\n",
                  (const char *)m_strName.mbc_str());        
@@ -312,7 +312,6 @@ CDeviceList::~CDeviceList(void)
     }
 
     m_devItemList.Clear();
-
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -321,7 +320,7 @@ CDeviceList::~CDeviceList(void)
 // An one device to the list
 //
 
-bool CDeviceList::addItem(wxString strName,
+bool CDeviceList::addItem( wxString strName,
                             wxString strParameter,
                             wxString strPath,
                             uint32_t flags,

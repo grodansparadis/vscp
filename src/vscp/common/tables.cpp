@@ -133,6 +133,7 @@ CVSCPTable::~CVSCPTable( void )
     // Close the database if it is open
     if ( NULL != m_dbTable ) {
         sqlite3_close( m_dbTable );
+        m_dbTable = NULL;
     }
         
 }

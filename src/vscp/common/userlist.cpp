@@ -1011,7 +1011,7 @@ bool CUserList::addUser( const wxString& user,
           
     // Check if user is defined already
     if ( !( bFlags & VSCP_ADD_USER_FLAG_LOCAL  ) && 
-                            pItem->isUserInDB( user ) ) {
+          pItem->isUserInDB( user ) ) {
         delete pItem;
         return false;
     }

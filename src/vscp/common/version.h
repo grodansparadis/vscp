@@ -35,9 +35,9 @@
 #define VSCPD_MAJOR_VERSION     13
 #define VSCPD_MINOR_VERSION     1
 #define VSCPD_RELEASE_VERSION   0
-#define VSCPD_BUILD_VERSION     5
+#define VSCPD_BUILD_VERSION     6
 
-#define VSCPD_DISPLAY_VERSION "13.1.0.5 Aluminium"
+#define VSCPD_DISPLAY_VERSION "13.1.0.6 Aluminium"
 
 #define VSCPD_COPYRIGHT "Copyright (C) 2000-2018, Grodans Paradis AB, https://www.grodansparadis.com"
 #define VSCPD_COPYRIGHT_HTML "Copyright (C) 2000-2018, <a href=\"mailto:info@grodansparadis.com\">Paradise of the Frog</a>, <a hrefs=\"https://www.grodansparadis.com\">https://www.grodansparadis.com</a>"

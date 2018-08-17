@@ -82,12 +82,6 @@ void _sighandler( int sig )
     gpobj->m_bQuit = true;
     gbStopDaemon = true;
     gbRestart = false;
-    wxSleep( 1 );
-    fprintf(stderr, "VSCPD: Shutdown in progress 1.\n");
-    wxSleep( 1 );
-    fprintf(stderr, "VSCPD: Shutdown in progress 2.\n");
-    wxSleep( 1 );
-    fprintf(stderr, "VSCPD: Shutdown in progress 3.\n");
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -305,10 +299,14 @@ BOOL VSCPApp::init(wxString& strcfgfile, wxString& rootFolder )
 
         fprintf( stderr, "VSCPD: init.\n");
         if ( !gpobj->init( strcfgfile, rootFolder ) ) {
-            fprintf(stderr, "Can't initialise daemon. Exiting.\n");
-            syslog(LOG_CRIT, "Can't initialise daemon. Exiting.");
+            fprintf(stderr, "Can't initialize daemon. Exiting.\n");
+            syslog(LOG_CRIT, "Can't initialize daemon. Exiting.");
             return FALSE;
         }
+
+        // *******************************
+        //    Main loop is entered here
+        // *******************************
 
         fprintf( stderr, "VSCPD: run.\n");
         if ( !gpobj->run() ) {
@@ -318,11 +316,12 @@ BOOL VSCPApp::init(wxString& strcfgfile, wxString& rootFolder )
         }
 
         fprintf( stderr, "VSCPD: cleanup.\n");
-        if ( !gpobj->cleanup() ) {
+        //gbRestart = 0;
+        /*if ( !gpobj->cleanup() ) {
             fprintf(stderr, "Unable to clean up the VSCPD application.\n");
             syslog( LOG_CRIT, "Unable to clean up the VSCPD application.");
             return FALSE;
-        }
+        }*/
         
         fprintf( stderr, "VSCPD: cleanup done.\n");
 

@@ -156,25 +156,23 @@ void *TCPListenThread::Entry()
     // --------------------------------------------------------------------------------------
 
     // Init. SSL subsystem
-    if ( 0 == stcp_init_ssl( m_srvctx.ssl_ctx, &opts ) ) {
+    /*if ( 0 == stcp_init_ssl( m_srvctx.ssl_ctx, &opts ) ) {
         gpobj->logMsg( _("[TCP/IP srv thread] Failed to init. ssl.\n"), 
-                        DAEMON_LOGMSG_NORMAL );       
-        gpobj->m_confirmQuitTcpIpSrv = VSCPD_QUIT_FLAG;                                     
+                        DAEMON_LOGMSG_NORMAL );                                           
         return NULL;
-    }
+    }*/
 
     // Bind to selected interface
     if ( 0 == stcp_listening( &m_srvctx, 
                         (const char *)gpobj->m_strTcpInterfaceAddress.mbc_str() ) ) {
         gpobj->logMsg( _("[TCP/IP srv thread] Failed to init listening socket.\n"), 
-                        DAEMON_LOGMSG_NORMAL ); 
-        gpobj->m_confirmQuitTcpIpSrv = VSCPD_QUIT_FLAG;                                           
+                        DAEMON_LOGMSG_NORMAL );                                         
         return NULL;                                    
     }
     
     gpobj->logMsg( _("[TCP/IP srv listen thread] Started.\n"), DAEMON_LOGMSG_DEBUG  );
         
-    while ( !TestDestroy() && !(gpobj->stopTcpIpSrv) ) {
+    while ( !TestDestroy() && !(gpobj->m_StopTcpIpSrv) ) {
                  
         pfd = m_srvctx.listening_socket_fds;
         memset( pfd, 0, sizeof(*pfd) );
@@ -188,7 +186,7 @@ void *TCPListenThread::Entry()
         if ( ( pollres = stcp_poll( pfd, 
                                         m_srvctx.num_listening_sockets, 
                                         200, 
-                                        &(gpobj->stopTcpIpSrv) ) ) > 0  ) {
+                                        &(gpobj->m_StopTcpIpSrv) ) ) > 0  ) {
             
             for ( i = 0; i < m_srvctx.num_listening_sockets; i++ ) {
                 
@@ -268,12 +266,14 @@ void *TCPListenThread::Entry()
         pollres = 0;
 
     } // While
+    
+    stcp_close_all_listening_sockets( &m_srvctx );
 
     gpobj->logMsg( _("[TCP/IP srv listen thread] Preparing Exit.\n"), DAEMON_LOGMSG_DEBUG  );
 
     // Wait for clients to close terminate
     int loopCnt = 0;
-    while ( true ) {
+    while ( true ) { 
         
         gpobj->m_mutexTcpClientList.Lock();
         if ( !m_clientList.GetCount() ) break;
@@ -318,10 +318,12 @@ void *TCPListenThread::Entry()
         opts.chipher_list = NULL;
     }
     
+    //stcp_uninit_ssl();
+    
     gpobj->logMsg( _("[TCP/IP srv listen thread] Exit.\n"), DAEMON_LOGMSG_DEBUG  );
-
-    // Confirm quiting
-    gpobj->m_confirmQuitTcpIpSrv = VSCPD_QUIT_FLAG;
+    
+    // Inform main thread that we are ending
+    gpobj->m_semTcpIpThread.Post();
 
     return NULL;
 }
@@ -332,7 +334,7 @@ void *TCPListenThread::Entry()
 
 void TCPListenThread::OnExit()
 {
-    gpobj->logMsg( _("[TCP/IP srv listen thread] Exit.\n"), DAEMON_LOGMSG_DEBUG );
+    //gpobj->logMsg( _("[TCP/IP srv listen thread] Exit.\n"), DAEMON_LOGMSG_DEBUG );
 }
 
 
@@ -432,7 +434,7 @@ void *TCPClientThread::Entry()
     // Enter command loop
     char buf[8192];
     struct pollfd fd;
-    while ( !TestDestroy() && !(gpobj->stopTcpIpSrv ) ) {
+    while ( !TestDestroy() && !(gpobj->m_StopTcpIpSrv ) ) {
 
         // * * * Receiveloop * * *
         if ( m_bReceiveLoop ) {
@@ -462,7 +464,7 @@ void *TCPClientThread::Entry()
             if ( stcp_poll( &fd, 
                                 1, 
                                 500, 
-                                &(gpobj->stopTcpIpSrv) ) < 0  ) {
+                                &(gpobj->m_StopTcpIpSrv) ) < 0  ) {
                 continue;   // Nothing                                 
             }
 
@@ -2541,6 +2543,7 @@ void TCPClientThread::handleClientInterface_List( void )
 
     // Display Interface List
     gpobj->m_wxClientMutex.Lock();
+
     VSCPCLIENTLIST::iterator iter;
     for (iter = gpobj->m_clientList.m_clientItemList.begin();
         iter != gpobj->m_clientList.m_clientItemList.end();
@@ -2991,6 +2994,7 @@ void TCPClientThread::handleClientTable_List( void )
         }
         
         gpobj->m_mutexUserTables.Lock();
+        
         CVSCPTable *pTable = 
                 gpobj->m_userTableObjects.getTable( tblName );
         if ( NULL == pTable ) {

@@ -3404,6 +3404,7 @@ restsrv_doGetTableData( struct web_connection *conn,
 
         CVSCPTable *ptblItem = NULL;
         gpobj->m_mutexTableList.Lock();
+        
         listVSCPTables::iterator iter;
 
         for ( iter = gpobj->m_listTables.begin(); iter != gpobj->m_listTables.end(); ++iter ) {

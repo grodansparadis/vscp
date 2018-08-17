@@ -5866,8 +5866,6 @@ CDM::~CDM()
 
     // Remove all elements
     m_timerHash.clear();
-
-
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -5935,6 +5933,17 @@ void CDM::init( void )
                             (const char *)m_staticXMLPath.mbc_str() );
         gpobj->logMsg( _("[DM] ") + wxlogmsg, DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM );
     }
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// cleanup
+//
+
+void CDM::cleanup( void )
+{
+    if ( NULL != m_db_vscp_dm ) sqlite3_close( m_db_vscp_dm  );
+    m_db_vscp_dm = NULL; 
 }
 
 
@@ -7445,6 +7454,7 @@ bool CDM::loadFromDatabase( void )
                                             -1,
                                             &ppStmt,
                                             NULL ) ) {
+        m_mutexDM.Unlock();
         return false;
     }
     

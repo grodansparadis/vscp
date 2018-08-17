@@ -1988,11 +1988,13 @@ CVariableStorage::~CVariableStorage()
     // Close the internal variable database
     if ( NULL != m_db_vscp_internal_variable ) {
         sqlite3_close( m_db_vscp_internal_variable );
+        m_db_vscp_internal_variable = NULL;
     }
     
     // Close the external variable database
     if ( NULL != m_db_vscp_external_variable ) {
         sqlite3_close( m_db_vscp_external_variable );
+        m_db_vscp_external_variable = NULL;
     }
 }
 
@@ -2089,7 +2091,7 @@ bool CVariableStorage::init( void )
         gpobj->logMsg(wxstr);
         if ( NULL != m_db_vscp_internal_variable ) 
             sqlite3_close( m_db_vscp_internal_variable );
-        m_db_vscp_internal_variable = NULL;
+            m_db_vscp_internal_variable = NULL;
     }
     
     //************************************************************************** 

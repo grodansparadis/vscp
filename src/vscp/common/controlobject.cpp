@@ -274,6 +274,7 @@ CControlObject::CControlObject()
     m_udpInfo.m_bAck = false;
 
     // Default TCP/IP interface settings
+    m_StopTcpIpSrv = 0;
     m_enableTcpip = true;
     m_strTcpInterfaceAddress = _("9598");
     m_encryptionTcpip = 0;
@@ -372,9 +373,6 @@ CControlObject::CControlObject()
         fprintf(stderr,"Failed to initialize webserver subsystem.\n" );
     }
 
-    m_enableMqttBroker = false;
-    m_strMQTTBrokerInterfaceAddress = _("tcp://1883");
-
 #ifdef WIN32
 
     // Initialize winsock layer
@@ -396,107 +394,6 @@ CControlObject::CControlObject()
     // Initialize the CRC
     crcInit();
     
-#if ( 0 )
-// {
-//    "head": 2,
-//    "obid"; 123,
-//    "datetime": "2017-01-13T10:16:02",
-//    "timestamp":50817,
-//    "class": 10,
-//    "type": 8,
-//    "guid": "00:00:00:00:00:00:00:00:00:00:00:00:00:01:00:02",
-//    "data": [1,2,3,4,5,6,7]
-// }    
-    vscpEvent e;
-    wxString strJSON = _("{" 
-            "\"head\": 1,"
-            "\"obid\": 123,"
-            "\"timestamp\": 23488,"
-            "\"datetime\": \"2017-01-13T10:16:02\","
-            "\"class\": 10,"
-            "\"type\": 10,"
-            "\"guid\": \"88:00:00:00:00:00:00:00:00:00:00:00:00:01:00:02\","
-            "\"data\": [11,22,33,44,55]"
-    "}");
-    vscp_convertJSONToEvent( strJSON, &e );
-#endif    
-    
-#if ( 0 )
-    wxString strxml = _("<variable type=\"boolean\" "
-        "name=\"VSCP_LEVEL_II_SIM_DRIVER_BLEVEL20\" "
-        "persistent=\"true\" "
-        "user=\"0\" "
-        " access-rights=\"0x644\" "
-        " value=\"false\" "
-        " note=\"This is not a Level II node.\" />");
-    CVSCPVariable test;
-    wxPrintf( strxml );
-    test.setFromXML( strxml );
-#endif    
-    
-#if ( 0 )    
-    wxString strxml = _("{"
-	"\"name\": \"variable-name\","
-	"\"type\": 1,"
-	"\"user\": 2,"
-	"\"accessrights\": 0x777,"
-        "\"persistence\": true,"
-	"\"lastchange\": \"2018-01-22T14:32:10\","
-	"\"value\": \"This is a test variable\","
-	"\"note\": \"This is a note about this variable\""
-        "}");
-    CVSCPVariable test;
-    wxPrintf( strjson );
-    test.setFromJSON( strjson );
-#endif    
-
-#if ( 0 )
-    CVSCPTable testtable( "c:/tmp/test.tbl" );
-
-    testtable.logData( 1, 100 );
-    testtable.logData( 8, 800 );
-    testtable.logData( 12, 1200 );
-    testtable.logData( 19, 2000 );
-    testtable.logData( 20, 2000 );
-    testtable.logData( 21, 2100 );
-    testtable.logData( 30, 3000 );
-    testtable.logData( 48, 4800 );
-
-    long size = testtable.GetRangeOfData( 22, 48, NULL, 0 );
-    size = testtable.GetRangeOfData( 1, 8, NULL, 0 );
-    size = testtable.GetRangeOfData( 20, 48, NULL, 0 );
-#endif
-
-#if ( 0 ) 
-    time_t rawtime;
-    struct tm *timeinfo;
-
-    time ( &rawtime );
-    timeinfo = localtime( &rawtime );
-    timeinfo->tm_hour = 18;
-    timeinfo->tm_min = 0;
-    timeinfo->tm_sec = 0;
-    timeinfo->tm_mday = 3;
-    timeinfo->tm_mon = 10;
-    timeinfo->tm_year = 2015;
-    time_t ttt = mktime ( timeinfo );
-    ttt = ttt + 1;
-#endif
-
-/*
-wxString ssss(_("12345678"));
-vscp_base64_wxencode( ssss );
-vscp_base64_wxdecode( ssss );
-ssss = _("1234");
-*/
-
-#ifdef CS_ENABLE_DEBUG
-    FILE *logfile;
-    cs_log_set_level( LL_VERBOSE_DEBUG );
-    logfile = fopen( "/mongoose_logfile.txt", "w+" );
-    cs_log_set_file( logfile );
-#endif
-
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -505,12 +402,12 @@ ssss = _("1234");
 
 CControlObject::~CControlObject()
 {
-    fprintf( stderr, "ControlObject: Final death starting.\n");
+    fprintf( stderr, "ControlObject: Going away...\n");
     
     // Remove objects in Client send queue
     VSCPEventList::iterator iterVSCP;
 
-    //m_mutexClientOutputQueue.Lock();
+    m_mutexClientOutputQueue.Lock();
     for (iterVSCP = m_clientOutputQueue.begin();
             iterVSCP != m_clientOutputQueue.end(); ++iterVSCP) {
         vscpEvent *pEvent = *iterVSCP;
@@ -518,12 +415,12 @@ CControlObject::~CControlObject()
     }
 
     m_clientOutputQueue.Clear();
-    //m_mutexClientOutputQueue.Unlock();
+    m_mutexClientOutputQueue.Unlock();
 
     // Exit weserver interface
-    web_exit();
+    //web_exit();
 
-    //gpobj->m_mutexUDPInfo.Lock();
+    gpobj->m_mutexUDPInfo.Lock();
     udpRemoteClientList::iterator iterUDP;
     for (iterUDP = m_udpInfo.m_remotes.begin();
             iterUDP != m_udpInfo.m_remotes.end(); ++iterUDP) {
@@ -533,11 +430,10 @@ CControlObject::~CControlObject()
         }
 
     }
-    //gpobj->m_mutexUDPInfo.Unlock();
-
     m_udpInfo.m_remotes.Clear();
+    m_mutexUDPInfo.Unlock();
     
-    fprintf( stderr, "ControlObject: Final death ending.\n");
+    fprintf( stderr, "ControlObject: Gone!\n");
 
 }
 
@@ -549,48 +445,15 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
 {
     wxString str;
 
-/*
-    vscpEventEx e;
-    vscpEventEx *pEventEx = &e;
-    wxLogDebug( wxString::Format(_("%p crc=%p obid=%p year=%p month=%p day=%p"), (void*)pEventEx, (void *)&(pEventEx->crc), (void*)&(pEventEx->obid), (void*)&(pEventEx->year), (void*)&(pEventEx->month), (void*)&(pEventEx->day) ));
-    wxLogDebug( wxString::Format(_("sizeof unsigned short %zu"), sizeof(unsigned short) ) );
-    wxLogDebug( wxString::Format(_("sizeof unsigned uint16_t %zu"), sizeof(uint16_t) ) );
-    wxLogDebug( wxString::Format(_("sizeof unsigned long %zu"), sizeof(unsigned long) ) );
-    wxLogDebug( wxString::Format(_("sizeof unsigned uint32_t %zu"), sizeof(uint32_t) ) );
-    wxLogDebug( wxString::Format(_("sizeof unsigned int %zu"), sizeof(int) ) );
-*/
-    /*
-    vscp_isPasswordValid( _("E2D453EF99FB3FCD19E67876554A8C27;A4A86F7D7E119BA3F0CD06881E371B989B33B6D606A863B633EF529D64544F8E"),
-            _("secrett") );
-
-    wxDateTime ttt;
-    ttt.ParseISOCombined(_("1970-12-31T12:00:00+02:00"));
-    //ttt = ttt.ToTimezone( wxDateTime::TimeZone(-2 ) ); // .ToUTC(true);
-    str = ttt.FormatISOCombined();
-
-    str = _("1970-12-31T12:00:00.345+02:00Z");
-    str = str.AfterFirst('.');
-    uint32_t ms = vscp_readStringValue( str );
-
-    str = str.AfterFirst('+');
-    if ( str.Length() ) {
-
-    }
-    else {
-        str = str.AfterFirst('+');
-    }
-
-    wxString strMinus = str.AfterFirst('-');
-    */
-
-    /*
-    // https://www.w3.org/TR/NOTE-datetime
-    wxDateTime ttt;
-    ttt.ParseISOCombined(_("1970-12-31T12:00:00.444"));
-    ttt.SetMillisecond( 123 );
-    unsigned short ms = ttt.GetMillisecond();
-    */
-
+    //wxLog::AddTraceMask( "wxTRACE_doWorkLoop" );
+    //wxLog::AddTraceMask(_("wxTRACE_vscpd_receiveQueue")); // Receive queue
+    //wxLog::AddTraceMask(_("wxTRACE_vscpd_Msg"));
+    //wxLog::AddTraceMask(_("wxTRACE_VSCP_Msg"));
+    //wxLog::AddTraceMask(_("wxTRACE_vscpd_ReceiveMutex"));
+    //wxLog::AddTraceMask(_("wxTRACE_vscpd_sendMutexLevel1"));
+    //wxLog::AddTraceMask(_("wxTRACE_vscpd_LevelII"));
+    //wxLog::AddTraceMask( _( "wxTRACE_vscpd_dm" ) );
+    
     // Save root folder for later use.
     m_rootFolder = rootFolder;
 
@@ -606,15 +469,6 @@ bool CControlObject::init( wxString& strcfgfile, wxString& rootFolder )
     m_path_db_vscp_log.Assign( m_rootFolder + _("/logs/vscpd_log.sqlite3") );
     wxString strRootwww = m_rootFolder + _("www");
     m_web_document_root = strRootwww;
-
-    //wxLog::AddTraceMask( "wxTRACE_doWorkLoop" );
-    //wxLog::AddTraceMask(_("wxTRACE_vscpd_receiveQueue")); // Receive queue
-    //wxLog::AddTraceMask(_("wxTRACE_vscpd_Msg"));
-    //wxLog::AddTraceMask(_("wxTRACE_VSCP_Msg"));
-    //wxLog::AddTraceMask(_("wxTRACE_vscpd_ReceiveMutex"));
-    //wxLog::AddTraceMask(_("wxTRACE_vscpd_sendMutexLevel1"));
-    //wxLog::AddTraceMask(_("wxTRACE_vscpd_LevelII"));
-    //wxLog::AddTraceMask( _( "wxTRACE_vscpd_dm" ) );
 
     // Change locale to get the correct decimal point "." 
     // Set locale
@@ -1122,11 +976,12 @@ bool CControlObject::run( void )
     //-------------------------------------------------------------------------
     //                            MAIN - LOOP
     //-------------------------------------------------------------------------
-
+    
 
     // DM Loop
+    int cnt = 0;
     while ( !m_bQuit ) {
-
+        
         // CLOCKS_PER_SEC
         clock_t ticks,oldus;
         oldus = ticks = clock();
@@ -1144,6 +999,11 @@ bool CControlObject::run( void )
         if ( wxSEMA_TIMEOUT ==
                 pClientItem->m_semClientInputQueue.WaitTimeout( 100 ) ) {
 
+            if ( m_bQuit ) continue;
+#if 0            
+            cnt++;
+            if ( cnt > 100 ) m_bQuit = true;
+#endif            
             // Put the LOOP event on the queue
             m_dm.feed( &EventLoop );
             continue;
@@ -1152,6 +1012,7 @@ bool CControlObject::run( void )
 
         //----------------------------------------------------------------------
         //                         Event received here
+        //                   from one of the incoming source
         //----------------------------------------------------------------------
 
 
@@ -1181,8 +1042,8 @@ bool CControlObject::run( void )
             websock_post_incomingEvents();
 
         } // Event in queue
-
-    }  // LOOP
+        
+    }  // while
 
     // Do shutdown event
     m_dm.feed( &EventShutDown );
@@ -1193,6 +1054,9 @@ bool CControlObject::run( void )
     m_wxClientMutex.Unlock();
 
     fprintf(stderr, "ControlObject: Run - Done\n" );
+
+    cleanup();
+
     return true;
 }
 
@@ -1202,8 +1066,29 @@ bool CControlObject::run( void )
 
 bool CControlObject::cleanup( void )
 {
-    fprintf( stderr, "ControlObject: cleanup - Giving worker threads time to stop operations...\n");
+    /*m_mutexUDPInfo.Unlock();
+    m_mutexLogWrite.Unlock();
+    m_mutexTcpClientList.Unlock();
+    m_mutexMulticastInfo.Unlock();
+    m_websrvSessionMutex.Unlock();
+    m_restSessionMutex.Unlock();
+    m_websocketSessionMutex.Unlock();
+    m_variableMutex.Unlock();
+    m_db_vscp_configMutex.Unlock();
+    m_wxClientMutex.Unlock();
+    m_wxDeviceMutex.Unlock();
+    m_mutexDeviceList.Unlock();
+    m_mutexClientList.Unlock();
+    m_mutexUserList.Unlock();
+    m_mutexUserTables.Unlock();
+    m_mutexKnownNodes.Unlock();
+    m_mutexClientOutputQueue.Unlock();
+    m_mutexclientMsgWorkerThread.Unlock();
+    m_mutexdaemonVSCPThread.Unlock();
+    m_mutexVSCPClientnUDPThread.Unlock();
+    m_mutexudpClientThread.Unlock();*/
     
+    fprintf( stderr, "ControlObject: cleanup - Giving worker threads time to stop operations...\n");    
     sleep( 2 ); // Give threads some time to end
     
     fprintf( stderr, "ControlObject: cleanup - Stopping device worker thread...\n");
@@ -1213,7 +1098,12 @@ bool CControlObject::cleanup( void )
     stopDaemonWorkerThread();
 
     fprintf( stderr, "ControlObject: cleanup - Stopping client worker thread...\n");
-    stopClientWorkerThread();    
+    stopClientWorkerThread();  
+
+    m_dm.cleanup();
+
+    fprintf( stderr, "ControlObject: cleanup - Stopping Web Server worker thread...\n");
+    stop_webserver();
 
     fprintf( stderr, "ControlObject: cleanup - Stopping UDP worker thread...\n");
     stopUDPWorkerThread();
@@ -1224,22 +1114,20 @@ bool CControlObject::cleanup( void )
     fprintf( stderr, "ControlObject: cleanup - Stopping TCP/IP worker thread...\n");
     stopTcpWorkerThread();
 
-    fprintf( stderr, "ControlObject: cleanup - Stopping Web Server worker thread...\n");
-    stop_webserver();        
-
     fprintf( stderr, "ControlObject: cleanup - Closing databases.\n");
 
-    // Close the VSCP data database
-    sqlite3_close( m_db_vscp_data );
-
-    // Close the DM database
-    sqlite3_close( m_dm.m_db_vscp_dm );
-
     // Close the vscpd database
-    sqlite3_close( m_db_vscp_daemon );
+    if ( NULL != m_db_vscp_daemon ) sqlite3_close( m_db_vscp_daemon );
+    m_db_vscp_daemon = NULL;
+
+    // Close the VSCP data database
+    if ( NULL != m_db_vscp_data ) sqlite3_close( m_db_vscp_data );
+    m_db_vscp_data = NULL;
 
     // Close log database
-    sqlite3_close( m_db_vscp_log );
+    if ( NULL != m_db_vscp_log ) sqlite3_close( m_db_vscp_log );
+    m_db_vscp_log = NULL;
+    
 
     // Clean up SQLite lib allocations
     sqlite3_shutdown();
@@ -1314,7 +1202,7 @@ bool CControlObject::startTcpWorkerThread(void)
 
     logMsg(_("Controlobject: Starting TCP/IP interface...\n") );
 
-    
+    m_StopTcpIpSrv = 0;
     m_pTCPListenThread = new TCPListenThread;
 
     if ( NULL != m_pTCPListenThread ) {
@@ -1324,8 +1212,6 @@ bool CControlObject::startTcpWorkerThread(void)
             
             m_pTCPListenThread->SetPriority( WXTHREAD_DEFAULT_PRIORITY );
             
-            m_confirmQuitTcpIpSrv = 0;      // Rest quit flag
-
             if ( wxTHREAD_NO_ERROR != ( err = m_pTCPListenThread->Run() ) ) {
                 logMsg(_("Controlobject: Unable to run TCP thread.") );
             }
@@ -1352,28 +1238,31 @@ bool CControlObject::startTcpWorkerThread(void)
 bool CControlObject::stopTcpWorkerThread( void )
 {
     // Tell the thread it's time to quit
-    stopTcpIpSrv = 0xff;
+    m_StopTcpIpSrv = 1;
 
     logMsg(_("Controlobject: Terminating TCP thread.") );
 
     //if ( NULL != m_pTCPClientThread ) {
 
     // Wait for magic number confirming thread ending
-    int cnt = 0;
+    /*int cnt = 0;
     while ( VSCPD_QUIT_FLAG == m_confirmQuitTcpIpSrv ) {
         wxSleep( 1 );
         cnt++;
         if ( cnt > 5 ) {
-            logMsg(_("Controlobject: No termination confirm from TCP thread. Quiting anyway") );
+            logMsg(_("Controlobject: No termination confirm from TCP thread. Quitting anyway") );
             break;
         }
-    }
+    }*/
 
         //m_mutexTcpClientListenThread.Lock();        
         //delete m_pTCPClientThread;
         //m_pTCPClientThread = NULL;
         //m_mutexTcpClientListenThread.Unlock();
     //}
+    
+    // Wait for the tcp/ip listen thread to terminate
+    m_semTcpIpThread.Wait();
 
     logMsg(_("Controlobject: Terminated TCP thread.") );
 
@@ -1983,6 +1872,7 @@ bool CControlObject::searchLogDB( const char * sql, wxString& strResult )
         logMsg( wxString::Format( _("Failed to get records from log "
                                     "database. SQL is %s"),
                                     sql )  );
+        m_mutexLogWrite.Unlock();
         return false;
     }
 
@@ -3782,48 +3672,6 @@ bool CControlObject::readConfigurationXML( wxString& strcfgfile )
                 }
             }
 
-        }
-
-        else if (child->GetName().Lower() == _("mqtt")) {
-
-            wxString attribute;
-
-            // Enable
-            attribute = child->GetAttribute( _("enable"), _("") );
-            if ( child->GetAttribute( _("timeout_ms"), &attribute ) ) {
-                attribute.Trim();
-                attribute.Trim(false);
-                if ( attribute.Length() ) {
-                    attribute.MakeUpper();
-                    if ( attribute.IsSameAs(_("FALSE"), false ) ) {
-                        m_enableMqttBroker = false;
-                    }
-                    else {
-                        m_enableMqttBroker = true;
-                    }
-                }
-            }
-        }
-
-
-        else if (child->GetName().Lower() == _("coap")) {
-
-            wxString attribute;
-
-            // Enable
-            if ( child->GetAttribute( _("enable"), &attribute ) ) {
-                attribute.Trim();
-                attribute.Trim(false);
-                if ( attribute.Length() ) {
-                    attribute.MakeUpper();
-                    if ( attribute.IsSameAs(_("FALSE"), false ) ) {
-                        m_enableMqttBroker = false;
-                    }
-                    else {
-                        m_enableMqttBroker = true;
-                    }
-                }
-            }
         }
 
         else if ( child->GetName().Lower() == _("remoteuser") ) {
@@ -5734,52 +5582,6 @@ bool CControlObject::readConfigurationDB( void )
             m_websocket_timeout_ms = atol( (const char *)pValue );
             continue;
         }
-
-
-        // * * * MQTT * * *
-
-        // CoAP broker enable
-        if ( !vscp_strcasecmp( (const char *)pName,
-                        VSCPDB_CONFIG_NAME_MQTT_ENABLE )  ) {
-            if ( atoi( (const char *)pValue ) ) {
-                m_enableMqttBroker = true;
-            }
-            else {
-                m_enableMqttBroker = false;
-            }
-            continue;
-        }
-
-        // MQTT broker interface
-        if ( !vscp_strcasecmp( (const char *)pName,
-                        VSCPDB_CONFIG_NAME_MQTT_INTERFACE )  ) {
-            m_strMQTTBrokerInterfaceAddress =
-                wxString::FromUTF8( (const char *)pValue );
-            continue;    
-        }
-
-        // * * * CoAP * * *
-
-        // CoAP server enable
-        if ( !vscp_strcasecmp( (const char *)pName,
-                        VSCPDB_CONFIG_NAME_COAP_ENABLE )  ) {
-            if ( atoi( (const char *)pValue ) ) {
-                m_enableCOAP = true;
-            }
-            else {
-                m_enableCOAP = false;
-            }
-            continue;
-        }
-
-        // CoAP interface
-        if ( !vscp_strcasecmp( (const char *)pName,
-                        VSCPDB_CONFIG_NAME_COAP_INTERFACE )  ) {
-            m_strCoapInterfaceAddress =
-                wxString::FromUTF8( (const char *)pValue );
-            continue;    
-        }
-
 
         // * * * Automation * * *
 

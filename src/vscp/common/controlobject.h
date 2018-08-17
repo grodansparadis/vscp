@@ -65,10 +65,6 @@
 class TCPListenThread;
 class CVSCPAutomation;
 
-// This is a magic value used by a thread to confirm
-// it is quitting.
-#define VSCPD_QUIT_FLAG     0x55AA
-
 // Log level
 enum {
     DAEMON_LOGMSG_NONE = 0,
@@ -688,8 +684,10 @@ public:
 
     // Flag read by tcp/ip server thread and which terminates the 
     // thread when set to non zero
-    int stopTcpIpSrv;
-    volatile uint16_t m_confirmQuitTcpIpSrv;     // 0x55aa when quiting
+    int m_StopTcpIpSrv;
+    
+    // Used for main thread wait on listend thread exit
+    wxSemaphore m_semTcpIpThread;
 
     // Interface used for TCP/IP connection  (only one)
     wxString m_strTcpInterfaceAddress;
@@ -859,20 +857,6 @@ public:
     // List of active websocket sessions
     WEBSOCKETSESSIONLIST m_websocketSessions;
 
-
-    //**************************************************************************
-    //                               MQTT
-    //**************************************************************************
-
-    bool m_enableMqttBroker;
-    wxString m_strMQTTBrokerInterfaceAddress;
-
-    //**************************************************************************
-    //                               CoAP
-    //**************************************************************************
-
-    bool m_enableCOAP;
-    wxString m_strCoapInterfaceAddress;
 
     //**************************************************************************
     //                             REMOTE VARIABLES

@@ -3479,8 +3479,8 @@ stcp_write( struct stcp_connection *conn, const void *buf, size_t len )
 
 
 
-static void
-close_all_listening_sockets( struct server_context *srv_ctx )
+void
+stcp_close_all_listening_sockets( struct server_context *srv_ctx )
 {
     unsigned int i;
     if ( !srv_ctx ) {
@@ -3961,7 +3961,7 @@ stcp_listening( struct server_context *srv_ctx,
     } // while
     
     if ( portsOk != portsTotal ) {
-        close_all_listening_sockets( srv_ctx );
+        stcp_close_all_listening_sockets( srv_ctx );
         portsOk = 0;
     }
     

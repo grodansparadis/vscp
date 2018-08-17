@@ -1257,8 +1257,7 @@ ws1_command( struct web_connection *conn,
             pSession->m_pClientItem->m_mutexClientInputQueue.Lock();
             if ( !vscp_readFilterFromString( &pSession->m_pClientItem->m_filterVSCP, strTok ) ) {
 
-                // Unlock
-                pSession->m_pClientItem->m_mutexClientInputQueue.Unlock();
+                
                 wxstr = wxString::Format( _("-;SF;%d;%s"),
                                         (int)WEBSOCK_ERROR_SYNTAX_ERROR,
                                         WEBSOCK_STR_ERROR_SYNTAX_ERROR );
@@ -1266,7 +1265,9 @@ ws1_command( struct web_connection *conn,
                 web_websocket_write( conn, 
                                     WEB_WEBSOCKET_OPCODE_TEXT,
                                     (const char *)wxstr.mbc_str(),
-                                    wxstr.length() );;
+                                    wxstr.length() );
+
+                pSession->m_pClientItem->m_mutexClientInputQueue.Unlock();                                    
                 return;
             }
 
@@ -1294,9 +1295,6 @@ ws1_command( struct web_connection *conn,
             pSession->m_pClientItem->m_mutexClientInputQueue.Lock();
             if (!vscp_readMaskFromString( &pSession->m_pClientItem->m_filterVSCP,
                                             strTok ) ) {
-
-                // Unlock
-                pSession->m_pClientItem->m_mutexClientInputQueue.Unlock();
                 
                 wxstr = wxString::Format( _("-;SF;%d;%s"),
                                         (int)WEBSOCK_ERROR_SYNTAX_ERROR,
@@ -2604,7 +2602,9 @@ ws1_command( struct web_connection *conn,
             // list with argument - list specs for specific table
             
             wxArrayString arrayTblInfo;
+            
             gpobj->m_mutexUserTables.Lock();
+
             CVSCPTable *pTable = 
                 gpobj->m_userTableObjects.getTable( strTable );
             if ( NULL == pTable ) {

@@ -387,7 +387,16 @@ stcp_listening( struct server_context *srv_ctx,
 int
 stcp_accept( struct server_context *srv_ctx,
                 const struct socket *listener, 
-                struct socket *psocket );                 
+                struct socket *psocket );               
+
+/*!
+ * Close all listening sockets
+ * 
+ * @parm srv_ctx Pointer to server context
+ */
+void
+
+stcp_close_all_listening_sockets( struct server_context *srv_ctx );
 
 /*!
     INit data for a connected client (after accept)
