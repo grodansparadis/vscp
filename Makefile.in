@@ -14,16 +14,6 @@ all:
 	@for d in $(PROJ_SUBDIRS); do (echo "====================================================" &&\
 	echo "Building in dir " $$d && echo "====================================================" && cd $$d && $(MAKE)); done
 
-
-clean:
-	@for d in $(PROJ_SUBDIRS); do (cd $$d && $(MAKE) clean); done
-	rm -f config.log
-	rm -f config.startup
-	rm -f config.status
-	rm -r m4/Makefile
-	rm -f Makefile
-
-
 install-all: install install-folders install-startup-script install-config install-sample-data install-sample-certs install-manpages
 
 install: install-folders install-startup-script install-config install-sample-data install-sample-certs install-manpages
@@ -212,7 +202,14 @@ delete-all:
 
 clean-conf: delete-all force-conf
 
-distclean:
+clean:
+	@for d in $(PROJ_SUBDIRS); do (cd $$d && $(MAKE) clean); done
+	rm -f config.log
+	rm -f config.startup
+	rm -f config.status
+	rm -r m4/Makefile
+
+distclean: clean
 	@sh clean_for_dist
 
 deb:

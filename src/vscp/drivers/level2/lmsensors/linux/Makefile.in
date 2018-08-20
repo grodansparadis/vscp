@@ -88,9 +88,6 @@ LMSENSOROBJ =  vscpl2drv_lmsensors.o\
 all: vscpl2drv-lmsensors.so
 
 
-distclean: clean
-	rm -f config.cache config.log config.status bk-deps bk-make-pch shared-ld-sh Makefile	
-
 # Build the Linux DL
 vscpl2drv-lmsensors.so: $(LMSENSOROBJ)
 	$(CXX) -o $@ $(LMSENSOROBJ) $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS) 
