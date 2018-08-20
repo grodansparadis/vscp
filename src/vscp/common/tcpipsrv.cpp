@@ -60,6 +60,11 @@
 
 WX_DEFINE_LIST( TCPIPCLIENTS );
 
+#define TCPIPSRV_INACTIVITY_TIMOUT  (3600 * 12)
+
+
+
+
 ///////////////////////////////////////////////////
 //                 GLOBALS
 ///////////////////////////////////////////////////
@@ -409,6 +414,9 @@ void *TCPClientThread::Entry()
     m_pClientItem->m_strDeviceName += _(" ");
     m_pClientItem->m_strDeviceName += wxDateTime::Now().FormatISOTime();
 
+    // Start of activity
+    m_pClientItem->m_clientActivity = wxGetUTCTime();
+
     // Add the client to the Client List
     gpobj->m_wxClientMutex.Lock();
     gpobj->addClient( m_pClientItem );
@@ -436,6 +444,12 @@ void *TCPClientThread::Entry()
     struct pollfd fd;
     while ( !TestDestroy() && !(gpobj->m_StopTcpIpSrv ) ) {
 
+        // Check for client inactivity
+        if ( ( wxGetUTCTime() - m_pClientItem->m_clientActivity ) > TCPIPSRV_INACTIVITY_TIMOUT ) {
+            gpobj->logMsg( _("[TCP/IP srv client thread] Client closed due to inactivity.\n") );
+            break;
+        }
+
         // * * * Receiveloop * * *
         if ( m_bReceiveLoop ) {
 
@@ -449,6 +463,7 @@ void *TCPClientThread::Entry()
             // link is open
             if ( ( wxGetUTCTime()-m_pClientItem->m_timeRcvLoop ) > 2 ) {
                 m_pClientItem->m_timeRcvLoop = wxGetUTCTime();
+                m_pClientItem->m_clientActivity = wxGetUTCTime();
                 write( "+OK\r\n", 5 );
             }
                 
@@ -499,6 +514,9 @@ void *TCPClientThread::Entry()
         else if ( nRead > 0 ) {
             m_strResponse += wxString::FromUTF8Unchecked( buf, nRead );
         }
+
+        // Record client activity
+        m_pClientItem->m_clientActivity = wxGetUTCTime();
         
         // get data up to "\r\n" if any
         int pos;

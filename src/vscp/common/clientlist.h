@@ -197,8 +197,11 @@ public:
     //                       Used by TCP/IP client thread
     //////////////////////////////////////////////////////////////////////////
     
+    // UTC time since last client activity
+    long m_clientActivity;
+
     /*!
-        RCVLOOP clock
+        RCVLOOP clock (UTC time for last sent "+OK")
     */
     wxLongLong m_timeRcvLoop;
     
