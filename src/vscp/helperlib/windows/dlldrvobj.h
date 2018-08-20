@@ -32,7 +32,7 @@
 #define DLL_VERSION		0x000001
 
 // This is the vendor string - Change to your own value
-#define DLL_VENDOR "Paradise of the Frog, Sweden, http://www.paradiseofthefrog.com"
+#define DLL_VENDOR "Grodans Paradis AB, Sweden, http://www.grodansparaids.com"
 							
 // Max number of open connections
 #define VSCP_HELPER_MAX_OPEN	256

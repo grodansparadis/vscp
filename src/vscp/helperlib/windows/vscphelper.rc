@@ -83,7 +83,7 @@ BEGIN
 	BEGIN
         BLOCK "040904e4"
 		BEGIN
-            VALUE "CompanyName", "Paradise of the Frog/Grodans Paradis AB"
+            VALUE "CompanyName", "Grodans Paradis AB"
             VALUE "FileDescription", "Helper library for the VSCP project"
 			VALUE "FileVersion",     "1.0.0.1"
 			VALUE "InternalName",    "VSCP helper lib.dll"

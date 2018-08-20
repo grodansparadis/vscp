@@ -15,8 +15,8 @@
     <bool name="translate_strings">1</bool>
     <bool name="make_unicode_strings">1</bool>
     <bool name="extract_strings">0</bool>
-    <string name="user_name">"Ake Hedman, Paradise of the Frog"</string>
-    <string name="copyright_string">"(C) 2007-2014 Ake Hedman, Grodans Paradis AB, &lt;akhe@grodansparadis.com&gt;"</string>
+    <string name="user_name">"Ake Hedman, Grodans Paradis AB"</string>
+    <string name="copyright_string">"(C) 2007-2018 Ake Hedman, Grodans Paradis AB, &lt;akhe@grodansparadis.com&gt;"</string>
     <string name="resource_prefix">""</string>
     <bool name="use_two_step_construction">1</bool>
     <bool name="use_enums">1</bool>

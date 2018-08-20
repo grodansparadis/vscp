@@ -2555,42 +2555,7 @@ bool CVariableStorage::init( void )
     variable.setNote( _("Address for VSCP daemon simple UDP interface."), true );
     addStockVariable( variable  );
     
-    // *************************************************************************
-    //                                 MQTT
-    // *************************************************************************
-    
-    variable.init();
-    variable.setAccessRights( PERMISSON_ALL_READ  | PERMISSON_OWNER_WRITE );    
-    variable.setName( _("vscp.mqtt.server.enable") );
-    variable.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
-    variable.setNote( _("Enable flag for VSCP server MQTT interface."), true );
-    addStockVariable( variable  );
-    
-    variable.init();
-    variable.setAccessRights( PERMISSON_ALL_READ  | PERMISSON_OWNER_WRITE );    
-    variable.setName( _("vscp.mqtt.server.address") );
-    variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
-    variable.setNote( _("Address for VSCP server MQTT interface."), true );
-    addStockVariable( variable  );
-    
-    
-    // *************************************************************************
-    //                               CoAP
-    // *************************************************************************
-    
-    variable.init();
-    variable.setAccessRights( PERMISSON_ALL_READ  | PERMISSON_OWNER_WRITE );    
-    variable.setName( _("vscp.coap.server.enable") );
-    variable.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
-    variable.setNote( _("Enable flag for VSCP daemon CoAP interface."), true );
-    addStockVariable( variable  );
-    
-    variable.init();
-    variable.setAccessRights( PERMISSON_ALL_READ  | PERMISSON_OWNER_WRITE );    
-    variable.setName( _("vscp.coap.server.address") );
-    variable.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
-    variable.setNote( _("Address for VSCP daemon CoAP interface."), true );
-    addStockVariable( variable  );
+
     
     // *************************************************************************
     //                              Discovery
@@ -4563,40 +4528,6 @@ uint32_t CVariableStorage::getStockVariable( const wxString& name,
     
     if ( lcname.StartsWith( _("vscp.udp.address") ) ) {
         var.setValue( gpobj->m_udpInfo.m_interface , true );
-        return var.getID();
-    }
-    
-    // *************************************************************************
-    //                                 COAP
-    // *************************************************************************
-    
-    
-    if ( lcname.StartsWith( _("vscp.coap.server.enable") ) ) {
-        var.setValue( false );
-        return var.getID();
-    }
-    
-    if ( lcname.StartsWith( _("vscp.coap.server.address") ) ) {
-        var.setValue( wxString::Format( _("%s"),
-                    "COAP is not part of VSCP anymore." ), true );
-        return var.getID();
-    }
-    
-    
-        
-    // *************************************************************************
-    //                                MQTT
-    // *************************************************************************
-       
-    
-    if ( lcname.StartsWith( _("vscp.mqtt.server.enable") ) ) {
-        var.setValue( false );
-        return var.getID();
-    }
-    
-    if ( lcname.StartsWith( _("vscp.mqtt.server.address") ) ) {
-        var.setValue( wxString::Format( _("%s"),
-                    "MQTT is not part of VSCP anymore." ), true );
         return var.getID();
     }
     

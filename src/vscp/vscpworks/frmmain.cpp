@@ -767,8 +767,6 @@ void frmMain::addDefaultContent( void )
     //m_moduleItem = m_mdfTree->AppendItem( m_rootItem, _( "Level II node" ), MDF_EDITOR_MAIN_ITEM );
     //m_moduleItem = m_mdfTree->AppendItem( m_rootItem, _( "Websocket interface" ), MDF_EDITOR_MAIN_ITEM );
     //m_moduleItem = m_mdfTree->AppendItem( m_rootItem, _( "REST interface" ), MDF_EDITOR_MAIN_ITEM );
-    //m_moduleItem = m_mdfTree->AppendItem( m_rootItem, _( "MQTT interface" ), MDF_EDITOR_MAIN_ITEM );
-    //m_moduleItem = m_mdfTree->AppendItem( m_rootItem, _( "CoAP interface" ), MDF_EDITOR_MAIN_ITEM );
 
     /*
     m_mdfTree->AppendItem( m_moduleItem, _( "Model" ), MDF_EDITOR_SUB_ITEM );

@@ -342,21 +342,6 @@
 #define VSCPDB_CONFIG_NAME_WEBSOCKET_TIMEOUT_MS                 "websocket_timeout_ms"
 #define VSCPDB_CONFIG_DEFAULT_WEBSOCKET_TIMEOUT_MS              "30000"
 
-// MQTT broker
-
-#define VSCPDB_CONFIG_NAME_MQTT_ENABLE                          "mqtt_enable"
-#define VSCPDB_CONFIG_DEFAULT_MQTT_ENABLE                       "0"
-
-#define VSCPDB_CONFIG_NAME_MQTT_INTERFACE                       "mqtt_interface_address"
-#define VSCPDB_CONFIG_DEFAULT_MQTT_INTERFACE                    "tcp://1883"
-
-// COAP broker
-
-#define VSCPDB_CONFIG_NAME_COAP_ENABLE                          "coap_enable"
-#define VSCPDB_CONFIG_DEFAULT_COAP_ENABLE                       "0"
-
-#define VSCPDB_CONFIG_NAME_COAP_INTERFACE                       "coap_interface_address"
-#define VSCPDB_CONFIG_DEFAULT_COAP_INTERFACE                    "udp://5684"
 
 // Automation
 

@@ -1,5 +1,5 @@
 // Copyright: (C) 2007-2018 
-// Ake Hedman, Paradise of the Frog AB, <akhe@paradiseofthefrog.com>
+// Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 #define MEMREG_PRG_START_COMMON         0x000000
 #define MEMREG_PRG_END_COMMON           0x2fffff
 
