@@ -207,10 +207,10 @@ clean:
 	rm -f config.log
 	rm -f config.startup
 	rm -f config.status
-	rm -r m4/Makefile
 
 distclean: clean
 	@sh clean_for_dist
+	rm -f m4/Makefile
 
 deb:
 	@for d in $(PROJ_SUBDIRS); do (echo "====================================================" &&\
