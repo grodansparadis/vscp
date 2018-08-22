@@ -1036,7 +1036,7 @@ event_destroy(void *eventhdl)
 static void
 set_close_on_exec(SOCKET sock)
 {
-    (void)conn; // Unused.
+    (void)sock; // Unused.
 }
 
 
@@ -2840,6 +2840,8 @@ stcp_close_connection( struct stcp_connection *conn )
  * @return >0 success, -1 timeout, -2 stopped
  */
 
+#ifndef _WIN32
+
 int
 stcp_poll( struct pollfd *pfd,
                 unsigned int n,
@@ -2887,6 +2889,8 @@ stcp_poll( struct pollfd *pfd,
     // timeout: return 0
     return 0;
 }
+
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // stcp_push_inner
@@ -3798,7 +3802,7 @@ stcp_listening( struct server_context *srv_ctx,
         // same process, so a short Sleep may be
         // required between web_stop and web_start.
         //
-        if ( setsockopt( srv_ctx->listener.sock,
+        if ( setsockopt(so.sock,
                         SOL_SOCKET,
                         SO_EXCLUSIVEADDRUSE,
                         (SOCK_OPT_TYPE) & on,
@@ -4002,7 +4006,7 @@ stcp_accept( struct server_context *srv_ctx,
 
         // Put so socket structure into the queue
 #if defined(_WIN32)
-        (void)SetHandleInformation((HANDLE)(intptr_t)so.sock, HANDLE_FLAG_INHERIT, 0);
+        (void)SetHandleInformation((HANDLE)(intptr_t)psocket->sock, HANDLE_FLAG_INHERIT, 0);
 #else
         if ( fcntl( psocket->sock, F_SETFD, FD_CLOEXEC ) != 0 ) {
             // Failed TODO
