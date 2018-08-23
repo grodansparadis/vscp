@@ -2474,7 +2474,11 @@ stcp_connect_socket( const char *hostip,
                         hostip,
                         port,
                         strerror( ERRNO ) );
+#ifdef _WIN32
+    closesocket(*sock);
+#else
     close(*sock);
+#endif
     *sock = INVALID_SOCKET;
 
     return 0;
@@ -2541,7 +2545,11 @@ stcp_connect_remote_impl( const char *host,
         unsigned long ssl_err = ERR_get_error();
         const char* const str = ERR_reason_error_string( ssl_err );
         stcp_report_error("SSL_CTX_new error. %s", str );
+#ifdef _WIN32
+        closesocket(sock);
+#else
         close(sock);
+#endif
         free(conn);
         return NULL;
     }
@@ -2577,7 +2585,11 @@ stcp_connect_remote_impl( const char *host,
                                     NULL ) ) {
                 stcp_report_error( "Can not use SSL client certificate" );
                 SSL_CTX_free( conn->ssl_ctx );
-                close( sock );
+#ifdef _WIN32
+                closesocket(sock);
+#else
+                close(sock);
+#endif
                 free( conn );
                 return NULL;
             }
@@ -2601,7 +2613,11 @@ stcp_connect_remote_impl( const char *host,
                         &(conn->stop_flag ) ) ) {
             stcp_report_error("SSL connection error");
             SSL_CTX_free( conn->ssl_ctx );
-            close( sock );
+#ifdef _WIN32
+            closesocket(sock);
+#else
+            close(sock);
+#endif
             free( conn );
             return NULL;
         }
