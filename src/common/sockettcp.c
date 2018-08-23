@@ -2763,7 +2763,11 @@ stcp_close_socket_gracefully( struct stcp_connection *conn )
     }
 
     // Now we know that our FIN is ACK-ed, safe to close
+#ifdef _WIN32
+    closesocket( conn->client.sock );
+#else
     close( conn->client.sock );
+#endif
     conn->client.sock = INVALID_SOCKET;
 }
 
@@ -3387,13 +3391,11 @@ stcp_pull_all( FILE *fp, struct stcp_connection *conn, char *buf, int len, int m
 static int
 stcp_read_inner( struct stcp_connection *conn, void *buf, size_t len, int mstimeout )
 {
-    int64_t n, buffered_len, nread;
+    int64_t n, nread;
     int64_t len64 =
             (int64_t) ((len > INT_MAX) ? INT_MAX : len); // since the return value is
                                                          // int, we may not read more
 	                                                     // bytes
-    const char *body;
-
     if ( conn == NULL ) {
         return -1;
     }
@@ -3459,8 +3461,7 @@ stcp_read( struct stcp_connection *conn, void *buf, size_t len, int mstimeout )
 int
 stcp_write( struct stcp_connection *conn, const void *buf, size_t len )
 {
-    time_t now;
-    int64_t n, total, allowed;
+    int64_t total;
 
     if ( ( NULL == conn ) || ( NULL == buf ) ) {
         return 0;
@@ -3982,7 +3983,7 @@ stcp_accept( struct server_context *srv_ctx,
                 const struct socket *listener, 
                 struct socket *psocket )
 {
-    char src_addr[ IP_ADDR_STR_LEN ];
+    //char src_addr[ IP_ADDR_STR_LEN ];
     socklen_t len = sizeof( psocket->rsa );
     int on = 1;
 

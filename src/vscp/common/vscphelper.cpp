@@ -4672,7 +4672,7 @@ bool vscp_setVscpEventFromString(vscpEvent *pEvent, const wxString& strEvent)
         str.Trim();
         if ( str.Length() ) {
             // Parse and set time
-            wxDateTime dt;
+            wxDateTime dt = wxDateTime::Now();
             dt.ParseISOCombined( str );
             pEvent->year = dt.GetYear();
             pEvent->month = dt.GetMonth() + 1;

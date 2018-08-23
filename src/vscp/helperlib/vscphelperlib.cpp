@@ -606,6 +606,7 @@ extern "C"  int vscphlp_getVendorString( long handle, char *pVendorStr, size_t l
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
     wxString str =  wxString::FromUTF8( pvscpif->doCmdVendorString() );
+    memset(pVendorStr, 0, len);
     strncpy( pVendorStr, str.mbc_str(), MIN( strlen( str.mbc_str() ), len ) );
 
     return VSCP_ERROR_SUCCESS;
@@ -629,6 +630,7 @@ extern "C" int vscphlp_getDriverInfo( long handle, char *pInfoStr, size_t len )
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
     wxString str =  wxString::FromUTF8( pvscpif->doCmdGetDriverInfo() );
+    memset(pInfoStr, 0, len);
     strncpy( pInfoStr, str.mbc_str(), MIN( strlen( str.mbc_str() ), len ) );
 
     return VSCP_ERROR_SUCCESS;
@@ -896,6 +898,7 @@ extern "C" int vscphlp_getRemoteVariableString( long handle, const char *pName, 
     wxString name = wxString::FromUTF8( pName );
     wxString strValue;
     if ( VSCP_ERROR_SUCCESS == ( rv = pvscpif->getRemoteVariableValue( name, strValue ) ) ) {
+        memset(pValue, 0, len);
         strncpy( pValue, strValue.mbc_str(), MIN( strlen( strValue.mbc_str() ), len ) );
     }
 
@@ -1421,6 +1424,7 @@ extern "C" int vscphlp_getRemoteVariableGUIDString( long handle, const char *pNa
     wxString name = wxString::FromUTF8( pName );
     int rv =  pvscpif->getRemoteVariableGUID( name, GUID );
     GUID.toString( strGUID );
+    memset(pGUID, 0, len);
     strncpy( pGUID, strGUID.mbc_str(), MIN( strlen( strGUID.mbc_str() ), len ) );
     return rv;
 }
@@ -1763,6 +1767,7 @@ extern "C" int vscphlp_getRemoteVariableDateTime( long handle, const char *pName
     wxDateTime datetime;
     if ( VSCP_ERROR_SUCCESS == ( rv = pvscpif->getRemoteVariableDateTime( name, datetime ) ) ) {
         wxString str = datetime.FormatISOCombined();
+        memset(pValue, 0, len);
         strncpy( pValue, (const char *)str.mbc_str(), MIN( strlen( (const char *)str.mbc_str() ), len )  );
     }
 
@@ -1836,6 +1841,7 @@ extern "C" int vscphlp_getRemoteVariableDate( long handle, const char *pName, ch
     wxDateTime datetime;
     if ( VSCP_ERROR_SUCCESS == ( rv = pvscpif->getRemoteVariableDate( name, datetime ) ) ) {
         wxString str = datetime.FormatISODate();
+        memset(pValue, 0, len);
         strncpy( pValue, (const char *)str.mbc_str(), MIN( strlen( (const char *)str.mbc_str() ), len )  );
     }
 
@@ -1908,6 +1914,7 @@ extern "C" int vscphlp_getRemoteVariableTime( long handle, const char *pName, ch
     wxDateTime datetime;
     if ( VSCP_ERROR_SUCCESS == ( rv = pvscpif->getRemoteVariableTime( name, datetime ) ) ) {
         wxString str = datetime.FormatISOTime();
+        memset(pValue, 0, len);
         strncpy( pValue, (const char *)str.mbc_str(), MIN( strlen( (const char *)str.mbc_str() ), len )  );
     }
 
@@ -1980,6 +1987,7 @@ extern "C" int vscphlp_getRemoteVariableBlob( long handle, const char *pName, ch
     wxString blob;
    
     if ( VSCP_ERROR_SUCCESS == ( rv = pvscpif->getRemoteVariableBlob( name, blob ) ) ) {
+        memset(pValue, 0, len);
         strncpy( pValue, (const char *)blob.mbc_str(), MIN( strlen( (const char *)blob.mbc_str() ), len )  );
     }
 
@@ -2048,6 +2056,7 @@ extern "C" int vscphlp_getRemoteVariableMIME( long handle, const char *pName, ch
     wxString mime;
    
     if ( VSCP_ERROR_SUCCESS == ( rv = pvscpif->getRemoteVariableMIME( name, mime ) ) ) {
+        memset(pValue, 0, len);
         strncpy( pValue, (const char *)mime.mbc_str(), MIN( strlen( (const char *)mime.mbc_str() ), len )  );
     }
 
@@ -2117,6 +2126,7 @@ extern "C" int vscphlp_getRemoteVariableHTML( long handle, const char *pName, ch
     wxString html;
    
     if ( VSCP_ERROR_SUCCESS == ( rv = pvscpif->getRemoteVariableHTML( name, html ) ) ) {
+        memset(pValue, 0, len);
         strncpy( pValue, (const char *)html.mbc_str(), MIN( strlen( (const char *)html.mbc_str() ), len )  );
     }
 
@@ -2185,6 +2195,7 @@ extern "C" int vscphlp_getRemoteVariableJavaScript( long handle, const char *pNa
     wxString js;
    
     if ( VSCP_ERROR_SUCCESS == ( rv = pvscpif->getRemoteVariableJavaScript( name, js ) ) ) {
+        memset(pValue, 0, len);
         strncpy( pValue, (const char *)js.mbc_str(), MIN( strlen( (const char *)js.mbc_str() ), len )  );
     }
 
@@ -2253,6 +2264,7 @@ extern "C" int vscphlp_getRemoteVariableLUA( long handle, const char *pName, cha
     wxString lua;
    
     if ( VSCP_ERROR_SUCCESS == ( rv = pvscpif->getRemoteVariableLUA( name, lua ) ) ) {
+        memset(pValue, 0, len);
         strncpy( pValue, (const char *)lua.mbc_str(), MIN( strlen( (const char *)lua.mbc_str() ), len )  );
     }
 
@@ -2322,6 +2334,7 @@ extern "C" int vscphlp_getRemoteVariableLUARES( long handle, const char *pName, 
     wxString luares;
    
     if ( VSCP_ERROR_SUCCESS == ( rv = pvscpif->getRemoteVariableLUARES( name, luares ) ) ) {
+        memset(pValue, 0, len);
         strncpy( pValue, (const char *)luares.mbc_str(), MIN( strlen( (const char *)luares.mbc_str() ), len )  );
     }
 
@@ -2390,6 +2403,7 @@ extern "C" int vscphlp_getRemoteVariableUX1( long handle, const char *pName, cha
     wxString ux1;
    
     if ( VSCP_ERROR_SUCCESS == ( rv = pvscpif->getRemoteVariableUX1( name, ux1 ) ) ) {
+        memset(pValue, 0, len);
         strncpy( pValue, (const char *)ux1.mbc_str(), MIN( strlen( (const char *)ux1.mbc_str() ), len )  );
     }
 
@@ -2458,6 +2472,7 @@ extern "C" int vscphlp_getRemoteVariableDMROW( long handle, const char *pName, c
     wxString dm;
    
     if ( VSCP_ERROR_SUCCESS == ( rv = pvscpif->getRemoteVariableDMROW( name, dm ) ) ) {
+        memset(pValue, 0, len);
         strncpy( pValue, (const char *)dm.mbc_str(), MIN( strlen( (const char *)dm.mbc_str() ), len )  );
     }
 
@@ -2527,6 +2542,7 @@ extern "C" int vscphlp_getRemoteVariableDriver( long handle, const char *pName, 
     wxString driver;
    
     if ( VSCP_ERROR_SUCCESS == ( rv = pvscpif->getRemoteVariableDriver( name, driver ) ) ) {
+        memset(pValue, 0, len);
         strncpy( pValue, (const char *)driver.mbc_str(), MIN( strlen( (const char *)driver.mbc_str() ), len )  );
     }
 
@@ -2596,6 +2612,7 @@ extern "C" int vscphlp_getRemoteVariableUser( long handle, const char *pName, ch
     wxString user;
    
     if ( VSCP_ERROR_SUCCESS == ( rv = pvscpif->getRemoteVariableUser( name, user ) ) ) {
+        memset(pValue, 0, len);
         strncpy( pValue, (const char *)user.mbc_str(), MIN( strlen( (const char *)user.mbc_str() ), len )  );
     }
 
@@ -2664,6 +2681,7 @@ extern "C" int vscphlp_getRemoteVariableFilter( long handle, const char *pName, 
     wxString filter;
    
     if ( VSCP_ERROR_SUCCESS == ( rv = pvscpif->getRemoteVariableFilter( name, filter ) ) ) {
+        memset(pValue, 0, len);
         strncpy( pValue, (const char *)filter.mbc_str(), MIN( strlen( (const char *)filter.mbc_str() ), len )  );
     }
 
@@ -3107,7 +3125,7 @@ extern "C" int vscphlp_getGuidFromStringToArray( uint8_t *pGUID, const char * pS
 
 /*!
     \fn bool vscphlp_writeGuidToString( const vscpEvent *pEvent, char *pStr, int size )
-    \brief Write GUID froom VSCP event to string.
+    \brief Write GUID from VSCP event to string.
 */
 #ifdef WIN32
 extern "C" DllExport int WINAPI EXPORT vscphlp_writeGuidToString( const vscpEvent *pEvent, char * pStr, size_t len )
@@ -3119,6 +3137,7 @@ extern "C" int vscphlp_writeGuidToString( const vscpEvent *pEvent, char *pStr, s
 
     wxString strGUID;
     rv = vscp_writeGuidToString( pEvent, strGUID );
+    memset(pStr, 0, len);
     strncpy( pStr, strGUID.mbc_str(), MIN( strlen( strGUID.mbc_str() ), len ) );
     return rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
 }
@@ -3137,6 +3156,7 @@ extern "C" int vscphlp_writeGuidToStringEx( const vscpEventEx *pEvent, char * pS
 
     wxString strGUID;
     rv = vscp_writeGuidToStringEx( pEvent, strGUID );
+    memset(pStr, 0, len);
     strncpy( pStr, strGUID.mbc_str(), MIN( strlen( strGUID.mbc_str() ), len ) );
     return rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
 }
@@ -3160,6 +3180,7 @@ extern "C" int vscphlp_writeGuidToString4Rows( const vscpEvent *pEvent,
 {
     wxString str = wxString::FromUTF8( strGUID );
     bool rv =  vscp_writeGuidToString4Rows( pEvent, str );
+    memset(strGUID, 0, len);
     strncpy( strGUID, str.mbc_str(), MIN( strlen( str.mbc_str() ), len ) );
 
     return rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
@@ -3185,6 +3206,7 @@ extern "C" int vscphlp_writeGuidToString4RowsEx( const vscpEventEx *pEvent,
     wxString str = wxString::FromUTF8( strGUID );
     bool rv = vscp_writeGuidToString4RowsEx( pEvent, str );
     
+    memset(strGUID, 0, len);
     strncpy( strGUID, str.mbc_str(), MIN( strlen( str.mbc_str() ), len ) );
 
     return rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
@@ -3208,6 +3230,8 @@ extern "C" int vscphlp_writeGuidArrayToString( const unsigned char * pGUID,
 {
     wxString str;
     bool rv = vscp_writeGuidArrayToString( pGUID, str );
+
+    memset(strGUID, 0, len);
     strncpy( strGUID, str.mbc_str(), MIN( strlen( str.mbc_str() ), len ) );
 
     return rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
@@ -3571,6 +3595,7 @@ extern "C" int vscphlp_writeVscpDataToString( const vscpEvent *pEvent,
     bool rv = vscp_writeVscpDataToString( pEvent,
                                          wxstr,
                                          bUseHtmlBreak ? true : false );
+    memset(pStr, 0, len);
     strncpy( pStr, wxstr.mbc_str(), MIN( strlen( wxstr.mbc_str() ), len ) );
     return rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
 }
@@ -3608,7 +3633,7 @@ extern "C" int vscphlp_writeVscpDataWithSizeToString( const unsigned char *pData
                                                         wxstr,
                                                         bUseHtmlBreak ? true : false,
                                                         bBreak ? true : false );
-    
+    memset(pStr, 0, len);
     strncpy( pStr, wxstr.mbc_str(), MIN( strlen( wxstr.mbc_str() ), len ) );
     return rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
 }
@@ -3673,6 +3698,7 @@ extern "C" int vscphlp_writeVscpEventToString( vscpEvent *pEvent, char *p, size_
 
     wxString str;;
     if ( ( rv =  vscp_writeVscpEventToString( pEvent, str ) ) ) {
+        memset(p, 0, len);
         strncpy( p, str.mbc_str(), MIN( strlen( str.mbc_str() ), len ) );
     }
     return rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
@@ -3695,6 +3721,7 @@ extern "C" int vscphlp_writeVscpEventExToString( vscpEventEx *pEvent,
 
     wxString str;
     if ( ( rv =  vscp_writeVscpEventExToString( pEvent, str ) ) ) {
+        memset(p, 0, len);
         strncpy( p, str.mbc_str(), MIN( strlen( str.mbc_str() ), len ) );
     }
     return rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
@@ -3829,6 +3856,7 @@ extern "C" int vscphlp_getDataCodingString(const unsigned char *pCode,
     bool rv =  vscp_getDataCodingString( pCode,
                                            dataLength,
                                            wxstr );
+    memset(strResult, 0, len);
     strncpy( strResult, wxstr.mbc_str(), MIN( strlen( wxstr.mbc_str() ), len ) );
     return rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
 }
@@ -3852,6 +3880,7 @@ extern "C" int vscphlp_getVSCPMeasurementAsString(const vscpEvent *pEvent,
     if ( NULL == pEvent ) return VSCP_ERROR_ERROR;
 
     bool rv =  vscp_getVSCPMeasurementAsString( pEvent, wxstr );
+    memset(pResult, 0, len);
     strncpy( pResult, wxstr.mbc_str(), MIN( strlen( wxstr.mbc_str() ), len ) );
     return rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
 }
@@ -3895,6 +3924,7 @@ extern "C" int vscphlp_getVSCPMeasurementFloat64AsString(const vscpEvent *pEvent
     if ( NULL == pEvent ) return VSCP_ERROR_ERROR;
 
     bool rv = vscp_getVSCPMeasurementFloat64AsString( pEvent, wxstr );
+    memset(pStrResult, 0, len);
     strncpy( pStrResult, wxstr.mbc_str(), MIN( strlen( wxstr.mbc_str() ), len ) );
     return rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
 }
@@ -4135,6 +4165,7 @@ extern "C" int vscphlp_convertEventToJSON( vscpEvent *pEvent, char *p, size_t le
     if ( len <= strlen( str.mbc_str() ) ) return VSCP_ERROR_BUFFER_TO_SMALL;
     
     // Copy in JSON string
+    memset(p, 0, len);
     strncpy( p, str.mbc_str(), MIN( strlen( str.mbc_str() ), len ) );
     
     return VSCP_ERROR_SUCCESS;
@@ -4159,6 +4190,7 @@ extern "C" int vscphlp_convertEventExToJSON( vscpEventEx *pEventEx, char *p, siz
     if ( len <= strlen( str.mbc_str() ) ) return VSCP_ERROR_BUFFER_TO_SMALL;
     
     // Copy in JSON string
+    memset(p, 0, len);
     strncpy( p, str.mbc_str(), MIN( strlen( str.mbc_str() ), len ) );
     
     return VSCP_ERROR_SUCCESS;
@@ -4183,6 +4215,7 @@ extern "C" int vscphlp_convertEventToXML( vscpEvent *pEvent, char *p, size_t len
     if ( len <= strlen( str.mbc_str() ) ) return VSCP_ERROR_BUFFER_TO_SMALL;
     
     // Copy in XML string
+    memset(p, 0, len);
     strncpy( p, str.mbc_str(), MIN( strlen( str.mbc_str() ), len ) );
     
     return VSCP_ERROR_SUCCESS;
@@ -4207,6 +4240,7 @@ extern "C" int vscphlp_convertEventExToXML( vscpEventEx *pEventEx, char *p, size
     if ( len <= strlen( str.mbc_str() ) ) return VSCP_ERROR_BUFFER_TO_SMALL;
     
     // Copy in XML string
+    memset(p, 0, len);
     strncpy( p, str.mbc_str(), MIN( strlen( str.mbc_str() ), len ) );
     
     return VSCP_ERROR_SUCCESS;
@@ -4232,6 +4266,7 @@ extern "C" int vscphlp_convertEventToHTML( vscpEvent *pEvent, char *p, size_t le
     if ( len <= strlen( str.mbc_str() ) ) return VSCP_ERROR_BUFFER_TO_SMALL;
     
     // Copy in HTML string
+    memset(p, 0, len);
     strncpy( p, str.mbc_str(), MIN( strlen( str.mbc_str() ), len ) );
     
     return VSCP_ERROR_SUCCESS;
@@ -4256,6 +4291,7 @@ extern "C" int vscphlp_convertEventExToHTML( vscpEventEx *pEventEx, char *p, siz
     if ( len <= strlen( str.mbc_str() ) ) return VSCP_ERROR_BUFFER_TO_SMALL;
     
     // Copy in HTML string
+    memset(p, 0, len);
     strncpy( p, str.mbc_str(), MIN( strlen( str.mbc_str() ), len ) );
     
     return VSCP_ERROR_SUCCESS;

@@ -108,21 +108,20 @@ bool VscpRemoteTcpIf::checkReturnValue( bool bClear )
     if ( bClear ) doClrInputQueue();
 
     wxLongLong start = wxGetLocalTimeMillis();
-    while ( /*nRead &&*/ ( ( wxGetLocalTimeMillis() - start ) < m_responseTimeOut  ) ) {
+    while ( ( ( wxGetLocalTimeMillis() - start ) < m_responseTimeOut  ) ) {
 
         memset( buf,0, sizeof( buf ) );
         int nRead = stcp_read( m_conn, buf, sizeof( buf ), m_innerResponseTimeout );
         
-        /*if ( 0 == nRead ) {
-            continue;   // Nothing more to read
-        }
-        else*/ if ( nRead < 0 ) {
+        if ( nRead < 0 ) {
             if ( STCP_ERROR_TIMEOUT == nRead ) {
-                rv = VSCP_ERROR_TIMEOUT;
+                //rv = VSCP_ERROR_TIMEOUT;
+                rv = false;
                 break;
             }
             else if ( STCP_ERROR_STOPPED == nRead ) {
-                rv = VSCP_ERROR_STOPPED;
+                //rv = VSCP_ERROR_STOPPED;
+                rv = false;
                 break;
             }
             break;
@@ -334,7 +333,6 @@ int VscpRemoteTcpIf::doCmdOpen( const wxString& strHostname,
     wxString wxstr;
     wxString host;
     int port;
-    int rv;
 
 #ifdef DEBUG_LIB_VSCP_HELPER    
     wxLogDebug( _("============================================================") );

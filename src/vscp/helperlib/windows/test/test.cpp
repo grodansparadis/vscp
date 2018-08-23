@@ -4,7 +4,7 @@
 //
 // The MIT License (MIT)
 // 
-// Copyright (c) 2000-2017 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
+// Copyright (c) 2000-2018 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
 // 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,10 @@
 // SOFTWARE.
 
 #include "targetver.h"
+
+#ifdef _WIN32
+#include "windows.h"
+#endif
 
 #include <stdio.h>
 #include <tchar.h>
@@ -54,6 +58,12 @@ int _tmain(int argc, _TCHAR* argv[])
     printf("VSCP helperlib test program\n");
     printf("===========================\n");
 
+    // Init Socket sub system
+#ifdef _WIN32
+    WSADATA data;
+    WSAStartup(MAKEWORD(2, 2), &data);
+#endif
+
     handle1 = vscphlp_newSession();
     if (0 != handle1 ) {
         printf( "Handle one OK %ld\n", handle1 );
@@ -72,7 +82,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
     // Open Channel 1
     rv=vscphlp_open( handle1, 
-                         "192.168.1.9:9598",
+                         "192.168.1.6:9598",
                          "admin",
                          "secret" ); 
     if ( VSCP_ERROR_SUCCESS == rv ) {
@@ -84,7 +94,7 @@ int _tmain(int argc, _TCHAR* argv[])
     }
 
     // OPEN channel 2
-    rv=vscphlp_openInterface( handle2, "192.168.1.9:9598;admin;secret", 0 ); 
+    rv=vscphlp_openInterface( handle2, "192.168.1.6:9598;admin;secret", 0 ); 
     if ( VSCP_ERROR_SUCCESS == rv ) {
         printf("Command success: vscphlp_openInterface on channel 2\n");
     }
