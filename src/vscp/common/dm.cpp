@@ -8575,42 +8575,48 @@ void *actionThread_VSCPSrv::Entry()
     // Allow for slower clients
     client.setResponseTimeout( 3000 );
 
-    tries = 5;
+    tries = 3;
     while ( true ) {
-        if ( CANAL_ERROR_SUCCESS != 
+        if ( CANAL_ERROR_SUCCESS == 
                 ( rv = client.doCmdOpen( interface,
                                             m_strUsername,
                                             m_strPassword ) ) ) {
+            break;
+        }
+        else {                                                
+                        
+            if ( CANAL_ERROR_TIMEOUT != rv ) {
+                goto connect_error;
+            }
+            
             tries--;
-            if ( CANAL_ERROR_TIMEOUT == rv ) {
-                if ( tries > 0 ) {
-                    wxSleep( 1 );
-                    continue;
-                }
+            if ( tries > 0 ) {
+                wxSleep( 1 );
+                continue;
             }
 
+connect_error:
             // Failed to connect
             gpobj->logMsg( _("[DM] ") + 
-                _( "actionThreadVSCPSrv: Unable to connect to remote server : " ) +
-                m_strHostname + 
-                wxString::Format( _(" Return code = %d"), rv ) +
-                _(" \n"), 
+                    _( "actionThreadVSCPSrv: Unable to connect to remote server : " ) +
+                    m_strHostname + 
+                    wxString::Format( _(" Return code = %d"), rv ) +
+                    _(" \n"), 
                     DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM  );
         
             return NULL;
         }
-        else {
-            break;
-        }
-    }
+    } // while
 
     // Connected - Send the event
     
-    tries = 5;
+    tries = 3;
     while ( true ) {
 
-        if ( CANAL_ERROR_SUCCESS != client.doCmdSendEx( &m_eventEx ) ) {
-            
+        if ( CANAL_ERROR_SUCCESS == client.doCmdSendEx( &m_eventEx ) ) {
+            break;
+        }
+        else {
             tries--;
             if ( tries > 0 ) {
                 wxSleep( 1 );
@@ -8626,10 +8632,8 @@ void *actionThread_VSCPSrv::Entry()
                 DAEMON_LOGTYPE_DM  );
             break;    
         }
-        else {
-            break;
-        }
-    }
+        
+    } // while
     
     if ( CANAL_ERROR_SUCCESS != client.doCmdClose() ) {
         // Failed to send event
