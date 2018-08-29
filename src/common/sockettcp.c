@@ -2844,7 +2844,7 @@ stcp_close_connection( struct stcp_connection *conn )
 
     // If client free connection data
     free( conn );
-    conn = NULL;
+    
 }
 
 /*!
