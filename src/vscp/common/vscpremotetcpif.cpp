@@ -60,7 +60,7 @@
 //#define DEBUG_INNER_COMMUNICTION 
 
 // Undef if debug messages is not wanted
-#define DEBUG_LIB_VSCP_HELPER   1
+//#define DEBUG_LIB_VSCP_HELPER   1
 
 //class mg_poll_server;
 //class mg_poll_server;
