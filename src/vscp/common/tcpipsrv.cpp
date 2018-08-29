@@ -222,7 +222,7 @@ void *TCPListenThread::Entry()
                         if ( NULL == pThread ) {
                             gpobj->logMsg( _("[TCP/IP srv] -- Memory problem when creating client thread.\n") );
                             stcp_close_connection( conn );
-                            delete conn;
+                            conn == NULL;
                             continue;
                         }
 
@@ -237,7 +237,7 @@ void *TCPListenThread::Entry()
                             if ( wxTHREAD_NO_ERROR != ( err = pThread->Run() ) ) {
                                 gpobj->logMsg(_("[TCP/IP srv] -- Unable to run TCP client thread.") );
                                 stcp_close_connection( conn );
-                                delete conn;
+                                conn == NULL;
                                 delete pThread;
                                 continue;
                             }
@@ -246,7 +246,7 @@ void *TCPListenThread::Entry()
                         else {
                             gpobj->logMsg( _("[TCP/IP srv] -- Unable to create TCP client thread.") );
                             stcp_close_connection( conn );
-                            delete conn;
+                            conn == NULL;
                             delete pThread;
                             continue;
                         }
@@ -2494,6 +2494,7 @@ void TCPClientThread::handleClientShutdown( void )
 
     write(   MSG_GOODBY, strlen ( MSG_GOODBY ) );
     stcp_close_connection( m_conn );
+    m_conn == NULL;
 }
 
 
