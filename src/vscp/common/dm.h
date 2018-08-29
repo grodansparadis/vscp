@@ -33,7 +33,7 @@
 #include <wx/dynlib.h>
 #include <wx/file.h>
 #include <wx/url.h>
-#include <dllist.h>
+//#include <dllist.h>
 #include <tables.h>
 #include <vscp.h>
 #include <remotevariable.h>
@@ -855,7 +855,6 @@ public:
 
     // For file writes
     wxFile m_file;
-
 
 
     /////////////////////////////////////////////////////////////////////////////

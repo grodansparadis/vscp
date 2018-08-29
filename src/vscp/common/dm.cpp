@@ -72,7 +72,6 @@ WX_DEFINE_LIST( PLUGINLIST );
 WX_DEFINE_LIST( DMLIST );
 WX_DEFINE_LIST( ACTIONTIME );
 
-
 ///////////////////////////////////////////////////
 //                 GLOBALS
 ///////////////////////////////////////////////////
@@ -1032,13 +1031,12 @@ dmElement::dmElement()
 // Destructor
 dmElement::~dmElement()
 {
-    ;
+     ;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // Assignment =
 //
-
 
 dmElement& dmElement::operator=( const dmElement& dm)
 {
@@ -8572,8 +8570,8 @@ void *actionThread_VSCPSrv::Entry()
     wxString interface = wxString::Format( _("tcp://%s:%d"), 
                                             (const char *)m_strHostname.mbc_str(),
                                             m_port );
-    // Allow for slower clients
-    client.setResponseTimeout( 3000 );
+    // Allow for **VERY** slower clients
+    client.setResponseTimeout( 5000 );
 
     tries = 3;
     while ( true ) {

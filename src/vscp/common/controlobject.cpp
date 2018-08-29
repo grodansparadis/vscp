@@ -140,8 +140,8 @@ WX_DEFINE_LIST(WEBSOCKETSESSIONLIST);   // websocket sessions
 WX_DEFINE_LIST(RESTSESSIONLIST);        // web server sessions
 WX_DEFINE_LIST(WEBSRVSESSIONLIST);      // web server sessions
 WX_DEFINE_LIST(TRIGGERLIST);            // websocket trigger
-WX_DEFINE_LIST(CanalMsgList);
-WX_DEFINE_LIST(VSCPEventList);
+WX_DEFINE_LIST(CanalMsgList);           // List for CANAL messages
+WX_DEFINE_LIST(VSCPEventList);          // List for VSCP events
 
 //#define DEBUGPRINT
 
@@ -417,8 +417,6 @@ CControlObject::~CControlObject()
     m_clientOutputQueue.Clear();
     m_mutexClientOutputQueue.Unlock();
 
-    // Exit weserver interface
-    //web_exit();
 
     gpobj->m_mutexUDPInfo.Lock();
     udpRemoteClientList::iterator iterUDP;
