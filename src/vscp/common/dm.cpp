@@ -8572,6 +8572,8 @@ void *actionThread_VSCPSrv::Entry()
     wxString interface = wxString::Format( _("tcp://%s:%d"), 
                                             (const char *)m_strHostname.mbc_str(),
                                             m_port );
+    // Allow for slower clients
+    client.setResponseTimeout( 3000 );
 
     tries = 5;
     while ( true ) {
@@ -8602,7 +8604,7 @@ void *actionThread_VSCPSrv::Entry()
         }
     }
 
-    // Connected
+    // Connected - Send the event
     
     tries = 5;
     while ( true ) {

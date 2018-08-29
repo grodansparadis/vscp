@@ -2793,6 +2793,11 @@ stcp_close_socket_gracefully( struct stcp_connection *conn )
 static void
 close_connection( struct stcp_connection *conn )
 {
+    if ( STCP_CONN_STATE_CONNECTED != conn->conn_state ) {
+        conn->conn_state = STCP_CONN_STATE_CLOSED; // closed
+        return;
+    }
+
     conn->conn_state = STCP_CONN_STATE_TOCLOSE; // to close
 
     // Set close flag, so keep-alive loops will stop

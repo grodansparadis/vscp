@@ -143,7 +143,7 @@ public:
         @param to Timeout value in milliseconds. 
      */
     void setResponseTimeout(uint32_t to) {
-        if ( to < 100 ) to = 3000;          // To be backward compatible
+        if ( to < 100 ) to = 1000;          // To be backward compatible
         if (to) m_responseTimeOut = to;        
     };
     
