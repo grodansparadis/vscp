@@ -8567,7 +8567,7 @@ actionThread_VSCPSrv::~actionThread_VSCPSrv()
 void *actionThread_VSCPSrv::Entry()
 {
     int rv;
-    int tries = 0;
+    int tries;
     VscpRemoteTcpIf client;
     wxString interface = wxString::Format( _("tcp://%s:%d"), 
                                             (const char *)m_strHostname.mbc_str(),
@@ -8575,13 +8575,16 @@ void *actionThread_VSCPSrv::Entry()
 
     tries = 5;
     while ( true ) {
-        if ( CANAL_ERROR_SUCCESS != ( rv = client.doCmdOpen( interface,
-                                                m_strUsername,
-                                                m_strPassword ) ) ) {
+        if ( CANAL_ERROR_SUCCESS != 
+                ( rv = client.doCmdOpen( interface,
+                                            m_strUsername,
+                                            m_strPassword ) ) ) {
             tries--;
-            if ( tries > 0 ) {
-                wxSleep( 1 );
-                continue;
+            if ( CANAL_ERROR_TIMEOUT == rv ) {
+                if ( tries > 0 ) {
+                    wxSleep( 1 );
+                    continue;
+                }
             }
 
             // Failed to connect

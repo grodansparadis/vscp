@@ -2395,7 +2395,6 @@ stcp_connect_socket( const char *hostip,
 
     (void)use_ssl;
 
-
     if ( stcp_inet_pton( AF_INET, hostip, &sa->sin, sizeof( sa->sin ) ) ) { // .sin_addr
         sa->sin.sin_family = AF_INET;
         sa->sin.sin_port = htons((uint16_t) port);
@@ -2441,18 +2440,18 @@ stcp_connect_socket( const char *hostip,
         return 0;
     }
 
-    if ( (4 == ip_ver ) &&
+    if ( ( 4 == ip_ver ) &&
             ( 0 == connect( *sock,
                                 (struct sockaddr *)&sa->sin,
                                 sizeof(sa->sin) ) ) ) {
         // connected with IPv4
         if ( 0 == set_non_blocking_mode( *sock ) ) {
-            // Ok
-            return 1;
-	}
+            return 1;   // Ok
+	    }
 
         // failed
 	    // TODO: specific error message
+        
     }
 
     if ( ( 6 == ip_ver ) &&
@@ -2461,12 +2460,12 @@ stcp_connect_socket( const char *hostip,
                             sizeof(sa->sin6) ) ) ) {
         // connected with IPv6
         if ( 0 == set_non_blocking_mode(*sock) ) {
-            // Ok
-            return 1;
+            return 1;   // Ok
         }
 
 	    // failed
 	    // TODO: specific error message
+
     }
 
     // Not connected

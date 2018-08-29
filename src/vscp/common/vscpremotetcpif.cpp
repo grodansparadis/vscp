@@ -370,6 +370,7 @@ int VscpRemoteTcpIf::doCmdOpen( const wxString& strHostname,
         wxLogDebug( _("No +OK found ") + strHostname );
 #endif
 
+        stcp_close_connection( m_conn );
         return VSCP_ERROR_CONNECTION;
     }
 
@@ -379,6 +380,7 @@ int VscpRemoteTcpIf::doCmdOpen( const wxString& strHostname,
     strBuf =  _("USER ") + wxstr + _("\r\n");
     
     if ( VSCP_ERROR_SUCCESS != doCommand( strBuf ) ) {
+        stcp_close_connection( m_conn );
         return VSCP_ERROR_USER;
     }
     
@@ -391,6 +393,7 @@ int VscpRemoteTcpIf::doCmdOpen( const wxString& strHostname,
     wxstr.Trim(false);
     strBuf =  _("PASS ") + wxstr + _("\r\n");
     if ( VSCP_ERROR_SUCCESS != doCommand( strBuf ) ) {
+        stcp_close_connection( m_conn );
         return VSCP_ERROR_PASSWORD;
     }
     
