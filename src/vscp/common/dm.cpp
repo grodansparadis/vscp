@@ -8600,7 +8600,7 @@ connect_error:
             gpobj->logMsg( _("[DM] ") + 
                     _( "actionThreadVSCPSrv: Unable to connect to remote server : " ) +
                     m_strHostname + 
-                    wxString::Format( _(" Return code = %d"), rv ) +
+                    wxString::Format( _(" Return code = %d (%d)"), rv, tries ) +
                     _(" \n"), 
                     DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM  );
         
