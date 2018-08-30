@@ -1299,7 +1299,7 @@ void *workThreadTransmit( void *pObject )
 
 				} // unable to allocate storage
 
-			} // faild to send message							
+			} // failed to send message							
 
 		} // while data
 

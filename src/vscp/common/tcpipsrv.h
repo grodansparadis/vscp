@@ -93,7 +93,7 @@ WX_DECLARE_LIST( struct stcp_connection, TCPIPCLIENTS );
 #define MSG_VARIABLE_NOT_DEFINED            "-OK - Variable is not defined.\r\n"
 #define MSG_MOT_ALLOWED_TO_SEND_EVENT       "-OK - Not allowed to sen this event (contact admin).\r\n"
 #define MSG_INVALID_PATH                    "-OK - Invalid path.\r\n"
-#define MSG_FAILD_TO_GENERATE_SID           "-OK - Failed to generate sid.\r\n"
+#define MSG_FAILED_TO_GENERATE_SID          "-OK - Failed to generate sid.\r\n"
 
 #define MSG_FAILED_TO_CREATE_TABLE          "-OK - Failed to create (one or more) table(s).\r\n"
 #define MSG_FAILED_TO_ADD_TABLE_TO_DB       "-OK - Failed to add table to database.\r\n"

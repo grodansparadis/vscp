@@ -981,7 +981,7 @@ vscp_password( struct web_connection *conn, void *cbdata )
                   "Content-Type: text/html; charset=utf-8\r\n"
                   "Connection: close\r\n\r\n");
 
-    web_printf( conn, WEB_COMMON_HEAD, "Password generation" );
+    web_printf( conn, WEB_COMMON_HEAD, "Password key generation" );
     web_printf( conn, WEB_STYLE_START );
     web_write( conn, WEB_COMMON_CSS, strlen( WEB_COMMON_CSS ) );    // CSS style Code
     web_printf( conn, WEB_STYLE_END );
@@ -1007,8 +1007,10 @@ vscp_password( struct web_connection *conn, void *cbdata )
         }
     }
 
-    web_printf( conn, "<h1 id=\"header\">Password generation</h1><br>" );
+    web_printf( conn, "<h1 id=\"header\">Password key generation</h1><br>" );
         
+    web_printf( conn, "<p>Enter clear text password to generate key.</p>" );
+
     if ( 0 == strlen( password ) ) {
         web_printf( conn, "<form action=\"/vscp/password\"><table>" );
         web_printf( conn, "<tr><td width=\"10%%\"><b>Password</b></td><td><input type=\"password\" "
@@ -8378,7 +8380,7 @@ vscp_configure_list( struct web_connection *conn, void *cbdata )
     wxMemorySize memsize;
     if ( -1 != ( memsize = wxGetFreeMemory() ) ) {
         web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Free memory:</b> ");
-        web_printf( conn, "%s", (const char *)memsize.ToString().mbc_str() );
+        web_printf( conn, "%s (%.2fM)", (const char *)memsize.ToString().mbc_str(), memsize.ToDouble()/1000000 );
         web_printf( conn, " bytes<br>");
     }
 

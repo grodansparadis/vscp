@@ -808,7 +808,7 @@ void CTesttcpinterfaceDlg::OnButtonBinaryReceive()
 		}
 	}
 	else {
-		writeLog("Faild to open channel.\r\n");
+		writeLog("Failed to open channel.\r\n");
 	}
 
 	writeLog("Done.\r\n");

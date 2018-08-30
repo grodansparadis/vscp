@@ -756,7 +756,7 @@ void *workThreadxAPClientSend( void *pObject )
 #else
 	if ( -1 == ( sock = socket( AF_INET, SOCK_DGRAM, IPPROTO_UDP ) ) ) {
 
-                SYSLOG( LOG_CRIT, "xapdrv: Faild to create send socket.");
+                SYSLOG( LOG_CRIT, "xapdrv: Failed to create send socket.");
 
 		sock = 0;
 		pthread_exit( &errorCode );
@@ -890,7 +890,7 @@ void *workThreadTransmit( void *pObject )
 	
 	}
 	else {
-		//SYSLOG( LOG_CRIT, "canald: Faild to create send socket. Functionality disabled.");
+		//SYSLOG( LOG_CRIT, "canald: Failed to create send socket. Functionality disabled.");
 #ifdef WIN32
 		sock = NULL;
 		ExitThread( errorCode );
@@ -1276,7 +1276,7 @@ void *workThreadReceive( void *pObject )
 							sizeof ( on ) );
 		}
 		else {
-			//SYSLOG( LOG_CRIT, "canald: Faild to create send socket. Functionality disabled.");
+			//SYSLOG( LOG_CRIT, "canald: Failed to create send socket. Functionality disabled.");
 #ifdef WIN32
 			bcastsock = NULL;
 			ExitThread( errorCode );

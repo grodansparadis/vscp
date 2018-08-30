@@ -175,7 +175,7 @@ void *UDPSendThread::Entry()
             sizeof( on));
 
         if (1 == bind(m_sendsock, (struct sockaddr*) &addr, sizeof( addr))) {
-            m_pCtrlObject->logMsg(_("vscpd: Faild to bind send socket. Functionality disabled."), DAEMON_LOGMSG_ERROR);
+            m_pCtrlObject->logMsg(_("vscpd: Failed to bind send socket. Functionality disabled."), DAEMON_LOGMSG_ERROR);
 #ifdef WIN32
             if (NULL != m_sendsock) closesocket(m_sendsock);
             m_sendsock = NULL;
@@ -187,7 +187,7 @@ void *UDPSendThread::Entry()
         }
 
     } else {
-        m_pCtrlObject->logMsg(_("vscpd: Faild to create send socket. Functionality disabled."), DAEMON_LOGMSG_ERROR);
+        m_pCtrlObject->logMsg(_("vscpd: Failed to create send socket. Functionality disabled."), DAEMON_LOGMSG_ERROR);
 #ifdef WIN32
         m_sendsock = NULL;
 #else

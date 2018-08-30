@@ -2430,7 +2430,7 @@ void TCPClientThread::handleChallenge( void )
     memset( m_pClientItem->m_sid, 0, sizeof( m_pClientItem->m_sid ) );
     if ( !gpobj->generateSessionId( (const char *)m_pClientItem->m_currentCommand.mbc_str(), 
                                     m_pClientItem->m_sid ) ) {
-        write( MSG_FAILD_TO_GENERATE_SID, strlen ( MSG_FAILD_TO_GENERATE_SID ) );
+        write( MSG_FAILED_TO_GENERATE_SID, strlen ( MSG_FAILED_TO_GENERATE_SID ) );
         return; 
     }
     

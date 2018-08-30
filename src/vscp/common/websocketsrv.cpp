@@ -3582,8 +3582,8 @@ ws1_command( struct web_connection *conn,
         double count;
         if ( !pTable->getNumberOfRecordsForRange( wxStart, wxEnd, &count ) ) { 
             wxstr = wxString::Format( _("-;TBL_RECORDS;%d;%s"),
-                                            (int)WEBSOCK_ERROR_TABLE_FAILD_COMMAND_RECORDS,
-                                            WEBSOCK_STR_ERROR_TABLE_FAILD_COMMAND_RECORDS );
+                                            (int)WEBSOCK_ERROR_TABLE_FAILED_COMMAND_RECORDS,
+                                            WEBSOCK_STR_ERROR_TABLE_FAILED_COMMAND_RECORDS );
             
             web_websocket_write( conn, 
                                     WEB_WEBSOCKET_OPCODE_TEXT,
@@ -3709,8 +3709,8 @@ ws1_command( struct web_connection *conn,
         wxDateTime first;
         if ( !pTable->getFirstDate( first ) ) {
             wxstr = wxString::Format( _("-;TBL_FIRSTDATE;%d;%s"),
-                                            (int)WEBSOCK_ERROR_TABLE_FAILD_COMMAND_FIRSTDATE,
-                                            WEBSOCK_STR_ERROR_TABLE_FAILD_COMMAND_FIRSTDATE );
+                                            (int)WEBSOCK_ERROR_TABLE_FAILED_COMMAND_FIRSTDATE,
+                                            WEBSOCK_STR_ERROR_TABLE_FAILED_COMMAND_FIRSTDATE );
             
             web_websocket_write( conn, 
                                     WEB_WEBSOCKET_OPCODE_TEXT,
@@ -3835,8 +3835,8 @@ ws1_command( struct web_connection *conn,
         wxDateTime last;
         if ( !pTable->getLastDate( last ) ) {
             wxstr = wxString::Format( _("-;TBL_LASTDATE;%d;%s"),
-                                            (int)WEBSOCK_ERROR_TABLE_FAILD_COMMAND_LASTDATE,
-                                            WEBSOCK_STR_ERROR_TABLE_FAILD_COMMAND_LASTDATE );
+                                            (int)WEBSOCK_ERROR_TABLE_FAILED_COMMAND_LASTDATE,
+                                            WEBSOCK_STR_ERROR_TABLE_FAILED_COMMAND_LASTDATE );
             
             web_websocket_write( conn, 
                                     WEB_WEBSOCKET_OPCODE_TEXT,
@@ -3961,8 +3961,8 @@ ws1_command( struct web_connection *conn,
         double sum;
         if ( !pTable->getSumValue( wxStart, wxEnd, &sum ) ) {
             wxstr = wxString::Format( _("-;TBL_SUM;%d;%s"),
-                                            (int)WEBSOCK_ERROR_TABLE_FAILD_COMMAND_SUM,
-                                            WEBSOCK_STR_ERROR_TABLE_FAILD_COMMAND_SUM );
+                                            (int)WEBSOCK_ERROR_TABLE_FAILED_COMMAND_SUM,
+                                            WEBSOCK_STR_ERROR_TABLE_FAILED_COMMAND_SUM );
             
             web_websocket_write( conn, 
                                     WEB_WEBSOCKET_OPCODE_TEXT,
@@ -4087,8 +4087,8 @@ ws1_command( struct web_connection *conn,
         double min;
         if ( !pTable->getMinValue( wxStart, wxEnd, &min ) ) {
             wxstr = wxString::Format( _("-;TBL_MIN;%d;%s"),
-                                            (int)WEBSOCK_ERROR_TABLE_FAILD_COMMAND_MIN,
-                                            WEBSOCK_STR_ERROR_TABLE_FAILD_COMMAND_MIN );
+                                            (int)WEBSOCK_ERROR_TABLE_FAILED_COMMAND_MIN,
+                                            WEBSOCK_STR_ERROR_TABLE_FAILED_COMMAND_MIN );
             
             web_websocket_write( conn, 
                                     WEB_WEBSOCKET_OPCODE_TEXT,
@@ -4213,8 +4213,8 @@ ws1_command( struct web_connection *conn,
         double max;
         if ( !pTable->getMaxValue( wxStart, wxEnd, &max ) ) {
             wxstr = wxString::Format( _("-;TBL_MAX;%d;%s"),
-                                            (int)WEBSOCK_ERROR_TABLE_FAILD_COMMAND_MAX,
-                                            WEBSOCK_STR_ERROR_TABLE_FAILD_COMMAND_MAX );
+                                            (int)WEBSOCK_ERROR_TABLE_FAILED_COMMAND_MAX,
+                                            WEBSOCK_STR_ERROR_TABLE_FAILED_COMMAND_MAX );
             
             web_websocket_write( conn, 
                                     WEB_WEBSOCKET_OPCODE_TEXT,
@@ -4339,8 +4339,8 @@ ws1_command( struct web_connection *conn,
         double average;
         if ( !pTable->getSumValue( wxStart, wxEnd, &average ) ) {
             wxstr = wxString::Format( _("-;TBL_AVERAGE;%d;%s"),
-                                  (int)WEBSOCK_ERROR_TABLE_FAILD_COMMAND_AVERAGE,
-                                  WEBSOCK_STR_ERROR_TABLE_FAILD_COMMAND_AVERAGE );
+                                  (int)WEBSOCK_ERROR_TABLE_FAILED_COMMAND_AVERAGE,
+                                  WEBSOCK_STR_ERROR_TABLE_FAILED_COMMAND_AVERAGE );
             
             web_websocket_write( conn, 
                                     WEB_WEBSOCKET_OPCODE_TEXT,
@@ -4465,8 +4465,8 @@ ws1_command( struct web_connection *conn,
         double median;
         if ( !pTable->getMedianValue( wxStart, wxEnd, &median ) ) {
             wxstr = wxString::Format( _("-;TBL_MEDIAN;%d;%s"),
-                                    (int)WEBSOCK_ERROR_TABLE_FAILD_COMMAND_MEDIAN,
-                                    WEBSOCK_STR_ERROR_TABLE_FAILD_COMMAND_MEDIAN );
+                                    (int)WEBSOCK_ERROR_TABLE_FAILED_COMMAND_MEDIAN,
+                                    WEBSOCK_STR_ERROR_TABLE_FAILED_COMMAND_MEDIAN );
             
             web_websocket_write( conn, 
                                     WEB_WEBSOCKET_OPCODE_TEXT,
@@ -4591,8 +4591,8 @@ ws1_command( struct web_connection *conn,
         double stddev;
         if ( !pTable->getStdevValue( wxStart, wxEnd, &stddev ) ) {
             wxstr = wxString::Format( _("-;TBL_STDDEV;%d;%s"),
-                                            (int)WEBSOCK_ERROR_TABLE_FAILD_COMMAND_STDDEV,
-                                            WEBSOCK_STR_ERROR_TABLE_FAILD_COMMAND_STDDEV );
+                                            (int)WEBSOCK_ERROR_TABLE_FAILED_COMMAND_STDDEV,
+                                            WEBSOCK_STR_ERROR_TABLE_FAILED_COMMAND_STDDEV );
             
             web_websocket_write( conn, 
                                     WEB_WEBSOCKET_OPCODE_TEXT,
@@ -4717,8 +4717,8 @@ ws1_command( struct web_connection *conn,
         double variance;
         if ( !pTable->getVarianceValue( wxStart, wxEnd, &variance ) ) {
             wxstr = wxString::Format( _("-;TBL_VARIANCE;%d;%s"),
-                                            (int)WEBSOCK_ERROR_TABLE_FAILD_COMMAND_VARIANCE,
-                                            WEBSOCK_STR_ERROR_TABLE_FAILD_COMMAND_VARIANCE );
+                                            (int)WEBSOCK_ERROR_TABLE_FAILED_COMMAND_VARIANCE,
+                                            WEBSOCK_STR_ERROR_TABLE_FAILED_COMMAND_VARIANCE );
             
             web_websocket_write( conn, 
                                     WEB_WEBSOCKET_OPCODE_TEXT,
@@ -4843,8 +4843,8 @@ ws1_command( struct web_connection *conn,
         double mode;
         if ( !pTable->getModeValue( wxStart, wxEnd, &mode ) ) {
             wxstr = wxString::Format( _("-;TBL_MODE;%d;%s"),
-                                            (int)WEBSOCK_ERROR_TABLE_FAILD_COMMAND_MODE,
-                                            WEBSOCK_STR_ERROR_TABLE_FAILD_COMMAND_MODE );
+                                            (int)WEBSOCK_ERROR_TABLE_FAILED_COMMAND_MODE,
+                                            WEBSOCK_STR_ERROR_TABLE_FAILED_COMMAND_MODE );
             
             web_websocket_write( conn, 
                                     WEB_WEBSOCKET_OPCODE_TEXT,
@@ -4969,8 +4969,8 @@ ws1_command( struct web_connection *conn,
         double lowerq;
         if ( !pTable->getLowerQuartileValue( wxStart, wxEnd, &lowerq ) ) {
             wxstr = wxString::Format( _("-;TBL_LOWERQ;%d;%s"),
-                                            (int)WEBSOCK_ERROR_TABLE_FAILD_COMMAND_LOWERQ,
-                                            WEBSOCK_STR_ERROR_TABLE_FAILD_COMMAND_LOWERQ );
+                                            (int)WEBSOCK_ERROR_TABLE_FAILED_COMMAND_LOWERQ,
+                                            WEBSOCK_STR_ERROR_TABLE_FAILED_COMMAND_LOWERQ );
             
             web_websocket_write( conn, 
                                     WEB_WEBSOCKET_OPCODE_TEXT,
@@ -5095,8 +5095,8 @@ ws1_command( struct web_connection *conn,
         double upperq;
         if ( !pTable->getUppeQuartileValue( wxStart, wxEnd, &upperq ) ) {
             wxstr = wxString::Format( _("-;TBL_UPPERQ;%d;%s"),
-                                            (int)WEBSOCK_ERROR_TABLE_FAILD_COMMAND_UPPERQ,
-                                            WEBSOCK_STR_ERROR_TABLE_FAILD_COMMAND_UPPERQ );
+                                            (int)WEBSOCK_ERROR_TABLE_FAILED_COMMAND_UPPERQ,
+                                            WEBSOCK_STR_ERROR_TABLE_FAILED_COMMAND_UPPERQ );
             
             web_websocket_write( conn, 
                                     WEB_WEBSOCKET_OPCODE_TEXT,
@@ -5226,8 +5226,8 @@ ws1_command( struct web_connection *conn,
         if ( bClearAll ) {
             if ( !pTable->clearTable() ) {
                 wxstr = wxString::Format( _("-;TBL_CLEAR;%d;%s"),
-                                            (int)WEBSOCK_ERROR_TABLE_FAILD_COMMAND_CLEAR,
-                                            WEBSOCK_STR_ERROR_TABLE_FAILD_COMMAND_CLEAR );
+                                            (int)WEBSOCK_ERROR_TABLE_FAILED_COMMAND_CLEAR,
+                                            WEBSOCK_STR_ERROR_TABLE_FAILED_COMMAND_CLEAR );
             
                 web_websocket_write( conn, 
                                     WEB_WEBSOCKET_OPCODE_TEXT,
@@ -5240,8 +5240,8 @@ ws1_command( struct web_connection *conn,
         else {
             if ( !pTable->clearTableRange( wxStart, wxEnd ) ) {
                 wxstr = wxString::Format( _("-;TBL_CLEAR;%d;%s"),
-                                            (int)WEBSOCK_ERROR_TABLE_FAILD_COMMAND_CLEAR,
-                                            WEBSOCK_STR_ERROR_TABLE_FAILD_COMMAND_CLEAR );
+                                            (int)WEBSOCK_ERROR_TABLE_FAILED_COMMAND_CLEAR,
+                                            WEBSOCK_STR_ERROR_TABLE_FAILED_COMMAND_CLEAR );
             
                 web_websocket_write( conn, 
                                     WEB_WEBSOCKET_OPCODE_TEXT,

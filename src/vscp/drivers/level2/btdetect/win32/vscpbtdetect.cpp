@@ -494,7 +494,7 @@ bool CVSCPBTDetectWrkTread::sendEvent( vscpEventEx& eventEx )
 #ifndef WIN32
             syslog( LOG_ERR,
                     "%s",
-                    ( const char * ) "Faild to convert event." );
+                    ( const char * ) "Failed to convert event." );
 #endif
             return false;
         }

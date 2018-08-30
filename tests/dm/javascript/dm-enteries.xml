@@ -204,7 +204,7 @@ Send event
           vscp_log("TurnOn event sent successfully!");
       }
       else {
-          vscp_log("Faild to send TurnOn event!");
+          vscp_log("Failed to send TurnOn event!");
       }              
 
 
@@ -293,7 +293,7 @@ if ( vscp_setFilter( filterObj ) ) {
   vscp_log("Filter set successfully!\n");
 }
 else {
-  vscp_log("Faild to set filter!\n");
+  vscp_log("Failed to set filter!\n");
 }
 
 

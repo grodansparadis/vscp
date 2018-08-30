@@ -7724,7 +7724,7 @@ bool CDM::loadFromXML( void )
 
     wxXmlDocument doc;
     if ( !doc.Load ( m_staticXMLPath ) ) {
-        gpobj->logMsg( _("[DM] ") + _("Faild to load DM. Check format!\n"), 
+        gpobj->logMsg( _("[DM] ") + _("Failed to load DM. Check format!\n"), 
                         DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
         return false;
     }

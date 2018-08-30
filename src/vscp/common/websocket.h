@@ -79,20 +79,20 @@ enum {
     WEBSOCK_ERROR_TABLE_LOG_MISSING_VALUE,      // Missing value 
     WEBSOCK_ERROR_TABLE_LOG_FAILED,             // Failed to log data
     WEBSOCK_ERROR_TABLE_NEED_SQL,               // Missing SQL expression   
-    WEBSOCK_ERROR_TABLE_FAILD_COMMAND_RECORDS,  // Failed to get # records 
-    WEBSOCK_ERROR_TABLE_FAILD_COMMAND_FIRSTDATE,// Failed to get first date  
-    WEBSOCK_ERROR_TABLE_FAILD_COMMAND_LASTDATE, // Failed to get last date
-    WEBSOCK_ERROR_TABLE_FAILD_COMMAND_SUM,      // Failed to get sum
-    WEBSOCK_ERROR_TABLE_FAILD_COMMAND_MIN,      // Failed to get min
-    WEBSOCK_ERROR_TABLE_FAILD_COMMAND_MAX,      // Failed to get max
-    WEBSOCK_ERROR_TABLE_FAILD_COMMAND_AVERAGE,  // Failed to get average
-    WEBSOCK_ERROR_TABLE_FAILD_COMMAND_MEDIAN,   // Failed to get median
-    WEBSOCK_ERROR_TABLE_FAILD_COMMAND_STDDEV,   // Failed to get stddev
-    WEBSOCK_ERROR_TABLE_FAILD_COMMAND_VARIANCE, // Failed to get variance
-    WEBSOCK_ERROR_TABLE_FAILD_COMMAND_MODE,     // Failed to get mode
-    WEBSOCK_ERROR_TABLE_FAILD_COMMAND_UPPERQ,   // Failed to get upperq
-    WEBSOCK_ERROR_TABLE_FAILD_COMMAND_LOWERQ,   // Failed to get lowerq
-    WEBSOCK_ERROR_TABLE_FAILD_COMMAND_CLEAR     // Failed to clear entries
+    WEBSOCK_ERROR_TABLE_FAILED_COMMAND_RECORDS,  // Failed to get # records 
+    WEBSOCK_ERROR_TABLE_FAILED_COMMAND_FIRSTDATE,// Failed to get first date  
+    WEBSOCK_ERROR_TABLE_FAILED_COMMAND_LASTDATE, // Failed to get last date
+    WEBSOCK_ERROR_TABLE_FAILED_COMMAND_SUM,      // Failed to get sum
+    WEBSOCK_ERROR_TABLE_FAILED_COMMAND_MIN,      // Failed to get min
+    WEBSOCK_ERROR_TABLE_FAILED_COMMAND_MAX,      // Failed to get max
+    WEBSOCK_ERROR_TABLE_FAILED_COMMAND_AVERAGE,  // Failed to get average
+    WEBSOCK_ERROR_TABLE_FAILED_COMMAND_MEDIAN,   // Failed to get median
+    WEBSOCK_ERROR_TABLE_FAILED_COMMAND_STDDEV,   // Failed to get stddev
+    WEBSOCK_ERROR_TABLE_FAILED_COMMAND_VARIANCE, // Failed to get variance
+    WEBSOCK_ERROR_TABLE_FAILED_COMMAND_MODE,     // Failed to get mode
+    WEBSOCK_ERROR_TABLE_FAILED_COMMAND_UPPERQ,   // Failed to get upperq
+    WEBSOCK_ERROR_TABLE_FAILED_COMMAND_LOWERQ,   // Failed to get lowerq
+    WEBSOCK_ERROR_TABLE_FAILED_COMMAND_CLEAR     // Failed to clear entries
 };
 
 #define	WEBSOCK_STR_ERROR_NO_ERROR                      "Everything is OK"
@@ -114,28 +114,28 @@ enum {
 #define WEBSOCK_STR_ERROR_TABLE_NO_DATA                 "No data in table"
 #define WEBSOCK_STR_ERROR_TABLE_ERROR_READING           "Error reading table"
 #define WEBSOCK_STR_ERROR_TABLE_CREATE_FORMAT           "Table create format was wrong"
-#define WEBSOCK_STR_ERROR_TABLE_DELETE_FAILED           "Table delete faild"
-#define WEBSOCK_STR_ERROR_TABLE_LIST_FAILED             "Table list faild"
+#define WEBSOCK_STR_ERROR_TABLE_DELETE_FAILED           "Table delete failed"
+#define WEBSOCK_STR_ERROR_TABLE_LIST_FAILED             "Table list failed"
 #define WEBSOCK_STR_ERROR_TABLE_FAILED_TO_GET           "Failed to get table (is it available?)"
 #define WEBSOCK_STR_ERROR_TABLE_FAILED_GET_DATA         "Failed to get table data"
 #define WEBSOCK_STR_ERROR_TABLE_FAILED_CLEAR            "Failed to clear table"
 #define WEBSOCK_STR_ERROR_TABLE_LOG_MISSING_VALUE       "A value is needed"
 #define WEBSOCK_STR_ERROR_TABLE_LOG_FAILED              "Failed to log data"
 #define WEBSOCK_STR_ERROR_TABLE_NEED_SQL                "Missing SQL expression"
-#define WEBSOCK_STR_ERROR_TABLE_FAILD_COMMAND_RECORDS   "Faild to get number of records"
-#define WEBSOCK_STR_ERROR_TABLE_FAILD_COMMAND_FIRSTDATE "Faild to get first date"
-#define WEBSOCK_STR_ERROR_TABLE_FAILD_COMMAND_LASTDATE  "Faild to get last date"
-#define WEBSOCK_STR_ERROR_TABLE_FAILD_COMMAND_SUM       "Faild to get sum"
-#define WEBSOCK_STR_ERROR_TABLE_FAILD_COMMAND_MIN       "Faild to get min"
-#define WEBSOCK_STR_ERROR_TABLE_FAILD_COMMAND_MAX       "Faild to get max"
-#define WEBSOCK_STR_ERROR_TABLE_FAILD_COMMAND_AVERAGE   "Faild to get average"
-#define WEBSOCK_STR_ERROR_TABLE_FAILD_COMMAND_MEDIAN    "Faild to get median"
-#define WEBSOCK_STR_ERROR_TABLE_FAILD_COMMAND_STDDEV    "Faild to get stddev"
-#define WEBSOCK_STR_ERROR_TABLE_FAILD_COMMAND_VARIANCE  "Faild to get variance"
-#define WEBSOCK_STR_ERROR_TABLE_FAILD_COMMAND_MODE      "Faild to get mode"
-#define WEBSOCK_STR_ERROR_TABLE_FAILD_COMMAND_UPPERQ    "Faild to get upperq"
-#define WEBSOCK_STR_ERROR_TABLE_FAILD_COMMAND_LOWERQ    "Faild to get lowerq"
-#define WEBSOCK_STR_ERROR_TABLE_FAILD_COMMAND_CLEAR     "Faild to clear table enteries"
+#define WEBSOCK_STR_ERROR_TABLE_FAILED_COMMAND_RECORDS   "Failed to get number of records"
+#define WEBSOCK_STR_ERROR_TABLE_FAILED_COMMAND_FIRSTDATE "Failed to get first date"
+#define WEBSOCK_STR_ERROR_TABLE_FAILED_COMMAND_LASTDATE  "Failed to get last date"
+#define WEBSOCK_STR_ERROR_TABLE_FAILED_COMMAND_SUM       "Failed to get sum"
+#define WEBSOCK_STR_ERROR_TABLE_FAILED_COMMAND_MIN       "Failed to get min"
+#define WEBSOCK_STR_ERROR_TABLE_FAILED_COMMAND_MAX       "Failed to get max"
+#define WEBSOCK_STR_ERROR_TABLE_FAILED_COMMAND_AVERAGE   "Failed to get average"
+#define WEBSOCK_STR_ERROR_TABLE_FAILED_COMMAND_MEDIAN    "Failed to get median"
+#define WEBSOCK_STR_ERROR_TABLE_FAILED_COMMAND_STDDEV    "Failed to get stddev"
+#define WEBSOCK_STR_ERROR_TABLE_FAILED_COMMAND_VARIANCE  "Failed to get variance"
+#define WEBSOCK_STR_ERROR_TABLE_FAILED_COMMAND_MODE      "Failed to get mode"
+#define WEBSOCK_STR_ERROR_TABLE_FAILED_COMMAND_UPPERQ    "Failed to get upperq"
+#define WEBSOCK_STR_ERROR_TABLE_FAILED_COMMAND_LOWERQ    "Failed to get lowerq"
+#define WEBSOCK_STR_ERROR_TABLE_FAILED_COMMAND_CLEAR     "Failed to clear table enteries"
 
 WX_DECLARE_LIST(vscpEventFilter, TRIGGERLIST);
 
