@@ -303,7 +303,7 @@ bool frmMain::Create( wxWindow* parent,
     wxFrame::Create( parent, id, caption, pos, size, style );
 
     CreateControls();
-    SetIcon( GetIconResource( wxT("../../../docs/vscp/logo/fatbee_v2.ico") ) );
+    SetIcon( GetIconResource( wxT("../../../docs/vscp/logo/fatbee.ico") ) );
     return true;
 }
 
@@ -617,7 +617,7 @@ wxIcon frmMain::GetIconResource( const wxString& name )
     // Icon retrieval
     wxUnusedVar(name);
     if ( name == _T("../../../docs/vscp/logo/fatbee_v2.ico") ) {
-        wxIcon icon(fatbee_v2_xpm);
+        wxIcon icon(fatbee_xpm);
         return icon;
     }
 
