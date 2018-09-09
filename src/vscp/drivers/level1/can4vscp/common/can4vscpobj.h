@@ -62,6 +62,7 @@
 #define CAN4VSCP_FLAG_ENABLE_WAIT_FOR_ACK                   0x0008
 #define CAN4VSCP_FLAG_ENABLE_TIMESTAMP                      0x0010
 #define CAN4VSCP_FLAG_ENABLE_HARDWARE_HANDSHAKE             0x0020
+#define CAN4VSCP_FLAG_ENABLE_REOPEN                         0x0040
 
 // Mutexes
 #define CANAL_DLL_CAN4VSCPDRV_OBJ_MUTEX	                    TEXT("___CANAL__DLL_CAN4VSCPDRV_OBJ_MUTEX____")
@@ -76,7 +77,7 @@
 #define CAN4VSCP_MAX_SNDMSG                                 4096
 
 // Max number of response messages in response queue
-#define CAN4VSCP_MAX_RESPONSEMSG	                    32
+#define CAN4VSCP_MAX_RESPONSEMSG	                        32
 
 // Byte stuffing start and end characters
 #define DLE                                                 0x10
@@ -158,6 +159,12 @@
 
 #define SET_BAUDRATE_MAX                                    13
 
+// Define soft open timeout in microsecons
+// If enabled i/f inactivity more than tyhis timeout
+// will reopen the i/f in a soft way and continue with
+// that until activity is detected.
+#define SOFT_OPEN_TIMOUT                                    120000000
+
 // Driver info in BINHEX
 #ifdef WIN32
 #define DRIVERINFO   "PGNvbmZpZz48ZGVzY3JpcHRpb24+Q0FONFZTQ1Agc3RhbmRhcmQgc2VyaWFsIGRyaXZlcjwvZGVzY3JpcHRpb24+PGxldmVsPjE8L2xldmVsPjxibG9ja2luZz55ZXM8L2Jsb2NraW5nPjxpbmZvdXJsPmh0dHA6Ly93d3cuZ3JvZGFuc3BhcmFkaXMuY29tL2ZyYW5rZnVydC9yczIzMi9tYW51YWwvZG9rdS5waHA/aWQ9dGhlX2NhbjR2c2NwX21vZGU8L2luZm91cmw+PGl0ZW1zPjxpdGVtIHBvcz0iMCIgdHlwZT0ic3RyaW5nIiBkZXNjcmlwdGlvbj0iU2VyaWFsIHBvcnQgKENPTTEsIENPTTIuLi4pIiBpbmZvdXJsPSJodHRwOi8vd3d3LnZzY3Aub3JnL2RvY3MvdnNjcGQvZG9rdS5waHA/aWQ9bGV2ZWwxX2RyaXZlcl9jYW40dnNjcCNwYXJhbWV0ZXJfc3RyaW5nIi8+PGl0ZW0gcG9zPSIxIiB0eXBlPSJjaG9pY2UiIG9wdGlvbmFsPSJ0cnVlIiBkZXNjcmlwdGlvbj0iQmF1ZHJhdGUgdG8gdXNlIGZvciBjb21tdW5pY2F0aW9uIHdpdGggdGhlIGFkYXB0ZXIuRGVmYXVsdCBpcyAxMTUyMDAgYmF1ZC4gIiBpbmZvdXJsPSJodHRwOi8vd3d3LnZzY3Aub3JnL2RvY3MvdnNjcGQvZG9rdS5waHA/aWQ9bGV2ZWwxX2RyaXZlcl9jYW40dnNjcCNwYXJhbWV0ZXJfc3RyaW5nIj48Y2hvaWNlIHZhbHVlPSIwIiBkZXNjcmlwdGlvbj0iMTE1MjAwIGJhdWQiLz48Y2hvaWNlIHZhbHVlPSIxIiBkZXNjcmlwdGlvbj0iMTI4MDAwIGJhdWQiLz48Y2hvaWNlIHZhbHVlPSIzIiBkZXNjcmlwdGlvbj0iMjMwNDAwIGJhdWQiLz48Y2hvaWNlIHZhbHVlPSI0IiBkZXNjcmlwdGlvbj0iMjU2MDAwIGJhdWQiLz48Y2hvaWNlIHZhbHVlPSI1IiBkZXNjcmlwdGlvbj0iNDYwODAwIGJhdWQiLz48Y2hvaWNlIHZhbHVlPSI2IiBkZXNjcmlwdGlvbj0iNTAwMDAwIGJhdWQiLz48Y2hvaWNlIHZhbHVlPSI3IiBkZXNjcmlwdGlvbj0iNjI1MDAwIGJhdWQiLz48Y2hvaWNlIHZhbHVlPSI4IiBkZXNjcmlwdGlvbj0iOTIxNjAwIGJhdWQiLz48Y2hvaWNlIHZhbHVlPSI5IiBkZXNjcmlwdGlvbj0iMTAwMDAwMCBiYXVkIi8+PGNob2ljZSB2YWx1ZT0iMCIgZGVzY3JpcHRpb249Ijk2MDAgYmF1ZCIvPjxjaG9pY2UgdmFsdWU9IjEwIiBkZXNjcmlwdGlvbj0iMTkyMDAgYmF1ZCIvPjxjaG9pY2UgdmFsdWU9IjExIiBkZXNjcmlwdGlvbj0iMzg0MDAgYmF1ZCIvPjxjaG9pY2UgdmFsdWU9IjEyIiBkZXNjcmlwdGlvbj0iNTc2MDAgYmF1ZCIvPjwvaXRlbT48L2l0ZW1zPjxmbGFncz48Yml0IHBvcz0iMCIgd2lkdGg9IjIiIHR5cGU9ImNob2ljZSIgZGVzY3JpcHRpb249IlNlbGVjdCB0aGUgbW9kZSB0aGUgZGV2aWNlIHNob3VsZCBiZSBvcGVuZWQgaW4uIFRoZSBub3JtYWwgbW9kZSBvcGVucyB0aGUgaW50ZXJmYWNlIGZvciByZWNlaXZlIGFuZCB0cmFuc21pdC4gVGhlIGxpc3RlbiBtb2RlIG9ubHkgbGlzdGVuIG9uIHRyYWZmaWMgb24gdGhlIGJ1cy4gTG9vcGJhY2sganVzdCBjb25uZWN0IHRoZSByZWNlaXZlIGFuZCB0cmFuc21pdCBsaW5lcyB3aXRob3V0IHNlbmRpbmcgYW55dGhpbmcgb24gdGhlIGJ1cy4gVGhlIG1hbnVhbCBkZXNjcmliZXMgdGhlIG1vZGVzIGluIGRldGFpbC4iIGluZm91cmw9Imh0dHA6Ly93d3cudnNjcC5vcmcvZG9jcy92c2NwZC9kb2t1LnBocD9pZD1sZXZlbDFfZHJpdmVyX2NhbjR2c2NwI2ZsYWdzIj48Y2hvaWNlIHZhbHVlPSIwIiBkZXNjcmlwdGlvbj0iT3BlbiBDQU40VlNDUCBpbnRlcmZhY2UgaW4gbm9ybWFsIG1vZGUuIi8+PGNob2ljZSB2YWx1ZT0iMSIgZGVzY3JpcHRpb249Ik9wZW4gQ0FONFZTQ1AgaW50ZXJmYWNlIGluIGxpc3RlbiBtb2RlLiIvPjxjaG9pY2UgdmFsdWU9IjIiIGRlc2NyaXB0aW9uPSJPcGVuIENBTjRWU0NQIGludGVyZmFjZSBpbiBsb29wYmFjayBtb2RlLiIvPjwvYml0PjxiaXQgcG9zPSIyIiB3aWR0aD0iMSIgdHlwZT0iYm9vbCIgZGVzY3JpcHRpb249IklmIHRoaXMgZmxhZyBpcyBzZXQgdGhlIGRyaXZlciB3aWxsIG5vdCBzd2l0Y2ggdG8gVlNDUCBtb2RlLiBUaGlzIG1lYW5zIGl0IGFscmVhZHkgbXVzdCBiZSBpbiBWU0NQIG1vZGUuIFRoZSBhZHZhbnRhZ2UgaXMgdGhhdCB0aGUgb3BlbiBvcGVyYXRpb24gd2lsbCBiZSBmYXN0ZXIuIiBpbmZvdXJsPSJodHRwOi8vd3d3LnZzY3Aub3JnL2RvY3MvdnNjcGQvZG9rdS5waHA/aWQ9bGV2ZWwxX2RyaXZlcl9jYW40dnNjcCNmbGFncyIvPjxiaXQgcG9zPSIzIiB3aWR0aD0iMSIgdHlwZT0iYm9vbCIgZGVzY3JpcHRpb249IklmIHRoaXMgZmxhZyBpcyBzZXQgdGhlIGRyaXZlciB3aWxsIHdhaXQgZm9yIGFuIEFDSyBmcm9tIHRoZSBwaHlzaWNhbCBkZXZpY2UgZm9yIGV2ZXJ5IHNlbnQgZnJhbWUuIFRoaXMgd2lsbCBzbG93IGRvd24gc2VuZGluZyBidXQgbWFrZSB0cmFuc21pc3Npb24gdmVyeSBzZWN1cmUuIiBpbmZvdXJsPSJodHRwOi8vd3d3LnZzY3Aub3JnL2RvY3MvdnNjcGQvZG9rdS5waHA/aWQ9bGV2ZWwxX2RyaXZlcl9jYW40dnNjcCNmbGFncyIvPjxiaXQgcG9zPSI0IiB3aWR0aD0iMSIgdHlwZT0iYm9vbCIgZGVzY3JpcHRpb249IklmIHRoaXMgZmxhZyBpcyBzZXQgaXQgZW5hYmxlIHRpbWVzdGFtcHMgaW4gaGFyZHdhcmUgbWVhbmluZyB0aGUgdGltZXN0YW1wIHdpbGwgYmUgd3JpdHRlbiBieSB0aGUgaGFyZHdhcmUgaW5zdGVhZCBvZiBieSB0aGUgZHJpdmVyLiBUaGUgZGlzYWR2YW50YWdlIGlzIHRoYXQgaXQgY29uc3VtZXMgYmFuZHdpZHRoLiIgaW5mb3VybD0iaHR0cDovL3d3dy52c2NwLm9yZy9kb2NzL3ZzY3BkL2Rva3UucGhwP2lkPWxldmVsMV9kcml2ZXJfY2FuNHZzY3AjZmxhZ3MiLz48Yml0IHBvcz0iNSIgd2lkdGg9IjEiIHR5cGU9ImJvb2wiIGRlc2NyaXB0aW9uPSJJZiB0aGlzIGZsYWcgaXMgc2V0IGVuYWJsZSBoYXJkd2FyZSBoYW5kc2hha2UuIFJlY29tbWVuZGVkIGZvciBsb3dlciBiYXVkcmF0ZXMgdG8gcHJldmVudCBidWZmZXIgb3ZlcmZsb3dzLiIgaW5mb3VybD0iaHR0cDovL3d3dy52c2NwLm9yZy9kb2NzL3ZzY3BkL2Rva3UucGhwP2lkPWxldmVsMV9kcml2ZXJfY2FuNHZzY3AjZmxhZ3MiLz48L2ZsYWdzPjwvY29uZmlnPg=="
@@ -192,7 +199,6 @@ public:
 
     /// Destructor
     virtual ~CCan4VSCPObj();
-
 
     /*!
         Filter message
@@ -235,6 +241,17 @@ public:
      */
     int close(void);
 
+    /*!
+        softOpen
+        
+        Reopen the channel in case of adapter being restarted while
+        in operation.If power is briken for a can4vscp adapter it will be logically
+        closed. From this side the serial channel will be open. softOpen
+        do a logical open (in case no traffic is detected). This will keep 
+        the connection open even in this case where a restart of the host 
+        software otherwise was needed.
+    */
+    int softOpen();
 
     /*!
         Get Interface statistics
@@ -477,46 +494,46 @@ public:
     uint8_t m_capsMaxCanalFrames;
 
     /*!
-    Interface statistics
+        Interface statistics
      */
     canalStatistics m_stat;
 
 
     /*!
-    Interface status
+        Interface status
 
-    Bit 0  - TX Error Counter.
-    Bit 1  - TX Error Counter.
-    Bit 2  - TX Error Counter.
-    Bit 3  - TX Error Counter.
-    Bit 4  - TX Error Counter.
-    Bit 5  - TX Error Counter.
-    Bit 6  - TX Error Counter.
-    Bit 7  - TX Error Counter.
-    Bit 8  - RX Error Counter.
-    Bit 9  - RX Error Counter.
-    Bit 10 - RX Error Counter.
-    Bit 11 - RX Error Counter.
-    Bit 12 - RX Error Counter.
-    Bit 13 - RX Error Counter.
-    Bit 14 - RX Error Counter.
-    Bit 15 - RX Error Counter.
-    Bit 16 - Overflow.
-    Bit 17 - RX Warning.
-    Bit 18 - TX Warning.
-    Bit 19 - TX bus passive.
-    Bit 20 - RX bus passive..
-    Bit 21 - Reserved.
-    Bit 22 - Reserved.
-    Bit 23 - Reserved.
-    Bit 24 - Reserved.
-    Bit 25 - Reserved.
-    Bit 26 - Reserved.
-    Bit 27 - Reserved.
-    Bit 28 - Reserved.
-    Bit 29 - Bus Passive.
-    Bit 30 - Bus Warning status
-    Bit 31 - Bus off status 
+        Bit 0  - TX Error Counter.
+        Bit 1  - TX Error Counter.
+        Bit 2  - TX Error Counter.
+        Bit 3  - TX Error Counter.
+        Bit 4  - TX Error Counter.
+        Bit 5  - TX Error Counter.
+        Bit 6  - TX Error Counter.
+        Bit 7  - TX Error Counter.
+        Bit 8  - RX Error Counter.
+        Bit 9  - RX Error Counter.
+        Bit 10 - RX Error Counter.
+        Bit 11 - RX Error Counter.
+        Bit 12 - RX Error Counter.
+        Bit 13 - RX Error Counter.
+        Bit 14 - RX Error Counter.
+        Bit 15 - RX Error Counter.
+        Bit 16 - Overflow.
+        Bit 17 - RX Warning.
+        Bit 18 - TX Warning.
+        Bit 19 - TX bus passive.
+        Bit 20 - RX bus passive..
+        Bit 21 - Reserved.
+        Bit 22 - Reserved.
+        Bit 23 - Reserved.
+        Bit 24 - Reserved.
+        Bit 25 - Reserved.
+        Bit 26 - Reserved.
+        Bit 27 - Reserved.
+        Bit 28 - Reserved.
+        Bit 29 - Bus Passive.
+        Bit 30 - Bus Warning status
+        Bit 31 - Bus off status 
 
      */
     canalStatus m_status;
@@ -594,7 +611,7 @@ public:
 #endif
 
     /*!
-        Mutex for receive queue.
+        Mutex that protect receive queue.
      */
 #ifdef WIN32	
     HANDLE m_receiveMutex;
@@ -603,7 +620,7 @@ public:
 #endif
 
     /*!
-        Mutex for transmit queue.
+        Mutex that protect transmit queue.
      */
 #ifdef WIN32	
     HANDLE m_transmitMutex;
@@ -612,7 +629,7 @@ public:
 #endif
 
     /*!
-        Mutex for command response queue.
+        Mutex that protect command response queue.
      */
 #ifdef WIN32	
     HANDLE m_responseMutex;
@@ -655,6 +672,11 @@ public:
     CComm m_com;
 #else
     Comm m_com;
+
+    /*!
+        Configured baudrate
+    */
+    uint8_t m_nBaud;
 
     /*!
         The can232 object MUTEX 	
@@ -714,7 +736,11 @@ public:
      */
     uint16_t m_hRxQue;
 
-
+    /*!
+        Activity timer
+        Is zero if events received
+    */
+   long m_activity;
 };
 
 #endif // !defined(AFX_IXXATVCI_H__6F5CD90E_ACF7_459A_9ACB_849A57595639__INCLUDED_)

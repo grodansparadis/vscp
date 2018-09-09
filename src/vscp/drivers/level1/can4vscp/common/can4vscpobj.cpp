@@ -120,6 +120,8 @@ CCan4VSCPObj::CCan4VSCPObj()
     m_filter = 0;
     m_mask = 0;
 
+    m_nBaud = SET_BAUDRATE_115200;
+
     // Default capabilities of connected device
     m_caps.maxVscpFrames = 1;    // We expect: One VSCP frame handled.
     m_caps.maxCanalFrames = 1;   // We expect: One CANAL frame handled.
@@ -133,6 +135,8 @@ CCan4VSCPObj::CCan4VSCPObj()
     m_sequencyno = 0;   // No frames sent yet
     
     memset( &msgResponseInfo, 0, sizeof( msgResponseInfo ) );
+
+    m_activity = getClockMicroSeconds();
 
 #ifdef WIN32
     
@@ -288,9 +292,10 @@ int CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
 #endif    
     char *p;
     int nComPort = 1;	// COM1 is default
-    int nBaud = SET_BAUDRATE_115200;
     uint8_t saveseq;
     cmdResponseMsg Msg;
+
+    m_nBaud = SET_BAUDRATE_115200;
 
     m_initFlag = flags;
 
@@ -343,15 +348,15 @@ int CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
 
     p = strtok( NULL, ";" );
     if ( NULL != p ) {
-        nBaud = atoi( p );
+        m_nBaud = atoi( p );
         // Check if a valid code
-        if ( nBaud > ( SET_BAUDRATE_MAX - 1 ) ) {
-            nBaud = SET_BAUDRATE_115200;
+        if ( m_nBaud > ( SET_BAUDRATE_MAX - 1 ) ) {
+            m_nBaud = SET_BAUDRATE_115200;
         }
     }
 
 #ifdef WIN32
-    switch ( nBaud ) {
+    switch ( m_nBaud ) {
 
         case SET_BAUDRATE_128000:
             baud = 128000;
@@ -407,7 +412,7 @@ int CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
             break;
     }
 #else
-    switch ( nBaud ) {
+    switch ( m_nBaud ) {
 
         case SET_BAUDRATE_128000:
             strcpy( szBaud, "128000" );
@@ -521,9 +526,9 @@ int CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
     // Set CAN4VSCP mode in case of device in verbose mode
     if ( !( m_initFlag & CAN4VSCP_FLAG_ENABLE_NO_SWITCH_TO_NEW_MODE ) ) {
 #ifdef WIN32        
-        BOOL rw = m_com.writebuf( (unsigned char *)"SET MODE VSCP\r\n", 19 );     // In case of garbage in queue
+        BOOL rw = m_com.writebuf( (unsigned char *)"SET MODE VSCP\r\n", 19 );   // In case of garbage in queue
         SLEEP( 200 );
-        rw = m_com.writebuf( (unsigned char *)"SET MODE VSCP\r\n", 19 );     // we set CAN4VSCP mode twice
+        rw = m_com.writebuf( (unsigned char *)"SET MODE VSCP\r\n", 19 );        // we set CAN4VSCP mode twice
 #else
         m_com.comm_puts( (char*)"SET MODE VSCP\r\n", 19 );              // In case of garbage in queue
         SLEEP( 200 );
@@ -668,9 +673,9 @@ int CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
     }
 
     // If non standard baudrate we change it here
-    if ( SET_BAUDRATE_115200 != nBaud ) {
+    if ( SET_BAUDRATE_115200 != m_nBaud ) {
 
-        uint8_t conf = nBaud;
+        uint8_t conf = m_nBaud;
         if ( !sendConfigWait( VSCP_DRIVER_CONFIG_BAUDRATE,
                                 &conf,
                                 1,
@@ -808,6 +813,99 @@ int CCan4VSCPObj::close( void )
     return CANAL_ERROR_SUCCESS;
 }
 
+//////////////////////////////////////////////////////////////////////
+// softOpen
+//
+
+int CCan4VSCPObj::softOpen()
+{
+    cmdResponseMsg Msg;
+
+    // If timestamp needs to be enabled we enabled it here
+    if ( m_initFlag & CAN4VSCP_FLAG_ENABLE_TIMESTAMP ) {
+
+        uint8_t conf = 1;
+        if ( !sendConfigWait( VSCP_DRIVER_CONFIG_TIMESTAMP,
+                                &conf,
+                                1,
+                                &Msg,
+                                500 ) ) {
+            // Failure
+            // We don't close the serial channel but
+            // instead try again later
+            return CANAL_ERROR_INIT_FAIL;
+        }
+
+    }
+
+    // If non standard baudrate we change it here
+    if ( SET_BAUDRATE_115200 != m_nBaud ) {
+
+        uint8_t conf = m_nBaud;
+        if ( !sendConfigWait( VSCP_DRIVER_CONFIG_BAUDRATE,
+                                &conf,
+                                1,
+                                &Msg,
+                                500 ) ) {
+            // Failure
+            // We don't close the serial channel but
+            // instead try again later
+            return CANAL_ERROR_INIT_FAIL;
+        }
+
+    }
+
+    // Wait for ACK
+    if ( m_initFlag & CAN4VSCP_FLAG_ENABLE_WAIT_FOR_ACK ) {
+
+    }
+
+    // Set interface in requested mode.
+    switch ( m_initFlag & 0x03) {
+
+    case 1:
+        if (!sendCommandWait( VSCP_CAN4VSCP_DRIVER_COMMAND_LISTEN,
+                                NULL,
+                                0,
+                                &Msg,
+                                1000)) {
+            // Failure
+            // We don't close the serial channel but
+            // instead try again later
+            return CANAL_ERROR_INIT_FAIL;
+        }
+        break;
+
+    case 2:
+        if (!sendCommandWait( VSCP_CAN4VSCP_DRIVER_COMMAND_LOOPBACK,
+                                NULL,
+                                0,
+                                &Msg,
+                                1000)) {
+            // Failure
+            // We don't close the serial channel but
+            // instead try again later
+            return CANAL_ERROR_INIT_FAIL;
+        }
+        break;
+
+    case 0:
+    default:
+        if (!sendCommandWait( VSCP_CAN4VSCP_DRIVER_COMMAND_OPEN,
+                                NULL,
+                                0,
+                                &Msg,
+                                1000 ) ) {
+            // Failure
+            // We don't close the serial channel but
+            // instead try again later
+            return CANAL_ERROR_INIT_FAIL;
+        }
+        break;
+    }
+
+    return CANAL_ERROR_SUCCESS;
+}
 
 //////////////////////////////////////////////////////////////////////
 // doFilter
@@ -1325,7 +1423,10 @@ bool CCan4VSCPObj::sendCommand( uint8_t cmdcode, uint8_t *pParam, uint8_t size )
 //
 //
 
-bool CCan4VSCPObj::wait4CommandResponse( cmdResponseMsg *pMsg, uint8_t cmdcode, uint8_t saveseq, uint32_t timeout )
+bool CCan4VSCPObj::wait4CommandResponse( cmdResponseMsg *pMsg, 
+                                            uint8_t cmdcode, 
+                                            uint8_t saveseq, 
+                                            uint32_t timeout )
 {
     //uint32_t start = GetTickCount();
     uint32_t start = getClockMilliSeconds();
@@ -1658,15 +1759,20 @@ bool CCan4VSCPObj::addToResponseQueue( void )
 {
     if ( ( m_initFlag & CAN4VSCP_FLAG_ENABLE_WAIT_FOR_ACK ) && msgResponseInfo.bWaitingForAckNack ) {
 
-        bool t1 = ( msgResponseInfo.channel == m_bufferMsgRcv[ VSCP_CAN4VSCP_DRIVER_POS_FRAME_CHANNEL ] );
-        bool t2 = ( msgResponseInfo.seq == m_bufferMsgRcv[ VSCP_CAN4VSCP_DRIVER_POS_FRAME_SEQUENCY ] );
+        bool t1 = ( msgResponseInfo.channel == 
+                m_bufferMsgRcv[ VSCP_CAN4VSCP_DRIVER_POS_FRAME_CHANNEL ] );
+        bool t2 = ( msgResponseInfo.seq == 
+                m_bufferMsgRcv[ VSCP_CAN4VSCP_DRIVER_POS_FRAME_SEQUENCY ] );
         bool t3 = ( t1 && t2 );
-        if ( msgResponseInfo.channel == m_bufferMsgRcv[ VSCP_CAN4VSCP_DRIVER_POS_FRAME_CHANNEL ] )  {
+        if ( msgResponseInfo.channel == 
+                m_bufferMsgRcv[ VSCP_CAN4VSCP_DRIVER_POS_FRAME_CHANNEL ] )  {
 
              if ( msgResponseInfo.seq == m_bufferMsgRcv[ VSCP_CAN4VSCP_DRIVER_POS_FRAME_SEQUENCY ] )  {
 
-                if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_ACK == m_bufferMsgRcv[ VSCP_CAN4VSCP_DRIVER_POS_FRAME_TYPE ] ) {
-                    //  Positive things happen
+                if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_ACK == 
+                        m_bufferMsgRcv[ VSCP_CAN4VSCP_DRIVER_POS_FRAME_TYPE ] ) {
+
+                    //  Positive things happens here
                     msgResponseInfo.bAck = true;
 #ifdef WIN32
                     SetEvent( m_transmitAckNackEvent  );
@@ -1674,7 +1780,8 @@ bool CCan4VSCPObj::addToResponseQueue( void )
                     sem_post( &m_transmitAckNackSem  );
 #endif
                 }
-                else if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_NACK == m_bufferMsgRcv[ VSCP_CAN4VSCP_DRIVER_POS_FRAME_TYPE ] ) {
+                else if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_NACK == 
+                        m_bufferMsgRcv[ VSCP_CAN4VSCP_DRIVER_POS_FRAME_TYPE ] ) {
                     //  Negative things happen to, sometimes
                     msgResponseInfo.bAck = false;
 #ifdef WIN32
@@ -1724,7 +1831,7 @@ bool CCan4VSCPObj::addToResponseQueue( void )
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// ReadSerialData
+// serialData2StateMachine
 //
 //
 
@@ -1913,11 +2020,14 @@ void CCan4VSCPObj::readSerialData( void )
 
             // Check if NOOP frame
             if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_NOOP == ( m_bufferMsgRcv[ 0 ] ) ) {
+                m_activity = getClockMicroSeconds(); // activity
                 sendACK( m_bufferMsgRcv[ VSCP_SERIAL_DRIVER_POS_FRAME_SEQUENCY ] );
             }
             // Check for CANAL message frame
             else if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_CANAL == ( m_bufferMsgRcv[ 0 ] ) ) {
             
+                m_activity = getClockMicroSeconds(); // activity
+
                 // CANAL message
                 // -------------
                 // [0]      -   DLE  - Not in buffer!!!!
@@ -2004,6 +2114,8 @@ void CCan4VSCPObj::readSerialData( void )
             }
             // Check for CANAL message frame
             else if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_CANAL_TIMESTAMP == ( m_bufferMsgRcv[ 0 ] ) ) {
+
+                m_activity = getClockMicroSeconds(); // activity
 
                 // CANAL message
                 // -------------
@@ -2100,34 +2212,43 @@ void CCan4VSCPObj::readSerialData( void )
             }
             // Check for VSCP event frame
             else if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_VSCP_EVENT == ( m_bufferMsgRcv[ 0 ] ) ) {
+                m_activity = getClockMicroSeconds(); // activity
                 sendNACK( m_bufferMsgRcv[ VSCP_SERIAL_DRIVER_POS_FRAME_SEQUENCY ] );	// We don't handle VSCP events
             }
             // Check for VSCP event frame
             else if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_VSCP_EVENT_TIMESTAMP == ( m_bufferMsgRcv[ 0 ] ) ) {
+                m_activity = getClockMicroSeconds(); // activity
                 sendNACK( m_bufferMsgRcv[ VSCP_SERIAL_DRIVER_POS_FRAME_SEQUENCY ] );	// We don't handle VSCP events
             }
             // Check for configure frame
             else if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_CONFIGURE == ( m_bufferMsgRcv[ 0 ] ) ) {
+                m_activity = getClockMicroSeconds(); // activity
                 sendNACK( m_bufferMsgRcv[ VSCP_SERIAL_DRIVER_POS_FRAME_SEQUENCY ] );	// We don't handle configure
             }
             // Check for poll frame
             else if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_POLL == ( m_bufferMsgRcv[ 0 ] ) ) {
+                m_activity = getClockMicroSeconds(); // activity
                 sendNACK( m_bufferMsgRcv[ VSCP_SERIAL_DRIVER_POS_FRAME_SEQUENCY ] );	// We don't handle poll
             }
             // Check for no event frame
             else if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_NO_EVENT == ( m_bufferMsgRcv[ 0 ] ) ) {
+                m_activity = getClockMicroSeconds(); // activity
                 sendNACK( m_bufferMsgRcv[ VSCP_SERIAL_DRIVER_POS_FRAME_SEQUENCY ] );	// We don't handle no event
             }
             // Check for multiframe VSCP message frame
             else if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_MULTI_FRAME_VSCP == ( m_bufferMsgRcv[ 0 ] ) ) {
+                m_activity = getClockMicroSeconds(); // activity
                 sendNACK( m_bufferMsgRcv[ VSCP_SERIAL_DRIVER_POS_FRAME_SEQUENCY ] );	// We don't handle vscp multi frame
             }
             // Check for multiframe VSCP message frame
             else if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_MULTI_FRAME_VSCP_TIMESTAMP == ( m_bufferMsgRcv[ 0 ] ) ) {
+                m_activity = getClockMicroSeconds(); // activity
                 sendNACK( m_bufferMsgRcv[ VSCP_SERIAL_DRIVER_POS_FRAME_SEQUENCY ] );	// We don't handle vscp multi frame
             }
             // Check for multiframe CANAL message frame
             else if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_MULTI_FRAME_CANAL == ( m_bufferMsgRcv[ 0 ] ) ) {
+
+                m_activity = getClockMicroSeconds(); // activity
 
                 // CANAL message
                 // -------------
@@ -2233,6 +2354,8 @@ void CCan4VSCPObj::readSerialData( void )
             }
             // Check for multiframe CANAL message frame with timestamp
             else if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_MULTI_FRAME_CANAL_TIMESTAMP == ( m_bufferMsgRcv[ 0 ] ) ) {
+
+                m_activity = getClockMicroSeconds(); // activity
 
                 // CANAL message
                 // -------------
@@ -2347,30 +2470,37 @@ void CCan4VSCPObj::readSerialData( void )
             }
             // Check for sent ACK frame
             else if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_SENT_ACK == ( m_bufferMsgRcv[ 0 ] ) ) {
+                m_activity = getClockMicroSeconds(); // activity
                 addToResponseQueue();
             }
             // Check for sent NACK frame
             else if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_SENT_NACK == ( m_bufferMsgRcv[ 0 ] ) ) {
+                m_activity = getClockMicroSeconds(); // activity
                 addToResponseQueue();
             }
             // Check for ACK frame
             else if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_ACK == ( m_bufferMsgRcv[ 0 ] ) ) {
+                m_activity = getClockMicroSeconds(); // activity
                 addToResponseQueue();
             }
             // Check for NACK frame
             else if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_NACK == ( m_bufferMsgRcv[ 0 ] ) ) {
+                m_activity = getClockMicroSeconds(); // activity
                 addToResponseQueue();
             }
             // Check for ERROR frame
             else if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_ERROR == ( m_bufferMsgRcv[ 0 ] ) ) {
+                m_activity = getClockMicroSeconds(); // activity
                 addToResponseQueue();
             }
             // Check for command reply frame
             else if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_COMMAND_REPLY == ( m_bufferMsgRcv[ 0 ] ) ) {
+                m_activity = getClockMicroSeconds(); // activity
                 addToResponseQueue();
             }
             // Check if command frame
             else if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_COMMAND == ( m_bufferMsgRcv[ 0 ] ) ) {
+                m_activity = getClockMicroSeconds(); // activity
                 addToResponseQueue();
             } 
 
@@ -2431,7 +2561,6 @@ static bool transmitMessage( CCan4VSCPObj * pobj, uint8_t *pseq )
     crc8( &crc, 0 );
 
     // Sequency number
-
     pos += addWithEscape( sendData + pos, (*pseq)++, &crc );
 
     // Size of payload  4 + datalen
@@ -2626,6 +2755,16 @@ void *workThreadTransmit( void *pObject )
 
         }
         else {
+            
+            // Check for i/f inactivity
+            if ( pobj->m_initFlag & CAN4VSCP_FLAG_ENABLE_REOPEN ) {
+                if ( getClockMicroSeconds() - pobj->m_activity > SOFT_OPEN_TIMOUT ) {
+                    // We have an inactivity problem
+                    pobj->softOpen();
+                    pobj->m_activity = getClockMicroSeconds(); // activity 
+                }
+            }
+
             // No data to write
             SLEEP( 10 );
         }

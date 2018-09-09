@@ -3981,7 +3981,7 @@ uint32_t CVariableStorage::getStockVariable( const wxString& name,
     
     if ( lcname.StartsWith( _("vscp.civetweb.copyright") ) ) {
         var.setValue( _("Copyright (c) 2004-2013 Sergey Lyubka, Copyright (c) "
-                        "2013-2017 the Civetweb developers, Copyright (c) 2017 "
+                        "2013-2018 the Civetweb developers, (mods.) Copyright (c) 2017-2018 "
                         "Ake Hedman, Grodans Paradis AB"),
                         true );
         return var.getID();

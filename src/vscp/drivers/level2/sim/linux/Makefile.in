@@ -95,7 +95,7 @@ test:  test.o $(VSCPSIM_OBJECTS)
 vscpl2drv-sim.so: $(VSCPSIM_OBJECTS)
 	$(CXX) -o $@ $(VSCPSIM_OBJECTS) $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS) 
 
-vscpl2drv/sim.o: vscpl2drv-sim.cpp vscpl2drv-sim.h
+vscpl2drv-sim.o: vscpl2drv-sim.cpp vscpl2drv-sim.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c vscpl2drv-sim.cpp -o $@
 
 simulation.o: ../common/simulation.cpp ../common/simulation.h
