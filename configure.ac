@@ -1,7 +1,7 @@
 dnl Autoconf settings for VSCP
 dnl $Id: configure.in,v 1.5 2017/10/13 11:22:06 akhe Exp $
 
-AC_INIT( [vscp], [13.1.0], [akhe@grodansparadis.com])
+AC_INIT( [vscp], [13.1.1], [akhe@grodansparadis.com])
 AC_CONFIG_SRCDIR([src/vscp/common/canalsuperwrapper.cpp])
 #AM_INIT_AUTOMAKE
 
@@ -93,6 +93,7 @@ AC_SUBST(WXGTK_LIBS)
 AC_SUBST(WXGTK_STATIC_LIBS)
 AC_SUBST(STATIC)
 AC_SUBST(VSCPDIR)
+AC_SUBST(RPI)
 
 dnl
 dnl Project base installation folder
@@ -111,22 +112,33 @@ dnl Project Sub directories
 dnl
 
 PROJ_SUBDIRS="src/vscp/drivers/level1/can4vscp/linux\
- src/vscp/drivers/level2/wire1/linux\
  src/vscp/drivers/level1/logger/linux\
  src/vscp/drivers/level1/can232/linux\
  src/vscp/drivers/level1/xap/linux\
  src/vscp/drivers/level1/socketcan/linux\
  src/vscp/drivers/level2/logger/linux\
+ src/vscp/drivers/level2/wire1/linux\
  src/vscp/drivers/level2/lmsensors/linux\
  src/vscp/drivers/level2/socketcan/linux\
  src/vscp/drivers/level2/mqtt/linux\
  src/vscp/drivers/level2/tcpdrv/linux\
  src/vscp/drivers/level2/rawethernet/linux\
+ src/vscp/drivers/level2/sim/linux\
  src/vscp/linuxvscpl1\
  src/vscp/helperlib/linux\
  src/vscp/daemon/linux\
- src/vscp/vscp-mkpasswd src/vscp/uvscpd\
- src/vscp/vscpcmd src/vscp/drivers/level2/sim/linux"
+ src/vscp/vscp-mkpasswd\
+ src/vscp/uvscpd\
+ src/vscp/vscpcmd"
+
+AC_ARG_ENABLE(rpi,
+[  --enable-rpi         Build Raspberry Pi specific stuff (default disabled)],
+[vscp_rpi=yes],[vscp_rpi=no])
+
+test "${vscp_rpi}" == "yes"
+if test "${vscp_rpi}" = yes ; then
+    PROJ_SUBDIRS+="  src/vscp/drivers/level2/rpigpio/linux"
+fi
 
 AC_SUBST(PROJ_SUBDIRS)
 PROJ_SUBDIRS_GUI="src/vscp/vscpworks"
@@ -253,15 +265,19 @@ AC_CONFIG_FILES([Makefile
          src/vscp/drivers/level1/can4vscp/linux/Makefile
          src/vscp/drivers/level2/logger/linux/Makefile
          src/vscp/drivers/level2/lmsensors/linux/Makefile
-	 src/vscp/drivers/level2/mqtt/linux/Makefile
+	     src/vscp/drivers/level2/mqtt/linux/Makefile
          src/vscp/drivers/level2/socketcan/linux/Makefile
          src/vscp/drivers/level2/tcpdrv/linux/Makefile
          src/vscp/drivers/level2/rawethernet/linux/Makefile
          src/vscp/drivers/level2/wire1/linux/Makefile
-	 src/vscp/drivers/level2/sim/linux/Makefile
+	     src/vscp/drivers/level2/sim/linux/Makefile
          src/vscp/linuxvscpl1/Makefile
          src/vscp/helperlib/linux/Makefile
 ])
+
+if test "${vscp_rpi}" = yes ; then
+AC_CONFIG_FILES([src/vscp/drivers/level2/rpigpio/linux/Makefile])
+fi
 
 dnl Generate makefiles
 AC_OUTPUT
@@ -300,12 +316,19 @@ else
    echo "linking for wxWidgets : shared "
 fi
 
+if test "${vscp_rpi}" = yes ; then
+   echo   "Raspberry Pi build    : ${vscp_rpi}"
+else
+   echo   "Raspberry Pi build    : no"
+fi
+
 printf "
 You can tune the compiler flags in vscp-config.
 To build VSCP and friends, type \'make\' followed by \'make install\'
 
  use --enable-debug to build a debug version; release is default.
  use --enable-static to include a static version of wxWidgets.
+ use --enable-rpi to build Raspberry Pi drivers.
 
  \"make\" -- builds VSCP & Friends.
  \"make install\" -- builds VSCP & Friends and install system.

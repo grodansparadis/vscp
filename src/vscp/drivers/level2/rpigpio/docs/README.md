@@ -107,7 +107,7 @@ Periodic reads are also possible.
 
 ```xml
 <output pin="8"
-	pullup="off" />
+	pullup="off|up|down" />
 
 <!-- Sent event that set state-->
 <trigger pin="8" state="on"
@@ -202,7 +202,7 @@ bit31 - Enable
 	action-parameter is comma separated list with pins to turn off.
 
 #### SET
-    action-parameter is pinstate as binary
+    action-parameter is pin state as binary
 	bit-array (011110)
 
 #### PWM
@@ -212,11 +212,13 @@ bit31 - Enable
 	action parameter is frequency, duration
 
 #### Shift out
-    action-parameter is data byte to shift out
+    action-parameter is data byte(s) to shift out
 	
-#### Shift out from data
-    action-parameter is offset to data byte to shift out
+#### Shift out from event data
+    action-parameter is offset to data byte(s) to shift out  CLASS1.CONTROL, Type=25
 
+#### Shift in 
+	action-paramter: # bytes (1-7), data coding  CLASS1.DATA
 	
 
 
