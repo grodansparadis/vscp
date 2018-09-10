@@ -1,1 +1,0 @@
-This is a CANAL driver for the CAN4VSCP CAN Controller by Grodans Paradis AB

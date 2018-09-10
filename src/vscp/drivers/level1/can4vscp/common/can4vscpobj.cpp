@@ -88,7 +88,7 @@ static uint32_t getClockMilliSeconds()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// getClockMilliseconds
+// getClockMicroSeconds
 //
 //
 
@@ -136,7 +136,7 @@ CCan4VSCPObj::CCan4VSCPObj()
     
     memset( &msgResponseInfo, 0, sizeof( msgResponseInfo ) );
 
-    m_activity = getClockMicroSeconds();
+    m_activity = getClockMilliSeconds();
 
 #ifdef WIN32
     
@@ -2020,13 +2020,13 @@ void CCan4VSCPObj::readSerialData( void )
 
             // Check if NOOP frame
             if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_NOOP == ( m_bufferMsgRcv[ 0 ] ) ) {
-                m_activity = getClockMicroSeconds(); // activity
+                m_activity = getClockMilliSeconds(); // activity
                 sendACK( m_bufferMsgRcv[ VSCP_SERIAL_DRIVER_POS_FRAME_SEQUENCY ] );
             }
             // Check for CANAL message frame
             else if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_CANAL == ( m_bufferMsgRcv[ 0 ] ) ) {
             
-                m_activity = getClockMicroSeconds(); // activity
+                m_activity = getClockMilliSeconds(); // activity
 
                 // CANAL message
                 // -------------
@@ -2115,7 +2115,7 @@ void CCan4VSCPObj::readSerialData( void )
             // Check for CANAL message frame
             else if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_CANAL_TIMESTAMP == ( m_bufferMsgRcv[ 0 ] ) ) {
 
-                m_activity = getClockMicroSeconds(); // activity
+                m_activity = getClockMilliSeconds(); // activity
 
                 // CANAL message
                 // -------------
@@ -2212,43 +2212,43 @@ void CCan4VSCPObj::readSerialData( void )
             }
             // Check for VSCP event frame
             else if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_VSCP_EVENT == ( m_bufferMsgRcv[ 0 ] ) ) {
-                m_activity = getClockMicroSeconds(); // activity
+                m_activity = getClockMilliSeconds(); // activity
                 sendNACK( m_bufferMsgRcv[ VSCP_SERIAL_DRIVER_POS_FRAME_SEQUENCY ] );	// We don't handle VSCP events
             }
             // Check for VSCP event frame
             else if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_VSCP_EVENT_TIMESTAMP == ( m_bufferMsgRcv[ 0 ] ) ) {
-                m_activity = getClockMicroSeconds(); // activity
+                m_activity = getClockMilliSeconds(); // activity
                 sendNACK( m_bufferMsgRcv[ VSCP_SERIAL_DRIVER_POS_FRAME_SEQUENCY ] );	// We don't handle VSCP events
             }
             // Check for configure frame
             else if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_CONFIGURE == ( m_bufferMsgRcv[ 0 ] ) ) {
-                m_activity = getClockMicroSeconds(); // activity
+                m_activity = getClockMilliSeconds(); // activity
                 sendNACK( m_bufferMsgRcv[ VSCP_SERIAL_DRIVER_POS_FRAME_SEQUENCY ] );	// We don't handle configure
             }
             // Check for poll frame
             else if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_POLL == ( m_bufferMsgRcv[ 0 ] ) ) {
-                m_activity = getClockMicroSeconds(); // activity
+                m_activity = getClockMilliSeconds(); // activity
                 sendNACK( m_bufferMsgRcv[ VSCP_SERIAL_DRIVER_POS_FRAME_SEQUENCY ] );	// We don't handle poll
             }
             // Check for no event frame
             else if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_NO_EVENT == ( m_bufferMsgRcv[ 0 ] ) ) {
-                m_activity = getClockMicroSeconds(); // activity
+                m_activity = getClockMilliSeconds(); // activity
                 sendNACK( m_bufferMsgRcv[ VSCP_SERIAL_DRIVER_POS_FRAME_SEQUENCY ] );	// We don't handle no event
             }
             // Check for multiframe VSCP message frame
             else if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_MULTI_FRAME_VSCP == ( m_bufferMsgRcv[ 0 ] ) ) {
-                m_activity = getClockMicroSeconds(); // activity
+                m_activity = getClockMilliSeconds(); // activity
                 sendNACK( m_bufferMsgRcv[ VSCP_SERIAL_DRIVER_POS_FRAME_SEQUENCY ] );	// We don't handle vscp multi frame
             }
             // Check for multiframe VSCP message frame
             else if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_MULTI_FRAME_VSCP_TIMESTAMP == ( m_bufferMsgRcv[ 0 ] ) ) {
-                m_activity = getClockMicroSeconds(); // activity
+                m_activity = getClockMilliSeconds(); // activity
                 sendNACK( m_bufferMsgRcv[ VSCP_SERIAL_DRIVER_POS_FRAME_SEQUENCY ] );	// We don't handle vscp multi frame
             }
             // Check for multiframe CANAL message frame
             else if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_MULTI_FRAME_CANAL == ( m_bufferMsgRcv[ 0 ] ) ) {
 
-                m_activity = getClockMicroSeconds(); // activity
+                m_activity = getClockMilliSeconds(); // activity
 
                 // CANAL message
                 // -------------
@@ -2355,7 +2355,7 @@ void CCan4VSCPObj::readSerialData( void )
             // Check for multiframe CANAL message frame with timestamp
             else if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_MULTI_FRAME_CANAL_TIMESTAMP == ( m_bufferMsgRcv[ 0 ] ) ) {
 
-                m_activity = getClockMicroSeconds(); // activity
+                m_activity = getClockMilliSeconds(); // activity
 
                 // CANAL message
                 // -------------
@@ -2470,37 +2470,37 @@ void CCan4VSCPObj::readSerialData( void )
             }
             // Check for sent ACK frame
             else if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_SENT_ACK == ( m_bufferMsgRcv[ 0 ] ) ) {
-                m_activity = getClockMicroSeconds(); // activity
+                m_activity = getClockMilliSeconds(); // activity
                 addToResponseQueue();
             }
             // Check for sent NACK frame
             else if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_SENT_NACK == ( m_bufferMsgRcv[ 0 ] ) ) {
-                m_activity = getClockMicroSeconds(); // activity
+                m_activity = getClockMilliSeconds(); // activity
                 addToResponseQueue();
             }
             // Check for ACK frame
             else if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_ACK == ( m_bufferMsgRcv[ 0 ] ) ) {
-                m_activity = getClockMicroSeconds(); // activity
+                m_activity = getClockMilliSeconds(); // activity
                 addToResponseQueue();
             }
             // Check for NACK frame
             else if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_NACK == ( m_bufferMsgRcv[ 0 ] ) ) {
-                m_activity = getClockMicroSeconds(); // activity
+                m_activity = getClockMilliSeconds(); // activity
                 addToResponseQueue();
             }
             // Check for ERROR frame
             else if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_ERROR == ( m_bufferMsgRcv[ 0 ] ) ) {
-                m_activity = getClockMicroSeconds(); // activity
+                m_activity = getClockMilliSeconds(); // activity
                 addToResponseQueue();
             }
             // Check for command reply frame
             else if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_COMMAND_REPLY == ( m_bufferMsgRcv[ 0 ] ) ) {
-                m_activity = getClockMicroSeconds(); // activity
+                m_activity = getClockMilliSeconds(); // activity
                 addToResponseQueue();
             }
             // Check if command frame
             else if ( VSCP_SERIAL_DRIVER_FRAME_TYPE_COMMAND == ( m_bufferMsgRcv[ 0 ] ) ) {
-                m_activity = getClockMicroSeconds(); // activity
+                m_activity = getClockMilliSeconds(); // activity
                 addToResponseQueue();
             } 
 
@@ -2755,13 +2755,13 @@ void *workThreadTransmit( void *pObject )
 
         }
         else {
-            
+
             // Check for i/f inactivity
             if ( pobj->m_initFlag & CAN4VSCP_FLAG_ENABLE_REOPEN ) {
                 if ( getClockMicroSeconds() - pobj->m_activity > SOFT_OPEN_TIMOUT ) {
                     // We have an inactivity problem
                     pobj->softOpen();
-                    pobj->m_activity = getClockMicroSeconds(); // activity 
+                    pobj->m_activity = getClockMilliSeconds(); // activity 
                 }
             }
 
