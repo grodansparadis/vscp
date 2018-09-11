@@ -137,7 +137,9 @@ AC_ARG_ENABLE(rpi,
 
 test "${vscp_rpi}" == "yes"
 if test "${vscp_rpi}" = yes ; then
-    PROJ_SUBDIRS+="  src/vscp/drivers/level2/rpigpio/linux"
+    PROJ_SUBDIRS+="  src/vscp/drivers/level2/rpigpio/linux\
+    src/vscp/drivers/level2/rpilcd/linux\
+    src/vscp/drivers/level2/rpimax6675/linux"
     AC_CHECK_LIB([wiringPi], [wiringPiSetup])
 fi
 
@@ -277,7 +279,10 @@ AC_CONFIG_FILES([Makefile
 ])
 
 if test "${vscp_rpi}" = yes ; then
-AC_CONFIG_FILES([src/vscp/drivers/level2/rpigpio/linux/Makefile])
+AC_CONFIG_FILES([src/vscp/drivers/level2/rpigpio/linux/Makefile
+        src/vscp/drivers/level2/rpilcd/linux/Makefile 
+        src/vscp/drivers/level2/rpimax6675/linux/Makefile
+])
 fi
 
 dnl Generate makefiles

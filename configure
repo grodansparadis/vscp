@@ -6347,7 +6347,9 @@ fi
 
 test "${vscp_rpi}" == "yes"
 if test "${vscp_rpi}" = yes ; then
-    PROJ_SUBDIRS+="  src/vscp/drivers/level2/rpigpio/linux"
+    PROJ_SUBDIRS+="  src/vscp/drivers/level2/rpigpio/linux\
+    src/vscp/drivers/level2/rpilcd/linux\
+    src/vscp/drivers/level2/rpimax6675/linux"
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for wiringPiSetup in -lwiringPi" >&5
 $as_echo_n "checking for wiringPiSetup in -lwiringPi... " >&6; }
 if ${ac_cv_lib_wiringPi_wiringPiSetup+:} false; then :
@@ -6979,7 +6981,7 @@ ac_config_files="$ac_config_files Makefile m4/Makefile src/vscp/vscpcmd/Makefile
 
 
 if test "${vscp_rpi}" = yes ; then
-ac_config_files="$ac_config_files src/vscp/drivers/level2/rpigpio/linux/Makefile"
+ac_config_files="$ac_config_files src/vscp/drivers/level2/rpigpio/linux/Makefile src/vscp/drivers/level2/rpilcd/linux/Makefile src/vscp/drivers/level2/rpimax6675/linux/Makefile"
 
 fi
 
@@ -7698,6 +7700,8 @@ do
     "src/vscp/linuxvscpl1/Makefile") CONFIG_FILES="$CONFIG_FILES src/vscp/linuxvscpl1/Makefile" ;;
     "src/vscp/helperlib/linux/Makefile") CONFIG_FILES="$CONFIG_FILES src/vscp/helperlib/linux/Makefile" ;;
     "src/vscp/drivers/level2/rpigpio/linux/Makefile") CONFIG_FILES="$CONFIG_FILES src/vscp/drivers/level2/rpigpio/linux/Makefile" ;;
+    "src/vscp/drivers/level2/rpilcd/linux/Makefile") CONFIG_FILES="$CONFIG_FILES src/vscp/drivers/level2/rpilcd/linux/Makefile" ;;
+    "src/vscp/drivers/level2/rpimax6675/linux/Makefile") CONFIG_FILES="$CONFIG_FILES src/vscp/drivers/level2/rpimax6675/linux/Makefile" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac

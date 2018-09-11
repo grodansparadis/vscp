@@ -71,7 +71,6 @@ LIBDIRNAME = $(top_wxbuilddir)lib
 
 RAWETH_OBJECTS = vscpl2drv_raweth.o\
 	dlldrvobj.o\
-	mongoose.o\
 	vscpremotetcpif.o\
 	vscphelper.o\
 	guid.o\
@@ -120,9 +119,6 @@ crc8.o: ../../../../../common/crc8.c ../../../../../common/crc8.h
 
 vscpbase64.o: ../../../../../common/vscpbase64.c ../../../../../common/vscpbase64.h
 	$(CC) $(CFLAGS) -c ../../../../../common/vscpbase64.c -o $@
-
-mongoose.o: ../../../../../common/mongoose.c ../../../../../common/mongoose.h
-	$(CC) $(CFLAGS) $(MONGOOSE_CFLAGS) -c ../../../../../common/mongoose.c -o $@
 
 fastpbkdf2.o: ../../../../../common/fastpbkdf2.c ../../../../../common/fastpbkdf2.h
 	$(CC) $(CFLAGS) -c ../../../../../common/fastpbkdf2.c -o $@

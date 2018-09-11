@@ -38,8 +38,8 @@ MINOR_VERSION = `sed '36!d' ../../../../common/version.h  | cut -b 33-`
 RELEASE_VERSION = `sed '37!d' ../../../../common/version.h  | cut -b 33-`
 BUILD_VERSION = `sed '38!d' ../../../../common/version.h  | cut -b 33-
 
-CFLAGS = -std=c99  -DOPENSSL_API_1_1 -fPIC -I/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0 -I/usr/include/wx-3.0 -D_FILE_OFFSET_BITS=64 -DWXUSINGDLL -D__WXGTK__ -DwxUSE_GUI=0 -pthread -DCBC -I../../../../common -I../../../../../common
-CXXFLAGS = -std=c++11 -D__LINUX__ -fPIC -D_REENTRANT  -I/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0 -I/usr/include/wx-3.0 -D_FILE_OFFSET_BITS=64 -DWXUSINGDLL -D__WXGTK__ -DwxUSE_GUI=0 -pthread
+CFLAGS = -std=c99  -g -O0 -DOPENSSL_API_1_1 -fPIC -I/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0 -I/usr/include/wx-3.0 -D_FILE_OFFSET_BITS=64 -DWXUSINGDLL -D__WXGTK__ -DwxUSE_GUI=0 -pthread -DCBC -I../../../../common -I../../../../../common
+CXXFLAGS = -std=c++11 -D__LINUX__ -fPIC -D_REENTRANT  -g -O0 -I/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0 -I/usr/include/wx-3.0 -D_FILE_OFFSET_BITS=64 -DWXUSINGDLL -D__WXGTK__ -DwxUSE_GUI=0 -pthread
 CPPFLAGS = -D__LINUX__ -fPIC  -I/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0 -I/usr/include/wx-3.0 -D_FILE_OFFSET_BITS=64 -DWXUSINGDLL -D__WXGTK__ -DwxUSE_GUI=0 -fno-var-tracking-assignments -I. -I../common -I../../../../common -I../../../../../common
 
 LDFLAGS = 
@@ -80,7 +80,6 @@ VSCPRPIGPIO_OBJECTS = vscpl2drv-rpigpio.o\
 	crc8.o\
 	vscp_aes.o\
 	vscpmd5.o\
-	mongoose.o\
 	fastpbkdf2.o\
 	vscpbase64.o
 
@@ -98,7 +97,7 @@ vscpl2drv-rpigpio.so: $(VSCPRPIGPIO_OBJECTS)
 vscpl2drv-rpigpio.o: vscpl2drv-rpigpio.cpp vscpl2drv-rpigpio.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c vscpl2drv-rpigpio.cpp -o $@
 
-rpigpio.o:  rpigpio.cpp rpigpio.h
+rpigpio.o: rpigpio.cpp rpigpio.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c rpigpio.cpp -o $@
 
 vscphelperlib.o: ../../../../vscphelperlib.cpp ../../../../vscphelperlib.h
@@ -127,9 +126,6 @@ crc8.o: ../../../../../common/crc8.c ../../../../../common/crc8.h
 
 vscpbase64.o: ../../../../../common/vscpbase64.c ../../../../../common/vscpbase64.h
 	$(CC) $(CFLAGS) -c ../../../../../common/vscpbase64.c -o $@
-	
-mongoose.o: ../../../../../common/mongoose.c ../../../../../common/mongoose.h
-	$(CC) $(CFLAGS) $(MONGOOSE_CFLAGS) -c ../../../../../common/mongoose.c -o $@
 
 fastpbkdf2.o: ../../../../../common/fastpbkdf2.c ../../../../../common/fastpbkdf2.h
 	$(CC) $(CFLAGS) -c ../../../../../common/fastpbkdf2.c -o $@
