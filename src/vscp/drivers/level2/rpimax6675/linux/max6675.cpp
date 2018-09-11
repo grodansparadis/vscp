@@ -1,4 +1,4 @@
-// rpigpio.cpp
+// max6675.cpp: implementation of the CRpiMax6675 class.
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -65,17 +65,17 @@
 #include "../../../../common/vscpremotetcpif.h"
 #include "../../../../common/vscp_type.h"
 #include "../../../../common/vscp_class.h"
-#include "rpigpio.h"
+#include "max6675.h"
 
 // queues
 //WX_DEFINE_LIST(VSCPEVENTLIST_SEND);
 //WX_DEFINE_LIST(VSCPEVENTLIST_RECEIVE);
 
 //////////////////////////////////////////////////////////////////////
-// Csocketcan
+// CRpiMax6675
 //
 
-Csocketcan::Csocketcan()
+CRpiMax6675::CRpiMax6675()
 {
 	m_bQuit = false;
 	m_pthreadWorker = NULL;
@@ -85,10 +85,10 @@ Csocketcan::Csocketcan()
 }
 
 //////////////////////////////////////////////////////////////////////
-// ~Csocketcan
+// ~CRpiMax6675
 //
 
-Csocketcan::~Csocketcan()
+CRpiMax6675::~CRpiMax6675()
 {
 	close();
 	::wxUninitialize();
@@ -101,7 +101,7 @@ Csocketcan::~Csocketcan()
 //
 
 bool
-Csocketcan::open(const char *pUsername,
+CRpiMax6675::open(const char *pUsername,
 		const char *pPassword,
 		const char *pHost,
 		short port,
@@ -175,24 +175,24 @@ Csocketcan::open(const char *pUsername,
 	wxString str;
 	wxString strName = m_prefix +
 			wxString::FromAscii("_interface");
-	m_srv.getVariableString(strName, &m_interface);
+	m_srv.getRemoteVariableAsString(strName, &m_interface);
 
 	strName = m_prefix +
 			wxString::FromAscii("_filter");
-	if (m_srv.getVariableString(strName, &str)) {
+	if (m_srv.getRemoteVariableAsString(strName, &str)) {
 		vscp_readFilterFromString(&m_vscpfilter, str);
 	}
 
 	strName = m_prefix +
 			wxString::FromAscii("_mask");
-	if (m_srv.getVariableString(strName, &str)) {
+	if (m_srv.getRemoteVariableAsString(strName, &str)) {
 		vscp_readMaskFromString(&m_vscpfilter, str);
 	}
-*/	
+*/
 	m_srv.doClrInputQueue();
 
 	// start the workerthread
-	m_pthreadWorker = new CSocketCanWorkerTread();
+	m_pthreadWorker = new CRpiMax6675WorkerTread();
 	if (NULL != m_pthreadWorker) {
 		m_pthreadWorker->m_pObj = this;
 		m_pthreadWorker->Create();
@@ -214,7 +214,7 @@ Csocketcan::open(const char *pUsername,
 //
 
 void
-Csocketcan::close(void)
+CRpiMax6675::close(void)
 {
 	// Do nothing if already terminated
 	if (m_bQuit) return;
@@ -229,7 +229,7 @@ Csocketcan::close(void)
 //
 
 bool 
-Csocketcan::addEvent2SendQueue(const vscpEvent *pEvent)
+CRpiMax6675::addEvent2SendQueue(const vscpEvent *pEvent)
 {
     m_mutexSendQueue.Lock();
 	//m_sendQueue.Append((vscpEvent *)pEvent);
@@ -242,15 +242,15 @@ Csocketcan::addEvent2SendQueue(const vscpEvent *pEvent)
 
 
 //////////////////////////////////////////////////////////////////////
-//                Workerthread - CSocketCanWorkerTread
+//                Workerthread - CRpiMax6675WorkerTread
 //////////////////////////////////////////////////////////////////////
 
-CSocketCanWorkerTread::CSocketCanWorkerTread()
+CRpiMax6675WorkerTread::CRpiMax6675WorkerTread()
 {
 	m_pObj = NULL;
 }
 
-CSocketCanWorkerTread::~CSocketCanWorkerTread()
+CRpiMax6675WorkerTread::~CRpiMax6675WorkerTread()
 {
 	;
 }
@@ -261,7 +261,7 @@ CSocketCanWorkerTread::~CSocketCanWorkerTread()
 //
 
 void *
-CSocketCanWorkerTread::Entry()
+CRpiMax6675WorkerTread::Entry()
 {
 	int sock;
 	char devname[IFNAMSIZ + 1];
@@ -476,7 +476,7 @@ CSocketCanWorkerTread::Entry()
 //
 
 void
-CSocketCanWorkerTread::OnExit()
+CRpiMax6675WorkerTread::OnExit()
 {
 	;
 }

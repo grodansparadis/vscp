@@ -95,11 +95,11 @@ test:  test.o $(VSCPRPIGPIO_OBJECTS)
 vscpl2drv-rpigpio.so: $(VSCPRPIGPIO_OBJECTS)
 	$(CXX) -o $@ $(VSCPRPIGPIO_OBJECTS) $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS) 
 
-vscpl2drv-rpigpio.o: vscpl2drv-rpicpio.cpp vscpl2drv-rpigpio.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c vscpl2drv-sim.cpp -o $@
+vscpl2drv-rpigpio.o: vscpl2drv-rpigpio.cpp vscpl2drv-rpigpio.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c vscpl2drv-rpigpio.cpp -o $@
 
-rpigpio.o: ../common/rpigpio.cpp ../common/rpigpio.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../common/rpigpio.cpp -o $@
+rpigpio.o:  rpigpio.cpp rpigpio.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c rpigpio.cpp -o $@
 
 vscphelperlib.o: ../../../../vscphelperlib.cpp ../../../../vscphelperlib.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../../../vscphelperlib.cpp -o $@

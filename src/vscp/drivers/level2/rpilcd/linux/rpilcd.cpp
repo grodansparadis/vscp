@@ -1,4 +1,4 @@
-// rpigpio.cpp
+// socketcan.cpp: implementation of the CRpiLCD class.
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -65,17 +65,17 @@
 #include "../../../../common/vscpremotetcpif.h"
 #include "../../../../common/vscp_type.h"
 #include "../../../../common/vscp_class.h"
-#include "rpigpio.h"
+#include "rpilcd.h"
 
 // queues
 //WX_DEFINE_LIST(VSCPEVENTLIST_SEND);
 //WX_DEFINE_LIST(VSCPEVENTLIST_RECEIVE);
 
 //////////////////////////////////////////////////////////////////////
-// Csocketcan
+// CRpiLCD
 //
 
-Csocketcan::Csocketcan()
+CRpiLCD::CRpiLCD()
 {
 	m_bQuit = false;
 	m_pthreadWorker = NULL;
@@ -85,10 +85,10 @@ Csocketcan::Csocketcan()
 }
 
 //////////////////////////////////////////////////////////////////////
-// ~Csocketcan
+// ~CRpiLCD
 //
 
-Csocketcan::~Csocketcan()
+CRpiLCD::~CRpiLCD()
 {
 	close();
 	::wxUninitialize();
@@ -101,7 +101,7 @@ Csocketcan::~Csocketcan()
 //
 
 bool
-Csocketcan::open(const char *pUsername,
+CRpiLCD::open(const char *pUsername,
 		const char *pPassword,
 		const char *pHost,
 		short port,
@@ -192,7 +192,7 @@ Csocketcan::open(const char *pUsername,
 	m_srv.doClrInputQueue();
 
 	// start the workerthread
-	m_pthreadWorker = new CSocketCanWorkerTread();
+	m_pthreadWorker = new CRpiLCDWorkerTread();
 	if (NULL != m_pthreadWorker) {
 		m_pthreadWorker->m_pObj = this;
 		m_pthreadWorker->Create();
@@ -214,7 +214,7 @@ Csocketcan::open(const char *pUsername,
 //
 
 void
-Csocketcan::close(void)
+CRpiLCD::close(void)
 {
 	// Do nothing if already terminated
 	if (m_bQuit) return;
@@ -229,7 +229,7 @@ Csocketcan::close(void)
 //
 
 bool 
-Csocketcan::addEvent2SendQueue(const vscpEvent *pEvent)
+CRpiLCD::addEvent2SendQueue(const vscpEvent *pEvent)
 {
     m_mutexSendQueue.Lock();
 	//m_sendQueue.Append((vscpEvent *)pEvent);
@@ -242,15 +242,15 @@ Csocketcan::addEvent2SendQueue(const vscpEvent *pEvent)
 
 
 //////////////////////////////////////////////////////////////////////
-//                Workerthread - CSocketCanWorkerTread
+//                Workerthread - CRpiLCDWorkerTread
 //////////////////////////////////////////////////////////////////////
 
-CSocketCanWorkerTread::CSocketCanWorkerTread()
+CRpiLCDWorkerTread::CRpiLCDWorkerTread()
 {
 	m_pObj = NULL;
 }
 
-CSocketCanWorkerTread::~CSocketCanWorkerTread()
+CRpiLCDWorkerTread::~CRpiLCDWorkerTread()
 {
 	;
 }
@@ -261,7 +261,7 @@ CSocketCanWorkerTread::~CSocketCanWorkerTread()
 //
 
 void *
-CSocketCanWorkerTread::Entry()
+CRpiLCDWorkerTread::Entry()
 {
 	int sock;
 	char devname[IFNAMSIZ + 1];
@@ -476,7 +476,7 @@ CSocketCanWorkerTread::Entry()
 //
 
 void
-CSocketCanWorkerTread::OnExit()
+CRpiLCDWorkerTread::OnExit()
 {
 	;
 }

@@ -29,7 +29,7 @@ AC_PROG_LN_S
 AC_PROG_MAKE_SET
 AC_PROG_RANLIB
 
-# Checks for libraries.
+# Check for needed libraries.
 dnl AC_CHECK_LIB([curses], [initscr])
 AC_CHECK_LIB([dl], [dlsym])
 AC_CHECK_LIB([pthread], [pthread_create])
@@ -138,6 +138,7 @@ AC_ARG_ENABLE(rpi,
 test "${vscp_rpi}" == "yes"
 if test "${vscp_rpi}" = yes ; then
     PROJ_SUBDIRS+="  src/vscp/drivers/level2/rpigpio/linux"
+    AC_CHECK_LIB([wiringPi], [wiringPiSetup])
 fi
 
 AC_SUBST(PROJ_SUBDIRS)
@@ -328,7 +329,7 @@ To build VSCP and friends, type \'make\' followed by \'make install\'
 
  use --enable-debug to build a debug version; release is default.
  use --enable-static to include a static version of wxWidgets.
- use --enable-rpi to build Raspberry Pi drivers.
+ use --enable-rpi to build Raspberry Pi specific drivers.
 
  \"make\" -- builds VSCP & Friends.
  \"make install\" -- builds VSCP & Friends and install system.

@@ -1,4 +1,4 @@
-// vscp2drv_socketcan.cpp : Defines the initialization routines for the DLL.
+// vscpl2drv-rpigpio.cpp
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public License
@@ -45,8 +45,8 @@
 #include "stdio.h"
 #include "stdlib.h"
 
-#include "vscp2drv_socketcan.h"
-#include "socketcan.h"
+#include "vscpl2drv-rpigpio.h"
+#include "rpigpio.h"
 
 void _init() __attribute__((constructor));
 void _fini() __attribute__((destructor));

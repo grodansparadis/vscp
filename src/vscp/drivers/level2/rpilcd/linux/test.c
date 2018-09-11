@@ -29,18 +29,15 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/ioctl.h>
- 
-#include <linux/can.h>
-#include <linux/can/raw.h>
+
  
 int
 main(void)
 {
         int s;
         int nbytes;
-        struct sockaddr_can addr;
-        struct can_frame frame;
 
+ 
  
         return 0;
 }

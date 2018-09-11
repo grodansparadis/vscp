@@ -70,8 +70,8 @@ DLLPREFIX = lib
 WX_RELEASE = 3.0
 LIBDIRNAME = $(top_wxbuilddir)lib
 
-VSCPRPIGPIO_OBJECTS = vscpl2drv-rpigpio.o\
-	rpigpio.o\
+VSCPRPIMAX6675_OBJECTS = vscpl2drv-rpimax6675.o\
+	max6675.o\
 	vscpremotetcpif.o\
 	vscphelper.o\
 	sockettcp.o\
@@ -86,20 +86,20 @@ VSCPRPIGPIO_OBJECTS = vscpl2drv-rpigpio.o\
 
 ### Targets: ###
 
-all: vscpl2drv-rpigpio.so test
+all: vscpl2drv-rpimax6675.so test
 
-test:  test.o $(VSCPRPIGPIO_OBJECTS)
-	$(CXX) -o $@ test.o $(VSCPRPIGPIO_OBJECTS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
+test:  test.o $(VSCPRPIMAX6675_OBJECTS)
+	$(CXX) -o $@ test.o $(VSCPRPIMAX6675_OBJECTS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
 
 # Build the Linux DL
-vscpl2drv-rpigpio.so: $(VSCPRPIGPIO_OBJECTS)
-	$(CXX) -o $@ $(VSCPRPIGPIO_OBJECTS) $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS) 
+vscpl2drv-rpimax6675.so: $(VSCPRPIMAX6675_OBJECTS)
+	$(CXX) -o $@ $(VSCPRPIMAX6675_OBJECTS) $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS) 
 
-vscpl2drv-rpigpio.o: vscpl2drv-rpigpio.cpp vscpl2drv-rpigpio.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c vscpl2drv-rpigpio.cpp -o $@
+vscpl2drv-rpimax6675.o: vscpl2drv-rpimax6675.cpp vscpl2drv-rpimax6675.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c vscpl2drv-rpimax6675.cpp -o $@
 
-rpigpio.o: rpigpio.cpp rpigpio.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c rpigpio.cpp -o $@
+max6675.o: max6675.cpp  max6675.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c max6675.cpp -o $@
 
 vscphelperlib.o: ../../../../vscphelperlib.cpp ../../../../vscphelperlib.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../../../vscphelperlib.cpp -o $@

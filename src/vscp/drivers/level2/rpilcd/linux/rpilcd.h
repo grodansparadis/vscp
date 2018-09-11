@@ -1,4 +1,4 @@
-// rpigpio.h: interface for the gpio driver.
+// gpio.h: interface for the gpio driver.
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -72,19 +72,19 @@ using namespace std;
 //WX_DECLARE_LIST(vscpEvent, VSCPEVENTLIST_RECEIVE);
 
 // Forward declarations
-class CSocketCanWorkerTread;
+class CRpiLCDWorkerTread;
 class VscpRemoteTcpIf;
 class wxFile;
 
 
-class Csocketcan {
+class CRpiLCD {
 public:
 
     /// Constructor
-    Csocketcan();
+    CRpiLCD();
 
     /// Destructor
-    virtual ~Csocketcan();
+    virtual ~CRpiLCD();
 
     /*! 
         Open
@@ -137,7 +137,7 @@ public:
 	//cguid m_ifguid;
 
     /// Pointer to worker threads
-    CSocketCanWorkerTread *m_pthreadWorker;
+    CRpiLCDWorkerTread *m_pthreadWorker;
     
      /// VSCP server interface
     VscpRemoteTcpIf m_srv;
@@ -166,14 +166,14 @@ public:
 ///////////////////////////////////////////////////////////////////////////////
 
 
-class CSocketCanWorkerTread : public wxThread {
+class CRpiLCDWorkerTread : public wxThread {
 public:
 
     /// Constructor
-    CSocketCanWorkerTread();
+    CRpiLCDWorkerTread();
 
     /// Destructor
-    ~CSocketCanWorkerTread();
+    ~CRpiLCDWorkerTread();
 
     /*!
         Thread code entry point
@@ -190,7 +190,7 @@ public:
     VscpRemoteTcpIf m_srv;
 
     /// Sensor object
-    Csocketcan *m_pObj;
+    CRpiLCD *m_pObj;
 
 };
 
