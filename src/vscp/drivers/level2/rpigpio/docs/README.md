@@ -4,32 +4,18 @@ This is a Level II driver for the linux raspberry pi gpio interface
 
 ## Setup
 
-### _SETUP_PINMODEn=mode
+Variable x_setup is read on startup. This should be an xml variable. x part of variable name
+is specified on driver startup configuration.
 
+### Input
 
-```xml
-<setup pin="18" mode="input|output|pwm|clock" pullup="off|down|up" state="on/off>
-```
+Defines input pins and there functionality.
 
-state is initial state for output. Set after initialization
+Inputs can either be monitored in the DM or or by call backs. Events are sent as programmed. (CLASS1_INFORMATION, TYPE=3/4 ON/OFF)  Any CLASS1_INFORMATION event
 
-**json:** "pinmode18" : "input"
+Periodic reads are also possible.
 
-One for each pin. _SETUP_PINMODE18 is for pin 18
-
-Values can be 
-  
-  * INPUT
-  * OUTPUT
-  * PWM_OUTPUT
-  * GPIO_CLOCK. 
-  
-Note that only pin 1 (BCM_GPIO 18) supports PWM output and only pin 7 (BCM_GPIO 4) supports CLOCK output modes.
-
-
-### _SETUP_PULLUPn=pud
-
-**json:** "pullup1" : "up"
+#### pullup
 
 This sets the pull-up or pull-down resistor mode on the given pin, which should be set 
 as an input. The parameter should be;
@@ -38,147 +24,102 @@ as an input. The parameter should be;
 * DOWN (pull to ground) 
 * UP (pull to 3.3v) 
  
-The internal pull up/down resistors have a value of approximately 50KO 
+The internal pull up/down resistors have a value of approximately 50KOhm 
 on the Raspberry Pi.
-
-### _SETUP_INITIALn=state
-
-**json:** "init1" : "on"
-
-Initial state for output.
-
-* ON for a pin a high lever
-* OFF for a low pin.
-
-## Inputs
 
 ```xml
 <input pin="1"
 	pullup="off|up|down" >
 
-	<!-- irq -->
-	<monitor period="10" >
-		<high class="20"
+	<!-- 
+		Periodic monitoring of input pin
+		Send event on trigger (falling|rising|both|setup).
+		CLASS1.INFORMATION TYPE=3/4 ON/OFF
+	-->
+	<monitor edge="falling|rising|both|setup">
+
+		<event class="20"
 			type="3"
 			index="0"
 			zone="11"
-			subzone="22" />
-		<low class="20"
-			type="4"
-			index="0"
-			zone="11"
-			subzone="22" />	
+			subzone="22"
+			data="1,2,3,4,,," />
+
 	</monitor>
 
-	<!-- Report pin status every x seconds CLASS1.INFORMATION TYPE=3/4 ON/OFF-->
-	<report period="5"
-			input="1"
-			index="0"
-			zone="11"
-			zubzone="22"/>
+	<!-- 
+		Report pin status every "period" milliseconds
+		CLASS1.INFORMATION TYPE=3/4 ON/OFF
+	-->
+	<report period="1000" />
+
 		<high class="20"
 			type="3"
 			index="0"
 			zone="11"
-			subzone="22" />
+			subzone="22" 
+			data="1,2,3,4,,," />
+	
 		<low class="20"
 			type="4"
 			index="0"
 			zone="11"
-			subzone="22" />
+			subzone="22"
+			data="1,2,3,4,,," />
+
 	</report>	
 </input>
 ```
 
-<input>  	- input		<report> <monitor>
-<output>	- output	<status>
-<pwm>		- pwm
-<clock>		- GPIO CLOCK
-<tone>
-<softpwm>
-<shift>
+### Output
 
+Specify an output pin. Events that make things 
+happen on the pin is defined in the decsion matrix.
 
-Inputs can either be monitored in the DM or or by call backs. Events are sent as programmed. (CLASS1_INFORMATION, TYPE=3/4 ON/OFF)  Any CLASS1_INFORMATION event
+state is initial state of pin. set after initialization.
 
-Periodic reads are also possible.
-
-## Outputs
 
 ```xml
-<output pin="8"
-	pullup="off|up|down" />
-
-<!-- Sent event that set state-->
-<trigger pin="8" state="on"
-	class="20"
-	type="3"
-	index="0"
-	zone="11"
-	subzone="22" />
+<output pin="n"
+	state="on|off" >
+</output>		
 ```
 
-### Callbacks (interrupts)
+### Pwm
 
-**params:** pin, edgetype
+Outputs pwm signal on pin.
 
-#### Edgetypes
+Note that only pin 1 (BMC_GPIO 18, Phys 12) supports PWM output.
 
-* FALLING
-* RISING
-* BOTH
-* EDGE
 
-## Outputs
+<pwm pin="n" type="hard|soft" mode="balanced|markspace" range="1024" divisor="n" >
+</pwm>
 
-Decision matrix is used to tell what event should be used to set or rest outputs.
+### GPIO clock
 
-_OUTPUT_MATRIXn=flags;prio;class;type;action;action-param;d0;d1;...
+Only pin 7 (BCM_GPIO 4) supports CLOCK output.
 
-rows must be consecutive.
+<gpioclock pin="7" />
+
+## DM
+
+Decision matrix is used to tell what event should be used to set or clear outputs etc.
 
 class type index zone subzone  => action
 
-### flags
-
-bit00 - Compare D0
-bit01 - Compare D1
-bit02 - Compare D2
-bit03 - Compare D3 
-bit04 - Compare D4
-bit05 - Compare D5
-bit06 - Compare D6
-bit07 - Compare D7
-bit08 - 
-bit09 -
-bit10 - 
-bit11 -  
-bit12 - 
-bit13 -
-bit14 - 
-bit15 -  
-bit16 - 
-bit17 -
-bit18 - 
-bit19 -  
-bit20 - 
-bit21 -
-bit22 - 
-bit23 -  
-bit24 - 
-bit25 -
-bit26 - 
-bit27 -  
-bit28 - 
-bit29 -
-bit30 - 
-bit31 - Enable 
+* If enable == "false" row is not read in. Default is "true"
+* Compare data byte 0 of event with index if index is defined. Default is undefined.
+* Compare data byte 1 of event with zone if zone is defined. Default is undefined.
+* Compare data byte 2 of event with subzone if subzone is defined. Default is undefined.
 
 ## DM
 
 ```xml
 <dm>
-	<row class-mask="0xffff"
+	<row enable="true|false"
+		priority-mask="0xff"
+		priotity-filter="0" 
+		class-mask="0xffff"
 		class-filter="30" 
 		type-mask="0xffff"
 		type-filter="5"
@@ -188,7 +129,7 @@ bit31 - Enable
 		zone="11"
 		subzone="22"
 		action="on"
-		param="1,8,5"
+		action-param="1,8,5"
 	/>
 </dm>
 ```
@@ -196,29 +137,47 @@ bit31 - Enable
 ### Actions
 
 #### ON
-	action-parameter is comma separated list with pins to turn on.
+	action-parameter is comma separated list with pin to turn on. 
+	pins must be defined as an output.
 
 #### OFF
+	Clear output pin.
 	action-parameter is comma separated list with pins to turn off.
+	pins must be defined as an output.
 
 #### SET
-    action-parameter is pin state as binary
-	bit-array (011110)
+	set output pin.
+    action-parameter is pin state in binary for (01010101) first 8 GPIO pins
+	bit-array of eight bits (01010101) in binary
 
 #### PWM
-	action parameter is value
+	Generate hard/spoft pwm signal on output pin.
+	action parameter is pin, pwm range value
 
 #### Frequency (sound)
-	action parameter is frequency, duration
+	Generate a tone on an output pin
+	action parameter is pin, frequency, duration
 
-#### Shift out
-    action-parameter is data byte(s) to shift out
+#### Shiftout
+	Shiftout action parameter data on output pin.
+    action-parameter is, pin, data byte(s) to shift out
 	
-#### Shift out from event data
-    action-parameter is offset to data byte(s) to shift out  CLASS1.CONTROL, Type=25
+#### Shiftoutevent
+	Shift out event data on output pin.
+    action-parameter is: pin, offset to data byte(s) to shift out  CLASS1.CONTROL, Type=25
 
-#### Shift in 
-	action-paramter: # bytes (1-7), data coding  CLASS1.DATA
+#### Shiftin 
+	Shift in data on input pin.
+	action-paramter: pin, # bytes (1-7), data coding  CLASS1.DATA
+
+#### Status
+	Return status for output pin. Can be used for sync events etc.
+	action parameter: pin, event...
+
+
+
+
+
 	
 
 

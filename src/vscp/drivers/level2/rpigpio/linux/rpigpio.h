@@ -22,31 +22,17 @@
 //
 
 
-#if !defined(____GPIO__INCLUDED_)
-#define ____GPIO__INCLUDED_
-
-#ifdef WIN32
-#include <windows.h>
-#endif
+#if !defined(____RPIGPIO__INCLUDED_)
+#define ____RPIGPIO__INCLUDED_
 
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
 
-#ifdef WIN32
-
-#if _MSC_VER > 1000
-#pragma once
-#endif // _MSC_VER > 1000
-
-#else
-
 #define _POSIX
 #include <unistd.h>
 #include <pthread.h>
 #include <syslog.h>
-
-#endif
 
 #include <wx/file.h>
 #include <wx/wfstream.h>
@@ -63,28 +49,24 @@
 
 using namespace std;
 
-#define VSCP_LEVEL2_DLL_LOGGER_OBJ_MUTEX "___VSCP__DLL_L2GPIO_OBJ_MUTEX____"
+#define VSCP_LEVEL2_DLL_RPIGPIO_OBJ_MUTEX   "___VSCP__DLL_L2GPIO_OBJ_MUTEX____"
 
-#define VSCP_SOCKETCAN_LIST_MAX_MSG		2048
+#define VSCP_RPIGPIO_LIST_MAX_MSG		    2048
   
-// Input and output queue
-//WX_DECLARE_LIST(vscpEvent, VSCPEVENTLIST_SEND);
-//WX_DECLARE_LIST(vscpEvent, VSCPEVENTLIST_RECEIVE);
-
 // Forward declarations
-class CSocketCanWorkerTread;
+class RpiGpioWorkerTread;
 class VscpRemoteTcpIf;
 class wxFile;
 
 
-class Csocketcan {
+class CRpiGpio {
 public:
 
     /// Constructor
-    Csocketcan();
+    CRpiGpio();
 
     /// Destructor
-    virtual ~Csocketcan();
+    virtual ~CRpiGpio();
 
     /*! 
         Open
@@ -137,7 +119,7 @@ public:
 	//cguid m_ifguid;
 
     /// Pointer to worker threads
-    CSocketCanWorkerTread *m_pthreadWorker;
+    RpiGpioWorkerTread *m_pthreadWorker;
     
      /// VSCP server interface
     VscpRemoteTcpIf m_srv;
@@ -166,14 +148,14 @@ public:
 ///////////////////////////////////////////////////////////////////////////////
 
 
-class CSocketCanWorkerTread : public wxThread {
+class RpiGpioWorkerTread : public wxThread {
 public:
 
     /// Constructor
-    CSocketCanWorkerTread();
+    RpiGpioWorkerTread();
 
     /// Destructor
-    ~CSocketCanWorkerTread();
+    ~RpiGpioWorkerTread();
 
     /*!
         Thread code entry point
@@ -190,10 +172,10 @@ public:
     VscpRemoteTcpIf m_srv;
 
     /// Sensor object
-    Csocketcan *m_pObj;
+    CRpiGpio *m_pObj;
 
 };
 
 
 
-#endif // !defined(AFX_VSCPLOG_H__6F5CD90E_ACF7_459A_9ACB_849A57595639__INCLUDED_)
+#endif // !defined(____RPIGPIO__INCLUDED_)

@@ -74,8 +74,8 @@ CVSCPDrvApp::CVSCPDrvApp()
 	pthread_mutex_init(&m_objMutex, NULL);
 
 	// Init the driver array
-	for (int i = 0; i < VSCP_SOCKETCAN_DRIVER_MAX_OPEN; i++) {
-		m_psockcanArray[ i ] = NULL;
+	for (int i = 0; i < VSCP_RPIGPIO_DRIVER_MAX_OPEN; i++) {
+		m_prpigpioArray[ i ] = NULL;
 	}
 
 	UNLOCK_MUTEX(m_objMutex);
@@ -85,15 +85,15 @@ CVSCPDrvApp::~CVSCPDrvApp()
 {
 	LOCK_MUTEX(m_objMutex);
 
-	for (int i = 0; i < VSCP_SOCKETCAN_DRIVER_MAX_OPEN; i++) {
+	for (int i = 0; i < VSCP_RPIGPIO_DRIVER_MAX_OPEN; i++) {
 
-		if (NULL == m_psockcanArray[ i ]) {
+		if (NULL == m_prpigpioArray[ i ]) {
 
-			Csocketcan *psockcan = getDriverObject(i);
-			if (NULL != psockcan) {
-				psockcan->close();
-				delete m_psockcanArray[ i ];
-				m_psockcanArray[ i ] = NULL;
+			CRpiGpio *prpigpio = getDriverObject(i);
+			if (NULL != prpigpio) {
+				prpigpio->close();
+				delete m_prpigpioArray[ i ];
+				m_prpigpioArray[ i ] = NULL;
 			}
 		}
 	}
@@ -118,16 +118,16 @@ CVSCPDrvApp theApp;
 // addDriverObject
 //
 
-long CVSCPDrvApp::addDriverObject(Csocketcan *psockcan)
+long CVSCPDrvApp::addDriverObject(CRpiGpio *prpigpio)
 {
 	long h = 0;
 
 	LOCK_MUTEX(m_objMutex);
-	for (int i = 0; i < VSCP_SOCKETCAN_DRIVER_MAX_OPEN; i++) {
+	for (int i = 0; i < VSCP_RPIGPIO_DRIVER_MAX_OPEN; i++) {
 
-		if (NULL == m_psockcanArray[ i ]) {
+		if (NULL == m_prpigpioArray[ i ]) {
 
-			m_psockcanArray[ i ] = psockcan;
+			m_prpigpioArray[ i ] = prpigpio;
 			h = i + 1681;
 			break;
 
@@ -145,14 +145,14 @@ long CVSCPDrvApp::addDriverObject(Csocketcan *psockcan)
 // getDriverObject
 //
 
-Csocketcan *CVSCPDrvApp::getDriverObject(long h)
+CRpiGpio *CVSCPDrvApp::getDriverObject(long h)
 {
 	long idx = h - 1681;
 
 	// Check if valid handle
 	if (idx < 0) return NULL;
-	if (idx >= VSCP_SOCKETCAN_DRIVER_MAX_OPEN) return NULL;
-	return m_psockcanArray[ idx ];
+	if (idx >= VSCP_RPIGPIO_DRIVER_MAX_OPEN) return NULL;
+	return m_prpigpioArray[ idx ];
 }
 
 
@@ -166,11 +166,11 @@ void CVSCPDrvApp::removeDriverObject(long h)
 
 	// Check if valid handle
 	if (idx < 0) return;
-	if (idx >= VSCP_SOCKETCAN_DRIVER_MAX_OPEN) return;
+	if (idx >= VSCP_RPIGPIO_DRIVER_MAX_OPEN) return;
 
 	LOCK_MUTEX(m_objMutex);
-	if (NULL != m_psockcanArray[ idx ]) delete m_psockcanArray[ idx ];
-	m_psockcanArray[ idx ] = NULL;
+	if (NULL != m_prpigpioArray[ idx ]) delete m_prpigpioArray[ idx ];
+	m_prpigpioArray[ idx ] = NULL;
 	UNLOCK_MUTEX(m_objMutex);
 }
 
@@ -202,7 +202,7 @@ VSCPOpen(const char *pUsername,
 {
 	long h = 0;
 
-	Csocketcan *pdrvObj = new Csocketcan();
+	CRpiGpio *pdrvObj = new CRpiGpio();
 	if (NULL != pdrvObj) {
 
 		if (pdrvObj->open(pUsername,
@@ -234,7 +234,7 @@ VSCPClose(long handle)
 {
 	int rv = 0;
 
-	Csocketcan *pdrvObj = theApp.getDriverObject(handle);
+	CRpiGpio *pdrvObj = theApp.getDriverObject(handle);
 	if (NULL == pdrvObj) return CANAL_ERROR_MEMORY;
 	pdrvObj->close();
 	theApp.removeDriverObject(handle);
@@ -251,7 +251,7 @@ VSCPBlockingSend(long handle, const vscpEvent *pEvent, unsigned long timeout)
 {
 	int rv = 0;
 
-	Csocketcan *pdrvObj = theApp.getDriverObject(handle);
+	CRpiGpio *pdrvObj = theApp.getDriverObject(handle);
 	if (NULL == pdrvObj) return CANAL_ERROR_MEMORY;
     
     //vscpEvent *pEventNew = new vscpEvent;
@@ -278,7 +278,7 @@ VSCPBlockingReceive(long handle, vscpEvent *pEvent, unsigned long timeout)
     // Check pointer
     if ( NULL == pEvent) return CANAL_ERROR_PARAMETER;
     
-	Csocketcan *pdrvObj = theApp.getDriverObject(handle);
+	CRpiGpio *pdrvObj = theApp.getDriverObject(handle);
 	if (NULL == pdrvObj) return CANAL_ERROR_MEMORY;
     
     if ( wxSEMA_TIMEOUT == pdrvObj->m_semReceiveQueue.WaitTimeout( timeout ) ) {
@@ -342,7 +342,7 @@ VSCPGetVendorString(void)
 extern "C" const char *
 VSCPGetDriverInfo(void)
 {
-	return VSCP_SOCKETCAN_DRIVERINFO;
+	return VSCP_RPIGPIO_DRIVERINFO;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

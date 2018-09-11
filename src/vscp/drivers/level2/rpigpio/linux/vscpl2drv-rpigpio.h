@@ -58,7 +58,7 @@ typedef int BOOL;
 #define VSCP_DLL_VENDOR "Grodans Paradis AB, Sweden, http://www.grodansparadis.com"
 
 // Driver information.
-#define VSCP_SOCKETCAN_DRIVERINFO "<?xml version = \"1.0\" encoding = \"UTF-8\" ?>" \
+#define VSCP_RPIGPIO_DRIVERINFO "<?xml version = \"1.0\" encoding = \"UTF-8\" ?>" \
 "<!-- Version 0.0.1    2013-05-11   -->" \
 "<config level=\"1|2\"blocking\"true|false\" description=\"bla bla bla bla\">" \
 "   <item pos=\"0\" type=\"string\" description\"Serial number for Tellstick\"/>" \
@@ -66,7 +66,7 @@ typedef int BOOL;
 "</config>"
 
 // Max number of open connections
-#define VSCP_SOCKETCAN_DRIVER_MAX_OPEN	    256
+#define VSCP_RPIGPIO_DRIVER_MAX_OPEN	    256
 
 /////////////////////////////////////////////////////////////////////////////
 // CVSCPDrvApp
@@ -90,7 +90,7 @@ public:
 		@parm plog Object to add
 		@return handle or 0 for error
 	*/	
-	long addDriverObject( Csocketcan *psockcan );
+	long addDriverObject( CRpiGpio *prpigpio );
 
 	/*!
 		Get a driver object from its handle
@@ -99,7 +99,7 @@ public:
 		@return pointer to object or NULL if invalid
 				handle.
 	*/
-	Csocketcan *getDriverObject( long h );
+	CRpiGpio *getDriverObject( long h );
 
 	/*!
 		Remove a driver object
@@ -112,7 +112,7 @@ public:
 		The log file object
 		This is the array with driver objects (max 256 objects
 	*/
-	Csocketcan *m_psockcanArray[ VSCP_SOCKETCAN_DRIVER_MAX_OPEN ];
+	CRpiGpio *m_prpigpioArray[ VSCP_RPIGPIO_DRIVER_MAX_OPEN ];
 	
 	
 	/// Mutex for open/close

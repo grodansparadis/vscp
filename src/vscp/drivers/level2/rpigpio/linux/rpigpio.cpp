@@ -72,10 +72,10 @@
 //WX_DEFINE_LIST(VSCPEVENTLIST_RECEIVE);
 
 //////////////////////////////////////////////////////////////////////
-// Csocketcan
+// CRpiGpio
 //
 
-Csocketcan::Csocketcan()
+CRpiGpio::CRpiGpio()
 {
 	m_bQuit = false;
 	m_pthreadWorker = NULL;
@@ -85,10 +85,10 @@ Csocketcan::Csocketcan()
 }
 
 //////////////////////////////////////////////////////////////////////
-// ~Csocketcan
+// ~CRpiGpio
 //
 
-Csocketcan::~Csocketcan()
+CRpiGpio::~CRpiGpio()
 {
 	close();
 	::wxUninitialize();
@@ -101,7 +101,7 @@ Csocketcan::~Csocketcan()
 //
 
 bool
-Csocketcan::open(const char *pUsername,
+CRpiGpio::open(const char *pUsername,
 		const char *pPassword,
 		const char *pHost,
 		short port,
@@ -192,7 +192,7 @@ Csocketcan::open(const char *pUsername,
 	m_srv.doClrInputQueue();
 
 	// start the workerthread
-	m_pthreadWorker = new CSocketCanWorkerTread();
+	m_pthreadWorker = new RpiGpioWorkerTread();
 	if (NULL != m_pthreadWorker) {
 		m_pthreadWorker->m_pObj = this;
 		m_pthreadWorker->Create();
@@ -214,7 +214,7 @@ Csocketcan::open(const char *pUsername,
 //
 
 void
-Csocketcan::close(void)
+CRpiGpio::close(void)
 {
 	// Do nothing if already terminated
 	if (m_bQuit) return;
@@ -229,7 +229,7 @@ Csocketcan::close(void)
 //
 
 bool 
-Csocketcan::addEvent2SendQueue(const vscpEvent *pEvent)
+CRpiGpio::addEvent2SendQueue(const vscpEvent *pEvent)
 {
     m_mutexSendQueue.Lock();
 	//m_sendQueue.Append((vscpEvent *)pEvent);
@@ -242,15 +242,15 @@ Csocketcan::addEvent2SendQueue(const vscpEvent *pEvent)
 
 
 //////////////////////////////////////////////////////////////////////
-//                Workerthread - CSocketCanWorkerTread
+//                Workerthread - RpiGpioWorkerTread
 //////////////////////////////////////////////////////////////////////
 
-CSocketCanWorkerTread::CSocketCanWorkerTread()
+RpiGpioWorkerTread::RpiGpioWorkerTread()
 {
 	m_pObj = NULL;
 }
 
-CSocketCanWorkerTread::~CSocketCanWorkerTread()
+RpiGpioWorkerTread::~RpiGpioWorkerTread()
 {
 	;
 }
@@ -261,7 +261,7 @@ CSocketCanWorkerTread::~CSocketCanWorkerTread()
 //
 
 void *
-CSocketCanWorkerTread::Entry()
+RpiGpioWorkerTread::Entry()
 {
 	int sock;
 	char devname[IFNAMSIZ + 1];
@@ -476,7 +476,7 @@ CSocketCanWorkerTread::Entry()
 //
 
 void
-CSocketCanWorkerTread::OnExit()
+RpiGpioWorkerTread::OnExit()
 {
 	;
 }
