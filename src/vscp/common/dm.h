@@ -609,7 +609,20 @@ public:
                 that it is marked as executable.
         @returns true if all went well.
     */
-    bool doActionExecute( vscpEvent *pDMEvent, bool bCheckExecutable = true );
+    bool doActionExecute( vscpEvent *pDMEvent, 
+                            bool bCheckExecutable = true );
+
+    /*!
+        Execute action conditional
+        Executes the external action script if variable is true. 
+        The parameter is action dependent.
+        @param pDMEvent Event that triggered the action
+        @param bCheckExecutable Check if target is an existing file and
+                that it is marked as executable.
+        @returns true if all went well.
+    */
+    bool doActionExecuteConditional( vscpEvent *pDMEvent, 
+                                        bool bCheckExecutable = true );
 
     /*!
         Timed exeute the external action script.

@@ -7,11 +7,38 @@ This is a Level II driver for the linux raspberry pi gpio interface
 Variable x_setup is read on startup. This should be an xml variable. x part of variable name
 is specified on driver startup configuration.
 
+The xml data is packed in
+
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<setup>
+... pin defines and dm here
+</setup>
+
+### mask
+Standard VSCP mask in string form.
+```
+1,0x0000,0x0006,ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:00
+```	
+as *priority,class,type,GUID*
+Used to filter what events that is received from 
+the socketcan interface. If not give all events 
+are received. 
+
+### filter
+Standard VSCP filter in string form. 
+```
+1,0x0000,0x0006,ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:00
+```
+as *priority,class,type,GUID*
+Used to filter what events that is received from 
+the socketcan interface. If not give all events 
+are received.
+
 ### Input
 
 Defines input pins and there functionality.
 
-Inputs can either be monitored in the DM or or by call backs. Events are sent as programmed. (CLASS1_INFORMATION, TYPE=3/4 ON/OFF)  Any CLASS1_INFORMATION event
+Inputs can either be monitored in the DM or or by callbacks. Events are sent as programmed. (CLASS1_INFORMATION, TYPE=3/4 ON/OFF)  Any CLASS1_INFORMATION event
 
 Periodic reads are also possible.
 
@@ -29,45 +56,40 @@ on the Raspberry Pi.
 
 ```xml
 <input pin="1"
-	pullup="off|up|down" >
+	pullup="off|up|down"
 
 	<!-- 
 		Periodic monitoring of input pin
 		Send event on trigger (falling|rising|both|setup).
 		CLASS1.INFORMATION TYPE=3/4 ON/OFF
 	-->
-	<monitor edge="falling|rising|both|setup">
-
-		<event class="20"
-			type="3"
-			index="0"
-			zone="11"
-			subzone="22"
-			data="1,2,3,4,,," />
-
-	</monitor>
+	monitor_edge="falling|rising|both|setup"
+	monitor_event_class="20"
+	monitor_event_type="3"
+	monitor_event_index="0" 	<!-- Written to data byte 0 -->
+	monitor_event_zone="11"		<!-- Written to data byte 1 -->
+	monitor_event_subzone="22"	<!-- Written to data byte 3 -->
+	monitor_event_data="1,2,3,4,,," 
 
 	<!-- 
 		Report pin status every "period" milliseconds
 		CLASS1.INFORMATION TYPE=3/4 ON/OFF
 	-->
-	<report period="1000" />
-
-		<high class="20"
-			type="3"
-			index="0"
-			zone="11"
-			subzone="22" 
-			data="1,2,3,4,,," />
+	report_period="1000"
+	report_high_class="20"
+	report_high_type="3"
+	report_high_index="0"		<!-- Written to data byte 0 -->
+	report_high_zone="11"		<!-- Written to data byte 1 -->
+	report_high_subzone="22" 	<!-- Written to data byte 2 -->
+	report_high_data="1,2,3,4,,,"
 	
-		<low class="20"
-			type="4"
-			index="0"
-			zone="11"
-			subzone="22"
-			data="1,2,3,4,,," />
+	report_low_class="20"
+	report_low_type="4"
+	report_low_index="0"		<!-- Written to data byte 0 -->
+	report_low_zone="11"		<!-- Written to data byte 1 -->
+	report_low_subzone="22"		<!-- Written to data byte 2 -->
+	report_low_data="1,2,3,4,,,"
 
-	</report>	
 </input>
 ```
 
@@ -89,8 +111,11 @@ state is initial state of pin. set after initialization.
 
 Outputs pwm signal on pin.
 
+pwmFrequency in Hz = 19.2e6 Hz / pwmClock / pwmRange.
+
 Note that only pin 1 (BMC_GPIO 18, Phys 12) supports PWM output.
 
+mask & space is default mode
 
 <pwm pin="n" type="hard|soft" mode="balanced|markspace" range="1024" divisor="n" >
 </pwm>

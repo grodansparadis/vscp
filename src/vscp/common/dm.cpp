@@ -2622,6 +2622,25 @@ bool dmElement::doAction( vscpEvent *pEvent )
             doActionExecute( pEvent );
             break;
 
+        case  VSCP_DAEMON_ACTION_CODE_EXECUTE_CONDITIONAL:
+            if ( gpobj->m_debugFlags1 & VSCP_DEBUG1_DM ) {
+                logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_EXECUTE_CONDITIONAL.\n") ); // Log
+                gpobj->logMsg( _("[DM] ") + logStr + _("\n"), 
+                                DAEMON_LOGMSG_DEBUG, 
+                                DAEMON_LOGTYPE_DM );
+                gpobj->logMsg(  _("[DM] ") + _("DM = ") + getAsString( false ) + 
+                                _("\n"), 
+                                DAEMON_LOGMSG_DEBUG, 
+                                DAEMON_LOGTYPE_DM );
+                vscp_writeVscpEventToString( pEvent, logStr );
+                gpobj->logMsg( _("[DM] ") + _("Event = ") + logStr + _("\n"), 
+                                DAEMON_LOGMSG_DEBUG, 
+                                DAEMON_LOGTYPE_DM );
+            }
+
+            doActionExecuteConditional( pEvent );
+            break;    
+
         case  VSCP_DAEMON_ACTION_CODE_SEND_EVENT:
             if ( gpobj->m_debugFlags1 & VSCP_DEBUG1_DM ) {
                 logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_SEND_EVENT.\n") ); // Log
@@ -3399,6 +3418,166 @@ bool dmElement::doActionExecute(vscpEvent *pDMEvent, bool bCheckExecutable )
         else {
             m_strLastError = _("File does not exists or is not an executable :");
             gpobj->logMsg( _("[DM] ") + 
+                           _("File does not exists or is not an executable \n"), 
+                            DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM);
+        }
+        
+        m_strLastError += m_actionparam;
+        m_strLastError += _("\n");
+        gpobj->logMsg( _("[DM] ") + wxstr, 
+                            DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+        return false;
+    }
+
+    return true;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// doActionExecuteConditional
+//
+
+bool dmElement::doActionExecuteConditional( vscpEvent *pDMEvent, 
+                                            bool bCheckExecutable )
+{
+    // Write in possible escapes
+    wxString escaped_actionparam = m_actionparam;
+    handleEscapes( pDMEvent, escaped_actionparam );
+
+    // Handle variable
+    if ( tkz.HasMoreTokens() ) {
+
+        wxString varname = tkz.GetNextToken();
+
+        CVSCPVariable variable; 
+        if ( !gpobj->m_variables.find( varname, variable ) ) {
+            
+            // Variable was not found - create it
+            if ( !gpobj->m_variables.add( varname, 
+                                        _("false"), 
+                                        VSCP_DAEMON_VARIABLE_CODE_BOOLEAN ) ) {
+                wxString logStr = 
+                            wxString::Format(_("[Action] Conditional send event: Variable [%s] "
+                                        "not defined. Failed to create it.\n"),
+                                                (const char *)varName.mbc_str() );
+                gpobj->logMsg( _("[DM] ") + logStr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+                return false;
+            }
+            
+            // Get the variable
+            if ( !gpobj->m_variables.find( varName, variable ) ) {
+                
+                // Well should not happen - but in case...
+                wxString logStr = 
+                            wxString::Format(_("[Action] Conditional execute: Variable [%s] "
+                                               "was not found (but was created alright).\n"),
+                                                (const char *)varName.mbc_str() );
+                gpobj->logMsg( _("[DM] ") + logStr, 
+                                DAEMON_LOGMSG_NORMAL, 
+                                DAEMON_LOGTYPE_DM );
+                return false;
+                
+            }
+            
+        }
+        
+        if (  VSCP_DAEMON_VARIABLE_CODE_BOOLEAN != variable.getType() ) {
+            
+            // must be a variable
+            wxString wxstrErr = 
+                    _("[Action] Conditional execute: "
+                      "Condition variable must be boolean ");
+            wxstrErr += escaped_actionparam;
+            wxstrErr += _("\n");
+            gpobj->logMsg( _("[DM] ") + wxstrErr, 
+                            DAEMON_LOGMSG_NORMAL, 
+                            DAEMON_LOGTYPE_DM );
+            return false;
+            
+        }
+        
+        // Get the value
+        variable.getValue( &bTrigger );
+        
+        // if the variable is false we should do nothing
+        if ( !bTrigger ) return false;
+
+    }
+    else {
+        // must be a condition variable
+        wxString wxstrErr = 
+                _("[Action] Conditional execute: No variable defined ");
+        wxstrErr += escaped_actionparam;
+        wxstrErr += _("\n");
+        gpobj->logMsg( _("[DM] ") + wxstrErr, 
+                        DAEMON_LOGMSG_NORMAL, 
+                        DAEMON_LOGTYPE_DM );
+        return false;
+    }
+
+    wxString wxstr;
+
+    // Handle variable
+    if ( tkz.HasMoreTokens() ) {
+        wxstr = tkz.GetNextToken();
+    }
+    
+    // Check for bCheckExecutable flag
+    if ( wxstr[0] == '!' ) {
+        wxstr = wxstr.Right( wxstr.Length() - 1 );
+        bCheckExecutable = false;
+    }
+    
+    wxString strfn = wxstr;
+    bool bOK = true;
+    
+    if ( bCheckExecutable ) {
+        int pos = wxstr.First(' ');
+        if (wxNOT_FOUND != pos) {
+            strfn = wxstr.Left(pos);
+        }
+    }
+
+    // wxExecute breaks if the path does not exist so we have to
+    // check that it does.
+    if ( bCheckExecutable && 
+            ( !wxFileName::FileExists( strfn ) ||
+              !wxFileName::IsFileExecutable( strfn ) ) ) {
+        gpobj->logMsg( _("[DM] Conditional execute: Target does not exist or is not executable") + 
+                        _("\n"), 
+                        DAEMON_LOGMSG_DEBUG, 
+                        DAEMON_LOGTYPE_DM);
+        bOK = false;
+    }
+
+    //wxString cdir = wxGetCwd();
+    //bool rv = wxSetWorkingDirectory(_("c:\\programdata\\vscp\\actions"));
+#ifdef WIN32
+    if ( bOK && ( ::wxExecute(wxstr, wxEXEC_ASYNC | wxEXEC_HIDE_CONSOLE ) ) ) {
+#else
+    //if ( bOK && ( ::wxExecute(wxstr, wxEXEC_ASYNC  ) ) ) {
+    if ( unixVSCPExecute( wxstr ) ) {
+#endif
+        if ( gpobj->m_debugFlags1 & VSCP_DEBUG1_DM ) {
+            wxString wxstr = _("[Action] Conditional Executed: ");
+            wxstr += m_actionparam;
+            wxstr += _("\n");
+            gpobj->logMsg( _("[DM] ") + wxstr + _("\n"), 
+                            DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_DM);
+        }
+    }
+    else {
+        // Failed to execute
+        m_errorCounter++;
+        if ( bOK ) {
+            m_strLastError = _("[Action] Failed to conditional execute :");
+            gpobj->logMsg( _("[DM] ") + 
+                           _("[Action] Failed to execute \n"), 
+                            DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM);
+        } 
+        else {
+            m_strLastError = _("File does not exists or is not an executable :");
+            gpobj->logMsg( _("[DM] Conditional execute: ") + 
                            _("File does not exists or is not an executable \n"), 
                             DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM);
         }

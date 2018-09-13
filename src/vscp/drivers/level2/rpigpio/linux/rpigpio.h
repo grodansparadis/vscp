@@ -37,6 +37,8 @@
 #include <wx/file.h>
 #include <wx/wfstream.h>
 
+#include <wiringPi.h>
+
 #include "../../../../common/canal.h"
 #include "../../../../common/vscp.h"
 #include "../../../../common/canal_macro.h"
@@ -49,8 +51,8 @@
 
 using namespace std;
 
+#define VSCP_RPIGPIO_SYSLOG_DRIVER_ID       "VSCP rpigpio driver:"
 #define VSCP_LEVEL2_DLL_RPIGPIO_OBJ_MUTEX   "___VSCP__DLL_L2GPIO_OBJ_MUTEX____"
-
 #define VSCP_RPIGPIO_LIST_MAX_MSG		    2048
   
 // Forward declarations
@@ -58,8 +60,231 @@ class RpiGpioWorkerTread;
 class VscpRemoteTcpIf;
 class wxFile;
 
+// Actions
+#define RPIGPIO_ACTION_NOOP     0
+
+// ----------------------------------------------------------------------------
+
+// Define one GPIO input
+class CGpioInput{
+
+public:
+
+    /// Constructor
+    CGpioInput();
+
+    /// Destructor
+    virtual ~CGpioInput();
+
+    // Getters & Setters
+    bool setPin( uint8_t pin );
+    uint8_t getPin(void);
+
+    bool setPullUp( const wxString& strPullUp );
+    uint8_t getPullUp( void );
+
+    bool setMonitor( bool bEnable, 
+                        wxString& strEdge, 
+                        vscpEventEx& event );
+    bool isMonitorEnabled( void );
+    uint8_t getMonitorEdge( void );
+    vscpEventEx& getMonitorEvent( void );
+
+    bool setReport( bool bEnable, 
+                        long period, 
+                        vscpEventEx& eventLow,
+                        vscpEventEx& eventHigh );
+    bool isReportEnabled( void );
+    long getReportPeriod( void );
+    vscpEventEx& getReportEventLow( void );
+    vscpEventEx& getReportEventHigh( void );
+
+private:
+
+// The GPIO port
+uint8_t m_pin;
+
+// The pullup
+uint8_t m_pullup;
+
+// * * * Monitor input settings
+
+// True if monitoring is enabled
+bool m_bEnable_Monitor;
+
+// 0-3 default = INT_EDGE_SETUP
+uint8_t m_monitor_edge;
+
+// Event to send when triggered
+vscpEventEx m_monitorEvent;
+
+// ---
+
+// True if monitoring is enabled
+bool m_bEnable_Report;
+
+// Time in milliseconds between reports
+long m_report_period;
+
+// Event to send when triggered
+vscpEventEx m_reportEventHigh;
+
+// Event to send when triggered
+vscpEventEx m_reportEventLow;
+
+};
+
+// ----------------------------------------------------------------------------
+
+// Define one GPIO output
+class CGpioOutput{
+
+public:
+
+    /// Constructor
+    CGpioOutput();
+
+    /// Destructor
+    virtual ~CGpioOutput();
+
+    bool setPin( uint8_t pin );
+    uint8_t getPin( void );
+
+    void setInitialState( int state );
+    int getInitialState( void );
+
+private:
+
+// The GPIO port
+uint8_t m_pin;
+
+// Initial state (-1 (default) don't set)
+int m_state;
+
+};
+
+// ----------------------------------------------------------------------------
+
+// Define one PWM output (hardware or software)
+class CGpioPwm {
+
+public:
+
+    /// Constructor
+    CGpioPwm();
+
+    /// Destructor
+    virtual ~CGpioPwm();
+
+    bool setPin( uint8_t pin );
+    uint8_t getPin( void );
+
+    bool setType( uint8_t type );
+    uint8_t getType( void );
+
+    bool setMode( uint8_t mode );
+    uint8_t getMode( void );
+
+    bool setRange( uint16_t range );
+    uint16_t getRange( void );
+
+    bool setDivisor( uint16_t divisor );
+    uint16_t getDivisor( void );
+
+private:
+
+// The GPIO port
+uint8_t m_pin;
+
+// Type of PWM (hard (PWM_OUTPUT) or soft (SOFT_PWM_OUTPUT) )
+uint8_t m_type;
+
+// Mode balanced or mark & space (default)
+uint8_t m_mode;
+
+// PWM range
+uint16_t m_range;
+
+// PWM divisor
+uint16_t m_divisor;
+
+};
+
+// ----------------------------------------------------------------------------
+
+// Define one GPIO clock pin
+class CGpioClock {
+
+public:
+
+    /// Constructor
+    CGpioClock();
+
+    /// Destructor
+    virtual ~CGpioClock();
+
+    bool setPin( uint8_t pin );
+    uint8_t getPin( void );
+
+private:
+
+// The GPIO port
+uint8_t m_pin;
+
+};
+
+// ----------------------------------------------------------------------------
+
+// The local decision matrix for the driver
+class CLocalDM{
+
+public:
+
+    /// Constructor
+    CLocalDM() {
+            vscp_clearVSCPFilter(&m_vscpfilter);    // Accept all events
+            bCompareIndex = false;                  // Don't compare index
+            m_index = 0;
+            bCompareZone = false;                   // Don't compare zone
+            m_zone = 0;
+            bCompareSubZone = false;                // Don't compare subzone
+            m_subzone = 0;
+            m_action = RPIGPIO_ACTION_NOOP;
+            m_strActionParam.Empty();               // Looks good (if you feel sick by this)
+    };
+
+    /// Destructor
+    virtual ~CLocalDM();
+
+private:
+
+    // Filter
+    vscpEventFilter m_vscpfilter;
+
+    // Index compare
+    bool bCompareIndex;
+	uint8_t m_index;
+
+    // Zone compare
+    bool bCompareZone;
+	uint8_t m_zone;
+
+    // SubZone compare
+    bool bCompareSubZone;
+	uint8_t m_subzone;
+
+    // Action to execute on match
+	uint8_t m_action;
+
+    // Parameter for action
+	wxString m_strActionParam;
+
+};
+
+// ----------------------------------------------------------------------------
 
 class CRpiGpio {
+
 public:
 
     /// Constructor
@@ -109,25 +334,21 @@ public:
     /// Server supplied port
     short m_port;
     
-    /// socketcan interface to use
-    wxString m_interface;
+    /// XML configuration
+    wxString m_setupXml;
     
     /// Filter
     vscpEventFilter m_vscpfilter;
 	
 	/// Get GUID for this interface.
-	//cguid m_ifguid;
+	cguid m_ifguid;
 
     /// Pointer to worker threads
     RpiGpioWorkerTread *m_pthreadWorker;
     
      /// VSCP server interface
     VscpRemoteTcpIf m_srv;
-	
-	// Queue
-	//VSCPEVENTLIST_SEND m_sendQueue;			// Things we should send
-	//VSCPEVENTLIST_RECEIVE m_receiveQueue;		// Thing this driver receive
-	
+		
 	std::list<vscpEvent *> m_sendList;
 	std::list<vscpEvent *> m_receiveList;
 	
@@ -141,6 +362,13 @@ public:
 	wxMutex m_mutexSendQueue;		
 	wxMutex m_mutexReceiveQueue;
 
+    // Lists for pin definitions
+    std::list<CGpioInput *> m_inputPinList;
+    std::list<CGpioOutput *> m_outputPinList;
+    std::list<CGpioPwm *> m_pwmPinList;
+    std::list<CGpioClock *> m_gpioClockPinList; // Will hold max one entry
+
+    // Decision matrix
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -173,7 +401,7 @@ public:
 
     /// Sensor object
     CRpiGpio *m_pObj;
-
+    
 };
 
 

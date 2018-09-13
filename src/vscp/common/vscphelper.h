@@ -1129,7 +1129,7 @@ extern "C" {
     
 
     /*!
-      Copy a VSCP event to another
+      Copy one VSCP event to another
 
       @param pEventTo Pointer to event to copy to.
       @param pEventFrom Pointer to event to copy from.
@@ -1137,6 +1137,14 @@ extern "C" {
     */
     bool vscp_copyVSCPEvent(vscpEvent *pEventTo, const vscpEvent *pEventFrom);
     
+     /*!
+      Copy one VSCP event ex to another
+
+      @param pEventTo Pointer to event to copy to.
+      @param pEventFrom Pointer to event to copy from.
+      @return True on success.
+    */
+    bool vscp_copyVSCPEventEx( vscpEventEx *pEventTo, const vscpEventEx *pEventFrom );
 
     /*!
       Write VSCP data to string    DEPRECATED: USE: vscp_writeVscpDataWithSizeToString

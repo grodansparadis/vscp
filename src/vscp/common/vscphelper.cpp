@@ -2770,6 +2770,43 @@ bool vscp_copyVSCPEvent( vscpEvent *pEventTo, const vscpEvent *pEventFrom )
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
+// copyVSCPEventEx
+
+bool vscp_copyVSCPEventEx( vscpEventEx *pEventTo, const vscpEventEx *pEventFrom )
+{
+    // Check pointers
+    if ( NULL == pEventTo ) return false;
+    if ( NULL == pEventFrom ) return false;
+
+    if ( pEventFrom->sizeData > VSCP_LEVEL2_MAXDATA ) return false;
+
+    // Convert
+    pEventTo->crc = pEventFrom->crc;
+    pEventTo->obid = pEventFrom->obid;
+    pEventTo->year = pEventFrom->year;
+    pEventTo->month = pEventFrom->month;
+    pEventTo->day = pEventFrom->day;
+    pEventTo->hour = pEventFrom->hour;
+    pEventTo->minute = pEventFrom->minute;
+    pEventTo->second = pEventFrom->second;
+    pEventTo->timestamp = pEventFrom->timestamp;
+    pEventTo->head = pEventFrom->head;
+    pEventTo->obid = pEventFrom->obid;
+    pEventTo->vscp_class = pEventFrom->vscp_class;
+    pEventTo->vscp_type = pEventFrom->vscp_type;
+    pEventTo->sizeData = pEventFrom->sizeData;
+
+    memcpy( pEventTo->GUID, pEventFrom->GUID, 16);
+    memcpy( pEventTo->data, pEventFrom->data, pEventFrom->sizeData );
+
+    if ( pEventFrom->sizeData ) {
+        memcpy( pEventTo->data, pEventFrom->data, pEventFrom->sizeData );
+    } 
+
+    return true;    
+}
+
+////////////////////////////////////////////////////////////////////////////////////
 // vscp_newVSCPevent
 //
 

@@ -63,6 +63,11 @@
 #define VSCP_DAEMON_ACTION_CODE_EXECUTE                     0x00000010  // Execute external program
 
 
+// conditional execute - Execute an external program or script if specified variable is true. 
+// The action parameter consist of condition variable + program name + path plus optional parameters.
+// Format of parameter is: condition variable + path to external program + parameter e.g. "echo Hello World!"   
+#define VSCP_DAEMON_ACTION_CODE_EXECUTE_CONDITIONAL         0x00000011  // Execute external program conditional
+
 
 // procex - A predefined internal procedure is executed. The action parameter is
 // sent as a parameter to the internal procedure. 

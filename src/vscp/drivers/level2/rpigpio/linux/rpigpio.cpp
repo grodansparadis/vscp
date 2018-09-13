@@ -54,6 +54,7 @@
 #include "wx/wx.h"
 #include "wx/defs.h"
 #include "wx/app.h"
+#include <wx/sstream.h>
 #include <wx/xml/xml.h>
 #include <wx/listimpl.cpp>
 #include <wx/thread.h>
@@ -67,9 +68,465 @@
 #include "../../../../common/vscp_class.h"
 #include "rpigpio.h"
 
-// queues
-//WX_DEFINE_LIST(VSCPEVENTLIST_SEND);
-//WX_DEFINE_LIST(VSCPEVENTLIST_RECEIVE);
+// ----------------------------------------------------------------------------
+
+//////////////////////////////////////////////////////////////////////
+// CRpiCGpioInputGpio
+//
+
+CGpioInput::CGpioInput()
+{
+    m_pin = 0;
+    m_pullup = PUD_OFF;
+    // Monitor
+    m_bEnable_Monitor = false;
+    m_monitor_edge = INT_EDGE_SETUP;
+    m_monitorEvent.obid = 0;
+    m_monitorEvent.timestamp = 0;
+    m_monitorEvent.year = 0;
+    m_monitorEvent.month = 0;
+    m_monitorEvent.day = 0;
+    m_monitorEvent.hour = 0;
+    m_monitorEvent.minute = 0;
+    m_monitorEvent.second = 0;
+    m_monitorEvent.vscp_class = 0;
+    m_monitorEvent.vscp_type = 0;
+    m_monitorEvent.head = 0;
+    m_monitorEvent.sizeData = 0;
+    memset( m_monitorEvent.GUID, 0, 16 );
+    // Reports
+    m_bEnable_Report = false;
+    m_report_period = 1000; // one second
+                    
+    m_reportEventHigh.obid = 0;
+    m_reportEventHigh.timestamp = 0;
+    m_reportEventHigh.year = 0;
+    m_reportEventHigh.month = 0;
+    m_reportEventHigh.day = 0;
+    m_reportEventHigh.hour = 0;
+    m_reportEventHigh.minute = 0;
+    m_reportEventHigh.second = 0;
+    m_reportEventHigh.vscp_class = 0;
+    m_reportEventHigh.vscp_type = 0;
+    m_reportEventHigh.head = 0;
+    m_reportEventHigh.sizeData = 0;
+    memset( m_reportEventHigh.GUID, 0, 16 );
+
+    m_reportEventLow.obid = 0;
+    m_reportEventLow.timestamp = 0;
+    m_reportEventLow.year = 0;
+    m_reportEventLow.month = 0;
+    m_reportEventLow.day = 0;
+    m_reportEventLow.hour = 0;
+    m_reportEventLow.minute = 0;
+    m_reportEventLow.second = 0;
+    m_reportEventLow.vscp_class = 0;
+    m_reportEventLow.vscp_type = 0;
+    m_reportEventLow.head = 0;
+    m_reportEventLow.sizeData = 0;
+    memset( m_reportEventLow.GUID, 0, 16 );
+}
+
+//////////////////////////////////////////////////////////////////////
+// ~CGpioInput
+//
+
+CGpioInput::~CGpioInput()
+{
+    ;
+}
+
+//////////////////////////////////////////////////////////////////////
+// setPin
+//
+
+bool CGpioInput::setPin( uint8_t pin ) 
+{ 
+    if ( pin < 18 ) {
+        m_pin = pin; 
+        return true;
+    }
+
+    return false;
+}
+
+//////////////////////////////////////////////////////////////////////
+// getPin
+//
+
+uint8_t CGpioInput::getPin( void ) 
+{
+     return m_pin; 
+}
+
+//////////////////////////////////////////////////////////////////////
+// setPullUp
+//
+
+bool CGpioInput::setPullUp( const wxString& strPullUp ) 
+{ 
+    wxString str = strPullUp.Upper();
+    str = str.Trim(false);
+    str = str.Trim(true);
+    if ( wxNOT_FOUND != str.Find("UP") ) {
+        m_pullup = PUD_UP;
+    } 
+    else if  ( wxNOT_FOUND != str.Find("DOWN") ) {
+        m_pullup = PUD_DOWN;
+    }
+    else if  ( wxNOT_FOUND != str.Find("OFF") ) {
+        m_pullup = PUD_OFF;
+    }
+    else {
+        return false;
+    }
+
+    return true;
+};
+
+//////////////////////////////////////////////////////////////////////
+// getPullUp
+//
+
+uint8_t CGpioInput::getPullUp( void )
+{
+    return m_pullup;
+}
+
+//////////////////////////////////////////////////////////////////////
+// setMonitor
+//
+
+bool CGpioInput::setMonitor( bool bEnable, 
+                                wxString& strEdge, 
+                                vscpEventEx& event )
+{
+    wxString str = strEdge.Upper();
+    str = str.Trim(false);
+    str = str.Trim(true);
+
+    if ( wxNOT_FOUND != str.Find("FALLING") ) {
+        m_monitor_edge = INT_EDGE_FALLING;
+    } 
+    else if  ( wxNOT_FOUND != str.Find("RISING") ) {
+        m_monitor_edge = INT_EDGE_RISING;
+    }
+    else if  ( wxNOT_FOUND != str.Find("BOTH") ) {
+        m_monitor_edge = INT_EDGE_BOTH;
+    }
+    else if  ( wxNOT_FOUND != str.Find("SETUP") ) {
+        m_monitor_edge = INT_EDGE_SETUP;
+    }
+    else {
+        return false;
+    }
+
+    m_bEnable_Monitor = bEnable;
+    vscp_copyVSCPEventEx( &m_monitorEvent, &event );
+
+    return true;
+}
+
+//////////////////////////////////////////////////////////////////////
+// isMonitorEnabled
+//
+
+bool CGpioInput::isMonitorEnabled( void )
+{
+    return m_bEnable_Monitor;
+}
+
+//////////////////////////////////////////////////////////////////////
+// getMonitorEdge
+//
+
+uint8_t CGpioInput::getMonitorEdge( void )
+{
+    return m_monitor_edge;
+}
+
+//////////////////////////////////////////////////////////////////////
+// getMonitorEvent
+//
+
+vscpEventEx& CGpioInput::getMonitorEvent( void )
+{
+    return m_monitorEvent;
+}
+
+//////////////////////////////////////////////////////////////////////
+// setReport
+//
+
+bool CGpioInput::setReport( bool bEnable, 
+                            long period, 
+                            vscpEventEx& eventLow,
+                            vscpEventEx& eventHigh )
+{
+    m_bEnable_Report = bEnable;
+    m_report_period = period;
+    vscp_copyVSCPEventEx( &m_reportEventLow, &eventLow );
+    vscp_copyVSCPEventEx( &m_reportEventHigh, &eventHigh );
+
+    return true;                  
+}
+
+//////////////////////////////////////////////////////////////////////
+// isReportEnabled
+//
+
+bool CGpioInput::isReportEnabled( void )
+{
+    return m_bEnable_Report;
+}
+
+//////////////////////////////////////////////////////////////////////
+// getReportPeriod
+//
+
+long CGpioInput::getReportPeriod( void )
+{
+    return m_report_period;
+}
+
+//////////////////////////////////////////////////////////////////////
+// getReportEventLow
+//
+
+vscpEventEx& CGpioInput::getReportEventLow( void )
+{
+    return m_reportEventLow;
+}
+
+//////////////////////////////////////////////////////////////////////
+// getReportEventHigh
+//
+
+vscpEventEx& CGpioInput::getReportEventHigh( void )
+{
+    return m_reportEventHigh;
+}
+
+
+// ----------------------------------------------------------------------------
+
+
+//////////////////////////////////////////////////////////////////////
+// CGpioOutput
+//
+
+CGpioOutput::CGpioOutput() 
+{
+    m_pin = 0;
+    m_state = -1;
+}
+
+//////////////////////////////////////////////////////////////////////
+// ~CGpioOutput
+//
+
+CGpioOutput::~CGpioOutput() 
+{
+    ;
+}
+
+//////////////////////////////////////////////////////////////////////
+// setPin
+//
+
+bool CGpioOutput::setPin( uint8_t pin ) 
+{
+    return true;
+}
+
+//////////////////////////////////////////////////////////////////////
+// getPin
+//
+
+uint8_t CGpioOutput::getPin( void )
+{
+    return m_pin;
+}
+
+//////////////////////////////////////////////////////////////////////
+// setInitialState
+//
+
+void CGpioOutput::setInitialState( int state )
+{
+    m_state = state;
+}
+
+//////////////////////////////////////////////////////////////////////
+// getInitialState
+//
+
+int CGpioOutput::getInitialState( void )
+{
+    return m_state;
+}
+
+// ----------------------------------------------------------------------------
+
+//////////////////////////////////////////////////////////////////////
+// CGpioPwm
+//
+
+CGpioPwm::CGpioPwm() 
+{
+    m_pin = 18;
+    m_type = PWM_OUTPUT;
+    m_mode = PWM_MODE_MS;
+    m_range = 1024;
+    m_divisor = 0;
+}
+
+//////////////////////////////////////////////////////////////////////
+// ~CGpioPwm
+//
+
+CGpioPwm::~CGpioPwm() 
+{
+    ;
+}
+
+//////////////////////////////////////////////////////////////////////
+// setPin
+//
+
+bool CGpioPwm::setPin( uint8_t pin )
+{
+    m_pin = pin;
+    return true;
+}
+
+//////////////////////////////////////////////////////////////////////
+// setPin
+//
+
+uint8_t CGpioPwm::getPin( void )
+{
+    return m_pin;
+}
+
+//////////////////////////////////////////////////////////////////////
+// setType
+//
+
+bool CGpioPwm::setType( uint8_t type )
+{
+    m_type = type;
+    return true;
+}
+
+//////////////////////////////////////////////////////////////////////
+// getType
+//
+
+uint8_t CGpioPwm::getType( void )
+{
+    return m_type;
+}
+
+//////////////////////////////////////////////////////////////////////
+// setMode
+//
+
+bool CGpioPwm::setMode( uint8_t mode )
+{
+    m_mode = mode;
+    return true;
+}
+
+//////////////////////////////////////////////////////////////////////
+// getMode
+//
+
+uint8_t CGpioPwm::getMode( void )
+{
+    return m_mode;
+}
+
+//////////////////////////////////////////////////////////////////////
+// setRange
+//
+
+bool CGpioPwm::setRange( uint16_t range )
+{
+    m_range = range;
+    return true;
+}
+
+//////////////////////////////////////////////////////////////////////
+// getRange
+//
+
+uint16_t CGpioPwm::getRange( void )
+{
+    return m_range;
+}
+
+//////////////////////////////////////////////////////////////////////
+// setDivisor
+//
+
+bool CGpioPwm::setDivisor( uint16_t divisor )
+{
+    m_divisor = divisor;
+    return true;
+}
+
+//////////////////////////////////////////////////////////////////////
+// getDivisor
+//
+
+uint16_t CGpioPwm::getDivisor( void )
+{
+    return m_divisor;
+}
+
+
+// ----------------------------------------------------------------------------
+
+
+//////////////////////////////////////////////////////////////////////
+// CGpioClock
+//
+
+CGpioClock::CGpioClock() 
+{
+    m_pin = 7;
+}
+
+//////////////////////////////////////////////////////////////////////
+// ~CGpioClock
+//
+
+CGpioClock::~CGpioClock() 
+{
+    ;
+}
+
+//////////////////////////////////////////////////////////////////////
+// setPin
+//
+
+bool CGpioClock::setPin( uint8_t pin )
+{
+    m_pin = pin;
+}
+
+//////////////////////////////////////////////////////////////////////
+// getPin
+//
+
+uint8_t CGpioClock::getPin( void )
+{
+    return m_pin;
+}
+
+// ----------------------------------------------------------------------------
+
 
 //////////////////////////////////////////////////////////////////////
 // CRpiGpio
@@ -79,7 +536,7 @@ CRpiGpio::CRpiGpio()
 {
 	m_bQuit = false;
 	m_pthreadWorker = NULL;
-	m_interface = _("vcan0");
+	m_setupXml = _("<?xml version = \"1.0\" encoding = \"UTF-8\" ?><setup><!-- empty --></setup>");
 	vscp_clearVSCPFilter(&m_vscpfilter); // Accept all events
 	::wxInitialize();
 }
@@ -101,94 +558,166 @@ CRpiGpio::~CRpiGpio()
 //
 
 bool
-CRpiGpio::open(const char *pUsername,
-		const char *pPassword,
-		const char *pHost,
-		short port,
-		const char *pPrefix,
-		const char *pConfig)
+CRpiGpio::open( const char *pUsername,
+		        const char *pPassword,
+		        const char *pHost,
+		        short port,
+		        const char *pPrefix,
+		        const char *pConfig)
 {
 	bool rv = true;
-	wxString wxstr = wxString::FromAscii(pConfig);
+	wxString wxstr = wxString::FromAscii( pConfig );
 
-	m_username = wxString::FromAscii(pUsername);
-	m_password = wxString::FromAscii(pPassword);
-	m_host = wxString::FromAscii(pHost);
+	m_username = wxString::FromAscii( pUsername );
+	m_password = wxString::FromAscii( pPassword );
+	m_host = wxString::FromAscii( pHost );
 	m_port = port;
-	m_prefix = wxString::FromAscii(pPrefix);
+	m_prefix = wxString::FromAscii( pPrefix );
 
 	// Parse the configuration string. It should
 	// have the following form
 	// path
-	// 
+	
 	wxStringTokenizer tkz(wxString::FromAscii(pConfig), _(";\n"));
 
 	// Check for socketcan interface in configuration string
-	if (tkz.HasMoreTokens()) {
+	if ( tkz.HasMoreTokens() ) {
 		// Interface
-		m_interface = tkz.GetNextToken();
+		m_setupXml = tkz.GetNextToken();
 	}
 
 
 	// First log on to the host and get configuration 
 	// variables
 
-	if ( VSCP_ERROR_SUCCESS != m_srv.doCmdOpen(m_host,
+	if ( VSCP_ERROR_SUCCESS != m_srv.doCmdOpen( m_host,
 												m_username,
 												m_password ) ) {
 		syslog(LOG_ERR,
-				"%s",
-				(const char *) "Unable to connect to VSCP TCP/IP interface. Terminating!");
-		return false;
+				"%s %s",
+                (const char *)VSCP_RPIGPIO_SYSLOG_DRIVER_ID,
+				(const char *)"Unable to connect to VSCP TCP/IP interface. Terminating!");
+		
+        return false;
 	}
 
 	// Find the channel id
 	uint32_t ChannelID;
-	m_srv.doCmdGetChannelID(&ChannelID);
+	m_srv.doCmdGetChannelID( &ChannelID );
     
-	//m_srv.doCmdGetGUID( m_ifguid );
+    // Get GUID for channel
+	m_srv.doCmdGetGUID( m_ifguid );
 
-	// The server should hold configuration data for each sensor
-	// we want to monitor.
-	// 
-	// We look for 
-	//
-	//	 _interface - The socketcan interface to use. Typically this 
-	//	 is “can0, can0, can1...
-	//
-	//   _filter - Standard VSCP filter in string form. 
-	//				   1,0x0000,0x0006,
-	//				   ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:00
-	//				as priority,class,type,GUID
-	//				Used to filter what events that is received from 
-	//				the socketcan interface. If not give all events 
-	//				are received.
-	//	 _mask - Standard VSCP mask in string form.
-	//				   1,0x0000,0x0006,
-	//				   ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:00
-	//				as priority,class,type,GUID
-	//				Used to filter what events that is received from 
-	//				the socketcan interface. If not give all events 
-	//				are received. 
-	//
-/*
-	wxString str;
+	// The server should hold XML configuration data for each
+	// driver (se documentation).
+
+    wxString str;
 	wxString strName = m_prefix +
-			wxString::FromAscii("_interface");
-	m_srv.getVariableString(strName, &m_interface);
+			wxString::FromAscii("_setup");
+	if ( VSCP_ERROR_SUCCESS != m_srv.getRemoteVariableAsString( strName, m_setupXml ) ) {
+        // OK if not available we use default
+    }
 
-	strName = m_prefix +
-			wxString::FromAscii("_filter");
-	if (m_srv.getVariableString(strName, &str)) {
-		vscp_readFilterFromString(&m_vscpfilter, str);
-	}
+    wxStringInputStream xmlstream( m_setupXml );
+    wxXmlDocument doc;
 
-	strName = m_prefix +
-			wxString::FromAscii("_mask");
-	if (m_srv.getVariableString(strName, &str)) {
-		vscp_readMaskFromString(&m_vscpfilter, str);
-	}
-*/	
+    if ( !doc.Load( xmlstream ) ) {
+        syslog(LOG_ERR,
+				"%s %s",
+                (const char *)VSCP_RPIGPIO_SYSLOG_DRIVER_ID,
+				(const char *) "Unable to parse XML config. Terminating!");
+        
+        // Close the channel
+	    m_srv.doCmdClose();
+        
+        return false;
+    }
+
+    wxString attribute;
+    wxXmlNode *child = doc.GetRoot()->GetChildren();
+    while ( child ) {
+    
+        if ( child->GetName() == "setup" ) {
+            
+            wxXmlNode *subchild = child->GetChildren();
+            while ( subchild ) {
+
+                if ( subchild->GetName() == "mask" ) {
+                    
+                    wxString mask = subchild->GetNodeContent();
+                    if ( !vscp_readMaskFromString( &m_vscpfilter, mask ) ) {
+                        syslog(LOG_ERR,
+				                "%s %s",
+                                (const char *)VSCP_RPIGPIO_SYSLOG_DRIVER_ID,
+				                (const char *) "Unable to read event receive mask to driver filter.");
+                    }
+
+                }
+                else if ( subchild->GetName() == "filter" ) {
+
+                    wxString filter = subchild->GetNodeContent();
+                    if ( vscp_readFilterFromString( &m_vscpfilter, filter ) ) {
+                        syslog(LOG_ERR,
+				                "%s %s",
+                                (const char *)VSCP_RPIGPIO_SYSLOG_DRIVER_ID,
+				                (const char *) "Unable to read event receive filter to driver filter.");
+                    }
+
+                }
+                // Define input pin
+                else if ( subchild->GetName() == "input" ) {
+
+                    CGpioInput *pInputObj = new CGpioInput;
+                    if ( NULL != pInputObj ) {
+
+                        // Get pin
+                        attribute =
+                            subchild->GetAttribute("pin", "0");
+                        uint8_t pin = vscp_readStringValue( attribute );
+                        pInputObj->setPin( pin );
+
+                        // Get pullup
+                        attribute =
+                            subchild->GetAttribute("pullup", "off");
+                        pInputObj->setPullUp( attribute );    
+
+                        //monitor_edge
+                    }
+                }
+                // Define output pin
+                else if ( subchild->GetName() == "output" ) {
+                
+                }
+                // Define PWM pin
+                else if ( subchild->GetName() == "pwm" ) {
+                
+                }
+                // Define gpioclock
+                else if ( subchild->GetName() == "gpioclock" ) {
+                
+                }
+                // Define Decision Matrix
+                else if ( subchild->GetName() == "dm" ) {
+                
+                }
+
+                subchild = child->GetNext();
+            }
+
+            // Process attributes of tag1.
+            wxString attrvalue1 =
+                child->GetAttribute("attr1", "default-value");
+            wxString attrvalue2 =
+                child->GetAttribute("attr2", "default-value");
+            
+        }
+        else if (child->GetName() == "tag2") {
+            // Process tag2 ...
+        }
+
+        child = child->GetNext();
+    }
+	
 	m_srv.doClrInputQueue();
 
 	// start the workerthread
@@ -279,7 +808,7 @@ RpiGpioWorkerTread::Entry()
 	// Check pointers
 	if (NULL == m_pObj) return NULL;
 
-	strncpy(devname, m_pObj->m_interface.ToAscii(), sizeof(devname) - 1);
+	//strncpy(devname, m_pObj->m_interface.ToAscii(), sizeof(devname) - 1);
 #if DEBUG	
 	syslog(LOG_ERR, "CWriteSocketCanTread: Interface: %s\n", ifname);
 #endif	
