@@ -12,13 +12,13 @@ filename_sms = str(uuid.uuid4())
 OUTDIR="/var/spool/sms/outgoing"
 
 # Voicel recipients (comma separated list, empty for non)
-VOICE_RECEIVERS="46730533146,46767644795"
+VOICE_RECEIVERS="4673232323232323,4612332323232"
 
 # Set to true for flash SMS
 bflash = False
 
 # SMS recipients (comma eparated list, empty for non )
-#SMS_RECEIVERS="46730533146,46767644795"
+#SMS_RECEIVERS="46732232323232,46762323232323"
 SMS_RECEIVERS=""
 
 SMS_TEXT="An alarm condition has occured!"
