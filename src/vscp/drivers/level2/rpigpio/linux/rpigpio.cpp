@@ -198,6 +198,24 @@ uint8_t CGpioInput::getPullUp( void )
 //
 
 bool CGpioInput::setMonitor( bool bEnable, 
+                                uint8_t edge, 
+                                vscpEventEx& event )
+{
+    if ( edge > INT_EDGE_BOTH ) {
+        return false;
+    }
+
+    m_bEnable_Monitor = bEnable;
+    m_monitor_edge = edge;
+    vscp_copyVSCPEventEx( &m_monitorEvent, &event );
+
+    return true;
+}
+//////////////////////////////////////////////////////////////////////
+// setMonitor
+//
+
+bool CGpioInput::setMonitor( bool bEnable, 
                                 wxString& strEdge, 
                                 vscpEventEx& event )
 {
@@ -420,6 +438,27 @@ bool CGpioPwm::setType( uint8_t type )
 }
 
 //////////////////////////////////////////////////////////////////////
+// setType
+//
+
+bool CGpioPwm::setType( const wxString& strtype )
+{
+    wxString str = strtype.Upper();
+
+    if ( wxNOT_FOUND != str.Find("HARD") ) {
+        m_type = VSCP_MODE_PWM_HARD;
+    }
+    else if ( wxNOT_FOUND != str.Find("SOFT") ) {
+        m_type = VSCP_MODE_PWM_SOFT;
+    }
+    else {
+        return false;
+    }
+
+    return true;
+}
+
+//////////////////////////////////////////////////////////////////////
 // getType
 //
 
@@ -435,6 +474,27 @@ uint8_t CGpioPwm::getType( void )
 bool CGpioPwm::setMode( uint8_t mode )
 {
     m_mode = mode;
+    return true;
+}
+
+//////////////////////////////////////////////////////////////////////
+// setMode
+//
+
+bool CGpioPwm::setMode( const wxString& strmode )
+{
+    wxString str = strmode.Upper();
+
+    if ( wxNOT_FOUND != str.Find("BALANCED") ) {
+        m_type = PWM_MODE_BAL;
+    }
+    else if ( wxNOT_FOUND != str.Find("MARKSPACE") ) {
+        m_type = PWM_MODE_MS;
+    }
+    else {
+        return false;
+    }
+
     return true;
 }
 
@@ -642,7 +702,66 @@ bool CLocalDM::isSubZoneCheckEnabled( void )
     return m_bCompareSubZone;
 }
 
+//////////////////////////////////////////////////////////////////////
+// setFilter
+//
+
+bool CLocalDM::setFilter( vscpEventFilter& filter )
+{
+    vscp_copyVSCPFilter( &m_vscpfilter, &filter );
+    return true;
+}
+
+//////////////////////////////////////////////////////////////////////
+// getFilter
+//
+
+vscpEventFilter& CLocalDM::getFilter( void )
+{
+    return m_vscpfilter;
+}
+
+//////////////////////////////////////////////////////////////////////
+// setAction
+//
+
+bool CLocalDM::setAction( uint8_t action )
+{
+    m_action = action;
+    return true;
+}
+
+//////////////////////////////////////////////////////////////////////
+// getAction
+//
+
+uint8_t CLocalDM::getAction( void )
+{
+    return m_action;
+}
+
+//////////////////////////////////////////////////////////////////////
+// setActionParameter
+//
+
+bool CLocalDM::setActionParameter( wxString& param )
+{
+    m_strActionParam = param;
+    return true;
+}
+
+//////////////////////////////////////////////////////////////////////
+// getActionParameter
+//
+
+wxString& CLocalDM::getActionParameter( void )
+{
+    return m_strActionParam;
+}
+
+
 // ----------------------------------------------------------------------------
+
 
 //////////////////////////////////////////////////////////////////////
 // CRpiGpio
@@ -843,17 +962,96 @@ CRpiGpio::open( const char *pUsername,
                                 syslog(LOG_ERR,
 				                        "%s %s %d",
                                         (const char *)VSCP_RPIGPIO_SYSLOG_DRIVER_ID,
-				                        (const char *) "Unable toadd input monitor.",
+				                        (const char *) "Unable to add input monitor.",
                                         (int)pin );
                             }                            
                         }
 
                         // Report
 
+                        attribute =
+                            subchild->GetAttribute("report_period", "");
+
+                        if ( attribute.Length() ) {
+
+                            long period = vscp_readStringValue( attribute );
+
+                            // event high
+                            vscpEventEx eventHigh;
+
+                            attribute =
+                            subchild->GetAttribute("report_event_high_class", "0");
+                            eventHigh.vscp_class = vscp_readStringValue( attribute );
+
+                            attribute =
+                            subchild->GetAttribute("report_event_high_type", "0");
+                            eventHigh.vscp_type = vscp_readStringValue( attribute );
+
+                            eventHigh.sizeData = 0;
+                            attribute =
+                            subchild->GetAttribute("report_event_high_data", "0,0,0");
+                            vscp_setVscpEventExDataFromString( &eventHigh, attribute );
+
+                            attribute =
+                            subchild->GetAttribute("report_event_high_index", "0");
+                            eventHigh.data[0] = vscp_readStringValue( attribute );
+                            if ( 0 == eventHigh.sizeData ) eventHigh.sizeData = 1;
+
+                            attribute =
+                            subchild->GetAttribute("report_event_high_zone", "0");
+                            eventHigh.data[1] = vscp_readStringValue( attribute );
+                            if ( eventHigh.sizeData < 2 ) eventHigh.sizeData = 2;
+
+                            attribute =
+                            subchild->GetAttribute("report_event_high_subzone", "0");
+                            eventHigh.data[2] = vscp_readStringValue( attribute );
+                            if ( eventHigh.sizeData < 3 ) eventHigh.sizeData = 3;
+
+                            // event low
+                            vscpEventEx eventLow;
+
+                            attribute =
+                            subchild->GetAttribute("report_event_low_class", "0");
+                            eventLow.vscp_class = vscp_readStringValue( attribute );
+
+                            attribute =
+                            subchild->GetAttribute("report_event_low_type", "0");
+                            eventLow.vscp_type = vscp_readStringValue( attribute );
+
+                            eventLow.sizeData = 0;
+                            attribute =
+                            subchild->GetAttribute("report_event_low_data", "0,0,0");
+                            vscp_setVscpEventExDataFromString( &eventLow, attribute );
+
+                            attribute =
+                            subchild->GetAttribute("report_event_low_index", "0");
+                            eventLow.data[0] = vscp_readStringValue( attribute );
+                            if ( 0 == eventLow.sizeData ) eventLow.sizeData = 1;
+
+                            attribute =
+                            subchild->GetAttribute("report_event_low_zone", "0");
+                            eventLow.data[1] = vscp_readStringValue( attribute );
+                            if ( eventLow.sizeData < 2 ) eventLow.sizeData = 2;
+
+                            attribute =
+                            subchild->GetAttribute("report_event_low_subzone", "0");
+                            eventLow.data[2] = vscp_readStringValue( attribute );
+                            if ( eventLow.sizeData < 3 ) eventLow.sizeData = 3;
+
+                            if ( !pInputObj->setReport( true,
+                                        period,
+                                        eventHigh,
+                                        eventLow ) ) {
+                                syslog(LOG_ERR,
+				                        "%s %s %d",
+                                        (const char *)VSCP_RPIGPIO_SYSLOG_DRIVER_ID,
+				                        (const char *) "Unable to add input report.",
+                                        (int)pin );
+                            }
+                        }                           
 
                         // Add input to list
                         m_inputPinList.push_back( pInputObj );
-
                         
                     }
 
@@ -861,18 +1059,161 @@ CRpiGpio::open( const char *pUsername,
                 // Define output pin
                 else if ( subchild->GetName() == "output" ) {
                 
+                    CGpioOutput *pOutputObj = new CGpioOutput;
+                    if ( NULL != pOutputObj ) {
+
+                        // Get pin
+                        attribute =
+                            subchild->GetAttribute("pin", "0");
+                        uint8_t pin = vscp_readStringValue( attribute );
+                        pOutputObj->setPin( pin );
+
+                        // Get initial state
+                        attribute =
+                            subchild->GetAttribute("pin", "off");
+                        attribute.MakeUpper();
+                        if ( wxNOT_FOUND != attribute.Find("ON") ) {
+                            pOutputObj->setInitialState( 1 );
+                        }
+                        else {
+                            pOutputObj->setInitialState( 0 );
+                        }
+
+                        // Add input to list
+                        m_outputPinList.push_back( pOutputObj );
+
+                    }
+
                 }
                 // Define PWM pin
                 else if ( subchild->GetName() == "pwm" ) {
                 
+                    CGpioPwm *pPwmObj = new CGpioPwm;
+                    if ( NULL != pPwmObj ) {
+
+                        // Get pin
+                        attribute =
+                            subchild->GetAttribute("pin", "18");
+                        uint8_t pin = vscp_readStringValue( attribute );
+                        pPwmObj->setPin( pin );
+
+                        // Get mode
+                        attribute =
+                            subchild->GetAttribute("mode", "MARKSPACE");
+                        pPwmObj->setMode( attribute );
+
+                        // Get rate
+                        attribute =
+                            subchild->GetAttribute("range", "0");
+                        uint16_t range = vscp_readStringValue( attribute );    
+                        pPwmObj->setRange( range );
+
+                        // Get divisor
+                        attribute =
+                            subchild->GetAttribute("range", "0");
+                        uint16_t divisor = vscp_readStringValue( attribute );    
+                        pPwmObj->setDivisor( divisor );
+
+                        // Add owm pwmoutput to list
+                        m_pwmPinList.push_back( pPwmObj );
+
+                    }
+
                 }
                 // Define gpioclock
                 else if ( subchild->GetName() == "gpioclock" ) {
                 
+                    CGpioClock *pGpioClockObj = new CGpioClock;
+                    if ( NULL != pGpioClockObj ) {
+
+                        // Get pin
+                        attribute =
+                            subchild->GetAttribute("pin", "7");
+                        uint8_t pin = vscp_readStringValue( attribute );
+                        pGpioClockObj->setPin( pin );
+
+                        // Add gpio clock output to list
+                        m_gpioClockPinList.push_back( pGpioClockObj );
+
+                    }
+
                 }
                 // Define Decision Matrix
                 else if ( subchild->GetName() == "dm" ) {
                 
+                    CLocalDM *pLocalDMObj = new CLocalDM;
+                    if ( NULL != pLocalDMObj ) {
+
+                        // Get filter
+                        vscpEventFilter filter;
+
+                        attribute =
+                            subchild->GetAttribute("priority-mask", "0");
+                        filter.filter_priority = vscp_readStringValue( attribute );   
+
+                        attribute =
+                            subchild->GetAttribute("priority-filter", "0");
+                        filter.mask_priority = vscp_readStringValue( attribute );  
+
+                        attribute =
+                            subchild->GetAttribute("class-mask", "0");
+                        filter.mask_class = vscp_readStringValue( attribute );
+
+                        attribute =
+                            subchild->GetAttribute("class-filter", "0");
+                        filter.filter_class = vscp_readStringValue( attribute );
+
+                        attribute =
+                            subchild->GetAttribute("type-mask", "0");
+                        filter.mask_type = vscp_readStringValue( attribute );
+
+                        attribute =
+                            subchild->GetAttribute("type-filter", "0"); 
+                        filter.filter_type = vscp_readStringValue( attribute );   
+
+                        attribute =
+                            subchild->GetAttribute("guid-mask", "0");
+                        vscp_getGuidFromStringToArray( filter.mask_GUID, attribute );  
+
+                        attribute =
+                            subchild->GetAttribute("guid-filter", "0");
+                        vscp_getGuidFromStringToArray( filter.filter_GUID, attribute );     
+
+                        pLocalDMObj->setFilter( filter );
+
+                        // Get Index
+                        attribute =
+                            subchild->GetAttribute("index", "0");
+                        uint8_t index = vscp_readStringValue( attribute ); 
+                        pLocalDMObj->setIndex( index );   
+
+                        // Get Zone
+                        attribute =
+                            subchild->GetAttribute("zone", "0");  
+                        uint8_t zone = vscp_readStringValue( attribute );     
+                        pLocalDMObj->setZone( zone );                             
+
+                        // Get SubZone
+                        attribute =
+                            subchild->GetAttribute("subzone", "0"); 
+                        uint8_t subzone = vscp_readStringValue( attribute );    
+                        pLocalDMObj->setSubZone( subzone );
+
+                        // Get Action
+                        attribute =
+                            subchild->GetAttribute("action", "0");                               
+                        uint8_t action = vscp_readStringValue( attribute ); 
+                        pLocalDMObj->setAction( action );   
+
+                        // Get action parameter
+                        attribute =
+                            subchild->GetAttribute("action-parameter", "");    
+                        pLocalDMObj->
+                        setActionParameter( attribute );    
+
+                        m_LocalDMList.push_back( pLocalDMObj ); 
+                    }
+                    
                 }
 
                 subchild = child->GetNext();

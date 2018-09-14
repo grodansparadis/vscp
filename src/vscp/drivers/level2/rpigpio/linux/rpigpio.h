@@ -55,6 +55,9 @@ using namespace std;
 #define VSCP_LEVEL2_DLL_RPIGPIO_OBJ_MUTEX   "___VSCP__DLL_L2GPIO_OBJ_MUTEX____"
 #define VSCP_RPIGPIO_LIST_MAX_MSG		    2048
   
+#define VSCP_MODE_PWM_SOFT   0
+#define VSCP_MODE_PWM_HARD   1  // PWM in hardware
+
 // Forward declarations
 class RpiGpioWorkerTread;
 class VscpRemoteTcpIf;
@@ -83,6 +86,9 @@ public:
     bool setPullUp( const wxString& strPullUp );
     uint8_t getPullUp( void );
 
+    bool setMonitor( bool bEnable, 
+                        uint8_t edge, 
+                        vscpEventEx& event );
     bool setMonitor( bool bEnable, 
                         wxString& strEdge, 
                         vscpEventEx& event );
@@ -180,9 +186,11 @@ public:
     uint8_t getPin( void );
 
     bool setType( uint8_t type );
+    bool setType( const wxString& strtype );
     uint8_t getType( void );
 
     bool setMode( uint8_t mode );
+    bool setMode( const wxString& strmode );
     uint8_t getMode( void );
 
     bool setRange( uint16_t range );
@@ -380,6 +388,7 @@ public:
     std::list<CGpioClock *> m_gpioClockPinList; // Will hold max one entry
 
     // Decision matrix
+    std::list<CLocalDM *> m_LocalDMList; // Will hold max one entry
 };
 
 ///////////////////////////////////////////////////////////////////////////////

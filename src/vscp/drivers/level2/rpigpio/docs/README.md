@@ -76,19 +76,20 @@ on the Raspberry Pi.
 		CLASS1.INFORMATION TYPE=3/4 ON/OFF
 	-->
 	report_period="1000"
-	report_high_class="20"
-	report_high_type="3"
-	report_high_index="0"		<!-- Written to data byte 0 -->
-	report_high_zone="11"		<!-- Written to data byte 1 -->
-	report_high_subzone="22" 	<!-- Written to data byte 2 -->
-	report_high_data="1,2,3,4,,,"
+
+	report_event_high_class="20"
+	report_event_high_type="3"
+	report_event_high_index="0"		<!-- Written to data byte 0 -->
+	report_event_high_zone="11"		<!-- Written to data byte 1 -->
+	report_event_high_subzone="22" 	<!-- Written to data byte 2 -->
+	report_event_high_data="1,2,3,4,,,"
 	
-	report_low_class="20"
-	report_low_type="4"
-	report_low_index="0"		<!-- Written to data byte 0 -->
-	report_low_zone="11"		<!-- Written to data byte 1 -->
-	report_low_subzone="22"		<!-- Written to data byte 2 -->
-	report_low_data="1,2,3,4,,,"
+	report_event_low_class="20"
+	report_event_low_type="4"
+	report_event_low_index="0"		<!-- Written to data byte 0 -->
+	report_event_low_zone="11"		<!-- Written to data byte 1 -->
+	report_event_low_subzone="22"		<!-- Written to data byte 2 -->
+	report_event_low_data="1,2,3,4,,,"
 
 </input>
 ```
@@ -96,14 +97,14 @@ on the Raspberry Pi.
 ### Output
 
 Specify an output pin. Events that make things 
-happen on the pin is defined in the decsion matrix.
+happen on the pin is defined in the decision matrix.
 
 state is initial state of pin. set after initialization.
 
 
 ```xml
 <output pin="n"
-	state="on|off" >
+	initialstate="on|off" >
 </output>		
 ```
 

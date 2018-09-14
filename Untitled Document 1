@@ -1,0 +1,361 @@
+<!-- wp:image {"id":3690} -->
+<figure class="wp-block-image"><img src="http://grodansparadis.com/wordpress/wp-content/uploads/2018/09/IMG_20180907_015349988.jpg" alt="" class="wp-image-3690"/></figure>
+<!-- /wp:image -->
+
+<!-- wp:heading -->
+<h2>The problem</h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>Just last week a house burned down to the ground here in my hometown. The family of two adults and three kids just made it out. This reminded me of the importance of alarms. My family as any family I guess have had some incidents over the year. In our case with a four floor building, cellar, office, apartment where we live and the attic it can be hard to, despite alarm equipment, to recognize what is happening in the cellar when your are in the apartment watching a film or even worse, sleeping. We have had our incident over the years as most people do.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>I use VSCP here of course. This system is intelligent enough to close down functionality&nbsp; when things get bad. But a few weeks ago I had a bad incident. I have a VSCP node that control the water boiler in the cellar for warm water. This is a very simple setup. A relay, a sensor and a control node. I can thus remotely control sense and control the temperature of the hot water in the house.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>Sitting in the office I noticed a strange sound. I usually play music loud so it had been going on for some time I guess. I went around the house investigating the sound and when I came down to the cellar I heard that the boiler literally boiled hard. Not a good thing. There is a risk for a steam explosion from this so I got really worried.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>I turned of the power. Opened valves for hot water in the office and got steam and boiling water coming out. I checked the control unit and it had turned of the relay. Still the temperature was way over the limit. There is an independent security unit inside the boiler that should turn off power when it get over a certain temperature. Apparently this mechanism had not done it's job. Also the security valve that prevent to hot water from going out in the system also malfunctioned otherwise I should not have got steam hot water out of the office valve. Two faults. The pressure security mechanism on the other side worked. But the boiler never got up to the 10 bar needed to release it. So things were actually not to bad. Bit could gone worse if I had been away for example.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>I later checked the cause and detected that the relays had gone stuck in the on position.&nbsp; Something that happen to relays some times when load is heavy or control is a bit jumpy.&nbsp; I also tested the overheat protection and it worked as it should, probably it would have just needed a bit more time to cut the power. The blender protecting the water line from to hot water was the only faulty component. Still this was a bit scary. I need to be alarmed if this happen again.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:heading -->
+<h2>GSM Modem</h2>
+<!-- /wp:heading -->
+
+<!-- wp:image {"id":3692} -->
+<figure class="wp-block-image"><img src="http://grodansparadis.com/wordpress/wp-content/uploads/2018/09/IMG_20180913_101018853.png" alt="" class="wp-image-3692"/></figure>
+<!-- /wp:image -->
+
+<!-- wp:paragraph -->
+<p>I previously sold professional GPRS modems in the FrogShop from <a href="http://www.caimore.net/">Caimore</a>. Still have some around so I decided to put one to work. You can find may similar on Aliexpress or <a href="https://www.ebay.com/itm/GSM-Modem-Wavecom-Q2303A-Module-COM-RS232-Serial-Port-AT-Commands-SMS-Voice-Call/272225402538?hash=item3f61e5feaa:g:eCgAAMXQUmFSe2mo">ebay.</a> and even <a href="https://www.ebay.com/itm/SIM800L-GPRS-GSM-Module-SIM-Board-Quadband-L-shape-Antenna-For-MCU-Arduino/263617797848?hash=item3d60d85ed8:m:mazp_SyChZP5klsDZkaUcaw">lower cost modules</a> intended for Arduino or similar as the one below. They all have there pros and cons.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:image {"id":3691} -->
+<figure class="wp-block-image"><img src="http://grodansparadis.com/wordpress/wp-content/uploads/2018/09/IMG_20180913_101333825_HDR.png" alt="" class="wp-image-3691"/></figure>
+<!-- /wp:image -->
+
+<!-- wp:heading -->
+<h2>SIM Card</h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>Next thing is to find a SIM card. In Sweden this is not a simple thing if you just want a module that sends a few SMS's per year. The solutions available are highly overpriced. I know there are other and better options available in other countries. I just select a cash card to get started.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:heading -->
+<h2>Software</h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>Initially I thought about writing a driver for the VSCP daemon and this may still be an option, we will see. I have for a long time used <a href="http://smstools3.kekekasvi.com">Smstools</a> a wonderful package for uses like this. With the help of the decision matrix of the VSCP daemon it will be possible to do plenty without a driver. So this is the solution I go for.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>There is a nice getting started <a href="https://www.20papercups.net/programming/sending-receiving-sms-on-linux/">tutorial for smstools here</a>. Thus no need for me to write one again.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>The only thing i ned to do to get things working is to set the <strong>device</strong> and the <strong>baudrate</strong> lines in <strong>/etc/smsd.conf</strong> file</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:quote -->
+<blockquote class="wp-block-quote">device = /dev/ttyUSB0</blockquote>
+<!-- /wp:quote -->
+
+<!-- wp:paragraph -->
+<p>as I use an USB adapter for serial communication.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>And</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:quote -->
+<blockquote class="wp-block-quote">baudrate = 115200</blockquote>
+<!-- /wp:quote -->
+
+<!-- wp:paragraph -->
+<p>as i use that higher speed.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>Then I just restart the smsd daemon with</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:quote -->
+<blockquote class="wp-block-quote">sudo service smsd restart</blockquote>
+<!-- /wp:quote -->
+
+<!-- wp:paragraph -->
+<p>and everything is working.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:heading -->
+<h2>Sending SMS's</h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>We are just interested in sending SMS's here so we stick to that. But receiving SMS's (we look at that in a later post) is also equally simple.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>To send a SMS one just copy a formated file into the folder /var/spool/smsd/outgoing. So to send an SMS to +467012345678 one send a file</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:preformatted -->
+<pre class="wp-block-preformatted">To: 467012345678</pre>
+<!-- /wp:preformatted -->
+
+<!-- wp:preformatted -->
+<pre class="wp-block-preformatted">ALARM: The water in the boiler is way to hot!</pre>
+<!-- /wp:preformatted -->
+
+<!-- wp:paragraph -->
+<p>Write this to a file and copy it to <strong>/var/spool/smsd/outgoing</strong> and the SMS will be delivered to the set recipient.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>You can set the header to</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:preformatted -->
+<pre class="wp-block-preformatted">To: 467012345678
+Flash: yes
+
+ALARM: The water in the boiler is way to hot!</pre>
+<!-- /wp:preformatted -->
+
+<!-- wp:paragraph -->
+<p>to send a flash SMS (is displayed on the users screen directly but not saved). It can hardly be simpler.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:heading {"level":4} -->
+<h4>Voicecall</h4>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>Another possibility is to make a call to a receiver instead. Add <strong>Voicecall</strong> to the header like this</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:preformatted -->
+<pre class="wp-block-preformatted">To: 46730533146
+Voicecall: yes</pre>
+<!-- /wp:preformatted -->
+
+<!-- wp:preformatted -->
+<pre class="wp-block-preformatted">TONE: 5 #,#,#</pre>
+<!-- /wp:preformatted -->
+
+<!-- wp:paragraph -->
+<p>Here the mentioned precipitant will receive a call and when answered five groups of three "#" DTMF tons will be sounded. Tones that can be used to tell the recipient about the cause of the alarm. I will for instance use the number of "#" sounds as an indication of what floor the alarm happened. Possible with different tones for different alarms.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:image {"id":3207} -->
+<figure class="wp-block-image"><img src="http://grodansparadis.com/wordpress/wp-content/uploads/2018/02/vscp_logo_text_box-1-1-1-1.png" alt="" class="wp-image-3207"/></figure>
+<!-- /wp:image -->
+
+<!-- wp:heading -->
+<h2>vscpd and smstools</h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>So now lets put this to work for our VSCP based system.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>Alarm related events is collected in the class <a href="https://grodansparadis.gitbooks.io/the-vscp-specification/class1.alarm.html">CLASS1.ALARM</a>. The <a href="https://grodansparadis.gitbooks.io/the-vscp-specification/class1.alarm.html#type2">CLASS1.ALARM, Type=2, Alarm occurred</a> is intended for alarm conditions.&nbsp; So if we let sensors that generate alarms send this event and trigger on it in the decision matrix of the VSCP daemon we can send our SMS and voicecalls from there. The <strong>zone</strong> and <strong>subzone</strong> can be used as markers for where the alarm occurred. The originating GUID can also be used to identify this.
+
+
+[code language="xml"][/code]
+
+
+&nbsp;</p>
+<!-- /wp:paragraph -->
+
+<p>[xml]<br>
+&lt;row enable="true" groupid="alarm" &gt;</p>
+<p>	&amp;lt;comment&amp;gt;Send alarm.&amp;lt;/comment&amp;gt;</p>
+<p>	&amp;lt;mask  priority="0"<br>
+		   class="65535"<br>
+		   type="65535"<br>
+		 guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" &amp;gt;<br>
+	&amp;lt;/mask&amp;gt;</p>
+<p>	&amp;lt;filter  priority="0"<br>
+			 class="1"<br>
+			 type="2"<br>
+			guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" &amp;gt;<br>
+	&amp;lt;/filter&amp;gt;</p>
+<p>	&amp;lt;action&amp;gt;0x10&amp;lt;/action&amp;gt;<br>
+	&amp;lt;param &amp;gt;/home/vscp/doalarm.py %zone %subzone event.guid %isodate %isotime "Current boiler temp is %vardecode:[boiler-temp]"&amp;lt;/param&amp;gt;</p>
+<p>	&amp;lt;allowed_from&amp;gt;0000-01-01 00:00:00&amp;lt;/allowed_from&amp;gt;<br>
+	&amp;lt;allowed_to&amp;gt;9999-12-31 23:59:59&amp;lt;/allowed_to&amp;gt;<br>
+	&amp;lt;allowed_weekdays&amp;gt;mtwtfss&amp;lt;/allowed_weekdays&amp;gt;<br>
+	&amp;lt;allowed_time&amp;gt;*-*-* *:*:*&amp;lt;/allowed_time&amp;gt;<br>
+&lt;/row&gt;<br>
+[/xml]</p>
+<p><!-- /wp:html --></p>
+<p><!-- wp:paragraph --></p>
+<p>So what do we have here?</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:paragraph --></p>
+<p>We trigger on any alarm occurred event regardless of priority and from which originating GUID (which unit) it comes from. It would have been possible to do several DM rows for different GUID's (originating nodes) of course to handle alarms from them different.</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:paragraph --></p>
+<p>The time block (form &lt;allowed from&gt; to the end) just say that this can happen anytime. Leaving this block out has the same meaning.</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:paragraph --></p>
+<p>And last the important action.&nbsp; In this case, execute external program (<strong>0x10</strong>) and in the parameter for the action the actual program to execute is specified with the path to it (<strong>/home/vscp/doalarm.py</strong>) is given. The rest of the action parameter line is arguments to this external program.</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:list --></p>
+<ul>
+<li><strong>%event.zone </strong>- Zone for alarm event.</li>
+<li><strong>%event.subzone </strong>- Subzone for alarm event.</li>
+<li><strong>%event.guid</strong> - GUID for alarm event.</li>
+<li><strong>%isodate</strong> - Date on ISO format for alarm.</li>
+<li><strong>%isotime</strong> - Time on ISO format for alarm.</li>
+<li><strong>%vardecode:[</strong>//alarmtext//<strong>]</strong> - Specific text for alarm.</li>
+</ul>
+<p><!-- /wp:list --></p>
+<p><!-- wp:paragraph --></p>
+<p>The description of the decision matrix is <a href="https://grodansparadis.gitbooks.io/the-vscp-daemon/decision_matrix.html">here</a>.</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:paragraph --></p>
+<p><strong>Zone</strong> and <strong>subzone</strong> is numericals that can be used to specify the place and equipment that generated the alarm. I have floor plan in zone and a room on that floor plan in subzone.</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:paragraph --></p>
+<p>The <strong>vardecode</strong> writes out the content of the given variable if it is present. We will come back to it later.</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:paragraph --></p>
+<p>When this row is added the external script will be executed when <a href="https://grodansparadis.gitbooks.io/the-vscp-specification/class1.alarm.html#type2">CLASS1.ALARM, TYPE=2</a> is generated by a node and received by the VSCP daemon.</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:paragraph --></p>
+<p>It is good if the script can do both voice calls and SMS sends and that both can be sent to a list of numbers.</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:heading --></p>
+<h2>The doalarm.py script</h2>
+<p><!-- /wp:heading --></p>
+<p><!-- wp:html -->
+</p><pre lang="python">import sys
+import uuid
+
+filename_voice = str(uuid.uuid4())
+filename_sms = str(uuid.uuid4())
+
+# Dir that holds outgoing SMS messages
+OUTDIR="/var/spool/sms/outgoing"
+
+# Voicel recipients (comma separated list, empty for non)
+VOICE_RECEIVERS="4673xxxxxxxx,4676yyyyyyyyy"
+
+# Set to true for flash SMS
+bflash = False
+
+# SMS recipients (comma eparated list, empty for non )
+#SMS_RECEIVERS="4673xxxxxxxx,4676yyyyyyyyy"
+SMS_RECEIVERS=""
+
+SMS_TEXT="An alarm condition has occured!"
+
+# -----------------------------------------------------------------------------
+
+voicetone="5 "
+for x in range(0, int( sys.argv[1] ) ):
+	voicetone = voicetone + "1,"
+
+voiceRcvList = VOICE_RECEIVERS.split(",")
+
+cnt=0
+if VOICE_RECEIVERS != "" :
+	for receiver in voiceRcvList:
+		print( OUTDIR + "/" + filename_voice + str(cnt) )
+		with open( OUTDIR + "/" + filename_voice + str(cnt), "w") as text_file:
+			text_file.write( "To: {0}\n".format(receiver) )
+			text_file.write( "Voicecall: yes\n\n" )
+			text_file.write( voicetone )
+		cnt = cnt + 1
+
+SMSRcvList = SMS_RECEIVERS.split(",")
+
+if SMS_RECEIVERS != "" :
+	for receiver in SMSRcvList:
+		print( OUTDIR + "/" + filename_voice + str(cnt) )
+		with open( OUTDIR + "/" + filename_voice + str(cnt), "w") as text_file:
+			text_file.write( "To: {0}\n".format(receiver) )
+			if bflash:
+				text_file.write( "Flash: yes\n" )
+			text_file.write( "\n\n" )
+			text_file.write( SMS_TEXT+"\n" )
+			text_file.write( "Zone={0} SubZone={1} Time={2} Date={3}\n".format(sys.argv[1],sys.argv[2],sys.argv[3],sys.argv[4] ) )
+			text_file.write( "{0}".format(sys.argv[5]) )        
+		cnt = cnt + 1
+</pre>
+<p><!-- /wp:html --></p>
+<p><!-- wp:paragraph --></p>
+<p>This is the script. It is written i Python to make things simple to edit and/or change. You can find the script in <a href="https://github.com/grodansparadis/vscp/tree/master/src/vscp/samples/smstools">the VSCP repository</a>.</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:paragraph --></p>
+<p>Just edit the variables in the beginning of the script to fit your setup and you are set to go.</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:paragraph --></p>
+<p>Note that the voice call will do five groups of a series of "1"-press DTMF where the count is the same as the supplied zone parameter. In my case this is the floor plan so I know instantly where something happened and runa way and fix it. The SMS also give me more info.</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:heading --></p>
+<h2>The variable</h2>
+<p><!-- /wp:heading --></p>
+<p><!-- wp:paragraph --></p>
+<p>To come back to the variable that is sent as a parameter. Perfect is to save a&nbsp; measurement value in another part of the DM. Like this</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:html -->
+</p><pre lang="xml">&lt;row enable="true" 
+	 	groupid="temperature" &gt;
+    &lt;mask  priority="0"  
+		  	class="65535"  
+		  	type="65535"  GUID="FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF" &gt; &lt;/mask&gt;
+    &lt;filter  priority="0"  
+				class="10"  
+				type="6"  GUID="FF:FF:FF:FF:FF:FF:FF:FF:3C:00:08:01:92:9D:3D:10" &gt; &lt;/filter&gt;
+    &lt;action&gt;80&lt;/action&gt;
+    &lt;param&gt;boiler-temp;float;true;0;0x777;%measurement.float&lt;/param&gt;
+    &lt;comment&gt;Store boiler temperature in variable&lt;/comment&gt;
+    &lt;allowed_from&gt;0000-01-01 00:00:00&lt;/allowed_from&gt;
+    &lt;allowed_to&gt;9999-12-31 23:59:59&lt;/allowed_to&gt;
+    &lt;allowed_weekdays&gt;mtwtfss&lt;/allowed_weekdays&gt;
+    &lt;allowed_time&gt;*-*-* *:*:*&lt;/allowed_time&gt;
+&lt;/row&gt;</pre>
+<p><!-- /wp:html --></p>
+<p><!-- wp:heading --></p>
+<h2>An alternative way to do it</h2>
+<p><!-- /wp:heading --></p>
+<p><!-- wp:paragraph --></p>
+<p>Another way is to do measurement compares, as in this case check the boiler temperature, you can read <a href="http://grodansparadis.com/wordpress/?p=2917">more about this method here </a>and it is in many ways the same as the one we described above but more specific for boiler temp alarm.</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:heading --></p>
+<h2>And next?</h2>
+<p><!-- /wp:heading --></p>
+<p><!-- wp:paragraph --></p>
+<p>Now you should be able to add your own alarms to your VSCP setup. Maybe something that will do good work in your remote cottage, alarming&nbsp; freezing conditions before bad and costly things happens. In my house we will now sleep much better knowing that we will get alarms when things go wrong.</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:paragraph --></p>
+<p>I promised to continue with a follow up on how to react on incoming SMS mesages. This makes it possible to remotely control things as well such as turning on the heat in that remote cottage I mentioned above. I will try to write that story up soon. Time is my enemy, or rather lack of it.</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:paragraph --></p>
+<p>Cheers<br>
+/<strong>Ake</strong></p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:image {"id":3700} --><br>
+</p><figure class="wp-block-image"><img class="wp-image-3700" src="http://grodansparadis.com/wordpress/wp-content/uploads/2018/09/IMG_20180913_094253218.png" alt=""></figure>
+<p><!-- /wp:image --></p>
+<p><!-- wp:paragraph --></p>
+<p>&nbsp;</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:paragraph --></p>
+<p>&nbsp;</p>
+<p><!-- /wp:paragraph --></p>
