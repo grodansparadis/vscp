@@ -63,7 +63,7 @@ on the Raspberry Pi.
 		Send event on trigger (falling|rising|both|setup).
 		CLASS1.INFORMATION TYPE=3/4 ON/OFF
 	-->
-	monitor_edge="falling|rising|both|setup"
+	monitor_edge="falling|rising|both|setup|disable" <!-- if not give monitor is ignored (disable) -->
 	monitor_event_class="20"
 	monitor_event_type="3"
 	monitor_event_index="0" 	<!-- Written to data byte 0 -->

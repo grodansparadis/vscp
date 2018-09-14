@@ -525,8 +525,124 @@ uint8_t CGpioClock::getPin( void )
     return m_pin;
 }
 
+
 // ----------------------------------------------------------------------------
 
+
+//////////////////////////////////////////////////////////////////////
+// CLocalDM
+//
+
+CLocalDM::CLocalDM() 
+{
+    vscp_clearVSCPFilter(&m_vscpfilter);    // Accept all events
+    m_bCompareIndex = false;                // Don't compare index
+    m_index = 0;
+    m_bCompareZone = false;                 // Don't compare zone
+    m_zone = 0;
+    m_bCompareSubZone = false;              // Don't compare subzone
+    m_subzone = 0;
+    m_action = RPIGPIO_ACTION_NOOP;
+    m_strActionParam.Empty();               // Looks good (if you feel sick by this)
+}
+
+//////////////////////////////////////////////////////////////////////
+// ~CLocalDM
+//
+
+CLocalDM::~CLocalDM()
+{
+    ;
+}
+
+//////////////////////////////////////////////////////////////////////
+// setIndex
+//
+
+bool CLocalDM::setIndex( uint8_t index )
+{
+    m_bCompareIndex = true;
+    m_index = index;
+    return true;
+}
+
+//////////////////////////////////////////////////////////////////////
+// getIndex
+//
+
+uint8_t CLocalDM::getIndex( void )
+{
+    return m_index;
+}
+
+//////////////////////////////////////////////////////////////////////
+// isIndexCheckEnabled
+//
+
+bool CLocalDM::isIndexCheckEnabled( void )
+{
+    return m_bCompareIndex;
+}
+
+//////////////////////////////////////////////////////////////////////
+// setZone
+//
+
+bool CLocalDM::setZone( uint8_t zone )
+{   
+    m_bCompareZone = true;
+    m_zone = zone;
+    return true;
+}
+
+//////////////////////////////////////////////////////////////////////
+// getZone
+//
+
+uint8_t CLocalDM::getZone( void )
+{
+    return m_zone;
+}
+
+//////////////////////////////////////////////////////////////////////
+// isZoneCheckEnabled
+//
+
+bool CLocalDM::isZoneCheckEnabled( void )
+{
+    return m_bCompareZone;
+}
+
+//////////////////////////////////////////////////////////////////////
+// setSubZone
+//
+
+bool CLocalDM::setSubZone( uint8_t subzone )
+{
+    m_bCompareSubZone = true;
+    m_subzone = subzone;
+    return true;
+}
+
+//////////////////////////////////////////////////////////////////////
+// getSubZone
+//
+
+uint8_t CLocalDM::getSubZone( void )
+{
+    return m_subzone;
+}
+
+//////////////////////////////////////////////////////////////////////
+// isSubZoneCheckEnabled
+//
+
+bool CLocalDM::isSubZoneCheckEnabled( void )
+{
+    return m_bCompareSubZone;
+}
+
+// ----------------------------------------------------------------------------
 
 //////////////////////////////////////////////////////////////////////
 // CRpiGpio
@@ -664,7 +780,7 @@ CRpiGpio::open( const char *pUsername,
                     }
 
                 }
-                // Define input pin
+                // Define one input pin
                 else if ( subchild->GetName() == "input" ) {
 
                     CGpioInput *pInputObj = new CGpioInput;
@@ -679,10 +795,68 @@ CRpiGpio::open( const char *pUsername,
                         // Get pullup
                         attribute =
                             subchild->GetAttribute("pullup", "off");
-                        pInputObj->setPullUp( attribute );    
+                        pInputObj->setPullUp( attribute ); 
+                       
 
-                        //monitor_edge
+                        // Monitor 
+
+                        // monitor_edge
+                        wxString str_monitor_edge =
+                            subchild->GetAttribute("monitor_edge", "disable");
+                        str_monitor_edge.MakeUpper();
+                        if ( wxNOT_FOUND == str_monitor_edge.Find("DISABLE") ) {
+                            
+                            uint8_t edge = INT_EDGE_SETUP;
+                            vscpEventEx event;
+
+                            attribute =
+                            subchild->GetAttribute("monitor_event_class", "0");
+                            event.vscp_class = vscp_readStringValue( attribute );
+
+                            attribute =
+                            subchild->GetAttribute("monitor_event_type", "0");
+                            event.vscp_type = vscp_readStringValue( attribute );
+
+                            event.sizeData = 0;
+                            attribute =
+                            subchild->GetAttribute("monitor_event_data", "0,0,0");
+                            vscp_setVscpEventExDataFromString( &event, attribute );
+
+                            attribute =
+                            subchild->GetAttribute("monitor_event_index", "0");
+                            event.data[0] = vscp_readStringValue( attribute );
+                            if ( 0 == event.sizeData ) event.sizeData = 1;
+
+                            attribute =
+                            subchild->GetAttribute("monitor_event_zone", "0");
+                            event.data[1] = vscp_readStringValue( attribute );
+                            if ( event.sizeData < 2 ) event.sizeData = 2;
+
+                            attribute =
+                            subchild->GetAttribute("monitor_event_subzone", "0");
+                            event.data[2] = vscp_readStringValue( attribute );
+                            if ( event.sizeData < 3 ) event.sizeData = 3;
+
+                            if ( !pInputObj->setMonitor( true, 
+                                                            str_monitor_edge, 
+                                                            event ) ) {
+                                syslog(LOG_ERR,
+				                        "%s %s %d",
+                                        (const char *)VSCP_RPIGPIO_SYSLOG_DRIVER_ID,
+				                        (const char *) "Unable toadd input monitor.",
+                                        (int)pin );
+                            }                            
+                        }
+
+                        // Report
+
+
+                        // Add input to list
+                        m_inputPinList.push_back( pInputObj );
+
+                        
                     }
+
                 }
                 // Define output pin
                 else if ( subchild->GetName() == "output" ) {

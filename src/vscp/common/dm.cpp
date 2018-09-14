@@ -3440,9 +3440,14 @@ bool dmElement::doActionExecute(vscpEvent *pDMEvent, bool bCheckExecutable )
 bool dmElement::doActionExecuteConditional( vscpEvent *pDMEvent, 
                                             bool bCheckExecutable )
 {
+    bool bTrigger;
+    wxString varName;
+
     // Write in possible escapes
     wxString escaped_actionparam = m_actionparam;
     handleEscapes( pDMEvent, escaped_actionparam );
+
+    wxStringTokenizer tkz( escaped_actionparam, _(";") );
 
     // Handle variable
     if ( tkz.HasMoreTokens() ) {

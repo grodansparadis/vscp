@@ -241,20 +241,31 @@ class CLocalDM{
 public:
 
     /// Constructor
-    CLocalDM() {
-            vscp_clearVSCPFilter(&m_vscpfilter);    // Accept all events
-            bCompareIndex = false;                  // Don't compare index
-            m_index = 0;
-            bCompareZone = false;                   // Don't compare zone
-            m_zone = 0;
-            bCompareSubZone = false;                // Don't compare subzone
-            m_subzone = 0;
-            m_action = RPIGPIO_ACTION_NOOP;
-            m_strActionParam.Empty();               // Looks good (if you feel sick by this)
-    };
+    CLocalDM();
 
     /// Destructor
     virtual ~CLocalDM();
+
+    bool setFilter( vscpEventFilter& filter );
+    vscpEventFilter& getFilter( void );
+
+    bool setIndex( uint8_t index );
+    uint8_t getIndex( void );
+    bool isIndexCheckEnabled( void );
+
+    bool setZone( uint8_t zone );
+    uint8_t getZone( void );
+    bool isZoneCheckEnabled( void );
+
+    bool setSubZone( uint8_t subzone );
+    uint8_t getSubZone( void );
+    bool isSubZoneCheckEnabled( void );
+
+    bool setAction( uint8_t action );
+    uint8_t getAction( void );
+
+    bool setActionParameter( wxString& param );
+    wxString& getActionParameter( void );
 
 private:
 
@@ -262,15 +273,15 @@ private:
     vscpEventFilter m_vscpfilter;
 
     // Index compare
-    bool bCompareIndex;
+    bool m_bCompareIndex;
 	uint8_t m_index;
 
     // Zone compare
-    bool bCompareZone;
+    bool m_bCompareZone;
 	uint8_t m_zone;
 
     // SubZone compare
-    bool bCompareSubZone;
+    bool m_bCompareSubZone;
 	uint8_t m_subzone;
 
     // Action to execute on match
