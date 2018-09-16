@@ -30,17 +30,24 @@
 #include <sys/socket.h>
 #include <sys/ioctl.h>
  
-#include <linux/can.h>
-#include <linux/can/raw.h>
+#include "wx/wxprec.h"
+#include "wx/wx.h"
+
+#include "rpigpio.h"
  
 int
 main(void)
 {
-        int s;
-        int nbytes;
-        struct sockaddr_can addr;
-        struct can_frame frame;
+        CRpiGpio gpio;
 
+        ::wxInitialize();
+
+        gpio.open( "admin",
+		        "secret",
+		        "192.168.1.6",
+		        9598,
+		        "test",
+		        "t1t2t3t4t5t");
  
         return 0;
 }

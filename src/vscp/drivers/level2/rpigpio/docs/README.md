@@ -201,7 +201,39 @@ class type index zone subzone  => action
 	action parameter: pin, event...
 
 
+```xml
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<setup>
+	<input pin="1"
+		pullup="up"
 
+		monitor_edge="rising"
+		monitor_event_class="20"
+		monitor_event_type="3"
+		monitor_event_index="0" 	
+		monitor_event_zone="11"		
+		monitor_event_subzone="22"
+		monitor_event_data="1,2,3,4,5,6" 
+
+		report_period="1000"
+
+		report_event_high_class="20"
+		report_event_high_type="3"
+		report_event_high_index="0"		
+		report_event_high_zone="11"		
+		report_event_high_subzone="22" 	
+		report_event_high_data="1,2,3,4,5,6,7,8"
+	
+		report_event_low_class="20"
+		report_event_low_type="4"
+		report_event_low_index="0"		
+		report_event_low_zone="11"		
+		report_event_low_subzone="22"		
+		report_event_low_data="1,2,3,4,5,6,7,8"
+
+	</input>
+</setup>
+```
 
 
 	

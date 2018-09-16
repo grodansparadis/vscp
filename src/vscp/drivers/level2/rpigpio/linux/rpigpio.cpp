@@ -32,12 +32,6 @@
 #include <sys/socket.h>
 #include <sys/ioctl.h>
 
-// Different on Kernel 2.6 and cansocket examples
-// currently using locally from can-utils
-// TODO remove include form makefile when they are in sync
-#include <linux/can.h>
-#include <linux/can/raw.h>
-
 #include <signal.h>
 #include <ctype.h>
 #include <libgen.h>
@@ -801,7 +795,7 @@ CRpiGpio::open( const char *pUsername,
 		        const char *pConfig)
 {
 	bool rv = true;
-	wxString wxstr = wxString::FromAscii( pConfig );
+	wxString strConfig = wxString::FromAscii( pConfig );
 
 	m_username = wxString::FromAscii( pUsername );
 	m_password = wxString::FromAscii( pPassword );
@@ -872,7 +866,7 @@ CRpiGpio::open( const char *pUsername,
     wxXmlNode *child = doc.GetRoot()->GetChildren();
     while ( child ) {
     
-        if ( child->GetName() == "setup" ) {
+        if ( child->GetName() == "dm" ) {
             
             wxXmlNode *subchild = child->GetChildren();
             while ( subchild ) {
@@ -1217,21 +1211,14 @@ CRpiGpio::open( const char *pUsername,
                 }
 
                 subchild = child->GetNext();
-            }
 
-            // Process attributes of tag1.
-            wxString attrvalue1 =
-                child->GetAttribute("attr1", "default-value");
-            wxString attrvalue2 =
-                child->GetAttribute("attr2", "default-value");
-            
-        }
-        else if (child->GetName() == "tag2") {
-            // Process tag2 ...
-        }
+            } // while
+
+        } // DM tag
 
         child = child->GetNext();
-    }
+
+    } // while (document)
 	
 	m_srv.doClrInputQueue();
 
@@ -1307,207 +1294,15 @@ RpiGpioWorkerTread::~RpiGpioWorkerTread()
 void *
 RpiGpioWorkerTread::Entry()
 {
-	int sock;
-	char devname[IFNAMSIZ + 1];
-	fd_set rdfs;
-	struct timeval tv;
-	struct sockaddr_can addr;
-	struct ifreq ifr;
-	struct cmsghdr *cmsg;
-	struct canfd_frame frame;
-	char ctrlmsg[CMSG_SPACE(sizeof(struct timeval)) + CMSG_SPACE(sizeof(__u32))];
-	const int canfd_on = 1;
-
 	::wxInitialize();
 			
 	// Check pointers
 	if (NULL == m_pObj) return NULL;
 
-	//strncpy(devname, m_pObj->m_interface.ToAscii(), sizeof(devname) - 1);
-#if DEBUG	
-	syslog(LOG_ERR, "CWriteSocketCanTread: Interface: %s\n", ifname);
-#endif	
 	
     while (!TestDestroy() && !m_pObj->m_bQuit) {
 
-        sock = socket(PF_CAN, SOCK_RAW, CAN_RAW);
-        if (sock < 0) {
-            
-            if (ENETDOWN == errno) {
-                sleep(1);
-                continue;
-            }
-            
-            syslog(LOG_ERR,
-                    "%s",
-                    (const char *) "CReadSocketCanTread: Error while opening socket. Terminating!");
-            
-            m_pObj->m_bQuit;
-            continue;
-        }
-
-        strcpy(ifr.ifr_name, devname);
-        ioctl(sock, SIOCGIFINDEX, &ifr);
-
-        addr.can_family = AF_CAN;
-        addr.can_ifindex = ifr.ifr_ifindex;
-
-#ifdef DEBUG
-        printf("using interface name '%s'.\n", ifr.ifr_name);
-#endif
-
-        // try to switch the socket into CAN FD mode 
-        setsockopt(sock,
-                SOL_CAN_RAW,
-                CAN_RAW_FD_FRAMES,
-                &canfd_on,
-                sizeof(canfd_on));
-
-        if (bind(sock, (struct sockaddr *) &addr, sizeof(addr)) < 0) {
-            syslog(LOG_ERR,
-                    "%s",
-                    (const char *) "CReadSocketCanTread: Error in socket bind. Terminating!");
-            close(sock);
-            sleep(2);
-            continue;
-        }
-
-        bool bInnerLoop = true;
-        while (!TestDestroy() && !m_pObj->m_bQuit && bInnerLoop) {
-
-            FD_ZERO(&rdfs);
-            FD_SET(sock, &rdfs);
-
-            tv.tv_sec = 0;
-            tv.tv_usec = 5000; // 5ms timeout 
-
-            int ret;
-            if ( ( ret = select(sock + 1, &rdfs, NULL, NULL, &tv ) ) <  0) {
-                // Error
-                if (ENETDOWN == errno) {
-                    // We try to get contact with the net
-                    // again if it goes down
-                    bInnerLoop = false;
-                }
-                else {
-                    m_pObj->m_bQuit = true;
-                }
-                continue;
-            }
-
-            if ( ret ) {
-
-                // There is data to read
-
-                ret = read(sock, &frame, sizeof(struct can_frame));
-                if (ret < 0) {
-                    if (ENETDOWN == errno) {
-                        // We try to get contact with the net
-                        // again if it goes down
-                        bInnerLoop = false;
-                        sleep(2);
-                    }
-                    else {
-                        m_pObj->m_bQuit = true;
-                    }
-                    continue;
-                }
-
-                // Must be Extended
-                if (!(frame.can_id & CAN_EFF_FLAG)) continue;
-
-                // Mask of control bits
-                frame.can_id &= CAN_EFF_MASK;
-
-                vscpEvent *pEvent = new vscpEvent();
-                if (NULL != pEvent) {
-
-                    pEvent->pdata = new uint8_t[frame.len];
-                    if (NULL == pEvent->pdata) {
-                        delete pEvent;
-                        continue;
-                    }
-
-                    // GUID will be set to GUID of interface
-                    // by driver interface with LSB set to nickname
-                    memset(pEvent->GUID, 0, 16);
-                    pEvent->GUID[VSCP_GUID_LSB] = frame.can_id & 0xff;
-
-                    // Set VSCP class
-                    pEvent->vscp_class = vscp_getVSCPclassFromCANALid(frame.can_id);
-
-                    // Set VSCP type
-                    pEvent->vscp_type = vscp_getVSCPtypeFromCANALid(frame.can_id);
-
-                    // Copy data if any
-                    pEvent->sizeData = frame.len;
-                    if (frame.len) {
-                        memcpy(pEvent->pdata, frame.data, frame.len);
-                    }
-
-                    if (vscp_doLevel2Filter(pEvent, &m_pObj->m_vscpfilter)) {
-                        m_pObj->m_mutexReceiveQueue.Lock();
-                        //m_pObj->m_receiveQueue.Append(pEvent);
-                        m_pObj->m_receiveList.push_back(pEvent);
-                        m_pObj->m_semReceiveQueue.Post();
-                        m_pObj->m_mutexReceiveQueue.Unlock();
-                    } else {
-                        vscp_deleteVSCPevent(pEvent);
-                    }
-                }
-
-            } else {
-
-                // Check if there is event(s) to send
-                if (m_pObj->m_sendList.size() /*m_pObj->m_sendQueue.GetCount()*/) {
-
-                    // Yes there are data to send
-                    // So send it out on the CAN bus
-
-                    //VSCPEVENTLIST_SEND::compatibility_iterator nodeClient;
-                    m_pObj->m_mutexSendQueue.Lock();
-                    //nodeClient = m_pObj->m_sendQueue.GetFirst();
-                    vscpEvent *pEvent = m_pObj->m_sendList.front();
-                    m_pObj->m_sendList.pop_front();
-                    m_pObj->m_mutexSendQueue.Unlock();
-
-                    if (NULL == pEvent) continue;
-
-                    // Class must be a Level I class or a Level II
-                    // mirror class
-                    if (pEvent->vscp_class < 512) {
-                        frame.can_id = vscp_getCANALidFromVSCPevent(pEvent);
-                        frame.can_id |= CAN_EFF_FLAG; // Always extended
-                        if (0 != pEvent->sizeData) {
-                            frame.len = (pEvent->sizeData > 8 ? 8 : pEvent->sizeData);
-                            memcpy(frame.data, pEvent->pdata, frame.len);
-                        }
-                    } else if (pEvent->vscp_class < 1024) {
-                        pEvent->vscp_class -= 512;
-                        frame.can_id = vscp_getCANALidFromVSCPevent(pEvent);
-                        frame.can_id |= CAN_EFF_FLAG; // Always extended
-                        if (0 != pEvent->sizeData) {
-                            frame.len = ((pEvent->sizeData - 16) > 8 ? 8 : pEvent->sizeData - 16);
-                            memcpy(frame.data, pEvent->pdata + 16, frame.len);
-                        }
-                    }
-
-                    // Remove the event
-                    m_pObj->m_mutexSendQueue.Lock();
-                    //m_pObj->m_sendQueue.DeleteNode(nodeClient);
-                    vscp_deleteVSCPevent(pEvent);
-                    m_pObj->m_mutexSendQueue.Unlock();
-
-
-                    // Write the data
-                    int nbytes = write(sock, &frame, sizeof(struct can_frame));
-
-                } // event to send
-            }  // No data to read
-        } // Inner loop
-
-        // Close the socket
-        close(sock);
+        
 
     } // Outer loop
 

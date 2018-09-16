@@ -5104,6 +5104,9 @@ static int vscp_variable_new( struct web_connection *conn, void *cbdata )
     web_printf( conn, "<option value=\"100\">Mime encoded value</option>");
     web_printf( conn, "<option value=\"101\">HTML value</option>");
     web_printf( conn, "<option value=\"102\">JavaScript value</option>");
+    web_printf( conn, "<option value=\"103\">JSON value</option>");
+    web_printf( conn, "<option value=\"104\">XML value</option>");
+    web_printf( conn, "<option value=\"105\">SQL value</option>");
     web_printf( conn, "<option value=\"200\">Lua script value</option>");
     web_printf( conn, "<option value=\"201\">Lua result value</option>");
     web_printf( conn, "<option value=\"300\">UX type 1 value</option>");
