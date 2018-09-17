@@ -44,7 +44,6 @@
 #include <wx/datetime.h>
 #include <wx/filename.h>
 #include <wx/cmdline.h>
-#include <wx/base64.h>
 
 #include <stdlib.h>
 #include <string.h>
@@ -2433,7 +2432,8 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
                     if ( gpobj->m_variables.find( variableName, variable ) ) {
 
                         wxString wxwrk;
-                        variable.writeValueToString( wxwrk );
+                        variable.writeValueToString( wxwrk, true );                       
+                       
                         strResult += wxwrk;
 
                     }
@@ -2458,15 +2458,6 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
 
                         wxString wxwrk;
                         variable.writeValueToString( wxwrk );
-                        if ( CVSCPVariable::isValueBase64Encoded( variable.getType() ) ) {
-                            size_t len = wxBase64Decode( NULL, 0, wxwrk );
-                            if ( 0 == len ) continue;
-                            uint8_t *pbuf = new uint8_t[ len ];
-                            if ( NULL == pbuf ) continue;
-                            len = wxBase64Decode( pbuf, len, wxwrk );
-                            wxwrk = wxString::FromUTF8( (const char *)pbuf, len );
-                            delete [] pbuf;
-                        }
                         strResult += wxwrk;
 
                     }
@@ -3201,25 +3192,15 @@ bool dmElement::doAction( vscpEvent *pEvent )
                 strParam.Trim( false );
                 if ( strParam.StartsWith( _("BASE64:"), &strParam ) ) {
                     // Yes should be decoded
-                    size_t len = wxBase64Decode( NULL, 0, strParam );
-                    if ( 0 == len ) {
+                    vscp_base64_wxdecode( strParam );
+                    if ( 0 == strParam.Length() ) {
                         gpobj->logMsg( _("[DM] ") + "Failed to decode BASE64 "
                                          "parameter (len=0)\n", 
                                             DAEMON_LOGMSG_NORMAL, 
                                             DAEMON_LOGTYPE_DM );
                         break;
                     }
-                    uint8_t *pbuf = new uint8_t[len];
-                    if ( NULL == pbuf ) {
-                        gpobj->logMsg( _("[DM] ") + "Failed to decode "
-                                         "BASE64 parameter  pbuf=NULL)\n", 
-                                            DAEMON_LOGMSG_NORMAL, 
-                                            DAEMON_LOGTYPE_DM );
-                        break;
-                    }
-                    len = wxBase64Decode( pbuf, len, strParam );
-                    strParam = wxString::FromUTF8( (const char *)pbuf, len );
-                    delete [] pbuf;
+                    
                 }
                 
                 // Write in possible escapes
@@ -3273,25 +3254,15 @@ bool dmElement::doAction( vscpEvent *pEvent )
                 strParam.Trim( false );
                 if ( strParam.StartsWith( _("BASE64:"), &strParam ) ) {
                     // Yes should be decoded
-                    size_t len = wxBase64Decode( NULL, 0, strParam );
-                    if ( 0 == len ) {
+                    vscp_base64_wxdecode( strParam );
+                    if ( 0 == strParam.Length() ) {
                         gpobj->logMsg( _("[DM] ") + "Failed to decode BASE64 "
                                          "parameter (len=0)\n", 
                                             DAEMON_LOGMSG_NORMAL, 
                                             DAEMON_LOGTYPE_DM );
                         break;
                     }
-                    uint8_t *pbuf = new uint8_t[len];
-                    if ( NULL == pbuf ) {
-                        gpobj->logMsg( _("[DM] ") + "Failed to decode "
-                                         "BASE64 parameter  pbuf=NULL)\n", 
-                                            DAEMON_LOGMSG_NORMAL, 
-                                            DAEMON_LOGTYPE_DM );
-                        break;
-                    }
-                    len = wxBase64Decode( pbuf, len, strParam );
-                    strParam = wxString::FromUTF8( (const char *)pbuf, len );
-                    delete [] pbuf;
+
                 }
                 
                 // Write in possible escapes

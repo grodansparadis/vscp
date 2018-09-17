@@ -820,6 +820,7 @@ CRpiGpio::open( const char *pUsername,
 	// variables
 
 	if ( VSCP_ERROR_SUCCESS != m_srv.doCmdOpen( m_host,
+                                                m_port,
 												m_username,
 												m_password ) ) {
 		syslog(LOG_ERR,
@@ -843,7 +844,7 @@ CRpiGpio::open( const char *pUsername,
     wxString str;
 	wxString strName = m_prefix +
 			wxString::FromAscii("_setup");
-	if ( VSCP_ERROR_SUCCESS != m_srv.getRemoteVariableAsString( strName, m_setupXml ) ) {
+	if ( VSCP_ERROR_SUCCESS != m_srv.getRemoteVariableValue( strName, m_setupXml, true ) ) {
         // OK if not available we use default
     }
 
@@ -854,7 +855,7 @@ CRpiGpio::open( const char *pUsername,
         syslog(LOG_ERR,
 				"%s %s",
                 (const char *)VSCP_RPIGPIO_SYSLOG_DRIVER_ID,
-				(const char *) "Unable to parse XML config. Terminating!");
+				(const char *)"Unable to parse XML config. Terminating!");
         
         // Close the channel
 	    m_srv.doCmdClose();
@@ -866,7 +867,7 @@ CRpiGpio::open( const char *pUsername,
     wxXmlNode *child = doc.GetRoot()->GetChildren();
     while ( child ) {
     
-        if ( child->GetName() == "dm" ) {
+        if ( child->GetName() == "setup" ) {
             
             wxXmlNode *subchild = child->GetChildren();
             while ( subchild ) {

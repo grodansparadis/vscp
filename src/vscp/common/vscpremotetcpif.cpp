@@ -413,6 +413,19 @@ int VscpRemoteTcpIf::doCmdOpen( const wxString& strHostname,
 }
 
 
+///////////////////////////////////////////////////////////////////////////////
+// doCmdOpen
+//
+
+int VscpRemoteTcpIf::doCmdOpen( const wxString& strHostname, 
+                                    short port,
+                                    const wxString& strUsername, 
+                                    const wxString& strPassword )
+{
+    wxString strCombinedHost = strHostname + wxString::Format(":%d", port );
+    return doCmdOpen( strCombinedHost, strUsername, strPassword );
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // close
@@ -1925,7 +1938,9 @@ int VscpRemoteTcpIf::setRemoteVariableFromString( const wxString& name,
 // getRemoteVariableValue
 //
 
-int VscpRemoteTcpIf::getRemoteVariableValue( const wxString& name, wxString& strValue )
+int VscpRemoteTcpIf::getRemoteVariableValue( const wxString& name, 
+                                                wxString& strValue,
+                                                bool bDecode )
 {
     wxString strCmd;
 
@@ -1940,6 +1955,10 @@ int VscpRemoteTcpIf::getRemoteVariableValue( const wxString& name, wxString& str
 
     // Get value
     strValue = m_inputStrArray[0];
+
+    if ( bDecode ) {
+        vscp_base64_wxdecode( strValue );   
+    }
 
     return VSCP_ERROR_SUCCESS;
 }

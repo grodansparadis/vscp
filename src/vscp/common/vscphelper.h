@@ -443,7 +443,7 @@ extern "C" {
     /*!
         Convert a floating point measurement value into VSCP data as a
         single precision float (32-bit) for
-	CLASS1.MEASUREMENT, CLASS2_LEVEL1.MEASUREMENT
+	      CLASS1.MEASUREMENT, CLASS2_LEVEL1.MEASUREMENT
         @param value Floating point value to convert.
         @param pEvent Pointer to event with pdata set to NULL. VSCP_class and
         vscp_type must be set to CLASS1.MEASUREMENT, CLASS2_LEVEL1.MEASUREMENT,

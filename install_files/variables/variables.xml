@@ -14,109 +14,103 @@
         persistent="true"
     	user="0"
         access-rights="0x644"
-        value="1"	
-        note = "Number of simulated nodes this driver should act as. Each of them should
-        have an entry below with the index of the driver ordinal as the last character
-        in there name. All variables names start with the driver unique prefix sim_ 
-        in this case." />
+        value="MQ=="	
+        note = "TnVtYmVyIG9mIHNpbXVsYXRlZCBub2RlcyB0aGlzIGRyaXZlciBzaG91bGQgYWN0IGFzLiBFYWNoIG9mIHRoZW0gc2hvdWxkCmhhdmUgYW4gZW50cnkgYmVsb3cgd2l0aCB0aGUgaW5kZXggb2YgdGhlIGRyaXZlciBvcmRpbmFsIGFzIHRoZSBsYXN0IGNoYXJhY3RlcgppbiB0aGVyZSBuYW1lLiBBbGwgdmFyaWFibGVzIG5hbWVzIHN0YXJ0IHdpdGggdGhlIGRyaXZlciB1bmlxdWUgcHJlZml4IHNpbV8gCmluIHRoaXMgY2FzZS4=" />
 
     <variable type="boolean"
         name="VSCP_LEVEL_II_SIM_DRIVER_BLEVEL20"
         persistent="true"
         user="0"
         access-rights="0x644"
-        value="false"
-        note="This is not a Level II node." />
+        value="ZmFsc2U="
+        note="VGhpcyBpcyBub3QgYSBMZXZlbCBJSSBub2RlLg==" />
 
     <variable type="integer"
         name="VSCP_LEVEL_II_SIM_DRIVER_ZONE0"
         persistent="true"
         user="0"
         access-rights="0x644"
-        value="1"
-        note="Zone for module." />
+        value="MQ=="
+        note="Wm9uZSBmb3IgbW9kdWxlLg==" />
 
     <variable type="integer"
        name="VSCP_LEVEL_II_SIM_DRIVER_SUBZONE0"
         persistent="true"
         user="0"
         access-rights="0x644"
-       value="2"
-       note="Zone for module." />
+       value="MA=="
+       note="U3ViWm9uZSBmb3IgbW9kdWxlLg==" />
 
     <variable type="guid"
         name="VSCP_LEVEL_II_SIM_DRIVER_GUID0"
         persistent="true"
         user="0"
         access-rights="0x644"
-        value="FF:FF:FF:FF:FF:FF:FF:F7:03:11:22:33:44:55:66:77"
-        note="GUID for the node." />
+        value="RkY6RkY6RkY6RkY6RkY6RkY6RkY6Rjc6MDM6MTE6MjI6MzM6NDQ6NTU6NjY6Nzc="
+        note="R1VJRCBmb3IgdGhlIG5vZGUu" />
 
     <variable type="string"
         name="VSCP_LEVEL_II_SIM_DRIVER_PATH0"
         persistent="true"
         user="0"
         access-rights="0x644"
-        value="/srv/vscp/simtempdata.txt"
-        note="Path to simulation data. Leave blank to use internal values." />
+        value="L3Nydi92c2NwL3NpbXRlbXBkYXRhLnR4dA=="
+        note="UGF0aCB0byBzaW11bGF0aW9uIGRhdGEuIExlYXZlIGJsYW5rIHRvIHVzZSBpbnRlcm5hbCB2YWx1ZXMu" />
 
     <variable type="integer"
         name="VSCP_LEVEL_II_SIM_DRIVER_INTERVAL0"
         persistent="true"
         user="0"
         access-rights="0x644"
-        value="2"
-        note="Interval between measurement events." />
+        value="Mg=="
+        note="SW50ZXJ2YWwgYmV0d2VlbiBtZWFzdXJlbWVudCBldmVudHMu" />
 
     <variable type="long"
         name="VSCP_LEVEL_II_SIM_DRIVER_MEASUREMENTCLASS0"
         persistent="true"
         user="0"
         access-rights="0x644"
-        value="10"
-        note="CLASS1_MEASUREMENT" />
+        value="MTA="
+        note="Q0xBU1MxX01FQVNVUkVNRU5U" />
 
     <variable type="long"
         name="VSCP_LEVEL_II_SIM_DRIVER_MEASUREMENTTYPE0"
         persistent="true"
         user="0"
         access-rights="0x644"
-        value="6"
-        note="Measurement type is temperature." />
+        value="Ng=="
+        note="TWVhc3VyZW1lbnQgdHlwZSBpcyB0ZW1wZXJhdHVyZS4=" />
 
     <variable type="integer"
         name="VSCP_LEVEL_II_SIM_DRIVER_UNIT0"
         persistent="true"
         user="0"
         access-rights="0x644"
-        value="1"
-        note="Degrees Celsius (0=Kelvin, 1=Celsius, 2=Fahrenheit)." />
+        value="MQ=="
+        note="RGVncmVlcyBDZWxzaXVzICgwPUtlbHZpbiwgMT1DZWxzaXVzLCAyPUZhaHJlbmhlaXQpLg==" />
 
     <variable type="integer"
         name="VSCP_LEVEL_II_SIM_DRIVER_CODING0"
         persistent="true"
         user="0"
         access-rights="0x644"
-        value="0"
-        note="Coding as normalized integer. (0=normalized integer, 1=float, 2=string)" />
+        value="MA=="
+        note="Q29kaW5nIGFzIG5vcm1hbGl6ZWQgaW50ZWdlci4gKDA9bm9ybWFsaXplZCBpbnRlZ2VyLCAxPWZsb2F0LCAyPXN0cmluZyk=" />
 
     <variable type="integer"
         name="VSCP_LEVEL_II_SIM_DRIVER_INDEX0"
         persistent="true"
         user="0"
         access-rights="0x644"
-        value="2"
-        note="Sensor index (0-7)." />
+        value="Mg=="
+        note="U2Vuc29yIGluZGV4ICgwLTcpLg==" />
 
     <variable type="string"
         name="VSCP_LEVEL_II_SIM_DRIVER_DECISIONMATRIX0"
         persistent="true"
         user="0"
         access-rights="0x644"
-        value="0,0x80,0xff,30,0xff,5,1,40,
-               0,0x80,0xff,30,0xff,6,2,40,
-               0,0x80,0xff,30,0xff,5,1,50,
-               0,0x80,0xff,30,0xff,6,2,50"
-        note="Two DM entries that reply to CLASS1.CONTROL, TurnOn/TurnOff with CLASS1.INFORMATION On/Off" />
+        value="MCwweDgwLDB4ZmYsMzAsMHhmZiw1LDEsNDAsCjAsMHg4MCwweGZmLDMwLDB4ZmYsNiwyLDQwLAowLDB4ODAsMHhmZiwzMCwweGZmLDUsMSw1MCwKMCwweDgwLDB4ZmYsMzAsMHhmZiw2LDIsNTA="
+        note="VHdvIERNIGVudHJpZXMgdGhhdCByZXBseSB0byBDTEFTUzEuQ09OVFJPTCwgVHVybk9uL1R1cm5PZmYgd2l0aCBDTEFTUzEuSU5GT1JNQVRJT04gT24vT2Zm" />
     
 </variables>

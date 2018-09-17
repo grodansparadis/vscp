@@ -462,12 +462,7 @@ int lua_vscp_readVariable( struct lua_State *L )
                 lua_pushboolean( L, variable.isTrue() );
             }
             else {
-                
-                // Decode if needed
-                if ( variable.isValueBase64Encoded() ) {
-                    vscp_base64_wxdecode( strval );
-                }
-                
+
                 lua_pushlstring( L, (const char *)strval.mbc_str(),
                                                   strval.Length() );
             }
@@ -477,7 +472,6 @@ int lua_vscp_readVariable( struct lua_State *L )
     else if ( 4 == format ) {
         // Get the variable value un encoded
         wxString strval = variable.getValue();
-        vscp_base64_wxdecode( strval );
         lua_pushlstring( L, (const char *)strval.mbc_str(),
                                           strval.Length() );
     }
@@ -845,7 +839,7 @@ int lua_vscp_isVariableBase64Encoded( struct lua_State *L )
                               "name found!");
     }
     
-    lua_pushboolean( L, variable.isValueBase64Encoded() );
+    lua_pushboolean( L, false );
     
     return 1;
 }

@@ -34,7 +34,6 @@
 
 #include "userlist.h"
 #include "websocket.h"
-//#include "controlobject.h"
 
 WX_DECLARE_STRING_HASH_MAP( wxString, HashString );
 
@@ -120,14 +119,14 @@ void ws1_closeHandler(const struct web_connection *conn, void *cbdata );
 #define WEBSERVER_COOKIE_NAME "____vscp_session____"
 
 
-static const char *html_form =
+/*static const char *html_form =
   "<html><body>POST example."
   "<form method=\"POST\" action=\"/handle_post_request\">"
   "Input 1: <input type=\"text\" name=\"input_1\" /> <br/>"
   "Input 2: <input type=\"text\" name=\"input_2\" /> <br/>"
   "<input type=\"submit\" />"
   "</form></body></html>";
-
+*/
 
 /**
  * State we keep for each user/session/browser.

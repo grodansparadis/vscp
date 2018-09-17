@@ -5217,7 +5217,7 @@ void TCPClientThread::handleVariable_ReadValue( bool bOKResponse )
     CVSCPVariable variable;
     if ( 0 != gpobj->m_variables.find( m_pClientItem->m_currentCommand, variable ) ) {
         
-        variable.writeValueToString( str );
+        variable.writeValueToString( str, true );
         str += _("\r\n");
         write(   str.mbc_str(), strlen( str.mbc_str() ) );
 
@@ -5247,7 +5247,7 @@ void TCPClientThread::handleVariable_ReadNote( bool bOKResponse )
     CVSCPVariable variable;
     if ( 0 != gpobj->m_variables.find( m_pClientItem->m_currentCommand,variable ) ) {
         
-        str = variable.getNote();
+        variable.getNote( str, true );
         str = _("+OK - ") + str + _("\r\n");
         write(   str.mbc_str(), strlen( str.mbc_str() ) );
 

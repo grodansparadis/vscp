@@ -33,7 +33,7 @@
 //
 
 void
-vscp_base64_encode( const unsigned char *src, int src_len, char *dst )
+vscp_base64_encode( const char *src, int src_len, char *dst )
 {
     static const char *b64 =
             "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
@@ -95,7 +95,7 @@ b64reverse(char letter)
 //
 
 int
-vscp_base64_decode( const unsigned char *src, 
+vscp_base64_decode( const char *src, 
                         int src_len, 
                         char *dst, 
                         size_t *dst_len )

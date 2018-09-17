@@ -63,7 +63,6 @@
 
 #include <sockettcp.h>
 #include <vscphelper.h>
-#include <mongoose.h>
 #include "wx/datetime.h"
 
 //---------------------------------------------------------------------------
@@ -76,9 +75,9 @@
     Default response timeout for communication with the
     tcp/ip interface of the daemon in milliseconds.
 
-    This is the overal time to wait for a +OK respsone.
+    This is the overall time to wait for a +OK respose.
  */
-#define TCPIP_DEFAULT_RESPONSE_TIMEOUT          1000
+#define TCPIP_DEFAULT_RESPONSE_TIMEOUT          2000
 
 /*! 
     @def DEFAULT_INNER_RESPONSE_TIMEOUT
@@ -223,7 +222,7 @@ public:
 
     /*!
         Open communication interface.
-        @param strHostname Host to connect to.
+        @param strHostname Host to connect to + port (host:port).
         @param strUsername Username.
         @param strPassword Username.
         @return CANAL_ERROR_SUCCESS if channel is open or CANAL error code if error 
@@ -232,6 +231,20 @@ public:
     int doCmdOpen(const wxString& strHostname,
                     const wxString& strUsername,
                     const wxString& strPassword);
+
+    /*!
+        Open communication interface.
+        @param strHostname Host to connect to.
+        @param port Port of interface to connec to
+        @param strUsername Username.
+        @param strPassword Username.
+        @return CANAL_ERROR_SUCCESS if channel is open or CANAL error code if error 
+            or the channel is already opened or other error occur.
+     */
+    int doCmdOpen(const wxString& strHostname,
+                    short port,
+                    const wxString& strUsername,
+                    const wxString& strPassword);                
 
     /*!
         Close communication interface
@@ -648,10 +661,12 @@ public:
      * Get value on string form for variable.
      * 
      * @param name Name of variable.
+     * @param strValue Value in string form
+     * @param bDecode Decode (if true) from BASE64 if value is stored decoded.
      * @return VSCP_ERROR_SUCCESS on success
      * 
      */
-    int getRemoteVariableValue( const wxString& name, wxString& strValue );
+    int getRemoteVariableValue( const wxString& name, wxString& strValue, bool bDecode=false );
     
     /*!
      * Set value for variable from string.

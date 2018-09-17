@@ -580,7 +580,7 @@ bool vscp_base64_wxdecode( wxString& str )
     if ( NULL == pbuf ) return false;
     memset( pbuf, 0, bufferSize );
     
-    vscp_base64_decode( (const unsigned char *)( (const char *)str.mbc_str() ), 
+    vscp_base64_decode( (const char *)str.mbc_str(), 
                             str.length(), 
                             pbuf, 
                             &dest_len );
@@ -601,7 +601,7 @@ bool vscp_base64_wxencode( wxString& str )
     if ( NULL == pbuf ) return false;
     memset( pbuf, 0, bufferSize );
     
-    vscp_base64_encode( (const unsigned char *)( (const char *)str.mbc_str() ), 
+    vscp_base64_encode( (const char *)str.mbc_str(), 
                                     strlen( (const char *)str.mbc_str() ), 
                                     pbuf );
     
@@ -4815,6 +4815,24 @@ void vscp_makeHtml(wxString& str)
         if (0x0a == (unsigned char) strOriginal.GetChar(i)) {
             str += _("<br>");
         } 
+        else if (' ' == (unsigned char) strOriginal.GetChar(i)) {
+            str += _("&nbsp;");
+        }
+        else if ('<' == (unsigned char) strOriginal.GetChar(i)) {
+            str += _("&lt;");
+        }
+        else if ('>' == (unsigned char) strOriginal.GetChar(i)) {
+            str += _("&gt;");
+        }
+        else if ('&' == (unsigned char) strOriginal.GetChar(i)) {
+            str += _("&amp;");
+        }
+        else if ('"' == (unsigned char) strOriginal.GetChar(i)) {
+            str += _("&quot;");
+        }
+        else if ('\'' == (unsigned char) strOriginal.GetChar(i)) {
+            str += _("&apos;");
+        }
         else {
             str += strOriginal.GetChar(i);
         }

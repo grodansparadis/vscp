@@ -25,6 +25,13 @@
 // SOFTWARE.
 //
 
+//-----------------------------------------------------------------------------
+// REMEMBER !!!
+// ============
+// Remote variables is displayed in clear text but are transferred BASE64 encoded.
+// That is XML files,tcp/ip links, websocket links etc use BASE64 encoded
+// values and notes. However they are stored in clear text in the database.
+//-----------------------------------------------------------------------------
 
 // VSCP daemon variable codes are defined in this file
 
@@ -188,15 +195,6 @@ public:
     static uint16_t getVariableTypeFromString(const wxString& strVariableType);
     
     /*!
-     * Return true if this variable type value is presented BASE64 encoded
-     * @param type Variable type to test.
-     *  @eturn true if type is BASE64 encoded, false otherwise
-     */
-    static bool isValueBase64Encoded( int type ); 
-    
-    bool isValueBase64Encoded( void ) { isValueBase64Encoded( m_type ); };
-    
-    /*!
      * Check if the variable is a numerical type
      * @return true if numerical, false otherwise.
      */
@@ -206,6 +204,7 @@ public:
         Set variable value from string
         @param type Type of value
         @param strValue Value in string form
+        @param bBase64 True if strValue is BASE64 encoded.
         @return true on success.
      */
     bool setValueFromString(int type, const wxString& strValue, bool bBase64 = false );
@@ -214,7 +213,7 @@ public:
     /*!
         Get the variable value as a string value
         @param str String that will get string representation of variable.
-        @param  bBase64 If true strings are encoded in BASE64
+        @param  bBase64 If set to true value is encoded in BASE64
      */
     void writeValueToString( wxString& strValue, bool bBase64=false );
 
@@ -326,7 +325,7 @@ public:
         getValue
         @param value String that will receive value.
      */
-    void setValue( wxString value, bool bBase64=false  );  
+    bool setValue( wxString strValue, bool bBase64=false  );  
 
     /*!
         setValue
@@ -460,7 +459,7 @@ public:
     uint16_t getType( void ) { return m_type; };
 
     // note
-    void setNote( const wxString& strNote, bool bBase64=false );
+    bool setNote( const wxString& strNote, bool bBase64=false );
     wxString& getNote( void ) { return m_note; };
     bool getNote( wxString& strNote, bool bBase64 = false );
     

@@ -44,9 +44,9 @@ main(void)
 
         gpio.open( "admin",
 		        "secret",
-		        "192.168.1.6",
+		        "127.0.0.1",
 		        9598,
-		        "test",
+		        "rpio",
 		        "t1t2t3t4t5t");
  
         return 0;

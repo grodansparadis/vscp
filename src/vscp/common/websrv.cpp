@@ -746,7 +746,7 @@ check_admin_authorization( struct web_connection *conn, void *cbdata )
     char decoded[2048];
     size_t len;
     memset( decoded, 0, sizeof( decoded ) );
-    if ( -1 == vscp_base64_decode( (const unsigned char *)buf, 
+    if ( -1 == vscp_base64_decode( (const char *)buf, 
                                     strlen( buf )+1, 
                                     decoded, 
                                     &len ) ) {
@@ -3738,7 +3738,8 @@ static int vscp_variable_list( struct web_connection *conn, void *cbdata  )
         web_printf(conn, "</h4>");
 
         wxString strValue;
-        variable.writeValueToString( strValue, true );
+        variable.writeValueToString( strValue, false );
+        vscp_makeHtml( strValue );
         if ( strValue.Length() > 80 ) {
             strValue = strValue.Left(80) + _("...");
         }
@@ -3748,7 +3749,7 @@ static int vscp_variable_list( struct web_connection *conn, void *cbdata  )
         web_printf( conn, "<br>");
         web_printf( conn, "<b>Note:</b> ");
         wxString strNote;
-        variable.getNote(strNote, true);
+        variable.getNote( strNote );
         if ( strNote.Length() > 80 ) {
             strNote = strNote.Left( 80 ) + _("...");
         }
@@ -4034,7 +4035,7 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         }
         else {
             wxString str;
-            variable.writeValueToString( str, true );
+            variable.writeValueToString( str );
             web_printf( conn, "%s", (const char *)str.mbc_str() );
         }
 
@@ -4343,7 +4344,7 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         }
         else {
             wxString str;
-            variable.writeValueToString( str, true );
+            variable.writeValueToString( str );
             web_printf( conn, "%s", (const char *)str.mbc_str() );
         }
 
@@ -4361,7 +4362,7 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         }
         else {
             wxString str;
-            variable.writeValueToString( str, true );
+            variable.writeValueToString( str );
             web_printf( conn, "%s", (const char *)str.mbc_str() );
         }
 
@@ -4379,7 +4380,7 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         }
         else {
             wxString str;
-            variable.writeValueToString( str, true );
+            variable.writeValueToString( str );
             web_printf( conn, "%s", (const char *)str.mbc_str() );
         }
 
@@ -4397,7 +4398,7 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         }
         else {
             wxString str;
-            variable.writeValueToString( str, true );
+            variable.writeValueToString( str );
             web_printf( conn, "%s", (const char *)str.mbc_str() );
         }
 
@@ -4415,7 +4416,7 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         }
         else {
             wxString str;
-            variable.writeValueToString( str, true );
+            variable.writeValueToString( str );
             web_printf( conn, "%s", (const char *)str.mbc_str() );
         }
 
@@ -4433,7 +4434,7 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         }
         else {
             wxString str;
-            variable.writeValueToString( str, true );
+            variable.writeValueToString( str );
             web_printf( conn, "%s", (const char *)str.mbc_str() );
         }
 
@@ -4451,7 +4452,7 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         }
         else {
             wxString str;
-            variable.writeValueToString( str, true );
+            variable.writeValueToString( str );
             web_printf( conn, "%s", (const char *)str.mbc_str() );
         }
 
@@ -4468,7 +4469,7 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         }
         else {
             wxString str;
-            variable.writeValueToString( str, true );
+            variable.writeValueToString( str );
             web_printf( conn, "%s", (const char *)str.mbc_str() );
         }
 
@@ -4485,7 +4486,7 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         }
         else {
             wxString str;
-            variable.writeValueToString( str, true );
+            variable.writeValueToString( str );
             web_printf( conn, "%s", (const char *)str.mbc_str() );
         }
 
@@ -4502,7 +4503,7 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         }
         else {
             wxString str;
-            variable.writeValueToString( str, true );
+            variable.writeValueToString( str );
             web_printf( conn, "%s", (const char *)str.mbc_str() );
         }
 
@@ -4520,7 +4521,7 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         }
         else {
             wxString str;
-            variable.writeValueToString( str, true );
+            variable.writeValueToString( str );
             web_printf( conn, "%s", (const char *)str.mbc_str() );
         }
 
@@ -4538,7 +4539,7 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         }
         else {
             wxString str;
-            variable.writeValueToString( str, true );
+            variable.writeValueToString( str );
             web_printf( conn, "%s", (const char *)str.mbc_str() );
         }
 
@@ -4555,7 +4556,7 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
         }
         else {
             wxString str;
-            variable.writeValueToString( str, true );
+            variable.writeValueToString( str );
             web_printf( conn, "%s", (const char *)str.mbc_str() );
         }
 
@@ -4699,7 +4700,7 @@ static int vscp_variable_edit( struct web_connection *conn, void *cbdata  )
     }
     else {
         wxString str;
-        variable.getNote( str, true );
+        variable.getNote( str );
         web_printf(conn, "%s", (const char *)str.mbc_str() );
     }
 
@@ -4924,7 +4925,7 @@ static int vscp_variable_post( struct web_connection *conn, void *cbdata )
 
         variable.setPersistent( bPersistent );
         variable.setType( nType );
-        vscp_base64_wxencode( strNote );
+        //vscp_base64_wxencode( strNote );
         variable.setNote( strNote );
         variable.setName( strName );
         variable.setLastChangedToNow();
@@ -4950,7 +4951,7 @@ static int vscp_variable_post( struct web_connection *conn, void *cbdata )
 
         //variable.setPersistent( bPersistent );
         //variable.setType( nType );
-        vscp_base64_wxencode( strNote );
+        //vscp_base64_wxencode( strNote );
         variable.setNote( strNote );
         variable.setName( strName );
         variable.setLastChangedToNow();
@@ -4963,10 +4964,10 @@ static int vscp_variable_post( struct web_connection *conn, void *cbdata )
 
     // If value should be BASE64 encoded we
     // do that now. The BLOB type
-    if ( variable.isValueBase64Encoded() &&
+    /*if ( variable.isValueBase64Encoded() &&
         ( VSCP_DAEMON_VARIABLE_CODE_BLOB != variable.getType() ) ) {
         vscp_base64_wxencode( strValue );
-    }
+    }*/
 
     variable.setValue( strValue );
 

@@ -48,7 +48,6 @@
 #include <wx/wfstream.h>
 #include <wx/xml/xml.h>
 #include <wx/tokenzr.h>
-#include <wx/base64.h>
 
 #include <sqlite3.h>
 
@@ -209,14 +208,7 @@ bool CUserItem::setFromString( wxString userSettings )
         strToken.Trim();
         strToken.Trim(false);
         if ( strToken.Length() ) {
-            size_t len = wxBase64Decode( NULL, 0, strToken );
-            if ( 0 == len ) return false;
-            uint8_t *pbuf = new uint8_t[len];
-            if ( NULL == pbuf ) return false;
-            len = wxBase64Decode( pbuf, len, strToken );
-            strToken = wxString::FromUTF8( (const char *)pbuf, len );
-            delete [] pbuf;        
-        
+            vscp_base64_wxdecode( strToken );       
             setNote( strToken );
         }
     }
@@ -260,8 +252,10 @@ bool CUserItem::getAsString( wxString& strUser )
     strUser += _(";");
     strUser += getAllowedEventsAsString();
     strUser += _(";");
-    strUser += wxBase64Encode( getNote().mbc_str(), strlen( getNote().mbc_str() ) ); 	
-    //strUser += getNote();
+    
+    wxstr = getNote();
+    vscp_base64_wxencode( wxstr );
+    strUser += wxstr;
     
     return true;
 }
@@ -1120,17 +1114,9 @@ bool CUserList::addUser( const wxString& strUser, bool bUnpackNote )
     // note
     if ( tkz.HasMoreTokens() ) {
         
-        if ( bUnpackNote ) {
-            
-            wxString wxstr = tkz.GetNextToken();
- 
-            size_t len = wxBase64Decode( NULL, 0, wxstr );
-            if ( 0 == len ) return false;
-            uint8_t *pbuf = new uint8_t[len];
-            if ( NULL == pbuf ) return false;
-            len = wxBase64Decode( pbuf, len, wxstr );
-            strNote = wxString::FromUTF8( (const char *)pbuf, len );
-            delete [] pbuf;
+        if ( bUnpackNote ) {            
+            strNote = tkz.GetNextToken();
+            vscp_base64_wxdecode( strNote );
         }
         else {
             strNote = tkz.GetNextToken();

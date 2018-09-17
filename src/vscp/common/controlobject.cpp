@@ -101,7 +101,6 @@
 #include "web_template.h"
 
 #include <sqlite3.h>
-#include <mongoose.h>
 
 #include <vscp_aes.h>
 #include <fastpbkdf2.h>

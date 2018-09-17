@@ -10,104 +10,90 @@
 
   <variable type="integer">
     <name>LMSENSORS_NUMBEROFSENSORS</name>
-    <note></note>
-    <value>1</value>
+    <value>MQ==</value>
   </variable>
 
   <variable type="integer">
     <name>LMSENSORS_INTERVAL0</name>
-    <note>core 0</note>
-    <value>1</value>
+    <note>Y29yZSAw</note>
+    <value>MQ==</value>
   </variable>
 
   <variable type="guid">
     <name>LMSENSORS_GUID0</name>
-    <note></note>
-    <value>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</value>
+    <value>MDA6MDA6MDA6MDA6MDA6MDA6MDA6MDA6MDA6MDA6MDA6MDA6MDA6MDA6MDA6MDA=</value>
   </variable>
 
   <variable type="string">
     <name>LMSENSORS_PATH0</name>
-    <note>Temp for core 0 on my developmet machine</note>
-    <value>/sys/class/hwmon/hwmon1/device/temp2_input</value>
+    <note>VGVtcCBmb3IgY29yZSAwIG9uIG15IGRldmVsb3BtZW50IG1hY2hpbmU=</note>
+    <value>L3N5cy9jbGFzcy9od21vbi9od21vbjEvZGV2aWNlL3RlbXAyX2lucHV0</value>
   </variable>
 
   <variable type="integer">
     <name>LMSENSORS_VSCPCLASS0</name>
-    <note></note>
-    <value>10</value>
+    <value>MTA=</value>
   </variable>
 
   <variable type="integer">
     <name>LMSENSORS_VSCPTYPE0</name>
-    <note></note>
-    <value>6</value>
+    <value>Ng==</value>
   </variable>
 
   <variable type="integer">
     <name>LMSENSORS_DATACODING0</name>
-    <note></note>
-   <value>0x68</value>
+   <value>MHg2OA==</value>
   </variable>
 
   <variable type="integer">
     <name>LMSENSORS_MULTIPLY0</name>
-    <note></note>
-    <value>1</value>
+    <value>MQ==</value>
   </variable>
 
   <variable type="integer">
     <name>LMSENSORS_DIVIDE0</name>
-    <note></note>
-    <value>1000</value>
+    <value>MTAwMA==</value>
   </variable>
 
   <variable type="integer">
     <name>LMSENSORS_INTERVAL1</name>
-    <note></note>
-    <value>1</value>
+    <value>MQ==</value>
   </variable>
 
   <variable type="guid">
     <name>LMSENSORS_GUID1</name>
-    <note></note>
-    <value>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</value>
+    <value>MDA6MDA6MDA6MDA6MDA6MDA6MDA6MDA6MDA6MDA6MDA6MDA6MDA6MDA6MDA6MDA=</value>
   </variable>
 
   <variable type="string">
     <name>LMSENSORS_PATH1</name>
-    <note>Temp for Core 1 on my development machine</note>
-    <value>/sys/class/hwmon/hwmon1/device/temp3_input</value>
+    <note>VGVtcCBmb3IgQ29yZSAxIG9uIG15IGRldmVsb3BtZW50IG1hY2hpbmU=</note>
+    <value>L3N5cy9jbGFzcy9od21vbi9od21vbjEvZGV2aWNlL3RlbXAzX2lucHV0</value>
   </variable>
 
   <variable type="integer">
     <name>LMSENSORS_VSCPCLASS1</name>
-    <note></note>
-    <value>10</value>
+    <value>MTA=</value>
   </variable>
 
   <variable type="integer">
     <name>LMSENSORS_VSCPTYPE1</name>
-    <note></note>
-    <value>6</value>
+    <value>Ng==</value>
   </variable>
 
   <variable type="integer">
     <name>LMSENSORS_DATACODING1</name>
-    <note></note>
-   <value>0x69</value>
+   <value>MHg2OQ==</value>
   </variable>
 
   <variable type="integer">
     <name>LMSENSORS_MULTIPLY1</name>
-    <note></note>
-    <value>1</value>
+    <value>MQ==</value>
   </variable>
 
   <variable type="integer">
     <name>LMSENSORS_DIVIDE1</name>
-    <note></note>
-    <value>1000</value>
+    <value>MTAwMA==</value>
   </variable>
 
 </persistent>
