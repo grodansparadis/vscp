@@ -453,19 +453,11 @@ void dlgVscpInterfaceSettings::OnButtonVscpSetConfigurationClick( wxCommandEvent
         return;
     }
 
-    char buf[ 256000 ];
-    wxCharBuffer wxbuf = strDrvInfo.ToUTF8();
-
-    int baselen = strlen( wxbuf.data() );
-    //int len = mg_base64_decode( (const unsigned char *)wxbuf.data(), baselen, buf );
-    size_t len;
-   if ( -1 ==  vscp_base64_decode( (const unsigned char *)wxbuf.data(), baselen, buf, &len ) ) {
-        wxMessageBox( _( "The configuration data was either in the wrong form (should have been base64 encoded xml) or it was absent." ) );
-        return;
-    }
+    wxString wxstr = strDrvInfo;  
+    vscp_base64_wxdecode( wxstr );
 
     // OK we have valid data - Parse it
-    wxString driverinfo = wxString::FromUTF8( buf );
+    wxString driverinfo = wxstr;
     if ( !conf.parseDriverInfo( driverinfo ) ) {
         wxMessageBox( _( "Failed to parse the configuration data." ) );
         return;
