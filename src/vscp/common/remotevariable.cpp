@@ -820,6 +820,34 @@ void CVSCPVariable::writeValueToString( wxString& strValueOut, bool bBase64 )
 // getValue
 //
 
+wxString CVSCPVariable::getValue( bool bBase64 ) 
+{ 
+    wxString wxstr = m_strValue;
+    if ( bBase64 ) {
+        vscp_base64_wxencode( wxstr );
+    }
+
+    return  wxstr; 
+};
+
+///////////////////////////////////////////////////////////////////////////////
+// getValue
+//
+
+void CVSCPVariable::getValue( wxString *pval, bool bBase64 ) 
+{ 
+    wxString wxstr = m_strValue;
+    if ( bBase64 ) {
+        vscp_base64_wxencode( wxstr );
+    }
+
+    *pval =  wxstr; 
+};
+
+///////////////////////////////////////////////////////////////////////////////
+// getValue
+//
+
 void CVSCPVariable::setValue(bool val)
 {
     m_strValue.Printf(_("%s"), val ? "true" : "false" );
@@ -1112,10 +1140,20 @@ bool CVSCPVariable::setValueFromString( int type, const wxString& strValue, bool
     return true;
 }
  
-
 ///////////////////////////////////////////////////////////////////////////////
 // getNote
 //
+
+wxString CVSCPVariable::getNote( bool bBase64 )
+{
+    wxString strNote = m_note; 
+    if ( bBase64 ) vscp_base64_wxencode( strNote );
+
+    return strNote;    
+} 
+
+///////////////////////////////////////////////////////////////////////////////
+// getNote
 //
 
 bool CVSCPVariable::getNote( wxString& strNote, bool bBase64 )

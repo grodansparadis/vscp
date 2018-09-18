@@ -2631,8 +2631,8 @@ restsrv_doListVariable( struct web_connection *conn,
                                     variable.getAccessRights(),
                                     (const char *)variable.getLastChange().FormatISOCombined().mbc_str(),
                                     variable.isPersistent() ? "true" : "false",
-                                    (const char *)variable.getValue().mbc_str(),
-                                    (const char *)variable.getNote().mbc_str() );                        
+                                    (const char *)variable.getValue( true ).mbc_str(),
+                                    (const char *)variable.getNote( true ).mbc_str() );                        
                     }
                     
                     web_write( conn, wrkbuf, strlen( wrkbuf) );
@@ -2719,8 +2719,8 @@ restsrv_doListVariable( struct web_connection *conn,
                     sprintf((char *) wrkbuf,
                                 "<name>%s</name><value>%s</value><note>%s</note>",
                                 (const char *)variable.getName().mbc_str(),
-                                (const char *)variable.getValue().mbc_str(),
-                                (const char *)variable.getNote().mbc_str() );
+                                (const char *)variable.getValue(true).mbc_str(),
+                                (const char *)variable.getNote(true).mbc_str() );
 
                     web_write( conn, wrkbuf, strlen( wrkbuf) );
                 }
@@ -2791,8 +2791,8 @@ restsrv_doListVariable( struct web_connection *conn,
                     var["varlastchange"] = 
                             (const char *)variable.getLastChange().FormatISOCombined().mbc_str();
                     if ( !bShort ) {
-                        var["varvalue"] = (const char *)variable.getValue().mbc_str();
-                        var["varnote"] = (const char *)variable.getNote().mbc_str();
+                        var["varvalue"] = (const char *)variable.getValue(true).mbc_str();
+                        var["varnote"] = (const char *)variable.getNote(true).mbc_str();
                     }
                     
                     // Add event to event array
@@ -2858,7 +2858,7 @@ restsrv_doWriteVariable( struct web_connection *conn,
         }
 
         // Set variable value
-        if (!variable.setValueFromString( variable.getType(), strValue ) ) {
+        if ( !variable.setValueFromString( variable.getType(), strValue ) ) {
             restsrv_error( conn, pSession, format, REST_ERROR_CODE_MISSING_DATA );
             return;
         }

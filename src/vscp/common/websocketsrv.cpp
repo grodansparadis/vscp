@@ -1550,14 +1550,16 @@ ws1_command( struct web_connection *conn,
         bool bInputValue = false;
         if ( tkz.HasMoreTokens() ) {
             bInputValue = true;
-            value = tkz.GetNextToken(); // Keep possible coding
+            value = tkz.GetNextToken(); 
+            vscp_base64_wxdecode( value );
         }
         
         // Get variable note
         bool bInputNote = false;
         if (tkz.HasMoreTokens()) {
             bInputNote = true;
-            note = tkz.GetNextToken();  // Keep possible coding
+            note = tkz.GetNextToken(); 
+            vscp_base64_wxdecode( value );
         }
 
         if ( !bVariableExist ) {
@@ -1694,8 +1696,6 @@ ws1_command( struct web_connection *conn,
             return;
         }
 
-        //variable.writeValueToString(strvalue);
-        //type = variable.getType();
         // name;type;bPersistent;userid;rights;lastchanged;value;note
         wxString strResult = _("+;RVAR;");
         strResult += variable.getAsString( false );
@@ -1783,7 +1783,7 @@ ws1_command( struct web_connection *conn,
                 
                 if ( !variable.setValueFromString( variable.getType(), 
                                                         strTok,
-                                                        false ) ) {     // Preserve coding
+                                                        true ) ) {     // decode
                     
                     wxstr = wxString::Format( _("-;WVAR;%d;%s"),
                                         (int)WEBSOCK_ERROR_SYNTAX_ERROR,
@@ -1833,9 +1833,6 @@ ws1_command( struct web_connection *conn,
                                     wxstr.length() );
             return;
         }
-
-        //variable.writeValueToString( strvalue );
-        //type = variable.getType();
 
         wxString strResult = _( "+;WVAR;" );
         strResult += strVarName;

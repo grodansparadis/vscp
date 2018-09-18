@@ -200,22 +200,7 @@ public:
      */
     bool isNumerical( void );
 
-    /*!
-        Set variable value from string
-        @param type Type of value
-        @param strValue Value in string form
-        @param bBase64 True if strValue is BASE64 encoded.
-        @return true on success.
-     */
-    bool setValueFromString(int type, const wxString& strValue, bool bBase64 = false );
 
-
-    /*!
-        Get the variable value as a string value
-        @param str String that will get string representation of variable.
-        @param  bBase64 If set to true value is encoded in BASE64
-     */
-    void writeValueToString( wxString& strValue, bool bBase64=false );
 
     /*!
         Set variable information from a string value
@@ -309,17 +294,36 @@ public:
      */
     void setFalse(void);
 
+        /*!
+        Set variable value from string
+        @param type Type of value
+        @param strValue Value in string form
+        @param bBase64 True if strValue is BASE64 encoded.
+        @return true on success.
+     */
+    bool setValueFromString(int type, const wxString& strValue, bool bBase64 = false );
+
+
+    /*!
+        Get the variable value as a string value
+        @param str String that will get string representation of variable.
+        @param  bBase64 If set to true value is encoded in BASE64
+     */
+    void writeValueToString( wxString& strValue, bool bBase64=false );
+
     /*!
         Get string value
+        @param bBase64 If true the returned value will be BASE64 encoded.
         @return value in string form is returned regardless of type.
      */
-    wxString getValue( void ) { return  m_strValue; };
+    wxString getValue( bool bBase64 = false );
     
     /*!
         getValue
         @param pval Pointer to string that will get value.
+        @param bBase64 If true the returned value will be BASE64 encoded.
      */
-    void getValue( wxString *pval ) { *pval =  m_strValue; };
+    void getValue( wxString *pval, bool bBase64=false );
     
     /*!
         getValue
@@ -460,7 +464,7 @@ public:
 
     // note
     bool setNote( const wxString& strNote, bool bBase64=false );
-    wxString& getNote( void ) { return m_note; };
+    wxString getNote( bool bBase64=false );
     bool getNote( wxString& strNote, bool bBase64 = false );
     
     // Persistence
