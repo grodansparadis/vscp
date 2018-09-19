@@ -38,16 +38,17 @@
 int
 main(void)
 {
-        CRpiGpio gpio;
+    CRpiGpio gpio;
 
-        ::wxInitialize();
+    ::wxInitialize();
 
-        gpio.open( "admin",
+    gpio.open( "admin",
 		        "secret",
 		        "127.0.0.1",
 		        9598,
-		        "rpio",
+		        "rpi",
 		        "t1t2t3t4t5t");
  
-        return 0;
+	gpio.close();
+    return 0;
 }

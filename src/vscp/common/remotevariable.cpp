@@ -880,7 +880,7 @@ void CVSCPVariable::setValue(int val)
 // setValue
 //
     
-void CVSCPVariable::getValue(int *pValue)
+void CVSCPVariable::getValue( int *pValue )
 {
     long longValue = 0;
     m_strValue.ToLong( &longValue );
@@ -891,7 +891,7 @@ void CVSCPVariable::getValue(int *pValue)
 // setValue
 //
     
-void CVSCPVariable::setValue(long val)
+void CVSCPVariable::setValue( long val )
 {
     m_strValue.Printf(_("%ld"), val );
 };
@@ -900,7 +900,7 @@ void CVSCPVariable::setValue(long val)
 // setValue
 //
 
-void CVSCPVariable::getValue(long *pValue)
+void CVSCPVariable::getValue( long *pValue )
 {
     m_strValue.ToLong( pValue );
 }
@@ -909,7 +909,7 @@ void CVSCPVariable::getValue(long *pValue)
 // setValue
 //
 
-void CVSCPVariable::setValue(double val)
+void CVSCPVariable::setValue( double val )
 {
     m_strValue.Printf(_("%lf"), val );
 }
@@ -918,7 +918,7 @@ void CVSCPVariable::setValue(double val)
 // getValue
 //
 
-void CVSCPVariable::getValue(double *pValue)
+void CVSCPVariable::getValue( double *pValue )
 {
     m_strValue.ToDouble( pValue );
 }
@@ -928,7 +928,7 @@ void CVSCPVariable::getValue(double *pValue)
 ///////////////////////////////////////////////////////////////////////////////
 // setValue
 //
-void CVSCPVariable::setValue(vscpEvent& event)
+void CVSCPVariable::setValue( vscpEvent& event )
 {
     vscp_writeVscpEventToString( &event, m_strValue );
 };
@@ -936,7 +936,7 @@ void CVSCPVariable::setValue(vscpEvent& event)
 ///////////////////////////////////////////////////////////////////////////////
 // getValue
 //
-void CVSCPVariable::getValue(vscpEvent *pEvent)
+void CVSCPVariable::getValue( vscpEvent *pEvent )
 {
     if ( NULL != pEvent ) return;
     vscp_setVscpEventFromString( pEvent, m_strValue );
@@ -953,7 +953,7 @@ void CVSCPVariable::setValue(vscpEventEx& eventex)
 ///////////////////////////////////////////////////////////////////////////////
 // getValue
 //
-void CVSCPVariable::getValue(vscpEventEx *pEventEx)
+void CVSCPVariable::getValue( vscpEventEx *pEventEx )
 {
     if ( NULL != pEventEx ) return;
     vscp_setVscpEventExFromString( pEventEx, m_strValue );
@@ -963,7 +963,7 @@ void CVSCPVariable::getValue(vscpEventEx *pEventEx)
 // setValue
 //
 
-void CVSCPVariable::getValue(wxDateTime *pValue)
+void CVSCPVariable::getValue( wxDateTime *pValue )
 {
     pValue->ParseISOCombined( m_strValue );
 }
@@ -972,7 +972,7 @@ void CVSCPVariable::getValue(wxDateTime *pValue)
 // setValue
 //
 
-void CVSCPVariable::setValue(wxDateTime& val)
+void CVSCPVariable::setValue( wxDateTime& val )
 {
     if ( val.IsValid() ) {
         m_strValue = val.FormatISOCombined();
@@ -987,7 +987,9 @@ void CVSCPVariable::setValue(wxDateTime& val)
 // setValueFromString
 //
 
-bool CVSCPVariable::setValueFromString( int type, const wxString& strValue, bool bBase64 )
+bool CVSCPVariable::setValueFromString( int type, 
+                                            const wxString& strValue, 
+                                            bool bBase64 )
 {	
     wxString wxstr = strValue;
 

@@ -51,7 +51,7 @@ EXTRALIBS += -L/usr/lib/x86_64-linux-gnu -pthread   -lwx_baseu-3.0 -lwx_baseu_xm
 endif
 
 DLFLAGS = -g -shared -fPIC
-TRIP = strip
+STRIP = strip
 INSTALL_PROGRAM = ${INSTALL}
 INSTALL_DATA = ${INSTALL} -m 644
 INSTALL_DIR = /usr/bin/install -c -d
@@ -88,7 +88,7 @@ VSCPRPIGPIO_OBJECTS = vscpl2drv-rpigpio.o\
 all: vscpl2drv-rpigpio.so test
 
 test:  test.o $(VSCPRPIGPIO_OBJECTS)
-	$(CXX) -o $@ test.o $(VSCPRPIGPIO_OBJECTS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -o $@ test.o $(VSCPRPIGPIO_OBJECTS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
 
 # Build the Linux DL
 vscpl2drv-rpigpio.so: $(VSCPRPIGPIO_OBJECTS)

@@ -1,0 +1,10 @@
+<xxxxxx_driver_setup> 
+<sensor	interval="30" guid="" path="/sys/bus/w1/devices/28-00000548476b/w1_slave" unit="K|C|F" class="10" />
+<sensor	interval="10" guid="" path=/sys/bus/w1/devices/28-000003e71198/w1_slave" unit="K|C|F" class="1040" />
+</xxxxxx_driver_setup>
+
+interval - Interval betwen sent out readings in seconds
+guid 	 - Possibility to set special GUID. If not given sneosr id is used to construct unique id.
+path	 - Path to sensor data.
+unit	 - Unit to present temperature data in.
+class    - Measuremt class to use. Type is always Temperature = 6
