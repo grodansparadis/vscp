@@ -1,6 +1,10 @@
 #!//usr/bin/python
 # Copyright 2018 Ake Hedman, Grodans Paradis AB
 # for the VSCP project (https://www.vscp.org)
+#
+# Arguments: #tones zone subzone time date
+# where #tones is number of voicecall tone repeats.
+
 
 import sys
 import uuid
