@@ -192,7 +192,7 @@ CSim::open(const char *pUsername,
 #ifndef WIN32
         syslog(LOG_ERR,
                 "%s",
-                (const char *) "[VSCPSimDrv]Unable to connect to VSCP TCP/IP interface. Terminating!");
+                (const char *)"[VSCPSimDrv]Unable to connect to VSCP TCP/IP interface. Terminating!");
 #endif
         return false;
     }
@@ -1399,10 +1399,10 @@ dumb_fill_data:
                             vscp_page_select = ( pEvent->pdata[ 1 ] << 8 ) | pEvent->pdata[ 2 ];
 
                             for ( i = pEvent->pdata[ 3 ]; // register to write
-                                  // number of registers to write comes from byte length of write event
-                                  // reduced by four bytes
-                                  i < ( pEvent->pdata[ 3 ] + ( pEvent->sizeData - 4 ) );
-                            i++ ) {
+                                    // number of registers to write comes from byte length of write event
+                                    // reduced by four bytes
+                                    i < ( pEvent->pdata[ 3 ] + ( pEvent->sizeData - 4 ) );
+                                    i++ ) {
                                 eventEx.data[ 4 + ( i - pEvent->pdata[ 3 ] ) ] =
                                     writeLevel1Register( i, pEvent->pdata[ 4 + ( i - pEvent->pdata[ 3 ] ) ] );
                             }

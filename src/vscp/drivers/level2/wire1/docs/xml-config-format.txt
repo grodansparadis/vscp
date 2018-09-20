@@ -1,4 +1,6 @@
 <xxxxxx_driver_setup> 
+<filer>
+<mask>
 <sensor	interval="30" guid="" path="/sys/bus/w1/devices/28-00000548476b/w1_slave" unit="K|C|F" class="10" />
 <sensor	interval="10" guid="" path=/sys/bus/w1/devices/28-000003e71198/w1_slave" unit="K|C|F" class="1040" />
 </xxxxxx_driver_setup>

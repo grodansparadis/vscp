@@ -55,6 +55,8 @@
 #include <wx/tokenzr.h>
 #include <wx/datetime.h>
 
+#include <pigpio.h>
+
 #include "../../../../common/vscp.h"
 #include "../../../../common/vscphelper.h"
 #include "../../../../common/vscpremotetcpif.h"
@@ -72,6 +74,11 @@ CGpioInput::CGpioInput()
 {
     m_pin = 0;
     m_pullup = PUD_OFF;
+    m_watchdog = 0;
+    m_noice_filter_steady = 0;
+    m_noice_filter_active = 0;
+    m_glitch_filter = 0;
+
     // Monitor
     m_bEnable_Monitor = false;
     m_monitor_edge = INT_EDGE_SETUP;
@@ -387,10 +394,9 @@ int CGpioOutput::getInitialState( void )
 CGpioPwm::CGpioPwm() 
 {
     m_pin = 18;
-    m_type = PWM_OUTPUT;
-    m_mode = PWM_MODE_MS;
+    m_bHardware = false;
     m_range = 1024;
-    m_divisor = 0;
+    m_frequency = 0;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -421,91 +427,12 @@ uint8_t CGpioPwm::getPin( void )
     return m_pin;
 }
 
-//////////////////////////////////////////////////////////////////////
-// setType
-//
-
-bool CGpioPwm::setType( uint8_t type )
-{
-    m_type = type;
-    return true;
-}
-
-//////////////////////////////////////////////////////////////////////
-// setType
-//
-
-bool CGpioPwm::setType( const wxString& strtype )
-{
-    wxString str = strtype.Upper();
-
-    if ( wxNOT_FOUND != str.Find("HARD") ) {
-        m_type = VSCP_MODE_PWM_HARD;
-    }
-    else if ( wxNOT_FOUND != str.Find("SOFT") ) {
-        m_type = VSCP_MODE_PWM_SOFT;
-    }
-    else {
-        return false;
-    }
-
-    return true;
-}
-
-//////////////////////////////////////////////////////////////////////
-// getType
-//
-
-uint8_t CGpioPwm::getType( void )
-{
-    return m_type;
-}
-
-//////////////////////////////////////////////////////////////////////
-// setMode
-//
-
-bool CGpioPwm::setMode( uint8_t mode )
-{
-    m_mode = mode;
-    return true;
-}
-
-//////////////////////////////////////////////////////////////////////
-// setMode
-//
-
-bool CGpioPwm::setMode( const wxString& strmode )
-{
-    wxString str = strmode.Upper();
-
-    if ( wxNOT_FOUND != str.Find("BALANCED") ) {
-        m_type = PWM_MODE_BAL;
-    }
-    else if ( wxNOT_FOUND != str.Find("MARKSPACE") ) {
-        m_type = PWM_MODE_MS;
-    }
-    else {
-        return false;
-    }
-
-    return true;
-}
-
-//////////////////////////////////////////////////////////////////////
-// getMode
-//
-
-uint8_t CGpioPwm::getMode( void )
-{
-    return m_mode;
-}
 
 //////////////////////////////////////////////////////////////////////
 // setRange
 //
 
-bool CGpioPwm::setRange( uint16_t range )
+bool CGpioPwm::setRange( int range )
 {
     m_range = range;
     return true;
@@ -515,28 +442,48 @@ bool CGpioPwm::setRange( uint16_t range )
 // getRange
 //
 
-uint16_t CGpioPwm::getRange( void )
+int CGpioPwm::getRange( void )
 {
     return m_range;
 }
 
 //////////////////////////////////////////////////////////////////////
-// setDivisor
+// setFrequency
 //
 
-bool CGpioPwm::setDivisor( uint16_t divisor )
+bool CGpioPwm::setFrequency( int frequency )
 {
-    m_divisor = divisor;
+    m_frequency = frequency;
     return true;
 }
 
 //////////////////////////////////////////////////////////////////////
-// getDivisor
+// getFrequency
 //
 
-uint16_t CGpioPwm::getDivisor( void )
+int CGpioPwm::getFrequency( void )
 {
-    return m_divisor;
+    return m_frequency;
+}
+
+
+//////////////////////////////////////////////////////////////////////
+// setDutyCycle
+//
+
+bool CGpioPwm::setDutyCycle( int dutycycle )
+{
+    m_dutycycle = dutycycle;
+    return true;
+}
+
+//////////////////////////////////////////////////////////////////////
+// getDutyCycle
+//
+
+int CGpioPwm::getDutyCycle( void )
+{
+    return m_dutycycle;
 }
 
 
@@ -579,6 +526,24 @@ uint8_t CGpioClock::getPin( void )
     return m_pin;
 }
 
+//////////////////////////////////////////////////////////////////////
+// setFrequency
+//
+
+bool CGpioClock::setFrequency( int frequency )
+{
+    m_frequency = frequency;
+    return true;
+}
+
+//////////////////////////////////////////////////////////////////////
+// getFrequency
+//
+
+int CGpioClock::getFrequency( void )
+{
+    return m_frequency;
+}
 
 // ----------------------------------------------------------------------------
 
@@ -767,6 +732,9 @@ CRpiGpio::CRpiGpio()
 	m_pthreadWorker = NULL;
 	m_setupXml = _("<?xml version = \"1.0\" encoding = \"UTF-8\" ?><setup><!-- empty --></setup>");
 	vscp_clearVSCPFilter(&m_vscpfilter); // Accept all events
+    m_sample_rate = 5;   
+    m_primary_dma_channel = 14;
+    m_secondary_dma_channel = 6;
 	::wxInitialize();
 }
 
@@ -819,11 +787,11 @@ CRpiGpio::~CRpiGpio()
 
 bool
 CRpiGpio::open( const char *pUsername,
-		        const char *pPassword,
-		        const char *pHost,
-		        short port,
-		        const char *pPrefix,
-		        const char *pConfig)
+		            const char *pPassword,
+		            const char *pHost,
+		            short port,
+		            const char *pPrefix,
+		            const char *pConfig)
 {
 	bool rv = true;
 	wxString strConfig = wxString::FromAscii( pConfig );
@@ -835,25 +803,21 @@ CRpiGpio::open( const char *pUsername,
 	m_prefix = wxString::FromAscii( pPrefix );
 
 	// Parse the configuration string. It should
-	// have the following form
-	// path
 	
 	wxStringTokenizer tkz(wxString::FromAscii(pConfig), _(";\n"));
 
 	// Check for socketcan interface in configuration string
 	if ( tkz.HasMoreTokens() ) {
-		// Interface
-		m_setupXml = tkz.GetNextToken();
+		m_setupXml = tkz.GetNextToken();    // XML for setup
 	}
-
 
 	// First log on to the host and get configuration 
 	// variables
 
 	if ( VSCP_ERROR_SUCCESS != m_srv.doCmdOpen( m_host,
-                                                m_port,
-												m_username,
-												m_password ) ) {
+                                                    m_port,
+												    m_username,
+												    m_password ) ) {
 		syslog(LOG_ERR,
 				"%s %s",
                 (const char *)VSCP_RPIGPIO_SYSLOG_DRIVER_ID,
@@ -885,6 +849,7 @@ CRpiGpio::open( const char *pUsername,
     wxXmlDocument doc;
 
     if ( !doc.Load( xmlstream ) ) {
+
         syslog( LOG_ERR,
 				    "%s %s",
                     (const char *)VSCP_RPIGPIO_SYSLOG_DRIVER_ID,
@@ -894,6 +859,7 @@ CRpiGpio::open( const char *pUsername,
 	    m_srv.doCmdClose();
         
         return false;
+
     }
 
     // start processing the XML file
@@ -911,33 +877,45 @@ CRpiGpio::open( const char *pUsername,
     }
 
     wxString attribute;
+
+    // Samplerate
+    attribute = doc.GetRoot()->GetAttribute("sample-rate", "5");
+    m_sample_rate = vscp_readStringValue( attribute );
+
+    // Primary DMA channel
+    attribute = doc.GetRoot()->GetAttribute("primary_dma-channel", "14");
+    m_primary_dma_channel = vscp_readStringValue( attribute );
+
+    // Secondary DMA channel
+    attribute = doc.GetRoot()->GetAttribute("secondary_dma-channel", "6");
+    m_secondary_dma_channel = vscp_readStringValue( attribute );
+    
+    // Mask
+    attribute = doc.GetRoot()->GetAttribute("mask", "");
+    if ( attribute.Length() ) {
+        if ( !vscp_readMaskFromString( &m_vscpfilter, attribute ) ) {
+            syslog(LOG_ERR,
+		            "%s %s",
+                    (const char *)VSCP_RPIGPIO_SYSLOG_DRIVER_ID,
+		            (const char *) "Unable to read event receive mask to driver filter.");
+        }
+    }
+
+    // Filter
+    attribute = doc.GetRoot()->GetAttribute("filter", "");
+    if ( attribute.Length() ) {
+        if ( !vscp_readFilterFromString( &m_vscpfilter, attribute ) ) {
+            syslog(LOG_ERR,
+		            "%s %s",
+                    (const char *)VSCP_RPIGPIO_SYSLOG_DRIVER_ID,
+		            (const char *) "Unable to read event receive filter to driver filter.");
+        }
+    }
+
     wxXmlNode *child = doc.GetRoot()->GetChildren();
     while ( child ) {
 
-        wxString str = child->GetName();
-        if ( child->GetName() == _("mask") ) {
-
-            wxString mask = child->GetNodeContent();
-            if ( !vscp_readMaskFromString( &m_vscpfilter, mask ) ) {
-                syslog(LOG_ERR,
-				            "%s %s",
-                            (const char *)VSCP_RPIGPIO_SYSLOG_DRIVER_ID,
-				            (const char *) "Unable to read event receive mask to driver filter.");
-            }
-
-        }
-        else if ( child->GetName() == _("filter") ) {
-            
-            wxString filter = child->GetNodeContent();
-            if ( vscp_readFilterFromString( &m_vscpfilter, filter ) ) {
-                syslog( LOG_ERR,
-				            "%s %s",
-                            (const char *)VSCP_RPIGPIO_SYSLOG_DRIVER_ID,
-				            (const char *) "Unable to read event receive filter to driver filter.");
-            }
-
-        } 
-        else if ( child->GetName() == _("input") ) {  
+        if ( child->GetName() == _("input") ) {  
 
             CGpioInput *pInputObj = new CGpioInput;
             if ( NULL != pInputObj ) {
@@ -952,6 +930,26 @@ CRpiGpio::open( const char *pUsername,
                 attribute =
                         child->GetAttribute("pullup", "off");
                 pInputObj->setPullUp( attribute ); 
+
+                // Watchdog
+                attribute =
+                        child->GetAttribute("watchdog", "0");
+                pInputObj->setWatchdog( vscp_readStringValue( attribute ) );
+
+                // Noice filter steady
+                attribute =
+                        child->GetAttribute("noice_filter_steady", "0");
+                pInputObj->setNoiceFilterSteady( vscp_readStringValue( attribute ) );
+
+                // Noice filter active
+                attribute =
+                        child->GetAttribute("noice_filter_active", "0");
+                pInputObj->setNoiceFilterActive( vscp_readStringValue( attribute ) );
+
+                // Glitch filter
+                attribute =
+                        child->GetAttribute("glitch_filter", "0");
+                pInputObj->setGlitchFilter( vscp_readStringValue( attribute ) );
                        
                 // * * * Monitor 
 
@@ -1086,7 +1084,7 @@ CRpiGpio::open( const char *pUsername,
                                 (int)pin );
                     }
 
-                } // report periof                          
+                } // report period                          
 
                 // Add input to list
                 m_inputPinList.push_back( pInputObj );
@@ -1136,10 +1134,13 @@ CRpiGpio::open( const char *pUsername,
                 uint8_t pin = vscp_readStringValue( attribute );
                 pPwmObj->setPin( pin );
 
-                // Get mode
+                // Get hardware flag
                 attribute =
-                    child->GetAttribute("mode", "MARKSPACE");
-                pPwmObj->setMode( attribute );
+                    child->GetAttribute("hardware", "false");
+                attribute.MakeUpper();
+                if ( wxNOT_FOUND != attribute.Find(_("TRUE")) ) {    
+                    pPwmObj->enableHardwarePwm();
+                }
 
                 // Get rate
                 attribute =
@@ -1150,8 +1151,8 @@ CRpiGpio::open( const char *pUsername,
                 // Get divisor
                 attribute =
                     child->GetAttribute("range", "0");
-                uint16_t divisor = vscp_readStringValue( attribute );    
-                pPwmObj->setDivisor( divisor );
+                uint16_t frequency = vscp_readStringValue( attribute );    
+                pPwmObj->setFrequency( frequency );
 
                 // Add owm pwmoutput to list
                 m_pwmPinList.push_back( pPwmObj );
@@ -1260,21 +1261,98 @@ CRpiGpio::open( const char *pUsername,
 
     } // while
 	
-	
+    // Close the channel
+	m_srv.doCmdClose();
+
+    // If samplerate is not default change it before initializing
+    if ( m_sample_rate != 5 ) {
+        gpioCfgClock( m_sample_rate, 1, 0 );
+    }
+
+    if ( ( m_primary_dma_channel != 14 ) || 
+         ( m_secondary_dma_channel != 6 ) ) {
+        gpioCfgDMAchannels( m_primary_dma_channel, 
+                            m_secondary_dma_channel ); 
+    }
+
+    // Init. the pigpio lib
+	if ( gpioInitialise() < 0 ) {
+        syslog( LOG_ERR,
+				    "%s %s pigpio version: %u, HW rev: %u",
+                    (const char *)VSCP_RPIGPIO_SYSLOG_DRIVER_ID,
+				    (const char *) "Failed to init. gpio library.",
+                    gpioVersion(), gpioHardwareRevision() );
+        return false;                    
+    }
+
+    // Setup pin functionality
+
+    // Init. input pins
+    std::list<CGpioInput *>::const_iterator iterator1;
+    for (iterator1 = m_inputPinList.begin(); iterator1 != m_inputPinList.end(); ++iterator1) {
+        CGpioInput *pGpioInput = *iterator1;
+        gpioSetMode( pGpioInput->getPin(), PI_INPUT );
+        gpioSetPullUpDown( pGpioInput->getPin(), pGpioInput->getPullUp() );
+        printf("%d\n", pGpioInput->getPin() );
+        // Define watchdog value
+        if ( pGpioInput->getWatchdog() ) {
+            gpioSetWatchdog( pGpioInput->getPin(), pGpioInput->getWatchdog() );
+        }
+        // Define noice filter value
+        if ( pGpioInput->getNoiceFilterSteady() ) {
+            gpioNoiseFilter( pGpioInput->getPin(), 
+                                pGpioInput->getNoiceFilterSteady(),
+                                pGpioInput->getNoiceFilterActive() );
+        }
+        // Define glitch filter value
+        if ( pGpioInput->getGlitchFilter() ) {
+            gpioGlitchFilter( pGpioInput->getPin(), pGpioInput->getGlitchFilter() );
+        }
+    }
+
+    // Init. output pins
+    std::list<CGpioOutput *>::const_iterator iterator2;
+    for (iterator2 = m_outputPinList.begin(); iterator2 != m_outputPinList.end(); ++iterator2) {
+        CGpioOutput *pGpioOutput = *iterator2;
+        gpioSetMode( pGpioOutput->getPin(), PI_OUTPUT );
+        gpioWrite( pGpioOutput->getPin(), pGpioOutput->getInitialState() ) ;
+    }
+
+    // Init. pwm pins
+    std::list<CGpioPwm *>::const_iterator iterator3;
+    for (iterator3 = m_pwmPinList.begin(); iterator3 != m_pwmPinList.end(); ++iterator3) {
+        CGpioPwm *pGpioPwm = *iterator3;
+        // Hardware PWM settings
+        if ( pGpioPwm->isHardwarePwm() ) {
+            gpioHardwarePWM( pGpioPwm->getPin(), pGpioPwm->getFrequency(), pGpioPwm->getDutyCycle() );            
+        }
+        else {
+            gpioSetPWMfrequency( pGpioPwm->getPin(), pGpioPwm->getFrequency() );
+            gpioSetPWMrange( pGpioPwm->getPin(), pGpioPwm->getRange() ) ;
+            gpioSetMode( pGpioPwm->getPin(), PI_OUTPUT );   
+            gpioPWM( pGpioPwm->getPin(), pGpioPwm->getDutyCycle() ) ;     
+        }
+    }
+
+    // Remove gpio clock pin descriptions
+    std::list<CGpioClock *>::const_iterator iterator4;
+    for (iterator4 = m_gpioClockPinList.begin(); iterator4 != m_gpioClockPinList.end(); ++iterator4) {
+        CGpioClock *pGpioClock = *iterator4;
+        gpioHardwareClock( pGpioClock->getPin(), pGpioClock->getFrequency() );
+    }
+
+
 
 	// start the workerthread
-	/*m_pthreadWorker = new RpiGpioWorkerTread();
-	if (NULL != m_pthreadWorker) {
+	m_pthreadWorker = new RpiGpioWorkerTread();
+	if ( NULL != m_pthreadWorker ) {
 		m_pthreadWorker->m_pObj = this;
 		m_pthreadWorker->Create();
 		m_pthreadWorker->Run();
 	} 
 	else {
 		rv = false;
-	}*/
-
-	// Close the channel
-	m_srv.doCmdClose();
+	}
 
 	return rv;
 }
@@ -1288,10 +1366,13 @@ void
 CRpiGpio::close(void)
 {
 	// Do nothing if already terminated
-	if (m_bQuit) return;
+	if  (m_bQuit ) return;
 
 	m_bQuit = true; // terminate the thread
-	wxSleep(1); // Give the thread some time to terminate
+	wxSleep(1);     // Give the worker thread some time to terminate
+
+    // wuit gpio library functionality
+    gpioTerminate();
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -1299,11 +1380,10 @@ CRpiGpio::close(void)
 //
 
 bool 
-CRpiGpio::addEvent2SendQueue(const vscpEvent *pEvent)
+CRpiGpio::addEvent2SendQueue( const vscpEvent *pEvent )
 {
     m_mutexSendQueue.Lock();
-	//m_sendQueue.Append((vscpEvent *)pEvent);
-    m_sendList.push_back((vscpEvent *)pEvent);
+    m_sendList.push_back( (vscpEvent *)pEvent );
 	m_semSendQueue.Post();
 	m_mutexSendQueue.Unlock();
     return true;
@@ -1315,6 +1395,8 @@ CRpiGpio::addEvent2SendQueue(const vscpEvent *pEvent)
 //                Workerthread - RpiGpioWorkerTread
 //////////////////////////////////////////////////////////////////////
 
+
+
 RpiGpioWorkerTread::RpiGpioWorkerTread()
 {
 	m_pObj = NULL;
@@ -1324,7 +1406,6 @@ RpiGpioWorkerTread::~RpiGpioWorkerTread()
 {
 	;
 }
-
 
 //////////////////////////////////////////////////////////////////////
 // Entry
@@ -1336,11 +1417,10 @@ RpiGpioWorkerTread::Entry()
 	::wxInitialize();
 			
 	// Check pointers
-	if (NULL == m_pObj) return NULL;
+	if ( NULL == m_pObj ) return NULL;
 	
-    while (!TestDestroy() && !m_pObj->m_bQuit) {
-        
-
+    while ( !TestDestroy() && !m_pObj->m_bQuit ) {
+        ;
     } // Outer loop
 
 	return NULL;

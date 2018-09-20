@@ -118,14 +118,14 @@ CVSCPDrvApp theApp;
 // addDriverObject
 //
 
-long CVSCPDrvApp::addDriverObject(CRpiGpio *prpigpio)
+long CVSCPDrvApp::addDriverObject( CRpiGpio *prpigpio )
 {
 	long h = 0;
 
 	LOCK_MUTEX(m_objMutex);
-	for (int i = 0; i < VSCP_RPIGPIO_DRIVER_MAX_OPEN; i++) {
+	for ( int i = 0; i < VSCP_RPIGPIO_DRIVER_MAX_OPEN; i++ ) {
 
-		if (NULL == m_prpigpioArray[ i ]) {
+		if ( NULL == m_prpigpioArray[ i ] ) {
 
 			m_prpigpioArray[ i ] = prpigpio;
 			h = i + 1681;
@@ -135,7 +135,7 @@ long CVSCPDrvApp::addDriverObject(CRpiGpio *prpigpio)
 
 	}
 
-	UNLOCK_MUTEX(m_objMutex);
+	UNLOCK_MUTEX( m_objMutex );
 
 	return h;
 }
@@ -145,7 +145,7 @@ long CVSCPDrvApp::addDriverObject(CRpiGpio *prpigpio)
 // getDriverObject
 //
 
-CRpiGpio *CVSCPDrvApp::getDriverObject(long h)
+CRpiGpio *CVSCPDrvApp::getDriverObject( long h )
 {
 	long idx = h - 1681;
 
@@ -192,31 +192,32 @@ BOOL CVSCPDrvApp::InitInstance()
 //
 
 extern "C" long
-VSCPOpen(const char *pUsername,
-		const char *pPassword,
-		const char *pHost,
-		short port,
-		const char *pPrefix,
-		const char *pParameter,
-		unsigned long flags)
+VSCPOpen( const char *pUsername,
+			const char *pPassword,
+			const char *pHost,
+			short port,
+			const char *pPrefix,
+			const char *pParameter,
+			unsigned long flags)
 {
 	long h = 0;
 
 	CRpiGpio *pdrvObj = new CRpiGpio();
-	if (NULL != pdrvObj) {
+	if ( NULL != pdrvObj ) {
 
-		if (pdrvObj->open(pUsername,
-							pPassword,
-							pHost,
-							port,
-							pPrefix,
-							pParameter)) {
+		if ( pdrvObj->open( pUsername,
+								pPassword,
+								pHost,
+								port,
+								pPrefix,
+								pParameter ) ) {
 
-			if (!(h = theApp.addDriverObject(pdrvObj))) {
+			if ( !( h = theApp.addDriverObject( pdrvObj ) ) ) {
 				delete pdrvObj;
 			}
 
-		} else {
+		} 
+		else {
 			delete pdrvObj;
 		}
 
@@ -234,8 +235,8 @@ VSCPClose(long handle)
 {
 	int rv = 0;
 
-	CRpiGpio *pdrvObj = theApp.getDriverObject(handle);
-	if (NULL == pdrvObj) return CANAL_ERROR_MEMORY;
+	CRpiGpio *pdrvObj = theApp.getDriverObject( handle );
+	if ( NULL == pdrvObj ) return CANAL_ERROR_MEMORY;
 	pdrvObj->close();
 	theApp.removeDriverObject(handle);
 	rv = 1;
@@ -247,21 +248,14 @@ VSCPClose(long handle)
 // 
 
 extern "C" int
-VSCPBlockingSend(long handle, const vscpEvent *pEvent, unsigned long timeout)
+VSCPBlockingSend( long handle, const vscpEvent *pEvent, unsigned long timeout )
 {
 	int rv = 0;
 
 	CRpiGpio *pdrvObj = theApp.getDriverObject(handle);
-	if (NULL == pdrvObj) return CANAL_ERROR_MEMORY;
+	if ( NULL == pdrvObj ) return CANAL_ERROR_MEMORY;
     
-    //vscpEvent *pEventNew = new vscpEvent;
-    //if ( NULL != pEventNew ) {
-    //    copyVSCPEvent( pEventNew, pEvent );
     pdrvObj->addEvent2SendQueue( pEvent );
-	//}
-    //else {
-    //    return CANAL_ERROR_MEMORY;
-    //}
     
 	return CANAL_ERROR_SUCCESS;
 }
@@ -271,7 +265,7 @@ VSCPBlockingSend(long handle, const vscpEvent *pEvent, unsigned long timeout)
 // 
 
 extern "C" int
-VSCPBlockingReceive(long handle, vscpEvent *pEvent, unsigned long timeout)
+VSCPBlockingReceive( long handle, vscpEvent *pEvent, unsigned long timeout )
 {
 	int rv = 0;
  
@@ -285,18 +279,13 @@ VSCPBlockingReceive(long handle, vscpEvent *pEvent, unsigned long timeout)
         return CANAL_ERROR_TIMEOUT;
     }
     
-    //VSCPEVENTLIST_RECEIVE::compatibility_iterator nodeClient;
-
 	pdrvObj->m_mutexReceiveQueue.Lock();
-	//nodeClient = pdrvObj->m_receiveQueue.GetFirst();
-	//vscpEvent *pLocalEvent = nodeClient->GetData();
     vscpEvent *pLocalEvent = pdrvObj->m_receiveList.front();
     pdrvObj->m_receiveList.pop_front();
 	pdrvObj->m_mutexReceiveQueue.Unlock();
-    if (NULL == pLocalEvent) return CANAL_ERROR_MEMORY;
+    if ( NULL == pLocalEvent ) return CANAL_ERROR_MEMORY;
     
     vscp_copyVSCPEvent( pEvent, pLocalEvent );
-    //pdrvObj->m_receiveQueue.DeleteNode(nodeClient);
     vscp_deleteVSCPevent( pLocalEvent );
 	
 	return CANAL_ERROR_SUCCESS;

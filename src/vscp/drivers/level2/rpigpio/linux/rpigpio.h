@@ -86,6 +86,21 @@ public:
     bool setPullUp( const wxString& strPullUp );
     uint8_t getPullUp( void );
 
+    bool setWatchdog( uint32_t watchdog ) { m_watchdog = watchdog; return true; };
+    uint32_t getWatchdog( void ) { return m_watchdog; };
+
+    bool setNoiceFilter( uint32_t steady, uint32_t active ) 
+        { m_noice_filter_steady = steady; m_noice_filter_active = active; return true; };
+    bool setNoiceFilterSteady( uint32_t steady ) 
+        { m_noice_filter_steady = steady; return true; };
+    bool setNoiceFilterActive( uint32_t active ) 
+        { m_noice_filter_active = active; return true; };        
+    uint32_t getNoiceFilterSteady( void ) { return m_noice_filter_steady; };
+    uint32_t getNoiceFilterActive( void ) { return m_noice_filter_active; };
+
+    bool setGlitchFilter( uint32_t glitch ) { m_glitch_filter = glitch; return true; };
+    uint32_t getGlitchFilter( void ) { return m_glitch_filter; };
+
     bool setMonitor( bool bEnable, 
                         uint8_t edge, 
                         vscpEventEx& event );
@@ -112,6 +127,22 @@ uint8_t m_pin;
 
 // The pullup
 uint8_t m_pullup;
+
+// Sample watchdog value. 0 = disabled.
+uint32_t m_watchdog;
+
+// Noice filter. 
+// Level changes on the GPIO are ignored until a level which has been 
+// stable for microseconds set here is detected. Level changes on the 
+// GPIO are then reported for active microseconds after which the 
+// process repeats.0 = disabled.
+uint32_t m_noice_filter_steady;
+uint32_t m_noice_filter_active;
+
+// Glitch filter. 
+// Level changes on the GPIO are not reported unless the level has been 
+// stable for at least microseconds set here. 0 = disabled.
+uint32_t m_glitch_filter;
 
 // * * * Monitor input settings
 
@@ -189,32 +220,50 @@ public:
     bool setType( const wxString& strtype );
     uint8_t getType( void );
 
-    bool setMode( uint8_t mode );
-    bool setMode( const wxString& strmode );
-    uint8_t getMode( void );
+    bool enableHardwarePwm() { m_bHardware = true; };
+    bool disableHardwarePwm() { m_bHardware = false; };
+    bool isHardwarePwm( void ) { return m_bHardware; };
 
-    bool setRange( uint16_t range );
-    uint16_t getRange( void );
+    bool setRange( int range );
+    int getRange( void );
 
-    bool setDivisor( uint16_t divisor );
-    uint16_t getDivisor( void );
+    bool setFrequency( int frequency );
+    int getFrequency( void );
+
+    bool setDutyCycle( int dutycycle );
+    int getDutyCycle( void );
 
 private:
 
 // The GPIO port
 uint8_t m_pin;
 
+// True if hardware PWM channel should be used.
+// If so the GPIO must be one of the following.
+//
+// 12  PWM channel 0  All models but A and B
+// 13  PWM channel 1  All models but A and B
+// 18  PWM channel 0  All models
+// 19  PWM channel 1  All models but A and B
+//
+// 40  PWM channel 0  Compute module only
+// 41  PWM channel 1  Compute module only
+// 45  PWM channel 1  Compute module only
+// 52  PWM channel 0  Compute module only
+// 53  PWM channel 1  Compute module only
+bool m_bHardware;
+
 // Type of PWM (hard (PWM_OUTPUT) or soft (SOFT_PWM_OUTPUT) )
 uint8_t m_type;
 
-// Mode balanced or mark & space (default)
-uint8_t m_mode;
-
 // PWM range
-uint16_t m_range;
+int m_range;
 
-// PWM divisor
-uint16_t m_divisor;
+// PWM frequency
+int m_frequency;
+
+// PWM duty cycle
+int m_dutycycle;
 
 };
 
@@ -234,10 +283,16 @@ public:
     bool setPin( uint8_t pin );
     uint8_t getPin( void );
 
+    bool setFrequency( int frequency );
+    int getFrequency( void );
+
 private:
 
 // The GPIO port
 uint8_t m_pin;
+
+// Clock frequency
+int m_frequency;
 
 };
 
@@ -365,21 +420,29 @@ public:
     /// Pointer to worker threads
     RpiGpioWorkerTread *m_pthreadWorker;
     
-     /// VSCP server interface
+    // VSCP server interface
     VscpRemoteTcpIf m_srv;
-		
+
+    // Event lists	
 	std::list<vscpEvent *> m_sendList;
 	std::list<vscpEvent *> m_receiveList;
 	
-	/*!
-        Event object to indicate that there is an event in the output queue
-     */
+    // Event object to indicate that there is an event in the output queue
     wxSemaphore m_semSendQueue;			
 	wxSemaphore m_semReceiveQueue;		
 	
 	// Mutex to protect the output queue
 	wxMutex m_mutexSendQueue;		
 	wxMutex m_mutexReceiveQueue;
+
+    // Can be set to 1, 2, 4, 5, 8, 10 always PCM
+    uint8_t m_sample_rate;
+
+    // Primary DMA channel 0-14
+    uint8_t m_primary_dma_channel;
+
+    // Scondary DMA channel 0-14
+    uint8_t m_secondary_dma_channel;
 
     // Lists for pin definitions
     std::list<CGpioInput *> m_inputPinList;

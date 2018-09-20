@@ -359,7 +359,7 @@ CWrkSendTread::Entry()
 
         }
 
-        if ( wxSEMA_TIMEOUT == m_pObj->m_semSendQueue.WaitTimeout(500)) continue;
+        if ( wxSEMA_TIMEOUT == m_pObj->m_semSendQueue.WaitTimeout( 500 ) ) continue;
         
         // Check if there is event(s) to send
         if ( m_pObj->m_sendList.size() ) {

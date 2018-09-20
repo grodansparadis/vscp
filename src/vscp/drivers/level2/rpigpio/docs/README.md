@@ -9,15 +9,21 @@ is specified on driver startup configuration.
 
 The xml data is packed in
 
+```xml
 <?xml version = "1.0" encoding = "UTF-8" ?>
-<setup>
-... pin defines and dm here
+<setup filter="" 
+		mask="" 
+		sample_rate="5"
+		primary_dma_channel="14"
+		secondary_dma_channel="6" >
+... pins and dm defined here
 </setup>
+```
 
 ### mask
 Standard VSCP mask in string form.
 ```
-1,0x0000,0x0006,ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:00
+0,0x0000,0x0000,00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00
 ```	
 as *priority,class,type,GUID*
 Used to filter what events that is received from 
@@ -34,13 +40,22 @@ Used to filter what events that is received from
 the socketcan interface. If not give all events 
 are received.
 
-### Input
+### sample_rate  (gpioCfgClock)
+Defaults to 5 us but can be set to 1,2,4,5,8,10
+
+### input
 
 Defines input pins and there functionality.
 
 Inputs can either be monitored in the DM or or by callbacks. Events are sent as programmed. (CLASS1_INFORMATION, TYPE=3/4 ON/OFF)  Any CLASS1_INFORMATION event
 
 Periodic reads are also possible.
+
+#### watchdog
+
+#### noice_filter
+
+#### glitch_filter
 
 #### pullup
 
@@ -57,7 +72,10 @@ on the Raspberry Pi.
 ```xml
 <input pin="1"
 	pullup="off|up|down"
-
+	watchdog="0"
+	noice_filter_steady="0"		
+	noice_filter_active="0"		
+	glitch_filter="0"	
 	<!-- 
 		Periodic monitoring of input pin
 		Send event on trigger (falling|rising|both|setup).
@@ -75,6 +93,7 @@ on the Raspberry Pi.
 		Report pin status every "period" milliseconds
 		CLASS1.INFORMATION TYPE=3/4 ON/OFF
 	-->
+	report_id="n"					<!-- Time id (0,9) -->
 	report_period="1000"
 
 	report_event_high_class="20"
@@ -93,6 +112,14 @@ on the Raspberry Pi.
 
 </input>
 ```
+
+Report uses 
+
+```c
+   int gpioSetTimerFuncEx(unsigned timer, unsigned millis, gpioTimerFuncEx_t f, void *userdata)
+```
+
+timer is set 
 
 ### Output
 
@@ -116,16 +143,23 @@ pwmFrequency in Hz = 19.2e6 Hz / pwmClock / pwmRange.
 
 Note that only pin 1 (BMC_GPIO 18, Phys 12) supports PWM output.
 
-mask & space is default mode
 
-<pwm pin="n" type="hard|soft" mode="balanced|markspace" range="1024" divisor="n" >
+```xml
+<pwm pin="n" 
+		hardware="true|false"
+		range="255" 
+		frequency="n"
+		dutycycle="40"  >
 </pwm>
+```
 
 ### GPIO clock
 
 Only pin 7 (BCM_GPIO 4) supports CLOCK output.
 
-<gpioclock pin="7" />
+```xml
+<gpioclock pin="7" frequency="5000000" />
+```
 
 ## DM
 
@@ -204,6 +238,11 @@ class type index zone subzone  => action
 ```xml
 <?xml version = "1.0" encoding = "UTF-8" ?>
 <setup>
+
+	<!-- Filter 			-->
+	<!-- Mask 				-->
+	<!-- Sample frequency 	-->
+
     <input pin="1"
            pullup="up"
 

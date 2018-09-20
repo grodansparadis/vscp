@@ -36,15 +36,8 @@ for x in range(0, int( sys.argv[1] ) ):
 voiceRcvList = VOICE_RECEIVERS.split(",")
 
 cnt=0
-if VOICE_RECEIVERS != "" :
-    for receiver in voiceRcvList:
-        print( OUTDIR + "/" + filename_voice + str(cnt) )
-        with open( OUTDIR + "/" + filename_voice + str(cnt), "w") as text_file:
-            text_file.write( "To: {0}\n".format(receiver) )
-            text_file.write( "Voicecall: yes\n\n" )
-            text_file.write( voicetone )
-        cnt = cnt + 1
 
+# Send SMS
 SMSRcvList = SMS_RECEIVERS.split(",")
 
 if SMS_RECEIVERS != "" :
@@ -60,3 +53,12 @@ if SMS_RECEIVERS != "" :
             text_file.write( "{0}".format(sys.argv[5]) )        
         cnt = cnt + 1
 
+# Voice calls
+if VOICE_RECEIVERS != "" :
+    for receiver in voiceRcvList:
+        print( OUTDIR + "/" + filename_voice + str(cnt) )
+        with open( OUTDIR + "/" + filename_voice + str(cnt), "w") as text_file:
+            text_file.write( "To: {0}\n".format(receiver) )
+            text_file.write( "Voicecall: yes\n\n" )
+            text_file.write( voicetone )
+        cnt = cnt + 1
