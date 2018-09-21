@@ -75,42 +75,7 @@ on the Raspberry Pi.
 	watchdog="0"
 	noice_filter_steady="0"		
 	noice_filter_active="0"		
-	glitch_filter="0"	
-	<!-- 
-		Periodic monitoring of input pin
-		Send event on trigger (falling|rising|both|setup).
-		CLASS1.INFORMATION TYPE=3/4 ON/OFF
-	-->
-	monitor_edge="falling|rising|both|setup|disable" <!-- if not give monitor is ignored (disable) -->
-	monitor_event_class="20"
-	monitor_event_type="3"
-	monitor_event_index="0" 	<!-- Written to data byte 0 -->
-	monitor_event_zone="11"		<!-- Written to data byte 1 -->
-	monitor_event_subzone="22"	<!-- Written to data byte 3 -->
-	monitor_event_data="1,2,3,4,,," 
-
-	<!-- 
-		Report pin status every "period" milliseconds
-		CLASS1.INFORMATION TYPE=3/4 ON/OFF
-	-->
-	report_id="n"					<!-- Time id (0,9) -->
-	report_period="1000"
-
-	report_event_high_class="20"
-	report_event_high_type="3"
-	report_event_high_index="0"		<!-- Written to data byte 0 -->
-	report_event_high_zone="11"		<!-- Written to data byte 1 -->
-	report_event_high_subzone="22" 	<!-- Written to data byte 2 -->
-	report_event_high_data="1,2,3,4,,,"
-	
-	report_event_low_class="20"
-	report_event_low_type="4"
-	report_event_low_index="0"		<!-- Written to data byte 0 -->
-	report_event_low_zone="11"		<!-- Written to data byte 1 -->
-	report_event_low_subzone="22"		<!-- Written to data byte 2 -->
-	report_event_low_data="1,2,3,4,,,"
-
-</input>
+	glitch_filter="0" />
 ```
 
 Report uses 
@@ -159,6 +124,55 @@ Only pin 7 (BCM_GPIO 4) supports CLOCK output.
 
 ```xml
 <gpioclock pin="7" frequency="5000000" />
+```
+
+### Report
+
+Report input pin status every "period" milliseconds
+CLASS1.INFORMATION TYPE=3/4 ON/OFF
+Can be set to id = 0..9
+
+```xml
+<report id="n"
+		pin="n"					
+		period="1000"
+
+		high_class="20"
+		high_type="3"
+		high_index="0"		 
+		high_zone="11"		 
+		high_subzone="22" 	 
+		high_data="1,2,3,4,,,"
+	
+		low_class="20"
+		low_type="4"
+		low_index="0"		 
+		low_zone="11"		 
+		low_subzone="22"		 
+		low_data="1,2,3,4,,," />
+```
+
+### Monitor
+
+Send event on trigger (falling|rising|both|setup).
+CLASS1.INFORMATION TYPE=3/4 ON/OFF
+
+```xml
+<monitor edge="falling|rising|both"
+
+			falling_class="20"
+			falling_type="3"
+			falling_index="0" 	 
+			falling_zone="11"		 
+			falling_subzone="22"	 
+			falling_data="1,2,3,4,,,"
+
+			rising_class="20"
+			rising_type="3"
+			rising_index="0" 	 
+			rising_zone="11"		 
+			rising_subzone="22"	 
+			rising_data="1,2,3,4,,,"
 ```
 
 ## DM
@@ -217,6 +231,12 @@ class type index zone subzone  => action
 #### Frequency (sound)
 	Generate a tone on an output pin
 	action parameter is pin, frequency, duration
+
+#### Servo
+
+#### Waveform
+
+#### Sample
 
 #### Shiftout
 	Shiftout action parameter data on output pin.

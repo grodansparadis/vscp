@@ -66,6 +66,10 @@
 
 // ----------------------------------------------------------------------------
 
+static void report_callback0( void * userdata );
+
+
+
 //////////////////////////////////////////////////////////////////////
 // CRpiCGpioInputGpio
 //
@@ -79,53 +83,6 @@ CGpioInput::CGpioInput()
     m_noice_filter_active = 0;
     m_glitch_filter = 0;
 
-    // Monitor
-    m_bEnable_Monitor = false;
-    m_monitor_edge = INT_EDGE_SETUP;
-    m_monitorEvent.obid = 0;
-    m_monitorEvent.timestamp = 0;
-    m_monitorEvent.year = 0;
-    m_monitorEvent.month = 0;
-    m_monitorEvent.day = 0;
-    m_monitorEvent.hour = 0;
-    m_monitorEvent.minute = 0;
-    m_monitorEvent.second = 0;
-    m_monitorEvent.vscp_class = 0;
-    m_monitorEvent.vscp_type = 0;
-    m_monitorEvent.head = 0;
-    m_monitorEvent.sizeData = 0;
-    memset( m_monitorEvent.GUID, 0, 16 );
-    // Reports
-    m_bEnable_Report = false;
-    m_report_period = 1000; // one second
-                    
-    m_reportEventHigh.obid = 0;
-    m_reportEventHigh.timestamp = 0;
-    m_reportEventHigh.year = 0;
-    m_reportEventHigh.month = 0;
-    m_reportEventHigh.day = 0;
-    m_reportEventHigh.hour = 0;
-    m_reportEventHigh.minute = 0;
-    m_reportEventHigh.second = 0;
-    m_reportEventHigh.vscp_class = 0;
-    m_reportEventHigh.vscp_type = 0;
-    m_reportEventHigh.head = 0;
-    m_reportEventHigh.sizeData = 0;
-    memset( m_reportEventHigh.GUID, 0, 16 );
-
-    m_reportEventLow.obid = 0;
-    m_reportEventLow.timestamp = 0;
-    m_reportEventLow.year = 0;
-    m_reportEventLow.month = 0;
-    m_reportEventLow.day = 0;
-    m_reportEventLow.hour = 0;
-    m_reportEventLow.minute = 0;
-    m_reportEventLow.second = 0;
-    m_reportEventLow.vscp_class = 0;
-    m_reportEventLow.vscp_type = 0;
-    m_reportEventLow.head = 0;
-    m_reportEventLow.sizeData = 0;
-    memset( m_reportEventLow.GUID, 0, 16 );
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -194,84 +151,7 @@ uint8_t CGpioInput::getPullUp( void )
     return m_pullup;
 }
 
-//////////////////////////////////////////////////////////////////////
-// setMonitor
-//
 
-bool CGpioInput::setMonitor( bool bEnable, 
-                                uint8_t edge, 
-                                vscpEventEx& event )
-{
-    if ( edge > INT_EDGE_BOTH ) {
-        return false;
-    }
-
-    m_bEnable_Monitor = bEnable;
-    m_monitor_edge = edge;
-    vscp_copyVSCPEventEx( &m_monitorEvent, &event );
-
-    return true;
-}
-//////////////////////////////////////////////////////////////////////
-// setMonitor
-//
-
-bool CGpioInput::setMonitor( bool bEnable, 
-                                wxString& strEdge, 
-                                vscpEventEx& event )
-{
-    wxString str = strEdge.Upper();
-    str = str.Trim(false);
-    str = str.Trim(true);
-
-    if ( wxNOT_FOUND != str.Find("FALLING") ) {
-        m_monitor_edge = INT_EDGE_FALLING;
-    } 
-    else if  ( wxNOT_FOUND != str.Find("RISING") ) {
-        m_monitor_edge = INT_EDGE_RISING;
-    }
-    else if  ( wxNOT_FOUND != str.Find("BOTH") ) {
-        m_monitor_edge = INT_EDGE_BOTH;
-    }
-    else if  ( wxNOT_FOUND != str.Find("SETUP") ) {
-        m_monitor_edge = INT_EDGE_SETUP;
-    }
-    else {
-        return false;
-    }
-
-    m_bEnable_Monitor = bEnable;
-    vscp_copyVSCPEventEx( &m_monitorEvent, &event );
-
-    return true;
-}
-
-//////////////////////////////////////////////////////////////////////
-// isMonitorEnabled
-//
-
-bool CGpioInput::isMonitorEnabled( void )
-{
-    return m_bEnable_Monitor;
-}
-
-//////////////////////////////////////////////////////////////////////
-// getMonitorEdge
-//
-
-uint8_t CGpioInput::getMonitorEdge( void )
-{
-    return m_monitor_edge;
-}
-
-//////////////////////////////////////////////////////////////////////
-// getMonitorEvent
-//
-
-vscpEventEx& CGpioInput::getMonitorEvent( void )
-{
-    return m_monitorEvent;
-}
 
 //////////////////////////////////////////////////////////////////////
 // setReport
@@ -723,6 +603,99 @@ wxString& CLocalDM::getActionParameter( void )
 
 
 //////////////////////////////////////////////////////////////////////
+// CGpioMonitor
+//
+
+CGpioMonitor::CGpioMonitor()
+{
+    m_pin = 0;
+
+    // Monitor
+    m_edge = INT_EDGE_SETUP;
+
+    m_eventFalling.obid = 0;
+    m_eventFalling.timestamp = 0;
+    m_eventFalling.year = 0;
+    m_eventFalling.month = 0;
+    m_eventFalling.day = 0;
+    m_eventFalling.hour = 0;
+    m_eventFalling.minute = 0;
+    m_eventFalling.second = 0;
+    m_eventFalling.vscp_class = VSCP_CLASS1_INFORMATION;;
+    m_eventFalling.vscp_type = VSCP_TYPE_INFORMATION_ON;
+    m_eventFalling.head = 0;
+    m_eventFalling.sizeData = 3;
+    memset( m_eventFalling.data, 0, sizeof( m_eventRising.data ) );
+    memset( m_eventFalling.GUID, 0, 16 );
+    
+    m_eventRising.obid = 0;
+    m_eventRising.timestamp = 0;
+    m_eventRising.year = 0;
+    m_eventRising.month = 0;
+    m_eventRising.day = 0;
+    m_eventRising.hour = 0;
+    m_eventRising.minute = 0;
+    m_eventRising.second = 0;
+    m_eventRising.vscp_class = VSCP_CLASS1_INFORMATION;
+    m_eventRising.vscp_type = VSCP_TYPE_INFORMATION_ON;
+    m_eventRising.head = 0;
+    m_eventRising.sizeData = 3;
+    memset( m_eventRising.data, 0, sizeof( m_eventRising.data ) );
+    memset( m_eventRising.GUID, 0, 16 );
+}
+
+//////////////////////////////////////////////////////////////////////
+// ~CGpioInput
+//
+
+CGpioMonitor::~CGpioMonitor()
+{
+    
+}
+
+//////////////////////////////////////////////////////////////////////
+// setEdge
+//
+
+bool CGpioMonitor::setEdge( wxString& strEdge )
+{
+    wxString str = strEdge.Upper();
+    str = str.Trim(false);
+    str = str.Trim(true);
+
+    if ( wxNOT_FOUND != str.Find("FALLING") ) {
+        m_edge = INT_EDGE_FALLING;
+    } 
+    else if  ( wxNOT_FOUND != str.Find("RISING") ) {
+        m_edge = INT_EDGE_RISING;
+    }
+    else if  ( wxNOT_FOUND != str.Find("BOTH") ) {
+        m_edge = INT_EDGE_BOTH;
+    }
+    else if  ( wxNOT_FOUND != str.Find("SETUP") ) {
+        m_edge = INT_EDGE_SETUP;
+    }
+    else {
+        return false;
+    }
+}
+
+//////////////////////////////////////////////////////////////////////
+// setMonitorEvents
+//
+
+void CGpioMonitor::setMonitorEvents( const vscpEventEx& eventFalling,
+                                     const vscpEventEx& eventRising )
+{
+    vscp_copyVSCPEventEx( &m_eventFalling, &eventFalling );
+    vscp_copyVSCPEventEx( &m_eventRising, &eventRising );
+}
+
+
+// ----------------------------------------------------------------------------
+
+
+//////////////////////////////////////////////////////////////////////
 // CRpiGpio
 //
 
@@ -735,6 +708,49 @@ CRpiGpio::CRpiGpio()
     m_sample_rate = 5;   
     m_primary_dma_channel = 14;
     m_secondary_dma_channel = 6;
+
+    for ( int i=0; i<10; i++ ) {
+        m_reporters[i].m_id = 0;
+        m_reporters[i].m_pin = 0;
+        m_reporters[i].m_period = 0;
+        memset( &m_reporters[i].m_reportEventLow, 0, sizeof( vscpEventEx ) );
+        memset( &m_reporters[i].m_reportEventHigh, 0, sizeof( vscpEventEx ) );
+    }
+
+    // Reports
+/*    
+    m_bEnable_Report = false;
+    m_report_period = 1000; // one second
+                    
+    m_reportEventHigh.obid = 0;
+    m_reportEventHigh.timestamp = 0;
+    m_reportEventHigh.year = 0;
+    m_reportEventHigh.month = 0;
+    m_reportEventHigh.day = 0;
+    m_reportEventHigh.hour = 0;
+    m_reportEventHigh.minute = 0;
+    m_reportEventHigh.second = 0;
+    m_reportEventHigh.vscp_class = 0;
+    m_reportEventHigh.vscp_type = 0;
+    m_reportEventHigh.head = 0;
+    m_reportEventHigh.sizeData = 0;
+    memset( m_reportEventHigh.GUID, 0, 16 );
+
+    m_reportEventLow.obid = 0;
+    m_reportEventLow.timestamp = 0;
+    m_reportEventLow.year = 0;
+    m_reportEventLow.month = 0;
+    m_reportEventLow.day = 0;
+    m_reportEventLow.hour = 0;
+    m_reportEventLow.minute = 0;
+    m_reportEventLow.second = 0;
+    m_reportEventLow.vscp_class = 0;
+    m_reportEventLow.vscp_type = 0;
+    m_reportEventLow.head = 0;
+    m_reportEventLow.sizeData = 0;
+    memset( m_reportEventLow.GUID, 0, 16 );
+*/
+
 	::wxInitialize();
 }
 
@@ -952,55 +968,8 @@ CRpiGpio::open( const char *pUsername,
                 pInputObj->setGlitchFilter( vscp_readStringValue( attribute ) );
                        
                 // * * * Monitor 
-
-                // monitor_edge
-                wxString str_monitor_edge =
-                        child->GetAttribute("monitor_edge", "disable");
-                str_monitor_edge.MakeUpper();
-                if ( wxNOT_FOUND == str_monitor_edge.Find("DISABLE") ) {
-                            
-                    uint8_t edge = INT_EDGE_SETUP;
-                    vscpEventEx event;
-
-                    attribute =
-                            child->GetAttribute("monitor_event_class", "0");
-                    event.vscp_class = vscp_readStringValue( attribute );
-
-                    attribute =
-                            child->GetAttribute("monitor_event_type", "0");
-                    event.vscp_type = vscp_readStringValue( attribute );
-
-                    event.sizeData = 0;
-                    attribute =
-                            child->GetAttribute("monitor_event_data", "0,0,0");
-                    vscp_setVscpEventExDataFromString( &event, attribute );
-
-                    attribute =
-                            child->GetAttribute("monitor_event_index", "0");
-                    event.data[0] = vscp_readStringValue( attribute );
-                    if ( 0 == event.sizeData ) event.sizeData = 1;
-
-                    attribute =
-                            child->GetAttribute("monitor_event_zone", "0");
-                    event.data[1] = vscp_readStringValue( attribute );
-                    if ( event.sizeData < 2 ) event.sizeData = 2;
-
-                    attribute =
-                            child->GetAttribute("monitor_event_subzone", "0");
-                    event.data[2] = vscp_readStringValue( attribute );
-                    if ( event.sizeData < 3 ) event.sizeData = 3;
-
-                    if ( !pInputObj->setMonitor( true, 
-                                                    str_monitor_edge, 
-                                                    event ) ) {
-                        syslog( LOG_ERR,
-				                "%s %s %d",
-                                (const char *)VSCP_RPIGPIO_SYSLOG_DRIVER_ID,
-				                (const char *) "Unable to add input monitor.",
-                                (int)pin );
-                    }
-
-                }
+/*
+                /
 
                 // * * * Report
 
@@ -1084,7 +1053,8 @@ CRpiGpio::open( const char *pUsername,
                                 (int)pin );
                     }
 
-                } // report period                          
+                } // report period    
+*/                                      
 
                 // Add input to list
                 m_inputPinList.push_back( pInputObj );
@@ -1092,6 +1062,175 @@ CRpiGpio::open( const char *pUsername,
             } // input obj
 
         } // input tag
+
+        // Define Monitor
+        else if ( child->GetName() == _("monitor") ) {
+
+            CGpioMonitor *pMonitorObj = new CGpioMonitor;
+            if ( NULL != pMonitorObj ) {
+
+                // monitor pin    
+                attribute = child->GetAttribute("pin", "0");
+                pMonitorObj->setPin( vscp_readStringValue( attribute ) );
+
+                // monitor_edge
+                wxString strEdge =
+                        child->GetAttribute("edge", "rising");
+                pMonitorObj->setEdge( strEdge );            
+
+                vscpEventEx eventRising;
+
+                attribute =
+                    child->GetAttribute("rising_class", "0");
+                eventRising.vscp_class = vscp_readStringValue( attribute );
+
+                attribute =
+                    child->GetAttribute("rising_type", "0");
+                eventRising.vscp_type = vscp_readStringValue( attribute );
+
+                eventRising.sizeData = 0;
+                attribute =
+                    child->GetAttribute("rising_data", "0,0,0");
+                
+                vscp_setVscpEventExDataFromString( &eventRising, attribute );
+
+                attribute =
+                    child->GetAttribute("rising_index", "0");
+                eventRising.data[0] = vscp_readStringValue( attribute );
+                if ( 0 == eventRising.sizeData ) eventRising.sizeData = 1;
+
+                attribute =
+                    child->GetAttribute("rising_zone", "0");
+                eventRising.data[1] = vscp_readStringValue( attribute );
+                if ( eventRising.sizeData < 2 ) eventRising.sizeData = 2;
+
+                attribute =
+                    child->GetAttribute("rising_subzone", "0");
+                eventRising.data[2] = vscp_readStringValue( attribute );
+                if ( eventRising.sizeData < 3 ) eventRising.sizeData = 3;
+
+                vscpEventEx eventFalling;
+
+                attribute =
+                    child->GetAttribute("rising_class", "0");
+                eventFalling.vscp_class = vscp_readStringValue( attribute );
+
+                attribute =
+                    child->GetAttribute("rising_type", "0");
+                eventFalling.vscp_type = vscp_readStringValue( attribute );
+
+                eventFalling.sizeData = 0;
+                attribute =
+                    child->GetAttribute("rising_data", "0,0,0");
+                
+                vscp_setVscpEventExDataFromString( &eventFalling, attribute );
+
+                attribute =
+                    child->GetAttribute("rising_index", "0");
+                eventFalling.data[0] = vscp_readStringValue( attribute );
+                if ( 0 == eventFalling.sizeData ) eventFalling.sizeData = 1;
+
+                attribute =
+                    child->GetAttribute("rising_zone", "0");
+                eventFalling.data[1] = vscp_readStringValue( attribute );
+                if ( eventFalling.sizeData < 2 ) eventFalling.sizeData = 2;
+
+                attribute =
+                    child->GetAttribute("rising_subzone", "0");
+                eventFalling.data[2] = vscp_readStringValue( attribute );
+                if ( eventFalling.sizeData < 3 ) eventFalling.sizeData = 3;
+
+                pMonitorObj->setMonitorEvents( eventRising, 
+                                                eventFalling );
+
+            }
+
+        }
+
+        // Define Report (max 10 )
+        else if ( child->GetName() == _("report") ) {
+        
+            // Report id 0-9    
+            attribute = child->GetAttribute("id", "0");
+            uint8_t id = vscp_readStringValue( attribute );
+            if ( id > 9 ) {
+
+                syslog( LOG_ERR,
+				            "%s %s %d",
+                            (const char *)VSCP_RPIGPIO_SYSLOG_DRIVER_ID,
+				            (const char *) "Invalid id.",
+                            (int)id );
+                continue;
+
+            }
+
+            // Pin    
+            attribute = child->GetAttribute("pin", "0");
+            m_reporters[ id ].m_pin = vscp_readStringValue( attribute );
+
+            // Period
+            attribute = child->GetAttribute("period", "0");
+            m_reporters[ id ].m_period = vscp_readStringValue( attribute );
+
+            attribute =
+                child->GetAttribute("rising_class", "0");
+            m_reporters[ id ].m_reportEventLow.vscp_class = vscp_readStringValue( attribute );
+
+            attribute =
+                child->GetAttribute("rising_type", "0");
+           m_reporters[ id ]. m_reportEventLow.vscp_type = vscp_readStringValue( attribute );
+
+            m_reporters[ id ].m_reportEventLow.sizeData = 0;
+            attribute =
+                child->GetAttribute("rising_data", "0,0,0");
+                
+            vscp_setVscpEventExDataFromString( &m_reporters[ id ].m_reportEventLow, attribute );
+
+            attribute =
+                child->GetAttribute("rising_index", "0");
+            m_reporters[ id ].m_reportEventLow.data[0] = vscp_readStringValue( attribute );
+            if ( 0 == m_reporters[ id ].m_reportEventLow.sizeData ) m_reporters[ id ].m_reportEventLow.sizeData = 1;
+
+            attribute =
+                child->GetAttribute("rising_zone", "0");
+            m_reporters[ id ].m_reportEventLow.data[1] = vscp_readStringValue( attribute );
+            if ( m_reporters[ id ].m_reportEventLow.sizeData < 2 ) m_reporters[ id ].m_reportEventLow.sizeData = 2;
+
+            attribute =
+                child->GetAttribute("rising_subzone", "0");
+            m_reporters[ id ].m_reportEventLow.data[2] = vscp_readStringValue( attribute );
+            if ( m_reporters[ id ].m_reportEventLow.sizeData < 3 ) m_reporters[ id ].m_reportEventLow.sizeData = 3;
+
+
+            attribute =
+                child->GetAttribute("rising_class", "0");
+            m_reporters[ id ].m_reportEventHigh.vscp_class = vscp_readStringValue( attribute );
+
+            attribute =
+                child->GetAttribute("rising_type", "0");
+            m_reporters[ id ].m_reportEventHigh.vscp_type = vscp_readStringValue( attribute );
+
+            m_reporters[ id ].m_reportEventHigh.sizeData = 0;
+            attribute =
+                child->GetAttribute("rising_data", "0,0,0");
+                
+            vscp_setVscpEventExDataFromString( &m_reporters[ id ].m_reportEventHigh, attribute );
+
+            attribute =
+                child->GetAttribute("rising_index", "0");
+            m_reporters[ id ].m_reportEventHigh.data[0] = vscp_readStringValue( attribute );
+            if ( 0 == m_reporters[ id ].m_reportEventHigh.sizeData ) m_reporters[ id ].m_reportEventHigh.sizeData = 1;
+
+            attribute =
+                child->GetAttribute("rising_zone", "0");
+            m_reporters[ id ].m_reportEventHigh.data[1] = vscp_readStringValue( attribute );
+            if ( m_reporters[ id ].m_reportEventHigh.sizeData < 2 ) m_reporters[ id ].m_reportEventHigh.sizeData = 2;
+
+            attribute =
+                child->GetAttribute("rising_subzone", "0");
+            m_reporters[ id ].m_reportEventHigh.data[2] = vscp_readStringValue( attribute );
+            if ( m_reporters[ id ].m_reportEventHigh.sizeData < 3 ) m_reporters[ id ].m_reportEventHigh.sizeData = 3;
+        }
 
         // Define output pin
         else if ( child->GetName() == _("output") ) {
@@ -1122,6 +1261,7 @@ CRpiGpio::open( const char *pUsername,
             }
 
         }
+
         // Define PWM pin
         else if ( child->GetName() == "pwm" ) {
                 
@@ -1179,6 +1319,7 @@ CRpiGpio::open( const char *pUsername,
             }
 
         }
+
         // Define Decision Matrix
         else if ( child->GetName() == "dm" ) {
                 
@@ -1341,7 +1482,10 @@ CRpiGpio::open( const char *pUsername,
         gpioHardwareClock( pGpioClock->getPin(), pGpioClock->getFrequency() );
     }
 
-
+    reportStruct *preport = new reportStruct;
+    preport->id = 0;
+    preport->pObj = this;
+    gpioSetTimerFuncEx( 0, 1000, report_callback0, preport );
 
 	// start the workerthread
 	m_pthreadWorker = new RpiGpioWorkerTread();
@@ -1437,4 +1581,19 @@ RpiGpioWorkerTread::OnExit()
 }
 
 
+//////////////////////////////////////////////////////////////////////
+// Report callback
+// 
+
+static void report_callback0( void *userdata  ) 
+{
+    reportStruct *pReport = (reportStruct *)userdata;
+    if ( NULL == pReport ) return;
+
+    if ( pReport->id != -1 ) {
+
+    }
+
+    delete pReport;
+ }
 

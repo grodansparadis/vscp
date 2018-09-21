@@ -48,7 +48,7 @@
             !!!!!!!!!!!!!!!!!!!!  W A R N I N G  !!!!!!!!!!!!!!!!!!!!
                            This file is auto-generated
                 see https://github.com/grodansparadis/vscp-classes
-                        Generated: 2018-08-16 18:08:57.849119
+                        Generated: 2018-09-21 18:19:31.788216
 */
  
 #ifndef VSCP_TYPE_H
@@ -293,6 +293,8 @@
 #define VSCP_TYPE_INFORMATION_LOCK                  75  /* Lock */
 #define VSCP_TYPE_INFORMATION_UNLOCK                76  /* Unlock */
 #define VSCP_TYPE_INFORMATION_DATETIME              77  /* DateTime */
+#define VSCP_TYPE_INFORMATION_RISING                78  /* Rising */
+#define VSCP_TYPE_INFORMATION_FALLING               79  /* Falling */
     
 /*  CLASS1.CONTROL = 30  -  Control */
 #define VSCP_TYPE_CONTROL_GENERAL                   0   /* General event */

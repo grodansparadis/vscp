@@ -2,7 +2,7 @@
             !!!!!!!!!!!!!!!!!!!!  W A R N I N G  !!!!!!!!!!!!!!!!!!!!
                            This file is auto-generated
                 see https://github.com/grodansparadis/vscp-classes
-                        Generated: 2018-08-16 18:08:59.946859
+                        Generated: 2018-09-21 18:19:33.820584
 */
  
 
@@ -243,6 +243,8 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(20,75) ] = _("VSCP_TYPE_INFORMATION_LOCK");
 	m_hashType[ MAKE_CLASSTYPE_LONG(20,76) ] = _("VSCP_TYPE_INFORMATION_UNLOCK");
 	m_hashType[ MAKE_CLASSTYPE_LONG(20,77) ] = _("VSCP_TYPE_INFORMATION_DATETIME");
+	m_hashType[ MAKE_CLASSTYPE_LONG(20,78) ] = _("VSCP_TYPE_INFORMATION_RISING");
+	m_hashType[ MAKE_CLASSTYPE_LONG(20,79) ] = _("VSCP_TYPE_INFORMATION_FALLING");
 
 	//  CLASS1.CONTROL = 30  -  Control
 	m_hashType[ MAKE_CLASSTYPE_LONG(30,0) ] = _("VSCP_TYPE_CONTROL_GENERAL");
@@ -1131,6 +1133,8 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(532,75) ] = _("VSCP_TYPE_INFORMATION_LOCK");
 	m_hashType[ MAKE_CLASSTYPE_LONG(532,76) ] = _("VSCP_TYPE_INFORMATION_UNLOCK");
 	m_hashType[ MAKE_CLASSTYPE_LONG(532,77) ] = _("VSCP_TYPE_INFORMATION_DATETIME");
+	m_hashType[ MAKE_CLASSTYPE_LONG(532,78) ] = _("VSCP_TYPE_INFORMATION_RISING");
+	m_hashType[ MAKE_CLASSTYPE_LONG(532,79) ] = _("VSCP_TYPE_INFORMATION_FALLING");
 
 	//  CLASS2.LEVEL1.CONTROL = 542  -  Class2 Level I Control
 	// 	Event types is the same as  CLASS1.CONTROL = 30  -  Control

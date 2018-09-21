@@ -62,9 +62,26 @@ using namespace std;
 class RpiGpioWorkerTread;
 class VscpRemoteTcpIf;
 class wxFile;
+class CRpiGpio;
+
+
+struct reportStruct {
+    int id;
+    CRpiGpio * pObj;
+};
 
 // Actions
 #define RPIGPIO_ACTION_NOOP     0
+
+// ----------------------------------------------------------------------------
+
+struct reportItem {
+    uint8_t m_id;
+    uint8_t m_pin;
+    uint32_t m_period;
+    vscpEventEx m_reportEventLow;
+    vscpEventEx m_reportEventHigh;
+};
 
 // ----------------------------------------------------------------------------
 
@@ -101,15 +118,7 @@ public:
     bool setGlitchFilter( uint32_t glitch ) { m_glitch_filter = glitch; return true; };
     uint32_t getGlitchFilter( void ) { return m_glitch_filter; };
 
-    bool setMonitor( bool bEnable, 
-                        uint8_t edge, 
-                        vscpEventEx& event );
-    bool setMonitor( bool bEnable, 
-                        wxString& strEdge, 
-                        vscpEventEx& event );
-    bool isMonitorEnabled( void );
-    uint8_t getMonitorEdge( void );
-    vscpEventEx& getMonitorEvent( void );
+    
 
     bool setReport( bool bEnable, 
                         long period, 
@@ -144,16 +153,7 @@ uint32_t m_noice_filter_active;
 // stable for at least microseconds set here. 0 = disabled.
 uint32_t m_glitch_filter;
 
-// * * * Monitor input settings
 
-// True if monitoring is enabled
-bool m_bEnable_Monitor;
-
-// 0-3 default = INT_EDGE_SETUP
-uint8_t m_monitor_edge;
-
-// Event to send when triggered
-vscpEventEx m_monitorEvent;
 
 // ---
 
@@ -357,6 +357,48 @@ private:
 
 // ----------------------------------------------------------------------------
 
+// Define one GPIO monitor
+class CGpioMonitor{
+
+public:
+
+    /// Constructor
+    CGpioMonitor();
+
+    /// Destructor
+    virtual ~CGpioMonitor();
+
+    void setPin( uint8_t pin ) { m_pin = pin; };
+    uint8_t getPin( void ) { return m_pin; };
+
+    void setEdge( uint8_t edge ) { m_edge = edge; };
+    bool setEdge( wxString& strEdge );
+    uint8_t getEdge( void ) { return m_edge; };
+
+    void setMonitorEvents( const vscpEventEx& eventFalling,
+                            const vscpEventEx& eventRising );
+
+    vscpEventEx& getMonitorEventFalling( void ) { return m_eventFalling; };
+    vscpEventEx& getMonitorEventRising( void ) { return m_eventFalling; };
+
+private:
+
+    // The GPIO port
+    uint8_t m_pin;
+
+    // 0-3 default = INT_EDGE_SETUP
+    uint8_t m_edge;
+
+    // Event to send when triggered on falling edge or both edges
+    vscpEventEx m_eventFalling;
+
+    // Event to send when triggered on rising or edge
+    vscpEventEx m_eventRising;
+
+};
+
+// ----------------------------------------------------------------------------
+
 class CRpiGpio {
 
 public:
@@ -449,6 +491,9 @@ public:
     std::list<CGpioOutput *> m_outputPinList;
     std::list<CGpioPwm *> m_pwmPinList;
     std::list<CGpioClock *> m_gpioClockPinList; // Will hold max one entry
+
+    // Max ten report items
+    reportItem m_reporters[10];
 
     // Decision matrix
     std::list<CLocalDM *> m_LocalDMList; // Will hold max one entry
