@@ -73,6 +73,7 @@ SOCKETCAN_OBJECTS = vscpl2drv_socketcan.o\
 	socketcan.o\
 	vscpremotetcpif.o\
 	vscphelper.o\
+	sockettcp.o\
 	guid.o\
 	crc.o\
 	crc8.o\
@@ -103,6 +104,9 @@ vscpremotetcpif.o: ../../../../common/vscpremotetcpif.cpp ../../../../common/vsc
 
 vscphelper.o: ../../../../common/vscphelper.cpp ../../../../common/vscphelper.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../../../common/vscphelper.cpp -o $@
+
+sockettcp.o: ../../../../../common/sockettcp.c ../../../../../common/sockettcp.h
+	$(CC) $(CFLAGS) -c ../../../../../common/sockettcp.c -o $@	
 
 guid.o: ../../../../common/guid.cpp ../../../../common/guid.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../../../common/guid.cpp -o $@	

@@ -43,7 +43,7 @@ CXXFLAGS = -std=c++11 -D__LINUX__ -fPIC -D_REENTRANT  -g -O0 -I/usr/lib/x86_64-l
 CPPFLAGS = -D__LINUX__ -fPIC  -I/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0 -I/usr/include/wx-3.0 -D_FILE_OFFSET_BITS=64 -DWXUSINGDLL -D__WXGTK__ -DwxUSE_GUI=0 -fno-var-tracking-assignments -I. -I../common -I../../../../common -I../../../../../common
 
 LDFLAGS = 
-EXTRALIBS =  -lpigpio -lssl -lz -lrt -lm  -lcrypto -lpthread -ldl  
+EXTRALIBS = -lpigpio  -lssl -lz -lrt -lm -lcrypto -lpthread -ldl  
 ifeq ($(STATIC),yes)
 EXTRALIBS += 
 else

@@ -1158,7 +1158,7 @@ CRpiGpio::open( const char *pUsername,
                 syslog( LOG_ERR,
 				            "%s %s %d",
                             (const char *)VSCP_RPIGPIO_SYSLOG_DRIVER_ID,
-				            (const char *) "Invalid id.",
+				            (const char *)"Invalid id.",
                             (int)id );
                 continue;
 

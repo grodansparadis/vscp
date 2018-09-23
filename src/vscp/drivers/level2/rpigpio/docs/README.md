@@ -11,8 +11,8 @@ The xml data is packed in
 
 ```xml
 <?xml version = "1.0" encoding = "UTF-8" ?>
-<setup filter="" 
-		mask="" 
+<setup filter="Incoming filter on string form"
+		mask="Incoming mask on string form"
 		sample_rate="5"
 		primary_dma_channel="14"
 		secondary_dma_channel="6" >
@@ -47,7 +47,9 @@ Defaults to 5 us but can be set to 1,2,4,5,8,10
 
 Defines input pins and there functionality.
 
-Inputs can either be monitored in the DM or or by callbacks. Events are sent as programmed. (CLASS1_INFORMATION, TYPE=3/4 ON/OFF)  Any CLASS1_INFORMATION event
+Inputs can either be monitored in the DM or or by callbacks. 
+Events are sent as programmed. (CLASS1_INFORMATION, TYPE=3/4 ON/OFF)  
+Any CLASS1_INFORMATION event
 
 Periodic reads are also possible.
 
@@ -59,8 +61,8 @@ Periodic reads are also possible.
 
 #### pullup
 
-This sets the pull-up or pull-down resistor mode on the given pin, which should be set 
-as an input. The parameter should be;
+This sets the pull-up or pull-down resistor mode on the given pin, 
+which should be set as an input. The parameter should be;
 
 * OFF, (no pull up/down)
 * DOWN (pull to ground) 
@@ -81,7 +83,10 @@ on the Raspberry Pi.
 Report uses 
 
 ```c
-   int gpioSetTimerFuncEx(unsigned timer, unsigned millis, gpioTimerFuncEx_t f, void *userdata)
+   int gpioSetTimerFuncEx( unsigned timer, 
+                              unsigned millis, 
+							  gpioTimerFuncEx_t f, 
+							  void *userdata )
 ```
 
 timer is set 
@@ -96,8 +101,7 @@ state is initial state of pin. set after initialization.
 
 ```xml
 <output pin="n"
-	initialstate="on|off" >
-</output>		
+	initialstate="on|off" />
 ```
 
 ### Pwm
@@ -112,10 +116,9 @@ Note that only pin 1 (BMC_GPIO 18, Phys 12) supports PWM output.
 ```xml
 <pwm pin="n" 
 		hardware="true|false"
-		range="255" 
+		range="255"
 		frequency="n"
-		dutycycle="40"  >
-</pwm>
+		dutycycle="40" />
 ```
 
 ### GPIO clock
@@ -134,21 +137,21 @@ Can be set to id = 0..9
 
 ```xml
 <report id="n"
-		pin="n"					
+		pin="n"
 		period="1000"
 
 		high_class="20"
 		high_type="3"
-		high_index="0"		 
-		high_zone="11"		 
-		high_subzone="22" 	 
+		high_index="0"
+		high_zone="11"
+		high_subzone="22"
 		high_data="1,2,3,4,,,"
 	
 		low_class="20"
 		low_type="4"
-		low_index="0"		 
-		low_zone="11"		 
-		low_subzone="22"		 
+		low_index="0"
+		low_zone="11"
+		low_subzone="22"
 		low_data="1,2,3,4,,," />
 ```
 
@@ -162,15 +165,15 @@ CLASS1.INFORMATION TYPE=3/4 ON/OFF
 
 			falling_class="20"
 			falling_type="3"
-			falling_index="0" 	 
-			falling_zone="11"		 
+			falling_index="0"
+			falling_zone="11"
 			falling_subzone="22"	 
 			falling_data="1,2,3,4,,,"
 
 			rising_class="20"
 			rising_type="3"
-			rising_index="0" 	 
-			rising_zone="11"		 
+			rising_index="0"
+			rising_zone="11"
 			rising_subzone="22"	 
 			rising_data="1,2,3,4,,,"
 ```
@@ -211,26 +214,31 @@ class type index zone subzone  => action
 ### Actions
 
 #### ON
-	action-parameter is comma separated list with pin to turn on. 
-	pins must be defined as an output.
+Set output pin(s)
+
+**action-parameter** is comma separated list with pins to turn on.
+pins must be defined as an output.
 
 #### OFF
-	Clear output pin.
-	action-parameter is comma separated list with pins to turn off.
-	pins must be defined as an output.
+Clear output pin(s).
+
+**action-parameter** is comma separated list with pins to turn off.
+pins must be defined as an output.
 
 #### SET
-	set output pin.
-    action-parameter is pin state in binary for (01010101) first 8 GPIO pins
-	bit-array of eight bits (01010101) in binary
+set output pin.
+
+**action-parameter** is pin state in binary for (01010101) first 8 GPIO pins
+bit-array of eight bits (01010101) in binary
 
 #### PWM
-	Generate hard/spoft pwm signal on output pin.
-	action parameter is pin, pwm range value
+Generate hard/spoft pwm signal on output pin.
+
+**action parameter** is pin, pwm range value
 
 #### Frequency (sound)
-	Generate a tone on an output pin
-	action parameter is pin, frequency, duration
+Generate a tone on an output pin
+action parameter is pin, frequency, duration
 
 #### Servo
 
@@ -239,21 +247,22 @@ class type index zone subzone  => action
 #### Sample
 
 #### Shiftout
-	Shiftout action parameter data on output pin.
-    action-parameter is, pin, data byte(s) to shift out
+Shiftout action parameter data on output pin.
+action-parameter is, pin, data byte(s) to shift out
 	
 #### Shiftoutevent
-	Shift out event data on output pin.
-    action-parameter is: pin, offset to data byte(s) to shift out  CLASS1.CONTROL, Type=25
+Shift out event data on output pin.
+action-parameter is: pin, offset to data byte(s) to shift out  CLASS1.CONTROL, Type=25
 
 #### Shiftin 
-	Shift in data on input pin.
-	action-paramter: pin, # bytes (1-7), data coding  CLASS1.DATA
+Shift in data on input pin.
+action-paramter: pin, # bytes (1-7), data coding  CLASS1.DATA
 
 #### Status
-	Return status for output pin. Can be used for sync events etc.
-	action parameter: pin, event...
+Return status for output pin. Can be used for sync events etc.
+action parameter: pin, event...
 
+## Sample setup
 
 ```xml
 <?xml version = "1.0" encoding = "UTF-8" ?>
@@ -264,17 +273,19 @@ class type index zone subzone  => action
 	<!-- Sample frequency 	-->
 
     <input pin="1"
-           pullup="up"
+           pullup="up" />
 
+	<monitor 
     monitor_edge="rising"
     monitor_event_class="20"
     monitor_event_type="3"
     monitor_event_index="0"
     monitor_event_zone="11"
     monitor_event_subzone="22"
-    monitor_event_data="1,2,3,4,5,6"
+    monitor_event_data="1,2,3,4,5,6" />
 
-    report_period="1000"
+
+    <report report_period="1000"
 
     report_event_high_class="20"
     report_event_high_type="3"
