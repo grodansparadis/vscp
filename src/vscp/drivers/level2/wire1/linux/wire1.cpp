@@ -117,7 +117,7 @@ CWire1::open(const char *pUsername,
     // have the following form
     // path
     // 
-    wxStringTokenizer tkz(wxString::FromAscii(pConfig), _(";\n"));
+    wxStringTokenizer tkz(wxString::FromAscii(pConfig), _(";"));
 
     // Check for # of sensors in configuration string
     if (tkz.HasMoreTokens()) {
@@ -129,6 +129,7 @@ CWire1::open(const char *pUsername,
     // variables
 
     if ( VSCP_ERROR_SUCCESS != m_srv.doCmdOpen( m_host,
+                                                    m_port,
                                                     m_username,
                                                     m_password ) ) {
         syslog( LOG_ERR,
@@ -163,6 +164,13 @@ CWire1::open(const char *pUsername,
     //
     //   _index[n] - Sensorindex 0-7
     //
+    // <setup>
+    //  <sensor guid=""
+    //          path="path to sensor data"
+    //          interval=60"
+    //          unit="1"
+    //          index="0" />
+    // </setup>
 
     // Get configuration data
     int varNumberOfSensors = 0;
@@ -335,7 +343,7 @@ CWrkTread::Entry()
         if (NULL == (m_pFile = fopen(m_path.mbc_str(), "r"))) {
             syslog(LOG_ERR,
                     "%s",
-                    (const char *) "Workerthread. File to open 1-wire data file. Terminating!");
+                    (const char *) ". File to open 1-wire data file. Terminating!");
 
             return NULL;
         }

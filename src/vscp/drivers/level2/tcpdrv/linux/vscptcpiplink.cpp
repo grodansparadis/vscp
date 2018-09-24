@@ -156,6 +156,7 @@ CTcpipLink::open(const char *pUsername,
     // variables
 
     if ( VSCP_ERROR_SUCCESS !=  m_srvLocal.doCmdOpen(m_hostLocal,
+                                                        port,
                                                         m_usernameLocal,
                                                         m_passwordLocal ) ) {
         syslog(LOG_ERR,
@@ -187,6 +188,7 @@ CTcpipLink::open(const char *pUsername,
     //              Used to filter what events that is received from 
     //              the socketcan interface. If not give all events 
     //              are received.
+    //
     //  _mask - Standard VSCP mask in string form.
     //              1,0x0000,0x0006,
     //                 ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:00
@@ -194,6 +196,13 @@ CTcpipLink::open(const char *pUsername,
     //              Used to filter what events that is received from 
     //              the socketcan interface. If not give all events 
     //              are received. 
+    //
+    // <setup host="localhost"
+    //          port="9598"
+    //          user="admin"
+    //          password="secret"
+    //          filter=""
+    //          mask="" />
     //
 
     wxString str;
@@ -225,6 +234,9 @@ CTcpipLink::open(const char *pUsername,
         vscp_readMaskFromString(&m_vscpfilter, str);
     }
 
+    // Close the channel
+    m_srvLocal.doCmdClose();
+
     // start the workerthread
     m_pthreadSend = new CWrkSendTread();
     if (NULL != m_pthreadSend) {
@@ -246,9 +258,6 @@ CTcpipLink::open(const char *pUsername,
     else {
         rv = false;
     }
-
-    // Close the channel
-    m_srvLocal.doCmdClose();
 
     return rv;
 }
@@ -313,7 +322,8 @@ CWrkSendTread::Entry()
     if (NULL == m_pObj) return NULL;
     
     // Open remote interface
-    if (m_srvRemote.doCmdOpen(m_pObj->m_hostRemote,
+    if (m_srvRemote.doCmdOpen( m_pObj->m_hostRemote,
+                                m_pObj->m_portRemote,
                                 m_pObj->m_usernameRemote,
                                 m_pObj->m_passwordRemote) <= 0) {
         syslog(LOG_ERR,
@@ -342,9 +352,10 @@ CWrkSendTread::Entry()
             // Wait five seconds before we try to connect again
             ::wxSleep(5);
 
-            if (m_srvRemote.doCmdOpen(m_pObj->m_hostRemote,
+            if ( m_srvRemote.doCmdOpen(m_pObj->m_hostRemote,
+                                        m_pObj->m_portRemote,
                                         m_pObj->m_usernameRemote,
-                                        m_pObj->m_passwordRemote)) {
+                                        m_pObj->m_passwordRemote ) ) {
                 syslog(LOG_ERR,
                         "%s",
                         (const char *) "Reconnected to remote host.");
@@ -435,6 +446,7 @@ CWrkReceiveTread::Entry()
 
     // Open remote interface
     if (m_srvRemote.doCmdOpen(m_pObj->m_hostRemote,
+                                m_pObj->m_portRemote,
                                 m_pObj->m_usernameRemote,
                                 m_pObj->m_passwordRemote) <= 0) {
         syslog(LOG_ERR,
@@ -452,7 +464,7 @@ CWrkReceiveTread::Entry()
         // Make sure the remote connection is up
         if (!m_srvRemote.isConnected()) {
 
-            if (!bRemoteConnectionLost) {
+            if ( !bRemoteConnectionLost ) {
                 bRemoteConnectionLost = true;
                 m_srvRemote.doCmdClose();
                 syslog(LOG_ERR,
@@ -464,6 +476,7 @@ CWrkReceiveTread::Entry()
             ::wxSleep(5);
 
             if (m_srvRemote.doCmdOpen(m_pObj->m_hostRemote,
+                                        m_pObj->m_portRemote,
                                         m_pObj->m_usernameRemote,
                                         m_pObj->m_passwordRemote)) {
                 syslog(LOG_ERR,

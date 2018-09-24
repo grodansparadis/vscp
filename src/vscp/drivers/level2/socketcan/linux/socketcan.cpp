@@ -128,6 +128,7 @@ Csocketcan::open(const char *pUsername,
     // variables
 
     if (VSCP_ERROR_SUCCESS != m_srv.doCmdOpen( m_host,
+                                                    m_port,
                                                     m_username,
                                                     m_password ) ) {
         syslog( LOG_ERR,
@@ -165,6 +166,10 @@ Csocketcan::open(const char *pUsername,
     //				Used to filter what events that is received from 
     //				the socketcan interface. If not give all events 
     //				are received. 
+    //
+    // <setup interface="vcan0"
+    //          filter=""
+    //          mask="" />
     //
 
     wxString str;

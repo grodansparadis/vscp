@@ -182,11 +182,11 @@ CSim::open(const char *pUsername,
         m_nNodes = vscp_readStringValue( tkz.GetNextToken() );
     }
     
-    
     // First log on to the host and get configuration 
     // variables
 
     if ( VSCP_ERROR_SUCCESS != m_srvLocal.doCmdOpen( m_hostLocal,
+                                                        port,
                                                         m_usernameLocal,
                                                         m_passwordLocal) ) {
 #ifndef WIN32

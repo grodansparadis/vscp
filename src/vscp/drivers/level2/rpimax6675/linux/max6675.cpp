@@ -134,6 +134,7 @@ CRpiMax6675::open(const char *pUsername,
 	// variables
 
 	if ( VSCP_ERROR_SUCCESS != m_srv.doCmdOpen(m_host,
+                                                m_port,
 												m_username,
 												m_password ) ) {
 		syslog(LOG_ERR,

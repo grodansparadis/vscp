@@ -126,7 +126,7 @@ CVSCPLog::open(const char *pUsername,
 	// have the following form
 	// path
 	// 
-	wxStringTokenizer tkz(wxString::FromAscii(pConfig), _(";\n"));
+	wxStringTokenizer tkz(wxString::FromAscii(pConfig), _(";"));
 
 	// Check for path in configuration string
 	if (tkz.HasMoreTokens()) {
@@ -140,12 +140,12 @@ CVSCPLog::open(const char *pUsername,
 		wxString str;
 		str = tkz.GetNextToken();
 		str = str.Upper();
-                if ( wxNOT_FOUND != str.Find( _("TRUE") ) ) {
+        if ( wxNOT_FOUND != str.Find( _("TRUE") ) ) {
 		    m_flags |= LOG_FILE_OVERWRITE;
-                }
-                else {
-                    m_flags &= ~LOG_FILE_OVERWRITE;
-                }
+        }
+        else {
+            m_flags &= ~LOG_FILE_OVERWRITE;
+        }
 	}
 	
 	// Check for vscpworksfmt in configuration string
@@ -154,12 +154,12 @@ CVSCPLog::open(const char *pUsername,
 		wxString str;
 		str = tkz.GetNextToken();
 		str = str.Upper();
-                if ( wxNOT_FOUND != str.Find( _("TRUE") ) ) {
-                    m_flags |= LOG_FILE_VSCP_WORKS;
-                }
-                else {
-                    m_flags &= ~LOG_FILE_VSCP_WORKS;
-                }
+        if ( wxNOT_FOUND != str.Find( _("TRUE") ) ) {
+            m_flags |= LOG_FILE_VSCP_WORKS;
+        }
+        else {
+            m_flags &= ~LOG_FILE_VSCP_WORKS;
+        }
 	}
 	
 	// Filter

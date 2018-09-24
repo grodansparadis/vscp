@@ -675,7 +675,8 @@ void *deviceThread::Entry()
 
         // Username, password, host and port can be set in configuration file. Read in them here
         // if they are.
-        wxString strHost(_("127.0.0.1:9598"));
+        wxString strHost(_("127.0.0.1"));
+        short port = 9598;
 
         wxStringTokenizer tkz(m_pDeviceItem->m_strParameter, _(";"));
         if ( tkz.HasMoreTokens() ) {
@@ -715,6 +716,16 @@ void *deviceThread::Entry()
                 }
             }
 
+            // Check if host is specified in the configuration file       
+            if ( m_pCtrlObject->m_variables.find( m_pDeviceItem->m_strName + 
+                                                    _("_port"), variable ) ) {
+                wxString str;
+                if (VSCP_DAEMON_VARIABLE_CODE_INTEGER == variable.getType()) {
+                    str = variable.getValue();
+                    port = vscp_readStringValue( str );
+                }
+            }
+
         }
 
         // Open up the driver
@@ -722,7 +733,7 @@ void *deviceThread::Entry()
             m_pDeviceItem->m_proc_VSCPOpen( m_pCtrlObject->m_driverUsername.mbc_str(),
                     ( const char * )m_pCtrlObject->m_driverPassword.mbc_str(),
                     ( const char * )strHost.mbc_str(),
-                    0,
+                    port,
                     ( const char * )m_pDeviceItem->m_strName.mbc_str(),
                     ( const char * )m_pDeviceItem->m_strParameter.mbc_str() );
 
