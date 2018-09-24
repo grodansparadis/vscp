@@ -109,10 +109,7 @@ CTcpipLink::open(const char *pUsername,
     m_portLocal = port;
     m_prefix = wxString::FromAscii(pPrefix);
 
-    // Parse the configuration string. It should
-    // have the following form
-    // path
-    // 
+    // Parse the configuration string.
     wxStringTokenizer tkz(wxString::FromAscii(pConfig), _(";"));
 
     // Check for remote host in configuration string
@@ -509,7 +506,6 @@ CWrkSendTread::Entry()
     // Find the channel id
     m_srvRemote.doCmdGetChannelID(&m_pObj->txChannelID);
 
-    vscpEventEx eventEx;
     while (!TestDestroy() && !m_pObj->m_bQuit) {
 
         // Make sure the remote connection is up
@@ -568,7 +564,7 @@ CWrkSendTread::Entry()
             // Yes there are data to send
             // Send it out to the remote server
                 
-            m_srvRemote.doCmdSendEx(&eventEx);
+            m_srvRemote.doCmdSend( pEvent );
             
         }
         
