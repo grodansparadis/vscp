@@ -155,10 +155,11 @@ CTcpipLink::open(const char *pUsername,
     // First log on to the host and get configuration 
     // variables
 
-    if ( VSCP_ERROR_SUCCESS !=  m_srvLocal.doCmdOpen(m_hostLocal,
-                                                        port,
-                                                        m_usernameLocal,
-                                                        m_passwordLocal ) ) {
+    if ( VSCP_ERROR_SUCCESS !=  
+                    m_srvLocal.doCmdOpen(m_hostLocal,
+                                            port,
+                                            m_usernameLocal,
+                                            m_passwordLocal ) ) {
         syslog(LOG_ERR,
                 "%s %s ",
                 VSCP_TCPIPLINK_SYSLOG_DRIVER_ID,
@@ -323,10 +324,11 @@ CWrkSendTread::Entry()
     if (NULL == m_pObj) return NULL;
     
     // Open remote interface
-    if (m_srvRemote.doCmdOpen( m_pObj->m_hostRemote,
-                                m_pObj->m_portRemote,
-                                m_pObj->m_usernameRemote,
-                                m_pObj->m_passwordRemote) <= 0) {
+    if ( VSCP_ERROR_SUCCESS != 
+            m_srvRemote.doCmdOpen( m_pObj->m_hostRemote,
+                                    m_pObj->m_portRemote,
+                                    m_pObj->m_usernameRemote,
+                                    m_pObj->m_passwordRemote) <= 0) {
         syslog(LOG_ERR,
                 "%s %s ",
                 VSCP_TCPIPLINK_SYSLOG_DRIVER_ID,
@@ -360,10 +362,11 @@ CWrkSendTread::Entry()
             // Wait five seconds before we try to connect again
             ::wxSleep(5);
 
-            if ( m_srvRemote.doCmdOpen(m_pObj->m_hostRemote,
-                                        m_pObj->m_portRemote,
-                                        m_pObj->m_usernameRemote,
-                                        m_pObj->m_passwordRemote ) ) {
+            if ( VSCP_ERROR_SUCCESS != 
+                    m_srvRemote.doCmdOpen(m_pObj->m_hostRemote,
+                                            m_pObj->m_portRemote,
+                                            m_pObj->m_usernameRemote,
+                                            m_pObj->m_passwordRemote ) ) {
                 syslog(LOG_ERR,
                         "%s %s ",
                         VSCP_TCPIPLINK_SYSLOG_DRIVER_ID,
@@ -460,10 +463,11 @@ CWrkReceiveTread::Entry()
     if (NULL == m_pObj) return NULL;
 
     // Open remote interface
-    if (m_srvRemote.doCmdOpen( m_pObj->m_hostRemote,
-                                    m_pObj->m_portRemote,
-                                    m_pObj->m_usernameRemote,
-                                    m_pObj->m_passwordRemote) <= 0 ) {
+    if ( VSCP_ERROR_SUCCESS != 
+                m_srvRemote.doCmdOpen( m_pObj->m_hostRemote,
+                                        m_pObj->m_portRemote,
+                                        m_pObj->m_usernameRemote,
+                                        m_pObj->m_passwordRemote) <= 0 ) {
         syslog(LOG_ERR,
                 "%s %s ",
                 VSCP_TCPIPLINK_SYSLOG_DRIVER_ID,
@@ -506,10 +510,11 @@ CWrkReceiveTread::Entry()
             // Wait five seconds before we try to connect again
             ::wxSleep(5);
 
-            if (m_srvRemote.doCmdOpen(m_pObj->m_hostRemote,
-                                        m_pObj->m_portRemote,
-                                        m_pObj->m_usernameRemote,
-                                        m_pObj->m_passwordRemote)) {
+            if ( VSCP_ERROR_SUCCESS != 
+                        m_srvRemote.doCmdOpen( m_pObj->m_hostRemote,
+                                                m_pObj->m_portRemote,
+                                                m_pObj->m_usernameRemote,
+                                                m_pObj->m_passwordRemote)) {
                 syslog(LOG_ERR,
                         "%s %s ",
                         VSCP_TCPIPLINK_SYSLOG_DRIVER_ID,

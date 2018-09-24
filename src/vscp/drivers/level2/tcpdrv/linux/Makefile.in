@@ -37,10 +37,9 @@ MINOR_VERSION = `sed '36!d' ../../../../common/version.h  | cut -b 33-`
 RELEASE_VERSION = `sed '37!d' ../../../../common/version.h  | cut -b 33-`
 BUILD_VERSION = `sed '38!d' ../../../../common/version.h  | cut -b 33-
 
-MONGOOSE_FLAGS = -DMG_ENABLE_THREADS -DMG_ENABLE_IPV6 -DMG_ENABLE_SSL -DMG_ENABLE_GETADDRINFO
 CFLAGS = -std=c99 @CFLAGS@ -fPIC @WXBASE_CFLAGS@ -DCBC -I../../../../common -I../../../../../common
-CXXFLAGS = -std=c++11 -D__LINUX__ -fPIC -D_REENTRANT @CXXFLAGS@ @WXBASE_CXXFLAGS@ $(MONGOOSE_FLAGS)
-CPPFLAGS = -D__LINUX__ -fPIC @CPPFLAGS@ @WXBASE_CPPFLAGS@ $(MONGOOSE_FLAGS) -fno-var-tracking-assignments -I../../../../common -I../../../../../common
+CXXFLAGS = -std=c++11 -D__LINUX__ -fPIC -D_REENTRANT @CXXFLAGS@ @WXBASE_CXXFLAGS@ 
+CPPFLAGS = -D__LINUX__ -fPIC @CPPFLAGS@ @WXBASE_CPPFLAGS@  -fno-var-tracking-assignments -I../../../../common -I../../../../../common
 
 LDFLAGS = @LDFLAGS@
 EXTRALIBS = @EXTRALIBS@ 
