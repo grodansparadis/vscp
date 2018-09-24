@@ -835,7 +835,7 @@ CRpiGpio::open( const char *pUsername,
 												    m_username,
 												    m_password ) ) {
 		syslog(LOG_ERR,
-				"%s %s",
+				"%s %s ",
                 (const char *)VSCP_RPIGPIO_SYSLOG_DRIVER_ID,
 				(const char *)"Unable to connect to VSCP TCP/IP interface. Terminating!");
 		
@@ -867,7 +867,7 @@ CRpiGpio::open( const char *pUsername,
     if ( !doc.Load( xmlstream ) ) {
 
         syslog( LOG_ERR,
-				    "%s %s",
+				    "%s %s ",
                     (const char *)VSCP_RPIGPIO_SYSLOG_DRIVER_ID,
 				    (const char *)"Unable to parse XML config. Terminating!");
         
@@ -882,7 +882,7 @@ CRpiGpio::open( const char *pUsername,
     if ( !(doc.GetRoot()->GetName() == _("setup") ) ) {
 
         syslog( LOG_ERR,
-				    "%s %s",
+				    "%s %s ",
                     (const char *)VSCP_RPIGPIO_SYSLOG_DRIVER_ID,
 				    (const char *)"Malformed configuration XML (<setup> tag missing). Terminating!");
         
@@ -911,7 +911,7 @@ CRpiGpio::open( const char *pUsername,
     if ( attribute.Length() ) {
         if ( !vscp_readMaskFromString( &m_vscpfilter, attribute ) ) {
             syslog(LOG_ERR,
-		            "%s %s",
+		            "%s %s ",
                     (const char *)VSCP_RPIGPIO_SYSLOG_DRIVER_ID,
 		            (const char *) "Unable to read event receive mask to driver filter.");
         }
@@ -922,7 +922,7 @@ CRpiGpio::open( const char *pUsername,
     if ( attribute.Length() ) {
         if ( !vscp_readFilterFromString( &m_vscpfilter, attribute ) ) {
             syslog(LOG_ERR,
-		            "%s %s",
+		            "%s %s ",
                     (const char *)VSCP_RPIGPIO_SYSLOG_DRIVER_ID,
 		            (const char *) "Unable to read event receive filter to driver filter.");
         }

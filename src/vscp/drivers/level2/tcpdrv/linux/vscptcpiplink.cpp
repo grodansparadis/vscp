@@ -110,36 +110,36 @@ CTcpipLink::open(const char *pUsername,
     // have the following form
     // path
     // 
-    wxStringTokenizer tkz(wxString::FromAscii(pConfig), _(";\n"));
+    wxStringTokenizer tkz(wxString::FromAscii(pConfig), _(";"));
 
     // Check for remote host in configuration string
     if (tkz.HasMoreTokens()) {
-        // Interface
+        // Get remote interface
         m_hostRemote = tkz.GetNextToken();
     }
     
     // Check for remote port in configuration string
     if (tkz.HasMoreTokens()) {
-        // Interface
+        // Get remote port
         m_portRemote = vscp_readStringValue(tkz.GetNextToken());
     }
     
     // Check for remote user in configuration string
     if (tkz.HasMoreTokens()) {
-        // Interface
+        // Get remote username
         m_usernameRemote = tkz.GetNextToken();
     }
     
     // Check for remote password in configuration string
     if (tkz.HasMoreTokens()) {
-        // Interface
+        // Get remote password
         m_passwordRemote = tkz.GetNextToken();
     }
     
     wxString strFilter;
     // Check for filter in configuration string
     if (tkz.HasMoreTokens()) {
-        // Interface
+        // Get filter
         strFilter = tkz.GetNextToken();
         vscp_readFilterFromString(&m_vscpfilter, strFilter);
     }
@@ -147,7 +147,7 @@ CTcpipLink::open(const char *pUsername,
     // Check for mask in configuration string
     wxString strMask;
     if (tkz.HasMoreTokens()) {
-        // Interface
+        // Get mask
         strMask = tkz.GetNextToken();
         vscp_readMaskFromString(&m_vscpfilter, strMask);
     }
@@ -160,8 +160,9 @@ CTcpipLink::open(const char *pUsername,
                                                         m_usernameLocal,
                                                         m_passwordLocal ) ) {
         syslog(LOG_ERR,
-                "%s",
-                (const char *) "Unable to connect to VSCP TCP/IP interface. Terminating!");
+                "%s %s ",
+                VSCP_TCPIPLINK_SYSLOG_DRIVER_ID,
+                (const char *) "Unable to connect to local VSCP TCP/IP interface. Terminating!");
         return false;
     }
 
@@ -181,7 +182,7 @@ CTcpipLink::open(const char *pUsername,
     //
     //   _password_remote   - Username to login at remote host
     //
-    //   _filter - Standard VSCP filter in string form. 
+    //   _filter - Standard VSCP filter in string form for receive-
     //             1,0x0000,0x0006,
     //                 ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:00
     //              as priority,class,type,GUID
@@ -189,7 +190,7 @@ CTcpipLink::open(const char *pUsername,
     //              the socketcan interface. If not give all events 
     //              are received.
     //
-    //  _mask - Standard VSCP mask in string form.
+    //  _mask - Standard VSCP mask in string form for receive.
     //              1,0x0000,0x0006,
     //                 ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:00
     //              as priority,class,type,GUID
@@ -327,10 +328,16 @@ CWrkSendTread::Entry()
                                 m_pObj->m_usernameRemote,
                                 m_pObj->m_passwordRemote) <= 0) {
         syslog(LOG_ERR,
-                "%s",
+                "%s %s ",
+                VSCP_TCPIPLINK_SYSLOG_DRIVER_ID,
                 (const char *) "Error while opening remote VSCP TCP/IP interface. Terminating!");
         return NULL;
     }
+
+    syslog(LOG_ERR,
+                "%s %s ",
+                VSCP_TCPIPLINK_SYSLOG_DRIVER_ID,
+                (const char *) "Connect to remote VSCP TCP/IP interface [SEND].");
     
     // Find the channel id
     m_srvRemote.doCmdGetChannelID(&m_pObj->txChannelID);
@@ -345,7 +352,8 @@ CWrkSendTread::Entry()
                 bRemoteConnectionLost = true;
                 m_srvRemote.doCmdClose();
                 syslog(LOG_ERR,
-                        "%s",
+                        "%s %s ",
+                        VSCP_TCPIPLINK_SYSLOG_DRIVER_ID,
                         (const char *) "Lost connection to remote host.");
             }
 
@@ -357,7 +365,8 @@ CWrkSendTread::Entry()
                                         m_pObj->m_usernameRemote,
                                         m_pObj->m_passwordRemote ) ) {
                 syslog(LOG_ERR,
-                        "%s",
+                        "%s %s ",
+                        VSCP_TCPIPLINK_SYSLOG_DRIVER_ID,
                         (const char *) "Reconnected to remote host.");
                 
                 // Find the channel id
@@ -396,6 +405,12 @@ CWrkSendTread::Entry()
 
     // Close the channel
     m_srvRemote.doCmdClose();
+
+    syslog(LOG_ERR,
+                "%s %s ",
+                VSCP_TCPIPLINK_SYSLOG_DRIVER_ID,
+                (const char *) "Disconnect from remote VSCP TCP/IP interface [SEND].");
+
 
     return NULL;
 
@@ -445,21 +460,36 @@ CWrkReceiveTread::Entry()
     if (NULL == m_pObj) return NULL;
 
     // Open remote interface
-    if (m_srvRemote.doCmdOpen(m_pObj->m_hostRemote,
-                                m_pObj->m_portRemote,
-                                m_pObj->m_usernameRemote,
-                                m_pObj->m_passwordRemote) <= 0) {
+    if (m_srvRemote.doCmdOpen( m_pObj->m_hostRemote,
+                                    m_pObj->m_portRemote,
+                                    m_pObj->m_usernameRemote,
+                                    m_pObj->m_passwordRemote) <= 0 ) {
         syslog(LOG_ERR,
-                "%s",
+                "%s %s ",
+                VSCP_TCPIPLINK_SYSLOG_DRIVER_ID,
                 (const char *) "Error while opening remote VSCP TCP/IP interface. Terminating!");
         return NULL;
     }
+
+    syslog(LOG_ERR,
+                "%s %s ",
+                VSCP_TCPIPLINK_SYSLOG_DRIVER_ID,
+                (const char *) "Connect to remote VSCP TCP/IP interface [RECEIVE].");
     
+    // Set receive filter
+    if ( VSCP_ERROR_SUCCESS != m_srvRemote.doCmdFilter( &m_pObj->m_vscpfilter ) ) {
+        syslog(LOG_ERR,
+                "%s %s ",
+                VSCP_TCPIPLINK_SYSLOG_DRIVER_ID,
+                (const char *) "Failed to set receiving filter.");
+
+    }
+
     // Enter the receive loop
     m_srvRemote.doCmdEnterReceiveLoop();
 
     vscpEventEx eventEx;
-    while (!TestDestroy() && !m_pObj->m_bQuit) {
+    while ( !TestDestroy() && !m_pObj->m_bQuit ) {
 
         // Make sure the remote connection is up
         if (!m_srvRemote.isConnected()) {
@@ -468,7 +498,8 @@ CWrkReceiveTread::Entry()
                 bRemoteConnectionLost = true;
                 m_srvRemote.doCmdClose();
                 syslog(LOG_ERR,
-                        "%s",
+                        "%s %s ",
+                        VSCP_TCPIPLINK_SYSLOG_DRIVER_ID,
                         (const char *) "Lost connection to remote host.");
             }
 
@@ -480,7 +511,8 @@ CWrkReceiveTread::Entry()
                                         m_pObj->m_usernameRemote,
                                         m_pObj->m_passwordRemote)) {
                 syslog(LOG_ERR,
-                        "%s",
+                        "%s %s ",
+                        VSCP_TCPIPLINK_SYSLOG_DRIVER_ID,
                         (const char *) "Reconnected to remote host.");
                 bRemoteConnectionLost = false;
             }
@@ -522,6 +554,11 @@ CWrkReceiveTread::Entry()
 
     // Close the channel
     m_srvRemote.doCmdClose();
+
+    syslog(LOG_ERR,
+                "%s %s ",
+                VSCP_TCPIPLINK_SYSLOG_DRIVER_ID,
+                (const char *) "Disconnect from remote VSCP TCP/IP interface [RECEIVE].");
 
     return NULL;
 
