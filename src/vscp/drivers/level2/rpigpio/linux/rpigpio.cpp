@@ -820,7 +820,7 @@ CRpiGpio::open( const char *pUsername,
 
 	// Parse the configuration string. It should
 	
-	wxStringTokenizer tkz(wxString::FromAscii(pConfig), _(";\n"));
+	wxStringTokenizer tkz(wxString::FromAscii(pConfig), _(";"));
 
 	// Check for socketcan interface in configuration string
 	if ( tkz.HasMoreTokens() ) {
@@ -869,13 +869,8 @@ CRpiGpio::open( const char *pUsername,
         syslog( LOG_ERR,
 				    "%s %s ",
                     (const char *)VSCP_RPIGPIO_SYSLOG_DRIVER_ID,
-				    (const char *)"Unable to parse XML config. Terminating!");
+				    (const char *)"Unable to parse XML config. Maybe just not used.");
         
-        // Close the channel
-	    m_srv.doCmdClose();
-        
-        return false;
-
     }
 
     // start processing the XML file

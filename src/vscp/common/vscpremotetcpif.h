@@ -142,7 +142,7 @@ public:
         @param to Timeout value in milliseconds. 
      */
     void setResponseTimeout(uint32_t to) {
-        if ( to < 100 ) to = 1000;          // To be backward compatible
+        if ( to < 100 ) to = 1000;      // To be backward compatible
         if (to) m_responseTimeOut = to;        
     };
     
@@ -151,7 +151,7 @@ public:
         @param to Sleep value in milliseconds.
      */
     void setAfterCommandSleep( uint16_t to ) {
-        TCPIP_UNUSED(to); // For backward compability
+        TCPIP_UNUSED(to);               // For backward compability
     }
 
     /*!

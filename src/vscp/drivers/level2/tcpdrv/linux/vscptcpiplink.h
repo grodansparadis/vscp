@@ -140,8 +140,14 @@ public:
     /// Send channel id
     uint32_t txChannelID;
     
-    /// Filter
-    vscpEventFilter m_vscpfilter;
+    /// Filter for receive
+    vscpEventFilter m_rxfilter;
+
+    /// Filter for transmitt
+    vscpEventFilter m_txfilter;
+
+    // TCP/IP link response timeout
+    uint32_t m_responseTimeout;
 
     /// Pointer to worker thread for send
     CWrkSendTread *m_pthreadSend;

@@ -47,6 +47,7 @@
 #include "wx/wx.h"
 #include "wx/defs.h"
 #include "wx/app.h"
+#include <wx/sstream.h>
 #include <wx/xml/xml.h>
 #include <wx/listimpl.cpp>
 #include <wx/thread.h>
@@ -69,7 +70,9 @@ CTcpipLink::CTcpipLink()
     m_bQuit = false;
     m_pthreadSend = NULL;
     m_pthreadReceive = NULL;
-    vscp_clearVSCPFilter(&m_vscpfilter); // Accept all events
+    vscp_clearVSCPFilter(&m_rxfilter); // Accept all events
+    vscp_clearVSCPFilter(&m_txfilter); // Send all events
+    m_responseTimeout = TCPIP_DEFAULT_INNER_RESPONSE_TIMEOUT;
     ::wxInitialize();
 }
 
@@ -136,27 +139,51 @@ CTcpipLink::open(const char *pUsername,
         m_passwordRemote = tkz.GetNextToken();
     }
     
-    wxString strFilter;
+    wxString strRxFilter;
     // Check for filter in configuration string
     if (tkz.HasMoreTokens()) {
         // Get filter
-        strFilter = tkz.GetNextToken();
-        vscp_readFilterFromString(&m_vscpfilter, strFilter);
+        strRxFilter = tkz.GetNextToken();
+        vscp_readFilterFromString(&m_rxfilter, strRxFilter);
     }
     
     // Check for mask in configuration string
-    wxString strMask;
+    wxString strRxMask;
     if (tkz.HasMoreTokens()) {
         // Get mask
-        strMask = tkz.GetNextToken();
-        vscp_readMaskFromString(&m_vscpfilter, strMask);
+        strRxMask = tkz.GetNextToken();
+        vscp_readMaskFromString(&m_rxfilter, strRxMask);
+    }
+
+    wxString strTxFilter;
+    // Check for filter in configuration string
+    if (tkz.HasMoreTokens()) {
+        // Get filter
+        strTxFilter = tkz.GetNextToken();
+        vscp_readFilterFromString(&m_txfilter, strTxFilter);
+    }
+    
+    // Check for mask in configuration string
+    wxString strTxMask;
+    if (tkz.HasMoreTokens()) {
+        // Get mask
+        strTxMask = tkz.GetNextToken();
+        vscp_readMaskFromString(&m_txfilter, strTxMask);
+    }
+
+    // Check for response timout in configuration string
+    wxString strResponseTimout;
+    if (tkz.HasMoreTokens()) {
+        // Get response timout
+        strResponseTimout = tkz.GetNextToken();
+        m_responseTimeout = vscp_readStringValue( strResponseTimout );
     }
     
     // First log on to the host and get configuration 
     // variables
 
     if ( VSCP_ERROR_SUCCESS !=  
-                    m_srvLocal.doCmdOpen(m_hostLocal,
+                    m_srvLocal.doCmdOpen( m_hostLocal,
                                             port,
                                             m_usernameLocal,
                                             m_passwordLocal ) ) {
@@ -183,7 +210,7 @@ CTcpipLink::open(const char *pUsername,
     //
     //   _password_remote   - Username to login at remote host
     //
-    //   _filter - Standard VSCP filter in string form for receive-
+    //   _filter (_rxfiter)- Standard VSCP filter in string form for receive-
     //             1,0x0000,0x0006,
     //                 ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:00
     //              as priority,class,type,GUID
@@ -191,7 +218,7 @@ CTcpipLink::open(const char *pUsername,
     //              the socketcan interface. If not give all events 
     //              are received.
     //
-    //  _mask - Standard VSCP mask in string form for receive.
+    //  _mask (_rxmask)- Standard VSCP mask in string form for receive.
     //              1,0x0000,0x0006,
     //                 ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:00
     //              as priority,class,type,GUID
@@ -199,12 +226,21 @@ CTcpipLink::open(const char *pUsername,
     //              the socketcan interface. If not give all events 
     //              are received. 
     //
+    // _responsetimeout - The time in milliseconds we should wait for a response
+    //                      from the remote server
+    //
+    // XML configuration
+    // -----------------
+    //
     // <setup host="localhost"
     //          port="9598"
     //          user="admin"
     //          password="secret"
-    //          filter=""
-    //          mask="" />
+    //          rxfilter=""
+    //          rxmask="" 
+    //          txfilter=""
+    //          txmask=""
+    //          responsetimeout="2000" />    
     //
 
     wxString str;
@@ -224,17 +260,146 @@ CTcpipLink::open(const char *pUsername,
             wxString::FromAscii("_password_remote");
     m_srvLocal.getRemoteVariableValue(strName, m_passwordRemote);
 
+    // Old format
     strName = m_prefix +
             wxString::FromAscii("_filter");
     if (VSCP_ERROR_SUCCESS == m_srvLocal.getRemoteVariableValue(strName, str)) {
-        vscp_readFilterFromString(&m_vscpfilter, str);
+        vscp_readFilterFromString(&m_rxfilter, str);
     }
 
     strName = m_prefix +
             wxString::FromAscii("_mask");
     if (VSCP_ERROR_SUCCESS == m_srvLocal.getRemoteVariableValue(strName, str)) {
-        vscp_readMaskFromString(&m_vscpfilter, str);
+        vscp_readMaskFromString(&m_rxfilter, str);
     }
+
+    //  New format
+    strName = m_prefix +
+            wxString::FromAscii("_rxfilter");
+    if (VSCP_ERROR_SUCCESS == m_srvLocal.getRemoteVariableValue(strName, str)) {
+        vscp_readFilterFromString(&m_rxfilter, str);
+    }
+
+    strName = m_prefix +
+            wxString::FromAscii("_rxmask");
+    if (VSCP_ERROR_SUCCESS == m_srvLocal.getRemoteVariableValue(strName, str)) {
+        vscp_readMaskFromString(&m_rxfilter, str);
+    }
+
+    strName = m_prefix +
+            wxString::FromAscii("_txfilter");
+    if (VSCP_ERROR_SUCCESS == m_srvLocal.getRemoteVariableValue(strName, str)) {
+        vscp_readFilterFromString(&m_txfilter, str);
+    }
+
+    strName = m_prefix +
+            wxString::FromAscii("_txmask");
+    if (VSCP_ERROR_SUCCESS == m_srvLocal.getRemoteVariableValue(strName, str)) {
+        vscp_readMaskFromString(&m_txfilter, str);
+    }
+
+    strName = m_prefix +
+            wxString::FromAscii("_response_timout");
+    if (VSCP_ERROR_SUCCESS == m_srvLocal.getRemoteVariableValue( strName, str ) ) {
+        m_responseTimeout = vscp_readStringValue( str );
+    }
+
+    /////////////////////////////////////////////////////////////
+    //                    XML Configuration
+    /////////////////////////////////////////////////////////////
+    
+    wxString setupXml;
+    strName = m_prefix +
+            wxString::FromAscii("_setup");
+    if (VSCP_ERROR_SUCCESS != m_srvLocal.getRemoteVariableValue( strName, setupXml ) ) {
+        // Not here, we use empty mock-up
+        setupXml =  _("<?xml version = \"1.0\" encoding = \"UTF-8\" ?><setup><!-- empty --></setup>");
+    }        
+
+    wxStringInputStream xmlstream( setupXml );
+    wxXmlDocument doc;
+
+    if ( doc.Load( xmlstream ) ) {
+
+        // start processing the XML file
+        if ( (doc.GetRoot()->GetName() == _("setup") ) ) {
+
+            wxString attribute;
+
+            // response timeout
+            attribute = doc.GetRoot()->GetAttribute("response-timeout", "");
+            if ( attribute.Length() ) {
+                m_responseTimeout = vscp_readStringValue( attribute );
+            }
+
+            // Remote host 
+            attribute = doc.GetRoot()->GetAttribute("host", "");
+            if ( attribute.Length() ) {
+                m_hostRemote = attribute;
+            }
+
+            // Remote port m_usernameRemote
+            attribute = doc.GetRoot()->GetAttribute("port", "");
+            if ( attribute.Length() ) {
+                m_portRemote = vscp_readStringValue( attribute );
+            }
+
+            // Remote port m_usernameRemote
+            attribute = doc.GetRoot()->GetAttribute("user", "");
+            if ( attribute.Length() ) {
+                m_usernameRemote = attribute;
+            }
+
+            // Remote port 
+            attribute = doc.GetRoot()->GetAttribute("password", "");
+            if ( attribute.Length() ) {
+                m_passwordRemote = attribute;
+            }
+
+            // RX filter 
+            attribute = doc.GetRoot()->GetAttribute("rxfilter", "");
+            if ( attribute.Length() ) {
+                vscp_readFilterFromString(&m_rxfilter, attribute);
+            }
+
+            // RX mask 
+            attribute = doc.GetRoot()->GetAttribute("rxmask", "");
+            if ( attribute.Length() ) {
+                vscp_readMaskFromString(&m_rxfilter, attribute);
+            }
+
+            // TX filter 
+            attribute = doc.GetRoot()->GetAttribute("txfilter", "");
+            if ( attribute.Length() ) {
+                vscp_readFilterFromString(&m_txfilter, attribute);
+            }
+
+            // TX mask 
+            attribute = doc.GetRoot()->GetAttribute("txmask", "");
+            if ( attribute.Length() ) {
+                vscp_readMaskFromString(&m_txfilter, attribute);
+            }
+            
+        }
+        else {
+            syslog( LOG_ERR,
+		    		    "%s %s ",
+                        (const char *)VSCP_TCPIPLINK_SYSLOG_DRIVER_ID,
+				        (const char *)"Malformed configuration XML (<setup> tag missing). Terminating!");
+        }
+        
+    }
+    else {
+        syslog( LOG_ERR,
+				    "%s %s ",
+                    (const char *)VSCP_TCPIPLINK_SYSLOG_DRIVER_ID,
+				    (const char *)"Unable to parse XML config. Maybe just not used.");
+        
+    }
+
+    
+
+
 
     // Close the channel
     m_srvLocal.doCmdClose();
@@ -328,7 +493,7 @@ CWrkSendTread::Entry()
             m_srvRemote.doCmdOpen( m_pObj->m_hostRemote,
                                     m_pObj->m_portRemote,
                                     m_pObj->m_usernameRemote,
-                                    m_pObj->m_passwordRemote) <= 0) {
+                                    m_pObj->m_passwordRemote ) ) {
         syslog(LOG_ERR,
                 "%s %s ",
                 VSCP_TCPIPLINK_SYSLOG_DRIVER_ID,
@@ -363,7 +528,7 @@ CWrkSendTread::Entry()
             ::wxSleep(5);
 
             if ( VSCP_ERROR_SUCCESS != 
-                    m_srvRemote.doCmdOpen(m_pObj->m_hostRemote,
+                    m_srvRemote.doCmdOpen( m_pObj->m_hostRemote,
                                             m_pObj->m_portRemote,
                                             m_pObj->m_usernameRemote,
                                             m_pObj->m_passwordRemote ) ) {
@@ -390,10 +555,15 @@ CWrkSendTread::Entry()
             // Yes there are data to send
             m_pObj->m_mutexSendQueue.Lock();
             vscpEvent *pEvent = m_pObj->m_sendList.front();
+            // Check if event should be filtered away
+            if ( !vscp_doLevel2Filter( pEvent, &m_pObj->m_txfilter ) ) {
+                m_pObj->m_mutexSendQueue.Unlock();
+                continue;
+            }
             m_pObj->m_sendList.pop_front();
             m_pObj->m_mutexSendQueue.Unlock();
 
-            if (NULL == pEvent) continue;
+            if ( NULL == pEvent ) continue;
             
             // Yes there are data to send
             // Send it out to the remote server
@@ -467,7 +637,7 @@ CWrkReceiveTread::Entry()
                 m_srvRemote.doCmdOpen( m_pObj->m_hostRemote,
                                         m_pObj->m_portRemote,
                                         m_pObj->m_usernameRemote,
-                                        m_pObj->m_passwordRemote) <= 0 ) {
+                                        m_pObj->m_passwordRemote ) ) {
         syslog(LOG_ERR,
                 "%s %s ",
                 VSCP_TCPIPLINK_SYSLOG_DRIVER_ID,
@@ -481,7 +651,7 @@ CWrkReceiveTread::Entry()
                 (const char *) "Connect to remote VSCP TCP/IP interface [RECEIVE].");
     
     // Set receive filter
-    if ( VSCP_ERROR_SUCCESS != m_srvRemote.doCmdFilter( &m_pObj->m_vscpfilter ) ) {
+    if ( VSCP_ERROR_SUCCESS != m_srvRemote.doCmdFilter( &m_pObj->m_rxfilter ) ) {
         syslog(LOG_ERR,
                 "%s %s ",
                 VSCP_TCPIPLINK_SYSLOG_DRIVER_ID,
@@ -514,7 +684,7 @@ CWrkReceiveTread::Entry()
                         m_srvRemote.doCmdOpen( m_pObj->m_hostRemote,
                                                 m_pObj->m_portRemote,
                                                 m_pObj->m_usernameRemote,
-                                                m_pObj->m_passwordRemote)) {
+                                                m_pObj->m_passwordRemote ) ) {
                 syslog(LOG_ERR,
                         "%s %s ",
                         VSCP_TCPIPLINK_SYSLOG_DRIVER_ID,
@@ -538,9 +708,9 @@ CWrkReceiveTread::Entry()
             
             if (CANAL_ERROR_SUCCESS == m_srvRemote.doCmdBlockingReceive(pEvent)) {
 
-                if ( vscp_doLevel2Filter( pEvent, 
-                                        &m_pObj->m_vscpfilter) && 
-                                            ( m_pObj->txChannelID != pEvent->obid ) ) {
+                // Filter is handled at server side. We check so we don't receive
+                // things we send ourself.
+                if ( m_pObj->txChannelID != pEvent->obid ) {
                     m_pObj->m_mutexReceiveQueue.Lock();
                     m_pObj->m_receiveList.push_back(pEvent);
                     m_pObj->m_semReceiveQueue.Post();
