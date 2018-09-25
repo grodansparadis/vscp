@@ -419,7 +419,14 @@ void *TCPClientThread::Entry()
 
     // Add the client to the Client List
     gpobj->m_wxClientMutex.Lock();
-    gpobj->addClient( m_pClientItem );
+    if ( !gpobj->addClient( m_pClientItem ) ) {
+        // Failed to add client
+        delete m_pClientItem;
+        m_pClientItem = NULL;
+        gpobj->m_wxClientMutex.Unlock();
+        gpobj->logMsg( _("TCP/IP server: Failed to add client. Terminating thread.") );
+        return NULL;
+    }
     gpobj->m_wxClientMutex.Unlock();
 
     // Clear the filter (Allow everything )
@@ -2563,13 +2570,13 @@ void TCPClientThread::handleClientInterface_List( void )
     // Display Interface List
     gpobj->m_wxClientMutex.Lock();
 
-    VSCPCLIENTLIST::iterator iter;
-    for (iter = gpobj->m_clientList.m_clientItemList.begin();
-        iter != gpobj->m_clientList.m_clientItemList.end();
-        ++iter) {
+    std::list<CClientItem*>::iterator it;
+    for (it = gpobj->m_clientList.m_clientItemList.begin();
+        it != gpobj->m_clientList.m_clientItemList.end();
+        ++it) {
 
-            CClientItem *pItem = *iter;
-            //writeGuidArrayToString( pItem->m_GUID, strGUID );	// Get GUID
+            CClientItem *pItem = *it;
+            
             pItem->m_guid.toString( strGUID );
             strBuf = wxString::Format(_("%d,"), pItem->m_clientID );
             strBuf += wxString::Format(_("%d,"), pItem->m_type );

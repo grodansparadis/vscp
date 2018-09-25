@@ -522,7 +522,14 @@ restsrv_add_session( struct web_connection *conn, CUserItem *pUserItem )
 
     // Add the client to the Client List
     gpobj->m_wxClientMutex.Lock();
-    gpobj->addClient( pSession->m_pClientItem );
+    if ( !gpobj->addClient( pSession->m_pClientItem ) ) {
+        // Failed to add client
+        delete pSession->m_pClientItem;
+        pSession->m_pClientItem = NULL;
+        gpobj->m_wxClientMutex.Unlock();
+        gpobj->logMsg( _("REST server: Failed to add client. Terminating thread.") );
+        return NULL;
+    }
     gpobj->m_wxClientMutex.Unlock();  
     
     // Add to linked list

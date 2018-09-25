@@ -31,12 +31,11 @@
 #endif // _MSC_VER > 1000
 #endif
 
+#include <list>
+
 #ifdef WIN32
-
 #else
-
 #include <limits.h>
-
 #endif
 
 #include <vscp.h>
@@ -44,8 +43,13 @@
 #include <userlist.h>
 #include <devicelist.h>
 
+// Predefined client id's
+#define CLIENT_ID_DAEMON_WORKER     0xffff
+#define CLIENT_ID_DM                0xfffe
+#define CLIENT_ID_UDP_LISTNER       0xfffd
+#define CLIENT_ID_MULTICAST_SRV     0xfffc
 
-WX_DECLARE_LIST ( vscpEvent, CLIENTEVENTLIST );
+WX_DECLARE_LIST( vscpEvent, CLIENTEVENTLIST );
 
 //
 // defines for levels
@@ -53,7 +57,8 @@ WX_DECLARE_LIST ( vscpEvent, CLIENTEVENTLIST );
 
 enum {
     CLIENT_ITEM_LEVEL1 = 0,
-    CLIENT_ITEM_LEVEL2
+    CLIENT_ITEM_LEVEL2,
+    CLIENT_ITEM_LEVEL3
 };
 
 
@@ -127,9 +132,9 @@ public:
     wxMutex m_mutexClientInputQueue;
 
     /*!
-        Client ID
+        Client ID for this client item
     */
-    uint32_t m_clientID;
+    uint16_t m_clientID;
 
     /*!
         Flag for open/closed channel
@@ -234,10 +239,6 @@ public:
     wxString m_currentToken;
 };
 
-// List with clientitems
-WX_DECLARE_LIST( CClientItem, VSCPCLIENTLIST );
-
-
 class CClientList  
 {
 
@@ -265,7 +266,7 @@ public:
     /*!
         Get client form client id
         @param id Numeric id for the client
-        @return A pointer to a cientitem on success or NULL on failure.
+        @return A pointer to a clientitem on success or NULL on failure.
     */
     CClientItem *getClientFromId( uint32_t id );
 
@@ -281,19 +282,8 @@ public:
     /*!
         List with clients
     */
-    VSCPCLIENTLIST m_clientItemList;
-
-    /// Counter for client id's
-    uint32_t m_clientIDCounter;
-
-protected:
-
-
-    /*!
-        System assigned ID for device
-    */
-    uint32_t m_clientID;
+    std::list<CClientItem*> m_clientItemList;
 
 };
 
-#endif // !defined(AFX_CLIENTLIST_H__B0190EE5_E0E8_497F_92A0_A8616296AF3E__INCLUDED_)
+#endif // !defined(CLIENTLIST_H__B0190EE5_E0E8_497F_92A0_A8616296AF3E__INCLUDED_)

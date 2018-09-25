@@ -25,12 +25,12 @@
 #include <winsock2.h>
 #endif
 
-//#include <wx/wxprec.h>
 #include <wx/wx.h>
 #include <wx/defs.h>
 #include <wx/app.h>
 #include <wx/listimpl.cpp>
 #include <wx/tokenzr.h>
+#include <wx/hashmap.h>
 
 #ifdef WIN32
 
@@ -51,16 +51,12 @@
 
 #endif
 
-
 #include "canal_macro.h"
 #include "vscp.h"
 #include "vscphelper.h"
 #include "clientlist.h"
 
-
 WX_DEFINE_LIST(CLIENTEVENTLIST);
-WX_DEFINE_LIST(VSCPCLIENTLIST);
-
 
 const char *interface_description[] = {
     "Unknown (you should not see this).",
@@ -142,7 +138,6 @@ CClientItem::~CClientItem()
     }
 
     m_clientInputQueue.Clear();
-
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -165,20 +160,31 @@ bool CClientItem::CommandStartsWith( const wxString &cmd, bool bFix )
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// compareClientItems
+//
+// Type of compare function for list sort operation (as in 'qsort')
+//
+
+bool compareClientItems( const void *element1, const void *element2 )
+{
+    return (int)(((CClientItem *)element1)->m_clientID) < 
+                (int)(((CClientItem *)element2)->m_clientID);
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 ///////////////////////////////////////////////////////////////////////////////
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // CClientList
 //
-// The list is sorted numeric so that messages with higher priority is
-// fetched first of the double linked list
-//
 
 CClientList::CClientList()
 {
-    m_clientIDCounter = 1;	
-    m_clientItemList.DeleteContents ( true );
+    //m_clientIDCounter = 1;	
+    
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -187,7 +193,13 @@ CClientList::CClientList()
 
 CClientList::~CClientList()
 {
-    ;
+    // Empty the client list
+    std::list<CClientItem*>::iterator it;
+    for (it=m_clientItemList.begin(); it!=m_clientItemList.end(); ++it) {
+        delete *it;
+    }
+
+    m_clientItemList.clear();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -196,13 +208,40 @@ CClientList::~CClientList()
 
 bool CClientList::addClient( CClientItem *pClientItem, uint32_t id )
 {
-    // Assign id and update id counter
-    pClientItem->m_clientID = m_clientIDCounter++;
-    
-    // Set specific id if requested 
-    if ( id ) pClientItem->m_clientID = id;
+    std::list<CClientItem*>::iterator it;
+    pClientItem->m_clientID = id ? id : 1;
 
-    m_clientItemList.Append( pClientItem );
+    if ( 0 == id ) {
+        // Find next free id
+        for (it=m_clientItemList.begin(); it!=m_clientItemList.end(); ++it) {    
+            CClientItem *pItem = *it;
+            // s the list is sorted on ClientId we have found an
+            // unused id if the ClientId is higher than the counter
+            if ( pClientItem->m_clientID < pItem->m_clientID ) {
+                break;
+            }
+
+            pClientItem->m_clientID++;
+            if ( 0 == pClientItem->m_clientID ) {
+                return false; // All client id's are in use
+            }
+        }
+    }
+   
+    // We try to assign requested id
+    for (it=m_clientItemList.begin(); it!=m_clientItemList.end(); ++it) {    
+        CClientItem *pItem = *it;
+        // If id is already in use fail
+        if ( pClientItem->m_clientID == pItem->m_clientID ) {
+            return false;    
+        }
+    } 
+    
+    // Append to list
+    m_clientItemList.push_back( pClientItem );
+
+    // Sort list on client id
+    m_clientItemList.sort( compareClientItems );
 
     return true;
 }
@@ -213,18 +252,16 @@ bool CClientList::addClient( CClientItem *pClientItem, uint32_t id )
 
 bool CClientList::removeClient( CClientItem *pClientItem )
 {
-    bool rv = true;
     // Must be a valid pointer
     if ( NULL == pClientItem ) return false;
     
     pClientItem->m_clientInputQueue.Clear();
     
     // Take away the node
-    if ( !m_clientItemList.DeleteObject( pClientItem ) ) {
-        rv = false;
-    }
+    m_clientItemList.remove( pClientItem );
+    delete pClientItem;
 
-    return rv;
+    return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -233,11 +270,11 @@ bool CClientList::removeClient( CClientItem *pClientItem )
 
 CClientItem *CClientList::getClientFromId( uint32_t id )
 {
+    std::list<CClientItem*>::iterator it;
     CClientItem *returnItem = NULL;
 
-    VSCPCLIENTLIST::iterator iter;
-    for ( iter = m_clientItemList.begin(); iter != m_clientItemList.end(); ++iter ) {
-        CClientItem *pItem = *iter;
+    for (it=m_clientItemList.begin(); it!=m_clientItemList.end(); ++it) {    
+        CClientItem *pItem = *it;
         if ( pItem->m_clientID == id ) {
             returnItem = pItem;
             break;
@@ -248,16 +285,16 @@ CClientItem *CClientList::getClientFromId( uint32_t id )
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// getClientFromId
+// getClientFromGUID
 //
 
 CClientItem *CClientList::getClientFromGUID( cguid& guid )
 {
+    std::list<CClientItem*>::iterator it;
     CClientItem *returnItem = NULL;
 
-    VSCPCLIENTLIST::iterator iter;
-    for ( iter = m_clientItemList.begin(); iter != m_clientItemList.end(); ++iter ) {
-        CClientItem *pItem = *iter;
+    for (it=m_clientItemList.begin(); it!=m_clientItemList.end(); ++it) {    
+        CClientItem *pItem = *it;
         if ( pItem->m_guid == guid ) {
             returnItem = pItem;
             break;

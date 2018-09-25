@@ -202,7 +202,13 @@ void *daemonVSCPThread::Entry()
 
     // Add the client to the Client List
     m_pCtrlObject->m_wxClientMutex.Lock();
-    m_pCtrlObject->addClient( pClientItem );
+    if ( !m_pCtrlObject->addClient( pClientItem, CLIENT_ID_DAEMON_WORKER ) ) {
+        // Failed to add client
+        delete pClientItem;
+        m_pCtrlObject->m_wxClientMutex.Unlock();
+        m_pCtrlObject->logMsg( _("Deamon worker: Failed to add client. Terminating thread.") );
+        return NULL;
+    }
     m_pCtrlObject->m_wxClientMutex.Unlock();
 
     // Clear the filter (Allow everything )
@@ -887,7 +893,14 @@ void *discoveryVSCPThread::Entry()
 
     // Add the client to the Client List
     m_pCtrlObject->m_wxClientMutex.Lock();
-    m_pCtrlObject->addClient ( m_pClientItem );
+    if ( !m_pCtrlObject->addClient ( m_pClientItem, CLIENT_ID_DAEMON_WORKER ) ) {
+        // Failed to add client
+        delete m_pClientItem;
+        m_pClientItem = NULL;
+        m_pCtrlObject->m_wxClientMutex.Unlock();
+        m_pCtrlObject->logMsg( _("Deamon discovery: Failed to add client. Terminating thread.") );        
+        return NULL;
+    }
     m_pCtrlObject->m_wxClientMutex.Unlock();
 
     // Read GUID of node
@@ -1022,12 +1035,12 @@ bool discoveryVSCPThread::sendEvent( vscpEvent *pEvent, uint32_t obid )
     // Find client
     m_pCtrlObject->m_wxClientMutex.Lock();
 
-    VSCPCLIENTLIST::iterator iter;
-    for (iter = m_pCtrlObject->m_clientList.m_clientItemList.begin();
-            iter != m_pCtrlObject->m_clientList.m_clientItemList.end();
-            ++iter) {
+    std::list<CClientItem*>::iterator it;
+    for (it = m_pCtrlObject->m_clientList.m_clientItemList.begin();
+            it != m_pCtrlObject->m_clientList.m_clientItemList.end();
+            ++it) {
 
-        CClientItem *pItem = *iter;
+        CClientItem *pItem = *it;
 
         if ( pItem->m_clientID == obid ) {
             // Found

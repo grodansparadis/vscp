@@ -163,7 +163,14 @@ void *VSCPUDPClientThread::Entry()
     
     // Add the client to the Client List
     gpobj->m_wxClientMutex.Lock();
-    gpobj->addClient( m_pClientItem );
+    if ( !gpobj->addClient( m_pClientItem, CLIENT_ID_UDP_LISTNER ) ) {
+        // Failed to add client
+        delete m_pClientItem;
+        m_pClientItem = NULL;
+        gpobj->m_wxClientMutex.Unlock();
+        gpobj->logMsg( _("UDP server: Failed to add client. Terminating thread.") );
+        return NULL;
+    }
     gpobj->m_wxClientMutex.Unlock();
 
     // Set receive filter

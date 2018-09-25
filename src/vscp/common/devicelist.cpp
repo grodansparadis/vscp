@@ -116,7 +116,7 @@ CDeviceItem::CDeviceItem()
 
     m_pdeviceThread = NULL; // No device thread started for this device
 
-    // No proc. addresses assigned yet
+    // VSCP Level I
     m_proc_CanalOpen = NULL;
     m_proc_CanalClose = NULL;
     m_proc_CanalGetLevel = NULL;
@@ -175,7 +175,7 @@ CDeviceItem::~CDeviceItem(void)
 bool CDeviceItem::startDriver( CControlObject *pCtrlObject )
 {
     // Must stop before we can start.
-    if (NULL != m_pdeviceThread) {
+    if ( NULL != m_pdeviceThread ) {
         return false;
     }
 
@@ -286,9 +286,11 @@ bool CDeviceItem::stopDriver()
     return false;
 }
 
+
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction CDeviceList
 //////////////////////////////////////////////////////////////////////
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // CDeviceList - Constructor
@@ -296,7 +298,7 @@ bool CDeviceItem::stopDriver()
 
 CDeviceList::CDeviceList(void)
 {
-    m_deviceID = 1; // First id == 1, unassigned == 0
+    ;
 }
 
 
@@ -306,9 +308,9 @@ CDeviceList::CDeviceList(void)
 CDeviceList::~CDeviceList(void)
 {
     VSCPDEVICELIST::iterator iter;
-    for (iter = m_devItemList.begin(); iter != m_devItemList.end(); ++iter) {
+    for ( iter = m_devItemList.begin(); iter != m_devItemList.end(); ++iter ) {
         CDeviceItem *pItem = *iter;
-        if (pItem) delete pItem;
+        if ( pItem ) delete pItem;
     }
 
     m_devItemList.Clear();
@@ -396,14 +398,15 @@ CDeviceItem *CDeviceList::getDeviceItemFromGUID( cguid& guid )
 // getDeviceItemFromClientId
 //
 
-CDeviceItem *CDeviceList::getDeviceItemFromClientId( uint32_t id)
+CDeviceItem *CDeviceList::getDeviceItemFromClientId( uint32_t id )
 {
     CDeviceItem *returnItem = NULL;
 
     VSCPDEVICELIST::iterator iter;
     for ( iter = m_devItemList.begin(); iter != m_devItemList.end(); ++iter ) {
         CDeviceItem *pItem = *iter;
-        if ( ( NULL != pItem->m_pClientItem  ) && ( pItem->m_pClientItem->m_clientID == id ) ) {
+        if ( ( NULL != pItem->m_pClientItem  ) && 
+             ( pItem->m_pClientItem->m_clientID == id ) ) {
             returnItem = pItem;
             break;
         }

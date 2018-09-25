@@ -303,8 +303,9 @@ public:
         @param Pointer to client that should be added.
         @param Normally not used but can be used to set a special
         client id.
+        @return True on success.
      */
-    void addClient( CClientItem *pClientItem, uint32_t id = 0 );
+    bool addClient( CClientItem *pClientItem, uint32_t id = 0 );
 
     /*!
         Add a known node

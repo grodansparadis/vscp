@@ -504,9 +504,9 @@ CWrkSendTread::Entry()
                 (const char *) "Connect to remote VSCP TCP/IP interface [SEND].");
     
     // Find the channel id
-    m_srvRemote.doCmdGetChannelID(&m_pObj->txChannelID);
+    m_srvRemote.doCmdGetChannelID( &m_pObj->txChannelID );
 
-    while (!TestDestroy() && !m_pObj->m_bQuit) {
+    while ( !TestDestroy() && !m_pObj->m_bQuit ) {
 
         // Make sure the remote connection is up
         if ( !m_srvRemote.isConnected() ) {
@@ -565,6 +565,7 @@ CWrkSendTread::Entry()
             // Send it out to the remote server
                 
             m_srvRemote.doCmdSend( pEvent );
+            vscp_deleteVSCPevent_v2( &pEvent );
             
         }
         

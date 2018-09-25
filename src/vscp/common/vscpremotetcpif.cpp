@@ -508,6 +508,8 @@ int VscpRemoteTcpIf::doCmdSend( const vscpEvent *pEvent )
         return VSCP_ERROR_PARAMETER;
     }
 
+    // Note that the caller must delete the event (if it should be deleted)
+
     strBuf = "send " + strBuf;
     strBuf += _("\r\n");
 

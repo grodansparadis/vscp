@@ -25,8 +25,8 @@
 // SOFTWARE.
 //
 
-#if !defined(AFX_DEVICELIST_H__0ED35EA7_E9E1_41CD_8A98_5EB3369B3194__INCLUDED_)
-#define AFX_DEVICELIST_H__0ED35EA7_E9E1_41CD_8A98_5EB3369B3194__INCLUDED_
+#if !defined(_DEVICELIST_H__0ED35EA7_E9E1_41CD_8A98_5EB3369B3194__INCLUDED_)
+#define _DEVICELIST_H__0ED35EA7_E9E1_41CD_8A98_5EB3369B3194__INCLUDED_
 
 #ifdef WIN32
 #if _MSC_VER > 1000
@@ -57,12 +57,12 @@
 #include "clientlist.h"
 #include "devicethread.h"
 
-#define NO_TRANSLATION  0       // No translation bit set
+#define NO_TRANSLATION              0       // No translation bit set
 
 // Out - translation bit definitions
-#define VSCP_DRIVER_OUT_TR_M1M2F     0x01  // M1 -> M2 Float  
-#define VSCP_DRIVER_OUT_TR_M1M2S     0x02  // M1 -> M2 String   
-#define VSCP_DRIVER_OUT_TR_ALL512    0x04  // All to Level II events
+#define VSCP_DRIVER_OUT_TR_M1M2F    0x01    // M1 -> M2 Float  
+#define VSCP_DRIVER_OUT_TR_M1M2S    0x02    // M1 -> M2 String   
+#define VSCP_DRIVER_OUT_TR_ALL512   0x04    // All to Level II events
 
 // In - translation bit definitions
 
@@ -110,11 +110,11 @@ public:
 
     bool startDriver( CControlObject *pCtrlObject );
     
-    bool pausDriver( void );  // TODO
+    bool pausDriver( void );    // TODO
     
-    bool resumeDriver( void ); // TODO
+    bool resumeDriver( void );  // TODO
     
-    bool stopDriver( void ); // TODO
+    bool stopDriver( void );    // TODO
 
 
     /*!
@@ -254,7 +254,7 @@ public:
 
     /*!
         Remove a driver item
-        @param id for the driver to removeItem
+        @param clientid for the driver to remove
         @return True if driver was removed successfully 
                 otherwise false.
     */
@@ -282,15 +282,8 @@ public:
     VSCPDEVICELIST m_devItemList;
 
 
-protected:
-
-    /*!
-        System assigned ID for device
-    */
-    uint32_t m_deviceID;
-
 };
 
-#endif // !defined(AFX_DEVICELIST_H__0ED35EA7_E9E1_41CD_8A98_5EB3369B3194__INCLUDED_)
+#endif // !defined(_DEVICELIST_H__0ED35EA7_E9E1_41CD_8A98_5EB3369B3194__INCLUDED_)
 
 

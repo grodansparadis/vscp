@@ -423,7 +423,14 @@ websock_new_session( const struct web_connection *conn )
 
     // Add the client to the Client List
     gpobj->m_wxClientMutex.Lock();
-    gpobj->addClient( pSession->m_pClientItem );
+    if ( !gpobj->addClient( pSession->m_pClientItem ) ) {
+        // Failed to add client
+        delete pSession->m_pClientItem;
+        pSession->m_pClientItem = NULL;
+        gpobj->m_wxClientMutex.Unlock();
+        gpobj->logMsg( _("Websocket server: Failed to add client. Terminating thread.") );
+        return NULL;
+    }
     gpobj->m_wxClientMutex.Unlock();
 
     gpobj->m_websocketSessionMutex.Lock();
@@ -533,7 +540,7 @@ websock_sendevent( struct web_connection *conn,
         // the rest of the network as normal
 
         cguid destguid;
-        destguid.getFromArray(pEvent->pdata);
+        destguid.getFromArray( pEvent->pdata );
         destguid.setAt(0,0);
         destguid.setAt(1,0);
         //unsigned char destGUID[16];  TODO ???
@@ -545,12 +552,12 @@ websock_sendevent( struct web_connection *conn,
 
         // Find client
         CClientItem *pDestClientItem = NULL;
-        VSCPCLIENTLIST::iterator iter;
-        for (iter = gpobj->m_clientList.m_clientItemList.begin();
-                iter != gpobj->m_clientList.m_clientItemList.end();
-                ++iter) {
+        std::list<CClientItem*>::iterator it;
+        for (it = gpobj->m_clientList.m_clientItemList.begin();
+                it != gpobj->m_clientList.m_clientItemList.end();
+                ++it) {
 
-            CClientItem *pItem = *iter;
+            CClientItem *pItem = *it;
             if ( pItem->m_guid == destguid ) {
                 // Found
                 pDestClientItem = pItem;
@@ -687,10 +694,6 @@ websock_post_incomingEvents( void )
                     if ( vscp_writeVscpEventToString( pEvent, str ) ) {
 
                         // Write it out
-                        /*char buf[ 512 ];
-                        memset( (char *)buf, 0, sizeof( buf) );
-                        strcpy( (char *)buf, (const char*)"E;");
-                        strcat( (char *)buf, (const char*)str.mbc_str() );*/
                         str = _("E;") + str;
                         web_websocket_write( pSession->m_conn, 
                                                 WEB_WEBSOCKET_OPCODE_TEXT, 

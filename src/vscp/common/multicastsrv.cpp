@@ -141,7 +141,7 @@ void *VSCPMulticastClientThread::Entry()
     group.imr_interface.s_addr = inet_addr( (const char *)m_pChannel->m_public.mbc_str() );  // INADDR_ANY does not work
     
     // Join group
-    if ( setsockopt( nc->sock, 
+    if ( setsockopt( nc->sock,
                             IPPROTO_IP, 
                             IP_ADD_MEMBERSHIP, 
                             (char *)&group,
@@ -229,7 +229,14 @@ void *VSCPMulticastClientThread::Entry()
     
     // Add the client to the Client List
     gpobj->m_wxClientMutex.Lock();
-    gpobj->addClient( m_pClientItem );
+    if ( !gpobj->addClient( m_pClientItem, CLIENT_ID_MULTICAST_SRV ) ) {
+        // Failed to add client
+        delete m_pClientItem;
+        m_pClientItem = NULL;
+        gpobj->m_wxClientMutex.Unlock();
+        gpobj->logMsg( _("Multicat client: Failed to add client. Terminating thread.") );
+        return NULL;
+    }
     gpobj->m_wxClientMutex.Unlock();
 
     // Set receive filter

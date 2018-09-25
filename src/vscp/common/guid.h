@@ -172,6 +172,13 @@ public:
      * @param clientid Client id ti write
      */
     void setClientID( uint16_t clientid );
+
+    /*!
+     *  Get Client ID in GUID
+     *  This is mostly for use by the VSCP daemon.
+     * @return clientid 
+     */
+    uint16_t getClientID( void );
     
     /*!
      *  Set nickname ID in GUID

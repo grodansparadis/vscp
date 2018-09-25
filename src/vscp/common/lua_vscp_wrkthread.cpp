@@ -258,6 +258,7 @@ void *actionThread_Lua::Entry()
     
     // Create VSCP client
     m_pClientItem = new CClientItem();
+    if ( NULL != m_pClientItem ) return NULL;
     vscp_clearVSCPFilter( &m_pClientItem->m_filterVSCP );
 
     // This is an active client
@@ -272,7 +273,14 @@ void *actionThread_Lua::Entry()
 
     // Add the client to the Client List
     gpobj->m_wxClientMutex.Lock();
-    gpobj->addClient( m_pClientItem );
+    if ( !gpobj->addClient( m_pClientItem ) ) {
+        // Failed to add client
+        delete m_pClientItem;
+        m_pClientItem = NULL;
+        gpobj->m_wxClientMutex.Unlock();
+        gpobj->logMsg( _("LUA worker: Failed to add client. Terminating thread.") );
+        return NULL;
+    }
     gpobj->m_wxClientMutex.Unlock();
     
     // Open the channel

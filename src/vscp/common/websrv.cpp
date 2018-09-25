@@ -463,7 +463,14 @@ websrv_add_session( struct web_connection *conn )
 
     // Add the client to the Client List
     gpobj->m_wxClientMutex.Lock();
-    gpobj->addClient( pSession->m_pClientItem );
+    if ( !gpobj->addClient( pSession->m_pClientItem ) ) {
+        // Failed to add client
+        delete pSession->m_pClientItem;
+        pSession->m_pClientItem = NULL;
+        gpobj->m_wxClientMutex.Unlock();
+        gpobj->logMsg( _("WEB server: Failed to add client. Terminating thread.") );
+        return NULL;
+    }
     gpobj->m_wxClientMutex.Unlock();
 
     // Add to linked list
@@ -1250,12 +1257,12 @@ static int vscp_interface( struct web_connection *conn, void *cbdata )
 
     // Display Interface List
     gpobj->m_wxClientMutex.Lock();
-    VSCPCLIENTLIST::iterator iter;
-    for (iter = gpobj->m_clientList.m_clientItemList.begin();
-            iter != gpobj->m_clientList.m_clientItemList.end();
-            ++iter) {
+    std::list<CClientItem*>::iterator it;
+    for (it = gpobj->m_clientList.m_clientItemList.begin();
+            it != gpobj->m_clientList.m_clientItemList.end();
+            ++it ) {
 
-        CClientItem *pItem = *iter;
+        CClientItem *pItem = *it;
         pItem->m_guid.toString(strGUID);
 
         web_printf( conn, WEB_IFLIST_TR );

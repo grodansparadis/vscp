@@ -940,7 +940,6 @@ bool CControlObject::run( void )
     // We need to create a clientItem and add this object to the list
     CClientItem *pClientItem = new CClientItem;
     if ( NULL == pClientItem ) {
-        wxLogDebug(_("ControlObject: Unable to allocate Client item, Ending"));
         logMsg( _("Unable to allocate Client item, Ending.") );
         return false;
     }
@@ -963,7 +962,13 @@ bool CControlObject::run( void )
 
     // Add the client to the Client List
     m_wxClientMutex.Lock();
-    addClient( pClientItem );
+    if ( !addClient( pClientItem, CLIENT_ID_DM ) ) {
+        // Failed to add client
+        delete pClientItem;
+        m_dm.m_pClientItem = pClientItem = NULL;
+        logMsg( _("ControlObject: Faild to add internal client.") );
+        m_wxClientMutex.Unlock();
+    }
     m_wxClientMutex.Unlock();
 
     // Feed startup event
@@ -1956,7 +1961,7 @@ void CControlObject::sendEventAllClients( vscpEvent *pEvent,
                                             uint32_t excludeID )
 {
     CClientItem *pClientItem;
-    VSCPCLIENTLIST::iterator it;
+    std::list<CClientItem*>::iterator it;
 
     if (NULL == pEvent) return;
 
@@ -2072,12 +2077,12 @@ bool CControlObject::sendEvent( CClientItem *pClientItem,
             m_wxClientMutex.Lock();
 
             CClientItem *pDestClientItem = NULL;
-            VSCPCLIENTLIST::iterator iter;
-            for (iter = m_clientList.m_clientItemList.begin();
-                    iter != m_clientList.m_clientItemList.end();
-                    ++iter) {
+            std::list<CClientItem*>::iterator it;
+            for (it = m_clientList.m_clientItemList.begin();
+                    it != m_clientList.m_clientItemList.end();
+                    ++it ) {
 
-                CClientItem *pItem = *iter;
+                CClientItem *pItem = *it;
                 dbgStr =
                     wxString::Format( _("Test if = %d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:"),
                     pItem->m_guid.getAt(15),pItem->m_guid.getAt(14),pItem->m_guid.getAt(13),pItem->m_guid.getAt(12),
@@ -2138,56 +2143,7 @@ bool CControlObject::sendEvent( CClientItem *pClientItem,
 
 
 
-//
-// The clientmap holds free client id's in an array
-// They are aquired when a client connects and released when a
-// client disconnects.
-//
-// Interfaces can be fetched by investigating the map.
-//
-// Not used at the moment.
 
-
-
-///////////////////////////////////////////////////////////////////////////////
-//  getClientMapFromId
-//
-
-uint32_t CControlObject::getClientMapFromId( uint32_t clid )
-{
-    for (uint32_t i = 0; i < VSCP_MAX_CLIENTS; i++) {
-        if (clid == m_clientMap[ i ]) return i;
-    }
-
-    return 0;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-//  getClientMapFromIndex
-//
-
-uint32_t CControlObject::getClientMapFromIndex( uint32_t idx )
-{
-    return m_clientMap[ idx ];
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-//  addIdToClientMap
-//
-
-uint32_t CControlObject::addIdToClientMap( uint32_t clid )
-{
-    for ( uint32_t i = 1; i < VSCP_MAX_CLIENTS; i++ ) {
-        if (0 == m_clientMap[ i ]) {
-            m_clientMap[ i ] = clid;
-            return clid;
-        }
-    }
-
-    return 0;
-}
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2211,20 +2167,21 @@ bool CControlObject::removeIdFromClientMap( uint32_t clid )
 // addClient
 //
 
-void CControlObject::addClient( CClientItem *pClientItem,
-                                    uint32_t id )
+bool CControlObject::addClient( CClientItem *pClientItem, uint32_t id )
 {
     // Add client to client list
-    m_clientList.addClient( pClientItem, id );
-
-    // Add mapped item
-    addIdToClientMap( pClientItem->m_clientID );
+    if ( !m_clientList.addClient( pClientItem, id ) ) {
+        return false;
+    }
 
     // Set GUID for interface
     pClientItem->m_guid = m_guid;
 
+    // Fill in client id
     pClientItem->m_guid.setNicknameID( 0 );
     pClientItem->m_guid.setClientID( pClientItem->m_clientID );
+
+    return true;
 }
 
 
@@ -3686,7 +3643,7 @@ bool CControlObject::readConfigurationXML( wxString& strcfgfile )
                 wxString allowevent;
                 bool bUser = false;
 
-                vscp_clearVSCPFilter(&VSCPFilter); // Allow all frames
+                vscp_clearVSCPFilter( &VSCPFilter ); // Allow all frames
 
                 if ( subchild->GetName().Lower() == _("user") ) {
 
@@ -3893,7 +3850,7 @@ bool CControlObject::readConfigurationXML( wxString& strcfgfile )
 
                 }
 
-                // Add the device
+                // Add the level I device
                 if ( bCanalDriver && bEnabled ) {
 
                     if (!m_deviceList.addItem( strName,
@@ -4017,7 +3974,7 @@ bool CControlObject::readConfigurationXML( wxString& strcfgfile )
 
                 }
 
-                // Add the device
+                // Add the level II device
                 if ( bLevel2Driver && bEnabled ) {
 
                     if (!m_deviceList.addItem( strName,
@@ -4141,7 +4098,7 @@ bool CControlObject::readConfigurationXML( wxString& strcfgfile )
 
                 }
 
-                // Add the device
+                // Add the level II device
                 if ( bLevel3Driver && bEnabled ) {
 
                     if (!m_deviceList.addItem( strName,

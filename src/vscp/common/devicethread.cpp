@@ -104,7 +104,7 @@ void *deviceThread::Entry()
 
     // We need to create a clientobject and add this object to the list
     m_pDeviceItem->m_pClientItem = new CClientItem;
-    if (NULL == m_pDeviceItem->m_pClientItem) {
+    if ( NULL == m_pDeviceItem->m_pClientItem ) {
         return NULL;
     }
 
@@ -125,12 +125,20 @@ void *deviceThread::Entry()
     m_pDeviceItem->m_pClientItem->m_strDeviceName += _(" ");
     m_pDeviceItem->m_pClientItem->m_strDeviceName += wxDateTime::Now().FormatISOTime();
 
-    m_pCtrlObject->logMsg(m_pDeviceItem->m_pClientItem->m_strDeviceName + _("\n"),
+    m_pCtrlObject->logMsg( m_pDeviceItem->m_pClientItem->m_strDeviceName + _("\n"),
                             DAEMON_LOGMSG_DEBUG);
 
     // Add the client to the Client List
     m_pCtrlObject->m_wxClientMutex.Lock();
-    m_pCtrlObject->addClient( m_pDeviceItem->m_pClientItem );
+    if ( !m_pCtrlObject->addClient( m_pDeviceItem->m_pClientItem, 
+                                    m_pDeviceItem->m_interface_guid.getClientID() ) ) {
+        // Failed to add client
+        delete m_pDeviceItem->m_pClientItem;
+        m_pDeviceItem->m_pClientItem = NULL;
+        m_pCtrlObject->m_wxClientMutex.Unlock();
+        m_pCtrlObject->logMsg( _("Devicethread: Failed to add client. Terminating thread.") );
+        return NULL;
+    }
     m_pCtrlObject->m_wxClientMutex.Unlock();
 
     // Client now have GUID set to server GUID + channel id
@@ -166,7 +174,7 @@ void *deviceThread::Entry()
         
     }
 
-    if (VSCP_DRIVER_LEVEL1 == m_pDeviceItem->m_driverLevel) {
+    if ( VSCP_DRIVER_LEVEL1 == m_pDeviceItem->m_driverLevel ) {
 
         // Now find methods in library
 
@@ -716,7 +724,7 @@ void *deviceThread::Entry()
                 }
             }
 
-            // Check if host is specified in the configuration file       
+            // Check if host is specified in the configuration file
             if ( m_pCtrlObject->m_variables.find( m_pDeviceItem->m_strName + 
                                                     _("_port"), variable ) ) {
                 wxString str;
