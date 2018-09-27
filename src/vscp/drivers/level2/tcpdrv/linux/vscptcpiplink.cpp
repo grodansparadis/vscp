@@ -511,7 +511,7 @@ CWrkSendTread::Entry()
         // Make sure the remote connection is up
         if ( !m_srvRemote.isConnected() ) {
 
-            if (!bRemoteConnectionLost) {
+            if ( !bRemoteConnectionLost ) {
                 bRemoteConnectionLost = true;
                 m_srvRemote.doCmdClose();
                 syslog(LOG_ERR,
@@ -568,9 +568,7 @@ CWrkSendTread::Entry()
             vscp_deleteVSCPevent_v2( &pEvent );
             
         }
-        
-        
-        
+                
     }
 
     // Close the channel
@@ -703,22 +701,22 @@ CWrkReceiveTread::Entry()
             pEvent->sizeData = 0;
             pEvent->pdata = NULL;
             
-            if (CANAL_ERROR_SUCCESS == m_srvRemote.doCmdBlockingReceive(pEvent)) {
+            if ( CANAL_ERROR_SUCCESS == m_srvRemote.doCmdBlockingReceive( pEvent ) ) {
 
                 // Filter is handled at server side. We check so we don't receive
                 // things we send ourself.
                 if ( m_pObj->txChannelID != pEvent->obid ) {
                     m_pObj->m_mutexReceiveQueue.Lock();
-                    m_pObj->m_receiveList.push_back(pEvent);
+                    m_pObj->m_receiveList.push_back( pEvent );
                     m_pObj->m_semReceiveQueue.Post();
                     m_pObj->m_mutexReceiveQueue.Unlock();
                 }
                 else {
-                    vscp_deleteVSCPevent(pEvent);
+                    vscp_deleteVSCPevent( pEvent );
                 }
             }
             else {
-                vscp_deleteVSCPevent(pEvent);
+                vscp_deleteVSCPevent( pEvent );
             }
         }
                 

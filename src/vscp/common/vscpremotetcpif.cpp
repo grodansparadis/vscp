@@ -783,6 +783,7 @@ int VscpRemoteTcpIf::doCmdBlockingReceive( vscpEvent *pEvent, uint32_t mstimeout
             }
 
             return VSCP_ERROR_SUCCESS;
+
         }
     }
 
@@ -792,6 +793,7 @@ int VscpRemoteTcpIf::doCmdBlockingReceive( vscpEvent *pEvent, uint32_t mstimeout
     
         if ( ( nRead = stcp_read( m_conn, buf, sizeof(buf), m_innerResponseTimeout ) ) <= 0 ) {
             if ( STCP_ERROR_STOPPED == nRead ) return  VSCP_ERROR_STOPPED;
+            wxMicroSleep( 50 );
             continue;
         }        
 
