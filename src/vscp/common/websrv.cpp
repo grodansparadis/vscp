@@ -9322,6 +9322,7 @@ vscp_configure_list( struct web_connection *conn, void *cbdata )
     web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Level I Drivers:</b> ");
 
     web_printf( conn, "enabled<br>");
+    web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;----------------------------------<br>");
 
     CDeviceItem *pDeviceItem;
     VSCPDEVICELIST::iterator iter;
@@ -9342,7 +9343,9 @@ vscp_configure_list( struct web_connection *conn, void *cbdata )
             web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Path:</b> ");
             web_printf( conn, "%s", (const char *)pDeviceItem->m_strPath.mbc_str() );
             web_printf( conn, "<br>");
+            web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;----------------------------------<br>");
         }
+        
     }
 
     web_printf( conn, "<hr>");
@@ -9354,6 +9357,7 @@ vscp_configure_list( struct web_connection *conn, void *cbdata )
     web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Level II Drivers:</b> ");
     web_printf( conn, "enabled<br>");
 
+    web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;----------------------------------<br>");
 
     for (iter = gpobj->m_deviceList.m_devItemList.begin();
             iter != gpobj->m_deviceList.m_devItemList.end();
@@ -9372,6 +9376,7 @@ vscp_configure_list( struct web_connection *conn, void *cbdata )
             web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Driver path:</b> ");
             web_printf( conn, "%s", (const char *)pDeviceItem->m_strPath.mbc_str() );
             web_printf( conn, "<br>");
+            web_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;----------------------------------<br>");
         }
     }
 

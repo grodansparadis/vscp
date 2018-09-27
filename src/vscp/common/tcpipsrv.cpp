@@ -2085,8 +2085,8 @@ void TCPClientThread::handleClientGetChannelID( void )
         return;
     }
 
-    sprintf ( outbuf, "%lu\r\n%s\r\n",
-        (unsigned long)m_pClientItem->m_clientID, MSG_OK );
+    sprintf( outbuf, "%lu\r\n%s",
+            (unsigned long)m_pClientItem->m_clientID, MSG_OK );
 
     write(   outbuf, strlen ( outbuf ) );
 

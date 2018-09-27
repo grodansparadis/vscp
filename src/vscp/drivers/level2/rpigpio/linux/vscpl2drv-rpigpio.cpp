@@ -21,26 +21,6 @@
 // Boston, MA 02111-1307, USA.
 //
 
-#ifdef __GNUG__
-//#pragma implementation
-#endif
-
-// For compilers that support precompilation, includes "wx.h".
-#include "wx/wxprec.h"
-
-#ifdef __BORLANDC__
-#pragma hdrstop
-#endif
-
-#ifndef WX_PRECOMP
-#include "wx/wx.h"
-#endif
-
-#ifdef __WXMSW__
-#include  "wx/ownerdrw.h"
-#endif
-
-#include "wx/tokenzr.h"
 
 #include "stdio.h"
 #include "stdlib.h"
@@ -67,30 +47,28 @@ void _fini()
 // CVSCPDrvApp construction
 
 CVSCPDrvApp::CVSCPDrvApp()
-{
-    ::wxInitialize();
-    
+{   
 	m_instanceCounter = 0;
-	pthread_mutex_init(&m_objMutex, NULL);
+	pthread_mutex_init( &m_objMutex, NULL );
 
 	// Init the driver array
 	for (int i = 0; i < VSCP_RPIGPIO_DRIVER_MAX_OPEN; i++) {
 		m_prpigpioArray[ i ] = NULL;
 	}
 
-	UNLOCK_MUTEX(m_objMutex);
+	UNLOCK_MUTEX( m_objMutex );
 }
 
 CVSCPDrvApp::~CVSCPDrvApp()
 {
-	LOCK_MUTEX(m_objMutex);
+	LOCK_MUTEX( m_objMutex );
 
-	for (int i = 0; i < VSCP_RPIGPIO_DRIVER_MAX_OPEN; i++) {
+	for ( int i = 0; i < VSCP_RPIGPIO_DRIVER_MAX_OPEN; i++ ) {
 
-		if (NULL == m_prpigpioArray[ i ]) {
+		if ( NULL == m_prpigpioArray[ i ] ) {
 
 			CRpiGpio *prpigpio = getDriverObject(i);
-			if (NULL != prpigpio) {
+			if ( NULL != prpigpio ) {
 				prpigpio->close();
 				delete m_prpigpioArray[ i ];
 				m_prpigpioArray[ i ] = NULL;
@@ -98,8 +76,8 @@ CVSCPDrvApp::~CVSCPDrvApp()
 		}
 	}
 
-	UNLOCK_MUTEX(m_objMutex);
-	pthread_mutex_destroy(&m_objMutex);
+	UNLOCK_MUTEX( m_objMutex );
+	pthread_mutex_destroy( &m_objMutex );
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -150,8 +128,8 @@ CRpiGpio *CVSCPDrvApp::getDriverObject( long h )
 	long idx = h - 1681;
 
 	// Check if valid handle
-	if (idx < 0) return NULL;
-	if (idx >= VSCP_RPIGPIO_DRIVER_MAX_OPEN) return NULL;
+	if ( idx < 0 ) return NULL;
+	if ( idx >= VSCP_RPIGPIO_DRIVER_MAX_OPEN ) return NULL;
 	return m_prpigpioArray[ idx ];
 }
 
@@ -168,10 +146,10 @@ void CVSCPDrvApp::removeDriverObject(long h)
 	if (idx < 0) return;
 	if (idx >= VSCP_RPIGPIO_DRIVER_MAX_OPEN) return;
 
-	LOCK_MUTEX(m_objMutex);
-	if (NULL != m_prpigpioArray[ idx ]) delete m_prpigpioArray[ idx ];
+	LOCK_MUTEX( m_objMutex );
+	if ( NULL != m_prpigpioArray[ idx ] ) delete m_prpigpioArray[ idx ];
 	m_prpigpioArray[ idx ] = NULL;
-	UNLOCK_MUTEX(m_objMutex);
+	UNLOCK_MUTEX( m_objMutex );
 }
 
 ///////////////////////////////////////////////////////////////////////////////

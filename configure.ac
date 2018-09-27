@@ -210,8 +210,8 @@ dnl LIBS="$LIBS $WX_LIBS"
 
 WX_BASENAME=`$WX_CONFIG_WITH_ARGS --basename`
 vscp_gui=no
-AC_MSG_CHECKING([for wx_gtk2* wxWidgets libs])
-if sh -c "$WX_CONFIG_WITH_ARGS --basename" 2>/dev/null | grep wx_gtk2 >/dev/null; then
+AC_MSG_CHECKING([for wx_gtk2* or wx_gtk3* wxWidgets libs])
+if sh -c "$WX_CONFIG_WITH_ARGS --basename" 2>/dev/null | grep -e wx_gtk2 -e wx_gtk3 >/dev/null; then
     dnl wxGTK is installed, build the GUI applications also
     PROJ_SUBDIRS="$PROJ_SUBDIRS $PROJ_SUBDIRS_GUI"
     vscp_gui=yes

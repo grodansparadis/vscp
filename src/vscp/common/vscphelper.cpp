@@ -57,6 +57,14 @@
 #include <sys/types.h>
 #endif
 
+#include <algorithm> 
+#include <functional> 
+#include <deque>
+#include <vector>
+#include <string>
+#include <cctype>
+#include <locale>
+
 #include <json.hpp>             // Needs C++11  -std=c++11
 
 #include <crc8.h> 
@@ -121,6 +129,32 @@ int32_t vscp_readStringValue( const wxString& strval )
     return val;
 }
 
+int32_t vscp2_readStringValue( const std::string& strval )
+{
+    int32_t val=0;
+    std::string str = strval;
+    vscp2_makeLower( str );
+    vscp2_trim( str );
+    
+    std::size_t pos;
+    if ( string::npos != ( pos = str.find( "0x" ) ) ) {
+        str = str.substr( 2 );
+        val = std::stoul( str, &pos, 16 );
+    }
+    else if ( string::npos != ( pos = str.find( "0o" ) ) ) {
+        str = str.substr( 2 );
+        val = std::stoul( str, &pos, 8 );
+    } 
+    else if ( string::npos != ( pos = str.find( "0b" ) ) ) {
+        str = str.substr( 2 );
+        val = std::stoul( str, &pos, 2 );
+    }
+    else {
+        val = std::stoul( str );
+    }
+
+    return val;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // vscp_littleEndian
@@ -2511,6 +2545,39 @@ bool vscp_getGuidFromStringToArray(unsigned char *pGUID, const wxString& strGUID
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// getGuidFromStringToArray
+//
+
+bool vscp2_getGuidFromStringToArray( unsigned char *pGUID, 
+                                        const std::string& strGUID )
+{
+    unsigned long val;
+    std::string str = vscp2_trim_copy( strGUID );
+    
+    if ( NULL == pGUID ) {
+        return false;
+    }
+    
+    // If GUID is empty or "-" set all to zero
+    if ( ( 0 == str.length() ) || ( 0 == str.compare("-") ) ) {
+        memset( pGUID, 0, 16 );
+        return true;
+    }
+
+    uint8_t cnt = 0;
+    std::deque<std::string> tokens;
+    vscp2_split( tokens, strGUID, ":" );
+    while ( tokens.size() ) {
+        if ( cnt > 15 ) return false;
+        std::size_t pos;
+        pGUID[ cnt++ ] = (uint8_t)std::stoul( tokens.front(), &pos, 16 );                
+        tokens.pop_front();
+    }
+
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // writeGuidToString
 //
 
@@ -3779,6 +3846,58 @@ bool vscp_readFilterFromString( vscpEventFilter *pFilter,
     return true;
 }
 
+bool vscp2_readFilterFromString( vscpEventFilter *pFilter, 
+                                    const std::string& strFilter)
+{
+    std::deque<std::string> tokens;
+
+    // Check pointer
+    if (NULL == pFilter) return false;
+
+    pFilter->filter_priority = 0;
+    pFilter->filter_class = 0;
+    pFilter->filter_type = 0;
+    memset( pFilter->filter_GUID, 0, 16 );
+
+    vscp2_split( tokens, strFilter, "," );
+
+    // Get filter priority
+    if ( !tokens.empty() ) {
+        pFilter->filter_priority = vscp2_readStringValue( tokens.front() );
+        tokens.pop_front();
+    } 
+    else {
+        return true;
+    }
+
+    // Get filter class
+    if ( !tokens.empty() ) {
+        pFilter->filter_class = vscp2_readStringValue( tokens.front() );
+        tokens.pop_front();
+    } 
+    else {
+        return true;
+    }
+
+    // Get filter type
+    if ( !tokens.empty() ) {
+        pFilter->filter_type = vscp2_readStringValue( tokens.front() );
+        tokens.pop_front();
+    } 
+    else {
+        return true;
+    }
+
+    // Get filter GUID
+    if ( !tokens.empty() ) {
+        vscp2_getGuidFromStringToArray( pFilter->filter_GUID,
+                                        tokens.front() );
+        tokens.pop_front();                                        
+    } 
+
+    return true;
+}
+
 //////////////////////////////////////////////////////////////////////////////
 // vscp_writeFilterToString
 //
@@ -3806,7 +3925,8 @@ bool vscp_writeFilterToString( const vscpEventFilter *pFilter,
 // readMaskFromString
 //
 
-bool vscp_readMaskFromString(vscpEventFilter *pFilter, const wxString& strMask)
+bool vscp_readMaskFromString( vscpEventFilter *pFilter, 
+                                const wxString& strMask )
 {
     wxString strTok;
 
@@ -3852,6 +3972,62 @@ bool vscp_readMaskFromString(vscpEventFilter *pFilter, const wxString& strMask)
         strTok = tkz.GetNextToken();
         vscp_getGuidFromStringToArray(pFilter->mask_GUID,
                                         strTok);
+    } 
+
+    return true;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// readMaskFromString
+//
+
+bool vscp2_readMaskFromString( vscpEventFilter *pFilter, 
+                                const std::string& strMask)
+{
+    std::deque<std::string> tokens;
+
+    // Check pointer
+    if (NULL == pFilter) return false;
+
+    pFilter->mask_priority = 0;
+    pFilter->mask_class = 0;
+    pFilter->mask_type = 0;
+    memset( pFilter->mask_GUID, 0, 16 );
+
+    vscp2_split( tokens, strMask, "," );
+
+    // Get mask priority
+    if ( !tokens.empty() ) {
+        pFilter->mask_priority = vscp2_readStringValue( tokens.front() );
+        tokens.pop_front();
+    } 
+    else {
+        return true;
+    }
+
+    // Get mask class
+    if ( !tokens.empty() ) {
+        pFilter->mask_class = vscp2_readStringValue( tokens.front() );
+        tokens.pop_front();
+    } 
+    else {
+        return true;
+    }
+
+    // Get mask type
+    if ( !tokens.empty() ) {
+        pFilter->mask_type = vscp2_readStringValue( tokens.front() );
+        tokens.pop_front();
+    } 
+    else {
+        return true;
+    }
+
+    // Get mask GUID
+    if ( !tokens.empty() ) {
+        vscp_getGuidFromStringToArray( pFilter->mask_GUID,
+                                        tokens.front() );
+        tokens.pop_front();
     } 
 
     return true;
@@ -4466,6 +4642,39 @@ bool vscp_setVscpEventDataFromString(vscpEvent *pEvent, const wxString& str)
 
 }
 
+bool vscp2_setVscpEventDataFromString(vscpEvent *pEvent, const std::string& str )
+{
+    std::deque<std::string> tokens;
+
+    // Check pointers
+    if (NULL == pEvent) return false;
+
+    vscp2_split( tokens, str, "," );
+
+    uint8_t data[ VSCP_MAX_DATA ];
+    pEvent->sizeData = 0;
+
+    while ( !tokens.empty() ) {
+        std::string token = tokens.front();
+        tokens.pop_front();
+        data[ pEvent->sizeData++ ] = vscp2_readStringValue( token );
+        if (pEvent->sizeData >= VSCP_MAX_DATA) break;
+    }
+
+    if ( pEvent->sizeData > 0 ) {
+        pEvent->pdata = new uint8_t[pEvent->sizeData];
+        if (NULL != pEvent->pdata) {
+            memcpy(pEvent->pdata, &data, pEvent->sizeData);
+        }
+    } 
+    else {
+        pEvent->pdata = NULL;
+    }
+
+    return true;
+
+}
+
 //////////////////////////////////////////////////////////////////////////////
 // vscp_setVscpEventExDataFromString
 //
@@ -4481,6 +4690,28 @@ bool vscp_setVscpEventExDataFromString(vscpEventEx *pEventEx, const wxString& st
     while (tkz.HasMoreTokens()) {
         wxString token = tkz.GetNextToken();
         pEventEx->data[ pEventEx->sizeData ] = vscp_readStringValue(token);
+        pEventEx->sizeData++;
+        if (pEventEx->sizeData >= VSCP_MAX_DATA) break;
+    }
+
+    return true;
+
+}
+
+bool vscp2_setVscpEventExDataFromString(vscpEventEx *pEventEx, const std::string& str)
+{
+    std::deque<std::string> tokens;
+
+    // Check pointers
+    if (NULL == pEventEx) return false;
+
+    vscp2_split( tokens, str, "," );
+
+    pEventEx->sizeData = 0;
+    while ( !tokens.empty() ) {
+        std::string token = tokens.front();
+        tokens.pop_front();
+        pEventEx->data[ pEventEx->sizeData ] = vscp2_readStringValue(token);
         pEventEx->sizeData++;
         if (pEventEx->sizeData >= VSCP_MAX_DATA) break;
     }

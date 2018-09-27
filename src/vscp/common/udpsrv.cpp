@@ -129,7 +129,7 @@ void *VSCPUDPClientThread::Entry()
     // This is now an active Client
     m_pClientItem->m_bOpen = true;
     m_pClientItem->m_type =  CLIENT_ITEM_INTERFACE_TYPE_CLIENT_UDP;
-    m_pClientItem->m_strDeviceName = _("Remote UDP Client Listner. [");
+    m_pClientItem->m_strDeviceName = _("Internal UDP client listner. [");
     m_pClientItem->m_strDeviceName += gpobj->m_udpInfo.m_interface;
     m_pClientItem->m_strDeviceName += _("]|Started at ");
     m_pClientItem->m_strDeviceName += wxDateTime::Now().FormatISODate();

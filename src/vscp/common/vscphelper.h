@@ -36,12 +36,19 @@
 #if !defined(VSCPHELPER_H__INCLUDED_)
 #define VSCPHELPER_H__INCLUDED_
 
-
 #include <wx/wx.h>
 #include <wx/hashmap.h>
 #ifndef WIN32
 #include <sys/times.h>
 #endif 
+
+#include <algorithm> 
+#include <functional> 
+#include <deque>
+#include <vector>
+#include <string>
+#include <cctype>
+#include <locale>
 
 #include <float.h>
 #include <vscp.h>
@@ -54,26 +61,26 @@ class CMDF;
 
 #ifdef __cplusplus
 extern "C" {
-#endif   
-
-    //@{
+#endif
 
     /*! 
-      \union vscp_value
-      \brief VSCP Data coding declaration
-     */
+        \union vscp_value
+        \brief VSCP Data coding declaration
+    */
     union vscp_value {
+        
         /// float value
         double float_value;
-        /// Integer and long value and 
+        
+        /// Integer and long value and
         long long_value;
+        
         /// Integer value
         int int_value;
+        
         /// Byte value
         unsigned char byte_value;
     };
-    //@}
-
 
     // ***************************************************************************
     //                                General Helpers
@@ -99,8 +106,9 @@ extern "C" {
      * https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/
      */
     
-    bool vscp_almostEqualRelativeFloat( float A, float B,
-                                            float maxRelDiff = FLT_EPSILON );
+    bool vscp_almostEqualRelativeFloat( float A, 
+                                        float B,
+                                        float maxRelDiff = FLT_EPSILON );
     
     /*!
      * https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/
@@ -113,9 +121,9 @@ extern "C" {
      * https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/
      */
     bool vscp_almostEqualRelativeAndAbsFloat( float A, 
-                                            float B,
-                                            float maxDiff, 
-                                            float maxRelDiff = FLT_EPSILON );
+                                                float B,
+                                                float maxDiff, 
+                                                float maxRelDiff = FLT_EPSILON );
     
     /*
      * Check two floats for equality
@@ -127,7 +135,8 @@ extern "C" {
      * https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/
      */
     
-    bool vscp_almostEqualRelativeDouble( double A, double B,
+    bool vscp_almostEqualRelativeDouble( double A, 
+                                            double B,
                                             double maxRelDiff = DBL_EPSILON );
 
     /*!
@@ -137,14 +146,13 @@ extern "C" {
         @return Unsigned long containing value
      */
  
-    int32_t vscp_readStringValue(const wxString& strval);
-    
-    
+    int32_t vscp_readStringValue( const wxString& strval );
+    int32_t vscp2_readStringValue(const std::string& strval);
 
     /*!
         Convert string to lowercase
     */
-    int vscp_lowercase(const char *s);
+    int vscp_lowercase( const char *s );
 
     /*!
         String non case compare
@@ -152,7 +160,7 @@ extern "C" {
         @param s2 String2 to compare
         @return 0 if strings are the same
     */
-    int vscp_strcasecmp(const char *s1, const char *s2);
+    int vscp_strcasecmp( const char *s1, const char *s2 );
 
     /*!
         String non case compare with length
@@ -161,23 +169,131 @@ extern "C" {
         @param len Number of byte to compare
         @return 0 if strings are the same
     */
-    int vscp_strncasecmp(const char *s1, const char *s2, size_t len);
-    
-    void vscp_strlcpy( register char *dst, register const char *src, size_t n );
-    
-    char *vscp_strdup( const char *str );
-    
-    char *vscp_strndup( const char *ptr, size_t len );
-    
-    const char *vscp_strcasestr( const char *big_str, const char *small_str );
-    
-    char* vscp_stristr( char* str1, const char* str2 );
-    
-    char *vscp_trimWhiteSpace( char *str );
-    
-    char *vscp_reverse(const char * const s);
-    
-    char *vscp_rstrstr( const char *s1, const char *s2);
+    int vscp_strncasecmp( const char *s1, const char *s2, size_t len );
+
+    void vscp_strlcpy(register char *dst, register const char *src, size_t n );
+
+    char *vscp_strdup(const char *str);
+
+    char *vscp_strndup(const char *ptr, size_t len);
+
+    const char *vscp_strcasestr(const char *big_str, const char *small_str);
+
+    char *vscp_stristr(char *str1, const char *str2);
+
+    char *vscp_trimWhiteSpace(char *str);
+
+    char *vscp_reverse(const char *const s);
+
+    char *vscp_rstrstr(const char *s1, const char *s2);
+
+// ----------------------------------------------------------------------------
+//                               Version 2 helpers
+// ----------------------------------------------------------------------------
+
+// wxString conversions - https://wiki.wxwidgets.org/Converting_everything_to_and_from_wxString
+
+// String to upper case (in place)
+static inline void
+vscp2_makeUpper(std::string &s)
+{
+    std::transform(s.begin(), s.end(), s.begin(),
+                    [](unsigned char c) -> unsigned char { return std::toupper(c); });
+}
+
+// String to upper case (copying)
+static inline std::string
+vscp2_makeUpper_copy(std::string s)
+{
+    vscp2_makeUpper(s);
+    return s;
+}
+
+// String to lower case (in place)
+static inline void 
+vscp2_makeLower(std::string &s) 
+{
+    std::transform( s.begin(), s.end(),s.begin(), ::tolower );
+}
+
+// String to upper case (copying)
+static inline std::string 
+vscp2_makeLower_copy(std::string s) 
+{
+    vscp2_makeLower(s);
+    return s;
+}
+
+// trim from start (in place)
+static inline void 
+vscp2_ltrim(std::string &s) 
+{
+    s.erase(s.begin(), std::find_if(s.begin(), s.end(),
+            std::not1(std::ptr_fun<int, int>(std::isspace))));
+}
+
+// trim from end (in place)
+static inline void 
+vscp2_rtrim(std::string &s) 
+{
+    s.erase(std::find_if(s.rbegin(), s.rend(),
+            std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
+}
+
+// trim from both ends (in place)
+static inline void 
+vscp2_trim(std::string &s) 
+{
+    vscp2_ltrim(s);
+    vscp2_rtrim(s);
+}
+
+// trim from start (copying)
+static inline std::string 
+vscp2_ltrim_copy(std::string s) 
+{
+    vscp2_ltrim(s);
+    return s;
+}
+
+// trim from end (copying)
+static inline std::string 
+vscp2_rtrim_copy(std::string s) 
+{
+    vscp2_rtrim(s);
+    return s;
+}
+
+// trim from both ends (copying)
+static inline std::string 
+vscp2_trim_copy(std::string s) 
+{
+    vscp2_trim(s);
+    return s;
+}
+
+// split for tokenizer
+// https://stackoverflow.com/questions/53849/how-do-i-tokenize-a-string-in-c
+static inline void
+vscp2_split( std::deque<std::string> & theStringVector,  
+       const std::string  & theString,
+       const std::string  & theDelimiter )
+{
+    size_t  start = 0, end = 0;
+
+    while ( end != std::string::npos)
+    {
+        end = theString.find( theDelimiter, start);
+
+        // If at end, use length=maxLength.  Else use length=end-start.
+        theStringVector.push_back( theString.substr( start,
+                       (end == std::string::npos) ? std::string::npos : end - start));
+
+        // If at end, use start=maxSize.  Else use start=end+delimiter.
+        start = (   ( end > (std::string::npos - theDelimiter.size()) )
+                  ?  std::string::npos  :  end + theDelimiter.size());
+    }
+}
 
     
     /*!
@@ -685,7 +801,8 @@ extern "C" {
       @return True on success, false on failure.
     */
  
-    bool vscp_getGuidFromString(vscpEvent *pEvent, const wxString& strGUID);
+    bool vscp_getGuidFromString( vscpEvent *pEvent, 
+                                    const wxString& strGUID );
 
     
     /*!
@@ -704,8 +821,11 @@ extern "C" {
       Fill event GUID from a string
      */
  
-    bool vscp_getGuidFromStringToArray(unsigned char *pGUID, 
+    bool vscp_getGuidFromStringToArray( unsigned char *pGUID, 
                                         const wxString& strGUID);
+
+    bool vscp2_getGuidFromStringToArray( unsigned char *pGUID, 
+                                        const std::string& strGUID);                                        
 
     /*!
       Write out GUID to string
@@ -715,7 +835,7 @@ extern "C" {
       @return True on success, false on failure.
     */
 
-    bool vscp_writeGuidArrayToString(const unsigned char *pGUID, 
+    bool vscp_writeGuidArrayToString( const unsigned char *pGUID, 
                                         wxString& strGUID);
 
 
@@ -727,7 +847,7 @@ extern "C" {
       @return True on success, false on failure.
      */
 
-    bool vscp_writeGuidToString(const vscpEvent *pEvent,        
+    bool vscp_writeGuidToString( const vscpEvent *pEvent,        
                                     wxString& strGUID);
 
     
@@ -739,7 +859,7 @@ extern "C" {
       @return True on success, false on failure.
      */
 
-    bool vscp_writeGuidToStringEx(const vscpEventEx *pEvent,            
+    bool vscp_writeGuidToStringEx( const vscpEventEx *pEvent,            
                                     wxString& strGUID);
 
 
@@ -751,7 +871,7 @@ extern "C" {
       @return True on success, false on failure.
      */
  
-    bool vscp_writeGuidToString4Rows(const vscpEvent *pEvent,   
+    bool vscp_writeGuidToString4Rows( const vscpEvent *pEvent,   
                                         wxString& strGUID);
 
     
@@ -773,7 +893,7 @@ extern "C" {
       @param pGUID pointer to GUID to check
       @return true if empty, false if not.
      */
-    bool vscp_isGUIDEmpty(const unsigned char *pGUID);
+    bool vscp_isGUIDEmpty( const unsigned char *pGUID );
 
     /*!
       Compare two GUID's
@@ -781,21 +901,21 @@ extern "C" {
       @param pGUID2 Second GUID to compare
       @return True if the two GUID's are equal. False otherwise.
      */
-    bool vscp_isSameGUID(const unsigned char *pGUID1, 
-                            const unsigned char *pGUID2);
+    bool vscp_isSameGUID( const unsigned char *pGUID1, 
+                            const unsigned char *pGUID2 );
 
     /*!
         Reverse GUID
         @param pGUID Pointer to GUID to reverse.
         @return true if OK.
      */
-    bool vscp_reverseGUID(unsigned char *pGUID);
+    bool vscp_reverseGUID( unsigned char *pGUID );
 
     /*!
       Convert a standard VSCP event to the Ex version
      */
-    bool vscp_convertVSCPtoEx(vscpEventEx *pEventEx, 
-                                const vscpEvent *pEvent);
+    bool vscp_convertVSCPtoEx( vscpEventEx *pEventEx, 
+                                const vscpEvent *pEvent );
 
     /*!
       Convert an Ex event to a standard VSCP event
@@ -1007,6 +1127,8 @@ extern "C" {
      */
  
     bool vscp_readFilterFromString( vscpEventFilter *pFilter, const wxString& strFilter);
+    
+    bool vscp2_readFilterFromString( vscpEventFilter *pFilter, const std::string& strFilter);
 
     /*!
         Write filter to string
@@ -1023,7 +1145,10 @@ extern "C" {
     /*!
         Read a mask from a string
         If strMask is an empty string elements in mask will be set to zero. Arguments is
-        priority,class,type,GUID and all is optional but if given must be given in order.
+
+        "priority,class,type,GUID"
+        
+        and all is optional but if given must be given in order.
         @param pFilter Filter structure to write mask to.
         @param strMask Mask in string form 
                 mask-priority, mask-class, mask-type, mask-GUID
@@ -1031,6 +1156,7 @@ extern "C" {
      */
  
     bool vscp_readMaskFromString( vscpEventFilter *pFilter, const wxString& strMask);
+    bool vscp2_readMaskFromString( vscpEventFilter *pFilter, const std::string& strMask);
 
     /*!
         Write mask to string
@@ -1186,6 +1312,7 @@ extern "C" {
     */
  
     bool vscp_setVscpEventDataFromString(vscpEvent *pEvent, const wxString& str);
+    bool vscp2_setVscpEventDataFromString(vscpEvent *pEvent, const std::string& str);
 
     /*!
       Set VSCP EventEx data from a string
@@ -1196,6 +1323,7 @@ extern "C" {
     */
  
     bool vscp_setVscpEventExDataFromString(vscpEventEx *pEventEx, const wxString& str);
+    bool vscp2_setVscpEventExDataFromString(vscpEventEx *pEventEx, const std::string& str);
     
     /*!
       Set VSCP data from a string
@@ -1550,8 +1678,7 @@ extern "C" {
      * @return True on success.
      */
     bool vscp_getSaltHex( wxString &strSalt, size_t len );
-    
-    
+ 
 #ifdef __cplusplus
 }
 #endif

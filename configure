@@ -6939,9 +6939,9 @@ fi
 
 WX_BASENAME=`$WX_CONFIG_WITH_ARGS --basename`
 vscp_gui=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for wx_gtk2* wxWidgets libs" >&5
-$as_echo_n "checking for wx_gtk2* wxWidgets libs... " >&6; }
-if sh -c "$WX_CONFIG_WITH_ARGS --basename" 2>/dev/null | grep wx_gtk2 >/dev/null; then
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for wx_gtk2* or wx_gtk3* wxWidgets libs" >&5
+$as_echo_n "checking for wx_gtk2* or wx_gtk3* wxWidgets libs... " >&6; }
+if sh -c "$WX_CONFIG_WITH_ARGS --basename" 2>/dev/null | grep -e wx_gtk2 -e wx_gtk3 >/dev/null; then
         PROJ_SUBDIRS="$PROJ_SUBDIRS $PROJ_SUBDIRS_GUI"
     vscp_gui=yes
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: Found; building GUI apps" >&5

@@ -34,11 +34,6 @@
 #include <pthread.h>
 #include <syslog.h>
 
-#include <wx/file.h>
-#include <wx/wfstream.h>
-
-#include <wiringPi.h>
-
 #include "../../../../common/canal.h"
 #include "../../../../common/vscp.h"
 #include "../../../../common/canal_macro.h"
@@ -52,7 +47,7 @@
 using namespace std;
 
 #define VSCP_RPIGPIO_SYSLOG_DRIVER_ID       "VSCP rpigpio driver:"
-#define VSCP_LEVEL2_DLL_RPIGPIO_OBJ_MUTEX   "___VSCP__DLL_L2GPIO_OBJ_MUTEX____"
+#define VSCP_LEVEL2_DLL_RPIGPIO_OBJ_MUTEX   "___VSCP__DLL_L2RPIGPIO_OBJ_MUTEX____"
 #define VSCP_RPIGPIO_LIST_MAX_MSG		    2048
   
 #define VSCP_MODE_PWM_SOFT   0
@@ -61,7 +56,6 @@ using namespace std;
 // Forward declarations
 class RpiGpioWorkerTread;
 class VscpRemoteTcpIf;
-class wxFile;
 class CRpiGpio;
 
 
@@ -100,7 +94,7 @@ public:
     bool setPin( uint8_t pin );
     uint8_t getPin(void);
 
-    bool setPullUp( const wxString& strPullUp );
+    bool setPullUp( const std::string& strPullUp );
     uint8_t getPullUp( void );
 
     bool setWatchdog( uint32_t watchdog ) { m_watchdog = watchdog; return true; };
@@ -372,7 +366,7 @@ public:
     uint8_t getPin( void ) { return m_pin; };
 
     void setEdge( uint8_t edge ) { m_edge = edge; };
-    bool setEdge( wxString& strEdge );
+    bool setEdge( const std::string& strEdge );
     uint8_t getEdge( void ) { return m_edge; };
 
     void setMonitorEvents( const vscpEventEx& eventFalling,
@@ -429,6 +423,18 @@ public:
 		Add event to send queue 
 	 */
 	bool addEvent2SendQueue(const vscpEvent *pEvent);
+
+    // Getter and setter for samplerate
+    void setSampleRate( uint8_t rate ) { m_sample_rate = rate; };
+    uint8_t getSampleRate( void ) { return m_sample_rate; };
+
+    // Getter and setter for primary DMA channel
+    void setPrimaryDmaChannel( uint8_t ch ) { m_primary_dma_channel = ch; };
+    uint8_t getPrimaryDmaChannel( void ) { return m_primary_dma_channel; };
+
+    // Getter and setter for secondary DMA channel
+    void setSecondaryDmaChannel( uint8_t ch ) { m_secondary_dma_channel = ch; };
+    uint8_t getSecondaryDmaChannel( void ) { return m_secondary_dma_channel; };
 
 public:
 
@@ -488,6 +494,7 @@ public:
 
     // Lists for pin definitions
     std::list<CGpioInput *> m_inputPinList;
+    std::list<CGpioMonitor *> m_monitorPinList;
     std::list<CGpioOutput *> m_outputPinList;
     std::list<CGpioPwm *> m_pwmPinList;
     std::list<CGpioClock *> m_gpioClockPinList; // Will hold max one entry

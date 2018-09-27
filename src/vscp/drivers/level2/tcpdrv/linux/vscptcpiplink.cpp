@@ -663,7 +663,7 @@ CWrkReceiveTread::Entry()
     while ( !TestDestroy() && !m_pObj->m_bQuit ) {
 
         // Make sure the remote connection is up
-        if (!m_srvRemote.isConnected()) {
+        if ( !m_srvRemote.isConnected() ) {
 
             if ( !bRemoteConnectionLost ) {
                 bRemoteConnectionLost = true;

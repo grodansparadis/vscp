@@ -43,7 +43,7 @@ CXXFLAGS = -std=c++11 -D__LINUX__ -fPIC -D_REENTRANT @CXXFLAGS@ @WXBASE_CXXFLAGS
 CPPFLAGS = -D__LINUX__ -fPIC @CPPFLAGS@ @WXBASE_CPPFLAGS@ -fno-var-tracking-assignments -I. -I../common -I../../../../common -I../../../../../common
 
 LDFLAGS = @LDFLAGS@
-EXTRALIBS = -lpigpio @EXTRALIBS@ 
+EXTRALIBS = -lpigpio -lexpat @EXTRALIBS@ 
 ifeq ($(STATIC),yes)
 EXTRALIBS += @WXBASE_STATIC_LIBS@
 else
