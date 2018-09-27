@@ -321,8 +321,8 @@ public:
     bool setAction( uint8_t action );
     uint8_t getAction( void );
 
-    bool setActionParameter( wxString& param );
-    wxString& getActionParameter( void );
+    bool setActionParameter( const std::string& param );
+    std::string& getActionParameter( void );
 
 private:
 
@@ -345,7 +345,8 @@ private:
 	uint8_t m_action;
 
     // Parameter for action
-	wxString m_strActionParam;
+	std::string
+     m_strActionParam;
 
 };
 
