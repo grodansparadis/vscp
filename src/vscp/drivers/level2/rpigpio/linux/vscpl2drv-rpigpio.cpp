@@ -24,6 +24,8 @@
 
 #include "stdio.h"
 #include "stdlib.h"
+#include <pthread.h>
+#include <semaphore.h>
 
 #include "vscpl2drv-rpigpio.h"
 #include "rpigpio.h"
@@ -253,14 +255,18 @@ VSCPBlockingReceive( long handle, vscpEvent *pEvent, unsigned long timeout )
 	CRpiGpio *pdrvObj = theApp.getDriverObject(handle);
 	if (NULL == pdrvObj) return CANAL_ERROR_MEMORY;
     
-    if ( wxSEMA_TIMEOUT == pdrvObj->m_semReceiveQueue.WaitTimeout( timeout ) ) {
+	struct timespec ts;
+	ts.tv_sec = 0;
+	ts.tv_nsec = timeout * 1e6;
+	if ( ETIMEDOUT == sem_timedwait( &pdrvObj->m_semaphore_ReceiveQueue, &ts ) ) {
+    //if ( wxSEMA_TIMEOUT == pdrvObj->m_semReceiveQueue.WaitTimeout( timeout ) ) {
         return CANAL_ERROR_TIMEOUT;
     }
     
-	pdrvObj->m_mutexReceiveQueue.Lock();
+	pthread_mutex_lock( &pdrvObj->m_mutex_ReceiveQueue );
     vscpEvent *pLocalEvent = pdrvObj->m_receiveList.front();
     pdrvObj->m_receiveList.pop_front();
-	pdrvObj->m_mutexReceiveQueue.Unlock();
+	pthread_mutex_unlock( &pdrvObj->m_mutex_ReceiveQueue );
     if ( NULL == pLocalEvent ) return CANAL_ERROR_MEMORY;
     
     vscp_copyVSCPEvent( pEvent, pLocalEvent );

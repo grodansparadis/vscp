@@ -220,5 +220,62 @@ main(void)
 
     ex.sizeData = 0;
 
+    // ------------------------------------------------------------------------
+    // Testing vscp2_base64_decode
+    // ------------------------------------------------------------------------
+    printf(" * Testing vscp2_base64_decode\n");
+    std::string base64val("VGhpcyBpcyBhIHNpbXBsZSB0ZXN0");
+    if ( !vscp2_base64_decode( base64val ) ) {
+        printf("[vscp2_base64_decode] Failed to decode!\n");
+        exit( -1 );
+    }
+
+    if ( 0 != strcmp( "This is a simple test", base64val.c_str() ) ) {
+        printf("[vscp2_base64_decode] Decoding value not correct!\n");
+        exit( -1 );
+    }
+
+    // ------------------------------------------------------------------------
+    // Testing vscp2_base64_encode
+    // ------------------------------------------------------------------------
+    printf(" * Testing vscp2_base64_encode\n");
+    std::string strBase64Encode = "This is a simple test";
+    if ( !vscp2_base64_encode( strBase64Encode ) ) {
+        printf("[vscp2_base64_encode] Failed to encode!\n");
+        exit( -1 );
+    }
+
+    if ( 0 != strcmp( strBase64Encode.c_str(), "VGhpcyBpcyBhIHNpbXBsZSB0ZXN0" ) ) {
+        printf("[vscp2_base64_decode] Encoding value not correct!\n");
+        exit( -1 );
+    }
+
+    // ------------------------------------------------------------------------
+    // Testing vscp2_decodeBase64IfNeeded
+    // ------------------------------------------------------------------------
+    printf(" * Testing vscp2_decodeBase64IfNeeded\n");
+    std::string strResult;
+    base64val = "VGhpcyBpcyBhIHNpbXBsZSB0ZXN0";
+    if ( !vscp2_decodeBase64IfNeeded( base64val, strResult ) ) {
+        printf("[vscp2_decodeBase64IfNeeded] Failed!\n");
+        exit( -1 );
+    }
+
+    if ( 0 != strcmp( strResult.c_str(), "VGhpcyBpcyBhIHNpbXBsZSB0ZXN0" ) ) {
+        printf("[vscp2_decodeBase64IfNeeded] Encoding value not correct!\n");
+        exit( -1 );
+    }
+
+    base64val = "BASE64:VGhpcyBpcyBhIHNpbXBsZSB0ZXN0";
+    if ( !vscp2_decodeBase64IfNeeded( base64val, strResult ) ) {
+        printf("[vscp2_decodeBase64IfNeeded] Failed!\n");
+        exit( -1 );
+    }
+
+    if ( 0 != strcmp( strResult.c_str(), "This is a simple test" ) ) {
+        printf("[vscp2_decodeBase64IfNeeded] Encoding value not correct!\n");
+        exit( -1 );
+    }
+
     return 0;
 }

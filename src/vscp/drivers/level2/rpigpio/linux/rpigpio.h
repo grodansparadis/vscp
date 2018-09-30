@@ -211,7 +211,7 @@ public:
     uint8_t getPin( void );
 
     bool setType( uint8_t type );
-    bool setType( const wxString& strtype );
+    bool setType( const std::string& strtype );
     uint8_t getType( void );
 
     bool enableHardwarePwm() { m_bHardware = true; };
@@ -409,11 +409,11 @@ public:
         @return True on success.
      */
     bool open(const char *pUsername,
-            const char *pPassword,
-            const char *pHost,
-            short port,
-            const char *pPrefix,
-            const char *pConfig);
+                const char *pPassword,
+                const char *pHost,
+                short port,
+                const char *pPrefix,
+                const char *pConfig);
 
     /*!
         Flush and close the log file
@@ -443,22 +443,22 @@ public:
     bool m_bQuit;
 	
     /// Server supplied username
-    wxString m_username;
+    std::string m_username;
 
     /// Server supplied password
-    wxString m_password;
+    std::string m_password;
 
     /// server supplied prefix
-    wxString m_prefix;
+    std::string m_prefix;
 
     /// server supplied host
-    wxString m_host;
+    std::string m_host;
 
     /// Server supplied port
     short m_port;
     
     /// XML configuration
-    wxString m_setupXml;
+    std::string m_setupXml;
     
     /// Filter
     vscpEventFilter m_vscpfilter;
@@ -477,12 +477,16 @@ public:
 	std::list<vscpEvent *> m_receiveList;
 	
     // Event object to indicate that there is an event in the output queue
-    wxSemaphore m_semSendQueue;			
-	wxSemaphore m_semReceiveQueue;		
+    //wxSemaphore m_semSendQueue;			
+	//wxSemaphore m_semReceiveQueue;	
+    sem_t m_semaphore_SendQueue;			
+	sem_t m_semaphore_ReceiveQueue;	
 	
 	// Mutex to protect the output queue
-	wxMutex m_mutexSendQueue;		
-	wxMutex m_mutexReceiveQueue;
+	//wxMutex m_mutexSendQueue;		
+	//wxMutex m_mutexReceiveQueue;
+    pthread_mutex_t m_mutex_SendQueue;
+    pthread_mutex_t m_mutex_ReceiveQueue;
 
     // Can be set to 1, 2, 4, 5, 8, 10 always PCM
     uint8_t m_sample_rate;

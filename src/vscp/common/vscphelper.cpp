@@ -625,6 +625,30 @@ bool vscp_base64_wxdecode( wxString& str )
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// vscp2_base64_decode
+//
+
+bool vscp2_base64_decode( std::string& str ) 
+{
+    size_t dest_len = 0;
+    size_t bufferSize = 2 * str.length();
+    if ( 0 == str.length() ) return true;   // Nothing to do if empty
+    
+    char *pbuf = new char[ bufferSize ];
+    if ( NULL == pbuf ) return false;
+    memset( pbuf, 0, bufferSize );
+    
+    vscp_base64_decode( (const char *)str.c_str(), 
+                            str.length(), 
+                            pbuf, 
+                            &dest_len );
+    str = pbuf;
+    delete [] pbuf;
+    
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // vscp_base64_wxencode
 //
 
@@ -645,6 +669,23 @@ bool vscp_base64_wxencode( wxString& str )
     return true;
 }
 
+bool vscp2_base64_encode( std::string& str ) 
+{
+    size_t  bufferSize = 2 * strlen( (const char *)str.c_str() );
+    char *pbuf = new char[ bufferSize ];
+    if ( NULL == pbuf ) return false;
+    memset( pbuf, 0, bufferSize );
+    
+    vscp_base64_encode( (const char *)str.c_str(), 
+                                    strlen( (const char *)str.c_str() ), 
+                                    pbuf );
+    
+    str = pbuf;
+    delete [] pbuf;
+    
+    return true;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // decodeBase64IfNeeded
 //
@@ -656,13 +697,28 @@ bool vscp_decodeBase64IfNeeded( wxString &wxstr, wxString &strResult )
     strResult = wxstr;
     
     // A zero length string is accepted
-    if ( strResult.Length() ) return true;
+    if ( 0 == strResult.Length() ) return true;
     
-    if ( wxstr.StartsWith(_("BASE64:"), &wxstr ) ) {
-        
-        vscp_base64_wxdecode( wxstr );     
-        
+    if ( wxstr.StartsWith(_("BASE64:"), &wxstr ) ) {        
+        vscp_base64_wxdecode( wxstr );             
     } 
+    
+    return true;
+}
+
+bool vscp2_decodeBase64IfNeeded( const std::string &str, std::string &strResult ) 
+{
+    // If BASE64 encoded then decode     
+    strResult = str;
+    vscp2_trim( strResult );
+    
+    // A zero length string is accepted
+    if ( 0 == strResult.length() ) return true;
+    
+    if ( 0 == strResult.find( "BASE64:") ) {
+        strResult = strResult.substr( 7, strResult.length()-7 );
+        vscp2_base64_decode( strResult );             
+    }
     
     return true;
 }

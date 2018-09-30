@@ -304,7 +304,9 @@ vscp2_split( std::deque<std::string> & theStringVector,
      * 
      */
     bool vscp_base64_wxdecode( wxString& str );
+    bool vscp2_base64_decode( std::string& str );
     
+
     /*!
      * BASE64 encode wx string
      * 
@@ -313,13 +315,28 @@ vscp2_split( std::deque<std::string> & theStringVector,
      * 
      */
     bool vscp_base64_wxencode( wxString& str );
-    
+    bool vscp2_base64_encode( std::string& str );
+
+
+    /*!
+     * Decode string from BASE64 is it have "BASE64:" in the front if not just
+     * leave the string as it is.
+     * 
+     * @param wxstr String to decode
+     * @param strResult String result
+     * @return True if all is OK (decoded or not) and false if decode error.
+     */
+    bool vscp_decodeBase64IfNeeded( wxString &wxstr, wxString &strResult );
+    bool vscp2_decodeBase64IfNeeded( const std::string &str, 
+                                        std::string &strResult );
+
     /*!
         Get GMT time 
         http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.3
     */
     bool vscp_getTimeString( char *buf, size_t buf_len, time_t *t ); 
     
+
     /*!
         Get ISO GMT datetime
     */
@@ -334,18 +351,7 @@ vscp2_split( std::deque<std::string> & theStringVector,
      */ 
     bool vscp_XML_Escape( const char *src, char *dst, size_t dst_len );
 
-    
-    /*!
-     * Decode string from BASE64 is it have "BASE64:" in the front if not just
-     * leave the string as it is.
-     * 
-     * @param wxstr String to decode
-     * @param strResult String result
-     * @return True if all is OK (decoded or not) and false if decode error.
-     */
-    bool vscp_decodeBase64IfNeeded( wxString &wxstr, wxString &strResult );
-    
-    
+
     /*!
      * Parse IPv4 address and return net part and mask part
      * 

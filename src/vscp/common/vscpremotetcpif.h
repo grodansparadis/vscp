@@ -200,7 +200,8 @@ public:
         @param cmd Commad to issue
         @return Returns VSCP_ERROR_SUCCESS if the command could be sent successfully.
      */
-    int doCommand(wxString& cmd);
+    int doCommand(const wxString& cmd);
+    int doCommand(const std::string& cmd);
 
     /*!
         \brief Send a command to the remote client.
@@ -666,7 +667,13 @@ public:
      * @return VSCP_ERROR_SUCCESS on success
      * 
      */
-    int getRemoteVariableValue( const wxString& name, wxString& strValue, bool bDecode=false );
+    int getRemoteVariableValue( const wxString& name, 
+                                    wxString& strValue, 
+                                    bool bDecode=false );
+
+    int getRemoteVariableValue( const std::string& name, 
+                                    std::string& strValue, 
+                                    bool bDecode=false );                                        
     
     /*!
      * Set value for variable from string.

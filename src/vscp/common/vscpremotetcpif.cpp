@@ -166,7 +166,7 @@ int VscpRemoteTcpIf::doCommand( const char *cmd )
 //  doCommand
 //
 
-int VscpRemoteTcpIf::doCommand( wxString& cmd )
+int VscpRemoteTcpIf::doCommand( const wxString& cmd )
 {
     bool ret = false;
     
@@ -199,6 +199,28 @@ int VscpRemoteTcpIf::doCommand( wxString& cmd )
 #ifdef DEBUG_INNER_COMMUNICTION        
         wxLogDebug( _("doCommand: checkReturnValue failed") );
 #endif        
+        return VSCP_ERROR_ERROR;
+    }
+
+    return VSCP_ERROR_SUCCESS;
+}
+
+int VscpRemoteTcpIf::doCommand( const std::string& cmd )
+{
+    bool ret = false;
+     
+    doClrInputQueue();    
+
+    int n;
+    if ( 0 == ( n = stcp_write( m_conn, (const char *)cmd.c_str(), cmd.length() ) ) ||
+        n != cmd.length() ) {
+        return VSCP_ERROR_ERROR;
+    }
+
+    ret = checkReturnValue( true );
+    addInputStringArrayFromReply();
+    
+    if ( !ret ) {      
         return VSCP_ERROR_ERROR;
     }
 
@@ -1962,6 +1984,35 @@ int VscpRemoteTcpIf::getRemoteVariableValue( const wxString& name,
 
     if ( bDecode ) {
         vscp_base64_wxdecode( strValue );   
+    }
+
+    return VSCP_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getRemoteVariableValue
+//
+
+int VscpRemoteTcpIf::getRemoteVariableValue( const std::string& name, 
+                                                std::string& strValue,
+                                                bool bDecode )
+{
+    std::string strCmd;
+
+    if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
+    
+    strCmd = "VAR READVALUE " + name + "\r\n";
+    if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
+        return VSCP_ERROR_ERROR;
+    }
+    
+    if ( m_inputStrArray.GetCount() < 2 ) return VSCP_ERROR_ERROR; 
+
+    // Get value
+    strValue = m_inputStrArray[0].ToStdString();
+
+    if ( bDecode ) {
+        vscp2_base64_decode( strValue );   
     }
 
     return VSCP_ERROR_SUCCESS;
