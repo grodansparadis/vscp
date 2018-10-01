@@ -1181,7 +1181,7 @@ dumb_fill_data:
         // --------------------------------------------------------------------
 
 
-        // Check if there is event(s) to send
+        // Check if there is event(s) to handle
         if ( m_pObj->m_sendList.size() ) {
 
             // Yes there are data to send

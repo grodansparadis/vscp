@@ -42,6 +42,8 @@
 #include <sys/times.h>
 #endif 
 
+#include <float.h>
+
 #include <algorithm> 
 #include <functional> 
 #include <deque>
@@ -50,7 +52,6 @@
 #include <cctype>
 #include <locale>
 
-#include <float.h>
 #include <vscp.h>
 #include <vscp_class.h>
 #include <vscp_type.h>
@@ -147,7 +148,7 @@ extern "C" {
      */
  
     int32_t vscp_readStringValue( const wxString& strval );
-    int32_t vscp2_readStringValue(const std::string& strval);
+    int32_t vscp2_readStringValue( const std::string& strval );
 
     /*!
         Convert string to lowercase
@@ -171,21 +172,21 @@ extern "C" {
     */
     int vscp_strncasecmp( const char *s1, const char *s2, size_t len );
 
-    void vscp_strlcpy(register char *dst, register const char *src, size_t n );
+    void vscp_strlcpy( register char *dst, register const char *src, size_t n );
 
-    char *vscp_strdup(const char *str);
+    char *vscp_strdup( const char *str );
 
-    char *vscp_strndup(const char *ptr, size_t len);
+    char *vscp_strndup( const char *ptr, size_t len );
 
-    const char *vscp_strcasestr(const char *big_str, const char *small_str);
+    const char *vscp_strcasestr( const char *big_str, const char *small_str );
 
-    char *vscp_stristr(char *str1, const char *str2);
+    char *vscp_stristr( char *str1, const char *str2 );
 
-    char *vscp_trimWhiteSpace(char *str);
+    char *vscp_trimWhiteSpace( char *str );
 
-    char *vscp_reverse(const char *const s);
+    char *vscp_reverse( const char *const s );
 
-    char *vscp_rstrstr(const char *s1, const char *s2);
+    char *vscp_rstrstr( const char *s1, const char *s2 );
 
 // ----------------------------------------------------------------------------
 //                               Version 2 helpers
@@ -195,7 +196,7 @@ extern "C" {
 
 // String to upper case (in place)
 static inline void
-vscp2_makeUpper(std::string &s)
+vscp2_makeUpper( std::string &s )
 {
     std::transform(s.begin(), s.end(), s.begin(),
                     [](unsigned char c) -> unsigned char { return std::toupper(c); });
@@ -203,7 +204,7 @@ vscp2_makeUpper(std::string &s)
 
 // String to upper case (copying)
 static inline std::string
-vscp2_makeUpper_copy(std::string s)
+vscp2_makeUpper_copy( std::string s )
 {
     vscp2_makeUpper(s);
     return s;
@@ -211,14 +212,14 @@ vscp2_makeUpper_copy(std::string s)
 
 // String to lower case (in place)
 static inline void 
-vscp2_makeLower(std::string &s) 
+vscp2_makeLower( std::string &s ) 
 {
     std::transform( s.begin(), s.end(),s.begin(), ::tolower );
 }
 
 // String to upper case (copying)
 static inline std::string 
-vscp2_makeLower_copy(std::string s) 
+vscp2_makeLower_copy( std::string s ) 
 {
     vscp2_makeLower(s);
     return s;
@@ -226,7 +227,7 @@ vscp2_makeLower_copy(std::string s)
 
 // trim from start (in place)
 static inline void 
-vscp2_ltrim(std::string &s) 
+vscp2_ltrim( std::string &s ) 
 {
     s.erase(s.begin(), std::find_if(s.begin(), s.end(),
             std::not1(std::ptr_fun<int, int>(std::isspace))));
@@ -234,7 +235,7 @@ vscp2_ltrim(std::string &s)
 
 // trim from end (in place)
 static inline void 
-vscp2_rtrim(std::string &s) 
+vscp2_rtrim( std::string &s ) 
 {
     s.erase(std::find_if(s.rbegin(), s.rend(),
             std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
@@ -242,7 +243,7 @@ vscp2_rtrim(std::string &s)
 
 // trim from both ends (in place)
 static inline void 
-vscp2_trim(std::string &s) 
+vscp2_trim( std::string &s ) 
 {
     vscp2_ltrim(s);
     vscp2_rtrim(s);
@@ -250,7 +251,7 @@ vscp2_trim(std::string &s)
 
 // trim from start (copying)
 static inline std::string 
-vscp2_ltrim_copy(std::string s) 
+vscp2_ltrim_copy( std::string s ) 
 {
     vscp2_ltrim(s);
     return s;
@@ -258,7 +259,7 @@ vscp2_ltrim_copy(std::string s)
 
 // trim from end (copying)
 static inline std::string 
-vscp2_rtrim_copy(std::string s) 
+vscp2_rtrim_copy( std::string s ) 
 {
     vscp2_rtrim(s);
     return s;
@@ -266,7 +267,7 @@ vscp2_rtrim_copy(std::string s)
 
 // trim from both ends (copying)
 static inline std::string 
-vscp2_trim_copy(std::string s) 
+vscp2_trim_copy( std::string s ) 
 {
     vscp2_trim(s);
     return s;
@@ -276,12 +277,12 @@ vscp2_trim_copy(std::string s)
 // https://stackoverflow.com/questions/53849/how-do-i-tokenize-a-string-in-c
 static inline void
 vscp2_split( std::deque<std::string> & theStringVector,  
-       const std::string  & theString,
-       const std::string  & theDelimiter )
+                const std::string  & theString,
+                const std::string  & theDelimiter )
 {
     size_t  start = 0, end = 0;
 
-    while ( end != std::string::npos)
+    while ( end != std::string::npos )
     {
         end = theString.find( theDelimiter, start);
 
@@ -689,56 +690,56 @@ vscp2_split( std::deque<std::string> & theStringVector,
       @param pEvent Pointer to VSCP event to set priority for.
       @return Priority (0-7) for event.
      */
-    unsigned char vscp_getVscpPriority(const vscpEvent *pEvent);
+    unsigned char vscp_getVscpPriority( const vscpEvent *pEvent );
 
     /*!
       Get VSCP priority
       @param pEvent Pointer to VSCP event to set priority for.
       @return Priority (0-7) for event.
      */
-    unsigned char vscp_getVscpPriorityEx(const vscpEventEx *pEvent);
+    unsigned char vscp_getVscpPriorityEx( const vscpEventEx *pEvent );
 
     /*!
       Set VSCP priority
       @param pEvent Pointer to VSCP event to set priority for.
       @param priority Priority (0-7) to set.
      */
-    void vscp_setVscpPriority(vscpEvent *pEvent, unsigned char priority);
+    void vscp_setVscpPriority( vscpEvent *pEvent, unsigned char priority );
     
      /*!
       Set VSCP priority Ex
       @param pEvent Pointer to VSCP event to set priority for.
       @param priority Priority (0-7) to set.
      */
-    void vscp_setVscpPriorityEx(vscpEventEx *pEvent, unsigned char priority);
+    void vscp_setVscpPriorityEx( vscpEventEx *pEvent, unsigned char priority );
 
     /*!
       Get VSCP head from CANAL id
       @param id CAN id
       @return VSCP head
      */
-    unsigned char vscp_getVSCPheadFromCANALid(uint32_t id);
+    unsigned char vscp_getVSCPheadFromCANALid( uint32_t id );
 
     /*!
      Get VSCP class from CANAL id
       @param id CAN id
       @return VSCP class
      */
-    uint16_t vscp_getVSCPclassFromCANALid(uint32_t id);
+    uint16_t vscp_getVSCPclassFromCANALid( uint32_t id );
 
     /*!
       Get VSCP type from CANAL id
       @param id CAN id
      @return VSCP type
      */
-    uint16_t vscp_getVSCPtypeFromCANALid(uint32_t id);
+    uint16_t vscp_getVSCPtypeFromCANALid( uint32_t id );
 
     /*!
      Get VSCP nide nickname from CANAL id
       @param id CAN id
       @return VSCP node nickname
      */
-    uint8_t vscp_getVSCPnicknameFromCANALid(uint32_t id);
+    uint8_t vscp_getVSCPnicknameFromCANALid( uint32_t id );
 
     /*!
       Get CANAL id from VSCP info
@@ -747,34 +748,34 @@ vscp2_split( std::deque<std::string> & theStringVector,
       @param vscp_type VSCP type
       @return CAN id with nickname == 0
      */
-    uint32_t vscp_getCANALidFromVSCPdata(unsigned char priority,
+    uint32_t vscp_getCANALidFromVSCPdata( unsigned char priority,
                                             const uint16_t vscp_class,
-                                            const uint16_t vscp_type);
+                                            const uint16_t vscp_type );
 
     /*!
       Get CANAL id from VSCP event
       @param pEvent Pointer to VSCP event
       @return CAN id with nickname == 0
      */
-    uint32_t vscp_getCANALidFromVSCPevent(const vscpEvent *pEvent);
+    uint32_t vscp_getCANALidFromVSCPevent( const vscpEvent *pEvent );
 
     /*!
       Get CAN id from VSCP event
       @param pEvent Pointer to VSCP event
       @return CAN id with nickname == 0
      */
-    uint32_t vscp_getCANALidFromVSCPeventEx(const vscpEventEx *pEvent);
+    uint32_t vscp_getCANALidFromVSCPeventEx( const vscpEventEx *pEvent );
 
     /*!
       Calculate CRC for VSCP event
      */
-    unsigned short vscp_calc_crc_Event(vscpEvent *pEvent, short bSet);
+    unsigned short vscp_calc_crc_Event( vscpEvent *pEvent, short bSet );
 
 
     /*!
       Calculate CRC for VSCP event
      */
-    unsigned short vscp_calc_crc_EventEx(vscpEventEx *pEvent, short bSet);
+    unsigned short vscp_calc_crc_EventEx( vscpEventEx *pEvent, short bSet );
 
     
     
@@ -788,7 +789,7 @@ vscp2_split( std::deque<std::string> & theStringVector,
         @param Pointer to GUID array (MSB-LSB order)
         \return crc for GUID.
     */
-    uint8_t vscp_calcCRC4GUIDArray(const uint8_t *pguid);
+    uint8_t vscp_calcCRC4GUIDArray( const uint8_t *pguid );
 
     /*!
         calcCRC4GUIDString
@@ -796,7 +797,7 @@ vscp2_split( std::deque<std::string> & theStringVector,
         @param Pointer to GUID array (MSB-LSB order)
         \return crc for GUID.
     */
-    uint8_t vscp_calcCRC4GUIDString(const wxString &strguid);
+    uint8_t vscp_calcCRC4GUIDString( const wxString &strguid );
 
 
     /*!
@@ -819,8 +820,8 @@ vscp2_split( std::deque<std::string> & theStringVector,
       @return True on success, false on failure.
     */
  
-    bool vscp_getGuidFromStringEx(vscpEventEx *pEventEx, 
-                                    const wxString& strGUID);
+    bool vscp_getGuidFromStringEx( vscpEventEx *pEventEx, 
+                                    const wxString& strGUID );
 
 
     /*!
@@ -946,19 +947,19 @@ vscp2_split( std::deque<std::string> & theStringVector,
      * Delete standard VSCP event and NULL
      * @param Pointer to pointer to standard VSCP event.
      */
-    void vscp_deleteVSCPevent_v2(vscpEvent **pEvent);
+    void vscp_deleteVSCPevent_v2( vscpEvent **pEvent );
 
     /*!
       Delete an Ex event
      */
-    void vscp_deleteVSCPeventEx(vscpEventEx *pEventEx);
+    void vscp_deleteVSCPeventEx( vscpEventEx *pEventEx );
     
     
     /*!
         Make a timestamp for events etc 
         @return Event timestamp as an unsigned long
      */
-    unsigned long vscp_makeTimeStamp(void);
+    unsigned long vscp_makeTimeStamp( void );
     
     /*!
         Set date & time in stamp block
@@ -1085,14 +1086,15 @@ vscp2_split( std::deque<std::string> & theStringVector,
       Clear VSCP filter so it will allow all events to go through
       @param pFilter Pointer to VSCP filter.
      */
-    void vscp_clearVSCPFilter(vscpEventFilter *pFilter);
+    void vscp_clearVSCPFilter( vscpEventFilter *pFilter );
     
     /*!
      * Copy filter from one filter to another
      * @param pToFilter Pointer to filter to copy data to
      * @param pFromFilter Pinter to filter to copy data from
      */  
-    void vscp_copyVSCPFilter( vscpEventFilter *pToFilter, const vscpEventFilter *pFromFilter);
+    void vscp_copyVSCPFilter( vscpEventFilter *pToFilter, 
+                                const vscpEventFilter *pFromFilter);
 
     /*!
       Check filter/mask to check if filter should be delivered
@@ -1116,11 +1118,11 @@ vscp2_split( std::deque<std::string> & theStringVector,
       
       @return true if message should be delivered false if not.
      */
-    bool vscp_doLevel2Filter(const vscpEvent *pEvent,
-            const vscpEventFilter *pFilter);
+    bool vscp_doLevel2Filter( const vscpEvent *pEvent,
+                                const vscpEventFilter *pFilter);
 
-    bool vscp_doLevel2FilterEx(const vscpEventEx *pEventEx,
-            const vscpEventFilter *pFilter);
+    bool vscp_doLevel2FilterEx( const vscpEventEx *pEventEx,
+                                const vscpEventFilter *pFilter);
 
     /*!
         Read a filter from a string
@@ -1132,9 +1134,11 @@ vscp2_split( std::deque<std::string> & theStringVector,
         @return true on success, false on failure.
      */
  
-    bool vscp_readFilterFromString( vscpEventFilter *pFilter, const wxString& strFilter);
+    bool vscp_readFilterFromString( vscpEventFilter *pFilter, 
+                                        const wxString& strFilter);
     
-    bool vscp2_readFilterFromString( vscpEventFilter *pFilter, const std::string& strFilter);
+    bool vscp2_readFilterFromString( vscpEventFilter *pFilter, 
+                                        const std::string& strFilter);
 
     /*!
         Write filter to string
@@ -1143,7 +1147,8 @@ vscp2_split( std::deque<std::string> & theStringVector,
                 filter-priority, filter-class, filter-type, filter-GUID
         @return true on success, false on failure.
     */
-    bool vscp_writeFilterToString( const vscpEventFilter *pFilter, wxString& strFilter);
+    bool vscp_writeFilterToString( const vscpEventFilter *pFilter, 
+                                        wxString& strFilter);
     
     
     
@@ -1276,7 +1281,8 @@ vscp2_split( std::deque<std::string> & theStringVector,
       @param pEventFrom Pointer to event to copy from.
       @return True on success.
     */
-    bool vscp_copyVSCPEventEx( vscpEventEx *pEventTo, const vscpEventEx *pEventFrom );
+    bool vscp_copyVSCPEventEx( vscpEventEx *pEventTo, 
+                                const vscpEventEx *pEventFrom );
 
     /*!
       Write VSCP data to string    DEPRECATED: USE: vscp_writeVscpDataWithSizeToString
@@ -1395,10 +1401,10 @@ vscp2_split( std::deque<std::string> & theStringVector,
         @param unit Measurement unit, 0-3 for Level I, 0-255 for Level II.
         @param sensoridx Index for sensor, 0-7 for Level I, 0-255 for Level II.
     */
-    wxString& writeMeasurementValue( uint16_t vscptype,
-                                        uint8_t unit,
-                                        uint8_t sensoridx,
-                                        wxString& strValue );
+    wxString& vscp_writeMeasurementValue( uint16_t vscptype,
+                                            uint8_t unit,
+                                            uint8_t sensoridx,
+                                            wxString& strValue );
 
     /*!
       Get Data in real text.
@@ -1410,7 +1416,7 @@ vscp2_split( std::deque<std::string> & theStringVector,
       if the class/type pair is not supported..
      */
  
-    wxString& vscp_getRealTextData(vscpEvent *pEvent);
+    wxString& vscp_getRealTextData( vscpEvent *pEvent );
 
 
     /*!
@@ -1419,7 +1425,7 @@ vscp2_split( std::deque<std::string> & theStringVector,
       @param str String that should be HTML coded.
      */
  
-    void vscp_makeHtml(wxString& str);
+    void vscp_makeHtml( wxString& str );
 
 
     /*
@@ -1689,5 +1695,5 @@ vscp2_split( std::deque<std::string> & theStringVector,
 }
 #endif
 
-#endif // #if !defined(AFX_VSCPHELPER_H__INCLUDED_)
+#endif // #if !defined(VSCPHELPER_H__INCLUDED_)
 

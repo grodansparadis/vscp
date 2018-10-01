@@ -15,10 +15,14 @@ The xml data is packed in
 		mask="Incoming mask on string form"
 		sample_rate="5"
 		primary_dma_channel="14"
-		secondary_dma_channel="6" >
+		secondary_dma_channel="6"
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" >
 ... pins and dm defined here
 </setup>
 ```
+
+guid - guid for outgoing events
+
 
 ### mask
 Standard VSCP mask in string form.
@@ -225,12 +229,6 @@ Clear output pin(s).
 **action-parameter** is comma separated list with pins to turn off.
 pins must be defined as an output.
 
-#### SET
-set output pin.
-
-**action-parameter** is pin state in binary for (01010101) first 8 GPIO pins
-bit-array of eight bits (01010101) in binary
-
 #### PWM
 Generate hard/spoft pwm signal on output pin.
 
@@ -260,7 +258,9 @@ action-paramter: pin, # bytes (1-7), data coding  CLASS1.DATA
 
 #### Status
 Return status for output pin. Can be used for sync events etc.
-action parameter: pin, event...
+CLASS1.INFORMATION, Type=3, ON
+CLASS1.INFORMATION, Type=4, OFF
+action parameter: pin, index, zone, subzone
 
 ## Sample setup
 

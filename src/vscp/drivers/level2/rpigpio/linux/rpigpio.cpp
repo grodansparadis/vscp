@@ -34,18 +34,6 @@
 #include <pthread.h>
 #include <semaphore.h>
 
-//#include "wx/wxprec.h"
-//#include "wx/wx.h"
-//
-#include "wx/defs.h"
-//#include "wx/app.h"
-//#include <wx/sstream.h>
-//#include <wx/xml/xml.h>
-//#include <wx/listimpl.cpp>
-//#include <wx/thread.h>
-//#include <wx/tokenzr.h>
-//#include <wx/datetime.h>
-
 #include <expat.h>
 #include <pigpio.h>
 
@@ -56,7 +44,7 @@
 #include "../../../../common/vscp_class.h"
 #include "rpigpio.h"
 
-#define XML_BUFF_SIZE   0xfff
+#define XML_BUFF_SIZE   0xffff
 
 // ----------------------------------------------------------------------------
 
@@ -64,7 +52,6 @@
 
 void *workerThread( void *data );
 static void report_callback0( void * userdata );
-
 
 
 //////////////////////////////////////////////////////////////////////
@@ -439,7 +426,7 @@ CLocalDM::CLocalDM()
     m_zone = 0;
     m_bCompareSubZone = false;              // Don't compare subzone
     m_subzone = 0;
-    m_action = RPIGPIO_ACTION_NOOP;
+    m_action = ACTION_RPIGPIO_NOOP;
     m_strActionParam.clear();               // Looks good (if you feel sick by this)
 }
 
@@ -1208,7 +1195,7 @@ CRpiGpio::CRpiGpio()
 	m_bQuit = false;
 	//m_pthreadWorker = NULL;
 	m_setupXml = _("<?xml version = \"1.0\" encoding = \"UTF-8\" ?><setup><!-- empty --></setup>");
-	vscp_clearVSCPFilter(&m_vscpfilter); // Accept all events
+	vscp_clearVSCPFilter( &m_vscpfilter ); // Accept all events
     m_sample_rate = 5;   
     m_primary_dma_channel = 14;
     m_secondary_dma_channel = 6;
@@ -1226,8 +1213,6 @@ CRpiGpio::CRpiGpio()
 
     sem_init( &m_semaphore_SendQueue, 0, 0 );                   
     sem_init( &m_semaphore_ReceiveQueue, 0, 0 );
-
-	//::wxInitialize();
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -1272,8 +1257,6 @@ CRpiGpio::~CRpiGpio()
     pthread_mutex_destroy( &m_mutex_ReceiveQueue );
     sem_destroy( &m_semaphore_SendQueue );
     sem_destroy( &m_semaphore_ReceiveQueue );
-
-	//::wxUninitialize();
 }
 
 
@@ -1290,8 +1273,6 @@ CRpiGpio::open( const char *pUsername,
 		            const char *pPrefix,
 		            const char *pConfig)
 {
-    
-
     std::string strConfig = pConfig;
    
 	m_username = pUsername;
@@ -1331,7 +1312,8 @@ CRpiGpio::open( const char *pUsername,
 
     std::string str;
 	std::string strName = m_prefix + std::string("_setup");
-	if ( VSCP_ERROR_SUCCESS != m_srv.getRemoteVariableValue( strName, m_setupXml, true ) ) {
+	if ( VSCP_ERROR_SUCCESS != 
+            m_srv.getRemoteVariableValue( strName, m_setupXml, true ) ) {
         // OK if not available we use default
     }
 
@@ -1522,7 +1504,35 @@ CRpiGpio::addEvent2SendQueue( const vscpEvent *pEvent )
     return true;
 }
 
+//////////////////////////////////////////////////////////////////////
+// sendEvent
+//
 
+bool sendEvent( CRpiGpio *pObj, vscpEventEx& eventEx )
+{
+    vscpEvent *pEvent = new vscpEvent();
+    if ( NULL != pEvent ) {
+        if ( vscp_convertVSCPfromEx( pEvent, &eventEx ) ) {
+
+            pthread_mutex_lock( &pObj->m_mutex_ReceiveQueue );
+            pObj->m_receiveList.push_back( pEvent );
+            sem_post( &pObj->m_semaphore_ReceiveQueue );
+            pthread_mutex_lock( &pObj->m_mutex_ReceiveQueue );
+
+        }
+        else {
+            vscp_deleteVSCPevent( pEvent );
+            syslog( LOG_ERR,
+				    "%s %s",
+                    (const char *)VSCP_RPIGPIO_SYSLOG_DRIVER_ID,
+				    (const char *) "Failed to convert send event"  );
+            return false;
+        }
+
+    }
+
+    return true;
+}
 
 //////////////////////////////////////////////////////////////////////
 //                Workerthread - RpiGpioWorkerTread
@@ -1532,11 +1542,249 @@ void *workerThread( void *data )
 {
     CRpiGpio *pObj = (CRpiGpio *)data;
 
-    VscpRemoteTcpIf m_srv;
-
     while ( pObj->m_bQuit ) {
-        ;
-    } // Outer loop 
+        
+        struct timespec ts;
+        ts.tv_sec = 0;
+        ts.tv_nsec = 500000;
+        if ( ETIMEDOUT != sem_timedwait( &pObj->m_semaphore_SendQueue, &ts ) ) {
+        
+            // Check if there is event(s) to handle
+            if ( pObj->m_sendList.size() ) {
+
+                // Yes there are an incoming event
+                pthread_mutex_lock( &pObj->m_mutex_SendQueue );
+                vscpEvent *pEvent = pObj->m_sendList.front();
+                pObj->m_sendList.pop_front();
+                pthread_mutex_unlock( &pObj->m_mutex_SendQueue );
+
+                if ( NULL == pEvent ) continue;
+
+                // Just to make sure
+                if ( 0 == pEvent->sizeData ) {
+                    pEvent->pdata = NULL;
+                }
+
+                // Feed through matrix - major filter
+                if ( vscp_doLevel2Filter( pEvent, &pObj->m_vscpfilter ) ) {
+
+                    std::list<CLocalDM *>::const_iterator it;
+                    for ( it = pObj->m_LocalDMList.begin(); 
+                            it != pObj->m_LocalDMList.end(); 
+                            ++it ) {
+
+                        CLocalDM *pDM = (CLocalDM *)*it;
+                        if ( vscp_doLevel2Filter( pEvent, &pDM->getFilter() ) ) {
+                            
+                            if ( pDM->isIndexCheckEnabled() ) {
+                                if ( ( pEvent->sizeData < 1 )  || 
+                                        ( pDM->getIndex() != pEvent->pdata[0] ) ) {
+                                    continue;
+                                } 
+                            }
+
+                            if ( pDM->isZoneCheckEnabled() ) {
+                                if ( ( pEvent->sizeData < 2 )  || 
+                                        ( pDM->getZone() != pEvent->pdata[1] ) ) {
+                                    continue;
+                                } 
+                            }
+
+                            if ( pDM->isSubZoneCheckEnabled() ) {
+                                if ( ( pEvent->sizeData )< 3   || 
+                                        ( pDM->getSubZone() != pEvent->pdata[2] ) ) {
+                                    continue;
+                                } 
+                            }
+
+                            // OK - Do action
+                            switch ( pDM->getAction() ) {
+
+                                case ACTION_RPIGPIO_ON:
+                                    {
+                                        uint8_t pin = vscp2_readStringValue( pDM->getActionParameter() );
+                                        if ( pin <= 53 ) {
+                                            gpioWrite( pin, 1 );
+                                        }
+                                        else {
+                                            syslog( LOG_ERR,
+				                                        "%s %s pin=%d",
+                                                        (const char *)VSCP_RPIGPIO_SYSLOG_DRIVER_ID,
+				                                        (const char *) "ACTION_RPIGPIO_ON - Invalid pin",
+                                                        (int)pin );
+                                        }
+                                    }
+                                    break;
+
+                                case ACTION_RPIGPIO_OFF:
+                                    {
+                                        uint8_t pin = vscp2_readStringValue( pDM->getActionParameter() );
+                                        if ( pin <= 53 ) {
+                                            gpioWrite( pin, 0 );
+                                        }
+                                        else {
+                                            syslog( LOG_ERR,
+				                                        "%s %s pin=%d",
+                                                        (const char *)VSCP_RPIGPIO_SYSLOG_DRIVER_ID,
+				                                        (const char *) "ACTION_RPIGPIO_OFF - Invalid pin",
+                                                        (int)pin );
+                                        }
+                                    }
+                                    break;
+
+                                case ACTION_RPIGPIO_PWM:
+                                    {
+                                        std::deque<std::string> tokens;
+                                        vscp2_split( tokens, pDM->getActionParameter(), "," );
+                                        if ( tokens.size() < 2 ) {
+                                            syslog( LOG_ERR,
+				                                        "%s %s ",
+                                                        (const char *)VSCP_RPIGPIO_SYSLOG_DRIVER_ID,
+				                                        (const char *) "ACTION_RPIGPIO_PWM - Invalid action parameter." );
+                                            continue;
+                                        }
+
+                                        uint8_t pin = vscp2_readStringValue( tokens.front() );
+                                        tokens.pop_front();
+                                        uint32_t dutycycle = vscp2_readStringValue( tokens.front() );
+                                        tokens.pop_front();
+                                        if ( pin <= 31 ) {
+                                            gpioPWM( pin, dutycycle );
+                                        }
+                                        else {
+                                            syslog( LOG_ERR,
+				                                        "%s %s pin=%d",
+                                                        (const char *)VSCP_RPIGPIO_SYSLOG_DRIVER_ID,
+				                                        (const char *) "ACTION_RPIGPIO_PWM - Invalid pin",
+                                                        (int)pin );
+                                        }
+                                    }
+                                    break;    
+
+                                case ACTION_RPIGPIO_STATUS:
+                                    {
+                                        vscpEventEx ex;
+                                        memset( &ex, 0, sizeof( vscpEventEx) );
+                                        uint8_t index = 0;
+                                        uint8_t zone = 0;
+                                        uint8_t subzone = 0;
+
+                                        std::deque<std::string> tokens;
+                                        vscp2_split( tokens, pDM->getActionParameter(), "," );
+                                        if ( tokens.size() < 1 ) {
+                                            syslog( LOG_ERR,
+				                                        "%s %s ",
+                                                        (const char *)VSCP_RPIGPIO_SYSLOG_DRIVER_ID,
+				                                        (const char *) "ACTION_RPIGPIO_STATUS - Invalid action parameter." );
+                                            continue; 
+                                        }
+
+                                        uint8_t pin = vscp2_readStringValue( tokens.front() );
+                                        tokens.pop_front();
+                                        if ( pin > 53 ) {
+                                            syslog( LOG_ERR,
+				                                        "%s %s pin=%d",
+                                                        (const char *)VSCP_RPIGPIO_SYSLOG_DRIVER_ID,
+				                                        (const char *) "ACTION_RPIGPIO_STATUS - Invalid pin",
+                                                        (int)pin );
+                                        }
+
+                                        int level = gpioRead( pin );
+                                        if ( PI_BAD_GPIO == level ) {
+                                            syslog( LOG_ERR,
+				                                        "%s %s pin=%d",
+                                                        (const char *)VSCP_RPIGPIO_SYSLOG_DRIVER_ID,
+				                                        (const char *) "ACTION_RPIGPIO_STATUS - Invalid pin (read)",
+                                                        (int)pin );
+                                        } 
+
+                                        // index
+                                        if ( tokens.size() ) {
+                                            index = vscp2_readStringValue( tokens.front() );
+                                            tokens.pop_front();
+                                        }
+                                        
+                                        // zone
+                                        if ( tokens.size() ) {
+                                            zone = vscp2_readStringValue( tokens.front() );
+                                            tokens.pop_front();
+                                        }
+
+                                        // subzone
+                                        if ( tokens.size() ) {
+                                            subzone = vscp2_readStringValue( tokens.front() );
+                                            tokens.pop_front();
+                                        }
+
+                                        ex.vscp_class = VSCP_CLASS1_INFORMATION;
+                                        ex.sizeData = 3;
+                                        ex.data[0] = index;
+                                        ex.data[1] = zone;
+                                        ex.data[2] = subzone;
+
+                                        if ( level ) {
+                                            ex.vscp_type = VSCP_TYPE_INFORMATION_ON;
+                                        }
+                                        else {
+                                            ex.vscp_type = VSCP_TYPE_INFORMATION_OFF;
+                                        }
+
+                                        sendEvent( pObj, ex );
+
+                                    }
+                                    break;
+                                    
+                                
+                                case ACTION_RPIGPIO_SERVO:
+                                    {
+                                        std::deque<std::string> tokens;
+                                        vscp2_split( tokens, pDM->getActionParameter(), "," );
+                                        if ( tokens.size() < 2 ) {
+                                            syslog( LOG_ERR,
+				                                        "%s %s ",
+                                                        (const char *)VSCP_RPIGPIO_SYSLOG_DRIVER_ID,
+				                                        (const char *) "ACTION_RPIGPIO_SERVO - Invalid action parameter." );
+                                            continue;
+                                        }
+
+                                        uint8_t pin = vscp2_readStringValue( tokens.front() );
+                                        tokens.pop_front();
+                                        uint32_t pulsewidth = vscp2_readStringValue( tokens.front() );
+                                        tokens.pop_front();
+                                        if ( pin <= 31 ) {
+                                            gpioServo( pin, pulsewidth );
+                                        }
+                                        else {
+                                            syslog( LOG_ERR,
+				                                        "%s %s pin=%d",
+                                                        (const char *)VSCP_RPIGPIO_SYSLOG_DRIVER_ID,
+				                                        (const char *) "ACTION_RPIGPIO_PWM - Invalid pin",
+                                                        (int)pin );
+                                        }
+                                    }
+                                    break; 
+
+                                case ACTION_RPIGPIO_NOOP:
+                                default:
+                                    break;
+
+
+                            }
+
+                        }
+
+                    }
+
+                }
+
+                // We are done with the event
+                vscp_deleteVSCPevent_v2( &pEvent );
+
+            } // Event in queue
+
+        }
+
+    } // while
 
     return NULL;
 }

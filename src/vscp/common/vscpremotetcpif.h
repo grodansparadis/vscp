@@ -141,7 +141,7 @@ public:
         Set response timeout.
         @param to Timeout value in milliseconds. 
      */
-    void setResponseTimeout(uint32_t to) {
+    void setResponseTimeout( uint32_t to ) {
         if ( to < 100 ) to = 1000;      // To be backward compatible
         if (to) m_responseTimeOut = to;        
     };
@@ -175,7 +175,7 @@ public:
     /*!
      Returns TRUE if we are connected false otherwise.
      */
-    bool isConnected(void) { return ( NULL != m_conn ); };
+    bool isConnected( void ) { return ( NULL != m_conn ); };
 
     /*!
         checkReturnValue
@@ -187,7 +187,7 @@ public:
     /*!
         Clear the input queue
      */
-    void doClrInputQueue(void);
+    void doClrInputQueue( void );
 
     /*!
         \brief Creates the input string array from a remote client response
@@ -200,8 +200,8 @@ public:
         @param cmd Commad to issue
         @return Returns VSCP_ERROR_SUCCESS if the command could be sent successfully.
      */
-    int doCommand(const wxString& cmd);
-    int doCommand(const std::string& cmd);
+    int doCommand( const wxString& cmd );
+    int doCommand( const std::string& cmd );
 
     /*!
         \brief Send a command to the remote client.
@@ -219,7 +219,7 @@ public:
         @return CANAL_ERROR_SUCCESS if channel is open or CANAL error code  if error 
         or the channel is already opened or other error occur.
      */
-    int doCmdOpen(const wxString& strInterface = (_("")), uint32_t flags = 0L);
+    int doCmdOpen( const wxString& strInterface = (_("")), uint32_t flags = 0L );
 
     /*!
         Open communication interface.
@@ -229,9 +229,9 @@ public:
         @return CANAL_ERROR_SUCCESS if channel is open or CANAL error code if error 
             or the channel is already opened or other error occur.
      */
-    int doCmdOpen(const wxString& strHostname,
+    int doCmdOpen( const wxString& strHostname,
                     const wxString& strUsername,
-                    const wxString& strPassword);
+                    const wxString& strPassword );
 
     /*!
         Open communication interface.
@@ -242,34 +242,34 @@ public:
         @return CANAL_ERROR_SUCCESS if channel is open or CANAL error code if error 
             or the channel is already opened or other error occur.
      */
-    int doCmdOpen(const wxString& strHostname,
+    int doCmdOpen( const wxString& strHostname,
                     short port,
                     const wxString& strUsername,
-                    const wxString& strPassword);                
+                    const wxString& strPassword );                
 
     /*!
         Close communication interface
         @return CANAL_ERROR_SUCCESS on success and error code if failure.
      */
-    int doCmdClose(void);
+    int doCmdClose( void );
 
     /*!
         Write NOOP message through pipe. 
         @return CANAL_ERROR_SUCCESS on success and error code if failure.
      */
-    int doCmdNOOP(void);
+    int doCmdNOOP( void );
 
     /*!
         Clear input queue
         @return CANAL_ERROR_SUCCESS on success and error code if failure.
      */
-    int doCmdClear(void);
+    int doCmdClear( void );
 
     /*!
         Get the Canal protocol level
         @return VSCP Level
      */
-    unsigned long doCmdGetLevel(void) {
+    unsigned long doCmdGetLevel( void ) {
         return VSCP_LEVEL2;
     }
 
@@ -280,33 +280,33 @@ public:
         @param pEvent VSCP Level II event to send.		
         @return CANAL_ERROR_SUCCESS on success and error code if failure.
      */
-    int doCmdSend(const vscpEvent *pEvent);
+    int doCmdSend( const vscpEvent *pEvent );
 
     /*!
         Send a VSCP ex event through interface. 
         @param pEvent VSCP Level II ex event to send.	
         @return CANAL_ERROR_SUCCESS on success and error code if failure.
      */
-    int doCmdSendEx(const vscpEventEx *pEvent);
+    int doCmdSendEx( const vscpEventEx *pEvent );
 
     /*!
         Send a Level I event through interface. 
         @param pMsg VSCP Level I event (==canalMsg).	
         @return CANAL_ERROR_SUCCESS on success and error code if failure.
      */
-    int doCmdSendLevel1(const canalMsg *pMsg);
+    int doCmdSendLevel1( const canalMsg *pMsg );
 
     /*!
         Receive a VSCP event through the interface. 
         @return CANAL_ERROR_SUCCESS on success and error code if failure.
      */
-    int doCmdReceive(vscpEvent *pEvent);
+    int doCmdReceive( vscpEvent *pEvent );
 
     /*!
         Receive an VSCP ex event through the interface. 
         @return true if success false if not.
      */
-    int doCmdReceiveEx(vscpEventEx *pEvent);
+    int doCmdReceiveEx( vscpEventEx *pEvent );
 
     /*!
         Receive an VSCP Level I event through the interface.
@@ -317,7 +317,7 @@ public:
         @param Pointer to CANAL message
         @return CANAL_ERROR_SUCCESS if success false if not.
      */
-    int doCmdReceiveLevel1(canalMsg *pCanalMsg);
+    int doCmdReceiveLevel1( canalMsg *pCanalMsg );
 
     /*!
         This command sets an open interface in the receive loop (RCVLOOP). 
@@ -329,7 +329,7 @@ public:
 
         @return CANAL_ERROR_SUCCESS if success CANAL_ERROR_GENERIC if not.
      */
-    int doCmdEnterReceiveLoop(void);
+    int doCmdEnterReceiveLoop( void );
 
     /*!
         Quit the receive loop
@@ -346,46 +346,46 @@ public:
         returned if no event was available. CANAL_ERROR_TIMEOUT on timeout.CANAL_ERROR_COMMUNICATION
         is returned if a socket error is detected.
      */
-    int doCmdBlockingReceive(vscpEvent *pEvent, uint32_t timeout = 500);
+    int doCmdBlockingReceive( vscpEvent *pEvent, uint32_t timeout = 500 );
 
-    int doCmdBlockingReceive(vscpEventEx *pEventEx, uint32_t timeout = 500);
+    int doCmdBlockingReceive( vscpEventEx *pEventEx, uint32_t timeout = 500 );
 
     /*!
         Get the number of events in the input queue of this interface
         @return the number of events available or if negative
         an error code.
      */
-    int doCmdDataAvailable(void);
+    int doCmdDataAvailable( void );
 
     /*!
         Receive CAN status through the interface. 
         @return CANAL_ERROR_SUCCESS on success and error code if failure.
      */
-    int doCmdStatus(canalStatus *pStatus);
+    int doCmdStatus( canalStatus *pStatus );
 
 
     /*!
         A VSCP variant of the above
      */
-    int doCmdStatus(VSCPStatus *pStatus);
+    int doCmdStatus( VSCPStatus *pStatus );
 
     /*!
         Receive VSCP statistics through the interface. 
         @return CANAL_ERROR_SUCCESS on success and error code if failure.
      */
-    int doCmdStatistics(VSCPStatistics *pStatistics);
+    int doCmdStatistics( VSCPStatistics *pStatistics );
 
     /*!
         Receive CAN statistics through the interface. 
         @return CANAL_ERROR_SUCCESS on success and error code if failure.
      */
-    int doCmdStatistics(canalStatistics *pStatistics);
+    int doCmdStatistics( canalStatistics *pStatistics );
 
     /*!
         Set/Reset a filter through the interface. 
         @return CANAL_ERROR_SUCCESS on success and error code if failure.
      */
-    int doCmdFilter(const vscpEventFilter *pFilter);
+    int doCmdFilter( const vscpEventFilter *pFilter );
 
     /*!
         Set/Reset filter through the interface. 
@@ -393,7 +393,7 @@ public:
         @param mask Mask on string form (priority,class,type,guid).
         @return CANAL_ERROR_SUCCESS on success and error code if failure.
      */
-    int doCmdFilter(const wxString& filter, const wxString& mask);
+    int doCmdFilter( const wxString& filter, const wxString& mask );
 
     /*!
         Get i/f version through the interface. 
@@ -415,71 +415,71 @@ public:
     /*!
         Get interface version
      */
-    unsigned long doCmdDLLVersion(void);
+    unsigned long doCmdDLLVersion( void );
 
 
     /*!
         Get vendor string
      */
-    const char *doCmdVendorString(void);
+    const char *doCmdVendorString( void );
 
     /*!
         Get Driver information string.
      */
-    const char *doCmdGetDriverInfo(void);
+    const char *doCmdGetDriverInfo( void );
 
     /*!
         Get GUID for this interface.  
         @return CANAL_ERROR_SUCCESS on success and error code if failure.
      */
-    int doCmdGetGUID(unsigned char *pGUID);
+    int doCmdGetGUID( unsigned char *pGUID );
 
     /*!
         Get GUID for this interface.  
         @return CANAL_ERROR_SUCCESS on success and error code if failure.
      */
-    int doCmdGetGUID(cguid& ifguid);
+    int doCmdGetGUID( cguid& ifguid );
 
     /*!
         Set GUID for this interface.  
         @param pGUID Array with uint8_t GUID's. (Note! Not a string).
         @return CANAL_ERROR_SUCCESS on success and error code if failure.
      */
-    int doCmdSetGUID(const unsigned char *pGUID);
+    int doCmdSetGUID( const unsigned char *pGUID );
     
     /*!
         Set GUID for this interface.  
         @param ifguid GUID to set.
         @return CANAL_ERROR_SUCCESS on success and error code if failure.
      */
-    int doCmdSetGUID(cguid& ifguid);
+    int doCmdSetGUID( cguid& ifguid );
 
     /*!
         Get information about a channel..  
         @param pChannelInfo The stucture that will get the information
         @return CANAL_ERROR_SUCCESS on success and error code if failure.
      */
-    int doCmdGetChannelInfo(VSCPChannelInfo *pChannelInfo);
+    int doCmdGetChannelInfo( VSCPChannelInfo *pChannelInfo );
 
     /*!
         Get Channel ID for the open channel
         @param pChannelID Channel ID for channel
         @return CANAL_ERROR_SUCCESS on success and error code if failure.
      */
-    int doCmdGetChannelID(uint32_t *pChannelID);
+    int doCmdGetChannelID( uint32_t *pChannelID );
 
     /*!
         Get available interfaces
         @param array A string array that will get interface list
         @return CANAL_ERROR_SUCCESS on success and error code if failure.
      */
-    int doCmdInterfaceList(wxArrayString& array);
+    int doCmdInterfaceList( wxArrayString& array );
 
     /*!
         Dummy for Baudrate setting
      */
     int doCmdSetBaudrate( uint32_t baudrate ) {
-                            TCPIP_UNUSED(baudrate);
+        TCPIP_UNUSED( baudrate );
         return CANAL_ERROR_SUCCESS;
     };
 
@@ -487,7 +487,7 @@ public:
         Dummy for filter setting
      */
     int doCmdFilter( uint32_t filter ) {
-                        TCPIP_UNUSED(filter);
+        TCPIP_UNUSED( filter );
         return CANAL_ERROR_SUCCESS;
     };
 
@@ -495,7 +495,7 @@ public:
         Dummy for mask setting
      */
     int doCmdMask( uint32_t mask ) {
-                    TCPIP_UNUSED(mask);
+        TCPIP_UNUSED( mask );
         return CANAL_ERROR_SUCCESS;
     };
 
@@ -510,7 +510,8 @@ public:
         @param strLine String with server event data line        
         @return true on success.
      */
-    bool getEventFromLine( vscpEvent *pEvent, const wxString& strLine );
+    bool getEventFromLine( vscpEvent *pEvent, 
+                            const wxString& strLine );
 
 
 
@@ -599,7 +600,8 @@ public:
         @return VSCP_ERROR_SUCCESS if the variable is of type string and the operation
                     was successful.
      */
-    int getRemoteVariableAsString( const wxString& name, wxString& strVariable );
+    int getRemoteVariableAsString( const wxString& name, 
+                                    wxString& strVariable );
 
     /*!
         Set variable from string 
@@ -619,7 +621,8 @@ public:
      * @param name Name of variable.
      * @return VSCP_ERROR_SUCCESS on success
      */
-    int getRemoteVariableLastChange( const wxString& name, wxDateTime& lastChange );
+    int getRemoteVariableLastChange( const wxString& name, 
+                                        wxDateTime& lastChange );
     
     
     /*!
@@ -629,7 +632,8 @@ public:
      * @return VSCP_ERROR_SUCCESS on success
      * 
      */
-    int getRemoteVariableType( const wxString& name, uint8_t *pType );
+    int getRemoteVariableType( const wxString& name, 
+                                    uint8_t *pType );
     
     /*!
      * Get persistence for variable.
@@ -638,7 +642,8 @@ public:
      * @return VSCP_ERROR_SUCCESS on success
      * 
      */
-    int getRemoteVariablePersistence( const wxString& name, bool *pPersistent );
+    int getRemoteVariablePersistence( const wxString& name, 
+                                        bool *pPersistent );
     
     /*!
      * Get owner for remote variable.
@@ -647,7 +652,8 @@ public:
      * @return VSCP_ERROR_SUCCESS on success
      * 
      */
-    int getRemoteVariableOwner( const wxString& name, uint32_t *pOwner );
+    int getRemoteVariableOwner( const wxString& name, 
+                                    uint32_t *pOwner );
     
     /*!
      * Get access rights for remote variable.
@@ -656,7 +662,8 @@ public:
      * @return VSCP_ERROR_SUCCESS on success
      * 
      */
-    int getRemoteVariableAccessRights( const wxString& name, uint16_t *pRights );
+    int getRemoteVariableAccessRights( const wxString& name, 
+                                        uint16_t *pRights );
     
     /*!
      * Get value on string form for variable.
@@ -682,7 +689,8 @@ public:
      * @return VSCP_ERROR_SUCCESS on success
      * 
      */
-    int setRemoteVariableValue( const wxString& name, wxString& strValue );
+    int setRemoteVariableValue( const wxString& name, 
+                                    wxString& strValue );
     
     /*!
      * Get note for remote variable.
@@ -691,7 +699,8 @@ public:
      * @return VSCP_ERROR_SUCCESS on success
      * 
      */
-    int getRemoteVariableNote( const wxString& name, wxString& strNote );
+    int getRemoteVariableNote( const wxString& name, 
+                                wxString& strNote );
 
 
     /*!
@@ -702,7 +711,8 @@ public:
         @return VSCP_ERROR_SUCCESS if the variable is of type bool and the operation
         was successful.
      */
-    int getRemoteVariableBool( const wxString& name, bool *bValue);
+    int getRemoteVariableBool( const wxString& name, 
+                                bool *bValue);
 
     /*!
         Set variable value from boolean variable
@@ -712,7 +722,8 @@ public:
         @return VSCP_ERROR_SUCCESS if the variable is of type bool and the operation
         was successful.
      */
-    int setRemoteVariableBool( const wxString& name, const bool bValue);
+    int setRemoteVariableBool( const wxString& name, 
+                                const bool bValue);
 
     /*!
         Get variable value from integer variable
@@ -722,7 +733,8 @@ public:
         @return VSCP_ERROR_SUCCESS if the variable is of type integer and the operation
         was successful.
      */
-    int getRemoteVariableInt( const wxString& name, int *value);
+    int getRemoteVariableInt( const wxString& name, 
+                                int *value);
 
     /*!
         Set variable value from integer variable
@@ -732,7 +744,8 @@ public:
         @return VSCP_ERROR_SUCCESS if the variable is of type integer and the operation
         was successful.
      */
-    int setRemoteVariableInt( const wxString& name, int value);
+    int setRemoteVariableInt( const wxString& name, 
+                                int value);
 
     /*!
         Get variable value from long variable
@@ -742,7 +755,8 @@ public:
         @return VSCP_ERROR_SUCCESS if the variable is of type long and the operation
         was successful.
      */
-    int getRemoteVariableLong( const wxString& name, long *value);
+    int getRemoteVariableLong( const wxString& name, 
+                                long *value);
 
     /*!
         Set variable value from long variable
@@ -752,7 +766,8 @@ public:
         @return VSCP_ERROR_SUCCESS if the variable is of type long and the operation
         was successful.
      */
-    int setRemoteVariableLong( const wxString& name, long value);
+    int setRemoteVariableLong( const wxString& name, 
+                                long value);
 
     /*!
         Get variable value from double variable
@@ -762,7 +777,8 @@ public:
         @return VSCP_ERROR_SUCCESS if the variable is of type double and the operation
         was successful.
      */
-    int getRemoteVariableDouble( const wxString& name, double *value);
+    int getRemoteVariableDouble( const wxString& name, 
+                                    double *value);
 
     /*!
         Set variable value from double variable
@@ -772,7 +788,8 @@ public:
         @return VSCP_ERROR_SUCCESS if the variable is of type double and the operation
         was successful.
      */
-    int setRemoteVariableDouble( const wxString& name, double value);
+    int setRemoteVariableDouble( const wxString& name, 
+                                    double value );
 
     /*!
         Get variable value from measurement variable
@@ -820,7 +837,8 @@ public:
         @return VSCP_ERROR_SUCCESS if the variable is of type VSCP event and the operation
         was successful.
      */
-    int getRemoteVariableEvent( const wxString& name, vscpEvent *pEvent);
+    int getRemoteVariableEvent( const wxString& name, 
+                                    vscpEvent *pEvent );
 
     /*!
         set variable value from VSCP event
@@ -829,7 +847,8 @@ public:
         @param pEvent pointer to event that is used to set the variable.
         @return VSCP_ERROR_SUCCESS if the operation was successful.
      */
-    int setRemoteVariableEvent( const wxString& name, vscpEvent *pEvent);
+    int setRemoteVariableEvent( const wxString& name, 
+                                    vscpEvent *pEvent );
 
     /*!
         Get variable value from event variable
@@ -839,7 +858,8 @@ public:
         @return VSCP_ERROR_SUCCESS if the variable is of type VSCP event and the operation
         was successful.
      */
-    int getRemoteVariableEventEx( const wxString& name, vscpEventEx *pEvent);
+    int getRemoteVariableEventEx( const wxString& name, 
+                                    vscpEventEx *pEvent );
 
     /*!
         set variable value from VSCP event
@@ -848,7 +868,8 @@ public:
         @param pEvent pointer to event that is used to set the variable.
         @return VSCP_ERROR_SUCCESS if the operation was successful.
      */
-    int setRemoteVariableEventEx( const wxString& name, vscpEventEx *pEvent);
+    int setRemoteVariableEventEx( const wxString& name, 
+                                    vscpEventEx *pEvent );
 
     /*!
         Get variable value from GUID variable
@@ -858,7 +879,7 @@ public:
         @return VSCP_ERROR_SUCCESS if the variable is of type VSCP GUID and the operation
         was successful.
      */
-    int getRemoteVariableGUID( const wxString& name, cguid& pGUID);
+    int getRemoteVariableGUID( const wxString& name, cguid& pGUID );
 
     /*!
         set variable value from GUID
@@ -867,7 +888,7 @@ public:
         @param pGUID pointer to GUID that is used to set the variable.
         @return VSCP_ERROR_SUCCESS if the operation was successful.
      */
-    int setRemoteVariableGUID( const wxString& name, cguid& pGUID);
+    int setRemoteVariableGUID( const wxString& name, cguid& pGUID );
 
     /*!
         Get variable value from VSCP data variable
@@ -880,7 +901,7 @@ public:
      */
     int getRemoteVariableVSCPdata( const wxString& name, 
                                         uint8_t *pData, 
-                                        uint16_t *pSize);
+                                        uint16_t *pSize );
 
     /*!
         set variable value from VSCP data
@@ -890,7 +911,9 @@ public:
         @param size Size of data.
         @return VSCP_ERROR_SUCCESS if the operation was successful.
      */
-    int setRemoteVariableVSCPdata( const wxString& name, uint8_t *pData, uint16_t size);
+    int setRemoteVariableVSCPdata( const wxString& name, 
+                                    uint8_t *pData, 
+                                    uint16_t size );
 
     /*!
         Get variable value from class variable
@@ -900,7 +923,8 @@ public:
         @return VSCP_ERROR_SUCCESS if the variable is of type VSCP class and the operation
         was successful.
      */
-    int getRemoteVariableVSCPclass( const wxString& name, uint16_t *vscp_class);
+    int getRemoteVariableVSCPclass( const wxString& name, 
+                                        uint16_t *vscp_class );
 
     /*!
         set variable value from vscp_class.
@@ -909,7 +933,8 @@ public:
         @param vscp_class to write to variable.
         @return VSCP_ERROR_SUCCESS if the operation was successful.
      */
-    int setRemoteVariableVSCPclass( const wxString& name, uint16_t vscp_class);
+    int setRemoteVariableVSCPclass( const wxString& name, 
+                                        uint16_t vscp_class );
 
     /*!
         Get variable value from type variable
@@ -919,7 +944,8 @@ public:
         @return VSCP_ERROR_SUCCESS if the variable is of type VSCP type and the operation
         was successful.
      */
-    int getRemoteVariableVSCPtype( const wxString& name, uint16_t *vscp_type);
+    int getRemoteVariableVSCPtype( const wxString& name, 
+                                    uint16_t *vscp_type );
 
 
     /*!
@@ -929,7 +955,8 @@ public:
         @param vscp_type to write to variable.
         @return VSCP_ERROR_SUCCESS if the operation was successful.
      */
-    int setRemoteVariableVSCPtype( const wxString& name, uint16_t vscp_type);
+    int setRemoteVariableVSCPtype( const wxString& name, 
+                                    uint16_t vscp_type );
     
     // -------------------------------------------------------------------------
     
@@ -941,7 +968,8 @@ public:
         @return VSCP_ERROR_SUCCESS if the variable is of type VSCP type and the operation
         was successful.
      */
-    int getRemoteVariableVSCPTimestamp( const wxString& name, uint32_t *vscp_timestamp);
+    int getRemoteVariableVSCPTimestamp( const wxString& name, 
+                                            uint32_t *vscp_timestamp );
 
 
     /*!
@@ -951,7 +979,8 @@ public:
         @param vscp_timestamp as uint32_t to write to variable.
         @return VSCP_ERROR_SUCCESS if the operation was successful.
      */
-    int setRemoteVariableVSCPTimestamp( const wxString& name, uint32_t vscp_timestamp);
+    int setRemoteVariableVSCPTimestamp( const wxString& name, 
+                                            uint32_t vscp_timestamp );
 
     /*!
         Get variable value from datetime variable
@@ -961,7 +990,8 @@ public:
         @return VSCP_ERROR_SUCCESS if the variable is of type VSCP type and the operation
         was successful.
      */
-    int getRemoteVariableDateTime( const wxString& name, wxDateTime& datetime );
+    int getRemoteVariableDateTime( const wxString& name, 
+                                        wxDateTime& datetime );
 
 
     /*!
@@ -971,7 +1001,8 @@ public:
         @param datetime to write to variable.
         @return VSCP_ERROR_SUCCESS if the operation was successful.
      */
-    int setRemoteVariableDateTime( const wxString& name, wxDateTime& datetimes );
+    int setRemoteVariableDateTime( const wxString& name, 
+                                    wxDateTime& datetimes );
     
     /*!
         Get variable value from a date variable
@@ -981,7 +1012,8 @@ public:
         @return VSCP_ERROR_SUCCESS if the variable is of type VSCP type and the operation
         was successful.
      */
-    int getRemoteVariableDate( const wxString& name, wxDateTime& date );
+    int getRemoteVariableDate( const wxString& name, 
+                                wxDateTime& date );
 
 
     /*!
@@ -991,7 +1023,8 @@ public:
         @param date to write to variable.
         @return VSCP_ERROR_SUCCESS if the operation was successful.
      */
-    int setRemoteVariableDate( const wxString& name, wxDateTime& date );
+    int setRemoteVariableDate( const wxString& name, 
+                                wxDateTime& date );
     
     /*!
         Get variable value from a time variable
@@ -1001,7 +1034,8 @@ public:
         @return VSCP_ERROR_SUCCESS if the variable is of type VSCP type and the operation
         was successful.
      */
-    int getRemoteVariableTime( const wxString& name, wxDateTime& time );
+    int getRemoteVariableTime( const wxString& name, 
+                                wxDateTime& time );
 
 
     /*!
@@ -1011,7 +1045,8 @@ public:
         @param time to write to variable.
         @return VSCP_ERROR_SUCCESS if the operation was successful.
      */
-    int setRemoteVariableTime( const wxString& name, wxDateTime& time );
+    int setRemoteVariableTime( const wxString& name, 
+                                wxDateTime& time );
     
     
     /*!
@@ -1022,7 +1057,8 @@ public:
         @return VSCP_ERROR_SUCCESS if the variable is of type VSCP type and the operation
         was successful.
      */
-    int getRemoteVariableBlob( const wxString& name, wxString& blob );
+    int getRemoteVariableBlob( const wxString& name, 
+                                wxString& blob );
 
 
     /*!
@@ -1032,7 +1068,8 @@ public:
         @param BASE64 encoded blob to write to variable.
         @return VSCP_ERROR_SUCCESS if the operation was successful.
      */
-    int setRemoteVariableBlob( const wxString& name, wxString& blob );
+    int setRemoteVariableBlob( const wxString& name, 
+                                wxString& blob );
     
     
     /*!
@@ -1043,7 +1080,8 @@ public:
         @return VSCP_ERROR_SUCCESS if the variable is of type VSCP type and the operation
         was successful.
      */
-    int getRemoteVariableMIME( const wxString& name, wxString& mime );
+    int getRemoteVariableMIME( const wxString& name, 
+                                wxString& mime );
 
 
     /*!
@@ -1285,7 +1323,9 @@ public:
      *          XML data.
      * @return return VSCP_ERROR_SUCCESS; on success, error code on failure.
      */
-    int tableListInfo( const wxString &tblName, wxString &tableInfo, bool bXML = true );
+    int tableListInfo( const wxString &tblName, 
+                        wxString &tableInfo, 
+                        bool bXML = true );
     
     
     
@@ -1570,7 +1610,7 @@ public:
                                 uint8_t *pval,
                                 cguid& ifGUID,
                                 cguid *pdestGUID = NULL,
-                                bool bLevel2 = false);
+                                bool bLevel2 = false );
 
     /*!
         Load level II register content into an array
@@ -1635,11 +1675,6 @@ public:
 
 
 
-#if ( wxUSE_GUI != 0 )
-
-#endif
-
-
 
     // ------------------------------------------------------------------------
     
@@ -1649,18 +1684,12 @@ public:
 
 
 
-    
-
-
 protected:
 
     /*! 
         Array that gets filled with input lines
      */
     wxArrayString m_inputStrArray;
-
-    /// Mutex to protect string array
-    //wxMutex m_mutexArray;    
 
 private:
 
@@ -1695,8 +1724,6 @@ private:
     uint8_t m_version_minor;
     uint8_t m_version_release;
     uint16_t m_version_build;
-    
-    
 
     /*!
         Get input queue count

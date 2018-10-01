@@ -5449,7 +5449,7 @@ wxString &vscp_getDeviceHtmlStatusInfo(const uint8_t *registers, CMDF *pmdf)
 //
 // TODO REMOVE !!!!!!!!!
 
-wxString& writeMeasurementValue( uint16_t vscptype,
+wxString& vscp_writeMeasurementValue( uint16_t vscptype,
                                     uint8_t unit,  
                                     uint8_t sensoridx,  
                                     wxString& strValue )
@@ -6341,7 +6341,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
             // definition which unit to use (this is bits 4,3 of datacoding byte)
 
             strOutput += 
-                writeMeasurementValue( pEvent->vscp_type,
+                vscp_writeMeasurementValue( pEvent->vscp_type,
                                         VSCP_DATACODING_UNIT( *( pEvent->pdata + offset ) ),
                                         VSCP_DATACODING_INDEX( *( pEvent->pdata + offset ) ),
                                         strValue );

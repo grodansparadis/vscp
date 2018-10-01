@@ -63,7 +63,23 @@ struct reportStruct {
 };
 
 // Actions
-#define RPIGPIO_ACTION_NOOP     0
+#define ACTION_RPIGPIO_NOOP             0x00    // No operation
+#define ACTION_RPIGPIO_ON               0x01    // Turn on output(s)
+#define ACTION_RPIGPIO_OFF              0x02    // Turn of output(s)
+#define ACTION_RPIGPIO_PWM              0x03    // PWM on pwm channel (duty)
+#define ACTION_RPIGPIO_FREQUENCY        0x04    // Frequency on pin
+#define ACTION_RPIGPIO_STATUS           0x05    // Report status for pin
+#define ACTION_RPIGPIO_SERVO            0x06    // Servo
+
+// Future
+
+#define ACTION_RPIGPIO_WAVEFORM         0x07    // Waveform
+#define ACTION_RPIGPIO_SHIFTOUT         0x08    // Shift out
+#define ACTION_RPIGPIO_SHIFTOUT_EVENT   0x09    // Shift out event data on output pin
+#define ACTION_RPIGPIO_SHIFTIN          0x0A    // Shift out
+#define ACTION_RPIGPIO_SAMPLE           0x0B    // Sample
+#define ACTION_RPIGPIO_SERIAL_OUT       0x0C    // Serial out 
+#define ACTION_RPIGPIO_SERIAL_IN        0x0D    // Serial in
 
 // ----------------------------------------------------------------------------
 
@@ -301,6 +317,7 @@ public:
     /// Destructor
     virtual ~CLocalDM();
 
+
     bool setFilter( vscpEventFilter& filter );
     vscpEventFilter& getFilter( void );
 
@@ -324,7 +341,7 @@ public:
 
 private:
 
-    // Filter
+    // Filter - for DM row trigger
     vscpEventFilter m_vscpfilter;
 
     // Index compare
@@ -343,8 +360,7 @@ private:
 	uint8_t m_action;
 
     // Parameter for action
-	std::string
-     m_strActionParam;
+	std::string m_strActionParam;
 
 };
 
