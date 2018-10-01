@@ -34,17 +34,15 @@
 #include <pthread.h>
 #include <syslog.h>
 
+#include <list>
+#include <string>
+
 #include "../../../../common/canal.h"
 #include "../../../../common/vscp.h"
 #include "../../../../common/canal_macro.h"
 #include "../../../../../common/dllist.h"
 #include "../../../../common/vscpremotetcpif.h"
 #include "../../../../common/guid.h"
-
-#include <list>
-#include <string>
-
-using namespace std;
 
 #define VSCP_RPIGPIO_SYSLOG_DRIVER_ID       "VSCP rpigpio driver:"
 #define VSCP_LEVEL2_DLL_RPIGPIO_OBJ_MUTEX   "___VSCP__DLL_L2RPIGPIO_OBJ_MUTEX____"
@@ -467,7 +465,7 @@ public:
 	cguid m_ifguid;
 
     /// Pointer to worker threads
-    RpiGpioWorkerTread *m_pthreadWorker;
+    pthread_t m_pthreadWorker;
     
     // VSCP server interface
     VscpRemoteTcpIf m_srv;
@@ -476,15 +474,11 @@ public:
 	std::list<vscpEvent *> m_sendList;
 	std::list<vscpEvent *> m_receiveList;
 	
-    // Event object to indicate that there is an event in the output queue
-    //wxSemaphore m_semSendQueue;			
-	//wxSemaphore m_semReceiveQueue;	
+    // Event object to indicate that there is an event in the output queue	
     sem_t m_semaphore_SendQueue;			
 	sem_t m_semaphore_ReceiveQueue;	
 	
 	// Mutex to protect the output queue
-	//wxMutex m_mutexSendQueue;		
-	//wxMutex m_mutexReceiveQueue;
     pthread_mutex_t m_mutex_SendQueue;
     pthread_mutex_t m_mutex_ReceiveQueue;
 
@@ -510,40 +504,6 @@ public:
     // Decision matrix
     std::list<CLocalDM *> m_LocalDMList; // Will hold max one entry
 };
-
-///////////////////////////////////////////////////////////////////////////////
-//				                Worker Treads
-///////////////////////////////////////////////////////////////////////////////
-
-
-class RpiGpioWorkerTread : public wxThread {
-public:
-
-    /// Constructor
-    RpiGpioWorkerTread();
-
-    /// Destructor
-    ~RpiGpioWorkerTread();
-
-    /*!
-        Thread code entry point
-     */
-    virtual void *Entry();
-
-    /*! 
-        called when the thread exits - whether it terminates normally or is
-        stopped with Delete() (but not when it is Kill()ed!)
-     */
-    virtual void OnExit();
-
-    /// VSCP server interface
-    VscpRemoteTcpIf m_srv;
-
-    /// Sensor object
-    CRpiGpio *m_pObj;
-    
-};
-
 
 
 #endif // !defined(____RPIGPIO__INCLUDED_)

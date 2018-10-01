@@ -34,16 +34,17 @@
 #include <pthread.h>
 #include <semaphore.h>
 
-#include "wx/wxprec.h"
-#include "wx/wx.h"
+//#include "wx/wxprec.h"
+//#include "wx/wx.h"
+//
 #include "wx/defs.h"
-#include "wx/app.h"
-#include <wx/sstream.h>
-#include <wx/xml/xml.h>
-#include <wx/listimpl.cpp>
-#include <wx/thread.h>
-#include <wx/tokenzr.h>
-#include <wx/datetime.h>
+//#include "wx/app.h"
+//#include <wx/sstream.h>
+//#include <wx/xml/xml.h>
+//#include <wx/listimpl.cpp>
+//#include <wx/thread.h>
+//#include <wx/tokenzr.h>
+//#include <wx/datetime.h>
 
 #include <expat.h>
 #include <pigpio.h>
@@ -55,10 +56,13 @@
 #include "../../../../common/vscp_class.h"
 #include "rpigpio.h"
 
-#define XML_BUFF_SIZE   32000
+#define XML_BUFF_SIZE   0xfff
 
 // ----------------------------------------------------------------------------
 
+// Forward declarations
+
+void *workerThread( void *data );
 static void report_callback0( void * userdata );
 
 
@@ -1202,7 +1206,7 @@ endSetupParser( void *data, const char *name )
 CRpiGpio::CRpiGpio()
 {
 	m_bQuit = false;
-	m_pthreadWorker = NULL;
+	//m_pthreadWorker = NULL;
 	m_setupXml = _("<?xml version = \"1.0\" encoding = \"UTF-8\" ?><setup><!-- empty --></setup>");
 	vscp_clearVSCPFilter(&m_vscpfilter); // Accept all events
     m_sample_rate = 5;   
@@ -1220,15 +1224,10 @@ CRpiGpio::CRpiGpio()
     pthread_mutex_init( &m_mutex_SendQueue, NULL );
     pthread_mutex_init( &m_mutex_ReceiveQueue, NULL );
 
-    sem_init( &m_semaphore_SendQueue,  
-                0,                     
-                0 );                   
-    sem_init( &m_semaphore_ReceiveQueue,  
-                0,                     
-                0 );
+    sem_init( &m_semaphore_SendQueue, 0, 0 );                   
+    sem_init( &m_semaphore_ReceiveQueue, 0, 0 );
 
-
-	::wxInitialize();
+	//::wxInitialize();
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -1274,7 +1273,7 @@ CRpiGpio::~CRpiGpio()
     sem_destroy( &m_semaphore_SendQueue );
     sem_destroy( &m_semaphore_ReceiveQueue );
 
-	::wxUninitialize();
+	//::wxUninitialize();
 }
 
 
@@ -1293,13 +1292,13 @@ CRpiGpio::open( const char *pUsername,
 {
     
 
-    wxString strConfig = wxString::FromAscii( pConfig );
+    std::string strConfig = pConfig;
    
-	m_username = wxString::FromAscii( pUsername );
-	m_password = wxString::FromAscii( pPassword );
-	m_host = wxString::FromAscii( pHost );
+	m_username = pUsername;
+	m_password = pPassword;
+	m_host = pHost;
 	m_port = port;
-	m_prefix = wxString::FromAscii( pPrefix );
+	m_prefix = pPrefix;
 
 	m_setupXml = pPrefix;
 
@@ -1476,16 +1475,17 @@ CRpiGpio::open( const char *pUsername,
     preport->pObj = this;
     gpioSetTimerFuncEx( 0, 1000, report_callback0, preport );
 
-	// start the workerthread
-	m_pthreadWorker = new RpiGpioWorkerTread();
-	if ( NULL == m_pthreadWorker ) {
-        return false;
+    // create and start the workerthread
+    if ( 0 != pthread_create( &m_pthreadWorker,  
+                                NULL,          
+                                workerThread,
+                                (void *)this ) ) {
+        syslog( LOG_ERR,
+				    "%s %s",
+                    (const char *)VSCP_RPIGPIO_SYSLOG_DRIVER_ID,
+				    (const char *) "Failed to start worker thread." );
+        return false;                    
     }
-
-    // Start the worker thread
-	m_pthreadWorker->m_pObj = this;
-	m_pthreadWorker->Create();
-	m_pthreadWorker->Run();
 
 	return true;
 }
@@ -1502,9 +1502,9 @@ CRpiGpio::close(void)
 	if  ( m_bQuit ) return;
 
 	m_bQuit = true; // terminate the thread
-	wxSleep(1);     // Give the worker thread some time to terminate
+	pthread_join( m_pthreadWorker, NULL );
 
-    // wuit gpio library functionality
+    // Quit gpio library functionality
     gpioTerminate();
 }
 
@@ -1528,45 +1528,17 @@ CRpiGpio::addEvent2SendQueue( const vscpEvent *pEvent )
 //                Workerthread - RpiGpioWorkerTread
 //////////////////////////////////////////////////////////////////////
 
-
-
-RpiGpioWorkerTread::RpiGpioWorkerTread()
+void *workerThread( void *data )
 {
-	m_pObj = NULL;
-}
+    CRpiGpio *pObj = (CRpiGpio *)data;
 
-RpiGpioWorkerTread::~RpiGpioWorkerTread()
-{
-	;
-}
+    VscpRemoteTcpIf m_srv;
 
-//////////////////////////////////////////////////////////////////////
-// Entry
-//
-
-void *
-RpiGpioWorkerTread::Entry()
-{
-	::wxInitialize();
-			
-	// Check pointers
-	if ( NULL == m_pObj ) return NULL;
-	
-    while ( !TestDestroy() && !m_pObj->m_bQuit ) {
+    while ( pObj->m_bQuit ) {
         ;
-    } // Outer loop
+    } // Outer loop 
 
-	return NULL;
-}
-
-//////////////////////////////////////////////////////////////////////
-// OnExit
-//
-
-void
-RpiGpioWorkerTread::OnExit()
-{
-	;
+    return NULL;
 }
 
 
