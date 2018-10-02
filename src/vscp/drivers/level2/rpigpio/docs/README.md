@@ -79,8 +79,8 @@ on the Raspberry Pi.
 <input pin="1"
 	pullup="off|up|down"
 	watchdog="0"
-	noice_filter_steady="0"		
-	noice_filter_active="0"		
+	noise_filter_steady="0"		
+	noise_filter_active="0"		
 	glitch_filter="0" />
 ```
 

@@ -114,14 +114,14 @@ public:
     bool setWatchdog( uint32_t watchdog ) { m_watchdog = watchdog; return true; };
     uint32_t getWatchdog( void ) { return m_watchdog; };
 
-    bool setNoiceFilter( uint32_t steady, uint32_t active ) 
-        { m_noice_filter_steady = steady; m_noice_filter_active = active; return true; };
-    bool setNoiceFilterSteady( uint32_t steady ) 
-        { m_noice_filter_steady = steady; return true; };
-    bool setNoiceFilterActive( uint32_t active ) 
-        { m_noice_filter_active = active; return true; };        
-    uint32_t getNoiceFilterSteady( void ) { return m_noice_filter_steady; };
-    uint32_t getNoiceFilterActive( void ) { return m_noice_filter_active; };
+    bool setNoiseFilter( uint32_t steady, uint32_t active ) 
+        { m_noise_filter_steady = steady; m_noise_filter_active = active; return true; };
+    bool setNoiseFilterSteady( uint32_t steady ) 
+        { m_noise_filter_steady = steady; return true; };
+    bool setNoiseFilterActive( uint32_t active ) 
+        { m_noise_filter_active = active; return true; };        
+    uint32_t getNoiseFilterSteady( void ) { return m_noise_filter_steady; };
+    uint32_t getNoiseFilterActive( void ) { return m_noise_filter_active; };
 
     bool setGlitchFilter( uint32_t glitch ) { m_glitch_filter = glitch; return true; };
     uint32_t getGlitchFilter( void ) { return m_glitch_filter; };
@@ -148,13 +148,13 @@ uint8_t m_pullup;
 // Sample watchdog value. 0 = disabled.
 uint32_t m_watchdog;
 
-// Noice filter. 
+// Noise filter. 
 // Level changes on the GPIO are ignored until a level which has been 
 // stable for microseconds set here is detected. Level changes on the 
 // GPIO are then reported for active microseconds after which the 
 // process repeats.0 = disabled.
-uint32_t m_noice_filter_steady;
-uint32_t m_noice_filter_active;
+uint32_t m_noise_filter_steady;
+uint32_t m_noise_filter_active;
 
 // Glitch filter. 
 // Level changes on the GPIO are not reported unless the level has been 
@@ -306,6 +306,8 @@ int m_frequency;
 
 // ----------------------------------------------------------------------------
 
+#define MAX_DM_ARGS     5
+
 // The local decision matrix for the driver
 class CLocalDM{
 
@@ -339,6 +341,9 @@ public:
     bool setActionParameter( const std::string& param );
     std::string& getActionParameter( void );
 
+    void setArg( uint8_t idx, uint32_t val ) { if ( idx < MAX_DM_ARGS ) m_args[idx] = val; };
+    uint32_t getArg( uint8_t idx ) { if ( idx < MAX_DM_ARGS ) return m_args[idx]; else return 0; };
+
 private:
 
     // Filter - for DM row trigger
@@ -361,6 +366,9 @@ private:
 
     // Parameter for action
 	std::string m_strActionParam;
+
+    // Parsed action parameter arg. values
+    uint32_t m_args[MAX_DM_ARGS];
 
 };
 

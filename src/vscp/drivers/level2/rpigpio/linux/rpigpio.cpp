@@ -63,8 +63,8 @@ CGpioInput::CGpioInput()
     m_pin = 0;
     m_pullup = PI_PUD_OFF;
     m_watchdog = 0;
-    m_noice_filter_steady = 0;
-    m_noice_filter_active = 0;
+    m_noise_filter_steady = 0;
+    m_noise_filter_active = 0;
     m_glitch_filter = 0;
 
 }
@@ -427,6 +427,7 @@ CLocalDM::CLocalDM()
     m_bCompareSubZone = false;              // Don't compare subzone
     m_subzone = 0;
     m_action = ACTION_RPIGPIO_NOOP;
+    memset( m_args, 0, sizeof( m_args ) );
     m_strActionParam.clear();               // Looks good (if you feel sick by this)
 }
 
@@ -748,13 +749,13 @@ startSetupParser( void *data, const char *name, const char **attr )
                 }
 
                 // Noice filter steady
-                else if ( 0 == strcmp( attr[i], "noice_filter_steady") ) {
+                else if ( 0 == strcmp( attr[i], "noise_filter_steady") ) {
                     pInputObj->setWatchdog( vscp2_readStringValue( attribute ) );
                 }
 
                 // Noice filter active
-                else if ( 0 == strcmp( attr[i], "noice_filter_active") ) {
-                    pInputObj->setNoiceFilterActive( vscp2_readStringValue( attribute ) );
+                else if ( 0 == strcmp( attr[i], "noise_filter_active") ) {
+                    pInputObj->setNoiseFilterActive( vscp2_readStringValue( attribute ) );
                 }
 
                 // Glitch filter
@@ -1164,7 +1165,20 @@ startSetupParser( void *data, const char *name, const char **attr )
                     pLocalDMObj->setAction( vscp2_readStringValue( attribute ) );
                 }
                 else if ( 0 == strcmp( attr[i], "action-parameter") ) {
+                    
                     pLocalDMObj->setActionParameter( attribute );
+
+                    // Preparse the action parameters
+                    std::deque<std::string> tokens;
+                    vscp2_split( tokens, attribute, "," );
+                    for ( int idx=0; idx<3; idx++ ) {
+                        if ( tokens.size() ) {
+                            uint32_t val = vscp2_readStringValue( tokens.front() );
+                            pLocalDMObj->setArg( idx, val );
+                            tokens.pop_front();
+                        }
+                    }
+                    
                 }                 
 
             } // DM obj.
@@ -1366,7 +1380,7 @@ CRpiGpio::open( const char *pUsername,
 
     // Init. input pins
     std::list<CGpioInput *>::const_iterator it1;
-    for (it1 = m_inputPinList.begin(); it1 != m_inputPinList.end(); ++it1) {
+    for ( it1 = m_inputPinList.begin(); it1 != m_inputPinList.end(); ++it1 ) {
        
         CGpioInput *pGpioInput = *it1;
         
@@ -1383,12 +1397,14 @@ CRpiGpio::open( const char *pUsername,
                 gpioSetWatchdog( pGpioInput->getPin(), 
                                     pGpioInput->getWatchdog() );
             }
-            // Define noice filter value
-            if ( pGpioInput->getNoiceFilterSteady() ) {
+
+            // Define noise filter value
+            if ( pGpioInput->getNoiseFilterSteady() ) {
                 gpioNoiseFilter( pGpioInput->getPin(), 
-                                    pGpioInput->getNoiceFilterSteady(),
-                                    pGpioInput->getNoiceFilterActive() );
+                                    pGpioInput->getNoiseFilterSteady(),
+                                    pGpioInput->getNoiseFilterActive() );
             }
+
             // Define glitch filter value
             if ( pGpioInput->getGlitchFilter() ) {
                 gpioGlitchFilter( pGpioInput->getPin(), 
@@ -1546,7 +1562,7 @@ void *workerThread( void *data )
         
         struct timespec ts;
         ts.tv_sec = 0;
-        ts.tv_nsec = 500000;
+        ts.tv_nsec = 500000000;    // 500 ms
         if ( ETIMEDOUT != sem_timedwait( &pObj->m_semaphore_SendQueue, &ts ) ) {
         
             // Check if there is event(s) to handle
@@ -1602,7 +1618,7 @@ void *workerThread( void *data )
 
                                 case ACTION_RPIGPIO_ON:
                                     {
-                                        uint8_t pin = vscp2_readStringValue( pDM->getActionParameter() );
+                                        uint8_t pin = (uint8_t)pDM->getArg( 0 );
                                         if ( pin <= 53 ) {
                                             gpioWrite( pin, 1 );
                                         }
@@ -1618,7 +1634,7 @@ void *workerThread( void *data )
 
                                 case ACTION_RPIGPIO_OFF:
                                     {
-                                        uint8_t pin = vscp2_readStringValue( pDM->getActionParameter() );
+                                        uint8_t pin = (uint8_t)pDM->getArg( 0 );
                                         if ( pin <= 53 ) {
                                             gpioWrite( pin, 0 );
                                         }
@@ -1634,20 +1650,9 @@ void *workerThread( void *data )
 
                                 case ACTION_RPIGPIO_PWM:
                                     {
-                                        std::deque<std::string> tokens;
-                                        vscp2_split( tokens, pDM->getActionParameter(), "," );
-                                        if ( tokens.size() < 2 ) {
-                                            syslog( LOG_ERR,
-				                                        "%s %s ",
-                                                        (const char *)VSCP_RPIGPIO_SYSLOG_DRIVER_ID,
-				                                        (const char *) "ACTION_RPIGPIO_PWM - Invalid action parameter." );
-                                            continue;
-                                        }
-
-                                        uint8_t pin = vscp2_readStringValue( tokens.front() );
-                                        tokens.pop_front();
-                                        uint32_t dutycycle = vscp2_readStringValue( tokens.front() );
-                                        tokens.pop_front();
+                                        uint8_t pin = (uint8_t)pDM->getArg( 0 );
+                                        uint32_t dutycycle = pDM->getArg( 1 );
+                                        
                                         if ( pin <= 31 ) {
                                             gpioPWM( pin, dutycycle );
                                         }
@@ -1669,18 +1674,8 @@ void *workerThread( void *data )
                                         uint8_t zone = 0;
                                         uint8_t subzone = 0;
 
-                                        std::deque<std::string> tokens;
-                                        vscp2_split( tokens, pDM->getActionParameter(), "," );
-                                        if ( tokens.size() < 1 ) {
-                                            syslog( LOG_ERR,
-				                                        "%s %s ",
-                                                        (const char *)VSCP_RPIGPIO_SYSLOG_DRIVER_ID,
-				                                        (const char *) "ACTION_RPIGPIO_STATUS - Invalid action parameter." );
-                                            continue; 
-                                        }
-
-                                        uint8_t pin = vscp2_readStringValue( tokens.front() );
-                                        tokens.pop_front();
+                                        uint8_t pin = (uint8_t)pDM->getArg( 0 );
+                                        
                                         if ( pin > 53 ) {
                                             syslog( LOG_ERR,
 				                                        "%s %s pin=%d",
@@ -1699,22 +1694,13 @@ void *workerThread( void *data )
                                         } 
 
                                         // index
-                                        if ( tokens.size() ) {
-                                            index = vscp2_readStringValue( tokens.front() );
-                                            tokens.pop_front();
-                                        }
-                                        
+                                        index = (uint8_t)pDM->getArg( 1 );
+
                                         // zone
-                                        if ( tokens.size() ) {
-                                            zone = vscp2_readStringValue( tokens.front() );
-                                            tokens.pop_front();
-                                        }
+                                        zone = (uint8_t)pDM->getArg( 2 );
 
                                         // subzone
-                                        if ( tokens.size() ) {
-                                            subzone = vscp2_readStringValue( tokens.front() );
-                                            tokens.pop_front();
-                                        }
+                                        subzone = (uint8_t)pDM->getArg( 3 );
 
                                         ex.vscp_class = VSCP_CLASS1_INFORMATION;
                                         ex.sizeData = 3;
@@ -1737,20 +1723,9 @@ void *workerThread( void *data )
                                 
                                 case ACTION_RPIGPIO_SERVO:
                                     {
-                                        std::deque<std::string> tokens;
-                                        vscp2_split( tokens, pDM->getActionParameter(), "," );
-                                        if ( tokens.size() < 2 ) {
-                                            syslog( LOG_ERR,
-				                                        "%s %s ",
-                                                        (const char *)VSCP_RPIGPIO_SYSLOG_DRIVER_ID,
-				                                        (const char *) "ACTION_RPIGPIO_SERVO - Invalid action parameter." );
-                                            continue;
-                                        }
-
-                                        uint8_t pin = vscp2_readStringValue( tokens.front() );
-                                        tokens.pop_front();
-                                        uint32_t pulsewidth = vscp2_readStringValue( tokens.front() );
-                                        tokens.pop_front();
+                                        uint8_t pin = (uint8_t)pDM->getArg( 0 );
+                                        uint32_t pulsewidth = pDM->getArg( 0 );
+                                        
                                         if ( pin <= 31 ) {
                                             gpioServo( pin, pulsewidth );
                                         }
