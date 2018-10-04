@@ -49,6 +49,16 @@
 
 #include <wx/tokenzr.h>
 
+#include <algorithm> 
+#include <functional> 
+#include <memory>    
+#include <deque>
+#include <vector>
+#include <string>
+#include <cctype>
+#include <locale>
+
+#include "vscphelper.h"
 #include "guid.h"
 
 
@@ -130,12 +140,41 @@ void cguid::getFromString( const wxString& strGUID )
 }
 
 
+void cguid::getFromString( const std::string& strGUID )
+{
+    unsigned long val;
+    std::string str = strGUID;
+
+    // Check for default string (all nills)
+    vscp2_trim( str );
+    if ( "-" == str ) {
+        clear();
+        return;
+    }
+    
+    std::deque<std::string> tokens;
+    vscp2_split( tokens, str, ":" );
+    for ( int i=0; i<16; i++ ) {
+        if ( tokens.size() ) {
+            std::string tok = tokens.front();
+            try {
+                std::size_t pos;
+                m_id[ i ] = ( uint8_t )std::stoul( tok, &pos, 16 );
+            }
+            catch (std::invalid_argument) {
+                m_id[ i ] = 0;
+            }
+            tokens.pop_front();
+        }
+    }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // getFromString
 //
 
 
- void cguid::getFromString( const char *pszGUID )
+void cguid::getFromString( const char *pszGUID )
  {
     wxString str;
     str = wxString::FromUTF8( pszGUID );
@@ -166,7 +205,14 @@ void cguid::toString( wxString& strGUID  )
                     m_id[12], m_id[13], m_id[14], m_id[15] );
 }
 
-
+void cguid::toString( std::string& strGUID  )
+{
+    strGUID = vscp_string_format("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X",
+                    m_id[0], m_id[1], m_id[2], m_id[3],
+                    m_id[4], m_id[5], m_id[6], m_id[7],
+                    m_id[8], m_id[9], m_id[10], m_id[11],
+                    m_id[12], m_id[13], m_id[14], m_id[15] );
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // isSameGUID

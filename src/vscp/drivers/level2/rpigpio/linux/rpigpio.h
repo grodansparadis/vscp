@@ -64,8 +64,8 @@ struct reportStruct {
 
 // Actions
 #define ACTION_RPIGPIO_NOOP             0x00    // No operation
-#define ACTION_RPIGPIO_ON               0x01    // Turn on output(s)
-#define ACTION_RPIGPIO_OFF              0x02    // Turn of output(s)
+#define ACTION_RPIGPIO_ON               0x01    // Turn on output
+#define ACTION_RPIGPIO_OFF              0x02    // Turn off output
 #define ACTION_RPIGPIO_PWM              0x03    // PWM on pwm channel (duty)
 #define ACTION_RPIGPIO_FREQUENCY        0x04    // Frequency on pin
 #define ACTION_RPIGPIO_STATUS           0x05    // Report status for pin
@@ -319,6 +319,9 @@ public:
     /// Destructor
     virtual ~CLocalDM();
 
+    void enableRow( void ) { m_bEnable = true; };
+    void disableRow( void ) { m_bEnable = false; };
+    bool isRowEnabled( void ) { return m_bEnable; };
 
     bool setFilter( vscpEventFilter& filter );
     vscpEventFilter& getFilter( void );
@@ -336,6 +339,7 @@ public:
     bool isSubZoneCheckEnabled( void );
 
     bool setAction( uint8_t action );
+    bool setAction( std::string& str );
     uint8_t getAction( void );
 
     bool setActionParameter( const std::string& param );
@@ -345,6 +349,9 @@ public:
     uint32_t getArg( uint8_t idx ) { if ( idx < MAX_DM_ARGS ) return m_args[idx]; else return 0; };
 
 private:
+
+    // Enable row
+    bool m_bEnable;
 
     // Filter - for DM row trigger
     vscpEventFilter m_vscpfilter;
@@ -393,10 +400,12 @@ public:
     uint8_t getEdge( void ) { return m_edge; };
 
     void setMonitorEvents( const vscpEventEx& eventFalling,
-                            const vscpEventEx& eventRising );
+                            const vscpEventEx& eventRising,
+                            const vscpEventEx& eventWatchdog );
 
     vscpEventEx& getMonitorEventFalling( void ) { return m_eventFalling; };
-    vscpEventEx& getMonitorEventRising( void ) { return m_eventFalling; };
+    vscpEventEx& getMonitorEventRising( void ) { return m_eventRising; };
+    vscpEventEx& getMonitorEventWatchdog( void ) { return m_eventWatchdog; };
 
 private:
 
@@ -411,6 +420,9 @@ private:
 
     // Event to send when triggered on rising or edge
     vscpEventEx m_eventRising;
+
+    // Event to send when triggered on watchdog
+    vscpEventEx m_eventWatchdog;
 
 };
 
@@ -459,6 +471,18 @@ public:
     void setSecondaryDmaChannel( uint8_t ch ) { m_secondary_dma_channel = ch; };
     uint8_t getSecondaryDmaChannel( void ) { return m_secondary_dma_channel; };
 
+    // Getter and setter for module index
+    void setIndex( uint8_t index ) { m_index = index; };
+    uint8_t getIndex( void ) { return m_index; };
+
+    // Getter and setter for module zone
+    void setZone( uint8_t zone ) { m_zone = zone; };
+    uint8_t getZone( void ) { return m_zone; };
+
+    // Getter and setter for module subzone
+    void setSubzone( uint8_t subzone ) { m_subzone = subzone; };
+    uint8_t getSubzone( void ) { return m_subzone; };
+
 public:
 
     /// Run flag
@@ -482,11 +506,20 @@ public:
     /// XML configuration
     std::string m_setupXml;
     
-    /// Filter
+    /// Filter for all trafic to this module
     vscpEventFilter m_vscpfilter;
 	
-	/// Get GUID for this interface.
+	/// GUID for this module (set to all zero to use interface GUID).
 	cguid m_ifguid;
+
+    // Index used for outgoing events from this module
+    uint8_t m_index;
+
+    // Zone used for outgoing events from this module
+    uint8_t m_zone;
+
+    // Subzone used for outgoing events from this module
+    uint8_t m_subzone;
 
     /// Pointer to worker threads
     pthread_t m_pthreadWorker;

@@ -50,6 +50,8 @@
 #include <string.h>
 #include <limits.h>
 #include <math.h>
+#include <stdarg.h>  
+
 
 #ifndef WIN32
 #include <sys/time.h>
@@ -59,6 +61,7 @@
 
 #include <algorithm> 
 #include <functional> 
+#include <memory>    
 #include <deque>
 #include <vector>
 #include <string>
@@ -131,26 +134,34 @@ int32_t vscp_readStringValue( const wxString& strval )
 
 int32_t vscp2_readStringValue( const std::string& strval )
 {
-    int32_t val=0;
+    int32_t val = 0;
     std::string str = strval;
     vscp2_makeLower( str );
     vscp2_trim( str );
     
-    std::size_t pos;
-    if ( string::npos != ( pos = str.find( "0x" ) ) ) {
-        str = str.substr( 2 );
-        val = std::stoul( str, &pos, 16 );
-    }
-    else if ( string::npos != ( pos = str.find( "0o" ) ) ) {
-        str = str.substr( 2 );
-        val = std::stoul( str, &pos, 8 );
+    try {
+        std::size_t pos;
+        if ( string::npos != ( pos = str.find( "0x" ) ) ) {
+                str = str.substr( 2 );
+            val = std::stoul( str, &pos, 16 );
+        }
+        else if ( string::npos != ( pos = str.find( "0o" ) ) ) {
+            str = str.substr( 2 );
+            val = std::stoul( str, &pos, 8 );
+        } 
+        else if ( string::npos != ( pos = str.find( "0b" ) ) ) {
+            str = str.substr( 2 );
+            val = std::stoul( str, &pos, 2 );
+        }
+        else {
+            val = std::stoul( str );
+        }
     } 
-    else if ( string::npos != ( pos = str.find( "0b" ) ) ) {
-        str = str.substr( 2 );
-        val = std::stoul( str, &pos, 2 );
+    catch (std::invalid_argument) {
+        val = 0;
     }
-    else {
-        val = std::stoul( str );
+    catch (std::out_of_range) {
+        val = 0;
     }
 
     return val;
@@ -599,6 +610,30 @@ bool vscp_XML_Escape( const char *src, char *dst, size_t dst_len )
     
     return true;
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// vscp_string_format
+//
+
+std::string vscp_string_format(const std::string fmt_str, ...) 
+{
+    int final_n, n = ((int)fmt_str.size()) * 2; /* Reserve two times as much as the length of the fmt_str */
+    std::unique_ptr<char[]> formatted;
+    va_list ap;
+    while(1) {
+        formatted.reset(new char[n]); /* Wrap the plain char array into the unique_ptr */
+        strcpy(&formatted[0], fmt_str.c_str());
+        va_start(ap, fmt_str);
+        final_n = vsnprintf(&formatted[0], n, fmt_str.c_str(), ap);
+        va_end(ap);
+        if (final_n < 0 || final_n >= n)
+            n += abs(final_n - n + 1);
+        else
+            break;
+    }
+    return std::string(formatted.get());
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // vscp_base64_wxdecode

@@ -188,6 +188,16 @@ extern "C" {
 
     char *vscp_rstrstr( const char *s1, const char *s2 );
 
+    /*!
+        vscp_string_format
+
+        https://stackoverflow.com/questions/2342162/stdstring-formatting-like-sprintf/49812018
+        @param format string
+        @param Variables part of resulting string
+        @return formated string
+    */
+    std::string vscp_string_format(const std::string fmt_str, ...);
+
 // ----------------------------------------------------------------------------
 //                               Version 2 helpers
 // ----------------------------------------------------------------------------

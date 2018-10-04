@@ -2,7 +2,7 @@
             !!!!!!!!!!!!!!!!!!!!  W A R N I N G  !!!!!!!!!!!!!!!!!!!!
                            This file is auto-generated
                 see https://github.com/grodansparadis/vscp-classes
-                        Generated: 2018-09-21 18:19:33.820584
+                        Generated: 2018-10-04 22:37:17.459626
 */
  
 
@@ -67,6 +67,7 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(1,9) ] = _("VSCP_TYPE_ALARM_EMERGENCY_RESUME");
 	m_hashType[ MAKE_CLASSTYPE_LONG(1,10) ] = _("VSCP_TYPE_ALARM_ARM");
 	m_hashType[ MAKE_CLASSTYPE_LONG(1,11) ] = _("VSCP_TYPE_ALARM_DISARM");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1,12) ] = _("VSCP_TYPE_ALARM_WATCHDOG");
 
 	//  CLASS1.SECURITY = 2  -  Security
 	m_hashType[ MAKE_CLASSTYPE_LONG(2,0) ] = _("VSCP_TYPE_SECURITY_GENERAL");
@@ -953,6 +954,7 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(513,9) ] = _("VSCP_TYPE_ALARM_EMERGENCY_RESUME");
 	m_hashType[ MAKE_CLASSTYPE_LONG(513,10) ] = _("VSCP_TYPE_ALARM_ARM");
 	m_hashType[ MAKE_CLASSTYPE_LONG(513,11) ] = _("VSCP_TYPE_ALARM_DISARM");
+	m_hashType[ MAKE_CLASSTYPE_LONG(513,12) ] = _("VSCP_TYPE_ALARM_WATCHDOG");
 
 	//  CLASS2.LEVEL1.SECURITY = 514  -  Class2 Level I Security
 	// 	Event types is the same as  CLASS1.SECURITY = 2  -  Security

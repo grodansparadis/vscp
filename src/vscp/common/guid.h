@@ -71,6 +71,7 @@ public:
         @param strGUID The GUID in string form
     */
     void getFromString( const wxString& strGUID );
+    void getFromString( const std::string& strGUID );
 
     /*!
         Get GUID from string
@@ -90,7 +91,8 @@ public:
         @param pszGUID Zero terminated ASCII string pointing at GUID
     */
     void toString( wxString& strGUID  );
-    
+    void toString( std::string& strGUID  );
+
     /*!
         GUID to string
         @return GUID as string

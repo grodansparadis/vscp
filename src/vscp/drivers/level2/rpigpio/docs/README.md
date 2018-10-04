@@ -16,13 +16,17 @@ The xml data is packed in
 		sample_rate="5"
 		primary_dma_channel="14"
 		secondary_dma_channel="6"
-		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" >
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" 
+		index="0"
+		zone="0"
+		subzone="0" >
 ... pins and dm defined here
 </setup>
 ```
 
 guid - guid for outgoing events
 
+index, zone and subzone is default values for the driver to use when sending events. All defaults to zero.
 
 ### mask
 Standard VSCP mask in string form.
@@ -58,10 +62,16 @@ Any CLASS1_INFORMATION event
 Periodic reads are also possible.
 
 #### watchdog
+0-60000. Until cancelled a timeout will be reported every timeout milliseconds after the last GPIO activity.  Cancel watchdog by setting it to zero.
 
-#### noice_filter
+#### noice_filter_steady
+0-300000. Level changes on the GPIO are ignored until a level which has been stable for steady microseconds is detected. Level changes on the GPIO are then reported for active microseconds after which the process repeats. 
+
+#### noice_filter_active
+0-1000000. Level changes on the GPIO are ignored until a level which has been stable for steady microseconds is detected. Level changes on the GPIO are then reported for active microseconds after which the process repeats. 
 
 #### glitch_filter
+0-300000. Level changes on the GPIO are not reported unless the level has been stable for at least steady microseconds. The level is then reported. Level changes of less than steady microseconds are ignored. 
 
 #### pullup
 
@@ -84,16 +94,7 @@ on the Raspberry Pi.
 	glitch_filter="0" />
 ```
 
-Report uses 
 
-```c
-   int gpioSetTimerFuncEx( unsigned timer, 
-                              unsigned millis, 
-							  gpioTimerFuncEx_t f, 
-							  void *userdata )
-```
-
-timer is set 
 
 ### Output
 
@@ -105,8 +106,10 @@ state is initial state of pin. set after initialization.
 
 ```xml
 <output pin="n"
-	initialstate="on|off" />
+	initial_state="on|1|off|0|x" />
 ```
+
+initial_state="x" or initial_state not given means the outputs state will not be set initially
 
 ### Pwm
 
@@ -139,6 +142,17 @@ Report input pin status every "period" milliseconds
 CLASS1.INFORMATION TYPE=3/4 ON/OFF
 Can be set to id = 0..9
 
+Report uses 
+
+```c
+   int gpioSetTimerFuncEx( unsigned timer, 
+                              unsigned millis, 
+							  gpioTimerFuncEx_t f, 
+							  void *userdata )
+```
+
+ 
+
 ```xml
 <report id="n"
 		pin="n"
@@ -146,18 +160,27 @@ Can be set to id = 0..9
 
 		high_class="20"
 		high_type="3"
-		high_index="0"
+		high_index="pin"
 		high_zone="11"
 		high_subzone="22"
 		high_data="1,2,3,4,,,"
 	
 		low_class="20"
 		low_type="4"
-		low_index="0"
+		low_index="pin"
 		low_zone="11"
 		low_subzone="22"
-		low_data="1,2,3,4,,," />
+		low_data="1,2,3,4,,,"
+		
+		watchdog_class="1"
+		watchdog_type="12"
+		watchdog_index="pin"
+		watchdog_zone="11"
+		watchdog_subzone="22"
+		watchdog_data="1,2,3,4,,," />
 ```
+By defauult index is used for the pin.
+
 
 ### Monitor
 
@@ -210,7 +233,7 @@ class type index zone subzone  => action
 		zone="11"
 		subzone="22"
 		action="on"
-		action-param="1,8,5"
+		action-parameter="1,8,5"
 	/>
 </dm>
 ```
@@ -220,25 +243,44 @@ class type index zone subzone  => action
 #### ON
 Set output pin(s)
 
+CLASS1.INFORMATION, Type=3, ON   index = pin
+CLASS1.INFORMATION, Type=4, OFF	 index = pin
+
 **action-parameter** is comma separated list with pins to turn on.
 pins must be defined as an output.
 
 #### OFF
 Clear output pin(s).
 
+CLASS1.INFORMATION, Type=3, ON   index = pin
+CLASS1.INFORMATION, Type=4, OFF	 index = pin
+
 **action-parameter** is comma separated list with pins to turn off.
 pins must be defined as an output.
 
 #### PWM
-Generate hard/spoft pwm signal on output pin.
+Generate hard/spof pwm signal on output pin. Default range of 255
 
-**action parameter** is pin, pwm range value
+CLASS1.INFORMATION, Type=3, ON   index = pin
+CLASS1.INFORMATION, Type=4, OFF	 index = pin
+
+##### Confirm
+CLASS1.INFORMATION, Type=51 (0x33) - Big level changed 
+
+**action parameter** is pin, duty-cycle (0-range)
 
 #### Frequency (sound)
 Generate a tone on an output pin
 action parameter is pin, frequency, duration
 
+##### Confirm
+CLASS1.INFORMATION, Type=51 (0x33) - Big level changed
+
 #### Servo
+**action parameter** is pin, pulse-width( 0-255)
+
+##### Confirm
+CLASS1.INFORMATION, Type=51 (0x33) - Big level changed
 
 #### Waveform
 
@@ -258,9 +300,9 @@ action-paramter: pin, # bytes (1-7), data coding  CLASS1.DATA
 
 #### Status
 Return status for output pin. Can be used for sync events etc.
-CLASS1.INFORMATION, Type=3, ON
-CLASS1.INFORMATION, Type=4, OFF
-action parameter: pin, index, zone, subzone
+CLASS1.INFORMATION, Type=3, ON   index = pin
+CLASS1.INFORMATION, Type=4, OFF	 index = pin
+action parameter: pin, zone, subzone
 
 ## Sample setup
 
@@ -304,7 +346,41 @@ action parameter: pin, index, zone, subzone
 </setup>
 ```
 
+```xml
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<setup>
+	<output pin="1"
+           	initial_state="on" />
+</setup>
+```
 
-	
+## DM for control of pin 17
 
-
+```xml
+<dm>
+	<row enable="true"
+		priority-mask="0"
+		priority-filter="0" 
+		class-mask="0xffff"
+		class-filter="20" 
+		type-mask="0xffff"
+		type-filter="3"
+		guid-mask="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"
+		guid-filter="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"
+		action="on"
+		action-parameter="17"
+	/>
+	<row enable="true"
+		priority-mask="0"
+		priotity-filter="0" 
+		class-mask="0xffff"
+		class-filter="20" 
+		type-mask="0xffff"
+		type-filter="4"
+		guid-mask="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"
+		guid-filter="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"
+		action="off"
+		action-parameter="17"
+	/>	
+</dm>
+```
