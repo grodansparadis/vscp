@@ -84,13 +84,16 @@ VSCPRPIGPIO_OBJECTS = vscpl2drv-rpigpio.o\
 
 ### Targets: ###
 
-all: rpigpio.o vscpl2drv-rpigpio.so vscpl2drv-rpigpio-if2.so test test-if2
+all: rpigpio.o vscpl2drv-rpigpio.so vscpl2drv-rpigpio-if2.so test-if2.o test test-if2
 
-test:  test.o $(VSCPRPIGPIO_OBJECTS)
+test:  test.o rpigpio.o $(VSCPRPIGPIO_OBJECTS)
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -o $@ test.o rpigpio.o $(VSCPRPIGPIO_OBJECTS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
 
-test-if2:  test.o $(VSCPRPIGPIO_OBJECTS)
-	$(CXX) -DUSE_PIGPIOD $(CXXFLAGS) $(CPPFLAGS) -o test-if2 test.o rpigpio-if2.o $(VSCPRPIGPIO_OBJECTS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
+test-if2:  test-if2.o rpigpio-if2.o $(VSCPRPIGPIO_OBJECTS)
+	$(CXX) -DUSE_PIGPIOD $(CXXFLAGS) $(CPPFLAGS) -o test-if2 test-if2.o rpigpio-if2.o $(VSCPRPIGPIO_OBJECTS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
+
+test-if2.o:  test.o 
+	$(CXX) -c test.cpp -DUSE_PIGPIOD $(CXXFLAGS) $(CPPFLAGS) -o test-if2.o 
 
 # Build the Linux DL
 vscpl2drv-rpigpio.so: $(VSCPRPIGPIO_OBJECTS)

@@ -33,6 +33,11 @@
 #include <vscp_type.h>
  
 #include "rpigpio.h"
+#ifdef USE_PIGPIOD
+#include <pigpiod_if2.h>
+#else
+    #include <pigpio.h>
+#endif
 
 
 void sig_handler(int signo)
