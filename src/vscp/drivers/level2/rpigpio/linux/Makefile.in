@@ -49,6 +49,8 @@ EXTRALIBS += @WXBASE_STATIC_LIBS@
 else
 EXTRALIBS += @WXBASE_LIBS@
 endif
+GPIOLIB = -lpigpio 
+GPIOLIB_IF2 = -lpigpiod_if2
 
 DLFLAGS = -g -shared -fPIC
 STRIP = strip
@@ -87,20 +89,20 @@ VSCPRPIGPIO_OBJECTS = vscpl2drv-rpigpio.o\
 all: rpigpio.o vscpl2drv-rpigpio.so vscpl2drv-rpigpio-if2.so test-if2.o test test-if2
 
 test:  test.o rpigpio.o $(VSCPRPIGPIO_OBJECTS)
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -o $@ test.o rpigpio.o $(VSCPRPIGPIO_OBJECTS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -o $@ test.o rpigpio.o $(VSCPRPIGPIO_OBJECTS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS) $(GPIOLIBS)
 
 test-if2:  test-if2.o rpigpio-if2.o $(VSCPRPIGPIO_OBJECTS)
-	$(CXX) -DUSE_PIGPIOD $(CXXFLAGS) $(CPPFLAGS) -o test-if2 test-if2.o rpigpio-if2.o $(VSCPRPIGPIO_OBJECTS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
+	$(CXX) -DUSE_PIGPIOD $(CXXFLAGS) $(CPPFLAGS) -o test-if2 test-if2.o rpigpio-if2.o $(VSCPRPIGPIO_OBJECTS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS) $(GPIOLIBS_IF2)
 
 test-if2.o:  test.o 
 	$(CXX) -c test.cpp -DUSE_PIGPIOD $(CXXFLAGS) $(CPPFLAGS) -o test-if2.o 
 
 # Build the Linux DL
 vscpl2drv-rpigpio.so: $(VSCPRPIGPIO_OBJECTS) rpigpio.o
-	$(CXX) -o $@  $(VSCPRPIGPIO_OBJECTS) rpigpio.o $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS) 
+	$(CXX) -o $@  $(VSCPRPIGPIO_OBJECTS) rpigpio.o $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS) $(GPIOLIBS)
 
 vscpl2drv-rpigpio-if2.so: $(VSCPRPIGPIO_OBJECTS) rpigpio-if2.o
-	$(CXX) -o $@  $(VSCPRPIGPIO_OBJECTS) rpigpio-if2.o $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
+	$(CXX) -o $@  $(VSCPRPIGPIO_OBJECTS) rpigpio-if2.o $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS) $(GPIOLIBS_IF2)
 
 vscpl2drv-rpigpio.o: vscpl2drv-rpigpio.cpp vscpl2drv-rpigpio.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c vscpl2drv-rpigpio.cpp -o $@

@@ -1931,7 +1931,11 @@ void *workerThread( void *data )
                                         uint8_t pin = (uint8_t)pDM->getArg( 0 );
                                         if ( pin <= 53 ) { 
 
+#ifdef USE_PIGPIOD
+                                            gpio_write( pgpiod_session_id, pin, 1 );
+#else
                                             gpioWrite( pin, 1 );
+#endif                                            
 
                                             vscpEventEx ex;
                                             memset( &ex, 0, sizeof( ex ) );
@@ -1941,7 +1945,11 @@ void *workerThread( void *data )
                                             ex.data[1] = pObj->getZone();
                                             ex.data[2] = pObj->getSubzone();
 
+#ifdef USE_PIGPIOD
+                                            if ( gpio_read( pgpiod_session_id, pin ) ) {
+#else
                                             if ( gpioRead( pin ) ) {
+#endif                                                
                                                 ex.vscp_type = VSCP_TYPE_INFORMATION_ON;
                                             }
                                             else {
@@ -1966,7 +1974,11 @@ void *workerThread( void *data )
                                         uint8_t pin = (uint8_t)pDM->getArg( 0 );
                                         if ( pin <= 53 ) {
 
+#ifdef USE_PIGPIOD
+                                            gpio_write( pgpiod_session_id, pin, 1 );
+#else
                                             gpioWrite( pin, 0 );
+#endif
 
                                             vscpEventEx ex;
                                             memset( &ex, 0, sizeof( vscpEventEx ) );
@@ -1976,7 +1988,11 @@ void *workerThread( void *data )
                                             ex.data[1] = pObj->getZone();
                                             ex.data[2] = pObj->getSubzone();
 
+#ifdef USE_PIGPIOD
+                                            if ( gpio_read( pgpiod_session_id, pin ) ) {
+#else
                                             if ( gpioRead( pin ) ) {
+#endif
                                                 ex.vscp_type = VSCP_TYPE_INFORMATION_ON;
                                             }
                                             else {
