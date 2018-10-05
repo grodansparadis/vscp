@@ -48,6 +48,9 @@
     #include <pigpio.h>
 #endif
 
+// Undef to get extra debug info to syslog
+#define RPIGPIO_DEBUG
+
 #define XML_BUFF_SIZE   0xffff
 
 // ----------------------------------------------------------------------------
@@ -1619,7 +1622,7 @@ bool sendEvent( CRpiGpio *pObj, vscpEventEx& eventEx )
             pthread_mutex_lock( &pObj->m_mutex_ReceiveQueue );
             pObj->m_receiveList.push_back( pEvent );
             sem_post( &pObj->m_semaphore_ReceiveQueue );
-            pthread_mutex_lock( &pObj->m_mutex_ReceiveQueue );
+            pthread_mutex_unlock( &pObj->m_mutex_ReceiveQueue );
 
         }
         else {
@@ -1878,6 +1881,11 @@ void *workerThread( void *data )
             // Check if there is event(s) to handle
             if ( pObj->m_sendList.size() ) {
 
+#ifdef RPIGPIO_DEBUG
+                syslog( LOG_ERR, 
+                            "%s Incoming event.",
+                            (const char *)VSCP_RPIGPIO_SYSLOG_DRIVER_ID  );
+#endif
                 // Yes there are an incoming event
                 pthread_mutex_lock( &pObj->m_mutex_SendQueue );
                 vscpEvent *pEvent = pObj->m_sendList.front();
@@ -1886,13 +1894,31 @@ void *workerThread( void *data )
 
                 if ( NULL == pEvent ) continue;
 
+#ifdef RPIGPIO_DEBUG
+                syslog( LOG_ERR, 
+                            "%s Event removed from queue.",
+                            (const char *)VSCP_RPIGPIO_SYSLOG_DRIVER_ID  );
+#endif
+
                 // Just to make sure
                 if ( 0 == pEvent->sizeData ) {
                     pEvent->pdata = NULL;
                 }
 
+#ifdef RPIGPIO_DEBUG
+                syslog( LOG_ERR, 
+                            "%s Valid event.",
+                            (const char *)VSCP_RPIGPIO_SYSLOG_DRIVER_ID  );
+#endif                
+
                 // Feed through matrix - major filter
                 if ( vscp_doLevel2Filter( pEvent, &pObj->m_vscpfilter ) ) {
+
+#ifdef RPIGPIO_DEBUG
+                    syslog( LOG_ERR, 
+                            "%s After major filter.",
+                            (const char *)VSCP_RPIGPIO_SYSLOG_DRIVER_ID  );
+#endif
 
                     std::list<CLocalDM *>::const_iterator it;
                     for ( it = pObj->m_LocalDMList.begin(); 
@@ -1901,7 +1927,13 @@ void *workerThread( void *data )
 
                         CLocalDM *pDM = (CLocalDM *)*it;
                         if ( vscp_doLevel2Filter( pEvent, &pDM->getFilter() ) ) {
-                            
+
+#ifdef RPIGPIO_DEBUG
+                            syslog( LOG_ERR, 
+                                        "%s After DM row filter.",
+                                        (const char *)VSCP_RPIGPIO_SYSLOG_DRIVER_ID  );
+#endif
+
                             if ( pDM->isIndexCheckEnabled() ) {
                                 if ( ( pEvent->sizeData < 1 )  || 
                                         ( pDM->getIndex() != pEvent->pdata[0] ) ) {
@@ -1923,11 +1955,22 @@ void *workerThread( void *data )
                                 } 
                             }
 
+#ifdef RPIGPIO_DEBUG
+                            syslog( LOG_ERR, 
+                                        "%s Ready for action.",
+                                        (const char *)VSCP_RPIGPIO_SYSLOG_DRIVER_ID  );
+#endif                            
+
                             // OK - Do action
                             switch ( pDM->getAction() ) {
 
                                 case ACTION_RPIGPIO_ON:
                                     {
+#ifdef RPIGPIO_DEBUG                                        
+                                        syslog( LOG_ERR, 
+                                                    "%s Action = ACTION_RPIGPIO_ON.",
+                                                    (const char *)VSCP_RPIGPIO_SYSLOG_DRIVER_ID  );
+#endif
                                         uint8_t pin = (uint8_t)pDM->getArg( 0 );
                                         if ( pin <= 53 ) { 
 
@@ -1946,7 +1989,7 @@ void *workerThread( void *data )
                                             ex.data[2] = pObj->getSubzone();
 
 #ifdef USE_PIGPIOD
-                                            if ( gpio_read( pgpiod_session_id, pin ) ) {
+                                            if ( 1 /*gpio_read( pgpiod_session_id, pin )*/ ) {
 #else
                                             if ( gpioRead( pin ) ) {
 #endif                                                
@@ -1989,7 +2032,7 @@ void *workerThread( void *data )
                                             ex.data[2] = pObj->getSubzone();
 
 #ifdef USE_PIGPIOD
-                                            if ( gpio_read( pgpiod_session_id, pin ) ) {
+                                            if ( 0/*gpio_read( pgpiod_session_id, pin )*/ ) {
 #else
                                             if ( gpioRead( pin ) ) {
 #endif
