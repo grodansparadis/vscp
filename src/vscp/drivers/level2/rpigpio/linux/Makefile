@@ -43,7 +43,7 @@ CXXFLAGS = -std=c++11 -D__LINUX__ -fPIC -D_REENTRANT  -g -O0 -I/usr/lib/x86_64-l
 CPPFLAGS = -D__LINUX__ -fPIC  -I/usr/lib/x86_64-linux-gnu/wx/include/gtk2-unicode-3.0 -I/usr/include/wx-3.0 -D_FILE_OFFSET_BITS=64 -DWXUSINGDLL -D__WXGTK__ -DwxUSE_GUI=0 -fno-var-tracking-assignments -I. -I../common -I../../../../common -I../../../../../common
 
 LDFLAGS = 
-EXTRALIBS = -lpigpio -lexpat  -lssl -lz -lrt -lm -lcrypto -lpthread -ldl  
+EXTRALIBS = -lpigpio -lpigpiod_if2 -lexpat  -lssl -lz -lrt -lm -lcrypto -lpthread -ldl  
 ifeq ($(STATIC),yes)
 EXTRALIBS += 
 else
@@ -94,11 +94,15 @@ test:  test.o $(VSCPRPIGPIO_OBJECTS)
 vscpl2drv-rpigpio.so: $(VSCPRPIGPIO_OBJECTS)
 	$(CXX) -o $@ $(VSCPRPIGPIO_OBJECTS) $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS) 
 
+vscpl2drv-rpigpio-if2.so: $(VSCPRPIGPIO_OBJECTS)
+	$(CXX) -o $@ $(VSCPRPIGPIO_OBJECTS) rpigpio-if2.o $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)	
+
 vscpl2drv-rpigpio.o: vscpl2drv-rpigpio.cpp vscpl2drv-rpigpio.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c vscpl2drv-rpigpio.cpp -o $@
 
 rpigpio.o: rpigpio.cpp rpigpio.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c rpigpio.cpp -o $@
+	$(CXX) -DUSE_PIGPIOD $(CXXFLAGS) $(CPPFLAGS) -c rpigpio.cpp -o rpigpio-if2.o
 
 vscphelperlib.o: ../../../../vscphelperlib.cpp ../../../../vscphelperlib.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../../../vscphelperlib.cpp -o $@
@@ -139,6 +143,7 @@ dllist.o: ../../../../../common/dllist.c ../../../../../common/dllist.h
 install: all
 	mkdir -p $(VSCP_PROJ_BASE_DIR)/drivers/level2
 	$(INSTALL_PROGRAM) vscpl2drv-rpigpio.so $(VSCP_PROJ_BASE_DIR)/drivers/level2
+	$(INSTALL_PROGRAM) vscpl2drv-rpigpio-if2.so $(VSCP_PROJ_BASE_DIR)/drivers/level2
 
 uninstall: 
 
@@ -157,6 +162,7 @@ clean:
 	rm -f ../../../../common/*.o
 	rm -f ../../../../../common/*.o
 	rm -f vscpl2drv-rpigpio.so
+	rm -f vscpl2drv-rpigpio-if2.so
 	rm -f test
 	rm -f *.deb
 	rm -f *.gz

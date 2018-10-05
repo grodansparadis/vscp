@@ -35,7 +35,6 @@
 #include <semaphore.h>
 
 #include <expat.h>
-#include <pigpio.h>
 
 #include "../../../../common/vscp.h"
 #include "../../../../common/vscphelper.h"
@@ -43,6 +42,11 @@
 #include "../../../../common/vscp_type.h"
 #include "../../../../common/vscp_class.h"
 #include "rpigpio.h"
+#ifdef USE_PIGPIOD
+#include <pigpiod_if2.h>
+#else
+    #include <pigpio.h>
+#endif
 
 #define XML_BUFF_SIZE   0xffff
 
@@ -793,6 +797,14 @@ startSetupParser( void *data, const char *name, const char **attr )
             else if ( 0 == strcmp( attr[i], "secondary-dma-channel") ) {
                 pgpio->setSecondaryDmaChannel( std::stoi( attribute ) );
             }
+#ifdef USE_PIGPIOD          
+            else if ( 0 == strcmp( attr[i], "pigpiod-host") ) {
+                pgpio->setPiGpiodHost( attribute );
+            }
+            else if ( 0 == strcmp( attr[i], "pigpiod-port") ) {
+                pgpio->setPiGpiodPort( attribute );
+            }
+#endif            
             else if ( 0 == strcmp( attr[i], "mask") ) {
                 if ( !attribute.empty() ) {
                     if ( !vscp2_readMaskFromString( &pgpio->m_vscpfilter, attribute ) ) {
@@ -1393,6 +1405,11 @@ CRpiGpio::CRpiGpio()
     m_zone = 0;
     m_subzone = 0;
 
+#ifdef USE_PIGPIOD 
+    m_pigpiod_host = "127.0.0.1";
+    m_pigpiod_port = "8888";
+#endif    
+
     for ( int i=0; i<10; i++ ) {
         m_reporters[i].m_id = 0;
         m_reporters[i].m_pin = 0;
@@ -1619,14 +1636,24 @@ bool sendEvent( CRpiGpio *pObj, vscpEventEx& eventEx )
     return true;
 }
 
+
+
+
+
 //////////////////////////////////////////////////////////////////////
 //                Workerthread - RpiGpioWorkerTread
 //////////////////////////////////////////////////////////////////////
 
+
+
+
+
 void *workerThread( void *data )
 {
+    
     CRpiGpio *pObj = (CRpiGpio *)data;
 
+#ifndef USE_PIGPIOD
     // If samplerate is not default change it before initializing
     if ( pObj->m_sample_rate != 5 ) {
         gpioCfgClock( pObj->m_sample_rate, 1, 0 );
@@ -1638,17 +1665,33 @@ void *workerThread( void *data )
         gpioCfgDMAchannels( pObj->m_primary_dma_channel, 
                             pObj->m_secondary_dma_channel ); 
     }
+#endif    
 
     // Initialize the pigpio lib
     //gpioCfgInternals(1<<10, 0);  // Prevent signal 11 error
+#ifdef USE_PIGPIOD
+    int pgpiod_session_id;
+    if ( ( pgpiod_session_id = pigpio_start( (char *)pObj->getPiGpiodHost().c_str(), 
+                                                (char *)pObj->getPiGpiodPort().c_str() ) ) < 0 ) {
+        syslog( LOG_ERR,
+				    "%s %s driver started pigpio version: %ul, HW rev: %ul",
+                    (const char *)VSCP_RPIGPIO_SYSLOG_DRIVER_ID,
+				    (const char *) "Failed to init. gpiod library.",
+                    get_pigpio_version( pgpiod_session_id ), 
+                    get_hardware_revision( pgpiod_session_id ) ); 
+        return NULL;                                      
+    }
+#else
 	if ( gpioInitialise() < 0 ) {
         syslog( LOG_ERR,
-				    "%s %s driver started pigpio version: %u, HW rev: %u",
+				    "%s %s driver started pigpio version: %ul, HW rev: %ul",
                     (const char *)VSCP_RPIGPIO_SYSLOG_DRIVER_ID,
 				    (const char *) "Failed to init. gpio library.",
                     gpioVersion(), gpioHardwareRevision() );
         return NULL;                    
     }
+#endif                    
+    
 
     // Debug
     syslog( LOG_ERR, 
@@ -1667,28 +1710,58 @@ void *workerThread( void *data )
         if ( NULL != pGpioInput ) {
 
             // Set as input
+#ifdef USE_PIGPIOD            
+            set_mode( pgpiod_session_id, pGpioInput->getPin(), PI_INPUT );
+#else            
             gpioSetMode( pGpioInput->getPin(), PI_INPUT );
+#endif            
 
             // Set pullups
-            gpioSetPullUpDown( pGpioInput->getPin(), pGpioInput->getPullUp() );
+#ifdef USE_PIGPIOD
+            set_pull_up_down( pgpiod_session_id, 
+                                pGpioInput->getPin(), 
+                                pGpioInput->getPullUp() );
+#else            
+            gpioSetPullUpDown( pGpioInput->getPin(), 
+                                    pGpioInput->getPullUp() );
+#endif            
 
             // Define watchdog value
             if ( pGpioInput->getWatchdog() ) {
+#ifdef USE_PIGPIOD                
+                set_watchdog( pgpiod_session_id, 
+                                pGpioInput->getPin(), 
+                                pGpioInput->getWatchdog() );
+#else                                
                 gpioSetWatchdog( pGpioInput->getPin(), 
                                     pGpioInput->getWatchdog() );
+#endif                                    
             }
 
             // Define noise filter value
             if ( pGpioInput->getNoiseFilterSteady() ) {
+#ifdef USE_PIGPIOD                 
+                set_noise_filter( pgpiod_session_id,
+                                    pGpioInput->getPin(), 
+                                    pGpioInput->getNoiseFilterSteady(),
+                                    pGpioInput->getNoiseFilterActive() );
+#else                                    
                 gpioNoiseFilter( pGpioInput->getPin(), 
                                     pGpioInput->getNoiseFilterSteady(),
                                     pGpioInput->getNoiseFilterActive() );
+#endif                                    
             }
 
             // Define glitch filter value
             if ( pGpioInput->getGlitchFilter() ) {
+#ifdef USE_PIGPIOD
+                set_glitch_filter( pgpiod_session_id,
+                                    pGpioInput->getPin(), 
+                                    pGpioInput->getGlitchFilter() );
+#else                
                 gpioGlitchFilter( pGpioInput->getPin(), 
                                         pGpioInput->getGlitchFilter() );
+#endif                                        
             }
 
         }
@@ -1702,11 +1775,21 @@ void *workerThread( void *data )
         CGpioOutput *pGpioOutput = *it2;
         
         if ( NULL != pGpioOutput ) {
+#ifdef USE_PIGPIOD            
+            set_mode( pgpiod_session_id, pGpioOutput->getPin(), PI_OUTPUT );
+#else             
             gpioSetMode( pGpioOutput->getPin(), PI_OUTPUT );
+#endif            
             if ( ( 0 == pGpioOutput->getInitialState() ) || 
                  ( 1 == pGpioOutput->getInitialState() ) ) {
+#ifdef USE_PIGPIOD
+                gpio_write( pgpiod_session_id,
+                            pGpioOutput->getPin(), 
+                            pGpioOutput->getInitialState() ) ;
+#else                     
                 gpioWrite( pGpioOutput->getPin(), 
                             pGpioOutput->getInitialState() ) ;
+#endif                            
             }
         }
 
@@ -1722,17 +1805,36 @@ void *workerThread( void *data )
         
             // Hardware PWM settings
             if ( pGpioPwm->isHardwarePwm() ) {
+#ifdef USE_PIGPIOD
+                hardware_PWM( pgpiod_session_id, 
+                                pGpioPwm->getPin(), 
+                                pGpioPwm->getFrequency(), 
+                                pGpioPwm->getDutyCycle() );
+#else
                 gpioHardwarePWM( pGpioPwm->getPin(), 
                                     pGpioPwm->getFrequency(), 
                                     pGpioPwm->getDutyCycle() );            
+#endif                                    
             }
             else {
+#ifdef USE_PIGPIOD
+                set_mode( pgpiod_session_id, pGpioPwm->getPin(), PI_OUTPUT );
+                set_PWM_frequency( pgpiod_session_id, pGpioPwm->getPin(), 
+                                    pGpioPwm->getFrequency() );
+                set_PWM_range( pgpiod_session_id, pGpioPwm->getPin(), 
+                                    pGpioPwm->getRange() ) ;
+                   
+                set_PWM_dutycycle( pgpiod_session_id, 
+                                    pGpioPwm->getPin(), 
+                                    pGpioPwm->getDutyCycle() ) ;
+#else                
+                gpioSetMode( pGpioPwm->getPin(), PI_OUTPUT );
                 gpioSetPWMfrequency( pGpioPwm->getPin(), 
                                         pGpioPwm->getFrequency() );
                 gpioSetPWMrange( pGpioPwm->getPin(), 
                                     pGpioPwm->getRange() ) ;
-                gpioSetMode( pGpioPwm->getPin(), PI_OUTPUT );   
                 gpioPWM( pGpioPwm->getPin(), pGpioPwm->getDutyCycle() ) ;     
+#endif                
             }
 
         }
@@ -1746,7 +1848,14 @@ void *workerThread( void *data )
         CGpioClock *pGpioClock = *it4;
         
         if ( NULL != pGpioClock ) {
-            gpioHardwareClock( pGpioClock->getPin(), pGpioClock->getFrequency() );
+#ifdef USE_PIGPIOD
+            hardware_clock( pgpiod_session_id, 
+                                pGpioClock->getPin(), 
+                                pGpioClock->getFrequency() );
+#else            
+            gpioHardwareClock( pGpioClock->getPin(), 
+                                pGpioClock->getFrequency() );
+#endif            
         }
         
     }
@@ -1761,8 +1870,9 @@ void *workerThread( void *data )
         struct timespec ts;
         ts.tv_sec = 0;
         ts.tv_nsec = 500000000;    // 500 ms
+      
         if ( ETIMEDOUT != sem_timedwait( &pObj->m_semaphore_SendQueue, &ts ) ) {
-        
+           
             if ( pObj->m_bQuit ) continue;
 
             // Check if there is event(s) to handle
@@ -2070,7 +2180,11 @@ void *workerThread( void *data )
     } // while
 
     // Quit gpio library functionality
+#ifdef USE_PIGPIOD
+    pigpio_stop( pgpiod_session_id );
+#else    
     gpioTerminate();
+#endif    
 
     return NULL;
 }

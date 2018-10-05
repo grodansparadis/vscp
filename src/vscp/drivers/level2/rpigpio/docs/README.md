@@ -11,7 +11,9 @@ The xml data is packed in
 
 ```xml
 <?xml version = "1.0" encoding = "UTF-8" ?>
-<setup filter="Incoming filter on string form"
+<setup 	pigpiod-host="host where pigpiod is (default:"localhost")"
+		pigpiod-port="port on host where pigpiod is (default:"8888")"
+		filter="Incoming filter on string form"
 		mask="Incoming mask on string form"
 		sample_rate="5"
 		primary_dma_channel="14"

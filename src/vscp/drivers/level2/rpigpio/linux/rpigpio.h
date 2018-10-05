@@ -47,7 +47,12 @@
 #define VSCP_RPIGPIO_SYSLOG_DRIVER_ID       "VSCP rpigpio driver:"
 #define VSCP_LEVEL2_DLL_RPIGPIO_OBJ_MUTEX   "___VSCP__DLL_L2RPIGPIO_OBJ_MUTEX____"
 #define VSCP_RPIGPIO_LIST_MAX_MSG		    2048
-  
+
+
+//#define USE_PIGPIOD           // if define the pigpio daemon i/f is used
+                                // Defined in MAkefile normally when if2 version
+                                // is built.
+
 #define VSCP_MODE_PWM_SOFT   0
 #define VSCP_MODE_PWM_HARD   1  // PWM in hardware
 
@@ -471,6 +476,14 @@ public:
     void setSecondaryDmaChannel( uint8_t ch ) { m_secondary_dma_channel = ch; };
     uint8_t getSecondaryDmaChannel( void ) { return m_secondary_dma_channel; };
 
+#ifdef USE_PIGPIOD
+    void setPiGpiodHost( const std::string& str ) { m_pigpiod_host = str; };
+    std::string getPiGpiodHost( void ) { return m_pigpiod_host; };
+
+    void setPiGpiodPort( const std::string& str ) { m_pigpiod_host = str; };
+    std::string getPiGpiodPort( void ) { return m_pigpiod_host; };
+#endif    
+
     // Getter and setter for module index
     void setIndex( uint8_t index ) { m_index = index; };
     uint8_t getIndex( void ) { return m_index; };
@@ -505,6 +518,14 @@ public:
     
     /// XML configuration
     std::string m_setupXml;
+
+#ifdef USE_PIGPIOD
+    /// host where pigpid is
+    std::string m_pigpiod_host; 
+
+    /// port on host where pigpid is
+    std::string m_pigpiod_port;         
+#endif     
     
     /// Filter for all trafic to this module
     vscpEventFilter m_vscpfilter;
