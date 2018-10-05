@@ -71,7 +71,6 @@ WX_RELEASE = 3.0
 LIBDIRNAME = $(top_wxbuilddir)lib
 
 VSCPRPIGPIO_OBJECTS = vscpl2drv-rpigpio.o\
-	rpigpio.o\
 	vscpremotetcpif.o\
 	vscphelper.o\
 	sockettcp.o\
@@ -85,17 +84,20 @@ VSCPRPIGPIO_OBJECTS = vscpl2drv-rpigpio.o\
 
 ### Targets: ###
 
-all: vscpl2drv-rpigpio.so test
+all: rpigpio.o vscpl2drv-rpigpio.so vscpl2drv-rpigpio-if2.so test test-if2
 
 test:  test.o $(VSCPRPIGPIO_OBJECTS)
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -o $@ test.o $(VSCPRPIGPIO_OBJECTS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -o $@ test.o rpigpio.o $(VSCPRPIGPIO_OBJECTS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
+
+test-if2:  test.o $(VSCPRPIGPIO_OBJECTS)
+	$(CXX) -DUSE_PIGPIOD $(CXXFLAGS) $(CPPFLAGS) -o test-if2 test.o rpigpio-if2.o $(VSCPRPIGPIO_OBJECTS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
 
 # Build the Linux DL
 vscpl2drv-rpigpio.so: $(VSCPRPIGPIO_OBJECTS)
-	$(CXX) -o $@ $(VSCPRPIGPIO_OBJECTS) $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS) 
+	$(CXX) -o $@  $(VSCPRPIGPIO_OBJECTS) rpigpio.o $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS) 
 
 vscpl2drv-rpigpio-if2.so: $(VSCPRPIGPIO_OBJECTS)
-	$(CXX) -o $@ rpigpio-if2.o $(VSCPRPIGPIO_OBJECTS) $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
+	$(CXX) -o $@  $(VSCPRPIGPIO_OBJECTS) rpigpio-if2.o $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
 
 vscpl2drv-rpigpio.o: vscpl2drv-rpigpio.cpp vscpl2drv-rpigpio.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c vscpl2drv-rpigpio.cpp -o $@
@@ -164,6 +166,7 @@ clean:
 	rm -f vscpl2drv-rpigpio.so
 	rm -f vscpl2drv-rpigpio-if2.so
 	rm -f test
+	rm -f test-if2
 	rm -f *.deb
 	rm -f *.gz
 
