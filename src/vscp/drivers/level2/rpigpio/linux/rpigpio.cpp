@@ -1863,7 +1863,7 @@ void *workerThread( void *data )
     /*reportStruct *preport = new reportStruct;
     preport->id = 0;
     preport->pObj = pObj;*/
-    gpioSetTimerFuncEx( 0, 1000, report_callback0, pObj );
+    //gpioSetTimerFuncEx( 0, 1000, report_callback0, pObj );
 
     while ( !pObj->m_bQuit ) {
         
@@ -1975,7 +1975,7 @@ void *workerThread( void *data )
                                         if ( pin <= 53 ) {
 
 #ifdef USE_PIGPIOD
-                                            gpio_write( pgpiod_session_id, pin, 1 );
+                                            gpio_write( pgpiod_session_id, pin, 0 );
 #else
                                             gpioWrite( pin, 0 );
 #endif

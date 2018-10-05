@@ -116,7 +116,7 @@ int main(void)
 		        "rpi",
 		        "t1t2t3t4t5t");
 
-	for ( i=0; i<50; i++ ) {
+	for ( i=0; i<20; i++ ) {
 
 		// CLASS1.INFORMATION, Type=3, ON
 		printf("Send CLASS1.INFORMATION, Type=3,ON\n");
