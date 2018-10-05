@@ -103,6 +103,10 @@ int main(void)
 	if ( SIG_ERR == signal(SIGTERM, sig_handler) ) printf("Could not catch SIGSEGV\n");
 
     //::wxInitialize();
+#ifdef USE_PIGPIOD
+	printf("Using if2\n");
+#endif	
+
 
 	printf("Open gpio\n");
     gpio.open( "admin",

@@ -481,7 +481,7 @@ public:
     std::string getPiGpiodHost( void ) { return m_pigpiod_host; };
 
     void setPiGpiodPort( const std::string& str ) { m_pigpiod_host = str; };
-    std::string getPiGpiodPort( void ) { return m_pigpiod_host; };
+    std::string getPiGpiodPort( void ) { return m_pigpiod_port; };
 #endif    
 
     // Getter and setter for module index
