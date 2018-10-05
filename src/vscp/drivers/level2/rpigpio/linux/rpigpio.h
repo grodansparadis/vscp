@@ -480,7 +480,7 @@ public:
     void setPiGpiodHost( const std::string& str ) { m_pigpiod_host = str; };
     std::string getPiGpiodHost( void ) { return m_pigpiod_host; };
 
-    void setPiGpiodPort( const std::string& str ) { m_pigpiod_host = str; };
+    void setPiGpiodPort( const std::string& str ) { m_pigpiod_port = str; };
     std::string getPiGpiodPort( void ) { return m_pigpiod_port; };
 #endif    
 
