@@ -1,20 +1,21 @@
 // test.cpp : 
 //
 // This program is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public License
+// modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version
 // 2 of the License, or (at your option) any later version.
+// 
+// This file is part of the VSCP Project (http://www.vscp.org) 
 //
-// This file is part of the VSCP (http://www.vscp.org)
-//
-// Copyright (C) 2007 Johan Hedlund,  <kungjohan@gmail.com>
-//
+// Copyright (C) 2000-2018 Ake Hedman, 
+// Grodans Paradis AB, <akhe@grodansparadis.com>
+// 
 // This file is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public License
+// 
+// You should have received a copy of the GNU General Public License
 // along with this file see the file COPYING.  If not, write to
 // the Free Software Foundation, 59 Temple Place - Suite 330,
 // Boston, MA 02111-1307, USA.
@@ -28,6 +29,8 @@
 #include <pthread.h>
 #include <semaphore.h>
 
+#include <iostream>
+
 #include <vscp.h>
 #include <vscp_class.h>
 #include <vscp_type.h>
@@ -39,12 +42,18 @@
     #include <pigpio.h>
 #endif
 
+#define TEST_HOST		"192.168.1.9"
+#define TEST_PORT		9598
+#define TEST_USER		"admin"
+#define TEST_PASSWORD	"secret"
+#define TEST_PREFIX		"rpi"
+#define TEST_CONFIG		""
 
 void sig_handler(int signo)
 {
-  if (signo == SIGSEGV) printf("received SIGSEGV\n");
-  if (signo == SIGTERM) printf("received SIGTERM\n");
-  exit( -1 );
+	if (signo == SIGSEGV) printf("received SIGSEGV\n");
+  	if (signo == SIGTERM) printf("received SIGTERM\n");
+  	exit( -1 );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -71,15 +80,18 @@ BlockingReceive( CRpiGpio *pgpio, vscpEvent *pEvent, unsigned long timeout )
  
     // Check pointer
     if ( NULL == pEvent) return CANAL_ERROR_PARAMETER;
-    
 	if (NULL == pgpio) return CANAL_ERROR_MEMORY;
     
+	if ( 0 == pgpio->m_receiveList.size() ) return CANAL_ERROR_FIFO_EMPTY;
+
+	/*
 	struct timespec ts;
 	ts.tv_sec = 0;
 	ts.tv_nsec = timeout * 1e6;
 	if ( ETIMEDOUT == sem_timedwait( &pgpio->m_semaphore_ReceiveQueue, &ts ) ) {
         return CANAL_ERROR_TIMEOUT;
     }
+	*/
     
 	pthread_mutex_lock( &pgpio->m_mutex_ReceiveQueue );
     vscpEvent *pLocalEvent = pgpio->m_receiveList.front();
@@ -93,33 +105,57 @@ BlockingReceive( CRpiGpio *pgpio, vscpEvent *pEvent, unsigned long timeout )
 	return CANAL_ERROR_SUCCESS;
 }
 
+int getCountInqueue( CRpiGpio *pgpio ) {
+	return pgpio->m_receiveList.size();
+}
  
-int main(void)
+int main( int argc, const char* argv[] )
 {
-	int i;
+	int i,j,k;		// Generlaq indexes
+	int cnt;
     CRpiGpio gpio;
+	int ntest = 1;	// Default do test 1
+	bool bQuit = false;
+	char c;
+
+	// Prints each argument on the command line.
+	/*for( int i = 0; i < argc; i++ )
+	{
+		printf( "arg %d: %s\n", i, argv[i] );
+	}*/
 
 	if ( SIG_ERR == signal(SIGSEGV, sig_handler) ) printf("Could not catch SIGSEGV\n");
 	if ( SIG_ERR == signal(SIGTERM, sig_handler) ) printf("Could not catch SIGSEGV\n");
 
-    //::wxInitialize();
+	printf( "%s arg = %s\n", argv[0], argv[1] );
+
+	if ( argc > 1 ) {
+		ntest = atoi( argv[1] );
+	}
+	 
 #ifdef USE_PIGPIOD
-	printf("Using if2\n");
+	printf("Using if2\n\n");
 #endif	
 
+if ( 1 == ntest ) {
+
+	int nSent = 0;
+
+	printf("RUNNING TEST 1 - Toggle gpio 17\n");
+	printf("------------------------------ \n\n");
 
 	printf("Open gpio\n");
-    gpio.open( "admin",
-		        "secret",
-		        "192.168.1.9",
-		        9598,
-		        "rpi",
-		        "t1t2t3t4t5t");
+    gpio.open( TEST_USER,
+		        TEST_PASSWORD,
+		        TEST_HOST,
+		        TEST_PORT,
+		        "rpi1",
+		        TEST_CONFIG);
 
 	for ( i=0; i<20; i++ ) {
 
-		// CLASS1.INFORMATION, Type=3, ON
-		printf("Send CLASS1.INFORMATION, Type=3,ON\n");
+		// CLASS1.CONTROL, Type=5, TURN-ON
+		printf("Send CLASS1.CONTROL, Type=5,TURN-ON\n");
 		vscpEvent *pEventOn = new vscpEvent;
 		pEventOn->pdata = new uint8_t[3];
 		pEventOn->pdata[0] = 0; // index
@@ -131,11 +167,13 @@ int main(void)
 		pEventOn->vscp_class = VSCP_CLASS1_CONTROL;
 		pEventOn->vscp_type = VSCP_TYPE_CONTROL_TURNON;
 
-		BlockingSend( &gpio, pEventOn, 500 );
+		if ( CANAL_ERROR_SUCCESS == BlockingSend( &gpio, pEventOn, 500 ) ) {
+			nSent++;
+		}
 		usleep(100000);
 
-		// CLASS1.INFORMATION, Type=4, OFF
-		printf("Send CLASS1.INFORMATION, Type=4,OFF\n");
+		// CLASS1.CONTROL, Type=6, TURN_OFF
+		printf("Send CLASS1.CONTROL, Type=6,TURN-OFF\n");
 		vscpEvent *pEventOff = new vscpEvent;
 		pEventOff->pdata = new uint8_t[3];
 		pEventOff->pdata[0] = 0; // index
@@ -147,14 +185,134 @@ int main(void)
 		pEventOff->vscp_class = VSCP_CLASS1_CONTROL;
 		pEventOff->vscp_type = VSCP_TYPE_CONTROL_TURNOFF;
 
-		BlockingSend( &gpio, pEventOff, 500 );
+		if ( CANAL_ERROR_SUCCESS == BlockingSend( &gpio, pEventOn, 500 ) ) {
+			nSent++;
+		}
 		usleep(100000);
+	}
+
+	int cnt = getCountInqueue( &gpio );
+	printf("Number of events sent = %d\n", nSent );
+	printf("Number of events in in-queue = %d\n", cnt );
+
+	
+	for ( int i=0; i<cnt; i++ ) {
+		vscpEvent *pEvent = new vscpEvent;
+		if ( CANAL_ERROR_SUCCESS == BlockingReceive( &gpio, pEvent, 1000 ) ) {
+			if ( NULL != pEvent ) {
+				printf("%d - Fetching event with class=%d, type=%d, data size = %d\n", 
+						i,
+						pEvent->vscp_class,
+						pEvent->vscp_type,
+						pEvent->sizeData );
+						
+			}
+		}
+
+		if ( NULL != pEvent ) {			
+			vscp_deleteVSCPevent_v2( &pEvent );
+		}
 	}
 
 	printf("Close gpio\n");
 	gpio.close();
+}
+else if ( 2 == ntest ) {
 
-	//::wxUninitialize();
+	printf("RUNNING TEST 2 - Monitor test on pin 27 (ctrl+D to terminate)\n");
+	printf("-------------------------------------------------------------\n\n");
+
+	cnt = 0;
+
+	printf("Open gpio\n");
+    gpio.open( TEST_USER,
+		        TEST_PASSWORD,
+		        TEST_HOST,
+		        TEST_PORT,
+		        "rpi2",
+		        TEST_CONFIG);
+	
+	printf("Waiting for eight rising flanks on BCM 27.\n");
+	printf("w 22 1 w 22 0w 22 1 w 22 0 w 22 1 w 22 0 w 22 1 w 22 0\n");
+
+	cnt = 0;
+ 	while ( cnt < 8 ) {
+
+		vscpEvent *pEvent;
+		
+		if ( !vscp_newVSCPevent( &pEvent ) ) {
+			printf("Failed to create event!\n");
+			exit( -1 );
+		}
+
+		if ( CANAL_ERROR_SUCCESS == BlockingReceive( &gpio, pEvent, 1000 ) ) {
+			if ( NULL != pEvent ) {
+				cnt++;
+				printf("%d - Got event with class=%d, type=%d, data size = %d\n", 
+						cnt,
+						pEvent->vscp_class,
+						pEvent->vscp_type,
+						pEvent->sizeData );		
+			}
+		}
+
+		if ( NULL != pEvent ) {			
+			vscp_deleteVSCPevent_v2( &pEvent );
+		}
+
+	}
+
+	printf("Close gpio\n");
+	gpio.close();
+}
+else if ( 3 == ntest ) {
+
+	printf("RUNNING TEST 3 - Reports test on pin 27 (ctrl+D to terminate)\n");
+	printf("-------------------------------------------------------------\n\n");
+
+	cnt = 0;
+
+	printf("Open gpio\n");
+    gpio.open( TEST_USER,
+		        TEST_PASSWORD,
+		        TEST_HOST,
+		        TEST_PORT,
+		        "rpi3",
+		        TEST_CONFIG);
+	
+	printf("Waiting for twenty report events with status for on BCM 27.\n");
+	printf("w 22 1 w 22 0w 22 1 w 22 0 w 22 1 w 22 0 w 22 1 w 22 0\n");
+
+	cnt = 0;
+ 	while ( cnt < 20 ) {
+
+		vscpEvent *pEvent;
+		
+		if ( !vscp_newVSCPevent( &pEvent ) ) {
+			printf("Failed to create event!\n");
+			exit( -1 );
+		}
+
+		if ( CANAL_ERROR_SUCCESS == BlockingReceive( &gpio, pEvent, 1000 ) ) {
+			if ( NULL != pEvent ) {
+				cnt++;
+				printf("%d - Got event with class=%d, type=%d, size=%d\n", 
+						cnt,
+						pEvent->vscp_class,
+						pEvent->vscp_type,
+						pEvent->sizeData );		
+			}
+		}
+
+		if ( NULL != pEvent ) {			
+			vscp_deleteVSCPevent_v2( &pEvent );
+		}
+
+	}
+
+	printf("Close gpio\n");
+	gpio.close();
+}
 
     return 0;
 }

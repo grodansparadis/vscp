@@ -196,7 +196,7 @@ extern "C" {
         @param Variables part of resulting string
         @return formated string
     */
-    std::string vscp_string_format(const std::string fmt_str, ...);
+    std::string vscp_string_format( const std::string fmt_str, ...);
 
 // ----------------------------------------------------------------------------
 //                               Version 2 helpers

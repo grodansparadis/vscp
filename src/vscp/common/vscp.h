@@ -52,6 +52,7 @@
 #define VSCP_ADDRESS_NEW_NODE               0xff
 
 #define VSCP_MAX_DATA                       (512)       /* was 487 */
+#define VSCP_SIZE_GUID                      (16)        /* GUID array size */
 
 #define VSCP_LEVEL1                         0           /* Changed 151104  Was 1/2 */
 #define VSCP_LEVEL2                         1

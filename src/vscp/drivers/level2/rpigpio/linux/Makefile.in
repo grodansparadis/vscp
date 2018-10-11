@@ -40,7 +40,7 @@ BUILD_VERSION = `sed '38!d' ../../../../common/version.h  | cut -b 33-
 
 CFLAGS = -std=c99 @CFLAGS@ -fPIC @WXBASE_CFLAGS@ -DCBC -I../../../../common -I../../../../../common
 CXXFLAGS = -std=c++11 -D__LINUX__ -fPIC -D_REENTRANT @CXXFLAGS@ @WXBASE_CXXFLAGS@
-CPPFLAGS = -D__LINUX__ -fPIC @CPPFLAGS@ @WXBASE_CPPFLAGS@ -fno-var-tracking-assignments -I. -I../common -I../../../../common -I../../../../../common
+CPPFLAGS = -DVSCP_NO_WX -D__LINUX__ -fPIC @CPPFLAGS@ @WXBASE_CPPFLAGS@ -fno-var-tracking-assignments -I. -I../common -I../../../../common -I../../../../../common
 
 LDFLAGS = @LDFLAGS@
 EXTRALIBS = -lpigpio -lpigpiod_if2 -lexpat @EXTRALIBS@ 

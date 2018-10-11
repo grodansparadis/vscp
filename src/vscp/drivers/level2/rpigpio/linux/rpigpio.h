@@ -62,10 +62,10 @@ class VscpRemoteTcpIf;
 class CRpiGpio;
 
 
-struct reportStruct {
+/*struct reportStruct {
     int id;
     CRpiGpio * pObj;
-};
+};*/
 
 // Actions
 #define ACTION_RPIGPIO_NOOP             0x00    // No operation
@@ -89,11 +89,22 @@ struct reportStruct {
 // ----------------------------------------------------------------------------
 
 struct reportItem {
-    uint8_t m_id;
-    uint8_t m_pin;
-    uint32_t m_period;
-    vscpEventEx m_reportEventLow;
-    vscpEventEx m_reportEventHigh;
+    bool bEnable;
+    uint8_t pin;
+    uint32_t period;
+    uint32_t last;
+    vscpEventEx eventLow;
+    vscpEventEx eventHigh;
+};
+
+// ----------------------------------------------------------------------------
+
+struct monitorItem {
+    bool bEnable;                   
+    uint8_t edge;                 // both/falling/rising  EITHER_EDGE/FALLING_EDGE/RISING_EDGE   
+    vscpEventEx eventFalling;     // Event to send when triggered on falling edge or both edges
+    vscpEventEx eventRising;      // Event to send when triggered on rising or edge
+    vscpEventEx eventWatchdog;    // Event to send when triggered on watchdog
 };
 
 // ----------------------------------------------------------------------------
@@ -166,21 +177,6 @@ uint32_t m_noise_filter_active;
 // stable for at least microseconds set here. 0 = disabled.
 uint32_t m_glitch_filter;
 
-
-
-// ---
-
-// True if monitoring is enabled
-bool m_bEnable_Report;
-
-// Time in milliseconds between reports
-long m_report_period;
-
-// Event to send when triggered
-vscpEventEx m_reportEventHigh;
-
-// Event to send when triggered
-vscpEventEx m_reportEventLow;
 
 };
 
@@ -387,6 +383,7 @@ private:
 // ----------------------------------------------------------------------------
 
 // Define one GPIO monitor
+/*
 class CGpioMonitor{
 
 public:
@@ -430,7 +427,7 @@ private:
     vscpEventEx m_eventWatchdog;
 
 };
-
+*/
 // ----------------------------------------------------------------------------
 
 class CRpiGpio {
@@ -571,7 +568,7 @@ public:
 
     // Lists for pin definitions
     std::list<CGpioInput *> m_inputPinList;
-    std::list<CGpioMonitor *> m_monitorPinList;
+    //std::list<CGpioMonitor *> m_monitorPinList;
     std::list<CGpioOutput *> m_outputPinList;
     std::list<CGpioPwm *> m_pwmPinList;
     std::list<CGpioClock *> m_gpioClockPinList; // Will hold max one entry
@@ -579,8 +576,11 @@ public:
     // Max ten report items
     reportItem m_reporters[10];
 
+    // Monitors each representing a pin from 0-31
+    monitorItem m_monitor[32];
+
     // Decision matrix
-    std::list<CLocalDM *> m_LocalDMList; // Will hold max one entry
+    std::list<CLocalDM *> m_LocalDMList; 
 };
 
 

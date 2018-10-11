@@ -144,7 +144,7 @@ Report input pin status every "period" milliseconds
 CLASS1.INFORMATION TYPE=3/4 ON/OFF
 Can be set to id = 0..9
 
-Report uses 
+Report uses
 
 ```c
    int gpioSetTimerFuncEx( unsigned timer, 
@@ -153,35 +153,34 @@ Report uses
 							  void *userdata )
 ```
 
- 
 
 ```xml
-<report id="n"
-		pin="n"
-		period="1000"
+<setup>
 
-		high_class="20"
-		high_type="3"
-		high_index="pin"
-		high_zone="11"
-		high_subzone="22"
-		high_data="1,2,3,4,,,"
-	
-		low_class="20"
-		low_type="4"
-		low_index="pin"
-		low_zone="11"
-		low_subzone="22"
-		low_data="1,2,3,4,,,"
-		
-		watchdog_class="1"
-		watchdog_type="12"
-		watchdog_index="pin"
-		watchdog_zone="11"
-		watchdog_subzone="22"
-		watchdog_data="1,2,3,4,,," />
+<input pin="27"
+	pullup="up"  />
+
+<report id="0"
+    pin="27"
+    period="1000"
+
+    high_class="20"
+    high_type="3"
+    high_index="27"
+    high_zone="11"
+    high_subzone="22"
+    high_data="27,0,0"
+
+    low_class="20"
+    low_type="4"
+    low_index="27"
+    low_zone="11"
+    low_subzone="22"
+    low_data="27,0,0" />
+
+</setup>
 ```
-By defauult index is used for the pin.
+By default index is used for the pin.
 
 
 ### Monitor
@@ -190,21 +189,29 @@ Send event on trigger (falling|rising|both|setup).
 CLASS1.INFORMATION TYPE=3/4 ON/OFF
 
 ```xml
-<monitor edge="falling|rising|both"
+<monitor pin="27"
+		edge="falling|rising|both"
 
-			falling_class="20"
-			falling_type="3"
-			falling_index="0"
-			falling_zone="11"
-			falling_subzone="22"	 
-			falling_data="1,2,3,4,,,"
+		falling_class="20"
+		falling_type="79"
+		falling_index="0"
+		falling_zone="11"
+		falling_subzone="22"
+		falling_data="0,0,0"
 
-			rising_class="20"
-			rising_type="3"
-			rising_index="0"
-			rising_zone="11"
-			rising_subzone="22"	 
-			rising_data="1,2,3,4,,,"
+		rising_class="20"
+		rising_type="78"
+		rising_index="0"
+		rising_zone="11"
+		rising_subzone="22"	 
+		rising_data="0,0,0"
+			
+		watchdog_class="1"
+		watchdog_type="12"
+		watchdog_index="0"
+		watchdog_zone="11"
+		watchdog_subzone="22"	 
+		watchdog_data="0,0,0" />
 ```
 
 ## DM
@@ -359,14 +366,18 @@ action parameter: pin, zone, subzone
 ## DM for control of pin 17
 
 ```xml
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<setup>
+	<output pin="1"
+           	initial_state="on" />			   
 <dm>
 	<row enable="true"
 		priority-mask="0"
 		priority-filter="0" 
 		class-mask="0xffff"
-		class-filter="20" 
+		class-filter="30" 
 		type-mask="0xffff"
-		type-filter="3"
+		type-filter="5"
 		guid-mask="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"
 		guid-filter="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"
 		action="on"
@@ -376,13 +387,15 @@ action parameter: pin, zone, subzone
 		priority-mask="0"
 		priotity-filter="0" 
 		class-mask="0xffff"
-		class-filter="20" 
+		class-filter="30" 
 		type-mask="0xffff"
-		type-filter="4"
+		type-filter="6"
 		guid-mask="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"
 		guid-filter="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"
 		action="off"
 		action-parameter="17"
 	/>	
 </dm>
+
+</setup>
 ```

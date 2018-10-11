@@ -615,7 +615,7 @@ bool vscp_XML_Escape( const char *src, char *dst, size_t dst_len )
 // vscp_string_format
 //
 
-std::string vscp_string_format(const std::string fmt_str, ...) 
+std::string vscp_string_format(const std::string fmt_str, ... ) 
 {
     int final_n, n = ((int)fmt_str.size()) * 2; /* Reserve two times as much as the length of the fmt_str */
     std::unique_ptr<char[]> formatted;
@@ -631,7 +631,7 @@ std::string vscp_string_format(const std::string fmt_str, ...)
         else
             break;
     }
-    return std::string(formatted.get());
+    return std::string( formatted.get() );
 }
 
 
@@ -2974,6 +2974,7 @@ bool vscp_newVSCPevent(vscpEvent **ppEvent)
     if ( NULL == *ppEvent ) return false;
     
     // No data allocated yet
+    (*ppEvent)->sizeData = 0;
     (*ppEvent)->pdata = NULL;
     
     return true;
@@ -4856,7 +4857,7 @@ unsigned long vscp_makeTimeStamp( void )
     gettimeofday( &curTime, NULL );
     return  1000 * curTime.tv_sec + curTime.tv_usec / 1000;
 #endif
-// This is the old millisecodn timestamp
+// This is the old millisecond timestamp
 /*
 #ifdef WIN32
     return GetTickCount();

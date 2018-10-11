@@ -59,6 +59,12 @@
 
 void *workerThread( void *data );
 
+static void monitor_callback( int handle,
+                                unsigned gpio,
+                                unsigned edge,
+                                uint32_t tick,
+                                void *userdata );
+
 static void report_callback0( void * userdata );
 static void report_callback1( void * userdata );
 static void report_callback2( void * userdata );
@@ -99,7 +105,7 @@ CGpioInput::~CGpioInput()
 
 bool CGpioInput::setPin( uint8_t pin ) 
 { 
-    if ( pin < 18 ) {
+    if ( pin < 32 ) {
         m_pin = pin; 
         return true;
     }
@@ -127,13 +133,13 @@ bool CGpioInput::setPullUp( const std::string& strPullUp )
     vscp2_trim( str );
  
     if ( std::string::npos != str.find("UP") ) {
-        m_pullup = PI_PUD_OFF;
+        m_pullup = PI_PUD_UP;
     } 
     else if  ( std::string::npos != str.find("DOWN") ) {
         m_pullup = PI_PUD_DOWN;
     }
     else if  ( std::string::npos != str.find("OFF") ) {
-        m_pullup = PI_PUD_UP;
+        m_pullup = PI_PUD_OFF;
     }
     else {
         return false;
@@ -153,61 +159,9 @@ uint8_t CGpioInput::getPullUp( void )
 
 
 
-//////////////////////////////////////////////////////////////////////
-// setReport
-//
-
-bool CGpioInput::setReport( bool bEnable, 
-                            long period, 
-                            vscpEventEx& eventLow,
-                            vscpEventEx& eventHigh )
-{
-    m_bEnable_Report = bEnable;
-    m_report_period = period;
-    vscp_copyVSCPEventEx( &m_reportEventLow, &eventLow );
-    vscp_copyVSCPEventEx( &m_reportEventHigh, &eventHigh );
-
-    return true;                  
-}
-
-//////////////////////////////////////////////////////////////////////
-// isReportEnabled
-//
-
-bool CGpioInput::isReportEnabled( void )
-{
-    return m_bEnable_Report;
-}
-
-//////////////////////////////////////////////////////////////////////
-// getReportPeriod
-//
-
-long CGpioInput::getReportPeriod( void )
-{
-    return m_report_period;
-}
-
-//////////////////////////////////////////////////////////////////////
-// getReportEventLow
-//
-
-vscpEventEx& CGpioInput::getReportEventLow( void )
-{
-    return m_reportEventLow;
-}
-
-//////////////////////////////////////////////////////////////////////
-// getReportEventHigh
-//
-
-vscpEventEx& CGpioInput::getReportEventHigh( void )
-{
-    return m_reportEventHigh;
-}
-
-
 // ----------------------------------------------------------------------------
+
+
 
 
 //////////////////////////////////////////////////////////////////////
@@ -671,7 +625,7 @@ std::string& CLocalDM::getActionParameter( void )
 //////////////////////////////////////////////////////////////////////
 // CGpioMonitor
 //
-
+/*
 CGpioMonitor::CGpioMonitor()
 {
     m_pin = 0;
@@ -691,7 +645,7 @@ CGpioMonitor::CGpioMonitor()
     m_eventFalling.vscp_type = VSCP_TYPE_INFORMATION_FALLING;
     m_eventFalling.head = 0;
     m_eventFalling.sizeData = 3;
-    memset( m_eventFalling.data, 0, sizeof( m_eventRising.data ) );
+    memset( m_eventFalling.data, 0, sizeof( m_eventFalling.data ) );
     memset( m_eventFalling.GUID, 0, 16 );
     
     m_eventRising.obid = 0;
@@ -721,7 +675,7 @@ CGpioMonitor::CGpioMonitor()
     m_eventWatchdog.vscp_type = VSCP_TYPE_ALARM_WATCHDOG;
     m_eventWatchdog.head = 0;
     m_eventWatchdog.sizeData = 3;
-    memset( m_eventWatchdog.data, 0, sizeof( m_eventRising.data ) );
+    memset( m_eventWatchdog.data, 0, sizeof( m_eventWatchdog.data ) );
     memset( m_eventWatchdog.GUID, 0, 16 );
 }
 
@@ -773,7 +727,7 @@ void CGpioMonitor::setMonitorEvents( const vscpEventEx& eventFalling,
     vscp_copyVSCPEventEx( &m_eventRising, &eventRising );
     vscp_copyVSCPEventEx( &m_eventWatchdog, &eventWatchdog );
 }
-
+*/
 
 // ----------------------------------------------------------------------------
 
@@ -943,144 +897,146 @@ startSetupParser( void *data, const char *name, const char **attr )
     }
     else if ( ( 0 == strcmp( name, "monitor" ) ) && ( 1 == depth_setup_parser ) ) {
         
-        CGpioMonitor *pMonitorObj = new CGpioMonitor;
-        if ( NULL != pMonitorObj ) {
+        int pin = 0;
+        for ( int i = 0; attr[i]; i += 2 ) {            
 
-            vscpEventEx eventRising;
-            vscp2_setVscpEventExDataFromString( &eventRising, "0,0,0" );
+            std::string attribute = attr[i+1];
 
-            vscpEventEx eventFalling;
-            vscp2_setVscpEventExDataFromString( &eventFalling, "0,0,0" );
+            // Get monitor pin 
+            if ( 0 == strcmp( attr[i], "pin") ) {
+                pin = vscp2_readStringValue( attribute );
+                if ( pin > 31 ) pin = 0;
+                pgpio->m_monitor[pin].bEnable = true;
+            }
 
-            vscpEventEx eventWatchdog;
-            vscp2_setVscpEventExDataFromString( &eventWatchdog, "0,0,0" );
-        
-            for ( int i = 0; attr[i]; i += 2 ) {            
+            // monitor_edge
+            else if ( 0 == strcmp( attr[i], "edge") ) {
+                std::string str = attribute;
+                vscp2_makeUpper( str );
+                vscp2_trim( str );
 
-                std::string attribute = attr[i+1];
-
-                // Get monitor pin 
-                if ( 0 == strcmp( attr[i], "pin") ) {
-                    pMonitorObj->setPin( vscp2_readStringValue( attribute ) );
+                if ( std::string::npos != str.find("FALLING") ) {
+                    pgpio->m_monitor[pin].edge = FALLING_EDGE;
+                } 
+                else if ( std::string::npos != str.find("RISING") ) {
+                    pgpio->m_monitor[pin].edge = RISING_EDGE;
                 }
-
-                // monitor_edge
-                else if ( 0 == strcmp( attr[i], "edge") ) {
-                    pMonitorObj->setEdge( attribute ); 
+                else if ( std::string::npos != str.find("BOTH") ) {
+                    pgpio->m_monitor[pin].edge = EITHER_EDGE;
                 }
-
-                // class for Rising event
-                else if ( 0 == strcmp( attr[i], "rising_class") ) {
-                    eventRising.vscp_class = vscp2_readStringValue( attribute ); 
+                else if ( std::string::npos != str.find("SETUP") ) {
+                    pgpio->m_monitor[pin].edge = EITHER_EDGE;
                 }
+                else {
+                    pgpio->m_monitor[pin].edge = EITHER_EDGE;
+                } 
+            }
 
-                // type for Rising event
-                else if ( 0 == strcmp( attr[i], "rising_type") ) {
-                    eventRising.vscp_type = vscp2_readStringValue( attribute ); 
-                }
+            // class for Rising event
+            else if ( 0 == strcmp( attr[i], "rising_class") ) {
+                pgpio->m_monitor[pin].eventRising.vscp_class = vscp2_readStringValue( attribute ); 
+            }
 
-                // data for Rising event
-                else if ( 0 == strcmp( attr[i], "rising_type") ) {
-                    vscp2_setVscpEventExDataFromString( &eventRising, attribute ); 
-                }
+            // type for Rising event
+            else if ( 0 == strcmp( attr[i], "rising_type") ) {
+                pgpio->m_monitor[pin].eventRising.vscp_type = vscp2_readStringValue( attribute ); 
+            }
 
-                // index for Rising event
-                else if ( 0 == strcmp( attr[i], "rising_index") ) {
-                    eventRising.data[0] = vscp2_readStringValue( attribute );
-                    if ( 0 == eventRising.sizeData ) eventRising.sizeData = 1; 
-                }
+            // data for Rising event
+            else if ( 0 == strcmp( attr[i], "rising_type") ) {
+                vscp2_setVscpEventExDataFromString( &pgpio->m_monitor[pin].eventRising, attribute ); 
+            }
 
-                // zone for Rising event
-                else if ( 0 == strcmp( attr[i], "rising_zone") ) {
-                    eventRising.data[1] = vscp2_readStringValue( attribute );
-                    if ( eventRising.sizeData < 2 ) eventRising.sizeData = 2; 
-                }
+            // index for Rising event
+            else if ( 0 == strcmp( attr[i], "rising_index") ) {
+                pgpio->m_monitor[pin].eventRising.data[0] = vscp2_readStringValue( attribute );
+                if ( 0 == pgpio->m_monitor[pin].eventRising.sizeData ) pgpio->m_monitor[pin].eventRising.sizeData = 1; 
+            }
 
-                // subzone for Rising event
-                else if ( 0 == strcmp( attr[i], "rising_subzone") ) {
-                    eventRising.data[2] = vscp2_readStringValue( attribute );
-                    if ( eventRising.sizeData < 3 ) eventRising.sizeData = 3; 
-                }
+            // zone for Rising event
+            else if ( 0 == strcmp( attr[i], "rising_zone") ) {
+                pgpio->m_monitor[pin].eventRising.data[1] = vscp2_readStringValue( attribute );
+                if ( pgpio->m_monitor[pin].eventRising.sizeData < 2 ) pgpio->m_monitor[pin].eventRising.sizeData = 2; 
+            }
 
-                // ----------------------------------------------------------------
+            // subzone for Rising event
+            else if ( 0 == strcmp( attr[i], "rising_subzone") ) {
+                pgpio->m_monitor[pin].eventRising.data[2] = vscp2_readStringValue( attribute );
+                if ( pgpio->m_monitor[pin].eventRising.sizeData < 3 ) pgpio->m_monitor[pin].eventRising.sizeData = 3; 
+            }
 
-                // class for Falling event
-                else if ( 0 == strcmp( attr[i], "falling_class") ) {
-                    eventFalling.vscp_class = vscp2_readStringValue( attribute ); 
-                }
+            // ----------------------------------------------------------------
 
-                // type for Falling event
-                else if ( 0 == strcmp( attr[i], "falling_type") ) {
-                    eventFalling.vscp_type = vscp2_readStringValue( attribute ); 
-                }
+            // class for Falling event
+            else if ( 0 == strcmp( attr[i], "falling_class") ) {
+                pgpio->m_monitor[pin].eventFalling.vscp_class = vscp2_readStringValue( attribute ); 
+            }
 
-                // data for Rising event
-                else if ( 0 == strcmp( attr[i], "rising_type") ) {
-                    vscp2_setVscpEventExDataFromString( &eventFalling, attribute ); 
-                }
+            // type for Falling event
+            else if ( 0 == strcmp( attr[i], "falling_type") ) {
+                pgpio->m_monitor[pin].eventFalling.vscp_type = vscp2_readStringValue( attribute ); 
+            }
 
-                // index for Falling event
-                else if ( 0 == strcmp( attr[i], "falling_index") ) {
-                    eventFalling.data[0] = vscp2_readStringValue( attribute );
-                    if ( 0 == eventFalling.sizeData ) eventFalling.sizeData = 1; 
-                }
+            // data for Rising event
+            else if ( 0 == strcmp( attr[i], "rising_type") ) {
+                vscp2_setVscpEventExDataFromString( &pgpio->m_monitor[pin].eventFalling, attribute ); 
+            }
 
-                // zone for Falling event
-                else if ( 0 == strcmp( attr[i], "falling_zone") ) {
-                    eventFalling.data[1] = vscp2_readStringValue( attribute );
-                    if ( eventFalling.sizeData < 2 ) eventFalling.sizeData = 2; 
-                }
+            // index for Falling event
+            else if ( 0 == strcmp( attr[i], "falling_index") ) {
+                pgpio->m_monitor[pin].eventFalling.data[0] = vscp2_readStringValue( attribute );
+                if ( 0 == pgpio->m_monitor[pin].eventFalling.sizeData ) pgpio->m_monitor[pin].eventFalling.sizeData = 1; 
+            }
 
-                // subzone for Falling event
-                else if ( 0 == strcmp( attr[i], "falling_subzone") ) {
-                    eventFalling.data[2] = vscp2_readStringValue( attribute );
-                    if ( eventFalling.sizeData < 3 ) eventFalling.sizeData = 3; 
-                }
+            // zone for Falling event
+            else if ( 0 == strcmp( attr[i], "falling_zone") ) {
+                pgpio->m_monitor[pin].eventFalling.data[1] = vscp2_readStringValue( attribute );
+                if ( pgpio->m_monitor[pin].eventFalling.sizeData < 2 ) pgpio->m_monitor[pin].eventFalling.sizeData = 2; 
+            }
 
-                // ----------------------------------------------------------------
+            // subzone for Falling event
+            else if ( 0 == strcmp( attr[i], "falling_subzone") ) {
+                pgpio->m_monitor[pin].eventFalling.data[2] = vscp2_readStringValue( attribute );
+                if ( pgpio->m_monitor[pin].eventFalling.sizeData < 3 ) pgpio->m_monitor[pin].eventFalling.sizeData = 3; 
+            }
 
-                // class for Watchdog event
-                else if ( 0 == strcmp( attr[i], "watchdog_class") ) {
-                    eventWatchdog.vscp_class = vscp2_readStringValue( attribute ); 
-                }
+            // ----------------------------------------------------------------
 
-                // type for Watchdog event
-                else if ( 0 == strcmp( attr[i], "watchdog_type") ) {
-                    eventWatchdog.vscp_type = vscp2_readStringValue( attribute ); 
-                }
+            // class for Watchdog event
+            else if ( 0 == strcmp( attr[i], "watchdog_class") ) {
+                pgpio->m_monitor[pin].eventWatchdog.vscp_class = vscp2_readStringValue( attribute ); 
+            }
 
-                // data for Watchdog event
-                else if ( 0 == strcmp( attr[i], "watchdog_type") ) {
-                    vscp2_setVscpEventExDataFromString( &eventWatchdog, attribute ); 
-                }
+            // type for Watchdog event
+            else if ( 0 == strcmp( attr[i], "watchdog_type") ) {
+                pgpio->m_monitor[pin].eventWatchdog.vscp_type = vscp2_readStringValue( attribute ); 
+            }
 
-                // index for Falling event
-                else if ( 0 == strcmp( attr[i], "watchdog_index") ) {
-                    eventWatchdog.data[0] = vscp2_readStringValue( attribute );
-                    if ( 0 == eventWatchdog.sizeData ) eventWatchdog.sizeData = 1; 
-                }
+            // data for Watchdog event
+            else if ( 0 == strcmp( attr[i], "watchdog_type") ) {
+                vscp2_setVscpEventExDataFromString( &pgpio->m_monitor[pin].eventWatchdog, attribute ); 
+            }
 
-                // zone for Watchdog event
-                else if ( 0 == strcmp( attr[i], "watchdog_zone") ) {
-                    eventWatchdog.data[1] = vscp2_readStringValue( attribute );
-                    if ( eventWatchdog.sizeData < 2 ) eventWatchdog.sizeData = 2; 
-                }
+            // index for Falling event
+            else if ( 0 == strcmp( attr[i], "watchdog_index") ) {
+                pgpio->m_monitor[pin].eventWatchdog.data[0] = vscp2_readStringValue( attribute );
+                if ( 0 == pgpio->m_monitor[pin].eventWatchdog.sizeData ) pgpio->m_monitor[pin].eventWatchdog.sizeData = 1; 
+            }
 
-                // subzone for Watchdog event
-                else if ( 0 == strcmp( attr[i], "watchdog_subzone") ) {
-                    eventWatchdog.data[2] = vscp2_readStringValue( attribute );
-                    if ( eventWatchdog.sizeData < 3 ) eventWatchdog.sizeData = 3; 
-                }
+            // zone for Watchdog event
+            else if ( 0 == strcmp( attr[i], "watchdog_zone") ) {
+                pgpio->m_monitor[pin].eventWatchdog.data[1] = vscp2_readStringValue( attribute );
+                if ( pgpio->m_monitor[pin].eventWatchdog.sizeData < 2 ) pgpio->m_monitor[pin].eventWatchdog.sizeData = 2; 
+            }
 
-            } // for - attributes
+            // subzone for Watchdog event
+            else if ( 0 == strcmp( attr[i], "watchdog_subzone") ) {
+                pgpio->m_monitor[pin].eventWatchdog.data[2] = vscp2_readStringValue( attribute );
+                if ( pgpio->m_monitor[pin].eventWatchdog.sizeData < 3 ) pgpio->m_monitor[pin].eventWatchdog.sizeData = 3; 
+            }
 
-            pMonitorObj->setMonitorEvents( eventRising, 
-                                            eventFalling,
-                                            eventWatchdog );
+        } // for - attributes
 
-            // Add monitor to list
-            pgpio->m_monitorPinList.push_back( pMonitorObj );                                            
-        }
     }
     else if ( ( 0 == strcmp( name, "report" ) ) && ( 1 == depth_setup_parser ) ) {
 
@@ -1099,114 +1055,120 @@ startSetupParser( void *data, const char *name, const char **attr )
                             (const char *)VSCP_RPIGPIO_SYSLOG_DRIVER_ID,
 				            (const char *)"Invalid id. Set to zero.",
                             (int)id );
-                } 
+                }
+                pgpio->m_reporters[ id ].bEnable = true;
             }
 
             // Pin    
             else if ( 0 == strcmp( attr[i], "pin") ) {
-                pgpio->m_reporters[ id ].m_pin = 
+                pgpio->m_reporters[ id ].pin = 
                             vscp2_readStringValue( attribute );
             }
 
             // Period
             else if ( 0 == strcmp( attr[i], "period") ) {
-                pgpio->m_reporters[ id ].m_period = 
+                pgpio->m_reporters[ id ].period = 
                             vscp2_readStringValue( attribute );
             }
 
             // Low class
             else if ( 0 == strcmp( attr[i], "low_class") ) {
-                pgpio->m_reporters[ id ].m_reportEventLow.vscp_class = 
+                pgpio->m_reporters[ id ].eventLow.vscp_class = 
                                         vscp2_readStringValue( attribute );
             }
 
             // Low type
             else if ( 0 == strcmp( attr[i], "low_type") ) {
-                pgpio->m_reporters[ id ].m_reportEventLow.vscp_type = 
+                pgpio->m_reporters[ id ].eventLow.vscp_type = 
                                         vscp2_readStringValue( attribute );
             }
 
             // Low data
             else if ( 0 == strcmp( attr[i], "low_data") ) {
-                pgpio->m_reporters[ id ].m_reportEventLow.sizeData = 0;
-                vscp_setVscpEventExDataFromString( &pgpio->m_reporters[ id ].m_reportEventLow, 
+                pgpio->m_reporters[ id ].eventLow.sizeData = 0;
+                vscp_setVscpEventExDataFromString( &pgpio->m_reporters[ id ].eventLow, 
                                                     attribute );                                    
             }
 
             // Low index
             else if ( 0 == strcmp( attr[i], "low_index") ) {
-                pgpio->m_reporters[ id ].m_reportEventLow.data[0] = 
+                pgpio->m_reporters[ id ].eventLow.data[0] = 
                                         vscp_readStringValue( attribute );
-                if ( 0 == pgpio->m_reporters[ id ].m_reportEventLow.sizeData ) {
-                    pgpio->m_reporters[ id ].m_reportEventLow.sizeData = 1;
+                if ( 0 == pgpio->m_reporters[ id ].eventLow.sizeData ) {
+                    pgpio->m_reporters[ id ].eventLow.sizeData = 1;
                 }
             }
 
             // Low zone
             else if ( 0 == strcmp( attr[i], "low_zone") ) {
-                pgpio->m_reporters[ id ].m_reportEventLow.data[1] = 
+                pgpio->m_reporters[ id ].eventLow.data[1] = 
                                         vscp_readStringValue( attribute );
-                if ( pgpio->m_reporters[ id ].m_reportEventLow.sizeData < 2 ) {
-                    pgpio->m_reporters[ id ].m_reportEventLow.sizeData = 2;
+                if ( pgpio->m_reporters[ id ].eventLow.sizeData < 2 ) {
+                    pgpio->m_reporters[ id ].eventLow.sizeData = 2;
                 }
             }
 
             // Low subzone
             else if ( 0 == strcmp( attr[i], "low_subzone") ) {
-                pgpio->m_reporters[ id ].m_reportEventLow.data[2] = 
+                pgpio->m_reporters[ id ].eventLow.data[2] = 
                                         vscp_readStringValue( attribute );
-                if ( pgpio->m_reporters[ id ].m_reportEventLow.sizeData < 3 ) {
-                    pgpio->m_reporters[ id ].m_reportEventLow.sizeData = 3;
+                if ( pgpio->m_reporters[ id ].eventLow.sizeData < 3 ) {
+                    pgpio->m_reporters[ id ].eventLow.sizeData = 3;
                 }
             }
 
             // High class
             else if ( 0 == strcmp( attr[i], "high_class") ) {
-                pgpio->m_reporters[ id ].m_reportEventHigh.vscp_class = 
+                pgpio->m_reporters[ id ].eventHigh.vscp_class = 
                                     vscp2_readStringValue( attribute );
             }
 
             // High type
             else if ( 0 == strcmp( attr[i], "high_type") ) {
-                pgpio->m_reporters[ id ].m_reportEventHigh.vscp_type = 
+                pgpio->m_reporters[ id ].eventHigh.vscp_type = 
                                     vscp2_readStringValue( attribute );
             }
 
             // High data
             else if ( 0 == strcmp( attr[i], "high_data") ) {
-                pgpio->m_reporters[ id ].m_reportEventHigh.sizeData = 0;
-                vscp_setVscpEventExDataFromString( &pgpio->m_reporters[ id ].m_reportEventHigh, 
+                pgpio->m_reporters[ id ].eventHigh.sizeData = 0;
+                vscp_setVscpEventExDataFromString( &pgpio->m_reporters[ id ].eventHigh, 
                                                     attribute );                                    
             }
 
             // High index
             else if ( 0 == strcmp( attr[i], "high_index") ) {
-                pgpio->m_reporters[ id ].m_reportEventHigh.data[0] = 
+                pgpio->m_reporters[ id ].eventHigh.data[0] = 
                                     vscp_readStringValue( attribute );
-                if ( 0 == pgpio->m_reporters[ id ].m_reportEventHigh.sizeData ) {
-                    pgpio->m_reporters[ id ].m_reportEventHigh.sizeData = 1;
+                if ( 0 == pgpio->m_reporters[ id ].eventHigh.sizeData ) {
+                    pgpio->m_reporters[ id ].eventHigh.sizeData = 1;
                 }
             }
 
             // High zone
             else if ( 0 == strcmp( attr[i], "high_zone") ) {
-                pgpio->m_reporters[ id ].m_reportEventHigh.data[1] = 
+                pgpio->m_reporters[ id ].eventHigh.data[1] = 
                                     vscp_readStringValue( attribute );
-                if ( pgpio->m_reporters[ id ].m_reportEventHigh.sizeData < 2 ) {
-                    pgpio->m_reporters[ id ].m_reportEventHigh.sizeData = 2;
+                if ( pgpio->m_reporters[ id ].eventHigh.sizeData < 2 ) {
+                    pgpio->m_reporters[ id ].eventHigh.sizeData = 2;
                 }
             }
 
             // High subzone
             else if ( 0 == strcmp( attr[i], "high_subzone") ) {
-                pgpio->m_reporters[ id ].m_reportEventHigh.data[2] = 
+                pgpio->m_reporters[ id ].eventHigh.data[2] = 
                                         vscp_readStringValue( attribute );
-                if ( pgpio->m_reporters[ id ].m_reportEventHigh.sizeData < 3 ) {
-                    pgpio->m_reporters[ id ].m_reportEventHigh.sizeData = 3;
+                if ( pgpio->m_reporters[ id ].eventHigh.sizeData < 3 ) {
+                    pgpio->m_reporters[ id ].eventHigh.sizeData = 3;
                 }
             }
-
         }
+
+        timeval curTime;
+        gettimeofday( &curTime, NULL );
+        uint32_t now = 1000 * curTime.tv_sec + ( curTime.tv_usec / 1000 );
+
+        pgpio->m_reporters[ id ].last = now;
     }
     
     else if ( ( 0 == strcmp( name, "pwm" ) ) && ( 1 == depth_setup_parser ) ) {
@@ -1398,7 +1360,8 @@ endSetupParser( void *data, const char *name )
 
 CRpiGpio::CRpiGpio()
 {
-	m_bQuit = false;
+	int i;
+    m_bQuit = false;
 	m_setupXml = _("<?xml version = \"1.0\" encoding = \"UTF-8\" ?><setup><!-- empty --></setup>");
 	vscp_clearVSCPFilter( &m_vscpfilter ); // Accept all events
     m_sample_rate = 5;   
@@ -1413,12 +1376,69 @@ CRpiGpio::CRpiGpio()
     m_pigpiod_port = "8888";
 #endif    
 
-    for ( int i=0; i<10; i++ ) {
-        m_reporters[i].m_id = 0;
-        m_reporters[i].m_pin = 0;
-        m_reporters[i].m_period = 0;
-        memset( &m_reporters[i].m_reportEventLow, 0, sizeof( vscpEventEx ) );
-        memset( &m_reporters[i].m_reportEventHigh, 0, sizeof( vscpEventEx ) );
+    timeval curTime;
+    gettimeofday( &curTime, NULL );
+    uint32_t now = 1000 * curTime.tv_sec + ( curTime.tv_usec / 1000 );
+
+    for ( i=0; i<10; i++ ) {
+        m_reporters[i].bEnable = false;
+        m_reporters[i].pin = 0;
+        m_reporters[i].period = 0;
+        m_reporters[i].last = now;
+        memset( &m_reporters[i].eventLow, 0, sizeof( vscpEventEx ) );
+        memset( &m_reporters[i].eventHigh, 0, sizeof( vscpEventEx ) );
+    }
+
+    // Init monitor
+    for ( i=0; i<32; i++ ) {
+        m_monitor[i].bEnable = false;
+        m_monitor[i].edge = 
+        m_monitor[i].edge = EITHER_EDGE;
+        
+        m_monitor[i].eventFalling.obid = 0;
+        m_monitor[i].eventFalling.timestamp = 0;
+        m_monitor[i].eventFalling.year = 0;
+        m_monitor[i].eventFalling.month = 0;
+        m_monitor[i].eventFalling.day = 0;
+        m_monitor[i].eventFalling.hour = 0;
+        m_monitor[i].eventFalling.minute = 0;
+        m_monitor[i].eventFalling.second = 0;
+        m_monitor[i].eventFalling.vscp_class = VSCP_CLASS1_INFORMATION;;
+        m_monitor[i].eventFalling.vscp_type = VSCP_TYPE_INFORMATION_FALLING;
+        m_monitor[i].eventFalling.head = 0;
+        m_monitor[i].eventFalling.sizeData = 3;
+        memset( m_monitor[i].eventFalling.data, 0, sizeof( m_monitor[i].eventFalling.data ) );
+        memset( m_monitor[i].eventFalling.GUID, 0, 16 );
+    
+        m_monitor[i].eventRising.obid = 0;
+        m_monitor[i].eventRising.timestamp = 0;
+        m_monitor[i].eventRising.year = 0;
+        m_monitor[i].eventRising.month = 0;
+        m_monitor[i].eventRising.day = 0;
+        m_monitor[i].eventRising.hour = 0;
+        m_monitor[i].eventRising.minute = 0;
+        m_monitor[i].eventRising.second = 0;
+        m_monitor[i].eventRising.vscp_class = VSCP_CLASS1_INFORMATION;
+        m_monitor[i].eventRising.vscp_type = VSCP_TYPE_INFORMATION_RISING;
+        m_monitor[i].eventRising.head = 0;
+        m_monitor[i].eventRising.sizeData = 3;
+        memset( m_monitor[i].eventRising.data, 0, VSCP_MAX_DATA );
+        memset( m_monitor[i].eventRising.GUID, 0, 16 );
+
+        m_monitor[i].eventWatchdog.obid = 0;
+        m_monitor[i].eventWatchdog.timestamp = 0;
+        m_monitor[i].eventWatchdog.year = 0;
+        m_monitor[i].eventWatchdog.month = 0;
+        m_monitor[i].eventWatchdog.day = 0;
+        m_monitor[i].eventWatchdog.hour = 0;
+        m_monitor[i].eventWatchdog.minute = 0;
+        m_monitor[i].eventWatchdog.second = 0;
+        m_monitor[i].eventWatchdog.vscp_class = VSCP_CLASS1_ALARM;
+        m_monitor[i].eventWatchdog.vscp_type = VSCP_TYPE_ALARM_WATCHDOG;
+        m_monitor[i].eventWatchdog.head = 0;
+        m_monitor[i].eventWatchdog.sizeData = 3;
+        memset( m_monitor[i].eventWatchdog.data, 0, VSCP_MAX_DATA );
+        memset( m_monitor[i].eventWatchdog.GUID, 0, 16 );
     }
 
     pthread_mutex_init( &m_mutex_SendQueue, NULL );
@@ -1705,66 +1725,71 @@ void *workerThread( void *data )
     // Setup pin functionality
 
     // Init. input pins
-    std::list<CGpioInput *>::const_iterator it1;
-    for ( it1 = pObj->m_inputPinList.begin(); it1 != pObj->m_inputPinList.end(); ++it1 ) {
+    {
+        std::list<CGpioInput *>::const_iterator it;
+        for ( it = pObj->m_inputPinList.begin(); 
+                it != pObj->m_inputPinList.end(); 
+                ++it ) {
        
-        CGpioInput *pGpioInput = *it1;
+            CGpioInput *pGpioInput = *it;
         
-        if ( NULL != pGpioInput ) {
+            if ( NULL != pGpioInput ) {
 
             // Set as input
 #ifdef USE_PIGPIOD            
-            set_mode( pgpiod_session_id, pGpioInput->getPin(), PI_INPUT );
+                set_mode( pgpiod_session_id, pGpioInput->getPin(), PI_INPUT );
 #else            
-            gpioSetMode( pGpioInput->getPin(), PI_INPUT );
+                gpioSetMode( pGpioInput->getPin(), PI_INPUT );
 #endif            
 
             // Set pullups
 #ifdef USE_PIGPIOD
-            set_pull_up_down( pgpiod_session_id, 
-                                pGpioInput->getPin(), 
-                                pGpioInput->getPullUp() );
-#else            
-            gpioSetPullUpDown( pGpioInput->getPin(), 
+                set_pull_up_down( pgpiod_session_id, 
+                                    pGpioInput->getPin(), 
                                     pGpioInput->getPullUp() );
+#else            
+                gpioSetPullUpDown( pGpioInput->getPin(), 
+                                        pGpioInput->getPullUp() );
 #endif            
 
-            // Define watchdog value
-            if ( pGpioInput->getWatchdog() ) {
+                // Define watchdog value
+                if ( pGpioInput->getWatchdog() ) {
 #ifdef USE_PIGPIOD                
-                set_watchdog( pgpiod_session_id, 
-                                pGpioInput->getPin(), 
-                                pGpioInput->getWatchdog() );
-#else                                
-                gpioSetWatchdog( pGpioInput->getPin(), 
+                    set_watchdog( pgpiod_session_id, 
+                                    pGpioInput->getPin(), 
                                     pGpioInput->getWatchdog() );
+#else                                
+                    gpioSetWatchdog( pGpioInput->getPin(), 
+                                        pGpioInput->getWatchdog() );
 #endif                                    
-            }
+                }
 
-            // Define noise filter value
-            if ( pGpioInput->getNoiseFilterSteady() ) {
+                // Define noise filter value
+                if ( pGpioInput->getNoiseFilterSteady() ) {
 #ifdef USE_PIGPIOD                 
-                set_noise_filter( pgpiod_session_id,
-                                    pGpioInput->getPin(), 
-                                    pGpioInput->getNoiseFilterSteady(),
-                                    pGpioInput->getNoiseFilterActive() );
+                    set_noise_filter( pgpiod_session_id,
+                                        pGpioInput->getPin(), 
+                                        pGpioInput->getNoiseFilterSteady(),
+                                        pGpioInput->getNoiseFilterActive() );
 #else                                    
-                gpioNoiseFilter( pGpioInput->getPin(), 
-                                    pGpioInput->getNoiseFilterSteady(),
-                                    pGpioInput->getNoiseFilterActive() );
+                    gpioNoiseFilter( pGpioInput->getPin(), 
+                                        pGpioInput->getNoiseFilterSteady(),
+                                        pGpioInput->getNoiseFilterActive() );
 #endif                                    
-            }
+                }
 
-            // Define glitch filter value
-            if ( pGpioInput->getGlitchFilter() ) {
+                // Define glitch filter value
+                if ( pGpioInput->getGlitchFilter() ) {
 #ifdef USE_PIGPIOD
-                set_glitch_filter( pgpiod_session_id,
-                                    pGpioInput->getPin(), 
-                                    pGpioInput->getGlitchFilter() );
-#else                
-                gpioGlitchFilter( pGpioInput->getPin(), 
+                    set_glitch_filter( pgpiod_session_id,
+                                        pGpioInput->getPin(), 
                                         pGpioInput->getGlitchFilter() );
+#else                
+                    gpioGlitchFilter( pGpioInput->getPin(), 
+                                            pGpioInput->getGlitchFilter() );
 #endif                                        
+                }
+
             }
 
         }
@@ -1772,72 +1797,82 @@ void *workerThread( void *data )
     }
 
     // Init. output pins
-    std::list<CGpioOutput *>::const_iterator it2;
-    for (it2 = pObj->m_outputPinList.begin(); it2 != pObj->m_outputPinList.end(); ++it2) {
+    {
+        std::list<CGpioOutput *>::const_iterator it;
+        for ( it = pObj->m_outputPinList.begin(); 
+                it != pObj->m_outputPinList.end(); 
+                ++it ) {
 
-        CGpioOutput *pGpioOutput = *it2;
+            CGpioOutput *pGpioOutput = *it;
         
-        if ( NULL != pGpioOutput ) {
+            if ( NULL != pGpioOutput ) {
 #ifdef USE_PIGPIOD            
-            set_mode( pgpiod_session_id, pGpioOutput->getPin(), PI_OUTPUT );
+                set_mode( pgpiod_session_id, pGpioOutput->getPin(), PI_OUTPUT );
 #else             
-            gpioSetMode( pGpioOutput->getPin(), PI_OUTPUT );
+                gpioSetMode( pGpioOutput->getPin(), PI_OUTPUT );
 #endif            
-            if ( ( 0 == pGpioOutput->getInitialState() ) || 
-                 ( 1 == pGpioOutput->getInitialState() ) ) {
+                if ( ( 0 == pGpioOutput->getInitialState() ) || 
+                     ( 1 == pGpioOutput->getInitialState() ) ) {
 #ifdef USE_PIGPIOD
-                gpio_write( pgpiod_session_id,
-                            pGpioOutput->getPin(), 
-                            pGpioOutput->getInitialState() ) ;
+                    gpio_write( pgpiod_session_id,
+                                pGpioOutput->getPin(), 
+                                pGpioOutput->getInitialState() ) ;
 #else                     
-                gpioWrite( pGpioOutput->getPin(), 
-                            pGpioOutput->getInitialState() ) ;
+                    gpioWrite( pGpioOutput->getPin(), 
+                                pGpioOutput->getInitialState() ) ;
 #endif                            
-            }
-        }
+                }
 
+            }
+
+        }   
     }
 
     // Init. pwm pins
-    std::list<CGpioPwm *>::const_iterator it3;
-    for ( it3 = pObj->m_pwmPinList.begin(); it3 != pObj->m_pwmPinList.end(); ++it3) {
+    {
+        std::list<CGpioPwm *>::const_iterator it;
+        for ( it = pObj->m_pwmPinList.begin(); 
+                it != pObj->m_pwmPinList.end(); 
+                ++it) {
 
-        CGpioPwm *pGpioPwm = *it3;
+            CGpioPwm *pGpioPwm = *it;
 
-        if ( NULL != pGpioPwm ) {
+            if ( NULL != pGpioPwm ) {
         
-            // Hardware PWM settings
-            if ( pGpioPwm->isHardwarePwm() ) {
+                // Hardware PWM settings
+                if ( pGpioPwm->isHardwarePwm() ) {
 #ifdef USE_PIGPIOD
-                hardware_PWM( pgpiod_session_id, 
-                                pGpioPwm->getPin(), 
-                                pGpioPwm->getFrequency(), 
-                                pGpioPwm->getDutyCycle() );
-#else
-                gpioHardwarePWM( pGpioPwm->getPin(), 
-                                    pGpioPwm->getFrequency(), 
-                                    pGpioPwm->getDutyCycle() );            
-#endif                                    
-            }
-            else {
-#ifdef USE_PIGPIOD
-                set_mode( pgpiod_session_id, pGpioPwm->getPin(), PI_OUTPUT );
-                set_PWM_frequency( pgpiod_session_id, pGpioPwm->getPin(), 
-                                    pGpioPwm->getFrequency() );
-                set_PWM_range( pgpiod_session_id, pGpioPwm->getPin(), 
-                                    pGpioPwm->getRange() ) ;
-                   
-                set_PWM_dutycycle( pgpiod_session_id, 
+                    hardware_PWM( pgpiod_session_id, 
                                     pGpioPwm->getPin(), 
-                                    pGpioPwm->getDutyCycle() ) ;
-#else                
-                gpioSetMode( pGpioPwm->getPin(), PI_OUTPUT );
-                gpioSetPWMfrequency( pGpioPwm->getPin(), 
+                                    pGpioPwm->getFrequency(), 
+                                    pGpioPwm->getDutyCycle() );
+#else
+                    gpioHardwarePWM( pGpioPwm->getPin(), 
+                                        pGpioPwm->getFrequency(), 
+                                        pGpioPwm->getDutyCycle() );            
+#endif                                    
+                }
+                else {
+#ifdef USE_PIGPIOD
+                    set_mode( pgpiod_session_id, pGpioPwm->getPin(), PI_OUTPUT );
+                    set_PWM_frequency( pgpiod_session_id, pGpioPwm->getPin(), 
                                         pGpioPwm->getFrequency() );
-                gpioSetPWMrange( pGpioPwm->getPin(), 
-                                    pGpioPwm->getRange() ) ;
-                gpioPWM( pGpioPwm->getPin(), pGpioPwm->getDutyCycle() ) ;     
+                    set_PWM_range( pgpiod_session_id, pGpioPwm->getPin(), 
+                                        pGpioPwm->getRange() ) ;
+                   
+                    set_PWM_dutycycle( pgpiod_session_id, 
+                                        pGpioPwm->getPin(), 
+                                        pGpioPwm->getDutyCycle() ) ;
+#else                
+                    gpioSetMode( pGpioPwm->getPin(), PI_OUTPUT );
+                    gpioSetPWMfrequency( pGpioPwm->getPin(), 
+                                            pGpioPwm->getFrequency() );
+                    gpioSetPWMrange( pGpioPwm->getPin(), 
+                                        pGpioPwm->getRange() ) ;
+                    gpioPWM( pGpioPwm->getPin(), pGpioPwm->getDutyCycle() ) ;     
 #endif                
+                }
+
             }
 
         }
@@ -1845,23 +1880,93 @@ void *workerThread( void *data )
     }
 
     // Init. clock pins
-    std::list<CGpioClock *>::const_iterator it4;
-    for ( it4 = pObj->m_gpioClockPinList.begin(); it4 != pObj->m_gpioClockPinList.end(); ++it4 ) {
+    {
+        std::list<CGpioClock *>::const_iterator it;
+        for ( it = pObj->m_gpioClockPinList.begin(); 
+                it != pObj->m_gpioClockPinList.end(); 
+                ++it ) {
 
-        CGpioClock *pGpioClock = *it4;
+            CGpioClock *pGpioClock = *it;
         
-        if ( NULL != pGpioClock ) {
+            if ( NULL != pGpioClock ) {
 #ifdef USE_PIGPIOD
-            hardware_clock( pgpiod_session_id, 
-                                pGpioClock->getPin(), 
-                                pGpioClock->getFrequency() );
+                hardware_clock( pgpiod_session_id, 
+                                    pGpioClock->getPin(), 
+                                    pGpioClock->getFrequency() );
 #else            
-            gpioHardwareClock( pGpioClock->getPin(), 
-                                pGpioClock->getFrequency() );
+                gpioHardwareClock( pGpioClock->getPin(), 
+                                    pGpioClock->getFrequency() );
 #endif            
-        }
+            }
         
+        }
     }
+
+    // Monitor
+    /*
+    uint32_t monitor_bits = 0;
+    {
+        std::list<CGpioMonitor *>::const_iterator it;
+        for ( it = pObj->m_monitorPinList.begin(); 
+                it != pObj->m_monitorPinList.end(); 
+                ++it ) {
+
+            CGpioMonitor *pGpioMonitor = *it;
+            if ( pGpioMonitor->getPin() <= 31 ) {
+                monitor_bits |= ( 1 << pGpioMonitor->getPin() );
+            }
+
+        }
+    }
+    */
+
+#ifdef USE_PIGPIOD
+/*
+    int pipeNotify;
+    if ( PI_NO_HANDLE == ( pipeNotify = notify_open( pgpiod_session_id ) ) ) {
+        syslog( LOG_ERR,
+				    "%s %s ",
+                    (const char *)VSCP_RPIGPIO_SYSLOG_DRIVER_ID,
+				    (const char *)"Unable to get notify pipe."  );
+#ifdef USE_PIGPIOD
+        pigpio_stop( pgpiod_session_id );
+#else    
+        gpioTerminate();
+#endif
+        return NULL;
+    }
+
+    int fdPipeNotify;
+    std::string pipePath = vscp_string_format("/dev/pigpio%d", pipeNotify );
+    
+    if ( -1 == ( fdPipeNotify = open( pipePath.c_str(), O_NONBLOCK | O_RDONLY ) ) ) {
+        syslog( LOG_ERR,
+				    "%s %s [%s]",
+                    (const char *)VSCP_RPIGPIO_SYSLOG_DRIVER_ID,
+				    (const char *)"Unable to open notify pipe.", 
+                    pipePath.c_str() );
+#ifdef USE_PIGPIOD
+        pigpio_stop( pgpiod_session_id );
+#else    
+        gpioTerminate();
+#endif                    
+        return NULL;
+    }
+
+    notify_begin( pgpiod_session_id, pipeNotify, 1 );
+*/
+    
+    for ( unsigned pin=0; pin<32; pin++ ) {
+        if ( pObj->m_monitor[ pin ].bEnable ) {
+            callback_ex( pgpiod_session_id, 
+                            pin, 
+                            pObj->m_monitor[ pin ].edge, 
+                            monitor_callback, 
+                            (void *)pObj );
+        }
+    }
+
+#endif    
 
     /*reportStruct *preport = new reportStruct;
     preport->id = 0;
@@ -1872,7 +1977,7 @@ void *workerThread( void *data )
         
         struct timespec ts;
         ts.tv_sec = 0;
-        ts.tv_nsec = 500000000;    // 500 ms
+        ts.tv_nsec = 100000000;    // 100 ms
       
         if ( ETIMEDOUT != sem_timedwait( &pObj->m_semaphore_SendQueue, &ts ) ) {
            
@@ -1989,7 +2094,7 @@ void *workerThread( void *data )
                                             ex.data[2] = pObj->getSubzone();
 
 #ifdef USE_PIGPIOD
-                                            if ( 1 /*gpio_read( pgpiod_session_id, pin )*/ ) {
+                                            if ( gpio_read( pgpiod_session_id, pin ) ) {
 #else
                                             if ( gpioRead( pin ) ) {
 #endif                                                
@@ -2032,7 +2137,7 @@ void *workerThread( void *data )
                                             ex.data[2] = pObj->getSubzone();
 
 #ifdef USE_PIGPIOD
-                                            if ( 0/*gpio_read( pgpiod_session_id, pin )*/ ) {
+                                            if ( gpio_read( pgpiod_session_id, pin ) ) {
 #else
                                             if ( gpioRead( pin ) ) {
 #endif
@@ -2234,12 +2339,86 @@ void *workerThread( void *data )
 
             } // Event in queue
 
-        }
+        } // if *not* timeout
+#ifdef USE_PIGPIOD        
+        /*else {
+            gpioReport_t report;
+            ssize_t nread = read( fdPipeNotify, &report, sizeof( report ) );
+            if ( nread == sizeof( report ) ) {
+                if ( report.flags | PI_NTFY_FLAGS_WDOG ) {
+                    uint8_t pin = PI_NTFY_FLAGS_EVENT & 0x1f;
+                    if ( pObj->m_monitor[pin].bEnable ) {
+                        pObj->m_monitor[pin].eventWatchdog.data[0] = pin;
+                        sendEvent( pObj, pObj->m_monitor[pin].eventWatchdog );
+                    }
+                }
+                else if ( report.flags | PI_NTFY_FLAGS_ALIVE ) {
+                    ; // We do nothing
+                }
+                else if ( report.flags | PI_NTFY_FLAGS_EVENT ) {
+
+                    // Get the pin that generated the even)
+                    uint8_t pin = PI_NTFY_FLAGS_EVENT & 0x1f;
+
+                    switch ( PI_NTFY_FLAGS_EVENT & 0x1f ) {
+                    
+                        case RISING_EDGE:
+                            if ( pObj->m_monitor[pin].bEnable ) {
+                                pObj->m_monitor[pin].eventRising.data[0] = pin;
+                                sendEvent( pObj, pObj->m_monitor[pin].eventRising );
+                            }
+                            break;
+                    
+                        case FALLING_EDGE:
+                            if ( pObj->m_monitor[pin].bEnable ) {
+                                pObj->m_monitor[pin].eventFalling.data[0] = pin;
+                                sendEvent( pObj, pObj->m_monitor[pin].eventFalling );
+                            }
+                            break;  
+                    
+                        default:
+                        case EITHER_EDGE:
+                            break;  
+
+                    }
+
+                }
+            }
+        }*/
+#endif     
+        timeval curTime;
+        gettimeofday( &curTime, NULL );
+        uint32_t now = 1000 * curTime.tv_sec + ( curTime.tv_usec / 1000 );
+
+        for ( int i=0; i<10; i++ ) {
+            if ( ( pObj->m_reporters[ i ].bEnable ) &&
+                 ( (uint32_t)( now - pObj->m_reporters[ i ].last ) > pObj->m_reporters[ i ].period ) ) {
+                pObj->m_reporters[ i ].last = now;
+
+#ifdef USE_PIGPIOD
+                int pin = gpio_read( pgpiod_session_id, pObj->m_reporters[ i ].pin );
+#else
+                int pin = gpioRead( pObj->m_reporters[ i ].pin );
+#endif                
+                if ( pin ) {
+                    pObj->m_reporters[ i ].eventHigh.data[0] = pin;
+                    sendEvent( pObj, pObj->m_reporters[ i ].eventHigh );
+                }
+                else {
+                    pObj->m_reporters[ i ].eventHigh.data[0] = pin;
+                    sendEvent( pObj, pObj->m_reporters[ i ].eventLow );
+                }
+            }
+        }        
 
     } // while
 
     // Quit gpio library functionality
 #ifdef USE_PIGPIOD
+    // Close pipe handling
+    /*notify_close( pgpiod_session_id, pipeNotify );
+    close( fdPipeNotify );*/
+    // Close lib
     pigpio_stop( pgpiod_session_id );
 #else    
     gpioTerminate();
@@ -2248,6 +2427,55 @@ void *workerThread( void *data )
     return NULL;
 }
 
+//////////////////////////////////////////////////////////////////////
+// Monitor callback
+//
+//  typedef void (*CBFuncEx_t)
+//      (int handle, unsigned user_gpio, unsigned level, uint32_t tick, void * user);
+//
+
+static void monitor_callback( int handle, 
+                                    unsigned gpio, 
+                                    unsigned edge, 
+                                    uint32_t tick, 
+                                    void *userdata ) 
+{
+    CRpiGpio *pObj = (CRpiGpio *)userdata;
+    if ( NULL == pObj ) return;
+
+    // Get the pin that generated the even
+    uint8_t pin = gpio;
+    //printf("Callback %d %d\n", gpio, edge );
+    switch ( edge ) {
+    
+        case 0: // FALLING_EDGE
+            if ( pObj->m_monitor[pin].bEnable ) {
+                pObj->m_monitor[pin].eventFalling.data[0] = pin;
+                sendEvent( pObj, pObj->m_monitor[pin].eventFalling );
+                //printf("Falling %d %d\n", pin, edge );
+            }
+            break;
+
+        case 1: // RISING_EDGE
+            if ( pObj->m_monitor[pin].bEnable ) {
+                pObj->m_monitor[pin].eventRising.data[0] = pin;
+                sendEvent( pObj, pObj->m_monitor[pin].eventRising );
+                //printf("Rising %d %d\n", gpio, edge );
+            }
+            break;
+    
+        default:
+        case 2: // Watchdog
+            if ( pObj->m_monitor[pin].bEnable ) {
+                pObj->m_monitor[pin].eventWatchdog.data[0] = pin;
+                sendEvent( pObj, pObj->m_monitor[pin].eventWatchdog );
+                printf("Watchdog %d %d\n", gpio, edge );
+            }
+            break;
+
+    }
+
+ }
 
 //////////////////////////////////////////////////////////////////////
 // Report callbacks (called at timed intervals)
