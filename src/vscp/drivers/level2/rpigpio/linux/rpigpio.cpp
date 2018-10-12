@@ -238,7 +238,7 @@ CGpioPwm::CGpioPwm()
 {
     m_pin = 18;
     m_bHardware = false;
-    m_range = 1024;
+    m_range = 0;
     m_frequency = 0;
 }
 
@@ -1185,6 +1185,16 @@ startSetupParser( void *data, const char *name, const char **attr )
                     pPwmObj->setPin( vscp2_readStringValue( attribute ) );
                 }
 
+                // Get duty cycle
+                else if ( 0 == strcmp( attr[i], "duty") ) {
+                    pPwmObj->setDutyCycle( vscp2_readStringValue( attribute ) );
+                }
+
+                // Get duty cycle (alternative keyword)
+                else if ( 0 == strcmp( attr[i], "dutycycle") ) {
+                    pPwmObj->setDutyCycle( vscp2_readStringValue( attribute ) );
+                }
+
                 // Get hardware flag
                 else if ( 0 == strcmp( attr[i], "hardware") ) {
                     
@@ -1855,20 +1865,36 @@ void *workerThread( void *data )
                 else {
 #ifdef USE_PIGPIOD
                     set_mode( pgpiod_session_id, pGpioPwm->getPin(), PI_OUTPUT );
-                    set_PWM_frequency( pgpiod_session_id, pGpioPwm->getPin(), 
-                                        pGpioPwm->getFrequency() );
-                    set_PWM_range( pgpiod_session_id, pGpioPwm->getPin(), 
+
+                    printf("Frequency = %d \n", pGpioPwm->getFrequency() );
+                    if ( 0 != pGpioPwm->getFrequency() ) {
+                        set_PWM_frequency( pgpiod_session_id, pGpioPwm->getPin(), 
+                                            pGpioPwm->getFrequency() );
+                    }
+
+                    printf("Range = %d \n", pGpioPwm->getRange() );
+                    if ( 0 != pGpioPwm->getRange() ) {
+                        set_PWM_range( pgpiod_session_id, pGpioPwm->getPin(), 
                                         pGpioPwm->getRange() ) ;
+                    }
                    
+                    printf("Duty = %d \n", pGpioPwm->getDutyCycle() );
                     set_PWM_dutycycle( pgpiod_session_id, 
                                         pGpioPwm->getPin(), 
                                         pGpioPwm->getDutyCycle() ) ;
 #else                
                     gpioSetMode( pGpioPwm->getPin(), PI_OUTPUT );
-                    gpioSetPWMfrequency( pGpioPwm->getPin(), 
+
+                    if ( 0 != pGpioPwm->getFrequency() ) {
+                        gpioSetPWMfrequency( pGpioPwm->getPin(), 
                                             pGpioPwm->getFrequency() );
-                    gpioSetPWMrange( pGpioPwm->getPin(), 
-                                        pGpioPwm->getRange() ) ;
+                    }
+
+                    if ( 0 != pGpioPwm->getRange() ) {
+                        gpioSetPWMrange( pGpioPwm->getPin(), 
+                                            pGpioPwm->getRange() ) ;
+                    }
+
                     gpioPWM( pGpioPwm->getPin(), pGpioPwm->getDutyCycle() ) ;     
 #endif                
                 }
@@ -2165,8 +2191,31 @@ void *workerThread( void *data )
                                         uint8_t pin = (uint8_t)pDM->getArg( 0 );
                                         uint32_t dutycycle = pDM->getArg( 1 );
                                         
+                                        if ( ( VSCP_CLASS1_CONTROL == pEvent->vscp_class ) &&
+                                             ( VSCP_TYPE_CONTROL_CHANGE_LEVEL == pEvent->vscp_type ) ) {
+                                            if ( ( NULL != pEvent->pdata ) && ( 1 >= pEvent->sizeData ) ) {
+                                                dutycycle = pEvent->pdata[0];
+                                            }
+                                        }
+                                        else if ( ( VSCP_CLASS1_CONTROL == pEvent->vscp_class ) &&
+                                                  ( VSCP_TYPE_CONTROL_BIG_CHANGE_LEVEL == pEvent->vscp_type ) ) {
+                                            if ( ( NULL != pEvent->pdata ) && ( 4 >= pEvent->sizeData ) ) {
+                                                dutycycle = 0;
+                                                int nBytes = pEvent->sizeData - 4; 
+                                                for ( int i=0; i<nBytes; i++ ) {
+                                                    dutycycle += pEvent->pdata[ 3 + i ] << ( (7-i) * 8 );
+                                                }
+                                            }
+                                        }                                      
+                                        
                                         if ( pin <= 31 ) {
+#ifdef USE_PIGPIOD
+                                            set_PWM_dutycycle( pgpiod_session_id, 
+                                                                pin, 
+                                                                dutycycle ) ;                                         
+#else                                            
                                             gpioPWM( pin, dutycycle );
+#endif                                            
                                         }
                                         else {
                                             syslog( LOG_ERR,
@@ -2185,7 +2234,12 @@ void *workerThread( void *data )
                                         ex.data[1] = pObj->getZone();
                                         ex.data[2] = pObj->getSubzone();
 
+#ifdef USE_PIGPIOD
+                                        int duty_cycle = get_PWM_dutycycle( pgpiod_session_id,
+                                                                                pin );
+#else
                                         int duty_cycle = gpioGetPWMdutycycle( pin );
+#endif
 
                                         if ( 0xff >= duty_cycle ) {
                                             ex.sizeData = 4;
@@ -2209,14 +2263,6 @@ void *workerThread( void *data )
                                             ex.data[5] = 0xff & ( duty_cycle >> 8 );
                                             ex.data[6] = 0xff & duty_cycle;
                                         }
-                                        /*else if ( 0xffffffffff >= duty_cycle ) {
-                                            ex.sizeData = 8;
-                                            ex.data[3] = 0xff & ( duty_cycle >> 32 );
-                                            ex.data[4] = 0xff & ( duty_cycle >> 24 );
-                                            ex.data[5] = 0xff & ( duty_cycle >> 16 );
-                                            ex.data[6] = 0xff & ( duty_cycle >> 8 );
-                                            ex.data[7] = 0xff & duty_cycle;
-                                        }*/
 
                                         sendEvent( pObj, ex );
 
@@ -2234,8 +2280,6 @@ void *workerThread( void *data )
                                         uint8_t zone = 0;
                                         uint8_t subzone = 0;
 
-                                        
-                                        
                                         if ( pin > 53 ) {
                                             syslog( LOG_ERR,
 				                                        "%s %s pin=%d",
@@ -2244,7 +2288,11 @@ void *workerThread( void *data )
                                                         (int)pin );
                                         }
 
+#ifdef USE_PIGPIOD
+                                        int level = gpio_read( pgpiod_session_id, pin );
+#else
                                         int level = gpioRead( pin );
+#endif                                        
                                         if ( PI_BAD_GPIO == level ) {
                                             syslog( LOG_ERR,
 				                                        "%s %s pin=%d",
@@ -2284,7 +2332,13 @@ void *workerThread( void *data )
                                         uint32_t pulsewidth = pDM->getArg( 0 );
                                         
                                         if ( pin <= 31 ) {
+#ifdef USE_PIGPIOD
+                                            set_servo_pulsewidth( pgpiod_session_id, 
+                                                                    pin, 
+                                                                    pulsewidth );
+#else                                            
                                             gpioServo( pin, pulsewidth );
+#endif                                            
                                         }
                                         else {
                                             syslog( LOG_ERR,
@@ -2304,7 +2358,12 @@ void *workerThread( void *data )
                                         ex.data[2] = pObj->getSubzone();
 
                                         // 0 (off), 500 (most anti-clockwise) to 2500 (most clockwise). 
+#ifdef USE_PIGPIOD
+                                        int pulse_width = get_servo_pulsewidth( pgpiod_session_id,
+                                                                                pin );
+#else                                        
                                         int pulse_width = gpioGetServoPulsewidth( pin );
+#endif                                        
 
                                         if ( 0xff >= pulse_width ) {
                                             ex.sizeData = 4;

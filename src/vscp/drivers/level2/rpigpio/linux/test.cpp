@@ -267,7 +267,7 @@ else if ( 2 == ntest ) {
 }
 else if ( 3 == ntest ) {
 
-	printf("RUNNING TEST 3 - Reports test on pin 27 (ctrl+D to terminate)\n");
+	printf("RUNNING TEST 3 - Reports test on pin 27 (ctrl+C to terminate)\n");
 	printf("-------------------------------------------------------------\n\n");
 
 	cnt = 0;
@@ -280,11 +280,69 @@ else if ( 3 == ntest ) {
 		        "rpi3",
 		        TEST_CONFIG);
 	
-	printf("Waiting for twenty report events with status for on BCM 27.\n");
+	printf("Waiting for ever for report events with status for on BCM 27.\n");
 	printf("w 22 1 w 22 0w 22 1 w 22 0 w 22 1 w 22 0 w 22 1 w 22 0\n");
 
 	cnt = 0;
- 	while ( cnt < 20 ) {
+ 	while ( true ) {
+
+		vscpEvent *pEvent;
+		
+		if ( !vscp_newVSCPevent( &pEvent ) ) {
+			printf("Failed to create event!\n");
+			exit( -1 );
+		}
+
+		if ( CANAL_ERROR_SUCCESS == BlockingReceive( &gpio, pEvent, 1000 ) ) {
+			if ( NULL != pEvent ) {
+				cnt++;
+				printf("%d - Got event with class=%d, type=%d, size=%d\n", 
+						cnt,
+						pEvent->vscp_class,
+						pEvent->vscp_type,
+						pEvent->sizeData );		
+			}
+		}
+
+		if ( NULL != pEvent ) {			
+			vscp_deleteVSCPevent_v2( &pEvent );
+		}
+
+	}
+
+	printf("Close gpio\n");
+	gpio.close();
+}
+
+else if ( 4 == ntest ) {
+
+	printf("RUNNING TEST 4 - PWM test on pin 27 (ctrl+C to terminate)\n");
+	printf("---------------------------------------------------------\n\n");
+
+	cnt = 0;
+
+	printf("Open gpio\n");
+    gpio.open( TEST_USER,
+		        TEST_PASSWORD,
+		        TEST_HOST,
+		        TEST_PORT,
+		        "rpi4",
+		        TEST_CONFIG);
+	
+	printf("0.3098 ms 800Hz, 25%% duty cycle on BCM 26.  Press any key to change duty cycle tp 50\n");
+	char c = getchar();
+
+	printf("0.3098 ms 800Hz, 50%% duty cycle on BCM 26.  Press any key to change duty cycle tp 75\n");
+	c = getchar();
+
+	printf("0.3098 ms 800Hz, 75%% duty cycle on BCM 26.  Press any key to change duty cycle tp 75\n");
+	c = getchar();
+
+	printf("BCM 26.  Press any key to change duty cycle tp 75%%\n");
+	c = getchar();
+
+	cnt = 0;
+ 	while ( true ) {
 
 		vscpEvent *pEvent;
 		

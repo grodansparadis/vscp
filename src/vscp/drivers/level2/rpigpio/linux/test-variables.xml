@@ -39,6 +39,7 @@
 // tesing input port monitoring BCM 27
 // BCM 22 is output
 // Connect BCM22 and BCM 27 togheter to test
+// pigs s here http://abyz.me.uk/rpi/pigpio/pigs.html
 -->
 
 <setup>
@@ -77,7 +78,7 @@
 
 <!-- 
         With watchdog
-        Give watchdog message every secodn if no activity on pin 27
+        Give watchdog message every second if no activity on pin 27
 -->
 
 <setup>
@@ -115,7 +116,7 @@
 
 <!-- 
         rpi3_setup 
-        Report status if BCM 27 every second. 
+        Report status of BCM 27 every second. 
         (connect to BCM 22 and change state with pig 22 0/1)
 -->
 

@@ -267,8 +267,14 @@ CLASS1.INFORMATION, Type=4, OFF	 index = pin
 **action-parameter** is comma separated list with pins to turn off.
 pins must be defined as an output.
 
+#### Status
+Return status for output pin. Can be used for sync events etc.
+CLASS1.INFORMATION, Type=3, ON   index = pin
+CLASS1.INFORMATION, Type=4, OFF	 index = pin
+action parameter: pin, zone, subzone
+
 #### PWM
-Generate hard/spof pwm signal on output pin. Default range of 255
+Generate hard/soft pwm signal on output pin. Default range of 255
 
 CLASS1.INFORMATION, Type=3, ON   index = pin
 CLASS1.INFORMATION, Type=4, OFF	 index = pin
@@ -307,11 +313,7 @@ action-parameter is: pin, offset to data byte(s) to shift out  CLASS1.CONTROL, T
 Shift in data on input pin.
 action-paramter: pin, # bytes (1-7), data coding  CLASS1.DATA
 
-#### Status
-Return status for output pin. Can be used for sync events etc.
-CLASS1.INFORMATION, Type=3, ON   index = pin
-CLASS1.INFORMATION, Type=4, OFF	 index = pin
-action parameter: pin, zone, subzone
+
 
 ## Sample setup
 
