@@ -45,7 +45,7 @@
 #ifdef USE_PIGPIOD
 #include <pigpiod_if2.h>
 #else
-    #include <pigpio.h>
+#include <pigpio.h>
 #endif
 
 // Undef to get extra debug info to syslog
