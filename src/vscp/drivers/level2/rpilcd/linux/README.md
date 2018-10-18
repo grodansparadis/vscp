@@ -30,7 +30,7 @@ Use **raspi-config** to enable the I2C interface hardware drivers.
 
 ## XML Configuration
 
-The configuration can be fetched from the driver configuration as BASE64 encoded XML data or from the server starting the driver from a XML varible **name_setup** where **name** is the driver-name used in the driver configuration above.
+The configuration can be fetched from the driver configuration as BASE64 encoded XML data or from the server starting the driver from a XML variable **name_setup** where **name** is the driver-name used in the driver configuration above.
 
 The XML configuration have the following format
 
@@ -45,51 +45,85 @@ The XML configuration have the following format
                 backlight="true|false"
                 cursor-type="block|line"
                 cursor="true|false"
-                start-text="line0\n\line1\n..." >
-    </interface>                
+                start-text="line0\n\line1\n..."
+                auto="true|false >
+
+        <format id="n" line="0" pos="0" template=""/>
+
+        <page id="n" 
+                clear="true|false"
+                format="n" 
+                line="n" 
+                row="n" 
+                wait="seconds" />
+
+    </interface>
 </setup>
 ```
-There can be more than one <interface> tag but they must use different bus id's (0/1).
+There can be more than one <interface> tag but they must use different bus id's (0/1) and address combinations.
 
-  * **enable** - Interface row is valid.
+  * **enable** - Interface row is valid. Interface will not be used if disabled.
   * **bus** - I2C channel to use.
+  * **address** - I2C addess to use (default is 0x27).
   * **rows** - Number of rows for display.
   * **width** - Display width.
   * **on** - The display will be turned on/off from start.
   * **backlight** - Backlight will be on or off from start.
   * **cursor-type** - Set the cursor type. line or block cursor.
-  * **cursor** - Cureos eill be on or off from start.
+  * **cursor** - Cursor will be on or off from start.
+  * **auto** - The auto mode show a number of pages in a round robin fashion. Pages (at least one) must be defined with the <page> tag.
+  * **start-text** - Initial text om the LCD. This text can be given BASE64 encoded if preceded with BASE64:
 
-## Decision Matrix (DM)
+### <format>
 
-The work for the driver is mostly done in the decision matrix. That is received event data is displayed when the data arrive.
-
-<format id="n" line="0" pos="0" template=""/>
-
- * **id** Unique id or this format.
+ * **id** Unique id or this format deinition.
  * **line** Line to put cursor at. Empty for current pos.
  * **pos** Horisontal pos to put cursor at. Empty for current pos. 
  * **template**  printf format template for data. Time and date 
 
+### <page>
+
+The auto mode show a number of pages in a round robin fashion. 
+
+ * **id** - This is the sort order for the page.
+ * **clear** - Clear display before printing.
+ * **format** - This is the format id used. Leave out format or set to -1 for no format.
+ * **row** - This is the row where the formated string is put.
+ * **pos** - This is the pos where the formated string is put.
+ * **wait** - Time in seconds that the information is shown. Can be zero. Typically used for update of several rows as a "page". In this case the wait is in the last update.
+
+## Decision Matrix (DM)
+
+The work for the driver is mostly done in the decision matrix. That is received event data is displayed when the data arrive or events trigger other actions.
+
 ### Actions
+
+Actions are validated with CLASS1.INFORMATION, Type=32 (VSCP_TYPE_INFORMATION_ACTION_TRIGGER) event.
+
  * **noop** - No operation.
  * **measurement** - Print measurement value. Argument is template id. Measurements are always expressed as a double precision floating point number so the template should be designed according to that.
+ * **text** - Output text. Argument text;line;pos  If line/pos is not give outputs at cursor.
  * **data** - Print event data. Argument is template id;data;....
  * **time** - Print time. Argument is template-id;line;pos
  * **date** - Print date. Argument is template-id;line;pos
  * **clear** - Clear screen.
- * **cblockon** - Block cursor on.
- * **cblockoff** - Block cursor off.
- * **clineon** - Line cursor on.
- * **clineoff** - Line cursor off.
+ * **cursblkon** - Block cursor on.
+ * **curscblkoff** - Block cursor off.
+ * **curslineon** - Line cursor on.
+ * **curslineoff** - Line cursor off.
  * **moveto** - Move to new location. Argument is *line;pos*
  * **shiftr** - Shift right. Argument is number of steps. Default is one step.
  * **shiftl** - Shift left. Argument is number of steps. Default is one step.
  * **putc** - Put character at position. Atgument is *char;line;pos*
- * **blank** - Bland display.
+ * **blank** - Blank display.
  * **restore** - Restore display.
  * **blon** - Backlight on.
  * **bloff** - Backlight off.
+ * **nextpg** - Go to next auto page.
+ * **prevpg** - go to previous auto page.
+ * **addpg** - Adde an auto display page. Argument is page XML data *\<page\>* coded in BINHEX64-
+ * **delpg** - Delete an auto display page. Arguent is page id.
+ * **gopg** - Go to page n in an auto sequency. Argument is page.
 
 ### Print event data
 Any event data can be printed.  
@@ -106,10 +140,15 @@ Any event data can be printed.
  * **%string[pos;length]** - String which starts and *pos* and have length characters. If length is not give the string is assumed to be zero termiantes.
  * **%char[pos]** - Character at *pos*.
 
+
+
 ### Example templates
 
 "Time: 23:47     " --> "Time: HH:MM"
 "Temp is 23.4C   " --> "Temp is %.2f"
+
+The fist template is handle by a time action and the second by a measurement.
+
 
 
 ---
