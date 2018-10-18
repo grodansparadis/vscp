@@ -1,75 +1,525 @@
-// socketcan.cpp: implementation of the CRpiLCD class.
+// rpilcd.cpp: implementation of the CRpiLCD class.
 //
-// This program is free software; you can redistribute it and/or
-// modify it under the terms of the GNU General Public License
-// as published by the Free Software Foundation; either version
-// 2 of the License, or (at your option) any later version.
-// 
-// This file is part of the VSCP Project (http://www.vscp.org) 
+// The MIT License (MIT)
 //
-// Copyright (C) 2000-2018 Ake Hedman, 
-// Grodans Paradis AB, <akhe@grodansparadis.com>
+// Copyright (c) 2000-2018 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
 // 
-// This file is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
 // 
-// You should have received a copy of the GNU General Public License
-// along with this file see the file COPYING.  If not, write to
-// the Free Software Foundation, 59 Temple Place - Suite 330,
-// Boston, MA 02111-1307, USA.
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 //
+
+#include <algorithm>
+#include <string>
+#include <functional>
+#include <cctype>
+#include <deque>
 
 #include <stdio.h>
-#include "unistd.h"
-#include "stdlib.h"
-#include <string.h>
-#include "limits.h"
-#include "syslog.h"
-#include <net/if.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <sys/ioctl.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <syslog.h>
+#include <pthread.h>
+#include <semaphore.h>
 
-// Different on Kernel 2.6 and cansocket examples
-// currently using locally from can-utils
-// TODO remove include form makefile when they are in sync
-#include <linux/can.h>
-#include <linux/can/raw.h>
-
-#include <signal.h>
-#include <ctype.h>
-#include <libgen.h>
-#include <time.h>
-#include <sys/time.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <sys/ioctl.h>
-#include <sys/uio.h>
-#include <net/if.h>
-#include <errno.h>
-
-#include "wx/wxprec.h"
-#include "wx/wx.h"
-#include "wx/defs.h"
-#include "wx/app.h"
-#include <wx/xml/xml.h>
-#include <wx/listimpl.cpp>
-#include <wx/thread.h>
-#include <wx/tokenzr.h>
-#include <wx/datetime.h>
+#include <expat.h>
 
 #include "../../../../common/vscp.h"
 #include "../../../../common/vscphelper.h"
 #include "../../../../common/vscpremotetcpif.h"
 #include "../../../../common/vscp_type.h"
 #include "../../../../common/vscp_class.h"
+
 #include "rpilcd.h"
 
-// queues
-//WX_DEFINE_LIST(VSCPEVENTLIST_SEND);
-//WX_DEFINE_LIST(VSCPEVENTLIST_RECEIVE);
+#ifdef USE_PIGPIOD
+#include <pigpiod_if2.h>
+#else
+#include <pigpio.h>
+#endif
+
+
+
+// Undef to get extra debug info to syslog
+#define RPIGPIO_DEBUG
+
+#define XML_BUFF_SIZE   0xffff
+
+// Forward declarations
+void *workerThread( void *data );
+
+// ----------------------------------------------------------------------------
+
+
+//////////////////////////////////////////////////////////////////////
+// CLocalDM
+//
+
+CLocalDM::CLocalDM() 
+{
+    m_bEnable = true;
+    vscp_clearVSCPFilter(&m_vscpfilter);    // Accept all events
+    m_bCompareIndex = false;                // Don't compare index
+    m_index = 0;
+    m_bCompareZone = false;                 // Don't compare zone
+    m_zone = 0;
+    m_bCompareSubZone = false;              // Don't compare subzone
+    m_subzone = 0;
+    m_action = ACTION_RPILCD_NOOP;
+    memset( m_args, 0, sizeof( m_args ) );
+    m_strActionParam.clear();               // Looks good (if you feel sick by this)
+}
+
+//////////////////////////////////////////////////////////////////////
+// ~CLocalDM
+//
+
+CLocalDM::~CLocalDM()
+{
+    ;
+}
+
+//////////////////////////////////////////////////////////////////////
+// setIndex
+//
+
+bool CLocalDM::setIndex( uint8_t index )
+{
+    m_bCompareIndex = true;
+    m_index = index;
+    return true;
+}
+
+//////////////////////////////////////////////////////////////////////
+// getIndex
+//
+
+uint8_t CLocalDM::getIndex( void )
+{
+    return m_index;
+}
+
+//////////////////////////////////////////////////////////////////////
+// isIndexCheckEnabled
+//
+
+bool CLocalDM::isIndexCheckEnabled( void )
+{
+    return m_bCompareIndex;
+}
+
+//////////////////////////////////////////////////////////////////////
+// setZone
+//
+
+bool CLocalDM::setZone( uint8_t zone )
+{   
+    m_bCompareZone = true;
+    m_zone = zone;
+    return true;
+}
+
+//////////////////////////////////////////////////////////////////////
+// getZone
+//
+
+uint8_t CLocalDM::getZone( void )
+{
+    return m_zone;
+}
+
+//////////////////////////////////////////////////////////////////////
+// isZoneCheckEnabled
+//
+
+bool CLocalDM::isZoneCheckEnabled( void )
+{
+    return m_bCompareZone;
+}
+
+//////////////////////////////////////////////////////////////////////
+// setSubZone
+//
+
+bool CLocalDM::setSubZone( uint8_t subzone )
+{
+    m_bCompareSubZone = true;
+    m_subzone = subzone;
+    return true;
+}
+
+//////////////////////////////////////////////////////////////////////
+// getSubZone
+//
+
+uint8_t CLocalDM::getSubZone( void )
+{
+    return m_subzone;
+}
+
+//////////////////////////////////////////////////////////////////////
+// isSubZoneCheckEnabled
+//
+
+bool CLocalDM::isSubZoneCheckEnabled( void )
+{
+    return m_bCompareSubZone;
+}
+
+//////////////////////////////////////////////////////////////////////
+// setFilter
+//
+
+bool CLocalDM::setFilter( vscpEventFilter& filter )
+{
+    vscp_copyVSCPFilter( &m_vscpfilter, &filter );
+    return true;
+}
+
+//////////////////////////////////////////////////////////////////////
+// getFilter
+//
+
+vscpEventFilter& CLocalDM::getFilter( void )
+{
+    return m_vscpfilter;
+}
+
+//////////////////////////////////////////////////////////////////////
+// setAction
+//
+
+bool CLocalDM::setAction( uint8_t action )
+{
+    m_action = action;
+    return true;
+}
+
+//////////////////////////////////////////////////////////////////////
+// setAction
+//
+
+bool CLocalDM::setAction( std::string& str )
+{
+    vscp2_makeUpper( str );
+    vscp2_trim( str );
+
+    if ( std::string::npos != str.find("NOOP") ) {
+        m_action = ACTION_RPILCD_NOOP;
+    }
+    /*else if ( std::string::npos != str.find("ON") ) {
+        m_action = ACTION_RPIGPIO_ON;
+    }
+    else if ( std::string::npos != str.find("OFF") ) {
+        m_action = ACTION_RPIGPIO_OFF;
+    }
+    else if ( std::string::npos != str.find("PWM") ) {
+        m_action = ACTION_RPIGPIO_PWM;
+    }
+    else if ( std::string::npos != str.find("FREQUENCY") ) {
+        m_action = ACTION_RPIGPIO_FREQUENCY;
+    }
+    else if ( std::string::npos != str.find("STATUS") ) {
+        m_action = ACTION_RPIGPIO_STATUS;
+    }
+    else if ( std::string::npos != str.find("SERVO") ) {
+        m_action = ACTION_RPIGPIO_SERVO;
+    }
+    else if ( std::string::npos != str.find("WAVEFORM") ) {
+        m_action = ACTION_RPIGPIO_WAVEFORM;
+    }
+    else if ( std::string::npos != str.find("SHIFTOUT") ) {
+        m_action = ACTION_RPIGPIO_SHIFTOUT;
+    }
+    else if ( std::string::npos != str.find("SHIFTOUT-EVENT") ) {
+        m_action = ACTION_RPIGPIO_SHIFTOUT_EVENT;
+    }
+    else if ( std::string::npos != str.find("SHIFTIN") ) {
+        m_action = ACTION_RPIGPIO_SHIFTIN;
+    }
+    else if ( std::string::npos != str.find("SAMPLE") ) {
+        m_action = ACTION_RPIGPIO_SAMPLE;
+    }
+    else if ( std::string::npos != str.find("SERIAL-OUT") ) {
+        m_action = ACTION_RPIGPIO_SERIAL_OUT;
+    }
+    else if ( std::string::npos != str.find("SERIAL-IN") ) {
+        m_action = ACTION_RPIGPIO_SERIAL_IN;
+    }*/
+
+    return true;
+}
+
+//////////////////////////////////////////////////////////////////////
+// getAction
+//
+
+uint8_t CLocalDM::getAction( void )
+{
+    return m_action;
+}
+
+//////////////////////////////////////////////////////////////////////
+// setActionParameter
+//
+
+bool CLocalDM::setActionParameter( const std::string& param )
+{
+    m_strActionParam = param;
+    return true;
+}
+
+//////////////////////////////////////////////////////////////////////
+// getActionParameter
+//
+
+std::string& CLocalDM::getActionParameter( void )
+{
+    return m_strActionParam;
+}
+
+
+// ----------------------------------------------------------------------------
+
+
+// ----------------------------------------------------------------------------
+
+int depth_setup_parser = 0;
+bool bDM = false;
+
+void
+startSetupParser( void *data, const char *name, const char **attr ) 
+{
+    CRpiLCD *pmax6675 = (CRpiLCD *)data;
+    if ( NULL == pmax6675 ) return;
+
+    if ( ( 0 == strcmp( name, "setup") ) && 
+         ( 0 == depth_setup_parser ) ) {
+
+        for ( int i = 0; attr[i]; i += 2 ) {
+
+            std::string attribute = attr[i+1];
+            if ( 0 == strcmp( attr[i], "mask") ) {
+                if ( !attribute.empty() ) {
+                    if ( !vscp2_readMaskFromString( &pmax6675->m_vscpfilter, attribute ) ) {
+                        syslog( LOG_ERR,
+		                            "%s %s ",
+                                    (const char *)VSCP_RPILCD_SYSLOG_DRIVER_ID,
+		                            (const char *) "Unable to read event receive mask to driver filter.");
+                    }
+                }
+            }
+            else if ( 0 == strcmp( attr[i], "filter") ) {
+                if ( !attribute.empty() ) {
+                    if ( !vscp2_readFilterFromString( &pmax6675->m_vscpfilter, attribute ) ) {
+                        syslog( LOG_ERR,
+		                            "%s %s ",
+                                    (const char *)VSCP_RPILCD_SYSLOG_DRIVER_ID,
+		                            (const char *) "Unable to read event receive mask to driver filter.");
+                    }
+                }
+            }
+            else if ( 0 == strcmp( attr[i], "guid") ) {
+                if ( !attribute.empty() ) {
+                    pmax6675->m_ifguid.getFromString( attribute );
+                }
+            }
+#ifdef USE_PIGPIOD          
+            else if ( 0 == strcmp( attr[i], "pigpiod-host") ) {
+                pmax6675->setPiGpiodHost( attribute );
+            }
+            else if ( 0 == strcmp( attr[i], "pigpiod-port") ) {
+                pmax6675->setPiGpiodPort( attribute );
+            }
+#endif            
+            else if ( 0 == strcmp( attr[i], "index") ) {
+                if ( !attribute.empty() ) {
+                    pmax6675->m_index = (uint8_t)vscp2_readStringValue( attribute );
+                }
+            }
+            else if ( 0 == strcmp( attr[i], "zone") ) {
+                if ( !attribute.empty() ) {
+                    pmax6675->m_zone = (uint8_t)vscp2_readStringValue( attribute );
+                }
+            }
+            else if ( 0 == strcmp( attr[i], "subzone") ) {
+                if ( !attribute.empty() ) {
+                    pmax6675->m_subzone = (uint8_t)vscp2_readStringValue( attribute );
+                }
+            }
+        }
+    } 
+    else if ( ( 0 == strcmp( name, "interface" ) ) && 
+              ( 1 == depth_setup_parser ) ) {
+        
+        //CGpioInput *pInputObj = new CGpioInput;
+        if ( NULL != NULL /*pInputObj*/ ) {
+
+            for ( int i = 0; attr[i]; i += 2 ) {
+            
+                std::string attribute = attr[i+1];
+/*
+                // Get pin
+                if ( 0 == strcmp( attr[i], "pin") ) {
+                    uint8_t pin = vscp2_readStringValue( attribute );
+                    pInputObj->setPin( pin );
+                }    
+                
+                // Get pullup
+                else if ( 0 == strcmp( attr[i], "pullup") ) {
+                    pInputObj->setPullUp( attribute );
+                }
+                
+                // Watchdog
+                else if ( 0 == strcmp( attr[i], "watchdog") ) {
+                    pInputObj->setWatchdog( vscp2_readStringValue( attribute ) );
+                }
+
+                // Noice filter steady
+                else if ( 0 == strcmp( attr[i], "noise_filter_steady") ) {
+                    pInputObj->setWatchdog( vscp2_readStringValue( attribute ) );
+                }
+
+                // Noise filter active
+                else if ( 0 == strcmp( attr[i], "noise_filter_active") ) {
+                    pInputObj->setNoiseFilterActive( vscp2_readStringValue( attribute ) );
+                }
+
+                // Glitch filter
+                else if ( 0 == strcmp( attr[i], "glitch_filter") ) {
+                    pInputObj->setGlitchFilter( vscp2_readStringValue( attribute ) );
+                }
+*/
+            } // for - attributes
+
+            // Add input to list
+            //pmax6675->m_inputPinList.push_back( pInputObj );
+
+        } // input obj
+    }
+    
+    else if ( ( 0 == strcmp( name, "dm" ) ) && 
+              ( 1 == depth_setup_parser ) ) {
+        bDM = true;
+    }
+    else if ( bDM && 
+                ( 0 == strcmp( name, "row" ) ) && 
+                ( 2 == depth_setup_parser ) ) {
+
+        CLocalDM *pLocalDMObj = new CLocalDM;
+        if ( NULL != pLocalDMObj ) {
+
+            // Get filter
+            vscpEventFilter filter;
+
+            for ( int i = 0; attr[i]; i += 2 ) {
+
+                std::string attribute = attr[i+1];
+
+                if ( 0 == strcmp( attr[i], "enable") ) {   
+                    
+                    vscp2_makeUpper( attribute );
+                    vscp2_trim( attribute );
+                    
+                    if ( 0 == strcmp( attribute.c_str(), "TRUE") ) {
+                        pLocalDMObj->enableRow();
+                    }
+                    else if ( 0 == strcmp( attribute.c_str(), "FALSE") ) {
+                        pLocalDMObj->disableRow();
+                    }
+
+                } 
+                else if ( 0 == strcmp( attr[i], "priority-mask") ) {
+                    filter.mask_priority = vscp2_readStringValue( attribute );
+                }
+                else if ( 0 == strcmp( attr[i], "priority-filter") ) {
+                    filter.filter_priority = vscp2_readStringValue( attribute );
+                }
+                else if ( 0 == strcmp( attr[i], "class-mask") ) {
+                    filter.mask_class = vscp2_readStringValue( attribute );
+                }
+                else if ( 0 == strcmp( attr[i], "class-filter") ) {
+                    filter.filter_class = vscp2_readStringValue( attribute );
+                }
+                else if ( 0 == strcmp( attr[i], "type-mask") ) {
+                    filter.mask_type = vscp2_readStringValue( attribute );
+                }
+                else if ( 0 == strcmp( attr[i], "type-filter") ) {
+                    filter.filter_type = vscp2_readStringValue( attribute );
+                }
+                else if ( 0 == strcmp( attr[i], "guid-mask") ) {
+                    vscp2_getGuidFromStringToArray( filter.mask_GUID,
+                                                        attribute );
+                }
+                else if ( 0 == strcmp( attr[i], "guid-filter") ) {
+                    vscp2_getGuidFromStringToArray( filter.filter_GUID,
+                                                        attribute );
+                }     
+                else if ( 0 == strcmp( attr[i], "index") ) {
+                    pLocalDMObj->setIndex( vscp2_readStringValue( attribute ) );
+                }
+                else if ( 0 == strcmp( attr[i], "zone") ) {
+                    pLocalDMObj->setZone( vscp2_readStringValue( attribute ) );
+                }
+                else if ( 0 == strcmp( attr[i], "subzone") ) {
+                    pLocalDMObj->setSubZone( vscp2_readStringValue( attribute ) );
+                }
+                else if ( 0 == strcmp( attr[i], "action") ) {
+                    pLocalDMObj->setAction( attribute );
+                }
+                else if ( 0 == strcmp( attr[i], "action-parameter") ) {
+                    
+                    pLocalDMObj->setActionParameter( attribute );
+
+                    // Preparse the action parameters
+                    std::deque<std::string> tokens;
+                    vscp2_split( tokens, attribute, "," );
+                    for ( int idx=0; idx<3; idx++ ) {
+                        if ( tokens.size() ) {
+                            uint32_t val = vscp2_readStringValue( tokens.front() );
+                            pLocalDMObj->setArg( idx, val );
+                            tokens.pop_front();
+                        }
+                    }
+                    
+                }
+
+            } // DM obj.
+
+            pLocalDMObj->setFilter( filter );
+            pmax6675->m_LocalDMList.push_back( pLocalDMObj );
+
+        }
+    }
+
+    depth_setup_parser++;
+}
+
+void
+endSetupParser( void *data, const char *name ) 
+{
+    depth_setup_parser--;
+
+    if ( 0 == strcmp( name, "dm" ) ) bDM = false;
+}  
+
+
+// ----------------------------------------------------------------------------
+
 
 //////////////////////////////////////////////////////////////////////
 // CRpiLCD
@@ -77,11 +527,30 @@
 
 CRpiLCD::CRpiLCD()
 {
-	m_bQuit = false;
-	m_pthreadWorker = NULL;
-	m_interface = _("vcan0");
-	vscp_clearVSCPFilter(&m_vscpfilter); // Accept all events
-	::wxInitialize();
+	int i;
+    m_bQuit = false;
+	m_setupXml = _("<?xml version = \"1.0\" encoding = \"UTF-8\" ?><setup><!-- empty --></setup>");
+	vscp_clearVSCPFilter( &m_vscpfilter ); // Accept all events
+    m_index = 0;
+    m_zone = 0;
+    m_subzone = 0;
+
+#ifdef USE_PIGPIOD 
+    m_pigpiod_host = "127.0.0.1";
+    m_pigpiod_port = "8888";
+#endif    
+
+    timeval curTime;
+    gettimeofday( &curTime, NULL );
+    uint32_t now = 1000 * curTime.tv_sec + ( curTime.tv_usec / 1000 );
+
+
+
+    pthread_mutex_init( &m_mutex_SendQueue, NULL );
+    pthread_mutex_init( &m_mutex_ReceiveQueue, NULL );
+
+    sem_init( &m_semaphore_SendQueue, 0, 0 );                   
+    sem_init( &m_semaphore_ReceiveQueue, 0, 0 );
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -90,8 +559,19 @@ CRpiLCD::CRpiLCD()
 
 CRpiLCD::~CRpiLCD()
 {
-	close();
-	::wxUninitialize();
+    // Close if not closed
+	if ( !m_bQuit ) close();
+
+    // Remove local DM
+    std::list<CLocalDM *>::const_iterator iterator5;
+    for (iterator5 = m_LocalDMList.begin(); iterator5 != m_LocalDMList.end(); ++iterator5) {
+        delete *iterator5;
+    }
+
+    pthread_mutex_destroy( &m_mutex_SendQueue );
+    pthread_mutex_destroy( &m_mutex_ReceiveQueue );
+    sem_destroy( &m_semaphore_SendQueue );
+    sem_destroy( &m_semaphore_ReceiveQueue );
 }
 
 
@@ -101,112 +581,94 @@ CRpiLCD::~CRpiLCD()
 //
 
 bool
-CRpiLCD::open(const char *pUsername,
-		const char *pPassword,
-		const char *pHost,
-		short port,
-		const char *pPrefix,
-		const char *pConfig)
+CRpiLCD::open( const char *pUsername,
+		            const char *pPassword,
+		            const char *pHost,
+		            short port,
+		            const char *pPrefix,
+		            const char *pConfig )
 {
-	bool rv = true;
-	wxString wxstr = wxString::FromAscii(pConfig);
-
-	m_username = wxString::FromAscii(pUsername);
-	m_password = wxString::FromAscii(pPassword);
-	m_host = wxString::FromAscii(pHost);
+    std::string strConfig = pConfig;
+   
+	m_username = pUsername;
+	m_password = pPassword;
+	m_host = pHost;
 	m_port = port;
-	m_prefix = wxString::FromAscii(pPrefix);
+	m_prefix = pPrefix;
 
-	// Parse the configuration string. It should
-	// have the following form
-	// path
-	// 
-	wxStringTokenizer tkz(wxString::FromAscii(pConfig), _(";\n"));
-
-	// Check for socketcan interface in configuration string
-	if (tkz.HasMoreTokens()) {
-		// Interface
-		m_interface = tkz.GetNextToken();
-	}
-
+	m_setupXml = pPrefix;
 
 	// First log on to the host and get configuration 
 	// variables
 
-	if ( VSCP_ERROR_SUCCESS != m_srv.doCmdOpen(m_host,
-                                                port,
-												m_username,                                                
-												m_password ) ) {
+	if ( VSCP_ERROR_SUCCESS != m_srv.doCmdOpen( m_host,
+                                                    m_port,
+												    m_username,
+												    m_password ) ) {
 		syslog(LOG_ERR,
-				"%s",
-				(const char *) "Unable to connect to VSCP TCP/IP interface. Terminating!");
-		return false;
+				"%s %s ",
+                (const char *)VSCP_RPILCD_SYSLOG_DRIVER_ID,
+				(const char *)"Unable to connect to VSCP TCP/IP interface. Terminating!");
+		
+        return false;
 	}
 
 	// Find the channel id
 	uint32_t ChannelID;
-	m_srv.doCmdGetChannelID(&ChannelID);
+	m_srv.doCmdGetChannelID( &ChannelID );
     
-	//m_srv.doCmdGetGUID( m_ifguid );
+    // Get GUID for channel
+	m_srv.doCmdGetGUID( m_ifguid );
 
-	// The server should hold configuration data for each sensor
-	// we want to monitor.
-	// 
-	// We look for 
-	//
-	//	 _interface - The socketcan interface to use. Typically this 
-	//	 is “can0, can0, can1...
-	//
-	//   _filter - Standard VSCP filter in string form. 
-	//				   1,0x0000,0x0006,
-	//				   ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:00
-	//				as priority,class,type,GUID
-	//				Used to filter what events that is received from 
-	//				the socketcan interface. If not give all events 
-	//				are received.
-	//	 _mask - Standard VSCP mask in string form.
-	//				   1,0x0000,0x0006,
-	//				   ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:00
-	//				as priority,class,type,GUID
-	//				Used to filter what events that is received from 
-	//				the socketcan interface. If not give all events 
-	//				are received. 
-	//
-/*
-	wxString str;
-	wxString strName = m_prefix +
-			wxString::FromAscii("_interface");
-	m_srv.getVariableString(strName, &m_interface);
+    m_srv.doClrInputQueue();
 
-	strName = m_prefix +
-			wxString::FromAscii("_filter");
-	if (m_srv.getVariableString(strName, &str)) {
-		vscp_readFilterFromString(&m_vscpfilter, str);
-	}
+	// The server should hold XML configuration data for each
+	// driver (se documentation).
 
-	strName = m_prefix +
-			wxString::FromAscii("_mask");
-	if (m_srv.getVariableString(strName, &str)) {
-		vscp_readMaskFromString(&m_vscpfilter, str);
-	}
-*/	
-	m_srv.doClrInputQueue();
+    std::string str;
+	std::string strName = m_prefix + std::string("_setup");
+	if ( VSCP_ERROR_SUCCESS != 
+            m_srv.getRemoteVariableValue( strName, m_setupXml, true ) ) {
+        // OK if not available we use default
+    }
 
-	// start the workerthread
-	m_pthreadWorker = new CRpiLCDWorkerTread();
-	if (NULL != m_pthreadWorker) {
-		m_pthreadWorker->m_pObj = this;
-		m_pthreadWorker->Create();
-		m_pthreadWorker->Run();
-	} 
-	else {
-		rv = false;
-	}
+    XML_Parser xmlParser = XML_ParserCreate("UTF-8");
+    XML_SetUserData( xmlParser, this );
+    XML_SetElementHandler( xmlParser,
+                            startSetupParser,
+                            endSetupParser ) ;
 
-	// Close the channel
+    int bytes_read;
+    void *buff = XML_GetBuffer( xmlParser, XML_BUFF_SIZE );
+
+    strncpy( (char *)buff, m_setupXml.c_str(), m_setupXml.length() );
+
+    bytes_read = m_setupXml.length();
+    if ( !XML_ParseBuffer( xmlParser, bytes_read, bytes_read == 0 ) ) {
+        syslog( LOG_ERR,
+				    "%s %s",
+                    (const char *)VSCP_RPILCD_SYSLOG_DRIVER_ID,
+				    (const char *) "Failed parse XML setup." );
+    }
+
+    XML_ParserFree( xmlParser );
+
+    // Close the channel
 	m_srv.doCmdClose();
 
-	return rv;
+    // create and start the workerthread
+    if ( 0 != pthread_create( &m_pthreadWorker,  
+                                NULL,          
+                                workerThread,
+                                (void *)this ) ) {
+        syslog( LOG_ERR,
+				    "%s %s",
+                    (const char *)VSCP_RPILCD_SYSLOG_DRIVER_ID,
+				    (const char *) "Failed to start worker thread." );
+        return false;                    
+    }
+
+	return true;
 }
 
 
@@ -217,12 +679,8 @@ CRpiLCD::open(const char *pUsername,
 void
 CRpiLCD::close(void)
 {
-	// Do nothing if already terminated
-	if (m_bQuit) return;
-
 	m_bQuit = true; // terminate the thread
-	wxSleep(1); // Give the thread some time to terminate
-
+    pthread_join( m_pthreadWorker, NULL );
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -232,255 +690,276 @@ CRpiLCD::close(void)
 bool 
 CRpiLCD::addEvent2SendQueue(const vscpEvent *pEvent)
 {
-    m_mutexSendQueue.Lock();
-	//m_sendQueue.Append((vscpEvent *)pEvent);
-    m_sendList.push_back((vscpEvent *)pEvent);
-	m_semSendQueue.Post();
-	m_mutexSendQueue.Unlock();
+    pthread_mutex_lock( &m_mutex_SendQueue );
+    m_sendList.push_back( (vscpEvent *)pEvent );
+	sem_post( &m_semaphore_SendQueue );
+	pthread_mutex_unlock( &m_mutex_SendQueue );
     return true;
 }
 
 
 
 //////////////////////////////////////////////////////////////////////
-//                Workerthread - CRpiLCDWorkerTread
-//////////////////////////////////////////////////////////////////////
-
-CRpiLCDWorkerTread::CRpiLCDWorkerTread()
-{
-	m_pObj = NULL;
-}
-
-CRpiLCDWorkerTread::~CRpiLCDWorkerTread()
-{
-	;
-}
-
-
-//////////////////////////////////////////////////////////////////////
-// Entry
+// sendEvent
 //
 
-void *
-CRpiLCDWorkerTread::Entry()
+bool sendEvent( CRpiLCD *pObj, vscpEventEx& eventEx )
 {
-	int sock;
-	char devname[IFNAMSIZ + 1];
-	fd_set rdfs;
-	struct timeval tv;
-	struct sockaddr_can addr;
-	struct ifreq ifr;
-	struct cmsghdr *cmsg;
-	struct canfd_frame frame;
-	char ctrlmsg[CMSG_SPACE(sizeof(struct timeval)) + CMSG_SPACE(sizeof(__u32))];
-	const int canfd_on = 1;
+    vscpEvent *pEvent = new vscpEvent();
+    if ( NULL != pEvent ) {
+        if ( vscp_convertVSCPfromEx( pEvent, &eventEx ) ) {
 
-	::wxInitialize();
-			
-	// Check pointers
-	if (NULL == m_pObj) return NULL;
+            pthread_mutex_lock( &pObj->m_mutex_ReceiveQueue );
+            pObj->m_receiveList.push_back( pEvent );
+            sem_post( &pObj->m_semaphore_ReceiveQueue );
+            pthread_mutex_unlock( &pObj->m_mutex_ReceiveQueue );
 
-	strncpy(devname, m_pObj->m_interface.ToAscii(), sizeof(devname) - 1);
-#if DEBUG	
-	syslog(LOG_ERR, "CWriteSocketCanTread: Interface: %s\n", ifname);
-#endif	
-	
-    while (!TestDestroy() && !m_pObj->m_bQuit) {
-
-        sock = socket(PF_CAN, SOCK_RAW, CAN_RAW);
-        if (sock < 0) {
-            
-            if (ENETDOWN == errno) {
-                sleep(1);
-                continue;
-            }
-            
-            syslog(LOG_ERR,
-                    "%s",
-                    (const char *) "CReadSocketCanTread: Error while opening socket. Terminating!");
-            
-            m_pObj->m_bQuit;
-            continue;
+        }
+        else {
+            vscp_deleteVSCPevent( pEvent );
+            syslog( LOG_ERR,
+				    "%s %s",
+                    (const char *)VSCP_RPILCD_SYSLOG_DRIVER_ID,
+				    (const char *) "Failed to convert send event"  );
+            return false;
         }
 
-        strcpy(ifr.ifr_name, devname);
-        ioctl(sock, SIOCGIFINDEX, &ifr);
+    }
 
-        addr.can_family = AF_CAN;
-        addr.can_ifindex = ifr.ifr_ifindex;
+    return true;
+}
 
-#ifdef DEBUG
-        printf("using interface name '%s'.\n", ifr.ifr_name);
+
+
+
+
+//////////////////////////////////////////////////////////////////////
+//                Workerthread - RpiMax6675WorkerTread
+//////////////////////////////////////////////////////////////////////
+
+
+
+
+
+void *workerThread( void *data )
+{
+    
+    CRpiLCD *pObj = (CRpiLCD *)data;
+    
+    // Initialize the pigpio lib
+    //gpioCfgInternals(1<<10, 0);  // Prevent signal 11 error
+#ifdef USE_PIGPIOD
+    int pmax6675d_session_id;
+    if ( ( pmax6675d_session_id = pigpio_start( (char *)pObj->getPiGpiodHost().c_str(), 
+                                                (char *)pObj->getPiGpiodPort().c_str() ) ) < 0 ) {
+        syslog( LOG_ERR,
+				    "%s %s driver started pigpio version: %ul, HW rev: %ul",
+                    (const char *)VSCP_RPILCD_SYSLOG_DRIVER_ID,
+				    (const char *) "Failed to init. gpiod library.",
+                    get_pigpio_version( pmax6675d_session_id ), 
+                    get_hardware_revision( pmax6675d_session_id ) ); 
+        return NULL;                                      
+    }
+#else
+	if ( gpioInitialise() < 0 ) {
+        syslog( LOG_ERR,
+				    "%s %s driver started pigpio version: %ul, HW rev: %ul",
+                    (const char *)VSCP_RPILCD_SYSLOG_DRIVER_ID,
+				    (const char *) "Failed to init. gpio library.",
+                    gpioVersion(), gpioHardwareRevision() );
+        return NULL;                    
+    }
+#endif                    
+    
+
+    // Debug
+    syslog( LOG_ERR, 
+                "%s gpioversion - Version=%d HW version =%d",
+                (const char *)VSCP_RPILCD_SYSLOG_DRIVER_ID, 
+                gpioVersion(), gpioHardwareRevision() );
+
+
+    while ( !pObj->m_bQuit ) {
+        
+        struct timespec ts;
+        ts.tv_sec = 0;
+        ts.tv_nsec = 100000000;    // 100 ms
+      
+        if ( ETIMEDOUT != sem_timedwait( &pObj->m_semaphore_SendQueue, &ts ) ) {
+           
+            if ( pObj->m_bQuit ) continue;
+
+            // Check if there is event(s) to handle
+            if ( pObj->m_sendList.size() ) {
+
+#ifdef RPIGPIO_DEBUG
+                syslog( LOG_ERR, 
+                            "%s Incoming event.",
+                            (const char *)VSCP_RPILCD_SYSLOG_DRIVER_ID  );
+#endif
+                // Yes there are an incoming event
+                pthread_mutex_lock( &pObj->m_mutex_SendQueue );
+                vscpEvent *pEvent = pObj->m_sendList.front();
+                pObj->m_sendList.pop_front();
+                pthread_mutex_unlock( &pObj->m_mutex_SendQueue );
+
+                if ( NULL == pEvent ) continue;
+
+#ifdef RPIGPIO_DEBUG
+                syslog( LOG_ERR, 
+                            "%s Event removed from queue.",
+                            (const char *)VSCP_RPILCD_SYSLOG_DRIVER_ID  );
 #endif
 
-        // try to switch the socket into CAN FD mode 
-        setsockopt(sock,
-                SOL_CAN_RAW,
-                CAN_RAW_FD_FRAMES,
-                &canfd_on,
-                sizeof(canfd_on));
-
-        if (bind(sock, (struct sockaddr *) &addr, sizeof(addr)) < 0) {
-            syslog(LOG_ERR,
-                    "%s",
-                    (const char *) "CReadSocketCanTread: Error in socket bind. Terminating!");
-            close(sock);
-            sleep(2);
-            continue;
-        }
-
-        bool bInnerLoop = true;
-        while (!TestDestroy() && !m_pObj->m_bQuit && bInnerLoop) {
-
-            FD_ZERO(&rdfs);
-            FD_SET(sock, &rdfs);
-
-            tv.tv_sec = 0;
-            tv.tv_usec = 5000; // 5ms timeout 
-
-            int ret;
-            if ( ( ret = select(sock + 1, &rdfs, NULL, NULL, &tv ) ) <  0) {
-                // Error
-                if (ENETDOWN == errno) {
-                    // We try to get contact with the net
-                    // again if it goes down
-                    bInnerLoop = false;
-                }
-                else {
-                    m_pObj->m_bQuit = true;
-                }
-                continue;
-            }
-
-            if ( ret ) {
-
-                // There is data to read
-
-                ret = read(sock, &frame, sizeof(struct can_frame));
-                if (ret < 0) {
-                    if (ENETDOWN == errno) {
-                        // We try to get contact with the net
-                        // again if it goes down
-                        bInnerLoop = false;
-                        sleep(2);
-                    }
-                    else {
-                        m_pObj->m_bQuit = true;
-                    }
-                    continue;
+                // Just to make sure
+                if ( 0 == pEvent->sizeData ) {
+                    pEvent->pdata = NULL;
                 }
 
-                // Must be Extended
-                if (!(frame.can_id & CAN_EFF_FLAG)) continue;
+#ifdef RPIGPIO_DEBUG
+                syslog( LOG_ERR, 
+                            "%s Valid event.",
+                            (const char *)VSCP_RPILCD_SYSLOG_DRIVER_ID  );
+#endif                
 
-                // Mask of control bits
-                frame.can_id &= CAN_EFF_MASK;
+                // Feed through matrix - major filter
+                if ( vscp_doLevel2Filter( pEvent, &pObj->m_vscpfilter ) ) {
 
-                vscpEvent *pEvent = new vscpEvent();
-                if (NULL != pEvent) {
+#ifdef RPIGPIO_DEBUG
+                    syslog( LOG_ERR, 
+                            "%s After major filter.",
+                            (const char *)VSCP_RPILCD_SYSLOG_DRIVER_ID  );
+#endif
 
-                    pEvent->pdata = new uint8_t[frame.len];
-                    if (NULL == pEvent->pdata) {
-                        delete pEvent;
-                        continue;
-                    }
+                    std::list<CLocalDM *>::const_iterator it;
+                    for ( it = pObj->m_LocalDMList.begin(); 
+                            it != pObj->m_LocalDMList.end(); 
+                            ++it ) {
 
-                    // GUID will be set to GUID of interface
-                    // by driver interface with LSB set to nickname
-                    memset(pEvent->GUID, 0, 16);
-                    pEvent->GUID[VSCP_GUID_LSB] = frame.can_id & 0xff;
+                        CLocalDM *pDM = (CLocalDM *)*it;
+                        if ( vscp_doLevel2Filter( pEvent, &pDM->getFilter() ) ) {
 
-                    // Set VSCP class
-                    pEvent->vscp_class = vscp_getVSCPclassFromCANALid(frame.can_id);
+#ifdef RPIGPIO_DEBUG
+                            syslog( LOG_ERR, 
+                                        "%s After DM row filter.",
+                                        (const char *)VSCP_RPILCD_SYSLOG_DRIVER_ID  );
+#endif
 
-                    // Set VSCP type
-                    pEvent->vscp_type = vscp_getVSCPtypeFromCANALid(frame.can_id);
+                            if ( pDM->isIndexCheckEnabled() ) {
+                                if ( ( pEvent->sizeData < 1 )  || 
+                                        ( pDM->getIndex() != pEvent->pdata[0] ) ) {
+                                    continue;
+                                } 
+                            }
 
-                    // Copy data if any
-                    pEvent->sizeData = frame.len;
-                    if (frame.len) {
-                        memcpy(pEvent->pdata, frame.data, frame.len);
-                    }
+                            if ( pDM->isZoneCheckEnabled() ) {
+                                if ( ( pEvent->sizeData < 2 )  || 
+                                        ( pDM->getZone() != pEvent->pdata[1] ) ) {
+                                    continue;
+                                } 
+                            }
 
-                    if (vscp_doLevel2Filter(pEvent, &m_pObj->m_vscpfilter)) {
-                        m_pObj->m_mutexReceiveQueue.Lock();
-                        //m_pObj->m_receiveQueue.Append(pEvent);
-                        m_pObj->m_receiveList.push_back(pEvent);
-                        m_pObj->m_semReceiveQueue.Post();
-                        m_pObj->m_mutexReceiveQueue.Unlock();
-                    } else {
-                        vscp_deleteVSCPevent(pEvent);
-                    }
-                }
+                            if ( pDM->isSubZoneCheckEnabled() ) {
+                                if ( ( pEvent->sizeData )< 3   || 
+                                        ( pDM->getSubZone() != pEvent->pdata[2] ) ) {
+                                    continue;
+                                } 
+                            }
 
-            } else {
+#ifdef RPIGPIO_DEBUG
+                            syslog( LOG_ERR, 
+                                        "%s Ready for action.",
+                                        (const char *)VSCP_RPILCD_SYSLOG_DRIVER_ID  );
+#endif                            
 
-                // Check if there is event(s) to send
-                if (m_pObj->m_sendList.size() /*m_pObj->m_sendQueue.GetCount()*/) {
+                            // OK - Do action
+                            switch ( pDM->getAction() ) {
+/*
+                                case ACTION_RPIGPIO_ON:
+                                    {
+#ifdef RPIGPIO_DEBUG                                        
+                                        syslog( LOG_ERR, 
+                                                    "%s Action = ACTION_RPIGPIO_ON.",
+                                                    (const char *)VSCP_RPILCD_SYSLOG_DRIVER_ID  );
+#endif
+                                        uint8_t pin = (uint8_t)pDM->getArg( 0 );
+                                        if ( pin <= 53 ) { 
 
-                    // Yes there are data to send
-                    // So send it out on the CAN bus
+#ifdef USE_PIGPIOD
+                                            gpio_write( pmax6675d_session_id, pin, 1 );
+#else
+                                            gpioWrite( pin, 1 );
+#endif                                            
 
-                    //VSCPEVENTLIST_SEND::compatibility_iterator nodeClient;
-                    m_pObj->m_mutexSendQueue.Lock();
-                    //nodeClient = m_pObj->m_sendQueue.GetFirst();
-                    vscpEvent *pEvent = m_pObj->m_sendList.front();
-                    m_pObj->m_sendList.pop_front();
-                    m_pObj->m_mutexSendQueue.Unlock();
+                                            vscpEventEx ex;
+                                            memset( &ex, 0, sizeof( ex ) );
+                                            ex.vscp_class = VSCP_CLASS1_INFORMATION;
+                                            ex.sizeData = 3;
+                                            ex.data[0] = pin;
+                                            ex.data[1] = pObj->getZone();
+                                            ex.data[2] = pObj->getSubzone();
 
-                    if (NULL == pEvent) continue;
+#ifdef USE_PIGPIOD
+                                            if ( gpio_read( pgpiod_session_id, pin ) ) {
+#else
+                                            if ( gpioRead( pin ) ) {
+#endif                                                
+                                                ex.vscp_type = VSCP_TYPE_INFORMATION_ON;
+                                            }
+                                            else {
+                                                ex.vscp_type = VSCP_TYPE_INFORMATION_OFF;
+                                            }
 
-                    // Class must be a Level I class or a Level II
-                    // mirror class
-                    if (pEvent->vscp_class < 512) {
-                        frame.can_id = vscp_getCANALidFromVSCPevent(pEvent);
-                        frame.can_id |= CAN_EFF_FLAG; // Always extended
-                        if (0 != pEvent->sizeData) {
-                            frame.len = (pEvent->sizeData > 8 ? 8 : pEvent->sizeData);
-                            memcpy(frame.data, pEvent->pdata, frame.len);
+                                            sendEvent( pObj, ex );
+
+                                        }
+                                        else {
+                                            syslog( LOG_ERR,
+				                                        "%s %s pin=%d",
+                                                        (const char *)VSCP_RPILCD_SYSLOG_DRIVER_ID,
+				                                        (const char *) "ACTION_RPIGPIO_ON - Invalid pin",
+                                                        (int)pin );
+                                        }
+                                    }
+                                    break;
+*/
+                               
+
+                                case ACTION_RPILCD_NOOP:
+                                default:
+                                    break;
+
+
+                            }
+
                         }
-                    } else if (pEvent->vscp_class < 1024) {
-                        pEvent->vscp_class -= 512;
-                        frame.can_id = vscp_getCANALidFromVSCPevent(pEvent);
-                        frame.can_id |= CAN_EFF_FLAG; // Always extended
-                        if (0 != pEvent->sizeData) {
-                            frame.len = ((pEvent->sizeData - 16) > 8 ? 8 : pEvent->sizeData - 16);
-                            memcpy(frame.data, pEvent->pdata + 16, frame.len);
-                        }
+
                     }
 
-                    // Remove the event
-                    m_pObj->m_mutexSendQueue.Lock();
-                    //m_pObj->m_sendQueue.DeleteNode(nodeClient);
-                    vscp_deleteVSCPevent(pEvent);
-                    m_pObj->m_mutexSendQueue.Unlock();
+                }
 
+                // We are done with the event
+                vscp_deleteVSCPevent_v2( &pEvent );
 
-                    // Write the data
-                    int nbytes = write(sock, &frame, sizeof(struct can_frame));
+            } // Event in queue
 
-                } // event to send
-            }  // No data to read
-        } // Inner loop
+        } // if *not* timeout
+   
+        timeval curTime;
+        gettimeofday( &curTime, NULL );
+        uint32_t now = 1000 * curTime.tv_sec + ( curTime.tv_usec / 1000 );
+      
 
-        // Close the socket
-        close(sock);
+    } // while
 
-    } // Outer loop
+    // Quit gpio library functionality
+#ifdef USE_PIGPIOD
+    // Close lib
+    pigpio_stop( pgpiod_session_id );
+#else    
+    gpioTerminate();
+#endif    
 
-	return NULL;
-
+    return NULL;
 }
-
-//////////////////////////////////////////////////////////////////////
-// OnExit
-//
-
-void
-CRpiLCDWorkerTread::OnExit()
-{
-	;
-}
-
-
 

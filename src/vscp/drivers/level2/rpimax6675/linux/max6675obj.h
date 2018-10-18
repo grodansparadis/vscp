@@ -261,38 +261,7 @@ public:
 
 };
 
-///////////////////////////////////////////////////////////////////////////////
-//				                Worker Treads
-///////////////////////////////////////////////////////////////////////////////
 
-
-class CRpiMax6675WorkerTread : public wxThread {
-public:
-
-    /// Constructor
-    CRpiMax6675WorkerTread();
-
-    /// Destructor
-    ~CRpiMax6675WorkerTread();
-
-    /*!
-        Thread code entry point
-     */
-    virtual void *Entry();
-
-    /*! 
-        called when the thread exits - whether it terminates normally or is
-        stopped with Delete() (but not when it is Kill()ed!)
-     */
-    virtual void OnExit();
-
-    /// VSCP server interface
-    VscpRemoteTcpIf m_srv;
-
-    /// Sensor object
-    CRpiMax6675 *m_pObj;
-
-};
 
 
 

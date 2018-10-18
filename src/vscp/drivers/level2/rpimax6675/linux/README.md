@@ -37,7 +37,12 @@ The XML configuration have the following format
 
 ```xml
 <?xml version = "1.0" encoding = "UTF-8" ?>
-<setup>
+<setup filter=""
+        mask=""
+        guid=""
+        index="" 
+        zone="" 
+        subzone="" >
     <interface enable="true|false" 
                 bus="0|1" 
                 unit="0|1|2|C|K|F" 
