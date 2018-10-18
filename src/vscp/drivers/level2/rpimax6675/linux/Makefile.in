@@ -40,18 +40,20 @@ BUILD_VERSION = `sed '38!d' ../../../../common/version.h  | cut -b 33-
 
 CFLAGS = -std=c99 @CFLAGS@ -fPIC @WXBASE_CFLAGS@ -DCBC -I../../../../common -I../../../../../common
 CXXFLAGS = -std=c++11 -D__LINUX__ -fPIC -D_REENTRANT @CXXFLAGS@ @WXBASE_CXXFLAGS@
-CPPFLAGS = -D__LINUX__ -fPIC @CPPFLAGS@ @WXBASE_CPPFLAGS@ -fno-var-tracking-assignments -I. -I../common -I../../../../common -I../../../../../common
+CPPFLAGS = -DVSCP_NO_WX -D__LINUX__ -fPIC @CPPFLAGS@ @WXBASE_CPPFLAGS@ -fno-var-tracking-assignments -I. -I../common -I../../../../common -I../../../../../common
 
 LDFLAGS = @LDFLAGS@
-EXTRALIBS = -lpigpio @EXTRALIBS@ 
+EXTRALIBS = -lpigpio -lpigpiod_if2 -lexpat @EXTRALIBS@ 
 ifeq ($(STATIC),yes)
 EXTRALIBS += @WXBASE_STATIC_LIBS@
 else
 EXTRALIBS += @WXBASE_LIBS@
 endif
+GPIOLIB = -lpigpio 
+GPIOLIB_IF2 = -lpigpiod_if2
 
 DLFLAGS = -g -shared -fPIC
-TRIP = strip
+STRIP = strip
 INSTALL_PROGRAM = ${INSTALL}
 INSTALL_DATA = ${INSTALL} -m 644
 INSTALL_DIR = /usr/bin/install -c -d
@@ -71,7 +73,6 @@ WX_RELEASE = 3.0
 LIBDIRNAME = $(top_wxbuilddir)lib
 
 VSCPRPIMAX6675_OBJECTS = vscpl2drv-rpimax6675.o\
-	max6675.o\
 	vscpremotetcpif.o\
 	vscphelper.o\
 	sockettcp.o\
@@ -85,20 +86,34 @@ VSCPRPIMAX6675_OBJECTS = vscpl2drv-rpimax6675.o\
 
 ### Targets: ###
 
-all: vscpl2drv-rpimax6675.so test
+all: max6675.o max6675obj.o vscpl2drv-rpimax6675.so vscpl2drv-rpimax6675-if2.so test-if2.o test test-if2
 
-test:  test.o $(VSCPRPIMAX6675_OBJECTS)
-	$(CXX) -o $@ test.o $(VSCPRPIMAX6675_OBJECTS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
+test:  test.o max6675.o max6675obj.o $(VSCPRPIMAX6675_OBJECTS)
+	$(CXX) -DPIGPIO $(CXXFLAGS) $(CPPFLAGS) -o $@ test.o max6675obj.o $(VSCPRPIMAX6675_OBJECTS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS) $(GPIOLIBS)
+
+test-if2: test-if2.o max6675-if2.o max6675obj-if2.o $(VSCPRPIMAX6675_OBJECTS)
+	$(CXX) -DPIGPIOIF2 $(CXXFLAGS) $(CPPFLAGS) -o test-if2 test-if2.o max6675-if2.o max6675obj-if2.o $(VSCPRPIMAX6675_OBJECTS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS) $(GPIOLIBS_IF2)
+
+test-if2.o:  test.o 
+	$(CXX) -c test.cpp -DUSE_PIGPIOD $(CXXFLAGS) $(CPPFLAGS) -o test-if2.o 
 
 # Build the Linux DL
-vscpl2drv-rpimax6675.so: $(VSCPRPIMAX6675_OBJECTS)
-	$(CXX) -o $@ $(VSCPRPIMAX6675_OBJECTS) $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS) 
+vscpl2drv-rpimax6675.so: $(VSCPRPIMAX6675_OBJECTS) max6675.o
+	$(CXX) -o $@  $(VSCPRPIMAX6675_OBJECTS) max6675.o max6675obj.o $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS) $(GPIOLIBS)
+
+vscpl2drv-rpimax6675-if2.so: $(VSCPRPIMAX6675_OBJECTS) max6675-if2.o
+	$(CXX) -o $@  $(VSCPRPIMAX6675_OBJECTS) max6675-if2.o max6675obj-if2.o $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS) $(GPIOLIBS_IF2)
 
 vscpl2drv-rpimax6675.o: vscpl2drv-rpimax6675.cpp vscpl2drv-rpimax6675.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c vscpl2drv-rpimax6675.cpp -o $@
 
-max6675.o: max6675.cpp  max6675.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c max6675.cpp -o $@
+max6675.o: max6675.c max6675.h
+	$(CC)  -DPIGPIO $(CFLAGS) -c max6675.c -o $@
+	$(CC) -DPIGPIOIF2 $(CFLAGS) -c max6675.c -o max6675-if2.o
+
+max6675obj.o: max6675obj.cpp max6675obj.h
+	$(CXX) -DPIGPIO $(CXXFLAGS) $(CPPFLAGS) -c max6675obj.cpp -o $@
+	$(CXX) -DPIGPIOIF2 $(CXXFLAGS) $(CPPFLAGS) -c max6675obj.cpp -o max6675obj-if2.o
 
 vscphelperlib.o: ../../../../vscphelperlib.cpp ../../../../vscphelperlib.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../../../vscphelperlib.cpp -o $@
@@ -139,6 +154,7 @@ dllist.o: ../../../../../common/dllist.c ../../../../../common/dllist.h
 install: all
 	mkdir -p $(VSCP_PROJ_BASE_DIR)/drivers/level2
 	$(INSTALL_PROGRAM) vscpl2drv-rpimax6675.so $(VSCP_PROJ_BASE_DIR)/drivers/level2
+	$(INSTALL_PROGRAM) vscpl2drv-rpimax6675-if2.so $(VSCP_PROJ_BASE_DIR)/drivers/level2
 
 uninstall: 
 
@@ -157,7 +173,9 @@ clean:
 	rm -f ../../../../common/*.o
 	rm -f ../../../../../common/*.o
 	rm -f vscpl2drv-rpimax6675.so
+	rm -f vscpl2drv-rpimax6675-if2.so
 	rm -f test
+	rm -f test-if2
 	rm -f *.deb
 	rm -f *.gz
 

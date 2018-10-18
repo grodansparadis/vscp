@@ -1,199 +1,59 @@
-// max6675.h: interface for the gpio driver.
+///////////////////////////////////////////////////////////////////////////////
+// max6675.h:
 //
-// This program is free software; you can redistribute it and/or
-// modify it under the terms of the GNU General Public License
-// as published by the Free Software Foundation; either version
-// 2 of the License, or (at your option) any later version.
-// 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2018 Ake Hedman, 
-// Grodans Paradis AB, <akhe@grodansparadis.com>
-// 
-// This file is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-// 
-// You should have received a copy of the GNU General Public License
-// along with this file see the file COPYING.  If not, write to
-// the Free Software Foundation, 59 Temple Place - Suite 330,
-// Boston, MA 02111-1307, USA.
+// The MIT License (MIT)
 //
+// Copyright -2018 Matthew Robinson - https://github.com/mttrb
+// Copyright (c) 2000-2018 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
+// 
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+// 
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
+#ifndef MAX6675_H
+#define MAX6675_H
+
+typedef enum {
+    MAX6675_CELSIUS,
+    MAX6675_KELVIN,
+    MAX6675_FAHRENHEIT
+} MAX6675TempScale;
 
 
-#if !defined(____GPIO__INCLUDED_)
-#define ____GPIO__INCLUDED_
+typedef struct max6675 {	
+    int m_pi;			// Used by pigpioif2 
+    int m_handle;		// Used by pigpio/pigpioif2
+    int m_SpiChannel;
+    int m_OpenSensor;   // != 0 if open sensor detected
+    MAX6675TempScale m_scale; 	// Temperature unit
+} max6675_t;
 
-#ifdef WIN32
-#include <windows.h>
+max6675_t * MAX6675Setup( int spi_channel ); 
+void MAX6675Free( max6675_t *handle );
+
+void MAX6675SetScale( max6675_t *handle, MAX6675TempScale scale );
+MAX6675TempScale MAX6675GetScale( max6675_t *handle );
+
+float MAX6675GetTempC( max6675_t *handle );
+float MAX6675GetTempK( max6675_t *handle );
+float MAX6675GetTempF( max6675_t *handle );
+
+float MAX6675GetTemp( max6675_t *handle );
+
 #endif
-
-#include <stdio.h>
-#include <string.h>
-#include <time.h>
-
-#ifdef WIN32
-
-#if _MSC_VER > 1000
-#pragma once
-#endif // _MSC_VER > 1000
-
-#else
-
-#define _POSIX
-#include <unistd.h>
-#include <pthread.h>
-#include <syslog.h>
-
-#endif
-
-#include <wx/file.h>
-#include <wx/wfstream.h>
-
-#include "../../../../common/canal.h"
-#include "../../../../common/vscp.h"
-#include "../../../../common/canal_macro.h"
-#include "../../../../../common/dllist.h"
-#include "../../../../common/vscpremotetcpif.h"
-#include "../../../../common/guid.h"
-
-#include <list>
-#include <string>
-
-using namespace std;
-
-#define VSCP_LEVEL2_DLL_LOGGER_OBJ_MUTEX "___VSCP__DLL_L2GPIO_OBJ_MUTEX____"
-
-#define VSCP_SOCKETCAN_LIST_MAX_MSG		2048
-  
-// Input and output queue
-//WX_DECLARE_LIST(vscpEvent, VSCPEVENTLIST_SEND);
-//WX_DECLARE_LIST(vscpEvent, VSCPEVENTLIST_RECEIVE);
-
-// Forward declarations
-class CRpiMax6675WorkerTread;
-class VscpRemoteTcpIf;
-class wxFile;
-
-
-class CRpiMax6675 {
-public:
-
-    /// Constructor
-    CRpiMax6675();
-
-    /// Destructor
-    virtual ~CRpiMax6675();
-
-    /*! 
-        Open
-        @return True on success.
-     */
-    bool open(const char *pUsername,
-            const char *pPassword,
-            const char *pHost,
-            short port,
-            const char *pPrefix,
-            const char *pConfig);
-
-    /*!
-        Flush and close the log file
-     */
-    void close(void);
-
-	/*!
-		Add event to send queue 
-	 */
-	bool addEvent2SendQueue(const vscpEvent *pEvent);
-
-public:
-
-    /// Run flag
-    bool m_bQuit;
-	
-    /// Server supplied username
-    wxString m_username;
-
-    /// Server supplied password
-    wxString m_password;
-
-    /// server supplied prefix
-    wxString m_prefix;
-
-    /// server supplied host
-    wxString m_host;
-
-    /// Server supplied port
-    short m_port;
-    
-    /// socketcan interface to use
-    wxString m_interface;
-    
-    /// Filter
-    vscpEventFilter m_vscpfilter;
-	
-	/// Get GUID for this interface.
-	//cguid m_ifguid;
-
-    /// Pointer to worker threads
-    CRpiMax6675WorkerTread *m_pthreadWorker;
-    
-     /// VSCP server interface
-    VscpRemoteTcpIf m_srv;
-	
-	// Queue
-	//VSCPEVENTLIST_SEND m_sendQueue;			// Things we should send
-	//VSCPEVENTLIST_RECEIVE m_receiveQueue;		// Thing this driver receive
-	
-	std::list<vscpEvent *> m_sendList;
-	std::list<vscpEvent *> m_receiveList;
-	
-	/*!
-        Event object to indicate that there is an event in the output queue
-     */
-    wxSemaphore m_semSendQueue;			
-	wxSemaphore m_semReceiveQueue;		
-	
-	// Mutex to protect the output queue
-	wxMutex m_mutexSendQueue;		
-	wxMutex m_mutexReceiveQueue;
-
-};
-
-///////////////////////////////////////////////////////////////////////////////
-//				                Worker Treads
-///////////////////////////////////////////////////////////////////////////////
-
-
-class CRpiMax6675WorkerTread : public wxThread {
-public:
-
-    /// Constructor
-    CRpiMax6675WorkerTread();
-
-    /// Destructor
-    ~CRpiMax6675WorkerTread();
-
-    /*!
-        Thread code entry point
-     */
-    virtual void *Entry();
-
-    /*! 
-        called when the thread exits - whether it terminates normally or is
-        stopped with Delete() (but not when it is Kill()ed!)
-     */
-    virtual void OnExit();
-
-    /// VSCP server interface
-    VscpRemoteTcpIf m_srv;
-
-    /// Sensor object
-    CRpiMax6675 *m_pObj;
-
-};
-
-
-
-#endif // !defined(AFX_VSCPLOG_H__6F5CD90E_ACF7_459A_9ACB_849A57595639__INCLUDED_)

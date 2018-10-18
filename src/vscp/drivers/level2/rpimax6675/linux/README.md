@@ -4,6 +4,7 @@
 
 This driver interface one or more K type thermocouples connected to MAX6675 SPI interface connected to one of the SPI interfaces on a Raspberry Pi. If you need hardware it can be found on [Ebay](https://www.ebay.com/itm/NEW-MAX6675-Module-K-Type-Thermocouple-Temperature-Sensor-Arduino-/272321510687) or [AliExpress](https://www.aliexpress.com/item/MAX6675-Module-K-Type-Thermocouple-Thermocouple-Senso-Temperature-Degrees-Module-for-arduino/32841448771.html?spm=2114.search0204.3.1.371980b8u1Rknu&ws_ab_test=searchweb0_0,searchweb201602_1_10065_10068_318_319_10546_317_10548_10696_450_10084_10083_10618_452_535_534_533_10307_10820_532_10303_204_10059_10884_323_10887_100031_320_10103_448_449,searchweb201603_60,ppcSwitch_0_ppcChannel&algo_expid=cf22e2e5-120a-4654-8619-09600ef8612e-0&algo_pvid=cf22e2e5-120a-4654-8619-09600ef8612e&transAbTest=ae803_5) or similar for a low cost. 
 
+It is possible to measure temperatures with 12-bit resolution in the range 0-1023 degrees (resolution: 0.25 degrees Celsius) with a higher accuracy up to 700 degrees.
 
 ## Building the driver
 If you build the VSCP package from source and want to build this driver you should add the switch **--enable-rpi** to configure as
@@ -15,7 +16,7 @@ If you build the VSCP package from source and want to build this driver you shou
 ## Enable SPI on the Raspberry Pi
 Use **raspi-config** to enable the SPI interface hardware drivers.
 
-[Sparcfun](https://learn.sparkfun.com/tutorials/raspberry-pi-spi-and-i2c-tutorial/all) have a good tutorial on both SPI and I2C and where you should connect the tour device.
+Sparcfun have a [good tutorial]((https://learn.sparkfun.com/tutorials/raspberry-pi-spi-and-i2c-tutorial/all)) on both SPI and I2C and where you should connect the tour device.
 
 ## Driver configuration
 
@@ -23,7 +24,7 @@ Use **raspi-config** to enable the SPI interface hardware drivers.
 <driver enable="true" >
     <name>driver-name</name>
     <path>path to driver</path>
-    <config>Optional BINHEX64 coded config</config>
+    <config>Optional BINHEX64 coded XML config</config>
     <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
 </driver>
 ```
@@ -37,17 +38,29 @@ The XML configuration have the following format
 ```xml
 <?xml version = "1.0" encoding = "UTF-8" ?>
 <setup>
-    <interface benable="true|false" 
+    <interface enable="true|false" 
                 bus="0|1" 
                 unit="0|1|2|C|K|F" 
-                interval="ms" 
+                detect-open="true|false"
+                interval="seconds" 
                 vscpclass="10" 
                 index="" 
                 zone="" 
                 subzone="" />
 </setup>
 ```
+
 There can be more than one <interface> tag but they must use different bus id's (0/1).
+
+ * **enable** - Enable the interface. Item disregarded if disabled. 
+ * **bus** - SPI bus. Can currently be 0 or 1.
+ * **unit** - This is the unit for the temperature measurement. Can me 0/1/2 or "K"/"C"/"F" representing units Kelvin, degrees Celsius and degrees Fahrenheit.
+ * **detect-open** - If true and open thermocouple will be detected.
+ * **interval** - Interval in seconds between temperature events.
+ * **vcpclass** - Measurement class that should be used of temperature events. See generated events below.
+ * **index** - Index to use if event of selected VSCP class require it.
+ * **zone** - Zone to use if event of selected VSCP class require it.
+ * **Subzone** - Subzone to use if event of selected VSCP class require it.
 
 ## Generated events
 

@@ -57,15 +57,9 @@
 #define VSCP_MODE_PWM_HARD   1  // PWM in hardware
 
 // Forward declarations
-class RpiGpioWorkerTread;
 class VscpRemoteTcpIf;
 class CRpiGpio;
 
-
-/*struct reportStruct {
-    int id;
-    CRpiGpio * pObj;
-};*/
 
 // Actions
 #define ACTION_RPIGPIO_NOOP             0x00    // No operation

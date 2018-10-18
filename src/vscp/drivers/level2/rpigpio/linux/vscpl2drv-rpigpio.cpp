@@ -228,7 +228,9 @@ VSCPClose(long handle)
 // 
 
 extern "C" int
-VSCPBlockingSend( long handle, const vscpEvent *pEvent, unsigned long timeout )
+VSCPBlockingSend( long handle, 
+					const vscpEvent *pEvent, 
+					unsigned long timeout )
 {
 	int rv = 0;
 

@@ -41,7 +41,9 @@
 #include "../../../../common/vscpremotetcpif.h"
 #include "../../../../common/vscp_type.h"
 #include "../../../../common/vscp_class.h"
+
 #include "rpigpio.h"
+
 #ifdef USE_PIGPIOD
 #include <pigpiod_if2.h>
 #else
@@ -829,12 +831,12 @@ startSetupParser( void *data, const char *name, const char **attr )
                     pInputObj->setWatchdog( vscp2_readStringValue( attribute ) );
                 }
 
-                // Noice filter steady
+                // Noise filter steady
                 else if ( 0 == strcmp( attr[i], "noise_filter_steady") ) {
                     pInputObj->setWatchdog( vscp2_readStringValue( attribute ) );
                 }
 
-                // Noice filter active
+                // Noise filter active
                 else if ( 0 == strcmp( attr[i], "noise_filter_active") ) {
                     pInputObj->setNoiseFilterActive( vscp2_readStringValue( attribute ) );
                 }

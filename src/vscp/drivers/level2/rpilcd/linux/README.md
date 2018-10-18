@@ -15,7 +15,7 @@ If you build the VSCP package from source and want to build this driver you shou
 ## Enable I2C on the Raspberry Pi
 Use **raspi-config** to enable the I2C interface hardware drivers.
 
-[Sparcfun](https://learn.sparkfun.com/tutorials/raspberry-pi-spi-and-i2c-tutorial/all) have a good tutorial on both SPI and I2C and where you should connect the device.
+Sparcfun have a [good tutorial]((https://learn.sparkfun.com/tutorials/raspberry-pi-spi-and-i2c-tutorial/all)) on both SPI and I2C and where you should connect the tour device.
 
 ## Driver configuration
 
@@ -41,7 +41,7 @@ The XML configuration have the following format
                 bus="0|1" 
                 rows="2"
                 width="16"
-                on="true|false"
+                display="true|flase"
                 backlight="true|false"
                 cursor-type="block|line"
                 cursor="true|false"
@@ -62,15 +62,15 @@ The XML configuration have the following format
 ```
 There can be more than one <interface> tag but they must use different bus id's (0/1) and address combinations.
 
-  * **enable** - Interface row is valid. Interface will not be used if disabled.
-  * **bus** - I2C channel to use.
+  * **enable** - Interface row is valid. Interface will not be used if disabled. "true"/"false"
+  * **bus** - I2C channel to use. (0/1)
   * **address** - I2C addess to use (default is 0x27).
-  * **rows** - Number of rows for display.
-  * **width** - Display width.
-  * **on** - The display will be turned on/off from start.
-  * **backlight** - Backlight will be on or off from start.
-  * **cursor-type** - Set the cursor type. line or block cursor.
-  * **cursor** - Cursor will be on or off from start.
+  * **rows** - Number of rows for display (default is 2)
+  * **width** - Display width (eefault is 16).
+  * **display** - The display will be turned on/off from start. ("true"/"false")
+  * **backlight** - Backlight will be on or off from start. ("true"/"false")
+  * **cursor-type** - Set the cursor type. "line" or "block" cursor.
+  * **cursor** - Cursor will be "on" or "off" from start.
   * **auto** - The auto mode show a number of pages in a round robin fashion. Pages (at least one) must be defined with the <page> tag.
   * **start-text** - Initial text om the LCD. This text can be given BASE64 encoded if preceded with BASE64:
 
