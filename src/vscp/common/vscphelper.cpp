@@ -737,6 +737,9 @@ bool vscp_decodeBase64IfNeeded( wxString &wxstr, wxString &strResult )
     if ( wxstr.StartsWith(_("BASE64:"), &wxstr ) ) {        
         vscp_base64_wxdecode( wxstr );             
     } 
+    else {
+        strResult = wxstr;
+    }
     
     return true;
 }
@@ -753,6 +756,9 @@ bool vscp2_decodeBase64IfNeeded( const std::string &str, std::string &strResult 
     if ( 0 == strResult.find( "BASE64:") ) {
         strResult = strResult.substr( 7, strResult.length()-7 );
         vscp2_base64_decode( strResult );             
+    }
+    else {
+        strResult = str;
     }
     
     return true;

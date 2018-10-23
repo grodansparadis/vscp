@@ -43,8 +43,8 @@ The XML configuration have the following format
         index="" 
         zone="" 
         subzone="" >
-    <interface enable="true|false" 
-                bus="0|1" 
+    <max6675 enable="true|false" 
+                spichannel="0|1" 
                 unit="0|1|2|C|K|F" 
                 detect-open="true|false"
                 interval="seconds" 
@@ -78,6 +78,30 @@ Event can be sent from the driver as
  * CLASS1.SETVALUEZONE = 85, Type=6, VSCP_TYPE_MEASUREMENT_TEMPERATURE
  * CLASS2.MEASUREMENT_STR = 1040, Type=6, VSCP_TYPE_MEASUREMENT_TEMPERATURE
  * CLASS2.MEASUREMENT_FLOAT = 1060, Type=6, VSCP_TYPE_MEASUREMENT_TEMPERATURE
+
+---
+
+## Test 
+
+use variable "max6675_setup"
+
+```xml
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<setup  guid="00:01:02:03:04:05:06:07:08:09:0A:0B:0C:0D:0E:0F"
+        index="11" 
+        zone="22" 
+        subzone="33" >
+    <max6675 enable="true" 
+                spichannel="0" 
+                unit="C" 
+                detect-open="true"
+                interval="1000" 
+                vscpclass="10" 
+                index="0" 
+                zone="1" 
+                subzone="2" />
+</setup>
+```
 
 ---
 

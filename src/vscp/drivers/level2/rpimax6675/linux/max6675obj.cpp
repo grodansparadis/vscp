@@ -67,6 +67,57 @@ void *workerThread( void *data );
 
 
 //////////////////////////////////////////////////////////////////////
+// CInterface
+//
+
+CInterface::CInterface() 
+{
+    m_bEnable = true;
+    setSpiChannel();
+    setDetectOpenSensor();
+    m_interval = 60;    // Every minute
+    m_vscp_unit = 0;    // Kelvin
+    m_vscp_class = VSCP_CLASS2_MEASUREMENT_STR;
+    m_index = 0;
+    m_zone = 0;
+    m_subzone = 0;
+}
+
+
+
+CInterface::~CInterface()
+{
+    ;
+}
+
+//////////////////////////////////////////////////////////////////////
+// ~CLocalDM
+//
+
+bool CInterface::setVscpClass( uint16_t vscpclass ) 
+{ 
+    switch ( vscpclass ) {
+        case VSCP_CLASS1_MEASUREMENT:
+        case VSCP_CLASS1_MEASUREMENT32:
+        case VSCP_CLASS1_MEASUREMENT64:
+        case VSCP_CLASS1_MEASUREZONE:
+        case VSCP_CLASS1_SETVALUEZONE:
+        case VSCP_CLASS2_MEASUREMENT_FLOAT:
+        case VSCP_CLASS2_MEASUREMENT_STR:
+            m_vscp_class = vscpclass; 
+            break;
+
+        default:
+            return false;
+    }
+
+    return true;
+};
+
+// ----------------------------------------------------------------------------
+
+
+//////////////////////////////////////////////////////////////////////
 // CLocalDM
 //
 
@@ -222,46 +273,10 @@ bool CLocalDM::setAction( std::string& str )
     if ( std::string::npos != str.find("NOOP") ) {
         m_action = ACTION_RPIMAX6675_NOOP;
     }
-    /*else if ( std::string::npos != str.find("ON") ) {
-        m_action = ACTION_RPIGPIO_ON;
+    else if ( std::string::npos != str.find("SYNC") ) {
+        m_action = ACTION_RPIMAX6675_SYNC;
     }
-    else if ( std::string::npos != str.find("OFF") ) {
-        m_action = ACTION_RPIGPIO_OFF;
-    }
-    else if ( std::string::npos != str.find("PWM") ) {
-        m_action = ACTION_RPIGPIO_PWM;
-    }
-    else if ( std::string::npos != str.find("FREQUENCY") ) {
-        m_action = ACTION_RPIGPIO_FREQUENCY;
-    }
-    else if ( std::string::npos != str.find("STATUS") ) {
-        m_action = ACTION_RPIGPIO_STATUS;
-    }
-    else if ( std::string::npos != str.find("SERVO") ) {
-        m_action = ACTION_RPIGPIO_SERVO;
-    }
-    else if ( std::string::npos != str.find("WAVEFORM") ) {
-        m_action = ACTION_RPIGPIO_WAVEFORM;
-    }
-    else if ( std::string::npos != str.find("SHIFTOUT") ) {
-        m_action = ACTION_RPIGPIO_SHIFTOUT;
-    }
-    else if ( std::string::npos != str.find("SHIFTOUT-EVENT") ) {
-        m_action = ACTION_RPIGPIO_SHIFTOUT_EVENT;
-    }
-    else if ( std::string::npos != str.find("SHIFTIN") ) {
-        m_action = ACTION_RPIGPIO_SHIFTIN;
-    }
-    else if ( std::string::npos != str.find("SAMPLE") ) {
-        m_action = ACTION_RPIGPIO_SAMPLE;
-    }
-    else if ( std::string::npos != str.find("SERIAL-OUT") ) {
-        m_action = ACTION_RPIGPIO_SERIAL_OUT;
-    }
-    else if ( std::string::npos != str.find("SERIAL-IN") ) {
-        m_action = ACTION_RPIGPIO_SERIAL_IN;
-    }*/
-
+    
     return true;
 }
 
@@ -364,51 +379,101 @@ startSetupParser( void *data, const char *name, const char **attr )
             }
         }
     } 
-    else if ( ( 0 == strcmp( name, "interface" ) ) && 
+    else if ( ( 0 == strcmp( name, "max6675" ) ) && 
               ( 1 == depth_setup_parser ) ) {
         
-        //CGpioInput *pInputObj = new CGpioInput;
-        if ( NULL != NULL /*pInputObj*/ ) {
+        CInterface * pInterface = new CInterface;
+        if ( NULL != pInterface ) {
 
             for ( int i = 0; attr[i]; i += 2 ) {
             
                 std::string attribute = attr[i+1];
-/*
-                // Get pin
-                if ( 0 == strcmp( attr[i], "pin") ) {
-                    uint8_t pin = vscp2_readStringValue( attribute );
-                    pInputObj->setPin( pin );
-                }    
-                
-                // Get pullup
-                else if ( 0 == strcmp( attr[i], "pullup") ) {
-                    pInputObj->setPullUp( attribute );
+
+                // Get enable
+                if ( 0 == strcmp( attr[i], "enable") ) {
+                    std::string str = attribute;
+                    vscp2_trim( str );
+                    vscp2_makeUpper( str );
+                    if ( std::string::npos != str.find("TRUE") ) {
+                        pInterface->setEnable( true );
+                    }
+                    else {
+                        pInterface->setEnable( false );
+                    } 
                 }
-                
-                // Watchdog
-                else if ( 0 == strcmp( attr[i], "watchdog") ) {
-                    pInputObj->setWatchdog( vscp2_readStringValue( attribute ) );
+                // bus
+                else if ( 0 == strcmp( attr[i], "spichannel") ) {
+                    uint8_t ch = vscp2_readStringValue( attribute );
+                    pInterface->setSpiChannel( ch );
+                }
+                // interval
+                else if ( 0 == strcmp( attr[i], "interval") ) {
+                    uint16_t interval = vscp2_readStringValue( attribute );
+                    pInterface->setInterval( interval );
+                }
+                // Check open connection
+                if ( 0 == strcmp( attr[i], "detect-open") ) {
+                    std::string str = attribute;
+                    vscp2_trim( str );
+                    vscp2_makeUpper( str );
+                    if ( std::string::npos != str.find("TRUE") ) {
+                        pInterface->setDetectOpenSensor( true );
+                    }
+                    else {
+                        pInterface->setDetectOpenSensor( false );
+                    } 
+                }
+                // unit
+                else if ( 0 == strcmp( attr[i], "unit") ) {
+                    std::string str = attribute;
+                    vscp2_trim( str );
+                    vscp2_makeUpper( str );
+                    if ( std::string::npos != str.find("K") ) {
+                        pInterface->setUnit( 0 );
+                    }
+                    else if ( std::string::npos != str.find("C") ) {
+                        pInterface->setUnit( 1 );
+                    }
+                    else if ( std::string::npos != str.find("F") ) {
+                        pInterface->setUnit( 2 );
+                    }
+                    else {
+                        uint8_t unit = vscp2_readStringValue( str );
+                        pInterface->setUnit( unit );
+                    }
+                }
+                // VSCP class
+                else if ( 0 == strcmp( attr[i], "vscpclass") ) {
+                    uint8_t vscpclass = vscp2_readStringValue( attribute );
+                    if ( !pInterface->setVscpClass( vscpclass ) ) {
+                        syslog( LOG_ERR,
+				                    "%s %s ",
+                                    (const char *)VSCP_RPIMAX6675_SYSLOG_DRIVER_ID,
+				                    (const char *)"Invalid VSCP class in configuration.");
+		
+                    }
+
+                }
+                // index
+                else if ( 0 == strcmp( attr[i], "index") ) {
+                    uint8_t index = vscp2_readStringValue( attribute );
+                    pInterface->setIndex( index );
+                }
+                // zone
+                else if ( 0 == strcmp( attr[i], "zone") ) {
+                    uint8_t zone = vscp2_readStringValue( attribute );
+                    pInterface->setZone( zone );
+                }
+                // subzone
+                else if ( 0 == strcmp( attr[i], "subzone") ) {
+                    uint8_t subzone = vscp2_readStringValue( attribute );
+                    pInterface->setSubzone( subzone );
                 }
 
-                // Noice filter steady
-                else if ( 0 == strcmp( attr[i], "noise_filter_steady") ) {
-                    pInputObj->setWatchdog( vscp2_readStringValue( attribute ) );
-                }
-
-                // Noise filter active
-                else if ( 0 == strcmp( attr[i], "noise_filter_active") ) {
-                    pInputObj->setNoiseFilterActive( vscp2_readStringValue( attribute ) );
-                }
-
-                // Glitch filter
-                else if ( 0 == strcmp( attr[i], "glitch_filter") ) {
-                    pInputObj->setGlitchFilter( vscp2_readStringValue( attribute ) );
-                }
-*/
             } // for - attributes
 
             // Add input to list
-            //pmax6675->m_inputPinList.push_back( pInputObj );
+            pmax6675->m_interfaceList.push_back( pInterface );
 
         } // input obj
     }
@@ -545,8 +610,6 @@ CRpiMax6675::CRpiMax6675()
     gettimeofday( &curTime, NULL );
     uint32_t now = 1000 * curTime.tv_sec + ( curTime.tv_usec / 1000 );
 
-
-
     pthread_mutex_init( &m_mutex_SendQueue, NULL );
     pthread_mutex_init( &m_mutex_ReceiveQueue, NULL );
 
@@ -564,9 +627,15 @@ CRpiMax6675::~CRpiMax6675()
 	if ( !m_bQuit ) close();
 
     // Remove local DM
-    std::list<CLocalDM *>::const_iterator iterator5;
-    for (iterator5 = m_LocalDMList.begin(); iterator5 != m_LocalDMList.end(); ++iterator5) {
-        delete *iterator5;
+    std::list<CLocalDM *>::const_iterator iteratorDM;
+    for (iteratorDM = m_LocalDMList.begin(); iteratorDM != m_LocalDMList.end(); ++iteratorDM) {
+        delete *iteratorDM;
+    }
+
+    // Remove interfaces
+    std::list<CInterface *>::const_iterator iteratorIf;
+    for (iteratorIf = m_interfaceList.begin(); iteratorIf != m_interfaceList.end(); ++iteratorIf) {
+        delete *iteratorIf;
     }
 
     pthread_mutex_destroy( &m_mutex_SendQueue );
@@ -597,10 +666,10 @@ CRpiMax6675::open( const char *pUsername,
 	m_port = port;
 	m_prefix = pPrefix;
 
-	m_setupXml = pPrefix;
+    vscp2_decodeBase64IfNeeded( pConfig, m_setupXml );
 
-	// First log on to the host and get configuration 
-	// variables
+	// First look on to the host and get the configuration 
+	// variable (if there)
 
 	if ( VSCP_ERROR_SUCCESS != m_srv.doCmdOpen( m_host,
                                                     m_port,
@@ -748,7 +817,6 @@ void *workerThread( void *data )
     CRpiMax6675 *pObj = (CRpiMax6675 *)data;
     
     // Initialize the pigpio lib
-    //gpioCfgInternals(1<<10, 0);  // Prevent signal 11 error
 #ifdef USE_PIGPIOD
     int pmax6675d_session_id;
     if ( ( pmax6675d_session_id = pigpio_start( (char *)pObj->getPiGpiodHost().c_str(), 
@@ -772,13 +840,62 @@ void *workerThread( void *data )
     }
 #endif                    
     
-
     // Debug
     syslog( LOG_ERR, 
                 "%s gpioversion - Version=%d HW version =%d",
                 (const char *)VSCP_RPIMAX6675_SYSLOG_DRIVER_ID, 
                 gpioVersion(), gpioHardwareRevision() );
 
+    int cntOpenInterfaces = 0;
+    std::list<CInterface *>::const_iterator it;
+    for ( it = pObj->m_interfaceList.begin(); 
+            it != pObj->m_interfaceList.end(); 
+            ++it ) {
+        CInterface *pInterface = *it;   
+        if ( pInterface->isEnable() ) {
+            if ( pInterface->openInterface() ) {
+
+                cntOpenInterfaces++;
+
+                pInterface->getMax6675()->m_OpenSensor =
+                    pInterface->isDetectOpenSensor() ?
+                        1 : 0;
+                switch ( pInterface->getUnit() ) {
+
+                    case 0:
+                        MAX6675SetScale( pInterface->getMax6675(), 
+                                            MAX6675_KELVIN );
+                        break;
+
+                    default:
+                    case 1:
+                        MAX6675SetScale( pInterface->getMax6675(), 
+                                            MAX6675_CELSIUS );
+                        break;
+
+                    case 2:
+                        MAX6675SetScale( pInterface->getMax6675(), 
+                                            MAX6675_FAHRENHEIT );
+                        break;        
+                }
+            }
+            else {
+                syslog( LOG_ERR,
+				            "%s %s ",
+                            (const char *)VSCP_RPIMAX6675_SYSLOG_DRIVER_ID,
+				            (const char *)"Unable to open SPI interface." );
+            }
+        }
+    }
+
+    // If no interface open just quit
+    if ( 0 == cntOpenInterfaces ) {
+        syslog( LOG_ERR,
+				    "%s %s ",
+                    (const char *)VSCP_RPIMAX6675_SYSLOG_DRIVER_ID,
+				    (const char *)"No SPI interface. Quitting" );
+        return NULL;
+    }
 
     while ( !pObj->m_bQuit ) {
         
@@ -876,7 +993,7 @@ void *workerThread( void *data )
                             // OK - Do action
                             switch ( pDM->getAction() ) {
 /*
-                                case ACTION_RPIGPIO_ON:
+                                case ACTION_RPIMAX6675_SYNC:
                                     {
 #ifdef RPIGPIO_DEBUG                                        
                                         syslog( LOG_ERR, 
@@ -950,9 +1067,55 @@ void *workerThread( void *data )
         gettimeofday( &curTime, NULL );
         uint32_t now = 1000 * curTime.tv_sec + ( curTime.tv_usec / 1000 );
       
+        //std::list<CInterface *>::const_iterator it;
+        for ( it = pObj->m_interfaceList.begin(); 
+                it != pObj->m_interfaceList.end(); 
+                ++it ) {
+            CInterface *pInterface = *it;   
+            if ( pInterface->isEnable() ) {
+
+                if ( ( now - pInterface->getLastEvent() ) > pInterface->getInterval() ) {
+
+                    // Time to send event
+
+                    float value;
+                    uint8_t unit;
+
+                    // Read temperature
+                    switch ( pInterface->getUnit() ) {
+
+                        case 0:     // Kelvin
+                            unit = 0;
+                            value = MAX6675GetTempK( pInterface->getMax6675() );
+                            break;
+
+                        case 2:     // Fahrenheit
+                            unit = 2;
+                            value = MAX6675GetTempF( pInterface->getMax6675() );
+                            break;
+        
+                        default:    // Celsius
+                            unit = 1;
+                            value = MAX6675GetTempC( pInterface->getMax6675() );
+                            break;
+                    }
+
+                }
+
+            }
+        }
+
 
     } // while
 
+    for ( it = pObj->m_interfaceList.begin(); 
+            it != pObj->m_interfaceList.end(); 
+            ++it ) {
+        CInterface *pInterface = *it;   
+        if ( pInterface->isEnable() ) {
+            pInterface->closeInterface();
+        }
+    }
     // Quit gpio library functionality
 #ifdef USE_PIGPIOD
     // Close lib

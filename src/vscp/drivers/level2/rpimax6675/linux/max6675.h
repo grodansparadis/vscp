@@ -29,6 +29,11 @@
 #ifndef MAX6675_H
 #define MAX6675_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 typedef enum {
     MAX6675_CELSIUS,
     MAX6675_KELVIN,
@@ -40,7 +45,7 @@ typedef struct max6675 {
     int m_pi;			// Used by pigpioif2 
     int m_handle;		// Used by pigpio/pigpioif2
     int m_SpiChannel;
-    int m_OpenSensor;   // != 0 if open sensor detected
+    int m_OpenSensor;           // != 0 if open sensor detected
     MAX6675TempScale m_scale; 	// Temperature unit
 } max6675_t;
 
@@ -55,5 +60,9 @@ float MAX6675GetTempK( max6675_t *handle );
 float MAX6675GetTempF( max6675_t *handle );
 
 float MAX6675GetTemp( max6675_t *handle );
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

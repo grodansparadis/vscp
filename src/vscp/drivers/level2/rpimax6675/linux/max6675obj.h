@@ -60,7 +60,7 @@ class VscpRemoteTcpIf;
 
 // Actions
 #define ACTION_RPIMAX6675_NOOP             0x00    // No operation
-
+#define ACTION_RPIMAX6675_SYNC             0x01    // Sync
 
 // Future
 
@@ -137,6 +137,92 @@ private:
     // Parsed action parameter arg. values
     uint32_t m_args[MAX_DM_ARGS];
 
+};
+
+
+// ----------------------------------------------------------------------------
+
+// This class encapsulates one max6675 sensor interface
+
+class CInterface {
+public:
+
+    /// Constructor
+    CInterface();
+
+    /// Destructor
+    virtual ~CInterface();
+
+    void setEnable( bool bEnable= true ) { m_bEnable = bEnable; };
+    bool isEnable( void ) { return m_bEnable; };
+
+    void setSpiChannel( uint8_t ch=0 ) { m_spiChannel = ch; };
+    uint8_t getSpiChannel( void ) { return m_spiChannel; };
+
+    void setDetectOpenSensor( bool bEnable= true ) { m_bOpenSensor = bEnable; };
+    bool isDetectOpenSensor( void ) { return m_bOpenSensor; };
+
+    void setInterval( uint16_t interval=0 ) { m_interval = interval; };
+    uint16_t getInterval( void ) { return m_interval; };
+
+    void setUnit( uint8_t unit = 0 ) { m_vscp_unit = unit; };
+    uint8_t getUnit( void ) { return m_vscp_unit; };
+
+    bool setVscpClass( uint16_t vscpclass = VSCP_CLASS2_MEASUREMENT_STR );
+    uint16_t getVscpClass( void ) { return m_vscp_class; };
+
+    void setIndex( uint8_t index = 0 ) { m_index = index; };
+    uint8_t getIndex( void ) { return m_index; };
+
+    void setZone( uint8_t zone = 0 ) { m_zone = zone; };
+    uint8_t getZone( void ) { return m_zone; };
+
+    void setSubzone( uint8_t subzone = 0 ) { m_subzone = subzone; };
+    uint8_t getSubZone( void ) { return m_subzone; };
+
+    void setLastEvent( uint32_t last ) { m_lastEvent = last; };
+    uint32_t getLastEvent( void ) { return m_lastEvent; };
+
+    bool openInterface( void ) 
+        { return ( NULL != ( m_max6675 = MAX6675Setup( m_spiChannel ) ) ); };
+    void closeInterface( void ) { MAX6675Free( m_max6675 ); };
+
+    max6675_t *getMax6675( void ) { return m_max6675; };
+
+ private:   
+
+    // True if interface is enabled
+    bool m_bEnable;
+
+    // SPI channel (0/1)
+    uint8_t m_spiChannel;
+
+    // Detect open/missing sensor 
+    bool m_bOpenSensor;
+
+    // Interval in seconds between events
+    uint16_t m_interval;
+
+    // Unit for temperature Kelvin=0 (default) / Celsius=1 /Fahrenheit=2
+    uint8_t m_vscp_unit;
+
+    // Measurement class (default 10)
+    uint16_t m_vscp_class;
+
+    // Sensor index
+    uint8_t m_index;
+
+    // sensor zone
+    uint8_t m_zone;
+
+    // sensor subzone
+    uint8_t m_subzone;
+
+    // Time for last event
+    uint32_t m_lastEvent;
+
+    // MAX6675 control structure pointer
+    max6675_t *m_max6675;
 };
 
 // ----------------------------------------------------------------------------
@@ -257,8 +343,10 @@ public:
     pthread_mutex_t m_mutex_ReceiveQueue;
 
     // Decision matrix
-    std::list<CLocalDM *> m_LocalDMList; 
+    std::list<CLocalDM *> m_LocalDMList;
 
+    // List with interfaces
+    std::list<CInterface *> m_interfaceList;
 };
 
 

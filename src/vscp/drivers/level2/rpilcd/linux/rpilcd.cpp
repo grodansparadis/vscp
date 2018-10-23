@@ -596,10 +596,10 @@ CRpiLCD::open( const char *pUsername,
 	m_port = port;
 	m_prefix = pPrefix;
 
-	m_setupXml = pPrefix;
+	vscp2_decodeBase64IfNeeded( pConfig, m_setupXml );
 
-	// First log on to the host and get configuration 
-	// variables
+	// First look on to the host and get the configuration 
+	// variable (if there)
 
 	if ( VSCP_ERROR_SUCCESS != m_srv.doCmdOpen( m_host,
                                                     m_port,
