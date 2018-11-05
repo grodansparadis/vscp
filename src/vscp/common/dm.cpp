@@ -147,7 +147,8 @@ void dmTimer::init( wxString& nameVar,
 // startTimer
 //
 
-void dmTimer::startTimer( void ) { 
+void dmTimer::startTimer( void ) 
+{ 
     reload(); 
     resumeTimer(); 
 };
@@ -6985,6 +6986,9 @@ int CDM::startTimer( uint32_t idTimer,
                         true,
                         bSetValue,
                         reloadLimit );
+    }
+    else {
+        rv = 1;
     }
 
     // Log
