@@ -6988,6 +6988,7 @@ int CDM::startTimer( uint32_t idTimer,
                         reloadLimit );
     }
     else {
+        pTimer->startTimer();
         rv = 1;
     }
 
