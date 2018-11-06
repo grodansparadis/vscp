@@ -91,7 +91,9 @@ DeviceBootloaderwizard::DeviceBootloaderwizard()
     Init();
 }
 
-DeviceBootloaderwizard::DeviceBootloaderwizard( wxWindow* parent, wxWindowID id, const wxPoint& pos )
+DeviceBootloaderwizard::DeviceBootloaderwizard( wxWindow* parent, 
+                                                    wxWindowID id, 
+                                                    const wxPoint& pos )
 {
     Init();
     Create( parent, id, pos );
@@ -151,10 +153,10 @@ void DeviceBootloaderwizard::Init()
     m_pgSelecAlgorithm = NULL;
     m_pgLoadFile = NULL;
 
-    m_bDeviceFound = false;           // No node found
-    m_bInterfaceSelected = false;   // No interface selected
-    m_bMDFLoaded = false;           // No MDF loaded
-    m_bHexFileLoaded = false;       // No firmware file loaded yet
+    m_bDeviceFound = false;             // No node found
+    m_bInterfaceSelected = false;       // No interface selected
+    m_bMDFLoaded = false;               // No MDF loaded
+    m_bHexFileLoaded = false;           // No firmware file loaded yet
 
     // Default boot device is none
     m_pBootCtrl = NULL;
