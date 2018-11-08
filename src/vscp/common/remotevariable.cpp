@@ -811,8 +811,8 @@ void CVSCPVariable::writeValueToString( wxString& strValueOut, bool bBase64 )
 {
     strValueOut = m_strValue;
 
-    if ( bBase64 ) {
-        vscp_base64_wxencode( strValueOut );
+    if ( !bBase64 ) {
+        vscp_base64_wxdecode( strValueOut );
     }
 }
 
