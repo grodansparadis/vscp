@@ -116,7 +116,6 @@ VSCPWORKS_OBJECTS =  vscpworks.o \
 	crc8.o \
 	vscp_aes.o \
 	sqlite3.o \
-	mongoose.o \
 	fastpbkdf2.o \
 	vscpbase64.o \
 	vscpmd5.o \

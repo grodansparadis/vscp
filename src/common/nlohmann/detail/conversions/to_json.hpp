@@ -248,10 +248,14 @@ void to_json(BasicJsonType& j, const std::vector<bool>& e)
     external_constructor<value_t::array>::construct(j, e);
 }
 
-template<typename BasicJsonType, typename CompatibleArrayType,
-         enable_if_t<is_compatible_array_type<BasicJsonType, CompatibleArrayType>::value or
-                     std::is_same<typename BasicJsonType::array_t, CompatibleArrayType>::value,
-                     int> = 0>
+template <typename BasicJsonType, typename CompatibleArrayType,
+          enable_if_t<is_compatible_array_type<BasicJsonType,
+                      CompatibleArrayType>::value and
+                      not is_compatible_object_type<
+                          BasicJsonType, CompatibleArrayType>::value and
+                      not is_compatible_string_type<BasicJsonType, CompatibleArrayType>::value and
+                      not is_basic_json<CompatibleArrayType>::value,
+                      int> = 0>
 void to_json(BasicJsonType& j, const CompatibleArrayType& arr)
 {
     external_constructor<value_t::array>::construct(j, arr);
@@ -271,7 +275,7 @@ void to_json(BasicJsonType& j, typename BasicJsonType::array_t&& arr)
 }
 
 template<typename BasicJsonType, typename CompatibleObjectType,
-         enable_if_t<is_compatible_object_type<BasicJsonType, CompatibleObjectType>::value, int> = 0>
+         enable_if_t<is_compatible_object_type<BasicJsonType, CompatibleObjectType>::value and not is_basic_json<CompatibleObjectType>::value, int> = 0>
 void to_json(BasicJsonType& j, const CompatibleObjectType& obj)
 {
     external_constructor<value_t::object>::construct(j, obj);
@@ -283,9 +287,12 @@ void to_json(BasicJsonType& j, typename BasicJsonType::object_t&& obj)
     external_constructor<value_t::object>::construct(j, std::move(obj));
 }
 
-template<typename BasicJsonType, typename T, std::size_t N,
-         enable_if_t<not std::is_constructible<typename BasicJsonType::string_t, T (&)[N]>::value, int> = 0>
-void to_json(BasicJsonType& j, T (&arr)[N])
+template <
+    typename BasicJsonType, typename T, std::size_t N,
+    enable_if_t<not std::is_constructible<typename BasicJsonType::string_t,
+                const T (&)[N]>::value,
+                int> = 0 >
+void to_json(BasicJsonType& j, const T (&arr)[N])
 {
     external_constructor<value_t::array>::construct(j, arr);
 }
@@ -299,13 +306,13 @@ void to_json(BasicJsonType& j, const std::pair<Args...>& p)
 // for https://github.com/nlohmann/json/pull/1134
 template<typename BasicJsonType, typename T,
          enable_if_t<std::is_same<T, typename iteration_proxy<typename BasicJsonType::iterator>::iteration_proxy_internal>::value, int> = 0>
-void to_json(BasicJsonType& j, T b) noexcept
+void to_json(BasicJsonType& j, const T& b)
 {
     j = {{b.key(), b.value()}};
 }
 
 template<typename BasicJsonType, typename Tuple, std::size_t... Idx>
-void to_json_tuple_impl(BasicJsonType& j, const Tuple& t, index_sequence<Idx...>)
+void to_json_tuple_impl(BasicJsonType& j, const Tuple& t, index_sequence<Idx...> /*unused*/)
 {
     j = {std::get<Idx>(t)...};
 }
@@ -318,41 +325,18 @@ void to_json(BasicJsonType& j, const std::tuple<Args...>& t)
 
 struct to_json_fn
 {
-  private:
     template<typename BasicJsonType, typename T>
-    auto call(BasicJsonType& j, T&& val, priority_tag<1> /*unused*/) const noexcept(noexcept(to_json(j, std::forward<T>(val))))
+    auto operator()(BasicJsonType& j, T&& val) const noexcept(noexcept(to_json(j, std::forward<T>(val))))
     -> decltype(to_json(j, std::forward<T>(val)), void())
     {
         return to_json(j, std::forward<T>(val));
     }
-
-    template<typename BasicJsonType, typename T>
-    void call(BasicJsonType& /*unused*/, T&& /*unused*/, priority_tag<0> /*unused*/) const noexcept
-    {
-        static_assert(sizeof(BasicJsonType) == 0,
-                      "could not find to_json() method in T's namespace");
-
-#ifdef _MSC_VER
-        // MSVC does not show a stacktrace for the above assert
-        using decayed = uncvref_t<T>;
-        static_assert(sizeof(typename decayed::force_msvc_stacktrace) == 0,
-                      "forcing MSVC stacktrace to show which T we're talking about.");
-#endif
-    }
-
-  public:
-    template<typename BasicJsonType, typename T>
-    void operator()(BasicJsonType& j, T&& val) const
-    noexcept(noexcept(std::declval<to_json_fn>().call(j, std::forward<T>(val), priority_tag<1> {})))
-    {
-        return call(j, std::forward<T>(val), priority_tag<1> {});
-    }
 };
-}
+}  // namespace detail
 
 /// namespace to hold default `to_json` function
 namespace
 {
 constexpr const auto& to_json = detail::static_const<detail::to_json_fn>::value;
-}
-}
+} // namespace
+}  // namespace nlohmann
