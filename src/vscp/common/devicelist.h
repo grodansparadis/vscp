@@ -110,7 +110,7 @@ public:
 
     bool startDriver( CControlObject *pCtrlObject );
     
-    bool pausDriver( void );    // TODO
+    bool pauseDriver( void );   // TODO
     
     bool resumeDriver( void );  // TODO
     

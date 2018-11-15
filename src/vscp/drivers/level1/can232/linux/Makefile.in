@@ -50,7 +50,7 @@ EXTRALIBS += @WXBASE_LIBS@
 endif
 
 DLFLAGS = -g -shared -fPIC -Wl,--no-undefined
-TRIP = strip
+STRIP = strip
 INSTALL_PROGRAM = ${INSTALL}
 INSTALL_DATA = ${INSTALL} -m 644
 INSTALL_DIR = /usr/bin/install -c -d

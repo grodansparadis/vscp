@@ -20,10 +20,6 @@
 // the Free Software Foundation, 59 Temple Place - Suite 330,
 // Boston, MA 02111-1307, USA.
 //
-// $RCSfile: test.cpp,v $                                       
-// $Date: 2005/09/08 07:56:00 $                                  
-// $Author: akhe $                                              
-// $Revision: 1.3 $ 
 
 #include <unistd.h>
 #include <stdio.h>
@@ -50,10 +46,10 @@ int main( void )
 	for ( i=0; i<NUMBER_OF_THREADS; i++ ) {
 		
 		// Create the worker thread.
-		if ( pthread_create( 	&workthreads[ i ],
-									&thread_attr,
-									workThread,
-									&i ) ) {	
+		if ( pthread_create( &workthreads[ i ],
+								&thread_attr,
+								workThread,
+								&i ) ) {	
 		}
 		
 	}

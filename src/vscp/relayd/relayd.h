@@ -1,4 +1,6 @@
-// version.h
+// relayd.h
+//
+// This file is part of the VSCP (http://www.vscp.org) 
 //
 // The MIT License (MIT)
 // 
@@ -21,27 +23,12 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
+//
 
-#ifndef _____VSCP_VERSION_h_____
-#define _____VSCP_VERSION_h_____
-/*
-    MAJOR version with incompatible API changes,
-    MINOR version with add functionality in a backwards-compatible manner, and
-    RELEASE version with backwards-compatible bug fixes.
-    BUILD Just a new build.
-*/
 
-// I M P O T A N T ! ! ! Lines below must be located at line 35/36/37/40/42/43    I M P O T A N T ! ! !
-#define VSCPD_MAJOR_VERSION     13
-#define VSCPD_MINOR_VERSION     1
-#define VSCPD_RELEASE_VERSION   1
-#define VSCPD_BUILD_VERSION     13
+#ifdef DEFINED_RELAYD
+#define DEFINED_RELAYD
 
-#define VSCPD_DISPLAY_VERSION "13.1.1.13 Aluminium"
 
-#define VSCPD_COPYRIGHT "Copyright (C) 2000-2018, Grodans Paradis AB, https://www.grodansparadis.com"
-#define VSCPD_COPYRIGHT_HTML "Copyright (C) 2000-2018, <a href=\"mailto:info@grodansparadis.com\">Grodans Paradis AB</a>, <a hrefs=\"https://www.grodansparadis.com\">https://www.grodansparadis.com</a>"
 
-#define VSCP_VERSION(major,minor,release) \
-    ( ( (major) << 16 ) | ( (minor) << 8 ) | (release) )
 #endif
