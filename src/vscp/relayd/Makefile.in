@@ -21,7 +21,7 @@ BUILD_VERSION = `sed '38!d' ../../../../common/version.h  | cut -b 33-
 
 CFLAGS = @CFLAGS@ -fPIC  -DCBC -I. -I../common -I../../common
 LDFLAGS = @LDFLAGS@
-EXTRALIBS = @EXTRALIBS@
+EXTRALIBS = @EXTRALIBS@ -lcrypt
 
 STRIP = strip
 INSTALL_PROGRAM = ${INSTALL}
@@ -41,19 +41,23 @@ DLLPREFIX = lib
 RELAYD_OBJECTS = relayd.o\
 	sockettcp.o\
 	vscpmd5.o\
+	canalif.o\
 
 ### Targets: ###
 
 all: relayd
 
 relayd:  $(RELAYD_OBJECTS)
-	$(CC) -o $@ $(RELAYD_OBJECTS) $(LDFLAGS)  $(EXTRALIBS)
+	$(CC) -o vscp-relayd $(RELAYD_OBJECTS) $(LDFLAGS)  $(EXTRALIBS)
 
 relayd.o: relayd.c relayd.h
 	$(CC) $(CFLAGS)  -c relayd.c -o $@
 
 sockettcp.o: ../../common/sockettcp.c ../../common/sockettcp.h
 	$(CC) $(CFLAGS) -c ../../common/sockettcp.c -o $@
+
+canalif.o: canalif.c canalif.h
+	$(CC) $(CFLAGS) -c canalif.c -o $@
 
 dllist.o: ../../common/dllist.c ../../common/dllist.h
 	$(CC) $(CFLAGS) -c ../../common/dllist.c -o $@
@@ -77,6 +81,7 @@ deb:    all
 	@mv *.deb ../../../../../../dist
 
 clean:
+	rm -rf vscp-relayd
 	rm -rf ./.deps ./.pch
 	rm -f ./*.o
 	rm -f ../common/*.o

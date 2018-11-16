@@ -177,7 +177,7 @@ CanalOpen(const char *pDevice, unsigned long flags)
 
     CCan4VSCPObj *pdrvObj = new CCan4VSCPObj();
     if (NULL != pdrvObj) {
-        if ( CANAL_ERROR_SUCCESS == pdrvObj->open(pDevice, flags)) {
+        if ( CANAL_ERROR_SUCCESS == pdrvObj->open( pDevice, flags ) ) {
             if (!(h = theApp.addDriverObject(pdrvObj))) {
                 delete pdrvObj;
             }

@@ -129,7 +129,9 @@ PROJ_SUBDIRS="src/vscp/drivers/level1/can4vscp/linux\
  src/vscp/daemon/linux\
  src/vscp/vscp-mkpasswd\
  src/vscp/uvscpd\
- src/vscp/vscpcmd"
+ src/vscp/vscpcmd\
+ src/vscp/relayd\
+ "
 
 AC_ARG_ENABLE(rpi,
 [  --enable-rpi         Build Raspberry Pi specific stuff (default disabled)],
@@ -276,6 +278,7 @@ AC_CONFIG_FILES([Makefile
 	     src/vscp/drivers/level2/sim/linux/Makefile
          src/vscp/linuxvscpl1/Makefile
          src/vscp/helperlib/linux/Makefile
+         src/vscp/relayd/Makefile
 ])
 
 if test "${vscp_rpi}" = yes ; then

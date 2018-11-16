@@ -26,8 +26,8 @@
 //
 
 
-#ifdef DEFINED_RELAYD
-#define DEFINED_RELAYD
+#ifndef ____DEFINED_RELAYD____
+#define ____DEFINED_RELAYD____
 
 
 

@@ -1,4 +1,4 @@
-// relayd.cpp
+// relayd.c
 //
 // This file is part of the VSCP (http://www.vscp.org) 
 //
@@ -33,87 +33,254 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <unistd.h>
+#include <getopt.h>
 #include <syslog.h>
 #include <string.h>
 #include <pthread.h>
 #include <dlfcn.h>
+#include <sys/types.h>
+#include <pwd.h>
+#include <shadow.h>
 
-#include <canaldlldef.h>    /* Level I driver functions */  
+#define _GNU_SOURCE
+#include <crypt.h>
+
+#include <canalif.h>        /* CANAL DLL interfaces functionality   */ 
 
 #define MAX_NUMBER_OF_THREADS 2
-
-typedef struct canalif {
-    /* Level I (CANAL) driver methods */
-    LPFNDLL_CANALOPEN                   m_proc_CanalOpen;
-    LPFNDLL_CANALCLOSE                  m_proc_CanalClose;
-    LPFNDLL_CANALGETLEVEL               m_proc_CanalGetLevel;
-    LPFNDLL_CANALSEND                   m_proc_CanalSend;
-    LPFNDLL_CANALRECEIVE                m_proc_CanalReceive;
-    LPFNDLL_CANALDATAAVAILABLE          m_proc_CanalDataAvailable;
-    LPFNDLL_CANALGETSTATUS              m_proc_CanalGetStatus;
-    LPFNDLL_CANALGETSTATISTICS          m_proc_CanalGetStatistics;
-    LPFNDLL_CANALSETFILTER              m_proc_CanalSetFilter;
-    LPFNDLL_CANALSETMASK                m_proc_CanalSetMask;
-    LPFNDLL_CANALSETBAUDRATE            m_proc_CanalSetBaudrate;
-    LPFNDLL_CANALGETVERSION             m_proc_CanalGetVersion;
-    LPFNDLL_CANALGETDLLVERSION          m_proc_CanalGetDllVersion;
-    LPFNDLL_CANALGETVENDORSTRING        m_proc_CanalGetVendorString;
-    /* Generation 2 */
-    LPFNDLL_CANALBLOCKINGSEND           m_proc_CanalBlockingSend;
-    LPFNDLL_CANALBLOCKINGRECEIVE        m_proc_CanalBlockingReceive;
-    LPFNDLL_CANALGETDRIVERINFO          m_proc_CanalGetdriverInfo;
-
-} m_canalif;
 
 /* Prototypes */
 void *workThread( void *id );
 
-int main( void ) 
+/*
+    Authenticate system user
+
+    Must be root user to execute this method.
+
+    @param username - Username for user
+    @param password - Password for user
+    @return 0 == OK, 1 == User not valid, 2 == Password wrong
+*/   
+int auth_sys_user( const char*username, const char*password ) 
+{
+    struct passwd *pw;
+    struct spwd *sp;
+    char *encrypted, *correct;
+
+    // Get use entry */
+    pw = getpwnam( username );
+    endpwent();
+
+    if (!pw) return 1; /* user doesn't really exist */
+
+    /* get shadow password file entry */
+    sp = getspnam( pw->pw_name );
+    endspent();
+
+    /* Check validity */
+    correct = sp ? sp->sp_pwdp : pw->pw_passwd;
+    encrypted = crypt( password, correct );
+    return strcmp( encrypted, correct ) ? 2 : 0;  /* bad pw=2, success=0 */
+}
+
+/******************************************************************************
+ *                               Main routine
+ * 
+ * 
+ * 
+ * 
+ * ****************************************************************************/
+int main( int argc, char **argv ) 
 {
     /* Our process ID and Session ID */
     pid_t pid, sid;
-    int i;
-    m_canalif drvobj;
+    int c, i;
+    opterr = 0;
+    
     pthread_t workthreads[ MAX_NUMBER_OF_THREADS ];
 	pthread_attr_t thread_attr;
-        
-    /* Fork off the parent process */
-    pid = fork();
-    if ( pid < 0 ) {
-        exit( EXIT_FAILURE );
+
+    static canalif_t drvobj;
+
+    static char *pDriverPath = NULL;    /* -d --driver      */
+    static char *pConfigStr = NULL;     /* -c --config      */
+    unsigned long flags = 0;            /* -f --flags       */
+    static int bRunStandalone = 0;      /* -s --standalone  */
+    static int port = 9598;             /* -p --port        */
+    static char *pInterface = NULL;     /* -i --interface   */
+    static int bVerbose = 0;            /* -v --verbose     */
+    static int filter = 0;              /* -f --filter      */
+    static int mask = 0;                /* -m --mask        */
+
+    canalif_init( &drvobj );  /* Init the CANAL if structure */
+
+    uid_t uid = getuid();
+    uid_t euid = geteuid();
+    if ( !( ( 0 == uid ) || ( 0 == euid ) ) ) {
+       printf("You must be root to run this program. uid=%d euid=%d\n", uid, euid );
+       exit( EXIT_FAILURE );
     }
 
-    /* If we got a good PID, then
-        we can exit the parent process. */
-    if ( pid > 0 ) {
-        exit( EXIT_SUCCESS );
+    for ( i=0; i<argc; i++ ) {
+        printf("Argument=%s\n", argv[i] );
+    }
+
+    // https://www.gnu.org/software/libc/manual/html_node/Getopt-Long-Option-Example.html#Getopt-Long-Option-Example
+    while ( 1 ) {
+
+        static struct option long_options[] =
+        {
+            /* These options set a flag. */
+            {"brief",   no_argument,       &bVerbose, 0},
+          
+            /* 
+                These options don’t set a flag.
+                We distinguish them by their indices. 
+            */
+            {"help",          no_argument, 0, '?'},   
+            {"config",        required_argument, 0, 'c'},
+            {"driver",        required_argument, 0, 'd'},
+            {"filter",        required_argument, 0, 'f'},
+            {"interface",     required_argument, 0, 'i'},
+            {"mask",          required_argument, 0, 'm'},
+            {"port",          required_argument, 0, 'p'},
+            {"standalone",    no_argument,       0, 's'},
+            {"verbose",       no_argument,       0, 'v'},
+            {"flags",         required_argument, 0, 'z'},
+            {0, 0, 0, 0}
+        };
+
+        /* getopt_long stores the option index here. */
+        int option_index = 0;
+
+        c = getopt_long( argc, 
+                            argv, 
+                            "?c:d:f:i:m:p:svz:",
+                            long_options, 
+                            &option_index );    
+
+         /* Detect the end of the options. */
+        if ( c == -1 ) break;
+
+        switch ( c ) {
+                        
+            case 0:
+                /* If this option set a flag, do nothing else now. */
+                if ( long_options[option_index].flag != 0 ) break;
+            
+                printf("option %s", long_options[option_index].name);
+                if ( optarg ) printf( " with arg %s", optarg );
+                printf("\n");
+
+                break;
+
+            case 'c':
+                pConfigStr = optarg;
+                break;
+
+            case 'd':
+                if ( NULL == canalif_setPath( &drvobj, optarg ) ) {
+                    syslog( LOG_CRIT, "Unable to set driver path. path=%s", pDriverPath );
+                    exit(EXIT_FAILURE);
+                }
+                break;
+
+            case 'f':
+                filter = atoi( optarg );
+                break;
+
+            case 'i':
+                pInterface = optarg;
+                break;
+
+            case 'm':
+                mask = atoi( optarg );
+                break; 
+
+            case 'p':
+                port = atoi( optarg );
+                break;       
+
+            case 's':
+                bRunStandalone = 1;
+                break;   
+
+            case 'v':
+                bVerbose = 1;
+                break;    
+
+            case 'z':
+                flags = atoi( optarg );
+                break;     
+
+            case '?':
+                puts( "option -?\n" );
+                break;  
+
+            default:
+                printf("Unknown switch c='%c'\n", c);
+
+        }
+
+
+
+    } // while
+
+    if ( bVerbose ) {
+        puts ("verbose flag is set.");
+        if ( bRunStandalone ) puts ("NOT run a as a daemon.");
+    }
+
+    if ( NULL == drvobj.m_drvPath ) {
+        printf("You must specify a path to a valid CANAL driver (-d/--driver)\n");
+        exit( EXIT_FAILURE );
+    }
+    
+    if ( !bRunStandalone ) {
+
+        /* Fork off the parent process */
+        pid = fork();
+        if ( pid < 0 ) {
+            exit( EXIT_FAILURE );
+        }
+
+        /* 
+            If we got a good PID, then
+            we can exit the parent process. 
+        */
+        if ( pid > 0 ) {
+            exit( EXIT_SUCCESS );
+        }
+
     }
 
     /* Change the file mode mask */
     umask(0);
                 
-    /* Open any logs here */        
-                
-    /* Create a new SID for the child process */
-    sid = setsid();
-    if ( sid < 0 ) {
-        /* Log the failure */
-        exit( EXIT_FAILURE );
-    }
-        
-    /* Change the current working directory */
-    if ( ( chdir("/") ) < 0 ) {
-        /* Log the failure */
-        exit( EXIT_FAILURE );
-    }
-        
-    /* Close out the standard file descriptors */
-    close( STDIN_FILENO );
-    close( STDOUT_FILENO );
-    close( STDERR_FILENO );
-        
-    openlog("vscp-relayd", LOG_CONS | LOG_PID, LOG_DAEMON );
+    /* Open any logs here */ 
+    openlog("vscp-relayd", LOG_CONS | LOG_PID, LOG_DAEMON );       
 
+    if ( !bRunStandalone ) {            
+        /* Create a new SID for the child process */
+        sid = setsid();
+        if ( sid < 0 ) {
+            /* Log the failure */
+            exit( EXIT_FAILURE );
+        }
+    
+        /* Change the current working directory */
+        if ( ( chdir("/") ) < 0 ) {
+            /* Log the failure */
+            exit( EXIT_FAILURE );
+        }   
+        
+        /* Close out the standard file descriptors */
+    
+        close( STDIN_FILENO );
+        close( STDOUT_FILENO );
+        close( STDERR_FILENO );
+    }
+        
     /* Daemon-specific initialization goes here */
 	pthread_attr_init( &thread_attr );
 
@@ -121,150 +288,137 @@ int main( void )
         workthreads[ i ] = 0;   
     }
 
-    /* No methods found in the driver yet */
-    drvobj.m_proc_CanalOpen = NULL;
-    drvobj.m_proc_CanalClose = NULL;
-    drvobj.m_proc_CanalGetLevel = NULL;
-    drvobj.m_proc_CanalSend = NULL;
-    drvobj.m_proc_CanalDataAvailable = NULL;
-    drvobj.m_proc_CanalReceive = NULL;
-    drvobj.m_proc_CanalGetStatus = NULL;
-    drvobj.m_proc_CanalGetStatistics = NULL;
-    drvobj.m_proc_CanalSetFilter = NULL;
-    drvobj.m_proc_CanalSetMask = NULL;
-    drvobj.m_proc_CanalSetBaudrate = NULL;
-    drvobj.m_proc_CanalGetVersion = NULL;
-    drvobj.m_proc_CanalGetDllVersion = NULL;
-    drvobj.m_proc_CanalGetVendorString = NULL;
+    // "/srv/vscp/drivers/level1/vscpl1drv-can4vscp.so"
+    if ( bVerbose ) {
+        printf("Driver path: %s\n", drvobj.m_drvPath );
+        printf("Driver Config str: %s\n", drvobj.m_drvConfig );
+        printf("Driver flags: 0x%lX\n", drvobj.m_drvFlags );      
+    }
 
-    /* Generation 2 */
-    drvobj.m_proc_CanalBlockingSend = NULL;
-    drvobj.m_proc_CanalBlockingReceive = NULL;
-    drvobj.m_proc_CanalGetdriverInfo = NULL;
+    // https://dwheeler.com/program-library/Program-Library-HOWTO/t1.html
 
     /* Open the driver */
-    void *handle =  dlopen("/srv/vscp/drivers/level1/vscpl1drv-can4vscp.so", RTLD_NOW );
-    if ( NULL == handle ) {
-        syslog( LOG_CRIT, "Unable to load library" );
-        /* Log the failure */
-        exit( EXIT_FAILURE );
+    drvobj.m_hdll = dlopen( drvobj.m_drvPath, RTLD_LAZY | RTLD_GLOBAL );
+    if ( NULL == drvobj.m_hdll ) {
+        syslog( LOG_CRIT, "Unable to load library." );
+        if ( bVerbose) fprintf( stderr, "dlopen failed: %s\n", dlerror() );
+        exit(EXIT_FAILURE);
     }
 
     /* * * * * CANAL OPEN * * * * */
     if ( NULL == ( drvobj.m_proc_CanalOpen =
-                    (LPFNDLL_CANALOPEN)dlsym( handle, "CanalOpen" ) ) ) {
+                    (LPFNDLL_CANALOPEN)dlsym( drvobj.m_hdll, "CanalOpen" ) ) ) {
         // Free the library
-        syslog( m_pDeviceItem->m_strName +  _(": Unable to get dl entry for CanalOpen.\n") );
-        dlclose(handle);
-        exit( EXIT_FAILURE );
+        syslog( LOG_CRIT, "Unable to get dl entry for 'CanalOpen'.");
+        dlclose(drvobj.m_hdll);
+        exit(EXIT_FAILURE);
     }
 
     /* * * * * CANAL CLOSE * * * * */
     if ( NULL == ( drvobj.m_proc_CanalClose = 
-                    (LPFNDLL_CANALCLOSE)dlsym( handle, "CanalClose" ) ) ) {
+                    (LPFNDLL_CANALCLOSE)dlsym( drvobj.m_hdll, "CanalClose" ) ) ) {
         // Free the library
-        //m_pCtrlObject->logMsg( m_pDeviceItem->m_strName +  _(": Unable to get dl entry for CanalClose.\n") );
-        dlclose(handle);
-        exit( EXIT_FAILURE );
+        syslog( LOG_CRIT, "Unable to get dl entry for 'CanalClose'.");
+        dlclose(drvobj.m_hdll);
+        exit(EXIT_FAILURE);
     }
 
     /* * * * * CANAL GETLEVEL * * * * */
     if (NULL == ( drvobj.m_proc_CanalGetLevel =
-        (LPFNDLL_CANALGETLEVEL) m_wxdll.GetSymbol(_("CanalGetLevel")))) {
+                    (LPFNDLL_CANALGETLEVEL)dlsym( drvobj.m_hdll, "CanalGetLevel") ) ) {
         // Free the library
-        m_pCtrlObject->logMsg( m_pDeviceItem->m_strName +  _(": Unable to get dl entry for CanalGetLevel.\n") );
-        dlclose(handle);
-        exit( EXIT_FAILURE );
+        syslog( LOG_CRIT, "Unable to get dl entry for 'CanalGetLevel'.");
+        dlclose(drvobj.m_hdll);
+        exit(EXIT_FAILURE);
     }
 
     /* * * * * CANAL SEND * * * * */
     if (NULL == ( drvobj.m_proc_CanalSend =
-        (LPFNDLL_CANALSEND) m_wxdll.GetSymbol(_("CanalSend")))) {
+                    (LPFNDLL_CANALSEND)dlsym( drvobj.m_hdll, "CanalSend") ) ) {
         // Free the library
-        m_pCtrlObject->logMsg( m_pDeviceItem->m_strName +  _(": Unable to get dl entry for CanalSend.\n") );
-        dlclose(handle);
+        syslog( LOG_CRIT, "Unable to get dl entry for 'CanalSend'.");
+        dlclose(drvobj.m_hdll);
         exit( EXIT_FAILURE );
     }
 
     /* * * * * CANAL DATA AVAILABLE * * * * */
     if (NULL == ( drvobj.m_proc_CanalDataAvailable =
-        (LPFNDLL_CANALDATAAVAILABLE) m_wxdll.GetSymbol(_("CanalDataAvailable")))) {
+                    (LPFNDLL_CANALDATAAVAILABLE)dlsym( drvobj.m_hdll, "CanalDataAvailable" ) ) ) {
         // Free the library
-        m_pCtrlObject->logMsg( m_pDeviceItem->m_strName +  _(": Unable to get dl entry for CanalDataAvailable.\n") );
-        dlclose(handle);
+        syslog( LOG_CRIT, "Unable to get dl entry for 'CanalDataAvailable'." );
+        dlclose(drvobj.m_hdll);
         exit( EXIT_FAILURE );
     }
 
-
     /* * * * * CANAL RECEIVE * * * * */
     if (NULL == ( drvobj.m_proc_CanalReceive =
-        (LPFNDLL_CANALRECEIVE) m_wxdll.GetSymbol(_("CanalReceive")))) {
+                    (LPFNDLL_CANALRECEIVE)dlsym( drvobj.m_hdll, "CanalReceive" ) ) ) {
         // Free the library
-        m_pCtrlObject->logMsg( m_pDeviceItem->m_strName +  _(": Unable to get dl entry for CanalReceive.\n") );
-        dlclose(handle);
+        syslog( LOG_CRIT, "Unable to get dl entry for 'CanalReceive'.");
+        dlclose(drvobj.m_hdll);
         exit( EXIT_FAILURE );
     }
 
     /* * * * * CANAL GET STATUS * * * * */
     if (NULL == ( drvobj.m_proc_CanalGetStatus =
-        (LPFNDLL_CANALGETSTATUS) m_wxdll.GetSymbol(_("CanalGetStatus")))) {
+                    (LPFNDLL_CANALGETSTATUS)dlsym( drvobj.m_hdll, "CanalGetStatus" ) ) ) {
         // Free the library
-        m_pCtrlObject->logMsg( m_pDeviceItem->m_strName +  _(": Unable to get dl entry for CanalGetStatus.\n") );
-        dlclose(handle);
+        syslog( LOG_CRIT, "Unable to get dl entry for 'CanalGetStatus'.");
+        dlclose(drvobj.m_hdll);
         exit( EXIT_FAILURE );
     }
 
     /* * * * * CANAL GET STATISTICS * * * * */
     if (NULL == ( drvobj.m_proc_CanalGetStatistics =
-        (LPFNDLL_CANALGETSTATISTICS) m_wxdll.GetSymbol(_("CanalGetStatistics")))) {
+                    (LPFNDLL_CANALGETSTATISTICS)dlsym( drvobj.m_hdll, "CanalGetStatistics" ) ) ) {
         // Free the library
-        m_pCtrlObject->logMsg( m_pDeviceItem->m_strName +  _(": Unable to get dl entry for CanalGetStatistics.\n") );
-        dlclose(handle);
+        syslog( LOG_CRIT, "Unable to get dl entry for 'CanalGetStatistics'.");
+        dlclose(drvobj.m_hdll);
         exit( EXIT_FAILURE );
     }
 
     /* * * * * CANAL SET FILTER * * * * */
     if (NULL == ( drvobj.m_proc_CanalSetFilter =
-        (LPFNDLL_CANALSETFILTER) m_wxdll.GetSymbol(_("CanalSetFilter")))) {
+                    (LPFNDLL_CANALSETFILTER)dlsym( drvobj.m_hdll, "CanalSetFilter" ) ) ) {
         // Free the library
-        m_pCtrlObject->logMsg( m_pDeviceItem->m_strName +  _(": Unable to get dl entry for CanalSetFilter.\n") );
-        dlclose(handle);
+        syslog( LOG_CRIT, "Unable to get dl entry for 'CanalSetFilter'.");
+        dlclose(drvobj.m_hdll);
         exit( EXIT_FAILURE );
     }
 
     /* * * * * CANAL SET MASK * * * * */
     if (NULL == ( drvobj.m_proc_CanalSetMask =
-        (LPFNDLL_CANALSETMASK) m_wxdll.GetSymbol(_("CanalSetMask")))) {
+                    (LPFNDLL_CANALSETMASK)dlsym( drvobj.m_hdll, "CanalSetMask" ) ) ) {
         // Free the library
-        m_pCtrlObject->logMsg( m_pDeviceItem->m_strName +  _(": Unable to get dl entry for CanalSetMask.\n") );
-        dlclose(handle);
+        syslog( LOG_CRIT, "Unable to get dl entry for 'CanalSetMask'.");
+        dlclose(drvobj.m_hdll);
         exit( EXIT_FAILURE );
     }
 
     /* * * * * CANAL GET VERSION * * * * */
     if (NULL == ( drvobj.m_proc_CanalGetVersion =
-        (LPFNDLL_CANALGETVERSION) m_wxdll.GetSymbol(_("CanalGetVersion")))) {
+                    (LPFNDLL_CANALGETVERSION)dlsym( drvobj.m_hdll, "CanalGetVersion" ) ) ) {
         // Free the library
-        m_pCtrlObject->logMsg( m_pDeviceItem->m_strName +  _(": Unable to get dl entry for CanalGetVersion.\n") );
-        dlclose(handle);
+        syslog( LOG_CRIT, "Unable to get dl entry for 'CanalGetVersion'.");
+        dlclose(drvobj.m_hdll);
         exit( EXIT_FAILURE );
     }
 
     /* * * * * CANAL GET DLL VERSION * * * * */
     if (NULL == ( drvobj.m_proc_CanalGetDllVersion =
-        (LPFNDLL_CANALGETDLLVERSION) m_wxdll.GetSymbol(_("CanalGetDllVersion")))) {
+                    (LPFNDLL_CANALGETDLLVERSION)dlsym( drvobj.m_hdll, "CanalGetDllVersion" ) ) ) {
         // Free the library
-        m_pCtrlObject->logMsg( m_pDeviceItem->m_strName +  _(": Unable to get dl entry for CanalGetDllVersion.\n") );
-        dlclose(handle);
+        syslog( LOG_CRIT, "Unable to get dl entry for 'CanalGetDllVersion'.");
+        dlclose(drvobj.m_hdll);
         exit( EXIT_FAILURE );
     }
 
     /* * * * * CANAL GET VENDOR STRING * * * * */
-    if (NULL == ( drvobj.m_proc_CanalGetVendorString =
-        (LPFNDLL_CANALGETVENDORSTRING) m_wxdll.GetSymbol(_("CanalGetVendorString")))) {
+    if ( NULL == ( drvobj.m_proc_CanalGetVendorString =
+                    (LPFNDLL_CANALGETVENDORSTRING)dlsym( drvobj.m_hdll, "CanalGetVendorString" ) ) ) {
         // Free the library
-        m_pCtrlObject->logMsg( m_pDeviceItem->m_strName +  _(": Unable to get dl entry for CanalGetVendorString.\n") );
-        dlclose(handle);
+        syslog( LOG_CRIT, "Unable to get dl entry for 'CanalGetVendorString'.");
+        dlclose(drvobj.m_hdll);
         exit( EXIT_FAILURE );
     }
 
@@ -276,61 +430,44 @@ int main( void )
     */
 
     /* * * * * CANAL BLOCKING SEND * * * * */
-    drvobj.m_proc_CanalBlockingSend = NULL;
-    if (m_wxdll.HasSymbol(_("CanalBlockingSend"))) {
-        if (NULL == ( drvobj.m_proc_CanalBlockingSend =
-            (LPFNDLL_CANALBLOCKINGSEND) m_wxdll.GetSymbol(_("CanalBlockingSend")))) {
-            m_pCtrlObject->logMsg( m_pDeviceItem->m_strName +  _(": Unable to get dl entry for CanalBlockingSend. Probably Generation 1 driver.\n") );
-            m_wxdll.m_proc_CanalBlockingSend = NULL;
-        }
-    }
-    else {
-        m_pCtrlObject->logMsg( m_pDeviceItem->m_strName +  _(": CanalBlockingSend not available. \n\tNon blocking operations set.\n") );
+    if ( NULL == ( drvobj.m_proc_CanalBlockingSend =
+                    (LPFNDLL_CANALBLOCKINGSEND)dlsym( drvobj.m_hdll, "CanalBlockingSend" ) ) ) {
+            syslog( LOG_INFO, "CanalBlockingSend not available. Non blocking operations set.");
     }
 
     /* * * * * CANAL BLOCKING RECEIVE * * * * */
-    drvobj.m_proc_CanalBlockingReceive = NULL;
-    if (m_wxdll.HasSymbol(_("CanalBlockingReceive"))) {
-        if (NULL == ( drvobj.m_proc_CanalBlockingReceive =
-            (LPFNDLL_CANALBLOCKINGRECEIVE) m_wxdll.GetSymbol(_("CanalBlockingReceive")))) {
-            m_pCtrlObject->logMsg( m_pDeviceItem->m_strName +  _(": Unable to get dl entry for CanalBlockingReceive. Probably Generation 1 driver.\n") );
-            m_wxdll.m_proc_CanalBlockingReceive = NULL;
-        }
-    }
-    else {
-        m_pCtrlObject->logMsg( m_pDeviceItem->m_strName +  _(": CanalBlockingReceive not available. \n\tNon blocking operations set.\n"));
+    if ( NULL == ( drvobj.m_proc_CanalBlockingReceive =
+                    (LPFNDLL_CANALBLOCKINGRECEIVE)dlsym( drvobj.m_hdll, "CanalBlockingReceive" ) ) ) {
+            syslog( LOG_INFO, "CanalBlockingReceive not available. Non blocking operations set.");
     }
 
     /* * * * * CANAL GET DRIVER INFO * * * * */
-    drvobj.m_proc_CanalGetdriverInfo = NULL;
-    if (m_wxdll.HasSymbol(_("CanalGetDriverInfo"))) {
-        if (NULL == ( drvobj.m_proc_CanalGetdriverInfo =
-            (LPFNDLL_CANALGETDRIVERINFO) m_wxdll.GetSymbol(_("CanalGetDriverInfo")))) {
-            m_pCtrlObject->logMsg( m_pDeviceItem->m_strName + _(": Unable to get dl entry for CanalGetDriverInfo. Probably Generation 1 driver.\n") );
-            m_wxdll.m_proc_CanalGetdriverInfo = NULL;
-        }
+    if ( NULL == ( drvobj.m_proc_CanalGetdriverInfo =
+                    (LPFNDLL_CANALGETDRIVERINFO)dlsym( drvobj.m_hdll, "CanalGetDriverInfo" ) ) ) {
+        syslog( LOG_INFO, "No dl entry for 'CanalGetDriverInfo'. Assume generation 1 driver.");
     }
 
-    /* Open the device */
-    m_pDeviceItem->m_openHandle =
-        drvobj.m_proc_CanalOpen((const char *) m_pDeviceItem->m_strParameter.mb_str(wxConvUTF8),
-                                            m_pDeviceItem->m_DeviceFlags);
-
-    /* Check if the driver opened properly */
-    if (m_pDeviceItem->m_openHandle <= 0) {
-        wxString errMsg = _("Failed to open driver. Will not use it! \n\t[ ")
-            + m_pDeviceItem->m_strName + _(" ]\n");
-        m_pCtrlObject->logMsg( errMsg );
-        /* Log the failure */
+    /* Open the driver */
+    if ( ( drvobj.m_hCANAL =
+            drvobj.m_proc_CanalOpen( drvobj.m_drvConfig, drvobj.m_drvFlags ) ) <= 0 ) {
+        /* Failed to open */
+        syslog( LOG_CRIT, 
+                    "Failed to open CANAL driver. path=%s config=%s flags=%lu",
+                    drvobj.m_drvPath,
+                    drvobj.m_drvConfig,
+                    drvobj.m_drvFlags );
+        // TODO cleanup                    
         exit( EXIT_FAILURE );
     }
     else {
-        wxString wxstr =
-            wxString::Format(_("Driver %s opended.\n"),
-                                (const char *)m_pDeviceItem->m_strName.mbc_str() );
-        m_pCtrlObject->logMsg( wxstr );
+        /* Driver opened properly */
+        syslog( LOG_INFO, 
+                    "Driver opended. path=%s config=%s flags=%lu", 
+                    drvobj.m_drvPath,
+                    drvobj.m_drvConfig,
+                    drvobj.m_drvFlags );
     }
-        
+            
     /* The Big Loop */
     while ( 1 ) {
         /* Do some task here ... */
@@ -344,6 +481,24 @@ int main( void )
 		    pthread_join( workthreads[ i ], (void **)&rv );
         }
 	}
+
+    /* Close the driver */
+    if ( CANAL_ERROR_SUCCESS != drvobj.m_proc_CanalClose( drvobj.m_hCANAL ) ) {
+        /* Failed to open */
+        syslog( LOG_CRIT, 
+                    "Failed to close CANAL driver. path=%s config=%s flags=%lu",
+                    drvobj.m_drvPath,
+                    drvobj.m_drvConfig,
+                    drvobj.m_drvFlags );
+    }
+    else {
+        /* Driver closed properly */
+        syslog( LOG_INFO, 
+                    "Driver closed. path=%s", 
+                    drvobj.m_drvPath );
+    }
+
+    canalif_cleanup( &drvobj );  /* Cleanup the CANAL if structure */
    
     closelog();             /* Close syslog session*/
     exit( EXIT_SUCCESS );

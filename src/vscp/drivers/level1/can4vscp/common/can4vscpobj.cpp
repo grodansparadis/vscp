@@ -304,10 +304,20 @@ int CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
 
     // Save configuration string and convert to upper case
 #ifdef WIN32    
-    strncpy( szDrvParams, pConfig, MAX_PATH );
-    _strupr( szDrvParams );
+    if ( NULL != pConfig ) {
+        strncpy( szDrvParams, pConfig, MAX_PATH );
+    }
+    else {
+        strncpy( szDrvParams, "COM1", MAX_PATH );   // Use default port
+    }
+    strupr( szDrvParams );
 #else
-    strncpy( szDrvParams, pConfig, PATH_MAX );
+    if ( NULL != pConfig ) {
+        strncpy( szDrvParams, pConfig, PATH_MAX );
+    }
+    else {
+        strncpy( szDrvParams, "/dev/ttyUSB0", PATH_MAX ); // Use default port
+    }
     // Make upper case
     p = szDrvParams;
 #endif    

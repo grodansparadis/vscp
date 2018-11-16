@@ -6335,7 +6335,9 @@ PROJ_SUBDIRS="src/vscp/drivers/level1/can4vscp/linux\
  src/vscp/daemon/linux\
  src/vscp/vscp-mkpasswd\
  src/vscp/uvscpd\
- src/vscp/vscpcmd"
+ src/vscp/vscpcmd\
+ src/vscp/relayd\
+ "
 
 # Check whether --enable-rpi was given.
 if test "${enable_rpi+set}" = set; then :
@@ -6977,7 +6979,7 @@ STATIC="no"
 fi
 
 
-ac_config_files="$ac_config_files Makefile m4/Makefile src/vscp/vscpcmd/Makefile src/vscp/vscpworks/Makefile src/vscp/daemon/linux/Makefile src/vscp/uvscpd/Makefile src/vscp/vscp-mkpasswd/Makefile src/vscp/drivers/level1/logger/linux/Makefile src/vscp/drivers/level1/can232/linux/Makefile src/vscp/drivers/level1/xap/linux/Makefile src/vscp/drivers/level1/socketcan/linux/Makefile src/vscp/drivers/level1/can4vscp/linux/Makefile src/vscp/drivers/level2/logger/linux/Makefile src/vscp/drivers/level2/lmsensors/linux/Makefile src/vscp/drivers/level2/mqtt/linux/Makefile src/vscp/drivers/level2/socketcan/linux/Makefile src/vscp/drivers/level2/tcpdrv/linux/Makefile src/vscp/drivers/level2/rawethernet/linux/Makefile src/vscp/drivers/level2/wire1/linux/Makefile src/vscp/drivers/level2/sim/linux/Makefile src/vscp/linuxvscpl1/Makefile src/vscp/helperlib/linux/Makefile"
+ac_config_files="$ac_config_files Makefile m4/Makefile src/vscp/vscpcmd/Makefile src/vscp/vscpworks/Makefile src/vscp/daemon/linux/Makefile src/vscp/uvscpd/Makefile src/vscp/vscp-mkpasswd/Makefile src/vscp/drivers/level1/logger/linux/Makefile src/vscp/drivers/level1/can232/linux/Makefile src/vscp/drivers/level1/xap/linux/Makefile src/vscp/drivers/level1/socketcan/linux/Makefile src/vscp/drivers/level1/can4vscp/linux/Makefile src/vscp/drivers/level2/logger/linux/Makefile src/vscp/drivers/level2/lmsensors/linux/Makefile src/vscp/drivers/level2/mqtt/linux/Makefile src/vscp/drivers/level2/socketcan/linux/Makefile src/vscp/drivers/level2/tcpdrv/linux/Makefile src/vscp/drivers/level2/rawethernet/linux/Makefile src/vscp/drivers/level2/wire1/linux/Makefile src/vscp/drivers/level2/sim/linux/Makefile src/vscp/linuxvscpl1/Makefile src/vscp/helperlib/linux/Makefile src/vscp/relayd/Makefile"
 
 
 if test "${vscp_rpi}" = yes ; then
@@ -7699,6 +7701,7 @@ do
     "src/vscp/drivers/level2/sim/linux/Makefile") CONFIG_FILES="$CONFIG_FILES src/vscp/drivers/level2/sim/linux/Makefile" ;;
     "src/vscp/linuxvscpl1/Makefile") CONFIG_FILES="$CONFIG_FILES src/vscp/linuxvscpl1/Makefile" ;;
     "src/vscp/helperlib/linux/Makefile") CONFIG_FILES="$CONFIG_FILES src/vscp/helperlib/linux/Makefile" ;;
+    "src/vscp/relayd/Makefile") CONFIG_FILES="$CONFIG_FILES src/vscp/relayd/Makefile" ;;
     "src/vscp/drivers/level2/rpigpio/linux/Makefile") CONFIG_FILES="$CONFIG_FILES src/vscp/drivers/level2/rpigpio/linux/Makefile" ;;
     "src/vscp/drivers/level2/rpilcd/linux/Makefile") CONFIG_FILES="$CONFIG_FILES src/vscp/drivers/level2/rpilcd/linux/Makefile" ;;
     "src/vscp/drivers/level2/rpimax6675/linux/Makefile") CONFIG_FILES="$CONFIG_FILES src/vscp/drivers/level2/rpimax6675/linux/Makefile" ;;
