@@ -87,7 +87,7 @@ extern "C" {
                                                    will be sent as soon as possible instead of waiting for a 
                                                    full buffer or timeout to occur.
                                                    (Not the same as socket option typedef TCP_NODELAY) 
-                                                 */
+                                                */
 
 #define STCP_SSL_PROTOCOL_VERSION        (0)
 #define STCP_SSL_DO_VERIFY_PEER          (0)    /* 0 == no, 1 == mandatory, 2 == optional */

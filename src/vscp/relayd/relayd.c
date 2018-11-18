@@ -29,6 +29,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <stdio.h>
+#include <errno.h>
 #include <stdlib.h>
 #include <fcntl.h>
 #include <errno.h>
@@ -36,6 +37,11 @@
 #include <getopt.h>
 #include <syslog.h>
 #include <string.h>
+#include <sys/ioctl.h>
+#include <sys/poll.h>
+#include <sys/socket.h>
+#include <sys/time.h>
+#include <netinet/in.h>
 #include <pthread.h>
 #include <dlfcn.h>
 #include <sys/types.h>
@@ -47,7 +53,11 @@
 
 #include <canalif.h>        /* CANAL DLL interfaces functionality   */ 
 
-#define MAX_NUMBER_OF_THREADS 2
+#define MAX_NUMBER_OF_THREADS   20
+#define MAX_CLIENTS             200
+#define POLL_TIMEOUT            1000
+#define TRUE                    1
+#define FALSE                   0
 
 /* Prototypes */
 void *workThread( void *id );
@@ -94,7 +104,7 @@ int main( int argc, char **argv )
 {
     /* Our process ID and Session ID */
     pid_t pid, sid;
-    int c, i;
+    int c, i, j;
     opterr = 0;
     
     pthread_t workthreads[ MAX_NUMBER_OF_THREADS ];
@@ -456,8 +466,8 @@ int main( int argc, char **argv )
                     drvobj.m_drvPath,
                     drvobj.m_drvConfig,
                     drvobj.m_drvFlags );
-        // TODO cleanup                    
-        exit( EXIT_FAILURE );
+        dlclose(drvobj.m_hdll);                   
+        exit(EXIT_FAILURE);
     }
     else {
         /* Driver opened properly */
@@ -467,12 +477,303 @@ int main( int argc, char **argv )
                     drvobj.m_drvConfig,
                     drvobj.m_drvFlags );
     }
+
+    int len, rc, on = 1;
+    int timeout;
+    int listen_sd = -1;
+    int new_sd = -1;
+    struct sockaddr_in6 addr;
+    struct pollfd fds[MAX_CLIENTS+1];   /* Listen + clients         */
+    int nfds = 1;                       /* Current # connections    */
+    int current_size = 0;               
+    int bQuit = FALSE;
+    int bCompressArray = FALSE;
+    char buffer[80];
+
+    /* Create listen socket */    
+    listen_sd = socket(AF_INET, SOCK_STREAM, 0);
+    if ( listen_sd < 0) {
+        syslog( LOG_CRIT, "socket() failed" );
+        /* Close CANAL driver */
+        drvobj.m_proc_CanalClose( drvobj.m_hCANAL );
+        /* Close DLL */
+        dlclose( drvobj.m_hdll );
+        exit(EXIT_FAILURE);
+    }
+
+    /* Allow socket descriptor to be reuseable */
+    rc = setsockopt( listen_sd, 
+                        SOL_SOCKET,  
+                        SO_REUSEADDR,
+                        (char *)&on, 
+                        sizeof( on ) );
+    if ( rc < 0 ) {
+        syslog( LOG_CRIT, "setsockopt() failed");
+        /* Close listen socket */
+        close(listen_sd);  
+        /* Close CANAL driver */
+        drvobj.m_proc_CanalClose( drvobj.m_hCANAL );
+        /* Close DLL */
+        dlclose( drvobj.m_hdll ); 
+        exit(EXIT_FAILURE);
+    }
+
+    /*************************************************************/
+    /* Set socket to be nonblocking. All of the sockets for      */
+    /* the incoming connections will also be nonblocking since   */
+    /* they will inherit that state from the listening socket.   */
+    /*************************************************************/
+    rc = ioctl(listen_sd, FIONBIO, (char *)&on);
+    if ( rc < 0 ) {
+        syslog( LOG_CRIT, "ioctl() failed");
+        /* Close listen socket */
+        close(listen_sd);  
+        /* Close CANAL driver */
+        drvobj.m_proc_CanalClose( drvobj.m_hCANAL );
+        /* Close DLL */
+        dlclose( drvobj.m_hdll );
+        exit(EXIT_FAILURE);
+    }
+
+    /* Bind the socket */
+    memset( &addr, 0, sizeof( addr ) );
+    addr.sin6_family = AF_INET6;
+    memcpy( &addr.sin6_addr, &in6addr_any, sizeof( in6addr_any ) );
+    addr.sin6_port = htons(port );
+    rc = bind( listen_sd,
+                (struct sockaddr *)&addr, 
+                sizeof( addr ) );
+    if (rc < 0) {
+        syslog( LOG_CRIT, "bind() failed");
+        /* Close listen socket */
+        close(listen_sd);  
+        /* Close CANAL driver */
+        drvobj.m_proc_CanalClose( drvobj.m_hCANAL );
+        /* Close DLL */
+        dlclose( drvobj.m_hdll );
+        exit(EXIT_FAILURE);
+    }
+
+    /* Set the listen back log */
+    rc = listen( listen_sd, 32 );
+    if ( rc < 0 ) {
+        syslog( LOG_CRIT, "listen() failed");
+        /* Close listen socket */
+        close(listen_sd);  
+        /* Close CANAL driver */
+        drvobj.m_proc_CanalClose( drvobj.m_hCANAL );
+        /* Close DLL */
+        dlclose( drvobj.m_hdll );
+        exit(EXIT_FAILURE);
+    }
+
+    /* Initialize the pollfd structure */
+    memset( fds, 0 , sizeof( fds ) );
+
+    /* Set up the initial listening socket */
+    fds[0].fd = listen_sd;
+    fds[0].events = POLLIN;
             
-    /* The Big Loop */
-    while ( 1 ) {
-        /* Do some task here ... */
+    /* Main Loop */
+    do {
+        /* Call poll() and wait for it to complete. */
+        rc = poll( fds, nfds, POLL_TIMEOUT );
+
+        /* Check to see if the poll call failed.*/
+        if ( rc < 0 ) {
+            syslog( LOG_CRIT, "  poll() failed");
+            break;
+        }
            
-        sleep(30); /* wait 30 seconds */
+        /* Check to see if the  time out expired. */
+        if ( 0 == rc ) {
+            printf("  poll() timed out.  End program.\n");
+
+            // Send "+OK" on all rcvloop connections
+            continue;
+        } 
+
+        /***********************************************************/
+        /* One or more descriptors are readable.  Need to          */
+        /* determine which ones they are.                          */
+        /***********************************************************/
+        current_size = nfds;
+        for ( i = 0; i < current_size; i++ ) {
+
+            /*********************************************************/
+            /* Loop through to find the descriptors that returned    */
+            /* POLLIN and determine whether it's the listening       */
+            /* or the active connection.                             */
+            /*********************************************************/
+            if ( 0 == fds[i].revents ) {
+                continue;
+            }
+
+            /*********************************************************/
+            /* If revents is not POLLIN, it's an unexpected result,  */
+            /* log and end the server.                               */
+            /*********************************************************/
+            if ( fds[i].revents != POLLIN ) {
+                printf("  Error! revents = %d\n", fds[i].revents);
+                bQuit = TRUE;
+                break;
+            }
+
+            if ( fds[i].fd == listen_sd ) {
+
+                /*******************************************************/
+                /* Listening descriptor is readable.                   */
+                /*******************************************************/
+                printf("  Listening socket is readable\n");
+
+                /*******************************************************/
+                /* Accept all incoming connections that are            */
+                /* queued up on the listening socket before we         */
+                /* loop back and call poll again.                      */
+                /*******************************************************/
+                do
+                {
+                    /*****************************************************/
+                    /* Accept each incoming connection. If               */
+                    /* accept fails with EWOULDBLOCK, then we            */
+                    /* have accepted all of them. Any other              */
+                    /* failure on accept will cause us to end the        */
+                    /* server.                                           */
+                    /*****************************************************/
+                    new_sd = accept( listen_sd, NULL, NULL );
+                    if ( new_sd < 0 ) {
+                        if (errno != EWOULDBLOCK) {
+                            perror("  accept() failed");
+                            bQuit = TRUE;
+                        }
+                        break;
+                    }
+
+                    /*****************************************************/
+                    /* Add the new incoming connection to the            */
+                    /* pollfd structure                                  */
+                    /*****************************************************/
+                    printf("  New incoming connection - %d\n", new_sd);
+                    fds[nfds].fd = new_sd;
+                    fds[nfds].events = POLLIN;
+                    nfds++;
+
+                    /*****************************************************/
+                    /* Loop back up and accept another incoming          */
+                    /* connection                                        */
+                    /*****************************************************/
+                } while ( new_sd != -1 );
+
+            } /* listen */
+
+            /*********************************************************/
+            /* This is not the listening socket, therefore an        */
+            /* existing connection must be readable                  */
+            /*********************************************************/
+
+            else {
+
+                printf("  Descriptor %d is readable\n", fds[i].fd);
+                bQuit = FALSE;
+
+                /*******************************************************/
+                /* Receive all incoming data on this socket            */
+                /* before we loop back and call poll again.            */
+                /*******************************************************/
+
+                do
+                {
+                    /*****************************************************/
+                    /* Receive data on this connection until the         */
+                    /* recv fails with EWOULDBLOCK. If any other         */
+                    /* failure occurs, we will close the                 */
+                    /* connection.                                       */
+                    /*****************************************************/
+                    rc = recv( fds[i].fd, buffer, sizeof(buffer), 0 );
+                    if ( rc < 0 ) {
+                        if ( errno != EWOULDBLOCK ) {
+                            syslog( LOG_CRIT, "  recv() failed");
+                            bQuit = TRUE;
+                        }
+                        break;
+                    }
+
+                    /*****************************************************/
+                    /* Check to see if the connection has been           */
+                    /* closed by the client                              */
+                    /*****************************************************/
+                    if ( 0 == rc ) {
+                        printf("  Connection closed\n");
+                        bQuit = TRUE;
+                        break;
+                    }
+
+                    /* Data was received */
+                    len = rc;
+                    printf("  %d bytes received\n", len);
+
+
+                    /* Echo the data back to the client */
+                    rc = send( fds[i].fd, buffer, len, 0 );
+                    if ( rc < 0 ) {
+                        syslog( LOG_CRIT, "  send() failed");
+                        bQuit = TRUE;
+                        break;
+                    }
+
+                } while( TRUE );
+
+                /*******************************************************/
+                /* If the close_conn flag was turned on, we need       */
+                /* to clean up this active connection. This            */
+                /* clean up process includes removing the              */
+                /* descriptor.                                         */
+                /*******************************************************/
+                if ( bQuit ) {
+                    close(fds[i].fd);
+                    fds[i].fd = -1;
+                    bCompressArray = TRUE;
+                }
+
+            }
+
+        } /* for each descriptor */
+
+        
+
+        /***********************************************************/
+        /* If the compress_array flag was turned on, we need       */
+        /* to squeeze together the array and decrement the number  */
+        /* of file descriptors. We do not need to move back the    */
+        /* events and revents fields because the events will always*/
+        /* be POLLIN in this case, and revents is output.          */
+        /***********************************************************/
+        if ( bCompressArray ) {
+
+            bCompressArray = FALSE;
+            
+            for (i = 0; i < nfds; i++) {
+
+                if ( fds[i].fd == -1 ) {
+                    
+                    for( j = i; j < nfds; j++ ) {
+                        fds[j].fd = fds[j+1].fd;
+                    }
+
+                    i--;
+                    nfds--;
+                }
+            }
+        }
+
+
+    } while ( FALSE == bQuit );     /* Main loop */
+
+    /* Clean up all of the sockets that are open */
+    for ( i = 0; i < nfds; i++ ) {
+        if ( fds[i].fd >= 0 ) {
+            close( fds[i].fd );
+        }
     }
 
     for ( i=0; i<MAX_NUMBER_OF_THREADS; i++ ) {
@@ -497,6 +798,9 @@ int main( int argc, char **argv )
                     "Driver closed. path=%s", 
                     drvobj.m_drvPath );
     }
+
+    /* Close DLL */
+    dlclose( drvobj.m_hdll );
 
     canalif_cleanup( &drvobj );  /* Cleanup the CANAL if structure */
    

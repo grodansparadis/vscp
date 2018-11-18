@@ -29,6 +29,8 @@
 #ifndef ____DEFINED_RELAYD____
 #define ____DEFINED_RELAYD____
 
-
+typedef struct relayd_client {
+    
+} relayd_client_t;
 
 #endif
