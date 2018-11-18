@@ -5,10 +5,9 @@
 prefix = @prefix@
 exec_prefix = @exec_prefix@
 INSTALL = @INSTALL@
-top_srcdir = @top_srcdir@
 top_wxsrcdir = @top_wxsrcdir@
 top_builddir = @top_builddir@
-top_wxbuilddir = @top_wxbuilddir@
+
 CXX = @CXX@
 CXXFLAGS = @CXXFLAGS@
 CPPFLAGS = @CPPFLAGS@
@@ -30,9 +29,6 @@ DLLPREFIX = lib
 
 
 ### Variables: ###
-
-WX_RELEASE = 2.6
-LIBDIRNAME = $(top_wxbuilddir)lib
 
 CANALLINCAN_OBJECTS =  lincan.o ../../../../common/dllist.o ../../../common/devicelist.o
 PROJOBJS        =       ../../../../common/dllist.o ../../../common/devicelist.o
@@ -62,11 +58,11 @@ distclean: clean
 	rm -f config.cache config.log config.status bk-deps bk-make-pch shared-ld-sh Makefile
 
 #canallogger: $(CANALLINCAN_OBJECTS)
-#	$(CXX) -o $@ $< $(CANALLINCAN_OBJECTS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
+#	$(CXX) -o $@ $< $(CANALLINCAN_OBJECTS) $(LDFLAGS) -L$(LIBDIRNAME)  $(EXTRALIBS)
 	
 
 test:  test.o $(PROJOBJS)
-	$(CXX) -o $@ test.o $(PROJOBJS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
+	$(CXX) -o $@ test.o $(PROJOBJS) $(LDFLAGS) -L$(LIBDIRNAME)  $(EXTRALIBS)
 
 # Build the Linux DL
 %.so: %.o $(CANALLINCAN_OBJECTS)

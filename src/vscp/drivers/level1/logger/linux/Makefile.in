@@ -10,26 +10,10 @@ prefix = @prefix@
 exec_prefix = @exec_prefix@
 INSTALL = @INSTALL@
 top_srcdir = @top_srcdir@
-top_wxsrcdir = @top_wxsrcdir@
 top_builddir = @top_builddir@
-top_wxbuilddir = @top_wxbuilddir@
 
 CC = @CC@
 CXX = @CXX@
-
-# wxBase flags and libs
-WXBASE_CPPFLAGS = @WXBASE_CPPFLAGS@
-WXBASE_CXXFLAGS = @WXBASE_CXXFLAGS@
-WXBASE_CFLAGS = @WXBASE_CFLAGS@
-WXBASE_LIBS = @WXBASE_LIBS@
-WXBASE_STATIC_LIBS = @WXBASE_STATIC_LIBS@
-
-# wxGTK flags and libs
-WXGTK_CPPFLAGS = @WXGTK_CPPFLAGS@
-WXGTK_CXXFLAGS = @WXGTK_CXXFLAGS@
-WXGTK_CFLAGS = @WXGTK_CFLAGS@
-WXGTK_LIBS = @WXGTK_LIBS@
-WXGTK_STATIC_LIBS = @WXGTK_STATIC_LIBS@
 
 # get version from the version file
 MAJOR_VERSION = `sed '35!d' ../../common/version.h  | cut -b 33-`
@@ -37,17 +21,12 @@ MINOR_VERSION = `sed '36!d' ../../common/version.h  | cut -b 33-`
 RELEASE_VERSION = `sed '37!d' ../../common/version.h  | cut -b 33-`
 BUILD_VERSION = `sed '38!d' ../../common/version.h  | cut -b 33-
 
-CFLAGS = -std=c99 @CFLAGS@ -fPIC @WXBASE_CFLAGS@ -DCBC -I../../../../common -I../../../../../common
-CXXFLAGS = -std=c++11 -D__LINUX__ -fPIC -D_REENTRANT @CXXFLAGS@ @WXBASE_CXXFLAGS@
-CPPFLAGS = -D__LINUX__ -fPIC @CPPFLAGS@ @WXBASE_CPPFLAGS@ -fno-var-tracking-assignments -I../../../../common -I../../../../../common
+CFLAGS = @CFLAGS@ -fPIC -DCBC -I../../../../common -I../../../../../common
+CXXFLAGS = -D__LINUX__ -fPIC -D_REENTRANT @CXXFLAGS@
+CPPFLAGS = -D__LINUX__ -fPIC @CPPFLAGS@ -fno-var-tracking-assignments -I../../../../common -I../../../../../common
 
 LDFLAGS = @LDFLAGS@
 EXTRALIBS = @EXTRALIBS@ 
-ifeq ($(STATIC),yes)
-EXTRALIBS += @WXBASE_STATIC_LIBS@
-else
-EXTRALIBS += @WXBASE_LIBS@
-endif
 
 DLFLAGS = -g -shared -fPIC
 STRIP = strip
@@ -66,24 +45,21 @@ DLLPREFIX = lib
 
 ### Variables: ###
 
-WX_RELEASE = 3.0
-LIBDIRNAME = $(top_wxbuilddir)lib
 
 CANALLOGGER_OBJECTS =  vscpl1drv-logger.o\
 	log.o\
-	guid.o\
 	dllist.o 
 
 ### Targets: ###
 
-all: vscpl1drv-logger.so test
+all: vscpl1drv-logger.so
 
 
 test:  test.o $(PROJOBJS)
-	$(CXX) -o $@ test.o $(PROJOBJS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
+	$(CXX) -o $@ test.o $(PROJOBJS) $(LDFLAGS) -L$(LIBDIRNAME) $(EXTRALIBS)
 
 vscpl1drv-logger.so: $(CANALLOGGER_OBJECTS)
-	$(CXX) -o $@ $(CANALLOGGER_OBJECTS) $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS) 
+	$(CXX) -o $@ $(CANALLOGGER_OBJECTS) $(DLFLAGS) -L$(LIBDIRNAME) $(EXTRALIBS) 
 
 log.o: ../common/log.cpp ../common/log.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../common/log.cpp -o $@
