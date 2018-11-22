@@ -753,7 +753,7 @@ check_admin_authorization( struct web_connection *conn, void *cbdata )
     char decoded[2048];
     size_t len;
     memset( decoded, 0, sizeof( decoded ) );
-    if ( -1 == vscp_base64_decode( (const char *)buf, 
+    if ( -1 == vscp_base64_decode( (const unsigned char *)((const char *)buf), 
                                     strlen( buf )+1, 
                                     decoded, 
                                     &len ) ) {
@@ -9535,9 +9535,9 @@ static int table( struct web_connection *conn, void *cbdata )
     /*
 
     web_printf( conn, WEB_TABLELIST_TABLE_END);
-
-    return 1;
 */
+    return 1;
+
 }
 
 
@@ -11778,6 +11778,8 @@ int start_webserver( void )
 
     // REST
     web_set_request_handler( gpobj->m_web_ctx, "/vscp/rest",       websrv_restapi, 0 );
+
+    return 1;
 }
 
 
@@ -11792,4 +11794,6 @@ int stop_webserver( void )
     
     // Exit web-server interface
     web_exit();
+
+    return 1;
 }

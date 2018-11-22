@@ -649,7 +649,7 @@ bool vscp_base64_wxdecode( wxString& str )
     if ( NULL == pbuf ) return false;
     memset( pbuf, 0, bufferSize );
     
-    vscp_base64_decode( (const char *)str.mbc_str(), 
+    vscp_base64_decode( (const unsigned char *)((const char *)str.mbc_str()), 
                             str.length(), 
                             pbuf, 
                             &dest_len );
@@ -673,7 +673,7 @@ bool vscp2_base64_decode( std::string& str )
     if ( NULL == pbuf ) return false;
     memset( pbuf, 0, bufferSize );
     
-    vscp_base64_decode( (const char *)str.c_str(), 
+    vscp_base64_decode( (const unsigned char *)((const char *)str.c_str()), 
                             str.length(), 
                             pbuf, 
                             &dest_len );

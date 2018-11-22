@@ -693,6 +693,8 @@ bool TCPClientThread::read( wxString& str )
         // Remove string from buffer
         m_strResponse = m_strResponse.Right( m_strResponse.Length() - pos - 1 );        
     }
+
+    return true;
 }
 
 

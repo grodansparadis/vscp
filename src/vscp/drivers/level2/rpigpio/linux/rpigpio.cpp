@@ -360,6 +360,7 @@ CGpioClock::~CGpioClock()
 bool CGpioClock::setPin( uint8_t pin )
 {
     m_pin = pin;
+    return true;
 }
 
 //////////////////////////////////////////////////////////////////////

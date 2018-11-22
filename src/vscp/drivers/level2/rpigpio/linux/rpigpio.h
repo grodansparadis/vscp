@@ -223,8 +223,8 @@ public:
     bool setType( const std::string& strtype );
     uint8_t getType( void );
 
-    bool enableHardwarePwm() { m_bHardware = true; };
-    bool disableHardwarePwm() { m_bHardware = false; };
+    bool enableHardwarePwm() { return ( m_bHardware = true ); };
+    bool disableHardwarePwm() { return ( m_bHardware = false ); };
     bool isHardwarePwm( void ) { return m_bHardware; };
 
     bool setRange( int range );
