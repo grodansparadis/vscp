@@ -694,7 +694,7 @@ bool vscp_base64_wxencode( wxString& str )
     if ( NULL == pbuf ) return false;
     memset( pbuf, 0, bufferSize );
     
-    vscp_base64_encode( (const char *)str.mbc_str(), 
+    vscp_base64_encode( (const unsigned char *)((const char *)str.mbc_str()), 
                                     strlen( (const char *)str.mbc_str() ), 
                                     pbuf );
     
@@ -711,7 +711,7 @@ bool vscp2_base64_encode( std::string& str )
     if ( NULL == pbuf ) return false;
     memset( pbuf, 0, bufferSize );
     
-    vscp_base64_encode( (const char *)str.c_str(), 
+    vscp_base64_encode( (const unsigned char *)((const char *)str.c_str()), 
                                     strlen( (const char *)str.c_str() ), 
                                     pbuf );
     

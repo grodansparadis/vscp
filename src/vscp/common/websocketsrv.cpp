@@ -56,7 +56,6 @@
 #ifdef WIN32
 
 #include <winsock2.h>
-//#include <winsock.h>
 #include "canal_win32_ipc.h"
 
 #else   // UNIX
@@ -393,18 +392,19 @@ websock_new_session( const struct web_connection *conn )
     memset( pSession->m_websocket_key, 0, sizeof( pSession->m_websocket_key ) ); 
 
     // Init.
-    strcpy( pSession->m_websocket_key, ws_key );                  // Save key    
+    strcpy( pSession->m_websocket_key, ws_key );           // Save key    
     pSession->m_conn = (struct web_connection *)conn;
     pSession->m_conn_state = WEBSOCK_CONN_STATE_CONNECTED;
-    pSession->m_version = atoi( ws_version );           // Store protocol version
+    pSession->m_version = atoi( ws_version );              // Store protocol version
     
-    pSession->m_pClientItem = new CClientItem();        // Create client
+    pSession->m_pClientItem = new CClientItem();           // Create client
     if ( NULL == pSession->m_pClientItem ) {
         gpobj->logMsg(_("[Websockets] New session: Unable to create client object."));
         delete pSession;
         return NULL;
     }
-    pSession->m_pClientItem->bAuthenticated = false;    // Not authenticated in yet
+
+    pSession->m_pClientItem->bAuthenticated = false;       // Not authenticated in yet
     vscp_clearVSCPFilter(&pSession->m_pClientItem->m_filterVSCP);    // Clear filter
     pSession->bEventTrigger = false;
     pSession->triggerTimeout = 0;
@@ -802,7 +802,7 @@ ws1_closeHandler(const struct web_connection *conn, void *cbdata)
 {
     struct web_context *ctx = web_get_context( conn );
     websock_session *pSession = 
-        (websock_session *)web_get_user_connection_data( conn );
+                (websock_session *)web_get_user_connection_data( conn );
 
     if ( NULL == conn ) return;
     if ( NULL == pSession ) return;
@@ -950,8 +950,8 @@ ws1_message( struct web_connection *conn,
     wxString wxstr;
 
     // Check pointer
-    if (NULL == conn) return false;
-    if (NULL == pSession) return false;
+    if ( NULL == conn ) return false;
+    if ( NULL == pSession ) return false;
     
     strWsPkt.Trim();
     strWsPkt.Trim(false);

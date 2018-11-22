@@ -178,7 +178,9 @@ static void ev_handler( struct mg_connection *nc, int ev, void *p )
             eventEx.head = VSCP_PRIORITY_NORMAL;
             memset( eventEx.GUID, 0, 16 );
 
-            if ( !strncmp( msg->topic.p, (const char *)pmqttobj->m_topic.mbc_str(), msg->topic.len ) ) {
+            if ( !strncmp( msg->topic.p, 
+                            (const char *)pmqttobj->m_topic.mbc_str(), 
+                            msg->topic.len ) ) {
 
                 char valbuf[512];
                 memset( valbuf, 0, sizeof( valbuf ) );
@@ -238,13 +240,8 @@ static void ev_handler( struct mg_connection *nc, int ev, void *p )
                                     // Unit
                                     eventEx.data[ 3 ] = pmqttobj->m_simple_unit;
                                     
-                                    double val;
-#if  wxMAJOR_VERSION < 3                                    
-                                    char *pNext;                                    
-                                    val = strtod( str.mbc_str(), &pNext );
-#else                                    
-                                    str.ToCDouble( &val );
-#endif                                    
+                                    double val;                                  
+                                    str.ToCDouble( &val );                                   
                                     uint8_t *p = (uint8_t *)&val;
                                     
                                     if ( wxIsPlatformLittleEndian() ) {

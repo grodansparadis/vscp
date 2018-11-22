@@ -11063,13 +11063,13 @@ struct t_ws_client {
 } static ws_clients[MAX_WS_CLIENTS];
 
 
-#define ASSERT(x)                                                              \
-	{                                                                      \
-		if (!(x)) {                                                    \
+#define ASSERT(x)                                                  \
+	{                                                              \
+		if (!(x)) {                                                \
 			fprintf(stderr,                                        \
 			        "Assertion failed in line %u\n",               \
 			        (unsigned)__LINE__);                           \
-		}                                                              \
+		}                                                          \
 	}
 
 ////////////////////////////////////////////////////////////////////////////////

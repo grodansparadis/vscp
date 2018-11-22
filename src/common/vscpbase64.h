@@ -42,7 +42,7 @@ extern "C" {
  * 
  */
 void
-vscp_base64_encode( const char *src, int src_len, char *dst );
+vscp_base64_encode( const unsigned char *src, int src_len, char *dst );
 
 /*
  * vscp_base64_decode
@@ -57,7 +57,7 @@ vscp_base64_encode( const char *src, int src_len, char *dst );
  * 
  */
 int
-vscp_base64_decode( const char *src, int src_len, char *dst, size_t *dst_len );
+vscp_base64_decode( const unsigned char *src, int src_len, char *dst, size_t *dst_len );
 
 
 #ifdef __cplusplus
