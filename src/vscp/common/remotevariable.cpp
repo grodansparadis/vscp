@@ -3314,7 +3314,7 @@ uint32_t CVariableStorage::getStockVariable( const wxString& name,
     wxString wxstr;
     wxString strToken;
     wxString strrest;
-    uint32_t id = 0;
+    uint32_t varid = 0;
     
     var.init();
     var.setStockVariable();
@@ -3330,8 +3330,8 @@ uint32_t CVariableStorage::getStockVariable( const wxString& name,
     if ( "vscp" != strToken ) return false;  
     
     // Get persistent variable
-    id = findNonPersistentVariable( name, var );
-    if ( 0 == id ) return 0;
+    varid = findNonPersistentVariable( name, var );
+    //if ( 0 == varid ) return 0;
     
     
     // *************************************************************************
@@ -4554,36 +4554,43 @@ uint32_t CVariableStorage::getStockVariable( const wxString& name,
                 var.setAccessRights( PERMISSON_OWNER_READ );;           
                 var.setType( VSCP_DAEMON_VARIABLE_CODE_LONG );
                 var.setValue( (long)pElement->m_id );
+                return (UINT_MAX);  // Fake variable id
             }
             else if ( wxstr.StartsWith( _("bEnable") ) ) {
                 var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
                 var.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
                 var.setValue( pElement->m_bEnable );
+                return (UINT_MAX);  // Fake variable id
             }
             else if ( wxstr.StartsWith( _("groupid") ) ) {
                 var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
                 var.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
                 var.setValue( pElement->m_strGroupID );
+                return (UINT_MAX);  // Fake variable id
             }
             else if ( wxstr.StartsWith( _("mask.priority") ) ) {
                 var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
                 var.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
                 var.setValue( pElement->m_vscpfilter.mask_priority );
+                return (UINT_MAX);  // Fake variable id
             }
             else if ( wxstr.StartsWith( _("mask.class") ) ) {
                 var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
                 var.setType( VSCP_DAEMON_VARIABLE_CODE_LONG );
                 var.setValue( pElement->m_vscpfilter.mask_class );
+                return (UINT_MAX);  // Fake variable id
             }
             else if ( wxstr.StartsWith( _("mask.type") ) ) {
                 var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
                 var.setType( VSCP_DAEMON_VARIABLE_CODE_LONG );
                 var.setValue( pElement->m_vscpfilter.mask_type );
+                return (UINT_MAX);  // Fake variable id
             }
             else if ( wxstr.StartsWith( _("mask.guid") ) ) {
                 var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
                 var.setType( VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_GUID );
                 var.setValue( pElement->m_vscpfilter.mask_GUID );
+                return (UINT_MAX);  // Fake variable id
             }
             else if ( wxstr.StartsWith( _("filter.priority") ) ) {
                 cguid guid;
@@ -4591,16 +4598,19 @@ uint32_t CVariableStorage::getStockVariable( const wxString& name,
                 var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
                 var.setType( VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_GUID );
                 var.setValue( guid.getAsString() );
+                return (UINT_MAX);  // Fake variable id
             }
             else if ( wxstr.StartsWith( _("filter.class") ) ) {
                 var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
                 var.setType( VSCP_DAEMON_VARIABLE_CODE_LONG );
                 var.setValue( pElement->m_vscpfilter.filter_class );
+                return (UINT_MAX);  // Fake variable id
             }
             else if ( wxstr.StartsWith( _("filter.type") ) ) {
                 var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
                 var.setType( VSCP_DAEMON_VARIABLE_CODE_LONG );
                 var.setValue( pElement->m_vscpfilter.filter_type );
+                return (UINT_MAX);  // Fake variable id
             }
             else if ( wxstr.StartsWith( _("filter.guid") ) ) {
                 cguid guid;
@@ -4608,130 +4618,153 @@ uint32_t CVariableStorage::getStockVariable( const wxString& name,
                 var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
                 var.setType( VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_GUID );
                 var.setValue( guid.getAsString() );
+                return (UINT_MAX);  // Fake variable id
             }
             else if ( wxstr.StartsWith( _("allowed.start") ) ) {
                 var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
                 var.setType( VSCP_DAEMON_VARIABLE_CODE_DATETIME );
                 var.setValue( (long)pElement->m_id );
+                return (UINT_MAX);  // Fake variable id
             }
             else if ( wxstr.StartsWith( _("allowed.end") ) ) {
                 var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
                 var.setType( VSCP_DAEMON_VARIABLE_CODE_DATETIME );
                 var.setValue( (long)pElement->m_id );
+                return (UINT_MAX);  // Fake variable id
             }
             else if ( wxstr.StartsWith( _("allowed.monday") ) ) {
                 var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
                 var.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
                 var.setValue( (long)pElement->m_id );
+                return (UINT_MAX);  // Fake variable id
             }
             else if ( wxstr.StartsWith( _("allowed.tuesday") ) ) {
                 var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );          
                 var.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
                 var.setValue( (long)pElement->m_id );
+                return (UINT_MAX);  // Fake variable id
             }
             else if ( wxstr.StartsWith( _("allowed.wednessday") ) ) {
                 var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );           
                 var.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
                 var.setValue( (long)pElement->m_id );
+                return (UINT_MAX);  // Fake variable id
             }
             else if ( wxstr.StartsWith( _("allowed.thursday") ) ) {
                 var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );         
                 var.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
                 var.setValue( (long)pElement->m_id );
+                return (UINT_MAX);  // Fake variable id
             }
             else if ( wxstr.StartsWith( _("allowed.friday") ) ) {
                 var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );           
                 var.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
                 var.setValue( (long)pElement->m_id );
+                return (UINT_MAX);  // Fake variable id
             }
             else if ( wxstr.StartsWith( _("allowed.saturday") ) ) {
                 var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );           
                 var.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
                 var.setValue( (long)pElement->m_id );
+                return (UINT_MAX);  // Fake variable id
             }
             else if ( wxstr.StartsWith( _("allowed.sunday") ) ) {
                 var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
                 var.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
                 var.setValue( (long)pElement->m_id );
+                return (UINT_MAX);  // Fake variable id
             }
             else if ( wxstr.StartsWith( _("allowed.time") ) ) {
                 var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
                 var.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
                 var.setValue( (long)pElement->m_id );
+                return (UINT_MAX);  // Fake variable id
             }
             else if ( wxstr.StartsWith( _("bCheckIndex") ) ) {
                 var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
                 var.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
                 var.setValue( (long)pElement->m_id );
+                return (UINT_MAX);  // Fake variable id
             }
             else if ( wxstr.StartsWith( _("index") ) ) {
                 var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
                 var.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
                 var.setValue( (long)pElement->m_id );
+                return (UINT_MAX);  // Fake variable id
             }
             else if ( wxstr.StartsWith( _("bCheckZone") ) ) {
                 var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
                 var.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
                 var.setValue( (long)pElement->m_id );
+                return (UINT_MAX);  // Fake variable id
             }
             else if ( wxstr.StartsWith( _("zone") ) ) {
                 var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
                 var.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
                 var.setValue( (long)pElement->m_id );
+                return (UINT_MAX);  // Fake variable id
             }
             else if ( wxstr.StartsWith( _("bCheckSubZone") ) ) {
                 var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
                 var.setType( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN );
                 var.setValue( (long)pElement->m_id );
+                return (UINT_MAX);  // Fake variable id
             }
             else if ( wxstr.StartsWith( _("subzone") ) ) {
                 var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
                 var.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
                 var.setValue( (long)pElement->m_id );
+                return (UINT_MAX);  // Fake variable id
             }
             else if ( wxstr.StartsWith( _("measurement.value") ) ) {
                 var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
                 var.setType( VSCP_DAEMON_VARIABLE_CODE_DOUBLE );
                 var.setValue( (long)pElement->m_id );
+                return (UINT_MAX);  // Fake variable id
             }
             else if ( wxstr.StartsWith( _("measurement.unit") ) ) {
                 var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
                 var.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
                 var.setValue( (long)pElement->m_id );
+                return (UINT_MAX);  // Fake variable id
             }
             else if ( wxstr.StartsWith( _("measurement.compare") ) ) {
                 var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
                 var.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
                 var.setValue( (long)pElement->m_id );
+                return (UINT_MAX);  // Fake variable id
             }
             else if ( wxstr.StartsWith( _("measurement.compare.string") ) ){
                 var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );
                 var.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
                 var.setValue( (long)pElement->m_id );
+                return (UINT_MAX);  // Fake variable id
             }
             else if ( wxstr.StartsWith( _("measurement.comment") ) ) {
                 var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );    
                 var.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
                 var.setValue( (long)pElement->m_id );
+                return (UINT_MAX);  // Fake variable id
             }
             else if ( wxstr.StartsWith( _("count.trigger") ) ) {
                 var.setAccessRights( PERMISSON_OWNER_READ );          
                 var.setType( VSCP_DAEMON_VARIABLE_CODE_LONG );
                 var.setValue( (long)pElement->m_id );
+                return (UINT_MAX);  // Fake variable id
             }
             else if ( wxstr.StartsWith( _("count.error") ) ) {
                 var.setAccessRights( PERMISSON_OWNER_READ );          
                 var.setType( VSCP_DAEMON_VARIABLE_CODE_LONG );
                 var.setValue( (long)pElement->m_id );
+                return (UINT_MAX);  // Fake variable id
             }
             else if ( ( wxstr.StartsWith( _("error") ) ) || 
                       ( wxstr.StartsWith( _("error.string") ) ) ) {
                 var.setAccessRights( PERMISSON_OWNER_READ | PERMISSON_OWNER_WRITE );           
                 var.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
                 var.setValue( (long)pElement->m_id );
+                return (UINT_MAX);  // Fake variable id
             }
-            
-            return var.getID();
             
         }
         else {
@@ -4864,6 +4897,7 @@ uint32_t CVariableStorage::getStockVariable( const wxString& name,
             if ( !gpobj->m_userList.getUserAsString( idx, wxstr ) ) return 0; 
             var.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
             var.setValue( wxstr );
+            return (UINT_MAX);  // Fake variable id
         }
         else {
             // vscp.user.n.field 
@@ -4876,28 +4910,34 @@ uint32_t CVariableStorage::getStockVariable( const wxString& name,
                 wxstr = wxString::Format( _("%ld"), pUserItem->getUserID() );
                 var.setType( VSCP_DAEMON_VARIABLE_CODE_LONG );
                 var.setValue( wxstr );
+                return (UINT_MAX);  // Fake variable id
             }
             else if ( strToken.StartsWith( _("name") ) ) {
                 var.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
                 var.setValue( pUserItem->getUserName() );
+                return (UINT_MAX);  // Fake variable id
             }
             else if ( strToken.StartsWith( _("password") ) ) {
                 var.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
                 var.setValue( pUserItem->getPassword() );
+                return (UINT_MAX);  // Fake variable id
             }
             else if ( strToken.StartsWith( _("fullname") ) ) {
                 var.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
                 var.setValue( pUserItem->getFullname() );
+                return (UINT_MAX);  // Fake variable id
             }
             else if ( strToken.StartsWith( _("filter") ) ) {
                 var.setType( VSCP_DAEMON_VARIABLE_CODE_FILTER );
                 var.setValue( wxstr );
+                return (UINT_MAX);  // Fake variable id
             }
             else if ( strToken.StartsWith( _("rights") ) ) {
                 // rights or rights.0..7
                 if ( !tkz.HasMoreTokens() ) {
                     var.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
                     var.setValue( pUserItem->getUserRightsAsString() );
+                    return (UINT_MAX);  // Fake variable id
                 }
                 else {
                     strToken = tkz.GetNextToken();   // 0..7
@@ -4906,6 +4946,7 @@ uint32_t CVariableStorage::getStockVariable( const wxString& name,
                     wxstr.Printf(_("%d"), idx );
                     var.setType( VSCP_DAEMON_VARIABLE_CODE_INTEGER );
                     var.setValue( wxstr );
+                    return (UINT_MAX);  // Fake variable id
                 }
             }
             else if (  strToken.StartsWith( _("allowed") ) ) {
@@ -4915,23 +4956,21 @@ uint32_t CVariableStorage::getStockVariable( const wxString& name,
                 if ( _("events") == strToken ) {
                     var.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
                     var.setValue( pUserItem->getAllowedEventsAsString() );
+                    return (UINT_MAX);  // Fake variable id
                 }
                 else if (  strToken.StartsWith( _("remotes") ) ) { 
                     var.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
                     var.setValue( pUserItem->getAllowedRemotesAsString() );
-                }
-                else {
-                    return 0;
+                    return (UINT_MAX);  // Fake variable id
                 }
             }
             else if ( strToken.StartsWith( _("note") ) ) {
                 var.setType( VSCP_DAEMON_VARIABLE_CODE_STRING );
                 var.setValue( pUserItem->getNote() );
+                return (UINT_MAX);  // Fake variable id
             }
             
         }
-        
-        return var.getID();
         
     }
     

@@ -1682,7 +1682,7 @@ void CControlObject::logMsg( const wxString& msgin,
                                 const uint8_t nType )
 {
     wxString msg = msgin;
-
+    
     m_mutexLogWrite.Lock();
 
     // Add CR if not set.

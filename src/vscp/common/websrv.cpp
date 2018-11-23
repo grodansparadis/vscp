@@ -11310,7 +11310,11 @@ static void delete_options( char **opts ) {
 
 int start_webserver( void )
 {
-    /*const char *options[] =
+    /*  
+    
+    // * * * Keep for test !!!! * * *   
+
+    const char *options[] =
     {
         "document_root",
 	"/srv/vscp/web",
