@@ -1890,7 +1890,7 @@ bool CControlObject::searchLogDB( const char * sql, wxString& strResult )
         wxstr += _(",");
         wxstr += sqlite3_column_text( ppStmt, 4 );
 
-        wxstr += _(";");
+        wxstr += _("|");
         strResult += wxstr;
     }
 
