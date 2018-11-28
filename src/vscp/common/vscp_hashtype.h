@@ -2,7 +2,7 @@
             !!!!!!!!!!!!!!!!!!!!  W A R N I N G  !!!!!!!!!!!!!!!!!!!!
                            This file is auto-generated
                 see https://github.com/grodansparadis/vscp-classes
-                        Generated: 2018-11-05 09:36:31.271435
+                        Generated: 2018-11-27 23:35:59.872605
 */
  
 
@@ -878,6 +878,9 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(508,43) ] = _("VSCP_TYPE_ERROR_BUFFER_SMALL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(508,44) ] = _("VSCP_TYPE_ERROR_ITEM_UNKNOWN");
 	m_hashType[ MAKE_CLASSTYPE_LONG(508,45) ] = _("VSCP_TYPE_ERROR_NAME_USED");
+	m_hashType[ MAKE_CLASSTYPE_LONG(508,46) ] = _("VSCP_TYPE_ERROR_DATA_WRITE");
+	m_hashType[ MAKE_CLASSTYPE_LONG(508,47) ] = _("VSCP_TYPE_ERROR_ABORTED");
+	m_hashType[ MAKE_CLASSTYPE_LONG(508,48) ] = _("VSCP_TYPE_ERROR_INVALID_POINTER");
 
 	//  CLASS1.LOG = 509  -  Logging
 	m_hashType[ MAKE_CLASSTYPE_LONG(509,0) ] = _("VSCP_TYPE_LOG_GENERAL");
@@ -1781,6 +1784,9 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(1020,43) ] = _("VSCP_TYPE_ERROR_BUFFER_SMALL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(1020,44) ] = _("VSCP_TYPE_ERROR_ITEM_UNKNOWN");
 	m_hashType[ MAKE_CLASSTYPE_LONG(1020,45) ] = _("VSCP_TYPE_ERROR_NAME_USED");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1020,46) ] = _("VSCP_TYPE_ERROR_DATA_WRITE");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1020,47) ] = _("VSCP_TYPE_ERROR_ABORTED");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1020,48) ] = _("VSCP_TYPE_ERROR_INVALID_POINTER");
 
 	//  CLASS2.LEVEL1.LOG = 1021  -  Class2 Level I Log
 	// 	Event types is the same as  CLASS1.LOG = 509  -  Logging

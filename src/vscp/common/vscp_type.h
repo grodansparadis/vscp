@@ -48,7 +48,7 @@
             !!!!!!!!!!!!!!!!!!!!  W A R N I N G  !!!!!!!!!!!!!!!!!!!!
                            This file is auto-generated
                 see https://github.com/grodansparadis/vscp-classes
-                        Generated: 2018-11-05 09:36:29.292907
+                        Generated: 2018-11-27 23:35:57.853655
 */
  
 #ifndef VSCP_TYPE_H
@@ -632,6 +632,9 @@
 #define VSCP_TYPE_ERROR_BUFFER_SMALL                43  /* Supplied buffer is to small to fit content */
 #define VSCP_TYPE_ERROR_ITEM_UNKNOWN                44  /* Requested item is unknown */
 #define VSCP_TYPE_ERROR_NAME_USED                   45  /* Name is already in use */
+#define VSCP_TYPE_ERROR_DATA_WRITE                  46  /* Error when writing data */
+#define VSCP_TYPE_ERROR_ABORTED                     47  /* Operation stopped or aborted */
+#define VSCP_TYPE_ERROR_INVALID_POINTER             48  /* Pointer with invalid value */
     
 /*  CLASS1.LOG = 509  -  Logging */
 #define VSCP_TYPE_LOG_GENERAL                       0   /* General event */

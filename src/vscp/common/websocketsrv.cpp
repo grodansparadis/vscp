@@ -213,7 +213,6 @@ websock_authentication( struct web_connection *conn,
     uint8_t iv[16];
     wxString strUser, strPassword;
     
-    
     struct web_context * ctx;
     const struct web_request_info *reqinfo;
     bool bValidHost = false;

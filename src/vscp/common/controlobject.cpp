@@ -1873,7 +1873,7 @@ bool CControlObject::searchLogDB( const char * sql, wxString& strResult )
                                         NULL ) )  {
         logMsg( wxString::Format( _("Failed to get records from log "
                                     "database. SQL is %s"),
-                                    sql )  );
+                                    sql ) );
         m_mutexLogWrite.Unlock();
         return false;
     }

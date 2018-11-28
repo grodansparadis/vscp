@@ -5013,7 +5013,6 @@ bool vscp_setVscpEventFromString(vscpEvent *pEvent, const wxString& strEvent)
         return false;
     }
 
-
     // Get Type
     if (tkz.HasMoreTokens()) {
         str = tkz.GetNextToken();
