@@ -93,7 +93,7 @@ CTcpipLink::~CTcpipLink()
 //
 
 bool
-CTcpipLink::open(const char *pUsername,
+CTcpipLink::open( const char *pUsername,
                     const char *pPassword,
                     const char *pHost,
                     short port,
@@ -485,6 +485,8 @@ CWrkSendTread::Entry()
     // Check pointers
     if (NULL == m_pObj) return NULL;
     
+ retry_send_connect:
+
     // Open remote interface
     if ( VSCP_ERROR_SUCCESS != 
             m_srvRemote.doCmdOpen( m_pObj->m_hostRemote,
@@ -495,7 +497,14 @@ CWrkSendTread::Entry()
                 "%s %s ",
                 VSCP_TCPIPLINK_SYSLOG_DRIVER_ID,
                 (const char *) "Error while opening remote VSCP TCP/IP interface. Terminating!");
-        return NULL;
+        
+        // Give the server some time to become active
+        for ( int loopcnt=0;loopcnt<VSCP_TCPIPLINK_DEFAULT_RECONNECT_TIME; loopcnt++ ) {
+            wxSleep(1);        
+            if ( TestDestroy() || m_pObj->m_bQuit ) return NULL;
+        }
+
+        goto retry_send_connect;
     }
 
     syslog(LOG_ERR,
@@ -517,11 +526,11 @@ CWrkSendTread::Entry()
                 syslog(LOG_ERR,
                         "%s %s ",
                         VSCP_TCPIPLINK_SYSLOG_DRIVER_ID,
-                        (const char *) "Lost connection to remote host.");
+                        (const char *) "Lost connection to remote host [SEND].");
             }
 
-            // Wait five seconds before we try to connect again
-            ::wxSleep(5);
+            // Wait before we try to connect again
+            ::wxSleep(VSCP_TCPIPLINK_DEFAULT_RECONNECT_TIME);
 
             if ( VSCP_ERROR_SUCCESS != 
                     m_srvRemote.doCmdOpen( m_pObj->m_hostRemote,
@@ -531,7 +540,7 @@ CWrkSendTread::Entry()
                 syslog(LOG_ERR,
                         "%s %s ",
                         VSCP_TCPIPLINK_SYSLOG_DRIVER_ID,
-                        (const char *) "Reconnected to remote host.");
+                        (const char *) "Reconnected to remote host [SEND].");
                 
                 // Find the channel id
                 m_srvRemote.doCmdGetChannelID(&m_pObj->txChannelID);
@@ -627,6 +636,8 @@ CWrkReceiveTread::Entry()
     // Check pointers
     if (NULL == m_pObj) return NULL;
 
+retry_receive_connect:
+
     // Open remote interface
     if ( VSCP_ERROR_SUCCESS != 
                 m_srvRemote.doCmdOpen( m_pObj->m_hostRemote,
@@ -637,10 +648,18 @@ CWrkReceiveTread::Entry()
                 "%s %s ",
                 VSCP_TCPIPLINK_SYSLOG_DRIVER_ID,
                 (const char *) "Error while opening remote VSCP TCP/IP interface. Terminating!");
-        return NULL;
+        
+        // Give the server some time to become active
+        for ( int loopcnt=0;loopcnt<VSCP_TCPIPLINK_DEFAULT_RECONNECT_TIME; loopcnt++ ) {
+            wxSleep(1);        
+            if ( TestDestroy() || m_pObj->m_bQuit ) return NULL;
+        }
+
+        goto retry_receive_connect;
+        
     }
 
-    syslog(LOG_ERR,
+    syslog( LOG_ERR,
                 "%s %s ",
                 VSCP_TCPIPLINK_SYSLOG_DRIVER_ID,
                 (const char *) "Connect to remote VSCP TCP/IP interface [RECEIVE].");
@@ -661,19 +680,21 @@ CWrkReceiveTread::Entry()
     while ( !TestDestroy() && !m_pObj->m_bQuit ) {
 
         // Make sure the remote connection is up
-        if ( !m_srvRemote.isConnected() ) {
+        if ( !m_srvRemote.isConnected() || 
+              ( ( wxGetLocalTimeMillis() - m_srvRemote.getlastResponseTime() ) > ( VSCP_TCPIPLINK_DEFAULT_RECONNECT_TIME * 1000 ) ) ) {
 
             if ( !bRemoteConnectionLost ) {
+
                 bRemoteConnectionLost = true;
                 m_srvRemote.doCmdClose();
                 syslog(LOG_ERR,
                         "%s %s ",
                         VSCP_TCPIPLINK_SYSLOG_DRIVER_ID,
-                        (const char *) "Lost connection to remote host.");
+                        (const char *) "Lost connection to remote host [Receive].");
             }
 
-            // Wait five seconds before we try to connect again
-            ::wxSleep(5);
+            // Wait before we try to connect again
+            ::wxSleep(VSCP_TCPIPLINK_DEFAULT_RECONNECT_TIME);
 
             if ( VSCP_ERROR_SUCCESS != 
                         m_srvRemote.doCmdOpen( m_pObj->m_hostRemote,
@@ -683,7 +704,7 @@ CWrkReceiveTread::Entry()
                 syslog(LOG_ERR,
                         "%s %s ",
                         VSCP_TCPIPLINK_SYSLOG_DRIVER_ID,
-                        (const char *) "Reconnected to remote host.");
+                        (const char *) "Reconnected to remote host [Receive].");
                 bRemoteConnectionLost = false;
             }
             
@@ -694,7 +715,7 @@ CWrkReceiveTread::Entry()
 
         }   
         
-        // Check if remote server has something to send
+        // Check if remote server has something to send to us
         vscpEvent *pEvent = new vscpEvent;
         if (NULL != pEvent) {
             
@@ -714,10 +735,12 @@ CWrkReceiveTread::Entry()
                 else {
                     vscp_deleteVSCPevent( pEvent );
                 }
+                
             }
             else {
                 vscp_deleteVSCPevent( pEvent );
             }
+
         }
                 
     }

@@ -63,6 +63,10 @@
 
 using namespace std;
 
+// Seconds before trying to reconnect to a broken connection
+#define VSCP_TCPIPLINK_DEFAULT_RECONNECT_TIME   30  
+
+
 #define VSCP_TCPIPLINK_SYSLOG_DRIVER_ID  "VSCP tcpip-link driver:"
 #define VSCP_LEVEL2_DLL_LOGGER_OBJ_MUTEX "___VSCP__DLL_L2TCPIPLINK_OBJ_MUTEX____"
 #define VSCP_SOCKETCAN_LIST_MAX_MSG		2048

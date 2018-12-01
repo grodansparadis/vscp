@@ -2,6 +2,7 @@
     "vscp-event": {
         "head": 0,
         "obid": 0,
+        "datetime": "2017-01-01T12:45:13Z",
         "timestamp": 0,
         "vscp-class": 123,
         "vscp-type": 123,

@@ -4871,6 +4871,9 @@ unsigned long vscp_makeTimeStamp( void )
     tms tm;
     return times(&tm);
 #endif
+Linux: Clock
+Windows: GetTickCount()   http://www.decompile.com/cpp/faq/windows_timer_api.htm
+https://docs.microsoft.com/en-us/windows/desktop/sysinfo/acquiring-high-resolution-time-stamps
 */
 }
 

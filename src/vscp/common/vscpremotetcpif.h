@@ -36,8 +36,8 @@
  */
 
 
-#if !defined(VSCPTCPIF_H__INCLUDED_)
-#define VSCPTCPIF_H__INCLUDED_
+#if !defined(VSCPREMOTETCPIF_H__INCLUDED_)
+#define VSCPREMOTETCPIF_H__INCLUDED_
 
 
 #include <canal.h>
@@ -166,16 +166,23 @@ public:
     };
     
     /*!
-     * Get last response form remote node
-     * @return Last raw response data from remote node
+        Get last response form remote node
+        @return Last raw response data from remote node
      */
     wxString& getLastResponse( void ) { return m_strResponse; };
-    
 
     /*!
-     Returns TRUE if we are connected false otherwise.
+        Get last response time
+        @return Relative time in milliseconds when last valid received
+            data was read.
+    */
+    wxLongLong getlastResponseTime( void ) { return m_lastResponseTime; };
+    
+    /*!
+        Returns TRUE if we are connected false otherwise. 
      */
-    bool isConnected( void ) { return ( NULL != m_conn ); };
+    bool isConnected( void ) { return( ( NULL != m_conn ) &&
+                                       ( STCP_CONN_STATE_CONNECTED == m_conn->conn_state ) ); };
 
     /*!
         checkReturnValue
@@ -1690,6 +1697,10 @@ protected:
         Array that gets filled with input lines
      */
     wxArrayString m_inputStrArray;
+
+    // Last read valid response in milliseconds
+    // Used to detect dead (rcvloop) link.  
+    wxLongLong m_lastResponseTime;
 
 private:
 

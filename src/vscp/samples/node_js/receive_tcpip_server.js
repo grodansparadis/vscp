@@ -118,8 +118,9 @@ client.on('data', function(data) {
             var vscpclass = parseInt(vscpitems[1]);
             var vscptype = parseInt(vscpitems[2]);
             var vscpobid = parseInt(vscpitems[3]);
-            var vscptimestamp = parseInt(vscpitems[4]);
-            var vscpguid = vscpitems[5];
+            var vscpdatetime = vscpitems[4];
+            var vscptimestamp = parseInt(vscpitems[5]);
+            var vscpguid = vscpitems[6];
             
             // Check if we have Level I events over Level II
             if ( vscpclass >= 512 && vscpclass < 1024 ) {
@@ -129,8 +130,8 @@ client.on('data', function(data) {
         
             // Get the data
             var vscpdata = new Array();
-            for (i=0;i<vscpitems.length-6-offset;i++){
-                vscpdata[i] = parseInt(vscpitems[offset+6+i]);
+            for (i=0;i<vscpitems.length-7-offset;i++){
+                vscpdata[i] = parseInt(vscpitems[offset+7+i]);
             }
             
             if ( bDebug ) {

@@ -3000,10 +3000,18 @@ stcp_push_inner( struct stcp_connection *conn,
                 err = 0;
                 n = 0;
             }
+            else if (err == EPIPE ) {   // Broken pipe
+                conn->conn_state = STCP_CONN_STATE_UNDEFINED;
+                return -2;    
+            }
 #else
             if (err == EWOULDBLOCK) {
                 err = 0;
                 n = 0;
+            }
+            else if (err == EPIPE ) {  // Broken pipe
+                conn->conn_state = STCP_CONN_STATE_UNDEFINED;
+                return -2;    
             }
 #endif
             if (n < 0) {
@@ -3427,8 +3435,15 @@ stcp_read_inner( struct stcp_connection *conn, void *buf, size_t len, int mstime
         nread += n;
     }
     else {
-        nread = ( (nread > 0) ? nread : n);
+        nread = ( (nread > 0) ? nread : n); 
      }
+
+    // Disconnected=
+    if ( -2 == nread) {
+        if (errno == EPIPE ) {  // Broken pipe
+            conn->conn_state = STCP_CONN_STATE_UNDEFINED;
+        }
+    }
 
     return (int)nread;
 

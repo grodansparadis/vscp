@@ -48,7 +48,7 @@
 #define VSCP_ANNOUNCE_MULTICAST_PORT        9598
 #define VSCP_DEFAULT_MULTICAST_PORT         44444
 
-#define VSCP_ADDRESS_SEGMENT_CONTROLLER	    0x00
+#define VSCP_ADDRESS_SEGMENT_CONTROLLER     0x00
 #define VSCP_ADDRESS_NEW_NODE               0xff
 
 #define VSCP_MAX_DATA                       (512)       /* was 487 */

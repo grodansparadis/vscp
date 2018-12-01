@@ -97,7 +97,7 @@ client.on('data', function(data) {
 
             // Send temperature event 
             if ( bDebug ) console.log('Sending temperature event to VSCP daemon.');
-            client.write('send 0,10,6,0,0,-,138,0,' + TEMPERATURE + '\r\n');
+            client.write('send 0,10,6,,,,-,138,0,' + TEMPERATURE + '\r\n');
         }
         else {
             nState = STATE_NOT_CONNECTED;

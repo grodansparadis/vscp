@@ -127,6 +127,8 @@ bool VscpRemoteTcpIf::checkReturnValue( bool bClear )
             break;
         }
         else if ( nRead > 0 ) {
+            //wxPrintf( "1: %s %d\n", buf, nRead );
+            m_lastResponseTime = wxGetLocalTimeMillis(); // Save last response time
             m_strResponse += wxString::FromUTF8Unchecked( buf, nRead );
         }
 
@@ -264,7 +266,7 @@ size_t VscpRemoteTcpIf::addInputStringArrayFromReply( bool bClear )
     // Get rest string that should not be handled now
     wxString tempStr = m_strResponse.AfterLast('\n');
 
-    // Get the string that should be parsed for inclusion in the striing array
+    // Get the string that should be parsed for inclusion in the string array
     wxString strToArray = m_strResponse.Left( m_strResponse.Length() - tempStr.Length() );
 
     // Set the readbuffer to the rest string
@@ -470,6 +472,9 @@ int VscpRemoteTcpIf::doCmdClose( void )
         m_conn = NULL;
 
     }
+
+    m_bModeReceiveLoop = false;
+    m_inputStrArray.Clear();
 
     return VSCP_ERROR_SUCCESS;  
 }
@@ -734,6 +739,9 @@ int VscpRemoteTcpIf::doCmdEnterReceiveLoop( void )
     // If in receive loop terminate
     if ( m_bModeReceiveLoop ) return VSCP_ERROR_SUCCESS;
     
+    // Prevent false timeouts when starting up
+    m_lastResponseTime = wxGetLocalTimeMillis();
+
     if ( VSCP_ERROR_SUCCESS != doCommand("RCVLOOP\r\n") ) {
         return VSCP_ERROR_ERROR;
     }
@@ -814,10 +822,19 @@ int VscpRemoteTcpIf::doCmdBlockingReceive( vscpEvent *pEvent, uint32_t mstimeout
     while ( ( wxGetLocalTimeMillis() - startTime ) < mstimeout )  {
     
         if ( ( nRead = stcp_read( m_conn, buf, sizeof(buf), m_innerResponseTimeout ) ) <= 0 ) {
-            if ( STCP_ERROR_STOPPED == nRead ) return  VSCP_ERROR_STOPPED;
+           
+            if ( STCP_ERROR_STOPPED == nRead ) {
+                stcp_close_connection( m_conn );
+                return  VSCP_ERROR_STOPPED;
+            }
+
             wxMicroSleep( 100 );
             continue;
+
         }        
+
+        //wxPrintf( "2: [%s] %d\n", buf, nRead );
+        m_lastResponseTime = wxGetLocalTimeMillis();
 
         // Save the response
         m_strResponse += wxString::FromUTF8Unchecked( buf, nRead );
@@ -831,6 +848,7 @@ int VscpRemoteTcpIf::doCmdBlockingReceive( vscpEvent *pEvent, uint32_t mstimeout
             wxString strItem = m_inputStrArray[0];  // Get first reply string
             m_inputStrArray.RemoveAt( 0 );          // Remove it from the array
     
+            // Not "+OK" or "+ERR"
             if ( ( wxNOT_FOUND == strItem.Find("+OK") ) && 
                  ( wxNOT_FOUND == strItem.Find("+ERR") ) ) {
     
