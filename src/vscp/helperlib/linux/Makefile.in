@@ -37,9 +37,9 @@ WXGTK_LIBS = @WXGTK_LIBS@
 WXGTK_STATIC_LIBS = @WXGTK_STATIC_LIBS@
 
 MONGOOSE_CFLAGS = -DMG_ENABLE_THREADS -DMG_ENABLE_IPV6 -DMG_ENABLE_SSL -DMG_ENABLE_GETADDRINFO 
-CFLAGS = -std=c11 -fPIC -D__LINUX__ @CFLAGS@ @WXBASE_CFLAGS@ -DCBC -I../../common -I../../../common -I../../../common/lua -I../../../common/lua/src
+CFLAGS = -std=c11 -fPIC -D__LINUX__ @CFLAGS@ @WXBASE_CFLAGS@ -DCBC -I../../../.. -I../../common -I../../../common -I../../../common/lua -I../../../common/lua/src
 CXXFLAGS = -std=c++11 -shared -fPIC @CXXFLAGS@ @WXBASE_CXXFLAGS@
-CPPFLAGS = -shared -fPIC @CPPFLAGS@ @WXBASE_CPPFLAGS@ -fno-var-tracking-assignments -I../../common -I../../../common -I../../../common/lua -I../../../common/lua/src
+CPPFLAGS = -shared -fPIC @CPPFLAGS@ @WXBASE_CPPFLAGS@ -fno-var-tracking-assignments -I../../../.. -I../../common -I../../../common -I../../../common/lua -I../../../common/lua/src
 CPPFLAGS += $(MONGOOSE_CFLAGS)
 
 LDFLAGS = @LDFLAGS@

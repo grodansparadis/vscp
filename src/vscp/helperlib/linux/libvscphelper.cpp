@@ -36,26 +36,13 @@
 //#pragma implementation
 #endif
 
-// For compilers that support precompilation, includes "wx.h".
-#include "wx/wxprec.h"
-
-#ifdef __BORLANDC__
-#pragma hdrstop
-#endif
-
-#ifndef WX_PRECOMP
-#include "wx/wx.h"
-#endif
-
-#ifdef __WXMSW__
-#include  "wx/ownerdrw.h"
-#endif
-
-#include "wx/tokenzr.h"
-
-#include "libvscphelper.h"
 #include "stdio.h"
 #include "stdlib.h"
+#include "unistd.h"
+#include "semaphore.h"
+
+#include "libvscphelper.h"
+
 
 void _init() __attribute__((constructor));
 void _fini() __attribute__((destructor));

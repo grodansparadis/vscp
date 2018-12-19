@@ -7,6 +7,8 @@
 
 <img src="http://vscp.org/images/logo.png" width="300">
 
+**Currently a big change (removing dependency on wxWidgets) is on the way in this project. This means all/parts will not build clean (or at all) for som time. Please use release code **
+
 <p>VSCP (Very Simple Control Protocol) is a framework for IoT/m2m tasks. The framework defines methods to
 have a common device discovery, a common configuration, a common way to interface with remote devices and a
 common way to update firmware of devices built on different architectures. A server is available that runs on
