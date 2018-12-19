@@ -26,6 +26,9 @@
 // SOFTWARE.
 //
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 #include <limits.h>
 #include <math.h>
 #include <stdarg.h>
@@ -34,7 +37,7 @@
 #include <string.h>
 #include <sys/time.h>
 #include <sys/times.h>
-#include <sys/types.h>
+
 
 #ifdef _WIN32
 #include <io.h>

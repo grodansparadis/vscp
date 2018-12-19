@@ -29,7 +29,6 @@
 #ifndef _MDF_H_
 #define _MDF_H_
 
-#include "wx/wx.h"
 
 #include <vscp.h>
 #include <vscp_class.h>

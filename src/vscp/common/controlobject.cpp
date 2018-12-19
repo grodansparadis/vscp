@@ -809,9 +809,7 @@ CControlObject::run (void)
     pClientItem->m_bOpen         = true;
     pClientItem->m_type          = CLIENT_ITEM_INTERFACE_TYPE_CLIENT_INTERNAL;
     pClientItem->m_strDeviceName = ("Internal Server DM Client.|Started at ");
-    pClientItem->m_strDeviceName += wxDateTime::Now ().FormatISODate ();
-    pClientItem->m_strDeviceName += (" ");
-    pClientItem->m_strDeviceName += wxDateTime::Now ().FormatISOTime ();
+    pClientItem->m_strDeviceName += vscpdatetime::setNow ().getISODateTime ();
 
     // Add the client to the Client List
     pthread_mutex_lock (&m_clientMutex);
@@ -1506,8 +1504,8 @@ CControlObject::getCountRecordsDB (sqlite3 *db, std::string &table)
 
     if (SQLITE_OK !=
         sqlite3_prepare (db, (const char *)sql.c_str (), -1, &ppStmt, NULL)) {
-        wxPrintf ("Failed to prepare count for log database. SQL is %s",
-                  VSCPDB_LOG_COUNT);
+        syslog(LOG_ERR, "Failed to prepare count for log database. SQL is %s",
+                  VSCPDB_LOG_COUNT) ;
         return 0;
     }
 

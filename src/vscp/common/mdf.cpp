@@ -29,36 +29,12 @@
 #pragma implementation "frmmain.h"
 #endif
 
-// For compilers that support precompilation, includes "wx/wx.h".
-#include "wx/wxprec.h"
-
-#ifdef __BORLANDC__
-#pragma hdrstop
-#endif
-
-#ifndef WX_PRECOMP
-#include "wx/wx.h"
-#endif
-
 #include <string> 
 #include <deque>
 #include <set>
 
-#include "wx/defs.h"
-#include "wx/app.h"
-#include <wx/wfstream.h>
-#include <wx/xml/xml.h>
-#include <wx/tokenzr.h>
-
-#include <wx/file.h>
-#include <wx/filename.h>
-#include <wx/stdpaths.h>
-#include <wx/url.h>
-#include <wx/xml/xml.h>
-#include <wx/wfstream.h>
-#include <wx/url.h>
-#include <wx/listimpl.cpp>
-
+#include <stdlib.h>
+#include <unistd.h>
 #include <canal.h>
 #include <vscp.h>
 #include <vscphelper.h>
@@ -873,9 +849,10 @@ void CMDF::clearStorage( void )
 
 bool CMDF::downLoadMDF( std::string& remoteFile, std::string &tempFileName )
 {
+    /* TODO
     char buf[ 64000 ];
     size_t cnt;
-    wxFile tempFile;
+    xxFile tempFile;
 
     tempFileName = wxFileName::CreateTempFileName( "mdf", &tempFile );
     if ( 0 == tempFileName.length() ) {
@@ -885,8 +862,8 @@ bool CMDF::downLoadMDF( std::string& remoteFile, std::string &tempFileName )
     m_tempFileName = tempFileName;
 
     // Create and open http stream
-    wxURL url( remoteFile );	
-    if ( wxURL_NOERR != url.GetError() ) {
+    xxURL url( remoteFile );	
+    if ( xxURL_NOERR != url.GetError() ) {
         return false;
     }
 
@@ -913,7 +890,7 @@ bool CMDF::downLoadMDF( std::string& remoteFile, std::string &tempFileName )
 
     // Close the file
     tempFile.Close();
-
+*/
     return true;
 }
 
@@ -975,7 +952,7 @@ void CMDF::mdfDescriptionFormat( std::string& str )
 
         if ( bEscape ) {
 
-            switch ( (wxChar) str[ i ] ) {
+            switch ( str[ i ] ) {
 
                 case '\\':
                     strWork += str[ i ];
@@ -992,7 +969,7 @@ void CMDF::mdfDescriptionFormat( std::string& str )
 
         }
         else {
-            switch ( (wxChar) str[ i ] ) {
+            switch ( str[ i ] ) {
 
                 case '\n':
                 case '\r':
@@ -1062,6 +1039,7 @@ void CMDF::mdfDescriptionFormat( std::string& str )
 
 bool CMDF::parseMDF( std::string& path )
 {
+ /* TODO   
     bool rv = true;
     wxXmlDocument doc;
 
@@ -2589,7 +2567,10 @@ bool CMDF::parseMDF( std::string& path )
             ( 0 == m_dmInfo.m_nStartPage ) ) {
         m_dmInfo.m_bIndexed = true;
     }
+    
     return rv;
+    */
+   return false;
 }
 
 

@@ -279,7 +279,7 @@ duk_ret_t js_vscp_print( duk_context *ctx )
     duk_push_string(ctx, " ");
     duk_insert(ctx, 0);
     duk_join(ctx, duk_get_top(ctx) - 1);
-    wxPrintf( "%s\n", duk_safe_to_string(ctx, -1) );
+    //xxPrintf( "%s\n", duk_safe_to_string(ctx, -1) );
     return JAVASCRIPT_OK;
 }
 
@@ -330,7 +330,7 @@ duk_ret_t js_vscp_sleep( duk_context *ctx )
         sleep_ms = duk_to_uint32(ctx, -1);
     }
         
-    wxMilliSleep( sleep_ms );
+    usleep( sleep_ms * 1000 );
        
     duk_pop_n(ctx, 1); // Clear stack
     duk_push_boolean(ctx, 1);  // Return success

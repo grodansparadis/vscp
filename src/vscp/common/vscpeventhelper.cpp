@@ -33,23 +33,9 @@
 //#pragma implementation
 #endif
 
-// For compilers that support precompilation, includes "wx.h".
-#include "wx/wxprec.h"
-
-#ifdef __BORLANDC__
-#pragma hdrstop
-#endif
-
-#ifndef WX_PRECOMP
-#include "wx/wx.h"
-#endif
-
-
-#include "wx/defs.h"
-#include "wx/app.h"
-#include <wx/wfstream.h>
-#include <wx/xml/xml.h>
-#include <wx/tokenzr.h>
+#include <string>
+#include <deque>
+#include <map>
 
 #include <stdlib.h>
 #include <string.h>
@@ -63,10 +49,10 @@
 
 #include <vscp.h>
 #include <mdf.h>
+#include <vscpdatetime.h>
 #include <vscphelper.h>
-#include <vscpeventhelper.h>
 
-
+#include "vscpeventhelper.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // Constructor
@@ -1211,7 +1197,7 @@ VSCPInformation::~VSCPInformation(void)
 // getClassHashPointer
 //
 
-VSCPHashClass *VSCPInformation::getClassHashPointer(void)
+std::map<unsigned long,std::string> *VSCPInformation::getClassHashPointer(void)
 {
     return &m_hashClass;
 }
@@ -1221,7 +1207,7 @@ VSCPHashClass *VSCPInformation::getClassHashPointer(void)
 // getClassHashPointer
 //
 
-VSCPHashType *VSCPInformation::getTypeHashPointer(void)
+std::map<unsigned long,std::string> *VSCPInformation::getTypeHashPointer(void)
 {
     return &m_hashType;
 }
@@ -1249,121 +1235,11 @@ std::string& VSCPInformation::getTypeDescription( int vscp_class, int vscp_type 
 
 
 
-// We don't want the graphical UI on apps that don't use it
-#if ( wxUSE_GUI != 0 )
-
-
-
-////////////////////////////////////////////////////////////////////////////////
-// fillClassDescriptions
-//
-
-void VSCPInformation::fillClassDescriptions( wxArrayString& strArray, 
-                                                VSCPInformationFormat format)
-{
-    std::string str;
-    int idx;
-
-    VSCPHashClass::iterator it;
-    for (it = m_hashClass.begin(); it != m_hashClass.end(); ++it) {
-        unsigned long key = it->first;
-        std::string value = it->second;
-
-        switch (format) {
-
-        case WITH_DECIMAL_PREFIX:
-            str = _("(") + str.Format(_("%d"), key) + _(") ") + value;
-            strArray.Add(str);
-            //idx = m_wxComboClass->Append( value );
-            break;
-
-        case WITH_HEX_PREFIX:
-            str = _("(") + str.Format(_("%04X"), key) + _(") ") + value;
-            idx = strArray.Add(str);
-            break;
-
-        case WITH_DECIMAL_SUFFIX:
-            str = value + _(" (") + str.Format(_("%d"), key) + _(")");
-            strArray.Add(str);
-            //idx = m_wxComboClass->Append( value );
-            break;
-
-        case WITH_HEX_SUFFIX:
-            str = value + _(" (") + str.Format(_("%04X"), key) + _(")");
-            idx = strArray.Add(str);
-            break;
-
-        default:
-        case DEFAULT:
-            idx = strArray.Add(value);
-            break;
-
-        }
-    }
-}
-
-
 ////////////////////////////////////////////////////////////////////////////////
 // fillTypeDescriptions
 //
 
-void VSCPInformation::fillClassDescriptions( wxControlWithItems *pctrl, 
-                                                VSCPInformationFormat format)
-{
-    std::string str;
-    int idx;
-
-    // Clear the combo
-    pctrl->Clear();
-
-    VSCPHashClass::iterator it;
-    for (it = m_hashClass.begin(); it != m_hashClass.end(); ++it) {
-        unsigned long key = it->first;
-        std::string value = it->second;
-
-        switch (format) {
-
-        case WITH_DECIMAL_PREFIX:
-            str = _("(") + str.Format(_("%lu"), key) + _(") ") + value;
-            idx = pctrl->Append(str);
-            pctrl->SetClientData(idx, (void *) key);
-            break;
-
-        case WITH_HEX_PREFIX:
-            str = _("(") + str.Format(_("%04lX"), key) + _(") ") + value;
-            idx = pctrl->Append(str);
-            pctrl->SetClientData(idx, (void *) key);
-            break;
-
-        case WITH_DECIMAL_SUFFIX:
-            str = value + _(" (") + str.Format(_("%lu"), key) + _(")");
-            idx = pctrl->Append(str);
-            pctrl->SetClientData(idx, (void *) key);
-            break;
-
-        case WITH_HEX_SUFFIX:
-            str = value + _(" (") + str.Format(_("%04lX"), key) + _(")");
-            idx = pctrl->Append(str);
-            pctrl->SetClientData(idx, (void *) key);
-            break;
-
-        default:
-        case DEFAULT:
-            idx = pctrl->Append(value);
-            pctrl->SetClientData(idx, (void *) key);
-            break;
-
-        }
-    }
-}
-
-#endif
-
-////////////////////////////////////////////////////////////////////////////////
-// fillTypeDescriptions
-//
-
-void VSCPInformation::fillTypeDescriptions( wxArrayString& strArray,
+void VSCPInformation::fillTypeDescriptions( std::deque<std::string>& strArray,
                                                 unsigned int vscp_class,
                                                 VSCPInformationFormat format)
 {
@@ -1409,67 +1285,4 @@ void VSCPInformation::fillTypeDescriptions( wxArrayString& strArray,
 }
 
 
-// We don't want the graphcal UI on apps that don't use it 
-#if ( wxUSE_GUI != 0 )
 
-
-////////////////////////////////////////////////////////////////////////////////
-// fillTypeDescriptions
-//
-
-void VSCPInformation::fillTypeDescriptions( wxControlWithItems *pctrl,
-                                                unsigned int vscp_class,
-                                                VSCPInformationFormat format)
-{
-    std::string str;
-    int idx;
-
-    // Clear the combo
-    pctrl->Clear();
-
-    VSCPHashType::iterator it;
-    for (it = m_hashType.begin(); it != m_hashType.end(); ++it) {
-        unsigned long key = it->first;
-        std::string value = it->second;
-
-        if (vscp_class == (key >> 16)) {
-
-            switch (format) {
-
-            case WITH_DECIMAL_PREFIX:
-                str = _("(") + str.Format(_("%lu"), key) + _(") ") + value;
-                idx = pctrl->Append(str);
-                pctrl->SetClientData(idx, (void *) (key));
-                break;
-
-            case WITH_HEX_PREFIX:
-                str = _("(") + str.Format(_("%04lX"), key) + _(") ") + value;
-                idx = pctrl->Append(str);
-                pctrl->SetClientData(idx, (void *) (key));
-                break;
-
-            case WITH_DECIMAL_SUFFIX:
-                str = value + _(" (") + str.Format(_("%lu"), (key & 0xffff)) + _(")");
-                idx = pctrl->Append(str);
-                pctrl->SetClientData(idx, (void *) (key));
-                break;
-
-            case WITH_HEX_SUFFIX:
-                str = value + _(" (") + str.Format(_("%04lX"), (key & 0xffff)) + _(")");
-                idx = pctrl->Append(str);
-                pctrl->SetClientData(idx, (void *) (key));
-                break;
-
-            default:
-            case DEFAULT:
-                idx = pctrl->Append(value);
-                pctrl->SetClientData(idx, (void *) (key));
-                break;
-
-            }
-        }
-    }
-}
-
-
-#endif

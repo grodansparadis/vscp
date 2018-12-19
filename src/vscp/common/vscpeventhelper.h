@@ -40,15 +40,8 @@
 #if !defined(VSCPEVENTHELPER_H__C2A773AD_8886_40F0_96C4_4DCA663402B2__INCLUDED_)
 #define VSCPEVENTHELPER_H__C2A773AD_8886_40F0_96C4_4DCA663402B2__INCLUDED_
 
-
-
-
-#include <wx/wx.h>
-#include <wx/hashmap.h>
-#ifndef WIN32
-#include <sys/times.h>
-#endif
-
+#include <string>
+#include <map>
 
 #include <vscp.h>
 #include <vscp_class.h>
@@ -65,12 +58,8 @@ extern "C" {
 #endif
 
 
-    /// Hashtable for known event VSCP classes
-    WX_DECLARE_HASH_MAP(unsigned long, std::string, wxIntegerHash, wxIntegerEqual, VSCPHashClass);
-
-    /// Hashtable for known event VSCP types
-    WX_DECLARE_HASH_MAP(unsigned long, std::string, wxIntegerHash, wxIntegerEqual, VSCPHashType);
-
+    
+    
 #define MAKE_CLASSTYPE_LONG( a, b ) ((((unsigned long)a)<<16) + b)
 
     enum VSCPInformationFormat {
@@ -97,12 +86,12 @@ extern "C" {
         /*!
           Get a pointer to the VSCP class hashtable.
          */
-        VSCPHashClass *getClassHashPointer(void);
+        std::map<unsigned long,std::string> *getClassHashPointer(void);
 
         /*!
           Get a pointer to the VSCP type hashtable.
          */
-        VSCPHashType *getTypeHashPointer(void);
+        std::map<unsigned long,std::string> *getTypeHashPointer(void);
 
         /*!
           Get class description from class id
@@ -122,26 +111,13 @@ extern "C" {
             \param strArray String array to fill.
             \param format Format for list. 0 is just description, 1 is
                 id + description
-         */
-#ifdef VSCP_QT
-#else		 
-        void fillClassDescriptions( wxArrayString& strArray, 
+         */	
+
+        void fillClassDescriptions( std::deque<std::string>& strArray, 
                                         VSCPInformationFormat format = DEFAULT );
-#endif		
+	
 
 
-        // We don't want the graphcal UI on apps that don't use it 
-#if ( wxUSE_GUI != 0 )
-        /*!
-            Fills a combobox with class descriptions
-            \param pctrl Pointer to control to fill.
-            \param format Format for list. 0 is just description, 1 is
-                id + description
-         */
-        void fillClassDescriptions( wxControlWithItems *pctrl, 
-                                        VSCPInformationFormat format = DEFAULT);
-
-#endif
         /*!
             Fills a string array with type descriptions
             \param strArray String array to fill.
@@ -149,32 +125,26 @@ extern "C" {
                 id + description
          */
          
-        void fillTypeDescriptions (wxArrayString& strArray, 
+        void fillTypeDescriptions (std::deque<std::string>& strArray, 
                                     unsigned int vscp_class, 
                                     VSCPInformationFormat format = DEFAULT);
     
 
         // We don't want the graphcal UI on apps that don't use it 
         
-#if ( wxUSE_GUI != 0 )
-        /*!
-            Fills a combobox with type descriptions
-            \param pctrl Pointer to control to fill.
-            \param format Format for list. 0 is just description, 1 is
-                id + description
-         */
-        void fillTypeDescriptions(wxControlWithItems *pctrl, 
-                    unsigned int vscp_class, 
-                    VSCPInformationFormat format = DEFAULT);
-
-#endif
 
  private:
         /// Hash for classes
-        VSCPHashClass m_hashClass;
+        std::map<unsigned long,std::string> m_hashClass;
+        /// Hashtable for known event VSCP classes
+        //XX_DECLARE_HASH_MAP(unsigned long, std::string, wxIntegerHash, wxIntegerEqual, VSCPHashClass);
+
 
         /// Hash for types
-        VSCPHashType m_hashType;
+        std::map<unsigned long,std::string> m_hashType;
+        /// Hashtable for known event VSCP types
+        //XX_DECLARE_HASH_MAP(unsigned long, std::string, wxIntegerHash, wxIntegerEqual, VSCPHashType);
+
     };
 
 

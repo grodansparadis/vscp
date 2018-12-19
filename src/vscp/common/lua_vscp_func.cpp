@@ -132,7 +132,7 @@ int lua_vscp_print( struct lua_State *L )
     for ( int i=1; i<nArgs+1; i++ ) {
         pstr = lua_tolstring ( L, i, &len );
         if ( NULL != pstr ) {
-            wxPrintf( "%s\n", pstr );
+            // xxPrintf( "%s\n", pstr );
         }
     }
     

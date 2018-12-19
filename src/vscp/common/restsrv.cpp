@@ -530,10 +530,8 @@ restsrv_add_session(struct web_connection *conn, CUserItem *pUserItem)
       CLIENT_ITEM_INTERFACE_TYPE_CLIENT_WEBSOCKET;
     pSession->m_pClientItem->m_strDeviceName = ("Internal REST server client.");
     pSession->m_pClientItem->m_strDeviceName += ("|Started at ");
-    wxDateTime now = wxDateTime::Now();
-    pSession->m_pClientItem->m_strDeviceName += now.FormatISODate();
-    pSession->m_pClientItem->m_strDeviceName += (" ");
-    pSession->m_pClientItem->m_strDeviceName += now.FormatISOTime();
+    //vscpdatetime now = vscpdatetime::Now();
+    pSession->m_pClientItem->m_strDeviceName += vscpdatetime::setNow().getISODateTime();
 
     // Add the client to the Client List
     pthread_mutex_lock(&gpobj->m_clientMutex);
@@ -3018,7 +3016,7 @@ restsrv_doWriteMeasurement(struct web_connection *conn,
                 data[3] = unit;
 
                 memcpy(data + 4, (uint8_t *)&value, 8); // copy in double
-                uint64_t temp = wxUINT64_SWAP_ON_LE(*(data + 4));
+                uint64_t temp = VSCP_UINT64_SWAP_ON_LE(*(data + 4));
                 memcpy(data + 4, (void *)&temp, 8);
 
                 // Copy in data
