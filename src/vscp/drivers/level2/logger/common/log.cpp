@@ -466,9 +466,9 @@ CVSCPLogWrkTread::Entry()
     // First log on to the host and get configuration 
     // variables
 
-    if ( VSCP_ERROR_SUCCESS == m_srv.doCmdOpen( m_pLog->m_host,
-		                                            m_pLog->m_username,
-		                                            m_pLog->m_password) <= 0) {
+    if ( VSCP_ERROR_SUCCESS == m_srv.doCmdOpen( m_pLog->m_host.ToStdString(),
+		                                            m_pLog->m_username.ToStdString(),
+		                                            m_pLog->m_password.ToStdString()) <= 0) {
         return NULL;
     }
 

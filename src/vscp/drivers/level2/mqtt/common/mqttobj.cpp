@@ -482,9 +482,9 @@ Cmqttobj::open( const char *pUsername,
     // First log on to the host and get configuration 
     // variables
 
-    if ( VSCP_ERROR_SUCCESS !=  m_srv.doCmdOpen( m_host,
-                                                    m_username,
-                                                    m_password) ) {
+    if ( VSCP_ERROR_SUCCESS !=  m_srv.doCmdOpen( m_host.ToStdString(),
+                                                    m_username.ToStdString(),
+                                                    m_password.ToStdString()) ) {
 #ifndef WIN32
         syslog(LOG_ERR,
                 "%s",

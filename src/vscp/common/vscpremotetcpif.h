@@ -39,13 +39,7 @@
 #if !defined(VSCPREMOTETCPIF_H__INCLUDED_)
 #define VSCPREMOTETCPIF_H__INCLUDED_
 
-
-#include <canal.h>
-#include <vscp.h>
-#include <guid.h>
-
-#if defined(_WIN32)
-#else
+#include <stdlib.h>
 #include <unistd.h>
 #include <sys/wait.h>
 #include <sys/socket.h>
@@ -59,11 +53,14 @@
 #include <netdb.h>
 #include <netinet/tcp.h>
 #include <sockettcp.h>
-#endif
 
+#include <canal.h>
+#include <vscp.h>
+#include <guid.h>
 #include <sockettcp.h>
+#include <vscpdatetime.h>
 #include <vscphelper.h>
-#include "wx/datetime.h"
+
 
 //---------------------------------------------------------------------------
 
@@ -114,10 +111,6 @@
  */
 #define TCPIP_UNUSED(__par)             (void)(__par)
 
-/// Receive queue
-WX_DECLARE_LIST(vscpEvent, EVENT_RX_QUEUE);
-/// Transmit queue
-WX_DECLARE_LIST(vscpEvent, EVENT_TX_QUEUE);
 
 // Forward declarations
 class VscpRemoteTcpIf;
@@ -169,14 +162,14 @@ public:
         Get last response form remote node
         @return Last raw response data from remote node
      */
-    wxString& getLastResponse( void ) { return m_strResponse; };
+    std::string& getLastResponse( void ) { return m_strResponse; };
 
     /*!
         Get last response time
         @return Relative time in milliseconds when last valid received
             data was read.
     */
-    wxLongLong getlastResponseTime( void ) { return m_lastResponseTime; };
+    uint32_t getlastResponseTime( void ) { return m_lastResponseTime; };
     
     /*!
         Returns TRUE if we are connected false otherwise. 
@@ -207,7 +200,6 @@ public:
         @param cmd Commad to issue
         @return Returns VSCP_ERROR_SUCCESS if the command could be sent successfully.
      */
-    int doCommand( const wxString& cmd );
     int doCommand( const std::string& cmd );
 
     /*!
@@ -226,7 +218,7 @@ public:
         @return CANAL_ERROR_SUCCESS if channel is open or CANAL error code  if error 
         or the channel is already opened or other error occur.
      */
-    int doCmdOpen( const wxString& strInterface = (_("")), uint32_t flags = 0L );
+    int doCmdOpen( const std::string& strInterface = std::string(""), uint32_t flags = 0L );
 
     /*!
         Open communication interface.
@@ -236,9 +228,9 @@ public:
         @return CANAL_ERROR_SUCCESS if channel is open or CANAL error code if error 
             or the channel is already opened or other error occur.
      */
-    int doCmdOpen( const wxString& strHostname,
-                    const wxString& strUsername,
-                    const wxString& strPassword );
+    int doCmdOpen( const std::string& strHostname,
+                    const std::string& strUsername,
+                    const std::string& strPassword );
 
     /*!
         Open communication interface.
@@ -249,10 +241,10 @@ public:
         @return CANAL_ERROR_SUCCESS if channel is open or CANAL error code if error 
             or the channel is already opened or other error occur.
      */
-    int doCmdOpen( const wxString& strHostname,
+    int doCmdOpen( const std::string& strHostname,
                     short port,
-                    const wxString& strUsername,
-                    const wxString& strPassword );                
+                    const std::string& strUsername,
+                    const std::string& strPassword );                
 
     /*!
         Close communication interface
@@ -400,7 +392,7 @@ public:
         @param mask Mask on string form (priority,class,type,guid).
         @return CANAL_ERROR_SUCCESS on success and error code if failure.
      */
-    int doCmdFilter( const wxString& filter, const wxString& mask );
+    int doCmdFilter( const std::string& filter, const std::string& mask );
 
     /*!
         Get i/f version through the interface. 
@@ -480,7 +472,7 @@ public:
         @param array A string array that will get interface list
         @return CANAL_ERROR_SUCCESS on success and error code if failure.
      */
-    int doCmdInterfaceList( wxArrayString& array );
+    int doCmdInterfaceList( std::deque<std::string>& array );
 
     /*!
         Dummy for Baudrate setting
@@ -518,7 +510,7 @@ public:
         @return true on success.
      */
     bool getEventFromLine( vscpEvent *pEvent, 
-                            const wxString& strLine );
+                            const std::string& strLine );
 
 
 
@@ -542,9 +534,9 @@ public:
         @param type Variable type that should be listed or 0 for all types.
         @return VSCP_ERROR_SUCCESS on success
      */
-    int getRemoteVariableList( wxArrayString& array, 
-                                    const wxString regexp = _(""),
-                                    const int type = 0 );
+    int getRemoteVariableList( std::deque<std::string>& array, 
+                                const std::string regexp = "",
+                                 const int type = 0 );
     
     /*!
      * Save variables to external disk
@@ -557,9 +549,9 @@ public:
      *          to write. Default is all.
      * @return VSCP_ERROR_SUCCESS on success
      */
-    int saveRemoteVariablesToDisk( const wxString& path, 
+    int saveRemoteVariablesToDisk( const std::string& path, 
                                         const int select=0, 
-                                        const wxString& regExp=_("") );
+                                        const std::string& regExp="" );
     
     /*!
      * Load variables from external disk
@@ -567,7 +559,7 @@ public:
      * @param Path to external storage.
      * @return VSCP_ERROR_SUCCESS on success.
      */
-    int loadRemoteVariablesFromDisk( const wxString& path );
+    int loadRemoteVariablesFromDisk( const std::string& path );
 
     /*!
         Create a variable
@@ -583,20 +575,20 @@ public:
         
         @return VSCP_ERROR_SUCCESS on success
      */
-    int createRemoteVariable( const wxString& name, 
-                                const wxString& strType,
+    int createRemoteVariable( const std::string& name, 
+                                const std::string& strType,
                                 const bool bPersistent,
-                                const wxString& strUser,
+                                const std::string& strUser,
                                 const uint32_t rights,
-                                const wxString& strValue,
-                                const wxString& strNote = _("") );
+                                const std::string& strValue,
+                                const std::string& strNote = "" );
     
     /*!
         Delete a named variable
         @param name Name of variable to delete.
         @return VSCP_ERROR_SUCCESS on success
      */
-    int deleteRemoteVariable( const wxString& name );
+    int deleteRemoteVariable( const std::string& name );
 
     /*!
         Get remote variable on string form
@@ -607,8 +599,8 @@ public:
         @return VSCP_ERROR_SUCCESS if the variable is of type string and the operation
                     was successful.
      */
-    int getRemoteVariableAsString( const wxString& name, 
-                                    wxString& strVariable );
+    int getRemoteVariableAsString( const std::string& name, 
+                                    std::string& strVariable );
 
     /*!
         Set variable from string 
@@ -617,8 +609,8 @@ public:
         @param strValue Variable on string form.
         @return VSCP_ERROR_SUCCESS if the operation was successful.
      */
-    int setRemoteVariableFromString( const wxString& name, 
-                                        const wxString& strValue,
+    int setRemoteVariableFromString( const std::string& name, 
+                                        const std::string& strValue,
                                         const bool bPersistent = false,
                                         const uint32_t rights = 0x744 );
     
@@ -628,8 +620,8 @@ public:
      * @param name Name of variable.
      * @return VSCP_ERROR_SUCCESS on success
      */
-    int getRemoteVariableLastChange( const wxString& name, 
-                                        wxDateTime& lastChange );
+    int getRemoteVariableLastChange( const std::string& name, 
+                                        vscpdatetime& lastChange );
     
     
     /*!
@@ -639,7 +631,7 @@ public:
      * @return VSCP_ERROR_SUCCESS on success
      * 
      */
-    int getRemoteVariableType( const wxString& name, 
+    int getRemoteVariableType( const std::string& name, 
                                     uint8_t *pType );
     
     /*!
@@ -649,7 +641,7 @@ public:
      * @return VSCP_ERROR_SUCCESS on success
      * 
      */
-    int getRemoteVariablePersistence( const wxString& name, 
+    int getRemoteVariablePersistence( const std::string& name, 
                                         bool *pPersistent );
     
     /*!
@@ -659,7 +651,7 @@ public:
      * @return VSCP_ERROR_SUCCESS on success
      * 
      */
-    int getRemoteVariableOwner( const wxString& name, 
+    int getRemoteVariableOwner( const std::string& name, 
                                     uint32_t *pOwner );
     
     /*!
@@ -669,7 +661,7 @@ public:
      * @return VSCP_ERROR_SUCCESS on success
      * 
      */
-    int getRemoteVariableAccessRights( const wxString& name, 
+    int getRemoteVariableAccessRights( const std::string& name, 
                                         uint16_t *pRights );
     
     /*!
@@ -681,9 +673,6 @@ public:
      * @return VSCP_ERROR_SUCCESS on success
      * 
      */
-    int getRemoteVariableValue( const wxString& name, 
-                                    wxString& strValue, 
-                                    bool bDecode=false );
 
     int getRemoteVariableValue( const std::string& name, 
                                     std::string& strValue, 
@@ -696,8 +685,8 @@ public:
      * @return VSCP_ERROR_SUCCESS on success
      * 
      */
-    int setRemoteVariableValue( const wxString& name, 
-                                    wxString& strValue );
+    int setRemoteVariableValue( const std::string& name, 
+                                    std::string& strValue );
     
     /*!
      * Get note for remote variable.
@@ -706,8 +695,8 @@ public:
      * @return VSCP_ERROR_SUCCESS on success
      * 
      */
-    int getRemoteVariableNote( const wxString& name, 
-                                wxString& strNote );
+    int getRemoteVariableNote( const std::string& name, 
+                                std::string& strNote );
 
 
     /*!
@@ -718,7 +707,7 @@ public:
         @return VSCP_ERROR_SUCCESS if the variable is of type bool and the operation
         was successful.
      */
-    int getRemoteVariableBool( const wxString& name, 
+    int getRemoteVariableBool( const std::string& name, 
                                 bool *bValue);
 
     /*!
@@ -729,7 +718,7 @@ public:
         @return VSCP_ERROR_SUCCESS if the variable is of type bool and the operation
         was successful.
      */
-    int setRemoteVariableBool( const wxString& name, 
+    int setRemoteVariableBool( const std::string& name, 
                                 const bool bValue);
 
     /*!
@@ -740,7 +729,7 @@ public:
         @return VSCP_ERROR_SUCCESS if the variable is of type integer and the operation
         was successful.
      */
-    int getRemoteVariableInt( const wxString& name, 
+    int getRemoteVariableInt( const std::string& name, 
                                 int *value);
 
     /*!
@@ -751,7 +740,7 @@ public:
         @return VSCP_ERROR_SUCCESS if the variable is of type integer and the operation
         was successful.
      */
-    int setRemoteVariableInt( const wxString& name, 
+    int setRemoteVariableInt( const std::string& name, 
                                 int value);
 
     /*!
@@ -762,7 +751,7 @@ public:
         @return VSCP_ERROR_SUCCESS if the variable is of type long and the operation
         was successful.
      */
-    int getRemoteVariableLong( const wxString& name, 
+    int getRemoteVariableLong( const std::string& name, 
                                 long *value);
 
     /*!
@@ -773,7 +762,7 @@ public:
         @return VSCP_ERROR_SUCCESS if the variable is of type long and the operation
         was successful.
      */
-    int setRemoteVariableLong( const wxString& name, 
+    int setRemoteVariableLong( const std::string& name, 
                                 long value);
 
     /*!
@@ -784,7 +773,7 @@ public:
         @return VSCP_ERROR_SUCCESS if the variable is of type double and the operation
         was successful.
      */
-    int getRemoteVariableDouble( const wxString& name, 
+    int getRemoteVariableDouble( const std::string& name, 
                                     double *value);
 
     /*!
@@ -795,7 +784,7 @@ public:
         @return VSCP_ERROR_SUCCESS if the variable is of type double and the operation
         was successful.
      */
-    int setRemoteVariableDouble( const wxString& name, 
+    int setRemoteVariableDouble( const std::string& name, 
                                     double value );
 
     /*!
@@ -810,7 +799,7 @@ public:
         @return VSCP_ERROR_SUCCESS if the variable is of type measurement and the operation
                 was successful.
      */
-    int getRemoteVariableMeasurement( const wxString& name, 
+    int getRemoteVariableMeasurement( const std::string& name, 
                                         double *pvalue,
                                         uint8_t *punit,
                                         uint8_t *psensoridx,
@@ -829,7 +818,7 @@ public:
         @return VSCP_ERROR_SUCCESS if the variable is of type double and the operation
         was successful.
      */
-    int setRemoteVariableMeasurement( const wxString& name, 
+    int setRemoteVariableMeasurement( const std::string& name, 
                                         double value,
                                         uint8_t unit = 0,
                                         uint8_t sensoridx = 0,
@@ -844,7 +833,7 @@ public:
         @return VSCP_ERROR_SUCCESS if the variable is of type VSCP event and the operation
         was successful.
      */
-    int getRemoteVariableEvent( const wxString& name, 
+    int getRemoteVariableEvent( const std::string& name, 
                                     vscpEvent *pEvent );
 
     /*!
@@ -854,7 +843,7 @@ public:
         @param pEvent pointer to event that is used to set the variable.
         @return VSCP_ERROR_SUCCESS if the operation was successful.
      */
-    int setRemoteVariableEvent( const wxString& name, 
+    int setRemoteVariableEvent( const std::string& name, 
                                     vscpEvent *pEvent );
 
     /*!
@@ -865,7 +854,7 @@ public:
         @return VSCP_ERROR_SUCCESS if the variable is of type VSCP event and the operation
         was successful.
      */
-    int getRemoteVariableEventEx( const wxString& name, 
+    int getRemoteVariableEventEx( const std::string& name, 
                                     vscpEventEx *pEvent );
 
     /*!
@@ -875,7 +864,7 @@ public:
         @param pEvent pointer to event that is used to set the variable.
         @return VSCP_ERROR_SUCCESS if the operation was successful.
      */
-    int setRemoteVariableEventEx( const wxString& name, 
+    int setRemoteVariableEventEx( const std::string& name, 
                                     vscpEventEx *pEvent );
 
     /*!
@@ -886,7 +875,7 @@ public:
         @return VSCP_ERROR_SUCCESS if the variable is of type VSCP GUID and the operation
         was successful.
      */
-    int getRemoteVariableGUID( const wxString& name, cguid& pGUID );
+    int getRemoteVariableGUID( const std::string& name, cguid& pGUID );
 
     /*!
         set variable value from GUID
@@ -895,7 +884,7 @@ public:
         @param pGUID pointer to GUID that is used to set the variable.
         @return VSCP_ERROR_SUCCESS if the operation was successful.
      */
-    int setRemoteVariableGUID( const wxString& name, cguid& pGUID );
+    int setRemoteVariableGUID( const std::string& name, cguid& pGUID );
 
     /*!
         Get variable value from VSCP data variable
@@ -906,7 +895,7 @@ public:
         @return VSCP_ERROR_SUCCESS if the variable is of type VSCP data and the operation
         was successful.
      */
-    int getRemoteVariableVSCPdata( const wxString& name, 
+    int getRemoteVariableVSCPdata( const std::string& name, 
                                         uint8_t *pData, 
                                         uint16_t *pSize );
 
@@ -918,7 +907,7 @@ public:
         @param size Size of data.
         @return VSCP_ERROR_SUCCESS if the operation was successful.
      */
-    int setRemoteVariableVSCPdata( const wxString& name, 
+    int setRemoteVariableVSCPdata( const std::string& name, 
                                     uint8_t *pData, 
                                     uint16_t size );
 
@@ -930,7 +919,7 @@ public:
         @return VSCP_ERROR_SUCCESS if the variable is of type VSCP class and the operation
         was successful.
      */
-    int getRemoteVariableVSCPclass( const wxString& name, 
+    int getRemoteVariableVSCPclass( const std::string& name, 
                                         uint16_t *vscp_class );
 
     /*!
@@ -940,7 +929,7 @@ public:
         @param vscp_class to write to variable.
         @return VSCP_ERROR_SUCCESS if the operation was successful.
      */
-    int setRemoteVariableVSCPclass( const wxString& name, 
+    int setRemoteVariableVSCPclass( const std::string& name, 
                                         uint16_t vscp_class );
 
     /*!
@@ -951,7 +940,7 @@ public:
         @return VSCP_ERROR_SUCCESS if the variable is of type VSCP type and the operation
         was successful.
      */
-    int getRemoteVariableVSCPtype( const wxString& name, 
+    int getRemoteVariableVSCPtype( const std::string& name, 
                                     uint16_t *vscp_type );
 
 
@@ -962,7 +951,7 @@ public:
         @param vscp_type to write to variable.
         @return VSCP_ERROR_SUCCESS if the operation was successful.
      */
-    int setRemoteVariableVSCPtype( const wxString& name, 
+    int setRemoteVariableVSCPtype( const std::string& name, 
                                     uint16_t vscp_type );
     
     // -------------------------------------------------------------------------
@@ -975,7 +964,7 @@ public:
         @return VSCP_ERROR_SUCCESS if the variable is of type VSCP type and the operation
         was successful.
      */
-    int getRemoteVariableVSCPTimestamp( const wxString& name, 
+    int getRemoteVariableVSCPTimestamp( const std::string& name, 
                                             uint32_t *vscp_timestamp );
 
 
@@ -986,7 +975,7 @@ public:
         @param vscp_timestamp as uint32_t to write to variable.
         @return VSCP_ERROR_SUCCESS if the operation was successful.
      */
-    int setRemoteVariableVSCPTimestamp( const wxString& name, 
+    int setRemoteVariableVSCPTimestamp( const std::string& name, 
                                             uint32_t vscp_timestamp );
 
     /*!
@@ -997,8 +986,8 @@ public:
         @return VSCP_ERROR_SUCCESS if the variable is of type VSCP type and the operation
         was successful.
      */
-    int getRemoteVariableDateTime( const wxString& name, 
-                                        wxDateTime& datetime );
+    int getRemoteVariableDateTime( const std::string& name, 
+                                        vscpdatetime& datetime );
 
 
     /*!
@@ -1008,8 +997,8 @@ public:
         @param datetime to write to variable.
         @return VSCP_ERROR_SUCCESS if the operation was successful.
      */
-    int setRemoteVariableDateTime( const wxString& name, 
-                                    wxDateTime& datetimes );
+    int setRemoteVariableDateTime( const std::string& name, 
+                                    vscpdatetime& datetimes );
     
     /*!
         Get variable value from a date variable
@@ -1019,8 +1008,8 @@ public:
         @return VSCP_ERROR_SUCCESS if the variable is of type VSCP type and the operation
         was successful.
      */
-    int getRemoteVariableDate( const wxString& name, 
-                                wxDateTime& date );
+    int getRemoteVariableDate( const std::string& name, 
+                                vscpdatetime& date );
 
 
     /*!
@@ -1030,8 +1019,8 @@ public:
         @param date to write to variable.
         @return VSCP_ERROR_SUCCESS if the operation was successful.
      */
-    int setRemoteVariableDate( const wxString& name, 
-                                wxDateTime& date );
+    int setRemoteVariableDate( const std::string& name, 
+                                vscpdatetime& date );
     
     /*!
         Get variable value from a time variable
@@ -1041,8 +1030,8 @@ public:
         @return VSCP_ERROR_SUCCESS if the variable is of type VSCP type and the operation
         was successful.
      */
-    int getRemoteVariableTime( const wxString& name, 
-                                wxDateTime& time );
+    int getRemoteVariableTime( const std::string& name, 
+                                vscpdatetime& time );
 
 
     /*!
@@ -1052,8 +1041,8 @@ public:
         @param time to write to variable.
         @return VSCP_ERROR_SUCCESS if the operation was successful.
      */
-    int setRemoteVariableTime( const wxString& name, 
-                                wxDateTime& time );
+    int setRemoteVariableTime( const std::string& name, 
+                                vscpdatetime& time );
     
     
     /*!
@@ -1064,8 +1053,8 @@ public:
         @return VSCP_ERROR_SUCCESS if the variable is of type VSCP type and the operation
         was successful.
      */
-    int getRemoteVariableBlob( const wxString& name, 
-                                wxString& blob );
+    int getRemoteVariableBlob( const std::string& name, 
+                                std::string& blob );
 
 
     /*!
@@ -1075,8 +1064,8 @@ public:
         @param BASE64 encoded blob to write to variable.
         @return VSCP_ERROR_SUCCESS if the operation was successful.
      */
-    int setRemoteVariableBlob( const wxString& name, 
-                                wxString& blob );
+    int setRemoteVariableBlob( const std::string& name, 
+                                std::string& blob );
     
     
     /*!
@@ -1087,8 +1076,8 @@ public:
         @return VSCP_ERROR_SUCCESS if the variable is of type VSCP type and the operation
         was successful.
      */
-    int getRemoteVariableMIME( const wxString& name, 
-                                wxString& mime );
+    int getRemoteVariableMIME( const std::string& name, 
+                                std::string& mime );
 
 
     /*!
@@ -1098,7 +1087,7 @@ public:
         @param BASE64 encoded MIME data to write to variable.
         @return VSCP_ERROR_SUCCESS if the operation was successful.
      */
-    int setRemoteVariableMIME( const wxString& name, wxString& mime );
+    int setRemoteVariableMIME( const std::string& name, std::string& mime );
     
     /*!
         Get variable value from a base64 ENCODED HTML variable
@@ -1108,7 +1097,7 @@ public:
         @return VSCP_ERROR_SUCCESS if the variable is of type VSCP type and the operation
         was successful.
      */
-    int getRemoteVariableHTML( const wxString& name, wxString& html );
+    int getRemoteVariableHTML( const std::string& name, std::string& html );
 
 
     /*!
@@ -1118,7 +1107,7 @@ public:
         @param BASE64 encoded HTML data to write to variable.
         @return VSCP_ERROR_SUCCESS if the operation was successful.
      */
-    int setRemoteVariableHTML( const wxString& name, wxString& html );
+    int setRemoteVariableHTML( const std::string& name, std::string& html );
     
    /*!
         Get variable value from a base64 ENCODED JavaScript variable
@@ -1128,7 +1117,7 @@ public:
         @return VSCP_ERROR_SUCCESS if the variable is of type VSCP type and the operation
         was successful.
      */
-    int getRemoteVariableJavaScript( const wxString& name, wxString& js );
+    int getRemoteVariableJavaScript( const std::string& name, std::string& js );
 
 
     /*!
@@ -1138,7 +1127,7 @@ public:
         @param BASE64 encoded JavaScript data to write to variable.
         @return VSCP_ERROR_SUCCESS if the operation was successful.
      */
-    int setRemoteVariableJavaScript( const wxString& name, wxString& js );    
+    int setRemoteVariableJavaScript( const std::string& name, std::string& js );    
     
     /*!
         Get variable value from a base64 ENCODED LUA variable
@@ -1148,7 +1137,7 @@ public:
         @return VSCP_ERROR_SUCCESS if the variable is of type VSCP type and the operation
         was successful.
      */
-    int getRemoteVariableLUA( const wxString& name, wxString& lua );
+    int getRemoteVariableLUA( const std::string& name, std::string& lua );
 
 
     /*!
@@ -1158,7 +1147,7 @@ public:
         @param BASE64 encoded LUA data to write to variable.
         @return VSCP_ERROR_SUCCESS if the operation was successful.
      */
-    int setRemoteVariableLUA( const wxString& name, wxString& lua );
+    int setRemoteVariableLUA( const std::string& name, std::string& lua );
     
     /*!
         Get variable value from a base64 ENCODED LUARES variable
@@ -1168,7 +1157,7 @@ public:
         @return VSCP_ERROR_SUCCESS if the variable is of type VSCP type and the operation
         was successful.
      */
-    int getRemoteVariableLUARES( const wxString& name, wxString& luares );
+    int getRemoteVariableLUARES( const std::string& name, std::string& luares );
 
 
     /*!
@@ -1178,7 +1167,7 @@ public:
         @param BASE64 encoded LUARES data to write to variable.
         @return VSCP_ERROR_SUCCESS if the operation was successful.
      */
-    int setRemoteVariableLUARES( const wxString& name, wxString& luares );    
+    int setRemoteVariableLUARES( const std::string& name, std::string& luares );    
     
     
     /*!
@@ -1189,7 +1178,7 @@ public:
         @return VSCP_ERROR_SUCCESS if the variable is of type VSCP type and the operation
         was successful.
      */
-    int getRemoteVariableUX1( const wxString& name, wxString& ux1 );
+    int getRemoteVariableUX1( const std::string& name, std::string& ux1 );
 
 
     /*!
@@ -1199,7 +1188,7 @@ public:
         @param BASE64 encoded UX1 data to write to variable.
         @return VSCP_ERROR_SUCCESS if the operation was successful.
      */
-    int setRemoteVariableUX1( const wxString& name, wxString& ux1 ); 
+    int setRemoteVariableUX1( const std::string& name, std::string& ux1 ); 
     
     
     /*!
@@ -1210,7 +1199,7 @@ public:
         @return VSCP_ERROR_SUCCESS if the variable is of type VSCP type and the operation
         was successful.
      */
-    int getRemoteVariableDMROW( const wxString& name, wxString& dmrow );
+    int getRemoteVariableDMROW( const std::string& name, std::string& dmrow );
 
 
     /*!
@@ -1220,7 +1209,7 @@ public:
         @param BASE64 encoded DM row data to write to variable.
         @return VSCP_ERROR_SUCCESS if the operation was successful.
      */
-    int setRemoteVariableDMROW( const wxString& name, wxString& dmrow );
+    int setRemoteVariableDMROW( const std::string& name, std::string& dmrow );
     
     /*!
         Get variable value from a base64 ENCODED driver variable
@@ -1230,7 +1219,7 @@ public:
         @return VSCP_ERROR_SUCCESS if the variable is of type VSCP type and the operation
         was successful.
      */
-    int getRemoteVariableDriver( const wxString& name, wxString& drv );
+    int getRemoteVariableDriver( const std::string& name, std::string& drv );
 
 
     /*!
@@ -1240,7 +1229,7 @@ public:
         @param BASE64 encoded driver data to write to variable.
         @return VSCP_ERROR_SUCCESS if the operation was successful.
      */
-    int setRemoteVariableDriver( const wxString& name, wxString& drv );
+    int setRemoteVariableDriver( const std::string& name, std::string& drv );
     
     /*!
         Get variable value from a base64 ENCODED user variable
@@ -1250,7 +1239,7 @@ public:
         @return VSCP_ERROR_SUCCESS if the variable is of type VSCP type and the operation
         was successful.
      */
-    int getRemoteVariableUser( const wxString& name, wxString& user );
+    int getRemoteVariableUser( const std::string& name, std::string& user );
 
 
     /*!
@@ -1260,7 +1249,7 @@ public:
         @param BASE64 encoded user data to write to variable.
         @return VSCP_ERROR_SUCCESS if the operation was successful.
      */
-    int setRemoteVariableUser( const wxString& name, wxString& user );
+    int setRemoteVariableUser( const std::string& name, std::string& user );
     
     /*!
         Get variable value from a base64 ENCODED filter variable
@@ -1270,7 +1259,7 @@ public:
         @return VSCP_ERROR_SUCCESS if the variable is of type VSCP type and the operation
         was successful.
      */
-    int getRemoteVariableFilter( const wxString& name, wxString& filter );
+    int getRemoteVariableFilter( const std::string& name, std::string& filter );
 
 
     /*!
@@ -1280,7 +1269,7 @@ public:
         @param BASE64 encoded filter data to write to variable.
         @return VSCP_ERROR_SUCCESS if the operation was successful.
      */
-    int setRemoteVariableFilter( const wxString& name, wxString& filter );
+    int setRemoteVariableFilter( const std::string& name, std::string& filter );
     
     
     
@@ -1301,7 +1290,7 @@ public:
      * @param defTable XML definition of table.
      * @return return VSCP_ERROR_SUCCESS; on success, error code on failure.
      */
-    int tableCreate( const wxString& defTable );
+    int tableCreate( const std::string& defTable );
     
     /*!
      * Delete named table
@@ -1311,7 +1300,7 @@ public:
      * @return return VSCP_ERROR_SUCCESS; on success, error code on failure.
      * 
      */
-    int tableDelete( const wxString &tblName, bool bDeleteFile=false );
+    int tableDelete( const std::string &tblName, bool bDeleteFile=false );
     
     /*!
      * Get a list of all defined tables
@@ -1319,7 +1308,7 @@ public:
      * @param tablesArray List that will get filled with table names.
      * @return return VSCP_ERROR_SUCCESS; on success, error code on failure.
      */
-    int tableList( wxArrayString &tablesArray );
+    int tableList( std::deque<std::string> &tablesArray );
     
     /*!
      * Get information about a named table
@@ -1330,8 +1319,8 @@ public:
      *          XML data.
      * @return return VSCP_ERROR_SUCCESS; on success, error code on failure.
      */
-    int tableListInfo( const wxString &tblName, 
-                        wxString &tableInfo, 
+    int tableListInfo( const std::string &tblName, 
+                        std::string &tableInfo, 
                         bool bXML = true );
     
     
@@ -1346,10 +1335,10 @@ public:
      * @param bFull True if all fields of the table row should be listed.
      * @return return VSCP_ERROR_SUCCESS; on success, error code on failure.
      */
-    int tableGet( const wxString& tblName, 
-                        const wxDateTime& from, 
-                        const wxDateTime& to,
-                        wxArrayString& resultArray,
+    int tableGet( const std::string& tblName, 
+                        const vscpdatetime& from, 
+                        const vscpdatetime& to,
+                        std::deque<std::string> &resultArray,
                         bool bFull = false  );
     
     /*!
@@ -1361,10 +1350,10 @@ public:
      * @param resultArray String array holding result.
      * @return return VSCP_ERROR_SUCCESS; on success, error code on failure.
      */
-    int tableGetRaw( const wxString& tblName, 
-                        const wxDateTime& from, 
-                        const wxDateTime& to,
-                        wxArrayString& resultArray );
+    int tableGetRaw( const std::string& tblName, 
+                        const vscpdatetime& from, 
+                        const vscpdatetime& to,
+                        std::deque<std::string> &resultArray );
     
     
     /*!
@@ -1375,9 +1364,9 @@ public:
      * @param pdt Pointer to datetime. If NULL the current date/time will be used.
      * @return return VSCP_ERROR_SUCCESS; on success, error code on failure.
      */
-    int tableLog( const wxString& tblName, 
+    int tableLog( const std::string& tblName, 
                         double value, 
-                        wxDateTime *pdt = NULL );
+                        vscpdatetime *pdt = NULL );
     
     /*!
      * Log data to with SQL expression
@@ -1386,7 +1375,7 @@ public:
      * @param sql Log SQL expression.
      * @return return VSCP_ERROR_SUCCESS; on success, error code on failure.
      */
-    int tableLogSQL( const wxString& tblName, const wxString& sql );
+    int tableLogSQL( const std::string& tblName, const std::string& sql );
     
     
     /*!
@@ -1398,9 +1387,9 @@ public:
      * @param pRecords Filled with number of records in the interval on success.
      * @return return VSCP_ERROR_SUCCESS; on success, error code on failure.
      */
-    int tableGetNumRecords( const wxString& tblName, 
-                                const wxDateTime& from, 
-                                const wxDateTime& to,
+    int tableGetNumRecords( const std::string& tblName, 
+                                const vscpdatetime& from, 
+                                const vscpdatetime& to,
                                 size_t *pRecords );
     
     /*!
@@ -1412,10 +1401,10 @@ public:
      * @param first First date/time in the interval on success.
      * @return return VSCP_ERROR_SUCCESS; on success, error code on failure.
      */
-    int tableGetFirstDate( const wxString& tblName, 
-                                const wxDateTime& from, 
-                                const wxDateTime& to,
-                                wxDateTime& first );
+    int tableGetFirstDate( const std::string& tblName, 
+                                const vscpdatetime& from, 
+                                const vscpdatetime& to,
+                                vscpdatetime& first );
     
     /*!
      * Get last date/time for an interval-
@@ -1426,10 +1415,10 @@ public:
      * @param last Last date/time in the interval on success.
      * @return return VSCP_ERROR_SUCCESS; on success, error code on failure.
      */
-    int tableGetLastDate( const wxString& tblName, 
-                                const wxDateTime& from, 
-                                const wxDateTime& to,
-                                wxDateTime& last );
+    int tableGetLastDate( const std::string& tblName, 
+                                const vscpdatetime& from, 
+                                const vscpdatetime& to,
+                                vscpdatetime& last );
     
     /*!
      * Get last sum of values for an interval-
@@ -1440,9 +1429,9 @@ public:
      * @param sum Sum of values in the interval on success.
      * @return return VSCP_ERROR_SUCCESS; on success, error code on failure.
      */
-    int tableGetSum( const wxString& tblName, 
-                        const wxDateTime& from, 
-                        const wxDateTime& to,
+    int tableGetSum( const std::string& tblName, 
+                        const vscpdatetime& from, 
+                        const vscpdatetime& to,
                         double *pSum );
     
     /*!
@@ -1454,9 +1443,9 @@ public:
      * @param min Min of values in the interval on success.
      * @return return VSCP_ERROR_SUCCESS; on success, error code on failure.
      */
-    int tableGetMin( const wxString& tblName, 
-                        const wxDateTime& from, 
-                        const wxDateTime& to,
+    int tableGetMin( const std::string& tblName, 
+                        const vscpdatetime& from, 
+                        const vscpdatetime& to,
                         double *pMin );
     
     
@@ -1469,9 +1458,9 @@ public:
      * @param max Max of values in the interval on success.
      * @return return VSCP_ERROR_SUCCESS; on success, error code on failure.
      */
-    int tableGetMax( const wxString& tblName, 
-                        const wxDateTime& from, 
-                        const wxDateTime& to,
+    int tableGetMax( const std::string& tblName, 
+                        const vscpdatetime& from, 
+                        const vscpdatetime& to,
                         double *pMax );
     
     /*!
@@ -1483,9 +1472,9 @@ public:
      * @param average Average of values in the interval on success.
      * @return return VSCP_ERROR_SUCCESS; on success, error code on failure.
      */
-    int tableGetAverage( const wxString& tblName, 
-                            const wxDateTime& from, 
-                            const wxDateTime& to,
+    int tableGetAverage( const std::string& tblName, 
+                            const vscpdatetime& from, 
+                            const vscpdatetime& to,
                             double *pAverage );
     
     /*!
@@ -1497,9 +1486,9 @@ public:
      * @param median Median of values in the interval on success.
      * @return return VSCP_ERROR_SUCCESS; on success, error code on failure.
      */
-    int tableGetMedian( const wxString& tblName, 
-                            const wxDateTime& from, 
-                            const wxDateTime& to,
+    int tableGetMedian( const std::string& tblName, 
+                            const vscpdatetime& from, 
+                            const vscpdatetime& to,
                             double *pMedian );
     
     /*!
@@ -1511,9 +1500,9 @@ public:
      * @param stddev Standard deviation of values in the interval on success.
      * @return return VSCP_ERROR_SUCCESS; on success, error code on failure.
      */
-    int tableGetStdDev( const wxString& tblName, 
-                            const wxDateTime& from, 
-                            const wxDateTime& to,
+    int tableGetStdDev( const std::string& tblName, 
+                            const vscpdatetime& from, 
+                            const vscpdatetime& to,
                             double *pStdDev );
     
     
@@ -1526,9 +1515,9 @@ public:
      * @param variance Variance of values in the interval on success.
      * @return return VSCP_ERROR_SUCCESS; on success, error code on failure.
      */
-    int tableGetVariance( const wxString& tblName, 
-                            const wxDateTime& from, 
-                            const wxDateTime& to,
+    int tableGetVariance( const std::string& tblName, 
+                            const vscpdatetime& from, 
+                            const vscpdatetime& to,
                             double *pVariance );
     
     /*!
@@ -1540,9 +1529,9 @@ public:
      * @param mode Mode of values in the interval on success.
      * @return return VSCP_ERROR_SUCCESS; on success, error code on failure.
      */
-    int tableGetMode( const wxString& tblName, 
-                            const wxDateTime& from, 
-                            const wxDateTime& to,
+    int tableGetMode( const std::string& tblName, 
+                            const vscpdatetime& from, 
+                            const vscpdatetime& to,
                             double *pMode );
     
     /*!
@@ -1554,9 +1543,9 @@ public:
      * @param lowerq Lower Q of values in the interval on success.
      * @return return VSCP_ERROR_SUCCESS; on success, error code on failure.
      */
-    int tableGetLowerQ( const wxString& tblName, 
-                            const wxDateTime& from, 
-                            const wxDateTime& to,
+    int tableGetLowerQ( const std::string& tblName, 
+                            const vscpdatetime& from, 
+                            const vscpdatetime& to,
                             double *pLowerQ );
     
     /*!
@@ -1568,9 +1557,9 @@ public:
      * @param upperq Upper Q of values in the interval on success.
      * @return return VSCP_ERROR_SUCCESS; on success, error code on failure.
      */
-    int tableGetUpperQ( const wxString& tblName, 
-                            const wxDateTime& from, 
-                            const wxDateTime& to,
+    int tableGetUpperQ( const std::string& tblName, 
+                            const vscpdatetime& from, 
+                            const vscpdatetime& to,
                             double *pUpperQ );
     
     
@@ -1583,9 +1572,9 @@ public:
      * @param upperq Upper Q of values in the interval on success.
      * @return return VSCP_ERROR_SUCCESS; on success, error code on failure.
      */
-    int tableClear( const wxString& tblName, 
-                        const wxDateTime& from, 
-                        const wxDateTime& to  );
+    int tableClear( const std::string& tblName, 
+                        const vscpdatetime& from, 
+                        const vscpdatetime& to  );
     
     
     
@@ -1667,7 +1656,7 @@ public:
      */
     bool getMDFUrlFromLevel2Device( cguid& ifGUID,
                                         cguid& destGUID,
-                                        wxString &strurl,
+                                        std::string &strurl,
                                         bool bLevel2 = false );
 
 
@@ -1678,7 +1667,7 @@ public:
         @param guid Returnd GUID for interface
         @param Returns true on success.
      */
-    int fetchIterfaceGUID( const wxString& ifName, cguid& guid );
+    int fetchIterfaceGUID( const std::string& ifName, cguid& guid );
 
 
 
@@ -1696,11 +1685,11 @@ protected:
     /*! 
         Array that gets filled with input lines
      */
-    wxArrayString m_inputStrArray;
+    std::deque<std::string> m_inputStrArray;
 
     // Last read valid response in milliseconds
     // Used to detect dead (rcvloop) link.  
-    wxLongLong m_lastResponseTime;
+    uint32_t m_lastResponseTime;
 
 private:
 
@@ -1755,7 +1744,7 @@ private:
      * with \r\n) and will end with a line containg +OK
      * or -ERR if an error response was receved.
      */            
-    wxString m_strResponse;
+    std::string m_strResponse;
 };
 
 
@@ -1813,13 +1802,13 @@ public:
     ~ctrlObjVscpTcpIf();
 
     /// Username for VSCP server
-    wxString m_strUsername;
+    std::string m_strUsername;
 
     /// Password for VSCP server
-    wxString m_strPassword;
+    std::string m_strPassword;
 
     /// Host address for VSCP server
-    wxString m_strHost;
+    std::string m_strHost;
 
     /// Port for VSCP server
     int m_port;
@@ -1853,7 +1842,7 @@ public:
     bool m_bFilterOwnTx;
 
     /*!
-        Send wxWidgets receive event instead of writing
+        Send receive event instead of writing
         event to RX queue. 
         m_pWnd must point to a valid window and
         the id for that window must be in m_wndID
@@ -1862,63 +1851,47 @@ public:
      */
     bool m_bUseRXTXEvents;
 
-    /*!
-        Pointer to window that receive events.
-        NULL if not used.
-     */
-    wxWindow *m_pWnd;
 
     /// Id for owner window (0 if not used).
     uint32_t m_wndID;
 
     /// Event Input queue
-    EVENT_RX_QUEUE m_rxQueue;
+    std::deque<vscpEvent*> m_rxQueue;
 
-    //@{
+
     /// Protection for input queue
-    wxMutex m_mutexRxQueue;
-    wxSemaphore m_semRxQueue;
-    //@}
+    pthread_mutex_t m_mutexRxQueue;
+    sem_t m_semRxQueue;
+
 
     /// Max events in queue
     uint32_t m_maxRXqueue;
 
     /// Event output queue
-    EVENT_TX_QUEUE m_txQueue;
+    std::deque<vscpEvent*> m_txQueue;
 
     //@{
     /// Protection for output queue
-    wxMutex m_mutexTxQueue;
-    wxSemaphore m_semTxQueue;
+    pthread_mutex_t m_mutexTxQueue;
+    sem_t m_semTxQueue;
     //@}
 };
 
 /*!
-        \class VSCPTCPIP_RX_WorkerThread
+        \class remotetcpipRxObj
         \brief This class implement a thread that handles
         receive events for a link to the VSCP daemon.
  */
 
-class VSCPTCPIP_RX_WorkerThread : public wxThread {
+class remotetcpipRxObj  {
 public:
 
     /// Constructor
-    VSCPTCPIP_RX_WorkerThread();
+    remotetcpipRxObj();
 
     /// Destructor
-    virtual ~VSCPTCPIP_RX_WorkerThread();
+    virtual ~remotetcpipRxObj();
 
-    /*!
-            Thread code entry point
-     */
-    virtual void *Entry();
-
-
-    /*! 
-            called when the thread exits - whether it terminates normally or is
-            stopped with Delete() (but not when it is Kill()ed!)
-     */
-    virtual void OnExit();
 
     /*!
             Pointer to control object.
@@ -1928,31 +1901,20 @@ public:
 };
 
 /*!
-        \class VSCPTCPIP_TX_WorkerThread
+        \class remotetcpipTxObj
         \brief This class implement a thread that handles
         transmit events for a link to the VSCP daemon.
  */
 
-class VSCPTCPIP_TX_WorkerThread : public wxThread {
+class remotetcpipTxObj  {
 public:
 
     /// Constructor
-    VSCPTCPIP_TX_WorkerThread();
+    remotetcpipTxObj();
 
     /// Destructor
-    virtual ~VSCPTCPIP_TX_WorkerThread();
+    virtual ~remotetcpipTxObj();
 
-    /*!
-            Thread code entry point
-     */
-    virtual void *Entry();
-
-
-    /*! 
-            called when the thread exits - whether it terminates normally or is
-            stopped with Delete() (but not when it is Kill()ed!)
-     */
-    virtual void OnExit();
 
     /*!
             Pointer to the daemon main control object.
@@ -1961,6 +1923,6 @@ public:
 
 };
 
-#endif // !defined(AFX_VSCPTCPIF_H__C2A773AD_8886_40F0_96C4_4DCA663402B2__INCLUDED_)
+#endif // !defined(VSCPREMOTETCPIF_H__INCLUDED_)
 
 

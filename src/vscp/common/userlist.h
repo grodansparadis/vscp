@@ -29,10 +29,9 @@
 #if !defined(USERLIST__INCLUDED_)
 #define USERLIST__INCLUDED_
 
-#include <wx/hashset.h>
-#include <wx/socket.h>
+#include <iostream>
+#include <map>
 
-#include <dllist.h>
 #include <vscphelper.h>
 #include <vscp.h>
 
@@ -123,8 +122,7 @@ private:
 };
 
 
-// hash table for groups
-WX_DECLARE_HASH_MAP(wxString, CGroupItem*, wxStringHash, wxStringEqual, VSCPGROUPHASH);
+
 
 
 class CUserItem {
@@ -151,7 +149,7 @@ public:
         @param remote ip-address for remote machine.
         @return true if the remote machine is allowed to connect.
     */
-    //bool isAllowedToConnect( const wxString& remote);
+    //bool isAllowedToConnect( const std::string& remote);
     
     /*
         IP ACL. By default, empty or non defined, meaning all IPs are allowed to 
@@ -201,21 +199,21 @@ public:
      * user     - user get standard user rights.
      * driver   - user get standard driver rights.
      */
-    bool setUserRightsFromString( const wxString& strRights );
+    bool setUserRightsFromString( const std::string& strRights );
     
     /*!
      * Set allowed remote addresses for string
      * Comma separated list if IP v4 or IP v6 addresses. Wildcards can be used
      * on any position ('*').
      */
-    bool setAllowedRemotesFromString( const wxString& strConnect );
+    bool setAllowedRemotesFromString( const std::string& strConnect );
     
     /*!
      * Set allowed event for string.
      * Comma separated string where each item is class:type where either
      * class or type or both can be wildcard '*'
      */
-    bool setAllowedEventsFromString( const wxString& strEvents );
+    bool setAllowedEventsFromString( const std::string& strEvents );
     
     /*!
      * Save record to database
@@ -243,49 +241,49 @@ public:
      *              the user is found.
      * @return true on success
      */
-    static bool isUserInDB(const wxString& user, long *pid = NULL );
+    static bool isUserInDB(const std::string& user, long *pid = NULL );
     
-    bool checkPassword( const wxString& password ) { return ( getPassword().IsSameAs( password ) ? true : false); };
-    bool checkPasswordDomain( const wxString& md5password ) { return ( getPasswordDomain().IsSameAs( md5password ) ? true : false); };
+    bool checkPassword( const std::string& password ) { return ( getPassword() == password ); };
+    bool checkPasswordDomain( const std::string& md5password ) { return ( getPasswordDomain() == md5password ); };
     
     // Getters/Setters
     long getUserID( void ) { return m_userID; };
     void setUserID( const long id ) { m_userID = id; };
     
-    wxString getUserName( void ) { return m_user; };
-    void setUserName( const wxString& strUser ) { m_user = strUser; };
+    std::string getUserName( void ) { return m_user; };
+    void setUserName( const std::string& strUser ) { m_user = strUser; };
     
-    wxString getPassword( void ) { return m_password; };
-    void setPassword( const wxString& strPassword ) { m_password = strPassword; };
+    std::string getPassword( void ) { return m_password; };
+    void setPassword( const std::string& strPassword ) { m_password = strPassword; };
     
-    wxString getPasswordDomain( void ) { return m_md5PasswordDomain.Lower(); };
-    void setPasswordDomain( const wxString& strPassword ) 
-                                    { m_md5PasswordDomain = strPassword.Lower(); };
+    std::string getPasswordDomain( void ) { return vscp_lower( m_md5PasswordDomain ); };
+    void setPasswordDomain( const std::string& strPassword ) 
+                                    { m_md5PasswordDomain = vscp_lower( strPassword ); };
     
-    wxString getFullname( void ) { return m_fullName; };
-    void setFullname( const wxString& strUser ) { m_fullName = strUser; };
+    std::string getFullname( void ) { return m_fullName; };
+    void setFullname( const std::string& strUser ) { m_fullName = strUser; };
     
-    wxString getNote( void ) { return m_note; };
-    void setNote( const wxString& note ) { m_note = note; };
+    std::string getNote( void ) { return m_note; };
+    void setNote( const std::string& note ) { m_note = note; };
     
     uint8_t getUserRights( const uint8_t pos ) { return m_userRights[ pos & 0x07 ]; };
     void setUserRights( const uint8_t pos, const uint8_t right ) { m_userRights[ pos & 0x07 ] = right; };
-    wxString getUserRightsAsString( void );
+    std::string getUserRightsAsString( void );
     
-    void clearAllowedEventList( void ) { m_listAllowedEvents.Clear(); };
-    void addAllowedEvent( const wxString& strEvent ) { m_listAllowedEvents.Add( strEvent ); };
-    wxString getAllowedEventsAsString( void );
+    void clearAllowedEventList( void ) { m_listAllowedEvents.clear(); };
+    void addAllowedEvent( const std::string& strEvent ) { m_listAllowedEvents.push_back( strEvent ); };
+    std::string getAllowedEventsAsString( void );
     
-    void clearAllowedRemoteList( void ) { m_listAllowedIPV4Remotes.Clear(); m_listAllowedIPV6Remotes.Clear(); };
-    void addAllowedRemote( const wxString& strRemote ) { if ( wxNOT_FOUND != strRemote.Find(':') ) m_listAllowedIPV6Remotes.Add( strRemote ); else m_listAllowedIPV4Remotes.Add( strRemote ); };     
-    wxString getAllowedRemotesAsString( void );
+    void clearAllowedRemoteList( void ) { m_listAllowedIPV4Remotes.clear(); m_listAllowedIPV6Remotes.clear(); };
+    void addAllowedRemote( const std::string& strRemote ) { if ( strRemote.npos != strRemote.find(':') ) m_listAllowedIPV6Remotes.push_back( strRemote ); else m_listAllowedIPV4Remotes.push_back( strRemote ); };     
+    std::string getAllowedRemotesAsString( void );
  
     const vscpEventFilter *getFilter( void ) { return &m_filterVSCP; };
     void setFilter( const vscpEventFilter * pFilter ) { if ( NULL != pFilter ) memcpy( &m_filterVSCP, 
                                                                     pFilter,
                                                                     sizeof( vscpEventFilter ) ); };
-    bool setFilterFromString( wxString strFilter ) { return vscp_readFilterFromString( &m_filterVSCP, strFilter ); };
-    bool setMaskFromString( wxString strMask ) { return vscp_readMaskFromString( &m_filterVSCP, strMask ); };
+    bool setFilterFromString( std::string strFilter ) { return vscp_readFilterFromString( &m_filterVSCP, strFilter ); };
+    bool setMaskFromString( std::string strMask ) { return vscp_readMaskFromString( &m_filterVSCP, strMask ); };
     
     /*!
      * Set user settings from string
@@ -293,34 +291,34 @@ public:
      *          leave fields blank if they should not be updated.
      * @return true on success, false on failure.
      */
-    bool setFromString( wxString userSettings );
+    bool setFromString( std::string userSettings );
     
     /*!
      * Get user settings as string
      * @param userSettings String that will get user settings
      * @return true on success, false on failure.
      */
-    bool getAsString( wxString& userSettings );
+    bool getAsString( std::string& userSettings );
     
 protected:
     
-    // System assigned ID for user (-1 -  for system users (not in DB), 0 for adḿin user )
+    // System assigned ID for user (-1 -  for system users (not in DB), 0 for admin user )
     long m_userID;
     
     /// Username
-    wxString m_user;
+    std::string m_user;
     
     /// Password
-    wxString m_password;
+    std::string m_password;
     
     /// MD5 of user:domain:password (h1)
-    wxString m_md5PasswordDomain;
+    std::string m_md5PasswordDomain;
     
     /// Full name
-    wxString m_fullName;
+    std::string m_fullName;
     
     /// note
-    wxString m_note;
+    std::string m_note;
     
     /*!
         Bit array (64-bits) with user rights i.e. tells what
@@ -334,15 +332,15 @@ protected:
         allowed. Form is class:type where either or both of
         class and type can use wildcard '*'
     */
-    wxArrayString m_listAllowedEvents;
+    std::deque<std::string> m_listAllowedEvents;
     
     /*!
         This list holds ip-addresses for remote
         computers that are allowed to connect to this
         machine. IP v4 and IP v6 on standard form.
     */
-    wxArrayString m_listAllowedIPV4Remotes;
-    wxArrayString m_listAllowedIPV6Remotes;
+    std::deque<std::string> m_listAllowedIPV4Remotes;
+    std::deque<std::string> m_listAllowedIPV6Remotes;
     
     
     
@@ -353,8 +351,7 @@ protected:
 
 };
 
-// hash table for users
-WX_DECLARE_HASH_MAP(wxString, CUserItem*, wxStringHash, wxStringEqual, VSCPUSERHASH);
+
 
 
 class CUserList {
@@ -383,9 +380,9 @@ public:
      * @param bSystemUser If true this user is a user that should not be saved to the DB
        @return true on success. false on failure.
      */
-    bool addSuperUser( const wxString& user,
-                            const wxString& password,
-                            const wxString& allowedRemotes = _(""),
+    bool addSuperUser( const std::string& user,
+                            const std::string& password,
+                            const std::string& allowedRemotes = "",
                             uint32_t bFlags = 0 );
     
     /*!
@@ -407,14 +404,14 @@ public:
         @param bSystemUser If true this user is a user that should not be saved to the DB
         @return true on success. false on failure.	
     */
-    bool addUser( const wxString& user,
-                            const wxString& password,
-                            const wxString& fullname,
-                            const wxString& strNote,
+    bool addUser( const std::string& user,
+                            const std::string& password,
+                            const std::string& fullname,
+                            const std::string& strNote,
                             const vscpEventFilter *pFilter = NULL,
-                            const wxString& userRights = _(""),
-                            const wxString& allowedRemotes = _(""),
-                            const wxString& allowedEvents = _(""),
+                            const std::string& userRights = "",
+                            const std::string& allowedRemotes = "",
+                            const std::string& allowedEvents = "",
                             uint32_t bFlags = 0 );
 
     /*!
@@ -423,7 +420,7 @@ public:
      *      name;password;fullname;filtermask;rights;remotes;events;note
      * @return true on success. false on failure.
      */
-    bool addUser( const wxString& strUser, bool bUnpackNote = false );
+    bool addUser( const std::string& strUser, bool bUnpackNote = false );
     
     /*!
      * Delete a user given it's userid. 
@@ -431,14 +428,14 @@ public:
      * @param users Username for user to delete
      * @param true on success. false on failure.
      */
-    bool deleteUser( const wxString& user );
+    bool deleteUser( const std::string& user );
     
     /*!
         Get user 
         @param user Username
         @return Pointer to user if available else NULL
     */
-    CUserItem *getUser( const wxString& user );
+    CUserItem *getUser( const std::string& user );
     
     /*!
         Get user 
@@ -455,7 +452,7 @@ public:
         @param password Password to test
         @return Pointer to useritem if valid, NULL if not.
     */
-    CUserItem *validateUser( const wxString& user, const wxString& password );
+    CUserItem *validateUser( const std::string& user, const std::string& password );
 
     /*!
         Validate a username using the user domain. (WEB/WEBSOCKETS)
@@ -463,7 +460,7 @@ public:
         @param md5password MD5(user;domain;password)
         @return Pointer to useritem if valid, NULL if not.
     */
-    CUserItem *validateUserDomain( const wxString& user, const wxString& md5password );
+    CUserItem *validateUserDomain( const std::string& user, const std::string& md5password );
     
     /*!
      * Get number of users on the system
@@ -480,7 +477,7 @@ public:
      * @param strUser String that will receive information
      * @return true on success.
      */
-    bool getUserAsString( CUserItem *pUserItem, wxString& strUser );
+    bool getUserAsString( CUserItem *pUserItem, std::string& strUser );
     
     /*!
      * Get user information on string form from user index
@@ -488,7 +485,7 @@ public:
      * @param strUser String that will receive information
      * @return true on success.
      */
-    bool getUserAsString( uint32_t idx, wxString& strUser );
+    bool getUserAsString( uint32_t idx, std::string& strUser );
     
     /*!
      * Fetch all users in semicolon separated string form ready for transfer.
@@ -499,14 +496,14 @@ public:
      * 
      * @param  strAllUser String containing user records in string form.
      */
-    bool getAllUsers( wxString& strAllusers ); 
+    bool getAllUsers( std::string& strAllusers ); 
     
     /*!
      * Fetch all users into a string array
      * @param arrayUsers Am array with all usernames
      * @return true on success.
      */
-    bool getAllUsers( wxArrayString& arrayUsers );
+    bool getAllUsers( std::deque<std::string>& arrayUsers );
     
     /*!
      * Get user item from ordinal in user array
@@ -521,12 +518,12 @@ protected:
     /*!
         hash with user items
     */
-    VSCPUSERHASH m_userhashmap;
+    std::map<std::string,CUserItem*> m_userhashmap;
     
     /*!
         hash with group items
     */
-    VSCPGROUPHASH m_grouphashmap;
+    std::map<std::string,CGroupItem*> m_grouphashmap;
     
 private:
 

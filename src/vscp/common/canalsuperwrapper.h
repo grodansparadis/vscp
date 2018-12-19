@@ -120,9 +120,9 @@ public:
     @param username Username to login to service.
     @param password to login to service.
     */
-    void setInterface( const wxString& host, 
-                            const wxString& username,
-                            const wxString& password );
+    void setInterface( const std::string& host, 
+                            const std::string& username,
+                            const std::string& password );
 
     /*!
     Set Interface CANAL
@@ -134,9 +134,9 @@ public:
     @param filter Filer to set.
     @param mask Mask to set.
     */
-    void setInterface( const wxString& name,
-                            const wxString& path,
-                            const wxString& parameters,
+    void setInterface( const std::string& name,
+                            const std::string& path,
+                            const std::string& parameters,
                             const unsigned long flags,
                             const unsigned long filter,
                             const unsigned long mask );
@@ -152,7 +152,7 @@ public:
     @return true if channel is open or false if error or the channel is
     already opened.
     */
-    long doCmdOpen( const wxString& strInterface = (_T("")), unsigned long flags = 0L );
+    long doCmdOpen( const std::string& strInterface = (_T("")), unsigned long flags = 0L );
 
     /*!
     Close communication channel
@@ -345,7 +345,7 @@ public:
     \param strValue pointer to string that get the value of the string variable.
     \return true if the variable is of type string.
     */
-    int getVariableString( wxString& name, wxString& strValue )
+    int getVariableString( std::string& name, std::string& strValue )
     { 
         return m_vscptcpif.getRemoteVariableAsString( name, strValue ); 
     };
@@ -356,7 +356,7 @@ public:
     \param strValue to string that get the value of the string variable.
     \return true if the variable is of type string.
     */
-    int setVariableString( wxString& name, wxString& strValue )
+    int setVariableString( std::string& name, std::string& strValue )
     { 
         return m_vscptcpif.getRemoteVariableValue( name, strValue ); 
     };
@@ -367,7 +367,7 @@ public:
     \param bValue pointer to boolean variable that get the value of the string variable.
     \return true if the variable is of type string.
     */
-    int getVariableBool( wxString& name, bool *bValue )
+    int getVariableBool( std::string& name, bool *bValue )
     { 
         return m_vscptcpif.getRemoteVariableBool( name, bValue ); 
     };
@@ -378,7 +378,7 @@ public:
     \param bValue boolean variable that get the value of the string variable.
     \return true if the variable is of type string.
     */
-    int setVariableBool( wxString& name, bool bValue )
+    int setVariableBool( std::string& name, bool bValue )
     { 
         return m_vscptcpif.setRemoteVariableBool( name, bValue ); 
     };
@@ -389,7 +389,7 @@ public:
     \param value pointer to integer variable that get the value of the string variable.
     \return true if the variable is of type string.
     */
-    int getVariableInt( wxString& name, int *value )
+    int getVariableInt( std::string& name, int *value )
     { 
         return m_vscptcpif.getRemoteVariableInt( name, value ); 
     };
@@ -400,7 +400,7 @@ public:
     \param value integer variable that get the value of the string variable.
     \return true if the variable is of type string.
     */
-    int setVariableInt( wxString& name, int value )
+    int setVariableInt( std::string& name, int value )
     { 
         return m_vscptcpif.setRemoteVariableInt( name, value ); 
     };
@@ -411,7 +411,7 @@ public:
     \param value pointer to long variable that get the value of the string variable.
     \return true if the variable is of type string.
     */
-    int getVariableLong( wxString& name, long *value )
+    int getVariableLong( std::string& name, long *value )
     { 
         return m_vscptcpif.getRemoteVariableLong( name, value );  
     };
@@ -422,7 +422,7 @@ public:
     \param value long variable that get the value of the string variable.
     \return true if the variable is of type string.
     */
-    int setVariableLong( wxString& name, long value )
+    int setVariableLong( std::string& name, long value )
     { 
         return m_vscptcpif.setRemoteVariableLong( name, value );  
     };
@@ -433,7 +433,7 @@ public:
     \param value pointer to double variable that get the value of the string variable.
     \return true if the variable is of type string.
     */
-    int getVariableDouble( wxString& name, double *value )
+    int getVariableDouble( std::string& name, double *value )
     { 
         return m_vscptcpif.getRemoteVariableDouble( name, value ); 
     };
@@ -444,7 +444,7 @@ public:
     \param value pointer to double variable that get the value of the string variable.
     \return true if the variable is of type string.
     */
-    int setVariableDouble( wxString& name, double value )
+    int setVariableDouble( std::string& name, double value )
     { 
         return m_vscptcpif.setRemoteVariableDouble( name, value ); 
     };
@@ -456,7 +456,7 @@ public:
     value of the measurement.
     \return true if the variable is of type string.
     */
-    int getVariableMeasurement( wxString& name, wxString& strValue )    // TODO Fix
+    int getVariableMeasurement( std::string& name, std::string& strValue )    // TODO Fix
     { 
         return m_vscptcpif.getRemoteVariableValue( name, strValue ); 
     };
@@ -468,7 +468,7 @@ public:
     value of the measurement.
     \return true if the variable is of type string.
     */
-    int setVariableMeasurement( wxString& name, wxString& strValue )    // TODO Fix
+    int setVariableMeasurement( std::string& name, std::string& strValue )    // TODO Fix
     { 
         return m_vscptcpif.setRemoteVariableValue( name, strValue ); 
     };
@@ -479,7 +479,7 @@ public:
     \param pEvent pointer to event variable that get the value of the string variable.
     \return true if the variable is of type string.
     */
-    int getVariableEvent( wxString& name, vscpEvent *pEvent )
+    int getVariableEvent( std::string& name, vscpEvent *pEvent )
     { 
         return m_vscptcpif.getRemoteVariableEvent( name, pEvent ); 
     };
@@ -490,7 +490,7 @@ public:
     \param pEvent pointer to event variable that get the value of the string variable.
     \return true if the variable is of type string.
     */
-    int setVariableEvent( wxString& name, vscpEvent *pEvent )
+    int setVariableEvent( std::string& name, vscpEvent *pEvent )
     { 
         return m_vscptcpif.setRemoteVariableEvent( name, pEvent ); 
     };
@@ -501,7 +501,7 @@ public:
     \param pEvent pointer to event variable that get the value of the string variable.
     \return true if the variable is of type string.
     */
-    int getVariableEventEx( wxString& name, vscpEventEx *pEvent )
+    int getVariableEventEx( std::string& name, vscpEventEx *pEvent )
     { 
         return m_vscptcpif.getRemoteVariableEventEx( name, pEvent ); 
     };
@@ -512,7 +512,7 @@ public:
     \param pEvent pointer to event variable that get the value of the string variable.
     \return true if the variable is of type string.
     */
-    int setVariableEventEx( wxString& name, vscpEventEx *pEvent )
+    int setVariableEventEx( std::string& name, vscpEventEx *pEvent )
     { 
         return m_vscptcpif.setRemoteVariableEventEx( name, pEvent ); 
     };
@@ -523,7 +523,7 @@ public:
     \param GUID variable that get the value of the GUID variable.
     \return true if the variable is of type string.
     */
-    int getVariableGUID( wxString& name, cguid& GUID )
+    int getVariableGUID( std::string& name, cguid& GUID )
     { 
         return m_vscptcpif.getRemoteVariableGUID( name, GUID ); 
     };
@@ -534,7 +534,7 @@ public:
     \param GUID variable that get the value of the GUID variable.
     \return true if the variable is of type string.
     */
-    int setVariableGUID( wxString& name, cguid& GUID )
+    int setVariableGUID( std::string& name, cguid& GUID )
     { 
         return m_vscptcpif.setRemoteVariableGUID( name, GUID ); 
     };
@@ -547,7 +547,7 @@ public:
     value of the string variable.
     \return true if the variable is of type string.
     */
-    int getVariableVSCPdata( wxString& name, uint8_t *pData, uint16_t *psizeData )
+    int getVariableVSCPdata( std::string& name, uint8_t *pData, uint16_t *psizeData )
     { 
         return m_vscptcpif.getRemoteVariableVSCPdata( name, pData, psizeData ); 
     };
@@ -560,7 +560,7 @@ public:
     value of the string variable.
     \return true if the variable is of type string.
     */
-    int setVariableVSCPdata( wxString& name, uint16_t sizeData, uint8_t *pData )
+    int setVariableVSCPdata( std::string& name, uint16_t sizeData, uint8_t *pData )
     { 
         return m_vscptcpif.setRemoteVariableVSCPdata( name, pData, sizeData ); 
     };
@@ -571,7 +571,7 @@ public:
     \param vscp_class pointer to int that get the value of the class variable.
     \return true if the variable is of type string.
     */
-    int getVariableVSCPclass( wxString& name, uint16_t *vscp_class )
+    int getVariableVSCPclass( std::string& name, uint16_t *vscp_class )
     { 
         return m_vscptcpif.getRemoteVariableVSCPclass( name, vscp_class ); 
     };
@@ -582,7 +582,7 @@ public:
     \param vscp_class int that get the value of the class variable.
     \return true if the variable is of type string.
     */
-    int setVariableVSCPclass( wxString& name, uint16_t vscp_class )
+    int setVariableVSCPclass( std::string& name, uint16_t vscp_class )
     { 
         return m_vscptcpif.setRemoteVariableVSCPclass( name, vscp_class ); 
     };
@@ -593,7 +593,7 @@ public:
     \param vscp_type pointer to int that get the value of the type variable.
     \return true if the variable is of type string.
     */
-    int getVariableVSCPtype( wxString& name, uint16_t *vscp_type )
+    int getVariableVSCPtype( std::string& name, uint16_t *vscp_type )
     { 
         return m_vscptcpif.getRemoteVariableVSCPtype( name, vscp_type ); 
     };
@@ -605,7 +605,7 @@ public:
     \param vscp_type to int that get the value of the type variable.
     \return true if the variable is of type string.
     */
-    int setVariableVSCPtype( wxString& name, uint16_t vscp_type )
+    int setVariableVSCPtype( std::string& name, uint16_t vscp_type )
     { 
         return m_vscptcpif.setRemoteVariableVSCPtype( name, vscp_type ); 
     };
@@ -736,7 +736,7 @@ public:
     or a 16 byte GUID if bLevel2 = true.
     @return true on success, false on failure.
     */
-    wxString getMDFfromLevel1Device( uint8_t id,
+    std::string getMDFfromLevel1Device( uint8_t id,
                                         bool bSilent = false );
 
     /*!
@@ -748,7 +748,7 @@ public:
     @param bSilent Set to true to not show error messages.
     @return true on success, false on failure.
     */
-    wxString getMDFfromLevel2Device( wxProgressDialog& progressDlg,
+    std::string getMDFfromLevel2Device( wxProgressDialog& progressDlg,
                                         cguid& ifGUID, 
                                         cguid& destGUID,
                                         bool bLevel2 = false,
@@ -769,7 +769,7 @@ public:
      */
     bool loadMDF( wxWindow *pwnd,
                     uint8_t *preg_url,
-                    wxString& url,
+                    std::string& url,
                     CMDF *pmdf );
     /*!
     Get Decision Matrix info for a Level I Node
@@ -873,7 +873,7 @@ public:
     bool getAbstractionString( wxWindow *pwnd,
                                 uint8_t nodeid,
                                 CMDF_Abstraction *abstraction,
-                                wxString& retstr,
+                                std::string& retstr,
                                 cguid *pifGUID = NULL,
                                 cguid *pdestGUID = NULL,
                                 wxProgressDialog *pdlg = NULL,
@@ -895,7 +895,7 @@ public:
     bool writeAbstractionString( wxWindow *pwnd,
                                     uint8_t nodeid,
                                     CMDF_Abstraction *abstraction,
-                                    wxString& strvalue,
+                                    std::string& strvalue,
                                     cguid *pifGUID = NULL,
                                     cguid *pdestGUID = NULL,
                                     wxProgressDialog *pdlg = NULL,
@@ -917,7 +917,7 @@ public:
     bool getAbstractionBitField( wxWindow *pwnd,
                                     uint8_t nodeid,
                                     CMDF_Abstraction *abstraction,
-                                    wxString& strBitField,
+                                    std::string& strBitField,
                                     cguid *pifGUID = NULL,
                                     cguid *pdestGUID = NULL,
                                     wxProgressDialog *pdlg = NULL,
@@ -939,7 +939,7 @@ public:
     bool writeAbstractionBitField( wxWindow *pwnd,
                                     uint8_t nodeid,
                                     CMDF_Abstraction *abstraction,
-                                    wxString& strBitField,
+                                    std::string& strBitField,
                                     cguid *pifGUID = NULL,
                                     cguid *pdestGUID = NULL,
                                     wxProgressDialog *pdlg = NULL,
@@ -1414,7 +1414,7 @@ public:
     @param bSilent Set to true to not show error messages.
     @return String representation
     */
-    wxString getAbstractionValueAsString( wxWindow *pwnd,
+    std::string getAbstractionValueAsString( wxWindow *pwnd,
                                 uint8_t nodeid,
                                 CMDF_Abstraction *abstraction,
                                 cguid *pifGUID = NULL,

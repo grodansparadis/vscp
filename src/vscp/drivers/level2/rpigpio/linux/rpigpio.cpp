@@ -737,7 +737,7 @@ void CGpioMonitor::setMonitorEvents( const vscpEventEx& eventFalling,
 int depth_setup_parser = 0;
 bool bDM = false;
 
-void
+static void
 startSetupParser( void *data, const char *name, const char **attr ) 
 {
     CRpiGpio *pgpio = (CRpiGpio *)data;
@@ -1357,7 +1357,7 @@ startSetupParser( void *data, const char *name, const char **attr )
     depth_setup_parser++;
 }
 
-void
+static void
 endSetupParser( void *data, const char *name ) 
 {
     depth_setup_parser--;
@@ -1471,31 +1471,31 @@ CRpiGpio::~CRpiGpio()
 	if ( !m_bQuit ) close();
 
     // Remove input pin defines
-    std::list<CGpioInput *>::const_iterator iterator1;
+    std::list<CGpioInput*>::const_iterator iterator1;
     for (iterator1 = m_inputPinList.begin(); iterator1 != m_inputPinList.end(); ++iterator1) {
         delete *iterator1;
     }
 
     // Remove output pin defines
-    std::list<CGpioOutput *>::const_iterator iterator2;
+    std::list<CGpioOutput*>::const_iterator iterator2;
     for (iterator2 = m_outputPinList.begin(); iterator2 != m_outputPinList.end(); ++iterator2) {
         delete *iterator2;
     }
 
     // Remove pwm pin defines
-    std::list<CGpioPwm *>::const_iterator iterator3;
+    std::list<CGpioPwm*>::const_iterator iterator3;
     for (iterator3 = m_pwmPinList.begin(); iterator3 != m_pwmPinList.end(); ++iterator3) {
         delete *iterator3;
     }
 
     // Remove gpio clock pin defines
-    std::list<CGpioClock *>::const_iterator iterator4;
+    std::list<CGpioClock*>::const_iterator iterator4;
     for (iterator4 = m_gpioClockPinList.begin(); iterator4 != m_gpioClockPinList.end(); ++iterator4) {
         delete *iterator4;
     }
 
     // Remove local DM
-    std::list<CLocalDM *>::const_iterator iterator5;
+    std::list<CLocalDM*>::const_iterator iterator5;
     for (iterator5 = m_LocalDMList.begin(); iterator5 != m_LocalDMList.end(); ++iterator5) {
         delete *iterator5;
     }
@@ -1528,7 +1528,7 @@ CRpiGpio::open( const char *pUsername,
 	m_port = port;
 	m_prefix = pPrefix;
 
-	vscp2_decodeBase64IfNeeded( pConfig, m_setupXml );
+	vscp_decodeBase64IfNeeded( pConfig, m_setupXml );
 
 	// First look on to the host and get the configuration 
 	// variable (if there)
@@ -1571,9 +1571,9 @@ CRpiGpio::open( const char *pUsername,
                             endSetupParser ) ;
 
     int bytes_read;
-    void *buff = XML_GetBuffer( xmlParser, XML_BUFF_SIZE );
+    void *buf = XML_GetBuffer( xmlParser, XML_BUFF_SIZE );
 
-    strncpy( (char *)buff, m_setupXml.c_str(), m_setupXml.length() );
+    strncpy( (char *)buf, m_setupXml.c_str(), m_setupXml.length() );
 
     bytes_read = m_setupXml.length();
     if ( !XML_ParseBuffer( xmlParser, bytes_read, bytes_read == 0 ) ) {
@@ -1589,7 +1589,7 @@ CRpiGpio::open( const char *pUsername,
 	m_srv.doCmdClose();
 
     {
-        std::list<CGpioOutput *>::const_iterator it;
+        std::list<CGpioOutput*>::const_iterator it;
         for (it = m_outputPinList.begin(); it != m_outputPinList.end(); ++it) {
 
             CGpioOutput *pGpioOutput = *it;
@@ -1739,7 +1739,7 @@ void *workerThread( void *data )
 
     // Init. input pins
     {
-        std::list<CGpioInput *>::const_iterator it;
+        std::list<CGpioInput*>::const_iterator it;
         for ( it = pObj->m_inputPinList.begin(); 
                 it != pObj->m_inputPinList.end(); 
                 ++it ) {
@@ -1811,7 +1811,7 @@ void *workerThread( void *data )
 
     // Init. output pins
     {
-        std::list<CGpioOutput *>::const_iterator it;
+        std::list<CGpioOutput*>::const_iterator it;
         for ( it = pObj->m_outputPinList.begin(); 
                 it != pObj->m_outputPinList.end(); 
                 ++it ) {
@@ -1843,7 +1843,7 @@ void *workerThread( void *data )
 
     // Init. pwm pins
     {
-        std::list<CGpioPwm *>::const_iterator it;
+        std::list<CGpioPwm*>::const_iterator it;
         for ( it = pObj->m_pwmPinList.begin(); 
                 it != pObj->m_pwmPinList.end(); 
                 ++it) {
@@ -1910,7 +1910,7 @@ void *workerThread( void *data )
 
     // Init. clock pins
     {
-        std::list<CGpioClock *>::const_iterator it;
+        std::list<CGpioClock*>::const_iterator it;
         for ( it = pObj->m_gpioClockPinList.begin(); 
                 it != pObj->m_gpioClockPinList.end(); 
                 ++it ) {
@@ -1935,7 +1935,7 @@ void *workerThread( void *data )
     /*
     uint32_t monitor_bits = 0;
     {
-        std::list<CGpioMonitor *>::const_iterator it;
+        std::list<CGpioMonitor*>::const_iterator it;
         for ( it = pObj->m_monitorPinList.begin(); 
                 it != pObj->m_monitorPinList.end(); 
                 ++it ) {
@@ -2054,7 +2054,7 @@ void *workerThread( void *data )
                             (const char *)VSCP_RPIGPIO_SYSLOG_DRIVER_ID  );
 #endif
 
-                    std::list<CLocalDM *>::const_iterator it;
+                    std::list<CLocalDM*>::const_iterator it;
                     for ( it = pObj->m_LocalDMList.begin(); 
                             it != pObj->m_LocalDMList.end(); 
                             ++it ) {

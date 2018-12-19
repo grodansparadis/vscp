@@ -61,7 +61,7 @@ int main()
     
     // Retrieve the device list on the local machine 
     if ( pcap_findalldevs_ex( PCAP_SRC_IF_STRING, NULL, &alldevs, errbuf ) == -1 ) {
-        fprintf( stderr, "Error in pcap_findalldevs: %s\n", errbuf );
+        syslog( LOG_ERR, "Error in pcap_findalldevs: %s\n", errbuf );
         exit( 1 );
     }
     
@@ -103,7 +103,7 @@ int main()
                               NULL,             // authentication on the remote machine
                               errbuf            // error buffer
                               ) ) == NULL ) {
-        fprintf(stderr,"\nUnable to open the adapter. %s is not supported by WinPcap\n", d->name);
+        syslog( LOG_ERR, "\nUnable to open the adapter. %s is not supported by WinPcap\n", d->name);
         // Free the device list 
         pcap_freealldevs( alldevs );
         return -1;

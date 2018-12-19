@@ -29,10 +29,7 @@
 #if !defined(INTERFACELIST__INCLUDED_)
 #define INTERFACELIST__INCLUDED_
 
-#include <wx/socket.h>
-
-#include <vscp.h>
-#include <dllist.h>
+#include <guid.h>
 
 class CInterfaceItem
 {
@@ -46,13 +43,13 @@ public:
     virtual ~CInterfaceItem( void );
 
     /// IP Address for interface
-    wxIPV4address m_ipaddress;
+    std::string m_ipaddress;
 
     /// MAC address for interface
-    wxString m_macaddress;
+    std::string m_macaddress;
 
     /// GUID for interface
-    uint8_t m_GUID[16];
+    cguid m_guid;
 
 protected:
 
@@ -64,7 +61,7 @@ protected:
 };
 
 
-WX_DECLARE_LIST ( CInterfaceItem, TCPClientList );
+
 
 
 class CInterfaceList  
@@ -81,18 +78,27 @@ public:
         Add interface
         @param ip IP address for interface.
         @param mac MAC address for interface.
-        @param guid GUID for interface.
-        @return true on sucess, false on failure.
+        @param guid GUID for interface in string form.
+        @return true on success, false on failure.
     */
-    bool addInterface( wxString ip, wxString mac, wxString guid );
+    bool addInterface( const std::string& ip, const std::string& mac, const std::string& guid );
+
+    /*!
+        Add interface
+        @param ip IP address for interface.
+        @param mac MAC address for interface.
+        @param guid GUID for interface.
+        @return true on success, false on failure.
+    */
+    bool addInterface( const std::string& ip, const std::string& mac, const cguid& guid );
 
 protected:
 
     /*!
         List with interface items
     */
-    TCPClientList m_tcpclientlist;
-
+    std::deque<CInterfaceItem*> m_tcpclientlist;
+  
 };
 
 

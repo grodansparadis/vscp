@@ -290,8 +290,8 @@ public:
     VscpRemoteTcpIf m_srvRemote;
 
     // Queue
-    std::list<vscpEvent *> m_sendList;
-    std::list<vscpEvent *> m_receiveList;
+    std::list<vscpEvent*> m_sendList;
+    std::list<vscpEvent*> m_receiveList;
 
     /*!
         Event object to indicate that there is an event in the output queue
@@ -300,8 +300,8 @@ public:
     wxSemaphore m_semReceiveQueue;
 
     // Mutex to protect the output queue
-    wxMutex m_mutexSendQueue;
-    wxMutex m_mutexReceiveQueue;
+    pthread_mutex_t m_mutexSendQueue;
+    pthread_mutex_t m_mutexReceiveQueue;
 
 };
 

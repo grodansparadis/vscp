@@ -28,32 +28,22 @@
 #if !defined(VSCP_JAVASCRIPT__INCLUDED_)
 #define VSCP_JAVASCRIPT__INCLUDED_
 
+#include <vscpdatetime.h>
 
 ////////////////////////////////////////////////////////////////////////////////
-// actionThread_JavaScript
+// actionJavascriptObj
 //
 
-class actionThread_JavaScript : public wxThread {
+class actionJavascriptObj {
     
 public:
 
     /// Constructor
-    actionThread_JavaScript( wxString& strScript,
-                                wxThreadKind kind = wxTHREAD_DETACHED );
+    actionJavascriptObj( std::string& strScript );
 
     /// Destructor
-    virtual ~actionThread_JavaScript();
+    virtual ~actionJavascriptObj();
 
-    /*!
-        Thread code entry point
-     */
-    virtual void *Entry();
-
-    /*! 
-        called when the thread exits - whether it terminates normally or is
-        stopped with Delete() (but not when it is Kill()ed!)
-     */
-    virtual void OnExit();
 
     /*!
         Termination control
@@ -63,16 +53,16 @@ public:
     /*!
      * Script
      */
-    wxString m_wxstrScript;
+    std::string m_strScript;
     
     /// JavaScript executing id
     uint64_t m_id;
     
     /// Time when script was started
-    wxDateTime m_start;
+    vscpdatetime m_start;
     
     /// Time when script was stopped
-    wxDateTime m_stop;
+    vscpdatetime m_stop;
     
     /// Client item for script
     CClientItem *m_pClientItem;

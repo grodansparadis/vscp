@@ -129,7 +129,7 @@ public:
   	ctrlObj* m_pCtrlObject;
 
   	/// Mutex that control the stopThreads method
-  	wxMutex m_mutexStopThread;
+  	pthread_mutex_t m_mutexStopThread;
   
   	// * * *   Threads  * * *
   

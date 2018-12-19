@@ -66,10 +66,10 @@ extern "C" {
 
 
     /// Hashtable for known event VSCP classes
-    WX_DECLARE_HASH_MAP(unsigned long, wxString, wxIntegerHash, wxIntegerEqual, VSCPHashClass);
+    WX_DECLARE_HASH_MAP(unsigned long, std::string, wxIntegerHash, wxIntegerEqual, VSCPHashClass);
 
     /// Hashtable for known event VSCP types
-    WX_DECLARE_HASH_MAP(unsigned long, wxString, wxIntegerHash, wxIntegerEqual, VSCPHashType);
+    WX_DECLARE_HASH_MAP(unsigned long, std::string, wxIntegerHash, wxIntegerEqual, VSCPHashType);
 
 #define MAKE_CLASSTYPE_LONG( a, b ) ((((unsigned long)a)<<16) + b)
 
@@ -107,13 +107,13 @@ extern "C" {
         /*!
           Get class description from class id
          */		 
-        wxString& getClassDescription(int vscp_class);
+        std::string& getClassDescription(int vscp_class);
         
 
         /*!
           Get type description from class id and type id
          */		 
-        wxString& getTypeDescription(int vscp_class, int vscp_type);
+        std::string& getTypeDescription(int vscp_class, int vscp_type);
     
 
 

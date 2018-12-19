@@ -507,9 +507,9 @@ void dlgVscpInterfaceSettings::OnButtonTestInterfaceClick( wxCommandEvent& event
     wxBusyCursor busy;
 
     long rv = 
-        tcpif.doCmdOpen( m_RemoteServerURL->GetValue(),
-            m_RemoteServerUsername->GetValue(),
-            wxstr );
+        tcpif.doCmdOpen( m_RemoteServerURL->GetValue().ToStdString(),
+                            m_RemoteServerUsername->GetValue().ToStdString(),
+                            wxstr.ToStdString() );
     if ( VSCP_ERROR_SUCCESS == rv ) {
         tcpif.doCmdClose();
         wxMessageBox(_("Successful connect to server."), _("Connection Test"), wxICON_INFORMATION );
@@ -555,23 +555,23 @@ void dlgVscpInterfaceSettings::OnButtonGetInterfacesClick( wxCommandEvent& event
 
     wxBusyCursor busy;
 
-    long rv = tcpif.doCmdOpen( m_RemoteServerURL->GetValue(),
-        m_RemoteServerUsername->GetValue(),
-        wxstr );
+    long rv = tcpif.doCmdOpen( m_RemoteServerURL->GetValue().ToStdString(),
+                                m_RemoteServerUsername->GetValue().ToStdString(),
+                                wxstr.ToStdString() );
 
     if ( VSCP_ERROR_SUCCESS == rv ) {
 
         // Get the interface list
-        wxArrayString array;
+        std::deque<std::string> array;
         tcpif.doCmdInterfaceList( array );
 
         // Close the channel
         tcpif.doCmdClose();
 
-        if ( array.Count() ) {
+        if ( array.size() ) {
 
             dlgSelectDaemonInterface dlg( this );
-            for ( unsigned int i=0; i<array.Count(); i++ ) {
+            for ( unsigned int i=0; i<array.size(); i++ ) {
 
                 wxStringTokenizer tkz( array[i], _(",") );
                 wxString strOrdinal = tkz.GetNextToken();

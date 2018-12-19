@@ -381,10 +381,10 @@ CRawEthernet::open(const char *pUsername,
 	// First log on to the host and get configuration 
 	// variables
 
-	if ( VSCP_ERROR_SUCCESS !=  m_srv.doCmdOpen( m_host,
+	if ( VSCP_ERROR_SUCCESS !=  m_srv.doCmdOpen( m_host.ToStdString(),
 													m_port,
-                                                    m_username,
-                                                    m_password ) ) {
+                                                    m_username.ToStdString(),
+                                                    m_password.ToStdString() ) ) {
 		syslog(LOG_ERR,
 				"%s",
 				(const char *) "Unable to connect to VSCP TCP/IP interface. Terminating!");

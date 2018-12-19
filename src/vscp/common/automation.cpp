@@ -29,36 +29,22 @@
     //#pragma implementation
 #endif
 
-#ifdef WIN32
-#include <winsock2.h>
-#endif
+#define _POSIX
 
-// For compilers that support precompilation, includes "wx.h".
-#include "wx/wxprec.h"
+#include <string>
+#include <algorithm>
 
-#ifdef __BORLANDC__
-    #pragma hdrstop
-#endif
-
-#ifndef WX_PRECOMP
-#include "wx/wx.h"
-#endif
-
-#include "wx/defs.h"
-#include "wx/app.h"
-#include <wx/datetime.h>
-#include <wx/wfstream.h>
-#include <wx/xml/xml.h>
-#include <wx/stdpaths.h>
-
-#include <wx/listimpl.cpp>
+#include <stdio.h>
+#include <unistd.h>
+#include <math.h>
 
 #include <vscp.h>
 #include <vscphelper.h>
 #include <vscp_class.h>
 #include <vscp_type.h>
+#include <controlobject.h>
+#include <vscpdatetime.h>
 
-#include "controlobject.h"
 #include "automation.h"
 
 ///////////////////////////////////////////////////
@@ -66,6 +52,9 @@
 ///////////////////////////////////////////////////
 
 extern CControlObject *gpobj;
+
+// Seconds for 24h
+#define SPAN24      (24*3600)
 
 //-----------------------------------------------------------------------------
 //                   Helpers for sunrise/sunset calculations
@@ -134,21 +123,20 @@ CVSCPAutomation::CVSCPAutomation( void )
     m_bCalulationHasBeenDone = false;   // No calculations has been done yet
 
     // Set to some early date to indicate that they have not been sent
-    wxTimeSpan in_the_past(-8760);
-    m_civilTwilightSunriseTime_sent  = wxDateTime::Now() + in_the_past;
-    m_SunriseTime_sent = wxDateTime::Now() + in_the_past;
-    m_SunsetTime_sent = wxDateTime::Now() + in_the_past;
-    m_civilTwilightSunsetTime_sent  = wxDateTime::Now() + in_the_past;
-    m_noonTime_sent = wxDateTime::Now() + in_the_past;
+    m_civilTwilightSunriseTime_sent  = vscpdatetime::dateTimeZero();
+    m_SunriseTime_sent = vscpdatetime::dateTimeZero();
+    m_SunsetTime_sent = vscpdatetime::dateTimeZero();
+    m_civilTwilightSunsetTime_sent  = vscpdatetime::dateTimeZero();
+    m_noonTime_sent = vscpdatetime::dateTimeZero();
 
-    m_lastCalculation = wxDateTime::Now();
+    m_lastCalculation = vscpdatetime::setNow();
 
-    m_Heartbeat_Level1_sent =  wxDateTime::Now() + in_the_past;
-    m_Heartbeat_Level2_sent = wxDateTime::Now() + in_the_past;
+    m_Heartbeat_Level1_sent =  vscpdatetime::dateTimeZero();
+    m_Heartbeat_Level2_sent = vscpdatetime::dateTimeZero();
     
-    m_SegmentHeartbeat_sent =  wxDateTime::Now() + in_the_past;
+    m_SegmentHeartbeat_sent =  vscpdatetime::dateTimeZero();
         
-    m_Capabilities_sent = wxDateTime::Now() + in_the_past;
+    m_Capabilities_sent = vscpdatetime::dateTimeZero();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -317,15 +305,16 @@ void CVSCPAutomation::calcSun( void )
     // read system date and extract the year
 
     // First get time
-    wxDateTime nowLocal = wxDateTime::Now();
-    year = nowLocal.GetYear();
-    month = nowLocal.GetMonth() + 1;
-    day = nowLocal.GetDay();
-    hour = nowLocal.GetHour();
+    vscpdatetime nowLocal = vscpdatetime::setNow();
+    year = nowLocal.getYear();
+    month = nowLocal.getMonth() + 1;
+    day = nowLocal.getDay();
+    hour = nowLocal.getHour();
 
     // Set offset from UTC - daytimesaving is taken care of
-    wxDateTime::TimeZone ttt( wxDateTime::Local );
-    tzone = ttt.GetOffset()/3600;
+    //vscpdatetime::TimeZone ttt( vscpdatetime::Local );
+    //tzone = ttt.GetOffset()/3600;
+    tzone = vscpdatetime::tzOffset2LocalTime();  // TODO CHECK!!!!!!
 
     // Adjust for daylight saving time
     /*if ( isDaylightSavingTime() ) {
@@ -383,44 +372,44 @@ void CVSCPAutomation::calcSun( void )
     m_SunMaxAltitude = maxAltitude;
 
     // Set last calculated time
-    m_lastCalculation = wxDateTime::Now();
+    m_lastCalculation = vscpdatetime::setNow();
 
     int intHour, intMinute;
 
     // Civil Twilight Sunrise
     convert2HourMinute( twilightSunrise, &intHour, &intMinute );
-    m_civilTwilightSunriseTime = wxDateTime::Now();
-    m_civilTwilightSunriseTime.ResetTime();     // Set to midnight
-    m_civilTwilightSunriseTime.SetHour( intHour );
-    m_civilTwilightSunriseTime.SetMinute( intMinute ); 
+    m_civilTwilightSunriseTime = vscpdatetime::setNow();
+    m_civilTwilightSunriseTime.zeroTime();     // Set to midnight
+    m_civilTwilightSunriseTime.setHour( intHour );
+    m_civilTwilightSunriseTime.setMinute( intMinute ); 
 
     // Sunrise
     convert2HourMinute( sunriseTime, &intHour, &intMinute );
-    m_SunriseTime = wxDateTime::Now();
-    m_SunriseTime.ResetTime();     // Set to midnight
-    m_SunriseTime.SetHour( intHour );
-    m_SunriseTime.SetMinute( intMinute ); 
+    m_SunriseTime = vscpdatetime::setNow();
+    m_SunriseTime.zeroTime();     // Set to midnight
+    m_SunriseTime.setHour( intHour );
+    m_SunriseTime.setMinute( intMinute ); 
 
     // Sunset
     convert2HourMinute( sunsetTime, &intHour, &intMinute );
-    m_SunsetTime = wxDateTime::Now();
-    m_SunsetTime.ResetTime();     // Set to midnight
-    m_SunsetTime.SetHour( intHour );
-    m_SunsetTime.SetMinute( intMinute ); 
+    m_SunsetTime = vscpdatetime::setNow();
+    m_SunsetTime.zeroTime();     // Set to midnight
+    m_SunsetTime.setHour( intHour );
+    m_SunsetTime.setMinute( intMinute ); 
 
     // Civil Twilight Sunset
     convert2HourMinute( twilightSunset, &intHour, &intMinute );
-    m_civilTwilightSunsetTime = wxDateTime::Now();
-    m_civilTwilightSunsetTime.ResetTime();     // Set to midnight
-    m_civilTwilightSunsetTime.SetHour( intHour );
-    m_civilTwilightSunsetTime.SetMinute( intMinute );
+    m_civilTwilightSunsetTime = vscpdatetime::setNow();
+    m_civilTwilightSunsetTime.zeroTime();     // Set to midnight
+    m_civilTwilightSunsetTime.setHour( intHour );
+    m_civilTwilightSunsetTime.setMinute( intMinute );
 
     // NoonTime
     convert2HourMinute( noonTime, &intHour, &intMinute );
-    m_noonTime = wxDateTime::Now();
-    m_noonTime.ResetTime();     // Set to midnight
-    m_noonTime.SetHour( intHour );
-    m_noonTime.SetMinute( intMinute );
+    m_noonTime = vscpdatetime::setNow();
+    m_noonTime.zeroTime();     // Set to midnight
+    m_noonTime.setHour( intHour );
+    m_noonTime.setMinute( intMinute );
 }
 
 
@@ -430,13 +419,13 @@ void CVSCPAutomation::calcSun( void )
 
 bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
 {
-    wxString wxstr;
-    wxDateTime now = wxDateTime::Now();
-    wxTimeSpan span24( 24 );  // Twentyfour hour span
+    std::string wxstr;
+    vscpdatetime now = vscpdatetime::setNow();
+    ////xxTimeSpan span24( 24 );  // Twentyfour hour span
 
     // Calculate Sunrise/sunset parameters once a day
     if ( !m_bCalulationHasBeenDone && 
-            ( 0 == wxDateTime::Now().GetHour() ) ) {
+            ( 0 == vscpdatetime::setNow().getHour() ) ) {
                 
         calcSun();     
         m_bCalulationHasBeenDone = true;
@@ -462,19 +451,19 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
     }
     
     // Trigger for next noon calculation
-    if ( 0 != wxDateTime::Now().GetHour() ) {
+    if ( 0 != vscpdatetime::setNow().getHour() ) {
         m_bCalulationHasBeenDone = false;
     }
 
     // Sunrise Time
-    if ( ( now.GetYear() == m_SunriseTime.GetYear() ) && 
-         ( now.GetMonth() == m_SunriseTime.GetMonth() ) &&
-         ( now.GetDay() == m_SunriseTime.GetDay() ) &&
-         ( now.GetHour() == m_SunriseTime.GetHour() ) && 
-         ( now.GetMinute() == m_SunriseTime.GetMinute() ) ) {
+    if ( ( now.getYear() == m_SunriseTime.getYear() ) && 
+         ( now.getMonth() == m_SunriseTime.getMonth() ) &&
+         ( now.getDay() == m_SunriseTime.getDay() ) &&
+         ( now.getHour() == m_SunriseTime.getHour() ) && 
+         ( now.getMinute() == m_SunriseTime.getMinute() ) ) {
 
-        m_SunriseTime += span24;   // Add 24h's
-        m_SunriseTime_sent = wxDateTime::Now();                              
+        m_SunriseTime += SPAN24;   // Add 24h's
+        m_SunriseTime_sent = vscpdatetime::setNow();                              
 
         // Send VSCP_CLASS1_INFORMATION, Type=44/VSCP_TYPE_INFORMATION_SUNRISE
         pEventEx->obid = 0;     // IMPORTANT Must be set by caller before event is sent
@@ -493,14 +482,14 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
     }
 
     // Civil Twilight Sunrise Time
-    if ( ( now.GetYear() == m_civilTwilightSunriseTime.GetYear() ) && 
-         ( now.GetMonth() == m_civilTwilightSunriseTime.GetMonth() ) &&
-         ( now.GetDay() == m_civilTwilightSunriseTime.GetDay() ) && 
-         ( now.GetHour() == m_civilTwilightSunriseTime.GetHour() ) && 
-         ( now.GetMinute() == m_civilTwilightSunriseTime.GetMinute() ) ) {
+    if ( ( now.getYear() == m_civilTwilightSunriseTime.getYear() ) && 
+         ( now.getMonth() == m_civilTwilightSunriseTime.getMonth() ) &&
+         ( now.getDay() == m_civilTwilightSunriseTime.getDay() ) && 
+         ( now.getHour() == m_civilTwilightSunriseTime.getHour() ) && 
+         ( now.getMinute() == m_civilTwilightSunriseTime.getMinute() ) ) {
 
-        m_civilTwilightSunriseTime += span24;   // Add 24h's
-        m_civilTwilightSunriseTime_sent = wxDateTime::Now();
+        m_civilTwilightSunriseTime += SPAN24;   // Add 24h's
+        m_civilTwilightSunriseTime_sent = vscpdatetime::setNow();
 
         // Send VSCP_CLASS1_INFORMATION, Type=52/VSCP_TYPE_INFORMATION_SUNRISE_TWILIGHT_START
         pEventEx->obid = 0;     // IMPORTANT Must be set by caller before event is sent
@@ -519,14 +508,14 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
     }
 
     // Sunset Time
-    if ( ( now.GetYear() == m_SunsetTime.GetYear() ) &&
-         ( now.GetMonth() == m_SunsetTime.GetMonth() ) &&
-         ( now.GetDay() == m_SunsetTime.GetDay() ) &&
-         ( now.GetHour() == m_SunsetTime.GetHour() ) &&
-         ( now.GetMinute() == m_SunsetTime.GetMinute() ) ) {
+    if ( ( now.getYear() == m_SunsetTime.getYear() ) &&
+         ( now.getMonth() == m_SunsetTime.getMonth() ) &&
+         ( now.getDay() == m_SunsetTime.getDay() ) &&
+         ( now.getHour() == m_SunsetTime.getHour() ) &&
+         ( now.getMinute() == m_SunsetTime.getMinute() ) ) {
 
-        m_SunsetTime += span24;     // Add 24h's
-        m_SunsetTime_sent = wxDateTime::Now(); 
+        m_SunsetTime += SPAN24;     // Add 24h's
+        m_SunsetTime_sent = vscpdatetime::setNow(); 
 
         // Send VSCP_CLASS1_INFORMATION, Type=45/VSCP_TYPE_INFORMATION_SUNSET
         pEventEx->obid = 0;         // IMPORTANT Must be set by caller before event is sent
@@ -545,14 +534,14 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
     }
 
     // Civil Twilight Sunset Time
-    if ( ( now.GetYear() == m_civilTwilightSunsetTime.GetYear() ) && 
-         ( now.GetMonth() == m_civilTwilightSunsetTime.GetMonth() ) &&
-         ( now.GetDay() == m_civilTwilightSunsetTime.GetDay() ) &&
-         ( now.GetHour() == m_civilTwilightSunsetTime.GetHour() ) && 
-         ( now.GetMinute() == m_civilTwilightSunsetTime.GetMinute() ) ) {
+    if ( ( now.getYear() == m_civilTwilightSunsetTime.getYear() ) && 
+         ( now.getMonth() == m_civilTwilightSunsetTime.getMonth() ) &&
+         ( now.getDay() == m_civilTwilightSunsetTime.getDay() ) &&
+         ( now.getHour() == m_civilTwilightSunsetTime.getHour() ) && 
+         ( now.getMinute() == m_civilTwilightSunsetTime.getMinute() ) ) {
 
-        m_civilTwilightSunsetTime += span24;   // Add 24h's
-        m_civilTwilightSunsetTime_sent = wxDateTime::Now();
+        m_civilTwilightSunsetTime += SPAN24;   // Add 24h's
+        m_civilTwilightSunsetTime_sent = vscpdatetime::setNow();
                                             
         // Send VSCP_CLASS1_INFORMATION, Type=53/VSCP_TYPE_INFORMATION_SUNSET_TWILIGHT_START
         pEventEx->obid = 0;     // IMPORTANT Must be set by caller before event is sent
@@ -571,14 +560,14 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
     }
 
     // Noon Time
-    if ( ( now.GetYear() == m_noonTime.GetYear() ) && 
-         ( now.GetMonth() == m_noonTime.GetMonth() ) &&
-         ( now.GetDay() == m_noonTime.GetDay() ) &&
-         ( now.GetHour() == m_noonTime.GetHour() ) && 
-         ( now.GetMinute() == m_noonTime.GetMinute() ) ) {
+    if ( ( now.getYear() == m_noonTime.getYear() ) && 
+         ( now.getMonth() == m_noonTime.getMonth() ) &&
+         ( now.getDay() == m_noonTime.getDay() ) &&
+         ( now.getHour() == m_noonTime.getHour() ) && 
+         ( now.getMinute() == m_noonTime.getMinute() ) ) {
 
-        m_noonTime += span24;   // Add 24h's
-        m_noonTime_sent = wxDateTime::Now();
+        m_noonTime += SPAN24;   // Add 24h's
+        m_noonTime_sent = vscpdatetime::setNow();
 
         // Send VSCP_CLASS1_INFORMATION, Type=58/VSCP_TYPE_INFORMATION_CALCULATED_NOON
         pEventEx->obid = 0;         // IMPORTANT Must be set by caller before event is sent
@@ -597,11 +586,13 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
     }
 
     // Heartbeat Level I
-    wxTimeSpan HeartBeatLevel1Period( 0, 0, m_intervalHeartBeat );
+    //xxTimeSpan HeartBeatLevel1Period( 0, 0, m_intervalHeartBeat );
+
     if ( m_bHeartBeatEvent && 
-         ( ( wxDateTime::Now() - m_Heartbeat_Level1_sent ) >= HeartBeatLevel1Period ) ) {
+        ( vscpdatetime::diffSeconds(now,m_Heartbeat_Level1_sent ) >= m_intervalHeartBeat ) )  {
+         //( ( vscpdatetime::setNow() - m_Heartbeat_Level1_sent ) >= HeartBeatLevel1Period ) ) {
         
-        m_Heartbeat_Level1_sent = wxDateTime::Now();
+        m_Heartbeat_Level1_sent = vscpdatetime::setNow();
 
         // Send VSCP_CLASS1_INFORMATION, Type=9/VSCP_TYPE_INFORMATION_NODE_HEARTBEAT
         pEventEx->obid = 0;         // IMPORTANT Must be set by caller before event is sent
@@ -620,11 +611,12 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
     }
 
     // Heartbeat Level II
-    wxTimeSpan HeartBeatLevel2Period( 0, 0, m_intervalHeartBeat );
+    //xxTimeSpan HeartBeatLevel2Period( 0, 0, m_intervalHeartBeat );
     if ( m_bHeartBeatEvent &&
-         ( ( wxDateTime::Now() - m_Heartbeat_Level2_sent ) >= HeartBeatLevel2Period ) ) {
+    ( vscpdatetime::diffSeconds(now,m_Heartbeat_Level2_sent ) >= m_intervalHeartBeat ) )  {
+    //     ( ( vscpdatetime::setNow() - m_Heartbeat_Level2_sent ) >= HeartBeatLevel2Period ) ) {
 
-        m_Heartbeat_Level2_sent = wxDateTime::Now();
+        m_Heartbeat_Level2_sent = vscpdatetime::setNow();
 
         // Send VSCP_CLASS1_INFORMATION, Type=9/VSCP_TYPE_INFORMATION_NODE_HEARTBEAT
         pEventEx->obid = 0;         // IMPORTANT Must be set by caller before event is sent
@@ -638,17 +630,18 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
         
         memset( pEventEx->data, 0, sizeof( pEventEx->data ) );
         memcpy( pEventEx->data, 
-                    gpobj->m_strServerName.mbc_str(), 
-                    strlen( gpobj->m_strServerName.mbc_str() ) );         
+                    gpobj->m_strServerName.c_str(), 
+                    strlen( gpobj->m_strServerName.c_str() ) );         
         return true;
     }
 
     // Segment Controller Heartbeat
-    wxTimeSpan SegmentControllerHeartBeatPeriod( 0, 0, m_intervalSegmentControllerHeartbeat );
+    //xxTimeSpan SegmentControllerHeartBeatPeriod( 0, 0, m_intervalSegmentControllerHeartbeat );
     if ( m_bSegmentControllerHeartbeat && 
-         ( ( wxDateTime::Now() - m_SegmentHeartbeat_sent ) >= SegmentControllerHeartBeatPeriod ) ) {
+    ( vscpdatetime::diffSeconds(now,m_SegmentHeartbeat_sent ) >= m_intervalSegmentControllerHeartbeat ) )  {
+    //     ( ( vscpdatetime::setNow() - m_SegmentHeartbeat_sent ) >= SegmentControllerHeartBeatPeriod ) ) {
 
-        m_SegmentHeartbeat_sent = wxDateTime::Now();
+        m_SegmentHeartbeat_sent = vscpdatetime::setNow();
 
         // Send VSCP_CLASS1_PROTOCOL, Type=1/VSCP_TYPE_PROTOCOL_SEGCTRL_HEARTBEAT
         pEventEx->obid = 0;     // IMPORTANT Must be set by caller before event is sent
@@ -676,11 +669,12 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
     }
     
     // High end server capabilities
-    wxTimeSpan CapabilitiesPeriod( 0, 0, m_intervalCapabilities );
+    //xxTimeSpan CapabilitiesPeriod( 0, 0, m_intervalCapabilities );
     if ( m_bCapabilitiesEvent && 
-         ( ( wxDateTime::Now() - m_Capabilities_sent ) >= CapabilitiesPeriod ) ) {
+    ( vscpdatetime::diffSeconds(now,m_Capabilities_sent ) >= m_intervalCapabilities ) )  {
+    //     ( ( vscpdatetime::setNow() - m_Capabilities_sent ) >= CapabilitiesPeriod ) ) {
 
-        m_Capabilities_sent = wxDateTime::Now();
+        m_Capabilities_sent = vscpdatetime::setNow();
         // 
         // Send VSCP_CLASS2_PROTOCOL, Type=20/VSCP2_TYPE_PROTOCOL_HIGH_END_SERVER_CAPS
         pEventEx->obid = 0;     // IMPORTANT Must be set by caller before event is sent
@@ -712,8 +706,8 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
         
         // Server name
         memcpy( pEventEx->data + VSCP_CAPABILITY_OFFSET_SRV_NAME, 
-                    (const char *)m_pCtrlObj->m_strServerName.mbc_str(),
-                    MIN( 64, strlen((const char *)m_pCtrlObj->m_strServerName.mbc_str()) ) );
+                    (const char *)m_pCtrlObj->m_strServerName.c_str(),
+                    std::min( 64, (int)m_pCtrlObj->m_strServerName.length() ) );
         
         // Capabilities array
         m_pCtrlObj->getVscpCapabilities( pEventEx->data );

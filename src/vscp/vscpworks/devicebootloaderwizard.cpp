@@ -755,9 +755,10 @@ void WizardPageSelecInterface::OnWizardPageChanging( wxWizardEvent& event )
         else if ( USE_TCPIP_INTERFACE == pblw->m_iftype ) {
 
             // Open the interface
-            if ( VSCP_ERROR_SUCCESS == pblw->m_tcpip.doCmdOpen( pblw->m_vscpif.m_strHost,
-                                                                    pblw->m_vscpif.m_strUser,
-                                                                    pblw->m_vscpif.m_strPassword ) ) {
+            if ( VSCP_ERROR_SUCCESS == 
+                pblw->m_tcpip.doCmdOpen( pblw->m_vscpif.m_strHost.ToStdString(),
+                                            pblw->m_vscpif.m_strUser.ToStdString(),
+                                            pblw->m_vscpif.m_strPassword.ToStdString() ) ) {
             }
             else {
                 wxMessageBox( _( "Unable to open TCP/IP interface." ) );

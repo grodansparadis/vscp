@@ -25,25 +25,14 @@
 // SOFTWARE.
 //
 
-#include <wx/wx.h>
-#include <wx/defs.h>
-#include <wx/app.h>
-#include <wx/wfstream.h>
-#include <wx/xml/xml.h>
-#include <wx/listimpl.cpp>
-#include <wx/tokenzr.h>
-#include <wx/stdpaths.h>
-#include <wx/thread.h>
-#include <wx/socket.h>
-#include <wx/url.h>
-#include <wx/datetime.h>
-#include <wx/filename.h>
-#include <wx/cmdline.h>
-#include <wx/base64.h>
+#include <string>
+#include <list>
 
 #include <stdlib.h>
+#include <unistd.h>
 #include <string.h>
 #include <float.h>
+#include <syslog.h>
 
 #include <vscp.h>
 #include <vscpdb.h>
@@ -56,11 +45,12 @@
 #include <userlist.h>
 #include <controlobject.h>
 #include <vscpremotetcpif.h>
-#include <duktape_vscp_wrkthread.h>
 #include <duktape.h>
 #include <duktape_vscp_func.h>
 #include <duk_module_node.h>
 #include <dm.h>
+
+#include "duktape_vscp_wrkthread.h"
 
 ///////////////////////////////////////////////////
 //                 GLOBALS
@@ -69,33 +59,38 @@
 extern CControlObject *gpobj;
 
 ///////////////////////////////////////////////////////////////////////////////
-// actionThread_JavaScript
+// actionJavascriptObj
 //
 // This thread executes a JavaScript 
 //
 
-actionThread_JavaScript::actionThread_JavaScript( wxString& strScript,
-                                                    wxThreadKind kind )
-                                            : wxThread( kind )
+actionJavascriptObj::actionJavascriptObj( std::string& strScript  )
 {
     //OutputDebugString( "actionThreadURL: Create");
-    m_wxstrScript = strScript;  // Script to execute
+    m_strScript = strScript;  // Script to execute
 }
 
-actionThread_JavaScript::~actionThread_JavaScript()
+actionJavascriptObj::~actionJavascriptObj()
 {
 
 }
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// Entry
+// Javascript execution thread
 //
 //
 
-void *actionThread_JavaScript::Entry()
+void *actionJavascriptThread( void *pData )
 {
-    m_start = wxDateTime::Now();    // Mark start time
+    actionJavascriptObj *pobj = (actionJavascriptObj *)pData;
+    if ( NULL == pobj ) {
+        syslog( LOG_ERR, "[Javascript execution] - "
+        "No control object, can't execute code." );
+        return NULL;
+    }
+
+    pobj->m_start = vscpdatetime::setNow();    // Mark start time
     
     // Create new JavaScript context
     duk_context *ctx = duk_create_heap_default();
@@ -168,22 +163,22 @@ void *actionThread_JavaScript::Entry()
     duk_put_global_string(ctx, "vscp_getMeasurementSubZone");
     
     // Save the DM feed event for easy access
-    wxString strEvent;
-    vscp_convertEventExToJSON( &m_feedEvent, strEvent );
-    duk_push_string( ctx, (const char *)strEvent.mbc_str() );
+    std::string strEvent;
+    vscp_convertEventExToJSON( &pobj->m_feedEvent, strEvent );
+    duk_push_string( ctx, (const char *)strEvent.c_str() );
     duk_json_decode(ctx, -1);
     duk_put_global_string(ctx, "vscp_feedevent");
     
     // Save client object as a global pointer
-    duk_push_pointer(ctx, (void *)m_pClientItem );
+    duk_push_pointer(ctx, (void *)pobj->m_pClientItem );
     duk_put_global_string(ctx, "vscp_controlobject");
     
     // Create VSCP client
-    m_pClientItem = new CClientItem();
-    vscp_clearVSCPFilter( &m_pClientItem->m_filterVSCP );
+    pobj->m_pClientItem = new CClientItem();
+    vscp_clearVSCPFilter( &pobj->m_pClientItem->m_filterVSCP );
     
     // Save the client object as a global pointer
-    duk_push_pointer(ctx, (void *)m_pClientItem );
+    duk_push_pointer(ctx, (void *)pobj->m_pClientItem );
     duk_put_global_string(ctx, "vscp_clientitem");
     
     // reading [global object].vscp_clientItem 
@@ -191,42 +186,36 @@ void *actionThread_JavaScript::Entry()
     duk_push_string(ctx, "vscp_clientitem");    // -> stack: [ global "vscp_clientItem" ] 
     duk_get_prop(ctx, -2);                      // -> stack: [ global vscp_clientItem ] 
     CClientItem *pItem = (CClientItem *)duk_get_pointer(ctx,-1);
-    wxString user = pItem->m_UserName;
+    std::string user = pItem->m_UserName;
     
     duk_bool_t rc;
     
     // This is an active client
-    m_pClientItem->m_bOpen = false;
-    m_pClientItem->m_type = CLIENT_ITEM_INTERFACE_TYPE_CLIENT_JAVASCRIPT;
-    m_pClientItem->m_strDeviceName = _("Internal daemon JavaScript client.");
-    m_pClientItem->m_strDeviceName += _("|Started at ");
-    wxDateTime now = wxDateTime::Now();
-    m_pClientItem->m_strDeviceName += now.FormatISODate();
-    m_pClientItem->m_strDeviceName += _(" ");
-    m_pClientItem->m_strDeviceName += now.FormatISOTime();
+    pobj->m_pClientItem->m_bOpen = false;
+    pobj->m_pClientItem->m_type = CLIENT_ITEM_INTERFACE_TYPE_CLIENT_JAVASCRIPT;
+    pobj->m_pClientItem->setDeviceName(std::string("Internal daemon JavaScript client."));
 
     // Add the client to the Client List
-    gpobj->m_wxClientMutex.Lock();
-    if ( !gpobj->addClient( m_pClientItem ) ) {
+    pthread_mutex_lock(&gpobj->m_clientMutex);
+    if ( !gpobj->addClient( pobj->m_pClientItem ) ) {
         // Failed to add client
-        delete m_pClientItem;
-        m_pClientItem = NULL;
-        gpobj->m_wxClientMutex.Unlock();
-        gpobj->logMsg( _("Dukape worker: Failed to add client. Terminating thread.") );
+        delete pobj->m_pClientItem;
+        pobj->m_pClientItem = NULL;
+        pthread_mutex_unlock(&gpobj->m_clientMutex);
+        syslog( LOG_ERR, "[Javascript execution] - Failed to add client. "
+        "Terminating thread.");
         return NULL;
     }
-    gpobj->m_wxClientMutex.Unlock();
+    pthread_mutex_unlock(&gpobj->m_clientMutex);
     
     // Open the channel
-    m_pClientItem->m_bOpen = true;
+    pobj->m_pClientItem->m_bOpen = true;
     
     // Execute the JavaScript
-    duk_push_string( ctx, (const char *)m_wxstrScript.mbc_str() );
+    duk_push_string( ctx, (const char *)pobj->m_strScript.c_str() );
     if ( 0 != duk_peval( ctx ) ) {
-        wxString strError = 
-                wxString::Format( "JavaScript failed to execute: %s\n", 
+        syslog( LOG_ERR, "[Javascript execution] - JavaScript failed to execute: %s", 
                                     duk_safe_to_string(ctx, -1) );
-        gpobj->logMsg( strError, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
     }
     
     // If the script wants to log results it can do so 
@@ -235,28 +224,20 @@ void *actionThread_JavaScript::Entry()
     duk_pop(ctx);  // pop eval. result 
     
     // Close the channel
-    m_pClientItem->m_bOpen = false;
+    pobj->m_pClientItem->m_bOpen = false;
     
     // Remove client and session item
-    gpobj->m_wxClientMutex.Lock();
-    gpobj->removeClient( m_pClientItem );
-    m_pClientItem = NULL;
-    gpobj->m_wxClientMutex.Unlock();
+    pthread_mutex_lock(&gpobj->m_clientMutex);
+    gpobj->removeClient( pobj->m_pClientItem );
+    pobj->m_pClientItem = NULL;
+    pthread_mutex_unlock(&gpobj->m_clientMutex);
 
     // Destroy the JavaScript context
     duk_destroy_heap( ctx );
     
-    m_stop = wxDateTime::Now();     // Mark stop time
+    pobj->m_stop = vscpdatetime::setNow();     // Mark stop time
  
     return NULL;
 }
 
 
-///////////////////////////////////////////////////////////////////////////////
-// OnExit
-//
-
-void actionThread_JavaScript::OnExit()
-{
-
-}

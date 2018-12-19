@@ -180,10 +180,10 @@ CTcpipLink::open( const char *pUsername,
     // variables
 
     if ( VSCP_ERROR_SUCCESS !=  
-                    m_srvLocal.doCmdOpen( m_hostLocal,
+                    m_srvLocal.doCmdOpen( m_hostLocal.ToStdString(),
                                             port,
-                                            m_usernameLocal,
-                                            m_passwordLocal ) ) {
+                                            m_usernameLocal.ToStdString(),
+                                            m_passwordLocal.ToStdString() ) ) {
         syslog(LOG_ERR,
                 "%s %s ",
                 VSCP_TCPIPLINK_SYSLOG_DRIVER_ID,
@@ -193,7 +193,7 @@ CTcpipLink::open( const char *pUsername,
 
     // Find the channel id
     uint32_t ChannelID;
-    m_srvLocal.doCmdGetChannelID(&ChannelID);
+    m_srvLocal.doCmdGetChannelID( &ChannelID );
 
     // The server should hold configuration data 
     // 
@@ -489,10 +489,10 @@ CWrkSendTread::Entry()
 
     // Open remote interface
     if ( VSCP_ERROR_SUCCESS != 
-            m_srvRemote.doCmdOpen( m_pObj->m_hostRemote,
+            m_srvRemote.doCmdOpen( m_pObj->m_hostRemote.ToStdString(),
                                     m_pObj->m_portRemote,
-                                    m_pObj->m_usernameRemote,
-                                    m_pObj->m_passwordRemote ) ) {
+                                    m_pObj->m_usernameRemote.ToStdString(),
+                                    m_pObj->m_passwordRemote.ToStdString() ) ) {
         syslog(LOG_ERR,
                 "%s %s ",
                 VSCP_TCPIPLINK_SYSLOG_DRIVER_ID,
@@ -533,10 +533,10 @@ CWrkSendTread::Entry()
             ::wxSleep(VSCP_TCPIPLINK_DEFAULT_RECONNECT_TIME);
 
             if ( VSCP_ERROR_SUCCESS != 
-                    m_srvRemote.doCmdOpen( m_pObj->m_hostRemote,
+                    m_srvRemote.doCmdOpen( m_pObj->m_hostRemote.ToStdString(),
                                             m_pObj->m_portRemote,
-                                            m_pObj->m_usernameRemote,
-                                            m_pObj->m_passwordRemote ) ) {
+                                            m_pObj->m_usernameRemote.ToStdString(),
+                                            m_pObj->m_passwordRemote.ToStdString() ) ) {
                 syslog(LOG_ERR,
                         "%s %s ",
                         VSCP_TCPIPLINK_SYSLOG_DRIVER_ID,
@@ -640,10 +640,10 @@ retry_receive_connect:
 
     // Open remote interface
     if ( VSCP_ERROR_SUCCESS != 
-                m_srvRemote.doCmdOpen( m_pObj->m_hostRemote,
+                m_srvRemote.doCmdOpen( m_pObj->m_hostRemote.ToStdString(),
                                         m_pObj->m_portRemote,
-                                        m_pObj->m_usernameRemote,
-                                        m_pObj->m_passwordRemote ) ) {
+                                        m_pObj->m_usernameRemote.ToStdString(),
+                                        m_pObj->m_passwordRemote.ToStdString() ) ) {
         syslog(LOG_ERR,
                 "%s %s ",
                 VSCP_TCPIPLINK_SYSLOG_DRIVER_ID,
@@ -697,10 +697,10 @@ retry_receive_connect:
             ::wxSleep(VSCP_TCPIPLINK_DEFAULT_RECONNECT_TIME);
 
             if ( VSCP_ERROR_SUCCESS != 
-                        m_srvRemote.doCmdOpen( m_pObj->m_hostRemote,
+                        m_srvRemote.doCmdOpen( m_pObj->m_hostRemote.ToStdString(),
                                                 m_pObj->m_portRemote,
-                                                m_pObj->m_usernameRemote,
-                                                m_pObj->m_passwordRemote ) ) {
+                                                m_pObj->m_usernameRemote.ToStdString(),
+                                                m_pObj->m_passwordRemote.ToStdString() ) ) {
                 syslog(LOG_ERR,
                         "%s %s ",
                         VSCP_TCPIPLINK_SYSLOG_DRIVER_ID,

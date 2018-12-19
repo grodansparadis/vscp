@@ -26,10 +26,13 @@
 // SOFTWARE./
 
 
-#if !defined(AFX_GUID_H__C2A773AD_8886_40F0_96C4_4DCA663402B2__INCLUDED_)
-#define AFX_GUID_H__C2A773AD_8886_40F0_96C4_4DCA663402B2__INCLUDED_
+#if !defined(_GUID_H__C2A773AD_8886_40F0_96C4_4DCA663402B2__INCLUDED_)
+#define _GUID_H__C2A773AD_8886_40F0_96C4_4DCA663402B2__INCLUDED_
 
-#include "wx/wx.h"
+#include <string>
+
+#include <stdio.h>
+#include <string.h>
 
 #include <vscp.h>
 
@@ -70,7 +73,6 @@ public:
         Get GUID from string
         @param strGUID The GUID in string form
     */
-    void getFromString( const wxString& strGUID );
     void getFromString( const std::string& strGUID );
 
     /*!
@@ -90,14 +92,14 @@ public:
         GUID to string
         @param pszGUID Zero terminated ASCII string pointing at GUID
     */
-    void toString( wxString& strGUID  );
+    //void toString( wxString& strGUID  );
     void toString( std::string& strGUID  );
 
     /*!
         GUID to string
         @return GUID as string
     */ 
-    wxString getAsString( void ) { wxString str; toString( str ); return str; };
+    std::string getAsString( void ) { std::string str; toString( str ); return str; };
 
     /*!
         Return pointer to GUID

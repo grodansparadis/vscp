@@ -54,7 +54,7 @@ struct restsrv_session
       
 };
 
-WX_DECLARE_LIST(struct restsrv_session, RESTSESSIONLIST);
+
 
 // Encapsulate a JSON block to make it JSONP
 #define REST_JSONP_START "typeof handler === 'function' && handler("

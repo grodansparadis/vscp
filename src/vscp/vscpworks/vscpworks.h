@@ -536,7 +536,7 @@ public:
     Pointer to the multicast worker thread
   */
   worksMulticastThread *m_pmulticastWorkerThread;
-  wxMutex m_mutexmulticastWorkerThread;
+  pthread_mutex_t m_mutexmulticastWorkerThread;
 
 };
 

@@ -25,40 +25,11 @@
 // SOFTWARE.
 //
 
-#if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma implementation "frmmain.h"
-#endif
 
-// For compilers that support precompilation, includes "wx/wx.h".
-#include "wx/wxprec.h"
+#include <string>
+#include <set>
+#include <map>
 
-#ifdef __BORLANDC__
-#pragma hdrstop
-#endif
-
-#ifndef WX_PRECOMP
-#include "wx/wx.h"
-#endif
-
-#include "wx/defs.h"
-#include "wx/app.h"
-#include <wx/wfstream.h>
-#include <wx/xml/xml.h>
-#include <wx/tokenzr.h>
-#if wxUSE_GUI!=0
-#include <wx/progdlg.h>
-#include <wx/imaglist.h>
-#endif
-#include <wx/file.h>
-#include <wx/filename.h>
-#include <wx/stdpaths.h>
-#include <wx/url.h>
-#include <wx/xml/xml.h>
-#include <wx/wfstream.h>
-#include <wx/url.h>
-#include <wx/listimpl.cpp>
-
-#include <canal.h>
 #include <vscp.h>
 #include <vscphelper.h>
 #include <mdf.h>
@@ -110,7 +81,7 @@ bool getRow( uint32_t row, uint8_t *pRow )
 
 CStandardRegisters::CStandardRegisters()
 {
-    memset( m_reg, 0, sizeof( m_reg ) );
+    ;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -126,13 +97,13 @@ CStandardRegisters::~CStandardRegisters()
 //  getFirmwareVersionString.
 // 
 
-wxString CStandardRegisters::getFirmwareVersionString( void )
+std::string CStandardRegisters::getFirmwareVersionString( void )
 {
-    wxString str;
+    std::string str;
 
-    str = str.Format( _("%d.%d.%d"), m_reg[ 0x94 - 0x80 ],
-                                    m_reg[ 0x95 - 0x80 ],
-                                    m_reg[ 0x96 - 0x80 ] ); 
+    str = str = vscp_string_format( "%d.%d.%d", m_reg[ 0x94 - 0x80 ],
+                                        m_reg[ 0x95 - 0x80 ],
+                                        m_reg[ 0x96 - 0x80 ] ); 
     return str;
 }
 
@@ -141,14 +112,14 @@ wxString CStandardRegisters::getFirmwareVersionString( void )
 //  getMDF
 // 
 
-void CStandardRegisters::getMDF( wxString& remoteFile )
+void CStandardRegisters::getMDF( std::string& remoteFile )
 {
     char url[33];
 
     memset( url, 0, sizeof( url ) );
     memcpy( url, ( m_reg + 0xe0 - 0x80 ), 32 );
-    remoteFile = _("http://");
-    remoteFile += wxString::From8BitData( url );
+    remoteFile = "http://";
+    remoteFile += std::string( url );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -163,6 +134,66 @@ uint8_t CStandardRegisters::getStandardReg( uint8_t reg )
 }
 
 
+//-----------------------------------------------------------------------------
+
+
+///////////////////////////////////////////////////////////////////////////////
+//  Constructor
+//
+
+CRegisterPage::CRegisterPage( uint8_t level )
+{
+    m_level = level;
+}
+
+CRegisterPage::~CRegisterPage()
+{
+    ;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// readReg
+//
+
+int CRegisterPage::readReg( uint32_t reg )
+{
+    // Check validity of register pointer
+    if ( VSCP_LEVEL1 == m_level ) {
+        if ( reg > 128 ) return -1;      // Invalid reg offset for Level I device
+    }
+    else if ( VSCP_LEVEL2 == m_level ) {
+        ;
+    }
+    else {
+        // Level is wrong
+        return -1;
+    }
+
+    return readReg( reg );
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// writeReg
+//
+
+bool CRegisterPage::writeReg( uint32_t reg, uint8_t value )
+{
+    // Check validity of register pointer
+    if ( VSCP_LEVEL1 == m_level ) {
+        if ( reg > 128 ) return false;       // Invalid reg offset for Level I device
+    }
+    else if ( VSCP_LEVEL2 == m_level ) {
+        ;
+    }
+    else {
+        // Level is wrong
+        return false;
+    }
+
+    m_registers[reg] = value;    // Assign value
+    return true;
+}
+
 
 //-----------------------------------------------------------------------------
 
@@ -172,9 +203,9 @@ uint8_t CStandardRegisters::getStandardReg( uint8_t reg )
 //  Constructor
 // 
 
-CUserRegisters::CUserRegisters()
+CUserRegisters::CUserRegisters( uint8_t level )
 {
-    m_reg = NULL;
+    m_level = level;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -183,86 +214,99 @@ CUserRegisters::CUserRegisters()
 
 CUserRegisters::~CUserRegisters()
 {
-    if ( NULL != m_reg ) {
-        delete [] m_reg;
-    }
-
-    m_size = 0;
+    
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-//  init
-// 
-
-void CUserRegisters::init( wxArrayLong &pagesArray )
-{
-    m_arrayPages = pagesArray;
-
-    // Delete possible previous allocation
-    if ( NULL != m_reg ) {
-        delete [] m_reg;
-    }
-
-
-    m_size = m_arrayPages.Count() * 128; 
-    m_reg = new unsigned char [ m_arrayPages.Count() * 128 ];
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// getRegs4Page
-// 
-
-uint8_t *CUserRegisters::getRegs4Page( uint16_t page )
-{
-    for (uint16_t i=0; i<m_arrayPages.Count(); i++ ) {
-        if ( page ==  m_arrayPages[ i ] ) {
-            return m_reg + i*128;
-        }
-    }
-
-    return NULL;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// getValue
+// readReg
 //
 
-uint8_t CUserRegisters::getValue( uint16_t page, uint8_t offset )
+int CUserRegisters::readReg( uint32_t reg, uint32_t page )
 {
-    uint8_t *p;
+    // Check validity of register pointer
+    if ( VSCP_LEVEL1 == m_level ) {
+        if ( page > 128 ) return -1;     // invalid page for Level I device
+        if ( reg > 128 ) return -1;      // Invalid reg offset for Level I device
+    }
+    else if ( VSCP_LEVEL2 == m_level ) {
+        if ( page > 0xfffffff0 ) return -1;  // Invalid page for level II device
+    }
+    else {
+        // Level is wrong
+        return -1;
+    }
 
-    if ( offset > 127 ) return 0;
-    if ( NULL == ( p = getRegs4Page( page ) ) ) return 0;
+    // Check if page exists
+    std::map<uint32_t,CRegisterPage *>::iterator it;
+    if ( m_registerPages.end() == ( it = m_registerPages.find( page ) ) ) {
+        return -1;
+    }
 
-    return p[offset];
+    // Get page
+    CRegisterPage *pPage = it->second;
+    if ( NULL == pPage ) return -1;
+
+    return pPage->readReg( reg ); // Return value
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////
-// setValue
+// writeReg
 //
 
-uint8_t CUserRegisters::setValue( uint16_t page, uint8_t offset, uint8_t value )
+bool CUserRegisters::writeReg( uint32_t reg, uint32_t page, uint8_t value )
 {
-    uint8_t *p;
+    // Check validity of register pointer
+    if ( VSCP_LEVEL1 == m_level ) {
+        if ( page > 128 ) return false;      // invalid page for Level I device
+        if ( reg > 128 ) return false;       // Invalid reg offset for Level I device
+    }
+    else if ( VSCP_LEVEL2 == m_level ) {
+        if ( page > 0xfffffff0 ) return false;  // Invalid page for level II device
+    }
+    else {
+        // Level is wrong
+        return false;
+    }
 
-    if ( offset > 127 ) return 0;
-    if ( NULL == ( p = getRegs4Page( page ) ) ) return 0;
+    std::map<uint32_t,CRegisterPage *>::iterator it;
+    if ( m_registerPages.end() != ( it = m_registerPages.find( page ) ) ) {
+        
+        // Page already exist
 
-    return ( p[offset] = value );
+        CRegisterPage * pPage = it->second;
+        if ( NULL == pPage ) return false;  // Invalid page
+
+        pPage->writeReg( reg, value );      // Assign value    
+ 
+    }
+    else {
+
+        // Page does not exist
+
+        // Create page
+        CRegisterPage *pPage  = new CRegisterPage( m_level );
+        if ( NULL == pPage ) return false;   // Unable to create page
+        m_registerPages[ page ] = pPage;
+
+        pPage->writeReg( reg, value );      // Assign value
+    }
+
+    return true;
 }
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //  abstractionValueFromRegsToString
 //
 
 bool CUserRegisters::abstractionValueFromRegsToString( CMDF_Abstraction *pAbstraction, 
-                                                            wxString &strValue,
+                                                            std::string &strValue,
                                                             uint8_t format )
 {
+    
     bool rv = false;
     uint8_t *pReg;
-
+/*
     if ( NULL == pAbstraction ) return false;
 
     // Get register page
@@ -278,7 +322,7 @@ bool CUserRegisters::abstractionValueFromRegsToString( CMDF_Abstraction *pAbstra
             if ( NULL == pStr ) return false;
             memset( pStr, 0, pAbstraction->m_nWidth + 1 );                
             memcpy( pStr, pReg + pAbstraction->m_nOffset, pAbstraction->m_nWidth );
-            strValue.From8BitData( (const char *)pStr );
+            strValue = (const char *)pStr;
             delete [] pStr;
             return true;
         }
@@ -286,7 +330,7 @@ bool CUserRegisters::abstractionValueFromRegsToString( CMDF_Abstraction *pAbstra
 
     case type_boolval:
         {
-            strValue = (pReg[pAbstraction->m_nOffset] ? _("true") : _("false") );
+            strValue = (pReg[pAbstraction->m_nOffset] ? "true" : "false" );
         }
         break;
 
@@ -294,10 +338,10 @@ bool CUserRegisters::abstractionValueFromRegsToString( CMDF_Abstraction *pAbstra
         for ( int i=0; i<pAbstraction->m_nWidth; i++ ) {
             for ( int j=7; j>0; j-- ) {
                 if ( *(pReg + pAbstraction->m_nOffset + i) & (1 << j) ) {
-                    strValue += _("1");
+                    strValue += "1";
                 }
                 else {
-                    strValue += _("0");
+                    strValue += "0";
                 }
             }
         }
@@ -306,10 +350,10 @@ bool CUserRegisters::abstractionValueFromRegsToString( CMDF_Abstraction *pAbstra
     case type_int8_t:
         {
             if ( FORMAT_ABSTRACTION_DECIMAL == format ) {
-                strValue.Printf( _( "%d" ), *( pReg + pAbstraction->m_nOffset ) );
+                strValue = vscp_sting_format( "%d", *( pReg + pAbstraction->m_nOffset ) );
             }
             else {
-                strValue.Printf( _( "0x%02x" ), *( pReg + pAbstraction->m_nOffset ) );
+                strValue = vscp_string_format( "0x%02x", *( pReg + pAbstraction->m_nOffset ) );
             }
         }
         break;
@@ -317,10 +361,10 @@ bool CUserRegisters::abstractionValueFromRegsToString( CMDF_Abstraction *pAbstra
     case type_uint8_t:
         {
             if ( FORMAT_ABSTRACTION_DECIMAL == format ) {
-                strValue.Printf( _( "%ud" ), *( pReg + pAbstraction->m_nOffset ) );
+                strValue = vscp_string_format( "%ud", *( pReg + pAbstraction->m_nOffset ) );
             }
             else {
-                strValue.Printf( _( "0x%02x" ), *( pReg + pAbstraction->m_nOffset ) );
+                strValue = vscp_string_format( "0x%02x" , *( pReg + pAbstraction->m_nOffset ) );
             }
         }
         break;
@@ -331,11 +375,12 @@ bool CUserRegisters::abstractionValueFromRegsToString( CMDF_Abstraction *pAbstra
             int16_t val = ( p[0] << 8 ) + p[1];
 
             if ( FORMAT_ABSTRACTION_DECIMAL == format ) {
-                strValue.Printf( _( "%d" ), val );
+                strValue = vscp_string_format( "%d", val );
             }
             else {
-                strValue.Printf( _( "%04x" ), val );
-                strValue = _("0x") + strValue.Right( 4 ); // Handles negative numbers correct
+                strValue = vscp_string_format( "%04x", val );
+                strValue = "0x";
+                strValue += strValue.substr( strValue.length() - 4 ); // Handles negative numbers correct
             }
         }
         break;
@@ -346,10 +391,10 @@ bool CUserRegisters::abstractionValueFromRegsToString( CMDF_Abstraction *pAbstra
             uint16_t val = ( p[0] << 8 ) + p[1];
 
             if ( FORMAT_ABSTRACTION_DECIMAL == format ) {
-                strValue.Printf( _( "%ud" ), val );
+                strValue = vscp_string_format( "%ud", val );
             }
             else {
-                strValue.Printf( _( "0x%04x" ), val );
+                strValue = vscp_string_format( "0x%04x", val );
             }
         }
         break;
@@ -359,11 +404,12 @@ bool CUserRegisters::abstractionValueFromRegsToString( CMDF_Abstraction *pAbstra
             uint8_t *p = pReg + pAbstraction->m_nOffset;
             int32_t val = ( p[0] << 24 ) + ( p[1] << 16 ) + ( p[2] << 8 ) + p[3];
             if ( FORMAT_ABSTRACTION_DECIMAL == format ) {
-                strValue.Printf( _( "%ld" ), *( pReg + pAbstraction->m_nOffset ) );
+                strValue = vscp_string_format( "%ld", *( pReg + pAbstraction->m_nOffset ) );
             }
             else {
-                strValue.Printf( _( "%08lx" ), *( pReg + pAbstraction->m_nOffset ) );
-                strValue = _("0x") + strValue.Right( 8 ); // Handles negative numbers correct
+                strValue = vscp_string_format( "%08lx", *( pReg + pAbstraction->m_nOffset ) );
+                strValue = "0x";
+                strValue += strValue.substr( strValue.length() - 8 ); // Handles negative numbers correct
             }
         }
         break;
@@ -374,10 +420,10 @@ bool CUserRegisters::abstractionValueFromRegsToString( CMDF_Abstraction *pAbstra
             uint32_t val = ( p[0] << 24 ) + ( p[1] << 16 ) + ( p[2] << 8 ) + p[3];
 
             if ( FORMAT_ABSTRACTION_DECIMAL == format ) {
-                strValue.Printf( _( "%uld" ), val );
+                strValue = vscp_string_format( "%uld", val );
             }
             else {
-                strValue.Printf( _( "0x%08lx" ), val );
+                strValue = vscp_string_format( "0x%08lx", val );
             }
         }
         break;
@@ -385,14 +431,15 @@ bool CUserRegisters::abstractionValueFromRegsToString( CMDF_Abstraction *pAbstra
     case type_int64_t:
         {
             uint8_t *p = pReg + pAbstraction->m_nOffset;
-            *p = wxUINT64_SWAP_ON_LE( *p );
+            *p = VSCP_UINT64_SWAP_ON_LE( *p );
 
             if ( FORMAT_ABSTRACTION_DECIMAL == format ) {
-                strValue.Printf( _( "%lld" ), *p );
+                strValue = vscp_string_format( "%lld", *p );
             }
             else {
-                strValue.Printf( _( "%llx" ), *p );
-                strValue = _("0x") + strValue.Right( 8 ); // Handles negative numbers correct
+                strValue = vscp_string_format( "%llx", *p );
+                strValue = "0x";
+                strValue += strValue.substr( strValue.length() - 8 ); // Handles negative numbers correct
             }
         }
         break;
@@ -402,10 +449,10 @@ bool CUserRegisters::abstractionValueFromRegsToString( CMDF_Abstraction *pAbstra
             uint8_t *p = pReg + pAbstraction->m_nOffset;
             *p = wxUINT64_SWAP_ON_LE( *p );
             if ( FORMAT_ABSTRACTION_DECIMAL == format ) {
-                strValue.Printf( _( "%ulld" ), *p );
+                strValue = vscp_string_format( "%ulld", *p );
             }
             else {
-                strValue.Printf( _( "0x%ullx" ), *p );
+                strValue = vscp_string_format( "0x%ullx", *p );
             }
         }
         break;
@@ -415,7 +462,7 @@ bool CUserRegisters::abstractionValueFromRegsToString( CMDF_Abstraction *pAbstra
             uint8_t *p = (uint8_t *)(pReg + pAbstraction->m_nOffset ); 
             uint32_t n = wxUINT32_SWAP_ON_LE( *( (uint32_t *)p ) );
             float f = *( (float *)((uint8_t *)&n ) );
-            strValue.Printf( _("%f"), f );
+            strValue = vscp_string_format( "%f", f );
         }
         break;
 
@@ -424,7 +471,7 @@ bool CUserRegisters::abstractionValueFromRegsToString( CMDF_Abstraction *pAbstra
             uint8_t *p = (uint8_t *)(pReg + pAbstraction->m_nOffset );
             uint64_t n = wxUINT64_SWAP_ON_LE( *( (uint32_t *)p ) );
             double f = *( (double *)((uint8_t *)&n ) );
-            strValue.Printf( _("%g"), f );
+            strValue = vscp_string_format( "%g"), f );
         }
         break;
 
@@ -452,18 +499,18 @@ bool CUserRegisters::abstractionValueFromRegsToString( CMDF_Abstraction *pAbstra
 
     case type_guid:
         {
-            cguid val;
-            val.getFromArray( pReg + pAbstraction->m_nOffset );
-            val.toString( strValue );
+            cguid guid;
+            guid.getFromArray( pReg + pAbstraction->m_nOffset );
+            guid.toString( strValue );
         }
         break;
 
     case type_unknown:
     default:
-        strValue = _("");
+        strValue = "";
         break;
     }
-
+*/
     return rv;
 }
 
@@ -473,11 +520,11 @@ bool CUserRegisters::abstractionValueFromRegsToString( CMDF_Abstraction *pAbstra
 //
 
 bool CUserRegisters::abstractionValueFromStringToRegs( CMDF_Abstraction *pAbstraction, 
-                                                        wxString &strValue )
+                                                        std::string &strValue )
 {   
     bool rv = false;
     uint8_t *pReg;
-
+/*
     if ( NULL == pAbstraction ) return false;
 
     // Get register page
@@ -553,7 +600,7 @@ bool CUserRegisters::abstractionValueFromStringToRegs( CMDF_Abstraction *pAbstra
 
         break;
     }
-    
+*/    
     return rv;
 }
 

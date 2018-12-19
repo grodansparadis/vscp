@@ -185,10 +185,10 @@ CSim::open(const char *pUsername,
     // First log on to the host and get configuration 
     // variables
 
-    if ( VSCP_ERROR_SUCCESS != m_srvLocal.doCmdOpen( m_hostLocal,
+    if ( VSCP_ERROR_SUCCESS != m_srvLocal.doCmdOpen( m_hostLocal.ToStdString(),
                                                         port,
-                                                        m_usernameLocal,
-                                                        m_passwordLocal) ) {
+                                                        m_usernameLocal.ToStdString(),
+                                                        m_passwordLocal.ToStdString() ) ) {
 #ifndef WIN32
         syslog(LOG_ERR,
                 "%s",

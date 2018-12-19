@@ -31,22 +31,11 @@
 #include <winsock2.h>
 #endif
 
-#include <wx/wx.h>
-#include <wx/defs.h>
-#include <wx/app.h>
-#include <wx/wfstream.h>
-#include <wx/xml/xml.h>
-#include <wx/listimpl.cpp>
-#include <wx/tokenzr.h>
-#include <wx/stdpaths.h>
-#include <wx/thread.h>
-#include <wx/socket.h>
-#include <wx/url.h>
-#include <wx/datetime.h>
-#include <wx/filename.h>
-#include <wx/cmdline.h>
+#include <string>
+#include <list>
 
 #include <stdlib.h>
+#include <unistd.h>
 #include <string.h>
 #include <float.h>
 
@@ -104,7 +93,7 @@ extern CControlObject *gpobj;
         return false;
     }
       
-    // Get Head
+    // get Head
     pex->head = 0;
     duk_push_string(ctx, "head");
     duk_get_prop(ctx, -2);
@@ -113,7 +102,7 @@ extern CControlObject *gpobj;
     }
     duk_pop(ctx);
     
-    // Get timestamp
+    // get timestamp
     pex->timestamp = 0;
     duk_push_string(ctx, "timestamp");
     duk_get_prop(ctx, -2);
@@ -122,7 +111,7 @@ extern CControlObject *gpobj;
     }
     duk_pop(ctx);
     
-    // Get obid
+    // get obid
     pex->obid = 0;
     duk_push_string(ctx, "obid");
     duk_get_prop(ctx, -2);
@@ -131,7 +120,7 @@ extern CControlObject *gpobj;
     }
     duk_pop(ctx);
     
-    // Get VSCP class
+    // get VSCP class
     pex->vscp_class  = 0;
     duk_push_string(ctx, "class");
     duk_get_prop(ctx, -2);
@@ -140,7 +129,7 @@ extern CControlObject *gpobj;
     }
     duk_pop(ctx);
     
-    // Get VSCP type
+    // get VSCP type
     pex->vscp_type  = 0;
     duk_push_string(ctx, "type");
     duk_get_prop(ctx, -2);
@@ -157,38 +146,38 @@ extern CControlObject *gpobj;
         const char *pGUID  = duk_get_string_default( ctx, 
                                 -1, 
                                 "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" );
-        vscp_getGuidFromStringEx( pex, pGUID );
+        vscp_setEventExGuidFromString( pex, pGUID );
     }
     duk_pop(ctx);
     
     
-    // Get time(block)
-    wxDateTime dt;
+    // get time(block)
+    vscpdatetime dt;
     vscp_setEventExDateTimeBlockToNow( pex );
     duk_push_string(ctx, "time");
     duk_get_prop(ctx, -2); 
     if ( duk_is_string( ctx, -1 ) ) {
         const char *pTime  = duk_get_string_default( ctx, -1, "" );
-        if ( dt.ParseISOCombined( pTime ) ) {
-            pex->year = dt.GetYear();
-            pex->month = dt.GetMonth() + 1;
-            pex->day = dt.GetDay();
-            pex->hour = dt.GetHour();
-            pex->minute = dt.GetMinute();
-            pex->second = dt.GetSecond();
+        if ( dt.set( pTime ) ) {
+            pex->year = dt.getYear();
+            pex->month = dt.getMonth() + 1;
+            pex->day = dt.getDay();
+            pex->hour = dt.getHour();
+            pex->minute = dt.getMinute();
+            pex->second = dt.getSecond();
         }
         else {
-            pex->year = wxDateTime::UNow().GetYear();
-            pex->month = wxDateTime::UNow().GetMonth() + 1;
-            pex->day = wxDateTime::UNow().GetDay();
-            pex->hour = wxDateTime::UNow().GetHour();
-            pex->minute = wxDateTime::UNow().GetMinute();
-            pex->second = wxDateTime::UNow().GetSecond();
+            pex->year = vscpdatetime::setUTCNow().getYear();
+            pex->month = vscpdatetime::setUTCNow().getMonth() + 1;
+            pex->day = vscpdatetime::setUTCNow().getDay();
+            pex->hour = vscpdatetime::setUTCNow().getHour();
+            pex->minute = vscpdatetime::setUTCNow().getMinute();
+            pex->second = vscpdatetime::setUTCNow().getSecond();
         }
     }
     duk_pop(ctx);
     
-    // Get data
+    // get data
     pex->sizeData = 0;
     memset( pex->data, 0, VSCP_MAX_DATA );
     duk_push_string(ctx, "data");
@@ -311,7 +300,7 @@ duk_ret_t js_vscp_log( duk_context *ctx )
         duk_push_int(ctx, DAEMON_LOGMSG_NORMAL );
     }
     
-    wxString wxDebug = duk_get_string_default(ctx, -3, "---Log fail---");
+    std::string wxDebug = duk_get_string_default(ctx, -3, "---Log fail---");
     uint8_t level = duk_get_int_default(ctx, -2, DAEMON_LOGMSG_NORMAL );
     uint8_t type = duk_get_int_default(ctx, -1, DAEMON_LOGTYPE_DM );
       
@@ -370,11 +359,11 @@ duk_ret_t js_vscp_sleep( duk_context *ctx )
  duk_ret_t js_vscp_readVariable( duk_context *ctx ) 
 {
     CVSCPVariable variable;
-    wxString strResult;
+    std::string strResult;
     
-    // Get the variable name
-    wxString varName = duk_get_string_default(ctx, -1, "");
-    if ( 0 == varName.Length() ) {
+    // get the variable name
+    std::string varName = duk_get_string_default(ctx, -1, "");
+    if ( 0 == varName.length() ) {
         duk_pop_n(ctx, 1);  // Clear stack
         duk_push_null(ctx); // Return failure
         return JAVASCRIPT_OK;
@@ -387,14 +376,14 @@ duk_ret_t js_vscp_sleep( duk_context *ctx )
         return JAVASCRIPT_OK;
     }
     
-    // Get the variable on JSON format
-    wxString varJSON;
+    // get the variable on JSON format
+    std::string varJSON;
     variable.getAsJSON( varJSON );
-    duk_push_string(ctx, (const char *)varJSON.mbc_str() );
+    duk_push_string(ctx, (const char *)varJSON.c_str() );
     duk_json_decode(ctx, -1);
     
     duk_get_prop_string(ctx, -1, "name");
-    wxString str = wxString::Format("name=%s", duk_to_string(ctx, -1));
+    std::string str = vscp_string_format("name=%s", duk_to_string(ctx, -1));
     duk_pop_n(ctx, 1); // Clear stack
        
     return JAVASCRIPT_OK;
@@ -409,7 +398,7 @@ duk_ret_t js_vscp_sleep( duk_context *ctx )
 
  duk_ret_t js_vscp_writeVariable( duk_context *ctx ) 
 {    
-    wxString varName;
+    std::string varName;
     CVSCPVariable variable;
     duk_ret_t err;
     
@@ -423,7 +412,7 @@ duk_ret_t js_vscp_sleep( duk_context *ctx )
     duk_get_prop(ctx, -2);
     varName = duk_get_string_default(ctx, -1, "");
     duk_pop_n(ctx, 1);
-    if ( 0 == varName.Length() ) {
+    if ( 0 == varName.length() ) {
         duk_push_boolean(ctx,0);    // return code false
         return JAVASCRIPT_OK;
     }
@@ -432,7 +421,7 @@ duk_ret_t js_vscp_sleep( duk_context *ctx )
     
         // Variable does not exist - should be created
         
-        // Get the type
+        // get the type
         duk_push_string(ctx, "type");
         duk_get_prop(ctx, -2);
         
@@ -444,7 +433,7 @@ duk_ret_t js_vscp_sleep( duk_context *ctx )
                                                 VSCP_DAEMON_VARIABLE_CODE_STRING );
         }
         else if ( duk_is_string(ctx, -1) ) {
-            wxString str = duk_get_string_default(ctx, -1, "string");
+            std::string str = duk_get_string_default(ctx, -1, "string");
             duk_pop_n(ctx, 1);
             type = CVSCPVariable::getVariableTypeFromString( str );
         }
@@ -454,22 +443,22 @@ duk_ret_t js_vscp_sleep( duk_context *ctx )
         }        
         duk_pop_n(ctx, 1);
         
-        // Get the value
-        wxString strValue;
+        // get the value
+        std::string strValue;
         duk_push_string(ctx, "value");
         duk_get_prop(ctx, -2);
     
         // The value can be number, boolean, string
         if ( duk_is_number(ctx, -1) ) {
             double val = duk_get_number_default(ctx, -1, 0.0 );
-            strValue = wxString::Format( "%lf", val );
+            strValue = vscp_string_format( "%lf", val );
         }
         else if ( duk_is_string(ctx, -1) ) {
             strValue = duk_get_string_default(ctx, -1, "" );
         }
         else if ( duk_is_boolean(ctx, -1) ) {
             bool bval = duk_get_boolean_default(ctx,-1, false );
-            strValue = wxString::Format(_("%s"), bval ? "true" : "false");
+            strValue = vscp_string_format("%s", bval ? "true" : "false");
         }
         else {
             duk_push_boolean(ctx,0);    // return code false
@@ -477,7 +466,7 @@ duk_ret_t js_vscp_sleep( duk_context *ctx )
         }
         duk_pop_n(ctx, 1);
         
-        // Get user
+        // get user
         uint32_t userid;
         duk_push_string(ctx, "user");
         duk_get_prop(ctx, -2);
@@ -487,7 +476,7 @@ duk_ret_t js_vscp_sleep( duk_context *ctx )
             userid = (uint32_t)duk_get_number_default(ctx, -1, 0.0 );
         }
         else if ( duk_is_string(ctx, -1) ) {
-            wxString strUser( duk_get_string_default(ctx, -1, "" ) );
+            std::string strUser( duk_get_string_default(ctx, -1, "" ) );
             CUserItem *pUser;
             pUser= gpobj->m_userList.getUser( strUser );
             if ( NULL == pUser ) {
@@ -504,7 +493,7 @@ duk_ret_t js_vscp_sleep( duk_context *ctx )
         duk_pop_n(ctx, 1);
         
         
-        // Get rights (if there)
+        // get rights (if there)
         uint32_t accessRights = PERMISSON_OWNER_ALL;
         duk_push_string(ctx, "accessrights");
         duk_get_prop(ctx, -2);
@@ -518,7 +507,7 @@ duk_ret_t js_vscp_sleep( duk_context *ctx )
         duk_pop_n(ctx, 1);
         
         
-        // Get persistence (if there)
+        // get persistence (if there)
         bool bPersistense = false;
         duk_push_string(ctx, "persistence");
         duk_get_prop(ctx, -2);
@@ -529,8 +518,8 @@ duk_ret_t js_vscp_sleep( duk_context *ctx )
         
         duk_pop_n(ctx, 1);     
         
-        // Get note (if there)
-        wxString strNote;
+        // get note (if there)
+        std::string strNote;
         duk_push_string(ctx, "note");
         duk_get_prop(ctx, -2);
         
@@ -559,11 +548,11 @@ duk_ret_t js_vscp_sleep( duk_context *ctx )
         // The value can be number, boolean, string
         if ( duk_is_number(ctx, -1) ) {
             double val = duk_get_number_default(ctx, -1, 0.0 );
-            wxString strval = wxString::Format( "%lf", val );
+            std::string strval = vscp_string_format( "%lf", val );
             variable.setValueFromString( variable.getType(), strval );
         }
         else if ( duk_is_string(ctx, -1) ) {
-            wxString strval( duk_get_string_default(ctx, -1, "" ) );
+            std::string strval( duk_get_string_default(ctx, -1, "" ) );
             variable.setValueFromString( variable.getType(), strval );
         }
         else if ( duk_is_boolean(ctx, -1) ) {
@@ -600,14 +589,14 @@ duk_ret_t js_vscp_sleep( duk_context *ctx )
 
 duk_ret_t js_vscp_deleteVariable( duk_context *ctx ) 
 {
-    wxString varName;
+    std::string varName;
     CVSCPVariable variable;
     bool bResult;
     
-    // Get variable name
+    // get variable name
     varName = duk_get_string_default(ctx, -1, "");
     duk_pop_n(ctx, 1);
-    if ( 0 == varName.Length() ) {
+    if ( 0 == varName.length() ) {
         duk_push_boolean(ctx,0);    // return code false
         return JAVASCRIPT_OK;
     }
@@ -708,24 +697,23 @@ duk_ret_t js_vscp_sendEvent( duk_context *ctx )
 try_again:
     
     // Check the client queue
-    if ( pClientItem->m_bOpen && pClientItem->m_clientInputQueue.GetCount() ) {
+    if ( pClientItem->m_bOpen && pClientItem->m_clientInputQueue.size() ) {
 
-        CLIENTEVENTLIST::compatibility_iterator nodeClient;
         vscpEvent *pEvent;
 
-        pClientItem->m_mutexClientInputQueue.Lock();
-        nodeClient = pClientItem->m_clientInputQueue.GetFirst();
-        if ( NULL == nodeClient )  {
+        pthread_mutex_lock( &pClientItem->m_mutexClientInputQueue );
+        pEvent = pClientItem->m_clientInputQueue.front();
+        pClientItem->m_clientInputQueue.pop_front();
+
+        if ( NULL == pEvent )  {
             
             // Exception
             duk_push_null(ctx);    // return code failure
             return JAVASCRIPT_OK;        
             
         }
-        
-        pEvent = nodeClient->GetData();                             
-        pClientItem->m_clientInputQueue.DeleteNode( nodeClient );
-        pClientItem->m_mutexClientInputQueue.Unlock();
+    
+        pthread_mutex_unlock( &pClientItem->m_mutexClientInputQueue );
 
         if ( NULL != pEvent ) {
 
@@ -733,11 +721,11 @@ try_again:
 
                 // Write it out
                 
-                wxString strResult;
+                std::string strResult;
                 vscp_convertEventToJSON( pEvent, strResult );
                 // Event is not needed anymore
                 vscp_deleteVSCPevent( pEvent );
-                duk_push_string( ctx, (const char *)strResult.mbc_str() );
+                duk_push_string( ctx, (const char *)strResult.c_str() );
                 duk_json_decode( ctx, -1 );
                                 
                 // All OK return event
@@ -792,7 +780,7 @@ try_again:
     duk_pop_n(ctx, 2);
     
     if ( pClientItem->m_bOpen ) {
-        count = pClientItem->m_clientInputQueue.GetCount();
+        count = pClientItem->m_clientInputQueue.size();
     }
     else {
         count = 0;
@@ -965,7 +953,7 @@ try_again:
         return JAVASCRIPT_OK;
     }
     
-    // Get measurement Level
+    // get measurement Level
     duk_push_string(ctx, "level");
     duk_get_prop(ctx, -2);
     if ( duk_is_number( ctx, -1 ) ) {
@@ -974,7 +962,7 @@ try_again:
     }
     duk_pop(ctx);
     
-    // Get measurement string flag
+    // get measurement string flag
     duk_push_string(ctx, "bstring");
     duk_get_prop(ctx, -2);
     if ( duk_is_boolean( ctx, -1 ) ) {
@@ -982,7 +970,7 @@ try_again:
     }
     duk_pop(ctx);
     
-    // Get measurement Value
+    // get measurement Value
     duk_push_string(ctx, "value");
     duk_get_prop(ctx, -2);
     if ( duk_is_number( ctx, -1 ) ) {
@@ -990,7 +978,7 @@ try_again:
     }
     duk_pop(ctx);
     
-    // Get measurement GUID
+    // get measurement GUID
     uint8_t guid[16];
     memset( guid, 0, 16 ); 
     duk_push_string(ctx, "guid");
@@ -1004,7 +992,7 @@ try_again:
     duk_pop(ctx);
 
     
-    // Get measurement VSCP type
+    // get measurement VSCP type
     duk_push_string(ctx, "type");
     duk_get_prop(ctx, -2);
     if ( duk_is_number( ctx, -1 ) ) {
@@ -1013,7 +1001,7 @@ try_again:
     duk_pop(ctx);
     
 
-    // Get measurement VSCP unit
+    // get measurement VSCP unit
     duk_push_string(ctx, "unit");
     duk_get_prop(ctx, -2);
     if ( duk_is_number( ctx, -1 ) ) {
@@ -1021,7 +1009,7 @@ try_again:
     }
     duk_pop(ctx);
     
-    // Get measurement sensorindex
+    // get measurement sensorindex
     duk_push_string(ctx, "sensorindex");
     duk_get_prop(ctx, -2);
     if ( duk_is_number( ctx, -1 ) ) {
@@ -1029,7 +1017,7 @@ try_again:
     }
     duk_pop(ctx);
     
-    // Get measurement zone
+    // get measurement zone
     duk_push_string(ctx, "zone");
     duk_get_prop(ctx, -2);
     if ( duk_is_number( ctx, -1 ) ) {
@@ -1037,7 +1025,7 @@ try_again:
     }
     duk_pop(ctx);
     
-    // Get measurement subzone
+    // get measurement subzone
     duk_push_string(ctx, "subzone");
     duk_get_prop(ctx, -2);
     if ( duk_is_number( ctx, -1 ) ) {
@@ -1415,7 +1403,7 @@ duk_ret_t js_tcpip_connect_ssl(duk_context *ctx)
 ///////////////////////////////////////////////////////////////////////////////
 // js_tcpip_connect_info
 //
-// Get connection info
+// get connection info
 //      remote address
 //      remote port
 //      server address
@@ -1486,7 +1474,7 @@ duk_ret_t js_tcpip_download(duk_context *ctx)
 ///////////////////////////////////////////////////////////////////////////////
 // js_get_httpd_version
 //
-// Get version for httpd code
+// get version for httpd code
 //
 
 duk_ret_t js_get_httpd_version(duk_context *ctx)

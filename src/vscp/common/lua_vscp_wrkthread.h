@@ -30,30 +30,19 @@
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// actionThread_Lua
+// actionLuaObj
 //
 
-class actionThread_Lua : public wxThread {
+class actionLuaObj  {
     
 public:
 
     /// Constructor
-    actionThread_Lua( wxString& strScript,
-                                wxThreadKind kind = wxTHREAD_DETACHED );
+    actionLuaObj( std::string& strScript );
 
     /// Destructor
-    virtual ~actionThread_Lua();
+    virtual ~actionLuaObj();
 
-    /*!
-        Thread code entry point
-     */
-    virtual void *Entry();
-
-    /*! 
-        called when the thread exits - whether it terminates normally or is
-        stopped with Delete() (but not when it is Kill()ed!)
-     */
-    virtual void OnExit();
 
     /*!
         Termination control
@@ -63,16 +52,16 @@ public:
     /*!
      * Script
      */
-    wxString m_wxstrScript;
+    std::string m_strScript;
     
     /// Lua executing id
     uint64_t m_id;
     
     /// Time when script was started
-    wxDateTime m_start;
+    vscpdatetime m_start;
     
     /// Time when script was stopped
-    wxDateTime m_stop;
+    vscpdatetime m_stop;
     
     /// Client item for script
     CClientItem *m_pClientItem;

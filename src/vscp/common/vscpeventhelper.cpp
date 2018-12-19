@@ -1230,7 +1230,7 @@ VSCPHashType *VSCPInformation::getTypeHashPointer(void)
 // getClassDescription
 //
 
-wxString& VSCPInformation::getClassDescription( int vscp_class )
+std::string& VSCPInformation::getClassDescription( int vscp_class )
 {
     return m_hashClass[ vscp_class ];
 }
@@ -1239,7 +1239,7 @@ wxString& VSCPInformation::getClassDescription( int vscp_class )
 // getClassDescription
 //
 
-wxString& VSCPInformation::getTypeDescription( int vscp_class, int vscp_type )
+std::string& VSCPInformation::getTypeDescription( int vscp_class, int vscp_type )
 {
     // Adjust for Level II mirror class of Level I events.
     if ((vscp_class >= 0x200) && (vscp_class < 0x400)) vscp_class -= 512;
@@ -1261,13 +1261,13 @@ wxString& VSCPInformation::getTypeDescription( int vscp_class, int vscp_type )
 void VSCPInformation::fillClassDescriptions( wxArrayString& strArray, 
                                                 VSCPInformationFormat format)
 {
-    wxString str;
+    std::string str;
     int idx;
 
     VSCPHashClass::iterator it;
     for (it = m_hashClass.begin(); it != m_hashClass.end(); ++it) {
         unsigned long key = it->first;
-        wxString value = it->second;
+        std::string value = it->second;
 
         switch (format) {
 
@@ -1310,7 +1310,7 @@ void VSCPInformation::fillClassDescriptions( wxArrayString& strArray,
 void VSCPInformation::fillClassDescriptions( wxControlWithItems *pctrl, 
                                                 VSCPInformationFormat format)
 {
-    wxString str;
+    std::string str;
     int idx;
 
     // Clear the combo
@@ -1319,7 +1319,7 @@ void VSCPInformation::fillClassDescriptions( wxControlWithItems *pctrl,
     VSCPHashClass::iterator it;
     for (it = m_hashClass.begin(); it != m_hashClass.end(); ++it) {
         unsigned long key = it->first;
-        wxString value = it->second;
+        std::string value = it->second;
 
         switch (format) {
 
@@ -1367,12 +1367,12 @@ void VSCPInformation::fillTypeDescriptions( wxArrayString& strArray,
                                                 unsigned int vscp_class,
                                                 VSCPInformationFormat format)
 {
-    wxString str;
+    std::string str;
 
     VSCPHashType::iterator it;
     for (it = m_hashType.begin(); it != m_hashType.end(); ++it) {
         unsigned long key = it->first;
-        wxString value = it->second;
+        std::string value = it->second;
 
         if (vscp_class == (key >> 16)) {
 
@@ -1421,7 +1421,7 @@ void VSCPInformation::fillTypeDescriptions( wxControlWithItems *pctrl,
                                                 unsigned int vscp_class,
                                                 VSCPInformationFormat format)
 {
-    wxString str;
+    std::string str;
     int idx;
 
     // Clear the combo
@@ -1430,7 +1430,7 @@ void VSCPInformation::fillTypeDescriptions( wxControlWithItems *pctrl,
     VSCPHashType::iterator it;
     for (it = m_hashType.begin(); it != m_hashType.end(); ++it) {
         unsigned long key = it->first;
-        wxString value = it->second;
+        std::string value = it->second;
 
         if (vscp_class == (key >> 16)) {
 

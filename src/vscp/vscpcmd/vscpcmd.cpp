@@ -373,7 +373,9 @@ int main(int argc, char **argv)
         }
 
         // Open the interface
-        if ( CANAL_ERROR_SUCCESS == m_vscpif.doCmdOpen(strHost, strUsername, strPassword)) {
+        if ( CANAL_ERROR_SUCCESS == m_vscpif.doCmdOpen( strHost.ToStdString(), 
+                                                            strUsername.ToStdString(), 
+                                                            strPassword.ToStdString() ) ) {
 
             if (bVerbose) {
                 wxString wxstr =

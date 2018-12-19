@@ -25,29 +25,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-
-
-
 #ifdef __GNUG__
     //#pragma implementation
 #endif
-
-// For compilers that support precompilation, includes "wx.h".
-#include "wx/wxprec.h" 
-
-#ifdef __BORLANDC__
-    #pragma hdrstop
-#endif
-
-#ifndef WX_PRECOMP
-#include "wx/wx.h"
-#endif
-
-#ifdef __WXMSW__
-    #include  "wx/ownerdrw.h"
-#endif
-
-#include <wx/tokenzr.h>
 
 #include <algorithm> 
 #include <functional> 
@@ -57,6 +37,10 @@
 #include <string>
 #include <cctype>
 #include <locale>
+
+#include <stdio.h>
+#include <unistd.h>
+#include <string.h>
 
 #include "vscphelper.h"
 #include "guid.h"
@@ -118,10 +102,10 @@ bool cguid::operator!=(const cguid &guid)
 //
  
 
-void cguid::getFromString( const wxString& strGUID )
+/*void cguid::getFromString( const std::string& strGUID )
 {
     unsigned long val;
-    wxString wxstr = strGUID;
+    std::string wxstr = strGUID;
 
     // Check for default string (all nills)
     wxstr.Trim();
@@ -130,30 +114,30 @@ void cguid::getFromString( const wxString& strGUID )
         return;
     }
     
-    wxStringTokenizer tkz( strGUID, wxT ( ":" ) );
+    std::stringTokenizer tkz( strGUID, wxT ( ":" ) );
     for ( int i=0; i<16; i++ ) {
         tkz.GetNextToken().ToULong( &val, 16 );
         m_id[ i ] = ( uint8_t ) val;
         // If no tokens left no meaning to continue
         if ( !tkz.HasMoreTokens() ) break;
     }
-}
+}*/
 
-#ifdef VSCP_NO_WX
+
 void cguid::getFromString( const std::string& strGUID )
 {
     unsigned long val;
     std::string str = strGUID;
 
     // Check for default string (all nills)
-    vscp2_trim( str );
+    vscp_trim( str );
     if ( "-" == str ) {
         clear();
         return;
     }
     
     std::deque<std::string> tokens;
-    vscp2_split( tokens, str, ":" );
+    vscp_split( tokens, str, ":" );
     for ( int i=0; i<16; i++ ) {
         if ( tokens.size() ) {
             std::string tok = tokens.front();
@@ -168,7 +152,7 @@ void cguid::getFromString( const std::string& strGUID )
         }
     }
 }
-#endif
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // getFromString
@@ -177,8 +161,8 @@ void cguid::getFromString( const std::string& strGUID )
 
 void cguid::getFromString( const char *pszGUID )
  {
-    wxString str;
-    str = wxString::FromUTF8( pszGUID );
+    std::string str;
+    str = std::string( pszGUID );
     getFromString( str );
  }
 
@@ -199,7 +183,7 @@ void cguid::getFromArray( const uint8_t *pguid )
 //
 
 
-void cguid::toString( wxString& strGUID  )
+/*void cguid::toString( std::string& strGUID  )
 {
     strGUID.Printf( _( "%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X" ),
                     m_id[0], m_id[1], m_id[2], m_id[3],
@@ -207,8 +191,8 @@ void cguid::toString( wxString& strGUID  )
                     m_id[8], m_id[9], m_id[10], m_id[11],
                     m_id[12], m_id[13], m_id[14], m_id[15] );
 }
+*/
 
-#ifdef VSCP_NO_WX
 void cguid::toString( std::string& strGUID  )
 {
     strGUID = vscp_string_format( "%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X",
@@ -217,7 +201,7 @@ void cguid::toString( std::string& strGUID  )
                     m_id[8], m_id[9], m_id[10], m_id[11],
                     m_id[12], m_id[13], m_id[14], m_id[15] );
 }
-#endif
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // isSameGUID

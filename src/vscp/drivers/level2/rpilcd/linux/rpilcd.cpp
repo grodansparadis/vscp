@@ -563,7 +563,7 @@ CRpiLCD::~CRpiLCD()
 	if ( !m_bQuit ) close();
 
     // Remove local DM
-    std::list<CLocalDM *>::const_iterator iterator5;
+    std::list<CLocalDM*>::const_iterator iterator5;
     for (iterator5 = m_LocalDMList.begin(); iterator5 != m_LocalDMList.end(); ++iterator5) {
         delete *iterator5;
     }
@@ -831,7 +831,7 @@ void *workerThread( void *data )
                             (const char *)VSCP_RPILCD_SYSLOG_DRIVER_ID  );
 #endif
 
-                    std::list<CLocalDM *>::const_iterator it;
+                    std::list<CLocalDM*>::const_iterator it;
                     for ( it = pObj->m_LocalDMList.begin(); 
                             it != pObj->m_LocalDMList.end(); 
                             ++it ) {

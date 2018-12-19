@@ -1,4 +1,4 @@
-// daemon_VSCP.h
+// daemonworker.h
 //
 // This file is part of the VSCP (http://www.vscp.org) 
 //
@@ -26,93 +26,21 @@
 //
 
 
-#if !defined(DAEMONVSCP_H__INCLUDED_)
-#define DAEMONVSCP_H__INCLUDED_
+#if !defined(VSCP_DAEMON_WORKER_H__INCLUDED_)
+#define VSCP_DAEMON_WORKER_H__INCLUDED_
 
-
-#include "wx/thread.h"
-#include "wx/socket.h"
-#include <wx/datetime.h>
-
-#include "guid.h"
-
+#include <deque>
+#include "discovery.h"
 
 class CControlObject;
 class CClientItem;
-class CVSCPNode;
-
-// This thread is used for node discovery
-
-
-class discoveryVSCPThread : public wxThread
-{
-
-public:
-
-    /// Constructor
-    discoveryVSCPThread();
-
-    /// Destructor
-    ~discoveryVSCPThread();
-
-    /*!
-        Thread code entry point
-    */
-    virtual void *Entry();
-
-    /*! 
-        called when the thread exits - whether it terminates normally or is
-        stopped with Delete() (but not when it is Kill()ed!)
-    */
-    virtual void OnExit();
-
-    /*!
-        Send event to client with specific id
-    */
-    bool sendEvent( vscpEvent *pEvent, uint32_t obid );
-
-    /*!
-        Read a level I register
-    */
-    bool readLevel1Register( uint8_t nodeid, 
-                                uint8_t reg, 
-                                uint8_t *pcontent,
-                                uint32_t clientID,
-                                uint32_t timeout = 1000 );
-
-    /*!
-        Termination control
-    */
-    bool m_bQuit;
-
-    // Node id for the node to investigate
-    uint8_t m_nodeid;
-
-    // Client id for interface the node is located at
-    uint32_t m_clientID;
-
-    // Clientitem for this thread
-    CClientItem *m_pClientItem;
-
-    // Pointer to the control object
-    CControlObject *m_pCtrlObject;
-};
-
-// This structure holds information about nodes that need to have
-// information collected from them.
-
-struct discoveredNodeInfo {
-    int bStatus;                    // 0 = working, -1=failed, 777=success.
-    discoveryVSCPThread *pThread;   // Discover thread
-    uint8_t nodeid;                 // nodeid for the node to investigate
-    uint32_t clientId;              // Clientid for node to investigate
-    cguid guid;                     // GUID for node.
-    wxString mdfPath;               // MDF path for node.
-};
-
-WX_DECLARE_LIST ( discoveredNodeInfo, DISCOVERYLIST );
+class cvscpnode;
+class cguid;
+class vscpdatetime;
 
 
+// The actual worker thread
+void *daemonWorkerThread( void *pData );
 
 /*!
     This class implement a one of thread that look
@@ -120,29 +48,17 @@ WX_DECLARE_LIST ( discoveredNodeInfo, DISCOVERYLIST );
 
 */
 
-class daemonVSCPThread : public wxThread
+class daemonWorkerObj
 {
 
 public:
     
     /// Constructor
-    daemonVSCPThread();
+    daemonWorkerObj( CControlObject *pObj );
 
     /// Destructor
-    ~daemonVSCPThread();
+    ~daemonWorkerObj();
 
-    /*!
-        Thread code entry point
-    */
-    virtual void *Entry();
-
-
-    /*! 
-        called when the thread exits - whether it terminates normally or is
-        stopped with Delete() (but not when it is Kill()ed!)
-    */
-    virtual void OnExit();
-    
     /*!
      *  Parse the interface string and fetch address and port.
      * 
@@ -155,17 +71,11 @@ public:
      * 
      */
     
-    bool parseInterface( const wxString &ifaddr, 
-                            wxString &ip, 
+    bool parseInterface( const std::string &ifaddr, 
+                            std::string &ip, 
                             unsigned short *pPort );
 
-    /*!
-        Add a known node if it is not already known
-        @param pEvent Event that initiated the add
-        @return Pointer to new or old information object or NULL if failure.
-    */
-    CVSCPNode *addNodeIfNotKnown( vscpEvent *pEvent );
-
+    
     /*!
         Send multicast event
         @param sock Multicast socket to send on
@@ -189,7 +99,10 @@ public:
         @return true on success, false on failure
     */
     bool sendMulticastInformationProxyEvent( int sock, 
-                                                CVSCPNode *pNode );
+                                                cvscpnode *pNode );
+
+    // This object must be allocated externally
+    CDiscoveryObj *m_pDiscoveryObj;
 
     /*!
         Termination control
@@ -199,11 +112,9 @@ public:
     CControlObject *m_pCtrlObject;
 
     // This list contains items (nodes) that are under discovery
-    DISCOVERYLIST m_discoverList;
+    std::deque<discoveredNodeInfo *> m_discoverList;
 
 };
-
-
 
 
 #endif

@@ -29,28 +29,14 @@
     //#pragma implementation
 #endif
 
-// For compilers that support precompilation, includes "wx.h".
-#include "wx/wxprec.h"
+#include <string>
+#include <deque>
 
-#ifdef __BORLANDC__
-    #pragma hdrstop
-#endif
-
-#ifndef WX_PRECOMP
-#include "wx/wx.h"
-#endif
-
-
-#include "wx/defs.h"
-#include "wx/app.h"
-#include <wx/wfstream.h>
-#include <wx/xml/xml.h>
-#include <wx/tokenzr.h>
-#include <wx/listimpl.cpp>
-
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
 #include "interfacelist.h"
 
-WX_DEFINE_LIST(TCPClientList);
 
 ///////////////////////////////////////////////////////////////////////////////
 // Constructor
@@ -58,9 +44,8 @@ WX_DEFINE_LIST(TCPClientList);
 
 CInterfaceItem::CInterfaceItem( void )
 {
-    m_ipaddress.Hostname(_("127.0.0.1"));
-    m_macaddress = _("");
-    memset( m_GUID, 0, sizeof( m_GUID ) );
+    m_ipaddress = "127.0.0.1";
+    m_macaddress = "";
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -84,7 +69,7 @@ CInterfaceItem::~CInterfaceItem( void )
 
 CInterfaceList::CInterfaceList( void )
 {
-  m_tcpclientlist.DeleteContents ( true );
+  m_tcpclientlist.clear();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -99,26 +84,40 @@ CInterfaceList::~CInterfaceList( void )
 ///////////////////////////////////////////////////////////////////////////////
 // addInterface
 //
-bool CInterfaceList::addInterface( wxString ip, wxString mac, wxString guid )
+bool CInterfaceList::addInterface( const std::string& ip, const std::string& mac, const std::string& guid )
 {
     unsigned long var;
 
     CInterfaceItem *pItem = new CInterfaceItem;
     if ( NULL == pItem ) return false;
 
-    pItem->m_ipaddress.Hostname( ip );
+    pItem->m_ipaddress = ip ;
     pItem->m_macaddress = mac;
-    
-    wxStringTokenizer tkz( guid , wxT(":") );
-    for ( int i=0; i<16; i++ ) {
-        tkz.GetNextToken().ToULong( &var, 16 );
-        pItem->m_GUID[ i ] = (uint8_t)var;
-        // If no tokens left no use to continue
-        if ( !tkz.HasMoreTokens() ) break;
-    }
+    pItem->m_guid.getFromString( guid );
 
     // Add the user
-    m_tcpclientlist.Append( pItem );
+    m_tcpclientlist.push_back( pItem );
+    
+    return true;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// addInterface
+//
+bool CInterfaceList::addInterface( const std::string& ip, const std::string& mac, const cguid& guid )
+{
+    unsigned long var;
+
+    CInterfaceItem *pItem = new CInterfaceItem;
+    if ( NULL == pItem ) return false;
+
+    pItem->m_ipaddress = ip ;
+    pItem->m_macaddress = mac;
+    pItem->m_guid = guid;
+
+    // Add the user
+    m_tcpclientlist.push_back( pItem );
     
     return true;
 }

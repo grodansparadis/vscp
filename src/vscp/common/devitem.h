@@ -25,20 +25,14 @@
 // SOFTWARE.
 //
 
-#if !defined(AFX_DEVICELIST_H__0ED35EA7_E9E1_41CD_8A98_5EB3369B3194__INCLUDED_)
-#define AFX_DEVICELIST_H__0ED35EA7_E9E1_41CD_8A98_5EB3369B3194__INCLUDED_
+#if !defined(_DEVICELIST_H__0ED35EA7_E9E1_41CD_8A98_5EB3369B3194__INCLUDED_)
+#define _DEVICELIST_H__0ED35EA7_E9E1_41CD_8A98_5EB3369B3194__INCLUDED_
 
 #ifdef WIN32
 #if _MSC_VER > 1000
 #pragma once
 #endif // _MSC_VER > 1000
 #endif
-
-
-#include "wx/wxprec.h"
-#include "wx/wx.h"
-#include "wx/defs.h"
-#include "wx/app.h"
 
 #include "vscp.h"
 
@@ -51,16 +45,16 @@
 typedef struct _devItem {
     int id;
     int regid;
-    wxString strName;
-    wxString strPath;
-    wxString strParameters; 
-    wxString strPrefix;
-    uint32_t flags;
-    uint32_t filter;
-    uint32_t mask;
-    wxString strUsername;
-    wxString strPassword;
-    short port;
+    std::string strName;        // Name of device
+    std::string strPath;        // Path to device
+    std::string strParameters;  // Configuration parameters for device
+    std::string strPrefix;      // Level II/III driver prefix for device flags
+    uint32_t flags;             // Bit flags for device 
+    uint32_t filter;            // Incoming filter for device driver
+    uint32_t mask;              // Incoming mask for device driver
+    std::string strUsername;    // Level II/III username for device driver
+    std::string strPassword;    // Level II/III password for device driver
+    short port;                 // Level II/III port for device driver
 } devItem;
 
 typedef  devItem  *PDEVITEM;

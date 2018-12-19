@@ -29,6 +29,7 @@
 #define VSCPTABLE_H__7D80016B_5EFD_40D5_94E3_6FD9C324CC7B__INCLUDED_
 
 #include <sqlite3.h>
+#include <vscpdatetime.h>
 #include <clientlist.h>
 
 // Table types
@@ -40,8 +41,8 @@ enum vscpTableType {
 
 // Holds a table item
 struct vscpTableItem {
-    wxDateTime date;    // YYYY-MM-DDTHH:MM:SS.sss
-    double value;       // Measurement value
+    vscpdatetime date;          // YYYY-MM-DDTHH:MM:SS.sss
+    double value;               // Measurement value
 };
 
 // Class that holds one VSCP table
@@ -65,8 +66,8 @@ public:
      *                  table.
      */
     
-    CVSCPTable( const wxString &folder,    
-                    const wxString &name, 
+    CVSCPTable( const std::string &folder,    
+                    const std::string &name, 
                     const bool bEnable = true,
                     const bool bInMemory = false, 
                     const vscpTableType type = VSCP_TABLE_DYNAMIC, 
@@ -95,16 +96,16 @@ public:
      *  @return true on success, false otherwise
      */
     
-    bool setTableInfo( const wxString &owner,
+    bool setTableInfo( const std::string &owner,
                             const uint16_t rights,
-                            const wxString &title,
-                            const wxString &xname,
-                            const wxString &yname,
-                            const wxString &note,
-                            const wxString &sqlcreate,
-                            const wxString &sqlinsert,
-                            const wxString &sqldelete,
-                            const wxString &description );
+                            const std::string &title,
+                            const std::string &xname,
+                            const std::string &yname,
+                            const std::string &note,
+                            const std::string &sqlcreate,
+                            const std::string &sqlinsert,
+                            const std::string &sqldelete,
+                            const std::string &description );
     
     /*!
      * Set event info for this table
@@ -168,12 +169,12 @@ public:
     /*!
      * Log data
      * 
-     * @param Date/time double that represent the date from the so-called Julian Day Number
+     * @param Date/time long that represent the date from the so-called Julian Day Number
      * @param value Double that represent the value for the measurement.
      * @return true on success, false if failure.
      */
     
-    bool logData( double jdn, double value, int ms = 0 );
+    bool logData( const double jdn, double value, int ms = 0 );
     
     /*!
      * Log data
@@ -193,7 +194,7 @@ public:
      * @return true on success, false if failure.
      */
     
-    bool logData( wxString &strtime, double value );
+    bool logData( std::string &strtime, double value );
     
     /*!
      * Log data
@@ -203,7 +204,7 @@ public:
      * @return true on success, false if failure.
      */
     
-    bool logData( wxDateTime &dt, double value );
+    bool logData( vscpdatetime &dt, double value );
     
     /*!
      * Log data
@@ -216,7 +217,7 @@ public:
      * @return true on success, false if failure.
      */
     
-    bool logData( wxDateTime &dt, double value, const wxString &sqlInsert );
+    bool logData( vscpdatetime &dt, double value, const std::string &sqlInsert );
     
     
     /*!
@@ -228,7 +229,7 @@ public:
      * @return true on success, false if failure.
      */
     
-    bool logData( const wxString strInsert );
+    bool logData( const std::string strInsert );
     
     
     
@@ -243,12 +244,12 @@ public:
     /*!
         Clear a date range of records in a table
       
-       @param wxStart Start of range to delete.
-       @param wxStart End of range to delete.
+       @param start Start of range to delete.
+       @param end End of range to delete.
        @return true om success, false on failure.
      */
-    bool clearTableRange( wxDateTime& wxStart,
-                            wxDateTime& wxEnd );    
+    bool clearTableRange( vscpdatetime& start,
+                            vscpdatetime& end );    
 
     /*!
      * Execute SQL expression
@@ -257,13 +258,13 @@ public:
      * @return True on success, false on failure.
      */
     
-    bool executeSQL( wxString &sql );
+    bool executeSQL( std::string &sql );
     
     /*!
      * Prepare to get a range of rows with data (columns)
      * 
-     * @param wxStart Datetime from which data should be searched.
-     * @param wxEnd Datetime to which data should be searched.
+     * @param start Datetime from which data should be searched.
+     * @param end Datetime to which data should be searched.
      * @param ppStmt Handle to range.
      * @param bAll If true all columns will be returned. If false (default)
      *              only value and datetime will be returned.
@@ -271,8 +272,8 @@ public:
      * 
      */
     
-    bool prepareRangeOfData( wxDateTime& wxStart,
-                                wxDateTime& wxEnd,
+    bool prepareRangeOfData( vscpdatetime& start,
+                                vscpdatetime& end,
                                 sqlite3_stmt **ppStmt, 
                                 bool bAll = false );
     
@@ -295,7 +296,7 @@ public:
      * @return True on success, false on failure.
      */
     
-    bool prepareRangeOfData( wxString& sql, sqlite3_stmt **ppStmt );
+    bool prepareRangeOfData( std::string& sql, sqlite3_stmt **ppStmt );
     
     /*!
      * Get row of data as a comma separated string. datetime,value will alway be 
@@ -306,7 +307,7 @@ public:
      * @return True on success, false on failure.
      * 
      */
-    bool getRowRangeOfData( sqlite3_stmt *ppStmt, wxString& rowData );
+    bool getRowRangeOfData( sqlite3_stmt *ppStmt, std::string& rowData );
     
     /*!
      * Get row of data in a table item.
@@ -327,7 +328,7 @@ public:
      * @return True on success, false on failure.
      * 
      */
-    bool getRowRangeOfDataRaw( sqlite3_stmt *ppStmt, wxString& rowData );
+    bool getRowRangeOfDataRaw( sqlite3_stmt *ppStmt, std::string& rowData );
     
     /*!
      * Finalise the range of data set.
@@ -340,15 +341,15 @@ public:
     /*!
      * Get data for a range as a string array
      * 
-     * @param wxStart Datetime from which data should be searched.
-     * @param wxEnd Datetime to which data should be searched.
+     * @param start Datetime from which data should be searched.
+     * @param end Datetime to which data should be searched.
      * @param strArray String array that will hold resulting data.
      * @return True on success, false on failure.
      * 
      */
-    bool getRangeInArray( wxDateTime& wxStart, 
-                            wxDateTime& wxEnd,
-                            wxArrayString& strArray,
+    bool getRangeInArray( vscpdatetime& start, 
+                            vscpdatetime& end,
+                            std::deque<std::string>& strArray,
                             bool bAll = false );
 
         
@@ -359,7 +360,7 @@ public:
      * @return true on success false on failure.
      */
     
-    bool getFirstDate( wxDateTime& dt );
+    bool getFirstDate( vscpdatetime& dt );
     
     /*!
      * Get the last date/time in table
@@ -368,7 +369,7 @@ public:
      * @return true on success false on failure.
     */
     
-    bool getLastDate( wxDateTime& dt  );
+    bool getLastDate( vscpdatetime& dt  );
     
     
     /*!
@@ -393,140 +394,140 @@ public:
      * @param pValue Pointer to double that will receive result.
      * @return true on success, false on failure.
      */
-    bool getSQLValue( const wxString& sqltemplate, 
-                        const wxDateTime& wxStart, 
-                        const wxDateTime& wxEnd, 
+    bool getSQLValue( const std::string& sqltemplate, 
+                        vscpdatetime& start, 
+                        vscpdatetime& end, 
                         double *pValue  );
     
     /*! 
         Get number of records for a range of data
-        @param wxStart Datetime from which data should be searched.
-        @param wxEnd Datetime to which data should be searched.
+        @param start Datetime from which data should be searched.
+        @param end Datetime to which data should be searched.
         @param pCount Pointer to double that will get count.
         @return true on success, false on failure.
     */
     
-    bool getNumberOfRecordsForRange( wxDateTime& wxStart, 
-                                        wxDateTime& wxEnd, 
+    bool getNumberOfRecordsForRange( vscpdatetime& start, 
+                                        vscpdatetime& end, 
                                         double *pCount );
     
     /*!
      * Get sum value  from a range of values
      * 
-     * @param wxStart Datetime from which data should be searched.
-     * @param wxEnd Datetime to which data should be searched.
+     * @param start Datetime from which data should be searched.
+     * @param end Datetime to which data should be searched.
      * @param pSum Pointer to double that will receive the sum value for 
      *          the range.
      * @return true on success, false on failure.   
      */
     
-    bool getSumValue( wxDateTime wxStart, wxDateTime wxEnd, double *pSum  );
+    bool getSumValue( vscpdatetime start, vscpdatetime end, double *pSum  );
     
     /*!
      * Get min value from a range of values
      * 
-     * @param wxStart Datetime from which data should be searched.
-     * @param wxEnd Datetime to which data should be searched.
+     * @param start Datetime from which data should be searched.
+     * @param end Datetime to which data should be searched.
      * @param pMedian Pointer to double that will receive the min value for 
      *          the range.
      * @return true on success, false on failure.   
      */
     
-    bool getMinValue( wxDateTime wxStart, wxDateTime wxEnd, double *pMin  );
+    bool getMinValue( vscpdatetime start, vscpdatetime end, double *pMin  );
     
 
     /*!
      * Get max value from a range of values
      * 
-     * @param wxStart Datetime from which data should be searched.
-     * @param wxEnd Datetime to which data should be searched.
+     * @param start Datetime from which data should be searched.
+     * @param end Datetime to which data should be searched.
      * @param pMedian Pointer to double that will receive the max value for 
      *          the range.
      * @return true on success, false on failure.
      */
         
-    bool getMaxValue( wxDateTime wxStart, wxDateTime wxEnd, double *pMax );
+    bool getMaxValue( vscpdatetime start, vscpdatetime end, double *pMax );
     
     
     /*!
      * Calculate mean over a range of values
      * 
-     * @param wxStart Datetime from which data should be searched.
-     * @param wxEnd Datetime to which data should be searched.
+     * @param start Datetime from which data should be searched.
+     * @param end Datetime to which data should be searched.
      * @param pMedian Pointer to double that will receive the avarage for the range.
      * @return true on success, false on failure.   
      */
 
-    bool getAverageValue(wxDateTime wxStart, wxDateTime wxEnd, double *pAvarage);
+    bool getAverageValue(vscpdatetime start, vscpdatetime end, double *pAvarage);
 
     
     /*!
      * Get median value from a range of values
      * 
-     * @param wxStart Datetime from which data should be searched.
-     * @param wxEnd Datetime to which data should be searched.
+     * @param start Datetime from which data should be searched.
+     * @param end Datetime to which data should be searched.
      * @param pMedian Pointer to double that will receive the median for the range.
      * @return true on success, false on failure.   
      */
 
-    bool getMedianValue( wxDateTime wxStart, wxDateTime wxEnd, double *pMedian );
+    bool getMedianValue( vscpdatetime start, vscpdatetime end, double *pMedian );
     
     
     /*!
      * Get standard deviation value from a range of values
      * 
-     * @param wxStart Datetime from which data should be searched.
-     * @param wxEnd Datetime to which data should be searched.
+     * @param start Datetime from which data should be searched.
+     * @param end Datetime to which data should be searched.
      * @param pStdev Pointer to double that will receive the standard deviation for the range.
      * @return true on success, false on failure.   
      */
 
-    bool getStdevValue( wxDateTime wxStart, wxDateTime wxEnd, double *pStdev );
+    bool getStdevValue( vscpdatetime start, vscpdatetime end, double *pStdev );
         
     
     /*!
      * Get variance value from a range of values
      * 
-     * @param wxStart Datetime from which data should be searched.
-     * @param wxEnd Datetime to which data should be searched.
+     * @param start Datetime from which data should be searched.
+     * @param end Datetime to which data should be searched.
      * @param pVariance Pointer to double that will receive the variance for the range.
      * @return true on success, false on failure.   
      */
 
-    bool getVarianceValue( wxDateTime wxStart, wxDateTime wxEnd, double *pVariance );
+    bool getVarianceValue( vscpdatetime start, vscpdatetime end, double *pVariance );
     
     /*!
      * Get mode value from a range of values
      * 
-     * @param wxStart Datetime from which data should be searched.
-     * @param wxEnd Datetime to which data should be searched.
+     * @param start Datetime from which data should be searched.
+     * @param end Datetime to which data should be searched.
      * @param pMode Pointer to double that will receive the mode for the range.
      * @return true on success, false on failure.   
      */
 
-    bool getModeValue( wxDateTime wxStart, wxDateTime wxEnd, double *pMode );
+    bool getModeValue( vscpdatetime start, vscpdatetime end, double *pMode );
     
     /*!
      * Get lower quartile value from a range of values
      * 
-     * @param wxStart Datetime from which data should be searched.
-     * @param wxEnd Datetime to which data should be searched.
+     * @param start Datetime from which data should be searched.
+     * @param end Datetime to which data should be searched.
      * @param pLowerQuartile Pointer to double that will receive the mode for the range.
      * @return true on success, false on failure.   
      */
 
-    bool getLowerQuartileValue( wxDateTime wxStart, wxDateTime wxEnd, double *pLowerQuartile );
+    bool getLowerQuartileValue( vscpdatetime start, vscpdatetime end, double *pLowerQuartile );
     
     /*!
      * Get upper quartile value from a range of values
      * 
-     * @param wxStart Datetime from which data should be searched.
-     * @param wxEnd Datetime to which data should be searched.
+     * @param start Datetime from which data should be searched.
+     * @param end Datetime to which data should be searched.
      * @param pUpperQuartile Pointer to double that will receive the mode for the range.
      * @return true on success, false on failure.   
      */
 
-    bool getUppeQuartileValue( wxDateTime wxStart, wxDateTime wxEnd, double *pUpperQuartile );
+    bool getUppeQuartileValue( vscpdatetime start, vscpdatetime end, double *pUpperQuartile );
     
         
     /*!
@@ -536,18 +537,18 @@ public:
      *  @return true on success, false on failure.
      */
     
-    bool setPathToDB( const wxString &dbpath ) 
-            { m_dbFile.Assign( dbpath ); return m_dbFile.IsOk(); };
+    bool setPathToDB( const std::string &dbpath ) 
+            { m_dbFile = dbpath; return vscp_fileExists( dbpath ); };
     
     // Get path to database
-    wxString getPathToDB( void ) { return m_dbFile.GetFullPath(); };
+    std::string getPathToDB( void ) { return m_dbFile; };
     
     bool isEnabled( void ) { return m_bEnable; };
     
     bool isInMemory( void ) { return m_bInMemory; };
     
     // Get the table name
-    wxString& getTableName( void ) { return m_tableName; };
+    std::string& getTableName( void ) { return m_tableName; };
     
     CUserItem *getUserItem( void ) { return m_pUserItemOwner; };
     
@@ -570,24 +571,24 @@ public:
     
     uint32_t getSize( void ) { return m_size; };
     
-    wxString& getLabelX( void ) { return m_labelX; };
+    std::string& getLabelX( void ) { return m_labelX; };
     
-    wxString& getLabelY( void ) { return m_labelY; };
+    std::string& getLabelY( void ) { return m_labelY; };
     
-    wxString& getTitle( void ) { return m_labelTitle; };
+    std::string& getTitle( void ) { return m_labelTitle; };
     
-    wxString& getNote( void ) { return m_labelNote; };
+    std::string& getNote( void ) { return m_labelNote; };
     
-    wxString& getDescription( void ) { return m_tableDescription; };
+    std::string& getDescription( void ) { return m_tableDescription; };
     
     // Get SQL create expression
-    wxString& getSQLCreate( void ) { return m_sqlCreate; };
+    std::string& getSQLCreate( void ) { return m_sqlCreate; };
     
     // Get SQL insert expression
-    wxString& getSQLInsert( void ) { return m_sqlInsert; };
+    std::string& getSQLInsert( void ) { return m_sqlInsert; };
     
     // Get SQL delete expression
-    wxString& getSQLDelete( void ) { return m_sqlDelete; };
+    std::string& getSQLDelete( void ) { return m_sqlDelete; };
     
     
     uint16_t getVSCPClass( void ) { return m_vscp_class; };
@@ -605,10 +606,10 @@ public:
 public:
     
     /// Protector for this table
-    wxMutex m_mutexThisTable;
+    pthread_mutex_t m_mutexThisTable;
     
     /// List with table columns
-    wxArrayString m_listColumns;
+    std::deque<std::string> m_listColumns;
 
 private:
     
@@ -616,16 +617,16 @@ private:
     bool m_bEnable;
 
     /// Path to database file
-    wxFileName m_dbFile;
+    std::string m_dbFile;
     
     /// Database
     sqlite3 *m_dbTable;
     
     /// Root folder for tables
-    wxString m_folder;
+    std::string m_folder;
     
     // Name for table.
-    wxString m_tableName;
+    std::string m_tableName;
     
     // Flag for in memory database
     bool m_bInMemory;
@@ -638,35 +639,35 @@ private:
     
     
     // Table description
-    wxString m_tableDescription;
+    std::string m_tableDescription;
     
     // Diagram title
-    wxString m_labelTitle;
+    std::string m_labelTitle;
     
     // Diagram note
-    wxString m_labelNote;
+    std::string m_labelNote;
 
     // Label for X-axis
-    wxString m_labelX;
+    std::string m_labelX;
     
     // Label for y-axis
-    wxString m_labelY;
+    std::string m_labelY;
     
     
     
     // SQL to create table.
-    wxString m_sqlCreate;
+    std::string m_sqlCreate;
     
     // SQL to insert value.
-    wxString m_sqlInsert;
+    std::string m_sqlInsert;
     
     /// True if '%f' is places before '%s' in insert string
     bool m_bValueFirst;
     
     // SQL to delete table.
-    wxString m_sqlDelete;
+    std::string m_sqlDelete;
     
-    wxString m_strOwner;    // owner item is not available when config is read
+    std::string m_strOwner;    // owner item is not available when config is read
                             // so it is looked up from name
     
     // Owner
@@ -697,8 +698,6 @@ private:
 
 };
 
-
-WX_DECLARE_LIST( CVSCPTable, listVSCPTables );
 
 
 /******************************************************************************/
@@ -756,7 +755,7 @@ public:
      *      zone = "0"
      *      subzone = "0"
      */
-    bool createTableFromString( const wxString &strCreate );
+    bool createTableFromString( const std::string &strCreate );
     
     /*!
      * Create one or more tables from a XML expression
@@ -790,7 +789,7 @@ public:
      * />
      * </tables>
      */
-    bool createTableFromXML( const wxString &strCreateXML );
+    bool createTableFromXML( const std::string &strCreateXML );
     
     /*!
      * Get user table from name
@@ -799,7 +798,7 @@ public:
      * @return Pointer to table on success, NULL on failure. 
      * 
      */
-    CVSCPTable *getTable( wxString &name );
+    CVSCPTable *getTable( std::string &name );
     
     /*!
      * Check if a name is used.
@@ -809,7 +808,7 @@ public:
      * 
      */
         
-    bool isNameUsed( wxString &name );
+    bool isNameUsed( std::string &name );
     
     /*!
      * Remove one table item from the internal structure
@@ -818,7 +817,7 @@ public:
      * @param bRemoveFile If true the database file is deleted
      * @return True on success, false on failure.
      */
-    bool removeTable( wxString &name, bool bRemoveFile = true );
+    bool removeTable( std::string &name, bool bRemoveFile = true );
     
     /*!
      * Remove all items in the table
@@ -850,7 +849,7 @@ public:
      * @return True on success, false on failure.
      * 
      */                
-    bool isTableInDB( wxString& name );                   
+    bool isTableInDB( std::string& name );                   
     
     /*!
      * Add a new table to the table database-
@@ -878,7 +877,7 @@ public:
      * 
      */
     
-    bool removeTableFromDB( wxString& name );
+    bool removeTableFromDB( std::string& name );
     
     /*!
      * Load tables definitions from database into
@@ -893,14 +892,16 @@ public:
      * @param Reference to string array
      * @return True on success, false on failure.
      */
-     bool getTableNames( wxArrayString& arrayNames );
+     bool getTableNames( std::deque<std::string>& arrayNames );
   
+    // Pointer to main object
+    CControlObject *m_pobj;
     
     /// Table list
-    listVSCPTables m_listTables;
+    std::deque<CVSCPTable *> m_listTables; 
     
     /// Mutex for table list
-    wxMutex m_mutexTableList;
+    pthread_mutex_t m_mutexTableList;
 };
 
 

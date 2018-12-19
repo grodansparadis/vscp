@@ -158,28 +158,25 @@ void ctrlObj::startWorkerThreads( wxWindow *pWnd, unsigned long id )
         /////////////////////////////////////////////////////////////////////////////
         // Load device handler
         /////////////////////////////////////////////////////////////////////////////
-    m_pDeviceWorkerThread = new deviceThread;
-
-        if ( NULL != m_pDeviceWorkerThread )
-        {
-        m_CtrlObject.m_pVSCPSessionWnd  = (frmVSCPSession *)pFrm;
-        m_pDeviceWorkerThread->m_pCtrlObject = &m_CtrlObject;
-            wxThreadError err;
-            if ( wxTHREAD_NO_ERROR == ( err = m_pDeviceWorkerThread->Create() ) ) {
-            m_pDeviceWorkerThread->SetPriority( WXTHREAD_DEFAULT_PRIORITY );
-                if ( wxTHREAD_NO_ERROR != ( err = m_pDeviceWorkerThread->Run() ) ) {
-                ::wxGetApp().logMsg ( _("Unable to run controlobject device thread."), DAEMON_LOGMSG_CRITICAL );
+        m_pDeviceWorkerThread = new deviceThreadObj;
+        if ( NULL != m_pDeviceWorkerThread ) {
+            m_CtrlObject.m_pVSCPSessionWnd  = (frmVSCPSession *)pFrm;
+            m_pDeviceWorkerThread->m_pCtrlObject = &m_CtrlObject;
+                wxThreadError err;
+                if ( wxTHREAD_NO_ERROR == ( err = m_pDeviceWorkerThread->Create() ) ) {
+                    m_pDeviceWorkerThread->SetPriority( WXTHREAD_DEFAULT_PRIORITY );
+                    if ( wxTHREAD_NO_ERROR != ( err = m_pDeviceWorkerThread->Run() ) ) {
+                        ::wxGetApp().logMsg ( _("Unable to run controlobject device thread."), DAEMON_LOGMSG_CRITICAL );
+                    }
+                }
+                else {
+                    ::wxGetApp().logMsg ( _("Unable to create controlobject device thread."), DAEMON_LOGMSG_CRITICAL );
                 }
             }
             else {
-                ::wxGetApp().logMsg ( _("Unable to create controlobject device thread."), DAEMON_LOGMSG_CRITICAL );
+                ::wxGetApp().logMsg ( _("Unable to allocate memory for controlobject device thread."), DAEMON_LOGMSG_CRITICAL );
             }
         }
-        else
-        {
-            ::wxGetApp().logMsg ( _("Unable to allocate memory for controlobject device thread."), DAEMON_LOGMSG_CRITICAL );
-        }
-    }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

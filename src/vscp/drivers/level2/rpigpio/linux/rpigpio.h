@@ -540,8 +540,8 @@ public:
     VscpRemoteTcpIf m_srv;
 
     // Event lists	
-	std::list<vscpEvent *> m_sendList;
-	std::list<vscpEvent *> m_receiveList;
+	std::list<vscpEvent*> m_sendList;
+	std::list<vscpEvent*> m_receiveList;
 	
     // Event object to indicate that there is an event in the output queue	
     sem_t m_semaphore_SendQueue;			
@@ -561,11 +561,11 @@ public:
     uint8_t m_secondary_dma_channel;
 
     // Lists for pin definitions
-    std::list<CGpioInput *> m_inputPinList;
+    std::list<CGpioInput*> m_inputPinList;
     //std::list<CGpioMonitor *> m_monitorPinList;
-    std::list<CGpioOutput *> m_outputPinList;
-    std::list<CGpioPwm *> m_pwmPinList;
-    std::list<CGpioClock *> m_gpioClockPinList; // Will hold max one entry
+    std::list<CGpioOutput*> m_outputPinList;
+    std::list<CGpioPwm*> m_pwmPinList;
+    std::list<CGpioClock*> m_gpioClockPinList; // Will hold max one entry
 
     // Max ten report items
     reportItem m_reporters[10];
@@ -574,7 +574,7 @@ public:
     monitorItem m_monitor[32];
 
     // Decision matrix
-    std::list<CLocalDM *> m_LocalDMList; 
+    std::list<CLocalDM*> m_LocalDMList; 
 };
 
 

@@ -3023,9 +3023,9 @@ void *TXWorkerThread::Entry()
 
     // Connect to the server with the control interface
     if ( VSCP_ERROR_SUCCESS != 
-        m_tcpifControl.doCmdOpen( m_pCtrlObject->m_ifVSCP.m_strHost,
-                                        m_pCtrlObject->m_ifVSCP.m_strUser,
-                                        m_pCtrlObject->m_ifVSCP.m_strPassword)) {
+        m_tcpifControl.doCmdOpen( m_pCtrlObject->m_ifVSCP.m_strHost.ToStdString(),
+                                        m_pCtrlObject->m_ifVSCP.m_strUser.ToStdString(),
+                                        m_pCtrlObject->m_ifVSCP.m_strPassword.ToStdString())) {
         ::wxGetApp().logMsg( _( "VSCP TX thread - Unable to connect to server." ), 
                                 VSCPWORKS_LOGMSG_CRITICAL );
         m_pCtrlObject->m_errorControl = VSCP_SESSION_ERROR_UNABLE_TO_CONNECT;
@@ -3140,9 +3140,9 @@ void *RXWorkerThread::Entry()
     wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventStatus);
 
     // Connect to the server with the control interface
-    if (VSCP_ERROR_SUCCESS != m_tcpifReceive.doCmdOpen(m_pCtrlObject->m_ifVSCP.m_strHost,
-                                                        m_pCtrlObject->m_ifVSCP.m_strUser,
-                                                        m_pCtrlObject->m_ifVSCP.m_strPassword)) {
+    if (VSCP_ERROR_SUCCESS != m_tcpifReceive.doCmdOpen(m_pCtrlObject->m_ifVSCP.m_strHost.ToStdString(),
+                                                        m_pCtrlObject->m_ifVSCP.m_strUser.ToStdString(),
+                                                        m_pCtrlObject->m_ifVSCP.m_strPassword.ToStdString())) {
         ::wxGetApp().logMsg( _( "TCP/IP Receive thread - Unable to connect to server." ), VSCPWORKS_LOGMSG_CRITICAL );
         m_pCtrlObject->m_errorReceive = VSCP_SESSION_ERROR_UNABLE_TO_CONNECT;
         wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventConnectionLost);

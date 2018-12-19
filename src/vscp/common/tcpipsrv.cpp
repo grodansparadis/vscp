@@ -29,39 +29,34 @@
 // https://stackoverflow.com/questions/3919420/tutorial-on-using-openssl-with-pthreads
 //
 
-#ifdef WIN32
-#include <winsock2.h>
-#endif
+#include <string>
+#include <list>
 
-//#include "wx/wxprec.h"
-#include "wx/wx.h"
-#include "wx/defs.h"
-#include "wx/app.h"
-#include <wx/listimpl.cpp>
-#include <wx/tokenzr.h>
-#include <wx/stdpaths.h>
-#include <wx/xml/xml.h>
-#include <wx/base64.h>
-#include <wx/sstream.h>
-
+#include <unistd.h>
 #include <time.h>
+#include <syslog.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
 #ifndef DWORD
 #define DWORD unsigned long
 #endif
 
 #include <vscp.h>
-#include <vscp_debug.h>
-#include "tcpipsrv.h"
-#include <vscphelper.h>
-#include <mongoose.h>
 #include <version.h>
+#include <vscp_debug.h>
+#include <vscphelper.h>
+#include <vscpdatetime.h>
 #include <controlobject.h>
 
-WX_DEFINE_LIST( TCPIPCLIENTS );
+#include "tcpipsrv.h"
 
 #define TCPIPSRV_INACTIVITY_TIMOUT  (3600 * 12)
 
+
+void *tcpipListenThread( void *pData );
+void *tcpipClientThread( void *pData );
 
 
 
@@ -69,7 +64,7 @@ WX_DEFINE_LIST( TCPIPCLIENTS );
 //                 GLOBALS
 ///////////////////////////////////////////////////
 
-extern CControlObject *gpobj;
+
 
 
 
@@ -84,33 +79,37 @@ extern CControlObject *gpobj;
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// TCPListenThread
+// tcpipListenThreadObj
 //
 // This thread listens for connection on a TCP socket and starts a new thread
 // to handle client requests
 //
 
-TCPListenThread::TCPListenThread()
-    : wxThread( wxTHREAD_DETACHED )
+tcpipListenThreadObj::tcpipListenThreadObj( CControlObject *pobj )
 {
+    // Set the control object pointer
+    setControlObjectPointer( pobj );
+
+    m_nStopTcpIpSrv = VSCP_TCPIP_SRV_RUN;
     // Init. the server comtext structure 
-    memset( &m_srvctx, 0, sizeof( struct server_context ) );
-    
+    memset( &m_srvctx, 0, sizeof( struct server_context ) );    
     m_idCounter = 0;
+
+    pthread_mutex_init( &m_mutexTcpClientList, NULL );
 }
 
 
-TCPListenThread::~TCPListenThread()
+tcpipListenThreadObj::~tcpipListenThreadObj()
 {
-    ;
+    pthread_mutex_destroy( &m_mutexTcpClientList );
 }
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// Entry
+// tcpipListenThread
 //
 
-void *TCPListenThread::Entry()
+void *tcpipListenThread( void *pData )
 {
     int i;
     struct stcp_connection *conn;
@@ -119,81 +118,87 @@ void *TCPListenThread::Entry()
     struct pollfd *pfd;
     memset( &opts, 0, sizeof( opts ) );
 
+    tcpipListenThreadObj *pListenObj = (tcpipListenThreadObj *)pData;
+    if ( NULL == pListenObj ) {
+        syslog( LOG_CRIT, "TCP/IP client is missing client object data. Terinating thread." );
+        return NULL;    
+    }
+
+    // Fix pointer to main object
+    CControlObject *pObj = pListenObj->getControlObject();
 
     // * * * Init. secure options * * *
 
-
     // Certificate
-    if ( gpobj->m_tcpip_ssl_certificate.Length() ) {
-        opts.pem = strdup( (const char *)gpobj->m_tcpip_ssl_certificate.mbc_str() );
+    if (  pObj->m_tcpip_ssl_certificate.length() ) {
+        opts.pem = strdup( (const char *)pObj->m_tcpip_ssl_certificate.c_str() );
     }
 
     // Certificate chain
-    if ( gpobj->m_tcpip_ssl_certificate_chain.Length() ) {
-        opts.chain = strdup( (const char *)gpobj->m_tcpip_ssl_certificate_chain.mbc_str() );
+    if (  pObj->m_tcpip_ssl_certificate_chain.length() ) {
+        opts.chain = strdup( (const char *)pObj->m_tcpip_ssl_certificate_chain.c_str() );
     }
 
-    opts.verify_peer = gpobj->m_tcpip_ssl_verify_peer;
+    opts.verify_peer =  pObj->m_tcpip_ssl_verify_peer;
 
     // CA path
-    if ( gpobj->m_tcpip_ssl_ca_path.Length() ) {
-        opts.ca_path = strdup( (const char *)gpobj->m_tcpip_ssl_ca_path.mbc_str() );
+    if (  pObj->m_tcpip_ssl_ca_path.length() ) {
+        opts.ca_path = strdup( (const char *)pObj->m_tcpip_ssl_ca_path.c_str() );
     }
 
     // CA file
-    if ( gpobj->m_tcpip_ssl_ca_file.Length() ) {
-        opts.chain = strdup( (const char *)gpobj->m_tcpip_ssl_ca_file.mbc_str() );
+    if (  pObj->m_tcpip_ssl_ca_file.length() ) {
+        opts.chain = strdup( (const char *)pObj->m_tcpip_ssl_ca_file.c_str() );
     }
 
-    opts.verify_depth = gpobj->m_tcpip_ssl_verify_depth;
+    opts.verify_depth =  pObj->m_tcpip_ssl_verify_depth;
 
-    opts.default_verify_path =  gpobj->m_tcpip_ssl_default_verify_paths ? 1 : 0;
+    opts.default_verify_path =   pObj->m_tcpip_ssl_default_verify_paths ? 1 : 0;
 
-    opts.protocol_version = gpobj->m_tcpip_ssl_protocol_version;
+    opts.protocol_version =  pObj->m_tcpip_ssl_protocol_version;
 
     // chiper list
-    if ( gpobj->m_tcpip_ssl_cipher_list.Length() ) {
-        opts.chipher_list = strdup( (const char *)gpobj->m_tcpip_ssl_cipher_list.mbc_str() );
+    if (  pObj->m_tcpip_ssl_cipher_list.length() ) {
+        opts.chipher_list = strdup( (const char *)pObj->m_tcpip_ssl_cipher_list.c_str() );
     }
 
-    opts.short_trust = gpobj->m_tcpip_ssl_short_trust ? 1 : 0;
+    opts.short_trust =  pObj->m_tcpip_ssl_short_trust ? 1 : 0;
 
     // --------------------------------------------------------------------------------------
 
     // Init. SSL subsystem
     /*if ( 0 == stcp_init_ssl( m_srvctx.ssl_ctx, &opts ) ) {
-        gpobj->logMsg( _("[TCP/IP srv thread] Failed to init. ssl.\n"), 
+         m_pObj->logMsg( ("[TCP/IP srv thread] Failed to init. ssl.\n"), 
                         DAEMON_LOGMSG_NORMAL );                                           
         return NULL;
     }*/
 
     // Bind to selected interface
-    if ( 0 == stcp_listening( &m_srvctx, 
-                        (const char *)gpobj->m_strTcpInterfaceAddress.mbc_str() ) ) {
-        gpobj->logMsg( _("[TCP/IP srv thread] Failed to init listening socket.\n"), 
-                        DAEMON_LOGMSG_NORMAL );                                         
+    if ( 0 == stcp_listening( &pListenObj->m_srvctx, 
+                        (const char *)pObj->m_strTcpInterfaceAddress.c_str() ) ) {
+        syslog( LOG_CRIT, "[TCP/IP srv thread] Failed to init listening socket." );                                         
         return NULL;                                    
     }
     
-    gpobj->logMsg( _("[TCP/IP srv listen thread] Started.\n"), DAEMON_LOGMSG_DEBUG  );
+    syslog( LOG_DEBUG, "[TCP/IP srv listen thread] Started." );
         
-    while ( !TestDestroy() && !(gpobj->m_StopTcpIpSrv) ) {
+    while ( !pListenObj->m_nStopTcpIpSrv ) {
                  
-        pfd = m_srvctx.listening_socket_fds;
+        pfd = pListenObj->m_srvctx.listening_socket_fds;
         memset( pfd, 0, sizeof(*pfd) );
-        for ( i = 0; i < m_srvctx.num_listening_sockets; i++ ) {
-            pfd[ i ].fd = m_srvctx.listening_sockets[i].sock;
+        for ( i = 0; i < pListenObj->m_srvctx.num_listening_sockets; i++ ) {
+            pfd[ i ].fd = pListenObj->m_srvctx.listening_sockets[i].sock;
             pfd[ i ].events = POLLIN;
             pfd[ i ].revents = 0;
         }
         
         int pollres;
         if ( ( pollres = stcp_poll( pfd, 
-                                        m_srvctx.num_listening_sockets, 
+                                        pListenObj->m_srvctx.num_listening_sockets, 
                                         200, 
-                                        &(gpobj->m_StopTcpIpSrv) ) ) > 0  ) {
+                                        &(pListenObj->m_nStopTcpIpSrv) ) ) > 0  ) {
             
-            for ( i = 0; i < m_srvctx.num_listening_sockets; i++ ) {
+            for ( i = 0; i < pListenObj->m_srvctx.num_listening_sockets; i++ ) {
                 
                 // NOTE(lsm): on QNX, poll() returns POLLRDNORM after the
                 // successful poll, and POLLIN is defined as
@@ -204,57 +209,50 @@ void *TCPListenThread::Entry()
 
                     conn = new struct stcp_connection;    // New connection
                     if ( NULL == conn ) {
-                       gpobj->logMsg( _("[TCP/IP srv] -- Memory problem when creating conn object.\n") );
+                       syslog( LOG_ERR, "[TCP/IP srv] -- Memory problem when creating conn object." );
                        continue; 
                     }
 
                     memset( conn, 0, sizeof(struct stcp_connection) );
-                    conn->client.id = m_idCounter++;
+                    conn->client.id = pListenObj->m_idCounter++;
 
-                    if ( stcp_accept( &m_srvctx, &m_srvctx.listening_sockets[ i ], &(conn->client) ) ) {
+                    if ( stcp_accept( &pListenObj->m_srvctx, 
+                                        &pListenObj->m_srvctx.listening_sockets[ i ], 
+                                        &(conn->client) ) ) {
 
                         stcp_init_client_connection( conn, &opts );
                         
-                        gpobj->logMsg( _("[TCP/IP srv] -- Connection accept.\n") );
+                        syslog( LOG_DEBUG, "[TCP/IP srv] -- Connection accept." );
 
-                        // Create the thread
-                        TCPClientThread *pThread = new TCPClientThread;
-                        if ( NULL == pThread ) {
-                            gpobj->logMsg( _("[TCP/IP srv] -- Memory problem when creating client thread.\n") );
+                        // Create the thread object
+                        tcpipClientObj *pClientObj = new tcpipClientObj( pListenObj );
+                        if ( NULL == pClientObj ) {
+                            syslog( LOG_ERR, "[TCP/IP srv] -- Memory problem when creating client thread." );
                             stcp_close_connection( conn );
                             conn == NULL;
                             continue;
                         }
 
-                        pThread->m_conn = conn;
-                        pThread->m_pParent = this;
-
-                        wxThreadError err;
-                        if ( wxTHREAD_NO_ERROR == ( err = pThread->Create() ) ) {
+                        pClientObj->m_conn = conn;
+                        pClientObj->m_pParent = pListenObj;
             
-                            pThread->SetPriority( WXTHREAD_DEFAULT_PRIORITY );
-            
-                            if ( wxTHREAD_NO_ERROR != ( err = pThread->Run() ) ) {
-                                gpobj->logMsg(_("[TCP/IP srv] -- Unable to run TCP client thread.") );
-                                stcp_close_connection( conn );
-                                conn == NULL;
-                                delete pThread;
-                                continue;
-                            }
-
-                        }
-                        else {
-                            gpobj->logMsg( _("[TCP/IP srv] -- Unable to create TCP client thread.") );
+                        syslog( LOG_DEBUG, "Controlobject: Starting client tcp/ip thread..." );
+ 
+                        if ( !pthread_create( &pClientObj->m_tcpipClientThread,
+                                                NULL, 
+                                                tcpipClientThread, 
+                                                pClientObj ) ) {
+                            syslog( LOG_ERR, "[TCP/IP srv] -- Unable to run TCP client thread." );
+                            delete pClientObj;
                             stcp_close_connection( conn );
                             conn == NULL;
-                            delete pThread;
                             continue;
                         }
 
                         // Add conn to list of active connections
-                        gpobj->m_mutexTcpClientList.Lock();
-                        m_clientList.Append( conn );
-                        gpobj->m_mutexTcpClientList.Unlock();
+                        pthread_mutex_lock( &pListenObj->m_mutexTcpClientList );
+                        pListenObj->m_tcpip_clientList.push_back( pClientObj );
+                        pthread_mutex_unlock( &pListenObj->m_mutexTcpClientList );
 
                     }
                     else {
@@ -270,29 +268,29 @@ void *TCPListenThread::Entry()
 
         pollres = 0;
 
-    } // While
+    } // While 
     
-    stcp_close_all_listening_sockets( &m_srvctx );
+    stcp_close_all_listening_sockets( &pListenObj->m_srvctx );
 
-    gpobj->logMsg( _("[TCP/IP srv listen thread] Preparing Exit.\n"), DAEMON_LOGMSG_DEBUG  );
+    syslog( LOG_DEBUG, "[TCP/IP srv listen thread] Preparing Exit." );
 
     // Wait for clients to close terminate
     int loopCnt = 0;
     while ( true ) { 
         
-        gpobj->m_mutexTcpClientList.Lock();
-        if ( !m_clientList.GetCount() ) break;
-        gpobj->m_mutexTcpClientList.Unlock();
+        pthread_mutex_lock( &pListenObj->m_mutexTcpClientList );
+        if ( !pListenObj->m_tcpip_clientList.size() ) break;
+        pthread_mutex_unlock( &pListenObj->m_mutexTcpClientList );
         
         loopCnt++;
         if ( loopCnt > 5 ) {
-            gpobj->logMsg( _("[TCP/IP srv listen thread] "
+            syslog( LOG_ERR, "[TCP/IP srv listen thread] "
                              "Clients did not end as expected. "
-                             "Terminate anyway.\n") );
+                             "Terminate anyway." );
             break;
         }
 
-        wxSleep( 1 );
+        sleep( 1 ); // Give them some time
 
     }
 
@@ -325,22 +323,12 @@ void *TCPListenThread::Entry()
     
     //stcp_uninit_ssl();
     
-    gpobj->logMsg( _("[TCP/IP srv listen thread] Exit.\n"), DAEMON_LOGMSG_DEBUG  );
-    
-    // Inform main thread that we are ending
-    gpobj->m_semTcpIpThread.Post();
+    syslog( LOG_DEBUG, "[TCP/IP srv listen thread] Exit." );
 
     return NULL;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// OnExit
-//
 
-void TCPListenThread::OnExit()
-{
-    //gpobj->logMsg( _("[TCP/IP srv listen thread] Exit.\n"), DAEMON_LOGMSG_DEBUG );
-}
 
 
 
@@ -355,304 +343,52 @@ void TCPListenThread::OnExit()
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// VSCPWebServerThread
+// tcpipClientObj
 //
 // This thread listens for connection on a TCP socket and starts a new thread
 // to handle client requests
 //
 
-TCPClientThread::TCPClientThread()
-    : wxThread( wxTHREAD_DETACHED )
+tcpipClientObj::tcpipClientObj( tcpipListenThreadObj *pParent )
 {
     m_pClientItem = NULL;
-    m_strResponse.Empty();  // For clearness
+    m_strResponse.clear();  // For clearness
     m_rv = 0;               // No error code
     m_bReceiveLoop = false; // Not in receive loop
     m_conn = NULL;          // No connection yet
-    m_pParent = NULL;       // No parent yet
+    m_pObj = NULL;
+    pParent = pParent;
+
+    if ( NULL != pParent ) {
+        m_pObj = pParent->getControlObject();   
+    }
 }
 
 
-TCPClientThread::~TCPClientThread()
+tcpipClientObj::~tcpipClientObj()
 {
-    m_strResponse.Empty();
-    m_commandArray.Clear();
+    m_commandArray.clear();     // TODO remove strings
 }
 
 
-///////////////////////////////////////////////////////////////////////////////
-// Entry
-//
-
-void *TCPClientThread::Entry()
-{
-    // Check pointers
-    if ( NULL == gpobj ) {
-        gpobj->logMsg( _("[TCP/IP srv client thread] Error, "
-                         "Control object not initialized.\n"), 
-                         DAEMON_LOGMSG_NORMAL );
-        return NULL;
-    }
-
-    gpobj->logMsg( _("[TCP/IP srv client thread] Thread started.\n"), DAEMON_LOGMSG_DEBUG  );
-
-    m_pClientItem = new CClientItem();
-    if ( NULL == m_pClientItem ) {
-        gpobj->logMsg( _("[TCP/IP srv client thread] Memory error, "
-                         "Cant allocate client structure.\n"), 
-                         DAEMON_LOGMSG_NORMAL );
-        return NULL;
-    }
-    
-    m_pClientItem->m_bOpen = true;
-    m_pClientItem->m_type =  CLIENT_ITEM_INTERFACE_TYPE_CLIENT_TCPIP;
-    m_pClientItem->m_strDeviceName = _("Remote TCP/IP Server. [");
-    m_pClientItem->m_strDeviceName += gpobj->m_strTcpInterfaceAddress;
-    m_pClientItem->m_strDeviceName += _("]|Started at ");
-    wxDateTime now = wxDateTime::Now();
-    m_pClientItem->m_strDeviceName += wxDateTime::Now().FormatISODate();
-    m_pClientItem->m_strDeviceName += _(" ");
-    m_pClientItem->m_strDeviceName += wxDateTime::Now().FormatISOTime();
-
-    // Start of activity
-    m_pClientItem->m_clientActivity = wxGetUTCTime();
-
-    // Add the client to the Client List
-    gpobj->m_wxClientMutex.Lock();
-    if ( !gpobj->addClient( m_pClientItem ) ) {
-        // Failed to add client
-        delete m_pClientItem;
-        m_pClientItem = NULL;
-        gpobj->m_wxClientMutex.Unlock();
-        gpobj->logMsg( _("TCP/IP server: Failed to add client. Terminating thread.") );
-        return NULL;
-    }
-    gpobj->m_wxClientMutex.Unlock();
-
-    // Clear the filter (Allow everything )
-    vscp_clearVSCPFilter( &m_pClientItem->m_filterVSCP );
-
-    // Send welcome message
-    wxString str = _(MSG_WELCOME);
-    str += _("Version: ");
-    str += _(VSCPD_DISPLAY_VERSION);
-    str += _("\r\n");
-    str += _(VSCPD_COPYRIGHT);
-    str += _("\r\n");
-    str += _(MSG_OK);
-   write(  (const char*)str.mbc_str(), str.Length() );
-
-    gpobj->logMsg( _("[TCP/IP srv] Ready to serve client.\n"),
-                         DAEMON_LOGMSG_DEBUG );
-    
-        
-    // Enter command loop
-    char buf[8192];
-    struct pollfd fd;
-    while ( !TestDestroy() && !(gpobj->m_StopTcpIpSrv ) ) {
-
-        // Check for client inactivity
-        if ( ( wxGetUTCTime() - m_pClientItem->m_clientActivity ) > TCPIPSRV_INACTIVITY_TIMOUT ) {
-            gpobj->logMsg( _("[TCP/IP srv client thread] Client closed due to inactivity.\n") );
-            break;
-        }
-
-        // * * * Receiveloop * * *
-        if ( m_bReceiveLoop ) {
-
-            // Wait for data
-            m_pClientItem->m_semClientInputQueue.WaitTimeout( 20 );
-
-            // Send everything in the queue
-            while( sendOneEventFromQueue( false ) );
-
-            // Send '+OK<CR><LF>' every two seconds to indicate that the
-            // link is open
-            if ( ( wxGetUTCTime()-m_pClientItem->m_timeRcvLoop ) > 2 ) {
-                m_pClientItem->m_timeRcvLoop = wxGetUTCTime();
-                m_pClientItem->m_clientActivity = wxGetUTCTime();
-                write( "+OK\r\n", 5 );
-            }
-                
-        }
-        else {
-
-            // Set poll
-            fd.fd = m_conn->client.sock;
-            fd.events = POLLIN;
-            fd.revents = 0;
-            
-            // Wait for data
-            if ( stcp_poll( &fd, 
-                                1, 
-                                500, 
-                                &(gpobj->m_StopTcpIpSrv) ) < 0  ) {
-                continue;   // Nothing                                 
-            }
-
-            // Data in?
-            if ( !( fd.revents & POLLIN ) ) {
-                continue;
-            }
-        }
-        
-        // Read possible data from client
-        //      If in receive loop we know we have delay
-        //      in event waiting above.
-        memset( buf, 0, sizeof( buf ) );
-        int nRead = stcp_read( m_conn, 
-                                buf, sizeof( buf ),
-                                ( m_bReceiveLoop ) ? 0 : 0 );
-        
-        if ( 0 == nRead ) {
-            ;   // Nothing more to read - Check for command and continue -> below
-        }
-        else if ( nRead < 0 ) {
-
-            if ( STCP_ERROR_TIMEOUT == nRead ) {
-                m_rv = VSCP_ERROR_TIMEOUT;
-            }
-            else if ( STCP_ERROR_STOPPED == nRead ) {
-                m_rv = VSCP_ERROR_STOPPED;
-                continue;
-            }
-            break;
-        }
-        else if ( nRead > 0 ) {
-            m_strResponse += wxString::FromUTF8Unchecked( buf, nRead );
-        }
-
-        // Record client activity
-        m_pClientItem->m_clientActivity = wxGetUTCTime();
-        
-        // get data up to "\r\n" if any
-        int pos;
-        if ( wxNOT_FOUND != ( pos = m_strResponse.Find("\n"))) {
-            
-            // Get the command
-            wxString strCommand = m_strResponse.Left( pos + 1 );
-
-            // Save the unhandled part
-            m_strResponse = m_strResponse.Right( m_strResponse.Length() - pos - 1 );
-
-            // Remove whitespace
-            strCommand.Trim(true);
-            strCommand.Trim(false);
-
-            // If nothing to do do nothing - pretty obious if you think about it
-            if ( 0 == strCommand.Length() ) continue;
-
-            // Check for repeat command
-            // +    - repear last command
-            // +n   - Repeat n-th command
-            // ++
-            if ( m_commandArray.Count() && ( '+' == strCommand[0] ) ) {
-
-                if ( strCommand.StartsWith( "++", &strCommand ) ) {
-                    for ( int i=m_commandArray.Count()-1; i>=0; i-- ) {
-                        wxString str = wxString::Format("%d - %s",
-                                            m_commandArray.Count() - i - 1, 
-                                            m_commandArray[ i ] );
-                        str.Trim();                        
-                        write( str, true );
-                    }
-                    continue;
-                }
-
-                // Get pos
-                unsigned int n = 0;
-                if ( strCommand.Length() > 1 ) {
-                    strCommand = strCommand.Right( strCommand.Length() - 1 );    
-                    n = atoi( strCommand.mbc_str() );
-                }
-
-                // Pos must be within range
-                if ( n > m_commandArray.Count() ) {
-                    n = m_commandArray.Count() - 1; 
-                }
-
-                // Get the command
-                strCommand = m_commandArray[ m_commandArray.Count() - n - 1 ];
-
-                // Write out the command
-                write( strCommand, true );
-
-            }
-
-            m_commandArray.Add( strCommand );   // put at beginning of list
-            if ( m_commandArray.Count() > VSCP_TCPIP_COMMAND_LIST_MAX ) {
-                m_commandArray.RemoveAt( 0 );   // Remove last inserted item
-            }
-
-            // Execute command
-            if ( VSCP_TCPIP_RV_CLOSE == CommandHandler( strCommand ) ) {
-                break;
-            }
-
-        }
-
-    } // while
-
-    // Remove the client from the client queue
-    gpobj->m_mutexTcpClientList.Lock();
-    TCPIPCLIENTS::iterator iter;
-    for ( iter = m_pParent->m_clientList.begin(); 
-            iter != m_pParent->m_clientList.end(); 
-            ++iter ) {
-        
-        struct stcp_connection *stored_conn = *iter;
-        if ( stored_conn->client.id == m_conn->client.id ) {
-            m_pParent->m_clientList.erase( iter );
-            break;
-        }
-    }
-    gpobj->m_mutexTcpClientList.Unlock();
-    
-    // Close the connection
-    stcp_close_connection( m_conn );
-    m_conn = NULL;
-
-    // Close the channel
-    m_pClientItem->m_bOpen = false;
-    
-    // Remove the client from the Client List
-    gpobj->m_wxClientMutex.Lock();
-    gpobj->removeClient( m_pClientItem );
-    gpobj->m_wxClientMutex.Unlock();
-
-    m_pClientItem = NULL;
-    m_pParent = NULL;
-    
-    gpobj->logMsg( _("[TCP/IP srv client thread] Exit.\n"), DAEMON_LOGMSG_DEBUG );
-
-    return NULL;
-}
 
 
-///////////////////////////////////////////////////////////////////////////////
-// OnExit
-//
-
-void TCPClientThread::OnExit()
-{
-    gpobj->logMsg( _("[TCP/IP srv client thread] Exit.\n"), DAEMON_LOGMSG_DEBUG );;
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 // write
 //
 
-bool TCPClientThread::write( wxString& str, bool bAddCRLF )
+bool tcpipClientObj::write( std::string& str, bool bAddCRLF )
 {
     // Must be connected
     if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return false;
     
     if ( bAddCRLF ) {
-        str += _("\r\n");
+        str += std::string("\r\n");
     }
     
-    m_rv = stcp_write( m_conn, (const char*)str.mbc_str(), str.Length() );
-    if ( m_rv != str.Length() ) return false;
+    m_rv = stcp_write( m_conn, (const char*)str.c_str(), str.length() );
+    if ( m_rv != str.length() ) return false;
     
     return true;
 }
@@ -661,7 +397,7 @@ bool TCPClientThread::write( wxString& str, bool bAddCRLF )
 // write
 //
 
-bool TCPClientThread::write( const char *buf, size_t len )
+bool tcpipClientObj::write( const char *buf, size_t len )
 {
     // Must be connected
     if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return false;
@@ -676,22 +412,21 @@ bool TCPClientThread::write( const char *buf, size_t len )
 // read
 //
 
-bool TCPClientThread::read( wxString& str )
+bool tcpipClientObj::read( std::string& str )
 {
     int pos;
     
     // Must be connected
     if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return false;
     
-    if ( wxNOT_FOUND != ( pos = m_strResponse.First('\n') ) ) {
+    if ( m_strResponse.npos != ( pos = m_strResponse.find('\n') ) ) {
 
         // Get the string
-        str = m_strResponse.Left( pos + 1 );
-        str.Trim(true);
-        str.Trim(false);
+        str = m_strResponse.substr( pos + 1 );
+        vscp_trim(str);
 
         // Remove string from buffer
-        m_strResponse = m_strResponse.Right( m_strResponse.Length() - pos - 1 );        
+        m_strResponse = m_strResponse.substr( m_strResponse.length() - pos - 1 );        
     }
 
     return true;
@@ -703,7 +438,7 @@ bool TCPClientThread::read( wxString& str )
 //
 
 int
-TCPClientThread::CommandHandler( wxString& strCommand )
+tcpipClientObj::CommandHandler( std::string& strCommand )
 {
     bool repeat = false;
     
@@ -712,23 +447,22 @@ TCPClientThread::CommandHandler( wxString& strCommand )
         return VSCP_TCPIP_RV_ERROR;
     }
 
-    if ( NULL == gpobj ) {
-        gpobj->logMsg( _( "[TCP/IP srv] ERROR: Control object pointer is NULL in command handler. \n" )  );
+    if ( NULL == m_pObj ) {
+        syslog( LOG_ERR, "[TCP/IP srv] ERROR: Control object pointer is NULL in command handler." );
         return VSCP_TCPIP_RV_CLOSE; // Close connection
     }
 
     if ( NULL == m_pClientItem ) {
-        gpobj->logMsg( _( "[TCP/IP srv] ERROR: ClientItem pointer is NULL in command handler.\n" )  );
+        syslog( LOG_ERR, "[TCP/IP srv] ERROR: ClientItem pointer is NULL in command handler." );
         return VSCP_TCPIP_RV_CLOSE; // Close connection
     }
 
     m_pClientItem->m_currentCommand = strCommand;
-    m_pClientItem->m_currentCommand.Trim(true);
-    m_pClientItem->m_currentCommand.Trim(false);
+    vscp_trim( m_pClientItem->m_currentCommand );
 
     // If nothing to handle just return
-    if ( 0 == m_pClientItem->m_currentCommand.Length() ) {
-        write( MSG_OK, strlen ( MSG_OK ) );
+    if ( 0 == m_pClientItem->m_currentCommand.length() ) {
+        write( MSG_OK, strlen( MSG_OK ) );
         return VSCP_TCPIP_RV_OK;
     }
 
@@ -737,8 +471,8 @@ TCPClientThread::CommandHandler( wxString& strCommand )
     //                            No Operation
     //*********************************************************************
     
-    if ( m_pClientItem->CommandStartsWith( _("noop") ) ) {        
-        write(   MSG_OK, strlen ( MSG_OK ) );
+    if ( m_pClientItem->CommandStartsWith( ("noop") ) ) {        
+        write( MSG_OK, strlen( MSG_OK ) );
         return VSCP_TCPIP_RV_OK;
     }
 
@@ -746,10 +480,10 @@ TCPClientThread::CommandHandler( wxString& strCommand )
     //                             Rcvloop
     //*********************************************************************
 
-    else if ( m_pClientItem->CommandStartsWith( _("rcvloop") ) || 
-                m_pClientItem->CommandStartsWith( _("receiveloop") ) ) {
+    else if ( m_pClientItem->CommandStartsWith( ("rcvloop") ) || 
+                m_pClientItem->CommandStartsWith( ("receiveloop") ) ) {
         if ( checkPrivilege( 2 ) ) {
-            m_pClientItem->m_timeRcvLoop = wxGetUTCTime();
+            m_pClientItem->m_timeRcvLoop = time(NULL);
             handleClientRcvLoop();
         }
     }
@@ -758,16 +492,16 @@ TCPClientThread::CommandHandler( wxString& strCommand )
     //                             Quitloop
     //*********************************************************************
 
-    else if ( m_pClientItem->CommandStartsWith( _("quitloop") ) ) {
+    else if ( m_pClientItem->CommandStartsWith( ("quitloop") ) ) {
               m_bReceiveLoop = false;
-        write(  MSG_QUIT_LOOP, strlen ( MSG_QUIT_LOOP ) );
+        write(  MSG_QUIT_LOOP, strlen( MSG_QUIT_LOOP ) );
     }
 
     //*********************************************************************
     //                             Username
     //*********************************************************************
 
-    else if ( m_pClientItem->CommandStartsWith( _("user") ) ) {
+    else if ( m_pClientItem->CommandStartsWith( ("user") ) ) {
         handleClientUser();
     }
 
@@ -775,17 +509,16 @@ TCPClientThread::CommandHandler( wxString& strCommand )
     //                            Password
     //*********************************************************************
 
-    else if ( m_pClientItem->CommandStartsWith( _("pass") ) ) {    
+    else if ( m_pClientItem->CommandStartsWith( ("pass") ) ) {    
 
         if ( !handleClientPassword() ) {
-            gpobj->logMsg ( _( "[TCP/IP srv] Command: Password. Not authorized.\n" ),
-                                    DAEMON_LOGMSG_NORMAL,
-                                    DAEMON_LOGTYPE_SECURITY );
+            syslog( LOG_ERR, 
+                        "[TCP/IP srv] Command: Password. Not authorized." );
             return VSCP_TCPIP_RV_CLOSE;    // Close connection
         }
 
-        if ( gpobj->m_debugFlags1 & VSCP_DEBUG1_TCP ) {
-            gpobj->logMsg( _( "[TCP/IP srv] Command: Password. PASS\n" ) );
+        if (  m_pObj->m_debugFlags1 & VSCP_DEBUG1_TCP ) {
+            syslog( LOG_DEBUG,"[TCP/IP srv] Command: Password. PASS" );
         }
 
     }
@@ -794,7 +527,7 @@ TCPClientThread::CommandHandler( wxString& strCommand )
     //                              Challenge
     //*********************************************************************
 
-    else if ( m_pClientItem->CommandStartsWith( _("challenge") ) ) {
+    else if ( m_pClientItem->CommandStartsWith( ("challenge") ) ) {
         handleChallenge();
     }
 
@@ -802,13 +535,13 @@ TCPClientThread::CommandHandler( wxString& strCommand )
     //                                 QUIT
     // *********************************************************************
 
-    else if ( m_pClientItem->CommandStartsWith( _("quit") ) ) {
+    else if ( m_pClientItem->CommandStartsWith( ("quit") ) ) {
         //long test = MG_F_CLOSE_IMMEDIATELY;
-        if ( gpobj->m_debugFlags1 & VSCP_DEBUG1_TCP ) {
-            gpobj->logMsg( _( "[TCP/IP srv] Command: Close.\n" ) );
+        if (  m_pObj->m_debugFlags1 & VSCP_DEBUG1_TCP ) {
+             m_pObj->logMsg( ( "[TCP/IP srv] Command: Close.\n" ) );
         }
 
-        write(  MSG_GOODBY, strlen ( MSG_GOODBY ) );
+        write( MSG_GOODBY, strlen( MSG_GOODBY ) );
  
         return VSCP_TCPIP_RV_CLOSE; // Close connection
     }
@@ -816,7 +549,7 @@ TCPClientThread::CommandHandler( wxString& strCommand )
     //*********************************************************************
     //                              Shutdown
     //*********************************************************************
-    else if ( m_pClientItem->CommandStartsWith(_("shutdown") ) ) {
+    else if ( m_pClientItem->CommandStartsWith(("shutdown") ) ) {
         if ( checkPrivilege( 15 ) ) {
             handleClientShutdown();            
         }
@@ -826,7 +559,7 @@ TCPClientThread::CommandHandler( wxString& strCommand )
     //                             Send event
     //*********************************************************************
 
-    else if ( m_pClientItem->CommandStartsWith( _("send") ) ) {
+    else if ( m_pClientItem->CommandStartsWith( ("send") ) ) {
         if ( checkPrivilege( 4 ) ) {
             handleClientSend();
         }
@@ -836,8 +569,8 @@ TCPClientThread::CommandHandler( wxString& strCommand )
     //                            Read event
     //********************************************************************* 
 
-    else if ( m_pClientItem->CommandStartsWith( _("retr") ) ||
-                m_pClientItem->CommandStartsWith( _("retrieve") ) ) {
+    else if ( m_pClientItem->CommandStartsWith( ("retr") ) ||
+                m_pClientItem->CommandStartsWith( ("retrieve") ) ) {
         if ( checkPrivilege( 2 ) ) {
             handleClientReceive();
         }
@@ -847,9 +580,9 @@ TCPClientThread::CommandHandler( wxString& strCommand )
     //                            Data Available
     //*********************************************************************
 
-    else if ( m_pClientItem->CommandStartsWith( _("cdta") ) ||
-                m_pClientItem->CommandStartsWith( _("chkdata") ) ||
-                m_pClientItem->CommandStartsWith( _("checkdata") ) ) {
+    else if ( m_pClientItem->CommandStartsWith( ("cdta") ) ||
+                m_pClientItem->CommandStartsWith( ("chkdata") ) ||
+                m_pClientItem->CommandStartsWith( ("checkdata") ) ) {
         if ( checkPrivilege( 1 ) ) {
             handleClientDataAvailable();
         }
@@ -859,9 +592,9 @@ TCPClientThread::CommandHandler( wxString& strCommand )
     //                          Clear input queue
     //*********************************************************************
 
-    else if ( m_pClientItem->CommandStartsWith( _("clra") ) ||
-                m_pClientItem->CommandStartsWith( _("clearall") ) ||
-                m_pClientItem->CommandStartsWith( _("clrall") ) ) {
+    else if ( m_pClientItem->CommandStartsWith( ("clra") ) ||
+                m_pClientItem->CommandStartsWith( ("clearall") ) ||
+                m_pClientItem->CommandStartsWith( ("clrall") ) ) {
         if ( checkPrivilege( 1 ) ) {
             handleClientClearInputQueue();
         }
@@ -872,7 +605,7 @@ TCPClientThread::CommandHandler( wxString& strCommand )
     //                           Get Statistics
     //*********************************************************************
 
-    else if ( m_pClientItem->CommandStartsWith( _("stat") ) ) {
+    else if ( m_pClientItem->CommandStartsWith( ("stat") ) ) {
          if ( checkPrivilege( 1 ) ) {
              handleClientGetStatistics();
          }
@@ -882,7 +615,7 @@ TCPClientThread::CommandHandler( wxString& strCommand )
     //                            Get Status
     //*********************************************************************
 
-    else if ( m_pClientItem->CommandStartsWith( _("info") ) ) {
+    else if ( m_pClientItem->CommandStartsWith( ("info") ) ) {
         if ( checkPrivilege( 1 ) ) {
             handleClientGetStatus();
         }
@@ -892,8 +625,8 @@ TCPClientThread::CommandHandler( wxString& strCommand )
     //                           Get Channel ID
     //*********************************************************************
 
-    else if ( m_pClientItem->CommandStartsWith( _("chid") ) ||
-                m_pClientItem->CommandStartsWith( _("getchid") ) ) {
+    else if ( m_pClientItem->CommandStartsWith( ("chid") ) ||
+                m_pClientItem->CommandStartsWith( ("getchid") ) ) {
         if ( checkPrivilege( 1 ) ) {
             handleClientGetChannelID();
         }
@@ -903,8 +636,8 @@ TCPClientThread::CommandHandler( wxString& strCommand )
     //                          Set Channel GUID
     //*********************************************************************
 
-    else if ( m_pClientItem->CommandStartsWith( _("sgid") ) ||
-                m_pClientItem->CommandStartsWith( _("setguid") ) ) {
+    else if ( m_pClientItem->CommandStartsWith( ("sgid") ) ||
+                m_pClientItem->CommandStartsWith( ("setguid") ) ) {
         if ( checkPrivilege( 6 ) ) {
             handleClientSetChannelGUID();
         }
@@ -914,8 +647,8 @@ TCPClientThread::CommandHandler( wxString& strCommand )
     //                          Get Channel GUID
     //*********************************************************************
 
-    else if ( m_pClientItem->CommandStartsWith( _("ggid") ) ||
-                m_pClientItem->CommandStartsWith( _("getguid") ) ) {
+    else if ( m_pClientItem->CommandStartsWith( ("ggid") ) ||
+                m_pClientItem->CommandStartsWith( ("getguid") ) ) {
         if ( checkPrivilege( 1 ) ) {
             handleClientGetChannelGUID();
         }
@@ -925,8 +658,8 @@ TCPClientThread::CommandHandler( wxString& strCommand )
     //                           Get Version
     //*********************************************************************
 
-    else if ( m_pClientItem->CommandStartsWith( _("version") ) ||
-                    m_pClientItem->CommandStartsWith( _("vers") ) ) {
+    else if ( m_pClientItem->CommandStartsWith( ("version") ) ||
+                    m_pClientItem->CommandStartsWith( ("vers") ) ) {
         handleClientGetVersion();
     }
 
@@ -934,8 +667,8 @@ TCPClientThread::CommandHandler( wxString& strCommand )
     //                           Set Filter
     //*********************************************************************
 
-    else if ( m_pClientItem->CommandStartsWith( _("sflt") ) ||
-                m_pClientItem->CommandStartsWith( _("setfilter") ) ) {
+    else if ( m_pClientItem->CommandStartsWith( ("sflt") ) ||
+                m_pClientItem->CommandStartsWith( ("setfilter") ) ) {
         if ( checkPrivilege( 6 ) ) {
             handleClientSetFilter();
         }
@@ -945,8 +678,8 @@ TCPClientThread::CommandHandler( wxString& strCommand )
     //                           Set Mask
     //*********************************************************************
 
-    else if ( m_pClientItem->CommandStartsWith( _("smsk") ) || 
-                m_pClientItem->CommandStartsWith( _("setmask") ) ) {
+    else if ( m_pClientItem->CommandStartsWith( ("smsk") ) || 
+                m_pClientItem->CommandStartsWith( ("setmask") ) ) {
         if ( checkPrivilege( 6 ) ) {
             handleClientSetMask();
         }
@@ -956,14 +689,14 @@ TCPClientThread::CommandHandler( wxString& strCommand )
     //                             Help
     //*********************************************************************
 
-    else if ( m_pClientItem->CommandStartsWith( _("help") ) ) {
+    else if ( m_pClientItem->CommandStartsWith( ("help") ) ) {
         handleClientHelp();
     }
 
     //*********************************************************************
     //                             Restart
 
-    else if ( m_pClientItem->CommandStartsWith( _("restart") ) ) {
+    else if ( m_pClientItem->CommandStartsWith( ("restart") ) ) {
         if ( checkPrivilege( 15 ) ) {
             handleClientRestart();
         }
@@ -973,7 +706,7 @@ TCPClientThread::CommandHandler( wxString& strCommand )
     //                             Driver
     //*********************************************************************
 
-    else if ( m_pClientItem->CommandStartsWith( _("driver") ) ) {
+    else if ( m_pClientItem->CommandStartsWith( ("driver") ) ) {
         if ( checkPrivilege( 15 ) ) {
             handleClientDriver();
         }
@@ -983,7 +716,7 @@ TCPClientThread::CommandHandler( wxString& strCommand )
     //                               DM
     //*********************************************************************
 
-    else if ( m_pClientItem->CommandStartsWith( _("dm") ) ) {
+    else if ( m_pClientItem->CommandStartsWith( ("dm") ) ) {
         if ( checkPrivilege( 15 ) ) {
             handleClientDm();
         }
@@ -993,8 +726,8 @@ TCPClientThread::CommandHandler( wxString& strCommand )
     //                             Variable
     //*********************************************************************
 
-    else if ( m_pClientItem->CommandStartsWith( _("variable") ) ||
-                m_pClientItem->CommandStartsWith( _("var") ) ) {
+    else if ( m_pClientItem->CommandStartsWith( ("variable") ) ||
+                m_pClientItem->CommandStartsWith( ("var") ) ) {
         if ( checkPrivilege( 4 ) ) {
             handleClientVariable();
         }
@@ -1004,7 +737,7 @@ TCPClientThread::CommandHandler( wxString& strCommand )
     //                               File
     //*********************************************************************
 
-    else if ( m_pClientItem->CommandStartsWith( _("file") ) ) {
+    else if ( m_pClientItem->CommandStartsWith( ("file") ) ) {
         if ( checkPrivilege( 15 ) ) {
             handleClientFile();
         }
@@ -1014,7 +747,7 @@ TCPClientThread::CommandHandler( wxString& strCommand )
     //                               UDP
     //*********************************************************************
 
-    else if ( m_pClientItem->CommandStartsWith( _("udp") ) ) {
+    else if ( m_pClientItem->CommandStartsWith( ("udp") ) ) {
         if ( checkPrivilege( 15 ) ) {
             handleClientUdp();
         }
@@ -1024,8 +757,8 @@ TCPClientThread::CommandHandler( wxString& strCommand )
     //                         Client/interface
     //*********************************************************************
 
-    else if ( m_pClientItem->CommandStartsWith( _("client") ) ||
-                m_pClientItem->CommandStartsWith( _("interface") ) ) {
+    else if ( m_pClientItem->CommandStartsWith( ("client") ) ||
+                m_pClientItem->CommandStartsWith( ("interface") ) ) {
         if ( checkPrivilege( 15 ) ) {
             handleClientInterface();
         }
@@ -1036,7 +769,7 @@ TCPClientThread::CommandHandler( wxString& strCommand )
     //                               Test
     //*********************************************************************
 
-    else if ( m_pClientItem->CommandStartsWith( _("test") ) ) {
+    else if ( m_pClientItem->CommandStartsWith( ("test") ) ) {
         if ( checkPrivilege( 15 ) ) {
             handleClientTest();
         }
@@ -1047,8 +780,8 @@ TCPClientThread::CommandHandler( wxString& strCommand )
     //                             WhatCanYouDo
     //*********************************************************************
     
-    else if ( m_pClientItem->CommandStartsWith( _("wcyd") ) ||
-                m_pClientItem->CommandStartsWith( _("whatcanyoudo") ) ) {
+    else if ( m_pClientItem->CommandStartsWith( ("wcyd") ) ||
+                m_pClientItem->CommandStartsWith( ("whatcanyoudo") ) ) {
         handleClientCapabilityRequest();
     }
 
@@ -1056,7 +789,7 @@ TCPClientThread::CommandHandler( wxString& strCommand )
     //                             Measurement
     //*********************************************************************
     
-    else if ( m_pClientItem->CommandStartsWith( _("measurement") ) ) {
+    else if ( m_pClientItem->CommandStartsWith( ("measurement") ) ) {
         handleClientMeasurment();
     }
 
@@ -1064,7 +797,7 @@ TCPClientThread::CommandHandler( wxString& strCommand )
     //                                Table
     //*********************************************************************
     
-    else if ( m_pClientItem->CommandStartsWith( _("table") ) ) {
+    else if ( m_pClientItem->CommandStartsWith( ("table") ) ) {
         handleClientTable();
     }
 
@@ -1072,7 +805,7 @@ TCPClientThread::CommandHandler( wxString& strCommand )
     //                                What?
     //*********************************************************************
     else {
-        write(   MSG_UNKNOWN_COMMAND, strlen ( MSG_UNKNOWN_COMMAND ) );
+        write( MSG_UNKNOWN_COMMAND, strlen( MSG_UNKNOWN_COMMAND ) );
     }
 
     m_pClientItem->m_lastCommand = m_pClientItem->m_currentCommand;
@@ -1087,7 +820,7 @@ TCPClientThread::CommandHandler( wxString& strCommand )
 // format,level,vscp-measurement-type,value,unit,guid,sensoridx,zone,subzone,dest-guid
 //
 // format                   float|string|0|1 - float=0, string=1.
-// level                    1|0  1 = VSCP Level I event, 2 = VSCP Level II event.
+// level                    level2|1|level1|0  1 = VSCP Level I event, 2 = VSCP Level II event.
 // vscp-measurement-type    A valid vscp measurement type.
 // value                    A floating point value. (use $ prefix for variable followed by name)
 // unit                     Optional unit for this type. Default = 0.
@@ -1098,9 +831,9 @@ TCPClientThread::CommandHandler( wxString& strCommand )
 // dest-guid                Optional destination GUID. For Level I over Level II.
 //
 
-void TCPClientThread::handleClientMeasurment( void )
+void tcpipClientObj::handleClientMeasurment( void )
 {
-    wxString wxstr;
+    std::string str;
     unsigned long l;
     double value = 0;
     cguid guid;             // Initialized to zero
@@ -1116,8 +849,8 @@ void TCPClientThread::handleClientMeasurment( void )
     uint16_t sizeData;
     
     // Check object pointer
-    if ( NULL == gpobj ) {
-        write( MSG_INTERNAL_MEMORY_ERROR, strlen ( MSG_INTERNAL_MEMORY_ERROR ) );
+    if ( NULL == m_pObj ) {
+        write( MSG_INTERNAL_MEMORY_ERROR, strlen( MSG_INTERNAL_MEMORY_ERROR ) );
         return;
     }
     
@@ -1129,7 +862,8 @@ void TCPClientThread::handleClientMeasurment( void )
         return;
     }
     
-    wxStringTokenizer tkz( m_pClientItem->m_currentCommand, _(",") );
+    std::deque<std::string> tokens;
+    vscp_split( tokens, m_pClientItem->m_currentCommand, "," );
 
     // If first character is $ user request us to send content from
     // a variable
@@ -1137,235 +871,189 @@ void TCPClientThread::handleClientMeasurment( void )
     // * * * event format * * *
     
     // Get event format (float | string | 0 | 1 - float=0, string=1.)
-    if ( !tkz.HasMoreTokens() ) {
-        write(   MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
+    if ( tokens.empty() ) {
+        write( MSG_PARAMETER_ERROR, strlen( MSG_PARAMETER_ERROR ) );
         return;
     }
     
-    wxstr = tkz.GetNextToken();
-    wxstr.MakeUpper();
-    if ( wxstr.IsNumber() ) {
-        
-        l = 0;
-  
-        if ( wxstr.ToULong( &l ) && ( l > 1 ) ) {
-            write( MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
-            return;
-        }
-        
-        eventFormat = l;
-        
+    str = tokens.front();
+    tokens.pop_front();
+
+    vscp_trim( str );
+    vscp_makeUpper( str );
+
+    // Handle float=0
+    if ( '0' == str[0] ) {
+        eventFormat = 0; 
+    }
+    // Handle string=1
+    else if ( '1' == str[0] ) {
+        eventFormat = 1;
+    }
+    else if ( str == "STRING" ) {
+        eventFormat = 1;
+    }
+    else if ( str == "FLOAT" ) {
+        eventFormat = 0;
     }
     else {
-        if ( wxNOT_FOUND != wxstr.Find("STRING") ) {
-            eventFormat = 1;
-        }
-        else if ( wxNOT_FOUND != wxstr.Find("FLOAT") ) {
-            eventFormat = 0;
-        }
-        else {
-            write(   MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
-            return;
-        }
+        write( MSG_PARAMETER_ERROR, strlen( MSG_PARAMETER_ERROR ) );
+        return;
     }
     
     // * * * Level * * *
     
-    if ( !tkz.HasMoreTokens() ) {
-        write(   MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
+    if ( tokens.empty() ) {
+        write( MSG_PARAMETER_ERROR, strlen( MSG_PARAMETER_ERROR ) );
         return;
     }
     
-    wxstr = tkz.GetNextToken();
+    str = tokens.front();
+    tokens.pop_front();
+
+    vscp_trim( str );
+    vscp_makeUpper( str );
     
-    if ( wxstr.IsNumber() ) {
-        
-        l = VSCP_LEVEL1; 
-  
-        if ( wxstr.ToULong( &l ) && ( l > VSCP_LEVEL2 ) ) {
-            write(   MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
-            return;
-        }
-        
-        level = l;
-        
+    if ( '0' == str[0] ) {
+        level = VSCP_LEVEL1;
+    }
+    else if ( '1' == str[0] ) {
+        level = VSCP_LEVEL2;
+    }
+    else if ( str == "LEVEL1" ) {
+        level = VSCP_LEVEL1;
+    }
+    else if ( str == "LEVEL2" ) {
+        level = VSCP_LEVEL2;
     }
     else {
-        write(   MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
+        write( MSG_PARAMETER_ERROR, strlen( MSG_PARAMETER_ERROR ) );
         return;
     }
     
     // * * * vscp-measurement-type * * *
-    
-    if ( !tkz.HasMoreTokens() ) {
-        write(   MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
+    if ( tokens.empty() ) {
+        write( MSG_PARAMETER_ERROR, strlen( MSG_PARAMETER_ERROR ) );
         return;
     }
     
-    wxstr = tkz.GetNextToken();
-    
-    if ( wxstr.IsNumber() ) {
+    str = tokens.front();
+    tokens.pop_front();
+    vscptype = vscp_readStringValue( str );
         
-        l = 0; 
-  
-        if ( wxstr.ToULong( &l ) ) {
-            write(   MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
-            return;
-        }
-        
-        vscptype = l;
-        
-    }
-    else {
-        write(   MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
-        return;
-    }
-    
 
-    // * * * value * * *
-    
-        
-    if ( !tkz.HasMoreTokens() ) {
-        write(   MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
+    // * * * value * * *   
+    if ( tokens.empty() ) {
+        write( MSG_PARAMETER_ERROR, strlen( MSG_PARAMETER_ERROR ) );
         return;
     }
     
-    wxstr = tkz.GetNextToken();
-    wxstr.Trim(true);
-    wxstr.Trim(false);
+    str = tokens.front();
+    tokens.pop_front();
+    vscp_trim(str);
     
     // If first character is '$' user request us to send content from
     // a variable (that must be numeric)
-    if ( '$' == wxstr[0] ) {
+    if ( '$' == str[0] ) {
         
         CVSCPVariable variable;
-        wxstr = wxstr.Right( wxstr.Length() - 1 );  // get variable name
+        str = str.substr( str.length() - 1 );  // get variable name
+        vscp_makeUpper(str);
 
-        wxstr.MakeUpper();
-
-        if ( gpobj->m_variables.find( wxstr, variable  ) ) {
-            write(  MSG_VARIABLE_NOT_DEFINED, strlen ( MSG_VARIABLE_NOT_DEFINED ) );
+        if (  m_pObj->m_variables.find( str, variable  ) ) {
+            write( MSG_VARIABLE_NOT_DEFINED, strlen( MSG_VARIABLE_NOT_DEFINED ) );
             return;
         }
         
         // get the value
-        wxstr = variable.getValue();
-        if ( !wxstr.IsNumber() ) {
-            write(  MSG_VARIABLE_NOT_NUMERIC, strlen ( MSG_VARIABLE_NOT_NUMERIC ) );
-            return;
-        }
-        
-        if ( wxstr.ToCDouble( &value ) ) {
-            write(   MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
-            return;
-        }
-        
+        str = variable.getValue();
+        value = std::stod(str);
+ 
     }
     else {
-        if ( !wxstr.ToCDouble( &value ) ) {
-            write(   MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
-            return;
-        }
+        value = std::stod(str);
     }
     
     
     // * * * unit * * *
     
     
-    if ( tkz.HasMoreTokens() ) {
-        wxstr = tkz.GetNextToken();
-        if ( wxstr.IsNumber() ) {
-            if ( wxstr.ToULong( &l ) ) {
-                unit = l;
-            }
-        }
+    if ( !tokens.empty() ) {
+        str = tokens.front();
+        tokens.pop_front();
+        unit = vscp_readStringValue( str );
     }
     
     
     // * * * guid * * *
     
        
-    if ( tkz.HasMoreTokens() ) {
+    if ( !tokens.empty() ) {
         
-        wxstr = tkz.GetNextToken();
-        
-        wxstr.Trim(true);
-        wxstr.Trim(false);
+        str = tokens.front();
+        tokens.pop_front();
+        vscp_trim(str);
+
         // If empty set to default.
-        if ( 0 == wxstr.Length() ) wxstr = _("-");
-        guid.getFromString( wxstr );
+        if ( 0 == str.length() ) str = "-";
+        guid.getFromString( str );
     }
     
     
     // * * * sensor index * * *
     
     
-    if ( tkz.HasMoreTokens() ) {
+    if ( !tokens.empty() ) {
+        str = tokens.front();
+        tokens.pop_front();
+        vscp_trim(str);
         
-        wxstr = tkz.GetNextToken();
-        
-        wxstr.Trim(true);
-        wxstr.Trim(false);
-        
-        if ( wxstr.IsNumber() ) { 
-            if ( wxstr.ToULong( &l ) ) {
-                sensoridx = l;
-            }
-        }
+        sensoridx = vscp_readStringValue( str );
     }
     
     
     // * * * zone * * *
     
     
-    if ( tkz.HasMoreTokens() ) {
+    if ( !tokens.empty() ) {
         
-        wxstr = tkz.GetNextToken();
+        str = tokens.front();
+        tokens.pop_front();
+        vscp_trim(str);
         
-        wxstr.Trim(true);
-        wxstr.Trim(false);
-        
-        if ( wxstr.IsNumber() ) { 
-            if ( wxstr.ToULong( &l ) ) {
-                zone = l;
-                zone &= 0xff;
-            }
-        }
+        zone = vscp_readStringValue( str );;
+        zone &= 0xff;
+
     }
     
     
     // * * * subzone * * *
     
     
-    if ( tkz.HasMoreTokens() ) {
+    if ( !tokens.empty() ) {
         
-        wxstr = tkz.GetNextToken();
+        str = tokens.front();
+        tokens.pop_front();
+        vscp_trim(str);
         
-        wxstr.Trim(true);
-        wxstr.Trim(false);
-        
-        if ( wxstr.IsNumber() ) { 
-            if ( wxstr.ToULong( &l ) ) {
-                subzone = l;
-                subzone &= 0xff;
-            }
-        }
+        subzone = vscp_readStringValue( str );
+        subzone &= 0xff;
+ 
     }
     
     
     // * * * destguid * * *
     
         
-    if ( tkz.HasMoreTokens() ) {
+    if ( !tokens.empty() ) {
         
-        wxstr = tkz.GetNextToken();
-        
-        wxstr.Trim(true);
-        wxstr.Trim(false);
+        str = tokens.front();
+        tokens.pop_front();
+        vscp_trim(str);
         
         // If empty set to default.
-        if ( 0 == wxstr.Length() ) wxstr = _("-");
-        destguid.getFromString( wxstr );
+        if ( 0 == str.length() ) str = ("-");
+        destguid.getFromString( str );
     }
     
     // Range checks
@@ -1379,7 +1067,7 @@ void TCPClientThread::handleClientMeasurment( void )
         if (sensoridx > 255) sensoridx &= 0xff;
     }
     
-    if ( 1 == level ) {
+    if ( 1 == level ) {     // Level I
 
         if ( 0 == eventFormat ) {
 
@@ -1394,7 +1082,8 @@ void TCPClientThread::handleClientMeasurment( void )
 
                 vscpEvent *pEvent = new vscpEvent;
                 if ( NULL == pEvent ) {
-                    write(   MSG_INTERNAL_MEMORY_ERROR, strlen ( MSG_INTERNAL_MEMORY_ERROR ) );
+                    write( MSG_INTERNAL_MEMORY_ERROR, 
+                            strlen( MSG_INTERNAL_MEMORY_ERROR ) );
                     return;
                 }
                 
@@ -1412,14 +1101,15 @@ void TCPClientThread::handleClientMeasurment( void )
                 pEvent->vscp_type = vscptype;
 
                 // send the event
-                if ( !gpobj->sendEvent( m_pClientItem, pEvent ) ) {
-                    write(   MSG_UNABLE_TO_SEND_EVENT, strlen ( MSG_UNABLE_TO_SEND_EVENT ) );
+                if ( !m_pObj->sendEvent( m_pClientItem, pEvent ) ) {
+                    write( MSG_UNABLE_TO_SEND_EVENT, 
+                            strlen( MSG_UNABLE_TO_SEND_EVENT ) );
                     return;
                 }
 
             } 
             else {
-                write(   MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
+                write( MSG_PARAMETER_ERROR, strlen( MSG_PARAMETER_ERROR ) );
             }
         } 
         else {
@@ -1428,7 +1118,8 @@ void TCPClientThread::handleClientMeasurment( void )
             
             vscpEvent *pEvent = new vscpEvent;
             if (NULL == pEvent) {
-                write(   MSG_INTERNAL_MEMORY_ERROR, strlen ( MSG_INTERNAL_MEMORY_ERROR ) );
+                write( MSG_INTERNAL_MEMORY_ERROR, 
+                        strlen( MSG_INTERNAL_MEMORY_ERROR ) );
                 return;
             }
             
@@ -1438,7 +1129,8 @@ void TCPClientThread::handleClientMeasurment( void )
                                                     value,
                                                     unit,
                                                     sensoridx ) ) {
-                write(   MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
+                write( MSG_PARAMETER_ERROR, 
+                        strlen( MSG_PARAMETER_ERROR ) );
             }
             
         }
@@ -1451,7 +1143,8 @@ void TCPClientThread::handleClientMeasurment( void )
             
             vscpEvent *pEvent = new vscpEvent;
             if ( NULL == pEvent ) {
-                write(   MSG_INTERNAL_MEMORY_ERROR, strlen ( MSG_INTERNAL_MEMORY_ERROR ) );
+                write( MSG_INTERNAL_MEMORY_ERROR, 
+                        strlen( MSG_INTERNAL_MEMORY_ERROR ) );
                 return;
             }
 
@@ -1473,13 +1166,14 @@ void TCPClientThread::handleClientMeasurment( void )
             data[ 3 ] = unit;
 
             memcpy(data + 4, (uint8_t *) & value, 8); // copy in double
-            uint64_t temp = wxUINT64_SWAP_ON_LE(*(data + 4));
+            uint64_t temp = VSCP_UINT64_SWAP_ON_LE(*(data + 4));
             memcpy(data + 4, (void *) &temp, 8);
 
             // Copy in data
             pEvent->pdata = new uint8_t[ 4 + 8 ];
             if (NULL == pEvent->pdata) {
-                write(   MSG_INTERNAL_MEMORY_ERROR, strlen ( MSG_INTERNAL_MEMORY_ERROR ) );
+                write( MSG_INTERNAL_MEMORY_ERROR, 
+                        strlen( MSG_INTERNAL_MEMORY_ERROR ) );
                 delete pEvent;
                 return;
             }
@@ -1487,8 +1181,9 @@ void TCPClientThread::handleClientMeasurment( void )
             memcpy(pEvent->pdata, data, 4 + 8);
 
             // send the event
-            if ( !gpobj->sendEvent( m_pClientItem, pEvent ) ) {
-                write(   MSG_UNABLE_TO_SEND_EVENT, strlen ( MSG_UNABLE_TO_SEND_EVENT ) );
+            if ( !m_pObj->sendEvent( m_pClientItem, pEvent ) ) {
+                write( MSG_UNABLE_TO_SEND_EVENT, 
+                        strlen( MSG_UNABLE_TO_SEND_EVENT ) );
                 return;
             }
             
@@ -1510,47 +1205,47 @@ void TCPClientThread::handleClientMeasurment( void )
             pEvent->vscp_type = vscptype;
             pEvent->sizeData = 12;
             
-            wxString strValue = wxString::Format(_("%f"), value );
+            std::string strValue = vscp_string_format( "%f", value );
 
             data[ 0 ] = sensoridx;
             data[ 1 ] = zone;
             data[ 2 ] = subzone;
             data[ 3 ] = unit;
 
-            pEvent->pdata = new uint8_t[ 4 + strValue.Length() ];
+            pEvent->pdata = new uint8_t[ 4 + strValue.length() ];
             if (NULL == pEvent->pdata) {
-                write(   MSG_INTERNAL_MEMORY_ERROR, strlen ( MSG_INTERNAL_MEMORY_ERROR ) );
+                write( MSG_INTERNAL_MEMORY_ERROR, strlen( MSG_INTERNAL_MEMORY_ERROR ) );
                 delete pEvent;
                 return;
             }
-            memcpy(data + 4, strValue.mbc_str(), strValue.Length()); // copy in double
+            memcpy( data + 4, strValue.c_str(), strValue.length() ); // copy in double
 
             // send the event
-            if ( !gpobj->sendEvent( m_pClientItem, pEvent ) ) {
-                write(   MSG_UNABLE_TO_SEND_EVENT, strlen ( MSG_UNABLE_TO_SEND_EVENT ) );
+            if ( !m_pObj->sendEvent( m_pClientItem, pEvent ) ) {
+                write( MSG_UNABLE_TO_SEND_EVENT, strlen( MSG_UNABLE_TO_SEND_EVENT ) );
                 return;
             }
             
         }
     }
    
-    write(  MSG_OK, strlen ( MSG_OK ) );
+    write( MSG_OK, strlen( MSG_OK ) );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // handleClientCapabilityRequest
 //
 
-void TCPClientThread::handleClientCapabilityRequest( void )
+void tcpipClientObj::handleClientCapabilityRequest( void )
 {
-    wxString wxstr;
+    std::string str;
     uint8_t capabilities[16];
     
-    gpobj->getVscpCapabilities( capabilities );
-    wxstr = wxString::Format(_("%02X-%02X-%02X-%02X-%02X-%02X-%02X-%02X"),                                
+    m_pObj->getVscpCapabilities( capabilities );
+    str = vscp_string_format( "%02X-%02X-%02X-%02X-%02X-%02X-%02X-%02X",                                
                                 capabilities[7], capabilities[6], capabilities[5], capabilities[4],
                                 capabilities[3], capabilities[2], capabilities[1], capabilities[0] );
-    write(   MSG_UNKNOWN_COMMAND, strlen ( MSG_UNKNOWN_COMMAND ) );
+    write( MSG_UNKNOWN_COMMAND, strlen( MSG_UNKNOWN_COMMAND ) );
 }
 
 
@@ -1558,10 +1253,10 @@ void TCPClientThread::handleClientCapabilityRequest( void )
 // isVerified
 //
 
-bool TCPClientThread::isVerified( void )
+bool tcpipClientObj::isVerified( void )
 {
     // Check object
-    if ( NULL == gpobj ) {
+    if ( NULL == m_pObj ) {
         return false;
     }
     
@@ -1570,7 +1265,7 @@ bool TCPClientThread::isVerified( void )
 
     // Must be accredited to do this
     if ( !m_pClientItem->bAuthenticated ) {
-        write(  MSG_NOT_ACCREDITED, strlen ( MSG_NOT_ACCREDITED ) );
+        write( MSG_NOT_ACCREDITED, strlen( MSG_NOT_ACCREDITED ) );
         return false;
     }
 
@@ -1581,10 +1276,10 @@ bool TCPClientThread::isVerified( void )
 // checkPrivilege
 //
 
-bool TCPClientThread::checkPrivilege( unsigned char reqiredPrivilege )
+bool tcpipClientObj::checkPrivilege( unsigned char reqiredPrivilege )
 {
     // Check objects
-    if ( NULL == gpobj ) {
+    if ( NULL == m_pObj ) {
         return false;
     }
     
@@ -1598,12 +1293,12 @@ bool TCPClientThread::checkPrivilege( unsigned char reqiredPrivilege )
     }
 
     if ( NULL == m_pClientItem->m_pUserItem ) {
-        write(   MSG_NOT_ACCREDITED, strlen ( MSG_NOT_ACCREDITED ) );
+        write( MSG_NOT_ACCREDITED, strlen( MSG_NOT_ACCREDITED ) );
         return false;
     }
 
     if ( (m_pClientItem->m_pUserItem->getUserRights( 0 ) & USER_PRIVILEGE_MASK ) < reqiredPrivilege ) {
-        write(   MSG_LOW_PRIVILEGE_ERROR, strlen ( MSG_LOW_PRIVILEGE_ERROR ) );
+        write( MSG_LOW_PRIVILEGE_ERROR, strlen( MSG_LOW_PRIVILEGE_ERROR ) );
         return false;
     }
 
@@ -1615,12 +1310,12 @@ bool TCPClientThread::checkPrivilege( unsigned char reqiredPrivilege )
 // handleClientSend
 //
 
-void TCPClientThread::handleClientSend( void )
+void tcpipClientObj::handleClientSend( void )
 {
     bool bSent = false;
     bool bVariable = false;
     vscpEvent event;
-    wxString nameVariable;
+    std::string nameVariable;
     
     // Must be connected
     if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
@@ -1628,36 +1323,36 @@ void TCPClientThread::handleClientSend( void )
     // Set timestamp block for event
     vscp_setEventDateTimeBlockToNow( &event );
 
-    if ( NULL == gpobj ) {
-        write(  MSG_PARAMETER_ERROR, strlen( MSG_PARAMETER_ERROR ) );
+    if ( NULL == m_pObj ) {
+        write( MSG_PARAMETER_ERROR, strlen( MSG_PARAMETER_ERROR ) );
         return;
     }
 
     if ( NULL == m_pClientItem ) {
-        write(  MSG_INTERNAL_ERROR, strlen( MSG_INTERNAL_ERROR ) );
+        write( MSG_INTERNAL_ERROR, strlen( MSG_INTERNAL_ERROR ) );
         return;
     }
 
     // Must be accredited to do this
     if ( !m_pClientItem->bAuthenticated ) {
-        write(  MSG_NOT_ACCREDITED, strlen ( MSG_NOT_ACCREDITED ) );
+        write( MSG_NOT_ACCREDITED, strlen( MSG_NOT_ACCREDITED ) );
         return;
     }
 
-    wxString str;
-    wxStringTokenizer tkz( m_pClientItem->m_currentCommand, _(",") );
+    std::string str;
+    std::deque<std::string> tokens;
+    vscp_split( tokens, m_pClientItem->m_currentCommand, "," );
 
     // If first character is $ user request us to send content from
     // a variable
 
-    if ( tkz.HasMoreTokens() ) {
+    if ( !tokens.empty() ) {
         
-        str = tkz.GetNextToken();
+        str = tokens.front();
+        tokens.pop_front();
+        vscp_trim(str);
         
-        str.Trim(true);
-        str.Trim(false);
-        
-        if ( wxNOT_FOUND == str.Find(_("$") ) ) {
+        if ( str[0] == '$' ) {
             event.head = vscp_readStringValue( str );
         }
         else {
@@ -1666,18 +1361,19 @@ void TCPClientThread::handleClientSend( void )
             bVariable = true;   // Yes this is a variable send
 
             // Get the name of the variable
-            nameVariable = str.Right( str.Length() - 1 );
-            nameVariable.MakeUpper();
+            nameVariable = str.substr( str.length() - 1 );
+            vscp_makeUpper( nameVariable );
 
-            if ( gpobj->m_variables.find( nameVariable, variable  ) ) {
-                write(  MSG_VARIABLE_NOT_DEFINED, strlen ( MSG_VARIABLE_NOT_DEFINED ) );
+            if ( m_pObj->m_variables.find( nameVariable, variable  ) ) {
+                write( MSG_VARIABLE_NOT_DEFINED, 
+                        strlen( MSG_VARIABLE_NOT_DEFINED ) );
                 return;
             }
 
             // Must be event type
             if ( VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT != variable.getType() ) {
-                write(  MSG_VARIABLE_MUST_BE_EVENT_TYPE, 
-                          strlen ( MSG_VARIABLE_MUST_BE_EVENT_TYPE ) );
+                write( MSG_VARIABLE_MUST_BE_EVENT_TYPE, 
+                          strlen( MSG_VARIABLE_MUST_BE_EVENT_TYPE ) );
                 return;
             }
 
@@ -1687,57 +1383,59 @@ void TCPClientThread::handleClientSend( void )
         }
     }
     else {
-        write(  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
+        write( MSG_PARAMETER_ERROR, strlen( MSG_PARAMETER_ERROR ) );
         return;
     }
 
-    if ( !bVariable ) {
-        
-        // Not a variable
+    if ( !bVariable ) {     // Not a variable
 
         // Get Class
-        if ( tkz.HasMoreTokens() ) {
-            str = tkz.GetNextToken();
+        if ( !tokens.empty() ) {
+            str = tokens.front();
+            tokens.pop_front();
             event.vscp_class = vscp_readStringValue( str );
         }
         else {
-            write(   MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
+            write( MSG_PARAMETER_ERROR, strlen( MSG_PARAMETER_ERROR ) );
             return;
         }
 
         // Get Type
-        if ( tkz.HasMoreTokens() ) {
-            str = tkz.GetNextToken();
+        if ( !tokens.empty() ) {
+            str = tokens.front();
+            tokens.pop_front();
             event.vscp_type = vscp_readStringValue( str );
         }
         else {
-            write(   MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
+            write( MSG_PARAMETER_ERROR, strlen( MSG_PARAMETER_ERROR ) );
             return;
         }
 
         // Get OBID  -  Kept here to be compatible with receive
-        if ( tkz.HasMoreTokens() ) {
-            str = tkz.GetNextToken();
+        if ( !tokens.empty() ) {
+            str = tokens.front();
+            tokens.pop_front();
             event.obid = vscp_readStringValue( str );
         }
         else {
-            write(   MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
+            write( MSG_PARAMETER_ERROR, strlen( MSG_PARAMETER_ERROR ) );
             return;
         }
         
         // Get date/time - can be empty
-        if ( tkz.HasMoreTokens() ) {
-            str = tkz.GetNextToken();
-            str.Trim();
-            if ( str.Length() ) {
-                wxDateTime dt;
-                if ( dt.ParseISOCombined( str ) ) {
-                    event.year = dt.GetYear();
-                    event.month = dt.GetMonth();
-                    event.day = dt.GetDay();
-                    event.hour = dt.GetHour();
-                    event.minute = dt.GetMinute();
-                    event.second = dt.GetSecond();
+        if ( !tokens.empty() ) {
+            str = tokens.front();
+            tokens.pop_front();
+            vscp_trim( str );
+            if ( str.length() ) {
+                vscpdatetime dt;
+                if ( dt.set( str ) ) {
+                    event.year = dt.getYear();
+                    event.month = dt.getMonth();
+                    event.day = dt.getDay();
+                    event.hour = dt.getHour();
+                    event.minute = dt.getMinute();
+                    event.second = dt.getSecond();
                 }
                 else {
                     vscp_setEventDateTimeBlockToNow( &event );
@@ -1750,15 +1448,16 @@ void TCPClientThread::handleClientSend( void )
 
         }
         else {
-            write(   MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
+            write( MSG_PARAMETER_ERROR, strlen( MSG_PARAMETER_ERROR ) );
             return;
         }
 
         // Get Timestamp - can be empty
-        if ( tkz.HasMoreTokens() ) {
-            str = tkz.GetNextToken();
-            str.Trim();
-            if ( str.Length() ) {
+        if ( !tokens.empty() ) {
+            str = tokens.front();
+            tokens.pop_front();
+            vscp_trim( str );
+            if ( str.length() ) {
                 event.timestamp = vscp_readStringValue( str );
             }
             else {
@@ -1766,14 +1465,15 @@ void TCPClientThread::handleClientSend( void )
             }
         }
         else {
-            write(   MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
+            write( MSG_PARAMETER_ERROR, strlen( MSG_PARAMETER_ERROR ) );
             return;
         }
 
         // Get GUID
-        wxString strGUID;
-        if ( tkz.HasMoreTokens() ) {
-            strGUID = tkz.GetNextToken();
+        std::string strGUID;
+        if ( !tokens.empty() ) {
+            strGUID = tokens.front();
+            tokens.pop_front();
             
             // Check if i/f GUID should be used
             if ( '-' == strGUID[0] ) {
@@ -1781,7 +1481,7 @@ void TCPClientThread::handleClientSend( void )
                 m_pClientItem->m_guid.writeGUID( event.GUID );
             }
             else {
-                vscp_getGuidFromString( &event, strGUID );
+                vscp_setEventGuidFromString( &event, strGUID );
                 
                 // Check if i/f GUID should be used
                 if ( true == vscp_isGUIDEmpty( event.GUID ) ) {
@@ -1791,17 +1491,17 @@ void TCPClientThread::handleClientSend( void )
             }
         }
         else {
-            write(   MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
+            write( MSG_PARAMETER_ERROR, strlen( MSG_PARAMETER_ERROR ) );
             return;
         }
 
         // Handle data
-        if ( 512 < tkz.CountTokens() ) {
-            write(  MSG_PARAMETER_ERROR, strlen( MSG_PARAMETER_ERROR ) );
+        if ( 512 < tokens.size() ) {
+            write( MSG_PARAMETER_ERROR, strlen( MSG_PARAMETER_ERROR ) );
             return;
         }
 
-        event.sizeData = tkz.CountTokens();
+        event.sizeData = tokens.size();
 
         if ( event.sizeData > 0 ) {
 
@@ -1810,17 +1510,18 @@ void TCPClientThread::handleClientSend( void )
             event.pdata = new uint8_t[ event.sizeData ];
 
             if ( NULL == event.pdata ) {
-                write(  MSG_INTERNAL_MEMORY_ERROR, strlen( MSG_INTERNAL_MEMORY_ERROR ) );
+                write( MSG_INTERNAL_MEMORY_ERROR, strlen( MSG_INTERNAL_MEMORY_ERROR ) );
                 return;
             }
 
-            while ( tkz.HasMoreTokens() && ( event.sizeData > index ) ) {
-                str = tkz.GetNextToken();
+            while ( !tokens.empty() && ( event.sizeData > index ) ) {
+                str = tokens.front();
+                tokens.pop_front();
                 event.pdata[ index++ ] = vscp_readStringValue( str );
             }
 
-            if ( tkz.HasMoreTokens() ) {
-                write(  MSG_PARAMETER_ERROR, strlen( MSG_PARAMETER_ERROR ) );
+            if ( !tokens.empty() ) {
+                write( MSG_PARAMETER_ERROR, strlen( MSG_PARAMETER_ERROR ) );
 
                 delete [] event.pdata;
                 event.pdata = NULL;
@@ -1836,14 +1537,14 @@ void TCPClientThread::handleClientSend( void )
 
     // Check if this user is allowed to send this event
     if ( !m_pClientItem->m_pUserItem->isUserAllowedToSendEvent( event.vscp_class, event.vscp_type ) ) {
-        wxString strErr =
-                        wxString::Format( _("[TCP/IP srv] User [%s] not allowed to send event class=%d type=%d.\n"),
-                                                (const char *)m_pClientItem->m_pUserItem->getUserName().mbc_str(),
+        std::string strErr =
+                        vscp_string_format( ("[TCP/IP srv] User [%s] not allowed to send event class=%d type=%d.\n"),
+                                                (const char *)m_pClientItem->m_pUserItem->getUserName().c_str(),
                                                 event.vscp_class, event.vscp_type );
 
-        gpobj->logMsg ( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY );
+        syslog( LOG_ERR, "%s", strErr.c_str() );
 
-        write(  MSG_MOT_ALLOWED_TO_SEND_EVENT, strlen ( MSG_MOT_ALLOWED_TO_SEND_EVENT ) );
+        write( MSG_MOT_ALLOWED_TO_SEND_EVENT, strlen( MSG_MOT_ALLOWED_TO_SEND_EVENT ) );
 
         if ( NULL != event.pdata ) {
             delete [] event.pdata;
@@ -1854,19 +1555,19 @@ void TCPClientThread::handleClientSend( void )
     }
     
     // send event
-    if ( !gpobj->sendEvent( m_pClientItem, &event ) ) {
-        write(   MSG_BUFFER_FULL, strlen ( MSG_BUFFER_FULL ) );
+    if ( !m_pObj->sendEvent( m_pClientItem, &event ) ) {
+        write( MSG_BUFFER_FULL, strlen( MSG_BUFFER_FULL ) );
         return;
     }
         
-    write(  MSG_OK, strlen ( MSG_OK ) );
+    write( MSG_OK, strlen( MSG_OK ) );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // handleClientReceive
 //
 
-void TCPClientThread::handleClientReceive( void )
+void tcpipClientObj::handleClientReceive( void )
 {
     unsigned short cnt = 0;	// # of messages to read
     
@@ -1875,23 +1576,22 @@ void TCPClientThread::handleClientReceive( void )
 
     // Must be accredited to do this
     if ( !m_pClientItem->bAuthenticated ) {
-        write(   MSG_NOT_ACCREDITED, strlen ( MSG_NOT_ACCREDITED ) );
+        write( MSG_NOT_ACCREDITED, strlen( MSG_NOT_ACCREDITED ) );
         return;
     }
 
-    wxString str;
+    std::string str;
     cnt = vscp_readStringValue( m_pClientItem->m_currentCommand );
 
     if ( !cnt ) cnt = 1;	// No arg is "read one"
 
-
     // Read cnt messages
     while ( cnt ) {
 
-        wxString strOut;
+        std::string strOut;
 
         if ( !m_pClientItem->m_bOpen ) {
-            write(   MSG_NO_MSG, strlen ( MSG_NO_MSG ) );
+            write( MSG_NO_MSG, strlen( MSG_NO_MSG ) );
             return;
         }
         else {
@@ -1904,7 +1604,7 @@ void TCPClientThread::handleClientReceive( void )
 
     } // while
 
-    write(   MSG_OK, strlen ( MSG_OK ) );
+    write( MSG_OK, strlen( MSG_OK ) );
 
 }
 
@@ -1912,41 +1612,34 @@ void TCPClientThread::handleClientReceive( void )
 // sendOneEventFromQueue
 //
 
-bool TCPClientThread::sendOneEventFromQueue( bool bStatusMsg )
+bool tcpipClientObj::sendOneEventFromQueue( bool bStatusMsg )
 {
-    wxString strOut;
+    std::string strOut;
     
     // Must be connected
     if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return false;
 
-    CLIENTEVENTLIST::compatibility_iterator nodeClient;
-
-    if ( m_pClientItem->m_clientInputQueue.GetCount() ) {
+    if ( m_pClientItem->m_clientInputQueue.size() ) {
 
         vscpEvent *pqueueEvent;
-        m_pClientItem->m_mutexClientInputQueue.Lock();
+        pthread_mutex_lock( &m_pClientItem->m_mutexClientInputQueue );
         {
-            nodeClient = m_pClientItem->m_clientInputQueue.GetFirst();
-            pqueueEvent = nodeClient->GetData();
+            pqueueEvent = m_pClientItem->m_clientInputQueue.front();
+            m_pClientItem->m_clientInputQueue.pop_front();
 
-            // Remove the node
-            m_pClientItem->m_clientInputQueue.DeleteNode ( nodeClient );
         }
-        m_pClientItem->m_mutexClientInputQueue.Unlock();
+        pthread_mutex_unlock( &m_pClientItem->m_mutexClientInputQueue );
 
         vscp_writeVscpEventToString( pqueueEvent, strOut );
-        strOut += _("\r\n");
-        write(   strOut.mb_str(), strlen ( strOut.mb_str() ) );
+        strOut += ("\r\n");
+        write( strOut.c_str(), strlen( strOut.c_str() ) );
 
-        //delete pqueueEvent;
         vscp_deleteVSCPevent( pqueueEvent );
 
-        // Let the system work a little
-        //ns_mgr_poll( &gpobj->m_mgrTcpIpServer, 1 );
     }
     else {
         if ( bStatusMsg ) {
-            write(   MSG_NO_MSG, strlen ( MSG_NO_MSG ) );
+            write( MSG_NO_MSG, strlen( MSG_NO_MSG ) );
         }
 
         return false;
@@ -1963,7 +1656,7 @@ bool TCPClientThread::sendOneEventFromQueue( bool bStatusMsg )
 // handleClientDataAvailable
 //
 
-void TCPClientThread::handleClientDataAvailable( void )
+void tcpipClientObj::handleClientDataAvailable( void )
 {
     char outbuf[ 1024 ];
     
@@ -1972,16 +1665,16 @@ void TCPClientThread::handleClientDataAvailable( void )
 
     // Must be accredited to do this
     if ( !m_pClientItem->bAuthenticated ) {
-        write(   MSG_NOT_ACCREDITED,
-            strlen ( MSG_NOT_ACCREDITED ) );
+        write( MSG_NOT_ACCREDITED,
+            strlen( MSG_NOT_ACCREDITED ) );
         return;
     }
 
     sprintf ( outbuf,
         "%zd\r\n%s\r\n",
-        m_pClientItem->m_clientInputQueue.GetCount(),
+        m_pClientItem->m_clientInputQueue.size(),
         MSG_OK );
-    write(   outbuf, strlen ( outbuf ) );
+    write( outbuf, strlen( outbuf ) );
 
 
 }
@@ -1990,23 +1683,23 @@ void TCPClientThread::handleClientDataAvailable( void )
 // handleClientClearInputQueue
 //
 
-void TCPClientThread::handleClientClearInputQueue( void )
+void tcpipClientObj::handleClientClearInputQueue( void )
 {
     // Must be connected
     if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
     // Must be accredited to do this
     if ( !m_pClientItem->bAuthenticated ) {
-        write(   MSG_NOT_ACCREDITED,
-            strlen ( MSG_NOT_ACCREDITED ) );
+        write( MSG_NOT_ACCREDITED,
+            strlen( MSG_NOT_ACCREDITED ) );
         return;
     }
 
-    m_pClientItem->m_mutexClientInputQueue.Lock();
-    m_pClientItem->m_clientInputQueue.Clear();    
-    m_pClientItem->m_mutexClientInputQueue.Unlock();
+    pthread_mutex_lock( &m_pClientItem->m_mutexClientInputQueue );
+    m_pClientItem->m_clientInputQueue.clear();    
+    pthread_mutex_unlock( &m_pClientItem->m_mutexClientInputQueue );
 
-    write(   MSG_QUEUE_CLEARED, strlen ( MSG_QUEUE_CLEARED ) );
+    write( MSG_QUEUE_CLEARED, strlen( MSG_QUEUE_CLEARED ) );
 }
 
 
@@ -2014,7 +1707,7 @@ void TCPClientThread::handleClientClearInputQueue( void )
 // handleClientGetStatistics
 //
 
-void TCPClientThread::handleClientGetStatistics( void )
+void tcpipClientObj::handleClientGetStatistics( void )
 {
     char outbuf[ 1024 ];
     
@@ -2023,7 +1716,7 @@ void TCPClientThread::handleClientGetStatistics( void )
 
     // Must be accredited to do this
     if ( !m_pClientItem->bAuthenticated ) {
-        write(   MSG_NOT_ACCREDITED, strlen ( MSG_NOT_ACCREDITED ) );
+        write( MSG_NOT_ACCREDITED, strlen( MSG_NOT_ACCREDITED ) );
         return;
     }
 
@@ -2037,7 +1730,7 @@ void TCPClientThread::handleClientGetStatistics( void )
         m_pClientItem->m_statistics.cntTransmitFrames,
         MSG_OK );
 
-    write( outbuf, strlen ( outbuf ) );
+    write( outbuf, strlen( outbuf ) );
 
 }
 
@@ -2045,7 +1738,7 @@ void TCPClientThread::handleClientGetStatistics( void )
 // handleClientGetStatus
 //
 
-void TCPClientThread::handleClientGetStatus( void )
+void tcpipClientObj::handleClientGetStatus( void )
 {
     char outbuf[ 1024 ];
     
@@ -2054,7 +1747,7 @@ void TCPClientThread::handleClientGetStatus( void )
 
     // Must be accredited to do this
     if ( !m_pClientItem->bAuthenticated ) {
-        write(   MSG_NOT_ACCREDITED, strlen ( MSG_NOT_ACCREDITED ) );
+        write( MSG_NOT_ACCREDITED, strlen( MSG_NOT_ACCREDITED ) );
         return;
     }
 
@@ -2074,7 +1767,7 @@ void TCPClientThread::handleClientGetStatus( void )
 // handleClientGetChannelID
 //
 
-void TCPClientThread::handleClientGetChannelID( void )
+void tcpipClientObj::handleClientGetChannelID( void )
 {
     char outbuf[ 1024 ];
     
@@ -2083,14 +1776,14 @@ void TCPClientThread::handleClientGetChannelID( void )
 
     // Must be accredited to do this
     if ( !m_pClientItem->bAuthenticated ) {
-        write(   MSG_NOT_ACCREDITED, strlen ( MSG_NOT_ACCREDITED ) );
+        write( MSG_NOT_ACCREDITED, strlen( MSG_NOT_ACCREDITED ) );
         return;
     }
 
     sprintf( outbuf, "%lu\r\n%s",
             (unsigned long)m_pClientItem->m_clientID, MSG_OK );
 
-    write(   outbuf, strlen ( outbuf ) );
+    write( outbuf, strlen( outbuf ) );
 
 }
 
@@ -2099,19 +1792,18 @@ void TCPClientThread::handleClientGetChannelID( void )
 // handleClientSetChannelGUID
 //
 
-void TCPClientThread::handleClientSetChannelGUID( void )
+void tcpipClientObj::handleClientSetChannelGUID( void )
 {
     // Must be connected
     if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
     // Must be accredited to do this
     if ( !m_pClientItem->bAuthenticated ) {
-        write(   MSG_NOT_ACCREDITED, strlen ( MSG_NOT_ACCREDITED ) );
+        write( MSG_NOT_ACCREDITED, strlen( MSG_NOT_ACCREDITED ) );
         return;
     }
 
-    m_pClientItem->m_currentCommand.Trim(true);
-    m_pClientItem->m_currentCommand.Trim(false);
+    vscp_trim( m_pClientItem->m_currentCommand );
     
     m_pClientItem->m_guid.getFromString( m_pClientItem->m_currentCommand );
     write( MSG_OK, strlen( MSG_OK ) );
@@ -2121,23 +1813,23 @@ void TCPClientThread::handleClientSetChannelGUID( void )
 // handleClientGetChannelGUID
 //
 
-void TCPClientThread::handleClientGetChannelGUID( void )
+void tcpipClientObj::handleClientGetChannelGUID( void )
 {
-    wxString strBuf;
+    std::string strBuf;
     
     // Must be connected
     if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
     // Must be accredited to do this
     if ( !m_pClientItem->bAuthenticated ) {
-        write(  MSG_NOT_ACCREDITED, strlen ( MSG_NOT_ACCREDITED ) );
+        write( MSG_NOT_ACCREDITED, strlen( MSG_NOT_ACCREDITED ) );
         return;
     }
 
 
     m_pClientItem->m_guid.toString( strBuf );
-    strBuf += _("\r\n");
-    strBuf += _(MSG_OK);
+    strBuf += std::string("\r\n");
+    strBuf += std::string(MSG_OK);
 
     write( strBuf );
 }
@@ -2146,7 +1838,7 @@ void TCPClientThread::handleClientGetChannelGUID( void )
 // handleClientGetVersion
 //
 
-void TCPClientThread::handleClientGetVersion( void )
+void tcpipClientObj::handleClientGetVersion( void )
 {
     char outbuf[ 1024 ];
 
@@ -2176,7 +1868,7 @@ void TCPClientThread::handleClientGetVersion( void )
 // handleClientSetFilter
 //
 
-void TCPClientThread::handleClientSetFilter( void )
+void tcpipClientObj::handleClientSetFilter( void )
 {
     // Must be connected
     if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
@@ -2187,14 +1879,15 @@ void TCPClientThread::handleClientSetFilter( void )
         return;
     }
 
-    wxString str;
-    m_pClientItem->m_currentCommand.Trim(true);
-    m_pClientItem->m_currentCommand.Trim(false);
-    wxStringTokenizer tkz( m_pClientItem->m_currentCommand, _(",") );
+    std::string str;
+    vscp_trim( m_pClientItem->m_currentCommand );
+    std::deque<std::string> tokens;
+    vscp_split( tokens, m_pClientItem->m_currentCommand, "," );
 
     // Get priority
-    if ( tkz.HasMoreTokens() ) {
-        str = tkz.GetNextToken();
+    if ( !tokens.empty() ) {
+        str = tokens.front();
+        tokens.pop_front();
         m_pClientItem->m_filterVSCP.filter_priority = vscp_readStringValue( str );
     }
     else {
@@ -2203,8 +1896,9 @@ void TCPClientThread::handleClientSetFilter( void )
     }
 
     // Get Class
-    if ( tkz.HasMoreTokens() ) {
-        str = tkz.GetNextToken();
+    if ( !tokens.empty() ) {
+        str = tokens.front();
+        tokens.pop_front();
         m_pClientItem->m_filterVSCP.filter_class = vscp_readStringValue( str );
     }
     else {
@@ -2212,10 +1906,10 @@ void TCPClientThread::handleClientSetFilter( void )
         return;
     }
 
-
     // Get Type
-    if ( tkz.HasMoreTokens() ) {
-        str = tkz.GetNextToken();
+    if ( !tokens.empty() ) {
+        str = tokens.front();
+        tokens.pop_front();
         m_pClientItem->m_filterVSCP.filter_type = vscp_readStringValue( str );
     }
     else {
@@ -2224,8 +1918,9 @@ void TCPClientThread::handleClientSetFilter( void )
     }
 
     // Get GUID
-    if ( tkz.HasMoreTokens() ) {
-        str = tkz.GetNextToken();
+    if ( !tokens.empty() ) {
+        str = tokens.front();
+        tokens.pop_front();
         vscp_getGuidFromStringToArray( m_pClientItem->m_filterVSCP.filter_GUID, str );
     }
     else {
@@ -2233,7 +1928,7 @@ void TCPClientThread::handleClientSetFilter( void )
         return;
     }
 
-    write( MSG_OK, strlen ( MSG_OK ) );
+    write( MSG_OK, strlen( MSG_OK ) );
 
 }
 
@@ -2241,7 +1936,7 @@ void TCPClientThread::handleClientSetFilter( void )
 // handleClientSetMask
 //
 
-void TCPClientThread::handleClientSetMask( void )
+void tcpipClientObj::handleClientSetMask( void )
 {
     // Must be connected
     if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
@@ -2252,14 +1947,15 @@ void TCPClientThread::handleClientSetMask( void )
         return;
     }
 
-    wxString str;
-    m_pClientItem->m_currentCommand.Trim(true);
-    m_pClientItem->m_currentCommand.Trim(false);
-    wxStringTokenizer tkz( m_pClientItem->m_currentCommand, _(",") );
+    std::string str;
+    vscp_trim( m_pClientItem->m_currentCommand );
+    std::deque<std::string> tokens;
+    vscp_split( tokens, m_pClientItem->m_currentCommand, "," );
 
     // Get priority
-    if ( tkz.HasMoreTokens() ) {
-        str = tkz.GetNextToken();
+    if ( !tokens.empty() ) {
+        str = tokens.front();
+        tokens.pop_front();
         m_pClientItem->m_filterVSCP.mask_priority = vscp_readStringValue( str );
     }
     else {
@@ -2268,8 +1964,9 @@ void TCPClientThread::handleClientSetMask( void )
     }
 
     // Get Class
-    if ( tkz.HasMoreTokens() ) {
-        str = tkz.GetNextToken();
+    if ( !tokens.empty() ) {
+        str = tokens.front();
+        tokens.pop_front();
         m_pClientItem->m_filterVSCP.mask_class = vscp_readStringValue( str );
     }
     else {
@@ -2277,10 +1974,10 @@ void TCPClientThread::handleClientSetMask( void )
         return;
     }
 
-
     // Get Type
-    if ( tkz.HasMoreTokens() ) {
-        str = tkz.GetNextToken();
+    if ( !tokens.empty() ) {
+        str = tokens.front();
+        tokens.pop_front();
         m_pClientItem->m_filterVSCP.mask_type = vscp_readStringValue( str );
     }
     else {
@@ -2289,8 +1986,9 @@ void TCPClientThread::handleClientSetMask( void )
     }
 
     // Get GUID
-    if ( tkz.HasMoreTokens() ) {
-        str = tkz.GetNextToken();
+    if ( !tokens.empty() ) {
+        str = tokens.front();
+        tokens.pop_front();
         vscp_getGuidFromStringToArray( m_pClientItem->m_filterVSCP.mask_GUID, str );
     }
     else {
@@ -2306,25 +2004,24 @@ void TCPClientThread::handleClientSetMask( void )
 // handleClientUser
 //
 
-void TCPClientThread::handleClientUser( void )
+void tcpipClientObj::handleClientUser( void )
 {
     // Must be connected
     if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
     if ( m_pClientItem->bAuthenticated ) {
-        write(   MSG_OK, strlen ( MSG_OK ) );
+        write( MSG_OK, strlen( MSG_OK ) );
         return;
     }
 
     m_pClientItem->m_UserName = m_pClientItem->m_currentCommand;
-    m_pClientItem->m_UserName.Trim(true);     // Trim right side
-    m_pClientItem->m_UserName.Trim(false );   // Trim left
-    if ( m_pClientItem->m_UserName.IsEmpty() ) {
-        write( MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
+    vscp_trim( m_pClientItem->m_UserName );    
+    if ( m_pClientItem->m_UserName.empty() ) {
+        write( MSG_PARAMETER_ERROR, strlen( MSG_PARAMETER_ERROR ) );
         return;
     }
 
-    write( MSG_USENAME_OK, strlen ( MSG_USENAME_OK ) );
+    write( MSG_USENAME_OK, strlen( MSG_USENAME_OK ) );
 
 }
 
@@ -2332,52 +2029,47 @@ void TCPClientThread::handleClientUser( void )
 // handleClientPassword
 //
 
-bool TCPClientThread::handleClientPassword( void )
+bool tcpipClientObj::handleClientPassword( void )
 {
     // Must be connected
     if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return false;
 
     if ( m_pClientItem->bAuthenticated ) {
-        write( MSG_OK, strlen ( MSG_OK ) );
+        write( MSG_OK, strlen( MSG_OK ) );
         return true;
     }
 
     // Must have username before password can be entered.
-    if ( 0 == m_pClientItem->m_UserName.Length() ) {
-        write( MSG_NEED_USERNAME, strlen ( MSG_NEED_USERNAME ) );
+    if ( 0 == m_pClientItem->m_UserName.length() ) {
+        write( MSG_NEED_USERNAME, strlen( MSG_NEED_USERNAME ) );
         return true;
     }
 
-    wxString strPassword = m_pClientItem->m_currentCommand;
-    strPassword.Trim(true);         // Trim right side
-    strPassword.Trim(false);        // Trim left
+    std::string strPassword = m_pClientItem->m_currentCommand;
+    vscp_trim( strPassword );     
 
-    if ( strPassword.IsEmpty() ) {
-        m_pClientItem->m_UserName = _("");
-        write(   MSG_PARAMETER_ERROR, strlen( MSG_PARAMETER_ERROR ) );
+    if ( strPassword.empty() ) {
+        m_pClientItem->m_UserName = ("");
+        write( MSG_PARAMETER_ERROR, strlen( MSG_PARAMETER_ERROR ) );
         return false;
     }
 
-    gpobj->m_mutexUserList.Lock();
-#if  0
-    ::wxLogDebug( _("Username: ") + m_UserName );
-    ::wxLogDebug( _("Password: ") + strPassword );
-    ::wxLogDebug( _("MD5 of Password: ") + md5Password );
-#endif
+    pthread_mutex_lock( &m_pObj->m_mutexUserList );
+
     m_pClientItem->m_pUserItem = 
-            gpobj->m_userList.validateUser( m_pClientItem->m_UserName, 
+            m_pObj->m_userList.validateUser( m_pClientItem->m_UserName, 
                                             strPassword );
-    gpobj->m_mutexUserList.Unlock();
+    pthread_mutex_unlock( &m_pObj->m_mutexUserList );
 
     if ( NULL == m_pClientItem->m_pUserItem ) {
 
-        wxString strErr =
-            wxString::Format(_("[TCP/IP srv] User [%s][%s] not allowed to connect.\n"),
-            (const char *)m_pClientItem->m_UserName.mbc_str(), 
-            (const char *)strPassword.mbc_str() );
+        std::string strErr =
+            vscp_string_format(("[TCP/IP srv] User [%s][%s] not allowed to connect.\n"),
+            (const char *)m_pClientItem->m_UserName.c_str(), 
+            (const char *)strPassword.c_str() );
 
-        gpobj->logMsg( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY );
-        write( MSG_PASSWORD_ERROR, strlen ( MSG_PASSWORD_ERROR ) );
+        m_pObj->logMsg( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY );
+        write( MSG_PASSWORD_ERROR, strlen( MSG_PASSWORD_ERROR ) );
         return false;
     }
 
@@ -2386,20 +2078,20 @@ bool TCPClientThread::handleClientPassword( void )
     socklen_t clilen = 0;
     clilen = sizeof (cli_addr);
     (void)getpeername( m_conn->client.sock, (struct sockaddr *)&cli_addr, &clilen);
-    wxString remoteaddr = wxString::FromAscii( inet_ntoa( cli_addr.sin_addr ) );
+    std::string remoteaddr = std::string( inet_ntoa( cli_addr.sin_addr ) );
 
     // Check if this user is allowed to connect from this location
-    gpobj->m_mutexUserList.Lock();
+    pthread_mutex_lock( &m_pObj->m_mutexUserList );
     bool bValidHost =
         ( 1 == m_pClientItem->m_pUserItem->isAllowedToConnect( cli_addr.sin_addr.s_addr ) );
-    gpobj->m_mutexUserList.Unlock();
+    pthread_mutex_unlock( &m_pObj->m_mutexUserList );
 
     if ( !bValidHost ) {
-        wxString strErr = wxString::Format(_("[TCP/IP srv] Host [%s] not allowed to connect.\n"),
+        std::string strErr = vscp_string_format(("[TCP/IP srv] Host [%s] not allowed to connect.\n"),
             (const char *)remoteaddr.c_str() );
 
-        gpobj->logMsg ( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY );
-        write(   MSG_INVALID_REMOTE_ERROR, strlen ( MSG_INVALID_REMOTE_ERROR ) );
+        m_pObj->logMsg ( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY );
+        write( MSG_INVALID_REMOTE_ERROR, strlen( MSG_INVALID_REMOTE_ERROR ) );
         return false;
     }
 
@@ -2408,15 +2100,15 @@ bool TCPClientThread::handleClientPassword( void )
                 m_pClientItem->m_pUserItem->getFilter(),
                 sizeof( vscpEventFilter ) );
 
-    wxString strErr =
-        wxString::Format( _("[TCP/IP srv] Host [%s] User [%s] allowed to connect.\n"),
+    std::string strErr =
+        vscp_string_format( ("[TCP/IP srv] Host [%s] User [%s] allowed to connect.\n"),
                             (const char *)remoteaddr.c_str(),
                             (const char *)m_pClientItem->m_UserName.c_str() );
 
-    gpobj->logMsg ( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY );
+    m_pObj->logMsg ( strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY );
 
     m_pClientItem->bAuthenticated = true;
-    write(   MSG_OK, strlen ( MSG_OK ) );
+    write( MSG_OK, strlen( MSG_OK ) );
 
     return true;
 
@@ -2426,25 +2118,24 @@ bool TCPClientThread::handleClientPassword( void )
 // handleChallenge
 //
 
-void TCPClientThread::handleChallenge( void )
+void tcpipClientObj::handleChallenge( void )
 {
-    wxString wxstr;
+    std::string str;
     
     // Must be connected
     if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
-    m_pClientItem->m_currentCommand.Trim(true);
-    m_pClientItem->m_currentCommand.Trim(false);
+    vscp_trim( m_pClientItem->m_currentCommand );
 
     memset( m_pClientItem->m_sid, 0, sizeof( m_pClientItem->m_sid ) );
-    if ( !gpobj->generateSessionId( (const char *)m_pClientItem->m_currentCommand.mbc_str(), 
+    if ( !m_pObj->generateSessionId( (const char *)m_pClientItem->m_currentCommand.c_str(), 
                                     m_pClientItem->m_sid ) ) {
-        write( MSG_FAILED_TO_GENERATE_SID, strlen ( MSG_FAILED_TO_GENERATE_SID ) );
+        write( MSG_FAILED_TO_GENERATE_SID, strlen( MSG_FAILED_TO_GENERATE_SID ) );
         return; 
     }
     
-    wxstr = _("+OK - ") + wxString::FromUTF8( m_pClientItem->m_sid ) + _("\r\n");
-    write( wxstr );
+    str = std::string("+OK - ") + std::string( m_pClientItem->m_sid ) + std::string("\r\n");
+    write( str );
 }
 
 
@@ -2452,15 +2143,15 @@ void TCPClientThread::handleChallenge( void )
 // handleClientRcvLoop
 //
 
-void TCPClientThread::handleClientRcvLoop( void )
+void tcpipClientObj::handleClientRcvLoop( void )
 {
     // Must be connected
     if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
-    write(   MSG_RECEIVE_LOOP, strlen ( MSG_RECEIVE_LOOP ) );
+    write( MSG_RECEIVE_LOOP, strlen( MSG_RECEIVE_LOOP ) );
     m_bReceiveLoop = true; // Mark connection as being in receive loop
     
-    m_pClientItem->m_readBuffer.Empty();
+    m_pClientItem->m_readBuffer.empty();
     
     return;
 }
@@ -2470,9 +2161,9 @@ void TCPClientThread::handleClientRcvLoop( void )
 // handleClientTest
 //
 
-void TCPClientThread::handleClientTest( void )
+void tcpipClientObj::handleClientTest( void )
 {
-    write( MSG_OK, strlen ( MSG_OK ) );
+    write( MSG_OK, strlen( MSG_OK ) );
     return;
 }
 
@@ -2481,9 +2172,9 @@ void TCPClientThread::handleClientTest( void )
 // handleClientRestart
 //
 
-void TCPClientThread::handleClientRestart( void )
+void tcpipClientObj::handleClientRestart( void )
 {
-    write(  MSG_OK, strlen ( MSG_OK ) );
+    write( MSG_OK, strlen( MSG_OK ) );
     return;
 }
 
@@ -2492,16 +2183,16 @@ void TCPClientThread::handleClientRestart( void )
 // handleClientShutdown
 //
 
-void TCPClientThread::handleClientShutdown( void )
+void tcpipClientObj::handleClientShutdown( void )
 {
     // Must be connected
     if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
     if ( !m_pClientItem->bAuthenticated ) {
-        write(   MSG_OK, strlen ( MSG_OK ) );
+        write( MSG_OK, strlen( MSG_OK ) );
     }
 
-    write(   MSG_GOODBY, strlen ( MSG_GOODBY ) );
+    write( MSG_GOODBY, strlen( MSG_GOODBY ) );
     stcp_close_connection( m_conn );
     m_conn == NULL;
 }
@@ -2511,7 +2202,7 @@ void TCPClientThread::handleClientShutdown( void )
 // handleClientRemote
 //
 
-void TCPClientThread::handleClientRemote( void )
+void tcpipClientObj::handleClientRemote( void )
 {
     return;
 }
@@ -2539,23 +2230,23 @@ void TCPClientThread::handleClientRemote( void )
 // normal   Normal access to interfaces. Full format is INTERFACE NORMAL id
 // close    Close interfaces. Full format is INTERFACE CLOSE id
 
-void TCPClientThread::handleClientInterface( void )
+void tcpipClientObj::handleClientInterface( void )
 {
     // Must be connected
     if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
-    gpobj->logMsg ( m_pClientItem->m_currentCommand, DAEMON_LOGMSG_NORMAL );
+    //syslog( LOG_DEBUG, m_pClientItem->m_currentCommand );
 
-    if ( m_pClientItem->CommandStartsWith(_("list") ) ) {
+    if ( m_pClientItem->CommandStartsWith(("list") ) ) {
         handleClientInterface_List();
     }
-    else if ( m_pClientItem->CommandStartsWith(_("unique") ) ) {
+    else if ( m_pClientItem->CommandStartsWith(("unique") ) ) {
         handleClientInterface_Unique();
     }
-    else if ( m_pClientItem->CommandStartsWith(_("normal") ) ) {
+    else if ( m_pClientItem->CommandStartsWith(("normal") ) ) {
         handleClientInterface_Normal();
     }
-    else if ( m_pClientItem->CommandStartsWith(_("close") ) ) {
+    else if ( m_pClientItem->CommandStartsWith(("close") ) ) {
         handleClientInterface_Close();
     }
 }
@@ -2564,44 +2255,43 @@ void TCPClientThread::handleClientInterface( void )
 // handleClientInterface_List
 //
 
-void TCPClientThread::handleClientInterface_List( void )
+void tcpipClientObj::handleClientInterface_List( void )
 {
-    wxString strGUID;
-    wxString strBuf;
+    std::string strGUID;
+    std::string strBuf;
 
     // Display Interface List
-    gpobj->m_wxClientMutex.Lock();
+    pthread_mutex_lock( &m_pObj->m_clientMutex );
 
     std::list<CClientItem*>::iterator it;
-    for (it = gpobj->m_clientList.m_clientItemList.begin();
-        it != gpobj->m_clientList.m_clientItemList.end();
+    for (it = m_pObj->m_clientList.m_itemList.begin();
+        it != m_pObj->m_clientList.m_itemList.end();
         ++it) {
 
             CClientItem *pItem = *it;
             
             pItem->m_guid.toString( strGUID );
-            strBuf = wxString::Format(_("%d,"), pItem->m_clientID );
-            strBuf += wxString::Format(_("%d,"), pItem->m_type );
+            strBuf = vscp_string_format( "%d,", pItem->m_clientID );
+            strBuf += vscp_string_format( "%d,", pItem->m_type );
             strBuf += strGUID;
-            strBuf += _(",");
+            strBuf += std::string(",");
             strBuf += pItem->m_strDeviceName;
-            strBuf += _("\r\n");
+            strBuf += std::string("\r\n");
 
-            write(   strBuf.mb_str(),
-                                    strlen( strBuf.mb_str() ) );
+            write( strBuf );
 
     }
 
-    write(  MSG_OK, strlen ( MSG_OK ) );
+    write( MSG_OK, strlen( MSG_OK ) );
 
-    gpobj->m_wxClientMutex.Unlock();
+    pthread_mutex_unlock( &m_pObj->m_clientMutex );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // handleClientInterface_Unique
 //
 
-void TCPClientThread::handleClientInterface_Unique( void )
+void tcpipClientObj::handleClientInterface_Unique( void )
 {
     unsigned char ifGUID[ 16 ];
     memset( ifGUID, 0, 16 );
@@ -2610,14 +2300,13 @@ void TCPClientThread::handleClientInterface_Unique( void )
     if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
     // Get GUID
-    m_pClientItem->m_currentCommand.Trim(true);
-    m_pClientItem->m_currentCommand.Trim(false);
+    vscp_trim( m_pClientItem->m_currentCommand );
     vscp_getGuidFromStringToArray( ifGUID, m_pClientItem->m_currentCommand );
 
     // Add the client to the Client List
     // TODO
 
-    write(  MSG_INTERFACE_NOT_FOUND, strlen( MSG_INTERFACE_NOT_FOUND ) );
+    write( MSG_INTERFACE_NOT_FOUND, strlen( MSG_INTERFACE_NOT_FOUND ) );
 
 }
 
@@ -2625,7 +2314,7 @@ void TCPClientThread::handleClientInterface_Unique( void )
 // handleClientInterface_Normal
 //
 
-void TCPClientThread::handleClientInterface_Normal( void )
+void tcpipClientObj::handleClientInterface_Normal( void )
 {
     // TODO
 }
@@ -2634,7 +2323,7 @@ void TCPClientThread::handleClientInterface_Normal( void )
 // handleClientInterface_Close
 //
 
-void TCPClientThread::handleClientInterface_Close( void )
+void tcpipClientObj::handleClientInterface_Close( void )
 {
     // TODO
 }
@@ -2664,7 +2353,7 @@ void TCPClientThread::handleClientInterface_Close( void )
 // handleClientUdp
 //
 
-void TCPClientThread::handleClientUdp( void )
+void tcpipClientObj::handleClientUdp( void )
 {
     // TODO
 }
@@ -2694,7 +2383,7 @@ void TCPClientThread::handleClientUdp( void )
 // handleClientFile
 //
 
-void TCPClientThread::handleClientFile( void )
+void tcpipClientObj::handleClientFile( void )
 {
     // TODO
 }
@@ -2724,103 +2413,102 @@ void TCPClientThread::handleClientFile( void )
 // handleClientTable
 //
 
-void TCPClientThread::handleClientTable( void )
+void tcpipClientObj::handleClientTable( void )
 {
     // Must be connected
     if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
-    m_pClientItem->m_currentCommand.Trim(true);
-    m_pClientItem->m_currentCommand.Trim(false);    
+    vscp_trim( m_pClientItem->m_currentCommand );    
     
     // List tables or table definition
-    if ( m_pClientItem->CommandStartsWith(_("list") ) ) {
+    if ( m_pClientItem->CommandStartsWith(("list") ) ) {
         handleClientTable_List();
     }
     // Get rawtable content
-    else if ( m_pClientItem->CommandStartsWith(_("getraw") ) ) {
+    else if ( m_pClientItem->CommandStartsWith(("getraw") ) ) {
         handleClientTable_GetRaw();
     }
     // Get table content
-    else if ( m_pClientItem->CommandStartsWith(_("get") ) ) {
+    else if ( m_pClientItem->CommandStartsWith(("get") ) ) {
         handleClientTable_Get();
     }    
     // Delete table data
-    else if ( m_pClientItem->CommandStartsWith(_("clear") ) ) {
+    else if ( m_pClientItem->CommandStartsWith(("clear") ) ) {
         handleClientTable_Clear();
     }
     // New table (create)
-    else if ( m_pClientItem->CommandStartsWith(_("create") ) ) {
+    else if ( m_pClientItem->CommandStartsWith(("create") ) ) {
         handleClientTable_Create();
     }
     // Delete table
-    else if ( m_pClientItem->CommandStartsWith(_("delete") ) ||
-                m_pClientItem->CommandStartsWith(_("del") ) ) {
+    else if ( m_pClientItem->CommandStartsWith(("delete") ) ||
+                m_pClientItem->CommandStartsWith(("del") ) ) {
         handleClientTable_Delete();
     }
     // Log data use SQL
-    else if ( m_pClientItem->CommandStartsWith(_("logsql") ) ) {
+    else if ( m_pClientItem->CommandStartsWith(("logsql") ) ) {
         handleClientTable_LogSQL();
     }
     // Log data
-    else if ( m_pClientItem->CommandStartsWith(_("log") ) ) {
+    else if ( m_pClientItem->CommandStartsWith(("log") ) ) {
         handleClientTable_Log();
     }    
     // Get number of records
-    else if ( m_pClientItem->CommandStartsWith(_("records") ) ) {
+    else if ( m_pClientItem->CommandStartsWith(("records") ) ) {
         handleClientTable_NumberOfRecords();
     }
     // Get first date
-    else if ( m_pClientItem->CommandStartsWith(_("firstdate") ) ) {
+    else if ( m_pClientItem->CommandStartsWith(("firstdate") ) ) {
         handleClientTable_FirstDate();
     }
     // Get last date
-    else if ( m_pClientItem->CommandStartsWith(_("lastdate") ) ) {
+    else if ( m_pClientItem->CommandStartsWith(("lastdate") ) ) {
         handleClientTable_FirstDate();
     }
     // Get sum
-    else if ( m_pClientItem->CommandStartsWith(_("sum") ) ) {
+    else if ( m_pClientItem->CommandStartsWith(("sum") ) ) {
         handleClientTable_Sum();
     }
     // Get min
-    else if ( m_pClientItem->CommandStartsWith(_("min") ) ) {
+    else if ( m_pClientItem->CommandStartsWith(("min") ) ) {
         handleClientTable_Min();
     }
     // Get max
-    else if ( m_pClientItem->CommandStartsWith(_("max") ) ) {
+    else if ( m_pClientItem->CommandStartsWith(("max") ) ) {
         handleClientTable_Min();
     }
     // Get average
-    else if ( m_pClientItem->CommandStartsWith(_("average") ) ) {
+    else if ( m_pClientItem->CommandStartsWith(("average") ) ) {
         handleClientTable_Average();
     }
     // Get median
-    else if ( m_pClientItem->CommandStartsWith(_("median") ) ) {
+    else if ( m_pClientItem->CommandStartsWith(("median") ) ) {
         handleClientTable_Median();
     }
     // Get stddev
-    else if ( m_pClientItem->CommandStartsWith(_("stddev") ) ) {
+    else if ( m_pClientItem->CommandStartsWith(("stddev") ) ) {
         handleClientTable_StdDev();
     }
     // Get variance
-    else if ( m_pClientItem->CommandStartsWith(_("variance") ) ) {
+    else if ( m_pClientItem->CommandStartsWith(("variance") ) ) {
         handleClientTable_Variance();
     }
     // Get mode
-    else if ( m_pClientItem->CommandStartsWith(_("mode") ) ) {
+    else if ( m_pClientItem->CommandStartsWith(("mode") ) ) {
         handleClientTable_Mode();
     }
     // Get lowerq
-    else if ( m_pClientItem->CommandStartsWith(_("lowerq") ) ) {
+    else if ( m_pClientItem->CommandStartsWith(("lowerq") ) ) {
         handleClientTable_LowerQ();
     }
     // Get upperq
-    else if ( m_pClientItem->CommandStartsWith(_("upperq") ) ) {
+    else if ( m_pClientItem->CommandStartsWith(("upperq") ) ) {
         handleClientTable_UpperQ();
     }
     
     // unrecognised
     else {
-        write(  MSG_UNKNOWN_COMMAND, strlen( MSG_UNKNOWN_COMMAND ) );
+        write( MSG_UNKNOWN_COMMAND, strlen( MSG_UNKNOWN_COMMAND ) );
     }
 }
 
@@ -2837,24 +2525,24 @@ void TCPClientThread::handleClientTable( void )
 //
 
 
-void TCPClientThread::handleClientTable_Create( void )
+void tcpipClientObj::handleClientTable_Create( void )
 {
-    wxString wxstr;
-    wxString strName;
+    std::string str;
+    std::string strName;
     bool bEnable = true;
     bool bInMemory = false;  
     vscpTableType type = VSCP_TABLE_DYNAMIC;
     uint32_t size = 0;
-    wxString strOwner;
+    std::string strOwner;
     uint16_t rights;
-    wxString strTitle;
-    wxString strXname;
-    wxString strYname;   
-    wxString strNote;
-    wxString strSqlCreate;
-    wxString strSqlInsert;
-    wxString strSqlDelete;
-    wxString strDescription;
+    std::string strTitle;
+    std::string strXname;
+    std::string strYname;   
+    std::string strNote;
+    std::string strSqlCreate;
+    std::string strSqlInsert;
+    std::string strSqlDelete;
+    std::string strDescription;
     uint8_t vscpclass;
     uint8_t vscptype;
     uint8_t sensorindex = 0;
@@ -2865,9 +2553,8 @@ void TCPClientThread::handleClientTable_Create( void )
     // Must be connected
     if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
     
-    if ( !gpobj->m_userTableObjects.createTableFromXML( m_pClientItem->m_currentCommand ) ) {
-        write( 
-                    MSG_FAILED_TO_CREATE_TABLE, 
+    if ( !m_pObj->m_userTableObjects.createTableFromXML( m_pClientItem->m_currentCommand ) ) {
+        write( MSG_FAILED_TO_CREATE_TABLE, 
                     strlen( MSG_FAILED_TO_CREATE_TABLE ) );
         return;
     }
@@ -2881,47 +2568,47 @@ void TCPClientThread::handleClientTable_Create( void )
 //
 
 
-void TCPClientThread::handleClientTable_Delete( void )
+void tcpipClientObj::handleClientTable_Delete( void )
 {
-    wxString strTable;
+    std::string strTable;
     bool bRemoveFile = false;
     
     // Must be connected
     if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;   
         
-    wxStringTokenizer tkz( m_pClientItem->m_currentCommand, _(" ") );
+    std::deque<std::string> tokens;
+    vscp_split( tokens, m_pClientItem->m_currentCommand, " " );    
     
     // Get table name 
-    if ( tkz.HasMoreTokens() ) {
-        strTable = tkz.GetNextToken();
-        strTable.Trim(true);
-        strTable.Trim(false);
+    if ( !tokens.empty() ) {
+        strTable = tokens.front();
+        tokens.pop_front();
+        vscp_trim( strTable );
     }
     else {
         // Problems: A table name must be given
-        write( 
-                    MSG_PARAMETER_ERROR, 
+        write( MSG_PARAMETER_ERROR, 
                     strlen( MSG_PARAMETER_ERROR ) );
         return;
     }
     
     // Should table db be removed 
-    if ( tkz.HasMoreTokens() ) {
-        wxString str = tkz.GetNextToken();
-        if ( wxNOT_FOUND != str.Upper().Find("TRUE") ) {
+    if ( !tokens.empty() ) {
+        std::string str = tokens.front();
+        tokens.pop_front();
+        if ( 0 == vscp_strcasecmp( str.c_str(), "true" ) ) {
             bRemoveFile = true;
         }
     }
     
     // Remove the table from the internal system
-    if ( !gpobj->m_userTableObjects.removeTable( strTable ), bRemoveFile ) {
+    if ( !m_pObj->m_userTableObjects.removeTable( strTable ), bRemoveFile ) {
          // Failed
-        write(  
-                    MSG_FAILED_TO_REMOVE_TABLE, 
+        write( MSG_FAILED_TO_REMOVE_TABLE, 
                     strlen( MSG_FAILED_TO_REMOVE_TABLE ) );
     }
     
-    write(  MSG_OK, strlen( MSG_OK ) );
+    write( MSG_OK, strlen( MSG_OK ) );
     
 }
 
@@ -2929,80 +2616,74 @@ void TCPClientThread::handleClientTable_Delete( void )
 // handleClientTable_List
 //
 
-void TCPClientThread::handleClientTable_List( void )
+void tcpipClientObj::handleClientTable_List( void )
 {
     // Must be connected
     if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
     
-    m_pClientItem->m_currentCommand.Trim(true);
-    m_pClientItem->m_currentCommand.Trim(false); 
+    vscp_trim( m_pClientItem->m_currentCommand ); 
     
-    if ( 0 == m_pClientItem->m_currentCommand.Length() ) {
+    if ( 0 == m_pClientItem->m_currentCommand.length() ) {
         
         // list without argument - list all defined tables
-        wxArrayString arrayTblNames;
-        gpobj->m_mutexUserTables.Lock();
-        if ( gpobj->m_userTableObjects.getTableNames( arrayTblNames ) ) {
+        std::deque<std::string> arrayTblNames;
+        pthread_mutex_lock( &m_pObj->m_mutexUserTables  );
+        if ( m_pObj->m_userTableObjects.getTableNames( arrayTblNames ) ) {
             
             // OK
             
-            wxString str = wxString::Format( _("%zu rows \r\n"), 
-                                                arrayTblNames.Count() );
-            write(  
-                        (const char *)str.mbc_str(), 
-                        strlen( (const char *)str.mbc_str() ) );
+            std::string str = vscp_string_format( "%zu rows \r\n", 
+                                                    arrayTblNames.size() );
+            write( (const char *)str.c_str(), 
+                        strlen( (const char *)str.c_str() ) );
             
-            for ( int i=0; i<arrayTblNames.Count(); i++ ) {
+            for ( int i=0; i<arrayTblNames.size(); i++ ) {
                 
                 CVSCPTable *pTable = 
-                    gpobj->m_userTableObjects.getTable( arrayTblNames[i] );
+                    m_pObj->m_userTableObjects.getTable( arrayTblNames[i] );
                 
                 str = arrayTblNames[i];
-                str += _(";");
+                str += (";");
                 if ( NULL != pTable ) {
                     
                     switch( pTable->getType() ) {
                         case VSCP_TABLE_DYNAMIC:
-                            str += _("dynamic");
+                            str += ("dynamic");
                             break;
                             
                         case VSCP_TABLE_STATIC:
-                            str += _("static");
+                            str += ("static");
                             break;
                             
                         case VSCP_TABLE_MAX:
-                            str += _("max");
+                            str += ("max");
                             break;
                             
                         default:
-                            str += _("Error: Invalid type");
+                            str += ("Error: Invalid type");
                             break;
                     }
                     
                 }
-                str += _(";");
+                str += (";");
                 if ( NULL != pTable ) {
                     str += pTable->getDescription();
                 }
-                str += _("\r\n");
-                write(  
-                            (const char *)str.mbc_str(), 
-                            strlen( (const char *)str.mbc_str() ) );
+                str += ("\r\n");
+                write( (const char *)str.c_str(), 
+                            strlen( (const char *)str.c_str() ) );
             }
             
-            write( 
-                        MSG_OK, 
-                        strlen( MSG_OK ) );
+            write( MSG_OK, strlen( MSG_OK ) );
             
         }
         else {
             
             // Failed
-            write(  
-                        MSG_FAILED_GET_TABLE_NAMES, 
+            write( MSG_FAILED_GET_TABLE_NAMES, 
                         strlen( MSG_FAILED_GET_TABLE_NAMES ) );
         }
-        gpobj->m_mutexUserTables.Unlock();
+        pthread_mutex_unlock( &m_pObj->m_mutexUserTables  );
     }
     else {
         
@@ -3011,157 +2692,164 @@ void TCPClientThread::handleClientTable_List( void )
         // be in XML format.
         
         bool bXmlFormat = false;
-        wxStringTokenizer tkz( m_pClientItem->m_currentCommand, _(" ") );
-        wxString tblName = tkz.GetNextToken();
+        std::deque<std::string> tokens;
+        vscp_split( tokens, m_pClientItem->m_currentCommand, " " );
+
+        if ( tokens.empty() ) {
+            write( MSG_PARAMETER_ERROR, 
+                        strlen( MSG_PARAMETER_ERROR ) );
+            return;                        
+        }
+
+        std::string tblName = tokens.front();
+        tokens.pop_front();
         
-        if ( tkz.HasMoreTokens() ) {
-            wxString str = tkz.GetNextToken();
-            if ( wxNOT_FOUND != str.Upper().Find( _("XML") ) ) {
+        if ( !tokens.empty() ) {
+            std::string str = tokens.front();
+            tokens.pop_front();
+            if ( 0 == strcasecmp( str.c_str(), "XML" ) ) {
                 bXmlFormat = true;  // Output XML format
             }
         }
         
-        gpobj->m_mutexUserTables.Lock();
+        pthread_mutex_lock( &m_pObj->m_mutexUserTables  );
         
         CVSCPTable *pTable = 
-                gpobj->m_userTableObjects.getTable( tblName );
+                m_pObj->m_userTableObjects.getTable( tblName );
         if ( NULL == pTable ) {
             // Failed
-            write(  
-                        MSG_FAILED_UNKNOWN_TABLE, 
+            write( MSG_FAILED_UNKNOWN_TABLE, 
                         strlen( MSG_FAILED_UNKNOWN_TABLE ) );
         }   
         else {
             
-            wxString str;
+            std::string str;
             
             if ( bXmlFormat ) {
-                str = _("<table \r\n");
+                str = "<table \r\n";
             }
 
-            str += _("name=") + pTable->getTableName();
-            str += _("\r\n");
+            str += "name=" + pTable->getTableName();
+            str += "\r\n";
             
-            str += _("enabled=");
-            str += pTable->isEnabled() ? _("true") : _("false");
-            str += _("\r\n");
+            str += "enabled=";
+            str += pTable->isEnabled() ? "true" : "false";
+            str += "\r\n";
             
-            str += _("type=");
+            str += "type=";
             switch( pTable->getType() ) {
                 case VSCP_TABLE_DYNAMIC:
-                    str += _("dynamic");
+                    str += "dynamic";
                     break;
                             
                 case VSCP_TABLE_STATIC:
-                    str += _("static");
+                    str += "static";
                     break;
                             
                 case VSCP_TABLE_MAX:
-                    str += _("max");
+                    str += "max";
                     break;
                             
                 default:
-                    str += _("Error: Invalid type");
+                    str += "Error: Invalid type";
                     break;
             }
-            str += _("\r\n");
+            str += "\r\n";
             
-            str += _("bmemory=");
-            str += pTable->isInMemory() ? _("true") : _("false");
-            str += _("\r\n");
+            str += "bmemory=";
+            str += pTable->isInMemory() ? "true" : "false";
+            str += "\r\n";
             
-            str += _("size=");
-            str += wxString::Format( _("%lu "), (unsigned long)pTable->getSize() );
-            str += _("\r\n");
+            str += "size=";
+            str += vscp_string_format( "%lu ", (unsigned long)pTable->getSize() );
+            str += "\r\n";
             
-            str += _("owner=");
+            str += "owner=";
             CUserItem *pUserItem = pTable->getUserItem();
             if ( NULL == pUserItem ) {
-                str += _("ERROR");
+                str += "ERROR";
             }
             else {
                 str += pUserItem->getUserName();
             }
-            str += _("\r\n");
+            str += "\r\n";
             
-            str += _("permission=");
-            str += wxString::Format( _("0x%0X "), (int)pTable->getRights() );
-            str += _("\r\n");
+            str += "permission=";
+            str += vscp_string_format( "0x%0X ", (int)pTable->getRights() );
+            str += "\r\n";
             
-            str += _("description=");
+            str += "description=";
             str += pTable->getDescription();
-            str += _("\r\n");
+            str += "\r\n";
             
-            str += _("xname=");
+            str += "xname=";
             str += pTable->getLabelX();
-            str += _("\r\n");
+            str += "\r\n";
             
-            str += _("yname=");
+            str += "yname=";
             str += pTable->getLabelY();
-            str += _("\r\n");
+            str += ("\r\n");
             
-            str += _("title=");
+            str += "title=";
             str += pTable->getTitle();
-            str += _("\r\n");
+            str += "\r\n";
             
-            str += _("note=");
+            str += "note=";
             str += pTable->getNote();
-            str += _("\r\n");
+            str += "\r\n";
             
-            str += _("vscp-class=");
-            str += wxString::Format( _("%d"), (int)pTable->getVSCPClass() );
-            str += _("\r\n");
+            str += "vscp-class=";
+            str += vscp_string_format( "%d", (int)pTable->getVSCPClass() );
+            str += "\r\n";
             
-            str += _("vscp-type=");
-            str += wxString::Format( _("%d"), (int)pTable->getVSCPType() );
-            str += _("\r\n");
+            str += "vscp-type=";
+            str += vscp_string_format( "%d", (int)pTable->getVSCPType() );
+            str += "\r\n";
             
-            str += _("vscp-sensor-index=");
-            str += wxString::Format( _("%d"), (int)pTable->getVSCPSensorIndex() );
-            str += _("\r\n");
+            str += "vscp-sensor-index=";
+            str += vscp_string_format( "%d", (int)pTable->getVSCPSensorIndex() );
+            str += ("\r\n");
             
-            str += _("vscp-unit=");
-            str += wxString::Format( _("%d"), (int)pTable->getVSCPUnit() );
-            str += _("\r\n");
+            str += "vscp-unit=";
+            str += vscp_string_format( "%d", (int)pTable->getVSCPUnit() );
+            str += "\r\n";
             
-            str += _("vscp-zone=");
-            str += wxString::Format( _("%d"), (int)pTable->getVSCPZone() );
-            str += _("\r\n");
+            str += "vscp-zone=";
+            str += vscp_string_format( "%d", (int)pTable->getVSCPZone() );
+            str += "\r\n";
             
-            str += _("vscp-subzone=");
-            str += wxString::Format( _("%d"), (int)pTable->getVSCPSubZone() );
-            str += _("\r\n");
+            str += "vscp-subzone=";
+            str += vscp_string_format( "%d", (int)pTable->getVSCPSubZone() );
+            str += "\r\n";
             
-            str += _("vscp-create=");
+            str += "vscp-create=";
             str += pTable->getSQLCreate();
-            str += _("\r\n");
+            str += "\r\n";
             
-            str += _("vscp-insert=");
+            str += "vscp-insert=";
             str += pTable->getSQLInsert();
-            str += _("\r\n");
+            str += "\r\n";
             
-            str += _("vscp-delete=");
+            str += "vscp-delete=";
             str += pTable->getSQLDelete();
-            str += _("\r\n");
+            str += "\r\n";
             
             if ( bXmlFormat ) {
-                str += _("/> \r\n");
-                str = wxBase64Encode( str.ToUTF8(), strlen( str.ToUTF8() ) );
-                str += _("\r\n");
+                str += "/> \r\n";
+                str = vscp_base64_std_encode( str );
+                str += "\r\n";
             }
             
             // Send response
-            write( 
-                        (const char *)str.mbc_str(), 
-                        strlen( (const char *)str.mbc_str() ) );
+            write( (const char *)str.c_str(), 
+                        strlen( (const char *)str.c_str() ) );
             
             // Tell user we are content with things.
-            write( 
-                        MSG_OK, 
+            write( MSG_OK, 
                         strlen( MSG_OK ) );
             
         }
-        gpobj->m_mutexUserTables.Unlock();
+        pthread_mutex_unlock( &m_pObj->m_mutexUserTables  );
     }
         
 }
@@ -3172,35 +2860,34 @@ void TCPClientThread::handleClientTable_List( void )
 // get 'table-name' start end ["full"]
 //
 
-void TCPClientThread::handleClientTable_Get( void )
+void tcpipClientObj::handleClientTable_Get( void )
 {
-    wxString strTable;
-    wxDateTime wxStart;   
-    wxDateTime wxEnd;
+    std::string strTable;
+    vscpdatetime start;   
+    vscpdatetime end;
     bool bAll = false;
     
     // Initialize date range to 'all'
-    wxStart.ParseISOCombined( _("0000-01-01T00:00:00") );   // The first date
-    wxEnd.ParseISOCombined( _("9999-12-31T23:59:59") );     // The last date
+    start.set( ("0000-01-01T00:00:00") );   // The first date
+    end.set( ("9999-12-31T23:59:59") );     // The last date
     
     // Must be connected
     if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;    
     
-    m_pClientItem->m_currentCommand.Trim(true);
-    m_pClientItem->m_currentCommand.Trim(false);
+    vscp_trim(m_pClientItem->m_currentCommand );
     
-    wxStringTokenizer tkz( m_pClientItem->m_currentCommand, _(" ") );
+    std::deque<std::string> tokens;
+    vscp_split( tokens, m_pClientItem->m_currentCommand, " " );
     
     // Get table name 
-    if ( tkz.HasMoreTokens() ) {
-        strTable = tkz.GetNextToken();
-        strTable.Trim(true);
-        strTable.Trim(false);
+    if ( !tokens.empty() ) {
+        strTable = tokens.front();
+        tokens.pop_front();
+        vscp_trim( strTable );
     }
     else {
         // Problems: A table name must be given
-        write( 
-                    MSG_PARAMETER_ERROR, 
+        write( MSG_PARAMETER_ERROR, 
                     strlen( MSG_PARAMETER_ERROR ) );
         return;
     }
@@ -3208,13 +2895,13 @@ void TCPClientThread::handleClientTable_Get( void )
     // The start and end parameters must be present
     
     // start
-    if ( tkz.HasMoreTokens() ) {
+    if ( !tokens.empty() ) {
         
-        wxStart.ParseISOCombined( tkz.GetNextToken() );
+        start.set( tokens.front() );
+        tokens.pop_front();
         
-        if ( !wxStart.IsValid() ) {
-            write( 
-                    MSG_PARAMETER_ERROR, 
+        if ( !start.isValid() ) {
+            write( MSG_PARAMETER_ERROR, 
                     strlen( MSG_PARAMETER_ERROR ) );
             return;
         }
@@ -3222,20 +2909,19 @@ void TCPClientThread::handleClientTable_Get( void )
     }
     else {
         // Problems: A start date must be given
-        write( 
-                    MSG_PARAMETER_ERROR, 
+        write( MSG_PARAMETER_ERROR, 
                     strlen( MSG_PARAMETER_ERROR ) );
         return;
     }
     
     // end
-    if ( tkz.HasMoreTokens() ) {
+    if ( !tokens.empty() ) {
         
-        wxEnd.ParseISOCombined( tkz.GetNextToken() );
+        end.set( tokens.front() );
+        tokens.pop_front();
         
-        if ( !wxEnd.IsValid() ) {
-            write( 
-                    MSG_PARAMETER_ERROR, 
+        if ( !end.isValid() ) {
+            write( MSG_PARAMETER_ERROR, 
                     strlen( MSG_PARAMETER_ERROR ) );
             return;
         }
@@ -3243,80 +2929,75 @@ void TCPClientThread::handleClientTable_Get( void )
     }
     else {
         // Problems: An end date must be given
-        write( 
-                    MSG_PARAMETER_ERROR, 
+        write( MSG_PARAMETER_ERROR, 
                     strlen( MSG_PARAMETER_ERROR ) );
         return;
     }
     
     // "full" flag
-    if ( tkz.HasMoreTokens() ) {
-        wxString str = tkz.GetNextToken();
-        if ( str.Upper().StartsWith( _("FULL") ) ) {
+    if ( !tokens.empty() ) {
+        std::string str = tokens.front();
+        tokens.pop_front();
+        if ( vscp_startsWith( vscp_upper( str ), "FULL" ) ) {
             bAll = true;
         }
     }
     
-    gpobj->m_mutexUserTables.Lock();
+    pthread_mutex_lock( &m_pObj->m_mutexUserTables  );
     
     CVSCPTable *pTable = 
-                gpobj->m_userTableObjects.getTable( strTable );
+                m_pObj->m_userTableObjects.getTable( strTable );
     if ( NULL == pTable ) {
         // Failed
-        write(  
-                    MSG_FAILED_UNKNOWN_TABLE, 
+        write( MSG_FAILED_UNKNOWN_TABLE, 
                     strlen( MSG_FAILED_UNKNOWN_TABLE ) );
         
-        gpobj->m_mutexUserTables.Unlock();
+        pthread_mutex_unlock( &m_pObj->m_mutexUserTables  );
         return;
     }   
 
     sqlite3_stmt *ppStmt;
-    if ( !pTable->prepareRangeOfData( wxStart, wxEnd, &ppStmt, bAll ) ) {
+    if ( !pTable->prepareRangeOfData( start, end, &ppStmt, bAll ) ) {
         // Failed
-        write(  
-                    MSG_FAILED_TO_PREPARE_TABLE, 
+        write( MSG_FAILED_TO_PREPARE_TABLE, 
                     strlen( MSG_FAILED_TO_PREPARE_TABLE ) );
         
-        gpobj->m_mutexUserTables.Unlock();
+        pthread_mutex_unlock( &m_pObj->m_mutexUserTables  );
         return;
     }
     
-    wxString str;
-    wxArrayString strArray;
+    std::string str;
+    std::deque<std::string> strArray;
     while ( pTable->getRowRangeOfData( ppStmt, str ) ) {
-        strArray.Add( str );
+        strArray.push_back( str );
     }
     
-    str = wxString::Format( _("%d rows.\r\n"), (int)strArray.Count() );
-    write(  
-                (const char *)str.mbc_str(), 
-                strlen( (const char *)str.mbc_str() ) );
+    str = vscp_string_format( ("%d rows.\r\n"), (int)strArray.size() );
+    write( (const char *)str.c_str(), 
+                strlen( (const char *)str.c_str() ) );
     
-    if ( strArray.Count() ) {
-        for ( int i=0; i<strArray.Count(); i++ ) {
+    if ( strArray.size() ) {
+        for ( int i=0; i<strArray.size(); i++ ) {
             str = strArray[i];
-            str += _("\r\n");
-            write(  
-                    (const char *)str.mbc_str(), 
-                    strlen( (const char *)str.mbc_str() ) );
+            str += ("\r\n");
+            write( (const char *)str.c_str(), 
+                    strlen( (const char *)str.c_str() ) );
         }
     }    
     
     if ( !pTable->finalizeRangeOfData( ppStmt )  ) {
         // Failed
-        write(  
-                    MSG_FAILED_TO_FINALIZE_TABLE, 
+        write( MSG_FAILED_TO_FINALIZE_TABLE, 
                     strlen( MSG_FAILED_TO_FINALIZE_TABLE ) );
         
-        gpobj->m_mutexUserTables.Unlock();
+        pthread_mutex_unlock( &m_pObj->m_mutexUserTables  );
         return;
     }
     
-    gpobj->m_mutexUserTables.Unlock();
+    pthread_mutex_unlock( &m_pObj->m_mutexUserTables  );
         
     // Everything is OK
-    write(  MSG_OK, strlen( MSG_OK ) );
+    write( MSG_OK, strlen( MSG_OK ) );
 }
 
 
@@ -3326,29 +3007,29 @@ void TCPClientThread::handleClientTable_Get( void )
 // get 'table-name' start end ["full"]
 //
 
-void TCPClientThread::handleClientTable_GetRaw( void )
+void tcpipClientObj::handleClientTable_GetRaw( void )
 {
-    wxString strTable;
-    wxDateTime wxStart;   
-    wxDateTime wxEnd;
+    std::string strTable;
+    vscpdatetime start;   
+    vscpdatetime end;
     
     // Initialize date range to 'all'
-    wxStart.ParseISOCombined( _("0000-01-01T00:00:00") );   // The first date
-    wxEnd.ParseISOCombined( _("9999-12-31T23:59:59") );     // The last date
+    start.set( ("0000-01-01T00:00:00") );   // The first date
+    end.set( ("9999-12-31T23:59:59") );     // The last date
     
     // Must be connected
     if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;    
     
-    m_pClientItem->m_currentCommand.Trim(true);
-    m_pClientItem->m_currentCommand.Trim(false);
+    vscp_trim( m_pClientItem->m_currentCommand );
     
-    wxStringTokenizer tkz( m_pClientItem->m_currentCommand, _(" ") );
+    std::deque<std::string> tokens;
+    vscp_split( tokens, m_pClientItem->m_currentCommand, " " );
     
     // Get table name 
-    if ( tkz.HasMoreTokens() ) {
-        strTable = tkz.GetNextToken();
-        strTable.Trim(true);
-        strTable.Trim(false);
+    if ( !tokens.empty() ) {
+        strTable = tokens.front();
+        tokens.pop_front();
+        vscp_trim( strTable );
     }
     else {
         // Problems: A table name must be given
@@ -3360,11 +3041,12 @@ void TCPClientThread::handleClientTable_GetRaw( void )
     // The start and end parameters must be present
     
     // start
-    if ( tkz.HasMoreTokens() ) {
+    if ( !tokens.empty() ) {
         
-        wxStart.ParseISOCombined( tkz.GetNextToken() );
+        start.set( tokens.front() );
+        tokens.pop_front();
         
-        if ( !wxStart.IsValid() ) {
+        if ( !start.isValid() ) {
             write( MSG_PARAMETER_ERROR, 
                     strlen( MSG_PARAMETER_ERROR ) );
             return;
@@ -3379,11 +3061,12 @@ void TCPClientThread::handleClientTable_GetRaw( void )
     }
     
     // end
-    if ( tkz.HasMoreTokens() ) {
+    if ( !tokens.empty() ) {
         
-        wxEnd.ParseISOCombined( tkz.GetNextToken() );
+        end.set( tokens.front() );
+        tokens.pop_front();
         
-        if ( !wxEnd.IsValid() ) {
+        if ( !end.isValid() ) {
             write( MSG_PARAMETER_ERROR, 
                     strlen( MSG_PARAMETER_ERROR ) );
             return;
@@ -3397,47 +3080,45 @@ void TCPClientThread::handleClientTable_GetRaw( void )
         return;
     }
         
-    gpobj->m_mutexUserTables.Lock();
+    pthread_mutex_lock( &m_pObj->m_mutexUserTables  );
     
     CVSCPTable *pTable = 
-                gpobj->m_userTableObjects.getTable( strTable );
+                m_pObj->m_userTableObjects.getTable( strTable );
     if ( NULL == pTable ) {
         // Failed
         write( MSG_FAILED_UNKNOWN_TABLE, 
                     strlen( MSG_FAILED_UNKNOWN_TABLE ) );
         
-        gpobj->m_mutexUserTables.Unlock();
+        pthread_mutex_unlock( &m_pObj->m_mutexUserTables  );
         return;
     }   
 
     sqlite3_stmt *ppStmt;
-    if ( !pTable->prepareRangeOfData( wxStart, wxEnd, &ppStmt, true ) ) {
+    if ( !pTable->prepareRangeOfData( start, end, &ppStmt, true ) ) {
         // Failed
         write( MSG_FAILED_TO_PREPARE_TABLE, 
                     strlen( MSG_FAILED_TO_PREPARE_TABLE ) );
         
-        gpobj->m_mutexUserTables.Unlock();
+        pthread_mutex_unlock( &m_pObj->m_mutexUserTables  );
         return;
     }
     
-    wxString str;
-    wxArrayString strArray;
+    std::string str;
+    std::deque<std::string> strArray;
     while ( pTable->getRowRangeOfDataRaw( ppStmt, str ) ) {
-        strArray.Add( str );
+        strArray.push_back( str );
     }
     
-    str = wxString::Format( _("%d rows.\r\n"), (int)strArray.Count() );
-    write(  
-                (const char *)str.mbc_str(), 
-                strlen( (const char *)str.mbc_str() ) );
+    str = vscp_string_format( ("%d rows.\r\n"), (int)strArray.size() );
+    write( (const char *)str.c_str(), 
+                strlen( (const char *)str.c_str() ) );
     
-    if ( strArray.Count() ) {
-        for ( int i=0; i<strArray.Count(); i++ ) {
+    if ( strArray.size() ) {
+        for ( int i=0; i<strArray.size(); i++ ) {
             str = strArray[i];
-            str += _("\r\n");
-            write(  
-                    (const char *)str.mbc_str(), 
-                    strlen( (const char *)str.mbc_str() ) );
+            str += ("\r\n");
+            write( (const char *)str.c_str(), 
+                    strlen( (const char *)str.c_str() ) );
         }
     }    
     
@@ -3446,11 +3127,11 @@ void TCPClientThread::handleClientTable_GetRaw( void )
         write( MSG_FAILED_TO_FINALIZE_TABLE, 
                     strlen( MSG_FAILED_TO_FINALIZE_TABLE ) );
         
-        gpobj->m_mutexUserTables.Unlock();
+        pthread_mutex_unlock( &m_pObj->m_mutexUserTables  );
         return;
     }
     
-    gpobj->m_mutexUserTables.Unlock();
+    pthread_mutex_unlock( &m_pObj->m_mutexUserTables  );
         
     // Everything is OK
     write( MSG_OK, strlen( MSG_OK ) );
@@ -3463,30 +3144,30 @@ void TCPClientThread::handleClientTable_GetRaw( void )
 // clear 'table-name' [to,from]
 //
 
-void TCPClientThread::handleClientTable_Clear( void )
+void tcpipClientObj::handleClientTable_Clear( void )
 {    
-    wxString strTable;
-    wxDateTime wxStart;   
-    wxDateTime wxEnd;
+    std::string strTable;
+    vscpdatetime start;   
+    vscpdatetime end;
     bool bClearAll = false;
     
     // Initialize date range to 'all'
-    wxStart.ParseISOCombined( _("0000-01-01T00:00:00") );   // The first date
-    wxEnd.ParseISOCombined( _("9999-12-31T23:59:59") );     // The last date
+    start.set( ("0000-01-01T00:00:00") );   // The first date
+    end.set( ("9999-12-31T23:59:59") );     // The last date
     
     // Must be connected
     if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
     
-    m_pClientItem->m_currentCommand.Trim(true);
-    m_pClientItem->m_currentCommand.Trim(false);
+    vscp_trim( m_pClientItem->m_currentCommand );
     
-    wxStringTokenizer tkz( m_pClientItem->m_currentCommand, _(" ") );
+    std::deque<std::string> tokens;     
+    vscp_split( tokens, m_pClientItem->m_currentCommand, " " );
     
     // Get table name
-    if ( tkz.HasMoreTokens() ) {
-        strTable = tkz.GetNextToken();
-        strTable.Trim(true);
-        strTable.Trim(false);
+    if ( !tokens.empty() ) {
+        strTable = tokens.front();
+        tokens.pop_front();
+        vscp_trim( strTable );
     }
     else {
         // Problems: A table name must be given
@@ -3496,36 +3177,38 @@ void TCPClientThread::handleClientTable_Clear( void )
     }
     
     // get range if given
-    if ( tkz.CountTokens() >= 2 ) {
+    if ( tokens.size() >= 2 ) {
         
-        if ( !wxStart.ParseISOCombined( tkz.GetNextToken() ) ) {
+        if ( !tokens.empty() && !start.set( tokens.front() ) ) {
             write( MSG_PARAMETER_ERROR, 
                     strlen( MSG_PARAMETER_ERROR ) );
             return;
         }
+        tokens.pop_front();
         
-        if ( !wxEnd.ParseISOCombined( tkz.GetNextToken() ) ) {
+        if ( !tokens.empty() && !end.set( tokens.front() ) ) {
             write( MSG_PARAMETER_ERROR, 
                     strlen( MSG_PARAMETER_ERROR ) );
             return;
         }
+        tokens.pop_front();
         
     }
     else {
         bClearAll = true;
     }
     
-    gpobj->m_mutexUserTables.Lock();
+    pthread_mutex_lock( &m_pObj->m_mutexUserTables  );
     
     CVSCPTable *pTable = 
-                gpobj->m_userTableObjects.getTable( strTable );
+                m_pObj->m_userTableObjects.getTable( strTable );
     
     if ( NULL == pTable ) {
         // Failed
         write( MSG_FAILED_UNKNOWN_TABLE, 
                     strlen( MSG_FAILED_UNKNOWN_TABLE ) );
         
-        gpobj->m_mutexUserTables.Unlock();
+        pthread_mutex_unlock( &m_pObj->m_mutexUserTables  );
         return;
     } 
     
@@ -3533,20 +3216,20 @@ void TCPClientThread::handleClientTable_Clear( void )
         if ( !pTable->clearTable() ) {
             write( MSG_FAILED_TO_CLEAR_TABLE, 
                     strlen( MSG_FAILED_TO_CLEAR_TABLE ) );
-            gpobj->m_mutexUserTables.Unlock();
+            pthread_mutex_unlock( &m_pObj->m_mutexUserTables  );
             return;
         }
     }
     else {
-        if ( !pTable->clearTableRange( wxStart, wxEnd ) ) {
+        if ( !pTable->clearTableRange( start, end ) ) {
             write( MSG_FAILED_TO_CLEAR_TABLE, 
                     strlen( MSG_FAILED_TO_CLEAR_TABLE ) );
-            gpobj->m_mutexUserTables.Unlock();
+            pthread_mutex_unlock( &m_pObj->m_mutexUserTables  );
             return;
         }
     }
             
-    gpobj->m_mutexUserTables.Unlock();
+    pthread_mutex_unlock( &m_pObj->m_mutexUserTables  );
     
     write( MSG_OK,  
                 strlen( MSG_OK ) );
@@ -3561,25 +3244,25 @@ void TCPClientThread::handleClientTable_Clear( void )
 // log table-name value [datetime]
 //
 
-void TCPClientThread::handleClientTable_Log( void )
+void tcpipClientObj::handleClientTable_Log( void )
 {
-    wxString strTable;
+    std::string strTable;
     double value;
-    wxDateTime dt;
+    vscpdatetime dt;
     
     // Must be connected
     if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;    
     
-    m_pClientItem->m_currentCommand.Trim(true);
-    m_pClientItem->m_currentCommand.Trim(false);
+    vscp_trim( m_pClientItem->m_currentCommand );
     
-    wxStringTokenizer tkz( m_pClientItem->m_currentCommand, _(" ") );
+    std::deque<std::string> tokens;     
+    vscp_split( tokens, m_pClientItem->m_currentCommand, " " );
     
     // Get table name 
-    if ( tkz.HasMoreTokens() ) {
-        strTable = tkz.GetNextToken();
-        strTable.Trim(true);
-        strTable.Trim(false);
+    if ( !tokens.empty() ) {
+        strTable = tokens.front();
+        tokens.pop_front();
+        vscp_trim( strTable );
     }
     else {
         // Problems: A table name must be given
@@ -3589,14 +3272,10 @@ void TCPClientThread::handleClientTable_Log( void )
     }
     
     // Get the value
-    if ( tkz.HasMoreTokens() ) {
-        wxString str = tkz.GetNextToken();
-        if ( !str.ToDouble( &value ) ) {
-            // Problems: The value is not in a valid format
-            write( MSG_PARAMETER_ERROR, 
-                    strlen( MSG_PARAMETER_ERROR ) );
-            return;            
-        }
+    if ( !tokens.empty() ) {
+        std::string str = tokens.front();
+        tokens.pop_front();
+        value = std::stod( str );
     }
     else {
         // Problems: A value must be given
@@ -3606,15 +3285,15 @@ void TCPClientThread::handleClientTable_Log( void )
     }
     
     // Get the datetime if its there
-    if ( tkz.HasMoreTokens() ) {
+    if ( !tokens.empty() ) {
         
         uint32_t ms = 0;
         
-        wxString str = tkz.GetNextToken();
-        str.Trim(true);
-        str.Trim(false);
+        std::string str = tokens.front();
+        tokens.pop_front();
+        vscp_trim(str);
         
-        if ( !dt.ParseISOCombined( str ) ) {
+        if ( !dt.set( str ) ) {
             // Problems: The value is not in a valid format
             write( MSG_PARAMETER_ERROR, 
                     strlen( MSG_PARAMETER_ERROR ) );
@@ -3622,47 +3301,47 @@ void TCPClientThread::handleClientTable_Log( void )
         }
         
         // Get possible millisecond part
+        /*  TODO  Remove????
         str = str.AfterFirst('.');
-        str.Trim();
-        if ( str.Length() ) {
+        vscp_trim( str );
+        if ( str.length() ) {
             ms = vscp_readStringValue( str );
         }    
         
         dt.SetMillisecond( ms );
-        
+        */
     }
     else {
         // Set to now
-        dt = wxDateTime::UNow();
+        dt.setUTCNow();
     }
     
     
-    gpobj->m_mutexUserTables.Lock();
+    pthread_mutex_lock( &m_pObj->m_mutexUserTables  );
     
     CVSCPTable *pTable = 
-                gpobj->m_userTableObjects.getTable( strTable );
+                m_pObj->m_userTableObjects.getTable( strTable );
     
     if ( NULL == pTable ) {
         // Failed
         write( MSG_FAILED_UNKNOWN_TABLE, 
                     strlen( MSG_FAILED_UNKNOWN_TABLE ) );
         
-        gpobj->m_mutexUserTables.Unlock();
+        pthread_mutex_unlock( &m_pObj->m_mutexUserTables  );
         return;
     }
     
     // Log data
     if ( !pTable->logData( dt, value ) ) {
-        gpobj->m_mutexUserTables.Unlock();
+        pthread_mutex_unlock( &m_pObj->m_mutexUserTables  );
         write( MSG_FAILED_TO_WRITE_TABLE,  
                     strlen( MSG_FAILED_TO_WRITE_TABLE ) );
         return;
     }
     
-    gpobj->m_mutexUserTables.Unlock();
+    pthread_mutex_unlock( &m_pObj->m_mutexUserTables  );
     
-    write( MSG_OK,  
-                strlen( MSG_OK ) );
+    write( MSG_OK,  strlen( MSG_OK ) );
 }
 
 
@@ -3670,38 +3349,37 @@ void TCPClientThread::handleClientTable_Log( void )
 // handleClientTable_LogSQL
 //
 
-void TCPClientThread::handleClientTable_LogSQL( void )
+void tcpipClientObj::handleClientTable_LogSQL( void )
 {
-    wxString strTable, strSQL;
+    std::string strTable, strSQL;
     
     // Must be connected
     if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;    
     
-    m_pClientItem->m_currentCommand.Trim(true);
-    m_pClientItem->m_currentCommand.Trim(false);
+    vscp_trim( m_pClientItem->m_currentCommand );
     
-    wxStringTokenizer tkz( m_pClientItem->m_currentCommand, _(" ") );
+    std::deque<std::string> tokens;     
+    vscp_split( tokens, m_pClientItem->m_currentCommand, " " );
     
     // Get table name 
-    if ( tkz.HasMoreTokens() ) {
-        strTable = tkz.GetNextToken();
-        strTable.Trim(true);
-        strTable.Trim(false);
+    if ( !tokens.empty() ) {
+        strTable = tokens.front();
+        tokens.pop_front();
+        vscp_trim( strTable );
     }
     else {
         // Problems: A table name must be given
-        write( 
-                    MSG_PARAMETER_ERROR, 
+        write( MSG_PARAMETER_ERROR, 
                     strlen( MSG_PARAMETER_ERROR ) );
         return;
     }
     
     
     // Get SQL expression 
-    if ( tkz.HasMoreTokens() ) {
-        strSQL = tkz.GetNextToken();
-        strSQL.Trim(true);
-        strSQL.Trim(false);
+    if ( !tokens.empty() ) {
+        strSQL = tokens.front();
+        tokens.pop_front();
+        vscp_trim( strSQL );
     }
     else {
         // Problems: A SQL expression must be given
@@ -3711,29 +3389,29 @@ void TCPClientThread::handleClientTable_LogSQL( void )
     }
     
     
-    gpobj->m_mutexUserTables.Lock();
+    pthread_mutex_lock( &m_pObj->m_mutexUserTables  );
     
     CVSCPTable *pTable = 
-                gpobj->m_userTableObjects.getTable( strTable );
+                m_pObj->m_userTableObjects.getTable( strTable );
     
     if ( NULL == pTable ) {
         // Failed
         write( MSG_FAILED_UNKNOWN_TABLE, 
                     strlen( MSG_FAILED_UNKNOWN_TABLE ) );
         
-        gpobj->m_mutexUserTables.Unlock();
+        pthread_mutex_unlock( &m_pObj->m_mutexUserTables  );
         return;
     }
     
     // Log data
     if ( !pTable->logData( strSQL ) ) {
-        gpobj->m_mutexUserTables.Unlock();
+        pthread_mutex_unlock( &m_pObj->m_mutexUserTables  );
         write( MSG_FAILED_TO_WRITE_TABLE,  
                     strlen( MSG_FAILED_TO_WRITE_TABLE ) );
         return;
     }
     
-    gpobj->m_mutexUserTables.Unlock();
+    pthread_mutex_unlock( &m_pObj->m_mutexUserTables  );
     
 }
 
@@ -3744,29 +3422,29 @@ void TCPClientThread::handleClientTable_LogSQL( void )
 // records 'table-name' [to,from]
 //
 
-void TCPClientThread::handleClientTable_NumberOfRecords( void )
+void tcpipClientObj::handleClientTable_NumberOfRecords( void )
 {    
-    wxString strTable;
-    wxDateTime wxStart;   
-    wxDateTime wxEnd;
+    std::string strTable;
+    vscpdatetime start;   
+    vscpdatetime end;
     
     // Initialize date range to 'all'
-    wxStart.ParseISOCombined( _("0000-01-01T00:00:00") );   // The first date
-    wxEnd.ParseISOCombined( _("9999-12-31T23:59:59") );     // The last date
+    start.set( ("0000-01-01T00:00:00") );   // The first date
+    end.set( ("9999-12-31T23:59:59") );     // The last date
     
     // Must be connected
     if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
     
-    m_pClientItem->m_currentCommand.Trim(true);
-    m_pClientItem->m_currentCommand.Trim(false);
+    vscp_trim( m_pClientItem->m_currentCommand );
     
-    wxStringTokenizer tkz( m_pClientItem->m_currentCommand, _(" ") );
+    std::deque<std::string> tokens;     
+    vscp_split( tokens, m_pClientItem->m_currentCommand, " " );
     
     // Get table name
-    if ( tkz.HasMoreTokens() ) {
-        strTable = tkz.GetNextToken();
-        strTable.Trim(true);
-        strTable.Trim(false);
+    if ( !tokens.empty() ) {
+        strTable = tokens.front();
+        tokens.pop_front();
+        vscp_trim( strTable );
     }
     else {
         // Problems: A table name must be given
@@ -3776,49 +3454,51 @@ void TCPClientThread::handleClientTable_NumberOfRecords( void )
     }
     
     // get range if given
-    if ( tkz.CountTokens() >= 2 ) {
+    if ( tokens.size() >= 2 ) {
         
-        if ( !wxStart.ParseISOCombined( tkz.GetNextToken() ) ) {
+        if ( !tokens.empty() && !start.set( tokens.front() ) ) {
             write( MSG_PARAMETER_ERROR, 
                     strlen( MSG_PARAMETER_ERROR ) );
             return;
         }
+        tokens.pop_front();
         
-        if ( !wxEnd.ParseISOCombined( tkz.GetNextToken() ) ) {
+        if ( !tokens.empty() && !end.set( tokens.front() ) ) {
             write( MSG_PARAMETER_ERROR, 
                     strlen( MSG_PARAMETER_ERROR ) );
             return;
         }
-        
+        tokens.pop_front();
+
     }
     
-    gpobj->m_mutexUserTables.Lock();
+    pthread_mutex_lock( &m_pObj->m_mutexUserTables  );
     
     CVSCPTable *pTable = 
-                gpobj->m_userTableObjects.getTable( strTable );
+                m_pObj->m_userTableObjects.getTable( strTable );
     
     if ( NULL == pTable ) {
         // Failed
         write( MSG_FAILED_UNKNOWN_TABLE, 
                     strlen( MSG_FAILED_UNKNOWN_TABLE ) );
         
-        gpobj->m_mutexUserTables.Unlock();
+        pthread_mutex_unlock( &m_pObj->m_mutexUserTables  );
         return;
     } 
     
     double count;
-    if ( !pTable->getNumberOfRecordsForRange( wxStart, wxEnd, &count ) ) {
+    if ( !pTable->getNumberOfRecordsForRange( start, end, &count ) ) {
         write( MSG_FAILED_TO_CLEAR_TABLE, 
                     strlen( MSG_FAILED_TO_CLEAR_TABLE ) );
-        gpobj->m_mutexUserTables.Unlock();
+        pthread_mutex_unlock( &m_pObj->m_mutexUserTables  );
         return;
     }
     
-    gpobj->m_mutexUserTables.Unlock();
+    pthread_mutex_unlock( &m_pObj->m_mutexUserTables  );
     
-    wxString strReply = wxString::Format(_("%f\r\n"), count );
-    write( (const char *)strReply.mbc_str(),  
-                strlen( (const char *)strReply.mbc_str() ) );
+    std::string strReply = vscp_string_format(("%f\r\n"), count );
+    write( (const char *)strReply.c_str(),  
+                strlen( (const char *)strReply.c_str() ) );
     
     write( MSG_OK,  
                 strlen( MSG_OK ) );
@@ -3832,23 +3512,23 @@ void TCPClientThread::handleClientTable_NumberOfRecords( void )
 // firstdate 'table-name' [to,from]
 //
 
-void TCPClientThread::handleClientTable_FirstDate( void )
+void tcpipClientObj::handleClientTable_FirstDate( void )
 {    
-    wxString strTable;
+    std::string strTable;
     
     // Must be connected
     if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
     
-    m_pClientItem->m_currentCommand.Trim(true);
-    m_pClientItem->m_currentCommand.Trim(false);
+    vscp_trim( m_pClientItem->m_currentCommand );
     
-    wxStringTokenizer tkz( m_pClientItem->m_currentCommand, _(" ") );
+    std::deque<std::string> tokens;     
+    vscp_split( tokens, m_pClientItem->m_currentCommand, " " );
     
     // Get table name
-    if ( tkz.HasMoreTokens() ) {
-        strTable = tkz.GetNextToken();
-        strTable.Trim(true);
-        strTable.Trim(false);
+    if ( !tokens.empty() ) {
+        strTable = tokens.front();
+        tokens.pop_front();
+        vscp_trim( strTable );
     }
     else {
         // Problems: A table name must be given
@@ -3858,34 +3538,35 @@ void TCPClientThread::handleClientTable_FirstDate( void )
     }
     
     
-    gpobj->m_mutexUserTables.Lock();
+    pthread_mutex_lock( &m_pObj->m_mutexUserTables  );
     
     CVSCPTable *pTable = 
-                gpobj->m_userTableObjects.getTable( strTable );
+                m_pObj->m_userTableObjects.getTable( strTable );
     
     if ( NULL == pTable ) {
         // Failed
         write( MSG_FAILED_UNKNOWN_TABLE, 
                     strlen( MSG_FAILED_UNKNOWN_TABLE ) );
         
-        gpobj->m_mutexUserTables.Unlock();
+        pthread_mutex_unlock( &m_pObj->m_mutexUserTables  );
         return;
     } 
     
-    wxDateTime first;
+    vscpdatetime first;
     if ( !pTable->getFirstDate( first ) ) {
         write( MSG_FAILED_TO_CLEAR_TABLE, 
                     strlen( MSG_FAILED_TO_CLEAR_TABLE ) );
-        gpobj->m_mutexUserTables.Unlock();
+        pthread_mutex_unlock( &m_pObj->m_mutexUserTables  );
         return;
     }
     
-    gpobj->m_mutexUserTables.Unlock();
+    pthread_mutex_unlock( &m_pObj->m_mutexUserTables  );
     
-    wxString strReply = wxString::Format(_("%s\r\n"), 
-                            (const char *)first.FormatISOCombined().mbc_str() );
-    write( (const char *)strReply.mbc_str(),  
-                strlen( (const char *)strReply.mbc_str() ) );
+    std::string strReply = 
+            vscp_string_format( "%s\r\n", 
+                         (const char *)first.getISODateTime().c_str() );
+    write( (const char *)strReply.c_str(),  
+                strlen( (const char *)strReply.c_str() ) );
     
     write( MSG_OK,  
                 strlen( MSG_OK ) );
@@ -3900,59 +3581,60 @@ void TCPClientThread::handleClientTable_FirstDate( void )
 // lastdate 'table-name' [to,from]
 //
 
-void TCPClientThread::handleClientTable_LastDate( void )
+void tcpipClientObj::handleClientTable_LastDate( void )
 {    
-    wxString strTable;
+    std::string strTable;
     
     // Must be connected
     if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
     
-    m_pClientItem->m_currentCommand.Trim(true);
-    m_pClientItem->m_currentCommand.Trim(false);
+    vscp_trim( m_pClientItem->m_currentCommand );
     
-    wxStringTokenizer tkz( m_pClientItem->m_currentCommand, _(" ") );
+    std::deque<std::string> tokens;     
+    vscp_split( tokens, m_pClientItem->m_currentCommand, " " );
     
     // Get table name
-    if ( tkz.HasMoreTokens() ) {
-        strTable = tkz.GetNextToken();
-        strTable.Trim(true);
-        strTable.Trim(false);
+    if ( !tokens.empty() ) {
+        strTable = tokens.front();
+        tokens.pop_front();
+        vscp_trim( strTable );
     }
     else {
         // Problems: A table name must be given
         write( MSG_PARAMETER_ERROR, 
-                    strlen( MSG_PARAMETER_ERROR ) );
+                strlen( MSG_PARAMETER_ERROR ) );
         return;
     }
     
-    gpobj->m_mutexUserTables.Lock();
+    pthread_mutex_lock( &m_pObj->m_mutexUserTables  );
     
     CVSCPTable *pTable = 
-                gpobj->m_userTableObjects.getTable( strTable );
+                m_pObj->m_userTableObjects.getTable( strTable );
     
     if ( NULL == pTable ) {
         // Failed
         write( MSG_FAILED_UNKNOWN_TABLE, 
                     strlen( MSG_FAILED_UNKNOWN_TABLE ) );
         
-        gpobj->m_mutexUserTables.Unlock();
+        pthread_mutex_unlock( &m_pObj->m_mutexUserTables  );
         return;
     } 
     
-    wxDateTime last;
+    vscpdatetime last;
     if ( !pTable->getLastDate( last) ) {
         write( MSG_FAILED_TO_CLEAR_TABLE, 
                     strlen( MSG_FAILED_TO_CLEAR_TABLE ) );
-        gpobj->m_mutexUserTables.Unlock();
+        pthread_mutex_unlock( &m_pObj->m_mutexUserTables  );
         return;
     }
     
-    gpobj->m_mutexUserTables.Unlock();
+    pthread_mutex_unlock( &m_pObj->m_mutexUserTables  );
     
-    wxString strReply = wxString::Format(_("%s\r\n"), 
-                            (const char *)last.FormatISOCombined().mbc_str() );
-    write( (const char *)strReply.mbc_str(),  
-                strlen( (const char *)strReply.mbc_str() ) );
+    std::string strReply = 
+            vscp_string_format( "%s\r\n", 
+                                (const char *)last.getISODateTime().c_str() );
+    write( (const char *)strReply.c_str(),  
+                strlen( (const char *)strReply.c_str() ) );
     
     write( MSG_OK,  
                 strlen( MSG_OK ) );
@@ -3967,29 +3649,29 @@ void TCPClientThread::handleClientTable_LastDate( void )
 // sum 'table-name' [to,from]
 //
 
-void TCPClientThread::handleClientTable_Sum( void )
+void tcpipClientObj::handleClientTable_Sum( void )
 {    
-    wxString strTable;
-    wxDateTime wxStart;   
-    wxDateTime wxEnd;
+    std::string strTable;
+    vscpdatetime start;   
+    vscpdatetime end;
     
     // Initialize date range to 'all'
-    wxStart.ParseISOCombined( _("0000-01-01T00:00:00") );   // The first date
-    wxEnd.ParseISOCombined( _("9999-12-31T23:59:59") );     // The last date
+    start.set( ("0000-01-01T00:00:00") );   // The first date
+    end.set( ("9999-12-31T23:59:59") );     // The last date
     
     // Must be connected
     if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
     
-    m_pClientItem->m_currentCommand.Trim(true);
-    m_pClientItem->m_currentCommand.Trim(false);
+    vscp_trim( m_pClientItem->m_currentCommand );
     
-    wxStringTokenizer tkz( m_pClientItem->m_currentCommand, _(" ") );
+    std::deque<std::string> tokens;     
+    vscp_split( tokens, m_pClientItem->m_currentCommand, " " );
     
     // Get table name
-    if ( tkz.HasMoreTokens() ) {
-        strTable = tkz.GetNextToken();
-        strTable.Trim(true);
-        strTable.Trim(false);
+    if ( !tokens.empty() ) {
+        strTable = tokens.front();
+        tokens.pop_front();
+        vscp_trim(strTable);
     }
     else {
         // Problems: A table name must be given
@@ -3999,49 +3681,51 @@ void TCPClientThread::handleClientTable_Sum( void )
     }
     
     // get range if given
-    if ( tkz.CountTokens() >= 2 ) {
+    if ( tokens.size() >= 2 ) {
         
-        if ( !wxStart.ParseISOCombined( tkz.GetNextToken() ) ) {
+        if ( !tokens.empty() && !start.set( tokens.front() ) ) {
             write( MSG_PARAMETER_ERROR, 
                     strlen( MSG_PARAMETER_ERROR ) );
             return;
         }
+        tokens.pop_front();
         
-        if ( !wxEnd.ParseISOCombined( tkz.GetNextToken() ) ) {
+        if ( !tokens.empty() && !end.set( tokens.front() ) ) {
             write( MSG_PARAMETER_ERROR, 
                     strlen( MSG_PARAMETER_ERROR ) );
             return;
         }
+        tokens.pop_front();
         
     }
     
-    gpobj->m_mutexUserTables.Lock();
+    pthread_mutex_lock( &m_pObj->m_mutexUserTables  );
     
     CVSCPTable *pTable = 
-                gpobj->m_userTableObjects.getTable( strTable );
+                m_pObj->m_userTableObjects.getTable( strTable );
     
     if ( NULL == pTable ) {
         // Failed
         write( MSG_FAILED_UNKNOWN_TABLE, 
                     strlen( MSG_FAILED_UNKNOWN_TABLE ) );
         
-        gpobj->m_mutexUserTables.Unlock();
+        pthread_mutex_unlock( &m_pObj->m_mutexUserTables  );
         return;
     } 
     
     double sum;
-    if ( !pTable->getSumValue( wxStart, wxEnd, &sum ) ) {
+    if ( !pTable->getSumValue( start, end, &sum ) ) {
         write( MSG_FAILED_TO_CLEAR_TABLE, 
                     strlen( MSG_FAILED_TO_CLEAR_TABLE ) );
-        gpobj->m_mutexUserTables.Unlock();
+        pthread_mutex_unlock( &m_pObj->m_mutexUserTables  );
         return;
     }
     
-    gpobj->m_mutexUserTables.Unlock();
+    pthread_mutex_unlock( &m_pObj->m_mutexUserTables  );
     
-    wxString strReply = wxString::Format(_("%f\r\n"), sum );
-    write( (const char *)strReply.mbc_str(),  
-                strlen( (const char *)strReply.mbc_str() ) );
+    std::string strReply = vscp_string_format(("%f\r\n"), sum );
+    write( (const char *)strReply.c_str(),  
+                strlen( (const char *)strReply.c_str() ) );
     
     write( MSG_OK,  
                 strlen( MSG_OK ) );
@@ -4056,84 +3740,85 @@ void TCPClientThread::handleClientTable_Sum( void )
 // min 'table-name' [to,from]
 //
 
-void TCPClientThread::handleClientTable_Min( void )
+void tcpipClientObj::handleClientTable_Min( void )
 {    
-    wxString strTable;
-    wxDateTime wxStart;   
-    wxDateTime wxEnd;
+    std::string strTable;
+    vscpdatetime start;   
+    vscpdatetime end;
     
     // Initialize date range to 'all'
-    wxStart.ParseISOCombined( _("0000-01-01T00:00:00") );   // The first date
-    wxEnd.ParseISOCombined( _("9999-12-31T23:59:59") );     // The last date
+    start.set( ("0000-01-01T00:00:00") );   // The first date
+    end.set( ("9999-12-31T23:59:59") );     // The last date
     
     // Must be connected
     if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
     
-    m_pClientItem->m_currentCommand.Trim(true);
-    m_pClientItem->m_currentCommand.Trim(false);
+    vscp_trim( m_pClientItem->m_currentCommand );
     
-    wxStringTokenizer tkz( m_pClientItem->m_currentCommand, _(" ") );
+    std::deque<std::string> tokens;     
+    vscp_split( tokens, m_pClientItem->m_currentCommand, " " );
     
     // Get table name
-    if ( tkz.HasMoreTokens() ) {
-        strTable = tkz.GetNextToken();
-        strTable.Trim(true);
-        strTable.Trim(false);
+    if ( !tokens.empty() ) {
+        strTable = tokens.front();
+        tokens.pop_front();
+        vscp_trim( strTable );
     }
     else {
         // Problems: A table name must be given
         write( MSG_PARAMETER_ERROR, 
-                    strlen( MSG_PARAMETER_ERROR ) );
+                strlen( MSG_PARAMETER_ERROR ) );
         return;
     }
     
     // get range if given
-    if ( tkz.CountTokens() >= 2 ) {
+    if ( tokens.size() >= 2 ) {
         
-        if ( !wxStart.ParseISOCombined( tkz.GetNextToken() ) ) {
+        if ( !tokens.empty() && !start.set( tokens.front() ) ) {
             write( MSG_PARAMETER_ERROR, 
                     strlen( MSG_PARAMETER_ERROR ) );
             return;
         }
+        tokens.pop_front();
         
-        if ( !wxEnd.ParseISOCombined( tkz.GetNextToken() ) ) {
+        if ( !tokens.empty() && !end.set( tokens.front() ) ) {
             write( MSG_PARAMETER_ERROR, 
                     strlen( MSG_PARAMETER_ERROR ) );
             return;
         }
+        tokens.pop_front();
         
     }
     
-    gpobj->m_mutexUserTables.Lock();
+    pthread_mutex_lock( &m_pObj->m_mutexUserTables  );
     
     CVSCPTable *pTable = 
-                gpobj->m_userTableObjects.getTable( strTable );
+                m_pObj->m_userTableObjects.getTable( strTable );
     
     if ( NULL == pTable ) {
         // Failed
         write( MSG_FAILED_UNKNOWN_TABLE, 
                     strlen( MSG_FAILED_UNKNOWN_TABLE ) );
         
-        gpobj->m_mutexUserTables.Unlock();
+        pthread_mutex_unlock( &m_pObj->m_mutexUserTables  );
         return;
     } 
     
     double min;
-    if ( !pTable->getMinValue( wxStart, wxEnd, &min ) ) {
+    if ( !pTable->getMinValue( start, end, &min ) ) {
         write( MSG_FAILED_TO_CLEAR_TABLE, 
                     strlen( MSG_FAILED_TO_CLEAR_TABLE ) );
-        gpobj->m_mutexUserTables.Unlock();
+        pthread_mutex_unlock( &m_pObj->m_mutexUserTables  );
         return;
     }
     
-    gpobj->m_mutexUserTables.Unlock();
+    pthread_mutex_unlock( &m_pObj->m_mutexUserTables  );
     
-    wxString strReply = wxString::Format(_("%f\r\n"), min );
-    write( (const char *)strReply.mbc_str(),  
-                strlen( (const char *)strReply.mbc_str() ) );
+    std::string strReply = vscp_string_format(("%f\r\n"), min );
+    write( (const char *)strReply.c_str(),  
+                strlen( (const char *)strReply.c_str() ) );
     
-    write( MSG_OK,  
-                strlen( MSG_OK ) );
+    write( MSG_OK, strlen( MSG_OK ) );
     
     return;
 }
@@ -4145,29 +3830,29 @@ void TCPClientThread::handleClientTable_Min( void )
 // max 'table-name' [to,from]
 //
 
-void TCPClientThread::handleClientTable_Max( void )
+void tcpipClientObj::handleClientTable_Max( void )
 {    
-    wxString strTable;
-    wxDateTime wxStart;   
-    wxDateTime wxEnd;
+    std::string strTable;
+    vscpdatetime start;   
+    vscpdatetime end;
     
     // Initialize date range to 'all'
-    wxStart.ParseISOCombined( _("0000-01-01T00:00:00") );   // The first date
-    wxEnd.ParseISOCombined( _("9999-12-31T23:59:59") );     // The last date
+    start.set( ("0000-01-01T00:00:00") );   // The first date
+    end.set( ("9999-12-31T23:59:59") );     // The last date
     
     // Must be connected
     if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
     
-    m_pClientItem->m_currentCommand.Trim(true);
-    m_pClientItem->m_currentCommand.Trim(false);
+    vscp_trim( m_pClientItem->m_currentCommand );
     
-    wxStringTokenizer tkz( m_pClientItem->m_currentCommand, _(" ") );
+    std::deque<std::string> tokens;     
+    vscp_split( tokens, m_pClientItem->m_currentCommand, " " );
     
     // Get table name
-    if ( tkz.HasMoreTokens() ) {
-        strTable = tkz.GetNextToken();
-        strTable.Trim(true);
-        strTable.Trim(false);
+    if ( !tokens.empty() ) {
+        strTable = tokens.front();
+        tokens.pop_front();
+        vscp_trim( strTable );
     }
     else {
         // Problems: A table name must be given
@@ -4177,49 +3862,51 @@ void TCPClientThread::handleClientTable_Max( void )
     }
     
     // get range if given
-    if ( tkz.CountTokens() >= 2 ) {
+    if ( tokens.size() >= 2 ) {
         
-        if ( !wxStart.ParseISOCombined( tkz.GetNextToken() ) ) {
+        if ( !tokens.empty() && !start.set( tokens.front() ) ) {
             write( MSG_PARAMETER_ERROR, 
                     strlen( MSG_PARAMETER_ERROR ) );
             return;
         }
+        tokens.pop_front();
         
-        if ( !wxEnd.ParseISOCombined( tkz.GetNextToken() ) ) {
+        if ( !tokens.empty() && !end.set( tokens.front() ) ) {
             write( MSG_PARAMETER_ERROR, 
                     strlen( MSG_PARAMETER_ERROR ) );
             return;
         }
+        tokens.pop_front();
         
     }
     
-    gpobj->m_mutexUserTables.Lock();
+    pthread_mutex_lock( &m_pObj->m_mutexUserTables  );
     
     CVSCPTable *pTable = 
-                gpobj->m_userTableObjects.getTable( strTable );
+                m_pObj->m_userTableObjects.getTable( strTable );
     
     if ( NULL == pTable ) {
         // Failed
         write( MSG_FAILED_UNKNOWN_TABLE, 
                     strlen( MSG_FAILED_UNKNOWN_TABLE ) );
         
-        gpobj->m_mutexUserTables.Unlock();
+        pthread_mutex_unlock( &m_pObj->m_mutexUserTables  );
         return;
     } 
     
     double max;
-    if ( !pTable->getMaxValue( wxStart, wxEnd, &max ) ) {
+    if ( !pTable->getMaxValue( start, end, &max ) ) {
         write( MSG_FAILED_TO_CLEAR_TABLE, 
                     strlen( MSG_FAILED_TO_CLEAR_TABLE ) );
-        gpobj->m_mutexUserTables.Unlock();
+        pthread_mutex_unlock( &m_pObj->m_mutexUserTables  );
         return;
     }
     
-    gpobj->m_mutexUserTables.Unlock();
+    pthread_mutex_unlock( &m_pObj->m_mutexUserTables  );
     
-    wxString strReply = wxString::Format(_("%f\r\n"), max );
-    write( (const char *)strReply.mbc_str(),  
-                strlen( (const char *)strReply.mbc_str() ) );
+    std::string strReply = vscp_string_format(("%f\r\n"), max );
+    write( (const char *)strReply.c_str(),  
+                strlen( (const char *)strReply.c_str() ) );
     
     write( MSG_OK,  
                 strlen( MSG_OK ) );
@@ -4233,29 +3920,29 @@ void TCPClientThread::handleClientTable_Max( void )
 // average 'table-name' [to,from]
 //
 
-void TCPClientThread::handleClientTable_Average( void )
+void tcpipClientObj::handleClientTable_Average( void )
 {    
-    wxString strTable;
-    wxDateTime wxStart;   
-    wxDateTime wxEnd;
+    std::string strTable;
+    vscpdatetime start;   
+    vscpdatetime end;
     
     // Initialize date range to 'all'
-    wxStart.ParseISOCombined( _("0000-01-01T00:00:00") );   // The first date
-    wxEnd.ParseISOCombined( _("9999-12-31T23:59:59") );     // The last date
+    start.set( ("0000-01-01T00:00:00") );   // The first date
+    end.set( ("9999-12-31T23:59:59") );     // The last date
     
     // Must be connected
     if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
     
-    m_pClientItem->m_currentCommand.Trim(true);
-    m_pClientItem->m_currentCommand.Trim(false);
+    vscp_trim( m_pClientItem->m_currentCommand );
     
-    wxStringTokenizer tkz( m_pClientItem->m_currentCommand, _(" ") );
+    std::deque<std::string> tokens;     
+    vscp_split( tokens, m_pClientItem->m_currentCommand, " " );
     
     // Get table name
-    if ( tkz.HasMoreTokens() ) {
-        strTable = tkz.GetNextToken();
-        strTable.Trim(true);
-        strTable.Trim(false);
+    if ( !tokens.empty() ) {
+        strTable = tokens.front();
+        tokens.pop_front();
+        vscp_trim( strTable );
     }
     else {
         // Problems: A table name must be given
@@ -4265,49 +3952,51 @@ void TCPClientThread::handleClientTable_Average( void )
     }
     
     // get range if given
-    if ( tkz.CountTokens() >= 2 ) {
+    if ( tokens.size() >= 2 ) {
         
-        if ( !wxStart.ParseISOCombined( tkz.GetNextToken() ) ) {
+        if ( !tokens.empty() && !start.set( tokens.front() ) ) {
             write( MSG_PARAMETER_ERROR, 
                     strlen( MSG_PARAMETER_ERROR ) );
             return;
         }
+        tokens.pop_front();
         
-        if ( !wxEnd.ParseISOCombined( tkz.GetNextToken() ) ) {
+        if ( !tokens.empty() && !end.set( tokens.front() ) ) {
             write( MSG_PARAMETER_ERROR, 
                     strlen( MSG_PARAMETER_ERROR ) );
             return;
         }
+        tokens.pop_front();
         
     }
     
-    gpobj->m_mutexUserTables.Lock();
+    pthread_mutex_lock( &m_pObj->m_mutexUserTables  );
     
     CVSCPTable *pTable = 
-                gpobj->m_userTableObjects.getTable( strTable );
+                m_pObj->m_userTableObjects.getTable( strTable );
     
     if ( NULL == pTable ) {
         // Failed
         write( MSG_FAILED_UNKNOWN_TABLE, 
                     strlen( MSG_FAILED_UNKNOWN_TABLE ) );
         
-        gpobj->m_mutexUserTables.Unlock();
+        pthread_mutex_unlock( &m_pObj->m_mutexUserTables  );
         return;
     } 
     
     double average;
-    if ( !pTable->getAverageValue( wxStart, wxEnd, &average ) ) {
+    if ( !pTable->getAverageValue( start, end, &average ) ) {
         write( MSG_FAILED_TO_CLEAR_TABLE, 
                     strlen( MSG_FAILED_TO_CLEAR_TABLE ) );
-        gpobj->m_mutexUserTables.Unlock();
+        pthread_mutex_unlock( &m_pObj->m_mutexUserTables  );
         return;
     }
     
-    gpobj->m_mutexUserTables.Unlock();
+    pthread_mutex_unlock( &m_pObj->m_mutexUserTables  );
     
-    wxString strReply = wxString::Format(_("%f\r\n"), average );
-    write( (const char *)strReply.mbc_str(),  
-                strlen( (const char *)strReply.mbc_str() ) );
+    std::string strReply = vscp_string_format(("%f\r\n"), average );
+    write( (const char *)strReply.c_str(),  
+                strlen( (const char *)strReply.c_str() ) );
     
     write( MSG_OK,  
                 strlen( MSG_OK ) );
@@ -4321,29 +4010,29 @@ void TCPClientThread::handleClientTable_Average( void )
 // median 'table-name' [to,from]
 //
 
-void TCPClientThread::handleClientTable_Median( void )
+void tcpipClientObj::handleClientTable_Median( void )
 {    
-    wxString strTable;
-    wxDateTime wxStart;   
-    wxDateTime wxEnd;
+    std::string strTable;
+    vscpdatetime start;   
+    vscpdatetime end;
     
     // Initialize date range to 'all'
-    wxStart.ParseISOCombined( _("0000-01-01T00:00:00") );   // The first date
-    wxEnd.ParseISOCombined( _("9999-12-31T23:59:59") );     // The last date
+    start.set( ("0000-01-01T00:00:00") );   // The first date
+    end.set( ("9999-12-31T23:59:59") );     // The last date
     
     // Must be connected
     if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
     
-    m_pClientItem->m_currentCommand.Trim(true);
-    m_pClientItem->m_currentCommand.Trim(false);
+    vscp_trim( m_pClientItem->m_currentCommand );
     
-    wxStringTokenizer tkz( m_pClientItem->m_currentCommand, _(" ") );
+    std::deque<std::string> tokens;     
+    vscp_split( tokens, m_pClientItem->m_currentCommand, " " );
     
     // Get table name
-    if ( tkz.HasMoreTokens() ) {
-        strTable = tkz.GetNextToken();
-        strTable.Trim(true);
-        strTable.Trim(false);
+    if ( !tokens.empty() ) {
+        strTable = tokens.front();
+        tokens.pop_front();
+        vscp_trim( strTable );
     }
     else {
         // Problems: A table name must be given
@@ -4353,52 +4042,53 @@ void TCPClientThread::handleClientTable_Median( void )
     }
     
     // get range if given
-    if ( tkz.CountTokens() >= 2 ) {
+    if ( tokens.size() >= 2 ) {
         
-        if ( !wxStart.ParseISOCombined( tkz.GetNextToken() ) ) {
+        if ( !tokens.empty() && !start.set( tokens.front() ) ) {
             write( MSG_PARAMETER_ERROR, 
                     strlen( MSG_PARAMETER_ERROR ) );
             return;
         }
+        tokens.pop_front();
         
-        if ( !wxEnd.ParseISOCombined( tkz.GetNextToken() ) ) {
+        if ( !tokens.empty() && !end.set( tokens.front() ) ) {
             write( MSG_PARAMETER_ERROR, 
                     strlen( MSG_PARAMETER_ERROR ) );
             return;
         }
+        tokens.pop_front();
         
     }
     
-    gpobj->m_mutexUserTables.Lock();
+    pthread_mutex_lock( &m_pObj->m_mutexUserTables  );
     
     CVSCPTable *pTable = 
-                gpobj->m_userTableObjects.getTable( strTable );
+                m_pObj->m_userTableObjects.getTable( strTable );
     
     if ( NULL == pTable ) {
         // Failed
         write( MSG_FAILED_UNKNOWN_TABLE, 
                     strlen( MSG_FAILED_UNKNOWN_TABLE ) );
         
-        gpobj->m_mutexUserTables.Unlock();
+        pthread_mutex_unlock( &m_pObj->m_mutexUserTables  );
         return;
     } 
     
     double median;
-    if ( !pTable->getMedianValue( wxStart, wxEnd, &median ) ) {
+    if ( !pTable->getMedianValue( start, end, &median ) ) {
         write( MSG_FAILED_TO_CLEAR_TABLE, 
                     strlen( MSG_FAILED_TO_CLEAR_TABLE ) );
-        gpobj->m_mutexUserTables.Unlock();
+        pthread_mutex_unlock( &m_pObj->m_mutexUserTables  );
         return;
     }
     
-    gpobj->m_mutexUserTables.Unlock();
+    pthread_mutex_unlock( &m_pObj->m_mutexUserTables  );
     
-    wxString strReply = wxString::Format(_("%f\r\n"), median );
-    write( (const char *)strReply.mbc_str(),  
-                strlen( (const char *)strReply.mbc_str() ) );
+    std::string strReply = vscp_string_format(("%f\r\n"), median );
+    write( (const char *)strReply.c_str(),  
+                strlen( (const char *)strReply.c_str() ) );
     
-    write( MSG_OK,  
-                strlen( MSG_OK ) );
+    write( MSG_OK, strlen( MSG_OK ) );
     
     return;
 }
@@ -4410,29 +4100,29 @@ void TCPClientThread::handleClientTable_Median( void )
 // stddev 'table-name' [to,from]
 //
 
-void TCPClientThread::handleClientTable_StdDev( void )
+void tcpipClientObj::handleClientTable_StdDev( void )
 {    
-    wxString strTable;
-    wxDateTime wxStart;   
-    wxDateTime wxEnd;
+    std::string strTable;
+    vscpdatetime start;   
+    vscpdatetime end;
     
     // Initialize date range to 'all'
-    wxStart.ParseISOCombined( _("0000-01-01T00:00:00") );   // The first date
-    wxEnd.ParseISOCombined( _("9999-12-31T23:59:59") );     // The last date
+    start.set( ("0000-01-01T00:00:00") );   // The first date
+    end.set( ("9999-12-31T23:59:59") );     // The last date
     
     // Must be connected
     if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
     
-    m_pClientItem->m_currentCommand.Trim(true);
-    m_pClientItem->m_currentCommand.Trim(false);
+    vscp_trim( m_pClientItem->m_currentCommand );
     
-    wxStringTokenizer tkz( m_pClientItem->m_currentCommand, _(" ") );
+    std::deque<std::string> tokens;     
+    vscp_split( tokens, m_pClientItem->m_currentCommand, " " );
     
     // Get table name
-    if ( tkz.HasMoreTokens() ) {
-        strTable = tkz.GetNextToken();
-        strTable.Trim(true);
-        strTable.Trim(false);
+    if ( !tokens.empty() ) {
+        strTable = tokens.front();
+        tokens.pop_front();
+        vscp_trim( strTable );
     }
     else {
         // Problems: A table name must be given
@@ -4442,49 +4132,51 @@ void TCPClientThread::handleClientTable_StdDev( void )
     }
     
     // get range if given
-    if ( tkz.CountTokens() >= 2 ) {
+    if ( tokens.size() >= 2 ) {
         
-        if ( !wxStart.ParseISOCombined( tkz.GetNextToken() ) ) {
+        if ( !tokens.empty() && !start.set( tokens.front() ) ) {
             write( MSG_PARAMETER_ERROR, 
                     strlen( MSG_PARAMETER_ERROR ) );
             return;
         }
+        tokens.pop_front();
         
-        if ( !wxEnd.ParseISOCombined( tkz.GetNextToken() ) ) {
+        if ( !tokens.empty() && !end.set( tokens.front() ) ) {
             write( MSG_PARAMETER_ERROR, 
                     strlen( MSG_PARAMETER_ERROR ) );
             return;
         }
+        tokens.pop_front();
         
     }
     
-    gpobj->m_mutexUserTables.Lock();
+    pthread_mutex_lock( &m_pObj->m_mutexUserTables );
     
     CVSCPTable *pTable = 
-                gpobj->m_userTableObjects.getTable( strTable );
+                m_pObj->m_userTableObjects.getTable( strTable );
     
     if ( NULL == pTable ) {
         // Failed
         write( MSG_FAILED_UNKNOWN_TABLE, 
                     strlen( MSG_FAILED_UNKNOWN_TABLE ) );
         
-        gpobj->m_mutexUserTables.Unlock();
+        pthread_mutex_unlock( &m_pObj->m_mutexUserTables  );
         return;
     } 
     
     double stdev;
-    if ( !pTable->getStdevValue( wxStart, wxEnd, &stdev ) ) {
+    if ( !pTable->getStdevValue( start, end, &stdev ) ) {
         write( MSG_FAILED_TO_CLEAR_TABLE, 
                     strlen( MSG_FAILED_TO_CLEAR_TABLE ) );
-        gpobj->m_mutexUserTables.Unlock();
+        pthread_mutex_unlock( &m_pObj->m_mutexUserTables  );
         return;
     }
     
-    gpobj->m_mutexUserTables.Unlock();
+    pthread_mutex_unlock( &m_pObj->m_mutexUserTables  );
     
-    wxString strReply = wxString::Format(_("%f\r\n"), stdev );
-    write( (const char *)strReply.mbc_str(),  
-                strlen( (const char *)strReply.mbc_str() ) );
+    std::string strReply = vscp_string_format(("%f\r\n"), stdev );
+    write( (const char *)strReply.c_str(),  
+                strlen( (const char *)strReply.c_str() ) );
     
     write( MSG_OK,  
                 strlen( MSG_OK ) );
@@ -4499,29 +4191,29 @@ void TCPClientThread::handleClientTable_StdDev( void )
 // variance 'table-name' [to,from]
 //
 
-void TCPClientThread::handleClientTable_Variance( void )
+void tcpipClientObj::handleClientTable_Variance( void )
 {    
-    wxString strTable;
-    wxDateTime wxStart;   
-    wxDateTime wxEnd;
+    std::string strTable;
+    vscpdatetime start;   
+    vscpdatetime end;
     
     // Initialize date range to 'all'
-    wxStart.ParseISOCombined( _("0000-01-01T00:00:00") );   // The first date
-    wxEnd.ParseISOCombined( _("9999-12-31T23:59:59") );     // The last date
+    start.set( ("0000-01-01T00:00:00") );   // The first date
+    end.set( ("9999-12-31T23:59:59") );     // The last date
     
     // Must be connected
     if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
     
-    m_pClientItem->m_currentCommand.Trim(true);
-    m_pClientItem->m_currentCommand.Trim(false);
+    vscp_trim( m_pClientItem->m_currentCommand );
     
-    wxStringTokenizer tkz( m_pClientItem->m_currentCommand, _(" ") );
+    std::deque<std::string> tokens;     
+    vscp_split( tokens, m_pClientItem->m_currentCommand, " " );
     
     // Get table name
-    if ( tkz.HasMoreTokens() ) {
-        strTable = tkz.GetNextToken();
-        strTable.Trim(true);
-        strTable.Trim(false);
+    if ( !tokens.empty() ) {
+        strTable = tokens.front();
+        tokens.pop_front();
+        vscp_trim( strTable );
     }
     else {
         // Problems: A table name must be given
@@ -4531,52 +4223,52 @@ void TCPClientThread::handleClientTable_Variance( void )
     }
     
     // get range if given
-    if ( tkz.CountTokens() >= 2 ) {
+    if ( tokens.size() >= 2 ) {
         
-        if ( !wxStart.ParseISOCombined( tkz.GetNextToken() ) ) {
+        if ( !tokens.empty() && !start.set( tokens.front() ) ) {
             write( MSG_PARAMETER_ERROR, 
                     strlen( MSG_PARAMETER_ERROR ) );
             return;
         }
+        tokens.pop_front();
         
-        if ( !wxEnd.ParseISOCombined( tkz.GetNextToken() ) ) {
+        if ( !tokens.empty() && !end.set( tokens.front() ) ) {
             write( MSG_PARAMETER_ERROR, 
                     strlen( MSG_PARAMETER_ERROR ) );
             return;
         }
+        tokens.pop_front();
         
     }
     
-    gpobj->m_mutexUserTables.Lock();
+    pthread_mutex_lock( &m_pObj->m_mutexUserTables  );
     
     CVSCPTable *pTable = 
-                gpobj->m_userTableObjects.getTable( strTable );
+                m_pObj->m_userTableObjects.getTable( strTable );
     
     if ( NULL == pTable ) {
         // Failed
         write( MSG_FAILED_UNKNOWN_TABLE, 
                     strlen( MSG_FAILED_UNKNOWN_TABLE ) );
         
-        gpobj->m_mutexUserTables.Unlock();
+        pthread_mutex_unlock( &m_pObj->m_mutexUserTables  );
         return;
     } 
     
     double variance;
-    if ( !pTable->getVarianceValue( wxStart, wxEnd, &variance ) ) {
+    if ( !pTable->getVarianceValue( start, end, &variance ) ) {
         write( MSG_FAILED_TO_CLEAR_TABLE, 
                     strlen( MSG_FAILED_TO_CLEAR_TABLE ) );
-        gpobj->m_mutexUserTables.Unlock();
+        pthread_mutex_unlock( &m_pObj->m_mutexUserTables  );
         return;
     }
     
-    gpobj->m_mutexUserTables.Unlock();
+    pthread_mutex_unlock( &m_pObj->m_mutexUserTables  );
     
-    wxString strReply = wxString::Format(_("%f\r\n"), variance );
-    write( (const char *)strReply.mbc_str(),  
-                strlen( (const char *)strReply.mbc_str() ) );
+    std::string strReply = vscp_string_format( "%f\r\n", variance );
+    write( strReply );
     
-    write( MSG_OK,  
-                strlen( MSG_OK ) );
+    write( MSG_OK, strlen( MSG_OK ) );
     
     return;
 }
@@ -4587,29 +4279,29 @@ void TCPClientThread::handleClientTable_Variance( void )
 // mode 'table-name' [to,from]
 //
 
-void TCPClientThread::handleClientTable_Mode( void )
+void tcpipClientObj::handleClientTable_Mode( void )
 {    
-    wxString strTable;
-    wxDateTime wxStart;   
-    wxDateTime wxEnd;
+    std::string strTable;
+    vscpdatetime start;   
+    vscpdatetime end;
     
     // Initialize date range to 'all'
-    wxStart.ParseISOCombined( _("0000-01-01T00:00:00") );   // The first date
-    wxEnd.ParseISOCombined( _("9999-12-31T23:59:59") );     // The last date
+    start.set( ("0000-01-01T00:00:00") );   // The first date
+    end.set( ("9999-12-31T23:59:59") );     // The last date
     
     // Must be connected
     if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
     
-    m_pClientItem->m_currentCommand.Trim(true);
-    m_pClientItem->m_currentCommand.Trim(false);
+    vscp_trim( m_pClientItem->m_currentCommand );
     
-    wxStringTokenizer tkz( m_pClientItem->m_currentCommand, _(" ") );
+    std::deque<std::string> tokens;     
+    vscp_split( tokens, m_pClientItem->m_currentCommand, " " );
     
     // Get table name
-    if ( tkz.HasMoreTokens() ) {
-        strTable = tkz.GetNextToken();
-        strTable.Trim(true);
-        strTable.Trim(false);
+    if ( !tokens.empty() ) {
+        strTable = tokens.front();
+        tokens.pop_front();
+        vscp_trim( strTable );
     }
     else {
         // Problems: A table name must be given
@@ -4619,49 +4311,51 @@ void TCPClientThread::handleClientTable_Mode( void )
     }
     
     // get range if given
-    if ( tkz.CountTokens() >= 2 ) {
+    if ( tokens.size() >= 2 ) {
         
-        if ( !wxStart.ParseISOCombined( tkz.GetNextToken() ) ) {
+        if ( !tokens.empty() && !start.set( tokens.front() ) ) {
             write( MSG_PARAMETER_ERROR, 
                     strlen( MSG_PARAMETER_ERROR ) );
             return;
         }
+        tokens.pop_front();
         
-        if ( !wxEnd.ParseISOCombined( tkz.GetNextToken() ) ) {
+        if ( !tokens.empty() && !end.set( tokens.front() ) ) {
             write( MSG_PARAMETER_ERROR, 
                     strlen( MSG_PARAMETER_ERROR ) );
             return;
         }
+        tokens.pop_front();
         
     }
     
-    gpobj->m_mutexUserTables.Lock();
+    pthread_mutex_lock( &m_pObj->m_mutexUserTables  );
     
     CVSCPTable *pTable = 
-                gpobj->m_userTableObjects.getTable( strTable );
+                m_pObj->m_userTableObjects.getTable( strTable );
     
     if ( NULL == pTable ) {
         // Failed
         write( MSG_FAILED_UNKNOWN_TABLE, 
                     strlen( MSG_FAILED_UNKNOWN_TABLE ) );
         
-        gpobj->m_mutexUserTables.Unlock();
+        pthread_mutex_unlock( &m_pObj->m_mutexUserTables  );
         return;
     } 
     
     double mode;
-    if ( !pTable->getModeValue( wxStart, wxEnd, &mode ) ) {
+    if ( !pTable->getModeValue( start, end, &mode ) ) {
         write( MSG_FAILED_TO_CLEAR_TABLE, 
                     strlen( MSG_FAILED_TO_CLEAR_TABLE ) );
-        gpobj->m_mutexUserTables.Unlock();
+        pthread_mutex_unlock( &m_pObj->m_mutexUserTables  );
         return;
     }
     
-    gpobj->m_mutexUserTables.Unlock();
+    pthread_mutex_unlock( &m_pObj->m_mutexUserTables  );
     
-    wxString strReply = wxString::Format(_("%f\r\n"), mode );
-    write( (const char *)strReply.mbc_str(),  
-                strlen( (const char *)strReply.mbc_str() ) );
+    std::string strReply = vscp_string_format(("%f\r\n"), mode );
+    write( (const char *)strReply.c_str(),  
+                strlen( (const char *)strReply.c_str() ) );
     
     write( MSG_OK,  
                 strlen( MSG_OK ) );
@@ -4675,29 +4369,29 @@ void TCPClientThread::handleClientTable_Mode( void )
 // lowerq 'table-name' [to,from]
 //
 
-void TCPClientThread::handleClientTable_LowerQ( void )
+void tcpipClientObj::handleClientTable_LowerQ( void )
 {    
-    wxString strTable;
-    wxDateTime wxStart;   
-    wxDateTime wxEnd;
+    std::string strTable;
+    vscpdatetime start;   
+    vscpdatetime end;
     
     // Initialize date range to 'all'
-    wxStart.ParseISOCombined( _("0000-01-01T00:00:00") );   // The first date
-    wxEnd.ParseISOCombined( _("9999-12-31T23:59:59") );     // The last date
+    start.set( ("0000-01-01T00:00:00") );   // The first date
+    end.set( ("9999-12-31T23:59:59") );     // The last date
     
     // Must be connected
     if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
     
-    m_pClientItem->m_currentCommand.Trim(true);
-    m_pClientItem->m_currentCommand.Trim(false);
+    vscp_trim( m_pClientItem->m_currentCommand );
     
-    wxStringTokenizer tkz( m_pClientItem->m_currentCommand, _(" ") );
+    std::deque<std::string> tokens;     
+    vscp_split( tokens, m_pClientItem->m_currentCommand, " " );
     
     // Get table name
-    if ( tkz.HasMoreTokens() ) {
-        strTable = tkz.GetNextToken();
-        strTable.Trim(true);
-        strTable.Trim(false);
+    if ( !tokens.empty() ) {
+        strTable = tokens.front();
+        tokens.pop_front();
+        vscp_trim( strTable );
     }
     else {
         // Problems: A table name must be given
@@ -4707,52 +4401,53 @@ void TCPClientThread::handleClientTable_LowerQ( void )
     }
     
     // get range if given
-    if ( tkz.CountTokens() >= 2 ) {
+    if ( tokens.size() >= 2 ) {
         
-        if ( !wxStart.ParseISOCombined( tkz.GetNextToken() ) ) {
+        if ( !tokens.empty() && !start.set( tokens.front() ) ) {
             write( MSG_PARAMETER_ERROR, 
                     strlen( MSG_PARAMETER_ERROR ) );
             return;
         }
+        tokens.pop_front();
         
-        if ( !wxEnd.ParseISOCombined( tkz.GetNextToken() ) ) {
+        if ( !tokens.empty() && !end.set( tokens.front() ) ) {
             write( MSG_PARAMETER_ERROR, 
                     strlen( MSG_PARAMETER_ERROR ) );
             return;
         }
+        tokens.pop_front();
         
     }
     
-    gpobj->m_mutexUserTables.Lock();
+    pthread_mutex_lock( &m_pObj->m_mutexUserTables  );
     
     CVSCPTable *pTable = 
-                gpobj->m_userTableObjects.getTable( strTable );
+                m_pObj->m_userTableObjects.getTable( strTable );
     
     if ( NULL == pTable ) {
         // Failed
         write( MSG_FAILED_UNKNOWN_TABLE, 
                     strlen( MSG_FAILED_UNKNOWN_TABLE ) );
         
-        gpobj->m_mutexUserTables.Unlock();
+        pthread_mutex_unlock( &m_pObj->m_mutexUserTables  );
         return;
     } 
     
     double lq;
-    if ( !pTable->getLowerQuartileValue( wxStart, wxEnd, &lq ) ) {
+    if ( !pTable->getLowerQuartileValue( start, end, &lq ) ) {
         write( MSG_FAILED_TO_CLEAR_TABLE, 
                     strlen( MSG_FAILED_TO_CLEAR_TABLE ) );
-        gpobj->m_mutexUserTables.Unlock();
+        pthread_mutex_unlock( &m_pObj->m_mutexUserTables  );
         return;
     }
     
-    gpobj->m_mutexUserTables.Unlock();
+    pthread_mutex_unlock( &m_pObj->m_mutexUserTables  );
     
-    wxString strReply = wxString::Format(_("%f\r\n"), lq );
-    write( (const char *)strReply.mbc_str(),  
-                strlen( (const char *)strReply.mbc_str() ) );
+    std::string strReply = vscp_string_format(("%f\r\n"), lq );
+    write( (const char *)strReply.c_str(),  
+                strlen( (const char *)strReply.c_str() ) );
     
-    write( MSG_OK,  
-                strlen( MSG_OK ) );
+    write( MSG_OK, strlen( MSG_OK ) );
     
     return;
 }
@@ -4763,29 +4458,29 @@ void TCPClientThread::handleClientTable_LowerQ( void )
 // upperq 'table-name' [to,from]
 //
 
-void TCPClientThread::handleClientTable_UpperQ( void )
+void tcpipClientObj::handleClientTable_UpperQ( void )
 {    
-    wxString strTable;
-    wxDateTime wxStart;   
-    wxDateTime wxEnd;
+    std::string strTable;
+    vscpdatetime start;   
+    vscpdatetime end;
     
     // Initialize date range to 'all'
-    wxStart.ParseISOCombined( _("0000-01-01T00:00:00") );   // The first date
-    wxEnd.ParseISOCombined( _("9999-12-31T23:59:59") );     // The last date
+    start.set( ("0000-01-01T00:00:00") );   // The first date
+    end.set( ("9999-12-31T23:59:59") );     // The last date
     
     // Must be connected
     if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
     
-    m_pClientItem->m_currentCommand.Trim(true);
-    m_pClientItem->m_currentCommand.Trim(false);
+    vscp_trim( m_pClientItem->m_currentCommand );
     
-    wxStringTokenizer tkz( m_pClientItem->m_currentCommand, _(" ") );
+    std::deque<std::string> tokens;     
+    vscp_split( tokens, m_pClientItem->m_currentCommand, " " );
     
     // Get table name
-    if ( tkz.HasMoreTokens() ) {
-        strTable = tkz.GetNextToken();
-        strTable.Trim(true);
-        strTable.Trim(false);
+    if ( !tokens.empty() ) {
+        strTable = tokens.front();
+        tokens.pop_front();
+        vscp_trim( strTable );
     }
     else {
         // Problems: A table name must be given
@@ -4795,52 +4490,53 @@ void TCPClientThread::handleClientTable_UpperQ( void )
     }
     
     // get range if given
-    if ( tkz.CountTokens() >= 2 ) {
+    if ( tokens.size() >= 2 ) {
         
-        if ( !wxStart.ParseISOCombined( tkz.GetNextToken() ) ) {
+        if ( !tokens.empty() && !start.set( tokens.front() ) ) {
             write( MSG_PARAMETER_ERROR, 
                     strlen( MSG_PARAMETER_ERROR ) );
             return;
         }
+        tokens.pop_front();
         
-        if ( !wxEnd.ParseISOCombined( tkz.GetNextToken() ) ) {
+        if ( !tokens.empty() && !end.set( tokens.front() ) ) {
             write( MSG_PARAMETER_ERROR, 
                     strlen( MSG_PARAMETER_ERROR ) );
             return;
         }
+        tokens.pop_front();
         
     }
     
-    gpobj->m_mutexUserTables.Lock();
+    pthread_mutex_lock( &m_pObj->m_mutexUserTables  );
     
     CVSCPTable *pTable = 
-                gpobj->m_userTableObjects.getTable( strTable );
+                m_pObj->m_userTableObjects.getTable( strTable );
     
     if ( NULL == pTable ) {
         // Failed
         write( MSG_FAILED_UNKNOWN_TABLE, 
                     strlen( MSG_FAILED_UNKNOWN_TABLE ) );
         
-        gpobj->m_mutexUserTables.Unlock();
+        pthread_mutex_unlock( &m_pObj->m_mutexUserTables  );
         return;
     } 
     
     double uq;
-    if ( !pTable->getUppeQuartileValue( wxStart, wxEnd, &uq ) ) {
+    if ( !pTable->getUppeQuartileValue( start, end, &uq ) ) {
         write( MSG_FAILED_TO_CLEAR_TABLE, 
                     strlen( MSG_FAILED_TO_CLEAR_TABLE ) );
-        gpobj->m_mutexUserTables.Unlock();
+        pthread_mutex_unlock( &m_pObj->m_mutexUserTables  );
         return;
     }
     
-    gpobj->m_mutexUserTables.Unlock();
+    pthread_mutex_unlock( &m_pObj->m_mutexUserTables  );
     
-    wxString strReply = wxString::Format(_("%f\r\n"), uq );
-    write( (const char *)strReply.mbc_str(),  
-                strlen( (const char *)strReply.mbc_str() ) );
+    std::string strReply = vscp_string_format(("%f\r\n"), uq );
+    write( (const char *)strReply.c_str(),  
+                strlen( (const char *)strReply.c_str() ) );
     
-    write( MSG_OK,  
-                strlen( MSG_OK ) );
+    write( MSG_OK, strlen( MSG_OK ) );
     
     return;
 }
@@ -4876,54 +4572,53 @@ void TCPClientThread::handleClientTable_UpperQ( void )
 // handleClientVariable
 //
 
-void TCPClientThread::handleClientVariable( void )
+void tcpipClientObj::handleClientVariable( void )
 {
     // Must be connected
     if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
-    m_pClientItem->m_currentCommand.Trim(false);
-    m_pClientItem->m_currentCommand.Trim(true);
+    vscp_trim( m_pClientItem->m_currentCommand );
 
-    if ( m_pClientItem->CommandStartsWith(_("list") ) ) {
+    if ( m_pClientItem->CommandStartsWith(("list") ) ) {
         handleVariable_List();
     }
-    else if ( m_pClientItem->CommandStartsWith(_("writevalue") ) ) {
+    else if ( m_pClientItem->CommandStartsWith(("writevalue") ) ) {
         handleVariable_WriteValue();
     }
-    else if ( m_pClientItem->CommandStartsWith(_("writenote") ) ) {
+    else if ( m_pClientItem->CommandStartsWith(("writenote") ) ) {
         handleVariable_WriteNote();
     }
-    else if ( m_pClientItem->CommandStartsWith(_("write") ) ) {
+    else if ( m_pClientItem->CommandStartsWith(("write") ) ) {
         handleVariable_Write();
     }
-    else if ( m_pClientItem->CommandStartsWith(_("readvalue") ) ) {
+    else if ( m_pClientItem->CommandStartsWith(("readvalue") ) ) {
         handleVariable_ReadValue();
     }
-    else if ( m_pClientItem->CommandStartsWith(_("readnote") ) ) {
+    else if ( m_pClientItem->CommandStartsWith(("readnote") ) ) {
         handleVariable_ReadNote();
     }
-    else if ( m_pClientItem->CommandStartsWith(_("readreset") ) ) {
+    else if ( m_pClientItem->CommandStartsWith(("readreset") ) ) {
         handleVariable_ReadReset();
     }  
-    else if ( m_pClientItem->CommandStartsWith(_("readremove") ) ) {
+    else if ( m_pClientItem->CommandStartsWith(("readremove") ) ) {
         handleVariable_ReadRemove();
     }
-    else if ( m_pClientItem->CommandStartsWith(_("read") ) ) {
+    else if ( m_pClientItem->CommandStartsWith(("read") ) ) {
         handleVariable_Read();
     }  
-    else if ( m_pClientItem->CommandStartsWith(_("reset") ) ) {
+    else if ( m_pClientItem->CommandStartsWith(("reset") ) ) {
         handleVariable_Reset();
     }
-    else if ( m_pClientItem->CommandStartsWith(_("remove") ) ) {
+    else if ( m_pClientItem->CommandStartsWith(("remove") ) ) {
         handleVariable_Remove();
     }    
-    else if ( m_pClientItem->CommandStartsWith(_("length") ) ) {
+    else if ( m_pClientItem->CommandStartsWith(("length") ) ) {
         handleVariable_Length();
     }
-    else if ( m_pClientItem->CommandStartsWith(_("load") ) ) {
+    else if ( m_pClientItem->CommandStartsWith(("load") ) ) {
         handleVariable_Load();
     }
-    else if ( m_pClientItem->CommandStartsWith(_("save") ) ) {
+    else if ( m_pClientItem->CommandStartsWith(("save") ) ) {
         handleVariable_Save();
     }
     else {
@@ -4938,65 +4633,65 @@ void TCPClientThread::handleClientVariable( void )
 // variable list test - List all variables with "test" in there name
 //
 
-void TCPClientThread::handleVariable_List( void )
+void tcpipClientObj::handleVariable_List( void )
 {
     CVSCPVariable variable;
-    wxString wxstr;
-    wxString strWork;
-    wxString strSearch;
+    std::string str;
+    std::string strWork;
+    std::string strSearch;
     int type = 0;   // All variables
     
     // Must be connected
     if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
-    m_pClientItem->m_currentCommand.Trim(false);
-    m_pClientItem->m_currentCommand.Trim(true);
+    vscp_trim( m_pClientItem->m_currentCommand );
 
-    wxStringTokenizer tkz( m_pClientItem->m_currentCommand, _(" ") );
+    std::deque<std::string> tokens;     
+    vscp_split( tokens, m_pClientItem->m_currentCommand, " " );
                                        
     // Check for variable name
-    if ( tkz.HasMoreTokens() ) {
+    if ( !tokens.empty() ) {
         
-        wxString token = tkz.GetNextToken();
+        std::string token = tokens.front();
+        tokens.pop_front();
         
-        token.Trim(true);
-        token.Trim(false);
-        if ( !token.empty() ) {
+        vscp_trim( token );
+        if ( !tokens.empty() ) {
             strSearch = token;
         }
         else {
-            strSearch = _("(.*))");     // List all
+            strSearch = ("(.*))");     // List all
         }
     }
     else {
-        strSearch = _("(.*)");          // List all
+        strSearch = ("(.*)");          // List all
     }
     
     // Check for variable type
-    if ( tkz.HasMoreTokens() ) {
-        wxString str = tkz.GetNextToken();
-        str.Trim(true);
-        str.Trim(false);
+    if ( !tokens.empty() ) {
+        std::string str = tokens.front();
+        tokens.pop_front();
+        vscp_trim(str);
         type = vscp_readStringValue( str );
     }
 
     // Get all variable names
-    wxArrayString arrayVars;
-    gpobj->m_variables.getVarlistFromRegExp( arrayVars, strSearch );
+    std::deque<std::string> arrayVars;
+    m_pObj->m_variables.getVarlistFromRegExp( arrayVars, strSearch );
     
-    if ( arrayVars.Count() ) {
+    if ( arrayVars.size() ) {
         
-        wxstr = wxString::Format( _("%zu rows.\r\n"), arrayVars.Count() );
-        write(   wxstr.mb_str(), wxstr.Length() );
+        str = vscp_string_format( ("%zu rows.\r\n"), arrayVars.size() );
+        write( str.c_str(), str.length() );
     
         int cnt = 0;
-        for ( int i=0; i<arrayVars.Count(); i++ ) {
-            if ( 0 != gpobj->m_variables.find( arrayVars[ i ], variable ) ) {
+        for ( int i=0; i<arrayVars.size(); i++ ) {
+            if ( 0 != m_pObj->m_variables.find( arrayVars[ i ], variable ) ) {
                 if ( ( 0 == type ) || ( variable.getType() == type ) ) {
-                    wxstr = wxString::Format( _("%d;"), cnt );
-                    wxstr += variable.getAsString();
-                    wxstr += _("\r\n");
-                    write(   wxstr.mb_str(), wxstr.Length() );
+                    str = vscp_string_format( "%d;", cnt );
+                    str += variable.getAsString();
+                    str += ("\r\n");
+                    write( str.c_str(), str.length() );
                     cnt++;
                 }
             }
@@ -5004,11 +4699,11 @@ void TCPClientThread::handleVariable_List( void )
     
     }
     else {
-        wxstr = _("0 rows.\r\n");
-        write(   wxstr.mb_str(), wxstr.Length() );
+        str = ("0 rows.\r\n");
+        write( str.c_str(), str.length() );
     } 
 
-    write(   MSG_OK, strlen ( MSG_OK ) );
+    write( MSG_OK, strlen( MSG_OK ) );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -5019,18 +4714,17 @@ void TCPClientThread::handleVariable_List( void )
 // test31;string;true;0;0x777;dGhpcyBpcyBhIHRlc3Q=;VGhpcyBpcyBhIG5vdGUgZm9yIGEgdGVzdCB2YXJpYWJsZQ==
 //
 
-void TCPClientThread::handleVariable_Write( void )
+void tcpipClientObj::handleVariable_Write( void )
 {
     CVSCPVariable variable;
-    wxString wxstr;
+    std::string str;
     
     bool bPersistence = false;
     
     // Must be connected
     if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
-    m_pClientItem->m_currentCommand.Trim(false);
-    m_pClientItem->m_currentCommand.Trim(true);
+    vscp_trim( m_pClientItem->m_currentCommand );
     
     if ( !variable.setVariableFromString( m_pClientItem->m_currentCommand, 
                                                 false, 
@@ -5040,11 +4734,11 @@ void TCPClientThread::handleVariable_Write( void )
         return;
     }
     
-    if ( gpobj->m_variables.exist( variable.getName() ) ) {
+    if ( m_pObj->m_variables.exist( variable.getName() ) ) {
         
         // Update in database
-        if ( !gpobj->m_variables.update( variable ) ) {
-            write(  MSG_VARIABLE_NO_SAVE, strlen ( MSG_VARIABLE_NO_SAVE ) );
+        if ( !m_pObj->m_variables.update( variable ) ) {
+            write( MSG_VARIABLE_NO_SAVE, strlen( MSG_VARIABLE_NO_SAVE ) );
             return;
         }
         
@@ -5053,8 +4747,8 @@ void TCPClientThread::handleVariable_Write( void )
        
         // If the variable exist change value 
         // if not - add it.
-        if ( !gpobj->m_variables.add( variable ) ) {
-            write(  MSG_VARIABLE_UNABLE_ADD, strlen ( MSG_VARIABLE_UNABLE_ADD ) );
+        if ( !m_pObj->m_variables.add( variable ) ) {
+            write( MSG_VARIABLE_UNABLE_ADD, strlen( MSG_VARIABLE_UNABLE_ADD ) );
             return;
         }
         
@@ -5067,22 +4761,23 @@ void TCPClientThread::handleVariable_Write( void )
 // handleVariable_WriteValue
 //
 
-void TCPClientThread::handleVariable_WriteValue( void )
+void tcpipClientObj::handleVariable_WriteValue( void )
 {
-    wxString name;
-    wxString value;
+    std::string name;
+    std::string value;
     
     // Must be connected
     if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
+
+    vscp_trim( m_pClientItem->m_currentCommand );
     
-    m_pClientItem->m_currentCommand.Trim(false);
-    m_pClientItem->m_currentCommand.Trim(true);
-    
-    wxStringTokenizer tkz( m_pClientItem->m_currentCommand, _(" \r\n") );
+    std::deque<std::string> tokens;
+    vscp_split( tokens, m_pClientItem->m_currentCommand, "\n" );
     
     // Variable name
-    if ( tkz.HasMoreTokens() ) {
-        name = tkz.GetNextToken();
+    if ( !tokens.empty() ) {
+        name = tokens.front();
+        tokens.pop_front();
     }
     else {
         write( MSG_PARAMETER_ERROR, strlen( MSG_PARAMETER_ERROR ) );
@@ -5090,9 +4785,10 @@ void TCPClientThread::handleVariable_WriteValue( void )
     }
     
     // Variable value
-    if ( tkz.HasMoreTokens() ) {
+    if ( !tokens.empty() ) {
         
-        value = tkz.GetNextToken();
+        value = tokens.front();
+        tokens.pop_front();
         
     }
     else {
@@ -5101,47 +4797,48 @@ void TCPClientThread::handleVariable_WriteValue( void )
     }
 
     CVSCPVariable variable;
-    if ( 0 != gpobj->m_variables.find( name, variable ) ) {
+    if ( 0 != m_pObj->m_variables.find( name, variable ) ) {
         
         // Set value and encode as BASE64 when expected
         variable.setValueFromString( variable.getType(), value, false );
         
         // Update in database
-        if ( !gpobj->m_variables.update( variable ) ) {
-            write( MSG_VARIABLE_NO_SAVE, strlen ( MSG_VARIABLE_NO_SAVE ) );
+        if ( !m_pObj->m_variables.update( variable ) ) {
+            write( MSG_VARIABLE_NO_SAVE, strlen( MSG_VARIABLE_NO_SAVE ) );
             return;
         }
         
     }
     else {
-        write( MSG_VARIABLE_NOT_DEFINED, strlen ( MSG_VARIABLE_NOT_DEFINED ) );
+        write( MSG_VARIABLE_NOT_DEFINED, strlen( MSG_VARIABLE_NOT_DEFINED ) );
     }
     
-    write(  MSG_OK, strlen ( MSG_OK ) );
+    write( MSG_OK, strlen( MSG_OK ) );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // handleVariable_WriteNote
 //
 
-void TCPClientThread::handleVariable_WriteNote( void )
+void tcpipClientObj::handleVariable_WriteNote( void )
 {
-    wxString str;
+    std::string str;
     
     // Must be connected
     if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
     
-    m_pClientItem->m_currentCommand.Trim(false);
-    m_pClientItem->m_currentCommand.Trim(true);
+    vscp_trim( m_pClientItem->m_currentCommand );
     
-    wxString name;
-    wxString note;
+    std::string name;
+    std::string note;
     
-    wxStringTokenizer tkz( m_pClientItem->m_currentCommand, _(" ") );
+    std::deque<std::string> tokens;     
+    vscp_split( tokens, m_pClientItem->m_currentCommand, " " );
     
     // Variable name
-    if ( tkz.HasMoreTokens() ) {
-        name = tkz.GetNextToken();
+    if ( !tokens.empty() ) {
+        name = tokens.front();
+        tokens.pop_front();
     }
     else {
         write( MSG_PARAMETER_ERROR, strlen( MSG_PARAMETER_ERROR ) );
@@ -5149,9 +4846,10 @@ void TCPClientThread::handleVariable_WriteNote( void )
     }
     
     // Variable value
-    if ( tkz.HasMoreTokens() ) {
+    if ( !tokens.empty() ) {
         
-        note = tkz.GetNextToken();
+        note = tokens.front();
+        tokens.pop_front();
         
     }
     else {
@@ -5160,51 +4858,50 @@ void TCPClientThread::handleVariable_WriteNote( void )
     }
 
     CVSCPVariable variable;
-    if ( 0 != gpobj->m_variables.find( name, variable ) ) {
+    if ( 0 != m_pObj->m_variables.find( name, variable ) ) {
         
         // Set value and encode as BASE64 when expected
         variable.setNote( note, true );
         
         // Update in database
-        if ( !gpobj->m_variables.update( variable ) ) {
-            write( MSG_VARIABLE_NO_SAVE, strlen ( MSG_VARIABLE_NO_SAVE ) );
+        if ( !m_pObj->m_variables.update( variable ) ) {
+            write( MSG_VARIABLE_NO_SAVE, strlen( MSG_VARIABLE_NO_SAVE ) );
             return;
         }
         
     }
     else {
-        write( MSG_VARIABLE_NOT_DEFINED, strlen ( MSG_VARIABLE_NOT_DEFINED ) );
+        write( MSG_VARIABLE_NOT_DEFINED, strlen( MSG_VARIABLE_NOT_DEFINED ) );
     }
     
-    write(  MSG_OK, strlen ( MSG_OK ) );
+    write( MSG_OK, strlen( MSG_OK ) );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // handleVariable_Read
 //
 
-void TCPClientThread::handleVariable_Read( bool bOKResponse )
+void tcpipClientObj::handleVariable_Read( bool bOKResponse )
 {
-    wxString str;
+    std::string str;
     
     // Must be connected
     if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
-    m_pClientItem->m_currentCommand.Trim(false);
-    m_pClientItem->m_currentCommand.Trim(true);
+    vscp_trim( m_pClientItem->m_currentCommand );
 
     CVSCPVariable variable;
-    if ( 0 != gpobj->m_variables.find( m_pClientItem->m_currentCommand,variable ) ) {
+    if ( 0 != m_pObj->m_variables.find( m_pClientItem->m_currentCommand,variable ) ) {
         
         str = variable.getAsString( false );
-        str = str + _("\r\n");
+        str += std::string("\r\n");
         write( str );
 
-        write( MSG_OK, strlen ( MSG_OK ) );
+        write( MSG_OK, strlen( MSG_OK ) );
         
     }
     else {
-        write( MSG_VARIABLE_NOT_DEFINED, strlen ( MSG_VARIABLE_NOT_DEFINED ) );
+        write( MSG_VARIABLE_NOT_DEFINED, strlen( MSG_VARIABLE_NOT_DEFINED ) );
     }
     
 }
@@ -5213,28 +4910,27 @@ void TCPClientThread::handleVariable_Read( bool bOKResponse )
 // handleVariable_ReadVal
 //
 
-void TCPClientThread::handleVariable_ReadValue( bool bOKResponse )
+void tcpipClientObj::handleVariable_ReadValue( bool bOKResponse )
 {
-    wxString str;
+    std::string str;
     
     // Must be connected
     if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
-    m_pClientItem->m_currentCommand.Trim(false);
-    m_pClientItem->m_currentCommand.Trim(true);
+    vscp_trim( m_pClientItem->m_currentCommand );
 
     CVSCPVariable variable;
-    if ( 0 != gpobj->m_variables.find( m_pClientItem->m_currentCommand, variable ) ) {
+    if ( 0 !=  m_pObj->m_variables.find( m_pClientItem->m_currentCommand, variable ) ) {
         
         variable.writeValueToString( str, true );
-        str += _("\r\n");
-        write(   str.mbc_str(), strlen( str.mbc_str() ) );
+        str += ("\r\n");
+        write( str.c_str(), strlen( str.c_str() ) );
 
-        write( MSG_OK, strlen ( MSG_OK ) );
+        write( MSG_OK, strlen( MSG_OK ) );
         
     }
     else {
-        write( MSG_VARIABLE_NOT_DEFINED, strlen ( MSG_VARIABLE_NOT_DEFINED ) );
+        write( MSG_VARIABLE_NOT_DEFINED, strlen( MSG_VARIABLE_NOT_DEFINED ) );
     }
 }
 
@@ -5243,28 +4939,27 @@ void TCPClientThread::handleVariable_ReadValue( bool bOKResponse )
 // handleVariable_ReadNote
 //
 
-void TCPClientThread::handleVariable_ReadNote( bool bOKResponse )
+void tcpipClientObj::handleVariable_ReadNote( bool bOKResponse )
 {
-    wxString str;
+    std::string str;
     
     // Must be connected
     if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
-    m_pClientItem->m_currentCommand.Trim(false);
-    m_pClientItem->m_currentCommand.Trim(true);
+    vscp_trim( m_pClientItem->m_currentCommand );
 
     CVSCPVariable variable;
-    if ( 0 != gpobj->m_variables.find( m_pClientItem->m_currentCommand,variable ) ) {
+    if ( 0 !=  m_pObj->m_variables.find( m_pClientItem->m_currentCommand,variable ) ) {
         
         variable.getNote( str, true );
-        str = _("+OK - ") + str + _("\r\n");
-        write(   str.mbc_str(), strlen( str.mbc_str() ) );
+        str = ("+OK - ") + str + ("\r\n");
+        write(   str.c_str(), strlen( str.c_str() ) );
 
-        write(  MSG_OK, strlen ( MSG_OK ) );
+        write(  MSG_OK, strlen( MSG_OK ) );
         
     }
     else {
-        write(  MSG_VARIABLE_NOT_DEFINED, strlen ( MSG_VARIABLE_NOT_DEFINED ) );
+        write( MSG_VARIABLE_NOT_DEFINED, strlen( MSG_VARIABLE_NOT_DEFINED ) );
     }
 }
 
@@ -5272,31 +4967,30 @@ void TCPClientThread::handleVariable_ReadNote( bool bOKResponse )
 // handleVariable_Reset
 //
 
-void TCPClientThread::handleVariable_Reset( void  )
+void tcpipClientObj::handleVariable_Reset( void  )
 {
-    wxString str;
+    std::string str;
     
     // Must be connected
     if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
-    m_pClientItem->m_currentCommand.Trim(false);
-    m_pClientItem->m_currentCommand.Trim(true);
+    vscp_trim( m_pClientItem->m_currentCommand );
 
     CVSCPVariable variable;
     
-    if ( 0 != gpobj->m_variables.find( m_pClientItem->m_currentCommand, variable ) ) {
+    if ( 0 !=  m_pObj->m_variables.find( m_pClientItem->m_currentCommand, variable ) ) {
         
         variable.Reset();
         
         // Update in database
-        if ( !gpobj->m_variables.update( variable ) ) {
-            write( MSG_VARIABLE_NO_SAVE, strlen ( MSG_VARIABLE_NO_SAVE ) );
+        if ( !m_pObj->m_variables.update( variable ) ) {
+            write( MSG_VARIABLE_NO_SAVE, strlen( MSG_VARIABLE_NO_SAVE ) );
             return;
         }
         
     }
     else {
-        write( MSG_VARIABLE_NOT_DEFINED, strlen ( MSG_VARIABLE_NOT_DEFINED ) );
+        write( MSG_VARIABLE_NOT_DEFINED, strlen( MSG_VARIABLE_NOT_DEFINED ) );
     }
 
     write( MSG_OK, strlen( MSG_OK ) );
@@ -5306,40 +5000,39 @@ void TCPClientThread::handleVariable_Reset( void  )
 // handleVariable_ReadReset
 //
 
-void TCPClientThread::handleVariable_ReadReset( void )
+void tcpipClientObj::handleVariable_ReadReset( void )
 {
-    wxString str;
+    std::string str;
     
     // Must be connected
     if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
-    m_pClientItem->m_currentCommand.Trim(false);
-    m_pClientItem->m_currentCommand.Trim(true);
+    vscp_trim( m_pClientItem->m_currentCommand );
     
-    if ( m_pClientItem->CommandStartsWith(_("vscp.") ) ) {
-        write( MSG_VARIABLE_NOT_STOCK, strlen ( MSG_VARIABLE_NOT_STOCK ) );
+    if ( m_pClientItem->CommandStartsWith(("vscp.") ) ) {
+        write( MSG_VARIABLE_NOT_STOCK, strlen( MSG_VARIABLE_NOT_STOCK ) );
         return;
     }
 
     CVSCPVariable variable;
     
-    if ( 0 != gpobj->m_variables.find( m_pClientItem->m_currentCommand, variable ) ) {
+    if ( 0 !=  m_pObj->m_variables.find( m_pClientItem->m_currentCommand, variable ) ) {
         
         variable.writeValueToString( str );
-        str = _("+OK - ") + str + _("\r\n");
-        write(   str.mbc_str(), strlen( str.mbc_str() ) );
+        str = ("+OK - ") + str + ("\r\n");
+        write( str.c_str(), strlen( str.c_str() ) );
     
         variable.Reset();
         
         // Update in database
-        if ( !gpobj->m_variables.update( variable ) ) {
-            write( MSG_VARIABLE_NO_SAVE, strlen ( MSG_VARIABLE_NO_SAVE ) );
+        if ( !m_pObj->m_variables.update( variable ) ) {
+            write( MSG_VARIABLE_NO_SAVE, strlen( MSG_VARIABLE_NO_SAVE ) );
             return;
         }
         
     }
     else {
-        write( MSG_VARIABLE_NOT_DEFINED, strlen ( MSG_VARIABLE_NOT_DEFINED ) );
+        write( MSG_VARIABLE_NOT_DEFINED, strlen( MSG_VARIABLE_NOT_DEFINED ) );
     }
 
     write( MSG_OK, strlen( MSG_OK ) );
@@ -5350,26 +5043,25 @@ void TCPClientThread::handleVariable_ReadReset( void )
 // handleVariable_Remove
 //
 
-void TCPClientThread::handleVariable_Remove( void )
+void tcpipClientObj::handleVariable_Remove( void )
 {
-    wxString str;
+    std::string str;
     
     // Must be connected
     if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
-    m_pClientItem->m_currentCommand.Trim(false);
-    m_pClientItem->m_currentCommand.Trim(true);
+    vscp_trim( m_pClientItem->m_currentCommand );
     
-    if ( m_pClientItem->CommandStartsWith(_("vscp.") ) ) {
-        write(  MSG_VARIABLE_NOT_STOCK, strlen ( MSG_VARIABLE_NOT_STOCK ) );
+    if ( m_pClientItem->CommandStartsWith(("vscp.") ) ) {
+        write( MSG_VARIABLE_NOT_STOCK, strlen( MSG_VARIABLE_NOT_STOCK ) );
         return;
     }
     
-    if ( !gpobj->m_variables.remove( m_pClientItem->m_currentCommand ) ) {
-        write(  MSG_VARIABLE_NOT_DEFINED, strlen ( MSG_VARIABLE_NOT_DEFINED ) );        
+    if ( !m_pObj->m_variables.remove( m_pClientItem->m_currentCommand ) ) {
+        write( MSG_VARIABLE_NOT_DEFINED, strlen( MSG_VARIABLE_NOT_DEFINED ) );        
     }
 
-    write(  MSG_OK, strlen( MSG_OK ) );
+    write( MSG_OK, strlen( MSG_OK ) );
 }
 
 
@@ -5377,67 +5069,65 @@ void TCPClientThread::handleVariable_Remove( void )
 // handleVariable_ReadRemove
 //
 
-void TCPClientThread::handleVariable_ReadRemove( void )
+void tcpipClientObj::handleVariable_ReadRemove( void )
 {
-    wxString str;
+    std::string str;
     
     // Must be connected
     if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
-    m_pClientItem->m_currentCommand.Trim(false);
-    m_pClientItem->m_currentCommand.Trim(true);
+    vscp_trim( m_pClientItem->m_currentCommand );
     
-    if ( m_pClientItem->CommandStartsWith(_("vscp.") ) ) {
-        write(  MSG_VARIABLE_NOT_STOCK, strlen ( MSG_VARIABLE_NOT_STOCK ) );
+    if ( m_pClientItem->CommandStartsWith(("vscp.") ) ) {
+        write( MSG_VARIABLE_NOT_STOCK, strlen( MSG_VARIABLE_NOT_STOCK ) );
         return;
     }
 
     CVSCPVariable variable;
-    if ( 0 != gpobj->m_variables.find( m_pClientItem->m_currentCommand, variable ) ) {
+    if ( 0 != m_pObj->m_variables.find( m_pClientItem->m_currentCommand, variable ) ) {
         
         variable.writeValueToString( str );
-        str = _("+OK - ") + str + _("\r\n");
-        write(   str.mbc_str(), strlen( str.mbc_str() ) );
+        str = ("+OK - ") + str + ("\r\n");
+        write( str.c_str(), strlen( str.c_str() ) );
     
-        gpobj->m_variables.remove( variable );
+         m_pObj->m_variables.remove( variable );
         
     }
     else {
-        write(  MSG_VARIABLE_NOT_DEFINED, strlen ( MSG_VARIABLE_NOT_DEFINED ) );
+        write( MSG_VARIABLE_NOT_DEFINED, strlen( MSG_VARIABLE_NOT_DEFINED ) );
     }
 
-    write(  MSG_OK, strlen( MSG_OK ) );
+    write( MSG_OK, strlen( MSG_OK ) );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // handleVariable_Length
 //
 
-void TCPClientThread::handleVariable_Length( void )
+void tcpipClientObj::handleVariable_Length( void )
 {
-    wxString str;
+    std::string str;
     
     // Must be connected
     if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
-    m_pClientItem->m_currentCommand.Trim(false);
-    m_pClientItem->m_currentCommand.Trim(true);
+    vscp_trim( m_pClientItem->m_currentCommand );
 
     CVSCPVariable variable;
-    if ( 0 != gpobj->m_variables.find( m_pClientItem->m_currentCommand, variable ) ) {
+    if ( 0 != m_pObj->m_variables.find( m_pClientItem->m_currentCommand, variable ) ) {
         
-        str = wxString::Format( _("%zu"), variable.getLength() );
-        str = str + _("\r\n");
-        write(   str.mbc_str(), strlen( str.mbc_str() ) );
+        str = vscp_string_format( "%zu", variable.getLength() );
+        str = str + "\r\n";
+        write( str.c_str(), strlen( str.c_str() ) );
     
-        gpobj->m_variables.remove( variable );
+         m_pObj->m_variables.remove( variable );
         
     }
     else {
-        write(  MSG_VARIABLE_NOT_DEFINED, strlen ( MSG_VARIABLE_NOT_DEFINED ) );
+        write( MSG_VARIABLE_NOT_DEFINED, strlen( MSG_VARIABLE_NOT_DEFINED ) );
     }
 
-    write(  MSG_OK, strlen( MSG_OK ) );
+    write( MSG_OK, strlen( MSG_OK ) );
 }
 
 
@@ -5446,12 +5136,12 @@ void TCPClientThread::handleVariable_Length( void )
 // handleVariable_Load
 //
 
-void TCPClientThread::handleVariable_Load( void )
+void tcpipClientObj::handleVariable_Load( void )
 {
-    wxString path;  // Empty to load from default path
-    gpobj->m_variables.loadFromXML( path );  // TODO add path + type
+    std::string path;  // Empty to load from default path
+     m_pObj->m_variables.loadFromXML( path );  // TODO add path + type
 
-    write(  MSG_OK, strlen( MSG_OK ) );
+    write( MSG_OK, strlen( MSG_OK ) );
 }
 
 
@@ -5459,29 +5149,28 @@ void TCPClientThread::handleVariable_Load( void )
 // handleVariable_Save
 //
 
-void TCPClientThread::handleVariable_Save( void )
+void tcpipClientObj::handleVariable_Save( void )
 {
-    wxString path;
+    std::string path;
     
     // Must be connected
     if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
-    m_pClientItem->m_currentCommand.Trim(false);
-    m_pClientItem->m_currentCommand.Trim(true);
+    vscp_trim( m_pClientItem->m_currentCommand );
 
     // Construct path to save to (always relative to root)
     // may not contain ".."
-    path = gpobj->m_rootFolder;
+    path =  m_pObj->m_rootFolder;
     path += m_pClientItem->m_currentCommand;
     
-    if ( wxNOT_FOUND != path.Find( _("..") ) ) {
-        write(  MSG_INVALID_PATH, strlen( MSG_INVALID_PATH ) );
+    if ( path.npos != path.find( ("..") ) ) {
+        write( MSG_INVALID_PATH, strlen( MSG_INVALID_PATH ) );
         return;
     }
 
-    gpobj->m_variables.save( path );
+     m_pObj->m_variables.save( path );
 
-    write(  MSG_OK, strlen( MSG_OK ) );
+    write( MSG_OK, strlen( MSG_OK ) );
 }
 
 
@@ -5495,41 +5184,40 @@ void TCPClientThread::handleVariable_Save( void )
 // handleClientDm
 //
 
-void TCPClientThread::handleClientDm( void )
+void tcpipClientObj::handleClientDm( void )
 {
     // Must be connected
     if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
-    gpobj->logMsg ( m_pClientItem->m_currentCommand, DAEMON_LOGMSG_NORMAL );
+     m_pObj->logMsg ( m_pClientItem->m_currentCommand, DAEMON_LOGMSG_NORMAL );
 
-    m_pClientItem->m_currentCommand.Trim(false);
-    m_pClientItem->m_currentCommand.Trim(true);
+    vscp_trim( m_pClientItem->m_currentCommand );
 
-    if ( m_pClientItem->CommandStartsWith(_("enable") ) ) {
+    if ( m_pClientItem->CommandStartsWith(("enable") ) ) {
         handleDM_Enable();
     }
-    else if (m_pClientItem->CommandStartsWith(_("disable") ) ) {
+    else if (m_pClientItem->CommandStartsWith(("disable") ) ) {
         handleDM_Enable();
     }
-    else if ( m_pClientItem->CommandStartsWith(_("list") ) ) {
+    else if ( m_pClientItem->CommandStartsWith(("list") ) ) {
         handleDM_List();
     }
-    else if ( m_pClientItem->CommandStartsWith(_("add") ) ) {
+    else if ( m_pClientItem->CommandStartsWith(("add") ) ) {
         handleDM_Add();
     }
-    else if ( m_pClientItem->CommandStartsWith(_("delete") ) ) {
+    else if ( m_pClientItem->CommandStartsWith(("delete") ) ) {
         handleDM_Delete();
     }
-    else if ( m_pClientItem->CommandStartsWith(_("reset") ) ) {
+    else if ( m_pClientItem->CommandStartsWith(("reset") ) ) {
         handleDM_Reset();
     }
-    else if ( m_pClientItem->CommandStartsWith(_("trig") ) ) {
+    else if ( m_pClientItem->CommandStartsWith(("trig") ) ) {
         handleDM_Trigger();
     }
-    else if ( m_pClientItem->CommandStartsWith(_("clrtrig") ) ) {
+    else if ( m_pClientItem->CommandStartsWith(("clrtrig") ) ) {
         handleDM_ClearTriggerCount();
     }
-    else if ( m_pClientItem->CommandStartsWith(_("clrerr") ) ) {
+    else if ( m_pClientItem->CommandStartsWith(("clrerr") ) ) {
         handleDM_ClearErrorCount();
     }
 }
@@ -5538,25 +5226,27 @@ void TCPClientThread::handleClientDm( void )
 // handleDM_Enable
 //
 
-void TCPClientThread::handleDM_Enable( void )
+void tcpipClientObj::handleDM_Enable( void )
 {
     unsigned short pos;
     
     // Must be connected
     if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
-    if ( m_pClientItem->CommandStartsWith(_("all") ) ) {
+    if ( m_pClientItem->CommandStartsWith(("all") ) ) {
 
-        gpobj->m_dm.m_mutexDM.Lock();
+        pthread_mutex_lock( &m_pObj->m_dm.m_mutexDM );
 
-        DMLIST::iterator iter;
-        for (iter = gpobj->m_dm.m_DMList.begin(); iter != gpobj->m_dm.m_DMList.end(); ++iter)
+        std::deque<dmElement*>::iterator it;
+        for ( it =  m_pObj->m_dm.m_DMList.begin(); 
+                it !=  m_pObj->m_dm.m_DMList.end(); 
+                ++it )
         {
-            dmElement *pDMItem = *iter;
+            dmElement *pDMItem = *it;
             pDMItem->enableRow();
         }
 
-        gpobj->m_dm.m_mutexDM.Unlock();
+        pthread_mutex_unlock( &m_pObj->m_dm.m_mutexDM );
 
     }
     else {
@@ -5564,21 +5254,20 @@ void TCPClientThread::handleDM_Enable( void )
         // Get the position
         pos = 0;
 
-        gpobj->m_dm.m_mutexDM.Lock();
+        pthread_mutex_lock( &m_pObj->m_dm.m_mutexDM );
 
-        if ( pos > ( gpobj->m_dm.m_DMList.GetCount() - 1 ) ) {
-            write(   MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
-            gpobj->m_dm.m_mutexDM.Unlock();
+        if ( pos > (  m_pObj->m_dm.m_DMList.size() - 1 ) ) {
+            write( MSG_PARAMETER_ERROR, strlen( MSG_PARAMETER_ERROR ) );
+             pthread_mutex_lock( &m_pObj->m_dm.m_mutexDM );
             return;
         }
-
-        DMLIST::compatibility_iterator node = gpobj->m_dm.m_DMList.Item( pos );
-        ( node->GetData() )->enableRow();
-        gpobj->m_dm.m_mutexDM.Unlock();
+ 
+        m_pObj->m_dm.m_DMList[ pos ]->enableRow();
+        pthread_mutex_unlock( &m_pObj->m_dm.m_mutexDM );
 
     }
 
-    write(  MSG_OK, strlen( MSG_OK ) );
+    write( MSG_OK, strlen( MSG_OK ) );
 
 }
 
@@ -5586,61 +5275,62 @@ void TCPClientThread::handleDM_Enable( void )
 // handleDM_Disable
 //
 
-void TCPClientThread::handleDM_Disable( void )
+void tcpipClientObj::handleDM_Disable( void )
 {
     unsigned short pos;
     
     // Must be connected
     if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
-    if ( m_pClientItem->CommandStartsWith(_("all") ) ) {
+    if ( m_pClientItem->CommandStartsWith(("all") ) ) {
 
-        gpobj->m_dm.m_mutexDM.Lock();
+        pthread_mutex_lock( &m_pObj->m_dm.m_mutexDM );
 
-        DMLIST::iterator iter;
-        for (iter = gpobj->m_dm.m_DMList.begin();
-            iter != gpobj->m_dm.m_DMList.end();
-            ++iter )
+        std::deque<dmElement*>::iterator it;
+        for (it =  m_pObj->m_dm.m_DMList.begin();
+            it !=  m_pObj->m_dm.m_DMList.end();
+            ++it )
         {
-            dmElement *pDMItem = *iter;
+            dmElement *pDMItem = *it;
             pDMItem->disableRow();
         }
-        gpobj->m_dm.m_mutexDM.Unlock();
+        pthread_mutex_unlock( &m_pObj->m_dm.m_mutexDM );
 
     }
     else {
 
         // Get the position
-        wxStringTokenizer tkz( m_pClientItem->m_currentCommand, _(",") );
-        while ( tkz.HasMoreTokens() ) {
+        std::deque<std::string> tokens;
+        vscp_split( tokens, m_pClientItem->m_currentCommand, "," );
+ 
+        while ( !tokens.empty() ) {
 
-            pos = vscp_readStringValue( tkz.GetNextToken() );
+            pos = vscp_readStringValue( tokens.front() );
+            tokens.pop_front();
 
-            gpobj->m_dm.m_mutexDM.Lock();
+            pthread_mutex_lock( &m_pObj->m_dm.m_mutexDM );
 
-            if ( pos > ( gpobj->m_dm.m_DMList.GetCount() - 1 ) ) {
-                write(   MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
-                gpobj->m_dm.m_mutexDM.Unlock();
+            if ( pos > (  m_pObj->m_dm.m_DMList.size() - 1 ) ) {
+                write( MSG_PARAMETER_ERROR, strlen( MSG_PARAMETER_ERROR ) );
+                 pthread_mutex_unlock( &m_pObj->m_dm.m_mutexDM );
                 return;
             }
-
-            DMLIST::compatibility_iterator node = gpobj->m_dm.m_DMList.Item( pos );
-            ( node->GetData() )->disableRow();
-
-            gpobj->m_dm.m_mutexDM.Unlock();
+ 
+            m_pObj->m_dm.m_DMList[ pos ]->disableRow();
+            pthread_mutex_unlock( &m_pObj->m_dm.m_mutexDM );
 
         }
 
     }
 
-    write(  MSG_OK, strlen( MSG_OK ) );
+    write( MSG_OK, strlen( MSG_OK ) );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // handleDM_List
 //
 
-void TCPClientThread::handleDM_List( void )
+void tcpipClientObj::handleDM_List( void )
 {
     // Valid commands at this point
     // dm list
@@ -5652,53 +5342,53 @@ void TCPClientThread::handleDM_List( void )
     // Must be connected
     if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
-    m_pClientItem->m_currentCommand.Trim(false);
-    m_pClientItem->m_currentCommand.Trim(true);
+    vscp_trim( m_pClientItem->m_currentCommand );
 
     // if "list" add "all"
-    if ( 0 == m_pClientItem->m_currentCommand.Length() ) {
-        m_pClientItem->m_currentCommand = _("ALL");
+    if ( 0 == m_pClientItem->m_currentCommand.length() ) {
+        m_pClientItem->m_currentCommand = ("ALL");
     }
 
-    else if ( m_pClientItem->CommandStartsWith(_("new") ) ||
-                m_pClientItem->CommandStartsWith(_("*") ) ) {
+    else if ( m_pClientItem->CommandStartsWith(("new") ) ||
+                m_pClientItem->CommandStartsWith(("*") ) ) {
 
-        gpobj->m_dm.m_mutexDM.Lock();
+        pthread_mutex_lock( &m_pObj->m_dm.m_mutexDM );
 
-        DMLIST::iterator iter;
-        for (iter = gpobj->m_dm.m_DMList.begin();
-                iter != gpobj->m_dm.m_DMList.end();
-                ++iter) {
+        std::deque<dmElement*>::iterator it;
+        for ( it =  m_pObj->m_dm.m_DMList.begin();
+                it !=  m_pObj->m_dm.m_DMList.end();
+                ++it ) {
 
-            dmElement *pDMItem = *iter;
-            wxString strRow = pDMItem->getAsString();
+            dmElement *pDMItem = *it;
+            std::string strRow = pDMItem->getAsString();
 
-            write(   strRow.mb_str(),
-                                        strlen ( strRow.mb_str() ) );
+            write( strRow.c_str(),
+                    strlen( strRow.c_str() ) );
 
         }
 
-        gpobj->m_dm.m_mutexDM.Unlock();
+        pthread_mutex_unlock( &m_pObj->m_dm.m_mutexDM );
 
     }
     else {
 
         // We have a list with specific rows  "list 1,8,9"
         //      first parse the argument to get the rows
-        //WX_DEFINE_ARRAY_INT( int, ArrayOfSortedInts );
-        wxArrayInt rowArray;
-        wxStringTokenizer tok( m_pClientItem->m_currentCommand, _(",") );
-        while ( tok.HasMoreTokens() ) {
+        std::deque<int> rowArray;
+        std::deque<std::string> tokens;
+        vscp_split( tokens, m_pClientItem->m_currentCommand, "," );
+        while ( !tokens.empty() ) {
 
-            int n = vscp_readStringValue( tok.GetNextToken() );
-            rowArray.Add( n );
+            int n = vscp_readStringValue( tokens.front() );
+            tokens.pop_front();
+            rowArray.push_back( n );
 
         }
 
     }
 
 
-    write(  MSG_OK, strlen ( MSG_OK ) );
+    write( MSG_OK, strlen( MSG_OK ) );
 
 }
 
@@ -5706,121 +5396,140 @@ void TCPClientThread::handleDM_List( void )
 // handleDM_Add
 //
 
-void TCPClientThread::handleDM_Add( void )
+void tcpipClientObj::handleDM_Add( void )
 {
     // Must be connected
     if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
     
     dmElement *pDMItem = new dmElement;
 
-    wxStringTokenizer tkz( m_pClientItem->m_currentCommand, _(",") );
+    std::deque<std::string> tokens;
+    vscp_split( tokens, m_pClientItem->m_currentCommand, "," );
 
     // Priority
-    pDMItem->m_vscpfilter.mask_priority = vscp_readStringValue( tkz.GetNextToken() );
-    pDMItem->m_vscpfilter.filter_priority = vscp_readStringValue( tkz.GetNextToken() );
+    pDMItem->m_vscpfilter.mask_priority = vscp_readStringValue( tokens.front() );
+    tokens.pop_front();
+    pDMItem->m_vscpfilter.filter_priority = vscp_readStringValue( tokens.front() );
+    tokens.pop_front();
 
     // Class
-    pDMItem->m_vscpfilter.mask_class = vscp_readStringValue( tkz.GetNextToken() );
-    pDMItem->m_vscpfilter.filter_class = vscp_readStringValue( tkz.GetNextToken() );
+    pDMItem->m_vscpfilter.mask_class = vscp_readStringValue( tokens.front() );
+    tokens.pop_front();
+    pDMItem->m_vscpfilter.filter_class = vscp_readStringValue( tokens.front() );
+    tokens.pop_front();
 
     // Type
-    pDMItem->m_vscpfilter.mask_type = vscp_readStringValue( tkz.GetNextToken() );
-    pDMItem->m_vscpfilter.filter_type = vscp_readStringValue( tkz.GetNextToken() );
+    pDMItem->m_vscpfilter.mask_type = vscp_readStringValue( tokens.front() );
+    tokens.pop_front();
+    pDMItem->m_vscpfilter.filter_type = vscp_readStringValue( tokens.front() );
+    tokens.pop_front();
 
     // GUID
-    wxString strGUID;
-    strGUID =tkz.GetNextToken();
+    std::string strGUID;
+    strGUID =tokens.front();
     vscp_getGuidFromStringToArray( pDMItem->m_vscpfilter.mask_GUID, strGUID );
-    strGUID = tkz.GetNextToken();
+    strGUID = tokens.front();
+    tokens.pop_front();
     vscp_getGuidFromStringToArray( pDMItem->m_vscpfilter.filter_GUID, strGUID );
 
     // action code
-    pDMItem->m_actionCode = vscp_readStringValue( tkz.GetNextToken() );
+    pDMItem->m_actionCode = vscp_readStringValue( tokens.front() );
+    tokens.pop_front();
 
     // action parameters
-    pDMItem->m_actionparam = tkz.GetNextToken();
+    pDMItem->m_actionparam = tokens.front();
+    tokens.pop_front();
 
     // add the DM row to the matrix
-    gpobj->m_dm.m_mutexDM.Lock();
-    gpobj->m_dm.addMemoryElement ( pDMItem );
-    gpobj->m_dm.m_mutexDM.Unlock();
+    pthread_mutex_lock( &m_pObj->m_dm.m_mutexDM );
+     m_pObj->m_dm.addMemoryElement ( pDMItem );
+    pthread_mutex_unlock( &m_pObj->m_dm.m_mutexDM );
 
-    write(  MSG_OK, strlen( MSG_OK ) );
+    write( MSG_OK, strlen( MSG_OK ) );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // handleDM_Delete
 //
 
-void TCPClientThread::handleDM_Delete( void )
+void tcpipClientObj::handleDM_Delete( void )
 {
     unsigned short pos;
     
     // Must be connected
     if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
-    if ( m_pClientItem->CommandStartsWith(_("all") ) ) {
+    if ( m_pClientItem->CommandStartsWith(("all") ) ) {
 
-        gpobj->m_dm.m_mutexDM.Lock();
+        pthread_mutex_lock( &m_pObj->m_dm.m_mutexDM );
 
-        DMLIST::iterator iter;
-        for (iter = gpobj->m_dm.m_DMList.begin();
-            iter != gpobj->m_dm.m_DMList.end();
-            ++iter) {
-                dmElement *pDMItem = *iter;
+        std::deque<dmElement*>::iterator it;
+        for ( it =  m_pObj->m_dm.m_DMList.begin();
+                it !=  m_pObj->m_dm.m_DMList.end();
+                ++it) {
+                dmElement *pDMItem = *it;
                 delete pDMItem;
         }
-        gpobj->m_dm.m_DMList.Clear();
-        gpobj->m_dm.m_mutexDM.Unlock();
+
+        m_pObj->m_dm.m_DMList.clear();
+
+        pthread_mutex_unlock( &m_pObj->m_dm.m_mutexDM );
 
     }
     else {
 
         // Get the position
-        wxStringTokenizer tkz( m_pClientItem->m_currentCommand, _(",") );
-        while ( tkz.HasMoreTokens() ) {
+        std::deque<std::string> tokens;
+        vscp_split( tokens, m_pClientItem->m_currentCommand, "," );
 
-            pos = vscp_readStringValue( tkz.GetNextToken() );
+        while ( !tokens.empty() ) {
 
-            gpobj->m_dm.m_mutexDM.Lock();
+            pos = vscp_readStringValue( tokens.front() );
+            tokens.pop_front();
 
-            if ( pos > ( gpobj->m_dm.m_DMList.GetCount() - 1 ) ) {
-                write(   MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
-                gpobj->m_dm.m_mutexDM.Unlock();
+            pthread_mutex_lock( &m_pObj->m_dm.m_mutexDM );
+
+            if ( pos > (  m_pObj->m_dm.m_DMList.size() - 1 ) ) {
+                write( MSG_PARAMETER_ERROR, strlen( MSG_PARAMETER_ERROR ) );
+                 pthread_mutex_unlock( &m_pObj->m_dm.m_mutexDM );
                 return;
             }
 
-            DMLIST::compatibility_iterator node = gpobj->m_dm.m_DMList.Item( pos );
-            dmElement *pDMItem = node->GetData();
-            gpobj->m_dm.m_DMList.DeleteNode( node );    // Delete the node
-            delete pDMItem;                                     // Delete the object
+            // Get the object
+            dmElement *pDMItem = m_pObj->m_dm.m_DMList[ pos ];
+            
+            // Delete the node
+            m_pObj->m_dm.m_DMList.erase( m_pObj->m_dm.m_DMList.begin() + pos ); 
+            
+            // Delete the object  
+            delete pDMItem;                               
 
-            gpobj->m_dm.m_mutexDM.Unlock();
+            pthread_mutex_unlock( &m_pObj->m_dm.m_mutexDM );
 
         }
 
     }
 
-    write(   MSG_OK, strlen ( MSG_OK ) );
+    write( MSG_OK, strlen( MSG_OK ) );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // handleDM_Reset
 //
 
-void TCPClientThread::handleDM_Reset( void )
+void tcpipClientObj::handleDM_Reset( void )
 {
-    gpobj->stopDaemonWorkerThread();
-    gpobj->startDaemonWorkerThread();
+     m_pObj->stopDaemonWorkerThread();
+     m_pObj->startDaemonWorkerThread();
 
-    write(  MSG_OK, strlen( MSG_OK ) );
+    write( MSG_OK, strlen( MSG_OK ) );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // handleDM_Trigger
 //
 
-void TCPClientThread::handleDM_Trigger( void )
+void tcpipClientObj::handleDM_Trigger( void )
 {
     unsigned short pos;
     
@@ -5828,28 +5537,30 @@ void TCPClientThread::handleDM_Trigger( void )
     if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
     // Get the position
-    wxStringTokenizer tkz( m_pClientItem->m_currentCommand, _(",") );
-    while ( tkz.HasMoreTokens() ) {
+    std::deque<std::string> tokens;
+    vscp_split( tokens, m_pClientItem->m_currentCommand, "," );
 
-        pos = vscp_readStringValue( tkz.GetNextToken() );
+    while ( !tokens.empty() ) {
 
-        gpobj->m_dm.m_mutexDM.Lock();
+        pos = vscp_readStringValue( tokens.front() );
+        tokens.pop_front();
 
-        if ( pos > ( gpobj->m_dm.m_DMList.GetCount() - 1 ) ) {
-            write(   MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
-            gpobj->m_dm.m_mutexDM.Unlock();
+        pthread_mutex_lock( &m_pObj->m_dm.m_mutexDM );
+
+        if ( pos > (  m_pObj->m_dm.m_DMList.size() - 1 ) ) {
+            write( MSG_PARAMETER_ERROR, strlen( MSG_PARAMETER_ERROR ) );
+             pthread_mutex_unlock( &m_pObj->m_dm.m_mutexDM );
             return;
         }
-
-        DMLIST::compatibility_iterator node = gpobj->m_dm.m_DMList.Item( pos );
-        dmElement *pDMItem = node->GetData();
+ 
+        dmElement *pDMItem = m_pObj->m_dm.m_DMList[ pos ];
         pDMItem->doAction( NULL );
 
-        gpobj->m_dm.m_mutexDM.Unlock();
+        pthread_mutex_unlock( &m_pObj->m_dm.m_mutexDM );
 
     }
 
-    write(  MSG_OK, strlen( MSG_OK ) );
+    write( MSG_OK, strlen( MSG_OK ) );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -5857,56 +5568,58 @@ void TCPClientThread::handleDM_Trigger( void )
 //
 
 
-void TCPClientThread::handleDM_ClearTriggerCount( void )
+void tcpipClientObj::handleDM_ClearTriggerCount( void )
 {
     unsigned short pos;
     
     // Must be connected
     if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
-    if ( m_pClientItem->CommandStartsWith(_("all") ) ) {
+    if ( m_pClientItem->CommandStartsWith(("all") ) ) {
 
-        gpobj->m_dm.m_mutexDM.Lock();
+        pthread_mutex_lock( &m_pObj->m_dm.m_mutexDM );
 
-        DMLIST::iterator iter;
-        for (iter = gpobj->m_dm.m_DMList.begin();
-            iter != gpobj->m_dm.m_DMList.end();
-            ++iter) {
-                dmElement *pDMItem = *iter;
+        std::deque<dmElement*>::iterator it;
+        for (it =  m_pObj->m_dm.m_DMList.begin();
+            it !=  m_pObj->m_dm.m_DMList.end();
+            ++it) {
+                dmElement *pDMItem = *it;
                 pDMItem->m_triggCounter = 0;
         }
 
-        gpobj->m_dm.m_mutexDM.Unlock();
+        pthread_mutex_unlock( &m_pObj->m_dm.m_mutexDM );
 
     }
     else {
 
         // Get the position
-        wxStringTokenizer tkz( m_pClientItem->m_currentCommand, _(",") );
-        while ( tkz.HasMoreTokens() ) {
+        std::deque<std::string> tokens;
+        vscp_split( tokens, m_pClientItem->m_currentCommand, "," );
 
-            pos = vscp_readStringValue( tkz.GetNextToken() );
+        while ( !tokens.empty() ) {
 
-            gpobj->m_dm.m_mutexDM.Lock();
+            pos = vscp_readStringValue( tokens.front() );
+            tokens.pop_front();
 
-            if ( pos > ( gpobj->m_dm.m_DMList.GetCount() - 1 ) ) {
-                write(   MSG_PARAMETER_ERROR,
-                    strlen ( MSG_PARAMETER_ERROR ) );
-                gpobj->m_dm.m_mutexDM.Unlock();
+            pthread_mutex_lock( &m_pObj->m_dm.m_mutexDM );
+
+            if ( pos > (  m_pObj->m_dm.m_DMList.size() - 1 ) ) {
+                write( MSG_PARAMETER_ERROR,
+                    strlen( MSG_PARAMETER_ERROR ) );
+                pthread_mutex_unlock( &m_pObj->m_dm.m_mutexDM );
                 return;
             }
-
-            DMLIST::compatibility_iterator node = gpobj->m_dm.m_DMList.Item( pos );
-            dmElement *pDMItem = node->GetData();
+ 
+            dmElement *pDMItem = m_pObj->m_dm.m_DMList[ pos ];
             pDMItem->m_triggCounter = 0;
 
-            gpobj->m_dm.m_mutexDM.Unlock();
+            pthread_mutex_unlock( &m_pObj->m_dm.m_mutexDM );
 
         }
 
     }
 
-    write(  MSG_OK, strlen( MSG_OK ) );
+    write( MSG_OK, strlen( MSG_OK ) );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -5914,65 +5627,67 @@ void TCPClientThread::handleDM_ClearTriggerCount( void )
 //
 
 
-void TCPClientThread::handleDM_ClearErrorCount( void )
+void tcpipClientObj::handleDM_ClearErrorCount( void )
 {
     unsigned short pos;
     
     // Must be connected
     if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
-    if ( m_pClientItem->CommandStartsWith(_("all") ) ) {
+    if ( m_pClientItem->CommandStartsWith(("all") ) ) {
 
-        gpobj->m_dm.m_mutexDM.Lock();
+        pthread_mutex_lock( &m_pObj->m_dm.m_mutexDM );
 
-        DMLIST::iterator iter;
-        for (iter = gpobj->m_dm.m_DMList.begin();
-            iter != gpobj->m_dm.m_DMList.end();
-            ++iter) {
-                dmElement *pDMItem = *iter;
+        std::deque<dmElement*>::iterator it;
+        for (it =  m_pObj->m_dm.m_DMList.begin();
+            it !=  m_pObj->m_dm.m_DMList.end();
+            ++it) {
+                dmElement *pDMItem = *it;
                 pDMItem->m_errorCounter = 0;
         }
 
-        gpobj->m_dm.m_mutexDM.Unlock();
+        pthread_mutex_unlock( &m_pObj->m_dm.m_mutexDM );
 
     }
     else {
 
         // Get the position
-        wxStringTokenizer tkz( m_pClientItem->m_currentCommand, _(",") );
-        while ( tkz.HasMoreTokens() ) {
+        std::deque<std::string> tokens;
+        vscp_split( tokens, m_pClientItem->m_currentCommand, "," );
 
-            pos = vscp_readStringValue( tkz.GetNextToken() );
+        while ( !tokens.empty() ) {
 
-            gpobj->m_dm.m_mutexDM.Lock();
+            pos = vscp_readStringValue( tokens.front() );
+            tokens.pop_front();
 
-            if ( pos > ( gpobj->m_dm.m_DMList.GetCount() - 1 ) ) {
-                write(   MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
-                gpobj->m_dm.m_mutexDM.Unlock();
+            pthread_mutex_lock( &m_pObj->m_dm.m_mutexDM );
+
+            if ( pos > (  m_pObj->m_dm.m_DMList.size() - 1 ) ) {
+                write( MSG_PARAMETER_ERROR, strlen( MSG_PARAMETER_ERROR ) );
+                pthread_mutex_unlock( &m_pObj->m_dm.m_mutexDM );
                 return;
             }
 
-            DMLIST::compatibility_iterator node = gpobj->m_dm.m_DMList.Item( pos );
-            dmElement *pDMItem = node->GetData();
+            dmElement *pDMItem = m_pObj->m_dm.m_DMList[ pos ];
             pDMItem->m_errorCounter = 0;
 
-            gpobj->m_dm.m_mutexDM.Unlock();
+            pthread_mutex_unlock( &m_pObj->m_dm.m_mutexDM );
 
         }
 
     }
 
-    write(  MSG_OK, strlen( MSG_OK ) );
+    write( MSG_OK, strlen( MSG_OK ) );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // handleClientList
 //
 
-void TCPClientThread::handleClientList( void )
+void tcpipClientObj::handleClientList( void )
 {
     // TODO
-    write(  MSG_OK, strlen ( MSG_OK ) );
+    write( MSG_OK, strlen( MSG_OK ) );
 }
 
 
@@ -5980,7 +5695,7 @@ void TCPClientThread::handleClientList( void )
 // handleClientDriver
 //
 
-void TCPClientThread::handleClientDriver( void )
+void tcpipClientObj::handleClientDriver( void )
 {
     // TODO
 }
@@ -5990,248 +5705,498 @@ void TCPClientThread::handleClientDriver( void )
 // handleClientHelp
 //
 
-void TCPClientThread::handleClientHelp( void )
+void tcpipClientObj::handleClientHelp( void )
 {
     // Must be connected
     if ( STCP_CONN_STATE_CONNECTED != m_conn->conn_state ) return;
 
-    m_pClientItem->m_currentCommand.Trim(true);
-    m_pClientItem->m_currentCommand.Trim(false);
+    vscp_trim( m_pClientItem->m_currentCommand );
 
-    if ( 0 == m_pClientItem->m_currentCommand.Length() ) {
+    if ( 0 == m_pClientItem->m_currentCommand.length() ) {
 
-        wxString str = _("Help for the VSCP tcp/ip interface\r\n");
-                str += _("====================================================================\r\n");
-                str += _("To get more information about a specific command issue 'HELP command'\r\n");
-                str += _("+                 - Repeat last command.\r\n");
-                str += _("+n                - Repeat command 'n' (0 is last).\r\n");
-                str += _("++                - List repeatable commands.\r\n");
-                str += _("NOOP              - No operation. Does nothing.\r\n");
-                str += _("QUIT              - Close the connection.\r\n");
-                str += _("USER 'username'   - Username for login. \r\n");
-                str += _("PASS 'password'   - Password for login.  \r\n");
-                str += _("CHALLENGE 'token' - Get session id.  \r\n");
-                str += _("SEND 'event'      - Send an event.   \r\n");
-                str += _("RETR 'count'      - Retrive n events from input queue.   \r\n");
-                str += _("RCVLOOP           - Will retrieve events in an endless loop until "
+        std::string str = ("Help for the VSCP tcp/ip interface\r\n");
+                str += ("====================================================================\r\n");
+                str += ("To get more information about a specific command issue 'HELP command'\r\n");
+                str += ("+                 - Repeat last command.\r\n");
+                str += ("+n                - Repeat command 'n' (0 is last).\r\n");
+                str += ("++                - List repeatable commands.\r\n");
+                str += ("NOOP              - No operation. Does nothing.\r\n");
+                str += ("QUIT              - Close the connection.\r\n");
+                str += ("USER 'username'   - Username for login. \r\n");
+                str += ("PASS 'password'   - Password for login.  \r\n");
+                str += ("CHALLENGE 'token' - Get session id.  \r\n");
+                str += ("SEND 'event'      - Send an event.   \r\n");
+                str += ("RETR 'count'      - Retrive n events from input queue.   \r\n");
+                str += ("RCVLOOP           - Will retrieve events in an endless loop until "
                                               "the connection is closed by the client or QUITLOOP is sent.\r\n");
-                str += _("QUITLOOP          - Terminate RCVLOOP.\r\n");
-                str += _("CDTA/CHKDATA      - Check if there is data in the input queue.\r\n");
-                str += _("CLRA/CLRALL       - Clear input queue.\r\n");
-                str += _("STAT              - Get statistical information.\r\n");
-                str += _("INFO              - Get status info.\r\n");
-                str += _("CHID              - Get channel id.\r\n");
-                str += _("SGID/SETGUID      - Set GUID for channel.\r\n");
-                str += _("GGID/GETGUID      - Get GUID for channel.\r\n");
-                str += _("VERS/VERSION      - Get VSCP daemon version.\r\n");
-                str += _("SFLT/SETFILTER    - Set incoming event filter.\r\n");
-                str += _("SMSK/SETMASK      - Set incoming event mask.\r\n");
-                str += _("HELP [command]    - This command.\r\n");
-                str += _("TEST              - Do test sequence. Only used for debugging.\r\n");
-                str += _("SHUTDOWN          - Shutdown the daemon.\r\n");
-                str += _("RESTART           - Restart the daemon.\r\n");
-                str += _("DRIVER            - Driver manipulation.\r\n");
-                str += _("FILE              - File handling.\r\n");
-                str += _("UDP               - UDP.\r\n");
-                str += _("REMOTE            - User handling.\r\n");
-                str += _("INTERFACE         - Interface handling. \r\n");
-                str += _("DM                - Decision Matrix manipulation.\r\n");
-                str += _("VAR               - Variable handling. \r\n");
-                str += _("WCYD/WHATCANYOUDO - Check server capabilities. \r\n");
-                write(  (const char *)str.mbc_str(), str.Length() );
+                str += ("QUITLOOP          - Terminate RCVLOOP.\r\n");
+                str += ("CDTA/CHKDATA      - Check if there is data in the input queue.\r\n");
+                str += ("CLRA/CLRALL       - Clear input queue.\r\n");
+                str += ("STAT              - Get statistical information.\r\n");
+                str += ("INFO              - Get status info.\r\n");
+                str += ("CHID              - Get channel id.\r\n");
+                str += ("SGID/SETGUID      - Set GUID for channel.\r\n");
+                str += ("GGID/GETGUID      - Get GUID for channel.\r\n");
+                str += ("VERS/VERSION      - Get VSCP daemon version.\r\n");
+                str += ("SFLT/SETFILTER    - Set incoming event filter.\r\n");
+                str += ("SMSK/SETMASK      - Set incoming event mask.\r\n");
+                str += ("HELP [command]    - This command.\r\n");
+                str += ("TEST              - Do test sequence. Only used for debugging.\r\n");
+                str += ("SHUTDOWN          - Shutdown the daemon.\r\n");
+                str += ("RESTART           - Restart the daemon.\r\n");
+                str += ("DRIVER            - Driver manipulation.\r\n");
+                str += ("FILE              - File handling.\r\n");
+                str += ("UDP               - UDP.\r\n");
+                str += ("REMOTE            - User handling.\r\n");
+                str += ("INTERFACE         - Interface handling. \r\n");
+                str += ("DM                - Decision Matrix manipulation.\r\n");
+                str += ("VAR               - Variable handling. \r\n");
+                str += ("WCYD/WHATCANYOUDO - Check server capabilities. \r\n");
+                write( (const char *)str.c_str(), str.length() );
     }
-    else if ( m_pClientItem->CommandStartsWith( _("+") ) ) {
-        wxString str = _("'+' repeats the last given command.\r\n");
-        write(  (const char *)str.mbc_str(), str.Length() );
+    else if ( m_pClientItem->CommandStartsWith( ("+") ) ) {
+        std::string str = ("'+' repeats the last given command.\r\n");
+        write( (const char *)str.c_str(), str.length() );
     }
-    else if ( m_pClientItem->CommandStartsWith( _("noop") ) ) {
-        wxString str = _("'NOOP' Does absolutly nothing but giving a success in return.\r\n");
-        write(  (const char *)str.mbc_str(), str.Length() );
+    else if ( m_pClientItem->CommandStartsWith( ("noop") ) ) {
+        std::string str = ("'NOOP' Does absolutly nothing but giving a success in return.\r\n");
+        write( (const char *)str.c_str(), str.length() );
     }
-    else if ( m_pClientItem->CommandStartsWith( _("quit") ) ) {
-        wxString str = _("'QUIT' Quit a session with the VSCP daemon and closes the m_connection.\r\n");
-        write(  (const char *)str.mbc_str(), str.Length() );
+    else if ( m_pClientItem->CommandStartsWith( ("quit") ) ) {
+        std::string str = ("'QUIT' Quit a session with the VSCP daemon and closes the m_connection.\r\n");
+        write( (const char *)str.c_str(), str.length() );
     }
-    else if ( m_pClientItem->CommandStartsWith( _("user") ) ) {
-        wxString str = _("'USER' Used to login to the system together with PASS. Connection will be closed if bad credentials are given.\r\n");
-        write(  (const char *)str.mbc_str(), str.Length() );
+    else if ( m_pClientItem->CommandStartsWith( ("user") ) ) {
+        std::string str = ("'USER' Used to login to the system together with PASS. Connection will be closed if bad credentials are given.\r\n");
+        write( (const char *)str.c_str(), str.length() );
     }
-    else if ( m_pClientItem->CommandStartsWith( _("pass") ) ) {
-        wxString str = _("'PASS' Used to login to the system together with USER. Connection will be closed if bad credentials are given.\r\n");
-        write(  (const char *)str.mbc_str(), str.Length() );
+    else if ( m_pClientItem->CommandStartsWith( ("pass") ) ) {
+        std::string str = ("'PASS' Used to login to the system together with USER. Connection will be closed if bad credentials are given.\r\n");
+        write( (const char *)str.c_str(), str.length() );
     }
-    else if ( m_pClientItem->CommandStartsWith( _("quit") ) ) {
-        wxString str = _("'QUIT' Quit a session with the VSCP daemon and closes the m_connection.\r\n");
-        write(  (const char *)str.mbc_str(), str.Length() );
+    else if ( m_pClientItem->CommandStartsWith( ("quit") ) ) {
+        std::string str = ("'QUIT' Quit a session with the VSCP daemon and closes the m_connection.\r\n");
+        write( (const char *)str.c_str(), str.length() );
     }
-    else if ( m_pClientItem->CommandStartsWith( _("send") ) ) {
-        wxString str = _("'SEND event'.\r\nThe event is given as 'head,class,type,obid,datetime,time-stamp,GUID,data1,data2,data3....' \r\n");
-        str += _("Normally set 'head' and 'obid' to zero. \r\nIf timestamp is set to zero it will be set by the server. \r\nIf GUID is given as '-' ");
-        str += _("the GUID of the interface will be used. \r\nThe GUID should be given on the form MSB-byte:MSB-byte-1:MSB-byte-2. \r\n");
-        write(  (const char *)str.mbc_str(), str.Length() );
+    else if ( m_pClientItem->CommandStartsWith( ("send") ) ) {
+        std::string str = ("'SEND event'.\r\nThe event is given as 'head,class,type,obid,datetime,time-stamp,GUID,data1,data2,data3....' \r\n");
+        str += ("Normally set 'head' and 'obid' to zero. \r\nIf timestamp is set to zero it will be set by the server. \r\nIf GUID is given as '-' ");
+        str += ("the GUID of the interface will be used. \r\nThe GUID should be given on the form MSB-byte:MSB-byte-1:MSB-byte-2. \r\n");
+        write( (const char *)str.c_str(), str.length() );
     }
-    else if ( m_pClientItem->CommandStartsWith( _("retr") ) ) {
-        wxString str = _("'RETR count' - Retrieve one (if no argument) or 'count' event(s). ");
-        str += _("Events are retrived on the form head,class,type,obid,datetime,time-stamp,GUID,data0,data1,data2,...........\r\n");
-        write(  (const char *)str.mbc_str(), str.Length() );
+    else if ( m_pClientItem->CommandStartsWith( ("retr") ) ) {
+        std::string str = ("'RETR count' - Retrieve one (if no argument) or 'count' event(s). ");
+        str += ("Events are retrived on the form head,class,type,obid,datetime,time-stamp,GUID,data0,data1,data2,...........\r\n");
+        write( (const char *)str.c_str(), str.length() );
     }
-    else if ( m_pClientItem->CommandStartsWith( _("rcvloop") ) ) {
-        wxString str = _("'RCVLOOP' - Enter the receive loop and receive events continously or until ");
-        str += _("terminated with 'QUITLOOP'. Events are retrived on the form head,class,type,obid,time-stamp,GUID,data0,data1,data2,...........\r\n");
-        write(  (const char *)str.mbc_str(), str.Length() );
+    else if ( m_pClientItem->CommandStartsWith( ("rcvloop") ) ) {
+        std::string str = ("'RCVLOOP' - Enter the receive loop and receive events continously or until ");
+        str += ("terminated with 'QUITLOOP'. Events are retrived on the form head,class,type,obid,time-stamp,GUID,data0,data1,data2,...........\r\n");
+        write( (const char *)str.c_str(), str.length() );
     }
-    else if ( m_pClientItem->CommandStartsWith( _("quitloop") ) ) {
-        wxString str = _("'QUITLOOP' - End 'RCVLOOP' event receives.\r\n");
-        write(  (const char *)str.mbc_str(), str.Length() );
+    else if ( m_pClientItem->CommandStartsWith( ("quitloop") ) ) {
+        std::string str = ("'QUITLOOP' - End 'RCVLOOP' event receives.\r\n");
+        write( (const char *)str.c_str(), str.length() );
     }
-    else if ( m_pClientItem->CommandStartsWith( _("cdta") ) ||
-                m_pClientItem->CommandStartsWith( _("chkdata") ) ) {
-        wxString str = _("'CDTA' or 'CHKDATA' - Check if there is events in the input queue.\r\n");
-        write(  (const char *)str.mbc_str(), str.Length() );
+    else if ( m_pClientItem->CommandStartsWith( ("cdta") ) ||
+                m_pClientItem->CommandStartsWith( ("chkdata") ) ) {
+        std::string str = ("'CDTA' or 'CHKDATA' - Check if there is events in the input queue.\r\n");
+        write( (const char *)str.c_str(), str.length() );
     }
-    else if ( m_pClientItem->CommandStartsWith( _("clra") ) ||
-                m_pClientItem->CommandStartsWith( _("clrall") ) ) {
-        wxString str = _("'CLRA' or 'CLRALL' - Clear input queue.\r\n");
-        write(  (const char *)str.mbc_str(), str.Length() );
+    else if ( m_pClientItem->CommandStartsWith( ("clra") ) ||
+                m_pClientItem->CommandStartsWith( ("clrall") ) ) {
+        std::string str = ("'CLRA' or 'CLRALL' - Clear input queue.\r\n");
+        write( (const char *)str.c_str(), str.length() );
     }
-    else if ( m_pClientItem->CommandStartsWith( _("stat") ) ) {
-        wxString str = _("'STAT' - Get statistical information.\r\n");
-        write(  (const char *)str.mbc_str(), str.Length() );
+    else if ( m_pClientItem->CommandStartsWith( ("stat") ) ) {
+        std::string str = ("'STAT' - Get statistical information.\r\n");
+        write( (const char *)str.c_str(), str.length() );
     }
-    else if ( m_pClientItem->CommandStartsWith( _("info") ) ) {
-        wxString str = _("'INFO' - Get status information.\r\n");
-        write(  (const char *)str.mbc_str(), str.Length() );
+    else if ( m_pClientItem->CommandStartsWith( ("info") ) ) {
+        std::string str = ("'INFO' - Get status information.\r\n");
+        write( (const char *)str.c_str(), str.length() );
     }
-    else if ( m_pClientItem->CommandStartsWith( _("chid") ) ||
-                m_pClientItem->CommandStartsWith( _("getchid") ) ) {
-        wxString str = _("'CHID' or 'GETCHID' - Get channel id.\r\n");
-        write(  (const char *)str.mbc_str(), str.Length() );
+    else if ( m_pClientItem->CommandStartsWith( ("chid") ) ||
+                m_pClientItem->CommandStartsWith( ("getchid") ) ) {
+        std::string str = ("'CHID' or 'GETCHID' - Get channel id.\r\n");
+        write( (const char *)str.c_str(), str.length() );
     }
-    else if ( m_pClientItem->CommandStartsWith( _("sgid") ) ||
-                m_pClientItem->CommandStartsWith( _("setguid") ) ) {
-        wxString str = _("'SGID' or 'SETGUID' - Set GUID for channel.\r\n");
-        write(  (const char *)str.mbc_str(), str.Length() );
+    else if ( m_pClientItem->CommandStartsWith( ("sgid") ) ||
+                m_pClientItem->CommandStartsWith( ("setguid") ) ) {
+        std::string str = ("'SGID' or 'SETGUID' - Set GUID for channel.\r\n");
+        write( (const char *)str.c_str(), str.length() );
     }
-    else if ( m_pClientItem->CommandStartsWith( _("ggid") ) ||
-                m_pClientItem->CommandStartsWith( _("getguid") ) ) {
-        wxString str = _("'GGID' or 'GETGUID' - Get GUID for channel.\r\n");
-        write(  (const char *)str.mbc_str(), str.Length() );
+    else if ( m_pClientItem->CommandStartsWith( ("ggid") ) ||
+                m_pClientItem->CommandStartsWith( ("getguid") ) ) {
+        std::string str = ("'GGID' or 'GETGUID' - Get GUID for channel.\r\n");
+        write( (const char *)str.c_str(), str.length() );
     }
-    else if ( m_pClientItem->CommandStartsWith( _("vers") ) ||
-                m_pClientItem->CommandStartsWith( _("version") ) ) {
-        wxString str = _("'VERS' or 'VERSION' - Get version of VSCP daemon.\r\n");
-        write(  (const char *)str.mbc_str(), str.Length() );
+    else if ( m_pClientItem->CommandStartsWith( ("vers") ) ||
+                m_pClientItem->CommandStartsWith( ("version") ) ) {
+        std::string str = ("'VERS' or 'VERSION' - Get version of VSCP daemon.\r\n");
+        write( (const char *)str.c_str(), str.length() );
     }
-    else if ( m_pClientItem->CommandStartsWith( _("sflt") ) ||
-                m_pClientItem->CommandStartsWith( _("setfilter") ) ) {
-        wxString str = _("'SFLT' or 'SETFILTER' - Set filter for channel. ");
-        str += _("The format is 'filter-priority, filter-class, filter-type, filter-GUID' \r\n");
-        str += _("Example:  \r\nSETFILTER 1,0x0000,0x0006,ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:00\r\n");
-        write(  (const char *)str.mbc_str(), str.Length() );
+    else if ( m_pClientItem->CommandStartsWith( ("sflt") ) ||
+                m_pClientItem->CommandStartsWith( ("setfilter") ) ) {
+        std::string str = ("'SFLT' or 'SETFILTER' - Set filter for channel. ");
+        str += ("The format is 'filter-priority, filter-class, filter-type, filter-GUID' \r\n");
+        str += ("Example:  \r\nSETFILTER 1,0x0000,0x0006,ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:00\r\n");
+        write( (const char *)str.c_str(), str.length() );
     }
-    else if ( m_pClientItem->CommandStartsWith( _("smsk") ) ||
-                m_pClientItem->CommandStartsWith( _("setmask") ) ) {
-        wxString str = _("'SMSK' or 'SETMASK' - Set mask for channel. ");
-        str += _("The format is 'mask-priority, mask-class, mask-type, mask-GUID' \r\n");
-        str += _("Example:  \r\nSETMASK 0x0f,0xffff,0x00ff,ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:00 \r\n");
-        write(  (const char *)str.mbc_str(), str.Length() );
+    else if ( m_pClientItem->CommandStartsWith( ("smsk") ) ||
+                m_pClientItem->CommandStartsWith( ("setmask") ) ) {
+        std::string str = ("'SMSK' or 'SETMASK' - Set mask for channel. ");
+        str += ("The format is 'mask-priority, mask-class, mask-type, mask-GUID' \r\n");
+        str += ("Example:  \r\nSETMASK 0x0f,0xffff,0x00ff,ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:00 \r\n");
+        write( (const char *)str.c_str(), str.length() );
     }
-    else if ( m_pClientItem->CommandStartsWith( _("help") ) ) {
-        wxString str = _("'HELP [command]' This command. Gives help about available commands and the usage.\r\n");
-        write(  (const char *)str.mbc_str(), str.Length() );
+    else if ( m_pClientItem->CommandStartsWith( ("help") ) ) {
+        std::string str = ("'HELP [command]' This command. Gives help about available commands and the usage.\r\n");
+        write( (const char *)str.c_str(), str.length() );
     }
-    else if ( m_pClientItem->CommandStartsWith( _("test") ) ) {
-        wxString str = _("'TEST [sequency]' Test command for debugging.\r\n");
-        write(  (const char *)str.mbc_str(), str.Length() );
+    else if ( m_pClientItem->CommandStartsWith( ("test") ) ) {
+        std::string str = ("'TEST [sequency]' Test command for debugging.\r\n");
+        write( (const char *)str.c_str(), str.length() );
     }
-    else if ( m_pClientItem->CommandStartsWith( _("shutdown") ) ) {
-        wxString str = _("'SHUTDOWN' Shutdown the daemon.\r\n");
-        write(  (const char *)str.mbc_str(), str.Length() );
+    else if ( m_pClientItem->CommandStartsWith( ("shutdown") ) ) {
+        std::string str = ("'SHUTDOWN' Shutdown the daemon.\r\n");
+        write( (const char *)str.c_str(), str.length() );
     }
-    else if ( m_pClientItem->CommandStartsWith( _("restart") ) ) {
-        wxString str = _("'RESTART' Restart the daemon.\r\n");
-        write(  (const char *)str.mbc_str(), str.Length() );
+    else if ( m_pClientItem->CommandStartsWith( ("restart") ) ) {
+        std::string str = ("'RESTART' Restart the daemon.\r\n");
+        write( (const char *)str.c_str(), str.length() );
     }
-    else if ( m_pClientItem->CommandStartsWith( _("driver") ) ) {
-        wxString str = _("'DRIVER' Handle (load/unload/update/start/stop) Level I/Level II drivers.\r\n");
-        str += _("'DRIVER install package' .\r\n");
-        str += _("'DRIVER uninstall package' .\r\n");
-        str += _("'DRIVER upgrade package' .\r\n");
-        str += _("'DRIVER start package' .\r\n");
-        str += _("'DRIVER stop package' .\r\n");
-        str += _("'DRIVER reload package' .\r\n");
-        write(  (const char *)str.mbc_str(), str.Length() );
+    else if ( m_pClientItem->CommandStartsWith( ("driver") ) ) {
+        std::string str = ("'DRIVER' Handle (load/unload/update/start/stop) Level I/Level II drivers.\r\n");
+        str += ("'DRIVER install package' .\r\n");
+        str += ("'DRIVER uninstall package' .\r\n");
+        str += ("'DRIVER upgrade package' .\r\n");
+        str += ("'DRIVER start package' .\r\n");
+        str += ("'DRIVER stop package' .\r\n");
+        str += ("'DRIVER reload package' .\r\n");
+        write( (const char *)str.c_str(), str.length() );
     }
-    else if ( m_pClientItem->CommandStartsWith( _("file") ) ) {
-        wxString str = _("'FILE' Handle daemon files.\r\n");
-        str += _("'FILE dir'.\r\n");
-        str += _("'FILE copy'.\r\n");
-        str += _("'FILE move'.\r\n");
-        str += _("'FILE delete'.\r\n");
-        str += _("'FILE list'.\r\n");
-        write(  (const char *)str.mbc_str(), str.Length() );
+    else if ( m_pClientItem->CommandStartsWith( ("file") ) ) {
+        std::string str = ("'FILE' Handle daemon files.\r\n");
+        str += ("'FILE dir'.\r\n");
+        str += ("'FILE copy'.\r\n");
+        str += ("'FILE move'.\r\n");
+        str += ("'FILE delete'.\r\n");
+        str += ("'FILE list'.\r\n");
+        write( (const char *)str.c_str(), str.length() );
     }
-    else if ( m_pClientItem->CommandStartsWith( _("udp") ) ) {
-        wxString str = _("'UDP' Handle UDP interface.\r\n");
-        str += _("'UDP enable'.\r\n");
-        str += _("'UDP disable' .\r\n");
-        write(  (const char *)str.mbc_str(), str.Length() );
+    else if ( m_pClientItem->CommandStartsWith( ("udp") ) ) {
+        std::string str = ("'UDP' Handle UDP interface.\r\n");
+        str += ("'UDP enable'.\r\n");
+        str += ("'UDP disable' .\r\n");
+        write( (const char *)str.c_str(), str.length() );
     }
-    else if ( m_pClientItem->CommandStartsWith( _("remote") ) ) {
-        wxString str = _("'REMOTE' User management.\r\n");
-        str += _("'REMOTE list'.\r\n");
-        str += _("'REMOTE add 'username','MD5 password','from-host(s)','access-right-list','event-list','filter','mask''. Add a user.\r\n");
-        str += _("'REMOTE remove username'.\r\n");
-        str += _("'REMOTE privilege 'username','access-right-list''.\r\n");
-        str += _("'REMOTE password 'username','MD5 for password' '.\r\n");
-        str += _("'REMOTE host-list 'username','host-list''.\r\n");
-        str += _("'REMOTE event-list 'username','event-list''.\r\n");
-        str += _("'REMOTE filter 'username','filter''.\r\n");
-        str += _("'REMOTE mask 'username','mask''.\r\n");
-        write(  (const char *)str.mbc_str(), str.Length() );
+    else if ( m_pClientItem->CommandStartsWith( ("remote") ) ) {
+        std::string str = ("'REMOTE' User management.\r\n");
+        str += ("'REMOTE list'.\r\n");
+        str += ("'REMOTE add 'username','MD5 password','from-host(s)','access-right-list','event-list','filter','mask''. Add a user.\r\n");
+        str += ("'REMOTE remove username'.\r\n");
+        str += ("'REMOTE privilege 'username','access-right-list''.\r\n");
+        str += ("'REMOTE password 'username','MD5 for password' '.\r\n");
+        str += ("'REMOTE host-list 'username','host-list''.\r\n");
+        str += ("'REMOTE event-list 'username','event-list''.\r\n");
+        str += ("'REMOTE filter 'username','filter''.\r\n");
+        str += ("'REMOTE mask 'username','mask''.\r\n");
+        write( (const char *)str.c_str(), str.length() );
     }
-    else if ( m_pClientItem->CommandStartsWith( _("interface") ) ) {
-        wxString str = _("'INTERFACE' Handle interfaces on the daemon.\r\n");
-        str += _("'INTERFACE list'.\r\n");
-        str += _("'INTERFACE close'.\r\n");
-        write(  (const char *)str.mbc_str(), str.Length() );
+    else if ( m_pClientItem->CommandStartsWith( ("interface") ) ) {
+        std::string str = ("'INTERFACE' Handle interfaces on the daemon.\r\n");
+        str += ("'INTERFACE list'.\r\n");
+        str += ("'INTERFACE close'.\r\n");
+        write( (const char *)str.c_str(), str.length() );
     }
-    else if ( m_pClientItem->CommandStartsWith( _("dm") ) ) {
-        wxString str = _("'DM' Handle decision matrix on the daemon.\r\n");
-        str += _("'DM enable'.\r\n");
-        str += _("'DM disable'.\r\n");
-        str += _("'DM list'.\r\n");
-        str += _("'DM add'.\r\n");
-        str += _("'DM delete'.\r\n");
-        str += _("'DM reset'.\r\n");
-        str += _("'DM clrtrig'.\r\n");
-        str += _("'DM clrerr'.\r\n");
-        str += _("'DM load'.\r\n");
-        str += _("'DM save'.\r\n");
-        write(  (const char *)str.mbc_str(), str.Length() );
+    else if ( m_pClientItem->CommandStartsWith( ("dm") ) ) {
+        std::string str = ("'DM' Handle decision matrix on the daemon.\r\n");
+        str += ("'DM enable'.\r\n");
+        str += ("'DM disable'.\r\n");
+        str += ("'DM list'.\r\n");
+        str += ("'DM add'.\r\n");
+        str += ("'DM delete'.\r\n");
+        str += ("'DM reset'.\r\n");
+        str += ("'DM clrtrig'.\r\n");
+        str += ("'DM clrerr'.\r\n");
+        str += ("'DM load'.\r\n");
+        str += ("'DM save'.\r\n");
+        write( (const char *)str.c_str(), str.length() );
     }
-    else if ( m_pClientItem->CommandStartsWith( _("var") ) ||
-                m_pClientItem->CommandStartsWith( _("variable") ) ) {
-        wxString str = _("'VARIABLE' Handle variables on the daemon.\r\n");
-        str += _("'VARIABLE list <regular-expression>'.\r\n");        
-        str += _("'VARIABLE read <variable-name>'.\r\n");
-        str += _("'VARIABLE readvalue <variable-name>'.\r\n");
-        str += _("'VARIABLE readnote <variable-name>'.\r\n");
-        str += _("'VARIABLE write <variable-name> <variable>'.\r\n");
-        str += _("'VARIABLE writevalue <variable-name> <value>'.\r\n");
-        str += _("'VARIABLE writenote <variable-name>' <note>.\r\n");
-        str += _("'VARIABLE reset <variable-name>'.\r\n");
-        str += _("'VARIABLE readreset <variable-name>'.\r\n");
-        str += _("'VARIABLE remove <variable-name>'.\r\n");
-        str += _("'VARIABLE readremove <variable-name>'.\r\n");
-        str += _("'VARIABLE length <variable-name>'.\r\n");
-        str += _("'VARIABLE save <path> <selection>'.\r\n");
-        write(  (const char *)str.mbc_str(), str.Length() );
+    else if ( m_pClientItem->CommandStartsWith( ("var") ) ||
+                m_pClientItem->CommandStartsWith( ("variable") ) ) {
+        std::string str = ("'VARIABLE' Handle variables on the daemon.\r\n");
+        str += ("'VARIABLE list <regular-expression>'.\r\n");        
+        str += ("'VARIABLE read <variable-name>'.\r\n");
+        str += ("'VARIABLE readvalue <variable-name>'.\r\n");
+        str += ("'VARIABLE readnote <variable-name>'.\r\n");
+        str += ("'VARIABLE write <variable-name> <variable>'.\r\n");
+        str += ("'VARIABLE writevalue <variable-name> <value>'.\r\n");
+        str += ("'VARIABLE writenote <variable-name>' <note>.\r\n");
+        str += ("'VARIABLE reset <variable-name>'.\r\n");
+        str += ("'VARIABLE readreset <variable-name>'.\r\n");
+        str += ("'VARIABLE remove <variable-name>'.\r\n");
+        str += ("'VARIABLE readremove <variable-name>'.\r\n");
+        str += ("'VARIABLE length <variable-name>'.\r\n");
+        str += ("'VARIABLE save <path> <selection>'.\r\n");
+        write( (const char *)str.c_str(), str.length() );
     }
 
     write( MSG_OK, strlen(MSG_OK) );
     return;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// Entry
+//
 
+void *tcpipClientThread( void *pData )
+{ 
+    tcpipClientObj *ptcpipobj = (tcpipClientObj *)pData;
+    if ( NULL == ptcpipobj ) {
+        syslog( LOG_CRIT, "[TCP/IP srv client thread] Error, "
+                          "Client thread object not initialized." );
+        return NULL;
+    }
+
+    if ( NULL == ptcpipobj->m_pObj ) {
+        syslog( LOG_CRIT, "[TCP/IP srv client thread] Error, "
+                          "Control object not initialized." );
+        return NULL;
+    }
+
+    syslog( LOG_DEBUG, "[TCP/IP srv client thread] Thread started." );
+
+    ptcpipobj->m_pClientItem = new CClientItem();
+    if ( NULL == ptcpipobj->m_pClientItem ) {
+        syslog( LOG_CRIT, "[TCP/IP srv client thread] Memory error, "
+                         "Cant allocate client structure." );
+        return NULL;
+    }
+    
+    vscpdatetime now;
+    ptcpipobj->m_pClientItem->m_bOpen = true;
+    ptcpipobj->m_pClientItem->m_type =  CLIENT_ITEM_INTERFACE_TYPE_CLIENT_TCPIP;
+    ptcpipobj->m_pClientItem->m_strDeviceName = ("Remote TCP/IP Server. [");
+    ptcpipobj->m_pClientItem->m_strDeviceName +=  ptcpipobj->m_pObj->m_strTcpInterfaceAddress;
+    ptcpipobj->m_pClientItem->m_strDeviceName += ("]|Started at ");    
+    ptcpipobj->m_pClientItem->m_strDeviceName += now.getISODateTime();
+
+    // Start of activity
+    ptcpipobj->m_pClientItem->m_clientActivity = time(NULL);
+
+    // Add the client to the Client List
+    pthread_mutex_lock( &ptcpipobj->m_pObj->m_clientMutex );
+    if ( !ptcpipobj->m_pObj->addClient( ptcpipobj->m_pClientItem ) ) {
+        // Failed to add client
+        delete ptcpipobj->m_pClientItem;
+        ptcpipobj->m_pClientItem = NULL;
+        pthread_mutex_unlock( &ptcpipobj->m_pObj->m_clientMutex );
+        syslog( LOG_ERR, "TCP/IP server: Failed to add client. Terminating thread." );
+        return NULL;
+    }
+    pthread_mutex_unlock( &ptcpipobj->m_pObj->m_clientMutex );
+
+    // Clear the filter (Allow everything )
+    vscp_clearVSCPFilter( &ptcpipobj->m_pClientItem->m_filterVSCP );
+
+    // Send welcome message
+    std::string str = std::string(MSG_WELCOME);
+    str += std::string("Version: ");
+    str += std::string(VSCPD_DISPLAY_VERSION);
+    str += std::string("\r\n");
+    str += std::string(VSCPD_COPYRIGHT);
+    str += std::string("\r\n");
+    str += std::string(MSG_OK);
+    ptcpipobj->write( (const char*)str.c_str(), str.length() );
+
+    syslog( LOG_DEBUG, "[TCP/IP srv] Ready to serve client." );
+        
+    // Enter command loop
+    char buf[8192];
+    struct pollfd fd;
+    while ( !ptcpipobj->m_pParent->m_nStopTcpIpSrv ) {
+
+        // Check for client inactivity
+        if ( ( time(NULL) - ptcpipobj->m_pClientItem->m_clientActivity ) > TCPIPSRV_INACTIVITY_TIMOUT ) {
+            syslog( LOG_INFO, "[TCP/IP srv client thread] Client closed due to inactivity." );
+            break;
+        }
+
+        // * * * Receiveloop * * *
+        if ( ptcpipobj->m_bReceiveLoop ) {
+
+            // Wait for data
+            struct timespec ts;
+            ts.tv_sec = 0;
+            ts.tv_nsec = 20000;    //20 ms
+            int rv = sem_timedwait( &ptcpipobj->m_pClientItem->m_semClientInputQueue, &ts );
+
+            // Send everything in the queue
+            while( ptcpipobj->sendOneEventFromQueue( false ) );
+
+            // Send '+OK<CR><LF>' every two seconds to indicate that the
+            // link is open
+            if ( ( time(NULL) - ptcpipobj->m_pClientItem->m_timeRcvLoop ) > 2 ) {
+                ptcpipobj->m_pClientItem->m_timeRcvLoop = time(NULL);
+                ptcpipobj->m_pClientItem->m_clientActivity = time(NULL);
+                ptcpipobj->write( "+OK\r\n", 5 );
+            }
+                
+        }
+        else {
+
+            // Set poll
+            fd.fd = ptcpipobj->m_conn->client.sock;
+            fd.events = POLLIN;
+            fd.revents = 0;
+            
+            // Wait for data
+            if ( stcp_poll( &fd, 
+                                1, 
+                                500, 
+                                &(ptcpipobj->m_pParent->m_nStopTcpIpSrv) ) < 0  ) {
+                continue;   // Nothing                                 
+            }
+
+            // Data in?
+            if ( !( fd.revents & POLLIN ) ) {
+                continue;
+            }
+        }
+        
+        // Read possible data from client
+        //      If in receive loop we know we have delay
+        //      in event waiting above.
+        memset( buf, 0, sizeof( buf ) );
+        int nRead = stcp_read( ptcpipobj->m_conn, 
+                                buf, sizeof( buf ),
+                                ( ptcpipobj->m_bReceiveLoop ) ? 0 : 0 );
+        
+        if ( 0 == nRead ) {
+            ;   // Nothing more to read - Check for command and continue -> below
+        }
+        else if ( nRead < 0 ) {
+
+            if ( STCP_ERROR_TIMEOUT == nRead ) {
+                ptcpipobj->m_rv = VSCP_ERROR_TIMEOUT;
+            }
+            else if ( STCP_ERROR_STOPPED == nRead ) {
+                ptcpipobj->m_rv = VSCP_ERROR_STOPPED;
+                continue;
+            }
+            break;
+        }
+        else if ( nRead > 0 ) {
+            ptcpipobj->m_strResponse += std::string( buf, nRead );
+        }
+
+        // Record client activity
+        ptcpipobj->m_pClientItem->m_clientActivity = time(NULL);
+        
+        // get data up to "\r\n" if any
+        int pos;
+        if ( ptcpipobj->m_strResponse.npos != 
+           ( pos = ptcpipobj->m_strResponse.find("\n") ) ) {
+            
+            // Get the command
+            std::string strCommand = ptcpipobj->m_strResponse.substr( pos + 1 );
+
+            // Save the unhandled part
+            ptcpipobj->m_strResponse = 
+                ptcpipobj->m_strResponse.substr( ptcpipobj->m_strResponse.length() - pos - 1 );
+
+            // Remove whitespace
+            vscp_trim( strCommand );
+
+            // If nothing to do do nothing - pretty obious if you think about it
+            if ( 0 == strCommand.length() ) continue;
+
+            // Check for repeat command
+            // +    - repear last command
+            // +n   - Repeat n-th command
+            // ++
+            if ( ptcpipobj->m_commandArray.size() && ( '+' == strCommand[0] ) ) {
+
+                if ( vscp_startsWith( strCommand, "++", &strCommand ) ) {
+                    for ( int i = ptcpipobj->m_commandArray.size()-1; i>=0; i-- ) {
+                        std::string str = vscp_string_format( "%d - %s",
+                                                ptcpipobj->m_commandArray.size() - i - 1, 
+                                                ptcpipobj->m_commandArray[ i ] );
+                        vscp_trim( str );                        
+                        ptcpipobj->write( str, true );
+                    }
+                    continue;
+                }
+
+                // Get pos
+                unsigned int n = 0;
+                if ( strCommand.length() > 1 ) {
+                    strCommand = strCommand.substr( strCommand.length() - 1 );    
+                    n = vscp_readStringValue( strCommand );
+                }
+
+                // Pos must be within range
+                if ( n > ptcpipobj->m_commandArray.size() ) {
+                    n = ptcpipobj->m_commandArray.size() - 1; 
+                }
+
+                // Get the command
+                strCommand = ptcpipobj->m_commandArray[ ptcpipobj->m_commandArray.size() - n - 1 ];
+
+                // Write out the command
+                ptcpipobj->write( strCommand, true );
+
+            }
+
+            ptcpipobj->m_commandArray.push_back( strCommand );   // put at beginning of list
+            if ( ptcpipobj->m_commandArray.size() > VSCP_TCPIP_COMMAND_LIST_MAX ) {
+                ptcpipobj->m_commandArray.pop_front();   // Remove last inserted item
+            }
+
+            // Execute command
+            if ( VSCP_TCPIP_RV_CLOSE == ptcpipobj->CommandHandler( strCommand ) ) {
+                break;
+            }
+
+        }
+
+    } // while
+
+    // Remove the client from the client queue
+    pthread_mutex_lock( &ptcpipobj->m_pParent->m_mutexTcpClientList );
+    std::list<tcpipClientObj *>::iterator it;
+    for ( it = ptcpipobj->m_pParent->m_tcpip_clientList.begin(); 
+            it != ptcpipobj->m_pParent->m_tcpip_clientList.end(); 
+            ++it ) {
+        
+        tcpipClientObj *pclient = *it;  // TODO check
+        struct stcp_connection *stored_conn = pclient->m_conn;
+        if ( stored_conn->client.id == ptcpipobj->m_conn->client.id ) {
+            ptcpipobj->m_pParent->m_tcpip_clientList.erase( it );
+            break;
+        }
+    }
+    pthread_mutex_unlock( &ptcpipobj->m_pParent->m_mutexTcpClientList );
+    
+    // Close the connection
+    stcp_close_connection( ptcpipobj->m_conn );
+    ptcpipobj->m_conn = NULL;
+
+    // Close the channel
+    ptcpipobj->m_pClientItem->m_bOpen = false;
+    
+    // Remove the client from the Client List
+    pthread_mutex_lock( &ptcpipobj->m_pObj->m_clientMutex );
+    ptcpipobj->m_pObj->removeClient( ptcpipobj->m_pClientItem );
+    pthread_mutex_unlock( &ptcpipobj->m_pObj->m_clientMutex );
+
+    ptcpipobj->m_pClientItem = NULL;
+    ptcpipobj->m_pParent = NULL;
+    
+    syslog( LOG_INFO, "[TCP/IP srv client thread] Exit." );
+
+    return NULL;
+}
 

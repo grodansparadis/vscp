@@ -217,7 +217,7 @@ extern "C" long CanalOpen( const char *pDevice, unsigned long flags )
 	VscpRemoteTcpIf *pvscpif = new VscpRemoteTcpIf();
 	if ( NULL != pvscpif ) {
 
-		if ( pvscpif->doCmdOpen( strDevice, flags ) ){
+		if ( pvscpif->doCmdOpen( strDevice.ToStdString(), flags ) ){
 
 			if ( !( h = theApp.addDriverObject( pvscpif ) ) ) {
 				delete pvscpif;

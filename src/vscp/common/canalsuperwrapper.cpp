@@ -140,9 +140,9 @@ void CCanalSuperWrapper::init( void )
 // setInterface
 //  TCP/IP version
 
-void CCanalSuperWrapper::setInterface( const wxString& host,
-                                            const wxString& username,
-                                            const wxString& password )
+void CCanalSuperWrapper::setInterface( const std::string& host,
+                                            const std::string& username,
+                                            const std::string& password )
 {
     // TCP/IP interface
     m_itemDevice.id = USE_TCPIP_INTERFACE;
@@ -170,9 +170,9 @@ void CCanalSuperWrapper::setInterface( const wxString& host,
 // setInterface - CANAL version
 //  
 
-void CCanalSuperWrapper::setInterface( const wxString& name,
-    const wxString& path,
-    const wxString& parameters,
+void CCanalSuperWrapper::setInterface( const std::string& name,
+    const std::string& path,
+    const std::string& parameters,
     const unsigned long flags,
     const unsigned long filter,
     const unsigned long mask)
@@ -195,7 +195,7 @@ void CCanalSuperWrapper::setInterface( const wxString& name,
 // open
 //
 
-long CCanalSuperWrapper::doCmdOpen( const wxString& strInterface, 
+long CCanalSuperWrapper::doCmdOpen( const std::string& strInterface, 
                                         unsigned long flags )
 {
     long rv = false;
@@ -218,12 +218,14 @@ long CCanalSuperWrapper::doCmdOpen( const wxString& strInterface,
         // *** Open remote TCP/IP interface *** 
 
         if ( strInterface.Length() ) {
-            if ( VSCP_ERROR_SUCCESS ==  m_vscptcpif.doCmdOpen( strInterface, flags ) ) {
+            if ( VSCP_ERROR_SUCCESS ==  m_vscptcpif.doCmdOpen( strInterface.ToStdString(), 
+                                                                flags ) ) {
                 rv = 1661; // Pretend to be driver 
             }
         }
         else {
-            rv = m_vscptcpif.doCmdOpen( m_itemDevice.strParameters, m_itemDevice.flags );
+            rv = m_vscptcpif.doCmdOpen( m_itemDevice.strParameters.ToStdString(), 
+                                            m_itemDevice.flags );
             if ( VSCP_ERROR_SUCCESS == rv ) {
                 // We try to get the interface GUID. If we
                 // fail to get it we use the GUID assigned
@@ -667,7 +669,7 @@ bool CCanalSuperWrapper::_readLevel1Register( uint8_t nodeid,
     bool rv = true;
     uint32_t errors = 0;
     bool bResend;
-    wxString strBuf;
+    std::string strBuf;
     canalMsg canalEvent;
 
     // Check pointer
@@ -745,7 +747,7 @@ bool CCanalSuperWrapper::_writeLevel1Register( uint8_t nodeid,
     bool rv = true;
     uint32_t errors = 0;
     bool bResend;
-    wxString strBuf;
+    std::string strBuf;
     canalMsg canalEvent;
 
     canalEvent.flags = CANAL_IDFLAG_EXTENDED;
@@ -824,7 +826,7 @@ bool CCanalSuperWrapper::readLevel1Registers( wxWindow *pwnd,
     uint8_t val;
     bool rv = true;
     int errors = 0;
-    wxString strBuf;
+    std::string strBuf;
 
     wxProgressDialog progressDlg( _("VSCP Works"),
         _("Reading Registers"),
@@ -850,7 +852,7 @@ bool CCanalSuperWrapper::readLevel1Registers( wxWindow *pwnd,
             break;   // User aborted
         }
 
-        progressDlg.Pulse( wxString::Format(_("Reading register %d"), i) );
+        progressDlg.Pulse( std::string::Format(_("Reading register %d"), i) );
 
         if ( _readLevel1Register( nodeid, i, &val ) ) {
             pregisters[ i-startreg ] = val;
@@ -884,7 +886,7 @@ bool CCanalSuperWrapper::readLevel2Register( cguid& ifGUID,
     bool rv = true;
     uint32_t errors = 0;
     bool bResend;
-    wxString strBuf;
+    std::string strBuf;
     vscpEventEx e;
 
     // Check pointers
@@ -972,8 +974,8 @@ bool CCanalSuperWrapper::readLevel2Register( cguid& ifGUID,
 
                 // Check for correct reply event
                 {
-                    wxString str;
-                    str = wxString::Format(_("Received Event: class=%d type=%d size=%d data=%d %d"), 
+                    std::string str;
+                    str = std::string::Format(_("Received Event: class=%d type=%d size=%d data=%d %d"), 
                             e.vscp_class, e.vscp_type, e.sizeData, e.data[16], e.data[17] );
                     wxLogDebug(str);
                 }
@@ -1082,7 +1084,7 @@ bool CCanalSuperWrapper::_writeLevel2Register( cguid& ifGUID,
     bool bInterface = false;  // No specific interface set
     uint32_t errors = 0;
     bool bResend;
-    wxString strBuf;
+    std::string strBuf;
     vscpEventEx event;
 
     // Check pointers
@@ -1268,7 +1270,7 @@ bool CCanalSuperWrapper::readLevel2Registers( wxWindow *pwnd,
     unsigned char val;
     bool rv = true;
     int errors = 0;
-    wxString strBuf;
+    std::string strBuf;
 
     wxProgressDialog progressDlg( _("VSCP Works"),
                                     _("Reading Registers"),
@@ -1293,7 +1295,7 @@ bool CCanalSuperWrapper::readLevel2Registers( wxWindow *pwnd,
             break;
         }
 
-        progressDlg.Pulse( wxString::Format(_("Reading register %04X:%02X"), 0, i) );
+        progressDlg.Pulse( std::string::Format(_("Reading register %04X:%02X"), 0, i) );
 
         if ( readLevel2Register( ifGUID, 
                                     i, 
@@ -1321,9 +1323,9 @@ bool CCanalSuperWrapper::readLevel2Registers( wxWindow *pwnd,
 // getMDFfromLevel1Device
 //
 
-wxString CCanalSuperWrapper::getMDFfromLevel1Device( uint8_t id, bool bSilent )
+std::string CCanalSuperWrapper::getMDFfromLevel1Device( uint8_t id, bool bSilent )
 {
-    wxString strWrk;
+    std::string strWrk;
     char url[ 33 ];
     bool rv = true;
 
@@ -1343,7 +1345,7 @@ wxString CCanalSuperWrapper::getMDFfromLevel1Device( uint8_t id, bool bSilent )
 
     strWrk = strWrk.From8BitData( url );
     if ( wxNOT_FOUND == strWrk.Find( _("http://") ) ) {
-        wxString str;
+        std::string str;
         str = _("http://");
         str += strWrk;
         strWrk = str;
@@ -1360,13 +1362,13 @@ error:
 // getMDFfromDevice2
 //
 
-wxString CCanalSuperWrapper::getMDFfromLevel2Device( wxProgressDialog& progressDlg,
+std::string CCanalSuperWrapper::getMDFfromLevel2Device( wxProgressDialog& progressDlg,
                                                         cguid& ifGUID,
                                                         cguid& destGUID, 
                                                         bool bLevel2, 
                                                         bool bSilent )
 {
-    wxString strWrk;
+    std::string strWrk;
     char url[ 33 ];
     bool rv = true;
 
@@ -1380,7 +1382,7 @@ wxString CCanalSuperWrapper::getMDFfromLevel2Device( wxProgressDialog& progressD
         uint8_t *p = (uint8_t *)url;
         for ( int i=0; i<32; i++ ) {
 
-            if ( !progressDlg.Pulse( wxString::Format(_("Reading MDF register %08X"), 0xe0 + i ) ) ) {
+            if ( !progressDlg.Pulse( std::string::Format(_("Reading MDF register %08X"), 0xe0 + i ) ) ) {
                 break;
             }
 
@@ -1408,7 +1410,7 @@ wxString CCanalSuperWrapper::getMDFfromLevel2Device( wxProgressDialog& progressD
         uint8_t *p = (uint8_t *)url;
         for ( int i=0; i<32; i++ ) {
 
-            if ( !progressDlg.Pulse( wxString::Format(_("Reading MDF register %02X"), 0xe0 +i ) ) ) {
+            if ( !progressDlg.Pulse( std::string::Format(_("Reading MDF register %02X"), 0xe0 +i ) ) ) {
                 break;
             }
 
@@ -1429,7 +1431,7 @@ wxString CCanalSuperWrapper::getMDFfromLevel2Device( wxProgressDialog& progressD
 
     strWrk = strWrk.From8BitData( url );
     if ( wxNOT_FOUND == strWrk.Find( _("http://") ) ) {
-        wxString str;
+        std::string str;
         str = _("http://");
         str += strWrk;
         strWrk = str;
@@ -1449,12 +1451,12 @@ error:
 
 bool CCanalSuperWrapper::loadMDF( wxWindow *pwnd,
                                     uint8_t *preg_url,
-                                    wxString& url,
+                                    std::string& url,
                                     CMDF *pmdf )
 {
     bool rv = true;
     //wxStandardPaths stdpaths;
-    wxString remoteFile;
+    std::string remoteFile;
     //uint8_t mdf_url[33];
 
     // Check pointers
@@ -1465,15 +1467,15 @@ bool CCanalSuperWrapper::loadMDF( wxWindow *pwnd,
     // from device to get mdf url
     if ( NULL != preg_url ) {
 
-        remoteFile = _("http://") + wxString::From8BitData( (const char *)preg_url );
-        //wxString remoteFile = _("http://www.grodansparadis.com/smart2_001.mdf");
+        remoteFile = _("http://") + std::string::From8BitData( (const char *)preg_url );
+        //std::string remoteFile = _("http://www.grodansparadis.com/smart2_001.mdf");
 
     }
     else {
         remoteFile = url;
     }
 
-    wxString localFile;
+    std::string localFile;
 
     wxProgressDialog progressDlg(_("VSCP Module Description File"),
             _("Load and parse MDF"),
@@ -1538,7 +1540,7 @@ bool CCanalSuperWrapper::getLevel1DmInfo( const uint8_t nodeid,
 {
     bool rv = true;
     bool bResend;
-    wxString strBuf;
+    std::string strBuf;
     canalMsg canalEvent;
 
     // Check pointer
@@ -1595,7 +1597,7 @@ bool CCanalSuperWrapper::getLevel2DmInfo( cguid& ifGUID,
 {
     bool rv = true;
     bool bResend;
-    wxString strBuf;
+    std::string strBuf;
     vscpEventEx event;
 
     // Check pointer
@@ -1879,7 +1881,7 @@ error:
 bool CCanalSuperWrapper::getAbstractionString( wxWindow *pwnd,
                                                 uint8_t nodeid,
                                                 CMDF_Abstraction *abstraction,
-                                                wxString& retstr, 
+                                                std::string& retstr, 
                                                 cguid *pifGUID,
                                                 cguid *pdestGUID,
                                                 wxProgressDialog *pdlg,
@@ -1887,7 +1889,7 @@ bool CCanalSuperWrapper::getAbstractionString( wxWindow *pwnd,
                                                 bool bSilent )
 {
     bool rv = true;
-    wxString str;
+    std::string str;
     uint16_t savepage;
 
     // Check pointers
@@ -2018,7 +2020,7 @@ error:
 bool CCanalSuperWrapper::writeAbstractionString( wxWindow *pwnd,
                                                     uint8_t nodeid,
                                                     CMDF_Abstraction *abstraction,
-                                                    wxString& strvalue,
+                                                    std::string& strvalue,
                                                     cguid *pifGUID,
                                                     cguid *pdestGUID,
                                                     wxProgressDialog *pdlg,
@@ -2162,7 +2164,7 @@ error:
 bool CCanalSuperWrapper::getAbstractionBitField( wxWindow *pwnd,
                                                     uint8_t nodeid,
                                                     CMDF_Abstraction *abstraction,
-                                                    wxString& retstr, 
+                                                    std::string& retstr, 
                                                     cguid *pifGUID,
                                                     cguid *pdestGUID,
                                                     wxProgressDialog *pdlg,
@@ -2170,7 +2172,7 @@ bool CCanalSuperWrapper::getAbstractionBitField( wxWindow *pwnd,
                                                     bool bSilent )
 {
     bool rv = true;
-    wxString strvalue;
+    std::string strvalue;
     uint16_t savepage;
 
     // Check pointers
@@ -2318,7 +2320,7 @@ error:
 bool CCanalSuperWrapper::writeAbstractionBitField( wxWindow *pwnd,
                                                     uint8_t nodeid,
                                                     CMDF_Abstraction *abstraction,
-                                                    wxString& strBitField,
+                                                    std::string& strBitField,
                                                     cguid *pifGUID,
                                                     cguid *pdestGUID,
                                                     wxProgressDialog *pdlg,
@@ -2340,7 +2342,7 @@ bool CCanalSuperWrapper::writeAbstractionBitField( wxWindow *pwnd,
     memset( p, 0, octetwidth );
 
     // Build byte array
-    wxString str = strBitField;
+    std::string str = strBitField;
     for ( int i=0; i<abstraction->m_nWidth; i++ ) {
         for ( int j=7; j>0; j-- ) {
             if ( !str.Length() ) break; // Must be digits left
@@ -5027,7 +5029,7 @@ error:
 //  getAbstractionValueAsString
 //
 
-wxString CCanalSuperWrapper::getAbstractionValueAsString( wxWindow *pwnd,
+std::string CCanalSuperWrapper::getAbstractionValueAsString( wxWindow *pwnd,
                                                             uint8_t nodeid,
                                                             CMDF_Abstraction *abstraction,
                                                             cguid *pifGUID,
@@ -5037,7 +5039,7 @@ wxString CCanalSuperWrapper::getAbstractionValueAsString( wxWindow *pwnd,
                                                             bool bSilent )
 {
     bool rv = false;
-    wxString strValue;
+    std::string strValue;
 
     switch ( abstraction->m_nType ) {
 

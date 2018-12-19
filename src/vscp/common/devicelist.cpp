@@ -25,22 +25,6 @@
 // SOFTWARE.
 //
 
-#ifdef WIN32
-#include <winsock2.h>
-#endif
-
-#include <wx/wx.h>
-#include <wx/defs.h>
-#include <wx/app.h>
-#include <wx/listimpl.cpp>
-#include <wx/xml/xml.h>
-#include <wx/file.h>
-
-#ifdef WIN32
-
-
-#else
-
 #define _POSIX
 #include <stdio.h>
 #include <unistd.h>
@@ -52,19 +36,15 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#endif
-
 #include <canal.h>
 #include <vscp.h>
 #include <dllist.h>
 #include <controlobject.h>
-#include "clientlist.h"
+#include <clientlist.h>
 #include <guid.h>
-#include "devicethread.h"
+#include <devicethread.h>
 #include "devicelist.h"
 
-WX_DEFINE_LIST(Level1MsgOutList);
-WX_DEFINE_LIST(VSCPDEVICELIST);
 
 ///////////////////////////////////////////////////
 //                 GLOBALS
@@ -72,20 +52,22 @@ WX_DEFINE_LIST(VSCPDEVICELIST);
 
 extern CControlObject *gpobj;
 
-Driver3Process::Driver3Process( int flags ) 
-                        : wxProcess( flags )
+
+Driver3Process::Driver3Process()
 {
-    ;
+    //TODO;
 }
 
 Driver3Process::~Driver3Process()
 {
-    ;
+    //TODO;
 }
 
 void Driver3Process::OnTerminate( int pid, int status )
 {
-    gpobj->logMsg(_("[Diver Level III] - Terminating.\n") );
+    // TODO
+    // http://man7.org/linux/man-pages/man2/waitpid.2.html
+    syslog( LOG_DEBUG, "[Diver Level III] - Terminating." );
 }
 
 
@@ -108,13 +90,11 @@ CDeviceItem::CDeviceItem()
 
     m_translation = NO_TRANSLATION; // Default is no translation
     
-    m_strName.Empty();      // No Device Name
-    m_strParameter.Empty(); // No Parameters
-    m_strPath.Empty();      // No path
+    m_strName.clear();      // No Device Name
+    m_strParameter.clear(); // No Parameters
+    m_strPath.clear();      // No path
     m_DeviceFlags = 0;      // Default: No flags.
     m_driverLevel = 0;      // Standard Canal messages is the default
-
-    m_pdeviceThread = NULL; // No device thread started for this device
 
     // VSCP Level I
     m_proc_CanalOpen = NULL;
@@ -154,7 +134,7 @@ CDeviceItem::CDeviceItem()
     
     // VSCP Level III
     m_pid = 0;
-    m_pDriver3Process = NULL;
+    //m_pDriver3Process = NULL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -162,11 +142,11 @@ CDeviceItem::CDeviceItem()
 
 CDeviceItem::~CDeviceItem(void)
 {
-    if ( NULL != m_pDriver3Process ) {
+    /*if ( NULL != m_pDriver3Process ) {
         m_pDriver3Process->Kill( m_pid );
         delete m_pDriver3Process;
         m_pDriver3Process = NULL;
-    }
+    }*/
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -174,14 +154,9 @@ CDeviceItem::~CDeviceItem(void)
 //
 bool CDeviceItem::startDriver( CControlObject *pCtrlObject )
 {
-    // Must stop before we can start.
-    if ( NULL != m_pdeviceThread ) {
-        return false;
-    }
-
     // Just start if enabled
     if ( !m_bEnable ) {
-        pCtrlObject->logMsg(_("[Driver] - Disabled.\n") );
+        syslog( LOG_INFO, "[Driver %s] - VSCP driver is disabled.", m_strName.c_str());
         return false;
     }
 
@@ -189,29 +164,17 @@ bool CDeviceItem::startDriver( CControlObject *pCtrlObject )
     //  Create the worker thread for the device
     // *****************************************
 
-    m_pdeviceThread = new deviceThread();
-    if ( NULL != m_pdeviceThread ) {
+    // Share control object
+    m_pCtrlObject = pCtrlObject;
 
-        m_pdeviceThread->m_pCtrlObject = pCtrlObject;
-        m_pdeviceThread->m_pDeviceItem = this;
-
-        wxThreadError err;
-        if (wxTHREAD_NO_ERROR == (err = m_pdeviceThread->Create())) {
-            if (wxTHREAD_NO_ERROR != (err = m_pdeviceThread->Run())) {
-                pCtrlObject->logMsg(_("[Driver] - Unable to create DeviceThread.\n") );
-            }
-        }
-        else {
-            pCtrlObject->logMsg(_("[Driver] - Unable to run DeviceThread.\n") );
-        }
-
+    if (!pthread_create(&m_deviceThreadHandle, NULL, deviceThread, this)) {
+        syslog(LOG_CRIT,
+               "[Driver %s] - Unable to create device thread.",
+               m_strName.c_str());
+        return false;
     }
-    else {
-        pCtrlObject->logMsg(_("[Driver] - Unable to allocate memory "
-                              "for DeviceThread.\n") );
-    }
-    
-    pCtrlObject->logMsg(_("[Driver] - Started driver .") + m_strName + _("\n") );
+
+    syslog( LOG_INFO, "[Driver %s] - Started VSCP device driver.", m_strName.c_str() );
 
     return true;
 }
@@ -220,72 +183,24 @@ bool CDeviceItem::startDriver( CControlObject *pCtrlObject )
 // stopDriver
 //
 
-bool CDeviceItem::stopDriver()
+bool
+CDeviceItem::stopDriver()
 {
-    if ( NULL != m_pdeviceThread ) {
-        
-        fprintf( stderr, 
-                 "CDeviceItem: Driver stop. [%s]\n",
-                 (const char *)m_strName.mbc_str() );
-        
-        m_mutexdeviceThread.Lock();
-        
-        if ( NULL != m_pdeviceThread->m_preceiveThread ) {
-            m_pdeviceThread->m_preceiveThread->m_bQuit = true;
-            fprintf( stderr, 
-                 "CDeviceItem: m_preceiveThread stop. [%s]\n",
-                 (const char *)m_strName.mbc_str() );
-            m_pdeviceThread->m_preceiveThread->Delete();
-            m_pdeviceThread->m_preceiveThread = NULL;
-        }
-        
-        if ( NULL != m_pdeviceThread->m_pwriteThread ) {
-            m_pdeviceThread->m_pwriteThread->m_bQuit = true;
-            fprintf( stderr, 
-                 "CDeviceItem: m_pwriteThread stop. [%s]\n",
-                 (const char *)m_strName.mbc_str() );
-            m_pdeviceThread->m_pwriteThread->Delete(); 
-            m_pdeviceThread->m_pwriteThread = NULL;
-        }
-        
-        if ( NULL != m_pdeviceThread->m_preceiveLevel2Thread ) {
-            m_pdeviceThread->m_preceiveLevel2Thread->m_bQuit = true;
-            fprintf( stderr, 
-                 "CDeviceItem: m_preceiveLevel2Thread stop. [%s]\n",
-                 (const char *)m_strName.mbc_str() );
-            m_pdeviceThread->m_preceiveLevel2Thread->Delete(); 
-            m_pdeviceThread->m_preceiveLevel2Thread = NULL;
-        }
-        
-        if ( NULL != m_pdeviceThread->m_pwriteLevel2Thread ) {
-            m_pdeviceThread->m_pwriteLevel2Thread->m_bQuit = true;
-            fprintf( stderr, 
-                 "CDeviceItem: m_pwriteLevel2Thread stop. [%s]\n",
-                 (const char *)m_strName.mbc_str() );
-            m_pdeviceThread->m_pwriteLevel2Thread->Delete(); 
-            m_pdeviceThread->m_pwriteLevel2Thread = NULL;
-        }
-               
-        m_mutexdeviceThread.Unlock();
-        
-        m_bQuit = true;
-        wxSleep( 1 );
-        fprintf( stderr, 
-                 "CDeviceItem: Driver asked to stop operation. [%s]\n",
-                 (const char *)m_strName.mbc_str());        
-        m_pdeviceThread->Delete();        
-        m_pdeviceThread = NULL;
-        
-        fprintf( stderr, 
-                 "CDeviceItem: Driver stopping. [%s]\n",
-                 (const char *)m_strName.mbc_str());
-        
-        return true;
-    }
+    m_bQuit = true;
+    syslog(LOG_INFO,
+           "Driver %s: Driver asked to stop operation.",
+           m_strName.c_str());
 
-    return false;
+    pthread_mutex_lock(&m_mutexdeviceThread);
+    pthread_join(m_deviceThreadHandle, NULL);
+    pthread_mutex_unlock(&m_mutexdeviceThread);
+
+    syslog(LOG_ERR,
+           "CDeviceItem: Driver stopping. [%s]\n",
+           (const char *)m_strName.c_str());
+
+    return true;
 }
-
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction CDeviceList
@@ -307,13 +222,13 @@ CDeviceList::CDeviceList(void)
 
 CDeviceList::~CDeviceList(void)
 {
-    VSCPDEVICELIST::iterator iter;
+    std::deque<CDeviceItem *>::iterator iter;
     for ( iter = m_devItemList.begin(); iter != m_devItemList.end(); ++iter ) {
         CDeviceItem *pItem = *iter;
         if ( pItem ) delete pItem;
     }
 
-    m_devItemList.Clear();
+    m_devItemList.clear();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -322,9 +237,9 @@ CDeviceList::~CDeviceList(void)
 // An one device to the list
 //
 
-bool CDeviceList::addItem( wxString strName,
-                            wxString strParameter,
-                            wxString strPath,
+bool CDeviceList::addItem( std::string strName,
+                            std::string strParameter,
+                            std::string strPath,
                             uint32_t flags,
                             cguid& guid,
                             uint8_t level,
@@ -337,9 +252,9 @@ bool CDeviceList::addItem( wxString strName,
 
     if ( NULL != pDeviceItem ) {
 
-        if  ( wxFile::Exists( strPath ) ) {
+        if  ( vscp_fileExists( strPath ) ) {
 
-            m_devItemList.Append( pDeviceItem );
+            m_devItemList.push_back( pDeviceItem );
 
             pDeviceItem->m_bEnable = bEnable;
 
@@ -382,7 +297,7 @@ CDeviceItem *CDeviceList::getDeviceItemFromGUID( cguid& guid )
 {
     CDeviceItem *returnItem = NULL;
 
-    VSCPDEVICELIST::iterator iter;
+    std::deque<CDeviceItem *>::iterator iter;
     for ( iter = m_devItemList.begin(); iter != m_devItemList.end(); ++iter ) {
         CDeviceItem *pItem = *iter;
         if ( pItem->m_interface_guid == guid ) {
@@ -402,7 +317,7 @@ CDeviceItem *CDeviceList::getDeviceItemFromClientId( uint32_t id )
 {
     CDeviceItem *returnItem = NULL;
 
-    VSCPDEVICELIST::iterator iter;
+    std::deque<CDeviceItem *>::iterator iter;
     for ( iter = m_devItemList.begin(); iter != m_devItemList.end(); ++iter ) {
         CDeviceItem *pItem = *iter;
         if ( ( NULL != pItem->m_pClientItem  ) && 

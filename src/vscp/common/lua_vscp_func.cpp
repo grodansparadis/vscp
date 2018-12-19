@@ -27,28 +27,13 @@
 // wxJSON - http://wxcode.sourceforge.net/docs/wxjson/wxjson_tutorial.html
 //
 
-#ifdef WIN32
-#include <winsock2.h>
-#endif
-
-#include <wx/wx.h>
-#include <wx/defs.h>
-#include <wx/app.h>
-#include <wx/wfstream.h>
-#include <wx/xml/xml.h>
-#include <wx/listimpl.cpp>
-#include <wx/tokenzr.h>
-#include <wx/stdpaths.h>
-#include <wx/thread.h>
-#include <wx/socket.h>
-#include <wx/url.h>
-#include <wx/datetime.h>
-#include <wx/filename.h>
-#include <wx/cmdline.h>
+#include <string>
+#include <list>
 
 #include <stdlib.h>
 #include <string.h>
 #include <float.h>
+#include <syslog.h>
 
 #include <json.hpp>             // Needs C++11  -std=c++11
 
@@ -76,11 +61,8 @@ extern "C" {
 }
 #endif /* __cplusplus */
 
-#include <lua_vscp_func.h>
+#include "lua_vscp_func.h"
 
-
-
-using namespace std;
 
 // https://github.com/nlohmann/json
 using json = nlohmann::json;
@@ -165,10 +147,10 @@ int lua_vscp_print( struct lua_State *L )
 
 int lua_vscp_log( struct lua_State *L ) 
 {
-    wxString wxMsg;
-    uint8_t level = DAEMON_LOGMSG_NORMAL;
-    uint8_t type = DAEMON_LOGTYPE_DM;
-    
+    std::string msg;
+    uint8_t type = LOG_ERR;
+    uint8_t level = 0;
+
     int nArgs = lua_gettop( L );
     
     if ( 0 == nArgs) {
@@ -183,7 +165,7 @@ int lua_vscp_log( struct lua_State *L )
         }
         size_t len;
         const char *pstr = lua_tolstring ( L, 1, &len ); 
-        wxMsg = wxString::FromUTF8( pstr, len );
+        msg = std::string( pstr, len );
     }    
     
     if ( nArgs >=2 ) {
@@ -208,7 +190,7 @@ int lua_vscp_log( struct lua_State *L )
                         
     }
           
-    gpobj->logMsg( wxMsg, level, type );
+    syslog(type, "%s", msg.c_str() );
         
     return 1;
 }
@@ -236,7 +218,7 @@ int lua_vscp_sleep( struct lua_State *L )
         sleep_ms = (uint32_t)lua_tonumber( L, 1 );
     }
     
-    wxMilliSleep( sleep_ms );
+    usleep( sleep_ms*1000 );
     
     lua_pushboolean( L, 1 );
     return 1;
@@ -250,7 +232,7 @@ int lua_vscp_sleep( struct lua_State *L )
 
 int lua_vscp_base64_encode( struct lua_State *L )
 {
-    wxString str;
+    std::string str;
     int nArgs = lua_gettop( L );
     
     if ( 0 == nArgs) {
@@ -266,14 +248,14 @@ int lua_vscp_base64_encode( struct lua_State *L )
         
     size_t len;
     const char *pstr = lua_tolstring ( L, 1, &len );
-    str = wxString::FromUTF8( pstr, len );
+    str = std::string( pstr, len );
     
-    if ( !vscp_base64_wxencode( str ) ) {
+    if ( !vscp_base64_std_encode( str ) ) {
         return luaL_error( L, "vscp.base64encode: Failed to encode string!");
     }
     
-    lua_pushlstring( L, (const char *)str.mbc_str(),
-                        str.Length() );
+    lua_pushlstring( L, (const char *)str.c_str(),
+                        str.length() );
     
     return 1;
 }
@@ -286,7 +268,7 @@ int lua_vscp_base64_encode( struct lua_State *L )
 
 int lua_vscp_base64_decode( struct lua_State *L )
 {
-    wxString str;
+    std::string str;
     int nArgs = lua_gettop( L );
     
     if ( 0 == nArgs) {
@@ -302,14 +284,14 @@ int lua_vscp_base64_decode( struct lua_State *L )
         
     size_t len;
     const char *pstr = lua_tolstring ( L, 1, &len );
-    str = wxString::FromUTF8( pstr, len );
+    str = std::string( pstr, len );
     
-    if ( !vscp_base64_wxdecode( str ) ) {
+    if ( !vscp_base64_std_decode( str ) ) {
         return luaL_error( L, "vscp.base64decode: Failed to decode string!");
     }
     
-    lua_pushlstring( L, (const char *)str.mbc_str(),
-                        str.Length() );
+    lua_pushlstring( L, (const char *)str.c_str(),
+                        str.length() );
     
     return 1;
 }
@@ -365,9 +347,9 @@ int lua_vscp_escapexml( struct lua_State *L )
 int lua_vscp_readVariable( struct lua_State *L )
 {
     int format = 0;
-    wxString varName;
+    std::string varName;
     CVSCPVariable variable;
-    wxString strResult;
+    std::string strResult;
     
     int nArgs = lua_gettop( L );
     
@@ -385,7 +367,7 @@ int lua_vscp_readVariable( struct lua_State *L )
         
         size_t len;
         const char *pstr = lua_tolstring ( L, 1, &len ); 
-        varName = wxString::FromUTF8( pstr, len );        
+        varName = std::string( pstr, len );        
         
     }
     else {
@@ -398,7 +380,7 @@ int lua_vscp_readVariable( struct lua_State *L )
         
         size_t len;
         const char *pstr = lua_tolstring ( L, 1, &len ); 
-        varName = wxString::FromUTF8( pstr, len );
+        varName = std::string( pstr, len );
         
         // format
         if ( !lua_isnumber( L, 2 ) ) {
@@ -417,43 +399,43 @@ int lua_vscp_readVariable( struct lua_State *L )
     // Get the variable in string format
     if ( 0 == format ) {
         // Get the variable in string format
-        wxString varStr;
+        std::string varStr;
         varStr = variable.getAsString( false );
-        lua_pushlstring( L, (const char *)varStr.mbc_str(),
-                            varStr.Length() );
+        lua_pushlstring( L, (const char *)varStr.c_str(),
+                            varStr.length() );
     }
     // Get variable in XML format
     else if ( 1 == format ) {
         // Get the variable in XML format
-        wxString varXML;
+        std::string varXML;
         variable.getAsXML( varXML );
-        lua_pushlstring( L, (const char *)varXML.mbc_str(),
-                            varXML.Length() );
+        lua_pushlstring( L, (const char *)varXML.c_str(),
+                            varXML.length() );
     } 
     // Get variable in JSON format
     else if ( 2 == format ) {
         // Get the variable on JSON format
-        wxString varJSON;
+        std::string varJSON;
         variable.getAsJSON( varJSON );
-        lua_pushlstring( L, (const char *)varJSON.mbc_str(),
-                            varJSON.Length() );
+        lua_pushlstring( L, (const char *)varJSON.c_str(),
+                            varJSON.length() );
     }
     // Get only value
     else if ( 3 == format ) {
         // Get the variable value 
-        wxString strval = variable.getValue();
+        std::string strval = variable.getValue();
         if ( variable.isNumerical() ) {
             if ( VSCP_DAEMON_VARIABLE_CODE_INTEGER == variable.getType() ) {
-                int val = atoi( strval );
+                int val = atoi( strval.c_str() );
                 lua_pushinteger( L, val );
             }
             else if ( VSCP_DAEMON_VARIABLE_CODE_LONG == variable.getType() ) {
-                long val = atol( strval );
+                long val = atol( strval.c_str() );
                 lua_pushnumber( L, val );
             }
             else if ( VSCP_DAEMON_VARIABLE_CODE_DOUBLE == variable.getType() ) {
                 double val;
-                strval.ToDouble( &val );
+                val = std::stod(strval);
                 lua_pushnumber( L, val );
             } 
         }
@@ -463,17 +445,17 @@ int lua_vscp_readVariable( struct lua_State *L )
             }
             else {
 
-                lua_pushlstring( L, (const char *)strval.mbc_str(),
-                                                  strval.Length() );
+                lua_pushlstring( L, (const char *)strval.c_str(),
+                                                  strval.length() );
             }
         }
     }
     // Get only note
     else if ( 4 == format ) {
         // Get the variable value un encoded
-        wxString strval = variable.getValue();
-        lua_pushlstring( L, (const char *)strval.mbc_str(),
-                                          strval.Length() );
+        std::string strval = variable.getValue();
+        lua_pushlstring( L, (const char *)strval.c_str(),
+                                          strval.length() );
     }
     else {
         return luaL_error( L, "vscp.readvariable: Format must be 0=string, "
@@ -499,7 +481,7 @@ int lua_vscp_writeVariable( struct lua_State *L )
     size_t len;
     int format = 0;
     bool bBase64 = false;
-    wxString varValue;
+    std::string varValue;
     CVSCPVariable variable;
  
     int nArgs = lua_gettop( L );
@@ -518,7 +500,7 @@ int lua_vscp_writeVariable( struct lua_State *L )
         }
         
         const char *pstr = lua_tolstring ( L, 1, &len ); 
-        varValue = wxString::FromUTF8( pstr, len );
+        varValue = std::string( pstr, len );
         
     }
     
@@ -580,8 +562,8 @@ int lua_vscp_writeVariableValue( struct lua_State *L )
     size_t len;
     const char *pstr;
     bool bBase64 = false;
-    wxString varName;    
-    wxString varValue;
+    std::string varName;    
+    std::string varValue;
     CVSCPVariable variable;
     
     int nArgs = lua_gettop( L );
@@ -598,7 +580,7 @@ int lua_vscp_writeVariableValue( struct lua_State *L )
     }
         
     pstr = lua_tolstring ( L, 1, &len ); 
-    varName = wxString::FromUTF8( pstr, len ); 
+    varName = std::string( pstr, len ); 
     
     if ( !gpobj->m_variables.find( varName, variable ) ) {
         return luaL_error( L, "vscp.writeVariableValue: No variable with that "
@@ -687,7 +669,7 @@ int lua_vscp_writeVariableValue( struct lua_State *L )
             }
             
             pstr = lua_tolstring ( L, 1, &len );
-            wxString str = wxString::FromUTF8( pstr, len );
+            std::string str = std::string( pstr, len );
             variable.setValue( str, bBase64 );
         }
                 
@@ -709,8 +691,8 @@ int lua_vscp_writeVariableValue( struct lua_State *L )
 
 int lua_vscp_writeVariableNote( struct lua_State *L ) 
 {
-    wxString varName;    
-    wxString varValue;
+    std::string varName;    
+    std::string varValue;
     CVSCPVariable variable;
     
     int nArgs = lua_gettop( L );
@@ -728,7 +710,7 @@ int lua_vscp_writeVariableNote( struct lua_State *L )
         
     size_t len;
     const char *pstr = lua_tolstring ( L, 1, &len ); 
-    varName = wxString::FromUTF8( pstr, len ); 
+    varName = std::string( pstr, len ); 
     
     
     // variable value
@@ -738,7 +720,7 @@ int lua_vscp_writeVariableNote( struct lua_State *L )
     }
         
     pstr = lua_tolstring ( L, 2, &len ); 
-    varValue = wxString::FromUTF8( pstr, len );
+    varValue = std::string( pstr, len );
     
     
     // variable base64 flag
@@ -771,7 +753,7 @@ int lua_vscp_writeVariableNote( struct lua_State *L )
 
 int lua_vscp_deleteVariable( struct lua_State *L ) 
 {
-    wxString varName;    
+    std::string varName;    
     CVSCPVariable variable;
     
     int nArgs = lua_gettop( L );
@@ -789,7 +771,7 @@ int lua_vscp_deleteVariable( struct lua_State *L )
         
     size_t len;
     const char *pstr = lua_tolstring ( L, 1, &len ); 
-    varName = wxString::FromUTF8( pstr, len ); 
+    varName = std::string( pstr, len ); 
     
     
     if ( !gpobj->m_variables.remove( varName ) ) {
@@ -811,7 +793,7 @@ int lua_vscp_isVariableBase64Encoded( struct lua_State *L )
 {    
     size_t len;
     bool bBase64 = false;
-    wxString varName;
+    std::string varName;
     CVSCPVariable variable;
  
     int nArgs = lua_gettop( L );
@@ -830,7 +812,7 @@ int lua_vscp_isVariableBase64Encoded( struct lua_State *L )
         }
         
         const char *pstr = lua_tolstring ( L, 1, &len ); 
-        varName = wxString::FromUTF8( pstr, len );
+        varName = std::string( pstr, len );
         
     }
     
@@ -856,7 +838,7 @@ int lua_vscp_isVariablePersistent( struct lua_State *L )
 {    
     size_t len;
     bool bBase64 = false;
-    wxString varName;
+    std::string varName;
     CVSCPVariable variable;
  
     int nArgs = lua_gettop( L );
@@ -875,7 +857,7 @@ int lua_vscp_isVariablePersistent( struct lua_State *L )
         }
         
         const char *pstr = lua_tolstring ( L, 1, &len ); 
-        varName = wxString::FromUTF8( pstr, len );
+        varName = std::string( pstr, len );
         
     }
     
@@ -901,7 +883,7 @@ int lua_vscp_isVariableNumerical( struct lua_State *L )
 {    
     size_t len;
     bool bBase64 = false;
-    wxString varName;
+    std::string varName;
     CVSCPVariable variable;
  
     int nArgs = lua_gettop( L );
@@ -920,7 +902,7 @@ int lua_vscp_isVariableNumerical( struct lua_State *L )
         }
         
         const char *pstr = lua_tolstring ( L, 1, &len ); 
-        varName = wxString::FromUTF8( pstr, len );
+        varName = std::string( pstr, len );
         
     }
     
@@ -946,7 +928,7 @@ int lua_vscp_isStockVariable( struct lua_State *L )
 {    
     size_t len;
     bool bBase64 = false;
-    wxString varName;
+    std::string varName;
     CVSCPVariable variable;
  
     int nArgs = lua_gettop( L );
@@ -965,7 +947,7 @@ int lua_vscp_isStockVariable( struct lua_State *L )
         }
         
         const char *pstr = lua_tolstring ( L, 1, &len ); 
-        varName = wxString::FromUTF8( pstr, len );
+        varName = std::string( pstr, len );
         
     }
     
@@ -993,7 +975,7 @@ int lua_vscp_sendEvent( struct lua_State *L )
 {
     int format = 0;
     vscpEventEx ex;
-    wxString strEvent;
+    std::string strEvent;
     CClientItem *pClientItem = NULL;
     
     int nArgs = lua_gettop( L );
@@ -1027,7 +1009,7 @@ int lua_vscp_sendEvent( struct lua_State *L )
         
     size_t len;
     const char *pstr = lua_tolstring ( L, 1, &len ); 
-    strEvent = wxString::FromUTF8( pstr, len );
+    strEvent = std::string( pstr, len );
     
     if ( nArgs >= 2 ) {
                 
@@ -1089,7 +1071,7 @@ int lua_vscp_getEvent( struct lua_State *L )
 {
     int format = 0;
     vscpEventEx ex;
-    wxString strEvent;
+    std::string strEvent;
     CClientItem *pClientItem = NULL;
     
     int nArgs = lua_gettop( L );
@@ -1116,20 +1098,18 @@ int lua_vscp_getEvent( struct lua_State *L )
 try_again:
     
     // Check the client queue
-    if ( pClientItem->m_bOpen && pClientItem->m_clientInputQueue.GetCount() ) {
+    if ( pClientItem->m_bOpen && pClientItem->m_clientInputQueue.size() ) {
 
-        CLIENTEVENTLIST::compatibility_iterator nodeClient;
+        std::deque<vscpEvent *>::iterator it;
         vscpEvent *pEvent;
 
-        pClientItem->m_mutexClientInputQueue.Lock();
-        nodeClient = pClientItem->m_clientInputQueue.GetFirst();
-        if ( NULL == nodeClient )  {
+        pthread_mutex_lock( &pClientItem->m_mutexClientInputQueue );
+        pEvent = pClientItem->m_clientInputQueue.front();
+        pClientItem->m_clientInputQueue.pop_front();
+        if ( NULL == pEvent )  {
             return luaL_error( L, "vscp.getEvent: Failed to get event.");      
         }
-        
-        pEvent = nodeClient->GetData();                             
-        pClientItem->m_clientInputQueue.DeleteNode( nodeClient );
-        pClientItem->m_mutexClientInputQueue.Unlock();
+        pthread_mutex_unlock( &pClientItem->m_mutexClientInputQueue );
 
         if ( NULL == pEvent ) {
             return luaL_error( L, "vscp.getEvent: Allocation error when "
@@ -1139,7 +1119,7 @@ try_again:
         if ( vscp_doLevel2Filter( pEvent, &pClientItem->m_filterVSCP ) ) {
 
             // Write it out                
-            wxString strResult;
+            std::string strResult;
             switch ( format ) {
                 case 0:  // String
                     if ( !vscp_writeVscpEventToString( pEvent, strResult ) ) {
@@ -1170,8 +1150,8 @@ try_again:
             vscp_deleteVSCPevent( pEvent );
                 
             lua_pushlstring( L, 
-                                (const char *)strResult.mbc_str(),
-                                strResult.Length() );
+                                (const char *)strResult.c_str(),
+                                strResult.length() );
                                 
             // All OK return event
             return 1;
@@ -1208,7 +1188,7 @@ int lua_vscp_getCountEvent( struct lua_State *L )
     }
     
     if ( pClientItem->m_bOpen ) {
-        count = pClientItem->m_clientInputQueue.GetCount();
+        count = pClientItem->m_clientInputQueue.size();
     }
     else {
         count = 0;
@@ -1243,7 +1223,7 @@ int lua_vscp_setFilter( struct lua_State *L )
 {
     int format = 0;
     vscpEventFilter filter;
-    wxString strFilter;
+    std::string strFilter;
     CClientItem *pClientItem = NULL;
     
     int nArgs = lua_gettop( L );
@@ -1270,7 +1250,7 @@ int lua_vscp_setFilter( struct lua_State *L )
         
     size_t len;
     const char *pstr = lua_tolstring ( L, 1, &len ); 
-    strFilter = wxString::FromUTF8( pstr, len );
+    strFilter = std::string( pstr, len );
     
     if ( nArgs >= 2 ) {
                 
@@ -1397,7 +1377,7 @@ int lua_send_Measurement( struct lua_State *L )
         
     size_t len;
     const char *pstr = lua_tolstring ( L, 4, &len ); 
-    wxString strGUID = wxString::FromUTF8( pstr, len );
+    std::string strGUID = std::string( pstr, len );
     if ( !vscp_getGuidFromStringToArray( guid, strGUID ) ) {
         return luaL_error( L, "vscp.sendMeasurement: Invalid GUID!" );
     }
@@ -1593,7 +1573,7 @@ int lua_is_Measurement( struct lua_State *L )
 {
     vscpEventEx ex;
     int format = 0;
-    wxString strEvent;
+    std::string strEvent;
     
     int nArgs = lua_gettop( L );
     
@@ -1606,7 +1586,7 @@ int lua_is_Measurement( struct lua_State *L )
         
     size_t len;
     const char *pstr = lua_tolstring ( L, 1, &len ); 
-    strEvent = wxString::FromUTF8( pstr, len );
+    strEvent = std::string( pstr, len );
     
     if ( nArgs >= 2 ) {
                 
@@ -1664,7 +1644,7 @@ int lua_get_MeasurementValue( struct lua_State *L )
     double value;
     vscpEventEx ex;
     int format = 0;
-    wxString strEvent;
+    std::string strEvent;
     
     int nArgs = lua_gettop( L );
     
@@ -1677,7 +1657,7 @@ int lua_get_MeasurementValue( struct lua_State *L )
         
     size_t len;
     const char *pstr = lua_tolstring ( L, 1, &len ); 
-    strEvent = wxString::FromUTF8( pstr, len );
+    strEvent = std::string( pstr, len );
     
     if ( nArgs >= 2 ) {
                 
@@ -1735,7 +1715,7 @@ int lua_get_MeasurementUnit( struct lua_State *L )
 {
     vscpEventEx ex;
     int format = 0;
-    wxString strEvent;
+    std::string strEvent;
     
     int nArgs = lua_gettop( L );
     
@@ -1748,7 +1728,7 @@ int lua_get_MeasurementUnit( struct lua_State *L )
         
     size_t len;
     const char *pstr = lua_tolstring ( L, 1, &len ); 
-    strEvent = wxString::FromUTF8( pstr, len );
+    strEvent = std::string( pstr, len );
     
     if ( nArgs >= 2 ) {
                 
@@ -1806,7 +1786,7 @@ int lua_get_MeasurementSensorIndex( struct lua_State *L )
 {
     vscpEventEx ex;
     int format = 0;
-    wxString strEvent;
+    std::string strEvent;
     
     int nArgs = lua_gettop( L );
     
@@ -1819,7 +1799,7 @@ int lua_get_MeasurementSensorIndex( struct lua_State *L )
         
     size_t len;
     const char *pstr = lua_tolstring ( L, 1, &len ); 
-    strEvent = wxString::FromUTF8( pstr, len );
+    strEvent = std::string( pstr, len );
     
     if ( nArgs >= 2 ) {
                 
@@ -1877,7 +1857,7 @@ int lua_get_MeasurementZone( struct lua_State *L )
 {
     vscpEventEx ex;
     int format = 0;
-    wxString strEvent;
+    std::string strEvent;
     
     int nArgs = lua_gettop( L );
     
@@ -1890,7 +1870,7 @@ int lua_get_MeasurementZone( struct lua_State *L )
         
     size_t len;
     const char *pstr = lua_tolstring ( L, 1, &len ); 
-    strEvent = wxString::FromUTF8( pstr, len );
+    strEvent = std::string( pstr, len );
     
     if ( nArgs >= 2 ) {
                 
@@ -1948,7 +1928,7 @@ int lua_get_MeasurementSubZone( struct lua_State *L )
 {
     vscpEventEx ex;
     int format = 0;
-    wxString strEvent;
+    std::string strEvent;
     
     int nArgs = lua_gettop( L );
     
@@ -1961,7 +1941,7 @@ int lua_get_MeasurementSubZone( struct lua_State *L )
         
     size_t len;
     const char *pstr = lua_tolstring ( L, 1, &len ); 
-    strEvent = wxString::FromUTF8( pstr, len );
+    strEvent = std::string( pstr, len );
     
     if ( nArgs >= 2 ) {
                 

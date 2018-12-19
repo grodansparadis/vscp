@@ -25,18 +25,7 @@
 #if !defined(CLIENTLIST_H__B0190EE5_E0E8_497F_92A0_A8616296AF3E__INCLUDED_)
 #define CLIENTLIST_H__B0190EE5_E0E8_497F_92A0_A8616296AF3E__INCLUDED_
 
-#ifdef WIN32
-#if _MSC_VER > 1000
-#pragma once
-#endif // _MSC_VER > 1000
-#endif
-
 #include <list>
-
-#ifdef WIN32
-#else
-#include <limits.h>
-#endif
 
 #include <vscp.h>
 #include <guid.h>
@@ -49,7 +38,6 @@
 #define CLIENT_ID_UDP_LISTNER       0xfffd
 #define CLIENT_ID_MULTICAST_SRV     0xfffc
 
-WX_DECLARE_LIST( vscpEvent, CLIENTEVENTLIST );
 
 //
 // defines for levels
@@ -114,22 +102,29 @@ public:
         @param bFix The command string have the command removed.
         @return true if command is found
      */
-    bool CommandStartsWith( const wxString &cmd, bool bFix = true );
+    bool CommandStartsWith( const std::string &cmd, bool bFix = true );
+
+    /*!
+        Set device name
+
+        @param name Name to set
+    */
+    void setDeviceName( const std::string& name );
  
     /*!
         Input Queue
     */
-    CLIENTEVENTLIST m_clientInputQueue;
+    std::deque<vscpEvent *> m_clientInputQueue;
 
     /*!
         Semaphore to indicate that an event has been received
     */
-    wxSemaphore m_semClientInputQueue;
+    sem_t m_semClientInputQueue;
 
     /*!
         Mutex handle that is used for sharing of the client object
     */
-    wxMutex m_mutexClientInputQueue;
+    pthread_mutex_t m_mutexClientInputQueue;
 
     /*!
         Client ID for this client item
@@ -169,7 +164,7 @@ public:
     /*!
         Interface name
     */
-    wxString m_strDeviceName;
+    std::string m_strDeviceName;
 
     /*!
         Channel state information
@@ -184,7 +179,7 @@ public:
     /*!
         Event to indicate that there is an event to send
     */
-    wxSemaphore m_hEventSend;
+    sem_t m_hEventSend;
 
     /*!
         Interface type: CANAL, TCP/IP
@@ -208,13 +203,13 @@ public:
     /*!
         RCVLOOP clock (UTC time for last sent "+OK")
     */
-    wxLongLong m_timeRcvLoop;
+    uint64_t m_timeRcvLoop;
     
     /// Username given by user
-    wxString m_UserName;
+    std::string m_UserName;
     
     /// Password given by user
-    wxString m_Password;
+    std::string m_Password;
     
     /// Session id
     char m_sid[33];
@@ -226,17 +221,17 @@ public:
     CUserItem *m_pUserItem;
 
     /// Read buffer
-    wxString m_readBuffer;
+    std::string m_readBuffer;
 
     /// Last command executed
-    wxString m_lastCommand;
+    std::string m_lastCommand;
 
     // Current command
-    wxString m_currentCommand;
+    std::string m_currentCommand;
 
     // Current token is the first space separated
     // item in the command string
-    wxString m_currentToken;
+    std::string m_currentToken;
 };
 
 class CClientList  
@@ -282,7 +277,7 @@ public:
     /*!
         List with clients
     */
-    std::list<CClientItem*> m_clientItemList;
+    std::list<CClientItem*> m_itemList;
 
 };
 

@@ -25,17 +25,14 @@
 // SOFTWARE.
 //
 
-#if !defined(WEBSRV_H__INCLUDED_)
-#define WEBSRV_H__INCLUDED_
+#if !defined(VSCP_WEBSRV_H__INCLUDED_)
+#define VSCP_WEBSRV_H__INCLUDED_
 
-
-#include "wx/thread.h"
-#include "wx/socket.h"
 
 #include "userlist.h"
 #include "websocket.h"
 
-WX_DECLARE_STRING_HASH_MAP( wxString, HashString );
+
 
 /*!
  * Init the webserver sub system
@@ -153,11 +150,12 @@ struct websrv_session
   
   // Keypairs
   //HashString m_keys; 
+  //XX_DECLARE_STRING_HASH_MAP( std::string, HashString );
   
 };
 
 
-WX_DECLARE_LIST(struct websrv_session, WEBSRVSESSIONLIST);
+
 
 
 // Test Certificate 
@@ -268,11 +266,11 @@ const char client_cert_pem[] =
 #define WEBSERVER_MAGIC_HEADER_SIZE (16 * 1024)
 
 
-bool websrv_parseHeader( wxArrayString &valarray, wxString &header );
+bool websrv_parseHeader( std::deque<std::string> &valarray, std::string &header );
 
-bool websrv_getHeaderElement( wxArrayString &valarray, 
-                                const wxString &name,
-                                wxString &value );
+bool websrv_getHeaderElement( std::deque<std::string> &valarray, 
+                                const std::string &name,
+                                std::string &value );
 
 /*!
     This class implement the VSCP Webserver thread

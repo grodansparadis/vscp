@@ -250,7 +250,7 @@ void *worksMulticastThread::Entry()
         }
 #endif
 
-        wxString originatingAddress;
+        std::string originatingAddress;
         
 #ifdef WIN32
         char *s = NULL;
@@ -274,7 +274,7 @@ void *worksMulticastThread::Entry()
         break;
         }*/
 
-        originatingAddress = wxString::FromAscii( s );
+        originatingAddress = std::string::FromAscii( s );
         //free( s );
 #else
         char *s = NULL;
@@ -353,7 +353,7 @@ void *worksMulticastThread::Entry()
                         unsigned char wrkbuf[ 65 ];
                         memset( wrkbuf, 0, sizeof( wrkbuf ) );
                         memcpy( wrkbuf, ( unsigned const char * )buf + VSCP_MULTICAST_PACKET0_POS_VSCP_DATA, MIN( size, 64 ) );
-                        pNode->m_strNodeName = wxString::FromUTF8( (const char *)wrkbuf );
+                        pNode->m_strNodeName = std::string::FromUTF8( (const char *)wrkbuf );
 
                     }
 
@@ -406,11 +406,11 @@ void *worksMulticastThread::Entry()
                     unsigned char wrkbuf[ 65 ];
                     memset( wrkbuf, 0, sizeof( wrkbuf ) );
                     memcpy( wrkbuf, ( unsigned const char * )buf + VSCP_MULTICAST_PACKET0_POS_VSCP_DATA + 64, 64  );
-                    pNode->m_strNodeName = wxString::FromUTF8( ( const char * )wrkbuf );
+                    pNode->m_strNodeName = std::string::FromUTF8( ( const char * )wrkbuf );
 
                     // If the node does not have a name give it one
                     if ( 0 == pNode->m_strNodeName.Length() ) {
-                        wxString wxstr;
+                        std::string wxstr;
                         guid.toString( wxstr );
                         pNode->m_strNodeName = _("Node without name @ ");
                         pNode->m_strNodeName += wxstr;

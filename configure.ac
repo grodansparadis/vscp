@@ -39,6 +39,7 @@ AC_CHECK_LIB([rt],[clock_gettime])
 AC_CHECK_LIB([z], [gzopen])
 dnl AC_CHECK_LIB([pcap], [pcap_open_live])
 AC_CHECK_LIB([ssl], [SSL_free])
+AC_CHECK_LIB([expat], [XML_ParserCreate])
 
 # Checks for header files.
 AC_HEADER_DIRENT
@@ -58,6 +59,7 @@ AC_HEADER_TIME
 AC_STRUCT_TM
 AC_C_VOLATILE
 
+
 # Checks for library functions.
 AC_FUNC_FORK
 AC_PROG_GCC_TRADITIONAL
@@ -72,6 +74,11 @@ AC_FUNC_STRFTIME
 AC_FUNC_STRTOD
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([alarm bzero dup2 floor gethostbyname gethostname gethrtime gettimeofday inet_ntoa memchr memmove memset mkfifo pow select setlocale socket sqrt strcasecmp strchr strcspn strdup strerror strncasecmp strpbrk strrchr strspn strstr strtol strtoul])
+
+dnl bigendian check
+AC_C_BIGENDIAN(
+     [AC_DEFINE([WORDS_BIGENDIAN], 1, [Define for endiness.])],
+     [AC_DEFINE([WORDS_BIGENDIAN], 0, [Define for endiness.])])
 
 dnl compile 32-bit/64-bit
 AC_CHECK_SIZEOF([long])

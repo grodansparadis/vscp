@@ -239,7 +239,7 @@ extern "C" int vscphlp_openInterface( long handle,
     if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
 
     strInterface = wxString::FromUTF8( pInterface );
-    return pvscpif->doCmdOpen( strInterface, flags );
+    return pvscpif->doCmdOpen( strInterface.ToStdString(), flags );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -253,9 +253,9 @@ extern "C" DllExport int WINAPI EXPORT vscphlp_open(const long handle,
 #else
 
 extern "C" int vscphlp_open(const long handle,
-        const char *pHostname,
-        const char *pUsername,
-        const char *pPassword)
+                                const char *pHostname,
+                                const char *pUsername,
+                                const char *pPassword)
 #endif
 {
     wxString strHostname;
@@ -269,7 +269,9 @@ extern "C" int vscphlp_open(const long handle,
     strUsername = wxString::FromUTF8(pUsername);
     strPassword = wxString::FromUTF8(pPassword);
 
-    return pvscpif->doCmdOpen(strHostname, strUsername, strPassword);
+    return pvscpif->doCmdOpen( strHostname.ToStdString(), 
+                                strUsername.ToStdString(), 
+                                strPassword.ToStdString());
 }
 
 

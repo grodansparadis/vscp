@@ -93,8 +93,8 @@ public:
     CCanalObj_Choice();
     ~CCanalObj_Choice();
 
-    wxString m_value;             // The value for this choice
-    wxString m_description;       // User description of item
+    std::string m_value;             // The value for this choice
+    std::string m_description;       // User description of item
 
 };
 
@@ -117,11 +117,11 @@ public:
     uint16_t m_pos;             // Position in configuration string (base = 0)
     bool m_bOptional;           // True if optional
     canalobj_type m_type;       // Type for this
-    wxString m_description;     // User description of item
-    wxString m_infourl;         // Pointer to web-based help page
+    std::string m_description;     // User description of item
+    std::string m_infourl;         // Pointer to web-based help page
 
     CANALOBJ_CHOICE_LIST m_listChoice;  // List with choices if type = choice
-    wxString m_strValue;                // Value (always in string form)
+    std::string m_strValue;                // Value (always in string form)
 
 };
 
@@ -143,8 +143,8 @@ public:
 
     uint16_t m_pos;             // Position in flags (base = 0)
     uint8_t m_width;            // Width in number of bits
-    wxString m_description;     // User description of item
-    wxString m_infourl;         // Pointer to web-based help page
+    std::string m_description;     // User description of item
+    std::string m_infourl;         // Pointer to web-based help page
     flagtype m_type;            // Type for flag bool, value or choice
     uint32_t m_defaultVal;      // Default value for 'value' type
 
@@ -171,7 +171,7 @@ public:
         @param  info Driver info fetched from file
         @return true if the parsing went well.
     */
-    bool parseDriverInfo( wxString& xmldata );
+    bool parseDriverInfo( std::string& xmldata );
 
     /*!
         Run the graphical wizard that assist the user in setting the parameters.
@@ -183,14 +183,14 @@ public:
         @return true if the parsing went well.
     */
     bool runWizard( wxWindow* parent,
-                        wxString& inputConfigString,
+                        std::string& inputConfigString,
                         uint32_t inputConfigFlags,
-                        wxString& resultConfigString, 
+                        std::string& resultConfigString, 
                         uint32_t *presultConfigFlags );
 
-    wxString m_decription;              // Description of DLL
+    std::string m_decription;              // Description of DLL
     typeDescription m_TypeDescription;  // Format for description (text or html)
-    wxString m_infourl;                 // Pointer to site with info about driver
+    std::string m_infourl;                 // Pointer to site with info about driver
 
     int m_level;                        // Level for driver
     bool m_bBlocking;                   // True if driver is blocking
@@ -238,16 +238,16 @@ public:
         @param inputConfigString Original configuration string.
         @param inputConfigFlags Original configuration flags.
     */
-    void CreateControls( CCanalConfObj  *pObj, wxString& inputConfigString, uint32_t inputConfigFlags );
+    void CreateControls( CCanalConfObj  *pObj, std::string& inputConfigString, uint32_t inputConfigFlags );
 
     /// Runs the wizard
     bool Run();
 
     /// Retrieves bitmap resources
-    wxBitmap GetBitmapResource( const wxString& name );
+    wxBitmap GetBitmapResource( const std::string& name );
 
     /// Retrieves icon resources
-    wxIcon GetIconResource( const wxString& name );
+    wxIcon GetIconResource( const std::string& name );
 
     /// Should we show tooltips?
     static bool ShowToolTips();
@@ -295,10 +295,10 @@ public:
 
 
     /// Retrieves bitmap resources
-    wxBitmap GetBitmapResource( const wxString& name );
+    wxBitmap GetBitmapResource( const std::string& name );
 
     /// Retrieves icon resources
-    wxIcon GetIconResource( const wxString& name );
+    wxIcon GetIconResource( const std::string& name );
 
     /// Should we show tooltips?
     static bool ShowToolTips();
@@ -342,10 +342,10 @@ public:
     void CreateControls();
 
     /// Retrieves bitmap resources
-    wxBitmap GetBitmapResource( const wxString& name );
+    wxBitmap GetBitmapResource( const std::string& name );
 
     /// Retrieves icon resources
-    wxIcon GetIconResource( const wxString& name );
+    wxIcon GetIconResource( const std::string& name );
 
     /// Should we show tooltips?
     static bool ShowToolTips();
@@ -357,7 +357,7 @@ public:
     int m_windowsID;
 
     // Text for head  "Parameter 0", "Parameter 1"  etc 
-    wxString m_strHead;
+    std::string m_strHead;
 
     // Parameter item associated with this wizard page
     CCanalObj_OneItem *m_pItem;
@@ -366,7 +366,7 @@ public:
     bool m_bOptional;
 
     // This is the string value for the configuration string
-    wxString  m_strValue;
+    std::string  m_strValue;
 
     // Choices for strings are here
     wxArrayString m_listBoxStrings;
@@ -411,10 +411,10 @@ public:
     void CreateControls();
 
     /// Retrieves bitmap resources
-    wxBitmap GetBitmapResource( const wxString& name );
+    wxBitmap GetBitmapResource( const std::string& name );
 
     /// Retrieves icon resources
-    wxIcon GetIconResource( const wxString& name );
+    wxIcon GetIconResource( const std::string& name );
 
     /// Should we show tooltips?
     static bool ShowToolTips();
@@ -431,7 +431,7 @@ public:
     int m_windowsID;
 
     // Text for head  "Flags setting 0", "Flags setting 1"  etc 
-    wxString m_strHead;
+    std::string m_strHead;
 
     // Parameter flag item associated with this wizard page
     CCanalObj_FlagBit *m_pItem;

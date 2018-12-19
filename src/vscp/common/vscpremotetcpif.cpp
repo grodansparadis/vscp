@@ -30,30 +30,18 @@
     //#pragma implementation
 #endif
 
-#ifdef WIN32
-#include <winsock2.h>
-#endif
+#include <string>
+#include <list>
+#include <deque>
 
-// For compilers that support precompilation, includes "wx.h".
-#include "wx/wxprec.h"
-
-#ifndef WX_PRECOMP
-#include "wx/wx.h"
-#endif
-
-#ifdef __WXMSW__
-//    #include  "wx/ownerdrw.h"
-#endif
-
-#include <wx/thread.h>
-#include <wx/datetime.h>
-#include <wx/socket.h>
-#include <wx/tokenzr.h>
-#include <wx/listimpl.cpp>
-#include <wx/event.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <math.h>
+#include <semaphore.h>
 
 #include <vscp.h>
 #include <version.h>
+#include <vscpdatetime.h>
 #include <vscpremotetcpif.h>
 
 // Undef to get extra debug info
@@ -62,10 +50,6 @@
 // Undef if debug messages is not wanted
 //#define DEBUG_LIB_VSCP_HELPER   1
 
-//class mg_poll_server;
-//class mg_poll_server;
-WX_DEFINE_LIST( EVENT_RX_QUEUE );
-WX_DEFINE_LIST( EVENT_TX_QUEUE );
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -107,8 +91,8 @@ bool VscpRemoteTcpIf::checkReturnValue( bool bClear )
     
     if ( bClear ) doClrInputQueue();
 
-    wxLongLong start = wxGetLocalTimeMillis();
-    while ( ( ( wxGetLocalTimeMillis() - start ) < m_responseTimeOut  ) ) {
+    uint32_t start = vscp_getMsTimeStamp();
+    while ( ( ( vscp_getMsTimeStamp() - start ) < m_responseTimeOut  ) ) {
 
         memset( buf,0, sizeof( buf ) );
         int nRead = stcp_read( m_conn, buf, sizeof( buf ), m_innerResponseTimeout );
@@ -127,18 +111,17 @@ bool VscpRemoteTcpIf::checkReturnValue( bool bClear )
             break;
         }
         else if ( nRead > 0 ) {
-            //wxPrintf( "1: %s %d\n", buf, nRead );
-            m_lastResponseTime = wxGetLocalTimeMillis(); // Save last response time
-            m_strResponse += wxString::FromUTF8Unchecked( buf, nRead );
+            m_lastResponseTime = vscp_getMsTimeStamp(); // Save last response time
+            m_strResponse += std::string( buf, nRead );
         }
 
         // if err abort
         if ( NULL != strstr( buf, "+ERR" ) ) break;
 
         // Check if we are done
-        // A line with "+OK bla bla bla bla bla bla blq abla \r\n"
+        // A line with "+OK bla bla bla bla bla bla bla bla \r\n"
         // It can be hacked up.
-        if ( wxNOT_FOUND != m_strResponse.Find("+OK")  ) {
+        if ( m_strResponse.npos != m_strResponse.find("+OK")  ) {
 
             // We check only for "\n" as it also could have been
             // broken up, even if rare
@@ -160,7 +143,7 @@ bool VscpRemoteTcpIf::checkReturnValue( bool bClear )
 
 int VscpRemoteTcpIf::doCommand( const char *cmd )
 {
-    wxString strCmd = wxString::FromUTF8( cmd );
+    std::string strCmd = cmd;
     return doCommand( strCmd );
 }
 
@@ -168,12 +151,12 @@ int VscpRemoteTcpIf::doCommand( const char *cmd )
 //  doCommand
 //
 
-int VscpRemoteTcpIf::doCommand( const wxString& cmd )
+/*int VscpRemoteTcpIf::doCommand( const std::string& cmd )
 {
     bool ret = false;
     
 #ifdef DEBUG_INNER_COMMUNICTION    
-    wxLogDebug( _("doCommand: ") + cmd );
+    VSCP_LOG_DEBUG( "doCommand: " + cmd );
 #endif  
         
     doClrInputQueue();    
@@ -189,23 +172,23 @@ int VscpRemoteTcpIf::doCommand( const wxString& cmd )
     addInputStringArrayFromReply();
     
 #ifdef DEBUG_INNER_COMMUNICTION
-    wxLogDebug( _("------------------------------------------------------------") );
-    wxLogDebug( _("checkReturnValue:  Queue before. Responsetime = %u. "), m_responseTimeOut );
+    VSCP_LOG_DEBUG( "------------------------------------------------------------" );
+    VSCP_LOG_DEBUG( "checkReturnValue:  Queue before. Responsetime = %u. ", m_responseTimeOut );
     for ( uint16_t i=0; i<m_inputStrArray.Count(); i++) {
-        wxLogDebug( "***** {" + m_inputStrArray[ i ] + "} *****" );
+        VSCP_LOG_DEBUG( "***** {" + m_inputStrArray[ i ] + "} *****" );
     }
-    wxLogDebug( _("------------------------------------------------------------") );
+    VSCP_LOG_DEBUG( "------------------------------------------------------------" );
 #endif
     
     if ( !ret ) {
 #ifdef DEBUG_INNER_COMMUNICTION        
-        wxLogDebug( _("doCommand: checkReturnValue failed") );
+        VSCP_LOG_DEBUG( "doCommand: checkReturnValue failed" );
 #endif        
         return VSCP_ERROR_ERROR;
     }
 
     return VSCP_ERROR_SUCCESS;
-}
+}*/
 
 int VscpRemoteTcpIf::doCommand( const std::string& cmd )
 {
@@ -235,7 +218,7 @@ int VscpRemoteTcpIf::doCommand( const std::string& cmd )
 
 size_t VscpRemoteTcpIf::getInputQueueCount( void )
 {	
-    return m_inputStrArray.Count();
+    return m_inputStrArray.size();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -244,8 +227,8 @@ size_t VscpRemoteTcpIf::getInputQueueCount( void )
 
 void VscpRemoteTcpIf::doClrInputQueue( void )
 {
-    m_strResponse.Empty();
-    m_inputStrArray.Clear();
+    m_strResponse.clear();
+    m_inputStrArray.clear();
 }
 
 
@@ -255,8 +238,10 @@ void VscpRemoteTcpIf::doClrInputQueue( void )
 
 size_t VscpRemoteTcpIf::addInputStringArrayFromReply( bool bClear )
 {	
+    std::string tempStr;
+
     if ( bClear ) {
-        m_inputStrArray.Clear();
+        m_inputStrArray.clear();
     }
 
     // If readBuffer have a "\r\n" pair at the end it just contains full
@@ -264,78 +249,94 @@ size_t VscpRemoteTcpIf::addInputStringArrayFromReply( bool bClear )
     // in the read buffer.
     
     // Get rest string that should not be handled now
-    wxString tempStr = m_strResponse.AfterLast('\n');
-
+    //std::string tempStr = m_strResponse.AfterLast('\n');
+    size_t fpos = m_strResponse.find_first_of('\n');
+    if ( fpos == m_strResponse.npos ) {
+        tempStr = m_strResponse;
+    }
+    else {
+        tempStr = m_strResponse.substr( fpos + 1 );
+    }
+    
     // Get the string that should be parsed for inclusion in the string array
-    wxString strToArray = m_strResponse.Left( m_strResponse.Length() - tempStr.Length() );
+    //std::string strToArray = m_strResponse.Left( m_strResponse.Length() - tempStr.Length() );
+    std::string strToArray = m_strResponse.substr( 0, m_strResponse.length() - tempStr.length() );
 
     // Set the readbuffer to the rest string
     m_strResponse = tempStr;
 
     // Parse the array string
-    wxStringTokenizer tkz( strToArray, _("\n") );
-    while( tkz.HasMoreTokens() ) {
-        wxString wxstr = tkz.GetNextToken();
-        m_inputStrArray.Add( wxstr.Trim() );
+    std::deque<std::string> tokens;
+    vscp_split( tokens, strToArray, "\n" );
+    while ( tokens.size() ) {
+        std::string str = tokens.front();
+        vscp_trim( str );
+        tokens.pop_front();
+        m_inputStrArray.push_back( str );
     }
     
-    return m_inputStrArray.GetCount();
+    return m_inputStrArray.size();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // doCmdOpen
 //
 
-int VscpRemoteTcpIf::doCmdOpen( const wxString& strInterface, uint32_t flags )
+int VscpRemoteTcpIf::doCmdOpen( const std::string& strInterface, uint32_t flags )
 {
-    wxString wxstr;
-    wxString strUsername;
-    wxString strPassword;
-    wxString strHostname;
+    std::string str;
+    std::string strUsername;
+    std::string strPassword;
+    std::string strHostname;
     
     TCPIP_UNUSED(flags);
 
 #ifdef DEBUG_LIB_VSCP_HELPER    
-    wxLogDebug( _("strInterface = ") );
-    wxLogDebug( strInterface ); 
+    VSCP_LOG_DEBUG( "strInterface = " );
+    VSCP_LOG_DEBUG( strInterface ); 
 #endif    
 
     // Interface can be given as
     //      tcp://host:port;username;password
     //      host:port;username;password
     
-    wxStringTokenizer tkz( strInterface, _(";") );
+    std::deque<std::string> tokens;
+    vscp_split( tokens, strInterface, ";" );
 
     // Hostname
-    if ( tkz.HasMoreTokens() ) {
-        strHostname = tkz.GetNextToken();
-        strHostname.Trim(false);
-        strHostname.StartsWith("tcp://", &strHostname ); // Remove "tcp://"
+    if ( tokens.size() ) {
+        strHostname = tokens.front();
+        tokens.pop_front();
+        vscp_trim( strHostname );
+        std::string prefix = "tcp://";
+        vscp_startsWith( prefix, strHostname, &strHostname ); // Remove "tcp://"
     }
  
 #ifdef DEBUG_LIB_VSCP_HELPER    
-    wxLogDebug( _("strHostname = ") );
-    wxLogDebug( strHostname );
+    VSCP_LOG_DEBUG( "strHostname = " );
+    VSCP_LOG_DEBUG( strHostname );
 #endif    
 
     // Username
-    if ( tkz.HasMoreTokens() ) {
-        strUsername = tkz.GetNextToken();
+    if ( tokens.size() ) {
+        strUsername = tokens.front();
+        tokens.pop_front();
     }
     
 #ifdef DEBUG_LIB_VSCP_HELPER    
-    wxLogDebug( _("strUsername = ") );
-    wxLogDebug( strUsername );
+    VSCP_LOG_DEBUG( "strUsername = " );
+    VSCP_LOG_DEBUG( strUsername );
 #endif    
     
     // Password
-    if ( tkz.HasMoreTokens() ) {
-        strPassword = tkz.GetNextToken();  
+    if ( tokens.size() ) {
+        strPassword = tokens.front();  
+        tokens.pop_front();
     }
 
 #ifdef DEBUG_LIB_VSCP_HELPER    
-    wxLogDebug( _("strPassword = ") );
-    wxLogDebug( strPassword );
+    VSCP_LOG_DEBUG( "strPassword = " );
+    VSCP_LOG_DEBUG( strPassword );
 #endif    
    
     return doCmdOpen( strHostname, 
@@ -344,54 +345,56 @@ int VscpRemoteTcpIf::doCmdOpen( const wxString& strInterface, uint32_t flags )
 }
 
 
-
 ///////////////////////////////////////////////////////////////////////////////
 // doCmdOpen
 //
 
-int VscpRemoteTcpIf::doCmdOpen( const wxString& strHostname, 
-                                    const wxString& strUsername, 
-                                    const wxString& strPassword )
+int VscpRemoteTcpIf::doCmdOpen( const std::string& strHostname, 
+                                    const std::string& strUsername, 
+                                    const std::string& strPassword )
 {
-    wxString strBuf;
-    wxString wxstr;
-    wxString host;
+    std::string buf;
+    std::string str;
+    std::string host;
     int port;
 
 #ifdef DEBUG_LIB_VSCP_HELPER    
-    wxLogDebug( _("============================================================") );
-    wxLogDebug( _("Connect in progress with server ") + strHostname );
-    wxLogDebug( _("============================================================") );   
+    VSCP_LOG_DEBUG( "============================================================" );
+    VSCP_LOG_DEBUG( "Connect in progress with server " + strHostname );
+    VSCP_LOG_DEBUG( "============================================================" );   
 #endif    
 
-    wxString strHost = strHostname.Lower();
-    strHost.Trim(false);
-    strHost.StartsWith("tcp://", &strHost ); // Remove "tcp://"
+    std::string strHost = vscp_lower( strHostname );
+    vscp_trim( strHost );
+    vscp_startsWith("tcp://", strHost, &strHost ); // Remove "tcp://" if there
     
-    wxStringTokenizer tkz( strHost, _(":") );
-    if ( tkz.CountTokens() < 2 ) return VSCP_ERROR_PARAMETER;
-    host = tkz.GetNextToken();
-    port = atoi( (const char *)tkz.GetNextToken().mbc_str() );
+    std::deque<std::string> tokens;
+    vscp_split( tokens, strHost, ":" );
+    if ( tokens.size() < 2 ) return VSCP_ERROR_PARAMETER;
+    host = tokens.front();
+    tokens.pop_front();
+    port = (int)vscp_readStringValue( tokens.front() );
+    tokens.pop_front();
 
-    m_conn = stcp_connect_remote( (const char *)host.mbc_str(), 
+    m_conn = stcp_connect_remote( (const char *)host.c_str(), 
                                     port,
                                     TCPIP_DEFAULT_CONNECT_TIMEOUT_SECONDS );
     if ( NULL == m_conn ) {    
 
 #ifdef DEBUG_LIB_VSCP_HELPER
-        wxLogDebug( _("Connection failed.") + strHostname );
+        VSCP_LOG_DEBUG( "Connection failed." + strHostname );
 #endif 
         return VSCP_ERROR_TIMEOUT;
     }
     
 #ifdef DEBUG_LIB_VSCP_HELPER    
-    wxLogDebug( _("Checking server response") );
+    VSCP_LOG_DEBUG( "Checking server response" );
 #endif        
 
     if ( !checkReturnValue( true ) ) {
 
 #ifdef DEBUG_LIB_VSCP_HELPER        
-        wxLogDebug( _("No +OK found ") + strHostname );
+        VSCP_LOG_DEBUG( _"No +OK found " + strHostname );
 #endif
 
         stcp_close_connection( m_conn );
@@ -400,35 +403,26 @@ int VscpRemoteTcpIf::doCmdOpen( const wxString& strHostname,
     }
 
     // Username
-    wxstr = strUsername;
-    wxstr.Trim(false);
-    strBuf =  _("USER ") + wxstr + _("\r\n");
+    str = strUsername;
+    vscp_trim( str );;
+    buf = std::string("USER ") + str + std::string("\r\n");
     
-    if ( VSCP_ERROR_SUCCESS != doCommand( strBuf ) ) {
+    if ( VSCP_ERROR_SUCCESS != doCommand( buf ) ) {
         stcp_close_connection( m_conn );
         m_conn = NULL;
         return VSCP_ERROR_USER;
     }
-    
-#ifdef DEBUG_LIB_VSCP_HELPER
-    wxLogDebug( _("Username OK") );
-#endif    
-
+       
     // Password
-    wxstr = strPassword;
-    wxstr.Trim(false);
-    strBuf =  _("PASS ") + wxstr + _("\r\n");
-    if ( VSCP_ERROR_SUCCESS != doCommand( strBuf ) ) {
+    str = strPassword;
+    vscp_trim( str );
+    buf = std::string("PASS ") + str + std::string("\r\n");
+    if ( VSCP_ERROR_SUCCESS != doCommand( buf ) ) {
         stcp_close_connection( m_conn );
         m_conn = NULL;
         return VSCP_ERROR_PASSWORD;
     }
     
-#ifdef DEBUG_LIB_VSCP_HELPER    
-    wxLogDebug( _("Password OK") );    
-    wxLogDebug( _("Successful log in to VSCP server") );
-#endif    
-
     // Get version (for internal versioning)    
     uint8_t v1,v2,v3; // Not used - stored by method
     doCmdVersion( &v1, &v2, &v3 );
@@ -441,12 +435,14 @@ int VscpRemoteTcpIf::doCmdOpen( const wxString& strHostname,
 // doCmdOpen
 //
 
-int VscpRemoteTcpIf::doCmdOpen( const wxString& strHostname, 
+int VscpRemoteTcpIf::doCmdOpen( const std::string& strHostname, 
                                     short port,
-                                    const wxString& strUsername, 
-                                    const wxString& strPassword )
+                                    const std::string& strUsername, 
+                                    const std::string& strPassword )
 {
-    wxString strCombinedHost = strHostname + wxString::Format(":%d", port );
+    std::string strCombinedHost = strHostname + 
+                                    std::string(":") + 
+                                    vscp_string_format( "%d", port );
     return doCmdOpen( strCombinedHost, strUsername, strPassword );
 }
 
@@ -474,7 +470,7 @@ int VscpRemoteTcpIf::doCmdClose( void )
     }
 
     m_bModeReceiveLoop = false;
-    m_inputStrArray.Clear();
+    m_inputStrArray.clear();
 
     return VSCP_ERROR_SUCCESS;  
 }
@@ -521,7 +517,7 @@ int VscpRemoteTcpIf::doCmdSend( const vscpEvent *pEvent )
     // If in receive loop terminate
     if ( m_bModeReceiveLoop ) return VSCP_ERROR_PARAMETER;
     
-    wxString strBuf, strWrk, strGUID;
+    std::string strBuf, strWrk, strGUID;
     unsigned char guidsum = 0;
     
     // Must be a valid data pointer if data 
@@ -538,7 +534,7 @@ int VscpRemoteTcpIf::doCmdSend( const vscpEvent *pEvent )
     // Note that the caller must delete the event (if it should be deleted)
 
     strBuf = "send " + strBuf;
-    strBuf += _("\r\n");
+    strBuf += "\r\n";
 
     return doCommand( strBuf );
 }
@@ -551,7 +547,7 @@ int VscpRemoteTcpIf::doCmdSend( const vscpEvent *pEvent )
 
 int VscpRemoteTcpIf::doCmdSendEx( const vscpEventEx *pEventEx )
 {	
-    wxString strBuf, strWrk, strGUID;
+    std::string strBuf, strWrk, strGUID;
     unsigned char guidsum = 0;
     
     if ( !isConnected() ) return VSCP_ERROR_CONNECTION;
@@ -564,8 +560,8 @@ int VscpRemoteTcpIf::doCmdSendEx( const vscpEventEx *pEventEx )
     // Validate datasize
     if ( pEventEx->sizeData > VSCP_MAX_DATA ) return VSCP_ERROR_PARAMETER;
     
-    //wxLogDebug( wxString::Format(_("%p crc=%p obid=%p year=%p month=%p day=%p"), (void*)pEventEx, (void *)&(pEventEx->crc), (void*)&(pEventEx->obid), (void*)&(pEventEx->year), (void*)&(pEventEx->month), (void*)&(pEventEx->day) ));
-    //wxLogDebug( wxString::Format(_("vscpclass=%d vscptype=%d"), (int)pEventEx->vscp_class, (int)pEventEx->vscp_type ));
+    //VSCP_LOG_DEBUG( std::string::Format("%p crc=%p obid=%p year=%p month=%p day=%p"), (void*)pEventEx, (void *)&(pEventEx->crc), (void*)&(pEventEx->obid), (void*)&(pEventEx->year), (void*)&(pEventEx->month), (void*)&(pEventEx->day) ));
+    //VSCP_LOG_DEBUG( std::string::Format("vscpclass=%d vscptype=%d"), (int)pEventEx->vscp_class, (int)pEventEx->vscp_type ));
     
     //send head,class,type,obid,datetime,timestamp,GUID,data1,data2,data3....
     if ( !vscp_writeVscpEventExToString( pEventEx, strBuf ) ) {
@@ -573,7 +569,7 @@ int VscpRemoteTcpIf::doCmdSendEx( const vscpEventEx *pEventEx )
     }
 
     strBuf = "send " + strBuf;
-    strBuf += _("\r\n");
+    strBuf += "\r\n";
 
     return doCommand( strBuf );
 }
@@ -620,7 +616,7 @@ int VscpRemoteTcpIf::doCmdSendLevel1( const canalMsg *pCanalMsg )
 // getEventFromLine
 //
 
-bool VscpRemoteTcpIf::getEventFromLine( vscpEvent *pEvent, const wxString& strLine )
+bool VscpRemoteTcpIf::getEventFromLine( vscpEvent *pEvent, const std::string& strLine )
 {
     // Check pointer
     if ( NULL == pEvent ) return false;
@@ -740,7 +736,7 @@ int VscpRemoteTcpIf::doCmdEnterReceiveLoop( void )
     if ( m_bModeReceiveLoop ) return VSCP_ERROR_SUCCESS;
     
     // Prevent false timeouts when starting up
-    m_lastResponseTime = wxGetLocalTimeMillis();
+    m_lastResponseTime = vscp_getMsTimeStamp();
 
     if ( VSCP_ERROR_SUCCESS != doCommand("RCVLOOP\r\n") ) {
         return VSCP_ERROR_ERROR;
@@ -771,7 +767,7 @@ int VscpRemoteTcpIf::doCmdQuitReceiveLoop( void )
     }
   
     m_bModeReceiveLoop = false;
-    m_inputStrArray.Clear();
+    m_inputStrArray.clear();
 
     return VSCP_ERROR_SUCCESS;
 }
@@ -790,22 +786,22 @@ int VscpRemoteTcpIf::doCmdBlockingReceive( vscpEvent *pEvent, uint32_t mstimeout
     int nRead;
 
     // Check pointer
-    if (NULL == pEvent) return VSCP_ERROR_PARAMETER;
+    if ( NULL == pEvent ) return VSCP_ERROR_PARAMETER;
 
     // Must be connected
-    if (!isConnected()) return VSCP_ERROR_CONNECTION;
+    if ( !isConnected() ) return VSCP_ERROR_CONNECTION;
 
     // If **not** in receive loop terminate
-    if (!m_bModeReceiveLoop) return VSCP_ERROR_PARAMETER;
+    if ( !m_bModeReceiveLoop ) return VSCP_ERROR_PARAMETER;
 
     // If array already contains lines check if one of them is an event
-    while ( m_inputStrArray.GetCount() ) {
+    while ( m_inputStrArray.size() ) {
     
-        wxString strItem = m_inputStrArray[0];  // Get first reply string
-        m_inputStrArray.RemoveAt( 0 );          // Remove it from the array
+        std::string strItem = m_inputStrArray.front();  // Get first reply string
+        m_inputStrArray.pop_front();                    // Remove it from the array
     
-        if ( ( wxNOT_FOUND == strItem.Find("+OK") ) && 
-             ( wxNOT_FOUND == strItem.Find("+ERR") ) ) {
+        if ( ( strItem.npos == strItem.find("+OK") ) && 
+             ( strItem.npos == strItem.find("+ERR") ) ) {
     
             // This should be an event - Get it
             if ( !getEventFromLine( pEvent, strItem ) ) {
@@ -817,9 +813,9 @@ int VscpRemoteTcpIf::doCmdBlockingReceive( vscpEvent *pEvent, uint32_t mstimeout
         }
     }
 
-    wxLongLong startTime = wxGetLocalTimeMillis();
+    uint32_t startTime = vscp_getMsTimeStamp();
 
-    while ( ( wxGetLocalTimeMillis() - startTime ) < mstimeout )  {
+    while ( ( vscp_getMsTimeStamp() - startTime ) < mstimeout )  {
     
         if ( ( nRead = stcp_read( m_conn, buf, sizeof(buf), m_innerResponseTimeout ) ) <= 0 ) {
            
@@ -828,29 +824,28 @@ int VscpRemoteTcpIf::doCmdBlockingReceive( vscpEvent *pEvent, uint32_t mstimeout
                 return  VSCP_ERROR_STOPPED;
             }
 
-            wxMicroSleep( 100 );
+            usleep( 100 );
             continue;
 
         }        
 
-        //wxPrintf( "2: [%s] %d\n", buf, nRead );
-        m_lastResponseTime = wxGetLocalTimeMillis();
+        m_lastResponseTime = vscp_getMsTimeStamp();
 
         // Save the response
-        m_strResponse += wxString::FromUTF8Unchecked( buf, nRead );
+        m_strResponse += std::string( buf, nRead );
 
         // Fill array
         addInputStringArrayFromReply();
 
         // Check if one of the items is an event
-        while ( m_inputStrArray.GetCount() ) {
+        while ( m_inputStrArray.size() ) {
     
-            wxString strItem = m_inputStrArray[0];  // Get first reply string
-            m_inputStrArray.RemoveAt( 0 );          // Remove it from the array
+            std::string strItem = m_inputStrArray.front(); // Get first reply string
+            m_inputStrArray.pop_front();                // Remove it from the array
     
             // Not "+OK" or "+ERR"
-            if ( ( wxNOT_FOUND == strItem.Find("+OK") ) && 
-                 ( wxNOT_FOUND == strItem.Find("+ERR") ) ) {
+            if ( ( strItem.npos == strItem.find("+OK") ) && 
+                 ( strItem.npos == strItem.find("+ERR") ) ) {
     
                 // This should be an event - Get it
                 if ( !getEventFromLine( pEvent, strItem ) ) {
@@ -920,7 +915,7 @@ int VscpRemoteTcpIf::doCmdBlockingReceive( vscpEventEx *pEventEx, uint32_t timeo
 
 int VscpRemoteTcpIf::doCmdDataAvailable( void )
 {
-    wxString strLine;
+    std::string strLine;
     int nMsg = 0;	
   
     if ( !isConnected() ) return VSCP_ERROR_ERROR;
@@ -932,7 +927,7 @@ int VscpRemoteTcpIf::doCmdDataAvailable( void )
         return VSCP_ERROR_ERROR;
     }
     
-    nMsg = atoi( (const char *)m_inputStrArray[ 0 ].mbc_str() );
+    nMsg = atoi( (const char *)m_inputStrArray.front().c_str() );
     
     return nMsg;   
 }
@@ -945,38 +940,40 @@ int VscpRemoteTcpIf::doCmdDataAvailable( void )
 int VscpRemoteTcpIf::doCmdStatus( canalStatus *pStatus )
 {	
     long val;
-    wxString strBuf;
-    wxString strWrk;
-    wxString strLine;
+    std::string strBuf;
+    std::string strWrk;
+    std::string strLine;
 
     if ( !isConnected() ) return VSCP_ERROR_CONNECTION;
   
     // If receive loop active terminate
     if ( m_bModeReceiveLoop ) return VSCP_ERROR_PARAMETER;
     
-    wxString strCmd(_("INFO\r\n"));
+    std::string strCmd("INFO\r\n");
     if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
         return VSCP_ERROR_ERROR;
     }
     
-    wxStringTokenizer tkz( m_inputStrArray[ 0 ], _(",\r\n") );
+    std::deque<std::string> tokens;
+    vscp_split( tokens, m_inputStrArray.front(), "," );
+    m_inputStrArray.pop_front();
     
     // lasterrorcode
-    if ( !tkz.HasMoreTokens() ) return VSCP_ERROR_GENERIC;
-    ( tkz.GetNextToken() ).ToLong( &val );
-    pStatus->lasterrorcode = val;
-    
+    if ( tokens.empty() ) return VSCP_ERROR_GENERIC;
+    pStatus->lasterrorcode = vscp_readStringValue(tokens.front());
+    tokens.pop_front();
     
     // lasterrorsubcode
-    if ( !tkz.HasMoreTokens() ) return VSCP_ERROR_GENERIC;
-    ( tkz.GetNextToken() ).ToLong( &val );
-    pStatus->lasterrorsubcode = val;
+    if ( tokens.empty() ) return VSCP_ERROR_GENERIC;
+    pStatus->lasterrorsubcode = vscp_readStringValue(tokens.front());
+    tokens.pop_front();
     
 
     // lasterrorsubcode
-    if ( !tkz.HasMoreTokens() ) return VSCP_ERROR_GENERIC;
-    strWrk = tkz.GetNextToken();
-    strncpy( pStatus->lasterrorstr, strWrk.mbc_str(), sizeof(pStatus->lasterrorcode) );
+    if ( tokens.empty() ) return VSCP_ERROR_GENERIC;
+    strWrk = tokens.front();
+    tokens.pop_front();
+    strncpy( pStatus->lasterrorstr, strWrk.c_str(), strWrk.length() );
     
     return VSCP_ERROR_SUCCESS;
 
@@ -1007,48 +1004,39 @@ int VscpRemoteTcpIf::doCmdStatus( VSCPStatus *pStatus )
 int VscpRemoteTcpIf::doCmdStatistics( VSCPStatistics *pStatistics )
 {	
     long val;
-    wxString strBuf;
-    wxString strWrk;
-    wxString strLine;
+    std::string strBuf;
+    std::string strWrk;
+    std::string strLine;
 
     if ( !isConnected() ) return VSCP_ERROR_CONNECTION;
   
     // If receive loop active terminate
     if ( m_bModeReceiveLoop ) return VSCP_ERROR_PARAMETER;
         
-    wxString strCmd(_("STAT\r\n"));
+    std::string strCmd("STAT\r\n");
     if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
         return VSCP_ERROR_ERROR;
     }
 
-    wxStringTokenizer tkz( m_inputStrArray[ 0 ], _(",\r\n") );
+    std::deque<std::string> tokens;
+    vscp_split( tokens, m_inputStrArray.front(), "," );
 
     // Undefined - Bus off for CAN, no meaning for VSCP L2
     pStatistics->x = 0;
-    if ( tkz.HasMoreTokens() ) {
-        if ( ( tkz.GetNextToken() ).ToLong( &val ) ) {
-            pStatistics->x = val;
-        }
-        else {
-            return VSCP_ERROR_GENERIC;
-        }
+    if ( !tokens.empty() ) {
+        pStatistics->x = vscp_readStringValue(tokens.front());
     }
 
     // Undefined - Bus warnings for CAN, no meaning for VSCP L2
     pStatistics->y = 0;
-    if ( tkz.HasMoreTokens() ) {
-        if ( ( tkz.GetNextToken() ).ToLong( &val ) ) {
-            pStatistics->y = val;
-        }
-        else {
-            return VSCP_ERROR_GENERIC;
-        }
+    if ( !tokens.empty() ) {
+        pStatistics->y = vscp_readStringValue(tokens.front());
     }
 
     // Undefined - Not defined on server side
     pStatistics->z = 0;    
-    /*if ( tkz.HasMoreTokens() ) {
-        if ( ( tkz.GetNextToken() ).ToLong( &val ) ) {
+    /*if ( !tokens.empty() ) {
+        if ( ( tokens.front() ).ToLong( &val ) ) {
             pStatistics->z = val;
         }
         else {
@@ -1058,59 +1046,34 @@ int VscpRemoteTcpIf::doCmdStatistics( VSCPStatistics *pStatistics )
     
     // Overruns
     pStatistics->cntOverruns = 0;
-    if ( tkz.HasMoreTokens() ) {
-        if ( ( tkz.GetNextToken() ).ToLong( &val ) ) {
-            pStatistics->cntOverruns = val;
-        }
-        else {
-            return VSCP_ERROR_GENERIC;
-        }
+    if ( !tokens.empty() ) {
+        pStatistics->cntOverruns = vscp_readStringValue(tokens.front());
     }
 
     // Received data
     pStatistics->cntReceiveData = 0;
-    if ( tkz.HasMoreTokens() ) {
-        if ( ( tkz.GetNextToken() ).ToLong( &val ) ) {
-            pStatistics->cntReceiveData = val;
-        }
-        else {
-            return VSCP_ERROR_GENERIC;
-        }
+    if ( !tokens.empty() ) {
+        pStatistics->cntReceiveData = vscp_readStringValue(tokens.front());
     }
     
 
     // Received Frames
     pStatistics->cntReceiveFrames = 0;
-    if ( tkz.HasMoreTokens() ) {
-        if ( ( tkz.GetNextToken() ).ToLong( &val ) ) {
-            pStatistics->cntReceiveFrames = val;
-        }
-        else {
-            return VSCP_ERROR_GENERIC;
-        }
+    if ( !tokens.empty() ) {
+        pStatistics->cntReceiveFrames = vscp_readStringValue(tokens.front());
     }
     
     
     // Transmitted data
     pStatistics->cntTransmitData = 0;
-    if ( tkz.HasMoreTokens() ) {
-        if ( ( tkz.GetNextToken() ).ToLong( &val ) ) {
-            pStatistics->cntReceiveFrames = val;
-        }
-        else {
-            return VSCP_ERROR_GENERIC;
-        }
+    if ( !tokens.empty() ) {
+        pStatistics->cntTransmitData = vscp_readStringValue(tokens.front());
     }
 
     // Transmitted frames
     pStatistics->cntTransmitFrames = 0;
-    if ( tkz.HasMoreTokens() ) {
-        if ( ( tkz.GetNextToken() ).ToLong( &val ) ) {
-            pStatistics->cntTransmitFrames = val;
-        }
-        else {
-            return VSCP_ERROR_GENERIC;
-        }
+    if ( !tokens.empty() ) {
+        pStatistics->cntTransmitFrames = vscp_readStringValue(tokens.front());
     }
     
     return VSCP_ERROR_SUCCESS;
@@ -1152,7 +1115,7 @@ int VscpRemoteTcpIf::doCmdStatistics( canalStatistics *pStatistics )
 
 int VscpRemoteTcpIf::doCmdFilter( const vscpEventFilter *pFilter )
 {
-    wxString strCmd;
+    std::string strCmd;
     
     if ( !isConnected() ) return VSCP_ERROR_CONNECTION;
   
@@ -1160,7 +1123,7 @@ int VscpRemoteTcpIf::doCmdFilter( const vscpEventFilter *pFilter )
     if ( m_bModeReceiveLoop ) return VSCP_ERROR_PARAMETER;
     
     // filter-priority, filter-class, filter-type, filter-GUID
-    strCmd.Printf( _("SFLT %d,%d,%d,%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X\r\n"),
+    strCmd = vscp_string_format( "SFLT %d,%d,%d,%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X\r\n",
                     pFilter->filter_priority,
                     pFilter->filter_class,
                     pFilter->filter_type,
@@ -1186,7 +1149,7 @@ int VscpRemoteTcpIf::doCmdFilter( const vscpEventFilter *pFilter )
     }
 
     // mask-priority, mask-class, mask-type, mask-GUID
-    strCmd.Printf( _("SMSK %d,%d,%d,%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X\r\n"),
+    strCmd = vscp_string_format( "SMSK %d,%d,%d,%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X\r\n",
                     pFilter->mask_priority,
                     pFilter->mask_class,
                     pFilter->mask_type,
@@ -1206,7 +1169,7 @@ int VscpRemoteTcpIf::doCmdFilter( const vscpEventFilter *pFilter )
                     pFilter->mask_GUID[ 2 ],
                     pFilter->mask_GUID[ 1 ],
                     pFilter->mask_GUID[ 0 ] );
-    //wxLogDebug( strCmd );
+    //VSCP_LOG_DEBUG( strCmd );
     
     if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
         return VSCP_ERROR_ERROR;
@@ -1219,9 +1182,9 @@ int VscpRemoteTcpIf::doCmdFilter( const vscpEventFilter *pFilter )
 // doCmdFilter  (with mask)
 //
 
-int VscpRemoteTcpIf::doCmdFilter( const wxString& filter, const wxString& mask )
+int VscpRemoteTcpIf::doCmdFilter( const std::string& filter, const std::string& mask )
 {
-    wxString strCmd;
+    std::string strCmd;
 
     if ( !isConnected() ) return VSCP_ERROR_CONNECTION;
   
@@ -1229,13 +1192,17 @@ int VscpRemoteTcpIf::doCmdFilter( const wxString& filter, const wxString& mask )
     if ( m_bModeReceiveLoop ) return VSCP_ERROR_PARAMETER;
 
     // Set filter
-    strCmd = _("SFLT ") + filter + _("\r\n");
+    strCmd = "SFLT ";
+    strCmd += filter;
+    strCmd += "\r\n";
     if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
         return VSCP_ERROR_ERROR;
     }
     
     // Set mask
-    strCmd = _("SMSK ") + mask + _("\r\n");
+    strCmd = "SMSK ";
+    strCmd += mask;
+    strCmd += "\r\n";
     if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
         return VSCP_ERROR_ERROR;
     }
@@ -1252,24 +1219,27 @@ int VscpRemoteTcpIf::doCmdVersion( uint8_t *pMajorVer,
                                    uint8_t *pSubMinorVer )
 {
     long val;
-    wxString strLine;
+    std::string strLine;
       
     if ( !isConnected() ) return VSCP_ERROR_CONNECTION;
     
     // If receive loop active terminate
     if ( m_bModeReceiveLoop ) return VSCP_ERROR_PARAMETER;
         
-    wxString strCmd(_("VERS\r\n"));
+    std::string strCmd("VERS\r\n");
     if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
         return VSCP_ERROR_ERROR;
     }
 
-    wxStringTokenizer strTokens( m_inputStrArray[ 0 ], ",\r\n" );
+    std::deque<std::string> tokens;
+    vscp_split( tokens, m_inputStrArray.front(), "," );
 
     // Major version
     *pMajorVer = 0;
-    if ( ( strTokens.GetNextToken() ).ToLong( &val ) ) {
-        m_version_major = *pMajorVer = (uint8_t)val;
+    if ( !tokens.empty() ) {
+        m_version_major = *pMajorVer = 
+            (uint8_t)vscp_readStringValue( tokens.front() );
+        tokens.pop_front();    
     }
     else {
         return VSCP_ERROR_ERROR;
@@ -1277,8 +1247,10 @@ int VscpRemoteTcpIf::doCmdVersion( uint8_t *pMajorVer,
 
     // Minor version
     *pMinorVer = 0;
-    if ( ( strTokens.GetNextToken() ).ToLong( &val ) ) {
-        m_version_minor = *pMinorVer = (uint8_t)val;
+    if ( !tokens.empty() ) {
+        m_version_minor = *pMinorVer = 
+            (uint8_t)vscp_readStringValue( tokens.front() );
+        tokens.pop_front();            
     }
     else {
         return VSCP_ERROR_ERROR;
@@ -1286,20 +1258,21 @@ int VscpRemoteTcpIf::doCmdVersion( uint8_t *pMajorVer,
 
     // Sub minor version
     *pSubMinorVer = 0;
-    if ( ( strTokens.GetNextToken() ).ToLong( &val ) ) {
-        m_version_release = *pSubMinorVer = (uint8_t)val;
+    if ( !tokens.empty() ) {
+        m_version_release = *pSubMinorVer = 
+            (uint8_t)vscp_readStringValue( tokens.front() );
+        tokens.pop_front();            
     }
     else {
         return VSCP_ERROR_ERROR;
     }
 
     // Build version
-    if ( strTokens.HasMoreTokens() && 
-       ( strTokens.GetNextToken() ).ToLong( &val ) ) {
-        m_version_build = (uint16_t)val;
-    }
-
     m_version_build = VSCPD_BUILD_VERSION;
+    if ( !tokens.empty() ) {
+        m_version_build = 
+            (uint16_t)vscp_readStringValue( tokens.front() );
+    }
 
     return VSCP_ERROR_SUCCESS;
 }
@@ -1359,38 +1332,32 @@ const char * VscpRemoteTcpIf::doCmdGetDriverInfo( void )
 int VscpRemoteTcpIf::doCmdGetGUID( unsigned char *pGUID )
 {
     long val;
-    wxString strLine;
-    wxStringTokenizer strTokens;
+    std::string strLine;
 
     if ( !isConnected() ) return VSCP_ERROR_CONNECTION;
   
     // If receive loop active terminate
     if ( m_bModeReceiveLoop ) return VSCP_ERROR_PARAMETER;
         
-    wxString strCmd(_("GGID\r\n"));
+    std::string strCmd("GGID\r\n");
     if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
         return VSCP_ERROR_ERROR;
     }
     
     if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
-    strLine = m_inputStrArray[ m_inputStrArray.Count() - 2 ];
+    strLine = m_inputStrArray[ m_inputStrArray.size() - 2 ];
     
-    strTokens.SetString( strLine, _(",\r\n"));
+    std::deque<std::string> tokens;
+    vscp_split( tokens, strLine, "," );
     
-    if ( strTokens.HasMoreTokens() ) {
-         
-        int idx = 0; 
-        wxStringTokenizer wrkToken( strTokens.GetNextToken(), _(":") );
-        while ( wrkToken.HasMoreTokens() && ( idx < 16 ) ) {
-            
-            (wrkToken.GetNextToken()).ToLong( &val );
-            pGUID[ idx ] = (uint8_t)val;
-            idx++;
-            
-        }
-        
-        if ( idx != 16 ) return VSCP_ERROR_GENERIC;
-        
+    // GUID
+    if ( !tokens.empty() ) {         
+        std::string str = tokens.front();
+        tokens.pop_front(); 
+        if (!vscp_getGuidFromStringToArray( pGUID, str )) {
+            return VSCP_ERROR_GENERIC;
+        } 
+
     }
     else {
         return VSCP_ERROR_GENERIC;
@@ -1407,21 +1374,20 @@ int VscpRemoteTcpIf::doCmdGetGUID( unsigned char *pGUID )
 
 int VscpRemoteTcpIf::doCmdGetGUID( cguid& ifguid )
 {
-    wxString strLine;
-    wxStringTokenizer strTokens;
+    std::string strLine;
 
     if ( !isConnected() ) return VSCP_ERROR_CONNECTION;
   
     // If receive loop active terminate
     if ( m_bModeReceiveLoop ) return VSCP_ERROR_PARAMETER;
         
-    wxString strCmd(_("GGID\r\n"));
+    std::string strCmd("GGID\r\n");
     if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
         return VSCP_ERROR_ERROR;
     }
     
     if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
-    strLine = m_inputStrArray[ m_inputStrArray.Count() - 2 ];
+    strLine = m_inputStrArray[ m_inputStrArray.size() - 2 ];
     
     ifguid.getFromString(strLine);
     
@@ -1435,8 +1401,8 @@ int VscpRemoteTcpIf::doCmdGetGUID( cguid& ifguid )
 
 int VscpRemoteTcpIf::doCmdSetGUID( const unsigned char *pGUID )
 {
-    wxString strLine;
-    wxString strCmd;
+    std::string strLine;
+    std::string strCmd;
 
     if ( !isConnected() ) return VSCP_ERROR_CONNECTION;
 
@@ -1445,7 +1411,7 @@ int VscpRemoteTcpIf::doCmdSetGUID( const unsigned char *pGUID )
     // If receive loop active terminate
     if ( m_bModeReceiveLoop ) return VSCP_ERROR_PARAMETER;
     
-    strCmd.Printf( _("SGID %02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x\r\n"), 
+    strCmd = vscp_string_format("SGID %02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x\r\n", 
                     pGUID[ 0 ],
                     pGUID[ 1 ],
                     pGUID[ 2 ],
@@ -1492,8 +1458,7 @@ int VscpRemoteTcpIf::doCmdSetGUID( cguid& ifguid )
 int VscpRemoteTcpIf::doCmdGetChannelInfo( VSCPChannelInfo *pChannelInfo )
 {
     int rv;
-    wxStringTokenizer strTokens;
-    wxString strLine;
+    std::string strLine;
 
     if ( !isConnected() ) return VSCP_ERROR_CONNECTION;
     
@@ -1503,20 +1468,22 @@ int VscpRemoteTcpIf::doCmdGetChannelInfo( VSCPChannelInfo *pChannelInfo )
     // If receive loop active terminate
     if ( m_bModeReceiveLoop ) return VSCP_ERROR_PARAMETER;
     
-    wxString strCmd(_("INFO\r\n"));
+    std::string strCmd("INFO\r\n");
     if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
         return VSCP_ERROR_ERROR;
     }
     
     if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
-    strLine = m_inputStrArray[ m_inputStrArray.Count() - 2 ];
+    strLine = m_inputStrArray[ m_inputStrArray.size() - 2 ];
+
+    std::deque<std::string> tokens;
+    vscp_split( tokens, strLine, "," );
 
     // Channel
-    strTokens.SetString( strLine, _(",\r\n") );
-    if ( strTokens.HasMoreTokens() ) {
-        long val;
-        ( strTokens.GetNextToken() ).ToLong( &val );
-        pChannelInfo->channel = (uint16_t)val;
+    if ( !tokens.empty() ) {
+        pChannelInfo->channel = 
+            (uint16_t)vscp_readStringValue(tokens.front());
+        tokens.pop_front();
     }
     else {
         return VSCP_ERROR_GENERIC;
@@ -1538,28 +1505,25 @@ int VscpRemoteTcpIf::doCmdGetChannelInfo( VSCPChannelInfo *pChannelInfo )
 
 int VscpRemoteTcpIf::doCmdGetChannelID( uint32_t *pChannelID )
 {
-    wxString strLine;
+    std::string strLine;
 
     if ( !isConnected() ) return VSCP_ERROR_CONNECTION;
   
     // Check pointer
     if ( NULL == pChannelID ) return VSCP_ERROR_PARAMETER;
   
-    wxString strCmd(_("CHID\r\n"));
+    std::string strCmd("CHID\r\n");
     if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
         return VSCP_ERROR_ERROR;
     }
     
     if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
-    strLine = m_inputStrArray[ m_inputStrArray.Count() - 2 ];
+    strLine = m_inputStrArray[ m_inputStrArray.size() - 2 ];
 
     unsigned long val;
-    if ( !strLine.ToULong( &val ) ) {
-        return VSCP_ERROR_GENERIC;
-    }
-    *pChannelID = val;
+    *pChannelID = stoul(strLine);
   
-  return VSCP_ERROR_SUCCESS;
+    return VSCP_ERROR_SUCCESS;
 }
 
 
@@ -1567,11 +1531,11 @@ int VscpRemoteTcpIf::doCmdGetChannelID( uint32_t *pChannelID )
 // doCmdInterfaceList
 //
 
-int VscpRemoteTcpIf::doCmdInterfaceList( wxArrayString& wxarray )
+int VscpRemoteTcpIf::doCmdInterfaceList( std::deque<std::string>& strarray )
 {
     if ( !isConnected() ) return VSCP_ERROR_CONNECTION;
 
-    wxString strCmd(_("INTERFACE LIST\r\n"));
+    std::string strCmd("INTERFACE LIST\r\n");
     if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
         return VSCP_ERROR_ERROR;
     }
@@ -1580,8 +1544,8 @@ int VscpRemoteTcpIf::doCmdInterfaceList( wxArrayString& wxarray )
     
     // Handle the data (if any)
     for (unsigned int i=0; i<getInputQueueCount(); i++ ) {
-        if ( wxNOT_FOUND == m_inputStrArray[ i ].Find( _("+OK") ) ) {            
-            wxarray.Add( m_inputStrArray[ i ] );            
+        if ( std::string::npos == m_inputStrArray[ i ].find( "+OK" ) ) {            
+            strarray.push_back( m_inputStrArray[ i ] );            
         }
     }
   
@@ -1597,7 +1561,7 @@ int VscpRemoteTcpIf::doCmdShutDown( void )
 {
     if ( !isConnected() ) return VSCP_ERROR_CONNECTION;
 
-    wxString strCmd(_("SHUTDOWN\r\n"));
+    std::string strCmd("SHUTDOWN\r\n");
     if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
         return VSCP_ERROR_ERROR;
     }
@@ -1624,18 +1588,18 @@ int VscpRemoteTcpIf::doCmdShutDown( void )
 // getRemoteVariableList
 //
 
-int VscpRemoteTcpIf::getRemoteVariableList( wxArrayString& array,
-                                                const wxString regexp, 
+int VscpRemoteTcpIf::getRemoteVariableList( std::deque<std::string>& array,
+                                                const std::string regexp, 
                                                 const int type )
 {
-    wxString strCmd;
+    std::string strCmd;
     
     if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
     
-    strCmd = _("VAR LIST ") + regexp + _(" ");
-    if ( type ) strCmd += wxString::Format( _("%d"), type );
-    strCmd += _("\r\n");
-    if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
+    strCmd = std::string("VAR LIST ") + regexp + std::string(" ");
+    if ( type ) strCmd += vscp_string_format( "%d", type );
+    strCmd += std::string("\r\n");
+    if ( VSCP_ERROR_SUCCESS != doCommand( strCmd) ) {
         return VSCP_ERROR_ERROR;
     }
         
@@ -1643,8 +1607,8 @@ int VscpRemoteTcpIf::getRemoteVariableList( wxArrayString& array,
     
     // Handle the data (if any)
     for ( unsigned int i=0; i<getInputQueueCount(); i++ ) {
-        if ( wxNOT_FOUND == m_inputStrArray[ i ].Find( _("+OK") ) ) { 
-            array.Add( m_inputStrArray[ i ] );            
+        if ( std::string::npos == m_inputStrArray[ i ].find( "+OK" ) ) { 
+            array.push_back( m_inputStrArray[ i ] );            
         }
     }
     
@@ -1655,17 +1619,17 @@ int VscpRemoteTcpIf::getRemoteVariableList( wxArrayString& array,
 // saveRemoteVariablesToDisk
 //
 
-int VscpRemoteTcpIf::saveRemoteVariablesToDisk( const wxString& path,
+int VscpRemoteTcpIf::saveRemoteVariablesToDisk( const std::string& path,
                                                     const int select, 
-                                                    const wxString& regExp )
+                                                    const std::string& regExp )
 {
-    wxString strCmd;
+    std::string strCmd;
     
     if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN;    // Connection closed.
     
-    strCmd = _("VAR SAVE ") + path + _(" ");
-    strCmd += wxString::Format( _("%d "), select ) + regExp;
-    strCmd += _("\r\n");
+    strCmd = std::string("VAR SAVE ") + path + std::string(" ");
+    strCmd += vscp_string_format( "%d ", select ) + regExp;
+    strCmd += std::string("\r\n");
     if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
         return VSCP_ERROR_ERROR;
     }
@@ -1677,13 +1641,13 @@ int VscpRemoteTcpIf::saveRemoteVariablesToDisk( const wxString& path,
 // loadRemoteVariablesFromDisk
 //
 
-int VscpRemoteTcpIf::loadRemoteVariablesFromDisk( const wxString& path )
+int VscpRemoteTcpIf::loadRemoteVariablesFromDisk( const std::string& path )
 {
-    wxString strCmd;
+    std::string strCmd;
     
     if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN;    // Connection closed.
     
-    strCmd = _("VAR LOAD ") + path + _("\r\n");
+    strCmd = std::string("VAR LOAD ") + path + std::string("\r\n");
     if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
         return VSCP_ERROR_ERROR;
     }
@@ -1697,23 +1661,23 @@ int VscpRemoteTcpIf::loadRemoteVariablesFromDisk( const wxString& path )
 // Format is: "variable name";"type";"persistence";"user";"rights";"value";"note"
 //
 
-int VscpRemoteTcpIf::createRemoteVariable( const wxString& name, 
-                                                const wxString& type,
+int VscpRemoteTcpIf::createRemoteVariable( const std::string& name, 
+                                                const std::string& type,
                                                 const bool bPersistent,
-                                                const wxString& strUser,
+                                                const std::string& strUser,
                                                 const uint32_t rights,
-                                                const wxString& strValue,
-                                                const wxString& strNote )
+                                                const std::string& strValue,
+                                                const std::string& strNote )
 {
-    wxString strCmd;
+    std::string strCmd;
     
     if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN;    // Connection closed.
 
-    strCmd = _("VAR WRITE ") + name + _(";");
-    strCmd += type + _(";");
-    strCmd += ( ( bPersistent ) ? _("TRUE") : _("FALSE") ) + _(";");
-    strCmd += strUser + _(";") + wxString::Format( _("0x%lX"), (unsigned long)rights ) + _(";");
-    strCmd += strValue + _(";") + strNote + _("\r\n");
+    strCmd = std::string("VAR WRITE ") + name + std::string(";");
+    strCmd += type + std::string(";");
+    strCmd += ( ( bPersistent ) ? std::string("TRUE") : std::string("FALSE") ) + std::string(";");
+    strCmd += strUser + std::string(";") + vscp_string_format( "0x%lX", (unsigned long)rights ) + std::string(";");
+    strCmd += strValue + std::string(";") + strNote + std::string("\r\n");
     if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
         return VSCP_ERROR_ERROR;
     }
@@ -1726,13 +1690,13 @@ int VscpRemoteTcpIf::createRemoteVariable( const wxString& name,
 // deleteVariable
 //
 
-int VscpRemoteTcpIf::deleteRemoteVariable( const wxString& name )
+int VscpRemoteTcpIf::deleteRemoteVariable( const std::string& name )
 {
-    wxString strCmd;
+    std::string strCmd;
     
     if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
     
-    strCmd = _("VAR REMOVE ") + name + _("\r\n");
+    strCmd = std::string("VAR REMOVE ") + name + std::string("\r\n");
     if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
         return VSCP_ERROR_ERROR;
     }
@@ -1744,10 +1708,11 @@ int VscpRemoteTcpIf::deleteRemoteVariable( const wxString& name )
 // getRemoteVariableLastChange
 //
 
-int VscpRemoteTcpIf::getRemoteVariableLastChange( const wxString& name, wxDateTime& lastChange )
+int VscpRemoteTcpIf::getRemoteVariableLastChange( const std::string& name, 
+                                                    vscpdatetime& lastChange )
 {
-    wxString wxstr;
-    wxString strVariable;
+    std::string str;
+    std::string strVariable;
     
     if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
     
@@ -1756,20 +1721,17 @@ int VscpRemoteTcpIf::getRemoteVariableLastChange( const wxString& name, wxDateTi
     }
     
     // Format is: "variable name";"type";"persistence";"user";"rights";lastchanged;"value";"note"
-    wxStringTokenizer tkz( strVariable, _(";\r\n") );
-    wxstr = tkz.GetNextToken(); // name
-    wxstr = tkz.GetNextToken(); // type
-    wxstr = tkz.GetNextToken(); // persistence
-    wxstr = tkz.GetNextToken(); // user
-    wxstr = tkz.GetNextToken(); // rights
-    if ( tkz.HasMoreTokens() ) {
-        wxstr = tkz.GetNextToken(); // lastchange
+    std::deque<std::string> tokens;
+    vscp_split( tokens, strVariable, ";" );
+    
+    if ( tokens.size() >= 6 ) {
+        str = tokens[5]; // lastchange
     }
     else {
         return VSCP_ERROR_ERROR;
     }
     
-    if ( !lastChange.ParseISOCombined( wxstr ) ) {
+    if ( !lastChange.set( str ) ) {
         return VSCP_ERROR_ERROR;
     }
     
@@ -1780,10 +1742,11 @@ int VscpRemoteTcpIf::getRemoteVariableLastChange( const wxString& name, wxDateTi
 // getRemoteVariableType
 //
 
-int VscpRemoteTcpIf::getRemoteVariableType( const wxString& name, uint8_t *pType )
+int VscpRemoteTcpIf::getRemoteVariableType( const std::string& name, 
+                                                uint8_t *pType )
 {
-    wxString wxstr;
-    wxString strVariable;
+    std::string str;
+    std::string strVariable;
     
     if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
     
@@ -1792,12 +1755,18 @@ int VscpRemoteTcpIf::getRemoteVariableType( const wxString& name, uint8_t *pType
     }
     
     // Format is: "variable name";"type";"persistence";"user";"rights";lastchanged;"value";"note"
-    wxStringTokenizer tkz( strVariable, _(";\r\n") );
-    wxstr = tkz.GetNextToken(); // name
+    std::deque<std::string> tokens;
+    vscp_split( tokens, strVariable, ";" );
 
-    if ( tkz.HasMoreTokens() ) {
-        wxstr = tkz.GetNextToken(); // type
-        *pType = vscp_readStringValue( wxstr );
+    // name
+    if ( !tokens.empty() ) {
+        tokens.pop_front(); 
+    }
+
+    // type
+    if ( !tokens.empty() ) {
+        *pType = vscp_readStringValue( tokens.front() );
+        tokens.pop_front();
     }
     else {
         return VSCP_ERROR_ERROR;
@@ -1810,10 +1779,11 @@ int VscpRemoteTcpIf::getRemoteVariableType( const wxString& name, uint8_t *pType
 // getRemoteVariablePersistence
 //
 
-int VscpRemoteTcpIf::getRemoteVariablePersistence( const wxString& name, bool *pPersistent )
+int VscpRemoteTcpIf::getRemoteVariablePersistence( const std::string& name, 
+                                                        bool *pPersistent )
 {
-    wxString wxstr;
-    wxString strVariable;
+    std::string str;
+    std::string strVariable;
     
     if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
     
@@ -1822,13 +1792,17 @@ int VscpRemoteTcpIf::getRemoteVariablePersistence( const wxString& name, bool *p
     }
     
     // Format is: "variable name";"type";"persistence";"user";"rights";lastchanged;"value";"note"
-    wxStringTokenizer tkz( strVariable, _(";\r\n") );
-    wxstr = tkz.GetNextToken(); // name
-    wxstr = tkz.GetNextToken(); // type
+    std::deque<std::string> tokens;
+    vscp_split( tokens, strVariable, ";" );
 
-    if ( tkz.HasMoreTokens() ) {
-        wxstr = tkz.GetNextToken(); // persistence
-        if ( wxNOT_FOUND != wxstr.Find(_("TRUE")) ) {
+    if (!tokens.empty()) tokens.pop_front(); // name
+    if (!tokens.empty()) tokens.pop_front(); // type
+
+    if ( !tokens.empty() ) {
+        str = tokens.front(); // persistence
+        tokens.pop_front();
+        vscp_trim(str);
+        if ( 0 == vscp_strcasecmp( str.c_str(),"TRUE") ) {
             *pPersistent = true;
         }
         else {
@@ -1846,10 +1820,11 @@ int VscpRemoteTcpIf::getRemoteVariablePersistence( const wxString& name, bool *p
 // getRemoteVariableOwner
 //
 
-int VscpRemoteTcpIf::getRemoteVariableOwner( const wxString& name, uint32_t *pOwner  )
+int VscpRemoteTcpIf::getRemoteVariableOwner( const std::string& name, 
+                                                uint32_t *pOwner  )
 {
-    wxString wxstr;
-    wxString strVariable;
+    std::string str;
+    std::string strVariable;
     
     if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
     
@@ -1858,15 +1833,17 @@ int VscpRemoteTcpIf::getRemoteVariableOwner( const wxString& name, uint32_t *pOw
     }
     
     // Format is: "variable name";"type";"persistence";"user";"rights";lastchanged;"value";"note"
-    wxStringTokenizer tkz( strVariable, _(";\r\n") );
+    std::deque<std::string> tokens;
+    vscp_split( tokens, strVariable, ";" );
     
-    wxstr = tkz.GetNextToken();     // name
-    wxstr = tkz.GetNextToken();     // type
-    wxstr = tkz.GetNextToken();     // persistence
+    if ( !tokens.empty() ) tokens.pop_front();     // name
+    if ( !tokens.empty() ) tokens.pop_front();     // type
+    if ( !tokens.empty() ) tokens.pop_front();     // persistence
 
-    if ( tkz.HasMoreTokens() ) {
-        wxstr = tkz.GetNextToken(); // user
-        *pOwner = vscp_readStringValue( wxstr );
+    if ( !tokens.empty() ) {
+        str = tokens.front(); // user
+        tokens.pop_front();
+        *pOwner = vscp_readStringValue( str );
     }
     else {
         return VSCP_ERROR_ERROR;
@@ -1879,11 +1856,11 @@ int VscpRemoteTcpIf::getRemoteVariableOwner( const wxString& name, uint32_t *pOw
 // getRemoteVariableAccessRights
 //
 
-int VscpRemoteTcpIf::getRemoteVariableAccessRights( const wxString& name, 
+int VscpRemoteTcpIf::getRemoteVariableAccessRights( const std::string& name, 
                                                         uint16_t *pRights  )
 {
-    wxString wxstr;
-    wxString strVariable;
+    std::string str;
+    std::string strVariable;
     
     if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
     
@@ -1892,19 +1869,22 @@ int VscpRemoteTcpIf::getRemoteVariableAccessRights( const wxString& name,
     }
     
     // Format is: "variable name";"type";"persistence";"user";"rights";lastchanged;"value";"note"
-    wxStringTokenizer tkz( strVariable, _(";\r\n") );
-    wxstr = tkz.GetNextToken(); // name
-    wxstr = tkz.GetNextToken(); // type
-    wxstr = tkz.GetNextToken(); // persistence
-    wxstr = tkz.GetNextToken(); // user
-    if ( tkz.HasMoreTokens() ) {
-        wxstr = tkz.GetNextToken(); // rights
+    std::deque<std::string> tokens;
+    vscp_split( tokens, strVariable, ";" );
+ 
+    if (!tokens.empty()) tokens.pop_front(); // name
+    if (!tokens.empty()) tokens.pop_front(); // type
+    if (!tokens.empty()) tokens.pop_front(); // persistence
+    if (!tokens.empty()) tokens.pop_front(); // user
+    if ( !tokens.empty() ) {
+        str = tokens.front(); // rights
+        tokens.pop_front();
     }
     else {
         return VSCP_ERROR_ERROR;
     }
     
-    *pRights = vscp_readStringValue( wxstr );
+    *pRights = vscp_readStringValue( str );
     
     return VSCP_ERROR_SUCCESS;
 }
@@ -1914,14 +1894,14 @@ int VscpRemoteTcpIf::getRemoteVariableAccessRights( const wxString& name,
 // getRemoteVariableAsString
 //
 
-int VscpRemoteTcpIf::getRemoteVariableAsString( const wxString& name, 
-                                                    wxString& strValue )
+int VscpRemoteTcpIf::getRemoteVariableAsString( const std::string& name, 
+                                                    std::string& strValue )
 {
-    wxString strCmd;
+    std::string strCmd;
 
     if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
 
-    strCmd = _("VAR READ ") + name + _("\r\n");
+    strCmd = "VAR READ " + name + "\r\n";
     if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
         return VSCP_ERROR_ERROR;
     }
@@ -1929,7 +1909,7 @@ int VscpRemoteTcpIf::getRemoteVariableAsString( const wxString& name,
     if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
 
     // Get variable data
-    strValue = m_inputStrArray[ 0 ];
+    strValue = m_inputStrArray.front();
 
     // Reply prior to 13.0.1 was
     //
@@ -1942,7 +1922,7 @@ int VscpRemoteTcpIf::getRemoteVariableAsString( const wxString& name,
     // +OK Success. 
 
     if ( VSCP_VERSION( m_version_major, m_version_minor, m_version_release ) < VSCP_VERSION( 13, 0, 1 ) ) { 
-        strValue.StartsWith("+OK - ", &strValue ); // Remove "+OK - " if there
+        vscp_startsWith( strValue, "+OK - ", &strValue ); // Remove "+OK - " if there
     }
     
     return VSCP_ERROR_SUCCESS;
@@ -1952,25 +1932,25 @@ int VscpRemoteTcpIf::getRemoteVariableAsString( const wxString& name,
 // setRemoteVariableFromString
 //
 
-int VscpRemoteTcpIf::setRemoteVariableFromString( const wxString& name, 
-                                                    const wxString& strValue,
+int VscpRemoteTcpIf::setRemoteVariableFromString( const std::string& name, 
+                                                    const std::string& strValue,
                                                     const bool bPersistent,
                                                     const uint32_t rights )
 {
-    wxString strCmd; 
+    std::string strCmd; 
     
     if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
     
-    strCmd = _("VAR WRITE ") + name + _(";STRING;");
+    strCmd = "VAR WRITE " + name + ";STRING;";
     if ( bPersistent ) {
-        strCmd += _("true;");
+        strCmd += "true;";
     }
     else {
-        strCmd += _("false;");
+        strCmd += "false;";
     }
-    strCmd += _(";"); // User is logged in user
-    strCmd += wxString::Format( _("0x%lX"), rights ) + _(";");
-    strCmd += strValue + _("\r\n");
+    strCmd += ";"; // User is logged in user
+    strCmd += vscp_string_format( "0x%lX", rights ) + ";";
+    strCmd += strValue + "\r\n";
     if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
         return VSCP_ERROR_ERROR;
     }
@@ -1978,34 +1958,6 @@ int VscpRemoteTcpIf::setRemoteVariableFromString( const wxString& name,
     return VSCP_ERROR_SUCCESS;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// getRemoteVariableValue
-//
-
-int VscpRemoteTcpIf::getRemoteVariableValue( const wxString& name, 
-                                                wxString& strValue,
-                                                bool bDecode )
-{
-    wxString strCmd;
-
-    if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
-    
-    strCmd = _("VAR READVALUE ") + name + _("\r\n");
-    if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
-        return VSCP_ERROR_ERROR;
-    }
-    
-    if ( m_inputStrArray.GetCount() < 2 ) return VSCP_ERROR_ERROR; 
-
-    // Get value
-    strValue = m_inputStrArray[0];
-
-    if ( bDecode ) {
-        vscp_base64_wxdecode( strValue );   
-    }
-
-    return VSCP_ERROR_SUCCESS;
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 // getRemoteVariableValue
@@ -2024,13 +1976,13 @@ int VscpRemoteTcpIf::getRemoteVariableValue( const std::string& name,
         return VSCP_ERROR_ERROR;
     }
     
-    if ( m_inputStrArray.GetCount() < 2 ) return VSCP_ERROR_ERROR; 
+    if ( m_inputStrArray.size() < 2 ) return VSCP_ERROR_ERROR; 
 
     // Get value
-    strValue = m_inputStrArray[0].ToStdString();
+    strValue = m_inputStrArray.front();
 
     if ( bDecode ) {
-        vscp2_base64_decode( strValue );   
+        vscp_base64_std_decode( strValue );   
     }
 
     return VSCP_ERROR_SUCCESS;
@@ -2041,16 +1993,17 @@ int VscpRemoteTcpIf::getRemoteVariableValue( const std::string& name,
 // setRemoteVariableValue
 //
 
-int VscpRemoteTcpIf::setRemoteVariableValue( const wxString& name, wxString& strValue )
+int VscpRemoteTcpIf::setRemoteVariableValue( const std::string& name, 
+                                                std::string& strValue )
 {
-    wxString strLine;
-    wxString strCmd;
+    std::string strLine;
+    std::string strCmd;
 
     if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
     
-    strCmd = _("VAR WRITEVALUE ") + name + _(" ");
+    strCmd = std::string("VAR WRITEVALUE ") + name + std::string(" ");
     strCmd += strValue;
-    strCmd += _("\r\n");
+    strCmd += std::string("\r\n");
   
     
     if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
@@ -2064,10 +2017,10 @@ int VscpRemoteTcpIf::setRemoteVariableValue( const wxString& name, wxString& str
 // getRemoteVariableBool
 //
 
-int VscpRemoteTcpIf::getRemoteVariableBool( const wxString& name, bool *bValue )
+int VscpRemoteTcpIf::getRemoteVariableBool( const std::string& name, bool *bValue )
 {
     int rv;
-    wxString strValue;
+    std::string strValue;
     
     // Check pointer
     if ( NULL == bValue ) return VSCP_ERROR_PARAMETER;
@@ -2077,7 +2030,8 @@ int VscpRemoteTcpIf::getRemoteVariableBool( const wxString& name, bool *bValue )
     }
         
     // Check the value
-    if ( wxNOT_FOUND != strValue.Lower().Find( _("true") ) ) {
+    vscp_trim(strValue);
+    if ( 0 == vscp_strcasecmp( strValue.c_str(),"true") ) {
         *bValue = true;
     }
     else {
@@ -2092,16 +2046,16 @@ int VscpRemoteTcpIf::getRemoteVariableBool( const wxString& name, bool *bValue )
 // setRemoteVariableBool
 //
 
-int VscpRemoteTcpIf::setRemoteVariableBool( const wxString& name, 
+int VscpRemoteTcpIf::setRemoteVariableBool( const std::string& name, 
                                                 const bool bValue )
 {   
-    wxString strValue;
+    std::string strValue;
     
     if ( bValue ) {
-        strValue = _("TRUE");
+        strValue = "TRUE";
     }
     else {
-        strValue = _("FALSE");
+        strValue = "FALSE";
     }
     
     return setRemoteVariableValue( name, strValue );
@@ -2112,10 +2066,10 @@ int VscpRemoteTcpIf::setRemoteVariableBool( const wxString& name,
 // getRemoteVariableInt
 //
 
-int VscpRemoteTcpIf::getRemoteVariableInt( const wxString& name, int *value )
+int VscpRemoteTcpIf::getRemoteVariableInt( const std::string& name, int *value )
 {
     int rv;
-    wxString strValue;
+    std::string strValue;
     
     // Check pointer
     if ( NULL == value ) return VSCP_ERROR_PARAMETER;
@@ -2125,10 +2079,7 @@ int VscpRemoteTcpIf::getRemoteVariableInt( const wxString& name, int *value )
     }
         
     // Get the value
-    long retval;
-    if ( strValue.ToLong( &retval ) ) {
-        *value = retval;
-    }
+    *value = vscp_readStringValue( strValue );
     
     return VSCP_ERROR_SUCCESS;
 }
@@ -2138,11 +2089,11 @@ int VscpRemoteTcpIf::getRemoteVariableInt( const wxString& name, int *value )
 // setRemoteVariableInt
 //
 
-int VscpRemoteTcpIf::setRemoteVariableInt( const wxString& name, int value )
+int VscpRemoteTcpIf::setRemoteVariableInt( const std::string& name, int value )
 {
-    wxString strValue;
+    std::string strValue;
 
-    strValue.Printf( _("%d"), value );   
+    strValue = vscp_string_format( "%d", value );   
     return setRemoteVariableValue( name, strValue );
 }
 
@@ -2150,10 +2101,10 @@ int VscpRemoteTcpIf::setRemoteVariableInt( const wxString& name, int value )
 // getRemoteVariableLong
 //
 
-int VscpRemoteTcpIf::getRemoteVariableLong( const wxString& name, long *value )
+int VscpRemoteTcpIf::getRemoteVariableLong( const std::string& name, long *value )
 {
     int rv;
-    wxString strValue;
+    std::string strValue;
     
     // Check pointer
     if ( NULL == value ) return VSCP_ERROR_PARAMETER;
@@ -2163,10 +2114,7 @@ int VscpRemoteTcpIf::getRemoteVariableLong( const wxString& name, long *value )
     }
         
     // Get the value
-    long retval;
-    if ( strValue.ToLong( &retval ) ) {
-        *value = retval;
-    }
+    *value = vscp_readStringValue( strValue );
 
     return VSCP_ERROR_SUCCESS;
 }
@@ -2175,11 +2123,11 @@ int VscpRemoteTcpIf::getRemoteVariableLong( const wxString& name, long *value )
 // setRemoteVariableLong
 //
 
-int VscpRemoteTcpIf::setRemoteVariableLong( const wxString& name, long value )
+int VscpRemoteTcpIf::setRemoteVariableLong( const std::string& name, long value )
 {
-    wxString strValue;
+    std::string strValue;
 
-    strValue.Printf( _("%ld"), value );
+    strValue = vscp_string_format( "%ld", value );
     return setRemoteVariableValue( name, strValue );
 }
 
@@ -2187,10 +2135,10 @@ int VscpRemoteTcpIf::setRemoteVariableLong( const wxString& name, long value )
 // getRemoteVariableDouble
 //
 
-int VscpRemoteTcpIf::getRemoteVariableDouble( const wxString& name, double *value )
+int VscpRemoteTcpIf::getRemoteVariableDouble( const std::string& name, double *value )
 {
     int rv;
-    wxString strValue;
+    std::string strValue;
     
     // Check pointer
     if ( NULL == value ) return VSCP_ERROR_PARAMETER;
@@ -2200,10 +2148,7 @@ int VscpRemoteTcpIf::getRemoteVariableDouble( const wxString& name, double *valu
     }
         
     // Get the value
-    double retval;
-    if ( strValue.ToCDouble( &retval ) ) {
-        *value = retval;
-    }
+    *value = atof( strValue.c_str() );
 
     return VSCP_ERROR_SUCCESS;
 }
@@ -2212,11 +2157,11 @@ int VscpRemoteTcpIf::getRemoteVariableDouble( const wxString& name, double *valu
 // setRemoteVariableDouble
 //
 
-int VscpRemoteTcpIf::setRemoteVariableDouble( const wxString& name, double value )
+int VscpRemoteTcpIf::setRemoteVariableDouble( const std::string& name, double value )
 {
-    wxString strValue;
+    std::string strValue;
 
-    strValue.Printf( _("%f"), value );
+    strValue = vscp_string_format( "%f", value );
     return setRemoteVariableValue( name, strValue );
 }
 
@@ -2224,7 +2169,7 @@ int VscpRemoteTcpIf::setRemoteVariableDouble( const wxString& name, double value
 // getRemoteVariableMeasurement
 //
 
-int VscpRemoteTcpIf::getRemoteVariableMeasurement( const wxString& name, 
+int VscpRemoteTcpIf::getRemoteVariableMeasurement( const std::string& name, 
                                                         double *pvalue,
                                                         uint8_t *punit,
                                                         uint8_t *psensoridx,
@@ -2232,8 +2177,8 @@ int VscpRemoteTcpIf::getRemoteVariableMeasurement( const wxString& name,
                                                         uint8_t *psubzone )
 {
     int rv;
-    wxString str;
-    wxString strValue;
+    std::string str;
+    std::string strValue;
     
     // Check pointers
     if ( NULL == pvalue ) return VSCP_ERROR_PARAMETER;
@@ -2247,38 +2192,34 @@ int VscpRemoteTcpIf::getRemoteVariableMeasurement( const wxString& name,
     }
     
     // value,unit,sensoridx,zone,subzone
-    wxStringTokenizer tkz( strValue, _(",") );
+    std::deque<std::string> tokens;
+    vscp_split( tokens, strValue, "," );
     
     // Must have value
-    if ( !tkz.HasMoreTokens() ) {
+    if ( tokens.size() < 5 ) {
         return VSCP_ERROR_INTERNAL;  // Value should be there
     }
     
-    str = tkz.GetNextToken();
-    if ( !str.ToCDouble( pvalue ) ) {
-        return VSCP_ERROR_INTERNAL;  // Value should have correct format
-    }
+    str = tokens.front();
+    tokens.pop_front();
+    *pvalue = atof( str.c_str() );
     
-    *punit = 0;
-    if ( tkz.HasMoreTokens() ) {
-        *punit = vscp_readStringValue( tkz.GetNextToken() );
-    }
+    str = tokens.front();
+    tokens.pop_front();
+    *punit = vscp_readStringValue( str );
+
+    str = tokens.front();
+    tokens.pop_front();
+    *psensoridx = vscp_readStringValue( str );
     
-    *psensoridx = 0;
-    if ( tkz.HasMoreTokens() ) {
-        *psensoridx = vscp_readStringValue( tkz.GetNextToken() );
-    }
-    
-    *pzone = 255;
-    if ( tkz.HasMoreTokens() ) {
-        *pzone = vscp_readStringValue( tkz.GetNextToken() );
-    }
-    
-    *psubzone = 255;
-    if ( tkz.HasMoreTokens() ) {
-        *psubzone = vscp_readStringValue( tkz.GetNextToken() );
-    }
-    
+    str = tokens.front();
+    tokens.pop_front();
+    *pzone = vscp_readStringValue( str );
+
+    str = tokens.front();
+    tokens.pop_front();
+    *psubzone = vscp_readStringValue( str );
+ 
     return VSCP_ERROR_SUCCESS;
 }
 
@@ -2286,16 +2227,16 @@ int VscpRemoteTcpIf::getRemoteVariableMeasurement( const wxString& name,
 // setRemoteVariableMeasurement
 //
 
-int VscpRemoteTcpIf::setRemoteVariableMeasurement( const wxString& name, 
+int VscpRemoteTcpIf::setRemoteVariableMeasurement( const std::string& name, 
                                                         double value,
                                                         uint8_t unit,
                                                         uint8_t sensoridx,
                                                         uint8_t zone,
                                                         uint8_t subzone )
 {
-    wxString strValue;
+    std::string strValue;
     
-    strValue = wxString::Format( _("%f,%d,%d,%d,%d"), 
+    strValue = vscp_string_format( "%f,%d,%d,%d,%d", 
                                     value, 
                                     (int)unit, 
                                     (int)sensoridx, 
@@ -2309,10 +2250,10 @@ int VscpRemoteTcpIf::setRemoteVariableMeasurement( const wxString& name,
 // getRemoteVariableEvent
 //
 
-int VscpRemoteTcpIf::getRemoteVariableEvent( const wxString& name, vscpEvent *pEvent )
+int VscpRemoteTcpIf::getRemoteVariableEvent( const std::string& name, vscpEvent *pEvent )
 {
     int rv;
-    wxString strValue;
+    std::string strValue;
     
     // Check pointer
     if ( NULL == pEvent ) return VSCP_ERROR_PARAMETER;
@@ -2330,9 +2271,10 @@ int VscpRemoteTcpIf::getRemoteVariableEvent( const wxString& name, vscpEvent *pE
 // setRemoteVariableEvent
 //
 
-int VscpRemoteTcpIf::setRemoteVariableEvent( const wxString& name, vscpEvent *pEvent )
+int VscpRemoteTcpIf::setRemoteVariableEvent( const std::string& name, 
+                                                vscpEvent *pEvent )
 {
-    wxString strValue;
+    std::string strValue;
     
     // Check pointer
     if ( NULL == pEvent ) return VSCP_ERROR_PARAMETER;
@@ -2345,10 +2287,11 @@ int VscpRemoteTcpIf::setRemoteVariableEvent( const wxString& name, vscpEvent *pE
 // getRemoteVariableEventEx
 //
 
-int VscpRemoteTcpIf::getRemoteVariableEventEx( const wxString& name, vscpEventEx *pEventEx )
+int VscpRemoteTcpIf::getRemoteVariableEventEx( const std::string& name, 
+                                                vscpEventEx *pEventEx )
 {    
     int rv;
-    wxString strValue;
+    std::string strValue;
     
     // Check pointer
     if ( NULL == pEventEx ) return VSCP_ERROR_PARAMETER;
@@ -2366,9 +2309,10 @@ int VscpRemoteTcpIf::getRemoteVariableEventEx( const wxString& name, vscpEventEx
 // setRemoteVariableEventEx
 //
 
-int VscpRemoteTcpIf::setRemoteVariableEventEx( const wxString& name, vscpEventEx *pEventEx )
+int VscpRemoteTcpIf::setRemoteVariableEventEx( const std::string& name, 
+                                                vscpEventEx *pEventEx )
 {
-    wxString strValue;
+    std::string strValue;
     
     // Check pointer
     if ( NULL == pEventEx ) return VSCP_ERROR_PARAMETER;
@@ -2381,10 +2325,10 @@ int VscpRemoteTcpIf::setRemoteVariableEventEx( const wxString& name, vscpEventEx
 // getRemoteVariableGUID
 //
 
-int VscpRemoteTcpIf::getRemoteVariableGUID( const wxString& name, cguid& guid )
+int VscpRemoteTcpIf::getRemoteVariableGUID( const std::string& name, cguid& guid )
 {    
     int rv;
-    wxString strValue;
+    std::string strValue;
     if ( VSCP_ERROR_SUCCESS != ( rv = getRemoteVariableValue( name, strValue ) ) ) {
         return rv;
     }
@@ -2398,24 +2342,24 @@ int VscpRemoteTcpIf::getRemoteVariableGUID( const wxString& name, cguid& guid )
 // setRemoteVariableGUID
 //
 
-int VscpRemoteTcpIf::setRemoteVariableGUID( const wxString& name, cguid& guid )
+int VscpRemoteTcpIf::setRemoteVariableGUID( const std::string& name, cguid& guid )
 {
-    wxString strValue;
+    std::string strValue;
 
     guid.toString( strValue );
-    return setRemoteVariableValue( name, strValue );;
+    return setRemoteVariableValue( name, strValue );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // getRemoteVariableVSCPdata
 //
 
-int VscpRemoteTcpIf::getRemoteVariableVSCPdata( const wxString& name, 
+int VscpRemoteTcpIf::getRemoteVariableVSCPdata( const std::string& name, 
                                                     uint8_t *pData, 
                                                     uint16_t *psize )
 {
     int rv;
-    wxString strValue;
+    std::string strValue;
     
     // Check pointers
     if ( NULL == pData ) return VSCP_ERROR_PARAMETER;
@@ -2434,11 +2378,11 @@ int VscpRemoteTcpIf::getRemoteVariableVSCPdata( const wxString& name,
 // setRemoteVariableVSCPdata
 //
 
-int VscpRemoteTcpIf::setRemoteVariableVSCPdata( const wxString& name, 
+int VscpRemoteTcpIf::setRemoteVariableVSCPdata( const std::string& name, 
                                                     uint8_t *pData, 
                                                     uint16_t size )
 {
-    wxString strValue;
+    std::string strValue;
 
     vscp_writeVscpDataWithSizeToString( size, pData, strValue, false, false );
     return setRemoteVariableValue( name, strValue );
@@ -2448,11 +2392,11 @@ int VscpRemoteTcpIf::setRemoteVariableVSCPdata( const wxString& name,
 // getRemoteVariableVSCPclass
 //
 
-int VscpRemoteTcpIf::getRemoteVariableVSCPclass( const wxString& name, 
+int VscpRemoteTcpIf::getRemoteVariableVSCPclass( const std::string& name, 
                                                     uint16_t *vscp_class )
 {
     int rv;
-    wxString strValue;
+    std::string strValue;
     
     // Check pointer
     if ( NULL == vscp_class ) return VSCP_ERROR_PARAMETER;
@@ -2461,9 +2405,7 @@ int VscpRemoteTcpIf::getRemoteVariableVSCPclass( const wxString& name,
         return rv;
     }
 
-    long longVal;
-    strValue.ToLong( &longVal );
-    *vscp_class = (uint16_t)longVal;
+    *vscp_class = (uint16_t)stoul(strValue);
 
     return VSCP_ERROR_SUCCESS;
 }
@@ -2472,12 +2414,12 @@ int VscpRemoteTcpIf::getRemoteVariableVSCPclass( const wxString& name,
 // getRemoteVariableVSCPclass
 //
 
-int VscpRemoteTcpIf::setRemoteVariableVSCPclass( const wxString& name, 
+int VscpRemoteTcpIf::setRemoteVariableVSCPclass( const std::string& name, 
                                                     uint16_t vscp_class )
 {
-    wxString strValue;
+    std::string strValue;
 
-    strValue.Printf( _("%hu"), vscp_class );
+    strValue = vscp_string_format( "%hu", vscp_class );
     return setRemoteVariableValue( name, strValue );
 }
 
@@ -2486,11 +2428,11 @@ int VscpRemoteTcpIf::setRemoteVariableVSCPclass( const wxString& name,
 // getRemoteVariableVSCPtype
 //
 
-int VscpRemoteTcpIf::getRemoteVariableVSCPtype( const wxString& name, 
+int VscpRemoteTcpIf::getRemoteVariableVSCPtype( const std::string& name, 
                                                     uint16_t *vscp_type )
 {
     int rv;
-    wxString strValue;
+    std::string strValue;
     
     // Check pointer
     if ( NULL == vscp_type ) return VSCP_ERROR_PARAMETER;
@@ -2499,9 +2441,7 @@ int VscpRemoteTcpIf::getRemoteVariableVSCPtype( const wxString& name,
         return rv;
     }
 
-    long longVal;
-    strValue.ToLong( &longVal );
-    *vscp_type = (uint16_t)longVal;
+    *vscp_type = (uint16_t)stoul(strValue);
 
     return VSCP_ERROR_SUCCESS;
 }
@@ -2511,12 +2451,12 @@ int VscpRemoteTcpIf::getRemoteVariableVSCPtype( const wxString& name,
 // getRemoteVariableVSCPtype
 //
 
-int VscpRemoteTcpIf::setRemoteVariableVSCPtype( const wxString& name, 
+int VscpRemoteTcpIf::setRemoteVariableVSCPtype( const std::string& name, 
                                                     uint16_t vscp_type )
 {
-    wxString strValue;
+    std::string strValue;
 
-    strValue.Printf( _("%hu"), vscp_type );
+    strValue = vscp_string_format( "%hu", vscp_type );
     return setRemoteVariableValue( name, strValue );
 }
 
@@ -2526,11 +2466,11 @@ int VscpRemoteTcpIf::setRemoteVariableVSCPtype( const wxString& name,
 // getRemoteVariableVSCPTimestamp
 //
 
-int VscpRemoteTcpIf::getRemoteVariableVSCPTimestamp( const wxString& name, 
+int VscpRemoteTcpIf::getRemoteVariableVSCPTimestamp( const std::string& name, 
                                                         uint32_t *vscp_timestamp )
 {
     int rv;
-    wxString strValue;
+    std::string strValue;
     
     // Check pointer
     if ( NULL == vscp_timestamp ) return VSCP_ERROR_PARAMETER;
@@ -2539,9 +2479,7 @@ int VscpRemoteTcpIf::getRemoteVariableVSCPTimestamp( const wxString& name,
         return rv;
     }
 
-    unsigned long longVal;
-    strValue.ToULong( &longVal );
-    *vscp_timestamp = (uint32_t)longVal;
+    *vscp_timestamp = (uint32_t)stoul(strValue);
 
     return VSCP_ERROR_SUCCESS;
 }
@@ -2550,12 +2488,12 @@ int VscpRemoteTcpIf::getRemoteVariableVSCPTimestamp( const wxString& name,
 // setRemoteVariableVSCPTimestamp
 //
 
-int VscpRemoteTcpIf::setRemoteVariableVSCPTimestamp( const wxString& name, 
+int VscpRemoteTcpIf::setRemoteVariableVSCPTimestamp( const std::string& name, 
                                                         uint32_t vscp_timestamp)
 {
-    wxString strValue;
+    std::string strValue;
 
-    strValue.Printf( _("%lu"), (unsigned long)vscp_timestamp );
+    strValue = vscp_string_format("%lu", (unsigned long)vscp_timestamp );
     return setRemoteVariableValue( name, strValue );
 }
 
@@ -2564,16 +2502,17 @@ int VscpRemoteTcpIf::setRemoteVariableVSCPTimestamp( const wxString& name,
 // getRemoteVariableDateTime
 //
 
-int VscpRemoteTcpIf::getRemoteVariableDateTime( const wxString& name, wxDateTime& datetime )
+int VscpRemoteTcpIf::getRemoteVariableDateTime( const std::string& name, 
+                                                    vscpdatetime& datetime )
 {
     int rv;
-    wxString strValue;
+    std::string strValue;
          
     if ( VSCP_ERROR_SUCCESS != ( rv = getRemoteVariableValue( name, strValue ) ) ) {
         return rv;
     }
 
-    datetime.ParseISOCombined( strValue );
+    datetime.set( strValue );
 
     return VSCP_ERROR_SUCCESS;
 }
@@ -2582,11 +2521,12 @@ int VscpRemoteTcpIf::getRemoteVariableDateTime( const wxString& name, wxDateTime
 // setRemoteVariableDateTime
 // 
 
-int VscpRemoteTcpIf::setRemoteVariableDateTime( const wxString& name, wxDateTime& datetime )
+int VscpRemoteTcpIf::setRemoteVariableDateTime( const std::string& name, 
+                                                    vscpdatetime& datetime )
 {
-    wxString strValue;
+    std::string strValue;
 
-    strValue = datetime.FormatISOCombined();
+    strValue = datetime.getISODateTime();
     return setRemoteVariableValue( name, strValue );
 }
 
@@ -2594,16 +2534,17 @@ int VscpRemoteTcpIf::setRemoteVariableDateTime( const wxString& name, wxDateTime
 // getRemoteVariableDate
 //
 
-int VscpRemoteTcpIf::getRemoteVariableDate( const wxString& name, wxDateTime& date )
+int VscpRemoteTcpIf::getRemoteVariableDate( const std::string& name, 
+                                                vscpdatetime& date )
 {
     int rv;
-    wxString strValue;
+    std::string strValue;
          
     if ( VSCP_ERROR_SUCCESS != ( rv = getRemoteVariableValue( name, strValue ) ) ) {
         return rv;
     }
 
-    date.ParseISODate( strValue );
+    date.setISODate( strValue );
 
     return VSCP_ERROR_SUCCESS;
 }
@@ -2612,11 +2553,12 @@ int VscpRemoteTcpIf::getRemoteVariableDate( const wxString& name, wxDateTime& da
 // setRemoteVariableDate
 //
 
-int VscpRemoteTcpIf::setRemoteVariableDate( const wxString& name, wxDateTime& date )
+int VscpRemoteTcpIf::setRemoteVariableDate( const std::string& name, 
+                                                vscpdatetime& date )
 {
-    wxString strValue;
+    std::string strValue;
 
-    strValue = date.FormatISODate();
+    strValue = date.getISODate();
     return setRemoteVariableValue( name, strValue );
 }
     
@@ -2624,16 +2566,17 @@ int VscpRemoteTcpIf::setRemoteVariableDate( const wxString& name, wxDateTime& da
 // getRemoteVariableTime
 //
 
-int VscpRemoteTcpIf::getRemoteVariableTime( const wxString& name, wxDateTime& time )
+int VscpRemoteTcpIf::getRemoteVariableTime( const std::string& name, 
+                                                vscpdatetime& time )
 {
     int rv;
-    wxString strValue;
+    std::string strValue;
          
     if ( VSCP_ERROR_SUCCESS != ( rv = getRemoteVariableValue( name, strValue ) ) ) {
         return rv;
     }
 
-    time.ParseISOTime( strValue );
+    time.setISOTime( strValue );
 
     return VSCP_ERROR_SUCCESS;
 }
@@ -2642,11 +2585,12 @@ int VscpRemoteTcpIf::getRemoteVariableTime( const wxString& name, wxDateTime& ti
 // setRemoteVariableTime
 //
 
-int VscpRemoteTcpIf::setRemoteVariableTime( const wxString& name, wxDateTime& time )
+int VscpRemoteTcpIf::setRemoteVariableTime( const std::string& name, 
+                                                vscpdatetime& time )
 {
-    wxString strValue;
+    std::string strValue;
 
-    strValue = time.FormatISOTime();
+    strValue = time.getISOTime();
     return setRemoteVariableValue( name, strValue );
 }
 
@@ -2654,10 +2598,11 @@ int VscpRemoteTcpIf::setRemoteVariableTime( const wxString& name, wxDateTime& ti
 // getRemoteVariableBlob
 //
 
-int VscpRemoteTcpIf::getRemoteVariableBlob( const wxString& name, wxString& blob )
+int VscpRemoteTcpIf::getRemoteVariableBlob( const std::string& name, 
+                                                std::string& blob )
 {
     int rv;
-    wxString strValue;
+    std::string strValue;
          
     if ( VSCP_ERROR_SUCCESS != ( rv = getRemoteVariableValue( name, blob ) ) ) {
         return rv;
@@ -2670,9 +2615,10 @@ int VscpRemoteTcpIf::getRemoteVariableBlob( const wxString& name, wxString& blob
 // setRemoteVariableBlob
 //
 
-int VscpRemoteTcpIf::setRemoteVariableBlob( const wxString& name, wxString& blob )
+int VscpRemoteTcpIf::setRemoteVariableBlob( const std::string& name, 
+                                                std::string& blob )
 {
-    wxString strValue;
+    std::string strValue;
 
     return setRemoteVariableValue( name, blob );
 }
@@ -2681,10 +2627,11 @@ int VscpRemoteTcpIf::setRemoteVariableBlob( const wxString& name, wxString& blob
 // getRemoteVariableMIME
 //
 
-int VscpRemoteTcpIf::getRemoteVariableMIME( const wxString& name, wxString& mime )
+int VscpRemoteTcpIf::getRemoteVariableMIME( const std::string& name, 
+                                                std::string& mime )
 {
     int rv;
-    wxString strValue;
+    std::string strValue;
          
     if ( VSCP_ERROR_SUCCESS != ( rv = getRemoteVariableValue( name, mime ) ) ) {
         return rv;
@@ -2697,9 +2644,10 @@ int VscpRemoteTcpIf::getRemoteVariableMIME( const wxString& name, wxString& mime
 // setRemoteVariableMIME
 //
 
-int VscpRemoteTcpIf::setRemoteVariableMIME( const wxString& name, wxString& mime )
+int VscpRemoteTcpIf::setRemoteVariableMIME( const std::string& name, 
+                                                std::string& mime )
 {
-    wxString strValue;
+    std::string strValue;
 
     return setRemoteVariableValue( name, mime );
 }
@@ -2708,10 +2656,11 @@ int VscpRemoteTcpIf::setRemoteVariableMIME( const wxString& name, wxString& mime
 // getRemoteVariableHTML
 //
 
-int VscpRemoteTcpIf::getRemoteVariableHTML( const wxString& name, wxString& html )
+int VscpRemoteTcpIf::getRemoteVariableHTML( const std::string& name, 
+                                                std::string& html )
 {
     int rv;
-    wxString strValue;
+    std::string strValue;
          
     if ( VSCP_ERROR_SUCCESS != ( rv = getRemoteVariableValue( name, html ) ) ) {
         return rv;
@@ -2724,9 +2673,10 @@ int VscpRemoteTcpIf::getRemoteVariableHTML( const wxString& name, wxString& html
 // setRemoteVariableHTML
 //
 
-int VscpRemoteTcpIf::setRemoteVariableHTML( const wxString& name, wxString& html )
+int VscpRemoteTcpIf::setRemoteVariableHTML( const std::string& name, 
+                                                std::string& html )
 {
-    wxString strValue;
+    std::string strValue;
 
     return setRemoteVariableValue( name, html );
 }
@@ -2735,10 +2685,11 @@ int VscpRemoteTcpIf::setRemoteVariableHTML( const wxString& name, wxString& html
 // getRemoteVariableJavaScript
 //
 
-int VscpRemoteTcpIf::getRemoteVariableJavaScript( const wxString& name, wxString& js )
+int VscpRemoteTcpIf::getRemoteVariableJavaScript( const std::string& name, 
+                                                    std::string& js )
 {
     int rv;
-    wxString strValue;
+    std::string strValue;
          
     if ( VSCP_ERROR_SUCCESS != ( rv = getRemoteVariableValue( name, js ) ) ) {
         return rv;
@@ -2752,9 +2703,10 @@ int VscpRemoteTcpIf::getRemoteVariableJavaScript( const wxString& name, wxString
 // setRemoteVariableJavaScript
 //
 
-int VscpRemoteTcpIf::setRemoteVariableJavaScript( const wxString& name, wxString& js )
+int VscpRemoteTcpIf::setRemoteVariableJavaScript( const std::string& name, 
+                                                    std::string& js )
 {
-    wxString strValue;
+    std::string strValue;
 
     return setRemoteVariableValue( name, js );
 }
@@ -2763,10 +2715,11 @@ int VscpRemoteTcpIf::setRemoteVariableJavaScript( const wxString& name, wxString
 // vgetRemoteVariableLUA
 //
 
-int VscpRemoteTcpIf::getRemoteVariableLUA( const wxString& name, wxString& lua )
+int VscpRemoteTcpIf::getRemoteVariableLUA( const std::string& name, 
+                                                std::string& lua )
 {
     int rv;
-    wxString strValue;
+    std::string strValue;
          
     if ( VSCP_ERROR_SUCCESS != ( rv = getRemoteVariableValue( name, lua ) ) ) {
         return rv;
@@ -2779,9 +2732,10 @@ int VscpRemoteTcpIf::getRemoteVariableLUA( const wxString& name, wxString& lua )
 // setRemoteVariableLUA
 //
 
-int VscpRemoteTcpIf::setRemoteVariableLUA( const wxString& name, wxString& lua )
+int VscpRemoteTcpIf::setRemoteVariableLUA( const std::string& name, 
+                                            std::string& lua )
 {
-    wxString strValue;
+    std::string strValue;
 
     return setRemoteVariableValue( name, lua );
 }
@@ -2790,10 +2744,11 @@ int VscpRemoteTcpIf::setRemoteVariableLUA( const wxString& name, wxString& lua )
 // getRemoteVariableLUARES
 //
 
-int VscpRemoteTcpIf::getRemoteVariableLUARES( const wxString& name, wxString& luares )
+int VscpRemoteTcpIf::getRemoteVariableLUARES( const std::string& name, 
+                                                std::string& luares )
 {
     int rv;
-    wxString strValue;
+    std::string strValue;
          
     if ( VSCP_ERROR_SUCCESS != ( rv = getRemoteVariableValue( name, luares ) ) ) {
         return rv;
@@ -2806,9 +2761,10 @@ int VscpRemoteTcpIf::getRemoteVariableLUARES( const wxString& name, wxString& lu
 // setRemoteVariableLUARES
 //
 
-int VscpRemoteTcpIf::setRemoteVariableLUARES( const wxString& name, wxString& luares )
+int VscpRemoteTcpIf::setRemoteVariableLUARES( const std::string& name, 
+                                                std::string& luares )
 {
-    wxString strValue;
+    std::string strValue;
 
     return setRemoteVariableValue( name, luares );
 }
@@ -2817,10 +2773,11 @@ int VscpRemoteTcpIf::setRemoteVariableLUARES( const wxString& name, wxString& lu
 // getRemoteVariableUX1
 //
 
-int VscpRemoteTcpIf::getRemoteVariableUX1( const wxString& name, wxString& ux1 )
+int VscpRemoteTcpIf::getRemoteVariableUX1( const std::string& name, 
+                                            std::string& ux1 )
 {
     int rv;
-    wxString strValue;
+    std::string strValue;
          
     if ( VSCP_ERROR_SUCCESS != ( rv = getRemoteVariableValue( name, ux1 ) ) ) {
         return rv;
@@ -2833,9 +2790,10 @@ int VscpRemoteTcpIf::getRemoteVariableUX1( const wxString& name, wxString& ux1 )
 // setRemoteVariableUX1
 //
 
-int VscpRemoteTcpIf::setRemoteVariableUX1( const wxString& name, wxString& ux1 )
+int VscpRemoteTcpIf::setRemoteVariableUX1( const std::string& name, 
+                                            std::string& ux1 )
 {
-    wxString strValue;
+    std::string strValue;
 
     return setRemoteVariableValue( name, ux1 );
 }
@@ -2844,10 +2802,11 @@ int VscpRemoteTcpIf::setRemoteVariableUX1( const wxString& name, wxString& ux1 )
 // getRemoteVariableDMROW
 //
 
-int VscpRemoteTcpIf::getRemoteVariableDMROW( const wxString& name, wxString& dmrow )
+int VscpRemoteTcpIf::getRemoteVariableDMROW( const std::string& name, 
+                                                std::string& dmrow )
 {
     int rv;
-    wxString strValue;
+    std::string strValue;
          
     if ( VSCP_ERROR_SUCCESS != ( rv = getRemoteVariableValue( name, dmrow ) ) ) {
         return rv;
@@ -2861,9 +2820,10 @@ int VscpRemoteTcpIf::getRemoteVariableDMROW( const wxString& name, wxString& dmr
 // setRemoteVariableDMROW
 //
 
-int VscpRemoteTcpIf::setRemoteVariableDMROW( const wxString& name, wxString& dmrow )
+int VscpRemoteTcpIf::setRemoteVariableDMROW( const std::string& name, 
+                                                std::string& dmrow )
 {
-    wxString strValue;
+    std::string strValue;
 
     return setRemoteVariableValue( name, dmrow );
 }
@@ -2873,10 +2833,11 @@ int VscpRemoteTcpIf::setRemoteVariableDMROW( const wxString& name, wxString& dmr
 // getRemoteVariableDriver
 //
 
-int VscpRemoteTcpIf::getRemoteVariableDriver( const wxString& name, wxString& drv )
+int VscpRemoteTcpIf::getRemoteVariableDriver( const std::string& name, 
+                                                std::string& drv )
 {
     int rv;
-    wxString strValue;
+    std::string strValue;
          
     if ( VSCP_ERROR_SUCCESS != ( rv = getRemoteVariableValue( name, drv ) ) ) {
         return rv;
@@ -2889,9 +2850,10 @@ int VscpRemoteTcpIf::getRemoteVariableDriver( const wxString& name, wxString& dr
 // setRemoteVariableDriver
 //
 
-int VscpRemoteTcpIf::setRemoteVariableDriver( const wxString& name, wxString& drv )
+int VscpRemoteTcpIf::setRemoteVariableDriver( const std::string& name, 
+                                                std::string& drv )
 {
-    wxString strValue;
+    std::string strValue;
 
     return setRemoteVariableValue( name, drv );
 }
@@ -2900,10 +2862,10 @@ int VscpRemoteTcpIf::setRemoteVariableDriver( const wxString& name, wxString& dr
 // getRemoteVariableUser
 //
 
-int VscpRemoteTcpIf::getRemoteVariableUser( const wxString& name, wxString& user )
+int VscpRemoteTcpIf::getRemoteVariableUser( const std::string& name, std::string& user )
 {
     int rv;
-    wxString strValue;
+    std::string strValue;
          
     if ( VSCP_ERROR_SUCCESS != ( rv = getRemoteVariableValue( name, user ) ) ) {
         return rv;
@@ -2916,9 +2878,10 @@ int VscpRemoteTcpIf::getRemoteVariableUser( const wxString& name, wxString& user
 // setRemoteVariableUser
 //
 
-int VscpRemoteTcpIf::setRemoteVariableUser( const wxString& name, wxString& user )
+int VscpRemoteTcpIf::setRemoteVariableUser( const std::string& name, 
+                                                std::string& user )
 {
-    wxString strValue;
+    std::string strValue;
 
     return setRemoteVariableValue( name, user );
 }
@@ -2927,10 +2890,11 @@ int VscpRemoteTcpIf::setRemoteVariableUser( const wxString& name, wxString& user
 // getRemoteVariableFilter
 //
 
-int VscpRemoteTcpIf::getRemoteVariableFilter( const wxString& name, wxString& filter )
+int VscpRemoteTcpIf::getRemoteVariableFilter( const std::string& name, 
+                                                std::string& filter )
 {
     int rv;
-    wxString strValue;
+    std::string strValue;
          
     if ( VSCP_ERROR_SUCCESS != ( rv = getRemoteVariableValue( name, filter ) ) ) {
         return rv;
@@ -2943,9 +2907,10 @@ int VscpRemoteTcpIf::getRemoteVariableFilter( const wxString& name, wxString& fi
 // setRemoteVariableFilter
 //
 
-int VscpRemoteTcpIf::setRemoteVariableFilter( const wxString& name, wxString& filter )
+int VscpRemoteTcpIf::setRemoteVariableFilter( const std::string& name, 
+                                                std::string& filter )
 {
-    wxString strValue;
+    std::string strValue;
 
     return setRemoteVariableValue( name, filter );
 }
@@ -2975,14 +2940,14 @@ int VscpRemoteTcpIf::setRemoteVariableFilter( const wxString& name, wxString& fi
 // tableCreate
 //
 
-int VscpRemoteTcpIf::tableCreate( const wxString& defTable )
+int VscpRemoteTcpIf::tableCreate( const std::string& defTable )
 {    
-    wxString strCmd;
+    std::string strCmd;
 
     if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
     
-    strCmd = _("TABLE CREATE ") + defTable;
-    strCmd += _("\r\n");
+    strCmd = "TABLE CREATE " + defTable;
+    strCmd += "\r\n";
     
     if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
         return VSCP_ERROR_ERROR;
@@ -2996,17 +2961,17 @@ int VscpRemoteTcpIf::tableCreate( const wxString& defTable )
 // tableDelete
 //
 
-int VscpRemoteTcpIf::tableDelete( const wxString& tblName, bool bDeleteFile )
+int VscpRemoteTcpIf::tableDelete( const std::string& tblName, bool bDeleteFile )
 {
-    wxString strCmd;
+    std::string strCmd;
 
     if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
     
-    strCmd = _("TABLE DELETE ") + tblName + _(" ");
+    strCmd = "TABLE DELETE " + tblName + " ";
     if ( bDeleteFile ) {
-        strCmd += _("TRUE");
+        strCmd += "TRUE";
     }
-    strCmd += _("\r\n");
+    strCmd += "\r\n";
     
     if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
         return VSCP_ERROR_ERROR;
@@ -3019,15 +2984,15 @@ int VscpRemoteTcpIf::tableDelete( const wxString& tblName, bool bDeleteFile )
 // tableList
 //
 
-int VscpRemoteTcpIf::tableList( wxArrayString &tablesArray )
+int VscpRemoteTcpIf::tableList( std::deque<std::string> &tablesArray )
 {
-    wxString strCmd;
+    std::string strCmd;
     
     if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
     
-    strCmd = _("TABLE LIST\r\n");
-    //if ( type ) strCmd += wxString::Format( _("%d"), type );
-    //strCmd += _("\r\n");
+    strCmd = "TABLE LIST\r\n";
+    //if ( type ) strCmd += vscp_string_format("%d", type );
+    //strCmd += "\r\n";
     if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
         return VSCP_ERROR_ERROR;
     }
@@ -3036,8 +3001,8 @@ int VscpRemoteTcpIf::tableList( wxArrayString &tablesArray )
     
     // Handle the data (if any)
     for ( unsigned int i=0; i<getInputQueueCount(); i++ ) {
-        if ( wxNOT_FOUND == m_inputStrArray[ i ].Find( _("+OK") ) ) { 
-            tablesArray.Add( m_inputStrArray[ i ] );            
+        if ( std::string::npos == m_inputStrArray[ i ].find( "+OK" ) ) { 
+            tablesArray.push_back( m_inputStrArray[ i ] );            
         };
     }
     
@@ -3048,18 +3013,20 @@ int VscpRemoteTcpIf::tableList( wxArrayString &tablesArray )
 // tableListInfo
 //
 
-int VscpRemoteTcpIf::tableListInfo( const wxString &tblName, wxString &tableInfo, bool bXML )
+int VscpRemoteTcpIf::tableListInfo( const std::string &tblName, 
+                                        std::string &tableInfo, 
+                                        bool bXML )
 {
-    wxString strCmd;
+    std::string strCmd;
     
     if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
     
-    strCmd = _("TABLE LIST ");
-    strCmd += tblName + _(" ");
+    strCmd = "TABLE LIST ";
+    strCmd += tblName + " ";
     if ( bXML ) {
-        strCmd += _("XML");
+        strCmd += "XML";
     }
-    strCmd += _("\r\n");
+    strCmd += "\r\n";
     
     if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
         return VSCP_ERROR_ERROR;
@@ -3069,7 +3036,7 @@ int VscpRemoteTcpIf::tableListInfo( const wxString &tblName, wxString &tableInfo
     
     // Handle the data (if any)
     for ( unsigned int i=0; i<getInputQueueCount(); i++ ) {
-        if ( wxNOT_FOUND == m_inputStrArray[ i ].Find( _("+OK") ) ) { 
+        if ( std::string::npos == m_inputStrArray[ i ].find( "+OK" ) ) { 
             tableInfo += m_inputStrArray[ i ];            
         }
     }
@@ -3081,24 +3048,26 @@ int VscpRemoteTcpIf::tableListInfo( const wxString &tblName, wxString &tableInfo
 // tableGet
 //
 
-int VscpRemoteTcpIf::tableGet( const wxString& tblName, 
-                                const wxDateTime& from, 
-                                const wxDateTime& to,
-                                wxArrayString& resultArray,
+int VscpRemoteTcpIf::tableGet( const std::string& tblName, 
+                                const vscpdatetime& from, 
+                                const vscpdatetime& to,
+                                std::deque<std::string>& resultArray,
                                 bool bFull )
 {
-    wxString strCmd;
+    std::string strCmd;
     
     if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
     
-    strCmd = _("TABLE GET ");
-    strCmd += tblName + _(" ");
-    strCmd += from.FormatISOCombined() + _(" ");
-    strCmd += to.FormatISOCombined() + _(" ");
+    strCmd = "TABLE GET ";
+    strCmd += tblName + " ";
+    strCmd += from.getISODateTime();
+    strCmd += " ";
+    strCmd += to.getISODateTime();
+    strCmd += " ";
     if ( bFull ) {
-       strCmd += _("FULL"); 
+       strCmd += "FULL"; 
     }
-    strCmd += _("\r\n");
+    strCmd += "\r\n";
   
     if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
         return VSCP_ERROR_ERROR;
@@ -3108,8 +3077,8 @@ int VscpRemoteTcpIf::tableGet( const wxString& tblName,
     
     // Handle the data (if any)
     for ( unsigned int i=0; i<getInputQueueCount(); i++ ) {
-        if ( wxNOT_FOUND == m_inputStrArray[ i ].Find( _("+OK") ) ) { 
-            resultArray.Add( m_inputStrArray[ i ] );            
+        if ( std::string::npos == m_inputStrArray[ i ].find( "+OK" ) ) { 
+            resultArray.push_back( m_inputStrArray[ i ] );            
         }
     }
     
@@ -3120,20 +3089,20 @@ int VscpRemoteTcpIf::tableGet( const wxString& tblName,
 // tableGetRaw
 //
 
-int VscpRemoteTcpIf::tableGetRaw( const wxString& tblName, 
-                                const wxDateTime& from, 
-                                const wxDateTime& to,
-                                wxArrayString& resultArray )
+int VscpRemoteTcpIf::tableGetRaw( const std::string& tblName, 
+                                const vscpdatetime& from, 
+                                const vscpdatetime& to,
+                                std::deque<std::string>& resultArray )
 {
-    wxString strCmd;
+    std::string strCmd;
     
     if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
     
-    strCmd = _("TABLE GETRAW ");
-    strCmd += tblName + _(" ");
-    strCmd += from.FormatISOCombined() + _(" ");
-    strCmd += to.FormatISOCombined() + _(" ");
-    strCmd += _("\r\n");
+    strCmd = "TABLE GETRAW ";
+    strCmd += tblName + " ";
+    strCmd += from.getISODateTime() + " ";
+    strCmd += to.getISODateTime() + " ";
+    strCmd += "\r\n";
   
     if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
         return VSCP_ERROR_ERROR;
@@ -3143,8 +3112,8 @@ int VscpRemoteTcpIf::tableGetRaw( const wxString& tblName,
     
     // Handle the data (if any)
     for ( unsigned int i=0; i<getInputQueueCount(); i++ ) {
-        if ( wxNOT_FOUND == m_inputStrArray[ i ].Find( _("+OK") ) ) { 
-            resultArray.Add( m_inputStrArray[ i ] );            
+        if ( std::string::npos == m_inputStrArray[ i ].find( "+OK" ) ) { 
+            resultArray.push_back( m_inputStrArray[ i ] );            
         }
     }
     
@@ -3155,23 +3124,23 @@ int VscpRemoteTcpIf::tableGetRaw( const wxString& tblName,
 // tableLog
 //
 
-int VscpRemoteTcpIf::tableLog( const wxString& tblName, 
+int VscpRemoteTcpIf::tableLog( const std::string& tblName, 
                                     double value, 
-                                    wxDateTime *pdt )
+                                    vscpdatetime *pdt )
 {
-    wxString strCmd;
+    std::string strCmd;
 
     if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
     
-    strCmd = _("TABLE LOG ") + tblName + _(" ");
-    strCmd = wxString::Format(_("%f "), value );
+    strCmd = "TABLE LOG " + tblName + " ";
+    strCmd = vscp_string_format( "%f ", value );
     if ( NULL != pdt  ) {
-        strCmd += pdt->FormatISOCombined();
+        strCmd += pdt->getISODateTime();
     }
     else {
-        strCmd += wxDateTime::Now().FormatISOCombined();
+        strCmd += vscpdatetime::setNow().getISODateTime();
     }
-    strCmd += _("\r\n");
+    strCmd += "\r\n";
     
     if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
         return VSCP_ERROR_ERROR;
@@ -3185,16 +3154,16 @@ int VscpRemoteTcpIf::tableLog( const wxString& tblName,
 // tableLogSQL
 //
 
-int VscpRemoteTcpIf::tableLogSQL( const wxString& tblName, const wxString& sql )
+int VscpRemoteTcpIf::tableLogSQL( const std::string& tblName, const std::string& sql )
 {
-    wxString strCmd;
+    std::string strCmd;
 
     if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
     
-    strCmd = _("TABLE LOG ") + tblName + _(" ") + sql;
-    strCmd += _("\r\n");
+    strCmd = "TABLE LOG " + tblName + " " + sql;
+    strCmd += "\r\n";
     
-    if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
+    if ( VSCP_ERROR_SUCCESS != doCommand( strCmd) ) {
         return VSCP_ERROR_ERROR;
     }
     
@@ -3205,32 +3174,30 @@ int VscpRemoteTcpIf::tableLogSQL( const wxString& tblName, const wxString& sql )
 // tableGetNumRecords
 //
 
-int VscpRemoteTcpIf::tableGetNumRecords( const wxString& tblName, 
-                                            const wxDateTime& from, 
-                                            const wxDateTime& to,
+int VscpRemoteTcpIf::tableGetNumRecords( const std::string& tblName, 
+                                            const vscpdatetime& from, 
+                                            const vscpdatetime& to,
                                             size_t *pRecords )
 {
-    wxString strLine;
-    wxString strCmd;
+    std::string strLine;
+    std::string strCmd;
 
     if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN;        // Connection closed.
     if ( NULL == pRecords ) return VSCP_ERROR_PARAMETER;    
     
-    strCmd = _("TABLE RECORDS ") + tblName + _(" ");
-    strCmd += from.FormatISOCombined() + _(" ");
-    strCmd += to.FormatISOCombined() + _(" ");
-    strCmd += _("\r\n");
+    strCmd = "TABLE RECORDS " + tblName + " ";
+    strCmd += from.getISODateTime() + " ";
+    strCmd += to.getISODateTime() + " ";
+    strCmd += "\r\n";
     
     if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
         return VSCP_ERROR_ERROR;
     }
     
     if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
-    strLine = m_inputStrArray[ m_inputStrArray.Count() - 2 ];
-    
-    unsigned long cnt;
-    if ( !strLine.ToCULong( &cnt ) ) return VSCP_ERROR_PARAMETER;
-    *pRecords = cnt;
+    strLine = m_inputStrArray[ m_inputStrArray.size() - 2 ];
+
+    *pRecords = stoul(strLine);
     
     return VSCP_ERROR_SUCCESS;
 }
@@ -3239,29 +3206,29 @@ int VscpRemoteTcpIf::tableGetNumRecords( const wxString& tblName,
 // tableGetFirstDate
 //
 
-int VscpRemoteTcpIf::tableGetFirstDate( const wxString& tblName, 
-                                            const wxDateTime& from, 
-                                            const wxDateTime& to,
-                                            wxDateTime& first )
+int VscpRemoteTcpIf::tableGetFirstDate( const std::string& tblName, 
+                                            const vscpdatetime& from, 
+                                            const vscpdatetime& to,
+                                            vscpdatetime& first )
 {
-    wxString strLine;
-    wxString strCmd;
+    std::string strLine;
+    std::string strCmd;
 
     if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN;        // Connection closed.   
     
-    strCmd = _("TABLE FIRSTDATE ") + tblName + _(" ");
-    strCmd += from.FormatISOCombined() + _(" ");
-    strCmd += to.FormatISOCombined() + _(" ");
-    strCmd += _("\r\n");
+    strCmd = "TABLE FIRSTDATE " + tblName + " ";
+    strCmd += from.getISODateTime() + " ";
+    strCmd += to.getISODateTime() + " ";
+    strCmd += "\r\n";
     
     if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
         return VSCP_ERROR_ERROR;
     }
     
     if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
-    strLine = m_inputStrArray[ m_inputStrArray.Count() - 2 ];
+    strLine = m_inputStrArray[ m_inputStrArray.size() - 2 ];
     
-    if ( !first.ParseISODate( strLine ) ) {
+    if ( !first.setISODate( strLine ) ) {
         return VSCP_ERROR_ERROR;
     }
     
@@ -3273,29 +3240,29 @@ int VscpRemoteTcpIf::tableGetFirstDate( const wxString& tblName,
 // tableGetLastDate
 //
 
-int VscpRemoteTcpIf::tableGetLastDate( const wxString& tblName, 
-                                            const wxDateTime& from, 
-                                            const wxDateTime& to,
-                                            wxDateTime& last )
+int VscpRemoteTcpIf::tableGetLastDate( const std::string& tblName, 
+                                            const vscpdatetime& from, 
+                                            const vscpdatetime& to,
+                                            vscpdatetime& last )
 {
-    wxString strLine;
-    wxString strCmd;
+    std::string strLine;
+    std::string strCmd;
 
     if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN;        // Connection closed.   
     
-    strCmd = _("TABLE LASTDATE ") + tblName + _(" ");
-    strCmd += from.FormatISOCombined() + _(" ");
-    strCmd += to.FormatISOCombined() + _(" ");
-    strCmd += _("\r\n");
+    strCmd = "TABLE LASTDATE " + tblName + " ";
+    strCmd += from.getISODateTime() + " ";
+    strCmd += to.getISODateTime() + " ";
+    strCmd += "\r\n";
     
     if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
         return VSCP_ERROR_ERROR;
     }
     
     if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
-    strLine = m_inputStrArray[ m_inputStrArray.Count() - 2 ];
+    strLine = m_inputStrArray[ m_inputStrArray.size() - 2 ];
     
-    if ( !last.ParseISODate( strLine ) ) {
+    if ( !last.setISODate( strLine ) ) {
         return VSCP_ERROR_ERROR;
     }
     
@@ -3306,32 +3273,30 @@ int VscpRemoteTcpIf::tableGetLastDate( const wxString& tblName,
 // tableGetSum
 //
 
-int VscpRemoteTcpIf::tableGetSum( const wxString& tblName, 
-                                        const wxDateTime& from, 
-                                        const wxDateTime& to,
+int VscpRemoteTcpIf::tableGetSum( const std::string& tblName, 
+                                        const vscpdatetime& from, 
+                                        const vscpdatetime& to,
                                         double *pSum )
 {
-    wxString strLine;
-    wxString strCmd;
+    std::string strLine;
+    std::string strCmd;
 
     if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN;        // Connection closed.
     if ( NULL == pSum ) return VSCP_ERROR_PARAMETER;
     
-    strCmd = _("TABLE SUM ") + tblName + _(" ");
-    strCmd += from.FormatISOCombined() + _(" ");
-    strCmd += to.FormatISOCombined() + _(" ");
-    strCmd += _("\r\n");
+    strCmd = "TABLE SUM " + tblName + " ";
+    strCmd += from.getISODateTime() + " ";
+    strCmd += to.getISODateTime() + " ";
+    strCmd += "\r\n";
     
     if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
         return VSCP_ERROR_ERROR;
     }
     
     if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
-    strLine = m_inputStrArray[ m_inputStrArray.Count() - 2 ];
+    strLine = m_inputStrArray[ m_inputStrArray.size() - 2 ];
     
-    if ( !strLine.ToCDouble( pSum ) ) {
-        return VSCP_ERROR_ERROR;
-    }
+    *pSum = stod( strLine );
     
     return VSCP_ERROR_SUCCESS;
 }
@@ -3340,32 +3305,30 @@ int VscpRemoteTcpIf::tableGetSum( const wxString& tblName,
 // tableGetMin
 //
 
-int VscpRemoteTcpIf::tableGetMin( const wxString& tblName, 
-                                        const wxDateTime& from, 
-                                        const wxDateTime& to,
+int VscpRemoteTcpIf::tableGetMin( const std::string& tblName, 
+                                        const vscpdatetime& from, 
+                                        const vscpdatetime& to,
                                         double *pMin )
 {
-    wxString strLine;
-    wxString strCmd;
+    std::string strLine;
+    std::string strCmd;
 
     if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN;        // Connection closed.
     if ( NULL == pMin ) return VSCP_ERROR_PARAMETER;
     
-    strCmd = _("TABLE MIN ") + tblName + _(" ");
-    strCmd += from.FormatISOCombined() + _(" ");
-    strCmd += to.FormatISOCombined() + _(" ");
-    strCmd += _("\r\n");
+    strCmd = "TABLE MIN " + tblName + " ";
+    strCmd += from.getISODateTime() + " ";
+    strCmd += to.getISODateTime() + " ";
+    strCmd += "\r\n";
     
     if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
         return VSCP_ERROR_ERROR;
     }
     
     if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
-    strLine = m_inputStrArray[ m_inputStrArray.Count() - 2 ];
-    
-    if ( !strLine.ToCDouble( pMin ) ) {
-        return VSCP_ERROR_ERROR;
-    }
+    strLine = m_inputStrArray[ m_inputStrArray.size() - 2 ];
+
+    *pMin = stod( strLine );
     
     return VSCP_ERROR_SUCCESS;
 }
@@ -3375,32 +3338,30 @@ int VscpRemoteTcpIf::tableGetMin( const wxString& tblName,
 // tableGetMax
 //
 
-int VscpRemoteTcpIf::tableGetMax( const wxString& tblName, 
-                                        const wxDateTime& from, 
-                                        const wxDateTime& to,
+int VscpRemoteTcpIf::tableGetMax( const std::string& tblName, 
+                                        const vscpdatetime& from, 
+                                        const vscpdatetime& to,
                                         double *pMax )
 {
-    wxString strLine;
-    wxString strCmd;
+    std::string strLine;
+    std::string strCmd;
 
     if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN;        // Connection closed.
     if ( NULL == pMax ) return VSCP_ERROR_PARAMETER;
     
-    strCmd = _("TABLE MAX ") + tblName + _(" ");
-    strCmd += from.FormatISOCombined() + _(" ");
-    strCmd += to.FormatISOCombined() + _(" ");
-    strCmd += _("\r\n");
+    strCmd = "TABLE MAX " + tblName + " ";
+    strCmd += from.getISODateTime() + " ";
+    strCmd += to.getISODateTime() + " ";
+    strCmd += "\r\n";
     
     if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
         return VSCP_ERROR_ERROR;
     }
     
     if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
-    strLine = m_inputStrArray[ m_inputStrArray.Count() - 2 ];
+    strLine = m_inputStrArray[ m_inputStrArray.size() - 2 ];
     
-    if ( !strLine.ToCDouble( pMax ) ) {
-        return VSCP_ERROR_ERROR;
-    }
+    *pMax = stod( strLine );
     
     return VSCP_ERROR_SUCCESS;
 }
@@ -3410,32 +3371,30 @@ int VscpRemoteTcpIf::tableGetMax( const wxString& tblName,
 // tableGetAverage
 //
 
-int VscpRemoteTcpIf::tableGetAverage( const wxString& tblName, 
-                                        const wxDateTime& from, 
-                                        const wxDateTime& to,
+int VscpRemoteTcpIf::tableGetAverage( const std::string& tblName, 
+                                        const vscpdatetime& from, 
+                                        const vscpdatetime& to,
                                         double *pAverage )
 {
-    wxString strLine;
-    wxString strCmd;
+    std::string strLine;
+    std::string strCmd;
 
     if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN;        // Connection closed.
     if ( NULL == pAverage ) return VSCP_ERROR_PARAMETER;
     
-    strCmd = _("TABLE AVERAGE ") + tblName + _(" ");
-    strCmd += from.FormatISOCombined() + _(" ");
-    strCmd += to.FormatISOCombined() + _(" ");
-    strCmd += _("\r\n");
+    strCmd = "TABLE AVERAGE " + tblName + " ";
+    strCmd += from.getISODateTime() + " ";
+    strCmd += to.getISODateTime() + " ";
+    strCmd += "\r\n";
     
     if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
         return VSCP_ERROR_ERROR;
     }
     
     if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
-    strLine = m_inputStrArray[ m_inputStrArray.Count() - 2 ];
+    strLine = m_inputStrArray[ m_inputStrArray.size() - 2 ];
     
-    if ( !strLine.ToCDouble( pAverage ) ) {
-        return VSCP_ERROR_ERROR;
-    }
+    *pAverage = stod( strLine );
     
     return VSCP_ERROR_SUCCESS;
 }
@@ -3445,32 +3404,30 @@ int VscpRemoteTcpIf::tableGetAverage( const wxString& tblName,
 // tableGetMedian
 //
 
-int VscpRemoteTcpIf::tableGetMedian( const wxString& tblName, 
-                                        const wxDateTime& from, 
-                                        const wxDateTime& to,
+int VscpRemoteTcpIf::tableGetMedian( const std::string& tblName, 
+                                        const vscpdatetime& from, 
+                                        const vscpdatetime& to,
                                         double *pMedian )
 {
-    wxString strLine;
-    wxString strCmd;
+    std::string strLine;
+    std::string strCmd;
 
     if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN;        // Connection closed.
     if ( NULL == pMedian ) return VSCP_ERROR_PARAMETER;
     
-    strCmd = _("TABLE MEDIAN ") + tblName + _(" ");
-    strCmd += from.FormatISOCombined() + _(" ");
-    strCmd += to.FormatISOCombined() + _(" ");
-    strCmd += _("\r\n");
+    strCmd = "TABLE MEDIAN " + tblName + " ";
+    strCmd += from.getISODateTime() + " ";
+    strCmd += to.getISODateTime() + " ";
+    strCmd += "\r\n";
     
     if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
         return VSCP_ERROR_ERROR;
     }
     
     if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
-    strLine = m_inputStrArray[ m_inputStrArray.Count() - 2 ];
+    strLine = m_inputStrArray[ m_inputStrArray.size() - 2 ];
     
-    if ( !strLine.ToCDouble( pMedian ) ) {
-        return VSCP_ERROR_ERROR;
-    }
+    *pMedian = stod( strLine );
     
     return VSCP_ERROR_SUCCESS;
 }
@@ -3479,32 +3436,30 @@ int VscpRemoteTcpIf::tableGetMedian( const wxString& tblName,
 // tableGetStdDev
 //
 
-int VscpRemoteTcpIf::tableGetStdDev( const wxString& tblName, 
-                                        const wxDateTime& from, 
-                                        const wxDateTime& to,
+int VscpRemoteTcpIf::tableGetStdDev( const std::string& tblName, 
+                                        const vscpdatetime& from, 
+                                        const vscpdatetime& to,
                                         double *pStdDev )
 {
-    wxString strLine;
-    wxString strCmd;
+    std::string strLine;
+    std::string strCmd;
 
     if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN;        // Connection closed.
     if ( NULL == pStdDev ) return VSCP_ERROR_PARAMETER;
     
-    strCmd = _("TABLE STDDEV ") + tblName + _(" ");
-    strCmd += from.FormatISOCombined() + _(" ");
-    strCmd += to.FormatISOCombined() + _(" ");
-    strCmd += _("\r\n");
+    strCmd = "TABLE STDDEV " + tblName + " ";
+    strCmd += from.getISODateTime() + " ";
+    strCmd += to.getISODateTime() + " ";
+    strCmd += "\r\n";
     
     if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
         return VSCP_ERROR_ERROR;
     }
     
     if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
-    strLine = m_inputStrArray[ m_inputStrArray.Count() - 2 ];
+    strLine = m_inputStrArray[ m_inputStrArray.size() - 2 ];
     
-    if ( !strLine.ToCDouble( pStdDev ) ) {
-        return VSCP_ERROR_ERROR;
-    }
+    *pStdDev = stod( strLine );
     
     return VSCP_ERROR_SUCCESS;
 }
@@ -3513,32 +3468,30 @@ int VscpRemoteTcpIf::tableGetStdDev( const wxString& tblName,
 // tableGetVarianve
 //
 
-int VscpRemoteTcpIf::tableGetVariance( const wxString& tblName, 
-                                        const wxDateTime& from, 
-                                        const wxDateTime& to,
+int VscpRemoteTcpIf::tableGetVariance( const std::string& tblName, 
+                                        const vscpdatetime& from, 
+                                        const vscpdatetime& to,
                                         double *pVariance )
 {
-    wxString strLine;
-    wxString strCmd;
+    std::string strLine;
+    std::string strCmd;
 
     if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN;        // Connection closed.
     if ( NULL == pVariance ) return VSCP_ERROR_PARAMETER;
     
-    strCmd = _("TABLE VARIANCE ") + tblName + _(" ");
-    strCmd += from.FormatISOCombined() + _(" ");
-    strCmd += to.FormatISOCombined() + _(" ");
-    strCmd += _("\r\n");
+    strCmd = "TABLE VARIANCE " + tblName + " ";
+    strCmd += from.getISODateTime() + " ";
+    strCmd += to.getISODateTime() + " ";
+    strCmd += "\r\n";
     
     if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
         return VSCP_ERROR_ERROR;
     }
     
     if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
-    strLine = m_inputStrArray[ m_inputStrArray.Count() - 2 ];
+    strLine = m_inputStrArray[ m_inputStrArray.size() - 2 ];
     
-    if ( !strLine.ToCDouble( pVariance ) ) {
-        return VSCP_ERROR_ERROR;
-    }
+    *pVariance = stod( strLine );
     
     return VSCP_ERROR_SUCCESS;
 }
@@ -3547,32 +3500,30 @@ int VscpRemoteTcpIf::tableGetVariance( const wxString& tblName,
 // tableGetMode
 //
 
-int VscpRemoteTcpIf::tableGetMode( const wxString& tblName, 
-                                        const wxDateTime& from, 
-                                        const wxDateTime& to,
+int VscpRemoteTcpIf::tableGetMode( const std::string& tblName, 
+                                        const vscpdatetime& from, 
+                                        const vscpdatetime& to,
                                         double *pMode )
 {
-    wxString strLine;
-    wxString strCmd;
+    std::string strLine;
+    std::string strCmd;
 
     if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN;        // Connection closed.
     if ( NULL == pMode ) return VSCP_ERROR_PARAMETER;
     
-    strCmd = _("TABLE MODE ") + tblName + _(" ");
-    strCmd += from.FormatISOCombined() + _(" ");
-    strCmd += to.FormatISOCombined() + _(" ");
-    strCmd += _("\r\n");
+    strCmd = "TABLE MODE " + tblName + " ";
+    strCmd += from.getISODateTime() + " ";
+    strCmd += to.getISODateTime() + " ";
+    strCmd += "\r\n";
     
     if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
         return VSCP_ERROR_ERROR;
     }
     
     if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
-    strLine = m_inputStrArray[ m_inputStrArray.Count() - 2 ];
+    strLine = m_inputStrArray[ m_inputStrArray.size() - 2 ];
     
-    if ( !strLine.ToCDouble( pMode ) ) {
-        return VSCP_ERROR_ERROR;
-    }
+    *pMode = stod( strLine );
     
     return VSCP_ERROR_SUCCESS;
 }
@@ -3581,32 +3532,30 @@ int VscpRemoteTcpIf::tableGetMode( const wxString& tblName,
 // tableGetLowerQ
 //
 
-int VscpRemoteTcpIf::tableGetLowerQ( const wxString& tblName, 
-                                        const wxDateTime& from, 
-                                        const wxDateTime& to,
+int VscpRemoteTcpIf::tableGetLowerQ( const std::string& tblName, 
+                                        const vscpdatetime& from, 
+                                        const vscpdatetime& to,
                                         double *pLowerq )
 {
-    wxString strLine;
-    wxString strCmd;
+    std::string strLine;
+    std::string strCmd;
 
     if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN;        // Connection closed.
     if ( NULL == pLowerq ) return VSCP_ERROR_PARAMETER;
     
-    strCmd = _("TABLE LOWERQ ") + tblName + _(" ");
-    strCmd += from.FormatISOCombined() + _(" ");
-    strCmd += to.FormatISOCombined() + _(" ");
-    strCmd += _("\r\n");
+    strCmd = "TABLE LOWERQ " + tblName + " ";
+    strCmd += from.getISODateTime() + " ";
+    strCmd += to.getISODateTime() + " ";
+    strCmd += "\r\n";
     
     if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
         return VSCP_ERROR_ERROR;
     }
     
     if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
-    strLine = m_inputStrArray[ m_inputStrArray.Count() - 2 ];
+    strLine = m_inputStrArray[ m_inputStrArray.size() - 2 ];
     
-    if ( !strLine.ToCDouble( pLowerq ) ) {
-        return VSCP_ERROR_ERROR;
-    }
+    *pLowerq = stod( strLine );
     
     return VSCP_ERROR_SUCCESS;
 }
@@ -3615,32 +3564,30 @@ int VscpRemoteTcpIf::tableGetLowerQ( const wxString& tblName,
 // tableGetUpperQ
 //
 
-int VscpRemoteTcpIf::tableGetUpperQ( const wxString& tblName, 
-                                        const wxDateTime& from, 
-                                        const wxDateTime& to,
+int VscpRemoteTcpIf::tableGetUpperQ( const std::string& tblName, 
+                                        const vscpdatetime& from, 
+                                        const vscpdatetime& to,
                                         double *pUpperq )
 {
-    wxString strLine;
-    wxString strCmd;
+    std::string strLine;
+    std::string strCmd;
 
     if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN;        // Connection closed.
     if ( NULL == pUpperq ) return VSCP_ERROR_PARAMETER;
     
-    strCmd = _("TABLE UPPERQ ") + tblName + _(" ");
-    strCmd += from.FormatISOCombined() + _(" ");
-    strCmd += to.FormatISOCombined() + _(" ");
-    strCmd += _("\r\n");
+    strCmd = "TABLE UPPERQ " + tblName + " ";
+    strCmd += from.getISODateTime() + " ";
+    strCmd += to.getISODateTime() + " ";
+    strCmd += "\r\n";
     
     if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
         return VSCP_ERROR_ERROR;
     }
     
     if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
-    strLine = m_inputStrArray[ m_inputStrArray.Count() - 2 ];
+    strLine = m_inputStrArray[ m_inputStrArray.size() - 2 ];
     
-    if ( !strLine.ToCDouble( pUpperq ) ) {
-        return VSCP_ERROR_ERROR;
-    }
+    *pUpperq = stod( strLine );
     
     return VSCP_ERROR_SUCCESS;
 }
@@ -3649,18 +3596,18 @@ int VscpRemoteTcpIf::tableGetUpperQ( const wxString& tblName,
 // tableClear
 //
 
-int VscpRemoteTcpIf::tableClear( const wxString& tblName, 
-                                        const wxDateTime& from, 
-                                        const wxDateTime& to )
+int VscpRemoteTcpIf::tableClear( const std::string& tblName, 
+                                        const vscpdatetime& from, 
+                                        const vscpdatetime& to )
 {
-    wxString strCmd;
+    std::string strCmd;
 
     if ( !isConnected() ) return VSCP_ERROR_NOT_OPEN;        // Connection closed.
     
-    strCmd = _("TABLE CLEAR ") + tblName + _(" ");
-    strCmd += from.FormatISOCombined() + _(" ");
-    strCmd += to.FormatISOCombined() + _(" ");
-    strCmd += _("\r\n");
+    strCmd = "TABLE CLEAR " + tblName + " ";
+    strCmd += from.getISODateTime() + " ";
+    strCmd += to.getISODateTime() + " ";
+    strCmd += "\r\n";
     
     if ( VSCP_ERROR_SUCCESS != doCommand( strCmd ) ) {
         return VSCP_ERROR_ERROR;
@@ -3697,7 +3644,7 @@ int VscpRemoteTcpIf::readLevel2Register( uint32_t reg,
                                                 bool bLevel2 )
 {
     int rv = VSCP_ERROR_SUCCESS;
-    wxString strBuf;
+    std::string strBuf;
     vscpEventEx e;
 
     // Check pointers
@@ -3777,8 +3724,8 @@ int VscpRemoteTcpIf::readLevel2Register( uint32_t reg,
     e.timestamp = 0;
     doCmdSendEx( &e );
 
-    wxLongLong resendTime = m_registerOpResendTimeout;
-    wxLongLong startTime = ::wxGetLocalTimeMillis();
+    uint32_t resendTime = m_registerOpResendTimeout;
+    uint32_t startTime = vscp_getMsTimeStamp();
 
     while ( true ) {
 
@@ -3789,8 +3736,8 @@ int VscpRemoteTcpIf::readLevel2Register( uint32_t reg,
                 // Check for correct reply event
 #ifdef DEBUG_LIB_VSCP_HELPER                
                 {
-                    wxString str;
-                    str = wxString::Format(_("Received Event: class=%d type=%d size=%d index=%d page=%d Register=%d content=%d"), 
+                    std::string str;
+                    str = vscp_string_format("Received Event: class=%d type=%d size=%d index=%d page=%d Register=%d content=%d", 
                                                 e.vscp_class, 
                                                 e.vscp_type, 
                                                 e.sizeData, 
@@ -3798,7 +3745,7 @@ int VscpRemoteTcpIf::readLevel2Register( uint32_t reg,
                                                 (e.data[17]<<8) + e.data[18], // page
                                                 e.data[19],     // register
                                                 e.data[20] );   // content
-                    wxLogDebug(str);
+                    VSCP_LOG_DEBUG(str);
                 }
 #endif                
 
@@ -3872,22 +3819,20 @@ int VscpRemoteTcpIf::readLevel2Register( uint32_t reg,
             
         }
 
-        if ( ( ::wxGetLocalTimeMillis() - startTime ) >  m_registerOpErrorTimeout ) {
+        if ( ( vscp_getMsTimeStamp() - startTime ) >  m_registerOpErrorTimeout ) {
             rv = CANAL_ERROR_TIMEOUT;
             break;
         }
-        else if ( ( ::wxGetLocalTimeMillis() - startTime ) > resendTime ) {
+        else if ( ( vscp_getMsTimeStamp() - startTime ) > resendTime ) {
             // Send again
             e.timestamp = 0;
             doCmdSendEx( &e );
             resendTime += m_registerOpResendTimeout;
         }
              
-#if wxUSE_GUI == 1
-        wxYield();
-#else
-        wxMilliSleep( 2 );        
-#endif        
+
+        usleep( 2000 );        
+     
 
     } // while
 
@@ -3909,7 +3854,7 @@ int VscpRemoteTcpIf::readLevel2Registers( uint32_t reg,
                                                 bool bLevel2 )
 {
     int rv = CANAL_ERROR_SUCCESS;
-    wxString strBuf;
+    std::string strBuf;
     vscpEventEx e;
     uint8_t data[256];    // This makes range checking simpler
 
@@ -4002,18 +3947,18 @@ int VscpRemoteTcpIf::readLevel2Registers( uint32_t reg,
     unsigned long allRcvValue = pow(2.0,nPages) - 1;
 
     unsigned long resendTime = m_registerOpResendTimeout * (1+ nPages);
-    wxLongLong startTime = ::wxGetLocalTimeMillis();
+    uint32_t startTime = vscp_getMsTimeStamp();
 
 /*
 #ifdef DEBUG_LIB_VSCP_HELPER
-    wxLogDebug("readLevel2Registers: Start");
+    VSCP_LOG_DEBUG("readLevel2Registers: Start");
 #endif
 
     for ( int i=0; i<100; i++ ) {
         doCmdNOOP();
     }
 #ifdef DEBUG_LIB_VSCP_HELPER
-    wxLogDebug("readLevel2Registers: NOOP - End");
+    VSCP_LOG_DEBUG("readLevel2Registers: NOOP - End");
 #endif
 */
 
@@ -4030,8 +3975,8 @@ int VscpRemoteTcpIf::readLevel2Registers( uint32_t reg,
                 // Check for correct reply event
 #ifdef DEBUG_LIB_VSCP_HELPER                
                 {
-                    wxString str;
-                    str = wxString::Format(_("Received Event: count=%d class=%d type=%d size=%d data="), 
+                    std::string str;
+                    str = vscp_string_format("Received Event: count=%d class=%d type=%d size=%d data=", 
                                                 n,
                                                 e.vscp_class, 
                                                 e.vscp_type, 
@@ -4041,9 +3986,9 @@ int VscpRemoteTcpIf::readLevel2Registers( uint32_t reg,
                                                 e.data[19],     // register
                                                 e.data[20] );   // content
                     for ( int i=0; i<e.sizeData; i++ ) {
-                        str += wxString::Format(_("%02X "), e.data[i] );
+                        str += vscp_string_format( "%02X ", e.data[i] );
                     }                            
-                    wxLogDebug(str);
+                    VSCP_LOG_DEBUG(str);
                 }
 #endif                
 
@@ -4131,41 +4076,34 @@ int VscpRemoteTcpIf::readLevel2Registers( uint32_t reg,
                             }
                         }
                     }
-                }
-#if wxUSE_GUI == 1
-                wxYield();
-#endif                
+                }              
 
             } // valid event            
 
         } // Data available
 
-        if ( ( ::wxGetLocalTimeMillis() - startTime ) >  m_registerOpErrorTimeout ) {
+        if ( ( vscp_getMsTimeStamp() - startTime ) >  m_registerOpErrorTimeout ) {
             rv = CANAL_ERROR_TIMEOUT;
 #ifdef DEBUG_LIB_VSCP_HELPER
-            wxLogDebug(_("readLevel2Registers: Timeout"));
+            VSCP_LOG_DEBUG("readLevel2Registers: Timeout");
 #endif            
             break;
         }
-        else if ( ( ::wxGetLocalTimeMillis() - startTime ) > resendTime ) {
+        else if ( ( vscp_getMsTimeStamp() - startTime ) > resendTime ) {
             // Send again
             doCmdSendEx( &e );
             resendTime += m_registerOpResendTimeout * (1+ nPages);
 #ifdef DEBUG_LIB_VSCP_HELPER
-            wxLogDebug(_("readLevel2Registers: Resend "));
+            VSCP_LOG_DEBUG("readLevel2Registers: Resend ");
 #endif            
         }
-                
-#if wxUSE_GUI == 1
-        wxYield();
-#else
-        wxMilliSleep( 2 );
-#endif  
+
+        usleep( 2000 ); 
 
     } // while
 
 #ifdef DEBUG_LIB_VSCP_HELPER
-    wxLogDebug("readLevel2Registers: End");
+    VSCP_LOG_DEBUG("readLevel2Registers: End");
 #endif    
 
     // Copy data on success
@@ -4190,7 +4128,7 @@ int VscpRemoteTcpIf::writeLevel2Register( uint32_t reg,
 {
     int rv = CANAL_ERROR_SUCCESS;
     bool bInterface = false;                // No specific interface set
-    wxString strBuf;
+    std::string strBuf;
     vscpEventEx e;
 
     // Check pointers
@@ -4259,7 +4197,7 @@ int VscpRemoteTcpIf::writeLevel2Register( uint32_t reg,
     doCmdSendEx( &e );
 
     unsigned long resendTime = m_registerOpResendTimeout;
-    wxLongLong startTime = ::wxGetLocalTimeMillis();
+    uint32_t startTime = vscp_getMsTimeStamp();
 
     while ( true ) {
 
@@ -4337,18 +4275,16 @@ int VscpRemoteTcpIf::writeLevel2Register( uint32_t reg,
             }
         }
         else {          
-#if wxUSE_GUI == 1
-            wxYield();
-#else
-            wxMilliSleep( 2 );            
-#endif            
+
+            usleep( 2000 );            
+          
         }
 
-        if ( ( ::wxGetLocalTimeMillis() - startTime ) >  m_registerOpErrorTimeout ) {
+        if ( ( vscp_getMsTimeStamp() - startTime ) >  m_registerOpErrorTimeout ) {
             rv = CANAL_ERROR_TIMEOUT;
             break;
         }
-        else if ( ( ::wxGetLocalTimeMillis() - startTime ) > resendTime ) {
+        else if ( ( vscp_getMsTimeStamp() - startTime ) > resendTime ) {
             // Send again
             doCmdSendEx( &e );
             resendTime += m_registerOpResendTimeout;
@@ -4369,7 +4305,7 @@ int VscpRemoteTcpIf::writeLevel2Register( uint32_t reg,
 
 bool VscpRemoteTcpIf::getMDFUrlFromLevel2Device( cguid& ifGUID,
                                                     cguid& destGUID, 
-                                                    wxString& strurl,
+                                                    std::string& strurl,
                                                     bool bLevel2 )
 {
     char url[ 33 ];
@@ -4415,17 +4351,17 @@ bool VscpRemoteTcpIf::getMDFUrlFromLevel2Device( cguid& ifGUID,
 
     }
 
-    strurl = strurl.From8BitData( url );
-    if ( wxNOT_FOUND == strurl.Find( _("http://") ) ) {
-        wxString str;
-        str = _("http://");
+    strurl = std::string( url );
+    if ( strurl.npos == strurl.find( "http://" ) ) {
+        std::string str;
+        str = "http://";
         str += strurl;
         strurl = str;
     }
 
 error:
 
-    if ( !rv ) strurl.Empty();
+    if ( !rv ) strurl.clear();
 
     return rv;
 }
@@ -4455,10 +4391,10 @@ error:
 // fetchIterfaceGUID
 //
 
-int VscpRemoteTcpIf::fetchIterfaceGUID( const wxString& ifName, cguid& guid )
+int VscpRemoteTcpIf::fetchIterfaceGUID( const std::string& ifName, cguid& guid )
 {
-    wxString str;
-    wxArrayString ifarray;
+    std::string str;
+    std::deque<std::string> ifarray;
     uint8_t cnt = 0;
 
     if ( !isConnected() ) {
@@ -4470,26 +4406,47 @@ int VscpRemoteTcpIf::fetchIterfaceGUID( const wxString& ifName, cguid& guid )
 
         if ( VSCP_ERROR_SUCCESS == doCmdInterfaceList( ifarray ) ) {
 
-            if ( ifarray.Count() ) {
+            if ( ifarray.size() ) {
 
                 cnt++;
 
-                for ( unsigned int i = 0; i < ifarray.Count(); i++ ) {
+                for ( unsigned int i = 0; i < ifarray.size(); i++ ) {
 
-                    wxStringTokenizer tkz( ifarray[ i ], _( "," ) );
-                    wxString strOrdinal = tkz.GetNextToken();
-                    wxString strType = tkz.GetNextToken();
-                    wxString strIfGUID = tkz.GetNextToken();
-                    wxString strDescription = tkz.GetNextToken();
-
-                    int pos;
-                    wxString strName;
-                    if ( wxNOT_FOUND != ( pos = strDescription.Find( _( "|" ) ) ) ) {
-                        strName = strDescription.Left( pos );
-                        strName.Trim();
+                    std::deque<std::string> tokens;
+                    vscp_split( tokens, ifarray[ i ], "," );
+                    
+                    std::string strOrdinal;
+                    if ( !tokens.empty() ) {
+                        strOrdinal = tokens.front();
+                        tokens.pop_front();
                     }
 
-                    if ( strName.Upper() == ifName.Upper() ) {
+                    std::string strType;
+                    if ( !tokens.empty() ) {
+                        strType = tokens.front();
+                        tokens.pop_front();
+                    }
+
+                    std::string strIfGUID;
+                    if ( !tokens.empty() ) {
+                        strIfGUID = tokens.front();
+                        tokens.pop_front();
+                    }                        
+
+                    std::string strDescription;
+                    if ( !tokens.empty() ) {
+                        strDescription = tokens.front();
+                        tokens.pop_front();
+                    }
+
+                    int pos;
+                    std::string strName;
+                    if ( std::string::npos != ( pos = strDescription.find( "|" ) ) ) {
+                        strName = strDescription.substr( 0, pos );
+                        vscp_trim( strName );
+                    }
+
+                    if ( 0 == vscp_strcasecmp( strName.c_str(), ifName.c_str() ) ) {
 
                         // Save interface GUID;
                         guid.getFromString( strIfGUID );
@@ -4500,31 +4457,8 @@ int VscpRemoteTcpIf::fetchIterfaceGUID( const wxString& ifName, cguid& guid )
                 }
 
             }
-#if ( wxUSE_GUI != 0 )
-            else {
-                if ( wxYES != wxMessageBox( _( "No interfaces found. Try to find again?" ),
-                    _( "Fetching interfaces" ),
-                    wxYES_NO ) ) {
-                    break;
-                }
-                else {
-                    cnt = 0;
-                }
-            }
-#endif
+
         }
-#if ( wxUSE_GUI != 0 )
-        else {
-            if ( wxYES != wxMessageBox( _( "Unable to get interface list from VSCP daemon. Try to get again?" ),
-                _( "Fetching interfaces" ),
-                wxYES_NO ) ) {
-                break;
-            }
-            else {
-                cnt = 0;
-            }
-        }        
-#endif
 
         // Give up after tree tries
         if ( cnt > 3 ) break;
@@ -4556,19 +4490,18 @@ int VscpRemoteTcpIf::fetchIterfaceGUID( const wxString& ifName, cguid& guid )
 
 ctrlObjVscpTcpIf::ctrlObjVscpTcpIf()
 {
-    m_strUsername = _("admin");
-    m_strPassword = _("secret");
-    m_strHost = _("localhost");
-    m_port = 9598;			// VSCP_LEVEL2_TCP_PORT;
-    m_rxState = RX_TREAD_STATE_NONE;
-    m_bQuit = false; 	 		// Don't even think of quiting yet...
-    m_rxChannelID = 0;                  // No receive channel
-    m_txChannelID = 0;			// No transmit channel
-    m_bFilterOwnTx = false;		// Don't filter TX
-    m_bUseRXTXEvents = false;           // No events
-    m_pWnd = NULL;			// No message window
-    m_wndID = 0;                        // No meaage window id
-    m_maxRXqueue = MAX_TREAD_RECEIVE_EVENTS;
+    m_strUsername    = "admin";
+    m_strPassword    = "secret";
+    m_strHost        = "localhost";
+    m_port           = 9598; // VSCP_LEVEL2_TCP_PORT;
+    m_rxState        = RX_TREAD_STATE_NONE;
+    m_bQuit          = false; // Don't even think of quiting yet...
+    m_rxChannelID    = 0;     // No receive channel
+    m_txChannelID    = 0;     // No transmit channel
+    m_bFilterOwnTx   = false; // Don't filter TX
+    m_bUseRXTXEvents = false; // No events
+    m_wndID          = 0;     // No message window id
+    m_maxRXqueue     = MAX_TREAD_RECEIVE_EVENTS;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -4587,37 +4520,35 @@ ctrlObjVscpTcpIf::~ctrlObjVscpTcpIf()
 
 
 
-DEFINE_EVENT_TYPE(wxVSCPTCPIF_RX_EVENT);
-DEFINE_EVENT_TYPE(wxVSCPTCPIF_CONNECTION_LOST_EVENT);
-
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// VSCPTCPIP_RX_WorkerThread
+// remotetcpipRxObj
 //
 
-VSCPTCPIP_RX_WorkerThread::VSCPTCPIP_RX_WorkerThread()
+remotetcpipRxObj::remotetcpipRxObj()
 {
     m_pCtrlObject = NULL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// VSCPTCPIP_RX_WorkerThread
+// remotetcpipRxObj
 //
 
-VSCPTCPIP_RX_WorkerThread::~VSCPTCPIP_RX_WorkerThread()
+remotetcpipRxObj::~remotetcpipRxObj()
 {
   ;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// Entry
+// remotetcpipRxThread
 //
 // Is there any messages to send from Level II clients. Send it/them to all
 // devices/clients except for itself.
 //
 
-void *VSCPTCPIP_RX_WorkerThread::Entry()
+/*
+void *remotetcpipRxThread(void *pDate)
 {
     int rv;
     VscpRemoteTcpIf tcpifReceive; // TODO
@@ -4625,8 +4556,8 @@ void *VSCPTCPIP_RX_WorkerThread::Entry()
     // Must be a valid control object pointer
     if ( NULL == m_pCtrlObject ) return NULL;
     
-    //wxCommandEvent eventReceive( wxVSCPTCPIF_RX_EVENT, m_pCtrlObject->m_wndID );
-    //wxCommandEvent eventConnectionLost( wxVSCPTCPIF_CONNECTION_LOST_EVENT, m_pCtrlObject->m_wndID );
+    //xxCommandEvent eventReceive( xxVSCPTCPIF_RX_EVENT, m_pCtrlObject->m_wndID );
+    //xxCommandEvent eventConnectionLost( xxVSCPTCPIF_CONNECTION_LOST_EVENT, m_pCtrlObject->m_wndID );
     
     // Connect to the server with the control interface
     if ( VSCP_ERROR_SUCCESS != 
@@ -4634,7 +4565,7 @@ void *VSCPTCPIP_RX_WorkerThread::Entry()
                                     m_pCtrlObject->m_strUsername,
                                     m_pCtrlObject->m_strPassword ) ) {
         if ( m_pCtrlObject->m_bUseRXTXEvents ) {
-            // TODO if ( NULL != m_pCtrlObject->m_pWnd ) wxPostEvent( m_pCtrlObject->m_pWnd, eventConnectionLost );
+            // TODO if ( NULL != m_pCtrlObject->m_pWnd ) xxPostEvent( m_pCtrlObject->m_pWnd, eventConnectionLost );
         }
 
         m_pCtrlObject->m_rxState = RX_TREAD_STATE_FAIL_DISCONNECTED;
@@ -4667,7 +4598,7 @@ void *VSCPTCPIP_RX_WorkerThread::Entry()
 
             if ( m_pCtrlObject->m_bUseRXTXEvents ) {
                 //eventReceive.SetClientData( pEvent );
-                //if ( NULL != m_pCtrlObject->m_pWnd ) wxPostEvent( m_pCtrlObject->m_pWnd, eventReceive );
+                //if ( NULL != m_pCtrlObject->m_pWnd ) xxPostEvent( m_pCtrlObject->m_pWnd, eventReceive );
             }
             else {
                 if ( m_pCtrlObject->m_rxQueue.GetCount() <= m_pCtrlObject->m_maxRXqueue ) {
@@ -4695,7 +4626,7 @@ void *VSCPTCPIP_RX_WorkerThread::Entry()
     tcpifReceive.doCmdClose();
 
     if ( m_pCtrlObject->m_bUseRXTXEvents ) {
-        // TODO if ( NULL != m_pCtrlObject->m_pWnd ) wxPostEvent( m_pCtrlObject->m_pWnd, eventConnectionLost );
+        // TODO if ( NULL != m_pCtrlObject->m_pWnd ) xxPostEvent( m_pCtrlObject->m_pWnd, eventConnectionLost );
     }
 
     if ( m_pCtrlObject->m_rxState != RX_TREAD_STATE_FAIL_DISCONNECTED ) {
@@ -4705,15 +4636,9 @@ void *VSCPTCPIP_RX_WorkerThread::Entry()
     return NULL;
 
 }
+*/
 
-///////////////////////////////////////////////////////////////////////////////
-// OnExit
-//
 
-void VSCPTCPIP_RX_WorkerThread::OnExit()
-{
-
-}
 
 
 
@@ -4723,38 +4648,39 @@ void VSCPTCPIP_RX_WorkerThread::OnExit()
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// VSCPTCPIP_TX_WorkerThread
+// remotetcpipTxObj
 //
 
-VSCPTCPIP_TX_WorkerThread::VSCPTCPIP_TX_WorkerThread()
+remotetcpipTxObj::remotetcpipTxObj()
 {
     m_pCtrlObject = NULL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// VSCPTCPIP_TX_WorkerThread
+// remotetcpipTxObj
 //
 
-VSCPTCPIP_TX_WorkerThread::~VSCPTCPIP_TX_WorkerThread()
+remotetcpipTxObj::~remotetcpipTxObj()
 {
     ;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// Entry
+// remotetcpipTxThread
 //
 // Is there any messages to send from Level II clients. Send it/them to all
 // devices/clients except for itself.
 //
 
-void *VSCPTCPIP_TX_WorkerThread::Entry()
+/* TODO future
+void *remotetcpipTxThread( void *pDate )
 {
     VscpRemoteTcpIf tcpifTransmit;
 
     // Must be a valid control object pointer
     if ( NULL == m_pCtrlObject ) return NULL;
      
-    //wxCommandEvent eventConnectionLost( wxVSCPTCPIF_CONNECTION_LOST_EVENT, m_pCtrlObject->m_wndID );
+    //xxCommandEvent eventConnectionLost( xxVSCPTCPIF_CONNECTION_LOST_EVENT, m_pCtrlObject->m_wndID );
     
     // Connect to the server with the control interface
     if ( VSCP_ERROR_SUCCESS != 
@@ -4762,7 +4688,7 @@ void *VSCPTCPIP_TX_WorkerThread::Entry()
                                         m_pCtrlObject->m_strUsername,
                                         m_pCtrlObject->m_strPassword ) ) {
         if ( m_pCtrlObject->m_bUseRXTXEvents ) {
-            // TODO if ( NULL != m_pCtrlObject->m_pWnd ) wxPostEvent( m_pCtrlObject->m_pWnd, eventConnectionLost );
+            // TODO if ( NULL != m_pCtrlObject->m_pWnd ) xxPostEvent( m_pCtrlObject->m_pWnd, eventConnectionLost );
         }
         
         m_pCtrlObject->m_rxState = RX_TREAD_STATE_FAIL_DISCONNECTED;
@@ -4779,7 +4705,7 @@ void *VSCPTCPIP_TX_WorkerThread::Entry()
     
     while ( !TestDestroy() && !m_pCtrlObject->m_bQuit ) {
         
-        if ( wxSEMA_TIMEOUT == m_pCtrlObject->m_semTxQueue.WaitTimeout( 500 ) ) continue;
+        if ( xxSEMA_TIMEOUT == m_pCtrlObject->m_semTxQueue.WaitTimeout( 500 ) ) continue;
         m_pCtrlObject->m_mutexTxQueue.Lock();
         node = m_pCtrlObject->m_txQueue.GetFirst();
         pEvent = node->GetData();
@@ -4792,7 +4718,7 @@ void *VSCPTCPIP_TX_WorkerThread::Entry()
     tcpifTransmit.doCmdClose();
 
     if ( m_pCtrlObject->m_bUseRXTXEvents ) {
-        // TODO if ( NULL != m_pCtrlObject->m_pWnd ) wxPostEvent( m_pCtrlObject->m_pWnd, eventConnectionLost );
+        // TODO if ( NULL != m_pCtrlObject->m_pWnd ) xxPostEvent( m_pCtrlObject->m_pWnd, eventConnectionLost );
     }
 
     if ( m_pCtrlObject->m_rxState != RX_TREAD_STATE_FAIL_DISCONNECTED ) {
@@ -4802,13 +4728,7 @@ void *VSCPTCPIP_TX_WorkerThread::Entry()
     return NULL;
 
 }
+*/
 
-///////////////////////////////////////////////////////////////////////////////
-// OnExit
-//
 
-void VSCPTCPIP_TX_WorkerThread::OnExit()
-{
-
-}
 

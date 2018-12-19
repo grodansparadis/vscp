@@ -35,19 +35,17 @@
 
 // VSCP daemon variable codes are defined in this file
 
-#if !defined(VSCPVARIABLE__INCLUDED_)
-#define VSCPVARIABLE__INCLUDED_
+#if !defined(VSCP_REMOTE_VARIABLE__INCLUDED_)
+#define VSCP_REMOTE_VARIABLE__INCLUDED_
 
-#include <wx/hashset.h>
-#include <wx/datetime.h>
-#include <wx/tokenzr.h>
-#include <wx/filename.h>
+
 
 #include <sqlite3.h>
 #include <guid.h>
 #include <userlist.h>
 #include <variablecodes.h>
 #include <vscphelper.h>
+#include <vscpdatetime.h>
 
 #define VAR_MAXBUF_SIZE             0x10000     // Size for variable strings etc
 
@@ -90,7 +88,7 @@
 
 
 // Forward declarations
-class wxFFileOutputStream;
+
 
 
 // name,type,user,rights,persistence,last,bnumerical,bbase64,value,note
@@ -177,7 +175,7 @@ public:
      *          access eights.
      */
     static void makeAccessRightString( uint32_t accessrights, 
-                                        wxString& strAccessRights );
+                                        std::string& strAccessRights );
 
     /*!
         Get variable type as string
@@ -192,7 +190,7 @@ public:
         @parm strVariableType Variable type in string form
         @param variable type in numerical form.
      */
-    static uint16_t getVariableTypeFromString(const wxString& strVariableType);
+    static uint16_t getVariableTypeFromString(const std::string& strVariableType);
     
     /*!
      * Check if the variable is a numerical type
@@ -212,9 +210,9 @@ public:
         @param strUser User name that is used if user field is empty.
         @return true if the string could be parsed correctly.
      */
-    bool setVariableFromString( const wxString& strVariable, 
+    bool setVariableFromString( const std::string& strVariable, 
                                     bool bBase64=false,
-                                    const wxString& strUser = _("admin") );
+                                    const std::string& strUser = "admin" );
 
     /*!
      * Get string content as semicolon separated string form.
@@ -227,14 +225,14 @@ public:
      * is returned.
      * @return Variable content in semicolon separated form. 
      */
-    wxString getAsString( bool bShort=true );
+    std::string getAsString( bool bShort=true );
     
     /*!
      * Get the variable as a JSON object
      * @param strVariable Filled in with JSON data
      * @return true of all is OK, false otherwise.
      */
-    bool getAsJSON( wxString &strVariable );
+    bool getAsJSON( std::string &strVariable );
     
     /*!
      * Set variable information from a JSON object
@@ -242,7 +240,7 @@ public:
      * @param strVariable JSON object
      * @return true if the string could be parsed correctly.
      */
-    bool setFromJSON( wxString &strVariable );
+    bool setFromJSON( std::string &strVariable );
     
     
     /*!
@@ -250,7 +248,7 @@ public:
      * @param strVariable Filled in with JSON data
      * @return true of all is OK, false otherwise.
      */
-    bool getAsXML( wxString &strVariable );
+    bool getAsXML( std::string &strVariable );
     
     /*!
      * Set variable information from a XML object
@@ -258,7 +256,7 @@ public:
      * @param strVariable XML object
      * @return true if the string could be parsed correctly.
      */
-    bool setFromXML( wxString &strVariable );
+    bool setFromXML( std::string &strVariable );
 
     /*!
         Reset the variable to it's default value
@@ -278,7 +276,7 @@ public:
     /*!
      Get the length for the string value of a variable
      */
-    size_t getLength( void ) { return m_strValue.Length(); };
+    size_t getLength( void ) { return m_strValue.length(); };
 
     /*!
         setTrue
@@ -301,7 +299,7 @@ public:
         @param bBase64 True if strValue is BASE64 encoded.
         @return true on success.
      */
-    bool setValueFromString(int type, const wxString& strValue, bool bBase64 = false );
+    bool setValueFromString(int type, const std::string& strValue, bool bBase64 = false );
 
 
     /*!
@@ -309,27 +307,27 @@ public:
         @param str String that will get string representation of variable.
         @param  bBase64 If set to true value is encoded in BASE64
      */
-    void writeValueToString( wxString& strValue, bool bBase64=false );
+    void writeValueToString( std::string& strValue, bool bBase64=false );
 
     /*!
         Get string value
         @param bBase64 If true the returned value will be BASE64 encoded.
         @return value in string form is returned regardless of type.
      */
-    wxString getValue( bool bBase64 = false );
+    std::string getValue( bool bBase64 = false );
     
     /*!
         getValue
         @param pval Pointer to string that will get value.
         @param bBase64 If true the returned value will be BASE64 encoded.
      */
-    void getValue( wxString *pval, bool bBase64=false );
+    void getValue( std::string *pval, bool bBase64=false );
     
     /*!
         getValue
         @param value String that will receive value.
      */
-    bool setValue( wxString strValue, bool bBase64=false  );  
+    bool setValue( std::string strValue, bool bBase64=false  );  
 
     /*!
         setValue
@@ -410,32 +408,32 @@ public:
         GetValue - Date + time format
         @param pValue [OUT] Date + time value in ISO format
      */
-    void getValue( wxDateTime *pValue );
+    void getValue( vscpdatetime *pValue );
     
     /*!
         SetValue - Date + Time ISO format
         @param val Date + time in ISO format.
      */
-    void setValue( wxDateTime& val );
+    void setValue( vscpdatetime& val );
         
 
     /*!
      * setUser
      */
     bool setOwnerId( uint32_t ownerid );
-    bool setOwnerIdFromUserName( wxString& strUser );
+    bool setOwnerIdFromUserName( std::string& strUser );
     bool setOwnerdFromClient( uint32_t ownerid );
 
     /*!
         Change last change date time to now
     */
-    void setLastChangedToNow( void ) { m_lastChanged = wxDateTime::Now(); };
+    void setLastChangedToNow( void ) { m_lastChanged = vscpdatetime::setNow(); };
 
     /*!
      * Get last changed date/time
      * @return Last changed date/time
      */
-    wxDateTime& getLastChange( void ) { return m_lastChanged; };
+    vscpdatetime& getLastChange( void ) { return m_lastChanged; };
 
     // Getters/Setters
     
@@ -449,8 +447,8 @@ public:
         @param strName Name of variable
         @return true on success
      */
-    bool setName( const wxString& strName );
-    wxString& getName( void ) { return m_name.MakeUpper(); };
+    bool setName( const std::string& strName );
+    std::string getName( void ) { return vscp_upper( m_name ); };
     
     // type
     /*!
@@ -458,14 +456,14 @@ public:
         @param strType type in numerical or string form
         @return True on success.
      */
-    bool setType( const wxString& strType );
+    bool setType( const std::string& strType );
     void setType( uint16_t type ) { m_type = type; };
     uint16_t getType( void ) { return m_type; };
 
     // note
-    bool setNote( const wxString& strNote, bool bBase64=false );
-    wxString getNote( bool bBase64=false );
-    bool getNote( wxString& strNote, bool bBase64 = false );
+    bool setNote( const std::string& strNote, bool bBase64=false );
+    std::string getNote( bool bBase64=false );
+    bool getNote( std::string& strNote, bool bBase64 = false );
     
     // Persistence
     bool isPersistent( void ) { return m_bPersistent; };
@@ -474,7 +472,7 @@ public:
     // Access rights
     void setAccessRights( uint32_t accessRights ) { m_accessRights = accessRights; };
     uint32_t getAccessRights( void ) { return m_accessRights; };
-    void getAccessRightStr( wxString& strAccessRights  ) 
+    void getAccessRightStr( std::string& strAccessRights  ) 
         { makeAccessRightString( m_accessRights, strAccessRights ); };
     
     bool isUserWritable( void ) { return ( m_accessRights & 0x02 ) ? true : false; };
@@ -497,7 +495,7 @@ private:
     uint32_t m_id;
     
     // Name of variable
-    wxString m_name;
+    std::string m_name;
     
     // type of variable
     uint16_t m_type;
@@ -513,7 +511,7 @@ private:
     uint32_t m_userid;
         
     /// Note about variable (always coded in BASE64)
-    wxString m_note;
+    std::string m_note;
     
     /*! 
         Storage
@@ -522,7 +520,7 @@ private:
         A "GUID" variable is stored in the VSCP event.
         A VSCP data variables s stored in the VSCP event.
      */
-    wxString m_strValue;
+    std::string m_strValue;
     
     // True if this is a stock variable
     bool m_bStock;
@@ -530,12 +528,12 @@ private:
     // Variable hook  TODO
     // Used to get notification in websocket when a variable changed it's value
     // Contains client id's for clients that should be informed if the variable is written to.
-    wxArrayLong m_clientHooks;
+    std::list<int> m_clientHooks;
 
 public:
     
     // Time when variable was last changed.
-    wxDateTime m_lastChanged;
+    vscpdatetime m_lastChanged;
     
 };
 
@@ -566,7 +564,7 @@ public:
      * set to NULL in which case only availability of the variable is returned.
      * @return >0 if variable is found, zero if not. 
      */
-    uint32_t find( const wxString& name, CVSCPVariable& variable );
+    uint32_t find( const std::string& name, CVSCPVariable& variable );
     
     
     /*!
@@ -575,7 +573,7 @@ public:
      * @return id if the variable exists, zero else.
      * 
      */
-    uint32_t exist( const wxString& name );
+    uint32_t exist( const std::string& name );
     
     
     /*!
@@ -590,7 +588,7 @@ public:
      * @return Return id if variable is found, UINT_MAX if variable is internal and dynamic, 
      *      zero if the variable is not found. 
      */
-    uint32_t getStockVariable( const wxString& name, 
+    uint32_t getStockVariable( const std::string& name, 
                                     CVSCPVariable& pVar, 
                                     CUserItem *pUser = NULL );
     
@@ -622,7 +620,7 @@ public:
      * set to NULL in which case only availability of the variable is returned.
      * @return id if variable is found, zero if not. 
      */
-    uint32_t findNonPersistentVariable( const wxString& name, CVSCPVariable& pVar );
+    uint32_t findNonPersistentVariable( const std::string& name, CVSCPVariable& pVar );
     
     /*!
      * Find a persistent variable
@@ -633,7 +631,7 @@ public:
      * set to NULL in which case only availability of the variable is returned.
      * @return id if variable is found, zero if not. 
      */
-    uint32_t findPersistentVariable( const wxString& name, CVSCPVariable& pVar );
+    uint32_t findPersistentVariable( const std::string& name, CVSCPVariable& pVar );
 
     /*!
      * Add stock variable
@@ -663,22 +661,22 @@ public:
         @param accessRights Access rights for the variable
         @return true on success, false on failure.
      */
-    bool add( const wxString& name,
-                    const wxString& value,
+    bool add( const std::string& name,
+                    const std::string& value,
                     const uint16_t type = VSCP_DAEMON_VARIABLE_CODE_STRING,
                     const uint32_t userid = USER_ID_ADMIN,
                     const bool bPersistent = false,
                     const uint32_t accessRights = PERMISSON_OWNER_ALL,
-                    const wxString& note = _("") );
+                    const std::string& note = "" );
 
     // Variant of the above with string as type
-    bool add( const wxString& name,
-                            const wxString& value,
-                            const wxString& strType, 
+    bool add( const std::string& name,
+                            const std::string& value,
+                            const std::string& strType, 
                             const uint32_t userid = USER_ID_ADMIN,
                             const bool bPersistent = false,
                             const uint32_t accessRights = PERMISSON_OWNER_ALL,
-                            const wxString& note = _("") );
+                            const std::string& note = "" );
     
     // Update a variable (write to db)
     bool update( CVSCPVariable& var );
@@ -688,7 +686,7 @@ public:
         @param name Name of variable
         @return true on success, false on failure.
      */
-    bool remove( wxString& name );
+    bool remove( std::string& name );
 
     /*!
         Remove variable from object
@@ -703,7 +701,7 @@ public:
                 the default XML path is used.
         @return Returns true on success false on failure.
      */
-    bool loadFromXML( const wxString& path = _("") );
+    bool loadFromXML( const std::string& path = "" );
 
     /*!
         Write persistent variables to configured storage
@@ -716,7 +714,7 @@ public:
         @param strcfgfile path to variable file where data should be written.
         @return Returns true on success false on failure.
      */
-    bool save( wxString& path, 
+    bool save( std::string& path, 
                 uint8_t whatToSave = VARIABLE_INTERNAL | VARIABLE_EXTERNAL );
     
     /*!
@@ -725,7 +723,7 @@ public:
         @param variable Variable to write out.
         @return True on success.
      */
-    bool writeVariableToXmlFile( wxFFileOutputStream *pFileStream, CVSCPVariable& variable );
+    bool writeVariableToXmlFile( std::ofstream &of, CVSCPVariable& variable );
     
      /*!
         Create external variable table
@@ -751,8 +749,8 @@ public:
      * @param bClear If true the string array will be cleared before it is filled.
      * @return Returns true on success
      */
-    bool getVarlistFromRegExp( wxArrayString& nameArray,
-                                const wxString& regex = _("(.*)"),
+    bool getVarlistFromRegExp( std::deque<std::string>& nameArray,
+                                const std::string& regex = "(.*)",
                                 const int type = 0,
                                 bool bClear = true );
     
@@ -766,7 +764,7 @@ public:
      */
     
     bool listEnumerationFromRegExp( varQuery *pq, 
-                                        const wxString& regex = _("(.*)"),
+                                        const std::string& regex = "(.*)",
                                         const int type = 0 );
     /*!
      * Get next list item
@@ -789,20 +787,20 @@ public:
 public:
     
     /// Path to variable XML file 
-    wxString m_xmlPath;
+    std::string m_xmlPath;
         
     /// Path to the external VSCP variable database
-    wxFileName m_dbFilename; 
+    std::string m_dbFilename; 
     sqlite3 *m_db_vscp_external_variable;
     
     /// Internal variable database
     sqlite3 *m_db_vscp_internal_variable;
 
     // Last variable save
-    wxDateTime m_lastSaveTime;
+    vscpdatetime m_lastSaveTime;
     
     // Stock variables names
-    //wxArrayString m_StockVariable;
+    std::deque<std::string> m_StockVariable;  // TODO map?
     
 };
 

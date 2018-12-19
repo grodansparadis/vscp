@@ -25,25 +25,13 @@
 // SOFTWARE.
 //
 
-#include <wx/wx.h>
-#include <wx/defs.h>
-#include <wx/app.h>
-#include <wx/wfstream.h>
-#include <wx/xml/xml.h>
-#include <wx/listimpl.cpp>
-#include <wx/tokenzr.h>
-#include <wx/stdpaths.h>
-#include <wx/thread.h>
-#include <wx/socket.h>
-#include <wx/url.h>
-#include <wx/datetime.h>
-#include <wx/filename.h>
-#include <wx/cmdline.h>
-#include <wx/base64.h>
+#include <string>
+#include <list>
 
 #include <stdlib.h>
 #include <string.h>
 #include <float.h>
+#include <syslog.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -73,6 +61,7 @@ extern "C" {
 #include <controlobject.h>
 #include <vscpremotetcpif.h>
 #include <dm.h>
+#include <vscpdatetime.h>
 #include <lua_vscp_wrkthread.h>
 #include <lua_vscp_func.h>
 
@@ -89,38 +78,42 @@ const char lua_vscp__regkey_clientitem = 100;
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// actionThread_Lua
+// actionLuaObj
 //
 // This thread executes a Lua 
 //
 
-actionThread_Lua::actionThread_Lua( wxString& strScript,
-                                    wxThreadKind kind )
-                                            : wxThread( kind )
+actionLuaObj::actionLuaObj( std::string& strScript  )
 {
     //OutputDebugString( "actionThreadURL: Create");
-    m_wxstrScript = strScript;  // Script to execute
+    m_strScript = strScript;  // Script to execute
 }
 
-actionThread_Lua::~actionThread_Lua()
+actionLuaObj::~actionLuaObj()
 {
 
 }
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// Entry
+// actionLuaThread
 //
 //
 
-void *actionThread_Lua::Entry()
+void *actionLuaThread( void *pData )
 {
     struct lua_State *L;
     int lua_ret;
     const char *lua_err_txt;
+
+    actionLuaObj *pobj = (actionLuaObj *)pData;
+    if ( NULL == pobj ) {
+        syslog( LOG_ERR, "[LUA execution] - "
+        "No control object, can't execute code." );
+        return NULL;
+    }
     
-    m_start = wxDateTime::Now();    // Mark start time
-    
+    pobj->m_start = vscpdatetime::setNow();    // Mark start time
     
     // Create new Lua context
     L = luaL_newstate();
@@ -157,32 +150,26 @@ void *actionThread_Lua::Entry()
     web_reg_string( L, "lua_type", "dmscript" );
     web_reg_string( L, "version", VSCPD_DISPLAY_VERSION );
     
-    wxString strFeedEvent;
-    if ( vscp_writeVscpEventExToString( &m_feedEvent, strFeedEvent ) ) {
-        web_reg_string( L, "feedevent_str", (const char *)strFeedEvent.mbc_str() );
+    std::string strFeedEvent;
+    if ( vscp_writeVscpEventExToString( &pobj->m_feedEvent, strFeedEvent ) ) {
+        web_reg_string( L, "feedevent_str", (const char *)strFeedEvent.c_str() );
     }
     else {
-        wxString strError = 
-                wxString::Format( _("Failed to convert Lua feed event to string." ) );
-        gpobj->logMsg( strError, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+        syslog( LOG_ERR, "Failed to convert Lua feed event to string." );
     }
         
-    if ( vscp_convertEventExToJSON( &m_feedEvent, strFeedEvent ) ) {
-        web_reg_string( L, "feedevent_json", (const char *)strFeedEvent.mbc_str() );
+    if ( vscp_convertEventExToJSON( &pobj->m_feedEvent, strFeedEvent ) ) {
+        web_reg_string( L, "feedevent_json", (const char *)strFeedEvent.c_str() );
     }
     else {
-        wxString strError = 
-                wxString::Format( _("Failed to convert Lua feed event to JSON." ) );
-        gpobj->logMsg( strError, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+        syslog( LOG_ERR, "Failed to convert Lua feed event to JSON." );
     }
     
-    if ( vscp_convertEventExToXML( &m_feedEvent, strFeedEvent ) ) {
-        web_reg_string( L, "feedevent_xml", (const char *)strFeedEvent.mbc_str() );
+    if ( vscp_convertEventExToXML( &pobj->m_feedEvent, strFeedEvent ) ) {
+        web_reg_string( L, "feedevent_xml", (const char *)strFeedEvent.c_str() );
     }
     else {
-        wxString strError = 
-                wxString::Format( _("Failed to conver Lua feed event to XML." ) );
-        gpobj->logMsg( strError, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+        syslog( LOG_ERR, "Failed to conver Lua feed event to XML." );
     }
     
     // From httpd
@@ -223,22 +210,22 @@ void *actionThread_Lua::Entry()
     
 /*    
     // Save the DM feed event for easy access
-    wxString strEvent;
+    std::string strEvent;
     vscp_convertEventExToJSON( &m_feedEvent, strEvent );
-    duk_push_string( ctx, (const char *)strEvent.mbc_str() );
+    duk_push_string( ctx, (const char *)strEvent.c_str() );
     duk_json_decode(ctx, -1);
     duk_put_global_string(ctx, "vscp_feedevent");
     
     // Save client object as a global pointer
-    duk_push_pointer(ctx, (void *)m_pClientItem );
+    duk_push_pointer(ctx, (void *)pobj->m_pClientItem );
     duk_put_global_string(ctx, "vscp_controlobject");
     
     // Create VSCP client
-    m_pClientItem = new CClientItem();
-    vscp_clearVSCPFilter( &m_pClientItem->m_filterVSCP );
+    pobj->m_pClientItem = new CClientItem();
+    vscp_clearVSCPFilter( &pobj->m_pClientItem->m_filterVSCP );
     
     // Save the client object as a global pointer
-    duk_push_pointer(ctx, (void *)m_pClientItem );
+    duk_push_pointer(ctx, (void *)pobj->m_pClientItem );
     duk_put_global_string(ctx, "vscp_clientitem");
     
     // reading [global object].vscp_clientItem 
@@ -246,7 +233,7 @@ void *actionThread_Lua::Entry()
     duk_push_string(ctx, "vscp_clientitem");    // -> stack: [ global "vscp_clientItem" ] 
     duk_get_prop(ctx, -2);                      // -> stack: [ global vscp_clientItem ] 
     CClientItem *pItem = (CClientItem *)duk_get_pointer(ctx,-1);
-    wxString user = pItem->m_UserName;
+    std::string user = pItem->m_UserName;
     
     duk_bool_t rc;
 
@@ -257,65 +244,60 @@ void *actionThread_Lua::Entry()
     }
     
     // Create VSCP client
-    m_pClientItem = new CClientItem();
-    if ( NULL != m_pClientItem ) return NULL;
-    vscp_clearVSCPFilter( &m_pClientItem->m_filterVSCP );
+    pobj->m_pClientItem = new CClientItem();
+    if ( NULL != pobj->m_pClientItem ) return NULL;
+    vscp_clearVSCPFilter( &pobj->m_pClientItem->m_filterVSCP );
 
     // This is an active client
-    m_pClientItem->m_bOpen = false;
-    m_pClientItem->m_type = CLIENT_ITEM_INTERFACE_TYPE_CLIENT_LUA;
-    m_pClientItem->m_strDeviceName = _("Internal daemon Lua client.");
-    m_pClientItem->m_strDeviceName += _("|Started at ");
-    wxDateTime now = wxDateTime::Now();
-    m_pClientItem->m_strDeviceName += now.FormatISODate();
-    m_pClientItem->m_strDeviceName += _(" ");
-    m_pClientItem->m_strDeviceName += now.FormatISOTime();
+    pobj->m_pClientItem->m_bOpen = false;
+    pobj->m_pClientItem->m_type = CLIENT_ITEM_INTERFACE_TYPE_CLIENT_LUA;
+    pobj->m_pClientItem->m_strDeviceName = ("Internal daemon Lua client.");
+    pobj->m_pClientItem->m_strDeviceName += ("|Started at ");
+    pobj->m_pClientItem->m_strDeviceName += vscpdatetime::setNow().getISODateTime(); 
 
     // Add the client to the Client List
-    gpobj->m_wxClientMutex.Lock();
-    if ( !gpobj->addClient( m_pClientItem ) ) {
+    pthread_mutex_lock(&gpobj->m_clientMutex);
+    if ( !gpobj->addClient( pobj->m_pClientItem ) ) {
         // Failed to add client
-        delete m_pClientItem;
-        m_pClientItem = NULL;
-        gpobj->m_wxClientMutex.Unlock();
-        gpobj->logMsg( _("LUA worker: Failed to add client. Terminating thread.") );
+        delete pobj->m_pClientItem;
+        pobj->m_pClientItem = NULL;
+        pthread_mutex_unlock(&gpobj->m_clientMutex);
+        syslog( LOG_ERR, "LUA worker: Failed to add client. Terminating thread." );
         return NULL;
     }
-    gpobj->m_wxClientMutex.Unlock();
+    pthread_mutex_unlock(&gpobj->m_clientMutex);
     
     // Open the channel
-    m_pClientItem->m_bOpen = true;
+    pobj->m_pClientItem->m_bOpen = true;
     
     // Register client item object
     //lua_pushlightuserdata( L, (void *)&lua_vscp__regkey_clientitem );
     lua_pushlstring( L, "vscp_clientitem", 15 );
-    lua_pushlightuserdata( L, (void *)m_pClientItem );
+    lua_pushlightuserdata( L, (void *)pobj->m_pClientItem );
     lua_settable( L, LUA_REGISTRYINDEX );
     
     lua_setglobal( L, "vscp" );
     
     // Execute the Lua
-    //web_run_lua_string_script( (const char *)m_wxstrScript.mbc_str() );
-    //luaL_dostring( lua, (const char *)m_wxstrScript.mbc_str() );
+    //web_run_lua_string_script( (const char *)m_xxstrScript.c_str() );
+    //luaL_dostring( lua, (const char *)m_xxstrScript.c_str() );
     /*if ( 0 != duk_peval( ctx ) ) {
-        wxString strError = 
-                wxString::Format( "Lua failed to execute: %s\n", 
+        std::string strError = 
+                vscp_string_format( "Lua failed to execute: %s\n", 
                                     duk_safe_to_string(ctx, -1) );
-        gpobj->logMsg( strError, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+        syslog( LOG_ERR, ( strError, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
     }*/
     
     
     web_open_lua_libs( L );
 
-    lua_ret = luaL_loadstring( L, (const char *)m_wxstrScript.mbc_str() );
+    lua_ret = luaL_loadstring( L, (const char *)pobj->m_strScript.c_str() );
 
     if ( lua_ret != LUA_OK ) {
 
-        wxString strError = 
-                wxString::Format( _("Lua failed to load script from"
-                                    " DM parameter. Script = %s\n"),
-                                    (const char *)m_wxstrScript.mbc_str() );
-        gpobj->logMsg( strError, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+        syslog( LOG_ERR, "Lua failed to load script from"
+                                    " DM parameter. Script = %s",
+                                    (const char *)pobj->m_strScript.c_str() );
         
          return NULL;
     }
@@ -332,12 +314,10 @@ void *actionThread_Lua::Entry()
         // Error when executing the script
         lua_err_txt = lua_tostring( L, -1 );
         
-        wxString strError = 
-                wxString::Format( _("Error running Lua script. "
-                                    "Error = %s : Script = %s\n"),
+        syslog( LOG_ERR, "Error running Lua script. "
+                                    "Error = %s : Script = %s\n",
                                     lua_err_txt,
-                                    (const char *)m_wxstrScript.mbc_str() );
-        gpobj->logMsg( strError, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
+                                    (const char *)pobj->m_strScript.c_str() );
         
         return NULL;
         
@@ -352,28 +332,20 @@ void *actionThread_Lua::Entry()
     //duk_pop(ctx);  // pop eval. result 
     
     // Close the channel
-    m_pClientItem->m_bOpen = false;
+    pobj->m_pClientItem->m_bOpen = false;
     
     // Remove client and session item
-    gpobj->m_wxClientMutex.Lock();
-    gpobj->removeClient( m_pClientItem );
-    m_pClientItem = NULL;
-    gpobj->m_wxClientMutex.Unlock();
+    pthread_mutex_lock(&gpobj->m_clientMutex);
+    gpobj->removeClient( pobj->m_pClientItem );
+    pobj->m_pClientItem = NULL;
+    pthread_mutex_unlock(&gpobj->m_clientMutex);
 
     // Destroy the Lua context
     //duk_destroy_heap( ctx );
     
-    m_stop = wxDateTime::Now();     // Mark stop time
+    pobj->m_stop = vscpdatetime::setNow();     // Mark stop time
  
     return NULL;
 }
 
 
-///////////////////////////////////////////////////////////////////////////////
-// OnExit
-//
-
-void actionThread_Lua::OnExit()
-{
-
-}

@@ -28,252 +28,62 @@
 #if !defined(DEVICETHREAD_H__7D80016B_5EFD_40D5_94E3_6FD9C324CC7B__INCLUDED_)
 #define DEVICETHREAD_H__7D80016B_5EFD_40D5_94E3_6FD9C324CC7B__INCLUDED_
 
-#ifdef WIN32
-#if _MSC_VER > 1000
-#pragma once
-#endif // _MSC_VER > 1000
 
-#endif
 
-#ifdef WIN32
-#include <winsock2.h>
-#endif
+void *deviceThread( void *pData );
 
-#include "wx/wx.h"
-#include <wx/thread.h>
-#include <wx/socket.h>
-#include <wx/dynlib.h>
+void *deviceLevel1ReceiveThread( void *pData );
+void *deviceLevel1WriteThread( void *pData );
+
+void *deviceLevel2ReceiveThread( void *pData );
+void *deviceLevel2WriteThread( void *pData );
 
 class CControlObject;
 class CDeviceItem;
-class deviceThread;
-
-/*!
-    This class implement a thread that write data
-    to a blocking CANAL driver
-*/
-
-class deviceLevel1WriteThread : public wxThread
-{
-
-public:
-    
-    /// Constructor
-    deviceLevel1WriteThread();
-
-    /// Destructor
-    virtual ~deviceLevel1WriteThread();
-
-    /*!
-        Thread code entry point
-    */
-    virtual void *Entry();
-
-    /*! 
-        called when the thread exits - whether it terminates normally or is
-        stopped with Delete() (but not when it is Kill()ed!)
-    */
-    virtual void OnExit();
-
-    /*!
-        Pointer to master thread.
-    */
-    deviceThread *m_pMainThreadObj;
-
-  /*!
-        Termination control
-  */
-  bool m_bQuit;
-
-
-};
+class deviceThreadObj;
 
 
 /*!
-    This class implement a thread that read data
-    from a blocking CANAL driver
+    The common object for device threads
 */
 
-class deviceLevel1ReceiveThread : public wxThread
+class deviceThreadObj 
 {
 
 public:
 
     /// Constructor
-    deviceLevel1ReceiveThread();
+    deviceThreadObj();
 
     /// Destructor
-    virtual ~deviceLevel1ReceiveThread();
+    virtual ~deviceThreadObj();
 
-    /*!
-        Thread code entry point
-    */
-    virtual void *Entry();
-
-
-    /*! 
-        called when the thread exits - whether it terminates normally or is
-        stopped with Delete() (but not when it is Kill()ed!)
-    */
-    virtual void OnExit();
-
-    /*!
-        Pointer to master thread.
-    */
-    deviceThread *m_pMainThreadObj;
-
-  /*!
-        Termination control
-  */
-  bool m_bQuit;
-
-};
-
-
-/*!
-    This class implement a thread that write data
-    to a blocking VSCP Level II driver
-*/
-
-class deviceLevel2WriteThread : public wxThread
-{
-
-public:
-
-    /// Constructor
-    deviceLevel2WriteThread();
-
-    /// Destructor
-    virtual ~deviceLevel2WriteThread();
-
-    /*!
-        Thread code entry point
-    */
-    virtual void *Entry();
-
-    /*! 
-        called when the thread exits - whether it terminates normally or is
-        stopped with Delete() (but not when it is Kill()ed!)
-    */
-    virtual void OnExit();
-
-    /*!
-        Pointer to master thread.
-    */
-    deviceThread *m_pMainThreadObj;
-
-  /*!
-    Termination control
-  */
-  bool m_bQuit;
-
-
-};
-
-
-/*!
-    This class implement a thread that read data
-    from a blocking VSCP Level II driver
-*/
-
-class deviceLevel2ReceiveThread : public wxThread
-{
-
-public:
-    
-    /// Constructor
-    deviceLevel2ReceiveThread();
-
-    /// Destructor
-    virtual ~deviceLevel2ReceiveThread();
-
-    /*!
-        Thread code entry point
-    */
-    virtual void *Entry();
-
-
-    /*! 
-        called when the thread exits - whether it terminates normally or is
-        stopped with Delete() (but not when it is Kill()ed!)
-    */
-    virtual void OnExit();
-
-    /*!
-        Pointer to master thread.
-    */
-    deviceThread *m_pMainThreadObj;
-
-  /*!
-        Termination control
-  */
-  bool m_bQuit;
-
-};
-
-
-/*!
-    This class implement a one of thread that look
-    for specific events and react on them appropriately .
-*/
-
-class deviceThread : public wxThread
-{
-
-public:
-
-    /// Constructor
-    deviceThread();
-
-    /// Destructor
-    virtual ~deviceThread();
-
-    /*!
-        Thread code entry point
-    */
-    virtual void *Entry();
-
-
-    /*! 
-        called when the thread exits - whether it terminates normally or is
-        stopped with Delete() (but not when it is Kill()ed!)
-    */
-    virtual void OnExit();
-
+    // path to dll
+    std::string m_path2Driver;
 
     /// dl/dll handler
-    wxDynamicLibrary m_wxdll;
+    //void* m_handle_dll;
 
-    /*!
-        DeviceItem for device to control	
-    */
+    // DeviceItem for device to control	
     CDeviceItem *m_pDeviceItem;
 
-    /*!
-        Control object that invoked thread
-    */
+    // Control object that invoked thread
     CControlObject *m_pCtrlObject;
 
-    /*!
-        Holder for CANAL receive thread
-    */
-    deviceLevel1ReceiveThread *m_preceiveThread;
+    // Quit flag
+    bool m_bQuit;
 
-    /*!
-        Holder for CANAL write thread
-    */
-    deviceLevel1WriteThread *m_pwriteThread;
-    
-    
-    /*!
-        Holder for VSCP Level II receive thread
-    */
-    deviceLevel2ReceiveThread *m_preceiveLevel2Thread;
+    // Holder for CANAL receive thread
+    pthread_t m_level1ReceiveThread;
 
-    /*!
-        Holder for VSCP Level II write thread
-    */
-    deviceLevel2WriteThread *m_pwriteLevel2Thread;
+    // Holder for CANAL write thread
+    pthread_t m_level1WriteThread;
+    
+    // Holder for VSCP Level II receive thread
+    pthread_t m_level2ReceiveThread;
+
+    // Holder for VSCP Level II write thread
+    pthread_t m_level2WriteThread;
 
     /*!
         Check filter/mask to see if filter should be delivered

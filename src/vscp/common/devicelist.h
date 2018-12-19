@@ -28,32 +28,12 @@
 #if !defined(_DEVICELIST_H__0ED35EA7_E9E1_41CD_8A98_5EB3369B3194__INCLUDED_)
 #define _DEVICELIST_H__0ED35EA7_E9E1_41CD_8A98_5EB3369B3194__INCLUDED_
 
-#ifdef WIN32
-#if _MSC_VER > 1000
-#pragma once
-#endif // _MSC_VER > 1000
-#endif
-
-#include "wx/wxprec.h"
-#include "wx/wx.h"
-#include "wx/defs.h"
-#include "wx/app.h"
-#include <wx/process.h>
-
-#ifdef WIN32
-
-#else
-
 #include <pthread.h>
 #include <semaphore.h>
 
-#endif
-
 #include "canaldlldef.h"
 
-//#include "controlobject.h"
 #include "vscpdlldef.h"
-#include <dllist.h>
 #include "clientlist.h"
 #include "devicethread.h"
 
@@ -75,18 +55,16 @@ enum _driver_levels {
 class CClientItem;
 class cguid;
 
-WX_DECLARE_LIST ( canalMsg, Level1MsgOutList );
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // Driver3Process
 //
 
-class Driver3Process : public wxProcess
+class Driver3Process
 {
 
 public:
-    Driver3Process( int flags = wxPROCESS_REDIRECT );
+    Driver3Process();
     ~Driver3Process();
     
     void OnTerminate( int pid, int status );
@@ -120,17 +98,17 @@ public:
     /*!
         Name of device
     */
-    wxString m_strName;
+    std::string m_strName;
 
     /*!
         Device configuration string
     */
-    wxString m_strParameter;
+    std::string m_strParameter;
 
     /*!
         CANAL DLL/DL path
     */
-    wxString m_strPath;
+    std::string m_strPath;
 
     /*!
         Canal Driver Level
@@ -154,9 +132,8 @@ public:
     /*!
         Worker thread for device
     */
-    deviceThread *m_pdeviceThread;
-
-    wxMutex m_mutexdeviceThread;
+    pthread_t m_deviceThreadHandle;
+    pthread_mutex_t m_mutexdeviceThread;
 
     /*!
         Device flags for CANAL DLL open
@@ -171,7 +148,7 @@ public:
     /*!
         Mutex handle that is used for sharing of the device.
     */
-    wxMutex m_deviceMutex;
+    pthread_mutex_t m_deviceMutex;
 
     /*!
      *  Translation flags 
@@ -186,7 +163,33 @@ public:
     // Level III driver pid
     long m_pid;
     
-    Driver3Process *m_pDriver3Process;
+    // Driver3Process *m_pDriver3Process;
+
+    // ------------------------------------------------------------------------
+    //                     Start of driver worker thread data
+    // ------------------------------------------------------------------------
+
+    // Control object that invoked thread
+    CControlObject *m_pCtrlObject;
+
+    // Quit flag
+    //bool m_bQuit;  use item quit
+
+    // Holder for CANAL receive thread
+    pthread_t m_level1ReceiveThread;
+
+    // Holder for CANAL write thread
+    pthread_t m_level1WriteThread;
+    
+    // Holder for VSCP Level II receive thread
+    pthread_t m_level2ReceiveThread;
+
+    // Holder for VSCP Level II write thread
+    pthread_t m_level2WriteThread;
+
+    // ------------------------------------------------------------------------
+    //                     End of driver worker thread data
+    // ------------------------------------------------------------------------
 
     // Level I (CANAL) driver methods
     LPFNDLL_CANALOPEN                   m_proc_CanalOpen;
@@ -223,8 +226,7 @@ public:
     LPFNDLL_VSCPWEBPAGEUPDATE           m_proc_VSCPWebPageupdate;
 };
 
-// List with device items
-WX_DECLARE_LIST( CDeviceItem, VSCPDEVICELIST );
+
 
 class CDeviceList  
 {
@@ -243,9 +245,9 @@ public:
         @param translation Bits to set translations to be performed.
         @return True is returned if the driver was successfully added.
     */
-    bool addItem( wxString strName,
-                            wxString strParameters, 
-                            wxString strPath, 
+    bool addItem( std::string strName,
+                            std::string strParameters, 
+                            std::string strPath, 
                             uint32_t flags,
                             cguid& guid,
                             uint8_t level = VSCP_DRIVER_LEVEL1,
@@ -277,10 +279,9 @@ public:
 public:
 
     /*!
-        Hash map with devices
+        List with devices
     */
-    VSCPDEVICELIST m_devItemList;
-
+    std::deque<CDeviceItem *> m_devItemList;
 
 };
 

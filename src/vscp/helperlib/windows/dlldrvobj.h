@@ -88,7 +88,7 @@ public:
 	VscpRemoteTcpIf *m_drvObjArray[ VSCP_HELPER_MAX_OPEN ];
 
 	/// Mutex for open/close	
-    wxMutex m_mutex;
+    pthread_mutex_t m_mutex;
 
 	/// Counter for users of the interface
 	unsigned long m_instanceCounter;

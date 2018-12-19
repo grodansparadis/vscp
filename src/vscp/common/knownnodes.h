@@ -27,11 +27,13 @@
 
 #pragma once
 
-#ifndef _KNOWNNODES_H_
-#define _KNOWNNODES_H_
+#ifndef _VSCP_KNOWNNODES_H_
+#define _VSCP_KNOWNNODES_H_ 
 
-#include <wx/listimpl.cpp>
-#include "guid.h"
+#include <vscpdatetime.h>   // TODO
+
+// Forward declarations
+class cguid;
 
 // The different types of nodes
 enum {
@@ -70,15 +72,15 @@ enum {
 // the node does not have a name 'node'+nickname id.
 //
 
-class CVSCPNode
+class cvscpnode
 {
 
 public:
 
-    CVSCPNode();
-    ~CVSCPNode();
+    cvscpnode();
+    ~cvscpnode();
 
-    CVSCPNode& operator=( const CVSCPNode& node )
+    cvscpnode& operator=( const cvscpnode& node )
     {
         // Check for self-assignment!
         if ( this == &node ) {	// Same object?
@@ -112,13 +114,13 @@ public:
      * Write capabilities as a comma separated string
      * @param strCapabilities String to write result to.
      */
-    void writeCapabilitiesToString( wxString& strCapabilities );
+    void writeCapabilitiesToString( std::string& strCapabilities );
     
     /*!
      * Get node capabilities from a comma separated string
      * @param strCapabilities Capabilities in a comma separated string.
      */
-    void getCapabilitiesFromString( const wxString& strCapabilities );
+    void getCapabilitiesFromString( const std::string& strCapabilities );
     
     
     
@@ -159,25 +161,24 @@ public:
     uint32_t lint_to_mdf;
 
     // Last heartbeat from this node
-    wxDateTime m_lastHeartBeat;
+    vscpdatetime m_lastHeartBeat;
 
     // This is the name of the node if any.
     // Will be truncated to 64 byte when sent out or reported
-    wxString m_strNodeName;
+    std::string m_strNodeName;
 
     // If a driver is associated with the 
-    wxString m_deviceName;
+    std::string m_deviceName;
 
     // IP/MAC/... address (if any) associated with the node
-    wxString m_address;
+    std::string m_address;
 
     // Node level 0 = unknown, 1 = Level I, 2 = Level II, 3 = Level III
     uint8_t m_level;    
 };
 
 
-// GUID -> Node info
-WX_DECLARE_STRING_HASH_MAP( CVSCPNode*, VSCP_HASH_KNOWN_NODES );
+
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -197,17 +198,17 @@ public:
     /*!
         Find node
         @param guid GUID for node.
-        @return Return CVSCPNode class if found, NULL if not.
+        @return Return cvscpnode class if found, NULL if not.
     */
-    CVSCPNode *findNode( cguid& guid );
+    cvscpnode *findNode( cguid& guid );
 
 
     /*!
         Add node
         @param guid GUID for node.
-        @return Return CVSCPNode class if added or existing, NULL if error.
+        @return Return cvscpnode class if added or existing, NULL if error.
     */
-    CVSCPNode *addNode( cguid& guid );
+    cvscpnode *addNode( cguid& guid );
 
 
     /*!
@@ -235,14 +236,13 @@ public:
     bool load( void );
 
     // Protect the lists
-    wxMutex m_mutexKnownNodes;
+    pthread_mutex_t m_mutexKnownNodes;
 
     // This list holds information about each discovered
     // node in the system and. 
     // The content of the list can be
     // preserved in the filesystem over time
-    VSCP_HASH_KNOWN_NODES m_nodes;
-
+    std::map<std::string,cvscpnode*> m_nodes;
 
 };
 

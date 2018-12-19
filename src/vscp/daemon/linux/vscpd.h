@@ -57,7 +57,7 @@ public:
     /*!
             Initialize the system
      */
-    BOOL init( wxString& strcfgfile, wxString& rootFolder );
+    int init( std::string& strcfgfile, std::string& rootFolder );
 
 
     // Implementation

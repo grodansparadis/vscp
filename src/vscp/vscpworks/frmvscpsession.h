@@ -157,7 +157,7 @@ public:
     eventOutQueue m_outQueue;
   
     // Protection for output queue
-    wxMutex m_mutexOutQueue;
+    pthread_mutex_t m_mutexOutQueue;
     wxSemaphore m_semOutQue;
   
     // Table for transmission objects
@@ -176,7 +176,7 @@ public:
     vscp_interface m_ifVSCP;
 
 	// Mutex handle that is used for sharing of the device.
-	wxMutex m_deviceMutex;
+	pthread_mutex_t m_deviceMutex;
 
     // GUID for CANAL device
     unsigned char m_GUID[16];
@@ -728,10 +728,10 @@ public:
     bool m_bRun;
   
     /// Mutex to control the event grid
-    wxMutex *m_pmutexEventGrid;
+    pthread_mutex_t *m_pmutexEventGrid;
   
     /// Mutex to control the transmission grid
-    wxMutex *m_pmutexTransmissionGrid;
+    pthread_mutex_t *m_pmutexTransmissionGrid;
   
     /// Receive event grid Table
     BigGridTable *m_pgridTable;
@@ -740,7 +740,7 @@ public:
     ctrlObj m_CtrlObject;
 
     /// Mutex that control the stopThreads method
-    wxMutex m_mutexStopThread; 
+    pthread_mutex_t m_mutexStopThread; 
 
     // Filters
     bool m_bfilterActive;

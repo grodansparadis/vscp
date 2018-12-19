@@ -24,25 +24,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-
-#ifdef WIN32
-#include <sys/types.h>   // for type definitions 
-#include <winsock2.h>
-#include <ws2tcpip.h>    // for win socket structs 
-#endif
-
-#include "wx/wxprec.h"
-#include "wx/wx.h"
-#include "wx/defs.h"
-#include "wx/app.h"
-#include <wx/datetime.h>
-#include <wx/listimpl.cpp>
-#include <wx/hashmap.h>
-
-#ifdef WIN32
-#else
-
 #define _POSIX
+
+#include <pthread.h>
+
+#include <string>
+#include <map>
 
 #include <stdio.h>
 #include <unistd.h>
@@ -53,17 +40,16 @@
 #include <netinet/in.h>
 #include <netdb.h>
 
-#endif
-
-#include "daemonworker.h"
-#include "vscp.h"
-#include "vscphelper.h"
-#include "clientlist.h"
+#include <daemonworker.h>
+#include <vscp.h>
+#include <vscphelper.h>
+#include <clientlist.h>
 #include <dllist.h>
 #include <crc8.h>
 #include <vscpdb.h>
-#include "controlobject.h"
-#include "guid.h"
+#include <controlobject.h>
+#include <guid.h>
+
 #include "knownnodes.h"
 
 
@@ -84,7 +70,7 @@ extern CControlObject *gpobj;
 // CNodeInformation CTOR
 //
 
-CVSCPNode::CVSCPNode()
+cvscpnode::cvscpnode()
 {
     m_dbId = -1;
     m_bUpdated = false;
@@ -92,9 +78,9 @@ CVSCPNode::CVSCPNode()
     m_realguid.clear();
     m_interfaceguid.clear();
     lint_to_mdf = 0;
-    m_lastHeartBeat = wxDateTime::Now();
-    m_strNodeName.Empty();
-    m_deviceName.Empty();
+    m_lastHeartBeat = vscpdatetime::setNow();
+    m_strNodeName;
+    m_deviceName;
     m_clientID = 0;
     m_level = 0;
         
@@ -119,10 +105,10 @@ CVSCPNode::CVSCPNode()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// CVSCPNode DTOR
+// cvscpnode DTOR
 //
 
-CVSCPNode::~CVSCPNode()
+cvscpnode::~cvscpnode()
 {
     ;
 }
@@ -132,14 +118,16 @@ CVSCPNode::~CVSCPNode()
 // getCapabilitiesFromString
 //
 
-void CVSCPNode::getCapabilitiesFromString( const wxString& strCapabilities )
+void cvscpnode::getCapabilitiesFromString( const std::string& strCapabilities )
 {
     uint64_t caps = 0;
-    wxStringTokenizer tkz( strCapabilities, _(",") );
+    std::deque<std::string> tokens;
+    vscp_split( tokens, strCapabilities, "," );
     
     for ( int i=7; i>0; i-- ) {
-        if ( tkz.HasMoreTokens() ) {
-            uint8_t val = vscp_readStringValue( tkz.GetNextToken() );
+        if ( !tokens.empty() ) {
+            uint8_t val = vscp_readStringValue( tokens.front() );
+            tokens.pop_front();
             caps |= ( val << ( i*8 ) ); 
         }
     }
@@ -152,9 +140,9 @@ void CVSCPNode::getCapabilitiesFromString( const wxString& strCapabilities )
 // getCapabilitiesFromString
 //
 
-void CVSCPNode::writeCapabilitiesToString( wxString& strCapabilities )
+void cvscpnode::writeCapabilitiesToString( std::string& strCapabilities )
 {
-    strCapabilities.Printf( "%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x",
+    strCapabilities = vscp_string_format( "%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x",
                                 ( m_capabilities >> 56 ) & 0xff,
                                 ( m_capabilities >> 48 ) & 0xff,
                                 ( m_capabilities >> 40 ) & 0xff,
@@ -182,11 +170,11 @@ CKnownNodes::~CKnownNodes()
 {
     // Remove hash content
     {
-        VSCP_HASH_KNOWN_NODES::iterator it;
+        std::map<std::string,cvscpnode*>::iterator it;
         for ( it = m_nodes.begin(); it != m_nodes.end(); ++it )
         {
-            wxString key = it->first;
-            CVSCPNode *pNode = it->second;
+            std::string key = it->first;
+            cvscpnode *pNode = it->second;
             if ( NULL != pNode ) delete pNode;
             pNode = NULL;
         }
@@ -201,9 +189,9 @@ CKnownNodes::~CKnownNodes()
 // findNode
 //
 
-CVSCPNode *CKnownNodes::findNode( cguid& guid )
+cvscpnode *CKnownNodes::findNode( cguid& guid )
 {
-    wxString strGUID;
+    std::string strGUID;
 
     guid.toString( strGUID  );
     return m_nodes[ strGUID ];
@@ -214,13 +202,13 @@ CVSCPNode *CKnownNodes::findNode( cguid& guid )
 // addNode
 //
 
-CVSCPNode *CKnownNodes::addNode( cguid& guid )
+cvscpnode *CKnownNodes::addNode( cguid& guid )
 {
-    CVSCPNode *pNode = findNode( guid );
+    cvscpnode *pNode = findNode( guid );
     if ( NULL == pNode ) {
-        pNode = new CVSCPNode;
+        pNode = new cvscpnode;
         if ( NULL != pNode ) {
-            wxString strGUID;
+            std::string strGUID;
             guid.toString( strGUID );
             m_nodes[ strGUID ] = pNode;    // Assign the node
         }
@@ -236,9 +224,9 @@ CVSCPNode *CKnownNodes::addNode( cguid& guid )
 
 bool CKnownNodes::removeNode( cguid& guid )
 {
-    wxString strGUID;
+    std::string strGUID;
     bool rv = false;
-    CVSCPNode *pNode = findNode( guid );
+    cvscpnode *pNode = findNode( guid );
     if ( NULL != pNode ) delete pNode;
     pNode = NULL;
     
@@ -270,7 +258,7 @@ bool CKnownNodes::load( void )
     char *pErrMsg;
     sqlite3_stmt *ppStmt;
     
-    gpobj->m_knownNodes.m_mutexKnownNodes.Lock();
+    pthread_mutex_lock(&gpobj->m_knownNodes.m_mutexKnownNodes);
     
     if ( SQLITE_OK != sqlite3_prepare_v2( gpobj->m_db_vscp_daemon,
                                             VSCPDB_GUID_SELECT_ALL,
@@ -293,7 +281,7 @@ bool CKnownNodes::load( void )
         
         cguid guid;
         guid.getFromString( p );
-        CVSCPNode *pNode = addNode( guid );
+        cvscpnode *pNode = addNode( guid );
         
         // id in database
         if ( NULL != 
@@ -306,7 +294,7 @@ bool CKnownNodes::load( void )
         if ( NULL != 
                  ( p = (const char *)sqlite3_column_text( ppStmt, 
                                                VSCPDB_ORDINAL_GUID_NAME ) ) ) {
-            pNode->m_strNodeName = wxString::FromUTF8( p );
+            pNode->m_strNodeName = std::string( p );
         }
         
         
@@ -321,7 +309,7 @@ bool CKnownNodes::load( void )
         if ( NULL != 
                  ( p = (const char *)sqlite3_column_text( ppStmt, 
                                         VSCPDB_ORDINAL_GUID_DATE ) ) ) {
-            pNode->m_lastHeartBeat.ParseISOCombined( p );
+            pNode->m_lastHeartBeat.set( p );
         }        
                         
         // MDF link
@@ -335,7 +323,7 @@ bool CKnownNodes::load( void )
         if ( NULL != 
                  ( p = (const char *)sqlite3_column_text( ppStmt, 
                                         VSCPDB_ORDINAL_GUID_ADDRESS ) ) ) {
-            pNode->m_address = wxString::FromUTF8( p );
+            pNode->m_address = std::string( p );
         }
         
         // Capabilities
@@ -349,13 +337,13 @@ bool CKnownNodes::load( void )
         if ( NULL != 
                  ( p = (const char *)sqlite3_column_text( ppStmt, 
                                         VSCPDB_ORDINAL_GUID_NONSTANDARD ) ) ) {
-            wxString str = wxString::FromUTF8( p );
-            //pNode-> ->m_capabilities = wxString::FromUTF8( p );
+            std::string str = std::string( p );
+            //pNode-> ->m_capabilities = std::string( p );
         }        
         
     }
     
-    gpobj->m_knownNodes.m_mutexKnownNodes.Unlock();
+    pthread_mutex_unlock(&gpobj->m_knownNodes.m_mutexKnownNodes);
     
     return true;
 }
@@ -363,23 +351,23 @@ bool CKnownNodes::load( void )
 
 /*
  
- #include <wx/protocol/http.h>
-#include <wx/XML/xml.h>
+ #include <xx/protocol/http.h>
+#include <xx/XML/xml.h>
 //[...]
-	wxString link;
-	wxHTTP http;
+	std::string link;
+	xxHTTP http;
  
 	http.SetTimeout(6);
 	http.Connect(_T("example.com"));
         // PHP file sending XML content
-	wxInputStream *httpStream = http.GetInputStream(_T("/file.php"));
+	xxInputStream *httpStream = http.GetInputStream(_T("/file.php"));
  
-	if (http.GetError() == wxPROTO_NOERR)
+	if (http.GetError() == xxPROTO_NOERR)
 	{
                 // will crash here, if xml content is not formatted PERFECTLY
-		wxXmlDocument xml(*httpStream);
+		xxXmlDocument xml(*httpStream);
  
-		wxXmlNode *node = xml.GetRoot()->GetChildren();
+		xxXmlNode *node = xml.GetRoot()->GetChildren();
 		while (node)
 		{
 			if (node->GetName() == _T("tagname1"))
@@ -393,9 +381,9 @@ bool CKnownNodes::load( void )
 		}
 	}
 	else
-		wxMessageBox(_T("Can't connect!"));
+		xxMessageBox(_T("Can't connect!"));
  
 	http.Close();
-	wxDELETE(httpStream);
+	xxDELETE(httpStream);
  
  */

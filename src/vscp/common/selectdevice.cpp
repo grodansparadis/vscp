@@ -248,7 +248,7 @@ void CSelectDevice::loadRegistryDeviceData()
     int i, idx;
     wxChar szDeviceKey[ 32 ];
     wxChar buf[ 2048 ];
-    wxString str;
+    std::string str;
 
 #ifdef WIN32
     char szPathSystemDir[ MAX_PATH ];

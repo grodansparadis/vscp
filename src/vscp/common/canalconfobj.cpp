@@ -169,10 +169,10 @@ CCanalConfObj::~CCanalConfObj()
 //  parseDriverInfo
 // 
 
-bool CCanalConfObj::parseDriverInfo( wxString& xmldata )
+bool CCanalConfObj::parseDriverInfo( std::string& xmldata )
 {
     bool rv = true;
-    wxStringInputStream xmlstream( xmldata );
+    std::stringInputStream xmlstream( xmldata );
     wxXmlDocument doc;
 
     // Empty old MDF information
@@ -193,7 +193,7 @@ bool CCanalConfObj::parseDriverInfo( wxString& xmldata )
             
             m_decription = child1->GetNodeContent();
 
-            wxString str = child1->GetAttribute( _( "type" ), _( "text" ) );
+            std::string str = child1->GetAttribute( _( "type" ), _( "text" ) );
             str.Trim();
             str.Trim( false );
             str.MakeUpper();
@@ -208,7 +208,7 @@ bool CCanalConfObj::parseDriverInfo( wxString& xmldata )
         }
         else if ( child1->GetName() == wxT( "blocking" ) ) {
 
-            wxString str = child1->GetNodeContent();
+            std::string str = child1->GetNodeContent();
             str.Trim();
             str.Trim( false );
             str.MakeUpper();
@@ -228,7 +228,7 @@ bool CCanalConfObj::parseDriverInfo( wxString& xmldata )
 
                 if ( child2->GetName() == wxT( "item" ) ) {
                     
-                    wxString str;
+                    std::string str;
 
                     CCanalObj_OneItem *pOneItem = new CCanalObj_OneItem;
                     wxASSERT( NULL != pOneItem );
@@ -322,7 +322,7 @@ bool CCanalConfObj::parseDriverInfo( wxString& xmldata )
                 if ( ( child2->GetName() == wxT( "bit" )  ) || 
                         ( child2->GetName() == wxT( "flag" ) ) ) {
 
-                    wxString str;
+                    std::string str;
 
                     CCanalObj_FlagBit *pFlagBit = new CCanalObj_FlagBit;
                     wxASSERT( NULL != pFlagBit );
@@ -379,9 +379,9 @@ bool CCanalConfObj::parseDriverInfo( wxString& xmldata )
 // 
 
 bool CCanalConfObj::runWizard( wxWindow* parent,
-                                    wxString& inputConfigString,
+                                    std::string& inputConfigString,
                                     uint32_t inputConfigFlags,
-                                    wxString& resultConfigString, 
+                                    std::string& resultConfigString, 
                                     uint32_t *presultConfigFlags )
 {
     // Clear configuration data
@@ -510,7 +510,7 @@ void CanalConfigWizard::Init()
 //
 
 void CanalConfigWizard::CreateControls( CCanalConfObj *pObj, 
-                                            wxString& inputConfigString, 
+                                            std::string& inputConfigString, 
                                             uint32_t inputConfigFlags )
 {
     wxASSERT( NULL != pObj );
@@ -519,7 +519,7 @@ void CanalConfigWizard::CreateControls( CCanalConfObj *pObj,
 
     // Split up configuration values
     wxArrayString params;
-    wxStringTokenizer tkz( inputConfigString, _( ";" ) );
+    std::stringTokenizer tkz( inputConfigString, _( ";" ) );
     while ( tkz.HasMoreTokens() ) {
         params.Add( tkz.GetNextToken() );
     }
@@ -544,7 +544,7 @@ void CanalConfigWizard::CreateControls( CCanalConfObj *pObj,
     for ( unsigned int i = 0; i < m_pconfigObj->m_listItem.GetCount(); i++ ) {
 
         m_pgConfig[ i ] = new WizardPageCanalConfig;
-        m_pgConfig[ i ]->m_strHead = wxString::Format(_("Parameter %d"), i+1 );
+        m_pgConfig[ i ]->m_strHead = std::string::Format(_("Parameter %d"), i+1 );
         m_pgConfig[ i ]->m_pItem = m_pconfigObj->m_listItem.Item( i )->GetData();
         if ( i < params.GetCount() ) {
             m_pgConfig[ i ]->m_strValue = params[ i ];
@@ -567,7 +567,7 @@ void CanalConfigWizard::CreateControls( CCanalConfObj *pObj,
     for ( unsigned int i = 0; i < m_pconfigObj->m_listFlagBits.GetCount(); i++ ) {
 
         m_pgConfigFlags[ i ] = new WizardPageFlagsConfig;
-        m_pgConfigFlags[ i ]->m_strHead = wxString::Format( _( "Flags %d" ), i + 1 );
+        m_pgConfigFlags[ i ]->m_strHead = std::string::Format( _( "Flags %d" ), i + 1 );
         m_pgConfigFlags[ i ]->m_pItem = m_pconfigObj->m_listFlagBits.Item( i )->GetData();
         m_pgConfigFlags[ i ]->m_flags = inputConfigFlags;
         m_pgConfigFlags[ i ]->Create( pWizard );
@@ -616,7 +616,7 @@ bool CanalConfigWizard::ShowToolTips()
 // Get bitmap resources
 //
 
-wxBitmap CanalConfigWizard::GetBitmapResource( const wxString& name )
+wxBitmap CanalConfigWizard::GetBitmapResource( const std::string& name )
 {
     // Bitmap retrieval
     wxUnusedVar( name );
@@ -632,7 +632,7 @@ wxBitmap CanalConfigWizard::GetBitmapResource( const wxString& name )
 // Get icon resources
 //
 
-wxIcon CanalConfigWizard::GetIconResource( const wxString& name )
+wxIcon CanalConfigWizard::GetIconResource( const std::string& name )
 {
     // Icon retrieval
     wxUnusedVar( name );
@@ -774,14 +774,14 @@ void WizardCanalConfigPageStart::CreateControls()
     itemBoxSizer->Add( itemStaticTextDescription, 0, wxALIGN_LEFT | wxALL, 5 );
 
     // Level
-    wxString strBlocking;
+    std::string strBlocking;
     if ( m_pconfigObj->m_bBlocking ) {
         strBlocking = _("blocking");
     }
     else {
         strBlocking = _("non blocking");
     }
-    wxString strInfo = wxString::Format( _("This is a %s level %d driver." ), 
+    std::string strInfo = std::string::Format( _("This is a %s level %d driver." ), 
                                             (const char *)strBlocking.mbc_str(), 
                                             m_pconfigObj->m_level );
     wxStaticText* itemStaticTextInfo = new wxStaticText;
@@ -822,7 +822,7 @@ bool WizardCanalConfigPageStart::ShowToolTips()
 // Get bitmap resources
 //
 
-wxBitmap WizardCanalConfigPageStart::GetBitmapResource( const wxString& name )
+wxBitmap WizardCanalConfigPageStart::GetBitmapResource( const std::string& name )
 {
     // Bitmap retrieval
     wxUnusedVar( name );
@@ -833,7 +833,7 @@ wxBitmap WizardCanalConfigPageStart::GetBitmapResource( const wxString& name )
 // Get icon resources
 //
 
-wxIcon WizardCanalConfigPageStart::GetIconResource( const wxString& name )
+wxIcon WizardCanalConfigPageStart::GetIconResource( const std::string& name )
 {
     // Icon retrieval
     wxUnusedVar( name );
@@ -975,9 +975,9 @@ void WizardPageCanalConfig::CreateControls()
 
     if ( type_choice == m_pItem->m_type ) {
         
-        wxArrayString wxstrings;
+        wxArrayString std::strings;
         for ( unsigned int i = 0; i < m_pItem->m_listChoice.GetCount(); i++ ) {
-            wxstrings.Add( m_pItem->m_listChoice[ i ]->m_description );
+            std::strings.Add( m_pItem->m_listChoice[ i ]->m_description );
         }
 
         m_listBox = new wxListBox;
@@ -986,7 +986,7 @@ void WizardPageCanalConfig::CreateControls()
                              m_windowsID++,
                              wxDefaultPosition,
                              wxSize( 370, -1 ),
-                             wxstrings );
+                             std::strings );
        
         if ( WizardPageCanalConfig::ShowToolTips() ) {
             m_listBox->SetToolTip( _( "Set value for parameter" ) );
@@ -1068,7 +1068,7 @@ bool WizardPageCanalConfig::ShowToolTips()
 // Get bitmap resources
 //
 
-wxBitmap WizardPageCanalConfig::GetBitmapResource( const wxString& name )
+wxBitmap WizardPageCanalConfig::GetBitmapResource( const std::string& name )
 {
     // Bitmap retrieval
     wxUnusedVar( name );
@@ -1079,7 +1079,7 @@ wxBitmap WizardPageCanalConfig::GetBitmapResource( const wxString& name )
 // Get icon resources
 //
 
-wxIcon WizardPageCanalConfig::GetIconResource( const wxString& name )
+wxIcon WizardPageCanalConfig::GetIconResource( const std::string& name )
 {
     // Icon retrieval
     wxUnusedVar( name );
@@ -1102,7 +1102,7 @@ void WizardPageCanalConfig::OnWizardPageChanging( wxWizardEvent& event )
                     event.Veto();
                 }
                 else {
-                    m_strValue = wxString::Format( _( "%d" ), sel );
+                    m_strValue = std::string::Format( _( "%d" ), sel );
                 }
             }
         }
@@ -1282,9 +1282,9 @@ void WizardPageFlagsConfig::CreateControls()
 
     if ( flagtype_choice == m_pItem->m_type ) {
 
-        wxArrayString wxstrings;
+        wxArrayString std::strings;
         for ( unsigned int i = 0; i < m_pItem->m_listChoice.GetCount(); i++ ) {
-            wxstrings.Add( m_pItem->m_listChoice[ i ]->m_description );
+            std::strings.Add( m_pItem->m_listChoice[ i ]->m_description );
         }
 
         m_listBox = new wxListBox;
@@ -1293,7 +1293,7 @@ void WizardPageFlagsConfig::CreateControls()
                            m_windowsID++,
                            wxDefaultPosition,
                            wxSize( 370, -1 ),
-                           wxstrings );
+                           std::strings );
 
         if ( WizardPageCanalConfig::ShowToolTips() ) {
             m_listBox->SetToolTip( _( "Set value for flag" ) );
@@ -1319,7 +1319,7 @@ void WizardPageFlagsConfig::CreateControls()
         }
 
         m_textField->SetBackgroundColour( wxColour( 255, 255, 210 ) );
-        m_textField->SetValue( wxString::Format( _( "%d" ), 
+        m_textField->SetValue( std::string::Format( _( "%d" ), 
                                     getData( m_pItem->m_pos, 
                                     m_pItem->m_width ) ) );
         itemBoxSizer->Add( m_textField, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 ); 
@@ -1362,7 +1362,7 @@ bool WizardPageFlagsConfig::ShowToolTips()
 // Get bitmap resources
 //
 
-wxBitmap WizardPageFlagsConfig::GetBitmapResource( const wxString& name )
+wxBitmap WizardPageFlagsConfig::GetBitmapResource( const std::string& name )
 {
     // Bitmap retrieval
     wxUnusedVar( name );
@@ -1373,7 +1373,7 @@ wxBitmap WizardPageFlagsConfig::GetBitmapResource( const wxString& name )
 // Get icon resources
 //
 
-wxIcon WizardPageFlagsConfig::GetIconResource( const wxString& name )
+wxIcon WizardPageFlagsConfig::GetIconResource( const std::string& name )
 {
     // Icon retrieval
     wxUnusedVar( name );
@@ -1392,7 +1392,7 @@ void WizardPageFlagsConfig::OnWizardPageChanging( wxWizardEvent& event )
     if ( event.GetDirection() ) {  // Forward
 
         if ( flagtype_value == m_pItem->m_type ) {
-            wxString str = m_textField->GetValue();
+            std::string str = m_textField->GetValue();
             if ( !str.IsNumber() ) {
                 event.Veto();
             }

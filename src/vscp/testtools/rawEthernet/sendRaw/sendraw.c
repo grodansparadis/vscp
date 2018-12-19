@@ -26,7 +26,7 @@ int main(int argc, char **argv)
 							 errbuf			// error buffer
 							 )) == NULL )
 	{
-		fprintf(stderr,"\nUnable to open the adapter. %s is not supported by WinPcap\n", argv[1]);
+		syslog( LOG_ERR,"\nUnable to open the adapter. %s is not supported by WinPcap\n", argv[1]);
 		return 2;
 	}
 
@@ -109,7 +109,7 @@ int main(int argc, char **argv)
 		                    packet,	    // buffer with the packet
 		                    47			// size
 		                ) != 0 ) {
-		fprintf(stderr,"\nError sending the packet: %s\n", pcap_geterr(fp));
+		syslog( LOG_ERR, "\nError sending the packet: %s\n", pcap_geterr(fp));
 		return 3;
 	}
 

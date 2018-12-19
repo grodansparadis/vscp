@@ -331,8 +331,8 @@ public:
     VscpRemoteTcpIf m_srv;
 
     // Event lists	
-	std::list<vscpEvent *> m_sendList;
-	std::list<vscpEvent *> m_receiveList;
+	std::list<vscpEvent*> m_sendList;
+	std::list<vscpEvent*> m_receiveList;
 	
     // Event object to indicate that there is an event in the output queue	
     sem_t m_semaphore_SendQueue;			
@@ -343,10 +343,10 @@ public:
     pthread_mutex_t m_mutex_ReceiveQueue;
 
     // Decision matrix
-    std::list<CLocalDM *> m_LocalDMList;
+    std::list<CLocalDM*> m_LocalDMList;
 
     // List with interfaces
-    std::list<CInterface *> m_interfaceList;
+    std::list<CInterface*> m_interfaceList;
 };
 
 

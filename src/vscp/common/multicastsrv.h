@@ -29,18 +29,22 @@
 #if !defined(VSCP_MULTICAST_CLIENT_THREAD_H__INCLUDED_)
 #define VSCP_MULTICAST_CLIENT_THREAD_H__INCLUDED_
 
+#include <netinet/in.h>
+
 #include "userlist.h"
 #include "controlobject.h"
 
-class VSCPMulticastClientThread;
+void *multicastClientThread( void *pData );
+
+class MulticastObj;
 
 // Client structure (Will receive events from VSCP server)
 typedef struct {
     bool                        m_bEnable;          // Enable the channel
     bool                        m_bAllowUnsecure;   // Allow receive of un encrypted frames
-    wxString                    m_public;           // Public interface to bind to
+    std::string                 m_public;           // Public interface to bind to
     uint16_t                    m_port;             // Port for channel
-    wxString                    m_gropupAddress;    // Multicast group address "udp://224.0.23.158:44444"
+    std::string                 m_gropupAddress;    // Multicast group address "udp://224.0.23.158:44444"
     int                         m_ttl;              // Multicast ttl (defaults to 1)
     cguid                       m_guid;             // GUID to use for channel
     vscpEventFilter             m_txFilter;         // Filter for outgoing events
@@ -49,48 +53,28 @@ typedef struct {
     bool                        m_bSendAck;         // Send response frame when receiving frame
     uint8_t                     m_index;            // Rolling index
     
-    wxMutex                     m_mutexVSCPMulticastThread;     // Protect thread object
-    VSCPMulticastClientThread   *m_pWorkerThread;               // Worker thread
+    bool                        m_quit;             // Quit thread if true
+    pthread_t                   m_workerThread;     // Worker thread
 } multicastChannelItem;
-
-WX_DECLARE_LIST(multicastChannelItem, MULTICASTCHANNELLIST );
-
-typedef struct  {       
-    bool                    m_bEnable;          // Enable multicast interface    
-    MULTICASTCHANNELLIST    m_channels;         // List containing multicast channels
-} multicastInfo;
-
 
 
 /*!
  * Class that handle one multicast channel
  */
 
-class VSCPMulticastClientThread : public wxThread
+class MulticastObj 
 {
 
 public:
     
     /// Constructor
-    VSCPMulticastClientThread();
+    MulticastObj( CControlObject *pobj = NULL );
 
     /// Destructor
-    ~VSCPMulticastClientThread();
-
-    /*!
-        Thread code entry point
-    */
-    virtual void *Entry();
-
-
-    /*! 
-        called when the thread exits - whether it terminates normally or is
-        stopped with Delete() (but not when it is Kill()ed!)
-    */
-    virtual void OnExit();
+    ~MulticastObj();
+   
     
-    
-    static void ev_handler( struct mg_connection *nc, int ev, void *p );
+    //static void ev_handler( struct mg_connection *nc, int ev, void *p );
 
 
     /*!
@@ -106,11 +90,11 @@ public:
                                 CClientItem *pClientItem,
                                 vscpEventFilter *pRxFilter );
     
-    static bool replyAckFrame( VSCPMulticastClientThread *pMulticastClientThread, 
+    static bool replyAckFrame( MulticastObj *pMulticastClientThread, 
                                     uint8_t pkttype,
                                     uint8_t index );
     
-    static bool replyNackFrame( VSCPMulticastClientThread *pMulticastClientThread, 
+    static bool replyNackFrame( MulticastObj *pMulticastClientThread, 
                                     uint8_t pkttype,
                                     uint8_t index );
     
@@ -120,24 +104,30 @@ public:
     bool sendFrame( struct mg_mgr *pmgr, 
                         CClientItem *pClientItem );
 
+    /*!
+        Assign control object
+    */
+    void setControlObjectPointer( CControlObject *pobj ) { m_pObj = pobj; };                        
+
 // --- Member variables ---
 
     /*!
         Termination control
     */
     bool m_bQuit;
-    
-    /// Info about this multicast channel
-    multicastChannelItem *m_pChannel;
+
+    std::list<multicastChannelItem*> m_channels;  // List containing multicast channels
 
 private:    
+
+    CControlObject *m_pObj;
     
     /// Multicast channel Client item
     CClientItem *m_pClientItem;
     
     // Groupaddess + port to send on
     // default: udp://224.0.23.158:44444
-    //wxString m_sendAddress;
+    //std::string m_sendAddress;
     
     // Socket for sending
     int m_sendSock;

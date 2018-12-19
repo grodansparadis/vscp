@@ -60,19 +60,19 @@ DECLARE_EVENT_TYPE(wxVSCP_RCV_LOST_EVENT, wxID_ANY)	    // Receive thread connec
 
 // Structure for CANAL drivers
 typedef struct {
-    wxString m_strDescription;          // Decription of driver
-    wxString m_strPath;                 // Path to driver
-    wxString m_strConfig;               // Driver configuration string
+    std::string m_strDescription;          // Decription of driver
+    std::string m_strPath;                 // Path to driver
+    std::string m_strConfig;               // Driver configuration string
     unsigned long m_flags;              // Driver flags
     unsigned char m_GUID[16];       // GUID for interface
 } canal_interface;
 
 // Structure for VSCP drivers
 typedef struct {	
-    wxString m_strDescription;          // Description of VSCP interface
-    wxString m_strHost;                 // Host where server lives
-    wxString m_strUser;                 // Username
-    wxString m_strPassword;             // Password
+    std::string m_strDescription;          // Description of VSCP interface
+    std::string m_strHost;                 // Host where server lives
+    std::string m_strUser;                 // Username
+    std::string m_strPassword;             // Password
     unsigned long m_port;               // Port to use on server
 } vscp_interface;
 
@@ -127,7 +127,7 @@ class ctrlObj
   eventOutQueue m_outQueue;
   
   /// Protection for output queue
-  wxMutex m_mutexOutQueue;
+  pthread_mutex_t m_mutexOutQueue;
   wxSemaphore m_semOutQue;
   
   /// Table for transmission objects
@@ -150,7 +150,7 @@ class ctrlObj
     /*!
         Mutex handle that is used for sharing of the device.
     */
-    wxMutex m_deviceMutex;
+    pthread_mutex_t m_deviceMutex;
 
   /*!
     GUID for CANAL device

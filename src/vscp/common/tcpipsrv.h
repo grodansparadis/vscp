@@ -29,18 +29,14 @@
 #if !defined(VSCP_TCPIPSRV_H__INCLUDED_)
 #define VSCP_TCPIPSRV_H__INCLUDED_
 
-
-#include "wx/thread.h"
-//#include "wx/socket.h"
-
 #include <sockettcp.h>
 
 #include "userlist.h"
 #include "clientlist.h"
 #include "controlobject.h"
 
-// List with connected clients
-WX_DECLARE_LIST( struct stcp_connection, TCPIPCLIENTS );
+#define VSCP_TCPIP_SRV_RUN                  0
+#define VSCP_TCPIP_SRV_STOP                 1
 
 #define VSCP_TCPIP_COMMAND_LIST_MAX         200     // Max number of saved old commands
 
@@ -109,13 +105,16 @@ WX_DECLARE_LIST( struct stcp_connection, TCPIPCLIENTS );
 
 typedef const char * ( * COMMAND_METHOD) (  void );
 
+// Forward declarations
+class tcpipClientObj;
+
 /*!
     Class that defines one command
 */
 typedef struct {
-    wxString m_strCmd;                  // Command name
+    std::string m_strCmd;                  // Command name
     uint8_t m_securityLevel;            // Security level for command (0-15)
-    wxProcess *m_pfnCommand;            // Function to execute
+    //wxProcess *m_pfnCommand;            // Function to execute
 } structCommand;
 
 
@@ -124,49 +123,50 @@ typedef struct {
     the vscpd connections on the TCP interface
 */
 
-class TCPListenThread : public wxThread
+class tcpipListenThreadObj 
 {
 
 public:
     
     /// Constructor
-    TCPListenThread();
+    tcpipListenThreadObj( CControlObject *pobj = NULL );
 
     /// Destructor
-    ~TCPListenThread();
-
-    /*!
-        Thread code entry point
-    */
-    virtual void *Entry();
-
-    /*! 
-        called when the thread exits - whether it terminates normally or is
-        stopped with Delete() (but not when it is Kill()ed!)
-    */
-    virtual void OnExit();
+    ~tcpipListenThreadObj();
 
     /*!
         Set listening port
         Examples for IPv4: 80, 443s, 127.0.0.1:3128, 192.0.2.3:8080s
         Examples for IPv6: [::]:80, [::1]:80
     */
-    void setListeningPort( wxString str ) { m_strListeningPort = str; };
+    void setListeningPort( std::string str ) { m_strListeningPort = str; };
 
+    /*!
+        Getter/setter for control object
+    */
+    void setControlObjectPointer( CControlObject *pobj ) { m_pobj = pobj; };
+    CControlObject *getControlObject( void ) { return m_pobj; };
 
-    // List with active tcp/ip clients
-    TCPIPCLIENTS m_clientList;
+    int m_nStopTcpIpSrv;
 
-private:
+    // This mutex protects the clientlist
+    pthread_mutex_t m_mutexTcpClientList;
+
+    // List with active tcp/ip clients 
+    std::list<tcpipClientObj *> m_tcpip_clientList;
+
 
     // Listening port
-    wxString m_strListeningPort;
+    std::string m_strListeningPort;
 
     // Settings for the tcp/ip server
     server_context m_srvctx;        
 
     // Counter for client id's
     unsigned long m_idCounter;
+
+    // Pointer to the mother of all things
+    CControlObject *m_pobj;
 };
 
 
@@ -178,23 +178,17 @@ private:
     the vscpd connections on the TCP interface
 */
 
-class TCPClientThread : public wxThread
+class tcpipClientObj
 {
 
 public:
     
     /// Constructor
-    TCPClientThread();
+    tcpipClientObj( tcpipListenThreadObj *pParent );
 
     /// Destructor
-    ~TCPClientThread();
+    ~tcpipClientObj();
 
-    /*!
-        Thread code entry point
-    */
-    virtual void *Entry();
-
-    
     /*!
      * Write string to client
      * If encryption is activated this routine will encrypt
@@ -203,7 +197,7 @@ public:
      * @param bAddCRLF If true crlf will be added to string  
      * @return True on success, false on failure
     */
-    bool write( wxString& str, bool bAddCRLF = false ); 
+    bool write( std::string& str, bool bAddCRLF = false ); 
     
     /*!
      * Write string to client
@@ -220,20 +214,14 @@ public:
      * @param str String that will get read data
      * @return True on success (there is data to read), false on failure
     */
-    bool read( wxString& str );
+    bool read( std::string& str );
     
     /*!
         When a command is received on the TCP/IP interface the command handler is called.
     */
-    int CommandHandler( wxString& strCommand );
+    int CommandHandler( std::string& strCommand );
 
-    /*! 
-        called when the thread exits - whether it terminates normally or is
-        stopped with Delete() (but not when it is Kill()ed!)
-    */
-    virtual void OnExit();
 
-    
     /*!
         Check if a user has been verified
         @return true if verified, else false.
@@ -717,15 +705,26 @@ public:
      */
     void handleClientMeasurment( void );
 
+    /*!
+        Getter/setter for control object
+    */
+    void setControlObjectPointer( CControlObject *pobj ) { m_pObj = pobj; };
+    CControlObject *getControlObject( void ) { return m_pObj; };
+
 // --- Member variables ---
 
     // Client connection
     struct stcp_connection *m_conn;
 
+    // TCP/IP client thread
+    pthread_t m_tcpipClientThread;
+
     /// Parent object
-    TCPListenThread *m_pParent;
-    
-private:
+    tcpipListenThreadObj *m_pParent;
+
+
+    // Pointer to control object from listen parent
+    CControlObject *m_pObj;
     
     // This is info about the logged in user
     CClientItem *m_pClientItem;
@@ -733,7 +732,7 @@ private:
     // All input is added to the receive buf. as it is 
     // received. Commands are then fetched from this buffer
     // as we go
-    wxString m_strResponse;
+    std::string m_strResponse;
     
     // Saved return value for last sockettcp operation
     int m_rv;
@@ -742,7 +741,7 @@ private:
     bool m_bReceiveLoop;
 
     // List of old commands
-    wxArrayString m_commandArray;
+    std::deque<std::string> m_commandArray;
 };
 
 

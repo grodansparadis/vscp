@@ -467,7 +467,7 @@ public:
 	/*!
 		Mutex for receive queue.
 	*/
-	wxMutex m_receiveMutex;
+	pthread_mutex_t m_receiveMutex;
 
 	
 	/*!
@@ -478,13 +478,13 @@ public:
 	/*!
 		Mutex for the Tellstick channel.
 	*/
-	wxMutex m_tellstickMutex;
+	pthread_mutex_t m_tellstickMutex;
 
 	
 	/*!
 		Protects the tx list
 	*/
-	wxMutex m_txMutex;
+	pthread_mutex_t m_txMutex;
 
 	/*!
 		List with events that should be handled

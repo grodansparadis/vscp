@@ -627,13 +627,13 @@ CRpiMax6675::~CRpiMax6675()
 	if ( !m_bQuit ) close();
 
     // Remove local DM
-    std::list<CLocalDM *>::const_iterator iteratorDM;
+    std::list<CLocalDM*>::const_iterator iteratorDM;
     for (iteratorDM = m_LocalDMList.begin(); iteratorDM != m_LocalDMList.end(); ++iteratorDM) {
         delete *iteratorDM;
     }
 
     // Remove interfaces
-    std::list<CInterface *>::const_iterator iteratorIf;
+    std::list<CInterface*>::const_iterator iteratorIf;
     for (iteratorIf = m_interfaceList.begin(); iteratorIf != m_interfaceList.end(); ++iteratorIf) {
         delete *iteratorIf;
     }
@@ -847,7 +847,7 @@ void *workerThread( void *data )
                 gpioVersion(), gpioHardwareRevision() );
 
     int cntOpenInterfaces = 0;
-    std::list<CInterface *>::const_iterator it;
+    std::list<CInterface*>::const_iterator it;
     for ( it = pObj->m_interfaceList.begin(); 
             it != pObj->m_interfaceList.end(); 
             ++it ) {
@@ -949,7 +949,7 @@ void *workerThread( void *data )
                             (const char *)VSCP_RPIMAX6675_SYSLOG_DRIVER_ID  );
 #endif
 
-                    std::list<CLocalDM *>::const_iterator it;
+                    std::list<CLocalDM*>::const_iterator it;
                     for ( it = pObj->m_LocalDMList.begin(); 
                             it != pObj->m_LocalDMList.end(); 
                             ++it ) {
@@ -1067,7 +1067,7 @@ void *workerThread( void *data )
         gettimeofday( &curTime, NULL );
         uint32_t now = 1000 * curTime.tv_sec + ( curTime.tv_usec / 1000 );
       
-        //std::list<CInterface *>::const_iterator it;
+        //std::list<CInterface*>::const_iterator it;
         for ( it = pObj->m_interfaceList.begin(); 
                 it != pObj->m_interfaceList.end(); 
                 ++it ) {
