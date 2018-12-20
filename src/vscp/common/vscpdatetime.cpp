@@ -108,7 +108,7 @@ vscpdatetime::setDate(uint16_t year, uint8_t month, uint8_t day)
 //
 
 bool
-vscpdatetime::setISODate(std::string &strDate)
+vscpdatetime::setISODate( const std::string &strDate)
 {
     size_t pos;
     std::string isodt = strDate.c_str();
@@ -158,7 +158,7 @@ vscpdatetime::setTime(uint8_t hour,
 //
 
 bool
-vscpdatetime::setISOTime(std::string &strTime)
+vscpdatetime::setISOTime( const std::string &strTime)
 {
     size_t pos;
     std::string isodt = strTime.c_str();

@@ -5,7 +5,7 @@
 //
 // The MIT License (MIT)
 //
-// Copyright (c) 2000-2018 Ake Hedman, 
+// Copyright (c) 2000-2018 Ake Hedman,
 // Grodans Paradis AB <info@grodansparadis.com>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -15,8 +15,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -29,160 +29,148 @@
 //  This file is part of VSCP - Very Simple Control Protocol
 //  http://www.vscp.org
 //
-// 
-
+//  gcc -fPIC -g -c -I../../common -I../../../common -I../../../.. -Wall libvscphelper.cpp
+//
 
 #ifdef __GNUG__
 //#pragma implementation
 #endif
 
+#include <map>
+
 #include "stdio.h"
 #include "stdlib.h"
-#include "unistd.h"
 #include "semaphore.h"
+
+#include <canal.h>
+#include <canal_macro.h>
+#include <vscpremotetcpif.h>
 
 #include "libvscphelper.h"
 
+void
+_init() __attribute__((constructor));
+void
+_fini() __attribute__((destructor));
 
-void _init() __attribute__((constructor));
-void _fini() __attribute__((destructor));
+// This map holds driver handles/objects
+static std::map<long, VscpRemoteTcpIf *> g_ifMap;
 
-void _init()
-{
-    // The following works on 3.0 but not on 2.8
-    wxApp::SetInstance(new wxApp());    // 2
-    new wxInitializer();                // 2
-    //wxInitialize();   // 1
-}
-
-void _fini()
-{
-    //wxUninitialize(); // 1
-}
-
-
+// Mutex for the map object
+static pthread_mutex_t g_mapMutex;
 
 ////////////////////////////////////////////////////////////////////////////
-// CVSCPLApp construction
+// DLL constructor
+//
 
-CVSCPLApp::CVSCPLApp()
-{
-    m_instanceCounter = 0;
-    pthread_mutex_init( &m_objMutex, NULL );
-
-    // Init. the driver array
-    for (int i = 0; i < VSCP_INTERFACE_MAX_OPEN; i++) {
-        m_pvscpifArray[ i ] = NULL;
-    }
-
-    UNLOCK_MUTEX(m_objMutex);
-
+void
+_init()
+{   
+    pthread_mutex_init(&g_mapMutex, NULL);
 }
 
-CVSCPLApp::~CVSCPLApp()
+////////////////////////////////////////////////////////////////////////////
+// DLL destructor
+//
+
+void
+_fini()
 {
-    LOCK_MUTEX(m_objMutex);
+    // If empty - nothing to do
+    if (g_ifMap.empty()) return;
 
-    for (int i = 0; i < VSCP_INTERFACE_MAX_OPEN; i++) {
+    // Remove orphan objects
 
-        if ( NULL != m_pvscpifArray[ i ] ) {
+    LOCK_MUTEX(g_mapMutex);
 
-            VscpRemoteTcpIf *pvscpif = getDriverObject(i);
-            if (NULL != pvscpif) {
-                pvscpif->doCmdClose();
-                delete m_pvscpifArray[ i ];
-                m_pvscpifArray[ i ] = NULL;
-            }
+    for (std::map<long, VscpRemoteTcpIf *>::iterator it = g_ifMap.begin();
+         it != g_ifMap.end();
+         ++it) {
+        // std::cout << it->first << " => " << it->second << '\n';
+
+        VscpRemoteTcpIf *pvscpif = it->second;
+        if (NULL != pvscpif) {
+            pvscpif->doCmdClose();
+            delete pvscpif;
+            pvscpif = NULL;
         }
     }
 
-    UNLOCK_MUTEX(m_objMutex);
-    pthread_mutex_destroy( &m_objMutex );
+    g_ifMap.clear();    // Remove all items
 
+    UNLOCK_MUTEX(g_mapMutex);
+    pthread_mutex_destroy(&g_mapMutex);
 }
-
-/////////////////////////////////////////////////////////////////////////////
-// The one and only CLoggerdllApp object
-
-CVSCPLApp theApp;
-
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-// CreateObject
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // addDriverObject
 //
 
-long CVSCPLApp::addDriverObject( VscpRemoteTcpIf *pvscpif )
+long
+addDriverObject(VscpRemoteTcpIf *pvscpif)
 {
+    std::map<long, VscpRemoteTcpIf *>::iterator it;
     long h = 0;
 
-    LOCK_MUTEX(m_objMutex);
+    LOCK_MUTEX(g_mapMutex);
 
-    for (int i = 0; i < VSCP_INTERFACE_MAX_OPEN; i++) {
+    // Find free handle
+    while (true ) {
+        if ( g_ifMap.end() != ( it = g_ifMap.find(h) ) ) break;
+        h++;
+    };
 
-        if ( NULL == m_pvscpifArray[ i ] ) {
+    g_ifMap[h] = new VscpRemoteTcpIf;
+    h += 1681;
 
-            m_pvscpifArray[ i ] = pvscpif;
-            h = i + 1681;
-            break;
-
-        }
-
-    }
-
-    UNLOCK_MUTEX(m_objMutex);
+    UNLOCK_MUTEX(g_mapMutex);
 
     return h;
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // getDriverObject
 //
 
-VscpRemoteTcpIf *CVSCPLApp::getDriverObject(long h)
+VscpRemoteTcpIf *
+getDriverObject(long h)
 {
+    std::map<long, VscpRemoteTcpIf *>::iterator it;
     long idx = h - 1681;
 
     // Check if valid handle
     if (idx < 0) return NULL;
-    if (idx >= VSCP_INTERFACE_MAX_OPEN) return NULL;
-    return m_pvscpifArray[ idx ];
-}
 
+    it = g_ifMap.find(h);
+    if (it != g_ifMap.end()) {
+        return it->second;
+    }
+
+    return NULL;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // removeDriverObject
 //
 
-void CVSCPLApp::removeDriverObject(long h)
+void
+removeDriverObject(long h)
 {
+    std::map<long, VscpRemoteTcpIf *>::iterator it;
     long idx = h - 1681;
 
     // Check if valid handle
-    if ( idx < 0 ) return;
-    if ( idx >= VSCP_INTERFACE_MAX_OPEN  ) return;
+    if (idx < 0) return;
 
-    LOCK_MUTEX( m_objMutex );
-
-    if ( NULL != m_pvscpifArray[ idx ] ) delete m_pvscpifArray[ idx ];
-    m_pvscpifArray[ idx ] = NULL;
-
-    UNLOCK_MUTEX( m_objMutex );
+    LOCK_MUTEX(g_mapMutex);
+    it = g_ifMap.find(h);
+    if (it != g_ifMap.end()) {
+        VscpRemoteTcpIf *pObj = it->second;
+        if (NULL != pObj) {
+            delete pObj;
+            pObj = NULL;
+        }
+        g_ifMap.erase(it);
+    }
+    UNLOCK_MUTEX(g_mapMutex);
 }
-
-///////////////////////////////////////////////////////////////////////////////
-// InitInstance
-
-BOOL CVSCPLApp::InitInstance()
-{
-    m_instanceCounter++;
-    wxInitialize();
-    return TRUE;
-}
-

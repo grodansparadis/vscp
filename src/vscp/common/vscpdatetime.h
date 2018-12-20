@@ -185,7 +185,9 @@ class vscpdatetime
         @param strDate String with date on ISO format (YYYY-MM-DD).
         @return True on success. 
     */
-    bool setISODate( std::string& strDate );
+    bool setISODate( const std::string& strDate );
+
+    bool setISODate( const char *pDate )  { std::string str(pDate); return setISOTime(str); };
 
     /*!
         Set time
@@ -196,13 +198,16 @@ class vscpdatetime
     */
     bool setTime(uint8_t hour, uint8_t minute, uint8_t second, uint32_t millisecond=0);
 
+
     /*!
         Set ISO date from string
 
         @param strTime String with time on ISO format (HH:MM:SS).
         @return True on success. 
     */
-    bool setISOTime( std::string& strTime );
+    bool setISOTime( const std::string& strTime );
+
+    bool setISOTime( const char *pTime )  { std::string str(pTime); return setISOTime(str); };
 
     /*!
         Set datetime
@@ -572,6 +577,7 @@ class vscpdatetime
     {
         vscpdatetime temp = Left;
         long newval       = temp.getJulian() + Right;
+        temp.setFromJulian(newval);
         return temp;
     }
     
