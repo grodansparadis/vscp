@@ -22,28 +22,14 @@
 // Boston, MA 02111-1307, USA.
 //
 
+#include <string>
 
-#include "wx/wx.h"
-#include "wx/defs.h"
-#include "wx/app.h"
-#include <wx/stdpaths.h>
-
-#include "wx/cmdline.h"
-#include "wx/tokenzr.h"
-#include "wx/config.h"
-#include "wx/wfstream.h"
-#include "wx/fileconf.h"
-
-#include <math.h>
-
-#ifdef WIN32
-
-#else
-
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 #include <unistd.h>
 #include <sys/types.h>
-
-#endif
+#include <math.h>
 
 #include <vscp.h>
 #include <vscp_aes.h>
@@ -53,7 +39,7 @@
 int main(int argc, char **argv)
 {
     int i;
-    wxString password;
+    std::string password;
     uint8_t salt[16];
     uint8_t buf[32];
 
@@ -65,7 +51,7 @@ int main(int argc, char **argv)
     }
 
     password = argv[1];
-    if ( password.Length() < 12 ) {
+    if ( password.size() < 12 ) {
         printf("It is encouraged to use passwords with a length > 12 bytes.\n");
     }
 

@@ -64,10 +64,10 @@ VSCPL1_OBJECTS =  vscpl1.o \
 all: libvscpl1.so test
 
 test:  test.o $(PROJOBJS)
-	$(CXX) -o $@ test.o $(PROJOBJS) $(LDFLAGS) -L$(LIBDIRNAME) $(EXTRALIBS)
+	$(CXX) -o $@ test.o $(PROJOBJS) $(LDFLAGS) $(EXTRALIBS)
 
 libvscpl1.so: $(VSCPL1_OBJECTS)
-	$(CXX) -o $@ $(VSCPL1_OBJECTS) $(DLFLAGS) -L$(LIBDIRNAME)  $(EXTRALIBS) 	
+	$(CXX) -o $@ $(VSCPL1_OBJECTS) $(DLFLAGS) $(EXTRALIBS) 	
 
 vscpl1.o: vscpl1.cpp vscpl1.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c vscpl1.cpp -o $@
