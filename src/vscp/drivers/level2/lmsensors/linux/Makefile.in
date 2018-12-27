@@ -37,9 +37,9 @@ MINOR_VERSION = `sed '36!d' ../../../../common/version.h  | cut -b 33-`
 RELEASE_VERSION = `sed '37!d' ../../../../common/version.h  | cut -b 33-`
 BUILD_VERSION = `sed '38!d' ../../../../common/version.h  | cut -b 33-
 
-CFLAGS = -std=c99 @CFLAGS@ -fPIC @WXBASE_CFLAGS@ -DCBC -I../../../../common -I../../../../../common
+CFLAGS = -std=c99 @CFLAGS@ -fPIC @WXBASE_CFLAGS@ -DCBC -I@top_srcdir@ -I../../../../common -I../../../../../common
 CXXFLAGS = -std=c++11 -D__LINUX__ @CFLAGS@ -fPIC -D_REENTRANT @CXXFLAGS@ @WXBASE_CXXFLAGS@
-CPPFLAGS = -D__LINUX__ -fPIC @CPPFLAGS@ @WXBASE_CPPFLAGS@ -fno-var-tracking-assignments -I../../../../common -I../../../../../common
+CPPFLAGS = -D__LINUX__ -fPIC @CPPFLAGS@ @WXBASE_CPPFLAGS@ -fno-var-tracking-assignments -I@top_srcdir@ -I../../../../common -I../../../../../common
 
 LDFLAGS = @LDFLAGS@
 EXTRALIBS = @EXTRALIBS@ 

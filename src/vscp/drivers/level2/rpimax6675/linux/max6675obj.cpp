@@ -267,8 +267,8 @@ bool CLocalDM::setAction( uint8_t action )
 
 bool CLocalDM::setAction( std::string& str )
 {
-    vscp2_makeUpper( str );
-    vscp2_trim( str );
+    vscp_makeUpper( str );
+    vscp_trim( str );
 
     if ( std::string::npos != str.find("NOOP") ) {
         m_action = ACTION_RPIMAX6675_NOOP;
@@ -331,7 +331,7 @@ startSetupParser( void *data, const char *name, const char **attr )
             std::string attribute = attr[i+1];
             if ( 0 == strcmp( attr[i], "mask") ) {
                 if ( !attribute.empty() ) {
-                    if ( !vscp2_readMaskFromString( &pmax6675->m_vscpfilter, attribute ) ) {
+                    if ( !vscp_readMaskFromString( &pmax6675->m_vscpfilter, attribute ) ) {
                         syslog( LOG_ERR,
 		                            "%s %s ",
                                     (const char *)VSCP_RPIMAX6675_SYSLOG_DRIVER_ID,
@@ -341,7 +341,7 @@ startSetupParser( void *data, const char *name, const char **attr )
             }
             else if ( 0 == strcmp( attr[i], "filter") ) {
                 if ( !attribute.empty() ) {
-                    if ( !vscp2_readFilterFromString( &pmax6675->m_vscpfilter, attribute ) ) {
+                    if ( !vscp_readFilterFromString( &pmax6675->m_vscpfilter, attribute ) ) {
                         syslog( LOG_ERR,
 		                            "%s %s ",
                                     (const char *)VSCP_RPIMAX6675_SYSLOG_DRIVER_ID,
@@ -364,17 +364,17 @@ startSetupParser( void *data, const char *name, const char **attr )
 #endif            
             else if ( 0 == strcmp( attr[i], "index") ) {
                 if ( !attribute.empty() ) {
-                    pmax6675->m_index = (uint8_t)vscp2_readStringValue( attribute );
+                    pmax6675->m_index = (uint8_t)vscp_readStringValue( attribute );
                 }
             }
             else if ( 0 == strcmp( attr[i], "zone") ) {
                 if ( !attribute.empty() ) {
-                    pmax6675->m_zone = (uint8_t)vscp2_readStringValue( attribute );
+                    pmax6675->m_zone = (uint8_t)vscp_readStringValue( attribute );
                 }
             }
             else if ( 0 == strcmp( attr[i], "subzone") ) {
                 if ( !attribute.empty() ) {
-                    pmax6675->m_subzone = (uint8_t)vscp2_readStringValue( attribute );
+                    pmax6675->m_subzone = (uint8_t)vscp_readStringValue( attribute );
                 }
             }
         }
@@ -392,8 +392,8 @@ startSetupParser( void *data, const char *name, const char **attr )
                 // Get enable
                 if ( 0 == strcmp( attr[i], "enable") ) {
                     std::string str = attribute;
-                    vscp2_trim( str );
-                    vscp2_makeUpper( str );
+                    vscp_trim( str );
+                    vscp_makeUpper( str );
                     if ( std::string::npos != str.find("TRUE") ) {
                         pInterface->setEnable( true );
                     }
@@ -403,19 +403,19 @@ startSetupParser( void *data, const char *name, const char **attr )
                 }
                 // bus
                 else if ( 0 == strcmp( attr[i], "spichannel") ) {
-                    uint8_t ch = vscp2_readStringValue( attribute );
+                    uint8_t ch = vscp_readStringValue( attribute );
                     pInterface->setSpiChannel( ch );
                 }
                 // interval
                 else if ( 0 == strcmp( attr[i], "interval") ) {
-                    uint16_t interval = vscp2_readStringValue( attribute );
+                    uint16_t interval = vscp_readStringValue( attribute );
                     pInterface->setInterval( interval );
                 }
                 // Check open connection
                 if ( 0 == strcmp( attr[i], "detect-open") ) {
                     std::string str = attribute;
-                    vscp2_trim( str );
-                    vscp2_makeUpper( str );
+                    vscp_trim( str );
+                    vscp_makeUpper( str );
                     if ( std::string::npos != str.find("TRUE") ) {
                         pInterface->setDetectOpenSensor( true );
                     }
@@ -426,8 +426,8 @@ startSetupParser( void *data, const char *name, const char **attr )
                 // unit
                 else if ( 0 == strcmp( attr[i], "unit") ) {
                     std::string str = attribute;
-                    vscp2_trim( str );
-                    vscp2_makeUpper( str );
+                    vscp_trim( str );
+                    vscp_makeUpper( str );
                     if ( std::string::npos != str.find("K") ) {
                         pInterface->setUnit( 0 );
                     }
@@ -438,13 +438,13 @@ startSetupParser( void *data, const char *name, const char **attr )
                         pInterface->setUnit( 2 );
                     }
                     else {
-                        uint8_t unit = vscp2_readStringValue( str );
+                        uint8_t unit = vscp_readStringValue( str );
                         pInterface->setUnit( unit );
                     }
                 }
                 // VSCP class
                 else if ( 0 == strcmp( attr[i], "vscpclass") ) {
-                    uint8_t vscpclass = vscp2_readStringValue( attribute );
+                    uint8_t vscpclass = vscp_readStringValue( attribute );
                     if ( !pInterface->setVscpClass( vscpclass ) ) {
                         syslog( LOG_ERR,
 				                    "%s %s ",
@@ -456,17 +456,17 @@ startSetupParser( void *data, const char *name, const char **attr )
                 }
                 // index
                 else if ( 0 == strcmp( attr[i], "index") ) {
-                    uint8_t index = vscp2_readStringValue( attribute );
+                    uint8_t index = vscp_readStringValue( attribute );
                     pInterface->setIndex( index );
                 }
                 // zone
                 else if ( 0 == strcmp( attr[i], "zone") ) {
-                    uint8_t zone = vscp2_readStringValue( attribute );
+                    uint8_t zone = vscp_readStringValue( attribute );
                     pInterface->setZone( zone );
                 }
                 // subzone
                 else if ( 0 == strcmp( attr[i], "subzone") ) {
-                    uint8_t subzone = vscp2_readStringValue( attribute );
+                    uint8_t subzone = vscp_readStringValue( attribute );
                     pInterface->setSubzone( subzone );
                 }
 
@@ -498,8 +498,8 @@ startSetupParser( void *data, const char *name, const char **attr )
 
                 if ( 0 == strcmp( attr[i], "enable") ) {   
                     
-                    vscp2_makeUpper( attribute );
-                    vscp2_trim( attribute );
+                    vscp_makeUpper( attribute );
+                    vscp_trim( attribute );
                     
                     if ( 0 == strcmp( attribute.c_str(), "TRUE") ) {
                         pLocalDMObj->enableRow();
@@ -510,39 +510,39 @@ startSetupParser( void *data, const char *name, const char **attr )
 
                 } 
                 else if ( 0 == strcmp( attr[i], "priority-mask") ) {
-                    filter.mask_priority = vscp2_readStringValue( attribute );
+                    filter.mask_priority = vscp_readStringValue( attribute );
                 }
                 else if ( 0 == strcmp( attr[i], "priority-filter") ) {
-                    filter.filter_priority = vscp2_readStringValue( attribute );
+                    filter.filter_priority = vscp_readStringValue( attribute );
                 }
                 else if ( 0 == strcmp( attr[i], "class-mask") ) {
-                    filter.mask_class = vscp2_readStringValue( attribute );
+                    filter.mask_class = vscp_readStringValue( attribute );
                 }
                 else if ( 0 == strcmp( attr[i], "class-filter") ) {
-                    filter.filter_class = vscp2_readStringValue( attribute );
+                    filter.filter_class = vscp_readStringValue( attribute );
                 }
                 else if ( 0 == strcmp( attr[i], "type-mask") ) {
-                    filter.mask_type = vscp2_readStringValue( attribute );
+                    filter.mask_type = vscp_readStringValue( attribute );
                 }
                 else if ( 0 == strcmp( attr[i], "type-filter") ) {
-                    filter.filter_type = vscp2_readStringValue( attribute );
+                    filter.filter_type = vscp_readStringValue( attribute );
                 }
                 else if ( 0 == strcmp( attr[i], "guid-mask") ) {
-                    vscp2_getGuidFromStringToArray( filter.mask_GUID,
+                    vscp_getGuidFromStringToArray( filter.mask_GUID,
                                                         attribute );
                 }
                 else if ( 0 == strcmp( attr[i], "guid-filter") ) {
-                    vscp2_getGuidFromStringToArray( filter.filter_GUID,
+                    vscp_getGuidFromStringToArray( filter.filter_GUID,
                                                         attribute );
                 }     
                 else if ( 0 == strcmp( attr[i], "index") ) {
-                    pLocalDMObj->setIndex( vscp2_readStringValue( attribute ) );
+                    pLocalDMObj->setIndex( vscp_readStringValue( attribute ) );
                 }
                 else if ( 0 == strcmp( attr[i], "zone") ) {
-                    pLocalDMObj->setZone( vscp2_readStringValue( attribute ) );
+                    pLocalDMObj->setZone( vscp_readStringValue( attribute ) );
                 }
                 else if ( 0 == strcmp( attr[i], "subzone") ) {
-                    pLocalDMObj->setSubZone( vscp2_readStringValue( attribute ) );
+                    pLocalDMObj->setSubZone( vscp_readStringValue( attribute ) );
                 }
                 else if ( 0 == strcmp( attr[i], "action") ) {
                     pLocalDMObj->setAction( attribute );
@@ -553,10 +553,10 @@ startSetupParser( void *data, const char *name, const char **attr )
 
                     // Preparse the action parameters
                     std::deque<std::string> tokens;
-                    vscp2_split( tokens, attribute, "," );
+                    vscp_split( tokens, attribute, "," );
                     for ( int idx=0; idx<3; idx++ ) {
                         if ( tokens.size() ) {
-                            uint32_t val = vscp2_readStringValue( tokens.front() );
+                            uint32_t val = vscp_readStringValue( tokens.front() );
                             pLocalDMObj->setArg( idx, val );
                             tokens.pop_front();
                         }
@@ -595,7 +595,7 @@ CRpiMax6675::CRpiMax6675()
 {
 	int i;
     m_bQuit = false;
-	m_setupXml = _("<?xml version = \"1.0\" encoding = \"UTF-8\" ?><setup><!-- empty --></setup>");
+	m_setupXml = "<?xml version = \"1.0\" encoding = \"UTF-8\" ?><setup><!-- empty --></setup>";
 	vscp_clearVSCPFilter( &m_vscpfilter ); // Accept all events
     m_index = 0;
     m_zone = 0;
@@ -666,7 +666,7 @@ CRpiMax6675::open( const char *pUsername,
 	m_port = port;
 	m_prefix = pPrefix;
 
-    vscp2_decodeBase64IfNeeded( pConfig, m_setupXml );
+    vscp_std_decodeBase64IfNeeded( pConfig, m_setupXml );
 
 	// First look on to the host and get the configuration 
 	// variable (if there)

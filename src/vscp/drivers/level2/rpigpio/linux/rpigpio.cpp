@@ -131,8 +131,8 @@ uint8_t CGpioInput::getPin( void )
 bool CGpioInput::setPullUp( const std::string& strPullUp ) 
 { 
     std::string str = strPullUp;
-    vscp2_makeUpper( str );
-    vscp2_trim( str );
+    vscp_makeUpper( str );
+    vscp_trim( str );
  
     if ( std::string::npos != str.find("UP") ) {
         m_pullup = PI_PUD_UP;
@@ -544,8 +544,8 @@ bool CLocalDM::setAction( uint8_t action )
 
 bool CLocalDM::setAction( std::string& str )
 {
-    vscp2_makeUpper( str );
-    vscp2_trim( str );
+    vscp_makeUpper( str );
+    vscp_trim( str );
 
     if ( std::string::npos != str.find("NOOP") ) {
         m_action = ACTION_RPIGPIO_NOOP;
@@ -698,8 +698,8 @@ CGpioMonitor::~CGpioMonitor()
 bool CGpioMonitor::setEdge( const std::string& strEdge )
 {
     std::string str = strEdge;
-    vscp2_makeUpper( str );
-    vscp2_trim( str );
+    vscp_makeUpper( str );
+    vscp_trim( str );
   
     if ( std::string::npos != str.find("FALLING") ) {
         m_edge = FALLING_EDGE;
@@ -767,7 +767,7 @@ startSetupParser( void *data, const char *name, const char **attr )
 #endif            
             else if ( 0 == strcmp( attr[i], "mask") ) {
                 if ( !attribute.empty() ) {
-                    if ( !vscp2_readMaskFromString( &pgpio->m_vscpfilter, attribute ) ) {
+                    if ( !vscp_readMaskFromString( &pgpio->m_vscpfilter, attribute ) ) {
                         syslog( LOG_ERR,
 		                            "%s %s ",
                                     (const char *)VSCP_RPIGPIO_SYSLOG_DRIVER_ID,
@@ -777,7 +777,7 @@ startSetupParser( void *data, const char *name, const char **attr )
             }
             else if ( 0 == strcmp( attr[i], "filter") ) {
                 if ( !attribute.empty() ) {
-                    if ( !vscp2_readFilterFromString( &pgpio->m_vscpfilter, attribute ) ) {
+                    if ( !vscp_readFilterFromString( &pgpio->m_vscpfilter, attribute ) ) {
                         syslog( LOG_ERR,
 		                            "%s %s ",
                                     (const char *)VSCP_RPIGPIO_SYSLOG_DRIVER_ID,
@@ -792,17 +792,17 @@ startSetupParser( void *data, const char *name, const char **attr )
             }
             else if ( 0 == strcmp( attr[i], "index") ) {
                 if ( !attribute.empty() ) {
-                    pgpio->m_index = (uint8_t)vscp2_readStringValue( attribute );
+                    pgpio->m_index = (uint8_t)vscp_readStringValue( attribute );
                 }
             }
             else if ( 0 == strcmp( attr[i], "zone") ) {
                 if ( !attribute.empty() ) {
-                    pgpio->m_zone = (uint8_t)vscp2_readStringValue( attribute );
+                    pgpio->m_zone = (uint8_t)vscp_readStringValue( attribute );
                 }
             }
             else if ( 0 == strcmp( attr[i], "subzone") ) {
                 if ( !attribute.empty() ) {
-                    pgpio->m_subzone = (uint8_t)vscp2_readStringValue( attribute );
+                    pgpio->m_subzone = (uint8_t)vscp_readStringValue( attribute );
                 }
             }
         }
@@ -818,7 +818,7 @@ startSetupParser( void *data, const char *name, const char **attr )
 
                 // Get pin
                 if ( 0 == strcmp( attr[i], "pin") ) {
-                    uint8_t pin = vscp2_readStringValue( attribute );
+                    uint8_t pin = vscp_readStringValue( attribute );
                     pInputObj->setPin( pin );
                 }    
                 
@@ -829,22 +829,22 @@ startSetupParser( void *data, const char *name, const char **attr )
                 
                 // Watchdog
                 else if ( 0 == strcmp( attr[i], "watchdog") ) {
-                    pInputObj->setWatchdog( vscp2_readStringValue( attribute ) );
+                    pInputObj->setWatchdog( vscp_readStringValue( attribute ) );
                 }
 
                 // Noise filter steady
                 else if ( 0 == strcmp( attr[i], "noise_filter_steady") ) {
-                    pInputObj->setWatchdog( vscp2_readStringValue( attribute ) );
+                    pInputObj->setWatchdog( vscp_readStringValue( attribute ) );
                 }
 
                 // Noise filter active
                 else if ( 0 == strcmp( attr[i], "noise_filter_active") ) {
-                    pInputObj->setNoiseFilterActive( vscp2_readStringValue( attribute ) );
+                    pInputObj->setNoiseFilterActive( vscp_readStringValue( attribute ) );
                 }
 
                 // Glitch filter
                 else if ( 0 == strcmp( attr[i], "glitch_filter") ) {
-                    pInputObj->setGlitchFilter( vscp2_readStringValue( attribute ) );
+                    pInputObj->setGlitchFilter( vscp_readStringValue( attribute ) );
                 }
 
             } // for - attributes
@@ -865,14 +865,14 @@ startSetupParser( void *data, const char *name, const char **attr )
 
                 // Get pin
                 if ( 0 == strcmp( attr[i], "pin") ) {
-                    pOutputObj->setPin( vscp2_readStringValue( attribute ) );
+                    pOutputObj->setPin( vscp_readStringValue( attribute ) );
                 }
 
                 // Get initial state
                 else if ( 0 == strcmp( attr[i], "initial_state" ) ) {
 
-                    vscp2_makeUpper( attribute );
-                    vscp2_trim( attribute );
+                    vscp_makeUpper( attribute );
+                    vscp_trim( attribute );
                     if ( 0 == strcmp( attribute.c_str(), "OFF") ) {
                         pOutputObj->setInitialState( 0 );
                     }
@@ -907,7 +907,7 @@ startSetupParser( void *data, const char *name, const char **attr )
 
             // Get monitor pin 
             if ( 0 == strcmp( attr[i], "pin") ) {
-                pin = vscp2_readStringValue( attribute );
+                pin = vscp_readStringValue( attribute );
                 if ( pin > 31 ) pin = 0;
                 pgpio->m_monitor[pin].bEnable = true;
             }
@@ -915,8 +915,8 @@ startSetupParser( void *data, const char *name, const char **attr )
             // monitor_edge
             else if ( 0 == strcmp( attr[i], "edge") ) {
                 std::string str = attribute;
-                vscp2_makeUpper( str );
-                vscp2_trim( str );
+                vscp_makeUpper( str );
+                vscp_trim( str );
 
                 if ( std::string::npos != str.find("FALLING") ) {
                     pgpio->m_monitor[pin].edge = FALLING_EDGE;
@@ -937,34 +937,34 @@ startSetupParser( void *data, const char *name, const char **attr )
 
             // class for Rising event
             else if ( 0 == strcmp( attr[i], "rising_class") ) {
-                pgpio->m_monitor[pin].eventRising.vscp_class = vscp2_readStringValue( attribute ); 
+                pgpio->m_monitor[pin].eventRising.vscp_class = vscp_readStringValue( attribute ); 
             }
 
             // type for Rising event
             else if ( 0 == strcmp( attr[i], "rising_type") ) {
-                pgpio->m_monitor[pin].eventRising.vscp_type = vscp2_readStringValue( attribute ); 
+                pgpio->m_monitor[pin].eventRising.vscp_type = vscp_readStringValue( attribute ); 
             }
 
             // data for Rising event
             else if ( 0 == strcmp( attr[i], "rising_type") ) {
-                vscp2_setVscpEventExDataFromString( &pgpio->m_monitor[pin].eventRising, attribute ); 
+                vscp_setVscpEventExDataFromString( &pgpio->m_monitor[pin].eventRising, attribute ); 
             }
 
             // index for Rising event
             else if ( 0 == strcmp( attr[i], "rising_index") ) {
-                pgpio->m_monitor[pin].eventRising.data[0] = vscp2_readStringValue( attribute );
+                pgpio->m_monitor[pin].eventRising.data[0] = vscp_readStringValue( attribute );
                 if ( 0 == pgpio->m_monitor[pin].eventRising.sizeData ) pgpio->m_monitor[pin].eventRising.sizeData = 1; 
             }
 
             // zone for Rising event
             else if ( 0 == strcmp( attr[i], "rising_zone") ) {
-                pgpio->m_monitor[pin].eventRising.data[1] = vscp2_readStringValue( attribute );
+                pgpio->m_monitor[pin].eventRising.data[1] = vscp_readStringValue( attribute );
                 if ( pgpio->m_monitor[pin].eventRising.sizeData < 2 ) pgpio->m_monitor[pin].eventRising.sizeData = 2; 
             }
 
             // subzone for Rising event
             else if ( 0 == strcmp( attr[i], "rising_subzone") ) {
-                pgpio->m_monitor[pin].eventRising.data[2] = vscp2_readStringValue( attribute );
+                pgpio->m_monitor[pin].eventRising.data[2] = vscp_readStringValue( attribute );
                 if ( pgpio->m_monitor[pin].eventRising.sizeData < 3 ) pgpio->m_monitor[pin].eventRising.sizeData = 3; 
             }
 
@@ -972,34 +972,34 @@ startSetupParser( void *data, const char *name, const char **attr )
 
             // class for Falling event
             else if ( 0 == strcmp( attr[i], "falling_class") ) {
-                pgpio->m_monitor[pin].eventFalling.vscp_class = vscp2_readStringValue( attribute ); 
+                pgpio->m_monitor[pin].eventFalling.vscp_class = vscp_readStringValue( attribute ); 
             }
 
             // type for Falling event
             else if ( 0 == strcmp( attr[i], "falling_type") ) {
-                pgpio->m_monitor[pin].eventFalling.vscp_type = vscp2_readStringValue( attribute ); 
+                pgpio->m_monitor[pin].eventFalling.vscp_type = vscp_readStringValue( attribute ); 
             }
 
             // data for Rising event
             else if ( 0 == strcmp( attr[i], "rising_type") ) {
-                vscp2_setVscpEventExDataFromString( &pgpio->m_monitor[pin].eventFalling, attribute ); 
+                vscp_setVscpEventExDataFromString( &pgpio->m_monitor[pin].eventFalling, attribute ); 
             }
 
             // index for Falling event
             else if ( 0 == strcmp( attr[i], "falling_index") ) {
-                pgpio->m_monitor[pin].eventFalling.data[0] = vscp2_readStringValue( attribute );
+                pgpio->m_monitor[pin].eventFalling.data[0] = vscp_readStringValue( attribute );
                 if ( 0 == pgpio->m_monitor[pin].eventFalling.sizeData ) pgpio->m_monitor[pin].eventFalling.sizeData = 1; 
             }
 
             // zone for Falling event
             else if ( 0 == strcmp( attr[i], "falling_zone") ) {
-                pgpio->m_monitor[pin].eventFalling.data[1] = vscp2_readStringValue( attribute );
+                pgpio->m_monitor[pin].eventFalling.data[1] = vscp_readStringValue( attribute );
                 if ( pgpio->m_monitor[pin].eventFalling.sizeData < 2 ) pgpio->m_monitor[pin].eventFalling.sizeData = 2; 
             }
 
             // subzone for Falling event
             else if ( 0 == strcmp( attr[i], "falling_subzone") ) {
-                pgpio->m_monitor[pin].eventFalling.data[2] = vscp2_readStringValue( attribute );
+                pgpio->m_monitor[pin].eventFalling.data[2] = vscp_readStringValue( attribute );
                 if ( pgpio->m_monitor[pin].eventFalling.sizeData < 3 ) pgpio->m_monitor[pin].eventFalling.sizeData = 3; 
             }
 
@@ -1007,34 +1007,34 @@ startSetupParser( void *data, const char *name, const char **attr )
 
             // class for Watchdog event
             else if ( 0 == strcmp( attr[i], "watchdog_class") ) {
-                pgpio->m_monitor[pin].eventWatchdog.vscp_class = vscp2_readStringValue( attribute ); 
+                pgpio->m_monitor[pin].eventWatchdog.vscp_class = vscp_readStringValue( attribute ); 
             }
 
             // type for Watchdog event
             else if ( 0 == strcmp( attr[i], "watchdog_type") ) {
-                pgpio->m_monitor[pin].eventWatchdog.vscp_type = vscp2_readStringValue( attribute ); 
+                pgpio->m_monitor[pin].eventWatchdog.vscp_type = vscp_readStringValue( attribute ); 
             }
 
             // data for Watchdog event
             else if ( 0 == strcmp( attr[i], "watchdog_type") ) {
-                vscp2_setVscpEventExDataFromString( &pgpio->m_monitor[pin].eventWatchdog, attribute ); 
+                vscp_setVscpEventExDataFromString( &pgpio->m_monitor[pin].eventWatchdog, attribute ); 
             }
 
             // index for Falling event
             else if ( 0 == strcmp( attr[i], "watchdog_index") ) {
-                pgpio->m_monitor[pin].eventWatchdog.data[0] = vscp2_readStringValue( attribute );
+                pgpio->m_monitor[pin].eventWatchdog.data[0] = vscp_readStringValue( attribute );
                 if ( 0 == pgpio->m_monitor[pin].eventWatchdog.sizeData ) pgpio->m_monitor[pin].eventWatchdog.sizeData = 1; 
             }
 
             // zone for Watchdog event
             else if ( 0 == strcmp( attr[i], "watchdog_zone") ) {
-                pgpio->m_monitor[pin].eventWatchdog.data[1] = vscp2_readStringValue( attribute );
+                pgpio->m_monitor[pin].eventWatchdog.data[1] = vscp_readStringValue( attribute );
                 if ( pgpio->m_monitor[pin].eventWatchdog.sizeData < 2 ) pgpio->m_monitor[pin].eventWatchdog.sizeData = 2; 
             }
 
             // subzone for Watchdog event
             else if ( 0 == strcmp( attr[i], "watchdog_subzone") ) {
-                pgpio->m_monitor[pin].eventWatchdog.data[2] = vscp2_readStringValue( attribute );
+                pgpio->m_monitor[pin].eventWatchdog.data[2] = vscp_readStringValue( attribute );
                 if ( pgpio->m_monitor[pin].eventWatchdog.sizeData < 3 ) pgpio->m_monitor[pin].eventWatchdog.sizeData = 3; 
             }
 
@@ -1050,7 +1050,7 @@ startSetupParser( void *data, const char *name, const char **attr )
 
             // Report id 0-9    
             if ( 0 == strcmp( attr[i], "id") ) {
-                id = vscp2_readStringValue( attribute );
+                id = vscp_readStringValue( attribute );
                 if ( id > 9 ) {
                     id = 0;
                     syslog( LOG_ERR,
@@ -1065,25 +1065,25 @@ startSetupParser( void *data, const char *name, const char **attr )
             // Pin    
             else if ( 0 == strcmp( attr[i], "pin") ) {
                 pgpio->m_reporters[ id ].pin = 
-                            vscp2_readStringValue( attribute );
+                            vscp_readStringValue( attribute );
             }
 
             // Period
             else if ( 0 == strcmp( attr[i], "period") ) {
                 pgpio->m_reporters[ id ].period = 
-                            vscp2_readStringValue( attribute );
+                            vscp_readStringValue( attribute );
             }
 
             // Low class
             else if ( 0 == strcmp( attr[i], "low_class") ) {
                 pgpio->m_reporters[ id ].eventLow.vscp_class = 
-                                        vscp2_readStringValue( attribute );
+                                        vscp_readStringValue( attribute );
             }
 
             // Low type
             else if ( 0 == strcmp( attr[i], "low_type") ) {
                 pgpio->m_reporters[ id ].eventLow.vscp_type = 
-                                        vscp2_readStringValue( attribute );
+                                        vscp_readStringValue( attribute );
             }
 
             // Low data
@@ -1123,13 +1123,13 @@ startSetupParser( void *data, const char *name, const char **attr )
             // High class
             else if ( 0 == strcmp( attr[i], "high_class") ) {
                 pgpio->m_reporters[ id ].eventHigh.vscp_class = 
-                                    vscp2_readStringValue( attribute );
+                                    vscp_readStringValue( attribute );
             }
 
             // High type
             else if ( 0 == strcmp( attr[i], "high_type") ) {
                 pgpio->m_reporters[ id ].eventHigh.vscp_type = 
-                                    vscp2_readStringValue( attribute );
+                                    vscp_readStringValue( attribute );
             }
 
             // High data
@@ -1185,24 +1185,24 @@ startSetupParser( void *data, const char *name, const char **attr )
 
                 // Get pin
                 if ( 0 == strcmp( attr[i], "pin") ) {
-                    pPwmObj->setPin( vscp2_readStringValue( attribute ) );
+                    pPwmObj->setPin( vscp_readStringValue( attribute ) );
                 }
 
                 // Get duty cycle
                 else if ( 0 == strcmp( attr[i], "duty") ) {
-                    pPwmObj->setDutyCycle( vscp2_readStringValue( attribute ) );
+                    pPwmObj->setDutyCycle( vscp_readStringValue( attribute ) );
                 }
 
                 // Get duty cycle (alternative keyword)
                 else if ( 0 == strcmp( attr[i], "dutycycle") ) {
-                    pPwmObj->setDutyCycle( vscp2_readStringValue( attribute ) );
+                    pPwmObj->setDutyCycle( vscp_readStringValue( attribute ) );
                 }
 
                 // Get hardware flag
                 else if ( 0 == strcmp( attr[i], "hardware") ) {
                     
-                    vscp2_makeUpper( attribute );
-                    vscp2_trim( attribute );
+                    vscp_makeUpper( attribute );
+                    vscp_trim( attribute );
                     
                     if ( 0 == strcmp( attribute.c_str(), "TRUE") ) {
                         pPwmObj->enableHardwarePwm();
@@ -1221,12 +1221,12 @@ startSetupParser( void *data, const char *name, const char **attr )
 
                 // Get range
                 else if ( 0 == strcmp( attr[i], "range") ) {
-                    pPwmObj->setRange( vscp2_readStringValue( attribute ) );
+                    pPwmObj->setRange( vscp_readStringValue( attribute ) );
                 }
 
                 // Get frequency
                 else if ( 0 == strcmp( attr[i], "frequency") ) {
-                    pPwmObj->setFrequency( vscp2_readStringValue( attribute ) );
+                    pPwmObj->setFrequency( vscp_readStringValue( attribute ) );
                 }
 
             }
@@ -1247,10 +1247,10 @@ startSetupParser( void *data, const char *name, const char **attr )
                 std::string attribute = attr[i+1];
 
                 if ( 0 == strcmp( attr[i], "pin") ) {
-                    pGpioClockObj->setPin( vscp2_readStringValue( attribute ) );
+                    pGpioClockObj->setPin( vscp_readStringValue( attribute ) );
                 }
                 else if ( 0 == strcmp( attr[i], "frequency") ) {
-                    pGpioClockObj->setFrequency( vscp2_readStringValue( attribute ) );
+                    pGpioClockObj->setFrequency( vscp_readStringValue( attribute ) );
                 }
             
             }
@@ -1280,8 +1280,8 @@ startSetupParser( void *data, const char *name, const char **attr )
 
                 if ( 0 == strcmp( attr[i], "enable") ) {   
                     
-                    vscp2_makeUpper( attribute );
-                    vscp2_trim( attribute );
+                    vscp_makeUpper( attribute );
+                    vscp_trim( attribute );
                     
                     if ( 0 == strcmp( attribute.c_str(), "TRUE") ) {
                         pLocalDMObj->enableRow();
@@ -1292,39 +1292,39 @@ startSetupParser( void *data, const char *name, const char **attr )
 
                 } 
                 else if ( 0 == strcmp( attr[i], "priority-mask") ) {
-                    filter.mask_priority = vscp2_readStringValue( attribute );
+                    filter.mask_priority = vscp_readStringValue( attribute );
                 }
                 else if ( 0 == strcmp( attr[i], "priority-filter") ) {
-                    filter.filter_priority = vscp2_readStringValue( attribute );
+                    filter.filter_priority = vscp_readStringValue( attribute );
                 }
                 else if ( 0 == strcmp( attr[i], "class-mask") ) {
-                    filter.mask_class = vscp2_readStringValue( attribute );
+                    filter.mask_class = vscp_readStringValue( attribute );
                 }
                 else if ( 0 == strcmp( attr[i], "class-filter") ) {
-                    filter.filter_class = vscp2_readStringValue( attribute );
+                    filter.filter_class = vscp_readStringValue( attribute );
                 }
                 else if ( 0 == strcmp( attr[i], "type-mask") ) {
-                    filter.mask_type = vscp2_readStringValue( attribute );
+                    filter.mask_type = vscp_readStringValue( attribute );
                 }
                 else if ( 0 == strcmp( attr[i], "type-filter") ) {
-                    filter.filter_type = vscp2_readStringValue( attribute );
+                    filter.filter_type = vscp_readStringValue( attribute );
                 }
                 else if ( 0 == strcmp( attr[i], "guid-mask") ) {
-                    vscp2_getGuidFromStringToArray( filter.mask_GUID,
+                    vscp_getGuidFromStringToArray( filter.mask_GUID,
                                                         attribute );
                 }
                 else if ( 0 == strcmp( attr[i], "guid-filter") ) {
-                    vscp2_getGuidFromStringToArray( filter.filter_GUID,
+                    vscp_getGuidFromStringToArray( filter.filter_GUID,
                                                         attribute );
                 }     
                 else if ( 0 == strcmp( attr[i], "index") ) {
-                    pLocalDMObj->setIndex( vscp2_readStringValue( attribute ) );
+                    pLocalDMObj->setIndex( vscp_readStringValue( attribute ) );
                 }
                 else if ( 0 == strcmp( attr[i], "zone") ) {
-                    pLocalDMObj->setZone( vscp2_readStringValue( attribute ) );
+                    pLocalDMObj->setZone( vscp_readStringValue( attribute ) );
                 }
                 else if ( 0 == strcmp( attr[i], "subzone") ) {
-                    pLocalDMObj->setSubZone( vscp2_readStringValue( attribute ) );
+                    pLocalDMObj->setSubZone( vscp_readStringValue( attribute ) );
                 }
                 else if ( 0 == strcmp( attr[i], "action") ) {
                     pLocalDMObj->setAction( attribute );
@@ -1335,10 +1335,10 @@ startSetupParser( void *data, const char *name, const char **attr )
 
                     // Preparse the action parameters
                     std::deque<std::string> tokens;
-                    vscp2_split( tokens, attribute, "," );
+                    vscp_split( tokens, attribute, "," );
                     for ( int idx=0; idx<3; idx++ ) {
                         if ( tokens.size() ) {
-                            uint32_t val = vscp2_readStringValue( tokens.front() );
+                            uint32_t val = vscp_readStringValue( tokens.front() );
                             pLocalDMObj->setArg( idx, val );
                             tokens.pop_front();
                         }
@@ -1375,7 +1375,7 @@ CRpiGpio::CRpiGpio()
 {
 	int i;
     m_bQuit = false;
-	m_setupXml = _("<?xml version = \"1.0\" encoding = \"UTF-8\" ?><setup><!-- empty --></setup>");
+	m_setupXml = "<?xml version = \"1.0\" encoding = \"UTF-8\" ?><setup><!-- empty --></setup>";
 	vscp_clearVSCPFilter( &m_vscpfilter ); // Accept all events
     m_sample_rate = 5;   
     m_primary_dma_channel = 14;
@@ -1528,7 +1528,7 @@ CRpiGpio::open( const char *pUsername,
 	m_port = port;
 	m_prefix = pPrefix;
 
-	vscp_decodeBase64IfNeeded( pConfig, m_setupXml );
+	vscp_std_decodeBase64IfNeeded( pConfig, m_setupXml );
 
 	// First look on to the host and get the configuration 
 	// variable (if there)

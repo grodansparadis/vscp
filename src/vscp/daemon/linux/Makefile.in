@@ -10,26 +10,10 @@ prefix = @prefix@
 exec_prefix = @exec_prefix@
 INSTALL = @INSTALL@
 top_srcdir = @top_srcdir@
-top_wxsrcdir = @top_wxsrcdir@
 top_builddir = @top_builddir@
-top_wxbuilddir = @top_wxbuilddir@
 
 CC = @CC@
 CXX = @CXX@
-
-# wxBase flags and libs
-WXBASE_CPPFLAGS = @WXBASE_CPPFLAGS@
-WXBASE_CXXFLAGS = @WXBASE_CXXFLAGS@
-WXBASE_CFLAGS = @WXBASE_CFLAGS@
-WXBASE_LIBS = @WXBASE_LIBS@
-WXBASE_STATIC_LIBS = @WXBASE_STATIC_LIBS@
-
-# wxGTK flags and libs
-WXGTK_CPPFLAGS = @WXGTK_CPPFLAGS@
-WXGTK_CXXFLAGS = @WXGTK_CXXFLAGS@
-WXGTK_CFLAGS = @WXGTK_CFLAGS@
-WXGTK_LIBS = @WXGTK_LIBS@
-WXGTK_STATIC_LIBS = @WXGTK_STATIC_LIBS@
 
 # get version from the version file
 MAJOR_VERSION = `sed '35!d' ../../common/version.h  | cut -b 33-`
@@ -41,18 +25,13 @@ WARNINGS_HARD = -Werror -Wall -Wextra -pedantic -Wcast-align -Wcast-qual -Wctor-
 WARNINGS_MEDIUM = -Wformat-security -Wformat=2
 
 MONGOOSE_CFLAGS = -DMG_ENABLE_THREADS -DMG_ENABLE_IPV6 -DMG_ENABLE_SSL -DMG_ENABLE_HTTP_CGI -DMG_ENABLE_HTTP_SSI -DMG_ENABLE_HTTP_SSI_EXEC -DMG_ENABLE_HTTP_WEBDAV -DMG_ENABLE_GETADDRINFO -DMG_ENABLE_HTTP_URL_REWRITES -DMG_ENABLE_MQTT_BROKER
-CFLAGS = -std=c99 @CFLAGS@ @WXBASE_CFLAGS@ -DCBC -DLUA_USE_POSIX -I@top_srcdir@ -I../../common -I../../../common -I../../../common/lua -I../../../common/lua/src
-CXXFLAGS = -std=c++11 @CXXFLAGS@  @WXBASE_CXXFLAGS@
-CPPFLAGS = @CPPFLAGS@ @WXBASE_CPPFLAGS@ -fno-var-tracking-assignments -I@top_srcdir@ -I../../common -I../../../common -I../../../common/lua -I../../../common/lua/src
+CFLAGS = -std=c99 @CFLAGS@ -DCBC -DLUA_USE_POSIX -I@top_srcdir@ -I../../common -I../../../common -I../../../common/lua -I../../../common/lua/src
+CXXFLAGS = -std=c++11 @CXXFLAGS@ 
+CPPFLAGS = @CPPFLAGS@ -fno-var-tracking-assignments -I@top_srcdir@ -I../../common -I../../../common -I../../../common/lua -I../../../common/lua/src
 CPPFLAGS += $(MONGOOSE_CFLAGS)
 
 LDFLAGS = @LDFLAGS@
 EXTRALIBS = @EXTRALIBS@
-ifeq ($(STATIC),yes)
-EXTRALIBS += @WXBASE_STATIC_LIBS@
-else
-EXTRALIBS += @WXBASE_LIBS@
-endif
 
 STRIP = strip
 INSTALL_PROGRAM = ${INSTALL}
@@ -70,8 +49,6 @@ DLLPREFIX = lib
 ### Variables: ###
 
 DESTDIR =
-WX_RELEASE = 3.0
-LIBDIRNAME = $(top_wxbuilddir)lib
 
 VSCPD_OBJECTS =  vscpd.o \
 	daemonworker.o \
@@ -283,7 +260,7 @@ lua_all.o: ../../../common/lua_all.c
 	$(CC) $(CFLAGS) -I../../../common/lua -c ../../../common/lua_all.c -o $@
 
 vscpd: $(VSCPD_OBJECTS)
-	$(CXX) -o $@ $(VSCPD_OBJECTS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
+	$(CXX) -o $@ $(VSCPD_OBJECTS) $(LDFLAGS) -L$(LIBDIRNAME) $(EXTRALIBS)
 
 # Used by checkinstall
 debinst: all
