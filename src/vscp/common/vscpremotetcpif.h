@@ -52,6 +52,7 @@
 #include <inttypes.h>
 #include <netdb.h>
 #include <netinet/tcp.h>
+#include <semaphore.h>
 #include <sockettcp.h>
 
 #include <canal.h>
