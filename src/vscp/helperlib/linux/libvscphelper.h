@@ -55,8 +55,6 @@ typedef int BOOL;
 #define VSCP_DLL_VENDOR                                                        \
     "Grodans Paradis AB, Sweden, https://www.grodansparadis.com"
 
-
-
 /*!
         Add a driver object
 
@@ -78,13 +76,9 @@ getDriverObject(long handle);
 
 /*!
         Remove a driver object
-
-        @parm handle for object.
+        @param handle for object.
 */
 void
 removeDriverObject(long handle);
-
-
-
 
 #endif // !defined(VSCP_HELPER_LIB_H__INCLUDED_)

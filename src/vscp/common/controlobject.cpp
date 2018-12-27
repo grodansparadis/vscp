@@ -62,7 +62,6 @@
 #include "web_js.h"
 #include "web_template.h"
 
-
 #include <expat.h>
 #include <sqlite3.h>
 
@@ -101,20 +100,20 @@
 
 // Prototypes
 void
-createFolderStuct (std::string &rootFolder); // from vscpd.cpp
+createFolderStuct(std::string &rootFolder); // from vscpd.cpp
 
 void *
-clientMsgWorkerThread (void *userdata); // this
+clientMsgWorkerThread(void *userdata); // this
 void *
-tcpipListenThread (void *pData); // tcpipsev.cpp
+tcpipListenThread(void *pData); // tcpipsev.cpp
 void *
-UDPThread (void *pData); // udpsrv.cpp
+UDPThread(void *pData); // udpsrv.cpp
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-CControlObject::CControlObject ()
+CControlObject::CControlObject()
 {
     int i;
 
@@ -143,21 +142,21 @@ CControlObject::CControlObject ()
                         "630F6B154B2D644ABE29CEBDBFB545");
     m_admin_allowfrom = ("*");
     m_vscptoken       = ("Carpe diem quam minimum credula postero");
-    vscp_hexStr2ByteArray (m_systemKey,
-                           32,
-                           "A4A86F7D7E119BA3F0CD06881E371B989B"
-                           "33B6D606A863B633EF529D64544F8E");
+    vscp_hexStr2ByteArray(m_systemKey,
+                          32,
+                          "A4A86F7D7E119BA3F0CD06881E371B989B"
+                          "33B6D606A863B633EF529D64544F8E");
 
     m_nConfiguration = 1; // Default configuration record is read.
 
     // Log to syslog
     m_bLogToSysLog = true;
 
-    m_automation.setControlObject (this);
+    m_automation.setControlObject(this);
     m_maxItemsInClientReceiveQueue = MAX_ITEMS_CLIENT_RECEIVE_QUEUE;
 
     // Nill the GUID
-    m_guid.clear ();
+    m_guid.clear();
 
     // Initialize the client map
     // to all unused
@@ -182,9 +181,9 @@ CControlObject::CControlObject ()
 
     // Control UDP Interface
     m_udpSrvObj->m_bEnable = false;
-    m_udpSrvObj->m_interface.empty ();
-    m_udpSrvObj->m_guid.clear ();
-    vscp_clearVSCPFilter (&m_udpSrvObj->m_filter);
+    m_udpSrvObj->m_interface.empty();
+    m_udpSrvObj->m_guid.clear();
+    vscp_clearVSCPFilter(&m_udpSrvObj->m_filter);
     m_udpSrvObj->m_bAllowUnsecure = false;
     m_udpSrvObj->m_bAck           = false;
 
@@ -192,14 +191,14 @@ CControlObject::CControlObject ()
     m_enableTcpip            = true;
     m_strTcpInterfaceAddress = ("9598");
     m_encryptionTcpip        = 0;
-    m_tcpip_ssl_certificate.empty ();
-    m_tcpip_ssl_certificate_chain.empty ();
+    m_tcpip_ssl_certificate.empty();
+    m_tcpip_ssl_certificate_chain.empty();
     m_tcpip_ssl_verify_peer = 0; // no=0, optional=1, yes=2
-    m_tcpip_ssl_ca_path.empty ();
-    m_tcpip_ssl_ca_file.empty ();
+    m_tcpip_ssl_ca_path.empty();
+    m_tcpip_ssl_ca_file.empty();
     m_tcpip_ssl_verify_depth         = 9;
     m_tcpip_ssl_default_verify_paths = false;
-    m_tcpip_ssl_cipher_list.empty ();
+    m_tcpip_ssl_cipher_list.empty();
     m_tcpip_ssl_protocol_version = 0;
     m_tcpip_ssl_short_trust      = false;
 
@@ -273,50 +272,50 @@ CControlObject::CControlObject ()
 
     // Init. web server subsystem - All features enabled
     // ssl mt locks will we initiated here for openssl 1.0
-    if (0 == web_init (0xffff)) {
-        syslog (LOG_ERR, "Failed to initialize webserver subsystem.");
+    if (0 == web_init(0xffff)) {
+        syslog(LOG_ERR, "Failed to initialize webserver subsystem.");
     }
 
     // Initialize the CRC
-    crcInit ();
+    crcInit();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // Destructor
 //
 
-CControlObject::~CControlObject ()
+CControlObject::~CControlObject()
 {
-    syslog (LOG_INFO, "ControlObject: Going away...");
+    syslog(LOG_INFO, "ControlObject: Going away...");
 
     // Remove objects in Client send queue
     std::list<vscpEvent *>::iterator iterVSCP;
 
-    pthread_mutex_lock (&m_mutexClientOutputQueue);
-    for (iterVSCP = m_clientOutputQueue.begin ();
-         iterVSCP != m_clientOutputQueue.end ();
+    pthread_mutex_lock(&m_mutexClientOutputQueue);
+    for (iterVSCP = m_clientOutputQueue.begin();
+         iterVSCP != m_clientOutputQueue.end();
          ++iterVSCP) {
         vscpEvent *pEvent = *iterVSCP;
-        vscp_deleteVSCPevent (pEvent);
+        vscp_deleteVSCPevent(pEvent);
     }
 
-    m_clientOutputQueue.clear ();
-    pthread_mutex_unlock (&m_mutexClientOutputQueue);
+    m_clientOutputQueue.clear();
+    pthread_mutex_unlock(&m_mutexClientOutputQueue);
 
-    pthread_mutex_lock (&m_udpSrvObj->m_mutexUDPInfo);
+    pthread_mutex_lock(&m_udpSrvObj->m_mutexUDPInfo);
     std::deque<udpRemoteClientInfo *>::iterator iterUDP;
-    for (iterUDP = m_udpSrvObj->m_remotes.begin ();
-         iterUDP != m_udpSrvObj->m_remotes.end ();
+    for (iterUDP = m_udpSrvObj->m_remotes.begin();
+         iterUDP != m_udpSrvObj->m_remotes.end();
          ++iterUDP) {
         if (NULL != *iterUDP) {
             delete *iterUDP;
             *iterUDP = NULL;
         }
     }
-    m_udpSrvObj->m_remotes.clear ();
-    pthread_mutex_unlock (&m_udpSrvObj->m_mutexUDPInfo);
+    m_udpSrvObj->m_remotes.clear();
+    pthread_mutex_unlock(&m_udpSrvObj->m_mutexUDPInfo);
 
-    syslog (LOG_INFO, "ControlObject: Gone!");
+    syslog(LOG_INFO, "ControlObject: Gone!");
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -324,7 +323,7 @@ CControlObject::~CControlObject ()
 //
 
 bool
-CControlObject::init (std::string &strcfgfile, std::string &rootFolder)
+CControlObject::init(std::string &strcfgfile, std::string &rootFolder)
 {
     std::string str;
 
@@ -332,10 +331,10 @@ CControlObject::init (std::string &strcfgfile, std::string &rootFolder)
     m_rootFolder = rootFolder;
 
     // Root folder must exist
-    if (!vscp_fileExists (m_rootFolder.c_str ())) {
-        syslog (LOG_CRIT,
-                "The specified rootfolder does not exist (%s).",
-                (const char *)m_rootFolder.c_str ());
+    if (!vscp_fileExists(m_rootFolder.c_str())) {
+        syslog(LOG_CRIT,
+               "The specified rootfolder does not exist (%s).",
+               (const char *)m_rootFolder.c_str());
         return false;
     }
 
@@ -359,11 +358,11 @@ CControlObject::init (std::string &strcfgfile, std::string &rootFolder)
     }*/
 
     // A configuration file must be available
-    if (!vscp_fileExists (strcfgfile.c_str ())) {
-        printf ("No configuration file. Can't initialize!.");
-        syslog (LOG_CRIT,
-                "No configuration file. Can't initialize!. Path=%s",
-                strcfgfile.c_str ());
+    if (!vscp_fileExists(strcfgfile.c_str())) {
+        printf("No configuration file. Can't initialize!.");
+        syslog(LOG_CRIT,
+               "No configuration file. Can't initialize!. Path=%s",
+               strcfgfile.c_str());
         return false;
     }
 
@@ -372,30 +371,30 @@ CControlObject::init (std::string &strcfgfile, std::string &rootFolder)
     ////////////////////////////////////////////////////////////////////////////
 
     // Read XML configuration
-    if (!readXMLConfigurationGeneral (strcfgfile)) {
-        syslog (LOG_CRIT,
-                "General: Unable to open/parse configuration file [%s]. Can't "
-                "initialize!",
-                strcfgfile.c_str ());
+    if (!readXMLConfigurationGeneral(strcfgfile)) {
+        syslog(LOG_CRIT,
+               "General: Unable to open/parse configuration file [%s]. Can't "
+               "initialize!",
+               strcfgfile.c_str());
         return FALSE;
     }
 
 #ifndef WIN32
-    if (m_runAsUser.length ()) {
+    if (m_runAsUser.length()) {
         struct passwd *pw;
-        if (NULL == (pw = getpwnam (m_runAsUser.c_str ()))) {
-            syslog (LOG_ERR, "Unknown user.");
-        } else if (setgid (pw->pw_gid) != 0) {
-            syslog (LOG_ERR, "setgid() failed.");
-        } else if (setuid (pw->pw_uid) != 0) {
-            syslog (LOG_ERR, "setuid() failed.");
+        if (NULL == (pw = getpwnam(m_runAsUser.c_str()))) {
+            syslog(LOG_ERR, "Unknown user.");
+        } else if (setgid(pw->pw_gid) != 0) {
+            syslog(LOG_ERR, "setgid() failed.");
+        } else if (setuid(pw->pw_uid) != 0) {
+            syslog(LOG_ERR, "setuid() failed.");
         }
     }
 #endif
 
     // Initialize the SQLite library
-    if (SQLITE_OK != sqlite3_initialize ()) {
-        syslog (LOG_CRIT, "Unable to initialize SQLite library!.");
+    if (SQLITE_OK != sqlite3_initialize()) {
+        syslog(LOG_CRIT, "Unable to initialize SQLite library!.");
         return false;
     }
 
@@ -409,22 +408,22 @@ CControlObject::init (std::string &strcfgfile, std::string &rootFolder)
     // * * * VSCP Daemon configuration database * * *
 
     // Check filename
-    if (vscp_fileExists (m_path_db_vscp_daemon)) {
+    if (vscp_fileExists(m_path_db_vscp_daemon)) {
 
         if (SQLITE_OK !=
-            sqlite3_open ((const char *)m_path_db_vscp_daemon.c_str (),
-                          &m_db_vscp_daemon)) {
+            sqlite3_open((const char *)m_path_db_vscp_daemon.c_str(),
+                         &m_db_vscp_daemon)) {
 
             // Failed to open/create the database file
-            syslog (LOG_CRIT,
-                    "VSCP Daemon configuration database could not be opened. - "
-                    "Will exit.");
-            vscp_string_format (str,
-                                "Path=%s error=%s",
-                                (const char *)m_path_db_vscp_daemon.c_str (),
-                                sqlite3_errmsg (m_db_vscp_daemon));
-            syslog (LOG_CRIT, "%s", (const char *)str.c_str ());
-            if (NULL != m_db_vscp_daemon) sqlite3_close (m_db_vscp_daemon);
+            syslog(LOG_CRIT,
+                   "VSCP Daemon configuration database could not be opened. - "
+                   "Will exit.");
+            vscp_string_format(str,
+                               "Path=%s error=%s",
+                               (const char *)m_path_db_vscp_daemon.c_str(),
+                               sqlite3_errmsg(m_db_vscp_daemon));
+            syslog(LOG_CRIT, "%s", (const char *)str.c_str());
+            if (NULL != m_db_vscp_daemon) sqlite3_close(m_db_vscp_daemon);
             m_db_vscp_daemon = NULL;
             return false;
         } else {
@@ -432,10 +431,10 @@ CControlObject::init (std::string &strcfgfile, std::string &rootFolder)
             // Database is open.
 
             // Add possible missing configuration values
-            addDefaultConfigValues ();
+            addDefaultConfigValues();
 
             // Read configuration data
-            readConfigurationDB ();
+            readConfigurationDB();
         }
     } else {
 
@@ -443,120 +442,119 @@ CControlObject::init (std::string &strcfgfile, std::string &rootFolder)
 
             // We need to create the database from scratch. This may not work if
             // the database is in a read only location.
-            syslog (LOG_CRIT,
-                    "VSCP Daemon configuration database does not exist - will "
-                    "be created. Path=%s",
-                    m_path_db_vscp_daemon.c_str ());
+            syslog(LOG_CRIT,
+                   "VSCP Daemon configuration database does not exist - will "
+                   "be created. Path=%s",
+                   m_path_db_vscp_daemon.c_str());
 
             if (SQLITE_OK ==
-                sqlite3_open ((const char *)m_path_db_vscp_daemon.c_str (),
-                              &m_db_vscp_daemon)) {
+                sqlite3_open((const char *)m_path_db_vscp_daemon.c_str(),
+                             &m_db_vscp_daemon)) {
 
                 // create the configuration database.
-                if (!doCreateConfigurationTable ()) {
-                    syslog (LOG_ERR, "Failed to create configuration table.");
+                if (!doCreateConfigurationTable()) {
+                    syslog(LOG_ERR, "Failed to create configuration table.");
                 }
 
                 // Create the UDP node database
-                if (!doCreateUdpNodeTable ()) {
-                    syslog (LOG_ERR, "Failed to create udpnode table.");
+                if (!doCreateUdpNodeTable()) {
+                    syslog(LOG_ERR, "Failed to create udpnode table.");
                 }
 
                 // Create the multicast database
-                if (!doCreateMulticastTable ()) {
-                    syslog (LOG_ERR, "Failed to create multicast table.");
+                if (!doCreateMulticastTable()) {
+                    syslog(LOG_ERR, "Failed to create multicast table.");
                 }
 
                 // Create user table
-                if (!doCreateUserTable ()) {
-                    syslog (LOG_ERR, "Failed to create user table.");
+                if (!doCreateUserTable()) {
+                    syslog(LOG_ERR, "Failed to create user table.");
                 }
 
                 // Create driver table
-                if (!doCreateDriverTable ()) {
-                    syslog (LOG_ERR, "Failed to create driver table.");
+                if (!doCreateDriverTable()) {
+                    syslog(LOG_ERR, "Failed to create driver table.");
                 }
 
                 // Create guid table
-                if (!doCreateGuidTable ()) {
-                    syslog (LOG_ERR, "Failed to create GUID table.");
+                if (!doCreateGuidTable()) {
+                    syslog(LOG_ERR, "Failed to create GUID table.");
                 }
 
                 // Create location table
-                if (!doCreateLocationTable ()) {
-                    syslog (LOG_ERR, "Failed to create location table.");
+                if (!doCreateLocationTable()) {
+                    syslog(LOG_ERR, "Failed to create location table.");
                 }
 
                 // Create mdf table
-                if (!doCreateMdfCacheTable ()) {
-                    syslog (LOG_ERR, "Failed to create MDF cache table.");
+                if (!doCreateMdfCacheTable()) {
+                    syslog(LOG_ERR, "Failed to create MDF cache table.");
                 }
 
                 // Create simpleui table
-                if (!doCreateSimpleUiTable ()) {
-                    syslog (LOG_ERR, "Failed to create Simple UI table.");
+                if (!doCreateSimpleUiTable()) {
+                    syslog(LOG_ERR, "Failed to create Simple UI table.");
                 }
 
                 // Create simpleui item table
-                if (!doCreateSimpleUiItemTable ()) {
-                    syslog (LOG_ERR, "Failed to create Simple UI item table.");
+                if (!doCreateSimpleUiItemTable()) {
+                    syslog(LOG_ERR, "Failed to create Simple UI item table.");
                 }
 
                 // Create zone table
-                if (!doCreateZoneTable ()) {
-                    syslog (LOG_ERR, "Failed to create zone table.");
+                if (!doCreateZoneTable()) {
+                    syslog(LOG_ERR, "Failed to create zone table.");
                 }
 
                 // Create subzone table
-                if (!doCreateSubZoneTable ()) {
-                    syslog (LOG_ERR, "Failed to create sub zone table.");
+                if (!doCreateSubZoneTable()) {
+                    syslog(LOG_ERR, "Failed to create sub zone table.");
                 }
 
                 // Create userdef table
-                if (!doCreateUserdefTableTable ()) {
-                    syslog (LOG_ERR, "Failed to create user defined table.");
+                if (!doCreateUserdefTableTable()) {
+                    syslog(LOG_ERR, "Failed to create user defined table.");
                 }
 
                 // * * * All created * * *
 
                 // Database is open. Read configuration data from it
-                if (!readConfigurationDB ()) {
-                    syslog (LOG_ERR,
-                            "Failed to read configuration from "
-                            "configuration database.");
+                if (!readConfigurationDB()) {
+                    syslog(LOG_ERR,
+                           "Failed to read configuration from "
+                           "configuration database.");
                 }
             }
         } else {
-            syslog (LOG_CRIT,
-                    "VSCP Server configuration database path invalid - will "
-                    "exit. Path=%s",
-                    m_path_db_vscp_daemon.c_str ());
+            syslog(LOG_CRIT,
+                   "VSCP Server configuration database path invalid - will "
+                   "exit. Path=%s",
+                   m_path_db_vscp_daemon.c_str());
             return false;
         }
     }
 
     // Read UDP nodes
-    readUdpNodes ();
+    readUdpNodes();
 
     // Read multicast channels
-    readMulticastChannels ();
+    readMulticastChannels();
 
     // * * * VSCP Daemon logging database * * *
 
     // Check filename
-    if (vscp_fileExists (m_path_db_vscp_log)) {
+    if (vscp_fileExists(m_path_db_vscp_log)) {
 
-        if (SQLITE_OK !=
-            sqlite3_open ((const char *)m_path_db_vscp_log.c_str (),
-                          &m_db_vscp_log)) {
+        if (SQLITE_OK != sqlite3_open((const char *)m_path_db_vscp_log.c_str(),
+                                      &m_db_vscp_log)) {
 
             // Failed to open/create the database file
-            syslog (LOG_ERR,
-                    "VSCP Server logging database could not be "
-                    "opened. - Will not be used. Path=%s error=%s",
-                    m_path_db_vscp_log.c_str (),
-                    m_path_db_vscp_log.c_str ());
-            if (NULL != m_db_vscp_log) sqlite3_close (m_db_vscp_log);
+            syslog(LOG_ERR,
+                   "VSCP Server logging database could not be "
+                   "opened. - Will not be used. Path=%s error=%s",
+                   m_path_db_vscp_log.c_str(),
+                   m_path_db_vscp_log.c_str());
+            if (NULL != m_db_vscp_log) sqlite3_close(m_db_vscp_log);
             m_db_vscp_log = NULL;
         }
     } else {
@@ -565,31 +563,31 @@ CControlObject::init (std::string &strcfgfile, std::string &rootFolder)
 
             // We need to create the database from scratch. This may not work if
             // the database is in a read only location.
-            syslog (LOG_ERR,
-                    "VSCP Server logging database does not exist - "
-                    "will be created. Path=%s",
-                    m_path_db_vscp_log.c_str ());
+            syslog(LOG_ERR,
+                   "VSCP Server logging database does not exist - "
+                   "will be created. Path=%s",
+                   m_path_db_vscp_log.c_str());
 
             if (SQLITE_OK ==
-                sqlite3_open ((const char *)m_path_db_vscp_log.c_str (),
-                              &m_db_vscp_log)) {
+                sqlite3_open((const char *)m_path_db_vscp_log.c_str(),
+                             &m_db_vscp_log)) {
                 // create the config. database.
-                doCreateLogTable ();
+                doCreateLogTable();
             } else {
-                vscp_string_format (str,
-                                    "Failed to create vscp log database - will "
-                                    "not be used.  Error=%s",
-                                    sqlite3_errmsg (m_db_vscp_log));
-                syslog (LOG_ERR, "%s", (const char *)str.c_str ());
-                if (NULL != m_db_vscp_log) sqlite3_close (m_db_vscp_log);
+                vscp_string_format(str,
+                                   "Failed to create vscp log database - will "
+                                   "not be used.  Error=%s",
+                                   sqlite3_errmsg(m_db_vscp_log));
+                syslog(LOG_ERR, "%s", (const char *)str.c_str());
+                if (NULL != m_db_vscp_log) sqlite3_close(m_db_vscp_log);
                 m_db_vscp_log = NULL;
             }
         } else {
-            syslog (LOG_ERR,
-                    "VSCP Server logging database path invalid - will not be "
-                    "used. Path=%s",
-                    m_path_db_vscp_log.c_str ());
-            if (NULL != m_db_vscp_log) sqlite3_close (m_db_vscp_log);
+            syslog(LOG_ERR,
+                   "VSCP Server logging database path invalid - will not be "
+                   "used. Path=%s",
+                   m_path_db_vscp_log.c_str());
+            if (NULL != m_db_vscp_log) sqlite3_close(m_db_vscp_log);
             m_db_vscp_log = NULL;
         }
     }
@@ -597,24 +595,24 @@ CControlObject::init (std::string &strcfgfile, std::string &rootFolder)
     // https://www.sqlite.org/wal.html
     // http://stackoverflow.com/questions/3852068/sqlite-insert-very-slow
     if (NULL != m_db_vscp_log) {
-        sqlite3_exec (
+        sqlite3_exec(
           m_db_vscp_log, "PRAGMA journal_mode = WAL", NULL, NULL, NULL);
-        sqlite3_exec (
+        sqlite3_exec(
           m_db_vscp_log, "PRAGMA synchronous = NORMAL", NULL, NULL, NULL);
     }
 
     // * * * VSCP Server data database - NEVER created * * *
 
     if (SQLITE_OK !=
-        sqlite3_open (m_path_db_vscp_data.c_str (), &m_db_vscp_data)) {
+        sqlite3_open(m_path_db_vscp_data.c_str(), &m_db_vscp_data)) {
 
         // Failed to open/create the database file
-        syslog (LOG_ERR,
-                "The VSCP data database could not be opened. - Will not be "
-                "used. Path=%s error=%s",
-                m_path_db_vscp_data.c_str (),
-                sqlite3_errmsg (m_db_vscp_data));
-        if (NULL != m_db_vscp_data) sqlite3_close (m_db_vscp_data);
+        syslog(LOG_ERR,
+               "The VSCP data database could not be opened. - Will not be "
+               "used. Path=%s error=%s",
+               m_path_db_vscp_data.c_str(),
+               sqlite3_errmsg(m_db_vscp_data));
+        if (NULL != m_db_vscp_data) sqlite3_close(m_db_vscp_data);
         m_db_vscp_data = NULL;
     }
 
@@ -622,28 +620,28 @@ CControlObject::init (std::string &strcfgfile, std::string &rootFolder)
     //                      Read full XML configuration
     ////////////////////////////////////////////////////////////////////////////
 
-    syslog (LOG_DEBUG, "Using configuration file: %s", strcfgfile.c_str ());
+    syslog(LOG_DEBUG, "Using configuration file: %s", strcfgfile.c_str());
 
     // Read XML configuration
-    if (!readConfigurationXML (strcfgfile)) {
-        syslog (
+    if (!readConfigurationXML(strcfgfile)) {
+        syslog(
           LOG_ERR,
           "Unable to open/parse configuration file. Can't initialize! Path =%s",
-          strcfgfile.c_str ());
+          strcfgfile.c_str());
         return FALSE;
     }
 
     // Read users from database
-    syslog (LOG_DEBUG, "loading users from users db...");
-    m_userList.loadUsers ();
+    syslog(LOG_DEBUG, "loading users from users db...");
+    m_userList.loadUsers();
 
     //==========================================================================
     //                           Add admin user
     //==========================================================================
 
-    m_userList.addSuperUser (m_admin_user,
-                             m_admin_password,
-                             m_admin_allowfrom); // Remotes allows to connect
+    m_userList.addSuperUser(m_admin_user,
+                            m_admin_password,
+                            m_admin_allowfrom); // Remotes allows to connect
 
     //==========================================================================
     //                           Add driver user
@@ -651,51 +649,51 @@ CControlObject::init (std::string &strcfgfile, std::string &rootFolder)
 
     // Generate username and password for drivers
     char buf[128];
-    randPassword pw (4);
+    randPassword pw(4);
 
     // Level II Driver Username
-    memset (buf, 0, sizeof (buf));
-    pw.generatePassword (32, buf);
+    memset(buf, 0, sizeof(buf));
+    pw.generatePassword(32, buf);
     m_driverUsername = ("drv_");
-    m_driverUsername += std::string (buf);
+    m_driverUsername += std::string(buf);
 
     // Level II Driver Password (can't contain ";" character)
-    memset (buf, 0, sizeof (buf));
-    pw.generatePassword (32, buf);
+    memset(buf, 0, sizeof(buf));
+    pw.generatePassword(32, buf);
     m_driverPassword = buf;
 
     std::string drvhash;
-    vscp_makePasswordHash (drvhash, std::string (buf));
+    vscp_makePasswordHash(drvhash, std::string(buf));
 
-    m_userList.addUser (m_driverUsername,
-                        drvhash,                       // salt;hash
-                        ("System added driver user."), // full name
-                        ("System added driver user."), // note
-                        NULL,
-                        ("driver"),
-                        ("+127.0.0.0/24"), // Only local
-                        ("*:*"),           // All events
-                        VSCP_ADD_USER_FLAG_LOCAL);
+    m_userList.addUser(m_driverUsername,
+                       drvhash,                       // salt;hash
+                       ("System added driver user."), // full name
+                       ("System added driver user."), // note
+                       NULL,
+                       ("driver"),
+                       ("+127.0.0.0/24"), // Only local
+                       ("*:*"),           // All events
+                       VSCP_ADD_USER_FLAG_LOCAL);
 
     // Calculate sunset etc
-    m_automation.calcSun ();
+    m_automation.calcSun();
 
     // Get GUID
-    if (m_guid.isNULL ()) {
-        if (!getMacAddress (m_guid)) {
+    if (m_guid.isNULL()) {
+        if (!getMacAddress(m_guid)) {
             // We failed to create GUID from MAC address use
             // 'localhost' IP instead as the base.
-            getIPAddress (m_guid);
+            getIPAddress(m_guid);
         }
     }
 
     // If no server name set construct one
-    if (0 == m_strServerName.length ()) {
+    if (0 == m_strServerName.length()) {
         m_strServerName = ("VSCP Server @ ");
         ;
         std::string strguid;
-        m_guid.toString (strguid);
-        m_strServerName += std::string (strguid);
+        m_guid.toString(strguid);
+        m_strServerName += std::string(strguid);
     }
 
     str = "VSCP Server started - ";
@@ -703,61 +701,61 @@ CControlObject::init (std::string &strcfgfile, std::string &rootFolder)
     str += VSCPD_DISPLAY_VERSION;
     str += " - ";
     str += VSCPD_COPYRIGHT;
-    syslog (LOG_INFO, "%s", str.c_str ());
+    syslog(LOG_INFO, "%s", str.c_str());
 
-    syslog (LOG_DEBUG, "Log Level=%d", m_logLevel);
+    syslog(LOG_DEBUG, "Log Level=%d", m_logLevel);
 
     // Load tables from database
-    syslog (LOG_DEBUG, "Reading in user tables from DB.");
-    m_userTableObjects.loadTablesFromDB ();
+    syslog(LOG_DEBUG, "Reading in user tables from DB.");
+    m_userTableObjects.loadTablesFromDB();
 
-    syslog (LOG_DEBUG, "Initializing user tables.");
-    m_userTableObjects.init ();
+    syslog(LOG_DEBUG, "Initializing user tables.");
+    m_userTableObjects.init();
 
     // Initialize DM storage
-    syslog (LOG_DEBUG, "Initializing DM.");
-    m_dm.init ();
+    syslog(LOG_DEBUG, "Initializing DM.");
+    m_dm.init();
 
     // Load decision matrix from XML file if mechanism is enabled
-    syslog (LOG_DEBUG, "Loading DM from XML file.");
-    m_dm.loadFromXML ();
+    syslog(LOG_DEBUG, "Loading DM from XML file.");
+    m_dm.loadFromXML();
 
     // Load decision matrix from db if mechanism is enabled
-    syslog (LOG_DEBUG, "Loading DM from database.");
-    m_dm.loadFromDatabase ();
+    syslog(LOG_DEBUG, "Loading DM from database.");
+    m_dm.loadFromDatabase();
 
     // Initialize variable storage
-    syslog (LOG_DEBUG, "Initialize variables.");
-    m_variables.init ();
+    syslog(LOG_DEBUG, "Initialize variables.");
+    m_variables.init();
 
     // Load variables if mechanism is enabled
-    syslog (LOG_DEBUG,
-            "Loading persistent variables from XML variable default path.");
-    m_variables.loadFromXML ();
+    syslog(LOG_DEBUG,
+           "Loading persistent variables from XML variable default path.");
+    m_variables.loadFromXML();
 
     // Start daemon internal client worker thread
-    startClientMsgWorkerThread ();
+    startClientMsgWorkerThread();
 
     // Start webserver and websockets
     // IMPORTANT!!!!!!!!
     // Must be started before the tcp/ip server as
     // ssl initializarion is done here
-    start_webserver ();
+    start_webserver();
 
     // Start TCP/IP interface
-    startTcpipSrvThread ();
+    startTcpipSrvThread();
 
     // Start UDP interface
-    startUDPSrvThread ();
+    startUDPSrvThread();
 
     // Start Multicast interface
-    startMulticastWorkerThreads ();
+    startMulticastWorkerThreads();
 
     // Load drivers
-    startDeviceWorkerThreads ();
+    startDeviceWorkerThreads();
 
     // Start daemon worker thread
-    startDaemonWorkerThread ();
+    startDaemonWorkerThread();
 
     return true;
 }
@@ -769,7 +767,7 @@ CControlObject::init (std::string &strcfgfile, std::string &rootFolder)
 //
 
 bool
-CControlObject::run (void)
+CControlObject::run(void)
 {
     std::list<CClientItem *>::iterator nodeClient;
 
@@ -794,7 +792,7 @@ CControlObject::run (void)
     // We need to create a clientItem and add this object to the list
     CClientItem *pClientItem = new CClientItem;
     if (NULL == pClientItem) {
-        syslog (LOG_CRIT, "Unable to allocate Client item, Ending.");
+        syslog(LOG_CRIT, "Unable to allocate Client item, Ending.");
         return false;
     }
 
@@ -802,29 +800,29 @@ CControlObject::run (void)
     m_dm.m_pClientItem = pClientItem;
 
     // Set Filter/Mask for full DM table
-    memcpy (&pClientItem->m_filterVSCP,
-            &m_dm.m_DM_Table_filter,
-            sizeof (vscpEventFilter));
+    memcpy(&pClientItem->m_filterVSCP,
+           &m_dm.m_DM_Table_filter,
+           sizeof(vscpEventFilter));
 
     // This is an active client
     pClientItem->m_bOpen         = true;
     pClientItem->m_type          = CLIENT_ITEM_INTERFACE_TYPE_CLIENT_INTERNAL;
     pClientItem->m_strDeviceName = ("Internal Server DM Client.|Started at ");
-    pClientItem->m_strDeviceName += vscpdatetime::setNow ().getISODateTime ();
+    pClientItem->m_strDeviceName += vscpdatetime::setNow().getISODateTime();
 
     // Add the client to the Client List
-    pthread_mutex_lock (&m_clientMutex);
-    if (!addClient (pClientItem, CLIENT_ID_DM)) {
+    pthread_mutex_lock(&m_clientMutex);
+    if (!addClient(pClientItem, CLIENT_ID_DM)) {
         // Failed to add client
         delete pClientItem;
         m_dm.m_pClientItem = pClientItem = NULL;
-        syslog (LOG_ERR, "ControlObject: Failed to add internal client.");
-        pthread_mutex_unlock (&m_clientMutex);
+        syslog(LOG_ERR, "ControlObject: Failed to add internal client.");
+        pthread_mutex_unlock(&m_clientMutex);
     }
-    pthread_mutex_unlock (&m_clientMutex);
+    pthread_mutex_unlock(&m_clientMutex);
 
     // Feed startup event
-    m_dm.feed (&EventStartUp);
+    m_dm.feed(&EventStartUp);
 
     //-------------------------------------------------------------------------
     //                            MAIN - LOOP
@@ -836,27 +834,27 @@ CControlObject::run (void)
 
         // CLOCKS_PER_SEC
         clock_t ticks, oldus;
-        oldus = ticks = clock ();
+        oldus = ticks = clock();
 
         // Feed possible periodic event
-        m_dm.feedPeriodicEvent ();
+        m_dm.feedPeriodicEvent();
 
         // Put the LOOP event on the queue
         // Garanties at least one lop event between every other
         // event feed to the queue
-        m_dm.feed (&EventLoop);
+        m_dm.feed(&EventLoop);
 
         // Wait for event
         struct timespec ts;
         ts.tv_sec  = 0;
         ts.tv_nsec = 100000; // 100 ms
         if (ETIMEDOUT ==
-            sem_timedwait (&pClientItem->m_semClientInputQueue, &ts)) {
+            sem_timedwait(&pClientItem->m_semClientInputQueue, &ts)) {
 
             if (m_bQuit) continue; // Make quit request as fast as possible
 
             // Put the LOOP event on the queue
-            m_dm.feed (&EventLoop);
+            m_dm.feed(&EventLoop);
             continue;
         }
 
@@ -865,45 +863,45 @@ CControlObject::run (void)
         //                   from one of the incoming source
         //----------------------------------------------------------------------
 
-        if (pClientItem->m_clientInputQueue.size ()) {
+        if (pClientItem->m_clientInputQueue.size()) {
 
             vscpEvent *pEvent;
 
-            pthread_mutex_lock (&pClientItem->m_mutexClientInputQueue);
-            pEvent = pClientItem->m_clientInputQueue.front ();
-            pClientItem->m_clientInputQueue.pop_front ();
-            pthread_mutex_unlock (&pClientItem->m_mutexClientInputQueue);
+            pthread_mutex_lock(&pClientItem->m_mutexClientInputQueue);
+            pEvent = pClientItem->m_clientInputQueue.front();
+            pClientItem->m_clientInputQueue.pop_front();
+            pthread_mutex_unlock(&pClientItem->m_mutexClientInputQueue);
 
             if (NULL != pEvent) {
 
-                if (vscp_doLevel2Filter (pEvent, &m_dm.m_DM_Table_filter)) {
+                if (vscp_doLevel2Filter(pEvent, &m_dm.m_DM_Table_filter)) {
                     // Feed event through matrix
-                    m_dm.feed (pEvent);
+                    m_dm.feed(pEvent);
                 }
 
                 // Remove the event
-                vscp_deleteVSCPevent (pEvent);
+                vscp_deleteVSCPevent(pEvent);
 
             } // Valid pEvent pointer
 
             // Send events to websocket clients
-            websock_post_incomingEvents ();
+            websock_post_incomingEvents();
 
         } // Event in queue
 
     } // while
 
     // Do shutdown event
-    m_dm.feed (&EventShutDown);
+    m_dm.feed(&EventShutDown);
 
     // Remove messages in the client queues
-    pthread_mutex_lock (&m_clientMutex);
-    removeClient (pClientItem);
-    pthread_mutex_unlock (&m_clientMutex);
+    pthread_mutex_lock(&m_clientMutex);
+    removeClient(pClientItem);
+    pthread_mutex_unlock(&m_clientMutex);
 
-    syslog (LOG_DEBUG, "ControlObject: Run - Done");
+    syslog(LOG_DEBUG, "ControlObject: Run - Done");
 
-    cleanup ();
+    cleanup();
 
     return true;
 }
@@ -912,62 +910,61 @@ CControlObject::run (void)
 // cleanup
 
 bool
-CControlObject::cleanup (void)
+CControlObject::cleanup(void)
 {
 
-    syslog (LOG_DEBUG,
-            "ControlObject: cleanup - Giving worker threads time to stop "
-            "operations...");
-    sleep (2); // Give threads some time to end
+    syslog(LOG_DEBUG,
+           "ControlObject: cleanup - Giving worker threads time to stop "
+           "operations...");
+    sleep(2); // Give threads some time to end
 
-    syslog (LOG_DEBUG,
-            "ControlObject: cleanup - Stopping device worker thread...");
-    stopDeviceWorkerThreads ();
+    syslog(LOG_DEBUG,
+           "ControlObject: cleanup - Stopping device worker thread...");
+    stopDeviceWorkerThreads();
 
-    syslog (LOG_DEBUG,
-            "ControlObject: cleanup - Stopping VSCP Server worker thread...");
-    stopDaemonWorkerThread ();
+    syslog(LOG_DEBUG,
+           "ControlObject: cleanup - Stopping VSCP Server worker thread...");
+    stopDaemonWorkerThread();
 
-    syslog (LOG_DEBUG,
-            "ControlObject: cleanup - Stopping client worker thread...");
-    stopClientMsgWorkerThread ();
+    syslog(LOG_DEBUG,
+           "ControlObject: cleanup - Stopping client worker thread...");
+    stopClientMsgWorkerThread();
 
-    m_dm.cleanup ();
+    m_dm.cleanup();
 
-    syslog (LOG_DEBUG,
-            "ControlObject: cleanup - Stopping Web Server worker thread...");
-    stop_webserver ();
+    syslog(LOG_DEBUG,
+           "ControlObject: cleanup - Stopping Web Server worker thread...");
+    stop_webserver();
 
-    syslog (LOG_DEBUG,
-            "ControlObject: cleanup - Stopping UDP worker thread...");
-    stopUDPSrvThread ();
+    syslog(LOG_DEBUG, "ControlObject: cleanup - Stopping UDP worker thread...");
+    stopUDPSrvThread();
 
-    syslog (LOG_DEBUG,
-            "ControlObject: cleanup - Stopping Multicast worker threads...");
-    stopMulticastWorkerThreads ();
+    syslog(LOG_DEBUG,
+           "ControlObject: cleanup - Stopping Multicast worker threads...");
+    stopMulticastWorkerThreads();
 
-    syslog (LOG_DEBUG,
-            "ControlObject: cleanup - Stopping TCP/IP worker thread...");
-    stopTcpipSrvThread ();
+    syslog(LOG_DEBUG,
+           "ControlObject: cleanup - Stopping TCP/IP worker thread...");
+    stopTcpipSrvThread();
 
-    syslog (LOG_DEBUG, "ControlObject: cleanup - Closing databases.");
+    syslog(LOG_DEBUG, "ControlObject: cleanup - Closing databases.");
 
     // Close the vscpd database
-    if (NULL != m_db_vscp_daemon) sqlite3_close (m_db_vscp_daemon);
+    if (NULL != m_db_vscp_daemon) sqlite3_close(m_db_vscp_daemon);
     m_db_vscp_daemon = NULL;
 
     // Close the VSCP data database
-    if (NULL != m_db_vscp_data) sqlite3_close (m_db_vscp_data);
+    if (NULL != m_db_vscp_data) sqlite3_close(m_db_vscp_data);
     m_db_vscp_data = NULL;
 
     // Close log database
-    if (NULL != m_db_vscp_log) sqlite3_close (m_db_vscp_log);
+    if (NULL != m_db_vscp_log) sqlite3_close(m_db_vscp_log);
     m_db_vscp_log = NULL;
 
     // Clean up SQLite lib allocations
-    sqlite3_shutdown ();
+    sqlite3_shutdown();
 
-    syslog (LOG_INFO, "Controlobject: ControlObject: Cleanup done.");
+    syslog(LOG_INFO, "Controlobject: ControlObject: Cleanup done.");
     return true;
 }
 
@@ -976,16 +973,16 @@ CControlObject::cleanup (void)
 //
 
 bool
-CControlObject::startClientMsgWorkerThread (void)
+CControlObject::startClientMsgWorkerThread(void)
 {
-    syslog (LOG_INFO, "Controlobject: Starting client worker thread...");
+    syslog(LOG_INFO, "Controlobject: Starting client worker thread...");
 
-    if (!pthread_create (
+    if (!pthread_create(
           &m_clientMsgWorkerThread, NULL, clientMsgWorkerThread, this)) {
 
-        syslog (LOG_CRIT,
-                "Controlobject: Unable to allocate memory for controlobject "
-                "client thread.");
+        syslog(LOG_CRIT,
+               "Controlobject: Unable to allocate memory for controlobject "
+               "client thread.");
         return false;
     }
 
@@ -997,11 +994,11 @@ CControlObject::startClientMsgWorkerThread (void)
 //
 
 bool
-CControlObject::stopClientMsgWorkerThread (void)
+CControlObject::stopClientMsgWorkerThread(void)
 {
     // Request therad to terminate
     m_bQuit_clientMsgWorkerThread = true;
-    pthread_join (m_clientMsgWorkerThread, NULL);
+    pthread_join(m_clientMsgWorkerThread, NULL);
 
     return true;
 }
@@ -1011,27 +1008,27 @@ CControlObject::stopClientMsgWorkerThread (void)
 //
 
 bool
-CControlObject::startTcpipSrvThread (void)
+CControlObject::startTcpipSrvThread(void)
 {
     if (!m_enableTcpip) {
-        syslog (LOG_DEBUG, "Controlobject: TCP/IP interface disabled.");
+        syslog(LOG_DEBUG, "Controlobject: TCP/IP interface disabled.");
         return true;
     }
 
-    syslog (LOG_DEBUG, "Controlobject: Starting TCP/IP interface...");
+    syslog(LOG_DEBUG, "Controlobject: Starting TCP/IP interface...");
 
     // Create the tcp/ip server data object
-    m_ptcpipSrvObject = new tcpipListenThreadObj (this);
+    m_ptcpipSrvObject = new tcpipListenThreadObj(this);
     if (NULL == m_ptcpipSrvObject) {
-        syslog (LOG_CRIT,
-                "Controlobject: Failed to allocate storage for tcp/ip.");
+        syslog(LOG_CRIT,
+               "Controlobject: Failed to allocate storage for tcp/ip.");
     }
 
-    if (!pthread_create (
+    if (!pthread_create(
           &m_tcpipListenThread, NULL, tcpipListenThread, m_ptcpipSrvObject)) {
         delete m_ptcpipSrvObject;
-        syslog (LOG_CRIT,
-                "Controlobject: Unable to create the tcp/ip listen thread.");
+        syslog(LOG_CRIT,
+               "Controlobject: Unable to create the tcp/ip listen thread.");
         return false;
     }
 
@@ -1043,18 +1040,18 @@ CControlObject::startTcpipSrvThread (void)
 //
 
 bool
-CControlObject::stopTcpipSrvThread (void)
+CControlObject::stopTcpipSrvThread(void)
 {
     // Tell the thread it's time to quit
     m_ptcpipSrvObject->m_nStopTcpIpSrv = VSCP_TCPIP_SRV_STOP;
 
-    syslog (LOG_DEBUG, "Controlobject: Terminating TCP thread.");
+    syslog(LOG_DEBUG, "Controlobject: Terminating TCP thread.");
 
-    pthread_join (m_tcpipListenThread, NULL);
+    pthread_join(m_tcpipListenThread, NULL);
     delete m_ptcpipSrvObject;
     m_ptcpipSrvObject = NULL;
 
-    syslog (LOG_DEBUG, "Controlobject: Terminated TCP thread.");
+    syslog(LOG_DEBUG, "Controlobject: Terminated TCP thread.");
 
     return true;
 }
@@ -1064,25 +1061,25 @@ CControlObject::stopTcpipSrvThread (void)
 //
 
 bool
-CControlObject::startUDPSrvThread (void)
+CControlObject::startUDPSrvThread(void)
 {
     if (!m_enableUDP) {
-        syslog (LOG_DEBUG, "UDP server disabled.");
+        syslog(LOG_DEBUG, "UDP server disabled.");
         return false;
     }
 
-    syslog (LOG_DEBUG, "Controlobject: Starting UDP simple UDP interface...");
+    syslog(LOG_DEBUG, "Controlobject: Starting UDP simple UDP interface...");
 
-    m_udpSrvObj = new UDPSrvObj (this);
+    m_udpSrvObj = new UDPSrvObj(this);
     if (NULL == m_udpSrvObj) {
-        syslog (LOG_CRIT,
-                "Controlobject: Unable to allocate memory for UDP objects");
+        syslog(LOG_CRIT,
+               "Controlobject: Unable to allocate memory for UDP objects");
     }
 
-    if (!pthread_create (&m_UDPThread, NULL, UDPThread, m_udpSrvObj)) {
+    if (!pthread_create(&m_UDPThread, NULL, UDPThread, m_udpSrvObj)) {
 
-        syslog (LOG_CRIT,
-                "Controlobject: Unable to allocate memory for USP thread.");
+        syslog(LOG_CRIT,
+               "Controlobject: Unable to allocate memory for USP thread.");
         return false;
     }
 
@@ -1094,14 +1091,14 @@ CControlObject::startUDPSrvThread (void)
 //
 
 bool
-CControlObject::stopUDPSrvThread (void)
+CControlObject::stopUDPSrvThread(void)
 {
-    syslog (LOG_DEBUG, "Controlobject: Terminating UDP thread.");
+    syslog(LOG_DEBUG, "Controlobject: Terminating UDP thread.");
 
     m_udpSrvObj->m_bQuit = true;
-    pthread_join (m_UDPThread, NULL);
+    pthread_join(m_UDPThread, NULL);
 
-    syslog (LOG_DEBUG, "Controlobject: Terminated UDP thread.");
+    syslog(LOG_DEBUG, "Controlobject: Terminated UDP thread.");
 
     // Delete the USP server object
     delete m_udpSrvObj;
@@ -1115,39 +1112,39 @@ CControlObject::stopUDPSrvThread (void)
 //
 
 bool
-CControlObject::startMulticastWorkerThreads (void)
+CControlObject::startMulticastWorkerThreads(void)
 {
     if (!m_bEnableMulticast) {
-        syslog (LOG_DEBUG, "Multicast interface is disabled.");
+        syslog(LOG_DEBUG, "Multicast interface is disabled.");
         return true;
     }
 
-    if (m_multicastObj.m_channels.empty ()) {
-        syslog (LOG_DEBUG, "No multicast channels defined.");
+    if (m_multicastObj.m_channels.empty()) {
+        syslog(LOG_DEBUG, "No multicast channels defined.");
         return true;
     }
 
     // Bring up all multicast channels
     std::list<multicastChannelItem *>::iterator it;
-    for (it = m_multicastObj.m_channels.begin ();
-         it != m_multicastObj.m_channels.end ();
+    for (it = m_multicastObj.m_channels.begin();
+         it != m_multicastObj.m_channels.end();
          ++it) {
 
         multicastChannelItem *pChannel = *it;
         if (NULL == pChannel) {
-            syslog (
+            syslog(
               LOG_ERR,
               "Controlobject: Multicast start channel table invalid entry.");
             continue;
         }
 
-        syslog (LOG_DEBUG, "Starting multicast channel interface thread...");
-        if (pthread_create (&pChannel->m_workerThread,
-                            NULL,
-                            multicastClientThread,
-                            pChannel)) {
-            syslog (LOG_ERR,
-                    "Unable to start multicast channel interface thread.");
+        syslog(LOG_DEBUG, "Starting multicast channel interface thread...");
+        if (pthread_create(&pChannel->m_workerThread,
+                           NULL,
+                           multicastClientThread,
+                           pChannel)) {
+            syslog(LOG_ERR,
+                   "Unable to start multicast channel interface thread.");
         }
     }
 
@@ -1159,25 +1156,24 @@ CControlObject::startMulticastWorkerThreads (void)
 //
 
 bool
-CControlObject::stopMulticastWorkerThreads (void)
+CControlObject::stopMulticastWorkerThreads(void)
 {
     std::list<multicastChannelItem *>::iterator it;
-    for (it = m_multicastObj.m_channels.begin ();
-         it != m_multicastObj.m_channels.end ();
+    for (it = m_multicastObj.m_channels.begin();
+         it != m_multicastObj.m_channels.end();
          ++it) {
 
         multicastChannelItem *pChannel = *it;
         if (NULL == pChannel) {
-            syslog (
-              LOG_ERR,
-              "Controlobject: Multicast end channel table invalid entry.");
+            syslog(LOG_ERR,
+                   "Controlobject: Multicast end channel table invalid entry.");
             continue;
         }
 
         pChannel->m_quit = true;
-        pthread_join (pChannel->m_workerThread, NULL);
+        pthread_join(pChannel->m_workerThread, NULL);
         delete pChannel;
-        m_multicastObj.m_channels.erase (it);
+        m_multicastObj.m_channels.erase(it);
     }
 
     return true;
@@ -1188,24 +1184,24 @@ CControlObject::stopMulticastWorkerThreads (void)
 //
 
 bool
-CControlObject::startDaemonWorkerThread (void)
+CControlObject::startDaemonWorkerThread(void)
 {
-    syslog (LOG_DEBUG, "Controlobject: Starting daemon worker thread,,.");
+    syslog(LOG_DEBUG, "Controlobject: Starting daemon worker thread,,.");
 
-    m_pdaemonWorkerObj = new daemonWorkerObj (this);
+    m_pdaemonWorkerObj = new daemonWorkerObj(this);
     if (NULL == m_pdaemonWorkerObj) {
-        syslog (
+        syslog(
           LOG_CRIT,
           "Controlobject: Unable to allocate object for daemon worker thread.");
         return false;
     }
 
-    if (!pthread_create (&m_clientMsgWorkerThread,
-                         NULL,
-                         daemonWorkerThread,
-                         m_pdaemonWorkerObj)) {
+    if (!pthread_create(&m_clientMsgWorkerThread,
+                        NULL,
+                        daemonWorkerThread,
+                        m_pdaemonWorkerObj)) {
 
-        syslog (
+        syslog(
           LOG_CRIT,
           "Controlobject: Unable to allocate memory for daemon worker thread.");
         return false;
@@ -1219,12 +1215,12 @@ CControlObject::startDaemonWorkerThread (void)
 //
 
 bool
-CControlObject::stopDaemonWorkerThread (void)
+CControlObject::stopDaemonWorkerThread(void)
 {
-    syslog (LOG_DEBUG, "Controlobject: Stopping daemon worker thread...");
+    syslog(LOG_DEBUG, "Controlobject: Stopping daemon worker thread...");
     m_pdaemonWorkerObj->m_bQuit = true;
-    pthread_join (m_clientMsgWorkerThread, NULL);
-    syslog (LOG_DEBUG, "Controlobject: Stoped daemon worker thread.");
+    pthread_join(m_clientMsgWorkerThread, NULL);
+    syslog(LOG_DEBUG, "Controlobject: Stoped daemon worker thread.");
 
     return true;
 }
@@ -1234,22 +1230,22 @@ CControlObject::stopDaemonWorkerThread (void)
 //
 
 bool
-CControlObject::startDeviceWorkerThreads (void)
+CControlObject::startDeviceWorkerThreads(void)
 {
     CDeviceItem *pDeviceItem;
-    syslog (LOG_DEBUG, "[Controlobject][Driver] - Starting drivers...");
+    syslog(LOG_DEBUG, "[Controlobject][Driver] - Starting drivers...");
 
     std::deque<CDeviceItem *>::iterator it;
-    for (it = m_deviceList.m_devItemList.begin ();
-         it != m_deviceList.m_devItemList.end ();
+    for (it = m_deviceList.m_devItemList.begin();
+         it != m_deviceList.m_devItemList.end();
          ++it) {
 
         pDeviceItem = *it;
         if (NULL != pDeviceItem) {
 
-            syslog (LOG_DEBUG,
-                    "Controlobject: [Driver] - Preparing: %s ",
-                    pDeviceItem->m_strName.c_str ());
+            syslog(LOG_DEBUG,
+                   "Controlobject: [Driver] - Preparing: %s ",
+                   pDeviceItem->m_strName.c_str());
 
             // Just start if enabled
             if (!pDeviceItem->m_bEnable) continue;
@@ -1274,12 +1270,12 @@ CControlObject::startDeviceWorkerThreads (void)
                 }*/
             }
 
-            syslog (LOG_DEBUG,
-                    "Controlobject: [Driver] - Starting: %s ",
-                    pDeviceItem->m_strName.c_str ());
+            syslog(LOG_DEBUG,
+                   "Controlobject: [Driver] - Starting: %s ",
+                   pDeviceItem->m_strName.c_str());
 
             // Start  the driver logic
-            pDeviceItem->startDriver (this);
+            pDeviceItem->startDriver(this);
 
         } // Valid device item
     }
@@ -1292,22 +1288,22 @@ CControlObject::startDeviceWorkerThreads (void)
 //
 
 bool
-CControlObject::stopDeviceWorkerThreads (void)
+CControlObject::stopDeviceWorkerThreads(void)
 {
     CDeviceItem *pDeviceItem;
 
-    syslog (LOG_DEBUG, "[Controlobject][Driver] - Stopping drivers...");
+    syslog(LOG_DEBUG, "[Controlobject][Driver] - Stopping drivers...");
     std::deque<CDeviceItem *>::iterator iter;
-    for (iter = m_deviceList.m_devItemList.begin ();
-         iter != m_deviceList.m_devItemList.end ();
+    for (iter = m_deviceList.m_devItemList.begin();
+         iter != m_deviceList.m_devItemList.end();
          ++iter) {
 
         pDeviceItem = *iter;
         if (NULL != pDeviceItem) {
-            syslog (LOG_DEBUG,
-                    "Controlobject: [Driver] - Stopping: %s ",
-                    pDeviceItem->m_strName.c_str ());
-            pDeviceItem->stopDriver ();
+            syslog(LOG_DEBUG,
+                   "Controlobject: [Driver] - Stopping: %s ",
+                   pDeviceItem->m_strName.c_str());
+            pDeviceItem->stopDriver();
         }
     }
 
@@ -1319,7 +1315,7 @@ CControlObject::stopDeviceWorkerThreads (void)
 //
 
 bool
-CControlObject::generateSessionId (const char *pKey, char *psid)
+CControlObject::generateSessionId(const char *pKey, char *psid)
 {
     char buf[8193];
 
@@ -1327,22 +1323,22 @@ CControlObject::generateSessionId (const char *pKey, char *psid)
     if (NULL == pKey) return false;
     if (NULL == psid) return false;
 
-    if (strlen (pKey) > 256) return false;
+    if (strlen(pKey) > 256) return false;
 
     // Generate a random session ID
     time_t t;
-    t = time (NULL);
-    sprintf (buf,
-             "__%s_%X%X%X%X_be_hungry_stay_foolish_%X%X",
-             pKey,
-             (unsigned int)rand (),
-             (unsigned int)rand (),
-             (unsigned int)rand (),
-             (unsigned int)t,
-             (unsigned int)rand (),
-             1337);
+    t = time(NULL);
+    sprintf(buf,
+            "__%s_%X%X%X%X_be_hungry_stay_foolish_%X%X",
+            pKey,
+            (unsigned int)rand(),
+            (unsigned int)rand(),
+            (unsigned int)rand(),
+            (unsigned int)t,
+            (unsigned int)rand(),
+            1337);
 
-    vscp_md5 (psid, (const unsigned char *)buf, strlen (buf));
+    vscp_md5(psid, (const unsigned char *)buf, strlen(buf));
 
     return true;
 }
@@ -1352,12 +1348,12 @@ CControlObject::generateSessionId (const char *pKey, char *psid)
 //
 
 bool
-CControlObject::getVscpCapabilities (uint8_t *pCapability)
+CControlObject::getVscpCapabilities(uint8_t *pCapability)
 {
     // Check pointer
     if (NULL == pCapability) return false;
 
-    memset (pCapability, 0, 8);
+    memset(pCapability, 0, 8);
 
     // VSCP Multicast interface
     if (m_bEnableMulticast) {
@@ -1448,11 +1444,11 @@ CControlObject::getVscpCapabilities (uint8_t *pCapability)
 //
 
 void
-CControlObject::logMsg (const std::string &msgin,
-                        const uint8_t level,
-                        const uint8_t nType)
+CControlObject::logMsg(const std::string &msgin,
+                       const uint8_t level,
+                       const uint8_t nType)
 {
-    syslog (LOG_INFO, "%s", msgin.c_str ());
+    syslog(LOG_INFO, "%s", msgin.c_str());
     /*
     // Log to database
     if ( ( NULL != m_db_vscp_log ) &&
@@ -1492,7 +1488,7 @@ CControlObject::logMsg (const std::string &msgin,
 //
 
 long
-CControlObject::getCountRecordsDB (sqlite3 *db, std::string &table)
+CControlObject::getCountRecordsDB(sqlite3 *db, std::string &table)
 {
     long count = 0;
     sqlite3_stmt *ppStmt;
@@ -1500,18 +1496,19 @@ CControlObject::getCountRecordsDB (sqlite3 *db, std::string &table)
     // If not open no records
     if (NULL == db) return 0;
 
-    std::string sql = vscp_string_format ("SELECT count(*)from %s",
-                                          (const char *)table.c_str ());
+    std::string sql =
+      vscp_string_format("SELECT count(*)from %s", (const char *)table.c_str());
 
     if (SQLITE_OK !=
-        sqlite3_prepare (db, (const char *)sql.c_str (), -1, &ppStmt, NULL)) {
-        syslog(LOG_ERR, "Failed to prepare count for log database. SQL is %s",
-                  VSCPDB_LOG_COUNT) ;
+        sqlite3_prepare(db, (const char *)sql.c_str(), -1, &ppStmt, NULL)) {
+        syslog(LOG_ERR,
+               "Failed to prepare count for log database. SQL is %s",
+               VSCPDB_LOG_COUNT);
         return 0;
     }
 
-    if (SQLITE_ROW == sqlite3_step (ppStmt)) {
-        count = sqlite3_column_int (ppStmt, 0);
+    if (SQLITE_ROW == sqlite3_step(ppStmt)) {
+        count = sqlite3_column_int(ppStmt, 0);
     }
     return count;
 }
@@ -1521,7 +1518,7 @@ CControlObject::getCountRecordsDB (sqlite3 *db, std::string &table)
 //
 
 long
-CControlObject::getCountRecordsLogDB (void)
+CControlObject::getCountRecordsLogDB(void)
 {
     long count = 0;
     /*
@@ -1557,7 +1554,7 @@ CControlObject::getCountRecordsLogDB (void)
 //
 
 bool
-CControlObject::searchLogDB (const char *sql, std::string &strResult)
+CControlObject::searchLogDB(const char *sql, std::string &strResult)
 {
     /*
     sqlite3_stmt *ppStmt;
@@ -1607,18 +1604,18 @@ CControlObject::searchLogDB (const char *sql, std::string &strResult)
 //
 
 void
-CControlObject::sendEventToClient (CClientItem *pClientItem, vscpEvent *pEvent)
+CControlObject::sendEventToClient(CClientItem *pClientItem, vscpEvent *pEvent)
 {
     // Must be valid pointers
     if (NULL == pClientItem) return;
     if (NULL == pEvent) return;
 
     // Check if filtered out - if so do nothing here
-    if (!vscp_doLevel2Filter (pEvent, &pClientItem->m_filterVSCP)) return;
+    if (!vscp_doLevel2Filter(pEvent, &pClientItem->m_filterVSCP)) return;
 
     // If the client queue is full for this client then the
     // client will not receive the message
-    if (pClientItem->m_clientInputQueue.size () >
+    if (pClientItem->m_clientInputQueue.size() >
         m_maxItemsInClientReceiveQueue) {
         // Overrun
         pClientItem->m_statistics.cntOverruns++;
@@ -1630,14 +1627,14 @@ CControlObject::sendEventToClient (CClientItem *pClientItem, vscpEvent *pEvent)
     if (NULL != pnewvscpEvent) {
 
         // Copy in the new event
-        memcpy (pnewvscpEvent, pEvent, sizeof (vscpEvent));
+        memcpy(pnewvscpEvent, pEvent, sizeof(vscpEvent));
 
         // And data...
         if ((NULL != pEvent->pdata) && (pEvent->sizeData > 0)) {
             // Copy in data
             pnewvscpEvent->pdata = new uint8_t[pEvent->sizeData];
             if (NULL != pnewvscpEvent->pdata) {
-                memcpy (pnewvscpEvent->pdata, pEvent->pdata, pEvent->sizeData);
+                memcpy(pnewvscpEvent->pdata, pEvent->pdata, pEvent->sizeData);
             }
         } else {
             // No data
@@ -1645,10 +1642,10 @@ CControlObject::sendEventToClient (CClientItem *pClientItem, vscpEvent *pEvent)
         }
 
         // Add the new event to the input queue
-        pthread_mutex_lock (&pClientItem->m_mutexClientInputQueue);
-        pClientItem->m_clientInputQueue.push_back (pnewvscpEvent);
-        sem_post (&pClientItem->m_semClientInputQueue);
-        pthread_mutex_unlock (&pClientItem->m_mutexClientInputQueue);
+        pthread_mutex_lock(&pClientItem->m_mutexClientInputQueue);
+        pClientItem->m_clientInputQueue.push_back(pnewvscpEvent);
+        sem_post(&pClientItem->m_semClientInputQueue);
+        pthread_mutex_unlock(&pClientItem->m_mutexClientInputQueue);
     }
 }
 
@@ -1657,25 +1654,25 @@ CControlObject::sendEventToClient (CClientItem *pClientItem, vscpEvent *pEvent)
 //
 
 void
-CControlObject::sendEventAllClients (vscpEvent *pEvent, uint32_t excludeID)
+CControlObject::sendEventAllClients(vscpEvent *pEvent, uint32_t excludeID)
 {
     CClientItem *pClientItem;
     std::list<CClientItem *>::iterator it;
 
     if (NULL == pEvent) return;
 
-    pthread_mutex_lock (&m_clientMutex);
-    for (it = m_clientList.m_itemList.begin ();
-         it != m_clientList.m_itemList.end ();
+    pthread_mutex_lock(&m_clientMutex);
+    for (it = m_clientList.m_itemList.begin();
+         it != m_clientList.m_itemList.end();
          ++it) {
         pClientItem = *it;
 
         if ((NULL != pClientItem) && (excludeID != pClientItem->m_clientID)) {
-            sendEventToClient (pClientItem, pEvent);
+            sendEventToClient(pClientItem, pEvent);
         }
     }
 
-    pthread_mutex_unlock (&m_clientMutex);
+    pthread_mutex_unlock(&m_clientMutex);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1683,7 +1680,7 @@ CControlObject::sendEventAllClients (vscpEvent *pEvent, uint32_t excludeID)
 //
 
 bool
-CControlObject::sendEvent (CClientItem *pClientItem, vscpEvent *peventToSend)
+CControlObject::sendEvent(CClientItem *pClientItem, vscpEvent *peventToSend)
 {
     bool bSent = false;
 
@@ -1693,7 +1690,7 @@ CControlObject::sendEvent (CClientItem *pClientItem, vscpEvent *peventToSend)
 
     // If timestamp is nulled make one
     if (0 == peventToSend->timestamp) {
-        peventToSend->timestamp = vscp_makeTimeStamp ();
+        peventToSend->timestamp = vscp_makeTimeStamp();
     }
 
     // If obid is nulled set client interface id
@@ -1702,8 +1699,8 @@ CControlObject::sendEvent (CClientItem *pClientItem, vscpEvent *peventToSend)
     }
 
     // If GUID is all nilled set interface GUID
-    if (vscp_isGUIDEmpty (peventToSend->GUID)) {
-        memcpy (peventToSend->GUID, pClientItem->m_guid.getGUID (), 16);
+    if (vscp_isGUIDEmpty(peventToSend->GUID)) {
+        memcpy(peventToSend->GUID, pClientItem->m_guid.getGUID(), 16);
     }
 
     vscpEvent *pEvent = new vscpEvent; // Create new VSCP Event
@@ -1712,7 +1709,7 @@ CControlObject::sendEvent (CClientItem *pClientItem, vscpEvent *peventToSend)
     }
 
     // Copy event
-    vscp_copyVSCPEvent (pEvent, peventToSend);
+    vscp_copyVSCPEvent(pEvent, peventToSend);
 
     // We don't need the original event anymore
     if (NULL != peventToSend->pdata) {
@@ -1736,85 +1733,85 @@ CControlObject::sendEvent (CClientItem *pClientItem, vscpEvent *peventToSend)
         // the rest of the network as normal
 
         cguid destguid;
-        destguid.getFromArray (pEvent->pdata);
+        destguid.getFromArray(pEvent->pdata);
 
-        destguid.setAt (0, 0); // Interface GUID's have LSB bytes nilled
-        destguid.setAt (1, 0);
+        destguid.setAt(0, 0); // Interface GUID's have LSB bytes nilled
+        destguid.setAt(1, 0);
 
-        syslog (LOG_DEBUG,
-                "Level I event over Level II "
-                "dest = %d:%d:%d:%d:%d:%d:%d:%d:"
-                "%d:%d:%d:%d:%d:%d:%d:%d:",
-                destguid.getAt (15),
-                destguid.getAt (14),
-                destguid.getAt (13),
-                destguid.getAt (12),
-                destguid.getAt (11),
-                destguid.getAt (10),
-                destguid.getAt (9),
-                destguid.getAt (8),
-                destguid.getAt (7),
-                destguid.getAt (6),
-                destguid.getAt (5),
-                destguid.getAt (4),
-                destguid.getAt (3),
-                destguid.getAt (2),
-                destguid.getAt (1),
-                destguid.getAt (0));
+        syslog(LOG_DEBUG,
+               "Level I event over Level II "
+               "dest = %d:%d:%d:%d:%d:%d:%d:%d:"
+               "%d:%d:%d:%d:%d:%d:%d:%d:",
+               destguid.getAt(15),
+               destguid.getAt(14),
+               destguid.getAt(13),
+               destguid.getAt(12),
+               destguid.getAt(11),
+               destguid.getAt(10),
+               destguid.getAt(9),
+               destguid.getAt(8),
+               destguid.getAt(7),
+               destguid.getAt(6),
+               destguid.getAt(5),
+               destguid.getAt(4),
+               destguid.getAt(3),
+               destguid.getAt(2),
+               destguid.getAt(1),
+               destguid.getAt(0));
 
         // Find client
-        pthread_mutex_lock (&m_clientMutex);
+        pthread_mutex_lock(&m_clientMutex);
 
         CClientItem *pDestClientItem = NULL;
         std::list<CClientItem *>::iterator it;
-        for (it = m_clientList.m_itemList.begin ();
-             it != m_clientList.m_itemList.end ();
+        for (it = m_clientList.m_itemList.begin();
+             it != m_clientList.m_itemList.end();
              ++it) {
 
             CClientItem *pItem = *it;
-            syslog (
+            syslog(
               LOG_DEBUG,
               "Test if = %d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d: %s",
-              pItem->m_guid.getAt (15),
-              pItem->m_guid.getAt (14),
-              pItem->m_guid.getAt (13),
-              pItem->m_guid.getAt (12),
-              pItem->m_guid.getAt (11),
-              pItem->m_guid.getAt (10),
-              pItem->m_guid.getAt (9),
-              pItem->m_guid.getAt (8),
-              pItem->m_guid.getAt (7),
-              pItem->m_guid.getAt (6),
-              pItem->m_guid.getAt (5),
-              pItem->m_guid.getAt (4),
-              pItem->m_guid.getAt (3),
-              pItem->m_guid.getAt (2),
-              pItem->m_guid.getAt (1),
-              pItem->m_guid.getAt (0),
-              pItem->m_strDeviceName.c_str ());
+              pItem->m_guid.getAt(15),
+              pItem->m_guid.getAt(14),
+              pItem->m_guid.getAt(13),
+              pItem->m_guid.getAt(12),
+              pItem->m_guid.getAt(11),
+              pItem->m_guid.getAt(10),
+              pItem->m_guid.getAt(9),
+              pItem->m_guid.getAt(8),
+              pItem->m_guid.getAt(7),
+              pItem->m_guid.getAt(6),
+              pItem->m_guid.getAt(5),
+              pItem->m_guid.getAt(4),
+              pItem->m_guid.getAt(3),
+              pItem->m_guid.getAt(2),
+              pItem->m_guid.getAt(1),
+              pItem->m_guid.getAt(0),
+              pItem->m_strDeviceName.c_str());
 
             if (pItem->m_guid == destguid) {
                 // Found
                 pDestClientItem = pItem;
                 bSent           = true;
-                syslog (LOG_DEBUG, "Match ");
-                sendEventToClient (pItem, pEvent);
+                syslog(LOG_DEBUG, "Match ");
+                sendEventToClient(pItem, pEvent);
                 break;
             }
         }
 
-        pthread_mutex_unlock (&m_clientMutex);
+        pthread_mutex_unlock(&m_clientMutex);
     }
 
     if (!bSent) {
 
         // There must be room in the send queue
-        if (m_maxItemsInClientReceiveQueue > m_clientOutputQueue.size ()) {
+        if (m_maxItemsInClientReceiveQueue > m_clientOutputQueue.size()) {
 
-            pthread_mutex_lock (&m_mutexClientOutputQueue);
-            m_clientOutputQueue.push_back (pEvent);
-            sem_post (&m_semClientOutputQueue);
-            pthread_mutex_unlock (&m_mutexClientOutputQueue);
+            pthread_mutex_lock(&m_mutexClientOutputQueue);
+            m_clientOutputQueue.push_back(pEvent);
+            sem_post(&m_semClientOutputQueue);
+            pthread_mutex_unlock(&m_mutexClientOutputQueue);
 
             // TX Statistics
             pClientItem->m_statistics.cntTransmitData += pEvent->sizeData;
@@ -1823,7 +1820,7 @@ CControlObject::sendEvent (CClientItem *pClientItem, vscpEvent *peventToSend)
 
             pClientItem->m_statistics.cntOverruns++;
 
-            vscp_deleteVSCPevent (pEvent);
+            vscp_deleteVSCPevent(pEvent);
             return false;
         }
     }
@@ -1836,7 +1833,7 @@ CControlObject::sendEvent (CClientItem *pClientItem, vscpEvent *peventToSend)
 //
 
 bool
-CControlObject::removeIdFromClientMap (uint32_t clid)
+CControlObject::removeIdFromClientMap(uint32_t clid)
 {
     for (uint32_t i = 0; i < VSCP_MAX_CLIENTS; i++) {
         if (clid == m_clientMap[i]) {
@@ -1853,10 +1850,10 @@ CControlObject::removeIdFromClientMap (uint32_t clid)
 //
 
 bool
-CControlObject::addClient (CClientItem *pClientItem, uint32_t id)
+CControlObject::addClient(CClientItem *pClientItem, uint32_t id)
 {
     // Add client to client list
-    if (!m_clientList.addClient (pClientItem, id)) {
+    if (!m_clientList.addClient(pClientItem, id)) {
         return false;
     }
 
@@ -1864,8 +1861,8 @@ CControlObject::addClient (CClientItem *pClientItem, uint32_t id)
     pClientItem->m_guid = m_guid;
 
     // Fill in client id
-    pClientItem->m_guid.setNicknameID (0);
-    pClientItem->m_guid.setClientID (pClientItem->m_clientID);
+    pClientItem->m_guid.setNicknameID(0);
+    pClientItem->m_guid.setClientID(pClientItem->m_clientID);
 
     return true;
 }
@@ -1875,16 +1872,16 @@ CControlObject::addClient (CClientItem *pClientItem, uint32_t id)
 //
 
 void
-CControlObject::removeClient (CClientItem *pClientItem)
+CControlObject::removeClient(CClientItem *pClientItem)
 {
     // Do not try to handle invalid clients
     if (NULL == pClientItem) return;
 
     // Remove the mapped item
-    removeIdFromClientMap (pClientItem->m_clientID);
+    removeIdFromClientMap(pClientItem->m_clientID);
 
     // Remove the client
-    m_clientList.removeClient (pClientItem);
+    m_clientList.removeClient(pClientItem);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -1892,7 +1889,7 @@ CControlObject::removeClient (CClientItem *pClientItem)
 //
 
 void
-CControlObject::addKnownNode (cguid &guid, cguid &ifguid, std::string &name)
+CControlObject::addKnownNode(cguid &guid, cguid &ifguid, std::string &name)
 {
     ; // TODO ???
 }
@@ -1902,7 +1899,7 @@ CControlObject::addKnownNode (cguid &guid, cguid &ifguid, std::string &name)
 //
 
 bool
-CControlObject::getMacAddress (cguid &guid)
+CControlObject::getMacAddress(cguid &guid)
 {
 #ifdef WIN32
 
@@ -1913,61 +1910,61 @@ CControlObject::getMacAddress (cguid &guid)
     int i;
 
     // Clear the GUID
-    guid.clear ();
+    guid.clear();
 
-    memset (&Ncb, 0, sizeof (Ncb));
+    memset(&Ncb, 0, sizeof(Ncb));
     Ncb.ncb_command = NCBENUM;
     Ncb.ncb_buffer  = (UCHAR *)&lenum;
-    Ncb.ncb_length  = sizeof (lenum);
-    uRetCode        = Netbios (&Ncb);
+    Ncb.ncb_length  = sizeof(lenum);
+    uRetCode        = Netbios(&Ncb);
     // printf( "The NCBENUM return code is: 0x%x ", uRetCode );
 
     for (i = 0; i < lenum.length; i++) {
-        memset (&Ncb, 0, sizeof (Ncb));
+        memset(&Ncb, 0, sizeof(Ncb));
         Ncb.ncb_command  = NCBRESET;
         Ncb.ncb_lana_num = lenum.lana[i];
 
-        uRetCode = Netbios (&Ncb);
+        uRetCode = Netbios(&Ncb);
 
-        memset (&Ncb, 0, sizeof (Ncb));
+        memset(&Ncb, 0, sizeof(Ncb));
         Ncb.ncb_command  = NCBASTAT;
         Ncb.ncb_lana_num = lenum.lana[i];
 
-        strcpy ((char *)Ncb.ncb_callname, "*               ");
+        strcpy((char *)Ncb.ncb_callname, "*               ");
         Ncb.ncb_buffer = (unsigned char *)&Adapter;
-        Ncb.ncb_length = sizeof (Adapter);
+        Ncb.ncb_length = sizeof(Adapter);
 
-        uRetCode = Netbios (&Ncb);
+        uRetCode = Netbios(&Ncb);
 
         if (uRetCode == 0) {
-            guid.setAt (0, 0xff);
-            guid.setAt (1, 0xff);
-            guid.setAt (2, 0xff);
-            guid.setAt (3, 0xff);
-            guid.setAt (4, 0xff);
-            guid.setAt (5, 0xff);
-            guid.setAt (6, 0xff);
-            guid.setAt (7, 0xfe);
-            guid.setAt (8, Adapter.adapt.adapter_address[0]);
-            guid.setAt (9, Adapter.adapt.adapter_address[1]);
-            guid.setAt (10, Adapter.adapt.adapter_address[2]);
-            guid.setAt (11, Adapter.adapt.adapter_address[3]);
-            guid.setAt (12, Adapter.adapt.adapter_address[4]);
-            guid.setAt (13, Adapter.adapt.adapter_address[5]);
-            guid.setAt (14, 0);
-            guid.setAt (15, 0);
+            guid.setAt(0, 0xff);
+            guid.setAt(1, 0xff);
+            guid.setAt(2, 0xff);
+            guid.setAt(3, 0xff);
+            guid.setAt(4, 0xff);
+            guid.setAt(5, 0xff);
+            guid.setAt(6, 0xff);
+            guid.setAt(7, 0xfe);
+            guid.setAt(8, Adapter.adapt.adapter_address[0]);
+            guid.setAt(9, Adapter.adapt.adapter_address[1]);
+            guid.setAt(10, Adapter.adapt.adapter_address[2]);
+            guid.setAt(11, Adapter.adapt.adapter_address[3]);
+            guid.setAt(12, Adapter.adapt.adapter_address[4]);
+            guid.setAt(13, Adapter.adapt.adapter_address[5]);
+            guid.setAt(14, 0);
+            guid.setAt(15, 0);
 #ifdef __WXDEBUG__
             char buf[256];
-            sprintf (buf,
-                     "The Ethernet MAC Address: %02x:%02x:%02x:%02x:%02x:%02x",
-                     guid.getAt (2),
-                     guid.getAt (3),
-                     guid.getAt (4),
-                     guid.getAt (5),
-                     guid.getAt (6),
-                     guid.getAt (7));
+            sprintf(buf,
+                    "The Ethernet MAC Address: %02x:%02x:%02x:%02x:%02x:%02x",
+                    guid.getAt(2),
+                    guid.getAt(3),
+                    guid.getAt(4),
+                    guid.getAt(5),
+                    guid.getAt(6),
+                    guid.getAt(7));
 
-            std::string str = std::string (buf);
+            std::string str = std::string(buf);
 #endif
 
             rv = true;
@@ -1983,45 +1980,45 @@ CControlObject::getMacAddress (cguid &guid)
     int fd;
 
     // Clear the GUID
-    guid.clear ();
+    guid.clear();
 
-    fd = socket (PF_INET, SOCK_DGRAM, IPPROTO_IP);
+    fd = socket(PF_INET, SOCK_DGRAM, IPPROTO_IP);
     if (-1 == fd) return false;
 
-    memset (&s, 0, sizeof (s));
-    strcpy (s.ifr_name, "eth0");
+    memset(&s, 0, sizeof(s));
+    strcpy(s.ifr_name, "eth0");
 
-    if (0 == ioctl (fd, SIOCGIFHWADDR, &s)) {
+    if (0 == ioctl(fd, SIOCGIFHWADDR, &s)) {
 
         unsigned char *ptr;
         ptr = (unsigned char *)&s.ifr_ifru.ifru_hwaddr.sa_data[0];
-        syslog (LOG_DEBUG,
-                "Ethernet MAC address: %02X:%02X:%02X:%02X:%02X:%02X",
-                (uint8_t)s.ifr_addr.sa_data[0],
-                (uint8_t)s.ifr_addr.sa_data[1],
-                (uint8_t)s.ifr_addr.sa_data[2],
-                (uint8_t)s.ifr_addr.sa_data[3],
-                (uint8_t)s.ifr_addr.sa_data[4],
-                (uint8_t)s.ifr_addr.sa_data[5]);
+        syslog(LOG_DEBUG,
+               "Ethernet MAC address: %02X:%02X:%02X:%02X:%02X:%02X",
+               (uint8_t)s.ifr_addr.sa_data[0],
+               (uint8_t)s.ifr_addr.sa_data[1],
+               (uint8_t)s.ifr_addr.sa_data[2],
+               (uint8_t)s.ifr_addr.sa_data[3],
+               (uint8_t)s.ifr_addr.sa_data[4],
+               (uint8_t)s.ifr_addr.sa_data[5]);
 
-        guid.setAt (0, 0xff);
-        guid.setAt (1, 0xff);
-        guid.setAt (2, 0xff);
-        guid.setAt (3, 0xff);
-        guid.setAt (4, 0xff);
-        guid.setAt (5, 0xff);
-        guid.setAt (6, 0xff);
-        guid.setAt (7, 0xfe);
-        guid.setAt (8, s.ifr_addr.sa_data[0]);
-        guid.setAt (9, s.ifr_addr.sa_data[1]);
-        guid.setAt (10, s.ifr_addr.sa_data[2]);
-        guid.setAt (11, s.ifr_addr.sa_data[3]);
-        guid.setAt (12, s.ifr_addr.sa_data[4]);
-        guid.setAt (13, s.ifr_addr.sa_data[5]);
-        guid.setAt (14, 0);
-        guid.setAt (15, 0);
+        guid.setAt(0, 0xff);
+        guid.setAt(1, 0xff);
+        guid.setAt(2, 0xff);
+        guid.setAt(3, 0xff);
+        guid.setAt(4, 0xff);
+        guid.setAt(5, 0xff);
+        guid.setAt(6, 0xff);
+        guid.setAt(7, 0xfe);
+        guid.setAt(8, s.ifr_addr.sa_data[0]);
+        guid.setAt(9, s.ifr_addr.sa_data[1]);
+        guid.setAt(10, s.ifr_addr.sa_data[2]);
+        guid.setAt(11, s.ifr_addr.sa_data[3]);
+        guid.setAt(12, s.ifr_addr.sa_data[4]);
+        guid.setAt(13, s.ifr_addr.sa_data[5]);
+        guid.setAt(14, 0);
+        guid.setAt(15, 0);
     } else {
-        syslog (LOG_ERR, "Failed to get hardware address (must be root?).");
+        syslog(LOG_ERR, "Failed to get hardware address (must be root?).");
         rv = false;
     }
 
@@ -2035,28 +2032,28 @@ CControlObject::getMacAddress (cguid &guid)
 //
 
 bool
-CControlObject::getIPAddress (cguid &guid)
+CControlObject::getIPAddress(cguid &guid)
 {
     // Clear the GUID
-    guid.clear ();
+    guid.clear();
 
-    guid.setAt (0, 0xff);
-    guid.setAt (1, 0xff);
-    guid.setAt (2, 0xff);
-    guid.setAt (3, 0xff);
-    guid.setAt (4, 0xff);
-    guid.setAt (5, 0xff);
-    guid.setAt (6, 0xff);
-    guid.setAt (7, 0xfd);
+    guid.setAt(0, 0xff);
+    guid.setAt(1, 0xff);
+    guid.setAt(2, 0xff);
+    guid.setAt(3, 0xff);
+    guid.setAt(4, 0xff);
+    guid.setAt(5, 0xff);
+    guid.setAt(6, 0xff);
+    guid.setAt(7, 0xfd);
 
     char szName[128];
-    gethostname (szName, sizeof (szName));
+    gethostname(szName, sizeof(szName));
 #if defined(_WIN32)
     LPHOSTENT lpLocalHostEntry;
 #else
     struct hostent *lpLocalHostEntry;
 #endif
-    lpLocalHostEntry = gethostbyname (szName);
+    lpLocalHostEntry = gethostbyname(szName);
     if (NULL == lpLocalHostEntry) {
         return false;
     }
@@ -2072,15 +2069,15 @@ CControlObject::getIPAddress (cguid &guid)
         if (NULL != pAddr) localaddr[idx] = *((unsigned long *)pAddr);
     } while ((NULL != pAddr) && (idx < 16));
 
-    guid.setAt (8, (localaddr[0] >> 24) & 0xff);
-    guid.setAt (9, (localaddr[0] >> 16) & 0xff);
-    guid.setAt (10, (localaddr[0] >> 8) & 0xff);
-    guid.setAt (11, localaddr[0] & 0xff);
+    guid.setAt(8, (localaddr[0] >> 24) & 0xff);
+    guid.setAt(9, (localaddr[0] >> 16) & 0xff);
+    guid.setAt(10, (localaddr[0] >> 8) & 0xff);
+    guid.setAt(11, localaddr[0] & 0xff);
 
-    guid.setAt (12, 0);
-    guid.setAt (13, 0);
-    guid.setAt (14, 0);
-    guid.setAt (15, 0);
+    guid.setAt(12, 0);
+    guid.setAt(13, 0);
+    guid.setAt(14, 0);
+    guid.setAt(15, 0);
 
     return true;
 }
@@ -2090,10 +2087,10 @@ CControlObject::getIPAddress (cguid &guid)
 //
 
 uint8_t *
-CControlObject::getSystemKey (uint8_t *pKey)
+CControlObject::getSystemKey(uint8_t *pKey)
 {
     if (NULL != pKey) {
-        memcpy (pKey, m_systemKey, 32);
+        memcpy(pKey, m_systemKey, 32);
     }
 
     return m_systemKey;
@@ -2104,10 +2101,10 @@ CControlObject::getSystemKey (uint8_t *pKey)
 //
 
 void
-CControlObject::getSystemKeyMD5 (std::string &strKey)
+CControlObject::getSystemKeyMD5(std::string &strKey)
 {
     char digest[33];
-    vscp_md5 (digest, m_systemKey, 32);
+    vscp_md5(digest, m_systemKey, 32);
     strKey = digest;
 }
 
@@ -2117,140 +2114,140 @@ static int depth_general_config_parser   = 0;
 static char *last_general_config_content = NULL;
 
 static void
-startGeneralConfigParser (void *data, const char *name, const char **attr)
+startGeneralConfigParser(void *data, const char *name, const char **attr)
 {
     CControlObject *pObj = (CControlObject *)data;
     if (NULL == data) return;
 
     if (0 == depth_general_config_parser) {
 
-        if ((0 == vscp_strcasecmp (name, "security"))) {
+        if ((0 == vscp_strcasecmp(name, "security"))) {
 
             for (int i = 0; attr[i]; i += 2) {
 
                 std::string attribute = attr[i + 1];
-                if (0 == vscp_strcasecmp (attr[i], "user")) {
+                if (0 == vscp_strcasecmp(attr[i], "user")) {
                     pObj->m_admin_user = attribute;
-                } else if (0 == vscp_strcasecmp (attr[i], "password")) {
+                } else if (0 == vscp_strcasecmp(attr[i], "password")) {
                     pObj->m_admin_password = attribute;
-                } else if (0 == vscp_strcasecmp (attr[i], "allowfrom")) {
+                } else if (0 == vscp_strcasecmp(attr[i], "allowfrom")) {
                     pObj->m_admin_allowfrom = attribute;
-                } else if (0 == vscp_strcasecmp (attr[i], "vscptoken")) {
+                } else if (0 == vscp_strcasecmp(attr[i], "vscptoken")) {
                     pObj->m_vscptoken = attribute;
-                } else if (0 == vscp_strcasecmp (attr[i], "vscpkey")) {
-                    if (attribute.length ()) {
-                        vscp_hexStr2ByteArray (
-                          pObj->m_systemKey, 32, attribute.c_str ());
+                } else if (0 == vscp_strcasecmp(attr[i], "vscpkey")) {
+                    if (attribute.length()) {
+                        vscp_hexStr2ByteArray(
+                          pObj->m_systemKey, 32, attribute.c_str());
                     }
                 }
             }
-        } else if ((0 == vscp_strcasecmp (name, "daemon"))) {
+        } else if ((0 == vscp_strcasecmp(name, "daemon"))) {
             for (int i = 0; attr[i]; i += 2) {
 
                 std::string attribute = attr[i + 1];
-                if (0 == vscp_strcasecmp (attr[i], "loglevel")) {
+                if (0 == vscp_strcasecmp(attr[i], "loglevel")) {
 
-                    vscp_trim (attribute);
+                    vscp_trim(attribute);
 
-                    if (0 == vscp_strcasecmp (attribute.c_str (), "none")) {
+                    if (0 == vscp_strcasecmp(attribute.c_str(), "none")) {
                         pObj->m_logLevel = DAEMON_LOGMSG_NONE;
                     } else if (0 ==
-                               vscp_strcasecmp (attribute.c_str (), "normal")) {
+                               vscp_strcasecmp(attribute.c_str(), "normal")) {
                         pObj->m_logLevel = DAEMON_LOGMSG_NORMAL;
                     } else if (0 ==
-                               vscp_strcasecmp (attribute.c_str (), "debug")) {
+                               vscp_strcasecmp(attribute.c_str(), "debug")) {
                         pObj->m_logLevel = DAEMON_LOGMSG_DEBUG;
                     } else {
-                        pObj->m_logLevel = vscp_readStringValue (attribute);
+                        pObj->m_logLevel = vscp_readStringValue(attribute);
                         if (pObj->m_logLevel > DAEMON_LOGMSG_DEBUG) {
                             pObj->m_logLevel = DAEMON_LOGMSG_NORMAL;
                         }
                     }
-                } else if (0 == vscp_strcasecmp (attr[i], "clientbuffersize")) {
+                } else if (0 == vscp_strcasecmp(attr[i], "clientbuffersize")) {
                     pObj->m_maxItemsInClientReceiveQueue =
-                      vscp_readStringValue (attribute);
-                } else if (0 == vscp_strcasecmp (attr[i], "runasuser")) {
-                    vscp_trim (attribute);
+                      vscp_readStringValue(attribute);
+                } else if (0 == vscp_strcasecmp(attr[i], "runasuser")) {
+                    vscp_trim(attribute);
                     pObj->m_runAsUser = attribute;
                     // Also assign to web user
                     pObj->m_web_run_as_user = attribute;
-                } else if (0 == vscp_strcasecmp (attr[i], "guid")) {
-                    pObj->m_guid.getFromString (attribute);
-                } else if (0 == vscp_strcasecmp (attr[i], "servername")) {
+                } else if (0 == vscp_strcasecmp(attr[i], "guid")) {
+                    pObj->m_guid.getFromString(attribute);
+                } else if (0 == vscp_strcasecmp(attr[i], "servername")) {
                     pObj->m_strServerName = attribute;
                 }
             }
-        } else if ((0 == vscp_strcasecmp (name, "debugflags"))) {
+        } else if ((0 == vscp_strcasecmp(name, "debugflags"))) {
 
             for (int i = 0; attr[i]; i += 2) {
 
                 std::string attribute = attr[i + 1];
-                if (0 == strcasecmp (attr[i], "flags1")) {
-                    pObj->m_debugFlags1 = vscp_readStringValue (attribute);
-                } else if (0 == strcasecmp (attr[i], "flags2")) {
-                    pObj->m_debugFlags2 = vscp_readStringValue (attribute);
-                } else if (0 == strcasecmp (attr[i], "flags3")) {
-                    pObj->m_debugFlags3 = vscp_readStringValue (attribute);
-                } else if (0 == strcasecmp (attr[i], "flags4")) {
-                    pObj->m_debugFlags4 = vscp_readStringValue (attribute);
-                } else if (0 == strcasecmp (attr[i], "flags5")) {
-                    pObj->m_debugFlags5 = vscp_readStringValue (attribute);
-                } else if (0 == strcasecmp (attr[i], "flags6")) {
-                    pObj->m_debugFlags6 = vscp_readStringValue (attribute);
-                } else if (0 == strcasecmp (attr[i], "flags7")) {
-                    pObj->m_debugFlags7 = vscp_readStringValue (attribute);
+                if (0 == strcasecmp(attr[i], "flags1")) {
+                    pObj->m_debugFlags1 = vscp_readStringValue(attribute);
+                } else if (0 == strcasecmp(attr[i], "flags2")) {
+                    pObj->m_debugFlags2 = vscp_readStringValue(attribute);
+                } else if (0 == strcasecmp(attr[i], "flags3")) {
+                    pObj->m_debugFlags3 = vscp_readStringValue(attribute);
+                } else if (0 == strcasecmp(attr[i], "flags4")) {
+                    pObj->m_debugFlags4 = vscp_readStringValue(attribute);
+                } else if (0 == strcasecmp(attr[i], "flags5")) {
+                    pObj->m_debugFlags5 = vscp_readStringValue(attribute);
+                } else if (0 == strcasecmp(attr[i], "flags6")) {
+                    pObj->m_debugFlags6 = vscp_readStringValue(attribute);
+                } else if (0 == strcasecmp(attr[i], "flags7")) {
+                    pObj->m_debugFlags7 = vscp_readStringValue(attribute);
                 }
             }
-        } else if ((0 == vscp_strcasecmp (name, "db_vscp_daemon"))) {
+        } else if ((0 == vscp_strcasecmp(name, "db_vscp_daemon"))) {
             for (int i = 0; attr[i]; i += 2) {
 
                 std::string attribute = attr[i + 1];
-                if (0 == strcasecmp (attr[i], "path")) {
-                    vscp_trim (attribute);
-                    if (attribute.length ()) {
+                if (0 == strcasecmp(attr[i], "path")) {
+                    vscp_trim(attribute);
+                    if (attribute.length()) {
                         pObj->m_path_db_vscp_daemon = attribute;
                     }
                 }
             }
-        } else if ((0 == vscp_strcasecmp (name, "db_vscp_data"))) {
+        } else if ((0 == vscp_strcasecmp(name, "db_vscp_data"))) {
             for (int i = 0; attr[i]; i += 2) {
 
                 std::string attribute = attr[i + 1];
-                if (0 == strcasecmp (attr[i], "path")) {
-                    vscp_trim (attribute);
-                    if (attribute.length ()) {
+                if (0 == strcasecmp(attr[i], "path")) {
+                    vscp_trim(attribute);
+                    if (attribute.length()) {
                         pObj->m_path_db_vscp_data = attribute;
                     }
                 }
             }
-        } else if ((0 == vscp_strcasecmp (name, "db_vscp_variable"))) {
+        } else if ((0 == vscp_strcasecmp(name, "db_vscp_variable"))) {
             for (int i = 0; attr[i]; i += 2) {
 
                 std::string attribute = attr[i + 1];
-                if (0 == strcasecmp (attr[i], "path")) {
-                    vscp_trim (attribute);
-                    if (attribute.length ()) {
+                if (0 == strcasecmp(attr[i], "path")) {
+                    vscp_trim(attribute);
+                    if (attribute.length()) {
                         pObj->m_variables.m_dbFilename = attribute;
                     }
                 }
             }
-        } else if ((0 == vscp_strcasecmp (name, "db_vscp_dm"))) {
+        } else if ((0 == vscp_strcasecmp(name, "db_vscp_dm"))) {
             for (int i = 0; attr[i]; i += 2) {
 
                 std::string attribute = attr[i + 1];
-                if (0 == strcasecmp (attr[i], "path")) {
-                    vscp_trim (attribute);
-                    if (attribute.length ()) {
+                if (0 == strcasecmp(attr[i], "path")) {
+                    vscp_trim(attribute);
+                    if (attribute.length()) {
                         pObj->m_dm.m_path_db_vscp_dm = attribute;
                     }
                 }
             }
-        } else if ((0 == vscp_strcasecmp (name, "accesslogfile"))) {
+        } else if ((0 == vscp_strcasecmp(name, "accesslogfile"))) {
             for (int i = 0; attr[i]; i += 2) {
 
                 std::string attribute = attr[i + 1];
-                if (0 == strcasecmp (attr[i], "enable")) {
-                } else if (0 == strcasecmp (attr[i], "path")) {
+                if (0 == strcasecmp(attr[i], "enable")) {
+                } else if (0 == strcasecmp(attr[i], "path")) {
                     // TODO
                 }
             }
@@ -2261,36 +2258,36 @@ startGeneralConfigParser (void *data, const char *name, const char **attr)
 }
 
 static void
-handle_general_config_data (void *data, const char *content, int length)
+handle_general_config_data(void *data, const char *content, int length)
 {
     int prevLength = (NULL == last_general_config_content)
                        ? 0
-                       : strlen (last_general_config_content);
-    char *tmp = (char *)malloc (length + 1 + prevLength);
-    strncpy (tmp, content, length);
+                       : strlen(last_general_config_content);
+    char *tmp = (char *)malloc(length + 1 + prevLength);
+    strncpy(tmp, content, length);
     tmp[length] = '\0';
 
     if (NULL == last_general_config_content) {
-        tmp = (char *)malloc (length + 1);
-        strncpy (tmp, content, length);
+        tmp = (char *)malloc(length + 1);
+        strncpy(tmp, content, length);
         tmp[length]                 = '\0';
         last_general_config_content = tmp;
     } else {
         // Concatenate
-        int newlen = length + 1 + strlen (last_general_config_content);
+        int newlen = length + 1 + strlen(last_general_config_content);
         last_general_config_content =
-          (char *)realloc (last_general_config_content, newlen);
-        strncat (tmp, content, length);
+          (char *)realloc(last_general_config_content, newlen);
+        strncat(tmp, content, length);
         last_general_config_content[newlen] = '\0';
     }
 }
 
 static void
-endGeneralConfigParser (void *data, const char *name)
+endGeneralConfigParser(void *data, const char *name)
 {
     if (NULL != last_general_config_content) {
         // Free the allocated data
-        free (last_general_config_content);
+        free(last_general_config_content);
         last_general_config_content = NULL;
     }
 
@@ -2304,45 +2301,45 @@ endGeneralConfigParser (void *data, const char *name)
 //
 
 bool
-CControlObject::readXMLConfigurationGeneral (const std::string &strcfgfile)
+CControlObject::readXMLConfigurationGeneral(const std::string &strcfgfile)
 {
     FILE *fp;
-    fp = fopen (strcfgfile.c_str (), "r");
+    fp = fopen(strcfgfile.c_str(), "r");
     if (NULL == fp) {
-        syslog (LOG_CRIT,
-                "Failed to open configuration file [%s]",
-                strcfgfile.c_str ());
+        syslog(LOG_CRIT,
+               "Failed to open configuration file [%s]",
+               strcfgfile.c_str());
         return false;
     }
 
-    XML_Parser xmlParser = XML_ParserCreate ("UTF-8");
-    XML_SetUserData (xmlParser, this);
-    XML_SetElementHandler (
+    XML_Parser xmlParser = XML_ParserCreate("UTF-8");
+    XML_SetUserData(xmlParser, this);
+    XML_SetElementHandler(
       xmlParser, startGeneralConfigParser, endGeneralConfigParser);
-    XML_SetCharacterDataHandler (xmlParser, handle_general_config_data);
+    XML_SetCharacterDataHandler(xmlParser, handle_general_config_data);
 
     int bytes_read;
-    void *buf = XML_GetBuffer (xmlParser, XML_BUFF_SIZE);
+    void *buf = XML_GetBuffer(xmlParser, XML_BUFF_SIZE);
     if (NULL == buf) {
-        XML_ParserFree (xmlParser);
-        syslog (LOG_CRIT,
-                "Failed to allocate buffer for configuration file [%s]",
-                strcfgfile.c_str ());
+        XML_ParserFree(xmlParser);
+        syslog(LOG_CRIT,
+               "Failed to allocate buffer for configuration file [%s]",
+               strcfgfile.c_str());
         return false;
     }
 
     size_t file_size = 0;
-    file_size        = fread (buf, sizeof (char), XML_BUFF_SIZE, fp);
+    file_size        = fread(buf, sizeof(char), XML_BUFF_SIZE, fp);
 
-    if (!XML_ParseBuffer (xmlParser, file_size, file_size == 0)) {
-        syslog (LOG_ERR, "Failed parse XML configuration file.");
-        fclose (fp);
-        XML_ParserFree (xmlParser);
+    if (!XML_ParseBuffer(xmlParser, file_size, file_size == 0)) {
+        syslog(LOG_ERR, "Failed parse XML configuration file.");
+        fclose(fp);
+        XML_ParserFree(xmlParser);
         return false;
     }
 
-    fclose (fp);
-    XML_ParserFree (xmlParser);
+    fclose(fp);
+    XML_ParserFree(xmlParser);
 
     return true;
 }
@@ -2354,7 +2351,7 @@ CControlObject::readXMLConfigurationGeneral (const std::string &strcfgfile)
 //
 
 bool
-CControlObject::readConfigurationXML (const std::string &strcfgfile)
+CControlObject::readConfigurationXML(const std::string &strcfgfile)
 {
     /*
     unsigned long val;
@@ -4057,7 +4054,7 @@ xml_table_error:
 //
 
 bool
-CControlObject::isDbTableExist (sqlite3 *db, const std::string &strTblName)
+CControlObject::isDbTableExist(sqlite3 *db, const std::string &strTblName)
 {
     sqlite3_stmt *pSelectStatement = NULL;
     int iResult                    = SQLITE_ERROR;
@@ -4065,29 +4062,29 @@ CControlObject::isDbTableExist (sqlite3 *db, const std::string &strTblName)
 
     // Database file must be open
     if (NULL == db) {
-        syslog (LOG_ERR, "isDbFieldExistent. Database file is not open.");
+        syslog(LOG_ERR, "isDbFieldExistent. Database file is not open.");
         return false;
     }
 
     std::string sql =
       "SELECT name FROM sqlite_master WHERE type='table' AND name='%s'";
-    sql = vscp_string_format (sql, (const char *)strTblName.c_str ());
+    sql = vscp_string_format(sql, (const char *)strTblName.c_str());
 
-    iResult = sqlite3_prepare16_v2 (
-      db, (const char *)sql.c_str (), -1, &pSelectStatement, 0);
+    iResult = sqlite3_prepare16_v2(
+      db, (const char *)sql.c_str(), -1, &pSelectStatement, 0);
 
     if ((iResult == SQLITE_OK) && (pSelectStatement != NULL)) {
 
-        iResult = sqlite3_step (pSelectStatement);
+        iResult = sqlite3_step(pSelectStatement);
 
         // was found?
         if (iResult == SQLITE_ROW) {
             rv = true;
-            sqlite3_clear_bindings (pSelectStatement);
-            sqlite3_reset (pSelectStatement);
+            sqlite3_clear_bindings(pSelectStatement);
+            sqlite3_reset(pSelectStatement);
         }
 
-        iResult = sqlite3_finalize (pSelectStatement);
+        iResult = sqlite3_finalize(pSelectStatement);
     }
 
     return rv;
@@ -4098,9 +4095,9 @@ CControlObject::isDbTableExist (sqlite3 *db, const std::string &strTblName)
 //
 
 bool
-CControlObject::isDbFieldExist (sqlite3 *db,
-                                const std::string &strTblName,
-                                const std::string &strFieldName)
+CControlObject::isDbFieldExist(sqlite3 *db,
+                               const std::string &strTblName,
+                               const std::string &strFieldName)
 {
     bool rv = false;
     sqlite3_stmt *ppStmt;
@@ -4108,40 +4105,40 @@ CControlObject::isDbFieldExist (sqlite3 *db,
 
     // Database file must be open
     if (NULL == db) {
-        syslog (LOG_ERR, "isDbFieldExist. Database file is not open.");
+        syslog(LOG_ERR, "isDbFieldExist. Database file is not open.");
         return false;
     }
 
     std::string sql = "PRAGMA table_info(%s);";
-    sql = vscp_string_format (sql, (const char *)strTblName.c_str ());
+    sql             = vscp_string_format(sql, (const char *)strTblName.c_str());
 
     if (SQLITE_OK !=
-        sqlite3_prepare (
-          m_db_vscp_daemon, (const char *)sql.c_str (), -1, &ppStmt, NULL)) {
-        syslog (LOG_ERR,
-                "isDbFieldExist: Failed to read VSCP settings database - "
-                "prepare query.");
+        sqlite3_prepare(
+          m_db_vscp_daemon, (const char *)sql.c_str(), -1, &ppStmt, NULL)) {
+        syslog(LOG_ERR,
+               "isDbFieldExist: Failed to read VSCP settings database - "
+               "prepare query.");
         return false;
     }
 
-    while (SQLITE_ROW == sqlite3_step (ppStmt)) {
+    while (SQLITE_ROW == sqlite3_step(ppStmt)) {
 
         const unsigned char *p;
 
         // Get column name
-        if (NULL == (p = sqlite3_column_text (ppStmt, 1))) {
+        if (NULL == (p = sqlite3_column_text(ppStmt, 1))) {
             continue;
         }
 
         // database version
-        if (0 == vscp_strcasecmp ((const char *)p,
-                                  (const char *)strFieldName.c_str ())) {
+        if (0 == vscp_strcasecmp((const char *)p,
+                                 (const char *)strFieldName.c_str())) {
             rv = true;
             break;
         }
     }
 
-    sqlite3_finalize (ppStmt);
+    sqlite3_finalize(ppStmt);
 
     return rv;
 }
@@ -4151,35 +4148,35 @@ CControlObject::isDbFieldExist (sqlite3 *db,
 //
 
 bool
-CControlObject::updateConfigurationRecordItem (const std::string &strName,
-                                               const std::string &strValue)
+CControlObject::updateConfigurationRecordItem(const std::string &strName,
+                                              const std::string &strValue)
 {
     char *pErrMsg;
 
     // Database file must be open
     if (NULL == m_db_vscp_daemon) {
-        syslog (LOG_ERR,
-                "Settings update: Update record. Database file is not open.");
+        syslog(LOG_ERR,
+               "Settings update: Update record. Database file is not open.");
         return false;
     }
 
-    pthread_mutex_lock (&m_db_vscp_configMutex);
+    pthread_mutex_lock(&m_db_vscp_configMutex);
 
-    char *sql = sqlite3_mprintf (VSCPDB_CONFIG_UPDATE_ITEM,
-                                 (const char *)strValue.c_str (),
-                                 (const char *)strName.c_str (),
-                                 m_nConfiguration);
+    char *sql = sqlite3_mprintf(VSCPDB_CONFIG_UPDATE_ITEM,
+                                (const char *)strValue.c_str(),
+                                (const char *)strName.c_str(),
+                                m_nConfiguration);
     if (SQLITE_OK !=
-        sqlite3_exec (m_db_vscp_daemon, sql, NULL, NULL, &pErrMsg)) {
-        sqlite3_free (sql);
-        pthread_mutex_unlock (&m_db_vscp_configMutex);
-        syslog (LOG_ERR, "Failed to update setting with error %s.", pErrMsg);
+        sqlite3_exec(m_db_vscp_daemon, sql, NULL, NULL, &pErrMsg)) {
+        sqlite3_free(sql);
+        pthread_mutex_unlock(&m_db_vscp_configMutex);
+        syslog(LOG_ERR, "Failed to update setting with error %s.", pErrMsg);
         return false;
     }
 
-    sqlite3_free (sql);
+    sqlite3_free(sql);
 
-    pthread_mutex_unlock (&m_db_vscp_configMutex);
+    pthread_mutex_unlock(&m_db_vscp_configMutex);
 
     return true;
 }
@@ -4189,8 +4186,8 @@ CControlObject::updateConfigurationRecordItem (const std::string &strName,
 //
 
 bool
-CControlObject::addConfigurationValueToDatabase (const char *pName,
-                                                 const char *pValue)
+CControlObject::addConfigurationValueToDatabase(const char *pName,
+                                                const char *pValue)
 {
     sqlite3_stmt *ppStmt;
     char *pErrMsg = 0;
@@ -4201,11 +4198,11 @@ CControlObject::addConfigurationValueToDatabase (const char *pName,
 
     // Check if the variable is defined already
     //      if it is - just return true
-    psql = sqlite3_mprintf (VSCPDB_CONFIG_FIND_ITEM, pName);
+    psql = sqlite3_mprintf(VSCPDB_CONFIG_FIND_ITEM, pName);
     if (SQLITE_OK !=
-        sqlite3_prepare (m_db_vscp_daemon, psql, -1, &ppStmt, NULL)) {
-        sqlite3_free (psql);
-        syslog (
+        sqlite3_prepare(m_db_vscp_daemon, psql, -1, &ppStmt, NULL)) {
+        sqlite3_free(psql);
+        syslog(
           LOG_ERR,
           "Failed to check if %s = %s is already in configuration database",
           pName,
@@ -4213,34 +4210,34 @@ CControlObject::addConfigurationValueToDatabase (const char *pName,
         return false;
     }
 
-    sqlite3_free (psql);
+    sqlite3_free(psql);
 
-    if (SQLITE_ROW == sqlite3_step (ppStmt)) {
+    if (SQLITE_ROW == sqlite3_step(ppStmt)) {
         return true; // Record is there already
     }
 
-    pthread_mutex_lock (&m_db_vscp_configMutex);
+    pthread_mutex_lock(&m_db_vscp_configMutex);
 
-    syslog (LOG_DEBUG, "Add %s = %s to configuration database", pName, pValue);
+    syslog(LOG_DEBUG, "Add %s = %s to configuration database", pName, pValue);
 
     // Create settings in db
-    psql = sqlite3_mprintf (VSCPDB_CONFIG_INSERT, pName, pValue);
+    psql = sqlite3_mprintf(VSCPDB_CONFIG_INSERT, pName, pValue);
 
     if (SQLITE_OK !=
-        sqlite3_exec (m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg)) {
+        sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg)) {
 
-        sqlite3_free (psql);
-        pthread_mutex_unlock (&m_db_vscp_configMutex);
+        sqlite3_free(psql);
+        pthread_mutex_unlock(&m_db_vscp_configMutex);
 
-        syslog (LOG_ERR,
-                "Inserting new entry into configuration database failed with "
-                "message %s",
-                pErrMsg);
+        syslog(LOG_ERR,
+               "Inserting new entry into configuration database failed with "
+               "message %s",
+               pErrMsg);
         return false;
     }
 
-    sqlite3_free (psql);
-    pthread_mutex_unlock (&m_db_vscp_configMutex);
+    sqlite3_free(psql);
+    pthread_mutex_unlock(&m_db_vscp_configMutex);
     return true;
 }
 
@@ -4249,281 +4246,274 @@ CControlObject::addConfigurationValueToDatabase (const char *pName,
 //
 
 void
-CControlObject::addDefaultConfigValues (void)
+CControlObject::addDefaultConfigValues(void)
 {
     // Add default settings (set as defaults in SQL create expression))
-    addConfigurationValueToDatabase (VSCPDB_CONFIG_NAME_DBVERSION,
-                                     VSCPDB_CONFIG_DEFAULT_DBVERSION);
-    addConfigurationValueToDatabase (VSCPDB_CONFIG_NAME_CLIENTBUFFERSIZE,
-                                     VSCPDB_CONFIG_DEFAULT_CLIENTBUFFERSIZE);
-    addConfigurationValueToDatabase (VSCPDB_CONFIG_NAME_GUID,
-                                     VSCPDB_CONFIG_DEFAULT_GUID);
-    addConfigurationValueToDatabase (VSCPDB_CONFIG_NAME_SERVERNAME,
-                                     VSCPDB_CONFIG_DEFAULT_SERVERNAME);
-    addConfigurationValueToDatabase (VSCPDB_CONFIG_NAME_ANNOUNCE_ADDR,
-                                     VSCPDB_CONFIG_DEFAULT_ANNOUNCE_ADDR);
-    addConfigurationValueToDatabase (VSCPDB_CONFIG_NAME_ANNOUNCE_TTL,
-                                     VSCPDB_CONFIG_DEFAULT_ANNOUNCE_TTL);
-    addConfigurationValueToDatabase (VSCPDB_CONFIG_NAME_PATH_DB_DATA,
-                                     VSCPDB_CONFIG_DEFAULT_PATH_DB_DATA);
+    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_DBVERSION,
+                                    VSCPDB_CONFIG_DEFAULT_DBVERSION);
+    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_CLIENTBUFFERSIZE,
+                                    VSCPDB_CONFIG_DEFAULT_CLIENTBUFFERSIZE);
+    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_GUID,
+                                    VSCPDB_CONFIG_DEFAULT_GUID);
+    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_SERVERNAME,
+                                    VSCPDB_CONFIG_DEFAULT_SERVERNAME);
+    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_ANNOUNCE_ADDR,
+                                    VSCPDB_CONFIG_DEFAULT_ANNOUNCE_ADDR);
+    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_ANNOUNCE_TTL,
+                                    VSCPDB_CONFIG_DEFAULT_ANNOUNCE_TTL);
+    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_PATH_DB_DATA,
+                                    VSCPDB_CONFIG_DEFAULT_PATH_DB_DATA);
 
     // UDP
-    addConfigurationValueToDatabase (VSCPDB_CONFIG_NAME_UDP_ENABLE,
-                                     VSCPDB_CONFIG_DEFAULT_UDP_ENABLE);
-    addConfigurationValueToDatabase (VSCPDB_CONFIG_NAME_UDP_ADDR,
-                                     VSCPDB_CONFIG_DEFAULT_UDP_ADDR);
-    addConfigurationValueToDatabase (VSCPDB_CONFIG_NAME_UDP_USER,
-                                     VSCPDB_CONFIG_DEFAULT_UDP_USER);
-    addConfigurationValueToDatabase (VSCPDB_CONFIG_NAME_UDP_PASSWORD,
-                                     VSCPDB_CONFIG_DEFAULT_UDP_PASSWORD);
-    addConfigurationValueToDatabase (VSCPDB_CONFIG_NAME_UDP_UNSECURE_ENABLE,
-                                     VSCPDB_CONFIG_DEFAULT_UDP_UNSECURE_ENABLE);
-    addConfigurationValueToDatabase (VSCPDB_CONFIG_NAME_UDP_FILTER,
-                                     VSCPDB_CONFIG_DEFAULT_UDP_FILTER);
-    addConfigurationValueToDatabase (VSCPDB_CONFIG_NAME_UDP_MASK,
-                                     VSCPDB_CONFIG_DEFAULT_UDP_MASK);
-    addConfigurationValueToDatabase (VSCPDB_CONFIG_NAME_UDP_GUID,
-                                     VSCPDB_CONFIG_DEFAULT_UDP_GUID);
-    addConfigurationValueToDatabase (VSCPDB_CONFIG_NAME_UDP_ACK_ENABLE,
-                                     VSCPDB_CONFIG_DEFAULT_UDP_ACK_ENABLE);
-    addConfigurationValueToDatabase (VSCPDB_CONFIG_NAME_MULTICAST_ENABLE,
-                                     VSCPDB_CONFIG_DEFAULT_MULTICAST_ENABLE);
+    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_UDP_ENABLE,
+                                    VSCPDB_CONFIG_DEFAULT_UDP_ENABLE);
+    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_UDP_ADDR,
+                                    VSCPDB_CONFIG_DEFAULT_UDP_ADDR);
+    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_UDP_USER,
+                                    VSCPDB_CONFIG_DEFAULT_UDP_USER);
+    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_UDP_PASSWORD,
+                                    VSCPDB_CONFIG_DEFAULT_UDP_PASSWORD);
+    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_UDP_UNSECURE_ENABLE,
+                                    VSCPDB_CONFIG_DEFAULT_UDP_UNSECURE_ENABLE);
+    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_UDP_FILTER,
+                                    VSCPDB_CONFIG_DEFAULT_UDP_FILTER);
+    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_UDP_MASK,
+                                    VSCPDB_CONFIG_DEFAULT_UDP_MASK);
+    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_UDP_GUID,
+                                    VSCPDB_CONFIG_DEFAULT_UDP_GUID);
+    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_UDP_ACK_ENABLE,
+                                    VSCPDB_CONFIG_DEFAULT_UDP_ACK_ENABLE);
+    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_MULTICAST_ENABLE,
+                                    VSCPDB_CONFIG_DEFAULT_MULTICAST_ENABLE);
 
     // TCP/IP
-    addConfigurationValueToDatabase (VSCPDB_CONFIG_NAME_TCPIP_ADDR,
-                                     VSCPDB_CONFIG_DEFAULT_TCPIP_ADDR);
-    addConfigurationValueToDatabase (VSCPDB_CONFIG_NAME_TCPIP_ENCRYPTION,
-                                     VSCPDB_CONFIG_DEFAULT_TCPIP_ENCRYPTION);
-    addConfigurationValueToDatabase (
+    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_TCPIP_ADDR,
+                                    VSCPDB_CONFIG_DEFAULT_TCPIP_ADDR);
+    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_TCPIP_ENCRYPTION,
+                                    VSCPDB_CONFIG_DEFAULT_TCPIP_ENCRYPTION);
+    addConfigurationValueToDatabase(
       VSCPDB_CONFIG_NAME_TCPIP_SSL_CERTIFICATE,
       VSCPDB_CONFIG_DEFAULT_TCPIP_SSL_CERTIFICATE);
-    addConfigurationValueToDatabase (
+    addConfigurationValueToDatabase(
       VSCPDB_CONFIG_NAME_TCPIP_SSL_CERTIFICAT_CHAIN,
       VSCPDB_CONFIG_DEFAULT_TCPIP_SSL_CERTIFICAT_CHAIN);
-    addConfigurationValueToDatabase (
+    addConfigurationValueToDatabase(
       VSCPDB_CONFIG_NAME_TCPIP_SSL_VERIFY_PEER,
       VSCPDB_CONFIG_DEFAULT_TCPIP_SSL_VERIFY_PEER);
-    addConfigurationValueToDatabase (VSCPDB_CONFIG_NAME_TCPIP_SSL_CA_PATH,
-                                     VSCPDB_CONFIG_DEFAULT_TCPIP_SSL_CA_PATH);
-    addConfigurationValueToDatabase (VSCPDB_CONFIG_NAME_TCPIP_SSL_CA_FILE,
-                                     VSCPDB_CONFIG_DEFAULT_TCPIP_SSL_CA_FILE);
-    addConfigurationValueToDatabase (
+    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_TCPIP_SSL_CA_PATH,
+                                    VSCPDB_CONFIG_DEFAULT_TCPIP_SSL_CA_PATH);
+    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_TCPIP_SSL_CA_FILE,
+                                    VSCPDB_CONFIG_DEFAULT_TCPIP_SSL_CA_FILE);
+    addConfigurationValueToDatabase(
       VSCPDB_CONFIG_NAME_TCPIP_SSL_VERIFY_DEPTH,
       VSCPDB_CONFIG_DEFAULT_TCPIP_SSL_VERIFY_DEPTH);
-    addConfigurationValueToDatabase (
+    addConfigurationValueToDatabase(
       VSCPDB_CONFIG_NAME_TCPIP_SSL_DEFAULT_VERIFY_PATHS,
       VSCPDB_CONFIG_DEFAULT_TCPIP_SSL_DEFAULT_VERIFY_PATHS);
-    addConfigurationValueToDatabase (
+    addConfigurationValueToDatabase(
       VSCPDB_CONFIG_NAME_TCPIP_SSL_CHIPHER_LIST,
       VSCPDB_CONFIG_DEFAULT_TCPIP_SSL_CHIPHER_LIST);
-    addConfigurationValueToDatabase (
+    addConfigurationValueToDatabase(
       VSCPDB_CONFIG_NAME_TCPIP_SSL_PROTOCOL_VERSION,
       VSCPDB_CONFIG_DEFAULT_TCPIP_SSL_PROTOCOL_VERSION);
-    addConfigurationValueToDatabase (
+    addConfigurationValueToDatabase(
       VSCPDB_CONFIG_NAME_TCPIP_SSL_SHORT_TRUST,
       VSCPDB_CONFIG_DEFAULT_TCPIP_SSL_SHORT_TRUST);
 
     // DM
-    addConfigurationValueToDatabase (VSCPDB_CONFIG_NAME_DM_PATH_DB,
-                                     VSCPDB_CONFIG_DEFAULT_DM_PATH_DB);
-    addConfigurationValueToDatabase (VSCPDB_CONFIG_NAME_DM_PATH_XML,
-                                     VSCPDB_CONFIG_DEFAULT_DM_PATH_XML);
-    addConfigurationValueToDatabase (VSCPDB_CONFIG_NAME_DM_ALLOW_XML_SAVE,
-                                     VSCPDB_CONFIG_DEFAULT_DM_ALLOW_XML_SAVE);
+    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_DM_PATH_DB,
+                                    VSCPDB_CONFIG_DEFAULT_DM_PATH_DB);
+    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_DM_PATH_XML,
+                                    VSCPDB_CONFIG_DEFAULT_DM_PATH_XML);
+    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_DM_ALLOW_XML_SAVE,
+                                    VSCPDB_CONFIG_DEFAULT_DM_ALLOW_XML_SAVE);
 
     // Variables
-    addConfigurationValueToDatabase (VSCPDB_CONFIG_NAME_VARIABLES_PATH_DB,
-                                     VSCPDB_CONFIG_DEFAULT_VARIABLES_PATH_DB);
-    addConfigurationValueToDatabase (VSCPDB_CONFIG_NAME_VARIABLES_PATH_XML,
-                                     VSCPDB_CONFIG_DEFAULT_VARIABLES_PATH_XML);
+    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_VARIABLES_PATH_DB,
+                                    VSCPDB_CONFIG_DEFAULT_VARIABLES_PATH_DB);
+    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_VARIABLES_PATH_XML,
+                                    VSCPDB_CONFIG_DEFAULT_VARIABLES_PATH_XML);
 
     // WEB server
-    addConfigurationValueToDatabase (VSCPDB_CONFIG_NAME_WEB_ENABLE,
-                                     VSCPDB_CONFIG_DEFAULT_WEB_ENABLE);
-    addConfigurationValueToDatabase (VSCPDB_CONFIG_NAME_WEB_DOCUMENT_ROOT,
-                                     VSCPDB_CONFIG_DEFAULT_WEB_DOCUMENT_ROOT);
-    addConfigurationValueToDatabase (VSCPDB_CONFIG_NAME_WEB_LISTENING_PORTS,
-                                     VSCPDB_CONFIG_DEFAULT_WEB_LISTENING_PORTS);
-    addConfigurationValueToDatabase (VSCPDB_CONFIG_NAME_WEB_INDEX_FILES,
-                                     VSCPDB_CONFIG_DEFAULT_WEB_INDEX_FILES);
-    addConfigurationValueToDatabase (
+    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_WEB_ENABLE,
+                                    VSCPDB_CONFIG_DEFAULT_WEB_ENABLE);
+    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_WEB_DOCUMENT_ROOT,
+                                    VSCPDB_CONFIG_DEFAULT_WEB_DOCUMENT_ROOT);
+    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_WEB_LISTENING_PORTS,
+                                    VSCPDB_CONFIG_DEFAULT_WEB_LISTENING_PORTS);
+    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_WEB_INDEX_FILES,
+                                    VSCPDB_CONFIG_DEFAULT_WEB_INDEX_FILES);
+    addConfigurationValueToDatabase(
       VSCPDB_CONFIG_NAME_WEB_AUTHENTICATION_DOMAIN,
       VSCPDB_CONFIG_DEFAULT_WEB_AUTHENTICATION_DOMAIN);
-    addConfigurationValueToDatabase (
+    addConfigurationValueToDatabase(
       VSCPDB_CONFIG_NAME_WEB_ENABLE_AUTH_DOMAIN_CHECK,
       VSCPDB_CONFIG_DEFAULT_WEB_ENABLE_AUTH_DOMAIN_CHECK);
-    addConfigurationValueToDatabase (VSCPDB_CONFIG_NAME_WEB_SSL_CERTIFICATE,
-                                     VSCPDB_CONFIG_DEFAULT_WEB_SSL_CERTIFICATE);
-    addConfigurationValueToDatabase (
+    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_WEB_SSL_CERTIFICATE,
+                                    VSCPDB_CONFIG_DEFAULT_WEB_SSL_CERTIFICATE);
+    addConfigurationValueToDatabase(
       VSCPDB_CONFIG_NAME_WEB_SSL_CERTIFICAT_CHAIN,
       VSCPDB_CONFIG_DEFAULT_WEB_SSL_CERTIFICAT_CHAIN);
-    addConfigurationValueToDatabase (VSCPDB_CONFIG_NAME_WEB_SSL_VERIFY_PEER,
-                                     VSCPDB_CONFIG_DEFAULT_WEB_SSL_VERIFY_PEER);
-    addConfigurationValueToDatabase (VSCPDB_CONFIG_NAME_WEB_SSL_CA_PATH,
-                                     VSCPDB_CONFIG_DEFAULT_WEB_SSL_CA_PATH);
-    addConfigurationValueToDatabase (VSCPDB_CONFIG_NAME_WEB_SSL_CA_FILE,
-                                     VSCPDB_CONFIG_DEFAULT_WEB_SSL_CA_FILE);
-    addConfigurationValueToDatabase (
-      VSCPDB_CONFIG_NAME_WEB_SSL_VERIFY_DEPTH,
-      VSCPDB_CONFIG_DEFAULT_WEB_SSL_VERIFY_DEPTH);
-    addConfigurationValueToDatabase (
+    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_WEB_SSL_VERIFY_PEER,
+                                    VSCPDB_CONFIG_DEFAULT_WEB_SSL_VERIFY_PEER);
+    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_WEB_SSL_CA_PATH,
+                                    VSCPDB_CONFIG_DEFAULT_WEB_SSL_CA_PATH);
+    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_WEB_SSL_CA_FILE,
+                                    VSCPDB_CONFIG_DEFAULT_WEB_SSL_CA_FILE);
+    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_WEB_SSL_VERIFY_DEPTH,
+                                    VSCPDB_CONFIG_DEFAULT_WEB_SSL_VERIFY_DEPTH);
+    addConfigurationValueToDatabase(
       VSCPDB_CONFIG_NAME_WEB_SSL_DEFAULT_VERIFY_PATHS,
       VSCPDB_CONFIG_DEFAULT_WEB_SSL_DEFAULT_VERIFY_PATHS);
-    addConfigurationValueToDatabase (
-      VSCPDB_CONFIG_NAME_WEB_SSL_CHIPHER_LIST,
-      VSCPDB_CONFIG_DEFAULT_WEB_SSL_CHIPHER_LIST);
-    addConfigurationValueToDatabase (
+    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_WEB_SSL_CHIPHER_LIST,
+                                    VSCPDB_CONFIG_DEFAULT_WEB_SSL_CHIPHER_LIST);
+    addConfigurationValueToDatabase(
       VSCPDB_CONFIG_NAME_WEB_SSL_PROTOCOL_VERSION,
       VSCPDB_CONFIG_DEFAULT_WEB_SSL_PROTOCOL_VERSION);
-    addConfigurationValueToDatabase (VSCPDB_CONFIG_NAME_WEB_SSL_SHORT_TRUST,
-                                     VSCPDB_CONFIG_DEFAULT_WEB_SSL_SHORT_TRUST);
-    addConfigurationValueToDatabase (VSCPDB_CONFIG_NAME_WEB_CGI_PATTERN,
-                                     VSCPDB_CONFIG_DEFAULT_WEB_CGI_PATTERN);
-    addConfigurationValueToDatabase (VSCPDB_CONFIG_NAME_WEB_CGI_INTERPRETER,
-                                     VSCPDB_CONFIG_DEFAULT_WEB_CGI_INTERPRETER);
-    addConfigurationValueToDatabase (VSCPDB_CONFIG_NAME_WEB_CGI_ENVIRONMENT,
-                                     VSCPDB_CONFIG_DEFAULT_WEB_CGI_ENVIRONMENT);
-    addConfigurationValueToDatabase (VSCPDB_CONFIG_NAME_WEB_PROTECT_URI,
-                                     VSCPDB_CONFIG_DEFAULT_WEB_PROTECT_URI);
-    addConfigurationValueToDatabase (VSCPDB_CONFIG_NAME_WEB_TROTTLE,
-                                     VSCPDB_CONFIG_DEFAULT_WEB_TROTTLE);
-    addConfigurationValueToDatabase (
+    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_WEB_SSL_SHORT_TRUST,
+                                    VSCPDB_CONFIG_DEFAULT_WEB_SSL_SHORT_TRUST);
+    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_WEB_CGI_PATTERN,
+                                    VSCPDB_CONFIG_DEFAULT_WEB_CGI_PATTERN);
+    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_WEB_CGI_INTERPRETER,
+                                    VSCPDB_CONFIG_DEFAULT_WEB_CGI_INTERPRETER);
+    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_WEB_CGI_ENVIRONMENT,
+                                    VSCPDB_CONFIG_DEFAULT_WEB_CGI_ENVIRONMENT);
+    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_WEB_PROTECT_URI,
+                                    VSCPDB_CONFIG_DEFAULT_WEB_PROTECT_URI);
+    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_WEB_TROTTLE,
+                                    VSCPDB_CONFIG_DEFAULT_WEB_TROTTLE);
+    addConfigurationValueToDatabase(
       VSCPDB_CONFIG_NAME_WEB_ENABLE_DIRECTORY_LISTING,
       VSCPDB_CONFIG_DEFAULT_WEB_ENABLE_DIRECTORY_LISTING);
-    addConfigurationValueToDatabase (
+    addConfigurationValueToDatabase(
       VSCPDB_CONFIG_NAME_WEB_ENABLE_KEEP_ALIVE,
       VSCPDB_CONFIG_DEFAULT_WEB_ENABLE_KEEP_ALIVE);
-    addConfigurationValueToDatabase (
+    addConfigurationValueToDatabase(
       VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_LIST,
       VSCPDB_CONFIG_DEFAULT_WEB_ACCESS_CONTROL_LIST);
-    addConfigurationValueToDatabase (
-      VSCPDB_CONFIG_NAME_WEB_EXTRA_MIME_TYPES,
-      VSCPDB_CONFIG_DEFAULT_WEB_EXTRA_MIME_TYPES);
-    addConfigurationValueToDatabase (VSCPDB_CONFIG_NAME_WEB_NUM_THREADS,
-                                     VSCPDB_CONFIG_DEFAULT_WEB_NUM_THREADS);
-    addConfigurationValueToDatabase (
+    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_WEB_EXTRA_MIME_TYPES,
+                                    VSCPDB_CONFIG_DEFAULT_WEB_EXTRA_MIME_TYPES);
+    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_WEB_NUM_THREADS,
+                                    VSCPDB_CONFIG_DEFAULT_WEB_NUM_THREADS);
+    addConfigurationValueToDatabase(
       VSCPDB_CONFIG_NAME_WEB_HIDE_FILE_PATTERNS,
       VSCPDB_CONFIG_DEFAULT_WEB_HIDE_FILE_PATTERNS);
-    addConfigurationValueToDatabase (VSCPDB_CONFIG_NAME_WEB_RUN_AS_USER,
-                                     VSCPDB_CONFIG_DEFAULT_WEB_RUN_AS_USER);
-    addConfigurationValueToDatabase (
+    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_WEB_RUN_AS_USER,
+                                    VSCPDB_CONFIG_DEFAULT_WEB_RUN_AS_USER);
+    addConfigurationValueToDatabase(
       VSCPDB_CONFIG_NAME_WEB_URL_REWRITE_PATTERNS,
       VSCPDB_CONFIG_DEFAULT_WEB_URL_REWRITE_PATTERNS);
-    addConfigurationValueToDatabase (
+    addConfigurationValueToDatabase(
       VSCPDB_CONFIG_NAME_WEB_REQUEST_TIMEOUT_MS,
       VSCPDB_CONFIG_DEFAULT_WEB_REQUEST_TIMEOUT_MS);
-    addConfigurationValueToDatabase (
+    addConfigurationValueToDatabase(
       VSCPDB_CONFIG_NAME_WEB_LINGER_TIMEOUT_MS,
       VSCPDB_CONFIG_DEFAULT_WEB_LINGER_TIMEOUT_MS);
-    addConfigurationValueToDatabase (VSCPDB_CONFIG_NAME_WEB_DECODE_URL,
-                                     VSCPDB_CONFIG_DEFAULT_WEB_DECODE_URL);
-    addConfigurationValueToDatabase (VSCPDB_CONFIG_NAME_WEB_GLOBAL_AUTHFILE,
-                                     VSCPDB_CONFIG_DEFAULT_WEB_GLOBAL_AUTHFILE);
-    addConfigurationValueToDatabase (
+    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_WEB_DECODE_URL,
+                                    VSCPDB_CONFIG_DEFAULT_WEB_DECODE_URL);
+    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_WEB_GLOBAL_AUTHFILE,
+                                    VSCPDB_CONFIG_DEFAULT_WEB_GLOBAL_AUTHFILE);
+    addConfigurationValueToDatabase(
       VSCPDB_CONFIG_NAME_WEB_PER_DIRECTORY_AUTH_FILE,
       VSCPDB_CONFIG_DEFAULT_WEB_PER_DIRECTORY_AUTH_FILE);
-    addConfigurationValueToDatabase (VSCPDB_CONFIG_NAME_WEB_SSI_PATTERNS,
-                                     VSCPDB_CONFIG_DEFAULT_WEB_SSI_PATTERNS);
-    addConfigurationValueToDatabase (
+    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_WEB_SSI_PATTERNS,
+                                    VSCPDB_CONFIG_DEFAULT_WEB_SSI_PATTERNS);
+    addConfigurationValueToDatabase(
       VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_ALLOW_ORIGIN,
       VSCPDB_CONFIG_DEFAULT_WEB_ACCESS_CONTROL_ALLOW_ORIGIN);
-    addConfigurationValueToDatabase (
+    addConfigurationValueToDatabase(
       VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_ALLOW_METHODS,
       VSCPDB_CONFIG_DEFAULT_WEB_ACCESS_CONTROL_ALLOW_METHODS);
-    addConfigurationValueToDatabase (
+    addConfigurationValueToDatabase(
       VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_ALLOW_HEADERS,
       VSCPDB_CONFIG_DEFAULT_WEB_ACCESS_CONTROL_ALLOW_HEADERS);
-    addConfigurationValueToDatabase (VSCPDB_CONFIG_NAME_WEB_ERROR_PAGES,
-                                     VSCPDB_CONFIG_DEFAULT_WEB_ERROR_PAGES);
-    addConfigurationValueToDatabase (VSCPDB_CONFIG_NAME_WEB_TCP_NO_DELAY,
-                                     VSCPDB_CONFIG_DEFAULT_WEB_TCP_NO_DELAY);
-    addConfigurationValueToDatabase (
+    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_WEB_ERROR_PAGES,
+                                    VSCPDB_CONFIG_DEFAULT_WEB_ERROR_PAGES);
+    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_WEB_TCP_NO_DELAY,
+                                    VSCPDB_CONFIG_DEFAULT_WEB_TCP_NO_DELAY);
+    addConfigurationValueToDatabase(
       VSCPDB_CONFIG_NAME_WEB_STATIC_FILE_MAX_AGE,
       VSCPDB_CONFIG_DEFAULT_WEB_STATIC_FILE_MAX_AGE);
-    addConfigurationValueToDatabase (
+    addConfigurationValueToDatabase(
       VSCPDB_CONFIG_NAME_WEB_STRICT_TRANSPORT_SECURITY_MAX_AGE,
       VSCPDB_CONFIG_DEFAULT_WEB_STRICT_TRANSPORT_SECURITY_MAX_AGE);
-    addConfigurationValueToDatabase (
+    addConfigurationValueToDatabase(
       VSCPDB_CONFIG_NAME_WEB_ALLOW_SENDFILE_CALL,
       VSCPDB_CONFIG_DEFAULT_WEB_ALLOW_SENDFILE_CALL);
-    addConfigurationValueToDatabase (
+    addConfigurationValueToDatabase(
       VSCPDB_CONFIG_NAME_WEB_ADDITIONAL_HEADERS,
       VSCPDB_CONFIG_DEFAULT_WEB_ADDITIONAL_HEADERS);
-    addConfigurationValueToDatabase (
-      VSCPDB_CONFIG_NAME_WEB_MAX_REQUEST_SIZE,
-      VSCPDB_CONFIG_DEFAULT_WEB_MAX_REQUEST_SIZE);
-    addConfigurationValueToDatabase (
+    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_WEB_MAX_REQUEST_SIZE,
+                                    VSCPDB_CONFIG_DEFAULT_WEB_MAX_REQUEST_SIZE);
+    addConfigurationValueToDatabase(
       VSCPDB_CONFIG_NAME_WEB_ALLOW_INDEX_SCRIPT_RESOURCE,
       VSCPDB_CONFIG_DEFAULT_WEB_ALLOW_INDEX_SCRIPT_RESOURCE);
-    addConfigurationValueToDatabase (
+    addConfigurationValueToDatabase(
       VSCPDB_CONFIG_NAME_WEB_DUKTAPE_SCRIPT_PATTERN,
       VSCPDB_CONFIG_DEFAULT_WEB_DUKTAPE_SCRIPT_PATTERN);
-    addConfigurationValueToDatabase (
-      VSCPDB_CONFIG_NAME_WEB_LUA_PRELOAD_FILE,
-      VSCPDB_CONFIG_DEFAULT_WEB_LUA_PRELOAD_FILE);
-    addConfigurationValueToDatabase (
+    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_WEB_LUA_PRELOAD_FILE,
+                                    VSCPDB_CONFIG_DEFAULT_WEB_LUA_PRELOAD_FILE);
+    addConfigurationValueToDatabase(
       VSCPDB_CONFIG_NAME_WEB_LUA_SCRIPT_PATTERN,
       VSCPDB_CONFIG_DEFAULT_WEB_LUA_SCRIPT_PATTERN);
-    addConfigurationValueToDatabase (
+    addConfigurationValueToDatabase(
       VSCPDB_CONFIG_NAME_WEB_LUA_SERVER_PAGE_PATTERN,
       VSCPDB_CONFIG_DEFAULT_WEB_LUA_SERVER_PAGE_PATTERN);
-    addConfigurationValueToDatabase (
+    addConfigurationValueToDatabase(
       VSCPDB_CONFIG_NAME_WEB_LUA_WEBSOCKET_PATTERN,
       VSCPDB_CONFIG_DEFAULT_WEB_LUA_WEBSOCKET_PATTERN);
-    addConfigurationValueToDatabase (
+    addConfigurationValueToDatabase(
       VSCPDB_CONFIG_NAME_WEB_LUA_BACKGROUND_SCRIPT,
       VSCPDB_CONFIG_DEFAULT_WEB_LUA_BACKGROUND_SCRIPT);
-    addConfigurationValueToDatabase (
+    addConfigurationValueToDatabase(
       VSCPDB_CONFIG_NAME_WEB_LUA_BACKGROUND_SCRIPT_PARAMS,
       VSCPDB_CONFIG_DEFAULT_WEB_LUA_BACKGROUND_SCRIPT_PARAMS);
 
     // Websockets
-    addConfigurationValueToDatabase (VSCPDB_CONFIG_NAME_WEBSOCKET_ENABLE,
-                                     VSCPDB_CONFIG_DEFAULT_WEBSOCKET_ENABLE);
-    addConfigurationValueToDatabase (
+    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_WEBSOCKET_ENABLE,
+                                    VSCPDB_CONFIG_DEFAULT_WEBSOCKET_ENABLE);
+    addConfigurationValueToDatabase(
       VSCPDB_CONFIG_NAME_WEBSOCKET_DOCUMENT_ROOT,
       VSCPDB_CONFIG_DEFAULT_WEBSOCKET_DOCUMENT_ROOT);
-    addConfigurationValueToDatabase (
-      VSCPDB_CONFIG_NAME_WEBSOCKET_TIMEOUT_MS,
-      VSCPDB_CONFIG_DEFAULT_WEBSOCKET_TIMEOUT_MS);
+    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_WEBSOCKET_TIMEOUT_MS,
+                                    VSCPDB_CONFIG_DEFAULT_WEBSOCKET_TIMEOUT_MS);
 
     // Automation
-    addConfigurationValueToDatabase (VSCPDB_CONFIG_NAME_AUTOMATION_ENABLE,
-                                     VSCPDB_CONFIG_DEFAULT_AUTOMATION_ENABLE);
-    addConfigurationValueToDatabase (VSCPDB_CONFIG_NAME_AUTOMATION_ZONE,
-                                     VSCPDB_CONFIG_DEFAULT_AUTOMATION_ZONE);
-    addConfigurationValueToDatabase (VSCPDB_CONFIG_NAME_AUTOMATION_SUBZONE,
-                                     VSCPDB_CONFIG_DEFAULT_AUTOMATION_SUBZONE);
-    addConfigurationValueToDatabase (
-      VSCPDB_CONFIG_NAME_AUTOMATION_LONGITUDE,
-      VSCPDB_CONFIG_DEFAULT_AUTOMATION_LONGITUDE);
-    addConfigurationValueToDatabase (VSCPDB_CONFIG_NAME_AUTOMATION_LATITUDE,
-                                     VSCPDB_CONFIG_DEFAULT_AUTOMATION_LATITUDE);
-    addConfigurationValueToDatabase (
+    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_AUTOMATION_ENABLE,
+                                    VSCPDB_CONFIG_DEFAULT_AUTOMATION_ENABLE);
+    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_AUTOMATION_ZONE,
+                                    VSCPDB_CONFIG_DEFAULT_AUTOMATION_ZONE);
+    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_AUTOMATION_SUBZONE,
+                                    VSCPDB_CONFIG_DEFAULT_AUTOMATION_SUBZONE);
+    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_AUTOMATION_LONGITUDE,
+                                    VSCPDB_CONFIG_DEFAULT_AUTOMATION_LONGITUDE);
+    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_AUTOMATION_LATITUDE,
+                                    VSCPDB_CONFIG_DEFAULT_AUTOMATION_LATITUDE);
+    addConfigurationValueToDatabase(
       VSCPDB_CONFIG_NAME_AUTOMATION_SUNRISE_ENABLE,
       VSCPDB_CONFIG_DEFAULT_AUTOMATION_SUNRISE_ENABLE);
-    addConfigurationValueToDatabase (
+    addConfigurationValueToDatabase(
       VSCPDB_CONFIG_NAME_AUTOMATION_SUNSET_ENABLE,
       VSCPDB_CONFIG_DEFAULT_AUTOMATION_SUNSET_ENABLE);
-    addConfigurationValueToDatabase (
+    addConfigurationValueToDatabase(
       VSCPDB_CONFIG_NAME_AUTOMATION_SUNSET_TWILIGHT_ENABLE,
       VSCPDB_CONFIG_DEFAULT_AUTOMATION_SUNSET_TWILIGHT_ENABLE);
-    addConfigurationValueToDatabase (
+    addConfigurationValueToDatabase(
       VSCPDB_CONFIG_NAME_AUTOMATION_SUNRISE_TWILIGHT_ENABLE,
       VSCPDB_CONFIG_DEFAULT_AUTOMATION_SUNRISE_TWILIGHT_ENABLE);
-    addConfigurationValueToDatabase (
+    addConfigurationValueToDatabase(
       VSCPDB_CONFIG_NAME_AUTOMATION_SEGMENT_CTRL_ENABLE,
       VSCPDB_CONFIG_DEFAULT_AUTOMATION_SEGMENT_CTRL_ENABLE);
-    addConfigurationValueToDatabase (
+    addConfigurationValueToDatabase(
       VSCPDB_CONFIG_NAME_AUTOMATION_SEGMENT_CTRL_INTERVAL,
       VSCPDB_CONFIG_DEFAULT_AUTOMATION_SEGMENT_CTRL_INTERVAL);
-    addConfigurationValueToDatabase (
+    addConfigurationValueToDatabase(
       VSCPDB_CONFIG_NAME_AUTOMATION_HEARTBEAT_ENABLE,
       VSCPDB_CONFIG_DEFAULT_AUTOMATION_HEARTBEAT_ENABLE);
-    addConfigurationValueToDatabase (
+    addConfigurationValueToDatabase(
       VSCPDB_CONFIG_NAME_AUTOMATION_CAPABILITIES_ENABLE,
       VSCPDB_CONFIG_DEFAULT_AUTOMATION_CAPABILITIES_ENABLE);
-    addConfigurationValueToDatabase (
+    addConfigurationValueToDatabase(
       VSCPDB_CONFIG_NAME_AUTOMATION_CAPABILITIES_INTERVAL,
       VSCPDB_CONFIG_DEFAULT_AUTOMATION_CAPABILITIES_INTERVAL);
 }
@@ -4536,43 +4526,43 @@ CControlObject::addDefaultConfigValues (void)
 //
 
 bool
-CControlObject::doCreateConfigurationTable (void)
+CControlObject::doCreateConfigurationTable(void)
 {
     char *pErrMsg = 0;
     const char *psql;
 
-    syslog (LOG_INFO, "Creating settings database.");
+    syslog(LOG_INFO, "Creating settings database.");
 
     // Check if database is open
     if (NULL == m_db_vscp_daemon) return false;
 
-    pthread_mutex_lock (&m_db_vscp_configMutex);
+    pthread_mutex_lock(&m_db_vscp_configMutex);
 
     // Create settings db
     psql = VSCPDB_CONFIG_CREATE;
     if (SQLITE_OK !=
-        sqlite3_exec (m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg)) {
-        syslog (LOG_ERR,
-                "Creation of the VSCP settings database failed with message %s",
-                pErrMsg);
+        sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg)) {
+        syslog(LOG_ERR,
+               "Creation of the VSCP settings database failed with message %s",
+               pErrMsg);
         return false;
     }
 
     // Create name index
     psql = VSCPDB_CONFIG_CREATE_INDEX;
     if (SQLITE_OK !=
-        sqlite3_exec (m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg)) {
-        pthread_mutex_unlock (&m_db_vscp_configMutex);
-        syslog (LOG_ERR,
-                "Creation of the VSCP settings index failed with message %s",
-                pErrMsg);
+        sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg)) {
+        pthread_mutex_unlock(&m_db_vscp_configMutex);
+        syslog(LOG_ERR,
+               "Creation of the VSCP settings index failed with message %s",
+               pErrMsg);
         return false;
     }
 
-    syslog (LOG_INFO, "Writing default configuration database content.");
-    addDefaultConfigValues ();
+    syslog(LOG_INFO, "Writing default configuration database content.");
+    addDefaultConfigValues();
 
-    pthread_mutex_unlock (&m_db_vscp_configMutex);
+    pthread_mutex_unlock(&m_db_vscp_configMutex);
 
     return true;
 }
@@ -4585,7 +4575,7 @@ CControlObject::doCreateConfigurationTable (void)
 //
 
 bool
-CControlObject::readConfigurationDB (void)
+CControlObject::readConfigurationDB(void)
 {
     char *pErrMsg    = 0;
     const char *psql = VSCPDB_CONFIG_FIND_ALL;
@@ -4594,313 +4584,312 @@ CControlObject::readConfigurationDB (void)
 
     // Check if database is open
     if (NULL == m_db_vscp_daemon) {
-        syslog (LOG_ERR,
-                "dbReadConfiguration: Failed to read VSCP settings database "
-                "- Database is not open.");
+        syslog(LOG_ERR,
+               "dbReadConfiguration: Failed to read VSCP settings database "
+               "- Database is not open.");
         return false;
     }
 
     if (SQLITE_OK !=
-        sqlite3_prepare (m_db_vscp_daemon, psql, -1, &ppStmt, NULL)) {
-        syslog (LOG_ERR,
-                "dbReadConfiguration: Failed to read VSCP settings database "
-                "- prepare query.");
+        sqlite3_prepare(m_db_vscp_daemon, psql, -1, &ppStmt, NULL)) {
+        syslog(LOG_ERR,
+               "dbReadConfiguration: Failed to read VSCP settings database "
+               "- prepare query.");
         return false;
     }
 
-    while (SQLITE_ROW == sqlite3_step (ppStmt)) {
+    while (SQLITE_ROW == sqlite3_step(ppStmt)) {
 
         const unsigned char *pName  = NULL;
         const unsigned char *pValue = NULL;
 
-        if (NULL == (pName = sqlite3_column_text (
-                       ppStmt, VSCPDB_ORDINAL_CONFIG_NAME))) {
-            syslog (LOG_ERR,
-                    "dbReadConfiguration: Failed to read 'name' "
-                    "from settings record.");
+        if (NULL ==
+            (pName = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_CONFIG_NAME))) {
+            syslog(LOG_ERR,
+                   "dbReadConfiguration: Failed to read 'name' "
+                   "from settings record.");
             continue;
         }
 
-        if (NULL == (pValue = sqlite3_column_text (
+        if (NULL == (pValue = sqlite3_column_text(
                        ppStmt, VSCPDB_ORDINAL_CONFIG_VALUE))) {
-            syslog (LOG_ERR,
-                    "dbReadConfiguration: Failed to read 'value' "
-                    "from settings record.");
+            syslog(LOG_ERR,
+                   "dbReadConfiguration: Failed to read 'value' "
+                   "from settings record.");
             continue;
         }
 
         // database version
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_DBVERSION)) {
-            dbVersion = atoi ((const char *)pValue);
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_DBVERSION)) {
+            dbVersion = atoi((const char *)pValue);
             continue;
         }
 
         // client buffer size
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_CLIENTBUFFERSIZE)) {
-            m_maxItemsInClientReceiveQueue = atol ((const char *)pValue);
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_CLIENTBUFFERSIZE)) {
+            m_maxItemsInClientReceiveQueue = atol((const char *)pValue);
             continue;
         }
 
         // Server GUID
         if (0 ==
-            vscp_strcasecmp ((const char *)pName, VSCPDB_CONFIG_NAME_GUID)) {
-            m_guid.getFromString ((const char *)pValue);
+            vscp_strcasecmp((const char *)pName, VSCPDB_CONFIG_NAME_GUID)) {
+            m_guid.getFromString((const char *)pValue);
             continue;
         }
 
         // Server name
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_SERVERNAME)) {
-            m_strServerName = std::string ((const char *)pValue);
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_SERVERNAME)) {
+            m_strServerName = std::string((const char *)pValue);
             continue;
         }
 
         // TCP/IP interface address
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_TCPIP_ADDR)) {
-            m_strTcpInterfaceAddress = std::string ((const char *)pValue);
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_TCPIP_ADDR)) {
+            m_strTcpInterfaceAddress = std::string((const char *)pValue);
             // Remove possible "tcp://"" prefix
-            vscp_startsWith (
+            vscp_startsWith(
               m_strTcpInterfaceAddress, "tcp://", &m_strTcpInterfaceAddress);
-            if (vscp_startsWith (m_strTcpInterfaceAddress,
-                                 "ssl://",
-                                 &m_strTcpInterfaceAddress)) {
+            if (vscp_startsWith(m_strTcpInterfaceAddress,
+                                "ssl://",
+                                &m_strTcpInterfaceAddress)) {
                 m_strTcpInterfaceAddress += "s";
             }
-            vscp_trim (m_strTcpInterfaceAddress);
+            vscp_trim(m_strTcpInterfaceAddress);
             continue;
         }
 
         // TCP/IP encryption
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_TCPIP_ENCRYPTION)) {
-            m_encryptionTcpip = atoi ((const char *)pValue);
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_TCPIP_ENCRYPTION)) {
+            m_encryptionTcpip = atoi((const char *)pValue);
             continue;
         }
 
         // TCP/IP SSL certificat
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_TCPIP_SSL_CERTIFICATE)) {
-            m_tcpip_ssl_certificate = std::string ((const char *)pValue);
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_TCPIP_SSL_CERTIFICATE)) {
+            m_tcpip_ssl_certificate = std::string((const char *)pValue);
             continue;
         }
 
         // TCP/IP SSL certificat chain
         if (0 ==
-            vscp_strcasecmp ((const char *)pName,
-                             VSCPDB_CONFIG_NAME_TCPIP_SSL_CERTIFICAT_CHAIN)) {
-            m_tcpip_ssl_certificate_chain = std::string ((const char *)pValue);
+            vscp_strcasecmp((const char *)pName,
+                            VSCPDB_CONFIG_NAME_TCPIP_SSL_CERTIFICAT_CHAIN)) {
+            m_tcpip_ssl_certificate_chain = std::string((const char *)pValue);
             continue;
         }
 
         // TCP/IP SSL verify peer
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_TCPIP_SSL_VERIFY_PEER)) {
-            m_tcpip_ssl_verify_peer = atoi ((const char *)pValue);
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_TCPIP_SSL_VERIFY_PEER)) {
+            m_tcpip_ssl_verify_peer = atoi((const char *)pValue);
             continue;
         }
 
         // TCP/IP SSL CA path
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_TCPIP_SSL_CA_PATH)) {
-            m_tcpip_ssl_ca_path = std::string ((const char *)pValue);
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_TCPIP_SSL_CA_PATH)) {
+            m_tcpip_ssl_ca_path = std::string((const char *)pValue);
             continue;
         }
 
         // TCP/IP SSL CA file
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_TCPIP_SSL_CA_FILE)) {
-            m_tcpip_ssl_ca_file = std::string ((const char *)pValue);
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_TCPIP_SSL_CA_FILE)) {
+            m_tcpip_ssl_ca_file = std::string((const char *)pValue);
             continue;
         }
 
         // TCP/IP SSL verify depth
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_TCPIP_SSL_VERIFY_DEPTH)) {
-            m_tcpip_ssl_verify_depth = atoi ((const char *)pValue);
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_TCPIP_SSL_VERIFY_DEPTH)) {
+            m_tcpip_ssl_verify_depth = atoi((const char *)pValue);
             continue;
         }
 
         // TCP/IP SSL verify paths
-        if (0 == vscp_strcasecmp (
+        if (0 == vscp_strcasecmp(
                    (const char *)pName,
                    VSCPDB_CONFIG_NAME_TCPIP_SSL_DEFAULT_VERIFY_PATHS)) {
             m_tcpip_ssl_default_verify_paths =
-              atoi ((const char *)pValue) ? true : false;
+              atoi((const char *)pValue) ? true : false;
             continue;
         }
 
         // TCP/IP SSL Chipher list
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_TCPIP_SSL_CHIPHER_LIST)) {
-            m_tcpip_ssl_cipher_list = std::string ((const char *)pValue);
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_TCPIP_SSL_CHIPHER_LIST)) {
+            m_tcpip_ssl_cipher_list = std::string((const char *)pValue);
             continue;
         }
 
         // TCP/IP SSL protocol version
         if (0 ==
-            vscp_strcasecmp ((const char *)pName,
-                             VSCPDB_CONFIG_NAME_TCPIP_SSL_PROTOCOL_VERSION)) {
-            m_tcpip_ssl_protocol_version = atoi ((const char *)pValue);
+            vscp_strcasecmp((const char *)pName,
+                            VSCPDB_CONFIG_NAME_TCPIP_SSL_PROTOCOL_VERSION)) {
+            m_tcpip_ssl_protocol_version = atoi((const char *)pValue);
             continue;
         }
 
         // TCP/IP SSL short trust
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_TCPIP_SSL_SHORT_TRUST)) {
-            m_tcpip_ssl_short_trust =
-              atoi ((const char *)pValue) ? true : false;
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_TCPIP_SSL_SHORT_TRUST)) {
+            m_tcpip_ssl_short_trust = atoi((const char *)pValue) ? true : false;
             continue;
         }
 
         // Announce multicast interface address
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_ANNOUNCE_ADDR)) {
-            m_strMulticastAnnounceAddress = std::string ((const char *)pValue);
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_ANNOUNCE_ADDR)) {
+            m_strMulticastAnnounceAddress = std::string((const char *)pValue);
             continue;
         }
 
         // TTL for the multicast i/f
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_ANNOUNCE_TTL)) {
-            m_ttlMultiCastAnnounce = atoi ((const char *)pValue);
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_ANNOUNCE_TTL)) {
+            m_ttlMultiCastAnnounce = atoi((const char *)pValue);
             continue;
         }
 
         // Enable UDP interface
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_UDP_ENABLE)) {
-            pthread_mutex_lock (&m_udpSrvObj->m_mutexUDPInfo);
-            m_udpSrvObj->m_bEnable = atoi ((const char *)pValue) ? true : false;
-            pthread_mutex_unlock (&m_udpSrvObj->m_mutexUDPInfo);
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_UDP_ENABLE)) {
+            pthread_mutex_lock(&m_udpSrvObj->m_mutexUDPInfo);
+            m_udpSrvObj->m_bEnable = atoi((const char *)pValue) ? true : false;
+            pthread_mutex_unlock(&m_udpSrvObj->m_mutexUDPInfo);
             continue;
         }
 
         // UDP interface address/port
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_UDP_ADDR)) {
-            pthread_mutex_lock (&m_udpSrvObj->m_mutexUDPInfo);
-            m_udpSrvObj->m_interface = std::string ((const char *)pValue);
-            pthread_mutex_unlock (&m_udpSrvObj->m_mutexUDPInfo);
+        if (0 ==
+            vscp_strcasecmp((const char *)pName, VSCPDB_CONFIG_NAME_UDP_ADDR)) {
+            pthread_mutex_lock(&m_udpSrvObj->m_mutexUDPInfo);
+            m_udpSrvObj->m_interface = std::string((const char *)pValue);
+            pthread_mutex_unlock(&m_udpSrvObj->m_mutexUDPInfo);
             continue;
         }
 
         // UDP User
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_UDP_USER)) {
-            pthread_mutex_lock (&m_udpSrvObj->m_mutexUDPInfo);
-            m_udpSrvObj->m_user = std::string ((const char *)pValue);
-            pthread_mutex_unlock (&m_udpSrvObj->m_mutexUDPInfo);
+        if (0 ==
+            vscp_strcasecmp((const char *)pName, VSCPDB_CONFIG_NAME_UDP_USER)) {
+            pthread_mutex_lock(&m_udpSrvObj->m_mutexUDPInfo);
+            m_udpSrvObj->m_user = std::string((const char *)pValue);
+            pthread_mutex_unlock(&m_udpSrvObj->m_mutexUDPInfo);
             continue;
         }
 
         // UDP User Password
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_UDP_PASSWORD)) {
-            pthread_mutex_lock (&m_udpSrvObj->m_mutexUDPInfo);
-            m_udpSrvObj->m_password = std::string ((const char *)pValue);
-            pthread_mutex_unlock (&m_udpSrvObj->m_mutexUDPInfo);
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_UDP_PASSWORD)) {
+            pthread_mutex_lock(&m_udpSrvObj->m_mutexUDPInfo);
+            m_udpSrvObj->m_password = std::string((const char *)pValue);
+            pthread_mutex_unlock(&m_udpSrvObj->m_mutexUDPInfo);
             continue;
         }
 
         // UDP un-secure enable
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_UDP_UNSECURE_ENABLE)) {
-            pthread_mutex_lock (&m_udpSrvObj->m_mutexUDPInfo);
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_UDP_UNSECURE_ENABLE)) {
+            pthread_mutex_lock(&m_udpSrvObj->m_mutexUDPInfo);
             m_udpSrvObj->m_bAllowUnsecure =
-              atoi ((const char *)pValue) ? true : false;
-            pthread_mutex_unlock (&m_udpSrvObj->m_mutexUDPInfo);
+              atoi((const char *)pValue) ? true : false;
+            pthread_mutex_unlock(&m_udpSrvObj->m_mutexUDPInfo);
             continue;
         }
 
         // UDP Filter
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_UDP_FILTER)) {
-            pthread_mutex_lock (&m_udpSrvObj->m_mutexUDPInfo);
-            vscp_readFilterFromString (&m_udpSrvObj->m_filter,
-                                       std::string ((const char *)pValue));
-            pthread_mutex_unlock (&m_udpSrvObj->m_mutexUDPInfo);
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_UDP_FILTER)) {
+            pthread_mutex_lock(&m_udpSrvObj->m_mutexUDPInfo);
+            vscp_readFilterFromString(&m_udpSrvObj->m_filter,
+                                      std::string((const char *)pValue));
+            pthread_mutex_unlock(&m_udpSrvObj->m_mutexUDPInfo);
             continue;
         }
 
         // UDP Mask
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_UDP_MASK)) {
-            pthread_mutex_lock (&m_udpSrvObj->m_mutexUDPInfo);
-            vscp_readMaskFromString (&m_udpSrvObj->m_filter,
-                                     std::string ((const char *)pValue));
-            pthread_mutex_unlock (&m_udpSrvObj->m_mutexUDPInfo);
+        if (0 ==
+            vscp_strcasecmp((const char *)pName, VSCPDB_CONFIG_NAME_UDP_MASK)) {
+            pthread_mutex_lock(&m_udpSrvObj->m_mutexUDPInfo);
+            vscp_readMaskFromString(&m_udpSrvObj->m_filter,
+                                    std::string((const char *)pValue));
+            pthread_mutex_unlock(&m_udpSrvObj->m_mutexUDPInfo);
             continue;
         }
 
         // UDP GUID
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_UDP_GUID)) {
-            pthread_mutex_lock (&m_udpSrvObj->m_mutexUDPInfo);
-            m_udpSrvObj->m_guid.getFromString ((const char *)pValue);
-            pthread_mutex_unlock (&m_udpSrvObj->m_mutexUDPInfo);
+        if (0 ==
+            vscp_strcasecmp((const char *)pName, VSCPDB_CONFIG_NAME_UDP_GUID)) {
+            pthread_mutex_lock(&m_udpSrvObj->m_mutexUDPInfo);
+            m_udpSrvObj->m_guid.getFromString((const char *)pValue);
+            pthread_mutex_unlock(&m_udpSrvObj->m_mutexUDPInfo);
             continue;
         }
 
         // UDP Enable ACK
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_UDP_ACK_ENABLE)) {
-            pthread_mutex_lock (&m_udpSrvObj->m_mutexUDPInfo);
-            m_udpSrvObj->m_bAck = atoi ((const char *)pValue) ? true : false;
-            pthread_mutex_unlock (&m_udpSrvObj->m_mutexUDPInfo);
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_UDP_ACK_ENABLE)) {
+            pthread_mutex_lock(&m_udpSrvObj->m_mutexUDPInfo);
+            m_udpSrvObj->m_bAck = atoi((const char *)pValue) ? true : false;
+            pthread_mutex_unlock(&m_udpSrvObj->m_mutexUDPInfo);
             continue;
         }
 
         // Enable Multicast interface
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_MULTICAST_ENABLE)) {
-            m_bEnableMulticast = atoi ((const char *)pValue) ? true : false;
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_MULTICAST_ENABLE)) {
+            m_bEnableMulticast = atoi((const char *)pValue) ? true : false;
             continue;
         }
 
         // Path to DM database file
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_DM_PATH_DB)) {
-            m_dm.m_path_db_vscp_dm = std::string ((const char *)pValue);
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_DM_PATH_DB)) {
+            m_dm.m_path_db_vscp_dm = std::string((const char *)pValue);
             continue;
         }
 
         // Path to DM XML file
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_DM_PATH_XML)) {
-            m_dm.m_staticXMLPath = std::string ((const char *)pValue);
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_DM_PATH_XML)) {
+            m_dm.m_staticXMLPath = std::string((const char *)pValue);
             continue;
         }
 
         // Path to variable database
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_VARIABLES_PATH_DB)) {
-            m_variables.m_dbFilename = std::string ((const char *)pValue);
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_VARIABLES_PATH_DB)) {
+            m_variables.m_dbFilename = std::string((const char *)pValue);
             continue;
         }
 
         // Path to variable XML
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_VARIABLES_PATH_XML)) {
-            m_variables.m_xmlPath = std::string ((const char *)pValue);
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_VARIABLES_PATH_XML)) {
+            m_variables.m_xmlPath = std::string((const char *)pValue);
             continue;
         }
 
         // VSCP data database path
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_PATH_DB_DATA)) {
-            m_path_db_vscp_data = std::string ((const char *)pValue);
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_PATH_DB_DATA)) {
+            m_path_db_vscp_data = std::string((const char *)pValue);
             continue;
         }
 
         // * * * WEB server * * *
 
         // Web server enable
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_WEB_ENABLE)) {
-            if (atoi ((const char *)pValue)) {
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_WEB_ENABLE)) {
+            if (atoi((const char *)pValue)) {
                 m_web_bEnable = true;
             } else {
                 m_web_bEnable = false;
@@ -4909,39 +4898,39 @@ CControlObject::readConfigurationDB (void)
         }
 
         // Web server document root
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_WEB_DOCUMENT_ROOT)) {
-            m_web_document_root = std::string ((const char *)pValue);
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_WEB_DOCUMENT_ROOT)) {
+            m_web_document_root = std::string((const char *)pValue);
             continue;
         }
 
         // listening ports for web server
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_WEB_LISTENING_PORTS)) {
-            m_web_listening_ports = std::string ((const char *)pValue);
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_WEB_LISTENING_PORTS)) {
+            m_web_listening_ports = std::string((const char *)pValue);
             continue;
         }
 
         // Index files
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_WEB_INDEX_FILES)) {
-            m_web_index_files = std::string ((const char *)pValue);
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_WEB_INDEX_FILES)) {
+            m_web_index_files = std::string((const char *)pValue);
             continue;
         }
 
         // Authdomain
         if (0 ==
-            vscp_strcasecmp ((const char *)pName,
-                             VSCPDB_CONFIG_NAME_WEB_AUTHENTICATION_DOMAIN)) {
-            m_web_authentication_domain = std::string ((const char *)pValue);
+            vscp_strcasecmp((const char *)pName,
+                            VSCPDB_CONFIG_NAME_WEB_AUTHENTICATION_DOMAIN)) {
+            m_web_authentication_domain = std::string((const char *)pValue);
             continue;
         }
 
         // Enable authdomain check
         if (0 ==
-            vscp_strcasecmp ((const char *)pName,
-                             VSCPDB_CONFIG_NAME_WEB_ENABLE_AUTH_DOMAIN_CHECK)) {
-            if (atoi ((const char *)pValue)) {
+            vscp_strcasecmp((const char *)pName,
+                            VSCPDB_CONFIG_NAME_WEB_ENABLE_AUTH_DOMAIN_CHECK)) {
+            if (atoi((const char *)pValue)) {
                 m_enable_auth_domain_check = true;
             } else {
                 m_enable_auth_domain_check = false;
@@ -4950,24 +4939,23 @@ CControlObject::readConfigurationDB (void)
         }
 
         // Path to cert file
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_WEB_SSL_CERTIFICATE)) {
-            m_web_ssl_certificate = std::string ((const char *)pValue);
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_WEB_SSL_CERTIFICATE)) {
+            m_web_ssl_certificate = std::string((const char *)pValue);
             continue;
         }
 
         // SSL certificate chain
-        if (0 ==
-            vscp_strcasecmp ((const char *)pName,
-                             VSCPDB_CONFIG_NAME_WEB_SSL_CERTIFICAT_CHAIN)) {
-            m_web_ssl_certificate_chain = std::string ((const char *)pValue);
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_WEB_SSL_CERTIFICAT_CHAIN)) {
+            m_web_ssl_certificate_chain = std::string((const char *)pValue);
             continue;
         }
 
         // SSL verify peer
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_WEB_SSL_VERIFY_PEER)) {
-            if (atoi ((const char *)pValue)) {
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_WEB_SSL_VERIFY_PEER)) {
+            if (atoi((const char *)pValue)) {
                 m_web_ssl_verify_peer = true;
             } else {
                 m_web_ssl_verify_peer = false;
@@ -4976,31 +4964,31 @@ CControlObject::readConfigurationDB (void)
         }
 
         // SSL CA path
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_WEB_SSL_CA_FILE)) {
-            m_web_ssl_ca_path = std::string ((const char *)pValue);
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_WEB_SSL_CA_FILE)) {
+            m_web_ssl_ca_path = std::string((const char *)pValue);
             continue;
         }
 
         // SSL CA file
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_WEB_SSL_CA_FILE)) {
-            m_web_ssl_ca_file = std::string ((const char *)pValue);
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_WEB_SSL_CA_FILE)) {
+            m_web_ssl_ca_file = std::string((const char *)pValue);
             continue;
         }
 
         // SSL verify depth
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_WEB_SSL_VERIFY_DEPTH)) {
-            m_web_ssl_verify_depth = atoi ((const char *)pValue);
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_WEB_SSL_VERIFY_DEPTH)) {
+            m_web_ssl_verify_depth = atoi((const char *)pValue);
             continue;
         }
 
         // SSL default verify path
         if (0 ==
-            vscp_strcasecmp ((const char *)pName,
-                             VSCPDB_CONFIG_NAME_WEB_SSL_DEFAULT_VERIFY_PATHS)) {
-            if (atoi ((const char *)pValue)) {
+            vscp_strcasecmp((const char *)pName,
+                            VSCPDB_CONFIG_NAME_WEB_SSL_DEFAULT_VERIFY_PATHS)) {
+            if (atoi((const char *)pValue)) {
                 m_web_ssl_default_verify_paths = true;
             } else {
                 m_web_ssl_default_verify_paths = false;
@@ -5009,24 +4997,23 @@ CControlObject::readConfigurationDB (void)
         }
 
         // SSL chipher list
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_WEB_SSL_CHIPHER_LIST)) {
-            m_web_ssl_cipher_list = std::string ((const char *)pValue);
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_WEB_SSL_CHIPHER_LIST)) {
+            m_web_ssl_cipher_list = std::string((const char *)pValue);
             continue;
         }
 
         // SSL protocol version
-        if (0 ==
-            vscp_strcasecmp ((const char *)pName,
-                             VSCPDB_CONFIG_NAME_WEB_SSL_PROTOCOL_VERSION)) {
-            m_web_ssl_protocol_version = atoi ((const char *)pValue);
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_WEB_SSL_PROTOCOL_VERSION)) {
+            m_web_ssl_protocol_version = atoi((const char *)pValue);
             continue;
         }
 
         // SSL short trust
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_WEB_SSL_SHORT_TRUST)) {
-            if (atoi ((const char *)pValue)) {
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_WEB_SSL_SHORT_TRUST)) {
+            if (atoi((const char *)pValue)) {
                 m_web_ssl_short_trust = true;
             } else {
                 m_web_ssl_short_trust = false;
@@ -5035,45 +5022,45 @@ CControlObject::readConfigurationDB (void)
         }
 
         // CGI interpreter
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_WEB_CGI_INTERPRETER)) {
-            m_web_cgi_interpreter = std::string ((const char *)pValue);
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_WEB_CGI_INTERPRETER)) {
+            m_web_cgi_interpreter = std::string((const char *)pValue);
             continue;
         }
 
         // CGI pattern
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_WEB_CGI_PATTERN)) {
-            m_web_cgi_patterns = std::string ((const char *)pValue);
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_WEB_CGI_PATTERN)) {
+            m_web_cgi_patterns = std::string((const char *)pValue);
             continue;
         }
 
         // CGI environment
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_WEB_CGI_ENVIRONMENT)) {
-            m_web_cgi_environment = std::string ((const char *)pValue);
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_WEB_CGI_ENVIRONMENT)) {
+            m_web_cgi_environment = std::string((const char *)pValue);
             continue;
         }
 
         // Protect URI
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_WEB_PROTECT_URI)) {
-            m_web_protect_uri = std::string ((const char *)pValue);
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_WEB_PROTECT_URI)) {
+            m_web_protect_uri = std::string((const char *)pValue);
             continue;
         }
 
         // Web trottle
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_WEB_TROTTLE)) {
-            m_web_trottle = std::string ((const char *)pValue);
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_WEB_TROTTLE)) {
+            m_web_trottle = std::string((const char *)pValue);
             continue;
         }
 
         // Enable directory listings
         if (0 ==
-            vscp_strcasecmp ((const char *)pName,
-                             VSCPDB_CONFIG_NAME_WEB_ENABLE_DIRECTORY_LISTING)) {
-            if (atoi ((const char *)pValue)) {
+            vscp_strcasecmp((const char *)pName,
+                            VSCPDB_CONFIG_NAME_WEB_ENABLE_DIRECTORY_LISTING)) {
+            if (atoi((const char *)pValue)) {
                 m_web_enable_directory_listing = true;
             } else {
                 m_web_enable_directory_listing = false;
@@ -5082,9 +5069,9 @@ CControlObject::readConfigurationDB (void)
         }
 
         // Enable keep alive
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_WEB_ENABLE_KEEP_ALIVE)) {
-            if (atoi ((const char *)pValue)) {
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_WEB_ENABLE_KEEP_ALIVE)) {
+            if (atoi((const char *)pValue)) {
                 m_web_enable_keep_alive = true;
             } else {
                 m_web_enable_keep_alive = false;
@@ -5094,80 +5081,79 @@ CControlObject::readConfigurationDB (void)
 
         // Keep alive timout ms
         if (0 ==
-            vscp_strcasecmp ((const char *)pName,
-                             VSCPDB_CONFIG_NAME_WEB_KEEP_ALIVE_TIMEOUT_MS)) {
-            m_web_keep_alive_timeout_ms = atol ((const char *)pValue);
+            vscp_strcasecmp((const char *)pName,
+                            VSCPDB_CONFIG_NAME_WEB_KEEP_ALIVE_TIMEOUT_MS)) {
+            m_web_keep_alive_timeout_ms = atol((const char *)pValue);
             continue;
         }
 
         // IP ACL
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_LIST)) {
-            m_web_access_control_list = std::string ((const char *)pValue);
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_LIST)) {
+            m_web_access_control_list = std::string((const char *)pValue);
             continue;
         }
 
         // Extra mime types
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_WEB_EXTRA_MIME_TYPES)) {
-            m_web_extra_mime_types = std::string ((const char *)pValue);
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_WEB_EXTRA_MIME_TYPES)) {
+            m_web_extra_mime_types = std::string((const char *)pValue);
             continue;
         }
 
         // Number of threads
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_WEB_NUM_THREADS)) {
-            m_web_num_threads = atoi ((const char *)pValue);
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_WEB_NUM_THREADS)) {
+            m_web_num_threads = atoi((const char *)pValue);
             continue;
         }
 
         // Hide file patterns
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_WEB_HIDE_FILE_PATTERNS)) {
-            m_web_hide_file_patterns = std::string ((const char *)pValue);
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_WEB_HIDE_FILE_PATTERNS)) {
+            m_web_hide_file_patterns = std::string((const char *)pValue);
             continue;
         }
 
         // Run as user
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_WEB_RUN_AS_USER)) {
-            m_web_run_as_user = std::string ((const char *)pValue);
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_WEB_RUN_AS_USER)) {
+            m_web_run_as_user = std::string((const char *)pValue);
             continue;
         }
 
         // URL rewrites
-        if (0 ==
-            vscp_strcasecmp ((const char *)pName,
-                             VSCPDB_CONFIG_NAME_WEB_URL_REWRITE_PATTERNS)) {
-            m_web_url_rewrite_patterns = std::string ((const char *)pValue);
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_WEB_URL_REWRITE_PATTERNS)) {
+            m_web_url_rewrite_patterns = std::string((const char *)pValue);
             continue;
         }
 
         // Hide file patterns
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_WEB_HIDE_FILE_PATTERNS)) {
-            m_web_hide_file_patterns = std::string ((const char *)pValue);
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_WEB_HIDE_FILE_PATTERNS)) {
+            m_web_hide_file_patterns = std::string((const char *)pValue);
             continue;
         }
 
         // web request timout
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_WEB_REQUEST_TIMEOUT_MS)) {
-            m_web_request_timeout_ms = atol ((const char *)pValue);
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_WEB_REQUEST_TIMEOUT_MS)) {
+            m_web_request_timeout_ms = atol((const char *)pValue);
             continue;
         }
 
         // web linger timout
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_WEB_LINGER_TIMEOUT_MS)) {
-            m_web_linger_timeout_ms = atol ((const char *)pValue);
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_WEB_LINGER_TIMEOUT_MS)) {
+            m_web_linger_timeout_ms = atol((const char *)pValue);
             continue;
         }
 
         // Decode URL
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_WEB_DECODE_URL)) {
-            if (atoi ((const char *)pValue)) {
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_WEB_DECODE_URL)) {
+            if (atoi((const char *)pValue)) {
                 m_web_decode_url = true;
             } else {
                 m_web_decode_url = false;
@@ -5176,88 +5162,88 @@ CControlObject::readConfigurationDB (void)
         }
 
         // Global auth. file
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_WEB_GLOBAL_AUTHFILE)) {
-            m_web_global_auth_file = std::string ((const char *)pValue);
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_WEB_GLOBAL_AUTHFILE)) {
+            m_web_global_auth_file = std::string((const char *)pValue);
             continue;
         }
 
         // Per directory auth. file
         if (0 ==
-            vscp_strcasecmp ((const char *)pName,
-                             VSCPDB_CONFIG_NAME_WEB_PER_DIRECTORY_AUTH_FILE)) {
-            m_web_per_directory_auth_file = std::string ((const char *)pValue);
+            vscp_strcasecmp((const char *)pName,
+                            VSCPDB_CONFIG_NAME_WEB_PER_DIRECTORY_AUTH_FILE)) {
+            m_web_per_directory_auth_file = std::string((const char *)pValue);
             continue;
         }
 
         // SSI patterns
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_WEB_SSI_PATTERNS)) {
-            m_web_ssi_patterns = std::string ((const char *)pValue);
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_WEB_SSI_PATTERNS)) {
+            m_web_ssi_patterns = std::string((const char *)pValue);
             continue;
         }
 
         // Access control allow origin
-        if (0 == vscp_strcasecmp (
+        if (0 == vscp_strcasecmp(
                    (const char *)pName,
                    VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_ALLOW_ORIGIN)) {
             m_web_access_control_allow_origin =
-              std::string ((const char *)pValue);
+              std::string((const char *)pValue);
             continue;
         }
 
         // Access control allow methods
-        if (0 == vscp_strcasecmp (
+        if (0 == vscp_strcasecmp(
                    (const char *)pName,
                    VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_ALLOW_METHODS)) {
             m_web_access_control_allow_methods =
-              std::string ((const char *)pValue);
+              std::string((const char *)pValue);
             continue;
         }
 
         // Access control alow heraders
-        if (0 == vscp_strcasecmp (
+        if (0 == vscp_strcasecmp(
                    (const char *)pName,
                    VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_ALLOW_HEADERS)) {
             m_web_access_control_allow_headers =
-              std::string ((const char *)pValue);
+              std::string((const char *)pValue);
             continue;
         }
 
         // Error pages
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_WEB_ERROR_PAGES)) {
-            m_web_error_pages = std::string ((const char *)pValue);
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_WEB_ERROR_PAGES)) {
+            m_web_error_pages = std::string((const char *)pValue);
             continue;
         }
 
         // TCP no delay
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_WEB_TCP_NO_DELAY)) {
-            m_web_tcp_nodelay = atol ((const char *)pValue);
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_WEB_TCP_NO_DELAY)) {
+            m_web_tcp_nodelay = atol((const char *)pValue);
             continue;
         }
 
         // File max age
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_WEB_STATIC_FILE_MAX_AGE)) {
-            m_web_static_file_max_age = atol ((const char *)pValue);
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_WEB_STATIC_FILE_MAX_AGE)) {
+            m_web_static_file_max_age = atol((const char *)pValue);
             continue;
         }
 
         // Transport security max age
-        if (0 == vscp_strcasecmp (
+        if (0 == vscp_strcasecmp(
                    (const char *)pName,
                    VSCPDB_CONFIG_NAME_WEB_STRICT_TRANSPORT_SECURITY_MAX_AGE)) {
             m_web_strict_transport_security_max_age =
-              atol ((const char *)pValue);
+              atol((const char *)pValue);
             continue;
         }
 
         // Enable sendfile call
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_WEB_ALLOW_SENDFILE_CALL)) {
-            if (atoi ((const char *)pValue)) {
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_WEB_ALLOW_SENDFILE_CALL)) {
+            if (atoi((const char *)pValue)) {
                 m_web_allow_sendfile_call = true;
             } else {
                 m_web_allow_sendfile_call = false;
@@ -5266,24 +5252,24 @@ CControlObject::readConfigurationDB (void)
         }
 
         // Additional headers
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_WEB_ADDITIONAL_HEADERS)) {
-            m_web_additional_header = std::string ((const char *)pValue);
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_WEB_ADDITIONAL_HEADERS)) {
+            m_web_additional_header = std::string((const char *)pValue);
             continue;
         }
 
         // Max request size
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_WEB_MAX_REQUEST_SIZE)) {
-            m_web_max_request_size = atol ((const char *)pValue);
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_WEB_MAX_REQUEST_SIZE)) {
+            m_web_max_request_size = atol((const char *)pValue);
             continue;
         }
 
         // Allow index script resource
-        if (0 == vscp_strcasecmp (
+        if (0 == vscp_strcasecmp(
                    (const char *)pName,
                    VSCPDB_CONFIG_NAME_WEB_ALLOW_INDEX_SCRIPT_RESOURCE)) {
-            if (atoi ((const char *)pValue)) {
+            if (atoi((const char *)pValue)) {
                 m_web_allow_index_script_resource = true;
             } else {
                 m_web_allow_index_script_resource = false;
@@ -5293,65 +5279,65 @@ CControlObject::readConfigurationDB (void)
 
         // Duktape script patterns
         if (0 ==
-            vscp_strcasecmp ((const char *)pName,
-                             VSCPDB_CONFIG_NAME_WEB_DUKTAPE_SCRIPT_PATTERN)) {
-            m_web_duktape_script_patterns = std::string ((const char *)pValue);
+            vscp_strcasecmp((const char *)pName,
+                            VSCPDB_CONFIG_NAME_WEB_DUKTAPE_SCRIPT_PATTERN)) {
+            m_web_duktape_script_patterns = std::string((const char *)pValue);
             continue;
         }
 
         // Lua preload file
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_WEB_LUA_PRELOAD_FILE)) {
-            m_web_lua_preload_file = std::string ((const char *)pValue);
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_WEB_LUA_PRELOAD_FILE)) {
+            m_web_lua_preload_file = std::string((const char *)pValue);
             continue;
         }
 
         // Lua script patterns
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_WEB_LUA_SCRIPT_PATTERN)) {
-            m_web_lua_script_patterns = std::string ((const char *)pValue);
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_WEB_LUA_SCRIPT_PATTERN)) {
+            m_web_lua_script_patterns = std::string((const char *)pValue);
             continue;
         }
 
         // Lua server page patterns
         if (0 ==
-            vscp_strcasecmp ((const char *)pName,
-                             VSCPDB_CONFIG_NAME_WEB_LUA_SERVER_PAGE_PATTERN)) {
-            m_web_lua_server_page_patterns = std::string ((const char *)pValue);
+            vscp_strcasecmp((const char *)pName,
+                            VSCPDB_CONFIG_NAME_WEB_LUA_SERVER_PAGE_PATTERN)) {
+            m_web_lua_server_page_patterns = std::string((const char *)pValue);
             continue;
         }
 
         // Lua websocket patterns
         if (0 ==
-            vscp_strcasecmp ((const char *)pName,
-                             VSCPDB_CONFIG_NAME_WEB_LUA_WEBSOCKET_PATTERN)) {
-            m_web_lua_websocket_patterns = std::string ((const char *)pValue);
+            vscp_strcasecmp((const char *)pName,
+                            VSCPDB_CONFIG_NAME_WEB_LUA_WEBSOCKET_PATTERN)) {
+            m_web_lua_websocket_patterns = std::string((const char *)pValue);
             continue;
         }
 
         // Lua background script
         if (0 ==
-            vscp_strcasecmp ((const char *)pName,
-                             VSCPDB_CONFIG_NAME_WEB_LUA_BACKGROUND_SCRIPT)) {
-            m_web_lua_background_script = std::string ((const char *)pValue);
+            vscp_strcasecmp((const char *)pName,
+                            VSCPDB_CONFIG_NAME_WEB_LUA_BACKGROUND_SCRIPT)) {
+            m_web_lua_background_script = std::string((const char *)pValue);
             continue;
         }
 
         // Lua background script params
-        if (0 == vscp_strcasecmp (
+        if (0 == vscp_strcasecmp(
                    (const char *)pName,
                    VSCPDB_CONFIG_NAME_WEB_LUA_BACKGROUND_SCRIPT_PARAMS)) {
             m_web_lua_background_script_params =
-              std::string ((const char *)pValue);
+              std::string((const char *)pValue);
             continue;
         }
 
         // * * * Websockets * * *
 
         // Web server enable
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_WEBSOCKET_ENABLE)) {
-            if (atoi ((const char *)pValue)) {
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_WEBSOCKET_ENABLE)) {
+            if (atoi((const char *)pValue)) {
                 m_bWebsocketsEnable = true;
             } else {
                 m_bWebsocketsEnable = false;
@@ -5360,174 +5346,172 @@ CControlObject::readConfigurationDB (void)
         }
 
         // Document root for websockets
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_WEBSOCKET_DOCUMENT_ROOT)) {
-            m_websocket_document_root = std::string ((const char *)pValue);
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_WEBSOCKET_DOCUMENT_ROOT)) {
+            m_websocket_document_root = std::string((const char *)pValue);
             continue;
         }
 
         // Websocket timeout
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_WEBSOCKET_TIMEOUT_MS)) {
-            m_websocket_timeout_ms = atol ((const char *)pValue);
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_WEBSOCKET_TIMEOUT_MS)) {
+            m_websocket_timeout_ms = atol((const char *)pValue);
             continue;
         }
 
         // * * * Automation * * *
 
         // Enable automation
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_AUTOMATION_ENABLE)) {
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_AUTOMATION_ENABLE)) {
 
-            if (atoi ((const char *)pValue)) {
-                m_automation.enableAutomation ();
+            if (atoi((const char *)pValue)) {
+                m_automation.enableAutomation();
             } else {
-                m_automation.enableAutomation ();
+                m_automation.enableAutomation();
             }
             continue;
         }
 
         // Automation zone
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_AUTOMATION_ZONE)) {
-            m_automation.setZone (atoi ((const char *)pValue));
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_AUTOMATION_ZONE)) {
+            m_automation.setZone(atoi((const char *)pValue));
             continue;
         }
 
         // Automation sub zone
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_AUTOMATION_SUBZONE)) {
-            m_automation.setSubzone (atoi ((const char *)pValue));
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_AUTOMATION_SUBZONE)) {
+            m_automation.setSubzone(atoi((const char *)pValue));
             continue;
         }
 
         // Automation longitude
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_AUTOMATION_LONGITUDE)) {
-            m_automation.setLongitude (atof ((const char *)pValue));
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_AUTOMATION_LONGITUDE)) {
+            m_automation.setLongitude(atof((const char *)pValue));
             continue;
         }
 
         // Automation latitude
-        if (0 == vscp_strcasecmp ((const char *)pName,
-                                  VSCPDB_CONFIG_NAME_AUTOMATION_LATITUDE)) {
-            m_automation.setLatitude (atof ((const char *)pValue));
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_AUTOMATION_LATITUDE)) {
+            m_automation.setLatitude(atof((const char *)pValue));
             continue;
         }
 
         // Automation enable sun rise event
         if (0 ==
-            vscp_strcasecmp ((const char *)pName,
-                             VSCPDB_CONFIG_NAME_AUTOMATION_SUNRISE_ENABLE)) {
-            if (atoi ((const char *)pValue)) {
-                m_automation.enableSunRiseEvent ();
+            vscp_strcasecmp((const char *)pName,
+                            VSCPDB_CONFIG_NAME_AUTOMATION_SUNRISE_ENABLE)) {
+            if (atoi((const char *)pValue)) {
+                m_automation.enableSunRiseEvent();
             } else {
-                m_automation.disableSunRiseEvent ();
+                m_automation.disableSunRiseEvent();
             }
             continue;
         }
 
         // Automation enable sun set event
-        if (0 ==
-            vscp_strcasecmp ((const char *)pName,
-                             VSCPDB_CONFIG_NAME_AUTOMATION_SUNSET_ENABLE)) {
-            if (atoi ((const char *)pValue)) {
-                m_automation.enableSunSetEvent ();
+        if (0 == vscp_strcasecmp((const char *)pName,
+                                 VSCPDB_CONFIG_NAME_AUTOMATION_SUNSET_ENABLE)) {
+            if (atoi((const char *)pValue)) {
+                m_automation.enableSunSetEvent();
             } else {
-                m_automation.disableSunSetEvent ();
+                m_automation.disableSunSetEvent();
             }
             continue;
         }
 
         // Automation enable sunset twilight event
-        if (0 == vscp_strcasecmp (
+        if (0 == vscp_strcasecmp(
                    (const char *)pName,
                    VSCPDB_CONFIG_NAME_AUTOMATION_SUNSET_TWILIGHT_ENABLE)) {
-            if (atoi ((const char *)pValue)) {
-                m_automation.enableSunSetTwilightEvent ();
+            if (atoi((const char *)pValue)) {
+                m_automation.enableSunSetTwilightEvent();
             } else {
-                m_automation.disableSunSetTwilightEvent ();
+                m_automation.disableSunSetTwilightEvent();
             }
             continue;
         }
 
         // Automation enable sunrise twilight event
-        if (0 == vscp_strcasecmp (
+        if (0 == vscp_strcasecmp(
                    (const char *)pName,
                    VSCPDB_CONFIG_NAME_AUTOMATION_SUNRISE_TWILIGHT_ENABLE)) {
-            if (atoi ((const char *)pValue)) {
-                m_automation.enableSunRiseTwilightEvent ();
+            if (atoi((const char *)pValue)) {
+                m_automation.enableSunRiseTwilightEvent();
             } else {
-                m_automation.disableSunRiseTwilightEvent ();
+                m_automation.disableSunRiseTwilightEvent();
             }
             continue;
         }
 
         // Automation segment controller event enable
-        if (0 == vscp_strcasecmp (
+        if (0 == vscp_strcasecmp(
                    (const char *)pName,
                    VSCPDB_CONFIG_NAME_AUTOMATION_SEGMENT_CTRL_ENABLE)) {
-            if (atoi ((const char *)pValue)) {
-                m_automation.enableSegmentControllerHeartbeat ();
+            if (atoi((const char *)pValue)) {
+                m_automation.enableSegmentControllerHeartbeat();
             } else {
-                m_automation.disableSegmentControllerHeartbeat ();
+                m_automation.disableSegmentControllerHeartbeat();
             }
             continue;
         }
 
         // Automation, segment controller heartbeat interval
-        if (0 == vscp_strcasecmp (
+        if (0 == vscp_strcasecmp(
                    (const char *)pName,
                    VSCPDB_CONFIG_NAME_AUTOMATION_SEGMENT_CTRL_INTERVAL)) {
-            m_automation.setSegmentControllerHeartbeatInterval (
-              atol ((const char *)pValue));
+            m_automation.setSegmentControllerHeartbeatInterval(
+              atol((const char *)pValue));
             continue;
         }
 
         // Automation heartbeat event enable
         if (0 ==
-            vscp_strcasecmp ((const char *)pName,
-                             VSCPDB_CONFIG_NAME_AUTOMATION_HEARTBEAT_ENABLE)) {
-            if (atoi ((const char *)pValue)) {
-                m_automation.enableHeartbeatEvent ();
+            vscp_strcasecmp((const char *)pName,
+                            VSCPDB_CONFIG_NAME_AUTOMATION_HEARTBEAT_ENABLE)) {
+            if (atoi((const char *)pValue)) {
+                m_automation.enableHeartbeatEvent();
             } else {
-                m_automation.disableHeartbeatEvent ();
+                m_automation.disableHeartbeatEvent();
             }
             continue;
         }
 
         // Automation heartbeat interval
-        if (0 == vscp_strcasecmp (
-                   (const char *)pName,
-                   VSCPDB_CONFIG_NAME_AUTOMATION_HEARTBEAT_INTERVAL)) {
-            m_automation.setHeartbeatEventInterval (
-              atol ((const char *)pValue));
+        if (0 ==
+            vscp_strcasecmp((const char *)pName,
+                            VSCPDB_CONFIG_NAME_AUTOMATION_HEARTBEAT_INTERVAL)) {
+            m_automation.setHeartbeatEventInterval(atol((const char *)pValue));
             continue;
         }
 
         // Automation capabilities event enable
-        if (0 == vscp_strcasecmp (
+        if (0 == vscp_strcasecmp(
                    (const char *)pName,
                    VSCPDB_CONFIG_NAME_AUTOMATION_CAPABILITIES_ENABLE)) {
-            if (atoi ((const char *)pValue)) {
-                m_automation.enableCapabilitiesEvent ();
+            if (atoi((const char *)pValue)) {
+                m_automation.enableCapabilitiesEvent();
             } else {
-                m_automation.disableCapabilitiesEvent ();
+                m_automation.disableCapabilitiesEvent();
             }
             continue;
         }
 
         // Automation capabilities interval
-        if (0 == vscp_strcasecmp (
+        if (0 == vscp_strcasecmp(
                    (const char *)pName,
                    VSCPDB_CONFIG_NAME_AUTOMATION_CAPABILITIES_INTERVAL)) {
-            m_automation.setCapabilitiesEventInterval (
-              atol ((const char *)pValue));
+            m_automation.setCapabilitiesEventInterval(
+              atol((const char *)pValue));
             continue;
         }
     }
 
-    sqlite3_finalize (ppStmt);
+    sqlite3_finalize(ppStmt);
 
     return true;
 }
@@ -5540,7 +5524,7 @@ CControlObject::readConfigurationDB (void)
 //
 
 bool
-CControlObject::readUdpNodes (void)
+CControlObject::readUdpNodes(void)
 {
     char *pErrMsg    = 0;
     const char *psql = "SELECT * FROM udpnode";
@@ -5551,79 +5535,79 @@ CControlObject::readUdpNodes (void)
 
     // Check if database is open
     if (NULL == m_db_vscp_daemon) {
-        syslog (LOG_ERR, "readUdpNodes: Database is not open.");
+        syslog(LOG_ERR, "readUdpNodes: Database is not open.");
         return false;
     }
 
     if (SQLITE_OK !=
-        sqlite3_prepare (m_db_vscp_daemon, psql, -1, &ppStmt, NULL)) {
-        syslog (LOG_ERR, "readUdpNodes: prepare query failed.");
+        sqlite3_prepare(m_db_vscp_daemon, psql, -1, &ppStmt, NULL)) {
+        syslog(LOG_ERR, "readUdpNodes: prepare query failed.");
         return false;
     }
 
-    while (SQLITE_ROW == sqlite3_step (ppStmt)) {
+    while (SQLITE_ROW == sqlite3_step(ppStmt)) {
 
         const unsigned char *p;
 
         // If not enabled move on
-        if (!sqlite3_column_int (ppStmt, VSCPDB_ORDINAL_UDPNODE_ENABLE))
+        if (!sqlite3_column_int(ppStmt, VSCPDB_ORDINAL_UDPNODE_ENABLE))
             continue;
 
-        pthread_mutex_lock (&m_udpSrvObj->m_mutexUDPInfo);
+        pthread_mutex_lock(&m_udpSrvObj->m_mutexUDPInfo);
 
         udpRemoteClientInfo *pudpClient = new udpRemoteClientInfo;
         if (NULL == pudpClient) {
-            syslog (LOG_ERR,
-                    "readUdpNodes: Failed to allocate storage for UDP node.");
-            pthread_mutex_unlock (&m_udpSrvObj->m_mutexUDPInfo);
+            syslog(LOG_ERR,
+                   "readUdpNodes: Failed to allocate storage for UDP node.");
+            pthread_mutex_unlock(&m_udpSrvObj->m_mutexUDPInfo);
             continue;
         }
 
         // Broadcast
         pudpClient->m_bSetBroadcast = false;
-        if (sqlite3_column_int (ppStmt, VSCPDB_ORDINAL_UDPNODE_SET_BROADCAST)) {
+        if (sqlite3_column_int(ppStmt, VSCPDB_ORDINAL_UDPNODE_SET_BROADCAST)) {
             pudpClient->m_bSetBroadcast = true;
         } // Interface
-        p = sqlite3_column_text (ppStmt, VSCPDB_ORDINAL_UDPNODE_INTERFACE);
+        p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_UDPNODE_INTERFACE);
         if (NULL != p) {
-            pudpClient->m_remoteAddress = std::string ((const char *)p);
+            pudpClient->m_remoteAddress = std::string((const char *)p);
         }
 
         //  Filter
-        p = sqlite3_column_text (ppStmt, VSCPDB_ORDINAL_UDPNODE_FILTER);
+        p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_UDPNODE_FILTER);
         if (NULL != p) {
-            std::string wxstr = std::string ((const char *)p);
-            if (!vscp_readFilterFromString (&pudpClient->m_filter, wxstr)) {
-                syslog (LOG_ERR,
-                        "readUdpNodes: Failed to set filter for UDP node.");
+            std::string wxstr = std::string((const char *)p);
+            if (!vscp_readFilterFromString(&pudpClient->m_filter, wxstr)) {
+                syslog(LOG_ERR,
+                       "readUdpNodes: Failed to set filter for UDP node.");
             }
         }
 
         // Mask
-        p = sqlite3_column_text (ppStmt, VSCPDB_ORDINAL_UDPNODE_MASK);
+        p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_UDPNODE_MASK);
         if (NULL != p) {
-            std::string wxstr = std::string ((const char *)p);
-            if (!vscp_readMaskFromString (&pudpClient->m_filter, wxstr)) {
-                syslog (LOG_ERR,
-                        "readUdpNodes: Failed to set mask for UDP node.");
+            std::string wxstr = std::string((const char *)p);
+            if (!vscp_readMaskFromString(&pudpClient->m_filter, wxstr)) {
+                syslog(LOG_ERR,
+                       "readUdpNodes: Failed to set mask for UDP node.");
             }
         }
 
         // Encryption
-        p = sqlite3_column_text (ppStmt, VSCPDB_ORDINAL_UDPNODE_ENCRYPTION);
+        p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_UDPNODE_ENCRYPTION);
         if (NULL != p) {
-            std::string wxstr         = std::string ((const char *)p);
-            pudpClient->m_nEncryption = vscp_getEncryptionCodeFromToken (wxstr);
+            std::string wxstr         = std::string((const char *)p);
+            pudpClient->m_nEncryption = vscp_getEncryptionCodeFromToken(wxstr);
         }
 
         // Add to list
         pudpClient->m_index = 0;
-        m_udpSrvObj->m_remotes.push_back (pudpClient);
+        m_udpSrvObj->m_remotes.push_back(pudpClient);
 
-        pthread_mutex_unlock (&m_udpSrvObj->m_mutexUDPInfo);
+        pthread_mutex_unlock(&m_udpSrvObj->m_mutexUDPInfo);
     }
 
-    sqlite3_finalize (ppStmt);
+    sqlite3_finalize(ppStmt);
 
     return true;
 }
@@ -5636,7 +5620,7 @@ CControlObject::readUdpNodes (void)
 //
 
 bool
-CControlObject::readMulticastChannels (void)
+CControlObject::readMulticastChannels(void)
 {
     char *pErrMsg    = 0;
     const char *psql = "SELECT * FROM multicast";
@@ -5647,127 +5631,127 @@ CControlObject::readMulticastChannels (void)
 
     // Check if database is open
     if (NULL == m_db_vscp_daemon) {
-        syslog (LOG_ERR, "readMulticastChannels: Database is not open.");
+        syslog(LOG_ERR, "readMulticastChannels: Database is not open.");
         return false;
     }
 
     if (SQLITE_OK !=
-        sqlite3_prepare (m_db_vscp_daemon, psql, -1, &ppStmt, NULL)) {
-        syslog (LOG_ERR, "readMulticastChannels: prepare query failed.");
+        sqlite3_prepare(m_db_vscp_daemon, psql, -1, &ppStmt, NULL)) {
+        syslog(LOG_ERR, "readMulticastChannels: prepare query failed.");
         return false;
     }
 
-    while (SQLITE_ROW == sqlite3_step (ppStmt)) {
+    while (SQLITE_ROW == sqlite3_step(ppStmt)) {
 
         const unsigned char *p;
 
         // If not enabled move on
-        if (!sqlite3_column_int (ppStmt, VSCPDB_ORDINAL_MULTICAST_ENABLE))
+        if (!sqlite3_column_int(ppStmt, VSCPDB_ORDINAL_MULTICAST_ENABLE))
             continue;
 
         multicastChannelItem *pChannel = new multicastChannelItem;
         if (NULL == pChannel) {
-            syslog (LOG_ERR,
-                    "readMulticastChannels: Failed to allocate storage for "
-                    "multicast node.");
+            syslog(LOG_ERR,
+                   "readMulticastChannels: Failed to allocate storage for "
+                   "multicast node.");
             continue;
         }
 
         // Default is to let everything come through
-        vscp_clearVSCPFilter (&pChannel->m_txFilter);
-        vscp_clearVSCPFilter (&pChannel->m_rxFilter);
+        vscp_clearVSCPFilter(&pChannel->m_txFilter);
+        vscp_clearVSCPFilter(&pChannel->m_rxFilter);
 
         // public interface
-        p = sqlite3_column_text (ppStmt, VSCPDB_ORDINAL_MULTICAST_PUBLIC);
+        p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_MULTICAST_PUBLIC);
         if (NULL != p) {
-            pChannel->m_public = std::string ((const char *)p);
+            pChannel->m_public = std::string((const char *)p);
         }
 
         // Port
-        p = sqlite3_column_text (ppStmt, VSCPDB_ORDINAL_MULTICAST_PORT);
+        p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_MULTICAST_PORT);
 
         // group
-        p = sqlite3_column_text (ppStmt, VSCPDB_ORDINAL_MULTICAST_GROUP);
+        p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_MULTICAST_GROUP);
         if (NULL != p) {
-            pChannel->m_gropupAddress = std::string ((const char *)p);
+            pChannel->m_gropupAddress = std::string((const char *)p);
         } // ttl
         pChannel->m_ttl =
-          sqlite3_column_int (ppStmt, VSCPDB_ORDINAL_MULTICAST_TTL);
+          sqlite3_column_int(ppStmt, VSCPDB_ORDINAL_MULTICAST_TTL);
 
         // bAck
         pChannel->m_bSendAck =
-          sqlite3_column_int (ppStmt, VSCPDB_ORDINAL_MULTICAST_SENDACK) ? true
-                                                                        : false;
+          sqlite3_column_int(ppStmt, VSCPDB_ORDINAL_MULTICAST_SENDACK) ? true
+                                                                       : false;
 
         // Allow unsecure
         pChannel->m_bAllowUnsecure =
-          sqlite3_column_int (ppStmt, VSCPDB_ORDINAL_MULTICAST_ALLOW_UNSECURE)
+          sqlite3_column_int(ppStmt, VSCPDB_ORDINAL_MULTICAST_ALLOW_UNSECURE)
             ? true
             : false;
 
         // GUID
-        p = sqlite3_column_text (ppStmt, VSCPDB_ORDINAL_MULTICAST_GUID);
+        p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_MULTICAST_GUID);
         if (NULL != p) {
-            pChannel->m_guid.getFromString ((const char *)p);
+            pChannel->m_guid.getFromString((const char *)p);
         }
 
         //  TX Filter
-        p = sqlite3_column_text (ppStmt, VSCPDB_ORDINAL_MULTICAST_TXFILTER);
+        p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_MULTICAST_TXFILTER);
         if (NULL != p) {
-            std::string wxstr = std::string ((const char *)p);
-            if (!vscp_readFilterFromString (&pChannel->m_txFilter, wxstr)) {
-                syslog (LOG_ERR,
-                        "readMulticastChannels: Failed to set TX "
-                        "filter for multicast channel.");
+            std::string wxstr = std::string((const char *)p);
+            if (!vscp_readFilterFromString(&pChannel->m_txFilter, wxstr)) {
+                syslog(LOG_ERR,
+                       "readMulticastChannels: Failed to set TX "
+                       "filter for multicast channel.");
             }
         }
 
         // TX Mask
-        p = sqlite3_column_text (ppStmt, VSCPDB_ORDINAL_MULTICAST_TXMASK);
+        p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_MULTICAST_TXMASK);
         if (NULL != p) {
-            std::string wxstr = std::string ((const char *)p);
-            if (!vscp_readMaskFromString (&pChannel->m_txFilter, wxstr)) {
-                syslog (LOG_ERR,
-                        "readMulticastChannels: Failed to set TX "
-                        "mask for multicast channel.");
+            std::string wxstr = std::string((const char *)p);
+            if (!vscp_readMaskFromString(&pChannel->m_txFilter, wxstr)) {
+                syslog(LOG_ERR,
+                       "readMulticastChannels: Failed to set TX "
+                       "mask for multicast channel.");
             }
         }
 
         //  RX Filter
-        p = sqlite3_column_text (ppStmt, VSCPDB_ORDINAL_MULTICAST_RXFILTER);
+        p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_MULTICAST_RXFILTER);
         if (NULL != p) {
-            std::string wxstr = std::string ((const char *)p);
-            if (!vscp_readFilterFromString (&pChannel->m_rxFilter, wxstr)) {
-                syslog (LOG_ERR,
-                        "readMulticastChannels: Failed to set RX "
-                        "filter for multicast channel.");
+            std::string wxstr = std::string((const char *)p);
+            if (!vscp_readFilterFromString(&pChannel->m_rxFilter, wxstr)) {
+                syslog(LOG_ERR,
+                       "readMulticastChannels: Failed to set RX "
+                       "filter for multicast channel.");
             }
         }
 
         // RX Mask
-        p = sqlite3_column_text (ppStmt, VSCPDB_ORDINAL_MULTICAST_RXMASK);
+        p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_MULTICAST_RXMASK);
         if (NULL != p) {
-            std::string wxstr = std::string ((const char *)p);
-            if (!vscp_readMaskFromString (&pChannel->m_rxFilter, wxstr)) {
-                syslog (LOG_ERR,
-                        "readMulticastChannels: Failed to set RX "
-                        "mask for multicast channel.");
+            std::string wxstr = std::string((const char *)p);
+            if (!vscp_readMaskFromString(&pChannel->m_rxFilter, wxstr)) {
+                syslog(LOG_ERR,
+                       "readMulticastChannels: Failed to set RX "
+                       "mask for multicast channel.");
             }
         }
 
         // Encryption
-        p = sqlite3_column_text (ppStmt, VSCPDB_ORDINAL_UDPNODE_ENCRYPTION);
+        p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_UDPNODE_ENCRYPTION);
         if (NULL != p) {
-            std::string wxstr       = std::string ((const char *)p);
-            pChannel->m_nEncryption = vscp_getEncryptionCodeFromToken (wxstr);
+            std::string wxstr       = std::string((const char *)p);
+            pChannel->m_nEncryption = vscp_getEncryptionCodeFromToken(wxstr);
         }
 
         // Add to list
         pChannel->m_index = 0;
-        m_multicastObj.m_channels.push_back (pChannel);
+        m_multicastObj.m_channels.push_back(pChannel);
     }
 
-    sqlite3_finalize (ppStmt);
+    sqlite3_finalize(ppStmt);
 
     return true;
 }
@@ -5780,29 +5764,29 @@ CControlObject::readMulticastChannels (void)
 //
 
 bool
-CControlObject::doCreateLogTable (void)
+CControlObject::doCreateLogTable(void)
 {
     char *pErrMsg    = 0;
     const char *psql = VSCPDB_LOG_CREATE;
 
-    syslog (LOG_INFO, "Creating VSCP log database.");
+    syslog(LOG_INFO, "Creating VSCP log database.");
 
     // Check if database is open
     if (NULL == m_db_vscp_log) {
-        syslog (LOG_ERR, "Failed to create VSCP log database - closed.");
+        syslog(LOG_ERR, "Failed to create VSCP log database - closed.");
         return false;
     }
 
-    pthread_mutex_lock (&m_db_vscp_configMutex);
+    pthread_mutex_lock(&m_db_vscp_configMutex);
 
-    if (SQLITE_OK != sqlite3_exec (m_db_vscp_log, psql, NULL, NULL, &pErrMsg)) {
-        syslog (
+    if (SQLITE_OK != sqlite3_exec(m_db_vscp_log, psql, NULL, NULL, &pErrMsg)) {
+        syslog(
           LOG_ERR, "Failed to create VSCP log table with error %s.", pErrMsg);
-        pthread_mutex_unlock (&m_db_vscp_configMutex);
+        pthread_mutex_unlock(&m_db_vscp_configMutex);
         return false;
     }
 
-    pthread_mutex_unlock (&m_db_vscp_configMutex);
+    pthread_mutex_unlock(&m_db_vscp_configMutex);
 
     return true;
 }
@@ -5814,32 +5798,32 @@ CControlObject::doCreateLogTable (void)
 //
 
 bool
-CControlObject::doCreateUdpNodeTable (void)
+CControlObject::doCreateUdpNodeTable(void)
 {
     char *pErrMsg    = 0;
     const char *psql = VSCPDB_UDPNODE_CREATE;
 
-    syslog (LOG_INFO, "Creating udpnode table.");
+    syslog(LOG_INFO, "Creating udpnode table.");
 
     // Check if database is open
     if (NULL == m_db_vscp_daemon) {
-        syslog (LOG_ERR,
-                "Failed to create VSCP udpnode table - database closed.");
+        syslog(LOG_ERR,
+               "Failed to create VSCP udpnode table - database closed.");
         return false;
     }
 
-    pthread_mutex_lock (&m_db_vscp_configMutex);
+    pthread_mutex_lock(&m_db_vscp_configMutex);
 
     if (SQLITE_OK !=
-        sqlite3_exec (m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg)) {
-        syslog (LOG_ERR,
-                "Failed to create VSCP udpnode table with error %s.",
-                pErrMsg);
-        pthread_mutex_unlock (&m_db_vscp_configMutex);
+        sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg)) {
+        syslog(LOG_ERR,
+               "Failed to create VSCP udpnode table with error %s.",
+               pErrMsg);
+        pthread_mutex_unlock(&m_db_vscp_configMutex);
         return false;
     }
 
-    pthread_mutex_unlock (&m_db_vscp_configMutex);
+    pthread_mutex_unlock(&m_db_vscp_configMutex);
 
     return true;
 }
@@ -5852,32 +5836,32 @@ CControlObject::doCreateUdpNodeTable (void)
 //
 
 bool
-CControlObject::doCreateMulticastTable (void)
+CControlObject::doCreateMulticastTable(void)
 {
     char *pErrMsg    = 0;
     const char *psql = VSCPDB_MULTICAST_CREATE;
 
-    syslog (LOG_INFO, "Creating multicast table.");
+    syslog(LOG_INFO, "Creating multicast table.");
 
     // Check if database is open
     if (NULL == m_db_vscp_daemon) {
-        syslog (LOG_ERR,
-                "Failed to create VSCP multicast table - database closed.");
+        syslog(LOG_ERR,
+               "Failed to create VSCP multicast table - database closed.");
         return false;
     }
 
-    pthread_mutex_lock (&m_db_vscp_configMutex);
+    pthread_mutex_lock(&m_db_vscp_configMutex);
 
     if (SQLITE_OK !=
-        sqlite3_exec (m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg)) {
-        syslog (LOG_ERR,
-                "Failed to create VSCP multicast table with error %s.",
-                pErrMsg);
-        pthread_mutex_unlock (&m_db_vscp_configMutex);
+        sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg)) {
+        syslog(LOG_ERR,
+               "Failed to create VSCP multicast table with error %s.",
+               pErrMsg);
+        pthread_mutex_unlock(&m_db_vscp_configMutex);
         return false;
     }
 
-    pthread_mutex_unlock (&m_db_vscp_configMutex);
+    pthread_mutex_unlock(&m_db_vscp_configMutex);
 
     return true;
 }
@@ -5890,22 +5874,22 @@ CControlObject::doCreateMulticastTable (void)
 //
 
 bool
-CControlObject::doCreateUserTable (void)
+CControlObject::doCreateUserTable(void)
 {
     char *pErrMsg    = 0;
     const char *psql = VSCPDB_USER_CREATE;
 
-    syslog (LOG_INFO, "Creating user table.");
+    syslog(LOG_INFO, "Creating user table.");
 
     // Check if database is open
     if (NULL == m_db_vscp_daemon) {
-        syslog (LOG_ERR, "Failed to create VSCP user table - closed.");
+        syslog(LOG_ERR, "Failed to create VSCP user table - closed.");
         return false;
     }
 
     if (SQLITE_OK !=
-        sqlite3_exec (m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg)) {
-        syslog (
+        sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg)) {
+        syslog(
           LOG_ERR, "Failed to create VSCP user table with error %s.", pErrMsg);
         return false;
     }
@@ -5921,24 +5905,24 @@ CControlObject::doCreateUserTable (void)
 //
 
 bool
-CControlObject::doCreateDriverTable (void)
+CControlObject::doCreateDriverTable(void)
 {
     char *pErrMsg    = 0;
     const char *psql = VSCPDB_DRIVER_CREATE;
 
-    syslog (LOG_INFO, "Creating driver table.");
+    syslog(LOG_INFO, "Creating driver table.");
 
     // Check if database is open
     if (NULL == m_db_vscp_daemon) {
-        syslog (LOG_ERR, "Failed to create VSCP driver table - closed.");
+        syslog(LOG_ERR, "Failed to create VSCP driver table - closed.");
         return false;
     }
 
     if (SQLITE_OK !=
-        sqlite3_exec (m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg)) {
-        syslog (LOG_ERR,
-                "Failed to create VSCP driver table with error %s.",
-                pErrMsg);
+        sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg)) {
+        syslog(LOG_ERR,
+               "Failed to create VSCP driver table with error %s.",
+               pErrMsg);
         return false;
     }
 
@@ -5953,22 +5937,22 @@ CControlObject::doCreateDriverTable (void)
 //
 
 bool
-CControlObject::doCreateGuidTable (void)
+CControlObject::doCreateGuidTable(void)
 {
     char *pErrMsg    = 0;
     const char *psql = VSCPDB_GUID_CREATE;
 
-    syslog (LOG_INFO, "Creating GUID discovery table.");
+    syslog(LOG_INFO, "Creating GUID discovery table.");
 
     // Check if database is open
     if (NULL == m_db_vscp_daemon) {
-        syslog (LOG_ERR, "Failed to create VSCP GUID table - closed.");
+        syslog(LOG_ERR, "Failed to create VSCP GUID table - closed.");
         return false;
     }
 
     if (SQLITE_OK !=
-        sqlite3_exec (m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg)) {
-        syslog (
+        sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg)) {
+        syslog(
           LOG_ERR, "Failed to create VSCP GUID table with error %s.", pErrMsg);
         return false;
     }
@@ -5984,24 +5968,24 @@ CControlObject::doCreateGuidTable (void)
 //
 
 bool
-CControlObject::doCreateLocationTable (void)
+CControlObject::doCreateLocationTable(void)
 {
     char *pErrMsg    = 0;
     const char *psql = VSCPDB_LOCATION_CREATE;
 
-    syslog (LOG_INFO, "Creating location table.");
+    syslog(LOG_INFO, "Creating location table.");
 
     // Check if database is open
     if (NULL == m_db_vscp_daemon) {
-        syslog (LOG_ERR, "Failed to create VSCP location table - closed.");
+        syslog(LOG_ERR, "Failed to create VSCP location table - closed.");
         return false;
     }
 
     if (SQLITE_OK !=
-        sqlite3_exec (m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg)) {
-        syslog (LOG_ERR,
-                "Failed to create VSCP location table with error %s.",
-                pErrMsg);
+        sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg)) {
+        syslog(LOG_ERR,
+               "Failed to create VSCP location table with error %s.",
+               pErrMsg);
         return false;
     }
 
@@ -6016,22 +6000,22 @@ CControlObject::doCreateLocationTable (void)
 //
 
 bool
-CControlObject::doCreateMdfCacheTable (void)
+CControlObject::doCreateMdfCacheTable(void)
 {
     char *pErrMsg    = 0;
     const char *psql = VSCPDB_MDF_CREATE;
 
-    syslog (LOG_INFO, "Creating MDF table.");
+    syslog(LOG_INFO, "Creating MDF table.");
 
     // Check if database is open
     if (NULL == m_db_vscp_daemon) {
-        syslog (LOG_ERR, "Failed to create VSCP mdf table - closed.");
+        syslog(LOG_ERR, "Failed to create VSCP mdf table - closed.");
         return false;
     }
 
     if (SQLITE_OK !=
-        sqlite3_exec (m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg)) {
-        syslog (
+        sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg)) {
+        syslog(
           LOG_ERR, "Failed to create VSCP mdf table with error %s.", pErrMsg);
         return false;
     }
@@ -6047,24 +6031,24 @@ CControlObject::doCreateMdfCacheTable (void)
 //
 
 bool
-CControlObject::doCreateSimpleUiTable (void)
+CControlObject::doCreateSimpleUiTable(void)
 {
     char *pErrMsg    = 0;
     const char *psql = VSCPDB_SIMPLE_UI_CREATE;
 
-    syslog (LOG_INFO, "Creating simple ui table.");
+    syslog(LOG_INFO, "Creating simple ui table.");
 
     // Check if database is open
     if (NULL == m_db_vscp_daemon) {
-        syslog (LOG_ERR, "Failed to create VSCP simple ui table - closed.");
+        syslog(LOG_ERR, "Failed to create VSCP simple ui table - closed.");
         return false;
     }
 
     if (SQLITE_OK !=
-        sqlite3_exec (m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg)) {
-        syslog (LOG_ERR,
-                "Failed to create VSCP simple ui table with error %s.",
-                pErrMsg);
+        sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg)) {
+        syslog(LOG_ERR,
+               "Failed to create VSCP simple ui table with error %s.",
+               pErrMsg);
         return false;
     }
 
@@ -6079,25 +6063,24 @@ CControlObject::doCreateSimpleUiTable (void)
 //
 
 bool
-CControlObject::doCreateSimpleUiItemTable (void)
+CControlObject::doCreateSimpleUiItemTable(void)
 {
     char *pErrMsg    = 0;
     const char *psql = VSCPDB_SIMPLE_UI_ITEM_CREATE;
 
-    syslog (LOG_INFO, "Creating simple ui item table..");
+    syslog(LOG_INFO, "Creating simple ui item table..");
 
     // Check if database is open
     if (NULL == m_db_vscp_daemon) {
-        syslog (LOG_ERR,
-                "Failed to create VSCP simple UI item table - closed.");
+        syslog(LOG_ERR, "Failed to create VSCP simple UI item table - closed.");
         return false;
     }
 
     if (SQLITE_OK !=
-        sqlite3_exec (m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg)) {
-        syslog (LOG_ERR,
-                "Failed to create VSCP simple UI item table with error %s.",
-                pErrMsg);
+        sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg)) {
+        syslog(LOG_ERR,
+               "Failed to create VSCP simple UI item table with error %s.",
+               pErrMsg);
         return false;
     }
 
@@ -6111,22 +6094,22 @@ CControlObject::doCreateSimpleUiItemTable (void)
 //
 
 bool
-CControlObject::doCreateZoneTable (void)
+CControlObject::doCreateZoneTable(void)
 {
     char *pErrMsg    = 0;
     const char *psql = VSCPDB_ZONE_CREATE;
 
-    syslog (LOG_INFO, "Creating zone table..");
+    syslog(LOG_INFO, "Creating zone table..");
 
     // Check if database is open
     if (NULL == m_db_vscp_daemon) {
-        syslog (LOG_ERR, "Failed to create VSCP zone table - closed.");
+        syslog(LOG_ERR, "Failed to create VSCP zone table - closed.");
         return false;
     }
 
     if (SQLITE_OK !=
-        sqlite3_exec (m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg)) {
-        syslog (
+        sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg)) {
+        syslog(
           LOG_ERR, "Failed to create VSCP zone table with error %s.", pErrMsg);
         return false;
     }
@@ -6134,21 +6117,21 @@ CControlObject::doCreateZoneTable (void)
     // Fill with default info
     std::string sql = "BEGIN;";
     for (int i = 0; i < 256; i++) {
-        sql += vscp_string_format (("INSERT INTO 'zone' (idx_zone, name) "
-                                    "VALUES( %d, 'zone%d' );"),
-                                   i,
-                                   i);
+        sql += vscp_string_format(("INSERT INTO 'zone' (idx_zone, name) "
+                                   "VALUES( %d, 'zone%d' );"),
+                                  i,
+                                  i);
     }
 
-    sql += vscp_string_format (VSCPDB_ZONE_UPDATE,
-                               "All zones",
-                               "Zone = 255 represents all zones.",
-                               255L);
+    sql += vscp_string_format(VSCPDB_ZONE_UPDATE,
+                              "All zones",
+                              "Zone = 255 represents all zones.",
+                              255L);
     sql += "COMMIT;";
     if (SQLITE_OK !=
-        sqlite3_exec (
-          m_db_vscp_daemon, (const char *)sql.c_str (), NULL, NULL, &pErrMsg)) {
-        syslog (
+        sqlite3_exec(
+          m_db_vscp_daemon, (const char *)sql.c_str(), NULL, NULL, &pErrMsg)) {
+        syslog(
           LOG_ERR,
           "Failed to insert last VSCP default zone table entry %d. Error %s",
           255,
@@ -6166,46 +6149,46 @@ CControlObject::doCreateZoneTable (void)
 //
 
 bool
-CControlObject::doCreateSubZoneTable (void)
+CControlObject::doCreateSubZoneTable(void)
 {
     char *pErrMsg    = 0;
     const char *psql = VSCPDB_SUBZONE_CREATE;
 
-    syslog (LOG_INFO, "Creating sub-zone table.");
+    syslog(LOG_INFO, "Creating sub-zone table.");
 
     // Check if database is open
     if (NULL == m_db_vscp_daemon) {
-        syslog (LOG_ERR, "Failed to create VSCP subzone table - closed.");
+        syslog(LOG_ERR, "Failed to create VSCP subzone table - closed.");
         return false;
     }
 
     if (SQLITE_OK !=
-        sqlite3_exec (m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg)) {
-        syslog (LOG_ERR,
-                "Failed to create VSCP subzone table with error %s.",
-                pErrMsg);
+        sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg)) {
+        syslog(LOG_ERR,
+               "Failed to create VSCP subzone table with error %s.",
+               pErrMsg);
         return false;
     }
 
     // Fill with default info
     std::string sql = "BEGIN;";
     for (int i = 0; i < 256; i++) {
-        sql += vscp_string_format (("INSERT INTO 'subzone' (idx_subzone, name) "
-                                    "VALUES( %d, 'subzone%d' );"),
-                                   i,
-                                   i);
+        sql += vscp_string_format(("INSERT INTO 'subzone' (idx_subzone, name) "
+                                   "VALUES( %d, 'subzone%d' );"),
+                                  i,
+                                  i);
     }
 
     sql +=
-      vscp_string_format (VSCPDB_SUBZONE_UPDATE,
-                          "All subzones",
-                          "Subzone = 255 represents all subzones of a zone.",
-                          255L);
+      vscp_string_format(VSCPDB_SUBZONE_UPDATE,
+                         "All subzones",
+                         "Subzone = 255 represents all subzones of a zone.",
+                         255L);
     sql += "COMMIT;";
     if (SQLITE_OK !=
-        sqlite3_exec (
-          m_db_vscp_daemon, (const char *)sql.c_str (), NULL, NULL, &pErrMsg)) {
-        syslog (
+        sqlite3_exec(
+          m_db_vscp_daemon, (const char *)sql.c_str(), NULL, NULL, &pErrMsg)) {
+        syslog(
           LOG_ERR,
           "Failed to insert last VSCP default subzone table entry %d. Error %s",
           255,
@@ -6223,24 +6206,24 @@ CControlObject::doCreateSubZoneTable (void)
 //
 
 bool
-CControlObject::doCreateUserdefTableTable (void)
+CControlObject::doCreateUserdefTableTable(void)
 {
     char *pErrMsg    = 0;
     const char *psql = VSCPDB_TABLE_CREATE;
 
-    syslog (LOG_INFO, "Creating userdef table.");
+    syslog(LOG_INFO, "Creating userdef table.");
 
     // Check if database is open
     if (NULL == m_db_vscp_daemon) {
-        syslog (LOG_ERR, "Failed to create VSCP userdef table - closed.");
+        syslog(LOG_ERR, "Failed to create VSCP userdef table - closed.");
         return false;
     }
 
     if (SQLITE_OK !=
-        sqlite3_exec (m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg)) {
-        syslog (LOG_ERR,
-                "Failed to create VSCP userdef table with error %s.",
-                pErrMsg);
+        sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg)) {
+        syslog(LOG_ERR,
+               "Failed to create VSCP userdef table with error %s.",
+               pErrMsg);
         return false;
     }
 
@@ -6258,7 +6241,7 @@ CControlObject::doCreateUserdefTableTable (void)
 //
 
 void *
-clientMsgWorkerThread (void *userdata)
+clientMsgWorkerThread(void *userdata)
 {
     std::list<vscpEvent *>::iterator it;
     vscpEvent *pvscpEvent = NULL;
@@ -6273,16 +6256,16 @@ clientMsgWorkerThread (void *userdata)
         struct timespec ts;
         ts.tv_sec  = 0;
         ts.tv_nsec = 500000; // 500 ms
-        if (ETIMEDOUT == sem_timedwait (&pObj->m_semClientOutputQueue, &ts)) {
+        if (ETIMEDOUT == sem_timedwait(&pObj->m_semClientOutputQueue, &ts)) {
             continue;
         }
-        if (pObj->m_clientOutputQueue.size ()) {
+        if (pObj->m_clientOutputQueue.size()) {
 
-            pthread_mutex_lock (&pObj->m_mutexClientOutputQueue);
-            pvscpEvent = pObj->m_clientOutputQueue.front ();
-            pObj->m_clientOutputQueue.pop_front ();
+            pthread_mutex_lock(&pObj->m_mutexClientOutputQueue);
+            pvscpEvent = pObj->m_clientOutputQueue.front();
+            pObj->m_clientOutputQueue.pop_front();
             // pvscpEvent = *it;
-            pthread_mutex_unlock (&pObj->m_mutexClientOutputQueue);
+            pthread_mutex_unlock(&pObj->m_mutexClientOutputQueue);
 
             if (NULL != pvscpEvent) {
 
@@ -6292,12 +6275,12 @@ clientMsgWorkerThread (void *userdata)
                 // * * * *
                 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
-                pObj->sendEventAllClients (pvscpEvent, pvscpEvent->obid);
+                pObj->sendEventAllClients(pvscpEvent, pvscpEvent->obid);
 
             } // Valid event
 
             // Delete the event
-            if (NULL != pvscpEvent) vscp_deleteVSCPevent (pvscpEvent);
+            if (NULL != pvscpEvent) vscp_deleteVSCPevent(pvscpEvent);
             pvscpEvent = NULL;
 
         } // while

@@ -26,18 +26,17 @@
 // SOFTWARE.
 //
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
 #include <limits.h>
 #include <math.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/times.h>
-
+#include <sys/types.h>
+#include <unistd.h>
 
 #ifdef _WIN32
 #include <io.h>
@@ -2580,8 +2579,7 @@ vscp_setEventExGuidFromString(vscpEventEx *pEvent, const std::string &strGUID)
 //
 
 bool
-vscp_getGuidFromStringToArray(unsigned char *pGUID,
-                                   const std::string &strGUID)
+vscp_getGuidFromStringToArray(unsigned char *pGUID, const std::string &strGUID)
 {
     unsigned long val;
     std::string str = vscp_trim_copy(strGUID);
@@ -2642,7 +2640,7 @@ vscp_writeGuidToString(const vscpEvent *pEvent, std::string &strGUID)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// writeGuidToStringEx  
+// writeGuidToStringEx
 //
 
 bool

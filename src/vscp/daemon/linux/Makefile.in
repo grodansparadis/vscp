@@ -24,7 +24,7 @@ BUILD_VERSION = `sed '38!d' ../../common/version.h  | cut -b 33-
 WARNINGS_HARD = -Werror -Wall -Wextra -pedantic -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self -Wlogical-op -Wmissing-include-dirs -Wnoexcept -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-promo -Wstrict-null-sentinel -Wstrict-overflow=5 -Wundef -Wno-unused -Wno-variadic-macros -Wno-parentheses -fdiagnostics-show-option
 WARNINGS_MEDIUM = -Wformat-security -Wformat=2
 
-MONGOOSE_CFLAGS = -DMG_ENABLE_THREADS -DMG_ENABLE_IPV6 -DMG_ENABLE_SSL -DMG_ENABLE_HTTP_CGI -DMG_ENABLE_HTTP_SSI -DMG_ENABLE_HTTP_SSI_EXEC -DMG_ENABLE_HTTP_WEBDAV -DMG_ENABLE_GETADDRINFO -DMG_ENABLE_HTTP_URL_REWRITES -DMG_ENABLE_MQTT_BROKER
+MONGOOSE_CFLAGS = -DMG_ENABLE_THREADS -DMG_ENABLE_IPV6 -DMG_ENABLE_SSL -DMG_ENABLE_GETADDRINFO
 CFLAGS = -std=c99 @CFLAGS@ -DCBC -DLUA_USE_POSIX -I@top_srcdir@ -I../../common -I../../../common -I../../../common/lua -I../../../common/lua/src
 CXXFLAGS = -std=c++11 @CXXFLAGS@ 
 CPPFLAGS = @CPPFLAGS@ -fno-var-tracking-assignments -I@top_srcdir@ -I../../common -I../../../common -I../../../common/lua -I../../../common/lua/src
@@ -37,7 +37,7 @@ STRIP = strip
 INSTALL_PROGRAM = ${INSTALL}
 INSTALL_DATA = ${INSTALL} -m 644
 INSTALL_DIR = /usr/bin/install -c -d
-srcdir = .
+srcdir = .<
 top_srcdir = .
 top_builddir =
 bindir = ${exec_prefix}/bin
@@ -107,7 +107,7 @@ VSCPD_OBJECTS =  vscpd.o \
 all: vscpd
 
 vscpd.o: vscpd.cpp vscpd.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c vscpd.cpp -o $@
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c vscpd.cpp -o $@ $(EXTRALIBS)
 
 daemonworker.o: ../../common/daemonworker.cpp ../../common/daemonworker.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/daemonworker.cpp -o $@
@@ -260,7 +260,7 @@ lua_all.o: ../../../common/lua_all.c
 	$(CC) $(CFLAGS) -I../../../common/lua -c ../../../common/lua_all.c -o $@
 
 vscpd: $(VSCPD_OBJECTS)
-	$(CXX) -o $@ $(VSCPD_OBJECTS) $(LDFLAGS) -L$(LIBDIRNAME) $(EXTRALIBS)
+	$(CXX) -o $@ $(VSCPD_OBJECTS) $(LDFLAGS) $(EXTRALIBS)
 
 # Used by checkinstall
 debinst: all

@@ -137,8 +137,7 @@ PROJ_SUBDIRS="src/vscp/drivers/level1/can4vscp/linux\
  src/vscp/vscp-mkpasswd\
  src/vscp/uvscpd\
  src/vscp/vscpcmd\
- src/vscp/relayd\
- "
+ src/vscp/relayd "
 
 AC_ARG_ENABLE(rpi,
 [  --enable-rpi         Build Raspberry Pi specific stuff (default disabled)],
@@ -146,7 +145,7 @@ AC_ARG_ENABLE(rpi,
 
 test "${vscp_rpi}" == "yes"
 if test "${vscp_rpi}" = yes ; then
-    PROJ_SUBDIRS+="  src/vscp/drivers/level2/rpigpio/linux\
+    PROJ_SUBDIRS+=" src/vscp/drivers/level2/rpigpio/linux\
     src/vscp/drivers/level2/rpilcd/linux\
     src/vscp/drivers/level2/rpimax6675/linux"
     AC_CHECK_LIB([wiringPi], [wiringPiSetup])
@@ -181,77 +180,77 @@ dnl
 dnl  Static build if wxWidgets
 dnl
 
-AC_ARG_ENABLE(static,
-[  --enable-static         static build of wxWidgets (default shared)],
-[vscp_static=yes],[vscp_static=no])
+dnl WX AC_ARG_ENABLE(static,
+dnl WX [  --enable-static         static build of wxWidgets (default shared)],
+dnl WX [vscp_static=yes],[vscp_static=no])
 dnl test "${vscp_static}" != "yes" && vscp_static="no"
 
 dnl
 dnl  wxWindows module
 dnl
 
-AM_OPTIONS_WXCONFIG
-reqwx=3.0.0
+dnl WX AM_OPTIONS_WXCONFIG
+dnl WX reqwx=3.0.0
 
-if test "${ax_enable_debug}" = yes ; then
-    echo 'checking for debug unicode wx-libs ...'
-    AM_PATH_WXCONFIG($reqwx, [wxWin=1], [wxWin=0], --unicode=yes --debug=yes)
-else
-    echo 'checking for unicode wx-libs ...'
-    AM_PATH_WXCONFIG($reqwx, [wxWin=1], [wxWin=0], --unicode=yes --debug=no)
-fi
-if test "$wxWin" != 1; then
-    AC_MSG_ERROR([
-        wxWidgets must be installed on your system.
+dnl WX if test "${ax_enable_debug}" = yes ; then
+dnl WX     echo 'checking for debug unicode wx-libs ...'
+dnl WX     AM_PATH_WXCONFIG($reqwx, [wxWin=1], [wxWin=0], --unicode=yes --debug=yes)
+dnl WX else
+dnl WX     echo 'checking for unicode wx-libs ...'
+dnl WX     AM_PATH_WXCONFIG($reqwx, [wxWin=1], [wxWin=0], --unicode=yes --debug=no)
+dnl WX fi
+dnl WX if test "$wxWin" != 1; then
+dnl WX     AC_MSG_ERROR([
+dnl WX         wxWidgets must be installed on your system.
+dnl WX 
+dnl WX         Please check that wx-config is in path, the directory
+dnl WX         where wxWidgets libraries are installed (returned by
+dnl WX         'wx-config --libs' or 'wx-config --static --libs' command)
+dnl WX         is in LD_LIBRARY_PATH or equivalent variable and
+dnl WX         wxWidgets version is $reqwx or above.
+dnl WX     ])
+dnl WX fi
+dnl WX 
+dnl WX dnl CPPFLAGS="$CPPFLAGS $WX_CPPFLAGS"
+dnl WX dnl CXXFLAGS="$CXXFLAGS $WX_CXXFLAGS_ONLY"
+dnl WX dnl CFLAGS="$CFLAGS $WX_CFLAGS_ONLY"
+dnl WX dnl LIBS="$LIBS $WX_LIBS"
 
-        Please check that wx-config is in path, the directory
-        where wxWidgets libraries are installed (returned by
-        'wx-config --libs' or 'wx-config --static --libs' command)
-        is in LD_LIBRARY_PATH or equivalent variable and
-        wxWidgets version is $reqwx or above.
-    ])
-fi
-
-dnl CPPFLAGS="$CPPFLAGS $WX_CPPFLAGS"
-dnl CXXFLAGS="$CXXFLAGS $WX_CXXFLAGS_ONLY"
-dnl CFLAGS="$CFLAGS $WX_CFLAGS_ONLY"
-dnl LIBS="$LIBS $WX_LIBS"
-
-WX_BASENAME=`$WX_CONFIG_WITH_ARGS --basename`
-vscp_gui=no
-AC_MSG_CHECKING([for wx_gtk2* or wx_gtk3* wxWidgets libs])
-if sh -c "$WX_CONFIG_WITH_ARGS --basename" 2>/dev/null | grep -e wx_gtk2 -e wx_gtk3 >/dev/null; then
-    dnl wxGTK is installed, build the GUI applications also
-    PROJ_SUBDIRS="$PROJ_SUBDIRS $PROJ_SUBDIRS_GUI"
-    vscp_gui=yes
-    AC_MSG_RESULT([Found; building GUI apps])
-fi
+dnl WX WX_BASENAME=`$WX_CONFIG_WITH_ARGS --basename`
+dnl WX vscp_gui=no
+dnl WX AC_MSG_CHECKING([for wx_gtk2* or wx_gtk3* wxWidgets libs])
+dnl WX if sh -c "$WX_CONFIG_WITH_ARGS --basename" 2>/dev/null | grep -e wx_gtk2 -e wx_gtk3 >/dev/null; then
+dnl WX     dnl wxGTK is installed, build the GUI applications also
+dnl WX     PROJ_SUBDIRS="$PROJ_SUBDIRS $PROJ_SUBDIRS_GUI"
+dnl WX     vscp_gui=yes
+dnl WX     AC_MSG_RESULT([Found; building GUI apps])
+dnl WX fi
 
 EXTRALIBS="${EXTRALIBS} ${LIBS}"
 
-if test "${vscp_debug}" = yes ; then
-WXBASE_CPPFLAGS=`$WX_CONFIG_WITH_ARGS -debug --cppflags base`
-WXBASE_CXXFLAGS=`$WX_CONFIG_WITH_ARGS --debug --cxxflags base`
-WXBASE_CFLAGS=`$WX_CONFIG_WITH_ARGS --debug --cflags base`
-WXBASE_LIBS=`$WX_CONFIG_WITH_ARGS --debug --libs base xml net`
+dnl WX if test "${vscp_debug}" = yes ; then
+dnl WX WXBASE_CPPFLAGS=`$WX_CONFIG_WITH_ARGS -debug --cppflags base`
+dnl WX WXBASE_CXXFLAGS=`$WX_CONFIG_WITH_ARGS --debug --cxxflags base`
+dnl WX WXBASE_CFLAGS=`$WX_CONFIG_WITH_ARGS --debug --cflags base`
+dnl WX WXBASE_LIBS=`$WX_CONFIG_WITH_ARGS --debug --libs base xml net`
 dnl WXBASE_STATIC_LIBS=`$WX_CONFIG_WITH_ARGS --debug --static  --libs base xml net`
-WXGTK_CPPFLAGS=`$WX_CONFIG_WITH_ARGS -debug --cppflags`
-WXGTK_CXXFLAGS=`$WX_CONFIG_WITH_ARGS --debug --cxxflags`
-WXGTK_CFLAGS=`$WX_CONFIG_WITH_ARGS --debug --cflags`
-WXGTK_LIBS=`$WX_CONFIG_WITH_ARGS --debug --libs`
+dnl WX WXGTK_CPPFLAGS=`$WX_CONFIG_WITH_ARGS -debug --cppflags`
+dnl WX WXGTK_CXXFLAGS=`$WX_CONFIG_WITH_ARGS --debug --cxxflags`
+dnl WX WXGTK_CFLAGS=`$WX_CONFIG_WITH_ARGS --debug --cflags`
+dnl WX WXGTK_LIBS=`$WX_CONFIG_WITH_ARGS --debug --libs`
 dnl WXGTK_STATIC_LIBS=`$WX_CONFIG_WITH_ARGS --debug --static --libs`
-else
-WXBASE_CPPFLAGS=`$WX_CONFIG_WITH_ARGS --cppflags base`
-WXBASE_CXXFLAGS=`$WX_CONFIG_WITH_ARGS --cxxflags base`
-WXBASE_CFLAGS=`$WX_CONFIG_WITH_ARGS --cflags base`
-WXBASE_LIBS=`$WX_CONFIG_WITH_ARGS --libs base xml net`
+dnl WX else
+dnl WX WXBASE_CPPFLAGS=`$WX_CONFIG_WITH_ARGS --cppflags base`
+dnl WX WXBASE_CXXFLAGS=`$WX_CONFIG_WITH_ARGS --cxxflags base`
+dnl WX WXBASE_CFLAGS=`$WX_CONFIG_WITH_ARGS --cflags base`
+dnl WX WXBASE_LIBS=`$WX_CONFIG_WITH_ARGS --libs base xml net`
 dnl WXBASE_STATIC_LIBS=`$WX_CONFIG_WITH_ARGS --static  --libs base xml net`
-WXGTK_CPPFLAGS=`$WX_CONFIG_WITH_ARGS --cppflags`
-WXGTK_CXXFLAGS=`$WX_CONFIG_WITH_ARGS --cxxflags`
-WXGTK_CFLAGS=`$WX_CONFIG_WITH_ARGS --cflags`
-WXGTK_LIBS=`$WX_CONFIG_WITH_ARGS  --libs`
+dnl WX WXGTK_CPPFLAGS=`$WX_CONFIG_WITH_ARGS --cppflags`
+dnl WX WXGTK_CXXFLAGS=`$WX_CONFIG_WITH_ARGS --cxxflags`
+dnl WX WXGTK_CFLAGS=`$WX_CONFIG_WITH_ARGS --cflags`
+dnl WX WXGTK_LIBS=`$WX_CONFIG_WITH_ARGS  --libs`
 dnl WXGTK_STATIC_LIBS=`$WX_CONFIG_WITH_ARGS --static --libs`
-fi
+dnl WX fi
 
 if test "${vscp_static}" = yes ; then
 STATIC="yes"
@@ -266,7 +265,6 @@ dnl
 AC_CONFIG_FILES([Makefile
          m4/Makefile
          src/vscp/vscpcmd/Makefile
-         src/vscp/vscpworks/Makefile
          src/vscp/daemon/linux/Makefile
          src/vscp/uvscpd/Makefile
          src/vscp/vscp-mkpasswd/Makefile
@@ -300,7 +298,7 @@ AC_OUTPUT
 
 dnl Output some debugging information
 echo   "LIBS          : ${LIBS}"
-echo   "WXLIBS        : ${WXLIBS}"
+dnl WX echo   "WXLIBS        : ${WXLIBS}"
 echo   "EXTRALIBS     : ${EXTRALIBS}"
 echo   "EXTRACPPFLAGS : ${CPPFLAGS}"
 echo   "EXTRACXXFLAGS : ${CXXFLAGS}"
@@ -327,9 +325,9 @@ fi
 
 if test "${vscp_static}" = "yes"
 then
-   echo "linking for wxWidgets : static "
+   echo "linking : static "
 else
-   echo "linking for wxWidgets : shared "
+   echo "linking : shared "
 fi
 
 if test "${vscp_rpi}" = yes ; then
@@ -343,7 +341,7 @@ You can tune the compiler flags in vscp-config.
 To build VSCP and friends, type \'make\' followed by \'make install\'
 
  use --enable-debug to build a debug version; release is default.
- use --enable-static to include a static version of wxWidgets.
+ use --enable-static to include a static version (currently diabled).
  use --enable-rpi to build Raspberry Pi specific drivers.
 
  \"make\" -- builds VSCP & Friends.
