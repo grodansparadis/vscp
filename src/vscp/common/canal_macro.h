@@ -1,4 +1,4 @@
-// udpReceiveThread.cpp
+// canal_macro.h
 //
 // This file is part of the VSCP (http://www.vscp.org) 
 //

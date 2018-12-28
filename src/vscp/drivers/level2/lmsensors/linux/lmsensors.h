@@ -25,31 +25,18 @@
 #if !defined(LMSENSORS_H__INCLUDED_)
 #define LMSENSORS_H__INCLUDED_
 
-#ifdef WIN32
-#include <windows.h>
-#endif
+#define _POSIX
+
+#include <string>
+#include <list>
+#include <deque>
 
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
-
-#ifdef WIN32
-
-#if _MSC_VER > 1000
-#pragma once
-#endif // _MSC_VER > 1000
-
-#else
-
-#define _POSIX
 #include <unistd.h>
 #include <pthread.h>
 #include <syslog.h>
-
-#endif
-
-#include <wx/file.h>
-#include <wx/wfstream.h>
 
 #include <canal.h>
 #include <vscp.h>
@@ -58,10 +45,6 @@
 #include <vscpremotetcpif.h>
 #include <guid.h>
 
-#include <list>
-#include <string>
-
-using namespace std;
 
 #define VSCP_LEVEL2_DLL_LMSENSORS_OBJ_MUTEX "___VSCP__DLL_L2LMSENSORS_OBJ_MUTEX____"
 
@@ -71,9 +54,8 @@ using namespace std;
 #define DEFAULT_INTERVAL    10    
 
 // Forward declarations
-class ClmsensorsWrkTread;
+class CWrkTreadObj;
 class VscpRemoteTcpIf;
-class wxFile;
 
 
 class Clmsensors {
@@ -112,16 +94,16 @@ public:
     bool m_bQuit;
 
     /// Server supplied username
-    wxString m_username;
+    std::string m_username;
 
     /// Server supplied password
-    wxString m_password;
+    std::string m_password;
 
     /// server supplied prefix
-    wxString m_prefix;
+    std::string m_prefix;
 
     /// server supplied host
-    wxString m_host;
+    std::string m_host;
 
     /// Server supplied port
     short m_port;
@@ -132,9 +114,7 @@ public:
 	/// Filter
     vscpEventFilter m_vscpfilter;
 
-    /// Pointer to worker thread
-    ClmsensorsWrkTread *m_pthreadWork;
-    
+
      /// VSCP server interface
     VscpRemoteTcpIf m_srv;
 	
@@ -145,13 +125,15 @@ public:
 	/*!
         Event object to indicate that there is an event in the output queue
      */
-    wxSemaphore m_semSendQueue;			
-	wxSemaphore m_semReceiveQueue;		
+    sem_t m_semSendQueue;			
+	sem_t m_semReceiveQueue;		
 	
 	// Mutex to protect the output queue
 	pthread_mutex_t m_mutexSendQueue;		
 	pthread_mutex_t m_mutexReceiveQueue;
 
+    // List with active thread objects
+    std::deque<CWrkTreadObj*> m_objectList;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -159,25 +141,14 @@ public:
 ///////////////////////////////////////////////////////////////////////////////
 
 
-class CWrkTread : public wxThread {
+class CWrkTreadObj {
 public:
 
     /// Constructor
-    CWrkTread();
+    CWrkTreadObj();
 
     /// Destructor
-    ~CWrkTread();
-
-    /*!
-        Thread code entry point
-     */
-    virtual void *Entry();
-
-    /*! 
-        called when the thread exits - whether it terminates normally or is
-        stopped with Delete() (but not when it is Kill()ed!)
-     */
-    virtual void OnExit();
+    ~CWrkTreadObj();
 
     /// VSCP server interface
     VscpRemoteTcpIf m_srv;
@@ -186,7 +157,7 @@ public:
     Clmsensors *m_pObj;
     
     /// Dataobject for specific sensor
-    wxString m_path;
+    std::string m_path;
     cguid m_guid;
     int m_interval;
     int m_vscpclass;    // VSCP CLASS
@@ -199,6 +170,9 @@ public:
 	int m_zone;			// Zone for events that needs zone
 	int m_subzone;		// Subzone for events that needs subzone
 	int m_unit;			// Unit for events that need unit
+
+    // Worker thread
+    pthread_t m_pthreadWork;
 };
 
 #endif // !defined(AFX_VSCPLOG_H__6F5CD90E_ACF7_459A_9ACB_849A57595639__INCLUDED_)

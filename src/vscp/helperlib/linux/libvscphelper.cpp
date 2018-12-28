@@ -36,6 +36,7 @@
 //#pragma implementation
 #endif
 
+#include <string>
 #include <map>
 
 #include "stdio.h"
