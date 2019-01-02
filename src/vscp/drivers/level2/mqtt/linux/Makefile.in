@@ -10,26 +10,10 @@ prefix = @prefix@
 exec_prefix = @exec_prefix@
 INSTALL = @INSTALL@
 top_srcdir = @top_srcdir@
-top_wxsrcdir = @top_wxsrcdir@
 top_builddir = @top_builddir@
-top_wxbuilddir = @top_wxbuilddir@
 
 CC = @CC@
 CXX = @CXX@
-
-# wxBase flags and libs
-WXBASE_CPPFLAGS = @WXBASE_CPPFLAGS@
-WXBASE_CXXFLAGS = @WXBASE_CXXFLAGS@
-WXBASE_CFLAGS = @WXBASE_CFLAGS@
-WXBASE_LIBS = @WXBASE_LIBS@
-WXBASE_STATIC_LIBS = @WXBASE_STATIC_LIBS@
-
-# wxGTK flags and libs
-WXGTK_CPPFLAGS = @WXGTK_CPPFLAGS@
-WXGTK_CXXFLAGS = @WXGTK_CXXFLAGS@
-WXGTK_CFLAGS = @WXGTK_CFLAGS@
-WXGTK_LIBS = @WXGTK_LIBS@
-WXGTK_STATIC_LIBS = @WXGTK_STATIC_LIBS@
 
 # get version from the version file
 MAJOR_VERSION = `sed '35!d' ../../../../common/version.h  | cut -b 33-`
@@ -38,17 +22,12 @@ RELEASE_VERSION = `sed '37!d' ../../../../common/version.h  | cut -b 33-`
 BUILD_VERSION = `sed '38!d' ../../../../common/version.h  | cut -b 33-
 
 MONGOOSE_FLAGS = -DMG_ENABLE_THREADS -DMG_ENABLE_IPV6 -DMG_ENABLE_SSL -DMG_ENABLE_GETADDRINFO
-CFLAGS = -std=c99 @CFLAGS@ -fPIC @WXBASE_CFLAGS@ -DCBC -I@top_srcdir@ -I../../../../common -I@top_srcdir@ -I../../../../../common
-CXXFLAGS = -std=c++11 -D__LINUX__ -fPIC -D_REENTRANT @CXXFLAGS@ @WXBASE_CXXFLAGS@ $(MONGOOSE_FLAGS)
-CPPFLAGS = -D__LINUX__ -fPIC @CPPFLAGS@ @WXBASE_CPPFLAGS@ $(MONGOOSE_FLAGS) -fno-var-tracking-assignments -I../../../../common -I../../../../../common
+CFLAGS = -std=c99 @CFLAGS@ -fPIC -DCBC -I@top_srcdir@ -I../../../../common  -I../../../../../common
+CXXFLAGS = -std=c++11 -D__LINUX__ -fPIC -D_REENTRANT @CXXFLAGS@  $(MONGOOSE_FLAGS)
+CPPFLAGS = -D__LINUX__ -fPIC @CPPFLAGS@  $(MONGOOSE_FLAGS) -fno-var-tracking-assignments -I@top_srcdir@ -I../../../../common -I../../../../../common
 
 LDFLAGS = @LDFLAGS@
 EXTRALIBS = @EXTRALIBS@ 
-ifeq ($(STATIC),yes)
-EXTRALIBS += @WXBASE_STATIC_LIBS@
-else
-EXTRALIBS += @WXBASE_LIBS@
-endif
 
 DLFLAGS = -g -shared -fPIC
 STRIP = strip
@@ -67,13 +46,12 @@ DLLPREFIX = lib
 
 ### Variables: ###
 
-WX_RELEASE = 3.0
-LIBDIRNAME = $(top_wxbuilddir)lib
 
 MQTT_OBJECTS = vscpl2drv_mqtt.o\
 	mqttobj.o\
 	vscpremotetcpif.o\
 	vscphelper.o\
+	vscpdatetime.o\
 	sockettcp.o\
 	guid.o\
 	crc.o\
@@ -89,10 +67,10 @@ MQTT_OBJECTS = vscpl2drv_mqtt.o\
 all: vscpl2drv-mqtt.so test
 
 test:  test.o $(PROJOBJS)
-	$(CXX) -o $@ test.o $(PROJOBJS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
+	$(CXX) -o $@ test.o $(PROJOBJS) $(LDFLAGS) $(EXTRALIBS)
 
 vscpl2drv-mqtt.so: $(MQTT_OBJECTS)
-	$(CXX) -o $@ $(MQTT_OBJECTS) $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS) 
+	$(CXX) -o $@ $(MQTT_OBJECTS) $(DLFLAGS) $(EXTRALIBS) 
 
 mqttobj.o: ../common/mqttobj.cpp ../common/mqttobj.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../common/mqttobj.cpp -o $@
@@ -105,6 +83,9 @@ vscpremotetcpif.o: ../../../../common/vscpremotetcpif.cpp ../../../../common/vsc
 
 vscphelper.o: ../../../../common/vscphelper.cpp ../../../../common/vscphelper.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../../../common/vscphelper.cpp -o $@
+
+vscpdatetime.o: ../../../../common/vscpdatetime.cpp ../../../../common/vscpdatetime.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../../../common/vscpdatetime.cpp -o $@
 
 sockettcp.o: ../../../../../common/sockettcp.c ../../../../../common/sockettcp.h
 	$(CC) $(CFLAGS) -c ../../../../../common/sockettcp.c -o $@

@@ -21,13 +21,13 @@
 // Boston, MA 02111-1307, USA.
 //
 
-
-#include <map>
 #include <string>
+#include <map>
 
-#include "semaphore.h"
-#include "stdio.h"
-#include "stdlib.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <semaphore.h>
+#include <pthread.h>
 
 #include "vscpl2drv_lmsensors.h"
 #include "lmsensors.h"
@@ -40,7 +40,7 @@ void
 _fini() __attribute__((destructor));
 
 // This map holds driver handles/objects
-static std::map<long, Clmsensors *> g_ifMap;
+static std::map<long, Clmsensors*> g_ifMap;
 
 // Mutex for the map object
 static pthread_mutex_t g_mapMutex;

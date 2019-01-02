@@ -39,8 +39,8 @@
 
 #define VSCPD_DISPLAY_VERSION "13.1.1.19 Aluminium"
 
-#define VSCPD_COPYRIGHT "Copyright (C) 2000-2018, Grodans Paradis AB, https://www.grodansparadis.com"
-#define VSCPD_COPYRIGHT_HTML "Copyright (C) 2000-2018, <a href=\"mailto:info@grodansparadis.com\">Grodans Paradis AB</a>, <a hrefs=\"https://www.grodansparadis.com\">https://www.grodansparadis.com</a>"
+#define VSCPD_COPYRIGHT "Copyright (C) 2000-2019 Ake Hedman,, Grodans Paradis AB, https://www.grodansparadis.com"
+#define VSCPD_COPYRIGHT_HTML "Copyright (C) 2000-2019 Ake Hedman,, <a href=\"mailto:info@grodansparadis.com\">Grodans Paradis AB</a>, <a hrefs=\"https://www.grodansparadis.com\">https://www.grodansparadis.com</a>"
 
 #define VSCP_VERSION(major,minor,release) \
     ( ( (major) << 16 ) | ( (minor) << 8 ) | (release) )

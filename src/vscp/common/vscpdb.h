@@ -4,7 +4,7 @@
 //
 // MIT License 
 //
-// Copyright (C) 2000-2018
+// Copyright (C) 2000-2019 Ake Hedman,
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 //
 // Permission is hereby granted, free of charge, to any person 

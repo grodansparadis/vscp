@@ -4,91 +4,70 @@
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version
 // 2 of the License, or (at your option) any later version.
-// 
-// This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2019 Ake Hedman, 
+// This file is part of the VSCP (http://www.vscp.org)
+//
+// Copyright (C) 2000-2019 Ake Hedman,
 // Grodans Paradis AB, <akhe@grodansparadis.com>
-// 
+//
 // This file is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with this file see the file COPYING.  If not, write to
 // the Free Software Foundation, 59 Temple Place - Suite 330,
 // Boston, MA 02111-1307, USA.
 //
 
-
 #if !defined(_VSCPMQTT_H__INCLUDED_)
 #define _VSCPMQTT_H__INCLUDED_
 
-#ifdef WIN32
-#include <windows.h>
-#endif
+#include <list>
+#include <string>
 
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
 
-#ifdef WIN32
-
-#if _MSC_VER > 1000
-#pragma once
-#endif // _MSC_VER > 1000
-
-#else
-
 #define _POSIX
-#include <unistd.h>
 #include <pthread.h>
 #include <syslog.h>
-
-#endif
+#include <unistd.h>
 
 #include <mongoose.h>
 
-#include <wx/file.h>
-#include <wx/wfstream.h>
-
 #include <canal.h>
-#include <vscp.h>
 #include <canal_macro.h>
-#include <vscpremotetcpif.h>
 #include <guid.h>
-
-#include <list>
-#include <string>
-
-using namespace std;
-
+#include <vscp.h>
+#include <vscpremotetcpif.h>
 
 // Forward declarations
 class CWrkThread;
 class VscpRemoteTcpIf;
 class Cmqtt;
+class CWrkThreadObj;
 
-
-class Cmqttobj {
-public:
-
+class Cmqttobj
+{
+  public:
     /// Constructor
     Cmqttobj();
 
     /// Destructor
     virtual ~Cmqttobj();
 
-    /*! 
+    /*!
         Open
         @return True on success.
      */
     bool open(const char *pUsername,
-                const char *pPassword,
-                const char *pHost,
-                const char *pPrefix,
-                const char *pConfig);
+              const char *pPassword,
+              const char *pHost,
+              const char *pPrefix,
+              const char *pConfig);
 
     /*!
         Flush and close the log file
@@ -96,91 +75,82 @@ public:
     void close(void);
 
     /*!
-        Add event to send queue 
+        Add event to send queue
     */
     bool addEvent2SendQueue(const vscpEvent *pEvent);
 
-public:
-
+  public:
     /// Run flag
     bool m_bQuit;
 
     /// Connected flag
     bool m_bConnected;
-    
+
     /// True if we should subscribe. False if we should publish)
     bool m_bSubscribe;
-    
+
     /// Session id
-    wxString m_sessionid;
+    std::string m_sessionid;
 
     /// Server supplied username
-    wxString m_username;
+    std::string m_username;
 
     /// Server supplied password
-    wxString m_password;
+    std::string m_password;
 
     /// server supplied prefix
-    wxString m_prefix;
+    std::string m_prefix;
 
     /// server supplied host
-    wxString m_host;
+    std::string m_host;
 
     /// Subscribe or Publish topic.
-    wxString m_topic;
-    
-    /*!
-        MQTT host (broker)
-     */
-    wxString m_hostMQTT;
-    
-    
-    /*!
-        MQTT username (broker)
-     */
-    wxString m_usernameMQTT;
-    
-    /*!
-        MQTT password (broker)
-     */
-    wxString m_passwordMQTT;
+    std::string m_topic;
+
+    // MQTT host (broker)
+    std::string m_hostMQTT;
+
+    // MQTT username (broker)
+    std::string m_usernameMQTT;
+
+    // MQTT password (broker)
+    std::string m_passwordMQTT;
 
     /*!
         Structure for subscription topics. Will only hold
         one entry for this driver.
     */
-    struct mg_mqtt_topic_expression m_topic_list[ 1 ];
+    struct mg_mqtt_topic_expression m_topic_list[1];
 
     /*!
         Event simplification
     */
-    wxString m_simplify;
-    
+    std::string m_simplify;
+
     /// Flag for simple channel handling
     bool m_bSimplify;
-    
+
     /// Class for simple channel handling
     uint16_t m_simple_vscpclass;
-    
+
     /// Type for simple channel handling
     uint16_t m_simple_vscptype;
-    
+
     /// Coding for simple channel handling
     uint8_t m_simple_coding;
-    
+
     /// Unit for simple channel handling
     uint8_t m_simple_unit;
-    
+
     /// Unit for simple channel handling
     uint8_t m_simple_sensorindex;
-    
+
     /// zone for simple channel handling
     uint8_t m_simple_zone;
-            
+
     /// Subzone for simple channel handling
     uint8_t m_simple_subzone;
-    
-    
+
     /*!
         Keepalive value
     */
@@ -189,59 +159,48 @@ public:
     /// Filter
     vscpEventFilter m_vscpfilter;
 
+    // Thread worker object
+    CWrkThreadObj *m_pWrkObj;
+
     /// Pointer to worker thread
-    CWrkThread *m_pthreadWork;
+    pthread_t *m_threadWork;
 
     /// VSCP server interface
     VscpRemoteTcpIf m_srv;
-    
+
     // Queue
-    std::list<vscpEvent*> m_sendList;
-    std::list<vscpEvent*> m_receiveList;
-    
+    std::list<vscpEvent *> m_sendList;
+    std::list<vscpEvent *> m_receiveList;
+
     /*!
         Event object to indicate that there is an event in the output queue
     */
-    wxSemaphore m_semSendQueue;
-    wxSemaphore m_semReceiveQueue;
-    
+    sem_t m_semSendQueue;
+    sem_t m_semReceiveQueue;
+
     // Mutex to protect the output queue
     pthread_mutex_t m_mutexSendQueue;
     pthread_mutex_t m_mutexReceiveQueue;
-
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-//                          Worker Treads
+//                          Worker Tread Object
 ///////////////////////////////////////////////////////////////////////////////
 
-class CWrkThread : public wxThread {
+class CWrkThreadObj
+{
 public:
-
     /// Constructor
-    CWrkThread();
+    CWrkThreadObj();
 
     /// Destructor
-    ~CWrkThread();
-
-    /*!
-        Thread code entry point
-     */
-    virtual void *Entry();
-
-    /*! 
-        called when the thread exits - whether it terminates normally or is
-        stopped with Delete() (but not when it is Kill()ed!)
-     */
-    virtual void OnExit();
+    ~CWrkThreadObj();
 
     /// VSCP server interface
     VscpRemoteTcpIf m_srv;
 
     /// Sensor object
     Cmqttobj *m_pObj;
-
 };
 
-
-#endif 
+#endif // defined _VSCPMQTT_H__INCLUDED_

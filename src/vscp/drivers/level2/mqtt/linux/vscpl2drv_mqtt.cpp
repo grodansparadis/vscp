@@ -4,17 +4,17 @@
 // modify it under the terms of the GNU Lesser General Public License
 // as published by the Free Software Foundation; either version
 // 2 of the License, or (at your option) any later version.
-// 
-// This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2018 
-// Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
-// 
+// This file is part of the VSCP (http://www.vscp.org)
+//
+// Copyright (C) 2000-2019 Ake Hedman,
+// Grodans Paradis AB, <akhe@grodansparadis.com>
+//
 // This file is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public License
 // along with this file see the file COPYING.  If not, write to
 // the Free Software Foundation, 59 Temple Place - Suite 330,
@@ -25,160 +25,147 @@
 //#pragma implementation
 #endif
 
-// For compilers that support precompilation, includes "wx.h".
-#include "wx/wxprec.h"
+#include <string>
+#include <map>
 
-#ifdef __BORLANDC__
-#pragma hdrstop
-#endif
+#include <pthread.h>
+#include <semaphore.h>
+#include <stdio.h>
+#include <stdlib.h>
 
-#ifndef WX_PRECOMP
-#include "wx/wx.h"
-#endif
+#include <canal.h>
+#include <canal_macro.h>
+#include <vscp.h>
+#include <vscphelper.h>
 
-#ifdef __WXMSW__
-#include  "wx/ownerdrw.h"
-#endif
-
-#include "wx/tokenzr.h"
-
-#include "stdio.h"
-#include "stdlib.h"
-
-#include "vscpl2drv_mqtt.h"
 #include "../common/mqttobj.h"
+#include "vscpl2drv_mqtt.h"
 
-void _init() __attribute__((constructor));
-void _fini() __attribute__((destructor));
+void
+_init() __attribute__((constructor));
+void
+_fini() __attribute__((destructor));
 
-void _init()
-{
-    printf("initializing\n");
-}
+// This map holds driver handles/objects
+static std::map<long, Cmqttobj *> g_ifMap;
 
-void _fini()
-{
-    printf("finishing\n");
-}
-
-
+// Mutex for the map object
+static pthread_mutex_t g_mapMutex;
 
 ////////////////////////////////////////////////////////////////////////////
-// CVSCPDrvApp construction
+// DLL constructor
+//
 
-CVSCPDrvApp::CVSCPDrvApp()
+void
+_init()
 {
-    m_instanceCounter = 0;
-    pthread_mutex_init(&m_objMutex, NULL);
-
-    // Init. the driver array
-    for (int i = 0; i < VSCP_MQTT_DRIVER_MAX_OPEN; i++) {
-        m_pmqttArray[ i ] = NULL;
-    }
-
-    UNLOCK_MUTEX(m_objMutex);
+    pthread_mutex_init(&g_mapMutex, NULL);
 }
 
-CVSCPDrvApp::~CVSCPDrvApp()
+////////////////////////////////////////////////////////////////////////////
+// DLL destructor
+//
+
+void
+_fini()
 {
-    LOCK_MUTEX(m_objMutex);
+    // If empty - nothing to do
+    if (g_ifMap.empty()) return;
 
-    for (int i = 0; i < VSCP_MQTT_DRIVER_MAX_OPEN; i++) {
+    // Remove orphan objects
 
-        if (NULL != m_pmqttArray[ i ]) {
+    LOCK_MUTEX(g_mapMutex);
 
-            Cmqttobj *pmqtt = getDriverObject(i);
-            if (NULL != pmqtt) {
-                pmqtt->close();
-                delete m_pmqttArray[ i ];
-                m_pmqttArray[ i ] = NULL;
-            }
+    for (std::map<long, Cmqttobj *>::iterator it = g_ifMap.begin();
+         it != g_ifMap.end();
+         ++it) {
+        // std::cout << it->first << " => " << it->second << '\n';
+
+        Cmqttobj *pif = it->second;
+        if (NULL != pif) {
+            pif->m_srv.doCmdClose();
+            delete pif;
+            pif = NULL;
         }
     }
 
-    UNLOCK_MUTEX(m_objMutex);
-    pthread_mutex_destroy(&m_objMutex);
+    g_ifMap.clear(); // Remove all items
+
+    UNLOCK_MUTEX(g_mapMutex);
+    pthread_mutex_destroy(&g_mapMutex);
 }
-
-/////////////////////////////////////////////////////////////////////////////
-// The one and only CLoggerdllApp object
-
-CVSCPDrvApp theApp;
-
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-// CreateObject
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // addDriverObject
 //
 
-long CVSCPDrvApp::addDriverObject(Cmqttobj *pmqtt)
+long
+addDriverObject(Cmqttobj *pif)
 {
+    std::map<long, Cmqttobj *>::iterator it;
     long h = 0;
 
-    LOCK_MUTEX(m_objMutex);
-    for (int i = 0; i < VSCP_MQTT_DRIVER_MAX_OPEN; i++) {
+    LOCK_MUTEX(g_mapMutex);
 
-        if (NULL == m_pmqttArray[ i ]) {
+    // Find free handle
+    while (true) {
+        if (g_ifMap.end() != (it = g_ifMap.find(h))) break;
+        h++;
+    };
 
-            m_pmqttArray[ i ] = pmqtt;
-            h = i + 1681;
-            break;
+    g_ifMap[h] = new Cmqttobj;
+    h += 1681;
 
-        }
-
-    }
-
-    UNLOCK_MUTEX(m_objMutex);
+    UNLOCK_MUTEX(g_mapMutex);
 
     return h;
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // getDriverObject
 //
 
-Cmqttobj *CVSCPDrvApp::getDriverObject(long h)
+Cmqttobj *
+getDriverObject(long h)
 {
+    std::map<long, Cmqttobj *>::iterator it;
     long idx = h - 1681;
 
     // Check if valid handle
     if (idx < 0) return NULL;
-    if (idx >= VSCP_MQTT_DRIVER_MAX_OPEN) return NULL;
-    return m_pmqttArray[ idx ];
-}
 
+    it = g_ifMap.find(h);
+    if (it != g_ifMap.end()) {
+        return it->second;
+    }
+
+    return NULL;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // removeDriverObject
 //
 
-void CVSCPDrvApp::removeDriverObject(long h)
+void
+removeDriverObject(long h)
 {
+    std::map<long, Cmqttobj *>::iterator it;
     long idx = h - 1681;
 
     // Check if valid handle
     if (idx < 0) return;
-    if (idx >= VSCP_MQTT_DRIVER_MAX_OPEN) return;
 
-    LOCK_MUTEX(m_objMutex);
-    if (NULL != m_pmqttArray[ idx ]) delete m_pmqttArray[ idx ];
-    m_pmqttArray[ idx ] = NULL;
-    UNLOCK_MUTEX(m_objMutex);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// InitInstance
-
-BOOL CVSCPDrvApp::InitInstance()
-{
-    m_instanceCounter++;
-    return TRUE;
+    LOCK_MUTEX(g_mapMutex);
+    it = g_ifMap.find(h);
+    if (it != g_ifMap.end()) {
+        Cmqttobj *pObj = it->second;
+        if (NULL != pObj) {
+            delete pObj;
+            pObj = NULL;
+        }
+        g_ifMap.erase(it);
+    }
+    UNLOCK_MUTEX(g_mapMutex);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -191,33 +178,27 @@ BOOL CVSCPDrvApp::InitInstance()
 
 extern "C" long
 VSCPOpen(const char *pUsername,
-            const char *pPassword,
-            const char *pHost,
-            short port,
-            const char *pPrefix,
-            const char *pParameter,
-            unsigned long flags)
+         const char *pPassword,
+         const char *pHost,
+         short port,
+         const char *pPrefix,
+         const char *pParameter,
+         unsigned long flags)
 {
     long h = 0;
 
     Cmqttobj *pdrvObj = new Cmqttobj();
     if (NULL != pdrvObj) {
 
-        if (pdrvObj->open( pUsername,
-                            pPassword,
-                            pHost,
-                            pPrefix,
-                            pParameter ) ) {
+        if (pdrvObj->open(pUsername, pPassword, pHost, pPrefix, pParameter)) {
 
-            if ( !( h = theApp.addDriverObject( pdrvObj ) ) ) {
+            if (!(h = addDriverObject(pdrvObj))) {
                 delete pdrvObj;
             }
 
-        }
-        else {
+        } else {
             delete pdrvObj;
         }
-
     }
 
     return h;
@@ -225,31 +206,31 @@ VSCPOpen(const char *pUsername,
 
 ///////////////////////////////////////////////////////////////////////////////
 //  VSCPClose
-// 
+//
 
 extern "C" int
 VSCPClose(long handle)
 {
     int rv = 0;
 
-    Cmqttobj *pdrvObj = theApp.getDriverObject(handle);
+    Cmqttobj *pdrvObj = getDriverObject(handle);
     if (NULL == pdrvObj) return 0;
     pdrvObj->close();
-    theApp.removeDriverObject(handle);
+    removeDriverObject(handle);
     rv = 1;
     return CANAL_ERROR_SUCCESS;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 //  VSCPBlockingSend
-// 
+//
 
 extern "C" int
 VSCPBlockingSend(long handle, const vscpEvent *pEvent, unsigned long timeout)
 {
     int rv = 0;
 
-    Cmqttobj *pdrvObj = theApp.getDriverObject(handle);
+    Cmqttobj *pdrvObj = getDriverObject(handle);
     if (NULL == pdrvObj) return CANAL_ERROR_MEMORY;
     pdrvObj->addEvent2SendQueue(pEvent);
 
@@ -258,27 +239,30 @@ VSCPBlockingSend(long handle, const vscpEvent *pEvent, unsigned long timeout)
 
 ///////////////////////////////////////////////////////////////////////////////
 //  VSCPBlockingReceive
-// 
+//
 
 extern "C" int
 VSCPBlockingReceive(long handle, vscpEvent *pEvent, unsigned long timeout)
 {
-   int rv = 0;
+    int rv = 0;
 
     // Check pointer
     if (NULL == pEvent) return CANAL_ERROR_PARAMETER;
 
-    Cmqttobj *pdrvObj = theApp.getDriverObject(handle);
+    Cmqttobj *pdrvObj = getDriverObject(handle);
     if (NULL == pdrvObj) return CANAL_ERROR_MEMORY;
 
-    if (wxSEMA_TIMEOUT == pdrvObj->m_semReceiveQueue.WaitTimeout(timeout)) {
+    struct timespec ts;
+    ts.tv_sec  = 0;
+    ts.tv_nsec = timeout * 1000;
+    if (ETIMEDOUT == sem_timedwait(&pdrvObj->m_semReceiveQueue, &ts)) {
         return CANAL_ERROR_TIMEOUT;
     }
 
-    pdrvObj->m_mutexReceiveQueue.Lock();
+    pthread_mutex_lock( &pdrvObj->m_mutexReceiveQueue);
     vscpEvent *pLocalEvent = pdrvObj->m_receiveList.front();
     pdrvObj->m_receiveList.pop_front();
-    pdrvObj->m_mutexReceiveQueue.Unlock();
+    pthread_mutex_unlock( &pdrvObj->m_mutexReceiveQueue);
     if (NULL == pLocalEvent) return CANAL_ERROR_MEMORY;
 
     vscp_copyVSCPEvent(pEvent, pLocalEvent);
@@ -289,14 +273,13 @@ VSCPBlockingReceive(long handle, vscpEvent *pEvent, unsigned long timeout)
 
 ///////////////////////////////////////////////////////////////////////////////
 //  VSCPGetLevel
-// 
+//
 
 extern "C" unsigned long
 VSCPGetLevel(void)
 {
     return CANAL_LEVEL_USES_TCPIP;
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // VSCPGetDllVersion
@@ -308,7 +291,6 @@ VSCPGetDllVersion(void)
     return VSCP_DLL_VERSION;
 }
 
-
 ///////////////////////////////////////////////////////////////////////////////
 // VSCPGetVendorString
 //
@@ -318,7 +300,6 @@ VSCPGetVendorString(void)
 {
     return VSCP_DLL_VENDOR;
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // VSCPGetDriverInfo
@@ -330,10 +311,9 @@ VSCPGetDriverInfo(void)
     return VSCP_MQTT_DRIVERINFO;
 }
 
-
 ///////////////////////////////////////////////////////////////////////////////
 //  VSCPGetVSCPGetWebPageTemplate
-// 
+//
 
 extern "C" long
 VSCPGetWebPageTemplate(long handle, const char *url, char *page)
@@ -344,10 +324,9 @@ VSCPGetWebPageTemplate(long handle, const char *url, char *page)
     return -1;
 }
 
-
 ///////////////////////////////////////////////////////////////////////////////
 //  VSCPGetVSCPWebPageInfo
-// 
+//
 
 extern "C" int
 VSCPGetWebPageInfo(long handle, const struct vscpextwebpageinfo *info)
@@ -356,10 +335,9 @@ VSCPGetWebPageInfo(long handle, const struct vscpextwebpageinfo *info)
     return -1;
 }
 
-
 ///////////////////////////////////////////////////////////////////////////////
 //  VSCPWebPageupdate
-// 
+//
 
 extern "C" int
 VSCPWebPageupdate(long handle, const char *url)
