@@ -47,7 +47,6 @@ typedef int BOOL;
 #define VSCP_DLL_VENDOR                                                        \
     "Grodans Paradis AB, Sweden, https://www.grodansparadis.com"
 
-
 #define VSCP_LMSENSORS_DRIVERINFO ""
 
 /*!

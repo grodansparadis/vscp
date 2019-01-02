@@ -61,8 +61,10 @@ LMSENSOROBJ =  vscpl2drv_lmsensors.o\
 
 ### Targets: ###
 
-all: vscpl2drv-lmsensors.so
+all: vscpl2drv-lmsensors.so test
 
+test:  test.o $(PROJOBJS)
+	$(CXX) -o $@ test.o $(PROJOBJS) $(LDFLAGS) -L$(LIBDIRNAME) $(EXTRALIBS)
 
 # Build the Linux DL
 vscpl2drv-lmsensors.so: $(LMSENSOROBJ)

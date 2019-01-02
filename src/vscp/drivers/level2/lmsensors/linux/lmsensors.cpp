@@ -43,8 +43,8 @@
 #include <vscphelper.h>
 #include <vscpremotetcpif.h>
 
-#include "vscpl2drv_lmsensors.h"
 #include "lmsensors.h"
+#include "vscpl2drv_lmsensors.h"
 
 // Forward declaration
 void *
@@ -80,8 +80,8 @@ Clmsensors::~Clmsensors()
     close();
 
     // Terminate threads and deallocate objects
-    std::deque<CWrkTreadObj*>::iterator it;
-    for ( it = m_objectList.begin(); it != m_objectList.begin(); ++it ) {
+    std::deque<CWrkTreadObj *>::iterator it;
+    for (it = m_objectList.begin(); it != m_objectList.begin(); ++it) {
         CWrkTreadObj *pObj = *it;
         if (NULL != pObj) {
             // Wait for workerthread to quit
@@ -349,8 +349,10 @@ Clmsensors::open(const char *pUsername,
                        i);
             }
 
-            if (!pthread_create(
-                  &pthreadObj->m_pthreadWork, NULL, driverWorkerThread, pthreadObj)) {
+            if (!pthread_create(&pthreadObj->m_pthreadWork,
+                                NULL,
+                                driverWorkerThread,
+                                pthreadObj)) {
 
                 syslog(LOG_CRIT,
                        "Unable to allocate memory for "
@@ -465,18 +467,19 @@ driverWorkerThread(void *pData)
     while (!pWorkObj->m_pObj->m_bQuit) {
 
         memset(buf, 0, sizeof(buf));
-        if ( 0 != fseek(pFile, pWorkObj->m_readOffset, SEEK_SET) ) {
-			if ( ferror(pFile ) ) {
-				clearerr(pFile);
-				syslog( LOG_ERR, "Error seeking pos %d of file %s.", 
-					pWorkObj->m_readOffset,
-					pWorkObj->m_path.c_str() );
-				goto error;
-			}
-		}
+        if (0 != fseek(pFile, pWorkObj->m_readOffset, SEEK_SET)) {
+            if (ferror(pFile)) {
+                clearerr(pFile);
+                syslog(LOG_ERR,
+                       "Error seeking pos %d of file %s.",
+                       pWorkObj->m_readOffset,
+                       pWorkObj->m_path.c_str());
+                goto error;
+            }
+        }
 
-		memset( buf, 0, sizeof(buf) );
-        if ( fread(buf, 1, sizeof(buf)-1, pFile )) {
+        memset(buf, 0, sizeof(buf));
+        if (fread(buf, 1, sizeof(buf) - 1, pFile)) {
 
             std::string str = std::string(buf);
             val             = std::stod(buf);
@@ -652,7 +655,8 @@ driverWorkerThread(void *pData)
                     } // switch
 
                 } else if ((VSCP_CLASS1_MEASUREZONE == pWorkObj->m_vscpclass) ||
-                           (VSCP_CLASS1_SETVALUEZONE == pWorkObj->m_vscpclass)) {
+                           (VSCP_CLASS1_SETVALUEZONE ==
+                            pWorkObj->m_vscpclass)) {
 
                     // We pretend we are a standard measurement
                     uint8_t buf[8];
@@ -694,7 +698,8 @@ driverWorkerThread(void *pData)
                             memcpy(pEvent->pdata, buf, 8);
                         }
                     }
-                } else if (VSCP_CLASS2_MEASUREMENT_STR == pWorkObj->m_vscpclass) {
+                } else if (VSCP_CLASS2_MEASUREMENT_STR ==
+                           pWorkObj->m_vscpclass) {
                     std::string str;
                     str = vscp_string_format("%d,%d,%d,%lf",
                                              pWorkObj->m_index,
@@ -705,18 +710,20 @@ driverWorkerThread(void *pData)
                     strcpy((char *)pEvent->pdata, str.c_str());
                 }
 
-                if (vscp_doLevel2Filter(pEvent, &pWorkObj->m_pObj->m_vscpfilter)) {
+                if (vscp_doLevel2Filter(pEvent,
+                                        &pWorkObj->m_pObj->m_vscpfilter)) {
                     pthread_mutex_lock(&pWorkObj->m_pObj->m_mutexReceiveQueue);
                     pWorkObj->m_pObj->m_receiveList.push_back(pEvent);
                     sem_post(&pWorkObj->m_pObj->m_semReceiveQueue);
-                    pthread_mutex_unlock(&pWorkObj->m_pObj->m_mutexReceiveQueue);
+                    pthread_mutex_unlock(
+                      &pWorkObj->m_pObj->m_mutexReceiveQueue);
                 } else {
                     vscp_deleteVSCPevent(pEvent);
                 }
             }
         }
 
-error:
+    error:
         sleep(pWorkObj->m_interval ? pWorkObj->m_interval : 1);
 
     } // Worker loop

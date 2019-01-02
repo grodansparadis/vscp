@@ -218,8 +218,8 @@ VSCPBlockingReceive(long handle, vscpEvent *pEvent, unsigned long timeout)
 {
     int rv = 0;
 
-	uint16_t secs = timeout/1000;
-	uint32_t ns = (timeout - secs * 1000 )*1000;
+    uint16_t secs = timeout / 1000;
+    uint32_t ns   = (timeout - secs * 1000) * 1000;
 
     // Check pointer
     if (NULL == pEvent) return CANAL_ERROR_PARAMETER;
@@ -227,13 +227,12 @@ VSCPBlockingReceive(long handle, vscpEvent *pEvent, unsigned long timeout)
     Clmsensors *pdrvObj = getDriverObject(handle);
     if (NULL == pdrvObj) return CANAL_ERROR_MEMORY;
 
-	struct timespec ts;
- 	ts.tv_sec = secs;
- 	ts.tv_nsec = ns;   
-	if ( ETIMEDOUT == sem_timedwait( &pdrvObj->m_semReceiveQueue,
-                                  &ts ) ) {
-     	return CANAL_ERROR_TIMEOUT;
- 	}
+    struct timespec ts;
+    ts.tv_sec  = secs;
+    ts.tv_nsec = ns;
+    if (ETIMEDOUT == sem_timedwait(&pdrvObj->m_semReceiveQueue, &ts)) {
+        return CANAL_ERROR_TIMEOUT;
+    }
 
     pthread_mutex_lock(&pdrvObj->m_mutexReceiveQueue);
     // nodeClient = pdrvObj->m_receiveQueue.GetFirst();
