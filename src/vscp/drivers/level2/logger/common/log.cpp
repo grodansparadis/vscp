@@ -43,6 +43,7 @@
 
 #include "log.h"
 
+// Buffer size for XML parser
 #define XML_BUFF_SIZE   10000
 
 // Forward declarations

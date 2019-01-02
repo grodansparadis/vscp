@@ -129,7 +129,7 @@ class Clmsensors
     pthread_mutex_t m_mutexReceiveQueue;
 
     // List with active thread objects
-    std::deque<CWrkTreadObj *> m_objectList;
+    std::deque<CWrkTreadObj*> m_objectList;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -161,10 +161,11 @@ class CWrkTreadObj
     double m_divideValue;   // Divide value for read data
     double m_multiplyValue; // Multiply value for read data
     int m_readOffset;       // Offset into datafile for numerical conversion
-    int m_index;            // Index for evets that needs index
+    int m_index;            // Index for events that needs index
     int m_zone;             // Zone for events that needs zone
     int m_subzone;          // Subzone for events that needs subzone
     int m_unit;             // Unit for events that need unit
+    vscpEventFilter m_vscpfilter; // Filter
 
     // Worker thread
     pthread_t m_pthreadWork;

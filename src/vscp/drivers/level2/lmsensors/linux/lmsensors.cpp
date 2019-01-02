@@ -38,6 +38,8 @@
 #include <syslog.h>
 #include <unistd.h>
 
+#include <expat.h>
+
 #include <vscp.h>
 #include <vscp_class.h>
 #include <vscp_type.h>
@@ -47,9 +49,12 @@
 #include "lmsensors.h"
 #include "vscpl2drv_lmsensors.h"
 
+// Buffer for XML parser
+#define XML_BUFF_SIZE 10000
+
 // Forward declaration
 void *
-driverWorkerThread(void *pData);
+workerThread(void *pData);
 
 //////////////////////////////////////////////////////////////////////
 // Clmsensors
@@ -81,7 +86,7 @@ Clmsensors::~Clmsensors()
     close();
 
     // Terminate threads and deallocate objects
-    std::deque<CWrkTreadObj *>::iterator it;
+    std::deque<CWrkTreadObj*>::iterator it;
     for (it = m_objectList.begin(); it != m_objectList.begin(); ++it) {
         CWrkTreadObj *pObj = *it;
         if (NULL != pObj) {
@@ -103,6 +108,147 @@ Clmsensors::~Clmsensors()
     // Close syslog channel
     closelog();
 }
+
+// ----------------------------------------------------------------------------
+
+/*
+    XML Setup
+    =========
+
+    <setup>
+
+    <sensor path="path-to-sensor-data"
+            guid="GUID for sensor data"
+            interval="Interval in seconds to report sensor data"
+            class="VSCP class code for sensor data"
+            type="VSCP type code for sensor data"
+            index="Index to use for sensor data"
+            zone="zone to use for sensor data"
+            subzone="Subzone to use for sensor data"
+            coding="Coding to use for sensor data"
+            multiply="Multiply value to use for sensor data"
+            divide="divide data to use for sensor data"
+            offset="Offset for sensor data file read" />
+    <sensor ....... />
+    <sensor ....... />  
+
+    </setup>
+*/
+
+// ----------------------------------------------------------------------------
+
+int depth_setup_parser = 0;
+
+void
+startSetupParser( void *data, const char *name, const char **attr ) 
+{
+    Clmsensors *pObj = (Clmsensors *)data;
+    if (NULL == pObj) return;
+
+    if ((0 == strcmp(name, "sensor")) && (1 == depth_setup_parser)) {
+
+        CWrkTreadObj *pthreadObj = new CWrkTreadObj;
+        if (NULL == pthreadObj) {
+            return;
+        }
+
+        for (int i = 0; attr[i]; i += 2) {
+
+            std::string attribute = attr[i + 1];
+            vscp_trim(attribute);
+
+            if (0 == strcasecmp(attr[i], "path")) {
+                if (!attribute.empty()) {
+                    pthreadObj->m_path = attribute;
+                }
+            } else if (0 == strcasecmp(attr[i], "filter")) {
+                if (!attribute.empty()) {
+                    if (!vscp_readFilterFromString(&pthreadObj->m_vscpfilter,
+                                                   attribute)) {
+                        syslog(LOG_ERR, "Unable to read event receive filter.");
+                    }
+                }
+            } else if (0 == strcasecmp(attr[i], "mask")) {
+                if (!attribute.empty()) {
+                    if (!vscp_readMaskFromString(&pthreadObj->m_vscpfilter,
+                                                 attribute)) {
+                        syslog(LOG_ERR, "Unable to read event receive mask.");
+                    }
+                }
+            } else if (0 == strcasecmp(attr[i], "guid")) {
+                if (!attribute.empty()) {
+                    pthreadObj->m_guid.getFromString(attribute);
+                }
+            } else if (0 == strcmp(attr[i], "interval")) {
+                if (!attribute.empty()) {
+                    pthreadObj->m_interval = vscp_readStringValue(attribute);
+                }
+            } else if (0 == strcmp(attr[i], "class")) {
+                if (!attribute.empty()) {
+                    pthreadObj->m_vscpclass = vscp_readStringValue(attribute);
+                }
+            } else if (0 == strcmp(attr[i], "vscpclass")) {
+                if (!attribute.empty()) {
+                    pthreadObj->m_vscpclass = vscp_readStringValue(attribute);
+                }
+            } else if (0 == strcmp(attr[i], "type")) {
+                if (!attribute.empty()) {
+                    pthreadObj->m_vscptype = vscp_readStringValue(attribute);
+                }
+            } else if (0 == strcmp(attr[i], "vscptype")) {
+                if (!attribute.empty()) {
+                    pthreadObj->m_vscptype = vscp_readStringValue(attribute);
+                }
+            } else if (0 == strcmp(attr[i], "index")) {
+                if (!attribute.empty()) {
+                    pthreadObj->m_index = vscp_readStringValue(attribute);
+                }
+            } else if (0 == strcmp(attr[i], "zone")) {
+                if (!attribute.empty()) {
+                    pthreadObj->m_zone = vscp_readStringValue(attribute);
+                }
+            } else if (0 == strcmp(attr[i], "subzone")) {
+                if (!attribute.empty()) {
+                    pthreadObj->m_subzone = vscp_readStringValue(attribute);
+                }
+            } else if (0 == strcmp(attr[i], "coding")) {
+                if (!attribute.empty()) {
+                    pthreadObj->m_datacoding = vscp_readStringValue(attribute);
+                }
+            } else if (0 == strcmp(attr[i], "unit")) {
+                if (!attribute.empty()) {
+                    pthreadObj->m_unit = vscp_readStringValue(attribute);
+                }
+            } else if (0 == strcmp(attr[i], "offset")) {
+                if (!attribute.empty()) {
+                    pthreadObj->m_readOffset = vscp_readStringValue(attribute);
+                }
+            } else if (0 == strcmp(attr[i], "multiply")) {
+                if (!attribute.empty()) {
+                    pthreadObj->m_multiplyValue =
+                      vscp_readStringValue(attribute);
+                }
+            } else if (0 == strcmp(attr[i], "divide")) {
+                if (!attribute.empty()) {
+                    pthreadObj->m_divideValue = vscp_readStringValue(attribute);
+                }
+            }
+        }
+
+        pObj->m_objectList.push_back(pthreadObj);
+
+    }
+
+    depth_setup_parser++;
+}
+
+void
+endSetupParser( void *data, const char *name ) 
+{
+    depth_setup_parser--;
+}
+
+// ----------------------------------------------------------------------------
 
 //////////////////////////////////////////////////////////////////////
 // open
@@ -350,17 +496,6 @@ Clmsensors::open(const char *pUsername,
                        i);
             }
 
-            if (!pthread_create(&pthreadObj->m_pthreadWork,
-                                NULL,
-                                driverWorkerThread,
-                                pthreadObj)) {
-
-                syslog(LOG_CRIT,
-                       "Unable to allocate memory for "
-                       "controlobject client thread.");
-                return false;
-            }
-
             m_objectList.push_back(pthreadObj);
 
         } else {
@@ -373,8 +508,49 @@ Clmsensors::open(const char *pUsername,
         }
     }
 
+    // XML setup 
+    std::string strSetupXML;
+    std::string strName = m_prefix + std::string("_setup");
+    if (VSCP_ERROR_SUCCESS ==
+        m_srv.getRemoteVariableValue(strName, strSetupXML, true)) {
+        XML_Parser xmlParser = XML_ParserCreate("UTF-8");
+        XML_SetUserData(xmlParser, this);
+        XML_SetElementHandler(xmlParser, startSetupParser, endSetupParser);
+
+        int bytes_read;
+        void *buff = XML_GetBuffer(xmlParser, XML_BUFF_SIZE);
+
+        strncpy((char *)buff, strSetupXML.c_str(), strSetupXML.length());
+
+        bytes_read = strSetupXML.length();
+        if (!XML_ParseBuffer(xmlParser, bytes_read, bytes_read == 0)) {
+            syslog(LOG_ERR, "Failed parse XML setup.");
+        }
+
+        XML_ParserFree(xmlParser);
+    }
+
     // Close the channel
     m_srv.doCmdClose();
+
+    // Start the worker threads
+    std::deque<CWrkTreadObj *>::iterator it;
+    for (it = m_objectList.begin(); it != m_objectList.end(); ++it) {
+
+        CWrkTreadObj *pthreadObj = new CWrkTreadObj;
+        if (NULL == pthreadObj) {
+            continue;
+        }
+
+        if (!pthread_create(
+              &pthreadObj->m_pthreadWork, NULL, workerThread, pthreadObj)) {
+
+            syslog(LOG_CRIT,
+                   "Unable to allocate memory for "
+                   "controlobject client thread.");
+            return false;
+        }
+    }
 
     return rv;
 }
@@ -432,12 +608,15 @@ CWrkTreadObj::~CWrkTreadObj()
     ;
 }
 
+
+
+
 //////////////////////////////////////////////////////////////////////
 // Workerthread
 //
 
 void *
-driverWorkerThread(void *pData)
+workerThread(void *pData)
 {
     CWrkTreadObj *pWorkObj = (CWrkTreadObj *)pData;
     if (NULL == pWorkObj) {
