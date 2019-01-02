@@ -629,7 +629,7 @@ CRpiLCD::open( const char *pUsername,
 	std::string strName = m_prefix + std::string("_setup");
 	if ( VSCP_ERROR_SUCCESS != 
             m_srv.getRemoteVariableValue( strName, m_setupXml, true ) ) {
-        // OK if not available we use default
+        // OK if not available we use defaults
     }
 
     XML_Parser xmlParser = XML_ParserCreate("UTF-8");

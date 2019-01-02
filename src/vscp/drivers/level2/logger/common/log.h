@@ -24,20 +24,23 @@
 #if !defined(VSCPLOG_H__6F5CD90E_ACF7_459A_9ACB_849A57595639__INCLUDED_)
 #define VSCPLOG_H__6F5CD90E_ACF7_459A_9ACB_849A57595639__INCLUDED_
 
+#include <fstream>
 #include <list>
 #include <string>
+
+#include <vscp.h>
+#include <vscpremotetcpif.h>
 
 #define VSCP_LEVEL2_DLL_LOGGER_OBJ_MUTEX "___VSCP__DLL_L2LOGGER_OBJ_MUTEX____"
 
 #define VSCP_LOG_LIST_MAX_MSG 2048
 
 // Flags
-#define LOG_FILE_OVERWRITE 1L  // Overwrite
-#define LOG_FILE_VSCP_WORKS 2L // VSP Works format
+#define LOG_FILE_OVERWRITE  1L      // Overwrite
+#define LOG_FILE_VSCP_WORKS 2L      // VSCP Works format
 
 // Forward declarations
 class CLogWrkThreadObj;
-class VscpTcpIf;
 
 class CVSCPLog
 {
@@ -139,17 +142,18 @@ class CVSCPLog
     /// Path to logfile
     std::string m_path;
 
-    /// File
-    FILE m_file;
-
     /// The log stream
-    fstream m_pLogStream;
+    std::fstream m_logStream;
 
     /// Pointer to worker thread
-    CLogWrkThreadObj *m_pthreadWork;
+    pthread_t m_pWrkThread;
+    
+    // Worker object
+    CLogWrkThreadObj *m_pWorkObj;
+
 
     /// Filter
-    vscpEventFilter m_Filter;
+    vscpEventFilter m_vscpfilter;
 
     // Queue
     std::list<vscpEvent *> m_sendList;
@@ -184,4 +188,4 @@ class CLogWrkThreadObj
     CVSCPLog *m_pLog;
 };
 
-#endif // !defined(AFX_VSCPLOG_H__6F5CD90E_ACF7_459A_9ACB_849A57595639__INCLUDED_)
+#endif // !defined(VSCPLOG_H__6F5CD90E_ACF7_459A_9ACB_849A57595639__INCLUDED_)

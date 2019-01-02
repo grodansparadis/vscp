@@ -50,6 +50,7 @@ VSCPL2LOGGER_OBJECTS =  vscpl2drv_logger.o\
 	log.o\
 	vscpremotetcpif.o\
 	vscphelper.o\
+	vscpdatetime.o\
 	sockettcp.o\
 	guid.o\
 	crc.o\
@@ -82,6 +83,9 @@ vscpremotetcpif.o: ../../../../common/vscpremotetcpif.cpp ../../../../common/vsc
 
 vscphelper.o: ../../../../common/vscphelper.cpp ../../../../common/vscphelper.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../../../common/vscphelper.cpp -o $@
+
+vscpdatetime.o: ../../../../common/vscpdatetime.cpp ../../../../common/vscpdatetime.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../../../common/vscpdatetime.cpp -o $@
 
 sockettcp.o: ../../../../../common/sockettcp.c ../../../../../common/sockettcp.h
 	$(CC) $(CFLAGS) -c ../../../../../common/sockettcp.c -o $@

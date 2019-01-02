@@ -38,6 +38,7 @@
 #include <syslog.h>
 #include <unistd.h>
 
+#include <vscp.h>
 #include <vscp_class.h>
 #include <vscp_type.h>
 #include <vscphelper.h>

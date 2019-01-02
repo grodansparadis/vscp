@@ -33,6 +33,8 @@
 #include <syslog.h>
 #include <unistd.h>
 
+#include <expat.h>
+
 #include <vscp_class.h>
 #include <vscp_type.h>
 #include <vscpdatetime.h>
@@ -41,12 +43,11 @@
 
 #include "log.h"
 
-#ifndef _CRT_SECURE_NO_WARNINGS
-#define _CRT_SECURE_NO_WARNINGS
-#endif
+#define XML_BUFF_SIZE   10000
 
 // Forward declarations
-void *threadWorker(void *pData);
+void *
+threadWorker(void *pData);
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -60,13 +61,11 @@ CVSCPLog::CVSCPLog()
 {
     m_flags       = 0;
     m_bQuit       = false;
-    m_pLogStream  = NULL;
-    m_pthreadWork = NULL;
 
     sem_init(&m_semSendQueue, 0, 0);
-    pthread_mutex_init(&m_mutexSendQueue, NULL)
+    pthread_mutex_init(&m_mutexSendQueue, NULL);
 
-	openlog("vscpl2drv_logger", LOG_PID, LOG_DAEMON );
+    openlog("vscpl2drv_logger", LOG_PID, LOG_DAEMON);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -80,7 +79,7 @@ CVSCPLog::~CVSCPLog()
     sem_destroy(&m_semSendQueue);
     pthread_mutex_destroy(&m_mutexSendQueue);
 
-	closelog(void);
+    closelog();
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -104,8 +103,7 @@ CVSCPLog::open(const char *pUsername,
                const char *pPrefix,
                const char *pConfig)
 {
-    bool rv        = true;
-    std::string wxstr = std::string(pConfig);
+    std::string str = std::string(pConfig);
 
     m_username = std::string(pUsername);
     m_password = std::string(pPassword);
@@ -117,15 +115,15 @@ CVSCPLog::open(const char *pUsername,
     // have the following form
     // path
     //
-	std::deque<std::string> tokens;
-	vscp_split( tokens, std::string(pConfig), ";" );
+    std::deque<std::string> tokens;
+    vscp_split(tokens, std::string(pConfig), ";");
 
     // Check for path in configuration string
     if (tokens.empty()) {
-		syslog( LOG_ERR, "A path must be configured.");	
-	}
+        syslog(LOG_ERR, "A path must be configured.");
+    }
 
-	// Path
+    // Path
     m_path = tokens.front();
     tokens.pop_front();
 
@@ -134,9 +132,9 @@ CVSCPLog::open(const char *pUsername,
     if (!tokens.empty()) {
         std::string str;
         str = tokens.front();
-		tokens.pop_front();
+        tokens.pop_front();
         vscp_trim(str);
-        if (0 == vscp_strcasecmp( str.c_str(),"TRUE")) {
+        if (0 == vscp_strcasecmp(str.c_str(), "TRUE")) {
             m_flags |= LOG_FILE_OVERWRITE;
         } else {
             m_flags &= ~LOG_FILE_OVERWRITE;
@@ -148,9 +146,9 @@ CVSCPLog::open(const char *pUsername,
     if (!tokens.empty()) {
         std::string str;
         str = tokens.front();
-		tokens.pop_front();
+        tokens.pop_front();
         vscp_trim(str);
-        if (0 == vscp_strcasecmp( str.c_str(),"TRUE") ) {
+        if (0 == vscp_strcasecmp(str.c_str(), "TRUE")) {
             m_flags |= LOG_FILE_VSCP_WORKS;
         } else {
             m_flags &= ~LOG_FILE_VSCP_WORKS;
@@ -161,33 +159,34 @@ CVSCPLog::open(const char *pUsername,
     if (!tokens.empty()) {
         std::string str;
         str = tokens.front();
-		tokens.pop_front();
-        vscp_readFilterFromString(&m_Filter, str);
+        tokens.pop_front();
+        vscp_readFilterFromString(&m_vscpfilter, str);
     }
 
     // Mask
     if (!tokens.empty()) {
         std::string str;
         str = tokens.front();
-		tokens.pop_front();
-        vscp_readMaskFromString(&m_Filter, str);
+        tokens.pop_front();
+        vscp_readMaskFromString(&m_vscpfilter, str);
     }
 
     // start the worker thread
-    CLogWrkThreadObj *pObj = new CLogWrkThreadObj();
-    if (NULL != pObj) {
+    m_pWorkObj = new CLogWrkThreadObj();
+    if (NULL != m_pWorkObj) {
 
-		pObj->m_pLog = this;
+        m_pWorkObj->m_pLog = this;
 
-        if (!pthread_create(&m_pthreadWork, NULL, threadWorker, pObj)) {
+        if (!pthread_create( &m_pWrkThread, NULL, threadWorker, m_pWorkObj)) {
             syslog(LOG_CRIT, "Unable to start logger driver worker thread.");
             return false;
         }
     } else {
-        syslog(LOG_CRIT, "Unable to allocate thread object.") rv = false;
+        syslog(LOG_CRIT, "Unable to allocate thread object.");
+        return false;
     }
 
-    return rv;
+    return true;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -197,21 +196,18 @@ CVSCPLog::open(const char *pUsername,
 void
 CVSCPLog::close(void)
 {
-    if (m_file.IsOpened() && (m_flags | LOG_FILE_VSCP_WORKS)) {
-        m_pLogStream->Write("</vscprxdata>\n", strlen("</vscprxdata>\n"));
+    if (m_logStream.is_open() && (m_flags | LOG_FILE_VSCP_WORKS)) {
+        m_logStream.write("</vscprxdata>\n", strlen("</vscprxdata>\n"));
     }
 
     // Close the log-file
-    flose(m_file);
+    m_logStream.close();
 
     // Do nothing if already terminated
     if (m_bQuit) return;
 
     m_bQuit = true; // terminate the thread
-    sleep(1);     // Give the thread some time to terminate
-
-    // Delete the stream object
-    if (NULL != m_pLogStream) delete m_pLogStream;
+    sleep(1);       // Give the thread some time to terminate
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -248,51 +244,38 @@ CVSCPLog::setMask(vscpEvent *pMask)
 bool
 CVSCPLog::openFile(void)
 {
+    try {
+        if (m_flags & LOG_FILE_OVERWRITE) {
 
-    if (m_flags & LOG_FILE_OVERWRITE) {
-        if (m_file.Open(m_path, wxFile::write)) {
-            m_pLogStream = new wxFileOutputStream(m_file);
-            if (NULL != m_pLogStream) {
-                if (m_pLogStream->IsOk()) {
-                    if (m_flags & LOG_FILE_VSCP_WORKS) {
-                        m_pLogStream->Write(
-                          "<?xml version = \"1.0\" encoding = \"UTF-8\" ?>\n",
-                          strlen("<?xml version = \"1.0\" encoding = \"UTF-8\" "
-                                 "?>\n"));
-                        // RX data start
-                        m_pLogStream->Write("<vscprxdata>\n",
-                                            strlen("<vscprxdata>\n"));
-                        return true;
-                    } else {
-                        return true;
-                    }
-                } else {
-                    return false;
-                }
+            m_logStream.open(m_path, std::fstream::out);
+
+            if (m_flags & LOG_FILE_VSCP_WORKS) {
+                m_logStream
+                  << "<?xml version = \"1.0\" encoding = \"UTF-8\" ?>\n";
+                // RX data start
+                m_logStream << "<vscprxdata>\n";
+                return true;
+            } else {
+                return true;
+            }
+
+        } else {
+
+            m_logStream.open(m_path, std::fstream::out);
+
+            if (m_flags & LOG_FILE_VSCP_WORKS) {
+                m_logStream
+                  << "<?xml version = \"1.0\" encoding = \"UTF-8\" ?>\n";
+                // RX data start
+                m_logStream << "<vscprxdata>\n";
+                return true;
+            } else {
+                return true;
             }
         }
-    } else {
-        if (m_file.Open(m_path, wxFile::write_append)) {
-            m_pLogStream = new wxFileOutputStream(m_file);
-            if (NULL != m_pLogStream) {
-                if (m_pLogStream->IsOk()) {
-                    if (m_flags & LOG_FILE_VSCP_WORKS) {
-                        m_pLogStream->Write(
-                          "<?xml version = \"1.0\" encoding = \"UTF-8\" ?>\n",
-                          strlen("<?xml version = \"1.0\" encoding = \"UTF-8\" "
-                                 "?>\n"));
-                        // RX data start
-                        m_pLogStream->Write("<vscprxdata>\n",
-                                            strlen("<vscprxdata>\n"));
-                        return true;
-                    } else {
-                        return true;
-                    }
-                } else {
-                    return false;
-                }
-            }
-        }
+    } catch (...) {
+        syslog(LOG_CRIT, "Failed to open log file!");
+        return false;
     }
 
     return false;
@@ -305,11 +288,10 @@ CVSCPLog::openFile(void)
 bool
 CVSCPLog::addEvent2SendQueue(const vscpEvent *pEvent)
 {
-    m_mutexSendQueue.Lock();
-    // m_sendQueue.Append((vscpEvent *)pEvent);
+    pthread_mutex_lock(&m_mutexSendQueue);
     m_sendList.push_back((vscpEvent *)pEvent);
-    m_semSendQueue.Post();
-    m_mutexSendQueue.Unlock();
+    sem_post(&m_semSendQueue);
+    pthread_mutex_unlock(&m_mutexSendQueue);
     return true;
 }
 
@@ -325,104 +307,96 @@ CVSCPLog::writeEvent(vscpEvent *pEvent)
 
         std::string str;
 
-        // VSCP Works log format
+        // * * * VSCP Works log format * * *
 
         // Event
-        m_pLogStream->Write("<event>\n", strlen("<event>\n"));
-        m_pLogStream->Write("rx", strlen("rx"));
-        m_pLogStream->Write("</dir>\n", strlen("</dir>\n"));
+        m_logStream << "<event>\n";
+        m_logStream << "rx";
+        m_logStream << "</dir>\n";
 
-        m_pLogStream->Write("<time>", strlen("<time>"));
-        str = wxDateTime::Now().FormatISODate() + _(" ") +
-              wxDateTime::Now().FormatISOTime();
-        m_pLogStream->Write(str.mbc_str(), strlen(str.mbc_str()));
-        m_pLogStream->Write("</time>\n", strlen("</time>\n"));
+        m_logStream << "<time>";
+        str = vscpdatetime::setNow().getISODateTime();
+        m_logStream << str.c_str();
+        m_logStream << "</time>\n";
 
-        m_pLogStream->Write("<dt>", strlen("<dt>"));
+        m_logStream << "<dt>";
         if (!vscp_getDateStringFromEvent(pEvent, str)) {
-            str = _("Failed to get date/time.");
+            str = "Failed to get date/time.";
         }
-        m_pLogStream->Write(str.mbc_str(), strlen(str.mbc_str()));
-        m_pLogStream->Write("</dt>\n", strlen("</dt>\n"));
+        m_logStream << str.c_str();
+        m_logStream << "</dt>\n";
 
-        m_pLogStream->Write("<head>", strlen("<head>"));
-        str.Printf(_("%d"), pEvent->head);
-        m_pLogStream->Write(str.mbc_str(), strlen(str.mbc_str()));
-        m_pLogStream->Write("</head>\n", strlen("</head>\n"));
+        m_logStream << "<head>" << pEvent->head;
+        m_logStream << "</head>\n";
 
-        m_pLogStream->Write("<class>", strlen("<class>"));
-        str.Printf(_("%d"), pEvent->vscp_class);
-        m_pLogStream->Write(str.mbc_str(), strlen(str.mbc_str()));
-        m_pLogStream->Write("</class>\n", strlen("</class>\n"));
+        m_logStream << "<class>";
+        m_logStream << pEvent->vscp_class;
+        m_logStream << "</class>\n";
 
-        m_pLogStream->Write("<type>", strlen("<type>"));
-        str.Printf(_("%d"), pEvent->vscp_type);
-        m_pLogStream->Write(str.mbc_str(), strlen(str.mbc_str()));
-        m_pLogStream->Write("</type>\n", strlen("</type>\n"));
+        m_logStream << "<type>";
+        m_logStream << pEvent->vscp_type;
+        m_logStream << "</type>\n";
 
-        m_pLogStream->Write("<guid>", strlen("<guid>"));
+        m_logStream << "<guid>";
         vscp_writeGuidToString(pEvent, str);
-        m_pLogStream->Write(str.mbc_str(), strlen(str.mbc_str()));
-        m_pLogStream->Write("</guid>\n", strlen("</guid>\n"));
+        m_logStream << str.c_str();
+        m_logStream << "</guid>\n";
 
-        m_pLogStream->Write("<sizedata>",
-                            strlen("<sizedata>")); // Not used by read routine
-        str.Printf(_("%d"), pEvent->sizeData);
-        m_pLogStream->Write(str.mbc_str(), strlen(str.mbc_str()));
-        m_pLogStream->Write("</sizedata>\n", strlen("</sizedata>\n"));
+        m_logStream << "<sizedata>"; // Not used by read routine
+        m_logStream << pEvent->sizeData;
+        m_logStream << "</sizedata>\n";
 
         if (0 != pEvent->sizeData) {
-            m_pLogStream->Write("<data>", strlen("<data>"));
+            m_logStream << "<data>";
             vscp_writeVscpDataToString(pEvent, str);
-            m_pLogStream->Write(str.mbc_str(), strlen(str.mbc_str()));
-            m_pLogStream->Write("</data>\n", strlen("</data>\n"));
+            m_logStream << str.c_str();
+            m_logStream << "</data>\n";
         }
 
-        m_pLogStream->Write("<timestamp>", strlen("<timestamp>"));
-        str.Printf(_("%d"), pEvent->timestamp);
-        m_pLogStream->Write(str.mbc_str(), strlen(str.mbc_str()));
-        m_pLogStream->Write("</timestamp>\n", strlen("</timestamp>\n"));
+        m_logStream << "<timestamp>";
+        m_logStream << pEvent->timestamp;
+        m_logStream << "</timestamp>\n";
 
-        m_pLogStream->Write("<note>", strlen("<note>"));
-        m_pLogStream->Write("</note>\n", strlen("</note>\n"));
+        m_logStream << "<note>";
+        m_logStream << "</note>\n";
 
-        m_pLogStream->Write("</event>\n", strlen("</event>\n"));
+        m_logStream << "</event>\n";
 
     } else {
-        // Standard log format
+
+        // * * * Standard log format * * *
         std::string str;
 
-        str = wxDateTime::Now().FormatISODate() + _(" ") +
-              wxDateTime::Now().FormatISOTime() + _(": ");
-        m_pLogStream->Write(str.mbc_str(), strlen(str.mbc_str()));
+        str = vscpdatetime::setNow().getISODateTime();
+        m_logStream << str.c_str();
 
-        str.Printf(_("head=%d "), pEvent->head);
-        m_pLogStream->Write(str.mbc_str(), strlen(str.mbc_str()));
+        str = vscp_string_format("head=%d ", pEvent->head);
+        m_logStream << str.c_str();
 
-        str.Printf(_("class=%d "), pEvent->vscp_class);
-        m_pLogStream->Write(str.mbc_str(), strlen(str.mbc_str()));
+        str = vscp_string_format("class=%d ", pEvent->vscp_class);
+        m_logStream << str.c_str();
 
-        str.Printf(_("type=%d "), pEvent->vscp_type);
-        m_pLogStream->Write(str.mbc_str(), strlen(str.mbc_str()));
+        str = vscp_string_format("type=%d ", pEvent->vscp_type);
+        m_logStream << str.c_str();
 
-        str.Printf(_("GUID="), pEvent->vscp_type);
-        m_pLogStream->Write(str.mbc_str(), strlen(str.mbc_str()));
+        str = vscp_string_format("GUID=", pEvent->vscp_type);
+        m_logStream << str.c_str();
 
         vscp_writeGuidToString(pEvent, str);
-        m_pLogStream->Write(str.mbc_str(), strlen(str.mbc_str()));
+        m_logStream << str.c_str();
 
-        str.Printf(_(" datasize=%d "), pEvent->sizeData);
-        m_pLogStream->Write(str.mbc_str(), strlen(str.mbc_str()));
+        str = vscp_string_format(" datasize=%d ", pEvent->sizeData);
+        m_logStream << str.c_str();
 
         if (0 != pEvent->sizeData) {
-            str.Printf(_("data="), pEvent->vscp_type);
-            m_pLogStream->Write(str.mbc_str(), strlen(str.mbc_str()));
+            str = vscp_string_format("data=", pEvent->vscp_type);
+            m_logStream << str.c_str();
             vscp_writeVscpDataToString(pEvent, str);
-            m_pLogStream->Write(str.mbc_str(), strlen(str.mbc_str()));
+            m_logStream << str.c_str();
         }
 
-        str.Printf(_(" Timestamp=%d\r\n"), pEvent->timestamp);
-        m_pLogStream->Write(str.mbc_str(), strlen(str.mbc_str()));
+        str = vscp_string_format(" Timestamp=%d\r\n", pEvent->timestamp);
+        m_logStream << str.c_str();
     }
 
     return true;
@@ -442,43 +416,119 @@ CLogWrkThreadObj::~CLogWrkThreadObj() {}
 
 
 
-// ----------------------------------------------------------------------------
-
-
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // 								Worker thread
 ///////////////////////////////////////////////////////////////////////////////
 
+
+// ----------------------------------------------------------------------------
+
+/*
+    XML format
+    ==========
+    <setup path="path-to-log-file" 
+            brewrite="true|false"
+            bworksfmt="true|false"
+            filter="VSCP filter on string format"
+            mask="VSCP mask on string format" />
+*/
+
+// ----------------------------------------------------------------------------
+
+int depth_setup_parser = 0;
+
+void
+startSetupParser( void *data, const char *name, const char **attr ) 
+{
+    CVSCPLog *pLog = (CVSCPLog *)data;
+    if ( NULL == pLog ) return;
+
+    if ( ( 0 == strcmp( name, "setup") ) && 
+         ( 0 == depth_setup_parser ) ) {
+
+        for ( int i = 0; attr[i]; i += 2 ) {
+
+            std::string attribute = attr[i+1];
+            vscp_trim(attribute);
+
+            if ( 0 == strcmp( attr[i], "path") ) {
+                if ( !attribute.empty() ) {
+                    pLog->m_path =  attribute;
+                }
+            }
+            else if ( 0 == strcmp( attr[i], "filter") ) {
+                if ( !attribute.empty() ) {
+                    if ( !vscp_readFilterFromString( &pLog->m_vscpfilter, attribute ) ) {
+                        syslog( LOG_ERR, "Unable to read event receive filter.");
+                    }
+                }
+            }
+            else if ( 0 == strcmp( attr[i], "mask") ) {
+                if ( !attribute.empty() ) {
+                    if ( !vscp_readMaskFromString( &pLog->m_vscpfilter, attribute ) ) {
+                        syslog( LOG_ERR, "Unable to read event receive mask.");
+                    }
+                }
+            }
+            else if ( 0 == strcmp( attr[i], "brewrite") ) {
+                if ( !attribute.empty() ) {
+                    if ( 0 == vscp_strcasecmp(attribute.c_str(),"TRUE") ){
+                        pLog->m_flags |= LOG_FILE_OVERWRITE;
+                    }
+                }
+            }
+            else if ( 0 == strcmp( attr[i], "bworksfmt") ) {
+                if ( !attribute.empty() ) {
+                    if ( 0 == vscp_strcasecmp(attribute.c_str(),"TRUE")) {
+                        pLog->m_flags |= LOG_FILE_VSCP_WORKS;
+                    }
+                }
+            }
+        }
+    } 
+
+    depth_setup_parser++;
+}
+
+void
+endSetupParser( void *data, const char *name ) 
+{
+    depth_setup_parser--;
+}
+
+// ----------------------------------------------------------------------------
+
 void *
 threadWorker(void *pData)
 {
-	CLogWrkThreadObj *pObj = (CLogWrkThreadObj *)pData;
-	if ( NULL == pObj ) {
-		syslog(LOG_CRIT, "No thread object suppied to worker thread. Aborting!");
-		return NULL;
-	}
+    CLogWrkThreadObj *pObj = (CLogWrkThreadObj *)pData;
+    if (NULL == pObj) {
+        syslog(LOG_CRIT,
+               "No thread object supplied to worker thread. Aborting!");
+        return NULL;
+    }
 
     // Check pointers
     if (NULL == pObj->m_pLog) {
-		syslog(LOG_CRIT, "No valid logger object suppied to worker thread. Aborting!");
-		return NULL;
-	}
+        syslog(LOG_CRIT,
+               "No valid logger object suppied to worker thread. Aborting!");
+        return NULL;
+    }
 
     // First log on to the host and get configuration
     // variables
 
     if (VSCP_ERROR_SUCCESS ==
-        pObj->m_pLog->m_srv.doCmdOpen(pObj->m_pLog->m_host,
-                        pObj->m_pLog->m_username,
-                        pObj->m_pLog->m_password) <= 0) {
+        pObj->m_srv.doCmdOpen(pObj->m_pLog->m_host,
+                              pObj->m_pLog->m_username,
+                              pObj->m_pLog->m_password) <= 0) {
         return NULL;
     }
 
     // Find the channel id
     uint32_t ChannelID;
-    pObj->m_pLog->m_srv.doCmdGetChannelID(&ChannelID);
+    pObj->m_srv.doCmdGetChannelID(&ChannelID);
 
     // It is possible that there is configuration data the server holds
     // that we need to read in.
@@ -496,23 +546,24 @@ threadWorker(void *pData)
     std::string strFilter = pObj->m_pLog->m_prefix + std::string("_filter");
     std::string strMask   = pObj->m_pLog->m_prefix + std::string("_mask");
     if ((VSCP_ERROR_SUCCESS ==
-         pObj->m_pLog->m_srv.getRemoteVariableValue(strFilter, varFilter)) &&
+         pObj->m_srv.getRemoteVariableValue(strFilter, varFilter)) &&
         (VSCP_ERROR_SUCCESS ==
-         pObj->m_pLog->m_srv.getRemoteVariableValue(strMask, varMask))) {
-        pObj->m_pLog->m_srv.doCmdFilter(varFilter, varMask);
+         pObj->m_srv.getRemoteVariableValue(strMask, varMask))) {
+        pObj->m_srv.doCmdFilter(varFilter, varMask);
     }
 
-    // get overrided file path
+    // get overriden file path
     std::string strPath = pObj->m_pLog->m_prefix + std::string("_path");
     std::string varPath;
-    if (VSCP_ERROR_SUCCESS == pObj->m_pLog->m_srv.getRemoteVariableValue(strPath, varPath)) {
+    if (VSCP_ERROR_SUCCESS ==
+        pObj->m_srv.getRemoteVariableValue(strPath, varPath)) {
         pObj->m_pLog->m_path = varPath;
     }
 
     std::string strRewrite = pObj->m_pLog->m_prefix + std::string("_rewrite");
     bool bOverwrite;
     if (VSCP_ERROR_SUCCESS ==
-        pObj->m_pLog->m_srv.getRemoteVariableBool(strRewrite, &bOverwrite)) {
+        pObj->m_srv.getRemoteVariableBool(strRewrite, &bOverwrite)) {
         if (bOverwrite) {
             pObj->m_pLog->m_flags |= LOG_FILE_OVERWRITE;
         } else {
@@ -524,7 +575,7 @@ threadWorker(void *pData)
     std::string strVscpWorkdFmt =
       pObj->m_pLog->m_prefix + std::string("_vscpworksfmt");
     if (VSCP_ERROR_SUCCESS ==
-        pObj->m_pLog->m_srv.getRemoteVariableBool(strVscpWorkdFmt, &bVSCPWorksFormat)) {
+        pObj->m_srv.getRemoteVariableBool(strVscpWorkdFmt, &bVSCPWorksFormat)) {
         if (bVSCPWorksFormat) {
             pObj->m_pLog->m_flags |= LOG_FILE_VSCP_WORKS;
         } else {
@@ -532,28 +583,54 @@ threadWorker(void *pData)
         }
     }
 
+    // XML setup 
+    std::string str;
+    std::string strSetupXML;
+    std::string strName = pObj->m_pLog->m_prefix + std::string("_setup");
+    if (VSCP_ERROR_SUCCESS ==
+        pObj->m_srv.getRemoteVariableValue(strName, strSetupXML, true)) {
+        XML_Parser xmlParser = XML_ParserCreate("UTF-8");
+        XML_SetUserData(xmlParser, pObj->m_pLog);
+        XML_SetElementHandler(xmlParser, startSetupParser, endSetupParser);
+
+        int bytes_read;
+        void *buff = XML_GetBuffer(xmlParser, XML_BUFF_SIZE);
+
+        strncpy((char *)buff, strSetupXML.c_str(), strSetupXML.length());
+
+        bytes_read = strSetupXML.length();
+        if (!XML_ParseBuffer(xmlParser, bytes_read, bytes_read == 0)) {
+            syslog(LOG_ERR, "Failed parse XML setup.");
+        }
+
+        XML_ParserFree(xmlParser);
+    }  
+
     // Close server connection
-    pObj->m_pLog->m_srv.doCmdClose();
+    pObj->m_srv.doCmdClose();
 
     // Open the file
     if (!pObj->m_pLog->openFile()) return NULL;
 
-    while (!TestDestroy() && !pObj->m_pLog->m_bQuit) {
+    while (!pObj->m_pLog->m_bQuit) {
 
         // Wait for events
-        if (wxSEMA_TIMEOUT == pObj->m_pLog->m_semSendQueue.WaitTimeout(500)) continue;
+        struct timespec ts;
+        ts.tv_sec  = 0;
+        ts.tv_nsec = 500000; // 500 ms
+        if (ETIMEDOUT == sem_timedwait(&pObj->m_pLog->m_semSendQueue, &ts)) {
+            continue;
+        }
 
         if (pObj->m_pLog->m_sendList.size()) {
 
-            pObj->m_pLog->m_mutexSendQueue.Lock();
+            pthread_mutex_lock(&pObj->m_pLog->m_mutexSendQueue);
             vscpEvent *pEvent = pObj->m_pLog->m_sendList.front();
             pObj->m_pLog->m_sendList.pop_front();
-            pObj->m_pLog->m_mutexSendQueue.Unlock();
+            pthread_mutex_unlock(&pObj->m_pLog->m_mutexSendQueue);
 
             if (NULL == pEvent) continue;
-
             pObj->m_pLog->writeEvent(pEvent);
-
             vscp_deleteVSCPevent(pEvent);
             pEvent = NULL;
 
@@ -562,7 +639,7 @@ threadWorker(void *pData)
     } // Receive loop
 
     // Close the channel
-    pObj->m_pLog->m_srv.doCmdClose();
+    pObj->m_srv.doCmdClose();
 
     return NULL;
 }

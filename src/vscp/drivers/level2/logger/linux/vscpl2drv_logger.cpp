@@ -22,32 +22,23 @@
 //
 //
 
-#include "vscpl2drv_logger.h"
-#include "../common/log.h"
+#include <string>
+#include <map>
+#include <fstream> 
+
 #include "stdio.h"
 #include "stdlib.h"
+#include "unistd.h"
+
+#include <canal_macro.h>
+#include "vscpl2drv_logger.h"
+#include "../common/log.h"
 
 void
 _init() __attribute__((constructor));
 void
 _fini() __attribute__((destructor));
 
-void
-_init()
-{
-    printf("initializing\n");
-}
-
-void
-_fini()
-{
-    printf("finishing\n");
-}
-
-void
-_init() __attribute__((constructor));
-void
-_fini() __attribute__((destructor));
 
 // This map holds driver handles/objects
 static std::map<long, CVSCPLog *> g_ifMap;
@@ -86,7 +77,6 @@ _fini()
 
         CVSCPLog *pif = it->second;
         if (NULL != pif) {
-            pif->m_srv.doCmdClose();
             delete pif;
             pif = NULL;
         }
@@ -171,9 +161,19 @@ removeDriverObject(long h)
     UNLOCK_MUTEX(g_mapMutex);
 }
 
+
+
+
+
+
 ///////////////////////////////////////////////////////////////////////////////
 //                         V S C P   D R I V E R -  A P I
 ///////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // VSCPOpen
@@ -196,7 +196,7 @@ VSCPOpen(const char *pUsername,
         if (pdrvObj->open(
               pUsername, pPassword, pHost, port, pPrefix, pParameter)) {
 
-            if (!(h = theApp.addDriverObject(pdrvObj))) {
+            if (!(h = addDriverObject(pdrvObj))) {
                 delete pdrvObj;
             }
 
@@ -217,10 +217,10 @@ VSCPClose(long handle)
 {
     int rv = 0;
 
-    CVSCPLog *pdrvObj = theApp.getDriverObject(handle);
+    CVSCPLog *pdrvObj = getDriverObject(handle);
     if (NULL == pdrvObj) return 0;
     pdrvObj->close();
-    theApp.removeDriverObject(handle);
+    removeDriverObject(handle);
     rv = 1;
     return CANAL_ERROR_SUCCESS;
 }
@@ -234,7 +234,7 @@ VSCPBlockingSend(long handle, const vscpEvent *pEvent, unsigned long timeout)
 {
     int rv = 0;
 
-    CVSCPLog *pdrvObj = theApp.getDriverObject(handle);
+    CVSCPLog *pdrvObj = getDriverObject(handle);
     if (NULL == pdrvObj) return CANAL_ERROR_MEMORY;
     pdrvObj->addEvent2SendQueue(pEvent);
     return CANAL_ERROR_SUCCESS;
@@ -247,7 +247,7 @@ VSCPBlockingSend(long handle, const vscpEvent *pEvent, unsigned long timeout)
 extern "C" int
 VSCPBlockingReceive(long handle, vscpEvent *pEvent, unsigned long timeout)
 {
-    wxMilliSleep(timeout);
+    usleep(timeout*1000);
 
     // Nothing to receive
     pEvent = NULL;

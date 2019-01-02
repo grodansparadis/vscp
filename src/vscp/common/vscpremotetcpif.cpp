@@ -1909,7 +1909,7 @@ int VscpRemoteTcpIf::getRemoteVariableAsString( const std::string& name,
     if ( getInputQueueCount() < 2 ) return VSCP_ERROR_ERROR;   
 
     // Get variable data
-    strValue = m_inputStrArray.front();
+    strValue = m_inputStrArray.front();  // BASE64 encoded value
 
     // Reply prior to 13.0.1 was
     //
