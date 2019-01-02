@@ -2,7 +2,7 @@
 // md5.cpp: implementation of the Cmd5 class.
 // Calculate MD5 Digest using the WIN Crypto API.
 //
-// Copyright (C) 2000-2018 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
+// Copyright (C) 2000-2019 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 //
 // This software is placed into
 // the public domain and may be used for any purpose.  However, this

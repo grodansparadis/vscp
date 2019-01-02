@@ -4,17 +4,17 @@
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version
 // 2 of the License, or (at your option) any later version.
-// 
-// This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2018 Ake Hedman, 
+// This file is part of the VSCP (http://www.vscp.org)
+//
+// Copyright (C) 2000-2019 Ake Hedman,
 // Grodans Paradis AB, <akhe@grodansparadis.com>
-// 
+//
 // This file is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with this file see the file COPYING.  If not, write to
 // the Free Software Foundation, 59 Temple Place - Suite 330,
@@ -22,158 +22,153 @@
 //
 //
 
+#include "vscpl2drv_logger.h"
+#include "../common/log.h"
 #include "stdio.h"
 #include "stdlib.h"
-#include "../common/log.h"
-#include "vscpl2drv_logger.h"
 
-void _init() __attribute__((constructor));
-void _fini() __attribute__((destructor));
+void
+_init() __attribute__((constructor));
+void
+_fini() __attribute__((destructor));
 
 void
 _init()
 {
-	printf("initializing\n");
+    printf("initializing\n");
 }
 
 void
 _fini()
 {
-	printf("finishing\n");
+    printf("finishing\n");
 }
 
+void
+_init() __attribute__((constructor));
+void
+_fini() __attribute__((destructor));
 
-//CLoggerApp *gtheapp;
+// This map holds driver handles/objects
+static std::map<long, CVSCPLog *> g_ifMap;
 
-/////////////////////////////////////////////////////////////////////////////
-// CLoggerApp
+// Mutex for the map object
+static pthread_mutex_t g_mapMutex;
 
 ////////////////////////////////////////////////////////////////////////////
-// CLoggerApp construction
+// DLL constructor
+//
 
-CLoggerApp::CLoggerApp()
+void
+_init()
 {
-
-	m_instanceCounter = 0;
-	pthread_mutex_init(&m_objMutex, NULL);
-
-	// Init the driver array
-	for (int i = 0; i < VSCP_LOGGER_DRIVER_MAX_OPEN; i++) {
-		m_logArray[ i ] = NULL;
-	}
-
-	UNLOCK_MUTEX(m_objMutex);
+    pthread_mutex_init(&g_mapMutex, NULL);
 }
 
-CLoggerApp::~CLoggerApp()
+////////////////////////////////////////////////////////////////////////////
+// DLL destructor
+//
+
+void
+_fini()
 {
+    // If empty - nothing to do
+    if (g_ifMap.empty()) return;
 
-	LOCK_MUTEX(m_objMutex);
+    // Remove orphan objects
 
-	for (int i = 0; i < VSCP_LOGGER_DRIVER_MAX_OPEN; i++) {
+    LOCK_MUTEX(g_mapMutex);
 
-		if (NULL != m_logArray[ i ]) {
+    for (std::map<long, CVSCPLog *>::iterator it = g_ifMap.begin();
+         it != g_ifMap.end();
+         ++it) {
+        // std::cout << it->first << " => " << it->second << '\n';
 
-			CVSCPLog *pLog = getDriverObject(i);
-			if (NULL != pLog) {
-				pLog->close();
-				delete m_logArray[ i ];
-				m_logArray[ i ] = NULL;
-			}
-		}
-	}
+        CVSCPLog *pif = it->second;
+        if (NULL != pif) {
+            pif->m_srv.doCmdClose();
+            delete pif;
+            pif = NULL;
+        }
+    }
 
-	UNLOCK_MUTEX(m_objMutex);
-	pthread_mutex_destroy(&m_objMutex);
+    g_ifMap.clear(); // Remove all items
+
+    UNLOCK_MUTEX(g_mapMutex);
+    pthread_mutex_destroy(&g_mapMutex);
 }
-
-/////////////////////////////////////////////////////////////////////////////
-// The one and only CLoggerApp object
-
-CLoggerApp theApp;
-
-///////////////////////////////////////////////////////////////////////////////
-// CreateObject
-
-//extern "C" CLoggerApp* CreateObject( void ) {
-//	CLoggerApp *theapp = new CLoggerApp;
-//	return ( ( CLoggerApp * ) theapp );
-//}
 
 ///////////////////////////////////////////////////////////////////////////////
 // addDriverObject
 //
 
 long
-CLoggerApp::addDriverObject(CVSCPLog *plog)
+addDriverObject(CVSCPLog *pif)
 {
+    std::map<long, CVSCPLog *>::iterator it;
+    long h = 0;
 
-	long h = 0;
+    LOCK_MUTEX(g_mapMutex);
 
-	LOCK_MUTEX(m_objMutex);
-	for (int i = 0; i < VSCP_LOGGER_DRIVER_MAX_OPEN; i++) {
+    // Find free handle
+    while (true) {
+        if (g_ifMap.end() != (it = g_ifMap.find(h))) break;
+        h++;
+    };
 
-		if (NULL == m_logArray[ i ]) {
+    g_ifMap[h] = new CVSCPLog;
+    h += 1681;
 
-			m_logArray[ i ] = plog;
-			h = i + 1681;
-			break;
+    UNLOCK_MUTEX(g_mapMutex);
 
-		}
-
-	}
-
-	UNLOCK_MUTEX(m_objMutex);
-
-	return h;
+    return h;
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // getDriverObject
 //
 
 CVSCPLog *
-CLoggerApp::getDriverObject(long h)
+getDriverObject(long h)
 {
+    std::map<long, CVSCPLog *>::iterator it;
+    long idx = h - 1681;
 
-	long idx = h - 1681;
+    // Check if valid handle
+    if (idx < 0) return NULL;
 
-	// Check if valid handle
-	if (idx < 0) return NULL;
-	if (idx >= VSCP_LOGGER_DRIVER_MAX_OPEN) return NULL;
-	return m_logArray[ idx ];
+    it = g_ifMap.find(h);
+    if (it != g_ifMap.end()) {
+        return it->second;
+    }
+
+    return NULL;
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // removeDriverObject
 //
 
 void
-CLoggerApp::removeDriverObject(long h)
+removeDriverObject(long h)
 {
+    std::map<long, CVSCPLog *>::iterator it;
+    long idx = h - 1681;
 
-	long idx = h - 1681;
+    // Check if valid handle
+    if (idx < 0) return;
 
-	// Check if valid handle
-	if (idx < 0) return;
-	if (idx >= VSCP_LOGGER_DRIVER_MAX_OPEN) return;
-
-	LOCK_MUTEX(m_objMutex);
-	if (NULL != m_logArray[ idx ]) delete m_logArray[ idx ];
-	m_logArray[ idx ] = NULL;
-	UNLOCK_MUTEX(m_objMutex);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// InitInstance
-
-BOOL
-CLoggerApp::InitInstance()
-{
-	m_instanceCounter++;
-	return TRUE;
+    LOCK_MUTEX(g_mapMutex);
+    it = g_ifMap.find(h);
+    if (it != g_ifMap.end()) {
+        CVSCPLog *pObj = it->second;
+        if (NULL != pObj) {
+            delete pObj;
+            pObj = NULL;
+        }
+        g_ifMap.erase(it);
+    }
+    UNLOCK_MUTEX(g_mapMutex);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -186,98 +181,88 @@ CLoggerApp::InitInstance()
 
 extern "C" long
 VSCPOpen(const char *pUsername,
-            const char *pPassword,
-            const char *pHost,
-            short port,
-            const char *pPrefix,
-            const char *pParameter,
-            unsigned long flags)
+         const char *pPassword,
+         const char *pHost,
+         short port,
+         const char *pPrefix,
+         const char *pParameter,
+         unsigned long flags)
 {
-	long h = 0;
+    long h = 0;
 
-	CVSCPLog *pdrvObj = new CVSCPLog();
-	if (NULL != pdrvObj) {
+    CVSCPLog *pdrvObj = new CVSCPLog();
+    if (NULL != pdrvObj) {
 
-		if (pdrvObj->open( pUsername,
-                            pPassword,
-                            pHost,
-                            port,
-                            pPrefix,
-                            pParameter )) {
+        if (pdrvObj->open(
+              pUsername, pPassword, pHost, port, pPrefix, pParameter)) {
 
-			if (!(h = theApp.addDriverObject(pdrvObj))) {
-				delete pdrvObj;
-			}
+            if (!(h = theApp.addDriverObject(pdrvObj))) {
+                delete pdrvObj;
+            }
 
-		} 
-        else {
-			delete pdrvObj;
-		}
+        } else {
+            delete pdrvObj;
+        }
+    }
 
-	}
-
-	return h;
+    return h;
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 //  VSCPClose
-// 
+//
 
 extern "C" int
 VSCPClose(long handle)
 {
-	int rv = 0;
+    int rv = 0;
 
-	CVSCPLog *pdrvObj = theApp.getDriverObject(handle);
-	if (NULL == pdrvObj) return 0;
-	pdrvObj->close();
-	theApp.removeDriverObject(handle);
-	rv = 1;
-	return CANAL_ERROR_SUCCESS;
+    CVSCPLog *pdrvObj = theApp.getDriverObject(handle);
+    if (NULL == pdrvObj) return 0;
+    pdrvObj->close();
+    theApp.removeDriverObject(handle);
+    rv = 1;
+    return CANAL_ERROR_SUCCESS;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 //  VSCPBlockingSend
-// 
+//
 
 extern "C" int
 VSCPBlockingSend(long handle, const vscpEvent *pEvent, unsigned long timeout)
 {
-	int rv = 0;
+    int rv = 0;
 
-	CVSCPLog *pdrvObj = theApp.getDriverObject(handle);
-	if (NULL == pdrvObj) return CANAL_ERROR_MEMORY;
-    pdrvObj->addEvent2SendQueue( pEvent );   
-	return CANAL_ERROR_SUCCESS;
+    CVSCPLog *pdrvObj = theApp.getDriverObject(handle);
+    if (NULL == pdrvObj) return CANAL_ERROR_MEMORY;
+    pdrvObj->addEvent2SendQueue(pEvent);
+    return CANAL_ERROR_SUCCESS;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 //  VSCPBlockingReceive
-// 
+//
 
 extern "C" int
 VSCPBlockingReceive(long handle, vscpEvent *pEvent, unsigned long timeout)
 {
-    wxMilliSleep( timeout );
-    
+    wxMilliSleep(timeout);
+
     // Nothing to receive
     pEvent = NULL;
-	return CANAL_ERROR_FIFO_EMPTY;
+    return CANAL_ERROR_FIFO_EMPTY;
 }
-
-
 
 ///////////////////////////////////////////////////////////////////////////////
 //  VSCPGetLevel
-// 
+//
 
 extern "C" unsigned long
 VSCPGetLevel(void)
 {
-	return CANAL_LEVEL_USES_TCPIP;
+    return CANAL_LEVEL_USES_TCPIP;
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // VSCPGetDllVersion
@@ -286,9 +271,8 @@ VSCPGetLevel(void)
 extern "C" unsigned long
 VSCPGetDllVersion(void)
 {
-	return VSCP_DLL_VERSION;
+    return VSCP_DLL_VERSION;
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // VSCPGetVendorString
@@ -297,9 +281,8 @@ VSCPGetDllVersion(void)
 extern "C" const char *
 VSCPGetVendorString(void)
 {
-	return VSCP_DLL_VENDOR;
+    return VSCP_DLL_VENDOR;
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // VSCPGetDriverInfo
@@ -308,42 +291,40 @@ VSCPGetVendorString(void)
 extern "C" const char *
 VSCPGetDriverInfo(void)
 {
-	return VSCP_LOGGER_DRIVERINFO;
+    return VSCP_LOGGER_DRIVERINFO;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 //  VSCPGetVSCPGetWebPageTemplate
-// 
+//
 
 extern "C" long
-VSCPGetWebPageTemplate( long handle, const char *url, char *page )
+VSCPGetWebPageTemplate(long handle, const char *url, char *page)
 {
     page = NULL;
-    
-    // Not implemented
-	return -1;
-}
 
+    // Not implemented
+    return -1;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 //  VSCPGetVSCPWebPageInfo
-// 
+//
 
 extern "C" int
-VSCPGetWebPageInfo( long handle, const struct vscpextwebpageinfo *info )
+VSCPGetWebPageInfo(long handle, const struct vscpextwebpageinfo *info)
 {
     // Not implemented
-	return -1;
+    return -1;
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 //  VSCPWebPageupdate
-// 
+//
 
 extern "C" int
-VSCPWebPageupdate( long handle, const char *url )
+VSCPWebPageupdate(long handle, const char *url)
 {
     // Not implemented
-	return -1;
+    return -1;
 }
