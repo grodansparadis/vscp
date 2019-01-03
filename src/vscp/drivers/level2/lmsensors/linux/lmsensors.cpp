@@ -86,13 +86,17 @@ Clmsensors::~Clmsensors()
     close();
 
     // Terminate threads and deallocate objects
-    std::deque<CWrkTreadObj*>::iterator it;
-    for (it = m_objectList.begin(); it != m_objectList.begin(); ++it) {
+    std::deque<CWrkTreadObj *>::iterator it;
+    for (it = m_objectList.begin(); it != m_objectList.end(); ++it) {
         CWrkTreadObj *pObj = *it;
         if (NULL != pObj) {
+
             // Wait for workerthread to quit
             pthread_join(pObj->m_pthreadWork, NULL);
             *it = NULL;
+
+            // Delete the thread object
+            delete pObj;
         }
     }
 

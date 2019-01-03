@@ -21,13 +21,10 @@
 // the Free Software Foundation, 59 Temple Place - Suite 330,
 // Boston, MA 02111-1307, USA.
 //
-// $RCSfile: lincan.h,v $                                       
-// $Date: 2005/01/05 12:16:16 $                                  
-// $Author: akhe $                                              
-// $Revision: 1.2 $ 
 
-#if !defined(AFX_LINCAN_H__A388C093_AD35_4672_8BF7_DBC702C6B0C8__INCLUDED_)
-#define AFX_LINCAN_H__A388C093_AD35_4672_8BF7_DBC702C6B0C8__INCLUDED_
+
+#if !defined(LINCAN_H__A388C093_AD35_4672_8BF7_DBC702C6B0C8__INCLUDED_)
+#define LINCAN_H__A388C093_AD35_4672_8BF7_DBC702C6B0C8__INCLUDED_
 
 
 // This is the version info for this DLL - Change to your own value
@@ -107,4 +104,4 @@ extern "C"
 	CLinCanApp *CreateObject( void );
 }
 
-#endif // !defined(AFX_LINCAN_H__A388C093_AD35_4672_8BF7_DBC702C6B0C8__INCLUDED_)
+#endif // !defined(LINCAN_H__A388C093_AD35_4672_8BF7_DBC702C6B0C8__INCLUDED_)

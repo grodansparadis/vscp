@@ -1,8 +1,8 @@
 // loggerWnd.h : main header file for the LOGGERWND application
 //
 
-#if !defined(AFX_LOGGERWND_H__B38025D1_B5E4_4E4F_91E3_2AA787075D4C__INCLUDED_)
-#define AFX_LOGGERWND_H__B38025D1_B5E4_4E4F_91E3_2AA787075D4C__INCLUDED_
+#if !defined(LOGGERWND_H__B38025D1_B5E4_4E4F_91E3_2AA787075D4C__INCLUDED_)
+#define LOGGERWND_H__B38025D1_B5E4_4E4F_91E3_2AA787075D4C__INCLUDED_
 
 #if _MSC_VER > 1000
 #pragma once
@@ -45,4 +45,4 @@ public:
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.
 
-#endif // !defined(AFX_LOGGERWND_H__B38025D1_B5E4_4E4F_91E3_2AA787075D4C__INCLUDED_)
+#endif // !defined(LOGGERWND_H__B38025D1_B5E4_4E4F_91E3_2AA787075D4C__INCLUDED_)

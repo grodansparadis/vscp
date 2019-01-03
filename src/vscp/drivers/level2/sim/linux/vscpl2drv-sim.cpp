@@ -25,22 +25,9 @@
 //#pragma implementation
 #endif
 
-// For compilers that support precompilation, includes "wx.h".
-#include "wx/wxprec.h"
-
-#ifdef __BORLANDC__
-#pragma hdrstop
-#endif
-
-#ifndef WX_PRECOMP
-#include "wx/wx.h"
-#endif
-
-#ifdef __WXMSW__
-#include  "wx/ownerdrw.h"
-#endif
-
-#include "wx/tokenzr.h"
+#include <string>
+#include <list>
+#include <map>
 
 #include "stdio.h"
 #include "stdlib.h"
@@ -51,133 +38,134 @@
 void _init() __attribute__((constructor));
 void _fini() __attribute__((destructor));
 
-void _init()
-{
-    printf("initialising\n");
-}
+void
+_init() __attribute__((constructor));
+void
+_fini() __attribute__((destructor));
 
-void _fini()
-{
-    printf("finishing\n");
-}
+// This map holds driver handles/objects
+static std::map<long, CSim*> g_ifMap;
 
-
+// Mutex for the map object
+static pthread_mutex_t g_mapMutex;
 
 ////////////////////////////////////////////////////////////////////////////
-// CVSCPDrvApp construction
+// DLL constructor
+//
 
-CVSCPDrvApp::CVSCPDrvApp()
+void
+_init()
 {
-    m_instanceCounter = 0;
-    pthread_mutex_init(&m_objMutex, NULL);
-
-    // Init. the driver array
-    for (int i = 0; i < VSCP_SIM_DRIVER_MAX_OPEN; i++) {
-        m_psimArray[ i ] = NULL;
-    }
-
-    UNLOCK_MUTEX(m_objMutex);
+    pthread_mutex_init(&g_mapMutex, NULL);
 }
 
-CVSCPDrvApp::~CVSCPDrvApp()
+////////////////////////////////////////////////////////////////////////////
+// DLL destructor
+//
+
+void
+_fini()
 {
-    LOCK_MUTEX(m_objMutex);
+    // If empty - nothing to do
+    if (g_ifMap.empty()) return;
 
-    for (int i = 0; i < VSCP_SIM_DRIVER_MAX_OPEN; i++) {
+    // Remove orphan objects
 
-        if (NULL != m_psimArray[ i ]) {
+    LOCK_MUTEX(g_mapMutex);
 
-            CSim *psim = getDriverObject(i);
-            if (NULL != psim) {
-                psim->close();
-                delete m_psimArray[ i ];
-                m_psimArray[ i ] = NULL;
-            }
+    for (std::map<long, CSim *>::iterator it = g_ifMap.begin();
+         it != g_ifMap.end();
+         ++it) {
+        // std::cout << it->first << " => " << it->second << '\n';
+
+        CSim *pif = it->second;
+        if (NULL != pif) {
+            pif->m_srvLocal.doCmdClose();
+            //pif->m_srvRemote.doCmdClose();
+            delete pif;
+            pif = NULL;
         }
     }
 
-    UNLOCK_MUTEX(m_objMutex);
-    pthread_mutex_destroy(&m_objMutex);
+    g_ifMap.clear(); // Remove all items
+
+    UNLOCK_MUTEX(g_mapMutex);
+    pthread_mutex_destroy(&g_mapMutex);
 }
-
-/////////////////////////////////////////////////////////////////////////////
-// The one and only App object
-
-CVSCPDrvApp theApp;
-
-
-///////////////////////////////////////////////////////////////////////////////
-// CreateObject
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // addDriverObject
 //
 
-long CVSCPDrvApp::addDriverObject(CSim *psim)
+long
+addDriverObject(CSim *pif)
 {
+    std::map<long, CSim *>::iterator it;
     long h = 0;
 
-    LOCK_MUTEX(m_objMutex);
-    for (int i = 0; i < VSCP_SIM_DRIVER_MAX_OPEN; i++) {
+    LOCK_MUTEX(g_mapMutex);
 
-        if (NULL == m_psimArray[ i ]) {
+    // Find free handle
+    while (true) {
+        if (g_ifMap.end() != (it = g_ifMap.find(h))) break;
+        h++;
+    };
 
-            m_psimArray[ i ] = psim;
-            h = i + 1681;
-            break;
+    g_ifMap[h] = new CSim;
+    h += 1681;
 
-        }
-
-    }
-
-    UNLOCK_MUTEX(m_objMutex);
+    UNLOCK_MUTEX(g_mapMutex);
 
     return h;
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // getDriverObject
 //
 
-CSim *CVSCPDrvApp::getDriverObject(long h)
+CSim *
+getDriverObject(long h)
 {
+    std::map<long, CSim *>::iterator it;
     long idx = h - 1681;
 
     // Check if valid handle
     if (idx < 0) return NULL;
-    if (idx >= VSCP_SIM_DRIVER_MAX_OPEN) return NULL;
-    return m_psimArray[ idx ];
-}
 
+    it = g_ifMap.find(h);
+    if (it != g_ifMap.end()) {
+        return it->second;
+    }
+
+    return NULL;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // removeDriverObject
 //
 
-void CVSCPDrvApp::removeDriverObject(long h)
+void
+removeDriverObject(long h)
 {
+    std::map<long, CSim *>::iterator it;
     long idx = h - 1681;
 
     // Check if valid handle
     if (idx < 0) return;
-    if (idx >= VSCP_SIM_DRIVER_MAX_OPEN) return;
 
-    LOCK_MUTEX(m_objMutex);
-    if (NULL != m_psimArray[ idx ]) delete m_psimArray[ idx ];
-    m_psimArray[ idx ] = NULL;
-    UNLOCK_MUTEX(m_objMutex);
+    LOCK_MUTEX(g_mapMutex);
+    it = g_ifMap.find(h);
+    if (it != g_ifMap.end()) {
+        CSim *pObj = it->second;
+        if (NULL != pObj) {
+            delete pObj;
+            pObj = NULL;
+        }
+        g_ifMap.erase(it);
+    }
+    UNLOCK_MUTEX(g_mapMutex);
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// InitInstance
-
-BOOL CVSCPDrvApp::InitInstance()
-{
-    m_instanceCounter++;
-    return TRUE;
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 //                         V S C P   D R I V E R -  A P I
@@ -208,7 +196,7 @@ VSCPOpen(const char *pUsername,
                             pPrefix,
                             pParameter ) ) {
 
-            if ( !( h = theApp.addDriverObject( pdrvObj ) ) ) {
+            if ( !( h = addDriverObject( pdrvObj ) ) ) {
                 delete pdrvObj;
             }
 
@@ -229,10 +217,10 @@ VSCPOpen(const char *pUsername,
 extern "C" int
 VSCPClose(long handle)
 {
-    CSim *pdrvObj = theApp.getDriverObject(handle);
+    CSim *pdrvObj = getDriverObject(handle);
     if (NULL == pdrvObj) return CANAL_ERROR_SUCCESS;
     pdrvObj->close();
-    theApp.removeDriverObject(handle);
+    removeDriverObject(handle);
     
     return CANAL_ERROR_SUCCESS;
 }
@@ -244,7 +232,7 @@ VSCPClose(long handle)
 extern "C" int
 VSCPBlockingSend(long handle, const vscpEvent *pEvent, unsigned long timeout)
 {
-    CSim *pdrvObj = theApp.getDriverObject(handle);
+    CSim *pdrvObj = getDriverObject(handle);
     if (NULL == pdrvObj) return CANAL_ERROR_MEMORY;
     
     pdrvObj->addEvent2SendQueue( pEvent );
@@ -261,18 +249,21 @@ VSCPBlockingReceive(long handle, vscpEvent *pEvent, unsigned long timeout)
 {
     // Check pointer
     if ( NULL == pEvent) return CANAL_ERROR_PARAMETER;
-    
-    CSim *pdrvObj = theApp.getDriverObject(handle);
+
+    CSim *pdrvObj = getDriverObject(handle);
     if (NULL == pdrvObj) return CANAL_ERROR_MEMORY;
-    
-    if ( wxSEMA_TIMEOUT == pdrvObj->m_semReceiveQueue.WaitTimeout( timeout ) ) {
+
+    struct timespec ts;
+    ts.tv_sec  = 0;
+    ts.tv_nsec = timeout * 1000;
+    if (ETIMEDOUT == sem_timedwait(&pdrvObj->m_semReceiveQueue, &ts)) {
         return CANAL_ERROR_TIMEOUT;
     }
-    
-    pdrvObj->m_mutexReceiveQueue.Lock();
+
+    pthread_mutex_lock( &pdrvObj->m_mutexReceiveQueue);
     vscpEvent *pLocalEvent = pdrvObj->m_receiveList.front();
     pdrvObj->m_receiveList.pop_front();
-    pdrvObj->m_mutexReceiveQueue.Unlock();
+    pthread_mutex_unlock( &pdrvObj->m_mutexReceiveQueue);
     if (NULL == pLocalEvent) return CANAL_ERROR_MEMORY;
     
     vscp_copyVSCPEvent( pEvent, pLocalEvent );
@@ -321,7 +312,7 @@ VSCPGetVendorString(void)
 extern "C" const char *
 VSCPGetDriverInfo(void)
 {
-    return VSCP_TCPIPLINK_DRIVERINFO;
+    return VSCP_SIM_DRIVERINFO;
 }
 
 

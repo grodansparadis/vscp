@@ -21,14 +21,10 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
-// $RCSfile: can232obj.h,v $                                       
-// $Date: 2005/01/05 12:16:12 $                                  
-// $Author: akhe $                                              
-// $Revision: 1.3 $ 
 ///////////////////////////////////////////////////////////////////////////////
 
-#if !defined(AFX_CAN232DRV_H__16828641_5EDF_4115_9522_97BD178F566B__INCLUDED_)
-#define AFX_CAN232DRV_H__16828641_5EDF_4115_9522_97BD178F566B__INCLUDED_
+#if !defined(CAN232DRV_H__16828641_5EDF_4115_9522_97BD178F566B__INCLUDED_)
+#define CAN232DRV_H__16828641_5EDF_4115_9522_97BD178F566B__INCLUDED_
 
 #if _MSC_VER > 1000
 #pragma once
@@ -189,4 +185,4 @@ public:
 	 
 };
 
-#endif // !defined(AFX_CAN232DRV_H__16828641_5EDF_4115_9522_97BD178F566B__INCLUDED_)
+#endif // !defined(CAN232DRV_H__16828641_5EDF_4115_9522_97BD178F566B__INCLUDED_)

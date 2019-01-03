@@ -21,8 +21,8 @@
 // Boston, MA 02111-1307, USA.
 //
 
-#if !defined(AFX_VECTOROBJ_H__6F5CD90E_ACF7_459A_9ACB_849A57595639__INCLUDED_)
-#define AFX_VECTOROBJ_H__6F5CD90E_ACF7_459A_9ACB_849A57595639__INCLUDED_
+#if !defined(VECTOROBJ_H__6F5CD90E_ACF7_459A_9ACB_849A57595639__INCLUDED_)
+#define VECTOROBJ_H__6F5CD90E_ACF7_459A_9ACB_849A57595639__INCLUDED_
 
 #ifdef WIN32
 
@@ -269,7 +269,7 @@ public:
 			1				1					0			Reject
 			1				1					1			Accept
 
-		Formula is !( ( filter îd ) & mask )
+		Formula is !( ( filter ï¿½d ) & mask )
 	*/
 	uint32_t m_filter;
 
@@ -374,4 +374,4 @@ public:
  
 };
 
-#endif // !defined(AFX_VECTOROBJ_H__6F5CD90E_ACF7_459A_9ACB_849A57595639__INCLUDED_)
+#endif // !defined(VECTOROBJ_H__6F5CD90E_ACF7_459A_9ACB_849A57595639__INCLUDED_)

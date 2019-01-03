@@ -4,8 +4,8 @@
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 //////////////////////////////////////////////////////////////////////
 
-#if !defined(AFX_LIRCINTERFACE_H__212CD7A3_785B_4444_82A6_D876E36BFCB1__INCLUDED_)
-#define AFX_LIRCINTERFACE_H__212CD7A3_785B_4444_82A6_D876E36BFCB1__INCLUDED_
+#if !defined(LIRCINTERFACE_H__212CD7A3_785B_4444_82A6_D876E36BFCB1__INCLUDED_)
+#define LIRCINTERFACE_H__212CD7A3_785B_4444_82A6_D876E36BFCB1__INCLUDED_
 
 #if _MSC_VER > 1000
 #pragma once
@@ -435,7 +435,7 @@ public:
 			1				1					0			Reject
 			1				1					1			Accept
 
-		Formula is !( ( filter îd ) & mask )
+		Formula is !( ( filter ï¿½d ) & mask )
 	*/
 	uint32_t m_filter;
 
@@ -469,4 +469,4 @@ private:
 };
 
 
-#endif // !defined(AFX_LIRCINTERFACE_H__212CD7A3_785B_4444_82A6_D876E36BFCB1__INCLUDED_)
+#endif // !defined(LIRCINTERFACE_H__212CD7A3_785B_4444_82A6_D876E36BFCB1__INCLUDED_)

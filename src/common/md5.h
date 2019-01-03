@@ -8,8 +8,8 @@
 // expressed or implied by its publication or distribution.
 //////////////////////////////////////////////////////////////////////
 
-#if !defined(AFX_MD5_H__438D2BEF_6F1B_4C5C_830F_0E7B6D1FD7E2__INCLUDED_)
-#define AFX_MD5_H__438D2BEF_6F1B_4C5C_830F_0E7B6D1FD7E2__INCLUDED_
+#if !defined(MD5_H__438D2BEF_6F1B_4C5C_830F_0E7B6D1FD7E2__INCLUDED_)
+#define MD5_H__438D2BEF_6F1B_4C5C_830F_0E7B6D1FD7E2__INCLUDED_
 
 #if _MSC_VER > 1000
 #pragma once
@@ -74,4 +74,4 @@ private:
 #endif
 
 
-#endif // !defined(AFX_MD5CAPI_H__438D2BEF_6F1B_4C5C_830F_0E7B6D1FD7E2__INCLUDED_)
+#endif // !defined(MD5_H__438D2BEF_6F1B_4C5C_830F_0E7B6D1FD7E2__INCLUDED_)

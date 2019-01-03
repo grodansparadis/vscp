@@ -25,8 +25,8 @@
 // $Author: akhe $                                              
 // $Revision: 1.4 $ 
 
-#if !defined(AFX_LOG_H__6F5CD90E_ACF7_459A_9ACB_849A57595639__INCLUDED_)
-#define AFX_LOG_H__6F5CD90E_ACF7_459A_9ACB_849A57595639__INCLUDED_
+#if !defined(LOG_H__6F5CD90E_ACF7_459A_9ACB_849A57595639__INCLUDED_)
+#define LOG_H__6F5CD90E_ACF7_459A_9ACB_849A57595639__INCLUDED_
 
 #ifdef WIN32
 #include <windows.h>
@@ -165,7 +165,7 @@ public:
 			1				1					0			Reject
 			1				1					1			Accept
 
-		Formula is !( ( filter îd ) & mask )
+		Formula is !( ( filter ï¿½d ) & mask )
 	*/
 	_u32 m_filter;
 
@@ -175,4 +175,4 @@ public:
 	_u32 m_mask;
 };
 
-#endif // !defined(AFX_LOG_H__6F5CD90E_ACF7_459A_9ACB_849A57595639__INCLUDED_)
+#endif // !defined(LOG_H__6F5CD90E_ACF7_459A_9ACB_849A57595639__INCLUDED_)

@@ -27,8 +27,8 @@
 // $Revision: 1.3 $ 
 ///////////////////////////////////////////////////////////////////////////////
 
-#if !defined(AFX_CCSDRV_H__16828641_5EDF_4115_9522_97BD178F566B__INCLUDED_)
-#define AFX_CCSDRV_H__16828641_5EDF_4115_9522_97BD178F566B__INCLUDED_
+#if !defined(CCSDRV_H__16828641_5EDF_4115_9522_97BD178F566B__INCLUDED_)
+#define CCSDRV_H__16828641_5EDF_4115_9522_97BD178F566B__INCLUDED_
 
 #if _MSC_VER > 1000
 #pragma once
@@ -181,4 +181,4 @@ public:
 	 
 };
 
-#endif // !defined(AFX_CCSDRV_H__16828641_5EDF_4115_9522_97BD178F566B__INCLUDED_)
+#endif // !defined(CCSDRV_H__16828641_5EDF_4115_9522_97BD178F566B__INCLUDED_)
