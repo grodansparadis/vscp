@@ -1,4 +1,4 @@
-This is a Level II driver for the linux Socketcan interface
+This is a Level II driver for raw ethernet communication
 
 Configuration string
 
