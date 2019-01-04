@@ -122,6 +122,82 @@ CWire1::~CWire1()
     closelog();
 }
 
+// ----------------------------------------------------------------------------
+
+/*
+    XML Setup
+    =========
+
+    <setup>
+        <sensor path="path to sensor data"
+                guid=""              
+                interval=60"
+                unit="1"
+                index="0" />
+    </setup>        
+*/
+
+// ----------------------------------------------------------------------------
+
+int depth_setup_parser = 0;
+
+void
+startSetupParser( void *data, const char *name, const char **attr ) 
+{
+    CWire1 *pObj = (CWire1 *)data;
+    if (NULL == pObj) return;
+
+    if ((0 == strcmp(name, "sensor")) && (1 == depth_setup_parser)) {
+
+        CSensor *psensor = new CSensor;
+        if (NULL == psensor) {
+            return;
+        }
+
+        for (int i = 0; attr[i]; i += 2) {
+
+            std::string attribute = attr[i + 1];
+            vscp_trim(attribute);
+
+            if (0 == strcasecmp(attr[i], "path")) {
+                if (!attribute.empty()) {
+                    psensor->m_path = attribute;
+                }
+            } else if (0 == strcasecmp(attr[i], "guid")) {
+                if (!attribute.empty()) {
+                    psensor->m_guid.getFromString(attribute);
+                }
+            } else if (0 == strcmp(attr[i], "interval")) {
+                if (!attribute.empty()) {
+                    psensor->m_interval = vscp_readStringValue(attribute);
+                }
+            } else if (0 == strcmp(attr[i], "index")) {
+                if (!attribute.empty()) {
+                    psensor->m_index = vscp_readStringValue(attribute);
+                }
+            } else if (0 == strcmp(attr[i], "unit")) {
+                if (!attribute.empty()) {
+                    psensor->m_unit = vscp_readStringValue(attribute);
+                }
+            }  
+        }
+
+        pObj->m_sensorList.push_back(psensor);
+
+    }
+
+    depth_setup_parser++;
+}
+
+void
+endSetupParser( void *data, const char *name ) 
+{
+    depth_setup_parser--;
+}
+
+// ----------------------------------------------------------------------------
+
+
 //////////////////////////////////////////////////////////////////////
 // open
 //
@@ -136,13 +212,14 @@ CWire1::open(const char *pUsername,
              const char *pConfig)
 {
     bool rv           = true;
-    std::string wxstr = std::string(pConfig);
+    std::string str = std::string(pConfig);
 
     m_username = std::string(pUsername);
     m_password = std::string(pPassword);
     m_host     = std::string(pHost);
     m_port     = port;
     m_prefix   = std::string(pPrefix);
+    std::string strVariableName;
 
     // Parse the configuration string. It should
     // have the following form path
@@ -225,7 +302,7 @@ CWire1::open(const char *pUsername,
         if (NULL != psensor) {
 
             // Get sample interval
-            std::string strVariableName =
+            strVariableName =
               m_prefix + std::string("_interval") + strIteration;
             if (VSCP_ERROR_SUCCESS ==
                 m_srv.getRemoteVariableInt(strVariableName,
@@ -319,6 +396,28 @@ CWire1::open(const char *pUsername,
                    i);
             rv = false;
         }
+    }
+
+    // XML setup 
+    std::string strSetupXML;
+    strVariableName = m_prefix + std::string("_setup");
+    if (VSCP_ERROR_SUCCESS ==
+        m_srv.getRemoteVariableValue(strVariableName, strSetupXML, true)) {
+        XML_Parser xmlParser = XML_ParserCreate("UTF-8");
+        XML_SetUserData(xmlParser, this);
+        XML_SetElementHandler(xmlParser, startSetupParser, endSetupParser);
+
+        int bytes_read;
+        void *buff = XML_GetBuffer(xmlParser, XML_BUFF_SIZE);
+
+        strncpy((char *)buff, strSetupXML.c_str(), strSetupXML.length());
+
+        bytes_read = strSetupXML.length();
+        if (!XML_ParseBuffer(xmlParser, bytes_read, bytes_read == 0)) {
+            syslog(LOG_ERR, "Failed parse XML setup.");
+        }
+
+        XML_ParserFree(xmlParser);
     }
 
     // Close the channel
