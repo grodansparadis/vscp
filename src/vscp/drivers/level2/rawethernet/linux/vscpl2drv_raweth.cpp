@@ -50,12 +50,16 @@
 #include <sys/uio.h>
 #include <time.h>
 
+#include <expat.h>
+
 #include <vscp_class.h>
 #include <vscp_type.h>
 #include <vscphelper.h>
 #include <vscpremotetcpif.h>
 
 #include "vscpl2drv_raweth.h"
+
+#define XML_BUFF_SIZE   10000
 
 // Worker threads
 void *writeWorkerThread(void *pData);
@@ -415,7 +419,7 @@ CRawEthernet::CRawEthernet()
     memset(m_localMac, 0, 16);
     m_subaddr = 0;
 
-	// Open syslog channel
+    // Open syslog channel
     openlog(VSCP_DLL_SONAME, LOG_PID | LOG_CONS, LOG_DAEMON);
 
     vscp_clearVSCPFilter(&m_vscpfilter); // Accept all events
@@ -429,7 +433,7 @@ CRawEthernet::~CRawEthernet()
 {
     close();
 
-	// Close syslog channel
+    // Close syslog channel
     closelog();
 }
 
@@ -446,6 +450,88 @@ CRawEthernet::addEvent2SendQueue(const vscpEvent *pEvent)
     pthread_mutex_unlock(&m_mutexSendQueue);
     return true;
 }
+
+// ----------------------------------------------------------------------------
+
+/*
+    XML Setup
+    =========
+
+    <setup interface="A string that identifies the Ethernet device"
+            localmac="The mac address used as the outgoing mac address"
+            subaddr="sub address for i/f"
+            filter="filter for outgoing traffic"
+            mask="mask for outgoing traffic"
+    />
+*/
+
+// ----------------------------------------------------------------------------
+
+int depth_setup_parser = 0;
+
+void
+startSetupParser(void *data, const char *name, const char **attr)
+{
+    CRawEthernet *pObj = (CRawEthernet *)data;
+    if (NULL == pObj) return;
+
+    if ((0 == strcmp(name, "setup")) && (0 == depth_setup_parser)) {
+
+        for (int i = 0; attr[i]; i += 2) {
+
+            std::string attribute = attr[i + 1];
+            vscp_trim(attribute);
+
+            if (0 == strcasecmp(attr[i], "interface")) {
+                if (!attribute.empty()) {
+                    pObj->m_interface = attribute;
+                }
+            } else if (0 == strcasecmp(attr[i], "localmac")) {
+                if (!attribute.empty()) {
+                    vscp_makeUpper(attribute);
+                    std::deque<std::string> tokens_mac;
+                    vscp_split(tokens_mac, attribute, ":");
+                    for (int i = 0; i < 6; i++) {
+                        if (tokens_mac.empty()) break;
+                        std::string str = "0X" + tokens_mac.front();
+                        tokens_mac.pop_front();
+                        pObj->m_localMac[i] = vscp_readStringValue(str);
+                    }
+                }
+            } else if (0 == strcasecmp(attr[i], "subaddr")) {
+                if (!attribute.empty()) {
+                    pObj->m_subaddr = vscp_readStringValue(attribute);
+                }
+            }
+            else if (0 == strcasecmp(attr[i], "filter")) {
+                if (!attribute.empty()) {
+                    if (!vscp_readFilterFromString(&pObj->m_vscpfilter,
+                                                   attribute)) {
+                        syslog(LOG_ERR, "Unable to read event receive filter.");
+                    }
+                }
+            }
+            else if (0 == strcasecmp(attr[i], "mask")) {
+                if (!attribute.empty()) {
+                    if (!vscp_readMaskFromString(&pObj->m_vscpfilter,
+                                                 attribute)) {
+                        syslog(LOG_ERR, "Unable to read event receive mask.");
+                    }
+                }
+            }
+        }
+    }
+
+    depth_setup_parser++;
+}
+
+void
+endSetupParser(void *data, const char *name)
+{
+    depth_setup_parser--;
+}
+
+// ----------------------------------------------------------------------------
 
 //////////////////////////////////////////////////////////////////////
 // open
@@ -471,9 +557,8 @@ CRawEthernet::open(const char *pUsername,
     m_prefix   = std::string(pPrefix);
 
     // Parse the configuration string. It should
-    // have the following form
-    // path
-    //
+    // have the following form path
+
     std::deque<std::string> tokens;
     vscp_split(tokens, std::string(pConfig), ";");
 
@@ -503,10 +588,8 @@ CRawEthernet::open(const char *pUsername,
     // First log on to the host and get configuration
     // variables
 
-    if (VSCP_ERROR_SUCCESS != m_srv.doCmdOpen(m_host,
-                                              m_port,
-                                              m_username,
-                                              m_password)) {
+    if (VSCP_ERROR_SUCCESS !=
+        m_srv.doCmdOpen(m_host, m_port, m_username, m_password)) {
         syslog(LOG_ERR,
                "%s",
                (const char
@@ -589,27 +672,44 @@ CRawEthernet::open(const char *pUsername,
     // subaddr
     strName = m_prefix + std::string("_subaddr");
     if (VSCP_ERROR_SUCCESS == m_srv.getRemoteVariableValue(strName, str)) {
-        vscp_readMaskFromString(&m_vscpfilter, str);
+        m_subaddr = vscp_readStringValue(str);
     }
 
     // start the read workerthread
-	if ( !pthread_create( m_readWrkThread, 
-                            NULL, 
-                            readWorkerThread, 
-                            this ) ) {
- 
-        syslog( LOG_CRIT, "Unable to start read worker thread." );
+    if (!pthread_create(m_readWrkThread, NULL, readWorkerThread, this)) {
+
+        syslog(LOG_CRIT, "Unable to start read worker thread.");
         return false;
     }
 
+    // XML setup 
+    std::string strSetupXML;
+    
+    strName = m_prefix + std::string("_setup");
+    if (VSCP_ERROR_SUCCESS ==
+        m_srv.getRemoteVariableValue(strName, strSetupXML, true)) {
+        XML_Parser xmlParser = XML_ParserCreate("UTF-8");
+        XML_SetUserData(xmlParser, this);
+        XML_SetElementHandler(xmlParser, startSetupParser, endSetupParser);
+
+        int bytes_read;
+        void *buff = XML_GetBuffer(xmlParser, XML_BUFF_SIZE);
+
+        strncpy((char *)buff, strSetupXML.c_str(), strSetupXML.length());
+
+        bytes_read = strSetupXML.length();
+        if (!XML_ParseBuffer(xmlParser, bytes_read, bytes_read == 0)) {
+            syslog(LOG_ERR, "Failed parse XML setup.");
+        }
+
+        XML_ParserFree(xmlParser);
+    }
+
     // start the write workerthread
-	// start the read workerthread
-	if ( !pthread_create( m_writeWrkThread, 
-                            NULL, 
-                            writeWorkerThread, 
-                            this ) ) {
- 
-        syslog( LOG_CRIT, "Unable to start read worker thread." );
+    // start the read workerthread
+    if (!pthread_create(m_writeWrkThread, NULL, writeWorkerThread, this)) {
+
+        syslog(LOG_CRIT, "Unable to start read worker thread.");
         return false;
     }
 
@@ -659,11 +759,11 @@ readWorkerThread(void *pData)
     pcap_t *fp;
     char errbuf[PCAP_ERRBUF_SIZE];
 
-	CRawEthernet *pObj = (CRawEthernet *)pData;
-	if ( NULL == pObj) {
-		syslog(LOG_CRIT, "No data object supplied for read thread.");
-		return NULL;
-	}
+    CRawEthernet *pObj = (CRawEthernet *)pData;
+    if (NULL == pObj) {
+        syslog(LOG_CRIT, "No data object supplied for read thread.");
+        return NULL;
+    }
 
     // Open the adapter
     if (NULL ==
@@ -807,11 +907,11 @@ writeWorkerThread(void *pData)
     char errbuf[PCAP_ERRBUF_SIZE];
     uint8_t packet[512];
 
-	CRawEthernet *pObj = (CRawEthernet *)pData;
-	if ( NULL == pObj) {
-		syslog(LOG_CRIT, "No data object supplied for write thread.");
-		return NULL;
-	}
+    CRawEthernet *pObj = (CRawEthernet *)pData;
+    if (NULL == pObj) {
+        syslog(LOG_CRIT, "No data object supplied for write thread.");
+        return NULL;
+    }
 
     // Open the adapter
     if ((fp = pcap_open_live(
@@ -923,9 +1023,9 @@ writeWorkerThread(void *pData)
             }
 
             // Remove the event
-            pthread_mutex_lock( &pObj->m_mutexSendQueue);
+            pthread_mutex_lock(&pObj->m_mutexSendQueue);
             vscp_deleteVSCPevent(pEvent);
-            pthread_mutex_unlock( &pObj->m_mutexSendQueue);
+            pthread_mutex_unlock(&pObj->m_mutexSendQueue);
 
         } // Event received
 
