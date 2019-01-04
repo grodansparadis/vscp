@@ -52,9 +52,8 @@
 // Buffer for XML parser
 #define XML_BUFF_SIZE 10000
 
-// Forward declaration
-void *
-workerThread(void *pData);
+// Forward declaration 
+void *workerThread(void *pData);
 
 //////////////////////////////////////////////////////////////////////
 // Clmsensors

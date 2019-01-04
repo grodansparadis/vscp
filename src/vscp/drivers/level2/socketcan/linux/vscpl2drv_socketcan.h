@@ -23,13 +23,17 @@
 //
 
 
-#if !defined(VSCPL1_H__A388C093_AD35_4672_8BF7_DBC702C6B0C8__INCLUDED_)
-#define VSCPL1_H__A388C093_AD35_4672_8BF7_DBC702C6B0C8__INCLUDED_
+#if !defined(VSCPL2SOCKETCAN_H__A388C093_AD35_4672_8BF7_DBC702C6B0C8__INCLUDED_)
+#define VSCPL2SOCKETCAN_H__A388C093_AD35_4672_8BF7_DBC702C6B0C8__INCLUDED_
+
+#define _POSIX
+
+#include <string>
+#include <list>
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#define _POSIX
 #include <unistd.h>
 #include <pthread.h>
 #include <syslog.h>
@@ -51,8 +55,10 @@ typedef int BOOL;
 #define FALSE 0
 #endif
 
+#define VSCP_DLL_SONAME "vscpl2drv_socketcan.1.2"
+
 // This is the version info for this DLL - Change to your own value
-#define VSCP_DLL_VERSION        0x000001
+#define VSCP_DLL_VERSION        0x000002
 
 // This is the vendor string - Change to your own value
 #define VSCP_DLL_VENDOR "Grodans Paradis AB, Sweden, https://www.grodansparadis.com"
@@ -65,74 +71,33 @@ typedef int BOOL;
 "   <item pos=\"1\" type=\"path\" description\"Path to configuration file\"/>" \
 "</config>"
 
-// Max number of open connections
-#define VSCP_SOCKETCAN_DRIVER_MAX_OPEN	    256
 
-/////////////////////////////////////////////////////////////////////////////
-// CVSCPDrvApp
-// See vscpl1.cpp for the implementation of this class
-//
+/*!
+    Add a driver object
 
-class CVSCPDrvApp
-{
+    @parm plog Object to add
+    @return handle or 0 for error
+*/
+long
+addDriverObject(Csocketcan *pif);
 
-public:
+/*!
+    Get a driver object from its handle
 
-	/// Constructor
-	CVSCPDrvApp();
-	
-	/// Destructor
-	~CVSCPDrvApp();
+    @param handle for object
+    @return pointer to object or NULL if invalid
+            handle.
+*/
+Csocketcan *
+getDriverObject(long handle);
 
-	/*!
-		Add a driver object
+/*!
+    Remove a driver object
+    @param handle for object.
+*/
+void
+removeDriverObject(long handle);
 
-		@parm plog Object to add
-		@return handle or 0 for error
-	*/	
-	long addDriverObject( Csocketcan *psockcan );
 
-	/*!
-		Get a driver object from its handle
 
-		@param handle for object
-		@return pointer to object or NULL if invalid
-				handle.
-	*/
-	Csocketcan *getDriverObject( long h );
-
-	/*!
-		Remove a driver object
-
-		@parm handle for object.
-	*/
-	void removeDriverObject( long h );
-
-	/*!
-		The log file object
-		This is the array with driver objects (max 256 objects
-	*/
-	Csocketcan *m_psockcanArray[ VSCP_SOCKETCAN_DRIVER_MAX_OPEN ];
-	
-	
-	/// Mutex for open/close
-	pthread_mutex_t m_objMutex;
-
-	/// Counter for users of the interface
-	unsigned long m_instanceCounter;
-
-public:
-	BOOL InitInstance();
-
-};
-
-///////////////////////////////////////////////////////////////////////////////
-// CreateObject
-//
-
-extern "C"
-{
-	CVSCPDrvApp *CreateObject( void );
-}
-
-#endif // !defined(VSCPL1_H__A388C093_AD35_4672_8BF7_DBC702C6B0C8__INCLUDED_)
+#endif // !defined(VSCPL2SOCKETCAN_H__A388C093_AD35_4672_8BF7_DBC702C6B0C8__INCLUDED_)

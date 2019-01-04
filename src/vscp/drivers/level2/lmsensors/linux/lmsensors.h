@@ -171,4 +171,4 @@ class CWrkTreadObj
     pthread_t m_pthreadWork;
 };
 
-#endif // !defined(VSCPLOG_H__6F5CD90E_ACF7_459A_9ACB_849A57595639__INCLUDED_)
+#endif // !defined(LMSENSORS_H__INCLUDED_)
