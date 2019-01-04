@@ -86,7 +86,6 @@ CTcpipLink::CTcpipLink()
 
     pthread_mutex_init(&m_mutexSendQueue, NULL);
     pthread_mutex_init(&m_mutexReceiveQueue, NULL);
-
 }
 
 //////////////////////////////////////////////////////////////////////
