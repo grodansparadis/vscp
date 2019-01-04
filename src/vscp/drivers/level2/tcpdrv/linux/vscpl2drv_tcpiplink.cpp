@@ -25,25 +25,13 @@
 //#pragma implementation
 #endif
 
-// For compilers that support precompilation, includes "wx.h".
-#include "wx/wxprec.h"
+#include <string>
+#include <map>
 
-#ifdef __BORLANDC__
-#pragma hdrstop
-#endif
-
-#ifndef WX_PRECOMP
-#include "wx/wx.h"
-#endif
-
-#ifdef __WXMSW__
-#include  "wx/ownerdrw.h"
-#endif
-
-#include "wx/tokenzr.h"
-
-#include "stdio.h"
-#include "stdlib.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <semaphore.h>
+#include <pthread.h>
 
 #include "vscpl2drv_tcpiplink.h"
 #include "vscptcpiplink.h"
@@ -51,135 +39,136 @@
 void _init() __attribute__((constructor));
 void _fini() __attribute__((destructor));
 
-void _init()
-{
-    printf("initializing\n");
-}
+void
+_init() __attribute__((constructor));
+void
+_fini() __attribute__((destructor));
 
-void _fini()
-{
-    printf("finishing\n");
-}
+// This map holds driver handles/objects
+static std::map<long, CTcpipLink*> g_ifMap;
 
-
+// Mutex for the map object
+static pthread_mutex_t g_mapMutex;
 
 ////////////////////////////////////////////////////////////////////////////
-// CVSCPDrvApp construction
+// DLL constructor
+//
 
-CVSCPDrvApp::CVSCPDrvApp()
+void
+_init()
 {
-    m_instanceCounter = 0;
-    pthread_mutex_init(&m_objMutex, NULL);
-
-    // Init the driver array
-    for (int i = 0; i < VSCP_TCPIPLINK_DRIVER_MAX_OPEN; i++) {
-        m_ptcpiplinkArray[ i ] = NULL;
-    }
-
-    UNLOCK_MUTEX(m_objMutex);
+    pthread_mutex_init(&g_mapMutex, NULL);
 }
 
-CVSCPDrvApp::~CVSCPDrvApp()
+////////////////////////////////////////////////////////////////////////////
+// DLL destructor
+//
+
+void
+_fini()
 {
-    LOCK_MUTEX(m_objMutex);
+    // If empty - nothing to do
+    if (g_ifMap.empty()) return;
 
-    for (int i = 0; i < VSCP_TCPIPLINK_DRIVER_MAX_OPEN; i++) {
+    // Remove orphan objects
 
-        if (NULL != m_ptcpiplinkArray[ i ]) {
+    LOCK_MUTEX(g_mapMutex);
 
-            CTcpipLink *psockcan = getDriverObject(i);
-            if (NULL != psockcan) {
-                psockcan->close();
-                delete m_ptcpiplinkArray[ i ];
-                m_ptcpiplinkArray[ i ] = NULL;
-            }
+    for (std::map<long, CTcpipLink *>::iterator it = g_ifMap.begin();
+         it != g_ifMap.end();
+         ++it) {
+        // std::cout << it->first << " => " << it->second << '\n';
+
+        CTcpipLink *pif = it->second;
+        if (NULL != pif) {
+            pif->m_srvLocal.doCmdClose();
+            pif->m_srvRemote.doCmdClose();
+            delete pif;
+            pif = NULL;
         }
     }
 
-    UNLOCK_MUTEX(m_objMutex);
-    pthread_mutex_destroy(&m_objMutex);
+    g_ifMap.clear(); // Remove all items
+
+    UNLOCK_MUTEX(g_mapMutex);
+    pthread_mutex_destroy(&g_mapMutex);
 }
-
-/////////////////////////////////////////////////////////////////////////////
-// The one and only CLoggerdllApp object
-
-CVSCPDrvApp theApp;
-
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-// CreateObject
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // addDriverObject
 //
 
-long CVSCPDrvApp::addDriverObject(CTcpipLink *psockcan)
+long
+addDriverObject(CTcpipLink *pif)
 {
+    std::map<long, CTcpipLink *>::iterator it;
     long h = 0;
 
-    LOCK_MUTEX(m_objMutex);
-    for (int i = 0; i < VSCP_TCPIPLINK_DRIVER_MAX_OPEN; i++) {
+    LOCK_MUTEX(g_mapMutex);
 
-        if (NULL == m_ptcpiplinkArray[ i ]) {
+    // Find free handle
+    while (true) {
+        if (g_ifMap.end() != (it = g_ifMap.find(h))) break;
+        h++;
+    };
 
-            m_ptcpiplinkArray[ i ] = psockcan;
-            h = i + 1681;
-            break;
+    g_ifMap[h] = new CTcpipLink;
+    h += 1681;
 
-        }
-
-    }
-
-    UNLOCK_MUTEX(m_objMutex);
+    UNLOCK_MUTEX(g_mapMutex);
 
     return h;
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // getDriverObject
 //
 
-CTcpipLink *CVSCPDrvApp::getDriverObject(long h)
+CTcpipLink *
+getDriverObject(long h)
 {
+    std::map<long, CTcpipLink *>::iterator it;
     long idx = h - 1681;
 
     // Check if valid handle
     if (idx < 0) return NULL;
-    if (idx >= VSCP_TCPIPLINK_DRIVER_MAX_OPEN) return NULL;
-    return m_ptcpiplinkArray[ idx ];
-}
 
+    it = g_ifMap.find(h);
+    if (it != g_ifMap.end()) {
+        return it->second;
+    }
+
+    return NULL;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // removeDriverObject
 //
 
-void CVSCPDrvApp::removeDriverObject(long h)
+void
+removeDriverObject(long h)
 {
+    std::map<long, CTcpipLink *>::iterator it;
     long idx = h - 1681;
 
     // Check if valid handle
     if (idx < 0) return;
-    if (idx >= VSCP_TCPIPLINK_DRIVER_MAX_OPEN) return;
 
-    LOCK_MUTEX(m_objMutex);
-    if (NULL != m_ptcpiplinkArray[ idx ]) delete m_ptcpiplinkArray[ idx ];
-    m_ptcpiplinkArray[ idx ] = NULL;
-    UNLOCK_MUTEX(m_objMutex);
+    LOCK_MUTEX(g_mapMutex);
+    it = g_ifMap.find(h);
+    if (it != g_ifMap.end()) {
+        CTcpipLink *pObj = it->second;
+        if (NULL != pObj) {
+            delete pObj;
+            pObj = NULL;
+        }
+        g_ifMap.erase(it);
+    }
+    UNLOCK_MUTEX(g_mapMutex);
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// InitInstance
 
-BOOL CVSCPDrvApp::InitInstance()
-{
-    m_instanceCounter++;
-    return TRUE;
-}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //                         V S C P   D R I V E R -  A P I
@@ -210,7 +199,7 @@ VSCPOpen(const char *pUsername,
                             pPrefix,
                             pParameter)) {
 
-            if (!(h = theApp.addDriverObject(pdrvObj))) {
+            if (!(h = addDriverObject(pdrvObj))) {
                 delete pdrvObj;
             }
 
@@ -233,10 +222,10 @@ VSCPClose(long handle)
 {
     int rv = 0;
 
-    CTcpipLink *pdrvObj = theApp.getDriverObject(handle);
+    CTcpipLink *pdrvObj = getDriverObject(handle);
     if (NULL == pdrvObj) return 0;
     pdrvObj->close();
-    theApp.removeDriverObject(handle);
+    removeDriverObject(handle);
     rv = 1;
     return CANAL_ERROR_SUCCESS;
 }
@@ -250,7 +239,7 @@ VSCPBlockingSend(long handle, const vscpEvent *pEvent, unsigned long timeout)
 {
     int rv = 0;
 
-    CTcpipLink *pdrvObj = theApp.getDriverObject(handle);
+    CTcpipLink *pdrvObj = getDriverObject(handle);
     if (NULL == pdrvObj) return CANAL_ERROR_MEMORY;
     
     pdrvObj->addEvent2SendQueue( pEvent );
@@ -269,26 +258,24 @@ VSCPBlockingReceive(long handle, vscpEvent *pEvent, unsigned long timeout)
  
     // Check pointer
     if ( NULL == pEvent) return CANAL_ERROR_PARAMETER;
-    
-    CTcpipLink *pdrvObj = theApp.getDriverObject(handle);
+
+    CTcpipLink *pdrvObj = getDriverObject(handle);
     if (NULL == pdrvObj) return CANAL_ERROR_MEMORY;
-    
-    if ( wxSEMA_TIMEOUT == pdrvObj->m_semReceiveQueue.WaitTimeout( timeout ) ) {
+
+    struct timespec ts;
+    ts.tv_sec  = 0;
+    ts.tv_nsec = timeout * 1000;
+    if (ETIMEDOUT == sem_timedwait(&pdrvObj->m_semReceiveQueue, &ts)) {
         return CANAL_ERROR_TIMEOUT;
     }
-    
-    //VSCPEVENTLIST_RECEIVE::compatibility_iterator nodeClient;
 
-    pdrvObj->m_mutexReceiveQueue.Lock();
-    //nodeClient = pdrvObj->m_receiveQueue.GetFirst();
-    //vscpEvent *pLocalEvent = nodeClient->GetData();
+    pthread_mutex_lock( &pdrvObj->m_mutexReceiveQueue);
     vscpEvent *pLocalEvent = pdrvObj->m_receiveList.front();
     pdrvObj->m_receiveList.pop_front();
-    pdrvObj->m_mutexReceiveQueue.Unlock();
+    pthread_mutex_unlock( &pdrvObj->m_mutexReceiveQueue);
     if (NULL == pLocalEvent) return CANAL_ERROR_MEMORY;
     
     vscp_copyVSCPEvent( pEvent, pLocalEvent );
-    //pdrvObj->m_receiveQueue.DeleteNode(nodeClient);
     vscp_deleteVSCPevent( pLocalEvent );
     
     return CANAL_ERROR_SUCCESS;
