@@ -43,21 +43,20 @@
 #include <sys/uio.h>
 #include <time.h>
 
+#include <expat.h>
+
 #include <vscp_class.h>
 #include <vscp_type.h>
 #include <vscphelper.h>
 #include <vscpremotetcpif.h>
-#ifdef WIN32
-#include <simdrv.h>
-#else
 #include <vscpl2drv-sim.h>
-#endif
 
 #include "simulation.h"
 
+#define XML_BUFF_SIZE   10000
+
 // Workerthread
-void *
-workerThread(void *pData);
+void *workerThread(void *pData);
 
 // Globals
 
@@ -191,6 +190,7 @@ CSim::~CSim()
 
 // ----------------------------------------------------------------------------
 
+CWrkTreadObj *node_object_pointer = NULL;
 int depth_setup_parser = 0;
 
 void
@@ -200,6 +200,10 @@ startSetupParser(void *data, const char *name, const char **attr)
     if (NULL == pObj) return;
 
     if ((0 == vscp_strcasecmp(name, "setup")) && (0 == depth_setup_parser)) {
+        
+        // Init node object pointer
+        node_object_pointer = NULL;
+        
         for (int i = 0; attr[i]; i += 2) {
 
             std::string attribute = attr[i + 1];
@@ -207,8 +211,8 @@ startSetupParser(void *data, const char *name, const char **attr)
         }
     } else if ((0 == strcmp(name, "node")) && (1 == depth_setup_parser)) {
 
-        CWrkTreadObj *pthreadObj = new CWrkTreadObj;
-        if (NULL == pthreadObj) {
+        node_object_pointer = new CWrkTreadObj;
+        if (NULL == node_object_pointer) {
             return;
         }
 
@@ -219,18 +223,18 @@ startSetupParser(void *data, const char *name, const char **attr)
 
             if (0 == strcasecmp(attr[i], "path")) {
                 if (!attribute.empty()) {
-                    pthreadObj->m_path = attribute;
+                    node_object_pointer->m_path = attribute;
                 }
             } else if (0 == strcasecmp(attr[i], "filter")) {
                 if (!attribute.empty()) {
-                    if (!vscp_readFilterFromString(&pthreadObj->m_vscpfilter,
+                    if (!vscp_readFilterFromString(&node_object_pointer->m_vscpfilter,
                                                    attribute)) {
                         syslog(LOG_ERR, "Unable to read event receive filter.");
                     }
                 }
             } else if (0 == strcasecmp(attr[i], "mask")) {
                 if (!attribute.empty()) {
-                    if (!vscp_readMaskFromString(&pthreadObj->m_vscpfilter,
+                    if (!vscp_readMaskFromString(&node_object_pointer->m_vscpfilter,
                                                  attribute)) {
                         syslog(LOG_ERR, "Unable to read event receive mask.");
                     }
@@ -238,64 +242,146 @@ startSetupParser(void *data, const char *name, const char **attr)
             } else if (0 == strcasecmp(attr[i], "blevel2")) {
                 if (!attribute.empty()) {
                     if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
-                        pthreadObj->m_bLevel2 = true;
+                        node_object_pointer->m_bLevel2 = true;
                     } else {
-                        pthreadObj->m_bLevel2 = false;
+                        node_object_pointer->m_bLevel2 = false;
                     }
                 }
             } else if (0 == strcasecmp(attr[i], "guid")) {
                 if (!attribute.empty()) {
-                    pthreadObj->m_guid.getFromString(attribute);
-                    memcpy(pthreadObj->m_registers + VSCP_REG_GUID,
-                           pthreadObj->m_guid.getGUID(),
+                    node_object_pointer->m_guid.getFromString(attribute);
+                    memcpy(node_object_pointer->m_registers + VSCP_REG_GUID,
+                           node_object_pointer->m_guid.getGUID(),
                            16);
                 }
             } else if (0 == strcasecmp(attr[i], "interval")) {
                 if (!attribute.empty()) {
-                    pthreadObj->m_registers[SIM_USER_REG_INTERVAL] =
+                    node_object_pointer->m_registers[SIM_USER_REG_INTERVAL] =
                       vscp_readStringValue(attribute);
                 }
             } else if (0 == strcasecmp(attr[i], "measurementclass")) {
                 if (!attribute.empty()) {
-                    pthreadObj->m_measurementClass =
+                    node_object_pointer->m_measurementClass =
                       vscp_readStringValue(attribute);
                 }
             } else if (0 == strcasecmp(attr[i], "measurementtype")) {
                 if (!attribute.empty()) {
-                    pthreadObj->m_measurementType =
+                    node_object_pointer->m_measurementType =
                       vscp_readStringValue(attribute);
                 }
             } else if (0 == strcasecmp(attr[i], "index")) {
                 if (!attribute.empty()) {
-                    pthreadObj->m_registers[SIM_USER_REG_INDEX] =
+                    node_object_pointer->m_registers[SIM_USER_REG_INDEX] =
                       vscp_readStringValue(attribute);
                 }
             } else if (0 == strcasecmp(attr[i], "zone")) {
                 if (!attribute.empty()) {
-                    pthreadObj->m_registers[SIM_USER_REG_ZONE] =
+                    node_object_pointer->m_registers[SIM_USER_REG_ZONE] =
                       vscp_readStringValue(attribute);
                 }
             } else if (0 == strcasecmp(attr[i], "subzone")) {
                 if (!attribute.empty()) {
-                    pthreadObj->m_registers[SIM_USER_REG_SUBZONE] =
+                    node_object_pointer->m_registers[SIM_USER_REG_SUBZONE] =
                       vscp_readStringValue(attribute);
                 }
             } else if (0 == strcasecmp(attr[i], "coding")) {
                 if (!attribute.empty()) {
-                    pthreadObj->m_registers[SIM_USER_REG_CODING] =
+                    node_object_pointer->m_registers[SIM_USER_REG_CODING] =
                       vscp_readStringValue(attribute);
                 }
             } else if (0 == strcasecmp(attr[i], "unit")) {
                 if (!attribute.empty()) {
-                    pthreadObj->m_registers[SIM_USER_REG_UNIT] =
+                    node_object_pointer->m_registers[SIM_USER_REG_UNIT] =
                       vscp_readStringValue(attribute);
+                }
+            } else if ( 0 == strcasecmp(attr[i], "rawdm") ) {
+                std::deque<std::string> tokensDM;
+                vscp_split(tokensDM, attribute, ":");
+                for (int k = 0; k < (8 * SIM_DECISION_MATRIX_ROWS); k++) {
+                    if (!tokensDM.empty()) {
+                        node_object_pointer->m_registers[SIM_USER_REG_DECISION_MATRIX + k] =
+                          vscp_readStringValue(tokensDM.front());
+                        tokensDM.pop_front();
+                    } else {
+                        break;
+                    }
                 }
             }
         }
 
-        pObj->m_objectList.push_back(pthreadObj);
+        pObj->m_objectList.push_back(node_object_pointer);
 
     } else if ((0 == strcmp(name, "dm")) && (2 == depth_setup_parser)) {
+
+        int rowidx = 0;
+        uint8_t dm[8];
+        memset(dm, 0, 8);
+
+        for (int i = 0; attr[i]; i += 2) {
+
+            std::string attribute = attr[i + 1];
+            vscp_trim(attribute);
+
+            if (0 == strcasecmp(attr[i], "idx")) {
+                if (!attribute.empty()) {
+                    rowidx = vscp_readStringValue(attribute);
+                }
+            } else if (0 == strcasecmp(attr[i], "id")) {
+                if (!attribute.empty()) {
+                    dm[0] = vscp_readStringValue(attribute);
+                }
+            } else if (0 == strcasecmp(attr[i], "dm-row-flags")) {
+                if (!attribute.empty()) {
+                    dm[1] = vscp_readStringValue(attribute);
+                }
+            } else if (0 == strcasecmp(attr[i], "class-mask")) {
+                if (!attribute.empty()) {
+                    dm[2] = vscp_readStringValue(attribute);
+                }
+            } else if (0 == strcasecmp(attr[i], "class-filter")) {
+                if (!attribute.empty()) {
+                    dm[3] = vscp_readStringValue(attribute);
+                }
+            } else if (0 == strcasecmp(attr[i], "type-mask")) {
+                if (!attribute.empty()) {
+                    dm[4] = vscp_readStringValue(attribute);
+                }
+            } else if (0 == strcasecmp(attr[i], "type-filter")) {
+                if (!attribute.empty()) {
+                    dm[5] = vscp_readStringValue(attribute);
+                }
+            } else if (0 == strcasecmp(attr[i], "action")) {
+                if (!attribute.empty()) {
+                    dm[6] = vscp_readStringValue(attribute);
+                }
+            } else if (0 == strcasecmp(attr[i], "action-parameter")) {
+                if (!attribute.empty()) {
+                    dm[7] = vscp_readStringValue(attribute);
+                }
+            } else if (0 == strcasecmp(attr[i], "row")) {
+                if (!attribute.empty()) {
+                    std::deque<std::string> tokens;
+                    vscp_split(tokens, attribute, ",");
+                    for (int i = 0; i < 8; i++) {
+                        if (!tokens.empty()) {
+                            dm[i] = vscp_readStringValue(tokens.front());
+                            tokens.pop_front();
+                        }
+                    }
+                }
+            }
+        }
+
+        if ( NULL != node_object_pointer ) {
+            if ( rowidx <= SIM_DECISION_MATRIX_ROWS ) {
+                // Copy in the DM row
+                memcpy( node_object_pointer->m_registers + 8*rowidx, dm, 8 );
+            }
+            else {
+                syslog( LOG_ERR,"DM index out of range");
+            }
+        }
+
     }
 
     depth_setup_parser++;
@@ -304,6 +390,16 @@ startSetupParser(void *data, const char *name, const char **attr)
 void
 endSetupParser(void *data, const char *name)
 {
+    CSim *pObj = (CSim *)data;
+
+    if ((0 == strcmp(name, "node")) && (1 == depth_setup_parser)) {
+        if ( NULL != node_object_pointer ) {
+            // Add to object list
+            pObj->m_objectList.push_back(node_object_pointer);
+            node_object_pointer = NULL;
+        }    
+    }
+
     depth_setup_parser--;
 }
 
@@ -351,12 +447,11 @@ CSim::open(const char *pUsername,
     if (VSCP_ERROR_SUCCESS !=
         m_srvLocal.doCmdOpen(
           m_hostLocal, port, m_usernameLocal, m_passwordLocal)) {
-#ifndef WIN32
+
         syslog(LOG_ERR,
                "%s",
                (const char *)"[VSCPSimDrv]Unable to connect to VSCP TCP/IP "
                              "interface. Terminating!");
-#endif
         return false;
     }
 
@@ -510,6 +605,28 @@ CSim::open(const char *pUsername,
         }
 
     } // if
+
+    // XML setup 
+    std::string strSetupXML;
+    strName = m_prefix + std::string("_setup");
+    if (VSCP_ERROR_SUCCESS ==
+        m_srvLocal.getRemoteVariableValue(strName, strSetupXML, true)) {
+        XML_Parser xmlParser = XML_ParserCreate("UTF-8");
+        XML_SetUserData(xmlParser, this);
+        XML_SetElementHandler(xmlParser, startSetupParser, endSetupParser);
+
+        int bytes_read;
+        void *buff = XML_GetBuffer(xmlParser, XML_BUFF_SIZE);
+
+        strncpy((char *)buff, strSetupXML.c_str(), strSetupXML.length());
+
+        bytes_read = strSetupXML.length();
+        if (!XML_ParseBuffer(xmlParser, bytes_read, bytes_read == 0)) {
+            syslog(LOG_ERR, "Failed parse XML setup.");
+        }
+
+        XML_ParserFree(xmlParser);
+    }
 
     // Close the channel
     m_srvLocal.doCmdClose();
@@ -895,11 +1012,10 @@ CWrkTreadObj::sendEvent(vscpEventEx &eventEx)
 
         } else {
             vscp_deleteVSCPevent(pEvent);
-#ifndef WIN32
+
             syslog(LOG_ERR,
-                   "[VSCPSimDrv] %s",
-                   (const char *)"Failed to convert event.");
-#endif
+                   "[VSCPSimDrv] Failed to convert event.");
+
             return false;
         }
     }
@@ -1124,12 +1240,9 @@ workerThread(void *pData)
         }
     }
 
-#ifdef WIN32
-#else
     syslog(LOG_DEBUG,
            "[VSCPSimDrv] %s",
            (const char *)"Going into worker thread loop.");
-#endif
 
     while (!pObj->m_pSim->m_bQuit) {
 

@@ -984,7 +984,7 @@ extern "C"
 
     /*!
         Fill event GUID from a string
-        */
+    */
 
     bool vscp_getGuidFromStringToArray(unsigned char *pGUID,
                                        const std::string &strGUID);
