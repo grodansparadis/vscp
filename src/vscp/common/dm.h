@@ -228,6 +228,7 @@ class dmTimer
     pthread_t *m_pThread;
 
   private:
+
     /// Active flag. True if timer should run.
     bool m_bActive;
 
@@ -1151,6 +1152,9 @@ class CDM
     bool doFillMemoryDMTable ();
 
     //------------------------------------
+
+    // Enable disable DM functionality
+    bool m_bEnable;
 
     /// Random minute
     uint8_t m_rndMinute;

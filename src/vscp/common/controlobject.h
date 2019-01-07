@@ -491,11 +491,6 @@ class CControlObject
     bool createFolderStructure (void);
 
   public:
-#ifdef BUILD_VSCPD_SERVICE
-    HANDLE m_hEvntSource;
-#endif
-
-    // TODO wxLocale m_locale;
 
     // In the configuration database configurations are stored in records.
     // Normally record = 1 (default) is used )
@@ -656,20 +651,15 @@ class CControlObject
 
     // ** CHANNEL **
 
-    /*!
-        Multicast channel interface
-    */
-
+    // Multicast channel interface
     MulticastObj m_multicastObj;
 
     // ** ANNOUNCE **
 
-    /*!
-        Enable Multicast announce interface
-    */
-    bool m_bEnableMulticastAnounce;
+    // Enable Multicast announce interface
+    bool m_bEnableMulticastAnnounce;
 
-    /// Interface(s) used for multicast announce
+    // Interface(s) used for multicast announce
     std::string m_strMulticastAnnounceAddress;
 
     // ttl for multicast announce
@@ -773,10 +763,10 @@ class CControlObject
     //                             REMOTE VARIABLES
     //**************************************************************************
 
-    /// Hash table for variables
+    // Hash table for variables
     CVariableStorage m_variables;
 
-    /// Mutex to protect variables
+    // Mutex to protect variables
     pthread_mutex_t m_variableMutex;
 
     //**************************************************************************
@@ -787,48 +777,34 @@ class CControlObject
     //                    Databases
     //*****************************************************
 
-    std::string m_path_db_vscp_daemon; // Path to the VSCP daemon database
+    std::string m_path_db_vscp_daemon;      // Path to the VSCP daemon database
     sqlite3 *m_db_vscp_daemon;
-    /// Mutex to protect variables
-    pthread_mutex_t m_db_vscp_configMutex; // Mutex for the configuration table
 
-    std::string m_path_db_vscp_data; // Path to the VSCP data database
+    // Mutex to protect variables
+    pthread_mutex_t m_db_vscp_configMutex;  // Mutex for the configuration table
+
+    std::string m_path_db_vscp_data;        // Path to the VSCP data database
     sqlite3 *m_db_vscp_data;
 
-    std::string m_path_db_vscp_log; // Path to the VSCP log database
+    std::string m_path_db_vscp_log;         // Path to the VSCP log database
     sqlite3 *m_db_vscp_log;
 
-    /*!
-        Event source for NT event reporting
-     */
-#ifdef BUILD_VSCPD_SERVICE
-    HANDLE m_hEventSource;
-#endif
-
-    /*!
-        Mutex for client queue
-     */
+    // Mutex for client queue
     pthread_mutex_t m_clientMutex;
 
-    /*!
-        Mutex for device queue
-     */
+    // Mutex for device queue
     pthread_mutex_t m_deviceMutex;
 
-    /// Daemon Decision Matrix Object
+    // Daemon Decision Matrix Object
     CDM m_dm;
 
-    /// Automation Object
+    // Automation Object
     CVSCPAutomation m_automation;
 
-    /*!
-        Username for level II drivers
-     */
+    // Username for level II drivers
     std::string m_driverUsername;
 
-    /*!
-        Password for Level II drivers
-     */
+    // Password for Level II drivers
     std::string m_driverPassword;
 
     //**************************************************************************

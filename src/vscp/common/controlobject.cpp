@@ -345,17 +345,7 @@ CControlObject::init(std::string &strcfgfile, std::string &rootFolder)
     m_web_document_root    = strRootwww;
 
     // Change locale to get the correct decimal point "."
-    // Set locale
-    /* TODO
-    int sys_lang = wxLocale::GetSystemLanguage();
-    if ( sys_lang != wxLANGUAGE_DEFAULT ) {
-        m_locale.Init( sys_lang );              // set custom locale
-        m_locale.AddCatalogLookupPathPrefix( ("locale") );   // set "locale"
-    prefix m_locale.AddCatalog( ("wxproton") );   // our private domain
-        m_locale.AddCatalog( ("wxstd") );      // wx common domain is default
-                                                // Restore "C" numeric locale
-        setlocale( LC_NUMERIC, "C" );
-    }*/
+    setlocale(LC_NUMERIC, "C");
 
     // A configuration file must be available
     if (!vscp_fileExists(strcfgfile.c_str())) {
@@ -1226,7 +1216,7 @@ CControlObject::stopDaemonWorkerThread(void)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-//
+// startDeviceWorkerThreads
 //
 
 bool
@@ -1250,32 +1240,32 @@ CControlObject::startDeviceWorkerThreads(void)
             // Just start if enabled
             if (!pDeviceItem->m_bEnable) continue;
 
-            // *** Level 3 Driver * * *   TODO    Check this!
-            if (VSCP_DRIVER_LEVEL3 == pDeviceItem->m_driverLevel) {
-
-                //  Startup Level III driver
-                std::string executable = pDeviceItem->m_strPath;
-                /*   TODO
-                pDeviceItem->m_pDriver3Process = new Driver3Process;
-                if ( 0 == ( pDeviceItem->m_pid =
-                        wxExecute( executable.c_str(),
-                                    wxEXEC_ASYNC,
-                                    pDeviceItem->m_pDriver3Process ) ) ) {
-                    syslog( LOG_ERR,
-                                "Controlobject: Failed to load level III driver:
-                %s", pDeviceItem->m_strName.c_str() ); return NULL;
-                }
-                else {
-
-                }*/
-            }
-
             syslog(LOG_DEBUG,
                    "Controlobject: [Driver] - Starting: %s ",
                    pDeviceItem->m_strName.c_str());
 
-            // Start  the driver logic
-            pDeviceItem->startDriver(this);
+            // *** Level 3 Driver * * *
+            if (VSCP_DRIVER_LEVEL3 == pDeviceItem->m_driverLevel) {
+
+                // Startup Level III driver
+                //      username
+                //      password
+                //      driver parameter string
+                // The driver should return immediately after starting
+                std::string strExecute = pDeviceItem->m_strPath;
+                strExecute += " ";
+                strExecute += m_driverUsername;
+                strExecute += " ";
+                strExecute += m_driverPassword;
+                strExecute += " ";
+                strExecute += pDeviceItem->m_strParameter;
+
+                int status = system(pDeviceItem->m_strPath.c_str());
+
+            } else {
+                // Start  the driver logic
+                pDeviceItem->startDriver(this);
+            }
 
         } // Valid device item
     }
@@ -1374,7 +1364,7 @@ CControlObject::getVscpCapabilities(uint8_t *pCapability)
     }
 
     // VSCP Multicast announce interface
-    if (m_bEnableMulticastAnounce) {
+    if (m_bEnableMulticastAnnounce) {
         pCapability[8 - (VSCP_SERVER_CAPABILITY_MULTICAST_ANNOUNCE / 8)] |=
           (1 << (VSCP_SERVER_CAPABILITY_MULTICAST_ANNOUNCE % 8));
     }
@@ -2109,6 +2099,8 @@ CControlObject::getSystemKeyMD5(std::string &strKey)
 }
 
 // ----------------------------------------------------------------------------
+// General XML configuration callbacks
+// ----------------------------------------------------------------------------
 
 static int depth_general_config_parser   = 0;
 static char *last_general_config_content = NULL;
@@ -2258,7 +2250,7 @@ startGeneralConfigParser(void *data, const char *name, const char **attr)
 }
 
 static void
-handle_general_config_data(void *data, const char *content, int length)
+handleGeneralConfigData(void *data, const char *content, int length)
 {
     int prevLength = (NULL == last_general_config_content)
                        ? 0
@@ -2304,6 +2296,11 @@ bool
 CControlObject::readXMLConfigurationGeneral(const std::string &strcfgfile)
 {
     FILE *fp;
+
+    syslog(LOG_DEBUG,
+           "Reading general XML configuration from [%s]",
+           (const char *)strcfgfile.c_str());
+
     fp = fopen(strcfgfile.c_str(), "r");
     if (NULL == fp) {
         syslog(LOG_CRIT,
@@ -2316,7 +2313,7 @@ CControlObject::readXMLConfigurationGeneral(const std::string &strcfgfile)
     XML_SetUserData(xmlParser, this);
     XML_SetElementHandler(
       xmlParser, startGeneralConfigParser, endGeneralConfigParser);
-    XML_SetCharacterDataHandler(xmlParser, handle_general_config_data);
+    XML_SetCharacterDataHandler(xmlParser, handleGeneralConfigData);
 
     int bytes_read;
     void *buf = XML_GetBuffer(xmlParser, XML_BUFF_SIZE);
@@ -2344,6 +2341,1239 @@ CControlObject::readXMLConfigurationGeneral(const std::string &strcfgfile)
     return true;
 }
 
+// ----------------------------------------------------------------------------
+// FULL XML configuration callbacks
+// ----------------------------------------------------------------------------
+
+static int depth_full_config_parser   = 0;
+static char *last_full_config_content = NULL;
+static int bVscpConfigFound           = 0;
+static int bUDPConfigFound            = 0;
+static int bMulticastConfigFound      = 0;
+static int bRemoteUserConfigFound     = 0;
+static int bLevel1DriverConfigFound   = 0;
+static int bLevel2DriverConfigFound   = 0;
+static int bLevel3DriverConfigFound   = 0;
+static int bKnownNodesConfigFound     = 0;
+static int bTablesConfigFound         = 0;
+
+static void
+startFullConfigParser(void *data, const char *name, const char **attr)
+{
+    CControlObject *pObj = (CControlObject *)data;
+    if (NULL == data) return;
+
+    if ((0 == depth_full_config_parser) &&
+        (0 == vscp_strcasecmp(name, "vscpconfig"))) {
+        bVscpConfigFound = TRUE;
+    } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
+               (0 == vscp_strcasecmp(name, "tcpip"))) {
+
+        for (int i = 0; attr[i]; i += 2) {
+
+            std::string attribute = attr[i + 1];
+            vscp_trim(attribute);
+
+            if (0 == vscp_strcasecmp(attr[i], "enable")) {
+                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+                    pObj->m_enableTcpip = true;
+                } else {
+                    pObj->m_enableTcpip = false;
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "interface")) {
+                vscp_startsWith(attribute, "tcp://", &attribute);
+                vscp_trim(attribute);
+                pObj->m_strTcpInterfaceAddress = attribute;
+            } else if (0 == vscp_strcasecmp(attr[i], "ssl_certificate")) {
+                pObj->m_tcpip_ssl_certificate = attribute;
+            } else if (0 == vscp_strcasecmp(attr[i], "ssl_verify_peer")) {
+                pObj->m_tcpip_ssl_verify_peer = vscp_readStringValue(attribute);
+            } else if (0 == vscp_strcasecmp(attr[i], "ssl_certificate_chain")) {
+                pObj->m_tcpip_ssl_certificate_chain = attribute;
+            } else if (0 == vscp_strcasecmp(attr[i], "ssl_ca_path")) {
+                pObj->m_tcpip_ssl_ca_path = attribute;
+            } else if (0 == vscp_strcasecmp(attr[i], "ssl_ca_file")) {
+                pObj->m_tcpip_ssl_ca_file = attribute;
+            } else if (0 == vscp_strcasecmp(attr[i], "ssl_verify_depth")) {
+                pObj->m_tcpip_ssl_verify_depth =
+                  vscp_readStringValue(attribute);
+            } else if (0 ==
+                       vscp_strcasecmp(attr[i], "ssl_default_verify_paths")) {
+                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+                    pObj->m_tcpip_ssl_default_verify_paths = true;
+                } else {
+                    pObj->m_tcpip_ssl_default_verify_paths = false;
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "ssl_cipher_list")) {
+                pObj->m_tcpip_ssl_cipher_list = attribute;
+            } else if (0 == vscp_strcasecmp(attr[i], "ssl_protocol_version")) {
+                pObj->m_tcpip_ssl_verify_depth =
+                  vscp_readStringValue(attribute);
+            } else if (0 == vscp_strcasecmp(attr[i], "ssl_short_trust")) {
+                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+                    pObj->m_tcpip_ssl_short_trust = true;
+                } else {
+                    pObj->m_tcpip_ssl_short_trust = false;
+                }
+            }
+        }
+    } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
+               (0 == vscp_strcasecmp(name, "multicast-announce"))) {
+        for (int i = 0; attr[i]; i += 2) {
+
+            std::string attribute = attr[i + 1];
+            vscp_trim(attribute);
+
+            if (0 == vscp_strcasecmp(attr[i], "enable")) {
+                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+                    pObj->m_bEnableMulticastAnnounce = true;
+                } else {
+                    pObj->m_bEnableMulticastAnnounce = false;
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "interface")) {
+                pObj->m_strMulticastAnnounceAddress = attribute;
+            }
+            if (0 == vscp_strcasecmp(attr[i], "ttl")) {
+                pObj->m_strMulticastAnnounceAddress =
+                  vscp_readStringValue(attribute);
+            }
+        }
+    } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
+               (0 == vscp_strcasecmp(name, "udp"))) {
+
+        bUDPConfigFound = TRUE;
+
+        for (int i = 0; attr[i]; i += 2) {
+
+            std::string attribute = attr[i + 1];
+            vscp_trim(attribute);
+
+            if (0 == vscp_strcasecmp(attr[i], "enable")) {
+                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+                    pObj->m_udpSrvObj->m_bEnable = true;
+                } else {
+                    pObj->m_udpSrvObj->m_bEnable = false;
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "bAllowUnsecure")) {
+                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+                    pObj->m_udpSrvObj->m_bAllowUnsecure = true;
+                } else {
+                    pObj->m_udpSrvObj->m_bAllowUnsecure = false;
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "bSendAck")) {
+                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+                    pObj->m_udpSrvObj->m_bAck = true;
+                } else {
+                    pObj->m_udpSrvObj->m_bAck = false;
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "user")) {
+                pObj->m_udpSrvObj->m_user = attribute;
+            } else if (0 == vscp_strcasecmp(attr[i], "password")) {
+                pObj->m_udpSrvObj->m_password = attribute;
+            } else if (0 == vscp_strcasecmp(attr[i], "interface")) {
+                pObj->m_udpSrvObj->m_interface = attribute;
+            } else if (0 == vscp_strcasecmp(attr[i], "guid")) {
+                pObj->m_udpSrvObj->m_guid.getFromString(attribute);
+            } else if (0 == vscp_strcasecmp(attr[i], "filter")) {
+                if (attribute.length()) {
+                    vscp_readFilterFromString(&pObj->m_udpSrvObj->m_filter,
+                                              attribute);
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "mask")) {
+                if (attribute.length()) {
+                    vscp_readMaskFromString(&pObj->m_udpSrvObj->m_filter,
+                                            attribute);
+                }
+            }
+        }
+    } else if (bVscpConfigFound && bUDPConfigFound &&
+               (2 == depth_full_config_parser) &&
+               (0 == vscp_strcasecmp(name, "rxnode"))) {
+
+        for (int i = 0; attr[i]; i += 2) {
+
+            udpRemoteClientInfo *pudpClient = new udpRemoteClientInfo;
+            if (NULL == pudpClient) {
+                syslog(LOG_ERR, "Unable to allocate storage for UDP client");
+                return;
+            }
+
+            vscp_clearVSCPFilter(&pudpClient->m_filter);
+
+            std::string attribute = attr[i + 1];
+            vscp_trim(attribute);
+
+            if (0 == vscp_strcasecmp(attr[i], "enable")) {
+                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+                    pudpClient->m_bEnable = true;
+                } else {
+                    pudpClient->m_bEnable = false;
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "interface")) {
+                pudpClient->m_remoteAddress = attribute;
+            } else if (0 == vscp_strcasecmp(attr[i], "filter")) {
+                if (attribute.length()) {
+                    vscp_readFilterFromString(&pudpClient->m_filter, attribute);
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "mask")) {
+                if (attribute.length()) {
+                    vscp_readMaskFromString(&pudpClient->m_filter, attribute);
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "broadcast")) {
+                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+                    pudpClient->m_bSetBroadcast = true;
+                } else {
+                    pudpClient->m_bSetBroadcast = false;
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "encryption")) {
+                pudpClient->m_nEncryption =
+                  vscp_getEncryptionCodeFromToken(attribute);
+            }
+
+            // add to udp client list
+            pudpClient->m_index = 0;
+            pObj->m_udpSrvObj->m_remotes.push_back(pudpClient);
+        }
+    } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
+               (0 == vscp_strcasecmp(name, "multicast"))) {
+
+        bMulticastConfigFound = TRUE;
+
+        for (int i = 0; attr[i]; i += 2) {
+
+            std::string attribute = attr[i + 1];
+            vscp_trim(attribute);
+
+            if (0 == vscp_strcasecmp(attr[i], "enable")) {
+                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+                    pObj->m_bEnableMulticast = true;
+                } else {
+                    pObj->m_bEnableMulticast = false;
+                }
+            }
+        }
+
+    } else if (bVscpConfigFound && bMulticastConfigFound &&
+               (2 == depth_full_config_parser) &&
+               (0 == vscp_strcasecmp(name, "channel"))) {
+
+        multicastChannelItem *pChannel = new multicastChannelItem;
+        if (NULL == pChannel) {
+            syslog(LOG_ERR, "Unable to allocate storage for multicast client");
+            return;
+        }
+
+        pChannel->m_bEnable        = false;
+        pChannel->m_bAllowUnsecure = false;
+        pChannel->m_port           = 0;
+        pChannel->m_ttl            = 1;
+        pChannel->m_nEncryption    = 0;
+        pChannel->m_bSendAck       = 0;
+        pChannel->m_index          = 0;
+
+        // Default is to let everything come through
+        vscp_clearVSCPFilter(&pChannel->m_txFilter);
+        vscp_clearVSCPFilter(&pChannel->m_rxFilter);
+
+        for (int i = 0; attr[i]; i += 2) {
+
+            std::string attribute = attr[i + 1];
+            vscp_trim(attribute);
+
+            if (0 == vscp_strcasecmp(attr[i], "enable")) {
+                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+                    pChannel->m_bEnable = true;
+                } else {
+                    pChannel->m_bEnable = false;
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "bsendack")) {
+                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+                    pChannel->m_bSendAck = true;
+                } else {
+                    pChannel->m_bSendAck = false;
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "bAllowUndsecure")) {
+                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+                    pChannel->m_bAllowUnsecure = true;
+                } else {
+                    pChannel->m_bAllowUnsecure = false;
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "public")) {
+                pChannel->m_public = attribute;
+            } else if (0 == vscp_strcasecmp(attr[i], "port")) {
+                pChannel->m_port = vscp_readStringValue(attribute);
+            } else if (0 == vscp_strcasecmp(attr[i], "group")) {
+                pChannel->m_gropupAddress = attribute;
+            } else if (0 == vscp_strcasecmp(attr[i], "ttl")) {
+                pChannel->m_ttl = vscp_readStringValue(attribute);
+            } else if (0 == vscp_strcasecmp(attr[i], "guid")) {
+                pChannel->m_guid.getFromString(attribute);
+            } else if (0 == vscp_strcasecmp(attr[i], "txfilter")) {
+                if (attribute.length()) {
+                    vscp_readFilterFromString(&pChannel->m_txFilter, attribute);
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "txmask")) {
+                if (attribute.length()) {
+                    vscp_readMaskFromString(&pChannel->m_txFilter, attribute);
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "rxfilter")) {
+                if (attribute.length()) {
+                    vscp_readFilterFromString(&pChannel->m_rxFilter, attribute);
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "rxmask")) {
+                if (attribute.length()) {
+                    vscp_readMaskFromString(&pChannel->m_rxFilter, attribute);
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "encryption")) {
+                if (attribute.length()) {
+                    pChannel->m_nEncryption =
+                      vscp_getEncryptionCodeFromToken(attribute);
+                }
+            }
+        }
+
+        // add to multicast client list
+        pChannel->m_index = 0;
+        pObj->m_multicastObj.m_channels.push_back(pChannel);
+    } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
+               (0 == vscp_strcasecmp(name, "dm"))) {
+
+        for (int i = 0; attr[i]; i += 2) {
+
+            std::string attribute = attr[i + 1];
+            vscp_trim(attribute);
+
+            if (0 == vscp_strcasecmp(attr[i], "enable")) {
+                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+                    pObj->m_dm.m_bEnable = true;
+                } else {
+                    pObj->m_dm.m_bEnable = false;
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "path")) { // Deprecated
+                if (attribute.length()) {
+                    pObj->m_dm.m_staticXMLPath = attribute;
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "pathxml")) {
+                if (attribute.length()) {
+                    pObj->m_dm.m_staticXMLPath = attribute;
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "loglevel")) {
+                pObj->m_debugFlags1 |= VSCP_DEBUG1_DM;
+            }
+        }
+
+    } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
+               (0 == vscp_strcasecmp(name, "variables"))) {
+
+        for (int i = 0; attr[i]; i += 2) {
+
+            std::string attribute = attr[i + 1];
+            vscp_trim(attribute);
+
+            if (0 == vscp_strcasecmp(attr[i], "path")) { // Deprecated
+                if (attribute.length()) {
+                    pObj->m_variables.m_xmlPath = attribute;
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "pathxml")) {
+                if (attribute.length()) {
+                    pObj->m_variables.m_xmlPath = attribute;
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "pathdb")) {
+                if (attribute.length()) {
+                    pObj->m_variables.m_dbFilename = attribute;
+                }
+            }
+        }
+    } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
+               (0 == vscp_strcasecmp(name, "webserver"))) {
+
+        for (int i = 0; attr[i]; i += 2) {
+
+            std::string attribute = attr[i + 1];
+            vscp_trim(attribute);
+
+            if (0 == vscp_strcasecmp(attr[i], "enable")) {
+                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+                    pObj->m_web_bEnable = true;
+                } else {
+                    pObj->m_web_bEnable = false;
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "document_root")) {
+                if (attribute.length()) {
+                    pObj->m_web_document_root = attribute;
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "listening_ports")) {
+                if (attribute.length()) {
+                    pObj->m_web_listening_ports = attribute;
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "index_files")) {
+                if (attribute.length()) {
+                    pObj->m_web_index_files = attribute;
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "authentication_domain")) {
+                if (attribute.length()) {
+                    pObj->m_web_authentication_domain = attribute;
+                }
+            } else if (0 ==
+                       vscp_strcasecmp(attr[i], "enable_auth_domain_check")) {
+                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+                    pObj->m_enable_auth_domain_check = true;
+                } else {
+                    pObj->m_enable_auth_domain_check = false;
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "ssl_certificat")) {
+                if (attribute.length()) {
+                    pObj->m_web_ssl_certificate = attribute;
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "ssl_certificat_chain")) {
+                if (attribute.length()) {
+                    pObj->m_web_ssl_certificate_chain = attribute;
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "ssl_verify_peer")) {
+                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+                    pObj->m_web_ssl_verify_peer = true;
+                } else {
+                    pObj->m_web_ssl_verify_peer = false;
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "ssl_ca_path")) {
+                if (attribute.length()) {
+                    pObj->m_web_ssl_ca_path = attribute;
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "ssl_ca_file")) {
+                if (attribute.length()) {
+                    pObj->m_web_ssl_ca_file = attribute;
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "ssl_verify_depth")) {
+                if (attribute.length()) {
+                    pObj->m_web_ssl_verify_depth =
+                      vscp_readStringValue(attribute);
+                }
+            } else if (0 ==
+                       vscp_strcasecmp(attr[i], "ssl_default_verify_paths")) {
+                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+                    pObj->m_web_ssl_default_verify_paths = true;
+                } else {
+                    pObj->m_web_ssl_default_verify_paths = false;
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "ssl_cipher_list")) {
+                if (attribute.length()) {
+                    pObj->m_web_ssl_cipher_list = attribute;
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "ssl_protcol_version")) {
+                if (attribute.length()) {
+                    pObj->m_web_ssl_protocol_version =
+                      vscp_readStringValue(attribute);
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "ssl_short_trust")) {
+                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+                    pObj->m_web_ssl_short_trust = true;
+                } else {
+                    pObj->m_web_ssl_short_trust = false;
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "cgi_interpreter")) {
+                if (attribute.length()) {
+                    pObj->m_web_cgi_interpreter = attribute;
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "cgi_pattern")) {
+                if (attribute.length()) {
+                    pObj->m_web_cgi_patterns = attribute;
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "cgi_environment")) {
+                if (attribute.length()) {
+                    pObj->m_web_cgi_environment = attribute;
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "protect_uri")) {
+                if (attribute.length()) {
+                    pObj->m_web_protect_uri = attribute;
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "trottle")) {
+                if (attribute.length()) {
+                    pObj->m_web_trottle = attribute;
+                }
+            } else if (0 ==
+                       vscp_strcasecmp(attr[i], "enable_directory_listing")) {
+                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+                    pObj->m_web_enable_directory_listing = true;
+                } else {
+                    pObj->m_web_enable_directory_listing = false;
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "enable_keep_alive")) {
+                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+                    pObj->m_web_enable_keep_alive = true;
+                } else {
+                    pObj->m_web_enable_keep_alive = false;
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "keep_alive_timeout_ms")) {
+                if (attribute.length()) {
+                    pObj->m_web_keep_alive_timeout_ms =
+                      vscp_readStringValue(attribute);
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "access_control_list")) {
+                if (attribute.length()) {
+                    pObj->m_web_access_control_list = attribute;
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "extra_mime_types")) {
+                if (attribute.length()) {
+                    pObj->m_web_extra_mime_types = attribute;
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "num_threads")) {
+                if (attribute.length()) {
+                    pObj->m_web_num_threads = vscp_readStringValue(attribute);
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "hide_file_pattern")) {
+                if (attribute.length()) {
+                    pObj->m_web_hide_file_patterns = attribute;
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "run_as_user")) {
+                if (attribute.length()) {
+                    pObj->m_web_run_as_user = attribute;
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "url_rewrite_patterns")) {
+                if (attribute.length()) {
+                    pObj->m_web_url_rewrite_patterns = attribute;
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "hide_file_patterns")) {
+                if (attribute.length()) {
+                    pObj->m_web_hide_file_patterns = attribute;
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "request_timeout_ms")) {
+                if (attribute.length()) {
+                    pObj->m_web_request_timeout_ms =
+                      vscp_readStringValue(attribute);
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "linger_timeout_ms")) {
+                if (attribute.length()) {
+                    pObj->m_web_linger_timeout_ms =
+                      vscp_readStringValue(attribute);
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "decode_url")) {
+                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+                    pObj->m_web_decode_url = true;
+                } else {
+                    pObj->m_web_decode_url = false;
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "global_auth_file")) {
+                if (attribute.length()) {
+                    pObj->m_web_global_auth_file = attribute;
+                }
+            } else if (0 == vscp_strcasecmp(attr[i],
+                                            "web_per_directory_auth_file")) {
+                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+                    pObj->m_web_per_directory_auth_file = true;
+                } else {
+                    pObj->m_web_per_directory_auth_file = false;
+                }
+            } else if (0 == vscp_strcasecmp(attr[i],
+                                            "access_control_allow_origin")) {
+                if (attribute.length()) {
+                    pObj->m_web_access_control_allow_methods = attribute;
+                }
+            } else if (0 == vscp_strcasecmp(attr[i],
+                                            "access_control_allow_methods")) {
+                if (attribute.length()) {
+                    pObj->m_web_access_control_allow_methods = attribute;
+                }
+            } else if (0 == vscp_strcasecmp(attr[i],
+                                            "access_control_allow_headers")) {
+                if (attribute.length()) {
+                    pObj->m_web_access_control_allow_headers = attribute;
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "error_pages")) {
+                if (attribute.length()) {
+                    pObj->m_web_error_pages = attribute;
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "tcp_nodelay")) {
+                if (attribute.length()) {
+                    pObj->m_web_linger_timeout_ms =
+                      vscp_readStringValue(attribute);
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "static_file_max_age")) {
+                if (attribute.length()) {
+                    pObj->m_web_static_file_max_age =
+                      vscp_readStringValue(attribute);
+                }
+            } else if (0 == vscp_strcasecmp(
+                              attr[i], "strict_transport_security_max_age")) {
+                if (attribute.length()) {
+                    pObj->m_web_strict_transport_security_max_age =
+                      vscp_readStringValue(attribute);
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "sendfile_call")) {
+                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+                    pObj->m_web_allow_sendfile_call = true;
+                } else {
+                    pObj->m_web_allow_sendfile_call = false;
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "additional_headers")) {
+                if (attribute.length()) {
+                    pObj->m_web_additional_header = attribute;
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "max_request_size")) {
+                if (attribute.length()) {
+                    pObj->m_web_max_request_size =
+                      vscp_readStringValue(attribute);
+                }
+            } else if (0 == vscp_strcasecmp(
+                              attr[i], "web_allow_index_script_resource")) {
+                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+                    pObj->m_web_allow_index_script_resource = true;
+                } else {
+                    pObj->m_web_allow_index_script_resource = false;
+                }
+            } else if (0 ==
+                       vscp_strcasecmp(attr[i], "duktape_script_patterns")) {
+                if (attribute.length()) {
+                    pObj->m_web_duktape_script_patterns = attribute;
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "lua_preload_file")) {
+                if (attribute.length()) {
+                    pObj->m_web_lua_preload_file = attribute;
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "lua_script_patterns")) {
+                if (attribute.length()) {
+                    pObj->m_web_lua_script_patterns = attribute;
+                }
+            } else if (0 ==
+                       vscp_strcasecmp(attr[i], "lua_server_page_patterns")) {
+                if (attribute.length()) {
+                    pObj->m_web_lua_server_page_patterns = attribute;
+                }
+            } else if (0 ==
+                       vscp_strcasecmp(attr[i], "lua_websockets_patterns")) {
+                if (attribute.length()) {
+                    pObj->m_web_lua_websocket_patterns = attribute;
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "lua_background_script")) {
+                if (attribute.length()) {
+                    pObj->m_web_lua_background_script = attribute;
+                }
+            } else if (0 == vscp_strcasecmp(attr[i],
+                                            "lua_background_script_params")) {
+                if (attribute.length()) {
+                    pObj->m_web_lua_background_script_params = attribute;
+                }
+            }
+        }
+    } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
+               (0 == vscp_strcasecmp(name, "websockets"))) {
+
+        for (int i = 0; attr[i]; i += 2) {
+
+            std::string attribute = attr[i + 1];
+            vscp_trim(attribute);
+
+            if (0 == vscp_strcasecmp(attr[i], "enable")) {
+                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+                    pObj->m_bWebsocketsEnable = true;
+                } else {
+                    pObj->m_bWebsocketsEnable = false;
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "document_root")) {
+                if (attribute.length()) {
+                    pObj->m_websocket_document_root = attribute;
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "timeout_ms")) {
+                if (attribute.length()) {
+                    pObj->m_websocket_timeout_ms =
+                      vscp_readStringValue(attribute);
+                }
+            }
+        }
+    } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
+               (0 == vscp_strcasecmp(name, "remoteuser"))) {
+        bRemoteUserConfigFound = TRUE;
+    } else if (bVscpConfigFound && bRemoteUserConfigFound &&
+               (2 == depth_full_config_parser) &&
+               (0 == vscp_strcasecmp(name, "user"))) {
+
+        vscpEventFilter VSCPFilter;
+        bool bFilterPresent = false;
+        bool bMaskPresent   = false;
+        std::string name;
+        std::string md5;
+        std::string privilege;
+        std::string allowfrom;
+        std::string allowevent;
+        bool bUser = false;
+
+        vscp_clearVSCPFilter(&VSCPFilter); // Allow all frames
+
+        for (int i = 0; attr[i]; i += 2) {
+
+            std::string attribute = attr[i + 1];
+            vscp_trim(attribute);
+
+            if (0 == vscp_strcasecmp(attr[i], "name")) {
+                name = attribute;
+            } else if (0 == vscp_strcasecmp(attr[i], "password")) {
+                md5 = attribute;
+            } else if (0 == vscp_strcasecmp(attr[i], "privilege")) {
+                privilege = attribute;
+            } else if (0 == vscp_strcasecmp(attr[i], "allowfrom")) {
+                allowfrom = allowfrom;
+            } else if (0 == vscp_strcasecmp(attr[i], "allowevent")) {
+                allowevent = allowevent;
+            } else if (0 == vscp_strcasecmp(attr[i], "filter")) {
+                if (attribute.length()) {
+                    if (vscp_readFilterFromString(&VSCPFilter, attribute)) {
+                        bFilterPresent = true;
+                    }
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "mask")) {
+                if (attribute.length()) {
+                    if (vscp_readMaskFromString(&VSCPFilter, attribute)) {
+                        bMaskPresent = true;
+                    }
+                }
+            }
+
+            if (bFilterPresent && bMaskPresent) {
+                pObj->m_userList.addUser(name,
+                                         md5,
+                                         "",
+                                         "",
+                                         &VSCPFilter,
+                                         privilege,
+                                         allowfrom,
+                                         allowevent,
+                                         VSCP_ADD_USER_FLAG_LOCAL);
+            } else {
+                pObj->m_userList.addUser(name,
+                                         md5,
+                                         "",
+                                         "",
+                                         NULL,
+                                         privilege,
+                                         allowfrom,
+                                         allowevent,
+                                         VSCP_ADD_USER_FLAG_LOCAL);
+            }
+        }
+    } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
+               ((0 == vscp_strcasecmp(name, "level1driver")) ||
+                (0 == vscp_strcasecmp(name, "canal1driver")))) {
+        bLevel1DriverConfigFound = TRUE;
+    } else if (bVscpConfigFound && bLevel1DriverConfigFound &&
+               (2 == depth_full_config_parser) &&
+               (0 == vscp_strcasecmp(name, "driver"))) {
+
+        std::string strName;
+        std::string strConfig;
+        std::string strPath;
+        unsigned long flags;
+        uint32_t translation = 0;
+        cguid guid;
+        bool bEnabled = false;
+
+        for (int i = 0; attr[i]; i += 2) {
+
+            std::string attribute = attr[i + 1];
+            vscp_trim(attribute);
+
+            if (0 == vscp_strcasecmp(attr[i], "enable")) {
+                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+                    bEnabled = true;
+                } else {
+                    bEnabled = false;
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "name")) {
+                strName = attribute;
+                // Replace spaces in name with underscore
+                std::string::size_type found;
+                while (std::string::npos !=
+                       (found = strName.find_first_of(" "))) {
+                    strName[found] = '_';
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "config")) {
+                strConfig = attribute;
+            } else if (0 ==
+                       vscp_strcasecmp(attr[i], "parameter")) { // deprecated
+                strConfig = attribute;
+            } else if (0 == vscp_strcasecmp(attr[i], "path")) {
+                strPath = attribute;
+            } else if (0 == vscp_strcasecmp(attr[i], "flags")) {
+                flags = vscp_readStringValue(attribute);
+            } else if (0 == vscp_strcasecmp(attr[i], "guid")) {
+                guid.getFromString(attribute);
+            } else if (0 == vscp_strcasecmp(attr[i], "translation")) {
+                translation = vscp_readStringValue(attribute);
+            }
+
+            // Add the level I device
+            if (bEnabled) {
+
+                if (!pObj->m_deviceList.addItem(strName,
+                                                strConfig,
+                                                strPath,
+                                                flags,
+                                                guid,
+                                                VSCP_DRIVER_LEVEL1,
+                                                bEnabled,
+                                                translation)) {
+                    syslog(LOG_ERR,
+                           "Level I driver not added name=%s. "
+                           "Path does not exist. - [%s]",
+                           strName.c_str(),
+                           strPath.c_str());
+                } else {
+                    syslog(LOG_DEBUG,
+                           "Level I driver added. name = %s - [%s]",
+                           strName.c_str(),
+                           strPath.c_str());
+                }
+            }
+        }
+    } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
+               ((0 == vscp_strcasecmp(name, "level2driver")))) {
+        bLevel2DriverConfigFound = TRUE;
+    } else if (bVscpConfigFound && bLevel2DriverConfigFound &&
+               (2 == depth_full_config_parser) &&
+               (0 == vscp_strcasecmp(name, "driver"))) {
+        std::string strName;
+        std::string strConfig;
+        std::string strPath;
+        cguid guid;
+        bool bEnabled = false;
+
+        for (int i = 0; attr[i]; i += 2) {
+
+            std::string attribute = attr[i + 1];
+            vscp_trim(attribute);
+
+            if (0 == vscp_strcasecmp(attr[i], "enable")) {
+                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+                    bEnabled = true;
+                } else {
+                    bEnabled = false;
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "name")) {
+                strName = attribute;
+                // Replace spaces in name with underscore
+                std::string::size_type found;
+                while (std::string::npos !=
+                       (found = strName.find_first_of(" "))) {
+                    strName[found] = '_';
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "config")) {
+                strConfig = attribute;
+            } else if (0 ==
+                       vscp_strcasecmp(attr[i], "parameter")) { // deprecated
+                strConfig = attribute;
+            } else if (0 == vscp_strcasecmp(attr[i], "path")) {
+                strPath = attribute;
+            } else if (0 == vscp_strcasecmp(attr[i], "guid")) {
+                guid.getFromString(attribute);
+            }
+        }
+
+        // Add the level II device
+        if (bEnabled) {
+
+            if (!pObj->m_deviceList.addItem(strName,
+                                            strConfig,
+                                            strPath,
+                                            0,
+                                            guid,
+                                            VSCP_DRIVER_LEVEL2,
+                                            bEnabled)) {
+                syslog(LOG_ERR,
+                       "Level II driver was not added. name = %s"
+                       "Path does not exist. - [%s]",
+                       strName.c_str(),
+                       strPath.c_str());
+
+            } else {
+                syslog(LOG_DEBUG,
+                       "Level II driver added. name = %s- [%s]",
+                       strName.c_str(),
+                       strPath.c_str());
+            }
+        }
+    } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
+               ((0 == vscp_strcasecmp(name, "level3driver")))) {
+        bLevel3DriverConfigFound = TRUE;
+    } else if (bVscpConfigFound && bLevel3DriverConfigFound &&
+               (2 == depth_full_config_parser) &&
+               (0 == vscp_strcasecmp(name, "driver"))) {
+        std::string strName;
+        std::string strConfig;
+        std::string strPath;
+        cguid guid;
+        bool bEnabled = false;
+
+        for (int i = 0; attr[i]; i += 2) {
+
+            std::string attribute = attr[i + 1];
+            vscp_trim(attribute);
+
+            if (0 == vscp_strcasecmp(attr[i], "enable")) {
+                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+                    bEnabled = true;
+                } else {
+                    bEnabled = false;
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "name")) {
+                strName = attribute;
+                // Replace spaces in name with underscore
+                std::string::size_type found;
+                while (std::string::npos !=
+                       (found = strName.find_first_of(" "))) {
+                    strName[found] = '_';
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "config")) {
+                strConfig = attribute;
+            } else if (0 ==
+                       vscp_strcasecmp(attr[i], "parameter")) { // deprecated
+                strConfig = attribute;
+            } else if (0 == vscp_strcasecmp(attr[i], "path")) {
+                strPath = attribute;
+            } else if (0 == vscp_strcasecmp(attr[i], "guid")) {
+                guid.getFromString(attribute);
+            }
+        }
+
+        // Add the level III device
+        if (bEnabled) {
+
+            if (!pObj->m_deviceList.addItem(strName,
+                                            strConfig,
+                                            strPath,
+                                            0,
+                                            guid,
+                                            VSCP_DRIVER_LEVEL3,
+                                            bEnabled)) {
+                syslog(LOG_ERR,
+                       "Level III driver was not added. name = %s"
+                       "Path does not exist. - [%s]",
+                       strName.c_str(),
+                       strPath.c_str());
+
+            } else {
+                syslog(LOG_DEBUG,
+                       "Level III driver added. name = %s- [%s]",
+                       strName.c_str(),
+                       strPath.c_str());
+            }
+        }
+    } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
+               ((0 == vscp_strcasecmp(name, "knownnodes")))) {
+        bKnownNodesConfigFound = TRUE;
+    } else if (bVscpConfigFound && bKnownNodesConfigFound &&
+               (2 == depth_full_config_parser) &&
+               (0 == vscp_strcasecmp(name, "node"))) {
+
+        std::string strName;
+        cguid guidif;
+        cguid guid;
+
+        for (int i = 0; attr[i]; i += 2) {
+
+            std::string attribute = attr[i + 1];
+            vscp_trim(attribute);
+
+            if (0 == vscp_strcasecmp(attr[i], "name")) {
+                strName = attribute;
+            } else if (0 == vscp_strcasecmp(attr[i], "guid")) {
+                guid.getFromString(attribute);
+            } else if (0 == vscp_strcasecmp(attr[i], "if")) {
+                guidif.getFromString(attribute);
+            }
+        }
+
+        pObj->addKnownNode(guid, guidif, strName);
+
+    } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
+               ((0 == vscp_strcasecmp(name, "tables")))) {
+        bTablesConfigFound = TRUE;
+    } else if (bVscpConfigFound && bTablesConfigFound &&
+               (2 == depth_full_config_parser) &&
+               (0 == vscp_strcasecmp(name, "table"))) {
+
+        bool bEnabled = false;
+        std::string strName;
+        vscpTableType type = VSCP_TABLE_DYNAMIC;
+        int size           = 0;
+        bool bMemory       = false;
+
+        std::string owner = "admin";
+        uint16_t rights   = 0x700;
+        std::string title;
+        std::string xname;
+        std::string yname;
+        std::string note;
+        std::string sqlcreate;
+        std::string sqlinsert;
+        std::string sqldelete;
+        std::string description;
+
+        uint16_t vscp_class      = 0;
+        uint16_t vscp_type       = 0;
+        uint8_t vscp_sensorindex = 0;
+        uint8_t vscp_unit        = 0;
+        uint8_t vscp_zone        = 255;
+        uint8_t vscp_subzone     = 255;
+
+        for (int i = 0; attr[i]; i += 2) {
+
+            std::string attribute = attr[i + 1];
+            vscp_trim(attribute);
+
+            if (0 == vscp_strcasecmp(attr[i], "enable")) {
+                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+                    bEnabled = true;
+                } else {
+                    bEnabled = false;
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "name")) {
+                strName = attribute;
+                // Replace spaces in name with underscore
+                std::string::size_type found;
+                while (std::string::npos !=
+                       (found = strName.find_first_of(" "))) {
+                    strName[found] = '_';
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "type")) {
+                if (0 == vscp_strcasecmp(attribute.c_str(), "static")) {
+                    type = VSCP_TABLE_STATIC;
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "size")) {
+                size = vscp_readStringValue(attribute);
+            } else if (0 == vscp_strcasecmp(attr[i], "bmemory")) {
+                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+                    bMemory = true;
+                } else {
+                    bMemory = false;
+                }
+
+            } else if (0 == vscp_strcasecmp(attr[i], "owner")) {
+                owner = attribute;
+            } else if (0 == vscp_strcasecmp(attr[i], "rights")) {
+                rights = vscp_readStringValue(attribute);
+            } else if (0 == vscp_strcasecmp(attr[i], "title")) {
+                title = attribute;
+            } else if (0 == vscp_strcasecmp(attr[i], "labelx")) {
+                xname = attribute;
+            } else if (0 == vscp_strcasecmp(attr[i], "lavely")) {
+                yname = attribute;
+            } else if (0 == vscp_strcasecmp(attr[i], "note")) {
+                note = attribute;
+            } else if (0 == vscp_strcasecmp(attr[i], "sqlcreate")) {
+                sqlcreate = attribute;
+            } else if (0 == vscp_strcasecmp(attr[i], "sqldelete")) {
+                sqldelete = attribute;
+            } else if (0 == vscp_strcasecmp(attr[i], "sqlinsert")) {
+                sqlinsert = attribute;
+            } else if (0 == vscp_strcasecmp(attr[i], "description")) {
+                description = attribute;
+            } else if (0 == vscp_strcasecmp(attr[i], "vscpclass")) {
+                vscp_class = vscp_readStringValue(attribute);;
+            } else if (0 == vscp_strcasecmp(attr[i], "vscptype")) {
+                vscp_type = vscp_readStringValue(attribute);;
+            } else if (0 == vscp_strcasecmp(attr[i], "vscpsensorindex")) {
+                vscp_sensorindex = vscp_readStringValue(attribute);;
+            } else if (0 == vscp_strcasecmp(attr[i], "vscpunit")) {
+                vscp_unit = vscp_readStringValue(attribute);;
+            } else if (0 == vscp_strcasecmp(attr[i], "vscpzone")) {
+                vscp_zone = vscp_readStringValue(attribute);;
+            } else if (0 == vscp_strcasecmp(attr[i], "vscpsubzone")) {
+                vscp_subzone = vscp_readStringValue(attribute);;
+            }
+        }
+
+        CVSCPTable *pTable = new CVSCPTable(
+          pObj->m_rootFolder + ("table/"), strName, true, bMemory, type, size);
+        if (NULL == pTable) {
+            syslog(LOG_ERR, "Unable to create table %s", strName.c_str());
+            return;
+        }
+
+        if (!pTable->setTableInfo(owner,
+                                  rights,
+                                  title,
+                                  xname,
+                                  yname,
+                                  note,
+                                  sqlcreate,
+                                  sqlinsert,
+                                  sqldelete,
+                                  description)) {
+            syslog(LOG_ERR,
+                   "Unable to set table info for table %s",
+                   strName.c_str());
+            delete pTable;
+            return;
+        }
+
+        pTable->setTableEventInfo(vscp_class,
+                                  vscp_type,
+                                  vscp_sensorindex,
+                                  vscp_unit,
+                                  vscp_zone,
+                                  vscp_subzone);
+
+        // Add the table
+        if (!pObj->m_userTableObjects.addTable(pTable)) {
+            delete pTable;
+            syslog(LOG_ERR,
+                   "Could not add new table (name conflict?)! nane=%s",
+                   strName.c_str());
+        };
+
+    } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
+               ((0 == vscp_strcasecmp(name, "automation")))) {
+        for (int i = 0; attr[i]; i += 2) {
+
+            std::string attribute = attr[i + 1];
+            vscp_trim(attribute);
+
+            if (0 == vscp_strcasecmp(attr[i], "enable")) {
+                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+                    pObj->m_automation.enableAutomation();
+                } else {
+                    pObj->m_automation.disableAutomation();
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "zone")) {
+                uint8_t zone = vscp_readStringValue( attribute );
+                pObj->m_automation.setZone( zone );
+            }  else if (0 == vscp_strcasecmp(attr[i], "subzone")) {
+                uint8_t subzone = vscp_readStringValue( attribute );
+                pObj->m_automation.setSubzone( subzone );
+            }  else if (0 == vscp_strcasecmp(attr[i], "longitude")) {
+                // Decimal point should be '.'
+                std::string::size_type found;
+                while (std::string::npos !=
+                       (found = attribute.find_first_of(","))) {
+                    attribute[found] = '.';
+                }
+                double d = std::stod(attribute);
+                pObj->m_automation.setLongitude( d );
+            }  else if (0 == vscp_strcasecmp(attr[i], "latitude")) {
+                // Decimal point should be '.'
+                std::string::size_type found;
+                while (std::string::npos !=
+                       (found = attribute.find_first_of(","))) {
+                    attribute[found] = '.';
+                }
+                double d = std::stod(attribute);
+                pObj->m_automation.setLatitude( d );
+            }  else if (0 == vscp_strcasecmp(attr[i], "sunrise-event")) {
+                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+                    pObj->m_automation.enableSunRiseEvent();
+                } else {
+                    pObj->m_automation.disableSunRiseEvent();
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "sunrise-twilight-event")) {
+                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+                    pObj->m_automation.enableSunRiseTwilightEvent();
+                } else {
+                    pObj->m_automation.disableSunRiseTwilightEvent();
+                }
+            }  else if (0 == vscp_strcasecmp(attr[i], "sunset-event")) {
+                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+                    pObj->m_automation.enableSunSetEvent();
+                } else {
+                    pObj->m_automation.disableSunSetEvent();
+                }
+            }  else if (0 == vscp_strcasecmp(attr[i], "sunset-twilight-event")) {
+                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+                    pObj->m_automation.enableSunSetTwilightEvent();
+                } else {
+                    pObj->m_automation.disableSunSetTwilightEvent();
+                }
+            }  else if (0 == vscp_strcasecmp(attr[i], "segment-controler-event")) {
+                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+                    pObj->m_automation.enableSegmentControllerHeartbeat();
+                } else {
+                    pObj->m_automation.disableSegmentControllerHeartbeat();
+                }
+            }  else if (0 == vscp_strcasecmp(attr[i], "heartbeat-event")) {
+                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+                    pObj->m_automation.enableHeartbeatEvent();
+                } else {
+                    pObj->m_automation.disableHeartbeatEvent();
+                }
+            }  else if (0 == vscp_strcasecmp(attr[i], "capability-event")) {
+                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+                    pObj->m_automation.enableCapabilitiesEvent();
+                } else {
+                    pObj->m_automation.disableCapabilitiesEvent();
+                }
+            }
+        }                   
+    }
+
+    depth_full_config_parser++;
+}
+
+static void
+handleFullConfigData(void *data, const char *content, int length)
+{
+    int prevLength =
+      (NULL == last_full_config_content) ? 0 : strlen(last_full_config_content);
+    char *tmp = (char *)malloc(length + 1 + prevLength);
+    strncpy(tmp, content, length);
+    tmp[length] = '\0';
+
+    if (NULL == last_full_config_content) {
+        tmp = (char *)malloc(length + 1);
+        strncpy(tmp, content, length);
+        tmp[length]              = '\0';
+        last_full_config_content = tmp;
+    } else {
+        // Concatenate
+        int newlen = length + 1 + strlen(last_full_config_content);
+        last_general_config_content =
+          (char *)realloc(last_full_config_content, newlen);
+        strncat(tmp, content, length);
+        last_full_config_content[newlen] = '\0';
+    }
+}
+
+static void
+endFullConfigParser(void *data, const char *name)
+{
+    if (NULL != last_full_config_content) {
+        // Free the allocated data
+        free(last_full_config_content);
+        last_full_config_content = NULL;
+    }
+
+    if (1 == depth_full_config_parser &&
+        (0 == vscp_strcasecmp(name, "vscpconfig"))) {
+        bVscpConfigFound = FALSE;
+    }
+    if (bVscpConfigFound && (1 == depth_full_config_parser) &&
+        (0 == vscp_strcasecmp(name, "udp"))) {
+        bUDPConfigFound = FALSE;
+    } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
+               (0 == vscp_strcasecmp(name, "multicast"))) {
+        bMulticastConfigFound = FALSE;
+    } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
+               (0 == vscp_strcasecmp(name, "remoteuser"))) {
+        bRemoteUserConfigFound = FALSE;
+    } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
+               ((0 == vscp_strcasecmp(name, "level1driver")) ||
+                (0 == vscp_strcasecmp(name, "canal1driver")))) {
+        bLevel1DriverConfigFound = FALSE;
+    } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
+               (0 == vscp_strcasecmp(name, "level2driver"))) {
+        bLevel2DriverConfigFound = FALSE;
+    } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
+               (0 == vscp_strcasecmp(name, "level3driver"))) {
+        bLevel3DriverConfigFound = FALSE;
+    } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
+               ((0 == vscp_strcasecmp(name, "knownnodes")))) {
+        bKnownNodesConfigFound = FALSE;
+    } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
+               ((0 == vscp_strcasecmp(name, "tables")))) {
+        bTablesConfigFound = FALSE;
+    }
+
+    depth_full_config_parser--;
+}
+
+// ----------------------------------------------------------------------------
+
 ///////////////////////////////////////////////////////////////////////////////
 // readConfigurationXML
 //
@@ -2353,1699 +3583,49 @@ CControlObject::readXMLConfigurationGeneral(const std::string &strcfgfile)
 bool
 CControlObject::readConfigurationXML(const std::string &strcfgfile)
 {
-    /*
-    unsigned long val;
-    std::string attribute;
-    wxXmlDocument doc;
+    FILE *fp;
 
-    syslog( LOG_DEBUG,
-                "Reading full XML configuration from [%s]",
-                (const char *)strcfgfile.c_str()  );
+    syslog(LOG_DEBUG,
+           "Reading full XML configuration from [%s]",
+           (const char *)strcfgfile.c_str());
 
-    if ( !doc.Load( strcfgfile ) ) {
-        syslog( LOG_CRIT,
-                "Can't load logfile. Is path correct?" );
+    fp = fopen(strcfgfile.c_str(), "r");
+    if (NULL == fp) {
+        syslog(LOG_CRIT,
+               "Failed to open configuration file [%s]",
+               strcfgfile.c_str());
         return false;
     }
 
-    // start processing the XML file
-    if ( 0 != vscp_strcasecmp( doc.GetRoot()->GetName().c_str(), "vscpconfig" )
-{ syslog( LOG_CRIT, "Can't read logfile. Maybe it is invalid!" ); return false;
+    XML_Parser xmlParser = XML_ParserCreate("UTF-8");
+    XML_SetUserData(xmlParser, this);
+    XML_SetElementHandler(
+      xmlParser, startFullConfigParser, endFullConfigParser);
+    XML_SetCharacterDataHandler(xmlParser, handleFullConfigData);
+
+    int bytes_read;
+    void *buf = XML_GetBuffer(xmlParser, XML_BUFF_SIZE);
+    if (NULL == buf) {
+        XML_ParserFree(xmlParser);
+        syslog(LOG_CRIT,
+               "Failed to allocate buffer for configuration file [%s]",
+               strcfgfile.c_str());
+        return false;
     }
 
-    wxXmlNode *child = doc.GetRoot()->GetChildren();
-    while ( child ) {
-
-        // The "general" settings are read in a pre-step
-(readXMLConfigurationGeneral)
-
-        if ( 0 == vscp_strcasecmp( child->GetName().c_str(), "tcpip" ) {
-
-            // Enable
-            attribute = child->GetAttribute(("enable"), ("true"));
-            if ( 0 == vscp_strcasecmp( attribute, "false" ) ) {
-                m_enableTcpip = false;
-            }
-            else {
-                m_enableTcpip  = true;
-            }
-
-            m_strTcpInterfaceAddress = child->GetAttribute(("interface"),
-m_strTcpInterfaceAddress ); m_strTcpInterfaceAddress.StartsWith("tcp://",
-&m_strTcpInterfaceAddress ); vscp_trim( m_strTcpInterfaceAddress );
-
-            m_tcpip_ssl_certificate = child->GetAttribute(("ssl_certificate"),
-m_tcpip_ssl_certificate ); vscp_trim( m_tcpip_ssl_certificate );
-
-            m_tcpip_ssl_certificate_chain =
-child->GetAttribute(("ssl_verify_peer"), m_tcpip_ssl_certificate_chain );
-            vscp_trim( m_tcpip_ssl_certificate_chain );
-
-            m_tcpip_ssl_verify_peer = vscp_readStringValue( child->GetAttribute(
-("ssl_certificate_chain"), ("0") ) );
-
-            m_tcpip_ssl_ca_path = child->GetAttribute(("ssl_ca_path"), (""));
-            vscp_trim( m_tcpip_ssl_ca_path );
-
-            m_tcpip_ssl_ca_file = child->GetAttribute(("ssl_ca_file"), (""));
-            vscp_trim( m_tcpip_ssl_ca_file );
-
-            m_tcpip_ssl_verify_depth = vscp_readStringValue(
-child->GetAttribute( ("ssl_verify_depth"), ("9") ) );
-
-            attribute = child->GetAttribute(("ssl_default_verify_paths"),
-("true")); if ( 0 == vscp_strcasecmp( attribute, "false" ) ) {
-                m_tcpip_ssl_default_verify_paths = false;
-            }
-            else {
-                m_tcpip_ssl_default_verify_paths  = true;
-            }
-
-            m_tcpip_ssl_cipher_list = child->GetAttribute(("ssl_cipher_list"),
-m_tcpip_ssl_cipher_list ); vscp_trim( m_tcpip_ssl_cipher_list );
-
-            if ( child->GetAttribute(("ssl_protocol_version"), &attribute ) ) {
-                m_tcpip_ssl_protocol_version = vscp_readStringValue( attribute )
-;
-            }
-
-            if ( child->GetAttribute(("ssl_short_trust"), &attribute ) ) {
-                if ( 0 == vscp_strcasecmp( attribute, "false" ) ) {
-                    m_tcpip_ssl_short_trust = false;
-                }
-                else {
-                    m_tcpip_ssl_short_trust  = true;
-                }
-            }
-        }
-        else if ( 0 == vscp_strcasecmp( child->GetName().c_str(),
-"multicast-announce" ) ) {
-
-            // Enable
-            if ( child->GetAttribute(("enable"), &attribute ) ) {
-                if ( 0 == vscp_strcasecmp( attribute.c_str(), "false" ) ) {
-                    m_bEnableMulticastAnounce = false;
-                }
-                else {
-                    m_bEnableMulticastAnounce  = true;
-                }
-            }
-
-            // interface
-            if ( child->GetAttribute(("enable"), &attribute ) ) {
-                m_strMulticastAnnounceAddress = child->GetAttribute( attribute
-);
-            }
-
-            // ttl
-            if ( child->GetAttribute(("ttl"), &attribute ) ) {
-                m_ttlMultiCastAnnounce = vscp_readStringValue( attribute );
-            }
-
-        }
-        else if ( 0 == vscp_strcasecmp( child->GetName().c_str(), "udp" ) {
-
-            pthread_mutex_lock( &m_mutexUDPInfo );
-
-            // Default is to let everything come through
-            vscp_clearVSCPFilter( &m_udpSrvObj->m_filter );
-
-            // Enable
-            if ( child->GetAttribute(("enable"), &attribute ) ) {
-                if ( 0 == vscp_strcasecmp( attribute.c_str(), "false" ) ) {
-                    m_udpSrvObj->m_bEnable = false;
-                }
-                else {
-                    m_udpSrvObj->m_bEnable  = true;
-                }
-            }
-
-            // Allow insecure connections
-            if ( child->GetAttribute(("bAllowUnsecure"), &attribute ) ) {
-                if ( 0 == vscp_strcasecmp( attribute.c_str(), "false" ) ) {
-                    m_udpSrvObj->m_bAllowUnsecure = false;
-                }
-                else {
-                    m_udpSrvObj->m_bAllowUnsecure  = true;
-                }
-            }
-
-            // Enable ACK
-            if ( child->GetAttribute(("bSendAck"), &attribute ) ) {
-                if ( 0 == vscp_strcasecmp( attribute.c_str(), "false" ) ) {
-                    m_udpSrvObj->m_bAck = false;
-                }
-                else {
-                    m_udpSrvObj->m_bAck = true;
-                }
-            }
-
-            // Username
-            m_udpSrvObj->m_user = child->GetAttribute( ("user"),
-m_udpSrvObj->m_user );
-
-            // Password
-            m_udpSrvObj->m_password = child->GetAttribute( ("password"),
-m_udpSrvObj->m_password );
-
-            // Interface
-            m_udpSrvObj->m_interface = child->GetAttribute( ("interface"),
-m_udpSrvObj->m_interface );
-
-            // GUID
-            if ( child->GetAttribute(("guid"), &attribute ) ) {
-                m_udpSrvObj->m_guid.getFromString( attribute );
-            }
-
-            // Filter
-            if ( child->GetAttribute(("filter"), &attribute ) ) {
-                vscp_trim( attribute );
-                if ( attribute.length() ) {
-                    vscp_readFilterFromString( &m_udpSrvObj->m_filter, attribute
-);
-                }
-            }
-
-            // Mask
-            if ( child->GetAttribute(("mask"), &attribute ) ) {
-                vscp_trim( attribute );
-                if ( attribute.length() ) {
-                    vscp_readMaskFromString( &m_udpSrvObj->m_filter, attribute
-);
-                }
-            }
-
-            wxXmlNode *subchild = child->GetChildren();
-            while ( subchild ) {
-
-                if ( subchild->GetName() == ("rxnode") ) {
-
-                    udpRemoteClientInfo *pudpClient = new udpRemoteClientInfo;
-                    if ( NULL == pudpClient ) {
-                        syslog( LOG_ERR, "Failed to allocated UDP client remote
-structure."); pthread_mutex_unlock( &m_udpSrvObj->m_mutexUDPInfo ); subchild =
-subchild->GetNext(); continue;
-                    }
-
-                    // Default is to let everything come through
-                    vscp_clearVSCPFilter( &pudpClient->m_filter );
-
-                    if ( subchild->GetAttribute( ("enable"), &attribute ) ) {
-                        if ( 0 == vscp_strcasecmp( attribute.c_str(), "false" )
-) ) { pudpClient->m_bEnable = false;
-                        }
-                        else {
-                            pudpClient->m_bEnable = true;
-                        }
-                    }
-
-                    if ( !pudpClient->m_bEnable ) {
-                        delete pudpClient;
-                        pthread_mutex_unlock( &m_udpSrvObj->m_mutexUDPInfo );
-                        subchild = subchild->GetNext();
-                        continue;
-                    }
-
-                    // remote address
-                    pudpClient->m_remoteAddress = subchild->GetAttribute(
-("interface"), pudpClient->m_remoteAddress );
-
-                    // Filter
-                    if ( subchild->GetAttribute( ("filter"), &attribute ) ) {
-                        vscp_trim( attribute );
-                        if ( attribute.length() ) {
-                            vscp_readFilterFromString( &pudpClient->m_filter,
-attribute );
-                        }
-                    }
-
-                    // Mask
-                    if ( subchild->GetAttribute( ("mask"), &attribute ) ) {
-                        vscp_trim( attribute );
-                        if ( attribute.length() ) {
-                            vscp_readMaskFromString( &pudpClient->m_filter,
-attribute );
-                        }
-                    }
-
-                    // broadcast
-                    if ( subchild->GetAttribute( ("bsetbroadcast"), &attribute )
-) { if ( 0 == vscp_strcasecmp( attribute.c_str(), "false" ) ) {
-                            pudpClient->m_bSetBroadcast = false;
-                        }
-                        else {
-                            pudpClient->m_bSetBroadcast = true;
-                        }
-                    }
-
-                    // encryption
-                    if ( subchild->GetAttribute( ("encryption"), &attribute ) )
-{ pudpClient->m_nEncryption = vscp_getEncryptionCodeFromToken( attribute );
-                    }
-
-                    // add to list
-                    pudpClient->m_index = 0;
-                    m_udpSrvObj->m_remotes.push_back( pudpClient );
-
-                }
-
-                subchild = subchild->GetNext();
-
-            } // while
-
-            pthread_mutex_unlock( &m_udpSrvObj->m_mutexUDPInfo );
-
-        } // udp
-
-        else if ( 0 == vscp_strcasecmp( child->GetName().c_str(), "multicast" )
-) {
-
-            if ( child->GetAttribute( "enable", &attribute ) ) {
-                if ( 0 == vscp_strcasecmp( attribute.c_str(), "false" ) ) {
-                    m_bEnableMulticast = false;
-                }
-                else {
-                    m_bEnableMulticast = true;
-                }
-            }
-
-            wxXmlNode *subchild = child->GetChildren();
-            while ( subchild ) {
-
-                if ( 0 == vscp_strcasecmp( subchild->GetName().c_str(),
-"channel" ) ) {
-
-                    multicastChannelItem *pChannel = new multicastChannelItem;
-                    if ( NULL == pChannel ) {
-                        syslog( LOG_ERR, "Failed to allocated multicast channel
-structure." ); subchild = subchild->GetNext(); continue;
-                    }
-
-                    pChannel->m_bEnable = false;
-                    pChannel->m_bAllowUnsecure = false;
-                    pChannel->m_port = 0;
-                    pChannel->m_ttl = 1;
-                    pChannel->m_nEncryption = 0;
-                    pChannel->m_bSendAck = 0;
-                    pChannel->m_index = 0;
-
-                    // No worker thread started yet
-                    pChannel->m_pWorkerThread = NULL;
-
-                    // Default is to let everything come through
-                    vscp_clearVSCPFilter( &pChannel->m_txFilter );
-                    vscp_clearVSCPFilter( &pChannel->m_rxFilter );
-
-                    // Enable
-                    if ( subchild->GetAttribute( ("enable"), &attribute ) ) {
-                        if ( 0 == vscp_strcasecmp( attribute.c_str(), "false" )
-) { pChannel->m_bEnable = false;
-                        }
-                        else {
-                            pChannel->m_bEnable = true;
-                        }
-                    }
-
-                    // bSendAck
-                    if ( subchild->GetAttribute( ("bsendack"), &attribute ) ) {
-                        if ( 0 == vscp_strcasecmp( attribute, "false" ) ) {
-                            pChannel->m_bSendAck = false;
-                        }
-                        else {
-                            pChannel->m_bSendAck = true;
-                        }
-                    }
-
-                    // bAllowUndsecure
-                    if ( subchild->GetAttribute( ("ballowunsecure"), &attribute
-) ) { if ( 0 == vscp_strcasecmp( attribute.c_str(), "false" ) ) {
-                            pChannel->m_bAllowUnsecure = false;
-                        }
-                        else {
-                            pChannel->m_bAllowUnsecure = true;
-                        }
-                    }
-
-                    // Interface
-                    subchild->GetAttribute( ("public"), pChannel->m_public );
-
-                    // Interface
-                    if ( subchild->GetAttribute( ("ballowunsecure"), &attribute
-) ) { pChannel->m_port = vscp_readStringValue( attribute );
-                    }
-
-                    // Group
-                    subchild->GetAttribute( ("group"), pChannel->m_gropupAddress
-);
-
-                    // ttl
-                    if ( subchild->GetAttribute( ("ttl"), &attribute ) ) {
-                        pChannel->m_ttl = vscp_readStringValue( attribute );
-                    }
-
-                    // guid
-                    if ( subchild->GetAttribute( ("guid"), &attribute ) ) {
-                        pChannel->m_guid.getFromString( attribute );
-                    }
-
-                    // TX Filter
-                    if ( subchild->GetAttribute( ("txfilter"), &attribute ) ) {
-                        vscp_trim( attribute );
-                        if ( attribute.length() ) {
-                            vscp_readFilterFromString( &pChannel->m_txFilter,
-attribute );
-                        }
-                    }
-
-                    // TX Mask
-                    if ( subchild->GetAttribute( ("txmask"), &attribute ) ) {
-                        vscp_trim( attribute );
-                        if ( attribute.length() ) {
-                            vscp_readMaskFromString( &pChannel->m_txFilter,
-attribute );
-                        }
-                    }
-
-                    // RX Filter
-                    if ( subchild->GetAttribute( ("rxfilter"), &attribute ) ) {
-                        vscp_trim( attribute );
-                        if ( attribute.length() ) {
-                            vscp_readFilterFromString( &pChannel->m_rxFilter,
-attribute );
-                        }
-                    }
-
-                    // RX Mask
-                    if ( subchild->GetAttribute( ("rxmask"), &attribute ) ) {
-                        vscp_trim( attribute );
-                        if ( attribute.length() ) {
-                            vscp_readMaskFromString( &pChannel->m_rxFilter,
-attribute );
-                        }
-                    }
-
-                    // encryption
-                    if ( subchild->GetAttribute( ("encryption"), &attribute ) )
-{ pChannel->m_nEncryption = vscp_getEncryptionCodeFromToken( attribute );
-                    }
-
-                    // add to list
-                    pChannel->m_index = 0;
-                    m_multicastInfo.m_channels.Append( pChannel );
-
-                }
-
-                subchild = subchild->GetNext();
-
-            } // while
-
-        }
-
-        else if ( 0 == vscp_strcasecmp( child->GetName().c_str(), "dm" ) ) {
-
-            // Should the internal DM be disabled
-            std::string attribut;
-
-            // Get the path to the DM file  (Deprecated)
-            if ( child->GetAttribute( ("path"), &attribute ) ) {
-                if ( attribut.length() ) {
-                    m_dm.m_staticXMLPath = attribut;
-                }
-            }
-
-            // Get the path to the DM file
-            if ( child->GetAttribute( ("pathxml"), &attribute ) ) {
-                if ( attribut.length() ) {
-                    m_dm.m_staticXMLPath = attribut;
-                }
-            }
-
-            // Get the path to the DM db file
-            if ( child->GetAttribute( ("pathdb"), &attribute ) ) {
-                if ( attribut.length() ) {
-                    m_dm.m_path_db_vscp_dm = attribut;
-                }
-            }
-
-            // Get the DM XML save flag
-            if ( child->GetAttribute( ("allowxmlsave"), &attribute ) ) {
-                if ( 0 == vscp_strcasecmp( attribute.c_str(), "true" ) ) {
-                    m_dm.bAllowXMLsave = true;
-                }
-            }
-
-            // Get the DM loglevel
-            if ( child->GetAttribute( ("loglevel"), &attribute ) ) {
-                if ( 0 == vscp_strcasecmp( attribute.c_str(), "debug" ) ) {
-                    m_debugFlags1 |= VSCP_DEBUG1_DM;
-                }
-            }
-
-        }
-
-        else if ( 0 == vscp_strcasecmp( child->GetName().c_str(), "variables" )
-) {
-
-            // Get the path to the DM file
-            if ( child->GetAttribute( ("path"), &attribute ) ) {
-                m_variables.m_xmlPath = attribute;
-            }
-
-            if ( child->GetAttribute( ("pathxml"), &attribute ) ) {
-                m_variables.m_xmlPath = attribute;
-            }
-
-            if ( child->GetAttribute( ("pathdb"), &attribute ) ) {
-                m_variables.m_dbFilename = attribute;
-            }
-
-        }
-
-        else if ( 0 == vscp_strcasecmp( child->GetName().c_str(), "webserver" )
-) {
-
-            std::string attribute;
-
-            // Enable
-            if ( child->GetAttribute( ("enable"), &attribute ) ) {
-                vscp_trim( attribute );
-                if ( attribute.length() ) {
-                    if ( 0 == vscp_strcasecmp( attribute.c_str(), "false" )) ) {
-                        m_web_bEnable = false;
-                    }
-                    else {
-                        m_web_bEnable = true;
-                    }
-                }
-            }
-
-            if ( child->GetAttribute( ("document_root"), &attribute ) ) {
-                vscy_trim( attribute );
-                if ( attribute.length() ) {
-                    m_web_document_root = attribute;
-                }
-            }
-
-            if ( child->GetAttribute( ("listening_ports"), &attribute ) ) {
-                vscp_trim( attribute );
-                if ( attribute.length() ) {
-                    m_web_listening_ports = attribute;
-                }
-            }
-
-            if ( child->GetAttribute( ("index_files"), &attribute ) ) {
-                vscp_trim( attribute );
-                if ( attribute.length() ) {
-                    m_web_index_files = attribute;
-                }
-            }
-
-            if ( child->GetAttribute( ("authentication_domain"), &attribute ) )
-{ vscp_trim( attribute ); if ( attribute.length() ) {
-                    m_web_authentication_domain = attribute;
-                }
-            }
-
-            if ( child->GetAttribute( ("enable_auth_domain_check"), &attribute )
-) { vscp_trim( attribute ); if ( attribute.length() ) { if ( 0 ==
-vscp_strcasecmp( attribute.c_str(), "false" ) ) { m_enable_auth_domain_check =
-false;
-                    }
-                    else {
-                        m_enable_auth_domain_check = true;
-                    }
-                }
-            }
-
-            if ( child->GetAttribute( ("ssl_certificat"), &attribute ) ) {
-                vscp_trim( attribute );
-                if ( attribute.length() ) {
-                    m_web_ssl_certificate = attribute;
-                }
-            }
-
-            if ( child->GetAttribute( ("ssl_certificat_chain"), &attribute ) ) {
-                vscp_trim( attribute );
-                if ( attribute.length() ) {
-                    m_web_ssl_certificate_chain = attribute;
-                }
-            }
-
-            if ( child->GetAttribute( ("ssl_verify_peer"), &attribute ) ) {
-                vscp_trim( attribute );
-                if ( attribute.length() ) {
-                    if ( 0 == vscp_strcasecmp( attribute.c_str(), "false" ) ) {
-                        m_web_ssl_verify_peer = false;
-                    }
-                    else {
-                        m_web_ssl_verify_peer = true;
-                    }
-                }
-            }
-
-            if ( child->GetAttribute( ("ssl_ca_path"), &attribute ) ) {
-                vscp_trim( attribute );
-                if ( attribute.length() ) {
-                    m_web_ssl_ca_path = attribute;
-                }
-            }
-
-            if ( child->GetAttribute( ("ssl_ca_file"), &attribute ) ) {
-                vscp_trim( attribute );
-                if ( attribute.length() ) {
-                    m_web_ssl_ca_file = attribute;
-                }
-            }
-
-            if ( child->GetAttribute( ("ssl_verify_depth"), &attribute ) ) {
-                vscp_trim( attribute );
-                if ( attribute.length() ) {
-                    m_web_ssl_verify_depth = atoi( (const char
-*)attribute.c_str() );
-                }
-            }
-
-            if ( child->GetAttribute( ("ssl_default_verify_paths"), &attribute )
-) { vscp_trim( attribute ); if ( attribute.length() ) { if ( 0 ==
-vscp_strcasecmp( attribute.c_str(), "false" ) ) { m_web_ssl_default_verify_paths
-= false;
-                    }
-                    else {
-                        m_web_ssl_default_verify_paths = true;
-                    }
-                }
-            }
-
-            if ( child->GetAttribute( ("ssl_cipher_list"), &attribute ) ) {
-                vscp_trim( attribute );
-                if ( attribute.length() ) {
-                    m_web_ssl_cipher_list = attribute.c_str();
-                }
-            }
-
-            if ( child->GetAttribute( ("ssl_protcol_version"), &attribute ) ) {
-                vscp_trim( attribute );
-                if ( attribute.length() ) {
-                    m_web_ssl_protocol_version = atoi( (const char
-*)attribute.c_str() );
-                }
-            }
-
-            if ( child->GetAttribute( ("ssl_short_trust"), &attribute ) ) {
-                vscp_trim( attribute );
-                if ( attribute.length() ) {
-                    if ( 0 == vscp_strcasecmp( attribute.c_str(), "false" ) ) {
-                        m_web_ssl_short_trust = false;
-                    }
-                    else {
-                        m_web_ssl_short_trust = true;
-                    }
-                }
-            }
-
-            if ( child->GetAttribute( ("cgi_interpreter"), &attribute ) ) {
-                vscp_trim( attribute );
-                if ( attribute.length() ) {
-                    m_web_cgi_interpreter = attribute;
-                }
-            }
-
-            if ( child->GetAttribute( ("cgi_pattern"), &attribute ) ) {
-                vscp_trim( attribute );
-                if ( attribute.length() ) {
-                    m_web_cgi_patterns =attribute;
-                }
-            }
-
-            if ( child->GetAttribute( ("cgi_environment"), &attribute ) ) {
-                vscp_trim( attribute );
-                if ( attribute.length() ) {
-                    m_web_cgi_environment = attribute;
-                }
-            }
-
-            if ( child->GetAttribute( ("protect_uri"), &attribute ) ) {
-                vscp_trim( attribute );
-                if ( attribute.length() ) {
-                    m_web_protect_uri = attribute;
-                }
-            }
-
-            if ( child->GetAttribute( ("trottle"), &attribute ) ) {
-                vscp_trim( attribute );
-                if ( attribute.length() ) {
-                    m_web_trottle = attribute;
-                }
-            }
-
-            if ( child->GetAttribute( ("enable_directory_listing"), &attribute )
-) { vscp_trim( attribute ); if ( attribute.length() ) { if ( 0 ==
-vscp_strcasecmp( attribute.c_str(), "false" ) ) { m_web_enable_directory_listing
-= false;
-                    }
-                    else {
-                        m_web_enable_directory_listing = true;
-                    }
-                }
-            }
-
-            if ( child->GetAttribute( ("enable_keep_alive"), &attribute ) ) {
-                vscp_trim( attribute );
-                if ( attribute.length() ) {
-                    if ( 0 == vscp_strcasecmp( attribute.c_str(), "false" ) ) {
-                        m_web_enable_keep_alive = false;
-                    }
-                    else {
-                        m_web_enable_keep_alive = true;
-                    }
-                }
-            }
-
-            if ( child->GetAttribute( ("keep_alive_timeout_ms"), &attribute ) )
-{ vscp_trim( attribute ); if ( attribute.length() ) {
-                    m_web_keep_alive_timeout_ms = atol( (const char
-*)attribute.c_str() );
-                }
-            }
-
-            if ( child->GetAttribute( ("access_control_list"), &attribute ) ) {
-                vscp_trim( attribute );
-                if ( attribute.length() ) {
-                    m_web_access_control_list = attribute;
-                }
-            }
-
-            if ( child->GetAttribute( ("extra_mime_types"), &attribute ) ) {
-                vscp_trim( attribute );
-                if ( attribute.length() ) {
-                    m_web_extra_mime_types = attribute;
-                }
-            }
-
-            if ( child->GetAttribute( ("num_threads"), &attribute ) ) {
-                vscp_trim( attribute );
-                if ( attribute.length() ) {
-                    m_web_num_threads = atoi( (const char *)attribute.c_str() );
-                }
-            }
-
-            if ( child->GetAttribute( ("hide_file_pattern"), &attribute ) ) {
-                vscp_trim( attribute );
-                if ( attribute.length() ) {
-                    m_web_hide_file_patterns = attribute;
-                }
-            }
-
-            if ( child->GetAttribute( ("run_as_user"), &attribute ) ) {
-                vscp_trim( attribute );
-                m_web_run_as_user = attribute;
-            }
-
-            if ( child->GetAttribute( ("url_rewrite_patterns"), &attribute ) ) {
-                vscp_trim( attribute );
-                if ( attribute.length() ) {
-                    m_web_url_rewrite_patterns = attribute;
-                }
-            }
-
-            if ( child->GetAttribute( ("hide_file_patterns"), &attribute ) ) {
-                vscp_trim( attribute );
-                if ( attribute.length() ) {
-                    m_web_hide_file_patterns = attribute;
-                }
-            }
-
-            if ( child->GetAttribute( ("request_timeout_ms"), &attribute ) ) {
-                vscp_trim( attribute );
-                if ( attribute.length() ) {
-                    m_web_request_timeout_ms = atol( (const char
-*)attribute.c_str() );
-                }
-            }
-
-            if ( child->GetAttribute( ("linger_timeout_ms"), &attribute ) ) {
-                vscp_trim( attribute );
-                if ( attribute.length() ) {
-                    m_web_linger_timeout_ms = atol( (const char
-*)attribute.c_str() );
-                }
-            }
-
-            if ( child->GetAttribute( ("decode_url"), &attribute ) ) {
-                vscp_trim( attribute );
-                if ( attribute.length() ) {
-                    if ( 0 == vscp_strcasecmp( attribute.c_str(), "false" ) ) {
-                        m_web_decode_url = false;
-                    }
-                    else {
-                        m_web_decode_url = true;
-                    }
-                }
-            }
-
-            if ( child->GetAttribute( ("global_auth_file"), &attribute ) ) {
-                vscp_trim( attribute );
-                if ( attribute.length() ) {
-                    m_web_global_auth_file = attribute;
-                }
-            }
-
-            if ( child->GetAttribute( ("web_per_directory_auth_file"),
-&attribute ) ) { vscp_trim( attribute ); if ( attribute.length() ) {
-                    m_web_per_directory_auth_file = attribute;
-                }
-            }
-
-            if ( child->GetAttribute( ("ssi_pattern"), &attribute ) ) {
-                vscp_trim( attribute );
-                if ( attribute.length() ) {
-                    m_web_ssi_patterns = attribute;
-                }
-            }
-
-            if ( child->GetAttribute( ("access_control_allow_origin"),
-&attribute ) ) { vscp_trim( attribute ); if ( attribute.length() ) {
-                    m_web_access_control_allow_origin = attribute;
-                }
-            }
-
-            if ( child->GetAttribute( ("access_control_allow_methods"),
-&attribute ) ) { vscp_trim( attribute ); if ( attribute.length() ) {
-                    m_web_access_control_allow_methods = attribute;
-                }
-            }
-
-            if ( child->GetAttribute( ("access_control_allow_headers"),
-&attribute ) ) { vscp_trim( attribute ); if ( attribute.length() ) {
-                    m_web_access_control_allow_headers = attribute;
-                }
-            }
-
-            if ( child->GetAttribute( ("error_pages"), &attribute ) ) {
-                vscp_trim( attribute );
-                if ( attribute.length() ) {
-                    m_web_error_pages = attribute;
-                }
-            }
-
-            if ( child->GetAttribute( ("tcp_nodelay"), &attribute ) ) {
-                vscp_trim( attribute );
-                if ( attribute.length() ) {
-                    m_web_linger_timeout_ms = atol( (const char
-*)attribute.c_str() );
-                }
-            }
-
-            if ( child->GetAttribute( ("static_file_max_age"), &attribute ) ) {
-                vscp_trim( attribute );
-                if ( attribute.length() ) {
-                    m_web_static_file_max_age = atol( (const char
-*)attribute.c_str() );
-                }
-            }
-
-            if ( child->GetAttribute( ("strict_transport_security_max_age"),
-&attribute ) ) { vscp_trim( attribute ); if ( attribute.length() ) {
-                    m_web_strict_transport_security_max_age = atol( (const char
-*)attribute.c_str() );
-                }
-            }
-
-            if ( child->GetAttribute( ("sendfile_call"), &attribute ) ) {
-                vscp_trim( attribute );
-                if ( attribute.length() ) {
-                    if ( 0 == vscp_strcasecmp( attribute.c_str(), "false" ) ) {
-                        m_web_allow_sendfile_call = false;
-                    }
-                    else {
-                        m_web_allow_sendfile_call = true;
-                    }
-                }
-            }
-
-            if ( child->GetAttribute( ("additional_headers"), &attribute ) ) {
-                vscp_trim( attribute );
-                if ( attribute.length() ) {
-                    m_web_additional_header = attribute;
-                }
-            }
-
-            if ( child->GetAttribute( ("max_request_size"), &attribute ) ) {
-                vscp_trim( attribute );
-                if ( attribute.length() ) {
-                    m_web_max_request_size = atol( (const char
-*)attribute.c_str() );
-                }
-            }
-
-            if ( child->GetAttribute( ("web_allow_index_script_resource"),
-&attribute ) ) { vscp_trim( attribute ); if ( attribute.length() ) { if ( 0 ==
-vscp_strcasecmp( attribute.c_str(), "false" ) ) {
-                        m_web_allow_index_script_resource = false;
-                    }
-                    else {
-                        m_web_allow_index_script_resource = true;
-                    }
-                }
-            }
-
-            if ( child->GetAttribute( ("duktape_script_patterns"), &attribute )
-) { vscp_trim( attribute ); if ( attribute.length() ) {
-                    m_web_duktape_script_patterns = attribute;
-                }
-            }
-
-            if ( child->GetAttribute( ("lua_preload_file"), &attribute ) ) {
-                vscp_trim( attribute );
-                if ( attribute.length() ) {
-                    m_web_lua_preload_file = attribute;
-                }
-            }
-
-            if ( child->GetAttribute( ("lua_script_patterns"), &attribute ) ) {
-                vscp_trim( attribute );
-                if ( attribute.length() ) {
-                    m_web_lua_script_patterns = attribute;
-                }
-            }
-
-            if ( child->GetAttribute( ("lua_server_page_patterns"), &attribute )
-) { vscp_trim( attribute ); if ( attribute.length() ) {
-                    m_web_lua_server_page_patterns = attribute;
-                }
-            }
-
-            if ( child->GetAttribute( ("lua_websockets_patterns"), &attribute )
-) { attribute.Trim(); attribute.Trim(false); if ( attribute.length() ) {
-                    m_web_lua_websocket_patterns = attribute;
-                }
-            }
-
-            if ( child->GetAttribute( ("lua_background_script"), &attribute ) )
-{ vscp_trim( attribute ); if ( attribute.length() ) {
-                    m_web_lua_background_script = attribute;
-                }
-            }
-
-            if ( child->GetAttribute( ("lua_background_script_params"),
-&attribute ) ) { vscp_trim( attribute ); if ( attribute.length() ) {
-                    m_web_lua_background_script_params = attribute;
-                }
-            }
-
-        }
-
-        else if ( 0 == vscp_strcasecmp( child->GetName().c_str(), "websockets" )
-) {
-
-            if ( child->GetAttribute( ("enable"), &attribute ) ) {
-                vscp_trim( attribute );
-                if ( attribute.length() ) {
-                    if ( 0 == vscp_strcasecmp( attribute.c_str(), "false" ) ) {
-                        m_bWebsocketsEnable = false;
-                    }
-                    else {
-                        m_bWebsocketsEnable = true;
-                    }
-                }
-            }
-
-            if ( child->GetAttribute( ("document_root"), &attribute ) ) {
-                vscp_trim( attribute );
-                if ( attribute.length() ) {
-                    m_websocket_document_root = attribute;
-                }
-            }
-
-            if ( child->GetAttribute( ("timeout_ms"), &attribute ) ) {
-                vscp_trim( attribute );
-                if ( attribute.length() ) {
-                    m_websocket_timeout_ms = atol( (const char
-*)attribute.c_str() );
-                }
-            }
-
-        }
-
-        else if ( 0 == vscp_strcasecmp( child->GetName().c_str(), "remoteuser" )
-) {
-
-            wxXmlNode *subchild = child->GetChildren();
-            while ( subchild ) {
-
-                vscpEventFilter VSCPFilter;
-                bool bFilterPresent = false;
-                bool bMaskPresent = false;
-                std::string name;
-                std::string md5;
-                std::string privilege;
-                std::string allowfrom;
-                std::string allowevent;
-                bool bUser = false;
-
-                vscp_clearVSCPFilter( &VSCPFilter ); // Allow all frames
-
-                if ( 0 == vscp_strcasecmp( subchild->GetName().c_str(), "user" )
-) {
-
-                    wxXmlNode *subsubchild = subchild->GetChildren();
-
-                    while (subsubchild) {
-
-                        if ( 0 == vscp_strcasecmp(
-subsubchild->GetName().c_str(), "name" ) ) { name =
-subsubchild->GetNodeContent(); bUser = true;
-                        }
-                        else if ( 0 == vscp_strcasecmp(
-subsubchild->GetName().c_str(), "password" ) ) { md5 =
-subsubchild->GetNodeContent();
-                        }
-                        else if ( 0 == vscp_strcasecmp(
-subsubchild->GetName().c_str(), "privilege" ) ) { privilege =
-subsubchild->GetNodeContent();
-                        }
-                        else if ( 0 == vscp_strcasecmp(
-subsubchild->GetName().c_str(), "filter" ) ) {
-
-                            bFilterPresent = true;
-
-                            std::string str_vscp_priority =
-subchild->GetAttribute(("priority"), ("0") ); VSCPFilter.filter_priority =
-str_vscp_type( str_vscp_priority );
-
-                            std::string str_vscp_class =
-subchild->GetAttribute(("class"), ("0")); VSCPFilter.filter_class =
-str_vscp_type(str_vscp_class);
-
-                            std::string str_vscp_type =
-subchild->GetAttribute(("type"), ("0")); VSCPFilter.filter_type =
-vscp_readStringValue(str_vscp_type);
-
-                            std::string str_vscp_guid =
-subchild->GetAttribute(("guid"),
-                                                        ("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"));
-                            vscp_getGuidFromStringToArray(VSCPFilter.filter_GUID,
-str_vscp_guid);
-                        }
-                        else if ( 0 == vscp_strcasecmp(
-subsubchild->GetName().c_str(), "mask" ) ) {
-
-                            bMaskPresent = true;
-
-                            std::string str_vscp_priority =
-subchild->GetAttribute(("priority"), ("0")); VSCPFilter.mask_priority =
-vscp_readStringValue( str_vscp_priority );
-
-                            std::string str_vscp_class =
-subchild->GetAttribute(("class"), ("0")); VSCPFilter.mask_class =
-vscp_readStringValue( str_vscp_class );
-
-                            std::string str_vscp_type =
-subchild->GetAttribute(("type"), ("0")); VSCPFilter.mask_type =
-vscp_readStringValue( str_vscp_type );
-
-                            std::string str_vscp_guid =
-subchild->GetAttribute(("guid"),
-                                    ("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"));
-                            vscp_getGuidFromStringToArray(VSCPFilter.mask_GUID,
-str_vscp_guid);
-                        }
-                        else if ( 0 == vscp_strcasecmp(
-subsubchild->GetName().c_str(), "allowfrom" ) ) { allowfrom =
-subsubchild->GetNodeContent();
-                        }
-                        else if ( 0 == vscp_strcasecmp(
-subsubchild->GetName().c_str(), "allowevent" ) ) { allowevent =
-subsubchild->GetNodeContent();
-                        }
-
-                        subsubchild = subsubchild->GetNext();
-
-                    }
-
-                }
-
-                // Add user
-                if ( bUser ) {
-
-                    if ( bFilterPresent && bMaskPresent ) {
-                        m_userList.addUser( name,
-                                                md5,
-                                                "",
-                                                "",
-                                                &VSCPFilter,
-                                                privilege,
-                                                allowfrom,
-                                                allowevent,
-                                                VSCP_ADD_USER_FLAG_LOCAL );
-                    }
-                    else {
-                        m_userList.addUser( name,
-                                                md5,
-                                                "",
-                                                "",
-                                                NULL,
-                                                privilege,
-                                                allowfrom,
-                                                allowevent,
-                                                VSCP_ADD_USER_FLAG_LOCAL );
-                    }
-
-                    bUser = false;
-                    bFilterPresent = false;
-                    bMaskPresent = false;
-
-                }
-
-                subchild = subchild->GetNext();
-
-            }
-
-        }
-
-        // Level I driver
-        else if ( ( 0 == vscp_strcasecmp( child->GetName().c_str(),
-"canaldriver") ) || ( 0 == vscp_strcasecmp( child->GetName().c_str(),
-"level1driver") ) ) {
-
-            wxXmlNode *subchild = child->GetChildren();
-            while ( subchild ) {
-
-                std::string strName;
-                std::string strConfig;
-                std::string strPath;
-                unsigned long flags;
-                cguid guid;
-                bool bEnabled = false;
-                bool bCanalDriver = false;
-
-                if ( 0 == vscp_strcasecmp( subchild->GetName().c_str(), "driver"
-) ) {
-
-                    wxXmlNode *subsubchild = subchild->GetChildren();
-                    std::string attribute = subchild->GetAttribute(("enable"),
-("false")); if ( 0 == vscp_strcasecmp( attribute.c_str(), "true" ) ) { bEnabled
-= true;
-                    }
-
-                    while ( subsubchild ) {
-
-                        if ( 0 == vscp_strcasecmp(
-subsubchild->GetName().c_str(), "name" )  {
-
-                            strName = subsubchild->GetNodeContent();
-                            vscp_trim( strName );
-
-                            // Replace spaces in name with underscore
-                            std::string::size_type found;
-                            while ( std::string::npos != ( found =
-str.find_first_of(" ") ) ) {} str[found]='_';
-                            }
-
-                            bCanalDriver = true;    // This is a Level I driver
-
-                        }
-                        else if ( ( 0 == vscp_strcasecmp(
-subsubchild->GetName().c_str(), "config" ) ) || (
-subsubchild->GetName().c_str(), "parameter" ) )  {
-
-                            strConfig = subsubchild->GetNodeContent();
-                            vscp_trim( strConfig );
-                        }
-                        else if ( 0 == vscp_strcasecmp(
-subsubchild->GetName().c_str(), "path" ) ) { strPath =
-subsubchild->GetNodeContent(); vscp_trim( strConfig );
-                        }
-                        else if ( 0 == vscp_strcasecmp(
-subsubchild->GetName().c_str(), "flags" ) ) { std::string str =
-subsubchild->GetNodeContent(); flags = vscp_readStringValue(str);
-                        }
-                        else if ( 0 == vscp_strcasecmp(
-subsubchild->GetName().c_str(), "guid" ) ) { guid.getFromString(
-subsubchild->GetNodeContent() );
-                        }
-                        else if ( 0 == vscp_strcasecmp(
-subsubchild->GetName().c_str(), "known-nodes" ) ) {
-
-                            wxXmlNode *subsubsubchild = subchild->GetChildren();
-
-                            while ( subsubsubchild ) {
-
-                                if ( 0 == vscp_strcasecmp(
-subsubsubchild->GetName().c_str(), "node" ) ) { cguid knownguid;
-
-                                    knownguid.getFromString(
-subchild->GetAttribute( "guid", "-" ) ); std::string name =
-subchild->GetAttribute( "name", "" )  ) ; addKnownNode( knownguid, guid, name );
-                                }
-
-                                // Next driver item
-                                subsubsubchild = subsubsubchild->GetNext();
-
-                            } // while
-
-                        }
-
-                        // Next driver item
-                        subsubchild = subsubchild->GetNext();
-
-                    } // while
-
-                }
-
-                // Add the level I device
-                if ( bCanalDriver && bEnabled ) {
-
-                    if (!m_deviceList.addItem( strName,
-                                                    strConfig,
-                                                    strPath,
-                                                    flags,
-                                                    guid,
-                                                    VSCP_DRIVER_LEVEL1,
-                                                    bEnabled ) ) {
-                        syslog( LOG_ERR,
-                                    "Level I driver not added. "
-                                             "Path does not exist. - [%s]",
-                                    strPath.c_str() );
-                    }
-                    else {
-                        syslog( LOG_DEBUG,
-                                    "Level I driver added. - [%s]",
-                                    strPath );
-                    }
-
-                    bCanalDriver = false;
-
-                }
-
-                // Next driver
-                subchild = subchild->GetNext();
-
-            }
-
-        }
-
-        // Level II driver
-        else if ( ( 0 == vscp_strcasecmp( child->GetName().c_str(), "vscpdriver"
-) ) || ( 0 == vscp_strcasecmp( child->GetName().c_str(), "level2driver" ) ) ) {
-
-            wxXmlNode *subchild = child->GetChildren();
-
-            while ( subchild ) {
-
-                std::string strName;
-                std::string strConfig;
-                std::string strPath;
-                cguid guid;
-                bool bEnabled = false;
-                bool bLevel2Driver = false;
-
-                if ( 0 == vscp_strcasecmp( subchild->GetName().c_str(), "driver"
-) ) {
-
-                    wxXmlNode *subsubchild = subchild->GetChildren();
-                    std::string attribute = subchild->GetAttribute( "enable",
-                                                                    "false" );
-                    if ( 0 == vscp_strcasecmp( attribute.c_str(), "true" ) ) {
-                        bEnabled = true;
-                    }
-
-                    while ( subsubchild ) {
-
-                        if ( 0 == vscp_strcasecmp(
-subsubchild->GetName().c_str(), "name" ) ) {
-
-                            strName = subsubchild->GetNodeContent();
-                            vscp_Trim( strName );
-
-                            // Replace spaces in name with underscore
-                            int pos;
-                            while ( strName.npos != ( pos = strName.find( " " )
-) ) { strName[pos] = '_';
-                            }
-
-                            bLevel2Driver = true; // This is a Level II driver
-
-                        }
-                        else if ( ( 0 == vscp_strcasecmp(
-subsubchild->GetName().c_str(), "config" ) || ( 0 == vscp_strcasecmp(
-subsubchild->GetName().c_str(), "parameter" ) {
-
-                            strConfig = subsubchild->GetNodeContent();
-                            vscp_trim( strConfig );
-
-                        }
-                        else if ( 0 == vscp_strcasecmp(
-subsubchild->GetName().c_str(), "path" ) {
-
-                            strPath = subsubchild->GetNodeContent();
-                            vscp_trim( strConfig );;
-
-                        }
-                        else if ( 0 == vscp_strcasecmp(
-subsubchild->GetName().c_str(), "guid" ) ) { guid.getFromString(
-subsubchild->GetNodeContent() );
-                        }
-                        else if ( 0 == vscp_strcasecmp(
-subsubchild->GetName().c_str(), "known-nodes" ) ) {
-
-                            wxXmlNode *subsubsubchild = subchild->GetChildren();
-
-                            while ( subsubsubchild ) {
-
-                                if ( 0 == vscp_strcasecmp(
-subsubsubchild->GetName().c_str(), "node" ) ) { cguid knownguid;
-
-                                    knownguid.getFromString(
-subchild->GetAttribute( "guid",
-                                                                                     "-" ) );
-                                    std::string name =
-                                            subchild->GetAttribute( ( "name" ),
-( "" ) ); addKnownNode( knownguid, guid, name );
-                                }
-
-                                // Next driver item
-                                subsubsubchild = subsubsubchild->GetNext();
-
-                            } // while
-
-                        }
-
-                        // Next driver item
-                        subsubchild = subsubchild->GetNext();
-
-                    }
-
-                }
-
-                // Add the level II device
-                if ( bLevel2Driver && bEnabled ) {
-
-                    if ( !m_deviceList.addItem( strName,
-                                                strConfig,
-                                                strPath,
-                                                0,
-                                                guid,
-                                                VSCP_DRIVER_LEVEL2,
-                                                bEnabled ) ) {
-                        syslog( LOG_ERR,
-                                    "Level II driver was not added. "
-                                    "Path does not exist. - [%s]",
-                                    strPath.c_str() );
-
-                    }
-                    else {
-                        syslog( LOG_DEBUG,
-                                    "Level II driver added. - [%s]",
-                                    strPath.c_str() );
-                    }
-
-                    bLevel2Driver = false;
-
-                }
-
-                // Next driver
-                subchild = subchild->GetNext();
-
-            }
-
-        }
-        // Level III driver
-        else if ( 0 == vscp_strcasecmp( child->GetName().c_str(), "level3driver"
-) ) {
-
-            wxXmlNode *subchild = child->GetChildren();
-
-            while ( subchild ) {
-
-                std::string strName;
-                std::string strConfig;
-                std::string strPath;
-                cguid guid;
-                bool bEnabled = false;
-                bool bLevel3Driver = false;
-
-                if ( 0 == vscp_strcasecmp( subchild->GetName().c_str(), "driver"
-) ) {
-
-                    wxXmlNode *subsubchild = subchild->GetChildren();
-
-                    std::string attribute = subchild->GetAttribute(("enable"),
-                                                                ("false"));
-                    if ( 0 == vscp_strcasecmp( attribute.c_str(), "true" ) ) {
-                        bEnabled = true;
-                    }
-
-                    while ( subsubchild ) {
-
-                        if ( 0 == vscp_strcasecmp(
-subsubchild->GetName().c_str(), "name" ) ) {
-
-                            strName = subsubchild->GetNodeContent();
-                            vscp_trim( strName );
-
-                            // Replace spaces in name with underscore
-                            int pos;
-                            while ( strName != ( pos = strName.find( " ") ) ) {
-                                strName[pos] = '_' );
-                            }
-
-                            bLevel3Driver = true;
-
-                        }
-                        else if ( ( 0 == vscp_strcasecmp(
-subsubchild->GetName().c_str(), "config" ) ) || ( 0 == vscp_strcasecmp(
-subsubchild->GetName().c_str(), "parameter" ) ) ) {
-
-                            strConfig = subsubchild->GetNodeContent();
-                            vscp_trim( strConfig );
-
-                        }
-                        else if ( 0 == vscp_strcasecmp(
-subsubchild->GetName()c_str(), "path" ) ) {
-
-                            strPath = subsubchild->GetNodeContent();
-                            vscp_trim( strPath );
-
-                        }
-                        else if ( 0 == vscp_strcasecmp(
-subsubchild->GetName().c_str(), "guid" ) ) { guid.getFromString(
-subsubchild->GetNodeContent() );
-                        }
-                        else if ( 0 == vscp_strcasecmp(
-subsubchild->GetName().c_str(), "known-nodes" ) ) {
-
-                            wxXmlNode *subsubsubchild = subchild->GetChildren();
-
-                            while ( subsubsubchild ) {
-
-                                if ( 0 == vscp_strcasecmp(
-subsubsubchild->GetName().c_str(), "node" ) ) { cguid knownguid;
-
-                                    knownguid.getFromString(
-subchild->GetAttribute( ( "guid" ), ( "-" ) ) ); std::string name =
-                                            subchild->GetAttribute( ( "name" ),
-                                                                    ( "" ) );
-                                    addKnownNode( knownguid, guid, name );
-                                }
-
-                                // Next driver item
-                                subsubsubchild = subsubsubchild->GetNext();
-
-                            } // while
-
-                        }
-
-                        // Next driver item
-                        subsubchild = subsubchild->GetNext();
-
-                    }
-
-                }
-
-                // Add the level II device
-                if ( bLevel3Driver && bEnabled ) {
-
-                    if (!m_deviceList.addItem( strName,
-                                                strConfig,
-                                                strPath,
-                                                0,
-                                                guid,
-                                                VSCP_DRIVER_LEVEL3,
-                                                bEnabled )) {
-                        syslog( LOG_ERR,
-                                    "Level III driver was not added. Path does
-not exist. - [%s]", strPath.c_str() );
-
-                    }
-                    else {
-                        syslog( LOG_DEBUG,
-                                    "Level III driver added. - [%s]",
-                                    strPath.c_str() );
-                    }
-
-                    bLevel3Driver = false;
-
-                }
-
-                // Next driver
-                subchild = subchild->GetNext();
-
-            }
-
-        }
-        // Tables
-        else if ( 0 == vscp_strcasecmp( child->GetName().c_str(), "tables" ) ) {
-
-            wxXmlNode *subchild = child->GetChildren();
-            while ( subchild ) {
-
-                if ( 0 == vscp_strcasecmp( subchild->GetName().c_str(), "table"
-) ) {
-
-                    // Check if enabled
-                    std::string strEnabled = subchild->GetAttribute( ("enable"),
-("true") ); if ( 0 == vscp_strcasecmp( strEnabled.c_str(), "false" ) ) { goto
-xml_table_error;
-                    }
-
-                    // Get name of table
-                    std::string name = subchild->GetAttribute( ("name"), ("")
-);;
-
-                    // Get type of table
-                    vscpTableType type = VSCP_TABLE_DYNAMIC;
-                    int size = 0;
-                    std::string attribute = subchild->GetAttribute( ("type"),
-("0") ); if ( 0 == vscp_strcasecmp( attribute.c_str(), "dynamic" ) ) { type =
-VSCP_TABLE_DYNAMIC;
-                    }
-                    else if ( attribute.npos != attribute.find( ("static") ) ) {
-
-                        type = VSCP_TABLE_STATIC;
-
-                        // Get size
-                        size = vscp_readStringValue( subchild->GetAttribute(
-("size"), ("0") ) );
-
-                    }
-                    else {
-                        // Invalid type
-                        syslog( LOG_ERR, "Reading VSCP table xml info: Invalid
-table type (static/dynamic)!" ); goto xml_table_error;
-                    }
-
-                    // Should it be created in memory?
-                    bool bMemory = false;
-                    std::string strInMemory = subchild->GetAttribute(
-("bmemory"), ("false") ); if ( 0 == vscp_strcasecmp( strInMemory.c_str(), "true"
-) ) { bMemory = true;
-                    }
-
-                    CVSCPTable *pTable = new CVSCPTable( m_rootFolder +
-("table/"), name, true, bMemory, type, size ); if ( NULL != pTable ) {
-
-                        if ( !pTable->setTableInfo( subchild->GetAttribute(
-("owner"), ("admin") ), vscp_readStringValue( subchild->GetAttribute(
-("rights"), ("0x700") ) ), subchild->GetAttribute( ("title"), ("") ),
-                                                subchild->GetAttribute(
-("labelx"), ("") ), subchild->GetAttribute( ("labely"), ("") ),
-                                                subchild->GetAttribute(
-("note"), ("") ), subchild->GetAttribute( ("sqlcreate"), ("") ),
-                                                subchild->GetAttribute(
-("sqlinsert"), ("") ), subchild->GetAttribute( ("sqldelete"), ("") ),
-                                                subchild->GetAttribute(
-("description"), ("") ) ) ) { syslog( LOG_ERR, "Reading table xml info: Could
-not set table info!"); delete pTable; goto xml_table_error;
-                        }
-
-                        pTable->setTableEventInfo( vscp_readStringValue(
-subchild->GetAttribute( ("vscpclass"), ("0") ) ), vscp_readStringValue(
-subchild->GetAttribute( ("vscptype"), ("0") ) ), vscp_readStringValue(
-subchild->GetAttribute( ("vscpsensorindex"), ("0") ) ), vscp_readStringValue(
-subchild->GetAttribute( ("vscpunit"), ("0") ) ), vscp_readStringValue(
-subchild->GetAttribute( ("vscpzone"), ("255") ) ), vscp_readStringValue(
-subchild->GetAttribute( ("vscpsubzone"), ("255") ) )
-                        );
-
-                        if ( !m_userTableObjects.addTable( pTable ) ) {
-                            delete pTable;
-                            syslog( LOG_ERR, "Reading table xml info: Could not
-add new table (name conflict?)!"));
-                        };
-
-                        // Add to database if not there already
-                        //if ( !m_userTableObjects.isTableInDB( *pTable ) ) {
-                        //    m_userTableObjects.addTableToDB( *pTable );
-                        //
-                        //else {
-                        //    // Update
-                        //    m_userTableObjects.updateTableToDB( *pTable );
-                        //
-
-                    }
-                    else {
-                        syslog( LOG_ERR, "Reading table xml info: Unable to
-create table class!" );
-                    }
-
-                }
-
-xml_table_error:
-
-                subchild = subchild->GetNext();
-
-            } // while
-
-        }
-        else if ( 0 == vscp_strcasecmp( child->GetName().c_str(), "automation" )
-{
-
-            std::string attribut = child->GetAttribute(("enable"), ("true"));
-            if ( 0 == vscp_strcasecmp( attribut.c_str(), "false" ) ) {
-                m_automation.disableAutomation();
-            }
-            else {
-                m_automation.enableAutomation();
-            }
-
-            wxXmlNode *subchild = child->GetChildren();
-            while (subchild) {
-
-                if ( 0 == vscp_strcasecmp( subchild->GetName(), "zone" )  ) {
-
-                    long zone;
-                    std::string strZone = subchild->GetNodeContent();
-                    strZone.ToLong( &zone );
-                    m_automation.setZone( zone );
-
-                }
-                else if ( 0 == vscp_strcasecmp( subchild->GetName().c_str(),
-"sub-zone") ) {
-
-                    long subzone;
-                    std::string strSubZone = subchild->GetNodeContent();
-                    strSubZone.ToLong( &subzone );
-                    m_automation.setSubzone( subzone );
-
-                }
-                else if ( 0 == vscp_strcasecmp( subchild->GetName().c_str(),
-"longitude") ) {
-
-                    std::string strLongitude = subchild->GetNodeContent();
-                    double d = stod(strLongitude);
-                    m_automation.setLongitude( d );
-
-                }
-                else if ( 0 == vscp_strcasecmp( subchild->GetName().c_str(),
-"latitude" ) ) {
-
-                    std::string strLatitude = subchild->GetNodeContent();
-                    double d = stod(strLatitude);
-                    m_automation.setLatitude( d );
-
-                }
-                else if ( 0 == vscp_strcasecmp( subchild->GetName().c_str(),
-"sunrise" ) ) {
-
-                    m_automation.enableSunRiseEvent();
-                    std::string attribute = subchild->GetAttribute(("enable"),
-("true")); if ( 0 == vscp_strcasecmp( attribute.c_str(), "false" ) ) {
-                        m_automation.disableSunRiseEvent();
-                    }
-
-
-                }
-
-                else if ( 0 == vscp_strcasecmp( subchild->GetName().c_str(),
-"sunrise-twilight" ) ) {
-
-                    m_automation.enableSunRiseTwilightEvent();
-                    std::string attribute = subchild->GetAttribute(("enable"),
-("true")); if ( 0 == vscp_strcasecmp( attribute.c_str(), "false" ) ) {
-                        m_automation.disableSunRiseTwilightEvent();
-                    }
-
-
-                }
-                else if ( 0 == vscp_strcasecmp( subchild->GetName().c_str(),
-"sunset" ) ) {
-
-                    m_automation.enableSunSetEvent();
-                    std::string attribute = subchild->GetAttribute(("enable"),
-("true")); if ( 0 == vscp_strcasecmp( attribute.c_str(), "false" ) ) {
-                        m_automation.disableSunSetEvent();
-                    }
-
-                }
-                else if ( 0 == vscp_strcasecmp( subchild->GetName().c_str(),
-"sunset-twilight" ) ) {
-
-                    m_automation.enableSunSetTwilightEvent();
-                    std::string attribute = subchild->GetAttribute(("enable"),
-("true")); if ( 0 == vscp_strcasecmp( attribute.c_str(), "false" ) ) {
-                        m_automation.disableSunSetTwilightEvent();
-                    }
-
-                }
-                else if ( 0 == vscp_strcasecmp( subchild->GetName().c_str(),
-"segmentcontrol-event" ) ) {
-
-                    m_automation.enableSegmentControllerHeartbeat();
-                    std::string attribute = subchild->GetAttribute(("enable"),
-("true")); if ( 0 == vscp_strcasecmp( attribute.c_str(), "false" ) ) {
-                        m_automation.disableSegmentControllerHeartbeat();
-                    }
-
-                    attribute = subchild->GetAttribute(("interval"), ("60"));
-                    long interval = vscp_readStringValue( attribute );
-                    m_automation.setSegmentControllerHeartbeatInterval( interval
-);
-
-                }
-                else if ( 0 == vscp_strcasecmp( subchild->GetName().c_str(),
-"heartbeat-event" ) ) {
-
-                    m_automation.enableHeartbeatEvent();
-                    m_automation.setHeartbeatEventInterval( 30 );
-
-                    std::string attribute = subchild->GetAttribute(("enable"),
-("true")); if ( 0 == vscp_strcasecmp( attribute.c_str(), "false" ) ) {
-                        m_automation.disableHeartbeatEvent();
-                    }
-
-                    attribute = subchild->GetAttribute(("interval"), ("30"));
-                    long interval = vscp_readStringValue( attribute );
-                    m_automation.setHeartbeatEventInterval( interval );
-
-                }
-                else if ( 0 == vscp_strcasecmp( subchild->GetName().c_str(),
-"capabilities-event" ) ) {
-
-                    m_automation.enableCapabilitiesEvent();
-                    m_automation.setCapabilitiesEventInterval( 60 );
-
-                    std::string attribute = subchild->GetAttribute(("enable"),
-("true")); if ( 0 == vscp_strcasecmp( attribute.c_str(), "false" ) ) {
-                        m_automation.disableCapabilitiesEvent();
-                    }
-
-                    attribute = subchild->GetAttribute(("interval"), ("30"));
-                    long interval = vscp_readStringValue( attribute );
-                    m_automation.setHeartbeatEventInterval( interval );
-
-                }
-
-                subchild = subchild->GetNext();
-
-            } // while
-
-        }
-
-        child = child->GetNext();
-
+    size_t file_size = 0;
+    file_size        = fread(buf, sizeof(char), XML_BUFF_SIZE, fp);
+
+    if (!XML_ParseBuffer(xmlParser, file_size, file_size == 0)) {
+        syslog(LOG_ERR, "Failed parse XML configuration file.");
+        fclose(fp);
+        XML_ParserFree(xmlParser);
+        return false;
     }
-*/
+
+    fclose(fp);
+    XML_ParserFree(xmlParser);
+
     return true;
 } // XML config
 
@@ -6131,11 +5711,11 @@ CControlObject::doCreateZoneTable(void)
     if (SQLITE_OK !=
         sqlite3_exec(
           m_db_vscp_daemon, (const char *)sql.c_str(), NULL, NULL, &pErrMsg)) {
-        syslog(
-          LOG_ERR,
-          "Failed to insert last VSCP default zone table entry %d. Error %s",
-          255,
-          pErrMsg);
+        syslog(LOG_ERR,
+               "Failed to insert last VSCP default zone table entry %d. "
+               "Error %s",
+               255,
+               pErrMsg);
     }
 
     return true;
@@ -6188,11 +5768,11 @@ CControlObject::doCreateSubZoneTable(void)
     if (SQLITE_OK !=
         sqlite3_exec(
           m_db_vscp_daemon, (const char *)sql.c_str(), NULL, NULL, &pErrMsg)) {
-        syslog(
-          LOG_ERR,
-          "Failed to insert last VSCP default subzone table entry %d. Error %s",
-          255,
-          pErrMsg);
+        syslog(LOG_ERR,
+               "Failed to insert last VSCP default subzone table entry %d. "
+               "Error %s",
+               255,
+               pErrMsg);
     }
 
     return true;
@@ -6269,11 +5849,14 @@ clientMsgWorkerThread(void *userdata)
 
             if (NULL != pvscpEvent) {
 
-                // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                // * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                // * *
                 // * * * * *
-                // * * * * Send event to all Level II clients (not to ourself )
+                // * * * * Send event to all Level II clients (not to
+                // ourself )
                 // * * * *
-                // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                // * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                // * *
 
                 pObj->sendEventAllClients(pvscpEvent, pvscpEvent->obid);
 

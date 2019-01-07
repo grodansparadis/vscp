@@ -882,9 +882,8 @@ dmElement::dmElement()
     m_measurementCompareCode = DM_MEASUREMENT_COMPARE_NOOP;
 
     m_pDM = NULL; // Initially no owner
-}
+};
 
-// Destructor
 dmElement::~dmElement()
 {
     ;
@@ -5188,6 +5187,8 @@ dmElement::doActionStopTimer(vscpEvent *pDMEvent)
 
 CDM::CDM(CControlObject *ctrlObj)
 {
+    m_bEnable = true;
+    
     // Set the default dm configuration path
     m_staticXMLPath = "/srv/vscp/dm.xml";
 

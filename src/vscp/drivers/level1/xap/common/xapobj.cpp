@@ -21,9 +21,13 @@
 // Boston, MA 02111-1307, USA.
 //
 
-#include "stdlib.h"
-#include "stdio.h"
-#include "limits.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <limits.h>
+
+#include <canal.h>
+#include <canal_macro.h>
+
 #include "xapobj.h"
 #include "dlldrvobj.h"
 

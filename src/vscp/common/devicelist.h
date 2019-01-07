@@ -163,8 +163,6 @@ public:
     // Level III driver pid
     long m_pid;
     
-    // Driver3Process *m_pDriver3Process;
-
     // ------------------------------------------------------------------------
     //                     Start of driver worker thread data
     // ------------------------------------------------------------------------
