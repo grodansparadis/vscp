@@ -132,15 +132,15 @@ CControlObject::CControlObject()
     // m_debugFlags1 |= VSCP_DEBUG1_TCP;
     // m_debugFlags1 |= VSCP_DEBUG1_DRIVER
 
-    m_rootFolder = ("/srv/vscp/");
+    m_rootFolder = "/srv/vscp/";
 
     // Default admin user credentials
-    m_admin_user      = ("admin");
-    m_admin_password  = ("450ADCE88F2FDBB20F3318B65E53CA4A;"
-                        "06D3311CC2195E80BE4F8EB12931BFEB5C"
-                        "630F6B154B2D644ABE29CEBDBFB545");
-    m_admin_allowfrom = ("*");
-    m_vscptoken       = ("Carpe diem quam minimum credula postero");
+    m_admin_user     = "admin";
+    m_admin_password = "450ADCE88F2FDBB20F3318B65E53CA4A;"
+                       "06D3311CC2195E80BE4F8EB12931BFEB5C"
+                       "630F6B154B2D644ABE29CEBDBFB545";
+    m_admin_allowfrom = "*";
+    m_vscptoken       = "Carpe diem quam minimum credula postero";
     vscp_hexStr2ByteArray(m_systemKey,
                           32,
                           "A4A86F7D7E119BA3F0CD06881E371B989B"
@@ -154,12 +154,6 @@ CControlObject::CControlObject()
     // Nill the GUID
     m_guid.clear();
 
-    // Initialize the client map
-    // to all unused
-    for (i = 0; i < VSCP_MAX_CLIENTS; i++) {
-        m_clientMap[i] = 0;
-    }
-
     // Local domain
     m_web_authentication_domain = "mydomain.com";
 
@@ -168,24 +162,23 @@ CControlObject::CControlObject()
 
     m_path_db_vscp_daemon = m_rootFolder + "vscpd.sqlite3";
     m_path_db_vscp_data   = m_rootFolder + "vscp_data.sqlite3";
-    m_path_db_vscp_log    = m_rootFolder + "logs/vscpd_log.sqlite3";
 
     // No databases opened yet
     m_db_vscp_daemon = NULL;
     m_db_vscp_data   = NULL;
-    m_db_vscp_log    = NULL;
 
     // Control UDP Interface
-    m_udpSrvObj->m_bEnable = false;
-    m_udpSrvObj->m_interface.empty();
-    m_udpSrvObj->m_guid.clear();
-    vscp_clearVSCPFilter(&m_udpSrvObj->m_filter);
-    m_udpSrvObj->m_bAllowUnsecure = false;
-    m_udpSrvObj->m_bAck           = false;
+    m_udpSrvObj.setControlObjectPointer(this);
+    m_udpSrvObj.m_bEnable = false;
+    m_udpSrvObj.m_interface.empty();
+    m_udpSrvObj.m_guid.clear();
+    vscp_clearVSCPFilter(&m_udpSrvObj.m_filter);
+    m_udpSrvObj.m_bAllowUnsecure = false;
+    m_udpSrvObj.m_bAck           = false;
 
     // Default TCP/IP interface settings
     m_enableTcpip            = true;
-    m_strTcpInterfaceAddress = ("9598");
+    m_strTcpInterfaceAddress = "9598";
     m_encryptionTcpip        = 0;
     m_tcpip_ssl_certificate.empty();
     m_tcpip_ssl_certificate_chain.empty();
@@ -199,20 +192,22 @@ CControlObject::CControlObject()
     m_tcpip_ssl_short_trust      = false;
 
     // Default multicast announce port
-    m_strMulticastAnnounceAddress = ("udp://:" + VSCP_ANNOUNCE_MULTICAST_PORT);
+    m_strMulticastAnnounceAddress =
+      vscp_string_format("udp://:%d", VSCP_ANNOUNCE_MULTICAST_PORT);
 
     // default multicast announce ttl
     m_ttlMultiCastAnnounce = IP_MULTICAST_DEFAULT_TTL;
 
     // Default UDP interface
-    m_udpSrvObj->m_interface = ("udp://:" + VSCP_DEFAULT_UDP_PORT);
+    m_udpSrvObj.m_interface =
+      vscp_string_format("udp://:%d", VSCP_DEFAULT_UDP_PORT);
 
     // Web server SSL settings
     m_web_ssl_certificate          = m_rootFolder + "certs/server.pem";
-    m_web_ssl_certificate_chain    = ("");
+    m_web_ssl_certificate_chain    = "";
     m_web_ssl_verify_peer          = false;
-    m_web_ssl_ca_path              = ("");
-    m_web_ssl_ca_file              = ("");
+    m_web_ssl_ca_path              = "";
+    m_web_ssl_ca_file              = "";
     m_web_ssl_verify_depth         = 9;
     m_web_ssl_default_verify_paths = true;
     m_web_ssl_cipher_list      = "DES-CBC3-SHA:AES128-SHA:AES128-GCM-SHA256";
@@ -221,7 +216,7 @@ CControlObject::CControlObject()
 
     // Webserver interface
     m_web_bEnable         = true;
-    m_web_listening_ports = ("[::]:9999r,[::]:8843s,8884");
+    m_web_listening_ports = "[::]:9999r,[::]:8843s,8884";
 
     m_web_index_files = "index.xhtml,index.html,index.htm,"
                         "index.lp,index.lsp,index.lua,index.cgi,"
@@ -241,7 +236,7 @@ CControlObject::CControlObject()
     m_web_hide_file_patterns                = "";
     m_web_global_auth_file                  = "";
     m_web_per_directory_auth_file           = "";
-    m_web_ssi_patterns                      = ("");
+    m_web_ssi_patterns                      = "";
     m_web_url_rewrite_patterns              = "";
     m_web_request_timeout_ms                = 10000;
     m_web_linger_timeout_ms                 = -1; // Do not set
@@ -298,18 +293,18 @@ CControlObject::~CControlObject()
     m_clientOutputQueue.clear();
     pthread_mutex_unlock(&m_mutexClientOutputQueue);
 
-    pthread_mutex_lock(&m_udpSrvObj->m_mutexUDPInfo);
+    pthread_mutex_lock(&m_udpSrvObj.m_mutexUDPInfo);
     std::deque<udpRemoteClientInfo *>::iterator iterUDP;
-    for (iterUDP = m_udpSrvObj->m_remotes.begin();
-         iterUDP != m_udpSrvObj->m_remotes.end();
+    for (iterUDP = m_udpSrvObj.m_remotes.begin();
+         iterUDP != m_udpSrvObj.m_remotes.end();
          ++iterUDP) {
         if (NULL != *iterUDP) {
             delete *iterUDP;
             *iterUDP = NULL;
         }
     }
-    m_udpSrvObj->m_remotes.clear();
-    pthread_mutex_unlock(&m_udpSrvObj->m_mutexUDPInfo);
+    m_udpSrvObj.m_remotes.clear();
+    pthread_mutex_unlock(&m_udpSrvObj.m_mutexUDPInfo);
 
     syslog(LOG_INFO, "ControlObject: Gone!");
 }
@@ -336,7 +331,6 @@ CControlObject::init(std::string &strcfgfile, std::string &rootFolder)
 
     m_path_db_vscp_daemon  = m_rootFolder + "vscpd.sqlite3";
     m_path_db_vscp_data    = m_rootFolder + "vscp_data.sqlite3";
-    m_path_db_vscp_log     = m_rootFolder + "/logs/vscpd_log.sqlite3";
     std::string strRootwww = m_rootFolder + "www";
     m_web_document_root    = strRootwww;
 
@@ -526,67 +520,6 @@ CControlObject::init(std::string &strcfgfile, std::string &rootFolder)
     // Read multicast channels
     readMulticastChannels();
 
-    // * * * VSCP Daemon logging database * * *
-
-    // Check filename
-    if (vscp_fileExists(m_path_db_vscp_log)) {
-
-        if (SQLITE_OK != sqlite3_open((const char *)m_path_db_vscp_log.c_str(),
-                                      &m_db_vscp_log)) {
-
-            // Failed to open/create the database file
-            syslog(LOG_ERR,
-                   "VSCP Server logging database could not be "
-                   "opened. - Will not be used. Path=%s error=%s",
-                   m_path_db_vscp_log.c_str(),
-                   m_path_db_vscp_log.c_str());
-            if (NULL != m_db_vscp_log) sqlite3_close(m_db_vscp_log);
-            m_db_vscp_log = NULL;
-        }
-    } else {
-
-        if (1) {
-
-            // We need to create the database from scratch. This may not work if
-            // the database is in a read only location.
-            syslog(LOG_ERR,
-                   "VSCP Server logging database does not exist - "
-                   "will be created. Path=%s",
-                   m_path_db_vscp_log.c_str());
-
-            if (SQLITE_OK ==
-                sqlite3_open((const char *)m_path_db_vscp_log.c_str(),
-                             &m_db_vscp_log)) {
-                // create the config. database.
-                doCreateLogTable();
-            } else {
-                vscp_string_format(str,
-                                   "Failed to create vscp log database - will "
-                                   "not be used.  Error=%s",
-                                   sqlite3_errmsg(m_db_vscp_log));
-                syslog(LOG_ERR, "%s", (const char *)str.c_str());
-                if (NULL != m_db_vscp_log) sqlite3_close(m_db_vscp_log);
-                m_db_vscp_log = NULL;
-            }
-        } else {
-            syslog(LOG_ERR,
-                   "VSCP Server logging database path invalid - will not be "
-                   "used. Path=%s",
-                   m_path_db_vscp_log.c_str());
-            if (NULL != m_db_vscp_log) sqlite3_close(m_db_vscp_log);
-            m_db_vscp_log = NULL;
-        }
-    }
-
-    // https://www.sqlite.org/wal.html
-    // http://stackoverflow.com/questions/3852068/sqlite-insert-very-slow
-    if (NULL != m_db_vscp_log) {
-        sqlite3_exec(
-          m_db_vscp_log, "PRAGMA journal_mode = WAL", NULL, NULL, NULL);
-        sqlite3_exec(
-          m_db_vscp_log, "PRAGMA synchronous = NORMAL", NULL, NULL, NULL);
-    }
-
     // * * * VSCP Server data database - NEVER created * * *
 
     if (SQLITE_OK !=
@@ -640,7 +573,7 @@ CControlObject::init(std::string &strcfgfile, std::string &rootFolder)
     // Level II Driver Username
     memset(buf, 0, sizeof(buf));
     pw.generatePassword(32, buf);
-    m_driverUsername = ("drv_");
+    m_driverUsername = "drv_";
     m_driverUsername += std::string(buf);
 
     // Level II Driver Password (can't contain ";" character)
@@ -652,13 +585,13 @@ CControlObject::init(std::string &strcfgfile, std::string &rootFolder)
     vscp_makePasswordHash(drvhash, std::string(buf));
 
     m_userList.addUser(m_driverUsername,
-                       drvhash,                       // salt;hash
-                       ("System added driver user."), // full name
-                       ("System added driver user."), // note
+                       drvhash,                     // salt;hash
+                       "System added driver user.", // full name
+                       "System added driver user.", // note
                        NULL,
-                       ("driver"),
-                       ("+127.0.0.0/24"), // Only local
-                       ("*:*"),           // All events
+                       "driver",
+                       "+127.0.0.0/24", // Only local
+                       "*:*",           // All events
                        VSCP_ADD_USER_FLAG_LOCAL);
 
     // Calculate sunset etc
@@ -675,7 +608,7 @@ CControlObject::init(std::string &strcfgfile, std::string &rootFolder)
 
     // If no server name set construct one
     if (0 == m_strServerName.length()) {
-        m_strServerName = ("VSCP Server @ ");
+        m_strServerName = "VSCP Server @ ";
         ;
         std::string strguid;
         m_guid.toString(strguid);
@@ -793,7 +726,7 @@ CControlObject::run(void)
     // This is an active client
     pClientItem->m_bOpen         = true;
     pClientItem->m_type          = CLIENT_ITEM_INTERFACE_TYPE_CLIENT_INTERNAL;
-    pClientItem->m_strDeviceName = ("Internal Server DM Client.|Started at ");
+    pClientItem->m_strDeviceName = "Internal Server DM Client.|Started at ";
     pClientItem->m_strDeviceName += vscpdatetime::setNow().getISODateTime();
 
     // Add the client to the Client List
@@ -943,10 +876,6 @@ CControlObject::cleanup(void)
     if (NULL != m_db_vscp_data) sqlite3_close(m_db_vscp_data);
     m_db_vscp_data = NULL;
 
-    // Close log database
-    if (NULL != m_db_vscp_log) sqlite3_close(m_db_vscp_log);
-    m_db_vscp_log = NULL;
-
     // Clean up SQLite lib allocations
     sqlite3_shutdown();
 
@@ -1056,13 +985,7 @@ CControlObject::startUDPSrvThread(void)
 
     syslog(LOG_DEBUG, "Controlobject: Starting UDP simple UDP interface...");
 
-    m_udpSrvObj = new UDPSrvObj(this);
-    if (NULL == m_udpSrvObj) {
-        syslog(LOG_CRIT,
-               "Controlobject: Unable to allocate memory for UDP objects");
-    }
-
-    if (!pthread_create(&m_UDPThread, NULL, UDPThread, m_udpSrvObj)) {
+    if (!pthread_create(&m_UDPThread, NULL, UDPThread, &m_udpSrvObj)) {
 
         syslog(LOG_CRIT,
                "Controlobject: Unable to allocate memory for USP thread.");
@@ -1081,14 +1004,10 @@ CControlObject::stopUDPSrvThread(void)
 {
     syslog(LOG_DEBUG, "Controlobject: Terminating UDP thread.");
 
-    m_udpSrvObj->m_bQuit = true;
+    m_udpSrvObj.m_bQuit = true;
     pthread_join(m_UDPThread, NULL);
 
     syslog(LOG_DEBUG, "Controlobject: Terminated UDP thread.");
-
-    // Delete the USP server object
-    delete m_udpSrvObj;
-    m_udpSrvObj = NULL;
 
     return true;
 }
@@ -1354,7 +1273,7 @@ CControlObject::getVscpCapabilities(uint8_t *pCapability)
     }
 
     // VSCP UDP interface
-    if (m_udpSrvObj->m_bEnable) {
+    if (m_udpSrvObj.m_bEnable) {
         pCapability[8 - (VSCP_SERVER_CAPABILITY_UDP / 8)] |=
           (1 << (VSCP_SERVER_CAPABILITY_UDP % 8));
     }
@@ -1425,7 +1344,6 @@ CControlObject::getVscpCapabilities(uint8_t *pCapability)
     return true;
 }
 
-
 /////////////////////////////////////////////////////////////////////////////
 // getCountRecordsDB
 //
@@ -1455,9 +1373,6 @@ CControlObject::getCountRecordsDB(sqlite3 *db, std::string &table)
     }
     return count;
 }
-
-
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // sendEventToClient
@@ -1688,23 +1603,6 @@ CControlObject::sendEvent(CClientItem *pClientItem, vscpEvent *peventToSend)
     return true;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-//  removeIdFromClientMap
-//
-
-bool
-CControlObject::removeIdFromClientMap(uint32_t clid)
-{
-    for (uint32_t i = 0; i < VSCP_MAX_CLIENTS; i++) {
-        if (clid == m_clientMap[i]) {
-            m_clientMap[i] = 0;
-            return true;
-        }
-    }
-
-    return false;
-}
-
 //////////////////////////////////////////////////////////////////////////////
 // addClient
 //
@@ -1737,9 +1635,6 @@ CControlObject::removeClient(CClientItem *pClientItem)
     // Do not try to handle invalid clients
     if (NULL == pClientItem) return;
 
-    // Remove the mapped item
-    removeIdFromClientMap(pClientItem->m_clientID);
-
     // Remove the client
     m_clientList.removeClient(pClientItem);
 }
@@ -1751,7 +1646,7 @@ CControlObject::removeClient(CClientItem *pClientItem)
 void
 CControlObject::addKnownNode(cguid &guid, cguid &ifguid, std::string &name)
 {
-    ; // TODO ???
+    ; // TODO
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1813,7 +1708,7 @@ CControlObject::getMacAddress(cguid &guid)
             guid.setAt(13, Adapter.adapt.adapter_address[5]);
             guid.setAt(14, 0);
             guid.setAt(15, 0);
-#ifdef __WXDEBUG__
+#ifdef DEBUG__
             char buf[256];
             sprintf(buf,
                     "The Ethernet MAC Address: %02x:%02x:%02x:%02x:%02x:%02x",
@@ -1972,8 +1867,40 @@ CControlObject::getSystemKeyMD5(std::string &strKey)
 // General XML configuration callbacks
 // ----------------------------------------------------------------------------
 
+/*
+<general runasuser="xxxx"
+                guid="..."
+                servername="sdfdsfsd"
+                clientbuffersize="100" >
+
+    <logging  loglevel="n"
+                logdays="n"
+                debugflags1="n"
+                debugflags1="n"
+                debugflags2="n"
+                debugflags3="n"
+                debugflags4="n"
+                debugflags5="n"
+                debugflags6="n"
+                debugflags7="n"
+                debugflags8="n" />
+
+    <security admin="username"
+        password="450ADCE88F2FDBB20F3318B65E53CA4A;06D3311CC2195E80BE4F8EB12931BFEB5C630F6B154B2D644ABE29CEBDBFB545"
+        allowfrom="list of remotes"
+        vscptoken="Carpe diem quam minimum credula postero"
+        vscpkey="A4A86F7D7E119BA3F0CD06881E371B989B33B6D606A863B633EF529D64544F8E"
+        digest="" />
+
+    <database vscp-daemon="db-path"
+            vscp-data="db-path"
+            vscp-variable="db-path"
+            vscp-dm="db-path" />
+</general>
+*/
 static int depth_general_config_parser   = 0;
-static char *last_general_config_content = NULL;
+static int bvscpConfigFound              = 0;
+static int bGeneralConfigFound           = 0;
 
 static void
 startGeneralConfigParser(void *data, const char *name, const char **attr)
@@ -1981,14 +1908,101 @@ startGeneralConfigParser(void *data, const char *name, const char **attr)
     CControlObject *pObj = (CControlObject *)data;
     if (NULL == data) return;
 
-    if (0 == depth_general_config_parser) {
+    if ((0 == depth_general_config_parser) &&
+        (0 == vscp_strcasecmp(name, "vscpconfig"))) {
+        bvscpConfigFound = TRUE;
+    } else if (bvscpConfigFound && (1 == depth_general_config_parser) &&
+               (0 == vscp_strcasecmp(name, "general"))) {
+        bGeneralConfigFound = TRUE;
 
-        if ((0 == vscp_strcasecmp(name, "security"))) {
+        for (int i = 0; attr[i]; i += 2) {
+
+            std::string attribute = attr[i + 1];
+            vscp_trim(attribute);
+
+            if (0 == vscp_strcasecmp(attr[i], "clientbuffersize")) {
+                pObj->m_maxItemsInClientReceiveQueue =
+                  vscp_readStringValue(attribute);
+            } else if (0 == vscp_strcasecmp(attr[i], "runasuser")) {
+                vscp_trim(attribute);
+                pObj->m_runAsUser = attribute;
+                // Also assign to web user
+                pObj->m_web_run_as_user = attribute;
+            } else if (0 == vscp_strcasecmp(attr[i], "guid")) {
+                pObj->m_guid.getFromString(attribute);
+            } else if (0 == vscp_strcasecmp(attr[i], "servername")) {
+                pObj->m_strServerName = attribute;
+            }
+        }
+
+    } else if (2 == depth_general_config_parser) {
+
+        if (bGeneralConfigFound && (0 == vscp_strcasecmp(name, "logging"))) {
 
             for (int i = 0; attr[i]; i += 2) {
 
                 std::string attribute = attr[i + 1];
-                if (0 == vscp_strcasecmp(attr[i], "user")) {
+                vscp_trim(attribute);
+
+                if (0 == vscp_strcasecmp(attr[i], "loglevel")) {
+                    if (0 == vscp_strcasecmp(attribute.c_str(), "none")) {
+                        pObj->m_logLevel = DAEMON_LOGMSG_NONE;
+                    } else if (0 ==
+                               vscp_strcasecmp(attribute.c_str(), "normal")) {
+                        pObj->m_logLevel = DAEMON_LOGMSG_NORMAL;
+                    } else if (0 ==
+                               vscp_strcasecmp(attribute.c_str(), "debug")) {
+                        pObj->m_logLevel = DAEMON_LOGMSG_DEBUG;
+                    } else {
+                        pObj->m_logLevel = vscp_readStringValue(attribute);
+                        if (pObj->m_logLevel > DAEMON_LOGMSG_DEBUG) {
+                            pObj->m_logLevel = DAEMON_LOGMSG_DEBUG;
+                        }
+                    }
+                } else if (0 == vscp_strcasecmp(attr[i], "debugflags1")) {
+                    if (attribute.length()) {
+                        pObj->m_debugFlags1 = vscp_readStringValue(attribute);
+                    }
+                } else if (0 == vscp_strcasecmp(attr[i], "debugflags2")) {
+                    if (attribute.length()) {
+                        pObj->m_debugFlags2 = vscp_readStringValue(attribute);
+                    }
+                } else if (0 == vscp_strcasecmp(attr[i], "debugflags3")) {
+                    if (attribute.length()) {
+                        pObj->m_debugFlags3 = vscp_readStringValue(attribute);
+                    }
+                } else if (0 == vscp_strcasecmp(attr[i], "debugflags4")) {
+                    if (attribute.length()) {
+                        pObj->m_debugFlags4 = vscp_readStringValue(attribute);
+                    }
+                } else if (0 == vscp_strcasecmp(attr[i], "debugflags5")) {
+                    if (attribute.length()) {
+                        pObj->m_debugFlags5 = vscp_readStringValue(attribute);
+                    }
+                } else if (0 == vscp_strcasecmp(attr[i], "debugflags6")) {
+                    if (attribute.length()) {
+                        pObj->m_debugFlags6 = vscp_readStringValue(attribute);
+                    }
+                } else if (0 == vscp_strcasecmp(attr[i], "debugflags7")) {
+                    if (attribute.length()) {
+                        pObj->m_debugFlags7 = vscp_readStringValue(attribute);
+                    }
+                } else if (0 == vscp_strcasecmp(attr[i], "debugflags8")) {
+                    if (attribute.length()) {
+                        pObj->m_debugFlags8 = vscp_readStringValue(attribute);
+                    }
+                }
+            }
+
+        } else if (bGeneralConfigFound &&
+                   (0 == vscp_strcasecmp(name, "security"))) {
+
+            for (int i = 0; attr[i]; i += 2) {
+
+                std::string attribute = attr[i + 1];
+                vscp_trim(attribute);
+
+                if (0 == vscp_strcasecmp(attr[i], "admin")) {
                     pObj->m_admin_user = attribute;
                 } else if (0 == vscp_strcasecmp(attr[i], "password")) {
                     pObj->m_admin_password = attribute;
@@ -2003,154 +2017,56 @@ startGeneralConfigParser(void *data, const char *name, const char **attr)
                     }
                 }
             }
-        } else if ((0 == vscp_strcasecmp(name, "daemon"))) {
-            for (int i = 0; attr[i]; i += 2) {
-
-                std::string attribute = attr[i + 1];
-                if (0 == vscp_strcasecmp(attr[i], "loglevel")) {
-
-                    vscp_trim(attribute);
-
-                    if (0 == vscp_strcasecmp(attribute.c_str(), "none")) {
-                        pObj->m_logLevel = DAEMON_LOGMSG_NONE;
-                    } else if (0 ==
-                               vscp_strcasecmp(attribute.c_str(), "normal")) {
-                        pObj->m_logLevel = DAEMON_LOGMSG_NORMAL;
-                    } else if (0 ==
-                               vscp_strcasecmp(attribute.c_str(), "debug")) {
-                        pObj->m_logLevel = DAEMON_LOGMSG_DEBUG;
-                    } else {
-                        pObj->m_logLevel = vscp_readStringValue(attribute);
-                        if (pObj->m_logLevel > DAEMON_LOGMSG_DEBUG) {
-                            pObj->m_logLevel = DAEMON_LOGMSG_NORMAL;
-                        }
-                    }
-                } else if (0 == vscp_strcasecmp(attr[i], "clientbuffersize")) {
-                    pObj->m_maxItemsInClientReceiveQueue =
-                      vscp_readStringValue(attribute);
-                } else if (0 == vscp_strcasecmp(attr[i], "runasuser")) {
-                    vscp_trim(attribute);
-                    pObj->m_runAsUser = attribute;
-                    // Also assign to web user
-                    pObj->m_web_run_as_user = attribute;
-                } else if (0 == vscp_strcasecmp(attr[i], "guid")) {
-                    pObj->m_guid.getFromString(attribute);
-                } else if (0 == vscp_strcasecmp(attr[i], "servername")) {
-                    pObj->m_strServerName = attribute;
-                }
-            }
-        } else if ((0 == vscp_strcasecmp(name, "debugflags"))) {
+        } else if (bGeneralConfigFound &&
+                   (0 == vscp_strcasecmp(name, "database"))) {
 
             for (int i = 0; attr[i]; i += 2) {
 
                 std::string attribute = attr[i + 1];
-                if (0 == strcasecmp(attr[i], "flags1")) {
-                    pObj->m_debugFlags1 = vscp_readStringValue(attribute);
-                } else if (0 == strcasecmp(attr[i], "flags2")) {
-                    pObj->m_debugFlags2 = vscp_readStringValue(attribute);
-                } else if (0 == strcasecmp(attr[i], "flags3")) {
-                    pObj->m_debugFlags3 = vscp_readStringValue(attribute);
-                } else if (0 == strcasecmp(attr[i], "flags4")) {
-                    pObj->m_debugFlags4 = vscp_readStringValue(attribute);
-                } else if (0 == strcasecmp(attr[i], "flags5")) {
-                    pObj->m_debugFlags5 = vscp_readStringValue(attribute);
-                } else if (0 == strcasecmp(attr[i], "flags6")) {
-                    pObj->m_debugFlags6 = vscp_readStringValue(attribute);
-                } else if (0 == strcasecmp(attr[i], "flags7")) {
-                    pObj->m_debugFlags7 = vscp_readStringValue(attribute);
-                }
-            }
-        } else if ((0 == vscp_strcasecmp(name, "db_vscp_daemon"))) {
-            for (int i = 0; attr[i]; i += 2) {
+                vscp_trim(attribute);
 
-                std::string attribute = attr[i + 1];
-                if (0 == strcasecmp(attr[i], "path")) {
+                if (0 == strcasecmp(attr[i], "daemon")) {
                     vscp_trim(attribute);
                     if (attribute.length()) {
                         pObj->m_path_db_vscp_daemon = attribute;
                     }
                 }
-            }
-        } else if ((0 == vscp_strcasecmp(name, "db_vscp_data"))) {
-            for (int i = 0; attr[i]; i += 2) {
-
-                std::string attribute = attr[i + 1];
-                if (0 == strcasecmp(attr[i], "path")) {
+                else if (0 == strcasecmp(attr[i], "data")) {
                     vscp_trim(attribute);
                     if (attribute.length()) {
                         pObj->m_path_db_vscp_data = attribute;
                     }
                 }
-            }
-        } else if ((0 == vscp_strcasecmp(name, "db_vscp_variable"))) {
-            for (int i = 0; attr[i]; i += 2) {
-
-                std::string attribute = attr[i + 1];
-                if (0 == strcasecmp(attr[i], "path")) {
+                else if (0 == strcasecmp(attr[i], "variable")) {
                     vscp_trim(attribute);
                     if (attribute.length()) {
                         pObj->m_variables.m_dbFilename = attribute;
                     }
                 }
-            }
-        } else if ((0 == vscp_strcasecmp(name, "db_vscp_dm"))) {
-            for (int i = 0; attr[i]; i += 2) {
-
-                std::string attribute = attr[i + 1];
-                if (0 == strcasecmp(attr[i], "path")) {
+                else if (0 == strcasecmp(attr[i], "dm")) {
                     vscp_trim(attribute);
                     if (attribute.length()) {
                         pObj->m_dm.m_path_db_vscp_dm = attribute;
                     }
                 }
-            }
-        } else if ((0 == vscp_strcasecmp(name, "accesslogfile"))) {
-            for (int i = 0; attr[i]; i += 2) {
 
-                std::string attribute = attr[i + 1];
-                if (0 == strcasecmp(attr[i], "enable")) {
-                } else if (0 == strcasecmp(attr[i], "path")) {
-                    // TODO
-                }
             }
-        }
+        } 
     }
 
     depth_general_config_parser++;
 }
 
-static void
-handleGeneralConfigData(void *data, const char *content, int length)
-{
-    int prevLength = (NULL == last_general_config_content)
-                       ? 0
-                       : strlen(last_general_config_content);
-    char *tmp = (char *)malloc(length + 1 + prevLength);
-    strncpy(tmp, content, length);
-    tmp[length] = '\0';
-
-    if (NULL == last_general_config_content) {
-        tmp = (char *)malloc(length + 1);
-        strncpy(tmp, content, length);
-        tmp[length]                 = '\0';
-        last_general_config_content = tmp;
-    } else {
-        // Concatenate
-        int newlen = length + 1 + strlen(last_general_config_content);
-        last_general_config_content =
-          (char *)realloc(last_general_config_content, newlen);
-        strncat(tmp, content, length);
-        last_general_config_content[newlen] = '\0';
-    }
-}
 
 static void
 endGeneralConfigParser(void *data, const char *name)
 {
-    if (NULL != last_general_config_content) {
-        // Free the allocated data
-        free(last_general_config_content);
-        last_general_config_content = NULL;
+    if ((0 == depth_general_config_parser) &&
+        (0 == vscp_strcasecmp(name, "vscpconfig"))) {
+        bvscpConfigFound = FALSE;
+    } else if (bvscpConfigFound && (1 == depth_general_config_parser) &&
+               (0 == vscp_strcasecmp(name, "general"))) {
+        bGeneralConfigFound = FALSE;
     }
 
     depth_general_config_parser--;
@@ -2183,7 +2099,6 @@ CControlObject::readXMLConfigurationGeneral(const std::string &strcfgfile)
     XML_SetUserData(xmlParser, this);
     XML_SetElementHandler(
       xmlParser, startGeneralConfigParser, endGeneralConfigParser);
-    XML_SetCharacterDataHandler(xmlParser, handleGeneralConfigData);
 
     int bytes_read;
     void *buf = XML_GetBuffer(xmlParser, XML_BUFF_SIZE);
@@ -2320,38 +2235,38 @@ startFullConfigParser(void *data, const char *name, const char **attr)
 
             if (0 == vscp_strcasecmp(attr[i], "enable")) {
                 if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
-                    pObj->m_udpSrvObj->m_bEnable = true;
+                    pObj->m_udpSrvObj.m_bEnable = true;
                 } else {
-                    pObj->m_udpSrvObj->m_bEnable = false;
+                    pObj->m_udpSrvObj.m_bEnable = false;
                 }
             } else if (0 == vscp_strcasecmp(attr[i], "bAllowUnsecure")) {
                 if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
-                    pObj->m_udpSrvObj->m_bAllowUnsecure = true;
+                    pObj->m_udpSrvObj.m_bAllowUnsecure = true;
                 } else {
-                    pObj->m_udpSrvObj->m_bAllowUnsecure = false;
+                    pObj->m_udpSrvObj.m_bAllowUnsecure = false;
                 }
             } else if (0 == vscp_strcasecmp(attr[i], "bSendAck")) {
                 if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
-                    pObj->m_udpSrvObj->m_bAck = true;
+                    pObj->m_udpSrvObj.m_bAck = true;
                 } else {
-                    pObj->m_udpSrvObj->m_bAck = false;
+                    pObj->m_udpSrvObj.m_bAck = false;
                 }
             } else if (0 == vscp_strcasecmp(attr[i], "user")) {
-                pObj->m_udpSrvObj->m_user = attribute;
+                pObj->m_udpSrvObj.m_user = attribute;
             } else if (0 == vscp_strcasecmp(attr[i], "password")) {
-                pObj->m_udpSrvObj->m_password = attribute;
+                pObj->m_udpSrvObj.m_password = attribute;
             } else if (0 == vscp_strcasecmp(attr[i], "interface")) {
-                pObj->m_udpSrvObj->m_interface = attribute;
+                pObj->m_udpSrvObj.m_interface = attribute;
             } else if (0 == vscp_strcasecmp(attr[i], "guid")) {
-                pObj->m_udpSrvObj->m_guid.getFromString(attribute);
+                pObj->m_udpSrvObj.m_guid.getFromString(attribute);
             } else if (0 == vscp_strcasecmp(attr[i], "filter")) {
                 if (attribute.length()) {
-                    vscp_readFilterFromString(&pObj->m_udpSrvObj->m_filter,
+                    vscp_readFilterFromString(&pObj->m_udpSrvObj.m_filter,
                                               attribute);
                 }
             } else if (0 == vscp_strcasecmp(attr[i], "mask")) {
                 if (attribute.length()) {
-                    vscp_readMaskFromString(&pObj->m_udpSrvObj->m_filter,
+                    vscp_readMaskFromString(&pObj->m_udpSrvObj.m_filter,
                                             attribute);
                 }
             }
@@ -2402,7 +2317,7 @@ startFullConfigParser(void *data, const char *name, const char **attr)
 
             // add to udp client list
             pudpClient->m_index = 0;
-            pObj->m_udpSrvObj->m_remotes.push_back(pudpClient);
+            pObj->m_udpSrvObj.m_remotes.push_back(pudpClient);
         }
     } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
                (0 == vscp_strcasecmp(name, "multicast"))) {
@@ -3236,22 +3151,28 @@ startFullConfigParser(void *data, const char *name, const char **attr)
             } else if (0 == vscp_strcasecmp(attr[i], "description")) {
                 description = attribute;
             } else if (0 == vscp_strcasecmp(attr[i], "vscpclass")) {
-                vscp_class = vscp_readStringValue(attribute);;
+                vscp_class = vscp_readStringValue(attribute);
+                ;
             } else if (0 == vscp_strcasecmp(attr[i], "vscptype")) {
-                vscp_type = vscp_readStringValue(attribute);;
+                vscp_type = vscp_readStringValue(attribute);
+                ;
             } else if (0 == vscp_strcasecmp(attr[i], "vscpsensorindex")) {
-                vscp_sensorindex = vscp_readStringValue(attribute);;
+                vscp_sensorindex = vscp_readStringValue(attribute);
+                ;
             } else if (0 == vscp_strcasecmp(attr[i], "vscpunit")) {
-                vscp_unit = vscp_readStringValue(attribute);;
+                vscp_unit = vscp_readStringValue(attribute);
+                ;
             } else if (0 == vscp_strcasecmp(attr[i], "vscpzone")) {
-                vscp_zone = vscp_readStringValue(attribute);;
+                vscp_zone = vscp_readStringValue(attribute);
+                ;
             } else if (0 == vscp_strcasecmp(attr[i], "vscpsubzone")) {
-                vscp_subzone = vscp_readStringValue(attribute);;
+                vscp_subzone = vscp_readStringValue(attribute);
+                ;
             }
         }
 
         CVSCPTable *pTable = new CVSCPTable(
-          pObj->m_rootFolder + ("table/"), strName, true, bMemory, type, size);
+          pObj->m_rootFolder + "table/", strName, true, bMemory, type, size);
         if (NULL == pTable) {
             syslog(LOG_ERR, "Unable to create table %s", strName.c_str());
             return;
@@ -3303,12 +3224,12 @@ startFullConfigParser(void *data, const char *name, const char **attr)
                     pObj->m_automation.disableAutomation();
                 }
             } else if (0 == vscp_strcasecmp(attr[i], "zone")) {
-                uint8_t zone = vscp_readStringValue( attribute );
-                pObj->m_automation.setZone( zone );
-            }  else if (0 == vscp_strcasecmp(attr[i], "subzone")) {
-                uint8_t subzone = vscp_readStringValue( attribute );
-                pObj->m_automation.setSubzone( subzone );
-            }  else if (0 == vscp_strcasecmp(attr[i], "longitude")) {
+                uint8_t zone = vscp_readStringValue(attribute);
+                pObj->m_automation.setZone(zone);
+            } else if (0 == vscp_strcasecmp(attr[i], "subzone")) {
+                uint8_t subzone = vscp_readStringValue(attribute);
+                pObj->m_automation.setSubzone(subzone);
+            } else if (0 == vscp_strcasecmp(attr[i], "longitude")) {
                 // Decimal point should be '.'
                 std::string::size_type found;
                 while (std::string::npos !=
@@ -3316,8 +3237,8 @@ startFullConfigParser(void *data, const char *name, const char **attr)
                     attribute[found] = '.';
                 }
                 double d = std::stod(attribute);
-                pObj->m_automation.setLongitude( d );
-            }  else if (0 == vscp_strcasecmp(attr[i], "latitude")) {
+                pObj->m_automation.setLongitude(d);
+            } else if (0 == vscp_strcasecmp(attr[i], "latitude")) {
                 // Decimal point should be '.'
                 std::string::size_type found;
                 while (std::string::npos !=
@@ -3325,51 +3246,53 @@ startFullConfigParser(void *data, const char *name, const char **attr)
                     attribute[found] = '.';
                 }
                 double d = std::stod(attribute);
-                pObj->m_automation.setLatitude( d );
-            }  else if (0 == vscp_strcasecmp(attr[i], "sunrise-event")) {
+                pObj->m_automation.setLatitude(d);
+            } else if (0 == vscp_strcasecmp(attr[i], "sunrise-event")) {
                 if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
                     pObj->m_automation.enableSunRiseEvent();
                 } else {
                     pObj->m_automation.disableSunRiseEvent();
                 }
-            } else if (0 == vscp_strcasecmp(attr[i], "sunrise-twilight-event")) {
+            } else if (0 ==
+                       vscp_strcasecmp(attr[i], "sunrise-twilight-event")) {
                 if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
                     pObj->m_automation.enableSunRiseTwilightEvent();
                 } else {
                     pObj->m_automation.disableSunRiseTwilightEvent();
                 }
-            }  else if (0 == vscp_strcasecmp(attr[i], "sunset-event")) {
+            } else if (0 == vscp_strcasecmp(attr[i], "sunset-event")) {
                 if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
                     pObj->m_automation.enableSunSetEvent();
                 } else {
                     pObj->m_automation.disableSunSetEvent();
                 }
-            }  else if (0 == vscp_strcasecmp(attr[i], "sunset-twilight-event")) {
+            } else if (0 == vscp_strcasecmp(attr[i], "sunset-twilight-event")) {
                 if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
                     pObj->m_automation.enableSunSetTwilightEvent();
                 } else {
                     pObj->m_automation.disableSunSetTwilightEvent();
                 }
-            }  else if (0 == vscp_strcasecmp(attr[i], "segment-controler-event")) {
+            } else if (0 ==
+                       vscp_strcasecmp(attr[i], "segment-controler-event")) {
                 if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
                     pObj->m_automation.enableSegmentControllerHeartbeat();
                 } else {
                     pObj->m_automation.disableSegmentControllerHeartbeat();
                 }
-            }  else if (0 == vscp_strcasecmp(attr[i], "heartbeat-event")) {
+            } else if (0 == vscp_strcasecmp(attr[i], "heartbeat-event")) {
                 if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
                     pObj->m_automation.enableHeartbeatEvent();
                 } else {
                     pObj->m_automation.disableHeartbeatEvent();
                 }
-            }  else if (0 == vscp_strcasecmp(attr[i], "capability-event")) {
+            } else if (0 == vscp_strcasecmp(attr[i], "capability-event")) {
                 if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
                     pObj->m_automation.enableCapabilitiesEvent();
                 } else {
                     pObj->m_automation.disableCapabilitiesEvent();
                 }
             }
-        }                   
+        }
     }
 
     depth_full_config_parser++;
@@ -3392,7 +3315,7 @@ handleFullConfigData(void *data, const char *content, int length)
     } else {
         // Concatenate
         int newlen = length + 1 + strlen(last_full_config_content);
-        last_general_config_content =
+        last_full_config_content =
           (char *)realloc(last_full_config_content, newlen);
         strncat(tmp, content, length);
         last_full_config_content[newlen] = '\0';
@@ -3402,11 +3325,11 @@ handleFullConfigData(void *data, const char *content, int length)
 static void
 endFullConfigParser(void *data, const char *name)
 {
-    if (NULL != last_full_config_content) {
+    /*if (NULL != last_full_config_content) {
         // Free the allocated data
         free(last_full_config_content);
         last_full_config_content = NULL;
-    }
+    }*/
 
     if (1 == depth_full_config_parser &&
         (0 == vscp_strcasecmp(name, "vscpconfig"))) {
@@ -3471,7 +3394,7 @@ CControlObject::readConfigurationXML(const std::string &strcfgfile)
     XML_SetUserData(xmlParser, this);
     XML_SetElementHandler(
       xmlParser, startFullConfigParser, endFullConfigParser);
-    XML_SetCharacterDataHandler(xmlParser, handleFullConfigData);
+    //XML_SetCharacterDataHandler(xmlParser, handleFullConfigData);
 
     int bytes_read;
     void *buf = XML_GetBuffer(xmlParser, XML_BUFF_SIZE);
@@ -4211,84 +4134,84 @@ CControlObject::readConfigurationDB(void)
         // Enable UDP interface
         if (0 == vscp_strcasecmp((const char *)pName,
                                  VSCPDB_CONFIG_NAME_UDP_ENABLE)) {
-            pthread_mutex_lock(&m_udpSrvObj->m_mutexUDPInfo);
-            m_udpSrvObj->m_bEnable = atoi((const char *)pValue) ? true : false;
-            pthread_mutex_unlock(&m_udpSrvObj->m_mutexUDPInfo);
+            pthread_mutex_lock(&m_udpSrvObj.m_mutexUDPInfo);
+            m_udpSrvObj.m_bEnable = atoi((const char *)pValue) ? true : false;
+            pthread_mutex_unlock(&m_udpSrvObj.m_mutexUDPInfo);
             continue;
         }
 
         // UDP interface address/port
         if (0 ==
             vscp_strcasecmp((const char *)pName, VSCPDB_CONFIG_NAME_UDP_ADDR)) {
-            pthread_mutex_lock(&m_udpSrvObj->m_mutexUDPInfo);
-            m_udpSrvObj->m_interface = std::string((const char *)pValue);
-            pthread_mutex_unlock(&m_udpSrvObj->m_mutexUDPInfo);
+            pthread_mutex_lock(&m_udpSrvObj.m_mutexUDPInfo);
+            m_udpSrvObj.m_interface = std::string((const char *)pValue);
+            pthread_mutex_unlock(&m_udpSrvObj.m_mutexUDPInfo);
             continue;
         }
 
         // UDP User
         if (0 ==
             vscp_strcasecmp((const char *)pName, VSCPDB_CONFIG_NAME_UDP_USER)) {
-            pthread_mutex_lock(&m_udpSrvObj->m_mutexUDPInfo);
-            m_udpSrvObj->m_user = std::string((const char *)pValue);
-            pthread_mutex_unlock(&m_udpSrvObj->m_mutexUDPInfo);
+            pthread_mutex_lock(&m_udpSrvObj.m_mutexUDPInfo);
+            m_udpSrvObj.m_user = std::string((const char *)pValue);
+            pthread_mutex_unlock(&m_udpSrvObj.m_mutexUDPInfo);
             continue;
         }
 
         // UDP User Password
         if (0 == vscp_strcasecmp((const char *)pName,
                                  VSCPDB_CONFIG_NAME_UDP_PASSWORD)) {
-            pthread_mutex_lock(&m_udpSrvObj->m_mutexUDPInfo);
-            m_udpSrvObj->m_password = std::string((const char *)pValue);
-            pthread_mutex_unlock(&m_udpSrvObj->m_mutexUDPInfo);
+            pthread_mutex_lock(&m_udpSrvObj.m_mutexUDPInfo);
+            m_udpSrvObj.m_password = std::string((const char *)pValue);
+            pthread_mutex_unlock(&m_udpSrvObj.m_mutexUDPInfo);
             continue;
         }
 
         // UDP un-secure enable
         if (0 == vscp_strcasecmp((const char *)pName,
                                  VSCPDB_CONFIG_NAME_UDP_UNSECURE_ENABLE)) {
-            pthread_mutex_lock(&m_udpSrvObj->m_mutexUDPInfo);
-            m_udpSrvObj->m_bAllowUnsecure =
+            pthread_mutex_lock(&m_udpSrvObj.m_mutexUDPInfo);
+            m_udpSrvObj.m_bAllowUnsecure =
               atoi((const char *)pValue) ? true : false;
-            pthread_mutex_unlock(&m_udpSrvObj->m_mutexUDPInfo);
+            pthread_mutex_unlock(&m_udpSrvObj.m_mutexUDPInfo);
             continue;
         }
 
         // UDP Filter
         if (0 == vscp_strcasecmp((const char *)pName,
                                  VSCPDB_CONFIG_NAME_UDP_FILTER)) {
-            pthread_mutex_lock(&m_udpSrvObj->m_mutexUDPInfo);
-            vscp_readFilterFromString(&m_udpSrvObj->m_filter,
+            pthread_mutex_lock(&m_udpSrvObj.m_mutexUDPInfo);
+            vscp_readFilterFromString(&m_udpSrvObj.m_filter,
                                       std::string((const char *)pValue));
-            pthread_mutex_unlock(&m_udpSrvObj->m_mutexUDPInfo);
+            pthread_mutex_unlock(&m_udpSrvObj.m_mutexUDPInfo);
             continue;
         }
 
         // UDP Mask
         if (0 ==
             vscp_strcasecmp((const char *)pName, VSCPDB_CONFIG_NAME_UDP_MASK)) {
-            pthread_mutex_lock(&m_udpSrvObj->m_mutexUDPInfo);
-            vscp_readMaskFromString(&m_udpSrvObj->m_filter,
+            pthread_mutex_lock(&m_udpSrvObj.m_mutexUDPInfo);
+            vscp_readMaskFromString(&m_udpSrvObj.m_filter,
                                     std::string((const char *)pValue));
-            pthread_mutex_unlock(&m_udpSrvObj->m_mutexUDPInfo);
+            pthread_mutex_unlock(&m_udpSrvObj.m_mutexUDPInfo);
             continue;
         }
 
         // UDP GUID
         if (0 ==
             vscp_strcasecmp((const char *)pName, VSCPDB_CONFIG_NAME_UDP_GUID)) {
-            pthread_mutex_lock(&m_udpSrvObj->m_mutexUDPInfo);
-            m_udpSrvObj->m_guid.getFromString((const char *)pValue);
-            pthread_mutex_unlock(&m_udpSrvObj->m_mutexUDPInfo);
+            pthread_mutex_lock(&m_udpSrvObj.m_mutexUDPInfo);
+            m_udpSrvObj.m_guid.getFromString((const char *)pValue);
+            pthread_mutex_unlock(&m_udpSrvObj.m_mutexUDPInfo);
             continue;
         }
 
         // UDP Enable ACK
         if (0 == vscp_strcasecmp((const char *)pName,
                                  VSCPDB_CONFIG_NAME_UDP_ACK_ENABLE)) {
-            pthread_mutex_lock(&m_udpSrvObj->m_mutexUDPInfo);
-            m_udpSrvObj->m_bAck = atoi((const char *)pValue) ? true : false;
-            pthread_mutex_unlock(&m_udpSrvObj->m_mutexUDPInfo);
+            pthread_mutex_lock(&m_udpSrvObj.m_mutexUDPInfo);
+            m_udpSrvObj.m_bAck = atoi((const char *)pValue) ? true : false;
+            pthread_mutex_unlock(&m_udpSrvObj.m_mutexUDPInfo);
             continue;
         }
 
@@ -4981,7 +4904,7 @@ CControlObject::readUdpNodes(void)
     sqlite3_stmt *ppStmt;
 
     // If UDP is disabled we are done
-    if (!m_udpSrvObj->m_bEnable) return true;
+    if (!m_udpSrvObj.m_bEnable) return true;
 
     // Check if database is open
     if (NULL == m_db_vscp_daemon) {
@@ -5003,13 +4926,13 @@ CControlObject::readUdpNodes(void)
         if (!sqlite3_column_int(ppStmt, VSCPDB_ORDINAL_UDPNODE_ENABLE))
             continue;
 
-        pthread_mutex_lock(&m_udpSrvObj->m_mutexUDPInfo);
+        pthread_mutex_lock(&m_udpSrvObj.m_mutexUDPInfo);
 
         udpRemoteClientInfo *pudpClient = new udpRemoteClientInfo;
         if (NULL == pudpClient) {
             syslog(LOG_ERR,
                    "readUdpNodes: Failed to allocate storage for UDP node.");
-            pthread_mutex_unlock(&m_udpSrvObj->m_mutexUDPInfo);
+            pthread_mutex_unlock(&m_udpSrvObj.m_mutexUDPInfo);
             continue;
         }
 
@@ -5052,9 +4975,9 @@ CControlObject::readUdpNodes(void)
 
         // Add to list
         pudpClient->m_index = 0;
-        m_udpSrvObj->m_remotes.push_back(pudpClient);
+        m_udpSrvObj.m_remotes.push_back(pudpClient);
 
-        pthread_mutex_unlock(&m_udpSrvObj->m_mutexUDPInfo);
+        pthread_mutex_unlock(&m_udpSrvObj.m_mutexUDPInfo);
     }
 
     sqlite3_finalize(ppStmt);
@@ -5202,41 +5125,6 @@ CControlObject::readMulticastChannels(void)
     }
 
     sqlite3_finalize(ppStmt);
-
-    return true;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// doCreateLogTable
-//
-// Create the log database
-//
-//
-
-bool
-CControlObject::doCreateLogTable(void)
-{
-    char *pErrMsg    = 0;
-    const char *psql = VSCPDB_LOG_CREATE;
-
-    syslog(LOG_INFO, "Creating VSCP log database.");
-
-    // Check if database is open
-    if (NULL == m_db_vscp_log) {
-        syslog(LOG_ERR, "Failed to create VSCP log database - closed.");
-        return false;
-    }
-
-    pthread_mutex_lock(&m_db_vscp_configMutex);
-
-    if (SQLITE_OK != sqlite3_exec(m_db_vscp_log, psql, NULL, NULL, &pErrMsg)) {
-        syslog(
-          LOG_ERR, "Failed to create VSCP log table with error %s.", pErrMsg);
-        pthread_mutex_unlock(&m_db_vscp_configMutex);
-        return false;
-    }
-
-    pthread_mutex_unlock(&m_db_vscp_configMutex);
 
     return true;
 }
@@ -5567,8 +5455,8 @@ CControlObject::doCreateZoneTable(void)
     // Fill with default info
     std::string sql = "BEGIN;";
     for (int i = 0; i < 256; i++) {
-        sql += vscp_string_format(("INSERT INTO 'zone' (idx_zone, name) "
-                                   "VALUES( %d, 'zone%d' );"),
+        sql += vscp_string_format("INSERT INTO 'zone' (idx_zone, name) "
+                                  "VALUES( %d, 'zone%d' );",
                                   i,
                                   i);
     }
@@ -5623,8 +5511,8 @@ CControlObject::doCreateSubZoneTable(void)
     // Fill with default info
     std::string sql = "BEGIN;";
     for (int i = 0; i < 256; i++) {
-        sql += vscp_string_format(("INSERT INTO 'subzone' (idx_subzone, name) "
-                                   "VALUES( %d, 'subzone%d' );"),
+        sql += vscp_string_format("INSERT INTO 'subzone' (idx_subzone, name) "
+                                  "VALUES( %d, 'subzone%d' );",
                                   i,
                                   i);
     }

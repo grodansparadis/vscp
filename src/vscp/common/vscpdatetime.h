@@ -36,7 +36,6 @@ class vscpdatetime
 {
 
   public:
-
     // some trivial ones
     static const int MONTHS_IN_YEAR = 12;
 
@@ -150,7 +149,7 @@ class vscpdatetime
                  uint8_t hour,
                  uint8_t minute,
                  uint8_t second,
-                 uint32_t millisecond=0);
+                 uint32_t millisecond = 0);
 
     /*!
         Initialize from julian date/time
@@ -175,7 +174,7 @@ class vscpdatetime
         @param year Year to initialize the object with.
         @param month Month to initialize the object with.
         @param day Day to initialize the object with.
-        @return True on success. 
+        @return True on success.
     */
     bool setDate(uint16_t year, uint8_t month, uint8_t day);
 
@@ -183,11 +182,15 @@ class vscpdatetime
         Set ISO date from string
 
         @param strDate String with date on ISO format (YYYY-MM-DD).
-        @return True on success. 
+        @return True on success.
     */
-    bool setISODate( const std::string& strDate );
+    bool setISODate(const std::string &strDate);
 
-    bool setISODate( const char *pDate )  { std::string str(pDate); return setISOTime(str); };
+    bool setISODate(const char *pDate)
+    {
+        std::string str(pDate);
+        return setISOTime(str);
+    };
 
     /*!
         Set time
@@ -196,18 +199,24 @@ class vscpdatetime
         @param minute Minute to initialize the object with.
         @param second second to initialize the object with.
     */
-    bool setTime(uint8_t hour, uint8_t minute, uint8_t second, uint32_t millisecond=0);
-
+    bool setTime(uint8_t hour,
+                 uint8_t minute,
+                 uint8_t second,
+                 uint32_t millisecond = 0);
 
     /*!
         Set ISO date from string
 
         @param strTime String with time on ISO format (HH:MM:SS).
-        @return True on success. 
+        @return True on success.
     */
-    bool setISOTime( const std::string& strTime );
+    bool setISOTime(const std::string &strTime);
 
-    bool setISOTime( const char *pTime )  { std::string str(pTime); return setISOTime(str); };
+    bool setISOTime(const char *pTime)
+    {
+        std::string str(pTime);
+        return setISOTime(str);
+    };
 
     /*!
         Set datetime
@@ -445,7 +454,7 @@ class vscpdatetime
 
         @return system time (time_t).
     */
-    time_t toSysTime(void) const; 
+    time_t toSysTime(void) const;
 
     /*!
         Check if time is valid
@@ -474,14 +483,14 @@ class vscpdatetime
     /*!
         Get English weekday name for a given week day
     */
-    static std::string getWeekDayName(weekDay weekday,
-                                        nameFlags flags = vscpdatetime::name_Full);
+    static std::string getWeekDayName(
+      weekDay weekday, nameFlags flags = vscpdatetime::name_Full);
 
     /*!
         Get English month name for a given month
     */
-    static std::string getMonthName(month month, 
-                                        nameFlags flags = vscpdatetime::name_Full);
+    static std::string getMonthName(month month,
+                                    nameFlags flags = vscpdatetime::name_Full);
 
     /*!
         Check if a date/time is equal to another date/time
@@ -519,8 +528,7 @@ class vscpdatetime
         Check if a date/time is strictly (not equal to one of them) between two
        other date/time
     */
-    inline bool isStrictlyBetween(vscpdatetime &t1,
-                                  vscpdatetime &t2)
+    inline bool isStrictlyBetween(vscpdatetime &t1, vscpdatetime &t2)
     {
         return (isLaterThan(t1) && isEarlierThan(t2));
     }
@@ -550,8 +558,7 @@ class vscpdatetime
 
     static int tzOffset2LocalTime(void);
 
-    static long
-    tz_offset_second(time_t t);
+    static long tz_offset_second(time_t t);
 
     //
     // Function      : Additive operators
@@ -580,7 +587,7 @@ class vscpdatetime
         temp.setFromJulian(newval);
         return temp;
     }
-    
+
     friend vscpdatetime operator+(const long Left, const vscpdatetime &Right)
     {
         vscpdatetime temp = Right;
@@ -588,14 +595,14 @@ class vscpdatetime
         temp.setFromJulian(newval);
         return temp;
     }
-    
+
     vscpdatetime &operator+=(const long Right)
     {
         long newval = getJulian() + Right;
         setFromJulian(newval);
         return *this;
     }
-    
+
     friend vscpdatetime operator-(const vscpdatetime &Left, const long Right)
     {
         vscpdatetime temp = Left;
@@ -603,7 +610,7 @@ class vscpdatetime
         temp.setFromJulian(newval);
         return temp;
     }
-    
+
     friend vscpdatetime operator-(const long Left, const vscpdatetime &Right)
     {
         vscpdatetime temp = Right;
@@ -611,7 +618,7 @@ class vscpdatetime
         temp.setFromJulian(newval);
         return temp;
     }
-    
+
     vscpdatetime &operator-=(const long Right)
     {
         long newval = getJulian() - Right;
@@ -647,7 +654,7 @@ class vscpdatetime
     vscpdatetime operator++(int)
     {
         vscpdatetime Temp = *this;
-        long newval          = getJulian();
+        long newval       = getJulian();
         newval++;
         setFromJulian(newval);
         return Temp;
@@ -664,14 +671,13 @@ class vscpdatetime
     vscpdatetime operator--(int)
     {
         vscpdatetime Temp = *this;
-        long newval          = getJulian();
+        long newval       = getJulian();
         newval--;
         setFromJulian(newval);
         return Temp;
     }
 
   private:
-
     uint16_t m_year;  // year
     uint8_t m_month;  // month 1-12
     uint8_t m_day;    // day 1-31

@@ -3849,12 +3849,12 @@ CVariableStorage::getStockVariable(const std::string &name,
     // *************************************************************************
 
     if (vscp_startsWith(lcname, "vscp.udp.enable")) {
-        var.setValue(gpobj->m_udpSrvObj->m_bEnable ? true : false);
+        var.setValue(gpobj->m_udpSrvObj.m_bEnable ? true : false);
         return var.getID();
     }
 
     if (vscp_startsWith(lcname, "vscp.udp.address")) {
-        var.setValue(gpobj->m_udpSrvObj->m_interface);
+        var.setValue(gpobj->m_udpSrvObj.m_interface);
         return var.getID();
     }
 
@@ -4823,7 +4823,7 @@ CVariableStorage::putStockVariable(CVSCPVariable &var, CUserItem *pUser)
     if (vscp_startsWith(lcname, "vscp.udp.enable")) {
         int val;
         var.getValue(&val);
-        if (NULL != gpobj->m_udpSrvObj) gpobj->m_udpSrvObj->m_bEnable = val;
+        gpobj->m_udpSrvObj.m_bEnable = val;
         return gpobj->updateConfigurationRecordItem(
           "vscpd_UdpSimpleInterface_Enable", val ? ("1") : ("0"));
     }
@@ -4831,8 +4831,7 @@ CVariableStorage::putStockVariable(CVSCPVariable &var, CUserItem *pUser)
     if (vscp_startsWith(lcname, "vscp.udp.address")) {
         std::string strval;
         strval = var.getValue();
-        if (NULL != gpobj->m_udpSrvObj)
-            gpobj->m_udpSrvObj->m_interface = strval;
+        gpobj->m_udpSrvObj.m_interface = strval;
         return gpobj->updateConfigurationRecordItem(
           ("vscpd_UdpSimpleInterface_Address"), strval);
     }

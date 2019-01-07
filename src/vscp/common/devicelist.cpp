@@ -1,21 +1,22 @@
 // DeviceList.cpp:
 //
-// This file is part of the VSCP (http://www.vscp.org) 
+// This file is part of the VSCP (http://www.vscp.org)
 //
 // The MIT License (MIT)
-// 
-// Copyright (C) 2000-2019 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
-// 
+//
+// Copyright (C) 2000-2019 Ake Hedman, Grodans Paradis AB
+// <info@grodansparadis.com>
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
-// 
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,25 +27,24 @@
 //
 
 #define _POSIX
-#include <stdio.h>
-#include <unistd.h>
-#include <string.h>
 #include <errno.h>
-#include <pthread.h>
-#include <syslog.h>
 #include <fcntl.h>
-#include <sys/types.h>
+#include <pthread.h>
+#include <stdio.h>
+#include <string.h>
 #include <sys/stat.h>
+#include <sys/types.h>
+#include <syslog.h>
+#include <unistd.h>
 
-#include <canal.h>
-#include <vscp.h>
-#include <dllist.h>
-#include <controlobject.h>
-#include <clientlist.h>
-#include <guid.h>
-#include <devicethread.h>
 #include "devicelist.h"
-
+#include <canal.h>
+#include <clientlist.h>
+#include <controlobject.h>
+#include <devicethread.h>
+#include <dllist.h>
+#include <guid.h>
+#include <vscp.h>
 
 ///////////////////////////////////////////////////
 //                 GLOBALS
@@ -52,28 +52,23 @@
 
 extern CControlObject *gpobj;
 
-
 Driver3Process::Driver3Process()
 {
-    //TODO;
+    // TODO;
 }
 
 Driver3Process::~Driver3Process()
 {
-    //TODO;
+    // TODO;
 }
 
-void Driver3Process::OnTerminate( int pid, int status )
+void
+Driver3Process::OnTerminate(int pid, int status)
 {
     // TODO
     // http://man7.org/linux/man-pages/man2/waitpid.2.html
-    syslog( LOG_DEBUG, "[Diver Level III] - Terminating." );
+    syslog(LOG_DEBUG, "[Diver Level III] - Terminating.");
 }
-
-
-
-
-
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction CDeviceList
@@ -85,11 +80,11 @@ void Driver3Process::OnTerminate( int pid, int status )
 
 CDeviceItem::CDeviceItem()
 {
-    m_bQuit = false;
-    m_bEnable = false;      // Default is that driver should not be started
+    m_bQuit   = false;
+    m_bEnable = false; // Default is that driver should not be started
 
     m_translation = NO_TRANSLATION; // Default is no translation
-    
+
     m_strName.clear();      // No Device Name
     m_strParameter.clear(); // No Parameters
     m_strPath.clear();      // No path
@@ -97,44 +92,43 @@ CDeviceItem::CDeviceItem()
     m_driverLevel = 0;      // Standard Canal messages is the default
 
     // VSCP Level I
-    m_proc_CanalOpen = NULL;
-    m_proc_CanalClose = NULL;
-    m_proc_CanalGetLevel = NULL;
-    m_proc_CanalSend = NULL;
-    m_proc_CanalDataAvailable = NULL;
-    m_proc_CanalReceive = NULL;
-    m_proc_CanalGetStatus = NULL;
-    m_proc_CanalGetStatistics = NULL;
-    m_proc_CanalSetFilter = NULL;
-    m_proc_CanalSetMask = NULL;
-    m_proc_CanalSetBaudrate = NULL;
-    m_proc_CanalGetVersion = NULL;
-    m_proc_CanalGetDllVersion = NULL;
+    m_proc_CanalOpen            = NULL;
+    m_proc_CanalClose           = NULL;
+    m_proc_CanalGetLevel        = NULL;
+    m_proc_CanalSend            = NULL;
+    m_proc_CanalDataAvailable   = NULL;
+    m_proc_CanalReceive         = NULL;
+    m_proc_CanalGetStatus       = NULL;
+    m_proc_CanalGetStatistics   = NULL;
+    m_proc_CanalSetFilter       = NULL;
+    m_proc_CanalSetMask         = NULL;
+    m_proc_CanalSetBaudrate     = NULL;
+    m_proc_CanalGetVersion      = NULL;
+    m_proc_CanalGetDllVersion   = NULL;
     m_proc_CanalGetVendorString = NULL;
 
     // Generation 2
-    m_proc_CanalBlockingSend = NULL;
+    m_proc_CanalBlockingSend    = NULL;
     m_proc_CanalBlockingReceive = NULL;
-    m_proc_CanalGetdriverInfo = NULL;
-
+    m_proc_CanalGetdriverInfo   = NULL;
 
     // VSCP Level II
-    m_proc_VSCPOpen = NULL;
-    m_proc_VSCPClose = NULL;
-    m_proc_VSCPBlockingSend = NULL;
-    m_proc_VSCPBlockingReceive = NULL;
-    m_proc_VSCPGetLevel = NULL;
-    m_proc_VSCPGetVersion = NULL;
-    m_proc_VSCPGetDllVersion = NULL;
-    m_proc_VSCPGetVendorString = NULL;
-    m_proc_VSCPGetdriverInfo = NULL;
+    m_proc_VSCPOpen               = NULL;
+    m_proc_VSCPClose              = NULL;
+    m_proc_VSCPBlockingSend       = NULL;
+    m_proc_VSCPBlockingReceive    = NULL;
+    m_proc_VSCPGetLevel           = NULL;
+    m_proc_VSCPGetVersion         = NULL;
+    m_proc_VSCPGetDllVersion      = NULL;
+    m_proc_VSCPGetVendorString    = NULL;
+    m_proc_VSCPGetdriverInfo      = NULL;
     m_proc_VSCPGetWebPageTemplate = NULL;
-    m_proc_VSCPGetWebPageInfo = NULL;
-    m_proc_VSCPWebPageupdate = NULL;
-    
+    m_proc_VSCPGetWebPageInfo     = NULL;
+    m_proc_VSCPWebPageupdate      = NULL;
+
     // VSCP Level III
     m_pid = 0;
-    //m_pDriver3Process = NULL;
+    // m_pDriver3Process = NULL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -152,11 +146,14 @@ CDeviceItem::~CDeviceItem(void)
 ///////////////////////////////////////////////////////////////////////////////
 // startDriver
 //
-bool CDeviceItem::startDriver( CControlObject *pCtrlObject )
+bool
+CDeviceItem::startDriver(CControlObject *pCtrlObject)
 {
     // Just start if enabled
-    if ( !m_bEnable ) {
-        syslog( LOG_INFO, "[Driver %s] - VSCP driver is disabled.", m_strName.c_str());
+    if (!m_bEnable) {
+        syslog(LOG_INFO,
+               "[Driver %s] - VSCP driver is disabled.",
+               m_strName.c_str());
         return false;
     }
 
@@ -174,7 +171,8 @@ bool CDeviceItem::startDriver( CControlObject *pCtrlObject )
         return false;
     }
 
-    syslog( LOG_INFO, "[Driver %s] - Started VSCP device driver.", m_strName.c_str() );
+    syslog(
+      LOG_INFO, "[Driver %s] - Started VSCP device driver.", m_strName.c_str());
 
     return true;
 }
@@ -206,7 +204,6 @@ CDeviceItem::stopDriver()
 // Construction/Destruction CDeviceList
 //////////////////////////////////////////////////////////////////////
 
-
 ///////////////////////////////////////////////////////////////////////////////
 // CDeviceList - Constructor
 //
@@ -216,16 +213,15 @@ CDeviceList::CDeviceList(void)
     ;
 }
 
-
 ///////////////////////////////////////////////////////////////////////////////
 // ~CDeviceList Destructor
 
 CDeviceList::~CDeviceList(void)
 {
     std::deque<CDeviceItem *>::iterator iter;
-    for ( iter = m_devItemList.begin(); iter != m_devItemList.end(); ++iter ) {
+    for (iter = m_devItemList.begin(); iter != m_devItemList.end(); ++iter) {
         CDeviceItem *pItem = *iter;
-        if ( pItem ) delete pItem;
+        if (pItem) delete pItem;
     }
 
     m_devItemList.clear();
@@ -237,43 +233,42 @@ CDeviceList::~CDeviceList(void)
 // An one device to the list
 //
 
-bool CDeviceList::addItem( std::string strName,
-                            std::string strParameter,
-                            std::string strPath,
-                            uint32_t flags,
-                            cguid& guid,
-                            uint8_t level,
-                            bool bEnable,
-                            uint32_t translation )
+bool
+CDeviceList::addItem(std::string strName,
+                     std::string strParameter,
+                     std::string strPath,
+                     uint32_t flags,
+                     cguid &guid,
+                     uint8_t level,
+                     bool bEnable,
+                     uint32_t translation)
 {
-    bool rv = true;
+    bool rv                  = true;
     CDeviceItem *pDeviceItem = new CDeviceItem();
     if (NULL == pDeviceItem) return false;
 
-    if ( NULL != pDeviceItem ) {
+    if (NULL != pDeviceItem) {
 
-        if  ( vscp_fileExists( strPath ) ) {
+        if (vscp_fileExists(strPath)) {
 
-            m_devItemList.push_back( pDeviceItem );
+            m_devItemList.push_back(pDeviceItem);
 
             pDeviceItem->m_bEnable = bEnable;
 
-            pDeviceItem->m_driverLevel = level;
-            pDeviceItem->m_strName = strName;
-            pDeviceItem->m_strParameter = strParameter;
-            pDeviceItem->m_strPath = strPath;
+            pDeviceItem->m_driverLevel    = level;
+            pDeviceItem->m_strName        = strName;
+            pDeviceItem->m_strParameter   = strParameter;
+            pDeviceItem->m_strPath        = strPath;
             pDeviceItem->m_interface_guid = guid;
 
             // Set buffer sizes and flags
             pDeviceItem->m_DeviceFlags = flags;
 
-        }
-        else {
+        } else {
             // Driver does not exist at this path
             delete pDeviceItem;
             rv = false;
         }
-
     }
 
     return rv;
@@ -283,7 +278,8 @@ bool CDeviceList::addItem( std::string strName,
 // removeItem
 //
 
-bool CDeviceList::removeItem(unsigned long id)
+bool
+CDeviceList::removeItem(unsigned long id)
 {
 
     return true;
@@ -293,14 +289,15 @@ bool CDeviceList::removeItem(unsigned long id)
 // getDeviceItemFromGUID
 //
 
-CDeviceItem *CDeviceList::getDeviceItemFromGUID( cguid& guid )
+CDeviceItem *
+CDeviceList::getDeviceItemFromGUID(cguid &guid)
 {
     CDeviceItem *returnItem = NULL;
 
     std::deque<CDeviceItem *>::iterator iter;
-    for ( iter = m_devItemList.begin(); iter != m_devItemList.end(); ++iter ) {
+    for (iter = m_devItemList.begin(); iter != m_devItemList.end(); ++iter) {
         CDeviceItem *pItem = *iter;
-        if ( pItem->m_interface_guid == guid ) {
+        if (pItem->m_interface_guid == guid) {
             returnItem = pItem;
             break;
         }
@@ -313,15 +310,16 @@ CDeviceItem *CDeviceList::getDeviceItemFromGUID( cguid& guid )
 // getDeviceItemFromClientId
 //
 
-CDeviceItem *CDeviceList::getDeviceItemFromClientId( uint32_t id )
+CDeviceItem *
+CDeviceList::getDeviceItemFromClientId(uint32_t id)
 {
     CDeviceItem *returnItem = NULL;
 
     std::deque<CDeviceItem *>::iterator iter;
-    for ( iter = m_devItemList.begin(); iter != m_devItemList.end(); ++iter ) {
+    for (iter = m_devItemList.begin(); iter != m_devItemList.end(); ++iter) {
         CDeviceItem *pItem = *iter;
-        if ( ( NULL != pItem->m_pClientItem  ) && 
-             ( pItem->m_pClientItem->m_clientID == id ) ) {
+        if ((NULL != pItem->m_pClientItem) &&
+            (pItem->m_pClientItem->m_clientID == id)) {
             returnItem = pItem;
             break;
         }

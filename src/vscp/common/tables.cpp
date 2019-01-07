@@ -439,11 +439,11 @@ CVSCPTable::createDatabase(void)
           m_dbTable, (const char *)m_sqlCreate.c_str(), NULL, NULL, &pErrMsg)) {
         syslog(
           LOG_ERR, "Failed to create VSCP log table with error %s.", pErrMsg);
-        pthread_mutex_lock(&m_mutexThisTable);
+        pthread_mutex_unlock(&m_mutexThisTable);
         return false;
     }
 
-    pthread_mutex_lock(&m_mutexThisTable);
+    pthread_mutex_unlock(&m_mutexThisTable);
 
     return true;
 }
@@ -1219,7 +1219,7 @@ CUserTableObjList::addTable(CVSCPTable *pTable)
 
     pthread_mutex_lock(&m_mutexTableList);
     m_listTables.push_back(pTable);
-    pthread_mutex_lock(&m_mutexTableList);
+    pthread_mutex_unlock(&m_mutexTableList);
 
     return true;
 }
@@ -1718,11 +1718,11 @@ CUserTableObjList::getTable(std::string &name)
 
         CVSCPTable *pTable = *it;
         if ((NULL != pTable) && (name == pTable->getTableName())) {
-            pthread_mutex_lock(&m_mutexTableList);
+            pthread_mutex_unlock(&m_mutexTableList);
             return pTable;
         }
     }
-    pthread_mutex_lock(&m_mutexTableList);
+    pthread_mutex_unlock(&m_mutexTableList);
     return NULL;
 }
 
@@ -1751,9 +1751,9 @@ CUserTableObjList::init(void)
         CVSCPTable *pTable = *it;
         pthread_mutex_lock(&pTable->m_mutexThisTable);
         pTable->init();
-        pthread_mutex_lock(&pTable->m_mutexThisTable);
+        pthread_mutex_unlock(&pTable->m_mutexThisTable);
     }
-    pthread_mutex_lock(&m_mutexTableList);
+    pthread_mutex_unlock(&m_mutexTableList);
 
     return true;
 }
@@ -1780,7 +1780,7 @@ CUserTableObjList::removeTable(std::string &name, bool bRemoveFile)
                                        name + ".sqlite3";
                                        remove(filename.c_str());
             }
-            pthread_mutex_lock(&m_mutexTableList);
+            pthread_mutex_unlock(&m_mutexTableList);
             return true;
         }
     }
@@ -1805,7 +1805,7 @@ CUserTableObjList::clearTable(void)
         m_listTables.erase(it);
     }
 
-    pthread_mutex_lock(&m_mutexTableList);
+    pthread_mutex_unlock(&m_mutexTableList);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1991,7 +1991,7 @@ CUserTableObjList::loadTablesFromDB(void)
         syslog(LOG_ERR,
                "Load tables: Error=%s",
                sqlite3_errstr(sqlite3_errcode(gpobj->m_db_vscp_daemon)));
-        pthread_mutex_lock(&m_mutexTableList);
+        pthread_mutex_unlock(&m_mutexTableList);
         return false;
     }
 
@@ -2159,7 +2159,7 @@ CUserTableObjList::loadTablesFromDB(void)
     } // While
 
     sqlite3_finalize(ppStmt);
-    pthread_mutex_lock(&m_mutexTableList);
+    pthread_mutex_unlock(&m_mutexTableList);
 
     return true;
 }

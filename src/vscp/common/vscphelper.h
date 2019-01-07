@@ -160,7 +160,6 @@ extern "C"
     //                                General Helpers
     // ***************************************************************************
 
-
     /*!
         Return non zero if endiness is little endian
     */

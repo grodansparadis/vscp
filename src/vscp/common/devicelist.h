@@ -1,21 +1,22 @@
 // DeviceList.h: interface for the CDeviceList class.
 //
-// This file is part of the VSCP (http://www.vscp.org) 
+// This file is part of the VSCP (http://www.vscp.org)
 //
 // The MIT License (MIT)
-// 
-// Copyright (C) 2000-2019 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
-// 
+//
+// Copyright (C) 2000-2019 Ake Hedman, Grodans Paradis AB
+// <info@grodansparadis.com>
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
-// 
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -28,33 +29,36 @@
 #if !defined(_DEVICELIST_H__0ED35EA7_E9E1_41CD_8A98_5EB3369B3194__INCLUDED_)
 #define _DEVICELIST_H__0ED35EA7_E9E1_41CD_8A98_5EB3369B3194__INCLUDED_
 
+#include <string>
+#include <deque>
+
 #include <pthread.h>
 #include <semaphore.h>
 
 #include "canaldlldef.h"
-
-#include "vscpdlldef.h"
+#include "guid.h"
 #include "clientlist.h"
 #include "devicethread.h"
+#include "vscpdlldef.h"
 
-#define NO_TRANSLATION              0       // No translation bit set
+#define NO_TRANSLATION 0 // No translation bit set
 
 // Out - translation bit definitions
-#define VSCP_DRIVER_OUT_TR_M1M2F    0x01    // M1 -> M2 Float  
-#define VSCP_DRIVER_OUT_TR_M1M2S    0x02    // M1 -> M2 String   
-#define VSCP_DRIVER_OUT_TR_ALL512   0x04    // All to Level II events
+#define VSCP_DRIVER_OUT_TR_M1M2F 0x01  // M1 -> M2 Float
+#define VSCP_DRIVER_OUT_TR_M1M2S 0x02  // M1 -> M2 String
+#define VSCP_DRIVER_OUT_TR_ALL512 0x04 // All to Level II events
 
 // In - translation bit definitions
 
-enum _driver_levels {
-    VSCP_DRIVER_LEVEL1 = 1,  
+enum _driver_levels
+{
+    VSCP_DRIVER_LEVEL1 = 1,
     VSCP_DRIVER_LEVEL2,
     VSCP_DRIVER_LEVEL3
 };
 
 class CClientItem;
 class cguid;
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // Driver3Process
@@ -63,11 +67,11 @@ class cguid;
 class Driver3Process
 {
 
-public:
+  public:
     Driver3Process();
     ~Driver3Process();
-    
-    void OnTerminate( int pid, int status );
+
+    void OnTerminate(int pid, int status);
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -77,23 +81,20 @@ public:
 class CDeviceItem
 {
 
-public:
-
+  public:
     /// Constructor
     CDeviceItem();
 
     /// Destructor
     virtual ~CDeviceItem();
 
+    bool startDriver(CControlObject *pCtrlObject);
 
-    bool startDriver( CControlObject *pCtrlObject );
-    
-    bool pauseDriver( void );   // TODO
-    
-    bool resumeDriver( void );  // TODO
-    
-    bool stopDriver( void );    // TODO
+    bool pauseDriver(void); // TODO
 
+    bool resumeDriver(void); // TODO
+
+    bool stopDriver(void); // TODO
 
     /*!
         Name of device
@@ -114,7 +115,7 @@ public:
         Canal Driver Level
     */
     uint8_t m_driverLevel;
-    
+
     /// True if driver should be started.
     bool m_bEnable;
 
@@ -122,7 +123,7 @@ public:
         termination control
     */
     bool m_bQuit;
-    
+
     /*!
         GUID to use for driver interface if set
         four msb should be zero for this GUID
@@ -151,7 +152,7 @@ public:
     pthread_mutex_t m_deviceMutex;
 
     /*!
-     *  Translation flags 
+     *  Translation flags
      *  High 16-bits incoming.
      *  Low 16-bit outgoing.
      */
@@ -159,10 +160,10 @@ public:
 
     // Handle for dll/dl driver interface
     long m_openHandle;
-    
+
     // Level III driver pid
     long m_pid;
-    
+
     // ------------------------------------------------------------------------
     //                     Start of driver worker thread data
     // ------------------------------------------------------------------------
@@ -171,14 +172,14 @@ public:
     CControlObject *m_pCtrlObject;
 
     // Quit flag
-    //bool m_bQuit;  use item quit
+    // bool m_bQuit;  use item quit
 
     // Holder for CANAL receive thread
     pthread_t m_level1ReceiveThread;
 
     // Holder for CANAL write thread
     pthread_t m_level1WriteThread;
-    
+
     // Holder for VSCP Level II receive thread
     pthread_t m_level2ReceiveThread;
 
@@ -190,45 +191,43 @@ public:
     // ------------------------------------------------------------------------
 
     // Level I (CANAL) driver methods
-    LPFNDLL_CANALOPEN                   m_proc_CanalOpen;
-    LPFNDLL_CANALCLOSE                  m_proc_CanalClose;
-    LPFNDLL_CANALGETLEVEL               m_proc_CanalGetLevel;
-    LPFNDLL_CANALSEND                   m_proc_CanalSend;
-    LPFNDLL_CANALRECEIVE                m_proc_CanalReceive;
-    LPFNDLL_CANALDATAAVAILABLE          m_proc_CanalDataAvailable;
-    LPFNDLL_CANALGETSTATUS              m_proc_CanalGetStatus;
-    LPFNDLL_CANALGETSTATISTICS          m_proc_CanalGetStatistics;
-    LPFNDLL_CANALSETFILTER              m_proc_CanalSetFilter;
-    LPFNDLL_CANALSETMASK                m_proc_CanalSetMask;
-    LPFNDLL_CANALSETBAUDRATE            m_proc_CanalSetBaudrate;
-    LPFNDLL_CANALGETVERSION             m_proc_CanalGetVersion;
-    LPFNDLL_CANALGETDLLVERSION          m_proc_CanalGetDllVersion;
-    LPFNDLL_CANALGETVENDORSTRING        m_proc_CanalGetVendorString;
+    LPFNDLL_CANALOPEN m_proc_CanalOpen;
+    LPFNDLL_CANALCLOSE m_proc_CanalClose;
+    LPFNDLL_CANALGETLEVEL m_proc_CanalGetLevel;
+    LPFNDLL_CANALSEND m_proc_CanalSend;
+    LPFNDLL_CANALRECEIVE m_proc_CanalReceive;
+    LPFNDLL_CANALDATAAVAILABLE m_proc_CanalDataAvailable;
+    LPFNDLL_CANALGETSTATUS m_proc_CanalGetStatus;
+    LPFNDLL_CANALGETSTATISTICS m_proc_CanalGetStatistics;
+    LPFNDLL_CANALSETFILTER m_proc_CanalSetFilter;
+    LPFNDLL_CANALSETMASK m_proc_CanalSetMask;
+    LPFNDLL_CANALSETBAUDRATE m_proc_CanalSetBaudrate;
+    LPFNDLL_CANALGETVERSION m_proc_CanalGetVersion;
+    LPFNDLL_CANALGETDLLVERSION m_proc_CanalGetDllVersion;
+    LPFNDLL_CANALGETVENDORSTRING m_proc_CanalGetVendorString;
     // Generation 2
-    LPFNDLL_CANALBLOCKINGSEND           m_proc_CanalBlockingSend;
-    LPFNDLL_CANALBLOCKINGRECEIVE        m_proc_CanalBlockingReceive;
-    LPFNDLL_CANALGETDRIVERINFO          m_proc_CanalGetdriverInfo;
+    LPFNDLL_CANALBLOCKINGSEND m_proc_CanalBlockingSend;
+    LPFNDLL_CANALBLOCKINGRECEIVE m_proc_CanalBlockingReceive;
+    LPFNDLL_CANALGETDRIVERINFO m_proc_CanalGetdriverInfo;
 
     // Level II driver methods
-    LPFNDLL_VSCPOPEN                    m_proc_VSCPOpen;
-    LPFNDLL_VSCPCLOSE                   m_proc_VSCPClose;
-    LPFNDLL_VSCPBLOCKINGSEND            m_proc_VSCPBlockingSend;
-    LPFNDLL_VSCPBLOCKINGRECEIVE         m_proc_VSCPBlockingReceive;
-    LPFNDLL_VSCPGETLEVEL                m_proc_VSCPGetLevel;
-    LPFNDLL_VSCPGETVERSION              m_proc_VSCPGetVersion;
-    LPFNDLL_VSCPGETDLLVERSION           m_proc_VSCPGetDllVersion;
-    LPFNDLL_VSCPGETVENDORSTRING         m_proc_VSCPGetVendorString;
-    LPFNDLL_VSCPGETDRIVERINFO           m_proc_VSCPGetdriverInfo;
-    LPFNDLL_VSCPGETWEBPAGETEMPLATE      m_proc_VSCPGetWebPageTemplate;
-    LPFNDLL_VSCPGETWEBPAGEINFO          m_proc_VSCPGetWebPageInfo;
-    LPFNDLL_VSCPWEBPAGEUPDATE           m_proc_VSCPWebPageupdate;
+    LPFNDLL_VSCPOPEN m_proc_VSCPOpen;
+    LPFNDLL_VSCPCLOSE m_proc_VSCPClose;
+    LPFNDLL_VSCPBLOCKINGSEND m_proc_VSCPBlockingSend;
+    LPFNDLL_VSCPBLOCKINGRECEIVE m_proc_VSCPBlockingReceive;
+    LPFNDLL_VSCPGETLEVEL m_proc_VSCPGetLevel;
+    LPFNDLL_VSCPGETVERSION m_proc_VSCPGetVersion;
+    LPFNDLL_VSCPGETDLLVERSION m_proc_VSCPGetDllVersion;
+    LPFNDLL_VSCPGETVENDORSTRING m_proc_VSCPGetVendorString;
+    LPFNDLL_VSCPGETDRIVERINFO m_proc_VSCPGetdriverInfo;
+    LPFNDLL_VSCPGETWEBPAGETEMPLATE m_proc_VSCPGetWebPageTemplate;
+    LPFNDLL_VSCPGETWEBPAGEINFO m_proc_VSCPGetWebPageInfo;
+    LPFNDLL_VSCPWEBPAGEUPDATE m_proc_VSCPWebPageupdate;
 };
 
-
-
-class CDeviceList  
+class CDeviceList
 {
-public:
+  public:
     CDeviceList();
     virtual ~CDeviceList();
 
@@ -243,46 +242,42 @@ public:
         @param translation Bits to set translations to be performed.
         @return True is returned if the driver was successfully added.
     */
-    bool addItem( std::string strName,
-                            std::string strParameters, 
-                            std::string strPath, 
-                            uint32_t flags,
-                            cguid& guid,
-                            uint8_t level = VSCP_DRIVER_LEVEL1,
-                            bool bEnable = true,
-                            uint32_t translation = NO_TRANSLATION );
+    bool addItem(std::string strName,
+                 std::string strParameters,
+                 std::string strPath,
+                 uint32_t flags,
+                 cguid &guid,
+                 uint8_t level        = VSCP_DRIVER_LEVEL1,
+                 bool bEnable         = true,
+                 uint32_t translation = NO_TRANSLATION);
 
     /*!
         Remove a driver item
         @param clientid for the driver to remove
-        @return True if driver was removed successfully 
+        @return True if driver was removed successfully
                 otherwise false.
     */
-    bool removeItem( unsigned long id );
+    bool removeItem(unsigned long id);
 
     /*!
         Get device item from GUID
         @param guid for device to look for
         @return Pointer to device item or NULL if not found
     */
-    CDeviceItem *getDeviceItemFromGUID( cguid& guid );
+    CDeviceItem *getDeviceItemFromGUID(cguid &guid);
 
     /*!
         Get device item from the client id
         @param guid for device to look for
         @return Pointer to device item or NULL if not found
     */
-    CDeviceItem *getDeviceItemFromClientId( uint32_t id );
+    CDeviceItem *getDeviceItemFromClientId(uint32_t id);
 
-public:
-
+  public:
     /*!
         List with devices
     */
     std::deque<CDeviceItem *> m_devItemList;
-
 };
 
 #endif // !defined(_DEVICELIST_H__0ED35EA7_E9E1_41CD_8A98_5EB3369B3194__INCLUDED_)
-
-

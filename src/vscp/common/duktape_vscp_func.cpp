@@ -290,9 +290,9 @@ js_vscp_print(duk_context *ctx)
 duk_ret_t
 js_vscp_log(duk_context *ctx)
 {
-    int nArgs = duk_get_top(ctx);
+    int nArgs           = duk_get_top(ctx);
     std::string wxDebug = duk_get_string_default(ctx, -1, "---Log fail---");
-    syslog(LOG_INFO, "%s",wxDebug.c_str());
+    syslog(LOG_INFO, "%s", wxDebug.c_str());
 
     duk_pop_n(ctx, 1);        // Clear stack
     duk_push_boolean(ctx, 1); // Return success

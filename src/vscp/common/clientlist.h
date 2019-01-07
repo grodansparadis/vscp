@@ -4,55 +4,54 @@
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version
 // 2 of the License, or (at your option) any later version.
-// 
-// This file is part of the VSCP (http://www.vscp.org) 
+//
+// This file is part of the VSCP (http://www.vscp.org)
 //
 // Copyright (C) 2000-2019 Ake Hedman,
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
-// 
+//
 // This file is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with this file see the file COPYING.  If not, write to
 // the Free Software Foundation, 59 Temple Place - Suite 330,
 // Boston, MA 02111-1307, USA.
 //
 
-
 #if !defined(CLIENTLIST_H__B0190EE5_E0E8_497F_92A0_A8616296AF3E__INCLUDED_)
 #define CLIENTLIST_H__B0190EE5_E0E8_497F_92A0_A8616296AF3E__INCLUDED_
 
 #include <list>
 
-#include <vscp.h>
+#include <devicelist.h>
 #include <guid.h>
 #include <userlist.h>
-#include <devicelist.h>
+#include <vscp.h>
 
 // Predefined client id's
-#define CLIENT_ID_DAEMON_WORKER     0xffff
-#define CLIENT_ID_DM                0xfffe
-#define CLIENT_ID_UDP_LISTNER       0xfffd
-#define CLIENT_ID_MULTICAST_SRV     0xfffc
-
+#define CLIENT_ID_DAEMON_WORKER 0xffff
+#define CLIENT_ID_DM 0xfffe
+#define CLIENT_ID_UDP_LISTNER 0xfffd
+#define CLIENT_ID_MULTICAST_SRV 0xfffc
 
 //
 // defines for levels
 //
 
-enum {
+enum
+{
     CLIENT_ITEM_LEVEL1 = 0,
     CLIENT_ITEM_LEVEL2,
     CLIENT_ITEM_LEVEL3
 };
 
-
-enum {
+enum
+{
     CLIENT_ITEM_INTERFACE_TYPE_NONE = 0,
-    CLIENT_ITEM_INTERFACE_TYPE_CLIENT_INTERNAL,     // 1 Daemon internal 
+    CLIENT_ITEM_INTERFACE_TYPE_CLIENT_INTERNAL,     // 1 Daemon internal
     CLIENT_ITEM_INTERFACE_TYPE_DRIVER_LEVEL1,       // 2 Level I drivers
     CLIENT_ITEM_INTERFACE_TYPE_DRIVER_LEVEL2,       // 3 Level II drivers
     CLIENT_ITEM_INTERFACE_TYPE_DRIVER_LEVEL3,       // 4 Level III drivers
@@ -62,7 +61,8 @@ enum {
     CLIENT_ITEM_INTERFACE_TYPE_CLIENT_WEBSOCKET,    // 8 Websocket interface
     CLIENT_ITEM_INTERFACE_TYPE_CLIENT_REST,         // 9 REST interface
     CLIENT_ITEM_INTERFACE_TYPE_CLIENT_MULTICAST,    // 10 Multicast interface
-    CLIENT_ITEM_INTERFACE_TYPE_CLIENT_MULTICAST_CH, // 11 Multicast channel interface
+    CLIENT_ITEM_INTERFACE_TYPE_CLIENT_MULTICAST_CH, // 11 Multicast channel
+                                                    // interface
     CLIENT_ITEM_INTERFACE_TYPE_CLIENT_MQTT,         // 12 MQTT interface
     CLIENT_ITEM_INTERFACE_TYPE_CLIENT_COAP,         // 13 COAP interface
     CLIENT_ITEM_INTERFACE_TYPE_CLIENT_DISCOVERY,    // 14 Discovery interface
@@ -71,11 +71,11 @@ enum {
 };
 
 // Description of each interface type (for web interface etc)
-//const char **interface_description;
+// const char **interface_description;
 
 // Both the UDP send and receive id clients use this is. This way
-// received UDP events will not be transmitted on the UDP interface. 
-#define CLIENT_ITEM_SPECIAL_ID_UDP                      0xffffffff
+// received UDP events will not be transmitted on the UDP interface.
+#define CLIENT_ITEM_SPECIAL_ID_UDP 0xffffffff
 
 /*!
     Client Item
@@ -84,17 +84,14 @@ enum {
 class CClientItem
 {
 
-public:
-
+  public:
     /// Constructor
     CClientItem();
 
     /// Destructor
     ~CClientItem();
 
-
-public:
-    
+  public:
     /*!
         Check if the command line start with the command
         The command is checked case insensitive
@@ -102,15 +99,15 @@ public:
         @param bFix The command string have the command removed.
         @return true if command is found
      */
-    bool CommandStartsWith( const std::string &cmd, bool bFix = true );
+    bool CommandStartsWith(const std::string &cmd, bool bFix = true);
 
     /*!
         Set device name
 
         @param name Name to set
     */
-    void setDeviceName( const std::string& name );
- 
+    void setDeviceName(const std::string &name);
+
     /*!
         Input Queue
     */
@@ -151,12 +148,14 @@ public:
 
         The GUID for a client have the following form MSB -> LSB
 
-        0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFD ip-address ip-address ip-address ip-address Client-ID Client-ID 0 0
+        0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFD ip-address ip-address ip-address
+       ip-address Client-ID Client-ID 0 0
 
         ip-address ver 4 interface IP address
         Client-ID mapped id for this client
 
-        This is the default address and it can be changed by the client application
+        This is the default address and it can be changed by the client
+       application
 
     */
     cguid m_guid;
@@ -196,7 +195,7 @@ public:
     ///////////////////////////////////////////////////////////////////////////
     //                       Used by TCP/IP client thread
     //////////////////////////////////////////////////////////////////////////
-    
+
     // UTC time since last client activity
     long m_clientActivity;
 
@@ -204,13 +203,13 @@ public:
         RCVLOOP clock (UTC time for last sent "+OK")
     */
     uint64_t m_timeRcvLoop;
-    
+
     /// Username given by user
     std::string m_UserName;
-    
+
     /// Password given by user
     std::string m_Password;
-    
+
     /// Session id
     char m_sid[33];
 
@@ -234,11 +233,10 @@ public:
     std::string m_currentToken;
 };
 
-class CClientList  
+class CClientList
 {
 
-public:
-
+  public:
     /// Constructor
     CClientList();
 
@@ -251,34 +249,32 @@ public:
         @param id Normally not used but can be used to set a specific id
         @return true om success.
     */
-    bool addClient( CClientItem *pClientItem, uint32_t id = 0 );
+    bool addClient(CClientItem *pClientItem, uint32_t id = 0);
 
     /*!
         Remove a client from the list
     */
-    bool removeClient( CClientItem *pClientItem );
+    bool removeClient(CClientItem *pClientItem);
 
     /*!
         Get client form client id
         @param id Numeric id for the client
         @return A pointer to a clientitem on success or NULL on failure.
     */
-    CClientItem *getClientFromId( uint32_t id );
+    CClientItem *getClientFromId(uint32_t id);
 
     /*!
         Get Client from GUID
         @param guid Guid for the client
         @return A pointer to a cientitem on success or NULL on failure.
     */
-    CClientItem *getClientFromGUID( cguid& guid );
+    CClientItem *getClientFromGUID(cguid &guid);
 
-public:
-
+  public:
     /*!
         List with clients
     */
-    std::list<CClientItem*> m_itemList;
-
+    std::list<CClientItem *> m_itemList;
 };
 
 #endif // !defined(CLIENTLIST_H__B0190EE5_E0E8_497F_92A0_A8616296AF3E__INCLUDED_)

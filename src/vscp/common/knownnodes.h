@@ -1,21 +1,22 @@
-// FILE: knownnodes.h 
+// FILE: knownnodes.h
 //
-// This file is part of the VSCP (http://www.vscp.org) 
+// This file is part of the VSCP (http://www.vscp.org)
 //
 // The MIT License (MIT)
-// 
-// Copyright (C) 2000-2019 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
-// 
+//
+// Copyright (C) 2000-2019 Ake Hedman, Grodans Paradis AB
+// <info@grodansparadis.com>
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
-// 
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -24,121 +25,121 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-
 #pragma once
 
 #ifndef _VSCP_KNOWNNODES_H_
-#define _VSCP_KNOWNNODES_H_ 
+#define _VSCP_KNOWNNODES_H_
 
-#include <vscpdatetime.h>   // TODO
+#include <vscpdatetime.h> // TODO
 
 // Forward declarations
 class cguid;
 
 // The different types of nodes
-enum {
-    NODE_TYPE_COMMON_GUID = 0,  // Common GUID.
-    NODE_TYPE_INTERFACE,        // Interface on this machine,
-    NODE_TYPE_HARDWARE_L1,      // Level I hardware. Lives on one of the interfaces of this daemon.
-    NODE_TYPE_HARDWARE_L2,      // Level II hardware. Have an address.
-    NODE_TYPE_HARDWARE_L3,      // Level III hardware. Software/driver pretending to be hardware
-    NODE_TYPE_DUMB,             // Dumb node (no registers, no MDF)
-    NODE_TYPE_DRIVER,           // Driver
-    NODE_TYPE_LOCATION,         // Location.
+enum
+{
+    NODE_TYPE_COMMON_GUID = 0, // Common GUID.
+    NODE_TYPE_INTERFACE,       // Interface on this machine,
+    NODE_TYPE_HARDWARE_L1, // Level I hardware. Lives on one of the interfaces
+                           // of this daemon.
+    NODE_TYPE_HARDWARE_L2, // Level II hardware. Have an address.
+    NODE_TYPE_HARDWARE_L3, // Level III hardware. Software/driver pretending to
+                           // be hardware
+    NODE_TYPE_DUMB,        // Dumb node (no registers, no MDF)
+    NODE_TYPE_DRIVER,      // Driver
+    NODE_TYPE_LOCATION,    // Location.
 };
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // CNodeInformation
 //
-// This class holds information about a known node. This can be 
+// This class holds information about a known node. This can be
 // either a node that is assigned as known from the configuration
 // file or a node that is discovered. It can be a server or a client node.
 //
 // A level II node always use it's own guid. A Level I node on the
 // other hand may be using an interface guid + nickname. For such a node, when
-// a heart beat is received, an entry is first made for the proxy id set as real-id. 
-// Another entry may be added when a node has been discovered. The proxy node will have 
-// the proxy flag set and the interface guid will be set to the interface part of the
-// guid (12 MSB bytes with 4 LSB bytes set to zero). The real node will not have the
-// proxy flag set and the interface will be set to the interface it is on.
+// a heart beat is received, an entry is first made for the proxy id set as
+// real-id. Another entry may be added when a node has been discovered. The
+// proxy node will have the proxy flag set and the interface guid will be set to
+// the interface part of the guid (12 MSB bytes with 4 LSB bytes set to zero).
+// The real node will not have the proxy flag set and the interface will be set
+// to the interface it is on.
 //
-// ClientObject can be received from clientid' which also is set in obid of the event.
+// ClientObject can be received from clientid' which also is set in obid of the
+// event.
 //
-// DeviceObject can be fetched from the client id with the getDeviceItemFromClientId method
-// in the devicelist class.
+// DeviceObject can be fetched from the client id with the
+// getDeviceItemFromClientId method in the devicelist class.
 //
-// Names are formed from the interface they are at as 'interfacename.nodename' and if
-// the node does not have a name 'node'+nickname id.
+// Names are formed from the interface they are at as 'interfacename.nodename'
+// and if the node does not have a name 'node'+nickname id.
 //
 
 class cvscpnode
 {
 
-public:
-
+  public:
     cvscpnode();
     ~cvscpnode();
 
-    cvscpnode& operator=( const cvscpnode& node )
+    cvscpnode &operator=(const cvscpnode &node)
     {
         // Check for self-assignment!
-        if ( this == &node ) {	// Same object?
-            return *this;	// Yes, so skip assignment, 
-                            // and just return *this.
+        if (this == &node) { // Same object?
+            return *this;    // Yes, so skip assignment,
+                             // and just return *this.
         }
 
-        m_dbId = node.m_dbId;
-        m_nodeType = node.m_nodeType;
-        m_bUpdated = node.m_bUpdated;
+        m_dbId          = node.m_dbId;
+        m_nodeType      = node.m_nodeType;
+        m_bUpdated      = node.m_bUpdated;
         m_bInvestigated = node.m_bInvestigated;
-        m_bProxy = node.m_bProxy;
-        m_realguid = node.m_realguid;
+        m_bProxy        = node.m_bProxy;
+        m_realguid      = node.m_realguid;
         m_interfaceguid = node.m_interfaceguid;
-        m_clientID = node.m_clientID;
-        lint_to_mdf = node.lint_to_mdf;
+        m_clientID      = node.m_clientID;
+        lint_to_mdf     = node.lint_to_mdf;
         m_lastHeartBeat = node.m_lastHeartBeat;
-        m_strNodeName = node.m_strNodeName;
-        m_deviceName = node.m_deviceName;
-        m_address = node.m_address;
-        m_level = node.m_level;
-        
+        m_strNodeName   = node.m_strNodeName;
+        m_deviceName    = node.m_deviceName;
+        m_address       = node.m_address;
+        m_level         = node.m_level;
+
         // Server
         m_capabilities = node.m_capabilities;
-        memcpy( (void *)m_ports, (void *)node.m_ports, sizeof( m_ports ) );
-        
+        memcpy((void *)m_ports, (void *)node.m_ports, sizeof(m_ports));
+
         return *this;
     };
-    
+
     /*!
      * Write capabilities as a comma separated string
      * @param strCapabilities String to write result to.
      */
-    void writeCapabilitiesToString( std::string& strCapabilities );
-    
+    void writeCapabilitiesToString(std::string &strCapabilities);
+
     /*!
      * Get node capabilities from a comma separated string
      * @param strCapabilities Capabilities in a comma separated string.
      */
-    void getCapabilitiesFromString( const std::string& strCapabilities );
-    
-    
-    
+    void getCapabilitiesFromString(const std::string &strCapabilities);
+
     // Database id
     long m_dbId;
-    
+
     // This flag can be used by a client to mark this item as seen
     // by an update routine.
     bool m_bUpdated;
-    
+
     // This is the type of node
     uint8_t m_nodeType;
-    
+
     // Capabilities for server
-    uint64_t m_capabilities; 
-    
+    uint64_t m_capabilities;
+
     // Ports related to services.
-    uint16_t m_ports[ 64 ];
+    uint16_t m_ports[64];
 
     // True if this node has been checked
     bool m_bInvestigated;
@@ -151,7 +152,7 @@ public:
     // Full GUID for node (real GUID)
     cguid m_realguid;
 
-    // Full GUID for interface 
+    // Full GUID for interface
     cguid m_interfaceguid;
 
     // Client id - Used by the VSCP daemon
@@ -167,19 +168,15 @@ public:
     // Will be truncated to 64 byte when sent out or reported
     std::string m_strNodeName;
 
-    // If a driver is associated with the 
+    // If a driver is associated with the
     std::string m_deviceName;
 
     // IP/MAC/... address (if any) associated with the node
     std::string m_address;
 
     // Node level 0 = unknown, 1 = Level I, 2 = Level II, 3 = Level III
-    uint8_t m_level;    
+    uint8_t m_level;
 };
-
-
-
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // CKnownNodes
@@ -190,8 +187,7 @@ public:
 class CKnownNodes
 {
 
-public:
-
+  public:
     CKnownNodes();
     ~CKnownNodes();
 
@@ -200,51 +196,47 @@ public:
         @param guid GUID for node.
         @return Return cvscpnode class if found, NULL if not.
     */
-    cvscpnode *findNode( cguid& guid );
-
+    cvscpnode *findNode(cguid &guid);
 
     /*!
         Add node
         @param guid GUID for node.
         @return Return cvscpnode class if added or existing, NULL if error.
     */
-    cvscpnode *addNode( cguid& guid );
-
+    cvscpnode *addNode(cguid &guid);
 
     /*!
         Remove node
         @param guid GUID for node.
         @return Return true on success, false on failure.
     */
-    bool removeNode( cguid& guid );
+    bool removeNode(cguid &guid);
 
     /*!
         Remove server
         @param guid GUID for node.
         @return Return true on success, false on failure.
     */
-    bool removeServer( cguid& guid );
+    bool removeServer(cguid &guid);
 
     /*!
         Save known nodes to database
     */
-    void save( void );
+    void save(void);
 
     /*!
         Load known nodes from database
     */
-    bool load( void );
+    bool load(void);
 
     // Protect the lists
     pthread_mutex_t m_mutexKnownNodes;
 
     // This list holds information about each discovered
-    // node in the system and. 
+    // node in the system and.
     // The content of the list can be
     // preserved in the filesystem over time
-    std::map<std::string,cvscpnode*> m_nodes;
-
+    std::map<std::string, cvscpnode *> m_nodes;
 };
-
 
 #endif

@@ -8430,10 +8430,10 @@ vscp_configure_list(struct web_connection *conn, void *cbdata)
 
     // UDP interface
     web_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>UDP interface:</b> ");
-    if (gpobj->m_udpSrvObj->m_bEnable) {
+    if (gpobj->m_udpSrvObj.m_bEnable) {
         web_printf(conn, "enabled on <b>interface:</b> '");
         web_printf(
-          conn, "%s", (const char *)gpobj->m_udpSrvObj->m_interface.c_str());
+          conn, "%s", (const char *)gpobj->m_udpSrvObj.m_interface.c_str());
         web_printf(conn, "'");
     } else {
         web_printf(conn, "disabled");
@@ -9191,10 +9191,6 @@ vscp_configure_list(struct web_connection *conn, void *cbdata)
     web_printf(conn, "%s", (const char *)gpobj->m_path_db_vscp_data.c_str());
     web_printf(conn, "<br>");
 
-    web_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Path to logging db:</b> ");
-    web_printf(conn, "%s", (const char *)gpobj->m_path_db_vscp_log.c_str());
-    web_printf(conn, "<br>");
-
     web_printf(conn, "<hr>");
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * ** * * * * * * * *
@@ -9776,6 +9772,7 @@ vscp_log_pre(struct web_connection *conn, void *cbdata)
 static int
 vscp_log_list(struct web_connection *conn, void *cbdata)
 {
+    /* TODO Delete
     char buf[80];
     std::string sql          = "select * from 'log' ";
     char *zErrMsg            = NULL;
@@ -9950,7 +9947,7 @@ vscp_log_list(struct web_connection *conn, void *cbdata)
     std::string url_logedit =
       vscp_string_format(("/vscp/loglist?id=%ld&from=%ld&count=%ld"
                           "&type=%d&level=%d"),
-                         (long)(nFrom /*+i*/),
+                         (long)(nFrom ),
                          (long)nFrom,
                          (long)nCount,
                          nType,
@@ -10045,6 +10042,7 @@ vscp_log_list(struct web_connection *conn, void *cbdata)
     sqlite3_finalize(ppStmt);
 
     web_printf(conn, "</tbody></table>");
+ */   
     web_printf(conn, WEB_COMMON_END, VSCPD_COPYRIGHT_HTML); // Common end code
 
     return WEB_OK;
@@ -10057,6 +10055,7 @@ vscp_log_list(struct web_connection *conn, void *cbdata)
 static int
 vscp_log_delete(struct web_connection *conn, void *cbdata)
 {
+ /*   TODO Delete
     std::string sql;
     char *zErrMsg = NULL;
     sqlite3_stmt *ppStmt;
@@ -10133,7 +10132,7 @@ vscp_log_delete(struct web_connection *conn, void *cbdata)
     web_printf(conn, WEB_LOG_SUBMIT);
 
     web_printf(conn, "</form>");
-
+*/
     web_printf(conn, WEB_COMMON_END, VSCPD_COPYRIGHT_HTML); // Common end code
     return WEB_OK;
 }
@@ -10145,6 +10144,7 @@ vscp_log_delete(struct web_connection *conn, void *cbdata)
 static int
 vscp_log_do_delete(struct web_connection *conn, void *cbdata)
 {
+    /*  TODO Delete
     char buf[80];
     std::string sql;
     char *zErrMsg = NULL;
@@ -10291,7 +10291,7 @@ vscp_log_do_delete(struct web_connection *conn, void *cbdata)
       conn,
       "%s",
       (const char *)vscp_string_format(("%d records deleted!"), count).c_str());
-
+*/
     web_printf(conn, WEB_COMMON_END, VSCPD_COPYRIGHT_HTML); // Common end code
     return WEB_OK;
 }

@@ -33,13 +33,13 @@
 #include <string>
 
 #include <dlfcn.h>
+#include <fcntl.h>
 #include <float.h>
 #include <stdlib.h>
 #include <string.h>
-#include <syslog.h>
-#include <sys/types.h>
 #include <sys/stat.h>
-#include <fcntl.h>
+#include <sys/types.h>
+#include <syslog.h>
 
 #include <expat.h>
 
@@ -264,17 +264,15 @@ actionTime::clearTables()
 
     m_actionHour.clear();
 
-    /*for (iter = m_actionMinute.begin(); iter != m_actionMinute.end(); ++iter) {
-        if (NULL != *iter) {
-            delete *iter;
+    /*for (iter = m_actionMinute.begin(); iter != m_actionMinute.end(); ++iter)
+    { if (NULL != *iter) { delete *iter;
         }
     }*/
 
     m_actionMinute.clear();
 
-    /*for (iter = m_actionSecond.begin(); iter != m_actionSecond.end(); ++iter) {
-        if (NULL != *iter) {
-            delete *iter;
+    /*for (iter = m_actionSecond.begin(); iter != m_actionSecond.end(); ++iter)
+    { if (NULL != *iter) { delete *iter;
         }
     }*/
 
@@ -443,7 +441,6 @@ actionTime::getMultiItem(const std::string &items, std::set<int> *pList)
                 int val = (int)vscp_readStringValue(items);
                 pList->insert(val);
             }
-
         }
     } else {
         // One Token ( or none )
@@ -453,7 +450,7 @@ actionTime::getMultiItem(const std::string &items, std::set<int> *pList)
         std::string token = tokens.front();
         tokens.pop_front();
 
-        val       = vscp_readStringValue(token);
+        val = vscp_readStringValue(token);
         pList->insert(val);
     }
 
@@ -565,7 +562,7 @@ actionTime::parseActionTime(const std::string &actionTime)
         vscp_trim(strSecond);
         getMultiItem(strSecond, &m_actionSecond);
     } else {
- 
+
         m_actionHour.clear();
         m_actionMinute.clear();
         m_actionSecond.clear();
@@ -638,11 +635,10 @@ actionTime::ShouldWeDoAction(void)
     if (m_actionMonth.size()) {
         bMatch = false;
         std::set<int>::iterator it;
-        for (it = m_actionMonth.begin(); it != m_actionMonth.end();
-             ++it) {
-                if (*it == vscpdatetime::setNow().getMonth()) {
-                    bMatch = true;
-                    break;
+        for (it = m_actionMonth.begin(); it != m_actionMonth.end(); ++it) {
+            if (*it == vscpdatetime::setNow().getMonth()) {
+                bMatch = true;
+                break;
             }
         }
 
@@ -657,10 +653,10 @@ actionTime::ShouldWeDoAction(void)
         bMatch = false;
         std::set<int>::iterator it;
         for (it = m_actionDay.begin(); it != m_actionDay.end(); ++it) {
-                if (*it == vscpdatetime::setNow().getDay()) {
-                    bMatch = true;
-                    break;
-                }
+            if (*it == vscpdatetime::setNow().getDay()) {
+                bMatch = true;
+                break;
+            }
         }
 
         // Fail if no match found
@@ -674,10 +670,10 @@ actionTime::ShouldWeDoAction(void)
         bMatch = false;
         std::set<int>::iterator it;
         for (it = m_actionHour.begin(); it != m_actionHour.end(); ++it) {
-                if (*it == vscpdatetime::setNow().getHour()) {
-                    bMatch = true;
-                    break;
-                }
+            if (*it == vscpdatetime::setNow().getHour()) {
+                bMatch = true;
+                break;
+            }
         }
 
         // Fail if no match found
@@ -690,12 +686,11 @@ actionTime::ShouldWeDoAction(void)
     if (m_actionMinute.size()) {
         bMatch = false;
         std::set<int>::iterator it;
-        for (it = m_actionMinute.begin(); it != m_actionMinute.end();
-             ++it) {
-                if (*it == vscpdatetime::setNow().getMinute()) {
-                    bMatch = true;
-                    break;
-                }
+        for (it = m_actionMinute.begin(); it != m_actionMinute.end(); ++it) {
+            if (*it == vscpdatetime::setNow().getMinute()) {
+                bMatch = true;
+                break;
+            }
         }
 
         // Fail if no match found
@@ -708,12 +703,11 @@ actionTime::ShouldWeDoAction(void)
     if (m_actionSecond.size()) {
         bMatch = false;
         std::set<int>::iterator it;
-        for (it = m_actionSecond.begin(); it != m_actionSecond.end();
-             ++it) {
-                if (*it == vscpdatetime::setNow().getSecond()) {
-                    bMatch = true;
-                    break;
-                }
+        for (it = m_actionSecond.begin(); it != m_actionSecond.end(); ++it) {
+            if (*it == vscpdatetime::setNow().getSecond()) {
+                bMatch = true;
+                break;
+            }
         }
 
         // Fail if no match found
@@ -739,15 +733,15 @@ actionTime::getActionTimeAsString(void)
     if ((cnt = m_actionYear.size())) {
         std::set<int>::iterator it;
         for (it = m_actionYear.begin(); it != m_actionYear.end(); ++it) {
-                str += vscp_string_format("%4d", *it);
-                // Add backslash for all but last
-                cnt--;
-                if (cnt) {
-                    str += "/";
-                } else {
-                    // Add date separator
-                    str += "-";
-                }
+            str += vscp_string_format("%4d", *it);
+            // Add backslash for all but last
+            cnt--;
+            if (cnt) {
+                str += "/";
+            } else {
+                // Add date separator
+                str += "-";
+            }
         }
     } else {
         str += "*-"; // All years trigger.
@@ -756,17 +750,16 @@ actionTime::getActionTimeAsString(void)
     // ActionMonth
     if ((cnt = m_actionMonth.size())) {
         std::set<int>::iterator it;
-        for (it = m_actionMonth.begin(); it != m_actionMonth.end();
-             ++it) {
-                str += vscp_string_format("%02d", *it);
-                // Add backslash for all but last
-                cnt--;
-                if (cnt) {
-                    str += "/";
-                } else {
-                    // Add date separator
-                    str += "-";
-                }
+        for (it = m_actionMonth.begin(); it != m_actionMonth.end(); ++it) {
+            str += vscp_string_format("%02d", *it);
+            // Add backslash for all but last
+            cnt--;
+            if (cnt) {
+                str += "/";
+            } else {
+                // Add date separator
+                str += "-";
+            }
         }
     } else {
         str += "*-"; // All months trigger.
@@ -776,12 +769,12 @@ actionTime::getActionTimeAsString(void)
     if ((cnt = m_actionDay.size())) {
         std::set<int>::iterator it;
         for (it = m_actionDay.begin(); it != m_actionDay.end(); ++it) {
-                str += vscp_string_format("%02d", *it);
-                // Add backslash for all but last
-                cnt--;
-                if (cnt) {
-                    str += "/";
-                }
+            str += vscp_string_format("%02d", *it);
+            // Add backslash for all but last
+            cnt--;
+            if (cnt) {
+                str += "/";
+            }
         }
     } else {
         str += "*"; // All days trigger.
@@ -794,15 +787,15 @@ actionTime::getActionTimeAsString(void)
     if ((cnt = m_actionHour.size())) {
         std::set<int>::iterator it;
         for (it = m_actionHour.begin(); it != m_actionHour.end(); ++it) {
-                str += vscp_string_format("%02d", *it);
-                // Add backslash for all but last
-                cnt--;
-                if (cnt) {
-                    str += "/";
-                } else {
-                    // Add date separator
-                    str += ":";
-                }
+            str += vscp_string_format("%02d", *it);
+            // Add backslash for all but last
+            cnt--;
+            if (cnt) {
+                str += "/";
+            } else {
+                // Add date separator
+                str += ":";
+            }
         }
     } else {
         str += "*:"; // All hours trigger.
@@ -811,17 +804,16 @@ actionTime::getActionTimeAsString(void)
     // ActionMinute
     if ((cnt = m_actionMinute.size())) {
         std::set<int>::iterator it;
-        for (it = m_actionMinute.begin(); it != m_actionMinute.end();
-             ++it) {
-                str += vscp_string_format("%02d", *it);
-                // Add backslash for all but last
-                cnt--;
-                if (cnt) {
-                    str += "/";
-                } else {
-                    // Add date separator
-                    str += ":";
-                }
+        for (it = m_actionMinute.begin(); it != m_actionMinute.end(); ++it) {
+            str += vscp_string_format("%02d", *it);
+            // Add backslash for all but last
+            cnt--;
+            if (cnt) {
+                str += "/";
+            } else {
+                // Add date separator
+                str += ":";
+            }
         }
     } else {
         str += "*:"; // All minutes trigger.
@@ -830,14 +822,13 @@ actionTime::getActionTimeAsString(void)
     // ActionSeconds
     if ((cnt = m_actionSecond.size())) {
         std::set<int>::iterator it;
-        for (it = m_actionSecond.begin(); it != m_actionSecond.end();
-             ++it) {
-                str += vscp_string_format("%02d", *it);
-                // Add backslash for all but last
-                cnt--;
-                if (cnt) {
-                    str += "/";
-                }
+        for (it = m_actionSecond.begin(); it != m_actionSecond.end(); ++it) {
+            str += vscp_string_format("%02d", *it);
+            // Add backslash for all but last
+            cnt--;
+            if (cnt) {
+                str += "/";
+            }
         }
     } else {
         str += "*"; // All seconds trigger.
@@ -1309,7 +1300,7 @@ dmElement::setFromString(std::string &strDM)
     if (!tokens.empty()) {
         str = tokens.front();
         tokens.pop_front();
-        if (0 == strcasecmp(str.c_str(),"true")) {
+        if (0 == strcasecmp(str.c_str(), "true")) {
             m_bCheckSubZone = true;
         } else {
             m_bCheckSubZone = false;
@@ -1505,7 +1496,7 @@ dmElement::handleEscapes(vscpEvent *pEvent, std::string &str)
                         str = str.substr(str.length() - pos - 1);
                     }
                     long idx = 0;
-                    idx = vscp_readStringValue( str );
+                    idx      = vscp_readStringValue(str);
                     if (idx < pEvent->sizeData) {
                         strResult +=
                           vscp_string_format("%d", pEvent->pdata[idx]);
@@ -1529,7 +1520,7 @@ dmElement::handleEscapes(vscpEvent *pEvent, std::string &str)
                         str = str.substr(str.length() - pos - 1);
                     }
                     long idx = 0;
-                    idx = vscp_readStringValue( str );
+                    idx      = vscp_readStringValue(str);
                     if (idx < pEvent->sizeData) {
                         strResult +=
                           vscp_string_format("%02X", pEvent->pdata[idx]);
@@ -1552,8 +1543,8 @@ dmElement::handleEscapes(vscpEvent *pEvent, std::string &str)
                     if (str.npos != (pos = str.find(']'))) {
                         str = str.substr(str.length() - pos - 1);
                     }
-                    long idx = 0;
-                    idx = vscp_readStringValue( str );
+                    long idx     = 0;
+                    idx          = vscp_readStringValue(str);
                     uint8_t byte = idx / 8;
                     uint8_t bit  = idx % 8;
                     if (byte < pEvent->sizeData) {
@@ -1580,7 +1571,7 @@ dmElement::handleEscapes(vscpEvent *pEvent, std::string &str)
                         str = str.substr(str.length() - pos - 1);
                     }
                     long idx = 0;
-                    idx = vscp_readStringValue( str );
+                    idx      = vscp_readStringValue(str);
                     if (idx < pEvent->sizeData) {
                         strResult += vscp_string_format(
                           "%s", pEvent->pdata[idx] ? "true" : "false");
@@ -1604,7 +1595,7 @@ dmElement::handleEscapes(vscpEvent *pEvent, std::string &str)
                         str = str.substr(str.length() - pos - 1);
                     }
                     long idx = 0;
-                    idx = vscp_readStringValue( str );
+                    idx      = vscp_readStringValue(str);
                     if (idx < pEvent->sizeData) {
                         strResult +=
                           vscp_string_format("%d", (int8_t)pEvent->pdata[idx]);
@@ -1628,7 +1619,7 @@ dmElement::handleEscapes(vscpEvent *pEvent, std::string &str)
                         str = str.substr(str.length() - pos - 1);
                     }
                     long idx = 0;
-                    idx = vscp_readStringValue( str );
+                    idx      = vscp_readStringValue(str);
                     if (idx < pEvent->sizeData) {
                         strResult +=
                           vscp_string_format("%d", (uint8_t)pEvent->pdata[idx]);
@@ -1652,7 +1643,7 @@ dmElement::handleEscapes(vscpEvent *pEvent, std::string &str)
                         str = str.substr(str.length() - pos - 1);
                     }
                     long idx = 0;
-                    idx = vscp_readStringValue( str );
+                    idx      = vscp_readStringValue(str);
                     if (idx < pEvent->sizeData) {
                         strResult += vscp_string_format(
                           "%02X", (uint8_t)pEvent->pdata[idx]);
@@ -1693,227 +1684,215 @@ dmElement::handleEscapes(vscpEvent *pEvent, std::string &str)
                 }
             }
             // Check for data.uint16[n] escape
-            else if (vscp_startsWith(str, "%event.data.uint16[", &str) ) {
-                         // Must be data
-                         if (pEvent->sizeData && (NULL != pEvent->pdata)) {
-                             std::string str = str;
-                             if (str.npos != (pos = str.find(']'))) {
-                                 str = str.substr(str.length() - pos - 1);
-                             }
+            else if (vscp_startsWith(str, "%event.data.uint16[", &str)) {
+                // Must be data
+                if (pEvent->sizeData && (NULL != pEvent->pdata)) {
+                    std::string str = str;
+                    if (str.npos != (pos = str.find(']'))) {
+                        str = str.substr(str.length() - pos - 1);
+                    }
 
-                             long idx = 0;
-                             idx = vscp_readStringValue( str );
-                             if ((idx + 1) < pEvent->sizeData) {
-                                 uint16_t val =
-                                   ((uint16_t)pEvent->pdata[idx] << 8) +
-                                   ((uint16_t)pEvent->pdata[idx + 1]);
-                                 strResult +=
-                                   vscp_string_format("%d", (int)val);
-                             } else {
-                                 strResult += "?"; // invalid index
-                             }
-                         } else {
-                             // Just remove ending ]
-                             if (str.npos != (pos = str.find(']'))) {
-                                 str = str.substr(str.length() - pos - 1);
-                             }
-                             strResult += ""; // No data
-                         }
-                     } // Check for data.uint16[n] escape
-                     else if (vscp_startsWith(
-                                str, "%event.hexdata.uint16[", &str)) {
-                         // Must be data
-                         if (pEvent->sizeData && (NULL != pEvent->pdata)) {
-                             std::string str = str;
-                             if (str.npos != (pos = str.find(']'))) {
-                                 str = str.substr(str.length() - pos - 1);
-                             }
+                    long idx = 0;
+                    idx      = vscp_readStringValue(str);
+                    if ((idx + 1) < pEvent->sizeData) {
+                        uint16_t val = ((uint16_t)pEvent->pdata[idx] << 8) +
+                                       ((uint16_t)pEvent->pdata[idx + 1]);
+                        strResult += vscp_string_format("%d", (int)val);
+                    } else {
+                        strResult += "?"; // invalid index
+                    }
+                } else {
+                    // Just remove ending ]
+                    if (str.npos != (pos = str.find(']'))) {
+                        str = str.substr(str.length() - pos - 1);
+                    }
+                    strResult += ""; // No data
+                }
+            } // Check for data.uint16[n] escape
+            else if (vscp_startsWith(str, "%event.hexdata.uint16[", &str)) {
+                // Must be data
+                if (pEvent->sizeData && (NULL != pEvent->pdata)) {
+                    std::string str = str;
+                    if (str.npos != (pos = str.find(']'))) {
+                        str = str.substr(str.length() - pos - 1);
+                    }
 
-                             long idx = 0;
-                             idx = vscp_readStringValue( str );
-                             if ((idx + 1) < pEvent->sizeData) {
-                                 uint16_t val =
-                                   ((uint16_t)pEvent->pdata[idx] << 8) +
-                                   ((uint16_t)pEvent->pdata[idx + 1]);
-                                 strResult += vscp_string_format("%04X", val);
-                             } else {
-                                 strResult += "?"; // invalid index
-                             }
-                         } else {
-                             // Just remove ending ]
-                             if (str.npos != (pos = str.find(']'))) {
-                                 str = str.substr(str.length() - pos - 1);
-                             }
-                             strResult += ""; // No data
-                         }
-                     }
-                     // Check for data.int32[n] escape
-                     else if (vscp_startsWith(
-                                str, "%event.data.int32[", &str)) {
-                         // Must be data
-                         if (pEvent->sizeData && (NULL != pEvent->pdata)) {
-                             std::string str = str;
-                             if (str.npos != (pos = str.find(']'))) {
-                                 str = str.substr(str.length() - pos - 1);
-                             }
+                    long idx = 0;
+                    idx      = vscp_readStringValue(str);
+                    if ((idx + 1) < pEvent->sizeData) {
+                        uint16_t val = ((uint16_t)pEvent->pdata[idx] << 8) +
+                                       ((uint16_t)pEvent->pdata[idx + 1]);
+                        strResult += vscp_string_format("%04X", val);
+                    } else {
+                        strResult += "?"; // invalid index
+                    }
+                } else {
+                    // Just remove ending ]
+                    if (str.npos != (pos = str.find(']'))) {
+                        str = str.substr(str.length() - pos - 1);
+                    }
+                    strResult += ""; // No data
+                }
+            }
+            // Check for data.int32[n] escape
+            else if (vscp_startsWith(str, "%event.data.int32[", &str)) {
+                // Must be data
+                if (pEvent->sizeData && (NULL != pEvent->pdata)) {
+                    std::string str = str;
+                    if (str.npos != (pos = str.find(']'))) {
+                        str = str.substr(str.length() - pos - 1);
+                    }
 
-                             long idx = 0;
-                             idx = vscp_readStringValue( str );
-                             if ((idx + 3) < pEvent->sizeData) {
-                                 long val =
-                                   ((long)pEvent->pdata[idx] << 24) +
+                    long idx = 0;
+                    idx      = vscp_readStringValue(str);
+                    if ((idx + 3) < pEvent->sizeData) {
+                        long val = ((long)pEvent->pdata[idx] << 24) +
                                    ((long)pEvent->pdata[idx + 1] << 16) +
                                    ((long)pEvent->pdata[idx + 2] << 8) +
                                    ((long)pEvent->pdata[idx + 3]);
-                                 strResult += vscp_string_format("%ld", val);
-                             } else {
-                                 strResult += "?"; // invalid index
-                             }
-                         } else {
-                             // Just remove ending ]
-                             if (str.npos != (pos = str.find(']'))) {
-                                 str = str.substr(str.length() - pos - 1);
-                             }
-                             strResult += ""; // No data
-                         }
-                     }
-                     // Check for data.uint32[n] escape
-                     else if (vscp_startsWith(
-                                str, "%event.data.uint32[", &str)) {
-                         // Must be data
-                         if (pEvent->sizeData && (NULL != pEvent->pdata)) {
-                             std::string str = str;
-                             if (str.npos != (pos = str.find(']'))) {
-                                 str = str.substr(str.length() - pos - 1);
-                             }
+                        strResult += vscp_string_format("%ld", val);
+                    } else {
+                        strResult += "?"; // invalid index
+                    }
+                } else {
+                    // Just remove ending ]
+                    if (str.npos != (pos = str.find(']'))) {
+                        str = str.substr(str.length() - pos - 1);
+                    }
+                    strResult += ""; // No data
+                }
+            }
+            // Check for data.uint32[n] escape
+            else if (vscp_startsWith(str, "%event.data.uint32[", &str)) {
+                // Must be data
+                if (pEvent->sizeData && (NULL != pEvent->pdata)) {
+                    std::string str = str;
+                    if (str.npos != (pos = str.find(']'))) {
+                        str = str.substr(str.length() - pos - 1);
+                    }
 
-                             long idx = 0;
-                             idx = vscp_readStringValue( str );
-                             if ((idx + 3) < pEvent->sizeData) {
-                                 uint32_t val =
-                                   ((uint32_t)pEvent->pdata[idx] << 24) +
-                                   ((uint32_t)pEvent->pdata[idx + 1] << 16) +
-                                   ((uint32_t)pEvent->pdata[idx + 2] << 8) +
-                                   ((uint32_t)pEvent->pdata[idx + 3]);
-                                 strResult += vscp_string_format(
-                                   "%lu", (unsigned long)val);
-                             } else {
-                                 strResult += "?"; // invalid index
-                             }
-                         } else {
-                             // Just remove ending ]
-                             if (str.npos != (pos = str.find(']'))) {
-                                 str = str.substr(str.length() - pos - 1);
-                             }
-                             strResult += ""; // No data
-                         }
-                     }
-                     // Check for hexdata.uint32[n] escape
-                     else if (vscp_startsWith(
-                                str, "%event.hexdata.uint32[", &str)) {
-                         // Must be data
-                         if (pEvent->sizeData && (NULL != pEvent->pdata)) {
-                             std::string str = str;
-                             if (str.npos != (pos = str.find(']'))) {
-                                 str = str.substr(str.length() - pos - 1);
-                             }
+                    long idx = 0;
+                    idx      = vscp_readStringValue(str);
+                    if ((idx + 3) < pEvent->sizeData) {
+                        uint32_t val =
+                          ((uint32_t)pEvent->pdata[idx] << 24) +
+                          ((uint32_t)pEvent->pdata[idx + 1] << 16) +
+                          ((uint32_t)pEvent->pdata[idx + 2] << 8) +
+                          ((uint32_t)pEvent->pdata[idx + 3]);
+                        strResult +=
+                          vscp_string_format("%lu", (unsigned long)val);
+                    } else {
+                        strResult += "?"; // invalid index
+                    }
+                } else {
+                    // Just remove ending ]
+                    if (str.npos != (pos = str.find(']'))) {
+                        str = str.substr(str.length() - pos - 1);
+                    }
+                    strResult += ""; // No data
+                }
+            }
+            // Check for hexdata.uint32[n] escape
+            else if (vscp_startsWith(str, "%event.hexdata.uint32[", &str)) {
+                // Must be data
+                if (pEvent->sizeData && (NULL != pEvent->pdata)) {
+                    std::string str = str;
+                    if (str.npos != (pos = str.find(']'))) {
+                        str = str.substr(str.length() - pos - 1);
+                    }
 
-                             long idx = 0;
-                             idx = vscp_readStringValue( str );
-                             if ((idx + 3) < pEvent->sizeData) {
-                                 uint32_t val =
-                                   ((uint32_t)pEvent->pdata[idx] << 24) +
-                                   ((uint32_t)pEvent->pdata[idx + 1] << 16) +
-                                   ((uint32_t)pEvent->pdata[idx + 2] << 8) +
-                                   ((uint32_t)pEvent->pdata[idx + 3]);
-                                 strResult += vscp_string_format("%08X", val);
-                             } else {
-                                 strResult += "?"; // invalid index
-                             }
-                         } else {
-                             // Just remove ending ]
-                             if (str.npos != (pos = str.find(']'))) {
-                                 str = str.substr(str.length() - pos - 1);
-                             }
-                             strResult += ""; // No data
-                         }
-                     }
-                     // Check for data.float[n] escape
-                     else if (vscp_startsWith(
-                                str, "%event.data.float[", &str)) {
-                         // Must be data
-                         if (pEvent->sizeData && (NULL != pEvent->pdata)) {
-                             std::string str = str;
-                             if (str.npos != (pos = str.find(']'))) {
-                                 str = str.substr(str.length() - pos - 1);
-                             }
+                    long idx = 0;
+                    idx      = vscp_readStringValue(str);
+                    if ((idx + 3) < pEvent->sizeData) {
+                        uint32_t val =
+                          ((uint32_t)pEvent->pdata[idx] << 24) +
+                          ((uint32_t)pEvent->pdata[idx + 1] << 16) +
+                          ((uint32_t)pEvent->pdata[idx + 2] << 8) +
+                          ((uint32_t)pEvent->pdata[idx + 3]);
+                        strResult += vscp_string_format("%08X", val);
+                    } else {
+                        strResult += "?"; // invalid index
+                    }
+                } else {
+                    // Just remove ending ]
+                    if (str.npos != (pos = str.find(']'))) {
+                        str = str.substr(str.length() - pos - 1);
+                    }
+                    strResult += ""; // No data
+                }
+            }
+            // Check for data.float[n] escape
+            else if (vscp_startsWith(str, "%event.data.float[", &str)) {
+                // Must be data
+                if (pEvent->sizeData && (NULL != pEvent->pdata)) {
+                    std::string str = str;
+                    if (str.npos != (pos = str.find(']'))) {
+                        str = str.substr(str.length() - pos - 1);
+                    }
 
-                             long idx = 0;
-                             idx = vscp_readStringValue( str );
-                             if ((idx + 3) < pEvent->sizeData) {
-                                 float val = *((float *)(pEvent->pdata + idx));
-                                 strResult += vscp_string_format("%f", val);
-                             } else {
-                                 strResult += "?"; // invalid index
-                             }
-                         } else {
-                             // Just remove ending ]
-                             if (str.npos != (pos = str.find(']'))) {
-                                 str = str.substr(str.length() - pos - 1);
-                             }
-                             strResult += ""; // No data
-                         }
-                     }
-                     // Check for data.double[n] escape
-                     else if (vscp_startsWith(
-                                str, "%event.data.double[", &str)) {
-                         // Must be data
-                         if (pEvent->sizeData && (NULL != pEvent->pdata)) {
-                             std::string str = str;
-                             if (str.npos != (pos = str.find(']'))) {
-                                 str = str.substr(str.length() - pos - 1);
-                             }
+                    long idx = 0;
+                    idx      = vscp_readStringValue(str);
+                    if ((idx + 3) < pEvent->sizeData) {
+                        float val = *((float *)(pEvent->pdata + idx));
+                        strResult += vscp_string_format("%f", val);
+                    } else {
+                        strResult += "?"; // invalid index
+                    }
+                } else {
+                    // Just remove ending ]
+                    if (str.npos != (pos = str.find(']'))) {
+                        str = str.substr(str.length() - pos - 1);
+                    }
+                    strResult += ""; // No data
+                }
+            }
+            // Check for data.double[n] escape
+            else if (vscp_startsWith(str, "%event.data.double[", &str)) {
+                // Must be data
+                if (pEvent->sizeData && (NULL != pEvent->pdata)) {
+                    std::string str = str;
+                    if (str.npos != (pos = str.find(']'))) {
+                        str = str.substr(str.length() - pos - 1);
+                    }
 
-                             long idx = 0;
-                             idx = vscp_readStringValue( str );
-                             if ((idx + 7) < pEvent->sizeData) {
-                                 double val =
-                                   *((double *)(pEvent->pdata + idx));
-                                 strResult += vscp_string_format("%lf", val);
-                             } else {
-                                 strResult += "?"; // invalid index
-                             }
-                         } else {
-                             // Just remove ending ]
-                             if (str.npos != (pos = str.find(']'))) {
-                                 str = str.substr(str.length() - pos - 1);
-                             }
-                             strResult += ""; // No data
-                         }
-                     }
-                     // Check for sizedata escape
-                     else if (vscp_startsWith(str, "%event.sizedata", &str)) {
-                         strResult +=
-                           vscp_string_format("%d", pEvent->sizeData);
-                     }
-                     // Check for data escape
-                     else if (vscp_startsWith(str, "%event.data", &str)) {
-                         if (pEvent->sizeData && (NULL != pEvent->pdata)) {
-                             std::string str;
-                             vscp_writeVscpDataToString(pEvent, str, false);
-                             strResult += str;
-                         } else {
-                             strResult += "empty"; // No data
-                         }
-                     }
-                     // Check for guid escape
-                     else if (vscp_startsWith(str, "%event.guid", &str)) {
-                         std::string strGUID;
-                         vscp_writeGuidToString(pEvent, strGUID);
-                         strResult += strGUID;
-                     }
-                     // Check for nickname escape
-                     else if (vscp_startsWith(str, "%event.nickname", &str)) {
+                    long idx = 0;
+                    idx      = vscp_readStringValue(str);
+                    if ((idx + 7) < pEvent->sizeData) {
+                        double val = *((double *)(pEvent->pdata + idx));
+                        strResult += vscp_string_format("%lf", val);
+                    } else {
+                        strResult += "?"; // invalid index
+                    }
+                } else {
+                    // Just remove ending ]
+                    if (str.npos != (pos = str.find(']'))) {
+                        str = str.substr(str.length() - pos - 1);
+                    }
+                    strResult += ""; // No data
+                }
+            }
+            // Check for sizedata escape
+            else if (vscp_startsWith(str, "%event.sizedata", &str)) {
+                strResult += vscp_string_format("%d", pEvent->sizeData);
+            }
+            // Check for data escape
+            else if (vscp_startsWith(str, "%event.data", &str)) {
+                if (pEvent->sizeData && (NULL != pEvent->pdata)) {
+                    std::string str;
+                    vscp_writeVscpDataToString(pEvent, str, false);
+                    strResult += str;
+                } else {
+                    strResult += "empty"; // No data
+                }
+            }
+            // Check for guid escape
+            else if (vscp_startsWith(str, "%event.guid", &str)) {
+                std::string strGUID;
+                vscp_writeGuidToString(pEvent, strGUID);
+                strResult += strGUID;
+            }
+            // Check for nickname escape
+            else if (vscp_startsWith(str, "%event.nickname", &str)) {
                 strResult +=
                   vscp_string_format(("%d"), pEvent->GUID[VSCP_GUID_LSB]);
             }
@@ -1934,25 +1913,21 @@ dmElement::handleEscapes(vscpEvent *pEvent, std::string &str)
                 }
             }
             // Check for event zone escape
-            else if (vscp_startsWith(str, "%event.zone", &str) )
-                {
-                    if (pEvent->sizeData && (NULL != pEvent->pdata)) {
-                        strResult +=
-                          vscp_string_format(("%d"), pEvent->pdata[1]);
-                    } else {
-                        strResult += ("empty"); // No data
-                    }
+            else if (vscp_startsWith(str, "%event.zone", &str)) {
+                if (pEvent->sizeData && (NULL != pEvent->pdata)) {
+                    strResult += vscp_string_format(("%d"), pEvent->pdata[1]);
+                } else {
+                    strResult += ("empty"); // No data
                 }
+            }
             // Check for event subzone escape
-            else if (vscp_startsWith(str,"%event.subzone", &str) )
-                {
-                    if (pEvent->sizeData && (NULL != pEvent->pdata)) {
-                        strResult +=
-                          vscp_string_format(("%d"), pEvent->pdata[2]);
-                    } else {
-                        strResult += ("empty"); // No data
-                    }
+            else if (vscp_startsWith(str, "%event.subzone", &str)) {
+                if (pEvent->sizeData && (NULL != pEvent->pdata)) {
+                    strResult += vscp_string_format(("%d"), pEvent->pdata[2]);
+                } else {
+                    strResult += ("empty"); // No data
                 }
+            }
             // Check for event escape
             else if (vscp_startsWith(str, "%event", &str)) {
                 std::string strEvent;
@@ -1986,7 +1961,7 @@ dmElement::handleEscapes(vscpEvent *pEvent, std::string &str)
                 // int ms =
                 // vscpdatetime::setNow().getMillisecond();
                 // !!!!! Does not work  !!!!!
-                std::string msstr = vscp_string_format(".%ld", ms );
+                std::string msstr = vscp_string_format(".%ld", ms);
                 strResult += vscpdatetime::setNow().getISODate();
                 strResult += "T";
                 strResult += vscpdatetime::setNow().getISOTime();
@@ -2000,12 +1975,12 @@ dmElement::handleEscapes(vscpEvent *pEvent, std::string &str)
             }
             // Check for mstime escape
             else if (vscp_startsWith(str, "%mstime", &str)) {
-                uint64_t now    = time(NULL); // get current time
+                uint64_t now = time(NULL); // get current time
                 strResult += vscp_string_format("%llu", now);
             }
             // Check for unixtime escape
             else if (vscp_startsWith(str, "%unixtime", &str)) {
-                uint64_t now    = time(NULL); // get current time
+                uint64_t now = time(NULL); // get current time
                 strResult += vscp_string_format("%llu", now);
             }
             // Check for hour escape
@@ -2253,7 +2228,8 @@ dmElement::handleEscapes(vscpEvent *pEvent, std::string &str)
                             memset(buf, 0, sizeof(buf));
 
                             size_t size = 0;
-                            size = fread(buf, sizeof(char), sizeof(buf) - 1, fp);
+                            size =
+                              fread(buf, sizeof(char), sizeof(buf) - 1, fp);
                             strResult += std::string(buf, size);
 
                             fclose(fp);
@@ -2608,11 +2584,11 @@ dmElement::doAction(vscpEvent *pEvent)
                 handleEscapes(pEvent, strParam);
 
                 // TODO
-                //actionThread_JavaScript *pThread =
+                // actionThread_JavaScript *pThread =
                 //  new actionThread_JavaScript(strParam);
-                //if (NULL == pThread) return false;
+                // if (NULL == pThread) return false;
 
-                //vscp_convertVSCPtoEx(&pThread->m_feedEvent,
+                // vscp_convertVSCPtoEx(&pThread->m_feedEvent,
                 //                     pEvent); // Save feed event
 
                 /* TODO
@@ -2660,10 +2636,10 @@ dmElement::doAction(vscpEvent *pEvent)
                 vscp_trim(strParam);
 
                 // TODO
-                //actionThread_Lua *pThread = new actionThread_Lua(strParam);
-                //if (NULL == pThread) return false;
+                // actionThread_Lua *pThread = new actionThread_Lua(strParam);
+                // if (NULL == pThread) return false;
 
-                //vscp_convertVSCPtoEx(&pThread->m_feedEvent,
+                // vscp_convertVSCPtoEx(&pThread->m_feedEvent,
                 //                     pEvent); // Save feed event
 
                 /* TODO
@@ -2852,7 +2828,7 @@ dmElement::doActionExecuteConditional(vscpEvent *pDMEvent,
         syslog(
           LOG_ERR,
           "[DM] [Action] Conditional execute: No variable defined. Param = %s",
-            escaped_actionparam.c_str());
+          escaped_actionparam.c_str());
         return false;
     }
 
@@ -3101,14 +3077,14 @@ dmElement::doActionSendEvent(vscpEvent *pDMEvent)
                     if (!gpobj->m_variables.find(varName, variable)) {
                         // Well should not happen - but
                         // in case...
-                          syslog(LOG_ERR,
-                                 "[DM] [Action] Check "
-                                 "measurement: Variable "
-                                 "[%s] "
-                                 "was not found (but "
-                                 "was created "
-                                 "alsubstr).",
-                                 (const char *)varName.c_str());
+                        syslog(LOG_ERR,
+                               "[DM] [Action] Check "
+                               "measurement: Variable "
+                               "[%s] "
+                               "was not found (but "
+                               "was created "
+                               "alsubstr).",
+                               (const char *)varName.c_str());
                         return false;
                     }
                 }
@@ -3635,9 +3611,9 @@ dmElement::doActionGetURL(vscpEvent *pDMEvent)
 
     // Go do your work mate
     // TODO
-    //actionThread_URL *thread = new actionThread_URL(
+    // actionThread_URL *thread = new actionThread_URL(
     //  gpobj, url, nAccessMethod, putdata, extraheaders, proxy);
-    //if (NULL == thread) {
+    // if (NULL == thread) {
     //    return false;
     //}
 
@@ -3727,7 +3703,7 @@ dmElement::doActionStoreVariable(vscpEvent *pDMEvent)
             syslog(LOG_ERR,
                    "[DM] "
                    "[Action] Store Variable: Could not add variable Param = %s",
-                   params.c_str() );
+                   params.c_str());
             return false;
         }
 
@@ -4686,8 +4662,10 @@ dmElement::doActionCheckMeasurement(vscpEvent *pDMEvent)
 
         // The variable must be boolean
         if (VSCP_DAEMON_VARIABLE_CODE_BOOLEAN != varFlag.getType()) {
-            syslog(LOG_ERR, "[DM] [Action] Result (flag) variable must be boolean. "
-                  "param = %s",escaped_param.c_str() );
+            syslog(LOG_ERR,
+                   "[DM] [Action] Result (flag) variable must be boolean. "
+                   "param = %s",
+                   escaped_param.c_str());
             return false;
         }
     } else {
@@ -5059,7 +5037,7 @@ dmElement::doActionStartTimer(vscpEvent *pDMEvent)
     if (!tokens.empty()) {
         std::string str = tokens.front();
         tokens.pop_front();
-        if (0 == vscp_strcasecmp( str.c_str(), "true" ) ){
+        if (0 == vscp_strcasecmp(str.c_str(), "true")) {
             bAutoReload = true;
         }
     }
@@ -5188,7 +5166,7 @@ dmElement::doActionStopTimer(vscpEvent *pDMEvent)
 CDM::CDM(CControlObject *ctrlObj)
 {
     m_bEnable = true;
-    
+
     // Set the default dm configuration path
     m_staticXMLPath = "/srv/vscp/dm.xml";
 
@@ -5215,7 +5193,7 @@ CDM::CDM(CControlObject *ctrlObj)
 
     m_lastTime = vscpdatetime::setNow();
 
-    m_staticXMLPath = "/srv/vscp/dm.xml";
+    m_staticXMLPath   = "/srv/vscp/dm.xml";
     m_path_db_vscp_dm = "/srv/vscp/dm.sqlite3";
 
     m_db_vscp_dm = NULL;
@@ -5257,8 +5235,8 @@ CDM::init(void)
 
     // Check filename
     if (vscp_fileExists(m_path_db_vscp_dm)) {
-        if (SQLITE_OK != sqlite3_open(m_path_db_vscp_dm.c_str(),
-                                      &m_db_vscp_dm)) {
+        if (SQLITE_OK !=
+            sqlite3_open(m_path_db_vscp_dm.c_str(), &m_db_vscp_dm)) {
             // Failed to open/create the database file
             syslog(LOG_ERR,
                    "VSCP Daemon decision matrix database could not "
@@ -5272,27 +5250,24 @@ CDM::init(void)
         }
     } else {
 
-            // We need to create the database from scratch. This may
-            // not work if the database is in a read only location.
+        // We need to create the database from scratch. This may
+        // not work if the database is in a read only location.
+        syslog(LOG_ERR,
+               "VSCP Daemon DM database does not exist - will "
+               "be created. Path=%s",
+               m_path_db_vscp_dm.c_str());
+
+        if (SQLITE_OK == sqlite3_open((const char *)m_path_db_vscp_dm.c_str(),
+                                      &m_db_vscp_dm)) {
+            // create the table.
+            doCreateDMTable();
+        } else {
             syslog(LOG_ERR,
-                   "VSCP Daemon DM database does not exist - will "
-                   "be created. Path=%s",
-                   m_path_db_vscp_dm.c_str());
-
-            if (SQLITE_OK ==
-                sqlite3_open(
-                  (const char *)m_path_db_vscp_dm.c_str(),
-                  &m_db_vscp_dm)) {
-                // create the table.
-                doCreateDMTable();
-            } else {
-                syslog(LOG_ERR,
-                       "Failed to create VSCP DM database - "
-                       "will not be used. Path=%s error=%s",
-                       m_path_db_vscp_dm.c_str(),
-                       sqlite3_errmsg(m_db_vscp_dm));
-            }
-
+                   "Failed to create VSCP DM database - "
+                   "will not be used. Path=%s error=%s",
+                   m_path_db_vscp_dm.c_str(),
+                   sqlite3_errmsg(m_db_vscp_dm));
+        }
     }
 
     if (gpobj->m_debugFlags1 & VSCP_DEBUG1_DM) {
@@ -5323,49 +5298,35 @@ CDM::getCompareCodeFromToken(std::string &token)
     vscp_makeLower(token);
     vscp_trim(token);
 
-    if ( vscp_startsWith(token, "noop" ) ) {
+    if (vscp_startsWith(token, "noop")) {
         return DM_MEASUREMENT_COMPARE_NOOP;
-    } 
-    else if ( vscp_startsWith(token, "eqgt" ) ) {
+    } else if (vscp_startsWith(token, "eqgt")) {
         return DM_MEASUREMENT_COMPARE_GTEQ;
-    }
-    else if ( vscp_startsWith(token, "eqlt" ) ) {
+    } else if (vscp_startsWith(token, "eqlt")) {
         return DM_MEASUREMENT_COMPARE_LTEQ;
-    }
-    else if ( vscp_startsWith(token, "eq" ) ) {
+    } else if (vscp_startsWith(token, "eq")) {
         return DM_MEASUREMENT_COMPARE_EQ;
-    } 
-    else if ( vscp_startsWith(token, "==" ) ) {
+    } else if (vscp_startsWith(token, "==")) {
         return DM_MEASUREMENT_COMPARE_EQ;
-    }
-    else if ( vscp_startsWith(token, "neq" ) ) {
+    } else if (vscp_startsWith(token, "neq")) {
         return DM_MEASUREMENT_COMPARE_NEQ;
-    } 
-    else if ( vscp_startsWith(token, "!=" ) ) {
+    } else if (vscp_startsWith(token, "!=")) {
         return DM_MEASUREMENT_COMPARE_NEQ;
-    }     
-    else if ( vscp_startsWith(token, "<" ) ) {
+    } else if (vscp_startsWith(token, "<")) {
         return DM_MEASUREMENT_COMPARE_LT;
-    }   
-    else if ( vscp_startsWith(token, ">" ) ) {
+    } else if (vscp_startsWith(token, ">")) {
         return DM_MEASUREMENT_COMPARE_GT;
-    }
-    else if ( vscp_startsWith(token, "gteq" ) ) {
+    } else if (vscp_startsWith(token, "gteq")) {
         return DM_MEASUREMENT_COMPARE_GTEQ;
-    }
-    else if ( vscp_startsWith(token, "gt" ) ) {
+    } else if (vscp_startsWith(token, "gt")) {
         return DM_MEASUREMENT_COMPARE_GT;
-    }    
-    else if ( vscp_startsWith(token, ">=" ) ) {
+    } else if (vscp_startsWith(token, ">=")) {
         return DM_MEASUREMENT_COMPARE_GTEQ;
-    }
-    else if ( vscp_startsWith(token, "lteq" ) ) {
+    } else if (vscp_startsWith(token, "lteq")) {
         return DM_MEASUREMENT_COMPARE_LTEQ;
-    }
-    else if ( vscp_startsWith(token, "lt" ) ) {
+    } else if (vscp_startsWith(token, "lt")) {
         return DM_MEASUREMENT_COMPARE_LT;
-    }
-    else if ( vscp_startsWith(token, "<=" ) ) {
+    } else if (vscp_startsWith(token, "<=")) {
         return DM_MEASUREMENT_COMPARE_LTEQ;
     }
 
@@ -5432,7 +5393,7 @@ CDM::addMemoryElement(dmElement *pItem)
 
     pthread_mutex_lock(&m_mutexDM);
     m_DMList.push_back(pItem);
-    pthread_mutex_unlock( &m_mutexDM );
+    pthread_mutex_unlock(&m_mutexDM);
 
     return true;
 }
@@ -5449,7 +5410,7 @@ CDM::removeMemoryElement(unsigned short row)
     std::deque<dmElement *>::iterator it = m_DMList.begin();
 
     pthread_mutex_lock(&m_mutexDM);
-    m_DMList.erase(it+row);
+    m_DMList.erase(it + row);
     pthread_mutex_unlock(&m_mutexDM);
 
     return true;
@@ -6290,14 +6251,14 @@ CDM::doCreateDMTable(void)
     // Check if database is open
     if (NULL == m_db_vscp_dm) return false;
 
-    pthread_mutex_lock( &m_mutexDM );
+    pthread_mutex_lock(&m_mutexDM);
 
     if (SQLITE_OK != sqlite3_exec(m_db_vscp_dm, psql, NULL, NULL, &pErrMsg)) {
-        pthread_mutex_unlock( &m_mutexDM );
+        pthread_mutex_unlock(&m_mutexDM);
         return false;
     }
 
-    pthread_mutex_unlock( &m_mutexDM );
+    pthread_mutex_unlock(&m_mutexDM);
 
     return true;
 }
@@ -6514,7 +6475,7 @@ CDM::updateDatabaseRecord(dmElement *pdm)
         syslog(LOG_ERR,
                "[DM] updateDatabaseRecord failed. SQL = %s error=%s",
                sql,
-               pErrMsg );
+               pErrMsg);
         sqlite3_free(sql);
         return false;
     }
@@ -6548,8 +6509,8 @@ CDM::updateDatabaseRecordItem(unsigned long id,
     if (SQLITE_OK != sqlite3_exec(m_db_vscp_dm, sql, NULL, NULL, &pErrMsg)) {
         syslog(LOG_ERR,
                "[DM] updateDatabaseRecordItem failed. SQL = %s error=%s",
-               sql ,
-               pErrMsg );
+               sql,
+               pErrMsg);
         sqlite3_free(sql);
         return false;
     }
@@ -6895,8 +6856,7 @@ CDM::loadFromDatabase(void)
             if (NULL != (p = (const char *)sqlite3_column_text(
                            ppStmt, VSCPDB_ORDINAL_DM_ALLOWED_TIME))) {
                 if ((NULL != p) && ('*' != *p)) {
-                    pDMitem->m_timeAllow.parseActionTime(
-                      std::string(p));
+                    pDMitem->m_timeAllow.parseActionTime(std::string(p));
                 }
             }
 
@@ -7041,11 +7001,16 @@ startDMParser(void *data, const char *name, const char **attr)
     CDM *pdm = (CDM *)data;
     if (NULL == pdm) return;
 
-    if ((0 == vscp_strcasecmp(name, "dm")) &&
-        (0 == depth_dm_parser)) {
+    // New tag - Start new data collect
+    if (NULL != last_dm_content) {
+        free(last_dm_content);
+        last_dm_content = NULL;
+    }
+
+    if ((0 == vscp_strcasecmp(name, "dm")) && (0 == depth_dm_parser)) {
         // just increase the depth
-    } else if ((0 == vscp_strcasecmp(name, "row")) &&
-               (1 == depth_dm_parser)) {
+    } else if ((0 == vscp_strcasecmp(name, "row")) && (1 == depth_dm_parser)) {
+
         // New row
         if (NULL != pnew_dm_item) {
             delete pnew_dm_item;
@@ -7054,7 +7019,8 @@ startDMParser(void *data, const char *name, const char **attr)
 
         pnew_dm_item = (dmElement *)new dmElement;
         if (NULL == pnew_dm_item) return;
-        memset(pnew_dm_item, 0, sizeof(dmElement));
+
+        //memset(pnew_dm_item, 0, sizeof(dmElement));
         pnew_dm_item->m_bStatic = true; // Can not be edited/saved
         pnew_dm_item->m_bEnable = false;
 
@@ -7069,14 +7035,15 @@ startDMParser(void *data, const char *name, const char **attr)
                 }
             } else if (0 == vscp_strcasecmp(attr[i], "groupid")) {
                 vscp_trim(attribute);
-                pnew_dm_item->m_strGroupID = attribute;
+                if (attribute.length()) {
+                    pnew_dm_item->m_strGroupID = attribute;
+                }
             }
         }
     } else if ((0 == vscp_strcasecmp(name, "comment")) &&
                (2 == depth_dm_parser)) {
         // Picked up in data part
-    } else if ((0 == vscp_strcasecmp(name, "mask")) &&
-               (2 == depth_dm_parser)) {
+    } else if ((0 == vscp_strcasecmp(name, "mask")) && (2 == depth_dm_parser)) {
         for (int i = 0; attr[i]; i += 2) {
             std::string attribute = attr[i + 1];
             if (0 == vscp_strcasecmp(attr[i], "priority")) {
@@ -7137,10 +7104,9 @@ startDMParser(void *data, const char *name, const char **attr)
             std::string attribute = attr[i + 1];
             if (0 == vscp_strcasecmp(attr[i], "measurementindex")) {
                 vscp_trim(attribute);
-                if ( 0 == vscp_strcasecmp( attribute.c_str(), "true" ) ) {
+                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
                     pnew_dm_item->m_bCheckMeasurementIndex = true;
-                }
-                else {
+                } else {
                     pnew_dm_item->m_bCheckMeasurementIndex = false;
                 }
             } else if (0 == vscp_strcasecmp(attr[i], "zone")) {
@@ -7151,8 +7117,7 @@ startDMParser(void *data, const char *name, const char **attr)
                 pnew_dm_item->m_subzone       = vscp_readStringValue(attribute);
             }
         }
-    } else if ((0 == vscp_strcasecmp(name, "zone")) &&
-               (2 == depth_dm_parser)) {
+    } else if ((0 == vscp_strcasecmp(name, "zone")) && (2 == depth_dm_parser)) {
         pnew_dm_item->m_bCheckZone = true;
         // Picked up in data part
     } else if ((0 == vscp_strcasecmp(name, "subzone")) &&
@@ -7180,7 +7145,6 @@ startDMParser(void *data, const char *name, const char **attr)
                 pnew_dm_item->m_measurementValue = std::stod(attribute);
             }
         }
-
     }
 
     depth_dm_parser++;
@@ -7192,80 +7156,91 @@ handle_dm_data(void *data, const char *content, int length)
     CDM *pdm = (CDM *)data;
     if (NULL == pdm) return;
 
-    int prevLength = (NULL == last_dm_content) ? 0 : strlen(last_dm_content);
-    char *tmp      = (char *)malloc(length + 1 + prevLength);
-    strncpy(tmp, content, length);
-    tmp[length] = '\0';
-
     if (NULL == last_dm_content) {
-        tmp = (char *)malloc(length + 1);
-        strncpy(tmp, content, length);
-        tmp[length]     = '\0';
-        last_dm_content = tmp;
+        last_dm_content = (char *)malloc(length + 1);
+        strncpy(last_dm_content, content, length);
+        last_dm_content[length] = '\0';
     } else {
         // Concatenate
-        int newlen      = length + 1 + strlen(last_dm_content);
-        last_dm_content = (char *)realloc(last_dm_content, newlen);
-        strncat(tmp, content, length);
-        last_dm_content[newlen] = '\0';
+        int newlen = length + 1 + strlen(last_dm_content);
+        char *p    = (char *)realloc(last_dm_content, newlen);
+        if (NULL == p) {
+            syslog(LOG_ERR, "Memory allocation failure");
+            free(last_dm_content);
+            last_dm_content = NULL;
+            return;
+        }
+        last_dm_content = p;
+        strncat(last_dm_content, content, length);
     }
 }
 
 static void
 endDMParser(void *data, const char *name)
 {
+    std::string str;
     CDM *pdm = (CDM *)data;
     if (NULL == pdm) return;
 
-    std::string str = last_dm_content;
+    depth_dm_parser--;
 
+    // If no data there is nothing more to do
     if (NULL != last_dm_content) {
-        if ((0 == vscp_strcasecmp(name, "row")) && (2 == depth_dm_parser)) {
-            // add the DM row to the matrix
-            pdm->addMemoryElement(pnew_dm_item);
-            pnew_dm_item = NULL;
-        } else if ((0 == vscp_strcasecmp(name, "comment")) &&
-                   (2 == depth_dm_parser)) {
-            vscp_trim(str);
+        str = last_dm_content;
+        vscp_trim(str);
+        // Free the allocated data
+        free(last_dm_content);
+        last_dm_content = NULL;
+    }
+
+    if ((0 == vscp_strcasecmp(name, "row")) && (1 == depth_dm_parser)) {
+        // add the DM row to the matrix
+        pdm->addMemoryElement(pnew_dm_item);
+        pnew_dm_item = NULL;
+    } else if ((0 == vscp_strcasecmp(name, "comment")) &&
+               (2 == depth_dm_parser)) {
+        vscp_trim(str);
+        if (str.length()) {
             pnew_dm_item->m_comment = str;
-        } else if ((0 == vscp_strcasecmp(name, "action")) &&
-                   (2 == depth_dm_parser)) {
-            pnew_dm_item->m_actionCode = vscp_readStringValue(str);
-        } else if ((0 == vscp_strcasecmp(name, "zone")) &&
-                   (2 == depth_dm_parser)) {
-            pnew_dm_item->m_zone = vscp_readStringValue(str);
-        } else if ((0 == vscp_strcasecmp(name, "subzone")) &&
-                   (2 == depth_dm_parser)) {
-            pnew_dm_item->m_subzone = vscp_readStringValue(str);
-        } else if ((0 == vscp_strcasecmp(name, "param")) &&
-                   (2 == depth_dm_parser)) {
-            vscp_trim(str);
+        }
+    } else if ((0 == vscp_strcasecmp(name, "action")) &&
+               (2 == depth_dm_parser)) {
+        pnew_dm_item->m_actionCode = vscp_readStringValue(str);
+    } else if ((0 == vscp_strcasecmp(name, "zone")) && (2 == depth_dm_parser)) {
+        pnew_dm_item->m_zone = vscp_readStringValue(str);
+    } else if ((0 == vscp_strcasecmp(name, "subzone")) &&
+               (2 == depth_dm_parser)) {
+        pnew_dm_item->m_subzone = vscp_readStringValue(str);
+    } else if ((0 == vscp_strcasecmp(name, "param")) &&
+               (2 == depth_dm_parser)) {
+        vscp_trim(str);
+        if (str.length()) {
             pnew_dm_item->m_actionparam = str;
-        } else if ((0 == vscp_strcasecmp(name, "allowed_from")) &&
-                   (2 == depth_dm_parser)) {
-            vscp_trim(str);
-            if (0 != str.length()) {
-                pnew_dm_item->m_timeAllow.setFromTime(str);
-            } else {
-                pnew_dm_item->m_timeAllow.setFromTime("*");
-            }
-        } else if ((0 == vscp_strcasecmp(name, "allowed_to")) &&
-                   (2 == depth_dm_parser)) {
-            vscp_trim(str);
-            if (0 != str.length()) {
-                pnew_dm_item->m_timeAllow.setEndTime(str);
-            } else {
-                pnew_dm_item->m_timeAllow.setEndTime("*");
-            }
-        } else if ((0 == vscp_strcasecmp(name, "allowed_weekdays")) &&
-                   (2 == depth_dm_parser)) {
-            vscp_trim(str);
-            if ("*" == str) str = "mtwtfss";
-            if (0 != str.length()) {
-                pnew_dm_item->m_timeAllow.setWeekDays(str);
-            } else {
-                pnew_dm_item->m_timeAllow.setWeekDays("mtwtfss");
-            }
+        }
+    } else if ((0 == vscp_strcasecmp(name, "allowed_from")) &&
+               (2 == depth_dm_parser)) {
+        vscp_trim(str);
+        if (0 != str.length()) {
+            pnew_dm_item->m_timeAllow.setFromTime(str);
+        } else {
+            pnew_dm_item->m_timeAllow.setFromTime("*");
+        }
+    } else if ((0 == vscp_strcasecmp(name, "allowed_to")) &&
+               (2 == depth_dm_parser)) {
+        vscp_trim(str);
+        if (0 != str.length()) {
+            pnew_dm_item->m_timeAllow.setEndTime(str);
+        } else {
+            pnew_dm_item->m_timeAllow.setEndTime("*");
+        }
+    } else if ((0 == vscp_strcasecmp(name, "allowed_weekdays")) &&
+               (2 == depth_dm_parser)) {
+        vscp_trim(str);
+        if ("*" == str) str = "mtwtfss";
+        if (0 != str.length()) {
+            pnew_dm_item->m_timeAllow.setWeekDays(str);
+        } else {
+            pnew_dm_item->m_timeAllow.setWeekDays("mtwtfss");
         }
     } else if ((0 == vscp_strcasecmp(name, "allowed_time")) &&
                (2 == depth_dm_parser)) {
@@ -7277,15 +7252,7 @@ endDMParser(void *data, const char *name)
             pnew_dm_item->m_timeAllow.parseActionTime("*-*-* *:*:*");
         }
     }
-
-    // Free the allocated data
-    free(last_dm_content);
-    last_dm_content = NULL;
-
-    depth_dm_parser--;
 }
-
-
 
 // ----------------------------------------------------------------------------
 
@@ -7377,9 +7344,10 @@ CDM::saveToXML(bool bAll)
     std::ofstream dst(m_staticXMLPath + "~", std::ios::binary);
     dst << src.rdbuf();
 
-    std::ofstream fxml; fxml;
+    std::ofstream fxml;
+    fxml;
 
-    try {   
+    try {
         fxml.open(m_staticXMLPath.c_str());
     } catch (...) {
         syslog(LOG_ERR,
@@ -7417,138 +7385,144 @@ CDM::saveToXML(bool bAll)
 
                 fxml << "  <row enable=\"";
                 if (pDMitem->isEnabled()) {
-                    fxml <<  "true\" ";
+                    fxml << "true\" ";
                 } else {
-                    fxml <<  "false\" ";
+                    fxml << "false\" ";
                 }
 
-                fxml <<  "groupid=\"";
+                fxml << "groupid=\"";
                 fxml << pDMitem->m_strGroupID;
-                fxml <<  "\" >";
+                fxml << "\" >";
 
                 fxml << "    <mask ";
-            fxml << vscp_string_format(" priority=\"%d\" ", pDMitem->m_vscpfilter.mask_priority );
+                fxml << vscp_string_format(" priority=\"%d\" ",
+                                           pDMitem->m_vscpfilter.mask_priority);
 
-            buf = vscp_string_format(" class=\"%d\" ", pDMitem->m_vscpfilter.mask_class );
-            fxml << buf;
+                buf = vscp_string_format(" class=\"%d\" ",
+                                         pDMitem->m_vscpfilter.mask_class);
+                fxml << buf;
 
-            buf = vscp_string_format(" type=\"%d\" " , pDMitem->m_vscpfilter.mask_type );
-            fxml << buf;
+                buf = vscp_string_format(" type=\"%d\" ",
+                                         pDMitem->m_vscpfilter.mask_type);
+                fxml << buf;
 
-       
-            fxml << " GUID=\" ";
-            std::string strGUID;
-            vscp_writeGuidArrayToString(pDMitem->m_vscpfilter.mask_GUID,
-                                        strGUID);
-            fxml << strGUID;
-            fxml << "\" > ";
-            fxml << "</mask>";
+                fxml << " GUID=\" ";
+                std::string strGUID;
+                vscp_writeGuidArrayToString(pDMitem->m_vscpfilter.mask_GUID,
+                                            strGUID);
+                fxml << strGUID;
+                fxml << "\" > ";
+                fxml << "</mask>";
 
-            fxml << "    <filter ";
-            buf = vscp_string_format(" priority=\"%d\" ", pDMitem->m_vscpfilter.filter_priority );
-            fxml << buf;
-            buf = vscp_string_format(" class=\"%d\" ", pDMitem->m_vscpfilter.filter_class );
-            fxml << buf;
-            buf = vscp_string_format(" type=\"%d\" ", pDMitem->m_vscpfilter.filter_type );
-            fxml << buf;
-            buf = vscp_string_format(" GUID=\" ");
-            fxml << buf;
-            vscp_writeGuidArrayToString(pDMitem->m_vscpfilter.filter_GUID,
-                                        strGUID);
-            fxml << strGUID;
-            fxml << "\" > ";
-            fxml << "</filter>";
+                fxml << "    <filter ";
+                buf = vscp_string_format(" priority=\"%d\" ",
+                                         pDMitem->m_vscpfilter.filter_priority);
+                fxml << buf;
+                buf = vscp_string_format(" class=\"%d\" ",
+                                         pDMitem->m_vscpfilter.filter_class);
+                fxml << buf;
+                buf = vscp_string_format(" type=\"%d\" ",
+                                         pDMitem->m_vscpfilter.filter_type);
+                fxml << buf;
+                buf = vscp_string_format(" GUID=\" ");
+                fxml << buf;
+                vscp_writeGuidArrayToString(pDMitem->m_vscpfilter.filter_GUID,
+                                            strGUID);
+                fxml << strGUID;
+                fxml << "\" > ";
+                fxml << "</filter>";
 
-            fxml << "    <action>";
-            buf = vscp_string_format("0x%x", pDMitem->m_actionCode);
-            fxml << buf;
-            fxml << "</action>";
+                fxml << "    <action>";
+                buf = vscp_string_format("0x%x", pDMitem->m_actionCode);
+                fxml << buf;
+                fxml << "</action>";
 
-            fxml << "    <param>";
-            fxml << pDMitem->m_actionparam;
-            fxml << "</param>";
+                fxml << "    <param>";
+                fxml << pDMitem->m_actionparam;
+                fxml << "</param>";
 
-            fxml << "    <comment>";
-            fxml << pDMitem->m_comment;
-            fxml << "</comment>";
+                fxml << "    <comment>";
+                fxml << pDMitem->m_comment;
+                fxml << "</comment>";
 
-            fxml << "    <allowed_from>";
-            {
-                std::string str =
-                  pDMitem->m_timeAllow.getFromTime().getISODateTime();
-                fxml << str;
-            }
-            fxml << "</allowed_from>";
+                fxml << "    <allowed_from>";
+                {
+                    std::string str =
+                      pDMitem->m_timeAllow.getFromTime().getISODateTime();
+                    fxml << str;
+                }
+                fxml << "</allowed_from>";
 
-            fxml << "    <allowed_to>";
-            {
-                std::string str =
-                  pDMitem->m_timeAllow.getEndTime().getISODateTime();
-                fxml << str;
-            }
-            fxml << "</allowed_to>";
+                fxml << "    <allowed_to>";
+                {
+                    std::string str =
+                      pDMitem->m_timeAllow.getEndTime().getISODateTime();
+                    fxml << str;
+                }
+                fxml << "</allowed_to>";
 
-            fxml << "    <allowed_weekdays>";
-            {
-                std::string str = pDMitem->m_timeAllow.getWeekDays();
-                fxml << str;
-            }
-            fxml << "</allowed_weekdays>";
+                fxml << "    <allowed_weekdays>";
+                {
+                    std::string str = pDMitem->m_timeAllow.getWeekDays();
+                    fxml << str;
+                }
+                fxml << "</allowed_weekdays>";
 
-            fxml << "    <allowed_time>";
-            {
-                std::string str = pDMitem->m_timeAllow.getActionTimeAsString();
-                fxml << str;
-            }
-            fxml << "</allowed_time>";
+                fxml << "    <allowed_time>";
+                {
+                    std::string str =
+                      pDMitem->m_timeAllow.getActionTimeAsString();
+                    fxml << str;
+                }
+                fxml << "</allowed_time>";
 
-            // Index
-            fxml << "    <index ";
-            buf = vscp_string_format(
-              " bCheckMeasurementIndex=\"%s\" ",
-              (pDMitem->m_bCheckMeasurementIndex) ? "true" : "false");
-            fxml << buf;
-            fxml << " > ";
-            buf = vscp_string_format("%d", pDMitem->m_index);
-            fxml << buf;
-            fxml << "</index>";
+                // Index
+                fxml << "    <index ";
+                buf = vscp_string_format(
+                  " bCheckMeasurementIndex=\"%s\" ",
+                  (pDMitem->m_bCheckMeasurementIndex) ? "true" : "false");
+                fxml << buf;
+                fxml << " > ";
+                buf = vscp_string_format("%d", pDMitem->m_index);
+                fxml << buf;
+                fxml << "</index>";
 
-            // Zone
-            fxml << "    <zone>";
-            buf = vscp_string_format("%d", pDMitem->m_zone);
-            fxml << buf;
-            fxml << "</zone>";
+                // Zone
+                fxml << "    <zone>";
+                buf = vscp_string_format("%d", pDMitem->m_zone);
+                fxml << buf;
+                fxml << "</zone>";
 
-            // Subzone
-            fxml << "    <subzone>";
-            buf = vscp_string_format("%d", pDMitem->m_subzone);
-            fxml << buf;
-            fxml << "</subzone>";
+                // Subzone
+                fxml << "    <subzone>";
+                buf = vscp_string_format("%d", pDMitem->m_subzone);
+                fxml << buf;
+                fxml << "</subzone>";
 
-            // measurement
-            fxml << "    <measurement ";
-            if (pDMitem->m_bCompareMeasurement) {
-                fxml << "enable=\"true\" ";
-            } else {
-                fxml << "enable=\"false\" ";
-            }
+                // measurement
+                fxml << "    <measurement ";
+                if (pDMitem->m_bCompareMeasurement) {
+                    fxml << "enable=\"true\" ";
+                } else {
+                    fxml << "enable=\"false\" ";
+                }
 
-            std::string strCode =
-              getTokenFromCompareCode(pDMitem->m_measurementCompareCode);
-            buf = "compare=\"" + strCode + "\" ";
-            fxml << buf;
+                std::string strCode =
+                  getTokenFromCompareCode(pDMitem->m_measurementCompareCode);
+                buf = "compare=\"" + strCode + "\" ";
+                fxml << buf;
 
-            buf =
-              vscp_string_format("unit=\"%d\" ", pDMitem->m_measurementUnit);
-            fxml << buf;
+                buf = vscp_string_format("unit=\"%d\" ",
+                                         pDMitem->m_measurementUnit);
+                fxml << buf;
 
-            buf =
-              vscp_string_format("value=\"%lf\" ", pDMitem->m_measurementValue);
-            fxml << buf;
+                buf = vscp_string_format("value=\"%lf\" ",
+                                         pDMitem->m_measurementValue);
+                fxml << buf;
 
-            fxml << " />";
+                fxml << " />";
 
-            fxml << "  </row>\n";
+                fxml << "  </row>\n";
             }
         }
 
@@ -7625,9 +7599,10 @@ CDM::feed(vscpEvent *pEvent)
                 if (!vscp_getVSCPMeasurementAsDouble(pEvent, &value)) {
                     std::string strEvent;
                     vscp_writeVscpEventToString(pEvent, strEvent);
-                    syslog( LOG_ERR, "[DM] Conversion to double failed for "
-                                  "measurement. Event= %s",
-                                  strEvent.c_str());
+                    syslog(LOG_ERR,
+                           "[DM] Conversion to double failed for "
+                           "measurement. Event= %s",
+                           strEvent.c_str());
                     continue;
                 }
 

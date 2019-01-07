@@ -1185,10 +1185,9 @@ deviceLevel2ReceiveThread(void *pData)
 
     deviceThreadObj *pDevObj = (deviceThreadObj *)pData;
     if (NULL == pDevObj) {
-        syslog(
-          LOG_CRIT,
-          "deviceLevel2ReceiveThread quitting due to NULL object.");
-           return NULL;
+        syslog(LOG_CRIT,
+               "deviceLevel2ReceiveThread quitting due to NULL object.");
+        return NULL;
     }
 
     int rv;
@@ -1236,7 +1235,8 @@ deviceLevel2ReceiveThread(void *pData)
                   pEvent->GUID);
             } else {
                 // If no driver GUID set use interface GUID
-                pDevObj->m_pDeviceItem->m_pClientItem->m_guid.writeGUID(pEvent->GUID);
+                pDevObj->m_pDeviceItem->m_pClientItem->m_guid.writeGUID(
+                  pEvent->GUID);
             }
 
             // Preserve nickname
@@ -1277,10 +1277,9 @@ deviceLevel2WriteThread(void *pData)
 {
     deviceThreadObj *pDevObj = (deviceThreadObj *)pData;
     if (NULL == pDevObj) {
-        syslog(
-          LOG_CRIT,
-          "deviceLevel2WriteThread quitting due to NULL object."); 
-          return NULL;
+        syslog(LOG_CRIT,
+               "deviceLevel2WriteThread quitting due to NULL object.");
+        return NULL;
     }
 
     while (!pDevObj->m_bQuit) {
@@ -1290,7 +1289,9 @@ deviceLevel2WriteThread(void *pData)
         ts.tv_sec  = 0;
         ts.tv_nsec = 500000; // 500 ms
         if (ETIMEDOUT ==
-            sem_timedwait(&pDevObj->m_pDeviceItem->m_pClientItem->m_semClientInputQueue, &ts)) {
+            sem_timedwait(
+              &pDevObj->m_pDeviceItem->m_pClientItem->m_semClientInputQueue,
+              &ts)) {
             continue;
         }
 
@@ -1308,11 +1309,12 @@ deviceLevel2WriteThread(void *pData)
                   pDevObj->m_pDeviceItem->m_openHandle, pqueueEvent, 300)) {
 
                 // Remove the node
-                pthread_mutex_lock(
-                  &pDevObj->m_pDeviceItem->m_pClientItem->m_mutexClientInputQueue);
-                pDevObj->m_pDeviceItem->m_pClientItem->m_clientInputQueue.pop_front();
-                pthread_mutex_unlock(
-                  &pDevObj->m_pDeviceItem->m_pClientItem->m_mutexClientInputQueue);
+                pthread_mutex_lock(&pDevObj->m_pDeviceItem->m_pClientItem
+                                      ->m_mutexClientInputQueue);
+                pDevObj->m_pDeviceItem->m_pClientItem->m_clientInputQueue
+                  .pop_front();
+                pthread_mutex_unlock(&pDevObj->m_pDeviceItem->m_pClientItem
+                                        ->m_mutexClientInputQueue);
             } else {
                 // Give it another try
                 sem_post(&pDevObj->m_pCtrlObject->m_semClientOutputQueue);

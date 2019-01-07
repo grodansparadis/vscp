@@ -31,10 +31,10 @@
 
 #include <set>
 
-#include <vscpdatetime.h>
 #include <remotevariable.h>
 #include <tables.h>
 #include <vscp.h>
+#include <vscpdatetime.h>
 
 class CControlObject;
 class CClientItem;
@@ -79,7 +79,7 @@ class dmTimer
 
   public:
     /// Constructor
-    dmTimer ();
+    dmTimer();
 
     /*!
       Constructor
@@ -89,15 +89,15 @@ class dmTimer
       @param bStart Run flag for timer
       @param setValue Value to set variable to when timer elapse
     */
-    dmTimer (std::string &nameVar,
-             uint32_t id,
-             uint32_t delay  = 0,
-             bool m_bStart   = false,
-             bool setValue   = false,
-             int reloadLimit = -1);
+    dmTimer(std::string &nameVar,
+            uint32_t id,
+            uint32_t delay  = 0,
+            bool m_bStart   = false,
+            bool setValue   = false,
+            int reloadLimit = -1);
 
     /// Destructor
-    ~dmTimer ();
+    ~dmTimer();
 
     /*!
       Init
@@ -108,114 +108,114 @@ class dmTimer
       @param setValue Value to set variable to when timer elapse
       @param reloadLimit Limit for reloads (-1 is no limit)
     */
-    void init (std::string &nameVar,
-               uint32_t id,
-               uint32_t delay  = 0,
-               bool m_bStart   = false,
-               bool setValue   = false,
-               int reloadLimit = -1);
+    void init(std::string &nameVar,
+              uint32_t id,
+              uint32_t delay  = 0,
+              bool m_bStart   = false,
+              bool setValue   = false,
+              int reloadLimit = -1);
 
     /*!
       Check if the timer is active
       @returns true if active.
     */
-    bool isActive (void);
+    bool isActive(void);
 
     /*!
       Set the time active state
       @param bState (default true) which sets te active state.
     */
-    void setActive (bool bState = true);
+    void setActive(bool bState = true);
 
     /*!
      * Getter/setter for id
      */
-    void setId (uint32_t id) { m_id = id; };
-    uint32_t getId (void) { return m_id; };
+    void setId(uint32_t id) { m_id = id; };
+    uint32_t getId(void) { return m_id; };
 
     /*!
       Stop timer
     */
-    void stopTimer (void);
+    void stopTimer(void);
     ;
 
     /*!
       Pause timer
     */
-    void pauseTimer (void);
+    void pauseTimer(void);
 
     /*!
       Start timer
     */
-    void startTimer (void);
+    void startTimer(void);
 
     /*!
       Resume timer
     */
-    void resumeTimer (void);
+    void resumeTimer(void);
 
     /*!
       Get current timer value
       @return current timer value.
     */
-    uint32_t getDelay (void) { return m_delay; };
+    uint32_t getDelay(void) { return m_delay; };
 
     /*!
       Get start timer value
       @return start timer value.
     */
-    uint32_t getStartDelay (void) { return m_delayStart; };
+    uint32_t getStartDelay(void) { return m_delayStart; };
 
     /*!
       Set timer value
       @param timer value.
     */
-    void setDelay (uint32_t delay) { m_delayStart = m_delay = delay; };
+    void setDelay(uint32_t delay) { m_delayStart = m_delay = delay; };
 
     /*!
       Check if timer is of reloading type
       @return true if reloading, false otherwise
     */
-    bool isReloading (void) { return m_bReload; };
+    bool isReloading(void) { return m_bReload; };
 
     /*!
       Set the reloading functionality
       @param reload flag
     */
-    void setReload (bool bReload) { m_bReload = bReload; };
+    void setReload(bool bReload) { m_bReload = bReload; };
 
     /*!
      * Reload timer
      */
-    void reload (void)
+    void reload(void)
     {
         m_delay = m_delayStart;
         m_reloadCounter--;
     };
 
     /// Setter/getters for reloadlimit
-    void setReloadLimit (int limit) { m_reloadlimit = limit; };
-    int getReloadLimit (void) { return m_reloadlimit; };
-    bool isReloadLimit (void) { return (m_reloadlimit > 0); };
+    void setReloadLimit(int limit) { m_reloadlimit = limit; };
+    int getReloadLimit(void) { return m_reloadlimit; };
+    bool isReloadLimit(void) { return (m_reloadlimit > 0); };
 
-    int getReloadCounter (void) { return m_reloadCounter; };
+    int getReloadCounter(void) { return m_reloadCounter; };
 
     /*!
       Decrement timer if greater than zero
     */
-    uint32_t decTimer (void);
+    uint32_t decTimer(void);
 
     /*!
       Get variable name
       @return Variable name
     */
-    std::string &getVariableName (void) { return m_nameVariable; };
+    std::string &getVariableName(void) { return m_nameVariable; };
 
     /*!
       Set the variable name
       @param Variable name
     */
-    void setVariableName (std::string &nameVariable)
+    void setVariableName(std::string &nameVariable)
     {
         m_nameVariable = nameVariable;
     };
@@ -228,7 +228,6 @@ class dmTimer
     pthread_t *m_pThread;
 
   private:
-
     /// Active flag. True if timer should run.
     bool m_bActive;
 
@@ -267,13 +266,13 @@ class actionTime
 {
 
   public:
-    actionTime ();
-    ~actionTime ();
+    actionTime();
+    ~actionTime();
 
     /*!
      * Clear all tables
      */
-    void clearTables (void);
+    void clearTables(void);
 
     /*!
       Set the weekdays that the action is allowed to occur at. The
@@ -282,14 +281,14 @@ class actionTime
       @param actionTime strWeek on the format 'mtwtfss'
       @return True on success.
     */
-    bool setWeekDays (const std::string &strWeek);
+    bool setWeekDays(const std::string &strWeek);
 
     /*!
       Get the allowed weekdays as a xxWtring on the form 'mtwtfss' where
       '-' is used to indicate a day when the event is not allowe to occur.
       @return A string with the allowed weekdays.
     */
-    std::string getWeekDays (void);
+    std::string getWeekDays(void);
 
     /*!
       Set an allowed weekday in realtext.
@@ -298,54 +297,54 @@ class actionTime
       @return true on success.
     */
 
-    bool setWeekDay (const std::string &strWeekday);
+    bool setWeekDay(const std::string &strWeekday);
 
     /*!
      * Set data so action is always allowed.
      */
-    void allowAlways (void);
+    void allowAlways(void);
 
     /*!
       Allow/disallow action to happen on Mondays
       @param bAllow True to allow action on this day.
      */
-    void allowMonday (bool bAllow = true) { m_weekDay[0] = bAllow; };
+    void allowMonday(bool bAllow = true) { m_weekDay[0] = bAllow; };
 
     /*!
       Allow/disallow action to happen on Tuesday
       @param bAllow True to allow action on this day.
      */
-    void allowTuesday (bool bAllow = true) { m_weekDay[1] = bAllow; };
+    void allowTuesday(bool bAllow = true) { m_weekDay[1] = bAllow; };
 
     /*!
       Allow/disallow action to happen on Wednesday
       @param bAllow True to allow action on this day.
      */
-    void allowWednesday (bool bAllow = true) { m_weekDay[2] = bAllow; };
+    void allowWednesday(bool bAllow = true) { m_weekDay[2] = bAllow; };
 
     /*!
       Allow/disallow action to happen on Thursday
       @param bAllow True to allow action on this day.
      */
-    void allowThursday (bool bAllow = true) { m_weekDay[3] = bAllow; };
+    void allowThursday(bool bAllow = true) { m_weekDay[3] = bAllow; };
 
     /*!
       Allow/disallow action to happen on Friday
       @param bAllow True to allow action on this day.
      */
-    void allowFriday (bool bAllow = true) { m_weekDay[4] = bAllow; };
+    void allowFriday(bool bAllow = true) { m_weekDay[4] = bAllow; };
 
     /*!
       Allow/disallow action to happen on Saturday
       @param bAllow True to allow action on this day.
      */
-    void allowSaturday (bool bAllow = true) { m_weekDay[5] = bAllow; };
+    void allowSaturday(bool bAllow = true) { m_weekDay[5] = bAllow; };
 
     /*!
       Allow/disallow action to happen on Sunday
       @param bAllow True to allow action on this day.
      */
-    void allowSunday (bool bAllow = true) { m_weekDay[6] = bAllow; };
+    void allowSunday(bool bAllow = true) { m_weekDay[6] = bAllow; };
 
     /*!
       This method parse a string on the form YYYY-MM-DD HH:MM:SS. Both parts can
@@ -360,7 +359,7 @@ class actionTime
       @param actionTime Time on the format YYYY-MM-DD HH:MM:SS
       @return True on success.
     */
-    bool parseActionTime (const std::string &actionTime);
+    bool parseActionTime(const std::string &actionTime);
 
     /*!
       Get multiple integers when they are in a string separated
@@ -369,26 +368,26 @@ class actionTime
       @param pList Pointer to list with integer items.
       @return True on success.
     */
-    bool getMultiItem (const std::string &items, std::set<int> *pList);
+    bool getMultiItem(const std::string &items, std::set<int> *pList);
 
     /*!
       Check if we should do actionTime action
       @return True if the actions should be performed else false.
     */
-    bool ShouldWeDoAction (void);
+    bool ShouldWeDoAction(void);
 
     /*!
       Get the actiontime as a readable string
       @return actiontime as a string.
     */
-    std::string getActionTimeAsString (void);
+    std::string getActionTimeAsString(void);
 
     /*!
      * Get/set weekday allow
      */
-    bool getWeekday (char day) { return m_weekDay[day & 0x07]; };
+    bool getWeekday(char day) { return m_weekDay[day & 0x07]; };
 
-    bool setWeekday (char day, bool bAllow = true)
+    bool setWeekday(char day, bool bAllow = true)
     {
         return m_weekDay[day & 0x07] = bAllow;
     };
@@ -412,26 +411,28 @@ class actionTime
 
     void setFromTime(vscpdatetime &dt) { m_fromTime = dt; };
 
-    vscpdatetime &getFromTime (void) { return m_fromTime; };
+    vscpdatetime &getFromTime(void) { return m_fromTime; };
 
     /*!
      * Get/set end time.
      */
-    void setEndTime (std::string strEnd)
+    void setEndTime(std::string strEnd)
     {
 
-        vscp_trim (strEnd);
-        if ("*" == strEnd) { strEnd = "9999-12-31T23:59:59"; }
+        vscp_trim(strEnd);
+        if ("*" == strEnd) {
+            strEnd = "9999-12-31T23:59:59";
+        }
 
-        m_endTime.set (strEnd);
-        if (!m_endTime.isValid ()) { 
-            m_endTime.set( "9999-12-31T23:59:59"); 
-        } 
+        m_endTime.set(strEnd);
+        if (!m_endTime.isValid()) {
+            m_endTime.set("9999-12-31T23:59:59");
+        }
     };
 
-    void setEndTime (vscpdatetime &dt) { m_endTime = dt; };
+    void setEndTime(vscpdatetime &dt) { m_endTime = dt; };
 
-    vscpdatetime &getEndTime (void) { return m_endTime; };
+    vscpdatetime &getEndTime(void) { return m_endTime; };
 
   private:
     /*!
@@ -482,15 +483,15 @@ class dmElement
 
   public:
     /// Constructor
-    dmElement (void);
+    dmElement(void);
 
     /// Destructor
-    ~dmElement (void);
+    ~dmElement(void);
 
     /*!
         Assignment overload
     */
-    dmElement &operator= (const dmElement &dm);
+    dmElement &operator=(const dmElement &dm);
 
     /*!
         Get DM row as a string description.
@@ -502,51 +503,51 @@ class dmElement
        Priority;Class;Type;GUID See the specification for a description of the
        from, to and weekday fields.
     */
-    std::string getAsString (bool bCRLF = true);
+    std::string getAsString(bool bCRLF = true);
 
     /*!
         Set DM row content from string
         @param strDM DM row in string form.
         @return True on success.
      */
-    bool setFromString (std::string &strDM);
+    bool setFromString(std::string &strDM);
 
     /*!
         Enable row
     */
-    void enableRow (void) { m_bEnable = true; };
+    void enableRow(void) { m_bEnable = true; };
 
     /*!
         Disable row
     */
-    void disableRow (void) { m_bEnable = false; };
+    void disableRow(void) { m_bEnable = false; };
 
     /*!
         Check if it is enabled
         @returns true if enabled false otherwise
     */
-    bool isEnabled (void) { return m_bEnable; };
+    bool isEnabled(void) { return m_bEnable; };
 
     /*!
         Check if index should be checked
         @returns true if enabled false otherwise
      */
-    bool isCheckIndexSet (void) { return m_bCheckIndex; };
+    bool isCheckIndexSet(void) { return m_bCheckIndex; };
 
     /*!
         Check if zone should be checked
         @returns true if enabled false otherwise
     */
-    bool isCheckZoneSet (void) { return m_bCheckZone; };
+    bool isCheckZoneSet(void) { return m_bCheckZone; };
 
     /*!
         Check if zone should be checked
         @returns true if enabled false otherwise
     */
-    bool isCheckSubZoneSet (void) { return m_bCheckSubZone; };
+    bool isCheckSubZoneSet(void) { return m_bCheckSubZone; };
 
     // Check if measurement should be compared.
-    bool isCompareMeasurementSet () { return m_bCompareMeasurement; };
+    bool isCompareMeasurementSet() { return m_bCompareMeasurement; };
 
     /*!
         Get measurement compare code from symbolic compare value
@@ -554,16 +555,16 @@ class dmElement
         @return Symbolic code or zero if invalid code
        (DM_MEASUREMENT_COMPARE_NOOP)
      */
-    uint8_t getCompareCodeFromSymbolicMeasurement (std::string &strCompare);
+    uint8_t getCompareCodeFromSymbolicMeasurement(std::string &strCompare);
 
-    void setSymbolicMeasurementCompareCode (std::string &strCompare)
+    void setSymbolicMeasurementCompareCode(std::string &strCompare)
     {
         m_measurementCompareCode =
-          getCompareCodeFromSymbolicMeasurement (strCompare);
+          getCompareCodeFromSymbolicMeasurement(strCompare);
     };
 
-    std::string getSymbolicMeasurementFromCompareCode (uint8_t cc,
-                                                       uint8_t type = 0);
+    std::string getSymbolicMeasurementFromCompareCode(uint8_t cc,
+                                                      uint8_t type = 0);
 
     /*!
         Handle escape sequences
@@ -571,7 +572,7 @@ class dmElement
         @param str String to replace escapes in
         @return true on success, else false.
     */
-    static bool handleEscapes (vscpEvent *pEvent, std::string &str);
+    static bool handleEscapes(vscpEvent *pEvent, std::string &str);
 
     /*
         Execute for Unix.
@@ -579,7 +580,7 @@ class dmElement
         @return True on success.
     */
 #ifndef WIN32
-    bool unixVSCPExecute (std::string &argExec);
+    bool unixVSCPExecute(std::string &argExec);
 #endif
 
     /*!
@@ -588,7 +589,7 @@ class dmElement
         @param pDMEvent Event that triggered the action
         @returns true if all went well.
     */
-    bool doAction (vscpEvent *pDMEvent);
+    bool doAction(vscpEvent *pDMEvent);
 
     /*!
         Execute action
@@ -599,7 +600,7 @@ class dmElement
                 that it is marked as executable.
         @returns true if all went well.
     */
-    bool doActionExecute (vscpEvent *pDMEvent, bool bCheckExecutable = true);
+    bool doActionExecute(vscpEvent *pDMEvent, bool bCheckExecutable = true);
 
     /*!
         Execute action conditional
@@ -610,36 +611,36 @@ class dmElement
                 that it is marked as executable.
         @returns true if all went well.
     */
-    bool doActionExecuteConditional (vscpEvent *pDMEvent,
-                                     bool bCheckExecutable = true);
+    bool doActionExecuteConditional(vscpEvent *pDMEvent,
+                                    bool bCheckExecutable = true);
 
     /*!
         Timed exeute the external action script.
         @param pDMEvent Event that triggered the action
         @returns true if all went well.
     */
-    bool doActionTimedExecute (vscpEvent *pDMEvent);
+    bool doActionTimedExecute(vscpEvent *pDMEvent);
 
     /*!
         Send event action
         @param pDMEvent Event that triggered the action
         @returns true if all went well.
     */
-    bool doActionSendEvent (vscpEvent *pDMEvent);
+    bool doActionSendEvent(vscpEvent *pDMEvent);
 
     /*!
         Send event conditional action
         @param pDMEvent Event that triggered the action
         @returns true if all went well.
     */
-    bool doActionSendEventConditional (vscpEvent *pDMEvent);
+    bool doActionSendEventConditional(vscpEvent *pDMEvent);
 
     /*!
         Send events from file action
         @param pDMEvent Event that triggered the action
         @returns true if all went well.
     */
-    bool doActionSendEventsFromFile (vscpEvent *pDMEvent);
+    bool doActionSendEventsFromFile(vscpEvent *pDMEvent);
 
     /*!
         Send event to remote VSCP server action
@@ -647,42 +648,42 @@ class dmElement
         @param bSecure Should be set to true for a secure connection (SSL)
         @returns true if all went well.
     */
-    bool doActionSendEventRemote (vscpEvent *pDMEvent, bool bSecure = false);
+    bool doActionSendEventRemote(vscpEvent *pDMEvent, bool bSecure = false);
 
     /*!
         Store in variable action
         @param pDMEvent Event that triggered the action
         @returns true if all went well.
     */
-    bool doActionStoreVariable (vscpEvent *pDMEvent);
+    bool doActionStoreVariable(vscpEvent *pDMEvent);
 
     /*!
         Add to variable action
         @param pDMEvent Event that triggered the action
         @returns true if all went well.
     */
-    bool doActionAddVariable (vscpEvent *pDMEvent);
+    bool doActionAddVariable(vscpEvent *pDMEvent);
 
     /*!
         Subtract from variable action
         @param pDMEvent Event that triggered the action
         @returns true if all went well.
     */
-    bool doActionSubtractVariable (vscpEvent *pDMEvent);
+    bool doActionSubtractVariable(vscpEvent *pDMEvent);
 
     /*!
         Multiply variable action
         @param pDMEvent Event that triggered the action
         @returns true if all went well.
     */
-    bool doActionMultiplyVariable (vscpEvent *pDMEvent);
+    bool doActionMultiplyVariable(vscpEvent *pDMEvent);
 
     /*!
         Divide variable action
         @param pDMEvent Event that triggered the action
         @returns true if all went well.
     */
-    bool doActionDivideVariable (vscpEvent *pDMEvent);
+    bool doActionDivideVariable(vscpEvent *pDMEvent);
 
     /*!
      * Check variable against constant
@@ -690,70 +691,70 @@ class dmElement
      * @param type Type of check
      * @returns true if all went well.
      */
-    bool doActionCheckVariable (vscpEvent *pDMEvent, VariableCheckType type);
+    bool doActionCheckVariable(vscpEvent *pDMEvent, VariableCheckType type);
 
     /*!
      * Check variable against measurement
      * @param pDMEvent Event that triggered the action
      * @returns true if all went well.
      */
-    bool doActionCheckMeasurement (vscpEvent *pDMEvent);
+    bool doActionCheckMeasurement(vscpEvent *pDMEvent);
 
     /*!
      * Store new minimum of measurement in variable if lower than current.
      * @param pDMEvent Event that triggered the action
        @returns true if all went well.
      */
-    bool doActionStoreMin (vscpEvent *pDMEvent);
+    bool doActionStoreMin(vscpEvent *pDMEvent);
 
     /*!
      * Store new maximum of measurement in variable is higher than current.
      * @param pDMEvent Event that triggered the action
        @returns true if all went well.
      */
-    bool doActionStoreMax (vscpEvent *pDMEvent);
+    bool doActionStoreMax(vscpEvent *pDMEvent);
 
     /*!
         Start a timer
         @param pDMEvent Event that triggered the action
         @returns true if all went well.
     */
-    bool doActionStartTimer (vscpEvent *pDMEvent);
+    bool doActionStartTimer(vscpEvent *pDMEvent);
 
     /*!
         Pause a timer
         @param pDMEvent Event that triggered the action
         @returns true if all went well.
     */
-    bool doActionPauseTimer (vscpEvent *pDMEvent);
+    bool doActionPauseTimer(vscpEvent *pDMEvent);
 
     /*!
         Resume a timer
         @param pDMEvent Event that triggered the action
         @returns true if all went well.
     */
-    bool doActionResumeTimer (vscpEvent *pDMEvent);
+    bool doActionResumeTimer(vscpEvent *pDMEvent);
 
     /*!
         Stop a timer
         @param pDMEvent Event that triggered the action
         @returns true if all went well.
     */
-    bool doActionStopTimer (vscpEvent *pDMEvent);
+    bool doActionStopTimer(vscpEvent *pDMEvent);
 
     /*!
         Write to file
         @param pDMEvent Event that triggered the action
         @returns true if all went well.
     */
-    bool doActionWriteFile (vscpEvent *pDMEvent);
+    bool doActionWriteFile(vscpEvent *pDMEvent);
 
     /*!
         Get URL
         @param pDMEvent Event that triggered the action
         @returns true if all went well.
     */
-    bool doActionGetURL (vscpEvent *pDMEvent);
+    bool doActionGetURL(vscpEvent *pDMEvent);
 
     // Database index for record ( 0 if loaded from XML file)
     uint32_t m_id;
@@ -865,56 +866,56 @@ class CDM
 
   public:
     // Constructor
-    CDM (CControlObject *ctrlObj = NULL);
+    CDM(CControlObject *ctrlObj = NULL);
 
     // Destructor
-    ~CDM ();
+    ~CDM();
 
     /*!
         Init open logfile etc
     */
-    void init (void);
+    void init(void);
 
     /*!
         Cleanup DM resources
     */
-    void cleanup (void);
+    void cleanup(void);
 
     /*!
      * Get compare code from token
      * @param token String token for compare operation
      * @return Code for token or -1 f error.
      */
-    static int getCompareCodeFromToken (std::string &token);
+    static int getCompareCodeFromToken(std::string &token);
 
     /*!
      * Get compare token from code
      * @param code Compare codee
      * @return Compare token or empty string if invalid token
      */
-    static std::string getTokenFromCompareCode (uint8_t code);
+    static std::string getTokenFromCompareCode(uint8_t code);
 
     /*!
         Add Element to matrix
     */
-    bool addMemoryElement (dmElement *pItem);
+    bool addMemoryElement(dmElement *pItem);
 
     /*!
         Remove Element from matrix
     */
-    bool removeMemoryElement (unsigned short row);
+    bool removeMemoryElement(unsigned short row);
 
     /*!
         Get number of rows in matrix
     */
-    unsigned short getMemoryElementCount (void) { return m_DMList.size (); };
+    unsigned short getMemoryElementCount(void) { return m_DMList.size(); };
 
     /*!
         Get a row from the matrix (from row number)
         @param row DM row to fetch
         @return Pointer to DM row if found, NULL else.
     */
-    dmElement *getMemoryElementFromRow (const short row);
+    dmElement *getMemoryElementFromRow(const short row);
 
     /*!
         Get database index from row
@@ -924,7 +925,7 @@ class CDM
             this can be due to a XML loaded record which
             all have zero indexes.
     */
-    uint32_t getDbIndexFromRow (const short row);
+    uint32_t getDbIndexFromRow(const short row);
 
     /*!
         Get a row from the matrix (from idx )
@@ -933,35 +934,35 @@ class CDM
        where DM entry was found.
         @return Pointer to DM row if found, NULL else.
     */
-    dmElement *getMemoryElementFromId (const uint32_t idx, short *prow = NULL);
+    dmElement *getMemoryElementFromId(const uint32_t idx, short *prow = NULL);
 
     /*!
      * Get all rows in DM as string
      * @param strAllRows All DM rows (crlf separated)
      * @return True on success.
      */
-    bool getAllRows (std::string &strAllRows);
+    bool getAllRows(std::string &strAllRows);
 
     /*!
         Add database record
         @param dm Reference to DM element with record data.
         @return True if record inserted.
      */
-    bool addDatabaseRecord (dmElement *pdm);
+    bool addDatabaseRecord(dmElement *pdm);
 
     /*!
         Update database record
         @param dm Reference to DM element with record data.
         @return True if record found and updated.
      */
-    bool updateDatabaseRecord (dmElement *pdm);
+    bool updateDatabaseRecord(dmElement *pdm);
 
     /*
         Update item if database record
      */
-    bool updateDatabaseRecordItem (unsigned long id,
-                                   const std::string &strUpdateField,
-                                   const std::string &strUpdateValue);
+    bool updateDatabaseRecordItem(unsigned long id,
+                                  const std::string &strUpdateField,
+                                  const std::string &strUpdateValue);
 
     /*!
         Read DM record from database
@@ -970,31 +971,31 @@ class CDM
                 record data.
         @return True if record found.
      */
-    bool getDatabaseRecord (uint32_t idx, dmElement *pDMitem);
+    bool getDatabaseRecord(uint32_t idx, dmElement *pDMitem);
 
     /*!
         Delete database record
         @param idx Database index
         @return True if record found.
      */
-    bool deleteDatabaseRecord (uint32_t idx);
+    bool deleteDatabaseRecord(uint32_t idx);
 
     /*!
         Delete database record count
         @param idx Database index
         @return True if record found.
      */
-    uint32_t getDatabaseRecordCount (void);
+    uint32_t getDatabaseRecordCount(void);
 
     /*!
         Load from Database
     */
-    bool loadFromDatabase (void);
+    bool loadFromDatabase(void);
 
     /*!
         Load DM from external storage.
     */
-    bool loadFromXML (void);
+    bool loadFromXML(void);
 
     /*!
         Save DM to external storage.
@@ -1002,12 +1003,12 @@ class CDM
             only records loaded from XML file.
         @return true on success, false on failure.
     */
-    bool saveToXML (bool bAll = true);
+    bool saveToXML(bool bAll = true);
 
     /*!
         Run an event through the matrix
     */
-    bool feed (vscpEvent *pEvent);
+    bool feed(vscpEvent *pEvent);
 
     /*!
         Feed periodic events true the matrix
@@ -1029,7 +1030,7 @@ class CDM
         DUSK
         DAWN
     */
-    bool feedPeriodicEvent (void);
+    bool feedPeriodicEvent(void);
 
     /*!
      * Feed timer started event
@@ -1037,7 +1038,7 @@ class CDM
      * @param time Start time in ms
      * return true if event was delivered
      */
-    bool feedTimerStarted (uint32_t id, uint32_t time);
+    bool feedTimerStarted(uint32_t id, uint32_t time);
 
     /*!
      * Feed timer paused event
@@ -1045,7 +1046,7 @@ class CDM
      * @param time Start time in ms
      * return true if event was delivered
      */
-    bool feedTimerPaused (uint32_t id, uint32_t time);
+    bool feedTimerPaused(uint32_t id, uint32_t time);
 
     /*!
      * Feed timer resumed event
@@ -1053,7 +1054,7 @@ class CDM
      * @param time Start time in ms
      * return true if event was delivered
      */
-    bool feedTimerResumed (uint32_t id, uint32_t time);
+    bool feedTimerResumed(uint32_t id, uint32_t time);
 
     /*!
      * Feed timer stopped event
@@ -1061,14 +1062,14 @@ class CDM
      * @param time Start time in ms
      * return true if event was delivered
      */
-    bool feedTimerStopped (uint32_t id, uint32_t time);
+    bool feedTimerStopped(uint32_t id, uint32_t time);
 
     /*!
      * Feed timer elapsed event
      * @param id Timer id
      * return true if event was delivered
      */
-    bool feedTimerElapsed (uint32_t id);
+    bool feedTimerElapsed(uint32_t id);
 
     //------------------------------------
     //              Timers
@@ -1078,7 +1079,7 @@ class CDM
         serviceTimers
         This method service all timers and handle there decrement
     */
-    void serviceTimers (void);
+    void serviceTimers(void);
 
     /*!
         Add a new timer
@@ -1091,65 +1092,65 @@ class CDM
         @param bReload True if reload should be done
         @return a timer if > 0 on success
     */
-    int addTimer (uint32_t id,
-                  std::string &nameVar,
-                  uint32_t delay  = 0,
-                  bool bStart     = false,
-                  bool bReload    = false,
-                  int reloadLimit = -1);
+    int addTimer(uint32_t id,
+                 std::string &nameVar,
+                 uint32_t delay  = 0,
+                 bool bStart     = false,
+                 bool bReload    = false,
+                 int reloadLimit = -1);
 
     /*!
         Start an existing timer. Do nothing if timer does not exist.
         @return true on success
     */
-    bool startTimer (uint32_t idTimer);
+    bool startTimer(uint32_t idTimer);
 
     /*!
         Start a timer and set 'setvalues' If the timer does not
         exist create it.
         @return timer id or zero on failure
     */
-    int startTimer (uint32_t id,
-                    std::string &nameVariable,
-                    uint32_t delay,
-                    bool bSetValue  = false,
-                    int reloadLimit = -1);
+    int startTimer(uint32_t id,
+                   std::string &nameVariable,
+                   uint32_t delay,
+                   bool bSetValue  = false,
+                   int reloadLimit = -1);
 
     /*!
        Stop an existing timer
        @return true on success
    */
-    bool stopTimer (uint32_t idTimer);
+    bool stopTimer(uint32_t idTimer);
 
     /*!
        Pause an existing timer
        @return true on success
    */
-    bool pauseTimer (uint32_t idTimer);
+    bool pauseTimer(uint32_t idTimer);
 
     /*!
        Resume an existing timer
        @return true on success
    */
-    bool resumeTimer (uint32_t idTimer);
+    bool resumeTimer(uint32_t idTimer);
 
     /*!
      *     Create DM table
      *     @return true on success.
      */
-    bool doCreateDMTable (void);
+    bool doCreateDMTable(void);
 
     /*!
      *     Create the in memory DM table
      *     @return true on success.
      */
-    bool doCreateInMemoryDMTable (void);
+    bool doCreateInMemoryDMTable(void);
 
     /*!
      *     Fill/Update the in memory DM table
      *     @return true on success.
      */
-    bool doFillMemoryDMTable ();
+    bool doFillMemoryDMTable();
 
     //------------------------------------
 
@@ -1244,15 +1245,15 @@ class actionThread_URL
         @param proxy Optional proxy to use on the form <hostname>:<port number>
         @param kind Threadtype.
     */
-    actionThread_URL (CControlObject *pCtrlObject,
-                      std::string &url,
-                      accessmethod_t nAccessMethod,
-                      std::string &putdata,
-                      std::string &extraheaders,
-                      std::string &proxy);
+    actionThread_URL(CControlObject *pCtrlObject,
+                     std::string &url,
+                     accessmethod_t nAccessMethod,
+                     std::string &putdata,
+                     std::string &extraheaders,
+                     std::string &proxy);
 
     /// Destructor
-    ~actionThread_URL ();
+    ~actionThread_URL();
 
   private:
     /*!
@@ -1297,15 +1298,15 @@ class actionThread_VSCPSrv
         @param strEvent Event to send
         @param kind Threadtype.
     */
-    actionThread_VSCPSrv (CControlObject *pCtrlObject,
-                          std::string &strHostname,
-                          short port,
-                          std::string &strUsername,
-                          std::string &strPassword,
-                          std::string &strEvent);
+    actionThread_VSCPSrv(CControlObject *pCtrlObject,
+                         std::string &strHostname,
+                         short port,
+                         std::string &strUsername,
+                         std::string &strPassword,
+                         std::string &strEvent);
 
     /// Destructor
-    ~actionThread_VSCPSrv ();
+    ~actionThread_VSCPSrv();
 
   private:
     /*!
@@ -1348,10 +1349,10 @@ class actionThread_Table
         @param pTableObj Table object.
         @param kind Threadtype.
     */
-    actionThread_Table (std::string &strParam, vscpEvent *pEvent);
+    actionThread_Table(std::string &strParam, vscpEvent *pEvent);
 
     /// Destructor
-    ~actionThread_Table ();
+    ~actionThread_Table();
 
     /// Escaped DM action parameter
     std::string m_strParam;

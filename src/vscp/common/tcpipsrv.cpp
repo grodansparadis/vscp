@@ -2033,7 +2033,7 @@ tcpipClientObj::handleClientPassword(void)
           ("[TCP/IP srv] Host [%s] not allowed to connect.\n"),
           (const char *)remoteaddr.c_str());
 
-        syslog(LOG_ERR, "%s",strErr.c_str());
+        syslog(LOG_ERR, "%s", strErr.c_str());
         write(MSG_INVALID_REMOTE_ERROR, strlen(MSG_INVALID_REMOTE_ERROR));
         return false;
     }
@@ -2048,7 +2048,7 @@ tcpipClientObj::handleClientPassword(void)
       (const char *)remoteaddr.c_str(),
       (const char *)m_pClientItem->m_UserName.c_str());
 
-    syslog(LOG_ERR, "%s",strErr.c_str());
+    syslog(LOG_ERR, "%s", strErr.c_str());
 
     m_pClientItem->bAuthenticated = true;
     write(MSG_OK, strlen(MSG_OK));

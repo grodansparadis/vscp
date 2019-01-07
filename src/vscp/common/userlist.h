@@ -100,8 +100,8 @@
 
 // Users not in db is local
 //#define USER_IS_LOCAL                                -1           // Never
-//saved to db #define USER_IS_UNSAVED                               0 // Should
-//be saved to db
+// saved to db #define USER_IS_UNSAVED                               0 // Should
+// be saved to db
 
 #define USER_PRIVILEGE_MASK 0x0f
 #define USER_PRIVILEGE_BYTES 8

@@ -108,7 +108,7 @@ vscpdatetime::setDate(uint16_t year, uint8_t month, uint8_t day)
 //
 
 bool
-vscpdatetime::setISODate( const std::string &strDate)
+vscpdatetime::setISODate(const std::string &strDate)
 {
     size_t pos;
     std::string isodt = strDate.c_str();
@@ -158,7 +158,7 @@ vscpdatetime::setTime(uint8_t hour,
 //
 
 bool
-vscpdatetime::setISOTime( const std::string &strTime)
+vscpdatetime::setISOTime(const std::string &strTime)
 {
     size_t pos;
     std::string isodt = strTime.c_str();
@@ -392,7 +392,8 @@ vscpdatetime::set(const struct tm &tm)
 // setNow
 //
 
-vscpdatetime vscpdatetime::setNow( void )
+vscpdatetime
+vscpdatetime::setNow(void)
 {
     time_t rawtime;
     struct tm *ptm;
@@ -440,8 +441,8 @@ vscpdatetime::setUTCNow(void)
 vscpdatetime
 vscpdatetime::zeroTime(void)
 {
-    //m_hour = m_minute = m_second = m_millisecond = 0;
-    return vscpdatetime(0,0,0,0,0,0,0);
+    // m_hour = m_minute = m_second = m_millisecond = 0;
+    return vscpdatetime(0, 0, 0, 0, 0, 0, 0);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -451,8 +452,9 @@ vscpdatetime::zeroTime(void)
 vscpdatetime
 vscpdatetime::zeroDate(void)
 {
-    //m_year = m_month = m_day = 0;
-    return vscpdatetime(0,0,0,0,0,0,0);;
+    // m_year = m_month = m_day = 0;
+    return vscpdatetime(0, 0, 0, 0, 0, 0, 0);
+    ;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -462,7 +464,7 @@ vscpdatetime::zeroDate(void)
 vscpdatetime
 vscpdatetime::dateTimeZero(void)
 {
-    //set(0, 0, 0, 0, 0, 0, 0);
+    // set(0, 0, 0, 0, 0, 0, 0);
     return vscpdatetime(0, 0, 0, 0, 0, 0, 0);
 }
 
@@ -746,11 +748,11 @@ vscpdatetime::isLeapYear(void)
 //
 
 int
-vscpdatetime::getWeekNumber(void) const 
+vscpdatetime::getWeekNumber(void) const
 {
     constexpr int DAYS_PER_WEEK = 7;
 
-    time_t t      = toSysTime();
+    time_t t       = toSysTime();
     struct tm *ptm = localtime(&t);
 
     const int wday  = ptm->tm_wday;
@@ -765,7 +767,7 @@ vscpdatetime::getWeekNumber(void) const
 vscpdatetime::weekDay
 vscpdatetime::getWeekDay(void) const
 {
-    time_t t      = toSysTime();
+    time_t t       = toSysTime();
     struct tm *ptm = localtime(&t);
     return static_cast<weekDay>(ptm->tm_wday);
 }

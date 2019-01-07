@@ -1,21 +1,22 @@
 // vscp_lua.h
 //
-// This file is part of the VSCP (http://www.vscp.org) 
+// This file is part of the VSCP (http://www.vscp.org)
 //
 // The MIT License (MIT)
-// 
-// Copyright (C) 2000-2019 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
-// 
+//
+// Copyright (C) 2000-2019 Ake Hedman, Grodans Paradis AB
+// <info@grodansparadis.com>
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
-// 
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -28,49 +29,44 @@
 #if !defined(VSCP_LUA__INCLUDED_)
 #define VSCP_LUA__INCLUDED_
 
-
 ////////////////////////////////////////////////////////////////////////////////
 // actionLuaObj
 //
 
-class actionLuaObj  {
-    
-public:
+class actionLuaObj
+{
 
+  public:
     /// Constructor
-    actionLuaObj( std::string& strScript );
+    actionLuaObj(std::string &strScript);
 
     /// Destructor
     virtual ~actionLuaObj();
-
 
     /*!
         Termination control
      */
     bool m_bQuit;
-    
+
     /*!
      * Script
      */
     std::string m_strScript;
-    
+
     /// Lua executing id
     uint64_t m_id;
-    
+
     /// Time when script was started
     vscpdatetime m_start;
-    
+
     /// Time when script was stopped
     vscpdatetime m_stop;
-    
+
     /// Client item for script
     CClientItem *m_pClientItem;
-    
+
     /// Feed event
     vscpEventEx m_feedEvent;
-    
 };
-
-
 
 #endif

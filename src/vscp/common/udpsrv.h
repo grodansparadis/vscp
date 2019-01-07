@@ -56,7 +56,7 @@ typedef struct
     uint8_t m_nRetry;    // Retry counter
 } eventResendItem;
 
-//XX_DECLARE_LIST(eventResendItem, udpResendItemList);
+// XX_DECLARE_LIST(eventResendItem, udpResendItemList);
 
 /*!
     This class implement the listen thread for
@@ -92,9 +92,9 @@ class UDPSrvObj
      * @param index Running packet index.-
      * @return True on success, false on failure.
      */
-    static bool receiveFrame( struct mg_connection *nc,
-                                CClientItem *pClientItem,
-                                vscpEventFilter *pRxFilter);
+    static bool receiveFrame(struct mg_connection *nc,
+                             CClientItem *pClientItem,
+                             vscpEventFilter *pRxFilter);
 
     /*!
      *  Send ACk reply

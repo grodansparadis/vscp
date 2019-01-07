@@ -61,7 +61,6 @@ enum
     DAEMON_LOGMSG_DEBUG,
 };
 
-
 // TTL     Scope
 // ----------------------------------------------------------------------
 // 0       Restricted to the same host.Won't be output by any interface.
@@ -104,109 +103,109 @@ class CControlObject
     /*!
         Constructor
      */
-    CControlObject (void);
+    CControlObject(void);
 
     /*!
         Destructor
      */
-    virtual ~CControlObject (void);
+    virtual ~CControlObject(void);
 
     /*!
         Generate a random session key from a string key
         @param pKey Null terminated string key (max 255 characters)
         @param pSid Pointer to 33 byte sid that will receive sid
      */
-    bool generateSessionId (const char *pKey, char *pSid);
+    bool generateSessionId(const char *pKey, char *pSid);
 
     /*!
         Get server capabilities (64-bit array)
         @param pCapability Pointer to 64 bit capabilities array
         @return True on success.
      */
-    bool getVscpCapabilities (uint8_t *pCapability);
+    bool getVscpCapabilities(uint8_t *pCapability);
 
     /*!
         General initialisation
      */
-    bool init (std::string &strcfgfile, std::string &rootFolder);
+    bool init(std::string &strcfgfile, std::string &rootFolder);
 
     /*!
         Clean up used resources
      */
-    bool cleanup (void);
+    bool cleanup(void);
 
     /*!
         The main worker thread
      */
-    bool run (void);
+    bool run(void);
 
     /*!
         Start worker threads for devices
         @return true on success
      */
-    bool startDeviceWorkerThreads (void);
+    bool startDeviceWorkerThreads(void);
 
     /*!
         Stop worker threads for devices
         @return true on success
      */
-    bool stopDeviceWorkerThreads (void);
+    bool stopDeviceWorkerThreads(void);
 
     /*!
         Starting daemon worker thread
         @return true on success
      */
-    bool startDaemonWorkerThread (void);
+    bool startDaemonWorkerThread(void);
 
     /*!
         Stop daemon worker thread
         @return true on success
      */
-    bool stopDaemonWorkerThread (void);
+    bool stopDaemonWorkerThread(void);
 
     /*!
         Starting TCP/IP worker thread
         @return true on success
      */
-    bool startTcpipSrvThread (void);
+    bool startTcpipSrvThread(void);
 
     /*!
         Stop the TCP/IP worker thread
         @return true on success
      */
-    bool stopTcpipSrvThread (void);
+    bool stopTcpipSrvThread(void);
 
     /*!
         Start the UDP worker thread
     */
-    bool startUDPSrvThread (void);
+    bool startUDPSrvThread(void);
 
     /*!
         Stop the UDP Workerthread
     */
-    bool stopUDPSrvThread (void);
+    bool stopUDPSrvThread(void);
 
     /*!
         Start the Multicast worker threads
     */
-    bool startMulticastWorkerThreads (void);
+    bool startMulticastWorkerThreads(void);
 
     /*!
         Stop the Multicast Workerthreads
     */
-    bool stopMulticastWorkerThreads (void);
+    bool stopMulticastWorkerThreads(void);
 
     /*!
         Starting Client worker thread
         @return true on success
      */
-    bool startClientMsgWorkerThread (void);
+    bool startClientMsgWorkerThread(void);
 
     /*!
         Stop Client worker thread
         @return true on success
      */
-    bool stopClientMsgWorkerThread (void);
+    bool stopClientMsgWorkerThread(void);
 
     /*!
         Add a new client to the clinet list
@@ -216,64 +215,64 @@ class CControlObject
         client id.
         @return True on success.
      */
-    bool addClient (CClientItem *pClientItem, uint32_t id = 0);
+    bool addClient(CClientItem *pClientItem, uint32_t id = 0);
 
     /*!
         Add a known node
         @param guid Real GUID for node
         @param name Symbolic name for node.
     */
-    void addKnownNode (cguid &guid, cguid &ifguid, std::string &name);
+    void addKnownNode(cguid &guid, cguid &ifguid, std::string &name);
 
     /*!
         Remove a new client from the client list
 
         @param pClientItem Pointer to client that should be added.
      */
-    void removeClient (CClientItem *pClientItem);
+    void removeClient(CClientItem *pClientItem);
 
     /*!
         Get device address for primary ehernet adapter
 
         @param guid class
      */
-    bool getMacAddress (cguid &guid);
+    bool getMacAddress(cguid &guid);
 
     /*!
         Get the first IP address computer is known under
 
         @param pGUID Pointer to GUID class
      */
-    bool getIPAddress (cguid &guid);
+    bool getIPAddress(cguid &guid);
 
     /*!
         Read XML configuration GENEAL data
         @param strcfgfile path to configuration file.
         @return Returns true on success false on failure.
      */
-    bool readXMLConfigurationGeneral (const std::string &strcfgfile);
+    bool readXMLConfigurationGeneral(const std::string &strcfgfile);
 
     /*!
         Read configuration data
         @param strcfgfile path to configuration file.
         @return Returns true on success false on failure.
      */
-    bool readConfigurationXML (const std::string &strcfgfile);
+    bool readConfigurationXML(const std::string &strcfgfile);
 
     /*!
          Save configuration data
      */
-    bool saveConfiguration (void);
+    bool saveConfiguration(void);
 
     /*!
         send level II message to all clients
      */
-    void sendEventToClient (CClientItem *pClientItem, vscpEvent *pEvent);
+    void sendEventToClient(CClientItem *pClientItem, vscpEvent *pEvent);
 
     /*!
         Send Level II event to all clients with exception
      */
-    void sendEventAllClients (vscpEvent *pEvent, uint32_t excludeID = 0);
+    void sendEventAllClients(vscpEvent *pEvent, uint32_t excludeID = 0);
 
     /*!
      * Send event
@@ -281,28 +280,8 @@ class CControlObject
      * @param pEvent Event to send
      * @return True on success false on failure.
      */
-    bool sendEvent (CClientItem *pClientItem, vscpEvent *peventToSend);
+    bool sendEvent(CClientItem *pClientItem, vscpEvent *peventToSend);
 
-    /*!
-        Get clientmap index from a client id
-     */
-    uint32_t getClientMapFromId (uint32_t clid);
-
-    /*!
-        Get a client id from a client map index
-     */
-    uint32_t getClientMapFromIndex (uint32_t idx);
-
-    /*!
-        Add a client id to the clientmap
-     */
-    uint32_t addIdToClientMap (uint32_t clid);
-
-    /*!
-        Remove a client id to the clientmap
-        @return True on success
-     */
-    bool removeIdFromClientMap (uint32_t clid);
 
     /*!
      * Read configuration data from database.
@@ -310,131 +289,123 @@ class CControlObject
      * been read and will replace duplicate values, if any.
      * @return true on success
      */
-    bool readConfigurationDB (void);
+    bool readConfigurationDB(void);
 
     /*!
      * Write configuration datapait to configuration database.
      *
      * @return true on success
      */
-    bool addConfigurationValueToDatabase (const char *pName,
-                                          const char *pValue);
+    bool addConfigurationValueToDatabase(const char *pName, const char *pValue);
 
     /*!
      * Adds default configuration values to the configuration table. If
      * a configuration value does not exist it is created to make it easy to
      * add new values to later software versions
      */
-    void addDefaultConfigValues (void);
+    void addDefaultConfigValues(void);
 
     /*!
      * Create configuration table
      * @return true on success
      */
-    bool doCreateConfigurationTable (void);
+    bool doCreateConfigurationTable(void);
 
     /*!
      * Check if db table exists
      */
-    bool isDbTableExist (sqlite3 *db, const std::string &strTblName);
+    bool isDbTableExist(sqlite3 *db, const std::string &strTblName);
 
     /*!
      * Check if a field n the database exist.
      * Can be used to updated generations of tables
      */
-    bool isDbFieldExist (sqlite3 *db,
-                         const std::string &strTblName,
-                         const std::string &strFieldName);
+    bool isDbFieldExist(sqlite3 *db,
+                        const std::string &strTblName,
+                        const std::string &strFieldName);
 
     /*
      * Update field in settings table
      */
-    bool updateConfigurationRecordItem (const std::string &strName,
-                                        const std::string &strValue);
+    bool updateConfigurationRecordItem(const std::string &strName,
+                                       const std::string &strValue);
 
     /*!
      * Read in UDP nodes from the database
      */
-    bool readUdpNodes (void);
+    bool readUdpNodes(void);
 
     /*!
      * Read in multicast channels from the database
      */
-    bool readMulticastChannels (void);
-
-    /*!
-     * Create log database
-     * @return true on success
-     */
-    bool doCreateLogTable (void);
+    bool readMulticastChannels(void);
 
     /*!
      * Create udpnode database
      * @return true on success
      */
-    bool doCreateUdpNodeTable (void);
+    bool doCreateUdpNodeTable(void);
 
     /*!
      * Create multicast database
      * @return true on success
      */
-    bool doCreateMulticastTable (void);
+    bool doCreateMulticastTable(void);
 
     /*!
      * Create user table
      */
-    bool doCreateUserTable (void);
+    bool doCreateUserTable(void);
 
     /*!
      * Create driver table
      */
-    bool doCreateDriverTable (void);
+    bool doCreateDriverTable(void);
 
     /*!
      * Create guid table
      */
-    bool doCreateGuidTable (void);
+    bool doCreateGuidTable(void);
 
     /*!
      * Create location table
      */
-    bool doCreateLocationTable (void);
+    bool doCreateLocationTable(void);
 
     /*!
      * Create mdf table
      */
-    bool doCreateMdfCacheTable (void);
+    bool doCreateMdfCacheTable(void);
 
     /*!
      * Create simpleui table
      */
-    bool doCreateSimpleUiTable (void);
+    bool doCreateSimpleUiTable(void);
 
     /*!
      * Create simpleui item table
      */
-    bool doCreateSimpleUiItemTable (void);
+    bool doCreateSimpleUiItemTable(void);
 
     /*!
      * Create zone table
      */
-    bool doCreateZoneTable (void);
+    bool doCreateZoneTable(void);
 
     /*!
      * Create subzone table
      */
-    bool doCreateSubZoneTable (void);
+    bool doCreateSubZoneTable(void);
 
     /*!
      * Create userdef table
      */
-    bool doCreateUserdefTableTable (void);
-
+    bool doCreateUserdefTableTable(void);
 
     /*!
      * Get number of records in a database table
      */
-    long getCountRecordsDB (sqlite3 *db, std::string &table);
+    long getCountRecordsDB(sqlite3 *db, std::string &table);
 
     /*!
      * Get the system key
@@ -443,23 +414,22 @@ class CControlObject
      *              case the key is not copied to the param.
      * @return Pointer to the 32 byte key
      */
-    uint8_t *getSystemKey (uint8_t *pKey);
+    uint8_t *getSystemKey(uint8_t *pKey);
 
     /*!
      * Get MD5 of system key (vscptoken)
      *
      * @param Reference to string that will receive the MD5 of the key.
      */
-    void getSystemKeyMD5 (std::string &strKey);
+    void getSystemKeyMD5(std::string &strKey);
 
     /*!
      * Create the folder structure that the VSCP daemon is expecting
      * http://www.vscp.org/docs/vscpd/doku.php?id=files_and_directory_structure
      */
-    bool createFolderStructure (void);
+    bool createFolderStructure(void);
 
   public:
-
     // In the configuration database configurations are stored in records.
     // Normally record = 1 (default) is used )
     uint16_t m_nConfiguration;
@@ -528,25 +498,12 @@ class CControlObject
     */
     cguid m_guid;
 
-    /*!
-        ClientMap
-        This structure maps client id's and
-        The client map structure
-        Maps unsigned log client id's to
-        unsigned char id's for the
-        GUID
-    */
-    uint32_t m_clientMap[VSCP_MAX_CLIENTS];
-
     //**************************************************************************
     //                                Logging
     //**************************************************************************
 
-    /*!
-        Log Level
-     */
+    // Log Level
     uint8_t m_logLevel;
-
 
     //**************************************************************************
     //                            Communication
@@ -594,7 +551,7 @@ class CControlObject
     /*!
         UDP worker thread object
     */
-    UDPSrvObj *m_udpSrvObj; // TODO UserServerInfo to this one ????
+    UDPSrvObj m_udpSrvObj; // TODO UserServerInfo to this one ????
 
     /*!
         UDP Worker threads
@@ -735,17 +692,14 @@ class CControlObject
     //                    Databases
     //*****************************************************
 
-    std::string m_path_db_vscp_daemon;      // Path to the VSCP daemon database
+    std::string m_path_db_vscp_daemon; // Path to the VSCP daemon database
     sqlite3 *m_db_vscp_daemon;
 
     // Mutex to protect variables
-    pthread_mutex_t m_db_vscp_configMutex;  // Mutex for the configuration table
+    pthread_mutex_t m_db_vscp_configMutex; // Mutex for the configuration table
 
-    std::string m_path_db_vscp_data;        // Path to the VSCP data database
+    std::string m_path_db_vscp_data; // Path to the VSCP data database
     sqlite3 *m_db_vscp_data;
-
-    std::string m_path_db_vscp_log;         // Path to the VSCP log database
-    sqlite3 *m_db_vscp_log;
 
     // Mutex for client queue
     pthread_mutex_t m_clientMutex;
