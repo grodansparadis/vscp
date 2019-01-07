@@ -132,7 +132,6 @@ CControlObject::CControlObject()
     // m_debugFlags1 |= VSCP_DEBUG1_TCP;
     // m_debugFlags1 |= VSCP_DEBUG1_DRIVER
 
-    m_logDays    = DEFAULT_LOGDAYS;
     m_rootFolder = ("/srv/vscp/");
 
     // Default admin user credentials
@@ -148,9 +147,6 @@ CControlObject::CControlObject()
                           "33B6D606A863B633EF529D64544F8E");
 
     m_nConfiguration = 1; // Default configuration record is read.
-
-    // Log to syslog
-    m_bLogToSysLog = true;
 
     m_automation.setControlObject(this);
     m_maxItemsInClientReceiveQueue = MAX_ITEMS_CLIENT_RECEIVE_QUEUE;
@@ -1429,49 +1425,6 @@ CControlObject::getVscpCapabilities(uint8_t *pCapability)
     return true;
 }
 
-/////////////////////////////////////////////////////////////////////////////
-// logMsg
-//
-
-void
-CControlObject::logMsg(const std::string &msgin,
-                       const uint8_t level,
-                       const uint8_t nType)
-{
-    syslog(LOG_INFO, "%s", msgin.c_str());
-    /*
-    // Log to database
-    if ( ( NULL != m_db_vscp_log ) &&
-            ( m_logLevel >= level) ) {
-
-        char *zErrMsg = NULL;
-
-        char *sql = sqlite3_mprintf( VSCPDB_LOG_INSERT,
-            nType,
-            (const char *)(datetime.FormatISODate() + ("T") +
-                datetime.FormatISOTime() ).c_str(),
-            level,
-            (const char *)msg.c_str() );
-
-        if ( SQLITE_OK != sqlite3_exec( m_db_vscp_log,
-                                        sql, NULL, NULL, &zErrMsg ) ) {
-            wxPrintf( "Failed to write message to log database. Error is: "
-                      "%s -- Message is: %s",
-                        zErrMsg,
-                        (const char *)msg.c_str() );
-        }
-        sqlite3_free( sql );
-
-        // Clean up old entries
-        if ( -1 != m_logDays ) {
-            sql = sqlite3_mprintf( VSCPDB_LOG_DELETE_OLD, m_logDays );
-            sqlite3_exec( m_db_vscp_log, sql, NULL, NULL, &zErrMsg );
-            sqlite3_free( sql );
-        }
-
-    }
-*/
-}
 
 /////////////////////////////////////////////////////////////////////////////
 // getCountRecordsDB
@@ -1503,91 +1456,8 @@ CControlObject::getCountRecordsDB(sqlite3 *db, std::string &table)
     return count;
 }
 
-/////////////////////////////////////////////////////////////////////////////
-// getCountRecordsLogDB
-//
-
-long
-CControlObject::getCountRecordsLogDB(void)
-{
-    long count = 0;
-    /*
-    sqlite3_stmt *ppStmt;
-
-    // If not open no records
-    if ( NULL == m_db_vscp_log ) return 0;
 
 
-    pthread_mutex_lock( &m_mutexLogWrite );
-
-    if ( SQLITE_OK != sqlite3_prepare( m_db_vscp_log,
-                                        VSCPDB_LOG_COUNT,
-                                        -1,
-                                        &ppStmt,
-                                        NULL ) )  {
-        wxPrintf( "Failed to prepare count for log database. SQL is %s",
-                        VSCPDB_LOG_COUNT  );
-        return 0;
-    }
-
-    if ( SQLITE_ROW == sqlite3_step( ppStmt ) ) {
-        count = sqlite3_column_int( ppStmt, 0 );
-    }
-
-    pthread_mutex_unlock( &m_mutexLogWrite );
-*/
-    return count;
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// searchLogDB
-//
-
-bool
-CControlObject::searchLogDB(const char *sql, std::string &strResult)
-{
-    /*
-    sqlite3_stmt *ppStmt;
-
-    // If not open no records
-    if ( NULL == m_db_vscp_log ) return 0;
-
-
-    pthread_mutex_lock( &m_mutexLogWrite );
-
-    if ( SQLITE_OK != sqlite3_prepare( m_db_vscp_log,
-                                        sql,
-                                        -1,
-                                        &ppStmt,
-                                        NULL ) )  {
-        syslog( LOG_ERR,
-                    "Failed to get records from log "
-                    "database. SQL is %s"),
-                    sql.c_str() );
-        pthread_mutex_unlock( &m_mutexLogWrite );
-        return false;
-    }
-
-    while ( SQLITE_ROW == sqlite3_step( ppStmt ) ) {
-        std::string str;
-        str = sqlite3_column_text( ppStmt, 0 );
-        str += (",");
-        str += sqlite3_column_text( ppStmt, 1 );
-        str += (",");
-        str += sqlite3_column_text( ppStmt, 2 );
-        str += (",");
-        str += sqlite3_column_text( ppStmt, 3 );
-        str += (",");
-        str += sqlite3_column_text( ppStmt, 4 );
-
-        str += ("|");
-        strResult += str;
-    }
-
-    pthread_mutex_unlock( &m_mutexLogWrite );
-*/
-    return true;
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 // sendEventToClient

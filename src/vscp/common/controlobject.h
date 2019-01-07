@@ -61,18 +61,6 @@ enum
     DAEMON_LOGMSG_DEBUG,
 };
 
-// Log type
-enum
-{
-    DAEMON_LOGTYPE_GENERAL = 0,
-    DAEMON_LOGTYPE_SECURITY,
-    DAEMON_LOGTYPE_ACCESS,
-    DAEMON_LOGTYPE_DM
-};
-
-// Number of days a log entry will be kept
-// before it is removed
-#define DEFAULT_LOGDAYS 7
 
 // TTL     Scope
 // ----------------------------------------------------------------------
@@ -136,22 +124,6 @@ class CControlObject
         @return True on success.
      */
     bool getVscpCapabilities (uint8_t *pCapability);
-
-    /*!
-      Write log message -
-    */
-    void logMsg (const std::string &str,
-                 const uint8_t level = DAEMON_LOGMSG_NORMAL,
-                 const uint8_t nType = DAEMON_LOGTYPE_GENERAL);
-
-    /*!
-     * Get records from log database. The variable vscp.log.database.sql
-     * contains the sql expression (without "select * from log")
-     * @param sql Search expression
-     * @param strResult The search result will be returned in this string.
-     * @return True on success.
-     */
-    bool searchLogDB (const char *sql, std::string &strResult);
 
     /*!
         General initialisation
@@ -458,10 +430,6 @@ class CControlObject
      */
     bool doCreateUserdefTableTable (void);
 
-    /*!
-     * Get current number of records in log database
-     */
-    long getCountRecordsLogDB (void);
 
     /*!
      * Get number of records in a database table
@@ -579,16 +547,6 @@ class CControlObject
      */
     uint8_t m_logLevel;
 
-    /*!
-     * Number of days a log entry will be kept in th system
-     * -1 is always.
-     */
-    int m_logDays;
-
-    /*!
-        Log to syslog
-     */
-    bool m_bLogToSysLog;
 
     //**************************************************************************
     //                            Communication

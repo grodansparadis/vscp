@@ -26,11 +26,11 @@
 // SOFTWARE.
 //
 
-#include <string>
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <list>
 #include <regex>
+#include <string>
 
 #include <openssl/crypto.h>
 #include <openssl/opensslv.h>
@@ -57,7 +57,7 @@
 
 #include "remotevariable.h"
 
-#define XML_BUFF_SIZE   512000      // Size of XML parser buffer
+#define XML_BUFF_SIZE 512000 // Size of XML parser buffer
 
 // https://github.com/nlohmann/json
 using json = nlohmann::json;
@@ -69,7 +69,6 @@ using json = nlohmann::json;
 // The global control object
 extern CControlObject *gpobj;
 
-
 // XML parser
 static void
 startLoadVarParser(void *data, const char *name, const char **attr);
@@ -77,7 +76,6 @@ static void
 handleLoadVardata(void *data, const char *content, int length);
 static void
 endLoadVarParser(void *data, const char *name);
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // Constructor
@@ -613,7 +611,6 @@ CVSCPVariable::getAsXML(std::string &strVariable)
     return true;
 }
 
-
 ///////////////////////////////////////////////////////////////////////////////
 // setFromXML
 //
@@ -627,34 +624,28 @@ CVSCPVariable::setFromXML(std::string &strVariable)
 
     XML_Parser xmlParser = XML_ParserCreate("UTF-8");
     XML_SetUserData(xmlParser, this);
-    XML_SetElementHandler(xmlParser,
-                          startLoadVarParser,
-                          endLoadVarParser);
+    XML_SetElementHandler(xmlParser, startLoadVarParser, endLoadVarParser);
     XML_SetCharacterDataHandler(xmlParser, handleLoadVardata);
 
     void *buf = XML_GetBuffer(xmlParser, XML_BUFF_SIZE);
-    if (NULL == buf)
-    {
+    if (NULL == buf) {
         XML_ParserFree(xmlParser);
-        syslog(LOG_CRIT,
-               "Failed to allocate buffer for XML parser (string)" );
+        syslog(LOG_CRIT, "Failed to allocate buffer for XML parser (string)");
         return false;
     }
- 
-    memset( buf, 0, sizeof( buf ) );
-    memcpy( buf, strVariable.c_str(), strVariable.length() );
- 
+
+    memset(buf, 0, sizeof(buf));
+    memcpy(buf, strVariable.c_str(), strVariable.length());
+
     size_t size = strVariable.length();
-    if (!XML_ParseBuffer(xmlParser, size, size == 0))
-    {
-        syslog(LOG_ERR,
-               "Failed parse XML configuration file.");
+    if (!XML_ParseBuffer(xmlParser, size, size == 0)) {
+        syslog(LOG_ERR, "Failed parse XML configuration file.");
         XML_ParserFree(xmlParser);
         return false;
     }
- 
+
     XML_ParserFree(xmlParser);
- 
+
     return true;
 }
 
@@ -4067,75 +4058,6 @@ CVariableStorage::getStockVariable(const std::string &name,
     //                              Log files
     // *************************************************************************
 
-    // Enable syslog logging
-    if (vscp_startsWith(lcname, "vscp.log.syslog.enable")) {
-        var.setValue(gpobj->m_bLogToSysLog ? true : false);
-        return var.getID();
-    }
-
-    // Enable database log
-    if (vscp_startsWith(lcname, "vscp.log.database.enable")) {
-        var.setValue(false); // TODO
-        return var.getID();
-    }
-
-    // Read Log database path
-    if (vscp_startsWith(lcname, "vscp.log.database.path")) {
-        var.setValue(gpobj->m_path_db_vscp_data);
-        return var.getID();
-    }
-
-    // Read Log database row count
-    if (vscp_startsWith(lcname, "vscp.log.database.count")) {
-        var.setValue(gpobj->getCountRecordsLogDB());
-        return var.getID();
-    }
-
-    // Read Log database search result
-    if (vscp_startsWith(lcname, "vscp.log.database.search")) {
-        std::string strResult;
-
-        var.setStockVariable();
-        var.setPersistent(false);
-
-        CVSCPVariable sqlvar;
-        if (0 == findNonPersistentVariable("vscp.log.database.sql", sqlvar)) {
-            var.setValue("0,0,0,0,ERROR: sql variable was not found");
-        } else {
-
-            std::string str = sqlvar.getValue();
-            // if ( !vscp_base64_std_decode( str ) ) return false;
-
-            std::string searchStr = "SELECT * from log ";
-            searchStr += str;
-
-            // Do search
-            gpobj->searchLogDB((const char *)searchStr.c_str(), strResult);
-
-            // Set the value
-            var.setValue(strResult);
-        }
-
-        return var.getID();
-    }
-
-    if (vscp_startsWith(lcname, "vscp.log.database.sql")) {
-        // SQL
-        return var.getID();
-    }
-
-    if (vscp_startsWith(lcname, "vscp.log.general.enable")) {
-        // Boolean
-        var.setValue(false); // TODO
-        return var.getID();
-    }
-
-    if (vscp_startsWith(lcname, "vscp.log.general.path")) {
-        // String
-        var.setValue(""); // TODO
-        return var.getID();
-    }
-
     if (vscp_startsWith(lcname, "vscp.log.access.enable")) {
         // Boolean
         var.setValue(false); // TODO
@@ -4143,18 +4065,6 @@ CVariableStorage::getStockVariable(const std::string &name,
     }
 
     if (vscp_startsWith(lcname, "vscp.log.access.path")) {
-        // String
-        var.setValue(""); // TODO
-        return var.getID();
-    }
-
-    if (vscp_startsWith(lcname, "vscp.log.security.enable")) {
-        // Boolean
-        var.setValue(false); // TODO
-        return var.getID();
-    }
-
-    if (vscp_startsWith(lcname, "vscp.log.security.path")) {
         // String
         var.setValue(""); // TODO
         return var.getID();
@@ -5434,29 +5344,6 @@ CVariableStorage::putStockVariable(CVSCPVariable &var, CUserItem *pUser)
     // *************************************************************************
     //                              Log files
     // *************************************************************************
-
-    // Enable syslog logging
-    if (vscp_startsWith(lcname, "vscp.log.syslog.enable")) {
-        bool val;
-        var.getValue(&val);
-        gpobj->m_bLogToSysLog = val;
-        return gpobj->updateConfigurationRecordItem(("vscpd_Syslog_Enable"),
-                                                    val ? ("1") : ("0"));
-    }
-
-    if (vscp_startsWith(lcname, "vscp.log.database.path")) {
-        std::string strval;
-        strval                     = var.getValue();
-        gpobj->m_path_db_vscp_data = strval;
-        return gpobj->updateConfigurationRecordItem(
-          ("vscpd_GeneralLogFile_Path"), strval);
-    }
-
-    // Write SQL value for log database retreival
-    if (vscp_startsWith(lcname, "vscp.log.database.sql")) {
-        // Handled by the stock variable itself
-        return true;
-    }
 
     // *************************************************************************
     //                             Databases
@@ -6823,7 +6710,7 @@ startLoadVarParser(void *data, const char *name, const char **attr)
                 }
             }
 
-            if ( pStorage->exist( var.getName() ) ) {
+            if (pStorage->exist(var.getName())) {
                 if (pStorage->update(var)) {
                     if (gpobj->m_debugFlags1 & VSCP_DEBUG1_VARIABLE) {
                         syslog(LOG_DEBUG,
@@ -6835,9 +6722,8 @@ startLoadVarParser(void *data, const char *name, const char **attr)
                            "[Loading XML file] Failed to update variable %s.\n",
                            (const char *)var.getName().c_str());
                 }
-                
-            }
-            else {
+
+            } else {
                 if (pStorage->add(var)) {
                     if (gpobj->m_debugFlags1 & VSCP_DEBUG1_VARIABLE) {
                         syslog(LOG_DEBUG,
@@ -6927,7 +6813,6 @@ CVariableStorage::loadFromXML(const std::string &path)
                    "[loadFromXML] Loading variable XML file from %s.",
                    (const char *)path.c_str());
         }
-
     }
 
     FILE *fp;
@@ -7005,8 +6890,7 @@ CVariableStorage::save(std::string &path, uint8_t whatToSave)
                    path.c_str());
         } else {
 
-            of <<
-              "<?xml version=\"1.0\" encoding=\"utf-8\" ?>\n\n";
+            of << "<?xml version=\"1.0\" encoding=\"utf-8\" ?>\n\n";
 
             // VSCP variables
             of << "<variables>\n\n";
@@ -7140,7 +7024,7 @@ CVariableStorage::save(std::string &path, uint8_t whatToSave)
         syslog(LOG_ERR,
                "Error when writing out variables to file. path=%s",
                path.c_str());
-        return false;               
+        return false;
     }
 
     return true;
@@ -7161,7 +7045,8 @@ CVariableStorage::writeVariableToXmlFile(std::ofstream &of,
     std::string name = variable.getName();
 
     try {
-        of << vscp_string_format("  <variable type=\"%d\" ", variable.getType());
+        of << vscp_string_format("  <variable type=\"%d\" ",
+                                 variable.getType());
         of << vscp_string_format(" name=\"%s\" ", (const char *)name.c_str());
         if (variable.isPersistent()) {
             of << " persistent=\"true\" ";
@@ -7170,12 +7055,13 @@ CVariableStorage::writeVariableToXmlFile(std::ofstream &of,
         }
         of << vscp_string_format(" user=\"%d\" ", variable.getOwnerID());
         of << vscp_string_format(" access-rights=\"%d\" ",
-                           variable.getAccessRights());
+                                 variable.getAccessRights());
         variable.writeValueToString(strtemp);
-        of << vscp_string_format(" value=\"%s\" ", (const char *)strtemp.c_str());
+        of << vscp_string_format(" value=\"%s\" ",
+                                 (const char *)strtemp.c_str());
         // Always save on base64 encoded form
         of << vscp_string_format(" note=\"%s\" ",
-                           (const char *)variable.getNote().c_str());
+                                 (const char *)variable.getNote().c_str());
         of << " />\n\n";
     } catch (...) {
         syslog(LOG_ERR,

@@ -77,7 +77,6 @@ void _sighandler( int sig )
 {
     fprintf(stderr, "VSCPD: signal received, forced to stop.\n");
     syslog( LOG_CRIT, "VSCPD: signal received, forced to stop.: %m");    
-    gpobj->logMsg( "VSCPD: signal received, forced to stop." );
     gpobj->m_bQuit = true;
     gbStopDaemon = true;
     gbRestart = false;

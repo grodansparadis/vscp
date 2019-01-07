@@ -514,8 +514,8 @@ restsrv_add_session(struct web_connection *conn, CUserItem *pUserItem)
 
     pSession->m_pClientItem = new CClientItem(); // Create client
     if (NULL == pSession->m_pClientItem) {
-        gpobj->logMsg(
-          ("[restsrv] New session: Unable to create client object."));
+        syslog(LOG_ERR,
+               "[restsrv] New session: Unable to create client object.");
         delete pSession;
         return NULL;
     }
@@ -530,8 +530,9 @@ restsrv_add_session(struct web_connection *conn, CUserItem *pUserItem)
       CLIENT_ITEM_INTERFACE_TYPE_CLIENT_WEBSOCKET;
     pSession->m_pClientItem->m_strDeviceName = ("Internal REST server client.");
     pSession->m_pClientItem->m_strDeviceName += ("|Started at ");
-    //vscpdatetime now = vscpdatetime::Now();
-    pSession->m_pClientItem->m_strDeviceName += vscpdatetime::setNow().getISODateTime();
+    // vscpdatetime now = vscpdatetime::Now();
+    pSession->m_pClientItem->m_strDeviceName +=
+      vscpdatetime::setNow().getISODateTime();
 
     // Add the client to the Client List
     pthread_mutex_lock(&gpobj->m_clientMutex);
@@ -540,8 +541,8 @@ restsrv_add_session(struct web_connection *conn, CUserItem *pUserItem)
         delete pSession->m_pClientItem;
         pSession->m_pClientItem = NULL;
         pthread_mutex_unlock(&gpobj->m_clientMutex);
-        gpobj->logMsg(
-          ("REST server: Failed to add client. Terminating thread."));
+        syslog(LOG_ERR,
+               "REST server: Failed to add client. Terminating thread.");
         return NULL;
     }
     pthread_mutex_unlock(&gpobj->m_clientMutex);
@@ -854,8 +855,7 @@ websrv_restapi(struct web_connection *conn, void *cbdata)
               vscp_string_format("[REST Client] Host [%s] Invalid user [%s]",
                                  std::string(reqinfo->remote_addr).c_str(),
                                  (const char *)keypairs[("VSCPUSER")].c_str());
-            gpobj->logMsg(
-              strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY);
+            syslog(LOG_ERR, "%s", strErr.c_str());
             restsrv_error(conn, pSession, format, REST_ERROR_CODE_INVALID_USER);
             return WEB_ERROR;
         }

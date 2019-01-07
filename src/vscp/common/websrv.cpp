@@ -68,7 +68,6 @@
 #include <actioncodes.h>
 #include <canal_macro.h>
 #include <controlobject.h>
-#include <vscpdatetime.h>
 #include <devicelist.h>
 #include <dm.h>
 #include <fastpbkdf2.h>
@@ -81,6 +80,7 @@
 #include <vscp.h>
 #include <vscp_aes.h>
 #include <vscpbase64.h>
+#include <vscpdatetime.h>
 #include <vscpdb.h>
 #include <vscphelper.h>
 #include <vscpmd5.h>
@@ -379,8 +379,8 @@ websrv_add_session(struct web_connection *conn)
 
     pSession->m_pClientItem = new CClientItem(); // Create client
     if (NULL == pSession->m_pClientItem) {
-        gpobj->logMsg(
-          ("[websrv] New session: Unable to create client object."));
+        syslog( LOG_ERR,
+          "[websrv] New session: Unable to create client object.");
         delete pSession;
         return NULL;
     }
