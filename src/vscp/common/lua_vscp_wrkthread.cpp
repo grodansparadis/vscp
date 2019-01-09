@@ -283,7 +283,7 @@ actionLuaThread(void *pData)
     // luaL_dostring( lua, (const char *)m_xxstrScript.c_str() );
     /*if ( 0 != duk_peval( ctx ) ) {
         std::string strError =
-                vscp_string_format( "Lua failed to execute: %s\n",
+                vscp_str_format( "Lua failed to execute: %s\n",
                                     duk_safe_to_string(ctx, -1) );
         syslog( LOG_ERR, ( strError, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_DM );
     }*/

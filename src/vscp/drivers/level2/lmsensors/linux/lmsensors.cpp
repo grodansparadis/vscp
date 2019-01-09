@@ -356,7 +356,7 @@ Clmsensors::open(const char *pUsername,
     for (int i = 0; i < varNumberOfSensors; i++) {
 
         std::string strIteration;
-        strIteration = vscp_string_format("%d", i);
+        strIteration = vscp_str_format("%d", i);
         vscp_trim(strIteration);
 
         CWrkTreadObj *pthreadObj = new CWrkTreadObj;
@@ -791,7 +791,7 @@ workerThread(void *pData)
 
                             if (NULL != pEvent->pdata) {
                                 std::string str;
-                                str = vscp_string_format("%lf", val);
+                                str = vscp_str_format("%lf", val);
                                 if (str.length() > 7) {
                                     str = vscp_str_left(str, 7);
                                 }
@@ -884,7 +884,7 @@ workerThread(void *pData)
                 } else if (VSCP_CLASS2_MEASUREMENT_STR ==
                            pWorkObj->m_vscpclass) {
                     std::string str;
-                    str = vscp_string_format("%d,%d,%d,%lf",
+                    str = vscp_str_format("%d,%d,%d,%lf",
                                              pWorkObj->m_index,
                                              pWorkObj->m_zone,
                                              pWorkObj->m_subzone,

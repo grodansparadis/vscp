@@ -44,7 +44,7 @@
 #include "log.h"
 
 // Buffer size for XML parser
-#define XML_BUFF_SIZE   10000
+#define XML_BUFF_SIZE 10000
 
 // Forward declarations
 void *
@@ -60,8 +60,8 @@ threadWorker(void *pData);
 
 CVSCPLog::CVSCPLog()
 {
-    m_flags       = 0;
-    m_bQuit       = false;
+    m_flags = 0;
+    m_bQuit = false;
 
     sem_init(&m_semSendQueue, 0, 0);
     pthread_mutex_init(&m_mutexSendQueue, NULL);
@@ -178,7 +178,7 @@ CVSCPLog::open(const char *pUsername,
 
         m_pWorkObj->m_pLog = this;
 
-        if (pthread_create( &m_pWrkThread, NULL, threadWorker, m_pWorkObj)) {
+        if (pthread_create(&m_pWrkThread, NULL, threadWorker, m_pWorkObj)) {
             syslog(LOG_CRIT, "Unable to start logger driver worker thread.");
             return false;
         }
@@ -371,32 +371,32 @@ CVSCPLog::writeEvent(vscpEvent *pEvent)
         str = vscpdatetime::setNow().getISODateTime();
         m_logStream << str.c_str();
 
-        str = vscp_string_format("head=%d ", pEvent->head);
+        str = vscp_str_format("head=%d ", pEvent->head);
         m_logStream << str.c_str();
 
-        str = vscp_string_format("class=%d ", pEvent->vscp_class);
+        str = vscp_str_format("class=%d ", pEvent->vscp_class);
         m_logStream << str.c_str();
 
-        str = vscp_string_format("type=%d ", pEvent->vscp_type);
+        str = vscp_str_format("type=%d ", pEvent->vscp_type);
         m_logStream << str.c_str();
 
-        str = vscp_string_format("GUID=", pEvent->vscp_type);
+        str = vscp_str_format("GUID=", pEvent->vscp_type);
         m_logStream << str.c_str();
 
         vscp_writeGuidToString(pEvent, str);
         m_logStream << str.c_str();
 
-        str = vscp_string_format(" datasize=%d ", pEvent->sizeData);
+        str = vscp_str_format(" datasize=%d ", pEvent->sizeData);
         m_logStream << str.c_str();
 
         if (0 != pEvent->sizeData) {
-            str = vscp_string_format("data=", pEvent->vscp_type);
+            str = vscp_str_format("data=", pEvent->vscp_type);
             m_logStream << str.c_str();
             vscp_writeVscpDataToString(pEvent, str);
             m_logStream << str.c_str();
         }
 
-        str = vscp_string_format(" Timestamp=%d\r\n", pEvent->timestamp);
+        str = vscp_str_format(" Timestamp=%d\r\n", pEvent->timestamp);
         m_logStream << str.c_str();
     }
 
@@ -414,21 +414,16 @@ CLogWrkThreadObj::CLogWrkThreadObj()
 
 CLogWrkThreadObj::~CLogWrkThreadObj() {}
 
-
-
-
-
 ///////////////////////////////////////////////////////////////////////////////
 // 								Worker thread
 ///////////////////////////////////////////////////////////////////////////////
-
 
 // ----------------------------------------------------------------------------
 
 /*
     XML format
     ==========
-    <setup path="path-to-log-file" 
+    <setup path="path-to-log-file"
             brewrite="true|false"
             bworksfmt="true|false"
             filter="VSCP filter on string format"
@@ -440,60 +435,57 @@ CLogWrkThreadObj::~CLogWrkThreadObj() {}
 int depth_setup_parser = 0;
 
 void
-startSetupParser( void *data, const char *name, const char **attr ) 
+startSetupParser(void *data, const char *name, const char **attr)
 {
     CVSCPLog *pLog = (CVSCPLog *)data;
-    if ( NULL == pLog ) return;
+    if (NULL == pLog) return;
 
-    if ( ( 0 == strcmp( name, "setup") ) && 
-         ( 0 == depth_setup_parser ) ) {
+    if ((0 == strcmp(name, "setup")) && (0 == depth_setup_parser)) {
 
-        for ( int i = 0; attr[i]; i += 2 ) {
+        for (int i = 0; attr[i]; i += 2) {
 
-            std::string attribute = attr[i+1];
+            std::string attribute = attr[i + 1];
             vscp_trim(attribute);
 
-            if ( 0 == strcmp( attr[i], "path") ) {
-                if ( !attribute.empty() ) {
-                    pLog->m_path =  attribute;
+            if (0 == strcmp(attr[i], "path")) {
+                if (!attribute.empty()) {
+                    pLog->m_path = attribute;
                 }
-            }
-            else if ( 0 == strcmp( attr[i], "filter") ) {
-                if ( !attribute.empty() ) {
-                    if ( !vscp_readFilterFromString( &pLog->m_vscpfilter, attribute ) ) {
-                        syslog( LOG_ERR, "Unable to read event receive filter.");
+            } else if (0 == strcmp(attr[i], "filter")) {
+                if (!attribute.empty()) {
+                    if (!vscp_readFilterFromString(&pLog->m_vscpfilter,
+                                                   attribute)) {
+                        syslog(LOG_ERR, "Unable to read event receive filter.");
                     }
                 }
-            }
-            else if ( 0 == strcmp( attr[i], "mask") ) {
-                if ( !attribute.empty() ) {
-                    if ( !vscp_readMaskFromString( &pLog->m_vscpfilter, attribute ) ) {
-                        syslog( LOG_ERR, "Unable to read event receive mask.");
+            } else if (0 == strcmp(attr[i], "mask")) {
+                if (!attribute.empty()) {
+                    if (!vscp_readMaskFromString(&pLog->m_vscpfilter,
+                                                 attribute)) {
+                        syslog(LOG_ERR, "Unable to read event receive mask.");
                     }
                 }
-            }
-            else if ( 0 == strcmp( attr[i], "brewrite") ) {
-                if ( !attribute.empty() ) {
-                    if ( 0 == vscp_strcasecmp(attribute.c_str(),"TRUE") ){
+            } else if (0 == strcmp(attr[i], "brewrite")) {
+                if (!attribute.empty()) {
+                    if (0 == vscp_strcasecmp(attribute.c_str(), "TRUE")) {
                         pLog->m_flags |= LOG_FILE_OVERWRITE;
                     }
                 }
-            }
-            else if ( 0 == strcmp( attr[i], "bworksfmt") ) {
-                if ( !attribute.empty() ) {
-                    if ( 0 == vscp_strcasecmp(attribute.c_str(),"TRUE")) {
+            } else if (0 == strcmp(attr[i], "bworksfmt")) {
+                if (!attribute.empty()) {
+                    if (0 == vscp_strcasecmp(attribute.c_str(), "TRUE")) {
                         pLog->m_flags |= LOG_FILE_VSCP_WORKS;
                     }
                 }
             }
         }
-    } 
+    }
 
     depth_setup_parser++;
 }
 
 void
-endSetupParser( void *data, const char *name ) 
+endSetupParser(void *data, const char *name)
 {
     depth_setup_parser--;
 }
@@ -584,7 +576,7 @@ threadWorker(void *pData)
         }
     }
 
-    // XML setup 
+    // XML setup
     std::string str;
     std::string strSetupXML;
     std::string strName = pObj->m_pLog->m_prefix + std::string("_setup");
@@ -605,7 +597,7 @@ threadWorker(void *pData)
         }
 
         XML_ParserFree(xmlParser);
-    }  
+    }
 
     // Close server connection
     pObj->m_srv.doCmdClose();
@@ -616,10 +608,8 @@ threadWorker(void *pData)
     while (!pObj->m_pLog->m_bQuit) {
 
         // Wait for events
-        struct timespec ts;
-        ts.tv_sec  = 0;
-        ts.tv_nsec = 500000; // 500 ms
-        if (ETIMEDOUT == sem_timedwait(&pObj->m_pLog->m_semSendQueue, &ts)) {
+        if ((-1 == vscp_sem_wait(&pObj->m_pLog->m_semSendQueue, 500)) &&
+            errno == ETIMEDOUT) {
             continue;
         }
 

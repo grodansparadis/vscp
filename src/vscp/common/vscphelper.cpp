@@ -26,17 +26,18 @@
 // SOFTWARE.
 //
 
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
 #include <limits.h>
 #include <math.h>
 #include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/times.h>
 #include <sys/types.h>
-#include <unistd.h>
+#include <semaphore.h>
 
 #ifdef _WIN32
 #include <io.h>
@@ -153,6 +154,31 @@ int
 vscp_isBigEndian(void)
 {
     return !vscp_isLittleEndian();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// vscp_sem_wait
+//
+//
+
+int
+vscp_sem_wait(sem_t *sem, uint32_t waitms)
+{
+    uint64_t ns;
+    struct timespec ts;
+
+    // Wait time must be less than four seconds
+    if ( waitms >= 4000 ) return -1;
+
+    if (-1 == clock_gettime(CLOCK_REALTIME, &ts)) {
+        return -1;
+    }
+
+    ns = ts.tv_nsec + (waitms * 1000000);
+    ts.tv_sec += (ns / 1000000000);
+    ts.tv_nsec = ns % 1000000000;
+
+    return sem_timedwait(sem, &ts);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -494,11 +520,11 @@ vscp_rstrstr(const char *s1, const char *s2)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// vscp_string_format
+// vscp_str_format
 //
 
 std::string
-vscp_string_format(const std::string fmt_str, ...)
+vscp_str_format(const std::string fmt_str, ...)
 {
     int final_n,
       n = ((int)fmt_str.size()) *
@@ -1106,7 +1132,7 @@ vscp_getVSCPMeasurementAsString(const vscpEvent *pEvent, std::string &strValue)
             }
         }
 
-        strValue = vscp_string_format("%f", *((double *)buf));
+        strValue = vscp_str_format("%f", *((double *)buf));
 
     } else if (VSCP_CLASS1_MEASUREMENT32 == pEvent->vscp_class) {
 
@@ -1118,7 +1144,7 @@ vscp_getVSCPMeasurementAsString(const vscpEvent *pEvent, std::string &strValue)
         memset(buf, 0, sizeof(buf));
         memcpy(buf, pEvent->pdata, 4); // float
 
-        strValue = vscp_string_format("%f", *((float *)buf));
+        strValue = vscp_str_format("%f", *((float *)buf));
 
     } else if (VSCP_CLASS2_LEVEL1_MEASUREMENT32 == pEvent->vscp_class) {
 
@@ -1130,7 +1156,7 @@ vscp_getVSCPMeasurementAsString(const vscpEvent *pEvent, std::string &strValue)
         memset(buf, 0, sizeof(buf));
         memcpy(buf, pEvent->pdata + 16, 4); // float
 
-        strValue = vscp_string_format("%f", *((float *)buf));
+        strValue = vscp_str_format("%f", *((float *)buf));
 
     } else if (VSCP_CLASS1_MEASUREMENT64 == pEvent->vscp_class) {
 
@@ -1142,7 +1168,7 @@ vscp_getVSCPMeasurementAsString(const vscpEvent *pEvent, std::string &strValue)
         memset(buf, 0, sizeof(buf));
         memcpy(buf, pEvent->pdata, 8); // Double
 
-        strValue = vscp_string_format("%f", *((double *)buf));
+        strValue = vscp_str_format("%f", *((double *)buf));
 
     } else if (VSCP_CLASS2_LEVEL1_MEASUREMENT64 == pEvent->vscp_class) {
 
@@ -1154,7 +1180,7 @@ vscp_getVSCPMeasurementAsString(const vscpEvent *pEvent, std::string &strValue)
         memset(buf, 0, sizeof(buf));
         memcpy(buf, pEvent->pdata + 16, 8); // Double
 
-        strValue = vscp_string_format("%f", *((double *)buf));
+        strValue = vscp_str_format("%f", *((double *)buf));
 
     }
 
@@ -1207,7 +1233,7 @@ vscp_getVSCPMeasurementAsString(const vscpEvent *pEvent, std::string &strValue)
                 for (i = 1; i < (pEvent->sizeData - offset); i++) {
 
                     strValue +=
-                      vscp_string_format("%d", pEvent->pdata[i + offset]);
+                      vscp_str_format("%d", pEvent->pdata[i + offset]);
 
                     if (i != (pEvent->sizeData - 1 - offset)) {
                         strValue += ",";
@@ -1231,14 +1257,14 @@ vscp_getVSCPMeasurementAsString(const vscpEvent *pEvent, std::string &strValue)
             {
                 double value = (double)vscp_getDataCodingInteger(
                   pEvent->pdata + offset, pEvent->sizeData - offset);
-                strValue = vscp_string_format("%.0lf", value);
+                strValue = vscp_str_format("%.0lf", value);
             } break;
 
             case 4: // normalised integer
             {
                 double value = vscp_getDataCodingNormalizedInteger(
                   pEvent->pdata + offset, pEvent->sizeData - offset);
-                strValue = vscp_string_format("%lf", value);
+                strValue = vscp_str_format("%lf", value);
             } break;
 
             case 5: // Floating point value
@@ -1273,7 +1299,7 @@ vscp_getVSCPMeasurementAsString(const vscpEvent *pEvent, std::string &strValue)
 
                 double dValue = value;
                 dValue        = sign * (dValue * pow(10.0, exponent));
-                strValue      = vscp_string_format("%f", dValue);
+                strValue      = vscp_str_format("%f", dValue);
 
             } break;
 
@@ -1362,7 +1388,7 @@ vscp_getVSCPMeasurementFloat64AsString(const vscpEvent *pEvent,
     if (pEvent->sizeData - offset != 8) return false;
 
     double *pfloat = (double *)(pEvent->pdata + offset);
-    strValue       = vscp_string_format("%lf", *pfloat);
+    strValue       = vscp_str_format("%lf", *pfloat);
 
     return true;
 }
@@ -1872,7 +1898,7 @@ vscp_makeStringMeasurementEvent(vscpEvent *pEvent,
 
     sensoridx &= 7; // Mask of invalid bits
 
-    strValue         = vscp_string_format("%f", value);
+    strValue         = vscp_str_format("%f", value);
     pEvent->sizeData = (strValue.length() > 7) ? 8 : (strValue.length() + 1);
 
     // Allocate data if needed
@@ -1951,7 +1977,7 @@ vscp_makeLevel2StringMeasurementEvent(vscpEvent *pEvent,
     // Check pointer
     if (NULL == pEvent) return false;
 
-    std::string strData = vscp_string_format("%f", value);
+    std::string strData = vscp_str_format("%f", value);
 
     pEvent->vscp_class = VSCP_CLASS2_MEASUREMENT_STR;
     pEvent->vscp_type  = type;
@@ -2617,7 +2643,7 @@ vscp_writeGuidToString(const vscpEvent *pEvent, std::string &strGUID)
     // Check pointer
     if (NULL == pEvent) return false;
 
-    strGUID = vscp_string_format("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%"
+    strGUID = vscp_str_format("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%"
                                  "02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X",
                                  pEvent->GUID[0],
                                  pEvent->GUID[1],
@@ -2649,7 +2675,7 @@ vscp_writeGuidToStringEx(const vscpEventEx *pEvent, std::string &strGUID)
     // Check pointer
     if (NULL == pEvent) return false;
 
-    strGUID = vscp_string_format("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%"
+    strGUID = vscp_str_format("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%"
                                  "02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X",
                                  pEvent->GUID[0],
                                  pEvent->GUID[1],
@@ -2681,7 +2707,7 @@ vscp_writeGuidToString4Rows(const vscpEvent *pEvent, std::string &strGUID)
     // Check pointer
     if (NULL == pEvent) return false;
 
-    strGUID = vscp_string_format("%02X:%02X:%02X:%02X\n%02X:%02X:%02X:%02X\n%"
+    strGUID = vscp_str_format("%02X:%02X:%02X:%02X\n%02X:%02X:%02X:%02X\n%"
                                  "02X:%02X:%02X:%02X\n%02X:%02X:%02X:%02X",
                                  pEvent->GUID[0],
                                  pEvent->GUID[1],
@@ -2713,7 +2739,7 @@ vscp_writeGuidToString4RowsEx(const vscpEventEx *pEvent, std::string &strGUID)
     // Check pointer
     if (NULL == pEvent) return false;
 
-    strGUID = vscp_string_format("%02X:%02X:%02X:%02X\n%02X:%02X:%02X:%02X\n%"
+    strGUID = vscp_str_format("%02X:%02X:%02X:%02X\n%02X:%02X:%02X:%02X\n%"
                                  "02X:%02X:%02X:%02X\n%02X:%02X:%02X:%02X",
                                  pEvent->GUID[0],
                                  pEvent->GUID[1],
@@ -2745,7 +2771,7 @@ vscp_writeGuidArrayToString(const unsigned char *pGUID, std::string &strGUID)
     // Check pointer
     if (NULL == pGUID) return false;
 
-    strGUID = vscp_string_format("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%"
+    strGUID = vscp_str_format("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%"
                                  "02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X",
                                  pGUID[0],
                                  pGUID[1],
@@ -3051,7 +3077,7 @@ vscp_getDateStringFromEvent(const vscpEvent *pEvent, std::string &dt)
     // Return empty string if all date/time values is zero
     if (pEvent->year || pEvent->month || pEvent->day || pEvent->hour ||
         pEvent->minute || pEvent->second) {
-        dt = vscp_string_format("%04d-%02d-%02dT%02d:%02d:%02dZ",
+        dt = vscp_str_format("%04d-%02d-%02dT%02d:%02d:%02dZ",
                                 (int)pEvent->year,
                                 (int)pEvent->month,
                                 (int)pEvent->day,
@@ -3073,7 +3099,7 @@ vscp_getDateStringFromEventEx(const vscpEventEx *pEventEx, std::string &dt)
     // Check pointer
     if (NULL == pEventEx) return false;
 
-    dt = vscp_string_format("%04d-%02d-%02dT%02d:%02d:%02dZ",
+    dt = vscp_str_format("%04d-%02d-%02dT%02d:%02d:%02dZ",
                             (int)pEventEx->year,
                             (int)pEventEx->month,
                             (int)pEventEx->day,
@@ -3107,7 +3133,7 @@ vscp_convertEventToJSON(vscpEvent *pEvent, std::string &strJSON)
     vscp_getDateStringFromEvent(pEvent, dt);
 
     // datetime,head,obid,datetime,timestamp,class,type,guid,data,note
-    strJSON = vscp_string_format(VSCP_JSON_EVENT_TEMPLATE,
+    strJSON = vscp_str_format(VSCP_JSON_EVENT_TEMPLATE,
                                  (unsigned short int)pEvent->head,
                                  (unsigned long)pEvent->obid,
                                  (const char *)dt.c_str(),
@@ -3241,7 +3267,7 @@ vscp_convertEventExToJSON(vscpEventEx *pEventEx, std::string &strJSON)
     vscp_getDateStringFromEventEx(pEventEx, dt);
 
     // datetime,head,obid,datetime,timestamp,class,type,guid,data,note
-    strJSON = vscp_string_format(VSCP_JSON_EVENT_TEMPLATE,
+    strJSON = vscp_str_format(VSCP_JSON_EVENT_TEMPLATE,
                                  (unsigned short int)pEventEx->head,
                                  (unsigned long)pEventEx->obid,
                                  (const char *)dt.c_str(),
@@ -3373,7 +3399,7 @@ vscp_convertEventToXML(vscpEvent *pEvent, std::string &strXML)
     vscp_getDateStringFromEvent(pEvent, dt);
 
     // datetime,head,obid,datetime,timestamp,class,type,guid,sizedata,data,note
-    strXML = vscp_string_format(VSCP_XML_EVENT_TEMPLATE,
+    strXML = vscp_str_format(VSCP_XML_EVENT_TEMPLATE,
                                 (unsigned short int)pEvent->head,
                                 (unsigned long)pEvent->obid,
                                 (const char *)dt.c_str(),
@@ -3504,7 +3530,7 @@ vscp_convertEventExToXML(vscpEventEx *pEventEx, std::string &strXML)
     vscp_getDateStringFromEventEx(pEventEx, dt);
 
     // datetime,head,obid,datetime,timestamp,class,type,guid,sizedata,data,note
-    strXML = vscp_string_format(VSCP_XML_EVENT_TEMPLATE,
+    strXML = vscp_str_format(VSCP_XML_EVENT_TEMPLATE,
                                 (unsigned short int)pEventEx->head,
                                 (unsigned long)pEventEx->obid,
                                 (const char *)dt.c_str(),
@@ -3636,7 +3662,7 @@ vscp_convertEventToHTML(vscpEvent *pEvent, std::string &strHTML)
     vscp_getDateStringFromEvent(pEvent, dt);
 
     // datetime,class,type,data-count,data,guid,head,timestamp,obid,note
-    strHTML = vscp_string_format(VSCP_HTML_EVENT_TEMPLATE,
+    strHTML = vscp_str_format(VSCP_HTML_EVENT_TEMPLATE,
                                  (const char *)dt.c_str(),
                                  (unsigned short int)pEvent->vscp_class,
                                  (unsigned short int)pEvent->vscp_type,
@@ -3676,7 +3702,7 @@ vscp_convertEventExToHTML(vscpEventEx *pEventEx, std::string &strHTML)
     vscp_getDateStringFromEventEx(pEventEx, dt);
 
     // datetime,class,type,data-count,data,guid,head,timestamp,obid,note
-    strHTML = vscp_string_format(VSCP_HTML_EVENT_TEMPLATE,
+    strHTML = vscp_str_format(VSCP_HTML_EVENT_TEMPLATE,
                                  (const char *)dt.c_str(),
                                  (unsigned short int)pEventEx->vscp_class,
                                  (unsigned short int)pEventEx->vscp_type,
@@ -3979,7 +4005,7 @@ vscp_writeFilterToString(const vscpEventFilter *pFilter, std::string &strFilter)
 
     guid.getFromArray(pFilter->filter_GUID);
 
-    strFilter = vscp_string_format("%d,%d,%d,%s",
+    strFilter = vscp_str_format("%d,%d,%d,%s",
                                    pFilter->filter_priority,
                                    pFilter->filter_class,
                                    pFilter->filter_type,
@@ -4054,7 +4080,7 @@ vscp_writeMaskToString(const vscpEventFilter *pFilter, std::string &strFilter)
 
     guid.getFromArray(pFilter->mask_GUID);
 
-    strFilter = vscp_string_format("%d,%d,%d,%s",
+    strFilter = vscp_str_format("%d,%d,%d,%s",
                                    pFilter->mask_priority,
                                    pFilter->mask_class,
                                    pFilter->mask_type,
@@ -4260,7 +4286,7 @@ vscp_writeFilterMaskToXML(vscpEventFilter *pFilter, std::string &strFilter)
     vscp_writeGuidArrayToString(pFilter->mask_GUID, strmaskguid);
     vscp_writeGuidArrayToString(pFilter->filter_GUID, strfilterguid);
 
-    strFilter = vscp_string_format(VSCP_XML_FILTER_TEMPLATE,
+    strFilter = vscp_str_format(VSCP_XML_FILTER_TEMPLATE,
                                    (int)pFilter->mask_priority,
                                    (int)pFilter->mask_class,
                                    (int)pFilter->mask_type,
@@ -4358,7 +4384,7 @@ vscp_writeFilterMaskToJSON(vscpEventFilter *pFilter, std::string &strFilter)
     vscp_writeGuidArrayToString(pFilter->mask_GUID, strmaskguid);
     vscp_writeGuidArrayToString(pFilter->filter_GUID, strfilterguid);
 
-    strFilter = vscp_string_format(VSCP_JSON_FILTER_TEMPLATE,
+    strFilter = vscp_str_format(VSCP_JSON_FILTER_TEMPLATE,
                                    (int)pFilter->mask_priority,
                                    (int)pFilter->mask_class,
                                    (int)pFilter->mask_type,
@@ -4569,7 +4595,7 @@ vscp_writeVscpDataToString(const vscpEvent *pEvent,
 
     for (int i = 0; i < pEvent->sizeData; i++) {
 
-        wrk = vscp_string_format("0x%02X", pEvent->pdata[i]);
+        wrk = vscp_str_format("0x%02X", pEvent->pdata[i]);
 
         if (i < (pEvent->sizeData - 1)) {
             wrk += ",";
@@ -4610,7 +4636,7 @@ vscp_writeVscpDataWithSizeToString(const uint16_t sizeData,
 
     for (int i = 0; i < sizeData; i++) {
 
-        wrk = vscp_string_format("0x%02X", pData[i]);
+        wrk = vscp_str_format("0x%02X", pData[i]);
 
         if (i < (sizeData - 1)) {
             wrk += ",";
@@ -4833,7 +4859,7 @@ vscp_writeVscpEventToString(const vscpEvent *pEvent, std::string &str)
     vscp_getDateStringFromEvent(pEvent, dt);
 
     // head,class,type,obid,datetime,timestamp
-    str = vscp_string_format("%hu,%hu,%hu,%lu,%s,%lu,",
+    str = vscp_str_format("%hu,%hu,%hu,%lu,%s,%lu,",
                              (unsigned short)pEvent->head,
                              (unsigned short)pEvent->vscp_class,
                              (unsigned short)pEvent->vscp_type,
@@ -5075,7 +5101,7 @@ vscp_getDeviceHtmlStatusInfo(const uint8_t *registers, CMDF *pmdf)
     strHTML += "<font color=\"#009900\">";
 
     strHTML += "nodeid = ";
-    str = vscp_string_format("%d", registers[0x91]);
+    str = vscp_str_format("%d", registers[0x91]);
     strHTML += str;
     strHTML += "<br>";
 
@@ -5117,11 +5143,11 @@ vscp_getDeviceHtmlStatusInfo(const uint8_t *registers, CMDF *pmdf)
     strHTML += "<br>";
 
     strHTML += "Firmware VSCP conformance : ";
-    strHTML += vscp_string_format("%d.%d", registers[0x81], registers[0x82]);
+    strHTML += vscp_str_format("%d.%d", registers[0x81], registers[0x82]);
     strHTML += "<br>";
 
     strHTML += "User ID: ";
-    strHTML += vscp_string_format("%d.%d.%d.%d.%d",
+    strHTML += vscp_str_format("%d.%d.%d.%d.%d",
                                   registers[0x84],
                                   registers[0x85],
                                   registers[0x86],
@@ -5130,7 +5156,7 @@ vscp_getDeviceHtmlStatusInfo(const uint8_t *registers, CMDF *pmdf)
     strHTML += "<br>";
 
     strHTML += "Manufacturer device ID: ";
-    strHTML += vscp_string_format("%d.%d.%d.%d",
+    strHTML += vscp_str_format("%d.%d.%d.%d",
                                   registers[0x89],
                                   registers[0x8A],
                                   registers[0x8B],
@@ -5138,7 +5164,7 @@ vscp_getDeviceHtmlStatusInfo(const uint8_t *registers, CMDF *pmdf)
     strHTML += "<br>";
 
     strHTML += "Manufacturer sub device ID: ";
-    strHTML += vscp_string_format("%d.%d.%d.%d",
+    strHTML += vscp_str_format("%d.%d.%d.%d",
                                   registers[0x8d],
                                   registers[0x8e],
                                   registers[0x8f],
@@ -5146,19 +5172,19 @@ vscp_getDeviceHtmlStatusInfo(const uint8_t *registers, CMDF *pmdf)
     strHTML += "<br>";
 
     strHTML += "Page select: ";
-    strHTML += vscp_string_format("%d (MSB=%d LSB=%d)",
+    strHTML += vscp_str_format("%d (MSB=%d LSB=%d)",
                                   registers[0x92] * 256 + registers[0x93],
                                   registers[0x92],
                                   registers[0x93]);
     strHTML += "<br>";
 
     strHTML += "Firmware version: ";
-    strHTML += vscp_string_format(
+    strHTML += vscp_str_format(
       "%d.%d.%d", registers[0x94], registers[0x95], registers[0x96]);
     strHTML += "<br>";
 
     strHTML += "Boot loader algorithm: ";
-    strHTML += vscp_string_format("%d - ", registers[0x97]);
+    strHTML += vscp_str_format("%d - ", registers[0x97]);
     switch (registers[0x97]) {
 
         case 0x00:
@@ -5189,12 +5215,12 @@ vscp_getDeviceHtmlStatusInfo(const uint8_t *registers, CMDF *pmdf)
     strHTML += "<br>";
 
     strHTML += "Buffer size: ";
-    strHTML += vscp_string_format("%d bytes. ", registers[0x98]);
+    strHTML += vscp_str_format("%d bytes. ", registers[0x98]);
     if (!registers[0x98]) strHTML += " ( == default size (8 or 487 bytes) )";
     strHTML += "<br>";
 
     strHTML += "Number of register pages: ";
-    strHTML += vscp_string_format("%d", registers[0x99]);
+    strHTML += vscp_str_format("%d", registers[0x99]);
     if (registers[0x99] > 22) {
         strHTML += " (Note: VSCP Works display max 22 pages.) ";
     }
@@ -5207,18 +5233,18 @@ vscp_getDeviceHtmlStatusInfo(const uint8_t *registers, CMDF *pmdf)
         memset(data, 0, 8);
 
         strHTML += "Decison Matrix: Rows=";
-        strHTML += vscp_string_format("%d ", pmdf->m_dmInfo.m_nRowCount);
+        strHTML += vscp_str_format("%d ", pmdf->m_dmInfo.m_nRowCount);
         strHTML += " Offset=";
-        strHTML += vscp_string_format("%d ", pmdf->m_dmInfo.m_nStartOffset);
+        strHTML += vscp_str_format("%d ", pmdf->m_dmInfo.m_nStartOffset);
         strHTML += " Page start=";
-        strHTML += vscp_string_format("%d ", pmdf->m_dmInfo.m_nStartPage);
+        strHTML += vscp_str_format("%d ", pmdf->m_dmInfo.m_nStartPage);
         strHTML += " Row Size=";
-        strHTML += vscp_string_format("%d ", pmdf->m_dmInfo.m_nRowSize);
+        strHTML += vscp_str_format("%d ", pmdf->m_dmInfo.m_nRowSize);
         strHTML += " Level=";
-        strHTML += vscp_string_format("%d ", pmdf->m_dmInfo.m_nLevel);
+        strHTML += vscp_str_format("%d ", pmdf->m_dmInfo.m_nLevel);
         strHTML += " # actions define =";
         strHTML +=
-          vscp_string_format("%d ", pmdf->m_dmInfo.m_list_action.size());
+          vscp_str_format("%d ", pmdf->m_dmInfo.m_list_action.size());
         strHTML += "<br>";
     } else {
         strHTML += "No Decision Matrix is available on this device.";
@@ -5389,11 +5415,11 @@ vscp_writeMeasurementValue(uint16_t vscptype,
 
     // The unit can be 0..3 for Level I and equals bits 3,4 of the
     // data coding byte. For Level II unit can be 0..255
-    strOutput += vscp_string_format("Unit = %d \n", unit);
+    strOutput += vscp_str_format("Unit = %d \n", unit);
 
     // The sensor index/number can be 0..7 for Level I and equals
     // bits 2,1,0 of datacoding byte. For Level II unit can be 0..255
-    strOutput += vscp_string_format("Sensor %d ", sensoridx);
+    strOutput += vscp_str_format("Sensor %d ", sensoridx);
 
     // Add the value
     strOutput += strValue;
@@ -5875,12 +5901,12 @@ std:
 
                     case VSCP_TYPE_PROTOCOL_NEW_NODE_ONLINE:
                         if (0xff != pEvent->GUID[15]) {
-                            strOutput = vscp_string_format(
+                            strOutput = vscp_str_format(
                               "New node with nickname=0x%02X",
                               pEvent->GUID[15]);
                         } else {
                             strOutput =
-                              vscp_string_format("Probe for nickname=0x%02X",
+                              vscp_str_format("Probe for nickname=0x%02X",
                                                  pEvent->pdata[0 + offset]);
                             if (0 == pEvent->pdata[0 + offset]) {
                                 strOutput += "\n(Check if there is a server "
@@ -5890,7 +5916,7 @@ std:
                         break;
 
                     case VSCP_TYPE_PROTOCOL_PROBE_ACK:
-                        strOutput = vscp_string_format(
+                        strOutput = vscp_str_format(
                           "The nickname=0x%02X is in use", pEvent->GUID[15]);
                         if (0 == pEvent->GUID[15]) {
                             strOutput += "\n(Server will suppy nickname.)";
@@ -5899,7 +5925,7 @@ std:
 
                     case VSCP_TYPE_PROTOCOL_SET_NICKNAME:
                         strOutput =
-                          vscp_string_format("Set/change nickname for node "
+                          vscp_str_format("Set/change nickname for node "
                                              "0x%02X from 0x%02X to 0x%02X.",
                                              pEvent->GUID[15],
                                              pEvent->pdata[0 + offset],
@@ -5914,13 +5940,13 @@ std:
 
                     case VSCP_TYPE_PROTOCOL_READ_REGISTER:
                         strOutput =
-                          vscp_string_format("node=0x%02X register=0x%02X",
+                          vscp_str_format("node=0x%02X register=0x%02X",
                                              pEvent->pdata[0 + offset],
                                              pEvent->pdata[1 + offset]);
                         break;
 
                     case VSCP_TYPE_PROTOCOL_RW_RESPONSE:
-                        strOutput = vscp_string_format(
+                        strOutput = vscp_str_format(
                           "node=0x%02X register=0x%02X content=0x%02X ",
                           pEvent->GUID[15],
                           pEvent->pdata[0 + offset],
@@ -5928,7 +5954,7 @@ std:
                         break;
 
                     case VSCP_TYPE_PROTOCOL_WRITE_REGISTER:
-                        strOutput = vscp_string_format(
+                        strOutput = vscp_str_format(
                           "node=0x%02X register=0x%02X content=0x%02X ",
                           pEvent->GUID[0],
                           pEvent->pdata[1 + offset],
@@ -6105,7 +6131,7 @@ std:
                     case 0x00: // bit format
                     {
                         strValue = "[bit] = ";
-                        strValue += vscp_string_format(
+                        strValue += vscp_str_format(
                           "%X",
                           (long)vscp_getDataCodingBitArray(
                             pEvent->pdata + offset, pEvent->sizeData - offset));
@@ -6137,7 +6163,7 @@ std:
                     {
                         double temp = vscp_getDataCodingNormalizedInteger(
                           pEvent->pdata + offset, pEvent->sizeData - offset);
-                        strValue = vscp_string_format("[nint] = %f ", temp);
+                        strValue = vscp_str_format("[nint] = %f ", temp);
                     } break;
 
                     case 0xA0: // float format
@@ -6146,7 +6172,7 @@ std:
                               pEvent->pdata + offset,
                               pEvent->sizeData - offset);
                             strValue =
-                              vscp_string_format("[float] = %f ", msrmt);
+                              vscp_str_format("[float] = %f ", msrmt);
                         } else {
                             strValue = "[float] = invalid event format ";
                         }
@@ -6273,7 +6299,7 @@ std:
                     case VSCP_TYPE_INFORMATION_SHUTTER_END_LEFT:
                     case VSCP_TYPE_INFORMATION_SHUTTER_END_RIGHT:
                         if ((pEvent->sizeData - offset) >= 3) {
-                            strOutput = vscp_string_format(
+                            strOutput = vscp_str_format(
                               "Index=%d Zone=%d Subzone=%d\nNickname=%d\n",
                               pEvent->pdata[0 + offset],
                               pEvent->pdata[1 + offset],
@@ -6298,22 +6324,22 @@ std:
                                 strOutput = "Unknown key type code.";
                             }
 
-                            strOutput += vscp_string_format(
+                            strOutput += vscp_str_format(
                               "Repeat count = %d\n",
                               (pEvent->pdata[0 + offset] >> 3 & 0x01f));
 
                             strOutput +=
-                              vscp_string_format("Zone=%d Subzone=%d\n",
+                              vscp_str_format("Zone=%d Subzone=%d\n",
                                                  pEvent->pdata[1 + offset],
                                                  pEvent->pdata[2 + offset]);
 
-                            strOutput += vscp_string_format(
+                            strOutput += vscp_str_format(
                               "Button Code=%d\n",
                               ((pEvent->pdata[3 + offset] << 8) +
                                pEvent->pdata[4 + offset]));
 
                             if ((pEvent->sizeData - offset) > 5) {
-                                strOutput += vscp_string_format(
+                                strOutput += vscp_str_format(
                                   "Code Page=%d\n",
                                   ((pEvent->pdata[5 + offset] << 8) +
                                    pEvent->pdata[6 + offset]));
@@ -6327,7 +6353,7 @@ std:
                         if ((pEvent->sizeData - offset) == 7) {
 
                             strOutput +=
-                              vscp_string_format("Zone=%d Subzone=%d\n",
+                              vscp_str_format("Zone=%d Subzone=%d\n",
                                                  pEvent->pdata[1 + offset],
                                                  pEvent->pdata[2 + offset]);
 
@@ -6339,7 +6365,7 @@ std:
                                 strOutput += "Unknown coordinates.\n";
                             }
 
-                            strOutput += vscp_string_format(
+                            strOutput += vscp_str_format(
                               "x=%d y=%d\n",
                               ((pEvent->pdata[3 + offset] << 8) +
                                pEvent->pdata[4 + offset]),
@@ -6354,7 +6380,7 @@ std:
                     case VSCP_TYPE_INFORMATION_TOKEN_ACTIVITY: {
                         if ((pEvent->sizeData - offset) >= 5) {
 
-                            strOutput = vscp_string_format(
+                            strOutput = vscp_str_format(
                               "Token activity.\n Event Code=%d [",
                               (*(pEvent->pdata + offset) & 0x03));
 
@@ -6379,7 +6405,7 @@ std:
                             }
 
                             // Token code
-                            strOutput += vscp_string_format(
+                            strOutput += vscp_str_format(
                               "\nToken Code=%d [",
                               (*(pEvent->pdata + offset) >> 2) & 0x3f);
                             switch ((*(pEvent->pdata + offset) >> 2) & 0x3f) {
@@ -6452,7 +6478,7 @@ std:
                                     strOutput += "Reserved token. ] ";
                             }
 
-                            wrkstr1 = vscp_string_format(
+                            wrkstr1 = vscp_str_format(
                               "\nZone=%d\n Subzone=%d\n Index=%d\n",
                               pEvent->pdata[1 + offset],
                               pEvent->pdata[2 + offset],
@@ -6465,12 +6491,12 @@ std:
                     break;
 
                     case VSCP_TYPE_INFORMATION_STREAM_DATA: {
-                        strOutput = vscp_string_format(
+                        strOutput = vscp_str_format(
                           "sequence index=%d\n", pEvent->pdata[0 + offset]);
                         strOutput += "steam data = ";
                         for (i = 1; i < (pEvent->sizeData - offset); i++) {
                             strOutput +=
-                              vscp_string_format("%02X(%c) ",
+                              vscp_str_format("%02X(%c) ",
                                                  pEvent->pdata[i + offset],
                                                  pEvent->pdata[i + offset]);
                         }
@@ -6480,16 +6506,16 @@ std:
                     case VSCP_TYPE_INFORMATION_STREAM_DATA_WITH_ZONE: {
 
                         strOutput =
-                          vscp_string_format("\nZone=%d\n Subzone=%d\n",
+                          vscp_str_format("\nZone=%d\n Subzone=%d\n",
                                              pEvent->pdata[0 + offset],
                                              pEvent->pdata[1 + offset]);
 
-                        strOutput += vscp_string_format(
+                        strOutput += vscp_str_format(
                           "sequence index=%d\n", pEvent->pdata[2 + offset]);
                         strOutput += "steam data = ";
                         for (i = 3; i < (pEvent->sizeData - offset); i++) {
                             strOutput +=
-                              vscp_string_format("%02X(%c) ",
+                              vscp_str_format("%02X(%c) ",
                                                  pEvent->pdata[i + offset],
                                                  pEvent->pdata[i + offset]);
                         }
@@ -6497,36 +6523,36 @@ std:
                     } break;
 
                     case VSCP_TYPE_INFORMATION_CONFIRM: {
-                        strOutput = vscp_string_format(
+                        strOutput = vscp_str_format(
                           "\nZone=%d\n Subzone=%d\n Sequence index=%d\n",
                           pEvent->pdata[0 + offset],
                           pEvent->pdata[1 + offset],
                           pEvent->pdata[2 + offset]);
                         strOutput +=
-                          vscp_string_format("Class=%d\n",
+                          vscp_str_format("Class=%d\n",
                                              ((pEvent->pdata[3 + offset] << 8) +
                                               pEvent->pdata[4 + offset]));
 
                         strOutput +=
-                          vscp_string_format("Type=%d\n",
+                          vscp_str_format("Type=%d\n",
                                              ((pEvent->pdata[5 + offset] << 8) +
                                               pEvent->pdata[6 + offset]));
                     } break;
 
                     case VSCP_TYPE_INFORMATION_STATE: {
-                        strOutput = vscp_string_format(
+                        strOutput = vscp_str_format(
                           "Zone=%d\n Subzone=%d\n User byte=%d\n",
                           pEvent->pdata[1 + offset],
                           pEvent->pdata[2 + offset],
                           pEvent->pdata[0 + offset]);
-                        strOutput += vscp_string_format(
+                        strOutput += vscp_str_format(
                           "Current state=%d\n Previous state=%d\n",
                           pEvent->pdata[3 + offset],
                           pEvent->pdata[3 + offset]);
                     } break;
 
                     case VSCP_TYPE_INFORMATION_ACTION_TRIGGER: {
-                        strOutput = vscp_string_format(
+                        strOutput = vscp_str_format(
                           "Zone=%d\n Subzone=%d\n Action Trigger=%d\n",
                           pEvent->pdata[1 + offset],
                           pEvent->pdata[2 + offset],
@@ -6534,7 +6560,7 @@ std:
                     } break;
 
                     case VSCP_TYPE_INFORMATION_START_OF_RECORD: {
-                        strOutput = vscp_string_format(
+                        strOutput = vscp_str_format(
                           "Zone=%d\n Subzone=%d\n Record=%d\n Count=%d\n",
                           pEvent->pdata[1 + offset],
                           pEvent->pdata[2 + offset],
@@ -6543,7 +6569,7 @@ std:
                     } break;
 
                     case VSCP_TYPE_INFORMATION_END_OF_RECORD: {
-                        strOutput = vscp_string_format(
+                        strOutput = vscp_str_format(
                           "Zone=%d\n Subzone=%d\n Record=%d\n",
                           pEvent->pdata[1 + offset],
                           pEvent->pdata[2 + offset],
@@ -6551,7 +6577,7 @@ std:
                     } break;
 
                     case VSCP_TYPE_INFORMATION_PRESET_ACTIVE: {
-                        strOutput = vscp_string_format(
+                        strOutput = vscp_str_format(
                           "Zone=%d\n Subzone=%d\n Preset code=%d\n",
                           pEvent->pdata[1 + offset],
                           pEvent->pdata[2 + offset],
@@ -6662,10 +6688,10 @@ std:
                 strOutput = "\n[string] = ";
                 strOutput += strValue;
                 strOutput += "\n";
-                strOutput += vscp_string_format(" Unit=%d Sensor index=%d\n",
+                strOutput += vscp_str_format(" Unit=%d Sensor index=%d\n",
                                                 pEvent->pdata[3],
                                                 pEvent->pdata[0]);
-                strOutput += vscp_string_format(
+                strOutput += vscp_str_format(
                   " Zone=%d Subzone=%d\n", pEvent->pdata[1], pEvent->pdata[2]);
             }
                 strOutput += "\n";
@@ -6681,15 +6707,15 @@ std:
                 if (!vscp_getVSCPMeasurementAsDouble(pEvent, &value)) {
                     strValue = "ERROR";
                 } else {
-                    strValue = vscp_string_format("%f", value);
+                    strValue = vscp_str_format("%f", value);
                 }
 
                 strOutput = "\n[double] = " + strValue;
                 strOutput += "\n";
-                strOutput += vscp_string_format(" Unit=%d Sensor index=%d\n",
+                strOutput += vscp_str_format(" Unit=%d Sensor index=%d\n",
                                                 pEvent->pdata[3],
                                                 pEvent->pdata[0]);
-                strOutput += vscp_string_format(
+                strOutput += vscp_str_format(
                   " Zone=%d Subzone=%d\n", pEvent->pdata[1], pEvent->pdata[2]);
             }
 
@@ -7399,11 +7425,11 @@ vscp_makePasswordHash(std::string &result,
     delete[] p;
 
     for (i = 0; i < 16; i++) {
-        result += vscp_string_format("%02X", salt[i]);
+        result += vscp_str_format("%02X", salt[i]);
     }
     result += (";");
     for (i = 0; i < 32; i++) {
-        result += vscp_string_format("%02X", buf[i]);
+        result += vscp_str_format("%02X", buf[i]);
     }
 
     return true;
@@ -7460,7 +7486,7 @@ vscp_getSaltHex(std::string &strSalt, size_t len)
 
         strSalt.clear();
         for (int i = 0; i < len; i++) {
-            strSalt += vscp_string_format("%02X", pbuf[i]);
+            strSalt += vscp_str_format("%02X", pbuf[i]);
         }
 
         delete[] pbuf;

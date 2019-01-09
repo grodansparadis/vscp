@@ -106,7 +106,7 @@ void MulticastObj::ev_handler( struct mg_connection *nc, int ev, void *p )
                     pthread_mutex_unlock(&m_pObj->m_mutexUserList);
 
                     if ( !bValidHost ) {
-                        std::string strErr = vscp_string_format(("[Multicast channel] Host [%s] not allowed to send UDP datagrams.\n"),
+                        std::string strErr = vscp_str_format(("[Multicast channel] Host [%s] not allowed to send UDP datagrams.\n"),
                                                                 (const char *)remoteaddr.mbc_str() );
                         syslog( LOG_ERR, strErr );
                         return;
@@ -117,7 +117,7 @@ void MulticastObj::ev_handler( struct mg_connection *nc, int ev, void *p )
                 if ( nc->recv_mbuf.len < ( 1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 2 ) ) {
                     
                     // Packet to short
-                    syslog( LOG_ERR, vscp_string_format(("[Multicast channel] Frame have invalid length = %d\n"),
+                    syslog( LOG_ERR, vscp_str_format(("[Multicast channel] Frame have invalid length = %d\n"),
                                         (int)nc->recv_mbuf.len ) );
                     return;
                     
@@ -126,7 +126,7 @@ void MulticastObj::ev_handler( struct mg_connection *nc, int ev, void *p )
                 // If un-secure frames are not supported frames must be encrypted                
                 if ( !pMulticastClientThread->m_pChannel->m_bAllowUnsecure && 
                         !GET_VSCP_MULTICAST_PACKET_ENCRYPTION( nc->recv_mbuf.buf[ VSCP_MULTICAST_PACKET0_POS_PKTTYPE ] ) ) {
-                    syslog( LOG_ERR, vscp_string_format(("[Multicast channel] Frame must be encrypted (or m_bAllowUnsecure set to true) to be accepted.\n" ) ) );
+                    syslog( LOG_ERR, vscp_str_format(("[Multicast channel] Frame must be encrypted (or m_bAllowUnsecure set to true) to be accepted.\n" ) ) );
                     return;
                 }
                 
@@ -136,7 +136,7 @@ void MulticastObj::ev_handler( struct mg_connection *nc, int ev, void *p )
                                     &pMulticastClientThread->m_pChannel->m_rxFilter )  ) {
                     
                     if ( m_pObj->m_debugFlags1 & VSCP_DEBUG1_MULTICAST ) {
-                        syslog( LOG_ERR, vscp_string_format( ( "[Multicast channel] Received Multicast event\n" ) ),
+                        syslog( LOG_ERR, vscp_str_format( ( "[Multicast channel] Received Multicast event\n" ) ),
                                         DAEMON_LOGMSG_DEBUG,
                                         DAEMON_LOGTYPE_GENERAL );
                     }
@@ -474,7 +474,7 @@ void *multicastClientThread( void *pData )
     crcInit();
      
     // Bind to interface
-    std::string bindif = vscp_string_format( ("udp://%d"), pmobj->m_pChannel->m_port );
+    std::string bindif = vscp_str_format( ("udp://%d"), pmobj->m_pChannel->m_port );
     if ( NULL == ( nc = mg_bind( &mgr, 
                                     bindif,         // "udp://44444"
                                     ev_handler ) ) ) {
@@ -527,7 +527,7 @@ void *multicastClientThread( void *pData )
     {
         std::string str = ( "[Multicast channel] Starting multicast channel on group ");
         str += m_pChannel->m_gropupAddress;
-        str += vscp_string_format((":%d"), m_pChannel->m_port );
+        str += vscp_str_format((":%d"), m_pChannel->m_port );
         syslog( LOG_ERR, str );
     }
     
@@ -570,7 +570,7 @@ void *multicastClientThread( void *pData )
     m_pClientItem->m_type =  CLIENT_ITEM_INTERFACE_TYPE_CLIENT_MULTICAST_CH;
     m_pClientItem->m_strDeviceName = ("Multicast channel. [");
     m_pClientItem->m_strDeviceName += m_pChannel->m_gropupAddress;
-    m_pClientItem->m_strDeviceName += vscp_string_format(":%d", m_pChannel->m_port );
+    m_pClientItem->m_strDeviceName += vscp_str_format(":%d", m_pChannel->m_port );
     m_pClientItem->m_strDeviceName += ("]|Started at ");
     m_pClientItem->m_strDeviceName += vscpdatetime::setNow().getISODateTime(); 
     

@@ -191,7 +191,6 @@ startSetupParser(void *data, const char *name, const char **attr)
                 }
             }
         }
-
     }
 
     depth_setup_parser++;
@@ -414,7 +413,7 @@ CTcpipLink::open(const char *pUsername,
         m_srvLocal.getRemoteVariableValue(strName, setupXml)) {
         // Not here, we use empty mock-up
         setupXml = "<?xml version = \"1.0\" encoding = \"UTF-8\" "
-                     "?><setup><!-- empty --></setup>";
+                   "?><setup><!-- empty --></setup>";
     }
 
     // XML setup
@@ -566,10 +565,8 @@ retry_send_connect:
             continue;
         }
 
-        struct timespec ts;
-        ts.tv_sec  = 0;
-        ts.tv_nsec = 500000; // 500 ms
-        if (ETIMEDOUT == sem_timedwait(&pObj->m_semSendQueue, &ts)) {
+        if ((-1 == vscp_sem_wait(&pObj->m_semSendQueue, 500)) &&
+            errno == ETIMEDOUT) {
             continue;
         }
 

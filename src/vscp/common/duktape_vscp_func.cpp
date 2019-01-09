@@ -373,7 +373,7 @@ js_vscp_readVariable(duk_context *ctx)
     duk_json_decode(ctx, -1);
 
     duk_get_prop_string(ctx, -1, "name");
-    std::string str = vscp_string_format("name=%s", duk_to_string(ctx, -1));
+    std::string str = vscp_str_format("name=%s", duk_to_string(ctx, -1));
     duk_pop_n(ctx, 1); // Clear stack
 
     return JAVASCRIPT_OK;
@@ -437,12 +437,12 @@ js_vscp_writeVariable(duk_context *ctx)
         // The value can be number, boolean, string
         if (duk_is_number(ctx, -1)) {
             double val = duk_get_number_default(ctx, -1, 0.0);
-            strValue   = vscp_string_format("%lf", val);
+            strValue   = vscp_str_format("%lf", val);
         } else if (duk_is_string(ctx, -1)) {
             strValue = duk_get_string_default(ctx, -1, "");
         } else if (duk_is_boolean(ctx, -1)) {
             bool bval = duk_get_boolean_default(ctx, -1, false);
-            strValue  = vscp_string_format("%s", bval ? "true" : "false");
+            strValue  = vscp_str_format("%s", bval ? "true" : "false");
         } else {
             duk_push_boolean(ctx, 0); // return code false
             return JAVASCRIPT_OK;
@@ -523,7 +523,7 @@ js_vscp_writeVariable(duk_context *ctx)
         // The value can be number, boolean, string
         if (duk_is_number(ctx, -1)) {
             double val         = duk_get_number_default(ctx, -1, 0.0);
-            std::string strval = vscp_string_format("%lf", val);
+            std::string strval = vscp_str_format("%lf", val);
             variable.setValueFromString(variable.getType(), strval);
         } else if (duk_is_string(ctx, -1)) {
             std::string strval(duk_get_string_default(ctx, -1, ""));

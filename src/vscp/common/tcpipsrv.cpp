@@ -56,8 +56,10 @@
 #define TCPIPSRV_INACTIVITY_TIMOUT (3600 * 12)
 
 // Worker threads
-void *tcpipListenThread(void *pData);
-void *tcpipClientThread(void *pData);
+void *
+tcpipListenThread(void *pData);
+void *
+tcpipClientThread(void *pData);
 
 ///////////////////////////////////////////////////
 //                 GLOBALS
@@ -245,9 +247,9 @@ tcpipListenThread(void *pData)
 
                         int n = 0;
                         if (pthread_create(&pClientObj->m_tcpipClientThread,
-                                            NULL,
-                                            tcpipClientThread,
-                                            pClientObj)) {
+                                           NULL,
+                                           tcpipClientThread,
+                                           pClientObj)) {
                             syslog(LOG_ERR,
                                    "[TCP/IP srv] -- Failed to run client "
                                    "tcp/ip client thread.");
@@ -689,6 +691,7 @@ tcpipClientObj::CommandHandler(std::string &strCommand)
 
     //*********************************************************************
     //                             Restart
+    //*********************************************************************
 
     else if (m_pClientItem->CommandStartsWith(("restart"))) {
         if (checkPrivilege(15)) {
@@ -1163,7 +1166,7 @@ tcpipClientObj::handleClientMeasurment(void)
             pEvent->vscp_type  = vscptype;
             pEvent->sizeData   = 12;
 
-            std::string strValue = vscp_string_format("%f", value);
+            std::string strValue = vscp_str_format("%f", value);
 
             data[0] = sensoridx;
             data[1] = zone;
@@ -1203,7 +1206,7 @@ tcpipClientObj::handleClientCapabilityRequest(void)
     uint8_t capabilities[16];
 
     m_pObj->getVscpCapabilities(capabilities);
-    str = vscp_string_format("%02X-%02X-%02X-%02X-%02X-%02X-%02X-%02X",
+    str = vscp_str_format("%02X-%02X-%02X-%02X-%02X-%02X-%02X-%02X",
                              capabilities[7],
                              capabilities[6],
                              capabilities[5],
@@ -1494,7 +1497,7 @@ tcpipClientObj::handleClientSend(void)
     // Check if this user is allowed to send this event
     if (!m_pClientItem->m_pUserItem->isUserAllowedToSendEvent(
           event.vscp_class, event.vscp_type)) {
-        std::string strErr = vscp_string_format(
+        std::string strErr = vscp_str_format(
           ("[TCP/IP srv] User [%s] not allowed to send event class=%d "
            "type=%d.\n"),
           (const char *)m_pClientItem->m_pUserItem->getUserName().c_str(),
@@ -1798,12 +1801,6 @@ tcpipClientObj::handleClientGetVersion(void)
     // Must be connected
     if (STCP_CONN_STATE_CONNECTED != m_conn->conn_state) return;
 
-    // Must be accredited to do this
-    if (!m_pClientItem->bAuthenticated) {
-        write(MSG_NOT_ACCREDITED, strlen(MSG_NOT_ACCREDITED));
-        return;
-    }
-
     sprintf(outbuf,
             "%d,%d,%d,%d\r\n%s\r\n",
             VSCPD_MAJOR_VERSION,
@@ -2008,7 +2005,7 @@ tcpipClientObj::handleClientPassword(void)
 
     if (NULL == m_pClientItem->m_pUserItem) {
 
-        std::string strErr = vscp_string_format(
+        std::string strErr = vscp_str_format(
           ("[TCP/IP srv] User [%s][%s] not allowed to connect.\n"),
           (const char *)m_pClientItem->m_UserName.c_str(),
           (const char *)strPassword.c_str());
@@ -2033,7 +2030,7 @@ tcpipClientObj::handleClientPassword(void)
     pthread_mutex_unlock(&m_pObj->m_mutexUserList);
 
     if (!bValidHost) {
-        std::string strErr = vscp_string_format(
+        std::string strErr = vscp_str_format(
           ("[TCP/IP srv] Host [%s] not allowed to connect.\n"),
           (const char *)remoteaddr.c_str());
 
@@ -2047,7 +2044,7 @@ tcpipClientObj::handleClientPassword(void)
            m_pClientItem->m_pUserItem->getFilter(),
            sizeof(vscpEventFilter));
 
-    std::string strErr = vscp_string_format(
+    std::string strErr = vscp_str_format(
       ("[TCP/IP srv] Host [%s] User [%s] allowed to connect.\n"),
       (const char *)remoteaddr.c_str(),
       (const char *)m_pClientItem->m_UserName.c_str());
@@ -2208,8 +2205,8 @@ tcpipClientObj::handleClientInterface_List(void)
         CClientItem *pItem = *it;
 
         pItem->m_guid.toString(strGUID);
-        strBuf = vscp_string_format("%d,", pItem->m_clientID);
-        strBuf += vscp_string_format("%d,", pItem->m_type);
+        strBuf = vscp_str_format("%d,", pItem->m_clientID);
+        strBuf += vscp_str_format("%d,", pItem->m_type);
         strBuf += strGUID;
         strBuf += std::string(",");
         strBuf += pItem->m_strDeviceName;
@@ -2533,7 +2530,7 @@ tcpipClientObj::handleClientTable_List(void)
             // OK
 
             std::string str =
-              vscp_string_format("%zu rows \r\n", arrayTblNames.size());
+              vscp_str_format("%zu rows \r\n", arrayTblNames.size());
             write((const char *)str.c_str(), strlen((const char *)str.c_str()));
 
             for (int i = 0; i < arrayTblNames.size(); i++) {
@@ -2653,7 +2650,7 @@ tcpipClientObj::handleClientTable_List(void)
             str += "\r\n";
 
             str += "size=";
-            str += vscp_string_format("%lu ", (unsigned long)pTable->getSize());
+            str += vscp_str_format("%lu ", (unsigned long)pTable->getSize());
             str += "\r\n";
 
             str += "owner=";
@@ -2666,7 +2663,7 @@ tcpipClientObj::handleClientTable_List(void)
             str += "\r\n";
 
             str += "permission=";
-            str += vscp_string_format("0x%0X ", (int)pTable->getRights());
+            str += vscp_str_format("0x%0X ", (int)pTable->getRights());
             str += "\r\n";
 
             str += "description=";
@@ -2690,27 +2687,27 @@ tcpipClientObj::handleClientTable_List(void)
             str += "\r\n";
 
             str += "vscp-class=";
-            str += vscp_string_format("%d", (int)pTable->getVSCPClass());
+            str += vscp_str_format("%d", (int)pTable->getVSCPClass());
             str += "\r\n";
 
             str += "vscp-type=";
-            str += vscp_string_format("%d", (int)pTable->getVSCPType());
+            str += vscp_str_format("%d", (int)pTable->getVSCPType());
             str += "\r\n";
 
             str += "vscp-sensor-index=";
-            str += vscp_string_format("%d", (int)pTable->getVSCPSensorIndex());
+            str += vscp_str_format("%d", (int)pTable->getVSCPSensorIndex());
             str += ("\r\n");
 
             str += "vscp-unit=";
-            str += vscp_string_format("%d", (int)pTable->getVSCPUnit());
+            str += vscp_str_format("%d", (int)pTable->getVSCPUnit());
             str += "\r\n";
 
             str += "vscp-zone=";
-            str += vscp_string_format("%d", (int)pTable->getVSCPZone());
+            str += vscp_str_format("%d", (int)pTable->getVSCPZone());
             str += "\r\n";
 
             str += "vscp-subzone=";
-            str += vscp_string_format("%d", (int)pTable->getVSCPSubZone());
+            str += vscp_str_format("%d", (int)pTable->getVSCPSubZone());
             str += "\r\n";
 
             str += "vscp-create=";
@@ -2849,7 +2846,7 @@ tcpipClientObj::handleClientTable_Get(void)
         strArray.push_back(str);
     }
 
-    str = vscp_string_format(("%d rows.\r\n"), (int)strArray.size());
+    str = vscp_str_format(("%d rows.\r\n"), (int)strArray.size());
     write((const char *)str.c_str(), strlen((const char *)str.c_str()));
 
     if (strArray.size()) {
@@ -2973,7 +2970,7 @@ tcpipClientObj::handleClientTable_GetRaw(void)
         strArray.push_back(str);
     }
 
-    str = vscp_string_format(("%d rows.\r\n"), (int)strArray.size());
+    str = vscp_str_format(("%d rows.\r\n"), (int)strArray.size());
     write((const char *)str.c_str(), strlen((const char *)str.c_str()));
 
     if (strArray.size()) {
@@ -3319,7 +3316,7 @@ tcpipClientObj::handleClientTable_NumberOfRecords(void)
 
     pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
 
-    std::string strReply = vscp_string_format(("%f\r\n"), count);
+    std::string strReply = vscp_str_format(("%f\r\n"), count);
     write((const char *)strReply.c_str(),
           strlen((const char *)strReply.c_str()));
 
@@ -3379,7 +3376,7 @@ tcpipClientObj::handleClientTable_FirstDate(void)
 
     pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
 
-    std::string strReply = vscp_string_format(
+    std::string strReply = vscp_str_format(
       "%s\r\n", (const char *)first.getISODateTime().c_str());
     write((const char *)strReply.c_str(),
           strlen((const char *)strReply.c_str()));
@@ -3441,7 +3438,7 @@ tcpipClientObj::handleClientTable_LastDate(void)
     pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
 
     std::string strReply =
-      vscp_string_format("%s\r\n", (const char *)last.getISODateTime().c_str());
+      vscp_str_format("%s\r\n", (const char *)last.getISODateTime().c_str());
     write((const char *)strReply.c_str(),
           strlen((const char *)strReply.c_str()));
 
@@ -3523,7 +3520,7 @@ tcpipClientObj::handleClientTable_Sum(void)
 
     pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
 
-    std::string strReply = vscp_string_format(("%f\r\n"), sum);
+    std::string strReply = vscp_str_format(("%f\r\n"), sum);
     write((const char *)strReply.c_str(),
           strlen((const char *)strReply.c_str()));
 
@@ -3605,7 +3602,7 @@ tcpipClientObj::handleClientTable_Min(void)
 
     pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
 
-    std::string strReply = vscp_string_format(("%f\r\n"), min);
+    std::string strReply = vscp_str_format(("%f\r\n"), min);
     write((const char *)strReply.c_str(),
           strlen((const char *)strReply.c_str()));
 
@@ -3687,7 +3684,7 @@ tcpipClientObj::handleClientTable_Max(void)
 
     pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
 
-    std::string strReply = vscp_string_format(("%f\r\n"), max);
+    std::string strReply = vscp_str_format(("%f\r\n"), max);
     write((const char *)strReply.c_str(),
           strlen((const char *)strReply.c_str()));
 
@@ -3769,7 +3766,7 @@ tcpipClientObj::handleClientTable_Average(void)
 
     pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
 
-    std::string strReply = vscp_string_format(("%f\r\n"), average);
+    std::string strReply = vscp_str_format(("%f\r\n"), average);
     write((const char *)strReply.c_str(),
           strlen((const char *)strReply.c_str()));
 
@@ -3851,7 +3848,7 @@ tcpipClientObj::handleClientTable_Median(void)
 
     pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
 
-    std::string strReply = vscp_string_format(("%f\r\n"), median);
+    std::string strReply = vscp_str_format(("%f\r\n"), median);
     write((const char *)strReply.c_str(),
           strlen((const char *)strReply.c_str()));
 
@@ -3933,7 +3930,7 @@ tcpipClientObj::handleClientTable_StdDev(void)
 
     pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
 
-    std::string strReply = vscp_string_format(("%f\r\n"), stdev);
+    std::string strReply = vscp_str_format(("%f\r\n"), stdev);
     write((const char *)strReply.c_str(),
           strlen((const char *)strReply.c_str()));
 
@@ -4015,7 +4012,7 @@ tcpipClientObj::handleClientTable_Variance(void)
 
     pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
 
-    std::string strReply = vscp_string_format("%f\r\n", variance);
+    std::string strReply = vscp_str_format("%f\r\n", variance);
     write(strReply);
 
     write(MSG_OK, strlen(MSG_OK));
@@ -4096,7 +4093,7 @@ tcpipClientObj::handleClientTable_Mode(void)
 
     pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
 
-    std::string strReply = vscp_string_format(("%f\r\n"), mode);
+    std::string strReply = vscp_str_format(("%f\r\n"), mode);
     write((const char *)strReply.c_str(),
           strlen((const char *)strReply.c_str()));
 
@@ -4178,7 +4175,7 @@ tcpipClientObj::handleClientTable_LowerQ(void)
 
     pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
 
-    std::string strReply = vscp_string_format(("%f\r\n"), lq);
+    std::string strReply = vscp_str_format(("%f\r\n"), lq);
     write((const char *)strReply.c_str(),
           strlen((const char *)strReply.c_str()));
 
@@ -4260,7 +4257,7 @@ tcpipClientObj::handleClientTable_UpperQ(void)
 
     pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
 
-    std::string strReply = vscp_string_format(("%f\r\n"), uq);
+    std::string strReply = vscp_str_format(("%f\r\n"), uq);
     write((const char *)strReply.c_str(),
           strlen((const char *)strReply.c_str()));
 
@@ -4376,14 +4373,14 @@ tcpipClientObj::handleVariable_List(void)
 
     if (arrayVars.size()) {
 
-        str = vscp_string_format(("%zu rows.\r\n"), arrayVars.size());
+        str = vscp_str_format(("%zu rows.\r\n"), arrayVars.size());
         write(str.c_str(), str.length());
 
         int cnt = 0;
         for (int i = 0; i < arrayVars.size(); i++) {
             if (0 != m_pObj->m_variables.find(arrayVars[i], variable)) {
                 if ((0 == type) || (variable.getType() == type)) {
-                    str = vscp_string_format("%d;", cnt);
+                    str = vscp_str_format("%d;", cnt);
                     str += variable.getAsString();
                     str += ("\r\n");
                     write(str.c_str(), str.length());
@@ -4810,7 +4807,7 @@ tcpipClientObj::handleVariable_Length(void)
     if (0 !=
         m_pObj->m_variables.find(m_pClientItem->m_currentCommand, variable)) {
 
-        str = vscp_string_format("%zu", variable.getLength());
+        str = vscp_str_format("%zu", variable.getLength());
         str = str + "\r\n";
         write(str.c_str(), strlen(str.c_str()));
 
@@ -5377,238 +5374,241 @@ tcpipClientObj::handleClientHelp(void)
 
     if (0 == m_pClientItem->m_currentCommand.length()) {
 
-        std::string str = ("Help for the VSCP tcp/ip interface\r\n");
-        str += ("=============================================================="
-                "======\r\n");
-        str += ("To get more information about a specific command issue 'HELP "
-                "command'\r\n");
-        str += ("+                 - Repeat last command.\r\n");
-        str += ("+n                - Repeat command 'n' (0 is last).\r\n");
-        str += ("++                - List repeatable commands.\r\n");
-        str += ("NOOP              - No operation. Does nothing.\r\n");
-        str += ("QUIT              - Close the connection.\r\n");
-        str += ("USER 'username'   - Username for login. \r\n");
-        str += ("PASS 'password'   - Password for login.  \r\n");
-        str += ("CHALLENGE 'token' - Get session id.  \r\n");
-        str += ("SEND 'event'      - Send an event.   \r\n");
+        std::string str = "Help for the VSCP tcp/ip interface\r\n";
+        str += "=============================================================="
+               "======\r\n";
+        str += "To get more information about a specific command issue 'HELP "
+               "command'\r\n";
+        str += "+                 - Repeat last command.\r\n";
+        str += "+n                - Repeat command 'n' (0 is last).\r\n";
+        str += "++                - List repeatable commands.\r\n";
+        str += "NOOP              - No operation. Does nothing.\r\n";
+        str += "QUIT              - Close the connection.\r\n";
+        str += "USER 'username'   - Username for login. \r\n";
+        str += "PASS 'password'   - Password for login.  \r\n";
+        str += "CHALLENGE 'token' - Get session id.  \r\n";
+        str += "SEND 'event'      - Send an event.   \r\n";
+        str += "RETR 'count'      - Retrive n events from input queue.   \r\n";
         str +=
-          ("RETR 'count'      - Retrive n events from input queue.   \r\n");
-        str +=
-          ("RCVLOOP           - Will retrieve events in an endless loop until "
-           "the connection is closed by the client or QUITLOOP is sent.\r\n");
-        str += ("QUITLOOP          - Terminate RCVLOOP.\r\n");
-        str += ("CDTA/CHKDATA      - Check if there is data in the input "
-                "queue.\r\n");
-        str += ("CLRA/CLRALL       - Clear input queue.\r\n");
-        str += ("STAT              - Get statistical information.\r\n");
-        str += ("INFO              - Get status info.\r\n");
-        str += ("CHID              - Get channel id.\r\n");
-        str += ("SGID/SETGUID      - Set GUID for channel.\r\n");
-        str += ("GGID/GETGUID      - Get GUID for channel.\r\n");
-        str += ("VERS/VERSION      - Get VSCP daemon version.\r\n");
-        str += ("SFLT/SETFILTER    - Set incoming event filter.\r\n");
-        str += ("SMSK/SETMASK      - Set incoming event mask.\r\n");
-        str += ("HELP [command]    - This command.\r\n");
-        str += ("TEST              - Do test sequence. Only used for "
-                "debugging.\r\n");
-        str += ("SHUTDOWN          - Shutdown the daemon.\r\n");
-        str += ("RESTART           - Restart the daemon.\r\n");
-        str += ("DRIVER            - Driver manipulation.\r\n");
-        str += ("FILE              - File handling.\r\n");
-        str += ("UDP               - UDP.\r\n");
-        str += ("REMOTE            - User handling.\r\n");
-        str += ("INTERFACE         - Interface handling. \r\n");
-        str += ("DM                - Decision Matrix manipulation.\r\n");
-        str += ("VAR               - Variable handling. \r\n");
-        str += ("WCYD/WHATCANYOUDO - Check server capabilities. \r\n");
+          "RCVLOOP           - Will retrieve events in an endless loop until "
+          "the connection is closed by the client or QUITLOOP is sent.\r\n";
+        str += "QUITLOOP          - Terminate RCVLOOP.\r\n";
+        str += "CDTA/CHKDATA      - Check if there is data in the input "
+               "queue.\r\n";
+        str += "CLRA/CLRALL       - Clear input queue.\r\n";
+        str += "STAT              - Get statistical information.\r\n";
+        str += "INFO              - Get status info.\r\n";
+        str += "CHID              - Get channel id.\r\n";
+        str += "SGID/SETGUID      - Set GUID for channel.\r\n";
+        str += "GGID/GETGUID      - Get GUID for channel.\r\n";
+        str += "VERS/VERSION      - Get VSCP daemon version.\r\n";
+        str += "SFLT/SETFILTER    - Set incoming event filter.\r\n";
+        str += "SMSK/SETMASK      - Set incoming event mask.\r\n";
+        str += "HELP [command]    - This command.\r\n";
+        str += "TEST              - Do test sequence. Only used for "
+               "debugging.\r\n";
+        str += "SHUTDOWN          - Shutdown the daemon.\r\n";
+        str += "RESTART           - Restart the daemon.\r\n";
+        str += "DRIVER            - Driver manipulation.\r\n";
+        str += "FILE              - File handling.\r\n";
+        str += "UDP               - UDP.\r\n";
+        str += "REMOTE            - User handling.\r\n";
+        str += "INTERFACE         - Interface handling. \r\n";
+        str += "DM                - Decision Matrix manipulation.\r\n";
+        str += "VAR               - Variable handling. \r\n";
+        str += "WCYD/WHATCANYOUDO - Check server capabilities. \r\n";
         write((const char *)str.c_str(), str.length());
-    } else if (m_pClientItem->CommandStartsWith(("+"))) {
-        std::string str = ("'+' repeats the last given command.\r\n");
+    } else if (m_pClientItem->CommandStartsWith("+")) {
+        std::string str = "'+' repeats the last given command.\r\n";
         write((const char *)str.c_str(), str.length());
-    } else if (m_pClientItem->CommandStartsWith(("noop"))) {
+    } else if (m_pClientItem->CommandStartsWith("noop")) {
         std::string str =
-          ("'NOOP' Does absolutly nothing but giving a success in return.\r\n");
+          "'NOOP' Does absolutely nothing but giving a success in return.\r\n";
         write((const char *)str.c_str(), str.length());
     } else if (m_pClientItem->CommandStartsWith(("quit"))) {
-        std::string str = ("'QUIT' Quit a session with the VSCP daemon and "
-                           "closes the m_connection.\r\n");
+        std::string str = "'QUIT' Quit a session with the VSCP daemon and "
+                          "closes the m_connection.\r\n";
         write((const char *)str.c_str(), str.length());
     } else if (m_pClientItem->CommandStartsWith(("user"))) {
         std::string str =
-          ("'USER' Used to login to the system together with PASS. Connection "
-           "will be closed if bad credentials are given.\r\n");
+          "'USER' Used to login to the system together with PASS. Connection "
+          "will be closed if bad credentials are given.\r\n";
         write((const char *)str.c_str(), str.length());
     } else if (m_pClientItem->CommandStartsWith(("pass"))) {
         std::string str =
-          ("'PASS' Used to login to the system together with USER. Connection "
-           "will be closed if bad credentials are given.\r\n");
+          "'PASS' Used to login to the system together with USER. Connection "
+          "will be closed if bad credentials are given.\r\n";
         write((const char *)str.c_str(), str.length());
     } else if (m_pClientItem->CommandStartsWith(("quit"))) {
-        std::string str = ("'QUIT' Quit a session with the VSCP daemon and "
-                           "closes the m_connection.\r\n");
+        std::string str = "'QUIT' Quit a session with the VSCP daemon and "
+                          "closes the m_connection.\r\n";
         write((const char *)str.c_str(), str.length());
     } else if (m_pClientItem->CommandStartsWith(("send"))) {
-        std::string str = ("'SEND event'.\r\nThe event is given as "
-                           "'head,class,type,obid,datetime,time-stamp,GUID,"
-                           "data1,data2,data3....' \r\n");
+        std::string str = "'SEND event'.\r\nThe event is given as "
+                          "'head,class,type,obid,datetime,time-stamp,GUID,"
+                          "data1,data2,data3....' \r\n";
         str +=
-          ("Normally set 'head' and 'obid' to zero. \r\nIf timestamp is set to "
-           "zero it will be set by the server. \r\nIf GUID is given as '-' ");
-        str += ("the GUID of the interface will be used. \r\nThe GUID should "
-                "be given on the form MSB-byte:MSB-byte-1:MSB-byte-2. \r\n");
+          "Normally set 'head' and 'obid' to zero. \r\nIf timestamp is set to "
+          "zero it will be set by the server. \r\nIf GUID is given as '-' ";
+        str += "the GUID of the interface will be used. \r\nThe GUID should "
+               "be given on the form MSB-byte:MSB-byte-1:MSB-byte-2. \r\n";
         write((const char *)str.c_str(), str.length());
     } else if (m_pClientItem->CommandStartsWith(("retr"))) {
-        std::string str = ("'RETR count' - Retrieve one (if no argument) or "
-                           "'count' event(s). ");
-        str += ("Events are retrived on the form "
-                "head,class,type,obid,datetime,time-stamp,GUID,data0,data1,"
-                "data2,...........\r\n");
+        std::string str = "'RETR count' - Retrieve one (if no argument) or "
+                          "'count' event(s). ";
+        str += "Events are retrived on the form "
+               "head,class,type,obid,datetime,time-stamp,GUID,data0,data1,"
+               "data2,...........\r\n";
         write((const char *)str.c_str(), str.length());
-    } else if (m_pClientItem->CommandStartsWith(("rcvloop"))) {
-        std::string str = ("'RCVLOOP' - Enter the receive loop and receive "
-                           "events continously or until ");
-        str += ("terminated with 'QUITLOOP'. Events are retrived on the form "
-                "head,class,type,obid,time-stamp,GUID,data0,data1,data2,......."
-                "....\r\n");
+    } else if (m_pClientItem->CommandStartsWith("rcvloop")) {
+        std::string str = "'RCVLOOP' - Enter the receive loop and receive "
+                          "events continously or until ";
+        str += "terminated with 'QUITLOOP'. Events are retrived on the form "
+               "head,class,type,obid,time-stamp,GUID,data0,data1,data2,......."
+               "....\r\n";
         write((const char *)str.c_str(), str.length());
     } else if (m_pClientItem->CommandStartsWith(("quitloop"))) {
-        std::string str = ("'QUITLOOP' - End 'RCVLOOP' event receives.\r\n");
+        std::string str = "'QUITLOOP' - End 'RCVLOOP' event receives.\r\n";
         write((const char *)str.c_str(), str.length());
-    } else if (m_pClientItem->CommandStartsWith(("cdta")) ||
-               m_pClientItem->CommandStartsWith(("chkdata"))) {
-        std::string str = ("'CDTA' or 'CHKDATA' - Check if there is events in "
-                           "the input queue.\r\n");
+    } else if (m_pClientItem->CommandStartsWith("cdta") ||
+               m_pClientItem->CommandStartsWith("chkdata")) {
+        std::string str = "'CDTA' or 'CHKDATA' - Check if there is events in "
+                          "the input queue.\r\n";
         write((const char *)str.c_str(), str.length());
     } else if (m_pClientItem->CommandStartsWith(("clra")) ||
                m_pClientItem->CommandStartsWith(("clrall"))) {
-        std::string str = ("'CLRA' or 'CLRALL' - Clear input queue.\r\n");
+        std::string str = "'CLRA' or 'CLRALL' - Clear input queue.\r\n";
         write((const char *)str.c_str(), str.length());
     } else if (m_pClientItem->CommandStartsWith(("stat"))) {
-        std::string str = ("'STAT' - Get statistical information.\r\n");
+        std::string str = "'STAT' - Get statistical information.\r\n";
         write((const char *)str.c_str(), str.length());
-    } else if (m_pClientItem->CommandStartsWith(("info"))) {
-        std::string str = ("'INFO' - Get status information.\r\n");
+    } else if (m_pClientItem->CommandStartsWith("info")) {
+        std::string str = "'INFO' - Get status information.\r\n";
         write((const char *)str.c_str(), str.length());
-    } else if (m_pClientItem->CommandStartsWith(("chid")) ||
-               m_pClientItem->CommandStartsWith(("getchid"))) {
-        std::string str = ("'CHID' or 'GETCHID' - Get channel id.\r\n");
+    } else if (m_pClientItem->CommandStartsWith("chid") ||
+               m_pClientItem->CommandStartsWith("getchid")) {
+        std::string str = "'CHID' or 'GETCHID' - Get channel id.\r\n";
         write((const char *)str.c_str(), str.length());
-    } else if (m_pClientItem->CommandStartsWith(("sgid")) ||
-               m_pClientItem->CommandStartsWith(("setguid"))) {
-        std::string str = ("'SGID' or 'SETGUID' - Set GUID for channel.\r\n");
+    } else if (m_pClientItem->CommandStartsWith("sgid") ||
+               m_pClientItem->CommandStartsWith("setguid")) {
+        std::string str = "'SGID' or 'SETGUID' - Set GUID for channel.\r\n";
         write((const char *)str.c_str(), str.length());
-    } else if (m_pClientItem->CommandStartsWith(("ggid")) ||
-               m_pClientItem->CommandStartsWith(("getguid"))) {
+    } else if (m_pClientItem->CommandStartsWith("ggid") ||
+               m_pClientItem->CommandStartsWith("getguid")) {
         std::string str = ("'GGID' or 'GETGUID' - Get GUID for channel.\r\n");
         write((const char *)str.c_str(), str.length());
-    } else if (m_pClientItem->CommandStartsWith(("vers")) ||
-               m_pClientItem->CommandStartsWith(("version"))) {
+    } else if (m_pClientItem->CommandStartsWith("vers") ||
+               m_pClientItem->CommandStartsWith("version")) {
         std::string str =
-          ("'VERS' or 'VERSION' - Get version of VSCP daemon.\r\n");
+          "'VERS' or 'VERSION' - Get version of VSCP daemon.\r\n";
         write((const char *)str.c_str(), str.length());
-    } else if (m_pClientItem->CommandStartsWith(("sflt")) ||
-               m_pClientItem->CommandStartsWith(("setfilter"))) {
-        std::string str = ("'SFLT' or 'SETFILTER' - Set filter for channel. ");
-        str += ("The format is 'filter-priority, filter-class, filter-type, "
-                "filter-GUID' \r\n");
-        str += ("Example:  \r\nSETFILTER "
-                "1,0x0000,0x0006,ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:"
-                "00\r\n");
+    } else if (m_pClientItem->CommandStartsWith("sflt") ||
+               m_pClientItem->CommandStartsWith("setfilter")) {
+        std::string str = "'SFLT' or 'SETFILTER' - Set filter for channel. ";
+        str += "The format is 'filter-priority, filter-class, filter-type, "
+               "filter-GUID' \r\n";
+        str += "Example:  \r\nSETFILTER "
+               "1,0x0000,0x0006,ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:"
+               "00\r\n";
         write((const char *)str.c_str(), str.length());
-    } else if (m_pClientItem->CommandStartsWith(("smsk")) ||
-               m_pClientItem->CommandStartsWith(("setmask"))) {
-        std::string str = ("'SMSK' or 'SETMASK' - Set mask for channel. ");
-        str += ("The format is 'mask-priority, mask-class, mask-type, "
-                "mask-GUID' \r\n");
-        str += ("Example:  \r\nSETMASK "
-                "0x0f,0xffff,0x00ff,ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:"
-                "00:00 \r\n");
+    } else if (m_pClientItem->CommandStartsWith("smsk") ||
+               m_pClientItem->CommandStartsWith("setmask")) {
+        std::string str = "'SMSK' or 'SETMASK' - Set mask for channel. ";
+        str += "The format is 'mask-priority, mask-class, mask-type, "
+               "mask-GUID' \r\n";
+        str += "Example:  \r\nSETMASK "
+               "0x0f,0xffff,0x00ff,ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:"
+               "00:00 \r\n";
         write((const char *)str.c_str(), str.length());
     } else if (m_pClientItem->CommandStartsWith(("help"))) {
-        std::string str = ("'HELP [command]' This command. Gives help about "
-                           "available commands and the usage.\r\n");
+        std::string str = "'HELP [command]' This command. Gives help about "
+                          "available commands and the usage.\r\n";
         write((const char *)str.c_str(), str.length());
-    } else if (m_pClientItem->CommandStartsWith(("test"))) {
-        std::string str = ("'TEST [sequency]' Test command for debugging.\r\n");
+    } else if (m_pClientItem->CommandStartsWith("test")) {
+        std::string str = "'TEST [sequency]' Test command for debugging.\r\n";
         write((const char *)str.c_str(), str.length());
-    } else if (m_pClientItem->CommandStartsWith(("shutdown"))) {
-        std::string str = ("'SHUTDOWN' Shutdown the daemon.\r\n");
+    } else if (m_pClientItem->CommandStartsWith("shutdown")) {
+        std::string str = "'SHUTDOWN' Shutdown the daemon.\r\n";
         write((const char *)str.c_str(), str.length());
-    } else if (m_pClientItem->CommandStartsWith(("restart"))) {
-        std::string str = ("'RESTART' Restart the daemon.\r\n");
+    } else if (m_pClientItem->CommandStartsWith("restart")) {
+        std::string str = "'RESTART' Restart the daemon.\r\n";
         write((const char *)str.c_str(), str.length());
     } else if (m_pClientItem->CommandStartsWith(("driver"))) {
-        std::string str = ("'DRIVER' Handle (load/unload/update/start/stop) "
-                           "Level I/Level II drivers.\r\n");
-        str += ("'DRIVER install package' .\r\n");
-        str += ("'DRIVER uninstall package' .\r\n");
-        str += ("'DRIVER upgrade package' .\r\n");
-        str += ("'DRIVER start package' .\r\n");
-        str += ("'DRIVER stop package' .\r\n");
-        str += ("'DRIVER reload package' .\r\n");
+        std::string str = "'DRIVER' Handle (load/unload/update/start/stop) "
+                          "Level I/Level II drivers.\r\n";
+        str += "'DRIVER install package' .\r\n";
+        str += "'DRIVER uninstall package' .\r\n";
+        str += "'DRIVER upgrade package' .\r\n";
+        str += "'DRIVER start package' .\r\n";
+        str += "'DRIVER stop package' .\r\n";
+        str += "'DRIVER reload package' .\r\n";
         write((const char *)str.c_str(), str.length());
-    } else if (m_pClientItem->CommandStartsWith(("file"))) {
-        std::string str = ("'FILE' Handle daemon files.\r\n");
-        str += ("'FILE dir'.\r\n");
-        str += ("'FILE copy'.\r\n");
-        str += ("'FILE move'.\r\n");
-        str += ("'FILE delete'.\r\n");
-        str += ("'FILE list'.\r\n");
+    } else if (m_pClientItem->CommandStartsWith("file")) {
+        std::string str = "'FILE' Handle daemon files.\r\n";
+        str += "'FILE dir'.\r\n";
+        str += "'FILE copy'.\r\n";
+        str += "'FILE move'.\r\n";
+        str += "'FILE delete'.\r\n";
+        str += "'FILE list'.\r\n";
         write((const char *)str.c_str(), str.length());
-    } else if (m_pClientItem->CommandStartsWith(("udp"))) {
-        std::string str = ("'UDP' Handle UDP interface.\r\n");
-        str += ("'UDP enable'.\r\n");
-        str += ("'UDP disable' .\r\n");
+    } else if (m_pClientItem->CommandStartsWith("udp")) {
+        std::string str = "'UDP' Handle UDP interface.\r\n";
+        str += "'UDP enable'.\r\n";
+        str += "'UDP disable' .\r\n";
         write((const char *)str.c_str(), str.length());
     } else if (m_pClientItem->CommandStartsWith(("remote"))) {
-        std::string str = ("'REMOTE' User management.\r\n");
-        str += ("'REMOTE list'.\r\n");
-        str += ("'REMOTE add 'username','MD5 "
-                "password','from-host(s)','access-right-list','event-list','"
-                "filter','mask''. Add a user.\r\n");
-        str += ("'REMOTE remove username'.\r\n");
-        str += ("'REMOTE privilege 'username','access-right-list''.\r\n");
-        str += ("'REMOTE password 'username','MD5 for password' '.\r\n");
-        str += ("'REMOTE host-list 'username','host-list''.\r\n");
-        str += ("'REMOTE event-list 'username','event-list''.\r\n");
-        str += ("'REMOTE filter 'username','filter''.\r\n");
-        str += ("'REMOTE mask 'username','mask''.\r\n");
+        std::string str = "'REMOTE' User management.\r\n";
+        str += "'REMOTE list'.\r\n";
+        str += "'REMOTE add 'username','MD5 "
+               "password','from-host(s)','access-right-list','event-list','"
+               "filter','mask''. Add a user.\r\n";
+        str += "'REMOTE remove username'.\r\n";
+        str += "'REMOTE privilege 'username','access-right-list''.\r\n";
+        str += "'REMOTE password 'username','MD5 for password' '.\r\n";
+        str += "'REMOTE host-list 'username','host-list''.\r\n";
+        str += "'REMOTE event-list 'username','event-list''.\r\n";
+        str += "'REMOTE filter 'username','filter''.\r\n";
+        str += "'REMOTE mask 'username','mask''.\r\n";
         write((const char *)str.c_str(), str.length());
-    } else if (m_pClientItem->CommandStartsWith(("interface"))) {
-        std::string str = ("'INTERFACE' Handle interfaces on the daemon.\r\n");
-        str += ("'INTERFACE list'.\r\n");
-        str += ("'INTERFACE close'.\r\n");
+    } else if (m_pClientItem->CommandStartsWith("interface")) {
+        std::string str = "'INTERFACE' Handle interfaces on the daemon.\r\n";
+        str += "'INTERFACE list'.\r\n";
+        str += "'INTERFACE close'.\r\n";
         write((const char *)str.c_str(), str.length());
-    } else if (m_pClientItem->CommandStartsWith(("dm"))) {
-        std::string str = ("'DM' Handle decision matrix on the daemon.\r\n");
-        str += ("'DM enable'.\r\n");
-        str += ("'DM disable'.\r\n");
-        str += ("'DM list'.\r\n");
-        str += ("'DM add'.\r\n");
-        str += ("'DM delete'.\r\n");
-        str += ("'DM reset'.\r\n");
-        str += ("'DM clrtrig'.\r\n");
-        str += ("'DM clrerr'.\r\n");
-        str += ("'DM load'.\r\n");
-        str += ("'DM save'.\r\n");
+    } else if (m_pClientItem->CommandStartsWith("dm")) {
+        std::string str = "'DM' Handle decision matrix on the daemon.\r\n";
+        str += "'DM enable'.\r\n";
+        str += "'DM disable'.\r\n";
+        str += "'DM list'.\r\n";
+        str += "'DM add'.\r\n";
+        str += "'DM delete'.\r\n";
+        str += "'DM reset'.\r\n";
+        str += "'DM clrtrig'.\r\n";
+        str += "'DM clrerr'.\r\n";
+        str += "'DM load'.\r\n";
+        str += "'DM save'.\r\n";
         write((const char *)str.c_str(), str.length());
-    } else if (m_pClientItem->CommandStartsWith(("var")) ||
-               m_pClientItem->CommandStartsWith(("variable"))) {
-        std::string str = ("'VARIABLE' Handle variables on the daemon.\r\n");
-        str += ("'VARIABLE list <regular-expression>'.\r\n");
-        str += ("'VARIABLE read <variable-name>'.\r\n");
-        str += ("'VARIABLE readvalue <variable-name>'.\r\n");
-        str += ("'VARIABLE readnote <variable-name>'.\r\n");
-        str += ("'VARIABLE write <variable-name> <variable>'.\r\n");
-        str += ("'VARIABLE writevalue <variable-name> <value>'.\r\n");
-        str += ("'VARIABLE writenote <variable-name>' <note>.\r\n");
-        str += ("'VARIABLE reset <variable-name>'.\r\n");
-        str += ("'VARIABLE readreset <variable-name>'.\r\n");
-        str += ("'VARIABLE remove <variable-name>'.\r\n");
-        str += ("'VARIABLE readremove <variable-name>'.\r\n");
-        str += ("'VARIABLE length <variable-name>'.\r\n");
-        str += ("'VARIABLE save <path> <selection>'.\r\n");
+    } else if (m_pClientItem->CommandStartsWith("var") ||
+               m_pClientItem->CommandStartsWith("variable")) {
+        std::string str = "'VARIABLE' Handle variables on the daemon.\r\n";
+        str += "'VARIABLE list <regular-expression>'.\r\n";
+        str += "'VARIABLE read <variable-name>'.\r\n";
+        str += "'VARIABLE readvalue <variable-name>'.\r\n";
+        str += "'VARIABLE readnote <variable-name>'.\r\n";
+        str += "'VARIABLE write <variable-name> <variable>'.\r\n";
+        str += "'VARIABLE writevalue <variable-name> <value>'.\r\n";
+        str += "'VARIABLE writenote <variable-name>' <note>.\r\n";
+        str += "'VARIABLE reset <variable-name>'.\r\n";
+        str += "'VARIABLE readreset <variable-name>'.\r\n";
+        str += "'VARIABLE remove <variable-name>'.\r\n";
+        str += "'VARIABLE readremove <variable-name>'.\r\n";
+        str += "'VARIABLE length <variable-name>'.\r\n";
+        str += "'VARIABLE save <path> <selection>'.\r\n";
         write((const char *)str.c_str(), str.length());
+    } else {
+        std::string str = vscp_str_format("The command '%s' is not available\r\n",
+                                 m_pClientItem->m_currentCommand.c_str());
+        write((const char *)str.c_str(), str.length());                                 
     }
 
     write(MSG_OK, strlen(MSG_OK));
@@ -5705,11 +5705,12 @@ tcpipClientThread(void *pData)
         if (ptcpipobj->m_bReceiveLoop) {
 
             // Wait for data
-            struct timespec ts;
-            ts.tv_sec  = 0;
-            ts.tv_nsec = 20000; // 20 ms
-            int rv     = sem_timedwait(
-              &ptcpipobj->m_pClientItem->m_semClientInputQueue, &ts);
+            if ((-1 ==
+                 vscp_sem_wait(&ptcpipobj->m_pClientItem->m_semClientInputQueue,
+                               10)) &&
+                errno == ETIMEDOUT) {
+                continue;
+            }
 
             // Send everything in the queue
             while (ptcpipobj->sendOneEventFromQueue(false))
@@ -5775,11 +5776,13 @@ tcpipClientThread(void *pData)
             (pos = ptcpipobj->m_strResponse.find("\n"))) {
 
             // Get the command
-            std::string strCommand = ptcpipobj->m_strResponse.substr(pos + 1);
+            std::string strCommand =
+              vscp_str_left(ptcpipobj->m_strResponse, pos + 1);
 
             // Save the unhandled part
-            ptcpipobj->m_strResponse = ptcpipobj->m_strResponse.substr(
-              ptcpipobj->m_strResponse.length() - pos - 1);
+            ptcpipobj->m_strResponse =
+              vscp_str_right(ptcpipobj->m_strResponse,
+                             ptcpipobj->m_strResponse.length() - pos - 1);
 
             // Remove whitespace
             vscp_trim(strCommand);
@@ -5796,7 +5799,7 @@ tcpipClientThread(void *pData)
                 if (vscp_startsWith(strCommand, "++", &strCommand)) {
                     for (int i = ptcpipobj->m_commandArray.size() - 1; i >= 0;
                          i--) {
-                        std::string str = vscp_string_format(
+                        std::string str = vscp_str_format(
                           "%d - %s",
                           ptcpipobj->m_commandArray.size() - i - 1,
                           ptcpipobj->m_commandArray[i]);

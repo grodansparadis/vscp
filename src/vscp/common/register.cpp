@@ -101,7 +101,7 @@ std::string CStandardRegisters::getFirmwareVersionString( void )
 {
     std::string str;
 
-    str = str = vscp_string_format( "%d.%d.%d", m_reg[ 0x94 - 0x80 ],
+    str = str = vscp_str_format( "%d.%d.%d", m_reg[ 0x94 - 0x80 ],
                                         m_reg[ 0x95 - 0x80 ],
                                         m_reg[ 0x96 - 0x80 ] ); 
     return str;
@@ -353,7 +353,7 @@ bool CUserRegisters::abstractionValueFromRegsToString( CMDF_Abstraction *pAbstra
                 strValue = vscp_sting_format( "%d", *( pReg + pAbstraction->m_nOffset ) );
             }
             else {
-                strValue = vscp_string_format( "0x%02x", *( pReg + pAbstraction->m_nOffset ) );
+                strValue = vscp_str_format( "0x%02x", *( pReg + pAbstraction->m_nOffset ) );
             }
         }
         break;
@@ -361,10 +361,10 @@ bool CUserRegisters::abstractionValueFromRegsToString( CMDF_Abstraction *pAbstra
     case type_uint8_t:
         {
             if ( FORMAT_ABSTRACTION_DECIMAL == format ) {
-                strValue = vscp_string_format( "%ud", *( pReg + pAbstraction->m_nOffset ) );
+                strValue = vscp_str_format( "%ud", *( pReg + pAbstraction->m_nOffset ) );
             }
             else {
-                strValue = vscp_string_format( "0x%02x" , *( pReg + pAbstraction->m_nOffset ) );
+                strValue = vscp_str_format( "0x%02x" , *( pReg + pAbstraction->m_nOffset ) );
             }
         }
         break;
@@ -375,10 +375,10 @@ bool CUserRegisters::abstractionValueFromRegsToString( CMDF_Abstraction *pAbstra
             int16_t val = ( p[0] << 8 ) + p[1];
 
             if ( FORMAT_ABSTRACTION_DECIMAL == format ) {
-                strValue = vscp_string_format( "%d", val );
+                strValue = vscp_str_format( "%d", val );
             }
             else {
-                strValue = vscp_string_format( "%04x", val );
+                strValue = vscp_str_format( "%04x", val );
                 strValue = "0x";
                 strValue += strValue.substr( strValue.length() - 4 ); // Handles negative numbers correct
             }
@@ -391,10 +391,10 @@ bool CUserRegisters::abstractionValueFromRegsToString( CMDF_Abstraction *pAbstra
             uint16_t val = ( p[0] << 8 ) + p[1];
 
             if ( FORMAT_ABSTRACTION_DECIMAL == format ) {
-                strValue = vscp_string_format( "%ud", val );
+                strValue = vscp_str_format( "%ud", val );
             }
             else {
-                strValue = vscp_string_format( "0x%04x", val );
+                strValue = vscp_str_format( "0x%04x", val );
             }
         }
         break;
@@ -404,10 +404,10 @@ bool CUserRegisters::abstractionValueFromRegsToString( CMDF_Abstraction *pAbstra
             uint8_t *p = pReg + pAbstraction->m_nOffset;
             int32_t val = ( p[0] << 24 ) + ( p[1] << 16 ) + ( p[2] << 8 ) + p[3];
             if ( FORMAT_ABSTRACTION_DECIMAL == format ) {
-                strValue = vscp_string_format( "%ld", *( pReg + pAbstraction->m_nOffset ) );
+                strValue = vscp_str_format( "%ld", *( pReg + pAbstraction->m_nOffset ) );
             }
             else {
-                strValue = vscp_string_format( "%08lx", *( pReg + pAbstraction->m_nOffset ) );
+                strValue = vscp_str_format( "%08lx", *( pReg + pAbstraction->m_nOffset ) );
                 strValue = "0x";
                 strValue += strValue.substr( strValue.length() - 8 ); // Handles negative numbers correct
             }
@@ -420,10 +420,10 @@ bool CUserRegisters::abstractionValueFromRegsToString( CMDF_Abstraction *pAbstra
             uint32_t val = ( p[0] << 24 ) + ( p[1] << 16 ) + ( p[2] << 8 ) + p[3];
 
             if ( FORMAT_ABSTRACTION_DECIMAL == format ) {
-                strValue = vscp_string_format( "%uld", val );
+                strValue = vscp_str_format( "%uld", val );
             }
             else {
-                strValue = vscp_string_format( "0x%08lx", val );
+                strValue = vscp_str_format( "0x%08lx", val );
             }
         }
         break;
@@ -434,10 +434,10 @@ bool CUserRegisters::abstractionValueFromRegsToString( CMDF_Abstraction *pAbstra
             *p = VSCP_UINT64_SWAP_ON_LE( *p );
 
             if ( FORMAT_ABSTRACTION_DECIMAL == format ) {
-                strValue = vscp_string_format( "%lld", *p );
+                strValue = vscp_str_format( "%lld", *p );
             }
             else {
-                strValue = vscp_string_format( "%llx", *p );
+                strValue = vscp_str_format( "%llx", *p );
                 strValue = "0x";
                 strValue += strValue.substr( strValue.length() - 8 ); // Handles negative numbers correct
             }
@@ -449,10 +449,10 @@ bool CUserRegisters::abstractionValueFromRegsToString( CMDF_Abstraction *pAbstra
             uint8_t *p = pReg + pAbstraction->m_nOffset;
             *p = wxUINT64_SWAP_ON_LE( *p );
             if ( FORMAT_ABSTRACTION_DECIMAL == format ) {
-                strValue = vscp_string_format( "%ulld", *p );
+                strValue = vscp_str_format( "%ulld", *p );
             }
             else {
-                strValue = vscp_string_format( "0x%ullx", *p );
+                strValue = vscp_str_format( "0x%ullx", *p );
             }
         }
         break;
@@ -462,7 +462,7 @@ bool CUserRegisters::abstractionValueFromRegsToString( CMDF_Abstraction *pAbstra
             uint8_t *p = (uint8_t *)(pReg + pAbstraction->m_nOffset ); 
             uint32_t n = wxUINT32_SWAP_ON_LE( *( (uint32_t *)p ) );
             float f = *( (float *)((uint8_t *)&n ) );
-            strValue = vscp_string_format( "%f", f );
+            strValue = vscp_str_format( "%f", f );
         }
         break;
 
@@ -471,7 +471,7 @@ bool CUserRegisters::abstractionValueFromRegsToString( CMDF_Abstraction *pAbstra
             uint8_t *p = (uint8_t *)(pReg + pAbstraction->m_nOffset );
             uint64_t n = wxUINT64_SWAP_ON_LE( *( (uint32_t *)p ) );
             double f = *( (double *)((uint8_t *)&n ) );
-            strValue = vscp_string_format( "%g"), f );
+            strValue = vscp_str_format( "%g"), f );
         }
         break;
 

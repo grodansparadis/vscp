@@ -852,7 +852,7 @@ websrv_restapi(struct web_connection *conn, void *cbdata)
         // Check if user is valid
         if (NULL == pUserItem) {
             std::string strErr =
-              vscp_string_format("[REST Client] Host [%s] Invalid user [%s]",
+              vscp_str_format("[REST Client] Host [%s] Invalid user [%s]",
                                  std::string(reqinfo->remote_addr).c_str(),
                                  (const char *)keypairs[("VSCPUSER")].c_str());
             syslog(LOG_ERR, "%s", strErr.c_str());
@@ -868,7 +868,7 @@ websrv_restapi(struct web_connection *conn, void *cbdata)
           (1 == pUserItem->isAllowedToConnect(inet_addr(reqinfo->remote_addr)));
         pthread_mutex_unlock(&gpobj->m_mutexUserList);
         if (!bValidHost) {
-            std::string strErr = vscp_string_format(
+            std::string strErr = vscp_str_format(
               "[REST Client] Host [%s] NOT allowed to connect. User [%s]",
               reqinfo->remote_addr,
               (const char *)keypairs["VSCPUSER"].c_str());
@@ -885,7 +885,7 @@ websrv_restapi(struct web_connection *conn, void *cbdata)
         pthread_mutex_unlock(&gpobj->m_mutexUserList);
 
         if (NULL == pValidUser) {
-            std::string strErr = vscp_string_format(
+            std::string strErr = vscp_str_format(
               "[REST Client] User [%s] NOT allowed to connect. Client [%s]",
               (const char *)keypairs["VSCPUSER"].c_str(),
               reqinfo->remote_addr);
@@ -899,7 +899,7 @@ websrv_restapi(struct web_connection *conn, void *cbdata)
 
             // Hm,,, did not work out well...
 
-            std::string strErr = vscp_string_format(
+            std::string strErr = vscp_str_format(
               ("[REST Client] Unable to create new session for user [%s]\n"),
               (const char *)keypairs[("VSCPUSER")].c_str());
             syslog(LOG_ERR, "%s", strErr.c_str());
@@ -917,7 +917,7 @@ websrv_restapi(struct web_connection *conn, void *cbdata)
 
         // !!! No meaning to go further - end it here !!!
 
-        std::string strErr = vscp_string_format(
+        std::string strErr = vscp_str_format(
           "[REST Client] Unable to create new session for user [%s]",
           (const char *)keypairs[("VSCPUSER")].c_str());
         syslog(LOG_ERR, "%s", strErr.c_str());
@@ -933,7 +933,7 @@ websrv_restapi(struct web_connection *conn, void *cbdata)
                          inet_addr(reqinfo->remote_addr)));
     pthread_mutex_unlock(&gpobj->m_mutexUserList);
     if (!bValidHost) {
-        std::string strErr = vscp_string_format(
+        std::string strErr = vscp_str_format(
           ("[REST Client] Host [%s] NOT allowed to connect. User [%s]\n"),
           std::string(reqinfo->remote_addr).c_str(),
           (const char *)keypairs[("VSCPUSER")].c_str());
@@ -946,7 +946,7 @@ websrv_restapi(struct web_connection *conn, void *cbdata)
     //                      * * * User is validated * * *
     // ------------------------------------------------------------------------
 
-    std::string strErr = vscp_string_format(
+    std::string strErr = vscp_str_format(
       ("[REST Client] User [%s] Host [%s] allowed to connect. \n"),
       (const char *)keypairs[("VSCPUSER")].c_str(),
       std::string(reqinfo->remote_addr).c_str());
@@ -1953,7 +1953,7 @@ restsrv_doReceiveEvent(struct web_connection *conn,
                                 // head
                                 strcat((char *)wrkbuf, (const char *)"<head>");
                                 strcat((char *)wrkbuf,
-                                       vscp_string_format(("%d"), pEvent->head)
+                                       vscp_str_format(("%d"), pEvent->head)
                                          .c_str());
                                 strcat((char *)wrkbuf, (const char *)"</head>");
 
@@ -1962,7 +1962,7 @@ restsrv_doReceiveEvent(struct web_connection *conn,
                                        (const char *)"<vscpclass>");
                                 strcat(
                                   (char *)wrkbuf,
-                                  vscp_string_format(("%d"), pEvent->vscp_class)
+                                  vscp_str_format(("%d"), pEvent->vscp_class)
                                     .c_str());
                                 strcat((char *)wrkbuf,
                                        (const char *)"</vscpclass>");
@@ -1972,7 +1972,7 @@ restsrv_doReceiveEvent(struct web_connection *conn,
                                        (const char *)"<vscptype>");
                                 strcat(
                                   (char *)wrkbuf,
-                                  vscp_string_format(("%d"), pEvent->vscp_type)
+                                  vscp_str_format(("%d"), pEvent->vscp_type)
                                     .c_str());
                                 strcat((char *)wrkbuf,
                                        (const char *)"</vscptype>");
@@ -1980,7 +1980,7 @@ restsrv_doReceiveEvent(struct web_connection *conn,
                                 // obid
                                 strcat((char *)wrkbuf, (const char *)"<obid>");
                                 strcat((char *)wrkbuf,
-                                       vscp_string_format(("%lu"), pEvent->obid)
+                                       vscp_str_format(("%lu"), pEvent->obid)
                                          .c_str());
                                 strcat((char *)wrkbuf, (const char *)"</obid>");
 
@@ -1991,7 +1991,7 @@ restsrv_doReceiveEvent(struct web_connection *conn,
                                 vscp_getDateStringFromEvent(pEvent, dt);
                                 strcat(
                                   (char *)wrkbuf,
-                                  vscp_string_format("%s", dt.c_str()).c_str());
+                                  vscp_str_format("%s", dt.c_str()).c_str());
                                 strcat((char *)wrkbuf,
                                        (const char *)"</datetime>");
 
@@ -2000,7 +2000,7 @@ restsrv_doReceiveEvent(struct web_connection *conn,
                                        (const char *)"<timestamp>");
                                 strcat(
                                   (char *)wrkbuf,
-                                  vscp_string_format(("%lu"), pEvent->timestamp)
+                                  vscp_str_format(("%lu"), pEvent->timestamp)
                                     .c_str());
                                 strcat((char *)wrkbuf,
                                        (const char *)"</timestamp>");
@@ -2017,7 +2017,7 @@ restsrv_doReceiveEvent(struct web_connection *conn,
                                        (const char *)"<sizedata>");
                                 strcat(
                                   (char *)wrkbuf,
-                                  vscp_string_format(("%d"), pEvent->sizeData)
+                                  vscp_str_format(("%d"), pEvent->sizeData)
                                     .c_str());
                                 strcat((char *)wrkbuf,
                                        (const char *)"</sizedata>");
@@ -2056,12 +2056,12 @@ restsrv_doReceiveEvent(struct web_connection *conn,
 
                     strcpy((char *)wrkbuf, (const char *)"<filtered>");
                     strcat((char *)wrkbuf,
-                           vscp_string_format(("%d"), filtered).c_str());
+                           vscp_str_format(("%d"), filtered).c_str());
                     strcat((char *)wrkbuf, (const char *)"</filtered>");
 
                     strcat((char *)wrkbuf, (const char *)"<errors>");
                     strcat((char *)wrkbuf,
-                           vscp_string_format(("%d"), errors).c_str());
+                           vscp_str_format(("%d"), errors).c_str());
                     strcat((char *)wrkbuf, (const char *)"</errors>");
 
                     web_write(conn, wrkbuf, strlen(wrkbuf));
@@ -2108,7 +2108,7 @@ restsrv_doReceiveEvent(struct web_connection *conn,
                     output["code"]        = 1;
                     output["message"]     = "success";
                     output["description"] = "Success";
-                    output["info"]        = (const char *)vscp_string_format(
+                    output["info"]        = (const char *)vscp_str_format(
                                        "%zd events requested of %lu available "
                                        "(unfiltered) %zd will be retrieved",
                                        count,
@@ -2703,7 +2703,7 @@ restsrv_doListVariable(struct web_connection *conn,
                 output["code"]        = 1;
                 output["message"]     = "success";
                 output["description"] = "Success";
-                output["info"]        = (const char *)vscp_string_format(
+                output["info"]        = (const char *)vscp_str_format(
                                    "\"%zd variables will be retrieved\"",
                                    variable_array.size())
                                    .c_str();

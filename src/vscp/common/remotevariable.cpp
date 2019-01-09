@@ -449,11 +449,11 @@ CVSCPVariable::getAsString(bool bShort)
 
     str = m_name;
     str += (";");
-    str += vscp_string_format("%u", (unsigned short)m_type);
+    str += vscp_str_format("%u", (unsigned short)m_type);
     str += (";");
-    str += vscp_string_format("%lu", (unsigned long)m_userid);
+    str += vscp_str_format("%lu", (unsigned long)m_userid);
     str += (";");
-    str += vscp_string_format("%lu", (unsigned long)m_accessRights);
+    str += vscp_str_format("%lu", (unsigned long)m_accessRights);
     str += (";");
     str += m_bPersistent ? ("true") : ("false");
     str += (";");
@@ -486,7 +486,7 @@ CVSCPVariable::getAsJSON(std::string &strVariable)
 
     // name,type,user,rights,persistence,last,bnumerical,bbase64,value,note
     // value is numerical for a numerical variable else string
-    vscp_string_format(strVariable,
+    vscp_str_format(strVariable,
                        VARIABLE_JSON_TEMPLATE,
                        m_name,
                        (unsigned short int)m_type,
@@ -598,7 +598,7 @@ CVSCPVariable::getAsXML(std::string &strVariable)
     std::string str = m_strValue;
     vscp_base64_std_encode(str);
 
-    vscp_string_format(strVariable,
+    vscp_str_format(strVariable,
                        VARIABLE_XML_TEMPLATE,
                        m_name,
                        (unsigned short int)m_type,
@@ -768,7 +768,7 @@ CVSCPVariable::getValue(std::string *pval, bool bBase64)
 void
 CVSCPVariable::setValue(bool val)
 {
-    vscp_string_format(m_strValue, "%s", val ? "true" : "false");
+    vscp_str_format(m_strValue, "%s", val ? "true" : "false");
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -792,7 +792,7 @@ CVSCPVariable::getValue(bool *pValue)
 void
 CVSCPVariable::setValue(int val)
 {
-    vscp_string_format(m_strValue, "%d", val);
+    vscp_str_format(m_strValue, "%d", val);
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -812,7 +812,7 @@ CVSCPVariable::getValue(int *pValue)
 void
 CVSCPVariable::setValue(long val)
 {
-    vscp_string_format(m_strValue, "%ld", val);
+    vscp_str_format(m_strValue, "%ld", val);
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -832,7 +832,7 @@ CVSCPVariable::getValue(long *pValue)
 void
 CVSCPVariable::setValue(double val)
 {
-    vscp_string_format(m_strValue, "%lf", val);
+    vscp_str_format(m_strValue, "%lf", val);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -947,18 +947,18 @@ CVSCPVariable::setValueFromString(int type,
         case VSCP_DAEMON_VARIABLE_CODE_INTEGER: {
             long lval;
             lval       = vscp_readStringValue(str);
-            m_strValue = vscp_string_format("%d", (int)lval);
+            m_strValue = vscp_str_format("%d", (int)lval);
         } break;
 
         case VSCP_DAEMON_VARIABLE_CODE_LONG: {
             long lval;
             lval       = vscp_readStringValue(str);
-            m_strValue = vscp_string_format("%ld", lval);
+            m_strValue = vscp_str_format("%ld", lval);
         } break;
 
         case VSCP_DAEMON_VARIABLE_CODE_DOUBLE: {
             double dval = std::stod(str);
-            m_strValue  = vscp_string_format("%lf", dval);
+            m_strValue  = vscp_str_format("%lf", dval);
         } break;
 
         case VSCP_DAEMON_VARIABLE_CODE_VSCP_MEASUREMENT:
@@ -3153,32 +3153,32 @@ CVariableStorage::getStockVariable(const std::string &name,
     // *************************************************************************
 
     if (vscp_startsWith(lcname, "vscp.version.major")) {
-        var.setValue(vscp_string_format("%d", VSCPD_MAJOR_VERSION));
+        var.setValue(vscp_str_format("%d", VSCPD_MAJOR_VERSION));
         return var.getID();
     }
 
     if (vscp_startsWith(lcname, "vscp.version.minor")) {
-        var.setValue(vscp_string_format("%d", VSCPD_MINOR_VERSION));
+        var.setValue(vscp_str_format("%d", VSCPD_MINOR_VERSION));
         return var.getID();
     }
 
     if (vscp_startsWith(lcname, "vscp.version.release")) {
-        var.setValue(vscp_string_format("%d", VSCPD_RELEASE_VERSION));
+        var.setValue(vscp_str_format("%d", VSCPD_RELEASE_VERSION));
         return var.getID();
     }
 
     if (vscp_startsWith(lcname, "vscp.version.build")) {
-        var.setValue(vscp_string_format("%d", VSCPD_BUILD_VERSION));
+        var.setValue(vscp_str_format("%d", VSCPD_BUILD_VERSION));
         return var.getID();
     }
 
     if (vscp_startsWith(lcname, "vscp.version.str")) {
-        var.setValue(vscp_string_format("%s", VSCPD_DISPLAY_VERSION));
+        var.setValue(vscp_str_format("%s", VSCPD_DISPLAY_VERSION));
         return var.getID();
     }
 
     if (vscp_startsWith(lcname, "vscp.copyright")) {
-        var.setValue(vscp_string_format("%s", VSCPD_COPYRIGHT));
+        var.setValue(vscp_str_format("%s", VSCPD_COPYRIGHT));
         return var.getID();
     }
 
@@ -3189,28 +3189,28 @@ CVariableStorage::getStockVariable(const std::string &name,
     if (vscp_startsWith(lcname, "vscp.sqlite.version.major")) {
         int major, minor, sub, build;
         sscanf(SQLITE_VERSION, "%d.%d.%d.%d", &major, &minor, &sub, &build);
-        var.setValue(vscp_string_format("%d", major));
+        var.setValue(vscp_str_format("%d", major));
         return var.getID();
     }
 
     if (vscp_startsWith(lcname, "vscp.sqlite.version.minor")) {
         int major, minor, sub, build;
         sscanf(SQLITE_VERSION, "%d.%d.%d.%d", &major, &minor, &sub, &build);
-        var.setValue(vscp_string_format("%d", minor));
+        var.setValue(vscp_str_format("%d", minor));
         return var.getID();
     }
 
     if (vscp_startsWith(lcname, "vscp.sqlite.version.release")) {
         int major, minor, sub, build;
         sscanf(SQLITE_VERSION, "%d.%d.%d.%d", &major, &minor, &sub, &build);
-        var.setValue(vscp_string_format("%d", sub));
+        var.setValue(vscp_str_format("%d", sub));
         return var.getID();
     }
 
     if (vscp_startsWith(lcname, "vscp.sqlite.version.build")) {
         int major, minor, sub, build;
         sscanf(SQLITE_VERSION, "%d.%d.%d.%d", &major, &minor, &sub, &build);
-        var.setValue(vscp_string_format("%d", build));
+        var.setValue(vscp_str_format("%d", build));
         return var.getID();
     }
 
@@ -3220,7 +3220,7 @@ CVariableStorage::getStockVariable(const std::string &name,
     }
 
     if (vscp_startsWith(lcname, "vscp.sqlite.copyright")) {
-        var.setValue(vscp_string_format("%s", "SQLite Is Public Domain"));
+        var.setValue(vscp_str_format("%s", "SQLite Is Public Domain"));
         return var.getID();
     }
 
@@ -3234,7 +3234,7 @@ CVariableStorage::getStockVariable(const std::string &name,
 #else
         // http://linux.die.net/man/3/ssleay
         // var.setValue( ("OPENSSL_VERSION_NUMBER") );
-        var.setValue(vscp_string_format("%s", SSLeay_version(SSLEAY_VERSION)));
+        var.setValue(vscp_str_format("%s", SSLeay_version(SSLEAY_VERSION)));
         return var.getID();
 #endif
     }
@@ -3264,12 +3264,12 @@ CVariableStorage::getStockVariable(const std::string &name,
     }
 
     if (vscp_startsWith(lcname, "vscp.lua.version.str")) {
-        var.setValue(vscp_string_format("%s", LUA_RELEASE));
+        var.setValue(vscp_str_format("%s", LUA_RELEASE));
         return var.getID();
     }
 
     if (vscp_startsWith(lcname, "vscp.lua.copyright")) {
-        var.setValue(vscp_string_format("%s", LUA_COPYRIGHT));
+        var.setValue(vscp_str_format("%s", LUA_COPYRIGHT));
         return var.getID();
     }
 
@@ -3294,7 +3294,7 @@ CVariableStorage::getStockVariable(const std::string &name,
     }
 
     if (vscp_startsWith(lcname, "vscp.duktape.version.str")) {
-        var.setValue(vscp_string_format("%s", DUK_GIT_DESCRIBE));
+        var.setValue(vscp_str_format("%s", DUK_GIT_DESCRIBE));
         return var.getID();
     }
 
@@ -3371,7 +3371,7 @@ CVariableStorage::getStockVariable(const std::string &name,
             guid.clear();
         }
 
-        var.setValue(vscp_string_format("%d.%d.%d.%d",
+        var.setValue(vscp_str_format("%d.%d.%d.%d",
                                         guid.getAt(11),
                                         guid.getAt(10),
                                         guid.getAt(9),
@@ -3386,7 +3386,7 @@ CVariableStorage::getStockVariable(const std::string &name,
             guid.clear();
         }
 
-        var.setValue(vscp_string_format("%02X:%02X:%02X:%02X:%02X:%02X",
+        var.setValue(vscp_str_format("%02X:%02X:%02X:%02X:%02X:%02X",
                                         guid.getAt(13),
                                         guid.getAt(12),
                                         guid.getAt(11),
@@ -3431,13 +3431,13 @@ CVariableStorage::getStockVariable(const std::string &name,
     }
 
     if (vscp_startsWith(lcname, "vscp.loglevel")) {
-        var.setValue(vscp_string_format("%d ", gpobj->m_logLevel));
+        var.setValue(vscp_str_format("%d ", gpobj->m_logLevel));
         return var.getID();
     }
 
     if (vscp_startsWith(lcname, "vscp.client.receivequeue.max")) {
         var.setValue(
-          vscp_string_format("%d", gpobj->m_maxItemsInClientReceiveQueue));
+          vscp_str_format("%d", gpobj->m_maxItemsInClientReceiveQueue));
         return var.getID();
     }
 
@@ -3870,13 +3870,13 @@ CVariableStorage::getStockVariable(const std::string &name,
 
     if (vscp_startsWith(lcname, "vscp.automation.longitude")) {
         var.setValue(
-          vscp_string_format("%f", gpobj->m_automation.getLongitude()));
+          vscp_str_format("%f", gpobj->m_automation.getLongitude()));
         return var.getID();
     }
 
     if (vscp_startsWith(lcname, "vscp.automation.latitude")) {
         var.setValue(
-          vscp_string_format("%f", gpobj->m_automation.getLatitude()));
+          vscp_str_format("%f", gpobj->m_automation.getLatitude()));
         return var.getID();
     }
 
@@ -3886,7 +3886,7 @@ CVariableStorage::getStockVariable(const std::string &name,
     }
 
     if (vscp_startsWith(lcname, "vscp.automation.heartbeat.period")) {
-        var.setValue(vscp_string_format(
+        var.setValue(vscp_str_format(
           "%ld", gpobj->m_automation.getIntervalHeartbeat()));
         return var.getID();
     }
@@ -3905,7 +3905,7 @@ CVariableStorage::getStockVariable(const std::string &name,
     }
 
     if (vscp_startsWith(lcname, "vscp.automation.segctrl-heartbeat.period")) {
-        var.setValue(vscp_string_format(
+        var.setValue(vscp_str_format(
           "%ld", gpobj->m_automation.getIntervalSegmentControllerHeartbeat()));
         return var.getID();
     }
@@ -3921,21 +3921,21 @@ CVariableStorage::getStockVariable(const std::string &name,
         int hour, minute;
         double daylength = gpobj->m_automation.getDayLength();
         gpobj->m_automation.convert2HourMinute(daylength, &hour, &minute);
-        vscp_string_format("%02d:%02d", hour, minute);
+        vscp_str_format("%02d:%02d", hour, minute);
         var.setValue(str);
         return var.getID();
     }
 
     if (vscp_startsWith(lcname, "vscp.automation.declination")) {
         double declination = gpobj->m_automation.getDeclination();
-        vscp_string_format("%f", declination);
+        vscp_str_format("%f", declination);
         var.setValue(str);
         return var.getID();
     }
 
     if (vscp_startsWith(lcname, "vscp.automation.sun.max.altitude")) {
         double maxalt = gpobj->m_automation.getSunMaxAltitude();
-        vscp_string_format("%f", maxalt);
+        vscp_str_format("%f", maxalt);
         var.setValue(str);
         return var.getID();
     }
@@ -4481,7 +4481,7 @@ CVariableStorage::getStockVariable(const std::string &name,
             strToken = tokens.front();
             tokens.pop_front(); // Get field
             if (vscp_startsWith(strToken, "userid")) {
-                str = vscp_string_format("%ld", pUserItem->getUserID());
+                str = vscp_str_format("%ld", pUserItem->getUserID());
                 var.setType(VSCP_DAEMON_VARIABLE_CODE_LONG);
                 var.setValue(str);
                 return (UINT_MAX); // Fake variable id
@@ -4512,7 +4512,7 @@ CVariableStorage::getStockVariable(const std::string &name,
                     tokens.pop_front(); // 0..7
                     idx = stol(strToken);
                     if (idx > 7) return false;
-                    vscp_string_format("%d", idx);
+                    vscp_str_format("%d", idx);
                     var.setType(VSCP_DAEMON_VARIABLE_CODE_INTEGER);
                     var.setValue(str);
                     return (UINT_MAX); // Fake variable id
@@ -4769,7 +4769,7 @@ CVariableStorage::putStockVariable(CVSCPVariable &var, CUserItem *pUser)
         gpobj->m_strServerName = var.getValue();
         return gpobj->updateConfigurationRecordItem(
           ("vscpd_servername"),
-          vscp_string_format("%s", gpobj->m_strServerName.c_str()));
+          vscp_str_format("%s", gpobj->m_strServerName.c_str()));
     }
 
     if (vscp_startsWith(lcname, "vscp.host.ip")) {
@@ -4809,7 +4809,7 @@ CVariableStorage::putStockVariable(CVSCPVariable &var, CUserItem *pUser)
         var.getValue(&val);
         gpobj->m_maxItemsInClientReceiveQueue = val;
         return gpobj->updateConfigurationRecordItem(
-          ("vscpd.maxqueue"), vscp_string_format("%d", val));
+          ("vscpd.maxqueue"), vscp_str_format("%d", val));
     }
 
     if (vscp_startsWith(lcname, "vscp.tcpip.address")) {
@@ -4851,7 +4851,7 @@ CVariableStorage::putStockVariable(CVSCPVariable &var, CUserItem *pUser)
         gpobj->m_logLevel = val;
         return gpobj->updateConfigurationRecordItem(
           "vscpd_Automation_HeartbeatEvent_Interval",
-          vscp_string_format("%d", val));
+          vscp_str_format("%d", val));
     }
 
     if (vscp_startsWith(lcname, "vscp.automation.heartbeat.last")) {
@@ -4872,7 +4872,7 @@ CVariableStorage::putStockVariable(CVSCPVariable &var, CUserItem *pUser)
         gpobj->m_automation.setSegmentControllerHeartbeatInterval(val);
         return gpobj->updateConfigurationRecordItem(
           ("vscpd_Automation_SegmentControllerEvent_Interval"),
-          vscp_string_format("%ld", val));
+          vscp_str_format("%ld", val));
     }
 
     if (vscp_startsWith(lcname, "vscp.automation.segctrl.heartbeat.last")) {
@@ -4885,7 +4885,7 @@ CVariableStorage::putStockVariable(CVSCPVariable &var, CUserItem *pUser)
         gpobj->m_automation.setLongitude(val);
         return gpobj->updateConfigurationRecordItem(
           ("vscpd_Automation_Longitude"),
-          vscp_string_format("%f", gpobj->m_automation.getLongitude()));
+          vscp_str_format("%f", gpobj->m_automation.getLongitude()));
     }
 
     if (vscp_startsWith(lcname, "vscp.automation.latitude")) {
@@ -4894,7 +4894,7 @@ CVariableStorage::putStockVariable(CVSCPVariable &var, CUserItem *pUser)
         gpobj->m_automation.setLatitude(val);
         return gpobj->updateConfigurationRecordItem(
           ("vscpd_Automation_Latitude"),
-          vscp_string_format("%f", gpobj->m_automation.getLatitude()));
+          vscp_str_format("%f", gpobj->m_automation.getLatitude()));
     }
 
     if (vscp_startsWith(lcname,
@@ -5469,7 +5469,7 @@ CVariableStorage::putStockVariable(CVSCPVariable &var, CUserItem *pUser)
                 if (NULL != pdm) {
                     pdm->m_vscpfilter.mask_priority = val;
                 }
-                strValue = vscp_string_format("%d", val);
+                strValue = vscp_str_format("%d", val);
                 return gpobj->m_dm.updateDatabaseRecordItem(
                   id, ("maskPriority"), strValue);
             } else if (vscp_startsWith(str, "mask.class")) {
@@ -5482,7 +5482,7 @@ CVariableStorage::putStockVariable(CVSCPVariable &var, CUserItem *pUser)
                 if (NULL != pdm) {
                     pdm->m_vscpfilter.mask_class = val;
                 }
-                strValue = vscp_string_format(("%d"), val);
+                strValue = vscp_str_format(("%d"), val);
                 return gpobj->m_dm.updateDatabaseRecordItem(
                   id, ("maskClass"), strValue);
             } else if (vscp_startsWith(str, "mask.type")) {
@@ -5495,7 +5495,7 @@ CVariableStorage::putStockVariable(CVSCPVariable &var, CUserItem *pUser)
                 if (NULL != pdm) {
                     pdm->m_vscpfilter.mask_type = val;
                 }
-                strValue = vscp_string_format(("%d"), val);
+                strValue = vscp_str_format(("%d"), val);
                 return gpobj->m_dm.updateDatabaseRecordItem(
                   id, ("maskType"), strValue);
             } else if (vscp_startsWith(str, "mask.guid")) {
@@ -5521,7 +5521,7 @@ CVariableStorage::putStockVariable(CVSCPVariable &var, CUserItem *pUser)
                 if (NULL != pdm) {
                     pdm->m_vscpfilter.filter_priority = val;
                 }
-                strValue = vscp_string_format(("%d"), val);
+                strValue = vscp_str_format(("%d"), val);
                 return gpobj->m_dm.updateDatabaseRecordItem(
                   id, ("filterPriority"), strValue);
             } else if (vscp_startsWith(str, "filter.class")) {
@@ -5534,7 +5534,7 @@ CVariableStorage::putStockVariable(CVSCPVariable &var, CUserItem *pUser)
                 if (NULL != pdm) {
                     pdm->m_vscpfilter.filter_class = val;
                 }
-                strValue = vscp_string_format(("%d"), val);
+                strValue = vscp_str_format(("%d"), val);
                 return gpobj->m_dm.updateDatabaseRecordItem(
                   id, ("filterClass"), strValue);
             } else if (vscp_startsWith(str, "filter.type")) {
@@ -5547,7 +5547,7 @@ CVariableStorage::putStockVariable(CVSCPVariable &var, CUserItem *pUser)
                 if (NULL != pdm) {
                     pdm->m_vscpfilter.filter_type = val;
                 }
-                strValue = vscp_string_format(("%d"), val);
+                strValue = vscp_str_format(("%d"), val);
                 return gpobj->m_dm.updateDatabaseRecordItem(
                   id, ("filterType"), strValue);
             } else if (vscp_startsWith(str, "filter.guid")) {
@@ -5711,7 +5711,7 @@ CVariableStorage::putStockVariable(CVSCPVariable &var, CUserItem *pUser)
                 if (NULL != pdm) {
                     pdm->m_index = val;
                 }
-                strValue = vscp_string_format(("%d"), val);
+                strValue = vscp_str_format(("%d"), val);
                 return gpobj->m_dm.updateDatabaseRecordItem(
                   id, ("index"), strValue);
             } else if (vscp_startsWith(str, "bCheckZone")) {
@@ -5737,7 +5737,7 @@ CVariableStorage::putStockVariable(CVSCPVariable &var, CUserItem *pUser)
                 if (NULL != pdm) {
                     pdm->m_zone = val;
                 }
-                strValue = vscp_string_format(("%d"), val);
+                strValue = vscp_str_format(("%d"), val);
                 return gpobj->m_dm.updateDatabaseRecordItem(
                   id, ("zone"), strValue);
             } else if (vscp_startsWith(str, "bCheckSubZone")) {
@@ -5763,7 +5763,7 @@ CVariableStorage::putStockVariable(CVSCPVariable &var, CUserItem *pUser)
                 if (NULL != pdm) {
                     pdm->m_subzone = val;
                 }
-                strValue = vscp_string_format(("%d"), val);
+                strValue = vscp_str_format(("%d"), val);
                 return gpobj->m_dm.updateDatabaseRecordItem(
                   id, ("subzone"), strValue);
             } else if (vscp_startsWith(str, "measurement.value")) {
@@ -5776,7 +5776,7 @@ CVariableStorage::putStockVariable(CVSCPVariable &var, CUserItem *pUser)
                 if (NULL != pdm) {
                     pdm->m_measurementValue = val;
                 }
-                strValue = vscp_string_format(("%d"), val);
+                strValue = vscp_str_format(("%d"), val);
                 return gpobj->m_dm.updateDatabaseRecordItem(
                   id, ("measurementValue"), strValue);
             } else if (vscp_startsWith(str, "measurement.unit")) {
@@ -5789,7 +5789,7 @@ CVariableStorage::putStockVariable(CVSCPVariable &var, CUserItem *pUser)
                 if (NULL != pdm) {
                     pdm->m_measurementUnit = val;
                 }
-                strValue = vscp_string_format("%d", val);
+                strValue = vscp_str_format("%d", val);
                 return gpobj->m_dm.updateDatabaseRecordItem(
                   id, "measurementUnit", strValue);
             } else if (vscp_startsWith(str, "measurement.compare")) {
@@ -5802,7 +5802,7 @@ CVariableStorage::putStockVariable(CVSCPVariable &var, CUserItem *pUser)
                 if (NULL != pdm) {
                     pdm->m_measurementUnit = val;
                 }
-                strValue = vscp_string_format("%d", val);
+                strValue = vscp_str_format("%d", val);
                 return gpobj->m_dm.updateDatabaseRecordItem(
                   id, "measurementCompare", strValue);
             } else if (vscp_startsWith(str, "measurement.compare.string")) {
@@ -6231,7 +6231,7 @@ CVariableStorage::listEnumerationFromRegExp(varQuery *pq,
     /* TODO xxRegEx xxregex( regexlocal );
     if ( !xxregex.isValid() ) {
 
-        syslog( LOG_ERR,  vscp_string_format("[getVarlistFromRegExp] Invalid "
+        syslog( LOG_ERR,  vscp_str_format("[getVarlistFromRegExp] Invalid "
                                            "regular expression [%s]"),
                             (const char *)regexlocal.c_str() ) );
         return false;
@@ -7044,22 +7044,22 @@ CVariableStorage::writeVariableToXmlFile(std::ofstream &of,
     std::string name = variable.getName();
 
     try {
-        of << vscp_string_format("  <variable type=\"%d\" ",
+        of << vscp_str_format("  <variable type=\"%d\" ",
                                  variable.getType());
-        of << vscp_string_format(" name=\"%s\" ", (const char *)name.c_str());
+        of << vscp_str_format(" name=\"%s\" ", (const char *)name.c_str());
         if (variable.isPersistent()) {
             of << " persistent=\"true\" ";
         } else {
             of << " persistent=\"false\" ";
         }
-        of << vscp_string_format(" user=\"%d\" ", variable.getOwnerID());
-        of << vscp_string_format(" access-rights=\"%d\" ",
+        of << vscp_str_format(" user=\"%d\" ", variable.getOwnerID());
+        of << vscp_str_format(" access-rights=\"%d\" ",
                                  variable.getAccessRights());
         variable.writeValueToString(strtemp);
-        of << vscp_string_format(" value=\"%s\" ",
+        of << vscp_str_format(" value=\"%s\" ",
                                  (const char *)strtemp.c_str());
         // Always save on base64 encoded form
-        of << vscp_string_format(" note=\"%s\" ",
+        of << vscp_str_format(" note=\"%s\" ",
                                  (const char *)variable.getNote().c_str());
         of << " />\n\n";
     } catch (...) {

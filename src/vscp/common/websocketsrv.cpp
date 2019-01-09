@@ -768,7 +768,7 @@ ws1_readyHandler(struct web_connection *conn, void *cbdata)
     pSession->lastActiveTime = time(NULL);
 
     // Start authentication
-    std::string str = vscp_string_format(("+;AUTH0;%s"), pSession->m_sid);
+    std::string str = vscp_str_format(("+;AUTH0;%s"), pSession->m_sid);
     web_websocket_write(
       conn, WEB_WEBSOCKET_OPCODE_TEXT, (const char *)str.c_str(), str.length());
 
@@ -879,7 +879,7 @@ ws1_message(struct web_connection *conn,
             if ((NULL == pSession->m_pClientItem) ||
                 !pSession->m_pClientItem->bAuthenticated) {
 
-                str = vscp_string_format(("-;%d;%s"),
+                str = vscp_str_format(("-;%d;%s"),
                                          (int)WEBSOCK_ERROR_NOT_AUTHORISED,
                                          WEBSOCK_STR_ERROR_NOT_AUTHORISED);
                 web_websocket_write(conn,
@@ -918,7 +918,7 @@ ws1_message(struct web_connection *conn,
                     web_websocket_write(
                       conn, WEB_WEBSOCKET_OPCODE_TEXT, "+;EVENT", 7);
                 } else {
-                    str = vscp_string_format(("-;%d;%s"),
+                    str = vscp_str_format(("-;%d;%s"),
                                              (int)WEBSOCK_ERROR_TX_BUFFER_FULL,
                                              WEBSOCK_STR_ERROR_TX_BUFFER_FULL);
                     web_websocket_write(conn,
@@ -968,7 +968,7 @@ ws1_command(struct web_connection *conn,
         vscp_trim(strTok);
         vscp_makeUpper(strTok);
     } else {
-        std::string str = vscp_string_format(("-;%d;%s"),
+        std::string str = vscp_str_format(("-;%d;%s"),
                                              (int)WEBSOCK_ERROR_SYNTAX_ERROR,
                                              WEBSOCK_STR_ERROR_SYNTAX_ERROR);
         web_websocket_write(conn,
@@ -1005,7 +1005,7 @@ ws1_command(struct web_connection *conn,
             !pSession->m_pClientItem->bAuthenticated) {
 
             // Start authentication
-            str = vscp_string_format(("+;AUTH0;%s"), pSession->m_sid);
+            str = vscp_str_format(("+;AUTH0;%s"), pSession->m_sid);
             web_websocket_write(conn,
                                 WEB_WEBSOCKET_OPCODE_TEXT,
                                 (const char *)str.c_str(),
@@ -1030,7 +1030,7 @@ ws1_command(struct web_connection *conn,
         if (websock_authentication(conn, pSession, strIV, strCrypto)) {
             std::string userSettings;
             pSession->m_pClientItem->m_pUserItem->getAsString(userSettings);
-            str = vscp_string_format(("+;AUTH1;%s"),
+            str = vscp_str_format(("+;AUTH1;%s"),
                                      (const char *)userSettings.c_str());
             web_websocket_write(conn,
                                 WEB_WEBSOCKET_OPCODE_TEXT,
@@ -1038,7 +1038,7 @@ ws1_command(struct web_connection *conn,
                                 str.length());
         } else {
 
-            str = vscp_string_format(("-;AUTH;%d;%s"),
+            str = vscp_str_format(("-;AUTH;%d;%s"),
                                      (int)WEBSOCK_ERROR_NOT_AUTHORISED,
                                      WEBSOCK_STR_ERROR_NOT_AUTHORISED);
             web_websocket_write(conn,
@@ -1059,7 +1059,7 @@ ws1_command(struct web_connection *conn,
         if ((NULL == pSession->m_pClientItem) ||
             !pSession->m_pClientItem->bAuthenticated) {
 
-            str = vscp_string_format(("-;OPEN;%d;%s"),
+            str = vscp_str_format(("-;OPEN;%d;%s"),
                                      (int)WEBSOCK_ERROR_NOT_AUTHORISED,
                                      WEBSOCK_STR_ERROR_NOT_AUTHORISED);
 
@@ -1098,7 +1098,7 @@ ws1_command(struct web_connection *conn,
         if ((NULL == pSession->m_pClientItem) ||
             !pSession->m_pClientItem->bAuthenticated) {
 
-            str = vscp_string_format(("-;SF;%d;%s"),
+            str = vscp_str_format(("-;SF;%d;%s"),
                                      (int)WEBSOCK_ERROR_NOT_AUTHORISED,
                                      WEBSOCK_STR_ERROR_NOT_AUTHORISED);
 
@@ -1117,7 +1117,7 @@ ws1_command(struct web_connection *conn,
         if ((pSession->m_pClientItem->m_pUserItem->getUserRights(0) & 0xf) <
             6) {
 
-            str = vscp_string_format(("-;SF;%d;%s"),
+            str = vscp_str_format(("-;SF;%d;%s"),
                                      (int)WEBSOCK_ERROR_NOT_ALLOWED_TO_DO_THAT,
                                      WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT);
 
@@ -1144,7 +1144,7 @@ ws1_command(struct web_connection *conn,
             if (!vscp_readFilterFromString(
                   &pSession->m_pClientItem->m_filterVSCP, strTok)) {
 
-                str = vscp_string_format(("-;SF;%d;%s"),
+                str = vscp_str_format(("-;SF;%d;%s"),
                                          (int)WEBSOCK_ERROR_SYNTAX_ERROR,
                                          WEBSOCK_STR_ERROR_SYNTAX_ERROR);
 
@@ -1162,7 +1162,7 @@ ws1_command(struct web_connection *conn,
               &pSession->m_pClientItem->m_mutexClientInputQueue);
         } else {
 
-            str = vscp_string_format(("-;SF;%d;%s"),
+            str = vscp_str_format(("-;SF;%d;%s"),
                                      (int)WEBSOCK_ERROR_SYNTAX_ERROR,
                                      WEBSOCK_STR_ERROR_SYNTAX_ERROR);
 
@@ -1185,7 +1185,7 @@ ws1_command(struct web_connection *conn,
             if (!vscp_readMaskFromString(&pSession->m_pClientItem->m_filterVSCP,
                                          strTok)) {
 
-                str = vscp_string_format(("-;SF;%d;%s"),
+                str = vscp_str_format(("-;SF;%d;%s"),
                                          (int)WEBSOCK_ERROR_SYNTAX_ERROR,
                                          WEBSOCK_STR_ERROR_SYNTAX_ERROR);
 
@@ -1203,7 +1203,7 @@ ws1_command(struct web_connection *conn,
               &pSession->m_pClientItem->m_mutexClientInputQueue);
 
         } else {
-            str = vscp_string_format(("-;SF;%d;%s"),
+            str = vscp_str_format(("-;SF;%d;%s"),
                                      (int)WEBSOCK_ERROR_SYNTAX_ERROR,
                                      WEBSOCK_STR_ERROR_SYNTAX_ERROR);
 
@@ -1231,7 +1231,7 @@ ws1_command(struct web_connection *conn,
         if ((NULL == pSession->m_pClientItem) ||
             !pSession->m_pClientItem->bAuthenticated) {
 
-            str = vscp_string_format(("-;CLRQ;%d;%s"),
+            str = vscp_str_format(("-;CLRQ;%d;%s"),
                                      (int)WEBSOCK_ERROR_NOT_AUTHORISED,
                                      WEBSOCK_STR_ERROR_NOT_AUTHORISED);
 
@@ -1250,7 +1250,7 @@ ws1_command(struct web_connection *conn,
         if ((pSession->m_pClientItem->m_pUserItem->getUserRights(0) & 0xf) <
             1) {
 
-            str = vscp_string_format(("-;CLRQ;%d;%s"),
+            str = vscp_str_format(("-;CLRQ;%d;%s"),
                                      (int)WEBSOCK_ERROR_NOT_ALLOWED_TO_DO_THAT,
                                      WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT);
 
@@ -1307,7 +1307,7 @@ ws1_command(struct web_connection *conn,
         if ((NULL == pSession->m_pClientItem) ||
             !pSession->m_pClientItem->bAuthenticated) {
 
-            str = vscp_string_format(("-;CVAR;%d;%s"),
+            str = vscp_str_format(("-;CVAR;%d;%s"),
                                      (int)WEBSOCK_ERROR_NOT_AUTHORISED,
                                      WEBSOCK_STR_ERROR_NOT_AUTHORISED);
 
@@ -1327,7 +1327,7 @@ ws1_command(struct web_connection *conn,
         if ((pSession->m_pClientItem->m_pUserItem->getUserRights(0) & 0xf) <
             6) {
 
-            str = vscp_string_format(("-;CVAR;%d;%s"),
+            str = vscp_str_format(("-;CVAR;%d;%s"),
                                      (int)WEBSOCK_ERROR_NOT_ALLOWED_TO_DO_THAT,
                                      WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT);
 
@@ -1351,7 +1351,7 @@ ws1_command(struct web_connection *conn,
             tokens.pop_front();
         } else {
 
-            str = vscp_string_format(("-;CVAR;%d;%s"),
+            str = vscp_str_format(("-;CVAR;%d;%s"),
                                      (int)WEBSOCK_ERROR_SYNTAX_ERROR,
                                      WEBSOCK_STR_ERROR_SYNTAX_ERROR);
 
@@ -1373,7 +1373,7 @@ ws1_command(struct web_connection *conn,
         // name can not start with "vscp." - reserved for a stock variable
         if (vscp_startsWith(vscp_lower(name), "vscp.")) {
 
-            str = vscp_string_format(("-;CVAR;%d;%s"),
+            str = vscp_str_format(("-;CVAR;%d;%s"),
                                      (int)WEBSOCK_ERROR_VARIABLE_NO_STOCK,
                                      WEBSOCK_STR_ERROR_VARIABLE_NO_STOCK);
 
@@ -1419,7 +1419,7 @@ ws1_command(struct web_connection *conn,
             } else if (1 == val) {
                 bPersistent = true;
             } else {
-                str = vscp_string_format(("-;CVAR;%d;%s"),
+                str = vscp_str_format(("-;CVAR;%d;%s"),
                                          (int)WEBSOCK_ERROR_SYNTAX_ERROR,
                                          WEBSOCK_STR_ERROR_SYNTAX_ERROR);
 
@@ -1461,7 +1461,7 @@ ws1_command(struct web_connection *conn,
                   accessrights,
                   note)) {
 
-                str = vscp_string_format(("-;CVAR;%d;%s"),
+                str = vscp_str_format(("-;CVAR;%d;%s"),
                                          (int)WEBSOCK_ERROR_SYNTAX_ERROR,
                                          WEBSOCK_STR_ERROR_SYNTAX_ERROR);
 
@@ -1496,7 +1496,7 @@ ws1_command(struct web_connection *conn,
             // Save the changed variable
             if (!gpobj->m_variables.update(variable)) {
 
-                str = vscp_string_format(("-;CVAR;%d;%s"),
+                str = vscp_str_format(("-;CVAR;%d;%s"),
                                          (int)WEBSOCK_ERROR_SYNTAX_ERROR,
                                          WEBSOCK_STR_ERROR_SYNTAX_ERROR);
 
@@ -1533,7 +1533,7 @@ ws1_command(struct web_connection *conn,
         if ((NULL == pSession->m_pClientItem) ||
             !pSession->m_pClientItem->bAuthenticated) {
 
-            str = vscp_string_format(("-;RVAR;%d;%s"),
+            str = vscp_str_format(("-;RVAR;%d;%s"),
                                      (int)WEBSOCK_ERROR_NOT_AUTHORISED,
                                      WEBSOCK_STR_ERROR_NOT_AUTHORISED);
 
@@ -1552,7 +1552,7 @@ ws1_command(struct web_connection *conn,
         if ((pSession->m_pClientItem->m_pUserItem->getUserRights(0) & 0xf) <
             4) {
 
-            str = vscp_string_format(("-;RVAR;%d;%s"),
+            str = vscp_str_format(("-;RVAR;%d;%s"),
                                      (int)WEBSOCK_ERROR_NOT_ALLOWED_TO_DO_THAT,
                                      WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT);
 
@@ -1572,7 +1572,7 @@ ws1_command(struct web_connection *conn,
         tokens.pop_front();
         if (0 == gpobj->m_variables.find(strTok, variable)) {
 
-            str = vscp_string_format(("-;RVAR;%d;%s"),
+            str = vscp_str_format(("-;RVAR;%d;%s"),
                                      (int)WEBSOCK_ERROR_VARIABLE_UNKNOWN,
                                      WEBSOCK_STR_ERROR_VARIABLE_UNKNOWN);
 
@@ -1607,7 +1607,7 @@ ws1_command(struct web_connection *conn,
         if ((NULL == pSession->m_pClientItem) ||
             !pSession->m_pClientItem->bAuthenticated) {
 
-            str = vscp_string_format(("-;WVAR;%d;%s"),
+            str = vscp_str_format(("-;WVAR;%d;%s"),
                                      (int)WEBSOCK_ERROR_NOT_AUTHORISED,
                                      WEBSOCK_STR_ERROR_NOT_AUTHORISED);
 
@@ -1626,7 +1626,7 @@ ws1_command(struct web_connection *conn,
         if ((pSession->m_pClientItem->m_pUserItem->getUserRights(0) & 0xf) <
             6) {
 
-            str = vscp_string_format(("-;WVAR;%d;%s"),
+            str = vscp_str_format(("-;WVAR;%d;%s"),
                                      (int)WEBSOCK_ERROR_NOT_ALLOWED_TO_DO_THAT,
                                      WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT);
 
@@ -1650,7 +1650,7 @@ ws1_command(struct web_connection *conn,
             if (0 ==
                 gpobj->m_variables.find(vscp_upper(strVarName), variable)) {
 
-                str = vscp_string_format(("-;WVAR;%d;%s"),
+                str = vscp_str_format(("-;WVAR;%d;%s"),
                                          (int)WEBSOCK_ERROR_VARIABLE_UNKNOWN,
                                          WEBSOCK_STR_ERROR_VARIABLE_UNKNOWN);
 
@@ -1672,7 +1672,7 @@ ws1_command(struct web_connection *conn,
                                                  strTok,
                                                  true)) { // decode
 
-                    str = vscp_string_format(("-;WVAR;%d;%s"),
+                    str = vscp_str_format(("-;WVAR;%d;%s"),
                                              (int)WEBSOCK_ERROR_SYNTAX_ERROR,
                                              WEBSOCK_STR_ERROR_SYNTAX_ERROR);
 
@@ -1686,7 +1686,7 @@ ws1_command(struct web_connection *conn,
                 // Update the variable
                 if (!gpobj->m_variables.update(variable)) {
 
-                    str = vscp_string_format(("-;WVAR;%d;%s"),
+                    str = vscp_str_format(("-;WVAR;%d;%s"),
                                              (int)WEBSOCK_ERROR_SYNTAX_ERROR,
                                              WEBSOCK_STR_ERROR_VARIABLE_UPDATE);
 
@@ -1697,7 +1697,7 @@ ws1_command(struct web_connection *conn,
                     return;
                 }
             } else {
-                str = vscp_string_format(("-;WVAR;%d;%s"),
+                str = vscp_str_format(("-;WVAR;%d;%s"),
                                          (int)WEBSOCK_ERROR_SYNTAX_ERROR,
                                          WEBSOCK_STR_ERROR_SYNTAX_ERROR);
 
@@ -1708,7 +1708,7 @@ ws1_command(struct web_connection *conn,
                 return;
             }
         } else {
-            str = vscp_string_format(("-;WVAR;%d;%s"),
+            str = vscp_str_format(("-;WVAR;%d;%s"),
                                      (int)WEBSOCK_ERROR_SYNTAX_ERROR,
                                      WEBSOCK_STR_ERROR_SYNTAX_ERROR);
 
@@ -1745,7 +1745,7 @@ ws1_command(struct web_connection *conn,
         if ((NULL == pSession->m_pClientItem) ||
             !pSession->m_pClientItem->bAuthenticated) {
 
-            str = vscp_string_format(("-;RSTVAR;%d;%s"),
+            str = vscp_str_format(("-;RSTVAR;%d;%s"),
                                      (int)WEBSOCK_ERROR_NOT_AUTHORISED,
                                      WEBSOCK_STR_ERROR_NOT_AUTHORISED);
 
@@ -1761,7 +1761,7 @@ ws1_command(struct web_connection *conn,
         if ((pSession->m_pClientItem->m_pUserItem->getUserRights(0) & 0xf) <
             6) {
 
-            str = vscp_string_format(("-;RSTVAR;%d;%s"),
+            str = vscp_str_format(("-;RSTVAR;%d;%s"),
                                      (int)WEBSOCK_ERROR_NOT_ALLOWED_TO_DO_THAT,
                                      WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT);
 
@@ -1780,7 +1780,7 @@ ws1_command(struct web_connection *conn,
         tokens.pop_front();
         if (0 == gpobj->m_variables.find(strTok, variable)) {
 
-            str = vscp_string_format(("-;RSTVAR;%d;%s"),
+            str = vscp_str_format(("-;RSTVAR;%d;%s"),
                                      (int)WEBSOCK_ERROR_VARIABLE_UNKNOWN,
                                      WEBSOCK_STR_ERROR_VARIABLE_UNKNOWN);
 
@@ -1804,7 +1804,7 @@ ws1_command(struct web_connection *conn,
         std::string strResult = ("+;RSTVAR;");
         strResult += strTok;
         strResult += (";");
-        strResult += vscp_string_format(("%d"), type);
+        strResult += vscp_str_format(("%d"), type);
         strResult += (";");
         strResult += strvalue;
 
@@ -1830,7 +1830,7 @@ ws1_command(struct web_connection *conn,
         if ((NULL == pSession->m_pClientItem) ||
             !pSession->m_pClientItem->bAuthenticated) {
 
-            str = vscp_string_format(("-;DELVAR;%d;%s"),
+            str = vscp_str_format(("-;DELVAR;%d;%s"),
                                      (int)WEBSOCK_ERROR_NOT_AUTHORISED,
                                      WEBSOCK_STR_ERROR_NOT_AUTHORISED);
 
@@ -1850,7 +1850,7 @@ ws1_command(struct web_connection *conn,
         if ((pSession->m_pClientItem->m_pUserItem->getUserRights(0) & 0xf) <
             6) {
 
-            str = vscp_string_format(("-;DELVAR;%d;%s"),
+            str = vscp_str_format(("-;DELVAR;%d;%s"),
                                      (int)WEBSOCK_ERROR_NOT_ALLOWED_TO_DO_THAT,
                                      WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT);
 
@@ -1870,7 +1870,7 @@ ws1_command(struct web_connection *conn,
         tokens.pop_front();
         if (0 == gpobj->m_variables.find(name, variable)) {
 
-            str = vscp_string_format(("-;DELVAR;%d;%s"),
+            str = vscp_str_format(("-;DELVAR;%d;%s"),
                                      (int)WEBSOCK_ERROR_VARIABLE_UNKNOWN,
                                      WEBSOCK_STR_ERROR_VARIABLE_UNKNOWN);
 
@@ -1910,7 +1910,7 @@ ws1_command(struct web_connection *conn,
         if ((NULL == pSession->m_pClientItem) ||
             !pSession->m_pClientItem->bAuthenticated) {
 
-            str = vscp_string_format(("-;LENVAR;%d;%s"),
+            str = vscp_str_format(("-;LENVAR;%d;%s"),
                                      (int)WEBSOCK_ERROR_NOT_AUTHORISED,
                                      WEBSOCK_STR_ERROR_NOT_AUTHORISED);
 
@@ -1930,7 +1930,7 @@ ws1_command(struct web_connection *conn,
         if ((pSession->m_pClientItem->m_pUserItem->getUserRights(0) & 0xf) <
             4) {
 
-            str = vscp_string_format(("-;LENVAR;%d;%s"),
+            str = vscp_str_format(("-;LENVAR;%d;%s"),
                                      (int)WEBSOCK_ERROR_NOT_ALLOWED_TO_DO_THAT,
                                      WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT);
 
@@ -1950,7 +1950,7 @@ ws1_command(struct web_connection *conn,
         tokens.pop_front();
         if (0 == gpobj->m_variables.find(strTok, variable)) {
 
-            str = vscp_string_format(("-;LENVAR;%d;%s"),
+            str = vscp_str_format(("-;LENVAR;%d;%s"),
                                      (int)WEBSOCK_ERROR_VARIABLE_UNKNOWN,
                                      WEBSOCK_STR_ERROR_VARIABLE_UNKNOWN);
 
@@ -1964,7 +1964,7 @@ ws1_command(struct web_connection *conn,
         std::string strResult = ("+;LENVAR;");
         strResult += strTok;
         strResult += (";");
-        strResult += vscp_string_format(("%d"), variable.getValue().length());
+        strResult += vscp_str_format(("%d"), variable.getValue().length());
 
         // Positive reply
         web_websocket_write(conn,
@@ -1988,7 +1988,7 @@ ws1_command(struct web_connection *conn,
         if ((NULL == pSession->m_pClientItem) ||
             !pSession->m_pClientItem->bAuthenticated) {
 
-            str = vscp_string_format(("-;LCVAR;%d;%s"),
+            str = vscp_str_format(("-;LCVAR;%d;%s"),
                                      (int)WEBSOCK_ERROR_NOT_AUTHORISED,
                                      WEBSOCK_STR_ERROR_NOT_AUTHORISED);
 
@@ -2008,7 +2008,7 @@ ws1_command(struct web_connection *conn,
         if ((pSession->m_pClientItem->m_pUserItem->getUserRights(0) & 0xf) <
             4) {
 
-            str = vscp_string_format(("-;LCVAR;%d;%s"),
+            str = vscp_str_format(("-;LCVAR;%d;%s"),
                                      (int)WEBSOCK_ERROR_NOT_ALLOWED_TO_DO_THAT,
                                      WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT);
 
@@ -2028,7 +2028,7 @@ ws1_command(struct web_connection *conn,
         tokens.pop_front();
         if (0 == gpobj->m_variables.find(strTok, variable)) {
 
-            str = vscp_string_format(("-;LCVAR;%d;%s"),
+            str = vscp_str_format(("-;LCVAR;%d;%s"),
                                      (int)WEBSOCK_ERROR_VARIABLE_UNKNOWN,
                                      WEBSOCK_STR_ERROR_VARIABLE_UNKNOWN);
 
@@ -2070,7 +2070,7 @@ ws1_command(struct web_connection *conn,
         if ((NULL == pSession->m_pClientItem) ||
             !pSession->m_pClientItem->bAuthenticated) {
 
-            str = vscp_string_format(("-;LSTVAR;%d;%s"),
+            str = vscp_str_format(("-;LSTVAR;%d;%s"),
                                      (int)WEBSOCK_ERROR_NOT_AUTHORISED,
                                      WEBSOCK_STR_ERROR_NOT_AUTHORISED);
 
@@ -2090,7 +2090,7 @@ ws1_command(struct web_connection *conn,
         if ((pSession->m_pClientItem->m_pUserItem->getUserRights(0) & 0xf) <
             4) {
 
-            str = vscp_string_format(("-;LSTVAR;%d;%s"),
+            str = vscp_str_format(("-;LSTVAR;%d;%s"),
                                      (int)WEBSOCK_ERROR_NOT_ALLOWED_TO_DO_THAT,
                                      WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT);
 
@@ -2132,7 +2132,7 @@ ws1_command(struct web_connection *conn,
             for (int i = 0; i < arrayVars.size(); i++) {
                 if (0 != gpobj->m_variables.find(arrayVars[i], variable)) {
 
-                    str = vscp_string_format(
+                    str = vscp_str_format(
                       ("+;LSTVAR;%d;%zu;"), i, arrayVars.size());
                     str += variable.getAsString();
 
@@ -2145,7 +2145,7 @@ ws1_command(struct web_connection *conn,
 
         } else {
 
-            str = vscp_string_format(("-;LSTVAR;%d;%s"),
+            str = vscp_str_format(("-;LSTVAR;%d;%s"),
                                      (int)WEBSOCK_ERROR_VARIABLE_UNKNOWN,
                                      WEBSOCK_STR_ERROR_VARIABLE_UNKNOWN);
 
@@ -2159,7 +2159,7 @@ ws1_command(struct web_connection *conn,
 
         /* TODO
                 // Send count
-                strResult = vscp_string_format( ( "+;LISTVAR;%zu" ),
+                strResult = vscp_str_format( ( "+;LISTVAR;%zu" ),
            m_gpobj->m_VSCP_Variables.m_listVariable.size() );
                 mg_printf_websocket_frame( nc, WEBSOCKET_OP_TEXT, ( const char *
            )strResult.c_str() );
@@ -2174,7 +2174,7 @@ ws1_command(struct web_connection *conn,
                     if ( NULL == ( pvar = *it ) ) continue;
 
                     strResult = ("+;LISTVAR;");
-                    strResult += vscp_string_format( ("%d;"), i++ );
+                    strResult += vscp_str_format( ("%d;"), i++ );
                     strResult += pvar->getName();
                     strResult += (";");
                     strWork.Printf( ("%d"), pvar->getType() ) ;
@@ -2212,7 +2212,7 @@ ws1_command(struct web_connection *conn,
         if ((NULL == pSession->m_pClientItem) ||
             !pSession->m_pClientItem->bAuthenticated) {
 
-            str = vscp_string_format(("-;TBL_CREATE;%d;%s"),
+            str = vscp_str_format(("-;TBL_CREATE;%d;%s"),
                                      (int)WEBSOCK_ERROR_NOT_AUTHORISED,
                                      WEBSOCK_STR_ERROR_NOT_AUTHORISED);
 
@@ -2232,7 +2232,7 @@ ws1_command(struct web_connection *conn,
         if ((pSession->m_pClientItem->m_pUserItem->getUserRights(0) & 0xf) <
             4) {
 
-            str = vscp_string_format(("-;TBL_CREATE;%d;%s"),
+            str = vscp_str_format(("-;TBL_CREATE;%d;%s"),
                                      (int)WEBSOCK_ERROR_NOT_ALLOWED_TO_DO_THAT,
                                      WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT);
 
@@ -2254,7 +2254,7 @@ ws1_command(struct web_connection *conn,
             tokens.pop_front();
         } else {
             // Must have XML table create expression
-            str = vscp_string_format(("-;TBL_CREATE;%d;%s"),
+            str = vscp_str_format(("-;TBL_CREATE;%d;%s"),
                                      (int)WEBSOCK_ERROR_SYNTAX_ERROR,
                                      WEBSOCK_STR_ERROR_SYNTAX_ERROR);
 
@@ -2267,7 +2267,7 @@ ws1_command(struct web_connection *conn,
 
         if (!gpobj->m_userTableObjects.createTableFromString(
               table_create_str)) {
-            str = vscp_string_format(("-;TBL_CREATE;%d;%s"),
+            str = vscp_str_format(("-;TBL_CREATE;%d;%s"),
                                      (int)WEBSOCK_ERROR_TABLE_CREATE_FORMAT,
                                      WEBSOCK_STR_ERROR_TABLE_CREATE_FORMAT);
 
@@ -2302,7 +2302,7 @@ ws1_command(struct web_connection *conn,
         if ((NULL == pSession->m_pClientItem) ||
             !pSession->m_pClientItem->bAuthenticated) {
 
-            str = vscp_string_format(("-;TBL_DELETE;%d;%s"),
+            str = vscp_str_format(("-;TBL_DELETE;%d;%s"),
                                      (int)WEBSOCK_ERROR_NOT_AUTHORISED,
                                      WEBSOCK_STR_ERROR_NOT_AUTHORISED);
 
@@ -2323,7 +2323,7 @@ ws1_command(struct web_connection *conn,
             tokens.pop_front();
         } else {
             // Must have XML table create expression
-            str = vscp_string_format(("-;TBL_DELETE;%d;%s"),
+            str = vscp_str_format(("-;TBL_DELETE;%d;%s"),
                                      (int)WEBSOCK_ERROR_SYNTAX_ERROR,
                                      WEBSOCK_STR_ERROR_SYNTAX_ERROR);
 
@@ -2347,7 +2347,7 @@ ws1_command(struct web_connection *conn,
         // Remove the table from the internal system
         if (!gpobj->m_userTableObjects.removeTable(strTable), bRemoveFile) {
 
-            str = vscp_string_format(("-;TBL_DLETE;%d;%s"),
+            str = vscp_str_format(("-;TBL_DLETE;%d;%s"),
                                      (int)WEBSOCK_ERROR_TABLE_DELETE_FAILED,
                                      WEBSOCK_STR_ERROR_TABLE_DELETE_FAILED);
 
@@ -2382,7 +2382,7 @@ ws1_command(struct web_connection *conn,
         if ((NULL == pSession->m_pClientItem) ||
             !pSession->m_pClientItem->bAuthenticated) {
 
-            str = vscp_string_format(("-;TBL_LIST;%d;%s"),
+            str = vscp_str_format(("-;TBL_LIST;%d;%s"),
                                      (int)WEBSOCK_ERROR_NOT_AUTHORISED,
                                      WEBSOCK_STR_ERROR_NOT_AUTHORISED);
 
@@ -2419,7 +2419,7 @@ ws1_command(struct web_connection *conn,
                     CVSCPTable *pTable =
                       gpobj->m_userTableObjects.getTable(arrayTblNames[i]);
 
-                    std::string str = vscp_string_format(
+                    std::string str = vscp_str_format(
                       ("+;%i;%zu;"), i, arrayTblNames.size());
                     str += arrayTblNames[i];
                     str += (";");
@@ -2460,7 +2460,7 @@ ws1_command(struct web_connection *conn,
 
                 // Failed
 
-                str = vscp_string_format(("-;TBL_LIST;%d;%s"),
+                str = vscp_str_format(("-;TBL_LIST;%d;%s"),
                                          (int)WEBSOCK_ERROR_TABLE_LIST_FAILED,
                                          WEBSOCK_STR_ERROR_TABLE_LIST_FAILED);
 
@@ -2483,7 +2483,7 @@ ws1_command(struct web_connection *conn,
             CVSCPTable *pTable = gpobj->m_userTableObjects.getTable(strTable);
             if (NULL == pTable) {
                 // Failed
-                str = vscp_string_format(("-;TBL_LIST;%d;%s"),
+                str = vscp_str_format(("-;TBL_LIST;%d;%s"),
                                          (int)WEBSOCK_ERROR_TABLE_LIST_FAILED,
                                          WEBSOCK_STR_ERROR_TABLE_LIST_FAILED);
 
@@ -2527,7 +2527,7 @@ ws1_command(struct web_connection *conn,
 
                 // Size
                 arrayTblInfo.push_back(
-                  vscp_string_format("%lu ", (unsigned long)pTable->getSize()));
+                  vscp_str_format("%lu ", (unsigned long)pTable->getSize()));
 
                 // Owner
                 CUserItem *pUserItem = pTable->getUserItem();
@@ -2540,7 +2540,7 @@ ws1_command(struct web_connection *conn,
 
                 // Access rights
                 arrayTblInfo.push_back(
-                  vscp_string_format(("0x%0X "), (int)pTable->getRights()));
+                  vscp_str_format(("0x%0X "), (int)pTable->getRights()));
 
                 // Description
                 arrayTblInfo.push_back(pTable->getDescription());
@@ -2559,27 +2559,27 @@ ws1_command(struct web_connection *conn,
 
                 // vscp-class
                 arrayTblInfo.push_back(
-                  vscp_string_format(("%d"), (int)pTable->getVSCPClass()));
+                  vscp_str_format(("%d"), (int)pTable->getVSCPClass()));
 
                 // vscp-type
                 arrayTblInfo.push_back(
-                  vscp_string_format(("%d"), (int)pTable->getVSCPType()));
+                  vscp_str_format(("%d"), (int)pTable->getVSCPType()));
 
                 // vscp-sensor-index
-                arrayTblInfo.push_back(vscp_string_format(
+                arrayTblInfo.push_back(vscp_str_format(
                   ("%d"), (int)pTable->getVSCPSensorIndex()));
 
                 // vscp-unit
                 arrayTblInfo.push_back(
-                  vscp_string_format(("%d"), (int)pTable->getVSCPUnit()));
+                  vscp_str_format(("%d"), (int)pTable->getVSCPUnit()));
 
                 // vscp-zone
                 arrayTblInfo.push_back(
-                  vscp_string_format(("%d"), (int)pTable->getVSCPZone()));
+                  vscp_str_format(("%d"), (int)pTable->getVSCPZone()));
 
                 // vscp-subzone
                 arrayTblInfo.push_back(
-                  vscp_string_format(("%d"), (int)pTable->getVSCPSubZone()));
+                  vscp_str_format(("%d"), (int)pTable->getVSCPSubZone()));
 
                 // SQL-create
                 arrayTblInfo.push_back(pTable->getSQLCreate());
@@ -2593,7 +2593,7 @@ ws1_command(struct web_connection *conn,
                 // Send response
                 for (int i = 0; i < arrayTblInfo.size(); i++) {
                     str =
-                      vscp_string_format(("+;%i;%zu;"), i, arrayTblInfo.size());
+                      vscp_str_format(("+;%i;%zu;"), i, arrayTblInfo.size());
                     str += arrayTblInfo[i];
                     // Output row
                     web_websocket_write(conn,
@@ -2625,7 +2625,7 @@ ws1_command(struct web_connection *conn,
         if ((NULL == pSession->m_pClientItem) ||
             !pSession->m_pClientItem->bAuthenticated) {
 
-            str = vscp_string_format(("-;TBL_GET;%d;%s"),
+            str = vscp_str_format(("-;TBL_GET;%d;%s"),
                                      (int)WEBSOCK_ERROR_NOT_AUTHORISED,
                                      WEBSOCK_STR_ERROR_NOT_AUTHORISED);
 
@@ -2649,7 +2649,7 @@ ws1_command(struct web_connection *conn,
             vscp_trim(strTable);
         } else {
             // Error: Need tablename
-            str = vscp_string_format(("-;TBL_GET;%d;%s"),
+            str = vscp_str_format(("-;TBL_GET;%d;%s"),
                                      (int)WEBSOCK_ERROR_SYNTAX_ERROR,
                                      WEBSOCK_STR_ERROR_SYNTAX_ERROR);
 
@@ -2664,7 +2664,7 @@ ws1_command(struct web_connection *conn,
             tokens.pop_front();
             if (!start.isValid()) {
                 // Invalid date time
-                str = vscp_string_format(("-;TBL_GET;%d;%s"),
+                str = vscp_str_format(("-;TBL_GET;%d;%s"),
                                          (int)WEBSOCK_ERROR_INVALID_DATE,
                                          WEBSOCK_STR_ERROR_INVALID_DATE);
 
@@ -2675,7 +2675,7 @@ ws1_command(struct web_connection *conn,
             }
 
         } else {
-            str = vscp_string_format(("-;TBL_GET;%d;%s"),
+            str = vscp_str_format(("-;TBL_GET;%d;%s"),
                                      (int)WEBSOCK_ERROR_SYNTAX_ERROR,
                                      WEBSOCK_STR_ERROR_SYNTAX_ERROR);
 
@@ -2689,7 +2689,7 @@ ws1_command(struct web_connection *conn,
             end.set(tokens.front());
             if (!end.isValid()) {
                 // Invalid date time
-                str = vscp_string_format(("-;TBL_GET;%d;%s"),
+                str = vscp_str_format(("-;TBL_GET;%d;%s"),
                                          (int)WEBSOCK_ERROR_INVALID_DATE,
                                          WEBSOCK_STR_ERROR_INVALID_DATE);
 
@@ -2700,7 +2700,7 @@ ws1_command(struct web_connection *conn,
             }
             tokens.pop_front();
         } else {
-            str = vscp_string_format(("-;TBL_GET;%d;%s"),
+            str = vscp_str_format(("-;TBL_GET;%d;%s"),
                                      (int)WEBSOCK_ERROR_SYNTAX_ERROR,
                                      WEBSOCK_STR_ERROR_SYNTAX_ERROR);
 
@@ -2727,7 +2727,7 @@ ws1_command(struct web_connection *conn,
         if (NULL == pTable) {
 
             // Failed
-            str = vscp_string_format(("-;TBL_GET;%d;%s"),
+            str = vscp_str_format(("-;TBL_GET;%d;%s"),
                                      (int)WEBSOCK_ERROR_TABLE_FAILED_TO_GET,
                                      WEBSOCK_STR_ERROR_TABLE_FAILED_TO_GET);
 
@@ -2744,7 +2744,7 @@ ws1_command(struct web_connection *conn,
         if (!pTable->prepareRangeOfData(start, end, &ppStmt, bAll)) {
 
             // Failed
-            str = vscp_string_format(("-;TBL_GET;%d;%s"),
+            str = vscp_str_format(("-;TBL_GET;%d;%s"),
                                      (int)WEBSOCK_ERROR_TABLE_FAILED_GET_DATA,
                                      WEBSOCK_STR_ERROR_TABLE_FAILED_GET_DATA);
 
@@ -2766,7 +2766,7 @@ ws1_command(struct web_connection *conn,
         if (strArray.size()) {
             for (int i = 0; i < strArray.size(); i++) {
 
-                str = vscp_string_format(("+;%d;%zu;"), i, strArray.size());
+                str = vscp_str_format(("+;%d;%zu;"), i, strArray.size());
                 str += strArray[i];
 
                 // Output row
@@ -2799,7 +2799,7 @@ ws1_command(struct web_connection *conn,
         if ((NULL == pSession->m_pClientItem) ||
             !pSession->m_pClientItem->bAuthenticated) {
 
-            str = vscp_string_format(("-;TBL_GETRAW;%d;%s"),
+            str = vscp_str_format(("-;TBL_GETRAW;%d;%s"),
                                      (int)WEBSOCK_ERROR_NOT_AUTHORISED,
                                      WEBSOCK_STR_ERROR_NOT_AUTHORISED);
 
@@ -2823,7 +2823,7 @@ ws1_command(struct web_connection *conn,
             vscp_trim(strTable);
         } else {
             // Error: Need tablename
-            str = vscp_string_format(("-;TBL_GETRAW;%d;%s"),
+            str = vscp_str_format(("-;TBL_GETRAW;%d;%s"),
                                      (int)WEBSOCK_ERROR_SYNTAX_ERROR,
                                      WEBSOCK_STR_ERROR_SYNTAX_ERROR);
 
@@ -2837,7 +2837,7 @@ ws1_command(struct web_connection *conn,
             start.set(tokens.front());
             if (!start.isValid()) {
                 // Invalid date time
-                str = vscp_string_format(("-;TBL_GETRAW;%d;%s"),
+                str = vscp_str_format(("-;TBL_GETRAW;%d;%s"),
                                          (int)WEBSOCK_ERROR_INVALID_DATE,
                                          WEBSOCK_STR_ERROR_INVALID_DATE);
 
@@ -2848,7 +2848,7 @@ ws1_command(struct web_connection *conn,
             }
             tokens.pop_front();
         } else {
-            str = vscp_string_format(("-;TBL_GETRAW;%d;%s"),
+            str = vscp_str_format(("-;TBL_GETRAW;%d;%s"),
                                      (int)WEBSOCK_ERROR_SYNTAX_ERROR,
                                      WEBSOCK_STR_ERROR_SYNTAX_ERROR);
 
@@ -2862,7 +2862,7 @@ ws1_command(struct web_connection *conn,
             end.set(tokens.front());
             if (!end.isValid()) {
                 // Invalid date time
-                str = vscp_string_format(("-;TBL_GETRAW;%d;%s"),
+                str = vscp_str_format(("-;TBL_GETRAW;%d;%s"),
                                          (int)WEBSOCK_ERROR_INVALID_DATE,
                                          WEBSOCK_STR_ERROR_INVALID_DATE);
 
@@ -2873,7 +2873,7 @@ ws1_command(struct web_connection *conn,
             }
             tokens.pop_front();
         } else {
-            str = vscp_string_format(("-;TBL_GETRAW;%d;%s"),
+            str = vscp_str_format(("-;TBL_GETRAW;%d;%s"),
                                      (int)WEBSOCK_ERROR_SYNTAX_ERROR,
                                      WEBSOCK_STR_ERROR_SYNTAX_ERROR);
 
@@ -2900,7 +2900,7 @@ ws1_command(struct web_connection *conn,
         if (NULL == pTable) {
 
             // Failed
-            str = vscp_string_format(("-;TBL_GETRAW;%d;%s"),
+            str = vscp_str_format(("-;TBL_GETRAW;%d;%s"),
                                      (int)WEBSOCK_ERROR_TABLE_FAILED_TO_GET,
                                      WEBSOCK_STR_ERROR_TABLE_FAILED_TO_GET);
 
@@ -2917,7 +2917,7 @@ ws1_command(struct web_connection *conn,
         if (!pTable->prepareRangeOfData(start, end, &ppStmt, bAll)) {
 
             // Failed
-            str = vscp_string_format(("-;TBL_GETRAW;%d;%s"),
+            str = vscp_str_format(("-;TBL_GETRAW;%d;%s"),
                                      (int)WEBSOCK_ERROR_TABLE_FAILED_GET_DATA,
                                      WEBSOCK_STR_ERROR_TABLE_FAILED_GET_DATA);
 
@@ -2939,7 +2939,7 @@ ws1_command(struct web_connection *conn,
         if (strArray.size()) {
             for (int i = 0; i < strArray.size(); i++) {
 
-                str = vscp_string_format(("+;%d;%zu;"), i, strArray.size());
+                str = vscp_str_format(("+;%d;%zu;"), i, strArray.size());
                 str += strArray[i];
 
                 // Output row
@@ -2972,7 +2972,7 @@ ws1_command(struct web_connection *conn,
         if ((NULL == pSession->m_pClientItem) ||
             !pSession->m_pClientItem->bAuthenticated) {
 
-            str = vscp_string_format(("-;TBL_CLEAR;%d;%s"),
+            str = vscp_str_format(("-;TBL_CLEAR;%d;%s"),
                                      (int)WEBSOCK_ERROR_NOT_AUTHORISED,
                                      WEBSOCK_STR_ERROR_NOT_AUTHORISED);
 
@@ -2996,7 +2996,7 @@ ws1_command(struct web_connection *conn,
             vscp_trim(strTable);
         } else {
             // Error: Need tablename
-            str = vscp_string_format(("-;TBL_CLEAR;%d;%s"),
+            str = vscp_str_format(("-;TBL_CLEAR;%d;%s"),
                                      (int)WEBSOCK_ERROR_SYNTAX_ERROR,
                                      WEBSOCK_STR_ERROR_SYNTAX_ERROR);
 
@@ -3012,7 +3012,7 @@ ws1_command(struct web_connection *conn,
             start.set(tokens.front());
             if (!start.isValid()) {
                 // Invalid date time
-                str = vscp_string_format(("-;TBL_CLEAR;%d;%s"),
+                str = vscp_str_format(("-;TBL_CLEAR;%d;%s"),
                                          (int)WEBSOCK_ERROR_INVALID_DATE,
                                          WEBSOCK_STR_ERROR_INVALID_DATE);
 
@@ -3029,7 +3029,7 @@ ws1_command(struct web_connection *conn,
             tokens.pop_front();
             if (!end.isValid()) {
                 // Invalid date time
-                str = vscp_string_format(("-;TBL_CLEAR;%d;%s"),
+                str = vscp_str_format(("-;TBL_CLEAR;%d;%s"),
                                          (int)WEBSOCK_ERROR_INVALID_DATE,
                                          WEBSOCK_STR_ERROR_INVALID_DATE);
 
@@ -3046,7 +3046,7 @@ ws1_command(struct web_connection *conn,
 
         if (NULL == pTable) {
             // Failed
-            str = vscp_string_format(("-;TBL_CLEAR;%d;%s"),
+            str = vscp_str_format(("-;TBL_CLEAR;%d;%s"),
                                      (int)WEBSOCK_ERROR_TABLE_NOT_FOUND,
                                      WEBSOCK_STR_ERROR_TABLE_NOT_FOUND);
 
@@ -3062,7 +3062,7 @@ ws1_command(struct web_connection *conn,
         if (bClearAll) {
             if (!pTable->clearTable()) {
                 // Failed
-                str = vscp_string_format(("-;TBL_CLEAR;%d;%s"),
+                str = vscp_str_format(("-;TBL_CLEAR;%d;%s"),
                                          (int)WEBSOCK_ERROR_TABLE_FAILED_CLEAR,
                                          WEBSOCK_STR_ERROR_TABLE_FAILED_CLEAR);
 
@@ -3076,7 +3076,7 @@ ws1_command(struct web_connection *conn,
         } else {
             if (!pTable->clearTableRange(start, end)) {
                 // Failed
-                str = vscp_string_format(("-;TBL_CLEAR;%d;%s"),
+                str = vscp_str_format(("-;TBL_CLEAR;%d;%s"),
                                          (int)WEBSOCK_ERROR_TABLE_FAILED_CLEAR,
                                          WEBSOCK_STR_ERROR_TABLE_FAILED_CLEAR);
 
@@ -3103,7 +3103,7 @@ ws1_command(struct web_connection *conn,
         if ((NULL == pSession->m_pClientItem) ||
             !pSession->m_pClientItem->bAuthenticated) {
 
-            str = vscp_string_format(("-;TBL_LOG;%d;%s"),
+            str = vscp_str_format(("-;TBL_LOG;%d;%s"),
                                      (int)WEBSOCK_ERROR_NOT_AUTHORISED,
                                      WEBSOCK_STR_ERROR_NOT_AUTHORISED);
 
@@ -3127,7 +3127,7 @@ ws1_command(struct web_connection *conn,
             vscp_trim(strTable);
         } else {
             // Error: Need tablename
-            str = vscp_string_format(("-;TBL_LOG;%d;%s"),
+            str = vscp_str_format(("-;TBL_LOG;%d;%s"),
                                      (int)WEBSOCK_ERROR_SYNTAX_ERROR,
                                      WEBSOCK_STR_ERROR_SYNTAX_ERROR);
 
@@ -3145,7 +3145,7 @@ ws1_command(struct web_connection *conn,
             value = std::stod(str);
         } else {
             // Problems: A value must be given
-            str = vscp_string_format(("-;TBL_LOG;%d;%s"),
+            str = vscp_str_format(("-;TBL_LOG;%d;%s"),
                                      (int)WEBSOCK_ERROR_TABLE_LOG_MISSING_VALUE,
                                      WEBSOCK_STR_ERROR_TABLE_LOG_MISSING_VALUE);
 
@@ -3168,7 +3168,7 @@ ws1_command(struct web_connection *conn,
 
             if (!dt.set(str)) {
                 // Problems: The value is not in a valid format
-                str = vscp_string_format(("-;TBL_LOG;%d;%s"),
+                str = vscp_str_format(("-;TBL_LOG;%d;%s"),
                                          (int)WEBSOCK_ERROR_INVALID_DATE,
                                          WEBSOCK_STR_ERROR_INVALID_DATE);
 
@@ -3199,7 +3199,7 @@ ws1_command(struct web_connection *conn,
 
         if (NULL == pTable) {
             // Failed
-            str = vscp_string_format(("-;TBL_LOG;%d;%s"),
+            str = vscp_str_format(("-;TBL_LOG;%d;%s"),
                                      (int)WEBSOCK_ERROR_TABLE_NOT_FOUND,
                                      WEBSOCK_STR_ERROR_TABLE_NOT_FOUND);
 
@@ -3215,7 +3215,7 @@ ws1_command(struct web_connection *conn,
         // Log data
         if (!pTable->logData(dt, value)) {
             pthread_mutex_unlock(&gpobj->m_mutexUserTables);
-            str = vscp_string_format(("-;TBL_LOG;%d;%s"),
+            str = vscp_str_format(("-;TBL_LOG;%d;%s"),
                                      (int)WEBSOCK_ERROR_TABLE_LOG_FAILED,
                                      WEBSOCK_STR_ERROR_TABLE_LOG_FAILED);
 
@@ -3240,7 +3240,7 @@ ws1_command(struct web_connection *conn,
         if ((NULL == pSession->m_pClientItem) ||
             !pSession->m_pClientItem->bAuthenticated) {
 
-            str = vscp_string_format(("-;TBL_LOGSQL;%d;%s"),
+            str = vscp_str_format(("-;TBL_LOGSQL;%d;%s"),
                                      (int)WEBSOCK_ERROR_NOT_AUTHORISED,
                                      WEBSOCK_STR_ERROR_NOT_AUTHORISED);
 
@@ -3264,7 +3264,7 @@ ws1_command(struct web_connection *conn,
             vscp_trim(strTable);
         } else {
             // Error: Need tablename
-            str = vscp_string_format(("-;TBL_LOG;%d;%s"),
+            str = vscp_str_format(("-;TBL_LOG;%d;%s"),
                                      (int)WEBSOCK_ERROR_SYNTAX_ERROR,
                                      WEBSOCK_STR_ERROR_SYNTAX_ERROR);
 
@@ -3282,7 +3282,7 @@ ws1_command(struct web_connection *conn,
             vscp_trim(strSQL);
         } else {
             // Problems: A SQL expression must be given
-            str = vscp_string_format(("-;TBL_LOGSQL;%d;%s"),
+            str = vscp_str_format(("-;TBL_LOGSQL;%d;%s"),
                                      (int)WEBSOCK_ERROR_TABLE_NEED_SQL,
                                      WEBSOCK_STR_ERROR_TABLE_NEED_SQL);
 
@@ -3299,7 +3299,7 @@ ws1_command(struct web_connection *conn,
 
         if (NULL == pTable) {
             // Failed
-            str = vscp_string_format(("-;TBL_LOGSQL;%d;%s"),
+            str = vscp_str_format(("-;TBL_LOGSQL;%d;%s"),
                                      (int)WEBSOCK_ERROR_TABLE_NOT_FOUND,
                                      WEBSOCK_STR_ERROR_TABLE_NOT_FOUND);
 
@@ -3315,7 +3315,7 @@ ws1_command(struct web_connection *conn,
         // Log data
         if (!pTable->logData(strSQL)) {
             pthread_mutex_unlock(&gpobj->m_mutexUserTables);
-            str = vscp_string_format(("-;TBL_LOGSQL;%d;%s"),
+            str = vscp_str_format(("-;TBL_LOGSQL;%d;%s"),
                                      (int)WEBSOCK_ERROR_TABLE_LOG_FAILED,
                                      WEBSOCK_STR_ERROR_TABLE_LOG_FAILED);
 
@@ -3347,7 +3347,7 @@ ws1_command(struct web_connection *conn,
         if ((NULL == pSession->m_pClientItem) ||
             !pSession->m_pClientItem->bAuthenticated) {
 
-            str = vscp_string_format(("-;TBL_RECORDS;%d;%s"),
+            str = vscp_str_format(("-;TBL_RECORDS;%d;%s"),
                                      (int)WEBSOCK_ERROR_NOT_AUTHORISED,
                                      WEBSOCK_STR_ERROR_NOT_AUTHORISED);
 
@@ -3371,7 +3371,7 @@ ws1_command(struct web_connection *conn,
             vscp_trim(strTable);
         } else {
             // Error: Need tablename
-            str = vscp_string_format(("-;TBL_RECORDS;%d;%s"),
+            str = vscp_str_format(("-;TBL_RECORDS;%d;%s"),
                                      (int)WEBSOCK_ERROR_SYNTAX_ERROR,
                                      WEBSOCK_STR_ERROR_SYNTAX_ERROR);
 
@@ -3384,7 +3384,7 @@ ws1_command(struct web_connection *conn,
         // If available get Start data
         if (!tokens.empty()) {
             if (!strStart.set(tokens.front())) {
-                str = vscp_string_format(("-;TBL_RECORDS;%d;%s"),
+                str = vscp_str_format(("-;TBL_RECORDS;%d;%s"),
                                          (int)WEBSOCK_ERROR_INVALID_DATE,
                                          WEBSOCK_STR_ERROR_INVALID_DATE);
 
@@ -3400,7 +3400,7 @@ ws1_command(struct web_connection *conn,
         // If available get end date
         if (!tokens.empty()) {
             if (!strEnd.set(tokens.front())) {
-                str = vscp_string_format(("-;TBL_RECORDS;%d;%s"),
+                str = vscp_str_format(("-;TBL_RECORDS;%d;%s"),
                                          (int)WEBSOCK_ERROR_INVALID_DATE,
                                          WEBSOCK_STR_ERROR_INVALID_DATE);
 
@@ -3419,7 +3419,7 @@ ws1_command(struct web_connection *conn,
 
         if (NULL == pTable) {
             // Failed
-            str = vscp_string_format(("-;TBL_RECORDS;%d;%s"),
+            str = vscp_str_format(("-;TBL_RECORDS;%d;%s"),
                                      (int)WEBSOCK_ERROR_TABLE_NOT_FOUND,
                                      WEBSOCK_STR_ERROR_TABLE_NOT_FOUND);
 
@@ -3434,7 +3434,7 @@ ws1_command(struct web_connection *conn,
 
         double count;
         if (!pTable->getNumberOfRecordsForRange(strStart, strEnd, &count)) {
-            str = vscp_string_format(
+            str = vscp_str_format(
               ("-;TBL_RECORDS;%d;%s"),
               (int)WEBSOCK_ERROR_TABLE_FAILED_COMMAND_RECORDS,
               WEBSOCK_STR_ERROR_TABLE_FAILED_COMMAND_RECORDS);
@@ -3450,7 +3450,7 @@ ws1_command(struct web_connection *conn,
         pthread_mutex_unlock(&gpobj->m_mutexUserTables);
 
         // Success
-        str = vscp_string_format(("+;TBL_RECORDS;%lf"), count);
+        str = vscp_str_format(("+;TBL_RECORDS;%lf"), count);
 
         web_websocket_write(conn,
                             WEB_WEBSOCKET_OPCODE_TEXT,
@@ -3476,7 +3476,7 @@ ws1_command(struct web_connection *conn,
         if ((NULL == pSession->m_pClientItem) ||
             !pSession->m_pClientItem->bAuthenticated) {
 
-            str = vscp_string_format(("-;TBL_FIRSTDATE;%d;%s"),
+            str = vscp_str_format(("-;TBL_FIRSTDATE;%d;%s"),
                                      (int)WEBSOCK_ERROR_NOT_AUTHORISED,
                                      WEBSOCK_STR_ERROR_NOT_AUTHORISED);
 
@@ -3500,7 +3500,7 @@ ws1_command(struct web_connection *conn,
             vscp_trim(strTable);
         } else {
             // Error: Need tablename
-            str = vscp_string_format(("-;TBL_FIRSTDATE;%d;%s"),
+            str = vscp_str_format(("-;TBL_FIRSTDATE;%d;%s"),
                                      (int)WEBSOCK_ERROR_SYNTAX_ERROR,
                                      WEBSOCK_STR_ERROR_SYNTAX_ERROR);
 
@@ -3513,7 +3513,7 @@ ws1_command(struct web_connection *conn,
         // If available get Start data
         if (!tokens.empty()) {
             if (!strStart.set(tokens.front())) {
-                str = vscp_string_format(("-;TBL_FIRSTDATE;%d;%s"),
+                str = vscp_str_format(("-;TBL_FIRSTDATE;%d;%s"),
                                          (int)WEBSOCK_ERROR_INVALID_DATE,
                                          WEBSOCK_STR_ERROR_INVALID_DATE);
 
@@ -3529,7 +3529,7 @@ ws1_command(struct web_connection *conn,
         // If available get end date
         if (!tokens.empty()) {
             if (!strEnd.set(tokens.front())) {
-                str = vscp_string_format(("-;TBL_FIRSTDATE;%d;%s"),
+                str = vscp_str_format(("-;TBL_FIRSTDATE;%d;%s"),
                                          (int)WEBSOCK_ERROR_INVALID_DATE,
                                          WEBSOCK_STR_ERROR_INVALID_DATE);
 
@@ -3547,7 +3547,7 @@ ws1_command(struct web_connection *conn,
 
         if (NULL == pTable) {
             // Failed
-            str = vscp_string_format(("-;TBL_FIRSTDATE;%d;%s"),
+            str = vscp_str_format(("-;TBL_FIRSTDATE;%d;%s"),
                                      (int)WEBSOCK_ERROR_TABLE_NOT_FOUND,
                                      WEBSOCK_STR_ERROR_TABLE_NOT_FOUND);
 
@@ -3562,7 +3562,7 @@ ws1_command(struct web_connection *conn,
 
         vscpdatetime first;
         if (!pTable->getFirstDate(first)) {
-            str = vscp_string_format(
+            str = vscp_str_format(
               ("-;TBL_FIRSTDATE;%d;%s"),
               (int)WEBSOCK_ERROR_TABLE_FAILED_COMMAND_FIRSTDATE,
               WEBSOCK_STR_ERROR_TABLE_FAILED_COMMAND_FIRSTDATE);
@@ -3578,7 +3578,7 @@ ws1_command(struct web_connection *conn,
         pthread_mutex_unlock(&gpobj->m_mutexUserTables);
 
         // Success
-        str = vscp_string_format(("+;TBL_FIRSTDATE;%s"),
+        str = vscp_str_format(("+;TBL_FIRSTDATE;%s"),
                                  (const char *)first.getISODateTime().c_str());
 
         web_websocket_write(conn,
@@ -3604,7 +3604,7 @@ ws1_command(struct web_connection *conn,
         if ((NULL == pSession->m_pClientItem) ||
             !pSession->m_pClientItem->bAuthenticated) {
 
-            str = vscp_string_format(("-;TBL_LASTDATE;%d;%s"),
+            str = vscp_str_format(("-;TBL_LASTDATE;%d;%s"),
                                      (int)WEBSOCK_ERROR_NOT_AUTHORISED,
                                      WEBSOCK_STR_ERROR_NOT_AUTHORISED);
 
@@ -3628,7 +3628,7 @@ ws1_command(struct web_connection *conn,
             vscp_trim(strTable);
         } else {
             // Error: Need tablename
-            str = vscp_string_format(("-;TBL_LASTDATE;%d;%s"),
+            str = vscp_str_format(("-;TBL_LASTDATE;%d;%s"),
                                      (int)WEBSOCK_ERROR_SYNTAX_ERROR,
                                      WEBSOCK_STR_ERROR_SYNTAX_ERROR);
 
@@ -3641,7 +3641,7 @@ ws1_command(struct web_connection *conn,
         // If available get Start data
         if (!tokens.empty()) {
             if (!strStart.set(tokens.front())) {
-                str = vscp_string_format(("-;TBL_LASTDATE;%d;%s"),
+                str = vscp_str_format(("-;TBL_LASTDATE;%d;%s"),
                                          (int)WEBSOCK_ERROR_INVALID_DATE,
                                          WEBSOCK_STR_ERROR_INVALID_DATE);
 
@@ -3656,7 +3656,7 @@ ws1_command(struct web_connection *conn,
         // If available get end date
         if (!tokens.empty()) {
             if (!strEnd.set(tokens.front())) {
-                str = vscp_string_format(("-;TBL_LASTDATE;%d;%s"),
+                str = vscp_str_format(("-;TBL_LASTDATE;%d;%s"),
                                          (int)WEBSOCK_ERROR_INVALID_DATE,
                                          WEBSOCK_STR_ERROR_INVALID_DATE);
 
@@ -3674,7 +3674,7 @@ ws1_command(struct web_connection *conn,
 
         if (NULL == pTable) {
             // Failed
-            str = vscp_string_format(("-;TBL_LASTDATE;%d;%s"),
+            str = vscp_str_format(("-;TBL_LASTDATE;%d;%s"),
                                      (int)WEBSOCK_ERROR_TABLE_NOT_FOUND,
                                      WEBSOCK_STR_ERROR_TABLE_NOT_FOUND);
 
@@ -3689,7 +3689,7 @@ ws1_command(struct web_connection *conn,
 
         vscpdatetime last;
         if (!pTable->getLastDate(last)) {
-            str = vscp_string_format(
+            str = vscp_str_format(
               ("-;TBL_LASTDATE;%d;%s"),
               (int)WEBSOCK_ERROR_TABLE_FAILED_COMMAND_LASTDATE,
               WEBSOCK_STR_ERROR_TABLE_FAILED_COMMAND_LASTDATE);
@@ -3705,7 +3705,7 @@ ws1_command(struct web_connection *conn,
         pthread_mutex_unlock(&gpobj->m_mutexUserTables);
 
         // Success
-        str = vscp_string_format(("+;TBL_LASTDATE;%s"),
+        str = vscp_str_format(("+;TBL_LASTDATE;%s"),
                                  (const char *)last.getISODateTime().c_str());
 
         web_websocket_write(conn,
@@ -3731,7 +3731,7 @@ ws1_command(struct web_connection *conn,
         if ((NULL == pSession->m_pClientItem) ||
             !pSession->m_pClientItem->bAuthenticated) {
 
-            str = vscp_string_format(("-;TBL_SUM;%d;%s"),
+            str = vscp_str_format(("-;TBL_SUM;%d;%s"),
                                      (int)WEBSOCK_ERROR_NOT_AUTHORISED,
                                      WEBSOCK_STR_ERROR_NOT_AUTHORISED);
 
@@ -3755,7 +3755,7 @@ ws1_command(struct web_connection *conn,
             vscp_trim(strTable);
         } else {
             // Error: Need tablename
-            str = vscp_string_format(("-;TBL_SUM;%d;%s"),
+            str = vscp_str_format(("-;TBL_SUM;%d;%s"),
                                      (int)WEBSOCK_ERROR_SYNTAX_ERROR,
                                      WEBSOCK_STR_ERROR_SYNTAX_ERROR);
 
@@ -3768,7 +3768,7 @@ ws1_command(struct web_connection *conn,
         // If available get Start data
         if (!tokens.empty()) {
             if (!strStart.set(tokens.front())) {
-                str = vscp_string_format(("-;TBL_SUM;%d;%s"),
+                str = vscp_str_format(("-;TBL_SUM;%d;%s"),
                                          (int)WEBSOCK_ERROR_INVALID_DATE,
                                          WEBSOCK_STR_ERROR_INVALID_DATE);
 
@@ -3783,7 +3783,7 @@ ws1_command(struct web_connection *conn,
         // If available get end date
         if (!tokens.empty()) {
             if (!strEnd.set(tokens.front())) {
-                str = vscp_string_format(("-;TBL_SUM;%d;%s"),
+                str = vscp_str_format(("-;TBL_SUM;%d;%s"),
                                          (int)WEBSOCK_ERROR_INVALID_DATE,
                                          WEBSOCK_STR_ERROR_INVALID_DATE);
 
@@ -3801,7 +3801,7 @@ ws1_command(struct web_connection *conn,
 
         if (NULL == pTable) {
             // Failed
-            str = vscp_string_format(("-;TBL_SUM;%d;%s"),
+            str = vscp_str_format(("-;TBL_SUM;%d;%s"),
                                      (int)WEBSOCK_ERROR_TABLE_NOT_FOUND,
                                      WEBSOCK_STR_ERROR_TABLE_NOT_FOUND);
 
@@ -3817,7 +3817,7 @@ ws1_command(struct web_connection *conn,
         double sum;
         if (!pTable->getSumValue(strStart, strEnd, &sum)) {
             str =
-              vscp_string_format(("-;TBL_SUM;%d;%s"),
+              vscp_str_format(("-;TBL_SUM;%d;%s"),
                                  (int)WEBSOCK_ERROR_TABLE_FAILED_COMMAND_SUM,
                                  WEBSOCK_STR_ERROR_TABLE_FAILED_COMMAND_SUM);
 
@@ -3832,7 +3832,7 @@ ws1_command(struct web_connection *conn,
         pthread_mutex_unlock(&gpobj->m_mutexUserTables);
 
         // Success
-        str = vscp_string_format(("+;TBL_SUM;%lf"), sum);
+        str = vscp_str_format(("+;TBL_SUM;%lf"), sum);
 
         web_websocket_write(conn,
                             WEB_WEBSOCKET_OPCODE_TEXT,
@@ -3858,7 +3858,7 @@ ws1_command(struct web_connection *conn,
         if ((NULL == pSession->m_pClientItem) ||
             !pSession->m_pClientItem->bAuthenticated) {
 
-            str = vscp_string_format(("-;TBL_MIN;%d;%s"),
+            str = vscp_str_format(("-;TBL_MIN;%d;%s"),
                                      (int)WEBSOCK_ERROR_NOT_AUTHORISED,
                                      WEBSOCK_STR_ERROR_NOT_AUTHORISED);
 
@@ -3882,7 +3882,7 @@ ws1_command(struct web_connection *conn,
             vscp_trim(strTable);
         } else {
             // Error: Need tablename
-            str = vscp_string_format(("-;TBL_MIN;%d;%s"),
+            str = vscp_str_format(("-;TBL_MIN;%d;%s"),
                                      (int)WEBSOCK_ERROR_SYNTAX_ERROR,
                                      WEBSOCK_STR_ERROR_SYNTAX_ERROR);
 
@@ -3895,7 +3895,7 @@ ws1_command(struct web_connection *conn,
         // If available get Start data
         if (!tokens.empty()) {
             if (!strStart.set(tokens.front())) {
-                str = vscp_string_format(("-;TBL_MIN;%d;%s"),
+                str = vscp_str_format(("-;TBL_MIN;%d;%s"),
                                          (int)WEBSOCK_ERROR_INVALID_DATE,
                                          WEBSOCK_STR_ERROR_INVALID_DATE);
 
@@ -3910,7 +3910,7 @@ ws1_command(struct web_connection *conn,
         // If available get end date
         if (!tokens.empty()) {
             if (!strEnd.set(tokens.front())) {
-                str = vscp_string_format(("-;TBL_MIN;%d;%s"),
+                str = vscp_str_format(("-;TBL_MIN;%d;%s"),
                                          (int)WEBSOCK_ERROR_INVALID_DATE,
                                          WEBSOCK_STR_ERROR_INVALID_DATE);
 
@@ -3928,7 +3928,7 @@ ws1_command(struct web_connection *conn,
 
         if (NULL == pTable) {
             // Failed
-            str = vscp_string_format(("-;TBL_MIN;%d;%s"),
+            str = vscp_str_format(("-;TBL_MIN;%d;%s"),
                                      (int)WEBSOCK_ERROR_TABLE_NOT_FOUND,
                                      WEBSOCK_STR_ERROR_TABLE_NOT_FOUND);
 
@@ -3944,7 +3944,7 @@ ws1_command(struct web_connection *conn,
         double min;
         if (!pTable->getMinValue(strStart, strEnd, &min)) {
             str =
-              vscp_string_format(("-;TBL_MIN;%d;%s"),
+              vscp_str_format(("-;TBL_MIN;%d;%s"),
                                  (int)WEBSOCK_ERROR_TABLE_FAILED_COMMAND_MIN,
                                  WEBSOCK_STR_ERROR_TABLE_FAILED_COMMAND_MIN);
 
@@ -3959,7 +3959,7 @@ ws1_command(struct web_connection *conn,
         pthread_mutex_unlock(&gpobj->m_mutexUserTables);
 
         // Success
-        str = vscp_string_format(("+;TBL_MIN;%lf"), min);
+        str = vscp_str_format(("+;TBL_MIN;%lf"), min);
 
         web_websocket_write(conn,
                             WEB_WEBSOCKET_OPCODE_TEXT,
@@ -3985,7 +3985,7 @@ ws1_command(struct web_connection *conn,
         if ((NULL == pSession->m_pClientItem) ||
             !pSession->m_pClientItem->bAuthenticated) {
 
-            str = vscp_string_format(("-;TBL_MAX;%d;%s"),
+            str = vscp_str_format(("-;TBL_MAX;%d;%s"),
                                      (int)WEBSOCK_ERROR_NOT_AUTHORISED,
                                      WEBSOCK_STR_ERROR_NOT_AUTHORISED);
 
@@ -4009,7 +4009,7 @@ ws1_command(struct web_connection *conn,
             vscp_trim(strTable);
         } else {
             // Error: Need tablename
-            str = vscp_string_format(("-;TBL_MAX;%d;%s"),
+            str = vscp_str_format(("-;TBL_MAX;%d;%s"),
                                      (int)WEBSOCK_ERROR_SYNTAX_ERROR,
                                      WEBSOCK_STR_ERROR_SYNTAX_ERROR);
 
@@ -4022,7 +4022,7 @@ ws1_command(struct web_connection *conn,
         // If available get Start data
         if (!tokens.empty()) {
             if (!strStart.set(tokens.front())) {
-                str = vscp_string_format(("-;TBL_MAX;%d;%s"),
+                str = vscp_str_format(("-;TBL_MAX;%d;%s"),
                                          (int)WEBSOCK_ERROR_INVALID_DATE,
                                          WEBSOCK_STR_ERROR_INVALID_DATE);
 
@@ -4037,7 +4037,7 @@ ws1_command(struct web_connection *conn,
         // If available get end date
         if (!tokens.empty()) {
             if (!strEnd.set(tokens.front())) {
-                str = vscp_string_format(("-;TBL_MAX;%d;%s"),
+                str = vscp_str_format(("-;TBL_MAX;%d;%s"),
                                          (int)WEBSOCK_ERROR_INVALID_DATE,
                                          WEBSOCK_STR_ERROR_INVALID_DATE);
 
@@ -4055,7 +4055,7 @@ ws1_command(struct web_connection *conn,
 
         if (NULL == pTable) {
             // Failed
-            str = vscp_string_format(("-;TBL_MAX;%d;%s"),
+            str = vscp_str_format(("-;TBL_MAX;%d;%s"),
                                      (int)WEBSOCK_ERROR_TABLE_NOT_FOUND,
                                      WEBSOCK_STR_ERROR_TABLE_NOT_FOUND);
 
@@ -4071,7 +4071,7 @@ ws1_command(struct web_connection *conn,
         double max;
         if (!pTable->getMaxValue(strStart, strEnd, &max)) {
             str =
-              vscp_string_format(("-;TBL_MAX;%d;%s"),
+              vscp_str_format(("-;TBL_MAX;%d;%s"),
                                  (int)WEBSOCK_ERROR_TABLE_FAILED_COMMAND_MAX,
                                  WEBSOCK_STR_ERROR_TABLE_FAILED_COMMAND_MAX);
 
@@ -4086,7 +4086,7 @@ ws1_command(struct web_connection *conn,
         pthread_mutex_unlock(&gpobj->m_mutexUserTables);
 
         // Success
-        str = vscp_string_format(("+;TBL_MAX;%lf"), max);
+        str = vscp_str_format(("+;TBL_MAX;%lf"), max);
 
         web_websocket_write(conn,
                             WEB_WEBSOCKET_OPCODE_TEXT,
@@ -4112,7 +4112,7 @@ ws1_command(struct web_connection *conn,
         if ((NULL == pSession->m_pClientItem) ||
             !pSession->m_pClientItem->bAuthenticated) {
 
-            str = vscp_string_format(("-;TBL_AVERAGE;%d;%s"),
+            str = vscp_str_format(("-;TBL_AVERAGE;%d;%s"),
                                      (int)WEBSOCK_ERROR_NOT_AUTHORISED,
                                      WEBSOCK_STR_ERROR_NOT_AUTHORISED);
 
@@ -4136,7 +4136,7 @@ ws1_command(struct web_connection *conn,
             vscp_trim(strTable);
         } else {
             // Error: Need tablename
-            str = vscp_string_format(("-;TBL_AVERAGE;%d;%s"),
+            str = vscp_str_format(("-;TBL_AVERAGE;%d;%s"),
                                      (int)WEBSOCK_ERROR_SYNTAX_ERROR,
                                      WEBSOCK_STR_ERROR_SYNTAX_ERROR);
 
@@ -4149,7 +4149,7 @@ ws1_command(struct web_connection *conn,
         // If available get Start data
         if (!tokens.empty()) {
             if (!strStart.set(tokens.front())) {
-                str = vscp_string_format(("-;TBL_AVERAGE;%d;%s"),
+                str = vscp_str_format(("-;TBL_AVERAGE;%d;%s"),
                                          (int)WEBSOCK_ERROR_INVALID_DATE,
                                          WEBSOCK_STR_ERROR_INVALID_DATE);
 
@@ -4164,7 +4164,7 @@ ws1_command(struct web_connection *conn,
         // If available get end date
         if (!tokens.empty()) {
             if (!strEnd.set(tokens.front())) {
-                str = vscp_string_format(("-;TBL_AVERAGE;%d;%s"),
+                str = vscp_str_format(("-;TBL_AVERAGE;%d;%s"),
                                          (int)WEBSOCK_ERROR_INVALID_DATE,
                                          WEBSOCK_STR_ERROR_INVALID_DATE);
 
@@ -4182,7 +4182,7 @@ ws1_command(struct web_connection *conn,
 
         if (NULL == pTable) {
             // Failed
-            str = vscp_string_format(("-;TBL_AVERAGE;%d;%s"),
+            str = vscp_str_format(("-;TBL_AVERAGE;%d;%s"),
                                      (int)WEBSOCK_ERROR_TABLE_NOT_FOUND,
                                      WEBSOCK_STR_ERROR_TABLE_NOT_FOUND);
 
@@ -4197,7 +4197,7 @@ ws1_command(struct web_connection *conn,
 
         double average;
         if (!pTable->getSumValue(strStart, strEnd, &average)) {
-            str = vscp_string_format(
+            str = vscp_str_format(
               ("-;TBL_AVERAGE;%d;%s"),
               (int)WEBSOCK_ERROR_TABLE_FAILED_COMMAND_AVERAGE,
               WEBSOCK_STR_ERROR_TABLE_FAILED_COMMAND_AVERAGE);
@@ -4213,7 +4213,7 @@ ws1_command(struct web_connection *conn,
         pthread_mutex_unlock(&gpobj->m_mutexUserTables);
 
         // Success
-        str = vscp_string_format(("+;TBL_AVERAGE;%lf"), average);
+        str = vscp_str_format(("+;TBL_AVERAGE;%lf"), average);
 
         web_websocket_write(conn,
                             WEB_WEBSOCKET_OPCODE_TEXT,
@@ -4239,7 +4239,7 @@ ws1_command(struct web_connection *conn,
         if ((NULL == pSession->m_pClientItem) ||
             !pSession->m_pClientItem->bAuthenticated) {
 
-            str = vscp_string_format(("-;TBL_MEDIAN;%d;%s"),
+            str = vscp_str_format(("-;TBL_MEDIAN;%d;%s"),
                                      (int)WEBSOCK_ERROR_NOT_AUTHORISED,
                                      WEBSOCK_STR_ERROR_NOT_AUTHORISED);
 
@@ -4263,7 +4263,7 @@ ws1_command(struct web_connection *conn,
             vscp_trim(strTable);
         } else {
             // Error: Need tablename
-            str = vscp_string_format(("-;TBL_MEDIAN;%d;%s"),
+            str = vscp_str_format(("-;TBL_MEDIAN;%d;%s"),
                                      (int)WEBSOCK_ERROR_SYNTAX_ERROR,
                                      WEBSOCK_STR_ERROR_SYNTAX_ERROR);
 
@@ -4276,7 +4276,7 @@ ws1_command(struct web_connection *conn,
         // If available get Start data
         if (!tokens.empty()) {
             if (!strStart.set(tokens.front())) {
-                str = vscp_string_format(("-;TBL_MEDIAN;%d;%s"),
+                str = vscp_str_format(("-;TBL_MEDIAN;%d;%s"),
                                          (int)WEBSOCK_ERROR_INVALID_DATE,
                                          WEBSOCK_STR_ERROR_INVALID_DATE);
 
@@ -4291,7 +4291,7 @@ ws1_command(struct web_connection *conn,
         // If available get end date
         if (!tokens.empty()) {
             if (!strEnd.set(tokens.front())) {
-                str = vscp_string_format(("-;TBL_MEDIAN;%d;%s"),
+                str = vscp_str_format(("-;TBL_MEDIAN;%d;%s"),
                                          (int)WEBSOCK_ERROR_INVALID_DATE,
                                          WEBSOCK_STR_ERROR_INVALID_DATE);
 
@@ -4309,7 +4309,7 @@ ws1_command(struct web_connection *conn,
 
         if (NULL == pTable) {
             // Failed
-            str = vscp_string_format(("-;TBL_MEDIAN;%d;%s"),
+            str = vscp_str_format(("-;TBL_MEDIAN;%d;%s"),
                                      (int)WEBSOCK_ERROR_TABLE_NOT_FOUND,
                                      WEBSOCK_STR_ERROR_TABLE_NOT_FOUND);
 
@@ -4325,7 +4325,7 @@ ws1_command(struct web_connection *conn,
         double median;
         if (!pTable->getMedianValue(strStart, strEnd, &median)) {
             str =
-              vscp_string_format(("-;TBL_MEDIAN;%d;%s"),
+              vscp_str_format(("-;TBL_MEDIAN;%d;%s"),
                                  (int)WEBSOCK_ERROR_TABLE_FAILED_COMMAND_MEDIAN,
                                  WEBSOCK_STR_ERROR_TABLE_FAILED_COMMAND_MEDIAN);
 
@@ -4340,7 +4340,7 @@ ws1_command(struct web_connection *conn,
         pthread_mutex_unlock(&gpobj->m_mutexUserTables);
 
         // Success
-        str = vscp_string_format(("+;TBL_MEDIAN;%lf"), median);
+        str = vscp_str_format(("+;TBL_MEDIAN;%lf"), median);
 
         web_websocket_write(conn,
                             WEB_WEBSOCKET_OPCODE_TEXT,
@@ -4366,7 +4366,7 @@ ws1_command(struct web_connection *conn,
         if ((NULL == pSession->m_pClientItem) ||
             !pSession->m_pClientItem->bAuthenticated) {
 
-            str = vscp_string_format(("-;TBL_STDDEV;%d;%s"),
+            str = vscp_str_format(("-;TBL_STDDEV;%d;%s"),
                                      (int)WEBSOCK_ERROR_NOT_AUTHORISED,
                                      WEBSOCK_STR_ERROR_NOT_AUTHORISED);
 
@@ -4390,7 +4390,7 @@ ws1_command(struct web_connection *conn,
             vscp_trim(strTable);
         } else {
             // Error: Need tablename
-            str = vscp_string_format(("-;TBL_STDDEV;%d;%s"),
+            str = vscp_str_format(("-;TBL_STDDEV;%d;%s"),
                                      (int)WEBSOCK_ERROR_SYNTAX_ERROR,
                                      WEBSOCK_STR_ERROR_SYNTAX_ERROR);
 
@@ -4403,7 +4403,7 @@ ws1_command(struct web_connection *conn,
         // If available get Start data
         if (!tokens.empty()) {
             if (!strStart.set(tokens.front())) {
-                str = vscp_string_format(("-;TBL_STDDEV;%d;%s"),
+                str = vscp_str_format(("-;TBL_STDDEV;%d;%s"),
                                          (int)WEBSOCK_ERROR_INVALID_DATE,
                                          WEBSOCK_STR_ERROR_INVALID_DATE);
 
@@ -4418,7 +4418,7 @@ ws1_command(struct web_connection *conn,
         // If available get end date
         if (!tokens.empty()) {
             if (!strEnd.set(tokens.front())) {
-                str = vscp_string_format(("-;TBL_STDDEV;%d;%s"),
+                str = vscp_str_format(("-;TBL_STDDEV;%d;%s"),
                                          (int)WEBSOCK_ERROR_INVALID_DATE,
                                          WEBSOCK_STR_ERROR_INVALID_DATE);
 
@@ -4436,7 +4436,7 @@ ws1_command(struct web_connection *conn,
 
         if (NULL == pTable) {
             // Failed
-            str = vscp_string_format(("-;TBL_STDDEV;%d;%s"),
+            str = vscp_str_format(("-;TBL_STDDEV;%d;%s"),
                                      (int)WEBSOCK_ERROR_TABLE_NOT_FOUND,
                                      WEBSOCK_STR_ERROR_TABLE_NOT_FOUND);
 
@@ -4452,7 +4452,7 @@ ws1_command(struct web_connection *conn,
         double stddev;
         if (!pTable->getStdevValue(strStart, strEnd, &stddev)) {
             str =
-              vscp_string_format(("-;TBL_STDDEV;%d;%s"),
+              vscp_str_format(("-;TBL_STDDEV;%d;%s"),
                                  (int)WEBSOCK_ERROR_TABLE_FAILED_COMMAND_STDDEV,
                                  WEBSOCK_STR_ERROR_TABLE_FAILED_COMMAND_STDDEV);
 
@@ -4467,7 +4467,7 @@ ws1_command(struct web_connection *conn,
         pthread_mutex_unlock(&gpobj->m_mutexUserTables);
 
         // Success
-        str = vscp_string_format(("+;TBL_STDDEV;%lf"), stddev);
+        str = vscp_str_format(("+;TBL_STDDEV;%lf"), stddev);
 
         web_websocket_write(conn,
                             WEB_WEBSOCKET_OPCODE_TEXT,
@@ -4493,7 +4493,7 @@ ws1_command(struct web_connection *conn,
         if ((NULL == pSession->m_pClientItem) ||
             !pSession->m_pClientItem->bAuthenticated) {
 
-            str = vscp_string_format(("-;TBL_VARIANCE;%d;%s"),
+            str = vscp_str_format(("-;TBL_VARIANCE;%d;%s"),
                                      (int)WEBSOCK_ERROR_NOT_AUTHORISED,
                                      WEBSOCK_STR_ERROR_NOT_AUTHORISED);
 
@@ -4517,7 +4517,7 @@ ws1_command(struct web_connection *conn,
             vscp_trim(strTable);
         } else {
             // Error: Need tablename
-            str = vscp_string_format(("-;TBL_VARIANCE;%d;%s"),
+            str = vscp_str_format(("-;TBL_VARIANCE;%d;%s"),
                                      (int)WEBSOCK_ERROR_SYNTAX_ERROR,
                                      WEBSOCK_STR_ERROR_SYNTAX_ERROR);
 
@@ -4530,7 +4530,7 @@ ws1_command(struct web_connection *conn,
         // If available get Start data
         if (!tokens.empty()) {
             if (!strStart.set(tokens.front())) {
-                str = vscp_string_format(("-;TBL_VARIANCE;%d;%s"),
+                str = vscp_str_format(("-;TBL_VARIANCE;%d;%s"),
                                          (int)WEBSOCK_ERROR_INVALID_DATE,
                                          WEBSOCK_STR_ERROR_INVALID_DATE);
 
@@ -4545,7 +4545,7 @@ ws1_command(struct web_connection *conn,
         // If available get end date
         if (!tokens.empty()) {
             if (!strEnd.set(tokens.front())) {
-                str = vscp_string_format(("-;TBL_VARIANCE;%d;%s"),
+                str = vscp_str_format(("-;TBL_VARIANCE;%d;%s"),
                                          (int)WEBSOCK_ERROR_INVALID_DATE,
                                          WEBSOCK_STR_ERROR_INVALID_DATE);
 
@@ -4563,7 +4563,7 @@ ws1_command(struct web_connection *conn,
 
         if (NULL == pTable) {
             // Failed
-            str = vscp_string_format(("-;TBL_VARIANCE;%d;%s"),
+            str = vscp_str_format(("-;TBL_VARIANCE;%d;%s"),
                                      (int)WEBSOCK_ERROR_TABLE_NOT_FOUND,
                                      WEBSOCK_STR_ERROR_TABLE_NOT_FOUND);
 
@@ -4578,7 +4578,7 @@ ws1_command(struct web_connection *conn,
 
         double variance;
         if (!pTable->getVarianceValue(strStart, strEnd, &variance)) {
-            str = vscp_string_format(
+            str = vscp_str_format(
               ("-;TBL_VARIANCE;%d;%s"),
               (int)WEBSOCK_ERROR_TABLE_FAILED_COMMAND_VARIANCE,
               WEBSOCK_STR_ERROR_TABLE_FAILED_COMMAND_VARIANCE);
@@ -4594,7 +4594,7 @@ ws1_command(struct web_connection *conn,
         pthread_mutex_unlock(&gpobj->m_mutexUserTables);
 
         // Success
-        str = vscp_string_format(("+;TBL_VARIANCE;%lf"), variance);
+        str = vscp_str_format(("+;TBL_VARIANCE;%lf"), variance);
 
         web_websocket_write(conn,
                             WEB_WEBSOCKET_OPCODE_TEXT,
@@ -4620,7 +4620,7 @@ ws1_command(struct web_connection *conn,
         if ((NULL == pSession->m_pClientItem) ||
             !pSession->m_pClientItem->bAuthenticated) {
 
-            str = vscp_string_format(("-;TBL_MODE;%d;%s"),
+            str = vscp_str_format(("-;TBL_MODE;%d;%s"),
                                      (int)WEBSOCK_ERROR_NOT_AUTHORISED,
                                      WEBSOCK_STR_ERROR_NOT_AUTHORISED);
 
@@ -4644,7 +4644,7 @@ ws1_command(struct web_connection *conn,
             vscp_trim(strTable);
         } else {
             // Error: Need tablename
-            str = vscp_string_format(("-;TBL_MODE;%d;%s"),
+            str = vscp_str_format(("-;TBL_MODE;%d;%s"),
                                      (int)WEBSOCK_ERROR_SYNTAX_ERROR,
                                      WEBSOCK_STR_ERROR_SYNTAX_ERROR);
 
@@ -4657,7 +4657,7 @@ ws1_command(struct web_connection *conn,
         // If available get Start data
         if (!tokens.empty()) {
             if (!strStart.set(tokens.front())) {
-                str = vscp_string_format(("-;TBL_MODE;%d;%s"),
+                str = vscp_str_format(("-;TBL_MODE;%d;%s"),
                                          (int)WEBSOCK_ERROR_INVALID_DATE,
                                          WEBSOCK_STR_ERROR_INVALID_DATE);
 
@@ -4672,7 +4672,7 @@ ws1_command(struct web_connection *conn,
         // If available get end date
         if (!tokens.empty()) {
             if (!strEnd.set(tokens.front())) {
-                str = vscp_string_format(("-;TBL_MODE;%d;%s"),
+                str = vscp_str_format(("-;TBL_MODE;%d;%s"),
                                          (int)WEBSOCK_ERROR_INVALID_DATE,
                                          WEBSOCK_STR_ERROR_INVALID_DATE);
 
@@ -4690,7 +4690,7 @@ ws1_command(struct web_connection *conn,
 
         if (NULL == pTable) {
             // Failed
-            str = vscp_string_format(("-;TBL_MODE;%d;%s"),
+            str = vscp_str_format(("-;TBL_MODE;%d;%s"),
                                      (int)WEBSOCK_ERROR_TABLE_NOT_FOUND,
                                      WEBSOCK_STR_ERROR_TABLE_NOT_FOUND);
 
@@ -4706,7 +4706,7 @@ ws1_command(struct web_connection *conn,
         double mode;
         if (!pTable->getModeValue(strStart, strEnd, &mode)) {
             str =
-              vscp_string_format(("-;TBL_MODE;%d;%s"),
+              vscp_str_format(("-;TBL_MODE;%d;%s"),
                                  (int)WEBSOCK_ERROR_TABLE_FAILED_COMMAND_MODE,
                                  WEBSOCK_STR_ERROR_TABLE_FAILED_COMMAND_MODE);
 
@@ -4721,7 +4721,7 @@ ws1_command(struct web_connection *conn,
         pthread_mutex_unlock(&gpobj->m_mutexUserTables);
 
         // Success
-        str = vscp_string_format(("+;TBL_MODE;%lf"), mode);
+        str = vscp_str_format(("+;TBL_MODE;%lf"), mode);
 
         web_websocket_write(conn,
                             WEB_WEBSOCKET_OPCODE_TEXT,
@@ -4747,7 +4747,7 @@ ws1_command(struct web_connection *conn,
         if ((NULL == pSession->m_pClientItem) ||
             !pSession->m_pClientItem->bAuthenticated) {
 
-            str = vscp_string_format(("-;TBL_LOWERQ;%d;%s"),
+            str = vscp_str_format(("-;TBL_LOWERQ;%d;%s"),
                                      (int)WEBSOCK_ERROR_NOT_AUTHORISED,
                                      WEBSOCK_STR_ERROR_NOT_AUTHORISED);
 
@@ -4771,7 +4771,7 @@ ws1_command(struct web_connection *conn,
             vscp_trim(strTable);
         } else {
             // Error: Need tablename
-            str = vscp_string_format(("-;TBL_LOWERQ;%d;%s"),
+            str = vscp_str_format(("-;TBL_LOWERQ;%d;%s"),
                                      (int)WEBSOCK_ERROR_SYNTAX_ERROR,
                                      WEBSOCK_STR_ERROR_SYNTAX_ERROR);
 
@@ -4784,7 +4784,7 @@ ws1_command(struct web_connection *conn,
         // If available get Start data
         if (!tokens.empty()) {
             if (!strStart.set(tokens.front())) {
-                str = vscp_string_format(("-;TBL_LOWERQ;%d;%s"),
+                str = vscp_str_format(("-;TBL_LOWERQ;%d;%s"),
                                          (int)WEBSOCK_ERROR_INVALID_DATE,
                                          WEBSOCK_STR_ERROR_INVALID_DATE);
 
@@ -4799,7 +4799,7 @@ ws1_command(struct web_connection *conn,
         // If available get end date
         if (!tokens.empty()) {
             if (!strEnd.set(tokens.front())) {
-                str = vscp_string_format(("-;TBL_LOWERQ;%d;%s"),
+                str = vscp_str_format(("-;TBL_LOWERQ;%d;%s"),
                                          (int)WEBSOCK_ERROR_INVALID_DATE,
                                          WEBSOCK_STR_ERROR_INVALID_DATE);
 
@@ -4817,7 +4817,7 @@ ws1_command(struct web_connection *conn,
 
         if (NULL == pTable) {
             // Failed
-            str = vscp_string_format(("-;TBL_LOWERQ;%d;%s"),
+            str = vscp_str_format(("-;TBL_LOWERQ;%d;%s"),
                                      (int)WEBSOCK_ERROR_TABLE_NOT_FOUND,
                                      WEBSOCK_STR_ERROR_TABLE_NOT_FOUND);
 
@@ -4833,7 +4833,7 @@ ws1_command(struct web_connection *conn,
         double lowerq;
         if (!pTable->getLowerQuartileValue(strStart, strEnd, &lowerq)) {
             str =
-              vscp_string_format(("-;TBL_LOWERQ;%d;%s"),
+              vscp_str_format(("-;TBL_LOWERQ;%d;%s"),
                                  (int)WEBSOCK_ERROR_TABLE_FAILED_COMMAND_LOWERQ,
                                  WEBSOCK_STR_ERROR_TABLE_FAILED_COMMAND_LOWERQ);
 
@@ -4848,7 +4848,7 @@ ws1_command(struct web_connection *conn,
         pthread_mutex_unlock(&gpobj->m_mutexUserTables);
 
         // Success
-        str = vscp_string_format(("+;TBL_LOWERQ;%lf"), lowerq);
+        str = vscp_str_format(("+;TBL_LOWERQ;%lf"), lowerq);
 
         web_websocket_write(conn,
                             WEB_WEBSOCKET_OPCODE_TEXT,
@@ -4874,7 +4874,7 @@ ws1_command(struct web_connection *conn,
         if ((NULL == pSession->m_pClientItem) ||
             !pSession->m_pClientItem->bAuthenticated) {
 
-            str = vscp_string_format(("-;TBL_UPPERQ;%d;%s"),
+            str = vscp_str_format(("-;TBL_UPPERQ;%d;%s"),
                                      (int)WEBSOCK_ERROR_NOT_AUTHORISED,
                                      WEBSOCK_STR_ERROR_NOT_AUTHORISED);
 
@@ -4898,7 +4898,7 @@ ws1_command(struct web_connection *conn,
             vscp_trim(strTable);
         } else {
             // Error: Need tablename
-            str = vscp_string_format(("-;TBL_UPPERQ;%d;%s"),
+            str = vscp_str_format(("-;TBL_UPPERQ;%d;%s"),
                                      (int)WEBSOCK_ERROR_SYNTAX_ERROR,
                                      WEBSOCK_STR_ERROR_SYNTAX_ERROR);
 
@@ -4911,7 +4911,7 @@ ws1_command(struct web_connection *conn,
         // If available get Start data
         if (!tokens.empty()) {
             if (!strStart.set(tokens.front())) {
-                str = vscp_string_format(("-;TBL_UPPERQ;%d;%s"),
+                str = vscp_str_format(("-;TBL_UPPERQ;%d;%s"),
                                          (int)WEBSOCK_ERROR_INVALID_DATE,
                                          WEBSOCK_STR_ERROR_INVALID_DATE);
 
@@ -4926,7 +4926,7 @@ ws1_command(struct web_connection *conn,
         // If available get end date
         if (!tokens.empty()) {
             if (!strEnd.set(tokens.front())) {
-                str = vscp_string_format(("-;TBL_UPPERQ;%d;%s"),
+                str = vscp_str_format(("-;TBL_UPPERQ;%d;%s"),
                                          (int)WEBSOCK_ERROR_INVALID_DATE,
                                          WEBSOCK_STR_ERROR_INVALID_DATE);
 
@@ -4944,7 +4944,7 @@ ws1_command(struct web_connection *conn,
 
         if (NULL == pTable) {
             // Failed
-            str = vscp_string_format(("-;TBL_UPPERQ;%d;%s"),
+            str = vscp_str_format(("-;TBL_UPPERQ;%d;%s"),
                                      (int)WEBSOCK_ERROR_TABLE_NOT_FOUND,
                                      WEBSOCK_STR_ERROR_TABLE_NOT_FOUND);
 
@@ -4960,7 +4960,7 @@ ws1_command(struct web_connection *conn,
         double upperq;
         if (!pTable->getUppeQuartileValue(strStart, strEnd, &upperq)) {
             str =
-              vscp_string_format(("-;TBL_UPPERQ;%d;%s"),
+              vscp_str_format(("-;TBL_UPPERQ;%d;%s"),
                                  (int)WEBSOCK_ERROR_TABLE_FAILED_COMMAND_UPPERQ,
                                  WEBSOCK_STR_ERROR_TABLE_FAILED_COMMAND_UPPERQ);
 
@@ -4975,7 +4975,7 @@ ws1_command(struct web_connection *conn,
         pthread_mutex_unlock(&gpobj->m_mutexUserTables);
 
         // Success
-        str = vscp_string_format(("+;TBL_UPPERQ;%lf"), upperq);
+        str = vscp_str_format(("+;TBL_UPPERQ;%lf"), upperq);
 
         web_websocket_write(conn,
                             WEB_WEBSOCKET_OPCODE_TEXT,
@@ -5001,7 +5001,7 @@ ws1_command(struct web_connection *conn,
         if ((NULL == pSession->m_pClientItem) ||
             !pSession->m_pClientItem->bAuthenticated) {
 
-            str = vscp_string_format(("-;TBL_CLEAR;%d;%s"),
+            str = vscp_str_format(("-;TBL_CLEAR;%d;%s"),
                                      (int)WEBSOCK_ERROR_NOT_AUTHORISED,
                                      WEBSOCK_STR_ERROR_NOT_AUTHORISED);
 
@@ -5025,7 +5025,7 @@ ws1_command(struct web_connection *conn,
             vscp_trim(strTable);
         } else {
             // Error: Need tablename
-            str = vscp_string_format(("-;TBL_CLEAR;%d;%s"),
+            str = vscp_str_format(("-;TBL_CLEAR;%d;%s"),
                                      (int)WEBSOCK_ERROR_SYNTAX_ERROR,
                                      WEBSOCK_STR_ERROR_SYNTAX_ERROR);
 
@@ -5040,7 +5040,7 @@ ws1_command(struct web_connection *conn,
         // If available get Start data
         if (!tokens.empty()) {
             if (!strStart.set(tokens.front())) {
-                str = vscp_string_format(("-;TBL_CLEAR;%d;%s"),
+                str = vscp_str_format(("-;TBL_CLEAR;%d;%s"),
                                          (int)WEBSOCK_ERROR_INVALID_DATE,
                                          WEBSOCK_STR_ERROR_INVALID_DATE);
 
@@ -5057,7 +5057,7 @@ ws1_command(struct web_connection *conn,
         // If available get end date
         if (!tokens.empty()) {
             if (!strEnd.set(tokens.front())) {
-                str = vscp_string_format(("-;TBL_CLEAR;%d;%s"),
+                str = vscp_str_format(("-;TBL_CLEAR;%d;%s"),
                                          (int)WEBSOCK_ERROR_INVALID_DATE,
                                          WEBSOCK_STR_ERROR_INVALID_DATE);
 
@@ -5075,7 +5075,7 @@ ws1_command(struct web_connection *conn,
 
         if (NULL == pTable) {
             // Failed
-            str = vscp_string_format(("-;TBL_CLEAR;%d;%s"),
+            str = vscp_str_format(("-;TBL_CLEAR;%d;%s"),
                                      (int)WEBSOCK_ERROR_TABLE_NOT_FOUND,
                                      WEBSOCK_STR_ERROR_TABLE_NOT_FOUND);
 
@@ -5090,7 +5090,7 @@ ws1_command(struct web_connection *conn,
 
         if (bClearAll) {
             if (!pTable->clearTable()) {
-                str = vscp_string_format(
+                str = vscp_str_format(
                   ("-;TBL_CLEAR;%d;%s"),
                   (int)WEBSOCK_ERROR_TABLE_FAILED_COMMAND_CLEAR,
                   WEBSOCK_STR_ERROR_TABLE_FAILED_COMMAND_CLEAR);
@@ -5104,7 +5104,7 @@ ws1_command(struct web_connection *conn,
             }
         } else {
             if (!pTable->clearTableRange(strStart, strEnd)) {
-                str = vscp_string_format(
+                str = vscp_str_format(
                   ("-;TBL_CLEAR;%d;%s"),
                   (int)WEBSOCK_ERROR_TABLE_FAILED_COMMAND_CLEAR,
                   WEBSOCK_STR_ERROR_TABLE_FAILED_COMMAND_CLEAR);
@@ -5140,7 +5140,7 @@ ws1_command(struct web_connection *conn,
         std::string strResult = ("+;VERSION;");
         strResult += VSCPD_DISPLAY_VERSION;
         strResult += (";");
-        strResult += vscp_string_format(("%d.%d.%d.%d"),
+        strResult += vscp_str_format(("%d.%d.%d.%d"),
                                         VSCPD_MAJOR_VERSION,
                                         VSCPD_MINOR_VERSION,
                                         VSCPD_RELEASE_VERSION,

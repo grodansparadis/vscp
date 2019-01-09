@@ -1966,7 +1966,7 @@ void *workerThread( void *data )
     }
 
     int fdPipeNotify;
-    std::string pipePath = vscp_string_format("/dev/pigpio%d", pipeNotify );
+    std::string pipePath = vscp_str_format("/dev/pigpio%d", pipeNotify );
     
     if ( -1 == ( fdPipeNotify = open( pipePath.c_str(), O_NONBLOCK | O_RDONLY ) ) ) {
         syslog( LOG_ERR,
@@ -2004,11 +2004,8 @@ void *workerThread( void *data )
 
     while ( !pObj->m_bQuit ) {
         
-        struct timespec ts;
-        ts.tv_sec = 0;
-        ts.tv_nsec = 100000000;    // 100 ms
-      
-        if ( ETIMEDOUT != sem_timedwait( &pObj->m_semaphore_SendQueue, &ts ) ) {
+        if ((-1 == vscp_sem_wait(&pObj->m_semaphore_SendQueue, 100)) &&
+         errno == ETIMEDOUT) {
            
             if ( pObj->m_bQuit ) continue;
 

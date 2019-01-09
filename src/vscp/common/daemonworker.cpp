@@ -275,11 +275,8 @@ daemonWorkerThread(void *threadData)
         int rv = pClientItem->m_clientInputQueue.size();
 
         // Wait for incoming event
-        struct timespec ts;
-        ts.tv_sec  = 0;
-        ts.tv_nsec = 100000; // 100 ms
-        if (ETIMEDOUT ==
-            sem_timedwait(&pClientItem->m_semClientInputQueue, &ts)) {
+        if ((-1 == vscp_sem_wait(&pClientItem->m_semClientInputQueue, 100)) &&
+            errno == ETIMEDOUT) {
             continue;
         }
 

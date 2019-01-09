@@ -1897,7 +1897,7 @@ CMDF::parseMDF(std::string &path)
                                        switch ( idx % 8 ) {
                                            case 0: // originating address
                                                pRegisterExt->m_strName =
-       vscp_string_format( ( "Decision matrix row %d: Oaddr" ), 1+idx/8 );
+       vscp_str_format( ( "Decision matrix row %d: Oaddr" ), 1+idx/8 );
                                                pRegisterExt->m_strDescription =
        ("Originating address.\nSet to nickname for node that should trigger
        action here. Oaddr is the originating address.\nMeans we are only
@@ -1905,7 +1905,7 @@ CMDF::parseMDF(std::string &path)
        controller and 0xff is a node without a nickname.\nIf bit 6 of flags is
        set oaddr will not be checked and events from all nodes will be
        accepted."); break; case 1: // flags pRegisterExt->m_strName =
-       vscp_string_format( ( "Decision matrix row %d: Flags" ), 1+idx/8 );
+       vscp_str_format( ( "Decision matrix row %d: Flags" ), 1+idx/8 );
                                                pRegisterExt->m_strDescription =
        ( "Flags. Set selection behaviour.\nThe enable bit can be used to disable
        a decion matrix row while it is edited.\nThe zone and use subzone bits
@@ -1913,36 +1913,36 @@ CMDF::parseMDF(std::string &path)
        event.That is the zone / subzone of the machine must match the one of the
        event to trigger\nthe DM row." ); break; case 2: // class mask
                                                pRegisterExt->m_strName =
-       vscp_string_format( ( "Decision matrix row %d: Class mask (low eight
+       vscp_str_format( ( "Decision matrix row %d: Class mask (low eight
        bits)" ), 1+idx/8 ); pRegisterExt->m_strDescription = ( "The lowest eight
        bits of the class mask that defines the events that should trigger the
        action of\nthis decision matrix row. Bit 8 of the class mask is stored in
        bit 1 of the flag byte." ); break; case 3: // class filter
                                                pRegisterExt->m_strName =
-       vscp_string_format( ( "Decision matrix row %d: Class filter (low eight
+       vscp_str_format( ( "Decision matrix row %d: Class filter (low eight
        bits)" ), 1+idx/8 ); pRegisterExt->m_strDescription = ( "The lowest eight
        bits of the class filter that defines the events that should trigger the
        action of\nthis decision matrix row. Bit 8 of the class filter is stored
        in bit 1 of the flag byte." ); break; case 4: // type mask
                                                pRegisterExt->m_strName =
-       vscp_string_format( ( "Decision matrix row %d: Type mask" ), 1+idx/8 );
+       vscp_str_format( ( "Decision matrix row %d: Type mask" ), 1+idx/8 );
                                                pRegisterExt->m_strDescription =
        ( "Type mask that defines the events that should trigger the action of
        this decision matrix row." ); break; case 5: // type filter
                                                pRegisterExt->m_strName =
-       vscp_string_format( ( "Decision matrix row %d: Type filter" ), 1+idx/8 );
+       vscp_str_format( ( "Decision matrix row %d: Type filter" ), 1+idx/8 );
                                                pRegisterExt->m_strDescription =
        ( "Type filter that defines the events that should trigger the action of
        this decision matrix row." ); break; case 6: // action
                                                pRegisterExt->m_strName =
-       vscp_string_format( ( "Decision matrix row %d: Action" ), 1+idx/8 );
+       vscp_str_format( ( "Decision matrix row %d: Action" ), 1+idx/8 );
                                                pRegisterExt->m_strDescription =
        ( "This is the action or operation that should be performed if the
        filtering is satisfied.\nOnly action code 0x00 is predefined and means
        No-Operation.\nAll other codes are application specific and typical
        application defined codes could do\nmeasurement, send predefined event
        etc." ); break; case 7: // action parameter pRegisterExt->m_strName =
-       vscp_string_format( ( "Decision matrix row %d: Action parameter" ),
+       vscp_str_format( ( "Decision matrix row %d: Action parameter" ),
        1+idx/8 ); pRegisterExt->m_strDescription = ( "A numeric action parameter
        can be set and its meaning is application specific." ); break;
                                        }
@@ -1965,7 +1965,7 @@ CMDF::parseMDF(std::string &path)
        != pRegisterExt ); *pRegisterExt = *pRegister; pRegisterExt->m_size = 1;
                                        pRegisterExt->m_nOffset += idx;
                                        pRegisterExt->m_strName =
-       vscp_string_format( ( "%s%d" ), pRegisterExt->m_strName.c_str(), idx );
+       vscp_str_format( ( "%s%d" ), pRegisterExt->m_strName.c_str(), idx );
                                        // Append the register
                                        m_list_register.push_back( pRegisterExt
        );

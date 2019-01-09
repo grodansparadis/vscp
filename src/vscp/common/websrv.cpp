@@ -513,7 +513,7 @@ websrv_check_if_authorized(const struct web_connection *conn)
     ); pthread_mutex_unlock(&pObject->m_mutexUserList); if ( !bValidHost ) {
         // Host wrong
         std::string strErr =
-                vscp_string_format( ( "[Webserver Client] Host [%s] NOT allowed
+                vscp_str_format( ( "[Webserver Client] Host [%s] NOT allowed
     to connect. User [%s]\n" ), reqinfo->remote_addr, (const char
     *)pUserItem->m_user.c_str() ); syslog( LOG_ERR, strErr,
     DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY ); return WEB_ERROR;
@@ -536,7 +536,7 @@ websrv_check_if_authorized(const struct web_connection *conn)
 
             // Username/password wrong
         std::string strErr =
-                vscp_string_format( ( "[Webserver Client] Host [%s] User [%s]
+                vscp_str_format( ( "[Webserver Client] Host [%s] User [%s]
     NOT allowed to connect.\n" ), std::string( ( const char * )inet_ntoa(
     conn->sa.sin.sin_addr ) ).xx_str(), (const char *)pUserItem->m_user.c_str()
     ); syslog( LOG_ERR, strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY );
@@ -1119,7 +1119,7 @@ vscp_listFile(struct web_connection *conn,
                "close\r\n\r\n");
 
     /*bool bFirstRow = false;   TODO
-    std::string strHeader = vscp_string_format(("VSCP - %s"), textHeader.c_str()
+    std::string strHeader = vscp_str_format(("VSCP - %s"), textHeader.c_str()
     ); web_printf( conn,WEB_COMMON_HEAD, strHeader.c_str() ); web_printf( conn,
     WEB_STYLE_START); web_printf( conn, WEB_COMMON_CSS);     // CSS style Code
     web_printf( conn, WEB_STYLE_END);
@@ -1509,7 +1509,7 @@ vscp_dm_list(struct web_connection *conn, void *cbdata)
 
         {
             std::string url_dmedit =
-              vscp_string_format(("/vscp/dmedit?id=%ld&from=%ld&count=%ld"),
+              vscp_str_format(("/vscp/dmedit?id=%ld&from=%ld&count=%ld"),
                                  (long)(nFrom + i),
                                  (long)nFrom,
                                  (long)nCount);
@@ -3517,11 +3517,11 @@ vscp_variable_list(struct web_connection *conn, void *cbdata)
         if (1 || !variable.isStockVariable()) {
 
             std::string url_dmedit =
-              vscp_string_format(("/vscp/varedit?id=%ld&from=%ld&count=%ld"),
+              vscp_str_format(("/vscp/varedit?id=%ld&from=%ld&count=%ld"),
                                  (long)(nFrom + i),
                                  (long)nFrom,
                                  (long)nCount);
-            std::string str = vscp_string_format(
+            std::string str = vscp_str_format(
               (WEB_COMMON_TR_CLICKABLE_ROW), (const char *)url_dmedit.c_str());
             web_printf(conn, "%s", (const char *)str.c_str());
         }
@@ -4824,7 +4824,7 @@ vscp_variable_post(struct web_connection *conn, void *cbdata)
             CUserItem *pUserItem = gpobj->m_userList.getUser(owner);
             if (NULL == pUserItem) {
                 owner = 0;
-                msg += vscp_string_format(
+                msg += vscp_str_format(
                   ("Uses %s does not exist (set to 'admin')<br>"), buf);
             }
         }
@@ -5081,7 +5081,7 @@ vscp_variable_new(struct web_connection *conn, void *cbdata)
 
     web_printf(conn, "<br></div>");
     web_printf(conn, WEB_VARNEW_SUBMIT);
-    // std::string strurl = vscp_string_format(("%s/vscp/varedit?new=true"),
+    // std::string strurl = vscp_str_format(("%s/vscp/varedit?new=true"),
     //                                            strHost.c_str() );
     // web_printf( conn, WEB_VARNEW_SUBMIT,
     //                  strurl.c_str() );
@@ -5370,7 +5370,7 @@ vscp_zone_list(struct web_connection *conn, void *cbdata)
     if (nFrom < 0) nFrom = 0;
 
     std::string sql =
-      vscp_string_format(VSCPDB_ZONE_SELECT_PAGE, (int)nFrom, (int)nCount);
+      vscp_str_format(VSCPDB_ZONE_SELECT_PAGE, (int)nFrom, (int)nCount);
 
     if (SQLITE_OK != sqlite3_prepare_v2(gpobj->m_db_vscp_daemon,
                                         (const char *)sql.c_str(),
@@ -5392,9 +5392,9 @@ vscp_zone_list(struct web_connection *conn, void *cbdata)
             id = atol(p);
         }
 
-        std::string url_edit = vscp_string_format(
+        std::string url_edit = vscp_str_format(
           ("/vscp/zoneedit?id=%ld&from=%ld"), id, (long)nFrom);
-        std::string str = vscp_string_format((WEB_COMMON_TR_CLICKABLE_ROW),
+        std::string str = vscp_str_format((WEB_COMMON_TR_CLICKABLE_ROW),
                                              (const char *)url_edit.c_str());
         web_printf(conn, "%s", (const char *)str.c_str());
 
@@ -5539,7 +5539,7 @@ vscp_zone_edit(struct web_connection *conn, void *cbdata)
     std::string sql = (VSCPDB_ZONE_SELECT_ID);
     sqlite3_stmt *ppStmt;
 
-    sql = vscp_string_format(sql, id);
+    sql = vscp_str_format(sql, id);
 
     if (SQLITE_OK != sqlite3_prepare(gpobj->m_db_vscp_daemon,
                                      (const char *)sql.c_str(),
@@ -5720,7 +5720,7 @@ vscp_zone_post(struct web_connection *conn, void *cbdata)
         char *pErrMsg   = 0;
         std::string sql = VSCPDB_ZONE_UPDATE;
 
-        sql = vscp_string_format(sql,
+        sql = vscp_str_format(sql,
                                  (const char *)name.c_str(),
                                  (const char *)description.c_str(),
                                  id);
@@ -5883,7 +5883,7 @@ vscp_subzone_list(struct web_connection *conn, void *cbdata)
     if (nFrom < 0) nFrom = 0;
 
     std::string sql =
-      vscp_string_format(VSCPDB_SUBZONE_SELECT_PAGE, (int)nFrom, (int)nCount);
+      vscp_str_format(VSCPDB_SUBZONE_SELECT_PAGE, (int)nFrom, (int)nCount);
 
     if (SQLITE_OK != sqlite3_prepare_v2(gpobj->m_db_vscp_daemon,
                                         (const char *)sql.c_str(),
@@ -5905,9 +5905,9 @@ vscp_subzone_list(struct web_connection *conn, void *cbdata)
             id = atol(p);
         }
 
-        std::string url_edit = vscp_string_format(
+        std::string url_edit = vscp_str_format(
           ("/vscp/subzoneedit?id=%ld&from=%ld"), id, (long)nFrom);
-        std::string str = vscp_string_format((WEB_COMMON_TR_CLICKABLE_ROW),
+        std::string str = vscp_str_format((WEB_COMMON_TR_CLICKABLE_ROW),
                                              (const char *)url_edit.c_str());
         web_printf(conn, "%s", (const char *)str.c_str());
 
@@ -6053,7 +6053,7 @@ vscp_subzone_edit(struct web_connection *conn, void *cbdata)
     std::string sql = (VSCPDB_SUBZONE_SELECT_ID);
     sqlite3_stmt *ppStmt;
 
-    sql = vscp_string_format(sql, id);
+    sql = vscp_str_format(sql, id);
 
     if (SQLITE_OK != sqlite3_prepare(gpobj->m_db_vscp_daemon,
                                      (const char *)sql.c_str(),
@@ -6235,7 +6235,7 @@ vscp_subzone_post(struct web_connection *conn, void *cbdata)
         char *pErrMsg   = 0;
         std::string sql = VSCPDB_SUBZONE_UPDATE;
 
-        sql = vscp_string_format(sql,
+        sql = vscp_str_format(sql,
                                  (const char *)name.c_str(),
                                  (const char *)description.c_str(),
                                  id);
@@ -6405,7 +6405,7 @@ vscp_guid_list(struct web_connection *conn, void *cbdata)
     if (nFrom < 0) nFrom = 0;
 
     std::string sql =
-      vscp_string_format(VSCPDB_GUID_SELECT_PAGE, (int)nFrom, (int)nCount);
+      vscp_str_format(VSCPDB_GUID_SELECT_PAGE, (int)nFrom, (int)nCount);
 
     if (SQLITE_OK != sqlite3_prepare_v2(gpobj->m_db_vscp_daemon,
                                         (const char *)sql.c_str(),
@@ -6427,9 +6427,9 @@ vscp_guid_list(struct web_connection *conn, void *cbdata)
             id = atol(p);
         }
 
-        std::string url_edit = vscp_string_format(
+        std::string url_edit = vscp_str_format(
           ("/vscp/guidedit?id=%ld&from=%ld"), id, (long)nFrom);
-        std::string str = vscp_string_format((WEB_COMMON_TR_CLICKABLE_ROW),
+        std::string str = vscp_str_format((WEB_COMMON_TR_CLICKABLE_ROW),
                                              (const char *)url_edit.c_str());
         web_printf(conn, "%s", (const char *)str.c_str());
 
@@ -6476,7 +6476,7 @@ vscp_guid_list(struct web_connection *conn, void *cbdata)
         }
 
         sqlite3_stmt *ppStmtType;
-        std::string sqlType = vscp_string_format(sql, atoi(p));
+        std::string sqlType = vscp_str_format(sql, atoi(p));
 
         if (SQLITE_OK != sqlite3_prepare(gpobj->m_db_vscp_daemon,
                                          (const char *)sqlType.c_str(),
@@ -6655,7 +6655,7 @@ vscp_guid_edit(struct web_connection *conn, void *cbdata)
 
     if (!bNew) {
 
-        sql = vscp_string_format(sql, id);
+        sql = vscp_str_format(sql, id);
 
         if (SQLITE_OK != sqlite3_prepare(gpobj->m_db_vscp_daemon,
                                          (const char *)sql.c_str(),
@@ -7222,7 +7222,7 @@ vscp_guid_delete(struct web_connection *conn, void *cbdata)
 
     // Remove the item from the database
     char *pErrMsg   = NULL;
-    std::string sql = vscp_string_format(VSCPDB_GUID_DELETE_ID, id);
+    std::string sql = vscp_str_format(VSCPDB_GUID_DELETE_ID, id);
     if (SQLITE_OK != sqlite3_exec(gpobj->m_db_vscp_daemon,
                                   (const char *)sql.c_str(),
                                   NULL,
@@ -7383,7 +7383,7 @@ vscp_location_list(struct web_connection *conn, void *cbdata)
     if (nFrom < 0) nFrom = 0;
 
     std::string sql =
-      vscp_string_format(VSCPDB_LOCATION_SELECT_PAGE, (int)nFrom, (int)nCount);
+      vscp_str_format(VSCPDB_LOCATION_SELECT_PAGE, (int)nFrom, (int)nCount);
 
     if (SQLITE_OK != sqlite3_prepare_v2(gpobj->m_db_vscp_daemon,
                                         (const char *)sql.c_str(),
@@ -7405,9 +7405,9 @@ vscp_location_list(struct web_connection *conn, void *cbdata)
             id = atol(p);
         }
 
-        std::string url_edit = vscp_string_format(
+        std::string url_edit = vscp_str_format(
           ("/vscp/locationedit?id=%ld&from=%ld"), id, (long)nFrom);
-        std::string str = vscp_string_format((WEB_COMMON_TR_CLICKABLE_ROW),
+        std::string str = vscp_str_format((WEB_COMMON_TR_CLICKABLE_ROW),
                                              (const char *)url_edit.c_str());
         web_printf(conn, "%s", (const char *)str.c_str());
 
@@ -7592,7 +7592,7 @@ vscp_location_edit(struct web_connection *conn, void *cbdata)
 
     if (!bNew) {
 
-        sql = vscp_string_format(sql, id);
+        sql = vscp_str_format(sql, id);
 
         if (SQLITE_OK != sqlite3_prepare(gpobj->m_db_vscp_daemon,
                                          (const char *)sql.c_str(),
@@ -8089,7 +8089,7 @@ vscp_location_delete(struct web_connection *conn, void *cbdata)
 
     // Remove the item from the database
     char *pErrMsg   = NULL;
-    std::string sql = vscp_string_format(VSCPDB_LOCATION_DELETE_ID, id);
+    std::string sql = vscp_str_format(VSCPDB_LOCATION_DELETE_ID, id);
     if (SQLITE_OK != sqlite3_exec(gpobj->m_db_vscp_daemon,
                                   (const char *)sql.c_str(),
                                   NULL,
@@ -9373,7 +9373,7 @@ table(struct web_connection *conn, void *cbdata)
             vscpdatetime dtEnd = vscpdatetime(
        (time_t)ptblItem->getTimeStampEnd() ); web_printf( conn,
        dtEnd.getISODateTime(); web_printf( conn, " <b>Number of records: </b>
-       "); web_printf( conn,vscp_string_format(("%d"),
+       "); web_printf( conn,vscp_str_format(("%d"),
        ptblItem->getNumberOfRecords() ); web_printf( conn, "<br><b>X-label:</b>
        "); web_printf( conn, std::string( ptblItem->m_vscpFileHead.nameXLabel );
             web_printf( conn, " <b>Y-label :</b> ");
@@ -9844,19 +9844,19 @@ vscp_log_list(struct web_connection *conn, void *cbdata)
 
     if ((0 != nType) && (0 != nLevel)) {
         sql +=
-          vscp_string_format(" WHERE type=%d AND level=%d ", nType - 1, nLevel);
-        strSqlTotCnt = vscp_string_format("SELECT COUNT(*) AS nrows FROM log "
+          vscp_str_format(" WHERE type=%d AND level=%d ", nType - 1, nLevel);
+        strSqlTotCnt = vscp_str_format("SELECT COUNT(*) AS nrows FROM log "
                                           "WHERE type=%d AND level=%d;",
                                           nType - 1,
                                           nLevel);
     } else if (0 != nType) {
-        sql += vscp_string_format(" WHERE type=%d ", nType - 1);
-        strSqlTotCnt = vscp_string_format("SELECT COUNT(*) AS nrows FROM log "
+        sql += vscp_str_format(" WHERE type=%d ", nType - 1);
+        strSqlTotCnt = vscp_str_format("SELECT COUNT(*) AS nrows FROM log "
                                           "WHERE type=%d;",
                                           nType - 1);
     } else if (0 != nLevel) {
-        sql += vscp_string_format(" WHERE level=%d ", nLevel);
-        strSqlTotCnt = vscp_string_format("SELECT COUNT(*) AS nrows FROM log "
+        sql += vscp_str_format(" WHERE level=%d ", nLevel);
+        strSqlTotCnt = vscp_str_format("SELECT COUNT(*) AS nrows FROM log "
                                           "WHERE level=%d;",
                                           nLevel);
     }
@@ -9945,21 +9945,21 @@ vscp_log_list(struct web_connection *conn, void *cbdata)
     // Display log
 
     std::string url_logedit =
-      vscp_string_format(("/vscp/loglist?id=%ld&from=%ld&count=%ld"
+      vscp_str_format(("/vscp/loglist?id=%ld&from=%ld&count=%ld"
                           "&type=%d&level=%d"),
                          (long)(nFrom ),
                          (long)nFrom,
                          (long)nCount,
                          nType,
                          nLevel);
-    std::string str = vscp_string_format((WEB_COMMON_TR_NON_CLICKABLE_ROW),
+    std::string str = vscp_str_format((WEB_COMMON_TR_NON_CLICKABLE_ROW),
                                          url_logedit.c_str());
     web_printf(conn, "%s", (const char *)str.c_str());
 
     sql += " ORDER BY DATETIME(date) DESC ";
 
     sql += " LIMIT %ld,%ld;";
-    sql = vscp_string_format(sql, nFrom, nCount);
+    sql = vscp_str_format(sql, nFrom, nCount);
     if (SQLITE_OK !=
         sqlite3_prepare_v2(
           gpobj->m_db_vscp_log, (const char *)sql.c_str(), -1, &ppStmt, NULL)) {
@@ -10222,32 +10222,32 @@ vscp_log_do_delete(struct web_connection *conn, void *cbdata)
     // specific type/level
     bool bWhere = false;
     if ((0 != nType) && (0 != nLevel)) {
-        sql += vscp_string_format(
+        sql += vscp_str_format(
           (" WHERE type=%d AND level=%d "), nType - 1, nLevel);
         bWhere = true; // flag that where statement is present
     } else if (0 != nType) {
-        sql += vscp_string_format((" WHERE type=%d "), nType - 1);
+        sql += vscp_str_format((" WHERE type=%d "), nType - 1);
         bWhere = true; // flag that where statement is present
     } else if (0 != nLevel) {
-        sql += vscp_string_format((" WHERE level=%d "), nLevel);
+        sql += vscp_str_format((" WHERE level=%d "), nLevel);
         bWhere = true; // flag that where statement is present
     }
 
     // Date range
     std::string sqldate;
     if (strFrom.length() && strTo.length()) {
-        sqldate = vscp_string_format(
+        sqldate = vscp_str_format(
           (" ( DATETIME( date ) >= DATETIME( \"%s\" ) )"
            " AND ( DATETIME( date ) <= DATETIME( \"%s\" ) )"),
           (const char *)strFrom.c_str(),
           (const char *)strTo.c_str());
     } else if (strFrom.length()) {
         sqldate =
-          vscp_string_format((" ( DATETIME( date ) >= DATETIME( \"%s\" ) ) "),
+          vscp_str_format((" ( DATETIME( date ) >= DATETIME( \"%s\" ) ) "),
                              (const char *)strFrom.c_str());
     } else if (strTo.length()) {
         sqldate =
-          vscp_string_format((" ( DATETIME( date ) <= DATETIME( \"%s\" ) ) "),
+          vscp_str_format((" ( DATETIME( date ) <= DATETIME( \"%s\" ) ) "),
                              (const char *)strTo.c_str());
     }
 
@@ -10279,7 +10279,7 @@ vscp_log_do_delete(struct web_connection *conn, void *cbdata)
         sqlite3_exec(gpobj->m_db_vscp_log, sql.c_str(), NULL, NULL, &zErrMsg)) {
         web_printf(conn,
                    "%s",
-                   (const char *)vscp_string_format(
+                   (const char *)vscp_str_format(
                      ("Failed to clear data. sql=%s Error = %s"), sql, zErrMsg)
                      .c_str());
         web_printf(conn, WEB_COMMON_END, VSCPD_COPYRIGHT_HTML);
@@ -10290,7 +10290,7 @@ vscp_log_do_delete(struct web_connection *conn, void *cbdata)
     web_printf(
       conn,
       "%s",
-      (const char *)vscp_string_format(("%d records deleted!"), count).c_str());
+      (const char *)vscp_str_format(("%d records deleted!"), count).c_str());
 */
     web_printf(conn, WEB_COMMON_END, VSCPD_COPYRIGHT_HTML); // Common end code
     return WEB_OK;
@@ -11252,7 +11252,7 @@ start_webserver(void)
     if (gpobj->m_web_ssl_verify_depth !=
         atoi(VSCPDB_CONFIG_DEFAULT_WEB_SSL_VERIFY_DEPTH)) {
         std::string str =
-          vscp_string_format(("%d"), (int)gpobj->m_web_ssl_verify_depth);
+          vscp_str_format(("%d"), (int)gpobj->m_web_ssl_verify_depth);
         web_options[pos++] =
           web_strdup(VSCPDB_CONFIG_NAME_WEB_SSL_VERIFY_DEPTH + 4);
         web_options[pos++] = web_strdup((const char *)str.c_str());
@@ -11272,7 +11272,7 @@ start_webserver(void)
     if (gpobj->m_web_ssl_protocol_version !=
         atoi(VSCPDB_CONFIG_DEFAULT_WEB_SSL_PROTOCOL_VERSION)) {
         std::string str =
-          vscp_string_format(("%d"), (int)gpobj->m_web_ssl_protocol_version);
+          vscp_str_format(("%d"), (int)gpobj->m_web_ssl_protocol_version);
         web_options[pos++] =
           web_strdup(VSCPDB_CONFIG_NAME_WEB_SSL_PROTOCOL_VERSION + 4);
         web_options[pos++] = web_strdup((const char *)str.c_str());
@@ -11331,7 +11331,7 @@ start_webserver(void)
     if (gpobj->m_web_keep_alive_timeout_ms !=
         atol(VSCPDB_CONFIG_DEFAULT_WEB_KEEP_ALIVE_TIMEOUT_MS)) {
         std::string str =
-          vscp_string_format(("%ld"), (long)gpobj->m_web_ssl_protocol_version);
+          vscp_str_format(("%ld"), (long)gpobj->m_web_ssl_protocol_version);
         web_options[pos++] =
           web_strdup(VSCPDB_CONFIG_NAME_WEB_KEEP_ALIVE_TIMEOUT_MS + 4);
         web_options[pos++] = web_strdup((const char *)str.c_str());
@@ -11354,7 +11354,7 @@ start_webserver(void)
     if (gpobj->m_web_num_threads !=
         atoi(VSCPDB_CONFIG_DEFAULT_WEB_NUM_THREADS)) {
         std::string str =
-          vscp_string_format(("%d"), (int)gpobj->m_web_num_threads);
+          vscp_str_format(("%d"), (int)gpobj->m_web_num_threads);
         web_options[pos++] =
           web_strdup(VSCPDB_CONFIG_NAME_WEB_EXTRA_MIME_TYPES + 4);
         web_options[pos++] = web_strdup((const char *)str.c_str());
@@ -11383,7 +11383,7 @@ start_webserver(void)
     if (gpobj->m_web_request_timeout_ms !=
         atol(VSCPDB_CONFIG_DEFAULT_WEB_REQUEST_TIMEOUT_MS)) {
         std::string str =
-          vscp_string_format(("%ld"), (long)gpobj->m_web_request_timeout_ms);
+          vscp_str_format(("%ld"), (long)gpobj->m_web_request_timeout_ms);
         web_options[pos++] =
           web_strdup(VSCPDB_CONFIG_NAME_WEB_REQUEST_TIMEOUT_MS + 4);
         web_options[pos++] = web_strdup((const char *)str.c_str());
@@ -11391,7 +11391,7 @@ start_webserver(void)
 
     if (-1 != gpobj->m_web_linger_timeout_ms) {
         std::string str =
-          vscp_string_format(("%ld"), (long)gpobj->m_web_linger_timeout_ms);
+          vscp_str_format(("%ld"), (long)gpobj->m_web_linger_timeout_ms);
         web_options[pos++] =
           web_strdup(VSCPDB_CONFIG_NAME_WEB_LINGER_TIMEOUT_MS + 4);
         web_options[pos++] = web_strdup((const char *)str.c_str());
@@ -11452,7 +11452,7 @@ start_webserver(void)
 
     if (-1 != gpobj->m_web_tcp_nodelay) {
         std::string str =
-          vscp_string_format(("%ld"), (long)gpobj->m_web_tcp_nodelay);
+          vscp_str_format(("%ld"), (long)gpobj->m_web_tcp_nodelay);
         web_options[pos++] =
           web_strdup(VSCPDB_CONFIG_NAME_WEB_TCP_NO_DELAY + 4);
         web_options[pos++] = web_strdup((const char *)str.c_str());
@@ -11461,14 +11461,14 @@ start_webserver(void)
     if (gpobj->m_web_static_file_max_age !=
         atol(VSCPDB_CONFIG_DEFAULT_WEB_STATIC_FILE_MAX_AGE)) {
         std::string str =
-          vscp_string_format(("%ld"), (long)gpobj->m_web_static_file_max_age);
+          vscp_str_format(("%ld"), (long)gpobj->m_web_static_file_max_age);
         web_options[pos++] =
           web_strdup(VSCPDB_CONFIG_NAME_WEB_STATIC_FILE_MAX_AGE + 4);
         web_options[pos++] = web_strdup((const char *)str.c_str());
     }
 
     if (-1 != gpobj->m_web_strict_transport_security_max_age) {
-        std::string str = vscp_string_format(
+        std::string str = vscp_str_format(
           ("%ld"), (long)gpobj->m_web_strict_transport_security_max_age);
         web_options[pos++] = web_strdup(
           VSCPDB_CONFIG_NAME_WEB_STRICT_TRANSPORT_SECURITY_MAX_AGE + 4);
@@ -11491,7 +11491,7 @@ start_webserver(void)
     if (gpobj->m_web_max_request_size !=
         atol(VSCPDB_CONFIG_DEFAULT_WEB_MAX_REQUEST_SIZE)) {
         std::string str =
-          vscp_string_format(("%ld"), (long)gpobj->m_web_max_request_size);
+          vscp_str_format(("%ld"), (long)gpobj->m_web_max_request_size);
         web_options[pos++] =
           web_strdup(VSCPDB_CONFIG_NAME_WEB_MAX_REQUEST_SIZE + 4);
         web_options[pos++] = web_strdup((const char *)str.c_str());

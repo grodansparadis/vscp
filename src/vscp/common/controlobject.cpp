@@ -193,14 +193,14 @@ CControlObject::CControlObject()
 
     // Default multicast announce port
     m_strMulticastAnnounceAddress =
-      vscp_string_format("udp://:%d", VSCP_ANNOUNCE_MULTICAST_PORT);
+      vscp_str_format("udp://:%d", VSCP_ANNOUNCE_MULTICAST_PORT);
 
     // default multicast announce ttl
     m_ttlMultiCastAnnounce = IP_MULTICAST_DEFAULT_TTL;
 
     // Default UDP interface
     m_udpSrvObj.m_interface =
-      vscp_string_format("udp://:%d", VSCP_DEFAULT_UDP_PORT);
+      vscp_str_format("udp://:%d", VSCP_DEFAULT_UDP_PORT);
 
     // Web server SSL settings
     m_web_ssl_certificate          = m_rootFolder + "certs/server.pem";
@@ -398,7 +398,7 @@ CControlObject::init(std::string &strcfgfile, std::string &rootFolder)
             syslog(LOG_CRIT,
                    "VSCP Daemon configuration database could not be opened. - "
                    "Will exit.");
-            vscp_string_format(str,
+            vscp_str_format(str,
                                "Path=%s error=%s",
                                (const char *)m_path_db_vscp_daemon.c_str(),
                                sqlite3_errmsg(m_db_vscp_daemon));
@@ -653,28 +653,28 @@ CControlObject::init(std::string &strcfgfile, std::string &rootFolder)
     m_variables.loadFromXML();
 
     // Start daemon internal client worker thread
-    startClientMsgWorkerThread();
+    //startClientMsgWorkerThread();
 
     // Start webserver and websockets
     // IMPORTANT!!!!!!!!
     // Must be started before the tcp/ip server as
     // ssl initializarion is done here
-    start_webserver();
+    //start_webserver();
 
     // Start TCP/IP interface
-    startTcpipSrvThread();
+    //startTcpipSrvThread();
 
     // Start UDP interface
-    startUDPSrvThread();
+    //startUDPSrvThread();
 
     // Start Multicast interface
-    startMulticastWorkerThreads();
+    //startMulticastWorkerThreads();
 
     // Load drivers
     //startDeviceWorkerThreads();
 
     // Start daemon worker thread
-    startDaemonWorkerThread();
+    //startDaemonWorkerThread();
 
     return true;
 }
@@ -764,11 +764,8 @@ CControlObject::run(void)
         m_dm.feed(&EventLoop);
 
         // Wait for event
-        struct timespec ts;
-        ts.tv_sec  = 0;
-        ts.tv_nsec = 100000; // 100 ms
-        if (ETIMEDOUT ==
-            sem_timedwait(&pClientItem->m_semClientInputQueue, &ts)) {
+        if ((-1 == vscp_sem_wait(&pClientItem->m_semClientInputQueue, 10)) &&
+            errno == ETIMEDOUT) {
 
             if (m_bQuit) continue; // Make quit request as fast as possible
 
@@ -1363,7 +1360,7 @@ CControlObject::getCountRecordsDB(sqlite3 *db, std::string &table)
     if (NULL == db) return 0;
 
     std::string sql =
-      vscp_string_format("SELECT count(*)from %s", (const char *)table.c_str());
+      vscp_str_format("SELECT count(*)from %s", (const char *)table.c_str());
 
     if (SQLITE_OK !=
         sqlite3_prepare(db, (const char *)sql.c_str(), -1, &ppStmt, NULL)) {
@@ -3446,7 +3443,7 @@ CControlObject::isDbTableExist(sqlite3 *db, const std::string &strTblName)
 
     std::string sql =
       "SELECT name FROM sqlite_master WHERE type='table' AND name='%s'";
-    sql = vscp_string_format(sql, (const char *)strTblName.c_str());
+    sql = vscp_str_format(sql, (const char *)strTblName.c_str());
 
     iResult = sqlite3_prepare16_v2(
       db, (const char *)sql.c_str(), -1, &pSelectStatement, 0);
@@ -3488,7 +3485,7 @@ CControlObject::isDbFieldExist(sqlite3 *db,
     }
 
     std::string sql = "PRAGMA table_info(%s);";
-    sql             = vscp_string_format(sql, (const char *)strTblName.c_str());
+    sql             = vscp_str_format(sql, (const char *)strTblName.c_str());
 
     if (SQLITE_OK !=
         sqlite3_prepare(
@@ -5460,13 +5457,13 @@ CControlObject::doCreateZoneTable(void)
     // Fill with default info
     std::string sql = "BEGIN;";
     for (int i = 0; i < 256; i++) {
-        sql += vscp_string_format("INSERT INTO 'zone' (idx_zone, name) "
+        sql += vscp_str_format("INSERT INTO 'zone' (idx_zone, name) "
                                   "VALUES( %d, 'zone%d' );",
                                   i,
                                   i);
     }
 
-    sql += vscp_string_format(VSCPDB_ZONE_UPDATE,
+    sql += vscp_str_format(VSCPDB_ZONE_UPDATE,
                               "All zones",
                               "Zone = 255 represents all zones.",
                               255L);
@@ -5516,14 +5513,14 @@ CControlObject::doCreateSubZoneTable(void)
     // Fill with default info
     std::string sql = "BEGIN;";
     for (int i = 0; i < 256; i++) {
-        sql += vscp_string_format("INSERT INTO 'subzone' (idx_subzone, name) "
+        sql += vscp_str_format("INSERT INTO 'subzone' (idx_subzone, name) "
                                   "VALUES( %d, 'subzone%d' );",
                                   i,
                                   i);
     }
 
     sql +=
-      vscp_string_format(VSCPDB_SUBZONE_UPDATE,
+      vscp_str_format(VSCPDB_SUBZONE_UPDATE,
                          "All subzones",
                          "Subzone = 255 represents all subzones of a zone.",
                          255L);
@@ -5596,12 +5593,11 @@ clientMsgWorkerThread(void *userdata)
     while (!pObj->m_bQuit_clientMsgWorkerThread) {
 
         // Wait for event
-        struct timespec ts;
-        ts.tv_sec  = 0;
-        ts.tv_nsec = 500000; // 500 ms
-        if (ETIMEDOUT == sem_timedwait(&pObj->m_semClientOutputQueue, &ts)) {
+        if ((-1 == vscp_sem_wait(&pObj->m_semClientOutputQueue, 500)) &&
+            errno == ETIMEDOUT) {
             continue;
         }
+ 
         if (pObj->m_clientOutputQueue.size()) {
 
             pthread_mutex_lock(&pObj->m_mutexClientOutputQueue);

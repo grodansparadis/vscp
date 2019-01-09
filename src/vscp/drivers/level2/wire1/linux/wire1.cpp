@@ -295,7 +295,7 @@ CWire1::open(const char *pUsername,
     for (int i = 0; i < varNumberOfSensors; i++) {
 
         std::string strIteration;
-        strIteration = vscp_string_format( "%d", i);
+        strIteration = vscp_str_format( "%d", i);
         vscp_trim(strIteration);
 
         CSensor *psensor = new CSensor();
@@ -603,7 +603,7 @@ void *workerThread(void *pData)
 
                     if (NULL != pEvent->pdata) {
                         std::string str;
-                        str = vscp_string_format("%lf", val);
+                        str = vscp_str_format("%lf", val);
                         if (str.length() > 7) {
                             str = vscp_str_left(str,7);
                         }

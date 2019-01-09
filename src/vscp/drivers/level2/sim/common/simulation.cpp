@@ -48,15 +48,16 @@
 #include <vscp_class.h>
 #include <vscp_type.h>
 #include <vscphelper.h>
-#include <vscpremotetcpif.h>
 #include <vscpl2drv-sim.h>
+#include <vscpremotetcpif.h>
 
 #include "simulation.h"
 
-#define XML_BUFF_SIZE   10000
+#define XML_BUFF_SIZE 10000
 
 // Workerthread
-void *workerThread(void *pData);
+void *
+workerThread(void *pData);
 
 // Globals
 
@@ -191,7 +192,7 @@ CSim::~CSim()
 // ----------------------------------------------------------------------------
 
 CWrkTreadObj *node_object_pointer = NULL;
-int depth_setup_parser = 0;
+int depth_setup_parser            = 0;
 
 void
 startSetupParser(void *data, const char *name, const char **attr)
@@ -200,10 +201,10 @@ startSetupParser(void *data, const char *name, const char **attr)
     if (NULL == pObj) return;
 
     if ((0 == vscp_strcasecmp(name, "setup")) && (0 == depth_setup_parser)) {
-        
+
         // Init node object pointer
         node_object_pointer = NULL;
-        
+
         for (int i = 0; attr[i]; i += 2) {
 
             std::string attribute = attr[i + 1];
@@ -227,15 +228,15 @@ startSetupParser(void *data, const char *name, const char **attr)
                 }
             } else if (0 == strcasecmp(attr[i], "filter")) {
                 if (!attribute.empty()) {
-                    if (!vscp_readFilterFromString(&node_object_pointer->m_vscpfilter,
-                                                   attribute)) {
+                    if (!vscp_readFilterFromString(
+                          &node_object_pointer->m_vscpfilter, attribute)) {
                         syslog(LOG_ERR, "Unable to read event receive filter.");
                     }
                 }
             } else if (0 == strcasecmp(attr[i], "mask")) {
                 if (!attribute.empty()) {
-                    if (!vscp_readMaskFromString(&node_object_pointer->m_vscpfilter,
-                                                 attribute)) {
+                    if (!vscp_readMaskFromString(
+                          &node_object_pointer->m_vscpfilter, attribute)) {
                         syslog(LOG_ERR, "Unable to read event receive mask.");
                     }
                 }
@@ -294,12 +295,13 @@ startSetupParser(void *data, const char *name, const char **attr)
                     node_object_pointer->m_registers[SIM_USER_REG_UNIT] =
                       vscp_readStringValue(attribute);
                 }
-            } else if ( 0 == strcasecmp(attr[i], "rawdm") ) {
+            } else if (0 == strcasecmp(attr[i], "rawdm")) {
                 std::deque<std::string> tokensDM;
                 vscp_split(tokensDM, attribute, ":");
                 for (int k = 0; k < (8 * SIM_DECISION_MATRIX_ROWS); k++) {
                     if (!tokensDM.empty()) {
-                        node_object_pointer->m_registers[SIM_USER_REG_DECISION_MATRIX + k] =
+                        node_object_pointer
+                          ->m_registers[SIM_USER_REG_DECISION_MATRIX + k] =
                           vscp_readStringValue(tokensDM.front());
                         tokensDM.pop_front();
                     } else {
@@ -372,16 +374,14 @@ startSetupParser(void *data, const char *name, const char **attr)
             }
         }
 
-        if ( NULL != node_object_pointer ) {
-            if ( rowidx <= SIM_DECISION_MATRIX_ROWS ) {
+        if (NULL != node_object_pointer) {
+            if (rowidx <= SIM_DECISION_MATRIX_ROWS) {
                 // Copy in the DM row
-                memcpy( node_object_pointer->m_registers + 8*rowidx, dm, 8 );
-            }
-            else {
-                syslog( LOG_ERR,"DM index out of range");
+                memcpy(node_object_pointer->m_registers + 8 * rowidx, dm, 8);
+            } else {
+                syslog(LOG_ERR, "DM index out of range");
             }
         }
-
     }
 
     depth_setup_parser++;
@@ -393,11 +393,11 @@ endSetupParser(void *data, const char *name)
     CSim *pObj = (CSim *)data;
 
     if ((0 == strcmp(name, "node")) && (1 == depth_setup_parser)) {
-        if ( NULL != node_object_pointer ) {
+        if (NULL != node_object_pointer) {
             // Add to object list
             pObj->m_objectList.push_back(node_object_pointer);
             node_object_pointer = NULL;
-        }    
+        }
     }
 
     depth_setup_parser--;
@@ -483,7 +483,7 @@ CSim::open(const char *pUsername,
     for (int i = 0; i < m_nNodes; i++) {
 
         std::string strIteration;
-        strIteration = vscp_string_format("%d", i);
+        strIteration = vscp_str_format("%d", i);
 
         CWrkTreadObj *pObj = new CWrkTreadObj();
         if (NULL != pObj) {
@@ -606,7 +606,7 @@ CSim::open(const char *pUsername,
 
     } // if
 
-    // XML setup 
+    // XML setup
     std::string strSetupXML;
     strName = m_prefix + std::string("_setup");
     if (VSCP_ERROR_SUCCESS ==
@@ -821,7 +821,7 @@ CWrkTreadObj::readStandardReg(uint8_t reg)
     if (VSCP_REG_ALARMSTATUS == reg) {
 
         // * * * Read alarm status register * * *
-        rv               = m_vscp_alarmstatus;
+        rv                 = m_vscp_alarmstatus;
         m_vscp_alarmstatus = 0x00; // Reset alarm status
 
     } else if (VSCP_REG_VSCP_MAJOR_VERSION == reg) {
@@ -964,13 +964,14 @@ CWrkTreadObj::writeStandardReg(uint8_t reg, uint8_t value)
     } else if (VSCP_REG_PAGE_SELECT_MSB == reg) {
 
         // * * * Page select register MSB * * *
-        m_vscp_page_select = (m_vscp_page_select & 0xff) | ((uint16_t)value << 8);
-        rv               = (m_vscp_page_select >> 8) & 0xff;
+        m_vscp_page_select =
+          (m_vscp_page_select & 0xff) | ((uint16_t)value << 8);
+        rv = (m_vscp_page_select >> 8) & 0xff;
     } else if (VSCP_REG_PAGE_SELECT_LSB == reg) {
 
         // * * * Page select register LSB * * *
         m_vscp_page_select = (m_vscp_page_select & 0xff00) | value;
-        rv               = (m_vscp_page_select & 0xff);
+        rv                 = (m_vscp_page_select & 0xff);
     } else if ((reg >= VSCP_REG_STANDARD_DEVICE_FAMILY_CODE) &&
                (reg < VSCP_REG_STANDARD_DEVICE_TYPE_CODE)) {
         rv = 0;
@@ -1013,8 +1014,7 @@ CWrkTreadObj::sendEvent(vscpEventEx &eventEx)
         } else {
             vscp_deleteVSCPevent(pEvent);
 
-            syslog(LOG_ERR,
-                   "[VSCPSimDrv] Failed to convert event.");
+            syslog(LOG_ERR, "[VSCPSimDrv] Failed to convert event.");
 
             return false;
         }
@@ -1246,112 +1246,62 @@ workerThread(void *pData)
 
     while (!pObj->m_pSim->m_bQuit) {
 
-        struct timespec ts;
-        ts.tv_sec  = 0;
-        ts.tv_nsec = 500000; // 500 ms
-        if (ETIMEDOUT ==
-            sem_timedwait(&pObj->m_pSim->m_semSendQueue, &ts)) {
+        if ((-1 == vscp_sem_wait(&pObj->m_pSim->m_semSendQueue, 500)) &&
+            errno == ETIMEDOUT) {
 
-                // Should a simulated measurement event be sent?
-                if (pObj->m_registers[SIM_USER_REG_INTERVAL] &&
-                    ((::vscp_getMsTimeStamp() - lastSendEvent) >
-                     ((uint32_t)pObj->m_registers[SIM_USER_REG_INTERVAL] * 1000))) {
+            // Should a simulated measurement event be sent?
+            if (pObj->m_registers[SIM_USER_REG_INTERVAL] &&
+                ((::vscp_getMsTimeStamp() - lastSendEvent) >
+                 ((uint32_t)pObj->m_registers[SIM_USER_REG_INTERVAL] * 1000))) {
 
-                    // Save new time
-                    lastSendEvent = ::vscp_getMsTimeStamp();
+                // Save new time
+                lastSendEvent = ::vscp_getMsTimeStamp();
 
-                    // Get next value
-                    val = simlist.front();
-                    simlist.pop_front();
-                    simlist.push_back(val);
+                // Get next value
+                val = simlist.front();
+                simlist.pop_front();
+                simlist.push_back(val);
 
-                    eventEx.head = VSCP_PRIORITY_NORMAL;
-                    memcpy(
-                      eventEx.GUID, pObj->m_registers + VSCP_STD_REGISTER_GUID, 16);
-                    eventEx.timestamp = vscp_makeTimeStamp();
-                    vscp_setEventExDateTimeBlockToNow(&eventEx);
-                    eventEx.sizeData   = 0;
-                    eventEx.vscp_class = pObj->m_measurementClass;
-                    eventEx.vscp_type  = pObj->m_measurementType;
+                eventEx.head = VSCP_PRIORITY_NORMAL;
+                memcpy(
+                  eventEx.GUID, pObj->m_registers + VSCP_STD_REGISTER_GUID, 16);
+                eventEx.timestamp = vscp_makeTimeStamp();
+                vscp_setEventExDateTimeBlockToNow(&eventEx);
+                eventEx.sizeData   = 0;
+                eventEx.vscp_class = pObj->m_measurementClass;
+                eventEx.vscp_type  = pObj->m_measurementType;
 
-                    if (VSCP_CLASS1_MEASUREMENT == pObj->m_measurementClass) {
+                if (VSCP_CLASS1_MEASUREMENT == pObj->m_measurementClass) {
 
-                        vscpEvent *pEvent = new vscpEvent();
+                    vscpEvent *pEvent = new vscpEvent();
 
-                        if (NULL != pEvent) {
+                    if (NULL != pEvent) {
 
-                            pEvent->pdata = NULL;
+                        pEvent->pdata = NULL;
 
-                            if (SIM_CODING_NORMALIZED ==
-                                pObj->m_registers[SIM_USER_REG_CODING]) {
+                        if (SIM_CODING_NORMALIZED ==
+                            pObj->m_registers[SIM_USER_REG_CODING]) {
 
-                                if (vscp_convertFloatToNormalizedEventData(
-                                      eventEx.data,
-                                      &eventEx.sizeData,
-                                      val,
-                                      pObj->m_registers[SIM_USER_REG_UNIT],
-                                      pObj->m_registers[SIM_USER_REG_INDEX])) {
+                            if (vscp_convertFloatToNormalizedEventData(
+                                  eventEx.data,
+                                  &eventEx.sizeData,
+                                  val,
+                                  pObj->m_registers[SIM_USER_REG_UNIT],
+                                  pObj->m_registers[SIM_USER_REG_INDEX])) {
 
-                                    if (vscp_convertVSCPfromEx(pEvent,
-                                                               &eventEx)) {
-
-                                        // OK send the event
-                                        if (vscp_doLevel2Filter(
-                                              pEvent, &pObj->m_vscpfilter)) {
-                                            pthread_mutex_lock( &pObj->m_pSim->m_mutexReceiveQueue);
-                                            pObj->m_pSim->m_receiveList.push_back(
-                                              pEvent);
-                                            sem_post(&pObj->m_pSim->m_semReceiveQueue);
-                                            pthread_mutex_unlock( &pObj->m_pSim->m_mutexReceiveQueue);
-                                        } else {
-                                            vscp_deleteVSCPevent(pEvent);
-                                        }
-
-                                    } else {
-                                        vscp_deleteVSCPevent(pEvent);
-
-                                        syslog(LOG_ERR,
-                                               "[VSCPSimDrv] %s",
-                                               (const char
-                                                  *)"Failed to convert event.");
-
-                                    }
-                                } else {
-                                    vscp_deleteVSCPevent(pEvent);
-
-                                    syslog(
-                                      LOG_ERR,
-                                      "[VSCPSimDrv] %s",
-                                      (const char *)"Failed to convert data.");
-
-                                }
-                            } else if (SIM_CODING_FLOAT ==
-                                       pObj->m_registers[SIM_USER_REG_CODING]) {
-
-                                pEvent->head = VSCP_PRIORITY_NORMAL;
-                                memcpy(pEvent->GUID,
-                                       pObj->m_registers + VSCP_STD_REGISTER_GUID,
-                                       16);
-                                pEvent->timestamp = vscp_makeTimeStamp();
-                                vscp_setEventDateTimeBlockToNow(pEvent);
-                                pEvent->sizeData   = 0;
-                                pEvent->vscp_class = pObj->m_measurementClass;
-                                pEvent->vscp_type  = pObj->m_measurementType;
-                                pEvent->pdata      = NULL;
-
-                                if (vscp_makeFloatMeasurementEvent(
-                                      pEvent,
-                                      val,
-                                      pObj->m_registers[SIM_USER_REG_UNIT],
-                                      pObj->m_registers[SIM_USER_REG_INDEX])) {
+                                if (vscp_convertVSCPfromEx(pEvent, &eventEx)) {
 
                                     // OK send the event
-                                    if (vscp_doLevel2Filter(pEvent,
-                                                            &pObj->m_vscpfilter)) {
-                                        pthread_mutex_lock( &pObj->m_pSim->m_mutexReceiveQueue);
-                                        pObj->m_pSim->m_receiveList.push_back(pEvent);
-                                        sem_post(&pObj->m_pSim->m_semReceiveQueue );
-                                        pthread_mutex_unlock( &pObj->m_pSim->m_mutexReceiveQueue);
+                                    if (vscp_doLevel2Filter(
+                                          pEvent, &pObj->m_vscpfilter)) {
+                                        pthread_mutex_lock(
+                                          &pObj->m_pSim->m_mutexReceiveQueue);
+                                        pObj->m_pSim->m_receiveList.push_back(
+                                          pEvent);
+                                        sem_post(
+                                          &pObj->m_pSim->m_semReceiveQueue);
+                                        pthread_mutex_unlock(
+                                          &pObj->m_pSim->m_mutexReceiveQueue);
                                     } else {
                                         vscp_deleteVSCPevent(pEvent);
                                     }
@@ -1362,369 +1312,409 @@ workerThread(void *pData)
                                     syslog(
                                       LOG_ERR,
                                       "[VSCPSimDrv] %s",
-                                      (const char *)"Failed to convert data.");
-
+                                      (const char *)"Failed to convert event.");
                                 }
+                            } else {
+                                vscp_deleteVSCPevent(pEvent);
 
-                            } else if (SIM_CODING_STRING ==
-                                       pObj->m_registers[SIM_USER_REG_CODING]) {
+                                syslog(LOG_ERR,
+                                       "[VSCPSimDrv] %s",
+                                       (const char *)"Failed to convert data.");
+                            }
+                        } else if (SIM_CODING_FLOAT ==
+                                   pObj->m_registers[SIM_USER_REG_CODING]) {
 
-                                pEvent->head = VSCP_PRIORITY_NORMAL;
-                                memcpy(pEvent->GUID,
-                                       pObj->m_registers + VSCP_STD_REGISTER_GUID,
-                                       16);
-                                pEvent->timestamp = vscp_makeTimeStamp();
-                                vscp_setEventDateTimeBlockToNow(pEvent);
-                                pEvent->sizeData   = 0;
-                                pEvent->vscp_class = pObj->m_measurementClass;
-                                pEvent->vscp_type  = pObj->m_measurementType;
-                                pEvent->pdata      = NULL;
+                            pEvent->head = VSCP_PRIORITY_NORMAL;
+                            memcpy(pEvent->GUID,
+                                   pObj->m_registers + VSCP_STD_REGISTER_GUID,
+                                   16);
+                            pEvent->timestamp = vscp_makeTimeStamp();
+                            vscp_setEventDateTimeBlockToNow(pEvent);
+                            pEvent->sizeData   = 0;
+                            pEvent->vscp_class = pObj->m_measurementClass;
+                            pEvent->vscp_type  = pObj->m_measurementType;
+                            pEvent->pdata      = NULL;
 
-                                if (vscp_makeStringMeasurementEvent(
-                                      pEvent,
-                                      val,
-                                      pObj->m_registers[SIM_USER_REG_UNIT],
-                                      pObj->m_registers[SIM_USER_REG_INDEX])) {
+                            if (vscp_makeFloatMeasurementEvent(
+                                  pEvent,
+                                  val,
+                                  pObj->m_registers[SIM_USER_REG_UNIT],
+                                  pObj->m_registers[SIM_USER_REG_INDEX])) {
 
-                                    // OK send the event
-                                    if (vscp_doLevel2Filter(pEvent,
-                                                            &pObj->m_vscpfilter)) {
-                                        pthread_mutex_lock( &pObj->m_pSim->m_mutexReceiveQueue);
-                                        pObj->m_pSim->m_receiveList.push_back(pEvent);
-                                        sem_post(&pObj->m_pSim->m_semReceiveQueue);
-                                        pthread_mutex_unlock( &pObj->m_pSim->m_mutexReceiveQueue);
-                                    } else {
-                                        vscp_deleteVSCPevent(pEvent);
-                                    }
-
+                                // OK send the event
+                                if (vscp_doLevel2Filter(pEvent,
+                                                        &pObj->m_vscpfilter)) {
+                                    pthread_mutex_lock(
+                                      &pObj->m_pSim->m_mutexReceiveQueue);
+                                    pObj->m_pSim->m_receiveList.push_back(
+                                      pEvent);
+                                    sem_post(&pObj->m_pSim->m_semReceiveQueue);
+                                    pthread_mutex_unlock(
+                                      &pObj->m_pSim->m_mutexReceiveQueue);
                                 } else {
                                     vscp_deleteVSCPevent(pEvent);
-
-                                    syslog(
-                                      LOG_ERR,
-                                      "[VSCPSimDrv] Failed to convert data.");
-
                                 }
+
+                            } else {
+                                vscp_deleteVSCPevent(pEvent);
+
+                                syslog(LOG_ERR,
+                                       "[VSCPSimDrv] %s",
+                                       (const char *)"Failed to convert data.");
+                            }
+
+                        } else if (SIM_CODING_STRING ==
+                                   pObj->m_registers[SIM_USER_REG_CODING]) {
+
+                            pEvent->head = VSCP_PRIORITY_NORMAL;
+                            memcpy(pEvent->GUID,
+                                   pObj->m_registers + VSCP_STD_REGISTER_GUID,
+                                   16);
+                            pEvent->timestamp = vscp_makeTimeStamp();
+                            vscp_setEventDateTimeBlockToNow(pEvent);
+                            pEvent->sizeData   = 0;
+                            pEvent->vscp_class = pObj->m_measurementClass;
+                            pEvent->vscp_type  = pObj->m_measurementType;
+                            pEvent->pdata      = NULL;
+
+                            if (vscp_makeStringMeasurementEvent(
+                                  pEvent,
+                                  val,
+                                  pObj->m_registers[SIM_USER_REG_UNIT],
+                                  pObj->m_registers[SIM_USER_REG_INDEX])) {
+
+                                // OK send the event
+                                if (vscp_doLevel2Filter(pEvent,
+                                                        &pObj->m_vscpfilter)) {
+                                    pthread_mutex_lock(
+                                      &pObj->m_pSim->m_mutexReceiveQueue);
+                                    pObj->m_pSim->m_receiveList.push_back(
+                                      pEvent);
+                                    sem_post(&pObj->m_pSim->m_semReceiveQueue);
+                                    pthread_mutex_unlock(
+                                      &pObj->m_pSim->m_mutexReceiveQueue);
+                                } else {
+                                    vscp_deleteVSCPevent(pEvent);
+                                }
+
+                            } else {
+                                vscp_deleteVSCPevent(pEvent);
+
+                                syslog(LOG_ERR,
+                                       "[VSCPSimDrv] Failed to convert data.");
                             }
                         }
                     }
                 }
+            }
 
-                // Should a heartbeat event be sent (every 30 seconds)
-                if ((::vscp_getMsTimeStamp() - lastSendHeartbeat) > 30000) {
+            // Should a heartbeat event be sent (every 30 seconds)
+            if ((::vscp_getMsTimeStamp() - lastSendHeartbeat) > 30000) {
 
-                    // Save new time
-                    lastSendHeartbeat = ::vscp_getMsTimeStamp();
+                // Save new time
+                lastSendHeartbeat = ::vscp_getMsTimeStamp();
 
-                    eventEx.head = VSCP_PRIORITY_NORMAL;
-                    memcpy(
-                      eventEx.GUID, pObj->m_registers + VSCP_STD_REGISTER_GUID, 16);
-                    eventEx.timestamp = vscp_makeTimeStamp();
-                    vscp_setEventExDateTimeBlockToNow(&eventEx);
-                    eventEx.sizeData = 3;
-                    eventEx.data[0]  = 0;
-                    eventEx.data[1]  = pObj->m_registers[SIM_USER_REG_ZONE]; // Zone
-                    eventEx.data[2] =
-                      pObj->m_registers[SIM_USER_REG_SUBZONE]; // Subzone
-                    eventEx.vscp_class = VSCP_CLASS1_INFORMATION;
-                    eventEx.vscp_type  = VSCP_TYPE_INFORMATION_NODE_HEARTBEAT;
+                eventEx.head = VSCP_PRIORITY_NORMAL;
+                memcpy(
+                  eventEx.GUID, pObj->m_registers + VSCP_STD_REGISTER_GUID, 16);
+                eventEx.timestamp = vscp_makeTimeStamp();
+                vscp_setEventExDateTimeBlockToNow(&eventEx);
+                eventEx.sizeData = 3;
+                eventEx.data[0]  = 0;
+                eventEx.data[1]  = pObj->m_registers[SIM_USER_REG_ZONE]; // Zone
+                eventEx.data[2] =
+                  pObj->m_registers[SIM_USER_REG_SUBZONE]; // Subzone
+                eventEx.vscp_class = VSCP_CLASS1_INFORMATION;
+                eventEx.vscp_type  = VSCP_TYPE_INFORMATION_NODE_HEARTBEAT;
 
-                    pObj->sendEvent(eventEx);
-                }
+                pObj->sendEvent(eventEx);
+            }
 
-                // Go on with work
-                continue;
+            // Go on with work
+            continue;
 
-            } // Timeout
+        } // Timeout
 
-            // --------------------------------------------------------------------
+        // --------------------------------------------------------------------
 
-            // Check if there is event(s) to handle
-            if (pObj->m_pSim->m_sendList.size()) {
+        // Check if there is event(s) to handle
+        if (pObj->m_pSim->m_sendList.size()) {
 
-                // Yes there are data to send
-                pthread_mutex_lock( &pObj->m_pSim->m_mutexSendQueue);
-                vscpEvent *pEvent = pObj->m_pSim->m_sendList.front();
-                pObj->m_pSim->m_sendList.pop_front();
-                pthread_mutex_unlock( &pObj->m_pSim->m_mutexSendQueue);
+            // Yes there are data to send
+            pthread_mutex_lock(&pObj->m_pSim->m_mutexSendQueue);
+            vscpEvent *pEvent = pObj->m_pSim->m_sendList.front();
+            pObj->m_pSim->m_sendList.pop_front();
+            pthread_mutex_unlock(&pObj->m_pSim->m_mutexSendQueue);
 
-                if (NULL == pEvent) continue;
+            if (NULL == pEvent) continue;
 
-                // Just to make sure
-                if (0 == pEvent->sizeData) {
-                    pEvent->pdata = NULL;
-                }
+            // Just to make sure
+            if (0 == pEvent->sizeData) {
+                pEvent->pdata = NULL;
+            }
 
-                // Yes there is data to handle
-                if (pObj->m_bLevel2) {
+            // Yes there is data to handle
+            if (pObj->m_bLevel2) {
 
-                } else {
+            } else {
 
-                    if (VSCP_CLASS1_PROTOCOL == pEvent->vscp_class) {
+                if (VSCP_CLASS1_PROTOCOL == pEvent->vscp_class) {
 
-                        if (VSCP_TYPE_PROTOCOL_READ_REGISTER ==
-                            pEvent->vscp_type) {
-                            if ((NULL != pEvent->pdata) &&
-                                (2 == pEvent->sizeData) &&
-                                (pObj->m_guid.getNickname() == pEvent->pdata[0])) {
-                                eventEx.head      = VSCP_PRIORITY_NORMAL;
-                                eventEx.timestamp = vscp_makeTimeStamp();
-                                vscp_setEventExDateTimeBlockToNow(&eventEx);
-                                eventEx.sizeData = 2;
-                                eventEx.data[0]  = pEvent->pdata[1]; // Reg
-                                eventEx.data[1] =
-                                  pObj->readLevel1Register(pEvent->pdata[1]);
-                                eventEx.vscp_class = VSCP_CLASS1_PROTOCOL;
-                                eventEx.vscp_type =
-                                  VSCP_TYPE_PROTOCOL_RW_RESPONSE;
+                    if (VSCP_TYPE_PROTOCOL_READ_REGISTER == pEvent->vscp_type) {
+                        if ((NULL != pEvent->pdata) &&
+                            (2 == pEvent->sizeData) &&
+                            (pObj->m_guid.getNickname() == pEvent->pdata[0])) {
+                            eventEx.head      = VSCP_PRIORITY_NORMAL;
+                            eventEx.timestamp = vscp_makeTimeStamp();
+                            vscp_setEventExDateTimeBlockToNow(&eventEx);
+                            eventEx.sizeData = 2;
+                            eventEx.data[0]  = pEvent->pdata[1]; // Reg
+                            eventEx.data[1] =
+                              pObj->readLevel1Register(pEvent->pdata[1]);
+                            eventEx.vscp_class = VSCP_CLASS1_PROTOCOL;
+                            eventEx.vscp_type  = VSCP_TYPE_PROTOCOL_RW_RESPONSE;
 
-                                pObj->sendEvent(eventEx);
-                            }
-                        } else if (VSCP_TYPE_PROTOCOL_WRITE_REGISTER ==
-                                   pEvent->vscp_type) {
-                            if ((NULL != pEvent->pdata) &&
-                                (3 == pEvent->sizeData) &&
-                                (pObj->m_guid.getNickname() == pEvent->pdata[0])) {
-                                eventEx.head      = VSCP_PRIORITY_NORMAL;
-                                eventEx.timestamp = vscp_makeTimeStamp();
-                                vscp_setEventExDateTimeBlockToNow(&eventEx);
-                                eventEx.sizeData = 2;
-                                eventEx.data[0]  = pEvent->pdata[1]; // Reg
-                                eventEx.data[1]  = pObj->writeLevel1Register(
-                                  pEvent->pdata[1], pEvent->pdata[2]);
-                                eventEx.vscp_class = VSCP_CLASS1_PROTOCOL;
-                                eventEx.vscp_type =
-                                  VSCP_TYPE_PROTOCOL_RW_RESPONSE;
+                            pObj->sendEvent(eventEx);
+                        }
+                    } else if (VSCP_TYPE_PROTOCOL_WRITE_REGISTER ==
+                               pEvent->vscp_type) {
+                        if ((NULL != pEvent->pdata) &&
+                            (3 == pEvent->sizeData) &&
+                            (pObj->m_guid.getNickname() == pEvent->pdata[0])) {
+                            eventEx.head      = VSCP_PRIORITY_NORMAL;
+                            eventEx.timestamp = vscp_makeTimeStamp();
+                            vscp_setEventExDateTimeBlockToNow(&eventEx);
+                            eventEx.sizeData = 2;
+                            eventEx.data[0]  = pEvent->pdata[1]; // Reg
+                            eventEx.data[1]  = pObj->writeLevel1Register(
+                              pEvent->pdata[1], pEvent->pdata[2]);
+                            eventEx.vscp_class = VSCP_CLASS1_PROTOCOL;
+                            eventEx.vscp_type  = VSCP_TYPE_PROTOCOL_RW_RESPONSE;
 
-                                pObj->sendEvent(eventEx);
-                            }
-                        } else if (VSCP_TYPE_PROTOCOL_PAGE_READ ==
-                                   pEvent->vscp_type) {
-                            if ((NULL != pEvent->pdata) &&
-                                (3 == pEvent->sizeData) &&
-                                (pObj->m_guid.getNickname() == pEvent->pdata[0])) {
+                            pObj->sendEvent(eventEx);
+                        }
+                    } else if (VSCP_TYPE_PROTOCOL_PAGE_READ ==
+                               pEvent->vscp_type) {
+                        if ((NULL != pEvent->pdata) &&
+                            (3 == pEvent->sizeData) &&
+                            (pObj->m_guid.getNickname() == pEvent->pdata[0])) {
 
-                                uint8_t i;
-                                uint8_t pos    = 0;
-                                uint8_t offset = pEvent->pdata[1];
-                                uint8_t len    = pEvent->pdata[2];
+                            uint8_t i;
+                            uint8_t pos    = 0;
+                            uint8_t offset = pEvent->pdata[1];
+                            uint8_t len    = pEvent->pdata[2];
 
-                                for (i = 0; i < len; i++) {
-                                    eventEx.data[(i % 7) + 1] =
-                                      pObj->readLevel1Register(offset + i);
+                            for (i = 0; i < len; i++) {
+                                eventEx.data[(i % 7) + 1] =
+                                  pObj->readLevel1Register(offset + i);
 
-                                    if ((i % 7) == 6 || i == (len - 1)) {
-                                        uint8_t bytes;
+                                if ((i % 7) == 6 || i == (len - 1)) {
+                                    uint8_t bytes;
 
-                                        if ((i % 7) == 6) {
-                                            bytes = 7;
-                                        } else {
-                                            bytes = (i % 7) + 1;
-                                        }
-
-                                        eventEx.timestamp =
-                                          vscp_makeTimeStamp();
-                                        vscp_setEventExDateTimeBlockToNow(
-                                          &eventEx);
-                                        eventEx.sizeData = bytes + 1;
-                                        eventEx.head     = VSCP_PRIORITY_NORMAL;
-                                        eventEx.vscp_class =
-                                          VSCP_CLASS1_PROTOCOL;
-                                        eventEx.vscp_type =
-                                          VSCP_TYPE_PROTOCOL_RW_PAGE_RESPONSE;
-                                        eventEx.data[0] = pos; // index
-
-                                        // send the event
-                                        pObj->sendEvent(eventEx);
-                                        pos++;
-                                    }
-                                }
-                            }
-                        } else if (VSCP_TYPE_PROTOCOL_PAGE_WRITE ==
-                                   pEvent->vscp_type) {
-                            if ((NULL != pEvent->pdata) &&
-                                (3 == pEvent->sizeData) &&
-                                (pObj->m_guid.getNickname() == pEvent->pdata[0])) {
-                                uint8_t i;
-                                uint8_t pos = pEvent->pdata[1];
-                                uint8_t len = eventEx.sizeData - 2;
-
-                                for (i = 0; i < len; i++) {
-                                    // Write VSCP register
-                                    pObj->writeLevel1Register(pos + i,
-                                                        pEvent->pdata[2 + i]);
-                                    eventEx.data[1 + i] =
-                                      pObj->readLevel1Register(pos + i);
-                                }
-
-                                eventEx.head       = VSCP_PRIORITY_NORMAL;
-                                eventEx.vscp_class = VSCP_CLASS1_PROTOCOL;
-                                eventEx.vscp_type =
-                                  VSCP_TYPE_PROTOCOL_RW_PAGE_RESPONSE;
-                                eventEx.data[0]   = 0; // index
-                                eventEx.sizeData  = len + 1;
-                                eventEx.timestamp = vscp_makeTimeStamp();
-                                vscp_setEventExDateTimeBlockToNow(&eventEx);
-
-                                // send the event
-                                pObj->sendEvent(eventEx);
-                            }
-                        } else if (VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_READ ==
-                                   pEvent->vscp_type) {
-                            if ((NULL != pEvent->pdata) &&
-                                (pObj->m_guid.getNickname() == pEvent->pdata[0])) {
-
-                                uint16_t page_save;
-                                uint8_t byte = 0, bytes = 0;
-                                uint8_t bytes_this_time, cb;
-
-                                // if data byte 4 of the request is present
-                                // probably more than 1 register should be
-                                // read/written, therefore check lower 4 bits of
-                                // the flags and decide
-                                if (pEvent->sizeData > 3) {
-
-                                    // Number of registers was specified', thus
-                                    // take that value
-                                    bytes = pEvent->pdata[4];
-                                    // if number of bytes was zero we read one
-                                    // byte
-                                    if (0 == bytes) {
-                                        bytes = 1;
-                                    }
-                                } else {
-                                    bytes = 1;
-                                }
-
-                                // Save the current page
-                                page_save = pObj->m_vscp_page_select;
-
-                                // Assign the requested page, this variable is
-                                // used in the implementation specific function
-                                // 'vscp_readAppReg()' and 'vscp_writeAppReg()'
-                                // to actually switch pages there
-                                pObj->m_vscp_page_select =
-                                  ((pEvent->pdata[1] << 8) | pEvent->pdata[2]);
-
-                                // Construct response event
-                                eventEx.head       = VSCP_PRIORITY_NORMAL;
-                                eventEx.vscp_class = VSCP_CLASS1_PROTOCOL;
-                                eventEx.vscp_type =
-                                  VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_RESPONSE;
-                                eventEx.data[0] =
-                                  0; // index of event, this is the first
-                                eventEx.data[1] =
-                                  pEvent->pdata[1]; // mirror page msb
-                                eventEx.data[2] =
-                                  pEvent->pdata[2]; // mirror page lsb
-
-                                eventEx.timestamp = vscp_makeTimeStamp();
-                                vscp_setEventExDateTimeBlockToNow(&eventEx);
-
-                                do {
-                                    // calculate bytes to transfer in this event
-                                    if ((bytes - byte) >= 4) {
-                                        bytes_this_time = 4;
+                                    if ((i % 7) == 6) {
+                                        bytes = 7;
                                     } else {
-                                        bytes_this_time = (bytes - byte);
+                                        bytes = (i % 7) + 1;
                                     }
 
-                                    // define length of this event
-                                    eventEx.sizeData = 4 + bytes_this_time;
-                                    eventEx.data[3] =
-                                      pEvent->pdata[3] +
-                                      byte; // first register in this event
-
-                                    // Put up to four registers to data space
-                                    for (cb = 0; cb < bytes_this_time; cb++) {
-                                        eventEx.data[(4 + cb)] =
-                                          pObj->readLevel1Register(
-                                            (pEvent->pdata[3] + byte + cb));
-                                    }
+                                    eventEx.timestamp = vscp_makeTimeStamp();
+                                    vscp_setEventExDateTimeBlockToNow(&eventEx);
+                                    eventEx.sizeData   = bytes + 1;
+                                    eventEx.head       = VSCP_PRIORITY_NORMAL;
+                                    eventEx.vscp_class = VSCP_CLASS1_PROTOCOL;
+                                    eventEx.vscp_type =
+                                      VSCP_TYPE_PROTOCOL_RW_PAGE_RESPONSE;
+                                    eventEx.data[0] = pos; // index
 
                                     // send the event
                                     pObj->sendEvent(eventEx);
-
-                                    // increment byte by bytes_this_time and the
-                                    // event number by one
-                                    byte += bytes_this_time;
-
-                                    // increment the index
-                                    eventEx.data[0] += 1;
-
-                                } while (byte < bytes);
-
-                                // Restore the saved page
-                                pObj->m_vscp_page_select = page_save;
+                                    pos++;
+                                }
                             }
-                        } else if (VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_WRITE ==
-                                   pEvent->vscp_type) {
+                        }
+                    } else if (VSCP_TYPE_PROTOCOL_PAGE_WRITE ==
+                               pEvent->vscp_type) {
+                        if ((NULL != pEvent->pdata) &&
+                            (3 == pEvent->sizeData) &&
+                            (pObj->m_guid.getNickname() == pEvent->pdata[0])) {
+                            uint8_t i;
+                            uint8_t pos = pEvent->pdata[1];
+                            uint8_t len = eventEx.sizeData - 2;
 
-                            if ((NULL != pEvent->pdata) &&
-                                (pObj->m_guid.getNickname() == pEvent->pdata[0])) {
+                            for (i = 0; i < len; i++) {
+                                // Write VSCP register
+                                pObj->writeLevel1Register(pos + i,
+                                                          pEvent->pdata[2 + i]);
+                                eventEx.data[1 + i] =
+                                  pObj->readLevel1Register(pos + i);
+                            }
 
-                                uint8_t i;
-                                uint16_t page_save;
+                            eventEx.head       = VSCP_PRIORITY_NORMAL;
+                            eventEx.vscp_class = VSCP_CLASS1_PROTOCOL;
+                            eventEx.vscp_type =
+                              VSCP_TYPE_PROTOCOL_RW_PAGE_RESPONSE;
+                            eventEx.data[0]   = 0; // index
+                            eventEx.sizeData  = len + 1;
+                            eventEx.timestamp = vscp_makeTimeStamp();
+                            vscp_setEventExDateTimeBlockToNow(&eventEx);
 
-                                // Save the current page
-                                page_save = pObj->m_vscp_page_select;
+                            // send the event
+                            pObj->sendEvent(eventEx);
+                        }
+                    } else if (VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_READ ==
+                               pEvent->vscp_type) {
+                        if ((NULL != pEvent->pdata) &&
+                            (pObj->m_guid.getNickname() == pEvent->pdata[0])) {
 
-                                // Assign the requested page
-                                // specific function 'vscp_readAppReg()' and
-                                // 'vscp_writeAppReg()' to actually
-                                pObj->m_vscp_page_select =
-                                  (pEvent->pdata[1] << 8) | pEvent->pdata[2];
+                            uint16_t page_save;
+                            uint8_t byte = 0, bytes = 0;
+                            uint8_t bytes_this_time, cb;
 
-                                for (i = pEvent
-                                           ->pdata[3]; // register to write
+                            // if data byte 4 of the request is present
+                            // probably more than 1 register should be
+                            // read/written, therefore check lower 4 bits of
+                            // the flags and decide
+                            if (pEvent->sizeData > 3) {
+
+                                // Number of registers was specified', thus
+                                // take that value
+                                bytes = pEvent->pdata[4];
+                                // if number of bytes was zero we read one
+                                // byte
+                                if (0 == bytes) {
+                                    bytes = 1;
+                                }
+                            } else {
+                                bytes = 1;
+                            }
+
+                            // Save the current page
+                            page_save = pObj->m_vscp_page_select;
+
+                            // Assign the requested page, this variable is
+                            // used in the implementation specific function
+                            // 'vscp_readAppReg()' and 'vscp_writeAppReg()'
+                            // to actually switch pages there
+                            pObj->m_vscp_page_select =
+                              ((pEvent->pdata[1] << 8) | pEvent->pdata[2]);
+
+                            // Construct response event
+                            eventEx.head       = VSCP_PRIORITY_NORMAL;
+                            eventEx.vscp_class = VSCP_CLASS1_PROTOCOL;
+                            eventEx.vscp_type =
+                              VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_RESPONSE;
+                            eventEx.data[0] =
+                              0; // index of event, this is the first
+                            eventEx.data[1] =
+                              pEvent->pdata[1]; // mirror page msb
+                            eventEx.data[2] =
+                              pEvent->pdata[2]; // mirror page lsb
+
+                            eventEx.timestamp = vscp_makeTimeStamp();
+                            vscp_setEventExDateTimeBlockToNow(&eventEx);
+
+                            do {
+                                // calculate bytes to transfer in this event
+                                if ((bytes - byte) >= 4) {
+                                    bytes_this_time = 4;
+                                } else {
+                                    bytes_this_time = (bytes - byte);
+                                }
+
+                                // define length of this event
+                                eventEx.sizeData = 4 + bytes_this_time;
+                                eventEx.data[3] =
+                                  pEvent->pdata[3] +
+                                  byte; // first register in this event
+
+                                // Put up to four registers to data space
+                                for (cb = 0; cb < bytes_this_time; cb++) {
+                                    eventEx.data[(4 + cb)] =
+                                      pObj->readLevel1Register(
+                                        (pEvent->pdata[3] + byte + cb));
+                                }
+
+                                // send the event
+                                pObj->sendEvent(eventEx);
+
+                                // increment byte by bytes_this_time and the
+                                // event number by one
+                                byte += bytes_this_time;
+
+                                // increment the index
+                                eventEx.data[0] += 1;
+
+                            } while (byte < bytes);
+
+                            // Restore the saved page
+                            pObj->m_vscp_page_select = page_save;
+                        }
+                    } else if (VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_WRITE ==
+                               pEvent->vscp_type) {
+
+                        if ((NULL != pEvent->pdata) &&
+                            (pObj->m_guid.getNickname() == pEvent->pdata[0])) {
+
+                            uint8_t i;
+                            uint16_t page_save;
+
+                            // Save the current page
+                            page_save = pObj->m_vscp_page_select;
+
+                            // Assign the requested page
+                            // specific function 'vscp_readAppReg()' and
+                            // 'vscp_writeAppReg()' to actually
+                            pObj->m_vscp_page_select =
+                              (pEvent->pdata[1] << 8) | pEvent->pdata[2];
+
+                            for (i = pEvent->pdata[3]; // register to write
                                                        // number of registers to
                                                        // write comes from byte
                                                        // length of write event
                                                        // reduced by four bytes
-                                     i < (pEvent->pdata[3] +
-                                          (pEvent->sizeData - 4));
-                                     i++) {
-                                    eventEx.data[4 + (i - pEvent->pdata[3])] =
-                                      pObj->writeLevel1Register(
-                                        i,
-                                        pEvent
-                                          ->pdata[4 + (i - pEvent->pdata[3])]);
-                                }
-
-                                // Restore the saved page
-                                pObj->m_vscp_page_select = page_save;
-
-                                eventEx.head      = VSCP_PRIORITY_NORMAL;
-                                eventEx.sizeData  = 4 + (pEvent->sizeData - 4);
-                                eventEx.timestamp = vscp_makeTimeStamp();
-                                vscp_setEventExDateTimeBlockToNow(&eventEx);
-                                eventEx.vscp_class = VSCP_CLASS1_PROTOCOL;
-                                eventEx.vscp_type =
-                                  VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_RESPONSE;
-                                eventEx.data[0] = 0; // index of event, this is
-                                                     // the first and only
-                                eventEx.data[1] =
-                                  pEvent->pdata[1]; // mirror page msb
-                                eventEx.data[2] =
-                                  pEvent->pdata[2]; // mirror page lsb
-                                eventEx.data[3] = pEvent->pdata[3]; // Register
-
-                                // send the event
-                                pObj->sendEvent(eventEx);
+                                 i <
+                                 (pEvent->pdata[3] + (pEvent->sizeData - 4));
+                                 i++) {
+                                eventEx.data[4 + (i - pEvent->pdata[3])] =
+                                  pObj->writeLevel1Register(
+                                    i,
+                                    pEvent->pdata[4 + (i - pEvent->pdata[3])]);
                             }
+
+                            // Restore the saved page
+                            pObj->m_vscp_page_select = page_save;
+
+                            eventEx.head      = VSCP_PRIORITY_NORMAL;
+                            eventEx.sizeData  = 4 + (pEvent->sizeData - 4);
+                            eventEx.timestamp = vscp_makeTimeStamp();
+                            vscp_setEventExDateTimeBlockToNow(&eventEx);
+                            eventEx.vscp_class = VSCP_CLASS1_PROTOCOL;
+                            eventEx.vscp_type =
+                              VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_RESPONSE;
+                            eventEx.data[0] = 0; // index of event, this is
+                                                 // the first and only
+                            eventEx.data[1] =
+                              pEvent->pdata[1]; // mirror page msb
+                            eventEx.data[2] =
+                              pEvent->pdata[2]; // mirror page lsb
+                            eventEx.data[3] = pEvent->pdata[3]; // Register
+
+                            // send the event
+                            pObj->sendEvent(eventEx);
                         }
                     }
-
-                    // Feed through matrix
-                    pObj->doDM(pEvent);
                 }
 
-                // We are done with the event
-                vscp_deleteVSCPevent_v2(&pEvent);
+                // Feed through matrix
+                pObj->doDM(pEvent);
+            }
 
-            } // Send list size
+            // We are done with the event
+            vscp_deleteVSCPevent_v2(&pEvent);
 
-        } // while
+        } // Send list size
 
-        return NULL;
-    }
+    } // while
+
+    return NULL;
+}

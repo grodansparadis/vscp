@@ -170,6 +170,16 @@ extern "C"
     */
     int vscp_isBigEndian(void);
 
+    /*!
+        Wait a number of milliseconds for semaphore
+
+        @param sem Pointer to semaphore to wait for
+        @param waitms Time in milliseconds to wait. Max 3999 ms.
+        return 0 is semaphore is signaled, -1 if error. errno
+        is set accordingly. ETIMEDOUT is returned for timeout.
+    */
+    int vscp_sem_wait(sem_t *sem, uint32_t waitms);
+
     /*
      * Check two floats for equality
      * @param A Float to compare
@@ -261,14 +271,14 @@ extern "C"
     char *vscp_rstrstr(const char *s1, const char *s2);
 
     /*!
-        vscp_string_format
+        vscp_str_format
 
         https://stackoverflow.com/questions/2342162/stdstring-formatting-like-sprintf/49812018
         @param format string
         @param Variables part of resulting string
         @return formated string
     */
-    std::string vscp_string_format(const std::string fmt_str, ...);
+    std::string vscp_str_format(const std::string fmt_str, ...);
 
     /*!
         vscp_startsWith
@@ -407,6 +417,7 @@ extern "C"
     static inline std::string vscp_str_left(const std::string &str,
                                             size_t length)
     {
+        if ( 0 == length ) return std::string("");
         return str.substr(0, length);
     }
 
@@ -416,6 +427,7 @@ extern "C"
     static inline std::string vscp_str_right(const std::string &str,
                                              size_t length)
     {
+        if ( 0 == length ) return std::string("");
         if (length > str.length()) length = str.length();
         return str.substr(str.length() - length);
     }

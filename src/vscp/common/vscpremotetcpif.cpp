@@ -446,7 +446,7 @@ VscpRemoteTcpIf::doCmdOpen(const std::string &strHostname,
                            const std::string &strPassword)
 {
     std::string strCombinedHost =
-      strHostname + std::string(":") + vscp_string_format("%d", port);
+      strHostname + std::string(":") + vscp_str_format("%d", port);
     return doCmdOpen(strCombinedHost, strUsername, strPassword);
 }
 
@@ -1121,7 +1121,7 @@ VscpRemoteTcpIf::doCmdFilter(const vscpEventFilter *pFilter)
 
     // filter-priority, filter-class, filter-type, filter-GUID
     strCmd =
-      vscp_string_format("SFLT "
+      vscp_str_format("SFLT "
                          "%d,%d,%d,%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%"
                          "02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X\r\n",
                          pFilter->filter_priority,
@@ -1150,7 +1150,7 @@ VscpRemoteTcpIf::doCmdFilter(const vscpEventFilter *pFilter)
 
     // mask-priority, mask-class, mask-type, mask-GUID
     strCmd =
-      vscp_string_format("SMSK "
+      vscp_str_format("SMSK "
                          "%d,%d,%d,%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%"
                          "02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X\r\n",
                          pFilter->mask_priority,
@@ -1415,7 +1415,7 @@ VscpRemoteTcpIf::doCmdSetGUID(const unsigned char *pGUID)
     // If receive loop active terminate
     if (m_bModeReceiveLoop) return VSCP_ERROR_PARAMETER;
 
-    strCmd = vscp_string_format("SGID "
+    strCmd = vscp_str_format("SGID "
                                 "%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%"
                                 "02x:%02x:%02x:%02x:%02x:%02x:%02x\r\n",
                                 pGUID[0],
@@ -1589,7 +1589,7 @@ VscpRemoteTcpIf::getRemoteVariableList(std::deque<std::string> &array,
     if (!isConnected()) return VSCP_ERROR_NOT_OPEN; // Connection closed.
 
     strCmd = std::string("VAR LIST ") + regexp + std::string(" ");
-    if (type) strCmd += vscp_string_format("%d", type);
+    if (type) strCmd += vscp_str_format("%d", type);
     strCmd += std::string("\r\n");
     if (VSCP_ERROR_SUCCESS != doCommand(strCmd)) {
         return VSCP_ERROR_ERROR;
@@ -1621,7 +1621,7 @@ VscpRemoteTcpIf::saveRemoteVariablesToDisk(const std::string &path,
     if (!isConnected()) return VSCP_ERROR_NOT_OPEN; // Connection closed.
 
     strCmd = std::string("VAR SAVE ") + path + std::string(" ");
-    strCmd += vscp_string_format("%d ", select) + regExp;
+    strCmd += vscp_str_format("%d ", select) + regExp;
     strCmd += std::string("\r\n");
     if (VSCP_ERROR_SUCCESS != doCommand(strCmd)) {
         return VSCP_ERROR_ERROR;
@@ -1674,7 +1674,7 @@ VscpRemoteTcpIf::createRemoteVariable(const std::string &name,
     strCmd += ((bPersistent) ? std::string("TRUE") : std::string("FALSE")) +
               std::string(";");
     strCmd += strUser + std::string(";") +
-              vscp_string_format("0x%lX", (unsigned long)rights) +
+              vscp_str_format("0x%lX", (unsigned long)rights) +
               std::string(";");
     strCmd += strValue + std::string(";") + strNote + std::string("\r\n");
     if (VSCP_ERROR_SUCCESS != doCommand(strCmd)) {
@@ -1953,7 +1953,7 @@ VscpRemoteTcpIf::setRemoteVariableFromString(const std::string &name,
         strCmd += "false;";
     }
     strCmd += ";"; // User is logged in user
-    strCmd += vscp_string_format("0x%lX", rights) + ";";
+    strCmd += vscp_str_format("0x%lX", rights) + ";";
     strCmd += strValue + "\r\n";
     if (VSCP_ERROR_SUCCESS != doCommand(strCmd)) {
         return VSCP_ERROR_ERROR;
@@ -2095,7 +2095,7 @@ VscpRemoteTcpIf::setRemoteVariableInt(const std::string &name, int value)
 {
     std::string strValue;
 
-    strValue = vscp_string_format("%d", value);
+    strValue = vscp_str_format("%d", value);
     return setRemoteVariableValue(name, strValue);
 }
 
@@ -2131,7 +2131,7 @@ VscpRemoteTcpIf::setRemoteVariableLong(const std::string &name, long value)
 {
     std::string strValue;
 
-    strValue = vscp_string_format("%ld", value);
+    strValue = vscp_str_format("%ld", value);
     return setRemoteVariableValue(name, strValue);
 }
 
@@ -2167,7 +2167,7 @@ VscpRemoteTcpIf::setRemoteVariableDouble(const std::string &name, double value)
 {
     std::string strValue;
 
-    strValue = vscp_string_format("%f", value);
+    strValue = vscp_str_format("%f", value);
     return setRemoteVariableValue(name, strValue);
 }
 
@@ -2244,7 +2244,7 @@ VscpRemoteTcpIf::setRemoteVariableMeasurement(const std::string &name,
 {
     std::string strValue;
 
-    strValue = vscp_string_format("%f,%d,%d,%d,%d",
+    strValue = vscp_str_format("%f,%d,%d,%d,%d",
                                   value,
                                   (int)unit,
                                   (int)sensoridx,
@@ -2437,7 +2437,7 @@ VscpRemoteTcpIf::setRemoteVariableVSCPclass(const std::string &name,
 {
     std::string strValue;
 
-    strValue = vscp_string_format("%hu", vscp_class);
+    strValue = vscp_str_format("%hu", vscp_class);
     return setRemoteVariableValue(name, strValue);
 }
 
@@ -2474,7 +2474,7 @@ VscpRemoteTcpIf::setRemoteVariableVSCPtype(const std::string &name,
 {
     std::string strValue;
 
-    strValue = vscp_string_format("%hu", vscp_type);
+    strValue = vscp_str_format("%hu", vscp_type);
     return setRemoteVariableValue(name, strValue);
 }
 
@@ -2513,7 +2513,7 @@ VscpRemoteTcpIf::setRemoteVariableVSCPTimestamp(const std::string &name,
 {
     std::string strValue;
 
-    strValue = vscp_string_format("%lu", (unsigned long)vscp_timestamp);
+    strValue = vscp_str_format("%lu", (unsigned long)vscp_timestamp);
     return setRemoteVariableValue(name, strValue);
 }
 
@@ -3017,7 +3017,7 @@ VscpRemoteTcpIf::tableList(std::deque<std::string> &tablesArray)
     if (!isConnected()) return VSCP_ERROR_NOT_OPEN; // Connection closed.
 
     strCmd = "TABLE LIST\r\n";
-    // if ( type ) strCmd += vscp_string_format("%d", type );
+    // if ( type ) strCmd += vscp_str_format("%d", type );
     // strCmd += "\r\n";
     if (VSCP_ERROR_SUCCESS != doCommand(strCmd)) {
         return VSCP_ERROR_ERROR;
@@ -3163,7 +3163,7 @@ VscpRemoteTcpIf::tableLog(const std::string &tblName,
     if (!isConnected()) return VSCP_ERROR_NOT_OPEN; // Connection closed.
 
     strCmd = "TABLE LOG " + tblName + " ";
-    strCmd = vscp_string_format("%f ", value);
+    strCmd = vscp_str_format("%f ", value);
     if (NULL != pdt) {
         strCmd += pdt->getISODateTime();
     } else {
@@ -3762,7 +3762,7 @@ VscpRemoteTcpIf::readLevel2Register(uint32_t reg,
 #ifdef DEBUG_LIB_VSCP_HELPER
                 {
                     std::string str;
-                    str = vscp_string_format(
+                    str = vscp_str_format(
                       "Received Event: class=%d type=%d size=%d index=%d "
                       "page=%d Register=%d content=%d",
                       e.vscp_class,
@@ -3999,7 +3999,7 @@ VscpRemoteTcpIf::readLevel2Registers(uint32_t reg,
 #ifdef DEBUG_LIB_VSCP_HELPER
                 {
                     std::string str;
-                    str = vscp_string_format(
+                    str = vscp_str_format(
                       "Received Event: count=%d class=%d type=%d size=%d data=",
                       n,
                       e.vscp_class,
@@ -4010,7 +4010,7 @@ VscpRemoteTcpIf::readLevel2Registers(uint32_t reg,
                       e.data[19],                     // register
                       e.data[20]);                    // content
                     for (int i = 0; i < e.sizeData; i++) {
-                        str += vscp_string_format("%02X ", e.data[i]);
+                        str += vscp_str_format("%02X ", e.data[i]);
                     }
                     VSCP_LOG_DEBUG(str);
                 }

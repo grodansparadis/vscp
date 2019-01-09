@@ -196,11 +196,8 @@ CDiscoveryObj::readLevel1Register(uint8_t nodeid,
         }
 
         // Wait for incoming event
-        struct timespec ts;
-        ts.tv_sec  = 0;
-        ts.tv_nsec = 500000; // 500 ms
-        if (ETIMEDOUT ==
-            sem_timedwait(&m_pClientItem->m_semClientInputQueue, &ts)) {
+        if ((-1 == vscp_sem_wait(&m_pClientItem->m_semClientInputQueue, 500)) &&
+            errno == ETIMEDOUT) {
             continue;
         }
 
@@ -316,7 +313,7 @@ CDiscoveryObj::addNodeIfNotKnown(vscpEvent *pEvent)
                     if ( pNode->m_deviceName.empty() ) {
                         pNode->m_deviceName = pDeviceItem->m_strName;
                         pNode->m_deviceName += "_";
-                        pNode->m_deviceName += vscp_string_format( "%u",
+                        pNode->m_deviceName += vscp_str_format( "%u",
                                                  pDeviceItem->m_pClientItem->m_clientID
        );
                     }
@@ -333,8 +330,8 @@ CDiscoveryObj::addNodeIfNotKnown(vscpEvent *pEvent)
                         pNode->m_strNodeName = "client_";
                         uint32_t clientID =
        pDeviceItem->m_pClientItem->m_clientID; pNode->m_strNodeName +=
-       vscp_string_format( "%u", clientID ); pNode->m_strNodeName += "_";
-                        pNode->m_strNodeName += vscp_string_format( "%u",
+       vscp_str_format( "%u", clientID ); pNode->m_strNodeName += "_";
+                        pNode->m_strNodeName += vscp_str_format( "%u",
                                                     ( pEvent->GUID[ 14 ] << 8 )
        + pEvent->GUID[ 15 ] );
                     }
@@ -369,7 +366,7 @@ CDiscoveryObj::addNodeIfNotKnown(vscpEvent *pEvent)
                         pNode->m_strNodeName = "client_";
                         if ( NULL != pClientItem ) {
                             pNode->m_strNodeName +=
-                                vscp_string_format( "%lu",
+                                vscp_str_format( "%lu",
                                                     (unsigned
        long)pClientItem->m_clientID );
                         }
@@ -378,7 +375,7 @@ CDiscoveryObj::addNodeIfNotKnown(vscpEvent *pEvent)
                         }
                         pNode->m_strNodeName += "_";
                         pNode->m_strNodeName +=
-                            vscp_string_format( "%u",
+                            vscp_str_format( "%u",
                                                 ( pEvent->GUID[ 14 ] << 8 ) +
                                                     pEvent->GUID[ 15 ] );
                     }

@@ -1119,17 +1119,13 @@ deviceLevel1WriteThread(void *pData)
     while (!pDevObj->m_bQuit) {
 
         // Wait until there is something to send
-        struct timespec ts;
-        ts.tv_sec  = 0;
-        ts.tv_nsec = 500000; // 500 ms
-        if (ETIMEDOUT ==
-            sem_timedwait(
-              &pDevObj->m_pDeviceItem->m_pClientItem->m_semClientInputQueue,
-              &ts)) {
+        if ((-1 ==
+             vscp_sem_wait(
+               &pDevObj->m_pDeviceItem->m_pClientItem->m_semClientInputQueue,
+               500)) &&
+            errno == ETIMEDOUT) {
             continue;
         }
-
-        // CLIENTEVENTLIST::compatibility_iterator nodeClient;
 
         if (pDevObj->m_pDeviceItem->m_pClientItem->m_clientInputQueue.size()) {
 
@@ -1285,13 +1281,11 @@ deviceLevel2WriteThread(void *pData)
     while (!pDevObj->m_bQuit) {
 
         // Wait until there is something to send
-        struct timespec ts;
-        ts.tv_sec  = 0;
-        ts.tv_nsec = 500000; // 500 ms
-        if (ETIMEDOUT ==
-            sem_timedwait(
-              &pDevObj->m_pDeviceItem->m_pClientItem->m_semClientInputQueue,
-              &ts)) {
+        if ((-1 ==
+             vscp_sem_wait(
+               &pDevObj->m_pDeviceItem->m_pClientItem->m_semClientInputQueue,
+               500)) &&
+            errno == ETIMEDOUT) {
             continue;
         }
 

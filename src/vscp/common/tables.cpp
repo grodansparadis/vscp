@@ -517,13 +517,13 @@ CVSCPTable::logData(vscpdatetime &time, double value)
 #endif
     // int ms = vscpdatetime::Now().GetMillisecond();   !!!!! Does not work
     // !!!!!
-    std::string msstr = vscp_string_format(".%d", ms);
+    std::string msstr = vscp_str_format(".%d", ms);
 
     std::string dtstamp = time.getISODateTime() + msstr;
     if (m_bValueFirst) {
-        strInsert = vscp_string_format(m_sqlInsert, value, dtstamp.c_str());
+        strInsert = vscp_str_format(m_sqlInsert, value, dtstamp.c_str());
     } else {
-        strInsert = vscp_string_format(m_sqlInsert, dtstamp.c_str(), value);
+        strInsert = vscp_str_format(m_sqlInsert, dtstamp.c_str(), value);
     }
 
     return logData(strInsert);
@@ -554,13 +554,13 @@ CVSCPTable::logData(vscpdatetime &dt,
     ms = round(spec.tv_nsec / 1.0e6); // Convert nanoseconds to milliseconds
 #endif
 
-    std::string msstr   = vscp_string_format((".%d"), ms);
+    std::string msstr   = vscp_str_format((".%d"), ms);
     std::string dtstamp = dt.getISODateTime() + msstr;
 
     if (m_bValueFirst) {
-        strInsertMod = vscp_string_format(sqlInsert, value, dtstamp.c_str());
+        strInsertMod = vscp_str_format(sqlInsert, value, dtstamp.c_str());
     } else {
-        strInsertMod = vscp_string_format(sqlInsert, dtstamp.c_str(), value);
+        strInsertMod = vscp_str_format(sqlInsert, dtstamp.c_str(), value);
     }
 
     return logData(strInsertMod);
@@ -612,7 +612,7 @@ CVSCPTable::logData(const std::string strInsert)
     // here to keep the table size
     if ((VSCP_TABLE_STATIC == m_type) && m_size) {
         std::string strDel =
-          vscp_string_format(VSCPDB_TABLE_DELETE_STATIC, (unsigned long)m_size);
+          vscp_str_format(VSCPDB_TABLE_DELETE_STATIC, (unsigned long)m_size);
         if (SQLITE_OK !=
             sqlite3_exec(
               m_dbTable, (const char *)strDel.c_str(), NULL, NULL, &zErrMsg)) {
@@ -825,7 +825,7 @@ CVSCPTable::getSQLValue(const std::string &sqltemplate,
         return false;
     }
 
-    std::string sql = vscp_string_format( sqltemplate.c_str(),
+    std::string sql = vscp_str_format( sqltemplate.c_str(),
                        (const char *)start.getISODateTime(false).c_str(),
                        (const char *)end.getISODateTime(false).c_str());
 

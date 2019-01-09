@@ -733,7 +733,7 @@ actionTime::getActionTimeAsString(void)
     if ((cnt = m_actionYear.size())) {
         std::set<int>::iterator it;
         for (it = m_actionYear.begin(); it != m_actionYear.end(); ++it) {
-            str += vscp_string_format("%4d", *it);
+            str += vscp_str_format("%4d", *it);
             // Add backslash for all but last
             cnt--;
             if (cnt) {
@@ -751,7 +751,7 @@ actionTime::getActionTimeAsString(void)
     if ((cnt = m_actionMonth.size())) {
         std::set<int>::iterator it;
         for (it = m_actionMonth.begin(); it != m_actionMonth.end(); ++it) {
-            str += vscp_string_format("%02d", *it);
+            str += vscp_str_format("%02d", *it);
             // Add backslash for all but last
             cnt--;
             if (cnt) {
@@ -769,7 +769,7 @@ actionTime::getActionTimeAsString(void)
     if ((cnt = m_actionDay.size())) {
         std::set<int>::iterator it;
         for (it = m_actionDay.begin(); it != m_actionDay.end(); ++it) {
-            str += vscp_string_format("%02d", *it);
+            str += vscp_str_format("%02d", *it);
             // Add backslash for all but last
             cnt--;
             if (cnt) {
@@ -787,7 +787,7 @@ actionTime::getActionTimeAsString(void)
     if ((cnt = m_actionHour.size())) {
         std::set<int>::iterator it;
         for (it = m_actionHour.begin(); it != m_actionHour.end(); ++it) {
-            str += vscp_string_format("%02d", *it);
+            str += vscp_str_format("%02d", *it);
             // Add backslash for all but last
             cnt--;
             if (cnt) {
@@ -805,7 +805,7 @@ actionTime::getActionTimeAsString(void)
     if ((cnt = m_actionMinute.size())) {
         std::set<int>::iterator it;
         for (it = m_actionMinute.begin(); it != m_actionMinute.end(); ++it) {
-            str += vscp_string_format("%02d", *it);
+            str += vscp_str_format("%02d", *it);
             // Add backslash for all but last
             cnt--;
             if (cnt) {
@@ -823,7 +823,7 @@ actionTime::getActionTimeAsString(void)
     if ((cnt = m_actionSecond.size())) {
         std::set<int>::iterator it;
         for (it = m_actionSecond.begin(); it != m_actionSecond.end(); ++it) {
-            str += vscp_string_format("%02d", *it);
+            str += vscp_str_format("%02d", *it);
             // Add backslash for all but last
             cnt--;
             if (cnt) {
@@ -931,7 +931,7 @@ dmElement::getAsString(bool bCRLF)
     std::string strRow;
 
     // id
-    strRow = vscp_string_format("%d,", m_id);
+    strRow = vscp_str_format("%d,", m_id);
 
     // bEnable
     if (isEnabled()) {
@@ -945,13 +945,13 @@ dmElement::getAsString(bool bCRLF)
     strRow += ",";
 
     // Priority mask
-    strRow += vscp_string_format("0x%02X,", m_vscpfilter.mask_priority);
+    strRow += vscp_str_format("0x%02X,", m_vscpfilter.mask_priority);
 
     // Class mask
-    strRow += vscp_string_format("0x%04X,", m_vscpfilter.mask_class);
+    strRow += vscp_str_format("0x%04X,", m_vscpfilter.mask_class);
 
     // Type mask
-    strRow += vscp_string_format("0x%04X,", m_vscpfilter.mask_type);
+    strRow += vscp_str_format("0x%04X,", m_vscpfilter.mask_type);
 
     // GUID mask
     std::string strGUID;
@@ -960,13 +960,13 @@ dmElement::getAsString(bool bCRLF)
     strRow += ",";
 
     // Priority filter
-    strRow += vscp_string_format("0x%02X,", m_vscpfilter.filter_priority);
+    strRow += vscp_str_format("0x%02X,", m_vscpfilter.filter_priority);
 
     // Class filter
-    strRow += vscp_string_format("0x%04X,", m_vscpfilter.filter_class);
+    strRow += vscp_str_format("0x%04X,", m_vscpfilter.filter_class);
 
     // Type filter
-    strRow += vscp_string_format("0x%04X,", m_vscpfilter.filter_type);
+    strRow += vscp_str_format("0x%04X,", m_vscpfilter.filter_type);
 
     // GUID filter
     vscp_writeGuidArrayToString(m_vscpfilter.filter_GUID, strGUID);
@@ -989,7 +989,7 @@ dmElement::getAsString(bool bCRLF)
     strRow += m_bCheckIndex ? "true," : "false,";
 
     // index
-    strRow += vscp_string_format("%d,", m_index);
+    strRow += vscp_str_format("%d,", m_index);
 
     // bMeasurementIndex
     strRow += m_bCheckMeasurementIndex ? "true," : "false,";
@@ -998,39 +998,39 @@ dmElement::getAsString(bool bCRLF)
     strRow += m_bCheckZone ? "true," : "false,";
 
     // zone
-    strRow += vscp_string_format("%d,", m_zone);
+    strRow += vscp_str_format("%d,", m_zone);
 
     // bCheckSubZone
     strRow += m_bCheckSubZone ? "true," : "false,";
 
     // subzone
-    strRow += vscp_string_format("%d,", m_subzone);
+    strRow += vscp_str_format("%d,", m_subzone);
 
     // m_bCompareMeasurement
     strRow += m_bCompareMeasurement ? "true," : "false,";
 
     // measurement value
-    strRow += vscp_string_format("%lf,", m_measurementValue);
+    strRow += vscp_str_format("%lf,", m_measurementValue);
 
     // measurement unit
-    strRow += vscp_string_format("%d,", m_measurementUnit);
+    strRow += vscp_str_format("%d,", m_measurementUnit);
 
     // measurement compare code
     strRow += getSymbolicMeasurementFromCompareCode(m_measurementCompareCode);
     strRow += ",";
 
     // Action Code
-    strRow += vscp_string_format("0x%08X,", m_actionCode);
+    strRow += vscp_str_format("0x%08X,", m_actionCode);
 
     // Action Parameters
     strRow += m_actionparam;
     strRow += ",";
 
     // trig-counter:
-    strRow += vscp_string_format("%d,", m_triggCounter);
+    strRow += vscp_str_format("%d,", m_triggCounter);
 
     // error-counter:
-    strRow += vscp_string_format("%d,", m_errorCounter);
+    strRow += vscp_str_format("%d,", m_errorCounter);
 
     // Last error
     strRow += m_strLastError;
@@ -1450,11 +1450,11 @@ dmElement::handleEscapes(vscpEvent *pEvent, std::string &str)
             }
             // Check for head escape
             else if (vscp_startsWith(str, "%event.head", &str)) {
-                strResult += vscp_string_format("%d", pEvent->head);
+                strResult += vscp_str_format("%d", pEvent->head);
             }
             // Check for priority escape
             else if (vscp_startsWith(str, "%event.priority", &str)) {
-                strResult += vscp_string_format(
+                strResult += vscp_str_format(
                   "%d", ((pEvent->head & VSCP_HEADER_PRIORITY_MASK) >> 5));
             }
             // Check for hardcoded escape
@@ -1467,7 +1467,7 @@ dmElement::handleEscapes(vscpEvent *pEvent, std::string &str)
             }
             // Check for class escape
             else if (vscp_startsWith(str, "%event.class", &str)) {
-                strResult += vscp_string_format("%d", pEvent->vscp_class);
+                strResult += vscp_str_format("%d", pEvent->vscp_class);
             }
             // Check for class string  escape
             else if (vscp_startsWith(str, "%event.class.str", &str)) {
@@ -1477,7 +1477,7 @@ dmElement::handleEscapes(vscpEvent *pEvent, std::string &str)
             }
             // Check for type escape
             else if (vscp_startsWith(str, "%event.type", &str)) {
-                strResult += vscp_string_format("%d", pEvent->vscp_type);
+                strResult += vscp_str_format("%d", pEvent->vscp_type);
             }
             // Check for type string escape
             else if (vscp_startsWith(str, "%event.type.str", &str)) {
@@ -1499,7 +1499,7 @@ dmElement::handleEscapes(vscpEvent *pEvent, std::string &str)
                     idx      = vscp_readStringValue(str);
                     if (idx < pEvent->sizeData) {
                         strResult +=
-                          vscp_string_format("%d", pEvent->pdata[idx]);
+                          vscp_str_format("%d", pEvent->pdata[idx]);
                     } else {
                         strResult += "?"; // invalid index
                     }
@@ -1523,7 +1523,7 @@ dmElement::handleEscapes(vscpEvent *pEvent, std::string &str)
                     idx      = vscp_readStringValue(str);
                     if (idx < pEvent->sizeData) {
                         strResult +=
-                          vscp_string_format("%02X", pEvent->pdata[idx]);
+                          vscp_str_format("%02X", pEvent->pdata[idx]);
                     } else {
                         strResult += "?"; // invalid index
                     }
@@ -1548,7 +1548,7 @@ dmElement::handleEscapes(vscpEvent *pEvent, std::string &str)
                     uint8_t byte = idx / 8;
                     uint8_t bit  = idx % 8;
                     if (byte < pEvent->sizeData) {
-                        strResult += vscp_string_format(
+                        strResult += vscp_str_format(
                           "%d",
                           (pEvent->pdata[byte] & (1 << (7 - bit))) ? 1 : 0);
                     } else {
@@ -1573,7 +1573,7 @@ dmElement::handleEscapes(vscpEvent *pEvent, std::string &str)
                     long idx = 0;
                     idx      = vscp_readStringValue(str);
                     if (idx < pEvent->sizeData) {
-                        strResult += vscp_string_format(
+                        strResult += vscp_str_format(
                           "%s", pEvent->pdata[idx] ? "true" : "false");
                     } else {
                         strResult += "?"; // invalid index
@@ -1598,7 +1598,7 @@ dmElement::handleEscapes(vscpEvent *pEvent, std::string &str)
                     idx      = vscp_readStringValue(str);
                     if (idx < pEvent->sizeData) {
                         strResult +=
-                          vscp_string_format("%d", (int8_t)pEvent->pdata[idx]);
+                          vscp_str_format("%d", (int8_t)pEvent->pdata[idx]);
                     } else {
                         strResult += "?"; // invalid index
                     }
@@ -1622,7 +1622,7 @@ dmElement::handleEscapes(vscpEvent *pEvent, std::string &str)
                     idx      = vscp_readStringValue(str);
                     if (idx < pEvent->sizeData) {
                         strResult +=
-                          vscp_string_format("%d", (uint8_t)pEvent->pdata[idx]);
+                          vscp_str_format("%d", (uint8_t)pEvent->pdata[idx]);
                     } else {
                         strResult += "?"; // invalid index
                     }
@@ -1645,7 +1645,7 @@ dmElement::handleEscapes(vscpEvent *pEvent, std::string &str)
                     long idx = 0;
                     idx      = vscp_readStringValue(str);
                     if (idx < pEvent->sizeData) {
-                        strResult += vscp_string_format(
+                        strResult += vscp_str_format(
                           "%02X", (uint8_t)pEvent->pdata[idx]);
                     } else {
                         strResult += "? "; // invalid index
@@ -1671,7 +1671,7 @@ dmElement::handleEscapes(vscpEvent *pEvent, std::string &str)
                     if ((idx + 1) < pEvent->sizeData) {
                         int16_t val = ((int16_t)pEvent->pdata[idx] << 8) +
                                       ((int16_t)pEvent->pdata[idx + 1]);
-                        strResult += vscp_string_format("%d", (int)val);
+                        strResult += vscp_str_format("%d", (int)val);
                     } else {
                         strResult += "?"; // invalid index
                     }
@@ -1697,7 +1697,7 @@ dmElement::handleEscapes(vscpEvent *pEvent, std::string &str)
                     if ((idx + 1) < pEvent->sizeData) {
                         uint16_t val = ((uint16_t)pEvent->pdata[idx] << 8) +
                                        ((uint16_t)pEvent->pdata[idx + 1]);
-                        strResult += vscp_string_format("%d", (int)val);
+                        strResult += vscp_str_format("%d", (int)val);
                     } else {
                         strResult += "?"; // invalid index
                     }
@@ -1722,7 +1722,7 @@ dmElement::handleEscapes(vscpEvent *pEvent, std::string &str)
                     if ((idx + 1) < pEvent->sizeData) {
                         uint16_t val = ((uint16_t)pEvent->pdata[idx] << 8) +
                                        ((uint16_t)pEvent->pdata[idx + 1]);
-                        strResult += vscp_string_format("%04X", val);
+                        strResult += vscp_str_format("%04X", val);
                     } else {
                         strResult += "?"; // invalid index
                     }
@@ -1750,7 +1750,7 @@ dmElement::handleEscapes(vscpEvent *pEvent, std::string &str)
                                    ((long)pEvent->pdata[idx + 1] << 16) +
                                    ((long)pEvent->pdata[idx + 2] << 8) +
                                    ((long)pEvent->pdata[idx + 3]);
-                        strResult += vscp_string_format("%ld", val);
+                        strResult += vscp_str_format("%ld", val);
                     } else {
                         strResult += "?"; // invalid index
                     }
@@ -1780,7 +1780,7 @@ dmElement::handleEscapes(vscpEvent *pEvent, std::string &str)
                           ((uint32_t)pEvent->pdata[idx + 2] << 8) +
                           ((uint32_t)pEvent->pdata[idx + 3]);
                         strResult +=
-                          vscp_string_format("%lu", (unsigned long)val);
+                          vscp_str_format("%lu", (unsigned long)val);
                     } else {
                         strResult += "?"; // invalid index
                     }
@@ -1809,7 +1809,7 @@ dmElement::handleEscapes(vscpEvent *pEvent, std::string &str)
                           ((uint32_t)pEvent->pdata[idx + 1] << 16) +
                           ((uint32_t)pEvent->pdata[idx + 2] << 8) +
                           ((uint32_t)pEvent->pdata[idx + 3]);
-                        strResult += vscp_string_format("%08X", val);
+                        strResult += vscp_str_format("%08X", val);
                     } else {
                         strResult += "?"; // invalid index
                     }
@@ -1834,7 +1834,7 @@ dmElement::handleEscapes(vscpEvent *pEvent, std::string &str)
                     idx      = vscp_readStringValue(str);
                     if ((idx + 3) < pEvent->sizeData) {
                         float val = *((float *)(pEvent->pdata + idx));
-                        strResult += vscp_string_format("%f", val);
+                        strResult += vscp_str_format("%f", val);
                     } else {
                         strResult += "?"; // invalid index
                     }
@@ -1859,7 +1859,7 @@ dmElement::handleEscapes(vscpEvent *pEvent, std::string &str)
                     idx      = vscp_readStringValue(str);
                     if ((idx + 7) < pEvent->sizeData) {
                         double val = *((double *)(pEvent->pdata + idx));
-                        strResult += vscp_string_format("%lf", val);
+                        strResult += vscp_str_format("%lf", val);
                     } else {
                         strResult += "?"; // invalid index
                     }
@@ -1873,7 +1873,7 @@ dmElement::handleEscapes(vscpEvent *pEvent, std::string &str)
             }
             // Check for sizedata escape
             else if (vscp_startsWith(str, "%event.sizedata", &str)) {
-                strResult += vscp_string_format("%d", pEvent->sizeData);
+                strResult += vscp_str_format("%d", pEvent->sizeData);
             }
             // Check for data escape
             else if (vscp_startsWith(str, "%event.data", &str)) {
@@ -1894,20 +1894,20 @@ dmElement::handleEscapes(vscpEvent *pEvent, std::string &str)
             // Check for nickname escape
             else if (vscp_startsWith(str, "%event.nickname", &str)) {
                 strResult +=
-                  vscp_string_format(("%d"), pEvent->GUID[VSCP_GUID_LSB]);
+                  vscp_str_format(("%d"), pEvent->GUID[VSCP_GUID_LSB]);
             }
             // Check for obid escape
             else if (vscp_startsWith(str, "%event.obid", &str)) {
-                strResult += vscp_string_format("%d", pEvent->obid);
+                strResult += vscp_str_format("%d", pEvent->obid);
             }
             // Check for timestamp escape
             else if (vscp_startsWith(str, "%event.timestamp", &str)) {
-                strResult += vscp_string_format("%d", pEvent->timestamp);
+                strResult += vscp_str_format("%d", pEvent->timestamp);
             }
             // Check for event index escape
             else if (vscp_startsWith(str, "%event.index", &str)) {
                 if (pEvent->sizeData && (NULL != pEvent->pdata)) {
-                    strResult += vscp_string_format(("%d"), pEvent->pdata[0]);
+                    strResult += vscp_str_format(("%d"), pEvent->pdata[0]);
                 } else {
                     strResult += ("empty"); // No data
                 }
@@ -1915,7 +1915,7 @@ dmElement::handleEscapes(vscpEvent *pEvent, std::string &str)
             // Check for event zone escape
             else if (vscp_startsWith(str, "%event.zone", &str)) {
                 if (pEvent->sizeData && (NULL != pEvent->pdata)) {
-                    strResult += vscp_string_format(("%d"), pEvent->pdata[1]);
+                    strResult += vscp_str_format(("%d"), pEvent->pdata[1]);
                 } else {
                     strResult += ("empty"); // No data
                 }
@@ -1923,7 +1923,7 @@ dmElement::handleEscapes(vscpEvent *pEvent, std::string &str)
             // Check for event subzone escape
             else if (vscp_startsWith(str, "%event.subzone", &str)) {
                 if (pEvent->sizeData && (NULL != pEvent->pdata)) {
-                    strResult += vscp_string_format(("%d"), pEvent->pdata[2]);
+                    strResult += vscp_str_format(("%d"), pEvent->pdata[2]);
                 } else {
                     strResult += ("empty"); // No data
                 }
@@ -1961,7 +1961,7 @@ dmElement::handleEscapes(vscpEvent *pEvent, std::string &str)
                 // int ms =
                 // vscpdatetime::setNow().getMillisecond();
                 // !!!!! Does not work  !!!!!
-                std::string msstr = vscp_string_format(".%ld", ms);
+                std::string msstr = vscp_str_format(".%ld", ms);
                 strResult += vscpdatetime::setNow().getISODate();
                 strResult += "T";
                 strResult += vscpdatetime::setNow().getISOTime();
@@ -1976,37 +1976,37 @@ dmElement::handleEscapes(vscpEvent *pEvent, std::string &str)
             // Check for mstime escape
             else if (vscp_startsWith(str, "%mstime", &str)) {
                 uint64_t now = time(NULL); // get current time
-                strResult += vscp_string_format("%llu", now);
+                strResult += vscp_str_format("%llu", now);
             }
             // Check for unixtime escape
             else if (vscp_startsWith(str, "%unixtime", &str)) {
                 uint64_t now = time(NULL); // get current time
-                strResult += vscp_string_format("%llu", now);
+                strResult += vscp_str_format("%llu", now);
             }
             // Check for hour escape
             else if (vscp_startsWith(str, "%hour", &str)) {
                 strResult +=
-                  vscp_string_format("%d", vscpdatetime::setNow().getHour());
+                  vscp_str_format("%d", vscpdatetime::setNow().getHour());
             }
             // Check for minute escape
             else if (vscp_startsWith(str, "%minute", &str)) {
                 strResult +=
-                  vscp_string_format("%d", vscpdatetime::setNow().getMinute());
+                  vscp_str_format("%d", vscpdatetime::setNow().getMinute());
             }
             // Check for second escape
             else if (vscp_startsWith(str, "%second", &str)) {
                 strResult +=
-                  vscp_string_format("%d", vscpdatetime::setNow().getSecond());
+                  vscp_str_format("%d", vscpdatetime::setNow().getSecond());
             }
             // Check for week0 escape
             else if (vscp_startsWith(str, "%week0", &str)) {
-                strResult += vscp_string_format(
+                strResult += vscp_str_format(
                   "%d", vscpdatetime::setNow().getWeekNumber());
             }
             // Check for week1 escape
             else if (vscp_startsWith(str, "%week1", &str)) {
                 strResult +=
-                  vscp_string_format("%d", // TODO FIX!
+                  vscp_str_format("%d", // TODO FIX!
                                      vscpdatetime::setNow().getWeekNumber());
             }
             // Check for weekdaytxtfull escape
@@ -2031,13 +2031,13 @@ dmElement::handleEscapes(vscpEvent *pEvent, std::string &str)
             }
             // Check for month escape
             else if (vscp_startsWith(str, "%month", &str)) {
-                strResult += vscp_string_format(
+                strResult += vscp_str_format(
                   "%d", vscpdatetime::setNow().getMonth() + 1);
             }
             // Check for year escape
             else if (vscp_startsWith(str, "%year", &str)) {
                 strResult +=
-                  vscp_string_format("%d", vscpdatetime::setNow().getYear());
+                  vscp_str_format("%d", vscpdatetime::setNow().getYear());
             }
             // Check for quarter escape
             else if (vscp_startsWith(str, "%quarter", &str)) {
@@ -2112,7 +2112,7 @@ dmElement::handleEscapes(vscpEvent *pEvent, std::string &str)
                 uint8_t data_coding_byte =
                   vscp_getMeasurementDataCoding(pEvent);
                 if (-1 != data_coding_byte) {
-                    strResult += vscp_string_format(
+                    strResult += vscp_str_format(
                       "%d", VSCP_DATACODING_INDEX(data_coding_byte));
                 }
             }
@@ -2121,7 +2121,7 @@ dmElement::handleEscapes(vscpEvent *pEvent, std::string &str)
                 uint8_t data_coding_byte =
                   vscp_getMeasurementDataCoding(pEvent);
                 if (-1 != data_coding_byte) {
-                    strResult += vscp_string_format(
+                    strResult += vscp_str_format(
                       "%d", VSCP_DATACODING_UNIT(data_coding_byte));
                 }
             }
@@ -2130,7 +2130,7 @@ dmElement::handleEscapes(vscpEvent *pEvent, std::string &str)
                 uint8_t data_coding_byte =
                   vscp_getMeasurementDataCoding(pEvent);
                 if (-1 != data_coding_byte) {
-                    strResult += vscp_string_format(
+                    strResult += vscp_str_format(
                       "%d", VSCP_DATACODING_TYPE(data_coding_byte));
                 }
             }
@@ -2243,19 +2243,19 @@ dmElement::handleEscapes(vscpEvent *pEvent, std::string &str)
             ////////////////////////////////////////////////////////////////////
 
             else if (vscp_startsWith(str, "%vscp.version.major", &str)) {
-                strResult += vscp_string_format("%d", VSCPD_MAJOR_VERSION);
+                strResult += vscp_str_format("%d", VSCPD_MAJOR_VERSION);
             } else if (vscp_startsWith(str, "%vscp.version.minor", &str)) {
-                strResult += vscp_string_format("%d", VSCPD_MINOR_VERSION);
+                strResult += vscp_str_format("%d", VSCPD_MINOR_VERSION);
             } else if (vscp_startsWith(str, "%vscp.version.sub", &str)) {
-                strResult += vscp_string_format("%d", VSCPD_RELEASE_VERSION);
+                strResult += vscp_str_format("%d", VSCPD_RELEASE_VERSION);
             } else if (vscp_startsWith(str, "%vscp.version.build", &str)) {
-                strResult += vscp_string_format("%d", VSCPD_BUILD_VERSION);
+                strResult += vscp_str_format("%d", VSCPD_BUILD_VERSION);
             } else if (vscp_startsWith(str, "%vscp.version.str", &str)) {
-                strResult += vscp_string_format("%s", VSCPD_DISPLAY_VERSION);
+                strResult += vscp_str_format("%s", VSCPD_DISPLAY_VERSION);
             } else if (vscp_startsWith(str, "%vscp.copysubstr", &str)) {
-                strResult += vscp_string_format("%s", VSCPD_COPYRIGHT);
+                strResult += vscp_str_format("%s", VSCPD_COPYRIGHT);
             } else if (vscp_startsWith(str, "%vscp.copysubstr.vscp", &str)) {
-                strResult += vscp_string_format("%s", VSCPD_COPYRIGHT);
+                strResult += vscp_str_format("%s", VSCPD_COPYRIGHT);
             } else if (vscp_startsWith(str, "%vscp.os.str", &str)) {
                 // strResult += xxGetOsDescription(); TODO
                 strResult += "TODO";
@@ -3810,7 +3810,7 @@ dmElement::doActionStoreVariable(vscpEvent *pDMEvent)
                     if (vscp_getVSCPMeasurementAsDouble(pDMEvent, &value)) {
                         // (MEASUREMENT|6;true|false;)value;unit;sensor-index;zone;subzone
                         std::string strValue =
-                          vscp_string_format("%lf;%d;%d;%d;%d",
+                          vscp_str_format("%lf;%d;%d;%d;%d",
                                              value,
                                              unit,
                                              sensor_index,
@@ -3887,7 +3887,7 @@ dmElement::doActionStoreVariable(vscpEvent *pDMEvent)
                 vscp_writeGuidToString(pDMEvent, strGUID);
 
                 std::string str =
-                  vscp_string_format(VSCP_HTML_EVENT_TEMPLATE,
+                  vscp_str_format(VSCP_HTML_EVENT_TEMPLATE,
                                      vscpdatetime::setNow().getISODateTime(),
                                      pDMEvent->vscp_class,
                                      pDMEvent->vscp_type,
@@ -3909,7 +3909,7 @@ dmElement::doActionStoreVariable(vscpEvent *pDMEvent)
                 vscp_writeGuidToString(pDMEvent, strGUID);
 
                 std::string str =
-                  vscp_string_format(VSCP_JSON_EVENT_TEMPLATE,
+                  vscp_str_format(VSCP_JSON_EVENT_TEMPLATE,
                                      vscpdatetime::setNow().getISODateTime(),
                                      pDMEvent->head,
                                      pDMEvent->timestamp,
@@ -3930,7 +3930,7 @@ dmElement::doActionStoreVariable(vscpEvent *pDMEvent)
                 vscp_writeGuidToString(pDMEvent, strGUID);
 
                 std::string str =
-                  vscp_string_format(VSCP_XML_EVENT_TEMPLATE,
+                  vscp_str_format(VSCP_XML_EVENT_TEMPLATE,
                                      vscpdatetime::setNow().getISODateTime(),
                                      pDMEvent->head,
                                      pDMEvent->timestamp,
@@ -7395,14 +7395,14 @@ CDM::saveToXML(bool bAll)
                 fxml << "\" >";
 
                 fxml << "    <mask ";
-                fxml << vscp_string_format(" priority=\"%d\" ",
+                fxml << vscp_str_format(" priority=\"%d\" ",
                                            pDMitem->m_vscpfilter.mask_priority);
 
-                buf = vscp_string_format(" class=\"%d\" ",
+                buf = vscp_str_format(" class=\"%d\" ",
                                          pDMitem->m_vscpfilter.mask_class);
                 fxml << buf;
 
-                buf = vscp_string_format(" type=\"%d\" ",
+                buf = vscp_str_format(" type=\"%d\" ",
                                          pDMitem->m_vscpfilter.mask_type);
                 fxml << buf;
 
@@ -7415,16 +7415,16 @@ CDM::saveToXML(bool bAll)
                 fxml << "</mask>";
 
                 fxml << "    <filter ";
-                buf = vscp_string_format(" priority=\"%d\" ",
+                buf = vscp_str_format(" priority=\"%d\" ",
                                          pDMitem->m_vscpfilter.filter_priority);
                 fxml << buf;
-                buf = vscp_string_format(" class=\"%d\" ",
+                buf = vscp_str_format(" class=\"%d\" ",
                                          pDMitem->m_vscpfilter.filter_class);
                 fxml << buf;
-                buf = vscp_string_format(" type=\"%d\" ",
+                buf = vscp_str_format(" type=\"%d\" ",
                                          pDMitem->m_vscpfilter.filter_type);
                 fxml << buf;
-                buf = vscp_string_format(" GUID=\" ");
+                buf = vscp_str_format(" GUID=\" ");
                 fxml << buf;
                 vscp_writeGuidArrayToString(pDMitem->m_vscpfilter.filter_GUID,
                                             strGUID);
@@ -7433,7 +7433,7 @@ CDM::saveToXML(bool bAll)
                 fxml << "</filter>";
 
                 fxml << "    <action>";
-                buf = vscp_string_format("0x%x", pDMitem->m_actionCode);
+                buf = vscp_str_format("0x%x", pDMitem->m_actionCode);
                 fxml << buf;
                 fxml << "</action>";
 
@@ -7478,24 +7478,24 @@ CDM::saveToXML(bool bAll)
 
                 // Index
                 fxml << "    <index ";
-                buf = vscp_string_format(
+                buf = vscp_str_format(
                   " bCheckMeasurementIndex=\"%s\" ",
                   (pDMitem->m_bCheckMeasurementIndex) ? "true" : "false");
                 fxml << buf;
                 fxml << " > ";
-                buf = vscp_string_format("%d", pDMitem->m_index);
+                buf = vscp_str_format("%d", pDMitem->m_index);
                 fxml << buf;
                 fxml << "</index>";
 
                 // Zone
                 fxml << "    <zone>";
-                buf = vscp_string_format("%d", pDMitem->m_zone);
+                buf = vscp_str_format("%d", pDMitem->m_zone);
                 fxml << buf;
                 fxml << "</zone>";
 
                 // Subzone
                 fxml << "    <subzone>";
-                buf = vscp_string_format("%d", pDMitem->m_subzone);
+                buf = vscp_str_format("%d", pDMitem->m_subzone);
                 fxml << buf;
                 fxml << "</subzone>";
 
@@ -7512,11 +7512,11 @@ CDM::saveToXML(bool bAll)
                 buf = "compare=\"" + strCode + "\" ";
                 fxml << buf;
 
-                buf = vscp_string_format("unit=\"%d\" ",
+                buf = vscp_str_format("unit=\"%d\" ",
                                          pDMitem->m_measurementUnit);
                 fxml << buf;
 
-                buf = vscp_string_format("value=\"%lf\" ",
+                buf = vscp_str_format("value=\"%lf\" ",
                                          pDMitem->m_measurementValue);
                 fxml << buf;
 
@@ -7742,7 +7742,7 @@ actionThread_URL(void *pData)
             str += ":";
             str += m_url.GetPort();
             str += "\r";
-            str += vscp_string_format( "User-Agent: VSCPD/%s\r",
+            str += vscp_str_format( "User-Agent: VSCPD/%s\r",
                                         VSCPD_DISPLAY_VERSION );
 
             // Add extra headers if there are any
@@ -7764,7 +7764,7 @@ actionThread_URL(void *pData)
             str += ":";
             str += m_url.GetPort();
             str += "\r";
-            str += vscp_string_format( "User-Agent: VSCPD/%s\r",
+            str += vscp_str_format( "User-Agent: VSCPD/%s\r",
                                         VSCPD_DISPLAY_VERSION );
             // Add extra headers if there are any
             if ( m_extraheaders.length() ) {
@@ -7775,7 +7775,7 @@ actionThread_URL(void *pData)
     /*\r";
             str += "Content-Type: application/x-www-form-urlencoded\r";
             str += "Content-Length: ";
-            str += vscp_string_format("%ld",m_putdata.length());
+            str += vscp_str_format("%ld",m_putdata.length());
             str += "\r\n\r";
             str += m_putdata;
             str += "\r";
@@ -7793,7 +7793,7 @@ actionThread_URL(void *pData)
             str += ":";
             str += m_url.GetPort();
             str += "\r";
-            str += vscp_string_format( "User-Agent: VSCPD/%s\r",
+            str += vscp_str_format( "User-Agent: VSCPD/%s\r",
                                         VSCPD_DISPLAY_VERSION );
 
             // Add extra headers if there are any
@@ -7803,7 +7803,7 @@ actionThread_URL(void *pData)
 
             str += "Content-Type: application/x-www-form-urlencoded\r";
             str += "Content-Length: ";
-            str += vscp_string_format("%ld",m_putdata.length());
+            str += vscp_str_format("%ld",m_putdata.length());
             str += "\r\n\r";
             str += m_putdata;
             str += "\r";
@@ -7820,7 +7820,7 @@ actionThread_URL(void *pData)
                                 "," +
                                 m_url.GetPath() +
                                 "," +
-                                vscp_string_format( "acessMethod = %d" ),
+                                vscp_str_format( "acessMethod = %d" ),
                                                   m_acessMethod ) +
                                 " "   );
 
@@ -7846,7 +7846,7 @@ actionThread_URL(void *pData)
                                 "," +
                                 m_url.GetPath() +
                                 "," +
-                                vscp_string_format( "acessMethod = %d" ),
+                                vscp_str_format( "acessMethod = %d" ),
     m_acessMethod ) + " "   );
         }
 
@@ -7885,7 +7885,7 @@ actionThread_URL(void *pData)
                                         "," +
                                         m_url.GetPath() +
                                         "," +
-                                        vscp_string_format( "acessMethod =
+                                        vscp_str_format( "acessMethod =
     %d"
     ), m_acessMethod ) +
                                         ", Response = " +
@@ -7922,7 +7922,7 @@ actionThread_URL(void *pData)
                                 "," +
                                 m_url.GetPath() +
                                 "," +
-                                vscp_string_format( "acessMethod = %d" ),
+                                vscp_str_format( "acessMethod = %d" ),
     m_acessMethod ) + " "   );
     }
   */
@@ -7969,7 +7969,7 @@ actionThread_VSCPSrv(void *pData)
     int tries;
     VscpRemoteTcpIf client;
     // TODO
-    //std::string interface = vscp_string_format(
+    //std::string interface = vscp_str_format(
     //  "tcp://%s:%d", (const char *)m_strHostname.c_str(), m_port);
     // Allow for **VERY** slower clients
     client.setResponseTimeout(5000);

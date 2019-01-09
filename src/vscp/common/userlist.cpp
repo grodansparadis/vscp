@@ -221,7 +221,7 @@ CUserItem::getAsString(std::string &strUser)
     std::string str;
     strUser.clear();
 
-    strUser += vscp_string_format("%ld;", getUserID());
+    strUser += vscp_str_format("%ld;", getUserID());
     strUser += getUserName();
     strUser += ";";
     // Protect password
@@ -379,7 +379,7 @@ CUserItem::getUserRightsAsString(void)
     std::string strRights;
 
     for (int i = 0; i < USER_PRIVILEGE_BYTES; i++) {
-        strRights += vscp_string_format("%d", m_userRights[i]);
+        strRights += vscp_str_format("%d", m_userRights[i]);
         if (i != (USER_PRIVILEGE_BYTES - 1)) {
             strRights += "/";
         }
@@ -750,13 +750,13 @@ CUserItem::isUserAllowedToSendEvent(const uint32_t vscp_class,
         if (m_listAllowedEvents[i] == str) return true;
     }
 
-    str = vscp_string_format("%04X:%04X", vscp_class, vscp_type);
+    str = vscp_str_format("%04X:%04X", vscp_class, vscp_type);
     for (i = 0; i < m_listAllowedEvents.size(); i++) {
         if (m_listAllowedEvents[i] == str) return true;
     }
 
     // test wildcard class.*
-    str = vscp_string_format("%04X:*", vscp_class);
+    str = vscp_str_format("%04X:*", vscp_class);
     for (i = 0; i < m_listAllowedEvents.size(); i++) {
         if (m_listAllowedEvents[i] == str) return true;
     }

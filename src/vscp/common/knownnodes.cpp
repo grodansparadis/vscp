@@ -140,7 +140,7 @@ void
 cvscpnode::writeCapabilitiesToString(std::string &strCapabilities)
 {
     strCapabilities =
-      vscp_string_format("%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x",
+      vscp_str_format("%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x",
                          (m_capabilities >> 56) & 0xff,
                          (m_capabilities >> 48) & 0xff,
                          (m_capabilities >> 40) & 0xff,

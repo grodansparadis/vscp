@@ -136,8 +136,12 @@ CClientItem::CommandStartsWith(const std::string &cmd, bool bFix)
 
     // If asked to do so remove the command.
     if (bFix) {
-        m_currentCommand =
-          m_currentCommand.substr(m_currentCommand.length() - cmd.length());
+        if (m_currentCommand.length() - cmd.length()) {
+            m_currentCommand = vscp_str_right(
+              m_currentCommand, m_currentCommand.length() - cmd.length()-1);
+        } else {
+            m_currentCommand.clear();
+        }
         vscp_trim(m_currentCommand);
     }
 

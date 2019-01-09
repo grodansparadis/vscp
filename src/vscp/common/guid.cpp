@@ -191,7 +191,7 @@ cguid::getFromArray(const uint8_t *pguid)
 void
 cguid::toString(std::string &strGUID)
 {
-    strGUID = vscp_string_format("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:"
+    strGUID = vscp_str_format("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:"
                                  "%02X:%02X:%02X:%02X:%02X:%02X:%02X",
                                  m_id[0],
                                  m_id[1],

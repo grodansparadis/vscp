@@ -934,10 +934,8 @@ writeWorkerThread(void *pData)
 
     while (!pObj->m_bQuit) {
 
-        struct timespec ts;
-        ts.tv_sec  = 0;
-        ts.tv_nsec = 300000; // 300 ms
-        if (ETIMEDOUT == sem_timedwait(&pObj->m_semSendQueue, &ts)) {
+        if ((-1 == vscp_sem_wait(&pObj->m_semSendQueue, 300)) &&
+            errno == ETIMEDOUT) {
             continue;
         }
 
