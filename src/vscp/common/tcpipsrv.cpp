@@ -55,10 +55,9 @@
 
 #define TCPIPSRV_INACTIVITY_TIMOUT (3600 * 12)
 
-void *
-tcpipListenThread(void *pData);
-void *
-tcpipClientThread(void *pData);
+// Worker threads
+void *tcpipListenThread(void *pData);
+void *tcpipClientThread(void *pData);
 
 ///////////////////////////////////////////////////
 //                 GLOBALS
@@ -80,10 +79,13 @@ tcpipListenThreadObj::tcpipListenThreadObj(CControlObject *pobj)
     // Set the control object pointer
     setControlObjectPointer(pobj);
 
-    m_nStopTcpIpSrv = VSCP_TCPIP_SRV_RUN;
+    m_strListeningPort = "9598";
+
     // Init. the server comtext structure
     memset(&m_srvctx, 0, sizeof(struct server_context));
-    m_idCounter = 0;
+
+    m_nStopTcpIpSrv = VSCP_TCPIP_SRV_RUN;
+    m_idCounter     = 0;
 
     pthread_mutex_init(&m_mutexTcpClientList, NULL);
 }
@@ -117,6 +119,8 @@ tcpipListenThread(void *pData)
 
     // Fix pointer to main object
     CControlObject *pObj = pListenObj->getControlObject();
+
+    // ------------------------------------------------------------------------
 
     // * * * Init. secure options * * *
 
@@ -167,9 +171,8 @@ tcpipListenThread(void *pData)
     }*/
 
     // Bind to selected interface
-    if (0 ==
-        stcp_listening(&pListenObj->m_srvctx,
-                       (const char *)pObj->m_strTcpInterfaceAddress.c_str())) {
+    if (0 == stcp_listening(&pListenObj->m_srvctx,
+                            pListenObj->m_strListeningPort.c_str())) {
         syslog(LOG_CRIT,
                "[TCP/IP srv thread] Failed to init listening socket.");
         return NULL;
@@ -240,13 +243,14 @@ tcpipListenThread(void *pData)
                           LOG_DEBUG,
                           "Controlobject: Starting client tcp/ip thread...");
 
-                        if (!pthread_create(&pClientObj->m_tcpipClientThread,
+                        int n = 0;
+                        if (pthread_create(&pClientObj->m_tcpipClientThread,
                                             NULL,
                                             tcpipClientThread,
                                             pClientObj)) {
                             syslog(LOG_ERR,
-                                   "[TCP/IP srv] -- Unable to run TCP client "
-                                   "thread.");
+                                   "[TCP/IP srv] -- Failed to run client "
+                                   "tcp/ip client thread.");
                             delete pClientObj;
                             stcp_close_connection(conn);
                             conn == NULL;
@@ -5626,7 +5630,7 @@ tcpipClientThread(void *pData)
         return NULL;
     }
 
-    if (NULL == ptcpipobj->m_pObj) {
+    if (NULL == ptcpipobj->m_pParent) {
         syslog(LOG_CRIT,
                "[TCP/IP srv client thread] Error, "
                "Control object not initialized.");

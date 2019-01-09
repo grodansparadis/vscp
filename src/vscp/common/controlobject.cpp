@@ -671,7 +671,7 @@ CControlObject::init(std::string &strcfgfile, std::string &rootFolder)
     startMulticastWorkerThreads();
 
     // Load drivers
-    startDeviceWorkerThreads();
+    //startDeviceWorkerThreads();
 
     // Start daemon worker thread
     startDaemonWorkerThread();
@@ -892,12 +892,11 @@ CControlObject::startClientMsgWorkerThread(void)
 {
     syslog(LOG_INFO, "Controlobject: Starting client worker thread...");
 
-    if (!pthread_create(
+    if ( pthread_create(
           &m_clientMsgWorkerThread, NULL, clientMsgWorkerThread, this)) {
 
         syslog(LOG_CRIT,
-               "Controlobject: Unable to allocate memory for controlobject "
-               "client thread.");
+               "Controlobject: Unable to start client thread.");
         return false;
     }
 
@@ -933,17 +932,21 @@ CControlObject::startTcpipSrvThread(void)
     syslog(LOG_DEBUG, "Controlobject: Starting TCP/IP interface...");
 
     // Create the tcp/ip server data object
-    m_ptcpipSrvObject = new tcpipListenThreadObj(this);
+    m_ptcpipSrvObject = (tcpipListenThreadObj*)new tcpipListenThreadObj(this);
     if (NULL == m_ptcpipSrvObject) {
         syslog(LOG_CRIT,
                "Controlobject: Failed to allocate storage for tcp/ip.");
     }
 
-    if (!pthread_create(
+    // Set the port to listen for connections on
+    m_ptcpipSrvObject->setListeningPort(m_strTcpInterfaceAddress );
+
+    if ( pthread_create(
           &m_tcpipListenThread, NULL, tcpipListenThread, m_ptcpipSrvObject)) {
         delete m_ptcpipSrvObject;
+        m_ptcpipSrvObject = NULL;
         syslog(LOG_CRIT,
-               "Controlobject: Unable to create the tcp/ip listen thread.");
+               "Controlobject: Unable to start the tcp/ip listen thread.");
         return false;
     }
 
@@ -983,12 +986,12 @@ CControlObject::startUDPSrvThread(void)
         return false;
     }
 
-    syslog(LOG_DEBUG, "Controlobject: Starting UDP simple UDP interface...");
+    syslog(LOG_DEBUG, "Controlobject: Starting UDP simple server interface...");
 
-    if (!pthread_create(&m_UDPThread, NULL, UDPThread, &m_udpSrvObj)) {
+    if (pthread_create(&m_UDPThread, NULL, UDPThread, &m_udpSrvObj)) {
 
         syslog(LOG_CRIT,
-               "Controlobject: Unable to allocate memory for USP thread.");
+               "Controlobject: Unable to start the udp simple server thread.");
         return false;
     }
 
@@ -1049,7 +1052,7 @@ CControlObject::startMulticastWorkerThreads(void)
                            multicastClientThread,
                            pChannel)) {
             syslog(LOG_ERR,
-                   "Unable to start multicast channel interface thread.");
+                   "Unable to start the multicast channel interface thread.");
         }
     }
 
@@ -1101,14 +1104,16 @@ CControlObject::startDaemonWorkerThread(void)
         return false;
     }
 
-    if (!pthread_create(&m_clientMsgWorkerThread,
+    m_pdaemonWorkerObj->m_pCtrlObject = this;  // Give it a pointer to us
+
+    if (pthread_create(&m_clientMsgWorkerThread,
                         NULL,
                         daemonWorkerThread,
                         m_pdaemonWorkerObj)) {
 
         syslog(
           LOG_CRIT,
-          "Controlobject: Unable to allocate memory for daemon worker thread.");
+          "Controlobject: Unable to start the daemon worker thread.");
         return false;
     }
 

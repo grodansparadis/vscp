@@ -529,6 +529,9 @@ class CControlObject
     // Data object for the tcp/ip Listen thread
     tcpipListenThreadObj *m_ptcpipSrvObject;
 
+    // Listen thread for tcp/ip connections
+    pthread_t m_tcpipListenThread;
+
     // tcp/ip SSL settings
     std::string m_tcpip_ssl_certificate;
     std::string m_tcpip_ssl_certificate_chain;
@@ -792,10 +795,7 @@ class CControlObject
     daemonWorkerObj *m_pdaemonWorkerObj;
     pthread_t m_pdaemonWorkerThread;
 
-    /*!
-        Listen thread for tcp/ip connections
-    */
-    pthread_t m_tcpipListenThread;
+    
 };
 
 #endif // !defined(CONTROLOBJECT_H__7D80016B_5EFD_40D5_94E3_6FD9C324CC7B__INCLUDED_)

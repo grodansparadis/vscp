@@ -164,9 +164,9 @@ CDeviceItem::startDriver(CControlObject *pCtrlObject)
     // Share control object
     m_pCtrlObject = pCtrlObject;
 
-    if (!pthread_create(&m_deviceThreadHandle, NULL, deviceThread, this)) {
+    if (pthread_create(&m_deviceThreadHandle, NULL, deviceThread, this)) {
         syslog(LOG_CRIT,
-               "[Driver %s] - Unable to create device thread.",
+               "[Driver %s] - Unable to start the device thread.",
                m_strName.c_str());
         return false;
     }

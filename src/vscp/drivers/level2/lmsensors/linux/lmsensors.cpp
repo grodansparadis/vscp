@@ -545,7 +545,7 @@ Clmsensors::open(const char *pUsername,
             continue;
         }
 
-        if (!pthread_create(
+        if (pthread_create(
               &pthreadObj->m_pthreadWork, NULL, workerThread, pthreadObj)) {
 
             syslog(LOG_CRIT,

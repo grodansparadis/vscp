@@ -443,13 +443,13 @@ CTcpipLink::open(const char *pUsername,
     m_srvLocal.doCmdClose();
 
     // start the workerthread
-    if (!pthread_create(m_pthreadSend, NULL, workerThreadSend, this)) {
+    if (pthread_create(m_pthreadSend, NULL, workerThreadSend, this)) {
 
         syslog(LOG_CRIT, "Unable to start send worker thread.");
         return false;
     }
 
-    if (!pthread_create(m_pthreadReceive, NULL, workerThreadReceive, this)) {
+    if (pthread_create(m_pthreadReceive, NULL, workerThreadReceive, this)) {
 
         syslog(LOG_CRIT, "Unable to start receive worker thread.");
         return false;

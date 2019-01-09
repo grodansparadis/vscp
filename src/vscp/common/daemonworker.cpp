@@ -94,7 +94,7 @@ daemonWorkerThread(void *threadData)
 
     // Must have a valid pointer to the control object
     if (NULL == pWorkerObj->m_pCtrlObject) return NULL;
-    CControlObject *pctrlObj = pctrlObj; // shortcut
+    CControlObject *pctrlObj = pWorkerObj->m_pCtrlObject; // shortcut
 
     unsigned char mc_ttl =
       pctrlObj->m_ttlMultiCastAnnounce; // time to live (hop count)

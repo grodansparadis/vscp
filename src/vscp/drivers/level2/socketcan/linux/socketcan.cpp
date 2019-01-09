@@ -296,7 +296,7 @@ Csocketcan::open(const char *pUsername,
     }
 
     // start the workerthread
-    if ( !pthread_create( &m_threadWork, 
+    if ( pthread_create( &m_threadWork, 
                             NULL, 
                             workerThread, 
                             this ) ) {

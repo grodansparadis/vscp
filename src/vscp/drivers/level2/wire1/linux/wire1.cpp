@@ -375,7 +375,7 @@ CWire1::open(const char *pUsername,
             psensor->m_pW1Obj = this;
 
             // start the workerthread
-            if (!pthread_create(
+            if (pthread_create(
                   &psensor->m_threadWork, NULL, workerThread, psensor)) {
 
                 delete psensor;      

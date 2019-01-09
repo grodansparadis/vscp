@@ -676,7 +676,7 @@ CRawEthernet::open(const char *pUsername,
     }
 
     // start the read workerthread
-    if (!pthread_create(m_readWrkThread, NULL, readWorkerThread, this)) {
+    if (pthread_create(m_readWrkThread, NULL, readWorkerThread, this)) {
 
         syslog(LOG_CRIT, "Unable to start read worker thread.");
         return false;
@@ -707,7 +707,7 @@ CRawEthernet::open(const char *pUsername,
 
     // start the write workerthread
     // start the read workerthread
-    if (!pthread_create(m_writeWrkThread, NULL, writeWorkerThread, this)) {
+    if (pthread_create(m_writeWrkThread, NULL, writeWorkerThread, this)) {
 
         syslog(LOG_CRIT, "Unable to start read worker thread.");
         return false;

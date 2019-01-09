@@ -178,7 +178,7 @@ CVSCPLog::open(const char *pUsername,
 
         m_pWorkObj->m_pLog = this;
 
-        if (!pthread_create( &m_pWrkThread, NULL, threadWorker, m_pWorkObj)) {
+        if (pthread_create( &m_pWrkThread, NULL, threadWorker, m_pWorkObj)) {
             syslog(LOG_CRIT, "Unable to start logger driver worker thread.");
             return false;
         }

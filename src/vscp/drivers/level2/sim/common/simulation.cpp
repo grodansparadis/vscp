@@ -587,7 +587,7 @@ CSim::open(const char *pUsername,
 
             // start the workerthread
             pObj->m_pSim = this;
-            if (!pthread_create(
+            if (pthread_create(
                   &pObj->m_workerThread, NULL, workerThread, this)) {
 
                 syslog(LOG_CRIT, "Unable to start simulation worker thread.");

@@ -450,12 +450,12 @@ deviceThread(void *pData)
             //                      Device write worker thread
             /////////////////////////////////////////////////////////////////////////////
 
-            if (!pthread_create(&pDevObj->m_level1WriteThread,
+            if ( pthread_create(&pDevObj->m_level1WriteThread,
                                 NULL,
                                 deviceLevel1WriteThread,
                                 pDevObj)) {
                 syslog(LOG_CRIT,
-                       "%s: Unable to run device write worker thread.",
+                       "%s: Unable to run the device write worker thread.",
                        pDevItem->m_strName.c_str());
                 // pDevItem->m_openHandle = pDevItem->m_proc_CanalOpen();
                 dlclose(hdll);
@@ -465,12 +465,12 @@ deviceThread(void *pData)
             /////////////////////////////////////////////////////////////////////////////
             // Device read worker thread
             /////////////////////////////////////////////////////////////////////////////
-            if (!pthread_create(&pDevObj->m_level1ReceiveThread,
+            if (pthread_create(&pDevObj->m_level1ReceiveThread,
                                 NULL,
                                 deviceLevel1ReceiveThread,
                                 pDevObj)) {
                 syslog(LOG_CRIT,
-                       "%s: Unable to run device read worker thread.",
+                       "%s: Unable to run the device read worker thread.",
                        pDevItem->m_strName.c_str());
                 pDevObj->m_bQuit = true;
                 pthread_join(pDevObj->m_level1WriteThread, NULL);
@@ -856,12 +856,12 @@ deviceThread(void *pData)
         // Device write worker thread
         /////////////////////////////////////////////////////////////////////////////
 
-        if (!pthread_create(&pDevObj->m_level2WriteThread,
+        if (pthread_create(&pDevObj->m_level2WriteThread,
                             NULL,
                             deviceLevel2WriteThread,
                             pDevObj)) {
             syslog(LOG_CRIT,
-                   "%s: Unable to run device Level II write worker thread.",
+                   "%s: Unable to run the device Level II write worker thread.",
                    pDevItem->m_strName.c_str());
             dlclose(hdll);
             return NULL; // TODO close dll
@@ -877,12 +877,12 @@ deviceThread(void *pData)
         // Device read worker thread
         /////////////////////////////////////////////////////////////////////////////
 
-        if (!pthread_create(&pDevObj->m_level2ReceiveThread,
+        if (pthread_create(&pDevObj->m_level2ReceiveThread,
                             NULL,
                             deviceLevel2ReceiveThread,
                             pDevObj)) {
             syslog(LOG_CRIT,
-                   "%s: Unable to run device Level II read worker thread.",
+                   "%s: Unable to run the device Level II read worker thread.",
                    pDevItem->m_strName.c_str());
             pDevObj->m_bQuit = true;
             pthread_join(pDevObj->m_level2WriteThread, NULL);

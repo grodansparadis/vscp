@@ -750,7 +750,7 @@ Cmqttobj::open(const char *pUsername,
     m_pWrkObj = new CWrkThreadObj();
     if (NULL != m_pWrkObj) {
         m_pWrkObj->m_pObj = this;
-        if (!pthread_create(m_threadWork, NULL, workerTread, this)) {
+        if (pthread_create(m_threadWork, NULL, workerTread, this)) {
 
             syslog(LOG_CRIT, "Unable to start worker thread.");
             return false;
