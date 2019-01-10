@@ -399,9 +399,9 @@ CControlObject::init(std::string &strcfgfile, std::string &rootFolder)
                    "VSCP Daemon configuration database could not be opened. - "
                    "Will exit.");
             vscp_str_format(str,
-                               "Path=%s error=%s",
-                               (const char *)m_path_db_vscp_daemon.c_str(),
-                               sqlite3_errmsg(m_db_vscp_daemon));
+                            "Path=%s error=%s",
+                            (const char *)m_path_db_vscp_daemon.c_str(),
+                            sqlite3_errmsg(m_db_vscp_daemon));
             syslog(LOG_CRIT, "%s", (const char *)str.c_str());
             if (NULL != m_db_vscp_daemon) sqlite3_close(m_db_vscp_daemon);
             m_db_vscp_daemon = NULL;
@@ -889,11 +889,10 @@ CControlObject::startClientMsgWorkerThread(void)
 {
     syslog(LOG_INFO, "Controlobject: Starting client worker thread...");
 
-    if ( pthread_create(
+    if (pthread_create(
           &m_clientMsgWorkerThread, NULL, clientMsgWorkerThread, this)) {
 
-        syslog(LOG_CRIT,
-               "Controlobject: Unable to start client thread.");
+        syslog(LOG_CRIT, "Controlobject: Unable to start client thread.");
         return false;
     }
 
@@ -929,16 +928,16 @@ CControlObject::startTcpipSrvThread(void)
     syslog(LOG_DEBUG, "Controlobject: Starting TCP/IP interface...");
 
     // Create the tcp/ip server data object
-    m_ptcpipSrvObject = (tcpipListenThreadObj*)new tcpipListenThreadObj(this);
+    m_ptcpipSrvObject = (tcpipListenThreadObj *)new tcpipListenThreadObj(this);
     if (NULL == m_ptcpipSrvObject) {
         syslog(LOG_CRIT,
                "Controlobject: Failed to allocate storage for tcp/ip.");
     }
 
     // Set the port to listen for connections on
-    m_ptcpipSrvObject->setListeningPort(m_strTcpInterfaceAddress );
+    m_ptcpipSrvObject->setListeningPort(m_strTcpInterfaceAddress);
 
-    if ( pthread_create(
+    if (pthread_create(
           &m_tcpipListenThread, NULL, tcpipListenThread, m_ptcpipSrvObject)) {
         delete m_ptcpipSrvObject;
         m_ptcpipSrvObject = NULL;
@@ -1101,16 +1100,15 @@ CControlObject::startDaemonWorkerThread(void)
         return false;
     }
 
-    m_pdaemonWorkerObj->m_pCtrlObject = this;  // Give it a pointer to us
+    m_pdaemonWorkerObj->m_pCtrlObject = this; // Give it a pointer to us
 
     if (pthread_create(&m_clientMsgWorkerThread,
-                        NULL,
-                        daemonWorkerThread,
-                        m_pdaemonWorkerObj)) {
+                       NULL,
+                       daemonWorkerThread,
+                       m_pdaemonWorkerObj)) {
 
-        syslog(
-          LOG_CRIT,
-          "Controlobject: Unable to start the daemon worker thread.");
+        syslog(LOG_CRIT,
+               "Controlobject: Unable to start the daemon worker thread.");
         return false;
     }
 
@@ -1325,18 +1323,16 @@ CControlObject::getVscpCapabilities(uint8_t *pCapability)
 
     // AES256
     caps |= VSCP_SERVER_CAPABILITY_AES256;
-   
 
     // AES192
     caps |= VSCP_SERVER_CAPABILITY_AES192;
-   
 
     // AES128
     caps |= VSCP_SERVER_CAPABILITY_AES128;
 
-    for ( int i=0; i<8; i++ ) {
+    for (int i = 0; i < 8; i++) {
         pCapability[i] = caps & 0xff;
-        caps = caps >> 8;    
+        caps           = caps >> 8;
     }
 
     return true;
@@ -1896,9 +1892,9 @@ CControlObject::getSystemKeyMD5(std::string &strKey)
             vscp-dm="db-path" />
 </general>
 */
-static int depth_general_config_parser   = 0;
-static int bvscpConfigFound              = 0;
-static int bGeneralConfigFound           = 0;
+static int depth_general_config_parser = 0;
+static int bvscpConfigFound            = 0;
+static int bGeneralConfigFound         = 0;
 
 static void
 startGeneralConfigParser(void *data, const char *name, const char **attr)
@@ -2028,33 +2024,28 @@ startGeneralConfigParser(void *data, const char *name, const char **attr)
                     if (attribute.length()) {
                         pObj->m_path_db_vscp_daemon = attribute;
                     }
-                }
-                else if (0 == strcasecmp(attr[i], "data")) {
+                } else if (0 == strcasecmp(attr[i], "data")) {
                     vscp_trim(attribute);
                     if (attribute.length()) {
                         pObj->m_path_db_vscp_data = attribute;
                     }
-                }
-                else if (0 == strcasecmp(attr[i], "variable")) {
+                } else if (0 == strcasecmp(attr[i], "variable")) {
                     vscp_trim(attribute);
                     if (attribute.length()) {
                         pObj->m_variables.m_dbFilename = attribute;
                     }
-                }
-                else if (0 == strcasecmp(attr[i], "dm")) {
+                } else if (0 == strcasecmp(attr[i], "dm")) {
                     vscp_trim(attribute);
                     if (attribute.length()) {
                         pObj->m_dm.m_path_db_vscp_dm = attribute;
                     }
                 }
-
             }
-        } 
+        }
     }
 
     depth_general_config_parser++;
 }
-
 
 static void
 endGeneralConfigParser(void *data, const char *name)
@@ -2217,8 +2208,7 @@ startFullConfigParser(void *data, const char *name, const char **attr)
                 pObj->m_strMulticastAnnounceAddress = attribute;
             }
             if (0 == vscp_strcasecmp(attr[i], "ttl")) {
-                pObj->m_ttlMultiCastAnnounce =
-                  vscp_readStringValue(attribute);
+                pObj->m_ttlMultiCastAnnounce = vscp_readStringValue(attribute);
             }
         }
     } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
@@ -2881,31 +2871,32 @@ startFullConfigParser(void *data, const char *name, const char **attr)
             } else if (0 == vscp_strcasecmp(attr[i], "translation")) {
                 translation = vscp_readStringValue(attribute);
             }
+        } // for
 
-            // Add the level I device
-            if (bEnabled) {
+        // Add the level I device
+        if (bEnabled) {
 
-                if (!pObj->m_deviceList.addItem(strName,
-                                                strConfig,
-                                                strPath,
-                                                flags,
-                                                guid,
-                                                VSCP_DRIVER_LEVEL1,
-                                                bEnabled,
-                                                translation)) {
-                    syslog(LOG_ERR,
-                           "Level I driver not added name=%s. "
-                           "Path does not exist. - [%s]",
-                           strName.c_str(),
-                           strPath.c_str());
-                } else {
-                    syslog(LOG_DEBUG,
-                           "Level I driver added. name = %s - [%s]",
-                           strName.c_str(),
-                           strPath.c_str());
-                }
+            if (!pObj->m_deviceList.addItem(strName,
+                                            strConfig,
+                                            strPath,
+                                            flags,
+                                            guid,
+                                            VSCP_DRIVER_LEVEL1,
+                                            bEnabled,
+                                            translation)) {
+                syslog(LOG_ERR,
+                       "Level I driver not added name=%s. "
+                       "Path does not exist. - [%s]",
+                       strName.c_str(),
+                       strPath.c_str());
+            } else {
+                syslog(LOG_DEBUG,
+                       "Level I driver added. name = %s - [%s]",
+                       strName.c_str(),
+                       strPath.c_str());
             }
         }
+
     } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
                ((0 == vscp_strcasecmp(name, "level2driver")))) {
         bLevel2DriverConfigFound = TRUE;
@@ -2947,7 +2938,7 @@ startFullConfigParser(void *data, const char *name, const char **attr)
             } else if (0 == vscp_strcasecmp(attr[i], "guid")) {
                 guid.getFromString(attribute);
             }
-        }
+        } // for
 
         // Add the level II device
         if (bEnabled) {
@@ -3277,18 +3268,29 @@ startFullConfigParser(void *data, const char *name, const char **attr)
                 } else {
                     pObj->m_automation.disableSegmentControllerHeartbeat();
                 }
+            } else if (0 ==
+                       vscp_strcasecmp(attr[i], "segment-controler-interval")) {
+                int interval = vscp_readStringValue(attribute);
+                pObj->m_automation.setSegmentControllerHeartbeatInterval(
+                  interval);
             } else if (0 == vscp_strcasecmp(attr[i], "heartbeat-event")) {
                 if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
                     pObj->m_automation.enableHeartbeatEvent();
                 } else {
                     pObj->m_automation.disableHeartbeatEvent();
                 }
+            } else if (0 == vscp_strcasecmp(attr[i], "heartbeat-interval")) {
+                int interval = vscp_readStringValue(attribute);
+                pObj->m_automation.setHeartbeatEventInterval(interval);
             } else if (0 == vscp_strcasecmp(attr[i], "capability-event")) {
                 if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
                     pObj->m_automation.enableCapabilitiesEvent();
                 } else {
                     pObj->m_automation.disableCapabilitiesEvent();
                 }
+            } else if (0 == vscp_strcasecmp(attr[i], "capability-interval")) {
+                int interval = vscp_readStringValue(attribute);
+                pObj->m_automation.setCapabilitiesEventInterval(interval);
             }
         }
     }
@@ -3392,7 +3394,7 @@ CControlObject::readConfigurationXML(const std::string &strcfgfile)
     XML_SetUserData(xmlParser, this);
     XML_SetElementHandler(
       xmlParser, startFullConfigParser, endFullConfigParser);
-    //XML_SetCharacterDataHandler(xmlParser, handleFullConfigData);
+    // XML_SetCharacterDataHandler(xmlParser, handleFullConfigData);
 
     int bytes_read;
     void *buf = XML_GetBuffer(xmlParser, XML_BUFF_SIZE);
@@ -5454,15 +5456,15 @@ CControlObject::doCreateZoneTable(void)
     std::string sql = "BEGIN;";
     for (int i = 0; i < 256; i++) {
         sql += vscp_str_format("INSERT INTO 'zone' (idx_zone, name) "
-                                  "VALUES( %d, 'zone%d' );",
-                                  i,
-                                  i);
+                               "VALUES( %d, 'zone%d' );",
+                               i,
+                               i);
     }
 
     sql += vscp_str_format(VSCPDB_ZONE_UPDATE,
-                              "All zones",
-                              "Zone = 255 represents all zones.",
-                              255L);
+                           "All zones",
+                           "Zone = 255 represents all zones.",
+                           255L);
     sql += "COMMIT;";
     if (SQLITE_OK !=
         sqlite3_exec(
@@ -5510,16 +5512,15 @@ CControlObject::doCreateSubZoneTable(void)
     std::string sql = "BEGIN;";
     for (int i = 0; i < 256; i++) {
         sql += vscp_str_format("INSERT INTO 'subzone' (idx_subzone, name) "
-                                  "VALUES( %d, 'subzone%d' );",
-                                  i,
-                                  i);
+                               "VALUES( %d, 'subzone%d' );",
+                               i,
+                               i);
     }
 
-    sql +=
-      vscp_str_format(VSCPDB_SUBZONE_UPDATE,
-                         "All subzones",
-                         "Subzone = 255 represents all subzones of a zone.",
-                         255L);
+    sql += vscp_str_format(VSCPDB_SUBZONE_UPDATE,
+                           "All subzones",
+                           "Subzone = 255 represents all subzones of a zone.",
+                           255L);
     sql += "COMMIT;";
     if (SQLITE_OK !=
         sqlite3_exec(
@@ -5593,7 +5594,7 @@ clientMsgWorkerThread(void *userdata)
             errno == ETIMEDOUT) {
             continue;
         }
- 
+
         if (pObj->m_clientOutputQueue.size()) {
 
             pthread_mutex_lock(&pObj->m_mutexClientOutputQueue);
@@ -5605,12 +5606,11 @@ clientMsgWorkerThread(void *userdata)
             if (NULL != pvscpEvent) {
 
                 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-                // 
+                //
                 // Send event to all Level II clients (not to
                 // ourself )
-                // 
+                //
                 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-            
 
                 pObj->sendEventAllClients(pvscpEvent, pvscpEvent->obid);
 
