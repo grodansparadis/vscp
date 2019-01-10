@@ -481,22 +481,22 @@ struct vscpMyNode {
     CLASS2.PROTOCOL, HIGH END SERVER HEART BEAT
 */
 
-#define VSCP_SERVER_CAPABILITY_TCPIP                (1<<15)
-#define VSCP_SERVER_CAPABILITY_UDP                  (1<<14)
-#define VSCP_SERVER_CAPABILITY_MULTICAST_ANNOUNCE   (1<<13)
-#define VSCP_SERVER_CAPABILITY_RAWETH               (1<<12)
-#define VSCP_SERVER_CAPABILITY_WEB                  (1<<11)
-#define VSCP_SERVER_CAPABILITY_WEBSOCKET            (1<<10)
-#define VSCP_SERVER_CAPABILITY_REST                 (1<<9)
-#define VSCP_SERVER_CAPABILITY_MULTICAST_CHANNEL    (1<<8)
-#define VSCP_SERVER_CAPABILITY_RESERVED             (1<<7)
-#define VSCP_SERVER_CAPABILITY_IP6                  (1<<6)
-#define VSCP_SERVER_CAPABILITY_IP4                  (1<<5)
-#define VSCP_SERVER_CAPABILITY_SSL                  (1<<4)
-#define VSCP_SERVER_CAPABILITY_TWO_CONNECTIONS      (1<<3)
-#define VSCP_SERVER_CAPABILITY_AES256               (1<<2)
-#define VSCP_SERVER_CAPABILITY_AES192               (1<<1)
-#define VSCP_SERVER_CAPABILITY_AES128               1
+#define VSCP_SERVER_CAPABILITY_TCPIP                (1<<15) // 32768
+#define VSCP_SERVER_CAPABILITY_UDP                  (1<<14) // 16384
+#define VSCP_SERVER_CAPABILITY_MULTICAST_ANNOUNCE   (1<<13) // 8192
+#define VSCP_SERVER_CAPABILITY_RAWETH               (1<<12) // 4196
+#define VSCP_SERVER_CAPABILITY_WEB                  (1<<11) // 2048
+#define VSCP_SERVER_CAPABILITY_WEBSOCKET            (1<<10) // 1024
+#define VSCP_SERVER_CAPABILITY_REST                 (1<<9)  // 512
+#define VSCP_SERVER_CAPABILITY_MULTICAST_CHANNEL    (1<<8)  // 256
+#define VSCP_SERVER_CAPABILITY_RESERVED             (1<<7)  // 128
+#define VSCP_SERVER_CAPABILITY_IP6                  (1<<6)  // 64
+#define VSCP_SERVER_CAPABILITY_IP4                  (1<<5)  // 32
+#define VSCP_SERVER_CAPABILITY_SSL                  (1<<4)  // 16
+#define VSCP_SERVER_CAPABILITY_TWO_CONNECTIONS      (1<<3)  // 8
+#define VSCP_SERVER_CAPABILITY_AES256               (1<<2)  // 4
+#define VSCP_SERVER_CAPABILITY_AES192               (1<<1)  // 2
+#define VSCP_SERVER_CAPABILITY_AES128               1       // 1
 
 /*
     Offsets into the data of the capabilities event

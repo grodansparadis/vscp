@@ -360,7 +360,7 @@ vscp_strncasecmp(const char *s1, const char *s2, size_t len)
 //
 
 void
-vscp_strlcpy(register char *dst, register const char *src, size_t n)
+vscp_strlcpy(char *dst, const char *src, size_t n)
 {
     for (; *src != '\0' && n > 1; n--) {
         *dst++ = *src++;

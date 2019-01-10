@@ -42,8 +42,6 @@
 #include <sys/times.h>
 #endif
 
-#include <float.h>
-
 #include <algorithm>
 #include <cctype>
 #include <deque>
@@ -51,6 +49,9 @@
 #include <locale>
 #include <string>
 #include <vector>
+
+#include <float.h>
+#include <semaphore.h>
 
 #include <canal.h>
 #include <vscp.h>
@@ -254,7 +255,7 @@ extern "C"
     */
     int vscp_strncasecmp(const char *s1, const char *s2, size_t len);
 
-    void vscp_strlcpy(register char *dst, register const char *src, size_t n);
+    void vscp_strlcpy(char *dst, const char *src, size_t n);
 
     char *vscp_strdup(const char *str);
 

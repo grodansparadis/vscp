@@ -653,28 +653,28 @@ CControlObject::init(std::string &strcfgfile, std::string &rootFolder)
     m_variables.loadFromXML();
 
     // Start daemon internal client worker thread
-    //startClientMsgWorkerThread();
+    startClientMsgWorkerThread();
 
     // Start webserver and websockets
     // IMPORTANT!!!!!!!!
     // Must be started before the tcp/ip server as
     // ssl initializarion is done here
-    //start_webserver();
+    start_webserver();
 
     // Start TCP/IP interface
-    //startTcpipSrvThread();
+    startTcpipSrvThread();
 
     // Start UDP interface
-    //startUDPSrvThread();
+    startUDPSrvThread();
 
     // Start Multicast interface
-    //startMulticastWorkerThreads();
+    startMulticastWorkerThreads();
 
     // Load drivers
-    //startDeviceWorkerThreads();
+    startDeviceWorkerThreads();
 
     // Start daemon worker thread
-    //startDaemonWorkerThread();
+    startDaemonWorkerThread();
 
     return true;
 }
@@ -1260,88 +1260,84 @@ CControlObject::getVscpCapabilities(uint8_t *pCapability)
     // Check pointer
     if (NULL == pCapability) return false;
 
+    uint64_t caps = 0;
     memset(pCapability, 0, 8);
 
     // VSCP Multicast interface
     if (m_bEnableMulticast) {
-        pCapability[8 - (VSCP_SERVER_CAPABILITY_MULTICAST_CHANNEL / 8)] |=
-          (1 << (VSCP_SERVER_CAPABILITY_MULTICAST_CHANNEL % 8));
+        caps |= VSCP_SERVER_CAPABILITY_MULTICAST_CHANNEL;
     }
 
     // VSCP TCP/IP interface
     if (m_enableTcpip) {
-        pCapability[8 - (VSCP_SERVER_CAPABILITY_TCPIP / 8)] |=
-          (1 << (VSCP_SERVER_CAPABILITY_TCPIP % 8));
+        caps |= VSCP_SERVER_CAPABILITY_TCPIP;
     }
 
     // VSCP UDP interface
     if (m_udpSrvObj.m_bEnable) {
-        pCapability[8 - (VSCP_SERVER_CAPABILITY_UDP / 8)] |=
-          (1 << (VSCP_SERVER_CAPABILITY_UDP % 8));
+        caps |= VSCP_SERVER_CAPABILITY_UDP;
     }
 
     // VSCP Multicast announce interface
     if (m_bEnableMulticastAnnounce) {
-        pCapability[8 - (VSCP_SERVER_CAPABILITY_MULTICAST_ANNOUNCE / 8)] |=
-          (1 << (VSCP_SERVER_CAPABILITY_MULTICAST_ANNOUNCE % 8));
+        caps |= VSCP_SERVER_CAPABILITY_MULTICAST_ANNOUNCE;
     }
 
     // VSCP raw Ethernet interface
     if (1) {
-        pCapability[8 - (VSCP_SERVER_CAPABILITY_RAWETH / 8)] |=
-          (1 << (VSCP_SERVER_CAPABILITY_RAWETH % 8));
+        caps |= VSCP_SERVER_CAPABILITY_RAWETH;
     }
 
     // VSCP web server
     if (m_web_bEnable) {
-        pCapability[8 - (VSCP_SERVER_CAPABILITY_WEB / 8)] |=
-          (1 << (VSCP_SERVER_CAPABILITY_WEB % 8));
+        caps |= VSCP_SERVER_CAPABILITY_WEB;
     }
 
     // VSCP websocket interface
     if (m_web_bEnable) {
-        pCapability[8 - (VSCP_SERVER_CAPABILITY_WEBSOCKET / 8)] |=
-          (1 << (VSCP_SERVER_CAPABILITY_WEBSOCKET % 8));
+        caps |= VSCP_SERVER_CAPABILITY_WEBSOCKET;
     }
 
     // VSCP websocket interface
     if (m_web_bEnable) {
-        pCapability[8 - (VSCP_SERVER_CAPABILITY_REST / 8)] |=
-          (1 << (VSCP_SERVER_CAPABILITY_REST % 8));
+        caps |= VSCP_SERVER_CAPABILITY_REST;
     }
 
     // IPv6 support
     if (0) {
-        pCapability[8 - (VSCP_SERVER_CAPABILITY_IP6 / 8)] |=
-          (1 << (VSCP_SERVER_CAPABILITY_IP6 % 8));
+        caps |= VSCP_SERVER_CAPABILITY_IP6;
     }
 
     // IPv4 support
     if (0) {
-        pCapability[8 - (VSCP_SERVER_CAPABILITY_IP4 / 8)] |=
-          (1 << (VSCP_SERVER_CAPABILITY_IP4 % 8));
+        caps |= VSCP_SERVER_CAPABILITY_IP4;
     }
 
     // SSL support
     if (1) {
-        pCapability[8 - (VSCP_SERVER_CAPABILITY_SSL / 8)] |=
-          (1 << (VSCP_SERVER_CAPABILITY_SSL % 8));
+        caps |= VSCP_SERVER_CAPABILITY_SSL;
     }
 
     // +2 tcp/ip connections support
     if (m_enableTcpip) {
-        pCapability[8 - (VSCP_SERVER_CAPABILITY_TWO_CONNECTIONS / 8)] |=
-          (1 << (VSCP_SERVER_CAPABILITY_TWO_CONNECTIONS % 8));
+        caps |= VSCP_SERVER_CAPABILITY_TWO_CONNECTIONS;
     }
 
     // AES256
-    pCapability[15] |= (1 << 2);
+    caps |= VSCP_SERVER_CAPABILITY_AES256;
+   
 
     // AES192
-    pCapability[15] |= (1 << 1);
+    caps |= VSCP_SERVER_CAPABILITY_AES192;
+   
 
     // AES128
-    pCapability[15] |= 1;
+    caps |= VSCP_SERVER_CAPABILITY_AES128;
+
+    for ( int i=0; i<8; i++ ) {
+        pCapability[i] = caps & 0xff;
+        caps = caps >> 8;    
+    }
 
     return true;
 }
@@ -5609,13 +5605,12 @@ clientMsgWorkerThread(void *userdata)
             if (NULL != pvscpEvent) {
 
                 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-                // * *
-                // * * * * *
-                // * * * * Send event to all Level II clients (not to
+                // 
+                // Send event to all Level II clients (not to
                 // ourself )
-                // * * * *
+                // 
                 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-                // * *
+            
 
                 pObj->sendEventAllClients(pvscpEvent, pvscpEvent->obid);
 

@@ -1203,10 +1203,10 @@ void
 tcpipClientObj::handleClientCapabilityRequest(void)
 {
     std::string str;
-    uint8_t capabilities[16];
+    uint8_t capabilities[8];
 
     m_pObj->getVscpCapabilities(capabilities);
-    str = vscp_str_format("%02X-%02X-%02X-%02X-%02X-%02X-%02X-%02X",
+    str = vscp_str_format("%02X-%02X-%02X-%02X-%02X-%02X-%02X-%02X\r\n",
                              capabilities[7],
                              capabilities[6],
                              capabilities[5],
@@ -1215,7 +1215,8 @@ tcpipClientObj::handleClientCapabilityRequest(void)
                              capabilities[2],
                              capabilities[1],
                              capabilities[0]);
-    write(MSG_UNKNOWN_COMMAND, strlen(MSG_UNKNOWN_COMMAND));
+    write ( str.c_str(), str.length());
+    write(MSG_OK, strlen(MSG_OK));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1628,7 +1629,7 @@ tcpipClientObj::handleClientDataAvailable(void)
     }
 
     sprintf(outbuf,
-            "%zd\r\n%s\r\n",
+            "%zd\r\n%s",
             m_pClientItem->m_clientInputQueue.size(),
             MSG_OK);
     write(outbuf, strlen(outbuf));
@@ -1676,7 +1677,7 @@ tcpipClientObj::handleClientGetStatistics(void)
     }
 
     sprintf(outbuf,
-            "%lu,%lu,%lu,%lu,%lu,%lu,%lu\r\n%s\r\n",
+            "%lu,%lu,%lu,%lu,%lu,%lu,%lu\r\n%s",
             m_pClientItem->m_statistics.cntBusOff,
             m_pClientItem->m_statistics.cntBusWarnings,
             m_pClientItem->m_statistics.cntOverruns,
@@ -1708,7 +1709,7 @@ tcpipClientObj::handleClientGetStatus(void)
     }
 
     sprintf(outbuf,
-            "%lu,%lu,%lu,\"%s\"\r\n%s\r\n",
+            "%lu,%lu,%lu,\"%s\"\r\n%s",
             m_pClientItem->m_status.channel_status,
             m_pClientItem->m_status.lasterrorcode,
             m_pClientItem->m_status.lasterrorsubcode,
@@ -1802,7 +1803,7 @@ tcpipClientObj::handleClientGetVersion(void)
     if (STCP_CONN_STATE_CONNECTED != m_conn->conn_state) return;
 
     sprintf(outbuf,
-            "%d,%d,%d,%d\r\n%s\r\n",
+            "%d,%d,%d,%d\r\n%s",
             VSCPD_MAJOR_VERSION,
             VSCPD_MINOR_VERSION,
             VSCPD_RELEASE_VERSION,
