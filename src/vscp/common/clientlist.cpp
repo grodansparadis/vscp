@@ -158,7 +158,7 @@ CClientItem::setDeviceName(const std::string &name)
     m_strDeviceName = name;
     m_strDeviceName += "|Started at ";
 
-    m_strDeviceName += vscpdatetime::setNow().getISODateTime();
+    m_strDeviceName += vscpdatetime::Now().getISODateTime();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -89,7 +89,7 @@ actionJavascriptThread(void *pData)
         return NULL;
     }
 
-    pobj->m_start = vscpdatetime::setNow(); // Mark start time
+    pobj->m_start = vscpdatetime::Now(); // Mark start time
 
     // Create new JavaScript context
     duk_context *ctx = duk_create_heap_default();
@@ -238,7 +238,7 @@ actionJavascriptThread(void *pData)
     // Destroy the JavaScript context
     duk_destroy_heap(ctx);
 
-    pobj->m_stop = vscpdatetime::setNow(); // Mark stop time
+    pobj->m_stop = vscpdatetime::Now(); // Mark stop time
 
     return NULL;
 }

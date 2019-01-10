@@ -35,6 +35,8 @@
 
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/socket.h>
 #include <syslog.h>
 #include <time.h>
@@ -150,9 +152,7 @@ tcpipListenThread(void *pData)
     }
 
     opts.verify_depth = pObj->m_tcpip_ssl_verify_depth;
-
     opts.default_verify_path = pObj->m_tcpip_ssl_default_verify_paths ? 1 : 0;
-
     opts.protocol_version = pObj->m_tcpip_ssl_protocol_version;
 
     // chiper list
@@ -1207,15 +1207,15 @@ tcpipClientObj::handleClientCapabilityRequest(void)
 
     m_pObj->getVscpCapabilities(capabilities);
     str = vscp_str_format("%02X-%02X-%02X-%02X-%02X-%02X-%02X-%02X\r\n",
-                             capabilities[7],
-                             capabilities[6],
-                             capabilities[5],
-                             capabilities[4],
-                             capabilities[3],
-                             capabilities[2],
-                             capabilities[1],
-                             capabilities[0]);
-    write ( str.c_str(), str.length());
+                          capabilities[7],
+                          capabilities[6],
+                          capabilities[5],
+                          capabilities[4],
+                          capabilities[3],
+                          capabilities[2],
+                          capabilities[1],
+                          capabilities[0]);
+    write(str.c_str(), str.length());
     write(MSG_OK, strlen(MSG_OK));
 }
 
@@ -1628,10 +1628,8 @@ tcpipClientObj::handleClientDataAvailable(void)
         return;
     }
 
-    sprintf(outbuf,
-            "%zd\r\n%s",
-            m_pClientItem->m_clientInputQueue.size(),
-            MSG_OK);
+    sprintf(
+      outbuf, "%zd\r\n%s", m_pClientItem->m_clientInputQueue.size(), MSG_OK);
     write(outbuf, strlen(outbuf));
 }
 
@@ -2031,9 +2029,9 @@ tcpipClientObj::handleClientPassword(void)
     pthread_mutex_unlock(&m_pObj->m_mutexUserList);
 
     if (!bValidHost) {
-        std::string strErr = vscp_str_format(
-          ("[TCP/IP srv] Host [%s] not allowed to connect.\n"),
-          (const char *)remoteaddr.c_str());
+        std::string strErr =
+          vscp_str_format(("[TCP/IP srv] Host [%s] not allowed to connect.\n"),
+                          (const char *)remoteaddr.c_str());
 
         syslog(LOG_ERR, "%s", strErr.c_str());
         write(MSG_INVALID_REMOTE_ERROR, strlen(MSG_INVALID_REMOTE_ERROR));
@@ -2162,7 +2160,7 @@ tcpipClientObj::handleClientRemote(void)
 // handleClientInterface
 //
 // list     List interfaces.
-// unique   Aquire selected interface uniquely. Full format is INTERFACE UNIQUE
+// unique   Acquire selected interface uniquely. Full format is INTERFACE UNIQUE
 // id normal   Normal access to interfaces. Full format is INTERFACE NORMAL id
 // close    Close interfaces. Full format is INTERFACE CLOSE id
 
@@ -2172,8 +2170,6 @@ tcpipClientObj::handleClientInterface(void)
     // Must be connected
     if (STCP_CONN_STATE_CONNECTED != m_conn->conn_state) return;
 
-    // syslog( LOG_DEBUG, m_pClientItem->m_currentCommand );
-
     if (m_pClientItem->CommandStartsWith(("list"))) {
         handleClientInterface_List();
     } else if (m_pClientItem->CommandStartsWith(("unique"))) {
@@ -2182,6 +2178,9 @@ tcpipClientObj::handleClientInterface(void)
         handleClientInterface_Normal();
     } else if (m_pClientItem->CommandStartsWith(("close"))) {
         handleClientInterface_Close();
+    }
+    else {
+        handleClientInterface_List();
     }
 }
 
@@ -3156,7 +3155,7 @@ tcpipClientObj::handleClientTable_Log(void)
         */
     } else {
         // Set to now
-        dt.setUTCNow();
+        dt = vscpdatetime::UTCNow();
     }
 
     pthread_mutex_lock(&m_pObj->m_mutexUserTables);
@@ -3377,8 +3376,8 @@ tcpipClientObj::handleClientTable_FirstDate(void)
 
     pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
 
-    std::string strReply = vscp_str_format(
-      "%s\r\n", (const char *)first.getISODateTime().c_str());
+    std::string strReply =
+      vscp_str_format("%s\r\n", (const char *)first.getISODateTime().c_str());
     write((const char *)strReply.c_str(),
           strlen((const char *)strReply.c_str()));
 
@@ -5606,10 +5605,16 @@ tcpipClientObj::handleClientHelp(void)
         str += "'VARIABLE length <variable-name>'.\r\n";
         str += "'VARIABLE save <path> <selection>'.\r\n";
         write((const char *)str.c_str(), str.length());
+    } else if (m_pClientItem->CommandStartsWith("wcyd") ||
+               m_pClientItem->CommandStartsWith("whatcanyoudo")) {
+        std::string str = "'WCYD/WHATCANYOUDO' Return the VSCP server "
+                          "capabilities 64-bit array.\r\n";
+        write((const char *)str.c_str(), str.length());
     } else {
-        std::string str = vscp_str_format("The command '%s' is not available\r\n",
-                                 m_pClientItem->m_currentCommand.c_str());
-        write((const char *)str.c_str(), str.length());                                 
+        std::string str =
+          vscp_str_format("The command '%s' is not available\r\n",
+                          m_pClientItem->m_currentCommand.c_str());
+        write((const char *)str.c_str(), str.length());
     }
 
     write(MSG_OK, strlen(MSG_OK));
@@ -5706,12 +5711,7 @@ tcpipClientThread(void *pData)
         if (ptcpipobj->m_bReceiveLoop) {
 
             // Wait for data
-            if ((-1 ==
-                 vscp_sem_wait(&ptcpipobj->m_pClientItem->m_semClientInputQueue,
-                               10)) &&
-                errno == ETIMEDOUT) {
-                continue;
-            }
+            vscp_sem_wait(&ptcpipobj->m_pClientItem->m_semClientInputQueue, 10);
 
             // Send everything in the queue
             while (ptcpipobj->sendOneEventFromQueue(false))

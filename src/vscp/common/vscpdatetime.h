@@ -272,15 +272,25 @@ class vscpdatetime
     */
     bool set(vscpEventEx &ex);
 
-    /*!
-        Set time to current local time.
+    /*! 
+        Set date/time to current local time
     */
-    static vscpdatetime setNow(void);
+    void setNow(void);
 
     /*!
-        Set time to current UTC time.
+        Set date/time to UTC
     */
-    static vscpdatetime setUTCNow(void);
+    void setUTCNow(void);
+
+    /*!
+        Return current local time.
+    */
+    static vscpdatetime Now(void);
+
+    /*!
+        Return current UTC time.
+    */
+    static vscpdatetime UTCNow(void);
 
     /*!
         Get current set year

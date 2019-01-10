@@ -316,7 +316,7 @@ CVSCPLog::writeEvent(vscpEvent *pEvent)
         m_logStream << "</dir>\n";
 
         m_logStream << "<time>";
-        str = vscpdatetime::setNow().getISODateTime();
+        str = vscpdatetime::Now().getISODateTime();
         m_logStream << str.c_str();
         m_logStream << "</time>\n";
 
@@ -368,7 +368,7 @@ CVSCPLog::writeEvent(vscpEvent *pEvent)
         // * * * Standard log format * * *
         std::string str;
 
-        str = vscpdatetime::setNow().getISODateTime();
+        str = vscpdatetime::Now().getISODateTime();
         m_logStream << str.c_str();
 
         str = vscp_str_format("head=%d ", pEvent->head);

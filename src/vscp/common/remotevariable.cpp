@@ -108,7 +108,7 @@ CVSCPVariable::init(void)
     m_bPersistent  = false;               // Not persistent by default
     m_accessRights = PERMISSON_OWNER_ALL; // Owner can do everything.
     m_userid       = USER_ID_ADMIN;       // Admin owns variable by default
-    m_lastChanged  = vscpdatetime::setNow();
+    m_lastChanged  = vscpdatetime::Now();
     m_bStock       = false; // This is not a stock variable
 }
 
@@ -1329,15 +1329,15 @@ CVSCPVariable::Reset(void)
                 break;
 
             case VSCP_DAEMON_VARIABLE_CODE_DATE:
-                m_strValue = vscpdatetime::setNow().getISODate();
+                m_strValue = vscpdatetime::Now().getISODate();
                 break;
 
             case VSCP_DAEMON_VARIABLE_CODE_TIME:
-                m_strValue = vscpdatetime::setNow().getISOTime();
+                m_strValue = vscpdatetime::Now().getISOTime();
                 break;
 
             case VSCP_DAEMON_VARIABLE_CODE_DATETIME:
-                m_strValue = vscpdatetime::setNow().getISODateTime();
+                m_strValue = vscpdatetime::Now().getISODateTime();
                 break;
 
             case VSCP_DAEMON_VARIABLE_CODE_BLOB:
@@ -1498,7 +1498,7 @@ CVariableStorage::CVariableStorage()
     m_dbFilename = "/srv/vscp/variable.sqlite3";
 
     // We just read variables
-    m_lastSaveTime = vscpdatetime::setNow();
+    m_lastSaveTime = vscpdatetime::Now();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -6339,7 +6339,7 @@ CVariableStorage::addStockVariable(CVSCPVariable &var)
 
     char *sql = sqlite3_mprintf(
       VSCPDB_VARIABLE_INSERT,
-      (const char *)var.m_lastChanged.setNow().getISODateTime().c_str(),
+      (const char *)var.m_lastChanged.Now().getISODateTime().c_str(),
       (const char *)var.getName().c_str(),
       var.getType(),
       (const char *)var.getValue().c_str(),
@@ -6420,7 +6420,7 @@ CVariableStorage::add(CVSCPVariable &var)
     } else {
         char *sql = sqlite3_mprintf(
           VSCPDB_VARIABLE_INSERT,
-          (const char *)var.m_lastChanged.setNow().getISODateTime().c_str(),
+          (const char *)var.m_lastChanged.Now().getISODateTime().c_str(),
           (const char *)var.getName().c_str(),
           var.getType(),
           (const char *)var.getValue().c_str(),
@@ -7017,7 +7017,7 @@ CVariableStorage::save(std::string &path, uint8_t whatToSave)
             of.close();
 
             // Variable saved
-            m_lastSaveTime = vscpdatetime::setNow();
+            m_lastSaveTime = vscpdatetime::Now();
         }
     } catch (...) {
         syslog(LOG_ERR,

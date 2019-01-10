@@ -103,7 +103,7 @@ threadDiscovery(void *data)
     pObj->m_pClientItem->m_strDeviceName =
       "VSCP node discovery thread.|Started at ";
     pObj->m_pClientItem->m_strDeviceName +=
-      vscpdatetime::setNow().getISODateTime();
+      vscpdatetime::Now().getISODateTime();
 
     // Add the client to the Client List
     pthread_mutex_lock(&pObj->m_pCtrlObject->m_clientMutex);

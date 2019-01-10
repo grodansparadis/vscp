@@ -355,7 +355,7 @@ websock_new_session(const struct web_connection *conn)
       CLIENT_ITEM_INTERFACE_TYPE_CLIENT_WEBSOCKET;
     pSession->m_pClientItem->m_strDeviceName = ("Internal websocket client.");
     pSession->m_pClientItem->m_strDeviceName += ("|Started at ");
-    vscpdatetime now = vscpdatetime::setNow();
+    vscpdatetime now = vscpdatetime::Now();
     pSession->m_pClientItem->m_strDeviceName += now.getISODateTime();
 
     // Add the client to the Client List
@@ -3190,7 +3190,7 @@ ws1_command(struct web_connection *conn,
 
         } else {
             // Set to now
-            dt = vscpdatetime::setUTCNow();
+            dt = vscpdatetime::UTCNow();
         }
 
         pthread_mutex_lock(&gpobj->m_mutexUserTables);

@@ -164,12 +164,12 @@ get_js_Event(duk_context *ctx, vscpEventEx *pex)
             pex->minute = dt.getMinute();
             pex->second = dt.getSecond();
         } else {
-            pex->year   = vscpdatetime::setUTCNow().getYear();
-            pex->month  = vscpdatetime::setUTCNow().getMonth() + 1;
-            pex->day    = vscpdatetime::setUTCNow().getDay();
-            pex->hour   = vscpdatetime::setUTCNow().getHour();
-            pex->minute = vscpdatetime::setUTCNow().getMinute();
-            pex->second = vscpdatetime::setUTCNow().getSecond();
+            pex->year   = vscpdatetime::UTCNow().getYear();
+            pex->month  = vscpdatetime::UTCNow().getMonth() + 1;
+            pex->day    = vscpdatetime::UTCNow().getDay();
+            pex->hour   = vscpdatetime::UTCNow().getHour();
+            pex->minute = vscpdatetime::UTCNow().getMinute();
+            pex->second = vscpdatetime::UTCNow().getSecond();
         }
     }
     duk_pop(ctx);

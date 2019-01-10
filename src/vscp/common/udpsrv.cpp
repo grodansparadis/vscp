@@ -376,12 +376,12 @@ UDPSrvObj::replyAckFrame(struct mg_connection *nc,
        ex.crc       = 0;
        ex.obid      = 0;
        ex.timestamp = vscp_makeTimeStamp();
-       ex.year      = vscpdatetime::setUTCNow().getYear();
-       ex.month     = vscpdatetime::setUTCNow().getMonth();
-       ex.day       = vscpdatetime::setUTCNow().getDay();
-       ex.hour      = vscpdatetime::setUTCNow().getHour();
-       ex.minute    = vscpdatetime::setUTCNow().getMinute();
-       ex.second    = vscpdatetime::setUTCNow().getSecond();
+       ex.year      = vscpdatetime::UTCNow().getYear();
+       ex.month     = vscpdatetime::UTCNow().getMonth();
+       ex.day       = vscpdatetime::UTCNow().getDay();
+       ex.hour      = vscpdatetime::UTCNow().getHour();
+       ex.minute    = vscpdatetime::UTCNow().getMinute();
+       ex.second    = vscpdatetime::UTCNow().getSecond();
        memcpy(ex.GUID, m_pobj->m_udpSrvObj.m_guid.getGUID(), 16);
        ex.vscp_class = VSCP_CLASS1_ERROR;
        ex.vscp_type  = VSCP_TYPE_ERROR_SUCCESS;
@@ -419,12 +419,12 @@ UDPSrvObj::replyNackFrame(struct mg_connection *nc,
        ex.crc       = 0;
        ex.obid      = 0;
        ex.timestamp = vscp_makeTimeStamp();
-       ex.year      = vscpdatetime::setUTCNow().getYear();
-       ex.month     = vscpdatetime::setUTCNow().getMonth();
-       ex.day       = vscpdatetime::setUTCNow().getDay();
-       ex.hour      = vscpdatetime::setUTCNow().getHour();
-       ex.minute    = vscpdatetime::setUTCNow().getMinute();
-       ex.second    = vscpdatetime::setUTCNow().getSecond();
+       ex.year      = vscpdatetime::UTCNow().getYear();
+       ex.month     = vscpdatetime::UTCNow().getMonth();
+       ex.day       = vscpdatetime::UTCNow().getDay();
+       ex.hour      = vscpdatetime::UTCNow().getHour();
+       ex.minute    = vscpdatetime::UTCNow().getMinute();
+       ex.second    = vscpdatetime::UTCNow().getSecond();
        memcpy(ex.GUID, m_pobj->m_udpSrvObj.m_guid.getGUID(), 16);
        ex.vscp_class = VSCP_CLASS1_ERROR;
        ex.vscp_type  = VSCP_TYPE_ERROR_ERROR;
@@ -491,7 +491,7 @@ UDPThread(void *pData)
         m_pClientItem->m_strDeviceName += m_pobj->m_udpSrvObj.m_interface;
         m_pClientItem->m_strDeviceName += ("]|Started at ");
         m_pClientItem->m_strDeviceName +=
-       vscpdatetime::setNow().getISODateTime();
+       vscpdatetime::Now().getISODateTime();
 
         // If a user is defined get user item
         if (m_pobj->m_udpSrvObj.m_user.Trim().Length()) {

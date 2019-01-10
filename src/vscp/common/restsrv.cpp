@@ -532,7 +532,7 @@ restsrv_add_session(struct web_connection *conn, CUserItem *pUserItem)
     pSession->m_pClientItem->m_strDeviceName += ("|Started at ");
     // vscpdatetime now = vscpdatetime::Now();
     pSession->m_pClientItem->m_strDeviceName +=
-      vscpdatetime::setNow().getISODateTime();
+      vscpdatetime::Now().getISODateTime();
 
     // Add the client to the Client List
     pthread_mutex_lock(&gpobj->m_clientMutex);
@@ -2908,7 +2908,7 @@ restsrv_doWriteMeasurement(struct web_connection *conn,
         // datetime
         vscpdatetime dt;
         if (!dt.set(strDateTime)) {
-            dt.setUTCNow();
+            dt = vscpdatetime::UTCNow();
         }
 
         level = vscp_readStringValue(strLevel); // Level I or Level II (default)

@@ -392,8 +392,52 @@ vscpdatetime::set(const struct tm &tm)
 // setNow
 //
 
-vscpdatetime
+void
 vscpdatetime::setNow(void)
+{
+    time_t rawtime;
+    struct tm *ptm;
+
+    time(&rawtime);
+    ptm = localtime(&rawtime);
+
+    m_year = ptm->tm_year + 1900;
+    m_month = ptm->tm_mon;
+    m_day = ptm->tm_mday;
+    m_hour = ptm->tm_hour;
+    m_minute = ptm->tm_min;
+    m_second = ptm->tm_sec;
+
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// setUTCNow
+//
+
+void
+vscpdatetime::setUTCNow(void)
+{
+    time_t rawtime;
+    struct tm *ptm;
+
+    time(&rawtime);
+    ptm = gmtime(&rawtime);
+
+    m_year = ptm->tm_year + 1900;
+    m_month = ptm->tm_mon;
+    m_day = ptm->tm_mday;
+    m_hour = ptm->tm_hour;
+    m_minute = ptm->tm_min;
+    m_second = ptm->tm_sec;
+
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Now
+//
+
+vscpdatetime
+vscpdatetime::Now(void)
 {
     time_t rawtime;
     struct tm *ptm;
@@ -412,11 +456,11 @@ vscpdatetime::setNow(void)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// setUTCNow
+// UTCNow
 //
 
 vscpdatetime
-vscpdatetime::setUTCNow(void)
+vscpdatetime::UTCNow(void)
 {
     time_t rawtime;
     struct tm *ptm;

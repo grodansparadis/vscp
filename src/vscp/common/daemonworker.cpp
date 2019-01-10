@@ -142,7 +142,7 @@ daemonWorkerThread(void *threadData)
     pClientItem->m_type          = CLIENT_ITEM_INTERFACE_TYPE_CLIENT_INTERNAL;
     pClientItem->m_strDeviceName = "Internal VSCP Daemon Worker Client.";
     pClientItem->m_strDeviceName += "|Started at ";
-    pClientItem->m_strDeviceName += vscpdatetime::setNow().getISODateTime();
+    pClientItem->m_strDeviceName += vscpdatetime::Now().getISODateTime();
 
     // Add the client to the Client List
     pthread_mutex_lock(&pctrlObj->m_clientMutex);

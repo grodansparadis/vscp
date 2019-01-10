@@ -419,7 +419,7 @@ class CVSCPVariable
     /*!
         Change last change date time to now
     */
-    void setLastChangedToNow(void) { m_lastChanged = vscpdatetime::setNow(); };
+    void setLastChangedToNow(void) { m_lastChanged = vscpdatetime::Now(); };
 
     /*!
      * Get last changed date/time

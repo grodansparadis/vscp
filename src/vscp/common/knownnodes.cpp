@@ -75,7 +75,7 @@ cvscpnode::cvscpnode()
     m_realguid.clear();
     m_interfaceguid.clear();
     lint_to_mdf     = 0;
-    m_lastHeartBeat = vscpdatetime::setNow();
+    m_lastHeartBeat = vscpdatetime::Now();
     m_strNodeName;
     m_deviceName;
     m_clientID = 0;

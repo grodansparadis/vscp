@@ -619,7 +619,7 @@ actionTime::ShouldWeDoAction(void)
         bMatch = false;
         std::set<int>::iterator it;
         for (it = m_actionYear.begin(); it != m_actionYear.end(); ++it) {
-            if (*it == vscpdatetime::setNow().getYear()) {
+            if (*it == vscpdatetime::Now().getYear()) {
                 bMatch = true;
                 break;
             }
@@ -636,7 +636,7 @@ actionTime::ShouldWeDoAction(void)
         bMatch = false;
         std::set<int>::iterator it;
         for (it = m_actionMonth.begin(); it != m_actionMonth.end(); ++it) {
-            if (*it == vscpdatetime::setNow().getMonth()) {
+            if (*it == vscpdatetime::Now().getMonth()) {
                 bMatch = true;
                 break;
             }
@@ -653,7 +653,7 @@ actionTime::ShouldWeDoAction(void)
         bMatch = false;
         std::set<int>::iterator it;
         for (it = m_actionDay.begin(); it != m_actionDay.end(); ++it) {
-            if (*it == vscpdatetime::setNow().getDay()) {
+            if (*it == vscpdatetime::Now().getDay()) {
                 bMatch = true;
                 break;
             }
@@ -670,7 +670,7 @@ actionTime::ShouldWeDoAction(void)
         bMatch = false;
         std::set<int>::iterator it;
         for (it = m_actionHour.begin(); it != m_actionHour.end(); ++it) {
-            if (*it == vscpdatetime::setNow().getHour()) {
+            if (*it == vscpdatetime::Now().getHour()) {
                 bMatch = true;
                 break;
             }
@@ -687,7 +687,7 @@ actionTime::ShouldWeDoAction(void)
         bMatch = false;
         std::set<int>::iterator it;
         for (it = m_actionMinute.begin(); it != m_actionMinute.end(); ++it) {
-            if (*it == vscpdatetime::setNow().getMinute()) {
+            if (*it == vscpdatetime::Now().getMinute()) {
                 bMatch = true;
                 break;
             }
@@ -704,7 +704,7 @@ actionTime::ShouldWeDoAction(void)
         bMatch = false;
         std::set<int>::iterator it;
         for (it = m_actionSecond.begin(); it != m_actionSecond.end(); ++it) {
-            if (*it == vscpdatetime::setNow().getSecond()) {
+            if (*it == vscpdatetime::Now().getSecond()) {
                 bMatch = true;
                 break;
             }
@@ -1936,11 +1936,11 @@ dmElement::handleEscapes(vscpEvent *pEvent, std::string &str)
             }
             // Check for isodate escape
             else if (vscp_startsWith(str, "%isodate", &str)) {
-                strResult += vscpdatetime::setNow().getISODate();
+                strResult += vscpdatetime::Now().getISODate();
             }
             // Check for isotime escape
             else if (vscp_startsWith(str, "%isotime", &str)) {
-                strResult += vscpdatetime::setNow().getISOTime();
+                strResult += vscpdatetime::Now().getISOTime();
             }
             // Check for isobothms escape
             else if (vscp_startsWith(str, "%isobothms", &str)) {
@@ -1959,19 +1959,19 @@ dmElement::handleEscapes(vscpEvent *pEvent, std::string &str)
                                                   // milliseconds
 #endif
                 // int ms =
-                // vscpdatetime::setNow().getMillisecond();
+                // vscpdatetime::Now().getMillisecond();
                 // !!!!! Does not work  !!!!!
                 std::string msstr = vscp_str_format(".%ld", ms);
-                strResult += vscpdatetime::setNow().getISODate();
+                strResult += vscpdatetime::Now().getISODate();
                 strResult += "T";
-                strResult += vscpdatetime::setNow().getISOTime();
+                strResult += vscpdatetime::Now().getISOTime();
                 strResult += msstr;
             }
             // Check for isoboth escape
             else if (vscp_startsWith(str, "%isoboth", &str)) {
-                strResult += vscpdatetime::setNow().getISODate();
+                strResult += vscpdatetime::Now().getISODate();
                 strResult += "T";
-                strResult += vscpdatetime::setNow().getISOTime();
+                strResult += vscpdatetime::Now().getISOTime();
             }
             // Check for mstime escape
             else if (vscp_startsWith(str, "%mstime", &str)) {
@@ -1986,66 +1986,66 @@ dmElement::handleEscapes(vscpEvent *pEvent, std::string &str)
             // Check for hour escape
             else if (vscp_startsWith(str, "%hour", &str)) {
                 strResult +=
-                  vscp_str_format("%d", vscpdatetime::setNow().getHour());
+                  vscp_str_format("%d", vscpdatetime::Now().getHour());
             }
             // Check for minute escape
             else if (vscp_startsWith(str, "%minute", &str)) {
                 strResult +=
-                  vscp_str_format("%d", vscpdatetime::setNow().getMinute());
+                  vscp_str_format("%d", vscpdatetime::Now().getMinute());
             }
             // Check for second escape
             else if (vscp_startsWith(str, "%second", &str)) {
                 strResult +=
-                  vscp_str_format("%d", vscpdatetime::setNow().getSecond());
+                  vscp_str_format("%d", vscpdatetime::Now().getSecond());
             }
             // Check for week0 escape
             else if (vscp_startsWith(str, "%week0", &str)) {
                 strResult += vscp_str_format(
-                  "%d", vscpdatetime::setNow().getWeekNumber());
+                  "%d", vscpdatetime::Now().getWeekNumber());
             }
             // Check for week1 escape
             else if (vscp_startsWith(str, "%week1", &str)) {
                 strResult +=
                   vscp_str_format("%d", // TODO FIX!
-                                     vscpdatetime::setNow().getWeekNumber());
+                                     vscpdatetime::Now().getWeekNumber());
             }
             // Check for weekdaytxtfull escape
             else if (vscp_startsWith(str, "%weekdaytxtfull", &str)) {
                 strResult += vscpdatetime::getWeekDayName(
-                  vscpdatetime::setNow().getWeekDay(), vscpdatetime::name_Full);
+                  vscpdatetime::Now().getWeekDay(), vscpdatetime::name_Full);
             }
             // Check for weekdaytxt escape
             else if (vscp_startsWith(str, "%weekdaytxt", &str)) {
                 strResult += vscpdatetime::getWeekDayName(
-                  vscpdatetime::setNow().getWeekDay(), vscpdatetime::name_Abbr);
+                  vscpdatetime::Now().getWeekDay(), vscpdatetime::name_Abbr);
             }
             // Check for monthtxtfull escape
             else if (vscp_startsWith(str, "%monthtxtfull", &str)) {
                 strResult += vscpdatetime::getMonthName(
-                  vscpdatetime::setNow().getMonth(), vscpdatetime::name_Full);
+                  vscpdatetime::Now().getMonth(), vscpdatetime::name_Full);
             }
             // Check for monthtxt escape
             else if (vscp_startsWith(str, "%monthtxt", &str)) {
                 strResult += vscpdatetime::getMonthName(
-                  vscpdatetime::setNow().getMonth(), vscpdatetime::name_Abbr);
+                  vscpdatetime::Now().getMonth(), vscpdatetime::name_Abbr);
             }
             // Check for month escape
             else if (vscp_startsWith(str, "%month", &str)) {
                 strResult += vscp_str_format(
-                  "%d", vscpdatetime::setNow().getMonth() + 1);
+                  "%d", vscpdatetime::Now().getMonth() + 1);
             }
             // Check for year escape
             else if (vscp_startsWith(str, "%year", &str)) {
                 strResult +=
-                  vscp_str_format("%d", vscpdatetime::setNow().getYear());
+                  vscp_str_format("%d", vscpdatetime::Now().getYear());
             }
             // Check for quarter escape
             else if (vscp_startsWith(str, "%quarter", &str)) {
-                if (vscpdatetime::setNow().getMonth() < 4) {
+                if (vscpdatetime::Now().getMonth() < 4) {
                     strResult += "1";
-                } else if (vscpdatetime::setNow().getMonth() < 7) {
+                } else if (vscpdatetime::Now().getMonth() < 7) {
                     strResult += "2";
-                } else if (vscpdatetime::setNow().getMonth() < 10) {
+                } else if (vscpdatetime::Now().getMonth() < 10) {
                     strResult += "3";
                 } else {
                     strResult += "1";
@@ -3865,17 +3865,17 @@ dmElement::doActionStoreVariable(vscpEvent *pDMEvent)
                 break;
 
             case VSCP_DAEMON_VARIABLE_CODE_DATETIME: {
-                vscpdatetime dt = vscpdatetime::setNow();
+                vscpdatetime dt = vscpdatetime::Now();
                 var.setValue(dt.getISODateTime());
             } break;
 
             case VSCP_DAEMON_VARIABLE_CODE_DATE: {
-                vscpdatetime dt = vscpdatetime::setNow();
+                vscpdatetime dt = vscpdatetime::Now();
                 var.setValue(dt.getISODate());
             } break;
 
             case VSCP_DAEMON_VARIABLE_CODE_TIME: {
-                vscpdatetime dt = vscpdatetime::setNow();
+                vscpdatetime dt = vscpdatetime::Now();
                 var.setValue(dt.getISODateTime());
             } break;
 
@@ -3888,7 +3888,7 @@ dmElement::doActionStoreVariable(vscpEvent *pDMEvent)
 
                 std::string str =
                   vscp_str_format(VSCP_HTML_EVENT_TEMPLATE,
-                                     vscpdatetime::setNow().getISODateTime(),
+                                     vscpdatetime::Now().getISODateTime(),
                                      pDMEvent->vscp_class,
                                      pDMEvent->vscp_type,
                                      pDMEvent->sizeData,
@@ -3910,7 +3910,7 @@ dmElement::doActionStoreVariable(vscpEvent *pDMEvent)
 
                 std::string str =
                   vscp_str_format(VSCP_JSON_EVENT_TEMPLATE,
-                                     vscpdatetime::setNow().getISODateTime(),
+                                     vscpdatetime::Now().getISODateTime(),
                                      pDMEvent->head,
                                      pDMEvent->timestamp,
                                      pDMEvent->obid,
@@ -3931,7 +3931,7 @@ dmElement::doActionStoreVariable(vscpEvent *pDMEvent)
 
                 std::string str =
                   vscp_str_format(VSCP_XML_EVENT_TEMPLATE,
-                                     vscpdatetime::setNow().getISODateTime(),
+                                     vscpdatetime::Now().getISODateTime(),
                                      pDMEvent->head,
                                      pDMEvent->timestamp,
                                      pDMEvent->obid,
@@ -5176,8 +5176,8 @@ CDM::CDM(CControlObject *ctrlObj)
     // Default is to feed all events through the matrix
     vscp_clearVSCPFilter(&m_DM_Table_filter);
 
-    srand(vscpdatetime::setNow().getYear() +
-          vscpdatetime::setNow().getSecond());
+    srand(vscpdatetime::Now().getYear() +
+          vscpdatetime::Now().getSecond());
     m_rndMinute =
       (uint8_t)((double)rand() / ((double)(RAND_MAX) + (double)(1))) * 60;
     m_rndHour =
@@ -5191,7 +5191,7 @@ CDM::CDM(CControlObject *ctrlObj)
     m_rndYear =
       (uint8_t)((double)rand() / ((double)(RAND_MAX) + (double)(1))) * 365;
 
-    m_lastTime = vscpdatetime::setNow();
+    m_lastTime = vscpdatetime::Now();
 
     m_staticXMLPath   = "/srv/vscp/dm.xml";
     m_path_db_vscp_dm = "/srv/vscp/dm.sqlite3";
@@ -5495,7 +5495,7 @@ CDM::getAllRows(std::string &strAllRows)
 bool
 CDM::feedPeriodicEvent(void)
 {
-    if (m_lastTime.getSecond() != vscpdatetime::setNow().getSecond()) {
+    if (m_lastTime.getSecond() != vscpdatetime::Now().getSecond()) {
         vscpEvent EventSecond;
         EventSecond.vscp_class = VSCP_CLASS2_VSCPD;
         EventSecond.vscp_type =
@@ -5513,7 +5513,7 @@ CDM::feedPeriodicEvent(void)
         // Update timers
         serviceTimers();
 
-        if (m_rndMinute == vscpdatetime::setNow().getSecond()) {
+        if (m_rndMinute == vscpdatetime::Now().getSecond()) {
             vscpEvent EventRandomMinute;
             EventRandomMinute.vscp_class = VSCP_CLASS2_VSCPD;
             EventRandomMinute.vscp_type =
@@ -5532,7 +5532,7 @@ CDM::feedPeriodicEvent(void)
         }
     }
 
-    if (m_lastTime.getMinute() != vscpdatetime::setNow().getMinute()) {
+    if (m_lastTime.getMinute() != vscpdatetime::Now().getMinute()) {
         m_rndMinute = (rand() / RAND_MAX) * 60;
         vscpEvent EventMinute;
         EventMinute.vscp_class = VSCP_CLASS2_VSCPD;
@@ -5550,7 +5550,7 @@ CDM::feedPeriodicEvent(void)
           (uint8_t)((double)rand() / ((double)(RAND_MAX) + (double)(1))) * 60;
         feed(&EventMinute);
 
-        if (m_rndHour == vscpdatetime::setNow().getMinute()) {
+        if (m_rndHour == vscpdatetime::Now().getMinute()) {
             vscpEvent EventRandomHour;
             EventRandomHour.vscp_class = VSCP_CLASS2_VSCPD;
             EventRandomHour.vscp_type =
@@ -5569,7 +5569,7 @@ CDM::feedPeriodicEvent(void)
         }
     }
 
-    if (m_lastTime.getHour() != vscpdatetime::setNow().getHour()) {
+    if (m_lastTime.getHour() != vscpdatetime::Now().getHour()) {
         m_rndHour = (rand() / RAND_MAX) * 60;
         vscpEvent EventHour;
         EventHour.vscp_class = VSCP_CLASS2_VSCPD;
@@ -5587,7 +5587,7 @@ CDM::feedPeriodicEvent(void)
         feed(&EventHour);
 
         // Check if it's time to send radom day event
-        if (m_rndDay == vscpdatetime::setNow().getHour()) {
+        if (m_rndDay == vscpdatetime::Now().getHour()) {
             vscpEvent EventRandomDay;
             EventRandomDay.vscp_class = VSCP_CLASS2_VSCPD;
             EventRandomDay.vscp_type =
@@ -5605,7 +5605,7 @@ CDM::feedPeriodicEvent(void)
         }
     }
 
-    if (m_lastTime.getDay() != vscpdatetime::setNow().getDay()) {
+    if (m_lastTime.getDay() != vscpdatetime::Now().getDay()) {
         m_rndDay = (rand() / RAND_MAX) * 24;
         vscpEvent EventDay;
         EventDay.vscp_class = VSCP_CLASS2_VSCPD;
@@ -5624,7 +5624,7 @@ CDM::feedPeriodicEvent(void)
         feed(&EventDay);
 
         // Check if it's time to send random week event
-        if (m_rndWeek == vscpdatetime::setNow().getDay()) {
+        if (m_rndWeek == vscpdatetime::Now().getDay()) {
             vscpEvent EventRandomWeek;
             EventRandomWeek.vscp_class = VSCP_CLASS2_VSCPD;
             EventRandomWeek.vscp_type =
@@ -5642,8 +5642,8 @@ CDM::feedPeriodicEvent(void)
         }
     }
 
-    if ((1 == vscpdatetime::setNow().getWeekDay()) &&
-        (m_lastTime.getWeekDay() != vscpdatetime::setNow().getWeekDay())) {
+    if ((1 == vscpdatetime::Now().getWeekDay()) &&
+        (m_lastTime.getWeekDay() != vscpdatetime::Now().getWeekDay())) {
         m_rndWeek = (rand() / RAND_MAX) * 7;
         vscpEvent EventWeek;
         EventWeek.vscp_class = VSCP_CLASS2_VSCPD;
@@ -5660,7 +5660,7 @@ CDM::feedPeriodicEvent(void)
           (uint8_t)((double)rand() / ((double)(RAND_MAX) + (double)(1))) * 52;
         feed(&EventWeek);
 
-        if (m_rndMonth == vscpdatetime::setNow().getWeekDay()) {
+        if (m_rndMonth == vscpdatetime::Now().getWeekDay()) {
             vscpEvent EventRandomMonth;
             EventRandomMonth.vscp_class = VSCP_CLASS2_VSCPD;
             EventRandomMonth.vscp_type =
@@ -5679,7 +5679,7 @@ CDM::feedPeriodicEvent(void)
         }
     }
 
-    if (m_lastTime.getMonth() != vscpdatetime::setNow().getMonth()) {
+    if (m_lastTime.getMonth() != vscpdatetime::Now().getMonth()) {
         m_rndMonth = (rand() / RAND_MAX) * 30;
         vscpEvent EventMonth;
         EventMonth.vscp_class = VSCP_CLASS2_VSCPD;
@@ -5696,7 +5696,7 @@ CDM::feedPeriodicEvent(void)
           (uint8_t)((double)rand() / ((double)(RAND_MAX) + (double)(1))) * 12;
         feed(&EventMonth);
 
-        if (m_rndYear == vscpdatetime::setNow().getMonth()) {
+        if (m_rndYear == vscpdatetime::Now().getMonth()) {
             vscpEvent EventRandomYear;
             EventRandomYear.vscp_class = VSCP_CLASS2_VSCPD;
             EventRandomYear.vscp_type =
@@ -5715,7 +5715,7 @@ CDM::feedPeriodicEvent(void)
         }
     }
 
-    if (m_lastTime.getYear() != vscpdatetime::setNow().getYear()) {
+    if (m_lastTime.getYear() != vscpdatetime::Now().getYear()) {
         m_rndYear = (rand() / RAND_MAX) * 365;
         vscpEvent EventYear;
         EventYear.vscp_class = VSCP_CLASS2_VSCPD;
@@ -5733,8 +5733,8 @@ CDM::feedPeriodicEvent(void)
         feed(&EventYear);
     }
 
-    if ((1 == vscpdatetime::setNow().getMonth()) &&
-        (m_lastTime.getMonth() != vscpdatetime::setNow().getMonth())) {
+    if ((1 == vscpdatetime::Now().getMonth()) &&
+        (m_lastTime.getMonth() != vscpdatetime::Now().getMonth())) {
         vscpEvent EventQuarter;
         EventQuarter.vscp_class = VSCP_CLASS2_VSCPD;
         EventQuarter.vscp_type =
@@ -5750,8 +5750,8 @@ CDM::feedPeriodicEvent(void)
         feed(&EventQuarter);
     }
 
-    if ((4 == vscpdatetime::setNow().getMonth()) &&
-        (m_lastTime.getMonth() != vscpdatetime::setNow().getMonth())) {
+    if ((4 == vscpdatetime::Now().getMonth()) &&
+        (m_lastTime.getMonth() != vscpdatetime::Now().getMonth())) {
         vscpEvent EventQuarter;
         EventQuarter.vscp_class = VSCP_CLASS2_VSCPD;
         EventQuarter.vscp_type =
@@ -5767,8 +5767,8 @@ CDM::feedPeriodicEvent(void)
         feed(&EventQuarter);
     }
 
-    if ((7 == vscpdatetime::setNow().getMonth()) &&
-        (m_lastTime.getMonth() != vscpdatetime::setNow().getMonth())) {
+    if ((7 == vscpdatetime::Now().getMonth()) &&
+        (m_lastTime.getMonth() != vscpdatetime::Now().getMonth())) {
         vscpEvent EventQuarter;
         EventQuarter.vscp_class = VSCP_CLASS2_VSCPD;
         EventQuarter.vscp_type =
@@ -5784,8 +5784,8 @@ CDM::feedPeriodicEvent(void)
         feed(&EventQuarter);
     }
 
-    if ((10 == vscpdatetime::setNow().getMonth()) &&
-        (m_lastTime.getMonth() != vscpdatetime::setNow().getMonth())) {
+    if ((10 == vscpdatetime::Now().getMonth()) &&
+        (m_lastTime.getMonth() != vscpdatetime::Now().getMonth())) {
         vscpEvent EventQuarter;
         EventQuarter.vscp_class = VSCP_CLASS2_VSCPD;
         EventQuarter.vscp_type =
@@ -5801,7 +5801,7 @@ CDM::feedPeriodicEvent(void)
         feed(&EventQuarter);
     }
 
-    m_lastTime = vscpdatetime::setNow();
+    m_lastTime = vscpdatetime::Now();
 
     return true;
 }
@@ -8084,7 +8084,7 @@ actionThread_Table(void *pData)
 {
     CVSCPTable *pTable; // Table object
     std::string strErr;
-    vscpdatetime dt = vscpdatetime::setNow();
+    vscpdatetime dt = vscpdatetime::Now();
     double value    = 0;
     int type;         // Action parameter type
     std::string name; // Table name
@@ -8153,7 +8153,7 @@ actionThread_Table(void *pData)
 #endif
 
 #if 0 // TEST Get range of data
-    xxPrintf( ">>>>>" + vscpdatetime::setNow().getISODateTime() + "" );
+    xxPrintf( ">>>>>" + vscpdatetime::Now().getISODateTime() + "" );
     
     sqlite3_stmt *ppStmt;
     vscpdatetime from,to;
@@ -8170,7 +8170,7 @@ actionThread_Table(void *pData)
         pTable->finalizeRangeOfData( ppStmt );
     }
     
-    xxPrintf( ">>>>>" + vscpdatetime::setNow().getISODateTime() + "" );
+    xxPrintf( ">>>>>" + vscpdatetime::Now().getISODateTime() + "" );
 #endif
 
     if (0 == type) {

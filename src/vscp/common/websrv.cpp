@@ -394,7 +394,7 @@ websrv_add_session(struct web_connection *conn)
       CLIENT_ITEM_INTERFACE_TYPE_CLIENT_WEBSOCKET;
     pSession->m_pClientItem->m_strDeviceName = ("Internal web server client.");
     pSession->m_pClientItem->m_strDeviceName += ("|Started at ");
-    vscpdatetime now = vscpdatetime::setNow();
+    vscpdatetime now = vscpdatetime::Now();
     pSession->m_pClientItem->m_strDeviceName += now.getISODateTime();
 
     // Add the client to the Client List
@@ -4659,7 +4659,7 @@ vscp_variable_edit(struct web_connection *conn, void *cbdata)
         web_printf(
           conn,
           "%s",
-          (const char *)vscpdatetime::setNow().getISODateTime().c_str());
+          (const char *)vscpdatetime::Now().getISODateTime().c_str());
     } else {
         web_printf(
           conn,
@@ -6695,7 +6695,7 @@ vscp_guid_edit(struct web_connection *conn, void *cbdata)
         type = sqlite3_column_int(ppStmt, VSCPDB_ORDINAL_GUID_TYPE);
     }
 
-    vscpdatetime dt = dt.setUTCNow();
+    vscpdatetime dt = vscpdatetime::UTCNow();
     if (!bNew) {
         p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_GUID_DATE);
         if (NULL != p) {

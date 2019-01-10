@@ -727,7 +727,7 @@ CControlObject::run(void)
     pClientItem->m_bOpen         = true;
     pClientItem->m_type          = CLIENT_ITEM_INTERFACE_TYPE_CLIENT_INTERNAL;
     pClientItem->m_strDeviceName = "Internal Server DM Client.|Started at ";
-    pClientItem->m_strDeviceName += vscpdatetime::setNow().getISODateTime();
+    pClientItem->m_strDeviceName += vscpdatetime::Now().getISODateTime();
 
     // Add the client to the Client List
     pthread_mutex_lock(&m_clientMutex);

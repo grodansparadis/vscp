@@ -112,7 +112,7 @@ actionLuaThread(void *pData)
         return NULL;
     }
 
-    pobj->m_start = vscpdatetime::setNow(); // Mark start time
+    pobj->m_start = vscpdatetime::Now(); // Mark start time
 
     // Create new Lua context
     L = luaL_newstate();
@@ -252,7 +252,7 @@ actionLuaThread(void *pData)
     pobj->m_pClientItem->m_strDeviceName = ("Internal daemon Lua client.");
     pobj->m_pClientItem->m_strDeviceName += ("|Started at ");
     pobj->m_pClientItem->m_strDeviceName +=
-      vscpdatetime::setNow().getISODateTime();
+      vscpdatetime::Now().getISODateTime();
 
     // Add the client to the Client List
     pthread_mutex_lock(&gpobj->m_clientMutex);
@@ -342,7 +342,7 @@ actionLuaThread(void *pData)
     // Destroy the Lua context
     // duk_destroy_heap( ctx );
 
-    pobj->m_stop = vscpdatetime::setNow(); // Mark stop time
+    pobj->m_stop = vscpdatetime::Now(); // Mark stop time
 
     return NULL;
 }

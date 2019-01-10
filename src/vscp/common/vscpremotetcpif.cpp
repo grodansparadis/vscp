@@ -3167,7 +3167,7 @@ VscpRemoteTcpIf::tableLog(const std::string &tblName,
     if (NULL != pdt) {
         strCmd += pdt->getISODateTime();
     } else {
-        strCmd += vscpdatetime::setNow().getISODateTime();
+        strCmd += vscpdatetime::Now().getISODateTime();
     }
     strCmd += "\r\n";
 

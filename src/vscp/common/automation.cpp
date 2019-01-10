@@ -129,7 +129,7 @@ CVSCPAutomation::CVSCPAutomation( void )
     m_civilTwilightSunsetTime_sent  = vscpdatetime::dateTimeZero();
     m_noonTime_sent = vscpdatetime::dateTimeZero();
 
-    m_lastCalculation = vscpdatetime::setNow();
+    m_lastCalculation = vscpdatetime::Now();
 
     m_Heartbeat_Level1_sent =  vscpdatetime::dateTimeZero();
     m_Heartbeat_Level2_sent = vscpdatetime::dateTimeZero();
@@ -305,7 +305,7 @@ void CVSCPAutomation::calcSun( void )
     // read system date and extract the year
 
     // First get time
-    vscpdatetime nowLocal = vscpdatetime::setNow();
+    vscpdatetime nowLocal = vscpdatetime::Now();
     year = nowLocal.getYear();
     month = nowLocal.getMonth() + 1;
     day = nowLocal.getDay();
@@ -372,41 +372,41 @@ void CVSCPAutomation::calcSun( void )
     m_SunMaxAltitude = maxAltitude;
 
     // Set last calculated time
-    m_lastCalculation = vscpdatetime::setNow();
+    m_lastCalculation = vscpdatetime::Now();
 
     int intHour, intMinute;
 
     // Civil Twilight Sunrise
     convert2HourMinute( twilightSunrise, &intHour, &intMinute );
-    m_civilTwilightSunriseTime = vscpdatetime::setNow();
+    m_civilTwilightSunriseTime = vscpdatetime::Now();
     m_civilTwilightSunriseTime.zeroTime();     // Set to midnight
     m_civilTwilightSunriseTime.setHour( intHour );
     m_civilTwilightSunriseTime.setMinute( intMinute ); 
 
     // Sunrise
     convert2HourMinute( sunriseTime, &intHour, &intMinute );
-    m_SunriseTime = vscpdatetime::setNow();
+    m_SunriseTime = vscpdatetime::Now();
     m_SunriseTime.zeroTime();     // Set to midnight
     m_SunriseTime.setHour( intHour );
     m_SunriseTime.setMinute( intMinute ); 
 
     // Sunset
     convert2HourMinute( sunsetTime, &intHour, &intMinute );
-    m_SunsetTime = vscpdatetime::setNow();
+    m_SunsetTime = vscpdatetime::Now();
     m_SunsetTime.zeroTime();     // Set to midnight
     m_SunsetTime.setHour( intHour );
     m_SunsetTime.setMinute( intMinute ); 
 
     // Civil Twilight Sunset
     convert2HourMinute( twilightSunset, &intHour, &intMinute );
-    m_civilTwilightSunsetTime = vscpdatetime::setNow();
+    m_civilTwilightSunsetTime = vscpdatetime::Now();
     m_civilTwilightSunsetTime.zeroTime();     // Set to midnight
     m_civilTwilightSunsetTime.setHour( intHour );
     m_civilTwilightSunsetTime.setMinute( intMinute );
 
     // NoonTime
     convert2HourMinute( noonTime, &intHour, &intMinute );
-    m_noonTime = vscpdatetime::setNow();
+    m_noonTime = vscpdatetime::Now();
     m_noonTime.zeroTime();     // Set to midnight
     m_noonTime.setHour( intHour );
     m_noonTime.setMinute( intMinute );
@@ -420,12 +420,12 @@ void CVSCPAutomation::calcSun( void )
 bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
 {
     std::string wxstr;
-    vscpdatetime now = vscpdatetime::setNow();
+    vscpdatetime now = vscpdatetime::Now();
     ////xxTimeSpan span24( 24 );  // Twentyfour hour span
 
     // Calculate Sunrise/sunset parameters once a day
     if ( !m_bCalulationHasBeenDone && 
-            ( 0 == vscpdatetime::setNow().getHour() ) ) {
+            ( 0 == vscpdatetime::Now().getHour() ) ) {
                 
         calcSun();     
         m_bCalulationHasBeenDone = true;
@@ -451,7 +451,7 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
     }
     
     // Trigger for next noon calculation
-    if ( 0 != vscpdatetime::setNow().getHour() ) {
+    if ( 0 != vscpdatetime::Now().getHour() ) {
         m_bCalulationHasBeenDone = false;
     }
 
@@ -463,7 +463,7 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
          ( now.getMinute() == m_SunriseTime.getMinute() ) ) {
 
         m_SunriseTime += SPAN24;   // Add 24h's
-        m_SunriseTime_sent = vscpdatetime::setNow();                              
+        m_SunriseTime_sent = vscpdatetime::Now();                              
 
         // Send VSCP_CLASS1_INFORMATION, Type=44/VSCP_TYPE_INFORMATION_SUNRISE
         pEventEx->obid = 0;     // IMPORTANT Must be set by caller before event is sent
@@ -489,7 +489,7 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
          ( now.getMinute() == m_civilTwilightSunriseTime.getMinute() ) ) {
 
         m_civilTwilightSunriseTime += SPAN24;   // Add 24h's
-        m_civilTwilightSunriseTime_sent = vscpdatetime::setNow();
+        m_civilTwilightSunriseTime_sent = vscpdatetime::Now();
 
         // Send VSCP_CLASS1_INFORMATION, Type=52/VSCP_TYPE_INFORMATION_SUNRISE_TWILIGHT_START
         pEventEx->obid = 0;     // IMPORTANT Must be set by caller before event is sent
@@ -515,7 +515,7 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
          ( now.getMinute() == m_SunsetTime.getMinute() ) ) {
 
         m_SunsetTime += SPAN24;     // Add 24h's
-        m_SunsetTime_sent = vscpdatetime::setNow(); 
+        m_SunsetTime_sent = vscpdatetime::Now(); 
 
         // Send VSCP_CLASS1_INFORMATION, Type=45/VSCP_TYPE_INFORMATION_SUNSET
         pEventEx->obid = 0;         // IMPORTANT Must be set by caller before event is sent
@@ -541,7 +541,7 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
          ( now.getMinute() == m_civilTwilightSunsetTime.getMinute() ) ) {
 
         m_civilTwilightSunsetTime += SPAN24;   // Add 24h's
-        m_civilTwilightSunsetTime_sent = vscpdatetime::setNow();
+        m_civilTwilightSunsetTime_sent = vscpdatetime::Now();
                                             
         // Send VSCP_CLASS1_INFORMATION, Type=53/VSCP_TYPE_INFORMATION_SUNSET_TWILIGHT_START
         pEventEx->obid = 0;     // IMPORTANT Must be set by caller before event is sent
@@ -567,7 +567,7 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
          ( now.getMinute() == m_noonTime.getMinute() ) ) {
 
         m_noonTime += SPAN24;   // Add 24h's
-        m_noonTime_sent = vscpdatetime::setNow();
+        m_noonTime_sent = vscpdatetime::Now();
 
         // Send VSCP_CLASS1_INFORMATION, Type=58/VSCP_TYPE_INFORMATION_CALCULATED_NOON
         pEventEx->obid = 0;         // IMPORTANT Must be set by caller before event is sent
@@ -590,9 +590,9 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
 
     if ( m_bHeartBeatEvent && 
         ( vscpdatetime::diffSeconds(now,m_Heartbeat_Level1_sent ) >= m_intervalHeartBeat ) )  {
-         //( ( vscpdatetime::setNow() - m_Heartbeat_Level1_sent ) >= HeartBeatLevel1Period ) ) {
+         //( ( vscpdatetime::Now() - m_Heartbeat_Level1_sent ) >= HeartBeatLevel1Period ) ) {
         
-        m_Heartbeat_Level1_sent = vscpdatetime::setNow();
+        m_Heartbeat_Level1_sent = vscpdatetime::Now();
 
         // Send VSCP_CLASS1_INFORMATION, Type=9/VSCP_TYPE_INFORMATION_NODE_HEARTBEAT
         pEventEx->obid = 0;         // IMPORTANT Must be set by caller before event is sent
@@ -614,9 +614,9 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
     //xxTimeSpan HeartBeatLevel2Period( 0, 0, m_intervalHeartBeat );
     if ( m_bHeartBeatEvent &&
     ( vscpdatetime::diffSeconds(now,m_Heartbeat_Level2_sent ) >= m_intervalHeartBeat ) )  {
-    //     ( ( vscpdatetime::setNow() - m_Heartbeat_Level2_sent ) >= HeartBeatLevel2Period ) ) {
+    //     ( ( vscpdatetime::Now() - m_Heartbeat_Level2_sent ) >= HeartBeatLevel2Period ) ) {
 
-        m_Heartbeat_Level2_sent = vscpdatetime::setNow();
+        m_Heartbeat_Level2_sent = vscpdatetime::Now();
 
         // Send VSCP_CLASS1_INFORMATION, Type=9/VSCP_TYPE_INFORMATION_NODE_HEARTBEAT
         pEventEx->obid = 0;         // IMPORTANT Must be set by caller before event is sent
@@ -639,9 +639,9 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
     //xxTimeSpan SegmentControllerHeartBeatPeriod( 0, 0, m_intervalSegmentControllerHeartbeat );
     if ( m_bSegmentControllerHeartbeat && 
     ( vscpdatetime::diffSeconds(now,m_SegmentHeartbeat_sent ) >= m_intervalSegmentControllerHeartbeat ) )  {
-    //     ( ( vscpdatetime::setNow() - m_SegmentHeartbeat_sent ) >= SegmentControllerHeartBeatPeriod ) ) {
+    //     ( ( vscpdatetime::Now() - m_SegmentHeartbeat_sent ) >= SegmentControllerHeartBeatPeriod ) ) {
 
-        m_SegmentHeartbeat_sent = vscpdatetime::setNow();
+        m_SegmentHeartbeat_sent = vscpdatetime::Now();
 
         // Send VSCP_CLASS1_PROTOCOL, Type=1/VSCP_TYPE_PROTOCOL_SEGCTRL_HEARTBEAT
         pEventEx->obid = 0;     // IMPORTANT Must be set by caller before event is sent
@@ -672,9 +672,9 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
     //xxTimeSpan CapabilitiesPeriod( 0, 0, m_intervalCapabilities );
     if ( m_bCapabilitiesEvent && 
     ( vscpdatetime::diffSeconds(now,m_Capabilities_sent ) >= m_intervalCapabilities ) )  {
-    //     ( ( vscpdatetime::setNow() - m_Capabilities_sent ) >= CapabilitiesPeriod ) ) {
+    //     ( ( vscpdatetime::Now() - m_Capabilities_sent ) >= CapabilitiesPeriod ) ) {
 
-        m_Capabilities_sent = vscpdatetime::setNow();
+        m_Capabilities_sent = vscpdatetime::Now();
         // 
         // Send VSCP_CLASS2_PROTOCOL, Type=20/VSCP2_TYPE_PROTOCOL_HIGH_END_SERVER_CAPS
         pEventEx->obid = 0;     // IMPORTANT Must be set by caller before event is sent
