@@ -2217,7 +2217,7 @@ startFullConfigParser(void *data, const char *name, const char **attr)
                 pObj->m_strMulticastAnnounceAddress = attribute;
             }
             if (0 == vscp_strcasecmp(attr[i], "ttl")) {
-                pObj->m_strMulticastAnnounceAddress =
+                pObj->m_ttlMultiCastAnnounce =
                   vscp_readStringValue(attribute);
             }
         }
