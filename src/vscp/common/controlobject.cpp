@@ -1063,9 +1063,10 @@ bool
 CControlObject::stopMulticastWorkerThreads(void)
 {
     std::list<multicastChannelItem *>::iterator it;
+    
     for (it = m_multicastObj.m_channels.begin();
-         it != m_multicastObj.m_channels.end();
-         ++it) {
+         it != m_multicastObj.m_channels.end(); 
+         /* inline */) {
 
         multicastChannelItem *pChannel = *it;
         if (NULL == pChannel) {
@@ -1077,7 +1078,8 @@ CControlObject::stopMulticastWorkerThreads(void)
         pChannel->m_quit = true;
         pthread_join(pChannel->m_workerThread, NULL);
         delete pChannel;
-        m_multicastObj.m_channels.erase(it);
+
+        it = m_multicastObj.m_channels.erase(it);
     }
 
     return true;
@@ -2083,6 +2085,7 @@ CControlObject::readXMLConfigurationGeneral(const std::string &strcfgfile)
     void *buf = XML_GetBuffer(xmlParser, XML_BUFF_SIZE);
     if (NULL == buf) {
         XML_ParserFree(xmlParser);
+        fclose(fp);
         syslog(LOG_CRIT,
                "Failed to allocate buffer for configuration file [%s]",
                strcfgfile.c_str());
@@ -3392,6 +3395,7 @@ CControlObject::readConfigurationXML(const std::string &strcfgfile)
     void *buf = XML_GetBuffer(xmlParser, XML_BUFF_SIZE);
     if (NULL == buf) {
         XML_ParserFree(xmlParser);
+        fclose(fp);
         syslog(LOG_CRIT,
                "Failed to allocate buffer for configuration file [%s]",
                strcfgfile.c_str());
