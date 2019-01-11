@@ -687,7 +687,7 @@ websrv_restapi(struct web_connection *conn, void *cbdata)
 
     // format
     if (0 < web_get_var(pParams, lenParam, "format", buf, sizeof(buf))) {
-        keypairs["FORMAT"] = std::string(buf);
+        keypairs["FORMAT"] = vscp_upper(std::string(buf));
     }
 
     // op
@@ -3731,7 +3731,7 @@ restsrv_convertXML2JSON(const char *input, const char *output)
     oss << is.rdbuf();
 
     // https://github.com/Cheedoong/xml2json
-    // TODO std::string json_str = xml2json( oss.str().data() );
+    std::string json_str = xml2json( oss.str().data() );
 
     std::ofstream myfile;
     myfile.open(output);
