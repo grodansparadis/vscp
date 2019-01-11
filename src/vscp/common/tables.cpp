@@ -1799,10 +1799,10 @@ CUserTableObjList::clearTable(void)
     pthread_mutex_lock(&m_mutexTableList);
 
     std::deque<CVSCPTable *>::iterator it;
-    for (it = m_listTables.begin(); it != m_listTables.end(); ++it) {
+    for (it = m_listTables.begin(); it != m_listTables.end(); /* inline */) {
         CVSCPTable *pTable = *it;
         delete pTable;
-        m_listTables.erase(it);
+        it = m_listTables.erase(it);
     }
 
     pthread_mutex_unlock(&m_mutexTableList);

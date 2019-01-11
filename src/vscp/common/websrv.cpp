@@ -458,11 +458,13 @@ websrv_expire_sessions(struct web_connection *conn)
     pthread_mutex_lock(&gpobj->m_websrvSessionMutex);
     std::list<struct websrv_session *>::iterator it;
     for (it = gpobj->m_web_sessions.begin(); it != gpobj->m_web_sessions.end();
-         ++it) {
+         /* inline */) {
         struct websrv_session *pSession = *it;
         if ((now - pSession->lastActiveTime) > (60 * 60)) {
-            gpobj->m_web_sessions.erase(it);
+            it = gpobj->m_web_sessions.erase(it);
             delete pSession;
+        } else {
+            ++it;
         }
     }
     pthread_mutex_unlock(&gpobj->m_websrvSessionMutex);
