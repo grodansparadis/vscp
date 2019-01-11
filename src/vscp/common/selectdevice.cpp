@@ -134,7 +134,7 @@ CSelectDevice::getDeviceProfile(int idx, devItem *pDev)
     } else if (0 == idx) {
         pDev->id = 0;
     } else {
-        memcpy(pDev, m_deviceList[idx - 1], sizeof(devItem));
+        *pDev = *m_deviceList[idx - 1];
     }
 
     return rv;
