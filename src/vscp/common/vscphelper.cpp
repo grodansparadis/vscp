@@ -3728,7 +3728,7 @@ vscp_setEventDateTime(vscpEvent *pEvent, struct tm *ptm)
     if (NULL == pEvent) return false;
 
     pEvent->year   = ptm->tm_year + 1900;
-    pEvent->month  = ptm->tm_mon;
+    pEvent->month  = ptm->tm_mon + 1;
     pEvent->day    = ptm->tm_mday;
     pEvent->hour   = ptm->tm_hour;
     pEvent->minute = ptm->tm_min;
@@ -3747,7 +3747,7 @@ vscp_setEventExDateTime(vscpEventEx *pEventEx, struct tm *ptm)
     if (NULL == pEventEx) return false;
 
     pEventEx->year   = ptm->tm_year + 1900;
-    pEventEx->month  = ptm->tm_mon;
+    pEventEx->month  = ptm->tm_mon + 1;
     pEventEx->day    = ptm->tm_mday;
     pEventEx->hour   = ptm->tm_hour;
     pEventEx->minute = ptm->tm_min;
@@ -3772,7 +3772,7 @@ vscp_setEventToNow(vscpEvent *pEvent)
     ptm = gmtime(&rawtime);
 
     pEvent->year   = ptm->tm_year + 1900;
-    pEvent->month  = ptm->tm_mon;
+    pEvent->month  = ptm->tm_mon + 1;
     pEvent->day    = ptm->tm_mday;
     pEvent->hour   = ptm->tm_hour;
     pEvent->minute = ptm->tm_min;
@@ -3797,7 +3797,7 @@ vscp_setEventExToNow(vscpEventEx *pEventEx)
     ptm = gmtime(&rawtime);
 
     pEventEx->year   = ptm->tm_year + 1900;
-    pEventEx->month  = ptm->tm_mon;
+    pEventEx->month  = ptm->tm_mon + 1;
     pEventEx->day    = ptm->tm_mday;
     pEventEx->hour   = ptm->tm_hour;
     pEventEx->minute = ptm->tm_min;
@@ -4808,7 +4808,7 @@ vscp_setEventDateTimeBlockToNow(vscpEvent *pEvent)
     ptm = gmtime(&rawtime);
 
     pEvent->year   = ptm->tm_year + 1900;
-    pEvent->month  = ptm->tm_mon;
+    pEvent->month  = ptm->tm_mon + 1;
     pEvent->day    = ptm->tm_mday;
     pEvent->hour   = ptm->tm_hour;
     pEvent->minute = ptm->tm_min;
@@ -4834,7 +4834,7 @@ vscp_setEventExDateTimeBlockToNow(vscpEventEx *pEventEx)
     ptm = gmtime(&rawtime);
 
     pEventEx->year   = ptm->tm_year + 1900;
-    pEventEx->month  = ptm->tm_mon;
+    pEventEx->month  = ptm->tm_mon + 1;
     pEventEx->day    = ptm->tm_mday;
     pEventEx->hour   = ptm->tm_hour;
     pEventEx->minute = ptm->tm_min;
@@ -7072,7 +7072,7 @@ vscp_getEventFromUdpFrame(vscpEvent *pEvent, const uint8_t *buf, size_t len)
         ptm = gmtime(&rawtime);
 
         pEvent->year   = ptm->tm_year + 1900;
-        pEvent->month  = ptm->tm_mon;
+        pEvent->month  = ptm->tm_mon + 1;
         pEvent->day    = ptm->tm_mday;
         pEvent->hour   = ptm->tm_hour;
         pEvent->minute = ptm->tm_min;

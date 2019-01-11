@@ -958,8 +958,6 @@ ws1_command(struct web_connection *conn,
 
     std::deque<std::string> tokens;
     vscp_split(tokens, strCmd, ";");
-    // std::stringTokenizer tkz( strCmd, (";"), xxTOKEN_RET_EMPTY_ALL );  TODO
-    // ???
 
     // Get command
     if (!tokens.empty()) {
