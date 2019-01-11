@@ -38,9 +38,12 @@
 #include "vscp.h"
 
 /*!
+  * * * Used by CCanalSuperWrapper * * *
+  
   Structure for registry and config file
   interaction with device parameters
 */
+
 
 typedef struct _devItem
 {

@@ -280,6 +280,7 @@ class CSim
     // Mutex to protect the output queue
     pthread_mutex_t m_mutexSendQueue;
     pthread_mutex_t m_mutexReceiveQueue;
+
 };
 
 ///////////////////////////////////////////////////////////////////////////////

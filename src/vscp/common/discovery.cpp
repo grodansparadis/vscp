@@ -268,7 +268,7 @@ CDiscoveryObj::addNodeIfNotKnown(vscpEvent *pEvent)
     cvscpnode *pNode;
     std::string strGUID;
     cguid guid;
-    /*
+    /*  TODO
         // Check pointer
         if ( NULL == pEvent ) return NULL;
 
@@ -390,8 +390,10 @@ CDiscoveryObj::addNodeIfNotKnown(vscpEvent *pEvent)
             // This node is known so we don't need to do a thing. Hurray! A la
 
         }
-    */
+    
     return pNode;
+    */
+   return NULL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

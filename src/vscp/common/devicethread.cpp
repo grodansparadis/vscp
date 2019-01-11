@@ -55,26 +55,6 @@
 
 #include "devicethread.h"
 
-///////////////////////////////////////////////////////////////////////////////
-// deviceThreadObj
-//
-
-deviceThreadObj::deviceThreadObj()
-{
-    m_pDeviceItem = NULL;
-    m_pCtrlObject = NULL;
-    // hdll = NULL;
-    m_bQuit = false;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// stopDriver
-//
-
-deviceThreadObj::~deviceThreadObj()
-{
-    ;
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 // deviceThread
@@ -85,20 +65,14 @@ deviceThread(void *pData)
 {
     const char *dlsym_error;
 
-    deviceThreadObj *pDevObj = (deviceThreadObj *)pData;
-    if (NULL == pDevObj) {
-        syslog(LOG_CRIT, "No data object defined. Aborting device thread!");
-        return NULL;
-    }
-
-    CDeviceItem *pDevItem = pDevObj->m_pDeviceItem;
+    CDeviceItem *pDevItem = (CDeviceItem *)pData;
     if (NULL == pDevItem) {
         syslog(LOG_CRIT, "No device item defined. Aborting device thread!");
         return NULL;
     }
 
     // Must have a valid pointer to the control object
-    CControlObject *pCtrlObj = pDevObj->m_pCtrlObject;
+    CControlObject *pCtrlObj = pDevItem->m_pCtrlObject;
     if (NULL == pCtrlObj) {
         syslog(LOG_CRIT, "No control object defined. Aborting device thread!");
         return NULL;
@@ -450,10 +424,10 @@ deviceThread(void *pData)
             //                      Device write worker thread
             /////////////////////////////////////////////////////////////////////////////
 
-            if ( pthread_create(&pDevObj->m_level1WriteThread,
+            if ( pthread_create(&pDevItem->m_level1WriteThread,
                                 NULL,
                                 deviceLevel1WriteThread,
-                                pDevObj)) {
+                                pDevItem)) {
                 syslog(LOG_CRIT,
                        "%s: Unable to run the device write worker thread.",
                        pDevItem->m_strName.c_str());
@@ -465,15 +439,15 @@ deviceThread(void *pData)
             /////////////////////////////////////////////////////////////////////////////
             // Device read worker thread
             /////////////////////////////////////////////////////////////////////////////
-            if (pthread_create(&pDevObj->m_level1ReceiveThread,
+            if (pthread_create(&pDevItem->m_level1ReceiveThread,
                                 NULL,
                                 deviceLevel1ReceiveThread,
-                                pDevObj)) {
+                                pDevItem)) {
                 syslog(LOG_CRIT,
                        "%s: Unable to run the device read worker thread.",
                        pDevItem->m_strName.c_str());
-                pDevObj->m_bQuit = true;
-                pthread_join(pDevObj->m_level1WriteThread, NULL);
+                pDevItem->m_bQuit = true;
+                pthread_join(pDevItem->m_level1WriteThread, NULL);
                 // pDevItem->m_openHandle = pDevItem->m_proc_CanalOpen();
                 dlclose(hdll);
                 return NULL;
@@ -485,7 +459,7 @@ deviceThread(void *pData)
             }
 
             // Signal worker threads to quit
-            pDevObj->m_bQuit = true;
+            pDevItem->m_bQuit = true;
 
             if (pCtrlObj->m_debugFlags1 & VSCP_DEBUG1_DRIVER) {
                 syslog(LOG_DEBUG,
@@ -494,8 +468,8 @@ deviceThread(void *pData)
             }
 
             // Wait for workerthreads to abort
-            pthread_join(pDevObj->m_level1WriteThread, NULL);
-            pthread_join(pDevObj->m_level1ReceiveThread, NULL);
+            pthread_join(pDevItem->m_level1WriteThread, NULL);
+            pthread_join(pDevItem->m_level1ReceiveThread, NULL);
         } else {
 
             // * * * * Non blocking version * * * *
@@ -511,8 +485,7 @@ deviceThread(void *pData)
 
                 bActivity = false;
                 /////////////////////////////////////////////////////////////////////////////
-                //                           Receive from device
-                //                           //
+                //                           Receive from device          
                 /////////////////////////////////////////////////////////////////////////////
                 canalMsg msg;
                 if (pDevItem->m_proc_CanalDataAvailable(
@@ -633,9 +606,9 @@ deviceThread(void *pData)
 
     level1_driver_exit:
 
-        pDevObj->m_bQuit = true;
-        pthread_join(pDevObj->m_level1WriteThread, NULL);
-        pthread_join(pDevObj->m_level1ReceiveThread, NULL);
+        pDevItem->m_bQuit = true;
+        pthread_join(pDevItem->m_level1WriteThread, NULL);
+        pthread_join(pDevItem->m_level1ReceiveThread, NULL);
 
         dlclose(hdll);
 
@@ -856,10 +829,10 @@ deviceThread(void *pData)
         // Device write worker thread
         /////////////////////////////////////////////////////////////////////////////
 
-        if (pthread_create(&pDevObj->m_level2WriteThread,
+        if (pthread_create(&pDevItem->m_level2WriteThread,
                             NULL,
                             deviceLevel2WriteThread,
-                            pDevObj)) {
+                            pDevItem)) {
             syslog(LOG_CRIT,
                    "%s: Unable to run the device Level II write worker thread.",
                    pDevItem->m_strName.c_str());
@@ -877,15 +850,15 @@ deviceThread(void *pData)
         // Device read worker thread
         /////////////////////////////////////////////////////////////////////////////
 
-        if (pthread_create(&pDevObj->m_level2ReceiveThread,
+        if (pthread_create(&pDevItem->m_level2ReceiveThread,
                             NULL,
                             deviceLevel2ReceiveThread,
-                            pDevObj)) {
+                            pDevItem)) {
             syslog(LOG_CRIT,
                    "%s: Unable to run the device Level II read worker thread.",
                    pDevItem->m_strName.c_str());
-            pDevObj->m_bQuit = true;
-            pthread_join(pDevObj->m_level2WriteThread, NULL);
+            pDevItem->m_bQuit = true;
+            pthread_join(pDevItem->m_level2WriteThread, NULL);
             dlclose(hdll);
             return NULL; // TODO close dll, kill other thread
         }
@@ -897,7 +870,7 @@ deviceThread(void *pData)
         }
 
         // Just sit and wait until the end of the world as we know it...
-        while (!pDevObj->m_bQuit) {
+        while (!pDevItem->m_bQuit) {
             sleep(1);
         }
 
@@ -918,9 +891,9 @@ deviceThread(void *pData)
 
     level2_driver_exit:
 
-        pDevObj->m_bQuit = true;
-        pthread_join(pDevObj->m_level2WriteThread, NULL);
-        pthread_join(pDevObj->m_level2ReceiveThread, NULL);
+        pDevItem->m_bQuit = true;
+        pthread_join(pDevItem->m_level2WriteThread, NULL);
+        pthread_join(pDevItem->m_level2ReceiveThread, NULL);
 
         // Unload dll
         dlclose(hdll);
@@ -971,27 +944,27 @@ deviceLevel1ReceiveThread(void *pData)
     canalMsg msg;
     // Level1MsgOutList::compatibility_iterator nodeLevel1;
 
-    deviceThreadObj *pDevObj = (deviceThreadObj *)pData;
-    if (NULL == pDevObj) {
+    CDeviceItem *pDevItem = (CDeviceItem *)pData;
+    if (NULL == pDevItem) {
         syslog(LOG_CRIT,
-               "deviceLevel1ReceiveThread quitting due to NULL object.");
+               "deviceLevel1ReceiveThread quitting due to NULL DevItem object.");
         return NULL;
     }
 
     // Blocking receive method must have been found
-    if (NULL == pDevObj->m_pDeviceItem->m_proc_CanalBlockingReceive) {
+    if (NULL == pDevItem->m_proc_CanalBlockingReceive) {
         return NULL;
     }
 
-    while (!pDevObj->m_bQuit) {
+    while (!pDevItem->m_bQuit) {
 
         if (CANAL_ERROR_SUCCESS ==
-            pDevObj->m_pDeviceItem->m_proc_CanalBlockingReceive(
-              pDevObj->m_pDeviceItem->m_openHandle, &msg, 500)) {
+            pDevItem->m_proc_CanalBlockingReceive(
+              pDevItem->m_openHandle, &msg, 500)) {
 
             // There must be room in the receive queue
-            if (pDevObj->m_pCtrlObject->m_maxItemsInClientReceiveQueue >
-                pDevObj->m_pCtrlObject->m_clientOutputQueue.size()) {
+            if (pDevItem->m_pCtrlObject->m_maxItemsInClientReceiveQueue >
+                pDevItem->m_pCtrlObject->m_clientOutputQueue.size()) {
 
                 vscpEvent *pvscpEvent = new vscpEvent;
                 if (NULL != pvscpEvent) {
@@ -999,13 +972,13 @@ deviceLevel1ReceiveThread(void *pData)
                     memset(pvscpEvent, 0, sizeof(vscpEvent));
 
                     // Set driver GUID if set
-                    /*if ( pDevObj->m_pDeviceItem->m_interface_guid.isNULL()
-                    ) { pDevObj->m_pDeviceItem->m_interface_guid.writeGUID(
+                    /*if ( pDevItem->m_interface_guid.isNULL()
+                    ) { pDevItem->m_interface_guid.writeGUID(
                     pvscpEvent->GUID );
                     }
                     else {
                         // If no driver GUID set use interface GUID
-                        pDevObj->m_pDeviceItem->m_guid.writeGUID(
+                        pDevItem->m_guid.writeGUID(
                     pvscpEvent->GUID );
                     }*/
 
@@ -1013,10 +986,10 @@ deviceLevel1ReceiveThread(void *pData)
                     vscp_convertCanalToEvent(
                       pvscpEvent,
                       &msg,
-                      pDevObj->m_pDeviceItem->m_pClientItem->m_guid.m_id);
+                      pDevItem->m_pClientItem->m_guid.m_id);
 
                     pvscpEvent->obid =
-                      pDevObj->m_pDeviceItem->m_pClientItem->m_clientID;
+                      pDevItem->m_pClientItem->m_clientID;
 
                     // If no GUID is set,
                     //      - Set driver GUID if it is defined
@@ -1036,13 +1009,13 @@ deviceLevel1ReceiveThread(void *pData)
                     if (vscp_isGUIDEmpty(ifguid)) {
 
                         // Set driver GUID if set
-                        if (!pDevObj->m_pDeviceItem->m_interface_guid
+                        if (!pDevItem->m_interface_guid
                                .isNULL()) {
-                            pDevObj->m_pDeviceItem->m_interface_guid.writeGUID(
+                            pDevItem->m_interface_guid.writeGUID(
                               pvscpEvent->GUID);
                         } else {
                             // If no driver GUID set use interface GUID
-                            pDevObj->m_pDeviceItem->m_pClientItem->m_guid
+                            pDevItem->m_pClientItem->m_guid
                               .writeGUID(pvscpEvent->GUID);
                         }
 
@@ -1055,18 +1028,18 @@ deviceLevel1ReceiveThread(void *pData)
                     // =========================================================
 
                     // Level I measurement events to Level II measurement float
-                    if (pDevObj->m_pDeviceItem->m_translation &
+                    if (pDevItem->m_translation &
                         VSCP_DRIVER_OUT_TR_M1M2F) {
                         vscp_convertLevel1MeasuremenToLevel2Double(pvscpEvent);
                     }
                     // Level I measurement events to Level II measurement string
-                    else if (pDevObj->m_pDeviceItem->m_translation &
+                    else if (pDevItem->m_translation &
                              VSCP_DRIVER_OUT_TR_M1M2S) {
                         vscp_convertLevel1MeasuremenToLevel2String(pvscpEvent);
                     }
 
                     // Level I events to Level I over Level II events
-                    if (pDevObj->m_pDeviceItem->m_translation &
+                    if (pDevItem->m_translation &
                         VSCP_DRIVER_OUT_TR_ALL512) {
                         pvscpEvent->vscp_class += 512;
                         uint8_t *p = new uint8_t[16 + pvscpEvent->sizeData];
@@ -1081,12 +1054,12 @@ deviceLevel1ReceiveThread(void *pData)
                     }
 
                     pthread_mutex_lock(
-                      &pDevObj->m_pCtrlObject->m_mutexClientOutputQueue);
-                    pDevObj->m_pCtrlObject->m_clientOutputQueue.push_back(
+                      &pDevItem->m_pCtrlObject->m_mutexClientOutputQueue);
+                    pDevItem->m_pCtrlObject->m_clientOutputQueue.push_back(
                       pvscpEvent);
-                    sem_post(&pDevObj->m_pCtrlObject->m_semClientOutputQueue);
+                    sem_post(&pDevItem->m_pCtrlObject->m_semClientOutputQueue);
                     pthread_mutex_unlock(
-                      &pDevObj->m_pCtrlObject->m_mutexClientOutputQueue);
+                      &pDevItem->m_pCtrlObject->m_mutexClientOutputQueue);
                 }
             }
         }
@@ -1106,41 +1079,41 @@ deviceLevel1WriteThread(void *pData)
 {
     // Level1MsgOutList::compatibility_iterator nodeLevel1;
 
-    deviceThreadObj *pDevObj = (deviceThreadObj *)pData;
-    if (NULL == pDevObj) {
+    CDeviceItem *pDevItem = (CDeviceItem *)pData;
+    if (NULL == pDevItem) {
         syslog(LOG_CRIT,
-               "deviceLevel1WriteThread quitting due to NULL object.");
+               "deviceLevel1WriteThread quitting due to NULL DevItem object.");
         return NULL;
     }
 
     // Blocking send method must have been found
-    if (NULL == pDevObj->m_pDeviceItem->m_proc_CanalBlockingSend) return NULL;
+    if (NULL == pDevItem->m_proc_CanalBlockingSend) return NULL;
 
-    while (!pDevObj->m_bQuit) {
+    while (!pDevItem->m_bQuit) {
 
         // Wait until there is something to send
         if ((-1 ==
              vscp_sem_wait(
-               &pDevObj->m_pDeviceItem->m_pClientItem->m_semClientInputQueue,
+               &pDevItem->m_pClientItem->m_semClientInputQueue,
                500)) &&
             errno == ETIMEDOUT) {
             continue;
         }
 
-        if (pDevObj->m_pDeviceItem->m_pClientItem->m_clientInputQueue.size()) {
+        if (pDevItem->m_pClientItem->m_clientInputQueue.size()) {
 
             pthread_mutex_lock(
-              &pDevObj->m_pDeviceItem->m_pClientItem->m_mutexClientInputQueue);
+              &pDevItem->m_pClientItem->m_mutexClientInputQueue);
             vscpEvent *pqueueEvent =
-              pDevObj->m_pDeviceItem->m_pClientItem->m_clientInputQueue.front();
-            pDevObj->m_pDeviceItem->m_pClientItem->m_clientInputQueue
+              pDevItem->m_pClientItem->m_clientInputQueue.front();
+            pDevItem->m_pClientItem->m_clientInputQueue
               .pop_front();
             pthread_mutex_unlock(
-              &pDevObj->m_pDeviceItem->m_pClientItem->m_mutexClientInputQueue);
+              &pDevItem->m_pClientItem->m_mutexClientInputQueue);
 
             // Trow away event if Level II and Level I interface
             if ((CLIENT_ITEM_INTERFACE_TYPE_DRIVER_LEVEL1 ==
-                 pDevObj->m_pDeviceItem->m_pClientItem->m_type) &&
+                 pDevItem->m_pClientItem->m_type) &&
                 (pqueueEvent->vscp_class > 512)) {
                 vscp_deleteVSCPevent(pqueueEvent);
                 continue;
@@ -1149,12 +1122,12 @@ deviceLevel1WriteThread(void *pData)
             canalMsg canalMsg;
             vscp_convertEventToCanal(&canalMsg, pqueueEvent);
             if (CANAL_ERROR_SUCCESS ==
-                pDevObj->m_pDeviceItem->m_proc_CanalBlockingSend(
-                  pDevObj->m_pDeviceItem->m_openHandle, &canalMsg, 300)) {
+                pDevItem->m_proc_CanalBlockingSend(
+                  pDevItem->m_openHandle, &canalMsg, 300)) {
                 vscp_deleteVSCPevent(pqueueEvent);
             } else {
                 // Give it another try
-                sem_post(&pDevObj->m_pCtrlObject->m_semClientOutputQueue);
+                sem_post(&pDevItem->m_pCtrlObject->m_semClientOutputQueue);
             }
 
         } // events in queue
@@ -1179,20 +1152,20 @@ deviceLevel2ReceiveThread(void *pData)
 {
     vscpEvent *pEvent;
 
-    deviceThreadObj *pDevObj = (deviceThreadObj *)pData;
-    if (NULL == pDevObj) {
+    CDeviceItem *pDevItem = (CDeviceItem *)pData;
+    if (NULL == pDevItem) {
         syslog(LOG_CRIT,
-               "deviceLevel2ReceiveThread quitting due to NULL object.");
+               "deviceLevel2ReceiveThread quitting due to NULL DevItem object.");
         return NULL;
     }
 
     int rv;
-    while (!pDevObj->m_bQuit) {
+    while (!pDevItem->m_bQuit) {
 
         pEvent = new vscpEvent;
         if (NULL == pEvent) continue;
-        rv = pDevObj->m_pDeviceItem->m_proc_VSCPBlockingReceive(
-          pDevObj->m_pDeviceItem->m_openHandle, pEvent, 500);
+        rv = pDevItem->m_proc_VSCPBlockingReceive(
+          pDevItem->m_openHandle, pEvent, 500);
 
         if ((CANAL_ERROR_SUCCESS != rv) || (NULL == pEvent)) {
             delete pEvent;
@@ -1200,7 +1173,7 @@ deviceLevel2ReceiveThread(void *pData)
         }
 
         // Identify ourselves
-        pEvent->obid = pDevObj->m_pDeviceItem->m_pClientItem->m_clientID;
+        pEvent->obid = pDevItem->m_pClientItem->m_clientID;
 
         // If timestamp is zero we set it here
         if (0 == pEvent->timestamp) {
@@ -1226,12 +1199,12 @@ deviceLevel2ReceiveThread(void *pData)
         if (vscp_isGUIDEmpty(ifguid)) {
 
             // Set driver GUID if set
-            if (!pDevObj->m_pDeviceItem->m_interface_guid.isNULL()) {
-                pDevObj->m_pDeviceItem->m_interface_guid.writeGUID(
+            if (!pDevItem->m_interface_guid.isNULL()) {
+                pDevItem->m_interface_guid.writeGUID(
                   pEvent->GUID);
             } else {
                 // If no driver GUID set use interface GUID
-                pDevObj->m_pDeviceItem->m_pClientItem->m_guid.writeGUID(
+                pDevItem->m_pClientItem->m_guid.writeGUID(
                   pEvent->GUID);
             }
 
@@ -1242,15 +1215,15 @@ deviceLevel2ReceiveThread(void *pData)
 
         // There must be room in the receive queue (even if room (or whisky) has
         // been better)
-        if (pDevObj->m_pCtrlObject->m_maxItemsInClientReceiveQueue >
-            pDevObj->m_pCtrlObject->m_clientOutputQueue.size()) {
+        if (pDevItem->m_pCtrlObject->m_maxItemsInClientReceiveQueue >
+            pDevItem->m_pCtrlObject->m_clientOutputQueue.size()) {
 
             pthread_mutex_lock(
-              &pDevObj->m_pCtrlObject->m_mutexClientOutputQueue);
-            pDevObj->m_pCtrlObject->m_clientOutputQueue.push_back(pEvent);
-            sem_post(&pDevObj->m_pCtrlObject->m_semClientOutputQueue);
+              &pDevItem->m_pCtrlObject->m_mutexClientOutputQueue);
+            pDevItem->m_pCtrlObject->m_clientOutputQueue.push_back(pEvent);
+            sem_post(&pDevItem->m_pCtrlObject->m_semClientOutputQueue);
             pthread_mutex_unlock(
-              &pDevObj->m_pCtrlObject->m_mutexClientOutputQueue);
+              &pDevItem->m_pCtrlObject->m_mutexClientOutputQueue);
 
         } else {
             if (NULL == pEvent) vscp_deleteVSCPevent_v2(&pEvent);
@@ -1271,47 +1244,47 @@ deviceLevel2ReceiveThread(void *pData)
 void *
 deviceLevel2WriteThread(void *pData)
 {
-    deviceThreadObj *pDevObj = (deviceThreadObj *)pData;
-    if (NULL == pDevObj) {
+    CDeviceItem *pDevItem = (CDeviceItem *)pData;
+    if (NULL == pDevItem) {
         syslog(LOG_CRIT,
-               "deviceLevel2WriteThread quitting due to NULL object.");
+               "deviceLevel2WriteThread quitting due to NULL DevItem object.");
         return NULL;
     }
 
-    while (!pDevObj->m_bQuit) {
+    while (!pDevItem->m_bQuit) {
 
         // Wait until there is something to send
         if ((-1 ==
              vscp_sem_wait(
-               &pDevObj->m_pDeviceItem->m_pClientItem->m_semClientInputQueue,
+               &pDevItem->m_pClientItem->m_semClientInputQueue,
                500)) &&
             errno == ETIMEDOUT) {
             continue;
         }
 
-        if (pDevObj->m_pDeviceItem->m_pClientItem->m_clientInputQueue.size()) {
+        if (pDevItem->m_pClientItem->m_clientInputQueue.size()) {
 
             pthread_mutex_lock(
-              &pDevObj->m_pDeviceItem->m_pClientItem->m_mutexClientInputQueue);
+              &pDevItem->m_pClientItem->m_mutexClientInputQueue);
             vscpEvent *pqueueEvent =
-              pDevObj->m_pDeviceItem->m_pClientItem->m_clientInputQueue.front();
+              pDevItem->m_pClientItem->m_clientInputQueue.front();
             pthread_mutex_unlock(
-              &pDevObj->m_pDeviceItem->m_pClientItem->m_mutexClientInputQueue);
+              &pDevItem->m_pClientItem->m_mutexClientInputQueue);
 
             if (CANAL_ERROR_SUCCESS ==
-                pDevObj->m_pDeviceItem->m_proc_VSCPBlockingSend(
-                  pDevObj->m_pDeviceItem->m_openHandle, pqueueEvent, 300)) {
+                pDevItem->m_proc_VSCPBlockingSend(
+                  pDevItem->m_openHandle, pqueueEvent, 300)) {
 
                 // Remove the node
-                pthread_mutex_lock(&pDevObj->m_pDeviceItem->m_pClientItem
+                pthread_mutex_lock(&pDevItem->m_pClientItem
                                       ->m_mutexClientInputQueue);
-                pDevObj->m_pDeviceItem->m_pClientItem->m_clientInputQueue
+                pDevItem->m_pClientItem->m_clientInputQueue
                   .pop_front();
-                pthread_mutex_unlock(&pDevObj->m_pDeviceItem->m_pClientItem
+                pthread_mutex_unlock(&pDevItem->m_pClientItem
                                         ->m_mutexClientInputQueue);
             } else {
                 // Give it another try
-                sem_post(&pDevObj->m_pCtrlObject->m_semClientOutputQueue);
+                sem_post(&pDevItem->m_pCtrlObject->m_semClientOutputQueue);
             }
 
         } // events in queue

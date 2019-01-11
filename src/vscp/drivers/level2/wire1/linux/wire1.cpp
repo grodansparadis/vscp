@@ -94,9 +94,6 @@ CWire1::CWire1()
     m_nSensors    = 1;                   // Default is one sensor
     vscp_clearVSCPFilter(&m_vscpfilter); // Accept all events
 
-    // Open syslog channel
-    openlog(VSCP_DLL_SONAME, LOG_PID | LOG_CONS, LOG_DAEMON);
-
     sem_init(&m_semSendQueue, 0, 0);
     sem_init(&m_semReceiveQueue, 0, 0);
 
@@ -117,9 +114,6 @@ CWire1::~CWire1()
 
     pthread_mutex_destroy(&m_mutexSendQueue);
     pthread_mutex_destroy(&m_mutexReceiveQueue);
-
-    // Close syslog channel
-    closelog();
 }
 
 // ----------------------------------------------------------------------------

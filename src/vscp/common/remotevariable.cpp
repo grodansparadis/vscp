@@ -6794,11 +6794,12 @@ bool
 CVariableStorage::loadFromXML(const std::string &path)
 {
     std::string str;
+    std::string xmlpath;
     unsigned long lval;
 
     // If a null path is supplied use the configured path
     if (path.empty()) {
-
+        xmlpath = m_xmlPath;
         if (gpobj->m_debugFlags1 & VSCP_DEBUG1_VARIABLE) {
             syslog(LOG_ERR,
                    "[loadFromXML] Loading variable XML file from %s.",
@@ -6806,7 +6807,7 @@ CVariableStorage::loadFromXML(const std::string &path)
         }
 
     } else {
-
+        xmlpath = path;
         if (gpobj->m_debugFlags1 & VSCP_DEBUG1_VARIABLE) {
             syslog(LOG_ERR,
                    "[loadFromXML] Loading variable XML file from %s.",
@@ -6815,7 +6816,7 @@ CVariableStorage::loadFromXML(const std::string &path)
     }
 
     FILE *fp;
-    fp = fopen(m_xmlPath.c_str(), "r");
+    fp = fopen(xmlpath.c_str(), "r");
     if (NULL == fp) {
         syslog(
           LOG_CRIT, "Failed to open variable file [%s]", m_xmlPath.c_str());

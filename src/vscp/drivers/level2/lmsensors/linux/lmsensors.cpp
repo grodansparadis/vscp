@@ -63,9 +63,6 @@ Clmsensors::Clmsensors()
 {
     m_bQuit = false;
 
-    // Open syslog channel
-    openlog(VSCP_DLL_SONAME, LOG_PID | LOG_CONS, LOG_DAEMON);
-
     sem_init(&m_semSendQueue, 0, 0);
     sem_init(&m_semReceiveQueue, 0, 0);
 
@@ -107,9 +104,6 @@ Clmsensors::~Clmsensors()
 
     pthread_mutex_destroy(&m_mutexSendQueue);
     pthread_mutex_destroy(&m_mutexReceiveQueue);
-
-    // Close syslog channel
-    closelog();
 }
 
 // ----------------------------------------------------------------------------

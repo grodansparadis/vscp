@@ -133,11 +133,11 @@ addDriverObject(CRawEthernet *pif)
 
     // Find free handle
     while (true) {
-        if (g_ifMap.end() != (it = g_ifMap.find(h))) break;
+        if (g_ifMap.end() == (it = g_ifMap.find(h))) break;
         h++;
     };
 
-    g_ifMap[h] = new CRawEthernet;
+    g_ifMap[h] = pif;
     h += 1681;
 
     UNLOCK_MUTEX(g_mapMutex);
@@ -158,7 +158,7 @@ getDriverObject(long h)
     // Check if valid handle
     if (idx < 0) return NULL;
 
-    it = g_ifMap.find(h);
+    it = g_ifMap.find(idx);
     if (it != g_ifMap.end()) {
         return it->second;
     }
@@ -180,7 +180,7 @@ removeDriverObject(long h)
     if (idx < 0) return;
 
     LOCK_MUTEX(g_mapMutex);
-    it = g_ifMap.find(h);
+    it = g_ifMap.find(idx);
     if (it != g_ifMap.end()) {
         CRawEthernet *pObj = it->second;
         if (NULL != pObj) {
@@ -419,9 +419,6 @@ CRawEthernet::CRawEthernet()
     memset(m_localMac, 0, 16);
     m_subaddr = 0;
 
-    // Open syslog channel
-    openlog(VSCP_DLL_SONAME, LOG_PID | LOG_CONS, LOG_DAEMON);
-
     vscp_clearVSCPFilter(&m_vscpfilter); // Accept all events
 }
 
@@ -432,9 +429,6 @@ CRawEthernet::CRawEthernet()
 CRawEthernet::~CRawEthernet()
 {
     close();
-
-    // Close syslog channel
-    closelog();
 }
 
 //////////////////////////////////////////////////////////////////////

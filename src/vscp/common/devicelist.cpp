@@ -161,6 +161,7 @@ CDeviceItem::startDriver(CControlObject *pCtrlObject)
     //  Create the worker thread for the device
     // *****************************************
 
+
     // Share control object
     m_pCtrlObject = pCtrlObject;
 

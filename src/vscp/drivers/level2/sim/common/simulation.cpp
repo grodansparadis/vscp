@@ -104,9 +104,6 @@ getClockMilliseconds()
 
 CSim::CSim()
 {
-    // Open syslog channel
-    openlog(VSCP_DLL_SONAME, LOG_PID | LOG_CONS, LOG_DAEMON);
-
     m_bQuit = false;
 
     m_nNodes = 1; // One node as default
@@ -126,26 +123,11 @@ CSim::~CSim()
 {
     close();
 
-    // Terminate threads and deallocate objects
-    std::deque<CWrkTreadObj *>::iterator it;
-    for (it = m_objectList.begin(); it != m_objectList.end(); ++it) {
-        CWrkTreadObj *pObj = *it;
-        if (NULL != pObj) {
+    sem_destroy(&m_semReceiveQueue);
+    sem_destroy(&m_semSendQueue);
 
-            // Wait for workerthread to quit
-            pthread_join(pObj->m_workerThread, NULL);
-            *it = NULL;
-
-            // Delete the thread object
-            delete pObj;
-        }
-    }
-
-    // Clear the list
-    m_objectList.clear();
-
-    // Close syslog channel
-    closelog();
+    pthread_mutex_destroy(&m_mutexReceiveQueue);
+    pthread_mutex_destroy(&m_mutexSendQueue);
 }
 
 // ----------------------------------------------------------------------------
@@ -488,9 +470,6 @@ CSim::open(const char *pUsername,
         CWrkTreadObj *pObj = new CWrkTreadObj();
         if (NULL != pObj) {
 
-            // Add to list
-            m_objectList.push_back(pObj);
-
             bool bvalue;
             strName = m_prefix + std::string("_bLevel2") + strIteration;
             if (VSCP_ERROR_SUCCESS ==
@@ -588,11 +567,15 @@ CSim::open(const char *pUsername,
             // start the workerthread
             pObj->m_pSim = this;
             if (pthread_create(
-                  &pObj->m_workerThread, NULL, workerThread, this)) {
+                  &pObj->m_workerThread, NULL, workerThread, pObj)) {
 
                 syslog(LOG_CRIT, "Unable to start simulation worker thread.");
+                delete pObj;
                 return false;
             }
+
+            // Add to list
+            m_objectList.push_back( pObj );
 
         } else {
 
@@ -645,7 +628,25 @@ CSim::close(void)
     if (m_bQuit) return;
 
     m_bQuit = true; // terminate the thread
-    sleep(1);       // Give the thread some time to terminate
+    
+    // Terminate threads and deallocate objects
+    std::deque<CWrkTreadObj *>::iterator it;
+    for (it = m_objectList.begin(); it != m_objectList.end(); ++it) {
+        CWrkTreadObj *pObj = *it;
+        if (NULL != pObj) {
+
+            // Wait for workerthread to quit
+            pthread_join(pObj->m_workerThread, NULL);
+            *it = NULL;
+
+            // Delete the thread object
+            delete pObj;
+        }
+    }
+
+    // Clear the list
+    m_objectList.clear();
+
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -1199,10 +1200,14 @@ workerThread(void *pData)
             fs.open(pObj->m_path);
         } catch (...) {
             syslog(LOG_ERR,
-                   "[VSCPSimDrv] Unable to open simulation data file %s",
+                   "[VSCPSimDrv] Unable to open simulation data file [%s] ",
                    pObj->m_path.c_str());
             goto dumb_fill_data;
         }
+    }
+
+    if ( !fs ) {
+        syslog(LOG_CRIT, "Unable to open the simulation data file [%s]", pObj->m_path.c_str() );
     }
 
     // Set C locale
@@ -1210,16 +1215,19 @@ workerThread(void *pData)
 
     // read all lines one by one
     // until the end of the file
-    while (!fs.eof()) {
-        fs.getline(buf, sizeof(buf));
-        if (fs.gcount()) {
-            str = std::string(buf, fs.gcount());
-        }
+    while ( fs >> str ) {
+ 
         // Replace possible comma with period
         if (std::string::npos != (pos = str.find(','))) {
             str[pos] = '.';
         }
-        val = std ::stod(str);
+        try {
+            val = std ::stod(str);
+        } catch (...) {
+            syslog(LOG_ERR,"Failed to convert value from simulation file (setting it to zero)");
+            val = 0;
+        }
+
         simlist.push_back(val);
     }
 

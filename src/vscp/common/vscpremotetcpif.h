@@ -666,16 +666,20 @@ class VscpRemoteTcpIf
 
     int getRemoteVariableValue(const std::string &name,
                                std::string &strValue,
-                               bool bDecode = false);
+                               bool bDecode = true);
 
     /*!
      * Set value for variable from string.
      *
      * @param name Name of variable.
+     * @param strValue Value to set varible to
+     * @param bEncode True if value should be BASE64 encoded (default).
      * @return VSCP_ERROR_SUCCESS on success
      *
      */
-    int setRemoteVariableValue(const std::string &name, std::string &strValue);
+    int setRemoteVariableValue(const std::string &name,
+                               std::string &strValue,
+                               bool bEncode = true);
 
     /*!
      * Get note for remote variable.

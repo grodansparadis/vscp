@@ -29,16 +29,16 @@
 #if !defined(_DEVICELIST_H__0ED35EA7_E9E1_41CD_8A98_5EB3369B3194__INCLUDED_)
 #define _DEVICELIST_H__0ED35EA7_E9E1_41CD_8A98_5EB3369B3194__INCLUDED_
 
-#include <string>
 #include <deque>
+#include <string>
 
 #include <pthread.h>
 #include <semaphore.h>
 
 #include "canaldlldef.h"
-#include "guid.h"
 #include "clientlist.h"
 #include "devicethread.h"
+#include "guid.h"
 #include "vscpdlldef.h"
 
 #define NO_TRANSLATION 0 // No translation bit set
@@ -59,12 +59,13 @@ enum _driver_levels
 
 class CClientItem;
 class cguid;
+class CControlObject;
 
-///////////////////////////////////////////////////////////////////////////////
-// Driver3Process
-//
+  ///////////////////////////////////////////////////////////////////////////////
+  // Driver3Process
+  //
 
-class Driver3Process
+  class Driver3Process
 {
 
   public:
@@ -96,32 +97,22 @@ class CDeviceItem
 
     bool stopDriver(void); // TODO
 
-    /*!
-        Name of device
-    */
+    // Name of device
     std::string m_strName;
 
-    /*!
-        Device configuration string
-    */
+    // Device configuration string
     std::string m_strParameter;
 
-    /*!
-        CANAL DLL/DL path
-    */
+    // Driver DLL/DL path
     std::string m_strPath;
 
-    /*!
-        Canal Driver Level
-    */
+    // Canal/VSCP Driver Level
     uint8_t m_driverLevel;
 
-    /// True if driver should be started.
+    // True if driver should be started.
     bool m_bEnable;
 
-    /*!
-        termination control
-    */
+    // termination control
     bool m_bQuit;
 
     /*!

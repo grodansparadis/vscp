@@ -314,7 +314,7 @@ VscpRemoteTcpIf::doCmdOpen(const std::string &strInterface, uint32_t flags)
         tokens.pop_front();
         vscp_trim(strHostname);
         std::string prefix = "tcp://";
-        vscp_startsWith(prefix, strHostname, &strHostname); // Remove "tcp://"
+        vscp_startsWith(strHostname,prefix, &strHostname); // Remove "tcp://"
     }
 
 #ifdef DEBUG_LIB_VSCP_HELPER
@@ -371,7 +371,7 @@ VscpRemoteTcpIf::doCmdOpen(const std::string &strHostname,
 
     std::string strHost = vscp_lower(strHostname);
     vscp_trim(strHost);
-    vscp_startsWith("tcp://", strHost, &strHost); // Remove "tcp://" if there
+    vscp_startsWith(strHost,"tcp://", &strHost); // Remove "tcp://" if there
 
     std::deque<std::string> tokens;
     vscp_split(tokens, strHost, ":");
@@ -1998,12 +1998,17 @@ VscpRemoteTcpIf::getRemoteVariableValue(const std::string &name,
 
 int
 VscpRemoteTcpIf::setRemoteVariableValue(const std::string &name,
-                                        std::string &strValue)
+                                        std::string &strValue,
+                                        bool bEncode )
 {
     std::string strLine;
     std::string strCmd;
 
     if (!isConnected()) return VSCP_ERROR_NOT_OPEN; // Connection closed.
+
+    if (bEncode) {
+        vscp_base64_std_encode(strValue);
+    }
 
     strCmd = std::string("VAR WRITEVALUE ") + name + std::string(" ");
     strCmd += strValue;

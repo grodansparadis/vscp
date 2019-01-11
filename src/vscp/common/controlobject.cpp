@@ -2029,17 +2029,7 @@ startGeneralConfigParser(void *data, const char *name, const char **attr)
                     if (attribute.length()) {
                         pObj->m_path_db_vscp_data = attribute;
                     }
-                } else if (0 == strcasecmp(attr[i], "variable")) {
-                    vscp_trim(attribute);
-                    if (attribute.length()) {
-                        pObj->m_variables.m_dbFilename = attribute;
-                    }
-                } else if (0 == strcasecmp(attr[i], "dm")) {
-                    vscp_trim(attribute);
-                    if (attribute.length()) {
-                        pObj->m_dm.m_path_db_vscp_dm = attribute;
-                    }
-                }
+                } 
             }
         }
     }
@@ -2445,7 +2435,7 @@ startFullConfigParser(void *data, const char *name, const char **attr)
 
             if (0 == vscp_strcasecmp(attr[i], "path")) { // Deprecated
                 if (attribute.length()) {
-                    pObj->m_variables.m_xmlPath = attribute;
+                    pObj->m_variables.m_dbFilename = attribute;
                 }
             } else if (0 == vscp_strcasecmp(attr[i], "pathxml")) {
                 if (attribute.length()) {
@@ -2833,7 +2823,7 @@ startFullConfigParser(void *data, const char *name, const char **attr)
         std::string strName;
         std::string strConfig;
         std::string strPath;
-        unsigned long flags;
+        unsigned long flags = 0;
         uint32_t translation = 0;
         cguid guid;
         bool bEnabled = false;
@@ -3331,6 +3321,8 @@ endFullConfigParser(void *data, const char *name)
         last_full_config_content = NULL;
     }*/
 
+    depth_full_config_parser--;
+
     if (1 == depth_full_config_parser &&
         (0 == vscp_strcasecmp(name, "vscpconfig"))) {
         bVscpConfigFound = FALSE;
@@ -3362,7 +3354,7 @@ endFullConfigParser(void *data, const char *name)
         bTablesConfigFound = FALSE;
     }
 
-    depth_full_config_parser--;
+    
 }
 
 // ----------------------------------------------------------------------------
