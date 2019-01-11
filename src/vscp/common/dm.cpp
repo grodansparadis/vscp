@@ -7295,6 +7295,7 @@ CDM::loadFromXML(void)
     void *buf = XML_GetBuffer(xmlParser, XML_BUFF_SIZE);
     if (NULL == buf) {
         XML_ParserFree(xmlParser);
+        fclose(fpxml);
         syslog(LOG_CRIT,
                "[DM ]Failed to allocate buffer for decision matrix "
                "file [%s]",
