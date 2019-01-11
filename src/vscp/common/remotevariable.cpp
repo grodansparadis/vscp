@@ -6832,6 +6832,7 @@ CVariableStorage::loadFromXML(const std::string &path)
     void *buf = XML_GetBuffer(xmlParser, XML_BUFF_SIZE);
     if (NULL == buf) {
         XML_ParserFree(xmlParser);
+        fclose(fp);
         syslog(LOG_CRIT,
                "Failed to allocate buffer for XML parser file [%s]",
                m_xmlPath.c_str());
