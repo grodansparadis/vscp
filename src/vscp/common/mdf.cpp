@@ -614,13 +614,13 @@ CMDF_Address::~CMDF_Address()
 void
 CMDF_Address::clearStorage(void)
 {
-    m_strStreet.empty();
-    m_strTown.empty();
-    m_strCity.empty();
-    m_strPostCode.empty();
-    m_strState.empty();
-    m_strRegion.empty();
-    m_strCountry.empty();
+    m_strStreet.clear();
+    m_strTown.clear();
+    m_strCity.clear();
+    m_strPostCode.clear();
+    m_strState.clear();
+    m_strRegion.clear();
+    m_strCountry.clear();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -712,9 +712,9 @@ CMDF_Firmware::~CMDF_Firmware() {}
 void
 CMDF_Firmware::clearStorage(void)
 {
-    m_strPath.empty();
+    m_strPath.clear();
     m_size = 0;
-    m_description.empty();
+    m_description.clear();
     m_version_major    = 0;
     m_version_minor    = 0;
     m_version_subminor = 0;
@@ -795,14 +795,14 @@ CMDF::clearStorage(void)
         }
     }
 
-    m_strModule_Name.empty();
-    m_strModule_Model.empty();
-    m_strModule_Version.empty();
-    m_strModule_Description.empty();
-    m_strModule_InfoURL.empty();
-    m_changeDate.empty();
+    m_strModule_Name.clear();
+    m_strModule_Model.clear();
+    m_strModule_Version.clear();
+    m_strModule_Description.clear();
+    m_strModule_InfoURL.clear();
+    m_changeDate.clear();
     m_Module_buffersize = 0;
-    m_strURL.empty();
+    m_strURL.clear();
     m_list_manufacturer.clear();
     m_dmInfo.clearStorage();
     m_bootInfo.clearStorage();
@@ -968,7 +968,7 @@ CMDF::mdfDescriptionFormat(std::string &str)
 
     int cnt = 0;
 
-    strWork.empty();
+    strWork.clear();
 
     // Break apart line that are longer then 80 chars
     for (i = 0; i < str.length(); i++) {
