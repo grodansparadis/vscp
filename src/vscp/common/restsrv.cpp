@@ -82,6 +82,7 @@
 #include <websrv.h>
 
 #include "restsrv.h"
+#include "xml2json.hpp"
 
 // https://github.com/nlohmann/json
 using json = nlohmann::json;
