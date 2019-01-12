@@ -180,14 +180,14 @@ CControlObject::CControlObject()
     m_enableTcpip            = true;
     m_strTcpInterfaceAddress = "9598";
     m_encryptionTcpip        = 0;
-    m_tcpip_ssl_certificate.empty();
-    m_tcpip_ssl_certificate_chain.empty();
+    m_tcpip_ssl_certificate.clear();
+    m_tcpip_ssl_certificate_chain.clear();
     m_tcpip_ssl_verify_peer = 0; // no=0, optional=1, yes=2
-    m_tcpip_ssl_ca_path.empty();
-    m_tcpip_ssl_ca_file.empty();
+    m_tcpip_ssl_ca_path.clear();
+    m_tcpip_ssl_ca_file.clear();
     m_tcpip_ssl_verify_depth         = 9;
     m_tcpip_ssl_default_verify_paths = false;
-    m_tcpip_ssl_cipher_list.empty();
+    m_tcpip_ssl_cipher_list.clear();
     m_tcpip_ssl_protocol_version = 0;
     m_tcpip_ssl_short_trust      = false;
 
