@@ -42,6 +42,7 @@ class cguid
 
   public:
     cguid();
+    cguid(const cguid &guid);
     virtual ~cguid();
 
   public:
