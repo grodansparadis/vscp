@@ -571,7 +571,7 @@ restsrv_expire_sessions(struct web_connection *conn)
 
     for (it = gpobj->m_rest_sessions.begin();
          it != gpobj->m_rest_sessions.end();
-         /* inline */ {
+         /* inline */ ) {
         struct restsrv_session *pSession = *it;
         if ((now - pSession->m_lastActiveTime) > (60 * 60)) {
             it = gpobj->m_rest_sessions.erase(it);
