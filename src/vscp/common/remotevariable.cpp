@@ -634,7 +634,7 @@ CVSCPVariable::setFromXML(std::string &strVariable)
         return false;
     }
 
-    memset(buf, 0, sizeof(buf));
+    memset(buf, 0, XML_BUFF_SIZE);
     memcpy(buf, strVariable.c_str(), strVariable.length());
 
     size_t size = strVariable.length();
