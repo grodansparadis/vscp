@@ -1063,7 +1063,7 @@ bool
 CControlObject::stopMulticastWorkerThreads(void)
 {
     std::list<multicastChannelItem *>::iterator it;
-    
+
     for (it = m_multicastObj.m_channels.begin();
          it != m_multicastObj.m_channels.end(); 
          /* inline */) {
@@ -2776,9 +2776,9 @@ startFullConfigParser(void *data, const char *name, const char **attr)
             } else if (0 == vscp_strcasecmp(attr[i], "privilege")) {
                 privilege = attribute;
             } else if (0 == vscp_strcasecmp(attr[i], "allowfrom")) {
-                allowfrom = allowfrom;
+                allowfrom = attribute;
             } else if (0 == vscp_strcasecmp(attr[i], "allowevent")) {
-                allowevent = allowevent;
+                allowevent = attribute;
             } else if (0 == vscp_strcasecmp(attr[i], "filter")) {
                 if (attribute.length()) {
                     if (vscp_readFilterFromString(&VSCPFilter, attribute)) {
