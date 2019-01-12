@@ -2624,10 +2624,8 @@ startFullConfigParser(void *data, const char *name, const char **attr)
                 }
             } else if (0 == vscp_strcasecmp(attr[i],
                                             "web_per_directory_auth_file")) {
-                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
-                    pObj->m_web_per_directory_auth_file = true;
-                } else {
-                    pObj->m_web_per_directory_auth_file = false;
+                if (attribute.length()) {
+                    pObj->m_web_per_directory_auth_file = attribute;
                 }
             } else if (0 == vscp_strcasecmp(attr[i],
                                             "access_control_allow_origin")) {
