@@ -821,38 +821,38 @@ vscpdatetime::getWeekDay(void) const
 //
 
 std::string
-vscpdatetime::getWeekDayName(vscpdatetime::weekDay weekday, nameFlags flags)
+vscpdatetime::getWeekDayName(weekDay weekday, nameFlags flags)
 {
     std::string strday;
 
     if (name_Full == flags) {
         switch (weekday) {
 
-            case weekDay::Sun:
+            case Sun:
                 strday = "Sunday";
                 break;
 
-            case weekDay::Mon:
+            case Mon:
                 strday = "Monday";
                 break;
 
-            case weekDay::Tue:
+            case Tue:
                 strday = "Thursday";
                 break;
 
-            case weekDay::Wed:
+            case Wed:
                 strday = "Wednesday";
                 break;
 
-            case weekDay::Thu:
+            case Thu:
                 strday = "Thursday";
                 break;
 
-            case weekDay::Fri:
+            case Fri:
                 strday = "Friday";
                 break;
 
-            case weekDay::Sat:
+            case Sat:
                 strday = "Saturday";
                 break;
 
@@ -863,31 +863,31 @@ vscpdatetime::getWeekDayName(vscpdatetime::weekDay weekday, nameFlags flags)
     } else {
         switch (weekday) {
 
-            case weekDay::Sun:
+            case Sun:
                 strday = "Sun";
                 break;
 
-            case weekDay::Mon:
+            case Mon:
                 strday = "Mon";
                 break;
 
-            case weekDay::Tue:
+            case Tue:
                 strday = "Thu";
                 break;
 
-            case weekDay::Wed:
+            case Wed:
                 strday = "Wed";
                 break;
 
-            case weekDay::Thu:
+            case Thu:
                 strday = "Thu";
                 break;
 
-            case weekDay::Fri:
+            case Fri:
                 strday = "Fri";
                 break;
 
-            case weekDay::Sat:
+            case Sat:
                 strday = "Sat";
                 break;
 
@@ -912,51 +912,51 @@ vscpdatetime::getMonthName(month month, nameFlags flags)
     if (name_Full == flags) {
         switch (month) {
 
-            case month::Jan:
+            case Jan:
                 strmonth = "January";
                 break;
 
-            case month::Feb:
+            case Feb:
                 strmonth = "February";
                 break;
 
-            case month::Mar:
+            case Mar:
                 strmonth = "Mars";
                 break;
 
-            case month::Apr:
+            case Apr:
                 strmonth = "April";
                 break;
 
-            case month::May:
+            case May:
                 strmonth = "May";
                 break;
 
-            case month::Jun:
+            case Jun:
                 strmonth = "June";
                 break;
 
-            case month::Jul:
+            case Jul:
                 strmonth = "July";
                 break;
 
-            case month::Aug:
+            case Aug:
                 strmonth = "August";
                 break;
 
-            case month::Sep:
+            case Sep:
                 strmonth = "September";
                 break;
 
-            case month::Oct:
+            case Oct:
                 strmonth = "October";
                 break;
 
-            case month::Nov:
+            case Nov:
                 strmonth = "November";
                 break;
 
-            case month::Dec:
+            case Dec:
                 strmonth = "December";
                 break;
 
@@ -967,51 +967,51 @@ vscpdatetime::getMonthName(month month, nameFlags flags)
     } else {
         switch (month) {
 
-            case month::Jan:
+            case Jan:
                 strmonth = "Jan";
                 break;
 
-            case month::Feb:
+            case Feb:
                 strmonth = "Feb";
                 break;
 
-            case month::Mar:
+            case Mar:
                 strmonth = "Mar";
                 break;
 
-            case month::Apr:
+            case Apr:
                 strmonth = "Apr";
                 break;
 
-            case month::May:
+            case May:
                 strmonth = "May";
                 break;
 
-            case month::Jun:
+            case Jun:
                 strmonth = "Jun";
                 break;
 
-            case month::Jul:
+            case Jul:
                 strmonth = "Jul";
                 break;
 
-            case month::Aug:
+            case Aug:
                 strmonth = "Aug";
                 break;
 
-            case month::Sep:
+            case Sep:
                 strmonth = "Sep";
                 break;
 
-            case month::Oct:
+            case Oct:
                 strmonth = "Oct";
                 break;
 
-            case month::Nov:
+            case Nov:
                 strmonth = "Nov";
                 break;
 
-            case month::Dec:
+            case Dec:
                 strmonth = "Dec";
                 break;
 
