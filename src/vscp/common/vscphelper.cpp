@@ -2578,10 +2578,10 @@ vscp_setEventExGuidFromString(vscpEventEx *pEvent, const std::string &strGUID)
 {
     unsigned long val;
 
-    memset(pEvent->GUID, 0, 16);
-
     // Check pointer
     if (NULL == pEvent) return false;
+
+    memset(pEvent->GUID, 0, 16);
 
     if (strGUID == "-") {
         return true;
