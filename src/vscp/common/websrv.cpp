@@ -6454,27 +6454,35 @@ vscp_guid_list(struct web_connection *conn, void *cbdata)
         // Name
         if (NULL != (p = (const char *)sqlite3_column_text(
                        ppStmt, VSCPDB_ORDINAL_GUID_NAME))) {
+
+            web_printf(conn, "<b>Name</b>: <u>%s</u><br>", p);
+        } else {
+            web_printf(conn, "<b>Name</b>: Parse error<br>");
         }
-        web_printf(conn, "<b>Name</b>: <u>%s</u><br>", p);
 
         // GUID
         if (NULL != (p = (const char *)sqlite3_column_text(
                        ppStmt, VSCPDB_ORDINAL_GUID_GUID))) {
+        
+            web_printf(conn, "<b>GUID</b>: %s<br>", p);
+        } else {
+            web_printf(conn, "<b>GUID</b>: Parse error<br>");
         }
-        web_printf(conn, "<b>GUID</b>: %s<br>", p);
 
         web_printf(conn, "<br><hr width=\"90%%\">");
 
         // Type
         if (NULL != (p = (const char *)sqlite3_column_text(
                        ppStmt, VSCPDB_ORDINAL_GUID_TYPE))) {
-        }
 
-        if (atoi(p) < GUID_COUNT_TYPES) {
-            web_printf(
-              conn, "<b>Type</b>: %s - %s<br>", p, pguid_types[atoi(p)]);
+            if (atoi(p) < GUID_COUNT_TYPES) {
+                web_printf(
+                conn, "<b>Type</b>: %s - %s<br>", p, pguid_types[atoi(p)]);
+            } else {
+                web_printf(conn, "<b>Type</b>: %s - Unknown GUID type<br>", p);
+            }
         } else {
-            web_printf(conn, "<b>Type</b>: %s - Unknown GUID type<br>", p);
+            web_printf(conn, "<b>Type</b>: Parse error<br>");
         }
 
         sqlite3_stmt *ppStmtType;
@@ -6497,14 +6505,20 @@ vscp_guid_list(struct web_connection *conn, void *cbdata)
         // Date
         if (NULL != (p = (const char *)sqlite3_column_text(
                        ppStmt, VSCPDB_ORDINAL_GUID_DATE))) {
+
+            web_printf(conn, "<b>Date</b>: %s<br>", p);
+        } else {
+            web_printf(conn, "<b>Date</b>: Parse error<br>");
         }
-        web_printf(conn, "<b>Date</b>: %s<br>", p);
 
         // Description
         if (NULL != (p = (const char *)sqlite3_column_text(
                        ppStmt, VSCPDB_ORDINAL_GUID_DESCRIPTION))) {
+            
+            web_printf(conn, "<b>Description</b>: %s<br>", p);
+        } else {
+            web_printf(conn, "<b>Description</b>: Parse error<br>");
         }
-        web_printf(conn, "<b>Description</b>: %s<br>", p);
 
         web_printf(conn, "</div>");
         web_printf(conn, "</td>");
