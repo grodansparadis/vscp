@@ -107,8 +107,8 @@ typedef struct _devItem
         filter        = item.filter;
         mask          = item.mask;
         strUsername   = item.strUsername;
-        strPassword   = item:strPassword;
-        port          = port;
+        strPassword   = item.strPassword;
+        port          = item.port;
 
         return *this;
     }
