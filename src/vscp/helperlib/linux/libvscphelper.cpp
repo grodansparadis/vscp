@@ -1,4 +1,4 @@
-// l it = g_ifMap.find(idx);nes the initialization routines for the DLL.
+// libvscphelper.cpp : Defines the initialization routines for the DLL.
 //
 // VSCP (Very Simple Control Protocol)
 // http://www.vscp.org
@@ -121,7 +121,7 @@ addDriverObject(VscpRemoteTcpIf *pvscpif)
         h++;
     };
 
-    g_ifMap[h] = pif;
+    g_ifMap[h] = pvscpif;
     h += 1681;
 
     UNLOCK_MUTEX(g_mapMutex);
