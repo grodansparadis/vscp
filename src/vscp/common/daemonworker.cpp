@@ -200,7 +200,7 @@ daemonWorkerThread(void *threadData)
             if (pctrlObj->m_automation.doWork(&eventEx)) {
 
                 if ((pctrlObj->m_logLevel >= DAEMON_LOGMSG_DEBUG) &&
-                    (VSCP_DEBUG1_AUTOMATION | pctrlObj->m_debugFlags1)) {
+                    (VSCP_DEBUG1_AUTOMATION & pctrlObj->m_debugFlags1)) {
                     syslog(LOG_DEBUG,
                            "Automation event sent: "
                            "Class=%d Type=%d\n",
