@@ -750,7 +750,7 @@ deviceThread(void *pData)
 
         std::deque<std::string> tokens;
         vscp_split(tokens, pDevItem->m_strParameter, ";");
-        if (tokens.empty()) {
+        if (false == tokens.empty()) {
 
             CVSCPVariable variable;
 

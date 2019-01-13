@@ -232,7 +232,7 @@ class CVSCPTable
      * @return true on success, false if failure.
      */
 
-    bool logData(const std::string strInsert);
+    bool logData(const std::string &strInsert);
 
     /*!
      * Clear the content of a VSCP table

@@ -235,11 +235,11 @@ CDeviceList::~CDeviceList(void)
 //
 
 bool
-CDeviceList::addItem(std::string strName,
-                     std::string strParameter,
-                     std::string strPath,
+CDeviceList::addItem(const std::string &strName,
+                     const std::string &strParameter,
+                     const std::string &strPath,
                      uint32_t flags,
-                     cguid &guid,
+                     const cguid &guid,
                      uint8_t level,
                      bool bEnable,
                      uint32_t translation)

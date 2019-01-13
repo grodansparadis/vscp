@@ -846,13 +846,13 @@ dmElement::dmElement()
     m_bEnable = false;
     m_bStatic = false;
     m_id      = 0;
-    m_strGroupID.empty();
+    m_strGroupID.clear();
     vscp_clearVSCPFilter(&m_vscpfilter);
     m_actionCode   = 0;
     m_triggCounter = 0;
     m_errorCounter = 0;
-    m_actionparam.empty();
-    m_comment.empty();
+    m_actionparam.clear();
+    m_comment.clear();
 
     m_bCheckIndex = false;
     m_index       = 0;
@@ -1154,7 +1154,7 @@ dmElement::setFromString(std::string &strDM)
     vscp_split(tokens, strDM, ",");
 
     // bEnable
-    if (tokens.empty()) {
+    if (!tokens.empty()) {
         str = tokens.front();
         tokens.pop_front();
         vscp_trim(str);
@@ -5208,7 +5208,7 @@ CDM::~CDM()
 {
     // Must remove any timers
     std::map<int, dmTimer *>::iterator it;
-    for (it = m_timerHash.begin(); it != m_timerHash.end(); it++) {
+    for (it = m_timerHash.begin(); it != m_timerHash.end(); ++it) {
         dmTimer *pTimer = it->second;
 
         // Check if variable name is already there
@@ -5477,7 +5477,7 @@ CDM::getAllRows(std::string &strAllRows)
 {
     short row = 0;
 
-    strAllRows.empty();
+    strAllRows.clear();
 
     std::deque<dmElement *>::iterator it;
     for (it = m_DMList.begin(); it != m_DMList.end(); ++it) {
@@ -5962,7 +5962,7 @@ CDM::serviceTimers(void)
     CVSCPVariable variable;
 
     std::map<int, dmTimer *>::iterator it;
-    for (it = m_timerHash.begin(); it != m_timerHash.end(); it++) {
+    for (it = m_timerHash.begin(); it != m_timerHash.end(); ++it) {
         dmTimer *pTimer = it->second;
 
         if (pTimer->isActive()) {
@@ -7295,6 +7295,7 @@ CDM::loadFromXML(void)
     void *buf = XML_GetBuffer(xmlParser, XML_BUFF_SIZE);
     if (NULL == buf) {
         XML_ParserFree(xmlParser);
+        fclose(fpxml);
         syslog(LOG_CRIT,
                "[DM ]Failed to allocate buffer for decision matrix "
                "file [%s]",

@@ -197,7 +197,7 @@ CVSCPLog::open(const char *pUsername,
 void
 CVSCPLog::close(void)
 {
-    if (m_logStream.is_open() && (m_flags | LOG_FILE_VSCP_WORKS)) {
+    if (m_logStream.is_open() && (m_flags & LOG_FILE_VSCP_WORKS)) {
         m_logStream.write("</vscprxdata>\n", strlen("</vscprxdata>\n"));
     }
 

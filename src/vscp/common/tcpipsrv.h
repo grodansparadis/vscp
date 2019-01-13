@@ -150,7 +150,7 @@ class tcpipListenThreadObj
         Examples for IPv4: 80, 443s, 127.0.0.1:3128, 192.0.2.3:8080s
         Examples for IPv6: [::]:80, [::1]:80
     */
-    void setListeningPort(std::string str) { m_strListeningPort = str; };
+    void setListeningPort(const std::string &str) { m_strListeningPort = str; };
 
     /*!
         Getter/setter for control object

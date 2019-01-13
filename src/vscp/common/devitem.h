@@ -59,6 +59,60 @@ typedef struct _devItem
     std::string strUsername;   // Level II/III username for device driver
     std::string strPassword;   // Level II/III password for device driver
     short port;                // Level II/III port for device driver
+
+    // Constructs a device item
+    _devItem() :
+        id(0),
+        regid(0),
+        strName(),
+        strPath(),
+        strParameters(),
+        strPrefix(),
+        flags(0),
+        filter(0),
+        mask(0),
+        strUsername(),
+        strPassword(),
+        port(0)
+    {
+    }
+
+    // Copy constructer for device item
+    _devItem(const _devItem& item) :
+        id(item.id),
+        regid(item.regid),
+        strName(item.strName),
+        strPath(item.strPath),
+        strParameters(item.strParameters),
+        strPrefix(item.strPrefix),
+        flags(item.flags),
+        filter(item.filter),
+        mask(item.mask),
+        strUsername(item.strUsername),
+        strPassword(item.strPassword),
+        port(item.port)
+    {
+    }
+
+    // Assign a device item
+    _devItem& operator=(const _devItem& item)
+    {
+        id            = item.id;
+        regid         = item.regid;
+        strName       = item.strName;
+        strPath       = item.strPath;
+        strParameters = item.strParameters;
+        strPrefix     = item.strPrefix;
+        flags         = item.flags;
+        filter        = item.filter;
+        mask          = item.mask;
+        strUsername   = item.strUsername;
+        strPassword   = item.strPassword;
+        port          = item.port;
+
+        return *this;
+    }
+
 } devItem;
 
 typedef devItem *PDEVITEM;

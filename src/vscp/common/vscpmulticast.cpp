@@ -108,6 +108,7 @@ worksMulticastThread::Entry()
           sock, SOL_SOCKET, SO_REUSEADDR, (char *)&flag_on, sizeof(flag_on))) <
         0) {
         perror("Multicast setsockopt() failed");
+        closesocket(sock);
         return NULL;
     }
 
@@ -127,6 +128,7 @@ worksMulticastThread::Entry()
     // bind to multicast address to socket
     if ((bind(sock, (struct sockaddr *)&mc_addr, sizeof(mc_addr))) < 0) {
         perror("Multicast bind() failed");
+        closesocket(sock);
         return NULL;
     }
 
@@ -142,6 +144,7 @@ worksMulticastThread::Entry()
                     (char *)&mc_req,
                     sizeof(mc_req))) < 0) {
         perror("Multicast setsockopt() failed");
+        closesocket(sock);
         return NULL;
     }
 
@@ -157,6 +160,7 @@ worksMulticastThread::Entry()
     if ((setsockopt(
           sock, IPPROTO_IP, IP_MULTICAST_TTL, (void *)&ttl, sizeof(ttl))) < 0) {
         perror("setsockopt() failed");
+        close(sock);
         return NULL;
     }
 
@@ -169,6 +173,7 @@ worksMulticastThread::Entry()
     // bind to multicast address to socket
     if ((bind(sock, (struct sockaddr *)&mc_addr, sizeof(mc_addr))) < 0) {
         perror("Multicast bind() failed");
+        close(sock);
         return NULL;
     }
 
@@ -184,6 +189,7 @@ worksMulticastThread::Entry()
                     (void *)&mc_req,
                     sizeof(mc_req))) < 0) {
         perror("setsockopt() failed");
+        close(sock);
         exit(1);
     }
 

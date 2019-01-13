@@ -631,7 +631,7 @@ CVSCPVariable::setFromXML(std::string &strVariable)
         return false;
     }
 
-    memset(buf, 0, sizeof(buf));
+    memset(buf, 0, XML_BUFF_SIZE);
     memcpy(buf, strVariable.c_str(), strVariable.length());
 
     size_t size = strVariable.length();
@@ -1229,7 +1229,7 @@ CVSCPVariable::setVariableFromString(const std::string &strVariable,
 //
 
 bool
-CVSCPVariable::setValue(std::string strValue, bool bBase64)
+CVSCPVariable::setValue(const std::string &strValue, bool bBase64)
 {
     std::string str = strValue;
 
@@ -3087,7 +3087,7 @@ CVariableStorage::getStockVariable(const std::string &name,
     std::deque<std::string> tokens;
     vscp_split(tokens, lcname, ".");
 
-    if (!tokens.empty()) return false;
+    if (tokens.empty()) return false;
     strToken = tokens.front();
     tokens.pop_front();
 
@@ -4455,7 +4455,7 @@ CVariableStorage::getStockVariable(const std::string &name,
         unsigned long idx;
         std::deque<std::string> tokens;
         vscp_split(tokens, strrest, ".");
-        if (!tokens.empty()) return 0;
+        if (tokens.empty()) return 0;
 
         std::string strToken = tokens.front();
         tokens.pop_front(); // Get idx
@@ -4500,7 +4500,7 @@ CVariableStorage::getStockVariable(const std::string &name,
                 return (UINT_MAX); // Fake variable id
             } else if (vscp_startsWith(strToken, "rights")) {
                 // rights or rights.0..7
-                if (!tokens.empty()) {
+                if (tokens.empty()) {
                     var.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
                     var.setValue(pUserItem->getUserRightsAsString());
                     return (UINT_MAX); // Fake variable id
@@ -4516,7 +4516,7 @@ CVariableStorage::getStockVariable(const std::string &name,
                 }
             } else if (vscp_startsWith(strToken, "allowed")) {
                 // allowed.events or allowed.remotes
-                if (!tokens.empty()) return 0;
+                if (tokens.empty()) return 0;
                 strToken = tokens.front();
                 tokens.pop_front(); // events/remotes
                 if (("events") == strToken) {
@@ -5888,7 +5888,7 @@ CVariableStorage::putStockVariable(CVSCPVariable &var, CUserItem *pUser)
         strToken = tokens.front();
         tokens.pop_front(); // user
 
-        if (!tokens.empty()) return false;
+        if (tokens.empty()) return false;
         strToken = tokens.front();
         tokens.pop_front(); // vscp
 
@@ -5945,7 +5945,7 @@ CVariableStorage::putStockVariable(CVSCPVariable &var, CUserItem *pUser)
             } else if (vscp_startsWith(strToken, "filter")) {
                 pUserItem->setFilterFromString(var.getValue());
             } else if (vscp_startsWith(strToken, "rights")) {
-                if (!tokens.empty()) {
+                if (tokens.empty()) {
                     pUserItem->setUserRightsFromString(var.getValue());
                 } else {
                     unsigned long nRight, value;
@@ -5957,7 +5957,7 @@ CVariableStorage::putStockVariable(CVSCPVariable &var, CUserItem *pUser)
                     pUserItem->setUserRights(nRight, value);
                 }
             } else if (vscp_startsWith(strToken, "allowed")) {
-                if (!tokens.empty()) return false;
+                if (tokens.empty()) return false;
                 strToken = tokens.front();
                 tokens.pop_front();
                 if (("events") == strToken) {
@@ -6797,6 +6797,7 @@ CVariableStorage::loadFromXML(const std::string &path)
     void *buf = XML_GetBuffer(xmlParser, XML_BUFF_SIZE);
     if (NULL == buf) {
         XML_ParserFree(xmlParser);
+        fclose(fp);
         syslog(LOG_CRIT,
                "Failed to allocate buffer for XML parser file [%s]",
                m_xmlPath.c_str());

@@ -313,11 +313,11 @@ class CUserItem
         if (NULL != pFilter)
             memcpy(&m_filterVSCP, pFilter, sizeof(vscpEventFilter));
     };
-    bool setFilterFromString(std::string strFilter)
+    bool setFilterFromString(const std::string &strFilter)
     {
         return vscp_readFilterFromString(&m_filterVSCP, strFilter);
     };
-    bool setMaskFromString(std::string strMask)
+    bool setMaskFromString(const std::string &strMask)
     {
         return vscp_readMaskFromString(&m_filterVSCP, strMask);
     };
@@ -328,7 +328,7 @@ class CUserItem
      * form. leave fields blank if they should not be updated.
      * @return true on success, false on failure.
      */
-    bool setFromString(std::string userSettings);
+    bool setFromString(const std::string &userSettings);
 
     /*!
      * Get user settings as string

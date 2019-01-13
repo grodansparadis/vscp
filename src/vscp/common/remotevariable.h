@@ -323,7 +323,7 @@ class CVSCPVariable
         getValue
         @param value String that will receive value.
      */
-    bool setValue(std::string strValue, bool bBase64 = false);
+    bool setValue(const std::string &strValue, bool bBase64 = false);
 
     /*!
         setValue

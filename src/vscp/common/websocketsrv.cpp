@@ -209,7 +209,7 @@ websock_authentication(struct web_connection *conn,
     // ?????
 
     // Get username
-    if (!!tokens.empty()) {
+    if (tokens.empty()) {
         syslog(LOG_ERR,
                "[Websocket Client] Authentication: Missing "
                "username from client. ");
@@ -221,7 +221,7 @@ websock_authentication(struct web_connection *conn,
     vscp_trim(strUser);
 
     // Get password
-    if (!!tokens.empty()) {
+    if (tokens.empty()) {
         syslog(LOG_ERR,
                "[Websocket Client] Authentication: Missing "
                "password from client. ");

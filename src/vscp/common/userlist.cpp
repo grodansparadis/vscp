@@ -112,7 +112,7 @@ CUserItem::fixName(void)
 //
 
 bool
-CUserItem::setFromString(std::string userSettings)
+CUserItem::setFromString(const std::string &userSettings)
 {
     std::string strToken;
     std::deque<std::string> tokens;

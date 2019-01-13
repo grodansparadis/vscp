@@ -1581,7 +1581,7 @@ VscpRemoteTcpIf::doCmdShutDown(void)
 
 int
 VscpRemoteTcpIf::getRemoteVariableList(std::deque<std::string> &array,
-                                       const std::string regexp,
+                                       const std::string &regexp,
                                        const int type)
 {
     std::string strCmd;

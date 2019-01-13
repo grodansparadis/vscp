@@ -312,12 +312,13 @@ RXWorkerThread::Entry()
 {
     int rv;
     VscpTcpIf tcpifReceive;
-    wxCommandEvent eventReceive(wxVSCP_IN_EVENT, m_pCtrlObject->m_windowID);
-    wxCommandEvent eventConnectionLost(wxVSCP_RCV_LOST_EVENT,
-                                       m_pCtrlObject->m_windowID);
 
     // Must be a valid control object pointer
     if (NULL == m_pCtrlObject) return NULL;
+
+    wxCommandEvent eventReceive(wxVSCP_IN_EVENT, m_pCtrlObject->m_windowID);
+    wxCommandEvent eventConnectionLost(wxVSCP_RCV_LOST_EVENT,
+                                       m_pCtrlObject->m_windowID);
 
     // Connect to the server with the control interface
     if (!tcpifReceive.doCmdOpen(m_pCtrlObject->m_ifVSCP.m_strHost,

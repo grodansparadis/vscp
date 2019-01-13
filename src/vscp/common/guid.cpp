@@ -55,6 +55,11 @@ cguid::cguid()
     clear();
 }
 
+cguid::cguid(const cguid &guid)
+{
+    memcpy(m_id, guid.m_id, sizeof(m_id));
+}
+
 cguid::~cguid()
 {
     ;
@@ -72,7 +77,7 @@ cguid::operator=(const cguid &guid)
         return *this;    // Yes, so skip assignment, and just return *this.
     }
 
-    memcpy(m_id, guid.m_id, 16);
+    memcpy(m_id, guid.m_id, sizeof(m_id));
 
     return *this;
 }

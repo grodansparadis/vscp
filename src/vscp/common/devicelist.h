@@ -233,11 +233,11 @@ class CDeviceList
         @param translation Bits to set translations to be performed.
         @return True is returned if the driver was successfully added.
     */
-    bool addItem(std::string strName,
-                 std::string strParameters,
-                 std::string strPath,
+    bool addItem(const std::string &strName,
+                 const std::string &strParameters,
+                 const std::string &strPath,
                  uint32_t flags,
-                 cguid &guid,
+                 const cguid &guid,
                  uint8_t level        = VSCP_DRIVER_LEVEL1,
                  bool bEnable         = true,
                  uint32_t translation = NO_TRANSLATION);

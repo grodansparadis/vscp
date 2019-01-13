@@ -117,7 +117,7 @@ addDriverObject(VscpRemoteTcpIf *pvscpif)
         h++;
     };
 
-    g_ifMap[h] = pif;
+    g_ifMap[h] = pvscpif;
     h += 1681;
 
     UNLOCK_MUTEX(g_mapMutex);

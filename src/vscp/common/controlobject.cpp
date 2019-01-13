@@ -180,14 +180,14 @@ CControlObject::CControlObject()
     m_enableTcpip            = true;
     m_strTcpInterfaceAddress = "9598";
     m_encryptionTcpip        = 0;
-    m_tcpip_ssl_certificate.empty();
-    m_tcpip_ssl_certificate_chain.empty();
+    m_tcpip_ssl_certificate.clear();
+    m_tcpip_ssl_certificate_chain.clear();
     m_tcpip_ssl_verify_peer = 0; // no=0, optional=1, yes=2
-    m_tcpip_ssl_ca_path.empty();
-    m_tcpip_ssl_ca_file.empty();
+    m_tcpip_ssl_ca_path.clear();
+    m_tcpip_ssl_ca_file.clear();
     m_tcpip_ssl_verify_depth         = 9;
     m_tcpip_ssl_default_verify_paths = false;
-    m_tcpip_ssl_cipher_list.empty();
+    m_tcpip_ssl_cipher_list.clear();
     m_tcpip_ssl_protocol_version = 0;
     m_tcpip_ssl_short_trust      = false;
 
@@ -1063,9 +1063,10 @@ bool
 CControlObject::stopMulticastWorkerThreads(void)
 {
     std::list<multicastChannelItem *>::iterator it;
+
     for (it = m_multicastObj.m_channels.begin();
-         it != m_multicastObj.m_channels.end();
-         ++it) {
+         it != m_multicastObj.m_channels.end(); 
+         /* inline */) {
 
         multicastChannelItem *pChannel = *it;
         if (NULL == pChannel) {
@@ -1077,7 +1078,8 @@ CControlObject::stopMulticastWorkerThreads(void)
         pChannel->m_quit = true;
         pthread_join(pChannel->m_workerThread, NULL);
         delete pChannel;
-        m_multicastObj.m_channels.erase(it);
+
+        it = m_multicastObj.m_channels.erase(it);
     }
 
     return true;
@@ -2083,6 +2085,7 @@ CControlObject::readXMLConfigurationGeneral(const std::string &strcfgfile)
     void *buf = XML_GetBuffer(xmlParser, XML_BUFF_SIZE);
     if (NULL == buf) {
         XML_ParserFree(xmlParser);
+        fclose(fp);
         syslog(LOG_CRIT,
                "Failed to allocate buffer for configuration file [%s]",
                strcfgfile.c_str());
@@ -2621,10 +2624,8 @@ startFullConfigParser(void *data, const char *name, const char **attr)
                 }
             } else if (0 == vscp_strcasecmp(attr[i],
                                             "web_per_directory_auth_file")) {
-                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
-                    pObj->m_web_per_directory_auth_file = true;
-                } else {
-                    pObj->m_web_per_directory_auth_file = false;
+                if (attribute.length()) {
+                    pObj->m_web_per_directory_auth_file = attribute;
                 }
             } else if (0 == vscp_strcasecmp(attr[i],
                                             "access_control_allow_origin")) {
@@ -2773,9 +2774,9 @@ startFullConfigParser(void *data, const char *name, const char **attr)
             } else if (0 == vscp_strcasecmp(attr[i], "privilege")) {
                 privilege = attribute;
             } else if (0 == vscp_strcasecmp(attr[i], "allowfrom")) {
-                allowfrom = allowfrom;
+                allowfrom = attribute;
             } else if (0 == vscp_strcasecmp(attr[i], "allowevent")) {
-                allowevent = allowevent;
+                allowevent = attribute;
             } else if (0 == vscp_strcasecmp(attr[i], "filter")) {
                 if (attribute.length()) {
                     if (vscp_readFilterFromString(&VSCPFilter, attribute)) {
@@ -3392,6 +3393,7 @@ CControlObject::readConfigurationXML(const std::string &strcfgfile)
     void *buf = XML_GetBuffer(xmlParser, XML_BUFF_SIZE);
     if (NULL == buf) {
         XML_ParserFree(xmlParser);
+        fclose(fp);
         syslog(LOG_CRIT,
                "Failed to allocate buffer for configuration file [%s]",
                strcfgfile.c_str());

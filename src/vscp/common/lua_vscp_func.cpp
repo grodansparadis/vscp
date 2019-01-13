@@ -650,15 +650,14 @@ int lua_vscp_writeVariableValue( struct lua_State *L )
     else {
                 
         if ( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN == variable.getType() ) {
-            bool bVal;
             if ( lua_isboolean( L, 2 ) ) {
-                variable.setValue( lua_toboolean( L, 2 ) ? true : false );
+                bool bVal   = lua_toboolean( L, 2 ) ? true : false;
+                variable.setValue( bVal );
             }
             else {
                 return luaL_error( L, "vscp.writeVariableValue: Value has "
                                       "wrong format !");
             }
-            variable.setValue( bVal );
         }
         else {
             // This is a string type value
