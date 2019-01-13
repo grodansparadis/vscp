@@ -4346,8 +4346,6 @@ CCanalSuperWrapper::writeAbstractionDate(wxWindow *pwnd,
     buf[2]        = valdate.GetMonth();
     buf[3]        = valdate.GetDay();
 
-    uint8_t *p = buf;
-
     // Save page
     if (!bLevel2) {
         savepage = getRegisterPage(pwnd, nodeid, pifGUID, pdestGUID, bLevel2);
@@ -4364,7 +4362,7 @@ CCanalSuperWrapper::writeAbstractionDate(wxWindow *pwnd,
 
     if (abstraction->m_bIndexed) {
 
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < ( sizeof(buf) / sizeof(buf[0]) ); i++) {
 
             if (!bLevel2 && (NULL == pifGUID || pifGUID->isNULL())) {
 
@@ -4380,7 +4378,7 @@ CCanalSuperWrapper::writeAbstractionDate(wxWindow *pwnd,
                 }
 
                 // Write data
-                val = *(p + i);
+                val = buf[i];
                 if (!_writeLevel1Register(
                       nodeid, abstraction->m_nOffset + 1, &val)) {
                     if (!bSilent)
@@ -4406,9 +4404,10 @@ CCanalSuperWrapper::writeAbstractionDate(wxWindow *pwnd,
                 }
 
                 // Write data Level II
+                val = buf[i];
                 if (!_writeLevel2Register(*pifGUID,
                                           abstraction->m_nOffset + i,
-                                          (p + i),
+                                          &val,
                                           *pdestGUID,
                                           pdlg,
                                           bLevel2)) {
@@ -4422,9 +4421,9 @@ CCanalSuperWrapper::writeAbstractionDate(wxWindow *pwnd,
 
     } else {
 
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < ( sizeof(buf) / sizeof(buf[0]) ); i++) {
 
-            val = val = *(p + i);
+            val = buf[i];
             if (!bLevel2 && (NULL == pifGUID || pifGUID->isNULL())) {
 
                 // Write data
