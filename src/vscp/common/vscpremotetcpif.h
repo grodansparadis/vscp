@@ -526,8 +526,8 @@ class VscpRemoteTcpIf
         @return VSCP_ERROR_SUCCESS on success
      */
     int getRemoteVariableList(std::deque<std::string> &array,
-                              const std::string regexp = "",
-                              const int type           = 0);
+                              const std::string &regexp = "",
+                              const int type            = 0);
 
     /*!
      * Save variables to external disk

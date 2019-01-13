@@ -524,7 +524,7 @@ vscp_rstrstr(const char *s1, const char *s2)
 //
 
 std::string
-vscp_str_format(const std::string fmt_str, ...)
+vscp_str_format(const std::string &fmt_str, ...)
 {
     int final_n,
       n = ((int)fmt_str.size()) *

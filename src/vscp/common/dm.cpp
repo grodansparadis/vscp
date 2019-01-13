@@ -5208,7 +5208,7 @@ CDM::~CDM()
 {
     // Must remove any timers
     std::map<int, dmTimer *>::iterator it;
-    for (it = m_timerHash.begin(); it != m_timerHash.end(); it++) {
+    for (it = m_timerHash.begin(); it != m_timerHash.end(); ++it) {
         dmTimer *pTimer = it->second;
 
         // Check if variable name is already there
@@ -5962,7 +5962,7 @@ CDM::serviceTimers(void)
     CVSCPVariable variable;
 
     std::map<int, dmTimer *>::iterator it;
-    for (it = m_timerHash.begin(); it != m_timerHash.end(); it++) {
+    for (it = m_timerHash.begin(); it != m_timerHash.end(); ++it) {
         dmTimer *pTimer = it->second;
 
         if (pTimer->isActive()) {

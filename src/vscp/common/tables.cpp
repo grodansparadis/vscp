@@ -571,7 +571,7 @@ CVSCPTable::logData(vscpdatetime &dt,
 //
 
 bool
-CVSCPTable::logData(const std::string strInsert)
+CVSCPTable::logData(const std::string &strInsert)
 {
     char *zErrMsg = 0;
 

@@ -1232,7 +1232,7 @@ CVSCPVariable::setVariableFromString(const std::string &strVariable,
 //
 
 bool
-CVSCPVariable::setValue(std::string strValue, bool bBase64)
+CVSCPVariable::setValue(const std::string &strValue, bool bBase64)
 {
     std::string str = strValue;
 
