@@ -120,6 +120,7 @@ daemonWorkerThread(void *threadData)
                     (void *)&mc_ttl,
                     sizeof(mc_ttl))) < 0) {
         syslog(LOG_ERR, "daemonWorkerThread - %s ", strerror(errno));
+        close(sock_mc);
         return NULL;
     }
 
@@ -135,7 +136,10 @@ daemonWorkerThread(void *threadData)
     // We need to create a client item and add this object to the list
     // of clients
     CClientItem *pClientItem = new CClientItem;
-    if (NULL == pClientItem) return NULL;
+    if (NULL == pClientItem) {
+        close(sock_mc);
+        return NULL;
+    }
 
     // This is an active client
     pClientItem->m_bOpen         = true;
@@ -150,6 +154,7 @@ daemonWorkerThread(void *threadData)
         // Failed to add client
         delete pClientItem;
         pthread_mutex_unlock(&pctrlObj->m_clientMutex);
+        close(sock_mc);
         syslog(
           LOG_ERR,
           "daemonWorkerThread - Failed to add client. Terminating thread.");
@@ -169,6 +174,7 @@ daemonWorkerThread(void *threadData)
     gethostname(szName, sizeof(szName));
     lpLocalHostEntry = gethostbyname(szName);
     if (NULL == lpLocalHostEntry) {
+        close(sock_mc);
         return NULL;
     }
 
