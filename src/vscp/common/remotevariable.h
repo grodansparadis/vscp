@@ -143,15 +143,15 @@ typedef struct varQuery varQuery;
 // Class that holds one VSCP variable
 // Persistent variables should have names staring with $
 
-class CVSCPVariable
+class CVariable
 {
 
   public:
     /// Constructor
-    CVSCPVariable(void);
+    CVariable(void);
 
     // Destructor
-    virtual ~CVSCPVariable(void);
+    virtual ~CVariable(void);
 
     /// Set default values
     void init(void);
@@ -256,7 +256,7 @@ class CVSCPVariable
         Reset the variable to it's default value
         Set variable to default values
      */
-    void Reset(void);
+    void reset(void);
 
     /*!
         isTrue
@@ -562,7 +562,7 @@ class CVariableStorage
      * set to NULL in which case only availability of the variable is returned.
      * @return >0 if variable is found, zero if not.
      */
-    uint32_t find(const std::string &name, CVSCPVariable &variable);
+    uint32_t find(const std::string &name, CVariable &variable);
 
     /*!
      * Check if a variable exist.
@@ -586,7 +586,7 @@ class CVariableStorage
      *      zero if the variable is not found.
      */
     uint32_t getStockVariable(const std::string &name,
-                              CVSCPVariable &pVar,
+                              CVariable &pVar,
                               CUserItem *pUser = NULL);
 
     /*!
@@ -597,7 +597,7 @@ class CVariableStorage
                     is system of admin user.
         @return true on success.
      */
-    bool putStockVariable(CVSCPVariable &var, CUserItem *pUser = NULL);
+    bool putStockVariable(CVariable &var, CUserItem *pUser = NULL);
 
     /*!
        Set variable value from Database record.
@@ -605,7 +605,7 @@ class CVariableStorage
        @param variable Variable that will get record data.
        @return true on success.
      */
-    bool setVariableFromDbRecord(sqlite3_stmt *ppStmt, CVSCPVariable &variable);
+    bool setVariableFromDbRecord(sqlite3_stmt *ppStmt, CVariable &variable);
 
     /*!
      * Find a non-persistent variable
@@ -617,7 +617,7 @@ class CVariableStorage
      * @return id if variable is found, zero if not.
      */
     uint32_t findNonPersistentVariable(const std::string &name,
-                                       CVSCPVariable &pVar);
+                                       CVariable &pVar);
 
     /*!
      * Find a persistent variable
@@ -629,7 +629,7 @@ class CVariableStorage
      * @return id if variable is found, zero if not.
      */
     uint32_t findPersistentVariable(const std::string &name,
-                                    CVSCPVariable &pVar);
+                                    CVariable &pVar);
 
     /*!
      * Add stock variable
@@ -639,14 +639,14 @@ class CVariableStorage
      * @param var Reference to variable to be added.
      * @return true on success.
      */
-    bool addStockVariable(CVSCPVariable &var);
+    bool addStockVariable(CVariable &var);
 
     /*!
         Add a variable.
         @param var Variable object.
         @return true on success, false on failure.
      */
-    bool add(CVSCPVariable &var);
+    bool add(CVariable &var);
 
     /*!
         Add a variable.
@@ -677,7 +677,7 @@ class CVariableStorage
              const std::string &note     = "");
 
     // Update a variable (write to db)
-    bool update(CVSCPVariable &var);
+    bool update(CVariable &var);
 
     /*!
         Remove named variable
@@ -691,7 +691,7 @@ class CVariableStorage
         @param pVariable Pointe to variable object
         @return true on success, false on failure.
      */
-    bool remove(CVSCPVariable &variable);
+    bool remove(CVariable &variable);
 
     /*!
         Read persistent variables from XML file.
@@ -721,7 +721,7 @@ class CVariableStorage
         @param variable Variable to write out.
         @return True on success.
      */
-    bool writeVariableToXmlFile(std::ofstream &of, CVSCPVariable &variable);
+    bool writeVariableToXmlFile(std::ofstream &of, CVariable &variable);
 
     /*!
        Create external variable table
@@ -768,9 +768,9 @@ class CVariableStorage
      * Get next list item
      * @oaram ppStmt List handle.
      * @param variable Reference to variable which will get data.
-     * @return Ture is returned if valid data is returned.
+     * @return True is returned if valid data is returned.
      */
-    bool listItem(varQuery *pq, CVSCPVariable &variable);
+    bool listItem(varQuery *pq, CVariable &variable);
 
     /*!
      * Clean up list operation

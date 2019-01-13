@@ -79,7 +79,7 @@ endLoadVarParser(void *data, const char *name);
 // Constructor
 //
 
-CVSCPVariable::CVSCPVariable(void)
+CVariable::CVariable(void)
 {
     init();
 }
@@ -88,7 +88,7 @@ CVSCPVariable::CVSCPVariable(void)
 // Destructor
 //
 
-CVSCPVariable::~CVSCPVariable(void)
+CVariable::~CVariable(void)
 {
     ;
 }
@@ -98,7 +98,7 @@ CVSCPVariable::~CVSCPVariable(void)
 //
 
 void
-CVSCPVariable::init(void)
+CVariable::init(void)
 {
     m_id = 0;
     m_name.clear();
@@ -115,7 +115,7 @@ CVSCPVariable::init(void)
 //
 
 void
-CVSCPVariable::fixName(void)
+CVariable::fixName(void)
 {
     vscp_trim(m_name);
     vscp_makeUpper(m_name);
@@ -140,7 +140,7 @@ CVSCPVariable::fixName(void)
 //
 
 void
-CVSCPVariable::makeAccessRightString(uint32_t accessrights,
+CVariable::makeAccessRightString(uint32_t accessrights,
                                      std::string &strAccessRights)
 {
     strAccessRights.clear();
@@ -192,7 +192,7 @@ CVSCPVariable::makeAccessRightString(uint32_t accessrights,
 //
 
 uint16_t
-CVSCPVariable::getVariableTypeFromString(const std::string &strVariableType)
+CVariable::getVariableTypeFromString(const std::string &strVariableType)
 {
     uint16_t type   = VSCP_DAEMON_VARIABLE_CODE_UNASSIGNED;
     std::string str = strVariableType;
@@ -291,7 +291,7 @@ CVSCPVariable::getVariableTypeFromString(const std::string &strVariableType)
 //
 
 const char *
-CVSCPVariable::getVariableTypeAsString(int type)
+CVariable::getVariableTypeAsString(int type)
 {
     switch (type) {
 
@@ -395,7 +395,7 @@ CVSCPVariable::getVariableTypeAsString(int type)
 //
 
 bool
-CVSCPVariable::isNumerical(void)
+CVariable::isNumerical(void)
 {
     if ((VSCP_DAEMON_VARIABLE_CODE_INTEGER == m_type) ||
         (VSCP_DAEMON_VARIABLE_CODE_LONG == m_type) ||
@@ -411,7 +411,7 @@ CVSCPVariable::isNumerical(void)
 //
 
 bool
-CVSCPVariable::setType(const std::string &strType)
+CVariable::setType(const std::string &strType)
 {
     unsigned long lval;
 
@@ -441,7 +441,7 @@ CVSCPVariable::setType(const std::string &strType)
 //
 
 std::string
-CVSCPVariable::getAsString(bool bShort)
+CVariable::getAsString(bool bShort)
 {
     std::string str;
 
@@ -477,7 +477,7 @@ CVSCPVariable::getAsString(bool bShort)
 //
 
 bool
-CVSCPVariable::getAsJSON(std::string &strVariable)
+CVariable::getAsJSON(std::string &strVariable)
 {
     std::string str = m_strValue;
     vscp_base64_std_encode(str);
@@ -513,7 +513,7 @@ CVSCPVariable::getAsJSON(std::string &strVariable)
 // "note": "This is some text"
 
 bool
-CVSCPVariable::setFromJSON(std::string &strVariable)
+CVariable::setFromJSON(std::string &strVariable)
 {
     try {
 
@@ -591,7 +591,7 @@ CVSCPVariable::setFromJSON(std::string &strVariable)
 //
 
 bool
-CVSCPVariable::getAsXML(std::string &strVariable)
+CVariable::getAsXML(std::string &strVariable)
 {
     std::string str = m_strValue;
     vscp_base64_std_encode(str);
@@ -614,9 +614,8 @@ CVSCPVariable::getAsXML(std::string &strVariable)
 //
 
 bool
-CVSCPVariable::setFromXML(std::string &strVariable)
+CVariable::setFromXML(std::string &strVariable)
 {
-
     std::string str;
     unsigned long lval;
 
@@ -651,7 +650,7 @@ CVSCPVariable::setFromXML(std::string &strVariable)
 //
 
 bool
-CVSCPVariable::setName(const std::string &strName)
+CVariable::setName(const std::string &strName)
 {
     std::string str = strName;
     vscp_trim(str);
@@ -675,7 +674,7 @@ CVSCPVariable::setName(const std::string &strName)
 //
 
 bool
-CVSCPVariable::setOwnerId(uint32_t userid)
+CVariable::setOwnerId(uint32_t userid)
 {
     // Check for admin user
     if (0 == userid) {
@@ -697,7 +696,7 @@ CVSCPVariable::setOwnerId(uint32_t userid)
 //
 
 bool
-CVSCPVariable::setOwnerIdFromUserName(std::string &strUser)
+CVariable::setOwnerIdFromUserName(std::string &strUser)
 {
     long userid;
 
@@ -719,7 +718,7 @@ CVSCPVariable::setOwnerIdFromUserName(std::string &strUser)
 //
 
 void
-CVSCPVariable::writeValueToString(std::string &strValueOut, bool bBase64)
+CVariable::writeValueToString(std::string &strValueOut, bool bBase64)
 {
     strValueOut = m_strValue;
 
@@ -733,7 +732,7 @@ CVSCPVariable::writeValueToString(std::string &strValueOut, bool bBase64)
 //
 
 std::string
-CVSCPVariable::getValue(bool bBase64)
+CVariable::getValue(bool bBase64)
 {
     std::string str = m_strValue;
     if (bBase64) {
@@ -748,7 +747,7 @@ CVSCPVariable::getValue(bool bBase64)
 //
 
 void
-CVSCPVariable::getValue(std::string *pval, bool bBase64)
+CVariable::getValue(std::string *pval, bool bBase64)
 {
     std::string str = m_strValue;
     if (bBase64) {
@@ -763,7 +762,7 @@ CVSCPVariable::getValue(std::string *pval, bool bBase64)
 //
 
 void
-CVSCPVariable::setValue(bool val)
+CVariable::setValue(bool val)
 {
     vscp_str_format(m_strValue, "%s", val ? "true" : "false");
 }
@@ -773,7 +772,7 @@ CVSCPVariable::setValue(bool val)
 //
 
 void
-CVSCPVariable::getValue(bool *pValue)
+CVariable::getValue(bool *pValue)
 {
     if (0 == vscp_strcasecmp(m_strValue.c_str(), "true")) {
         *pValue = true;
@@ -787,7 +786,7 @@ CVSCPVariable::getValue(bool *pValue)
 //
 
 void
-CVSCPVariable::setValue(int val)
+CVariable::setValue(int val)
 {
     vscp_str_format(m_strValue, "%d", val);
 };
@@ -797,7 +796,7 @@ CVSCPVariable::setValue(int val)
 //
 
 void
-CVSCPVariable::getValue(int *pValue)
+CVariable::getValue(int *pValue)
 {
     *pValue = (int)vscp_readStringValue(m_strValue);
 };
@@ -807,7 +806,7 @@ CVSCPVariable::getValue(int *pValue)
 //
 
 void
-CVSCPVariable::setValue(long val)
+CVariable::setValue(long val)
 {
     vscp_str_format(m_strValue, "%ld", val);
 };
@@ -817,7 +816,7 @@ CVSCPVariable::setValue(long val)
 //
 
 void
-CVSCPVariable::getValue(long *pValue)
+CVariable::getValue(long *pValue)
 {
     *pValue = vscp_readStringValue(m_strValue);
 }
@@ -827,7 +826,7 @@ CVSCPVariable::getValue(long *pValue)
 //
 
 void
-CVSCPVariable::setValue(double val)
+CVariable::setValue(double val)
 {
     vscp_str_format(m_strValue, "%lf", val);
 }
@@ -837,7 +836,7 @@ CVSCPVariable::setValue(double val)
 //
 
 void
-CVSCPVariable::getValue(double *pValue)
+CVariable::getValue(double *pValue)
 {
     *pValue = stod(m_strValue);
 }
@@ -846,7 +845,7 @@ CVSCPVariable::getValue(double *pValue)
 // setValue
 //
 void
-CVSCPVariable::setValue(vscpEvent &event)
+CVariable::setValue(vscpEvent &event)
 {
     vscp_writeVscpEventToString(&event, m_strValue);
 };
@@ -855,7 +854,7 @@ CVSCPVariable::setValue(vscpEvent &event)
 // getValue
 //
 void
-CVSCPVariable::getValue(vscpEvent *pEvent)
+CVariable::getValue(vscpEvent *pEvent)
 {
     if (NULL != pEvent) return;
     vscp_setVscpEventFromString(pEvent, m_strValue);
@@ -865,7 +864,7 @@ CVSCPVariable::getValue(vscpEvent *pEvent)
 // setValue
 //
 void
-CVSCPVariable::setValue(vscpEventEx &eventex)
+CVariable::setValue(vscpEventEx &eventex)
 {
     vscp_writeVscpEventExToString(&eventex, m_strValue);
 };
@@ -874,7 +873,7 @@ CVSCPVariable::setValue(vscpEventEx &eventex)
 // getValue
 //
 void
-CVSCPVariable::getValue(vscpEventEx *pEventEx)
+CVariable::getValue(vscpEventEx *pEventEx)
 {
     if (NULL != pEventEx) return;
     vscp_setVscpEventExFromString(pEventEx, m_strValue);
@@ -885,7 +884,7 @@ CVSCPVariable::getValue(vscpEventEx *pEventEx)
 //
 
 void
-CVSCPVariable::getValue(vscpdatetime *pValue)
+CVariable::getValue(vscpdatetime *pValue)
 {
     m_strValue = pValue->getISODateTime();
 }
@@ -895,7 +894,7 @@ CVSCPVariable::getValue(vscpdatetime *pValue)
 //
 
 void
-CVSCPVariable::setValue(vscpdatetime &val)
+CVariable::setValue(vscpdatetime &val)
 {
     if (val.isValid()) {
         m_strValue = val.getISODateTime();
@@ -909,7 +908,7 @@ CVSCPVariable::setValue(vscpdatetime &val)
 //
 
 bool
-CVSCPVariable::setValueFromString(int type,
+CVariable::setValueFromString(int type,
                                   const std::string &strValue,
                                   bool bBase64)
 {
@@ -1058,7 +1057,7 @@ CVSCPVariable::setValueFromString(int type,
 //
 
 std::string
-CVSCPVariable::getNote(bool bBase64)
+CVariable::getNote(bool bBase64)
 {
     std::string strNote = m_note;
     if (bBase64) vscp_base64_std_encode(strNote);
@@ -1071,7 +1070,7 @@ CVSCPVariable::getNote(bool bBase64)
 //
 
 bool
-CVSCPVariable::getNote(std::string &strNote, bool bBase64)
+CVariable::getNote(std::string &strNote, bool bBase64)
 {
     strNote = m_note;
 
@@ -1087,7 +1086,7 @@ CVSCPVariable::getNote(std::string &strNote, bool bBase64)
 //
 
 bool
-CVSCPVariable::setVariableFromString(const std::string &strVariable,
+CVariable::setVariableFromString(const std::string &strVariable,
                                      bool bBase64,
                                      const std::string &strUser)
 {
@@ -1200,7 +1199,7 @@ CVSCPVariable::setVariableFromString(const std::string &strVariable,
             setValueFromString(m_type, value);
         } else {
             // If no value given use RESET value
-            Reset();
+            reset();
         }
 
     } else {
@@ -1229,7 +1228,7 @@ CVSCPVariable::setVariableFromString(const std::string &strVariable,
 //
 
 bool
-CVSCPVariable::setValue(const std::string &strValue, bool bBase64)
+CVariable::setValue(const std::string &strValue, bool bBase64)
 {
     std::string str = strValue;
 
@@ -1250,7 +1249,7 @@ CVSCPVariable::setValue(const std::string &strValue, bool bBase64)
 //
 
 bool
-CVSCPVariable::setNote(const std::string &strNote, bool bBase64)
+CVariable::setNote(const std::string &strNote, bool bBase64)
 {
     std::string str = strNote;
 
@@ -1268,7 +1267,7 @@ CVSCPVariable::setNote(const std::string &strNote, bool bBase64)
 //
 
 void
-CVSCPVariable::Reset(void)
+CVariable::reset(void)
 {
     // Update lastchanged
     setLastChangedToNow();
@@ -1408,7 +1407,7 @@ CVSCPVariable::Reset(void)
 //
 
 bool
-CVSCPVariable::isTrue(void)
+CVariable::isTrue(void)
 {
     if (VSCP_DAEMON_VARIABLE_CODE_BOOLEAN == getType() &&
         (0 == vscp_strcasecmp(m_strValue.c_str(), "TRUE"))) {
@@ -1436,7 +1435,7 @@ CVSCPVariable::isTrue(void)
 //
 
 void
-CVSCPVariable::setTrue(void)
+CVariable::setTrue(void)
 {
     // Update lastchanged
     setLastChangedToNow();
@@ -1459,7 +1458,7 @@ CVSCPVariable::setTrue(void)
 //
 
 void
-CVSCPVariable::setFalse(void)
+CVariable::setFalse(void)
 {
     // Update lastchanged
     setLastChangedToNow();
@@ -1525,7 +1524,7 @@ bool
 CVariableStorage::init(void)
 {
     std::string str;
-    CVSCPVariable variable;
+    CVariable variable;
 
     // * * * VSCP Daemon external variable database * * *
 
@@ -3033,7 +3032,7 @@ CVariableStorage::init(void)
 uint32_t
 CVariableStorage::exist(const std::string &name)
 {
-    CVSCPVariable variable;
+    CVariable variable;
 
     return find(name, variable);
 }
@@ -3043,7 +3042,7 @@ CVariableStorage::exist(const std::string &name)
 //
 
 uint32_t
-CVariableStorage::find(const std::string &name, CVSCPVariable &variable)
+CVariableStorage::find(const std::string &name, CVariable &variable)
 {
     uint32_t id         = 0;
     std::string lc_name = vscp_lower(name);
@@ -3070,7 +3069,7 @@ CVariableStorage::find(const std::string &name, CVSCPVariable &variable)
 
 uint32_t
 CVariableStorage::getStockVariable(const std::string &name,
-                                   CVSCPVariable &var,
+                                   CVariable &var,
                                    CUserItem *pUser)
 {
     std::string str;
@@ -4572,7 +4571,7 @@ CVariableStorage::getStockVariable(const std::string &name,
 //
 
 bool
-CVariableStorage::putStockVariable(CVSCPVariable &var, CUserItem *pUser)
+CVariableStorage::putStockVariable(CVariable &var, CUserItem *pUser)
 {
     std::string str;
     std::string lcname = vscp_lower(var.getName());
@@ -5987,7 +5986,7 @@ CVariableStorage::putStockVariable(CVSCPVariable &var, CUserItem *pUser)
 
 bool
 CVariableStorage::setVariableFromDbRecord(sqlite3_stmt *ppStmt,
-                                          CVSCPVariable &variable)
+                                          CVariable &variable)
 {
     // Check pointer
     if (NULL == ppStmt) return false;
@@ -6036,7 +6035,7 @@ CVariableStorage::setVariableFromDbRecord(sqlite3_stmt *ppStmt,
 
 uint32_t
 CVariableStorage::findNonPersistentVariable(const std::string &name,
-                                            CVSCPVariable &variable)
+                                            CVariable &variable)
 {
     sqlite3_stmt *ppStmt;
     char psql[8192];
@@ -6087,7 +6086,7 @@ CVariableStorage::findNonPersistentVariable(const std::string &name,
 
 uint32_t
 CVariableStorage::findPersistentVariable(const std::string &name,
-                                         CVSCPVariable &variable)
+                                         CVariable &variable)
 {
     sqlite3_stmt *ppStmt;
     char psql[512];
@@ -6268,7 +6267,7 @@ CVariableStorage::listEnumerationFromRegExp(varQuery *pq,
 //
 
 bool
-CVariableStorage::listItem(varQuery *pq, CVSCPVariable &variable)
+CVariableStorage::listItem(varQuery *pq, CVariable &variable)
 {
     // Must be a valid pointer
     if (NULL == pq) return false;
@@ -6327,7 +6326,7 @@ CVariableStorage::listFinalize(varQuery *pq)
 //
 
 bool
-CVariableStorage::addStockVariable(CVSCPVariable &var)
+CVariableStorage::addStockVariable(CVariable &var)
 {
     uint32_t id   = 0;
     char *zErrMsg = 0;
@@ -6361,7 +6360,7 @@ CVariableStorage::addStockVariable(CVSCPVariable &var)
 //
 
 bool
-CVariableStorage::add(CVSCPVariable &var)
+CVariableStorage::add(CVariable &var)
 {
     uint32_t id   = 0;
     char *zErrMsg = 0;
@@ -6461,7 +6460,7 @@ CVariableStorage::add(const std::string &name,
                       const uint32_t accessRights,
                       const std::string &note)
 {
-    CVSCPVariable variable;
+    CVariable variable;
 
     variable.setName(name);
     variable.setType(type);
@@ -6487,7 +6486,7 @@ CVariableStorage::add(const std::string &varName,
                       const uint32_t accessRights,
                       const std::string &note)
 {
-    uint8_t type = CVSCPVariable::getVariableTypeFromString(strType);
+    uint8_t type = CVariable::getVariableTypeFromString(strType);
     return add(varName, value, type, userid, bPersistent, accessRights, note);
 }
 
@@ -6496,7 +6495,7 @@ CVariableStorage::add(const std::string &varName,
 //
 
 bool
-CVariableStorage::update(CVSCPVariable &var)
+CVariableStorage::update(CVariable &var)
 {
     long id       = 0;
     char *zErrMsg = 0;
@@ -6552,7 +6551,7 @@ bool
 CVariableStorage::remove(std::string &name)
 {
     char *zErrMsg = 0;
-    CVSCPVariable variable;
+    CVariable variable;
 
     if (!find(name, variable)) {
         return false;
@@ -6603,7 +6602,7 @@ CVariableStorage::remove(std::string &name)
 //
 
 bool
-CVariableStorage::remove(CVSCPVariable &variable)
+CVariableStorage::remove(CVariable &variable)
 {
     std::string str = variable.getName();
     return remove(str);
@@ -6676,7 +6675,7 @@ startLoadVarParser(void *data, const char *name, const char **attr)
 
         if (0 == vscp_strcasecmp(name, "variable")) {
 
-            CVSCPVariable var;
+            CVariable var;
 
             for (int i = 0; attr[i]; i += 2) {
 
@@ -6876,7 +6875,7 @@ CVariableStorage::save(std::string &path, uint8_t whatToSave)
 
                 while (SQLITE_ROW == sqlite3_step(ppStmt)) {
 
-                    CVSCPVariable variable;
+                    CVariable variable;
 
                     // id
                     variable.setID(
@@ -6931,7 +6930,7 @@ CVariableStorage::save(std::string &path, uint8_t whatToSave)
 
                 while (SQLITE_ROW == sqlite3_step(ppStmt)) {
 
-                    CVSCPVariable variable;
+                    CVariable variable;
 
                     // id
                     variable.setID(
@@ -7005,7 +7004,7 @@ CVariableStorage::save(std::string &path, uint8_t whatToSave)
 
 bool
 CVariableStorage::writeVariableToXmlFile(std::ofstream &of,
-                                         CVSCPVariable &variable)
+                                         CVariable &variable)
 {
     std::string str, strtemp;
     std::string name = variable.getName();

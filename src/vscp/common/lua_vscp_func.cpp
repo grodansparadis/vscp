@@ -348,7 +348,7 @@ int lua_vscp_readVariable( struct lua_State *L )
 {
     int format = 0;
     std::string varName;
-    CVSCPVariable variable;
+    CVariable variable;
     std::string strResult;
     
     int nArgs = lua_gettop( L );
@@ -482,7 +482,7 @@ int lua_vscp_writeVariable( struct lua_State *L )
     int format = 0;
     bool bBase64 = false;
     std::string varValue;
-    CVSCPVariable variable;
+    CVariable variable;
  
     int nArgs = lua_gettop( L );
     
@@ -564,7 +564,7 @@ int lua_vscp_writeVariableValue( struct lua_State *L )
     bool bBase64 = false;
     std::string varName;    
     std::string varValue;
-    CVSCPVariable variable;
+    CVariable variable;
     
     int nArgs = lua_gettop( L );
     
@@ -692,7 +692,7 @@ int lua_vscp_writeVariableNote( struct lua_State *L )
 {
     std::string varName;    
     std::string varValue;
-    CVSCPVariable variable;
+    CVariable variable;
     
     int nArgs = lua_gettop( L );
     
@@ -753,7 +753,7 @@ int lua_vscp_writeVariableNote( struct lua_State *L )
 int lua_vscp_deleteVariable( struct lua_State *L ) 
 {
     std::string varName;    
-    CVSCPVariable variable;
+    CVariable variable;
     
     int nArgs = lua_gettop( L );
     
@@ -793,7 +793,7 @@ int lua_vscp_isVariableBase64Encoded( struct lua_State *L )
     size_t len;
     bool bBase64 = false;
     std::string varName;
-    CVSCPVariable variable;
+    CVariable variable;
  
     int nArgs = lua_gettop( L );
     
@@ -838,7 +838,7 @@ int lua_vscp_isVariablePersistent( struct lua_State *L )
     size_t len;
     bool bBase64 = false;
     std::string varName;
-    CVSCPVariable variable;
+    CVariable variable;
  
     int nArgs = lua_gettop( L );
     
@@ -883,7 +883,7 @@ int lua_vscp_isVariableNumerical( struct lua_State *L )
     size_t len;
     bool bBase64 = false;
     std::string varName;
-    CVSCPVariable variable;
+    CVariable variable;
  
     int nArgs = lua_gettop( L );
     
@@ -928,7 +928,7 @@ int lua_vscp_isStockVariable( struct lua_State *L )
     size_t len;
     bool bBase64 = false;
     std::string varName;
-    CVSCPVariable variable;
+    CVariable variable;
  
     int nArgs = lua_gettop( L );
     

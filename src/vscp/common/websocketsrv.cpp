@@ -646,7 +646,7 @@ websock_post_incomingEvents(void)
 //
 
 void
-websock_post_variableTrigger(uint8_t op, CVSCPVariable *pVar)
+websock_post_variableTrigger(uint8_t op, CVariable *pVar)
 {
     pthread_mutex_lock(&gpobj->m_websocketSessionMutex);
 
@@ -1362,7 +1362,7 @@ ws1_command(struct web_connection *conn,
         }
 
         // Check if the variable exist
-        CVSCPVariable variable;
+        CVariable variable;
         bool bVariableExist = false;
         if (0 != gpobj->m_variables.find(name, variable)) {
             bVariableExist = true;
@@ -1523,7 +1523,7 @@ ws1_command(struct web_connection *conn,
     else if (vscp_startsWith(strTok, "READVAR") ||
              vscp_startsWith(strTok, "RVAR")) {
 
-        CVSCPVariable variable;
+        CVariable variable;
         uint8_t type;
         std::string strvalue;
 
@@ -1597,7 +1597,7 @@ ws1_command(struct web_connection *conn,
     else if (vscp_startsWith(strTok, "WRITEVAR") ||
              vscp_startsWith(strTok, "WVAR")) {
 
-        CVSCPVariable variable;
+        CVariable variable;
         std::string strvalue;
         uint8_t type;
 
@@ -1735,7 +1735,7 @@ ws1_command(struct web_connection *conn,
     else if (vscp_startsWith(strTok, "RESETVAR") ||
              vscp_startsWith(strTok, "RSTVAR")) {
 
-        CVSCPVariable variable;
+        CVariable variable;
         std::string strvalue;
         uint8_t type;
 
@@ -1794,7 +1794,7 @@ ws1_command(struct web_connection *conn,
             return;
         }
 
-        variable.Reset();
+        variable.reset();
 
         variable.writeValueToString(strvalue);
         type = variable.getType();
@@ -1821,7 +1821,7 @@ ws1_command(struct web_connection *conn,
     else if (vscp_startsWith(strTok, "DELVAR") ||
              vscp_startsWith(strTok, "REMOVEVAR")) {
 
-        CVSCPVariable variable;
+        CVariable variable;
         std::string name;
 
         // Must be authorised to do this
@@ -1902,7 +1902,7 @@ ws1_command(struct web_connection *conn,
     else if (vscp_startsWith(strTok, "LENGTHVAR") ||
              vscp_startsWith(strTok, "LENVAR")) {
 
-        CVSCPVariable variable;
+        CVariable variable;
 
         // Must be authorised to do this
         if ((NULL == pSession->m_pClientItem) ||
@@ -1979,7 +1979,7 @@ ws1_command(struct web_connection *conn,
     else if (vscp_startsWith(strTok, "LASTCHANGEVAR") ||
              vscp_startsWith(strTok, "LCVAR")) {
 
-        CVSCPVariable variable;
+        CVariable variable;
         std::string strvalue;
 
         // Must be authorised to do this
@@ -2060,7 +2060,7 @@ ws1_command(struct web_connection *conn,
     else if (vscp_startsWith(strTok, "LISTVAR") ||
              vscp_startsWith(strTok, "LSTVAR")) {
 
-        CVSCPVariable variable;
+        CVariable variable;
         std::string strvalue;
         std::string strSearch;
 

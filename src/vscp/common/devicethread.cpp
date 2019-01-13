@@ -752,7 +752,7 @@ deviceThread(void *pData)
         vscp_split(tokens, pDevItem->m_strParameter, ";");
         if (false == tokens.empty()) {
 
-            CVSCPVariable variable;
+            CVariable variable;
 
             // Get prefix
             std::string prefix = tokens.front();

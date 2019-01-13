@@ -943,7 +943,7 @@ tcpipClientObj::handleClientMeasurment(void)
     // a variable (that must be numeric)
     if ('$' == str[0]) {
 
-        CVSCPVariable variable;
+        CVariable variable;
         str = str.substr(str.length() - 1); // get variable name
         vscp_makeUpper(str);
 
@@ -1329,7 +1329,7 @@ tcpipClientObj::handleClientSend(void)
             event.head = vscp_readStringValue(str);
         } else {
 
-            CVSCPVariable variable;
+            CVariable variable;
             bVariable = true; // Yes this is a variable send
 
             // Get the name of the variable
@@ -4329,7 +4329,7 @@ tcpipClientObj::handleClientVariable(void)
 void
 tcpipClientObj::handleVariable_List(void)
 {
-    CVSCPVariable variable;
+    CVariable variable;
     std::string str;
     std::string strWork;
     std::string strSearch;
@@ -4409,7 +4409,7 @@ tcpipClientObj::handleVariable_List(void)
 void
 tcpipClientObj::handleVariable_Write(void)
 {
-    CVSCPVariable variable;
+    CVariable variable;
     std::string str;
 
     bool bPersistence = false;
@@ -4485,7 +4485,7 @@ tcpipClientObj::handleVariable_WriteValue(void)
         return;
     }
 
-    CVSCPVariable variable;
+    CVariable variable;
     if (0 != m_pObj->m_variables.find(name, variable)) {
 
         // Set value and encode as BASE64 when expected
@@ -4544,7 +4544,7 @@ tcpipClientObj::handleVariable_WriteNote(void)
         return;
     }
 
-    CVSCPVariable variable;
+    CVariable variable;
     if (0 != m_pObj->m_variables.find(name, variable)) {
 
         // Set value and encode as BASE64 when expected
@@ -4577,7 +4577,7 @@ tcpipClientObj::handleVariable_Read(bool bOKResponse)
 
     vscp_trim(m_pClientItem->m_currentCommand);
 
-    CVSCPVariable variable;
+    CVariable variable;
     if (0 !=
         m_pObj->m_variables.find(m_pClientItem->m_currentCommand, variable)) {
 
@@ -4606,7 +4606,7 @@ tcpipClientObj::handleVariable_ReadValue(bool bOKResponse)
 
     vscp_trim(m_pClientItem->m_currentCommand);
 
-    CVSCPVariable variable;
+    CVariable variable;
     if (0 !=
         m_pObj->m_variables.find(m_pClientItem->m_currentCommand, variable)) {
 
@@ -4635,7 +4635,7 @@ tcpipClientObj::handleVariable_ReadNote(bool bOKResponse)
 
     vscp_trim(m_pClientItem->m_currentCommand);
 
-    CVSCPVariable variable;
+    CVariable variable;
     if (0 !=
         m_pObj->m_variables.find(m_pClientItem->m_currentCommand, variable)) {
 
@@ -4664,12 +4664,12 @@ tcpipClientObj::handleVariable_Reset(void)
 
     vscp_trim(m_pClientItem->m_currentCommand);
 
-    CVSCPVariable variable;
+    CVariable variable;
 
     if (0 !=
         m_pObj->m_variables.find(m_pClientItem->m_currentCommand, variable)) {
 
-        variable.Reset();
+        variable.reset();
 
         // Update in database
         if (!m_pObj->m_variables.update(variable)) {
@@ -4703,7 +4703,7 @@ tcpipClientObj::handleVariable_ReadReset(void)
         return;
     }
 
-    CVSCPVariable variable;
+    CVariable variable;
 
     if (0 !=
         m_pObj->m_variables.find(m_pClientItem->m_currentCommand, variable)) {
@@ -4712,7 +4712,7 @@ tcpipClientObj::handleVariable_ReadReset(void)
         str = ("+OK - ") + str + ("\r\n");
         write(str.c_str(), strlen(str.c_str()));
 
-        variable.Reset();
+        variable.reset();
 
         // Update in database
         if (!m_pObj->m_variables.update(variable)) {
@@ -4772,7 +4772,7 @@ tcpipClientObj::handleVariable_ReadRemove(void)
         return;
     }
 
-    CVSCPVariable variable;
+    CVariable variable;
     if (0 !=
         m_pObj->m_variables.find(m_pClientItem->m_currentCommand, variable)) {
 
@@ -4803,7 +4803,7 @@ tcpipClientObj::handleVariable_Length(void)
 
     vscp_trim(m_pClientItem->m_currentCommand);
 
-    CVSCPVariable variable;
+    CVariable variable;
     if (0 !=
         m_pObj->m_variables.find(m_pClientItem->m_currentCommand, variable)) {
 

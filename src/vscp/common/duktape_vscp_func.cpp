@@ -348,7 +348,7 @@ js_vscp_sleep(duk_context *ctx)
 duk_ret_t
 js_vscp_readVariable(duk_context *ctx)
 {
-    CVSCPVariable variable;
+    CVariable variable;
     std::string strResult;
 
     // get the variable name
@@ -389,7 +389,7 @@ duk_ret_t
 js_vscp_writeVariable(duk_context *ctx)
 {
     std::string varName;
-    CVSCPVariable variable;
+    CVariable variable;
     duk_ret_t err;
 
     //  Should be a JSON variable object
@@ -422,7 +422,7 @@ js_vscp_writeVariable(duk_context *ctx)
         } else if (duk_is_string(ctx, -1)) {
             std::string str = duk_get_string_default(ctx, -1, "string");
             duk_pop_n(ctx, 1);
-            type = CVSCPVariable::getVariableTypeFromString(str);
+            type = CVariable::getVariableTypeFromString(str);
         } else {
             duk_push_boolean(ctx, 0); // return code false
             return JAVASCRIPT_OK;
@@ -562,7 +562,7 @@ duk_ret_t
 js_vscp_deleteVariable(duk_context *ctx)
 {
     std::string varName;
-    CVSCPVariable variable;
+    CVariable variable;
     bool bResult;
 
     // get variable name

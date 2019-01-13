@@ -38,7 +38,7 @@
 
 class CControlObject;
 class CClientItem;
-class cvscpvariable;
+class CVariable;
 class dmTimer;
 
 // TODO
@@ -842,7 +842,7 @@ class dmElement
 
     /// Variable +-*/
     uint8_t m_operation;
-    CVSCPVariable m_variable;
+    CVariable m_variable;
 
     // Event(s)
     // Offset 0 is for single event send and true conditional.

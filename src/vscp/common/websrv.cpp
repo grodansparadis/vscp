@@ -3506,7 +3506,7 @@ vscp_variable_list(struct web_connection *conn, void *cbdata)
         // Check if we are done
         if ((nFrom + i) >= nameArray.size()) break;
 
-        CVSCPVariable variable;
+        CVariable variable;
         if (0 == gpobj->m_variables.find(nameArray[nFrom + i], variable)) {
             web_printf(conn,
                        "Internal error: Non existent variable entry. "
@@ -3849,7 +3849,7 @@ vscp_variable_edit(struct web_connection *conn, void *cbdata)
     char buf[80];
     std::string str;
 
-    CVSCPVariable variable;
+    CVariable variable;
 
     // Check pointer
     if (NULL == conn) return 0;
@@ -4644,7 +4644,7 @@ vscp_variable_edit(struct web_connection *conn, void *cbdata)
 
     /*else {
         std::string str;
-        CVSCPVariable::makeAccessRightString( variable.getAccessRights(), str );
+        CVariable::makeAccessRightString( variable.getAccessRights(), str );
         web_printf( conn,
                         "0x%03X %s (owner group other)",
                         variable.getAccessRights(),
@@ -4707,7 +4707,7 @@ vscp_variable_post(struct web_connection *conn, void *cbdata)
 {
     char buf[32000];
     std::string msg;
-    CVSCPVariable variable;
+    CVariable variable;
 
     // Check pointer
     if (NULL == conn) return 0;
@@ -5104,7 +5104,7 @@ vscp_variable_delete(struct web_connection *conn, void *cbdata)
 {
     char buf[80];
     std::string str;
-    CVSCPVariable variable;
+    CVariable variable;
 
     // Check pointer
     if (NULL == conn) return 0;
@@ -8167,7 +8167,7 @@ static int
 vscp_configure_list(struct web_connection *conn, void *cbdata)
 {
     std::string str;
-    CVSCPVariable variable;
+    CVariable variable;
 
     // Check pointer
     if (NULL == conn) return 0;

@@ -2169,7 +2169,7 @@ dmElement::handleEscapes(vscpEvent *pEvent, std::string &str)
             else if (vscp_startsWith(str, "%variable:[", &str)) {
                 vscp_trim(str); // Trim of leading white space
                 if (str.npos != (pos = str.find(']'))) {
-                    CVSCPVariable variable;
+                    CVariable variable;
 
                     std::string variableName = str.substr(pos);
                     str = str.substr(str.length() - pos - 1);
@@ -2187,7 +2187,7 @@ dmElement::handleEscapes(vscpEvent *pEvent, std::string &str)
             else if (vscp_startsWith(str, "%vardecode:[", &str)) {
                 vscp_trim(str); // Trim of leading white space
                 if (str.npos != (pos = str.find(']'))) {
-                    CVSCPVariable variable;
+                    CVariable variable;
 
                     std::string variableName = str.substr(pos);
                     str = str.substr(str.length() - pos - 1);
@@ -2780,7 +2780,7 @@ dmElement::doActionExecuteConditional(vscpEvent *pDMEvent,
         std::string varname = tokens.front();
         tokens.pop_front();
 
-        CVSCPVariable variable;
+        CVariable variable;
         if (!gpobj->m_variables.find(varname, variable)) {
             // Variable was not found - create it
             if (!gpobj->m_variables.add(
@@ -3056,7 +3056,7 @@ dmElement::doActionSendEvent(vscpEvent *pDMEvent)
 
             // Set the condition variable to false if it is defined
             if (varName.length()) {
-                CVSCPVariable variable;
+                CVariable variable;
                 if (!gpobj->m_variables.find(varName, variable)) {
                     // Variable was not found - create it
                     if (!gpobj->m_variables.add(
@@ -3131,7 +3131,7 @@ dmElement::doActionSendEventConditional(vscpEvent *pDMEvent)
         std::string varname = tokens.front();
         tokens.pop_front();
 
-        CVSCPVariable variable;
+        CVariable variable;
         if (!gpobj->m_variables.find(varname, variable)) {
 
             // Variable was not found - create it
@@ -3232,7 +3232,7 @@ dmElement::doActionSendEventConditional(vscpEvent *pDMEvent)
 
         // Set the condition variable to false if it is defined
         if (varName.length()) {
-            CVSCPVariable variable;
+            CVariable variable;
             if (gpobj->m_variables.find(varName, variable)) {
                 // Set it to true
                 variable.setValue(true);
@@ -3637,7 +3637,7 @@ dmElement::doActionStoreVariable(vscpEvent *pDMEvent)
     std::deque<std::string> tokens;
     vscp_split(tokens, params, ";");
 
-    CVSCPVariable var;
+    CVariable var;
 
     if (tokens.size() >= 6) {
         // The form is variable-name; variable-type; persistence; value
@@ -3955,7 +3955,7 @@ dmElement::doActionStoreVariable(vscpEvent *pDMEvent)
 bool
 dmElement::doActionAddVariable(vscpEvent *pDMEvent)
 {
-    CVSCPVariable variable;
+    CVariable variable;
     std::string strName;
     long val        = 0;
     double floatval = 0.0;
@@ -4032,7 +4032,7 @@ dmElement::doActionAddVariable(vscpEvent *pDMEvent)
 bool
 dmElement::doActionSubtractVariable(vscpEvent *pDMEvent)
 {
-    CVSCPVariable variable;
+    CVariable variable;
     std::string strName;
     long val        = 0;
     double floatval = 0.0;
@@ -4109,7 +4109,7 @@ dmElement::doActionSubtractVariable(vscpEvent *pDMEvent)
 bool
 dmElement::doActionMultiplyVariable(vscpEvent *pDMEvent)
 {
-    CVSCPVariable variable;
+    CVariable variable;
     std::string strName;
     long val        = 0;
     double floatval = 0.0;
@@ -4182,7 +4182,7 @@ dmElement::doActionMultiplyVariable(vscpEvent *pDMEvent)
 bool
 dmElement::doActionDivideVariable(vscpEvent *pDMEvent)
 {
-    CVSCPVariable variable;
+    CVariable variable;
     std::string strName;
     long val        = 0;
     double floatval = 0.0;
@@ -4278,8 +4278,8 @@ dmElement::doActionCheckVariable(vscpEvent *pDMEvent, VariableCheckType type)
     std::string str;
     double value      = 0;
     uint8_t operation = DM_MEASUREMENT_COMPARE_NOOP;
-    CVSCPVariable varCompare; // Variable to compare
-    CVSCPVariable varFlag;    // Variable with flag
+    CVariable varCompare; // Variable to compare
+    CVariable varFlag;    // Variable with flag
 
     // Write in possible escapes
     std::string params = m_actionparam;
@@ -4539,7 +4539,7 @@ dmElement::doActionCheckMeasurement(vscpEvent *pDMEvent)
     double value            = 0;
     double valueMeasurement = 0;
     uint8_t operation       = DM_MEASUREMENT_COMPARE_NOOP;
-    CVSCPVariable varFlag; // Variable for result flag
+    CVariable varFlag; // Variable for result flag
 
     // Write in possible escapes
     std::string escaped_param = m_actionparam;
@@ -4754,7 +4754,7 @@ dmElement::doActionStoreMin(vscpEvent *pDMEvent)
     uint8_t sensorindex;
     uint8_t zone;
     uint8_t subzone;
-    CVSCPVariable variable; // Variable to store possible new min in
+    CVariable variable; // Variable to store possible new min in
     double currentValue;    // Current value of variable
     double value;           // Value of event
 
@@ -4875,7 +4875,7 @@ dmElement::doActionStoreMax(vscpEvent *pDMEvent)
     uint8_t sensorindex;
     uint8_t zone;
     uint8_t subzone;
-    CVSCPVariable variable; // Variable to store possible new max in
+    CVariable variable; // Variable to store possible new max in
     double currentValue;    // Current value of variable
     double value;           // Value of event
 
@@ -5959,7 +5959,7 @@ CDM::feedTimerElapsed(uint32_t id)
 void
 CDM::serviceTimers(void)
 {
-    CVSCPVariable variable;
+    CVariable variable;
 
     std::map<int, dmTimer *>::iterator it;
     for (it = m_timerHash.begin(); it != m_timerHash.end(); ++it) {

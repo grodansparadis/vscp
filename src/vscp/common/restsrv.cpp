@@ -63,7 +63,8 @@
 #include "web_js.h"
 #include "web_template.h"
 
-#include <json.hpp> // Needs C++11  -std=c++11
+#include <json.hpp>         // Needs C++11  -std=c++11
+#include <xml2json.hpp>     // https://github.com/Cheedoong/xml2json
 
 #include <actioncodes.h>
 #include <controlobject.h>
@@ -82,7 +83,7 @@
 #include <websrv.h>
 
 #include "restsrv.h"
-#include "xml2json.hpp"
+
 
 // https://github.com/nlohmann/json
 using json = nlohmann::json;
@@ -2310,7 +2311,7 @@ restsrv_doCreateVariable(struct web_connection *conn,
     if (vscp_isNumber(strType)) {
         type = vscp_readStringValue(strType);
     } else {
-        type = CVSCPVariable::getVariableTypeFromString(strType);
+        type = CVariable::getVariableTypeFromString(strType);
     }
 
     // Get persistence
@@ -2369,7 +2370,7 @@ restsrv_doReadVariable(struct web_connection *conn,
 
     if (NULL != pSession) {
 
-        CVSCPVariable variable;
+        CVariable variable;
 
         if (0 == gpobj->m_variables.find(strVariableName, variable)) {
             restsrv_error(
@@ -2544,7 +2545,7 @@ restsrv_doListVariable(struct web_connection *conn,
 
             for (unsigned int i = 0; i < variable_array.size(); i++) {
 
-                CVSCPVariable variable;
+                CVariable variable;
 
                 if (0 == gpobj->m_variables.find(variable_array[i], variable)) {
                     continue;
@@ -2604,7 +2605,7 @@ restsrv_doListVariable(struct web_connection *conn,
 
                 for (unsigned int i = 0; i < variable_array.size(); i++) {
 
-                    CVSCPVariable variable;
+                    CVariable variable;
 
                     if (0 ==
                         gpobj->m_variables.find(variable_array[i], variable)) {
@@ -2644,7 +2645,7 @@ restsrv_doListVariable(struct web_connection *conn,
 
             for (unsigned int i = 0; i < variable_array.size(); i++) {
 
-                CVSCPVariable variable;
+                CVariable variable;
 
                 if (0 == gpobj->m_variables.find(variable_array[i], variable)) {
                     continue;
@@ -2717,7 +2718,7 @@ restsrv_doListVariable(struct web_connection *conn,
                 uint32_t cntErrors   = 0;
                 for (unsigned int i = 0; i < variable_array.size(); i++) {
 
-                    CVSCPVariable variable;
+                    CVariable variable;
                     json var;
 
                     if (0 ==
@@ -2797,7 +2798,7 @@ restsrv_doWriteVariable(struct web_connection *conn,
     if (NULL != pSession) {
 
         // Get variable name
-        CVSCPVariable variable;
+        CVariable variable;
         if (0 == gpobj->m_variables.find(strVariableName, variable)) {
             restsrv_error(
               conn, pSession, format, REST_ERROR_CODE_VARIABLE_NOT_FOUND);
@@ -3735,7 +3736,7 @@ restsrv_convertXML2JSON(const char *input, const char *output)
     oss << is.rdbuf();
 
     // https://github.com/Cheedoong/xml2json
-    //std::string json_str = xml2json( oss.str().data() );
+    std::string json_str = xml2json( oss.str().data() );
 
     std::ofstream myfile;
     myfile.open(output);
