@@ -73,8 +73,6 @@ extern CControlObject *gpobj;
 static void
 startLoadVarParser(void *data, const char *name, const char **attr);
 static void
-handleLoadVardata(void *data, const char *content, int length);
-static void
 endLoadVarParser(void *data, const char *name);
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -625,7 +623,6 @@ CVSCPVariable::setFromXML(std::string &strVariable)
     XML_Parser xmlParser = XML_ParserCreate("UTF-8");
     XML_SetUserData(xmlParser, this);
     XML_SetElementHandler(xmlParser, startLoadVarParser, endLoadVarParser);
-    XML_SetCharacterDataHandler(xmlParser, handleLoadVardata);
 
     void *buf = XML_GetBuffer(xmlParser, XML_BUFF_SIZE);
     if (NULL == buf) {
@@ -6663,7 +6660,6 @@ CVariableStorage::doCreateInternalVariableTable(void)
 // ----------------------------------------------------------------------------
 
 static int depth_load_var_parser   = 0;
-static char *last_load_var_content = NULL;
 
 static void
 startLoadVarParser(void *data, const char *name, const char **attr)
@@ -6741,43 +6737,13 @@ startLoadVarParser(void *data, const char *name, const char **attr)
     depth_load_var_parser++;
 }
 
-static void
-handleLoadVardata(void *data, const char *content, int length)
-{
-    CVariableStorage *pStorage = (CVariableStorage *)data;
-    if (NULL == data) return;
 
-    int prevLength =
-      (NULL == last_load_var_content) ? 0 : strlen(last_load_var_content);
-    char *tmp = (char *)malloc(length + 1 + prevLength);
-    strncpy(tmp, content, length);
-    tmp[length] = '\0';
-
-    if (NULL == last_load_var_content) {
-        tmp = (char *)malloc(length + 1);
-        strncpy(tmp, content, length);
-        tmp[length]           = '\0';
-        last_load_var_content = tmp;
-    } else {
-        // Concatenate
-        int newlen            = length + 1 + strlen(last_load_var_content);
-        last_load_var_content = (char *)realloc(last_load_var_content, newlen);
-        strncat(tmp, content, length);
-        last_load_var_content[newlen] = '\0';
-    }
-}
 
 static void
 endLoadVarParser(void *data, const char *name)
 {
     CVariableStorage *pStorage = (CVariableStorage *)data;
     if (NULL == data) return;
-
-    if (NULL != last_load_var_content) {
-        // Free the allocated data
-        free(last_load_var_content);
-        last_load_var_content = NULL;
-    }
 
     depth_load_var_parser--;
 }
@@ -6826,7 +6792,6 @@ CVariableStorage::loadFromXML(const std::string &path)
     XML_Parser xmlParser = XML_ParserCreate("UTF-8");
     XML_SetUserData(xmlParser, this);
     XML_SetElementHandler(xmlParser, startLoadVarParser, endLoadVarParser);
-    XML_SetCharacterDataHandler(xmlParser, handleLoadVardata);
 
     int bytes_read;
     void *buf = XML_GetBuffer(xmlParser, XML_BUFF_SIZE);

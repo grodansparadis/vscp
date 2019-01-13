@@ -3731,7 +3731,7 @@ restsrv_convertXML2JSON(const char *input, const char *output)
     oss << is.rdbuf();
 
     // https://github.com/Cheedoong/xml2json
-    std::string json_str = xml2json( oss.str().data() );
+    //std::string json_str = xml2json( oss.str().data() );
 
     std::ofstream myfile;
     myfile.open(output);
