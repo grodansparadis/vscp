@@ -846,13 +846,13 @@ dmElement::dmElement()
     m_bEnable = false;
     m_bStatic = false;
     m_id      = 0;
-    m_strGroupID.empty();
+    m_strGroupID.clear();
     vscp_clearVSCPFilter(&m_vscpfilter);
     m_actionCode   = 0;
     m_triggCounter = 0;
     m_errorCounter = 0;
-    m_actionparam.empty();
-    m_comment.empty();
+    m_actionparam.clear();
+    m_comment.clear();
 
     m_bCheckIndex = false;
     m_index       = 0;
@@ -1154,7 +1154,7 @@ dmElement::setFromString(std::string &strDM)
     vscp_split(tokens, strDM, ",");
 
     // bEnable
-    if (tokens.empty()) {
+    if (!tokens.empty()) {
         str = tokens.front();
         tokens.pop_front();
         vscp_trim(str);
@@ -5477,7 +5477,7 @@ CDM::getAllRows(std::string &strAllRows)
 {
     short row = 0;
 
-    strAllRows.empty();
+    strAllRows.clear();
 
     std::deque<dmElement *>::iterator it;
     for (it = m_DMList.begin(); it != m_DMList.end(); ++it) {
