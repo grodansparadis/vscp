@@ -1247,7 +1247,7 @@ CUserTableObjList::createTableFromString(const std::string &strCreate)
     strCreateXML += "name = \"" + str + "\" ";
 
     // benable = "true"
-    if (!tokens.empty()) {
+    if (tokens.empty()) {
         return false;
     }
 
@@ -1256,7 +1256,7 @@ CUserTableObjList::createTableFromString(const std::string &strCreate)
     strCreateXML += "benable = \"" + str + "\" ";
 
     // binmemory = "false"
-    if (!tokens.empty()) {
+    if (tokens.empty()) {
         return false;
     }
 
@@ -1265,7 +1265,7 @@ CUserTableObjList::createTableFromString(const std::string &strCreate)
     strCreateXML += "binmemory = \"" + str + "\" ";
 
     // type = "dynamic"
-    if (!tokens.empty()) {
+    if (tokens.empty()) {
         return false;
     }
 
@@ -1274,7 +1274,7 @@ CUserTableObjList::createTableFromString(const std::string &strCreate)
     strCreateXML += "type = \"" + str + "\" ";
 
     // size = "0"
-    if (!tokens.empty()) {
+    if (tokens.empty()) {
         return false;
     }
 
@@ -1283,7 +1283,7 @@ CUserTableObjList::createTableFromString(const std::string &strCreate)
     strCreateXML += "size = \"" + str + "\" ";
 
     // owner = "admin"
-    if (!tokens.empty()) {
+    if (tokens.empty()) {
         return false;
     }
 
@@ -1292,7 +1292,7 @@ CUserTableObjList::createTableFromString(const std::string &strCreate)
     strCreateXML += "owner = \"" + str + "\" ";
 
     // rights = "0x777"
-    if (!tokens.empty()) {
+    if (tokens.empty()) {
         return false;
     }
 
@@ -1301,7 +1301,7 @@ CUserTableObjList::createTableFromString(const std::string &strCreate)
     strCreateXML += "rights = \"" + str + "\" ";
 
     // title = "This is a title"
-    if (!tokens.empty()) {
+    if (tokens.empty()) {
         return false;
     }
 
@@ -1310,7 +1310,7 @@ CUserTableObjList::createTableFromString(const std::string &strCreate)
     strCreateXML += "title = \"" + str + "\" ";
 
     // xname = "This the x-lable"
-    if (!tokens.empty()) {
+    if (tokens.empty()) {
         return false;
     }
 
@@ -1319,7 +1319,7 @@ CUserTableObjList::createTableFromString(const std::string &strCreate)
     strCreateXML += "xname = \"" + str + "\" ";
 
     // yname = "This is the y-label"
-    if (!tokens.empty()) {
+    if (tokens.empty()) {
         return false;
     }
 
@@ -1328,7 +1328,7 @@ CUserTableObjList::createTableFromString(const std::string &strCreate)
     strCreateXML += "yname = \"" + str + "\" ";
 
     // note = "This is a note"
-    if (!tokens.empty()) {
+    if (tokens.empty()) {
         return false;
     }
 
@@ -1337,7 +1337,7 @@ CUserTableObjList::createTableFromString(const std::string &strCreate)
     strCreateXML += "note = \"" + str + "\" ";
 
     // sqlcreate = "SQL create expression"
-    if (!tokens.empty()) {
+    if (tokens.empty()) {
         return false;
     }
 
@@ -1346,7 +1346,7 @@ CUserTableObjList::createTableFromString(const std::string &strCreate)
     strCreateXML += "sqlcreate = \"" + str + "\" ";
 
     // sqlinsert = "SQL insert expression"
-    if (!tokens.empty()) {
+    if (tokens.empty()) {
         return false;
     }
 
@@ -1355,7 +1355,7 @@ CUserTableObjList::createTableFromString(const std::string &strCreate)
     strCreateXML += "sqlinsert = \"" + str + "\" ";
 
     // sqldelete = "SQL delete expression"
-    if (!tokens.empty()) {
+    if (tokens.empty()) {
         return false;
     }
 
@@ -1364,7 +1364,7 @@ CUserTableObjList::createTableFromString(const std::string &strCreate)
     strCreateXML += "sqldelete = \"" + str + "\" ";
 
     // description = "This is the description"
-    if (!tokens.empty()) {
+    if (tokens.empty()) {
         return false;
     }
 
@@ -1373,7 +1373,7 @@ CUserTableObjList::createTableFromString(const std::string &strCreate)
     strCreateXML += "description = \"" + str + "\" ";
 
     // vscpclass = "10"
-    if (!tokens.empty()) {
+    if (tokens.empty()) {
         return false;
     }
 
@@ -1382,7 +1382,7 @@ CUserTableObjList::createTableFromString(const std::string &strCreate)
     strCreateXML += "vscpclass = \"" + str + "\" ";
 
     // vscptype = "6"
-    if (!tokens.empty()) {
+    if (tokens.empty()) {
         return false;
     }
 
@@ -1391,7 +1391,7 @@ CUserTableObjList::createTableFromString(const std::string &strCreate)
     strCreateXML += "vscptype = \"" + str + "\" ";
 
     // sensorindex = "0"
-    if (!tokens.empty()) {
+    if (tokens.empty()) {
         return false;
     }
 
@@ -1400,7 +1400,7 @@ CUserTableObjList::createTableFromString(const std::string &strCreate)
     strCreateXML += "sensorindex = \"" + str + "\" ";
 
     // unit = "1"
-    if (!tokens.empty()) {
+    if (tokens.empty()) {
         return false;
     }
 
@@ -1409,7 +1409,7 @@ CUserTableObjList::createTableFromString(const std::string &strCreate)
     strCreateXML += "unit = \"" + str + "\" ";
 
     // zone = "0"
-    if (!tokens.empty()) {
+    if (tokens.empty()) {
         return false;
     }
 
@@ -1418,7 +1418,7 @@ CUserTableObjList::createTableFromString(const std::string &strCreate)
     strCreateXML += "zone = \"" + str + "\" ";
 
     // subzone = "0"
-    if (!tokens.empty()) {
+    if (tokens.empty()) {
         return false;
     }
 
