@@ -141,7 +141,7 @@ CVariable::fixName(void)
 
 void
 CVariable::makeAccessRightString(uint32_t accessrights,
-                                     std::string &strAccessRights)
+                                 std::string &strAccessRights)
 {
     strAccessRights.clear();
 
@@ -485,17 +485,17 @@ CVariable::getAsJSON(std::string &strVariable)
     // name,type,user,rights,persistence,last,bnumerical,bbase64,value,note
     // value is numerical for a numerical variable else string
     vscp_str_format(strVariable,
-                       VARIABLE_JSON_TEMPLATE,
-                       m_name,
-                       (unsigned short int)m_type,
-                       (unsigned long int)m_userid,
-                       (unsigned long int)m_accessRights,
-                       m_bPersistent ? "true" : "false",
-                       (const char *)m_lastChanged.getISODateTime().c_str(),
-                       isNumerical() ? "true" : "false",
-                       "true",
-                       isNumerical() ? m_strValue : "\"" + str + "\"",
-                       m_note);
+                    VARIABLE_JSON_TEMPLATE,
+                    m_name,
+                    (unsigned short int)m_type,
+                    (unsigned long int)m_userid,
+                    (unsigned long int)m_accessRights,
+                    m_bPersistent ? "true" : "false",
+                    (const char *)m_lastChanged.getISODateTime().c_str(),
+                    isNumerical() ? "true" : "false",
+                    "true",
+                    isNumerical() ? m_strValue : "\"" + str + "\"",
+                    m_note);
     return true;
 }
 
@@ -597,15 +597,15 @@ CVariable::getAsXML(std::string &strVariable)
     vscp_base64_std_encode(str);
 
     vscp_str_format(strVariable,
-                       VARIABLE_XML_TEMPLATE,
-                       m_name,
-                       (unsigned short int)m_type,
-                       (unsigned long int)m_userid,
-                       (unsigned long int)m_accessRights,
-                       m_bPersistent ? ("true") : ("false"),
-                       (const char *)m_lastChanged.getISODateTime().c_str(),
-                       str,
-                       m_note);
+                    VARIABLE_XML_TEMPLATE,
+                    m_name,
+                    (unsigned short int)m_type,
+                    (unsigned long int)m_userid,
+                    (unsigned long int)m_accessRights,
+                    m_bPersistent ? ("true") : ("false"),
+                    (const char *)m_lastChanged.getISODateTime().c_str(),
+                    str,
+                    m_note);
     return true;
 }
 
@@ -909,8 +909,8 @@ CVariable::setValue(vscpdatetime &val)
 
 bool
 CVariable::setValueFromString(int type,
-                                  const std::string &strValue,
-                                  bool bBase64)
+                              const std::string &strValue,
+                              bool bBase64)
 {
     std::string str = strValue;
 
@@ -1079,16 +1079,16 @@ CVariable::getNote(std::string &strNote, bool bBase64)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// setVariableFromString
+// setFromString
 //
-// Format is: "variable
-// name";"type";"persistence";"user";"rights";"value";"note"
+// Format is:
+// "variable;name";"type";"persistence";"user";"rights";"value";"note"
+// value and note is always BASE64 encoded.
 //
 
 bool
-CVariable::setVariableFromString(const std::string &strVariable,
-                                     bool bBase64,
-                                     const std::string &strUser)
+CVariable::setFromString(const std::string &strVariable,
+                                 const std::string &strUser)
 {
     std::string strRights;    // User rights for variable
     bool bPersistent = false; // Persistence of variable
@@ -1190,18 +1190,10 @@ CVariable::setVariableFromString(const std::string &strVariable,
 
     // Get the value of the variable
     if (!tokens.empty()) {
-
         std::string value = tokens.front();
         tokens.pop_front();
         vscp_trim(value);
-
-        if (value.length()) {
-            setValueFromString(m_type, value);
-        } else {
-            // If no value given use RESET value
-            reset();
-        }
-
+        setValueFromString(m_type, value);
     } else {
         return false;
     }
@@ -1212,11 +1204,6 @@ CVariable::setVariableFromString(const std::string &strVariable,
 
         std::string note = tokens.front();
         tokens.pop_front();
-
-        // If the string starts with "Base64" it should be encoded
-        std::string str = note;
-        vscp_std_decodeBase64IfNeeded(str, note);
-
         setNote(note);
     }
 
@@ -3368,10 +3355,10 @@ CVariableStorage::getStockVariable(const std::string &name,
         }
 
         var.setValue(vscp_str_format("%d.%d.%d.%d",
-                                        guid.getAt(11),
-                                        guid.getAt(10),
-                                        guid.getAt(9),
-                                        guid.getAt(8)));
+                                     guid.getAt(11),
+                                     guid.getAt(10),
+                                     guid.getAt(9),
+                                     guid.getAt(8)));
         return var.getID();
     }
 
@@ -3383,12 +3370,12 @@ CVariableStorage::getStockVariable(const std::string &name,
         }
 
         var.setValue(vscp_str_format("%02X:%02X:%02X:%02X:%02X:%02X",
-                                        guid.getAt(13),
-                                        guid.getAt(12),
-                                        guid.getAt(11),
-                                        guid.getAt(10),
-                                        guid.getAt(9),
-                                        guid.getAt(8)));
+                                     guid.getAt(13),
+                                     guid.getAt(12),
+                                     guid.getAt(11),
+                                     guid.getAt(10),
+                                     guid.getAt(9),
+                                     guid.getAt(8)));
         return var.getID();
     }
 
@@ -3865,14 +3852,12 @@ CVariableStorage::getStockVariable(const std::string &name,
     }
 
     if (vscp_startsWith(lcname, "vscp.automation.longitude")) {
-        var.setValue(
-          vscp_str_format("%f", gpobj->m_automation.getLongitude()));
+        var.setValue(vscp_str_format("%f", gpobj->m_automation.getLongitude()));
         return var.getID();
     }
 
     if (vscp_startsWith(lcname, "vscp.automation.latitude")) {
-        var.setValue(
-          vscp_str_format("%f", gpobj->m_automation.getLatitude()));
+        var.setValue(vscp_str_format("%f", gpobj->m_automation.getLatitude()));
         return var.getID();
     }
 
@@ -3882,8 +3867,8 @@ CVariableStorage::getStockVariable(const std::string &name,
     }
 
     if (vscp_startsWith(lcname, "vscp.automation.heartbeat.period")) {
-        var.setValue(vscp_str_format(
-          "%ld", gpobj->m_automation.getIntervalHeartbeat()));
+        var.setValue(
+          vscp_str_format("%ld", gpobj->m_automation.getIntervalHeartbeat()));
         return var.getID();
     }
 
@@ -4804,8 +4789,8 @@ CVariableStorage::putStockVariable(CVariable &var, CUserItem *pUser)
         int val;
         var.getValue(&val);
         gpobj->m_maxItemsInClientReceiveQueue = val;
-        return gpobj->updateConfigurationRecordItem(
-          ("vscpd.maxqueue"), vscp_str_format("%d", val));
+        return gpobj->updateConfigurationRecordItem(("vscpd.maxqueue"),
+                                                    vscp_str_format("%d", val));
     }
 
     if (vscp_startsWith(lcname, "vscp.tcpip.address")) {
@@ -4826,7 +4811,7 @@ CVariableStorage::putStockVariable(CVariable &var, CUserItem *pUser)
 
     if (vscp_startsWith(lcname, "vscp.udp.address")) {
         std::string strval;
-        strval = var.getValue();
+        strval                         = var.getValue();
         gpobj->m_udpSrvObj.m_interface = strval;
         return gpobj->updateConfigurationRecordItem(
           ("vscpd_UdpSimpleInterface_Address"), strval);
@@ -5974,7 +5959,8 @@ CVariableStorage::putStockVariable(CVariable &var, CUserItem *pUser)
         }
     }
 
-    // ----------------------------- Not Found
+    // ------------------------------------- 
+    // Not Found
     // -------------------------------------
 
     return false; // Not a stock variable
@@ -6058,7 +6044,7 @@ CVariableStorage::findNonPersistentVariable(const std::string &name,
     // Get the data for the variable
     if (SQLITE_ROW == sqlite3_step(ppStmt)) {
         setVariableFromDbRecord(ppStmt, variable);
-        /*
+        /*   TODO 
         variable.setID( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_ID )
         ); variable.m_lastChanged.getISODateTime( (const char
         *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_LASTCHANGE ) );
@@ -6107,7 +6093,7 @@ CVariableStorage::findPersistentVariable(const std::string &name,
     // Get the result
     if (SQLITE_ROW == sqlite3_step(ppStmt)) {
         setVariableFromDbRecord(ppStmt, variable);
-        /*
+        /*   TODO ???? 
         variable.setID( sqlite3_column_int( ppStmt, VSCPDB_ORDINAL_VARIABLE_ID )
         ); variable.m_lastChanged.getISODateTime( (const char
         *)sqlite3_column_text( ppStmt, VSCPDB_ORDINAL_VARIABLE_LASTCHANGE ) );
@@ -6658,7 +6644,7 @@ CVariableStorage::doCreateInternalVariableTable(void)
 
 // ----------------------------------------------------------------------------
 
-static int depth_load_var_parser   = 0;
+static int depth_load_var_parser = 0;
 
 static void
 startLoadVarParser(void *data, const char *name, const char **attr)
@@ -6698,9 +6684,11 @@ startLoadVarParser(void *data, const char *name, const char **attr)
                     uint32_t ar = vscp_readStringValue(attribute);
                     var.setAccessRights(ar);
                 } else if (0 == vscp_strcasecmp(attr[i], "value")) {
-                    var.setValue(attribute);
+                    // Always BASE64 encoded on file
+                    var.setValue(attribute, true);
                 } else if (0 == vscp_strcasecmp(attr[i], "note")) {
-                    var.setNote(attribute);
+                    //  Allways BASE64 encoded on file
+                    var.setNote(attribute, true);
                 }
             }
 
@@ -6735,8 +6723,6 @@ startLoadVarParser(void *data, const char *name, const char **attr)
 
     depth_load_var_parser++;
 }
-
-
 
 static void
 endLoadVarParser(void *data, const char *name)
@@ -6822,7 +6808,6 @@ CVariableStorage::loadFromXML(const std::string &path)
 ///////////////////////////////////////////////////////////////////////////////
 // save
 //
-//
 
 bool
 CVariableStorage::save()
@@ -6836,7 +6821,6 @@ CVariableStorage::save()
 
 ///////////////////////////////////////////////////////////////////////////////
 // save
-//
 //
 
 bool
@@ -7003,15 +6987,13 @@ CVariableStorage::save(std::string &path, uint8_t whatToSave)
 //
 
 bool
-CVariableStorage::writeVariableToXmlFile(std::ofstream &of,
-                                         CVariable &variable)
+CVariableStorage::writeVariableToXmlFile(std::ofstream &of, CVariable &variable)
 {
     std::string str, strtemp;
     std::string name = variable.getName();
 
     try {
-        of << vscp_str_format("  <variable type=\"%d\" ",
-                                 variable.getType());
+        of << vscp_str_format("  <variable type=\"%d\" ", variable.getType());
         of << vscp_str_format(" name=\"%s\" ", (const char *)name.c_str());
         if (variable.isPersistent()) {
             of << " persistent=\"true\" ";
@@ -7020,13 +7002,12 @@ CVariableStorage::writeVariableToXmlFile(std::ofstream &of,
         }
         of << vscp_str_format(" user=\"%d\" ", variable.getOwnerID());
         of << vscp_str_format(" access-rights=\"%d\" ",
-                                 variable.getAccessRights());
+                              variable.getAccessRights());
         variable.writeValueToString(strtemp);
-        of << vscp_str_format(" value=\"%s\" ",
-                                 (const char *)strtemp.c_str());
+        of << vscp_str_format(" value=\"%s\" ", (const char *)strtemp.c_str());
         // Always save on base64 encoded form
         of << vscp_str_format(" note=\"%s\" ",
-                                 (const char *)variable.getNote().c_str());
+                              (const char *)variable.getNote().c_str());
         of << " />\n\n";
     } catch (...) {
         syslog(LOG_ERR,

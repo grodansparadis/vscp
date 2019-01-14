@@ -4419,8 +4419,8 @@ tcpipClientObj::handleVariable_Write(void)
 
     vscp_trim(m_pClientItem->m_currentCommand);
 
-    if (!variable.setVariableFromString(
-          m_pClientItem->m_currentCommand, false, m_pClientItem->m_UserName)) {
+    if (!variable.setFromString(
+          m_pClientItem->m_currentCommand, m_pClientItem->m_UserName)) {
         // Failed to parse
         write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
         return;

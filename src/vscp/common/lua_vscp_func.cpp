@@ -517,7 +517,7 @@ int lua_vscp_writeVariable( struct lua_State *L )
                 
     if ( 0 == format ) {
         // Set variable from string
-        if ( !variable.setVariableFromString( varValue ) ) {
+        if ( !variable.setFromString( varValue ) ) {
             return luaL_error( L, "vscp.writevariable: Could not set variable"
                                   " from string.");
         }

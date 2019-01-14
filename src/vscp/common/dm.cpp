@@ -3642,7 +3642,7 @@ dmElement::doActionStoreVariable(vscpEvent *pDMEvent)
     if (tokens.size() >= 6) {
         // The form is variable-name; variable-type; persistence; value
 
-        if (!(var.setVariableFromString(params))) {
+        if (!(var.setFromString(params))) {
             // must be a variable
             syslog(LOG_ERR,
                    "[DM] "

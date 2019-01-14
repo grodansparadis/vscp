@@ -126,6 +126,17 @@
     "value=\"%s\" \n"                                                          \
     "note=\"%s\" />"
 
+class CStockVar 
+{
+
+public:    
+    CStockVar(std::string name);
+    ~CStockVar();
+
+    typedef bool ( *STOCKVAR_SET ) ( std::string setString );
+    typedef std::string ( *STOCKVAR_GET ) ( void );
+};
+
 /*
  * Structure used for multi call variable
  * queries.
@@ -196,7 +207,7 @@ class CVariable
     /*!
         Set variable information from a string value
         Format is: "variable
-       name","type","persistence","user","rights","value","note" User can be
+       name";"type";"persistence";"user";"rights";"value";"note" User can be
        numeric (userid) or given as a username. It is valid to leave all fields
         blank ";;" except for variablename
         @param str String that will get string representation of variable with
@@ -205,8 +216,7 @@ class CVariable
         @param strUser User name that is used if user field is empty.
         @return true if the string could be parsed correctly.
      */
-    bool setVariableFromString(const std::string &strVariable,
-                               bool bBase64               = false,
+    bool setFromString(const std::string &strVariable,
                                const std::string &strUser = "admin");
 
     /*!
@@ -253,6 +263,11 @@ class CVariable
     bool setFromXML(std::string &strVariable);
 
     /*!
+        Get the length for the string value of a variable
+     */
+    size_t getLength(void) { return m_strValue.length(); };
+
+    /*!
         Reset the variable to it's default value
         Set variable to default values
      */
@@ -266,10 +281,7 @@ class CVariable
      */
     bool isTrue(void);
 
-    /*!
-     Get the length for the string value of a variable
-     */
-    size_t getLength(void) { return m_strValue.length(); };
+
 
     /*!
         setTrue
@@ -628,8 +640,7 @@ class CVariableStorage
      * set to NULL in which case only availability of the variable is returned.
      * @return id if variable is found, zero if not.
      */
-    uint32_t findPersistentVariable(const std::string &name,
-                                    CVariable &pVar);
+    uint32_t findPersistentVariable(const std::string &name, CVariable &pVar);
 
     /*!
      * Add stock variable
