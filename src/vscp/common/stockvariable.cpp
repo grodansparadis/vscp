@@ -145,7 +145,7 @@ CVariableStorage::stockvariable(std::string &name,
                 return addStockVariable(var);
             } else if (STOCKVAR_READ == op) {
                 // Is user allowed to read?
-                var.setValue((long)gpobj->m_debugFlags1);
+                var.setValue((long)gpobj->m_debugFlags[0]);
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
@@ -154,7 +154,7 @@ CVariableStorage::stockvariable(std::string &name,
                 }
                 long value;
                 var.getValue(&value);
-                gpobj->m_debugFlags1 = (uint32_t)value;
+                gpobj->m_debugFlags[0] = (uint32_t)value;
                 return true;
             }
         }

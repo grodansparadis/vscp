@@ -122,15 +122,15 @@ CControlObject::CControlObject()
       false; // true for clientWorkerThread termination
 
     // Debug flags
-    // m_debugFlags1 = VSCP_DEBUG1_ALL;
-    m_debugFlags1 = 0;
-    // m_debugFlags1 |= VSCP_DEBUG1_DM;
-    // m_debugFlags1 |= VSCP_DEBUG1_AUTOMATION;
-    // m_debugFlags1 |= VSCP_DEBUG1_VARIABLE;
-    // m_debugFlags1 |= VSCP_DEBUG1_MULTICAST;
-    // m_debugFlags1 |= VSCP_DEBUG1_UDP;
-    // m_debugFlags1 |= VSCP_DEBUG1_TCP;
-    // m_debugFlags1 |= VSCP_DEBUG1_DRIVER
+    // m_debugFlags[0] = VSCP_DEBUG1_ALL;
+    m_debugFlags[0] = 0;
+    // m_debugFlags[0] |= VSCP_DEBUG1_DM;
+    // m_debugFlags[0] |= VSCP_DEBUG1_AUTOMATION;
+    // m_debugFlags[0] |= VSCP_DEBUG1_VARIABLE;
+    // m_debugFlags[0] |= VSCP_DEBUG1_MULTICAST;
+    // m_debugFlags[0] |= VSCP_DEBUG1_UDP;
+    // m_debugFlags[0] |= VSCP_DEBUG1_TCP;
+    // m_debugFlags[0] |= VSCP_DEBUG1_DRIVER
 
     m_rootFolder = "/srv/vscp/";
 
@@ -1957,35 +1957,35 @@ startGeneralConfigParser(void *data, const char *name, const char **attr)
                     }
                 } else if (0 == vscp_strcasecmp(attr[i], "debugflags1")) {
                     if (attribute.length()) {
-                        pObj->m_debugFlags1 = vscp_readStringValue(attribute);
+                        pObj->m_debugFlags[0] = vscp_readStringValue(attribute);
                     }
                 } else if (0 == vscp_strcasecmp(attr[i], "debugflags2")) {
                     if (attribute.length()) {
-                        pObj->m_debugFlags2 = vscp_readStringValue(attribute);
+                        pObj->m_debugFlags[1] = vscp_readStringValue(attribute);
                     }
                 } else if (0 == vscp_strcasecmp(attr[i], "debugflags3")) {
                     if (attribute.length()) {
-                        pObj->m_debugFlags3 = vscp_readStringValue(attribute);
+                        pObj->m_debugFlags[2] = vscp_readStringValue(attribute);
                     }
                 } else if (0 == vscp_strcasecmp(attr[i], "debugflags4")) {
                     if (attribute.length()) {
-                        pObj->m_debugFlags4 = vscp_readStringValue(attribute);
+                        pObj->m_debugFlags[3] = vscp_readStringValue(attribute);
                     }
                 } else if (0 == vscp_strcasecmp(attr[i], "debugflags5")) {
                     if (attribute.length()) {
-                        pObj->m_debugFlags5 = vscp_readStringValue(attribute);
+                        pObj->m_debugFlags[4] = vscp_readStringValue(attribute);
                     }
                 } else if (0 == vscp_strcasecmp(attr[i], "debugflags6")) {
                     if (attribute.length()) {
-                        pObj->m_debugFlags6 = vscp_readStringValue(attribute);
+                        pObj->m_debugFlags[5] = vscp_readStringValue(attribute);
                     }
                 } else if (0 == vscp_strcasecmp(attr[i], "debugflags7")) {
                     if (attribute.length()) {
-                        pObj->m_debugFlags7 = vscp_readStringValue(attribute);
+                        pObj->m_debugFlags[6] = vscp_readStringValue(attribute);
                     }
                 } else if (0 == vscp_strcasecmp(attr[i], "debugflags8")) {
                     if (attribute.length()) {
-                        pObj->m_debugFlags8 = vscp_readStringValue(attribute);
+                        pObj->m_debugFlags[7] = vscp_readStringValue(attribute);
                     }
                 }
             }
@@ -2424,7 +2424,7 @@ startFullConfigParser(void *data, const char *name, const char **attr)
                     pObj->m_dm.m_staticXMLPath = attribute;
                 }
             } else if (0 == vscp_strcasecmp(attr[i], "loglevel")) {
-                pObj->m_debugFlags1 |= VSCP_DEBUG1_DM;
+                pObj->m_debugFlags[0] |= VSCP_DEBUG1_DM;
             }
         }
 

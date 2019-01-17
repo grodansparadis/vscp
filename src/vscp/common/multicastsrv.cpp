@@ -135,7 +135,7 @@ m_bAllowUnsecure set to true) to be accepted.\n" ) ) ); return;
                                     &pMulticastClientThread->m_pChannel->m_rxFilter
 )  ) {
 
-                    if ( m_pObj->m_debugFlags1 & VSCP_DEBUG1_MULTICAST ) {
+                    if ( m_pObj->m_debugFlags[0] & VSCP_DEBUG1_MULTICAST ) {
                         syslog( LOG_ERR, vscp_str_format( ( "[Multicast channel]
 Received Multicast event\n" ) ), DAEMON_LOGMSG_DEBUG, DAEMON_LOGTYPE_GENERAL );
                     }

@@ -3139,42 +3139,42 @@ CVariableStorage::getStockVariable(const std::string &name,
     if (vscp_startsWith(lcname, "vscp.debug")) {
 
         if (vscp_startsWith(lcname, "vscp.debug.flags1")) {
-            var.setValue((long)gpobj->m_debugFlags1);
+            var.setValue((long)gpobj->m_debugFlags[0]);
             return var.getID();
         }
 
         if (vscp_startsWith(lcname, "vscp.debug.flags2")) {
-            var.setValue((long)gpobj->m_debugFlags2);
+            var.setValue((long)gpobj->m_debugFlags[1]);
             return var.getID();
         }
 
         if (vscp_startsWith(lcname, "vscp.debug.flags3")) {
-            var.setValue((long)gpobj->m_debugFlags3);
+            var.setValue((long)gpobj->m_debugFlags[2]);
             return var.getID();
         }
 
         if (vscp_startsWith(lcname, "vscp.debug.flags4")) {
-            var.setValue((long)gpobj->m_debugFlags4);
+            var.setValue((long)gpobj->m_debugFlags[3]);
             return var.getID();
         }
 
         if (vscp_startsWith(lcname, "vscp.debug.flags5")) {
-            var.setValue((long)gpobj->m_debugFlags5);
+            var.setValue((long)gpobj->m_debugFlags[4]);
             return var.getID();
         }
 
         if (vscp_startsWith(lcname, "vscp.debug.flags6")) {
-            var.setValue((long)gpobj->m_debugFlags6);
+            var.setValue((long)gpobj->m_debugFlags[5]);
             return var.getID();
         }
 
         if (vscp_startsWith(lcname, "vscp.debug.flags7")) {
-            var.setValue((long)gpobj->m_debugFlags7);
+            var.setValue((long)gpobj->m_debugFlags[6]);
             return var.getID();
         }
 
         if (vscp_startsWith(lcname, "vscp.debug.flags8")) {
-            var.setValue((long)gpobj->m_debugFlags8);
+            var.setValue((long)gpobj->m_debugFlags[7]);
             return var.getID();
         }
     }
@@ -4061,7 +4061,7 @@ CVariableStorage::getStockVariable(const std::string &name,
     }
 
     if (vscp_startsWith(lcname, "vscp.dm.loglevel")) {
-        if (gpobj->m_debugFlags1 & VSCP_DEBUG1_DM) {
+        if (gpobj->m_debugFlags[0] & VSCP_DEBUG1_DM) {
             var.setValue("debug");
         } else {
             var.setValue("normal");
@@ -4619,56 +4619,56 @@ CVariableStorage::putStockVariable(CVariable &var, CUserItem *pUser)
     if (vscp_startsWith(lcname, "vscp.debug.flags1")) {
         long value;
         var.getValue(&value);
-        gpobj->m_debugFlags1 = (uint32_t)value;
+        gpobj->m_debugFlags[0] = (uint32_t)value;
         return true; // None writable
     }
 
     if (vscp_startsWith(lcname, "vscp.debug.flags2")) {
         long value;
         var.getValue(&value);
-        gpobj->m_debugFlags2 = (uint32_t)value;
+        gpobj->m_debugFlags[1] = (uint32_t)value;
         return true; // None writable
     }
 
     if (vscp_startsWith(lcname, "vscp.debug.flags3")) {
         long value;
         var.getValue(&value);
-        gpobj->m_debugFlags3 = (uint32_t)value;
+        gpobj->m_debugFlags[2] = (uint32_t)value;
         return true; // None writable
     }
 
     if (vscp_startsWith(lcname, "vscp.debug.flags4")) {
         long value;
         var.getValue(&value);
-        gpobj->m_debugFlags4 = (uint32_t)value;
+        gpobj->m_debugFlags[3] = (uint32_t)value;
         return true; // None writable
     }
 
     if (vscp_startsWith(lcname, "vscp.debug.flags5")) {
         long value;
         var.getValue(&value);
-        gpobj->m_debugFlags5 = (uint32_t)value;
+        gpobj->m_debugFlags[4] = (uint32_t)value;
         return true; // None writable
     }
 
     if (vscp_startsWith(lcname, "vscp.debug.flags6")) {
         long value;
         var.getValue(&value);
-        gpobj->m_debugFlags6 = (uint32_t)value;
+        gpobj->m_debugFlags[5] = (uint32_t)value;
         return true; // None writable
     }
 
     if (vscp_startsWith(lcname, "vscp.debug.flags7")) {
         long value;
         var.getValue(&value);
-        gpobj->m_debugFlags7 = (uint32_t)value;
+        gpobj->m_debugFlags[6] = (uint32_t)value;
         return true; // None writable
     }
 
     if (vscp_startsWith(lcname, "vscp.debug.flags8")) {
         long value;
         var.getValue(&value);
-        gpobj->m_debugFlags8 = (uint32_t)value;
+        gpobj->m_debugFlags[7] = (uint32_t)value;
         return true; // None writable
     }
 
@@ -6742,7 +6742,7 @@ startLoadVarParser(void *data, const char *name, const char **attr)
 
             if (pStorage->exist(var.getName())) {
                 if (pStorage->update(var)) {
-                    if (gpobj->m_debugFlags1 & VSCP_DEBUG1_VARIABLE) {
+                    if (gpobj->m_debugFlags[0] & VSCP_DEBUG1_VARIABLE) {
                         syslog(LOG_DEBUG,
                                "[Loading XML file] Update variable %s.",
                                (const char *)var.getName().c_str());
@@ -6755,7 +6755,7 @@ startLoadVarParser(void *data, const char *name, const char **attr)
 
             } else {
                 if (pStorage->add(var)) {
-                    if (gpobj->m_debugFlags1 & VSCP_DEBUG1_VARIABLE) {
+                    if (gpobj->m_debugFlags[0] & VSCP_DEBUG1_VARIABLE) {
                         syslog(LOG_DEBUG,
                                "[Loading XML file] Added variable %s.",
                                (const char *)var.getName().c_str());
@@ -6799,7 +6799,7 @@ CVariableStorage::loadFromXML(const std::string &path)
     // If a null path is supplied use the configured path
     if (path.empty()) {
         xmlpath = m_xmlPath;
-        if (gpobj->m_debugFlags1 & VSCP_DEBUG1_VARIABLE) {
+        if (gpobj->m_debugFlags[0] & VSCP_DEBUG1_VARIABLE) {
             syslog(LOG_ERR,
                    "[loadFromXML] Loading variable XML file from %s.",
                    m_xmlPath.c_str());
@@ -6807,7 +6807,7 @@ CVariableStorage::loadFromXML(const std::string &path)
 
     } else {
         xmlpath = path;
-        if (gpobj->m_debugFlags1 & VSCP_DEBUG1_VARIABLE) {
+        if (gpobj->m_debugFlags[0] & VSCP_DEBUG1_VARIABLE) {
             syslog(LOG_ERR,
                    "[loadFromXML] Loading variable XML file from %s.",
                    (const char *)path.c_str());

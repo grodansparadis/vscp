@@ -2749,7 +2749,7 @@ dmElement::doAction(vscpEvent *pEvent)
             break;
     }
 
-    if (gpobj->m_debugFlags1 & VSCP_DEBUG1_DM) {
+    if (gpobj->m_debugFlags[0] & VSCP_DEBUG1_DM) {
         std::string strEvent;
         vscp_writeVscpEventToString(pEvent, strEvent);
         syslog(LOG_ERR,
@@ -2809,7 +2809,7 @@ dmElement::doActionExecute(vscpEvent *pDMEvent, bool bCheckExecutable)
     //if ( bOK && ( ::xxExecute(str, xxEXEC_ASYNC  ) ) ) {
     if ( unixVSCPExecute( str ) ) {
   #endif
-        if ( gpobj->m_debugFlags1 & VSCP_DEBUG1_DM ) {
+        if ( gpobj->m_debugFlags[0] & VSCP_DEBUG1_DM ) {
             syslog( LOG_ERR, "[DM] [Action] Executed:", m_actionparam.c_str() );
         }
     }
@@ -2951,7 +2951,7 @@ dmElement::doActionExecuteConditional(vscpEvent *pDMEvent,
     //if ( bOK && ( ::xxExecute(str, xxEXEC_ASYNC  ) ) ) {
     if ( unixVSCPExecute( str ) ) {
   #endif
-        if ( gpobj->m_debugFlags1 & VSCP_DEBUG1_DM ) {
+        if ( gpobj->m_debugFlags[0] & VSCP_DEBUG1_DM ) {
             syslog(  LOG_ERR, "[DM] [Action] Conditional Executed: ",
   m_actionparam.c_str()  );
         }
@@ -5347,7 +5347,7 @@ CDM::init(void)
         }
     }
 
-    if (gpobj->m_debugFlags1 & VSCP_DEBUG1_DM) {
+    if (gpobj->m_debugFlags[0] & VSCP_DEBUG1_DM) {
         syslog(LOG_ERR,
                "[DM] DM engine started. DM from [%s]",
                m_staticXMLPath.c_str());
@@ -6115,7 +6115,7 @@ CDM::addTimer(uint32_t id,
     dmTimer *pTimer;
 
     // Log
-    if (gpobj->m_debugFlags1 & VSCP_DEBUG1_DM_TIMERS) {
+    if (gpobj->m_debugFlags[0] & VSCP_DEBUG1_DM_TIMERS) {
         syslog(LOG_ERR,
                "[DM] [Add timer] Add Timer %s.",
                (const char *)nameVar.c_str());
@@ -6130,7 +6130,7 @@ CDM::addTimer(uint32_t id,
         pTimer->setActive(bStart);
         pTimer->setReloadLimit(reloadLimit);
 
-        if (gpobj->m_debugFlags1 & VSCP_DEBUG1_DM_TIMERS) {
+        if (gpobj->m_debugFlags[0] & VSCP_DEBUG1_DM_TIMERS) {
             syslog(LOG_ERR,
                    "[DM] [Add timer] Timer %d "
                    "already exist.",
@@ -6158,7 +6158,7 @@ CDM::addTimer(uint32_t id,
 
     // Create variable if it does not exist
     if (!gpobj->m_variables.exist(nameVar)) {
-        if (gpobj->m_debugFlags1 & VSCP_DEBUG1_DM_TIMERS) {
+        if (gpobj->m_debugFlags[0] & VSCP_DEBUG1_DM_TIMERS) {
             syslog(LOG_ERR,
                    "[DM] [Add timer] Variable [%s] not defined. "
                    "Creating it.",
@@ -6196,7 +6196,7 @@ CDM::startTimer(uint32_t idTimer)
     feedTimerStarted(idTimer, pTimer->getDelay() * 1000);
 
     // Log
-    if (gpobj->m_debugFlags1 & VSCP_DEBUG1_DM_TIMERS) {
+    if (gpobj->m_debugFlags[0] & VSCP_DEBUG1_DM_TIMERS) {
         syslog(LOG_ERR, "[DM] Timer %d started.", idTimer);
     }
 
@@ -6219,7 +6219,7 @@ CDM::startTimer(uint32_t idTimer,
     dmTimer *pTimer = m_timerHash[idTimer];
     if (NULL == pTimer) {
         // Log
-        if (gpobj->m_debugFlags1 & VSCP_DEBUG1_DM_TIMERS) {
+        if (gpobj->m_debugFlags[0] & VSCP_DEBUG1_DM_TIMERS) {
             syslog(LOG_ERR, "[DM] Timer %d created.", idTimer);
         }
 
@@ -6232,7 +6232,7 @@ CDM::startTimer(uint32_t idTimer,
     }
 
     // Log
-    if (gpobj->m_debugFlags1 & VSCP_DEBUG1_DM_TIMERS) {
+    if (gpobj->m_debugFlags[0] & VSCP_DEBUG1_DM_TIMERS) {
         syslog(LOG_ERR, "[DM] Timer %d started.", idTimer);
     }
 
@@ -6256,7 +6256,7 @@ CDM::stopTimer(uint32_t idTimer)
     feedTimerStopped(idTimer, pTimer->getDelay());
 
     // Log
-    if (gpobj->m_debugFlags1 & VSCP_DEBUG1_DM_TIMERS) {
+    if (gpobj->m_debugFlags[0] & VSCP_DEBUG1_DM_TIMERS) {
         syslog(LOG_ERR, "[DM] Timer %d stopped.", idTimer);
     }
 
@@ -6280,7 +6280,7 @@ CDM::pauseTimer(uint32_t idTimer)
     feedTimerPaused(idTimer, pTimer->getDelay());
 
     // Log
-    if (gpobj->m_debugFlags1 & VSCP_DEBUG1_DM_TIMERS) {
+    if (gpobj->m_debugFlags[0] & VSCP_DEBUG1_DM_TIMERS) {
         syslog(LOG_ERR, "[DM] Timer %d pused.", idTimer);
     }
 
@@ -6304,7 +6304,7 @@ CDM::resumeTimer(uint32_t idTimer)
     feedTimerResumed(idTimer, pTimer->getDelay());
 
     // Log
-    if (gpobj->m_debugFlags1 & VSCP_DEBUG1_DM_TIMERS) {
+    if (gpobj->m_debugFlags[0] & VSCP_DEBUG1_DM_TIMERS) {
         syslog(LOG_ERR, "[DM] Timer %d resumed.", idTimer);
     }
 
@@ -7395,7 +7395,7 @@ CDM::loadFromXML(void)
     fclose(fpxml);
     XML_ParserFree(xmlParser);
 
-    if (gpobj->m_debugFlags1 & VSCP_DEBUG1_DM) {
+    if (gpobj->m_debugFlags[0] & VSCP_DEBUG1_DM) {
         syslog(LOG_DEBUG, "[DM]  Read success.");
     }
     return true;
@@ -7904,7 +7904,7 @@ actionThread_URL(void *pData)
 
         }
 
-        if ( gpobj->m_debugFlags1 & VSCP_DEBUG1_DM ) {
+        if ( gpobj->m_debugFlags[0] & VSCP_DEBUG1_DM ) {
             syslog(  LOG_ERR, "[DM] " + ( "actionThreadURL: Request: " ) +
                             str  );
         }
@@ -7940,7 +7940,7 @@ actionThread_URL(void *pData)
             strReponse = std::string( buffer );
 
             // Log response
-            if ( gpobj->m_debugFlags1 & VSCP_DEBUG1_DM ) {
+            if ( gpobj->m_debugFlags[0] & VSCP_DEBUG1_DM ) {
                 syslog(  LOG_ERR, "[DM] " + ( "actionThreadURL: OK Response:
     " )
     + strReponse + " "  );
