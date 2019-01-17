@@ -293,7 +293,7 @@ actionTime::allowAlways()
     }
 
     // Allow from the beginning of time
-    setFromTime("*");
+    setStartTime("*");
 
     // to the end of time
     setEndTime("*");
@@ -582,7 +582,7 @@ actionTime::ShouldWeDoAction(void)
     vscpdatetime now; // Get current date/time
 
     // Check that times are valid
-    if (!m_fromTime.isValid()) {
+    if (!m_startTime.isValid()) {
         return false;
     }
 
@@ -591,14 +591,14 @@ actionTime::ShouldWeDoAction(void)
     }
 
     // for debug
-    // std::string s1 = m_fromTime.getISODateTime(); std::string s2 =
+    // std::string s1 = m_startTime.getISODateTime(); std::string s2 =
     // m_endTime.getISODate() +
     // "
     // "
     // + m_endTime.getISOTime(); std::string s3 = now.getISODateTime();
 
     // If we are before starttime
-    if (now.isEarlierThan(m_fromTime)) {
+    if (now.isEarlierThan(m_startTime)) {
         return false;
     }
 
@@ -974,7 +974,7 @@ dmElement::getAsString(bool bCRLF)
     strRow += ",";
 
     // From time
-    strRow += m_timeAllow.getFromTime().getISODateTime() + ",";
+    strRow += m_timeAllow.getStartTime().getISODateTime() + ",";
 
     // End time
     strRow += m_timeAllow.getEndTime().getISODateTime() + ",";
@@ -1138,6 +1138,83 @@ dmElement::getSymbolicMeasurementFromCompareCode(uint8_t cc, uint8_t type)
     }
 
     return scc;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getMeasurementGroup
+//
+
+std::string
+dmElement::getMeasurementGroup(void)
+{
+    std::string str;
+
+    str = m_bCompareMeasurement ? "true," : "false,";
+    str += vscp_str_format("%f,%d,%d,",m_measurementValue, (int)m_measurementUnit );
+    str += getSymbolicMeasurementFromCompareCode(m_measurementCompareCode);
+    return str;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// setMeasurementGroup
+//
+
+bool
+dmElement::setMeasurementGroup(std::string& group)
+{
+    std::string strToken;
+    std::deque<std::string> tokens;
+    vscp_split( tokens, group, "," );
+
+    // enable
+    if ( tokens.empty() ) return false;
+    strToken = tokens.front();
+    tokens.pop_front();
+    vscp_trim(strToken);
+    vscp_makeLower(strToken);
+
+    if ( "true" == strToken ) {
+        m_bCompareMeasurement = true;
+    }
+    else {
+        m_bCompareMeasurement = false;
+    }
+
+    // value
+    if ( tokens.empty() ) return false;
+    strToken = tokens.front();
+    tokens.pop_front();
+    try {
+        m_measurementValue = std::stod(strToken);
+    }
+    catch (...) {
+        return false;
+    }
+
+    // unit
+    if ( tokens.empty() ) return false;
+    strToken = tokens.front();
+    tokens.pop_front();
+    m_measurementUnit = vscp_readStringValue(strToken);
+
+    // compare code/string
+    if ( tokens.empty() ) return false;
+    strToken = tokens.front();
+    tokens.pop_front();
+    vscp_trim(strToken);
+    vscp_makeLower(strToken);
+
+    if ( vscp_isNumber( strToken )) {
+        m_measurementCompareCode = vscp_readStringValue( strToken );
+    }
+    else {
+        if ( !setSymbolicMeasurementCompareCode(strToken) ) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -6360,7 +6437,7 @@ CDM::addDatabaseRecord(dmElement *pdm)
       pdm->m_vscpfilter.filter_type,
       (const char *)guid_filter.getAsString().c_str(),
       //--------------------------------------------------------------
-      (const char *)pdm->m_timeAllow.getFromTime().getISODateTime().c_str(),
+      (const char *)pdm->m_timeAllow.getStartTime().getISODateTime().c_str(),
       (const char *)pdm->m_timeAllow.getEndTime().getISODateTime().c_str(),
 
       pdm->m_timeAllow.getWeekday(0) ? 1 : 0,
@@ -6425,7 +6502,7 @@ CDM::updateDatabaseRecord(dmElement *pdm)
     guid_mask.getFromArray(pdm->m_vscpfilter.mask_GUID);
     guid_filter.getFromArray(pdm->m_vscpfilter.filter_GUID);
 
-    std::string dtFrom = pdm->m_timeAllow.getFromTime().getISODateTime();
+    std::string dtFrom = pdm->m_timeAllow.getStartTime().getISODateTime();
     std::string dtEnd  = pdm->m_timeAllow.getEndTime().getISODateTime();
 
     char *sql = sqlite3_mprintf(
@@ -6608,7 +6685,7 @@ CDM::getDatabaseRecord(uint32_t idx, dmElement *pDMitem)
         // Allowed start
         if (NULL != (p = (const char *)sqlite3_column_text(
                        ppStmt, VSCPDB_ORDINAL_DM_ALLOWED_START))) {
-            pDMitem->m_timeAllow.setFromTime(std::string(p));
+            pDMitem->m_timeAllow.setStartTime(std::string(p));
         }
 
         // Allowed end
@@ -6840,7 +6917,7 @@ CDM::loadFromDatabase(void)
             if (NULL != (p = (const char *)sqlite3_column_text(
                            ppStmt, VSCPDB_ORDINAL_DM_ALLOWED_START))) {
                 if ((NULL != p) && ('*' != *p)) {
-                    pDMitem->m_timeAllow.setFromTime(std::string(p));
+                    pDMitem->m_timeAllow.setStartTime(std::string(p));
                 }
             }
 
@@ -7221,9 +7298,9 @@ endDMParser(void *data, const char *name)
                (2 == depth_dm_parser)) {
         vscp_trim(str);
         if (0 != str.length()) {
-            pnew_dm_item->m_timeAllow.setFromTime(str);
+            pnew_dm_item->m_timeAllow.setStartTime(str);
         } else {
-            pnew_dm_item->m_timeAllow.setFromTime("*");
+            pnew_dm_item->m_timeAllow.setStartTime("*");
         }
     } else if ((0 == vscp_strcasecmp(name, "allowed_to")) &&
                (2 == depth_dm_parser)) {
@@ -7449,7 +7526,7 @@ CDM::saveToXML(bool bAll)
                 fxml << "    <allowed_from>";
                 {
                     std::string str =
-                      pDMitem->m_timeAllow.getFromTime().getISODateTime();
+                      pDMitem->m_timeAllow.getStartTime().getISODateTime();
                     fxml << str;
                 }
                 fxml << "</allowed_from>";

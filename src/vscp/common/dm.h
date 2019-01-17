@@ -59,6 +59,15 @@ class dmTimer;
 #define DM_MEASUREMENT_COMPARE_GT 0x05   // Greater than
 #define DM_MEASUREMENT_COMPARE_GTEQ 0x06 // Greater than or equal tp >=
 
+// Index for allowed weeksays
+#define DM_DAY_ALLOW_MONDAY         (0)
+#define DM_DAY_ALLOW_TUESDAY        (1)
+#define DM_DAY_ALLOW_WEDNESDAY      (2)
+#define DM_DAY_ALLOW_THURSDAY       (3)
+#define DM_DAY_ALLOW_FRIDAY         (4)
+#define DM_DAY_ALLOW_SATURDAY       (5)
+#define DM_DAY_ALLOW_SUNDAY         (6)
+
 // Variable check constants
 enum VariableCheckType
 {
@@ -385,7 +394,7 @@ class actionTime
     /*!
      * Get/set weekday allow
      */
-    bool getWeekday(char day) { return m_weekDay[day & 0x07]; };
+    bool getWeekday(char day) { return ( 0 != m_weekDay[day & 0x07]); };
 
     bool setWeekday(char day, bool bAllow = true)
     {
@@ -395,7 +404,7 @@ class actionTime
     /*!
      * Get/set from time.
      */
-    void setFromTime(std::string strFrom)
+    void setStartTime(std::string strFrom)
     {
 
         vscp_trim(strFrom);
@@ -403,15 +412,15 @@ class actionTime
             strFrom = "0000-01-01T00:00:00";
         }
 
-        m_fromTime.set(strFrom);
-        if (!m_fromTime.isValid()) {
-            m_fromTime.set("0000-01-01T00:00:00");
+        m_startTime.set(strFrom);
+        if (!m_startTime.isValid()) {
+            m_startTime.set("0000-01-01T00:00:00");
         }
     };
 
-    void setFromTime(vscpdatetime &dt) { m_fromTime = dt; };
+    void setStartTime(vscpdatetime &dt) { m_startTime = dt; };
 
-    vscpdatetime &getFromTime(void) { return m_fromTime; };
+    vscpdatetime &getStartTime(void) { return m_startTime; };
 
     /*!
      * Get/set end time.
@@ -444,7 +453,7 @@ class actionTime
       This is the time (inclusive) from which this action is
       allowed to occur.
     */
-    vscpdatetime m_fromTime;
+    vscpdatetime m_startTime;
 
     /*!
       This is the time up (inclusive) to which this action is
@@ -528,11 +537,40 @@ class dmElement
     */
     bool isEnabled(void) { return m_bEnable; };
 
+
+
     /*!
         Check if index should be checked
         @returns true if enabled false otherwise
      */
     bool isCheckIndexSet(void) { return m_bCheckIndex; };
+
+    /*!
+        Set CheckIndex
+        @param b Value to set CheckIndex to (default = true)
+    */
+    void setCheckIndex( bool b = true ) { m_bCheckIndex=b;};
+
+    /*!
+        Get Checkindex
+        @return Value for CheckIndex
+    */
+    bool getCheckIndex( void ) { return m_bCheckIndex;};
+
+    /*!
+        Get index
+        @return index value
+    */
+    uint8_t getIndex( void ) { return m_index; };
+
+    /*!
+        Set index
+        @param index Index to set
+    */
+    void setIndex( uint8_t index ) { m_index = index; };
+
+
+
 
     /*!
         Check if zone should be checked
@@ -541,33 +579,208 @@ class dmElement
     bool isCheckZoneSet(void) { return m_bCheckZone; };
 
     /*!
+        Set CheckZone
+        @param b Value to set CheckZone to (default = true)
+    */
+    void setCheckZone( bool b = true ) { m_bCheckZone=b;};
+
+    /*!
+        Get CheckZone
+        @return Value for CheckZone
+    */
+    bool getCheckZone( void ) { return m_bCheckZone;};
+
+    /*!
+        Get zone
+        @return zone value
+    */
+    uint8_t getZone( void ) { return m_zone; };
+
+    /*!
+        Set index
+        @param zone Zone to set
+    */
+    void setZone( uint8_t zone ) { m_zone = zone; };
+
+
+
+
+    /*!
         Check if zone should be checked
         @returns true if enabled false otherwise
     */
     bool isCheckSubZoneSet(void) { return m_bCheckSubZone; };
 
+    /*!
+        Set CheckSunZone
+        @param b Value to set CheckSunZone to (default = true)
+    */
+    void setCheckSubZone( bool b = true ) { m_bCheckSubZone=b;};
+
+    /*!
+        Get CheckSunZone
+        @return Value for CheckSunZone
+    */
+    bool getCheckSunZone( void ) { return m_bCheckSubZone;};
+
+    /*!
+        Get SubZone
+        @return SubZone value
+    */
+    uint8_t getSubZone( void ) { return m_subzone; };
+
+    /*!
+        Set SubZone
+        @param subzone SubZone to set
+    */
+    void setSubZone( uint8_t subzone ) { m_subzone = subzone; };
+
+
+
+
+
     // Check if measurement should be compared.
     bool isCompareMeasurementSet() { return m_bCompareMeasurement; };
 
+
+    /*!
+        Get measurement compoare code
+        @return Current measurement copmpare code
+    */
+    uint8_t getMeasurementCompareCode(void) { return m_measurementCompareCode; };
+
+    /*!
+        Set measurement compare code
+        @param val Measurement compare code to set
+    */
+    void setMeasurementCompareCode( uint8_t val ) { m_measurementCompareCode = val; };
+
     /*!
         Get measurement compare code from symbolic compare value
-        @parfam strCompare Symbolic compare value
+        @param strCompare Symbolic compare value
         @return Symbolic code or zero if invalid code
        (DM_MEASUREMENT_COMPARE_NOOP)
      */
     uint8_t getCompareCodeFromSymbolicMeasurement(std::string &strCompare);
 
-    void setSymbolicMeasurementCompareCode(std::string &strCompare)
+    /*!
+        Set symbolic compare code
+        @param strCompare Symbolic compare code
+        @return Return true on success
+    */
+    bool setSymbolicMeasurementCompareCode(std::string &strCompare)
     {
         m_measurementCompareCode =
           getCompareCodeFromSymbolicMeasurement(strCompare);
+        return (0 != m_measurementCompareCode);
     };
 
+    /*!
+        Get symbolic compare code form measurement compare code
+        @param cc
+        @param type
+        @return strCompare Symbolic compare code
+    */
     std::string getSymbolicMeasurementFromCompareCode(uint8_t cc,
                                                       uint8_t type = 0);
 
     /*!
-        Handle escape sequences
+        Get check measurement index enable
+        @return Measurement index enable
+    */
+    bool getCheckMeasurementIndex(void) { return m_bCheckMeasurementIndex; };
+
+    /*!
+        Set measurement index enable
+        @param Measurement index enable
+    */
+    void setCheckMeasurementIndex( bool b) { m_bCheckMeasurementIndex = b; };
+
+    /*!
+        Get measurement value
+        @return Current measurement value
+    */
+    double getMeasurementValue(void) { return m_measurementValue; };
+
+    /*!
+        Set measurement value
+        @param val Measurement value to set
+    */
+    void setMeasurementValue( double val ) { m_measurementValue = val; };
+
+    /*!
+        Get measurement unit
+        @return Current measurement unit
+    */
+    uint8_t getMeasurementUnit(void) { return m_measurementUnit; };
+
+    /*!
+        Set measurement unit
+        @param val Measurement unit to set
+    */
+    void setMeasurementUnit( uint8_t val ) { m_measurementUnit = val; };
+
+    /*!
+        Get measurement group data
+        @return Measurement group data on the form "enable,value,unit,compare"
+    */
+    std::string getMeasurementGroup(void);
+
+    /*!
+        Set measurement group data
+        @param Measurement group data on the form "enable,value,unit,compare"
+    */
+    bool setMeasurementGroup( std::string& group );
+
+    /*!
+        Get error counter
+        @return Error counter
+    */
+    uint32_t getErrorCounter(void) { return m_errorCounter; };
+
+    /*!
+        Clear error counter 
+    */
+    void clrErrorCounter( void ) { m_errorCounter = 0; };
+
+    /*!
+        Clear last error string
+    */
+    void clrErrorString( void ) { m_strLastError.clear(); };
+
+    /*!
+        Get last error string
+        @return comment
+    */
+    std::string getErrorString(void) { return m_strLastError; };
+
+    /*!
+        Get trigger counter
+        @return Error counter
+    */
+    uint32_t getTriggerCounter(void) { return m_triggCounter; };
+
+    /*!
+        Clear trigger counter
+    */
+    void clrTriggerCounter( void ) { m_triggCounter = 0; };
+
+    /*!
+        Set comment 
+        @param Comment 
+    */
+    void setComment( std::string& str ) { m_comment = str; };
+
+    /*!
+        Get comment
+        @return comment
+    */
+    std::string getComment(void) { return m_comment; };
+
+    // ------------------------------------------------------------------------
+
+    /*!
+        Handle escape sequences 
         @param pEvent Event feed true matrix
         @param str String to replace escapes in
         @return true on success, else false.
@@ -579,9 +792,7 @@ class dmElement
         @param argExec shell command line to execute.
         @return True on success.
     */
-#ifndef WIN32
     bool unixVSCPExecute(std::string &argExec);
-#endif
 
     /*!
         Perform the selected internal action. The parameter
@@ -762,55 +973,52 @@ class dmElement
     // This record is loaded from XML file - Can't be edited
     bool m_bStatic;
 
-    /// True if row is enabled
+    // True if row is enabled
     bool m_bEnable;
 
-    /// Group ID
+    // Group ID
     std::string m_strGroupID;
 
-    /// DM row filter
+    // DM row filter
     vscpEventFilter m_vscpfilter;
 
-    /// Action code
+    // Action code
     uint32_t m_actionCode;
 
-    /// Action parameters
+    // Action parameters
     std::string m_actionparam;
 
-    /// A counter that is updated each time a DM row is matched
+    // A counter that is updated each time a DM row is matched
     uint32_t m_triggCounter;
 
-    /// A counter that is updated each time an error occurs
+    // A counter that is updated each time an error occurs
     uint32_t m_errorCounter;
 
-    /// True if index should be checked
-    bool m_bCheckIndex;
-
-    /// If index should be checked this is the one
-    uint8_t m_index;
-
-    /// Index should be masked so only the LSB tree bits are checked
-    bool m_bCheckMeasurementIndex;
-
-    /// True if zone should be checked
-    bool m_bCheckZone;
-
-    /// If zone should be checked this is the one
-    uint8_t m_zone;
-
-    /// True if subzone should be checked
-    bool m_bCheckSubZone;
-
-    /// If sub zone should be checked this is the one
-    uint8_t m_subzone;
-
-    /// Description of last error
+    // Description of last error
     std::string m_strLastError;
 
-    /// Description for entry
-    std::string m_comment;
+    // True if index should be checked
+    bool m_bCheckIndex;
 
-    /// Action time
+    // If index should be checked this is the one
+    uint8_t m_index;
+
+    // Index should be masked so only the LSB tree bits are checked
+    bool m_bCheckMeasurementIndex;
+
+    // True if zone should be checked
+    bool m_bCheckZone;
+
+    // If zone should be checked this is the one
+    uint8_t m_zone;
+
+    // True if subzone should be checked
+    bool m_bCheckSubZone;
+
+    // If sub zone should be checked this is the one
+    uint8_t m_subzone;
+
+    // Action time
     actionTime m_timeAllow;
 
     // Measurement value should be compare with
@@ -825,6 +1033,9 @@ class dmElement
 
     // Measurement compare code
     uint8_t m_measurementCompareCode;
+
+    // Description for entry
+    std::string m_comment;
 
     // Pointer to owner
     CDM *m_pDM;

@@ -474,12 +474,12 @@ js_vscp_writeVariable(duk_context *ctx)
         duk_pop_n(ctx, 1);
 
         // get rights (if there)
-        uint32_t accessRights = PERMISSON_OWNER_ALL;
+        uint32_t accessRights = PERMISSION_OWNER_ALL;
         duk_push_string(ctx, "accessrights");
         duk_get_prop(ctx, -2);
         if (duk_is_number(ctx, -1)) {
             accessRights =
-              (uint32_t)duk_get_number_default(ctx, -1, PERMISSON_OWNER_ALL);
+              (uint32_t)duk_get_number_default(ctx, -1, PERMISSION_OWNER_ALL);
         }
 
         duk_pop_n(ctx, 1);

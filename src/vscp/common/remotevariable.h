@@ -49,32 +49,40 @@
 
 #define VAR_MAXBUF_SIZE 0x10000 // Size for variable strings etc
 
+// Variable read/write error codes
+#define VAR_ERROR_OK (0) // Positive response
+#define VAR_ERROR_USER (-1) // User is not allowed to do this operation
+#define VAR_ERROR_PERMISSION (-2) // RWX permission not right to do operation
+#define VAR_ERROR_TYPE_MISMATCH (-3) // Wrong variable type for operation
+#define VAR_ERROR_SYNTAX (-4) // Syntax or format is wrong
+
+// Persistence flags
 #define VSCP_VAR_PERSISTENT true
 #define VSCP_VAR_NON_PERISTENT false
 
 // Permissions
-#define PERMISSON_OWNER_READ 0x400
-#define PERMISSON_OWNER_WRITE 0x200
-#define PERMISSON_OWNER_EXECUTE 0x100
-#define PERMISSON_GROUP_READ 0x040    // Not used
-#define PERMISSON_GROUP_WRITE 0x020   // Not used
-#define PERMISSON_GROUP_EXECUTE 0x010 // Not used
-#define PERMISSON_OTHER_READ 0x004
-#define PERMISSON_OTHER_WRITE 0x002
-#define PERMISSON_OTHER_EXECUTE 0x001
+#define PERMISSION_OWNER_READ 0x400
+#define PERMISSION_OWNER_WRITE 0x200
+#define PERMISSION_OWNER_EXECUTE 0x100
+#define PERMISSION_GROUP_READ 0x040    // Not used
+#define PERMISSION_GROUP_WRITE 0x020   // Not used
+#define PERMISSION_GROUP_EXECUTE 0x010 // Not used
+#define PERMISSION_OTHER_READ 0x004
+#define PERMISSION_OTHER_WRITE 0x002
+#define PERMISSION_OTHER_EXECUTE 0x001
 
-#define PERMISSON_OWNER_ALL 0x700
-#define PERMISSON_OWNER_NONE 0x000
-#define PERMISSON_GROUP_ALL 0x070  // Not used
-#define PERMISSON_GROUP_NONE 0x000 // Not used
-#define PERMISSON_OTHER_ALL 0x007
-#define PERMISSON_OTHER_NONE 0x000
+#define PERMISSION_OWNER_ALL 0x700
+#define PERMISSION_OWNER_NONE 0x000
+#define PERMISSION_GROUP_ALL 0x070  // Not used
+#define PERMISSION_GROUP_NONE 0x000 // Not used
+#define PERMISSION_OTHER_ALL 0x007
+#define PERMISSION_OTHER_NONE 0x000
 
-#define PERMISSON_ALL_READ 0x444
-#define PERMISSON_ALL_WRITE 0x222
+#define PERMISSION_ALL_READ 0x444  
+#define PERMISSION_ALL_WRITE 0x222
 
-#define PERMISSON_ALL_RIGHTS 0x777
-#define PERMISSON_NO_RIGHTS 0x000
+#define PERMISSION_ALL_RIGHTS 0x777
+#define PERMISSION_NO_RIGHTS 0x000
 #define PERMSSION_VARIABLE_DEFAULT 0x744
 
 #define ID_NON_PERSISTENT UINT32_MAX
@@ -422,15 +430,22 @@ class CVariable
     void setValue(vscpdatetime &val);
 
     /*!
-     * setUser
+        setUser owner id
+        @param Owner id to set
+        @return True on success
      */
     bool setOwnerId(uint32_t ownerid);
-    bool setOwnerIdFromUserName(std::string &strUser);
-    bool setOwnerdFromClient(uint32_t ownerid);
 
     /*!
-        Change last change date time to now
+        Set owner id from user name
+        @param strUser Name of user
+        @return True on success
     */
+    bool setOwnerIdFromUserName(std::string &strUser);
+
+    /*!
+        Set last changed date/time to now (current local date/time)
+     */
     void setLastChangedToNow(void) { m_lastChanged = vscpdatetime::Now(); };
 
     /*!
@@ -439,70 +454,188 @@ class CVariable
      */
     vscpdatetime &getLastChange(void) { return m_lastChanged; };
 
-    // Getters/Setters
+    // * * * Getters/Setters
 
-    // id
+    /*!
+        Set id for variable
+        @param id Non zero id to set for variable
+    */
     void setID(uint32_t id) { m_id = id; };
+
+    /*!
+        Get id for variable
+        @return variable id
+    */
     uint32_t getID(void) { return m_id; };
 
     // name
+
     /*!
         Set variable name
-        @param strName Name of variable
+        @param strName Name of variable. Variables with prefix "vscp." are
+       reserved for stock variables,
         @return true on success
      */
     bool setName(const std::string &strName);
+
+    /*!
+        Get variable name
+        @return Name of variable always in upper case.
+    */
     std::string getName(void) { return vscp_upper(m_name); };
 
     // type
+
     /*!
-        set type
-        @param strType type in numerical or string form
+        Set variable type
+        @param strType type in numerical or mnemonic form
         @return True on success.
      */
     bool setType(const std::string &strType);
-    void setType(uint16_t type) { m_type = type; };
+
+    /*!
+        Set variable type
+        @param type Type to set variable to.
+        @return true if type is a valid type.
+    */
+    bool setType(uint16_t type);
+
+    /*!
+        Get variable type
+        @return variable type;
+    */
     uint16_t getType(void) { return m_type; };
 
-    // note
+    /*!
+        Set note for variable
+        @param strNote Note to set.
+        @param bBase64 If true strNote will be decoded from base64 before it is stored.
+        @return True on success.
+    */
     bool setNote(const std::string &strNote, bool bBase64 = false);
+
+    /*!
+        Get variable note
+        @param bBase64 If true the note will be returned base64 encoded.
+        @return Variable note.
+    */
     std::string getNote(bool bBase64 = false);
+
+    /*!
+        Get variable note
+        @param strNote Get the variable note if call is successfull.
+        @param bBase64 If true the note will be returned base64 encoded.
+        @return True on success.
+    */
     bool getNote(std::string &strNote, bool bBase64 = false);
 
-    // Persistence
+    /*!
+        test if variable is persistent
+        @return True if the variable is persistent, false otherwise.
+    */
     bool isPersistent(void) { return m_bPersistent; };
+
+    /*!
+        Set persistence for variable
+        @param b True if variable should be stored in a persistent way, false otherwise
+    */
     void setPersistent(bool b) { m_bPersistent = b; };
 
-    // Access rights
+    /*!
+        Set access rights
+        @param accessRights Rights to set. rw-rw-rw- for owner, group(not-used)
+       and other
+    */
     void setAccessRights(uint32_t accessRights)
     {
         m_accessRights = accessRights;
     };
+
+    /*!
+        Get access rights
+        @return access rights.
+    */
     uint32_t getAccessRights(void) { return m_accessRights; };
-    void getAccessRightStr(std::string &strAccessRights)
+
+    /*!
+        Get accessrights on string format
+        @return Accessrights as a string 
+    */
+    std::string getAccessRightStr(void)
     {
-        makeAccessRightString(m_accessRights, strAccessRights);
+        std::string str;
+        makeAccessRightString(m_accessRights, str);
+        return str;
     };
 
+    /*!
+        Test if variable is writable by a general user
+        @return Return true if variable is writable by a general user, false if not.
+    */
     bool isUserWritable(void)
     {
         return (m_accessRights & 0x02) ? true : false;
     };
+
+    /*!
+        Make variable writable (or not) by the general user
+        @param b True to make the variable writable by the general user. False to make
+       it non writable by the general user.
+    */
     void makeUserWritable(bool b) { m_accessRights |= 0x02; };
 
+    /*!
+        Test if variable is writable by owner
+        @return Return true if variable is writable by owner, false if not.
+    */
     bool isOwnerWritable(void)
     {
         return (m_accessRights & 0x80) ? true : false;
     };
+
+    /*!
+        Make variable writable (or not) by owner
+        @param b True to make the variable writable by the owner. False to make
+       it non writable by owner.
+    */
     void makeOwnerWritable(bool b) { m_accessRights |= 0x80; };
 
-    // owner id
+    /*! 
+        Set owner id for variable
+        @param uid Owner if to set. Must be defined.
+    */        
     void setOwnerID(uint32_t uid) { m_userid = uid; };
+    /*!
+        Get owner id for variable
+        @return Owner if for variable
+    */
     uint32_t getOwnerID(void) { return m_userid; };
 
-    // stock variable
+    /*!
+        Set/reset stock property of variable
+        @param bStock True to set variable to stock variable, false to set is as
+       a standard variable.
+    */
     void setStockVariable(bool bStock = true) { m_bStock = bStock; };
+    /*!
+        Check if a variable is a stock variable
+        @return True if variable is stock variable
+    */
     bool isStockVariable(void) { return m_bStock; };
+
+    /*! 
+        Check if a user is allowed to read variable
+        @param user Reference to user that wants to access variable
+        @return True if user is allowed to read value of variable.
+    */
+    bool isAllowedToRead(CUserItem &user);
+
+    /*! 
+        Check if a user is allowed to write variable
+        @param user Reference to user that wants to access variable
+        @return True if user is allowed to write value of variable.
+     */
+    bool isAllowedToWrite(CUserItem &pUser);
 
   private:
     // id in database
@@ -549,6 +682,8 @@ class CVariable
     // Time when variable was last changed.
     vscpdatetime m_lastChanged;
 };
+
+// ----------------------------------------------------------------------------
 
 class CVariableStorage
 {
@@ -600,6 +735,11 @@ class CVariableStorage
     uint32_t getStockVariable(const std::string &name,
                               CVariable &pVar,
                               CUserItem *pUser = NULL);
+
+    bool stockvariable(std::string &name,
+                       int op,
+                       CVariable &var,
+                       CUserItem &pUser);
 
     /*!
         Write stock variable.
@@ -675,7 +815,7 @@ class CVariableStorage
              const uint16_t type         = VSCP_DAEMON_VARIABLE_CODE_STRING,
              const uint32_t userid       = USER_ID_ADMIN,
              const bool bPersistent      = false,
-             const uint32_t accessRights = PERMISSON_OWNER_ALL,
+             const uint32_t accessRights = PERMISSION_OWNER_ALL,
              const std::string &note     = "");
 
     // Variant of the above with string as type
@@ -684,7 +824,7 @@ class CVariableStorage
              const std::string &strType,
              const uint32_t userid       = USER_ID_ADMIN,
              const bool bPersistent      = false,
-             const uint32_t accessRights = PERMISSON_OWNER_ALL,
+             const uint32_t accessRights = PERMISSION_OWNER_ALL,
              const std::string &note     = "");
 
     // Update a variable (write to db)

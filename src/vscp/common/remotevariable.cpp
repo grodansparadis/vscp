@@ -104,7 +104,7 @@ CVariable::init(void)
     m_name.clear();
     m_type         = VSCP_DAEMON_VARIABLE_CODE_UNASSIGNED;
     m_bPersistent  = false;               // Not persistent by default
-    m_accessRights = PERMISSON_OWNER_ALL; // Owner can do everything.
+    m_accessRights = PERMISSION_OWNER_ALL; // Owner can do everything.
     m_userid       = USER_ID_ADMIN;       // Admin owns variable by default
     m_lastChanged  = vscpdatetime::Now();
     m_bStock       = false; // This is not a stock variable
@@ -146,43 +146,43 @@ CVariable::makeAccessRightString(uint32_t accessrights,
     strAccessRights.clear();
 
     // other
-    strAccessRights = (accessrights & PERMISSON_OTHER_EXECUTE)
+    strAccessRights = (accessrights & PERMISSION_OTHER_EXECUTE)
                         ? 'x' + strAccessRights
                         : '-' + strAccessRights;
 
-    strAccessRights = (accessrights & PERMISSON_OTHER_WRITE)
+    strAccessRights = (accessrights & PERMISSION_OTHER_WRITE)
                         ? 'w' + strAccessRights
                         : '-' + strAccessRights;
 
-    strAccessRights = (accessrights & PERMISSON_OTHER_READ)
+    strAccessRights = (accessrights & PERMISSION_OTHER_READ)
                         ? 'r' + strAccessRights
                         : '-' + strAccessRights;
 
     // group
     strAccessRights = ' ' + strAccessRights;
-    strAccessRights = (accessrights & PERMISSON_GROUP_EXECUTE)
+    strAccessRights = (accessrights & PERMISSION_GROUP_EXECUTE)
                         ? 'x' + strAccessRights
                         : '-' + strAccessRights;
 
-    strAccessRights = (accessrights & PERMISSON_GROUP_WRITE)
+    strAccessRights = (accessrights & PERMISSION_GROUP_WRITE)
                         ? 'w' + strAccessRights
                         : '-' + strAccessRights;
 
-    strAccessRights = (accessrights & PERMISSON_GROUP_READ)
+    strAccessRights = (accessrights & PERMISSION_GROUP_READ)
                         ? 'r' + strAccessRights
                         : '-' + strAccessRights;
 
     // owner
     strAccessRights = ' ' + strAccessRights;
-    strAccessRights = (accessrights & PERMISSON_OWNER_EXECUTE)
+    strAccessRights = (accessrights & PERMISSION_OWNER_EXECUTE)
                         ? 'x' + strAccessRights
                         : '-' + strAccessRights;
 
-    strAccessRights = (accessrights & PERMISSON_OWNER_WRITE)
+    strAccessRights = (accessrights & PERMISSION_OWNER_WRITE)
                         ? 'w' + strAccessRights
                         : '-' + strAccessRights;
 
-    strAccessRights = (accessrights & PERMISSON_OWNER_READ)
+    strAccessRights = (accessrights & PERMISSION_OWNER_READ)
                         ? 'r' + strAccessRights
                         : '-' + strAccessRights;
 }
@@ -437,6 +437,55 @@ CVariable::setType(const std::string &strType)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// setType
+//
+
+bool
+CVariable::setType(uint16_t type )
+{
+    switch (type) {
+
+        case VSCP_DAEMON_VARIABLE_CODE_UNASSIGNED:
+        case VSCP_DAEMON_VARIABLE_CODE_STRING:
+        case VSCP_DAEMON_VARIABLE_CODE_BOOLEAN:
+        case VSCP_DAEMON_VARIABLE_CODE_INTEGER:
+        case VSCP_DAEMON_VARIABLE_CODE_LONG:
+        case VSCP_DAEMON_VARIABLE_CODE_DOUBLE:
+        case VSCP_DAEMON_VARIABLE_CODE_VSCP_MEASUREMENT:
+        case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT:
+        case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_GUID:
+        case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_DATA:
+        case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_CLASS:
+        case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TYPE:
+        case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TIMESTAMP:
+        case VSCP_DAEMON_VARIABLE_CODE_DATETIME:
+        case VSCP_DAEMON_VARIABLE_CODE_BLOB:
+        case VSCP_DAEMON_VARIABLE_CODE_DATE:
+        case VSCP_DAEMON_VARIABLE_CODE_TIME:
+        case VSCP_DAEMON_VARIABLE_CODE_MIME:
+        case VSCP_DAEMON_VARIABLE_CODE_HTML:
+        case VSCP_DAEMON_VARIABLE_CODE_JAVASCRIPT:
+        case VSCP_DAEMON_VARIABLE_CODE_JSON:
+        case VSCP_DAEMON_VARIABLE_CODE_XML:
+        case VSCP_DAEMON_VARIABLE_CODE_SQL:
+        case VSCP_DAEMON_VARIABLE_CODE_LUA:
+        case VSCP_DAEMON_VARIABLE_CODE_LUA_RESULT:
+        case VSCP_DAEMON_VARIABLE_CODE_UX_TYPE1:
+        case VSCP_DAEMON_VARIABLE_CODE_DM_ROW:
+        case VSCP_DAEMON_VARIABLE_CODE_DRIVER:
+        case VSCP_DAEMON_VARIABLE_CODE_USER:
+        case VSCP_DAEMON_VARIABLE_CODE_FILTER:
+            m_type=type;
+            break;
+
+        default:
+            return false;
+    }
+
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // getAsString
 //
 
@@ -683,7 +732,7 @@ CVariable::setOwnerId(uint32_t userid)
     }
 
     // Check if id is defined
-    // if ( !CUserItem::isUserInDB( userid ) ) return false;
+    if ( !CUserItem::isUserInDB( userid ) ) return false;
 
     // Assign userid
     m_userid = userid;
@@ -1476,7 +1525,7 @@ CVariableStorage::CVariableStorage()
     m_db_vscp_external_variable = NULL;
     m_db_vscp_internal_variable = NULL;
 
-    // Set the default dm configuration path
+    // Set the default dm configuration paths
     m_xmlPath    = "/srv/vscp/variable.xml";
     m_dbFilename = "/srv/vscp/variable.sqlite3";
 
@@ -1599,42 +1648,42 @@ CVariableStorage::init(void)
     // *************************************************************************
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.version.major"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_INTEGER);
     variable.setNote(("VSCP major version number."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.version.minor"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_INTEGER);
     variable.setNote(("VSCP minor version number."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.version.release"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_INTEGER);
     variable.setNote(("VSCP release version number."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.version.build"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_INTEGER);
     variable.setNote(("VSCP build version number."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.version.str"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("VSCP version string."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.copyright"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("VSCP copyright."));
@@ -1645,42 +1694,42 @@ CVariableStorage::init(void)
     // *************************************************************************
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.sqlite.version.major"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_INTEGER);
     variable.setNote(("SQLite3 major version number."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.sqlite.version.minor"));
     variable.setNote(("SQLite3 minor version number."));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_INTEGER);
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.sqlite.version.release"));
     variable.setNote(("SQLite3 release version number."));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_INTEGER);
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.sqlite.version.build"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_INTEGER);
     variable.setNote(("SQLite3 build version number."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.sqlite.version.str"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("SQLite3 version string."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.sqlite.copyright"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("SQLite3 copyright."));
@@ -1691,14 +1740,14 @@ CVariableStorage::init(void)
     // *************************************************************************
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.openssl.version.str"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("Open SSL version string."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.openssl.copyright"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("Open SSL copyright string."));
@@ -1709,35 +1758,35 @@ CVariableStorage::init(void)
     // *************************************************************************
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.duktape.version.major"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_INTEGER);
     variable.setNote(("Duktape major version number."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.duktape.version.minor"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_INTEGER);
     variable.setNote(("Duktape minor version number."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.duktape.version.release"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_INTEGER);
     variable.setNote(("Duktape release version number."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.duktape.version.str"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("Version for Duktape library."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.duktape.copyright"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_INTEGER);
     variable.setNote(("Licens for Duktape library."));
@@ -1748,7 +1797,7 @@ CVariableStorage::init(void)
     // *************************************************************************
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.civetweb.copyright"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_INTEGER);
     variable.setNote(("Licens for Civetweb library."));
@@ -1759,35 +1808,35 @@ CVariableStorage::init(void)
     // *************************************************************************
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.lua.version.major"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_INTEGER);
     variable.setNote(("LUA major version number."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.lua.version.minor"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_INTEGER);
     variable.setNote(("LUA minor version number."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.lua.version.release"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_INTEGER);
     variable.setNote(("LUA release version number."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.lua.version.str"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("LUA version string."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.lua.copyright"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("LUA copyright."));
@@ -1798,119 +1847,119 @@ CVariableStorage::init(void)
     // *************************************************************************
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.os.str"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("Operating system information string."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.os.width"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_INTEGER);
     variable.setNote(("Operating system CPU word width (numerical)."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.os.width.is64bit"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_BOOLEAN);
     variable.setNote(("True if operating system CPU word width is 64-bit."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.os.width.is32bit"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_BOOLEAN);
     variable.setNote(("True if operating system CPU word width is 32-bit."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.os.width.str"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("Operating system CPU word width (text form)."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.os.endiness.str"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("Operating system endiness."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.os.endiness.islittleendian"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_BOOLEAN);
     variable.setNote(("True if Operating system endiness is little endian."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.host.name"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("Name of host machine."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.host.ip"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("IP address for host machine."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.host.mac"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("MAC address for host machine."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.host.userid"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("The user the VSCP daemon is running as."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.host.username"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("Full name for the user the VSCP daemon is running as."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.host.guid"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_GUID);
     variable.setNote(("GUID for host."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.loglevel"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_INTEGER);
     variable.setNote(("Active log level (numerical form)."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.loglevel.str"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("Active log level (text form)."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.client.receivequeue.max"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_LONG);
     variable.setNote(("Maximum number of events in client receive queue."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.host.root.path"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("Root path for VSCP daemon."));
@@ -1921,7 +1970,7 @@ CVariableStorage::init(void)
     // *************************************************************************
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.tcpip.address"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("Address for VSCP daemon TCP/IP interface."));
@@ -1932,7 +1981,7 @@ CVariableStorage::init(void)
     // *************************************************************************
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.multicast.address"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("Address for VSCP daemon multicast TCP/IP "
@@ -1940,7 +1989,7 @@ CVariableStorage::init(void)
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.multicast.ttl"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_INTEGER);
     variable.setNote(("TTL for VSCP daemon multicast TCP/IP interface "
@@ -1952,14 +2001,14 @@ CVariableStorage::init(void)
     // *************************************************************************
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.udp.enable"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_BOOLEAN);
     variable.setNote(("Enable flag for VSCP daemon simple UDP interface."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.udp.address"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("Address for VSCP daemon simple UDP interface."));
@@ -1970,7 +2019,7 @@ CVariableStorage::init(void)
     // *************************************************************************
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.discovery.enable"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_BOOLEAN);
     variable.setNote(("Enable flag for VSCP daemon discovery."));
@@ -1981,7 +2030,7 @@ CVariableStorage::init(void)
     // *************************************************************************
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.automation.calc.last"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_DATETIME);
     variable.setNote(("Date and time for last VSCP daemon automation "
@@ -1989,21 +2038,21 @@ CVariableStorage::init(void)
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.automation.longitude"));
     variable.setNote(("VSCP daemon automation longitude setting."));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_DOUBLE);
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.automation.latitude"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_DOUBLE);
     variable.setNote(("VSCP daemon automation latitude setting."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.automation.heartbeat.enable"));
     variable.setNote(
       ("Enable flag for VSCP daemon automation heartbeat event."));
@@ -2011,7 +2060,7 @@ CVariableStorage::init(void)
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.automation.heartbeat.period"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_LONG);
     variable.setNote(("Period in seconds for VSCP daemon automation heartbeat "
@@ -2019,7 +2068,7 @@ CVariableStorage::init(void)
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.automation.heartbeat.last"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_DATETIME);
     variable.setNote(("Date and time for last sent VSCP daemon automation "
@@ -2027,7 +2076,7 @@ CVariableStorage::init(void)
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.automation.segctrl-heartbeat.enable"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_BOOLEAN);
     variable.setNote(("Enable flag for VSCP daemon automation segment "
@@ -2035,7 +2084,7 @@ CVariableStorage::init(void)
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.automation.segctrl-heartbeat.period"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_LONG);
     variable.setNote(("Period in seconds for VSCP daemon automation heart "
@@ -2043,7 +2092,7 @@ CVariableStorage::init(void)
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.automation.segctrl-heartbeat.last"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_DATETIME);
     variable.setNote(("Date and time for last sent VSCP daemon automation "
@@ -2051,28 +2100,28 @@ CVariableStorage::init(void)
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.automation.daylength"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("VSCP daemon automation calculated daylength."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.automation.declination"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_DOUBLE);
     variable.setNote(("VSCP daemon automation calculated sun declination."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.automation.sun.max.altitude"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_DOUBLE);
     variable.setNote(("VSCP daemon automation calculated max sun altitude."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.automation.twilightsunriseevent.enable"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_BOOLEAN);
     variable.setNote(("Enable flag for VSCP daemon automation twilight "
@@ -2080,7 +2129,7 @@ CVariableStorage::init(void)
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.automation.twilightsunriseevent.last"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_DATETIME);
     variable.setNote(("Date and time for last sent VSCP daemon automation "
@@ -2088,7 +2137,7 @@ CVariableStorage::init(void)
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.automation.sunriseevent.enable"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_BOOLEAN);
     variable.setNote(("Enable flag for VSCP daemon automation sunrise "
@@ -2096,7 +2145,7 @@ CVariableStorage::init(void)
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.automation.sunriseevent.last"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_DATETIME);
     variable.setNote(("Date and time for last sent VSCP daemon automation "
@@ -2104,14 +2153,14 @@ CVariableStorage::init(void)
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.automation.sunsetevent.enable"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_BOOLEAN);
     variable.setNote(("Enable flag for VSCP daemon automation sunset event."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.automation.sunsetevent.last"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_DATETIME);
     variable.setNote(("Date and time for last sent VSCP daemon automation "
@@ -2119,7 +2168,7 @@ CVariableStorage::init(void)
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.automation.twilightsunsetevent.enable"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_BOOLEAN);
     variable.setNote(("Enable flag for VSCP daemon automation twilight sunset "
@@ -2127,7 +2176,7 @@ CVariableStorage::init(void)
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.automation.twilightsunsetevent.last"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_DATETIME);
     variable.setNote(("Date and time for last sent VSCP daemon automation "
@@ -2135,7 +2184,7 @@ CVariableStorage::init(void)
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.automation.calculatednoonevent.enable"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_BOOLEAN);
     variable.setNote(("Enable flag for VSCP daemon automation calculated "
@@ -2143,7 +2192,7 @@ CVariableStorage::init(void)
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.automation.calculatednoonevent.last"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_DATETIME);
     variable.setNote(("Date and time for last sent VSCP daemon automation "
@@ -2155,35 +2204,35 @@ CVariableStorage::init(void)
     // *************************************************************************
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.websrv.enable"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_BOOLEAN);
     variable.setNote(("Enable the VSCP server web interface."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.websrv.document_root"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("Root folder for VSCP server web interface."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.websrv.listening_ports"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("VSCP server web interface listening ports."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.websrv.index_files"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("VSCP server web interface index files."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.websrv.authentication_domain"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("Authentication domain for VSCP server web interface."),
@@ -2191,7 +2240,7 @@ CVariableStorage::init(void)
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.websrv.enable_auth_domain_check"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_BOOLEAN);
     variable.setNote(("Enable the VSCP server web interface authentication "
@@ -2199,7 +2248,7 @@ CVariableStorage::init(void)
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.websrv.ssl_certificat"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("Path to SSL certification for VSCP server web "
@@ -2208,14 +2257,14 @@ CVariableStorage::init(void)
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.websrv.ssl_certificat_chain"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("T.B.D."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.websrv.ssl_verify_peer"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_BOOLEAN);
     variable.setNote(
@@ -2223,7 +2272,7 @@ CVariableStorage::init(void)
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.websrv.ssl_ca_path"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(
@@ -2231,7 +2280,7 @@ CVariableStorage::init(void)
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.websrv.ssl_ca_file"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("Path to a .pem file containing trusted certificates."),
@@ -2239,14 +2288,14 @@ CVariableStorage::init(void)
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.websrv.ssl_verify_depth"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_INTEGER);
     variable.setNote(("Sets maximum depth of certificate chain."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.websrv.ssl_default_verify_paths"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_BOOLEAN);
     variable.setNote(("Loads default trusted certificates locations set at "
@@ -2254,14 +2303,14 @@ CVariableStorage::init(void)
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.websrv.ssl_cipher_list"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("List of ciphers to present to the client."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.websrv.ssl_protocol_version"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_INTEGER);
     variable.setNote(("Sets the minimal accepted version of accepted SSL/TLS"
@@ -2269,14 +2318,14 @@ CVariableStorage::init(void)
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.websrv.ssl_short_trust"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_BOOLEAN);
     variable.setNote(("Enables the use of short lived certificates."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.websrv.cgi_interpreter"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("Path to an executable to be used use as an interpreter "
@@ -2285,7 +2334,7 @@ CVariableStorage::init(void)
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.websrv.cgi_patterns"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("All files that match cgi_patterns are treated as CGI "
@@ -2293,7 +2342,7 @@ CVariableStorage::init(void)
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.websrv.cgi_environment"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("Set extra variables to be passed to the CGI script "
@@ -2302,7 +2351,7 @@ CVariableStorage::init(void)
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.websrv.protect_uri"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("This is a comma separated list of URI=PATH pairs, "
@@ -2311,28 +2360,28 @@ CVariableStorage::init(void)
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.websrv.trottle"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("Limit download speed for clients."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.websrv.enable_directory_listing"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_BOOLEAN);
     variable.setNote(("Enable directory listing."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.websrv.enable_keep_alive"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_BOOLEAN);
     variable.setNote(("Enable connection keep alive."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.websrv.keep_alive_timeout_ms"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_LONG);
     variable.setNote(("Idle timeout between two requests in one keep-alive "
@@ -2340,49 +2389,49 @@ CVariableStorage::init(void)
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.websrv.access_control_list"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("Set which remote hosts are allowed to connect."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.websrv.extra_mime_types"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("Extra mime types to recognize."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.websrv.num_threads"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_INTEGER);
     variable.setNote(("Number of worker threads."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.websrv.run_as_user"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("Switch to given user credentials after startup."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.websrv.hide_file_patterns"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("A pattern for the files to hide."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.websrv.url_rewrite_patterns"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("URL rewrites for VSCP daemon web interface."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.websrv.global_auth_file"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("Path to global authentication file. Leave blank for no "
@@ -2390,7 +2439,7 @@ CVariableStorage::init(void)
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.websrv.per_directory_auth_file"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote((" To enable directory protection with authentication, "
@@ -2398,7 +2447,7 @@ CVariableStorage::init(void)
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.websrv.url_rewrite_patterns"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("Comma-separated list of URL rewrites in the form of "
@@ -2406,7 +2455,7 @@ CVariableStorage::init(void)
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.websrv.ssi_patterns"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("All files that match ssi_pattern are treated as Server "
@@ -2414,7 +2463,7 @@ CVariableStorage::init(void)
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.websrv.request_timeout_ms"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_LONG);
     variable.setNote(("Timeout for network read and network write operations, "
@@ -2422,7 +2471,7 @@ CVariableStorage::init(void)
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.websrv.linger_timeout_ms"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_LONG);
     variable.setNote(("Set TCP socket linger timeout before closing sockets "
@@ -2430,7 +2479,7 @@ CVariableStorage::init(void)
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.websrv.decode_url"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_BOOLEAN);
     variable.setNote(
@@ -2438,28 +2487,28 @@ CVariableStorage::init(void)
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.websrv.access_control_allow_origin"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("Access-Control-Allow-Origin header field."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.websrv.access_control_allow_methods"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("Access-Control-Allow-Methods header field."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.websrv.access_control_allow_headers"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("Access-Control-Allow-Methods header field."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.websrv.error_pages"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("This option may be used to specify a directory for "
@@ -2467,7 +2516,7 @@ CVariableStorage::init(void)
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName("vscp." VSCPDB_CONFIG_NAME_WEB_TCP_NO_DELAY);
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_INTEGER);
     variable.setNote(
@@ -2475,7 +2524,7 @@ CVariableStorage::init(void)
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.websrv.static_file_max_age"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_LONG);
     variable.setNote(("Set the maximum time (in seconds) a cache may store "
@@ -2483,7 +2532,7 @@ CVariableStorage::init(void)
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.websrv.strict_transport_security_max_age"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_LONG);
     variable.setNote(("Set the Strict-Transport-Security header, and set "
@@ -2491,7 +2540,7 @@ CVariableStorage::init(void)
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.websrv.allow_sendfile_call"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_BOOLEAN);
     variable.setNote(("This option can be used to enable or disable the "
@@ -2499,7 +2548,7 @@ CVariableStorage::init(void)
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.websrv.additional_header"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("Send additional HTTP response header line for "
@@ -2507,14 +2556,14 @@ CVariableStorage::init(void)
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.websrv.max_request_size"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_LONG);
     variable.setNote(("Maximum request size URL."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.websrv.allow_index_script_resource"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_BOOLEAN);
     variable.setNote(("Index scripts (like index.cgi or index.lua) may have "
@@ -2522,7 +2571,7 @@ CVariableStorage::init(void)
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.websrv.duktape_script_patterns"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("A pattern for files that are interpreted as "
@@ -2530,7 +2579,7 @@ CVariableStorage::init(void)
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.websrv.lua_preload_file"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("This configuration option can be used to specify a "
@@ -2539,7 +2588,7 @@ CVariableStorage::init(void)
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.websrv.lua_script_patterns"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("A pattern for files that are interpreted as Lua "
@@ -2547,7 +2596,7 @@ CVariableStorage::init(void)
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.websrv.lua_server_page_patterns"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("Files matching this pattern are treated as Lua "
@@ -2555,14 +2604,14 @@ CVariableStorage::init(void)
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.websrv.lua_websocket_patterns"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote((""));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.websrv.lua_background_script"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("Run a Lua script in the background, independent from "
@@ -2570,7 +2619,7 @@ CVariableStorage::init(void)
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.websrv.lua_background_script_params"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("Used to add dynamic parameters to background script."));
@@ -2581,21 +2630,21 @@ CVariableStorage::init(void)
     // *************************************************************************
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.websockets.enable"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_BOOLEAN);
     variable.setNote(("Enable websocket functionality."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.websockets.document_root"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("Rootfolder for websockets."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.websockets.timeout_ms"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_LONG);
     variable.setNote(("Websocket timeout in milliseconds."));
@@ -2606,28 +2655,28 @@ CVariableStorage::init(void)
     // *************************************************************************
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.dm.loglevel"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("DM log level 'normal' or 'debug'."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.dm.db.path"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("Path to decision matrix database."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.dm.xml.path"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("Path to decision matrix XML file to load at startup."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.dm.allow.xml.save"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_BOOLEAN);
     variable.setNote(
@@ -2635,21 +2684,21 @@ CVariableStorage::init(void)
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.dm.count"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_LONG);
     variable.setNote(("Total number of decision matrix rows."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.dm.count.active"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_LONG);
     variable.setNote(("Number of active decision matrix rows."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.dm"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("Full decision matrix (all rows)."));
@@ -2660,56 +2709,56 @@ CVariableStorage::init(void)
     // *************************************************************************
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.debug.flags1"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_LONG);
     variable.setNote(("VSCP debug flags 1."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.debug.flags2"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_LONG);
     variable.setNote(("VSCP debug flags 2."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.debug.flags3"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_LONG);
     variable.setNote(("VSCP debug flags 3."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.debug.flags4"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_LONG);
     variable.setNote(("VSCP debug flags 4."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.debug.flags5"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_LONG);
     variable.setNote(("VSCP debug flags 5."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.debug.flags6"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_LONG);
     variable.setNote(("VSCP debug flags 6."));
     addStockVariable(variable);
     variable.init();
 
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.debug.flags7"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_LONG);
     variable.setNote(("VSCP debug flags 7."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.debug.flags8"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_LONG);
     variable.setNote(("VSCP debug flags 8."));
@@ -2720,14 +2769,14 @@ CVariableStorage::init(void)
     // *************************************************************************
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.variable.xml.path"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("Path to XML file to load variables from on startup."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.variable.db.path"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("Path to variable database."));
@@ -2738,35 +2787,35 @@ CVariableStorage::init(void)
     // *************************************************************************
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.log.syslog.enable"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_BOOLEAN);
     variable.setNote(("Flag to enable syslog."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.log.database.enable"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_BOOLEAN);
     variable.setNote(("Flag to enable logging to database."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.log.database.path"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("Path to logging database."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.log.database.count"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_LONG);
     variable.setNote(("Number of records in log database."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.log.database.sql"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_SQL);
     variable.setNote(("SQL select for log database retrieval (Default: 'ORDER "
@@ -2776,49 +2825,49 @@ CVariableStorage::init(void)
     variable.setValue(("ORDER BY date DESC LIMIT 500"));
     addStockVariable(variable);
 
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.log.database.search"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("Log database search result."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.log.general.enable"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_BOOLEAN);
     variable.setNote(("Flag to enable general logging to a text file."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.log.general.path"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("Path to general logging text file."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.log.access.enable"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_BOOLEAN);
     variable.setNote(("Flag to enable access logging to a text file."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.log.access.path"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("Path to access logging text file."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.log.security.enable"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_BOOLEAN);
     variable.setNote(("Flag to enable security logging to a text file."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.log.security.path"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("Path to security logging text file."));
@@ -2829,14 +2878,14 @@ CVariableStorage::init(void)
     // *************************************************************************
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.database.vscpdata.path"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("Path to VSCP data database."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ | PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
     variable.setName(("vscp.database.vscpdconfig.path"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("Path to VSCP daemon main database."));
@@ -2847,63 +2896,63 @@ CVariableStorage::init(void)
     // *************************************************************************
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.driver.count"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_INTEGER);
     variable.setNote(("Number of loaded drivers."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.driver.level1.count"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_INTEGER);
     variable.setNote(("Number of Level I drivers."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.driver.level2.count"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_INTEGER);
     variable.setNote(("Number of level II drivers."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.driver.add"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_BOOLEAN);
     variable.setNote(("Add a driver."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.driver.delete"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_BOOLEAN);
     variable.setNote(("Delete a driver."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.driver.start"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_BOOLEAN);
     variable.setNote(("Start a driver."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.driver.pause"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_BOOLEAN);
     variable.setNote(("Pause a driver."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.driver.stop"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_BOOLEAN);
     variable.setNote(("Stop a driver."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.driver"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("All driver info."));
@@ -2914,14 +2963,14 @@ CVariableStorage::init(void)
     // *************************************************************************
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.interface.count"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_INTEGER);
     variable.setNote(("Number of active interfaces."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.interface"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("All interfaces."));
@@ -2932,14 +2981,14 @@ CVariableStorage::init(void)
     // *************************************************************************
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.discovery.count"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_INTEGER);
     variable.setNote(("Number of discovered units."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.discovery"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("All discovered units."));
@@ -2950,7 +2999,7 @@ CVariableStorage::init(void)
     // *************************************************************************
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setOwnerID(0);
     variable.setName(("vscp.user.count"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_INTEGER);
@@ -2958,7 +3007,7 @@ CVariableStorage::init(void)
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_OWNER_ALL);
+    variable.setAccessRights(PERMISSION_OWNER_ALL);
     variable.setOwnerID(0);
     variable.setName(("vscp.user"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
@@ -2966,7 +3015,7 @@ CVariableStorage::init(void)
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setOwnerID(0);
     variable.setName(("vscp.user.names"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
@@ -2974,7 +3023,7 @@ CVariableStorage::init(void)
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_OWNER_WRITE);
     variable.setOwnerID(0);
     variable.setStockVariable();
     variable.setName(("vscp.user.add"));
@@ -2983,7 +3032,7 @@ CVariableStorage::init(void)
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_OWNER_WRITE);
+    variable.setAccessRights(PERMISSION_OWNER_WRITE);
     variable.setOwnerID(0);
     variable.setStockVariable();
     variable.setName(("vscp.user.delete"));
@@ -2996,14 +3045,14 @@ CVariableStorage::init(void)
     // *************************************************************************
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.table.count"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_INTEGER);
     variable.setNote(("Number of defined user tables."));
     addStockVariable(variable);
 
     variable.init();
-    variable.setAccessRights(PERMISSON_ALL_READ);
+    variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.table"));
     variable.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
     variable.setNote(("All user tables."));
@@ -3020,7 +3069,6 @@ uint32_t
 CVariableStorage::exist(const std::string &name)
 {
     CVariable variable;
-
     return find(name, variable);
 }
 
@@ -4069,20 +4117,20 @@ CVariableStorage::getStockVariable(const std::string &name,
     //                             Decision Matrix
     // *************************************************************************
 
-    if (vscp_startsWith(lcname, "vscp.dm.count.active")) {
+    if (vscp_startsWith(lcname, "vscp.dm.count.active")) { // *
         var.setValue(gpobj->m_dm.getMemoryElementCount());
         return var.getID();
     }
 
-    if (vscp_startsWith(lcname, "vscp.dm.count")) {
+    if (vscp_startsWith(lcname, "vscp.dm.count")) { // *
         var.setValue((long)gpobj->m_dm.getDatabaseRecordCount());
         return var.getID();
     }
 
-    if (vscp_startsWith(lcname, "vscp.dm")) {
+    if (vscp_startsWith(lcname, "vscp.dm")) { // *
         var.setStockVariable();
         var.setPersistent(false);
-        var.setAccessRights(PERMISSON_OWNER_READ);
+        var.setAccessRights(PERMISSION_OWNER_READ);
         var.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
         gpobj->m_dm.getAllRows(str);
         var.setValue(str);
@@ -4113,215 +4161,215 @@ CVariableStorage::getStockVariable(const std::string &name,
             var.setPersistent(false);
 
             if (vscp_startsWith(str, "id")) {
-                var.setAccessRights(PERMISSON_OWNER_READ);
+                var.setAccessRights(PERMISSION_OWNER_READ);
                 ;
                 var.setType(VSCP_DAEMON_VARIABLE_CODE_LONG);
                 var.setValue((long)pElement->m_id);
                 return (UINT_MAX); // Fake variable id
             } else if (vscp_startsWith(str, "bEnable")) {
-                var.setAccessRights(PERMISSON_OWNER_READ |
-                                    PERMISSON_OWNER_WRITE);
+                var.setAccessRights(PERMISSION_OWNER_READ |
+                                    PERMISSION_OWNER_WRITE);
                 var.setType(VSCP_DAEMON_VARIABLE_CODE_BOOLEAN);
                 var.setValue(pElement->m_bEnable);
                 return (UINT_MAX); // Fake variable id
             } else if (vscp_startsWith(str, "groupid")) {
-                var.setAccessRights(PERMISSON_OWNER_READ |
-                                    PERMISSON_OWNER_WRITE);
+                var.setAccessRights(PERMISSION_OWNER_READ |
+                                    PERMISSION_OWNER_WRITE);
                 var.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
                 var.setValue(pElement->m_strGroupID);
                 return (UINT_MAX); // Fake variable id
             } else if (vscp_startsWith(str, "mask.priority")) {
-                var.setAccessRights(PERMISSON_OWNER_READ |
-                                    PERMISSON_OWNER_WRITE);
+                var.setAccessRights(PERMISSION_OWNER_READ |
+                                    PERMISSION_OWNER_WRITE);
                 var.setType(VSCP_DAEMON_VARIABLE_CODE_INTEGER);
                 var.setValue(pElement->m_vscpfilter.mask_priority);
                 return (UINT_MAX); // Fake variable id
             } else if (vscp_startsWith(str, "mask.class")) {
-                var.setAccessRights(PERMISSON_OWNER_READ |
-                                    PERMISSON_OWNER_WRITE);
+                var.setAccessRights(PERMISSION_OWNER_READ |
+                                    PERMISSION_OWNER_WRITE);
                 var.setType(VSCP_DAEMON_VARIABLE_CODE_LONG);
                 var.setValue(pElement->m_vscpfilter.mask_class);
                 return (UINT_MAX); // Fake variable id
             } else if (vscp_startsWith(str, "mask.type")) {
-                var.setAccessRights(PERMISSON_OWNER_READ |
-                                    PERMISSON_OWNER_WRITE);
+                var.setAccessRights(PERMISSION_OWNER_READ |
+                                    PERMISSION_OWNER_WRITE);
                 var.setType(VSCP_DAEMON_VARIABLE_CODE_LONG);
                 var.setValue(pElement->m_vscpfilter.mask_type);
                 return (UINT_MAX); // Fake variable id
             } else if (vscp_startsWith(str, "mask.guid")) {
-                var.setAccessRights(PERMISSON_OWNER_READ |
-                                    PERMISSON_OWNER_WRITE);
+                var.setAccessRights(PERMISSION_OWNER_READ |
+                                    PERMISSION_OWNER_WRITE);
                 var.setType(VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_GUID);
                 var.setValue(pElement->m_vscpfilter.mask_GUID);
                 return (UINT_MAX); // Fake variable id
             } else if (vscp_startsWith(str, "filter.priority")) {
                 cguid guid;
                 guid.getFromArray(pElement->m_vscpfilter.mask_GUID);
-                var.setAccessRights(PERMISSON_OWNER_READ |
-                                    PERMISSON_OWNER_WRITE);
+                var.setAccessRights(PERMISSION_OWNER_READ |
+                                    PERMISSION_OWNER_WRITE);
                 var.setType(VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_GUID);
                 var.setValue(guid.getAsString());
                 return (UINT_MAX); // Fake variable id
             } else if (vscp_startsWith(str, "filter.class")) {
-                var.setAccessRights(PERMISSON_OWNER_READ |
-                                    PERMISSON_OWNER_WRITE);
+                var.setAccessRights(PERMISSION_OWNER_READ |
+                                    PERMISSION_OWNER_WRITE);
                 var.setType(VSCP_DAEMON_VARIABLE_CODE_LONG);
                 var.setValue(pElement->m_vscpfilter.filter_class);
                 return (UINT_MAX); // Fake variable id
             } else if (vscp_startsWith(str, "filter.type")) {
-                var.setAccessRights(PERMISSON_OWNER_READ |
-                                    PERMISSON_OWNER_WRITE);
+                var.setAccessRights(PERMISSION_OWNER_READ |
+                                    PERMISSION_OWNER_WRITE);
                 var.setType(VSCP_DAEMON_VARIABLE_CODE_LONG);
                 var.setValue(pElement->m_vscpfilter.filter_type);
                 return (UINT_MAX); // Fake variable id
             } else if (vscp_startsWith(str, "filter.guid")) {
                 cguid guid;
                 guid.getFromArray(pElement->m_vscpfilter.filter_GUID);
-                var.setAccessRights(PERMISSON_OWNER_READ |
-                                    PERMISSON_OWNER_WRITE);
+                var.setAccessRights(PERMISSION_OWNER_READ |
+                                    PERMISSION_OWNER_WRITE);
                 var.setType(VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_GUID);
                 var.setValue(guid.getAsString());
                 return (UINT_MAX); // Fake variable id
             } else if (vscp_startsWith(str, "allowed.start")) {
-                var.setAccessRights(PERMISSON_OWNER_READ |
-                                    PERMISSON_OWNER_WRITE);
+                var.setAccessRights(PERMISSION_OWNER_READ |
+                                    PERMISSION_OWNER_WRITE);
                 var.setType(VSCP_DAEMON_VARIABLE_CODE_DATETIME);
                 var.setValue((long)pElement->m_id);
                 return (UINT_MAX); // Fake variable id
             } else if (vscp_startsWith(str, "allowed.end")) {
-                var.setAccessRights(PERMISSON_OWNER_READ |
-                                    PERMISSON_OWNER_WRITE);
+                var.setAccessRights(PERMISSION_OWNER_READ |
+                                    PERMISSION_OWNER_WRITE);
                 var.setType(VSCP_DAEMON_VARIABLE_CODE_DATETIME);
                 var.setValue((long)pElement->m_id);
                 return (UINT_MAX); // Fake variable id
             } else if (vscp_startsWith(str, "allowed.monday")) {
-                var.setAccessRights(PERMISSON_OWNER_READ |
-                                    PERMISSON_OWNER_WRITE);
+                var.setAccessRights(PERMISSION_OWNER_READ |
+                                    PERMISSION_OWNER_WRITE);
                 var.setType(VSCP_DAEMON_VARIABLE_CODE_BOOLEAN);
                 var.setValue((long)pElement->m_id);
                 return (UINT_MAX); // Fake variable id
             } else if (vscp_startsWith(str, "allowed.tuesday")) {
-                var.setAccessRights(PERMISSON_OWNER_READ |
-                                    PERMISSON_OWNER_WRITE);
+                var.setAccessRights(PERMISSION_OWNER_READ |
+                                    PERMISSION_OWNER_WRITE);
                 var.setType(VSCP_DAEMON_VARIABLE_CODE_BOOLEAN);
                 var.setValue((long)pElement->m_id);
                 return (UINT_MAX); // Fake variable id
             } else if (vscp_startsWith(str, "allowed.wednessday")) {
-                var.setAccessRights(PERMISSON_OWNER_READ |
-                                    PERMISSON_OWNER_WRITE);
+                var.setAccessRights(PERMISSION_OWNER_READ |
+                                    PERMISSION_OWNER_WRITE);
                 var.setType(VSCP_DAEMON_VARIABLE_CODE_BOOLEAN);
                 var.setValue((long)pElement->m_id);
                 return (UINT_MAX); // Fake variable id
             } else if (vscp_startsWith(str, "allowed.thursday")) {
-                var.setAccessRights(PERMISSON_OWNER_READ |
-                                    PERMISSON_OWNER_WRITE);
+                var.setAccessRights(PERMISSION_OWNER_READ |
+                                    PERMISSION_OWNER_WRITE);
                 var.setType(VSCP_DAEMON_VARIABLE_CODE_BOOLEAN);
                 var.setValue((long)pElement->m_id);
                 return (UINT_MAX); // Fake variable id
             } else if (vscp_startsWith(str, "allowed.friday")) {
-                var.setAccessRights(PERMISSON_OWNER_READ |
-                                    PERMISSON_OWNER_WRITE);
+                var.setAccessRights(PERMISSION_OWNER_READ |
+                                    PERMISSION_OWNER_WRITE);
                 var.setType(VSCP_DAEMON_VARIABLE_CODE_BOOLEAN);
                 var.setValue((long)pElement->m_id);
                 return (UINT_MAX); // Fake variable id
             } else if (vscp_startsWith(str, "allowed.saturday")) {
-                var.setAccessRights(PERMISSON_OWNER_READ |
-                                    PERMISSON_OWNER_WRITE);
+                var.setAccessRights(PERMISSION_OWNER_READ |
+                                    PERMISSION_OWNER_WRITE);
                 var.setType(VSCP_DAEMON_VARIABLE_CODE_BOOLEAN);
                 var.setValue((long)pElement->m_id);
                 return (UINT_MAX); // Fake variable id
             } else if (vscp_startsWith(str, "allowed.sunday")) {
-                var.setAccessRights(PERMISSON_OWNER_READ |
-                                    PERMISSON_OWNER_WRITE);
+                var.setAccessRights(PERMISSION_OWNER_READ |
+                                    PERMISSION_OWNER_WRITE);
                 var.setType(VSCP_DAEMON_VARIABLE_CODE_BOOLEAN);
                 var.setValue((long)pElement->m_id);
                 return (UINT_MAX); // Fake variable id
             } else if (vscp_startsWith(str, "allowed.time")) {
-                var.setAccessRights(PERMISSON_OWNER_READ |
-                                    PERMISSON_OWNER_WRITE);
+                var.setAccessRights(PERMISSION_OWNER_READ |
+                                    PERMISSION_OWNER_WRITE);
                 var.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
                 var.setValue((long)pElement->m_id);
                 return (UINT_MAX); // Fake variable id
             } else if (vscp_startsWith(str, "bCheckIndex")) {
-                var.setAccessRights(PERMISSON_OWNER_READ |
-                                    PERMISSON_OWNER_WRITE);
+                var.setAccessRights(PERMISSION_OWNER_READ |
+                                    PERMISSION_OWNER_WRITE);
                 var.setType(VSCP_DAEMON_VARIABLE_CODE_BOOLEAN);
                 var.setValue((long)pElement->m_id);
                 return (UINT_MAX); // Fake variable id
             } else if (vscp_startsWith(str, "index")) {
-                var.setAccessRights(PERMISSON_OWNER_READ |
-                                    PERMISSON_OWNER_WRITE);
+                var.setAccessRights(PERMISSION_OWNER_READ |
+                                    PERMISSION_OWNER_WRITE);
                 var.setType(VSCP_DAEMON_VARIABLE_CODE_INTEGER);
                 var.setValue((long)pElement->m_id);
                 return (UINT_MAX); // Fake variable id
             } else if (vscp_startsWith(str, "bCheckZone")) {
-                var.setAccessRights(PERMISSON_OWNER_READ |
-                                    PERMISSON_OWNER_WRITE);
+                var.setAccessRights(PERMISSION_OWNER_READ |
+                                    PERMISSION_OWNER_WRITE);
                 var.setType(VSCP_DAEMON_VARIABLE_CODE_BOOLEAN);
                 var.setValue((long)pElement->m_id);
                 return (UINT_MAX); // Fake variable id
             } else if (vscp_startsWith(str, "zone")) {
-                var.setAccessRights(PERMISSON_OWNER_READ |
-                                    PERMISSON_OWNER_WRITE);
+                var.setAccessRights(PERMISSION_OWNER_READ |
+                                    PERMISSION_OWNER_WRITE);
                 var.setType(VSCP_DAEMON_VARIABLE_CODE_INTEGER);
                 var.setValue((long)pElement->m_id);
                 return (UINT_MAX); // Fake variable id
             } else if (vscp_startsWith(str, "bCheckSubZone")) {
-                var.setAccessRights(PERMISSON_OWNER_READ |
-                                    PERMISSON_OWNER_WRITE);
+                var.setAccessRights(PERMISSION_OWNER_READ |
+                                    PERMISSION_OWNER_WRITE);
                 var.setType(VSCP_DAEMON_VARIABLE_CODE_BOOLEAN);
                 var.setValue((long)pElement->m_id);
                 return (UINT_MAX); // Fake variable id
             } else if (vscp_startsWith(str, "subzone")) {
-                var.setAccessRights(PERMISSON_OWNER_READ |
-                                    PERMISSON_OWNER_WRITE);
+                var.setAccessRights(PERMISSION_OWNER_READ |
+                                    PERMISSION_OWNER_WRITE);
                 var.setType(VSCP_DAEMON_VARIABLE_CODE_INTEGER);
                 var.setValue((long)pElement->m_id);
                 return (UINT_MAX); // Fake variable id
             } else if (vscp_startsWith(str, "measurement.value")) {
-                var.setAccessRights(PERMISSON_OWNER_READ |
-                                    PERMISSON_OWNER_WRITE);
+                var.setAccessRights(PERMISSION_OWNER_READ |
+                                    PERMISSION_OWNER_WRITE);
                 var.setType(VSCP_DAEMON_VARIABLE_CODE_DOUBLE);
                 var.setValue((long)pElement->m_id);
                 return (UINT_MAX); // Fake variable id
             } else if (vscp_startsWith(str, "measurement.unit")) {
-                var.setAccessRights(PERMISSON_OWNER_READ |
-                                    PERMISSON_OWNER_WRITE);
+                var.setAccessRights(PERMISSION_OWNER_READ |
+                                    PERMISSION_OWNER_WRITE);
                 var.setType(VSCP_DAEMON_VARIABLE_CODE_INTEGER);
                 var.setValue((long)pElement->m_id);
                 return (UINT_MAX); // Fake variable id
             } else if (vscp_startsWith(str, "measurement.compare")) {
-                var.setAccessRights(PERMISSON_OWNER_READ |
-                                    PERMISSON_OWNER_WRITE);
+                var.setAccessRights(PERMISSION_OWNER_READ |
+                                    PERMISSION_OWNER_WRITE);
                 var.setType(VSCP_DAEMON_VARIABLE_CODE_INTEGER);
                 var.setValue((long)pElement->m_id);
                 return (UINT_MAX); // Fake variable id
             } else if (vscp_startsWith(str, "measurement.compare.string")) {
-                var.setAccessRights(PERMISSON_OWNER_READ |
-                                    PERMISSON_OWNER_WRITE);
+                var.setAccessRights(PERMISSION_OWNER_READ |
+                                    PERMISSION_OWNER_WRITE);
                 var.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
                 var.setValue((long)pElement->m_id);
                 return (UINT_MAX); // Fake variable id
             } else if (vscp_startsWith(str, "measurement.comment")) {
-                var.setAccessRights(PERMISSON_OWNER_READ |
-                                    PERMISSON_OWNER_WRITE);
+                var.setAccessRights(PERMISSION_OWNER_READ |
+                                    PERMISSION_OWNER_WRITE);
                 var.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
                 var.setValue((long)pElement->m_id);
                 return (UINT_MAX); // Fake variable id
             } else if (vscp_startsWith(str, "count.trigger")) {
-                var.setAccessRights(PERMISSON_OWNER_READ);
+                var.setAccessRights(PERMISSION_OWNER_READ);
                 var.setType(VSCP_DAEMON_VARIABLE_CODE_LONG);
                 var.setValue((long)pElement->m_id);
                 return (UINT_MAX); // Fake variable id
             } else if (vscp_startsWith(str, "count.error")) {
-                var.setAccessRights(PERMISSON_OWNER_READ);
+                var.setAccessRights(PERMISSION_OWNER_READ);
                 var.setType(VSCP_DAEMON_VARIABLE_CODE_LONG);
                 var.setValue((long)pElement->m_id);
                 return (UINT_MAX); // Fake variable id
             } else if ((vscp_startsWith(str, "error")) ||
                        (vscp_startsWith(str, "error.string"))) {
-                var.setAccessRights(PERMISSON_OWNER_READ |
-                                    PERMISSON_OWNER_WRITE);
+                var.setAccessRights(PERMISSION_OWNER_READ |
+                                    PERMISSION_OWNER_WRITE);
                 var.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
                 var.setValue((long)pElement->m_id);
                 return (UINT_MAX); // Fake variable id
@@ -5551,7 +5599,7 @@ CVariableStorage::putStockVariable(CVariable &var, CUserItem *pUser)
                 var.getValue(&strValue);
                 // Change in memory record
                 if (NULL != pdm) {
-                    pdm->m_timeAllow.setFromTime(strValue);
+                    pdm->m_timeAllow.setStartTime(strValue);
                 }
                 return gpobj->m_dm.updateDatabaseRecordItem(
                   id, ("allowedStart"), strValue);

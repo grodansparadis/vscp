@@ -58,6 +58,7 @@ VSCPD_OBJECTS =  vscpd.o \
 	tcpipsrv.o \
 	dm.o \
 	remotevariable.o \
+	stockvariable.o\
 	interfacelist.o \
 	userlist.o \
 	devicethread.o \
@@ -129,6 +130,9 @@ dm.o: ../../common/dm.cpp ../../common/dm.h
 
 remotevariable.o: ../../common/remotevariable.cpp ../../common/remotevariable.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/remotevariable.cpp -o $@
+
+stockvariable.o: ../../common/stockvariable.cpp ../../common/stockvariable.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/stockvariable.cpp -o $@
 
 interfacelist.o: ../../common/interfacelist.cpp ../../common/interfacelist.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/interfacelist.cpp -o $@

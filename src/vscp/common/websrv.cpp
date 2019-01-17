@@ -1650,7 +1650,7 @@ vscp_dm_list(struct web_connection *conn, void *cbdata)
                 web_printf(conn, "<b>Allowed from:</b> ");
                 web_printf(conn,
                            "%s",
-                           (const char *)pElement->m_timeAllow.getFromTime()
+                           (const char *)pElement->m_timeAllow.getStartTime()
                              .getISODateTime()
                              .c_str());
 
@@ -2183,7 +2183,7 @@ vscp_dm_edit(struct web_connection *conn, void *cbdata)
         } else {
             web_printf(conn,
                        "%s",
-                       (const char *)pElement->m_timeAllow.getFromTime()
+                       (const char *)pElement->m_timeAllow.getStartTime()
                          .getISODateTime()
                          .c_str());
         }
@@ -3155,7 +3155,7 @@ vscp_dm_post(struct web_connection *conn, void *cbdata)
                 bCheckSubZone ? pElement->m_bCheckSubZone = true
                               : pElement->m_bCheckSubZone = false;
 
-                pElement->m_timeAllow.setFromTime(strAllowedFrom);
+                pElement->m_timeAllow.setStartTime(strAllowedFrom);
                 pElement->m_timeAllow.setEndTime(strAllowedTo);
                 pElement->m_timeAllow.parseActionTime(strAllowedTime);
 

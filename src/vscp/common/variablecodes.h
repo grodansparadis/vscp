@@ -52,13 +52,13 @@
 
 #define VSCP_DAEMON_VARIABLE_CODE_MIME                                         \
     (100) // Mime type (mime-type;base64 encoded content)
-#define VSCP_DAEMON_VARIABLE_CODE_HTML (101)       // HTML Page
-#define VSCP_DAEMON_VARIABLE_CODE_JAVASCRIPT (102) // Javascript code
-#define VSCP_DAEMON_VARIABLE_CODE_JSON (103)       // JSON data
-#define VSCP_DAEMON_VARIABLE_CODE_XML (104)        // XML data
-#define VSCP_DAEMON_VARIABLE_CODE_SQL (105)        // SQL data
+#define VSCP_DAEMON_VARIABLE_CODE_HTML (101)        // HTML Page
+#define VSCP_DAEMON_VARIABLE_CODE_JAVASCRIPT (102)  // Javascript code
+#define VSCP_DAEMON_VARIABLE_CODE_JSON (103)        // JSON data
+#define VSCP_DAEMON_VARIABLE_CODE_XML (104)         // XML data
+#define VSCP_DAEMON_VARIABLE_CODE_SQL (105)         // SQL data
 
-#define VSCP_DAEMON_VARIABLE_CODE_LUA (200) // LUA script
+#define VSCP_DAEMON_VARIABLE_CODE_LUA (200)         // LUA script
 #define VSCP_DAEMON_VARIABLE_CODE_LUA_RESULT                                   \
     (201) // LUA executed script result string
 
@@ -68,7 +68,7 @@
 #define VSCP_DAEMON_VARIABLE_CODE_DM_ROW (500) // A DM row, comma separated
 #define VSCP_DAEMON_VARIABLE_CODE_DRIVER (501) // Driver item, comma separated
 #define VSCP_DAEMON_VARIABLE_CODE_USER (502)   // User item, comma separated
-#define VSCP_DAEMON_VARIABLE_CODE_FILTER (503) // Filter item, comma separated
+#define VSCP_DAEMON_VARIABLE_CODE_FILTER (503) // Filter item, comma separated (filer + mask)
 
 // When adding new type
 // ====================
