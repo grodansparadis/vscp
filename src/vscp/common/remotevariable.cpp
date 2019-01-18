@@ -221,29 +221,29 @@ CVariable::getVariableTypeFromString(const std::string &strVariableType)
         } else if (0 == vscp_strcasecmp(str.c_str(), "double")) {
             type = VSCP_DAEMON_VARIABLE_CODE_DOUBLE;
         } else if (0 == vscp_strcasecmp(str.c_str(), "measurement")) {
-            type = VSCP_DAEMON_VARIABLE_CODE_VSCP_MEASUREMENT;
+            type = VSCP_DAEMON_VARIABLE_CODE_MEASUREMENT;
         } else if (0 == vscp_strcasecmp(str.c_str(), "eventguid")) {
-            type = VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_GUID;
+            type = VSCP_DAEMON_VARIABLE_CODE_GUID;
         } else if (0 == vscp_strcasecmp(str.c_str(), "eventdata")) {
-            type = VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_DATA;
+            type = VSCP_DAEMON_VARIABLE_CODE_EVENT_DATA;
         } else if (0 == vscp_strcasecmp(str.c_str(), "eventclass")) {
-            type = VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_CLASS;
+            type = VSCP_DAEMON_VARIABLE_CODE_EVENT_CLASS;
         } else if (0 == vscp_strcasecmp(str.c_str(), "eventtype")) {
-            type = VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TYPE;
+            type = VSCP_DAEMON_VARIABLE_CODE_EVENT_TYPE;
         } else if (0 == vscp_strcasecmp(str.c_str(), "eventtimestamp")) {
-            type = VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TIMESTAMP;
+            type = VSCP_DAEMON_VARIABLE_CODE_EVENT_TIMESTAMP;
         } else if (0 == vscp_strcasecmp(str.c_str(), "event")) {
-            type = VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT;
+            type = VSCP_DAEMON_VARIABLE_CODE_EVENT;
         } else if (0 == vscp_strcasecmp(str.c_str(), "guid")) {
-            type = VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_GUID;
+            type = VSCP_DAEMON_VARIABLE_CODE_GUID;
         } else if (0 == vscp_strcasecmp(str.c_str(), "data")) {
-            type = VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_DATA;
+            type = VSCP_DAEMON_VARIABLE_CODE_EVENT_DATA;
         } else if (0 == vscp_strcasecmp(str.c_str(), "vscpclass")) {
-            type = VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_CLASS;
+            type = VSCP_DAEMON_VARIABLE_CODE_EVENT_CLASS;
         } else if (0 == vscp_strcasecmp(str.c_str(), "vscptype")) {
-            type = VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TYPE;
+            type = VSCP_DAEMON_VARIABLE_CODE_EVENT_TYPE;
         } else if (0 == vscp_strcasecmp(str.c_str(), "timestamp")) {
-            type = VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TIMESTAMP;
+            type = VSCP_DAEMON_VARIABLE_CODE_EVENT_TIMESTAMP;
         } else if (0 == vscp_strcasecmp(str.c_str(), "datetime")) {
             type = VSCP_DAEMON_VARIABLE_CODE_DATETIME;
         } else if (0 == vscp_strcasecmp(str.c_str(), "date")) {
@@ -313,25 +313,25 @@ CVariable::getVariableTypeAsString(int type)
         case VSCP_DAEMON_VARIABLE_CODE_DOUBLE:
             return "Double";
 
-        case VSCP_DAEMON_VARIABLE_CODE_VSCP_MEASUREMENT:
+        case VSCP_DAEMON_VARIABLE_CODE_MEASUREMENT:
             return "Measurement";
 
-        case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT:
+        case VSCP_DAEMON_VARIABLE_CODE_EVENT:
             return "VscpEvent";
 
-        case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_GUID:
+        case VSCP_DAEMON_VARIABLE_CODE_GUID:
             return "VscpGuid";
 
-        case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_DATA:
+        case VSCP_DAEMON_VARIABLE_CODE_EVENT_DATA:
             return "VscpData";
 
-        case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_CLASS:
+        case VSCP_DAEMON_VARIABLE_CODE_EVENT_CLASS:
             return "VscpClass";
 
-        case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TYPE:
+        case VSCP_DAEMON_VARIABLE_CODE_EVENT_TYPE:
             return "VscpType";
 
-        case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TIMESTAMP:
+        case VSCP_DAEMON_VARIABLE_CODE_EVENT_TIMESTAMP:
             return "Timestamp";
 
         case VSCP_DAEMON_VARIABLE_CODE_DATETIME:
@@ -451,13 +451,13 @@ CVariable::setType(uint16_t type )
         case VSCP_DAEMON_VARIABLE_CODE_INTEGER:
         case VSCP_DAEMON_VARIABLE_CODE_LONG:
         case VSCP_DAEMON_VARIABLE_CODE_DOUBLE:
-        case VSCP_DAEMON_VARIABLE_CODE_VSCP_MEASUREMENT:
-        case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT:
-        case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_GUID:
-        case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_DATA:
-        case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_CLASS:
-        case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TYPE:
-        case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TIMESTAMP:
+        case VSCP_DAEMON_VARIABLE_CODE_MEASUREMENT:
+        case VSCP_DAEMON_VARIABLE_CODE_EVENT:
+        case VSCP_DAEMON_VARIABLE_CODE_GUID:
+        case VSCP_DAEMON_VARIABLE_CODE_EVENT_DATA:
+        case VSCP_DAEMON_VARIABLE_CODE_EVENT_CLASS:
+        case VSCP_DAEMON_VARIABLE_CODE_EVENT_TYPE:
+        case VSCP_DAEMON_VARIABLE_CODE_EVENT_TIMESTAMP:
         case VSCP_DAEMON_VARIABLE_CODE_DATETIME:
         case VSCP_DAEMON_VARIABLE_CODE_BLOB:
         case VSCP_DAEMON_VARIABLE_CODE_DATE:
@@ -894,6 +894,15 @@ CVariable::getValue(double *pValue)
 // setValue
 //
 void
+CVariable::setValue(cguid &guid)
+{
+    m_strValue= guid.getAsString();
+};
+
+///////////////////////////////////////////////////////////////////////////////
+// setValue
+//
+void
 CVariable::setValue(vscpEvent &event)
 {
     vscp_writeVscpEventToString(&event, m_strValue);
@@ -1006,31 +1015,31 @@ CVariable::setValueFromString(int type,
             m_strValue  = vscp_str_format("%lf", dval);
         } break;
 
-        case VSCP_DAEMON_VARIABLE_CODE_VSCP_MEASUREMENT:
+        case VSCP_DAEMON_VARIABLE_CODE_MEASUREMENT:
             m_strValue = str;
             break;
 
-        case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT:
+        case VSCP_DAEMON_VARIABLE_CODE_EVENT:
             m_strValue = str;
             break;
 
-        case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_GUID:
+        case VSCP_DAEMON_VARIABLE_CODE_GUID:
             m_strValue = str;
             break;
 
-        case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_DATA:
+        case VSCP_DAEMON_VARIABLE_CODE_EVENT_DATA:
             m_strValue = str;
             break;
 
-        case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_CLASS:
+        case VSCP_DAEMON_VARIABLE_CODE_EVENT_CLASS:
             m_strValue = str;
             break;
 
-        case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TYPE:
+        case VSCP_DAEMON_VARIABLE_CODE_EVENT_TYPE:
             m_strValue = str;
             break;
 
-        case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TIMESTAMP:
+        case VSCP_DAEMON_VARIABLE_CODE_EVENT_TIMESTAMP:
             m_strValue = str;
             break;
 
@@ -1330,33 +1339,33 @@ CVariable::reset(void)
                 m_strValue = ("0");
                 break;
 
-            case VSCP_DAEMON_VARIABLE_CODE_VSCP_MEASUREMENT:
+            case VSCP_DAEMON_VARIABLE_CODE_MEASUREMENT:
                 m_strValue =
                   ("0,0,0,255,255"); // value,unit,sensor-index,zone,subzone
                 break;
 
-            case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT:
+            case VSCP_DAEMON_VARIABLE_CODE_EVENT:
                 m_strValue = ("");
                 break;
 
-            case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_GUID:
+            case VSCP_DAEMON_VARIABLE_CODE_GUID:
                 m_strValue =
                   ("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00");
                 break;
 
-            case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_DATA:
+            case VSCP_DAEMON_VARIABLE_CODE_EVENT_DATA:
                 m_strValue = ("");
                 break;
 
-            case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_CLASS:
+            case VSCP_DAEMON_VARIABLE_CODE_EVENT_CLASS:
                 m_strValue = ("0");
                 break;
 
-            case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TYPE:
+            case VSCP_DAEMON_VARIABLE_CODE_EVENT_TYPE:
                 m_strValue = ("0");
                 break;
 
-            case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TIMESTAMP:
+            case VSCP_DAEMON_VARIABLE_CODE_EVENT_TIMESTAMP:
                 m_strValue = ("0");
                 break;
 
@@ -1933,7 +1942,7 @@ CVariableStorage::init(void)
     variable.init();
     variable.setAccessRights(PERMISSION_ALL_READ);
     variable.setName(("vscp.host.guid"));
-    variable.setType(VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_GUID);
+    variable.setType(VSCP_DAEMON_VARIABLE_CODE_GUID);
     variable.setNote(("GUID for host."));
     addStockVariable(variable);
 
@@ -4199,7 +4208,7 @@ CVariableStorage::getStockVariable(const std::string &name,
             } else if (vscp_startsWith(str, "mask.guid")) {
                 var.setAccessRights(PERMISSION_OWNER_READ |
                                     PERMISSION_OWNER_WRITE);
-                var.setType(VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_GUID);
+                var.setType(VSCP_DAEMON_VARIABLE_CODE_GUID);
                 var.setValue(pElement->m_vscpfilter.mask_GUID);
                 return (UINT_MAX); // Fake variable id
             } else if (vscp_startsWith(str, "filter.priority")) {
@@ -4207,7 +4216,7 @@ CVariableStorage::getStockVariable(const std::string &name,
                 guid.getFromArray(pElement->m_vscpfilter.mask_GUID);
                 var.setAccessRights(PERMISSION_OWNER_READ |
                                     PERMISSION_OWNER_WRITE);
-                var.setType(VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_GUID);
+                var.setType(VSCP_DAEMON_VARIABLE_CODE_GUID);
                 var.setValue(guid.getAsString());
                 return (UINT_MAX); // Fake variable id
             } else if (vscp_startsWith(str, "filter.class")) {
@@ -4227,7 +4236,7 @@ CVariableStorage::getStockVariable(const std::string &name,
                 guid.getFromArray(pElement->m_vscpfilter.filter_GUID);
                 var.setAccessRights(PERMISSION_OWNER_READ |
                                     PERMISSION_OWNER_WRITE);
-                var.setType(VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_GUID);
+                var.setType(VSCP_DAEMON_VARIABLE_CODE_GUID);
                 var.setValue(guid.getAsString());
                 return (UINT_MAX); // Fake variable id
             } else if (vscp_startsWith(str, "allowed.start")) {

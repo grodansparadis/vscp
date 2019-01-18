@@ -50,11 +50,11 @@
 #define VAR_MAXBUF_SIZE 0x10000 // Size for variable strings etc
 
 // Variable read/write error codes
-#define VAR_ERROR_OK (0) // Positive response
-#define VAR_ERROR_USER (-1) // User is not allowed to do this operation
-#define VAR_ERROR_PERMISSION (-2) // RWX permission not right to do operation
+#define VAR_ERROR_OK (0)             // Positive response
+#define VAR_ERROR_USER (-1)          // User is not allowed to do this operation
+#define VAR_ERROR_PERMISSION (-2)    // RWX permission not right to do operation
 #define VAR_ERROR_TYPE_MISMATCH (-3) // Wrong variable type for operation
-#define VAR_ERROR_SYNTAX (-4) // Syntax or format is wrong
+#define VAR_ERROR_SYNTAX (-4)        // Syntax or format is wrong
 
 // Persistence flags
 #define VSCP_VAR_PERSISTENT true
@@ -78,7 +78,7 @@
 #define PERMISSION_OTHER_ALL 0x007
 #define PERMISSION_OTHER_NONE 0x000
 
-#define PERMISSION_ALL_READ 0x444  
+#define PERMISSION_ALL_READ 0x444
 #define PERMISSION_ALL_WRITE 0x222
 
 #define PERMISSION_ALL_RIGHTS 0x777
@@ -134,15 +134,15 @@
     "value=\"%s\" \n"                                                          \
     "note=\"%s\" />"
 
-class CStockVar 
+class CStockVar
 {
 
-public:    
+  public:
     CStockVar(std::string name);
     ~CStockVar();
 
-    typedef bool ( *STOCKVAR_SET ) ( std::string setString );
-    typedef std::string ( *STOCKVAR_GET ) ( void );
+    typedef bool (*STOCKVAR_SET)(std::string setString);
+    typedef std::string (*STOCKVAR_GET)(void);
 };
 
 /*
@@ -225,7 +225,7 @@ class CVariable
         @return true if the string could be parsed correctly.
      */
     bool setFromString(const std::string &strVariable,
-                               const std::string &strUser = "admin");
+                       const std::string &strUser = "admin");
 
     /*!
      * Get string content as semicolon separated string form.
@@ -288,8 +288,6 @@ class CVariable
         it has a non zero value. In all other cases false will be returned.
      */
     bool isTrue(void);
-
-
 
     /*!
         setTrue
@@ -392,6 +390,12 @@ class CVariable
         @param value Bool that will receive the value.
      */
     void getValue(bool *pValue);
+
+    /*!
+        setValue - cguid
+        @param guid GUID to set.
+    */
+    void setValue(cguid &guid);
 
     /*!
         setValue - vscpEvent
@@ -509,7 +513,8 @@ class CVariable
     /*!
         Set note for variable
         @param strNote Note to set.
-        @param bBase64 If true strNote will be decoded from base64 before it is stored.
+        @param bBase64 If true strNote will be decoded from base64 before it is
+       stored.
         @return True on success.
     */
     bool setNote(const std::string &strNote, bool bBase64 = false);
@@ -537,7 +542,8 @@ class CVariable
 
     /*!
         Set persistence for variable
-        @param b True if variable should be stored in a persistent way, false otherwise
+        @param b True if variable should be stored in a persistent way, false
+       otherwise
     */
     void setPersistent(bool b) { m_bPersistent = b; };
 
@@ -559,7 +565,7 @@ class CVariable
 
     /*!
         Get accessrights on string format
-        @return Accessrights as a string 
+        @return Accessrights as a string
     */
     std::string getAccessRightStr(void)
     {
@@ -570,7 +576,8 @@ class CVariable
 
     /*!
         Test if variable is writable by a general user
-        @return Return true if variable is writable by a general user, false if not.
+        @return Return true if variable is writable by a general user, false if
+       not.
     */
     bool isUserWritable(void)
     {
@@ -579,8 +586,8 @@ class CVariable
 
     /*!
         Make variable writable (or not) by the general user
-        @param b True to make the variable writable by the general user. False to make
-       it non writable by the general user.
+        @param b True to make the variable writable by the general user. False
+       to make it non writable by the general user.
     */
     void makeUserWritable(bool b) { m_accessRights |= 0x02; };
 
@@ -600,10 +607,10 @@ class CVariable
     */
     void makeOwnerWritable(bool b) { m_accessRights |= 0x80; };
 
-    /*! 
+    /*!
         Set owner id for variable
         @param uid Owner if to set. Must be defined.
-    */        
+    */
     void setOwnerID(uint32_t uid) { m_userid = uid; };
     /*!
         Get owner id for variable
@@ -623,14 +630,14 @@ class CVariable
     */
     bool isStockVariable(void) { return m_bStock; };
 
-    /*! 
+    /*!
         Check if a user is allowed to read variable
         @param user Reference to user that wants to access variable
         @return True if user is allowed to read value of variable.
     */
     bool isAllowedToRead(CUserItem &user);
 
-    /*! 
+    /*!
         Check if a user is allowed to write variable
         @param user Reference to user that wants to access variable
         @return True if user is allowed to write value of variable.
@@ -733,13 +740,27 @@ class CVariableStorage
      *      zero if the variable is not found.
      */
     uint32_t getStockVariable(const std::string &name,
-                              CVariable &pVar,
+                              CVariable& var,
                               CUserItem *pUser = NULL);
 
-    bool stockvariable(std::string &name,
-                       int op,
-                       CVariable &var,
-                       CUserItem &pUser);
+    /*!
+        Handle init/read/write for stock variables
+        @param name Name of variable
+        @parm op Operation to perform (INIT/READ/WRITE)
+        @param var Variable with init/read/write data
+        @param user User that perform the operation
+        @return True if operation is performed successfully
+    */
+    bool handleStockVariable(std::string name,
+                             int op,
+                             CVariable& var,
+                             CUserItem& user);
+
+    /*!
+        Initialize stock variables that should be visible in lists
+        @param user User item used to init variables.
+    */
+    void initStockVariables(CUserItem &user);
 
     /*!
         Write stock variable.

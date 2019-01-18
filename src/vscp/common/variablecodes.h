@@ -37,13 +37,13 @@
 #define VSCP_DAEMON_VARIABLE_CODE_INTEGER (3)           // Integer value
 #define VSCP_DAEMON_VARIABLE_CODE_LONG (4)              // Long value
 #define VSCP_DAEMON_VARIABLE_CODE_DOUBLE (5)            // Floating point value
-#define VSCP_DAEMON_VARIABLE_CODE_VSCP_MEASUREMENT (6)  // VSCP data coding
-#define VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT (7)        // VSCP event (Level II)
-#define VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_GUID (8)   // VSCP event GUID
-#define VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_DATA (9)   // VSCP event data
-#define VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_CLASS (10) // VSCP event class
-#define VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TYPE (11)  // VSCP event type
-#define VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TIMESTAMP                         \
+#define VSCP_DAEMON_VARIABLE_CODE_MEASUREMENT (6)       // VSCP data coding
+#define VSCP_DAEMON_VARIABLE_CODE_EVENT (7)             // VSCP event (Level II)
+#define VSCP_DAEMON_VARIABLE_CODE_GUID (8)              // VSCP GUID
+#define VSCP_DAEMON_VARIABLE_CODE_EVENT_DATA (9)        // VSCP event data
+#define VSCP_DAEMON_VARIABLE_CODE_EVENT_CLASS (10)      // VSCP event class
+#define VSCP_DAEMON_VARIABLE_CODE_EVENT_TYPE (11)       // VSCP event type
+#define VSCP_DAEMON_VARIABLE_CODE_EVENT_TIMESTAMP                         \
     (12)                                        // VSCP event timestamp
 #define VSCP_DAEMON_VARIABLE_CODE_DATETIME (13) // Date + Time in iso format
 #define VSCP_DAEMON_VARIABLE_CODE_DATE (14)     // Date in iso format

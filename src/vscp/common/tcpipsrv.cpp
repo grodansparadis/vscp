@@ -1343,7 +1343,7 @@ tcpipClientObj::handleClientSend(void)
             }
 
             // Must be event type
-            if (VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT != variable.getType()) {
+            if (VSCP_DAEMON_VARIABLE_CODE_EVENT != variable.getType()) {
                 write(MSG_VARIABLE_MUST_BE_EVENT_TYPE,
                       strlen(MSG_VARIABLE_MUST_BE_EVENT_TYPE));
                 return;

@@ -3574,43 +3574,43 @@ vscp_variable_list(struct web_connection *conn, void *cbdata)
                            "bold;\">Double</div>");
                 break;
 
-            case VSCP_DAEMON_VARIABLE_CODE_VSCP_MEASUREMENT:
+            case VSCP_DAEMON_VARIABLE_CODE_MEASUREMENT:
                 web_printf(conn,
                            "<div id=\"small\" style=\"font-weight: "
                            "bold;\">Measurement</div>");
                 break;
 
-            case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT:
+            case VSCP_DAEMON_VARIABLE_CODE_EVENT:
                 web_printf(
                   conn,
                   "<div id=\"small\" style=\"font-weight: bold;\">Event</div>");
                 break;
 
-            case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_GUID:
+            case VSCP_DAEMON_VARIABLE_CODE_GUID:
                 web_printf(
                   conn,
                   "<div id=\"small\" style=\"font-weight: bold;\">GUID</div>");
                 break;
 
-            case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_DATA:
+            case VSCP_DAEMON_VARIABLE_CODE_EVENT_DATA:
                 web_printf(conn,
                            "<div id=\"small\" style=\"font-weight: "
                            "bold;\">Event data</div>");
                 break;
 
-            case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_CLASS:
+            case VSCP_DAEMON_VARIABLE_CODE_EVENT_CLASS:
                 web_printf(conn,
                            "<div id=\"small\" style=\"font-weight: "
                            "bold;\">Event class</div>");
                 break;
 
-            case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TYPE:
+            case VSCP_DAEMON_VARIABLE_CODE_EVENT_TYPE:
                 web_printf(conn,
                            "<div id=\"small\" style=\"font-weight: "
                            "bold;\">Event type</div>");
                 break;
 
-            case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TIMESTAMP:
+            case VSCP_DAEMON_VARIABLE_CODE_EVENT_TIMESTAMP:
                 web_printf(conn,
                            "<div id=\"small\" style=\"font-weight: "
                            "bold;\">Event timestamp</div>");
@@ -4124,7 +4124,7 @@ vscp_variable_edit(struct web_connection *conn, void *cbdata)
                    "<div id=\"small\">Decimal value. Format: "
                    "Decimal signed value.</div>");
 
-    } else if (VSCP_DAEMON_VARIABLE_CODE_VSCP_MEASUREMENT == nType) {
+    } else if (VSCP_DAEMON_VARIABLE_CODE_MEASUREMENT == nType) {
 
         web_printf(conn, "<textarea cols=\"50\" rows=\"1\" name=\"value\">");
 
@@ -4141,7 +4141,7 @@ vscp_variable_edit(struct web_connection *conn, void *cbdata)
         web_printf(conn,
                    "<div id=\"small\">Measurement value. Format: "
                    "value,unit,sensor-index,zone,subzone.</div>");
-    } else if (VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT == nType) {
+    } else if (VSCP_DAEMON_VARIABLE_CODE_EVENT == nType) {
 
         web_printf(conn, "<textarea cols=\"50\" rows=\"1\" name=\"value\">");
 
@@ -4160,7 +4160,7 @@ vscp_variable_edit(struct web_connection *conn, void *cbdata)
           "<div id=\"small\">VSCP Event. Format: "
           "'head,class;type,obid,datetime,timestamp,GUID,data1,data2'</div>");
 
-    } else if (VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_GUID == nType) {
+    } else if (VSCP_DAEMON_VARIABLE_CODE_GUID == nType) {
 
         web_printf(conn, "<textarea cols=\"50\" rows=\"1\" name=\"value\">");
 
@@ -4178,7 +4178,7 @@ vscp_variable_edit(struct web_connection *conn, void *cbdata)
                    "<div id=\"small\">Format: "
                    "'AA:BB:CC:DD:EE:FF:00:11:22:33:44:55:66:77:88:99'</div>");
 
-    } else if (VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_DATA == nType) {
+    } else if (VSCP_DAEMON_VARIABLE_CODE_EVENT_DATA == nType) {
 
         web_printf(conn, "<textarea cols=\"50\" rows=\"5\" name=\"value\">");
 
@@ -4197,7 +4197,7 @@ vscp_variable_edit(struct web_connection *conn, void *cbdata)
           "<div id=\"small\">VSCP Event data. Format: "
           "'data1,data2,data3,…' Decimal and hex values allowed.</div>");
 
-    } else if (VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_CLASS == nType) {
+    } else if (VSCP_DAEMON_VARIABLE_CODE_EVENT_CLASS == nType) {
 
         web_printf(conn, "<textarea cols=\"10\" rows=\"1\" name=\"value\">");
 
@@ -4216,7 +4216,7 @@ vscp_variable_edit(struct web_connection *conn, void *cbdata)
           "<div id=\"small\">VSCP event class code. Format: "
           "Decimal or hexadecimal (preceed with '0x') value 0-65535.</div>");
 
-    } else if (VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TYPE == nType) {
+    } else if (VSCP_DAEMON_VARIABLE_CODE_EVENT_TYPE == nType) {
 
         web_printf(conn, "<textarea cols=\"10\" rows=\"1\" name=\"value\">");
 
@@ -4235,7 +4235,7 @@ vscp_variable_edit(struct web_connection *conn, void *cbdata)
           "<div id=\"small\">VSCP event type code. Format: "
           "Decimal or hexadecimal (preceed with '0x') value 0-65535.</div>");
 
-    } else if (VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TIMESTAMP == nType) {
+    } else if (VSCP_DAEMON_VARIABLE_CODE_EVENT_TIMESTAMP == nType) {
 
         web_printf(conn, "<textarea cols=\"10\" rows=\"1\" name=\"value\">");
 

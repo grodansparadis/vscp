@@ -3857,7 +3857,7 @@ dmElement::doActionStoreVariable(vscpEvent *pDMEvent)
                 }
                 break;
 
-            case VSCP_DAEMON_VARIABLE_CODE_VSCP_MEASUREMENT:
+            case VSCP_DAEMON_VARIABLE_CODE_MEASUREMENT:
                 if (vscp_isVSCPMeasurement(pDMEvent)) {
                     double value         = 0;
                     uint8_t unit         = 0;
@@ -3907,14 +3907,14 @@ dmElement::doActionStoreVariable(vscpEvent *pDMEvent)
                 }
                 break;
 
-            case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT: {
+            case VSCP_DAEMON_VARIABLE_CODE_EVENT: {
                 std::string strEvent;
                 if (vscp_writeVscpEventToString(pDMEvent, strEvent)) {
                     var.setValue(strEvent);
                 }
             } break;
 
-            case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_GUID: {
+            case VSCP_DAEMON_VARIABLE_CODE_GUID: {
                 std::string str;
                 cguid guid;
                 guid.getFromArray(pDMEvent->GUID);
@@ -3922,22 +3922,22 @@ dmElement::doActionStoreVariable(vscpEvent *pDMEvent)
                 var.setValue(std::string(str));
             } break;
 
-            case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_DATA: {
+            case VSCP_DAEMON_VARIABLE_CODE_EVENT_DATA: {
                 std::string strData;
                 if (vscp_writeVscpDataToString(pDMEvent, strData)) {
                     var.setValue(strData);
                 }
             } break;
 
-            case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_CLASS:
+            case VSCP_DAEMON_VARIABLE_CODE_EVENT_CLASS:
                 var.setValue(pDMEvent->vscp_class);
                 break;
 
-            case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TYPE:
+            case VSCP_DAEMON_VARIABLE_CODE_EVENT_TYPE:
                 var.setValue(pDMEvent->vscp_type);
                 break;
 
-            case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TIMESTAMP:
+            case VSCP_DAEMON_VARIABLE_CODE_EVENT_TIMESTAMP:
                 var.setValue((double)pDMEvent->timestamp);
                 break;
 
