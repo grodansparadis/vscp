@@ -39,7 +39,6 @@
 // GUID
 class cguid
 {
-
   public:
     cguid();
     cguid(const cguid &guid);

@@ -292,8 +292,21 @@ class CControlObject
     bool readConfigurationDB(void);
 
     /*!
-     * Write configuration datapait to configuration database.
+     * Read configuration value from configuration database.
+     * @param pName Pointer to name of configuration value
+     * @param pValue Buffer that will get value after a successfull read
+     * @param len Size of value buffer
+     * @return true on success
+     */
+    bool getConfigurationValueFromDatabase(const char *pName,
+                                           char *pBuf,
+                                           size_t len);
+
+    /*!
+     * Write configuration datapair to configuration database.
      *
+     * @param pName Pointer to name of configuration value
+     * @param pValue Pointer to value to write as new configuration value
      * @return true on success
      */
     bool addConfigurationValueToDatabase(const char *pName, const char *pValue);
@@ -476,7 +489,7 @@ class CControlObject
     std::string m_runAsUser;
 
     /*!
-        Maximum number of items in receive queue for clients
+        Maximum number of items in receive queue for clients (ClientBufferSize)
      */
     uint32_t m_maxItemsInClientReceiveQueue;
 

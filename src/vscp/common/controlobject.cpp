@@ -3549,6 +3549,65 @@ CControlObject::updateConfigurationRecordItem(const std::string &strName,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// getConfigurationValueFromDatabase
+//
+
+bool
+CControlObject::getConfigurationValueFromDatabase(const char *pName,
+                                                    char *pBuf,
+                                                    size_t len )
+{
+    sqlite3_stmt *ppStmt;
+    char *pErrMsg = 0;
+    char *psql;
+
+    // Check if database is open
+    if (NULL == m_db_vscp_daemon) return false;
+
+    pthread_mutex_lock(&m_db_vscp_configMutex);
+
+    // Check if the variable is defined already
+    //      if it is - just return true
+    psql = sqlite3_mprintf(VSCPDB_CONFIG_FIND_ITEM, pName);
+    if (SQLITE_OK !=
+        sqlite3_prepare(m_db_vscp_daemon, psql, -1, &ppStmt, NULL)) {
+        sqlite3_free(psql);
+        syslog(
+          LOG_ERR,
+          "Failed to find %s in configuration database",
+          pName );
+        pthread_mutex_unlock(&m_db_vscp_configMutex);
+        return false;
+    }
+
+    sqlite3_free(psql);
+
+    if (SQLITE_ROW == sqlite3_step(ppStmt)) {
+
+        const unsigned char *p = NULL;
+
+        if (NULL == (p = sqlite3_column_text(
+                       ppStmt, VSCPDB_ORDINAL_CONFIG_VALUE))) {
+            syslog(LOG_ERR,
+                   "getConfigurationValueFromDatabase: Failed to read 'value' for %s "
+                   "from settings record.", pName );
+            sqlite3_finalize(ppStmt);                   
+            pthread_mutex_unlock(&m_db_vscp_configMutex);
+            return false;
+        }
+
+        // Copy in data
+        strncpy(pBuf, (const char *)p, std::min(len,strlen((const char *)p)));
+
+        sqlite3_finalize(ppStmt);
+    }
+
+    pthread_mutex_unlock(&m_db_vscp_configMutex);
+
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // addConfigurationValueToDatabase
 //
 
@@ -3628,8 +3687,8 @@ CControlObject::addDefaultConfigValues(void)
                                     VSCPDB_CONFIG_DEFAULT_ANNOUNCE_ADDR);
     addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_ANNOUNCE_TTL,
                                     VSCPDB_CONFIG_DEFAULT_ANNOUNCE_TTL);
-    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_PATH_DB_DATA,
-                                    VSCPDB_CONFIG_DEFAULT_PATH_DB_DATA);
+    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_PATH_DB_EVENTS,
+                                    VSCPDB_CONFIG_DEFAULT_PATH_DB_EVENTS);
 
     // UDP
     addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_UDP_ENABLE,
@@ -3949,11 +4008,14 @@ CControlObject::readConfigurationDB(void)
     sqlite3_stmt *ppStmt;
     int dbVersion = 0;
 
+    pthread_mutex_lock(&m_db_vscp_configMutex);
+
     // Check if database is open
     if (NULL == m_db_vscp_daemon) {
         syslog(LOG_ERR,
                "dbReadConfiguration: Failed to read VSCP settings database "
                "- Database is not open.");
+        pthread_mutex_unlock(&m_db_vscp_configMutex);       
         return false;
     }
 
@@ -3962,6 +4024,7 @@ CControlObject::readConfigurationDB(void)
         syslog(LOG_ERR,
                "dbReadConfiguration: Failed to read VSCP settings database "
                "- prepare query.");
+        pthread_mutex_unlock(&m_db_vscp_configMutex);       
         return false;
     }
 
@@ -4246,7 +4309,7 @@ CControlObject::readConfigurationDB(void)
 
         // VSCP data database path
         if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_PATH_DB_DATA)) {
+                                 VSCPDB_CONFIG_NAME_PATH_DB_EVENTS)) {
             m_path_db_vscp_data = std::string((const char *)pValue);
             continue;
         }
@@ -4879,6 +4942,8 @@ CControlObject::readConfigurationDB(void)
     }
 
     sqlite3_finalize(ppStmt);
+
+    pthread_mutex_unlock(&m_db_vscp_configMutex);
 
     return true;
 }

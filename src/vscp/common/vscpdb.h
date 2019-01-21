@@ -82,7 +82,7 @@
 #define VSCPDB_CONFIG_DEFAULT_TCPIP_ADDR                  "9598"
 
 #define VSCPDB_CONFIG_NAME_TCPIP_ENCRYPTION               "tcpip_encryption"
-#define VSCPDB_CONFIG_DEFAULT_TCPIP_ENCRYPTION            ""
+#define VSCPDB_CONFIG_DEFAULT_TCPIP_ENCRYPTION            "0"
 
 #define VSCPDB_CONFIG_NAME_TCPIP_SSL_CERTIFICATE          "tcpip_ssl_certificate"
 #define VSCPDB_CONFIG_DEFAULT_TCPIP_SSL_CERTIFICATE       "/srv/vscp/certs/tcpip_server.pem"
@@ -144,6 +144,8 @@
 #define VSCPDB_CONFIG_NAME_UDP_ACK_ENABLE               "udp_ack_enable"
 #define VSCPDB_CONFIG_DEFAULT_UDP_ACK_ENABLE            "0"
 
+// Multicast
+
 #define VSCPDB_CONFIG_NAME_MULTICAST_ENABLE             "muticast_enable"
 #define VSCPDB_CONFIG_DEFAULT_MULTICAST_ENABLE           "0"
 
@@ -158,14 +160,18 @@
 #define VSCPDB_CONFIG_NAME_DM_ALLOW_XML_SAVE            "dm_allow_xml_save"
 #define VSCPDB_CONFIG_DEFAULT_DM_ALLOW_XML_SAVE         "0"
 
+// Variables
+
 #define VSCPDB_CONFIG_NAME_VARIABLES_PATH_DB            "variable_path_db"
 #define VSCPDB_CONFIG_DEFAULT_VARIABLES_PATH_DB         "/srv/vscp/variable.sqlite3"
 
 #define VSCPDB_CONFIG_NAME_VARIABLES_PATH_XML           "variable_path_xml"
 #define VSCPDB_CONFIG_DEFAULT_VARIABLES_PATH_XML        "/srv/vscp/variable.xml"
 
-#define VSCPDB_CONFIG_NAME_PATH_DB_DATA                 "path_db_data"
-#define VSCPDB_CONFIG_DEFAULT_PATH_DB_DATA              "/srv/vscp/vscp_data.sqlite3"
+// Data
+
+#define VSCPDB_CONFIG_NAME_PATH_DB_EVENTS               "path_db_event_data"
+#define VSCPDB_CONFIG_DEFAULT_PATH_DB_EVENTS            "/srv/vscp/vscp_events.sqlite3"
 
 // WEB server
 
