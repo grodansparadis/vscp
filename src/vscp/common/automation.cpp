@@ -92,7 +92,7 @@ CVSCPAutomation::CVSCPAutomation( void )
 {
     m_pCtrlObj = NULL;
     
-    m_bAutomation = true;
+    m_bEnableAutomation = true;
 
     m_zone = 0;
     m_subzone = 0;

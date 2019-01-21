@@ -159,9 +159,9 @@ class CVSCPAutomation
     // double getTimeZone( void ) { return m_timezone; };
 
     /// setter for m_bSegmentControllerHeartbeat
-    void enableSegmentControllerHeartbeat(void)
+    void enableSegmentControllerHeartbeat(bool bVal=true)
     {
-        m_bSegmentControllerHeartbeat = true;
+        m_bSegmentControllerHeartbeat = bVal;
     };
 
     /// setter for m_bSegmentControllerHeartbeat
@@ -187,7 +187,7 @@ class CVSCPAutomation
     };
 
     /// setter for m_bHeartBeatEvent
-    void enableHeartbeatEvent(void) { m_bHeartBeatEvent = true; };
+    void enableHeartbeatEvent(bool bVal=true) { m_bHeartBeatEvent = bVal; };
 
     /// setter for m_bHeartBeatEvent
     void disableHeartbeatEvent(void) { m_bHeartBeatEvent = false; };
@@ -202,7 +202,7 @@ class CVSCPAutomation
     long getHeartbeatEventInterval(void) { return m_intervalHeartBeat; };
 
     /// setter for m_bCapabilitiesEvent
-    void enableCapabilitiesEvent(void) { m_bCapabilitiesEvent = true; };
+    void enableCapabilitiesEvent(bool bVal=true) { m_bCapabilitiesEvent = bVal; };
 
     /// setter for m_bCapabilitiesEvent
     void disableCapabilitiesEvent(void) { m_bCapabilitiesEvent = false; };
@@ -216,10 +216,10 @@ class CVSCPAutomation
     };
     long getcapabilitiesEventInterval(void) { return m_intervalCapabilities; };
 
-    // Setter/getter for automation enable/diable
-    void enableAutomation(void) { m_bAutomation = true; };
-    void disableAutomation(void) { m_bAutomation = false; };
-    bool isAutomationEnabled(void) { return m_bAutomation; };
+    // Setter/getter for automation enable/disable
+    void enableAutomation(bool bVal = true) { m_bEnableAutomation = bVal; };
+    void disableAutomation(void) { m_bEnableAutomation = false; };
+    bool isAutomationEnabled(void) { return m_bEnableAutomation; };
 
     vscpdatetime &getLastCalculation(void) { return m_lastCalculation; };
 
@@ -302,7 +302,8 @@ class CVSCPAutomation
     vscpdatetime &getCapabilitiesSent(void) { return m_Heartbeat_Level1_sent; };
 
   private:
-    bool m_bAutomation;
+
+    bool m_bEnableAutomation;
 
     /// Zone that automation server belongs to
     uint8_t m_zone;

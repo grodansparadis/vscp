@@ -6060,7 +6060,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 }
 
                 // Set database configuration value
-                std::string str = var.getValue();
+                std::string str = var.isTrue() ? "1" : "0";
                 if (gpobj->updateConfigurationRecordItem(
                       VSCPDB_CONFIG_NAME_AUTOMATION_ENABLE, str.c_str())) {
                     syslog(LOG_ERR,
@@ -6068,6 +6068,14 @@ CVariableStorage::handleStockVariable(std::string name,
                            "variable %s",
                            name.c_str());
                     return false;
+                }
+
+                int val = vscp_readStringValue( str );
+                if ( val ) {
+                    gpobj->m_automation.enableAutomation();
+                }
+                else {
+                    gpobj->m_automation.disableAutomation();
                 }
 
                 return true;
@@ -6119,6 +6127,9 @@ CVariableStorage::handleStockVariable(std::string name,
                     return false;
                 }
 
+                uint8_t zone = vscp_readStringValue(str);
+                gpobj->m_automation.setZone(zone);
+
                 return true;
             }
         } else if (VSCPDB_CONFIG_NAME_AUTOMATION_SUBZONE == strToken) {
@@ -6168,6 +6179,9 @@ CVariableStorage::handleStockVariable(std::string name,
                     return false;
                 }
 
+                uint8_t subzone = vscp_readStringValue(str);
+                gpobj->m_automation.setSubzone(subzone);
+
                 return true;
             }
         } else if (VSCPDB_CONFIG_NAME_AUTOMATION_LONGITUDE == strToken) {
@@ -6215,6 +6229,17 @@ CVariableStorage::handleStockVariable(std::string name,
                            "variable %s",
                            name.c_str());
                     return false;
+                }
+
+                try {
+                    double val = std::stod(str);
+                    gpobj->m_automation.setLongitude( val );
+                }
+                catch (...) {
+                    syslog(LOG_ERR,
+                           "Failed to set acive value for remote "
+                           "variable %s",
+                           name.c_str());
                 }
 
                 return true;
@@ -6266,6 +6291,17 @@ CVariableStorage::handleStockVariable(std::string name,
                     return false;
                 }
 
+                try {
+                    double val = std::stod(str);
+                    gpobj->m_automation.setLatitude( val );
+                }
+                catch (...) {
+                    syslog(LOG_ERR,
+                           "Failed to set acive value for remote "
+                           "variable %s",
+                           name.c_str());
+                }
+
                 return true;
             }
         } else if (VSCPDB_CONFIG_NAME_AUTOMATION_SUNRISE_ENABLE == strToken) {
@@ -6305,7 +6341,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 }
 
                 // Set database configuration value
-                std::string str = var.getValue();
+                std::string str = var.isTrue() ? "1" : "0";
                 if (gpobj->updateConfigurationRecordItem(
                       VSCPDB_CONFIG_NAME_AUTOMATION_SUNRISE_ENABLE, str.c_str())) {
                     syslog(LOG_ERR,
@@ -6314,6 +6350,9 @@ CVariableStorage::handleStockVariable(std::string name,
                            name.c_str());
                     return false;
                 }
+
+                bool bEnable = (0 != atoi(str.c_str()));
+                gpobj->m_automation.enableSunRiseEvent(bEnable);
 
                 return true;
             }
@@ -6364,6 +6403,9 @@ CVariableStorage::handleStockVariable(std::string name,
                     return false;
                 }
 
+                bool bEnable = (0 != atoi(str.c_str()));
+                gpobj->m_automation.enableSunSetEvent(bEnable);
+
                 return true;
             }
         } else if (VSCPDB_CONFIG_NAME_AUTOMATION_SUNRISE_TWILIGHT_ENABLE == strToken) {
@@ -6412,6 +6454,9 @@ CVariableStorage::handleStockVariable(std::string name,
                            name.c_str());
                     return false;
                 }
+
+                bool bEnable = (0 != atoi(str.c_str()));
+                gpobj->m_automation.enableSunRiseTwilightEvent(bEnable);
 
                 return true;
             }
@@ -6462,6 +6507,9 @@ CVariableStorage::handleStockVariable(std::string name,
                     return false;
                 }
 
+                bool bEnable = (0 != atoi(str.c_str()));
+                gpobj->m_automation.enableSunSetTwilightEvent(bEnable);
+
                 return true;
             }
         } else if (VSCPDB_CONFIG_NAME_AUTOMATION_SEGMENT_CTRL_ENABLE == strToken) {
@@ -6510,6 +6558,9 @@ CVariableStorage::handleStockVariable(std::string name,
                            name.c_str());
                     return false;
                 }
+
+                bool bEnable = (0 != atoi(str.c_str()));
+                gpobj->m_automation.enableSegmentControllerHeartbeat(bEnable);
 
                 return true;
             }
@@ -6560,6 +6611,9 @@ CVariableStorage::handleStockVariable(std::string name,
                     return false;
                 }
 
+                bool bEnable = (0 != atoi(str.c_str()));
+                gpobj->m_automation.enableHeartbeatEvent(bEnable);
+
                 return true;
             }
         } else if (VSCPDB_CONFIG_NAME_AUTOMATION_CAPABILITIES_ENABLE == strToken) {
@@ -6608,6 +6662,9 @@ CVariableStorage::handleStockVariable(std::string name,
                            name.c_str());
                     return false;
                 }
+
+                bool bEnable = (0 != atoi(str.c_str()));
+                gpobj->m_automation.enableCapabilitiesEvent(bEnable);
 
                 return true;
             }
@@ -6660,6 +6717,9 @@ CVariableStorage::handleStockVariable(std::string name,
                            name.c_str());
                     return false;
                 }
+
+                long val = vscp_readStringValue(str);
+                gpobj->m_automation.setSegmentControllerHeartbeatInterval( val );
 
                 return true;
             }
@@ -6714,6 +6774,9 @@ CVariableStorage::handleStockVariable(std::string name,
                     return false;
                 }
 
+                long val = vscp_readStringValue(str);
+                gpobj->m_automation.setHeartbeatEventInterval( val );
+
                 return true;
             }
 
@@ -6766,6 +6829,9 @@ CVariableStorage::handleStockVariable(std::string name,
                            name.c_str());
                     return false;
                 }
+
+                long val = vscp_readStringValue(str);
+                gpobj->m_automation.setCapabilitiesEventInterval( val );
 
                 return true;
             }
