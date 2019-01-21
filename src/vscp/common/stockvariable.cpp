@@ -43,7 +43,7 @@
 
 #include <duktape.h>
 #include <lua.h>
-#include <mongoose.h> // For copytight info
+#include <mongoose.h> // For copyright info
 
 #include <expat.h>
 #include <json.hpp> // Needs C++11  -std=c++11
@@ -2356,7 +2356,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 }
 
                 // Set database configuration value
-                std::string str = var.getValue();
+                std::string str =  var.isTrue() ? "1" : "0";
                 if (gpobj->updateConfigurationRecordItem(
                       VSCPDB_CONFIG_NAME_UDP_ENABLE, str.c_str())) {
                     syslog(LOG_ERR,
@@ -2555,7 +2555,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 }
 
                 // Set database configuration value
-                std::string str = var.getValue();
+                std::string str =  var.isTrue() ? "1" : "0";
                 if (gpobj->updateConfigurationRecordItem(
                       VSCPDB_CONFIG_NAME_UDP_UNSECURE_ENABLE, str.c_str())) {
                     syslog(LOG_ERR,
@@ -2704,7 +2704,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 }
 
                 // Set database configuration value
-                std::string str = var.getValue();
+                std::string str =  var.isTrue() ? "1" : "0";
                 if (gpobj->updateConfigurationRecordItem(
                       VSCPDB_CONFIG_NAME_UDP_ACK_ENABLE, str.c_str())) {
                     syslog(LOG_ERR,
@@ -2753,7 +2753,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 }
 
                 // Set database configuration value
-                std::string str = var.getValue();
+                std::string str =  var.isTrue() ? "1" : "0";
                 if (gpobj->updateConfigurationRecordItem(
                       VSCPDB_CONFIG_NAME_MULTICAST_ENABLE, str.c_str())) {
                     syslog(LOG_ERR,
@@ -2900,7 +2900,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 }
 
                 // Set database configuration value
-                std::string str = var.getValue();
+                std::string str =  var.isTrue() ? "1" : "0";
                 if (gpobj->updateConfigurationRecordItem(
                       VSCPDB_CONFIG_NAME_DM_ALLOW_XML_SAVE, str.c_str())) {
                     syslog(LOG_ERR,
@@ -3099,7 +3099,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 }
 
                 // Set database configuration value
-                std::string str = var.getValue();
+                std::string str =  var.isTrue() ? "1" : "0";
                 if (gpobj->updateConfigurationRecordItem(
                       VSCPDB_CONFIG_NAME_WEB_ENABLE, str.c_str())) {
                     syslog(LOG_ERR,
@@ -3148,7 +3148,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 }
 
                 // Set database configuration value
-                std::string str = var.getValue();
+                std::string str =  var.isTrue() ? "1" : "0";
                 if (gpobj->updateConfigurationRecordItem(
                       VSCPDB_CONFIG_NAME_WEB_DOCUMENT_ROOT, str.c_str())) {
                     syslog(LOG_ERR,
@@ -3355,7 +3355,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 }
 
                 // Set database configuration value
-                std::string str = var.getValue();
+                std::string str =  var.isTrue() ? "1" : "0";
                 if (gpobj->updateConfigurationRecordItem(
                       VSCPDB_CONFIG_NAME_WEB_ENABLE_AUTH_DOMAIN_CHECK,
                       str.c_str())) {
@@ -3512,7 +3512,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 }
 
                 // Set database configuration value
-                std::string str = var.getValue();
+                std::string str =  var.isTrue() ? "1" : "0";
                 if (gpobj->updateConfigurationRecordItem(
                       VSCPDB_CONFIG_NAME_WEB_SSL_VERIFY_PEER, str.c_str())) {
                     syslog(LOG_ERR,
@@ -3716,7 +3716,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 }
 
                 // Set database configuration value
-                std::string str = var.getValue();
+                std::string str =  var.isTrue() ? "1" : "0";
                 if (gpobj->updateConfigurationRecordItem(
                       VSCPDB_CONFIG_NAME_WEB_SSL_DEFAULT_VERIFY_PATHS,
                       str.c_str())) {
@@ -3872,7 +3872,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 }
 
                 // Set database configuration value
-                std::string str = var.getValue();
+                std::string str =  var.isTrue() ? "1" : "0";
                 if (gpobj->updateConfigurationRecordItem(
                       VSCPDB_CONFIG_NAME_WEB_SSL_SHORT_TRUST, str.c_str())) {
                     syslog(LOG_ERR,
@@ -4174,7 +4174,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 }
 
                 // Set database configuration value
-                std::string str = var.getValue();
+                std::string str =  var.isTrue() ? "1" : "0";
                 if (gpobj->updateConfigurationRecordItem(
                       VSCPDB_CONFIG_NAME_WEB_ENABLE_DIRECTORY_LISTING,
                       str.c_str())) {
@@ -4226,7 +4226,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 }
 
                 // Set database configuration value
-                std::string str = var.getValue();
+                std::string str =  var.isTrue() ? "1" : "0";
                 if (gpobj->updateConfigurationRecordItem(
                       VSCPDB_CONFIG_NAME_WEB_ENABLE_KEEP_ALIVE, str.c_str())) {
                     syslog(LOG_ERR,
@@ -4737,7 +4737,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 }
 
                 // Set database configuration value
-                std::string str = var.getValue();
+                std::string str =  var.isTrue() ? "1" : "0";
                 if (gpobj->updateConfigurationRecordItem(
                       VSCPDB_CONFIG_NAME_WEB_DECODE_URL, str.c_str())) {
                     syslog(LOG_ERR,
@@ -5309,7 +5309,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 }
 
                 // Set database configuration value
-                std::string str = var.getValue();
+                std::string str =  var.isTrue() ? "1" : "0";
                 if (gpobj->updateConfigurationRecordItem(
                       VSCPDB_CONFIG_NAME_WEB_ALLOW_SENDFILE_CALL,
                       str.c_str())) {
@@ -5466,7 +5466,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 }
 
                 // Set database configuration value
-                std::string str = var.getValue();
+                std::string str =  var.isTrue() ? "1" : "0";
                 if (gpobj->updateConfigurationRecordItem(
                       VSCPDB_CONFIG_NAME_WEB_ALLOW_INDEX_SCRIPT_RESOURCE,
                       str.c_str())) {
@@ -5901,7 +5901,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 }
 
                 // Set database configuration value
-                std::string str = var.getValue();
+                std::string str =  var.isTrue() ? "1" : "0";
                 if (gpobj->updateConfigurationRecordItem(
                       VSCPDB_CONFIG_NAME_WEBSOCKET_ENABLE, str.c_str())) {
                     syslog(LOG_ERR,
@@ -6445,7 +6445,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 }
 
                 // Set database configuration value
-                std::string str = var.getValue();
+                std::string str =  var.isTrue() ? "1" : "0";
                 if (gpobj->updateConfigurationRecordItem(
                       VSCPDB_CONFIG_NAME_AUTOMATION_SUNRISE_TWILIGHT_ENABLE, str.c_str())) {
                     syslog(LOG_ERR,
@@ -6497,7 +6497,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 }
 
                 // Set database configuration value
-                std::string str = var.getValue();
+                std::string str =  var.isTrue() ? "1" : "0";
                 if (gpobj->updateConfigurationRecordItem(
                       VSCPDB_CONFIG_NAME_AUTOMATION_SUNSET_TWILIGHT_ENABLE, str.c_str())) {
                     syslog(LOG_ERR,
@@ -6549,7 +6549,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 }
 
                 // Set database configuration value
-                std::string str = var.getValue();
+                std::string str =  var.isTrue() ? "1" : "0";
                 if (gpobj->updateConfigurationRecordItem(
                       VSCPDB_CONFIG_NAME_AUTOMATION_SEGMENT_CTRL_ENABLE, str.c_str())) {
                     syslog(LOG_ERR,
@@ -6601,7 +6601,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 }
 
                 // Set database configuration value
-                std::string str = var.getValue();
+                std::string str =  var.isTrue() ? "1" : "0";
                 if (gpobj->updateConfigurationRecordItem(
                       VSCPDB_CONFIG_NAME_AUTOMATION_HEARTBEAT_ENABLE, str.c_str())) {
                     syslog(LOG_ERR,
@@ -6653,7 +6653,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 }
 
                 // Set database configuration value
-                std::string str = var.getValue();
+                std::string str =  var.isTrue() ? "1" : "0";
                 if (gpobj->updateConfigurationRecordItem(
                       VSCPDB_CONFIG_NAME_AUTOMATION_CAPABILITIES_ENABLE, str.c_str())) {
                     syslog(LOG_ERR,
@@ -9326,4 +9326,111 @@ CVariableStorage::initStockVariables(CUserItem &user)
     handleStockVariable("vscp.dm.path-xml", STOCKVAR_INIT, var, user);
     handleStockVariable("vscp.dm.add", STOCKVAR_INIT, var, user);
     handleStockVariable("vscp.dm.delete", STOCKVAR_INIT, var, user);
+
+    handleStockVariable("vscp.config.dbversion", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.client-buffer-size", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.guid", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.servername", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.announceinterface-address", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.announceinterface-ttl", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.tcpipinterface-address", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.tcpip-encryption", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.tcpip-ssl-certificate", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.tcpip-ssl-certificate-chain", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.tcpip-ssl-verify-peer", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.tcpip-ssl-ca-path", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.tcpip-ssl-ca-file", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.tcpip-ssl-verify-depth", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.tcpip-ssl-default-verify-paths", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.tcpip-ssl-cipher-list", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.tcpip-ssl-protocol-version", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.tcpip-ssl-short-trust", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.udp-enable", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.udp-address", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.udp-user", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.udp-password", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.udp-unsecure-enable", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.udp-filter", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.udp-mask", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.udp-guid", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.udp-ack-enable", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.muticast-enable", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.dm-path-db", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.dm-path-xml", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.dm-allow-xml-save", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.variable-path-db", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.variable-path-xml", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.path-db-event-data", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.web-enable", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.web-document-root", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.web-listening-ports", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.web-index-files", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.web-authentication-domain", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.web-enable-auth-domain-check", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.web-ssl-certificate", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.web-ssl-certificate-chain", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.web-ssl-verify-peer", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.web-ssl-ca-path", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.web-ssl-ca-file", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.web-ssl-verify-depth", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.web-ssl-default-verify-paths", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.web-ssl-cipher-list", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.web-ssl-protocol-version", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.web-ssl-short-trust", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.web-cgi-interpreter", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.web-cgi-pattern", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.web-cgi-environment", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.web-protect-uri", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.web-trottle", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.web-enable-directory-listing", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.web-enable-keep-alive", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.web-keep-alive-timeout-ms", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.web-access-control-list", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.web-extra-mime-types", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.web-num-threads", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.web-run-as-user", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.web-url-rewrite-patterns", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.web-hide-file-patterns", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.web-request-timeout-ms", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.web-linger-timeout-ms", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.web-decode-url", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.web-global-authfile", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.web-per-directory-auth-file", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.web-ssi-patterns", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.web-access-control-allow-origin", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.web-access-control-allow-methods", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.web-access-control-allow-headers", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.web-error-pages", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.web-tcp-nodelay", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.web-static-file-max-age", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.web-strict-transport-security-max-age", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.web-allow-sendfile-call", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.web-additional-headers", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.web-max-request-size", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.web-allow-index-script-resource", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.web-duktape-script-pattern", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.web-lua-preload-file", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.web-lua-script-pattern", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.web-lua-server-page-pattern", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.web-lua-websocket-pattern", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.web-lua-background-script", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.web-lua-background-script-params", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.websocket-enable", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.websocket-document-root", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.websocket-timeout-ms", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.automation-enable", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.automation-zone", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.automation-subzone", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.automation-longitude", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.automation-latitude", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.automation-sunrise-enable", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.automation-sunset-enable", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.automation-sunset-twilight-enable", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.automation-sunrise-twilight-enable", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.automation-segment-ctrl-enable", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.automation-segment-ctrl-interval", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.automation-heartbeat-enable", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.automation-heartbeat-interval", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.automation-capabilities-enable", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.config.automation-capabilities-interval", STOCKVAR_INIT, var, user);
 }

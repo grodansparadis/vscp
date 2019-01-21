@@ -29,9 +29,9 @@
 
 
 
-#define STOCKVAR_INIT      (0)
-#define STOCKVAR_READ      (1)
-#define STOCKVAR_WRITE     (2)
+#define STOCKVAR_INIT       (0)
+#define STOCKVAR_READ       (1)
+#define STOCKVAR_WRITE      (2)
 
 
 // op = Read/Write
