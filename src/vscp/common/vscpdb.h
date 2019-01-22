@@ -48,6 +48,7 @@
 #define VSCPDB_CONFIG_FIND_ALL_SORT_NAME "SELECT * FROM config ORDER BY vscpd_name;"
 #define VSCPDB_CONFIG_FIND_ITEM "SELECT * FROM config WHERE vscpd_name='%q';"
 #define VSCPDB_CONFIG_UPDATE_ITEM "UPDATE 'config' SET 'vscpd_value' ='%q' WHERE vscpd_name='%q';"
+#define VSCPDB_CONFIG_UPDATE_CONFIG_NAME "UPDATE 'config' SET 'vscpd_name' ='%q' WHERE vscpd_name='%q';"
 #define VSCPDB_CONFIG_INSERT "INSERT INTO 'config' (vscpd_name,vscpd_value) VALUES ('%q','%q');"
 
 #define VSCPDB_ORDINAL_CONFIG_ID                        0
@@ -58,7 +59,7 @@
 // Configuration defaults
 
 #define VSCPDB_CONFIG_NAME_DBVERSION                    "dbversion"
-#define VSCPDB_CONFIG_DEFAULT_DBVERSION                 "1"
+#define VSCPDB_CONFIG_CURRENT_DBVERSION                 "2"
 
 #define VSCPDB_CONFIG_NAME_CLIENTBUFFERSIZE             "client-buffer-size"
 #define VSCPDB_CONFIG_DEFAULT_CLIENTBUFFERSIZE          "8192"
@@ -277,7 +278,7 @@
 #define VSCPDB_CONFIG_NAME_WEB_GLOBAL_AUTHFILE          "web-global-authfile"
 #define VSCPDB_CONFIG_DEFAULT_WEB_GLOBAL_AUTHFILE       ""
 
-#define VSCPDB_CONFIG_NAME_WEB_PER_DIRECTORY_AUTH_FILE           "web-per-directory-auth-file"
+#define VSCPDB_CONFIG_NAME_WEB_PER_DIRECTORY_AUTH_FILE          "web-per-directory-auth-file"
 #define VSCPDB_CONFIG_DEFAULT_WEB_PER_DIRECTORY_AUTH_FILE       ""
 
 #define VSCPDB_CONFIG_NAME_WEB_SSI_PATTERNS                     "web-ssi-patterns"

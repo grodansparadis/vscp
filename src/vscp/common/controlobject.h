@@ -338,10 +338,27 @@ class CControlObject
                         const std::string &strFieldName);
 
     /*
+     * Update field name in settings table
+     * @param strName Name of field to write
+     * @param strNewName New fieldname to set
+     * @Return true on success.
+     */
+    bool updateConfigurationRecordName(const std::string &strName,
+                                       const std::string &strNewName);
+
+    /*
      * Update field in settings table
+     * @param strName Name of field to write
+     * @param strValue Value to write to field
+     * @Return true on success.
      */
     bool updateConfigurationRecordItem(const std::string &strName,
                                        const std::string &strValue);
+
+    /*!
+        Update configuration databas if it has evolved
+    */
+    bool updateConfigDb(void);
 
     /*!
      * Read in UDP nodes from the database

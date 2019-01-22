@@ -410,6 +410,9 @@ CControlObject::init(std::string &strcfgfile, std::string &rootFolder)
 
             // Database is open.
 
+            // Update the configuration database if it has evolved
+            updateConfigDb();
+
             // Add possible missing configuration values
             addDefaultConfigValues();
 
@@ -1065,7 +1068,7 @@ CControlObject::stopMulticastWorkerThreads(void)
     std::list<multicastChannelItem *>::iterator it;
 
     for (it = m_multicastObj.m_channels.begin();
-         it != m_multicastObj.m_channels.end(); 
+         it != m_multicastObj.m_channels.end();
          /* inline */) {
 
         multicastChannelItem *pChannel = *it;
@@ -2031,7 +2034,7 @@ startGeneralConfigParser(void *data, const char *name, const char **attr)
                     if (attribute.length()) {
                         pObj->m_path_db_vscp_data = attribute;
                     }
-                } 
+                }
             }
         }
     }
@@ -2824,7 +2827,7 @@ startFullConfigParser(void *data, const char *name, const char **attr)
         std::string strName;
         std::string strConfig;
         std::string strPath;
-        unsigned long flags = 0;
+        unsigned long flags  = 0;
         uint32_t translation = 0;
         cguid guid;
         bool bEnabled = false;
@@ -3354,8 +3357,6 @@ endFullConfigParser(void *data, const char *name)
                ((0 == vscp_strcasecmp(name, "tables")))) {
         bTablesConfigFound = FALSE;
     }
-
-    
 }
 
 // ----------------------------------------------------------------------------
@@ -3511,6 +3512,44 @@ CControlObject::isDbFieldExist(sqlite3 *db,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// updateConfigurationRecordName
+//
+
+bool
+CControlObject::updateConfigurationRecordName(const std::string &strName,
+                                              const std::string &strNewName)
+{
+    char *pErrMsg;
+
+    // Database file must be open
+    if (NULL == m_db_vscp_daemon) {
+        syslog(LOG_ERR,
+               "Settings update: Update record. Database file is not open.");
+        return false;
+    }
+
+    pthread_mutex_lock(&m_db_vscp_configMutex);
+
+    char *sql = sqlite3_mprintf(VSCPDB_CONFIG_UPDATE_CONFIG_NAME,        
+                                (const char *)strNewName.c_str(),
+                                (const char *)strName.c_str(),
+                                m_nConfiguration);
+    if (SQLITE_OK !=
+        sqlite3_exec(m_db_vscp_daemon, sql, NULL, NULL, &pErrMsg)) {
+        sqlite3_free(sql);
+        pthread_mutex_unlock(&m_db_vscp_configMutex);
+        syslog(LOG_ERR, "Failed to update setting with error %s.", pErrMsg);
+        return false;
+    }
+
+    sqlite3_free(sql);
+
+    pthread_mutex_unlock(&m_db_vscp_configMutex);
+
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // updateConfigurationRecordItem
 //
 
@@ -3554,8 +3593,8 @@ CControlObject::updateConfigurationRecordItem(const std::string &strName,
 
 bool
 CControlObject::getConfigurationValueFromDatabase(const char *pName,
-                                                    char *pBuf,
-                                                    size_t len )
+                                                  char *pBuf,
+                                                  size_t len)
 {
     sqlite3_stmt *ppStmt;
     char *pErrMsg = 0;
@@ -3572,10 +3611,7 @@ CControlObject::getConfigurationValueFromDatabase(const char *pName,
     if (SQLITE_OK !=
         sqlite3_prepare(m_db_vscp_daemon, psql, -1, &ppStmt, NULL)) {
         sqlite3_free(psql);
-        syslog(
-          LOG_ERR,
-          "Failed to find %s in configuration database",
-          pName );
+        syslog(LOG_ERR, "Failed to find %s in configuration database", pName);
         pthread_mutex_unlock(&m_db_vscp_configMutex);
         return false;
     }
@@ -3586,18 +3622,20 @@ CControlObject::getConfigurationValueFromDatabase(const char *pName,
 
         const unsigned char *p = NULL;
 
-        if (NULL == (p = sqlite3_column_text(
-                       ppStmt, VSCPDB_ORDINAL_CONFIG_VALUE))) {
+        if (NULL ==
+            (p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_CONFIG_VALUE))) {
             syslog(LOG_ERR,
-                   "getConfigurationValueFromDatabase: Failed to read 'value' for %s "
-                   "from settings record.", pName );
-            sqlite3_finalize(ppStmt);                   
+                   "getConfigurationValueFromDatabase: Failed to read 'value' "
+                   "for %s "
+                   "from settings record.",
+                   pName);
+            sqlite3_finalize(ppStmt);
             pthread_mutex_unlock(&m_db_vscp_configMutex);
             return false;
         }
 
         // Copy in data
-        strncpy(pBuf, (const char *)p, std::min(len,strlen((const char *)p)));
+        strncpy(pBuf, (const char *)p, std::min(len, strlen((const char *)p)));
 
         sqlite3_finalize(ppStmt);
     }
@@ -3676,7 +3714,7 @@ CControlObject::addDefaultConfigValues(void)
 {
     // Add default settings (set as defaults in SQL create expression))
     addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_DBVERSION,
-                                    VSCPDB_CONFIG_DEFAULT_DBVERSION);
+                                    VSCPDB_CONFIG_CURRENT_DBVERSION);
     addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_CLIENTBUFFERSIZE,
                                     VSCPDB_CONFIG_DEFAULT_CLIENTBUFFERSIZE);
     addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_GUID,
@@ -3945,6 +3983,207 @@ CControlObject::addDefaultConfigValues(void)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// updateConfigDb
+//
+
+bool
+CControlObject::updateConfigDb()
+{
+    char buf[10];
+
+    // Check if we have a version 1 database
+    getConfigurationValueFromDatabase(
+      VSCPDB_CONFIG_NAME_DBVERSION, buf, sizeof(buf));
+
+    int version = atoi(buf);
+    if (0 == version) return false;
+
+    if (1 == version) {
+
+        syslog(LOG_INFO,"Updating configuration database vscpd.slite3 from version 1 to version 2");
+
+        // Update field names that have changed
+        updateConfigurationRecordName("client_buffer_size",
+                                      "client-buffer-size");
+        updateConfigurationRecordName("announceinterface_address",
+                                      "announceinterface-address");
+        updateConfigurationRecordName("announceinterface_ttl",
+                                      "announceinterface-ttl");
+        updateConfigurationRecordName("tcpipinterface_address",
+                                      "tcpipinterface-address");
+        updateConfigurationRecordName("tcpip_encryption", "tcpip-encryption");
+        updateConfigurationRecordName("tcpip_ssl_certificate",
+                                      "tcpip-ssl-certificate");
+        updateConfigurationRecordName("tcpip_ssl_certificate_chain",
+                                      "tcpip-ssl-certificate-chain");
+        updateConfigurationRecordName("tcpip_ssl_verify_peer",
+                                      "tcpip-ssl-verify-peer");
+        updateConfigurationRecordName("tcpip_ssl_ca_path", "tcpip-ssl-ca-path");
+        updateConfigurationRecordName("tcpip_ssl_ca_file", "tcpip-ssl-ca-file");
+        updateConfigurationRecordName("tcpip_ssl_verify_depth",
+                                      "tcpip-ssl-verify-depth");
+        updateConfigurationRecordName("tcpip_ssl_default_verify_paths",
+                                      "tcpip-ssl-default-verify-paths");
+        updateConfigurationRecordName("tcpip_ssl_cipher_list",
+                                      "tcpip-ssl-cipher-list");
+        updateConfigurationRecordName("tcpip_ssl_protocol_version",
+                                      "tcpip-ssl-protocol-version");
+        updateConfigurationRecordName("tcpip_ssl_short_trust",
+                                      "tcpip-ssl-short-trust");
+        updateConfigurationRecordName("udp_enable", "udp-enable");
+        updateConfigurationRecordName("udp_address", "udp-address");
+        updateConfigurationRecordName("udp_user", "udp-user");
+        updateConfigurationRecordName("udp_password", "udp-password");
+        updateConfigurationRecordName("udp_unsecure_enable", "udp-unsecure-enable");
+        updateConfigurationRecordName("udp_filter", "udp-filter");
+        updateConfigurationRecordName("udp_mask", "udp-mask");
+        updateConfigurationRecordName("udp_guid", "udp-guid");
+        updateConfigurationRecordName("udp_ack_enable", "udp-ack-enable");
+        updateConfigurationRecordName("muticast_enable",
+                                      "muticast-enable");
+        updateConfigurationRecordName("dm_path_db", "dm-path-db");
+        updateConfigurationRecordName("dm_path_xml", "dm-path-xml");
+        updateConfigurationRecordName("dm_allow_xml_save", "dm-allow-xml-save");
+        updateConfigurationRecordName("variable_path_db", "variable-path-db");
+        updateConfigurationRecordName("variable_path_xml", "variable-path-xml");
+        updateConfigurationRecordName("path_db_data",
+                                      "path-db-event-data");
+        updateConfigurationRecordName("web_enable", "web-enable");
+        updateConfigurationRecordName("web_document_root", "web-document-root");
+        updateConfigurationRecordName("web_listening_ports",
+                                      "web-listening-ports");
+        updateConfigurationRecordName("web_index_files", "web-index-files");
+        updateConfigurationRecordName("web_authentication_domain",
+                                      "web-authentication-domain");
+        updateConfigurationRecordName("web_enable_auth_domain_check",
+                                      "web-enable-auth-domain-check");
+        updateConfigurationRecordName("web_ssl_certificate",
+                                      "web-ssl-certificate");
+        updateConfigurationRecordName("web_ssl_certificate_chain",
+                                      "web-ssl-certificate-chain");
+        updateConfigurationRecordName("web_ssl_verify_peer",
+                                      "web-ssl-verify-peer");
+        updateConfigurationRecordName("web_ssl_ca_path", "web-ssl-ca-path");
+        updateConfigurationRecordName("web_ssl_ca_file", "web-ssl-ca-file");
+        updateConfigurationRecordName("web_ssl_verify_depth",
+                                      "web-ssl-verify-depth");
+        updateConfigurationRecordName("web_ssl_default_verify_paths",
+                                      "web-ssl-default-verify-paths");
+        updateConfigurationRecordName("web_ssl_cipher_list",
+                                      "web-ssl-cipher-list");
+        updateConfigurationRecordName("web_ssl_protocol_version",
+                                      "web-ssl-protocol-version");
+        updateConfigurationRecordName("web_ssl_short_trust",
+                                      "web-ssl-short-trust");
+        updateConfigurationRecordName("web_cgi_interpreter",
+                                      "web-cgi-interpreter");
+        updateConfigurationRecordName("web_cgi_pattern", "web-cgi-pattern");
+        updateConfigurationRecordName("web_cgi_environment",
+                                      "web-cgi-environment");
+        updateConfigurationRecordName("web_protect_uri", "web-protect-uri");
+        updateConfigurationRecordName("web_trottle", "web-trottle");
+        updateConfigurationRecordName("web_enable_directory_listing",
+                                      "web-enable-directory-listing");
+        updateConfigurationRecordName("web_enable_keep_alive",
+                                      "web-enable-keep-alive");
+        updateConfigurationRecordName("web_keep_alive_timeout_ms",
+                                      "web-keep-alive-timeout-ms");
+        updateConfigurationRecordName("web_access_control_list",
+                                      "web-access-control-list");
+        updateConfigurationRecordName("web_extra_mime_types",
+                                      "web-extra-mime-types");
+        updateConfigurationRecordName("web_num_threads", "web-num-threads");
+        updateConfigurationRecordName("web_run_as_user", "web-run-as-user");
+        updateConfigurationRecordName("web_url_rewrite_patterns",
+                                      "web-url-rewrite-patterns");
+        updateConfigurationRecordName("web_hide_file_patterns",
+                                      "web-hide-file-patterns");
+        updateConfigurationRecordName("web_request_timeout_ms",
+                                      "web-request-timeout-ms");
+        updateConfigurationRecordName("web_linger_timeout_ms",
+                                      "web-linger-timeout-ms");
+        updateConfigurationRecordName("web_decode_url", "web-decode-url");
+        updateConfigurationRecordName("web_global_authfile",
+                                      "web-global-authfile");
+        updateConfigurationRecordName("web_per_directory_auth_file",
+                                      "web-per-directory-auth-file");
+        updateConfigurationRecordName("web_ssi_patterns", "web-ssi-patterns");
+        updateConfigurationRecordName("web_access_control_allow_origin",
+                                      "web-access-control-allow-origin");
+        updateConfigurationRecordName("web_access_control_allow_methods",
+                                      "web-access-control-allow-methods");
+        updateConfigurationRecordName("web_access_control_allow_headers",
+                                      "web-access-control-allow-headers");
+        updateConfigurationRecordName("web_error_pages", "web-error-pages");
+        updateConfigurationRecordName("web_tcp_nodelay", "web-tcp-nodelay");
+        updateConfigurationRecordName("web_static_file_max_age",
+                                      "web-static-file-max-age");
+        updateConfigurationRecordName("web_strict_transport_security_max_age",
+                                      "web-strict-transport-security-max-age");
+        updateConfigurationRecordName("web_allow_sendfile_call",
+                                      "web-allow-sendfile-call");
+        updateConfigurationRecordName("web_additional_headers",
+                                      "web-additional-headers");
+        updateConfigurationRecordName("web_max_request_size",
+                                      "web-max-request-size");
+        updateConfigurationRecordName("web_allow_index_script_resource",
+                                      "web-allow-index-script-resource");
+        updateConfigurationRecordName("web_duktape_script_pattern",
+                                      "web-duktape-script-pattern");
+        updateConfigurationRecordName("web_lua_preload_file",
+                                      "web-lua-preload-file");
+        updateConfigurationRecordName("web_lua_script_pattern",
+                                      "web-lua-script-pattern");
+        updateConfigurationRecordName("web_lua_server_page_pattern",
+                                      "web-lua-server-page-pattern");
+        updateConfigurationRecordName("web_lua_websocket_pattern",
+                                      "web-lua-websocket-pattern");
+        updateConfigurationRecordName("web_lua_background_script",
+                                      "web-lua-background-script");
+        updateConfigurationRecordName("web_lua_background_script_params",
+                                      "web-lua-background-script-params");
+        updateConfigurationRecordName("websocket_enable", "websocket-enable");
+        updateConfigurationRecordName("websocket_document_root",
+                                      "websocket-document-root");
+        updateConfigurationRecordName("websocket_timeout_ms",
+                                      "websocket-timeout-ms");
+        updateConfigurationRecordName("automation_enable", "automation-enable");
+        updateConfigurationRecordName("automation_zone", "automation-zone");
+        updateConfigurationRecordName("automation_subzone",
+                                      "automation-subzone");
+        updateConfigurationRecordName("automation_longitude",
+                                      "automation-longitude");
+        updateConfigurationRecordName("automation_latitude",
+                                      "automation-latitude");
+        updateConfigurationRecordName("automation_sunrise_enable",
+                                      "automation-sunrise-enable");
+        updateConfigurationRecordName("automation_sunset_enable",
+                                      "automation-sunset-enable");
+        updateConfigurationRecordName("automation_sunset_twilight_enable",
+                                      "automation-sunset-twilight-enable");
+        updateConfigurationRecordName("automation_sunrise_twilight_enable",
+                                      "automation-sunrise-twilight-enable");
+        updateConfigurationRecordName("automation_segment_ctrl_enable",
+                                      "automation-segment-ctrl-enable");
+        updateConfigurationRecordName("automation_segment_ctrl_interval",
+                                      "automation-segment-ctrl-interval");
+        updateConfigurationRecordName("automation_heartbeat_enable",
+                                      "automation-heartbeat-enable");
+        updateConfigurationRecordName("automation_heartbeat_interval",
+                                      "automation-heartbeat-interval");
+        updateConfigurationRecordName("automation_capabilities_enable",
+                                      "automation-capabilities-enable");
+        updateConfigurationRecordName("automation_capabilities_interval",
+                                      "automation-capabilities-interval");
+
+        // We are now at version 2
+        updateConfigurationRecordItem(VSCPDB_CONFIG_NAME_DBVERSION ,"2");
+    } // end 1 -> 2
+
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // doCreateConfiguration
 //
 // Create configuration table.
@@ -4015,7 +4254,7 @@ CControlObject::readConfigurationDB(void)
         syslog(LOG_ERR,
                "dbReadConfiguration: Failed to read VSCP settings database "
                "- Database is not open.");
-        pthread_mutex_unlock(&m_db_vscp_configMutex);       
+        pthread_mutex_unlock(&m_db_vscp_configMutex);
         return false;
     }
 
@@ -4024,7 +4263,7 @@ CControlObject::readConfigurationDB(void)
         syslog(LOG_ERR,
                "dbReadConfiguration: Failed to read VSCP settings database "
                "- prepare query.");
-        pthread_mutex_unlock(&m_db_vscp_configMutex);       
+        pthread_mutex_unlock(&m_db_vscp_configMutex);
         return false;
     }
 
