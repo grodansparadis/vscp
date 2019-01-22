@@ -2372,7 +2372,7 @@ restsrv_doReadVariable(struct web_connection *conn,
 
         CVariable variable;
 
-        if (0 == gpobj->m_variables.find(strVariableName, variable)) {
+        if (0 == gpobj->m_variables.find(strVariableName, pSession->m_pClientItem->m_pUserItem, variable)) {
             restsrv_error(
               conn, pSession, format, REST_ERROR_CODE_VARIABLE_NOT_FOUND);
             return;
@@ -2547,7 +2547,7 @@ restsrv_doListVariable(struct web_connection *conn,
 
                 CVariable variable;
 
-                if (0 == gpobj->m_variables.find(variable_array[i], variable)) {
+                if (0 == gpobj->m_variables.find(variable_array[i], pSession->m_pClientItem->m_pUserItem, variable)) {
                     continue;
                 }
 
@@ -2608,7 +2608,7 @@ restsrv_doListVariable(struct web_connection *conn,
                     CVariable variable;
 
                     if (0 ==
-                        gpobj->m_variables.find(variable_array[i], variable)) {
+                        gpobj->m_variables.find(variable_array[i], pSession->m_pClientItem->m_pUserItem,  variable)) {
                         continue;
                     }
 
@@ -2647,7 +2647,7 @@ restsrv_doListVariable(struct web_connection *conn,
 
                 CVariable variable;
 
-                if (0 == gpobj->m_variables.find(variable_array[i], variable)) {
+                if (0 == gpobj->m_variables.find(variable_array[i], pSession->m_pClientItem->m_pUserItem, variable)) {
                     continue;
                 }
 
@@ -2722,7 +2722,7 @@ restsrv_doListVariable(struct web_connection *conn,
                     json var;
 
                     if (0 ==
-                        gpobj->m_variables.find(variable_array[i], variable)) {
+                        gpobj->m_variables.find(variable_array[i], pSession->m_pClientItem->m_pUserItem, variable)) {
                         cntErrors++;
                         continue;
                     }
@@ -2799,7 +2799,7 @@ restsrv_doWriteVariable(struct web_connection *conn,
 
         // Get variable name
         CVariable variable;
-        if (0 == gpobj->m_variables.find(strVariableName, variable)) {
+        if (0 == gpobj->m_variables.find(strVariableName, pSession->m_pClientItem->m_pUserItem, variable)) {
             restsrv_error(
               conn, pSession, format, REST_ERROR_CODE_VARIABLE_NOT_FOUND);
             return;
@@ -2811,7 +2811,7 @@ restsrv_doWriteVariable(struct web_connection *conn,
             return;
         }
 
-        if (!gpobj->m_variables.update(variable)) {
+        if (!gpobj->m_variables.update(variable,pSession->m_pClientItem->m_pUserItem)) {
             restsrv_error(
               conn, pSession, format, REST_ERROR_CODE_VARIABLE_FAIL_UPDATE);
             return;
@@ -2850,7 +2850,7 @@ restsrv_doDeleteVariable(struct web_connection *conn,
     if (NULL != pSession) {
 
         // Add the variable
-        if (!gpobj->m_variables.remove(strVariable)) {
+        if (!gpobj->m_variables.remove(strVariable,pSession->m_pClientItem->m_pUserItem)) {
             restsrv_error(
               conn, pSession, format, REST_ERROR_CODE_VARIABLE_NOT_DELETED);
             return;

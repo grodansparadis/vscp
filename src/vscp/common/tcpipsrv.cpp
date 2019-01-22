@@ -151,9 +151,9 @@ tcpipListenThread(void *pData)
         opts.chain = strdup((const char *)pObj->m_tcpip_ssl_ca_file.c_str());
     }
 
-    opts.verify_depth = pObj->m_tcpip_ssl_verify_depth;
+    opts.verify_depth        = pObj->m_tcpip_ssl_verify_depth;
     opts.default_verify_path = pObj->m_tcpip_ssl_default_verify_paths ? 1 : 0;
-    opts.protocol_version = pObj->m_tcpip_ssl_protocol_version;
+    opts.protocol_version    = pObj->m_tcpip_ssl_protocol_version;
 
     // chiper list
     if (pObj->m_tcpip_ssl_cipher_list.length()) {
@@ -785,7 +785,7 @@ tcpipClientObj::CommandHandler(std::string &strCommand)
     //*********************************************************************
 
     else if (m_pClientItem->CommandStartsWith(("measurement"))) {
-        handleClientMeasurment();
+        handleClientMeasurement();
     }
 
     //*********************************************************************
@@ -826,7 +826,7 @@ tcpipClientObj::CommandHandler(std::string &strCommand)
 //
 
 void
-tcpipClientObj::handleClientMeasurment(void)
+tcpipClientObj::handleClientMeasurement(void)
 {
     std::string str;
     unsigned long l;
@@ -947,7 +947,8 @@ tcpipClientObj::handleClientMeasurment(void)
         str = str.substr(str.length() - 1); // get variable name
         vscp_makeUpper(str);
 
-        if (m_pObj->m_variables.find(str, variable)) {
+        if (m_pObj->m_variables.find(
+              str, m_pClientItem->m_pUserItem, variable)) {
             write(MSG_VARIABLE_NOT_DEFINED, strlen(MSG_VARIABLE_NOT_DEFINED));
             return;
         }
@@ -1336,7 +1337,8 @@ tcpipClientObj::handleClientSend(void)
             nameVariable = str.substr(str.length() - 1);
             vscp_makeUpper(nameVariable);
 
-            if (m_pObj->m_variables.find(nameVariable, variable)) {
+            if (m_pObj->m_variables.find(
+                  nameVariable, m_pClientItem->m_pUserItem, variable)) {
                 write(MSG_VARIABLE_NOT_DEFINED,
                       strlen(MSG_VARIABLE_NOT_DEFINED));
                 return;
@@ -2178,8 +2180,7 @@ tcpipClientObj::handleClientInterface(void)
         handleClientInterface_Normal();
     } else if (m_pClientItem->CommandStartsWith(("close"))) {
         handleClientInterface_Close();
-    }
-    else {
+    } else {
         handleClientInterface_List();
     }
 }
@@ -4378,7 +4379,8 @@ tcpipClientObj::handleVariable_List(void)
 
         int cnt = 0;
         for (int i = 0; i < arrayVars.size(); i++) {
-            if (0 != m_pObj->m_variables.find(arrayVars[i], variable)) {
+            if (0 != m_pObj->m_variables.find(
+                       arrayVars[i], m_pClientItem->m_pUserItem, variable)) {
                 if ((0 == type) || (variable.getType() == type)) {
                     str = vscp_str_format("%d;", cnt);
                     str += variable.getAsString();
@@ -4419,8 +4421,8 @@ tcpipClientObj::handleVariable_Write(void)
 
     vscp_trim(m_pClientItem->m_currentCommand);
 
-    if (!variable.setFromString(
-          m_pClientItem->m_currentCommand, m_pClientItem->m_UserName)) {
+    if (!variable.setFromString(m_pClientItem->m_currentCommand,
+                                m_pClientItem->m_UserName)) {
         // Failed to parse
         write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
         return;
@@ -4429,7 +4431,7 @@ tcpipClientObj::handleVariable_Write(void)
     if (m_pObj->m_variables.exist(variable.getName())) {
 
         // Update in database
-        if (!m_pObj->m_variables.update(variable)) {
+        if (!m_pObj->m_variables.update(variable, m_pClientItem->m_pUserItem)) {
             write(MSG_VARIABLE_NO_SAVE, strlen(MSG_VARIABLE_NO_SAVE));
             return;
         }
@@ -4486,13 +4488,14 @@ tcpipClientObj::handleVariable_WriteValue(void)
     }
 
     CVariable variable;
-    if (0 != m_pObj->m_variables.find(name, variable)) {
+    if (0 !=
+        m_pObj->m_variables.find(name, m_pClientItem->m_pUserItem, variable)) {
 
         // Set value and encode as BASE64 when expected
         variable.setValueFromString(variable.getType(), value, false);
 
         // Update in database
-        if (!m_pObj->m_variables.update(variable)) {
+        if (!m_pObj->m_variables.update(variable, m_pClientItem->m_pUserItem)) {
             write(MSG_VARIABLE_NO_SAVE, strlen(MSG_VARIABLE_NO_SAVE));
             return;
         }
@@ -4545,13 +4548,14 @@ tcpipClientObj::handleVariable_WriteNote(void)
     }
 
     CVariable variable;
-    if (0 != m_pObj->m_variables.find(name, variable)) {
+    if (0 !=
+        m_pObj->m_variables.find(name, m_pClientItem->m_pUserItem, variable)) {
 
         // Set value and encode as BASE64 when expected
         variable.setNote(note, true);
 
         // Update in database
-        if (!m_pObj->m_variables.update(variable)) {
+        if (!m_pObj->m_variables.update(variable, m_pClientItem->m_pUserItem)) {
             write(MSG_VARIABLE_NO_SAVE, strlen(MSG_VARIABLE_NO_SAVE));
             return;
         }
@@ -4578,8 +4582,9 @@ tcpipClientObj::handleVariable_Read(bool bOKResponse)
     vscp_trim(m_pClientItem->m_currentCommand);
 
     CVariable variable;
-    if (0 !=
-        m_pObj->m_variables.find(m_pClientItem->m_currentCommand, variable)) {
+    if (0 != m_pObj->m_variables.find(m_pClientItem->m_currentCommand,
+                                      m_pClientItem->m_pUserItem,
+                                      variable)) {
 
         str = variable.getAsString(false);
         str += std::string("\r\n");
@@ -4607,8 +4612,9 @@ tcpipClientObj::handleVariable_ReadValue(bool bOKResponse)
     vscp_trim(m_pClientItem->m_currentCommand);
 
     CVariable variable;
-    if (0 !=
-        m_pObj->m_variables.find(m_pClientItem->m_currentCommand, variable)) {
+    if (0 != m_pObj->m_variables.find(m_pClientItem->m_currentCommand,
+                                      m_pClientItem->m_pUserItem,
+                                      variable)) {
 
         variable.writeValueToString(str, true);
         str += ("\r\n");
@@ -4636,8 +4642,9 @@ tcpipClientObj::handleVariable_ReadNote(bool bOKResponse)
     vscp_trim(m_pClientItem->m_currentCommand);
 
     CVariable variable;
-    if (0 !=
-        m_pObj->m_variables.find(m_pClientItem->m_currentCommand, variable)) {
+    if (0 != m_pObj->m_variables.find(m_pClientItem->m_currentCommand,
+                                      m_pClientItem->m_pUserItem,
+                                      variable)) {
 
         variable.getNote(str, true);
         str = ("+OK - ") + str + ("\r\n");
@@ -4666,13 +4673,14 @@ tcpipClientObj::handleVariable_Reset(void)
 
     CVariable variable;
 
-    if (0 !=
-        m_pObj->m_variables.find(m_pClientItem->m_currentCommand, variable)) {
+    if (0 != m_pObj->m_variables.find(m_pClientItem->m_currentCommand,
+                                      m_pClientItem->m_pUserItem,
+                                      variable)) {
 
         variable.reset();
 
         // Update in database
-        if (!m_pObj->m_variables.update(variable)) {
+        if (!m_pObj->m_variables.update(variable, m_pClientItem->m_pUserItem)) {
             write(MSG_VARIABLE_NO_SAVE, strlen(MSG_VARIABLE_NO_SAVE));
             return;
         }
@@ -4705,8 +4713,9 @@ tcpipClientObj::handleVariable_ReadReset(void)
 
     CVariable variable;
 
-    if (0 !=
-        m_pObj->m_variables.find(m_pClientItem->m_currentCommand, variable)) {
+    if (0 != m_pObj->m_variables.find(m_pClientItem->m_currentCommand,
+                                      m_pClientItem->m_pUserItem,
+                                      variable)) {
 
         variable.writeValueToString(str);
         str = ("+OK - ") + str + ("\r\n");
@@ -4715,7 +4724,7 @@ tcpipClientObj::handleVariable_ReadReset(void)
         variable.reset();
 
         // Update in database
-        if (!m_pObj->m_variables.update(variable)) {
+        if (!m_pObj->m_variables.update(variable, m_pClientItem->m_pUserItem)) {
             write(MSG_VARIABLE_NO_SAVE, strlen(MSG_VARIABLE_NO_SAVE));
             return;
         }
@@ -4746,7 +4755,8 @@ tcpipClientObj::handleVariable_Remove(void)
         return;
     }
 
-    if (!m_pObj->m_variables.remove(m_pClientItem->m_currentCommand)) {
+    if (!m_pObj->m_variables.remove(m_pClientItem->m_currentCommand,
+                                    m_pClientItem->m_pUserItem)) {
         write(MSG_VARIABLE_NOT_DEFINED, strlen(MSG_VARIABLE_NOT_DEFINED));
     }
 
@@ -4773,14 +4783,15 @@ tcpipClientObj::handleVariable_ReadRemove(void)
     }
 
     CVariable variable;
-    if (0 !=
-        m_pObj->m_variables.find(m_pClientItem->m_currentCommand, variable)) {
+    if (0 != m_pObj->m_variables.find(m_pClientItem->m_currentCommand,
+                                      m_pClientItem->m_pUserItem,
+                                      variable)) {
 
         variable.writeValueToString(str);
         str = ("+OK - ") + str + ("\r\n");
         write(str.c_str(), strlen(str.c_str()));
 
-        m_pObj->m_variables.remove(variable);
+        m_pObj->m_variables.remove(variable, m_pClientItem->m_pUserItem);
 
     } else {
         write(MSG_VARIABLE_NOT_DEFINED, strlen(MSG_VARIABLE_NOT_DEFINED));
@@ -4804,14 +4815,15 @@ tcpipClientObj::handleVariable_Length(void)
     vscp_trim(m_pClientItem->m_currentCommand);
 
     CVariable variable;
-    if (0 !=
-        m_pObj->m_variables.find(m_pClientItem->m_currentCommand, variable)) {
+    if (0 != m_pObj->m_variables.find(m_pClientItem->m_currentCommand,
+                                      m_pClientItem->m_pUserItem,
+                                      variable)) {
 
         str = vscp_str_format("%zu", variable.getLength());
         str = str + "\r\n";
         write(str.c_str(), strlen(str.c_str()));
 
-        m_pObj->m_variables.remove(variable);
+        m_pObj->m_variables.remove(variable, m_pClientItem->m_pUserItem);
 
     } else {
         write(MSG_VARIABLE_NOT_DEFINED, strlen(MSG_VARIABLE_NOT_DEFINED));

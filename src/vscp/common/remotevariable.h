@@ -85,7 +85,10 @@
 #define PERMISSION_NO_RIGHTS 0x000
 #define PERMSSION_VARIABLE_DEFAULT 0x744
 
-#define ID_NON_PERSISTENT UINT32_MAX
+// A dynamic variable is a variable that is not defined
+// in any of the databases during init but instead is
+// constructed on read.
+#define ID_VAR_DYNAMIC UINT32_MAX
 
 // Table types - bit-field
 #define VARIABLE_STOCK 0x01
@@ -306,12 +309,12 @@ class CVariable
     void setFalse(void);
 
     /*!
-    Set variable value from string
-    @param type Type of value
-    @param strValue Value in string form
-    @param bBase64 True if strValue is BASE64 encoded.
-    @return true on success.
- */
+        Set variable value from string
+        @param type Type of value
+        @param strValue Value in string form
+        @param bBase64 True if strValue is BASE64 encoded.
+        @return true on success.
+    */
     bool setValueFromString(int type,
                             const std::string &strValue,
                             bool bBase64 = false);
@@ -575,6 +578,29 @@ class CVariable
     };
 
     /*!
+        Test if variable is readable by a general user
+        @return Return true if variable is readable by
+        a general user, false if not.
+    */
+    bool isUserReadable(void)
+    {
+        return (m_accessRights & 0x04) ? true : false;
+    };
+
+    /*!
+       Make variable writable (or not) by the general user
+       @param b True to make the variable writable by the general user. False
+      to make it non writable by the general user.
+   */
+    void makeUserReadable(bool b)
+    {
+        if (b)
+            m_accessRights |= 0x04;
+        else
+            m_accessRights &= 0xFFFB;
+    };
+
+    /*!
         Test if variable is writable by a general user
         @return Return true if variable is writable by a general user, false if
        not.
@@ -589,7 +615,58 @@ class CVariable
         @param b True to make the variable writable by the general user. False
        to make it non writable by the general user.
     */
-    void makeUserWritable(bool b) { m_accessRights |= 0x02; };
+    void makeUserWritable(bool b)
+    {
+        if (b)
+            m_accessRights |= 0x40;
+        else
+            m_accessRights &= 0xFFFD;
+    };
+
+    /*!
+        Test if variable is executable by a general user
+        @return Return true if variable is executable by a general user, false
+       if not.
+    */
+    bool isUserExecutable(void)
+    {
+        return (m_accessRights & 0x01) ? true : false;
+    };
+
+    /*!
+        Make variable executable (or not) by the general user
+        @param b True to make the variable executable by the general user. False
+       to make it non executable by the general user.
+    */
+    void makeUserExecutable(bool b)
+    {
+        if (b)
+            m_accessRights |= 0x01;
+        else
+            m_accessRights &= 0xFFFE;
+    };
+
+    /*!
+        Test if variable is readable by owner
+        @return Return true if variable is readable by owner, false if not.
+    */
+    bool isOwnerReadable(void)
+    {
+        return (m_accessRights & 0x100) ? true : false;
+    };
+
+    /*!
+        Make variable readable (or not) by owner
+        @param b True to make the variable readable by the owner. False to make
+       it non readable by owner.
+    */
+    void makeOwnerReadable(bool b)
+    {
+        if (b)
+            m_accessRights |= 0x100;
+        else
+            m_accessRights &= 0xFEFF;
+    };
 
     /*!
         Test if variable is writable by owner
@@ -605,7 +682,61 @@ class CVariable
         @param b True to make the variable writable by the owner. False to make
        it non writable by owner.
     */
-    void makeOwnerWritable(bool b) { m_accessRights |= 0x80; };
+    void makeOwnerWritable(bool b)
+    {
+        if (b)
+            m_accessRights |= 0x80;
+        else
+            m_accessRights &= 0xFF7F;
+    };
+
+    /*!
+        Test if variable is executable by owner
+        @return Return true if variable is executable by owner, false if not.
+    */
+    bool isOwnerExecutable(void)
+    {
+        return (m_accessRights & 0x40) ? true : false;
+    };
+
+    /*!
+        Make variable executable (or not) by owner
+        @param b True to make the variable executable by the owner. False to
+       make it non executable by owner.
+    */
+    void makeOwnerExecutable(bool b)
+    {
+        if (b)
+            m_accessRights |= 0x40;
+        else
+            m_accessRights &= 0xFFBF;
+    };
+
+    /*!
+        Check if user is allowed to read variable. Admin can  ead all.
+        Owner and "user" must have write privileges.
+        @param pUser Pointer to user to check privileges for. Parameter
+        can be set to NULL and if so "general user" privileges is checked.
+        @return true of user is allowed to perform operation
+    */
+    bool isUserAllowRead(CUserItem *pUser);
+
+    /*!
+        Check if user is allowed to write variable. Admin can write all.
+        Owner and "user" must have write privileges.
+        @param pUser Pointer to user to check privileges for. Parameter
+        can be set to NULL and if so "general user" privileges is checked.
+        @return true of user is allowed to perform operation
+    */
+    bool isUserAllowWrite(CUserItem *pUser);
+
+    /*!
+        Check if user is allowed to execute variable content.
+        @param pUser Pointer to user to check privileges for. Parameter
+        can be set to NULL and if so "general user" privileges is checked.
+        @return true of user is allowed to perform operation
+    */
+    bool isUserAllowExecute(CUserItem *pUser);
 
     /*!
         Set owner id for variable
@@ -712,11 +843,13 @@ class CVariableStorage
      * non-persistent variables (in-memory) is searched, and last persistent
      * variables is searched.
      * @param name Name of variable
-     * @param pVar [OUT] If found supplied variable is filled with data. Can be
-     * set to NULL in which case only availability of the variable is returned.
+     * @param pUser This is a pointer to the user doing the search
+     * @param pVar [OUT] If found supplied variable is filled with data.
      * @return >0 if variable is found, zero if not.
      */
-    uint32_t find(const std::string &name, CVariable &variable);
+    uint32_t find(const std::string &name,
+                  CUserItem *pUser,
+                  CVariable &variable);
 
     /*!
      * Check if a variable exist.
@@ -725,23 +858,6 @@ class CVariableStorage
      *
      */
     uint32_t exist(const std::string &name);
-
-    /*!
-     * Get a stock variable
-     *
-     * First stock variable (start with "vscp.").
-     * @param name Name of variable
-     * @param pVar [OUT] If found supplied variable is filled with data. Can be
-     * set to NULL in which case only availability of the variable is returned.
-     * @param pUser Pointer to user performing operation. NULL
-                    is system of admin user.
-     * @return Return id if variable is found, UINT_MAX if variable is internal
-     and dynamic,
-     *      zero if the variable is not found.
-     */
-    uint32_t getStockVariable(const std::string &name,
-                              CVariable& var,
-                              CUserItem *pUser = NULL);
 
     /*!
         Handle init/read/write for stock variables
@@ -753,24 +869,14 @@ class CVariableStorage
     */
     bool handleStockVariable(std::string name,
                              int op,
-                             CVariable& var,
-                             CUserItem& user);
+                             CVariable &var,
+                             CUserItem *pUser);
 
     /*!
         Initialize stock variables that should be visible in lists
         @param user User item used to init variables.
     */
-    void initStockVariables(CUserItem &user);
-
-    /*!
-        Write stock variable.
-        @param name Name of variable.
-        @param var Reference to variable to write
-        @param pUser Pointer to user performing operation. NULL
-                    is system of admin user.
-        @return true on success.
-     */
-    bool putStockVariable(CVariable &var, CUserItem *pUser = NULL);
+    void initStockVariables(CUserItem *pUser);
 
     /*!
        Set variable value from Database record.
@@ -785,11 +891,13 @@ class CVariableStorage
      *
      * Find non-persistent variable (in-memory variable).
      * @param name Name of variable
+     * @param pUser Pointer to uer doin g the find
      * @param pVar [OUT] If found supplied variable is filled with data. Can be
      * set to NULL in which case only availability of the variable is returned.
      * @return id if variable is found, zero if not.
      */
     uint32_t findNonPersistentVariable(const std::string &name,
+                                       CUserItem *pUser,
                                        CVariable &pVar);
 
     /*!
@@ -797,11 +905,14 @@ class CVariableStorage
      *
      * Find persistent variable.
      * @param name Name of variable
+     * @param pUser Pointer to user doing the find
      * @param pVar [OUT] If found supplied variable is filled with data. Can be
      * set to NULL in which case only availability of the variable is returned.
      * @return id if variable is found, zero if not.
      */
-    uint32_t findPersistentVariable(const std::string &name, CVariable &pVar);
+    uint32_t findPersistentVariable(const std::string &name,
+                                    CUserItem *pUser,
+                                    CVariable &pVar);
 
     /*!
      * Add stock variable
@@ -849,21 +960,23 @@ class CVariableStorage
              const std::string &note     = "");
 
     // Update a variable (write to db)
-    bool update(CVariable &var);
+    bool update(CVariable &var, CUserItem *pUser);
 
     /*!
         Remove named variable
         @param name Name of variable
+        @param pUserItem Pointer to user that want to remove variable
         @return true on success, false on failure.
      */
-    bool remove(std::string &name);
+    bool remove(std::string &name, CUserItem *pUser);
 
     /*!
         Remove variable from object
-        @param pVariable Pointe to variable object
+        @param variable Variable object
+        @param pUserItem Pointer to user that want to remove variable
         @return true on success, false on failure.
      */
-    bool remove(CVariable &variable);
+    bool remove(CVariable &variable, CUserItem *pUser);
 
     /*!
         Read persistent variables from XML file.

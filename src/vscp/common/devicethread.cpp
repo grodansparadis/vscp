@@ -55,7 +55,6 @@
 
 #include "devicethread.h"
 
-
 ///////////////////////////////////////////////////////////////////////////////
 // deviceThread
 //
@@ -424,10 +423,10 @@ deviceThread(void *pData)
             //                      Device write worker thread
             /////////////////////////////////////////////////////////////////////////////
 
-            if ( pthread_create(&pDevItem->m_level1WriteThread,
-                                NULL,
-                                deviceLevel1WriteThread,
-                                pDevItem)) {
+            if (pthread_create(&pDevItem->m_level1WriteThread,
+                               NULL,
+                               deviceLevel1WriteThread,
+                               pDevItem)) {
                 syslog(LOG_CRIT,
                        "%s: Unable to run the device write worker thread.",
                        pDevItem->m_strName.c_str());
@@ -440,9 +439,9 @@ deviceThread(void *pData)
             // Device read worker thread
             /////////////////////////////////////////////////////////////////////////////
             if (pthread_create(&pDevItem->m_level1ReceiveThread,
-                                NULL,
-                                deviceLevel1ReceiveThread,
-                                pDevItem)) {
+                               NULL,
+                               deviceLevel1ReceiveThread,
+                               pDevItem)) {
                 syslog(LOG_CRIT,
                        "%s: Unable to run the device read worker thread.",
                        pDevItem->m_strName.c_str());
@@ -485,7 +484,7 @@ deviceThread(void *pData)
 
                 bActivity = false;
                 /////////////////////////////////////////////////////////////////////////////
-                //                           Receive from device          
+                //                           Receive from device
                 /////////////////////////////////////////////////////////////////////////////
                 canalMsg msg;
                 if (pDevItem->m_proc_CanalDataAvailable(
@@ -759,8 +758,10 @@ deviceThread(void *pData)
             tokens.pop_front();
 
             // Check if username is specified in the configuration file
-            if (pCtrlObj->m_variables.find(pDevItem->m_strName + "_username",
-                                           variable)) {
+            CUserItem *pAdminUser =
+              pDevItem->m_pCtrlObject->m_userList.getUser(USER_ID_ADMIN);
+            if (pCtrlObj->m_variables.find(
+                  pDevItem->m_strName + "_username", pAdminUser, variable)) {
                 std::string str;
                 if (VSCP_DAEMON_VARIABLE_CODE_STRING == variable.getType()) {
                     str                        = variable.getValue();
@@ -769,8 +770,8 @@ deviceThread(void *pData)
             }
 
             // Check if password is specified in the configuration file
-            if (pCtrlObj->m_variables.find(pDevItem->m_strName + "_password",
-                                           variable)) {
+            if (pCtrlObj->m_variables.find(
+                  pDevItem->m_strName + "_password", pAdminUser, variable)) {
                 std::string str;
                 if (VSCP_DAEMON_VARIABLE_CODE_STRING == variable.getType()) {
                     str                        = variable.getValue();
@@ -779,8 +780,8 @@ deviceThread(void *pData)
             }
 
             // Check if host is specified in the configuration file
-            if (pCtrlObj->m_variables.find(pDevItem->m_strName + "_host",
-                                           variable)) {
+            if (pCtrlObj->m_variables.find(
+                  pDevItem->m_strName + "_host", pAdminUser, variable)) {
                 std::string str;
                 if (VSCP_DAEMON_VARIABLE_CODE_STRING == variable.getType()) {
                     str     = variable.getValue();
@@ -789,8 +790,8 @@ deviceThread(void *pData)
             }
 
             // Check if host is specified in the configuration file
-            if (pCtrlObj->m_variables.find(pDevItem->m_strName + "_port",
-                                           variable)) {
+            if (pCtrlObj->m_variables.find(
+                  pDevItem->m_strName + "_port", pAdminUser, variable)) {
                 std::string str;
                 if (VSCP_DAEMON_VARIABLE_CODE_INTEGER == variable.getType()) {
                     str  = variable.getValue();
@@ -830,9 +831,9 @@ deviceThread(void *pData)
         /////////////////////////////////////////////////////////////////////////////
 
         if (pthread_create(&pDevItem->m_level2WriteThread,
-                            NULL,
-                            deviceLevel2WriteThread,
-                            pDevItem)) {
+                           NULL,
+                           deviceLevel2WriteThread,
+                           pDevItem)) {
             syslog(LOG_CRIT,
                    "%s: Unable to run the device Level II write worker thread.",
                    pDevItem->m_strName.c_str());
@@ -851,9 +852,9 @@ deviceThread(void *pData)
         /////////////////////////////////////////////////////////////////////////////
 
         if (pthread_create(&pDevItem->m_level2ReceiveThread,
-                            NULL,
-                            deviceLevel2ReceiveThread,
-                            pDevItem)) {
+                           NULL,
+                           deviceLevel2ReceiveThread,
+                           pDevItem)) {
             syslog(LOG_CRIT,
                    "%s: Unable to run the device Level II read worker thread.",
                    pDevItem->m_strName.c_str());
@@ -946,8 +947,9 @@ deviceLevel1ReceiveThread(void *pData)
 
     CDeviceItem *pDevItem = (CDeviceItem *)pData;
     if (NULL == pDevItem) {
-        syslog(LOG_CRIT,
-               "deviceLevel1ReceiveThread quitting due to NULL DevItem object.");
+        syslog(
+          LOG_CRIT,
+          "deviceLevel1ReceiveThread quitting due to NULL DevItem object.");
         return NULL;
     }
 
@@ -958,9 +960,8 @@ deviceLevel1ReceiveThread(void *pData)
 
     while (!pDevItem->m_bQuit) {
 
-        if (CANAL_ERROR_SUCCESS ==
-            pDevItem->m_proc_CanalBlockingReceive(
-              pDevItem->m_openHandle, &msg, 500)) {
+        if (CANAL_ERROR_SUCCESS == pDevItem->m_proc_CanalBlockingReceive(
+                                     pDevItem->m_openHandle, &msg, 500)) {
 
             // There must be room in the receive queue
             if (pDevItem->m_pCtrlObject->m_maxItemsInClientReceiveQueue >
@@ -984,12 +985,9 @@ deviceLevel1ReceiveThread(void *pData)
 
                     // Convert CANAL message to VSCP event
                     vscp_convertCanalToEvent(
-                      pvscpEvent,
-                      &msg,
-                      pDevItem->m_pClientItem->m_guid.m_id);
+                      pvscpEvent, &msg, pDevItem->m_pClientItem->m_guid.m_id);
 
-                    pvscpEvent->obid =
-                      pDevItem->m_pClientItem->m_clientID;
+                    pvscpEvent->obid = pDevItem->m_pClientItem->m_clientID;
 
                     // If no GUID is set,
                     //      - Set driver GUID if it is defined
@@ -1009,14 +1007,13 @@ deviceLevel1ReceiveThread(void *pData)
                     if (vscp_isGUIDEmpty(ifguid)) {
 
                         // Set driver GUID if set
-                        if (!pDevItem->m_interface_guid
-                               .isNULL()) {
+                        if (!pDevItem->m_interface_guid.isNULL()) {
                             pDevItem->m_interface_guid.writeGUID(
                               pvscpEvent->GUID);
                         } else {
                             // If no driver GUID set use interface GUID
-                            pDevItem->m_pClientItem->m_guid
-                              .writeGUID(pvscpEvent->GUID);
+                            pDevItem->m_pClientItem->m_guid.writeGUID(
+                              pvscpEvent->GUID);
                         }
 
                         // Preserve nickname
@@ -1028,8 +1025,7 @@ deviceLevel1ReceiveThread(void *pData)
                     // =========================================================
 
                     // Level I measurement events to Level II measurement float
-                    if (pDevItem->m_translation &
-                        VSCP_DRIVER_OUT_TR_M1M2F) {
+                    if (pDevItem->m_translation & VSCP_DRIVER_OUT_TR_M1M2F) {
                         vscp_convertLevel1MeasuremenToLevel2Double(pvscpEvent);
                     }
                     // Level I measurement events to Level II measurement string
@@ -1039,8 +1035,7 @@ deviceLevel1ReceiveThread(void *pData)
                     }
 
                     // Level I events to Level I over Level II events
-                    if (pDevItem->m_translation &
-                        VSCP_DRIVER_OUT_TR_ALL512) {
+                    if (pDevItem->m_translation & VSCP_DRIVER_OUT_TR_ALL512) {
                         pvscpEvent->vscp_class += 512;
                         uint8_t *p = new uint8_t[16 + pvscpEvent->sizeData];
                         if (NULL != p) {
@@ -1092,10 +1087,8 @@ deviceLevel1WriteThread(void *pData)
     while (!pDevItem->m_bQuit) {
 
         // Wait until there is something to send
-        if ((-1 ==
-             vscp_sem_wait(
-               &pDevItem->m_pClientItem->m_semClientInputQueue,
-               500)) &&
+        if ((-1 == vscp_sem_wait(
+                     &pDevItem->m_pClientItem->m_semClientInputQueue, 500)) &&
             errno == ETIMEDOUT) {
             continue;
         }
@@ -1106,8 +1099,7 @@ deviceLevel1WriteThread(void *pData)
               &pDevItem->m_pClientItem->m_mutexClientInputQueue);
             vscpEvent *pqueueEvent =
               pDevItem->m_pClientItem->m_clientInputQueue.front();
-            pDevItem->m_pClientItem->m_clientInputQueue
-              .pop_front();
+            pDevItem->m_pClientItem->m_clientInputQueue.pop_front();
             pthread_mutex_unlock(
               &pDevItem->m_pClientItem->m_mutexClientInputQueue);
 
@@ -1154,8 +1146,9 @@ deviceLevel2ReceiveThread(void *pData)
 
     CDeviceItem *pDevItem = (CDeviceItem *)pData;
     if (NULL == pDevItem) {
-        syslog(LOG_CRIT,
-               "deviceLevel2ReceiveThread quitting due to NULL DevItem object.");
+        syslog(
+          LOG_CRIT,
+          "deviceLevel2ReceiveThread quitting due to NULL DevItem object.");
         return NULL;
     }
 
@@ -1200,12 +1193,10 @@ deviceLevel2ReceiveThread(void *pData)
 
             // Set driver GUID if set
             if (!pDevItem->m_interface_guid.isNULL()) {
-                pDevItem->m_interface_guid.writeGUID(
-                  pEvent->GUID);
+                pDevItem->m_interface_guid.writeGUID(pEvent->GUID);
             } else {
                 // If no driver GUID set use interface GUID
-                pDevItem->m_pClientItem->m_guid.writeGUID(
-                  pEvent->GUID);
+                pDevItem->m_pClientItem->m_guid.writeGUID(pEvent->GUID);
             }
 
             // Preserve nickname
@@ -1254,10 +1245,8 @@ deviceLevel2WriteThread(void *pData)
     while (!pDevItem->m_bQuit) {
 
         // Wait until there is something to send
-        if ((-1 ==
-             vscp_sem_wait(
-               &pDevItem->m_pClientItem->m_semClientInputQueue,
-               500)) &&
+        if ((-1 == vscp_sem_wait(
+                     &pDevItem->m_pClientItem->m_semClientInputQueue, 500)) &&
             errno == ETIMEDOUT) {
             continue;
         }
@@ -1276,12 +1265,11 @@ deviceLevel2WriteThread(void *pData)
                   pDevItem->m_openHandle, pqueueEvent, 300)) {
 
                 // Remove the node
-                pthread_mutex_lock(&pDevItem->m_pClientItem
-                                      ->m_mutexClientInputQueue);
-                pDevItem->m_pClientItem->m_clientInputQueue
-                  .pop_front();
-                pthread_mutex_unlock(&pDevItem->m_pClientItem
-                                        ->m_mutexClientInputQueue);
+                pthread_mutex_lock(
+                  &pDevItem->m_pClientItem->m_mutexClientInputQueue);
+                pDevItem->m_pClientItem->m_clientInputQueue.pop_front();
+                pthread_mutex_unlock(
+                  &pDevItem->m_pClientItem->m_mutexClientInputQueue);
             } else {
                 // Give it another try
                 sem_post(&pDevItem->m_pCtrlObject->m_semClientOutputQueue);

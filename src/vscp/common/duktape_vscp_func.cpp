@@ -361,7 +361,8 @@ js_vscp_readVariable(duk_context *ctx)
 
     duk_pop_n(ctx, 3); // Clear stack
 
-    if (!gpobj->m_variables.find(varName, variable)) {
+    CUserItem *pAdminUser = gpobj->m_userList.getUser(USER_ID_ADMIN);
+    if (!gpobj->m_variables.find(varName, pAdminUser, variable)) {
         duk_push_null(ctx); // Return failure
         return JAVASCRIPT_OK;
     }
@@ -407,7 +408,8 @@ js_vscp_writeVariable(duk_context *ctx)
         return JAVASCRIPT_OK;
     }
 
-    if (!gpobj->m_variables.find(varName, variable)) {
+    CUserItem *pAdminUser = gpobj->m_userList.getUser(USER_ID_ADMIN);
+    if (!gpobj->m_variables.find(varName, pAdminUser, variable)) {
 
         // Variable does not exist - should be created
 
@@ -541,7 +543,7 @@ js_vscp_writeVariable(duk_context *ctx)
         duk_pop_n(ctx, 2); // Clear stack
 
         // Update variable storage
-        if (!gpobj->m_variables.update(variable)) {
+        if (!gpobj->m_variables.update(variable, pAdminUser)) {
             duk_push_boolean(ctx, 0); // return code false
             return JAVASCRIPT_OK;
         }
@@ -573,7 +575,8 @@ js_vscp_deleteVariable(duk_context *ctx)
         return JAVASCRIPT_OK;
     }
 
-    if (!gpobj->m_variables.remove(varName)) {
+    CUserItem *pAdminUser = gpobj->m_userList.getUser(USER_ID_ADMIN);
+    if (!gpobj->m_variables.remove(varName,pAdminUser)) {
         duk_push_boolean(ctx, 0); // return code false
         return JAVASCRIPT_OK;
     }

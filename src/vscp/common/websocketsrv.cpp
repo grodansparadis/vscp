@@ -1364,7 +1364,7 @@ ws1_command(struct web_connection *conn,
         // Check if the variable exist
         CVariable variable;
         bool bVariableExist = false;
-        if (0 != gpobj->m_variables.find(name, variable)) {
+        if (0 != gpobj->m_variables.find(name, pSession->m_pClientItem->m_pUserItem, variable)) {
             bVariableExist = true;
         }
 
@@ -1492,7 +1492,7 @@ ws1_command(struct web_connection *conn,
             }
 
             // Save the changed variable
-            if (!gpobj->m_variables.update(variable)) {
+            if (!gpobj->m_variables.update(variable,pSession->m_pClientItem->m_pUserItem)) {
 
                 str = vscp_str_format(("-;CVAR;%d;%s"),
                                          (int)WEBSOCK_ERROR_SYNTAX_ERROR,
@@ -1568,7 +1568,7 @@ ws1_command(struct web_connection *conn,
 
         strTok = tokens.front();
         tokens.pop_front();
-        if (0 == gpobj->m_variables.find(strTok, variable)) {
+        if (0 == gpobj->m_variables.find(strTok, pSession->m_pClientItem->m_pUserItem,variable)) {
 
             str = vscp_str_format(("-;RVAR;%d;%s"),
                                      (int)WEBSOCK_ERROR_VARIABLE_UNKNOWN,
@@ -1646,7 +1646,7 @@ ws1_command(struct web_connection *conn,
             strVarName = tokens.front();
             tokens.pop_front();
             if (0 ==
-                gpobj->m_variables.find(vscp_upper(strVarName), variable)) {
+                gpobj->m_variables.find(vscp_upper(strVarName), pSession->m_pClientItem->m_pUserItem,variable)) {
 
                 str = vscp_str_format(("-;WVAR;%d;%s"),
                                          (int)WEBSOCK_ERROR_VARIABLE_UNKNOWN,
@@ -1682,7 +1682,7 @@ ws1_command(struct web_connection *conn,
                 }
 
                 // Update the variable
-                if (!gpobj->m_variables.update(variable)) {
+                if (!gpobj->m_variables.update(variable,pSession->m_pClientItem->m_pUserItem)) {
 
                     str = vscp_str_format(("-;WVAR;%d;%s"),
                                              (int)WEBSOCK_ERROR_SYNTAX_ERROR,
@@ -1776,7 +1776,7 @@ ws1_command(struct web_connection *conn,
 
         strTok = tokens.front();
         tokens.pop_front();
-        if (0 == gpobj->m_variables.find(strTok, variable)) {
+        if (0 == gpobj->m_variables.find(strTok, pSession->m_pClientItem->m_pUserItem,variable)) {
 
             str = vscp_str_format(("-;RSTVAR;%d;%s"),
                                      (int)WEBSOCK_ERROR_VARIABLE_UNKNOWN,
@@ -1866,7 +1866,7 @@ ws1_command(struct web_connection *conn,
 
         name = tokens.front();
         tokens.pop_front();
-        if (0 == gpobj->m_variables.find(name, variable)) {
+        if (0 == gpobj->m_variables.find(name, pSession->m_pClientItem->m_pUserItem,variable)) {
 
             str = vscp_str_format(("-;DELVAR;%d;%s"),
                                      (int)WEBSOCK_ERROR_VARIABLE_UNKNOWN,
@@ -1881,7 +1881,7 @@ ws1_command(struct web_connection *conn,
         }
 
         pthread_mutex_lock(&gpobj->m_variableMutex);
-        gpobj->m_variables.remove(name);
+        gpobj->m_variables.remove(name,pSession->m_pClientItem->m_pUserItem);
         pthread_mutex_unlock(&gpobj->m_variableMutex);
 
         std::string strResult = ("+;DELVAR;");
@@ -1946,7 +1946,7 @@ ws1_command(struct web_connection *conn,
 
         strTok = tokens.front();
         tokens.pop_front();
-        if (0 == gpobj->m_variables.find(strTok, variable)) {
+        if (0 == gpobj->m_variables.find(strTok, pSession->m_pClientItem->m_pUserItem,variable)) {
 
             str = vscp_str_format(("-;LENVAR;%d;%s"),
                                      (int)WEBSOCK_ERROR_VARIABLE_UNKNOWN,
@@ -2024,7 +2024,7 @@ ws1_command(struct web_connection *conn,
 
         strTok = tokens.front();
         tokens.pop_front();
-        if (0 == gpobj->m_variables.find(strTok, variable)) {
+        if (0 == gpobj->m_variables.find(strTok, pSession->m_pClientItem->m_pUserItem,variable)) {
 
             str = vscp_str_format(("-;LCVAR;%d;%s"),
                                      (int)WEBSOCK_ERROR_VARIABLE_UNKNOWN,
@@ -2128,7 +2128,7 @@ ws1_command(struct web_connection *conn,
 
             // +;LSTVAR;ordinal;cnt;name;type;userid;accessrights;persistance;last_change
             for (int i = 0; i < arrayVars.size(); i++) {
-                if (0 != gpobj->m_variables.find(arrayVars[i], variable)) {
+                if (0 != gpobj->m_variables.find(arrayVars[i], pSession->m_pClientItem->m_pUserItem,variable)) {
 
                     str = vscp_str_format(
                       ("+;LSTVAR;%d;%zu;"), i, arrayVars.size());

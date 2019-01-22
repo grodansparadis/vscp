@@ -73,7 +73,7 @@ bool
 CVariableStorage::handleStockVariable(std::string name,
                                       int op,
                                       CVariable &var,
-                                      CUserItem &user)
+                                      CUserItem *pUser)
 {
     std::string str;
     std::string strToken;
@@ -102,7 +102,7 @@ CVariableStorage::handleStockVariable(std::string name,
         // Set common values
         var.init();
         var.setName(name);
-        var.setID(ID_NON_PERSISTENT);
+        var.setID(ID_VAR_DYNAMIC);
         var.setStockVariable(true);
         var.setPersistent(false);
         var.setOwnerId(USER_ID_ADMIN);
@@ -113,7 +113,11 @@ CVariableStorage::handleStockVariable(std::string name,
         var.setLastChangedToNow();
     } else if (STOCKVAR_READ == op) {
         // Try to read the variable from stock storage
-        var_id = findNonPersistentVariable(name, var);
+        var_id = findNonPersistentVariable(name, pUser, var);
+        // Will be zero for a dynamic stock variable
+        if ( 0 == var_id ) {
+            var.setID(ID_VAR_DYNAMIC);
+        }
     } else if (STOCKVAR_WRITE == op) {
         // Are we allowed to write the variable?
     }
@@ -1082,7 +1086,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -1131,7 +1135,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -1161,7 +1165,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -1193,7 +1197,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -1225,7 +1229,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -1257,7 +1261,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -1289,7 +1293,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -1321,7 +1325,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -1353,7 +1357,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -1385,7 +1389,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -1469,7 +1473,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -1522,7 +1526,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -1573,7 +1577,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -1625,7 +1629,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -1675,7 +1679,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -1725,7 +1729,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -1775,7 +1779,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -1827,7 +1831,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -1879,7 +1883,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -1932,7 +1936,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -1981,7 +1985,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -2030,7 +2034,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -2082,7 +2086,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -2135,7 +2139,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -2188,7 +2192,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -2240,7 +2244,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -2293,7 +2297,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -2342,7 +2346,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -2392,7 +2396,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -2424,7 +2428,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 var.setAccessRights(PERMISSION_OWNER_WRITE |
                                     PERMISSION_ALL_READ);
                 var.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
-                var.setNote("Configuration: VSCP Daemon UDP user.");
+                var.setNote("Configuration: VSCP Daemon UDP pUser->");
                 var.setValue(0); // Dummy value
                 return addStockVariable(var);
             } else if (STOCKVAR_READ == op) {
@@ -2441,7 +2445,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -2490,7 +2494,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -2541,7 +2545,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -2590,7 +2594,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -2640,7 +2644,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -2690,7 +2694,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -2739,7 +2743,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -2788,7 +2792,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -2837,7 +2841,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -2886,7 +2890,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -2935,7 +2939,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -2986,7 +2990,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -3036,7 +3040,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -3085,7 +3089,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -3134,7 +3138,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -3186,7 +3190,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -3236,7 +3240,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -3287,7 +3291,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -3341,7 +3345,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -3394,7 +3398,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -3445,7 +3449,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -3498,7 +3502,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -3548,7 +3552,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -3598,7 +3602,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -3649,7 +3653,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -3702,7 +3706,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -3754,7 +3758,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -3805,7 +3809,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -3858,7 +3862,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -3909,7 +3913,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -3958,7 +3962,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -4009,7 +4013,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -4058,7 +4062,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -4107,7 +4111,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -4160,7 +4164,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -4212,7 +4216,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -4264,7 +4268,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -4316,7 +4320,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -4368,7 +4372,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -4418,7 +4422,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -4450,7 +4454,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 var.setAccessRights(PERMISSION_OWNER_WRITE |
                                     PERMISSION_ALL_READ);
                 var.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
-                var.setNote("Configuration: Web-server run as user.");
+                var.setNote("Configuration: Web-server run as pUser->");
                 var.setValue(0); // Dummy value
                 return addStockVariable(var);
             } else if (STOCKVAR_READ == op) {
@@ -4467,7 +4471,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -4518,7 +4522,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -4570,7 +4574,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -4622,7 +4626,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -4674,7 +4678,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -4723,7 +4727,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -4775,7 +4779,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -4827,7 +4831,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -4877,7 +4881,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -4930,7 +4934,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -4984,7 +4988,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -5038,7 +5042,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -5088,7 +5092,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -5137,7 +5141,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -5189,7 +5193,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -5243,7 +5247,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -5295,7 +5299,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -5347,7 +5351,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -5399,7 +5403,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -5452,7 +5456,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -5505,7 +5509,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -5558,7 +5562,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -5609,7 +5613,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -5661,7 +5665,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote "
                            "variable %s",
@@ -5717,7 +5721,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote "
                            "variable %s",
@@ -5774,7 +5778,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write "
                            "remote variable %s",
@@ -5833,7 +5837,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write "
                            "remote variable %s",
@@ -5887,7 +5891,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -5939,7 +5943,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write "
                            "remote variable %s",
@@ -5996,7 +6000,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -6046,7 +6050,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -6103,7 +6107,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -6155,7 +6159,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -6207,7 +6211,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -6267,7 +6271,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -6327,7 +6331,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -6379,7 +6383,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -6431,7 +6435,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -6483,7 +6487,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -6535,7 +6539,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -6587,7 +6591,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -6639,7 +6643,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -6694,7 +6698,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -6750,7 +6754,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -6806,7 +6810,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 return true;
             } else if (STOCKVAR_WRITE == op) {
                 // Only admin is allowed to write?
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write remote variable %s",
                            name.c_str());
@@ -6935,7 +6939,7 @@ CVariableStorage::handleStockVariable(std::string name,
             } else if (STOCKVAR_WRITE == op) {
 
                 // Only admin is allowed to write
-                if (USER_ID_ADMIN != user.getUserID()) {
+                if (USER_ID_ADMIN != pUser->getUserID()) {
                     syslog(LOG_ERR,
                            "Only admin is allowed to write "
                            "remote variable %s",
@@ -7094,7 +7098,7 @@ CVariableStorage::handleStockVariable(std::string name,
                     var.setValue(pDMRow->getAsString(false));
                 } else if (STOCKVAR_WRITE == op) {
                     // Only admin is allowed to write
-                    if (USER_ID_ADMIN != user.getUserID()) {
+                    if (USER_ID_ADMIN != pUser->getUserID()) {
                         syslog(LOG_ERR,
                                "Only admin is allowed to "
                                "write DM row %ld for "
@@ -7132,7 +7136,7 @@ CVariableStorage::handleStockVariable(std::string name,
             if ("id" == strToken) {
 
                 if (STOCKVAR_READ == op) {
-                    var.setID(ID_NON_PERSISTENT);
+                    var.setID(VSCP_VAR_PERSISTENT);
                     var.setStockVariable(true);
                     var.setPersistent(false);
                     var.setOwnerId(USER_ID_ADMIN);
@@ -7155,7 +7159,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 }
             } else if ("enable" == strToken) {
                 if (STOCKVAR_READ == op) {
-                    var.setID(ID_NON_PERSISTENT);
+                    var.setID(VSCP_VAR_PERSISTENT);
                     var.setStockVariable(true);
                     var.setPersistent(false);
                     var.setOwnerId(USER_ID_ADMIN);
@@ -7169,7 +7173,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 } else if (STOCKVAR_WRITE == op) {
 
                     // Only admin is allowed to write
-                    if (USER_ID_ADMIN != user.getUserID()) {
+                    if (USER_ID_ADMIN != pUser->getUserID()) {
                         syslog(LOG_ERR,
                                "Only admin is allowed to "
                                "write DM bEnable "
@@ -7199,7 +7203,7 @@ CVariableStorage::handleStockVariable(std::string name,
 
             } else if ("groupid" == strToken) {
                 if (STOCKVAR_READ == op) {
-                    var.setID(ID_NON_PERSISTENT);
+                    var.setID(VSCP_VAR_PERSISTENT);
                     var.setStockVariable(true);
                     var.setPersistent(false);
                     var.setOwnerId(USER_ID_ADMIN);
@@ -7213,7 +7217,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 } else if (STOCKVAR_WRITE == op) {
 
                     // Only admin is allowed to write
-                    if (USER_ID_ADMIN != user.getUserID()) {
+                    if (USER_ID_ADMIN != pUser->getUserID()) {
                         syslog(LOG_ERR,
                                "Only admin is allowed to write "
                                "the DM groupid "
@@ -7245,7 +7249,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 if (tokens.empty()) { // 'vscp.dm.n.mask'
 
                     if (STOCKVAR_READ == op) {
-                        var.setID(ID_NON_PERSISTENT);
+                        var.setID(VSCP_VAR_PERSISTENT);
                         var.setStockVariable(true);
                         var.setPersistent(false);
                         var.setOwnerId(USER_ID_ADMIN);
@@ -7263,7 +7267,7 @@ CVariableStorage::handleStockVariable(std::string name,
                         return true;
                     } else if (STOCKVAR_WRITE == op) {
                         // Only admin is allowed to write
-                        if (USER_ID_ADMIN != user.getUserID()) {
+                        if (USER_ID_ADMIN != pUser->getUserID()) {
                             syslog(LOG_ERR,
                                    "Only admin is allowed "
                                    "to write remote "
@@ -7304,7 +7308,7 @@ CVariableStorage::handleStockVariable(std::string name,
 
                 if ("priority" == strToken) { // vscp.dm.n.mask.priority
                     if (STOCKVAR_READ == op) {
-                        var.setID(ID_NON_PERSISTENT);
+                        var.setID(VSCP_VAR_PERSISTENT);
                         var.setStockVariable(true);
                         var.setPersistent(false);
                         var.setOwnerId(USER_ID_ADMIN);
@@ -7319,7 +7323,7 @@ CVariableStorage::handleStockVariable(std::string name,
                         return true;
                     } else if (STOCKVAR_WRITE == op) {
                         // Only admin is allowed to write
-                        if (USER_ID_ADMIN != user.getUserID()) {
+                        if (USER_ID_ADMIN != pUser->getUserID()) {
                             syslog(LOG_ERR,
                                    "Only admin is allowed "
                                    "to write remote "
@@ -7348,7 +7352,7 @@ CVariableStorage::handleStockVariable(std::string name,
                     }
                 } else if ("class" == strToken) { // vscp.dm.n.mask.class
                     if (STOCKVAR_READ == op) {
-                        var.setID(ID_NON_PERSISTENT);
+                        var.setID(VSCP_VAR_PERSISTENT);
                         var.setStockVariable(true);
                         var.setPersistent(false);
                         var.setOwnerId(USER_ID_ADMIN);
@@ -7364,7 +7368,7 @@ CVariableStorage::handleStockVariable(std::string name,
                     } else if (STOCKVAR_WRITE == op) {
 
                         // Only admin is allowed to write
-                        if (USER_ID_ADMIN != user.getUserID()) {
+                        if (USER_ID_ADMIN != pUser->getUserID()) {
                             syslog(LOG_ERR,
                                    "Only admin is allowed "
                                    "to write remote "
@@ -7392,7 +7396,7 @@ CVariableStorage::handleStockVariable(std::string name,
                     }
                 } else if ("type" == strToken) { // vscp.dm.n.mask.type
                     if (STOCKVAR_READ == op) {
-                        var.setID(ID_NON_PERSISTENT);
+                        var.setID(VSCP_VAR_PERSISTENT);
                         var.setStockVariable(true);
                         var.setPersistent(false);
                         var.setOwnerId(USER_ID_ADMIN);
@@ -7408,7 +7412,7 @@ CVariableStorage::handleStockVariable(std::string name,
                     } else if (STOCKVAR_WRITE == op) {
 
                         // Only admin is allowed to write
-                        if (USER_ID_ADMIN != user.getUserID()) {
+                        if (USER_ID_ADMIN != pUser->getUserID()) {
                             syslog(LOG_ERR,
                                    "Only admin is allowed "
                                    "to write remote "
@@ -7436,7 +7440,7 @@ CVariableStorage::handleStockVariable(std::string name,
                     }
                 } else if ("guid" == strToken) { // vscp.dm.n.mask.guid
                     if (STOCKVAR_READ == op) {
-                        var.setID(ID_NON_PERSISTENT);
+                        var.setID(VSCP_VAR_PERSISTENT);
                         var.setStockVariable(true);
                         var.setPersistent(false);
                         var.setOwnerId(USER_ID_ADMIN);
@@ -7455,7 +7459,7 @@ CVariableStorage::handleStockVariable(std::string name,
                     } else if (STOCKVAR_WRITE == op) {
 
                         // Only admin is allowed to write
-                        if (USER_ID_ADMIN != user.getUserID()) {
+                        if (USER_ID_ADMIN != pUser->getUserID()) {
                             syslog(LOG_ERR,
                                    "Only admin is allowed "
                                    "to write remote "
@@ -7492,7 +7496,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 if (tokens.empty()) { // 'vscp.dm.n.filter'
 
                     if (STOCKVAR_READ == op) {
-                        var.setID(ID_NON_PERSISTENT);
+                        var.setID(VSCP_VAR_PERSISTENT);
                         var.setStockVariable(true);
                         var.setPersistent(false);
                         var.setOwnerId(USER_ID_ADMIN);
@@ -7510,7 +7514,7 @@ CVariableStorage::handleStockVariable(std::string name,
                         return true;
                     } else if (STOCKVAR_WRITE == op) {
                         // Only admin is allowed to write
-                        if (USER_ID_ADMIN != user.getUserID()) {
+                        if (USER_ID_ADMIN != pUser->getUserID()) {
                             syslog(LOG_ERR,
                                    "Only admin is allowed "
                                    "to write remote "
@@ -7551,7 +7555,7 @@ CVariableStorage::handleStockVariable(std::string name,
 
                 if ("priority" == strToken) { // vscp.dm.n.filter.priority
                     if (STOCKVAR_READ == op) {
-                        var.setID(ID_NON_PERSISTENT);
+                        var.setID(VSCP_VAR_PERSISTENT);
                         var.setStockVariable(true);
                         var.setPersistent(false);
                         var.setOwnerId(USER_ID_ADMIN);
@@ -7566,7 +7570,7 @@ CVariableStorage::handleStockVariable(std::string name,
                         return true;
                     } else if (STOCKVAR_WRITE == op) {
                         // Only admin is allowed to write
-                        if (USER_ID_ADMIN != user.getUserID()) {
+                        if (USER_ID_ADMIN != pUser->getUserID()) {
                             syslog(LOG_ERR,
                                    "Only admin is allowed "
                                    "to write remote "
@@ -7595,7 +7599,7 @@ CVariableStorage::handleStockVariable(std::string name,
                     }
                 } else if ("class" == strToken) { // vscp.dm.n.filter.class
                     if (STOCKVAR_READ == op) {
-                        var.setID(ID_NON_PERSISTENT);
+                        var.setID(VSCP_VAR_PERSISTENT);
                         var.setStockVariable(true);
                         var.setPersistent(false);
                         var.setOwnerId(USER_ID_ADMIN);
@@ -7611,7 +7615,7 @@ CVariableStorage::handleStockVariable(std::string name,
                     } else if (STOCKVAR_WRITE == op) {
 
                         // Only admin is allowed to write
-                        if (USER_ID_ADMIN != user.getUserID()) {
+                        if (USER_ID_ADMIN != pUser->getUserID()) {
                             syslog(LOG_ERR,
                                    "Only admin is allowed "
                                    "to write remote "
@@ -7639,7 +7643,7 @@ CVariableStorage::handleStockVariable(std::string name,
                     }
                 } else if ("type" == strToken) { // vscp.dm.n.filter.type
                     if (STOCKVAR_READ == op) {
-                        var.setID(ID_NON_PERSISTENT);
+                        var.setID(VSCP_VAR_PERSISTENT);
                         var.setStockVariable(true);
                         var.setPersistent(false);
                         var.setOwnerId(USER_ID_ADMIN);
@@ -7655,7 +7659,7 @@ CVariableStorage::handleStockVariable(std::string name,
                     } else if (STOCKVAR_WRITE == op) {
 
                         // Only admin is allowed to write
-                        if (USER_ID_ADMIN != user.getUserID()) {
+                        if (USER_ID_ADMIN != pUser->getUserID()) {
                             syslog(LOG_ERR,
                                    "Only admin is allowed "
                                    "to write remote "
@@ -7683,7 +7687,7 @@ CVariableStorage::handleStockVariable(std::string name,
                     }
                 } else if ("guid" == strToken) { // vscp.dm.n.filter.guid
                     if (STOCKVAR_READ == op) {
-                        var.setID(ID_NON_PERSISTENT);
+                        var.setID(VSCP_VAR_PERSISTENT);
                         var.setStockVariable(true);
                         var.setPersistent(false);
                         var.setOwnerId(USER_ID_ADMIN);
@@ -7702,7 +7706,7 @@ CVariableStorage::handleStockVariable(std::string name,
                     } else if (STOCKVAR_WRITE == op) {
 
                         // Only admin is allowed to write
-                        if (USER_ID_ADMIN != user.getUserID()) {
+                        if (USER_ID_ADMIN != pUser->getUserID()) {
                             syslog(LOG_ERR,
                                    "Only admin is allowed "
                                    "to write remote "
@@ -7739,7 +7743,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 if (tokens.empty()) {
 
                     if (STOCKVAR_READ == op) {
-                        var.setID(ID_NON_PERSISTENT);
+                        var.setID(VSCP_VAR_PERSISTENT);
                         var.setStockVariable(true);
                         var.setPersistent(false);
                         var.setOwnerId(USER_ID_ADMIN);
@@ -7768,7 +7772,7 @@ CVariableStorage::handleStockVariable(std::string name,
 
                         // Only admin is
                         // allowed to write
-                        if (USER_ID_ADMIN != user.getUserID()) {
+                        if (USER_ID_ADMIN != pUser->getUserID()) {
                             syslog(LOG_ERR,
                                    "Only admin is allowed "
                                    "to write remote "
@@ -7876,7 +7880,7 @@ CVariableStorage::handleStockVariable(std::string name,
 
                 if ("start" == strToken) {
                     if (STOCKVAR_READ == op) {
-                        var.setID(ID_NON_PERSISTENT);
+                        var.setID(VSCP_VAR_PERSISTENT);
                         var.setStockVariable(true);
                         var.setPersistent(false);
                         var.setOwnerId(USER_ID_ADMIN);
@@ -7893,7 +7897,7 @@ CVariableStorage::handleStockVariable(std::string name,
                     } else if (STOCKVAR_WRITE == op) {
 
                         // Only admin is allowed to write
-                        if (USER_ID_ADMIN != user.getUserID()) {
+                        if (USER_ID_ADMIN != pUser->getUserID()) {
                             syslog(LOG_ERR,
                                    "Only admin is allowed "
                                    "to write remote "
@@ -7920,7 +7924,7 @@ CVariableStorage::handleStockVariable(std::string name,
                     }
                 } else if ("end" == strToken) {
                     if (STOCKVAR_READ == op) {
-                        var.setID(ID_NON_PERSISTENT);
+                        var.setID(VSCP_VAR_PERSISTENT);
                         var.setStockVariable(true);
                         var.setPersistent(false);
                         var.setOwnerId(USER_ID_ADMIN);
@@ -7937,7 +7941,7 @@ CVariableStorage::handleStockVariable(std::string name,
                     } else if (STOCKVAR_WRITE == op) {
 
                         // Only admin is allowed to write
-                        if (USER_ID_ADMIN != user.getUserID()) {
+                        if (USER_ID_ADMIN != pUser->getUserID()) {
                             syslog(LOG_ERR,
                                    "Only admin is allowed "
                                    "to write remote "
@@ -7963,7 +7967,7 @@ CVariableStorage::handleStockVariable(std::string name,
                     }
                 } else if ("weekdays" == strToken) {
                     if (STOCKVAR_READ == op) {
-                        var.setID(ID_NON_PERSISTENT);
+                        var.setID(VSCP_VAR_PERSISTENT);
                         var.setStockVariable(true);
                         var.setPersistent(false);
                         var.setOwnerId(USER_ID_ADMIN);
@@ -7980,7 +7984,7 @@ CVariableStorage::handleStockVariable(std::string name,
                     } else if (STOCKVAR_WRITE == op) {
 
                         // Only admin is allowed to write
-                        if (USER_ID_ADMIN != user.getUserID()) {
+                        if (USER_ID_ADMIN != pUser->getUserID()) {
                             syslog(LOG_ERR,
                                    "Only admin is allowed "
                                    "to write remote "
@@ -8013,7 +8017,7 @@ CVariableStorage::handleStockVariable(std::string name,
                     }
                 } else if ("monday" == strToken) {
                     if (STOCKVAR_READ == op) {
-                        var.setID(ID_NON_PERSISTENT);
+                        var.setID(VSCP_VAR_PERSISTENT);
                         var.setStockVariable(true);
                         var.setPersistent(false);
                         var.setOwnerId(USER_ID_ADMIN);
@@ -8030,7 +8034,7 @@ CVariableStorage::handleStockVariable(std::string name,
                     } else if (STOCKVAR_WRITE == op) {
 
                         // Only admin is allowed to write
-                        if (USER_ID_ADMIN != user.getUserID()) {
+                        if (USER_ID_ADMIN != pUser->getUserID()) {
                             syslog(LOG_ERR,
                                    "Only admin is allowed "
                                    "to write remote "
@@ -8056,7 +8060,7 @@ CVariableStorage::handleStockVariable(std::string name,
                     }
                 } else if ("tuesday" == strToken) {
                     if (STOCKVAR_READ == op) {
-                        var.setID(ID_NON_PERSISTENT);
+                        var.setID(VSCP_VAR_PERSISTENT);
                         var.setStockVariable(true);
                         var.setPersistent(false);
                         var.setOwnerId(USER_ID_ADMIN);
@@ -8073,7 +8077,7 @@ CVariableStorage::handleStockVariable(std::string name,
                     } else if (STOCKVAR_WRITE == op) {
 
                         // Only admin is allowed to write
-                        if (USER_ID_ADMIN != user.getUserID()) {
+                        if (USER_ID_ADMIN != pUser->getUserID()) {
                             syslog(LOG_ERR,
                                    "Only admin is allowed "
                                    "to write remote "
@@ -8099,7 +8103,7 @@ CVariableStorage::handleStockVariable(std::string name,
                     }
                 } else if ("wednessday" == strToken) {
                     if (STOCKVAR_READ == op) {
-                        var.setID(ID_NON_PERSISTENT);
+                        var.setID(VSCP_VAR_PERSISTENT);
                         var.setStockVariable(true);
                         var.setPersistent(false);
                         var.setOwnerId(USER_ID_ADMIN);
@@ -8116,7 +8120,7 @@ CVariableStorage::handleStockVariable(std::string name,
                     } else if (STOCKVAR_WRITE == op) {
 
                         // Only admin is allowed to write
-                        if (USER_ID_ADMIN != user.getUserID()) {
+                        if (USER_ID_ADMIN != pUser->getUserID()) {
                             syslog(LOG_ERR,
                                    "Only admin is allowed "
                                    "to write remote "
@@ -8142,7 +8146,7 @@ CVariableStorage::handleStockVariable(std::string name,
                     }
                 } else if ("thursday" == strToken) {
                     if (STOCKVAR_READ == op) {
-                        var.setID(ID_NON_PERSISTENT);
+                        var.setID(VSCP_VAR_PERSISTENT);
                         var.setStockVariable(true);
                         var.setPersistent(false);
                         var.setOwnerId(USER_ID_ADMIN);
@@ -8159,7 +8163,7 @@ CVariableStorage::handleStockVariable(std::string name,
                     } else if (STOCKVAR_WRITE == op) {
 
                         // Only admin is allowed to write
-                        if (USER_ID_ADMIN != user.getUserID()) {
+                        if (USER_ID_ADMIN != pUser->getUserID()) {
                             syslog(LOG_ERR,
                                    "Only admin is allowed "
                                    "to write remote "
@@ -8185,7 +8189,7 @@ CVariableStorage::handleStockVariable(std::string name,
                     }
                 } else if ("friday" == strToken) {
                     if (STOCKVAR_READ == op) {
-                        var.setID(ID_NON_PERSISTENT);
+                        var.setID(VSCP_VAR_PERSISTENT);
                         var.setStockVariable(true);
                         var.setPersistent(false);
                         var.setOwnerId(USER_ID_ADMIN);
@@ -8202,7 +8206,7 @@ CVariableStorage::handleStockVariable(std::string name,
                     } else if (STOCKVAR_WRITE == op) {
 
                         // Only admin is allowed to write
-                        if (USER_ID_ADMIN != user.getUserID()) {
+                        if (USER_ID_ADMIN != pUser->getUserID()) {
                             syslog(LOG_ERR,
                                    "Only admin is allowed "
                                    "to write remote "
@@ -8228,7 +8232,7 @@ CVariableStorage::handleStockVariable(std::string name,
                     }
                 } else if ("saturday" == strToken) {
                     if (STOCKVAR_READ == op) {
-                        var.setID(ID_NON_PERSISTENT);
+                        var.setID(VSCP_VAR_PERSISTENT);
                         var.setStockVariable(true);
                         var.setPersistent(false);
                         var.setOwnerId(USER_ID_ADMIN);
@@ -8245,7 +8249,7 @@ CVariableStorage::handleStockVariable(std::string name,
                     } else if (STOCKVAR_WRITE == op) {
 
                         // Only admin is allowed to write
-                        if (USER_ID_ADMIN != user.getUserID()) {
+                        if (USER_ID_ADMIN != pUser->getUserID()) {
                             syslog(LOG_ERR,
                                    "Only admin is allowed "
                                    "to write remote "
@@ -8271,7 +8275,7 @@ CVariableStorage::handleStockVariable(std::string name,
                     }
                 } else if ("sunday" == strToken) {
                     if (STOCKVAR_READ == op) {
-                        var.setID(ID_NON_PERSISTENT);
+                        var.setID(VSCP_VAR_PERSISTENT);
                         var.setStockVariable(true);
                         var.setPersistent(false);
                         var.setOwnerId(USER_ID_ADMIN);
@@ -8288,7 +8292,7 @@ CVariableStorage::handleStockVariable(std::string name,
                     } else if (STOCKVAR_WRITE == op) {
 
                         // Only admin is allowed to write
-                        if (USER_ID_ADMIN != user.getUserID()) {
+                        if (USER_ID_ADMIN != pUser->getUserID()) {
                             syslog(LOG_ERR,
                                    "Only admin is allowed "
                                    "to write remote "
@@ -8314,7 +8318,7 @@ CVariableStorage::handleStockVariable(std::string name,
                     }
                 } else if ("time" == strToken) {
                     if (STOCKVAR_READ == op) {
-                        var.setID(ID_NON_PERSISTENT);
+                        var.setID(VSCP_VAR_PERSISTENT);
                         var.setStockVariable(true);
                         var.setPersistent(false);
                         var.setOwnerId(USER_ID_ADMIN);
@@ -8330,7 +8334,7 @@ CVariableStorage::handleStockVariable(std::string name,
                     } else if (STOCKVAR_WRITE == op) {
 
                         // Only admin is allowed to write
-                        if (USER_ID_ADMIN != user.getUserID()) {
+                        if (USER_ID_ADMIN != pUser->getUserID()) {
                             syslog(LOG_ERR,
                                    "Only admin is allowed "
                                    "to write remote "
@@ -8365,7 +8369,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 } // vscp.dm.allowed
             } else if ("bCheckIndex" == strToken) {
                 if (STOCKVAR_READ == op) {
-                    var.setID(ID_NON_PERSISTENT);
+                    var.setID(VSCP_VAR_PERSISTENT);
                     var.setStockVariable(true);
                     var.setPersistent(false);
                     var.setOwnerId(USER_ID_ADMIN);
@@ -8382,7 +8386,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 } else if (STOCKVAR_WRITE == op) {
 
                     // Only admin is allowed to write
-                    if (USER_ID_ADMIN != user.getUserID()) {
+                    if (USER_ID_ADMIN != pUser->getUserID()) {
                         syslog(LOG_ERR,
                                "Only admin is allowed to "
                                "write remote "
@@ -8408,7 +8412,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 }
             } else if ("index" == strToken) {
                 if (STOCKVAR_READ == op) {
-                    var.setID(ID_NON_PERSISTENT);
+                    var.setID(VSCP_VAR_PERSISTENT);
                     var.setStockVariable(true);
                     var.setPersistent(false);
                     var.setOwnerId(USER_ID_ADMIN);
@@ -8422,7 +8426,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 } else if (STOCKVAR_WRITE == op) {
 
                     // Only admin is allowed to write
-                    if (USER_ID_ADMIN != user.getUserID()) {
+                    if (USER_ID_ADMIN != pUser->getUserID()) {
                         syslog(LOG_ERR,
                                "Only admin is allowed to "
                                "write remote "
@@ -8448,7 +8452,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 }
             } else if ("bCheckZone" == strToken) {
                 if (STOCKVAR_READ == op) {
-                    var.setID(ID_NON_PERSISTENT);
+                    var.setID(VSCP_VAR_PERSISTENT);
                     var.setStockVariable(true);
                     var.setPersistent(false);
                     var.setOwnerId(USER_ID_ADMIN);
@@ -8465,7 +8469,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 } else if (STOCKVAR_WRITE == op) {
 
                     // // Only admin is allowed to write
-                    if (USER_ID_ADMIN != user.getUserID()) {
+                    if (USER_ID_ADMIN != pUser->getUserID()) {
                         syslog(LOG_ERR,
                                "Only admin is allowed to "
                                "write remote "
@@ -8491,7 +8495,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 }
             } else if ("zone" == strToken) {
                 if (STOCKVAR_READ == op) {
-                    var.setID(ID_NON_PERSISTENT);
+                    var.setID(VSCP_VAR_PERSISTENT);
                     var.setStockVariable(true);
                     var.setPersistent(false);
                     var.setOwnerId(USER_ID_ADMIN);
@@ -8505,7 +8509,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 } else if (STOCKVAR_WRITE == op) {
 
                     // // Only admin is allowed to write
-                    if (USER_ID_ADMIN != user.getUserID()) {
+                    if (USER_ID_ADMIN != pUser->getUserID()) {
                         syslog(LOG_ERR,
                                "Only admin is allowed to "
                                "write remote "
@@ -8531,7 +8535,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 }
             } else if ("bCheckSubZone" == strToken) {
                 if (STOCKVAR_READ == op) {
-                    var.setID(ID_NON_PERSISTENT);
+                    var.setID(VSCP_VAR_PERSISTENT);
                     var.setStockVariable(true);
                     var.setPersistent(false);
                     var.setOwnerId(USER_ID_ADMIN);
@@ -8548,7 +8552,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 } else if (STOCKVAR_WRITE == op) {
 
                     // // Only admin is allowed to write
-                    if (USER_ID_ADMIN != user.getUserID()) {
+                    if (USER_ID_ADMIN != pUser->getUserID()) {
                         syslog(LOG_ERR,
                                "Only admin is allowed to "
                                "write remote "
@@ -8574,7 +8578,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 }
             } else if ("subzone" == strToken) {
                 if (STOCKVAR_READ == op) {
-                    var.setID(ID_NON_PERSISTENT);
+                    var.setID(VSCP_VAR_PERSISTENT);
                     var.setStockVariable(true);
                     var.setPersistent(false);
                     var.setOwnerId(USER_ID_ADMIN);
@@ -8588,7 +8592,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 } else if (STOCKVAR_WRITE == op) {
 
                     // // Only admin is allowed to write
-                    if (USER_ID_ADMIN != user.getUserID()) {
+                    if (USER_ID_ADMIN != pUser->getUserID()) {
                         syslog(LOG_ERR,
                                "Only admin is allowed to "
                                "write remote "
@@ -8617,7 +8621,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 if (tokens.empty()) { // vscp.dm.n.measurement
 
                     if (STOCKVAR_READ == op) {
-                        var.setID(ID_NON_PERSISTENT);
+                        var.setID(VSCP_VAR_PERSISTENT);
                         var.setStockVariable(true);
                         var.setPersistent(false);
                         var.setOwnerId(USER_ID_ADMIN);
@@ -8633,7 +8637,7 @@ CVariableStorage::handleStockVariable(std::string name,
                     } else if (STOCKVAR_WRITE == op) {
 
                         // // Only admin is allowed to write
-                        if (USER_ID_ADMIN != user.getUserID()) {
+                        if (USER_ID_ADMIN != pUser->getUserID()) {
                             syslog(LOG_ERR,
                                    "Only admin is allowed "
                                    "to write remote "
@@ -8665,7 +8669,7 @@ CVariableStorage::handleStockVariable(std::string name,
 
                 if ("enable" == strToken) {
                     if (STOCKVAR_READ == op) {
-                        var.setID(ID_NON_PERSISTENT);
+                        var.setID(VSCP_VAR_PERSISTENT);
                         var.setStockVariable(true);
                         var.setPersistent(false);
                         var.setOwnerId(USER_ID_ADMIN);
@@ -8681,7 +8685,7 @@ CVariableStorage::handleStockVariable(std::string name,
                     } else if (STOCKVAR_WRITE == op) {
 
                         // // Only admin is allowed to write
-                        if (USER_ID_ADMIN != user.getUserID()) {
+                        if (USER_ID_ADMIN != pUser->getUserID()) {
                             syslog(LOG_ERR,
                                    "Only admin is allowed "
                                    "to write remote "
@@ -8707,7 +8711,7 @@ CVariableStorage::handleStockVariable(std::string name,
                     }
                 } else if ("value" == strToken) {
                     if (STOCKVAR_READ == op) {
-                        var.setID(ID_NON_PERSISTENT);
+                        var.setID(VSCP_VAR_PERSISTENT);
                         var.setStockVariable(true);
                         var.setPersistent(false);
                         var.setOwnerId(USER_ID_ADMIN);
@@ -8723,7 +8727,7 @@ CVariableStorage::handleStockVariable(std::string name,
                     } else if (STOCKVAR_WRITE == op) {
 
                         // // Only admin is allowed to write
-                        if (USER_ID_ADMIN != user.getUserID()) {
+                        if (USER_ID_ADMIN != pUser->getUserID()) {
                             syslog(LOG_ERR,
                                    "Only admin is allowed "
                                    "to write remote "
@@ -8749,7 +8753,7 @@ CVariableStorage::handleStockVariable(std::string name,
                     }
                 } else if ("unit" == strToken) {
                     if (STOCKVAR_READ == op) {
-                        var.setID(ID_NON_PERSISTENT);
+                        var.setID(VSCP_VAR_PERSISTENT);
                         var.setStockVariable(true);
                         var.setPersistent(false);
                         var.setOwnerId(USER_ID_ADMIN);
@@ -8765,7 +8769,7 @@ CVariableStorage::handleStockVariable(std::string name,
                     } else if (STOCKVAR_WRITE == op) {
 
                         // // Only admin is allowed to write
-                        if (USER_ID_ADMIN != user.getUserID()) {
+                        if (USER_ID_ADMIN != pUser->getUserID()) {
                             syslog(LOG_ERR,
                                    "Only admin is allowed "
                                    "to write remote "
@@ -8792,7 +8796,7 @@ CVariableStorage::handleStockVariable(std::string name,
                     }
                 } else if ("compare-code" == strToken) {
                     if (STOCKVAR_READ == op) {
-                        var.setID(ID_NON_PERSISTENT);
+                        var.setID(VSCP_VAR_PERSISTENT);
                         var.setStockVariable(true);
                         var.setPersistent(false);
                         var.setOwnerId(USER_ID_ADMIN);
@@ -8808,7 +8812,7 @@ CVariableStorage::handleStockVariable(std::string name,
                     } else if (STOCKVAR_WRITE == op) {
 
                         // // Only admin is allowed to write
-                        if (USER_ID_ADMIN != user.getUserID()) {
+                        if (USER_ID_ADMIN != pUser->getUserID()) {
                             syslog(LOG_ERR,
                                    "Only admin is allowed "
                                    "to write remote "
@@ -8837,7 +8841,7 @@ CVariableStorage::handleStockVariable(std::string name,
                     }
                 } else if ("compare-string" == strToken) {
                     if (STOCKVAR_READ == op) {
-                        var.setID(ID_NON_PERSISTENT);
+                        var.setID(VSCP_VAR_PERSISTENT);
                         var.setStockVariable(true);
                         var.setPersistent(false);
                         var.setOwnerId(USER_ID_ADMIN);
@@ -8856,7 +8860,7 @@ CVariableStorage::handleStockVariable(std::string name,
                     } else if (STOCKVAR_WRITE == op) {
 
                         // // Only admin is allowed to write
-                        if (USER_ID_ADMIN != user.getUserID()) {
+                        if (USER_ID_ADMIN != pUser->getUserID()) {
                             syslog(LOG_ERR,
                                    "Only admin is allowed "
                                    "to write remote "
@@ -8892,7 +8896,7 @@ CVariableStorage::handleStockVariable(std::string name,
 
             } else if ("comment" == strToken) {
                 if (STOCKVAR_READ == op) {
-                    var.setID(ID_NON_PERSISTENT);
+                    var.setID(VSCP_VAR_PERSISTENT);
                     var.setStockVariable(true);
                     var.setPersistent(false);
                     var.setOwnerId(USER_ID_ADMIN);
@@ -8906,7 +8910,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 } else if (STOCKVAR_WRITE == op) {
 
                     // // Only admin is allowed to write
-                    if (USER_ID_ADMIN != user.getUserID()) {
+                    if (USER_ID_ADMIN != pUser->getUserID()) {
                         syslog(LOG_ERR,
                                "Only admin is allowed to "
                                "write remote "
@@ -8932,7 +8936,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 }
             } else if ("count-trigger" == strToken) {
                 if (STOCKVAR_READ == op) {
-                    var.setID(ID_NON_PERSISTENT);
+                    var.setID(VSCP_VAR_PERSISTENT);
                     var.setStockVariable(true);
                     var.setPersistent(false);
                     var.setOwnerId(USER_ID_ADMIN);
@@ -8948,7 +8952,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 } else if (STOCKVAR_WRITE == op) {
 
                     // // Only admin is allowed to write
-                    if (USER_ID_ADMIN != user.getUserID()) {
+                    if (USER_ID_ADMIN != pUser->getUserID()) {
                         syslog(LOG_ERR,
                                "Only admin is allowed to "
                                "write remote "
@@ -8973,7 +8977,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 }
             } else if ("count-error" == strToken) {
                 if (STOCKVAR_READ == op) {
-                    var.setID(ID_NON_PERSISTENT);
+                    var.setID(VSCP_VAR_PERSISTENT);
                     var.setStockVariable(true);
                     var.setPersistent(false);
                     var.setOwnerId(USER_ID_ADMIN);
@@ -8989,7 +8993,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 } else if (STOCKVAR_WRITE == op) {
 
                     // // Only admin is allowed to write
-                    if (USER_ID_ADMIN != user.getUserID()) {
+                    if (USER_ID_ADMIN != pUser->getUserID()) {
                         syslog(LOG_ERR,
                                "Only admin is allowed to "
                                "write remote "
@@ -9014,7 +9018,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 }
             } else if (("error" == strToken) || ("error-string" == strToken)) {
                 if (STOCKVAR_READ == op) {
-                    var.setID(ID_NON_PERSISTENT);
+                    var.setID(VSCP_VAR_PERSISTENT);
                     var.setStockVariable(true);
                     var.setPersistent(false);
                     var.setOwnerId(USER_ID_ADMIN);
@@ -9030,7 +9034,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 } else if (STOCKVAR_WRITE == op) {
 
                     // // Only admin is allowed to write
-                    if (USER_ID_ADMIN != user.getUserID()) {
+                    if (USER_ID_ADMIN != pUser->getUserID()) {
                         syslog(LOG_ERR,
                                "Only admin is allowed to "
                                "write remote "
@@ -9107,18 +9111,18 @@ CVariableStorage::handleStockVariable(std::string name,
     // *************************************************************************
     //                                  Users
     // *************************************************************************
-    // vscp.user.count      - Number of users
+    // vscp.pUser->count      - Number of users
     // vscp.user            - Info about all users
-    // vscp.user.n          - Info about user n
-    // vscp.user.n.name     - Read/write user name
-    // vscp.user.n.password - Read/write user password
-    // vscp.user.n.filter   - Read/write user filter
+    // vscp.pUser->n          - Info about user n
+    // vscp.pUser->n.name     - Read/write user name
+    // vscp.pUser->n.password - Read/write user password
+    // vscp.pUser->n.filter   - Read/write user filter
     // vscp.uer.n.mask      - Read write user mask
-    // vscp-user.host-list  - Read/write host list
-    // vscp.user.event-list - Read write event-list for user
+    // vscp-pUser->host-list  - Read/write host list
+    // vscp.pUser->event-list - Read write event-list for user
     //
-    // vscp.user.add        - Add a user
-    // vscp.user.delete     - Delete a user
+    // vscp.pUser->add        - Add a user
+    // vscp.pUser->delete     - Delete a user
 
     if ("user" == strToken) {
 
@@ -9236,201 +9240,201 @@ CVariableStorage::handleStockVariable(std::string name,
 //
 
 void
-CVariableStorage::initStockVariables(CUserItem &user)
+CVariableStorage::initStockVariables(CUserItem* pUser)
 {
     CVariable var;
 
-    handleStockVariable("vscp.version", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.version", STOCKVAR_INIT, var, pUser );
 
-    handleStockVariable("vscp.version.major", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.version.minor", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.version.release", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.version.build", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.version.string", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.version.copyright", STOCKVAR_INIT, var, user);
-
-    handleStockVariable(
-      "vscp.version.sqlite3.string", STOCKVAR_INIT, var, user);
-    handleStockVariable(
-      "vscp.version.sqlite3.copyright", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.version.major", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.version.minor", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.version.release", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.version.build", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.version.string", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.version.copyright", STOCKVAR_INIT, var, pUser );
 
     handleStockVariable(
-      "vscp.version.openssl.string", STOCKVAR_INIT, var, user);
+      "vscp.version.sqlite3.string", STOCKVAR_INIT, var, pUser );
     handleStockVariable(
-      "vscp.version.openssl.copyright", STOCKVAR_INIT, var, user);
+      "vscp.version.sqlite3.copyright", STOCKVAR_INIT, var, pUser );
 
     handleStockVariable(
-      "vscp.version.duktape.string", STOCKVAR_INIT, var, user);
+      "vscp.version.openssl.string", STOCKVAR_INIT, var, pUser );
     handleStockVariable(
-      "vscp.version.duktape.copyright", STOCKVAR_INIT, var, user);
+      "vscp.version.openssl.copyright", STOCKVAR_INIT, var, pUser );
 
     handleStockVariable(
-      "vscp.version.civetweb.string", STOCKVAR_INIT, var, user);
+      "vscp.version.duktape.string", STOCKVAR_INIT, var, pUser );
     handleStockVariable(
-      "vscp.version.civetweb.copyright", STOCKVAR_INIT, var, user);
-
-    handleStockVariable("vscp.version.lua.string", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.version.lua.copyright", STOCKVAR_INIT, var, user);
+      "vscp.version.duktape.copyright", STOCKVAR_INIT, var, pUser );
 
     handleStockVariable(
-      "vscp.version.mongoose.string", STOCKVAR_INIT, var, user);
+      "vscp.version.civetweb.string", STOCKVAR_INIT, var, pUser );
     handleStockVariable(
-      "vscp.version.mongoose.copyright", STOCKVAR_INIT, var, user);
+      "vscp.version.civetweb.copyright", STOCKVAR_INIT, var, pUser );
 
-    handleStockVariable(
-      "vscp.version.nlohmann-json.string", STOCKVAR_INIT, var, user);
-    handleStockVariable(
-      "vscp.version.nlohmann-json.copyright", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.version.lua.string", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.version.lua.copyright", STOCKVAR_INIT, var, pUser );
 
     handleStockVariable(
-      "vscp.version.xml2json.string", STOCKVAR_INIT, var, user);
+      "vscp.version.mongoose.string", STOCKVAR_INIT, var, pUser );
     handleStockVariable(
-      "vscp.version.xml2json.copyright", STOCKVAR_INIT, var, user);
+      "vscp.version.mongoose.copyright", STOCKVAR_INIT, var, pUser );
 
-    handleStockVariable("vscp.os.width", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.os.endian.big", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.os.endian.little", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.os.userid", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.os.groupid", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.os.username", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.os.sysname", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.os.nodename", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.os.release", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.os.version", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.os.machine", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.os.host.name", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.os.host.domain", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.os.host.ip", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.os.host.mac", STOCKVAR_INIT, var, user);
-
-    handleStockVariable("vscp.daemon.runasuser", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.daemon.guid", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.daemon.name", STOCKVAR_INIT, var, user);
     handleStockVariable(
-      "vscp.daemon.client-buffer-size", STOCKVAR_INIT, var, user);
+      "vscp.version.nlohmann-json.string", STOCKVAR_INIT, var, pUser );
+    handleStockVariable(
+      "vscp.version.nlohmann-json.copyright", STOCKVAR_INIT, var, pUser );
 
-    handleStockVariable("vscp.debug.level", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.debug.flags1", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.debug.flags2", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.debug.flags3", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.debug.flags4", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.debug.flags5", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.debug.flags6", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.debug.flags7", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.debug.flags8", STOCKVAR_INIT, var, user);
+    handleStockVariable(
+      "vscp.version.xml2json.string", STOCKVAR_INIT, var, pUser );
+    handleStockVariable(
+      "vscp.version.xml2json.copyright", STOCKVAR_INIT, var, pUser );
 
-    handleStockVariable("vscp.dm.enable", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.dm.count", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.dm.count.active", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.dm.path-db", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.dm.path-xml", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.dm.add", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.dm.delete", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.os.width", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.os.endian.big", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.os.endian.little", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.os.userid", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.os.groupid", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.os.username", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.os.sysname", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.os.nodename", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.os.release", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.os.version", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.os.machine", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.os.host.name", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.os.host.domain", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.os.host.ip", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.os.host.mac", STOCKVAR_INIT, var, pUser );
 
-    handleStockVariable("vscp.config.dbversion", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.client-buffer-size", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.guid", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.servername", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.announceinterface-address", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.announceinterface-ttl", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.tcpipinterface-address", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.tcpip-encryption", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.tcpip-ssl-certificate", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.tcpip-ssl-certificate-chain", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.tcpip-ssl-verify-peer", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.tcpip-ssl-ca-path", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.tcpip-ssl-ca-file", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.tcpip-ssl-verify-depth", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.tcpip-ssl-default-verify-paths", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.tcpip-ssl-cipher-list", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.tcpip-ssl-protocol-version", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.tcpip-ssl-short-trust", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.udp-enable", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.udp-address", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.udp-user", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.udp-password", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.udp-unsecure-enable", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.udp-filter", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.udp-mask", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.udp-guid", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.udp-ack-enable", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.muticast-enable", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.dm-path-db", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.dm-path-xml", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.dm-allow-xml-save", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.variable-path-db", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.variable-path-xml", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.path-db-event-data", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.web-enable", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.web-document-root", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.web-listening-ports", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.web-index-files", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.web-authentication-domain", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.web-enable-auth-domain-check", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.web-ssl-certificate", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.web-ssl-certificate-chain", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.web-ssl-verify-peer", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.web-ssl-ca-path", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.web-ssl-ca-file", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.web-ssl-verify-depth", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.web-ssl-default-verify-paths", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.web-ssl-cipher-list", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.web-ssl-protocol-version", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.web-ssl-short-trust", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.web-cgi-interpreter", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.web-cgi-pattern", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.web-cgi-environment", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.web-protect-uri", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.web-trottle", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.web-enable-directory-listing", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.web-enable-keep-alive", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.web-keep-alive-timeout-ms", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.web-access-control-list", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.web-extra-mime-types", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.web-num-threads", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.web-run-as-user", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.web-url-rewrite-patterns", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.web-hide-file-patterns", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.web-request-timeout-ms", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.web-linger-timeout-ms", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.web-decode-url", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.web-global-authfile", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.web-per-directory-auth-file", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.web-ssi-patterns", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.web-access-control-allow-origin", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.web-access-control-allow-methods", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.web-access-control-allow-headers", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.web-error-pages", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.web-tcp-nodelay", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.web-static-file-max-age", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.web-strict-transport-security-max-age", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.web-allow-sendfile-call", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.web-additional-headers", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.web-max-request-size", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.web-allow-index-script-resource", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.web-duktape-script-pattern", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.web-lua-preload-file", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.web-lua-script-pattern", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.web-lua-server-page-pattern", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.web-lua-websocket-pattern", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.web-lua-background-script", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.web-lua-background-script-params", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.websocket-enable", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.websocket-document-root", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.websocket-timeout-ms", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.automation-enable", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.automation-zone", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.automation-subzone", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.automation-longitude", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.automation-latitude", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.automation-sunrise-enable", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.automation-sunset-enable", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.automation-sunset-twilight-enable", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.automation-sunrise-twilight-enable", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.automation-segment-ctrl-enable", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.automation-segment-ctrl-interval", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.automation-heartbeat-enable", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.automation-heartbeat-interval", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.automation-capabilities-enable", STOCKVAR_INIT, var, user);
-    handleStockVariable("vscp.config.automation-capabilities-interval", STOCKVAR_INIT, var, user);
+    handleStockVariable("vscp.daemon.runasuser", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.daemon.guid", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.daemon.name", STOCKVAR_INIT, var, pUser );
+    handleStockVariable(
+      "vscp.daemon.client-buffer-size", STOCKVAR_INIT, var, pUser );
+
+    handleStockVariable("vscp.debug.level", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.debug.flags1", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.debug.flags2", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.debug.flags3", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.debug.flags4", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.debug.flags5", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.debug.flags6", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.debug.flags7", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.debug.flags8", STOCKVAR_INIT, var, pUser );
+
+    handleStockVariable("vscp.dm.enable", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.dm.count", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.dm.count.active", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.dm.path-db", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.dm.path-xml", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.dm.add", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.dm.delete", STOCKVAR_INIT, var, pUser );
+
+    handleStockVariable("vscp.config.dbversion", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.client-buffer-size", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.guid", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.servername", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.announceinterface-address", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.announceinterface-ttl", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.tcpipinterface-address", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.tcpip-encryption", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.tcpip-ssl-certificate", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.tcpip-ssl-certificate-chain", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.tcpip-ssl-verify-peer", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.tcpip-ssl-ca-path", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.tcpip-ssl-ca-file", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.tcpip-ssl-verify-depth", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.tcpip-ssl-default-verify-paths", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.tcpip-ssl-cipher-list", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.tcpip-ssl-protocol-version", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.tcpip-ssl-short-trust", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.udp-enable", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.udp-address", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.udp-user", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.udp-password", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.udp-unsecure-enable", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.udp-filter", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.udp-mask", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.udp-guid", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.udp-ack-enable", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.muticast-enable", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.dm-path-db", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.dm-path-xml", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.dm-allow-xml-save", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.variable-path-db", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.variable-path-xml", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.path-db-event-data", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.web-enable", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.web-document-root", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.web-listening-ports", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.web-index-files", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.web-authentication-domain", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.web-enable-auth-domain-check", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.web-ssl-certificate", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.web-ssl-certificate-chain", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.web-ssl-verify-peer", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.web-ssl-ca-path", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.web-ssl-ca-file", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.web-ssl-verify-depth", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.web-ssl-default-verify-paths", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.web-ssl-cipher-list", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.web-ssl-protocol-version", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.web-ssl-short-trust", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.web-cgi-interpreter", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.web-cgi-pattern", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.web-cgi-environment", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.web-protect-uri", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.web-trottle", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.web-enable-directory-listing", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.web-enable-keep-alive", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.web-keep-alive-timeout-ms", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.web-access-control-list", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.web-extra-mime-types", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.web-num-threads", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.web-run-as-user", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.web-url-rewrite-patterns", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.web-hide-file-patterns", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.web-request-timeout-ms", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.web-linger-timeout-ms", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.web-decode-url", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.web-global-authfile", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.web-per-directory-auth-file", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.web-ssi-patterns", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.web-access-control-allow-origin", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.web-access-control-allow-methods", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.web-access-control-allow-headers", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.web-error-pages", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.web-tcp-nodelay", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.web-static-file-max-age", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.web-strict-transport-security-max-age", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.web-allow-sendfile-call", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.web-additional-headers", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.web-max-request-size", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.web-allow-index-script-resource", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.web-duktape-script-pattern", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.web-lua-preload-file", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.web-lua-script-pattern", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.web-lua-server-page-pattern", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.web-lua-websocket-pattern", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.web-lua-background-script", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.web-lua-background-script-params", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.websocket-enable", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.websocket-document-root", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.websocket-timeout-ms", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.automation-enable", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.automation-zone", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.automation-subzone", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.automation-longitude", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.automation-latitude", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.automation-sunrise-enable", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.automation-sunset-enable", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.automation-sunset-twilight-enable", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.automation-sunrise-twilight-enable", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.automation-segment-ctrl-enable", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.automation-segment-ctrl-interval", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.automation-heartbeat-enable", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.automation-heartbeat-interval", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.automation-capabilities-enable", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.config.automation-capabilities-interval", STOCKVAR_INIT, var, pUser );
 }

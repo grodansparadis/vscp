@@ -391,7 +391,8 @@ int lua_vscp_readVariable( struct lua_State *L )
         format = (int)lua_tointeger( L, 2 );
     }
     
-    if ( !gpobj->m_variables.find( varName, variable ) ) {
+    CUserItem *pAdminUser = gpobj->m_userList.getUser(USER_ID_ADMIN);
+    if ( !gpobj->m_variables.find( varName, pAdminUser, variable ) ) {
         return luaL_error( L, "vscp.readvariable: No variable with that "
                               "name found!");
     }
@@ -582,7 +583,8 @@ int lua_vscp_writeVariableValue( struct lua_State *L )
     pstr = lua_tolstring ( L, 1, &len ); 
     varName = std::string( pstr, len ); 
     
-    if ( !gpobj->m_variables.find( varName, variable ) ) {
+    CUserItem *pAdminUser = gpobj->m_userList.getUser(USER_ID_ADMIN);
+    if ( !gpobj->m_variables.find( varName, pAdminUser, variable ) ) {
         return luaL_error( L, "vscp.writeVariableValue: No variable with that "
                               "name found!");
     }
@@ -674,7 +676,7 @@ int lua_vscp_writeVariableValue( struct lua_State *L )
                 
     }
     
-    if ( !gpobj->m_variables.update( variable ) ) {
+    if ( !gpobj->m_variables.update( variable, pAdminUser ) ) {
         return luaL_error( L, "vscp.writeVariableValue: Failed to update variable value!");
     }
     
@@ -731,14 +733,15 @@ int lua_vscp_writeVariableNote( struct lua_State *L )
     
     bBase64 = lua_toboolean ( L, 3 );
     
-    if ( !gpobj->m_variables.find( varName, variable ) ) {
+    CUserItem *pAdminUser = gpobj->m_userList.getUser(USER_ID_ADMIN);
+    if ( !gpobj->m_variables.find( varName, pAdminUser, variable ) ) {
         return luaL_error( L, "vscp.writeVariableNote: No variable with that "
                               "name found!");
     }
     
     variable.setNote( varValue, bBase64 );
     
-    if ( !gpobj->m_variables.update( variable ) ) {
+    if ( !gpobj->m_variables.update( variable, pAdminUser ) ) {
         return luaL_error( L, "vscp.writeVariableNote: Failed to update variable note!");
     }
     
@@ -772,8 +775,8 @@ int lua_vscp_deleteVariable( struct lua_State *L )
     const char *pstr = lua_tolstring ( L, 1, &len ); 
     varName = std::string( pstr, len ); 
     
-    
-    if ( !gpobj->m_variables.remove( varName ) ) {
+    CUserItem *pAdminUser = gpobj->m_userList.getUser(USER_ID_ADMIN);
+    if ( !gpobj->m_variables.remove( varName, pAdminUser ) ) {
         return luaL_error( L, "vscp.deleteVariable: Failed to delete variable!");
     }
     
@@ -815,7 +818,8 @@ int lua_vscp_isVariableBase64Encoded( struct lua_State *L )
         
     }
     
-    if ( !gpobj->m_variables.find( varName, variable ) ) {
+    CUserItem *pAdminUser = gpobj->m_userList.getUser(USER_ID_ADMIN);
+    if ( !gpobj->m_variables.find( varName, pAdminUser, variable ) ) {
         return luaL_error( L, "vscp.isVariableBase64: No variable with that "
                               "name found!");
     }
@@ -860,7 +864,8 @@ int lua_vscp_isVariablePersistent( struct lua_State *L )
         
     }
     
-    if ( !gpobj->m_variables.find( varName, variable ) ) {
+    CUserItem *pAdminUser = gpobj->m_userList.getUser(USER_ID_ADMIN);
+    if ( !gpobj->m_variables.find( varName, pAdminUser, variable ) ) {
         return luaL_error( L, "vscp.isVariablePersistent: No variable with that "
                               "name found!");
     }
@@ -905,7 +910,8 @@ int lua_vscp_isVariableNumerical( struct lua_State *L )
         
     }
     
-    if ( !gpobj->m_variables.find( varName, variable ) ) {
+    CUserItem *pAdminUser = gpobj->m_userList.getUser(USER_ID_ADMIN);
+    if ( !gpobj->m_variables.find( varName, pAdminUser, variable ) ) {
         return luaL_error( L, "vscp.isVariableNumerical: No variable with that "
                               "name found!");
     }
@@ -950,7 +956,8 @@ int lua_vscp_isStockVariable( struct lua_State *L )
         
     }
     
-    if ( !gpobj->m_variables.find( varName, variable ) ) {
+    CUserItem *pAdminUser = gpobj->m_userList.getUser(USER_ID_ADMIN);
+    if ( !gpobj->m_variables.find( varName, pAdminUser, variable ) ) {
         return luaL_error( L, "vscp.isStockVariable: No variable with that "
                               "name found!");
     }

@@ -710,7 +710,7 @@ class tcpipClientObj
     /*!
      * Handle client measurement
      */
-    void handleClientMeasurment(void);
+    void handleClientMeasurement(void);
 
     /*!
         Getter/setter for control object

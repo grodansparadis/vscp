@@ -3507,7 +3507,8 @@ vscp_variable_list(struct web_connection *conn, void *cbdata)
         if ((nFrom + i) >= nameArray.size()) break;
 
         CVariable variable;
-        if (0 == gpobj->m_variables.find(nameArray[nFrom + i], variable)) {
+        CUserItem *pAdminUser = gpobj->m_userList.getUser(USER_ID_ADMIN);
+        if (0 == gpobj->m_variables.find(nameArray[nFrom + i], pAdminUser, variable)) {
             web_printf(conn,
                        "Internal error: Non existent variable entry. "
                        "name = %s idx= %ld<br>",
@@ -3942,7 +3943,8 @@ vscp_variable_edit(struct web_connection *conn, void *cbdata)
 
     if (!bNew) {
 
-        if (0 == gpobj->m_variables.find(nameArray[id], variable)) {
+        CUserItem *pAdminUser = gpobj->m_userList.getUser(USER_ID_ADMIN);
+        if (0 == gpobj->m_variables.find(nameArray[id], pAdminUser, variable)) {
             web_printf(conn,
                        "Internal error: Non existent variable entry. "
                        "name = %s idx= %ld<br>",
@@ -4907,7 +4909,8 @@ vscp_variable_post(struct web_connection *conn, void *cbdata)
 
         // * * * An updated variable * * *
 
-        if (!gpobj->m_variables.find(strName, variable)) {
+        CUserItem *pAdminUser = gpobj->m_userList.getUser(USER_ID_ADMIN);
+        if (!gpobj->m_variables.find(strName, pAdminUser, variable)) {
 
             // Variable was not found
 
@@ -4953,7 +4956,8 @@ vscp_variable_post(struct web_connection *conn, void *cbdata)
             }
         } else {
             // Update variables
-            if (!(bOK = gpobj->m_variables.update(variable))) {
+            CUserItem *pAdminUser = gpobj->m_userList.getUser(USER_ID_ADMIN);
+            if (!(bOK = gpobj->m_variables.update(variable,pAdminUser))) {
                 web_printf(
                   conn,
                   "<font color=\"red\">Failed to update variable!</font>");
@@ -5181,7 +5185,8 @@ vscp_variable_delete(struct web_connection *conn, void *cbdata)
 
     web_printf(conn, WEB_VAREDIT_BODY_START);
 
-    if (!gpobj->m_variables.find(strName, variable)) {
+    CUserItem *pAdminUser = gpobj->m_userList.getUser(USER_ID_ADMIN);
+    if (!gpobj->m_variables.find(strName, pAdminUser, variable)) {
         // Variable was not found
         web_printf(conn,
                    "<br><br>Unknown variable!. Unable to delete record. id=%ld",
@@ -5191,7 +5196,7 @@ vscp_variable_delete(struct web_connection *conn, void *cbdata)
         return 1;
     }
 
-    if (gpobj->m_variables.remove(variable)) {
+    if (gpobj->m_variables.remove(variable,pAdminUser)) {
         web_printf(
           conn, "<br>Deleted variable %s", (const char *)strName.c_str());
         // Save variables
@@ -8262,13 +8267,14 @@ vscp_configure_list(struct web_connection *conn, void *cbdata)
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * ** * * * * * * * *
 
-    if (gpobj->m_variables.find(("vscp.openssl.version.str"), variable)) {
+    CUserItem *pAdminUser = gpobj->m_userList.getUser(USER_ID_ADMIN);
+    if (gpobj->m_variables.find(("vscp.openssl.version.str"), pAdminUser, variable)) {
         str = variable.getValue();
         vscp_base64_std_decode(str);
         web_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Openssl version:</b> ");
         web_printf(conn, "%s", (const char *)str.c_str());
         web_printf(conn, " - ");
-        if (gpobj->m_variables.find(("vscp.openssl.copyright"), variable)) {
+        if (gpobj->m_variables.find(("vscp.openssl.copyright"), pAdminUser, variable)) {
             str = variable.getValue();
             vscp_base64_std_decode(str);
             web_printf(conn, "%s", (const char *)str.c_str());
@@ -8276,13 +8282,13 @@ vscp_configure_list(struct web_connection *conn, void *cbdata)
         web_printf(conn, "<br>");
     }
 
-    if (gpobj->m_variables.find(("vscp.duktape.version.str"), variable)) {
+    if (gpobj->m_variables.find(("vscp.duktape.version.str"), pAdminUser, variable)) {
         str = variable.getValue();
         vscp_base64_std_decode(str);
         web_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Duktape version:</b> ");
         web_printf(conn, "%s", (const char *)str.c_str());
         web_printf(conn, " - ");
-        if (gpobj->m_variables.find("vscp.duktape.copyright", variable)) {
+        if (gpobj->m_variables.find("vscp.duktape.copyright", pAdminUser, variable)) {
             str = variable.getValue();
             vscp_base64_std_decode(str);
             web_printf(conn, "%s", (const char *)str.c_str());
@@ -8290,13 +8296,13 @@ vscp_configure_list(struct web_connection *conn, void *cbdata)
         web_printf(conn, "<br>");
     }
 
-    if (gpobj->m_variables.find(("vscp.lua.version.str"), variable)) {
+    if (gpobj->m_variables.find(("vscp.lua.version.str"), pAdminUser, variable)) {
         str = variable.getValue();
         vscp_base64_std_decode(str);
         web_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Lua version:</b> ");
         web_printf(conn, "%s", (const char *)str.c_str());
         web_printf(conn, " - ");
-        if (gpobj->m_variables.find(("vscp.lua.copyright"), variable)) {
+        if (gpobj->m_variables.find(("vscp.lua.copyright"), pAdminUser, variable)) {
             str = variable.getValue();
             vscp_base64_std_decode(str);
             web_printf(conn, "%s", (const char *)str.c_str());
@@ -8304,13 +8310,13 @@ vscp_configure_list(struct web_connection *conn, void *cbdata)
         web_printf(conn, "<br>");
     }
 
-    if (gpobj->m_variables.find(("vscp.sqlite.version.str"), variable)) {
+    if (gpobj->m_variables.find(("vscp.sqlite.version.str"), pAdminUser, variable)) {
         str = variable.getValue();
         vscp_base64_std_decode(str);
         web_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Sqlite3 version:</b> ");
         web_printf(conn, "%s", (const char *)str.c_str());
         web_printf(conn, " - ");
-        if (gpobj->m_variables.find(("vscp.sqlite.copyright"), variable)) {
+        if (gpobj->m_variables.find(("vscp.sqlite.copyright"), pAdminUser, variable)) {
             str = variable.getValue();
             vscp_base64_std_decode(str);
             web_printf(conn, "%s", (const char *)str.c_str());
@@ -8318,7 +8324,7 @@ vscp_configure_list(struct web_connection *conn, void *cbdata)
         web_printf(conn, "<br>");
     }
 
-    if (gpobj->m_variables.find(("vscp.civetweb.copyright"), variable)) {
+    if (gpobj->m_variables.find(("vscp.civetweb.copyright"), pAdminUser, variable)) {
         str = variable.getValue();
         vscp_base64_std_decode(str);
         web_printf(

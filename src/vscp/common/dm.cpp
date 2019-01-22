@@ -2252,7 +2252,8 @@ dmElement::handleEscapes(vscpEvent *pEvent, std::string &str)
                     str = str.substr(str.length() - pos - 1);
 
                     // Assign value if variable exist
-                    if (gpobj->m_variables.find(variableName, variable)) {
+                    CUserItem *pAdminUser = gpobj->m_userList.getUser(USER_ID_ADMIN);
+                    if (gpobj->m_variables.find(variableName, pAdminUser, variable)) {
                         std::string strwrk;
                         variable.writeValueToString(strwrk, true);
                         strResult += strwrk;
@@ -2270,7 +2271,8 @@ dmElement::handleEscapes(vscpEvent *pEvent, std::string &str)
                     str = str.substr(str.length() - pos - 1);
 
                     // Assign value if variable exist
-                    if (gpobj->m_variables.find(variableName, variable)) {
+                    CUserItem *pAdminUser = gpobj->m_userList.getUser(USER_ID_ADMIN);
+                    if (gpobj->m_variables.find(variableName, pAdminUser, variable)) {
                         std::string strwrk;
                         variable.writeValueToString(strwrk);
                         strResult += strwrk;
@@ -2858,7 +2860,8 @@ dmElement::doActionExecuteConditional(vscpEvent *pDMEvent,
         tokens.pop_front();
 
         CVariable variable;
-        if (!gpobj->m_variables.find(varname, variable)) {
+        CUserItem *pAdminUser = gpobj->m_userList.getUser(USER_ID_ADMIN);
+        if (!gpobj->m_variables.find(varname, pAdminUser, variable)) {
             // Variable was not found - create it
             if (!gpobj->m_variables.add(
                   varname, "false", VSCP_DAEMON_VARIABLE_CODE_BOOLEAN)) {
@@ -2872,7 +2875,7 @@ dmElement::doActionExecuteConditional(vscpEvent *pDMEvent,
             }
 
             // Get the variable
-            if (!gpobj->m_variables.find(varName, variable)) {
+            if (!gpobj->m_variables.find(varName, pAdminUser, variable)) {
 
                 // Well should not happen - but in case report it...
 
@@ -3134,7 +3137,8 @@ dmElement::doActionSendEvent(vscpEvent *pDMEvent)
             // Set the condition variable to false if it is defined
             if (varName.length()) {
                 CVariable variable;
-                if (!gpobj->m_variables.find(varName, variable)) {
+                CUserItem *pAdminUser = gpobj->m_userList.getUser(USER_ID_ADMIN);
+                if (!gpobj->m_variables.find(varName, pAdminUser, variable)) {
                     // Variable was not found - create it
                     if (!gpobj->m_variables.add(
                           varName,
@@ -3151,7 +3155,7 @@ dmElement::doActionSendEvent(vscpEvent *pDMEvent)
                     }
 
                     // Get the variable
-                    if (!gpobj->m_variables.find(varName, variable)) {
+                    if (!gpobj->m_variables.find(varName, pAdminUser, variable)) {
                         // Well should not happen - but
                         // in case...
                         syslog(LOG_ERR,
@@ -3170,7 +3174,7 @@ dmElement::doActionSendEvent(vscpEvent *pDMEvent)
                 variable.setValue(true);
 
                 // Update the variable
-                if (!gpobj->m_variables.update(variable)) {
+                if (!gpobj->m_variables.update(variable,pAdminUser)) {
                     syslog(LOG_ERR,
                            "[DM] [Action] Send event: Failed to "
                            "update variable. [%s]",
@@ -3209,7 +3213,8 @@ dmElement::doActionSendEventConditional(vscpEvent *pDMEvent)
         tokens.pop_front();
 
         CVariable variable;
-        if (!gpobj->m_variables.find(varname, variable)) {
+        CUserItem *pAdminUser = gpobj->m_userList.getUser(USER_ID_ADMIN);
+        if (!gpobj->m_variables.find(varname, pAdminUser, variable)) {
 
             // Variable was not found - create it
 
@@ -3224,7 +3229,7 @@ dmElement::doActionSendEventConditional(vscpEvent *pDMEvent)
             }
 
             // Get the variable
-            if (!gpobj->m_variables.find(varName, variable)) {
+            if (!gpobj->m_variables.find(varName, pAdminUser, variable)) {
 
                 // Well should not happen - but in case...
 
@@ -3310,12 +3315,13 @@ dmElement::doActionSendEventConditional(vscpEvent *pDMEvent)
         // Set the condition variable to false if it is defined
         if (varName.length()) {
             CVariable variable;
-            if (gpobj->m_variables.find(varName, variable)) {
+            CUserItem *pAdminUser = gpobj->m_userList.getUser(USER_ID_ADMIN);
+            if (gpobj->m_variables.find(varName, pAdminUser, variable)) {
                 // Set it to true
                 variable.setValue(true);
 
                 // Update the variable
-                if (!gpobj->m_variables.update(variable)) {
+                if (!gpobj->m_variables.update(variable,pAdminUser)) {
 
                     syslog(LOG_ERR,
                            "[DM] "
@@ -3766,7 +3772,8 @@ dmElement::doActionStoreVariable(vscpEvent *pDMEvent)
             }
         }
 
-        if (!gpobj->m_variables.find(varName, var)) {
+        CUserItem *pAdminUser = gpobj->m_userList.getUser(USER_ID_ADMIN);
+        if (!gpobj->m_variables.find(varName, pAdminUser, var)) {
             // The variable was not found - it should be added
             var.setName(varName);
             var.setType(varType);
@@ -4052,7 +4059,8 @@ dmElement::doActionAddVariable(vscpEvent *pDMEvent)
     // Get the value
     std::string strval = vscp_str_after(str, ';'); // TODO check
 
-    if (0 == gpobj->m_variables.find(strName, variable)) {
+    CUserItem *pAdminUser = gpobj->m_userList.getUser(USER_ID_ADMIN);
+    if (0 == gpobj->m_variables.find(strName, pAdminUser, variable)) {
 
         syslog(LOG_ERR,
                "[DM] "
@@ -4091,7 +4099,7 @@ dmElement::doActionAddVariable(vscpEvent *pDMEvent)
         variable.setValue(dval);
     }
 
-    if (!gpobj->m_variables.update(variable)) {
+    if (!gpobj->m_variables.update(variable,pAdminUser)) {
         syslog(LOG_ERR,
                "[DM] "
                "[Action] Add to Variable: Failed to update variable param = %s",
@@ -4124,7 +4132,8 @@ dmElement::doActionSubtractVariable(vscpEvent *pDMEvent)
     // Get the value
     std::string strval = vscp_str_after(str, ';'); // TODO check
 
-    if (0 == gpobj->m_variables.find(strName, variable)) {
+    CUserItem *pAdminUser = gpobj->m_userList.getUser(USER_ID_ADMIN);
+    if (0 == gpobj->m_variables.find(strName, pAdminUser, variable)) {
 
         syslog(
           LOG_ERR,
@@ -4165,7 +4174,7 @@ dmElement::doActionSubtractVariable(vscpEvent *pDMEvent)
         variable.setValue(dval);
     }
 
-    if (!gpobj->m_variables.update(variable)) {
+    if (!gpobj->m_variables.update(variable,pAdminUser)) {
 
         syslog(LOG_ERR,
                "[DM] "
@@ -4201,7 +4210,8 @@ dmElement::doActionMultiplyVariable(vscpEvent *pDMEvent)
     // Get the value
     std::string strval = vscp_str_after(str, ';');
 
-    if (0 == gpobj->m_variables.find(strName, variable)) {
+    CUserItem *pAdminUser = gpobj->m_userList.getUser(USER_ID_ADMIN);
+    if (0 == gpobj->m_variables.find(strName, pAdminUser, variable)) {
         syslog(LOG_ERR,
                "[DM] "
                "[Action] Multiply Variable: Variable was not found. Param = %s",
@@ -4239,7 +4249,7 @@ dmElement::doActionMultiplyVariable(vscpEvent *pDMEvent)
         variable.setValue(dval);
     }
 
-    if (!gpobj->m_variables.update(variable)) {
+    if (!gpobj->m_variables.update(variable,pAdminUser)) {
 
         syslog(
           LOG_ERR,
@@ -4274,7 +4284,8 @@ dmElement::doActionDivideVariable(vscpEvent *pDMEvent)
     // Get the value
     std::string strval = vscp_str_after(str, ';');
 
-    if (0 == gpobj->m_variables.find(strName, variable)) {
+    CUserItem *pAdminUser = gpobj->m_userList.getUser(USER_ID_ADMIN);
+    if (0 == gpobj->m_variables.find(strName, pAdminUser, variable)) {
         syslog(LOG_ERR,
                "[DM] "
                "[Action] Divide Variable: Variable was not found. Param = %s",
@@ -4333,7 +4344,7 @@ dmElement::doActionDivideVariable(vscpEvent *pDMEvent)
         variable.setValue(dval);
     }
 
-    if (!gpobj->m_variables.update(variable)) {
+    if (!gpobj->m_variables.update(variable,pAdminUser)) {
         syslog(
           LOG_ERR,
           "[DM] "
@@ -4402,7 +4413,8 @@ dmElement::doActionCheckVariable(vscpEvent *pDMEvent, VariableCheckType type)
         tokens.pop_front();
         vscp_trim(str);
 
-        if (!gpobj->m_variables.find(str, varCompare)) {
+        CUserItem *pAdminUser = gpobj->m_userList.getUser(USER_ID_ADMIN);
+        if (!gpobj->m_variables.find(str, pAdminUser, varCompare)) {
             // Variable not found
             syslog(LOG_ERR,
                    "[DM] [Action] Compare variable was not found. param = %s",
@@ -4430,9 +4442,10 @@ dmElement::doActionCheckVariable(vscpEvent *pDMEvent, VariableCheckType type)
         std::string varName = tokens.front();
         tokens.pop_front();
         vscp_trim(varName);
-        if (!gpobj->m_variables.find(varName, varFlag)) {
+        CUserItem *pAdminUser = gpobj->m_userList.getUser(USER_ID_ADMIN);
+        if (!gpobj->m_variables.find(varName, pAdminUser, varFlag)) {
             // Get the variable
-            if (!gpobj->m_variables.find(varName, varFlag)) {
+            if (!gpobj->m_variables.find(varName, pAdminUser, varFlag)) {
                 // Well should not happen - but in case...
                 syslog(LOG_ERR,
                        "[DM] [Action] Check measurement: Variable [%s] "
@@ -4592,7 +4605,8 @@ dmElement::doActionCheckVariable(vscpEvent *pDMEvent, VariableCheckType type)
             break;
     }
 
-    if (!gpobj->m_variables.update(varFlag)) {
+    CUserItem *pAdminUser = gpobj->m_userList.getUser(USER_ID_ADMIN);
+    if (!gpobj->m_variables.update(varFlag, pAdminUser)) {
         syslog(LOG_ERR,
                "[DM] [Action] Compare Variable: "
                "Failed to update variable. Param = %s ",
@@ -4716,7 +4730,8 @@ dmElement::doActionCheckMeasurement(vscpEvent *pDMEvent)
         std::string varName = tokens.front();
         tokens.pop_front();
         vscp_trim(varName);
-        if (!gpobj->m_variables.find(varName, varFlag)) {
+        CUserItem *pAdminUser = gpobj->m_userList.getUser(USER_ID_ADMIN);
+        if (!gpobj->m_variables.find(varName, pAdminUser, varFlag)) {
             // Variable was not found - create it
             if (!gpobj->m_variables.add(
                   varName, "false", VSCP_DAEMON_VARIABLE_CODE_BOOLEAN)) {
@@ -4728,7 +4743,8 @@ dmElement::doActionCheckMeasurement(vscpEvent *pDMEvent)
             }
 
             // Get the variable
-            if (!gpobj->m_variables.find(varName, varFlag)) {
+            CUserItem *pAdminUser = gpobj->m_userList.getUser(USER_ID_ADMIN);
+            if (!gpobj->m_variables.find(varName, pAdminUser, varFlag)) {
                 syslog(LOG_ERR,
                        "[DM] [Action] Check measurement: Variable [%s] "
                        "was not found.",
@@ -4808,7 +4824,8 @@ dmElement::doActionCheckMeasurement(vscpEvent *pDMEvent)
             break;
     }
 
-    if (!gpobj->m_variables.update(varFlag)) {
+    CUserItem *pAdminUser = gpobj->m_userList.getUser(USER_ID_ADMIN);
+    if (!gpobj->m_variables.update(varFlag,pAdminUser)) {
         syslog(LOG_ERR,
                "[DM] [Action] Compare Variable: "
                "Failed to update variable %s",
@@ -4868,7 +4885,8 @@ dmElement::doActionStoreMin(vscpEvent *pDMEvent)
     vscp_trim(varname);
 
     // Find the variable
-    if (!gpobj->m_variables.find(varname, variable)) {
+    CUserItem *pAdminUser = gpobj->m_userList.getUser(USER_ID_ADMIN);
+    if (!gpobj->m_variables.find(varname, pAdminUser, variable)) {
         // Variable not found
         syslog(LOG_ERR,
                "[DM] [Action] Variable was not found. param = %s",
@@ -4929,7 +4947,7 @@ dmElement::doActionStoreMin(vscpEvent *pDMEvent)
         variable.setValue(value);
     }
 
-    if (!gpobj->m_variables.update(variable)) {
+    if (!gpobj->m_variables.update(variable,pAdminUser)) {
         syslog(LOG_ERR,
                "[DM] [Action] Minimum: "
                "Failed to update variable param = %s",
@@ -4988,7 +5006,8 @@ dmElement::doActionStoreMax(vscpEvent *pDMEvent)
     vscp_trim(varname);
 
     // Find the variable
-    if (!gpobj->m_variables.find(varname, variable)) {
+    CUserItem *pAdminUser = gpobj->m_userList.getUser(USER_ID_ADMIN);
+    if (!gpobj->m_variables.find(varname, pAdminUser, variable)) {
         // Variable not found
         syslog(LOG_ERR,
                "[DM] [Action] Variable was not found. param = %s",
@@ -5049,7 +5068,7 @@ dmElement::doActionStoreMax(vscpEvent *pDMEvent)
         variable.setValue(value);
     }
 
-    if (!gpobj->m_variables.update(variable)) {
+    if (!gpobj->m_variables.update(variable,pAdminUser)) {
         syslog(LOG_ERR,
                "[DM] [Action] Maximum: Failed to update variable %s ",
                m_actionparam.c_str());
@@ -6047,15 +6066,17 @@ CDM::serviceTimers(void)
                 // We have reached zero
 
                 bool bVariableFound = false;
-                if (gpobj->m_variables.find(pTimer->getVariableName(),
-                                            variable)) {
+                CUserItem *pAdminUser =
+                  gpobj->m_userList.getUser(USER_ID_ADMIN);
+                if (gpobj->m_variables.find(
+                      pTimer->getVariableName(), pAdminUser, variable)) {
                     bVariableFound = true;
                 }
 
                 // Set variable to true if one was defined
                 if (bVariableFound) {
                     variable.setTrue();
-                    if (!gpobj->m_variables.update(variable)) {
+                    if (!gpobj->m_variables.update(variable,pAdminUser)) {
                         syslog(LOG_ERR,
                                "[DM] [serviceTimers] Maximum: "
                                "Failed to update "
