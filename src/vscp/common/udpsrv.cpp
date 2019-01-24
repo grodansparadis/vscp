@@ -527,7 +527,7 @@ UDPThread(void *pData)
         pthread_mutex_lock(&m_pobj->m_clientMutex);
 
         // Set receive filter
-        memcpy(&m_pClientItem->m_filterVSCP,
+        memcpy(&m_pClientItem->m_filter,
                &m_pobj->m_udpSrvObj.m_filter,
                sizeof(vscpEventFilter));
 

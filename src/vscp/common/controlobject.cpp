@@ -691,7 +691,7 @@ CControlObject::init(std::string &strcfgfile, std::string &rootFolder)
 bool
 CControlObject::run(void)
 {
-    std::list<CClientItem *>::iterator nodeClient;
+    std::deque<CClientItem *>::iterator nodeClient;
 
     vscpEvent EventLoop;
     EventLoop.vscp_class = VSCP_CLASS2_VSCPD;
@@ -722,7 +722,7 @@ CControlObject::run(void)
     m_dm.m_pClientItem = pClientItem;
 
     // Set Filter/Mask for full DM table
-    memcpy(&pClientItem->m_filterVSCP,
+    memcpy(&pClientItem->m_filter,
            &m_dm.m_DM_Table_filter,
            sizeof(vscpEventFilter));
 
@@ -733,15 +733,15 @@ CControlObject::run(void)
     pClientItem->m_strDeviceName += vscpdatetime::Now().getISODateTime();
 
     // Add the client to the Client List
-    pthread_mutex_lock(&m_clientMutex);
+    pthread_mutex_lock(&m_clientList.m_mutexItemList);
     if (!addClient(pClientItem, CLIENT_ID_DM)) {
         // Failed to add client
         delete pClientItem;
         m_dm.m_pClientItem = pClientItem = NULL;
         syslog(LOG_ERR, "ControlObject: Failed to add internal client.");
-        pthread_mutex_unlock(&m_clientMutex);
+        pthread_mutex_unlock(&m_clientList.m_mutexItemList);
     }
-    pthread_mutex_unlock(&m_clientMutex);
+    pthread_mutex_unlock(&m_clientList.m_mutexItemList);
 
     // Feed startup event
     m_dm.feed(&EventStartUp);
@@ -814,9 +814,9 @@ CControlObject::run(void)
     m_dm.feed(&EventShutDown);
 
     // Remove messages in the client queues
-    pthread_mutex_lock(&m_clientMutex);
+    pthread_mutex_lock(&m_clientList.m_mutexItemList);
     removeClient(pClientItem);
-    pthread_mutex_unlock(&m_clientMutex);
+    pthread_mutex_unlock(&m_clientList.m_mutexItemList);
 
     syslog(LOG_DEBUG, "ControlObject: Run - Done");
 
@@ -1385,7 +1385,7 @@ CControlObject::sendEventToClient(CClientItem *pClientItem, vscpEvent *pEvent)
     if (NULL == pEvent) return;
 
     // Check if filtered out - if so do nothing here
-    if (!vscp_doLevel2Filter(pEvent, &pClientItem->m_filterVSCP)) return;
+    if (!vscp_doLevel2Filter(pEvent, &pClientItem->m_filter)) return;
 
     // If the client queue is full for this client then the
     // client will not receive the message
@@ -1431,11 +1431,11 @@ void
 CControlObject::sendEventAllClients(vscpEvent *pEvent, uint32_t excludeID)
 {
     CClientItem *pClientItem;
-    std::list<CClientItem *>::iterator it;
+    std::deque<CClientItem *>::iterator it;
 
     if (NULL == pEvent) return;
 
-    pthread_mutex_lock(&m_clientMutex);
+    pthread_mutex_lock(&m_clientList.m_mutexItemList);
     for (it = m_clientList.m_itemList.begin();
          it != m_clientList.m_itemList.end();
          ++it) {
@@ -1446,7 +1446,7 @@ CControlObject::sendEventAllClients(vscpEvent *pEvent, uint32_t excludeID)
         }
     }
 
-    pthread_mutex_unlock(&m_clientMutex);
+    pthread_mutex_unlock(&m_clientList.m_mutexItemList);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1534,10 +1534,10 @@ CControlObject::sendEvent(CClientItem *pClientItem, vscpEvent *peventToSend)
                destguid.getAt(0));
 
         // Find client
-        pthread_mutex_lock(&m_clientMutex);
+        pthread_mutex_lock(&m_clientList.m_mutexItemList);
 
         CClientItem *pDestClientItem = NULL;
-        std::list<CClientItem *>::iterator it;
+        std::deque<CClientItem *>::iterator it;
         for (it = m_clientList.m_itemList.begin();
              it != m_clientList.m_itemList.end();
              ++it) {
@@ -1574,7 +1574,7 @@ CControlObject::sendEvent(CClientItem *pClientItem, vscpEvent *peventToSend)
             }
         }
 
-        pthread_mutex_unlock(&m_clientMutex);
+        pthread_mutex_unlock(&m_clientList.m_mutexItemList);
     }
 
     if (!bSent) {

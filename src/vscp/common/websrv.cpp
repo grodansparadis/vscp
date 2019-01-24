@@ -386,7 +386,7 @@ websrv_add_session(struct web_connection *conn)
     }
     pSession->m_pClientItem->bAuthenticated = false; // Not authenticated in yet
     vscp_clearVSCPFilter(
-      &pSession->m_pClientItem->m_filterVSCP); // Clear filter
+      &pSession->m_pClientItem->m_filter); // Clear filter
 
     // This is an active client
     pSession->m_pClientItem->m_bOpen = false;
@@ -398,17 +398,17 @@ websrv_add_session(struct web_connection *conn)
     pSession->m_pClientItem->m_strDeviceName += now.getISODateTime();
 
     // Add the client to the Client List
-    pthread_mutex_lock(&gpobj->m_clientMutex);
+    pthread_mutex_lock(&gpobj->m_clientList.m_mutexItemList);
     if (!gpobj->addClient(pSession->m_pClientItem)) {
         // Failed to add client
         delete pSession->m_pClientItem;
         pSession->m_pClientItem = NULL;
-        pthread_mutex_unlock(&gpobj->m_clientMutex);
+        pthread_mutex_unlock(&gpobj->m_clientList.m_mutexItemList);
         syslog(LOG_ERR,
                ("WEB server: Failed to add client. Terminating thread."));
         return NULL;
     }
-    pthread_mutex_unlock(&gpobj->m_clientMutex);
+    pthread_mutex_unlock(&gpobj->m_clientList.m_mutexItemList);
 
     // Add to linked list
     pthread_mutex_lock(&gpobj->m_websrvSessionMutex);
@@ -1221,8 +1221,8 @@ vscp_interface(struct web_connection *conn, void *cbdata)
     std::string strBuf;
 
     // Display Interface List
-    pthread_mutex_lock(&gpobj->m_clientMutex);
-    std::list<CClientItem *>::iterator it;
+    pthread_mutex_lock(&gpobj->m_clientList.m_mutexItemList);
+    std::deque<CClientItem *>::iterator it;
     for (it = gpobj->m_clientList.m_itemList.begin();
          it != gpobj->m_clientList.m_itemList.end();
          ++it) {
@@ -1273,7 +1273,7 @@ vscp_interface(struct web_connection *conn, void *cbdata)
         web_printf(conn, "</tr>");
     }
 
-    pthread_mutex_unlock(&gpobj->m_clientMutex);
+    pthread_mutex_unlock(&gpobj->m_clientList.m_mutexItemList);
 
     web_printf(conn, WEB_IFLIST_TABLE_END);
 

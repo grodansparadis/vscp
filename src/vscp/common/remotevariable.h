@@ -437,6 +437,18 @@ class CVariable
     void setValue(vscpdatetime &val);
 
     /*!
+        Get value
+        @param val VSCP filter
+    */
+    void getValue(vscpEventFilter *pval);
+
+    /*!
+        Set value
+        @param val VSCP filter
+    */
+    void setValue(vscpEventFilter& val);
+
+    /*!
         setUser owner id
         @param Owner id to set
         @return True on success

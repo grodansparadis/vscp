@@ -27,6 +27,7 @@
 #include <list>
 
 #include <devicelist.h>
+#include <vscpdatetime.h>
 #include <guid.h>
 #include <userlist.h>
 #include <vscp.h>
@@ -103,45 +104,38 @@ class CClientItem
 
     /*!
         Set device name
-
         @param name Name to set
     */
     void setDeviceName(const std::string &name);
 
     /*!
-        Input Queue
+        Get client on string form
+        "id,type,GUID,name,dt-created(UTC),open-flag"
+        @return Client info on string form
     */
-    std::deque<vscpEvent *> m_clientInputQueue;
+    std::string getAsString(void);
 
-    /*!
-        Semaphore to indicate that an event has been received
-    */
+  public:
+    // Input Queue
+    std::deque<vscpEvent*> m_clientInputQueue;
+
+    // Semaphore to indicate that an event has been received
     sem_t m_semClientInputQueue;
 
-    /*!
-        Mutex handle that is used for sharing of the client object
-    */
+    // Mutex handle that is used for sharing of the client object
     pthread_mutex_t m_mutexClientInputQueue;
 
-    /*!
-        Client ID for this client item
-    */
+    // Client ID for this client item
     uint16_t m_clientID;
 
-    /*!
-        Flag for open/closed channel
-    */
+    // Flag for open/closed channel
     bool m_bOpen;
 
-    /*!
-        Channel flags
-    */
+    // Channel flags
     uint32_t m_flags;
 
-    /*!
-        Filter mask for VSCP
-    */
-    vscpEventFilter m_filterVSCP;
+    // Filter/mask for VSCP
+    vscpEventFilter m_filter;
 
     /*!
         Interface GUID
@@ -160,29 +154,22 @@ class CClientItem
     */
     cguid m_guid;
 
-    /*!
-        Interface name
-    */
+    // Interface name
     std::string m_strDeviceName;
 
-    /*!
-        Channel state information
-    */
+    // Datetime UTC when created
+    vscpdatetime m_dtutc;
+
+    // Channel state information
     canalStatus m_status;
 
-    /*!
-        Channel statistics
-    */
+    // Channel statistics
     canalStatistics m_statistics;
 
-    /*!
-        Event to indicate that there is an event to send
-    */
+    // Event to indicate that there is an event to send
     sem_t m_hEventSend;
 
-    /*!
-        Interface type: CANAL, TCP/IP
-    */
+    // Interface type: CANAL, TCP/IP
     uint8_t m_type;
 
     /*!
@@ -199,30 +186,28 @@ class CClientItem
     // UTC time since last client activity
     long m_clientActivity;
 
-    /*!
-        RCVLOOP clock (UTC time for last sent "+OK")
-    */
+    // RCVLOOP clock (UTC time for last sent "+OK")
     uint64_t m_timeRcvLoop;
 
-    /// Username given by user
+    // Username given by user
     std::string m_UserName;
 
-    /// Password given by user
+    // Password given by user
     std::string m_Password;
 
-    /// Session id
+    // Session id
     char m_sid[33];
 
-    /// True if the credentials has been checked.
+    // True if the credentials has been checked.
     bool bAuthenticated;
 
-    /// pointer ti the user
+    // pointer ti the user
     CUserItem *m_pUserItem;
 
-    /// Read buffer
+    // Read buffer
     std::string m_readBuffer;
 
-    /// Last command executed
+    // Last command executed
     std::string m_lastCommand;
 
     // Current command
@@ -233,6 +218,8 @@ class CClientItem
     std::string m_currentToken;
 };
 
+// ----------------------------------------------------------------------------
+
 class CClientList
 {
 
@@ -242,6 +229,13 @@ class CClientList
 
     /// Destructor
     virtual ~CClientList();
+
+    /*!
+        Find a free client id
+        pid Pointer to uint16_t that return free id.
+        @return True if id could be found
+    */
+    bool findFreeId(uint16_t *pid );
 
     /*!
         Add a client to the list
@@ -261,7 +255,14 @@ class CClientList
         @param id Numeric id for the client
         @return A pointer to a clientitem on success or NULL on failure.
     */
-    CClientItem *getClientFromId(uint32_t id);
+    CClientItem *getClientFromId(uint16_t id);
+
+    /*!
+        Get client form ordinal
+        @param id Numeric ordinal for the client
+        @return A pointer to a clientitem on success or NULL on failure.
+    */
+    CClientItem *getClientFromOrdinal(uint16_t ordinal);
 
     /*!
         Get Client from GUID
@@ -270,11 +271,34 @@ class CClientList
     */
     CClientItem *getClientFromGUID(cguid &guid);
 
-  public:
     /*!
-        List with clients
+        Get current number of clients
+
+        @return Current number of client.
     */
-    std::list<CClientItem *> m_itemList;
+    size_t getClientCount(void) { return m_itemList.size(); };
+
+    /*!
+        Get all interfaces as string
+        @return List of all interfaces
+    */
+    std::string getAllClientsAsString(void);
+
+    /*!
+        Get a client from it's ordinal
+        @param n Ordinal for client in list
+        @param client [out] Client data on string form
+        @return true on success
+    */
+    bool getClient(uint16_t n, std::string client);
+
+  public:
+
+    // List with clients
+    std::deque<CClientItem*> m_itemList;
+
+    // Mutex that protect the list
+    pthread_mutex_t m_mutexItemList;
 };
 
 #endif // !defined(CLIENTLIST_H__B0190EE5_E0E8_497F_92A0_A8616296AF3E__INCLUDED_)

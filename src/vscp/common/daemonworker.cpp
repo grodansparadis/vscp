@@ -149,21 +149,22 @@ daemonWorkerThread(void *threadData)
     pClientItem->m_strDeviceName += vscpdatetime::Now().getISODateTime();
 
     // Add the client to the Client List
-    pthread_mutex_lock(&pctrlObj->m_clientMutex);
+    pthread_mutex_lock(&pctrlObj->m_clientList.m_mutexItemList);
     if (!pctrlObj->addClient(pClientItem, CLIENT_ID_DAEMON_WORKER)) {
         // Failed to add client
         delete pClientItem;
-        pthread_mutex_unlock(&pctrlObj->m_clientMutex);
+        pthread_mutex_unlock(&pctrlObj->m_clientList.m_mutexItemList);
         close(sock_mc);
         syslog(
           LOG_ERR,
           "daemonWorkerThread - Failed to add client. Terminating thread.");
         return NULL;
     }
-    pthread_mutex_unlock(&pctrlObj->m_clientMutex);
+    pthread_mutex_unlock(&pctrlObj->m_clientList.m_mutexItemList);
 
     // Clear the filter (Allow everything )
-    vscp_clearVSCPFilter(&pClientItem->m_filterVSCP);
+    vscp_clearVSCPFilter(&pClientItem->m_filter
+    );
 
     char szName[128];
 #ifdef WIN32
@@ -456,9 +457,9 @@ daemonWorkerThread(void *threadData)
     } // while
 
     // Remove messages in the client queues
-    pthread_mutex_lock(&pctrlObj->m_clientMutex);
+    pthread_mutex_lock(&pctrlObj->m_clientList.m_mutexItemList);
     pctrlObj->removeClient(pClientItem);
-    pthread_mutex_unlock(&pctrlObj->m_clientMutex);
+    pthread_mutex_unlock(&pctrlObj->m_clientList.m_mutexItemList);
 
     // Close the multicast socket
     close(sock_mc);

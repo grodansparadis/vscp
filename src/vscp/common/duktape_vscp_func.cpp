@@ -694,7 +694,7 @@ try_again:
 
         if (NULL != pEvent) {
 
-            if (vscp_doLevel2Filter(pEvent, &pClientItem->m_filterVSCP)) {
+            if (vscp_doLevel2Filter(pEvent, &pClientItem->m_filter)) {
 
                 // Write it out
 
@@ -872,7 +872,7 @@ js_vscp_setFilter(duk_context *ctx)
     duk_pop(ctx);
 
     // Set the filter
-    vscp_copyVSCPFilter(&pClientItem->m_filterVSCP, &filter);
+    vscp_copyVSCPFilter(&pClientItem->m_filter, &filter);
 
     duk_push_boolean(ctx, 1); // return code success
     return JAVASCRIPT_OK;

@@ -174,7 +174,7 @@ actionJavascriptThread(void *pData)
 
     // Create VSCP client
     pobj->m_pClientItem = new CClientItem();
-    vscp_clearVSCPFilter(&pobj->m_pClientItem->m_filterVSCP);
+    vscp_clearVSCPFilter(&pobj->m_pClientItem->m_filter);
 
     // Save the client object as a global pointer
     duk_push_pointer(ctx, (void *)pobj->m_pClientItem);
@@ -197,18 +197,18 @@ actionJavascriptThread(void *pData)
       std::string("Internal daemon JavaScript client."));
 
     // Add the client to the Client List
-    pthread_mutex_lock(&gpobj->m_clientMutex);
+    pthread_mutex_lock(&gpobj->m_clientList.m_mutexItemList);
     if (!gpobj->addClient(pobj->m_pClientItem)) {
         // Failed to add client
         delete pobj->m_pClientItem;
         pobj->m_pClientItem = NULL;
-        pthread_mutex_unlock(&gpobj->m_clientMutex);
+        pthread_mutex_unlock(&gpobj->m_clientList.m_mutexItemList);
         syslog(LOG_ERR,
                "[Javascript execution] - Failed to add client. "
                "Terminating thread.");
         return NULL;
     }
-    pthread_mutex_unlock(&gpobj->m_clientMutex);
+    pthread_mutex_unlock(&gpobj->m_clientList.m_mutexItemList);
 
     // Open the channel
     pobj->m_pClientItem->m_bOpen = true;
@@ -230,10 +230,10 @@ actionJavascriptThread(void *pData)
     pobj->m_pClientItem->m_bOpen = false;
 
     // Remove client and session item
-    pthread_mutex_lock(&gpobj->m_clientMutex);
+    pthread_mutex_lock(&gpobj->m_clientList.m_mutexItemList);
     gpobj->removeClient(pobj->m_pClientItem);
     pobj->m_pClientItem = NULL;
-    pthread_mutex_unlock(&gpobj->m_clientMutex);
+    pthread_mutex_unlock(&gpobj->m_clientList.m_mutexItemList);
 
     // Destroy the JavaScript context
     duk_destroy_heap(ctx);

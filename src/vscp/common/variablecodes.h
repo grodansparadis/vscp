@@ -68,7 +68,7 @@
 #define VSCP_DAEMON_VARIABLE_CODE_DM_ROW (500) // A DM row, comma separated
 #define VSCP_DAEMON_VARIABLE_CODE_DRIVER (501) // Driver item, comma separated
 #define VSCP_DAEMON_VARIABLE_CODE_USER (502)   // User item, comma separated
-#define VSCP_DAEMON_VARIABLE_CODE_FILTER (503) // Filter item, comma separated (filer + mask)
+#define VSCP_DAEMON_VARIABLE_CODE_FILTER (503) // Filter item, comma separated (filter + mask)
 
 // When adding new type
 // ====================

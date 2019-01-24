@@ -1122,7 +1122,7 @@ try_again:
                                   "getting event from client!");
         }
 
-        if ( vscp_doLevel2Filter( pEvent, &pClientItem->m_filterVSCP ) ) {
+        if ( vscp_doLevel2Filter( pEvent, &pClientItem->m_filter ) ) {
 
             // Write it out                
             std::string strResult;
@@ -1292,7 +1292,7 @@ int lua_vscp_setFilter( struct lua_State *L )
     }
     
     // Set the filter
-    vscp_copyVSCPFilter( &pClientItem->m_filterVSCP, &filter );
+    vscp_copyVSCPFilter( &pClientItem->m_filter, &filter );
     
     return 1;
  }

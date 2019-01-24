@@ -526,7 +526,7 @@ restsrv_add_session(struct web_connection *conn, CUserItem *pUserItem)
     pSession->m_pClientItem->bAuthenticated = true; // Authenticated
     pSession->m_pClientItem->m_pUserItem    = pUserItem;
     vscp_clearVSCPFilter(
-      &pSession->m_pClientItem->m_filterVSCP); // Clear filter
+      &pSession->m_pClientItem->m_filter); // Clear filter
     pSession->m_pClientItem->m_bOpen = false;  // Start out closed
     pSession->m_pClientItem->m_type =
       CLIENT_ITEM_INTERFACE_TYPE_CLIENT_WEBSOCKET;
@@ -537,17 +537,17 @@ restsrv_add_session(struct web_connection *conn, CUserItem *pUserItem)
       vscpdatetime::Now().getISODateTime();
 
     // Add the client to the Client List
-    pthread_mutex_lock(&gpobj->m_clientMutex);
+    pthread_mutex_lock(&gpobj->m_clientList.m_mutexItemList);
     if (!gpobj->addClient(pSession->m_pClientItem)) {
         // Failed to add client
         delete pSession->m_pClientItem;
         pSession->m_pClientItem = NULL;
-        pthread_mutex_unlock(&gpobj->m_clientMutex);
+        pthread_mutex_unlock(&gpobj->m_clientList.m_mutexItemList);
         syslog(LOG_ERR,
                "REST server: Failed to add client. Terminating thread.");
         return NULL;
     }
-    pthread_mutex_unlock(&gpobj->m_clientMutex);
+    pthread_mutex_unlock(&gpobj->m_clientList.m_mutexItemList);
 
     // Add to linked list
     pthread_mutex_lock(&gpobj->m_restSessionMutex);
@@ -1610,10 +1610,10 @@ restsrv_doSendEvent(struct web_connection *conn,
 
                 // Check if filtered out
                 if (vscp_doLevel2Filter(
-                      pEvent, &pSession->m_pClientItem->m_filterVSCP)) {
+                      pEvent, &pSession->m_pClientItem->m_filter)) {
 
                     // Lock client
-                    pthread_mutex_lock(&gpobj->m_clientMutex);
+                    pthread_mutex_lock(&gpobj->m_clientList.m_mutexItemList);
 
                     // If the client queue is full for this client then the
                     // client will not receive the message
@@ -1645,7 +1645,7 @@ restsrv_doSendEvent(struct web_connection *conn,
                     }
 
                     // Unlock client
-                    pthread_mutex_unlock(&gpobj->m_clientMutex);
+                    pthread_mutex_unlock(&gpobj->m_clientList.m_mutexItemList);
 
                 } // filter
 
@@ -1767,7 +1767,7 @@ restsrv_doReceiveEvent(struct web_connection *conn,
 
                             if (vscp_doLevel2Filter(
                                   pEvent,
-                                  &pSession->m_pClientItem->m_filterVSCP)) {
+                                  &pSession->m_pClientItem->m_filter)) {
 
                                 std::string str;
                                 if (vscp_writeVscpEventToString(pEvent, str)) {
@@ -1857,7 +1857,7 @@ restsrv_doReceiveEvent(struct web_connection *conn,
 
                             if (vscp_doLevel2Filter(
                                   pEvent,
-                                  &pSession->m_pClientItem->m_filterVSCP)) {
+                                  &pSession->m_pClientItem->m_filter)) {
 
                                 std::string str;
                                 if (vscp_writeVscpEventToString(pEvent, str)) {
@@ -1948,7 +1948,7 @@ restsrv_doReceiveEvent(struct web_connection *conn,
 
                             if (vscp_doLevel2Filter(
                                   pEvent,
-                                  &pSession->m_pClientItem->m_filterVSCP)) {
+                                  &pSession->m_pClientItem->m_filter)) {
 
                                 std::string str;
 
@@ -2138,7 +2138,7 @@ restsrv_doReceiveEvent(struct web_connection *conn,
 
                             if (vscp_doLevel2Filter(
                                   pEvent,
-                                  &pSession->m_pClientItem->m_filterVSCP)) {
+                                  &pSession->m_pClientItem->m_filter)) {
 
                                 std::string str;
                                 json ev;
@@ -2232,7 +2232,7 @@ restsrv_doSetFilter(struct web_connection *conn,
     if (NULL != pSession) {
 
         pthread_mutex_lock(&pSession->m_pClientItem->m_mutexClientInputQueue);
-        memcpy(&pSession->m_pClientItem->m_filterVSCP,
+        memcpy(&pSession->m_pClientItem->m_filter,
                &vscpfilter,
                sizeof(vscpEventFilter));
         pthread_mutex_unlock(&pSession->m_pClientItem->m_mutexClientInputQueue);

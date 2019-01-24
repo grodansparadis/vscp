@@ -9174,15 +9174,325 @@ CVariableStorage::handleStockVariable(std::string name,
     // vscp.interface.count - Number of current interfaces
     // vscp.interface       - Info about all interfaces
     // vscp.interface.n     - Info about interface n
+    // vscp.interface.n.id
+    // vscp.interface.n.type
+    // vscp.interface.n.guid
+    // vscp.interface.n.name
+    // vscp.interface.n.filter
+    // vscp.interface.n.dt
+    // vscp.interface.n.flags
+    // vscp.interface.n.bopen
+    // vscp.interface.n.input-queue-count
 
     if ("interface" == strToken) {
 
-        // Must be at least one other token
-        if (tokens.empty()) return false;
+        // Info about all interfaces
+        if (tokens.empty()) {
+            if (STOCKVAR_INIT == op) {
+                var.setName(name);
+                var.setAccessRights(PERMISSION_OWNER_READ);
+                var.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
+                var.setNote("All defined interfaces/clients.");
+                var.setValue(""); // Dummy value
+                return addStockVariable(var);
+            } else if (STOCKVAR_READ == op) {
+                var.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
+                var.setValue(gpobj->m_clientList.getAllClientsAsString());
+                var.setLastChangedToNow();
+                return true;
+            } else if (STOCKVAR_WRITE == op) {
+                syslog(
+                  LOG_ERR, "Remote variable %s is read only", name.c_str());
+                return false;
+            } else {
+                syslog(LOG_ERR,
+                       "Operation on remote variable %s invalid %d",
+                       name.c_str(),
+                       op);
+                return false;
+            }
+        }
 
         strToken = tokens.front();
         vscp_trim(strToken);
         tokens.pop_front();
+
+        if ("count" == strToken) {
+            if (STOCKVAR_INIT == op) {
+                var.setName(name);
+                var.setAccessRights(PERMISSION_ALL_READ);
+                var.setType(VSCP_DAEMON_VARIABLE_CODE_LONG);
+                var.setNote("Number of defined interfaces/clients.");
+                var.setValue(0); // Dummy value
+                return addStockVariable(var);
+            } else if (STOCKVAR_READ == op) {
+                var.setType(VSCP_DAEMON_VARIABLE_CODE_LONG);
+                var.setValue((long)gpobj->m_clientList.getClientCount());
+                var.setLastChangedToNow();
+                return true;
+            } else if (STOCKVAR_WRITE == op) {
+                syslog(
+                  LOG_ERR, "Remote variable %s is read only", name.c_str());
+                return false;
+            }
+        } else if (vscp_isNumber(strToken)) {
+
+            int n = vscp_readStringValue(strToken);
+            CClientItem *pClientItem =
+              gpobj->m_clientList.getClientFromOrdinal(n);
+            if (NULL == pClientItem) {
+                syslog(
+                  LOG_ERR, "Failed to find client item for %s", name.c_str());
+                return false;
+            }
+
+            if (tokens.empty()) { // vscp.interface.n
+                if (STOCKVAR_INIT == op) {
+                    var.setName(name);
+                    var.setAccessRights(PERMISSION_OWNER_READ);
+                    var.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
+                    var.setNote("Interface");
+                    var.setValue(""); // Dummy value
+                    return addStockVariable(var);
+                } else if (STOCKVAR_READ == op) {
+                    var.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
+                    std::string interface;
+                    if (!gpobj->m_clientList.getClient(n, interface)) {
+                        syslog(LOG_ERR,
+                               "Failed to read interface list for %s",
+                               name.c_str());
+                    }
+                    var.setValue(interface);
+                    var.setLastChangedToNow();
+                    return true;
+                } else if (STOCKVAR_WRITE == op) {
+                    syslog(
+                      LOG_ERR, "Remote variable %s is read only", name.c_str());
+                    return false;
+                } else {
+                    syslog(LOG_ERR,
+                           "Operation on remote variable %s invalid %d",
+                           name.c_str(),
+                           op);
+                    return false;
+                }
+            }
+
+            strToken = tokens.front();
+            vscp_trim(strToken);
+            tokens.pop_front();
+
+            if ("id" == strToken) {
+                if (STOCKVAR_READ == op) {
+                    var.init();
+                    var.setAccessRights(PERMISSION_OWNER_READ);
+                    var.setType(VSCP_DAEMON_VARIABLE_CODE_INTEGER);
+                    var.setValue((int)pClientItem->m_clientID);
+                    var.setNote("Client interface id");
+                    var.setLastChangedToNow();
+                    return true;
+                } else if (STOCKVAR_WRITE == op) {
+                    syslog(
+                      LOG_ERR, "Remote variable %s is read only", name.c_str());
+                    return false;
+                } else {
+                    syslog(LOG_ERR,
+                           "Operation on remote variable %s invalid %d",
+                           name.c_str(),
+                           op);
+                    return false;
+                }
+            } else if ("type" == strToken) {
+                if (STOCKVAR_READ == op) {
+                    var.init();
+                    var.setAccessRights(PERMISSION_OWNER_READ);
+                    var.setType(VSCP_DAEMON_VARIABLE_CODE_INTEGER);
+                    var.setValue((int)pClientItem->m_type);
+                    var.setNote("Client interface type");
+                    var.setLastChangedToNow();
+                    return true;
+                } else if (STOCKVAR_WRITE == op) {
+                    syslog(
+                      LOG_ERR, "Remote variable %s is read only", name.c_str());
+                    return false;
+                } else {
+                    syslog(LOG_ERR,
+                           "Operation on remote variable %s invalid %d",
+                           name.c_str(),
+                           op);
+                    return false;
+                }
+            } else if ("guid" == strToken) {
+                if (STOCKVAR_READ == op) {
+                    var.init();
+                    var.setAccessRights(PERMISSION_OWNER_READ);
+                    var.setType(VSCP_DAEMON_VARIABLE_CODE_GUID);
+                    var.setValue(pClientItem->m_guid);
+                    var.setNote("Client interface GUID");
+                    var.setLastChangedToNow();
+                    return true;
+                } else if (STOCKVAR_WRITE == op) {
+                    syslog(
+                      LOG_ERR, "Remote variable %s is read only", name.c_str());
+                    return false;
+                } else {
+                    syslog(LOG_ERR,
+                           "Operation on remote variable %s invalid %d",
+                           name.c_str(),
+                           op);
+                    return false;
+                }
+            } else if ("name" == strToken) {
+                if (STOCKVAR_READ == op) {
+                    var.init();
+                    var.setAccessRights(PERMISSION_OWNER_READ);
+                    var.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
+                    var.setValue(pClientItem->m_strDeviceName);
+                    var.setNote("Client interface name");
+                    var.setLastChangedToNow();
+                    return true;
+                } else if (STOCKVAR_WRITE == op) {
+                    syslog(
+                      LOG_ERR, "Remote variable %s is read only", name.c_str());
+                    return false;
+                } else {
+                    syslog(LOG_ERR,
+                           "Operation on remote variable %s invalid %d",
+                           name.c_str(),
+                           op);
+                    return false;
+                }
+            } else if ("dt" == strToken) {
+                if (STOCKVAR_READ == op) {
+                    var.init();
+                    var.setAccessRights(PERMISSION_OWNER_READ);
+                    var.setType(VSCP_DAEMON_VARIABLE_CODE_DATETIME);
+                    var.setValue(pClientItem->m_dtutc.getISODateTime());
+                    var.setNote("Client interface creation UTC datetime");
+                    var.setLastChangedToNow();
+                    return true;
+                } else if (STOCKVAR_WRITE == op) {
+                    syslog(
+                      LOG_ERR, "Remote variable %s is read only", name.c_str());
+                    return false;
+                } else {
+                    syslog(LOG_ERR,
+                           "Operation on remote variable %s invalid %d",
+                           name.c_str(),
+                           op);
+                    return false;
+                }
+            } else if ("flags" == strToken) {
+                if (STOCKVAR_READ == op) {
+                    var.init();
+                    var.setAccessRights(PERMISSION_OWNER_READ);
+                    var.setType(VSCP_DAEMON_VARIABLE_CODE_LONG);
+                    var.setValue((long)pClientItem->m_flags);
+                    var.setNote("Client interface flags");
+                    var.setLastChangedToNow();
+                    return true;
+                } else if (STOCKVAR_WRITE == op) {
+                    syslog(
+                      LOG_ERR, "Remote variable %s is read only", name.c_str());
+                    return false;
+                } else {
+                    syslog(LOG_ERR,
+                           "Operation on remote variable %s invalid %d",
+                           name.c_str(),
+                           op);
+                    return false;
+                }
+            } else if ("bopen" == strToken) {
+                if (STOCKVAR_READ == op) {
+                    var.init();
+                    var.setAccessRights(PERMISSION_OWNER_READ|PERMISSION_OWNER_WRITE);
+                    var.setType(VSCP_DAEMON_VARIABLE_CODE_BOOLEAN);
+                    var.setValue(pClientItem->m_bOpen);
+                    var.setNote("Client interface flags");
+                    var.setLastChangedToNow();
+                    return true;
+                } else if (STOCKVAR_WRITE == op) {
+                    if (USER_ID_ADMIN != pUser->getUserID()) {
+                        syslog(
+                          LOG_ERR,
+                          "Only admin is allowed to write remote variable %s",
+                          name.c_str());
+                        return false;
+                    }
+                    if (VSCP_DAEMON_VARIABLE_CODE_BOOLEAN != var.getType()) {
+                        syslog(
+                          LOG_ERR,
+                          "Type must be string to write remote variable %s",
+                          name.c_str());
+                        return false;
+                    }
+                    bool val;
+                    var.getValue(&val );
+                    pClientItem->m_bOpen = val;
+                } else {
+                    syslog(LOG_ERR,
+                           "Operation on remote variable %s invalid %d",
+                           name.c_str(),
+                           op);
+                    return false;
+                }
+            } else if ("filter" == strToken) {
+                if (STOCKVAR_READ == op) {
+                    var.init();
+                    var.setAccessRights(PERMISSION_OWNER_READ|PERMISSION_OWNER_WRITE);
+                    var.setType(VSCP_DAEMON_VARIABLE_CODE_FILTER);
+                    std::string str, strFilter;
+                    var.setValue(pClientItem->m_filter);
+                    var.setNote("Client interface filter");
+                    var.setLastChangedToNow();
+                    return true;
+                } else if (STOCKVAR_WRITE == op) {
+                    if (USER_ID_ADMIN != pUser->getUserID()) {
+                        syslog(
+                          LOG_ERR,
+                          "Only admin is allowed to write remote variable %s",
+                          name.c_str());
+                        return false;
+                    }
+                    if (VSCP_DAEMON_VARIABLE_CODE_FILTER != var.getType()) {
+                        syslog(
+                          LOG_ERR,
+                          "Type must be filter to write remote variable %s",
+                          name.c_str());
+                        return false;
+                    }
+                    var.getValue(&pClientItem->m_filter);
+                } else {
+                    syslog(LOG_ERR,
+                           "Operation on remote variable %s invalid %d",
+                           name.c_str(),
+                           op);
+                    return false;
+                }
+            }  else if ("input-queue-count" == strToken) {
+                if (STOCKVAR_READ == op) {
+                    var.init();
+                    var.setAccessRights(PERMISSION_OWNER_READ);
+                    var.setType(VSCP_DAEMON_VARIABLE_CODE_LONG);
+                    var.setValue((long)pClientItem->m_clientInputQueue.size());
+                    var.setNote("Client interface input queue count");
+                    var.setLastChangedToNow();
+                    return true;
+                } else if (STOCKVAR_WRITE == op) {
+                    syslog(
+                      LOG_ERR, "Remote variable %s is read only", name.c_str());
+                    return false;
+                } else {
+                    syslog(LOG_ERR,
+                           "Operation on remote variable %s invalid %d",
+                           name.c_str(),
+                           op);
+                    return false;
+                }
+            }
+        }
+
+        return false;
     }
 
     // *************************************************************************
@@ -9203,7 +9513,7 @@ CVariableStorage::handleStockVariable(std::string name,
     // vscp.user.n.event-list   - Read write event-list for user
     //
     // vscp.user.add            - Add a user
-    // vscp.yser.add.xml        - future
+    // vscp.user.add.xml        - future
     // vscp.user.add.json       - future
     // vscp.user.delete         - Delete a user
 
@@ -9215,7 +9525,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 var.setName(name);
                 var.setAccessRights(PERMISSION_OWNER_READ);
                 var.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
-                var.setNote("Add defined users.");
+                var.setNote("All defined users.");
                 var.setValue(""); // Dummy value
                 return addStockVariable(var);
             } else if (STOCKVAR_READ == op) {
@@ -9652,11 +9962,12 @@ CVariableStorage::handleStockVariable(std::string name,
                             var.setNote("Allowed user remote host item");
                             std::string str;
                             if (pUser->getAllowedRemote(m, str)) {
-                                syslog(LOG_ERR,
-                                       "Allowed remote host %d does not exist for "
-                                       "remote variable %s",
-                                       (int)m,
-                                       name.c_str());
+                                syslog(
+                                  LOG_ERR,
+                                  "Allowed remote host %d does not exist for "
+                                  "remote variable %s",
+                                  (int)m,
+                                  name.c_str());
                                 return false;
                             }
                             var.setValue(str);
@@ -9680,11 +9991,12 @@ CVariableStorage::handleStockVariable(std::string name,
 
                             std::string str = var.getValue();
                             if (pUser->setAllowedRemote(m, str)) {
-                                syslog(LOG_ERR,
-                                       "Allowed remote host %d does not exist for "
-                                       "remote variable %s",
-                                       (int)m,
-                                       name.c_str());
+                                syslog(
+                                  LOG_ERR,
+                                  "Allowed remote host %d does not exist for "
+                                  "remote variable %s",
+                                  (int)m,
+                                  name.c_str());
                                 return false;
                             }
 
@@ -9979,54 +10291,47 @@ CVariableStorage::initStockVariables(CUserItem *pUser)
 {
     CVariable var;
 
+    // * * * version * * *
     handleStockVariable("vscp.version", STOCKVAR_INIT, var, pUser);
-
     handleStockVariable("vscp.version.major", STOCKVAR_INIT, var, pUser);
     handleStockVariable("vscp.version.minor", STOCKVAR_INIT, var, pUser);
     handleStockVariable("vscp.version.release", STOCKVAR_INIT, var, pUser);
     handleStockVariable("vscp.version.build", STOCKVAR_INIT, var, pUser);
     handleStockVariable("vscp.version.string", STOCKVAR_INIT, var, pUser);
     handleStockVariable("vscp.version.copyright", STOCKVAR_INIT, var, pUser);
-
     handleStockVariable(
       "vscp.version.sqlite3.string", STOCKVAR_INIT, var, pUser);
     handleStockVariable(
       "vscp.version.sqlite3.copyright", STOCKVAR_INIT, var, pUser);
-
     handleStockVariable(
       "vscp.version.openssl.string", STOCKVAR_INIT, var, pUser);
     handleStockVariable(
       "vscp.version.openssl.copyright", STOCKVAR_INIT, var, pUser);
-
     handleStockVariable(
       "vscp.version.duktape.string", STOCKVAR_INIT, var, pUser);
     handleStockVariable(
       "vscp.version.duktape.copyright", STOCKVAR_INIT, var, pUser);
-
     handleStockVariable(
       "vscp.version.civetweb.string", STOCKVAR_INIT, var, pUser);
     handleStockVariable(
       "vscp.version.civetweb.copyright", STOCKVAR_INIT, var, pUser);
-
     handleStockVariable("vscp.version.lua.string", STOCKVAR_INIT, var, pUser);
     handleStockVariable(
       "vscp.version.lua.copyright", STOCKVAR_INIT, var, pUser);
-
     handleStockVariable(
       "vscp.version.mongoose.string", STOCKVAR_INIT, var, pUser);
     handleStockVariable(
       "vscp.version.mongoose.copyright", STOCKVAR_INIT, var, pUser);
-
     handleStockVariable(
       "vscp.version.nlohmann-json.string", STOCKVAR_INIT, var, pUser);
     handleStockVariable(
       "vscp.version.nlohmann-json.copyright", STOCKVAR_INIT, var, pUser);
-
     handleStockVariable(
       "vscp.version.xml2json.string", STOCKVAR_INIT, var, pUser);
     handleStockVariable(
       "vscp.version.xml2json.copyright", STOCKVAR_INIT, var, pUser);
 
+    // * * * os * * *
     handleStockVariable("vscp.os.width", STOCKVAR_INIT, var, pUser);
     handleStockVariable("vscp.os.endian.big", STOCKVAR_INIT, var, pUser);
     handleStockVariable("vscp.os.endian.little", STOCKVAR_INIT, var, pUser);
@@ -10043,12 +10348,14 @@ CVariableStorage::initStockVariables(CUserItem *pUser)
     handleStockVariable("vscp.os.host.ip", STOCKVAR_INIT, var, pUser);
     handleStockVariable("vscp.os.host.mac", STOCKVAR_INIT, var, pUser);
 
+    // * * * daemon * * *
     handleStockVariable("vscp.daemon.runasuser", STOCKVAR_INIT, var, pUser);
     handleStockVariable("vscp.daemon.guid", STOCKVAR_INIT, var, pUser);
     handleStockVariable("vscp.daemon.name", STOCKVAR_INIT, var, pUser);
     handleStockVariable(
       "vscp.daemon.client-buffer-size", STOCKVAR_INIT, var, pUser);
 
+    // * * * debug * * *
     handleStockVariable("vscp.debug.level", STOCKVAR_INIT, var, pUser);
     handleStockVariable("vscp.debug.flags1", STOCKVAR_INIT, var, pUser);
     handleStockVariable("vscp.debug.flags2", STOCKVAR_INIT, var, pUser);
@@ -10059,6 +10366,7 @@ CVariableStorage::initStockVariables(CUserItem *pUser)
     handleStockVariable("vscp.debug.flags7", STOCKVAR_INIT, var, pUser);
     handleStockVariable("vscp.debug.flags8", STOCKVAR_INIT, var, pUser);
 
+    // * * * dm * * *
     handleStockVariable("vscp.dm.enable", STOCKVAR_INIT, var, pUser);
     handleStockVariable("vscp.dm.count", STOCKVAR_INIT, var, pUser);
     handleStockVariable("vscp.dm.count.active", STOCKVAR_INIT, var, pUser);
@@ -10067,6 +10375,7 @@ CVariableStorage::initStockVariables(CUserItem *pUser)
     handleStockVariable("vscp.dm.add", STOCKVAR_INIT, var, pUser);
     handleStockVariable("vscp.dm.delete", STOCKVAR_INIT, var, pUser);
 
+    // * * * config * * *
     handleStockVariable("vscp.config.dbversion", STOCKVAR_INIT, var, pUser);
     handleStockVariable(
       "vscp.config.client-buffer-size", STOCKVAR_INIT, var, pUser);
@@ -10290,4 +10599,13 @@ CVariableStorage::initStockVariables(CUserItem *pUser)
                         STOCKVAR_INIT,
                         var,
                         pUser);
+    // * * * user * * *
+    handleStockVariable("vscp.user.count", STOCKVAR_INIT, var, pUser);
+    handleStockVariable("vscp.user", STOCKVAR_INIT, var, pUser);
+    handleStockVariable("vscp.user.add", STOCKVAR_INIT, var, pUser);
+    handleStockVariable("vscp.user.delete", STOCKVAR_INIT, var, pUser);
+
+    // * * * interface * * *
+    handleStockVariable("vscp.interface.count", STOCKVAR_INIT, var, pUser);
+    handleStockVariable("vscp.interface", STOCKVAR_INIT, var, pUser);
 }

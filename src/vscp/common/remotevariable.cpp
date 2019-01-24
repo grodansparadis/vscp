@@ -1028,6 +1028,32 @@ CVariable::setValue(vscpdatetime &val)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// setValue
+//
+
+void
+CVariable::getValue(vscpEventFilter *pValue)
+{
+    vscp_readFilterMaskFromString( pValue, m_strValue);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// setValue
+//
+
+void
+CVariable::setValue(vscpEventFilter &val)
+{
+    std::string strFilter, strMask;
+
+    vscp_writeFilterToString( &val, strFilter );
+    vscp_writeMaskToString( &val, strMask );
+    m_strValue = strFilter;
+    m_strValue += ",";
+    m_strValue += strMask;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // setValueFromString
 //
 

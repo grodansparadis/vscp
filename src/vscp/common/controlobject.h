@@ -728,7 +728,7 @@ class CControlObject
     sqlite3 *m_db_vscp_data;
 
     // Mutex for client queue
-    pthread_mutex_t m_clientMutex;
+    //pthread_mutex_t m_clientMutex;
 
     // Mutex for device queue
     pthread_mutex_t m_deviceMutex;
@@ -754,11 +754,9 @@ class CControlObject
     CDeviceList m_deviceList;
     pthread_mutex_t m_mutexDeviceList;
 
-    /*!
-        The list with active clients.
-     */
-    CClientList m_clientList; // map
-    pthread_mutex_t m_mutexClientList;
+    // The list with active clients. (protecting mutex in object)
+    CClientList m_clientList; 
+    
 
     /*!
         The list of users

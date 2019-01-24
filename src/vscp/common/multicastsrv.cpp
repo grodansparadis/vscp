@@ -68,9 +68,9 @@ MulticastObj::~MulticastObj()
 {
     if (NULL != m_pClientItem) {
         // Add the client to the Client List
-        pthread_mutex_lock(&m_pObj->m_clientMutex);
+        pthread_mutex_lock(&m_pObj->m_clientList.m_mutexItemList);
         m_pObj->removeClient(m_pClientItem);
-        pthread_mutex_unlock(&m_pObj->m_clientMutex);
+        pthread_mutex_unlock(&m_pObj->m_clientList.m_mutexItemList);
     }
 }
 
@@ -570,19 +570,19 @@ multicastClientThread(void *pData)
        m_pClientItem->m_pUserItem = NULL;  // No user defined
 
        // Add the client to the Client List
-       pthread_mutex_lock(&m_pObj->m_clientMutex);
+       pthread_mutex_lock(&m_pObj->m_clientList.m_mutexItemList);
        if ( !m_pObj->addClient( m_pClientItem, CLIENT_ID_MULTICAST_SRV ) ) {
            // Failed to add client
            delete m_pClientItem;
            m_pClientItem = NULL;
-           pthread_mutex_unlock(&m_pObj->m_clientMutex);
+           pthread_mutex_unlock(&m_pObj->m_clientList.m_mutexItemList);
            syslog( LOG_ERR, ("Multicat client: Failed to add client. Terminating
        thread.") ); return NULL;
        }
-       pthread_mutex_unlock(&m_pObj->m_clientMutex);
+       pthread_mutex_unlock(&m_pObj->m_clientList.m_mutexItemList);
 
        // Set receive filter
-       memcpy( &m_pClientItem->m_filterVSCP, &m_pChannel->m_rxFilter,
+       memcpy( &m_pClientItem->m_filter, &m_pChannel->m_rxFilter,
        sizeof(vscpEventFilter) );
 
        // Set GUID for channel

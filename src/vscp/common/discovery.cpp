@@ -106,18 +106,18 @@ threadDiscovery(void *data)
       vscpdatetime::Now().getISODateTime();
 
     // Add the client to the Client List
-    pthread_mutex_lock(&pObj->m_pCtrlObject->m_clientMutex);
+    pthread_mutex_lock(&pObj->m_pCtrlObject->m_clientList.m_mutexItemList);
     if (!pObj->m_pCtrlObject->addClient(pObj->m_pClientItem,
                                         CLIENT_ID_DAEMON_WORKER)) {
         // Failed to add client
         delete pObj->m_pClientItem;
         pObj->m_pClientItem = NULL;
-        pthread_mutex_unlock(&pObj->m_pCtrlObject->m_clientMutex);
+        pthread_mutex_unlock(&pObj->m_pCtrlObject->m_clientList.m_mutexItemList);
         syslog(LOG_ERR,
                "Deamon discovery: Failed to add client. Terminating thread.");
         return NULL;
     }
-    pthread_mutex_unlock(&pObj->m_pCtrlObject->m_clientMutex);
+    pthread_mutex_unlock(&pObj->m_pCtrlObject->m_clientList.m_mutexItemList);
 
     // Read GUID of node
     cguid newguid;
@@ -142,9 +142,9 @@ threadDiscovery(void *data)
 error_abort:
 
     // Remove messages in the client queues
-    pthread_mutex_lock(&pObj->m_pCtrlObject->m_clientMutex);
+    pthread_mutex_lock(&pObj->m_pCtrlObject->m_clientList.m_mutexItemList);
     pObj->m_pCtrlObject->removeClient(pObj->m_pClientItem);
-    pthread_mutex_unlock(&pObj->m_pCtrlObject->m_clientMutex);
+    pthread_mutex_unlock(&pObj->m_pCtrlObject->m_clientList.m_mutexItemList);
 
     return NULL;
 }
@@ -236,9 +236,9 @@ CDiscoveryObj::sendEvent(vscpEvent *pEvent, uint32_t obid)
     bool bSent = false;
 
     // Find client
-    pthread_mutex_lock(&m_pCtrlObject->m_clientMutex);
+    pthread_mutex_lock(&m_pCtrlObject->m_clientList.m_mutexItemList);
 
-    std::list<CClientItem *>::iterator it;
+    std::deque<CClientItem *>::iterator it;
     for (it = m_pCtrlObject->m_clientList.m_itemList.begin();
          it != m_pCtrlObject->m_clientList.m_itemList.end();
          ++it) {
@@ -253,7 +253,7 @@ CDiscoveryObj::sendEvent(vscpEvent *pEvent, uint32_t obid)
         }
     }
 
-    pthread_mutex_unlock(&m_pCtrlObject->m_clientMutex);
+    pthread_mutex_unlock(&m_pCtrlObject->m_clientList.m_mutexItemList);
 
     return bSent;
 }
@@ -422,17 +422,17 @@ nodeDiscoveryThread(void *threadData)
         m_pClientItem->m_strDeviceName += now.FormatISOTime();
 
         // Add the client to the Client List
-        pthread_mutex_lock( &m_pCtrlObject->m_clientMutex );
+        pthread_mutex_lock( &m_pCtrlObject->m_clientList.m_mutexItemList );
         if ( !m_pCtrlObject->addClient ( m_pClientItem, CLIENT_ID_DAEMON_WORKER
     ) ) {
             // Failed to add client
             delete m_pClientItem;
             m_pClientItem = NULL;
-            m_pCtrlObject->m_clientMutex.Unlock();
+            m_pCtrlObject->m_clientList.m_mutexItemList.Unlock();
             m_pCtrlObject->logMsg( "Deamon discovery: Failed to add client.
     Terminating thread." ); return NULL;
         }
-        pthread_mutex_unlock( &m_pCtrlObject->m_clientMutex );
+        pthread_mutex_unlock( &m_pCtrlObject->m_clientList.m_mutexItemList );
 
         // Read GUID of node
         cguid newguid;
@@ -460,9 +460,9 @@ nodeDiscoveryThread(void *threadData)
     error_abort:
 
         // Remove messages in the client queues
-        pthread_mutex_lock( &m_pCtrlObject->m_clientMutex );
+        pthread_mutex_lock( &m_pCtrlObject->m_clientList.m_mutexItemList );
         m_pCtrlObject->removeClient( m_pClientItem );
-        pthread_mutex_unlock( &m_pCtrlObject->m_clientMutex );
+        pthread_mutex_unlock( &m_pCtrlObject->m_clientList.m_mutexItemList );
     */
     return NULL;
 }

@@ -71,6 +71,8 @@ CClientItem::CClientItem()
     m_type                  = CLIENT_ITEM_INTERFACE_TYPE_NONE;
     m_bUDPReceiveChannel    = false;
 
+    m_dtutc = vscpdatetime::UTCNow();
+
     sem_init(&m_semClientInputQueue, 0, 0);
     sem_init(&m_hEventSend, 0, 0);
     pthread_mutex_init(&m_mutexClientInputQueue, NULL);
@@ -79,7 +81,7 @@ CClientItem::CClientItem()
     m_guid.clear();
 
     // Nill Level II mask (accept all)
-    vscp_clearVSCPFilter(&m_filterVSCP);
+    vscp_clearVSCPFilter(&m_filter);
 
     m_statistics.cntReceiveFrames  = 0; // # of receive frames
     m_statistics.cntTransmitFrames = 0; // # of transmitted frames
@@ -138,7 +140,7 @@ CClientItem::CommandStartsWith(const std::string &cmd, bool bFix)
     if (bFix) {
         if (m_currentCommand.length() - cmd.length()) {
             m_currentCommand = vscp_str_right(
-              m_currentCommand, m_currentCommand.length() - cmd.length()-1);
+              m_currentCommand, m_currentCommand.length() - cmd.length() - 1);
         } else {
             m_currentCommand.clear();
         }
@@ -162,16 +164,42 @@ CClientItem::setDeviceName(const std::string &name)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// getAsString
+//
+// "id,type,GUID,name,dt-created(UTC),open-flag, flags"
+
+std::string
+CClientItem::getAsString(void)
+{
+    std::string str;
+
+    str = vscp_str_format("%ud,", m_clientID);
+    str += vscp_str_format("%d,", m_type);
+    str += m_guid.toString();
+    str += ",";
+    str += m_strDeviceName;
+    str += ",";
+    str += m_dtutc.getISODateTime();
+    str += ",";
+    str += m_bOpen ? "true" : "false";
+    str += ",";
+    str += vscp_str_format("%ul", m_flags);
+
+    return str;
+}
+
+// ----------------------------------------------------------------------------
+
+///////////////////////////////////////////////////////////////////////////////
 // compareClientItems
 //
 // Type of compare function for list sort operation (as in 'qsort')
 //
 
 bool
-compareClientItems(const void *element1, const void *element2)
+compareClientItems(const uint16_t element1, const uint16_t element2)
 {
-    return (int)(((CClientItem *)element1)->m_clientID) <
-           (int)(((CClientItem *)element2)->m_clientID);
+    return (element1 < element2);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -184,7 +212,7 @@ compareClientItems(const void *element1, const void *element2)
 
 CClientList::CClientList()
 {
-    ;
+    pthread_mutex_init(&m_mutexItemList, NULL);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -193,13 +221,58 @@ CClientList::CClientList()
 
 CClientList::~CClientList()
 {
+    pthread_mutex_lock(&m_mutexItemList);
+
     // Empty the client list
-    std::list<CClientItem *>::iterator it;
+    std::deque<CClientItem *>::iterator it;
     for (it = m_itemList.begin(); it != m_itemList.end(); ++it) {
         delete *it;
     }
 
     m_itemList.clear();
+
+    pthread_mutex_unlock(&m_mutexItemList);
+    pthread_mutex_destroy(&m_mutexItemList);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// findFreeId
+//
+
+bool
+CClientList::findFreeId(uint16_t *pid)
+{
+    uint16_t maxid = 0;
+    std::list<uint16_t> sorterIdList;
+    std::deque<CClientItem *>::iterator it;
+
+    // Check pointer
+    if (NULL == pid) return false;
+
+    // Find next free id
+    for (it = m_itemList.begin(); it != m_itemList.end(); ++it) {
+        CClientItem *pItem = *it;
+        sorterIdList.push_back(pItem->m_clientID);
+    }
+
+    // Sort list on client id
+    sorterIdList.sort(compareClientItems);
+
+    std::list<uint16_t>::iterator it_id;
+    for (it_id = sorterIdList.begin(); it_id != sorterIdList.end(); ++it_id) {
+        // As the list is sorted on id we have found an
+        // unused id if the id is higher than the counter
+        if (*pid < *it_id) {
+            break;
+        }
+
+        *pid++;
+        if (0 == *pid) {
+            return false; // All client id's are in use
+        }
+    }
+
+    return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -209,26 +282,16 @@ CClientList::~CClientList()
 bool
 CClientList::addClient(CClientItem *pClientItem, uint32_t id)
 {
-    std::list<CClientItem *>::iterator it;
+    std::deque<CClientItem *>::iterator it;
+
+    // Check pointer
+    if (NULL == pClientItem) return false;
+
     pClientItem->m_clientID = id ? id : 1;
 
     if (0 == id) {
-
-        // Find next free id
-        for (it = m_itemList.begin(); it != m_itemList.end(); ++it) {
-
-            CClientItem *pItem = *it;
-
-            // s the list is sorted on ClientId we have found an
-            // unused id if the ClientId is higher than the counter
-            if (pClientItem->m_clientID < pItem->m_clientID) {
-                break;
-            }
-
-            pClientItem->m_clientID++;
-            if (0 == pClientItem->m_clientID) {
-                return false; // All client id's are in use
-            }
+        if (!findFreeId(&pClientItem->m_clientID)) {
+            return false;
         }
     }
 
@@ -246,9 +309,6 @@ CClientList::addClient(CClientItem *pClientItem, uint32_t id)
     // Append to list
     m_itemList.push_back(pClientItem);
 
-    // Sort list on client id
-    m_itemList.sort(compareClientItems);
-
     return true;
 }
 
@@ -265,10 +325,18 @@ CClientList::removeClient(CClientItem *pClientItem)
     pClientItem->m_clientInputQueue.clear();
 
     // Take away the node
-    m_itemList.remove(pClientItem);
-    delete pClientItem;
+    // m_itemList.remove(pClientItem);
+    for (std::deque<CClientItem *>::iterator it = m_itemList.begin();
+         it != m_itemList.end();
+         ++it) {
+        if (*it == pClientItem) {
+            m_itemList.erase(it);
+            delete pClientItem;
+            return true;
+        }
+    }
 
-    return true;
+    return false;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -276,9 +344,9 @@ CClientList::removeClient(CClientItem *pClientItem)
 //
 
 CClientItem *
-CClientList::getClientFromId(uint32_t id)
+CClientList::getClientFromId(uint16_t id)
 {
-    std::list<CClientItem *>::iterator it;
+    std::deque<CClientItem *>::iterator it;
     CClientItem *returnItem = NULL;
 
     for (it = m_itemList.begin(); it != m_itemList.end(); ++it) {
@@ -294,13 +362,26 @@ CClientList::getClientFromId(uint32_t id)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// getClientFromOrdinal
+//
+
+CClientItem *
+CClientList::getClientFromOrdinal(uint16_t ordinal)
+{
+    if (!m_itemList.size()) return NULL;
+    if (ordinal > (m_itemList.size() - 1)) return NULL;
+
+    return m_itemList[ordinal];
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // getClientFromGUID
 //
 
 CClientItem *
 CClientList::getClientFromGUID(cguid &guid)
 {
-    std::list<CClientItem *>::iterator it;
+    std::deque<CClientItem *>::iterator it;
     CClientItem *returnItem = NULL;
 
     for (it = m_itemList.begin(); it != m_itemList.end(); ++it) {
@@ -313,4 +394,45 @@ CClientList::getClientFromGUID(cguid &guid)
     }
 
     return returnItem;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getAllInterfacesAsString
+//
+
+std::string
+CClientList::getAllClientsAsString(void)
+{
+    std::string str;
+
+    pthread_mutex_lock(&m_mutexItemList);
+
+    std::deque<CClientItem *>::iterator it;
+    for (it = m_itemList.begin(); it != m_itemList.end(); ++it) {
+
+        CClientItem *pItem = *it;
+        str += pItem->getAsString();
+        str += "\r\n";
+    }
+
+    pthread_mutex_unlock(&m_mutexItemList);
+
+    return str;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getClient
+//
+
+bool
+CClientList::getClient(uint16_t n, std::string client)
+{
+    if (!m_itemList.size()) return false;
+    if (n > (m_itemList.size() - 1)) return false;
+
+    CClientItem *pClient = m_itemList[n];
+    if (NULL == pClient) return false;
+    client = pClient->getAsString();
+
+    return true;
 }

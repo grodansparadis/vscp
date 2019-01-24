@@ -268,7 +268,7 @@ websock_authentication(struct web_connection *conn,
     pSession->m_pClientItem->m_pUserItem = pUserItem;
 
     // Copy in the user filter
-    memcpy(&pSession->m_pClientItem->m_filterVSCP,
+    memcpy(&pSession->m_pClientItem->m_filter,
            pUserItem->getUserFilter(),
            sizeof(vscpEventFilter));
 
@@ -344,7 +344,7 @@ websock_new_session(const struct web_connection *conn)
 
     pSession->m_pClientItem->bAuthenticated = false; // Not authenticated in yet
     vscp_clearVSCPFilter(
-      &pSession->m_pClientItem->m_filterVSCP); // Clear filter
+      &pSession->m_pClientItem->m_filter); // Clear filter
     pSession->bEventTrigger    = false;
     pSession->triggerTimeout   = 0;
     pSession->bVariableTrigger = false;
@@ -359,17 +359,17 @@ websock_new_session(const struct web_connection *conn)
     pSession->m_pClientItem->m_strDeviceName += now.getISODateTime();
 
     // Add the client to the Client List
-    pthread_mutex_lock(&gpobj->m_clientMutex);
+    pthread_mutex_lock(&gpobj->m_clientList.m_mutexItemList);
     if (!gpobj->addClient(pSession->m_pClientItem)) {
         // Failed to add client
         delete pSession->m_pClientItem;
         pSession->m_pClientItem = NULL;
-        pthread_mutex_unlock(&gpobj->m_clientMutex);
+        pthread_mutex_unlock(&gpobj->m_clientList.m_mutexItemList);
         syslog(LOG_ERR,
                ("Websocket server: Failed to add client. Terminating thread."));
         return NULL;
     }
-    pthread_mutex_unlock(&gpobj->m_clientMutex);
+    pthread_mutex_unlock(&gpobj->m_clientList.m_mutexItemList);
 
     pthread_mutex_lock(&gpobj->m_websocketSessionMutex);
     gpobj->m_websocketSessions.push_back(pSession);
@@ -425,10 +425,10 @@ websock_expire_sessions( struct web_connection *conn )
             }
 
             // Remove client and session item
-            pthread_mutex_lock(&pObject->m_clientMutex);
+            pthread_mutex_lock(&pObject->m_clientList.m_mutexItemList);
             pObject->removeClient( pos->m_pClientItem );
             pos->m_pClientItem = NULL;
-            pthread_mutex_unlock(&pObject->m_clientMutex);
+            pthread_mutex_unlock(&pObject->m_clientList.m_mutexItemList);
 
             // Free session data
             free( pos );
@@ -482,11 +482,11 @@ websock_sendevent(struct web_connection *conn,
         // destGUID[0] = 0; // Interface GUID's have LSB bytes nilled
         // destGUID[1] = 0;
 
-        pthread_mutex_lock(&gpobj->m_clientMutex);
+        pthread_mutex_lock(&gpobj->m_clientList.m_mutexItemList);
 
         // Find client
         CClientItem *pDestClientItem = NULL;
-        std::list<CClientItem *>::iterator it;
+        std::deque<CClientItem *>::iterator it;
         for (it = gpobj->m_clientList.m_itemList.begin();
              it != gpobj->m_clientList.m_itemList.end();
              ++it) {
@@ -537,7 +537,7 @@ websock_sendevent(struct web_connection *conn,
 
         } // Client found
 
-        pthread_mutex_unlock(&gpobj->m_clientMutex);
+        pthread_mutex_unlock(&gpobj->m_clientList.m_mutexItemList);
     }
 
     if (!bSent) {
@@ -611,7 +611,7 @@ websock_post_incomingEvents(void)
 
                 // Run event through filter
                 if (vscp_doLevel2Filter(
-                      pEvent, &pSession->m_pClientItem->m_filterVSCP)) {
+                      pEvent, &pSession->m_pClientItem->m_filter)) {
 
                     std::string str;
                     if (vscp_writeVscpEventToString(pEvent, str)) {
@@ -1140,7 +1140,7 @@ ws1_command(struct web_connection *conn,
             pthread_mutex_lock(
               &pSession->m_pClientItem->m_mutexClientInputQueue);
             if (!vscp_readFilterFromString(
-                  &pSession->m_pClientItem->m_filterVSCP, strTok)) {
+                  &pSession->m_pClientItem->m_filter, strTok)) {
 
                 str = vscp_str_format(("-;SF;%d;%s"),
                                          (int)WEBSOCK_ERROR_SYNTAX_ERROR,
@@ -1180,7 +1180,7 @@ ws1_command(struct web_connection *conn,
 
             pthread_mutex_lock(
               &pSession->m_pClientItem->m_mutexClientInputQueue);
-            if (!vscp_readMaskFromString(&pSession->m_pClientItem->m_filterVSCP,
+            if (!vscp_readMaskFromString(&pSession->m_pClientItem->m_filter,
                                          strTok)) {
 
                 str = vscp_str_format(("-;SF;%d;%s"),

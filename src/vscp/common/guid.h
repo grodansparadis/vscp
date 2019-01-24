@@ -93,6 +93,12 @@ class cguid
 
     /*!
         GUID to string
+        @return guid on string form
+    */
+    std::string toString(void);
+
+    /*!
+        GUID to string
         @return GUID as string
     */
     std::string getAsString(void)

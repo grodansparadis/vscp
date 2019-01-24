@@ -1838,7 +1838,7 @@ tcpipClientObj::handleClientSetFilter(void)
     if (!tokens.empty()) {
         str = tokens.front();
         tokens.pop_front();
-        m_pClientItem->m_filterVSCP.filter_priority = vscp_readStringValue(str);
+        m_pClientItem->m_filter.filter_priority = vscp_readStringValue(str);
     } else {
         write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
         return;
@@ -1848,7 +1848,7 @@ tcpipClientObj::handleClientSetFilter(void)
     if (!tokens.empty()) {
         str = tokens.front();
         tokens.pop_front();
-        m_pClientItem->m_filterVSCP.filter_class = vscp_readStringValue(str);
+        m_pClientItem->m_filter.filter_class = vscp_readStringValue(str);
     } else {
         write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
         return;
@@ -1858,7 +1858,7 @@ tcpipClientObj::handleClientSetFilter(void)
     if (!tokens.empty()) {
         str = tokens.front();
         tokens.pop_front();
-        m_pClientItem->m_filterVSCP.filter_type = vscp_readStringValue(str);
+        m_pClientItem->m_filter.filter_type = vscp_readStringValue(str);
     } else {
         write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
         return;
@@ -1868,7 +1868,7 @@ tcpipClientObj::handleClientSetFilter(void)
     if (!tokens.empty()) {
         str = tokens.front();
         tokens.pop_front();
-        vscp_getGuidFromStringToArray(m_pClientItem->m_filterVSCP.filter_GUID,
+        vscp_getGuidFromStringToArray(m_pClientItem->m_filter.filter_GUID,
                                       str);
     } else {
         write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
@@ -1903,7 +1903,7 @@ tcpipClientObj::handleClientSetMask(void)
     if (!tokens.empty()) {
         str = tokens.front();
         tokens.pop_front();
-        m_pClientItem->m_filterVSCP.mask_priority = vscp_readStringValue(str);
+        m_pClientItem->m_filter.mask_priority = vscp_readStringValue(str);
     } else {
         write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
         return;
@@ -1913,7 +1913,7 @@ tcpipClientObj::handleClientSetMask(void)
     if (!tokens.empty()) {
         str = tokens.front();
         tokens.pop_front();
-        m_pClientItem->m_filterVSCP.mask_class = vscp_readStringValue(str);
+        m_pClientItem->m_filter.mask_class = vscp_readStringValue(str);
     } else {
         write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
         return;
@@ -1923,7 +1923,7 @@ tcpipClientObj::handleClientSetMask(void)
     if (!tokens.empty()) {
         str = tokens.front();
         tokens.pop_front();
-        m_pClientItem->m_filterVSCP.mask_type = vscp_readStringValue(str);
+        m_pClientItem->m_filter.mask_type = vscp_readStringValue(str);
     } else {
         write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
         return;
@@ -1933,7 +1933,7 @@ tcpipClientObj::handleClientSetMask(void)
     if (!tokens.empty()) {
         str = tokens.front();
         tokens.pop_front();
-        vscp_getGuidFromStringToArray(m_pClientItem->m_filterVSCP.mask_GUID,
+        vscp_getGuidFromStringToArray(m_pClientItem->m_filter.mask_GUID,
                                       str);
     } else {
         write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
@@ -2041,7 +2041,7 @@ tcpipClientObj::handleClientPassword(void)
     }
 
     // Copy in the user filter
-    memcpy(&m_pClientItem->m_filterVSCP,
+    memcpy(&m_pClientItem->m_filter,
            m_pClientItem->m_pUserItem->getUserFilter(),
            sizeof(vscpEventFilter));
 
@@ -2196,9 +2196,9 @@ tcpipClientObj::handleClientInterface_List(void)
     std::string strBuf;
 
     // Display Interface List
-    pthread_mutex_lock(&m_pObj->m_clientMutex);
+    pthread_mutex_lock(&m_pObj->m_clientList.m_mutexItemList);
 
-    std::list<CClientItem *>::iterator it;
+    std::deque<CClientItem *>::iterator it;
     for (it = m_pObj->m_clientList.m_itemList.begin();
          it != m_pObj->m_clientList.m_itemList.end();
          ++it) {
@@ -2206,7 +2206,7 @@ tcpipClientObj::handleClientInterface_List(void)
         CClientItem *pItem = *it;
 
         pItem->m_guid.toString(strGUID);
-        strBuf = vscp_str_format("%d,", pItem->m_clientID);
+        strBuf = vscp_str_format("%d,", pItem->m_clientID);  
         strBuf += vscp_str_format("%d,", pItem->m_type);
         strBuf += strGUID;
         strBuf += std::string(",");
@@ -2218,7 +2218,7 @@ tcpipClientObj::handleClientInterface_List(void)
 
     write(MSG_OK, strlen(MSG_OK));
 
-    pthread_mutex_unlock(&m_pObj->m_clientMutex);
+    pthread_mutex_unlock(&m_pObj->m_clientList.m_mutexItemList);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -5678,20 +5678,20 @@ tcpipClientThread(void *pData)
     ptcpipobj->m_pClientItem->m_clientActivity = time(NULL);
 
     // Add the client to the Client List
-    pthread_mutex_lock(&ptcpipobj->m_pObj->m_clientMutex);
+    pthread_mutex_lock(&ptcpipobj->m_pObj->m_clientList.m_mutexItemList);
     if (!ptcpipobj->m_pObj->addClient(ptcpipobj->m_pClientItem)) {
         // Failed to add client
         delete ptcpipobj->m_pClientItem;
         ptcpipobj->m_pClientItem = NULL;
-        pthread_mutex_unlock(&ptcpipobj->m_pObj->m_clientMutex);
+        pthread_mutex_unlock(&ptcpipobj->m_pObj->m_clientList.m_mutexItemList);
         syslog(LOG_ERR,
                "TCP/IP server: Failed to add client. Terminating thread.");
         return NULL;
     }
-    pthread_mutex_unlock(&ptcpipobj->m_pObj->m_clientMutex);
+    pthread_mutex_unlock(&ptcpipobj->m_pObj->m_clientList.m_mutexItemList);
 
     // Clear the filter (Allow everything )
-    vscp_clearVSCPFilter(&ptcpipobj->m_pClientItem->m_filterVSCP);
+    vscp_clearVSCPFilter(&ptcpipobj->m_pClientItem->m_filter);
 
     // Send welcome message
     std::string str = std::string(MSG_WELCOME);
@@ -5883,9 +5883,9 @@ tcpipClientThread(void *pData)
     ptcpipobj->m_pClientItem->m_bOpen = false;
 
     // Remove the client from the Client List
-    pthread_mutex_lock(&ptcpipobj->m_pObj->m_clientMutex);
+    pthread_mutex_lock(&ptcpipobj->m_pObj->m_clientList.m_mutexItemList);
     ptcpipobj->m_pObj->removeClient(ptcpipobj->m_pClientItem);
-    pthread_mutex_unlock(&ptcpipobj->m_pObj->m_clientMutex);
+    pthread_mutex_unlock(&ptcpipobj->m_pObj->m_clientList.m_mutexItemList);
 
     ptcpipobj->m_pClientItem = NULL;
     ptcpipobj->m_pParent     = NULL;
