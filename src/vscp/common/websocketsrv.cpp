@@ -269,7 +269,7 @@ websock_authentication(struct web_connection *conn,
 
     // Copy in the user filter
     memcpy(&pSession->m_pClientItem->m_filterVSCP,
-           pUserItem->getFilter(),
+           pUserItem->getUserFilter(),
            sizeof(vscpEventFilter));
 
     // Log valid login

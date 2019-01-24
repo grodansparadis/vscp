@@ -2042,7 +2042,7 @@ tcpipClientObj::handleClientPassword(void)
 
     // Copy in the user filter
     memcpy(&m_pClientItem->m_filterVSCP,
-           m_pClientItem->m_pUserItem->getFilter(),
+           m_pClientItem->m_pUserItem->getUserFilter(),
            sizeof(vscpEventFilter));
 
     std::string strErr = vscp_str_format(

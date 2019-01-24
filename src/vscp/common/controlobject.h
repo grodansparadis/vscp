@@ -763,13 +763,13 @@ class CControlObject
     /*!
         The list of users
      */
-    CUserList m_userList; // dque
+    CUserList m_userList; // deque
     pthread_mutex_t m_mutexUserList;
 
     /*!
         This is a list with defined tables
     */
-    CUserTableObjList m_userTableObjects; // dque
+    CUserTableObjList m_userTableObjects; // deque
     pthread_mutex_t m_mutexUserTables;
 
     /*!

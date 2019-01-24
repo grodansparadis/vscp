@@ -189,7 +189,7 @@ class CUserItem
      * Set user rights from a comma separated string. The string can have
      * up to eight comma separated bit field octets.
      *
-     * As an alternative one can use mnenomics
+     * As an alternative one can use mnemonics
      *
      * admin    - user get full access.
      * user     - user get standard user rights.
@@ -203,13 +203,6 @@ class CUserItem
      * on any position ('*').
      */
     bool setAllowedRemotesFromString(const std::string &strConnect);
-
-    /*!
-     * Set allowed event for string.
-     * Comma separated string where each item is class:type where either
-     * class or type or both can be wildcard '*'
-     */
-    bool setAllowedEventsFromString(const std::string &strEvents);
 
     /*!
      * Save record to database
@@ -239,43 +232,63 @@ class CUserItem
      */
     static bool isUserInDB(const std::string &user, long *pid = NULL);
 
+    /*!
+        Check password for user
+        @param password Password to check
+        @return true If password is correct
+    */
     bool checkPassword(const std::string &password)
     {
         return (getPassword() == password);
     };
+
+    /*!
+        Check combined password domain for user
+        @param passworddomain Password domain to check
+        @return true If password domain is correct
+    */
     bool checkPasswordDomain(const std::string &md5password)
     {
         return (getPasswordDomain() == md5password);
     };
 
-    // Getters/Setters
+    // * * * Getters/Setters * * *
+
+    // UserID
     long getUserID(void) { return m_userID; };
     void setUserID(const long id) { m_userID = id; };
 
+    // Username
     std::string getUserName(void) { return m_user; };
     void setUserName(const std::string &strUser) { m_user = strUser; };
 
+    // Password
     std::string getPassword(void) { return m_password; };
     void setPassword(const std::string &strPassword)
     {
         m_password = strPassword;
     };
 
+    // PasswordDomain
     std::string getPasswordDomain(void)
     {
         return vscp_lower(m_md5PasswordDomain);
     };
+
     void setPasswordDomain(const std::string &strPassword)
     {
         m_md5PasswordDomain = vscp_lower(strPassword);
     };
 
+    // Full name
     std::string getFullname(void) { return m_fullName; };
     void setFullname(const std::string &strUser) { m_fullName = strUser; };
 
+    // Note
     std::string getNote(void) { return m_note; };
     void setNote(const std::string &note) { m_note = note; };
 
+    // User rights
     uint8_t getUserRights(const uint8_t pos)
     {
         return m_userRights[pos & 0x07];
@@ -286,40 +299,160 @@ class CUserItem
     };
     std::string getUserRightsAsString(void);
 
+    // -------------------------------- 
+    // * * * Allowed events list * * *
+    // -------------------------------- 
+
+    /*!
+        Clear the allowed event list
+    */
     void clearAllowedEventList(void) { m_listAllowedEvents.clear(); };
-    void addAllowedEvent(const std::string &strEvent)
-    {
-        m_listAllowedEvents.push_back(strEvent);
-    };
+
+    /*!
+        Add one allowed event
+        @param strEvent Event to add on the form "class:type" where
+        any of class/type can be a wildcard '*'
+    */
+    bool addAllowedEvent(const std::string &strEvent);
+
+    /*!
+        Get allowed event
+
+        @param n Ordinal for event.
+        @param event [out] Allowed event
+        @return True on success, false on failure
+    */
+    bool getAllowedEvent(size_t n, std::string& event );
+
+    /*!
+        Set allowed event
+
+        @param n Ordinal for event.
+        @param event Allowed event if success.
+        @return True on success, false on failure
+    */
+    bool setAllowedEvent(size_t n, std::string& event );
+
+    /*!
+        Get all allowed events as a comma separated string
+    */
     std::string getAllowedEventsAsString(void);
 
+    /*!
+     * Set allowed event for string.
+     * @param strEvents Comma separated string where each item is "class:type"
+     * where either class or type or both can be a wildcard '*'
+     * @param bClear If true clear the list before adding new entries.
+     * @return true on succes, false otherwise
+     */
+    bool setAllowedEventsFromString(const std::string &strEvents,
+                                    bool bClear = true);
+
+    /*!
+        Get Number of allowed events a user can send. Zero events returned means
+       user can send any event.
+        @return Number of events
+    */
+    size_t getAllowedEventsCount(void) { return m_listAllowedEvents.size(); };
+
+    // -----------------------
+    // * * * Remote list * * *
+    // -----------------------
+
+    /*!
+        Return total number of allowed hosts. An empty list means
+       all remote hosts can connect.
+        @return Number of allowed hosts
+    */
+    size_t getAllowedRemotesCount(void)
+    {
+        return (m_listAllowedRemotes.size());
+    };
+
+    /*!
+        Clear allowed hosts list. An empty list means
+       all remote hosts can connect.
+    */
     void clearAllowedRemoteList(void)
     {
-        m_listAllowedIPV4Remotes.clear();
-        m_listAllowedIPV6Remotes.clear();
+        m_listAllowedRemotes.clear();
     };
+
+    /*!
+        Add allowed remote
+        @param strRemote Address (ip.v4/ip.v6) for remote host to add
+    */
     void addAllowedRemote(const std::string &strRemote)
     {
-        if (strRemote.npos != strRemote.find(':'))
-            m_listAllowedIPV6Remotes.push_back(strRemote);
-        else
-            m_listAllowedIPV4Remotes.push_back(strRemote);
+        m_listAllowedRemotes.push_back(strRemote);
     };
+
+    /*!
+        Get all allowed remotes as a comma separated string. An empty list means
+       all remote hosts can connect.
+        @return Return list of allowed remotes as a comma separated list of
+       strings.
+    */
     std::string getAllowedRemotesAsString(void);
 
-    const vscpEventFilter *getFilter(void) { return &m_filterVSCP; };
+    /*!
+        Get specific remote host item
+        @param n Item index
+        @param remote [out] Remote host on success
+        @return true on success
+    */
+    bool getAllowedRemote( size_t n, std::string& remote );
+
+    /*!
+        Set specific remote host item
+        @param n Item index
+        @param remote Remote host to set
+        @return true on success
+    */
+    bool setAllowedRemote( size_t n, std::string& remote );
+
+    /*!
+        Get receive filter
+    */
+    const vscpEventFilter *getUserFilter(void) { return &m_filterVSCP; };
+
+    /*!
+        Set receive filter
+    */
     void setFilter(const vscpEventFilter *pFilter)
     {
         if (NULL != pFilter)
             memcpy(&m_filterVSCP, pFilter, sizeof(vscpEventFilter));
     };
+
+    /*!
+        Set receive filter from string
+    */
     bool setFilterFromString(const std::string &strFilter)
     {
         return vscp_readFilterFromString(&m_filterVSCP, strFilter);
     };
+
+    /*!
+        Set receive mask from string
+    */
     bool setMaskFromString(const std::string &strMask)
     {
         return vscp_readMaskFromString(&m_filterVSCP, strMask);
+    };
+
+    std::string getFilter(void)
+    {
+        std::string str;
+        vscp_writeFilterToString(&m_filterVSCP, str);
+        return str;
+    };
+
+    std::string getMask(void)
+    {
+        std::string str;
+        vscp_writeMaskToString(&m_filterVSCP, str);
+        return str;
     };
 
     /*!
@@ -374,10 +507,9 @@ class CUserItem
     /*!
         This list holds ip-addresses for remote
         computers that are allowed to connect to this
-        machine. IP v4 and IP v6 on standard form.
+        machine. ip.v4 and ip.v6 on standard form.
     */
-    std::deque<std::string> m_listAllowedIPV4Remotes;
-    std::deque<std::string> m_listAllowedIPV6Remotes;
+    std::deque<std::string> m_listAllowedRemotes;
 
     /*!
         Filter associated with this user
@@ -455,12 +587,20 @@ class CUserList
     bool addUser(const std::string &strUser, bool bUnpackNote = false);
 
     /*!
-     * Delete a user given it's userid.
+     * Delete a user given it's username.
      * Only non-system users can be deleted.
-     * @param users Username for user to delete
+     * @param user Username for user to delete
      * @param true on success. false on failure.
      */
     bool deleteUser(const std::string &user);
+
+    /*!
+     * Delete a user given it's userid.
+     * Only non-system users can be deleted.
+     * @param userid Userid for user to delete
+     * @param true on success. false on failure.
+     */
+    bool deleteUser(const long userid);
 
     /*!
         Get user

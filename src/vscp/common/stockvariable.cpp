@@ -100,12 +100,10 @@ CVariableStorage::handleStockVariable(std::string name,
     // Set read defaults
     if (STOCKVAR_INIT == op) {
         // Set common values
-        var.init();
+        var.init(); // Owner admin,non-persistent,non-stock
         var.setName(name);
         var.setID(ID_VAR_DYNAMIC);
         var.setStockVariable(true);
-        var.setPersistent(false);
-        var.setOwnerId(USER_ID_ADMIN);
         var.setAccessRights(PERMISSION_ALL_READ | PERMISSION_OWNER_WRITE);
         var.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
         var.setValue("");
@@ -115,7 +113,7 @@ CVariableStorage::handleStockVariable(std::string name,
         // Try to read the variable from stock storage
         var_id = findNonPersistentVariable(name, pUser, var);
         // Will be zero for a dynamic stock variable
-        if ( 0 == var_id ) {
+        if (0 == var_id) {
             var.setID(ID_VAR_DYNAMIC);
         }
     } else if (STOCKVAR_WRITE == op) {
@@ -2360,7 +2358,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 }
 
                 // Set database configuration value
-                std::string str =  var.isTrue() ? "1" : "0";
+                std::string str = var.isTrue() ? "1" : "0";
                 if (gpobj->updateConfigurationRecordItem(
                       VSCPDB_CONFIG_NAME_UDP_ENABLE, str.c_str())) {
                     syslog(LOG_ERR,
@@ -2559,7 +2557,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 }
 
                 // Set database configuration value
-                std::string str =  var.isTrue() ? "1" : "0";
+                std::string str = var.isTrue() ? "1" : "0";
                 if (gpobj->updateConfigurationRecordItem(
                       VSCPDB_CONFIG_NAME_UDP_UNSECURE_ENABLE, str.c_str())) {
                     syslog(LOG_ERR,
@@ -2708,7 +2706,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 }
 
                 // Set database configuration value
-                std::string str =  var.isTrue() ? "1" : "0";
+                std::string str = var.isTrue() ? "1" : "0";
                 if (gpobj->updateConfigurationRecordItem(
                       VSCPDB_CONFIG_NAME_UDP_ACK_ENABLE, str.c_str())) {
                     syslog(LOG_ERR,
@@ -2757,7 +2755,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 }
 
                 // Set database configuration value
-                std::string str =  var.isTrue() ? "1" : "0";
+                std::string str = var.isTrue() ? "1" : "0";
                 if (gpobj->updateConfigurationRecordItem(
                       VSCPDB_CONFIG_NAME_MULTICAST_ENABLE, str.c_str())) {
                     syslog(LOG_ERR,
@@ -2904,7 +2902,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 }
 
                 // Set database configuration value
-                std::string str =  var.isTrue() ? "1" : "0";
+                std::string str = var.isTrue() ? "1" : "0";
                 if (gpobj->updateConfigurationRecordItem(
                       VSCPDB_CONFIG_NAME_DM_ALLOW_XML_SAVE, str.c_str())) {
                     syslog(LOG_ERR,
@@ -3103,7 +3101,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 }
 
                 // Set database configuration value
-                std::string str =  var.isTrue() ? "1" : "0";
+                std::string str = var.isTrue() ? "1" : "0";
                 if (gpobj->updateConfigurationRecordItem(
                       VSCPDB_CONFIG_NAME_WEB_ENABLE, str.c_str())) {
                     syslog(LOG_ERR,
@@ -3152,7 +3150,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 }
 
                 // Set database configuration value
-                std::string str =  var.isTrue() ? "1" : "0";
+                std::string str = var.isTrue() ? "1" : "0";
                 if (gpobj->updateConfigurationRecordItem(
                       VSCPDB_CONFIG_NAME_WEB_DOCUMENT_ROOT, str.c_str())) {
                     syslog(LOG_ERR,
@@ -3359,7 +3357,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 }
 
                 // Set database configuration value
-                std::string str =  var.isTrue() ? "1" : "0";
+                std::string str = var.isTrue() ? "1" : "0";
                 if (gpobj->updateConfigurationRecordItem(
                       VSCPDB_CONFIG_NAME_WEB_ENABLE_AUTH_DOMAIN_CHECK,
                       str.c_str())) {
@@ -3516,7 +3514,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 }
 
                 // Set database configuration value
-                std::string str =  var.isTrue() ? "1" : "0";
+                std::string str = var.isTrue() ? "1" : "0";
                 if (gpobj->updateConfigurationRecordItem(
                       VSCPDB_CONFIG_NAME_WEB_SSL_VERIFY_PEER, str.c_str())) {
                     syslog(LOG_ERR,
@@ -3720,7 +3718,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 }
 
                 // Set database configuration value
-                std::string str =  var.isTrue() ? "1" : "0";
+                std::string str = var.isTrue() ? "1" : "0";
                 if (gpobj->updateConfigurationRecordItem(
                       VSCPDB_CONFIG_NAME_WEB_SSL_DEFAULT_VERIFY_PATHS,
                       str.c_str())) {
@@ -3876,7 +3874,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 }
 
                 // Set database configuration value
-                std::string str =  var.isTrue() ? "1" : "0";
+                std::string str = var.isTrue() ? "1" : "0";
                 if (gpobj->updateConfigurationRecordItem(
                       VSCPDB_CONFIG_NAME_WEB_SSL_SHORT_TRUST, str.c_str())) {
                     syslog(LOG_ERR,
@@ -4178,7 +4176,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 }
 
                 // Set database configuration value
-                std::string str =  var.isTrue() ? "1" : "0";
+                std::string str = var.isTrue() ? "1" : "0";
                 if (gpobj->updateConfigurationRecordItem(
                       VSCPDB_CONFIG_NAME_WEB_ENABLE_DIRECTORY_LISTING,
                       str.c_str())) {
@@ -4230,7 +4228,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 }
 
                 // Set database configuration value
-                std::string str =  var.isTrue() ? "1" : "0";
+                std::string str = var.isTrue() ? "1" : "0";
                 if (gpobj->updateConfigurationRecordItem(
                       VSCPDB_CONFIG_NAME_WEB_ENABLE_KEEP_ALIVE, str.c_str())) {
                     syslog(LOG_ERR,
@@ -4741,7 +4739,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 }
 
                 // Set database configuration value
-                std::string str =  var.isTrue() ? "1" : "0";
+                std::string str = var.isTrue() ? "1" : "0";
                 if (gpobj->updateConfigurationRecordItem(
                       VSCPDB_CONFIG_NAME_WEB_DECODE_URL, str.c_str())) {
                     syslog(LOG_ERR,
@@ -5313,7 +5311,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 }
 
                 // Set database configuration value
-                std::string str =  var.isTrue() ? "1" : "0";
+                std::string str = var.isTrue() ? "1" : "0";
                 if (gpobj->updateConfigurationRecordItem(
                       VSCPDB_CONFIG_NAME_WEB_ALLOW_SENDFILE_CALL,
                       str.c_str())) {
@@ -5470,7 +5468,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 }
 
                 // Set database configuration value
-                std::string str =  var.isTrue() ? "1" : "0";
+                std::string str = var.isTrue() ? "1" : "0";
                 if (gpobj->updateConfigurationRecordItem(
                       VSCPDB_CONFIG_NAME_WEB_ALLOW_INDEX_SCRIPT_RESOURCE,
                       str.c_str())) {
@@ -5905,7 +5903,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 }
 
                 // Set database configuration value
-                std::string str =  var.isTrue() ? "1" : "0";
+                std::string str = var.isTrue() ? "1" : "0";
                 if (gpobj->updateConfigurationRecordItem(
                       VSCPDB_CONFIG_NAME_WEBSOCKET_ENABLE, str.c_str())) {
                     syslog(LOG_ERR,
@@ -6074,11 +6072,10 @@ CVariableStorage::handleStockVariable(std::string name,
                     return false;
                 }
 
-                int val = vscp_readStringValue( str );
-                if ( val ) {
+                int val = vscp_readStringValue(str);
+                if (val) {
                     gpobj->m_automation.enableAutomation();
-                }
-                else {
+                } else {
                     gpobj->m_automation.disableAutomation();
                 }
 
@@ -6148,7 +6145,9 @@ CVariableStorage::handleStockVariable(std::string name,
             } else if (STOCKVAR_READ == op) {
                 char buf[80];
                 if (!gpobj->getConfigurationValueFromDatabase(
-                      VSCPDB_CONFIG_NAME_AUTOMATION_SUBZONE, buf, sizeof(buf))) {
+                      VSCPDB_CONFIG_NAME_AUTOMATION_SUBZONE,
+                      buf,
+                      sizeof(buf))) {
                     syslog(LOG_ERR,
                            "Failed to read remote variable %s from "
                            "configuration database.",
@@ -6200,7 +6199,9 @@ CVariableStorage::handleStockVariable(std::string name,
             } else if (STOCKVAR_READ == op) {
                 char buf[80];
                 if (!gpobj->getConfigurationValueFromDatabase(
-                      VSCPDB_CONFIG_NAME_AUTOMATION_LONGITUDE, buf, sizeof(buf))) {
+                      VSCPDB_CONFIG_NAME_AUTOMATION_LONGITUDE,
+                      buf,
+                      sizeof(buf))) {
                     syslog(LOG_ERR,
                            "Failed to read remote variable %s from "
                            "configuration database.",
@@ -6237,9 +6238,8 @@ CVariableStorage::handleStockVariable(std::string name,
 
                 try {
                     double val = std::stod(str);
-                    gpobj->m_automation.setLongitude( val );
-                }
-                catch (...) {
+                    gpobj->m_automation.setLongitude(val);
+                } catch (...) {
                     syslog(LOG_ERR,
                            "Failed to set acive value for remote "
                            "variable %s",
@@ -6260,7 +6260,9 @@ CVariableStorage::handleStockVariable(std::string name,
             } else if (STOCKVAR_READ == op) {
                 char buf[80];
                 if (!gpobj->getConfigurationValueFromDatabase(
-                      VSCPDB_CONFIG_NAME_AUTOMATION_LATITUDE, buf, sizeof(buf))) {
+                      VSCPDB_CONFIG_NAME_AUTOMATION_LATITUDE,
+                      buf,
+                      sizeof(buf))) {
                     syslog(LOG_ERR,
                            "Failed to read remote variable %s from "
                            "configuration database.",
@@ -6297,9 +6299,8 @@ CVariableStorage::handleStockVariable(std::string name,
 
                 try {
                     double val = std::stod(str);
-                    gpobj->m_automation.setLatitude( val );
-                }
-                catch (...) {
+                    gpobj->m_automation.setLatitude(val);
+                } catch (...) {
                     syslog(LOG_ERR,
                            "Failed to set acive value for remote "
                            "variable %s",
@@ -6320,7 +6321,9 @@ CVariableStorage::handleStockVariable(std::string name,
             } else if (STOCKVAR_READ == op) {
                 char buf[80];
                 if (!gpobj->getConfigurationValueFromDatabase(
-                      VSCPDB_CONFIG_NAME_AUTOMATION_SUNRISE_ENABLE, buf, sizeof(buf))) {
+                      VSCPDB_CONFIG_NAME_AUTOMATION_SUNRISE_ENABLE,
+                      buf,
+                      sizeof(buf))) {
                     syslog(LOG_ERR,
                            "Failed to read remote variable %s from "
                            "configuration database.",
@@ -6347,7 +6350,8 @@ CVariableStorage::handleStockVariable(std::string name,
                 // Set database configuration value
                 std::string str = var.isTrue() ? "1" : "0";
                 if (gpobj->updateConfigurationRecordItem(
-                      VSCPDB_CONFIG_NAME_AUTOMATION_SUNRISE_ENABLE, str.c_str())) {
+                      VSCPDB_CONFIG_NAME_AUTOMATION_SUNRISE_ENABLE,
+                      str.c_str())) {
                     syslog(LOG_ERR,
                            "Failed to update configuration database for remote "
                            "variable %s",
@@ -6372,7 +6376,9 @@ CVariableStorage::handleStockVariable(std::string name,
             } else if (STOCKVAR_READ == op) {
                 char buf[80];
                 if (!gpobj->getConfigurationValueFromDatabase(
-                      VSCPDB_CONFIG_NAME_AUTOMATION_SUNSET_ENABLE, buf, sizeof(buf))) {
+                      VSCPDB_CONFIG_NAME_AUTOMATION_SUNSET_ENABLE,
+                      buf,
+                      sizeof(buf))) {
                     syslog(LOG_ERR,
                            "Failed to read remote variable %s from "
                            "configuration database.",
@@ -6399,7 +6405,8 @@ CVariableStorage::handleStockVariable(std::string name,
                 // Set database configuration value
                 std::string str = var.getValue();
                 if (gpobj->updateConfigurationRecordItem(
-                      VSCPDB_CONFIG_NAME_AUTOMATION_SUNSET_ENABLE, str.c_str())) {
+                      VSCPDB_CONFIG_NAME_AUTOMATION_SUNSET_ENABLE,
+                      str.c_str())) {
                     syslog(LOG_ERR,
                            "Failed to update configuration database for remote "
                            "variable %s",
@@ -6412,19 +6419,23 @@ CVariableStorage::handleStockVariable(std::string name,
 
                 return true;
             }
-        } else if (VSCPDB_CONFIG_NAME_AUTOMATION_SUNRISE_TWILIGHT_ENABLE == strToken) {
+        } else if (VSCPDB_CONFIG_NAME_AUTOMATION_SUNRISE_TWILIGHT_ENABLE ==
+                   strToken) {
             if (STOCKVAR_INIT == op) {
                 var.setName(name);
                 var.setAccessRights(PERMISSION_OWNER_WRITE |
                                     PERMISSION_ALL_READ);
                 var.setType(VSCP_DAEMON_VARIABLE_CODE_BOOLEAN);
-                var.setNote("Configuration: Automation sunrise twilight event enable.");
+                var.setNote(
+                  "Configuration: Automation sunrise twilight event enable.");
                 var.setValue(0); // Dummy value
                 return addStockVariable(var);
             } else if (STOCKVAR_READ == op) {
                 char buf[80];
                 if (!gpobj->getConfigurationValueFromDatabase(
-                      VSCPDB_CONFIG_NAME_AUTOMATION_SUNRISE_TWILIGHT_ENABLE, buf, sizeof(buf))) {
+                      VSCPDB_CONFIG_NAME_AUTOMATION_SUNRISE_TWILIGHT_ENABLE,
+                      buf,
+                      sizeof(buf))) {
                     syslog(LOG_ERR,
                            "Failed to read remote variable %s from "
                            "configuration database.",
@@ -6449,9 +6460,10 @@ CVariableStorage::handleStockVariable(std::string name,
                 }
 
                 // Set database configuration value
-                std::string str =  var.isTrue() ? "1" : "0";
+                std::string str = var.isTrue() ? "1" : "0";
                 if (gpobj->updateConfigurationRecordItem(
-                      VSCPDB_CONFIG_NAME_AUTOMATION_SUNRISE_TWILIGHT_ENABLE, str.c_str())) {
+                      VSCPDB_CONFIG_NAME_AUTOMATION_SUNRISE_TWILIGHT_ENABLE,
+                      str.c_str())) {
                     syslog(LOG_ERR,
                            "Failed to update configuration database for remote "
                            "variable %s",
@@ -6464,19 +6476,23 @@ CVariableStorage::handleStockVariable(std::string name,
 
                 return true;
             }
-        } else if (VSCPDB_CONFIG_NAME_AUTOMATION_SUNSET_TWILIGHT_ENABLE == strToken) {
+        } else if (VSCPDB_CONFIG_NAME_AUTOMATION_SUNSET_TWILIGHT_ENABLE ==
+                   strToken) {
             if (STOCKVAR_INIT == op) {
                 var.setName(name);
                 var.setAccessRights(PERMISSION_OWNER_WRITE |
                                     PERMISSION_ALL_READ);
                 var.setType(VSCP_DAEMON_VARIABLE_CODE_BOOLEAN);
-                var.setNote("Configuration: Automation sunset twilight event enable.");
+                var.setNote(
+                  "Configuration: Automation sunset twilight event enable.");
                 var.setValue(0); // Dummy value
                 return addStockVariable(var);
             } else if (STOCKVAR_READ == op) {
                 char buf[80];
                 if (!gpobj->getConfigurationValueFromDatabase(
-                      VSCPDB_CONFIG_NAME_AUTOMATION_SUNSET_TWILIGHT_ENABLE, buf, sizeof(buf))) {
+                      VSCPDB_CONFIG_NAME_AUTOMATION_SUNSET_TWILIGHT_ENABLE,
+                      buf,
+                      sizeof(buf))) {
                     syslog(LOG_ERR,
                            "Failed to read remote variable %s from "
                            "configuration database.",
@@ -6501,9 +6517,10 @@ CVariableStorage::handleStockVariable(std::string name,
                 }
 
                 // Set database configuration value
-                std::string str =  var.isTrue() ? "1" : "0";
+                std::string str = var.isTrue() ? "1" : "0";
                 if (gpobj->updateConfigurationRecordItem(
-                      VSCPDB_CONFIG_NAME_AUTOMATION_SUNSET_TWILIGHT_ENABLE, str.c_str())) {
+                      VSCPDB_CONFIG_NAME_AUTOMATION_SUNSET_TWILIGHT_ENABLE,
+                      str.c_str())) {
                     syslog(LOG_ERR,
                            "Failed to update configuration database for remote "
                            "variable %s",
@@ -6516,19 +6533,23 @@ CVariableStorage::handleStockVariable(std::string name,
 
                 return true;
             }
-        } else if (VSCPDB_CONFIG_NAME_AUTOMATION_SEGMENT_CTRL_ENABLE == strToken) {
+        } else if (VSCPDB_CONFIG_NAME_AUTOMATION_SEGMENT_CTRL_ENABLE ==
+                   strToken) {
             if (STOCKVAR_INIT == op) {
                 var.setName(name);
                 var.setAccessRights(PERMISSION_OWNER_WRITE |
                                     PERMISSION_ALL_READ);
                 var.setType(VSCP_DAEMON_VARIABLE_CODE_BOOLEAN);
-                var.setNote("Configuration: Automation segment controller event enable.");
+                var.setNote(
+                  "Configuration: Automation segment controller event enable.");
                 var.setValue(0); // Dummy value
                 return addStockVariable(var);
             } else if (STOCKVAR_READ == op) {
                 char buf[80];
                 if (!gpobj->getConfigurationValueFromDatabase(
-                      VSCPDB_CONFIG_NAME_AUTOMATION_SEGMENT_CTRL_ENABLE, buf, sizeof(buf))) {
+                      VSCPDB_CONFIG_NAME_AUTOMATION_SEGMENT_CTRL_ENABLE,
+                      buf,
+                      sizeof(buf))) {
                     syslog(LOG_ERR,
                            "Failed to read remote variable %s from "
                            "configuration database.",
@@ -6553,9 +6574,10 @@ CVariableStorage::handleStockVariable(std::string name,
                 }
 
                 // Set database configuration value
-                std::string str =  var.isTrue() ? "1" : "0";
+                std::string str = var.isTrue() ? "1" : "0";
                 if (gpobj->updateConfigurationRecordItem(
-                      VSCPDB_CONFIG_NAME_AUTOMATION_SEGMENT_CTRL_ENABLE, str.c_str())) {
+                      VSCPDB_CONFIG_NAME_AUTOMATION_SEGMENT_CTRL_ENABLE,
+                      str.c_str())) {
                     syslog(LOG_ERR,
                            "Failed to update configuration database for remote "
                            "variable %s",
@@ -6580,7 +6602,9 @@ CVariableStorage::handleStockVariable(std::string name,
             } else if (STOCKVAR_READ == op) {
                 char buf[80];
                 if (!gpobj->getConfigurationValueFromDatabase(
-                      VSCPDB_CONFIG_NAME_AUTOMATION_HEARTBEAT_ENABLE, buf, sizeof(buf))) {
+                      VSCPDB_CONFIG_NAME_AUTOMATION_HEARTBEAT_ENABLE,
+                      buf,
+                      sizeof(buf))) {
                     syslog(LOG_ERR,
                            "Failed to read remote variable %s from "
                            "configuration database.",
@@ -6605,9 +6629,10 @@ CVariableStorage::handleStockVariable(std::string name,
                 }
 
                 // Set database configuration value
-                std::string str =  var.isTrue() ? "1" : "0";
+                std::string str = var.isTrue() ? "1" : "0";
                 if (gpobj->updateConfigurationRecordItem(
-                      VSCPDB_CONFIG_NAME_AUTOMATION_HEARTBEAT_ENABLE, str.c_str())) {
+                      VSCPDB_CONFIG_NAME_AUTOMATION_HEARTBEAT_ENABLE,
+                      str.c_str())) {
                     syslog(LOG_ERR,
                            "Failed to update configuration database for remote "
                            "variable %s",
@@ -6620,19 +6645,23 @@ CVariableStorage::handleStockVariable(std::string name,
 
                 return true;
             }
-        } else if (VSCPDB_CONFIG_NAME_AUTOMATION_CAPABILITIES_ENABLE == strToken) {
+        } else if (VSCPDB_CONFIG_NAME_AUTOMATION_CAPABILITIES_ENABLE ==
+                   strToken) {
             if (STOCKVAR_INIT == op) {
                 var.setName(name);
                 var.setAccessRights(PERMISSION_OWNER_WRITE |
                                     PERMISSION_ALL_READ);
                 var.setType(VSCP_DAEMON_VARIABLE_CODE_BOOLEAN);
-                var.setNote("Configuration: Automation server capabilities event enable.");
+                var.setNote("Configuration: Automation server capabilities "
+                            "event enable.");
                 var.setValue(0); // Dummy value
                 return addStockVariable(var);
             } else if (STOCKVAR_READ == op) {
                 char buf[80];
                 if (!gpobj->getConfigurationValueFromDatabase(
-                      VSCPDB_CONFIG_NAME_AUTOMATION_CAPABILITIES_ENABLE, buf, sizeof(buf))) {
+                      VSCPDB_CONFIG_NAME_AUTOMATION_CAPABILITIES_ENABLE,
+                      buf,
+                      sizeof(buf))) {
                     syslog(LOG_ERR,
                            "Failed to read remote variable %s from "
                            "configuration database.",
@@ -6657,9 +6686,10 @@ CVariableStorage::handleStockVariable(std::string name,
                 }
 
                 // Set database configuration value
-                std::string str =  var.isTrue() ? "1" : "0";
+                std::string str = var.isTrue() ? "1" : "0";
                 if (gpobj->updateConfigurationRecordItem(
-                      VSCPDB_CONFIG_NAME_AUTOMATION_CAPABILITIES_ENABLE, str.c_str())) {
+                      VSCPDB_CONFIG_NAME_AUTOMATION_CAPABILITIES_ENABLE,
+                      str.c_str())) {
                     syslog(LOG_ERR,
                            "Failed to update configuration database for remote "
                            "variable %s",
@@ -6672,14 +6702,15 @@ CVariableStorage::handleStockVariable(std::string name,
 
                 return true;
             }
-        } else if (VSCPDB_CONFIG_NAME_AUTOMATION_SEGMENT_CTRL_INTERVAL == strToken) {
+        } else if (VSCPDB_CONFIG_NAME_AUTOMATION_SEGMENT_CTRL_INTERVAL ==
+                   strToken) {
             if (STOCKVAR_INIT == op) {
                 var.setName(name);
                 var.setAccessRights(PERMISSION_OWNER_WRITE |
                                     PERMISSION_ALL_READ);
                 var.setType(VSCP_DAEMON_VARIABLE_CODE_LONG);
-                var.setNote(
-                  "Configuration: Automation segment controller event interval in milliseconds.");
+                var.setNote("Configuration: Automation segment controller "
+                            "event interval in milliseconds.");
                 var.setValue(0); // Dummy value
                 return addStockVariable(var);
             } else if (STOCKVAR_READ == op) {
@@ -6714,7 +6745,8 @@ CVariableStorage::handleStockVariable(std::string name,
                 // Set database configuration value
                 std::string str = var.getValue();
                 if (gpobj->updateConfigurationRecordItem(
-                      VSCPDB_CONFIG_NAME_AUTOMATION_SEGMENT_CTRL_INTERVAL, str.c_str())) {
+                      VSCPDB_CONFIG_NAME_AUTOMATION_SEGMENT_CTRL_INTERVAL,
+                      str.c_str())) {
                     syslog(LOG_ERR,
                            "Failed to update configuration database for remote "
                            "variable %s",
@@ -6723,19 +6755,20 @@ CVariableStorage::handleStockVariable(std::string name,
                 }
 
                 long val = vscp_readStringValue(str);
-                gpobj->m_automation.setSegmentControllerHeartbeatInterval( val );
+                gpobj->m_automation.setSegmentControllerHeartbeatInterval(val);
 
                 return true;
             }
 
-        }  else if (VSCPDB_CONFIG_NAME_AUTOMATION_HEARTBEAT_INTERVAL == strToken) {
+        } else if (VSCPDB_CONFIG_NAME_AUTOMATION_HEARTBEAT_INTERVAL ==
+                   strToken) {
             if (STOCKVAR_INIT == op) {
                 var.setName(name);
                 var.setAccessRights(PERMISSION_OWNER_WRITE |
                                     PERMISSION_ALL_READ);
                 var.setType(VSCP_DAEMON_VARIABLE_CODE_LONG);
-                var.setNote(
-                  "Configuration: Automation heartbeat event interval in milliseconds.");
+                var.setNote("Configuration: Automation heartbeat event "
+                            "interval in milliseconds.");
                 var.setValue(0); // Dummy value
                 return addStockVariable(var);
             } else if (STOCKVAR_READ == op) {
@@ -6770,7 +6803,8 @@ CVariableStorage::handleStockVariable(std::string name,
                 // Set database configuration value
                 std::string str = var.getValue();
                 if (gpobj->updateConfigurationRecordItem(
-                      VSCPDB_CONFIG_NAME_AUTOMATION_HEARTBEAT_INTERVAL, str.c_str())) {
+                      VSCPDB_CONFIG_NAME_AUTOMATION_HEARTBEAT_INTERVAL,
+                      str.c_str())) {
                     syslog(LOG_ERR,
                            "Failed to update configuration database for remote "
                            "variable %s",
@@ -6779,19 +6813,20 @@ CVariableStorage::handleStockVariable(std::string name,
                 }
 
                 long val = vscp_readStringValue(str);
-                gpobj->m_automation.setHeartbeatEventInterval( val );
+                gpobj->m_automation.setHeartbeatEventInterval(val);
 
                 return true;
             }
 
-        } else if (VSCPDB_CONFIG_NAME_AUTOMATION_CAPABILITIES_INTERVAL == strToken) {
+        } else if (VSCPDB_CONFIG_NAME_AUTOMATION_CAPABILITIES_INTERVAL ==
+                   strToken) {
             if (STOCKVAR_INIT == op) {
                 var.setName(name);
                 var.setAccessRights(PERMISSION_OWNER_WRITE |
                                     PERMISSION_ALL_READ);
                 var.setType(VSCP_DAEMON_VARIABLE_CODE_LONG);
-                var.setNote(
-                  "Configuration: Automation server capabilities event interval in milliseconds.");
+                var.setNote("Configuration: Automation server capabilities "
+                            "event interval in milliseconds.");
                 var.setValue(0); // Dummy value
                 return addStockVariable(var);
             } else if (STOCKVAR_READ == op) {
@@ -6826,7 +6861,8 @@ CVariableStorage::handleStockVariable(std::string name,
                 // Set database configuration value
                 std::string str = var.getValue();
                 if (gpobj->updateConfigurationRecordItem(
-                      VSCPDB_CONFIG_NAME_AUTOMATION_CAPABILITIES_INTERVAL, str.c_str())) {
+                      VSCPDB_CONFIG_NAME_AUTOMATION_CAPABILITIES_INTERVAL,
+                      str.c_str())) {
                     syslog(LOG_ERR,
                            "Failed to update configuration database for remote "
                            "variable %s",
@@ -6835,13 +6871,11 @@ CVariableStorage::handleStockVariable(std::string name,
                 }
 
                 long val = vscp_readStringValue(str);
-                gpobj->m_automation.setCapabilitiesEventInterval( val );
+                gpobj->m_automation.setCapabilitiesEventInterval(val);
 
                 return true;
             }
-
         }
- 
     }
 
     // *************************************************************************
@@ -6917,6 +6951,12 @@ CVariableStorage::handleStockVariable(std::string name,
                        "write individual DM rows instead.",
                        name.c_str());
                 return false;
+            } else {
+                syslog(LOG_ERR,
+                       "Operation on remote variable %s invalid %d",
+                       name.c_str(),
+                       op);
+                return false;
             }
         }
 
@@ -6987,6 +7027,12 @@ CVariableStorage::handleStockVariable(std::string name,
                 } else if (STOCKVAR_WRITE == op) {
                     syslog(
                       LOG_ERR, "Remote variable %s is read only", name.c_str());
+                    return false;
+                } else {
+                    syslog(LOG_ERR,
+                           "Operation on remote variable %s invalid %d",
+                           name.c_str(),
+                           op);
                     return false;
                 }
             }
@@ -7124,6 +7170,12 @@ CVariableStorage::handleStockVariable(std::string name,
                                name.c_str());
                         return false;
                     }
+                } else {
+                    syslog(LOG_ERR,
+                           "Operation on remote variable %s invalid %d",
+                           name.c_str(),
+                           op);
+                    return false;
                 }
             }
 
@@ -7298,6 +7350,12 @@ CVariableStorage::handleStockVariable(std::string name,
                         }
 
                         return true;
+                    } else {
+                        syslog(LOG_ERR,
+                               "Operation on remote variable %s invalid %d",
+                               name.c_str(),
+                               op);
+                        return false;
                     }
 
                 } // full mask
@@ -7545,6 +7603,12 @@ CVariableStorage::handleStockVariable(std::string name,
                         }
 
                         return true;
+                    } else {
+                        syslog(LOG_ERR,
+                               "Operation on remote variable %s invalid %d",
+                               name.c_str(),
+                               op);
+                        return false;
                     }
 
                 } // full filter
@@ -7871,7 +7935,14 @@ CVariableStorage::handleStockVariable(std::string name,
                         }
 
                         return true;
+                    } else {
+                        syslog(LOG_ERR,
+                               "Operation on remote variable %s invalid %d",
+                               name.c_str(),
+                               op);
+                        return false;
                     }
+
                 } // 'vscp.dm.n.allowed'
 
                 strToken = tokens.front();
@@ -8659,6 +8730,12 @@ CVariableStorage::handleStockVariable(std::string name,
                         pDMRow->setMeasurementGroup(str);
 
                         return true;
+                    } else {
+                        syslog(LOG_ERR,
+                               "Operation on remote variable %s invalid %d",
+                               name.c_str(),
+                               op);
+                        return false;
                     }
                 }
 
@@ -9111,27 +9188,685 @@ CVariableStorage::handleStockVariable(std::string name,
     // *************************************************************************
     //                                  Users
     // *************************************************************************
-    // vscp.pUser->count      - Number of users
-    // vscp.user            - Info about all users
-    // vscp.pUser->n          - Info about user n
-    // vscp.pUser->n.name     - Read/write user name
-    // vscp.pUser->n.password - Read/write user password
-    // vscp.pUser->n.filter   - Read/write user filter
-    // vscp.uer.n.mask      - Read write user mask
-    // vscp-pUser->host-list  - Read/write host list
-    // vscp.pUser->event-list - Read write event-list for user
+    // vscp.user.count          - Number of users
+    // vscp.user                - Info about all users
+    // vscp.user.xml            - future
+    // vscp-user.json           - future
+    // vscp.user.n              - Info about user n
+    // vscp.user.n.xml          - future
+    // vscp.user.n.json         - future
+    // vscp.user.n.name         - Read/write user name
+    // vscp.user.n.password     - Read/write user password
+    // vscp.user.n.filter       - Read/write user filter
+    // vscp.user.n.mask         - Read write user mask
+    // vscp-user.n.host-list    - Read/write host list
+    // vscp.user.n.event-list   - Read write event-list for user
     //
-    // vscp.pUser->add        - Add a user
-    // vscp.pUser->delete     - Delete a user
+    // vscp.user.add            - Add a user
+    // vscp.yser.add.xml        - future
+    // vscp.user.add.json       - future
+    // vscp.user.delete         - Delete a user
 
     if ("user" == strToken) {
 
-        // Must be at least one other token
-        if (tokens.empty()) return false;
+        // Info about all users
+        if (tokens.empty()) {
+            if (STOCKVAR_INIT == op) {
+                var.setName(name);
+                var.setAccessRights(PERMISSION_OWNER_READ);
+                var.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
+                var.setNote("Add defined users.");
+                var.setValue(""); // Dummy value
+                return addStockVariable(var);
+            } else if (STOCKVAR_READ == op) {
+                var.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
+                std::string allusers;
+                if (!gpobj->m_userList.getAllUsers(allusers)) {
+                    syslog(
+                      LOG_ERR, "Failed to read user list for %s", name.c_str());
+                }
+                var.setValue(allusers);
+                var.setLastChangedToNow();
+                return true;
+            } else if (STOCKVAR_WRITE == op) {
+                syslog(
+                  LOG_ERR, "Remote variable %s is read only", name.c_str());
+                return false;
+            } else {
+                syslog(LOG_ERR,
+                       "Operation on remote variable %s invalid %d",
+                       name.c_str(),
+                       op);
+                return false;
+            }
+        }
 
         strToken = tokens.front();
         vscp_trim(strToken);
         tokens.pop_front();
+
+        if ("count" == strToken) {
+            if (STOCKVAR_INIT == op) {
+                var.setName(name);
+                var.setAccessRights(PERMISSION_ALL_READ);
+                var.setType(VSCP_DAEMON_VARIABLE_CODE_LONG);
+                var.setNote("Number of defined users.");
+                var.setValue(0); // Dummy value
+                return addStockVariable(var);
+            } else if (STOCKVAR_READ == op) {
+                var.setType(VSCP_DAEMON_VARIABLE_CODE_LONG);
+                var.setValue((long)gpobj->m_userList.getUserCount());
+                var.setLastChangedToNow();
+                return true;
+            } else if (STOCKVAR_WRITE == op) {
+                syslog(
+                  LOG_ERR, "Remote variable %s is read only", name.c_str());
+                return false;
+            }
+        } else if ("add" == strToken) {
+            if (STOCKVAR_INIT == op) {
+                var.setName(name);
+                var.setAccessRights(PERMISSION_OWNER_ALL);
+                var.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
+                var.setNote("Add a user.");
+                var.setValue(""); // Dummy value
+                return addStockVariable(var);
+            } else if (STOCKVAR_READ == op) {
+                var.setValue("");
+                var.setLastChangedToNow();
+                return true;
+            } else if (STOCKVAR_WRITE == op) {
+                // Only admin is allowed to write?
+                if (USER_ID_ADMIN != pUser->getUserID()) {
+                    syslog(
+                      LOG_ERR,
+                      "Only admin is allowed to execute remote variable %s",
+                      name.c_str());
+                    return false;
+                }
+                if (VSCP_DAEMON_VARIABLE_CODE_STRING != var.getType()) {
+                    syslog(LOG_ERR,
+                           "Type must be string to execute remote variable %s",
+                           name.c_str());
+                    return false;
+                }
+
+                std::string str = var.getValue();
+                return gpobj->m_userList.addUser(str);
+            }
+        } else if ("delete-id" == strToken) {
+            if (STOCKVAR_INIT == op) {
+                var.setName(name);
+                var.setAccessRights(PERMISSION_OWNER_ALL);
+                var.setType(VSCP_DAEMON_VARIABLE_CODE_LONG);
+                var.setNote("Delete one user from userid.");
+                var.setValue(0); // Dummy value
+                return addStockVariable(var);
+            } else if (STOCKVAR_READ == op) {
+                var.setValue(0);
+                var.setLastChangedToNow();
+                return true;
+            } else if (STOCKVAR_WRITE == op) {
+                // Only admin is allowed to write?
+                if (USER_ID_ADMIN != pUser->getUserID()) {
+                    syslog(
+                      LOG_ERR,
+                      "Only admin is allowed to execute remote variable %s",
+                      name.c_str());
+                    return false;
+                }
+                if (VSCP_DAEMON_VARIABLE_CODE_LONG != var.getType()) {
+                    syslog(LOG_ERR,
+                           "Type must be long to execute remote variable %s",
+                           name.c_str());
+                    return false;
+                }
+
+                long val;
+                var.getValue(&val);
+                // CUserItem *pUser = gpobj->m_userList.getUser(val);
+                return gpobj->m_userList.deleteUser(val);
+            }
+        } else if ("delete" == strToken) {
+            if (STOCKVAR_INIT == op) {
+                var.setName(name);
+                var.setAccessRights(PERMISSION_OWNER_ALL);
+                var.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
+                var.setNote("Delete one user from username.");
+                var.setValue(""); // Dummy value
+                return addStockVariable(var);
+            } else if (STOCKVAR_READ == op) {
+                var.setValue("");
+                var.setLastChangedToNow();
+                return true;
+            } else if (STOCKVAR_WRITE == op) {
+                // Only admin is allowed to write?
+                if (USER_ID_ADMIN != pUser->getUserID()) {
+                    syslog(
+                      LOG_ERR,
+                      "Only admin is allowed to execute remote variable %s",
+                      name.c_str());
+                    return false;
+                }
+                if (VSCP_DAEMON_VARIABLE_CODE_STRING != var.getType()) {
+                    syslog(LOG_ERR,
+                           "Type must be string to execute remote variable %s",
+                           name.c_str());
+                    return false;
+                }
+
+                std::string str = var.getValue();
+                return gpobj->m_userList.deleteUser(str);
+            }
+        } else if (vscp_isNumber(strToken)) {
+
+            long n           = vscp_readStringValue(strToken);
+            CUserItem *pUser = gpobj->m_userList.getUser(n);
+            if (NULL == pUser) {
+                syslog(LOG_ERR,
+                       "User is not available for remote variable %s",
+                       name.c_str());
+                return false;
+            }
+
+            // Get full info for user n
+            if (tokens.empty()) {
+                if (STOCKVAR_READ == op) {
+                    var.setName(name);
+                    var.setAccessRights(PERMISSION_OWNER_READ);
+                    var.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
+                    var.setNote("Full info for user with userid %ul.", n);
+                    if (!gpobj->m_userList.getUserAsString(n, str)) {
+                        syslog(LOG_ERR,
+                               "Failed to get user info for remote variable %s",
+                               name.c_str());
+                        return false;
+                    }
+                    var.setValue(str);
+                    var.setLastChangedToNow();
+                    return true;
+                } else if (STOCKVAR_WRITE == op) {
+                    syslog(
+                      LOG_ERR, "Remote variable %s is read only", name.c_str());
+                    return false;
+                } else {
+                    syslog(LOG_ERR,
+                           "Operation on remote variable %s invalid %d",
+                           name.c_str(),
+                           op);
+                    return false;
+                }
+            }
+
+            strToken = tokens.front();
+            vscp_trim(strToken);
+            tokens.pop_front();
+
+            if ("name" == strToken) {
+                if (STOCKVAR_READ == op) {
+                    var.init(); // Owner admin,non-persistent,non-stock
+                    var.setName(name);
+                    var.setID(ID_VAR_DYNAMIC);
+                    var.setStockVariable(true);
+                    var.setName(name);
+                    var.setAccessRights(PERMISSION_OWNER_READ);
+                    var.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
+                    var.setNote("Username for user with userid %ul.", n);
+                    var.setValue(pUser->getUserName());
+                    var.setLastChangedToNow();
+                } else if (STOCKVAR_WRITE == op) {
+                    syslog(
+                      LOG_ERR, "Remote variable %s is read only", name.c_str());
+                    return false;
+                }
+            } else if ("password" == strToken) {
+                if (STOCKVAR_READ == op) {
+                    var.init(); // Owner admin,non-persistent,non-stock
+                    var.setName(name);
+                    var.setID(ID_VAR_DYNAMIC);
+                    var.setStockVariable(true);
+                    var.setName(name);
+                    var.setAccessRights(PERMISSION_OWNER_READ |
+                                        PERMISSION_OWNER_WRITE);
+                    var.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
+                    var.setNote("Password for user with userid %ul.", n);
+                    var.setValue("*******************************");
+                    var.setLastChangedToNow();
+                } else if (STOCKVAR_WRITE == op) {
+                    if (!var.isUserAllowWrite(pUser)) {
+                        syslog(
+                          LOG_ERR,
+                          "User is not allowed to write remote variable %s",
+                          name.c_str());
+                        return false;
+                    }
+                    if (VSCP_DAEMON_VARIABLE_CODE_STRING != var.getType()) {
+                        syslog(
+                          LOG_ERR,
+                          "Type must be string to write remote variable %s",
+                          name.c_str());
+                        return false;
+                    }
+
+                    std::string str = var.getValue();
+                    pUser->setPassword(str);
+
+                    // Save record to database
+                    if (pUser->saveToDatabase()) {
+                        syslog(
+                          LOG_ERR,
+                          "Remote variable %s could not be written to database",
+                          name.c_str());
+                        return false;
+                    }
+
+                    return true;
+                }
+            } else if ("filter" == strToken) {
+                if (STOCKVAR_READ == op) {
+                    var.init(); // Owner admin,non-persistent,non-stock
+                    var.setName(name);
+                    var.setID(ID_VAR_DYNAMIC);
+                    var.setStockVariable(true);
+                    var.setName(name);
+                    var.setAccessRights(PERMISSION_OWNER_READ |
+                                        PERMISSION_OWNER_WRITE);
+                    var.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
+                    var.setNote("Filter for user with userid %ul.", n);
+                    std::string str;
+                    vscp_writeFilterToString(pUser->getUserFilter(), str);
+                    var.setValue(str);
+                    var.setLastChangedToNow();
+                } else if (STOCKVAR_WRITE == op) {
+                    if (!var.isUserAllowWrite(pUser)) {
+                        syslog(
+                          LOG_ERR,
+                          "User is not allowed to write remote variable %s",
+                          name.c_str());
+                        return false;
+                    }
+                    if (VSCP_DAEMON_VARIABLE_CODE_STRING != var.getType()) {
+                        syslog(
+                          LOG_ERR,
+                          "Type must be string to write remote variable %s",
+                          name.c_str());
+                        return false;
+                    }
+
+                    std::string str = var.getValue();
+                    pUser->setMaskFromString(str);
+
+                    // Save record to database
+                    if (pUser->saveToDatabase()) {
+                        syslog(
+                          LOG_ERR,
+                          "Remote variable %s could not be written to database",
+                          name.c_str());
+                        return false;
+                    }
+
+                    return true;
+                }
+            } else if ("mask" == strToken) {
+                if (STOCKVAR_READ == op) {
+                    var.init(); // Owner admin,non-persistent,non-stock
+                    var.setName(name);
+                    var.setID(ID_VAR_DYNAMIC);
+                    var.setStockVariable(true);
+                    var.setName(name);
+                    var.setAccessRights(PERMISSION_OWNER_READ |
+                                        PERMISSION_OWNER_WRITE);
+                    var.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
+                    var.setNote("Mask for user with userid %ul.", n);
+                    std::string str;
+                    vscp_writeMaskToString(pUser->getUserFilter(), str);
+                    var.setValue(str);
+                    var.setLastChangedToNow();
+                } else if (STOCKVAR_WRITE == op) {
+                    if (!var.isUserAllowWrite(pUser)) {
+                        syslog(
+                          LOG_ERR,
+                          "User is not allowed to write remote variable %s",
+                          name.c_str());
+                        return false;
+                    }
+                    if (VSCP_DAEMON_VARIABLE_CODE_STRING != var.getType()) {
+                        syslog(
+                          LOG_ERR,
+                          "Type must be string to write remote variable %s",
+                          name.c_str());
+                        return false;
+                    }
+
+                    std::string str = var.getValue();
+                    pUser->setMaskFromString(str);
+
+                    // Save record to database
+                    if (pUser->saveToDatabase()) {
+                        syslog(
+                          LOG_ERR,
+                          "Remote variable %s could not be written to database",
+                          name.c_str());
+                        return false;
+                    }
+
+                    return true;
+                }
+            } else if ("host-list" == strToken) {
+
+                if (tokens.empty()) {
+                    if (STOCKVAR_READ == op) {
+                        var.init(); // Owner admin,non-persistent,non-stock
+                        var.setName(name);
+                        var.setID(ID_VAR_DYNAMIC);
+                        var.setStockVariable(true);
+                        var.setName(name);
+                        var.setAccessRights(PERMISSION_OWNER_READ |
+                                            PERMISSION_OWNER_WRITE);
+                        var.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
+                        var.setNote("Comma separated list of hosts allowed to "
+                                    "connect for user with userid %ul.",
+                                    n);
+                        var.setValue(pUser->getAllowedRemotesAsString());
+                        var.setLastChangedToNow();
+                    } else if (STOCKVAR_WRITE == op) {
+                        if (!var.isUserAllowWrite(pUser)) {
+                            syslog(
+                              LOG_ERR,
+                              "User is not allowed to write remote variable %s",
+                              name.c_str());
+                            return false;
+                        }
+                        if (VSCP_DAEMON_VARIABLE_CODE_STRING != var.getType()) {
+                            syslog(
+                              LOG_ERR,
+                              "Type must be string to write remote variable %s",
+                              name.c_str());
+                            return false;
+                        }
+
+                        std::string str = var.getValue();
+                        pUser->setAllowedEventsFromString(str);
+
+                        // Save record to database
+                        if (pUser->saveToDatabase()) {
+                            syslog(LOG_ERR,
+                                   "Remote variable %s could not be written to "
+                                   "database",
+                                   name.c_str());
+                            return false;
+                        }
+
+                        return true;
+                    } else {
+                        syslog(LOG_ERR,
+                               "Operation on remote variable %s invalid %d",
+                               name.c_str(),
+                               op);
+                        return false;
+                    }
+                }
+
+                strToken = tokens.front();
+                vscp_trim(strToken);
+                tokens.pop_front();
+
+                if ("count" == strToken) {
+                    if (tokens.empty()) {
+                        if (STOCKVAR_READ == op) {
+                            var.init(); // Owner admin,non-persistent,non-stock
+                            var.setName(name);
+                            var.setID(ID_VAR_DYNAMIC);
+                            var.setStockVariable(true);
+                            var.setName(name);
+                            var.setAccessRights(PERMISSION_OWNER_READ);
+                            var.setType(VSCP_DAEMON_VARIABLE_CODE_LONG);
+                            var.setNote("Number of remote hosts allowed to "
+                                        "connect as user with userid %ul.",
+                                        n);
+                            var.setValue((long)pUser->getAllowedRemotesCount());
+                            var.setLastChangedToNow();
+                        } else if (STOCKVAR_WRITE == op) {
+                            syslog(LOG_ERR,
+                                   "Remote variable %s is read only",
+                                   name.c_str());
+                            return false;
+                        }
+                    }
+                } else if (vscp_isNumber(
+                             strToken)) { // vscp.user.n.event-list.m
+
+                    int m = vscp_readStringValue(strToken);
+
+                    if (tokens.empty()) {
+                        if (STOCKVAR_READ == op) {
+                            var.init(); // Owner
+                                        // admin,non-persistent,non-stock
+                            var.setName(name);
+                            var.setID(ID_VAR_DYNAMIC);
+                            var.setStockVariable(true);
+                            var.setName(name);
+                            var.setAccessRights(PERMISSION_OWNER_READ |
+                                                PERMISSION_OWNER_WRITE);
+                            var.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
+                            var.setNote("Allowed user remote host item");
+                            std::string str;
+                            if (pUser->getAllowedRemote(m, str)) {
+                                syslog(LOG_ERR,
+                                       "Allowed remote host %d does not exist for "
+                                       "remote variable %s",
+                                       (int)m,
+                                       name.c_str());
+                                return false;
+                            }
+                            var.setValue(str);
+                            var.setLastChangedToNow();
+                        } else if (STOCKVAR_WRITE == op) {
+                            if (!var.isUserAllowWrite(pUser)) {
+                                syslog(LOG_ERR,
+                                       "User is not allowed to write "
+                                       "remote variable %s",
+                                       name.c_str());
+                                return false;
+                            }
+                            if (VSCP_DAEMON_VARIABLE_CODE_STRING !=
+                                var.getType()) {
+                                syslog(LOG_ERR,
+                                       "Type must be string to write "
+                                       "remote variable %s",
+                                       name.c_str());
+                                return false;
+                            }
+
+                            std::string str = var.getValue();
+                            if (pUser->setAllowedRemote(m, str)) {
+                                syslog(LOG_ERR,
+                                       "Allowed remote host %d does not exist for "
+                                       "remote variable %s",
+                                       (int)m,
+                                       name.c_str());
+                                return false;
+                            }
+
+                            // Save record to database
+                            if (pUser->saveToDatabase()) {
+                                syslog(LOG_ERR,
+                                       "Remote variable %s could not be "
+                                       "written to "
+                                       "database",
+                                       name.c_str());
+                                return false;
+                            }
+
+                            return true;
+                        } else {
+                            syslog(LOG_ERR,
+                                   "Operation on remote variable %s invalid %d",
+                                   name.c_str(),
+                                   op);
+                            return false;
+                        }
+                    }
+                }
+
+            } else if ("event-list" == strToken) {
+
+                if (tokens.empty()) {
+                    if (STOCKVAR_READ == op) {
+                        var.init(); // Owner admin,non-persistent,non-stock
+                        var.setName(name);
+                        var.setID(ID_VAR_DYNAMIC);
+                        var.setStockVariable(true);
+                        var.setName(name);
+                        var.setAccessRights(PERMISSION_OWNER_READ |
+                                            PERMISSION_OWNER_WRITE);
+                        var.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
+                        var.setNote("Comma separated list of events allowed to "
+                                    "send for user with userid %ul.",
+                                    n);
+                        var.setValue(pUser->getAllowedEventsAsString());
+                        var.setLastChangedToNow();
+                    } else if (STOCKVAR_WRITE == op) {
+                        if (!var.isUserAllowWrite(pUser)) {
+                            syslog(
+                              LOG_ERR,
+                              "User is not allowed to write remote variable %s",
+                              name.c_str());
+                            return false;
+                        }
+                        if (VSCP_DAEMON_VARIABLE_CODE_STRING != var.getType()) {
+                            syslog(
+                              LOG_ERR,
+                              "Type must be string to write remote variable %s",
+                              name.c_str());
+                            return false;
+                        }
+
+                        std::string str = var.getValue();
+                        pUser->setAllowedEventsFromString(str);
+
+                        // Save record to database
+                        if (pUser->saveToDatabase()) {
+                            syslog(LOG_ERR,
+                                   "Remote variable %s could not be written to "
+                                   "database",
+                                   name.c_str());
+                            return false;
+                        }
+
+                        return true;
+                    } else {
+                        syslog(LOG_ERR,
+                               "Operation on remote variable %s invalid %d",
+                               name.c_str(),
+                               op);
+                        return false;
+                    }
+                }
+
+                strToken = tokens.front();
+                vscp_trim(strToken);
+                tokens.pop_front();
+
+                if ("count" == strToken) {
+                    if (tokens.empty()) {
+                        if (STOCKVAR_READ == op) {
+                            var.init(); // Owner admin,non-persistent,non-stock
+                            var.setName(name);
+                            var.setID(ID_VAR_DYNAMIC);
+                            var.setStockVariable(true);
+                            var.setName(name);
+                            var.setAccessRights(PERMISSION_OWNER_READ);
+                            var.setType(VSCP_DAEMON_VARIABLE_CODE_LONG);
+                            var.setNote("Number of events allowed to "
+                                        "send for user with userid %ul.",
+                                        n);
+                            var.setValue((long)pUser->getAllowedEventsCount());
+                            var.setLastChangedToNow();
+                        } else if (STOCKVAR_WRITE == op) {
+                            syslog(LOG_ERR,
+                                   "Remote variable %s is read only",
+                                   name.c_str());
+                            return false;
+                        }
+                    }
+                } else if (vscp_isNumber(
+                             strToken)) { // vscp.user.n.event-list.m
+
+                    int m = vscp_readStringValue(strToken);
+
+                    if (tokens.empty()) {
+                        if (STOCKVAR_READ == op) {
+                            var.init(); // Owner
+                                        // admin,non-persistent,non-stock
+                            var.setName(name);
+                            var.setID(ID_VAR_DYNAMIC);
+                            var.setStockVariable(true);
+                            var.setName(name);
+                            var.setAccessRights(PERMISSION_OWNER_READ |
+                                                PERMISSION_OWNER_WRITE);
+                            var.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
+                            var.setNote("Allowed user event item");
+                            std::string str;
+                            if (pUser->getAllowedEvent(m, str)) {
+                                syslog(LOG_ERR,
+                                       "Allowed event %d does not exist for "
+                                       "remote variable %s",
+                                       (int)m,
+                                       name.c_str());
+                                return false;
+                            }
+                            var.setValue(str);
+                            var.setLastChangedToNow();
+                        } else if (STOCKVAR_WRITE == op) {
+                            if (!var.isUserAllowWrite(pUser)) {
+                                syslog(LOG_ERR,
+                                       "User is not allowed to write "
+                                       "remote variable %s",
+                                       name.c_str());
+                                return false;
+                            }
+                            if (VSCP_DAEMON_VARIABLE_CODE_STRING !=
+                                var.getType()) {
+                                syslog(LOG_ERR,
+                                       "Type must be string to write "
+                                       "remote variable %s",
+                                       name.c_str());
+                                return false;
+                            }
+
+                            std::string str = var.getValue();
+                            if (pUser->setAllowedEvent(m, str)) {
+                                syslog(LOG_ERR,
+                                       "Allowed event %d does not exist for "
+                                       "remote variable %s",
+                                       (int)m,
+                                       name.c_str());
+                                return false;
+                            }
+
+                            // Save record to database
+                            if (pUser->saveToDatabase()) {
+                                syslog(LOG_ERR,
+                                       "Remote variable %s could not be "
+                                       "written to "
+                                       "database",
+                                       name.c_str());
+                                return false;
+                            }
+
+                            return true;
+                        } else {
+                            syslog(LOG_ERR,
+                                   "Operation on remote variable %s invalid %d",
+                                   name.c_str(),
+                                   op);
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
     }
 
     // *************************************************************************
@@ -9240,201 +9975,319 @@ CVariableStorage::handleStockVariable(std::string name,
 //
 
 void
-CVariableStorage::initStockVariables(CUserItem* pUser)
+CVariableStorage::initStockVariables(CUserItem *pUser)
 {
     CVariable var;
 
-    handleStockVariable("vscp.version", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.version", STOCKVAR_INIT, var, pUser);
 
-    handleStockVariable("vscp.version.major", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.version.minor", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.version.release", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.version.build", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.version.string", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.version.copyright", STOCKVAR_INIT, var, pUser );
-
-    handleStockVariable(
-      "vscp.version.sqlite3.string", STOCKVAR_INIT, var, pUser );
-    handleStockVariable(
-      "vscp.version.sqlite3.copyright", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.version.major", STOCKVAR_INIT, var, pUser);
+    handleStockVariable("vscp.version.minor", STOCKVAR_INIT, var, pUser);
+    handleStockVariable("vscp.version.release", STOCKVAR_INIT, var, pUser);
+    handleStockVariable("vscp.version.build", STOCKVAR_INIT, var, pUser);
+    handleStockVariable("vscp.version.string", STOCKVAR_INIT, var, pUser);
+    handleStockVariable("vscp.version.copyright", STOCKVAR_INIT, var, pUser);
 
     handleStockVariable(
-      "vscp.version.openssl.string", STOCKVAR_INIT, var, pUser );
+      "vscp.version.sqlite3.string", STOCKVAR_INIT, var, pUser);
     handleStockVariable(
-      "vscp.version.openssl.copyright", STOCKVAR_INIT, var, pUser );
+      "vscp.version.sqlite3.copyright", STOCKVAR_INIT, var, pUser);
 
     handleStockVariable(
-      "vscp.version.duktape.string", STOCKVAR_INIT, var, pUser );
+      "vscp.version.openssl.string", STOCKVAR_INIT, var, pUser);
     handleStockVariable(
-      "vscp.version.duktape.copyright", STOCKVAR_INIT, var, pUser );
+      "vscp.version.openssl.copyright", STOCKVAR_INIT, var, pUser);
 
     handleStockVariable(
-      "vscp.version.civetweb.string", STOCKVAR_INIT, var, pUser );
+      "vscp.version.duktape.string", STOCKVAR_INIT, var, pUser);
     handleStockVariable(
-      "vscp.version.civetweb.copyright", STOCKVAR_INIT, var, pUser );
-
-    handleStockVariable("vscp.version.lua.string", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.version.lua.copyright", STOCKVAR_INIT, var, pUser );
+      "vscp.version.duktape.copyright", STOCKVAR_INIT, var, pUser);
 
     handleStockVariable(
-      "vscp.version.mongoose.string", STOCKVAR_INIT, var, pUser );
+      "vscp.version.civetweb.string", STOCKVAR_INIT, var, pUser);
     handleStockVariable(
-      "vscp.version.mongoose.copyright", STOCKVAR_INIT, var, pUser );
+      "vscp.version.civetweb.copyright", STOCKVAR_INIT, var, pUser);
+
+    handleStockVariable("vscp.version.lua.string", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.version.lua.copyright", STOCKVAR_INIT, var, pUser);
 
     handleStockVariable(
-      "vscp.version.nlohmann-json.string", STOCKVAR_INIT, var, pUser );
+      "vscp.version.mongoose.string", STOCKVAR_INIT, var, pUser);
     handleStockVariable(
-      "vscp.version.nlohmann-json.copyright", STOCKVAR_INIT, var, pUser );
+      "vscp.version.mongoose.copyright", STOCKVAR_INIT, var, pUser);
 
     handleStockVariable(
-      "vscp.version.xml2json.string", STOCKVAR_INIT, var, pUser );
+      "vscp.version.nlohmann-json.string", STOCKVAR_INIT, var, pUser);
     handleStockVariable(
-      "vscp.version.xml2json.copyright", STOCKVAR_INIT, var, pUser );
+      "vscp.version.nlohmann-json.copyright", STOCKVAR_INIT, var, pUser);
 
-    handleStockVariable("vscp.os.width", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.os.endian.big", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.os.endian.little", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.os.userid", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.os.groupid", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.os.username", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.os.sysname", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.os.nodename", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.os.release", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.os.version", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.os.machine", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.os.host.name", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.os.host.domain", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.os.host.ip", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.os.host.mac", STOCKVAR_INIT, var, pUser );
-
-    handleStockVariable("vscp.daemon.runasuser", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.daemon.guid", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.daemon.name", STOCKVAR_INIT, var, pUser );
     handleStockVariable(
-      "vscp.daemon.client-buffer-size", STOCKVAR_INIT, var, pUser );
+      "vscp.version.xml2json.string", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.version.xml2json.copyright", STOCKVAR_INIT, var, pUser);
 
-    handleStockVariable("vscp.debug.level", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.debug.flags1", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.debug.flags2", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.debug.flags3", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.debug.flags4", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.debug.flags5", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.debug.flags6", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.debug.flags7", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.debug.flags8", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.os.width", STOCKVAR_INIT, var, pUser);
+    handleStockVariable("vscp.os.endian.big", STOCKVAR_INIT, var, pUser);
+    handleStockVariable("vscp.os.endian.little", STOCKVAR_INIT, var, pUser);
+    handleStockVariable("vscp.os.userid", STOCKVAR_INIT, var, pUser);
+    handleStockVariable("vscp.os.groupid", STOCKVAR_INIT, var, pUser);
+    handleStockVariable("vscp.os.username", STOCKVAR_INIT, var, pUser);
+    handleStockVariable("vscp.os.sysname", STOCKVAR_INIT, var, pUser);
+    handleStockVariable("vscp.os.nodename", STOCKVAR_INIT, var, pUser);
+    handleStockVariable("vscp.os.release", STOCKVAR_INIT, var, pUser);
+    handleStockVariable("vscp.os.version", STOCKVAR_INIT, var, pUser);
+    handleStockVariable("vscp.os.machine", STOCKVAR_INIT, var, pUser);
+    handleStockVariable("vscp.os.host.name", STOCKVAR_INIT, var, pUser);
+    handleStockVariable("vscp.os.host.domain", STOCKVAR_INIT, var, pUser);
+    handleStockVariable("vscp.os.host.ip", STOCKVAR_INIT, var, pUser);
+    handleStockVariable("vscp.os.host.mac", STOCKVAR_INIT, var, pUser);
 
-    handleStockVariable("vscp.dm.enable", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.dm.count", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.dm.count.active", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.dm.path-db", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.dm.path-xml", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.dm.add", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.dm.delete", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.daemon.runasuser", STOCKVAR_INIT, var, pUser);
+    handleStockVariable("vscp.daemon.guid", STOCKVAR_INIT, var, pUser);
+    handleStockVariable("vscp.daemon.name", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.daemon.client-buffer-size", STOCKVAR_INIT, var, pUser);
 
-    handleStockVariable("vscp.config.dbversion", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.client-buffer-size", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.guid", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.servername", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.announceinterface-address", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.announceinterface-ttl", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.tcpipinterface-address", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.tcpip-encryption", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.tcpip-ssl-certificate", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.tcpip-ssl-certificate-chain", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.tcpip-ssl-verify-peer", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.tcpip-ssl-ca-path", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.tcpip-ssl-ca-file", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.tcpip-ssl-verify-depth", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.tcpip-ssl-default-verify-paths", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.tcpip-ssl-cipher-list", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.tcpip-ssl-protocol-version", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.tcpip-ssl-short-trust", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.udp-enable", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.udp-address", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.udp-user", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.udp-password", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.udp-unsecure-enable", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.udp-filter", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.udp-mask", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.udp-guid", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.udp-ack-enable", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.muticast-enable", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.dm-path-db", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.dm-path-xml", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.dm-allow-xml-save", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.variable-path-db", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.variable-path-xml", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.path-db-event-data", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.web-enable", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.web-document-root", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.web-listening-ports", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.web-index-files", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.web-authentication-domain", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.web-enable-auth-domain-check", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.web-ssl-certificate", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.web-ssl-certificate-chain", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.web-ssl-verify-peer", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.web-ssl-ca-path", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.web-ssl-ca-file", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.web-ssl-verify-depth", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.web-ssl-default-verify-paths", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.web-ssl-cipher-list", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.web-ssl-protocol-version", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.web-ssl-short-trust", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.web-cgi-interpreter", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.web-cgi-pattern", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.web-cgi-environment", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.web-protect-uri", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.web-trottle", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.web-enable-directory-listing", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.web-enable-keep-alive", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.web-keep-alive-timeout-ms", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.web-access-control-list", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.web-extra-mime-types", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.web-num-threads", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.web-run-as-user", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.web-url-rewrite-patterns", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.web-hide-file-patterns", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.web-request-timeout-ms", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.web-linger-timeout-ms", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.web-decode-url", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.web-global-authfile", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.web-per-directory-auth-file", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.web-ssi-patterns", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.web-access-control-allow-origin", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.web-access-control-allow-methods", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.web-access-control-allow-headers", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.web-error-pages", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.web-tcp-nodelay", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.web-static-file-max-age", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.web-strict-transport-security-max-age", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.web-allow-sendfile-call", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.web-additional-headers", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.web-max-request-size", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.web-allow-index-script-resource", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.web-duktape-script-pattern", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.web-lua-preload-file", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.web-lua-script-pattern", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.web-lua-server-page-pattern", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.web-lua-websocket-pattern", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.web-lua-background-script", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.web-lua-background-script-params", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.websocket-enable", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.websocket-document-root", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.websocket-timeout-ms", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.automation-enable", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.automation-zone", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.automation-subzone", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.automation-longitude", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.automation-latitude", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.automation-sunrise-enable", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.automation-sunset-enable", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.automation-sunset-twilight-enable", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.automation-sunrise-twilight-enable", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.automation-segment-ctrl-enable", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.automation-segment-ctrl-interval", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.automation-heartbeat-enable", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.automation-heartbeat-interval", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.automation-capabilities-enable", STOCKVAR_INIT, var, pUser );
-    handleStockVariable("vscp.config.automation-capabilities-interval", STOCKVAR_INIT, var, pUser );
+    handleStockVariable("vscp.debug.level", STOCKVAR_INIT, var, pUser);
+    handleStockVariable("vscp.debug.flags1", STOCKVAR_INIT, var, pUser);
+    handleStockVariable("vscp.debug.flags2", STOCKVAR_INIT, var, pUser);
+    handleStockVariable("vscp.debug.flags3", STOCKVAR_INIT, var, pUser);
+    handleStockVariable("vscp.debug.flags4", STOCKVAR_INIT, var, pUser);
+    handleStockVariable("vscp.debug.flags5", STOCKVAR_INIT, var, pUser);
+    handleStockVariable("vscp.debug.flags6", STOCKVAR_INIT, var, pUser);
+    handleStockVariable("vscp.debug.flags7", STOCKVAR_INIT, var, pUser);
+    handleStockVariable("vscp.debug.flags8", STOCKVAR_INIT, var, pUser);
+
+    handleStockVariable("vscp.dm.enable", STOCKVAR_INIT, var, pUser);
+    handleStockVariable("vscp.dm.count", STOCKVAR_INIT, var, pUser);
+    handleStockVariable("vscp.dm.count.active", STOCKVAR_INIT, var, pUser);
+    handleStockVariable("vscp.dm.path-db", STOCKVAR_INIT, var, pUser);
+    handleStockVariable("vscp.dm.path-xml", STOCKVAR_INIT, var, pUser);
+    handleStockVariable("vscp.dm.add", STOCKVAR_INIT, var, pUser);
+    handleStockVariable("vscp.dm.delete", STOCKVAR_INIT, var, pUser);
+
+    handleStockVariable("vscp.config.dbversion", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.client-buffer-size", STOCKVAR_INIT, var, pUser);
+    handleStockVariable("vscp.config.guid", STOCKVAR_INIT, var, pUser);
+    handleStockVariable("vscp.config.servername", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.announceinterface-address", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.announceinterface-ttl", STOCKVAR_INIT, var, pUser);
+
+    handleStockVariable(
+      "vscp.config.tcpipinterface-address", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.tcpip-encryption", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.tcpip-ssl-certificate", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.tcpip-ssl-certificate-chain", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.tcpip-ssl-verify-peer", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.tcpip-ssl-ca-path", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.tcpip-ssl-ca-file", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.tcpip-ssl-verify-depth", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.tcpip-ssl-default-verify-paths", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.tcpip-ssl-cipher-list", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.tcpip-ssl-protocol-version", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.tcpip-ssl-short-trust", STOCKVAR_INIT, var, pUser);
+
+    handleStockVariable("vscp.config.udp-enable", STOCKVAR_INIT, var, pUser);
+    handleStockVariable("vscp.config.udp-address", STOCKVAR_INIT, var, pUser);
+    handleStockVariable("vscp.config.udp-user", STOCKVAR_INIT, var, pUser);
+    handleStockVariable("vscp.config.udp-password", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.udp-unsecure-enable", STOCKVAR_INIT, var, pUser);
+    handleStockVariable("vscp.config.udp-filter", STOCKVAR_INIT, var, pUser);
+    handleStockVariable("vscp.config.udp-mask", STOCKVAR_INIT, var, pUser);
+    handleStockVariable("vscp.config.udp-guid", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.udp-ack-enable", STOCKVAR_INIT, var, pUser);
+
+    handleStockVariable(
+      "vscp.config.muticast-enable", STOCKVAR_INIT, var, pUser);
+
+    handleStockVariable("vscp.config.dm-path-db", STOCKVAR_INIT, var, pUser);
+    handleStockVariable("vscp.config.dm-path-xml", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.dm-allow-xml-save", STOCKVAR_INIT, var, pUser);
+
+    handleStockVariable(
+      "vscp.config.variable-path-db", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.variable-path-xml", STOCKVAR_INIT, var, pUser);
+
+    handleStockVariable(
+      "vscp.config.path-db-event-data", STOCKVAR_INIT, var, pUser);
+
+    handleStockVariable("vscp.config.web-enable", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.web-document-root", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.web-listening-ports", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.web-index-files", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.web-authentication-domain", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.web-enable-auth-domain-check", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.web-ssl-certificate", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.web-ssl-certificate-chain", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.web-ssl-verify-peer", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.web-ssl-ca-path", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.web-ssl-ca-file", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.web-ssl-verify-depth", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.web-ssl-default-verify-paths", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.web-ssl-cipher-list", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.web-ssl-protocol-version", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.web-ssl-short-trust", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.web-cgi-interpreter", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.web-cgi-pattern", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.web-cgi-environment", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.web-protect-uri", STOCKVAR_INIT, var, pUser);
+    handleStockVariable("vscp.config.web-trottle", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.web-enable-directory-listing", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.web-enable-keep-alive", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.web-keep-alive-timeout-ms", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.web-access-control-list", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.web-extra-mime-types", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.web-num-threads", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.web-run-as-user", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.web-url-rewrite-patterns", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.web-hide-file-patterns", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.web-request-timeout-ms", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.web-linger-timeout-ms", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.web-decode-url", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.web-global-authfile", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.web-per-directory-auth-file", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.web-ssi-patterns", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.web-access-control-allow-origin", STOCKVAR_INIT, var, pUser);
+    handleStockVariable("vscp.config.web-access-control-allow-methods",
+                        STOCKVAR_INIT,
+                        var,
+                        pUser);
+    handleStockVariable("vscp.config.web-access-control-allow-headers",
+                        STOCKVAR_INIT,
+                        var,
+                        pUser);
+    handleStockVariable(
+      "vscp.config.web-error-pages", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.web-tcp-nodelay", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.web-static-file-max-age", STOCKVAR_INIT, var, pUser);
+    handleStockVariable("vscp.config.web-strict-transport-security-max-age",
+                        STOCKVAR_INIT,
+                        var,
+                        pUser);
+    handleStockVariable(
+      "vscp.config.web-allow-sendfile-call", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.web-additional-headers", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.web-max-request-size", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.web-allow-index-script-resource", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.web-duktape-script-pattern", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.web-lua-preload-file", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.web-lua-script-pattern", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.web-lua-server-page-pattern", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.web-lua-websocket-pattern", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.web-lua-background-script", STOCKVAR_INIT, var, pUser);
+    handleStockVariable("vscp.config.web-lua-background-script-params",
+                        STOCKVAR_INIT,
+                        var,
+                        pUser);
+
+    handleStockVariable(
+      "vscp.config.websocket-enable", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.websocket-document-root", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.websocket-timeout-ms", STOCKVAR_INIT, var, pUser);
+
+    handleStockVariable(
+      "vscp.config.automation-enable", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.automation-zone", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.automation-subzone", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.automation-longitude", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.automation-latitude", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.automation-sunrise-enable", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.automation-sunset-enable", STOCKVAR_INIT, var, pUser);
+    handleStockVariable("vscp.config.automation-sunset-twilight-enable",
+                        STOCKVAR_INIT,
+                        var,
+                        pUser);
+    handleStockVariable("vscp.config.automation-sunrise-twilight-enable",
+                        STOCKVAR_INIT,
+                        var,
+                        pUser);
+    handleStockVariable(
+      "vscp.config.automation-segment-ctrl-enable", STOCKVAR_INIT, var, pUser);
+    handleStockVariable("vscp.config.automation-segment-ctrl-interval",
+                        STOCKVAR_INIT,
+                        var,
+                        pUser);
+    handleStockVariable(
+      "vscp.config.automation-heartbeat-enable", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.automation-heartbeat-interval", STOCKVAR_INIT, var, pUser);
+    handleStockVariable(
+      "vscp.config.automation-capabilities-enable", STOCKVAR_INIT, var, pUser);
+    handleStockVariable("vscp.config.automation-capabilities-interval",
+                        STOCKVAR_INIT,
+                        var,
+                        pUser);
 }

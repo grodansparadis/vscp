@@ -76,8 +76,7 @@ CUserItem::CUserItem(void)
 
 CUserItem::~CUserItem(void)
 {
-    m_listAllowedIPV4Remotes.clear();
-    m_listAllowedIPV6Remotes.clear();
+    m_listAllowedRemotes.clear();
     m_listAllowedEvents.clear();
 }
 
@@ -233,10 +232,10 @@ CUserItem::getAsString(std::string &strUser)
     strUser += ";";
     strUser += getFullname();
     strUser += ";";
-    vscp_writeFilterToString(getFilter(), str);
+    vscp_writeFilterToString(getUserFilter(), str);
     strUser += str;
     strUser += ";";
-    vscp_writeMaskToString(getFilter(), str);
+    vscp_writeMaskToString(getUserFilter(), str);
     strUser += str;
     strUser += ";";
     strUser += getUserRightsAsString();
@@ -299,30 +298,131 @@ CUserItem::setUserRightsFromString(const std::string &strRights)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// getAllowedEvent
+//
+
+bool
+CUserItem::getAllowedEvent(size_t n, std::string &event)
+{
+    if (!m_listAllowedEvents.size()) return false;
+    if (n > (m_listAllowedEvents.size() - 1)) return false;
+    event = m_listAllowedEvents[n];
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// setAllowedEvent
+//
+
+bool
+CUserItem::setAllowedEvent(size_t n, std::string &event)
+{
+    if (!m_listAllowedEvents.size()) return false;
+    if (n > (m_listAllowedEvents.size() - 1)) return false;
+    m_listAllowedEvents[n] = event;
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// addAllowedEvent
+//
+
+bool
+CUserItem::addAllowedEvent(const std::string &strEvent)
+{
+    std::string str = strEvent;
+    uint16_t vscp_class = 0;
+    uint16_t vscp_type = 0;
+
+    vscp_trim(str);
+
+    // We want to store in standard for "%04X:%04X" so we
+    // need to extract the values or wildcards
+    if ("*:*" == str) {
+        m_listAllowedEvents.push_back(str);
+        return true;
+    }
+
+    // Left wildcard
+    if ('*' == strEvent[0]) {
+        str       = vscp_str_right(str, str.length() - 2);
+        vscp_type = vscp_readStringValue(str);
+        str       = vscp_str_format("*:%04X", vscp_type);
+        m_listAllowedEvents.push_back(str);
+        return true;
+    }
+
+    // Right wildcard
+    if ('*' == str[str.length() - 1]) {
+        str        = vscp_str_left(str, str.length() - 2);
+        vscp_class = vscp_readStringValue(str);
+        str        = vscp_str_format("%04X:*", vscp_class);
+        m_listAllowedEvents.push_back(str);
+        return true;
+    }
+
+    // class:type
+    vscp_class = vscp_readStringValue(str);
+    size_t pos;
+    if (std::string::npos != (pos = str.find(':'))) {
+        str       = vscp_str_right(str, str.length() - pos - 1);
+        vscp_type = vscp_readStringValue(str);
+        str       = vscp_str_format("%04X:%04X", vscp_class, vscp_type);
+        m_listAllowedEvents.push_back(str);
+        return true;
+    }
+
+    return false;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // setAllowedEventsFromString
 //
 
 bool
-CUserItem::setAllowedEventsFromString(const std::string &strEvents)
+CUserItem::setAllowedEventsFromString(const std::string &strEvents, bool bClear)
 {
     std::string str;
-
+    
     // Privileges
     if (strEvents.length()) {
 
-        m_listAllowedEvents.clear();
+        if ( bClear ) {
+            m_listAllowedEvents.clear();
+        }
 
         std::deque<std::string> tokens;
-        vscp_split(tokens, strEvents, "/");
+        vscp_split(tokens, strEvents, ",");
 
         while (!tokens.empty()) {
+
             str = tokens.front();
             tokens.pop_front();
-            m_listAllowedEvents.push_back(str);
+            vscp_trim(str);
+
+            addAllowedEvent(str);
+
         };
     }
 
     return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getAllowedEventsAsString
+//
+
+std::string
+CUserItem::getAllowedEventsAsString(void)
+{
+    std::string strAllowedEvents;
+
+    for (int i = 0; i < m_listAllowedEvents.size(); i++) {
+        strAllowedEvents += m_listAllowedEvents[i];
+        if (i != (m_listAllowedEvents.size() - 1)) strAllowedEvents += "/";
+    }
+
+    return strAllowedEvents;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -335,8 +435,7 @@ CUserItem::setAllowedRemotesFromString(const std::string &strConnect)
     // Privileges
     if (strConnect.length()) {
 
-        m_listAllowedIPV4Remotes.clear();
-        m_listAllowedIPV6Remotes.clear();
+        m_listAllowedRemotes.clear();
 
         std::deque<std::string> tokens;
         vscp_split(tokens, strConnect, ",");
@@ -348,24 +447,51 @@ CUserItem::setAllowedRemotesFromString(const std::string &strConnect)
             addAllowedRemote(remote);
         }
 
-        // TODO handel Ipv6
-
-        /*do {
-            std::string remote = tokens.front();
-            tokens.pop_front();
-            if ( !remote.empty() ) {
-                vscp_trim( remote ;
-                if ( ( "*"  == remote ) || ( "*.*.*.*" == remote ) ) {
-                    // All is allowed to connect
-                    clearAllowedRemoteList();
-                }
-                else {
-                    addAllowedRemote( remote );
-                }
-            }
-        } while ( !tokes.empty() );*/
     }
 
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getAllowedRemotesAsString
+//
+
+std::string
+CUserItem::getAllowedRemotesAsString(void)
+{
+    int i;
+    std::string strAllowedRemotes;
+
+    for (i = 0; i < m_listAllowedRemotes.size(); i++) {
+        strAllowedRemotes += m_listAllowedRemotes[i];
+        if (i != (m_listAllowedRemotes.size() - 1))
+            strAllowedRemotes += ",";
+    }
+
+    return strAllowedRemotes;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getAllowedRemote
+//
+
+bool CUserItem::getAllowedRemote( size_t n, std::string& remote )
+{
+    if (!m_listAllowedRemotes.size()) return false;
+    if (n > (m_listAllowedRemotes.size() - 1)) return false;
+    remote = m_listAllowedRemotes[n];
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// setAllowedRemote
+//
+
+bool CUserItem::setAllowedRemote( size_t n, std::string& remote )
+{
+    if (!m_listAllowedRemotes.size()) return false;
+    if (n > (m_listAllowedRemotes.size() - 1)) return false;
+    m_listAllowedRemotes[n] = remote;
     return true;
 }
 
@@ -388,47 +514,9 @@ CUserItem::getUserRightsAsString(void)
     return strRights;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// getAllowedEventsAsString
-//
 
-std::string
-CUserItem::getAllowedEventsAsString(void)
-{
-    std::string strAllowedEvents;
 
-    for (int i = 0; i < m_listAllowedEvents.size(); i++) {
-        strAllowedEvents += m_listAllowedEvents[i];
-        if (i != (m_listAllowedEvents.size() - 1)) strAllowedEvents += "/";
-    }
 
-    return strAllowedEvents;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// getAllowedRemotesAsString
-//
-
-std::string
-CUserItem::getAllowedRemotesAsString(void)
-{
-    int i;
-    std::string strAllowedRemotes;
-
-    for (i = 0; i < m_listAllowedIPV4Remotes.size(); i++) {
-        strAllowedRemotes += m_listAllowedIPV4Remotes[i];
-        if (i != (m_listAllowedIPV4Remotes.size() - 1))
-            strAllowedRemotes += "/";
-    }
-
-    for (i = 0; i < m_listAllowedIPV6Remotes.size(); i++) {
-        strAllowedRemotes += m_listAllowedIPV6Remotes[i];
-        if (i != (m_listAllowedIPV6Remotes.size() - 1))
-            strAllowedRemotes += "/";
-    }
-
-    return strAllowedRemotes;
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 // isUserInDB
@@ -529,7 +617,10 @@ CUserItem::saveToDatabase(void)
     char *zErrMsg = 0;
 
     // Database must be open
-    if (NULL == gpobj->m_db_vscp_daemon) return false;
+    if (NULL == gpobj->m_db_vscp_daemon) {
+        syslog(LOG_ERR, "Saving user db record. No databas is defined.");
+        return false;
+    }
 
     // Internal records can't be saved to db
     // driver users is an example on users that are only local
@@ -559,6 +650,9 @@ CUserItem::saveToDatabase(void)
 
         if (SQLITE_OK !=
             sqlite3_exec(gpobj->m_db_vscp_daemon, sql, NULL, NULL, &zErrMsg)) {
+            syslog(LOG_ERR,
+                   "Saving user db record. Failed to add Err=%s SQL=%s.",
+                   zErrMsg,sql);
             sqlite3_free(sql);
             pthread_mutex_unlock(&gpobj->m_db_vscp_configMutex);
             return false;
@@ -591,7 +685,8 @@ CUserItem::saveToDatabase(void)
         if (SQLITE_OK !=
             sqlite3_exec(gpobj->m_db_vscp_daemon, sql, NULL, NULL, &zErrMsg)) {
             syslog(LOG_ERR,
-                   "Failed to update user database. Err=%s  SQL=%s",
+                   "Saving user db record. Failed to update user database. "
+                   "Err=%s SQL=%s",
                    zErrMsg,
                    sql);
             sqlite3_free(sql);
@@ -657,11 +752,11 @@ CUserItem::readBackIndexFromDatabase(void)
     if ( !ipaddr.Hostname( remote ) ) return false;
 
     // If empty all host allowed, This is "*.*.*.*" or "*"
-    if ( m_listAllowedIPV4Remotes.IsEmpty() ) return true;
+    if ( m_listAllowedRemotes.IsEmpty() ) return true;
 
-    for (i = 0; i < m_listAllowedIPV4Remotes.GetCount(); i++) {
-        xxLogDebug(m_listAllowedIPV4Remotes[ i ]);
-        if (m_listAllowedIPV4Remotes[ i ].IsSameAs(remote)) return true;
+    for (i = 0; i < m_listAllowedRemotes.GetCount(); i++) {
+        xxLogDebug(m_listAllowedRemotes[ i ]);
+        if (m_listAllowedRemotes[ i ].IsSameAs(remote)) return true;
     }
 
     std::deque<std::string> tokens;
@@ -677,20 +772,20 @@ CUserItem::readBackIndexFromDatabase(void)
 
     // test wildcard a.b.c.*
     str.Printf("%s.%s.%s.*", ip1.c_str(), ip2.c_str(), ip3.c_str());
-    for (i = 0; i < m_listAllowedIPV4Remotes.GetCount(); i++) {
-        if (m_listAllowedIPV4Remotes[ i ].IsSameAs(str)) return true;
+    for (i = 0; i < m_listAllowedRemotes.GetCount(); i++) {
+        if (m_listAllowedRemotes[ i ].IsSameAs(str)) return true;
     }
 
     // test wildcard a.b.*.*
     str.Printf("%s.%s.*.*", ip1.c_str(), ip2.c_str());
-    for (i = 0; i < m_listAllowedIPV4Remotes.GetCount(); i++) {
-        if (m_listAllowedIPV4Remotes[ i ].IsSameAs(str)) return true;
+    for (i = 0; i < m_listAllowedRemotes.GetCount(); i++) {
+        if (m_listAllowedRemotes[ i ].IsSameAs(str)) return true;
     }
 
     // test wildcard a.*.*.*
     str.Printf("%s.*.*.*", ip1.c_str());
-    for (i = 0; i < m_listAllowedIPV4Remotes.GetCount(); i++) {
-        if (m_listAllowedIPV4Remotes[ i ].IsSameAs(str)) return true;
+    for (i = 0; i < m_listAllowedRemotes.GetCount(); i++) {
+        if (m_listAllowedRemotes[ i ].IsSameAs(str)) return true;
     }
 
     return false;
@@ -710,15 +805,15 @@ CUserItem::isAllowedToConnect(uint32_t remote_ip)
     remote_ip = htonl(remote_ip);
 
     // If the list is empty - allow all
-    allowed = (0 == m_listAllowedIPV4Remotes.size()) ? '+' : '-';
+    allowed = (0 == m_listAllowedRemotes.size()) ? '+' : '-';
 
-    for (int i = 0; i < m_listAllowedIPV4Remotes.size(); i++) {
+    for (int i = 0; i < m_listAllowedRemotes.size(); i++) {
 
-        flag = m_listAllowedIPV4Remotes[i].at(0); // vec.ptr[0];
+        flag = m_listAllowedRemotes[i].at(0); // vec.ptr[0];
         if ((flag != '+' && flag != '-') ||
             (0 ==
              vscp_parse_ipv4_addr(
-               m_listAllowedIPV4Remotes[i].substr(1).c_str(), &net, &mask))) {
+               m_listAllowedRemotes[i].substr(1).c_str(), &net, &mask))) {
             return -1;
         }
 
@@ -1199,6 +1294,19 @@ CUserList::deleteUser(const std::string &user)
     m_userhashmap.erase(user);
 
     return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// deleteUser
+//
+
+bool
+CUserList::deleteUser(const long userid )
+{
+    CUserItem *pUser = getUser(userid);
+    if (NULL == pUser) return false;
+
+    return deleteUser(pUser->getUserName());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
