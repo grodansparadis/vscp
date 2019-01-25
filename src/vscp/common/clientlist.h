@@ -290,7 +290,7 @@ class CClientList
         @param client [out] Client data on string form
         @return true on success
     */
-    bool getClient(uint16_t n, std::string client);
+    bool getClient(uint16_t n, std::string &client);
 
   public:
 

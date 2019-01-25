@@ -425,7 +425,7 @@ CClientList::getAllClientsAsString(void)
 //
 
 bool
-CClientList::getClient(uint16_t n, std::string client)
+CClientList::getClient(uint16_t n, std::string &client)
 {
     if (!m_itemList.size()) return false;
     if (n > (m_itemList.size() - 1)) return false;
