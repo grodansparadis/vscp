@@ -266,7 +266,7 @@ CClientList::findFreeId(uint16_t *pid)
             break;
         }
 
-        *pid++;
+        (*pid)++;
         if (0 == *pid) {
             return false; // All client id's are in use
         }
