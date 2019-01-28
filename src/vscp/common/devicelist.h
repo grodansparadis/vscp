@@ -89,13 +89,39 @@ class CDeviceItem
     /// Destructor
     virtual ~CDeviceItem();
 
+    /*!
+        Get driver info as string
+        "bEnable,bActive,name,path,param,level,flags,guid,translation"
+        @return Driver info
+    */
+    std::string getAsString(void);
+
+    /*!
+        Start driver
+        @param Pointer to control object
+        @return true on success, false on failure
+    */
     bool startDriver(CControlObject *pCtrlObject);
 
-    bool pauseDriver(void); // TODO
+    /*!
+        Pause driver
+        @return true on success, false on failure
+    */
+    bool pauseDriver(void); 
 
-    bool resumeDriver(void); // TODO
+    /*!
+        Resume driver
+        @return true on success, false on failure
+    */
+    bool resumeDriver(void); 
 
-    bool stopDriver(void); // TODO
+    /*!
+        Stop driver
+        @return true on success, false on failure
+    */
+    bool stopDriver(void); 
+
+ public:   
 
     // Name of device
     std::string m_strName;
@@ -112,6 +138,9 @@ class CDeviceItem
     // True if driver should be started.
     bool m_bEnable;
 
+    // Paused driver is inactive
+    bool m_bActive;
+
     // termination control
     bool m_bQuit;
 
@@ -121,25 +150,17 @@ class CDeviceItem
     */
     cguid m_interface_guid;
 
-    /*!
-        Worker thread for device
-    */
+    // Worker thread for device
     pthread_t m_deviceThreadHandle;
     pthread_mutex_t m_mutexdeviceThread;
 
-    /*!
-        Device flags for CANAL DLL open
-    */
+    // Device flags for CANAL DLL open
     uint32_t m_DeviceFlags;
 
-    /*!
-        Client entry
-    */
+    // Client entry
     CClientItem *m_pClientItem;
 
-    /*!
-        Mutex handle that is used for sharing of the device.
-    */
+    // Mutex handle that is used for sharing of the device.
     pthread_mutex_t m_deviceMutex;
 
     /*!
@@ -161,9 +182,6 @@ class CDeviceItem
 
     // Control object that invoked thread
     CControlObject *m_pCtrlObject;
-
-    // Quit flag
-    // bool m_bQuit;  use item quit
 
     // Holder for CANAL receive thread
     pthread_t m_level1ReceiveThread;
@@ -196,6 +214,7 @@ class CDeviceItem
     LPFNDLL_CANALGETVERSION m_proc_CanalGetVersion;
     LPFNDLL_CANALGETDLLVERSION m_proc_CanalGetDllVersion;
     LPFNDLL_CANALGETVENDORSTRING m_proc_CanalGetVendorString;
+
     // Generation 2
     LPFNDLL_CANALBLOCKINGSEND m_proc_CanalBlockingSend;
     LPFNDLL_CANALBLOCKINGRECEIVE m_proc_CanalBlockingReceive;
@@ -263,6 +282,21 @@ class CDeviceList
         @return Pointer to device item or NULL if not found
     */
     CDeviceItem *getDeviceItemFromClientId(uint32_t id);
+
+    /*!
+        Get all drivers as a string
+        @return String with device item info lines separated
+        with \r\n
+    */
+    std::string getAllAsString(void);
+
+    /*!
+        Count number of drivers
+        @param type Type of driver to count (1/2/3) or all (0)
+        @param bOnlyActive True if only enabled drivers should be counted.
+        @return number of drivers
+    */
+    uint16_t getCountDrivers(uint8_t type = 0, bool bOnlyActive = false);
 
   public:
     /*!

@@ -82,6 +82,7 @@ CDeviceItem::CDeviceItem()
 {
     m_bQuit   = false;
     m_bEnable = false; // Default is that driver should not be started
+    m_bActive = true;  // Not paused
 
     m_translation = NO_TRANSLATION; // Default is no translation
 
@@ -144,6 +145,29 @@ CDeviceItem::~CDeviceItem(void)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// getAsString
+//
+// bEnable,bActive,name,path,param,level,flags,guid,translation
+//
+
+std::string
+CDeviceItem::getAsString(void)
+{
+    std::string str;
+
+    str = m_bEnable ? "true," : "false,";
+    str += m_bActive ? "true," : "false,";
+    str += m_strName + ",";
+    str += m_strPath + ",";
+    str += m_strParameter + ",";
+    str += vscp_str_format("%d,%ul,", (int)m_driverLevel, m_DeviceFlags);
+    str += m_interface_guid.getAsString() + ",";
+    str += vscp_str_format("%04X", m_translation);
+
+    return str;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // startDriver
 //
 bool
@@ -152,15 +176,14 @@ CDeviceItem::startDriver(CControlObject *pCtrlObject)
     // Just start if enabled
     if (!m_bEnable) {
         syslog(LOG_INFO,
-               "[Driver %s] - VSCP driver is disabled.",
+               "[Driver %s] Start - VSCP driver is disabled.",
                m_strName.c_str());
-        return false;
+        return true;
     }
 
     // *****************************************
     //  Create the worker thread for the device
     // *****************************************
-
 
     // Share control object
     m_pCtrlObject = pCtrlObject;
@@ -185,19 +208,50 @@ CDeviceItem::startDriver(CControlObject *pCtrlObject)
 bool
 CDeviceItem::stopDriver()
 {
-    m_bQuit = true;
-    syslog(LOG_INFO,
-           "Driver %s: Driver asked to stop operation.",
-           m_strName.c_str());
+    if (m_bEnable) {
+        m_bQuit = true;
+        syslog(LOG_INFO,
+               "Driver %s: Driver asked to stop operation.",
+               m_strName.c_str());
 
-    pthread_mutex_lock(&m_mutexdeviceThread);
-    pthread_join(m_deviceThreadHandle, NULL);
-    pthread_mutex_unlock(&m_mutexdeviceThread);
+        pthread_mutex_lock(&m_mutexdeviceThread);
+        pthread_join(m_deviceThreadHandle, NULL);
+        pthread_mutex_unlock(&m_mutexdeviceThread);
 
-    syslog(LOG_ERR,
-           "CDeviceItem: Driver stopping. [%s]\n",
-           (const char *)m_strName.c_str());
+        syslog(LOG_ERR,
+               "CDeviceItem: Driver stopping. [%s]\n",
+               (const char *)m_strName.c_str());
+    } else {
+        if (!m_bEnable) {
+            syslog(LOG_INFO,
+                   "[Driver %s] Stop - VSCP driver is disabled.",
+                   m_strName.c_str());
+            return true;
+        }
+    }
 
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// pauseDriver
+//
+
+bool
+CDeviceItem::pauseDriver(void)
+{
+    m_bActive = false;
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// resumeDriver
+//
+
+bool
+CDeviceItem::resumeDriver(void)
+{
+    m_bActive = true;
     return true;
 }
 
@@ -327,4 +381,82 @@ CDeviceList::getDeviceItemFromClientId(uint32_t id)
     }
 
     return returnItem;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getAllAsString
+//
+
+std::string
+CDeviceList::getAllAsString(void)
+{
+    std::string str;
+
+    std::deque<CDeviceItem *>::iterator iter;
+    for (iter = m_devItemList.begin(); iter != m_devItemList.end(); ++iter) {
+        CDeviceItem *pItem = *iter;
+        if (NULL != pItem) {
+            str += pItem->getAsString() + "\r\n";
+        }
+    }
+
+    return str;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getCountDrivers
+//
+
+uint16_t
+CDeviceList::getCountDrivers(uint8_t type, bool bOnlyActive)
+{
+    uint16_t count = 0;
+
+    std::deque<CDeviceItem *>::iterator iter;
+    for (iter = m_devItemList.begin(); iter != m_devItemList.end(); ++iter) {
+        CDeviceItem *pItem = *iter;
+        if (NULL != pItem) {
+            if (bOnlyActive) {
+                if (pItem->m_bEnable) {
+                    switch (type) {
+                        case 0:
+                            count++;
+                            break;
+
+                        case VSCP_DRIVER_LEVEL1:
+                            if (pItem->m_driverLevel) count++;
+                            break;
+
+                        case VSCP_DRIVER_LEVEL2:
+                            if (pItem->m_driverLevel) count++;
+                            break;
+
+                        case VSCP_DRIVER_LEVEL3:
+                            if (pItem->m_driverLevel) count++;
+                            break;
+                    }
+                }
+            } else {
+                if (pItem->m_bEnable) {
+                    switch (type) {
+                        case 0:
+                            count++;
+                            break;
+
+                        case VSCP_DRIVER_LEVEL1:
+                            if (pItem->m_driverLevel) count++;
+                            break;
+
+                        case VSCP_DRIVER_LEVEL2:
+                            if (pItem->m_driverLevel) count++;
+                            break;
+
+                        case VSCP_DRIVER_LEVEL3:
+                            if (pItem->m_driverLevel) count++;
+                            break;
+                    }
+                }
+            }
+        }
+    }
 }

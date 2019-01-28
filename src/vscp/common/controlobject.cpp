@@ -2868,27 +2868,24 @@ startFullConfigParser(void *data, const char *name, const char **attr)
         } // for
 
         // Add the level I device
-        if (bEnabled) {
-
-            if (!pObj->m_deviceList.addItem(strName,
-                                            strConfig,
-                                            strPath,
-                                            flags,
-                                            guid,
-                                            VSCP_DRIVER_LEVEL1,
-                                            bEnabled,
-                                            translation)) {
-                syslog(LOG_ERR,
-                       "Level I driver not added name=%s. "
-                       "Path does not exist. - [%s]",
-                       strName.c_str(),
-                       strPath.c_str());
-            } else {
-                syslog(LOG_DEBUG,
-                       "Level I driver added. name = %s - [%s]",
-                       strName.c_str(),
-                       strPath.c_str());
-            }
+        if (!pObj->m_deviceList.addItem(strName,
+                                        strConfig,
+                                        strPath,
+                                        flags,
+                                        guid,
+                                        VSCP_DRIVER_LEVEL1,
+                                        bEnabled,
+                                        translation)) {
+            syslog(LOG_ERR,
+                   "Level I driver not added name=%s. "
+                   "Path does not exist. - [%s]",
+                   strName.c_str(),
+                   strPath.c_str());
+        } else {
+            syslog(LOG_DEBUG,
+                   "Level I driver added. name = %s - [%s]",
+                   strName.c_str(),
+                   strPath.c_str());
         }
 
     } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
@@ -2935,28 +2932,26 @@ startFullConfigParser(void *data, const char *name, const char **attr)
         } // for
 
         // Add the level II device
-        if (bEnabled) {
+        if (!pObj->m_deviceList.addItem(strName,
+                                        strConfig,
+                                        strPath,
+                                        0,
+                                        guid,
+                                        VSCP_DRIVER_LEVEL2,
+                                        bEnabled)) {
+            syslog(LOG_ERR,
+                   "Level II driver was not added. name = %s"
+                   "Path does not exist. - [%s]",
+                   strName.c_str(),
+                   strPath.c_str());
 
-            if (!pObj->m_deviceList.addItem(strName,
-                                            strConfig,
-                                            strPath,
-                                            0,
-                                            guid,
-                                            VSCP_DRIVER_LEVEL2,
-                                            bEnabled)) {
-                syslog(LOG_ERR,
-                       "Level II driver was not added. name = %s"
-                       "Path does not exist. - [%s]",
-                       strName.c_str(),
-                       strPath.c_str());
-
-            } else {
-                syslog(LOG_DEBUG,
-                       "Level II driver added. name = %s- [%s]",
-                       strName.c_str(),
-                       strPath.c_str());
-            }
+        } else {
+            syslog(LOG_DEBUG,
+                   "Level II driver added. name = %s- [%s]",
+                   strName.c_str(),
+                   strPath.c_str());
         }
+
     } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
                ((0 == vscp_strcasecmp(name, "level3driver")))) {
         bLevel3DriverConfigFound = TRUE;
@@ -3001,28 +2996,26 @@ startFullConfigParser(void *data, const char *name, const char **attr)
         }
 
         // Add the level III device
-        if (bEnabled) {
+        if (!pObj->m_deviceList.addItem(strName,
+                                        strConfig,
+                                        strPath,
+                                        0,
+                                        guid,
+                                        VSCP_DRIVER_LEVEL3,
+                                        bEnabled)) {
+            syslog(LOG_ERR,
+                   "Level III driver was not added. name = %s"
+                   "Path does not exist. - [%s]",
+                   strName.c_str(),
+                   strPath.c_str());
 
-            if (!pObj->m_deviceList.addItem(strName,
-                                            strConfig,
-                                            strPath,
-                                            0,
-                                            guid,
-                                            VSCP_DRIVER_LEVEL3,
-                                            bEnabled)) {
-                syslog(LOG_ERR,
-                       "Level III driver was not added. name = %s"
-                       "Path does not exist. - [%s]",
-                       strName.c_str(),
-                       strPath.c_str());
-
-            } else {
-                syslog(LOG_DEBUG,
-                       "Level III driver added. name = %s- [%s]",
-                       strName.c_str(),
-                       strPath.c_str());
-            }
+        } else {
+            syslog(LOG_DEBUG,
+                   "Level III driver added. name = %s- [%s]",
+                   strName.c_str(),
+                   strPath.c_str());
         }
+
     } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
                ((0 == vscp_strcasecmp(name, "knownnodes")))) {
         bKnownNodesConfigFound = TRUE;

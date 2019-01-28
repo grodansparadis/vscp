@@ -748,9 +748,8 @@ class CControlObject
     //**************************************************************************
     //                                Lists
     //**************************************************************************
-    /*!
-        The list with available devices.
-     */
+    
+    // The list with available devices.
     CDeviceList m_deviceList;
     pthread_mutex_t m_mutexDeviceList;
 
@@ -758,22 +757,16 @@ class CControlObject
     CClientList m_clientList; 
     
 
-    /*!
-        The list of users
-     */
+    // The list of users
     CUserList m_userList; // deque
     pthread_mutex_t m_mutexUserList;
 
-    /*!
-        This is a list with defined tables
-    */
+    // This is a list with defined tables
     CUserTableObjList m_userTableObjects; // deque
     pthread_mutex_t m_mutexUserTables;
 
-    /*!
-        This is the mao with known nodes in the system
-        key = guidstr
-    */
+    // This is the mao with known nodes in the system
+    // key = guidstr
     CKnownNodes m_knownNodes;
     pthread_mutex_t m_mutexKnownNodes;
 

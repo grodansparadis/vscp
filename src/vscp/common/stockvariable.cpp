@@ -277,6 +277,10 @@ CVariableStorage::handleStockVariable(std::string name,
                       LOG_ERR, "Remote variable %s is read only", name.c_str());
                     return false;
                 }
+            } else {
+                syslog(
+                  LOG_ERR, "Remote variable %s is not available", name.c_str());
+                return false;
             }
 
         } else if ("openssl" == strToken) {
@@ -324,6 +328,10 @@ CVariableStorage::handleStockVariable(std::string name,
                       LOG_ERR, "Remote variable %s is read only", name.c_str());
                     return false;
                 }
+            } else {
+                syslog(
+                  LOG_ERR, "Remote variable %s is not available", name.c_str());
+                return false;
             }
 
         } else if ("duktape" == strToken) {
@@ -369,6 +377,10 @@ CVariableStorage::handleStockVariable(std::string name,
                       LOG_ERR, "Remote variable %s is read only", name.c_str());
                     return false;
                 }
+            } else {
+                syslog(
+                  LOG_ERR, "Remote variable %s is not available", name.c_str());
+                return false;
             }
 
         } else if ("civetweb" == strToken) {
@@ -416,6 +428,10 @@ CVariableStorage::handleStockVariable(std::string name,
                       LOG_ERR, "Remote variable %s is read only", name.c_str());
                     return false;
                 }
+            } else {
+                syslog(
+                  LOG_ERR, "Remote variable %s is not available", name.c_str());
+                return false;
             }
 
         } else if ("lua" == strToken) {
@@ -459,6 +475,10 @@ CVariableStorage::handleStockVariable(std::string name,
                       LOG_ERR, "Remote variable %s is read only", name.c_str());
                     return false;
                 }
+            } else {
+                syslog(
+                  LOG_ERR, "Remote variable %s is not available", name.c_str());
+                return false;
             }
 
         } else if ("mongoose" == strToken) {
@@ -504,6 +524,10 @@ CVariableStorage::handleStockVariable(std::string name,
                       LOG_ERR, "Remote variable %s is read only", name.c_str());
                     return false;
                 }
+            } else {
+                syslog(
+                  LOG_ERR, "Remote variable %s is not available", name.c_str());
+                return false;
             }
 
         } else if ("nlohmann-json" == strToken) {
@@ -592,7 +616,14 @@ CVariableStorage::handleStockVariable(std::string name,
                       LOG_ERR, "Remote variable %s is read only", name.c_str());
                     return false;
                 }
+            } else {
+                syslog(
+                  LOG_ERR, "Remote variable %s is not available", name.c_str());
+                return false;
             }
+        } else {
+            syslog(LOG_ERR, "Remote variable %s is not avilable", name.c_str());
+            return false;
         }
     }
 
@@ -667,6 +698,10 @@ CVariableStorage::handleStockVariable(std::string name,
                       LOG_ERR, "Remote variable %s is read only", name.c_str());
                     return false;
                 }
+            } else {
+                syslog(
+                  LOG_ERR, "Remote variable %s is not available", name.c_str());
+                return false;
             }
         } else if ("host" == strToken) {
 
@@ -790,6 +825,10 @@ CVariableStorage::handleStockVariable(std::string name,
                       LOG_ERR, "Remote variable %s is read only", name.c_str());
                     return false;
                 }
+            } else {
+                syslog(
+                  LOG_ERR, "Remote variable %s is not available", name.c_str());
+                return false;
             }
         } else if ("userid" == strToken) {
 
@@ -1006,6 +1045,10 @@ CVariableStorage::handleStockVariable(std::string name,
                   LOG_ERR, "Remote variable %s is read only", name.c_str());
                 return false;
             }
+        } else {
+            syslog(
+              LOG_ERR, "Remote variable %s is not available", name.c_str());
+            return false;
         }
     }
 
@@ -1101,6 +1144,10 @@ CVariableStorage::handleStockVariable(std::string name,
                 gpobj->m_maxItemsInClientReceiveQueue = (uint32_t)value;
                 return true;
             }
+        } else {
+            syslog(
+              LOG_ERR, "Remote variable %s is not available", name.c_str());
+            return false;
         }
     }
 
@@ -1180,9 +1227,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 gpobj->m_debugFlags[0] = (uint32_t)value;
                 return true;
             }
-        }
-
-        if ("flags2" == strToken) {
+        } else if ("flags2" == strToken) {
             if (STOCKVAR_INIT == op) {
                 var.setName(name);
                 var.setType(VSCP_DAEMON_VARIABLE_CODE_LONG);
@@ -1212,9 +1257,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 gpobj->m_debugFlags[1] = (uint32_t)value;
                 return true;
             }
-        }
-
-        if ("flags3" == strToken) {
+        } else if ("flags3" == strToken) {
             if (STOCKVAR_INIT == op) {
                 var.setName(name);
                 var.setType(VSCP_DAEMON_VARIABLE_CODE_LONG);
@@ -1244,9 +1287,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 gpobj->m_debugFlags[2] = (uint32_t)value;
                 return true;
             }
-        }
-
-        if ("flags" == strToken) {
+        } else if ("flags4" == strToken) {
             if (STOCKVAR_INIT == op) {
                 var.setName(name);
                 var.setType(VSCP_DAEMON_VARIABLE_CODE_LONG);
@@ -1276,9 +1317,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 gpobj->m_debugFlags[3] = (uint32_t)value;
                 return true;
             }
-        }
-
-        if ("flags5" == strToken) {
+        } else if ("flags5" == strToken) {
             if (STOCKVAR_INIT == op) {
                 var.setName(name);
                 var.setType(VSCP_DAEMON_VARIABLE_CODE_LONG);
@@ -1308,9 +1347,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 gpobj->m_debugFlags[4] = (uint32_t)value;
                 return true;
             }
-        }
-
-        if ("flags6" == strToken) {
+        } else if ("flags6" == strToken) {
             if (STOCKVAR_INIT == op) {
                 var.setName(name);
                 var.setType(VSCP_DAEMON_VARIABLE_CODE_LONG);
@@ -1340,9 +1377,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 gpobj->m_debugFlags[5] = (uint32_t)value;
                 return true;
             }
-        }
-
-        if ("flags7" == strToken) {
+        } else if ("flags7" == strToken) {
             if (STOCKVAR_INIT == op) {
                 var.setName(name);
                 var.setType(VSCP_DAEMON_VARIABLE_CODE_LONG);
@@ -1372,9 +1407,7 @@ CVariableStorage::handleStockVariable(std::string name,
                 gpobj->m_debugFlags[6] = (uint32_t)value;
                 return true;
             }
-        }
-
-        if ("flags8" == strToken) {
+        } else if ("flags8" == strToken) {
             if (STOCKVAR_INIT == op) {
                 var.setName(name);
                 var.setType(VSCP_DAEMON_VARIABLE_CODE_LONG);
@@ -1404,6 +1437,10 @@ CVariableStorage::handleStockVariable(std::string name,
                 gpobj->m_debugFlags[7] = (uint32_t)value;
                 return true;
             }
+        } else {
+            syslog(
+              LOG_ERR, "Remote variable %s is not available", name.c_str());
+            return false;
         }
     }
 
@@ -6875,6 +6912,10 @@ CVariableStorage::handleStockVariable(std::string name,
 
                 return true;
             }
+        } else {
+            syslog(
+              LOG_ERR, "Remote variable %s is not available", name.c_str());
+            return false;
         }
     }
 
@@ -7055,6 +7096,10 @@ CVariableStorage::handleStockVariable(std::string name,
                       LOG_ERR, "Remote variable %s is read only", name.c_str());
                     return false;
                 }
+            } else {
+                syslog(
+                  LOG_ERR, "Remote variable %s is not available", name.c_str());
+                return false;
             }
         } else if ("path-db" == strToken) {
             if (STOCKVAR_INIT == op) {
@@ -7546,6 +7591,11 @@ CVariableStorage::handleStockVariable(std::string name,
 
                         return true;
                     }
+                } else {
+                    syslog(LOG_ERR,
+                           "Remote variable %s is not available",
+                           name.c_str());
+                    return false;
                 }
             } // vscp.dm.n.mask
             else if ("filter" == strToken) {
@@ -7798,6 +7848,11 @@ CVariableStorage::handleStockVariable(std::string name,
 
                         return true;
                     }
+                } else {
+                    syslog(LOG_ERR,
+                           "Remote variable %s is not available",
+                           name.c_str());
+                    return false;
                 }
             } else if ("allowed" == strToken) { // 'vscp.dm.n.allowed'
 
@@ -8438,6 +8493,12 @@ CVariableStorage::handleStockVariable(std::string name,
                         return true;
                     }
                 } // vscp.dm.allowed
+                else {
+                    syslog(LOG_ERR,
+                           "Remote variable %s is not available",
+                           name.c_str());
+                    return false;
+                }
             } else if ("bCheckIndex" == strToken) {
                 if (STOCKVAR_READ == op) {
                     var.setID(VSCP_VAR_PERSISTENT);
@@ -8970,6 +9031,12 @@ CVariableStorage::handleStockVariable(std::string name,
                         return true;
                     }
                 } // end of vscp.dm.measurement
+                else {
+                    syslog(LOG_ERR,
+                           "Remote variable %s is not available",
+                           name.c_str());
+                    return false;
+                }
 
             } else if ("comment" == strToken) {
                 if (STOCKVAR_READ == op) {
@@ -9144,11 +9211,21 @@ CVariableStorage::handleStockVariable(std::string name,
                     return false;
                 }
 
-            } // vscp.dm.n.error
+            } // end vscp.dm.n.error
+            else {
+                syslog(
+                  LOG_ERR, "Remote variable %s is not available", name.c_str());
+                return false;
+            }
 
-        } // vscp.dm.n
+        } // end vscp.dm.n
+        else {
+            syslog(
+              LOG_ERR, "Remote variable %s is not available", name.c_str());
+            return false;
+        }
 
-    } // vscp.dm
+    } // vscp.dm end
 
     // *************************************************************************
     //                                 discovery
@@ -9166,13 +9243,15 @@ CVariableStorage::handleStockVariable(std::string name,
         strToken = tokens.front();
         vscp_trim(strToken);
         tokens.pop_front();
-    }
+    } // vscp.discovery end
 
     // *************************************************************************
     //                                Interface
     // *************************************************************************
     // vscp.interface.count - Number of current interfaces
     // vscp.interface       - Info about all interfaces
+    // vscp.interface.xml   - future
+    // vscp.interface.json  - future
     // vscp.interface.n     - Info about interface n
     // vscp.interface.n.id
     // vscp.interface.n.type
@@ -9405,7 +9484,8 @@ CVariableStorage::handleStockVariable(std::string name,
             } else if ("bopen" == strToken) {
                 if (STOCKVAR_READ == op) {
                     var.init();
-                    var.setAccessRights(PERMISSION_OWNER_READ|PERMISSION_OWNER_WRITE);
+                    var.setAccessRights(PERMISSION_OWNER_READ |
+                                        PERMISSION_OWNER_WRITE);
                     var.setType(VSCP_DAEMON_VARIABLE_CODE_BOOLEAN);
                     var.setValue(pClientItem->m_bOpen);
                     var.setNote("Client interface flags");
@@ -9427,7 +9507,7 @@ CVariableStorage::handleStockVariable(std::string name,
                         return false;
                     }
                     bool val;
-                    var.getValue(&val );
+                    var.getValue(&val);
                     pClientItem->m_bOpen = val;
                 } else {
                     syslog(LOG_ERR,
@@ -9439,7 +9519,8 @@ CVariableStorage::handleStockVariable(std::string name,
             } else if ("filter" == strToken) {
                 if (STOCKVAR_READ == op) {
                     var.init();
-                    var.setAccessRights(PERMISSION_OWNER_READ|PERMISSION_OWNER_WRITE);
+                    var.setAccessRights(PERMISSION_OWNER_READ |
+                                        PERMISSION_OWNER_WRITE);
                     var.setType(VSCP_DAEMON_VARIABLE_CODE_FILTER);
                     std::string str, strFilter;
                     var.setValue(pClientItem->m_filter);
@@ -9469,7 +9550,7 @@ CVariableStorage::handleStockVariable(std::string name,
                            op);
                     return false;
                 }
-            }  else if ("input-queue-count" == strToken) {
+            } else if ("input-queue-count" == strToken) {
                 if (STOCKVAR_READ == op) {
                     var.init();
                     var.setAccessRights(PERMISSION_OWNER_READ);
@@ -9489,11 +9570,19 @@ CVariableStorage::handleStockVariable(std::string name,
                            op);
                     return false;
                 }
+            } else {
+                syslog(
+                  LOG_ERR, "Remote variable %s is not available", name.c_str());
+                return false;
             }
+        } else {
+            syslog(
+              LOG_ERR, "Remote variable %s is not available", name.c_str());
+            return false;
         }
 
         return false;
-    }
+    } // vscp.interface end
 
     // *************************************************************************
     //                                  Users
@@ -10019,6 +10108,11 @@ CVariableStorage::handleStockVariable(std::string name,
                             return false;
                         }
                     }
+                } else {
+                    syslog(LOG_ERR,
+                           "Remote variable %s is not available",
+                           name.c_str());
+                    return false;
                 }
 
             } else if ("event-list" == strToken) {
@@ -10176,37 +10270,333 @@ CVariableStorage::handleStockVariable(std::string name,
                             return false;
                         }
                     }
+                } else {
+                    syslog(LOG_ERR,
+                           "Remote variable %s is not available",
+                           name.c_str());
+                    return false;
                 }
             }
+        } else {
+            syslog(
+              LOG_ERR, "Remote variable %s is not available", name.c_str());
+            return false;
         }
-    }
+    } // vscp.user end
 
     // *************************************************************************
     //                                 Drivers
     // *************************************************************************
-    // vscp.driver.count        - Number of drivers
-    // vscp.driver.count.l1     - Number of level I drivers
-    // vscp.driver.count.l2     - Number of level II drivers
-    // vscp.driver.count.l3     - Number of level III
-    // drivers vscp.driver.count.active - Number of active
-    // drivers vscp.driver.count.active.l1  - Number of
-    // active level L1 drivers vscp.driver.count.active.l2
-    // - Number of active level II drivers
-    // vscp.driver.count.active.l3  - Number of active level
-    // III drivers vscp.driver.start            - Star a
-    // diabled driver vscp.driver.stop             - Stop a
-    // running driver vscp.driver.restarts         - Restart
-    // a driver
+    // vscp.driver                  - List info about all drivers
+    // vscp.driver.xml              - future
+    // vscp.driver.json             - future
+    // vscp.driver.n                - List info about driver ordinal n
+    // vscp.driver.n.xml            - future
+    // vscp.driver.n.json           - future
+    // vscp.driver.count            - Number of drivers
+    // vscp.driver.count.l1         - Number of level I drivers
+    // vscp.driver.count.l2         - Number of level II drivers
+    // vscp.driver.count.l3         - Number of level III drivers
+    // vscp.driver.count.enable     - Number of active drivers
+    // vscp.driver.count.enable.l1  - Number of active level L1 drivers
+    // vscp.driver.count.enable.l2  - Number of active level II drivers
+    // vscp.driver.count.enable.l3  - Number of active level III drivers
+    // vscp.driver.n                - Info about driver n
+    // vscp.driver.name             - Name for driver n
+    // vscp.driver.path             - Path for driver n
+    // vscp.driver.params           - Parameter string for driver n
+    // vscp.driver.enable           - Enable/disable driver n
+    // vscp.driver.active           - Activate/deactivate driver n
+    // vscp.driver.level            - Driver level for driver n
+    // vscp.driver.flags            - Flags for driver n
+    // vscp.driver.guid             - guid for drive n
+    // vscp.driver.translation      - translation for driver n
+    // vscp.driver.start            - Start a paused driver
+    // vscp.driver.stop             - Stop a running driver
+    // vscp.driver.restart          - Restart a driver
+    // vscp.driver.add              - Add a driver (db)
+    // vscp.driver.delete           - Delete a driver (db)
 
     if ("driver" == strToken) {
 
-        // Must be at least one other token
-        if (tokens.empty()) return false;
+        if (tokens.empty()) { // vscp.driver
+            if (STOCKVAR_INIT == op) {
+                var.setName(name);
+                var.setAccessRights(PERMISSION_OWNER_READ);
+                var.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
+                var.setNote("All defined drivers.");
+                var.setValue(""); // Dummy value
+                return addStockVariable(var);
+            } else if (STOCKVAR_READ == op) {
+                var.setType(VSCP_DAEMON_VARIABLE_CODE_STRING);
+                var.setValue(gpobj->m_deviceList.getAllAsString());
+                var.setLastChangedToNow();
+                return true;
+            } else if (STOCKVAR_WRITE == op) {
+                syslog(
+                  LOG_ERR, "Remote variable %s is read only", name.c_str());
+                return false;
+            } else {
+                syslog(LOG_ERR,
+                       "Operation %d on remote variable %s invalid",
+                       op,
+                       name.c_str());
+                return false;
+            }
+        }
 
         strToken = tokens.front();
         vscp_trim(strToken);
         tokens.pop_front();
-    }
+
+        if ("count" == strToken) {
+
+            if (tokens.empty()) { // vscp.driver.count
+                if (STOCKVAR_INIT == op) {
+                    var.setName(name);
+                    var.setAccessRights(PERMISSION_OWNER_READ);
+                    var.setType(VSCP_DAEMON_VARIABLE_CODE_LONG);
+                    var.setNote("Total number of drivers.");
+                    var.setValue(""); // Dummy value
+                    return addStockVariable(var);
+                } else if (STOCKVAR_READ == op) {
+                    var.setType(VSCP_DAEMON_VARIABLE_CODE_LONG);
+                    var.setValue(
+                      (long)gpobj->m_deviceList.getCountDrivers(0, true));
+                    var.setLastChangedToNow();
+                    return true;
+                } else if (STOCKVAR_WRITE == op) {
+                    syslog(
+                      LOG_ERR, "Remote variable %s is read only", name.c_str());
+                    return false;
+                } else {
+                    syslog(LOG_ERR,
+                           "Operation %d on remote variable %s invalid",
+                           op,
+                           name.c_str());
+                    return false;
+                }
+            }
+
+            strToken = tokens.front();
+            vscp_trim(strToken);
+            tokens.pop_front();
+
+            if ("l1" == strToken) { // vscp.driver.count.l1
+                if (STOCKVAR_INIT == op) {
+                    var.setName(name);
+                    var.setAccessRights(PERMISSION_OWNER_READ);
+                    var.setType(VSCP_DAEMON_VARIABLE_CODE_LONG);
+                    var.setNote("Total number of level I drivers.");
+                    var.setValue(""); // Dummy value
+                    return addStockVariable(var);
+                } else if (STOCKVAR_READ == op) {
+                    var.setType(VSCP_DAEMON_VARIABLE_CODE_LONG);
+                    var.setValue((long)gpobj->m_deviceList.getCountDrivers(
+                      VSCP_DRIVER_LEVEL1, true));
+                    var.setLastChangedToNow();
+                    return true;
+                } else if (STOCKVAR_WRITE == op) {
+                    syslog(
+                      LOG_ERR, "Remote variable %s is read only", name.c_str());
+                    return false;
+                } else {
+                    syslog(LOG_ERR,
+                           "Operation %d on remote variable %s invalid",
+                           op,
+                           name.c_str());
+                    return false;
+                }
+            } else if ("l2" == strToken) { // vscp.driver.count.l2
+                if (STOCKVAR_INIT == op) {
+                    var.setName(name);
+                    var.setAccessRights(PERMISSION_OWNER_READ);
+                    var.setType(VSCP_DAEMON_VARIABLE_CODE_LONG);
+                    var.setNote("Total number of level II drivers.");
+                    var.setValue(""); // Dummy value
+                    return addStockVariable(var);
+                } else if (STOCKVAR_READ == op) {
+                    var.setType(VSCP_DAEMON_VARIABLE_CODE_LONG);
+                    var.setValue((long)gpobj->m_deviceList.getCountDrivers(
+                      VSCP_DRIVER_LEVEL2, true));
+                    var.setLastChangedToNow();
+                    return true;
+                } else if (STOCKVAR_WRITE == op) {
+                    syslog(
+                      LOG_ERR, "Remote variable %s is read only", name.c_str());
+                    return false;
+                } else {
+                    syslog(LOG_ERR,
+                           "Operation %d on remote variable %s invalid",
+                           op,
+                           name.c_str());
+                    return false;
+                }
+            } else if ("l3" == strToken) { // vscp.driver.count.l3
+                if (STOCKVAR_INIT == op) {
+                    var.setName(name);
+                    var.setAccessRights(PERMISSION_OWNER_READ);
+                    var.setType(VSCP_DAEMON_VARIABLE_CODE_LONG);
+                    var.setNote("Total number of level III drivers.");
+                    var.setValue(""); // Dummy value
+                    return addStockVariable(var);
+                } else if (STOCKVAR_READ == op) {
+                    var.setType(VSCP_DAEMON_VARIABLE_CODE_LONG);
+                    var.setValue((long)gpobj->m_deviceList.getCountDrivers(
+                      VSCP_DRIVER_LEVEL3, true));
+                    var.setLastChangedToNow();
+                    return true;
+                } else if (STOCKVAR_WRITE == op) {
+                    syslog(
+                      LOG_ERR, "Remote variable %s is read only", name.c_str());
+                    return false;
+                } else {
+                    syslog(LOG_ERR,
+                           "Operation %d on remote variable %s invalid",
+                           op,
+                           name.c_str());
+                    return false;
+                }
+            } else if ("enable" == strToken) { // vscp.driver.count.active
+
+                if (tokens.empty()) { // vscp.driver.count
+                    if (STOCKVAR_INIT == op) {
+                        var.setName(name);
+                        var.setAccessRights(PERMISSION_OWNER_READ);
+                        var.setType(VSCP_DAEMON_VARIABLE_CODE_LONG);
+                        var.setNote("Total number of enabled drivers.");
+                        var.setValue(""); // Dummy value
+                        return addStockVariable(var);
+                    } else if (STOCKVAR_READ == op) {
+                        var.setType(VSCP_DAEMON_VARIABLE_CODE_LONG);
+                        var.setValue(
+                          (long)gpobj->m_deviceList.getCountDrivers(0, true));
+                        var.setLastChangedToNow();
+                        return true;
+                    } else if (STOCKVAR_WRITE == op) {
+                        syslog(LOG_ERR,
+                               "Remote variable %s is read only",
+                               name.c_str());
+                        return false;
+                    } else {
+                        syslog(LOG_ERR,
+                               "Operation %d on remote variable %s invalid",
+                               op,
+                               name.c_str());
+                        return false;
+                    }
+                }
+
+                strToken = tokens.front();
+                vscp_trim(strToken);
+                tokens.pop_front();
+
+                if ("l1" == strToken) { // vscp.driver.count.active.l1
+                    if (STOCKVAR_INIT == op) {
+                        var.setName(name);
+                        var.setAccessRights(PERMISSION_OWNER_READ);
+                        var.setType(VSCP_DAEMON_VARIABLE_CODE_LONG);
+                        var.setNote("Number of enabled level I drivers.");
+                        var.setValue(""); // Dummy value
+                        return addStockVariable(var);
+                    } else if (STOCKVAR_READ == op) {
+                        var.setType(VSCP_DAEMON_VARIABLE_CODE_LONG);
+                        var.setValue((long)gpobj->m_deviceList.getCountDrivers(
+                          VSCP_DRIVER_LEVEL1));
+                        var.setLastChangedToNow();
+                        return true;
+                    } else if (STOCKVAR_WRITE == op) {
+                        syslog(LOG_ERR,
+                               "Remote variable %s is read only",
+                               name.c_str());
+                        return false;
+                    } else {
+                        syslog(LOG_ERR,
+                               "Operation %d on remote variable %s invalid",
+                               op,
+                               name.c_str());
+                        return false;
+                    }
+                } else if ("l2" == strToken) { // vscp.driver.count.active.l2
+                    if (STOCKVAR_INIT == op) {
+                        var.setName(name);
+                        var.setAccessRights(PERMISSION_OWNER_READ);
+                        var.setType(VSCP_DAEMON_VARIABLE_CODE_LONG);
+                        var.setNote("Number of enabled level II drivers.");
+                        var.setValue(""); // Dummy value
+                        return addStockVariable(var);
+                    } else if (STOCKVAR_READ == op) {
+                        var.setType(VSCP_DAEMON_VARIABLE_CODE_LONG);
+                        var.setValue((long)gpobj->m_deviceList.getCountDrivers(
+                          VSCP_DRIVER_LEVEL2));
+                        var.setLastChangedToNow();
+                        return true;
+                    } else if (STOCKVAR_WRITE == op) {
+                        syslog(LOG_ERR,
+                               "Remote variable %s is read only",
+                               name.c_str());
+                        return false;
+                    } else {
+                        syslog(LOG_ERR,
+                               "Operation %d on remote variable %s invalid",
+                               op,
+                               name.c_str());
+                        return false;
+                    }
+                } else if ("l3" == strToken) { // vscp.driver.count.active.l3
+                    if (STOCKVAR_INIT == op) {
+                        var.setName(name);
+                        var.setAccessRights(PERMISSION_OWNER_READ);
+                        var.setType(VSCP_DAEMON_VARIABLE_CODE_LONG);
+                        var.setNote("Number of enabled level III drivers.");
+                        var.setValue(""); // Dummy value
+                        return addStockVariable(var);
+                    } else if (STOCKVAR_READ == op) {
+                        var.setType(VSCP_DAEMON_VARIABLE_CODE_LONG);
+                        var.setValue((long)gpobj->m_deviceList.getCountDrivers(
+                          VSCP_DRIVER_LEVEL3));
+                        var.setLastChangedToNow();
+                        return true;
+                    } else if (STOCKVAR_WRITE == op) {
+                        syslog(LOG_ERR,
+                               "Remote variable %s is read only",
+                               name.c_str());
+                        return false;
+                    } else {
+                        syslog(LOG_ERR,
+                               "Operation %d on remote variable %s invalid",
+                               op,
+                               name.c_str());
+                        return false;
+                    }
+                } else {
+                    syslog(LOG_ERR,
+                           "Remote variable %s is not available",
+                           name.c_str());
+                    return false;
+                }
+
+            } else {
+                syslog(
+                  LOG_ERR, "Remote variable %s is not available", name.c_str());
+                return false;
+            }
+
+        } else if ("start" == strToken) {
+
+        } else if ("stop" == strToken) {
+
+        } else if ("restart" == strToken) {
+
+        } else if (vscp_isNumber(strToken)) {
+
+        } else {
+            syslog(
+              LOG_ERR, "Remote variable %s is not available", name.c_str());
+            return false;
+        }
+
+    } // vscp.driver end
 
     // *************************************************************************
     //                                  Tables
@@ -10217,29 +10607,30 @@ CVariableStorage::handleStockVariable(std::string name,
     // vscp.table.n.name        - Read/write table name
     // vscp.table.n.xml         - list table n in XML format
     // vscp.table.n.from.to     - Get Table data for table n
-    // in the interval from - to vscp.table.n.raw.from.to -
-    // Get Table data raw for table n in the interval from -
-    // to vscp.table.n.count.from.to   - Return number of
-    // records in range vscp.table.n.first.from.to   - First
-    // date in range vscp.table.n.last.from.to    - Last
-    // date in range vscp.table.n.sum.from.to     - Sum of
-    // records in range vscp.table.n.min.from.to     - Min
-    // of records in range vscp.table.n.max.from.to     -
-    // Max of records in range vscp.table.n.average.from.to
-    // - Average of records in range
-    // vscp.table.n.median.from.to  - Median of records in
-    // range vscp.table.n.stddev.from.to  - stddev of
-    // records in range vscp.table.n.variance.from.to -
-    // Variance of records in range
-    // vscp.table.n.mode.from.to    - Mode of records in
-    // range vscp.table.n.lowerq.from.to  - Lowerq of
-    // records in range vscp.table.n.upperq.from.to  -
-    // Upperq of records in range vscp.table.n.clear.from.to
-    // - Clear records in range vscp.table.log           -
-    // Log data (double: just value, string: value,datetime)
-    // vscp.table.logsql        - Log data using sql (only
-    // admin) vscp.table.add           - Add table
-    // vscp.table.delete        - Delete table.
+    //                            in the interval from - to
+    // vscp.table.n.raw.from.to - Get Table data raw for
+    //                            table n in the interval from - to
+    // vscp.table.n.count.from.to - Return number of
+    //                              records in range
+    // vscp.table.n.first.from.to - First date in range
+    // vscp.table.n.last.from.to  - Last date in range
+    // vscp.table.n.sum.from.to   - Sum of records in range
+    // vscp.table.n.min.from.to   - Min of records in range
+    // vscp.table.n.max.from.to   - Max of records in range
+    // vscp.table.n.average.from.to - Average of records in range
+    // vscp.table.n.median.from.to  - Median of records in range
+    // vscp.table.n.stddev.from.to  - stddev of records in range
+    // vscp.table.n.variance.from.to - Variance of records in range
+    // vscp.table.n.mode.from.to    - Mode of records in range
+    // vscp.table.n.lowerq.from.to  - Lowerq of records in range
+    // vscp.table.n.upperq.from.to  - Upperq of records in range
+    // vscp.table.n.clear.from.to   - Clear records in range
+    // vscp.table.log           - Log data (double: just value, string:
+    // value,datetime) vscp.table.logsql        - Log data using sql (only
+    // admin) vscp.table.log.xml       - future vscp.table.log.json      -
+    // future vscp.table.add           - Add table vscp.table.add.xml       -
+    // future vscp.table.add.json      . future vscp.table.delete        -
+    // Delete table.
 
     if ("table" == strToken) {
 
@@ -10249,7 +10640,7 @@ CVariableStorage::handleStockVariable(std::string name,
         strToken = tokens.front();
         vscp_trim(strToken);
         tokens.pop_front();
-    }
+    } // vscp.table end
 
     // *************************************************************************
     //                                   UDP
@@ -10263,7 +10654,7 @@ CVariableStorage::handleStockVariable(std::string name,
         strToken = tokens.front();
         vscp_trim(strToken);
         tokens.pop_front();
-    }
+    } // vscp.udp end
 
     // *************************************************************************
     //                                   MULTICAST
@@ -10277,7 +10668,7 @@ CVariableStorage::handleStockVariable(std::string name,
         strToken = tokens.front();
         vscp_trim(strToken);
         tokens.pop_front();
-    }
+    } // vscp.multicast end
 
     return false;
 }
