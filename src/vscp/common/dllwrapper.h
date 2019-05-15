@@ -50,7 +50,7 @@
 #define DLL_REGISTER_READ_MAX_TRIES 3
 
 // This structure holds info about found methods
-typedef struct structFoundMetods
+typedef struct structFoundMethods
 {
     int bCanalOpen;
     int bCanalClose;
@@ -121,7 +121,7 @@ class CDllWrapper
         @return Channel handler on success. -1 on error.
     */
     long doCmdOpen(const wxString &strConfiguration = (_("")),
-                   unsigned long flags              = 0L);
+                    unsigned long flags              = 0L);
 
     /*!
         Open communication channel.
