@@ -1,22 +1,22 @@
-/* 
- FILE: vscp.h 
+/*
+ FILE: vscp.h
 
- This file is part of the VSCP (http://www.vscp.org) 
+ This file is part of the VSCP (http://www.vscp.org)
 
  The MIT License (MIT)
- 
+
  Copyright (C) 2000-2019 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
- 
+
  Permission is hereby granted, free of charge, to any person obtaining a copy
  of this software and associated documentation files (the "Software"), to deal
  in the Software without restriction, including without limitation the rights
  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  copies of the Software, and to permit persons to whom the Software is
  furnished to do so, subject to the following conditions:
- 
+
  The above copyright notice and this permission notice shall be included in all
  copies or substantial portions of the Software.
- 
+
  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -29,8 +29,8 @@
  This file may be a copy of the original file. This is because the file is
  copied to other projects as a convenience. Thus editing the copy will not make
  it to the original and will be overwritten.
- The original file can be found in the vscp_softare source tree under 
- src/vscp/common 
+ The original file can be found in the vscp_softare source tree under
+ src/vscp/common
 */
 
 #ifndef _VSCP_H_
@@ -68,22 +68,22 @@ extern "C" {
     typedef struct {
         uint16_t crc;           /* crc checksum (calculated from here to end) */
                                 /* Used for UDP/Ethernet etc */
-       
+
         uint32_t obid;          /* Used by driver for channel info etc. */
-        
+
         /* Time block - Always UTC time */
-        uint16_t year; 
+        uint16_t year;
         uint8_t month;	        /* 1-12 */
         uint8_t day;	        /* 1-31 */
         uint8_t hour;	        /* 0-23 */
         uint8_t minute;	        /* 0-59 */
         uint8_t second;	        /* 0-59 */
-        
+
         uint32_t timestamp;     /* Relative time stamp for package in microseconds */
                                 /* ~71 minutes before roll over */
-        
+
         /* ----- CRC should be calculated from here to end + data block ----  */
-        
+
         uint16_t head;          /* Bit 15   GUID is IP v.6 address. */
 	                        /* Bit 14   This is a dumb node. No MDF, register, nothing. */
                                 /* Bit 8-13 = Reserved */
@@ -100,9 +100,9 @@ extern "C" {
         uint16_t vscp_type;     /* VSCP type */
         uint8_t GUID[ 16 ];     /* Node globally unique id MSB(0) -> LSB(15) */
         uint16_t sizeData;      /* Number of valid data bytes */
-        
+
         uint8_t *pdata;         /* Pointer to data. Max 512 bytes */
-        
+
     } vscpEvent;
 
 
@@ -110,29 +110,29 @@ typedef vscpEvent *PVSCPEVENT;
 
 
 
-/* 
-    WARNING!!! 
-    This structure is for VSCP Level II with data embedded == big!!! 
+/*
+    WARNING!!!
+    This structure is for VSCP Level II with data embedded == big!!!
  */
 
-typedef struct { 
-    
+typedef struct {
+
     uint16_t crc;                   /* CRC checksum (calculated from here to end) */
                                     /* Used for UDP/Ethernet etc */
- 
+
     uint32_t obid;                  /* Used by driver for channel info etc. */
-    
+
     /* Time block - Always UTC time */
-    uint16_t year; 
+    uint16_t year;
     uint8_t month;	            /* 1-12 */
     uint8_t day;	            /* 1-31 */
     uint8_t hour;	            /* 0-23 */
     uint8_t minute;	            /* 0-59 */
     uint8_t second;	            /* 0-59 */
-    
+
     uint32_t timestamp;             /* Relative time stamp for package in microseconds. */
                                     /* ~71 minutes before roll over */
-    
+
     /* CRC should be calculated from here to end + data block */
     uint16_t head;                  /* Bit 15   GUID is IP v.6 address. */
                                     /* Bit 14   This is a dumb node. No MDF, register, nothing. */
@@ -210,7 +210,7 @@ typedef struct  {
 
     uint8_t filter_priority;        /* Priority  */
     uint8_t mask_priority;
-                
+
     uint16_t filter_class;          /* VSCP class */
     uint16_t mask_class;
 
@@ -219,7 +219,7 @@ typedef struct  {
 
     uint8_t filter_GUID[ 16 ];      /* Node address MSB -> LSB, LSB is node nickname id */
     uint8_t mask_GUID[ 16 ];        /* when interfacing the VSCP daemon. */
-    
+
 } vscpEventFilter;
 
 
@@ -236,7 +236,7 @@ typedef struct structVSCPStatistics {
     unsigned long cntReceiveFrames;             /* # of receive frames */
     unsigned long cntTransmitFrames;            /* # of transmitted frames */
     unsigned long cntReceiveData;               /* # of received data bytes */
-    unsigned long cntTransmitData;              /* # of transmitted data bytes */	
+    unsigned long cntTransmitData;              /* # of transmitted data bytes */
     unsigned long cntOverruns;                  /* # of overruns */
     unsigned long x;                            /* Currently undefined value */
     unsigned long y;                            /* Currently undefined value */
@@ -263,7 +263,7 @@ typedef struct structVSCPStatus {
 
 
 typedef  VSCPStatus * PVSCPSTATUS;
- 
+
 
 /* VSCP LEVEL II UDP datagram offsets     */
 /*  Same format as multicast i used below */
@@ -279,7 +279,7 @@ typedef struct structVSCPChannelInfo {
     unsigned char channelType;      /* Level I, Level II etc. from canal.h  */
     unsigned short channel;         /* daemon channel number */
     char GUID[ 16 ];                /* Channel GUID id */
-    
+
 } VSCPChannelInfo;
 
 typedef  VSCPChannelInfo	*PVSCPCHANNELINFO;
@@ -361,7 +361,7 @@ typedef  VSCPChannelInfo	*PVSCPCHANNELINFO;
 #define VSCP_BOOTLOADER_PIC1                    0x01	/* PIC algorithm 0 */
 #define VSCP_BOOTLOADER_AVR1                    0x10	/* AVR algorithm 0 */
 #define VSCP_BOOTLOADER_LPC1                    0x20	/* NXP/Philips/Freescale algorithm 0 */
-#define VSPP_BOORLOADER_NXP1                    0x20    /* NXP/Philips/Freescale algorithm 0 */                    
+#define VSPP_BOORLOADER_NXP1                    0x20    /* NXP/Philips/Freescale algorithm 0 */
 #define VSCP_BOOTLOADER_ST                      0x30	/* ST STR algorithm 0 */
 #define VSCP_BOOTLOADER_FREESCALE               0x40	/* Freescale Kinetics algorithm 0 */
 #define VSCP_BOOTLOADER_NONE                    0xff
@@ -388,7 +388,7 @@ typedef  VSCPChannelInfo	*PVSCPCHANNELINFO;
 /*
  These bits are coded in the four least significant bits of the first data byte
  in a packet and tells how the following data should be interpreted. For a flow sensor
- the default format can be litres/minute. Other formats such as m3/second can be defined 
+ the default format can be litres/minute. Other formats such as m3/second can be defined
  by the node if it which. However it must always be able to report in the default format.
  */
 #define VSCP_DATACODING_INTERPRETION_DEFAULT  0
@@ -474,13 +474,16 @@ struct vscpMyNode {
 #define VSCP_LEVEL1_DM_OFFSET_ACTION            6
 #define VSCP_LEVEL1_DM_OFFSET_ACTION_PARAM      7
 
-/* 
+/*
     Bits for VSCP server 64/16-bit capability code
     used by CLASS1.PROTOCOL, HIGH END SERVER RESPONSE
     and low end 16-bits for
     CLASS2.PROTOCOL, HIGH END SERVER HEART BEAT
 */
 
+#define VSCP_SERVER_CAPABILITY_REMOTE_VARIABLE      (1<<63) //
+#define VSCP_SERVER_CAPABILITY_DECISION_MATRIX      (1<<62) //
+#define VSCP_SERVER_CAPABILITY_INTERFACE            (1<<61) //
 #define VSCP_SERVER_CAPABILITY_TCPIP                (1<<15) // 32768
 #define VSCP_SERVER_CAPABILITY_UDP                  (1<<14) // 16384
 #define VSCP_SERVER_CAPABILITY_MULTICAST_ANNOUNCE   (1<<13) // 8192
@@ -550,10 +553,10 @@ struct vscpMyNode {
 
 /*
     Template for VSCP XML event data
- 
+
     data: datetime,head,obid,datetime,timestamp,class,type,guid,sizedata,data,note
-  
-<event    
+
+<event
      head="3"
      obid="1234"
      datetime="2017-01-13T10:16:02"
@@ -579,11 +582,11 @@ struct vscpMyNode {
 
 
 /*
-  
+
     Template for VSCP JSON event data
-    data: datetime,head,obid,datetime,timestamp,class,type,guid,data,note 
-  
-{    
+    data: datetime,head,obid,datetime,timestamp,class,type,guid,data,note
+
+{
     "head": 2,
     "obid"; 123,
     "datetime": "2017-01-13T10:16:02",
@@ -608,11 +611,11 @@ struct vscpMyNode {
 "}"
 
 /*!
- 
-    Template for VSCP HTML event data  
-   
+
+    Template for VSCP HTML event data
+
     data: datetime,class,type,data-count,data,guid,head,timestamp,obid,note
- 
+
 <h2>VSCP Event</h2>
 <p>
 Time: 2017-01-13T10:16:02 <br>
@@ -635,7 +638,7 @@ Timestamp: 1234 <br>
 obid: 1234 <br>
 note: This is a note <br>
 </p>
- 
+
 */
 #define VSCP_HTML_EVENT_TEMPLATE "<h2>VSCP Event</h2> "\
     "<p>"\
@@ -687,4 +690,3 @@ note: This is a note <br>
 
 
 #endif /* _VSCP_H_ */
-
