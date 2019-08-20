@@ -48,7 +48,7 @@
             !!!!!!!!!!!!!!!!!!!!  W A R N I N G  !!!!!!!!!!!!!!!!!!!!
                            This file is auto-generated
                 see https://github.com/grodansparadis/vscp-classes
-                        Generated: 2019-05-27 15:59:13.524286
+                        Generated: 2019-08-19 10:38:51.724938
 */
  
 #ifndef VSCP_TYPE_H
@@ -470,6 +470,7 @@
 #define VSCP_TYPE_WEATHER_WARNING_LEVEL4            49  /* Warning level 4 */
 #define VSCP_TYPE_WEATHER_WARNING_LEVEL5            50  /* Warning level 5 */
 #define VSCP_TYPE_WEATHER_ARMAGEDON                 51  /* Armageddon */
+#define VSCP_TYPE_WEATHER_UV_INDEX                  52  /* UV Index */
     
 /*  CLASS1.WEATHER_FORECAST = 95  -  Weather forecast */
 /* 	Event types is the same as  CLASS1.WEATHER = 90  -  Weather */

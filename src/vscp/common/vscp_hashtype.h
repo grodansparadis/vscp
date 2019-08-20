@@ -2,7 +2,7 @@
             !!!!!!!!!!!!!!!!!!!!  W A R N I N G  !!!!!!!!!!!!!!!!!!!!
                            This file is auto-generated
                 see https://github.com/grodansparadis/vscp-classes
-                        Generated: 2019-05-27 15:59:17.103046
+                        Generated: 2019-08-19 10:38:55.396663
 */
  
 
@@ -664,6 +664,7 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(90,49) ] = _("VSCP_TYPE_WEATHER_WARNING_LEVEL4");
 	m_hashType[ MAKE_CLASSTYPE_LONG(90,50) ] = _("VSCP_TYPE_WEATHER_WARNING_LEVEL5");
 	m_hashType[ MAKE_CLASSTYPE_LONG(90,51) ] = _("VSCP_TYPE_WEATHER_ARMAGEDON");
+	m_hashType[ MAKE_CLASSTYPE_LONG(90,52) ] = _("VSCP_TYPE_WEATHER_UV_INDEX");
 
 	//  CLASS1.WEATHER_FORECAST = 95  -  Weather forecast
 	// 	Event types is the same as  CLASS1.WEATHER = 90  -  Weather
@@ -719,6 +720,7 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(95,49) ] = _("VSCP_TYPE_WEATHER_WARNING_LEVEL4");
 	m_hashType[ MAKE_CLASSTYPE_LONG(95,50) ] = _("VSCP_TYPE_WEATHER_WARNING_LEVEL5");
 	m_hashType[ MAKE_CLASSTYPE_LONG(95,51) ] = _("VSCP_TYPE_WEATHER_ARMAGEDON");
+	m_hashType[ MAKE_CLASSTYPE_LONG(95,52) ] = _("VSCP_TYPE_WEATHER_UV_INDEX");
 
 	//  CLASS1.PHONE = 100  -  Phone
 	m_hashType[ MAKE_CLASSTYPE_LONG(100,0) ] = _("VSCP_TYPE_PHONE_GENERAL");
@@ -1563,6 +1565,7 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(602,49) ] = _("VSCP_TYPE_WEATHER_WARNING_LEVEL4");
 	m_hashType[ MAKE_CLASSTYPE_LONG(602,50) ] = _("VSCP_TYPE_WEATHER_WARNING_LEVEL5");
 	m_hashType[ MAKE_CLASSTYPE_LONG(602,51) ] = _("VSCP_TYPE_WEATHER_ARMAGEDON");
+	m_hashType[ MAKE_CLASSTYPE_LONG(602,52) ] = _("VSCP_TYPE_WEATHER_UV_INDEX");
 
 	//  CLASS2.LEVEL1.WEATHERFORECAST = 607  -  Class2 Level I Weather Forecast
 	// 	Event types is the same as  CLASS1.WEATHER = 90  -  Weather
@@ -1618,6 +1621,7 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(607,49) ] = _("VSCP_TYPE_WEATHER_WARNING_LEVEL4");
 	m_hashType[ MAKE_CLASSTYPE_LONG(607,50) ] = _("VSCP_TYPE_WEATHER_WARNING_LEVEL5");
 	m_hashType[ MAKE_CLASSTYPE_LONG(607,51) ] = _("VSCP_TYPE_WEATHER_ARMAGEDON");
+	m_hashType[ MAKE_CLASSTYPE_LONG(607,52) ] = _("VSCP_TYPE_WEATHER_UV_INDEX");
 
 	//  CLASS2.LEVEL1.PHONE = 612  -  Class2 Level I Phone
 	// 	Event types is the same as  CLASS1.PHONE = 100  -  Phone
