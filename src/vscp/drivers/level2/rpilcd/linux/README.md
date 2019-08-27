@@ -2,7 +2,7 @@
 
 ![VSCP Logo](https://www.vscp.org/images/logo_200.png)
 
-This driver interface one HD44780 based LCD connected over I2C interface on a Raspberry Pi. If you need hardware it can be found on [Ebay](https://www.ebay.com/itm/1PCS-1602-16x2-HD44780-Character-LCD-IIC-I2C-Serial-Interface-Adapter-Module-N/182350804137?hash=item2a74f474a9:g:nDYAAOSwcUBYJZYm:rk:13:pf:0) or [AliExpress](https://www.aliexpress.com/item/1602-16x2-HD44780-Character-LCD-w-IIC-I2C-Serial-Interface-Adapter-Module/32546958584.html?spm=2114.search0204.3.2.51252fd87N4EXx&ws_ab_test=searchweb0_0,searchweb201602_1_10065_10068_318_319_10546_317_10548_10696_450_10084_10083_10618_452_535_534_533_10307_10820_532_10303_204_10059_10884_323_10887_100031_320_10103_448_449,searchweb201603_60,ppcSwitch_0_ppcChannel&algo_expid=25e44b6d-6e38-40fd-9f0b-679449600c85-0&algo_pvid=25e44b6d-6e38-40fd-9f0b-679449600c85&transAbTest=ae803_5) or similar for a low cost. 
+This driver interface one HD44780 based LCD connected over I2C interface on a Raspberry Pi. If you need hardware it can be found on [Ebay](https://www.ebay.com/itm/1PCS-1602-16x2-HD44780-Character-LCD-IIC-I2C-Serial-Interface-Adapter-Module-N/182350804137?hash=item2a74f474a9:g:nDYAAOSwcUBYJZYm:rk:13:pf:0) or [AliExpress](https://www.aliexpress.com/item/1602-16x2-HD44780-Character-LCD-w-IIC-I2C-Serial-Interface-Adapter-Module/32546958584.html?spm=2114.search0204.3.2.51252fd87N4EXx&ws_ab_test=searchweb0_0,searchweb201602_1_10065_10068_318_319_10546_317_10548_10696_450_10084_10083_10618_452_535_534_533_10307_10820_532_10303_204_10059_10884_323_10887_100031_320_10103_448_449,searchweb201603_60,ppcSwitch_0_ppcChannel&algo_expid=25e44b6d-6e38-40fd-9f0b-679449600c85-0&algo_pvid=25e44b6d-6e38-40fd-9f0b-679449600c85&transAbTest=ae803_5) or similar for a low cost.
 
 
 ## Building the driver
@@ -10,7 +10,7 @@ If you build the VSCP package from source and want to build this driver you shou
 
   ./configure --enable-rpi
 
- that will build the Raspberry Pi specific components and drivers for VSCP & Friends 
+ that will build the Raspberry Pi specific components and drivers for VSCP & Friends
 
 ## Enable I2C on the Raspberry Pi
 Use **raspi-config** to enable the I2C interface hardware drivers.
@@ -37,8 +37,8 @@ The XML configuration have the following format
 ```xml
 <?xml version = "1.0" encoding = "UTF-8" ?>
 <setup>
-    <interface enable="true|false" 
-                bus="0|1" 
+    <interface enable="true|false"
+                bus="0|1"
                 rows="2"
                 width="16"
                 display="true|flase"
@@ -50,11 +50,11 @@ The XML configuration have the following format
 
         <format id="n" line="0" pos="0" template=""/>
 
-        <page id="n" 
+        <page id="n"
                 clear="true|false"
-                format="n" 
-                line="n" 
-                row="n" 
+                format="n"
+                line="n"
+                row="n"
                 wait="seconds" />
 
     </interface>
@@ -64,9 +64,9 @@ There can be more than one <interface> tag but they must use different bus id's 
 
   * **enable** - Interface row is valid. Interface will not be used if disabled. "true"/"false"
   * **bus** - I2C channel to use. (0/1)
-  * **address** - I2C addess to use (default is 0x27).
+  * **address** - I2C address to use (default is 0x27).
   * **rows** - Number of rows for display (default is 2)
-  * **width** - Display width (eefault is 16).
+  * **width** - Display width (default is 16).
   * **display** - The display will be turned on/off from start. ("true"/"false")
   * **backlight** - Backlight will be on or off from start. ("true"/"false")
   * **cursor-type** - Set the cursor type. "line" or "block" cursor.
@@ -76,14 +76,14 @@ There can be more than one <interface> tag but they must use different bus id's 
 
 ### <format>
 
- * **id** Unique id or this format deinition.
+ * **id** Unique id or this format definition.
  * **line** Line to put cursor at. Empty for current pos.
- * **pos** Horisontal pos to put cursor at. Empty for current pos. 
- * **template**  printf format template for data. Time and date 
+ * **pos** Horizontal pos to put cursor at. Empty for current pos.
+ * **template**  printf format template for data. Time and date
 
 ### <page>
 
-The auto mode show a number of pages in a round robin fashion. 
+The auto mode show a number of pages in a round robin fashion.
 
  * **id** - This is the sort order for the page.
  * **clear** - Clear display before printing.
@@ -114,19 +114,19 @@ Actions are validated with CLASS1.INFORMATION, Type=32 (VSCP_TYPE_INFORMATION_AC
  * **moveto** - Move to new location. Argument is *line;pos*
  * **shiftr** - Shift right. Argument is number of steps. Default is one step.
  * **shiftl** - Shift left. Argument is number of steps. Default is one step.
- * **putc** - Put character at position. Atgument is *char;line;pos*
+ * **putc** - Put character at position. Argument is *char;line;pos*
  * **blank** - Blank display.
  * **restore** - Restore display.
  * **blon** - Backlight on.
  * **bloff** - Backlight off.
  * **nextpg** - Go to next auto page.
  * **prevpg** - go to previous auto page.
- * **addpg** - Adde an auto display page. Argument is page XML data *\<page\>* coded in BINHEX64-
+ * **addpg** - Add an auto display page. Argument is page XML data *\<page\>* coded in BINHEX64-
  * **delpg** - Delete an auto display page. Arguent is page id.
  * **gopg** - Go to page n in an auto sequency. Argument is page.
 
 ### Print event data
-Any event data can be printed.  
+Any event data can be printed.
 
  * **%int8_t[pos]** - Signed byte at *pos* on event data.
  * **%int16_t[pos]** - Signed integer starting at *pos* on event data. Big endian.
@@ -147,7 +147,7 @@ Any event data can be printed.
 "Time: 23:47     " --> "Time: HH:MM"
 "Temp is 23.4C   " --> "Temp is %.2f"
 
-The fist template is handle by a time action and the second by a measurement.
+The first template is handled by a time action and the second by a measurement.
 
 
 
@@ -155,4 +155,4 @@ The fist template is handle by a time action and the second by a measurement.
 
 MIT license
 
-Copyright 2018 [Ake Hedman, Grodans Paradis AB](akhe@grodansparadis.com)
+Copyright 2019 [Ake Hedman, Grodans Paradis AB](akhe@grodansparadis.com)
