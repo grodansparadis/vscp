@@ -48,7 +48,7 @@
             !!!!!!!!!!!!!!!!!!!!  W A R N I N G  !!!!!!!!!!!!!!!!!!!!
                            This file is auto-generated
                 see https://github.com/grodansparadis/vscp-classes
-                        Generated: 2019-08-19 10:38:51.724938
+                        Generated: 2019-09-25 15:42:28.277410
 */
  
 #ifndef VSCP_TYPE_H
@@ -213,7 +213,6 @@
 #define VSCP_TYPE_DATA_RELATIVE_STRENGTH            4   /* Relative strength */
 #define VSCP_TYPE_DATA_SIGNAL_LEVEL                 5   /* Signal Level */
 #define VSCP_TYPE_DATA_SIGNAL_QUALITY               6   /* Signal Quality */
-#define VSCP_TYPE_DATA_COUNT                        7   /* Count value */
     
 /*  CLASS1.INFORMATION = 20  -  Information */
 #define VSCP_TYPE_INFORMATION_GENERAL               0   /* General event */
@@ -343,6 +342,7 @@
 #define VSCP_TYPE_CONTROL_ALL_LAMPS_OFF             41  /* (All) Lamp(s) off */
 #define VSCP_TYPE_CONTROL_LOCK                      42  /* Lock */
 #define VSCP_TYPE_CONTROL_UNLOCK                    43  /* Unlock */
+#define VSCP_TYPE_CONTROL_PWM                       44  /* PWM set */
     
 /*  CLASS1.MULTIMEDIA = 40  -  Multimedia */
 #define VSCP_TYPE_MULTIMEDIA_GENERAL                0   /* General event */

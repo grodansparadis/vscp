@@ -2,7 +2,7 @@
             !!!!!!!!!!!!!!!!!!!!  W A R N I N G  !!!!!!!!!!!!!!!!!!!!
                            This file is auto-generated
                 see https://github.com/grodansparadis/vscp-classes
-                        Generated: 2019-08-19 10:38:55.396663
+                        Generated: 2019-09-25 15:42:32.141906
 */
  
 
@@ -163,7 +163,6 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(15,4) ] = _("VSCP_TYPE_DATA_RELATIVE_STRENGTH");
 	m_hashType[ MAKE_CLASSTYPE_LONG(15,5) ] = _("VSCP_TYPE_DATA_SIGNAL_LEVEL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(15,6) ] = _("VSCP_TYPE_DATA_SIGNAL_QUALITY");
-	m_hashType[ MAKE_CLASSTYPE_LONG(15,7) ] = _("VSCP_TYPE_DATA_COUNT");
 
 	//  CLASS1.INFORMATION = 20  -  Information
 	m_hashType[ MAKE_CLASSTYPE_LONG(20,0) ] = _("VSCP_TYPE_INFORMATION_GENERAL");
@@ -293,6 +292,7 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(30,41) ] = _("VSCP_TYPE_CONTROL_ALL_LAMPS_OFF");
 	m_hashType[ MAKE_CLASSTYPE_LONG(30,42) ] = _("VSCP_TYPE_CONTROL_LOCK");
 	m_hashType[ MAKE_CLASSTYPE_LONG(30,43) ] = _("VSCP_TYPE_CONTROL_UNLOCK");
+	m_hashType[ MAKE_CLASSTYPE_LONG(30,44) ] = _("VSCP_TYPE_CONTROL_PWM");
 
 	//  CLASS1.MULTIMEDIA = 40  -  Multimedia
 	m_hashType[ MAKE_CLASSTYPE_LONG(40,0) ] = _("VSCP_TYPE_MULTIMEDIA_GENERAL");
@@ -1059,7 +1059,6 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(527,4) ] = _("VSCP_TYPE_DATA_RELATIVE_STRENGTH");
 	m_hashType[ MAKE_CLASSTYPE_LONG(527,5) ] = _("VSCP_TYPE_DATA_SIGNAL_LEVEL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(527,6) ] = _("VSCP_TYPE_DATA_SIGNAL_QUALITY");
-	m_hashType[ MAKE_CLASSTYPE_LONG(527,7) ] = _("VSCP_TYPE_DATA_COUNT");
 
 	//  CLASS2.LEVEL1.INFORMATION1 = 532  -  Class2 Level I Information
 	// 	Event types is the same as  CLASS1.INFORMATION = 20  -  Information
@@ -1191,6 +1190,7 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(542,41) ] = _("VSCP_TYPE_CONTROL_ALL_LAMPS_OFF");
 	m_hashType[ MAKE_CLASSTYPE_LONG(542,42) ] = _("VSCP_TYPE_CONTROL_LOCK");
 	m_hashType[ MAKE_CLASSTYPE_LONG(542,43) ] = _("VSCP_TYPE_CONTROL_UNLOCK");
+	m_hashType[ MAKE_CLASSTYPE_LONG(542,44) ] = _("VSCP_TYPE_CONTROL_PWM");
 
 	//  CLASS2.LEVEL1.MULTIMEDIA = 552  -  Class2 Level I Multimedia
 	// 	Event types is the same as  CLASS1.MULTIMEDIA = 40  -  Multimedia
