@@ -29,4 +29,4 @@ The [manual](https://grodansparadis.gitbooks.io/vscp-works) for VSCP Works conta
 The vscpd source code may be downloaded from <https://github.com/grodansparadis/vscp>. Source code for other system components of VSCP & Friends are here <https://github.com/grodansparadis>
 
 # COPYRIGHT
-Copyright 2000-2018 Åke Hedman, Grodans Paradis AB - MIT license.
+Copyright 2000-2019 Åke Hedman, Grodans Paradis AB - MIT license.
