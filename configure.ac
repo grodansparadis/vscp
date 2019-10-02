@@ -152,8 +152,6 @@ if test "${vscp_rpi}" = yes ; then
 fi
 
 AC_SUBST(PROJ_SUBDIRS)
-PROJ_SUBDIRS_GUI="src/vscp/vscpworks"
-AC_SUBST(PROJ_SUBDIRS_GUI)
 
 dnl
 dnl  openssl version
@@ -202,7 +200,7 @@ dnl WX fi
 dnl WX if test "$wxWin" != 1; then
 dnl WX     AC_MSG_ERROR([
 dnl WX         wxWidgets must be installed on your system.
-dnl WX 
+dnl WX
 dnl WX         Please check that wx-config is in path, the directory
 dnl WX         where wxWidgets libraries are installed (returned by
 dnl WX         'wx-config --libs' or 'wx-config --static --libs' command)
@@ -210,7 +208,7 @@ dnl WX         is in LD_LIBRARY_PATH or equivalent variable and
 dnl WX         wxWidgets version is $reqwx or above.
 dnl WX     ])
 dnl WX fi
-dnl WX 
+dnl WX
 dnl WX dnl CPPFLAGS="$CPPFLAGS $WX_CPPFLAGS"
 dnl WX dnl CXXFLAGS="$CXXFLAGS $WX_CXXFLAGS_ONLY"
 dnl WX dnl CFLAGS="$CFLAGS $WX_CFLAGS_ONLY"
@@ -288,7 +286,7 @@ AC_CONFIG_FILES([Makefile
 
 if test "${vscp_rpi}" = yes ; then
 AC_CONFIG_FILES([src/vscp/drivers/level2/rpigpio/linux/Makefile
-        src/vscp/drivers/level2/rpilcd/linux/Makefile 
+        src/vscp/drivers/level2/rpilcd/linux/Makefile
         src/vscp/drivers/level2/rpimax6675/linux/Makefile
 ])
 fi
