@@ -190,12 +190,12 @@ AC_CONFIG_FILES([Makefile
          src/vscp/drivers/level1/socketcan/linux/Makefile
          src/vscp/drivers/level1/can4vscp/linux/Makefile
          src/vscp/drivers/level2/lmsensors/linux/Makefile
-	     src/vscp/drivers/level2/mqtt/linux/Makefile
+	      src/vscp/drivers/level2/mqtt/linux/Makefile
          src/vscp/drivers/level2/socketcan/linux/Makefile
          src/vscp/drivers/level2/tcpdrv/linux/Makefile
          src/vscp/drivers/level2/rawethernet/linux/Makefile
          src/vscp/drivers/level2/wire1/linux/Makefile
-	     src/vscp/drivers/level2/sim/linux/Makefile
+	      src/vscp/drivers/level2/sim/linux/Makefile
          src/vscp/linuxvscpl1/Makefile
          src/vscp/helperlib/linux/Makefile
          src/vscp/relayd/Makefile
