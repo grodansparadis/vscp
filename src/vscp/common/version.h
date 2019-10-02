@@ -22,7 +22,6 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-
 #ifndef _____VSCP_VERSION_h_____
 #define _____VSCP_VERSION_h_____
 /*
@@ -31,15 +30,14 @@
     RELEASE version with backwards-compatible bug fixes.
     BUILD Just a new build.
 */
+// I M P O T A N T ! ! ! Lines below must be located at line
+// 35/36/37/38/40/42/43 I M P O T A N T ! ! !
+#define VSCPD_MAJOR_VERSION     14
+#define VSCPD_MINOR_VERSION     0
+#define VSCPD_RELEASE_VERSION   0
+#define VSCPD_BUILD_VERSION     0
 
-// I M P O T A N T ! ! ! Lines below must be located at line 35/36/37/40/42/43
-// I M P O T A N T ! ! !
-#define VSCPD_MAJOR_VERSION 14
-#define VSCPD_MINOR_VERSION 0
-#define VSCPD_RELEASE_VERSION 0
-#define VSCPD_BUILD_VERSION 0
-
-#define VSCPD_DISPLAY_VERSION "14.0.0.0 Aluminium"
+#define VSCPD_DISPLAY_VERSION   "14.0.0.0 Aluminium"
 
 #define VSCPD_COPYRIGHT                                                        \
     "Copyright (C) 2000-2019 Ake Hedman,, Grodans Paradis AB, "                \

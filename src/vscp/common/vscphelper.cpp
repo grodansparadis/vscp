@@ -6226,9 +6226,9 @@ std:
 
                     } break;
 
-                    case VSCP_TYPE_DATA_COUNT: {
+                    /*case VSCP_TYPE_DATA_COUNT: {
 
-                    } break;
+                    } break;*/
                 }
             } break;
 
@@ -6905,7 +6905,7 @@ vscp_writeEventToUdpFrame(uint8_t *frame,
                 ( framecrc >> 8 ) & 0xff,
                 framecrc & 0xff );
     crc nnnn = crcFast( frame+1,
-                            VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 
+                            VSCP_MULTICAST_PACKET0_HEADER_LENGTH +
                             pEvent->sizeData );
     printf("CRC3 %02X %02X\n",
                 ( nnnn >> 8 ) & 0xff,
