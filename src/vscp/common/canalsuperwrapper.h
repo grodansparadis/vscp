@@ -150,7 +150,7 @@ class CCanalSuperWrapper
     @return true if channel is open or false if error or the channel is
     already opened.
     */
-    long doCmdOpen(const std::string &strInterface = (_T("")),
+    long doCmdOpen(const std::string &strInterface = "",
                    unsigned long flags             = 0L);
 
     /*!
