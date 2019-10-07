@@ -390,7 +390,7 @@ deviceThread(void *pData)
         // Check if the driver opened properly
         if (pDevItem->m_openHandle <= 0) {
             syslog(LOG_ERR,
-                   "Failed to open driver. Will not use it! %d [%s] ",
+                   "Failed to open driver. Will not use it! %ld [%s] ",
                    pDevItem->m_openHandle,
                    pDevItem->m_strName.c_str());
             dlclose(hdll);

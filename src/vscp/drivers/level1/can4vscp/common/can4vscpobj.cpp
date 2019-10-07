@@ -354,7 +354,7 @@ int CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
 
     openlog("vscpl1drv-can4vscp", LOG_CONS, LOG_DAEMON );
     if ( m_bDebug ) {
-        syslog(LOG_DEBUG, "Open driver %s &d", pConfig, flags );
+        syslog(LOG_DEBUG, "Open driver %s %ld", pConfig, flags );
     }
 
     // Initiate statistics
