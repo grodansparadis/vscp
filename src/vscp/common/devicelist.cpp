@@ -459,4 +459,6 @@ CDeviceList::getCountDrivers(uint8_t type, bool bOnlyActive)
             }
         }
     }
+
+    return count;
 }

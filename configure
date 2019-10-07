@@ -624,23 +624,11 @@ ac_includes_default="\
 #endif"
 
 ac_subst_vars='LTLIBOBJS
-PROJ_SUBDIRS_GUI
 PROJ_SUBDIRS
 RPI
 VSCPDIR
 STATIC
-WXGTK_STATIC_LIBS
-WXGTK_LIBS
-WXGTK_CFLAGS
-WXGTK_CXXFLAGS
-WXGTK_CPPFLAGS
-WXBASE_STATIC_LIBS
-WXBASE_LIBS
-WXBASE_CFLAGS
-WXBASE_CXXFLAGS
-WXBASE_CPPFLAGS
 EXTRALIBS
-WXLIBS
 POW_LIB
 LIBOBJS
 EGREP
@@ -6547,17 +6535,6 @@ fi
 
 
 
-
-
-
-
-
-
-
-
-
-
-
 if test "${VSCPDIR+set}" = set; then
   echo "variable \$VSCPDIR is set to: $VSCPDIR"
 else
@@ -6567,11 +6544,9 @@ fi
 
 
 PROJ_SUBDIRS="src/vscp/drivers/level1/can4vscp/linux\
- src/vscp/drivers/level1/logger/linux\
  src/vscp/drivers/level1/can232/linux\
  src/vscp/drivers/level1/xap/linux\
  src/vscp/drivers/level1/socketcan/linux\
- src/vscp/drivers/level2/logger/linux\
  src/vscp/drivers/level2/wire1/linux\
  src/vscp/drivers/level2/lmsensors/linux\
  src/vscp/drivers/level2/socketcan/linux\
@@ -6648,8 +6623,6 @@ fi
 fi
 
 
-PROJ_SUBDIRS_GUI="src/vscp/vscpworks"
-
 
 
 if sh -c "openssl version | cut -d' ' -f 2 " 2>/dev/null | grep 1.1. >/dev/null; then
@@ -6665,11 +6638,7 @@ fi
 
 
 
-
-
-
 EXTRALIBS="${EXTRALIBS} ${LIBS}"
-
 
 if test "${vscp_static}" = yes ; then
 STATIC="yes"
@@ -6678,7 +6647,7 @@ STATIC="no"
 fi
 
 
-ac_config_files="$ac_config_files Makefile m4/Makefile src/vscp/vscpcmd/Makefile src/vscp/daemon/linux/Makefile src/vscp/uvscpd/Makefile src/vscp/vscp-mkpasswd/Makefile src/vscp/drivers/level1/logger/linux/Makefile src/vscp/drivers/level1/can232/linux/Makefile src/vscp/drivers/level1/xap/linux/Makefile src/vscp/drivers/level1/socketcan/linux/Makefile src/vscp/drivers/level1/can4vscp/linux/Makefile src/vscp/drivers/level2/logger/linux/Makefile src/vscp/drivers/level2/lmsensors/linux/Makefile src/vscp/drivers/level2/mqtt/linux/Makefile src/vscp/drivers/level2/socketcan/linux/Makefile src/vscp/drivers/level2/tcpdrv/linux/Makefile src/vscp/drivers/level2/rawethernet/linux/Makefile src/vscp/drivers/level2/wire1/linux/Makefile src/vscp/drivers/level2/sim/linux/Makefile src/vscp/linuxvscpl1/Makefile src/vscp/helperlib/linux/Makefile src/vscp/relayd/Makefile"
+ac_config_files="$ac_config_files Makefile m4/Makefile src/vscp/vscpcmd/Makefile src/vscp/daemon/linux/Makefile src/vscp/uvscpd/Makefile src/vscp/vscp-mkpasswd/Makefile src/vscp/drivers/level1/can232/linux/Makefile src/vscp/drivers/level1/xap/linux/Makefile src/vscp/drivers/level1/socketcan/linux/Makefile src/vscp/drivers/level1/can4vscp/linux/Makefile src/vscp/drivers/level2/lmsensors/linux/Makefile src/vscp/drivers/level2/mqtt/linux/Makefile src/vscp/drivers/level2/socketcan/linux/Makefile src/vscp/drivers/level2/tcpdrv/linux/Makefile src/vscp/drivers/level2/rawethernet/linux/Makefile src/vscp/drivers/level2/wire1/linux/Makefile src/vscp/drivers/level2/sim/linux/Makefile src/vscp/linuxvscpl1/Makefile src/vscp/helperlib/linux/Makefile src/vscp/relayd/Makefile"
 
 
 if test "${vscp_rpi}" = yes ; then
@@ -7385,12 +7354,10 @@ do
     "src/vscp/daemon/linux/Makefile") CONFIG_FILES="$CONFIG_FILES src/vscp/daemon/linux/Makefile" ;;
     "src/vscp/uvscpd/Makefile") CONFIG_FILES="$CONFIG_FILES src/vscp/uvscpd/Makefile" ;;
     "src/vscp/vscp-mkpasswd/Makefile") CONFIG_FILES="$CONFIG_FILES src/vscp/vscp-mkpasswd/Makefile" ;;
-    "src/vscp/drivers/level1/logger/linux/Makefile") CONFIG_FILES="$CONFIG_FILES src/vscp/drivers/level1/logger/linux/Makefile" ;;
     "src/vscp/drivers/level1/can232/linux/Makefile") CONFIG_FILES="$CONFIG_FILES src/vscp/drivers/level1/can232/linux/Makefile" ;;
     "src/vscp/drivers/level1/xap/linux/Makefile") CONFIG_FILES="$CONFIG_FILES src/vscp/drivers/level1/xap/linux/Makefile" ;;
     "src/vscp/drivers/level1/socketcan/linux/Makefile") CONFIG_FILES="$CONFIG_FILES src/vscp/drivers/level1/socketcan/linux/Makefile" ;;
     "src/vscp/drivers/level1/can4vscp/linux/Makefile") CONFIG_FILES="$CONFIG_FILES src/vscp/drivers/level1/can4vscp/linux/Makefile" ;;
-    "src/vscp/drivers/level2/logger/linux/Makefile") CONFIG_FILES="$CONFIG_FILES src/vscp/drivers/level2/logger/linux/Makefile" ;;
     "src/vscp/drivers/level2/lmsensors/linux/Makefile") CONFIG_FILES="$CONFIG_FILES src/vscp/drivers/level2/lmsensors/linux/Makefile" ;;
     "src/vscp/drivers/level2/mqtt/linux/Makefile") CONFIG_FILES="$CONFIG_FILES src/vscp/drivers/level2/mqtt/linux/Makefile" ;;
     "src/vscp/drivers/level2/socketcan/linux/Makefile") CONFIG_FILES="$CONFIG_FILES src/vscp/drivers/level2/socketcan/linux/Makefile" ;;

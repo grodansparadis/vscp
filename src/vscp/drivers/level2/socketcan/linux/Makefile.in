@@ -74,11 +74,11 @@ vscpl2drv-socketcan.so: $(SOCKETCAN_OBJECTS)
 socketcan.o: socketcan.cpp socketcan.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c socketcan.cpp -o $@
 
-vscphelperlib.o: ../../../../vscphelperlib.cpp ../../../../vscphelperlib.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../../../vscphelperlib.cpp -o $@
+vscphelperlib.o: ../../../../common/vscphelperlib.cpp ../../../../common/vscphelperlib.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../../../common/vscphelperlib.cpp -o $@
 
-vscpdatetime.o: ../../../../vscpdatetime.cpp ../../../../vscpdatetime.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../../../vscpdatetime.cpp -o $@
+vscpdatetime.o: ../../../../common/vscpdatetime.cpp ../../../../common/vscpdatetime.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../../../common/vscpdatetime.cpp -o $@
 
 vscpremotetcpif.o: ../../../../common/vscpremotetcpif.cpp ../../../../common/vscpremotetcpif.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../../../common/vscpremotetcpif.cpp -o $@
