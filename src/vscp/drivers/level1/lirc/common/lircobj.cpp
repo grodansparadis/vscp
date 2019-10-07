@@ -1,6 +1,6 @@
 // LircInterface.cpp: implementation of the CLircObj class.
 //
-// Copyright (C) 2000-2015 
+// Copyright (C) 2000-2015
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 //////////////////////////////////////////////////////////////////////
 
@@ -50,11 +50,11 @@ static unsigned long getDataValue( const char *szData );
 CLircObj::CLircObj()
 {
 	// Set default LIRC host
-	strcpy( m_lircHost, "localhost" ); 
+	strcpy( m_lircHost, "localhost" );
 
 	// Set default LIRC port
 	m_lircPort = LIRC_PORT;
-	
+
 	// No configuration file yet
 	*m_pathToConfigFile = 0;
 
@@ -78,7 +78,7 @@ CLircObj::CLircObj()
 }
 
 CLircObj::~CLircObj()
-{	
+{
 	close();
 }
 
@@ -88,16 +88,16 @@ CLircObj::~CLircObj()
 void CLircObj::readConfigData()
 {
 	if ( !wxFileName::FileExists( m_pathToConfigFile ) ) return;
-	
+
 	// Init XML parser
 	XML_Parser parser = XML_ParserCreate( "ISO-8859-1" );
 	XML_SetUserData( parser, this );
 	XML_SetElementHandler(	parser,
 							startElement,
 							endElement );
-	XML_SetCharacterDataHandler( parser, 
+	XML_SetCharacterDataHandler( parser,
 								 characterDataHandler );
-	
+
 	wxFileInputStream fis( m_pathToConfigFile );
 
 	char buf[ 8192 ];
@@ -105,13 +105,13 @@ void CLircObj::readConfigData()
 		if ( XML_STATUS_ERROR == XML_Parse( parser, buf, fis.LastRead(), false ) ) {
 			return;
 		}
-	}	
-	
+	}
+
 	XML_Parse( parser, buf, fis.LastRead(), true );
 
 	// Free parser resources
 	XML_ParserFree( parser );
- 
+
 }
 
 
@@ -121,7 +121,7 @@ void CLircObj::readConfigData()
 // filename
 //-----------------------------------------------------------------------------
 // Parameters for the driver as a string on the following form
-//		
+//
 // "path to config file;lirchost"
 //
 // path to config file
@@ -135,7 +135,7 @@ void CLircObj::readConfigData()
 //
 // lircport
 // ========
-// The port that the lirc daemon is listening to. If not given the defaultport 
+// The port that the lirc daemon is listening to. If not given the defaultport
 // "8765" i used.
 //
 //
@@ -162,15 +162,15 @@ bool CLircObj::open( const char *szFileName, unsigned long flags )
 	m_stat.cntBusOff = 0;
 	m_stat.cntBusWarnings = 0;
 	m_stat.cntOverruns = 0;
-	
+
 
 	// if open we have noting to do
 	if ( m_bRun ) return true;
 
 	// Path to config file
 	char *p;
- 
-	
+
+
 	p = strtok( (char * )szDrvParams, ";" );
 	if ( NULL != p ) {
 		strncpy( m_pathToConfigFile, p, sizeof( m_pathToConfigFile ) );
@@ -199,51 +199,51 @@ bool CLircObj::open( const char *szFileName, unsigned long flags )
 	readConfigData();
 
 #ifdef WIN32
-	
- 
+
+
 	DWORD threadId;
 
-	// Start read thread 
-	if ( NULL == 
+	// Start read thread
+	if ( NULL ==
 			( m_hTreadReceive = CreateThread(	NULL,
 										0,
 										(LPTHREAD_START_ROUTINE) workThreadReceive,
 										this,
 										0,
-										&threadId ) ) ) { 
+										&threadId ) ) ) {
 		// Failure
 		close();
 		return  false;
 	}
-	
+
 	// Release the mutex
 	//UNLOCK_MUTEX( m_vectorMutex );
 	//UNLOCK_MUTEX( m_receiveMutex );
 	//UNLOCK_MUTEX( m_transmitMutex );
-	
+
 
 #else // LINUX
 
 
 	pthread_attr_t thread_attr;
 	pthread_attr_init( &thread_attr );
-	
-	
+
+
 	// Create the log write thread.
 	if ( pthread_create( 	&m_threadId,
 								&thread_attr,
 								workThreadReceive,
-								this ) ) {	
-							
-		syslog( LOG_CRIT, "canallogger: Unable to create vector receive thread.");
+								this ) ) {
+
+		syslog( LOG_ERR, "canallogger: Unable to create vector receive thread.");
 		rv = false;
 		fclose( m_flog );
 	}
-		
+
     // We are open
 	m_bOpen = true;
 
-	
+
 	// Release the mutex
 	pthread_mutex_unlock( &m_vectorMutex );
 
@@ -257,10 +257,10 @@ bool CLircObj::open( const char *szFileName, unsigned long flags )
 //
 
 bool CLircObj::close( void )
-{	
+{
 	// Do nothing if already terminated
 	if ( !m_bRun ) return false;
-	
+
 	m_bRun = false;
 
 	m_csHash.Enter();
@@ -269,46 +269,46 @@ bool CLircObj::close( void )
     LircHash::iterator it;
     for( it = m_lircHash.begin(); it != m_lircHash.end(); ++it )
     {
-		
+
 		if ( NULL != m_lircHash[ it->first ] ) {
-			
-		
+
+
 			// Remove list elements
-			for ( EventList::Node *node = m_lircHash[ it->first ]->GetFirst(); 
-																node; 
+			for ( EventList::Node *node = m_lircHash[ it->first ]->GetFirst();
+																node;
 																node = node->GetNext() ) {
 				// Delete the load
 				delete node->GetData();
 			}
-		
-			// Delete the list																	
+
+			// Delete the list
 			delete m_lircHash[ it->first ];
 		}
     }
-	
+
 	m_csHash.Leave();
 
 	// End the thread
 	//m_pworkThread->Delete();
 
-		// terminate the worker thread 
-#ifdef WIN32	
-	
+		// terminate the worker thread
+#ifdef WIN32
+
 	DWORD rv;
-	
+
 
 	// Wait for receive thread to terminate
 	while ( true ) {
 		GetExitCodeThread( m_hTreadReceive, &rv );
 		if ( STILL_ACTIVE != rv ) break;
 	}
-	
-	
+
+
 #else
-	
+
 	int *trv;
 	pthread_join( m_threadIdReceive, (void **)&trv );
-	
+
 #endif
 
 	return true;
@@ -320,14 +320,14 @@ bool CLircObj::close( void )
 //
 
 bool CLircObj::doFilter( canalMsg *pcanalMsg )
-{	
+{
 	unsigned long msgid = ( pcanalMsg->id & 0x1fffffff);
 	if ( !m_mask ) return true;	// fast escape
 
 	// Set bit 32 if extended message
 	if ( pcanalMsg->flags | CANAL_IDFLAG_EXTENDED ) {
 		msgid &= 0x1fffffff;
-		msgid |= 80000000;	
+		msgid |= 80000000;
 	}
 	else {
 		// Standard message
@@ -335,8 +335,8 @@ bool CLircObj::doFilter( canalMsg *pcanalMsg )
 	}
 
 	// Set bit 31 if RTR
-	if ( pcanalMsg->flags | CANAL_IDFLAG_RTR ) { 
-		msgid |= 40000000;	
+	if ( pcanalMsg->flags | CANAL_IDFLAG_RTR ) {
+		msgid |= 40000000;
 	}
 
 	return !( ( m_filter ^ msgid ) & m_mask );
@@ -380,11 +380,11 @@ bool CLircObj::writeMsg( canalMsg *pMsg )
 
 bool CLircObj::readMsg( canalMsg *pMsg )
 {
-	bool rv = false;	
+	bool rv = false;
 
 	// --------------------- Critical Section ---------------------
 	m_csRcvQueue.Enter();
-		
+
 	if ( !m_receiveQueue.IsEmpty() ) {
 		canalMsg *pmsg = ( m_receiveQueue.GetFirst() )->GetData();
 		if ( NULL != pmsg ) {
@@ -393,7 +393,7 @@ bool CLircObj::readMsg( canalMsg *pMsg )
 			rv = true;
 		}
 	}
-		
+
 	m_csRcvQueue.Leave();
 	// --------------------- Critical Section ---------------------
 
@@ -409,13 +409,13 @@ bool CLircObj::readMsg( canalMsg *pMsg )
 int CLircObj::dataAvailable( void )
 {
 	int cnt;
-	
+
 	// --------------------- Critical Section ---------------------
 	m_csRcvQueue.Enter();
-	cnt = m_receiveQueue.GetCount();	
+	cnt = m_receiveQueue.GetCount();
 	m_csRcvQueue.Leave();
 	// --------------------- Critical Section ---------------------
- 
+
 	return cnt;
 }
 
@@ -426,7 +426,7 @@ int CLircObj::dataAvailable( void )
 //
 
 bool CLircObj::getStatistics( PCANALSTATISTICS pCanalStatistics )
-{	
+{
 	// Must be a valid pointer
 	if ( NULL == pCanalStatistics ) return false;
 
@@ -447,7 +447,7 @@ bool CLircObj::getStatus( PCANALSTATUS pCanalStatus )
 
 
 	memcpy( pCanalStatus, &m_status, sizeof( canalStatus ) );
- 
+
 	return true;
 }
 
@@ -457,7 +457,7 @@ bool CLircObj::getStatus( PCANALSTATUS pCanalStatus )
 //
 
 void CLircObj::parseLircLine( wxString &wxstr )
-{	
+{
 	int idx = 0;
 
 	wxStringTokenizer tkz( wxstr, _T(" ") );
@@ -465,7 +465,7 @@ void CLircObj::parseLircLine( wxString &wxstr )
 
 		wxString token = tkz.GetNextToken();
 
- 
+
 		// process token here
 		token.UpperCase();
 
@@ -475,21 +475,21 @@ void CLircObj::parseLircLine( wxString &wxstr )
 		if ( ( NULL != m_lircHash[ token ] ) ) {
 
 			// Send events
-			for ( EventList::Node *node = m_lircHash[ token ]->GetFirst(); 
-														node; 
+			for ( EventList::Node *node = m_lircHash[ token ]->GetFirst();
+														node;
 														node = node->GetNext() ) {
-	
-				canalMsg *msg = node->GetData();	
+
+				canalMsg *msg = node->GetData();
 				m_receiveQueue.Append( msg );
 
 			}
 
-				
+
 		}
 
 		m_csHash.Leave();
 		// --------------------- Critical Section ---------------------
-		
+
 		idx++; // One more token
 
 	}
@@ -520,7 +520,7 @@ startElement( void *userData, const char *name, const char **atts )
 {
 	CLircObj *pworkObj = (CLircObj *)userData;
 	if ( NULL == pworkObj ) return;
-		
+
 	pworkObj->m_depth += 1;
 
 	// canallirc
@@ -529,23 +529,23 @@ startElement( void *userData, const char *name, const char **atts )
 		// We set a tagname as dummy incase there is some problem or a
 		// missing "codetag". This way elements with no code tag are
 		// added to this list
-		strcpy( pworkObj->m_keytag, _("dummy") );  
+		strcpy( pworkObj->m_keytag, _("dummy") );
 	}
 
 	// object
 	if ( 0 == strcmp( name, _("object") ) ) {
-		pworkObj->m_bObject = true; 
+		pworkObj->m_bObject = true;
 	}
-	
+
 	// vscp
-	else if ( 0 == strcmp( name, _("vscp") ) ) {			
+	else if ( 0 == strcmp( name, _("vscp") ) ) {
 		pworkObj->m_bVscpObject = true;
 		// Nill the message
 		memset( &pworkObj->m_workMsg, 0, sizeof( canalMsg ) );
 	}
 
 	// can
-	else if ( 0 == strcmp( name, _("can") ) ) {			
+	else if ( 0 == strcmp( name, _("can") ) ) {
 		pworkObj->m_bCanObject = true;
 		// Nill the message
 		memset( &pworkObj->m_workMsg, 0, sizeof( canalMsg ) );
@@ -553,18 +553,18 @@ startElement( void *userData, const char *name, const char **atts )
 
 	// information tags
 	else {
-		
+
 		// all other tags
 		strncpy( pworkObj->m_curtagname, name, sizeof( pworkObj->m_curtagname ) );
-		memset( pworkObj->m_xmlbuf, 0, sizeof( pworkObj->m_xmlbuf ) );		
+		memset( pworkObj->m_xmlbuf, 0, sizeof( pworkObj->m_xmlbuf ) );
 
 	}
- 
+
 }
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// endElement 
+// endElement
 //
 // IsDBCSLeadByte
 //
@@ -583,18 +583,18 @@ endElement( void *userData, const char *name )
 	}
 
 	// object - done
-	if ( 0 == strcmp( name, _("object") ) ) { 
+	if ( 0 == strcmp( name, _("object") ) ) {
 		pworkObj->m_bObject = false;
 	}
 
 	// keytag
-	else if ( 0 == strcmp( pworkObj->m_curtagname, _("codetag") ) ) { 
+	else if ( 0 == strcmp( pworkObj->m_curtagname, _("codetag") ) ) {
 		strncpy( pworkObj->m_keytag, pworkObj->m_xmlbuf, sizeof( pworkObj->m_keytag ) );
-		_strupr( pworkObj->m_keytag ); 
+		_strupr( pworkObj->m_keytag );
 	}
 
 
-	// VSCP object 
+	// VSCP object
 	else if ( 0 == strcmp( name, _("vscp") ) ) {
 
 		pworkObj->m_bVscpObject = false;
@@ -604,10 +604,10 @@ endElement( void *userData, const char *name )
 		canalMsg *pmsg = new canalMsg;
 		memcpy( pmsg, &pworkObj->m_workMsg, sizeof( canalMsg ) );
 		if ( NULL == pworkObj->m_lircHash[ pworkObj->m_keytag ] ) {
-			pworkObj->m_lircHash[ pworkObj->m_keytag ] = new EventList();	
+			pworkObj->m_lircHash[ pworkObj->m_keytag ] = new EventList();
 		}
 		pworkObj->m_lircHash[ pworkObj->m_keytag]->Append( pmsg );
-		
+
 	}
 
 	// CAN object - next object
@@ -622,85 +622,47 @@ endElement( void *userData, const char *name )
 		pworkObj->m_lircHash[ pworkObj->m_keytag ]->Append( pmsg );
 
 	}
-	
+
 	// information tags
 	else if ( ( 3 == pworkObj->m_depth ) && pworkObj->m_bObject && pworkObj->m_bCanalLirc  ) {
-		
+
 		if ( pworkObj->m_bVscpObject ) {
 
 			// class
-			if ( 0 == strcmp( pworkObj->m_curtagname, _("class") ) ) { 				
-				pworkObj->m_workMsg.id |= 
+			if ( 0 == strcmp( pworkObj->m_curtagname, _("class") ) ) {
+				pworkObj->m_workMsg.id |=
 								( getDataValue( pworkObj->m_xmlbuf ) << 16 );
 			}
 
 			// type
-			else if ( 0 == strcmp( pworkObj->m_curtagname, _("type") ) ) { 
-				pworkObj->m_workMsg.id |=  
+			else if ( 0 == strcmp( pworkObj->m_curtagname, _("type") ) ) {
+				pworkObj->m_workMsg.id |=
 								( getDataValue( pworkObj->m_xmlbuf ) << 8 );
 			}
 
 			// priority
-			else if ( 0 == strcmp( pworkObj->m_curtagname, _("priority") ) ) { 
-				pworkObj->m_workMsg.id |= 
+			else if ( 0 == strcmp( pworkObj->m_curtagname, _("priority") ) ) {
+				pworkObj->m_workMsg.id |=
 								( getDataValue( pworkObj->m_xmlbuf ) << 26 );
 			}
 
 			// nickname
-			else if ( 0 == strcmp( pworkObj->m_curtagname, _("nickname") ) ) { 
+			else if ( 0 == strcmp( pworkObj->m_curtagname, _("nickname") ) ) {
 				pworkObj->m_workMsg.id |= getDataValue( pworkObj->m_xmlbuf );
 			}
 
 			// sizeData
-			else if ( 0 == strcmp( pworkObj->m_curtagname, _("sizedata") ) ) { 
+			else if ( 0 == strcmp( pworkObj->m_curtagname, _("sizedata") ) ) {
 				pworkObj->m_workMsg.sizeData = getDataValue( pworkObj->m_xmlbuf );
 			}
 
 			// Data "val1,val2,val3,val4...."
-			else if ( 0 == strcmp( pworkObj->m_curtagname, _("data") ) ) { 
-				
+			else if ( 0 == strcmp( pworkObj->m_curtagname, _("data") ) ) {
+
 				int idx = 0;
 				wxStringTokenizer tok;
 				tok.SetString( pworkObj->m_xmlbuf, _(",\r\n") );
-			
-				while( ( idx < 8 ) && tok.HasMoreTokens() ) {
 
-					pworkObj->m_workMsg.data[ idx ] = getDataValue( tok.GetNextToken() );
-					idx++;
-
-				}
-
-				pworkObj->m_workMsg.sizeData = idx;	// Set new size	
-
-			}
-		}
-		else if ( pworkObj->m_bCanObject ) {
-		
-			// extended
-			if ( 0 == strcmp( pworkObj->m_curtagname, _("extended") ) ) { 
-				_strupr( pworkObj->m_xmlbuf );
-				if ( ( 1 == atoi( pworkObj->m_xmlbuf ) ) || 
-							( NULL != strstr( pworkObj->m_xmlbuf, "TRUE" ) ) ) { 
-					pworkObj->m_workMsg.flags |= CANAL_IDFLAG_EXTENDED;
-				}
-			}
-			
-			// id
-			if ( 0 == strcmp( pworkObj->m_curtagname, _("id") ) ) { 
-				pworkObj->m_workMsg.id = getDataValue( pworkObj->m_xmlbuf );
-			}
-			
-			// sizeData
-			else if ( 0 == strcmp( pworkObj->m_curtagname, _("sizedata") ) ) { 
-				pworkObj->m_workMsg.sizeData = getDataValue( pworkObj->m_xmlbuf );
-			}
-
-			// Data  "val1,val2,val3,val4...."
-			else if ( 0 == strcmp( pworkObj->m_curtagname, _("data") ) ) { 
-				int idx = 0;
-				wxStringTokenizer tok;
-				tok.SetString( pworkObj->m_xmlbuf, _(",\r\n") );
-			
 				while( ( idx < 8 ) && tok.HasMoreTokens() ) {
 
 					pworkObj->m_workMsg.data[ idx ] = getDataValue( tok.GetNextToken() );
@@ -712,7 +674,45 @@ endElement( void *userData, const char *name )
 
 			}
 		}
-	}	
+		else if ( pworkObj->m_bCanObject ) {
+
+			// extended
+			if ( 0 == strcmp( pworkObj->m_curtagname, _("extended") ) ) {
+				_strupr( pworkObj->m_xmlbuf );
+				if ( ( 1 == atoi( pworkObj->m_xmlbuf ) ) ||
+							( NULL != strstr( pworkObj->m_xmlbuf, "TRUE" ) ) ) {
+					pworkObj->m_workMsg.flags |= CANAL_IDFLAG_EXTENDED;
+				}
+			}
+
+			// id
+			if ( 0 == strcmp( pworkObj->m_curtagname, _("id") ) ) {
+				pworkObj->m_workMsg.id = getDataValue( pworkObj->m_xmlbuf );
+			}
+
+			// sizeData
+			else if ( 0 == strcmp( pworkObj->m_curtagname, _("sizedata") ) ) {
+				pworkObj->m_workMsg.sizeData = getDataValue( pworkObj->m_xmlbuf );
+			}
+
+			// Data  "val1,val2,val3,val4...."
+			else if ( 0 == strcmp( pworkObj->m_curtagname, _("data") ) ) {
+				int idx = 0;
+				wxStringTokenizer tok;
+				tok.SetString( pworkObj->m_xmlbuf, _(",\r\n") );
+
+				while( ( idx < 8 ) && tok.HasMoreTokens() ) {
+
+					pworkObj->m_workMsg.data[ idx ] = getDataValue( tok.GetNextToken() );
+					idx++;
+
+				}
+
+				pworkObj->m_workMsg.sizeData = idx;	// Set new size
+
+			}
+		}
+	}
 }
 
 
@@ -720,7 +720,7 @@ endElement( void *userData, const char *name )
 // characterDataHandler
 //
 
-static void XMLCALL 
+static void XMLCALL
 characterDataHandler( void *userData,
 						const XML_Char *s,
 						int len )
@@ -740,7 +740,7 @@ characterDataHandler( void *userData,
 			strncat( pworkObj->m_xmlbuf, s, sz );
 		}
 	}
-	
+
 }
 
 
@@ -761,7 +761,7 @@ unsigned long getDataValue( const char *szData )
 		val = strtoul( szData, &nstop, 10 );
 	}
 
-	return val;	
+	return val;
 }
 
 
@@ -790,7 +790,7 @@ void *workThreadReceive( void *pObject )
 	unsigned int sockfd;
 	char buf[ 512 ]; // Buffer for raw Lirc Data
 	struct hostent *he;
-    struct sockaddr_in server_addr; // connector's address information 
+    struct sockaddr_in server_addr; // connector's address information
 
 #ifdef WIN32
 	DWORD errorCode = 0;
@@ -800,7 +800,7 @@ void *workThreadReceive( void *pObject )
 
 	CLircObj * pobj = ( CLircObj *)pObject;
 	if ( NULL == pobj ) {
-#ifdef WIN32	
+#ifdef WIN32
 		ExitThread( errorCode ); // Fail
 #else
 		pthread_exit( &rv );
@@ -815,39 +815,39 @@ void *workThreadReceive( void *pObject )
 
 	err = WSAStartup( wVersionRequested, &wsaData );
 	if ( err != 0 ) {
-#ifdef WIN32	
+#ifdef WIN32
 		ExitThread( errorCode ); // Fail
 #else
 		pthread_exit( &rv );
 #endif
 	}
- 
-	// get the host info 
-	if ( NULL == ( he = gethostbyname("localhost") ) ) {  
-#ifdef WIN32	
+
+	// get the host info
+	if ( NULL == ( he = gethostbyname("localhost") ) ) {
+#ifdef WIN32
 		ExitThread( errorCode ); // Fail
 #else
 		pthread_exit( &rv );
 #endif
     }
-	
+
 	if ( SOCKET_ERROR == ( sockfd = socket( AF_INET, SOCK_STREAM, 0 ) ) ) {
-#ifdef WIN32	
+#ifdef WIN32
 		ExitThread( errorCode ); // Fail
 #else
 		pthread_exit( &rv );
 #endif
     }
 
-	server_addr.sin_family = AF_INET;		// host byte order 
-    server_addr.sin_port = htons( LIRC_PORT );	// short, network byte order 
+	server_addr.sin_family = AF_INET;		// host byte order
+    server_addr.sin_port = htons( LIRC_PORT );	// short, network byte order
     server_addr.sin_addr = *((struct in_addr *)he->h_addr);
-    memset(&(server_addr.sin_zero), '\0', 8);  // zero the rest of the struct 
+    memset(&(server_addr.sin_zero), '\0', 8);  // zero the rest of the struct
 
-    if ( SOCKET_ERROR == connect( sockfd, 
+    if ( SOCKET_ERROR == connect( sockfd,
 									(struct sockaddr *)&server_addr,
 									sizeof( struct sockaddr ) ) ) {
-#ifdef WIN32	
+#ifdef WIN32
 		ExitThread( errorCode ); // Fail
 #else
 		pthread_exit( &rv );
@@ -866,7 +866,7 @@ void *workThreadReceive( void *pObject )
 
 
 	while ( pobj->m_bRun ) {
-		
+
 		// Noting to do if we should end...
 		if ( !pobj->m_bRun ) continue;
 
@@ -874,25 +874,25 @@ void *workThreadReceive( void *pObject )
 		FD_SET( sockfd, &readfds );
 
 		select( 0, &readfds, NULL, NULL, &tv );
-		
+
 		if ( FD_ISSET( sockfd, &readfds ) ) {
-		
+
 			// read raw data
 			memset( buf, 0, sizeof( buf ) );
 			if ( SOCKET_ERROR != recv( sockfd, buf, sizeof( buf ), 0 ) ) {
-			
+
 				wxStringTokenizer tkz( buf, "\n" );
 				while ( tkz.HasMoreTokens() ) {
 					wxString token = tkz.GetNextToken();
 					pobj->parseLircLine( token );
 				}
-				
+
 			}
 
 		}
-	
-	
-	} // while 	 
+
+
+	} // while
 
 
 #ifdef WIN32
@@ -900,5 +900,5 @@ void *workThreadReceive( void *pObject )
 #else
 	pthread_exit( &rv );
 #endif
-	
+
 }

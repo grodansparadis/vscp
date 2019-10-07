@@ -116,7 +116,7 @@ tcpipListenThread(void *pData)
     tcpipListenThreadObj *pListenObj = (tcpipListenThreadObj *)pData;
     if (NULL == pListenObj) {
         syslog(
-          LOG_CRIT,
+          LOG_ERR,
           "TCP/IP client is missing client object data. Terinating thread.");
         return NULL;
     }
@@ -175,7 +175,7 @@ tcpipListenThread(void *pData)
     // Bind to selected interface
     if (0 == stcp_listening(&pListenObj->m_srvctx,
                             pListenObj->m_strListeningPort.c_str())) {
-        syslog(LOG_CRIT,
+        syslog(LOG_ERR,
                "[TCP/IP srv thread] Failed to init listening socket.");
         return NULL;
     }
@@ -2206,7 +2206,7 @@ tcpipClientObj::handleClientInterface_List(void)
         CClientItem *pItem = *it;
 
         pItem->m_guid.toString(strGUID);
-        strBuf = vscp_str_format("%d,", pItem->m_clientID);  
+        strBuf = vscp_str_format("%d,", pItem->m_clientID);
         strBuf += vscp_str_format("%d,", pItem->m_type);
         strBuf += strGUID;
         strBuf += std::string(",");
@@ -5642,14 +5642,14 @@ tcpipClientThread(void *pData)
 {
     tcpipClientObj *ptcpipobj = (tcpipClientObj *)pData;
     if (NULL == ptcpipobj) {
-        syslog(LOG_CRIT,
+        syslog(LOG_ERR,
                "[TCP/IP srv client thread] Error, "
                "Client thread object not initialized.");
         return NULL;
     }
 
     if (NULL == ptcpipobj->m_pParent) {
-        syslog(LOG_CRIT,
+        syslog(LOG_ERR,
                "[TCP/IP srv client thread] Error, "
                "Control object not initialized.");
         return NULL;
@@ -5659,7 +5659,7 @@ tcpipClientThread(void *pData)
 
     ptcpipobj->m_pClientItem = new CClientItem();
     if (NULL == ptcpipobj->m_pClientItem) {
-        syslog(LOG_CRIT,
+        syslog(LOG_ERR,
                "[TCP/IP srv client thread] Memory error, "
                "Cant allocate client structure.");
         return NULL;

@@ -672,13 +672,13 @@ CRawEthernet::open(const char *pUsername,
     // start the read workerthread
     if (pthread_create(m_readWrkThread, NULL, readWorkerThread, this)) {
 
-        syslog(LOG_CRIT, "Unable to start read worker thread.");
+        syslog(LOG_ERR, "Unable to start read worker thread.");
         return false;
     }
 
-    // XML setup 
+    // XML setup
     std::string strSetupXML;
-    
+
     strName = m_prefix + std::string("_setup");
     if (VSCP_ERROR_SUCCESS ==
         m_srv.getRemoteVariableValue(strName, strSetupXML, true)) {
@@ -703,7 +703,7 @@ CRawEthernet::open(const char *pUsername,
     // start the read workerthread
     if (pthread_create(m_writeWrkThread, NULL, writeWorkerThread, this)) {
 
-        syslog(LOG_CRIT, "Unable to start read worker thread.");
+        syslog(LOG_ERR, "Unable to start read worker thread.");
         return false;
     }
 
@@ -755,7 +755,7 @@ readWorkerThread(void *pData)
 
     CRawEthernet *pObj = (CRawEthernet *)pData;
     if (NULL == pObj) {
-        syslog(LOG_CRIT, "No data object supplied for read thread.");
+        syslog(LOG_ERR, "No data object supplied for read thread.");
         return NULL;
     }
 
@@ -903,7 +903,7 @@ writeWorkerThread(void *pData)
 
     CRawEthernet *pObj = (CRawEthernet *)pData;
     if (NULL == pObj) {
-        syslog(LOG_CRIT, "No data object supplied for write thread.");
+        syslog(LOG_ERR, "No data object supplied for write thread.");
         return NULL;
     }
 

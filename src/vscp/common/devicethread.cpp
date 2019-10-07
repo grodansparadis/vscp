@@ -66,14 +66,14 @@ deviceThread(void *pData)
 
     CDeviceItem *pDevItem = (CDeviceItem *)pData;
     if (NULL == pDevItem) {
-        syslog(LOG_CRIT, "No device item defined. Aborting device thread!");
+        syslog(LOG_ERR, "No device item defined. Aborting device thread!");
         return NULL;
     }
 
     // Must have a valid pointer to the control object
     CControlObject *pCtrlObj = pDevItem->m_pCtrlObject;
     if (NULL == pCtrlObj) {
-        syslog(LOG_CRIT, "No control object defined. Aborting device thread!");
+        syslog(LOG_ERR, "No control object defined. Aborting device thread!");
         return NULL;
     }
 
@@ -390,7 +390,8 @@ deviceThread(void *pData)
         // Check if the driver opened properly
         if (pDevItem->m_openHandle <= 0) {
             syslog(LOG_ERR,
-                   "Failed to open driver. Will not use it! [%s] ",
+                   "Failed to open driver. Will not use it! %d [%s] ",
+                   pDevItem->m_openHandle,
                    pDevItem->m_strName.c_str());
             dlclose(hdll);
             return NULL;
@@ -427,7 +428,7 @@ deviceThread(void *pData)
                                NULL,
                                deviceLevel1WriteThread,
                                pDevItem)) {
-                syslog(LOG_CRIT,
+                syslog(LOG_ERR,
                        "%s: Unable to run the device write worker thread.",
                        pDevItem->m_strName.c_str());
                 // pDevItem->m_openHandle = pDevItem->m_proc_CanalOpen();
@@ -442,7 +443,7 @@ deviceThread(void *pData)
                                NULL,
                                deviceLevel1ReceiveThread,
                                pDevItem)) {
-                syslog(LOG_CRIT,
+                syslog(LOG_ERR,
                        "%s: Unable to run the device read worker thread.",
                        pDevItem->m_strName.c_str());
                 pDevItem->m_bQuit = true;
@@ -834,7 +835,7 @@ deviceThread(void *pData)
                            NULL,
                            deviceLevel2WriteThread,
                            pDevItem)) {
-            syslog(LOG_CRIT,
+            syslog(LOG_ERR,
                    "%s: Unable to run the device Level II write worker thread.",
                    pDevItem->m_strName.c_str());
             dlclose(hdll);
@@ -855,7 +856,7 @@ deviceThread(void *pData)
                            NULL,
                            deviceLevel2ReceiveThread,
                            pDevItem)) {
-            syslog(LOG_CRIT,
+            syslog(LOG_ERR,
                    "%s: Unable to run the device Level II read worker thread.",
                    pDevItem->m_strName.c_str());
             pDevItem->m_bQuit = true;
@@ -948,7 +949,7 @@ deviceLevel1ReceiveThread(void *pData)
     CDeviceItem *pDevItem = (CDeviceItem *)pData;
     if (NULL == pDevItem) {
         syslog(
-          LOG_CRIT,
+          LOG_ERR,
           "deviceLevel1ReceiveThread quitting due to NULL DevItem object.");
         return NULL;
     }
@@ -1076,7 +1077,7 @@ deviceLevel1WriteThread(void *pData)
 
     CDeviceItem *pDevItem = (CDeviceItem *)pData;
     if (NULL == pDevItem) {
-        syslog(LOG_CRIT,
+        syslog(LOG_ERR,
                "deviceLevel1WriteThread quitting due to NULL DevItem object.");
         return NULL;
     }
@@ -1147,7 +1148,7 @@ deviceLevel2ReceiveThread(void *pData)
     CDeviceItem *pDevItem = (CDeviceItem *)pData;
     if (NULL == pDevItem) {
         syslog(
-          LOG_CRIT,
+          LOG_ERR,
           "deviceLevel2ReceiveThread quitting due to NULL DevItem object.");
         return NULL;
     }
@@ -1237,7 +1238,7 @@ deviceLevel2WriteThread(void *pData)
 {
     CDeviceItem *pDevItem = (CDeviceItem *)pData;
     if (NULL == pDevItem) {
-        syslog(LOG_CRIT,
+        syslog(LOG_ERR,
                "deviceLevel2WriteThread quitting due to NULL DevItem object.");
         return NULL;
     }

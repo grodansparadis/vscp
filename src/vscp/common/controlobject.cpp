@@ -323,7 +323,7 @@ CControlObject::init(std::string &strcfgfile, std::string &rootFolder)
 
     // Root folder must exist
     if (!vscp_fileExists(m_rootFolder.c_str())) {
-        syslog(LOG_CRIT,
+        syslog(LOG_ERR,
                "The specified rootfolder does not exist (%s).",
                (const char *)m_rootFolder.c_str());
         return false;
@@ -340,7 +340,7 @@ CControlObject::init(std::string &strcfgfile, std::string &rootFolder)
     // A configuration file must be available
     if (!vscp_fileExists(strcfgfile.c_str())) {
         printf("No configuration file. Can't initialize!.");
-        syslog(LOG_CRIT,
+        syslog(LOG_ERR,
                "No configuration file. Can't initialize!. Path=%s",
                strcfgfile.c_str());
         return false;
@@ -352,7 +352,7 @@ CControlObject::init(std::string &strcfgfile, std::string &rootFolder)
 
     // Read XML configuration
     if (!readXMLConfigurationGeneral(strcfgfile)) {
-        syslog(LOG_CRIT,
+        syslog(LOG_ERR,
                "General: Unable to open/parse configuration file [%s]. Can't "
                "initialize!",
                strcfgfile.c_str());
@@ -374,7 +374,7 @@ CControlObject::init(std::string &strcfgfile, std::string &rootFolder)
 
     // Initialize the SQLite library
     if (SQLITE_OK != sqlite3_initialize()) {
-        syslog(LOG_CRIT, "Unable to initialize SQLite library!.");
+        syslog(LOG_ERR, "Unable to initialize SQLite library!.");
         return false;
     }
 
@@ -395,14 +395,14 @@ CControlObject::init(std::string &strcfgfile, std::string &rootFolder)
                          &m_db_vscp_daemon)) {
 
             // Failed to open/create the database file
-            syslog(LOG_CRIT,
+            syslog(LOG_ERR,
                    "VSCP Daemon configuration database could not be opened. - "
                    "Will exit.");
             vscp_str_format(str,
                             "Path=%s error=%s",
                             (const char *)m_path_db_vscp_daemon.c_str(),
                             sqlite3_errmsg(m_db_vscp_daemon));
-            syslog(LOG_CRIT, "%s", (const char *)str.c_str());
+            syslog(LOG_ERR, "%s", (const char *)str.c_str());
             if (NULL != m_db_vscp_daemon) sqlite3_close(m_db_vscp_daemon);
             m_db_vscp_daemon = NULL;
             return false;
@@ -425,7 +425,7 @@ CControlObject::init(std::string &strcfgfile, std::string &rootFolder)
 
             // We need to create the database from scratch. This may not work if
             // the database is in a read only location.
-            syslog(LOG_CRIT,
+            syslog(LOG_ERR,
                    "VSCP Daemon configuration database does not exist - will "
                    "be created. Path=%s",
                    m_path_db_vscp_daemon.c_str());
@@ -509,7 +509,7 @@ CControlObject::init(std::string &strcfgfile, std::string &rootFolder)
                 }
             }
         } else {
-            syslog(LOG_CRIT,
+            syslog(LOG_ERR,
                    "VSCP Server configuration database path invalid - will "
                    "exit. Path=%s",
                    m_path_db_vscp_daemon.c_str());
@@ -714,7 +714,7 @@ CControlObject::run(void)
     // We need to create a clientItem and add this object to the list
     CClientItem *pClientItem = new CClientItem;
     if (NULL == pClientItem) {
-        syslog(LOG_CRIT, "Unable to allocate Client item, Ending.");
+        syslog(LOG_ERR, "Unable to allocate Client item, Ending.");
         return false;
     }
 
@@ -895,7 +895,7 @@ CControlObject::startClientMsgWorkerThread(void)
     if (pthread_create(
           &m_clientMsgWorkerThread, NULL, clientMsgWorkerThread, this)) {
 
-        syslog(LOG_CRIT, "Controlobject: Unable to start client thread.");
+        syslog(LOG_ERR, "Controlobject: Unable to start client thread.");
         return false;
     }
 
@@ -933,7 +933,7 @@ CControlObject::startTcpipSrvThread(void)
     // Create the tcp/ip server data object
     m_ptcpipSrvObject = (tcpipListenThreadObj *)new tcpipListenThreadObj(this);
     if (NULL == m_ptcpipSrvObject) {
-        syslog(LOG_CRIT,
+        syslog(LOG_ERR,
                "Controlobject: Failed to allocate storage for tcp/ip.");
     }
 
@@ -944,7 +944,7 @@ CControlObject::startTcpipSrvThread(void)
           &m_tcpipListenThread, NULL, tcpipListenThread, m_ptcpipSrvObject)) {
         delete m_ptcpipSrvObject;
         m_ptcpipSrvObject = NULL;
-        syslog(LOG_CRIT,
+        syslog(LOG_ERR,
                "Controlobject: Unable to start the tcp/ip listen thread.");
         return false;
     }
@@ -989,7 +989,7 @@ CControlObject::startUDPSrvThread(void)
 
     if (pthread_create(&m_UDPThread, NULL, UDPThread, &m_udpSrvObj)) {
 
-        syslog(LOG_CRIT,
+        syslog(LOG_ERR,
                "Controlobject: Unable to start the udp simple server thread.");
         return false;
     }
@@ -1100,7 +1100,7 @@ CControlObject::startDaemonWorkerThread(void)
     m_pdaemonWorkerObj = new daemonWorkerObj(this);
     if (NULL == m_pdaemonWorkerObj) {
         syslog(
-          LOG_CRIT,
+          LOG_ERR,
           "Controlobject: Unable to allocate object for daemon worker thread.");
         return false;
     }
@@ -1112,7 +1112,7 @@ CControlObject::startDaemonWorkerThread(void)
                        daemonWorkerThread,
                        m_pdaemonWorkerObj)) {
 
-        syslog(LOG_CRIT,
+        syslog(LOG_ERR,
                "Controlobject: Unable to start the daemon worker thread.");
         return false;
     }
@@ -2073,7 +2073,7 @@ CControlObject::readXMLConfigurationGeneral(const std::string &strcfgfile)
 
     fp = fopen(strcfgfile.c_str(), "r");
     if (NULL == fp) {
-        syslog(LOG_CRIT,
+        syslog(LOG_ERR,
                "Failed to open configuration file [%s]",
                strcfgfile.c_str());
         return false;
@@ -2089,7 +2089,7 @@ CControlObject::readXMLConfigurationGeneral(const std::string &strcfgfile)
     if (NULL == buf) {
         XML_ParserFree(xmlParser);
         fclose(fp);
-        syslog(LOG_CRIT,
+        syslog(LOG_ERR,
                "Failed to allocate buffer for configuration file [%s]",
                strcfgfile.c_str());
         return false;
@@ -3371,7 +3371,7 @@ CControlObject::readConfigurationXML(const std::string &strcfgfile)
 
     fp = fopen(strcfgfile.c_str(), "r");
     if (NULL == fp) {
-        syslog(LOG_CRIT,
+        syslog(LOG_ERR,
                "Failed to open configuration file [%s]",
                strcfgfile.c_str());
         return false;
@@ -3388,7 +3388,7 @@ CControlObject::readConfigurationXML(const std::string &strcfgfile)
     if (NULL == buf) {
         XML_ParserFree(xmlParser);
         fclose(fp);
-        syslog(LOG_CRIT,
+        syslog(LOG_ERR,
                "Failed to allocate buffer for configuration file [%s]",
                strcfgfile.c_str());
         return false;
@@ -3523,7 +3523,7 @@ CControlObject::updateConfigurationRecordName(const std::string &strName,
 
     pthread_mutex_lock(&m_db_vscp_configMutex);
 
-    char *sql = sqlite3_mprintf(VSCPDB_CONFIG_UPDATE_CONFIG_NAME,        
+    char *sql = sqlite3_mprintf(VSCPDB_CONFIG_UPDATE_CONFIG_NAME,
                                 (const char *)strNewName.c_str(),
                                 (const char *)strName.c_str(),
                                 m_nConfiguration);

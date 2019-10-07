@@ -204,7 +204,7 @@ void clientWorker(int clientSocket)
 void sighandler(int sig)
 {
     gbStopDaemon = TRUE;
-    syslog(LOG_CRIT, "uvscpd: signal received, forced to stop.: %m");
+    syslog(LOG_ERR, "uvscpd: signal received, forced to stop.: %m");
     //sleep( 3 );
     //exit(-1);
 }
@@ -256,7 +256,7 @@ int main(int argc, char **argv)
         close(STDERR_FILENO);
 
         if (open("/", 0)) {
-            syslog(LOG_CRIT, "VSCPD: open / not 0: %m");
+            syslog(LOG_ERR, "VSCPD: open / not 0: %m");
         }
 
         dup2(0, 1);

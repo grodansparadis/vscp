@@ -56,9 +56,9 @@ void *workThreadReceive( void *pObject );
 
 CSysLogObj::CSysLogObj()
 {
-	
+
 	// Set default SysLog port
-	m_syslogPort = SYSLOG_PORT;	
+	m_syslogPort = SYSLOG_PORT;
 
 	m_drvidx = 0;
 	m_callIdx = 0;	// No calls received yet
@@ -70,7 +70,7 @@ CSysLogObj::CSysLogObj()
 	m_bRun = false;
 
 #ifdef WIN32
-	
+
 	m_hTreadReceive = 0;
 
 	// Create the device AND LIST access mutexes
@@ -78,7 +78,7 @@ CSysLogObj::CSysLogObj()
 	m_receiveMutex = CreateMutex( NULL, true, CANAL_DLL_SYSLOG_RECEIVE_MUTEX );
 
 #else
-	
+
 	pthread_mutex_init( &m_syslogMutex, NULL );
 	pthread_mutex_init( &m_receiveMutex, NULL );
 
@@ -89,18 +89,18 @@ CSysLogObj::CSysLogObj()
 }
 
 CSysLogObj::~CSysLogObj()
-{	
+{
 	close();
-	
+
 	LOCK_MUTEX( m_receiveMutex );
 	dll_removeAllNodes( &m_receiveList );
 
 
-#ifdef WIN32	
-	
-	if ( NULL != m_syslogMutex ) CloseHandle( m_syslogMutex );	
+#ifdef WIN32
+
+	if ( NULL != m_syslogMutex ) CloseHandle( m_syslogMutex );
 	if ( NULL != m_receiveMutex ) CloseHandle( m_receiveMutex );
- 
+
 
 #else
 
@@ -118,13 +118,13 @@ CSysLogObj::~CSysLogObj()
 // filename
 //-----------------------------------------------------------------------------
 // Parameters for the driver as a string on the following form
-//		
+//
 // "port"
 //
 //
 // lircport
 // ========
-// The port to listen to. If not given the defaultport 
+// The port to listen to. If not given the defaultport
 // "514" i used.
 //
 //
@@ -153,17 +153,17 @@ bool CSysLogObj::open( const char *szFileName, unsigned long flags )
 	m_stat.cntBusOff = 0;
 	m_stat.cntBusWarnings = 0;
 	m_stat.cntOverruns = 0;
-	
+
 
 	// if open we have noting to do
 	if ( m_bRun ) return true;
 
 	// Path to config file
 	char *p;
- 
+
 	p = strtok( (char * )szDrvParams, ";" );
 	if ( NULL != p ) {
-		m_syslogPort = getDataValue( p );	
+		m_syslogPort = getDataValue( p );
 	}
 
 	// We are open
@@ -175,47 +175,47 @@ bool CSysLogObj::open( const char *szFileName, unsigned long flags )
 
 
 #ifdef WIN32
-	
- 
+
+
 	DWORD threadId;
 
-	// Start read thread 
-	if ( NULL == 
+	// Start read thread
+	if ( NULL ==
 			( m_hTreadReceive = CreateThread(	NULL,
 										0,
 										(LPTHREAD_START_ROUTINE) workThreadReceive,
 										this,
 										0,
-										&threadId ) ) ) { 
+										&threadId ) ) ) {
 		// Failure
 		close();
 		return  false;
 	}
-	
-	
+
+
 
 #else // LINUX
 
 
 	pthread_attr_t thread_attr;
 	pthread_attr_init( &thread_attr );
-	
-	
+
+
 	// Create the log write thread.
 	if ( pthread_create( 	&m_threadId,
 								&thread_attr,
 								workThreadReceive,
-								this ) ) {	
-							
-		syslog( LOG_CRIT, "canallogger: Unable to create vector receive thread.");
+								this ) ) {
+
+		syslog( LOG_ERR, "canallogger: Unable to create vector receive thread.");
 		rv = false;
 		fclose( m_flog );
 	}
-		
+
     // We are open
 	m_bOpen = true;
 
-	
+
 	// Release the mutex
 	pthread_mutex_unlock( &m_vectorMutex );
 
@@ -229,32 +229,32 @@ bool CSysLogObj::open( const char *szFileName, unsigned long flags )
 //
 
 bool CSysLogObj::close( void )
-{	
+{
 	// Do nothing if already terminated
 	if ( !m_bRun ) return false;
-	
+
 	m_bRun = false;
 
-	
 
-	// terminate the worker thread 
-#ifdef WIN32	
-	
+
+	// terminate the worker thread
+#ifdef WIN32
+
 	DWORD rv;
-	
+
 
 	// Wait for receive thread to terminate
 	while ( true ) {
 		GetExitCodeThread( m_hTreadReceive, &rv );
 		if ( STILL_ACTIVE != rv ) break;
 	}
-	
-	
+
+
 #else
-	
+
 	int *trv;
 	pthread_join( m_threadIdReceive, (void **)&trv );
-	
+
 #endif
 
 
@@ -267,14 +267,14 @@ bool CSysLogObj::close( void )
 //
 
 bool CSysLogObj::doFilter( canalMsg *pcanalMsg )
-{	
+{
 	unsigned long msgid = ( pcanalMsg->id & 0x1fffffff);
 	if ( !m_mask ) return true;	// fast escape
 
 	// Set bit 32 if extended message
 	if ( pcanalMsg->flags | CANAL_IDFLAG_EXTENDED ) {
 		msgid &= 0x1fffffff;
-		msgid |= 80000000;	
+		msgid |= 80000000;
 	}
 	else {
 		// Standard message
@@ -282,8 +282,8 @@ bool CSysLogObj::doFilter( canalMsg *pcanalMsg )
 	}
 
 	// Set bit 31 if RTR
-	if ( pcanalMsg->flags | CANAL_IDFLAG_RTR ) { 
-		msgid |= 40000000;	
+	if ( pcanalMsg->flags | CANAL_IDFLAG_RTR ) {
+		msgid |= 40000000;
 	}
 
 	return !( ( m_filter ^ msgid ) & m_mask );
@@ -327,12 +327,12 @@ bool CSysLogObj::writeMsg( canalMsg *pMsg )
 
 bool CSysLogObj::readMsg( canalMsg *pMsg )
 {
-	bool rv = false;	
+	bool rv = false;
 
- 
-	if ( ( NULL != m_receiveList.pHead ) && 
+
+	if ( ( NULL != m_receiveList.pHead ) &&
 			( NULL != m_receiveList.pHead->pObject ) ) {
-		
+
 		memcpy( pMsg, m_receiveList.pHead->pObject, sizeof( canalMsg ) );
 		LOCK_MUTEX( m_receiveMutex );
 		dll_removeNode( &m_receiveList, m_receiveList.pHead );
@@ -340,7 +340,7 @@ bool CSysLogObj::readMsg( canalMsg *pMsg )
 
 		rv = true;
 	}
-		
+
 
 	return rv;
 }
@@ -353,11 +353,11 @@ bool CSysLogObj::readMsg( canalMsg *pMsg )
 int CSysLogObj::dataAvailable( void )
 {
 	int cnt;
-	
+
 	LOCK_MUTEX( m_receiveMutex );
-	cnt = dll_getNodeCount( &m_receiveList );	
+	cnt = dll_getNodeCount( &m_receiveList );
 	UNLOCK_MUTEX( m_receiveMutex );
- 
+
 	return cnt;
 }
 
@@ -368,7 +368,7 @@ int CSysLogObj::dataAvailable( void )
 //
 
 bool CSysLogObj::getStatistics( PCANALSTATISTICS pCanalStatistics )
-{	
+{
 	// Must be a valid pointer
 	if ( NULL == pCanalStatistics ) return false;
 
@@ -389,7 +389,7 @@ bool CSysLogObj::getStatus( PCANALSTATUS pCanalStatus )
 
 
 	memcpy( pCanalStatus, &m_status, sizeof( canalStatus ) );
- 
+
 	return true;
 }
 
@@ -412,7 +412,7 @@ unsigned long CSysLogObj::getDataValue( const char *szData )
 		val = strtoul( szData, &nstop, 10 );
 	}
 
-	return val;	
+	return val;
 }
 
 
@@ -435,7 +435,7 @@ void workThreadReceive( void *pObject )
 #else
 void *workThreadReceive( void *pObject )
 #endif
-{	
+{
 	int nLen;
 	char buf[ 2048 ];
 	char szName[ 128 ];
@@ -454,7 +454,7 @@ void *workThreadReceive( void *pObject )
 
 	CSysLogObj * pobj = ( CSysLogObj *)pObject;
 	if ( NULL == pobj ) {
-#ifdef WIN32	
+#ifdef WIN32
 		ExitThread( errorCode ); // Fail
 #else
 		pthread_exit( &rv );
@@ -469,7 +469,7 @@ void *workThreadReceive( void *pObject )
 
 	err = WSAStartup( wVersionRequested, &wsaData );
 	if ( err != 0 ) {
-#ifdef WIN32	
+#ifdef WIN32
 		ExitThread( errorCode ); // Fail
 #else
 		pthread_exit( &rv );
@@ -479,34 +479,34 @@ void *workThreadReceive( void *pObject )
 	if ( SOCKET_ERROR == gethostname( szName, sizeof( szName ) ) ) {
 		strcpy( szName, "localhost" );
 	}
- 	
+
 	LPHOSTENT lpLocalHostEntry;
 	lpLocalHostEntry = gethostbyname( szName );
-	if ( NULL == lpLocalHostEntry ) {	
+	if ( NULL == lpLocalHostEntry ) {
 		ExitThread( errorCode );
 	}
-	
+
 
 	//
 	// Create a UDP/IP datagram socket
-	//	
+	//
 	SOCKET theSocket;
-	
+
 	theSocket = socket( AF_INET, SOCK_DGRAM, IPPROTO_UDP );
 	if ( theSocket == INVALID_SOCKET ) {
 		ExitThread( errorCode );
 	}
- 
+
 	//
 	// Fill in the address structure
 	//
- 	
+
 	SOCKADDR_IN saServer;
- 
+
 
 	saServer.sin_family = AF_INET;
 	saServer.sin_addr.s_addr = INADDR_ANY;	// Let WinSock assign address
-	saServer.sin_port = htons( pobj->m_syslogPort );	   
+	saServer.sin_port = htons( pobj->m_syslogPort );
 
 	//
 	// bind the name to the socket
@@ -514,13 +514,13 @@ void *workThreadReceive( void *pObject )
 
 	int nRet;
 
-	nRet = bind( theSocket,		
-					( LPSOCKADDR )&saServer, 
-					sizeof (struct sockaddr ) );					
+	nRet = bind( theSocket,
+					( LPSOCKADDR )&saServer,
+					sizeof (struct sockaddr ) );
 	if ( nRet == SOCKET_ERROR ) {
-		ExitThread( errorCode );		
+		ExitThread( errorCode );
 	}
- 
+
 	SOCKADDR_IN saClient;
 	nLen = sizeof( SOCKADDR );
 
@@ -536,7 +536,7 @@ void *workThreadReceive( void *pObject )
 
 
 	while ( pobj->m_bRun ) {
-		
+
 		// Noting to do if we should end...
 		if ( !pobj->m_bRun ) continue;
 
@@ -544,54 +544,54 @@ void *workThreadReceive( void *pObject )
 		FD_SET( theSocket, &readfds );
 
 		select( 0, &readfds, NULL, NULL, &tv );
-		
+
 		if ( FD_ISSET( theSocket, &readfds ) ) {
-		
+
 			memset( buf, 0, sizeof( buf ) );
-		
+
 			// Wait for data from the client
-			nRet = recvfrom( theSocket,				
-								buf,				
-								sizeof(buf ),		
-								0,								
+			nRet = recvfrom( theSocket,
+								buf,
+								sizeof(buf ),
+								0,
 								( LPSOCKADDR )&saClient,
-								&nLen );	
- 							
-			if ( !nRet || ( nRet == SOCKET_ERROR ) || ( nRet < 25 ) ) { 
+								&nLen );
+
+			if ( !nRet || ( nRet == SOCKET_ERROR ) || ( nRet < 25 ) ) {
 				continue;
 			}
-			
+
 			char *p;
 			wxString strCallFrom, strCallTo;
 			if ( NULL != ( p = strstr( buf, "isdn_net: call from ") ) ) {
-				
+
 				// OK this is an icoming call
 				p += 20; // Point past tag
 				wxStringTokenizer tkz( p, "," );
 				strCallFrom = tkz.GetNextToken();
 				if ( '0' != strCallFrom[0] ) {
-					strCallFrom = "0" + strCallFrom;		
+					strCallFrom = "0" + strCallFrom;
 				}
 
 				if ( NULL != ( p = strstr( buf, "-> ") ) ) {
 					p += 3; // Point past tag
 					wxStringTokenizer tkz( p, "\n" );
-					strCallTo = tkz.GetNextToken();	
+					strCallTo = tkz.GetNextToken();
 					if ( '0' != strCallTo[0] ) {
-						strCallTo = "0" + strCallTo;		
+						strCallTo = "0" + strCallTo;
 					}
 				}
-				
-				
+
+
 				totLength = strCallFrom.Length() + strCallTo.Length();
-				
+
 
 				if ( pobj->m_initFlag & SYSLOGDRV_ISDN4L_PHONE ) {
-				
+
 					// Send 'Incoming call with destination' if destination number
 					// information is available
 					if ( 0 != strCallTo.Length() ) {
-					
+
 						wxString wxSendBuf = strCallFrom + "_" + strCallTo;
 						totLength++;
 
@@ -599,17 +599,17 @@ void *workThreadReceive( void *pObject )
 						nPack = totLength / 5;
 						if ( totLength % 5 ) nPack++;
 
-						posSend = 0; 
+						posSend = 0;
 
 						// 'Send' the frames
 						for ( int i=0; i<nPack; i++ ) {
 
-							pNode = new dllnode; 
+							pNode = new dllnode;
 							if ( NULL != pNode ) {
-							
+
 								pmsg = new canalMsg;
 								if ( NULL != pmsg ) {
-							
+
 									pmsg->id = 0 + (8 << 8) + (100 << 16); // Class=100, Type = 8
 									pmsg->timestamp = (unsigned long)time( NULL );
 									pmsg->flags = CANAL_IDFLAG_EXTENDED;
@@ -618,14 +618,14 @@ void *workThreadReceive( void *pObject )
 									pmsg->data[ 0 ] = pobj->m_callIdx;	// Id for this incoming call
 									pmsg->data[ 1 ] = i;				// Fragment index
 									pmsg->data[ 2 ] = nPack;			// Total number of fragments
-									for ( int j=0; 
-											( ( posSend < wxSendBuf.Length() ) && ( j<5 ) ); 
+									for ( int j=0;
+											( ( posSend < wxSendBuf.Length() ) && ( j<5 ) );
 											j++ ) {
-										pmsg->data[ 3 + j ] =	wxSendBuf[ posSend++ ];	
+										pmsg->data[ 3 + j ] =	wxSendBuf[ posSend++ ];
 										pmsg->sizeData++;
 									}
-							
-						
+
+
 									pNode->pObject = pmsg;
 									LOCK_MUTEX( pobj->m_receiveMutex );
 									dll_addNode( &pobj->m_receiveList, pNode );
@@ -634,9 +634,9 @@ void *workThreadReceive( void *pObject )
 								}
 							}
 						}
-					} // flag switch 
+					} // flag switch
 				}
-				
+
 
 				// Send 'Incoming call'
 				wxString wxSendBuf = strCallFrom;
@@ -646,14 +646,14 @@ void *workThreadReceive( void *pObject )
 				nPack = totLength / 5;
 				if ( totLength % 5 ) nPack++;
 
-				posSend = 0; 
+				posSend = 0;
 
 				// 'Send' the frames
 				for ( int i=0; i<nPack; i++ ) {
-					
-					pNode = new dllnode; 
+
+					pNode = new dllnode;
 					if ( NULL != pNode ) {
-					
+
 						pmsg = new canalMsg;
 						if ( NULL != pmsg ) {
 
@@ -665,10 +665,10 @@ void *workThreadReceive( void *pObject )
 							pmsg->data[ 0 ] = pobj->m_callIdx;	// Id for this incoming call
 							pmsg->data[ 1 ] = i;				// Fragment index
 							pmsg->data[ 2 ] = nPack;			// Total number of fragments
-							for ( int j=0; 
-									( ( posSend < wxSendBuf.Length() ) && ( j<5 ) ); 
+							for ( int j=0;
+									( ( posSend < wxSendBuf.Length() ) && ( j<5 ) );
 									j++ ) {
-								pmsg->data[ 3 + j ] =	wxSendBuf[ posSend++ ];	
+								pmsg->data[ 3 + j ] =	wxSendBuf[ posSend++ ];
 								pmsg->sizeData++;
 							}
 
@@ -680,13 +680,13 @@ void *workThreadReceive( void *pObject )
 						}
 					}
 				}
-	
+
 				// Another incoming call
 				pobj->m_callIdx++;
 
 			}
 
-			
+
 			// Total syslog line transmission
 
 			if ( pobj->m_initFlag & SYSLOGDRV_RAW ) {
@@ -700,7 +700,7 @@ void *workThreadReceive( void *pObject )
 
 				posSend = 0;
 
-				pNode = new dllnode; 
+				pNode = new dllnode;
 				if ( NULL != pNode ) {
 
 					pmsg = new canalMsg;
@@ -714,25 +714,25 @@ void *workThreadReceive( void *pObject )
 						pmsg->data[ 0 ] = pobj->m_callIdx;	// Id for this incoming call
 						pmsg->data[ 1 ] = 0;				// Log Level
 						pmsg->data[ 2 ] = nPack;			// Total number of fragments
-						for ( int j=0; 
-								( ( posSend < wxSendBuf.Length() ) && ( j<5 ) ); 
+						for ( int j=0;
+								( ( posSend < wxSendBuf.Length() ) && ( j<5 ) );
 								j++ ) {
-							pmsg->data[ 3 + j ] =	wxSendBuf[ posSend++ ];	
+							pmsg->data[ 3 + j ] =	wxSendBuf[ posSend++ ];
 							pmsg->sizeData++;
 						}
-				
+
 						pNode->pObject = pmsg;
 						LOCK_MUTEX( pobj->m_receiveMutex );
 						dll_addNode( &pobj->m_receiveList, pNode );
 						UNLOCK_MUTEX( pobj->m_receiveMutex );
 
 					}
-				}	
+				}
 			}
 		}
-	
-	
-	} // while 	 
+
+
+	} // while
 
 
 #ifdef WIN32
@@ -740,5 +740,5 @@ void *workThreadReceive( void *pObject )
 #else
 	pthread_exit( &rv );
 #endif
-	
+
 }

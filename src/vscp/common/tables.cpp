@@ -1623,7 +1623,7 @@ startTableXmlParser(void *data, const char *name, const char **attr)
                 syslog(
                   LOG_ERR,
                   "createTableFromXML: Failed to initialize "
-                  "table '%sä in system.", 
+                  "table '%sä in system.",
                   strName.c_str());
                 return;
             }
@@ -1676,21 +1676,21 @@ CUserTableObjList::createTableFromXML(const std::string &strCreateXML)
     XML_SetElementHandler(xmlParser,
                           startTableXmlParser,
                           endTableXmlParser);
- 
+
     int bytes_read;
     void *buf = XML_GetBuffer(xmlParser, XML_BUFF_SIZE);
     if (NULL == buf)
     {
         XML_ParserFree(xmlParser);
-        syslog(LOG_CRIT,
+        syslog(LOG_ERR,
                "createTableFromXML: Failed to allocate buffer.");
         return false;
     }
- 
+
     memcpy( buf, decoded.c_str(), decoded.length() );
     size_t file_size = decoded.length();
 
- 
+
     if (!XML_ParseBuffer(xmlParser, file_size, file_size == 0))
     {
         syslog(LOG_ERR,
@@ -1698,7 +1698,7 @@ CUserTableObjList::createTableFromXML(const std::string &strCreateXML)
         XML_ParserFree(xmlParser);
         return false;
     }
- 
+
     XML_ParserFree(xmlParser);
 
 
@@ -1896,7 +1896,7 @@ CUserTableObjList::addTableToDB(CVSCPTable &table)
         sqlite3_exec(gpobj->m_db_vscp_daemon, psql, NULL, NULL, &zErrMsg)) {
         sqlite3_free(psql);
         syslog( LOG_ERR, "addTableToDB: Unable to insert "
-                                           "record in table. [%s] Err=%s", 
+                                           "record in table. [%s] Err=%s",
                                             psql, zErrMsg );
         return false;
     }
@@ -1954,7 +1954,7 @@ CUserTableObjList::updateTableToDB(CVSCPTable &table)
         sqlite3_exec(
           gpobj->m_db_vscp_daemon, sql.c_str(), NULL, NULL, &zErrMsg)) {
         syslog( LOG_ERR, "updateTableToDB: Unable to update "
-                                           "record in table. [%s] Err=%s", 
+                                           "record in table. [%s] Err=%s",
                                             sql.c_str(), zErrMsg );
         return false;
     }

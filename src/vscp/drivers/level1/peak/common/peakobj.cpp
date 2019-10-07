@@ -1,20 +1,20 @@
-// peakobj.cpp:  
+// peakobj.cpp:
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version
 // 2 of the License, or (at your option) any later version.
-// 
-// This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2015 
+// This file is part of the VSCP (http://www.vscp.org)
+//
+// Copyright (C) 2000-2015
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
-// 
+//
 // This file is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with this file see the file COPYING.  If not, write to
 // the Free Software Foundation, 59 Temple Place - Suite 330,
@@ -45,14 +45,14 @@ void *workThreadReceive( void *pObject );
 //
 
 CPeakObj::CPeakObj()
-{ 
+{
 	m_initFlag = 0;
 
 	// Error codes
 	m_lastErrorCode = 0;
 	m_lastSubErrorCode = 0;
 	*m_lastErrorStr = 0;
-	
+
 	// No filter mask
 	m_filter = 0;
 	m_mask = 0;
@@ -60,7 +60,7 @@ CPeakObj::CPeakObj()
 	m_bRun = false;
 
 	// No DDL loaded
-	m_hinst = NULL; 
+	m_hinst = NULL;
 
 	// Library not initialized
 	m_bInit = false;
@@ -69,7 +69,7 @@ CPeakObj::CPeakObj()
 	m_bOpen = false;
 
 #ifdef WIN32
-	
+
 	m_hTreadReceive = 0;
 	m_hTreadTransmit = 0;
 
@@ -79,7 +79,7 @@ CPeakObj::CPeakObj()
 	m_transmitMutex = CreateMutex( NULL, true, CANAL_DLL_PEAKDRV_TRANSMIT_MUTEX );
 
 #else
-	
+
 	m_flog = NULL;
 	pthread_mutex_init( &m_ixxMutex, NULL );
 	pthread_mutex_init( &m_receiveMutex, NULL );
@@ -96,19 +96,19 @@ CPeakObj::CPeakObj()
 //
 
 CPeakObj::~CPeakObj()
-{		 
+{
 	close();
-	
+
 	LOCK_MUTEX( m_transmitMutex );
 	dll_removeAllNodes( &m_transmitList );
-	
+
 	LOCK_MUTEX( m_receiveMutex );
 	dll_removeAllNodes( &m_receiveList );
 
 
-#ifdef WIN32	
-	
-	if ( NULL != m_peakMutex ) CloseHandle( m_peakMutex );	
+#ifdef WIN32
+
+	if ( NULL != m_peakMutex ) CloseHandle( m_peakMutex );
 	if ( NULL != m_receiveMutex ) CloseHandle( m_receiveMutex );
 	if ( NULL != m_transmitMutex ) CloseHandle( m_transmitMutex );
 
@@ -126,7 +126,7 @@ struct __peaksymtbl {
 	char symname[ 32 ];	// Symbolic name
 	int id;				// index code
 	char dllname[ 64 ];	// DLL name
-	bool bPnp;			// Plug and Play device 
+	bool bPnp;			// Plug and Play device
 } peaksymtbl[] = {
 		"CANDONGLE",	0,	"pcan_dng.dll", false,
 		"CANDONGLEPRO",	1,	"pcan_dnp.dll", false,
@@ -141,8 +141,8 @@ struct __peaksymtbl {
 // setLastError
 //
 
-void CPeakObj::setLastError( unsigned long errorcode, 
-								unsigned long suberrorcode, 
+void CPeakObj::setLastError( unsigned long errorcode,
+								unsigned long suberrorcode,
 								char  *perrorstr )
 {
 	m_lastErrorCode = errorcode;
@@ -195,7 +195,7 @@ static int nUSBDriverUseCnt = 0;
 // bus-speed
 // ========================================================
 // One of the predefined bitrates can be set here
-// 
+//
 //   5 for 5 Kbs
 //  10 for 10 Kbs
 //  20 for 20 Kbs
@@ -216,7 +216,7 @@ static int nUSBDriverUseCnt = 0;
 //		2 - dongle
 //		3 - epp
 //		5 - sja
-//		6 - sja-epp		
+//		6 - sja-epp
 //
 // CANDONGLEPRO
 // ------------
@@ -227,10 +227,10 @@ static int nUSBDriverUseCnt = 0;
 // ------
 //		1 - ISA
 //		9 - SJA
-// 
+//
 // port
 // ========================================================
-// For ISA and parallel port adapters this is the hardware 
+// For ISA and parallel port adapters this is the hardware
 // port address
 //
 //
@@ -241,28 +241,28 @@ static int nUSBDriverUseCnt = 0;
 //
 // channel
 // ========================================================
-// Is a value from 0 an up indicating the CAN channel on the 
+// Is a value from 0 an up indicating the CAN channel on the
 // selected board.
 //
 //
 // filter
 // ========================================================
-// Is the hardware dependent filter for this board hardware. 
-// Note that this filter may work in a different way then 
+// Is the hardware dependent filter for this board hardware.
+// Note that this filter may work in a different way then
 // the CANAL filter.
 //
 //
 // mask
 // ========================================================
-// Is the hardware dependent mask for this board hardware. 
-// Note that this filter may work in a different way then 
+// Is the hardware dependent mask for this board hardware.
+// Note that this filter may work in a different way then
 // the CANAL filter.
 //
 //
 //
 //
-// 
-// flags 
+//
+// flags
 //-----------------------------------------------------------------------------
 //
 // bit 0
@@ -281,7 +281,7 @@ static int nUSBDriverUseCnt = 0;
 //
 // bit 4
 // =====
-// 
+//
 
 bool CPeakObj::open( const char *szFileName, unsigned long flags )
 {
@@ -306,7 +306,7 @@ bool CPeakObj::open( const char *szFileName, unsigned long flags )
 	strncpy( szDrvParams, szFileName, MAX_PATH );
 	_strupr( szDrvParams );
 #endif
-	
+
 
 	// Initiate statistics
 	m_stat.cntReceiveData = 0;
@@ -316,12 +316,12 @@ bool CPeakObj::open( const char *szFileName, unsigned long flags )
 
 	m_stat.cntBusOff = 0;
 	m_stat.cntBusWarnings = 0;
-	m_stat.cntOverruns = 0;	
+	m_stat.cntOverruns = 0;
 
-	
+
 	// if open we have noting to do
 	if ( m_bRun ) return true;
-	
+
 	// Boardtype
 #ifdef WIN32
 	p = strtok_s( (char * )szDrvParams, ";", &next_token );
@@ -329,13 +329,13 @@ bool CPeakObj::open( const char *szFileName, unsigned long flags )
 	p = strtok( (char * )szDrvParams, ";" );
 #endif
 	if ( NULL != p ) {
-	
+
 		if ( isalpha( *p ) ) {
-		
+
 			// Symbolic form
 			int symidx = 0;
 			while( -1 != peaksymtbl[ symidx ]. id ) {
-			
+
 				if ( NULL != strstr( peaksymtbl[ symidx ]. symname, p ) ) {
 					m_dwBrdType = peaksymtbl[ symidx ]. id;
 					m_bPnp = peaksymtbl[ symidx ].bPnp;
@@ -347,13 +347,13 @@ bool CPeakObj::open( const char *szFileName, unsigned long flags )
 					break;
 				}
 
-				symidx++;	
+				symidx++;
 
 			}
-				 	
+
 		}
 		else {
-			
+
 			// Numeric form
 			m_dwBrdType = atoi( p );
 			m_bPnp = peaksymtbl[ m_dwBrdType ].bPnp;
@@ -379,7 +379,7 @@ bool CPeakObj::open( const char *szFileName, unsigned long flags )
 #else
 	p = strtok( NULL, ";" );
 #endif
-	if ( NULL != p ) {		
+	if ( NULL != p ) {
 		if ( ( NULL != strstr( p, "0x" ) ) || ( NULL != strstr( p, "0X" ) )  ) {
 #ifdef WIN32
 			sscanf_s( p + 2, "%x", &busspeed );
@@ -395,7 +395,7 @@ bool CPeakObj::open( const char *szFileName, unsigned long flags )
 
 		// Handle busspeed
 	switch ( busspeed ) {
-	
+
 		case 5:
 			btr0btr1 = 0x7F7F;
 			break;
@@ -447,7 +447,7 @@ bool CPeakObj::open( const char *szFileName, unsigned long flags )
 #else
 		p = strtok( NULL, ";" );
 #endif
-		if ( NULL != p ) {		
+		if ( NULL != p ) {
 			if ( ( NULL != strstr( p, "0x" ) ) || ( NULL != strstr( p, "0X" ) )  ) {
 #ifdef WIN32
 				sscanf( p + 2, "%x", &hwtype );
@@ -466,7 +466,7 @@ bool CPeakObj::open( const char *szFileName, unsigned long flags )
 #else
 		p = strtok( NULL, ";" );
 #endif
-		if ( NULL != p ) {		
+		if ( NULL != p ) {
 			if ( ( NULL != strstr( p, "0x" ) ) || ( NULL != strstr( p, "0X" ) )  ) {
 #ifdef WIN32
 				sscanf( p + 2, "%x", &port );
@@ -486,7 +486,7 @@ bool CPeakObj::open( const char *szFileName, unsigned long flags )
 #else
 		p = strtok( NULL, ";" );
 #endif
-		if ( NULL != p ) {		
+		if ( NULL != p ) {
 			if ( ( NULL != strstr( p, "0x" ) ) || ( NULL != strstr( p, "0X" ) )  ) {
 #ifdef WIN32
 				sscanf( p + 2, "%x", &irq );
@@ -502,13 +502,13 @@ bool CPeakObj::open( const char *szFileName, unsigned long flags )
 	}
 
 
-	// channel 
+	// channel
 #ifdef WIN32
 	p = strtok_s( NULL, ";", &next_token );
 #else
 	p = strtok( NULL, ";" );
 #endif
-	if ( NULL != p ) {		
+	if ( NULL != p ) {
 		if ( ( NULL != strstr( p, "0x" ) ) || ( NULL != strstr( p, "0X" ) )  ) {
 #ifdef WIN32
 			sscanf( p + 2, "%x", &m_channel );
@@ -528,7 +528,7 @@ bool CPeakObj::open( const char *szFileName, unsigned long flags )
 #else
 	p = strtok( NULL, ";" );
 #endif
-	if ( NULL != p ) {		
+	if ( NULL != p ) {
 		if ( ( NULL != strstr( p, "0x" ) ) || ( NULL != strstr( p, "0X" ) )  ) {
 #ifdef WIN32
 			sscanf( p + 2, "%x", &m_Peak_filter );
@@ -548,7 +548,7 @@ bool CPeakObj::open( const char *szFileName, unsigned long flags )
 #else
 	p = strtok( NULL, ";" );
 #endif
-	if ( NULL != p ) {		
+	if ( NULL != p ) {
 		if ( ( NULL != strstr( p, "0x" ) ) || ( NULL != strstr( p, "0X" ) )  ) {
 #ifdef WIN32
 			sscanf( p + 2, "%x", &m_Peak_mask );
@@ -561,110 +561,110 @@ bool CPeakObj::open( const char *szFileName, unsigned long flags )
 		}
 	}
 
-	
+
 	switch ( m_dwBrdType ) {
-		
+
 		case 0:	// CAN DONGLE
 			if ( !nDongleDriverUseCnt ) {
-				
+
 				// Initialize Driver DLL
 				if ( !initialize( m_dllName, m_bPnp ) ) {
-		
+
 					// Failed to initialize
-					return false;	
+					return false;
 				}
 			}
 			else if ( 1 == nDongleDriverUseCnt ) {
 				// Only one instance allowed
-				setLastError( CANAL_ERROR_ONLY_ONE_INSTANCE, 
-								GetLastError(),  
+				setLastError( CANAL_ERROR_ONLY_ONE_INSTANCE,
+								GetLastError(),
 								"PEAK CAN DONGLE accept only one instance");
 				return false;
 			}
 			nDongleDriverUseCnt++;
-			port = 0x378;		
+			port = 0x378;
 			irq = 7;
 			break;
 
 		case 1:	// CAN DONGLE PRO
 			if ( !nDongleProDriverUseCnt ) {
-				
+
 				// Initialize Driver DLL
 				if ( !initialize( m_dllName, m_bPnp ) ) {
-		
+
 					// Failed to initialize
-					return false;	
+					return false;
 				}
 			}
 			else if ( 1 == nDongleProDriverUseCnt ) {
 				// Only one instance allowed
-				setLastError( CANAL_ERROR_ONLY_ONE_INSTANCE, 
-								GetLastError(),  
+				setLastError( CANAL_ERROR_ONLY_ONE_INSTANCE,
+								GetLastError(),
 								"PEAK CAN DONGLE PRO accept only one instance");
 				return false;
 			}
 			nDongleProDriverUseCnt++;
-			port = 0x378;		
+			port = 0x378;
 			irq = 7;
 			break;
 
 		case 2:	// ISA
 			if ( !nIsaDriverUseCnt ) {
-				
+
 				// Initialize Driver DLL
 				if ( !initialize( m_dllName, m_bPnp ) ) {
-		
+
 					// Failed to initialize
-					return false;	
+					return false;
 				}
 
 			}
 			else if ( 1 == nIsaDriverUseCnt ) {
 				// Only one instance allowed
-				setLastError( CANAL_ERROR_ONLY_ONE_INSTANCE, 
-								GetLastError(),  
+				setLastError( CANAL_ERROR_ONLY_ONE_INSTANCE,
+								GetLastError(),
 								"PEAK CAN ISA accept only one instance");
 				return false;
 			}
 			nIsaDriverUseCnt++;
-			port = 0x300;		
+			port = 0x300;
 			irq = 10;
-			break;		
+			break;
 
 		case 3:	// PCI
 			if ( !nPciDriverUseCnt ) {
-				
+
 				// Initialize Driver DLL
 				if ( !initialize( m_dllName, m_bPnp ) ) {
-		
+
 					// Failed to initialize
-					return false;	
+					return false;
 				}
 			}
 			else if ( 1 == nPciDriverUseCnt ) {
 				// Only one instance allowed
-				setLastError( CANAL_ERROR_ONLY_ONE_INSTANCE, 
-								GetLastError(),  
+				setLastError( CANAL_ERROR_ONLY_ONE_INSTANCE,
+								GetLastError(),
 								"PEAK CAN PCI accept only one instance");
 				return false;
 			}
 			nPciDriverUseCnt++;
 			break;
 
-		case 4:	// PCI2	
+		case 4:	// PCI2
 			if ( !nPci2DriverUseCnt ) {
-				
+
 				// Initialize Driver DLL
 				if ( !initialize( m_dllName, m_bPnp ) ) {
-		
+
 					// Failed to initialize
-					return false;	
+					return false;
 				}
 			}
 			else if ( 1 == nPci2DriverUseCnt ) {
 				// Only one instance allowed
-				setLastError( CANAL_ERROR_ONLY_ONE_INSTANCE, 
-								GetLastError(),  
+				setLastError( CANAL_ERROR_ONLY_ONE_INSTANCE,
+								GetLastError(),
 								"PEAK CAN PCI2 accept only one instance");
 				return false;
 			}
@@ -673,33 +673,33 @@ bool CPeakObj::open( const char *szFileName, unsigned long flags )
 
 		case 5:	// USB
 			if ( !nUSBDriverUseCnt ) {
-				
+
 				// Initialize Driver DLL
 				if ( !initialize( m_dllName, m_bPnp ) ) {
-		
+
 					// Failed to initialize
-					return false;	
+					return false;
 				}
 			}
 			else if ( 1 == nUSBDriverUseCnt ) {
 				// Only one instance allowed
-				setLastError( CANAL_ERROR_ONLY_ONE_INSTANCE, 
-								GetLastError(),  
+				setLastError( CANAL_ERROR_ONLY_ONE_INSTANCE,
+								GetLastError(),
 								"PEAK CAN USB accept only one instance");
 				return false;
 			}
 			nUSBDriverUseCnt++;
-			
+
 			break;
 	}
 
 	// Init the device
 	unsigned long rv;
 	if ( m_bPnp ) {
-		rv = m_procInitPnp( btr0btr1, ( m_initFlag & 1 ) );	
+		rv = m_procInitPnp( btr0btr1, ( m_initFlag & 1 ) );
 		if ( PEAK_CAN_ERR_OK != rv ) {
-			setLastError( CANAL_ERROR_INIT_FAIL, 
-								rv,  
+			setLastError( CANAL_ERROR_INIT_FAIL,
+								rv,
 								"Init error (PCI): suberror is driver failure code");
 			return false;
 		}
@@ -707,74 +707,74 @@ bool CPeakObj::open( const char *szFileName, unsigned long flags )
 	else {
 		rv = m_procInit( btr0btr1, ( m_initFlag & 1 ), hwtype, port, irq );
 		if ( PEAK_CAN_ERR_OK != rv ) {
-			setLastError( CANAL_ERROR_INIT_FAIL, 
-								rv,  
+			setLastError( CANAL_ERROR_INIT_FAIL,
+								rv,
 								"Init error: suberror is driver failure code");
 			return false;
 		}
 	}
 
-	// Run run run ..... 
+	// Run run run .....
 	// (otional (for hard - fellow - rockers) "to the hills..."
 	m_bRun = true;
 
 #ifdef WIN32
-	
-	// Start write thread 
+
+	// Start write thread
 	DWORD threadId;
-	if ( NULL == 
+	if ( NULL ==
 			( m_hTreadTransmit = CreateThread(	NULL,
 										0,
 										(LPTHREAD_START_ROUTINE) workThreadTransmit,
 										this,
 										0,
-										&threadId ) ) ) { 
+										&threadId ) ) ) {
 		// Failure
-		setLastError( CANAL_ERROR_INIT_FAIL, 
-								GetLastError(),  
+		setLastError( CANAL_ERROR_INIT_FAIL,
+								GetLastError(),
 								"Init error: Unable to create transmit thread");
 		close();
 		return false;
 	}
 
-	// Start read thread 
-	if ( NULL == 
+	// Start read thread
+	if ( NULL ==
 			( m_hTreadReceive = CreateThread(	NULL,
 										0,
 										(LPTHREAD_START_ROUTINE) workThreadReceive,
 										this,
 										0,
-										&threadId ) ) ) { 
+										&threadId ) ) ) {
 		// Failure
-		setLastError( CANAL_ERROR_INIT_FAIL, 
-								GetLastError(),  
+		setLastError( CANAL_ERROR_INIT_FAIL,
+								GetLastError(),
 								"Init error: Unable to create receive thread");
 		close();
 		return  false;
 	}
-	
+
 	// Release the mutex
 	UNLOCK_MUTEX( m_peakMutex );
 	UNLOCK_MUTEX( m_receiveMutex );
 	UNLOCK_MUTEX( m_transmitMutex );
-	
+
 
 #else // LINUX
 
 
 	pthread_attr_t thread_attr;
 	pthread_attr_init( &thread_attr );
-	
-	
+
+
 	// Create the log write thread.
 	if ( pthread_create( 	&m_threadId,
 								&thread_attr,
 								workThreadTransmit,
-								this ) ) {	
-							
-		syslog( LOG_CRIT, "canallogger: Unable to create peakdrv write thread.");
-		setLastError( CANAL_ERROR_INIT_FAIL, 
-								GetLastError(),  
+								this ) ) {
+
+		syslog( LOG_ERR, "canallogger: Unable to create peakdrv write thread.");
+		setLastError( CANAL_ERROR_INIT_FAIL,
+								GetLastError(),
 								"Init error: Unable to create transmit thread");
 		rv = false;
 		fclose( m_flog );
@@ -785,21 +785,21 @@ bool CPeakObj::open( const char *szFileName, unsigned long flags )
 	if ( pthread_create( 	&m_threadId,
 								&thread_attr,
 								workThreadReceive,
-								this ) ) {	
-							
-		syslog( LOG_CRIT, "canallogger: Unable to create peakdrv receive thread.");
-		setLastError( CANAL_ERROR_INIT_FAIL, 
-								GetLastError(),  
+								this ) ) {
+
+		syslog( LOG_ERR, "canallogger: Unable to create peakdrv receive thread.");
+		setLastError( CANAL_ERROR_INIT_FAIL,
+								GetLastError(),
 								"Init error: Unable to create receive thread");
 		rv = false;
 		fclose( m_flog );
 	}
-		
+
 
 	// Release the mutex
 	pthread_mutex_unlock( &m_ixxMutex );
 
-#endif	
+#endif
 
 	// We are open
 	m_bOpen = true;
@@ -807,36 +807,36 @@ bool CPeakObj::open( const char *szFileName, unsigned long flags )
 	return true;
 }
 
- 
+
 //////////////////////////////////////////////////////////////////////
 // close
 //
 
 bool CPeakObj::close( void )
-{	
+{
 	unsigned long rv;
 
 	// Do nothing if already terminated
 	if ( !m_bRun ) return false;
-	
+
 	m_bRun = false;
 
 	UNLOCK_MUTEX( m_peakMutex );
 	Sleep( 1000 );
 	LOCK_MUTEX( m_peakMutex );
-	
+
 	// Close the driver
 	rv = m_procClose();
 	if ( PEAK_CAN_ERR_OK != rv ) {
-		setLastError( CANAL_ERROR_INIT_FAIL, 
-						rv,  
+		setLastError( CANAL_ERROR_INIT_FAIL,
+						rv,
 						"Error on close.");
 			return false;
 	}
-	
-	// terminate the worker thread 
-#ifdef WIN32	
-	
+
+	// terminate the worker thread
+#ifdef WIN32
+
 	// Wait for transmit thread to terminate
 	while ( true ) {
 		GetExitCodeThread( m_hTreadTransmit, &rv );
@@ -848,21 +848,21 @@ bool CPeakObj::close( void )
 		GetExitCodeThread( m_hTreadReceive, &rv );
 		if ( STILL_ACTIVE != rv ) break;
 	}
-	
 
-		
+
+
 #else
 	int *trv;
 	pthread_join( m_threadIdReceive, (void **)&trv );
 	pthread_join( m_threadIdTransmit, (void **)&trv );
 	pthread_mutex_destroy( &m_ixxMutex );
-	
+
 #endif
 
-	
+
 
 	switch ( m_dwBrdType ) {
-		
+
 		case 0:			// CAN DONGLE
 			nDongleDriverUseCnt--;
 			if ( !nDongleDriverUseCnt ) {
@@ -888,7 +888,7 @@ bool CPeakObj::close( void )
 				FreeLibrary( m_hinst );
 				m_hinst = NULL;
 			}
-			break;		
+			break;
 
 		case 3:			// PCI
 			nPciDriverUseCnt--;
@@ -899,7 +899,7 @@ bool CPeakObj::close( void )
 			}
 			break;
 
-		case 4:			// PCI2		
+		case 4:			// PCI2
 			nPci2DriverUseCnt--;
 			if ( !nPci2DriverUseCnt ) {
 				// Free library
@@ -917,7 +917,7 @@ bool CPeakObj::close( void )
 			}
 			break;
 	}
-	
+
 	// We are closed
 	m_bOpen = false;
 
@@ -930,14 +930,14 @@ bool CPeakObj::close( void )
 //
 
 bool CPeakObj::doFilter( canalMsg *pcanalMsg )
-{	
+{
 	unsigned long msgid = ( pcanalMsg->id & 0x1fffffff);
 	if ( !m_mask ) return true;	// fast escape
 
 	// Set bit 32 if extended message
 	if ( pcanalMsg->flags | CANAL_IDFLAG_EXTENDED ) {
 		msgid &= 0x1fffffff;
-		msgid |= 80000000;	
+		msgid |= 80000000;
 	}
 	else {
 		// Standard message
@@ -945,8 +945,8 @@ bool CPeakObj::doFilter( canalMsg *pcanalMsg )
 	}
 
 	// Set bit 31 if RTR
-	if ( pcanalMsg->flags | CANAL_IDFLAG_RTR ) { 
-		msgid |= 40000000;	
+	if ( pcanalMsg->flags | CANAL_IDFLAG_RTR ) {
+		msgid |= 40000000;
 	}
 
 	return !( ( m_filter ^ msgid ) & m_mask );
@@ -980,19 +980,19 @@ bool CPeakObj::setMask( unsigned long mask )
 //
 
 bool CPeakObj::writeMsg( canalMsg *pMsg )
-{	
+{
 	bool rv = false;
-	
+
 	if ( NULL != pMsg ) {
 
-	
+
 		// Must be room for the message
 		if ( m_transmitList.nCount < PEAKDRV_MAX_SNDMSG ) {
 
 			dllnode *pNode = new dllnode;
-			
+
 			if ( NULL != pNode ) {
-			
+
 				canalMsg *pcanalMsg = new canalMsg;
 
 				pNode->pObject = pcanalMsg;
@@ -1006,7 +1006,7 @@ bool CPeakObj::writeMsg( canalMsg *pMsg )
 				LOCK_MUTEX( m_transmitMutex );
 				dll_addNode( &m_transmitList, pNode );
 				UNLOCK_MUTEX( m_transmitMutex );
- 
+
 				rv = true;
 
 			}
@@ -1017,8 +1017,8 @@ bool CPeakObj::writeMsg( canalMsg *pMsg )
 			}
 		}
 	}
-	
-	return rv;		
+
+	return rv;
 }
 
 
@@ -1029,10 +1029,10 @@ bool CPeakObj::writeMsg( canalMsg *pMsg )
 bool CPeakObj::readMsg( canalMsg *pMsg )
 {
 	bool rv = false;
-	
-	if ( ( NULL != m_receiveList.pHead ) && 
+
+	if ( ( NULL != m_receiveList.pHead ) &&
 			( NULL != m_receiveList.pHead->pObject ) ) {
-		
+
 		memcpy( pMsg, m_receiveList.pHead->pObject, sizeof( canalMsg ) );
 		LOCK_MUTEX( m_receiveMutex );
 		dll_removeNode( &m_receiveList, m_receiveList.pHead );
@@ -1052,11 +1052,11 @@ bool CPeakObj::readMsg( canalMsg *pMsg )
 int CPeakObj::dataAvailable( void )
 {
 	int cnt;
-	
+
 	LOCK_MUTEX( m_receiveMutex );
-	cnt = dll_getNodeCount( &m_receiveList );	
+	cnt = dll_getNodeCount( &m_receiveList );
 	UNLOCK_MUTEX( m_receiveMutex );
- 
+
 	return cnt;
 }
 
@@ -1066,7 +1066,7 @@ int CPeakObj::dataAvailable( void )
 //
 
 bool CPeakObj::getStatistics( PCANALSTATISTICS pCanalStatistics )
-{	
+{
 	// Must be a valid pointer
 	if ( NULL == pCanalStatistics ) return false;
 
@@ -1083,21 +1083,21 @@ bool CPeakObj::getStatus( PCANALSTATUS pCanalStatus )
 {
 	// Must be a valid pointer
 	if ( NULL == pCanalStatus ) return false;
-	
+
 	// Get return Code
 	if ( m_bOpen ) {
 		pCanalStatus->channel_status = ( m_procStatus() & 0xffff );
-	
+
 		if ( PEAK_CAN_ERR_BUSOFF & pCanalStatus->channel_status ) {
-			pCanalStatus->channel_status |= 0x80000000;	
+			pCanalStatus->channel_status |= 0x80000000;
 		}
 
 		if ( PEAK_CAN_ERR_BUSHEAVY & pCanalStatus->channel_status ) {
-			pCanalStatus->channel_status |= 0x40000000;	
+			pCanalStatus->channel_status |= 0x40000000;
 		}
 
 		if ( PEAK_CAN_ERR_BUSLIGHT & pCanalStatus->channel_status ) {
-			pCanalStatus->channel_status |= 0x20000000;	
+			pCanalStatus->channel_status |= 0x20000000;
 		}
 	}
 
@@ -1134,7 +1134,7 @@ bool CPeakObj::initialize( char *path, bool bPnp )
 
 	if ( bPnp ){
 
-		if ( NULL == ( m_procInitPnp = 
+		if ( NULL == ( m_procInitPnp =
 						(LPFNDLL_INITPNP)GetProcAddress( m_hinst, "CAN_Init" ) ) ) {
 			setLastError( CANAL_ERROR_PROCADDRESS, GetLastError(), "Unable get procaddress for CAN_Init in peak dll" );
 			FreeLibrary( m_hinst );
@@ -1143,8 +1143,8 @@ bool CPeakObj::initialize( char *path, bool bPnp )
 		}
 	}
 	else {
-	
-		if ( NULL == ( m_procInit = 
+
+		if ( NULL == ( m_procInit =
 						(LPFNDLL_INIT)GetProcAddress( m_hinst, "CAN_Init" ) ) ) {
 			setLastError( CANAL_ERROR_PROCADDRESS, GetLastError(), "Unable get procaddress for CAN_Init in peak dll" );
 			FreeLibrary( m_hinst );
@@ -1154,8 +1154,8 @@ bool CPeakObj::initialize( char *path, bool bPnp )
 
 	}
 
- 
-	if ( NULL == ( m_procClose = 
+
+	if ( NULL == ( m_procClose =
 						(LPFNDLL_CLOSE)GetProcAddress( m_hinst, "CAN_Close" ) ) ) {
 		setLastError( CANAL_ERROR_PROCADDRESS, GetLastError(), "Unable get procaddress for CAN_Close in peak dll" );
 		FreeLibrary( m_hinst );
@@ -1164,7 +1164,7 @@ bool CPeakObj::initialize( char *path, bool bPnp )
 	}
 
 
-	if ( NULL == ( m_procStatus = 
+	if ( NULL == ( m_procStatus =
 						(LPFNDLL_STATUS)GetProcAddress( m_hinst, "CAN_Status" ) ) ) {
 		setLastError( CANAL_ERROR_PROCADDRESS, GetLastError(), "Unable get procaddress for CAN_Status in peak dll" );
 		FreeLibrary( m_hinst );
@@ -1172,7 +1172,7 @@ bool CPeakObj::initialize( char *path, bool bPnp )
 		return false;
 	}
 
-	if ( NULL == ( m_procWrite = 
+	if ( NULL == ( m_procWrite =
 						(LPFNDLL_WRITE)GetProcAddress( m_hinst, "CAN_Write" ) ) ) {
 		setLastError( CANAL_ERROR_PROCADDRESS, GetLastError(), "Unable get procaddress for CAN_Write in peak dll" );
 		FreeLibrary( m_hinst );
@@ -1180,7 +1180,7 @@ bool CPeakObj::initialize( char *path, bool bPnp )
 		return false;
 	}
 
-	if ( NULL == ( m_procRead = 
+	if ( NULL == ( m_procRead =
 						(LPFNDLL_READ)GetProcAddress( m_hinst, "CAN_Read" ) ) ) {
 		setLastError( CANAL_ERROR_PROCADDRESS, GetLastError(), "Unable get procaddress for CAN_Read in peak dll" );
 		FreeLibrary( m_hinst );
@@ -1188,7 +1188,7 @@ bool CPeakObj::initialize( char *path, bool bPnp )
 		return false;
 	}
 
-	if ( NULL == ( m_procVersionInfo = 
+	if ( NULL == ( m_procVersionInfo =
 						(LPFNDLL_VERSIONINFO)GetProcAddress( m_hinst, "CAN_VersionInfo" ) ) ) {
 		setLastError( CANAL_ERROR_PROCADDRESS, GetLastError(), "Unable get procaddress for CAN_VersionInfo in peak dll" );
 		FreeLibrary( m_hinst );
@@ -1200,7 +1200,7 @@ bool CPeakObj::initialize( char *path, bool bPnp )
 	m_bInit = true;
 
 	return true;
-	
+
 }
 
 
@@ -1223,27 +1223,27 @@ void *workThreadTransmit( void *pObject )
 
 	CPeakObj * pobj = ( CPeakObj *)pObject;
 	if ( NULL == pobj ) {
-#ifdef WIN32	
+#ifdef WIN32
 		ExitThread( errorCode ); // Fail
 #else
 		pthread_exit( &rv );
 #endif
 	}
-	
+
 	while ( pobj->m_bRun ) {
 
 		LOCK_MUTEX( pobj->m_peakMutex );
-		
+
 		// Noting to do if we should end...
 		if ( !pobj->m_bRun ) continue;
 
 		// Is there something to transmit...
 		int ret;
-		while ( ( NULL != pobj->m_transmitList.pHead ) && 
+		while ( ( NULL != pobj->m_transmitList.pHead ) &&
 				( NULL != pobj->m_transmitList.pHead->pObject ) ) {
 
 			canalMsg msg;
-			memcpy( &msg, pobj->m_transmitList.pHead->pObject, sizeof( canalMsg ) ); 
+			memcpy( &msg, pobj->m_transmitList.pHead->pObject, sizeof( canalMsg ) );
 			LOCK_MUTEX( pobj->m_transmitMutex );
 			dll_removeNode( &pobj->m_transmitList, pobj->m_transmitList.pHead );
 			UNLOCK_MUTEX( pobj->m_transmitMutex );
@@ -1266,7 +1266,7 @@ void *workThreadTransmit( void *pObject )
 			}
 
 			if ( PEAK_CAN_ERR_OK == ( ret = pobj->m_procWrite( &peakMsg ) ) ) {
-				
+
 				// Message sent successfully
 				// Update statistics
 				pobj->m_stat.cntTransmitData += msg.sizeData;
@@ -1275,17 +1275,17 @@ void *workThreadTransmit( void *pObject )
 
 			}
 			else {
-					
+
 				// Failed - put message back in queue front
 				PCANALMSG pMsg	= new canalMsg;
 				if ( NULL != pMsg ) {
-						
+
 					// Copy in data
 					memcpy ( pMsg, &msg, sizeof( canalMsg ) );
 
-					dllnode *pNode = new dllnode; 
+					dllnode *pNode = new dllnode;
 					if ( NULL != pNode ) {
-																
+
 						pNode->pObject = pMsg;
 						LOCK_MUTEX( pobj->m_transmitMutex );
 						dll_addNodeHead( &pobj->m_transmitList, pNode );
@@ -1299,7 +1299,7 @@ void *workThreadTransmit( void *pObject )
 
 				} // unable to allocate storage
 
-			} // failed to send message							
+			} // failed to send message
 
 		} // while data
 
@@ -1309,9 +1309,9 @@ void *workThreadTransmit( void *pObject )
 		UNLOCK_MUTEX( pobj->m_peakMutex );
 		SLEEP( 1 );
 
-		//}	 
-	
-	} // while 	 
+		//}
+
+	} // while
 
 
 #ifdef WIN32
@@ -1343,17 +1343,17 @@ void *workThreadReceive( void *pObject )
 
 	CPeakObj * pobj = ( CPeakObj *)pObject;
 	if ( NULL == pobj ) {
-#ifdef WIN32	
+#ifdef WIN32
 		ExitThread( errorCode ); // Fail
 #else
 		pthread_exit( &rv );
 #endif
 	}
-	
+
 	PeakCanMsg peakMsg;
 
 	while ( pobj->m_bRun ) {
-		
+
 		// Noting to do if we should end...
 		if ( !pobj->m_bRun ) continue;
 
@@ -1362,27 +1362,27 @@ void *workThreadReceive( void *pObject )
 
 			// Check if this is a status message
 			if ( PCAN_MSGTYPE_STATUS & peakMsg.msgType ) {
-				
+
 				continue; // TODO
 
-			}			
-			
+			}
+
 			// Write to the receive buffer
-			if (  pobj->m_receiveList.nCount < PEAKDRV_MAX_RCVMSG ) {					
-					
+			if (  pobj->m_receiveList.nCount < PEAKDRV_MAX_RCVMSG ) {
+
 				PCANALMSG pMsg	= new canalMsg;
 				pMsg->flags = 0;
 
 				if ( NULL != pMsg ) {
-						
-					dllnode *pNode = new dllnode; 
+
+					dllnode *pNode = new dllnode;
 					if ( NULL != pNode ) {
-							
+
 						pMsg->timestamp = GetTickCount() * 1000;
 						pMsg->id = peakMsg.id;
-						pMsg->sizeData = peakMsg.len;		
-						memcpy( pMsg->data, peakMsg.data, pMsg->sizeData ); 
-									
+						pMsg->sizeData = peakMsg.len;
+						memcpy( pMsg->data, peakMsg.data, pMsg->sizeData );
+
 						// If extended set extended flag
 						if ( PCAN_MSGTYPE_EXTENDED & peakMsg.msgType ) {
 							pMsg->flags |= CANAL_IDFLAG_EXTENDED;
@@ -1392,7 +1392,7 @@ void *workThreadReceive( void *pObject )
 						if ( PCAN_MSGTYPE_RTR & peakMsg.msgType ) {
 							pMsg->flags |= CANAL_IDFLAG_RTR;
 						}
-													
+
 						pNode->pObject = pMsg;
 						LOCK_MUTEX( pobj->m_receiveMutex );
 						dll_addNode( &pobj->m_receiveList, pNode );
@@ -1408,19 +1408,19 @@ void *workThreadReceive( void *pObject )
 						delete pMsg;
 
 					}
-				}				
-			} 
+				}
+			}
 			else {
 				// Full buffer
-				pobj->m_stat.cntOverruns++;	
+				pobj->m_stat.cntOverruns++;
 			}
 		} // while rcv msg
-				
-		
+
+
 		UNLOCK_MUTEX( pobj->m_peakMutex );
 		SLEEP( 1 );
-	
-	} // while 	 
+
+	} // while
 
 
 #ifdef WIN32

@@ -1,21 +1,21 @@
 // vscpd.cpp : Defines the class behaviour for the application.
 //
-// This file is part of the VSCP (http://www.vscp.org) 
+// This file is part of the VSCP (http://www.vscp.org)
 //
 // The MIT License (MIT)
-// 
+//
 // Copyright (C) 2000-2019 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in all
 // copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -76,7 +76,7 @@ void createFolderStuct( std::string& rootFolder );
 void _sighandler( int sig )
 {
     fprintf(stderr, "VSCPD: signal received, forced to stop.\n");
-    syslog( LOG_CRIT, "VSCPD: signal received, forced to stop.: %m");    
+    syslog( LOG_ERR, "VSCPD: signal received, forced to stop.: %m");
     gpobj->m_bQuit = true;
     gbStopDaemon = true;
     gbRestart = false;
@@ -92,24 +92,24 @@ int main( int argc, char **argv )
     int opt = 0;
     std::string rootFolder;    // Folder where VSCP files & folders will be located
     std::string strcfgfile;    // Points to XML configuration file
-    
+
     openlog( "vscpd", LOG_PERROR | LOG_PID | LOG_CONS, LOG_DAEMON );
 
     fprintf( stderr, "Prepare to start vscpd...\n" );
-    
+
     // Ignore return value from defunct processes d
     signal( SIGCHLD, SIG_IGN );
 
-    crcInit(); 
+    crcInit();
 
     rootFolder = "/srv/vscp/";
     strcfgfile = "/etc/vscp/vscpd.conf";
     gbStopDaemon = false;
 
-    while ( ( opt = getopt(argc, argv, "d:c:f:k:hgs") ) != -1 ) {        
+    while ( ( opt = getopt(argc, argv, "d:c:f:k:hgs") ) != -1 ) {
 
         switch (opt) {
- 
+
         case 's':
             fprintf( stderr, "Stay Hungry. Stay Foolish.\n" );
             fprintf( stderr, "I will ***NOT*** run as daemon! "
@@ -148,9 +148,9 @@ int main( int argc, char **argv )
 
     fprintf( stderr, "[vscpd] Configfile = %s\n",
                 (const char *)strcfgfile.c_str() );
-    
+
     if ( !init( strcfgfile, rootFolder ) ) {
-        syslog( LOG_CRIT, "[vscpd] Failed to configure. Terminating.\n");
+        syslog( LOG_ERR, "[vscpd] Failed to configure. Terminating.\n");
         fprintf( stderr, "VSCPD: Failed to configure. Terminating.\n");
         exit( -1 );
     }
@@ -173,7 +173,7 @@ int init(std::string& strcfgfile, std::string& rootFolder )
         // Fork child
         if (0 > (pid = fork())) {
             // Failure
-            syslog( LOG_CRIT, "Failed to fork.\n" );
+            syslog( LOG_ERR, "Failed to fork.\n" );
             return -1;
         }
         else if (0 != pid) {
@@ -183,7 +183,7 @@ int init(std::string& strcfgfile, std::string& rootFolder )
         sid = setsid(); // Become session leader
         if ( sid < 0 ) {
             // Failure
-            syslog( LOG_CRIT, "Failed to become session leader.\n" );
+            syslog( LOG_ERR, "Failed to become session leader.\n" );
             return -1;
         }
 
@@ -195,31 +195,31 @@ int init(std::string& strcfgfile, std::string& rootFolder )
         close(STDERR_FILENO);
 
         if ( open("/", 0 ) ) {
-            syslog( LOG_CRIT, "VSCPD: open / not 0: %m" );
+            syslog( LOG_ERR, "VSCPD: open / not 0: %m" );
         }
 
         dup2(0, 1);
         dup2(0, 2);
 
     }
-    
+
     signal(SIGHUP, _sighandler );
 
     // Write pid to file
     FILE *pFile;
     pFile = fopen("/var/run/vscpd/vscpd.pid", "w");
     if ( NULL != pFile ) {
-        syslog( LOG_CRIT, "%d\n", sid );
+        syslog( LOG_ERR, "%d\n", sid );
         fprintf( pFile, "%d\n", sid );
         fclose( pFile );
     }
-    
+
     // Create folder structure
     createFolderStuct( rootFolder );
 
     // Change working directory to root folder
     if ( chdir( (const char *)rootFolder.c_str() ) ) {
-        syslog( LOG_CRIT, "VSCPD: Failed to change dir to rootdir" );
+        syslog( LOG_ERR, "VSCPD: Failed to change dir to rootdir" );
         fprintf( stderr, "VSCPD: Failed to change dir to rootdir" );
         int n = chdir("/tmp"); // security measure
     }
@@ -250,7 +250,7 @@ int init(std::string& strcfgfile, std::string& rootFolder )
     my_action.sa_handler = _sighandler;
     my_action.sa_flags = SA_RESTART;
     sigaction(SIGTERM, &my_action, NULL);
-    
+
     // Redirect SIGHUP
     my_action.sa_handler = _sighandler;
     my_action.sa_flags = SA_RESTART;
@@ -260,10 +260,10 @@ int init(std::string& strcfgfile, std::string& rootFolder )
     do {
 
         gbRestart = false;
-        
+
         // Create the control object
         gpobj = new CControlObject();
-        
+
         // Set system key
         vscp_hexStr2ByteArray( gpobj->m_systemKey,
                                 32,
@@ -272,7 +272,7 @@ int init(std::string& strcfgfile, std::string& rootFolder )
         fprintf( stderr, "VSCPD: init.\n");
         if ( !gpobj->init( strcfgfile, rootFolder ) ) {
             fprintf(stderr, "Can't initialize daemon. Exiting.\n");
-            syslog(LOG_CRIT, "Can't initialize daemon. Exiting.");
+            syslog(LOG_ERR, "Can't initialize daemon. Exiting.");
             return FALSE;
         }
 
@@ -283,7 +283,7 @@ int init(std::string& strcfgfile, std::string& rootFolder )
         fprintf( stderr, "VSCPD: run.\n");
         if ( !gpobj->run() ) {
             fprintf(stderr, "Unable to start the VSCPD application. Exiting.\n");
-            syslog(LOG_CRIT, "Unable to start the VSCPD application. Exiting.");
+            syslog(LOG_ERR, "Unable to start the VSCPD application. Exiting.");
             return FALSE;
         }
 
@@ -291,21 +291,21 @@ int init(std::string& strcfgfile, std::string& rootFolder )
         //gbRestart = 0;
         /*if ( !gpobj->cleanup() ) {
             fprintf(stderr, "Unable to clean up the VSCPD application.\n");
-            syslog( LOG_CRIT, "Unable to clean up the VSCPD application.");
+            syslog( LOG_ERR, "Unable to clean up the VSCPD application.");
             return FALSE;
         }*/
-        
+
         fprintf( stderr, "VSCPD: cleanup done.\n");
 
         if ( gbRestart ) {
-            syslog( LOG_CRIT, "VSCPD: Will try to restart.\n" );
+            syslog( LOG_ERR, "VSCPD: Will try to restart.\n" );
             fprintf( stderr, "VSCPD: Will try to restart.\n" );
         }
         else {
-            syslog( LOG_CRIT, "VSCPD: Will end things.\n" );
+            syslog( LOG_ERR, "VSCPD: Will end things.\n" );
             fprintf( stderr, "VSCPD: Will end things.\n" );
         }
-                
+
         fprintf( stderr, "VSCPD: Deleting the control object.\n");
         delete gpobj;
 
@@ -313,9 +313,9 @@ int init(std::string& strcfgfile, std::string& rootFolder )
 
     // Remove the pid file
     unlink("/var/run/vscp/vscpd/vscpd.pid");
-    
+
     fprintf( stderr, "VSCPD: Yes we are leaving this world...\n");
- 
+
     gpobj = NULL;
 
     return TRUE;
@@ -378,98 +378,98 @@ void createFolderStuct( std::string& rootFolder )
 
     path = rootFolder + "/certs";
     if ( 0 == vscp_dirExists( path.c_str() ) ) {
-        mkdir( path.c_str(), 
+        mkdir( path.c_str(),
                 S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH );
     }
 
     path = rootFolder + "/web";
     if ( 0 == vscp_dirExists( path.c_str() ) ) {
-        mkdir( path.c_str(), 
+        mkdir( path.c_str(),
                 S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH );
     }
-    
+
     path = rootFolder + "/web/images";
     if ( 0 == vscp_dirExists( path.c_str() ) ) {
-        mkdir( path.c_str(), 
+        mkdir( path.c_str(),
                 S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH );
     }
-    
+
     path = rootFolder + "/web/js";
     if ( 0 == vscp_dirExists( path.c_str() ) ) {
-        mkdir( path.c_str(), 
+        mkdir( path.c_str(),
                 S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH );
     }
-    
+
     path = rootFolder + "/web/service";
     if ( 0 == vscp_dirExists( path.c_str() ) ) {
-        mkdir( path.c_str(), 
+        mkdir( path.c_str(),
                 S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH );
     }
 
     path = rootFolder + "/drivers";
     if ( 0 == vscp_dirExists( path.c_str() ) ) {
-        mkdir( path.c_str(), 
+        mkdir( path.c_str(),
                 S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH );
     }
-    
+
     path = rootFolder + "/drivers/level1";
     if ( 0 == vscp_dirExists( path.c_str() ) ) {
-        mkdir( path.c_str(), 
+        mkdir( path.c_str(),
                 S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH );
     }
-    
+
     path = rootFolder + "/drivers/level2";
     if ( 0 == vscp_dirExists( path.c_str() ) ) {
-        mkdir( path.c_str(), 
+        mkdir( path.c_str(),
                 S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH );
     }
-    
+
     path = rootFolder + "/drivers/level3";
     if ( 0 == vscp_dirExists( path.c_str() ) ) {
-        mkdir( path.c_str(), 
+        mkdir( path.c_str(),
                 S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH );
     }
-    
+
     path = rootFolder + "/actions";
     if ( 0 == vscp_dirExists( path.c_str() ) ) {
-        mkdir( path.c_str(), 
+        mkdir( path.c_str(),
                 S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH );
     }
-    
+
     path = rootFolder + "/scripts";
     if ( 0 == vscp_dirExists( path.c_str() ) ) {
-        mkdir( path.c_str(), 
+        mkdir( path.c_str(),
                 S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH );
     }
-    
+
     path = rootFolder + "/tables";
     if ( 0 == vscp_dirExists( path.c_str() ) ) {
-        mkdir( path.c_str(), 
+        mkdir( path.c_str(),
                 S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH );
     }
-    
+
     path = rootFolder + "/logs";
     if ( 0 == vscp_dirExists( path.c_str() ) ) {
-        mkdir( path.c_str(), 
+        mkdir( path.c_str(),
                 S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH );
     }
-    
+
     path = rootFolder + "/ux";
     if ( 0 == vscp_dirExists( path.c_str() ) ) {
-        mkdir( path.c_str(), 
+        mkdir( path.c_str(),
                 S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH );
     }
 
     path = rootFolder + "/upload";
     if ( 0 == vscp_dirExists( path.c_str() ) ){
-        mkdir( path.c_str(), 
+        mkdir( path.c_str(),
                 S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH );
     }
-    
+
     path = rootFolder + "/mdf";
     if ( 0 == vscp_dirExists( path.c_str() ) ) {
-        mkdir( path.c_str(), 
+        mkdir( path.c_str(),
                 S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH );
     }
-    
-}   
+
+}

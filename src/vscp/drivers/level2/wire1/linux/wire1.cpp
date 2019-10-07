@@ -57,7 +57,7 @@
 // Buffer for XML parser
 #define XML_BUFF_SIZE 10000
 
-// Forward declaration 
+// Forward declaration
 void *workerThread(void *pData);
 
 // Dallas 1-wire GUID base
@@ -124,11 +124,11 @@ CWire1::~CWire1()
 
     <setup>
         <sensor path="path to sensor data"
-                guid=""              
+                guid=""
                 interval=60"
                 unit="1"
                 index="0" />
-    </setup>        
+    </setup>
 */
 
 // ----------------------------------------------------------------------------
@@ -136,7 +136,7 @@ CWire1::~CWire1()
 int depth_setup_parser = 0;
 
 void
-startSetupParser( void *data, const char *name, const char **attr ) 
+startSetupParser( void *data, const char *name, const char **attr )
 {
     CWire1 *pObj = (CWire1 *)data;
     if (NULL == pObj) return;
@@ -173,7 +173,7 @@ startSetupParser( void *data, const char *name, const char **attr )
                 if (!attribute.empty()) {
                     psensor->m_unit = vscp_readStringValue(attribute);
                 }
-            }  
+            }
         }
 
         pObj->m_sensorList.push_back(psensor);
@@ -184,7 +184,7 @@ startSetupParser( void *data, const char *name, const char **attr )
 }
 
 void
-endSetupParser( void *data, const char *name ) 
+endSetupParser( void *data, const char *name )
 {
     depth_setup_parser--;
 }
@@ -372,9 +372,9 @@ CWire1::open(const char *pUsername,
             if (pthread_create(
                   &psensor->m_threadWork, NULL, workerThread, psensor)) {
 
-                delete psensor;      
+                delete psensor;
 
-                syslog(LOG_CRIT,
+                syslog(LOG_ERR,
                        "Controlobject: Unable to allocate memory for "
                        "controlobject client thread.");
                 return false;
@@ -392,7 +392,7 @@ CWire1::open(const char *pUsername,
         }
     }
 
-    // XML setup 
+    // XML setup
     std::string strSetupXML;
     strVariableName = m_prefix + std::string("_setup");
     if (VSCP_ERROR_SUCCESS ==
@@ -662,5 +662,3 @@ void *workerThread(void *pData)
 
     return NULL;
 }
-
-

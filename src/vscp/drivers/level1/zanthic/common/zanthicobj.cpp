@@ -1,21 +1,21 @@
-// zanthicobj.cpp:  
+// zanthicobj.cpp:
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version
 // 2 of the License, or (at your option) any later version.
-// 
-// This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2015 
+// This file is part of the VSCP (http://www.vscp.org)
+//
+// Copyright (C) 2000-2015
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // Copyright (C) 2000 Steven D. Letkeman/Zanthic Technologies Inc.
-// 
+//
 // This file is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with this file see the file COPYING.  If not, write to
 // the Free Software Foundation, 59 Temple Place - Suite 330,
@@ -47,7 +47,7 @@ void *workThreadReceive( void *pObject );
 //
 
 CZanthicObj::CZanthicObj()
-{ 
+{
     // No device yet
     m_phDeviceHandle = NULL;
 
@@ -59,7 +59,7 @@ CZanthicObj::CZanthicObj()
     m_drvIdx = 0;
 
 #ifdef WIN32
-    
+
     m_hTreadReceive = 0;
     m_hTreadTransmit = 0;
 
@@ -69,7 +69,7 @@ CZanthicObj::CZanthicObj()
     m_transmitMutex = CreateMutex( NULL, true, CANAL_DLL_ZANTHICDRV_TRANSMIT_MUTEX );
 
 #else
-    
+
     m_flog = NULL;
     pthread_mutex_init( &m_ixxMutex, NULL );
     pthread_mutex_init( &m_receiveMutex, NULL );
@@ -88,17 +88,17 @@ CZanthicObj::CZanthicObj()
 CZanthicObj::~CZanthicObj()
 {
     close();
-    
+
     LOCK_MUTEX( m_transmitMutex );
     dll_removeAllNodes( &m_transmitList );
-    
+
     LOCK_MUTEX( m_receiveMutex );
     dll_removeAllNodes( &m_receiveList );
 
 
-#ifdef WIN32	
-    
-    if ( NULL != m_zanthicMutex ) CloseHandle( m_zanthicMutex );	
+#ifdef WIN32
+
+    if ( NULL != m_zanthicMutex ) CloseHandle( m_zanthicMutex );
     if ( NULL != m_receiveMutex ) CloseHandle( m_receiveMutex );
     if ( NULL != m_transmitMutex ) CloseHandle( m_transmitMutex );
 
@@ -122,14 +122,14 @@ CZanthicObj::~CZanthicObj()
 // filename
 //-----------------------------------------------------------------------------
 // Parameters for the driver as a string on the following form
-//		
+//
 // "bus-speed"
 //
 //
 // bus-speed
 // =========
 // One of the predefined bitrates can be set here
-// 
+//
 //  10 for 10 Kbs
 //  20 for 20 Kbs
 //	50 for 50 Kbs
@@ -141,8 +141,8 @@ CZanthicObj::~CZanthicObj()
 //  1000 for 1000 Mbs
 //
 //
-// 
-// flags 
+//
+// flags
 //-----------------------------------------------------------------------------
 //
 // bit 0
@@ -164,7 +164,7 @@ CZanthicObj::~CZanthicObj()
 // bit 4
 // =====
 //
-// 
+//
 
 bool CZanthicObj::open( const char *szFileName, unsigned long flags )
 {
@@ -182,26 +182,26 @@ bool CZanthicObj::open( const char *szFileName, unsigned long flags )
     m_stat.cntBusOff = 0;
     m_stat.cntBusWarnings = 0;
     m_stat.cntOverruns = 0;
-    
+
     // if open we have noting to do
     if ( m_bRun ) return true;
 
 
 
     // Bus-Speed
-    
+
 #ifdef WIN32
     strcpy_s( szDrvParams, MAX_PATH, szFileName );
     p = strtok_s( szDrvParams, ";", &next_token );
 #else
     strcpy( szDrvParams, szFileName );
-    p = strtok( szDrvParams, ";" );	
+    p = strtok( szDrvParams, ";" );
 #endif
-    
-    if ( NULL != p ) {		
+
+    if ( NULL != p ) {
         if ( ( NULL != strstr( p, "0x" ) ) || ( NULL != strstr( p, "0X" ) )  ) {
 #ifdef WIN32
-            sscanf_s( p + 2, "%x", &busspeed );		
+            sscanf_s( p + 2, "%x", &busspeed );
 #else
             sscanf( p + 2, "%x", &busspeed );
 #endif
@@ -233,33 +233,33 @@ bool CZanthicObj::open( const char *szFileName, unsigned long flags )
         setDeviceFilter( i, 0x80000000 );
     }
 
-    // Run run run ..... 
+    // Run run run .....
     m_bRun = true;
- 
+
 #ifdef WIN32
-    
-    // Start write thread 
+
+    // Start write thread
     DWORD threadId;
-    if ( NULL == 
+    if ( NULL ==
             ( m_hTreadTransmit = CreateThread(	NULL,
                                         0,
                                         (LPTHREAD_START_ROUTINE) workThreadTransmit,
                                         this,
                                         0,
-                                        &threadId ) ) ) { 
+                                        &threadId ) ) ) {
         // Failure
         close();
         return false;
     }
 
-    // Start read thread 
-    if ( NULL == 
+    // Start read thread
+    if ( NULL ==
             ( m_hTreadReceive = CreateThread(	NULL,
                                         0,
                                         (LPTHREAD_START_ROUTINE) workThreadReceive,
                                         this,
                                         0,
-                                        &threadId ) ) ) { 
+                                        &threadId ) ) ) {
         // Failure
         close();
         return  false;
@@ -269,21 +269,21 @@ bool CZanthicObj::open( const char *szFileName, unsigned long flags )
     UNLOCK_MUTEX( m_zanthicMutex );
     UNLOCK_MUTEX( m_receiveMutex );
     UNLOCK_MUTEX( m_transmitMutex );
-    
+
 
 #else // LINUX
 
 
     pthread_attr_t thread_attr;
     pthread_attr_init( &thread_attr );
-    
+
     // Create the log write thread.
     if ( pthread_create( &m_threadId,
                                 &thread_attr,
                                 workThreadTransmit,
-                                this ) ) {	
-                        
-        syslog( LOG_CRIT, "zanthicdrv: Unable to create zanthicdrv write thread.");
+                                this ) ) {
+
+        syslog( LOG_ERR, "zanthicdrv: Unable to create zanthicdrv write thread.");
         rv = false;
             fclose( m_flog );
     }
@@ -293,13 +293,13 @@ bool CZanthicObj::open( const char *szFileName, unsigned long flags )
     if ( pthread_create( &m_threadId,
                             &thread_attr,
                             workThreadReceive,
-                            this ) ) {	
-                        
-        syslog( LOG_CRIT, "zanthicdrv: Unable to create zanthicdrv receive thread.");
+                            this ) ) {
+
+        syslog( LOG_ERR, "zanthicdrv: Unable to create zanthicdrv receive thread.");
         rv = false;
         fclose( m_flog );
     }
-    
+
     // We are open
     m_bOpen = true;
 
@@ -311,7 +311,7 @@ bool CZanthicObj::open( const char *szFileName, unsigned long flags )
     return true;
 }
 
- 
+
 //////////////////////////////////////////////////////////////////////
 // close
 //
@@ -320,20 +320,20 @@ bool CZanthicObj::close( void )
 {
     // Do nothing if already terminated
     if ( !m_bRun ) return false;
-    
+
     m_bRun = false;
 
     // Close the device
     closeDriver();
- 
+
     UNLOCK_MUTEX( m_zanthicMutex );
         LOCK_MUTEX( m_zanthicMutex );
 
-    
-    // terminate the worker thread 
+
+    // terminate the worker thread
 #ifdef WIN32
     DWORD rv;
-    
+
     // Wait for transmit thread to terminate
     while ( true ) {
         GetExitCodeThread( m_hTreadTransmit, &rv );
@@ -345,7 +345,7 @@ bool CZanthicObj::close( void )
         GetExitCodeThread( m_hTreadReceive, &rv );
         if ( STILL_ACTIVE != rv ) break;
     }
-    
+
 #else
     int *trv;
     pthread_join( m_threadIdReceive, (void **)&trv );
@@ -370,7 +370,7 @@ bool CZanthicObj::doFilter( canalMsg *pcanalMsg )
     // Set bit 32 if extended message
     if ( pcanalMsg->flags | CANAL_IDFLAG_EXTENDED ) {
         msgid &= 0x1fffffff;
-        msgid |= 80000000;	
+        msgid |= 80000000;
     }
     else {
         // Standard message
@@ -378,8 +378,8 @@ bool CZanthicObj::doFilter( canalMsg *pcanalMsg )
     }
 
     // Set bit 31 if RTR
-    if ( pcanalMsg->flags | CANAL_IDFLAG_RTR ) { 
-        msgid |= 40000000;	
+    if ( pcanalMsg->flags | CANAL_IDFLAG_RTR ) {
+        msgid |= 40000000;
     }
 
     return !( ( m_filter ^ msgid ) & m_mask );
@@ -416,19 +416,19 @@ bool CZanthicObj::setMask( unsigned long mask )
 bool CZanthicObj::writeMsg( canalMsg *pMsg )
 {
     bool rv = false;
-    
+
     if ( NULL != pMsg ) {
 
         // Filter
         //if ( !doFilter( pMsg ) ) return true;
-        
+
         // Must be room for the message
         if ( m_transmitList.nCount < ZANTHIC_MAX_SNDMSG ) {
 
             dllnode *pNode = new dllnode;
-            
+
             if ( NULL != pNode ) {
-            
+
                 canalMsg *pcanalMsg = new canalMsg;
 
                 pNode->pObject = pcanalMsg;
@@ -442,7 +442,7 @@ bool CZanthicObj::writeMsg( canalMsg *pMsg )
                 LOCK_MUTEX( m_transmitMutex );
                 dll_addNode( &m_transmitList, pNode );
                 UNLOCK_MUTEX( m_transmitMutex );
- 
+
                 rv = true;
 
             }
@@ -452,7 +452,7 @@ bool CZanthicObj::writeMsg( canalMsg *pMsg )
         }
     }
 
-    return rv;		
+    return rv;
 }
 
 
@@ -464,9 +464,9 @@ bool CZanthicObj::readMsg( canalMsg *pMsg )
 {
     bool rv = false;
 
-    if ( ( NULL != m_receiveList.pHead ) && 
+    if ( ( NULL != m_receiveList.pHead ) &&
             ( NULL != m_receiveList.pHead->pObject ) ) {
-    
+
         memcpy( pMsg, m_receiveList.pHead->pObject, sizeof( canalMsg ) );
         LOCK_MUTEX( m_receiveMutex );
         dll_removeNode( &m_receiveList, m_receiveList.pHead );
@@ -486,11 +486,11 @@ bool CZanthicObj::readMsg( canalMsg *pMsg )
 int CZanthicObj::dataAvailable( void )
 {
     int cnt;
-    
+
     LOCK_MUTEX( m_receiveMutex );
-    cnt = dll_getNodeCount( &m_receiveList );	
+    cnt = dll_getNodeCount( &m_receiveList );
     UNLOCK_MUTEX( m_receiveMutex );
- 
+
     return cnt;
 }
 
@@ -500,7 +500,7 @@ int CZanthicObj::dataAvailable( void )
 //
 
 bool CZanthicObj::getStatistics( PCANALSTATISTICS pCanalStatistics )
-{	
+{
     // Must be a valid pointer
     if ( NULL == pCanalStatistics ) return false;
 
@@ -517,7 +517,7 @@ bool CZanthicObj::getStatus( PCANALSTATUS pCanalStatus )
 {
     // Must be a valid pointer
     if ( NULL == pCanalStatus ) return false;
- 
+
     // Nothing at the moment
     pCanalStatus->channel_status = 0;
 
@@ -536,9 +536,9 @@ bool CZanthicObj::getStatus( PCANALSTATUS pCanalStatus )
 ///////////////////////////////////////////////////////////////////////////////
 //	resetDevice
 //
-short CZanthicObj::getDeviceInfo( uint8_t *Version, 
+short CZanthicObj::getDeviceInfo( uint8_t *Version,
                                     uint8_t *Feature,
-                                    char *pManufact, 
+                                    char *pManufact,
                                     uint8_t *CANCont )
 {
     uint8_t outbuffer[ 3 ];
@@ -556,17 +556,17 @@ short CZanthicObj::getDeviceInfo( uint8_t *Version,
 
     if ( GETSTATSRESP == inbuffer[0] )  {
 
-        *Version++ = inbuffer[1];  
-        *Version++ = inbuffer[2];  
+        *Version++ = inbuffer[1];
+        *Version++ = inbuffer[2];
 
         *Feature = inbuffer[3];
 
 #ifdef WIN32
-        strcpy_s( pManufact, sizeof( pManufact ), (char*)inbuffer + 4 );	
+        strcpy_s( pManufact, sizeof( pManufact ), (char*)inbuffer + 4 );
 #else
         strcpy( pManufact, (char*)inbuffer + 4 );
 #endif
-    
+
         *CANCont++ = 1;              // hardcoded for one device for now
         *CANCont++ = *(inbuffer + 4 + strlen( pManufact ) );
         return(1);
@@ -720,7 +720,7 @@ short CZanthicObj::sendMsgToDevice( uint32_t ID, uint8_t CB1, uint8_t CB2, uint8
 
 short CZanthicObj::readReg( uint8_t Address, uint8_t Numbytes, uint8_t *buffer)
 {
-    uint8_t outbuffer[4];	
+    uint8_t outbuffer[4];
     uint8_t inbuffer[65];
     short int result,c;
 
@@ -800,7 +800,7 @@ short CZanthicObj::getMsgFromDevice( void )
 
     outbuffer[0] = 0;
     outbuffer[1] = GETCANMESREQ;  // command
-  
+
     result = doCommand( outbuffer, 2, inbuffer );
     if ( result < 0 ) return( result );			// return error
 
@@ -809,11 +809,11 @@ short CZanthicObj::getMsgFromDevice( void )
 
     uint8_t *p = inbuffer + 3;	// Point at firts message
     cntMsg = inbuffer[ 2 ]; // number of packets in the buffer
- 
+
     for ( int i=0; i<cntMsg; i++ ) {
 
         sizeMsg = *p; 	// Packetsize
-    
+
         // [0] = number of bytes in message
         // [1] = Control Byte 1, upper 4 bits=message object, lower 4=number of bytes of data
         // [2] = Control Byte 2
@@ -822,32 +822,32 @@ short CZanthicObj::getMsgFromDevice( void )
         // bit 2 Filter 2 (applies to Rec Buffer 1 only)
         // bit 3 RXRTR (taken from bit 3, RXBxCTRL)
         // bit 4 SRR (taken from bit 4, RXBnSIDL)
-        // bit 5 Reserved 
+        // bit 5 Reserved
         // bit 6 RTR (taken from bit 6, RXBnDLC)
         // bit 7 IDE (taken from bit 3, RXBnSIDL)
         // [3] = CAN ID MSB
-        // [4] = CAN ID 
-        // [5] = CAN ID 
+        // [4] = CAN ID
+        // [5] = CAN ID
         // [6] = CAN ID LSB
         // [7+] = data bytes as required
-        if (  m_receiveList.nCount < ZANTHIC_MAX_RCVMSG ) {					
-                
+        if (  m_receiveList.nCount < ZANTHIC_MAX_RCVMSG ) {
+
             PCANALMSG pMsg	= new canalMsg;
             pMsg->flags = 0;
 
             if ( NULL != pMsg ) {
-                    
-                dllnode *pNode = new dllnode; 
+
+                dllnode *pNode = new dllnode;
                 if ( NULL != pNode ) {
-                        
+
                     pMsg->timestamp = 0;
                     pMsg->id = ( p[ 3 ] << 24 ) + ( p[ 4 ]<<16 ) + ( p[ 5 ]<<8 ) + p[ 6 ];
-                    
+
                     // Check for extended message
                     if ( 0x80 & p[ 2 ] ) {
                         pMsg->flags |= 	CANAL_IDFLAG_EXTENDED;
                     }
-                    
+
                     // Check for RTR message
                     if ( 0x40 & p[ 2 ] ) {
                         pMsg->flags |= 	CANAL_IDFLAG_RTR;
@@ -874,13 +874,13 @@ short CZanthicObj::getMsgFromDevice( void )
         else {
 
             // Full buffer
-            m_stat.cntOverruns++;	
+            m_stat.cntOverruns++;
 
         }
 
         p += sizeMsg;
     }
- 
+
     return( 1 );
 }
 
@@ -934,7 +934,7 @@ short CZanthicObj::clearReceiveBuffer( void )
     result = doCommand( outbuffer, 2, inbuffer );
     if ( result < 0 )  return( result ); // return error
 
-    if ( CLEARMESRESP == inbuffer[ 0 ] ) { 
+    if ( CLEARMESRESP == inbuffer[ 0 ] ) {
         return ( 1 );
     }
     else {
@@ -993,7 +993,7 @@ short CZanthicObj::setDeviceMask( uint32_t mask, uint8_t cb1 )
 
     // Must be open
     if ( NULL == m_phDeviceHandle ) return ZANTHIC_ERROR_GENERAL;
- 
+
     outbuffer[0] = 0;
     outbuffer[1] = RECCANREQ;  // command
     outbuffer[2] = ( uint8_t )( mask >> 24);
@@ -1031,7 +1031,7 @@ short CZanthicObj::doCommand( uint8_t *outbuffer, uint8_t numbytes, uint8_t *inb
                                         IOCTL_EZUSB_BULK_WRITE,
                                         &bulkControl,
                                         sizeof( BULK_TRANSFER_CONTROL ),
-                                        outbuffer,		
+                                        outbuffer,
                                         outPacketSize,
                                         &nBytes,
                                         NULL ) ) ) {
@@ -1056,8 +1056,8 @@ short CZanthicObj::doCommand( uint8_t *outbuffer, uint8_t numbytes, uint8_t *inb
         return ZANTHIC_ERROR_BULK_READ;
     }
 
- 
-    return( ( short )nBytes );  
+
+    return( ( short )nBytes );
 }
 
 
@@ -1088,7 +1088,7 @@ bool CZanthicObj::openDriver( void )
     if ( m_drvIdx > 9 ) return false;
 
     strng[ 6 ] = 0x30 + m_drvIdx;  // 0-9
-   
+
 #ifdef WIN32
     strcat_s( completeDeviceName, sizeof( completeDeviceName ), "\\\\.\\" );
     strcat_s( completeDeviceName, sizeof( completeDeviceName ), strng  );
@@ -1096,8 +1096,8 @@ bool CZanthicObj::openDriver( void )
     strcat (completeDeviceName, "\\\\.\\" );
     strcat (completeDeviceName,	strng );
 #endif
-   
-    if ( INVALID_HANDLE_VALUE == 
+
+    if ( INVALID_HANDLE_VALUE ==
             ( m_phDeviceHandle = CreateFile( completeDeviceName,
                                                 GENERIC_WRITE,
                                                 FILE_SHARE_WRITE,
@@ -1107,7 +1107,7 @@ bool CZanthicObj::openDriver( void )
                                                 NULL ) ) ) {
         return false;
     }
-    
+
    return true;
 }
 
@@ -1149,26 +1149,26 @@ void *workThreadTransmit( void *pObject )
 
     uint32_t id;
     uint8_t cb1,cb2;	// Transmit control bytes
-    
+
     while ( pobj->m_bRun ) {
 
         LOCK_MUTEX( pobj->m_zanthicMutex );
-        
+
         // Noting to do if we should end...
         if ( !pobj->m_bRun ) continue;
 
         // Is there something to transmit
-        while ( ( NULL != pobj->m_transmitList.pHead ) && 
+        while ( ( NULL != pobj->m_transmitList.pHead ) &&
                 ( NULL != pobj->m_transmitList.pHead->pObject ) ) {
 
             canalMsg msg;
-            memcpy( &msg, pobj->m_transmitList.pHead->pObject, sizeof( canalMsg ) ); 
+            memcpy( &msg, pobj->m_transmitList.pHead->pObject, sizeof( canalMsg ) );
             LOCK_MUTEX( pobj->m_transmitMutex );
             dll_removeNode( &pobj->m_transmitList, pobj->m_transmitList.pHead );
             UNLOCK_MUTEX( pobj->m_transmitMutex );
-            
+
             id = msg.id;
-    
+
             // Mark Extended if needed
             if ( msg.flags & CANAL_IDFLAG_EXTENDED ) {
                 id |= 0x80000000;
@@ -1178,11 +1178,11 @@ void *workThreadTransmit( void *pObject )
             if ( msg.flags & CANAL_IDFLAG_RTR ) {
                 id |= 0x40000000;
             }
-            
+
             cb1 = 0;
             cb2 = msg.sizeData;
             if ( ZANTECH_ACK == pobj->sendMsgToDevice( id, cb1, cb2, msg.data ) ) {
-                
+
                 // Message sent successfully
                 // Update statistics
                 pobj->m_stat.cntTransmitData += msg.sizeData;
@@ -1190,17 +1190,17 @@ void *workThreadTransmit( void *pObject )
 
             }
             else {
-                
+
                 // Failed - put message back in queue front
                 PCANALMSG pMsg	= new canalMsg;
                 if ( NULL != pMsg ) {
-                    
+
                     // Copy in data
                     memcpy ( pMsg, &msg, sizeof( canalMsg ) );
 
-                    dllnode *pNode = new dllnode; 
+                    dllnode *pNode = new dllnode;
                     if ( NULL != pNode ) {
-                                                            
+
                         pNode->pObject = pMsg;
                         LOCK_MUTEX( pobj->m_transmitMutex );
                         dll_addNodeHead( &pobj->m_transmitList, pNode );
@@ -1218,7 +1218,7 @@ void *workThreadTransmit( void *pObject )
         UNLOCK_MUTEX( pobj->m_zanthicMutex );
         SLEEP( 1 );
 
-    } // while 	 
+    } // while
 
 
 #ifdef WIN32
@@ -1251,21 +1251,21 @@ void *workThreadReceive( void *pObject )
 
     CZanthicObj * pobj = ( CZanthicObj *)pObject;
     if ( NULL == pobj ) {
-#ifdef WIN32	
+#ifdef WIN32
         ExitThread( errorCode ); // Fail
 #else
         pthread_exit( &rv );
 #endif
     }
-    
+
     while ( pobj->m_bRun ) {
-    
+
         // Noting to do if we should end...
         if ( !pobj->m_bRun ) continue;
 
         LOCK_MUTEX( pobj->m_zanthicMutex );
         if ( ( cntMsg = pobj->getMsgCntFromDevice() ) > 0 ) {
-        
+
             // There are messages to fetch
             pobj->getMsgFromDevice();
 
@@ -1274,7 +1274,7 @@ void *workThreadReceive( void *pObject )
         UNLOCK_MUTEX( pobj->m_zanthicMutex );
         SLEEP( 1 );
 
-    } // while 	 
+    } // while
 
 
 #ifdef WIN32

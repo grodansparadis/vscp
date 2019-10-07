@@ -52,7 +52,7 @@
 // Buffer for XML parser
 #define XML_BUFF_SIZE 10000
 
-// Forward declaration 
+// Forward declaration
 void *workerThread(void *pData);
 
 //////////////////////////////////////////////////////////////////////
@@ -127,7 +127,7 @@ Clmsensors::~Clmsensors()
             divide="divide data to use for sensor data"
             offset="Offset for sensor data file read" />
     <sensor ....... />
-    <sensor ....... />  
+    <sensor ....... />
 
     </setup>
 */
@@ -137,7 +137,7 @@ Clmsensors::~Clmsensors()
 int depth_setup_parser = 0;
 
 void
-startSetupParser( void *data, const char *name, const char **attr ) 
+startSetupParser( void *data, const char *name, const char **attr )
 {
     Clmsensors *pObj = (Clmsensors *)data;
     if (NULL == pObj) return;
@@ -240,7 +240,7 @@ startSetupParser( void *data, const char *name, const char **attr )
 }
 
 void
-endSetupParser( void *data, const char *name ) 
+endSetupParser( void *data, const char *name )
 {
     depth_setup_parser--;
 }
@@ -505,7 +505,7 @@ Clmsensors::open(const char *pUsername,
         }
     }
 
-    // XML setup 
+    // XML setup
     std::string strSetupXML;
     std::string strName = m_prefix + std::string("_setup");
     if (VSCP_ERROR_SUCCESS ==
@@ -542,7 +542,7 @@ Clmsensors::open(const char *pUsername,
         if (pthread_create(
               &pthreadObj->m_pthreadWork, NULL, workerThread, pthreadObj)) {
 
-            syslog(LOG_CRIT,
+            syslog(LOG_ERR,
                    "Unable to allocate memory for "
                    "controlobject client thread.");
             return false;

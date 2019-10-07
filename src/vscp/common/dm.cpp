@@ -2297,7 +2297,7 @@ dmElement::handleEscapes(vscpEvent *pEvent, std::string &str)
                         FILE *fp;
                         fp = fopen(path.c_str(), "r");
                         if (NULL == fp) {
-                            syslog(LOG_CRIT,
+                            syslog(LOG_ERR,
                                    "Failed to open "
                                    "configuration "
                                    "file [%s]",
@@ -7369,7 +7369,7 @@ CDM::loadFromXML(void)
 
     // File must exist
     if (!vscp_fileExists(m_staticXMLPath)) {
-        syslog(LOG_CRIT,
+        syslog(LOG_ERR,
                "[DM] Decision matrix file does not exist. %s",
                m_staticXMLPath.c_str());
         return false;
@@ -7378,7 +7378,7 @@ CDM::loadFromXML(void)
     FILE *fpxml;
     fpxml = fopen(m_staticXMLPath.c_str(), "r");
     if (NULL == fpxml) {
-        syslog(LOG_CRIT,
+        syslog(LOG_ERR,
                "[DM] Failed to open decision matrix file [%s]",
                m_staticXMLPath.c_str());
         return false;
@@ -7394,7 +7394,7 @@ CDM::loadFromXML(void)
     if (NULL == buf) {
         XML_ParserFree(xmlParser);
         fclose(fpxml);
-        syslog(LOG_CRIT,
+        syslog(LOG_ERR,
                "[DM ]Failed to allocate buffer for decision matrix "
                "file [%s]",
                m_staticXMLPath.c_str());
@@ -8253,22 +8253,22 @@ actionThread_Table(void *pData)
 
 #if 0 // TEST Get range of data
     xxPrintf( ">>>>>" + vscpdatetime::Now().getISODateTime() + "" );
-    
+
     sqlite3_stmt *ppStmt;
     vscpdatetime from,to;
     from.set"0000-01-01 00:00:00";
     to.set"9999-06-01 00:00:00";
-   
+
     if ( pTable->prepareRangeOfData( from, to, &ppStmt, true ) ) {
-        
+
         std::string rowData;
         while ( pTable->getRowRangeOfData( ppStmt, rowData ) ) {
             syslog(  LOG_ERR, "[DM] " + rowData  );
         }
-        
+
         pTable->finalizeRangeOfData( ppStmt );
     }
-    
+
     xxPrintf( ">>>>>" + vscpdatetime::Now().getISODateTime() + "" );
 #endif
 

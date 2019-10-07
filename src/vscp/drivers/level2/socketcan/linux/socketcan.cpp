@@ -69,7 +69,7 @@
 // Buffer for XML parser
 #define XML_BUFF_SIZE 10000
 
-// Forward declaration 
+// Forward declaration
 void *workerThread(void *pData);
 
 //////////////////////////////////////////////////////////////////////
@@ -120,7 +120,7 @@ Csocketcan::~Csocketcan()
 int depth_setup_parser = 0;
 
 void
-startSetupParser( void *data, const char *name, const char **attr ) 
+startSetupParser( void *data, const char *name, const char **attr )
 {
     Csocketcan *pObj = (Csocketcan *)data;
     if (NULL == pObj) return;
@@ -151,7 +151,7 @@ startSetupParser( void *data, const char *name, const char **attr )
                         syslog(LOG_ERR, "Unable to read event receive mask.");
                     }
                 }
-            } 
+            }
         }
 
     }
@@ -160,7 +160,7 @@ startSetupParser( void *data, const char *name, const char **attr )
 }
 
 void
-endSetupParser( void *data, const char *name ) 
+endSetupParser( void *data, const char *name )
 {
     depth_setup_parser--;
 }
@@ -191,7 +191,7 @@ Csocketcan::open(const char *pUsername,
 
     // Parse the configuration string. It should
     // have the following form path
-    
+
     std::deque<std::string> tokens;
     vscp_split( tokens, std::string(pConfig), ";" );
 
@@ -267,7 +267,7 @@ Csocketcan::open(const char *pUsername,
 
     m_srv.doClrInputQueue();
 
-    // XML setup 
+    // XML setup
     std::string strSetupXML;
     strName = m_prefix + std::string("_setup");
     if (VSCP_ERROR_SUCCESS ==
@@ -290,12 +290,12 @@ Csocketcan::open(const char *pUsername,
     }
 
     // start the workerthread
-    if ( pthread_create( &m_threadWork, 
-                            NULL, 
-                            workerThread, 
+    if ( pthread_create( &m_threadWork,
+                            NULL,
+                            workerThread,
                             this ) ) {
- 
-        syslog( LOG_CRIT, "Unable to start worker thread." );
+
+        syslog( LOG_ERR, "Unable to start worker thread." );
         return false;
     }
 
@@ -355,7 +355,7 @@ void *workerThread(void *pData)
 
     Csocketcan *pObj = (Csocketcan *)pData;
     if (NULL == pObj) {
-        syslog(LOG_CRIT, "No object data supplied for worker thread");
+        syslog(LOG_ERR, "No object data supplied for worker thread");
         return NULL;
     }
 
@@ -547,5 +547,3 @@ void *workerThread(void *pData)
 
     return NULL;
 }
-
-

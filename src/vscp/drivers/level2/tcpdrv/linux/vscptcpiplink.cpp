@@ -444,13 +444,13 @@ CTcpipLink::open(const char *pUsername,
     // start the workerthread
     if (pthread_create(m_pthreadSend, NULL, workerThreadSend, this)) {
 
-        syslog(LOG_CRIT, "Unable to start send worker thread.");
+        syslog(LOG_ERR, "Unable to start send worker thread.");
         return false;
     }
 
     if (pthread_create(m_pthreadReceive, NULL, workerThreadReceive, this)) {
 
-        syslog(LOG_CRIT, "Unable to start receive worker thread.");
+        syslog(LOG_ERR, "Unable to start receive worker thread.");
         return false;
     }
 

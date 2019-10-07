@@ -143,11 +143,11 @@ bool CCAN232Obj::open(const char *pDevice, unsigned long flags)
     // Open Serial Port
     //----------------------------------------------------------------------
     if (!m_can232obj.m_comm.open(modemDevice)) {
-        syslog(LOG_CRIT, "can232obj: Open [%s] failed\n", modemDevice);
+        syslog(LOG_ERR, "can232obj: Open [%s] failed\n", modemDevice);
         return 0;
     }
 
-    syslog(LOG_CRIT, "can232obj: Open [%s] successful\n", modemDevice);
+    syslog(LOG_ERR, "can232obj: Open [%s] successful\n", modemDevice);
     rv = true;
 
     //----------------------------------------------------------------------
@@ -242,7 +242,7 @@ bool CCAN232Obj::open(const char *pDevice, unsigned long flags)
         printf("]\n");
         SLEEP(100);
         if (try_count++ > 10) {
-            syslog(LOG_CRIT, "can232obj: Unable to Close CAN bus before Open!\n");
+            syslog(LOG_ERR, "can232obj: Unable to Close CAN bus before Open!\n");
             m_can232obj.m_bRun = false;
             m_can232obj.m_comm.close();
             return 0;
@@ -294,14 +294,14 @@ bool CCAN232Obj::open(const char *pDevice, unsigned long flags)
         }
         SLEEP(100);
         if (++try_count > 10) {
-            syslog(LOG_CRIT, "can232obj: Unable to get can232 dongle version!\n");
+            syslog(LOG_ERR, "can232obj: Unable to get can232 dongle version!\n");
             m_can232obj.m_bRun = false;
             m_can232obj.m_comm.close();
             return 0;
         }
     }
     printf("Get Version: [%d]\n", m_can232obj.m_version);
-    syslog(LOG_CRIT, "can232obj: Get Version: [%d]\n", m_can232obj.m_version);
+    syslog(LOG_ERR, "can232obj: Get Version: [%d]\n", m_can232obj.m_version);
 
 
     //----------------------------------------------------------------------
@@ -375,10 +375,10 @@ bool CCAN232Obj::open(const char *pDevice, unsigned long flags)
         }
     }
     printf("Auto pool %s\n", m_can232obj.m_bAuto ? "enabled" : "disabled");
-    syslog(LOG_CRIT, "can232obj: Auto pool %s", m_can232obj.m_bAuto ? "enabled" : "disabled");
+    syslog(LOG_ERR, "can232obj: Auto pool %s", m_can232obj.m_bAuto ? "enabled" : "disabled");
 
     //----------------------------------------------------------------------
-    // Start thread 
+    // Start thread
     //----------------------------------------------------------------------
     if (pthread_create(&m_threadId,
             &thread_attr,
@@ -424,14 +424,14 @@ int CCAN232Obj::close(void)
 	Sleep( 1000 );
 #else
 	sleep( 1 );
-#endif	
-	
+#endif
+
     int *trv;
     pthread_join(m_threadId, (void **) &trv);
     pthread_mutex_destroy(&m_can232ObjMutex);
 
     m_can232obj.m_comm.close();
-    syslog(LOG_CRIT, "can232obj: close port\n");
+    syslog(LOG_ERR, "can232obj: close port\n");
 
     return rv;
 }
@@ -490,7 +490,7 @@ int CCAN232Obj::readMsg(canalMsg *pMsg)
 
         rv = true;
     }
-    
+
     return rv;
 }
 
@@ -638,7 +638,7 @@ void *workThread(void *pObject)
     while (pcan232obj->m_can232obj.m_bRun) {
 
         ///////////////////////////////////////////////////////////////////////
-        //                                                              Receive 
+        //                                                              Receive
         ///////////////////////////////////////////////////////////////////////
 
         LOCK_MUTEX(pcan232obj->m_can232ObjMutex);
@@ -665,7 +665,7 @@ void *workThread(void *pObject)
             } else if (CAN232_STATE_MSG == pcan232obj->m_can232obj.m_state) {
                 pcan232obj->m_can232obj.m_receiveBuf[ pcan232obj->m_can232obj.m_cntRcv++ ] = c;
                 if (0x0d == c) {
-                    // One full message received If there is place in the queue 
+                    // One full message received If there is place in the queue
                     // add message to it
                     if (pcan232obj->m_can232obj.m_rcvList.nCount < CAN232_MAX_RCVMSG) {
                         PCANALMSG pMsg = new canalMsg;
@@ -857,7 +857,7 @@ bool can232ToCanal(char * p, PCANALMSG pMsg)
     else {
         rv = false;
     }
-    
+
     if ( false != rv ) {
 
         save = *(p + data_offset + 2 * pMsg->sizeData);
@@ -876,7 +876,7 @@ bool can232ToCanal(char * p, PCANALMSG pMsg)
         if (0x0d != *(p + data_offset + 2 * pMsg->sizeData)) {
             p[ data_offset + 2 * (pMsg->sizeData) + 4 ] = 0;
             sscanf((p + data_offset + 2 * (pMsg->sizeData)), "%x", &val);
-            pMsg->timestamp = val * 1000; // microseconds 
+            pMsg->timestamp = val * 1000; // microseconds
         } else {
             pMsg->timestamp = 0;
         }

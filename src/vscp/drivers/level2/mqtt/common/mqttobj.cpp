@@ -752,7 +752,7 @@ Cmqttobj::open(const char *pUsername,
         m_pWrkObj->m_pObj = this;
         if (pthread_create(m_threadWork, NULL, workerTread, this)) {
 
-            syslog(LOG_CRIT, "Unable to start worker thread.");
+            syslog(LOG_ERR, "Unable to start worker thread.");
             return false;
         }
     } else {
@@ -819,9 +819,9 @@ workerTread(void *pData)
     uint16_t msgid = 0;
 
     if ( NULL == pData ) {
-        syslog(LOG_CRIT, "Missing thread object!");
+        syslog(LOG_ERR, "Missing thread object!");
         return NULL;
-    }    
+    }
 
     Cmqttobj *pObj = (Cmqttobj *)pData;
 
@@ -1083,5 +1083,3 @@ PUBLISH:
 
     return NULL;
 }
-
-

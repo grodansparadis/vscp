@@ -1,26 +1,26 @@
-// ixxatvci.cpp:  
+// ixxatvci.cpp:
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version
 // 2 of the License, or (at your option) any later version.
-// 
-// This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2015 
+// This file is part of the VSCP (http://www.vscp.org)
+//
+// Copyright (C) 2000-2015
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
-// 
+//
 // This file is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with this file see the file COPYING.  If not, write to
 // the Free Software Foundation, 59 Temple Place - Suite 330,
 // Boston, MA 02111-1307, USA.
 //
-// 
+//
 
 #include "stdio.h"
 #include "ixxobj.h"
@@ -46,13 +46,13 @@ void *workThreadReceive( void *pObject );
 //
 
 CIxxObj::CIxxObj()
-{ 
-	
+{
+
 	m_channel = 0;
 	m_initFlag = 0;
 	m_dwBrdType = VCI_UNKNOWN;
 	m_dwBrdTypeRelatedIndex = 0;
-	
+
 	// No filter mask
 	m_filter = 0;
 	m_mask = 0;
@@ -60,7 +60,7 @@ CIxxObj::CIxxObj()
 	m_bRun = false;
 
 #ifdef WIN32
-	
+
 	m_hTreadReceive = 0;
 	m_hTreadTransmit = 0;
 
@@ -70,7 +70,7 @@ CIxxObj::CIxxObj()
 	m_transmitMutex = CreateMutex( NULL, true, CANAL_DLL_IXXATVCIDRV_TRANSMIT_MUTEX );
 
 #else
-	
+
 	m_flog = NULL;
 	pthread_mutex_init( &m_ixxMutex, NULL );
 	pthread_mutex_init( &m_receiveMutex, NULL );
@@ -87,19 +87,19 @@ CIxxObj::CIxxObj()
 //
 
 CIxxObj::~CIxxObj()
-{		 
+{
 	close();
-	
+
 	LOCK_MUTEX( m_transmitMutex );
 	dll_removeAllNodes( &m_transmitList );
-	
+
 	LOCK_MUTEX( m_receiveMutex );
 	dll_removeAllNodes( &m_receiveList );
 
 
-#ifdef WIN32	
-	
-	if ( NULL != m_ixxMutex ) CloseHandle( m_ixxMutex );	
+#ifdef WIN32
+
+	if ( NULL != m_ixxMutex ) CloseHandle( m_ixxMutex );
 	if ( NULL != m_receiveMutex ) CloseHandle( m_receiveMutex );
 	if ( NULL != m_transmitMutex ) CloseHandle( m_transmitMutex );
 
@@ -144,7 +144,7 @@ struct __ixxatsymtbl {
 // filename
 //-----------------------------------------------------------------------------
 // Parameters for the driver as a string on the following form
-//		
+//
 // "board;channel;filter;mask;bus-speed;btr0;btr1"
 //
 // board
@@ -186,7 +186,7 @@ struct __ixxatsymtbl {
 // bus-speed
 // =========
 // One of the predefined bitrates can be set here
-// 
+//
 //  10 for 10 Kbs
 //  20 for 20 Kbs
 //	50 for 50 Kbs
@@ -207,8 +207,8 @@ struct __ixxatsymtbl {
 // Value for bitrate register 1. If btr value pairs are given then the bus-speed
 // parameter is ignored.
 //
-// 
-// flags 
+//
+// flags
 //-----------------------------------------------------------------------------
 //
 // bit 0
@@ -232,7 +232,7 @@ struct __ixxatsymtbl {
 // bit 3
 // =====
 //	0		Active Mode.
-//	1		Passive mode: CAN controller works as passive 
+//	1		Passive mode: CAN controller works as passive
 //			CAN node (only monitoring) and
 //			therefore it does not send any
 //			acknowledge bit for CAN objects
@@ -244,7 +244,7 @@ struct __ixxatsymtbl {
 //	1		Errorframes are detected and
 //			reported as CAN objects via
 //			the rx queues
-// 
+//
 
 bool CIxxObj::open( const char *szFileName, unsigned long flags )
 {
@@ -271,44 +271,44 @@ bool CIxxObj::open( const char *szFileName, unsigned long flags )
 	m_stat.cntBusOff = 0;
 	m_stat.cntBusWarnings = 0;
 	m_stat.cntOverruns = 0;
-	
+
 
 	// if open we have noting to do
 	if ( m_bRun ) return true;
-	
+
 	// Boardtype
 	p = strtok( (char * )szDrvParams, ";" );
 	if ( NULL != p ) {
-	
+
 		if ( isalpha( *p ) ) {
-		
+
 			// Symbolic form
 			int symidx = 0;
 			while( -1 != ixxatsymtbl[ symidx ]. id ) {
-			
+
 				if ( NULL != strstr( ixxatsymtbl[ symidx ]. symname, p ) ) {
 					m_dwBrdType = ixxatsymtbl[ symidx ]. id;
 					break;
 				}
 
-				symidx++;	
+				symidx++;
 
 			}
-				 	
+
 		}
 		else {
-			
+
 			// Numeric form
-			m_dwBrdType = atoi( p );	
+			m_dwBrdType = atoi( p );
 
 		}
 
 	}
 
 
-	// channel 
+	// channel
 	p = strtok( NULL, ";" );
-	if ( NULL != p ) {		
+	if ( NULL != p ) {
 		if ( ( NULL != strstr( p, "0x" ) ) || ( NULL != strstr( p, "0X" ) )  ) {
 			sscanf( p + 2, "%x", &m_channel );
 		}
@@ -320,7 +320,7 @@ bool CIxxObj::open( const char *szFileName, unsigned long flags )
 
 	// Filter
 	p = strtok( NULL, ";" );
-	if ( NULL != p ) {		
+	if ( NULL != p ) {
 		if ( ( NULL != strstr( p, "0x" ) ) || ( NULL != strstr( p, "0X" ) )  ) {
 			sscanf( p + 2, "%x", &m_IXXAT_filter );
 		}
@@ -332,7 +332,7 @@ bool CIxxObj::open( const char *szFileName, unsigned long flags )
 
 	// Mask
 	p = strtok( NULL, ";" );
-	if ( NULL != p ) {		
+	if ( NULL != p ) {
 		if ( ( NULL != strstr( p, "0x" ) ) || ( NULL != strstr( p, "0X" ) )  ) {
 			sscanf( p + 2, "%x", &m_IXXAT_mask );
 		}
@@ -343,7 +343,7 @@ bool CIxxObj::open( const char *szFileName, unsigned long flags )
 
 	// Bus-Speed
 	p = strtok( NULL, ";" );
-	if ( NULL != p ) {		
+	if ( NULL != p ) {
 		if ( ( NULL != strstr( p, "0x" ) ) || ( NULL != strstr( p, "0X" ) )  ) {
 			sscanf( p + 2, "%x", &busspeed );
 		}
@@ -354,7 +354,7 @@ bool CIxxObj::open( const char *szFileName, unsigned long flags )
 
 	// BTR0
 	p = strtok( NULL, ";" );
-	if ( NULL != p ) {		
+	if ( NULL != p ) {
 		if ( ( NULL != strstr( p, "0x" ) ) || ( NULL != strstr( p, "0X" ) )  ) {
 			sscanf( p + 2, "%x", &btr0 );
 		}
@@ -365,7 +365,7 @@ bool CIxxObj::open( const char *szFileName, unsigned long flags )
 
 	// BTR1
 	p = strtok( NULL, ";" );
-	if ( NULL != p ) {		
+	if ( NULL != p ) {
 		if ( ( NULL != strstr( p, "0x" ) ) || ( NULL != strstr( p, "0X" ) )  ) {
 			sscanf( p + 2, "%x", &btr1 );
 		}
@@ -376,7 +376,7 @@ bool CIxxObj::open( const char *szFileName, unsigned long flags )
 
 	// Handle busspeed
 	switch ( busspeed ) {
-	
+
 		case 10:
 			btr0 = 0x31;
 			btr1 = 0x1C;
@@ -427,7 +427,7 @@ bool CIxxObj::open( const char *szFileName, unsigned long flags )
 	// Must have a bus speed
 	if ( ( 0 == btr0 ) && ( 0 == btr1 )  )  return false;
 
-	
+
 	// Find hardware entry
 	HRESULT hr = XAT_FindHwEntry( XATREG_FIND_BOARD_AT_RELATIVE_POSITION,
 									&m_dwBrdKey,
@@ -438,23 +438,23 @@ bool CIxxObj::open( const char *szFileName, unsigned long flags )
 	if ( ERROR_SUCCESS != hr ) {
 		return false;
 	}
-		
-	
+
+
 	// Get Configuration for card
 	hr = XAT_GetConfig( m_dwBrdKey, &m_sConfig );
-	
+
 	if ( ERROR_SUCCESS != hr ) {
 		return false;
-	} 
+	}
 
- 
+
 	//
     //  prepare choosen board for further configuration
     //
-	ret = 
+	ret =
 		VCI2_PrepareBoard( m_sConfig.board_type,	// board type
 							m_sConfig.board_no,		// unique board index
-							NULL,				// pointer to buffer for additional info 
+							NULL,				// pointer to buffer for additional info
                             0,					// length of additional info buffer
                             NULL,				// pointer to msg-callbackhandler
                             NULL,				// pointer to receive-callbackhandler
@@ -466,109 +466,109 @@ bool CIxxObj::open( const char *szFileName, unsigned long flags )
 
     // extract board handle from return value
     m_hBoard = (UINT16)ret;
- 
+
 	//
 	//  initialize CAN-Controller
 	//
-	
+
 	ret = VCI_InitCan( m_hBoard, m_channel, btr0, btr1, (unsigned char)( flags & 0x1f ) );
 
 	//
 	//  definition of Acceptance-Mask (define to receive all IDs)
 	//
-	
+
 	ret = VCI_SetAccMask( m_hBoard, m_channel, 0x0UL, 0x0UL );
 
 
 	//
 	//  definition of Transmit Queue
 	//
-	
-	ret = VCI_ConfigQueue( m_hBoard, 
-							            m_channel, 
-							            VCI_TX_QUE, 
+
+	ret = VCI_ConfigQueue( m_hBoard,
+							            m_channel,
+							            VCI_TX_QUE,
 							            100,		// queue size
-							            0,			// no limit 
+							            0,			// no limit
 							            0,			// no timeout
 							            0,			// timestamp resolution 100 uSec
 							            &m_hTxQue );
 
 
 	//
-	//  definition of Receive Queue 
+	//  definition of Receive Queue
 	//
-	
-	ret = VCI_ConfigQueue( m_hBoard, 
-							m_channel, 
-							VCI_RX_QUE, 
+
+	ret = VCI_ConfigQueue( m_hBoard,
+							m_channel,
+							VCI_RX_QUE,
 							100,			// queue size
-							0,				// No limit = polling mode 
+							0,				// No limit = polling mode
 							0,				// timeout not relavant
 							1,				// timestamp resolution 100 uSec
 							&m_hRxQue );
 
-	
+
 	ret = VCI_AssignRxQueObj( m_hBoard, m_hRxQue ,VCI_ACCEPT, 0x00, 0x00 ) ;
 
 	//
 	//  And now start the CAN
 	//
-	
+
 	ret = VCI_StartCan( m_hBoard, 0 );
 
-	// Run run run ..... 
+	// Run run run .....
 	// (otional (for hard fellow rockers) "to the hills..."
 	m_bRun = true;
 
 #ifdef WIN32
-	
-	// Start write thread 
+
+	// Start write thread
 	DWORD threadId;
-	if ( NULL == 
+	if ( NULL ==
 			( m_hTreadTransmit = CreateThread(	NULL,
 										0,
 										(LPTHREAD_START_ROUTINE) workThreadTransmit,
 										this,
 										0,
-										&threadId ) ) ) { 
+										&threadId ) ) ) {
 		// Failure
 		close();
 		return false;
 	}
 
-	// Start read thread 
-	if ( NULL == 
+	// Start read thread
+	if ( NULL ==
 			( m_hTreadReceive = CreateThread(	NULL,
 										0,
 										(LPTHREAD_START_ROUTINE) workThreadReceive,
 										this,
 										0,
-										&threadId ) ) ) { 
+										&threadId ) ) ) {
 		// Failure
 		close();
 		return  false;
 	}
-	
+
 	// Release the mutex
 	UNLOCK_MUTEX( m_ixxMutex );
 	UNLOCK_MUTEX( m_receiveMutex );
 	UNLOCK_MUTEX( m_transmitMutex );
-	
+
 
 #else // LINUX
 
 
 	pthread_attr_t thread_attr;
 	pthread_attr_init( &thread_attr );
-	
-	
+
+
 	// Create the log write thread.
 	if ( pthread_create( 	&m_threadId,
 								&thread_attr,
 								workThreadTransmit,
-								this ) ) {	
-							
-		syslog( LOG_CRIT, "canallogger: Unable to create ixxatvcidrv write thread.");
+								this ) ) {
+
+		syslog( LOG_ERR, "canallogger: Unable to create ixxatvcidrv write thread.");
 		rv = false;
 		fclose( m_flog );
 	}
@@ -578,46 +578,46 @@ bool CIxxObj::open( const char *szFileName, unsigned long flags )
 	if ( pthread_create( 	&m_threadId,
 								&thread_attr,
 								workThreadReceive,
-								this ) ) {	
-							
-		syslog( LOG_CRIT, "canallogger: Unable to create ixxatvcidrv receive thread.");
+								this ) ) {
+
+		syslog( LOG_ERR, "canallogger: Unable to create ixxatvcidrv receive thread.");
 		rv = false;
 		fclose( m_flog );
 	}
-		
+
     // We are open
 	m_bOpen = true;
 
 	// Release the mutex
 	pthread_mutex_unlock( &m_ixxMutex );
 
-#endif	
+#endif
 
 	return true;
 }
 
- 
+
 //////////////////////////////////////////////////////////////////////
 // close
 //
 
 bool CIxxObj::close( void )
-{	
+{
 	// Do nothing if already terminated
 	if ( !m_bRun ) return false;
-	
+
 	m_bRun = false;
 
 	VCI_CancelBoard( m_hBoard );
- 
+
 	UNLOCK_MUTEX( m_ixxMutex );
 	LOCK_MUTEX( m_ixxMutex );
 
-	
-	// terminate the worker thread 
-#ifdef WIN32	
+
+	// terminate the worker thread
+#ifdef WIN32
 	DWORD rv;
-	
+
 	// Wait for transmit thread to terminate
 	while ( true ) {
 		GetExitCodeThread( m_hTreadTransmit, &rv );
@@ -629,15 +629,15 @@ bool CIxxObj::close( void )
 		GetExitCodeThread( m_hTreadReceive, &rv );
 		if ( STILL_ACTIVE != rv ) break;
 	}
-	
-	
-	
+
+
+
 #else
 	int *trv;
 	pthread_join( m_threadIdReceive, (void **)&trv );
 	pthread_join( m_threadIdTransmit, (void **)&trv );
 	pthread_mutex_destroy( &m_ixxMutex );
-	
+
 #endif
 
 	return true;
@@ -649,14 +649,14 @@ bool CIxxObj::close( void )
 //
 
 bool CIxxObj::doFilter( canalMsg *pcanalMsg )
-{	
+{
 	unsigned long msgid = ( pcanalMsg->id & 0x1fffffff);
 	if ( !m_mask ) return true;	// fast escape
 
 	// Set bit 32 if extended message
 	if ( pcanalMsg->flags | CANAL_IDFLAG_EXTENDED ) {
 		msgid &= 0x1fffffff;
-		msgid |= 80000000;	
+		msgid |= 80000000;
 	}
 	else {
 		// Standard message
@@ -664,8 +664,8 @@ bool CIxxObj::doFilter( canalMsg *pcanalMsg )
 	}
 
 	// Set bit 31 if RTR
-	if ( pcanalMsg->flags | CANAL_IDFLAG_RTR ) { 
-		msgid |= 40000000;	
+	if ( pcanalMsg->flags | CANAL_IDFLAG_RTR ) {
+		msgid |= 40000000;
 	}
 
 	return !( ( m_filter ^ msgid ) & m_mask );
@@ -699,13 +699,13 @@ bool CIxxObj::setMask( unsigned long mask )
 //
 
 bool CIxxObj::writeMsg( canalMsg *pMsg )
-{	
+{
 	bool rv = false;
-	
+
 	if ( NULL != pMsg ) {
 
 		// VCI2 only allow sending of message with the same
-		// mode as the i/f is opended with. So extended id's in 
+		// mode as the i/f is opended with. So extended id's in
 		// standard mode shoud be disregareded and vice versa.
 		if ( VCI_29B & m_initFlag ) {
 			if ( !( pMsg->flags & CANAL_IDFLAG_EXTENDED ) ) return false;
@@ -713,14 +713,14 @@ bool CIxxObj::writeMsg( canalMsg *pMsg )
 			if ( pMsg->flags & CANAL_IDFLAG_EXTENDED ) return false;
 		}
 
-	
+
 		// Must be room for the message
 		if ( m_transmitList.nCount < IXXATVCI_MAX_SNDMSG ) {
 
 			dllnode *pNode = new dllnode;
-			
+
 			if ( NULL != pNode ) {
-			
+
 				canalMsg *pcanalMsg = new canalMsg;
 
 				pNode->pObject = pcanalMsg;
@@ -734,7 +734,7 @@ bool CIxxObj::writeMsg( canalMsg *pMsg )
 				LOCK_MUTEX( m_transmitMutex );
 				dll_addNode( &m_transmitList, pNode );
 				UNLOCK_MUTEX( m_transmitMutex );
- 
+
 				rv = true;
 
 			}
@@ -745,8 +745,8 @@ bool CIxxObj::writeMsg( canalMsg *pMsg )
 			}
 		}
 	}
-	
-	return rv;		
+
+	return rv;
 }
 
 
@@ -757,10 +757,10 @@ bool CIxxObj::writeMsg( canalMsg *pMsg )
 bool CIxxObj::readMsg( canalMsg *pMsg )
 {
 	bool rv = false;
-	
-	if ( ( NULL != m_receiveList.pHead ) && 
+
+	if ( ( NULL != m_receiveList.pHead ) &&
 			( NULL != m_receiveList.pHead->pObject ) ) {
-		
+
 		memcpy( pMsg, m_receiveList.pHead->pObject, sizeof( canalMsg ) );
 		LOCK_MUTEX( m_receiveMutex );
 		dll_removeNode( &m_receiveList, m_receiveList.pHead );
@@ -780,11 +780,11 @@ bool CIxxObj::readMsg( canalMsg *pMsg )
 int CIxxObj::dataAvailable( void )
 {
 	int cnt;
-	
+
 	LOCK_MUTEX( m_receiveMutex );
-	cnt = dll_getNodeCount( &m_receiveList );	
+	cnt = dll_getNodeCount( &m_receiveList );
 	UNLOCK_MUTEX( m_receiveMutex );
- 
+
 	return cnt;
 }
 
@@ -794,7 +794,7 @@ int CIxxObj::dataAvailable( void )
 //
 
 bool CIxxObj::getStatistics( PCANALSTATISTICS pCanalStatistics )
-{	
+{
 	// Must be a valid pointer
 	if ( NULL == pCanalStatistics ) return false;
 
@@ -811,7 +811,7 @@ bool CIxxObj::getStatus( PCANALSTATUS pCanalStatus )
 {
 	// Must be a valid pointer
 	if ( NULL == pCanalStatus ) return false;
-	
+
 	VCI_CAN_STS canstatus;
 	if ( VCI_OK != VCI_ReadCanStatus( m_hBoard, m_channel, &canstatus ) ) {
 		return false;
@@ -821,37 +821,37 @@ bool CIxxObj::getStatus( PCANALSTATUS pCanalStatus )
 
 	// Repeat bus off flag
 	if ( canstatus.sts & 0x80 ) {
-		m_status.channel_status |= 0x80000000;		
+		m_status.channel_status |= 0x80000000;
 	}
 
 	// Repeat bus off flag
 	if ( canstatus.sts & 0x40 ) {
-		m_status.channel_status |= 0x40000000;		
+		m_status.channel_status |= 0x40000000;
 	}
 
 	// Extended ID
 	if ( m_initFlag & VCI_29B ) {
-		m_status.channel_status |= 0x010000;		
+		m_status.channel_status |= 0x010000;
 	}
 
 	// Low Speed
 	if ( m_initFlag & VCI_LOW_SPEED ) {
-		m_status.channel_status |= 0x020000;		
+		m_status.channel_status |= 0x020000;
 	}
 
 	// Local echo
 	if ( m_initFlag & VCI_TX_ECHO ) {
-		m_status.channel_status |= 0x040000;		
+		m_status.channel_status |= 0x040000;
 	}
 
 	// Passive
 	if ( m_initFlag & VCI_TX_PASSIV ) {
-		m_status.channel_status |= 0x080000;		
+		m_status.channel_status |= 0x080000;
 	}
 
 	// Detected error frame
 	if ( m_initFlag & VCI_ERRFRM_DET ) {
-		m_status.channel_status |= 0x100000;		
+		m_status.channel_status |= 0x100000;
 	}
 
 	memcpy( pCanalStatus, &m_status, sizeof( canalStatus ) );
@@ -878,40 +878,40 @@ void *workThreadTransmit( void *pObject )
 
 	CIxxObj * pobj = ( CIxxObj *)pObject;
 	if ( NULL == pobj ) {
-#ifdef WIN32	
+#ifdef WIN32
 		ExitThread( errorCode ); // Fail
 #else
 		pthread_exit( &rv );
 #endif
 	}
-	
+
 	while ( pobj->m_bRun ) {
 
 		LOCK_MUTEX( pobj->m_ixxMutex );
-		
+
 		// Noting to do if we should end...
 		if ( !pobj->m_bRun ) continue;
 
 		// Is there something to transmit
-		while ( ( NULL != pobj->m_transmitList.pHead ) && 
+		while ( ( NULL != pobj->m_transmitList.pHead ) &&
 				( NULL != pobj->m_transmitList.pHead->pObject ) ) {
 
 			canalMsg msg;
-			memcpy( &msg, pobj->m_transmitList.pHead->pObject, sizeof( canalMsg ) ); 
+			memcpy( &msg, pobj->m_transmitList.pHead->pObject, sizeof( canalMsg ) );
 			LOCK_MUTEX( pobj->m_transmitMutex );
 			dll_removeNode( &pobj->m_transmitList, pobj->m_transmitList.pHead );
 			UNLOCK_MUTEX( pobj->m_transmitMutex );
-			
+
 			if ( !( msg.flags & CANAL_IDFLAG_RTR ) ) {
 
 				// Standard message
-			
-				if (  VCI_OK == VCI_TransmitObj( pobj->m_hBoard, 
-													pobj->m_hTxQue, 
-													msg.id, 
-													msg.sizeData, 
+
+				if (  VCI_OK == VCI_TransmitObj( pobj->m_hBoard,
+													pobj->m_hTxQue,
+													msg.id,
+													msg.sizeData,
 													msg.data ) ) {
-				
+
 					// Message sent successfully
 					// Update statistics
 					pobj->m_stat.cntTransmitData += msg.sizeData;
@@ -919,17 +919,17 @@ void *workThreadTransmit( void *pObject )
 
 				}
 				else {
-					
+
 					// Failed - put message back in queue front
 					PCANALMSG pMsg	= new canalMsg;
 					if ( NULL != pMsg ) {
-						
+
 						// Copy in data
 						memcpy ( pMsg, &msg, sizeof( canalMsg ) );
 
-						dllnode *pNode = new dllnode; 
+						dllnode *pNode = new dllnode;
 						if ( NULL != pNode ) {
-																
+
 							pNode->pObject = pMsg;
 							LOCK_MUTEX( pobj->m_transmitMutex );
 							dll_addNodeHead( &pobj->m_transmitList, pNode );
@@ -950,28 +950,28 @@ void *workThreadTransmit( void *pObject )
 
 				// Remote request
 
-				if (  VCI_OK == VCI_RequestObj( pobj->m_hBoard, 
-													pobj->m_hTxQue, 
-													msg.id, 
+				if (  VCI_OK == VCI_RequestObj( pobj->m_hBoard,
+													pobj->m_hTxQue,
+													msg.id,
 													msg.sizeData ) ) {
-				
+
 					// Message sent successfully
 					// Update statistics
 					pobj->m_stat.cntTransmitFrames += 1;
 
 				}
 				else {
-					
+
 					// Failed - put message back in queue front
 					PCANALMSG pMsg	= new canalMsg;
 					if ( NULL != pMsg ) {
-						
+
 						// Copy in data
 						memcpy ( pMsg, &msg, sizeof( canalMsg ) );
 
-						dllnode *pNode = new dllnode; 
+						dllnode *pNode = new dllnode;
 						if ( NULL != pNode ) {
-																
+
 							pNode->pObject = pMsg;
 							LOCK_MUTEX( pobj->m_transmitMutex );
 							dll_addNodeHead( &pobj->m_transmitList, pNode );
@@ -986,10 +986,10 @@ void *workThreadTransmit( void *pObject )
 
 					}
 
-				}	
-				
+				}
+
 			}
-							
+
 		} // while data
 
 
@@ -998,9 +998,9 @@ void *workThreadTransmit( void *pObject )
 		UNLOCK_MUTEX( pobj->m_ixxMutex );
 		SLEEP( 1 );
 
-		//}	 
-	
-	} // while 	 
+		//}
+
+	} // while
 
 
 #ifdef WIN32
@@ -1033,58 +1033,58 @@ void *workThreadReceive( void *pObject )
 
 	CIxxObj * pobj = ( CIxxObj *)pObject;
 	if ( NULL == pobj ) {
-#ifdef WIN32	
+#ifdef WIN32
 		ExitThread( errorCode ); // Fail
 #else
 		pthread_exit( &rv );
 #endif
 	}
-	
+
 	while ( pobj->m_bRun ) {
-		
+
 		// Noting to do if we should end...
 		if ( !pobj->m_bRun ) continue;
 
 		LOCK_MUTEX( pobj->m_ixxMutex );
 		if ( ( cntMsg = VCI_ReadQueStatus( pobj->m_hBoard, pobj->m_hRxQue ) ) > 0 ) {
-			
+
 			// There are messages to fetch
 			VCI_CAN_OBJ *pobjarray = new VCI_CAN_OBJ[ cntMsg ];
 			if ( NULL != pobjarray ) {
 
-				readMsg = VCI_ReadQueObj( pobj->m_hBoard, 
-											pobj->m_hRxQue, 
-											cntMsg, 
+				readMsg = VCI_ReadQueObj( pobj->m_hBoard,
+											pobj->m_hRxQue,
+											cntMsg,
 											pobjarray );
 				if ( readMsg > 0 ) {
-				
+
 					// Write them to the receive buffer
 					for ( int i=0; i<readMsg; i++ ) {
-					
-						if (  pobj->m_receiveList.nCount < IXXATVCI_MAX_RCVMSG ) {					
-					
+
+						if (  pobj->m_receiveList.nCount < IXXATVCI_MAX_RCVMSG ) {
+
 							PCANALMSG pMsg	= new canalMsg;
 							pMsg->flags = 0;
 
 							if ( NULL != pMsg ) {
-						
-								dllnode *pNode = new dllnode; 
+
+								dllnode *pNode = new dllnode;
 								if ( NULL != pNode ) {
-							
+
 									pMsg->timestamp = pobjarray[ i ].time_stamp;
 									pMsg->id = pobjarray[ i ].id;
-									pMsg->sizeData = pobjarray[ i ].len;		
-									memcpy( pMsg->data, pobjarray[ i ].a_data, pMsg->sizeData ); 
-									
+									pMsg->sizeData = pobjarray[ i ].len;
+									memcpy( pMsg->data, pobjarray[ i ].a_data, pMsg->sizeData );
+
 									// If extended set extended flag
 									if ( VCI_29B & pobj->m_initFlag ) pMsg->flags |= CANAL_IDFLAG_EXTENDED;
 
 									// Check for RTS package
 									if ( pobjarray[ i ].rtr ) pMsg->flags |= CANAL_IDFLAG_RTR;
-									
+
 									// Check for overrun error
 									if ( pobjarray[ i ].sts & 0x80 ) pobj->m_stat.cntOverruns++;
-									
+
 									pNode->pObject = pMsg;
 									LOCK_MUTEX( pobj->m_receiveMutex );
 									dll_addNode( &pobj->m_receiveList, pNode );
@@ -1100,23 +1100,23 @@ void *workThreadReceive( void *pObject )
 									delete pMsg;
 
 								}
-							}				
-						} 
+							}
+						}
 						else {
 							// Full buffer
-							pobj->m_stat.cntOverruns++;	
+							pobj->m_stat.cntOverruns++;
 						}
 					}
 				}
-		
+
 				delete[] pobjarray;
 			}
 		}
 
 		UNLOCK_MUTEX( pobj->m_ixxMutex );
 		SLEEP( 1 );
-	
-	} // while 	 
+
+	} // while
 
 
 #ifdef WIN32

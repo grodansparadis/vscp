@@ -1,21 +1,21 @@
 // relayd.c
 //
-// This file is part of the VSCP (http://www.vscp.org) 
+// This file is part of the VSCP (http://www.vscp.org)
 //
 // The MIT License (MIT)
-// 
+//
 // Copyright (C) 2000-2019 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in all
 // copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -51,7 +51,7 @@
 #define _GNU_SOURCE
 #include <crypt.h>
 
-#include <canalif.h>        /* CANAL DLL interfaces functionality   */ 
+#include <canalif.h>        /* CANAL DLL interfaces functionality   */
 
 #define MAX_NUMBER_OF_THREADS   20
 #define MAX_CLIENTS             200
@@ -70,8 +70,8 @@ void *workThread( void *id );
     @param username - Username for user
     @param password - Password for user
     @return 0 == OK, 1 == User not valid, 2 == Password wrong
-*/   
-int auth_sys_user( const char*username, const char*password ) 
+*/
+int auth_sys_user( const char*username, const char*password )
 {
     struct passwd *pw;
     struct spwd *sp;
@@ -95,18 +95,18 @@ int auth_sys_user( const char*username, const char*password )
 
 /******************************************************************************
  *                               Main routine
- * 
- * 
- * 
- * 
+ *
+ *
+ *
+ *
  * ****************************************************************************/
-int main( int argc, char **argv ) 
+int main( int argc, char **argv )
 {
     /* Our process ID and Session ID */
     pid_t pid, sid;
     int c, i, j;
     opterr = 0;
-    
+
     pthread_t workthreads[ MAX_NUMBER_OF_THREADS ];
 	pthread_attr_t thread_attr;
 
@@ -142,12 +142,12 @@ int main( int argc, char **argv )
         {
             /* These options set a flag. */
             {"brief",   no_argument,       &bVerbose, 0},
-          
-            /* 
+
+            /*
                 These options don’t set a flag.
-                We distinguish them by their indices. 
+                We distinguish them by their indices.
             */
-            {"help",          no_argument, 0, '?'},   
+            {"help",          no_argument, 0, '?'},
             {"config",        required_argument, 0, 'c'},
             {"driver",        required_argument, 0, 'd'},
             {"filter",        required_argument, 0, 'f'},
@@ -163,21 +163,21 @@ int main( int argc, char **argv )
         /* getopt_long stores the option index here. */
         int option_index = 0;
 
-        c = getopt_long( argc, 
-                            argv, 
+        c = getopt_long( argc,
+                            argv,
                             "?c:d:f:i:m:p:svz:",
-                            long_options, 
-                            &option_index );    
+                            long_options,
+                            &option_index );
 
          /* Detect the end of the options. */
         if ( c == -1 ) break;
 
         switch ( c ) {
-                        
+
             case 0:
                 /* If this option set a flag, do nothing else now. */
                 if ( long_options[option_index].flag != 0 ) break;
-            
+
                 printf("option %s", long_options[option_index].name);
                 if ( optarg ) printf( " with arg %s", optarg );
                 printf("\n");
@@ -190,7 +190,7 @@ int main( int argc, char **argv )
 
             case 'd':
                 if ( NULL == canalif_setPath( &drvobj, optarg ) ) {
-                    syslog( LOG_CRIT, "Unable to set driver path. path=%s", pDriverPath );
+                    syslog( LOG_ERR, "Unable to set driver path. path=%s", pDriverPath );
                     exit(EXIT_FAILURE);
                 }
                 break;
@@ -205,27 +205,27 @@ int main( int argc, char **argv )
 
             case 'm':
                 mask = atoi( optarg );
-                break; 
+                break;
 
             case 'p':
                 port = atoi( optarg );
-                break;       
+                break;
 
             case 's':
                 bRunStandalone = 1;
-                break;   
+                break;
 
             case 'v':
                 bVerbose = 1;
-                break;    
+                break;
 
             case 'z':
                 flags = atoi( optarg );
-                break;     
+                break;
 
             case '?':
                 puts( "option -?\n" );
-                break;  
+                break;
 
             default:
                 printf("Unknown switch c='%c'\n", c);
@@ -245,7 +245,7 @@ int main( int argc, char **argv )
         printf("You must specify a path to a valid CANAL driver (-d/--driver)\n");
         exit( EXIT_FAILURE );
     }
-    
+
     if ( !bRunStandalone ) {
 
         /* Fork off the parent process */
@@ -254,9 +254,9 @@ int main( int argc, char **argv )
             exit( EXIT_FAILURE );
         }
 
-        /* 
+        /*
             If we got a good PID, then
-            we can exit the parent process. 
+            we can exit the parent process.
         */
         if ( pid > 0 ) {
             exit( EXIT_SUCCESS );
@@ -266,43 +266,43 @@ int main( int argc, char **argv )
 
     /* Change the file mode mask */
     umask(0);
-                
-    /* Open any logs here */ 
-    openlog("vscp-relayd", LOG_CONS | LOG_PID, LOG_DAEMON );       
 
-    if ( !bRunStandalone ) {            
+    /* Open any logs here */
+    openlog("vscp-relayd", LOG_CONS | LOG_PID, LOG_DAEMON );
+
+    if ( !bRunStandalone ) {
         /* Create a new SID for the child process */
         sid = setsid();
         if ( sid < 0 ) {
             /* Log the failure */
             exit( EXIT_FAILURE );
         }
-    
+
         /* Change the current working directory */
         if ( ( chdir("/") ) < 0 ) {
             /* Log the failure */
             exit( EXIT_FAILURE );
-        }   
-        
+        }
+
         /* Close out the standard file descriptors */
-    
+
         close( STDIN_FILENO );
         close( STDOUT_FILENO );
         close( STDERR_FILENO );
     }
-        
+
     /* Daemon-specific initialization goes here */
 	pthread_attr_init( &thread_attr );
 
     for (i=0; i<MAX_NUMBER_OF_THREADS; i++ ) {
-        workthreads[ i ] = 0;   
+        workthreads[ i ] = 0;
     }
 
     // "/srv/vscp/drivers/level1/vscpl1drv-can4vscp.so"
     if ( bVerbose ) {
         printf("Driver path: %s\n", drvobj.m_drvPath );
         printf("Driver Config str: %s\n", drvobj.m_drvConfig );
-        printf("Driver flags: 0x%lX\n", drvobj.m_drvFlags );      
+        printf("Driver flags: 0x%lX\n", drvobj.m_drvFlags );
     }
 
     // https://dwheeler.com/program-library/Program-Library-HOWTO/t1.html
@@ -310,7 +310,7 @@ int main( int argc, char **argv )
     /* Open the driver */
     drvobj.m_hdll = dlopen( drvobj.m_drvPath, RTLD_LAZY | RTLD_GLOBAL );
     if ( NULL == drvobj.m_hdll ) {
-        syslog( LOG_CRIT, "Unable to load library." );
+        syslog( LOG_ERR, "Unable to load library." );
         if ( bVerbose) fprintf( stderr, "dlopen failed: %s\n", dlerror() );
         exit(EXIT_FAILURE);
     }
@@ -319,16 +319,16 @@ int main( int argc, char **argv )
     if ( NULL == ( drvobj.m_proc_CanalOpen =
                     (LPFNDLL_CANALOPEN)dlsym( drvobj.m_hdll, "CanalOpen" ) ) ) {
         // Free the library
-        syslog( LOG_CRIT, "Unable to get dl entry for 'CanalOpen'.");
+        syslog( LOG_ERR, "Unable to get dl entry for 'CanalOpen'.");
         dlclose(drvobj.m_hdll);
         exit(EXIT_FAILURE);
     }
 
     /* * * * * CANAL CLOSE * * * * */
-    if ( NULL == ( drvobj.m_proc_CanalClose = 
+    if ( NULL == ( drvobj.m_proc_CanalClose =
                     (LPFNDLL_CANALCLOSE)dlsym( drvobj.m_hdll, "CanalClose" ) ) ) {
         // Free the library
-        syslog( LOG_CRIT, "Unable to get dl entry for 'CanalClose'.");
+        syslog( LOG_ERR, "Unable to get dl entry for 'CanalClose'.");
         dlclose(drvobj.m_hdll);
         exit(EXIT_FAILURE);
     }
@@ -337,7 +337,7 @@ int main( int argc, char **argv )
     if (NULL == ( drvobj.m_proc_CanalGetLevel =
                     (LPFNDLL_CANALGETLEVEL)dlsym( drvobj.m_hdll, "CanalGetLevel") ) ) {
         // Free the library
-        syslog( LOG_CRIT, "Unable to get dl entry for 'CanalGetLevel'.");
+        syslog( LOG_ERR, "Unable to get dl entry for 'CanalGetLevel'.");
         dlclose(drvobj.m_hdll);
         exit(EXIT_FAILURE);
     }
@@ -346,7 +346,7 @@ int main( int argc, char **argv )
     if (NULL == ( drvobj.m_proc_CanalSend =
                     (LPFNDLL_CANALSEND)dlsym( drvobj.m_hdll, "CanalSend") ) ) {
         // Free the library
-        syslog( LOG_CRIT, "Unable to get dl entry for 'CanalSend'.");
+        syslog( LOG_ERR, "Unable to get dl entry for 'CanalSend'.");
         dlclose(drvobj.m_hdll);
         exit( EXIT_FAILURE );
     }
@@ -355,7 +355,7 @@ int main( int argc, char **argv )
     if (NULL == ( drvobj.m_proc_CanalDataAvailable =
                     (LPFNDLL_CANALDATAAVAILABLE)dlsym( drvobj.m_hdll, "CanalDataAvailable" ) ) ) {
         // Free the library
-        syslog( LOG_CRIT, "Unable to get dl entry for 'CanalDataAvailable'." );
+        syslog( LOG_ERR, "Unable to get dl entry for 'CanalDataAvailable'." );
         dlclose(drvobj.m_hdll);
         exit( EXIT_FAILURE );
     }
@@ -364,7 +364,7 @@ int main( int argc, char **argv )
     if (NULL == ( drvobj.m_proc_CanalReceive =
                     (LPFNDLL_CANALRECEIVE)dlsym( drvobj.m_hdll, "CanalReceive" ) ) ) {
         // Free the library
-        syslog( LOG_CRIT, "Unable to get dl entry for 'CanalReceive'.");
+        syslog( LOG_ERR, "Unable to get dl entry for 'CanalReceive'.");
         dlclose(drvobj.m_hdll);
         exit( EXIT_FAILURE );
     }
@@ -373,7 +373,7 @@ int main( int argc, char **argv )
     if (NULL == ( drvobj.m_proc_CanalGetStatus =
                     (LPFNDLL_CANALGETSTATUS)dlsym( drvobj.m_hdll, "CanalGetStatus" ) ) ) {
         // Free the library
-        syslog( LOG_CRIT, "Unable to get dl entry for 'CanalGetStatus'.");
+        syslog( LOG_ERR, "Unable to get dl entry for 'CanalGetStatus'.");
         dlclose(drvobj.m_hdll);
         exit( EXIT_FAILURE );
     }
@@ -382,7 +382,7 @@ int main( int argc, char **argv )
     if (NULL == ( drvobj.m_proc_CanalGetStatistics =
                     (LPFNDLL_CANALGETSTATISTICS)dlsym( drvobj.m_hdll, "CanalGetStatistics" ) ) ) {
         // Free the library
-        syslog( LOG_CRIT, "Unable to get dl entry for 'CanalGetStatistics'.");
+        syslog( LOG_ERR, "Unable to get dl entry for 'CanalGetStatistics'.");
         dlclose(drvobj.m_hdll);
         exit( EXIT_FAILURE );
     }
@@ -391,7 +391,7 @@ int main( int argc, char **argv )
     if (NULL == ( drvobj.m_proc_CanalSetFilter =
                     (LPFNDLL_CANALSETFILTER)dlsym( drvobj.m_hdll, "CanalSetFilter" ) ) ) {
         // Free the library
-        syslog( LOG_CRIT, "Unable to get dl entry for 'CanalSetFilter'.");
+        syslog( LOG_ERR, "Unable to get dl entry for 'CanalSetFilter'.");
         dlclose(drvobj.m_hdll);
         exit( EXIT_FAILURE );
     }
@@ -400,7 +400,7 @@ int main( int argc, char **argv )
     if (NULL == ( drvobj.m_proc_CanalSetMask =
                     (LPFNDLL_CANALSETMASK)dlsym( drvobj.m_hdll, "CanalSetMask" ) ) ) {
         // Free the library
-        syslog( LOG_CRIT, "Unable to get dl entry for 'CanalSetMask'.");
+        syslog( LOG_ERR, "Unable to get dl entry for 'CanalSetMask'.");
         dlclose(drvobj.m_hdll);
         exit( EXIT_FAILURE );
     }
@@ -409,7 +409,7 @@ int main( int argc, char **argv )
     if (NULL == ( drvobj.m_proc_CanalGetVersion =
                     (LPFNDLL_CANALGETVERSION)dlsym( drvobj.m_hdll, "CanalGetVersion" ) ) ) {
         // Free the library
-        syslog( LOG_CRIT, "Unable to get dl entry for 'CanalGetVersion'.");
+        syslog( LOG_ERR, "Unable to get dl entry for 'CanalGetVersion'.");
         dlclose(drvobj.m_hdll);
         exit( EXIT_FAILURE );
     }
@@ -418,7 +418,7 @@ int main( int argc, char **argv )
     if (NULL == ( drvobj.m_proc_CanalGetDllVersion =
                     (LPFNDLL_CANALGETDLLVERSION)dlsym( drvobj.m_hdll, "CanalGetDllVersion" ) ) ) {
         // Free the library
-        syslog( LOG_CRIT, "Unable to get dl entry for 'CanalGetDllVersion'.");
+        syslog( LOG_ERR, "Unable to get dl entry for 'CanalGetDllVersion'.");
         dlclose(drvobj.m_hdll);
         exit( EXIT_FAILURE );
     }
@@ -427,13 +427,13 @@ int main( int argc, char **argv )
     if ( NULL == ( drvobj.m_proc_CanalGetVendorString =
                     (LPFNDLL_CANALGETVENDORSTRING)dlsym( drvobj.m_hdll, "CanalGetVendorString" ) ) ) {
         // Free the library
-        syslog( LOG_CRIT, "Unable to get dl entry for 'CanalGetVendorString'.");
+        syslog( LOG_ERR, "Unable to get dl entry for 'CanalGetVendorString'.");
         dlclose(drvobj.m_hdll);
         exit( EXIT_FAILURE );
     }
 
 
-    /* 
+    /*
         ******************************
               Generation 2 Methods
         ******************************
@@ -461,18 +461,18 @@ int main( int argc, char **argv )
     if ( ( drvobj.m_hCANAL =
             drvobj.m_proc_CanalOpen( drvobj.m_drvConfig, drvobj.m_drvFlags ) ) <= 0 ) {
         /* Failed to open */
-        syslog( LOG_CRIT, 
+        syslog( LOG_ERR,
                     "Failed to open CANAL driver. path=%s config=%s flags=%lu",
                     drvobj.m_drvPath,
                     drvobj.m_drvConfig,
                     drvobj.m_drvFlags );
-        dlclose(drvobj.m_hdll);                   
+        dlclose(drvobj.m_hdll);
         exit(EXIT_FAILURE);
     }
     else {
         /* Driver opened properly */
-        syslog( LOG_INFO, 
-                    "Driver opended. path=%s config=%s flags=%lu", 
+        syslog( LOG_INFO,
+                    "Driver opended. path=%s config=%s flags=%lu",
                     drvobj.m_drvPath,
                     drvobj.m_drvConfig,
                     drvobj.m_drvFlags );
@@ -485,15 +485,15 @@ int main( int argc, char **argv )
     struct sockaddr_in6 addr;
     struct pollfd fds[MAX_CLIENTS+1];   /* Listen + clients         */
     int nfds = 1;                       /* Current # connections    */
-    int current_size = 0;               
+    int current_size = 0;
     int bQuit = FALSE;
     int bCompressArray = FALSE;
     char buffer[80];
 
-    /* Create listen socket */    
+    /* Create listen socket */
     listen_sd = socket(AF_INET, SOCK_STREAM, 0);
     if ( listen_sd < 0) {
-        syslog( LOG_CRIT, "socket() failed" );
+        syslog( LOG_ERR, "socket() failed" );
         /* Close CANAL driver */
         drvobj.m_proc_CanalClose( drvobj.m_hCANAL );
         /* Close DLL */
@@ -502,19 +502,19 @@ int main( int argc, char **argv )
     }
 
     /* Allow socket descriptor to be reuseable */
-    rc = setsockopt( listen_sd, 
-                        SOL_SOCKET,  
+    rc = setsockopt( listen_sd,
+                        SOL_SOCKET,
                         SO_REUSEADDR,
-                        (char *)&on, 
+                        (char *)&on,
                         sizeof( on ) );
     if ( rc < 0 ) {
-        syslog( LOG_CRIT, "setsockopt() failed");
+        syslog( LOG_ERR, "setsockopt() failed");
         /* Close listen socket */
-        close(listen_sd);  
+        close(listen_sd);
         /* Close CANAL driver */
         drvobj.m_proc_CanalClose( drvobj.m_hCANAL );
         /* Close DLL */
-        dlclose( drvobj.m_hdll ); 
+        dlclose( drvobj.m_hdll );
         exit(EXIT_FAILURE);
     }
 
@@ -525,9 +525,9 @@ int main( int argc, char **argv )
     /*************************************************************/
     rc = ioctl(listen_sd, FIONBIO, (char *)&on);
     if ( rc < 0 ) {
-        syslog( LOG_CRIT, "ioctl() failed");
+        syslog( LOG_ERR, "ioctl() failed");
         /* Close listen socket */
-        close(listen_sd);  
+        close(listen_sd);
         /* Close CANAL driver */
         drvobj.m_proc_CanalClose( drvobj.m_hCANAL );
         /* Close DLL */
@@ -541,12 +541,12 @@ int main( int argc, char **argv )
     memcpy( &addr.sin6_addr, &in6addr_any, sizeof( in6addr_any ) );
     addr.sin6_port = htons(port );
     rc = bind( listen_sd,
-                (struct sockaddr *)&addr, 
+                (struct sockaddr *)&addr,
                 sizeof( addr ) );
     if (rc < 0) {
-        syslog( LOG_CRIT, "bind() failed");
+        syslog( LOG_ERR, "bind() failed");
         /* Close listen socket */
-        close(listen_sd);  
+        close(listen_sd);
         /* Close CANAL driver */
         drvobj.m_proc_CanalClose( drvobj.m_hCANAL );
         /* Close DLL */
@@ -557,9 +557,9 @@ int main( int argc, char **argv )
     /* Set the listen back log */
     rc = listen( listen_sd, 32 );
     if ( rc < 0 ) {
-        syslog( LOG_CRIT, "listen() failed");
+        syslog( LOG_ERR, "listen() failed");
         /* Close listen socket */
-        close(listen_sd);  
+        close(listen_sd);
         /* Close CANAL driver */
         drvobj.m_proc_CanalClose( drvobj.m_hCANAL );
         /* Close DLL */
@@ -573,7 +573,7 @@ int main( int argc, char **argv )
     /* Set up the initial listening socket */
     fds[0].fd = listen_sd;
     fds[0].events = POLLIN;
-            
+
     /* Main Loop */
     do {
         /* Call poll() and wait for it to complete. */
@@ -581,17 +581,17 @@ int main( int argc, char **argv )
 
         /* Check to see if the poll call failed.*/
         if ( rc < 0 ) {
-            syslog( LOG_CRIT, "  poll() failed");
+            syslog( LOG_ERR, "  poll() failed");
             break;
         }
-           
+
         /* Check to see if the  time out expired. */
         if ( 0 == rc ) {
             printf("  poll() timed out.  End program.\n");
 
             // Send "+OK" on all rcvloop connections
             continue;
-        } 
+        }
 
         /***********************************************************/
         /* One or more descriptors are readable.  Need to          */
@@ -692,7 +692,7 @@ int main( int argc, char **argv )
                     rc = recv( fds[i].fd, buffer, sizeof(buffer), 0 );
                     if ( rc < 0 ) {
                         if ( errno != EWOULDBLOCK ) {
-                            syslog( LOG_CRIT, "  recv() failed");
+                            syslog( LOG_ERR, "  recv() failed");
                             bQuit = TRUE;
                         }
                         break;
@@ -716,7 +716,7 @@ int main( int argc, char **argv )
                     /* Echo the data back to the client */
                     rc = send( fds[i].fd, buffer, len, 0 );
                     if ( rc < 0 ) {
-                        syslog( LOG_CRIT, "  send() failed");
+                        syslog( LOG_ERR, "  send() failed");
                         bQuit = TRUE;
                         break;
                     }
@@ -739,7 +739,7 @@ int main( int argc, char **argv )
 
         } /* for each descriptor */
 
-        
+
 
         /***********************************************************/
         /* If the compress_array flag was turned on, we need       */
@@ -751,11 +751,11 @@ int main( int argc, char **argv )
         if ( bCompressArray ) {
 
             bCompressArray = FALSE;
-            
+
             for (i = 0; i < nfds; i++) {
 
                 if ( fds[i].fd == -1 ) {
-                    
+
                     for( j = i; j < nfds; j++ ) {
                         fds[j].fd = fds[j+1].fd;
                     }
@@ -786,7 +786,7 @@ int main( int argc, char **argv )
     /* Close the driver */
     if ( CANAL_ERROR_SUCCESS != drvobj.m_proc_CanalClose( drvobj.m_hCANAL ) ) {
         /* Failed to open */
-        syslog( LOG_CRIT, 
+        syslog( LOG_ERR,
                     "Failed to close CANAL driver. path=%s config=%s flags=%lu",
                     drvobj.m_drvPath,
                     drvobj.m_drvConfig,
@@ -794,8 +794,8 @@ int main( int argc, char **argv )
     }
     else {
         /* Driver closed properly */
-        syslog( LOG_INFO, 
-                    "Driver closed. path=%s", 
+        syslog( LOG_INFO,
+                    "Driver closed. path=%s",
                     drvobj.m_drvPath );
     }
 
@@ -803,7 +803,7 @@ int main( int argc, char **argv )
     dlclose( drvobj.m_hdll );
 
     canalif_cleanup( &drvobj );  /* Cleanup the CANAL if structure */
-   
+
     closelog();             /* Close syslog session*/
     exit( EXIT_SUCCESS );
 }

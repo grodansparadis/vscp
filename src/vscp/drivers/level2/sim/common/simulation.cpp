@@ -569,7 +569,7 @@ CSim::open(const char *pUsername,
             if (pthread_create(
                   &pObj->m_workerThread, NULL, workerThread, pObj)) {
 
-                syslog(LOG_CRIT, "Unable to start simulation worker thread.");
+                syslog(LOG_ERR, "Unable to start simulation worker thread.");
                 delete pObj;
                 return false;
             }
@@ -628,7 +628,7 @@ CSim::close(void)
     if (m_bQuit) return;
 
     m_bQuit = true; // terminate the thread
-    
+
     // Terminate threads and deallocate objects
     std::deque<CWrkTreadObj *>::iterator it;
     for (it = m_objectList.begin(); it != m_objectList.end(); ++it) {
@@ -1207,7 +1207,7 @@ workerThread(void *pData)
     }
 
     if ( !fs ) {
-        syslog(LOG_CRIT, "Unable to open the simulation data file [%s]", pObj->m_path.c_str() );
+        syslog(LOG_ERR, "Unable to open the simulation data file [%s]", pObj->m_path.c_str() );
     }
 
     // Set C locale
@@ -1216,7 +1216,7 @@ workerThread(void *pData)
     // read all lines one by one
     // until the end of the file
     while ( fs >> str ) {
- 
+
         // Replace possible comma with period
         if (std::string::npos != (pos = str.find(','))) {
             str[pos] = '.';

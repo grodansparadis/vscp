@@ -676,7 +676,7 @@ CVariable::setFromXML(std::string &strVariable)
     void *buf = XML_GetBuffer(xmlParser, XML_BUFF_SIZE);
     if (NULL == buf) {
         XML_ParserFree(xmlParser);
-        syslog(LOG_CRIT, "Failed to allocate buffer for XML parser (string)");
+        syslog(LOG_ERR, "Failed to allocate buffer for XML parser (string)");
         return false;
     }
 
@@ -2623,7 +2623,7 @@ CVariableStorage::loadFromXML(const std::string &path)
     fp = fopen(xmlpath.c_str(), "r");
     if (NULL == fp) {
         syslog(
-          LOG_CRIT, "Failed to open variable file [%s]", m_xmlPath.c_str());
+          LOG_ERR, "Failed to open variable file [%s]", m_xmlPath.c_str());
         return false;
     }
 
@@ -2636,7 +2636,7 @@ CVariableStorage::loadFromXML(const std::string &path)
     if (NULL == buf) {
         XML_ParserFree(xmlParser);
         fclose(fp);
-        syslog(LOG_CRIT,
+        syslog(LOG_ERR,
                "Failed to allocate buffer for XML parser file [%s]",
                m_xmlPath.c_str());
         return false;
