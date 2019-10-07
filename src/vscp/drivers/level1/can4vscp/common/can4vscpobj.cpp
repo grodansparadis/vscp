@@ -128,6 +128,8 @@ CCan4VSCPObj::CCan4VSCPObj()
 
     m_bRun = false;
     m_bOpen = false;
+    m_bDebug = false;
+    m_bStrict = false;
 
     m_RxMsgState = INCOMING_STATE_NONE;
     m_RxMsgSubState = INCOMING_SUBSTATE_NONE;
@@ -253,17 +255,22 @@ CCan4VSCPObj::~CCan4VSCPObj()
 // flags
 //-----------------------------------------------------------------------------
 //
-// bit 1/2
+// bit 0/1
 // =======
 //	00 - Normal Mode (0)
 //	01 - Listen Mode (1)
 //	10 - Loopback Mode (2)
 //	11 - Disabled Mode (3)
 //
-// bit 3
+// bit 2
 // =====
 //  0  - Switch to CAN4VSCP mode is carried out on startup
 //  1  - No switch to CAN4VSCP mode
+//
+// Bit 3
+// =====
+//  0  - Disable wait for ACK
+//  1  - Enable wait for ACK
 //
 // bit 4
 // =====
@@ -275,7 +282,20 @@ CCan4VSCPObj::~CCan4VSCPObj()
 //  0  - No hardware handshake.
 //  1  - Enable hardware handshake.
 //
+// bit 6
+// =====
+//  0  - Disable reopen.
+//  1  - Enable reopen.
 //
+// bit 8
+// =====
+//  0  - Try to continue even if errors occurs.
+//  1  - Strict mode. Give up on all errors.
+//
+// bit 31
+// ======
+//  0  - No debug logging
+//  1  - Debug logging (syslog LOG_DEBUG)
 
 int CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
 {
@@ -299,6 +319,16 @@ int CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
 
     m_initFlag = flags;
 
+    // Enable strict mode if asked to
+    if ( flags & CAN4VSCP_FLAG_ENABLE_STRICT ) {
+        m_bStrict = true;
+    }
+
+    // Enable debug messges if asked to
+    if ( flags & CAN4VSCP_FLAG_ENABLE_DEBUG ) {
+        m_bDebug = true;
+    }
+
     m_RxMsgState = INCOMING_STATE_NONE;
     m_RxMsgSubState = INCOMING_SUBSTATE_NONE;
 
@@ -321,6 +351,11 @@ int CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
     // Make upper case
     p = szDrvParams;
 #endif
+
+    openlog("vscpl1drv-can4vscp", LOG_CONS, LOG_DAEMON );
+    if ( m_bDebug ) {
+        syslog(LOG_DEBUG, "Open driver %s &d", pConfig, flags );
+    }
 
     // Initiate statistics
     m_stat.cntReceiveData = 0;
@@ -494,17 +529,22 @@ int CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
 
 
     // if open we have noting to do
-    if (0 != m_com.getFD()) return 0;
+    if (0 != m_com.getFD()) {
+        syslog(LOG_ERR, "Serial port is already open. Aborting! ");
+        return 0;
+    }
 
     //----------------------------------------------------------------------
     // Open Serial Port
     //----------------------------------------------------------------------
     if ( !m_com.open( pDeviceName ) ) {
-        syslog( LOG_ERR, "can4vscp: Open [%s] failed\n", pDeviceName );
-        return CANAL_ERROR_INIT_FAIL;
+        syslog( LOG_ERR, "Open [%s] failed\n", pDeviceName );
+        if ( m_bStrict ) {
+            return CANAL_ERROR_INIT_FAIL;
+        }
     }
 
-    syslog( LOG_ERR, "can4vscp: Open [%s] successful\n", pDeviceName );
+    syslog( LOG_ERR, "Open of port [%s] successful\n", pDeviceName );
 
     //----------------------------------------------------------------------
     // Com::setParam( char *baud, char *parity, char *bits, int HWFlow, int SWFlow )
@@ -604,7 +644,7 @@ int CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
                             workThreadTransmit,
                             this ) ) {
 
-        syslog( LOG_ERR, "can4vscp: Unable to create can4vscpdrv write thread.");
+        syslog( LOG_ERR, "Unable to create can4vscpdrv write thread.");
 #ifdef DEBUG_CAN4VSCP_RECEIVE
         if (NULL != m_flog) {
             fclose( m_flog );
@@ -618,7 +658,7 @@ int CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
                                 &thread_attr,
                                 workThreadReceive,
                                 this ) ) {
-            syslog( LOG_ERR, "can4vscp: Unable to create can4vscpdrv receive thread.");
+            syslog( LOG_ERR, "Unable to create can4vscpdrv receive thread.");
 #ifdef DEBUG_CAN4VSCP_RECEIVE
         if (NULL != m_flog) {
             fclose( m_flog );
@@ -656,8 +696,11 @@ int CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
     // Give up if not found
     if (!bFound) {
         // Failure
-        close();
-        return CANAL_ERROR_INIT_FAIL;
+        syslog(LOG_ERR, "NOOP initial command test failed.");
+        if ( m_bStrict ) {
+            close();
+            return CANAL_ERROR_INIT_FAIL;
+        }
     }
 
     m_bOpen = true;
@@ -676,8 +719,11 @@ int CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
                                 &Msg,
                                 500 ) ) {
             // Failure
-            close();
-            return CANAL_ERROR_INIT_FAIL;
+            syslog(LOG_ERR, "Enable of timestamp failed.");
+            if ( m_bStrict ) {
+                close();
+                return CANAL_ERROR_INIT_FAIL;
+            }
         }
 
     }
@@ -692,8 +738,11 @@ int CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
                                 &Msg,
                                 500 ) ) {
             // Failure
-            close();
-            return CANAL_ERROR_INIT_FAIL;
+            syslog(LOG_ERR, "Config of CAN bitrate failed.");
+            if ( m_bStrict ) {
+                close();
+                return CANAL_ERROR_INIT_FAIL;
+            }
         }
 
     }
@@ -713,8 +762,11 @@ int CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
                                 &Msg,
                                 1000)) {
             // Failure
-            close();
-            return CANAL_ERROR_INIT_FAIL;
+            syslog(LOG_ERR, "Failed to open device in listen mode");
+            if ( m_bStrict ) {
+                close();
+                return CANAL_ERROR_INIT_FAIL;
+            }
         }
         break;
 
@@ -725,8 +777,11 @@ int CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
                                 &Msg,
                                 1000)) {
             // Failure
-            close();
-            return CANAL_ERROR_INIT_FAIL;
+            syslog(LOG_ERR,"Failed to open device in loopback mode.");
+            if ( m_bStrict ) {
+                close();
+                return CANAL_ERROR_INIT_FAIL;
+            }
         }
         break;
 
@@ -738,12 +793,16 @@ int CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
                                 &Msg,
                                 1000 ) ) {
             // Failure
-            close();
-            return CANAL_ERROR_INIT_FAIL;
+            syslog(LOG_ERR,"Failed to open device in standard mode.");
+            if ( m_bStrict ) {
+                close();
+                return CANAL_ERROR_INIT_FAIL;
+            }
         }
         break;
     }
 
+    syslog(LOG_DEBUG,"Open success");
     return CANAL_ERROR_SUCCESS;
 }
 
@@ -755,6 +814,8 @@ int CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
 int CCan4VSCPObj::close( void )
 {
     cmdResponseMsg Msg;
+
+    syslog(LOG_DEBUG,"Closing driver");
 
     // Do nothing if already terminated
     if ( !m_bRun ) return CANAL_ERROR_SUCCESS;
@@ -820,6 +881,7 @@ int CCan4VSCPObj::close( void )
 
 #endif
 
+    syslog(LOG_DEBUG,"Driver close success");
     return CANAL_ERROR_SUCCESS;
 }
 
