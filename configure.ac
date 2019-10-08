@@ -1,7 +1,7 @@
 dnl Autoconf settings for VSCP
 dnl $Id: configure.in,v 1.5 2017/10/13 11:22:06 akhe Exp $
 
-AC_INIT( [vscp], [13.1.1], [akhe@grodansparadis.com])
+AC_INIT( [vscp], [14.0.0], [akhe@grodansparadis.com])
 AC_CONFIG_SRCDIR([src/vscp/common/canalsuperwrapper.cpp])
 #AM_INIT_AUTOMAKE
 
@@ -107,8 +107,7 @@ dnl
 dnl Project Sub directories
 dnl
 
-PROJ_SUBDIRS="src/vscp/drivers/level1/can4vscp/linux\
- src/vscp/drivers/level1/can232/linux\
+PROJ_SUBDIRS="src/vscp/drivers/level1/can232/linux\
  src/vscp/drivers/level1/xap/linux\
  src/vscp/drivers/level1/socketcan/linux\
  src/vscp/drivers/level2/wire1/linux\
@@ -188,7 +187,6 @@ AC_CONFIG_FILES([Makefile
          src/vscp/drivers/level1/can232/linux/Makefile
          src/vscp/drivers/level1/xap/linux/Makefile
          src/vscp/drivers/level1/socketcan/linux/Makefile
-         src/vscp/drivers/level1/can4vscp/linux/Makefile
          src/vscp/drivers/level2/lmsensors/linux/Makefile
 	      src/vscp/drivers/level2/mqtt/linux/Makefile
          src/vscp/drivers/level2/socketcan/linux/Makefile
