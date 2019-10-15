@@ -116,7 +116,6 @@ PROJ_SUBDIRS="src/vscp/drivers/level1/can232/linux\
  src/vscp/drivers/level2/rawethernet/linux\
  src/vscp/drivers/level2/sim/linux\
  src/vscp/linuxvscpl1\
- src/vscp/helperlib/linux\
  src/vscp/daemon/linux\
  src/vscp/vscp-mkpasswd\
  src/vscp/uvscpd\
@@ -191,7 +190,6 @@ AC_CONFIG_FILES([Makefile
          src/vscp/drivers/level2/wire1/linux/Makefile
          src/vscp/drivers/level2/sim/linux/Makefile
          src/vscp/linuxvscpl1/Makefile
-         src/vscp/helperlib/linux/Makefile
          src/vscp/relayd/Makefile
 ])
 

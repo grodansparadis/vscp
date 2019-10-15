@@ -48,7 +48,7 @@
             !!!!!!!!!!!!!!!!!!!!  W A R N I N G  !!!!!!!!!!!!!!!!!!!!
                            This file is auto-generated
                 see https://github.com/grodansparadis/vscp-classes
-                        Generated: 2019-09-26 11:12:50.145935
+                        Generated: 2019-10-15 12:07:10.024405
 */
  
 #ifndef VSCP_TYPE_H
@@ -141,6 +141,19 @@
 #define VSCP_TYPE_SECURITY_SOUND_DETECTED           18  /* Noise (sound) detected. */
 #define VSCP_TYPE_SECURITY_HARMFUL_SOUND_LEVEL      19  /* Harmful sound levels detected. */
 #define VSCP_TYPE_SECURITY_TAMPER                   20  /* Tamper detected. */
+#define VSCP_TYPE_SECURITY_AUTHENTICATED            21  /* Authenticated */
+#define VSCP_TYPE_SECURITY_UNAUTHENTICATED          22  /* Unauthenticated */
+#define VSCP_TYPE_SECURITY_AUTHORIZED               23  /* Authorized */
+#define VSCP_TYPE_SECURITY_UNAUTHORIZED             24  /* Unauthorized */
+#define VSCP_TYPE_SECURITY_ID_CHECK                 25  /* ID check */
+#define VSCP_TYPE_SECURITY_PIN_OK                   26  /* Valid pin */
+#define VSCP_TYPE_SECURITY_PIN_FAIL                 27  /* Invalid pin */
+#define VSCP_TYPE_SECURITY_PIN_WARNING              28  /* Pin warning */
+#define VSCP_TYPE_SECURITY_PIN_ERROR                29  /* Pin error */
+#define VSCP_TYPE_SECURITY_PASSWORD_OK              30  /* Valid password */
+#define VSCP_TYPE_SECURITY_PASSWORD_FAIL            31  /* Invalid password */
+#define VSCP_TYPE_SECURITY_PASSWORD_WARNING         32  /* Password warning */
+#define VSCP_TYPE_SECURITY_PASSWORD_ERROR           33  /* Password error */
     
 /*  CLASS1.MEASUREMENT = 10  -  Measurement */
 #define VSCP_TYPE_MEASUREMENT_GENERAL               0   /* General event */
@@ -343,6 +356,13 @@
 #define VSCP_TYPE_CONTROL_LOCK                      42  /* Lock */
 #define VSCP_TYPE_CONTROL_UNLOCK                    43  /* Unlock */
 #define VSCP_TYPE_CONTROL_PWM                       44  /* PWM set */
+#define VSCP_TYPE_CONTROL_TOKEN_LOCK                45  /* Lock with token */
+#define VSCP_TYPE_CONTROL_TOKEN_UNLOCK              46  /* Unlock with token */
+#define VSCP_TYPE_CONTROL_SET_SECURITY_LEVEL        47  /* Set security level */
+#define VSCP_TYPE_CONTROL_SET_SECURITY_PIN          48  /* Set security pin */
+#define VSCP_TYPE_CONTROL_SET_SECURITY_PASSWORD     49  /* Set security password */
+#define VSCP_TYPE_CONTROL_SET_SECURITY_TOKEN        50  /* Set security token */
+#define VSCP_TYPE_CONTROL_REQUEST_SECURITY_TOKEN    51  /* Request new security token */
     
 /*  CLASS1.MULTIMEDIA = 40  -  Multimedia */
 #define VSCP_TYPE_MULTIMEDIA_GENERAL                0   /* General event */
