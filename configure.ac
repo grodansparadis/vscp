@@ -111,16 +111,12 @@ PROJ_SUBDIRS="src/vscp/drivers/level1/can232/linux\
  src/vscp/drivers/level1/xap/linux\
  src/vscp/drivers/level2/wire1/linux\
  src/vscp/drivers/level2/lmsensors/linux\
- src/vscp/drivers/level2/socketcan/linux\
  src/vscp/drivers/level2/tcpdrv/linux\
  src/vscp/drivers/level2/rawethernet/linux\
  src/vscp/drivers/level2/sim/linux\
- src/vscp/linuxvscpl1\
  src/vscp/daemon/linux\
  src/vscp/vscp-mkpasswd\
- src/vscp/uvscpd\
- src/vscp/vscpcmd\
- src/vscp/relayd "
+ src/vscp/vscpcmd "
 
 AC_ARG_ENABLE(rpi,
 [  --enable-rpi         Build Raspberry Pi specific stuff (default disabled)],
@@ -179,18 +175,14 @@ AC_CONFIG_FILES([Makefile
          m4/Makefile
          src/vscp/vscpcmd/Makefile
          src/vscp/daemon/linux/Makefile
-         src/vscp/uvscpd/Makefile
          src/vscp/vscp-mkpasswd/Makefile
          src/vscp/drivers/level1/can232/linux/Makefile
          src/vscp/drivers/level1/xap/linux/Makefile
          src/vscp/drivers/level2/lmsensors/linux/Makefile
-         src/vscp/drivers/level2/socketcan/linux/Makefile
          src/vscp/drivers/level2/tcpdrv/linux/Makefile
          src/vscp/drivers/level2/rawethernet/linux/Makefile
          src/vscp/drivers/level2/wire1/linux/Makefile
          src/vscp/drivers/level2/sim/linux/Makefile
-         src/vscp/linuxvscpl1/Makefile
-         src/vscp/relayd/Makefile
 ])
 
 if test "${vscp_rpi}" = yes ; then

@@ -1,9 +1,9 @@
 # relayd - VSCP Level I/CANAL relay
 
-This software connectes a Level I /CANAL driver and a VSCP daemon using the VSCP Link protocol. 
+This software connects a Level I /CANAL driver and a VSCP daemon using the VSCP Link protocol.
 
 
-relayd [options] -d"driver-path" -c"configstr" -f"flags" 
+relayd [options] -d"driver-path" -c"configstr" -f"flags"
 
 -s --standalone - Don't run in daemon mode (default: daemon).
 -p --port       - Port to use (default: 9598).
