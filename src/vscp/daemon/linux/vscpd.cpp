@@ -51,6 +51,7 @@
 #include <sys/ioctl.h>
 #include <linux/sockios.h>
 
+#include <crc.h>
 #include "vscpd.h"
 #include <controlobject.h>
 #include <version.h>

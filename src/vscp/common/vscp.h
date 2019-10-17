@@ -39,7 +39,6 @@
 #include <vscp_class.h>
 #include <vscp_type.h>
 #include <canal.h>
-#include <crc.h>
 #include <inttypes.h>
 
 

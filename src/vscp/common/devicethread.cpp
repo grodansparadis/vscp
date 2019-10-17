@@ -177,7 +177,7 @@ deviceThread(void *pData)
         pDevItem->m_proc_CanalOpen =
           (LPFNDLL_CANALOPEN)dlsym(hdll, "CanalOpen");
         const char *dlsym_error = dlerror();
-        dlsym_error             = dlerror();
+
         if (dlsym_error) {
             // Free the library
             syslog(LOG_DEBUG,
