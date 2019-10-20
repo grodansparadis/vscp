@@ -1,22 +1,22 @@
 /******************************************************************************
  canal.h
 
- This file is part of the VSCP (http://www.vscp.org) 
+ This file is part of the VSCP (http://www.vscp.org)
 
  The MIT License (MIT)
- 
+
  Copyright (C) 2000-2019 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
- 
+
  Permission is hereby granted, free of charge, to any person obtaining a copy
  of this software and associated documentation files (the "Software"), to deal
  in the Software without restriction, including without limitation the rights
  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  copies of the Software, and to permit persons to whom the Software is
  furnished to do so, subject to the following conditions:
- 
+
  The above copyright notice and this permission notice shall be included in all
  copies or substantial portions of the Software.
- 
+
  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -29,8 +29,8 @@
  This file may be a copy of the original file. This is because the file is
  copied to other projects as a convinience. Thus editing the copy will not make
  it to the original and will be overwritten.
- The original file can be foud in the vscp_softare source tree under 
- src/vscp/common 
+ The original file can be foud in the vscp_softare source tree under
+ src/vscp/common
 */
 
 #ifndef ___CANAL_H___
@@ -47,7 +47,7 @@
 #define WINAPI __stdcall
 #endif
 #else
- 
+
 #endif
 
 
@@ -56,7 +56,7 @@
 
 
 /*
- CANAL version 
+ CANAL version
  =============
  This value is steped for each new version when
  the i/f is changed. This will hopefully not
@@ -133,7 +133,7 @@ typedef struct structCanalStatistics {
     unsigned long cntReceiveFrames;             /* # of receive frames */
     unsigned long cntTransmitFrames;            /* # of transmitted frames */
     unsigned long cntReceiveData;               /* # of received data bytes */
-    unsigned long cntTransmitData;              /* # of transmitted data bytes */	
+    unsigned long cntTransmitData;              /* # of transmitted data bytes */
     unsigned long cntOverruns;                  /* # of overruns */
     unsigned long cntBusWarnings;               /* # of bys warnings */
     unsigned long cntBusOff;                    /* # of bus off's */
@@ -169,11 +169,11 @@ typedef long CANHANDLE;
 
 /*    * * * Prototypes * * *   */
 
-/*!		
+/*!
     Open a CANAL device and get a handle to it.
 
     flags - Give extra info to the CANAL i/F
-    
+
   @param  pDevice Physical device to connect to.
   @return Handle of device or -1 if error.
 */
@@ -184,7 +184,7 @@ long CanalOpen( const char *pDevice, unsigned long flags );
 #endif
 
 
-/*! 
+/*!
     Close a CANAL channel.
 
     @param handle - Handle to open physical CANAL channel.
@@ -212,7 +212,7 @@ unsigned long CanalGetLevel( long handle );
 
     The instruction should block if not instructed not to
     do so when the interface was opened.
-    
+
     @param handle - Handle to open physical CANAL channel.
     @param pCanMsg - Message to send.
     @return zero on success or error-code on failure.
@@ -229,7 +229,7 @@ int CanalSend( long handle, PCANALMSG pCanalMsg );
 
     The instruction should block if not instructed not to
     do so when the interface was opened.
-    
+
     @param handle - Handle to open physical CANAL channel.
     @param pCanMsg - Message to send.
     @param timeout - time-out in ms. 0 is forever.
@@ -247,8 +247,8 @@ int CanalBlockingSend( long handle, PCANALMSG pCanalMsg, unsigned long timeout )
     The instruction should block if not instructed not to
     do so when the interface was opened.
 
-        :!: Note that if bit 2 in flags of the CANAL message is set and error status 
-        message is returned from the adapter. 
+        :!: Note that if bit 2 in flags of the CANAL message is set and error status
+        message is returned from the adapter.
 
     @param handle - Handle to open physical CANAL channel.
     @param pCanMsg - Message to send.
@@ -267,8 +267,8 @@ int CanalReceive( long handle, PCANALMSG pCanalMsg );
     The instruction should block if not instructed not to
     do so when the interface was opened.
 
-        Note that if bit 2 in flags of the CANAL message is set and error status 
-        message is returned from the adapter. 
+        Note that if bit 2 in flags of the CANAL message is set and error status
+        message is returned from the adapter.
 
     @param handle - Handle to open physical CANAL channel.
     @param pCanMsg - Message to send.
@@ -276,17 +276,17 @@ int CanalReceive( long handle, PCANALMSG pCanalMsg );
     @return zero on success or error-code on failure.
 */
 #ifdef WIN32
-int WINAPI EXPORT CanalBlockingReceive( long handle, 
-                                            PCANALMSG pCanalMsg, 
+int WINAPI EXPORT CanalBlockingReceive( long handle,
+                                            PCANALMSG pCanalMsg,
                                             unsigned long timeout );
 #else
-int CanalBlockingReceive( long handle, 
-                            PCANALMSG pCanalMsg, 
+int CanalBlockingReceive( long handle,
+                            PCANALMSG pCanalMsg,
                             unsigned long timeout );
 #endif
 
 /*!
-    Check a CANAL channel for message availability. 
+    Check a CANAL channel for message availability.
 
     @param handle - Handle to open physical CANAL channel.
     @return Zero if no message is available or the number of messages if
@@ -300,11 +300,11 @@ int CanalDataAvailable( long handle );
 
 /*!
     Get status for a CANAL channel
-    
+
     @param handle Handle to open physical CANAL channel.
     @param pCanStatus Pointer to a CANAL status structure.
     @return zero on success or error-code on failure.
-*/ 
+*/
 #ifdef WIN32
 int WINAPI EXPORT CanalGetStatus( long handle, PCANALSTATUS pCanalStatus );
 #else
@@ -319,10 +319,10 @@ int CanalGetStatus( long handle, PCANALSTATUS pCanalStatus );
     @return zero on success or error-code on failure.
 */
 #ifdef WIN32
-int WINAPI EXPORT CanalGetStatistics( long handle, 
+int WINAPI EXPORT CanalGetStatistics( long handle,
                                         PCANALSTATISTICS pCanalStatistics  );
 #else
-int CanalGetStatistics( long handle, 
+int CanalGetStatistics( long handle,
                             PCANALSTATISTICS pCanalStatistics  );
 #endif
 
@@ -343,7 +343,7 @@ int CanalSetFilter( long handle, unsigned long filter );
     Set the mask for a CANAL channel
 
     @param handle Handle to open physical CANAL channel.
-    @param mask for 
+    @param mask for
     @return zero on success or error-code on failure.
 */
 #ifdef WIN32
@@ -476,7 +476,7 @@ const char * CanalGetDriverInfo( void );
 #define CANAL_ERROR_FIFO_EMPTY              8           /* FIFO is empty */
 #define CANAL_ERROR_FIFO_FULL               9           /* FIFI is full */
 #define CANAL_ERROR_FIFO_SIZE               10          /* FIFO size error */
-#define CANAL_ERROR_FIFO_WAIT               11      
+#define CANAL_ERROR_FIFO_WAIT               11
 #define CANAL_ERROR_GENERIC                 12          /* Generic error */
 #define CANAL_ERROR_HARDWARE                13          /* Hardware error */
 #define CANAL_ERROR_INIT_FAIL               14          /* Initialization failed */
@@ -504,7 +504,7 @@ const char * CanalGetDriverInfo( void );
 #define CANAL_ERROR_INTERNAL                36          /* Some kind of internal program error */
 #define CANAL_ERROR_COMMUNICATION           37          /* Some kind of communication error */
 #define CANAL_ERROR_USER                    38          /* Login error */
- 
+
 // CANAL commands sent over the memory pipe interface (deprecated) */
 #define CANAL_COMMAND_NOOP                  0           /* No command */
 #define CANAL_COMMAND_OPEN                  1           /* Open channel */
@@ -523,7 +523,7 @@ const char * CanalGetDriverInfo( void );
 #define CANAL_COMMAND_LEVEL                 14          /* CANAL Level bit array */
 
 /* CANAL responses sent over the memory pipe interface (deprecated) */
-#define CANAL_RESPONSE_NONE                 0            
+#define CANAL_RESPONSE_NONE                 0
 #define CANAL_RESPONSE_SUCCESS              1           /* OK message       */
 #define CANAL_RESPONSE_ERROR                2           /* ERROR message    */
 #define CANAL_RESPONSE_MESSAGE              3           /* Response to read */
@@ -539,7 +539,7 @@ const char * CanalGetDriverInfo( void );
 #define CANAL_IFERROR_BUFFER_EMPTY          134
 #define CANAL_IFERROR_BUFFER_FULL           135
 #define CANAL_IFERROR_READ_FAILURE          136
-#define CANAL_IFERROR_SEND_STORAGE          137 
+#define CANAL_IFERROR_SEND_STORAGE          137
 
 
 /*    * * * TCP/IP FAST mode interface constants    */
@@ -568,6 +568,50 @@ const char * CanalGetDriverInfo( void );
 #define CANUSB_ACCEPTANCE_FILTER_ALL        0x00000000
 #define CANUSB_ACCEPTANCE_MASK_ALL          0xFFFFFFFF
 
+/*!
+    XML CAN message template
+
+    <canal flags="1234"
+            id="1234"
+            obid="1234"
+            dataSize="1234"
+            data="1,2,3,4..."
+            timestamp="1234"  />
+*/
+
+#define CANAL_XML_MSG_TEMPLATE      \
+    "<canal "                       \
+    "flags=\"%lu\" "                \
+    "id=\"%lu\" "                   \
+    "obid=\"%lu\" "                 \
+    "dataSize=\"%d\" "              \
+    "data=\"%s\" "                  \
+    "timestamp=\"%lu\" "            \
+    "/>"                            \
+
+/*!
+    JSON CAN message template
+
+    {
+        "flags"     : 1234,
+        "id"        : 1234,
+        "obid"      : 1234,
+        "sizeData"  : 1234,
+        "data"      : [1,1,2,3...],
+        "timestamp" : 1234
+    }
+*/
+
+#define CANAL_JSON_MSG_TEMPLATE     \
+    "{"                             \
+    "\"flags\": %d,\n"              \
+    "\"id\": %d,\n"                 \
+    "\"obid\": %d,\n"               \
+    "\"sizeData\": %d,\n"           \
+    "\"data\": [%s],\n"             \
+    "\"timestamp\": %d,\n"          \
+    "}"                             \
+
 
 #ifdef __cplusplus
 }
@@ -575,11 +619,3 @@ const char * CanalGetDriverInfo( void );
 
 
 #endif /* ___CANAL_H___ */
-
-
-
-
-
-
-
-
