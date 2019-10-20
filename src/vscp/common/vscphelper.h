@@ -1537,29 +1537,6 @@ extern "C"
     bool vscp_setVscpEventExFromString(vscpEventEx *pEventEx,
                                        const std::string &str);
 
-    /*!
-        Write in measurement data into real text string             TODO REMOVE
-       !!!!!!!!!
-        @param vscptype VSCP type
-        @param unit Measurement unit, 0-3 for Level I, 0-255 for Level II.
-        @param sensoridx Index for sensor, 0-7 for Level I, 0-255 for Level II.
-    */
-    std::string &vscp_writeMeasurementValue(uint16_t vscptype,
-                                            uint8_t unit,
-                                            uint8_t sensoridx,
-                                            std::string &strValue);
-
-    /*!
-        Get Data in real text.
-        This for measurement class events that can be describes in real text
-        in a deterministic way. Temperature event is typical which can be
-       returned in clear text as "Temperature = 22.5 C".
-        @param pEvent Event that should be presented
-        @return Text data representation of the event data or an empty string
-        if the class/type pair is not supported..
-        */
-
-    std::string vscp_getRealTextData(vscpEvent *pEvent);
 
     /*!
         This function makes a HTML string from a standard string. LF is replaced
