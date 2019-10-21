@@ -450,7 +450,7 @@ const char * CanalGetDriverInfo( void );
 #define CANAL_STATUSMSG_BIT0                0x25        /* Bit0 Error. */
 #define CANAL_STATUSMSG_CRC                 0x27        /* CRC Error. */
 
-/* Status codes (returned by status request) */
+/* Status codes (CANALSTATUS) (returned by status request) */
 #define CANAL_STATUS_NONE                   0x00000000
 #define CANAL_STATUS_ACTIVE                 0x10000000
 #define CANAL_STATUS_PASSIVE                0x40000000
@@ -584,7 +584,7 @@ const char * CanalGetDriverInfo( void );
     "flags=\"%lu\" "                \
     "id=\"%lu\" "                   \
     "obid=\"%lu\" "                 \
-    "dataSize=\"%d\" "              \
+    "sizeData=\"%d\" "              \
     "data=\"%s\" "                  \
     "timestamp=\"%lu\" "            \
     "/>"                            \
@@ -602,15 +602,15 @@ const char * CanalGetDriverInfo( void );
     }
 */
 
-#define CANAL_JSON_MSG_TEMPLATE     \
-    "{"                             \
-    "\"flags\": %d,\n"              \
-    "\"id\": %d,\n"                 \
-    "\"obid\": %d,\n"               \
-    "\"sizeData\": %d,\n"           \
-    "\"data\": [%s],\n"             \
-    "\"timestamp\": %d,\n"          \
-    "}"                             \
+#define CANAL_JSON_MSG_TEMPLATE    \
+    "{"                            \
+    "\"flags\": %lu,\n"            \
+    "\"id\": %lu,\n"               \
+    "\"obid\": %lu,\n"             \
+    "\"sizeData\": %d,\n"          \
+    "\"data\": [%s],\n"            \
+    "\"timestamp\": %lu,\n"        \
+    "}"                            \
 
 
 #ifdef __cplusplus
