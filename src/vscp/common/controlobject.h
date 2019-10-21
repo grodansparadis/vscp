@@ -40,7 +40,6 @@
 #include <knownnodes.h>
 #include <multicastsrv.h>
 #include <remotevariable.h>
-#include <restsrv.h>
 #include <tables.h>
 #include <tcpipsrv.h>
 #include <udpsrv.h>
@@ -748,14 +747,14 @@ class CControlObject
     //**************************************************************************
     //                                Lists
     //**************************************************************************
-    
+
     // The list with available devices.
     CDeviceList m_deviceList;
     pthread_mutex_t m_mutexDeviceList;
 
     // The list with active clients. (protecting mutex in object)
-    CClientList m_clientList; 
-    
+    CClientList m_clientList;
+
 
     // The list of users
     CUserList m_userList; // deque
@@ -809,7 +808,7 @@ class CControlObject
     daemonWorkerObj *m_pdaemonWorkerObj;
     pthread_t m_pdaemonWorkerThread;
 
-    
+
 };
 
 #endif // !defined(CONTROLOBJECT_H__7D80016B_5EFD_40D5_94E3_6FD9C324CC7B__INCLUDED_)

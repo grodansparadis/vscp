@@ -73,7 +73,7 @@
 #include <fastpbkdf2.h>
 #include <httpd.h>
 #include <mdf.h>
-#include <restsrv.h>
+//#include <restsrv.h>
 #include <tables.h>
 #include <variablecodes.h>
 #include <version.h>
@@ -6468,7 +6468,7 @@ vscp_guid_list(struct web_connection *conn, void *cbdata)
         // GUID
         if (NULL != (p = (const char *)sqlite3_column_text(
                        ppStmt, VSCPDB_ORDINAL_GUID_GUID))) {
-        
+
             web_printf(conn, "<b>GUID</b>: %s<br>", p);
         } else {
             web_printf(conn, "<b>GUID</b>: Parse error<br>");
@@ -6519,7 +6519,7 @@ vscp_guid_list(struct web_connection *conn, void *cbdata)
         // Description
         if (NULL != (p = (const char *)sqlite3_column_text(
                        ppStmt, VSCPDB_ORDINAL_GUID_DESCRIPTION))) {
-            
+
             web_printf(conn, "<b>Description</b>: %s<br>", p);
         } else {
             web_printf(conn, "<b>Description</b>: Parse error<br>");
@@ -10064,7 +10064,7 @@ vscp_log_list(struct web_connection *conn, void *cbdata)
     sqlite3_finalize(ppStmt);
 
     web_printf(conn, "</tbody></table>");
- */   
+ */
     web_printf(conn, WEB_COMMON_END, VSCPD_COPYRIGHT_HTML); // Common end code
 
     return WEB_OK;
@@ -11670,8 +11670,8 @@ start_webserver(void)
     // Set authorization handlers
     web_set_auth_handler(
       gpobj->m_web_ctx, "/vscp", check_admin_authorization, NULL);
-    web_set_auth_handler(
-      gpobj->m_web_ctx, "/vscp/rest", check_rest_authorization, NULL);
+    //web_set_auth_handler(
+    //  gpobj->m_web_ctx, "/vscp/rest", check_rest_authorization, NULL);
 
     // WS site for the websocket connection
     web_set_websocket_handler(gpobj->m_web_ctx,
@@ -11747,7 +11747,7 @@ start_webserver(void)
       gpobj->m_web_ctx, "/vscp/locationdelete", vscp_location_delete, 0);
 
     // REST
-    web_set_request_handler(gpobj->m_web_ctx, "/vscp/rest", websrv_restapi, 0);
+    //web_set_request_handler(gpobj->m_web_ctx, "/vscp/rest", websrv_restapi, 0);
 
     return 1;
 }

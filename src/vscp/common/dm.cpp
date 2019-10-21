@@ -2238,9 +2238,9 @@ dmElement::handleEscapes(vscpEvent *pEvent, std::string &str)
             }
 
             // Check for eventdata.realtext escape
-            else if (vscp_startsWith(str, "%eventdata.realtext", &str)) {
-                strResult += vscp_getRealTextData(pEvent);
-            }
+            //else if (vscp_startsWith(str, "%eventdata.realtext", &str)) {
+            //    strResult += vscp_getRealTextData(pEvent);
+            //}
 
             // Check for %variable:[name] (name is name of variable)
             else if (vscp_startsWith(str, "%variable:[", &str)) {

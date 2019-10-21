@@ -26,7 +26,7 @@ WARNINGS_MEDIUM = -Wformat-security -Wformat=2
 
 MONGOOSE_CFLAGS = -DMG_ENABLE_THREADS -DMG_ENABLE_IPV6 -DMG_ENABLE_SSL -DMG_ENABLE_GETADDRINFO
 CFLAGS = -std=c99 @CFLAGS@ -DCBC -DLUA_USE_POSIX -I@top_srcdir@ -I../../common -I../../../common -I../../../common/lua -I../../../common/lua/src
-CXXFLAGS = -std=c++11 @CXXFLAGS@ 
+CXXFLAGS = -std=c++11 @CXXFLAGS@
 CPPFLAGS = @CPPFLAGS@ -fno-var-tracking-assignments -I@top_srcdir@ -I../../common -I../../../common -I../../../common/lua -I../../../common/lua/src -I../../../common/xml2json/include
 CPPFLAGS += $(MONGOOSE_CFLAGS)
 
@@ -63,7 +63,6 @@ VSCPD_OBJECTS =  vscpd.o \
 	userlist.o \
 	devicethread.o \
 	websrv.o \
-	restsrv.o \
 	websocketsrv.o \
 	udpsrv.o \
 	multicastsrv.o \
@@ -146,9 +145,6 @@ devicethread.o: ../../common/devicethread.cpp ../../common/devicethread.h
 websrv.o: ../../common/websrv.cpp ../../common/websrv.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/websrv.cpp -o $@
 
-restsrv.o: ../../common/restsrv.cpp ../../common/restsrv.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/restsrv.cpp -o $@
-
 websocketsrv.o: ../../common/websocketsrv.cpp ../../common/websocket.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/websocketsrv.cpp -o $@
 
@@ -177,7 +173,7 @@ lua_vscp_func.o: ../../common/lua_vscp_func.cpp ../../common/lua_vscp_func.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/lua_vscp_func.cpp -o $@
 
 lua_vscp_wrkthread.o: ../../common/lua_vscp_wrkthread.cpp ../../common/lua_vscp_wrkthread.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/lua_vscp_wrkthread.cpp -o $@	
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/lua_vscp_wrkthread.cpp -o $@
 
 vscphelper.o: ../../common/vscphelper.cpp ../../common/vscphelper.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/vscphelper.cpp -o $@
@@ -204,7 +200,7 @@ configfile.o: ../../../common/configfile.cpp ../../../common/configfile.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../../common/configfile.cpp -o $@
 
 vscpdatetime.o: ../../common/vscpdatetime.cpp ../../common/vscpdatetime.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/vscpdatetime.cpp -o $@	
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/vscpdatetime.cpp -o $@
 
 dllist.o: ../../../common/dllist.c ../../../common/dllist.h
 	$(CC) $(CFLAGS) -c ../../../common/dllist.c  -o $@
