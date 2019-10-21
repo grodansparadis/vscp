@@ -52,7 +52,7 @@
 #include <vscp_aes.h>
 #include <vscp_debug.h>
 
-#include "multicastsrv.h"
+
 
 // Prototypes
 
