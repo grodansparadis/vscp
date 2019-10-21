@@ -37,7 +37,6 @@
 #include <remotevariable.h>
 #include <tables.h>
 #include <tcpipsrv.h>
-#include <udpsrv.h>
 #include <userlist.h>
 #include <vscp.h>
 #include <websocket.h>
@@ -172,12 +171,12 @@ class CControlObject
     /*!
         Start the UDP worker thread
     */
-    bool startUDPSrvThread(void);
+    //bool startUDPSrvThread(void);
 
     /*!
         Stop the UDP Workerthread
     */
-    bool stopUDPSrvThread(void);
+    //bool stopUDPSrvThread(void);
 
     /*!
         Start the Multicast worker threads
@@ -357,24 +356,24 @@ class CControlObject
     /*!
      * Read in UDP nodes from the database
      */
-    bool readUdpNodes(void);
+    // bool readUdpNodes(void);
 
     /*!
      * Read in multicast channels from the database
      */
-    bool readMulticastChannels(void);
+    // bool readMulticastChannels(void);
 
     /*!
      * Create udpnode database
      * @return true on success
      */
-    bool doCreateUdpNodeTable(void);
+    // bool doCreateUdpNodeTable(void);
 
     /*!
      * Create multicast database
      * @return true on success
      */
-    bool doCreateMulticastTable(void);
+    // bool doCreateMulticastTable(void);
 
     /*!
      * Create user table
@@ -561,44 +560,7 @@ class CControlObject
     uint8_t m_tcpip_ssl_protocol_version;
     bool m_tcpip_ssl_short_trust;
 
-    /////////////////////////////////////////////////////////
-    //                        UDP
-    /////////////////////////////////////////////////////////
 
-    // Server will be started if set to true (by configuration (db/xml)
-    bool m_enableUDP;
-
-    /*!
-        UDP worker thread object
-    */
-    UDPSrvObj m_udpSrvObj; // TODO UserServerInfo to this one ????
-
-    /*!
-        UDP Worker threads
-     */
-    pthread_t m_UDPThread;
-
-    /////////////////////////////////////////////////////////
-    //                      MULTICAST
-    /////////////////////////////////////////////////////////
-
-    // bool m_bEnableMulticast; // Enable multicast interface
-
-    // // ** CHANNEL **
-
-    // // Multicast channel interface
-    // MulticastObj m_multicastObj;
-
-    // // ** ANNOUNCE **
-
-    // // Enable Multicast announce interface
-    // bool m_bEnableMulticastAnnounce;
-
-    // // Interface(s) used for multicast announce
-    // std::string m_strMulticastAnnounceAddress;
-
-    // // ttl for multicast announce
-    // uint8_t m_ttlMultiCastAnnounce;
 
     //*****************************************************
     //               webserver interface

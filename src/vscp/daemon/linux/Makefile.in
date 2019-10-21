@@ -61,7 +61,6 @@ VSCPD_OBJECTS =  vscpd.o \
 	devicethread.o \
 	websrv.o \
 	websocketsrv.o \
-	udpsrv.o \
 	tables.o \
 	httpd.o \
 	vscphelper.o \
@@ -79,7 +78,6 @@ VSCPD_OBJECTS =  vscpd.o \
 	duktape.o \
 	duk_v1_compat.o \
 	duk_module_node.o \
-	mongoose.o \
 	sqlite3.o \
 	sqlite3math.o \
 	vscp_aes.o \
@@ -129,9 +127,6 @@ websrv.o: ../../common/websrv.cpp ../../common/websrv.h
 websocketsrv.o: ../../common/websocketsrv.cpp ../../common/websocket.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/websocketsrv.cpp -o $@
 
-udpsrv.o: ../../common/udpsrv.cpp ../../common/udpsrv.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/udpsrv.cpp -o $@
-
 tables.o: ../../common/tables.cpp ../../common/tables.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/tables.cpp -o $@
 
@@ -179,9 +174,6 @@ crc8.o: ../../../common/crc8.c ../../../common/crc8.h
 
 randpassword.o: ../../../common/randpassword.cpp ../../../common/randpassword.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../../common/randpassword.cpp -o $@
-
-mongoose.o: ../../../common/mongoose.c ../../../common/mongoose.h
-	$(CC) $(CFLAGS) $(MONGOOSE_CFLAGS) -c ../../../common/mongoose.c -o $@
 
 duktape.o: ../../../common/duktape.c ../../../common/duktape.h
 	$(CC) $(CFLAGS) -c ../../../common/duktape.c -o $@

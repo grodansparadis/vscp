@@ -167,13 +167,13 @@ CControlObject::CControlObject()
     m_db_vscp_data   = NULL;
 
     // Control UDP Interface
-    m_udpSrvObj.setControlObjectPointer(this);
-    m_udpSrvObj.m_bEnable = false;
-    m_udpSrvObj.m_interface.empty();
-    m_udpSrvObj.m_guid.clear();
-    vscp_clearVSCPFilter(&m_udpSrvObj.m_filter);
-    m_udpSrvObj.m_bAllowUnsecure = false;
-    m_udpSrvObj.m_bAck           = false;
+    // m_udpSrvObj.setControlObjectPointer(this);
+    // m_udpSrvObj.m_bEnable = false;
+    // m_udpSrvObj.m_interface.empty();
+    // m_udpSrvObj.m_guid.clear();
+    // vscp_clearVSCPFilter(&m_udpSrvObj.m_filter);
+    // m_udpSrvObj.m_bAllowUnsecure = false;
+    // m_udpSrvObj.m_bAck           = false;
 
     // Default TCP/IP interface settings
     m_enableTcpip            = true;
@@ -198,8 +198,8 @@ CControlObject::CControlObject()
     // m_ttlMultiCastAnnounce = IP_MULTICAST_DEFAULT_TTL;
 
     // Default UDP interface
-    m_udpSrvObj.m_interface =
-      vscp_str_format("udp://:%d", VSCP_DEFAULT_UDP_PORT);
+    // m_udpSrvObj.m_interface =
+    //   vscp_str_format("udp://:%d", VSCP_DEFAULT_UDP_PORT);
 
     // Web server SSL settings
     m_web_ssl_certificate          = m_rootFolder + "certs/server.pem";
@@ -292,18 +292,18 @@ CControlObject::~CControlObject()
     m_clientOutputQueue.clear();
     pthread_mutex_unlock(&m_mutexClientOutputQueue);
 
-    pthread_mutex_lock(&m_udpSrvObj.m_mutexUDPInfo);
-    std::deque<udpRemoteClientInfo *>::iterator iterUDP;
-    for (iterUDP = m_udpSrvObj.m_remotes.begin();
-         iterUDP != m_udpSrvObj.m_remotes.end();
-         ++iterUDP) {
-        if (NULL != *iterUDP) {
-            delete *iterUDP;
-            *iterUDP = NULL;
-        }
-    }
-    m_udpSrvObj.m_remotes.clear();
-    pthread_mutex_unlock(&m_udpSrvObj.m_mutexUDPInfo);
+    // pthread_mutex_lock(&m_udpSrvObj.m_mutexUDPInfo);
+    // std::deque<udpRemoteClientInfo *>::iterator iterUDP;
+    // for (iterUDP = m_udpSrvObj.m_remotes.begin();
+    //      iterUDP != m_udpSrvObj.m_remotes.end();
+    //      ++iterUDP) {
+    //     if (NULL != *iterUDP) {
+    //         delete *iterUDP;
+    //         *iterUDP = NULL;
+    //     }
+    // }
+    // m_udpSrvObj.m_remotes.clear();
+    // pthread_mutex_unlock(&m_udpSrvObj.m_mutexUDPInfo);
 
     syslog(LOG_INFO, "ControlObject: Gone!");
 }
@@ -439,14 +439,14 @@ CControlObject::init(std::string &strcfgfile, std::string &rootFolder)
                 }
 
                 // Create the UDP node database
-                if (!doCreateUdpNodeTable()) {
-                    syslog(LOG_ERR, "Failed to create udpnode table.");
-                }
+                // if (!doCreateUdpNodeTable()) {
+                //     syslog(LOG_ERR, "Failed to create udpnode table.");
+                // }
 
                 // Create the multicast database
-                if (!doCreateMulticastTable()) {
-                    syslog(LOG_ERR, "Failed to create multicast table.");
-                }
+                // if (!doCreateMulticastTable()) {
+                //     syslog(LOG_ERR, "Failed to create multicast table.");
+                // }
 
                 // Create user table
                 if (!doCreateUserTable()) {
@@ -517,10 +517,10 @@ CControlObject::init(std::string &strcfgfile, std::string &rootFolder)
     }
 
     // Read UDP nodes
-    readUdpNodes();
+    // readUdpNodes();
 
     // Read multicast channels
-    readMulticastChannels();
+    // readMulticastChannels();
 
     // * * * VSCP Server data database - NEVER created * * *
 
@@ -667,7 +667,7 @@ CControlObject::init(std::string &strcfgfile, std::string &rootFolder)
     startTcpipSrvThread();
 
     // Start UDP interface
-    startUDPSrvThread();
+    //startUDPSrvThread();
 
     // Start Multicast interface
     //startMulticastWorkerThreads();
@@ -854,8 +854,8 @@ CControlObject::cleanup(void)
            "ControlObject: cleanup - Stopping Web Server worker thread...");
     stop_webserver();
 
-    syslog(LOG_DEBUG, "ControlObject: cleanup - Stopping UDP worker thread...");
-    stopUDPSrvThread();
+    //syslog(LOG_DEBUG, "ControlObject: cleanup - Stopping UDP worker thread...");
+    //stopUDPSrvThread();
 
     syslog(LOG_DEBUG,
            "ControlObject: cleanup - Stopping Multicast worker threads...");
@@ -976,42 +976,42 @@ CControlObject::stopTcpipSrvThread(void)
 // startUDPSrvThread
 //
 
-bool
-CControlObject::startUDPSrvThread(void)
-{
-    if (!m_enableUDP) {
-        syslog(LOG_DEBUG, "UDP server disabled.");
-        return false;
-    }
+// bool
+// CControlObject::startUDPSrvThread(void)
+// {
+//     if (!m_enableUDP) {
+//         syslog(LOG_DEBUG, "UDP server disabled.");
+//         return false;
+//     }
 
-    syslog(LOG_DEBUG, "Controlobject: Starting UDP simple server interface...");
+//     syslog(LOG_DEBUG, "Controlobject: Starting UDP simple server interface...");
 
-    if (pthread_create(&m_UDPThread, NULL, UDPThread, &m_udpSrvObj)) {
+//     if (pthread_create(&m_UDPThread, NULL, UDPThread, &m_udpSrvObj)) {
 
-        syslog(LOG_ERR,
-               "Controlobject: Unable to start the udp simple server thread.");
-        return false;
-    }
+//         syslog(LOG_ERR,
+//                "Controlobject: Unable to start the udp simple server thread.");
+//         return false;
+//     }
 
-    return true;
-}
+//     return true;
+// }
 
 /////////////////////////////////////////////////////////////////////////////
 // stopUDPSrvThread
 //
 
-bool
-CControlObject::stopUDPSrvThread(void)
-{
-    syslog(LOG_DEBUG, "Controlobject: Terminating UDP thread.");
+// bool
+// CControlObject::stopUDPSrvThread(void)
+// {
+//     syslog(LOG_DEBUG, "Controlobject: Terminating UDP thread.");
 
-    m_udpSrvObj.m_bQuit = true;
-    pthread_join(m_UDPThread, NULL);
+//     m_udpSrvObj.m_bQuit = true;
+//     pthread_join(m_UDPThread, NULL);
 
-    syslog(LOG_DEBUG, "Controlobject: Terminated UDP thread.");
+//     syslog(LOG_DEBUG, "Controlobject: Terminated UDP thread.");
 
-    return true;
-}
+//     return true;
+// }
 
 /////////////////////////////////////////////////////////////////////////////
 // startMulticastWorkerThreads
@@ -1276,9 +1276,9 @@ CControlObject::getVscpCapabilities(uint8_t *pCapability)
     }
 
     // VSCP UDP interface
-    if (m_udpSrvObj.m_bEnable) {
-        caps |= VSCP_SERVER_CAPABILITY_UDP;
-    }
+    // if (m_udpSrvObj.m_bEnable) {
+    //     caps |= VSCP_SERVER_CAPABILITY_UDP;
+    // }
 
     // VSCP Multicast announce interface
     // if (m_bEnableMulticastAnnounce) {
@@ -2216,110 +2216,110 @@ startFullConfigParser(void *data, const char *name, const char **attr)
             std::string attribute = attr[i + 1];
             vscp_trim(attribute);
 
-            if (0 == vscp_strcasecmp(attr[i], "enable")) {
-                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
-                    pObj->m_udpSrvObj.m_bEnable = true;
-                } else {
-                    pObj->m_udpSrvObj.m_bEnable = false;
-                }
-            } else if (0 == vscp_strcasecmp(attr[i], "bAllowUnsecure")) {
-                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
-                    pObj->m_udpSrvObj.m_bAllowUnsecure = true;
-                } else {
-                    pObj->m_udpSrvObj.m_bAllowUnsecure = false;
-                }
-            } else if (0 == vscp_strcasecmp(attr[i], "bSendAck")) {
-                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
-                    pObj->m_udpSrvObj.m_bAck = true;
-                } else {
-                    pObj->m_udpSrvObj.m_bAck = false;
-                }
-            } else if (0 == vscp_strcasecmp(attr[i], "user")) {
-                pObj->m_udpSrvObj.m_user = attribute;
-            } else if (0 == vscp_strcasecmp(attr[i], "password")) {
-                pObj->m_udpSrvObj.m_password = attribute;
-            } else if (0 == vscp_strcasecmp(attr[i], "interface")) {
-                pObj->m_udpSrvObj.m_interface = attribute;
-            } else if (0 == vscp_strcasecmp(attr[i], "guid")) {
-                pObj->m_udpSrvObj.m_guid.getFromString(attribute);
-            } else if (0 == vscp_strcasecmp(attr[i], "filter")) {
-                if (attribute.length()) {
-                    vscp_readFilterFromString(&pObj->m_udpSrvObj.m_filter,
-                                              attribute);
-                }
-            } else if (0 == vscp_strcasecmp(attr[i], "mask")) {
-                if (attribute.length()) {
-                    vscp_readMaskFromString(&pObj->m_udpSrvObj.m_filter,
-                                            attribute);
-                }
-            }
+            // if (0 == vscp_strcasecmp(attr[i], "enable")) {
+            //     if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+            //         pObj->m_udpSrvObj.m_bEnable = true;
+            //     } else {
+            //         pObj->m_udpSrvObj.m_bEnable = false;
+            //     }
+            // } else if (0 == vscp_strcasecmp(attr[i], "bAllowUnsecure")) {
+            //     if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+            //         pObj->m_udpSrvObj.m_bAllowUnsecure = true;
+            //     } else {
+            //         pObj->m_udpSrvObj.m_bAllowUnsecure = false;
+            //     }
+            // } else if (0 == vscp_strcasecmp(attr[i], "bSendAck")) {
+            //     if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+            //         pObj->m_udpSrvObj.m_bAck = true;
+            //     } else {
+            //         pObj->m_udpSrvObj.m_bAck = false;
+            //     }
+            // } else if (0 == vscp_strcasecmp(attr[i], "user")) {
+            //     pObj->m_udpSrvObj.m_user = attribute;
+            // } else if (0 == vscp_strcasecmp(attr[i], "password")) {
+            //     pObj->m_udpSrvObj.m_password = attribute;
+            // } else if (0 == vscp_strcasecmp(attr[i], "interface")) {
+            //     pObj->m_udpSrvObj.m_interface = attribute;
+            // } else if (0 == vscp_strcasecmp(attr[i], "guid")) {
+            //     pObj->m_udpSrvObj.m_guid.getFromString(attribute);
+            // } else if (0 == vscp_strcasecmp(attr[i], "filter")) {
+            //     if (attribute.length()) {
+            //         vscp_readFilterFromString(&pObj->m_udpSrvObj.m_filter,
+            //                                   attribute);
+            //     }
+            // } else if (0 == vscp_strcasecmp(attr[i], "mask")) {
+            //     if (attribute.length()) {
+            //         vscp_readMaskFromString(&pObj->m_udpSrvObj.m_filter,
+            //                                 attribute);
+            //     }
+            // }
         }
     } else if (bVscpConfigFound && bUDPConfigFound &&
                (2 == depth_full_config_parser) &&
                (0 == vscp_strcasecmp(name, "rxnode"))) {
 
-        for (int i = 0; attr[i]; i += 2) {
+        // for (int i = 0; attr[i]; i += 2) {
 
-            udpRemoteClientInfo *pudpClient = new udpRemoteClientInfo;
-            if (NULL == pudpClient) {
-                syslog(LOG_ERR, "Unable to allocate storage for UDP client");
-                return;
-            }
+        //     udpRemoteClientInfo *pudpClient = new udpRemoteClientInfo;
+        //     if (NULL == pudpClient) {
+        //         syslog(LOG_ERR, "Unable to allocate storage for UDP client");
+        //         return;
+        //     }
 
-            vscp_clearVSCPFilter(&pudpClient->m_filter);
+        //     vscp_clearVSCPFilter(&pudpClient->m_filter);
 
-            std::string attribute = attr[i + 1];
-            vscp_trim(attribute);
+        //     std::string attribute = attr[i + 1];
+        //     vscp_trim(attribute);
 
-            if (0 == vscp_strcasecmp(attr[i], "enable")) {
-                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
-                    pudpClient->m_bEnable = true;
-                } else {
-                    pudpClient->m_bEnable = false;
-                }
-            } else if (0 == vscp_strcasecmp(attr[i], "interface")) {
-                pudpClient->m_remoteAddress = attribute;
-            } else if (0 == vscp_strcasecmp(attr[i], "filter")) {
-                if (attribute.length()) {
-                    vscp_readFilterFromString(&pudpClient->m_filter, attribute);
-                }
-            } else if (0 == vscp_strcasecmp(attr[i], "mask")) {
-                if (attribute.length()) {
-                    vscp_readMaskFromString(&pudpClient->m_filter, attribute);
-                }
-            } else if (0 == vscp_strcasecmp(attr[i], "broadcast")) {
-                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
-                    pudpClient->m_bSetBroadcast = true;
-                } else {
-                    pudpClient->m_bSetBroadcast = false;
-                }
-            } else if (0 == vscp_strcasecmp(attr[i], "encryption")) {
-                pudpClient->m_nEncryption =
-                  vscp_getEncryptionCodeFromToken(attribute);
-            }
+        //     if (0 == vscp_strcasecmp(attr[i], "enable")) {
+        //         if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+        //             pudpClient->m_bEnable = true;
+        //         } else {
+        //             pudpClient->m_bEnable = false;
+        //         }
+        //     } else if (0 == vscp_strcasecmp(attr[i], "interface")) {
+        //         pudpClient->m_remoteAddress = attribute;
+        //     } else if (0 == vscp_strcasecmp(attr[i], "filter")) {
+        //         if (attribute.length()) {
+        //             vscp_readFilterFromString(&pudpClient->m_filter, attribute);
+        //         }
+        //     } else if (0 == vscp_strcasecmp(attr[i], "mask")) {
+        //         if (attribute.length()) {
+        //             vscp_readMaskFromString(&pudpClient->m_filter, attribute);
+        //         }
+        //     } else if (0 == vscp_strcasecmp(attr[i], "broadcast")) {
+        //         if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+        //             pudpClient->m_bSetBroadcast = true;
+        //         } else {
+        //             pudpClient->m_bSetBroadcast = false;
+        //         }
+        //     } else if (0 == vscp_strcasecmp(attr[i], "encryption")) {
+        //         pudpClient->m_nEncryption =
+        //           vscp_getEncryptionCodeFromToken(attribute);
+        //     }
 
-            // add to udp client list
-            pudpClient->m_index = 0;
-            pObj->m_udpSrvObj.m_remotes.push_back(pudpClient);
-        }
+        //     // add to udp client list
+        //     pudpClient->m_index = 0;
+        //     // pObj->m_udpSrvObj.m_remotes.push_back(pudpClient);
+        // }
     } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
                (0 == vscp_strcasecmp(name, "multicast"))) {
 
-        bMulticastConfigFound = TRUE;
+        // bMulticastConfigFound = TRUE;
 
-        for (int i = 0; attr[i]; i += 2) {
+        // for (int i = 0; attr[i]; i += 2) {
 
-            std::string attribute = attr[i + 1];
-            vscp_trim(attribute);
+        //     std::string attribute = attr[i + 1];
+        //     vscp_trim(attribute);
 
-            // if (0 == vscp_strcasecmp(attr[i], "enable")) {
-            //     if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
-            //         pObj->m_bEnableMulticast = true;
-            //     } else {
-            //         pObj->m_bEnableMulticast = false;
-            //     }
-            // }
-        }
+        //     // if (0 == vscp_strcasecmp(attr[i], "enable")) {
+        //     //     if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+        //     //         pObj->m_bEnableMulticast = true;
+        //     //     } else {
+        //     //         pObj->m_bEnableMulticast = false;
+        //     //     }
+        //     // }
+        // }
 
     } else if (bVscpConfigFound && bMulticastConfigFound &&
                (2 == depth_full_config_parser) &&
@@ -4420,88 +4420,88 @@ CControlObject::readConfigurationDB(void)
         // }
 
         // Enable UDP interface
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_UDP_ENABLE)) {
-            pthread_mutex_lock(&m_udpSrvObj.m_mutexUDPInfo);
-            m_udpSrvObj.m_bEnable = atoi((const char *)pValue) ? true : false;
-            pthread_mutex_unlock(&m_udpSrvObj.m_mutexUDPInfo);
-            continue;
-        }
+        // if (0 == vscp_strcasecmp((const char *)pName,
+        //                          VSCPDB_CONFIG_NAME_UDP_ENABLE)) {
+        //     pthread_mutex_lock(&m_udpSrvObj.m_mutexUDPInfo);
+        //     m_udpSrvObj.m_bEnable = atoi((const char *)pValue) ? true : false;
+        //     pthread_mutex_unlock(&m_udpSrvObj.m_mutexUDPInfo);
+        //     continue;
+        // }
 
-        // UDP interface address/port
-        if (0 ==
-            vscp_strcasecmp((const char *)pName, VSCPDB_CONFIG_NAME_UDP_ADDR)) {
-            pthread_mutex_lock(&m_udpSrvObj.m_mutexUDPInfo);
-            m_udpSrvObj.m_interface = std::string((const char *)pValue);
-            pthread_mutex_unlock(&m_udpSrvObj.m_mutexUDPInfo);
-            continue;
-        }
+        // // UDP interface address/port
+        // if (0 ==
+        //     vscp_strcasecmp((const char *)pName, VSCPDB_CONFIG_NAME_UDP_ADDR)) {
+        //     pthread_mutex_lock(&m_udpSrvObj.m_mutexUDPInfo);
+        //     m_udpSrvObj.m_interface = std::string((const char *)pValue);
+        //     pthread_mutex_unlock(&m_udpSrvObj.m_mutexUDPInfo);
+        //     continue;
+        // }
 
-        // UDP User
-        if (0 ==
-            vscp_strcasecmp((const char *)pName, VSCPDB_CONFIG_NAME_UDP_USER)) {
-            pthread_mutex_lock(&m_udpSrvObj.m_mutexUDPInfo);
-            m_udpSrvObj.m_user = std::string((const char *)pValue);
-            pthread_mutex_unlock(&m_udpSrvObj.m_mutexUDPInfo);
-            continue;
-        }
+        // // UDP User
+        // if (0 ==
+        //     vscp_strcasecmp((const char *)pName, VSCPDB_CONFIG_NAME_UDP_USER)) {
+        //     pthread_mutex_lock(&m_udpSrvObj.m_mutexUDPInfo);
+        //     m_udpSrvObj.m_user = std::string((const char *)pValue);
+        //     pthread_mutex_unlock(&m_udpSrvObj.m_mutexUDPInfo);
+        //     continue;
+        // }
 
-        // UDP User Password
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_UDP_PASSWORD)) {
-            pthread_mutex_lock(&m_udpSrvObj.m_mutexUDPInfo);
-            m_udpSrvObj.m_password = std::string((const char *)pValue);
-            pthread_mutex_unlock(&m_udpSrvObj.m_mutexUDPInfo);
-            continue;
-        }
+        // // UDP User Password
+        // if (0 == vscp_strcasecmp((const char *)pName,
+        //                          VSCPDB_CONFIG_NAME_UDP_PASSWORD)) {
+        //     pthread_mutex_lock(&m_udpSrvObj.m_mutexUDPInfo);
+        //     m_udpSrvObj.m_password = std::string((const char *)pValue);
+        //     pthread_mutex_unlock(&m_udpSrvObj.m_mutexUDPInfo);
+        //     continue;
+        // }
 
-        // UDP un-secure enable
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_UDP_UNSECURE_ENABLE)) {
-            pthread_mutex_lock(&m_udpSrvObj.m_mutexUDPInfo);
-            m_udpSrvObj.m_bAllowUnsecure =
-              atoi((const char *)pValue) ? true : false;
-            pthread_mutex_unlock(&m_udpSrvObj.m_mutexUDPInfo);
-            continue;
-        }
+        // // UDP un-secure enable
+        // if (0 == vscp_strcasecmp((const char *)pName,
+        //                          VSCPDB_CONFIG_NAME_UDP_UNSECURE_ENABLE)) {
+        //     pthread_mutex_lock(&m_udpSrvObj.m_mutexUDPInfo);
+        //     m_udpSrvObj.m_bAllowUnsecure =
+        //       atoi((const char *)pValue) ? true : false;
+        //     pthread_mutex_unlock(&m_udpSrvObj.m_mutexUDPInfo);
+        //     continue;
+        // }
 
-        // UDP Filter
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_UDP_FILTER)) {
-            pthread_mutex_lock(&m_udpSrvObj.m_mutexUDPInfo);
-            vscp_readFilterFromString(&m_udpSrvObj.m_filter,
-                                      std::string((const char *)pValue));
-            pthread_mutex_unlock(&m_udpSrvObj.m_mutexUDPInfo);
-            continue;
-        }
+        // // UDP Filter
+        // if (0 == vscp_strcasecmp((const char *)pName,
+        //                          VSCPDB_CONFIG_NAME_UDP_FILTER)) {
+        //     pthread_mutex_lock(&m_udpSrvObj.m_mutexUDPInfo);
+        //     vscp_readFilterFromString(&m_udpSrvObj.m_filter,
+        //                               std::string((const char *)pValue));
+        //     pthread_mutex_unlock(&m_udpSrvObj.m_mutexUDPInfo);
+        //     continue;
+        // }
 
-        // UDP Mask
-        if (0 ==
-            vscp_strcasecmp((const char *)pName, VSCPDB_CONFIG_NAME_UDP_MASK)) {
-            pthread_mutex_lock(&m_udpSrvObj.m_mutexUDPInfo);
-            vscp_readMaskFromString(&m_udpSrvObj.m_filter,
-                                    std::string((const char *)pValue));
-            pthread_mutex_unlock(&m_udpSrvObj.m_mutexUDPInfo);
-            continue;
-        }
+        // // UDP Mask
+        // if (0 ==
+        //     vscp_strcasecmp((const char *)pName, VSCPDB_CONFIG_NAME_UDP_MASK)) {
+        //     pthread_mutex_lock(&m_udpSrvObj.m_mutexUDPInfo);
+        //     vscp_readMaskFromString(&m_udpSrvObj.m_filter,
+        //                             std::string((const char *)pValue));
+        //     pthread_mutex_unlock(&m_udpSrvObj.m_mutexUDPInfo);
+        //     continue;
+        // }
 
-        // UDP GUID
-        if (0 ==
-            vscp_strcasecmp((const char *)pName, VSCPDB_CONFIG_NAME_UDP_GUID)) {
-            pthread_mutex_lock(&m_udpSrvObj.m_mutexUDPInfo);
-            m_udpSrvObj.m_guid.getFromString((const char *)pValue);
-            pthread_mutex_unlock(&m_udpSrvObj.m_mutexUDPInfo);
-            continue;
-        }
+        // // UDP GUID
+        // if (0 ==
+        //     vscp_strcasecmp((const char *)pName, VSCPDB_CONFIG_NAME_UDP_GUID)) {
+        //     pthread_mutex_lock(&m_udpSrvObj.m_mutexUDPInfo);
+        //     m_udpSrvObj.m_guid.getFromString((const char *)pValue);
+        //     pthread_mutex_unlock(&m_udpSrvObj.m_mutexUDPInfo);
+        //     continue;
+        // }
 
-        // UDP Enable ACK
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_UDP_ACK_ENABLE)) {
-            pthread_mutex_lock(&m_udpSrvObj.m_mutexUDPInfo);
-            m_udpSrvObj.m_bAck = atoi((const char *)pValue) ? true : false;
-            pthread_mutex_unlock(&m_udpSrvObj.m_mutexUDPInfo);
-            continue;
-        }
+        // // UDP Enable ACK
+        // if (0 == vscp_strcasecmp((const char *)pName,
+        //                          VSCPDB_CONFIG_NAME_UDP_ACK_ENABLE)) {
+        //     pthread_mutex_lock(&m_udpSrvObj.m_mutexUDPInfo);
+        //     m_udpSrvObj.m_bAck = atoi((const char *)pValue) ? true : false;
+        //     pthread_mutex_unlock(&m_udpSrvObj.m_mutexUDPInfo);
+        //     continue;
+        // }
 
         // // Enable Multicast interface
         // if (0 == vscp_strcasecmp((const char *)pName,
@@ -5186,238 +5186,238 @@ CControlObject::readConfigurationDB(void)
 //
 //
 
-bool
-CControlObject::readUdpNodes(void)
-{
-    char *pErrMsg    = 0;
-    const char *psql = "SELECT * FROM udpnode";
-    sqlite3_stmt *ppStmt;
+// bool
+// CControlObject::readUdpNodes(void)
+// {
+//     char *pErrMsg    = 0;
+//     const char *psql = "SELECT * FROM udpnode";
+//     sqlite3_stmt *ppStmt;
 
-    // If UDP is disabled we are done
-    if (!m_udpSrvObj.m_bEnable) return true;
+//     // If UDP is disabled we are done
+//     if (!m_udpSrvObj.m_bEnable) return true;
 
-    // Check if database is open
-    if (NULL == m_db_vscp_daemon) {
-        syslog(LOG_ERR, "readUdpNodes: Database is not open.");
-        return false;
-    }
+//     // Check if database is open
+//     if (NULL == m_db_vscp_daemon) {
+//         syslog(LOG_ERR, "readUdpNodes: Database is not open.");
+//         return false;
+//     }
 
-    if (SQLITE_OK !=
-        sqlite3_prepare(m_db_vscp_daemon, psql, -1, &ppStmt, NULL)) {
-        syslog(LOG_ERR, "readUdpNodes: prepare query failed.");
-        return false;
-    }
+//     if (SQLITE_OK !=
+//         sqlite3_prepare(m_db_vscp_daemon, psql, -1, &ppStmt, NULL)) {
+//         syslog(LOG_ERR, "readUdpNodes: prepare query failed.");
+//         return false;
+//     }
 
-    while (SQLITE_ROW == sqlite3_step(ppStmt)) {
+//     while (SQLITE_ROW == sqlite3_step(ppStmt)) {
 
-        const unsigned char *p;
+//         const unsigned char *p;
 
-        // If not enabled move on
-        if (!sqlite3_column_int(ppStmt, VSCPDB_ORDINAL_UDPNODE_ENABLE))
-            continue;
+//         // If not enabled move on
+//         if (!sqlite3_column_int(ppStmt, VSCPDB_ORDINAL_UDPNODE_ENABLE))
+//             continue;
 
-        pthread_mutex_lock(&m_udpSrvObj.m_mutexUDPInfo);
+//         pthread_mutex_lock(&m_udpSrvObj.m_mutexUDPInfo);
 
-        udpRemoteClientInfo *pudpClient = new udpRemoteClientInfo;
-        if (NULL == pudpClient) {
-            syslog(LOG_ERR,
-                   "readUdpNodes: Failed to allocate storage for UDP node.");
-            pthread_mutex_unlock(&m_udpSrvObj.m_mutexUDPInfo);
-            continue;
-        }
+//         udpRemoteClientInfo *pudpClient = new udpRemoteClientInfo;
+//         if (NULL == pudpClient) {
+//             syslog(LOG_ERR,
+//                    "readUdpNodes: Failed to allocate storage for UDP node.");
+//             pthread_mutex_unlock(&m_udpSrvObj.m_mutexUDPInfo);
+//             continue;
+//         }
 
-        // Broadcast
-        pudpClient->m_bSetBroadcast = false;
-        if (sqlite3_column_int(ppStmt, VSCPDB_ORDINAL_UDPNODE_SET_BROADCAST)) {
-            pudpClient->m_bSetBroadcast = true;
-        } // Interface
-        p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_UDPNODE_INTERFACE);
-        if (NULL != p) {
-            pudpClient->m_remoteAddress = std::string((const char *)p);
-        }
+//         // Broadcast
+//         pudpClient->m_bSetBroadcast = false;
+//         if (sqlite3_column_int(ppStmt, VSCPDB_ORDINAL_UDPNODE_SET_BROADCAST)) {
+//             pudpClient->m_bSetBroadcast = true;
+//         } // Interface
+//         p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_UDPNODE_INTERFACE);
+//         if (NULL != p) {
+//             pudpClient->m_remoteAddress = std::string((const char *)p);
+//         }
 
-        //  Filter
-        p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_UDPNODE_FILTER);
-        if (NULL != p) {
-            std::string wxstr = std::string((const char *)p);
-            if (!vscp_readFilterFromString(&pudpClient->m_filter, wxstr)) {
-                syslog(LOG_ERR,
-                       "readUdpNodes: Failed to set filter for UDP node.");
-            }
-        }
+//         //  Filter
+//         p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_UDPNODE_FILTER);
+//         if (NULL != p) {
+//             std::string wxstr = std::string((const char *)p);
+//             if (!vscp_readFilterFromString(&pudpClient->m_filter, wxstr)) {
+//                 syslog(LOG_ERR,
+//                        "readUdpNodes: Failed to set filter for UDP node.");
+//             }
+//         }
 
-        // Mask
-        p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_UDPNODE_MASK);
-        if (NULL != p) {
-            std::string wxstr = std::string((const char *)p);
-            if (!vscp_readMaskFromString(&pudpClient->m_filter, wxstr)) {
-                syslog(LOG_ERR,
-                       "readUdpNodes: Failed to set mask for UDP node.");
-            }
-        }
+//         // Mask
+//         p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_UDPNODE_MASK);
+//         if (NULL != p) {
+//             std::string wxstr = std::string((const char *)p);
+//             if (!vscp_readMaskFromString(&pudpClient->m_filter, wxstr)) {
+//                 syslog(LOG_ERR,
+//                        "readUdpNodes: Failed to set mask for UDP node.");
+//             }
+//         }
 
-        // Encryption
-        p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_UDPNODE_ENCRYPTION);
-        if (NULL != p) {
-            std::string wxstr         = std::string((const char *)p);
-            pudpClient->m_nEncryption = vscp_getEncryptionCodeFromToken(wxstr);
-        }
+//         // Encryption
+//         p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_UDPNODE_ENCRYPTION);
+//         if (NULL != p) {
+//             std::string wxstr         = std::string((const char *)p);
+//             pudpClient->m_nEncryption = vscp_getEncryptionCodeFromToken(wxstr);
+//         }
 
-        // Add to list
-        pudpClient->m_index = 0;
-        m_udpSrvObj.m_remotes.push_back(pudpClient);
+//         // Add to list
+//         pudpClient->m_index = 0;
+//         m_udpSrvObj.m_remotes.push_back(pudpClient);
 
-        pthread_mutex_unlock(&m_udpSrvObj.m_mutexUDPInfo);
-    }
+//         pthread_mutex_unlock(&m_udpSrvObj.m_mutexUDPInfo);
+//     }
 
-    sqlite3_finalize(ppStmt);
+//     sqlite3_finalize(ppStmt);
 
-    return true;
-}
+//     return true;
+// }
 
-///////////////////////////////////////////////////////////////////////////////
-// readMulticastChannels
-//
-// Read in defined multicast channels
-//
-//
+// ///////////////////////////////////////////////////////////////////////////////
+// // readMulticastChannels
+// //
+// // Read in defined multicast channels
+// //
+// //
 
-bool
-CControlObject::readMulticastChannels(void)
-{
-    // char *pErrMsg    = 0;
-    // const char *psql = "SELECT * FROM multicast";
-    // sqlite3_stmt *ppStmt;
+// bool
+// CControlObject::readMulticastChannels(void)
+// {
+//     // char *pErrMsg    = 0;
+//     // const char *psql = "SELECT * FROM multicast";
+//     // sqlite3_stmt *ppStmt;
 
-    // // If multicast is disabled we are done
-    // if (!m_bEnableMulticast) return true;
+//     // // If multicast is disabled we are done
+//     // if (!m_bEnableMulticast) return true;
 
-    // // Check if database is open
-    // if (NULL == m_db_vscp_daemon) {
-    //     syslog(LOG_ERR, "readMulticastChannels: Database is not open.");
-    //     return false;
-    // }
+//     // // Check if database is open
+//     // if (NULL == m_db_vscp_daemon) {
+//     //     syslog(LOG_ERR, "readMulticastChannels: Database is not open.");
+//     //     return false;
+//     // }
 
-    // if (SQLITE_OK !=
-    //     sqlite3_prepare(m_db_vscp_daemon, psql, -1, &ppStmt, NULL)) {
-    //     syslog(LOG_ERR, "readMulticastChannels: prepare query failed.");
-    //     return false;
-    // }
+//     // if (SQLITE_OK !=
+//     //     sqlite3_prepare(m_db_vscp_daemon, psql, -1, &ppStmt, NULL)) {
+//     //     syslog(LOG_ERR, "readMulticastChannels: prepare query failed.");
+//     //     return false;
+//     // }
 
-    // while (SQLITE_ROW == sqlite3_step(ppStmt)) {
+//     // while (SQLITE_ROW == sqlite3_step(ppStmt)) {
 
-    //     // const unsigned char *p;
+//     //     // const unsigned char *p;
 
-    //     // // If not enabled move on
-    //     // if (!sqlite3_column_int(ppStmt, VSCPDB_ORDINAL_MULTICAST_ENABLE))
-    //     //     continue;
+//     //     // // If not enabled move on
+//     //     // if (!sqlite3_column_int(ppStmt, VSCPDB_ORDINAL_MULTICAST_ENABLE))
+//     //     //     continue;
 
-    //     // multicastChannelItem *pChannel = new multicastChannelItem;
-    //     // if (NULL == pChannel) {
-    //     //     syslog(LOG_ERR,
-    //     //            "readMulticastChannels: Failed to allocate storage for "
-    //     //            "multicast node.");
-    //     //     continue;
-    //     // }
+//     //     // multicastChannelItem *pChannel = new multicastChannelItem;
+//     //     // if (NULL == pChannel) {
+//     //     //     syslog(LOG_ERR,
+//     //     //            "readMulticastChannels: Failed to allocate storage for "
+//     //     //            "multicast node.");
+//     //     //     continue;
+//     //     // }
 
-    //     // // Default is to let everything come through
-    //     // vscp_clearVSCPFilter(&pChannel->m_txFilter);
-    //     // vscp_clearVSCPFilter(&pChannel->m_rxFilter);
+//     //     // // Default is to let everything come through
+//     //     // vscp_clearVSCPFilter(&pChannel->m_txFilter);
+//     //     // vscp_clearVSCPFilter(&pChannel->m_rxFilter);
 
-    //     // // public interface
-    //     // p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_MULTICAST_PUBLIC);
-    //     // if (NULL != p) {
-    //     //     pChannel->m_public = std::string((const char *)p);
-    //     // }
+//     //     // // public interface
+//     //     // p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_MULTICAST_PUBLIC);
+//     //     // if (NULL != p) {
+//     //     //     pChannel->m_public = std::string((const char *)p);
+//     //     // }
 
-    //     // // Port
-    //     // p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_MULTICAST_PORT);
+//     //     // // Port
+//     //     // p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_MULTICAST_PORT);
 
-    //     // // group
-    //     // p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_MULTICAST_GROUP);
-    //     // if (NULL != p) {
-    //     //     pChannel->m_gropupAddress = std::string((const char *)p);
-    //     // } // ttl
-    //     // pChannel->m_ttl =
-    //     //   sqlite3_column_int(ppStmt, VSCPDB_ORDINAL_MULTICAST_TTL);
+//     //     // // group
+//     //     // p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_MULTICAST_GROUP);
+//     //     // if (NULL != p) {
+//     //     //     pChannel->m_gropupAddress = std::string((const char *)p);
+//     //     // } // ttl
+//     //     // pChannel->m_ttl =
+//     //     //   sqlite3_column_int(ppStmt, VSCPDB_ORDINAL_MULTICAST_TTL);
 
-    //     // // bAck
-    //     // pChannel->m_bSendAck =
-    //     //   sqlite3_column_int(ppStmt, VSCPDB_ORDINAL_MULTICAST_SENDACK) ? true
-    //     //                                                                : false;
+//     //     // // bAck
+//     //     // pChannel->m_bSendAck =
+//     //     //   sqlite3_column_int(ppStmt, VSCPDB_ORDINAL_MULTICAST_SENDACK) ? true
+//     //     //                                                                : false;
 
-    //     // // Allow unsecure
-    //     // pChannel->m_bAllowUnsecure =
-    //     //   sqlite3_column_int(ppStmt, VSCPDB_ORDINAL_MULTICAST_ALLOW_UNSECURE)
-    //     //     ? true
-    //     //     : false;
+//     //     // // Allow unsecure
+//     //     // pChannel->m_bAllowUnsecure =
+//     //     //   sqlite3_column_int(ppStmt, VSCPDB_ORDINAL_MULTICAST_ALLOW_UNSECURE)
+//     //     //     ? true
+//     //     //     : false;
 
-    //     // // GUID
-    //     // p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_MULTICAST_GUID);
-    //     // if (NULL != p) {
-    //     //     pChannel->m_guid.getFromString((const char *)p);
-    //     // }
+//     //     // // GUID
+//     //     // p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_MULTICAST_GUID);
+//     //     // if (NULL != p) {
+//     //     //     pChannel->m_guid.getFromString((const char *)p);
+//     //     // }
 
-    //     // //  TX Filter
-    //     // p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_MULTICAST_TXFILTER);
-    //     // if (NULL != p) {
-    //     //     std::string wxstr = std::string((const char *)p);
-    //     //     if (!vscp_readFilterFromString(&pChannel->m_txFilter, wxstr)) {
-    //     //         syslog(LOG_ERR,
-    //     //                "readMulticastChannels: Failed to set TX "
-    //     //                "filter for multicast channel.");
-    //     //     }
-    //     // }
+//     //     // //  TX Filter
+//     //     // p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_MULTICAST_TXFILTER);
+//     //     // if (NULL != p) {
+//     //     //     std::string wxstr = std::string((const char *)p);
+//     //     //     if (!vscp_readFilterFromString(&pChannel->m_txFilter, wxstr)) {
+//     //     //         syslog(LOG_ERR,
+//     //     //                "readMulticastChannels: Failed to set TX "
+//     //     //                "filter for multicast channel.");
+//     //     //     }
+//     //     // }
 
-    //     // // TX Mask
-    //     // p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_MULTICAST_TXMASK);
-    //     // if (NULL != p) {
-    //     //     std::string wxstr = std::string((const char *)p);
-    //     //     if (!vscp_readMaskFromString(&pChannel->m_txFilter, wxstr)) {
-    //     //         syslog(LOG_ERR,
-    //     //                "readMulticastChannels: Failed to set TX "
-    //     //                "mask for multicast channel.");
-    //     //     }
-    //     // }
+//     //     // // TX Mask
+//     //     // p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_MULTICAST_TXMASK);
+//     //     // if (NULL != p) {
+//     //     //     std::string wxstr = std::string((const char *)p);
+//     //     //     if (!vscp_readMaskFromString(&pChannel->m_txFilter, wxstr)) {
+//     //     //         syslog(LOG_ERR,
+//     //     //                "readMulticastChannels: Failed to set TX "
+//     //     //                "mask for multicast channel.");
+//     //     //     }
+//     //     // }
 
-    //     // //  RX Filter
-    //     // p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_MULTICAST_RXFILTER);
-    //     // if (NULL != p) {
-    //     //     std::string wxstr = std::string((const char *)p);
-    //     //     if (!vscp_readFilterFromString(&pChannel->m_rxFilter, wxstr)) {
-    //     //         syslog(LOG_ERR,
-    //     //                "readMulticastChannels: Failed to set RX "
-    //     //                "filter for multicast channel.");
-    //     //     }
-    //     // }
+//     //     // //  RX Filter
+//     //     // p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_MULTICAST_RXFILTER);
+//     //     // if (NULL != p) {
+//     //     //     std::string wxstr = std::string((const char *)p);
+//     //     //     if (!vscp_readFilterFromString(&pChannel->m_rxFilter, wxstr)) {
+//     //     //         syslog(LOG_ERR,
+//     //     //                "readMulticastChannels: Failed to set RX "
+//     //     //                "filter for multicast channel.");
+//     //     //     }
+//     //     // }
 
-    //     // // RX Mask
-    //     // p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_MULTICAST_RXMASK);
-    //     // if (NULL != p) {
-    //     //     std::string wxstr = std::string((const char *)p);
-    //     //     if (!vscp_readMaskFromString(&pChannel->m_rxFilter, wxstr)) {
-    //     //         syslog(LOG_ERR,
-    //     //                "readMulticastChannels: Failed to set RX "
-    //     //                "mask for multicast channel.");
-    //     //     }
-    //     // }
+//     //     // // RX Mask
+//     //     // p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_MULTICAST_RXMASK);
+//     //     // if (NULL != p) {
+//     //     //     std::string wxstr = std::string((const char *)p);
+//     //     //     if (!vscp_readMaskFromString(&pChannel->m_rxFilter, wxstr)) {
+//     //     //         syslog(LOG_ERR,
+//     //     //                "readMulticastChannels: Failed to set RX "
+//     //     //                "mask for multicast channel.");
+//     //     //     }
+//     //     // }
 
-    //     // // Encryption
-    //     // p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_UDPNODE_ENCRYPTION);
-    //     // if (NULL != p) {
-    //     //     std::string wxstr       = std::string((const char *)p);
-    //     //     pChannel->m_nEncryption = vscp_getEncryptionCodeFromToken(wxstr);
-    //     // }
+//     //     // // Encryption
+//     //     // p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_UDPNODE_ENCRYPTION);
+//     //     // if (NULL != p) {
+//     //     //     std::string wxstr       = std::string((const char *)p);
+//     //     //     pChannel->m_nEncryption = vscp_getEncryptionCodeFromToken(wxstr);
+//     //     // }
 
-    //     // // Add to list
-    //     // pChannel->m_index = 0;
-    //     // m_multicastObj.m_channels.push_back(pChannel);
-    // }
+//     //     // // Add to list
+//     //     // pChannel->m_index = 0;
+//     //     // m_multicastObj.m_channels.push_back(pChannel);
+//     // }
 
-    // sqlite3_finalize(ppStmt);
+//     // sqlite3_finalize(ppStmt);
 
-    return true;
-}
+//     return true;
+// }
 
 ///////////////////////////////////////////////////////////////////////////////
 // doCreateUdpNodeTable
@@ -5425,36 +5425,36 @@ CControlObject::readMulticastChannels(void)
 // Create the UDP node database
 //
 
-bool
-CControlObject::doCreateUdpNodeTable(void)
-{
-    char *pErrMsg    = 0;
-    const char *psql = VSCPDB_UDPNODE_CREATE;
+// bool
+// CControlObject::doCreateUdpNodeTable(void)
+// {
+//     char *pErrMsg    = 0;
+//     const char *psql = VSCPDB_UDPNODE_CREATE;
 
-    syslog(LOG_INFO, "Creating udpnode table.");
+//     syslog(LOG_INFO, "Creating udpnode table.");
 
-    // Check if database is open
-    if (NULL == m_db_vscp_daemon) {
-        syslog(LOG_ERR,
-               "Failed to create VSCP udpnode table - database closed.");
-        return false;
-    }
+//     // Check if database is open
+//     if (NULL == m_db_vscp_daemon) {
+//         syslog(LOG_ERR,
+//                "Failed to create VSCP udpnode table - database closed.");
+//         return false;
+//     }
 
-    pthread_mutex_lock(&m_db_vscp_configMutex);
+//     pthread_mutex_lock(&m_db_vscp_configMutex);
 
-    if (SQLITE_OK !=
-        sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg)) {
-        syslog(LOG_ERR,
-               "Failed to create VSCP udpnode table with error %s.",
-               pErrMsg);
-        pthread_mutex_unlock(&m_db_vscp_configMutex);
-        return false;
-    }
+//     if (SQLITE_OK !=
+//         sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg)) {
+//         syslog(LOG_ERR,
+//                "Failed to create VSCP udpnode table with error %s.",
+//                pErrMsg);
+//         pthread_mutex_unlock(&m_db_vscp_configMutex);
+//         return false;
+//     }
 
-    pthread_mutex_unlock(&m_db_vscp_configMutex);
+//     pthread_mutex_unlock(&m_db_vscp_configMutex);
 
-    return true;
-}
+//     return true;
+// }
 
 ///////////////////////////////////////////////////////////////////////////////
 // doCreateMulticastTable
@@ -5463,36 +5463,36 @@ CControlObject::doCreateUdpNodeTable(void)
 //
 //
 
-bool
-CControlObject::doCreateMulticastTable(void)
-{
-    char *pErrMsg    = 0;
-    const char *psql = VSCPDB_MULTICAST_CREATE;
+// bool
+// CControlObject::doCreateMulticastTable(void)
+// {
+//     char *pErrMsg    = 0;
+//     const char *psql = VSCPDB_MULTICAST_CREATE;
 
-    syslog(LOG_INFO, "Creating multicast table.");
+//     syslog(LOG_INFO, "Creating multicast table.");
 
-    // Check if database is open
-    if (NULL == m_db_vscp_daemon) {
-        syslog(LOG_ERR,
-               "Failed to create VSCP multicast table - database closed.");
-        return false;
-    }
+//     // Check if database is open
+//     if (NULL == m_db_vscp_daemon) {
+//         syslog(LOG_ERR,
+//                "Failed to create VSCP multicast table - database closed.");
+//         return false;
+//     }
 
-    pthread_mutex_lock(&m_db_vscp_configMutex);
+//     pthread_mutex_lock(&m_db_vscp_configMutex);
 
-    if (SQLITE_OK !=
-        sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg)) {
-        syslog(LOG_ERR,
-               "Failed to create VSCP multicast table with error %s.",
-               pErrMsg);
-        pthread_mutex_unlock(&m_db_vscp_configMutex);
-        return false;
-    }
+//     if (SQLITE_OK !=
+//         sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg)) {
+//         syslog(LOG_ERR,
+//                "Failed to create VSCP multicast table with error %s.",
+//                pErrMsg);
+//         pthread_mutex_unlock(&m_db_vscp_configMutex);
+//         return false;
+//     }
 
-    pthread_mutex_unlock(&m_db_vscp_configMutex);
+//     pthread_mutex_unlock(&m_db_vscp_configMutex);
 
-    return true;
-}
+//     return true;
+// }
 
 ///////////////////////////////////////////////////////////////////////////////
 // doCreateUserTable

@@ -67,7 +67,6 @@
 #include <actioncodes.h>
 #include <controlobject.h>
 #include <devicelist.h>
-#include <dm.h>
 #include <mdf.h>
 #include <tables.h>
 #include <variablecodes.h>
