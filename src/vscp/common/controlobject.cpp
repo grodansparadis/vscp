@@ -677,7 +677,7 @@ CControlObject::init(std::string &strcfgfile, std::string &rootFolder)
     startDeviceWorkerThreads();
 
     // Start daemon worker thread
-    startDaemonWorkerThread();
+    //startDaemonWorkerThread();
 
     return true;
 }
@@ -841,9 +841,9 @@ CControlObject::cleanup(void)
            "ControlObject: cleanup - Stopping device worker thread...");
     stopDeviceWorkerThreads();
 
-    syslog(LOG_DEBUG,
-           "ControlObject: cleanup - Stopping VSCP Server worker thread...");
-    stopDaemonWorkerThread();
+    // syslog(LOG_DEBUG,
+    //        "ControlObject: cleanup - Stopping VSCP Server worker thread...");
+    // stopDaemonWorkerThread();
 
     syslog(LOG_DEBUG,
            "ControlObject: cleanup - Stopping client worker thread...");
@@ -1092,48 +1092,48 @@ CControlObject::stopMulticastWorkerThreads(void)
 // startDaemonWorkerThread
 //
 
-bool
-CControlObject::startDaemonWorkerThread(void)
-{
-    syslog(LOG_DEBUG, "Controlobject: Starting daemon worker thread,,.");
+// bool
+// CControlObject::startDaemonWorkerThread(void)
+// {
+//     syslog(LOG_DEBUG, "Controlobject: Starting daemon worker thread,,.");
 
-    m_pdaemonWorkerObj = new daemonWorkerObj(this);
-    if (NULL == m_pdaemonWorkerObj) {
-        syslog(
-          LOG_ERR,
-          "Controlobject: Unable to allocate object for daemon worker thread.");
-        return false;
-    }
+//     m_pdaemonWorkerObj = new daemonWorkerObj(this);
+//     if (NULL == m_pdaemonWorkerObj) {
+//         syslog(
+//           LOG_ERR,
+//           "Controlobject: Unable to allocate object for daemon worker thread.");
+//         return false;
+//     }
 
-    m_pdaemonWorkerObj->m_pCtrlObject = this; // Give it a pointer to us
+//     m_pdaemonWorkerObj->m_pCtrlObject = this; // Give it a pointer to us
 
-    if (pthread_create(&m_clientMsgWorkerThread,
-                       NULL,
-                       daemonWorkerThread,
-                       m_pdaemonWorkerObj)) {
+//     if (pthread_create(&m_clientMsgWorkerThread,
+//                        NULL,
+//                        daemonWorkerThread,
+//                        m_pdaemonWorkerObj)) {
 
-        syslog(LOG_ERR,
-               "Controlobject: Unable to start the daemon worker thread.");
-        return false;
-    }
+//         syslog(LOG_ERR,
+//                "Controlobject: Unable to start the daemon worker thread.");
+//         return false;
+//     }
 
-    return true;
-}
+//     return true;
+// }
 
 /////////////////////////////////////////////////////////////////////////////
 // stopDaemonWorkerThread
 //
 
-bool
-CControlObject::stopDaemonWorkerThread(void)
-{
-    syslog(LOG_DEBUG, "Controlobject: Stopping daemon worker thread...");
-    m_pdaemonWorkerObj->m_bQuit = true;
-    pthread_join(m_clientMsgWorkerThread, NULL);
-    syslog(LOG_DEBUG, "Controlobject: Stoped daemon worker thread.");
+// bool
+// CControlObject::stopDaemonWorkerThread(void)
+// {
+//     syslog(LOG_DEBUG, "Controlobject: Stopping daemon worker thread...");
+//     m_pdaemonWorkerObj->m_bQuit = true;
+//     pthread_join(m_clientMsgWorkerThread, NULL);
+//     syslog(LOG_DEBUG, "Controlobject: Stoped daemon worker thread.");
 
-    return true;
-}
+//     return true;
+// }
 
 ////////////////////////////////////////////////////////////////////////////////
 // startDeviceWorkerThreads

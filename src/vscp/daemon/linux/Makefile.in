@@ -51,8 +51,6 @@ DLLPREFIX = lib
 DESTDIR =
 
 VSCPD_OBJECTS =  vscpd.o \
-	daemonworker.o \
-	discovery.o \
 	clientlist.o \
 	controlobject.o \
 	tcpipsrv.o \
@@ -67,8 +65,6 @@ VSCPD_OBJECTS =  vscpd.o \
 	udpsrv.o \
 	multicastsrv.o \
 	tables.o \
-	automation.o \
-	knownnodes.o \
 	duktape_vscp_func.o \
 	duktape_vscp_wrkthread.o \
 	lua_vscp_wrkthread.o\
@@ -108,12 +104,6 @@ all: vscpd
 
 vscpd.o: vscpd.cpp vscpd.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c vscpd.cpp -o $@ $(EXTRALIBS)
-
-daemonworker.o: ../../common/daemonworker.cpp ../../common/daemonworker.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/daemonworker.cpp -o $@
-
-discovery.o: ../../common/discovery.cpp ../../common/discovery.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/discovery.cpp -o $@
 
 clientlist.o: ../../common/clientlist.cpp ../../common/clientlist.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/clientlist.cpp -o $@
@@ -156,12 +146,6 @@ multicastsrv.o: ../../common/multicastsrv.cpp ../../common/multicastsrv.h
 
 tables.o: ../../common/tables.cpp ../../common/tables.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/tables.cpp -o $@
-
-automation.o: ../../common/automation.cpp ../../common/automation.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/automation.cpp -o $@
-
-knownnodes.o: ../../common/knownnodes.cpp ../../common/knownnodes.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/knownnodes.cpp -o $@
 
 duktape_vscp_func.o: ../../common/duktape_vscp_func.cpp ../../common/duktape_vscp_func.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/duktape_vscp_func.cpp -o $@

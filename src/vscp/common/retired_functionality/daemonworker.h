@@ -29,7 +29,6 @@
 #if !defined(VSCP_DAEMON_WORKER_H__INCLUDED_)
 #define VSCP_DAEMON_WORKER_H__INCLUDED_
 
-#include "discovery.h"
 #include <deque>
 
 class CControlObject;

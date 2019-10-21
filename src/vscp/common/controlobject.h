@@ -33,11 +33,9 @@
 
 #include <automation.h>
 #include <clientlist.h>
-#include <daemonworker.h>
 #include <devicelist.h>
 #include <dm.h>
 #include <interfacelist.h>
-#include <knownnodes.h>
 #include <multicastsrv.h>
 #include <remotevariable.h>
 #include <tables.h>
@@ -764,10 +762,6 @@ class CControlObject
     CUserTableObjList m_userTableObjects; // deque
     pthread_mutex_t m_mutexUserTables;
 
-    // This is the mao with known nodes in the system
-    // key = guidstr
-    CKnownNodes m_knownNodes;
-    pthread_mutex_t m_mutexKnownNodes;
 
     // *************************************************************************
 
@@ -805,8 +799,8 @@ class CControlObject
     /*!
         The server thread for the VSCP daemon
      */
-    daemonWorkerObj *m_pdaemonWorkerObj;
-    pthread_t m_pdaemonWorkerThread;
+    //daemonWorkerObj *m_pdaemonWorkerObj;
+    //pthread_t m_pdaemonWorkerThread;
 
 
 };

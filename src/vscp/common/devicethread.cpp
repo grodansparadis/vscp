@@ -46,7 +46,7 @@
 #include <canal_macro.h>
 #include <canal_win32_ipc.h>
 #include <controlobject.h>
-#include <daemonworker.h>
+//#include <daemonworker.h>
 #include <dllist.h>
 #include <vscp.h>
 #include <vscp_debug.h>

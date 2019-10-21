@@ -40,7 +40,7 @@
 #include "canal_macro.h"
 #include "canal_win32_ipc.h"
 #include "clientlist.h"
-#include "daemonworker.h"
+//#include "daemonworker.h"
 #include "vscp.h"
 #include "vscphelper.h"
 #include <controlobject.h>
