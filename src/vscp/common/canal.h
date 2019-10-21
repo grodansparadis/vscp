@@ -505,65 +505,6 @@ const char * CanalGetDriverInfo( void );
 #define CANAL_ERROR_COMMUNICATION           37          /* Some kind of communication error */
 #define CANAL_ERROR_USER                    38          /* Login error */
 
-// CANAL commands sent over the memory pipe interface (deprecated) */
-#define CANAL_COMMAND_NOOP                  0           /* No command */
-#define CANAL_COMMAND_OPEN                  1           /* Open channel */
-#define CANAL_COMMAND_CLOSE                 2           /* Close channel */
-#define CANAL_COMMAND_SEND                  3           /* Send message */
-#define CANAL_COMMAND_RECEIVE               4           /* Receive message */
-#define CANAL_COMMAND_CHECKDATA             5           /* Check if data is available */
-#define CANAL_COMMAND_BAUDRATE              6           /* Set Baud rate */
-#define CANAL_COMMAND_STATUS                7           /* Get status */
-#define CANAL_COMMAND_STATISTICS            8           /* Get statistics */
-#define CANAL_COMMAND_FILTER                9           /* Set filter */
-#define CANAL_COMMAND_MASK                  10          /* Set mask */
-#define CANAL_COMMAND_VERSION               11          /* CANAL version */
-#define CANAL_COMMAND_DLL_VERSION           12          /* CANAL DLL version */
-#define CANAL_COMMAND_VENDOR_STRING         13          /* CANAL vendor string */
-#define CANAL_COMMAND_LEVEL                 14          /* CANAL Level bit array */
-
-/* CANAL responses sent over the memory pipe interface (deprecated) */
-#define CANAL_RESPONSE_NONE                 0
-#define CANAL_RESPONSE_SUCCESS              1           /* OK message       */
-#define CANAL_RESPONSE_ERROR                2           /* ERROR message    */
-#define CANAL_RESPONSE_MESSAGE              3           /* Response to read */
-
-/* CANAL error codes sent over the client interface     */
-/* on error responses                                   */
-#define CANAL_IFERROR_GENERAL               128         /* General error */
-#define CANAL_IFERROR_UNKNOWN_COMMAND       129
-#define CANAL_IFERROR_CHANNEL_OPEN          130
-#define CANAL_IFERROR_CHANNEL_CLOSED        131
-#define CANAL_IFERROR_SEND_SUCCESS          132
-#define CANAL_IFERROR_SEND_MSG_ALLOCATON    133
-#define CANAL_IFERROR_BUFFER_EMPTY          134
-#define CANAL_IFERROR_BUFFER_FULL           135
-#define CANAL_IFERROR_READ_FAILURE          136
-#define CANAL_IFERROR_SEND_STORAGE          137
-
-
-/*    * * * TCP/IP FAST mode interface constants    */
-
-/* FAST mode primary states (deprecated) */
-#define CANAL_BINARY_FRAME_TYPE_VSCP        0           /* VSCP event */
-#define CANAL_BINARY_FRAME_TYPE_ERROR       1           /* ACK/NACK/errors */
-#define CANAL_BINARY_FRAME_TYPE_COMMAND     2           /* Command frame */
-#define CANAL_BINARY_FRAME_TYPE_CAN         3           /* CAN Frame */
-
-#define CANAL_BINARY_COMMAND_NOOP           0           /* No operation */
-#define CANAL_BINARY_COMMAND_READ           1           /* Read one frame */
-#define CANAL_BINARY_COMMAND_CLOSE          2           /* Close communication channel */
-
-// FAST error codes (deprecated)
-#define CANAL_BINARY_ERROR_NONE             0           /* OK */
-#define CANAL_BINARY_ERROR_GENERAL          1           /* General error */
-#define CANAL_BINARY_ERROR_TO_SMALL         2           /* Packet smaller then min. packet */
-#define CANAL_BINARY_ERROR_FORMAT           3           /* Packet have bad format */
-#define CANAL_BINARY_ERROR_UNKNOW_FRAME     4           /* Unknown frame type */
-#define CANAL_BINARY_ERROR_MEMORY           5           /* No room for event */
-#define CANAL_BINARY_ERROR_NO_DATA          6           /* No data available */
-#define CANAL_BINARY_ERROR_INVALID_CMD      7           /* Command not recognized. */
-
 /* Filter mask settings */
 #define CANUSB_ACCEPTANCE_FILTER_ALL        0x00000000
 #define CANUSB_ACCEPTANCE_MASK_ALL          0xFFFFFFFF
