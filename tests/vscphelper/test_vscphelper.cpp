@@ -1,10 +1,12 @@
-
+#include <stdio.h>
+#include <string.h>
+#include <climits>
 #include <vscphelper.h>
- 
+
 int
 main(void)
 {
-    int i,j,k;          // General iterators  
+    int i,j,k;          // General iterators
     uint32_t sum;       // General sum
     uint8_t guid[16];   // General GUID
     vscpEvent e;        // General event
@@ -16,67 +18,67 @@ main(void)
     // ------------------------------------------------------------------------
     // Testing vscp_readStringValue
     // ------------------------------------------------------------------------
-    printf(" * Testing vscp2_readStringValue\n");
+    printf(" * Testing vscp_readStringValue\n");
 
 	std::string test = "54321";
-    int32_t t1 =  vscp2_readStringValue( test );
+    int32_t t1 =  vscp_readStringValue( test );
     if ( t1 != 54321 ) {
-        printf("[vscp2_readStringValue] Value is not 102!\n");
+        printf("[vscp_readStringValue] Value is not 102!\n");
         exit( -1 );
     }
 
-    int32_t t2 =  vscp2_readStringValue( std::string("102") );
+    int32_t t2 =  vscp_readStringValue( std::string("102") );
     if ( t2 != 102 ) {
-        printf("[vscp2_readStringValue] Value is not 102!\n");
+        printf("[vscp_readStringValue] Value is not 102!\n");
         exit( -1 );
     }
 
-    int32_t t3 =  vscp2_readStringValue( "12345" );
+    int32_t t3 =  vscp_readStringValue( "12345" );
     if ( t3 != 12345 ) {
-        printf("[vscp2_readStringValue] Value is not 12345!\n");
+        printf("[vscp_readStringValue] Value is not 12345!\n");
         exit( -1 );
     }
 
-    int32_t t4 =  vscp2_readStringValue( "0xffff" );
+    int32_t t4 =  vscp_readStringValue( "0xffff" );
     if ( t4 != 65535 ) {
-        printf("[vscp2_readStringValue] Value is not 65535!\n");
+        printf("[vscp_readStringValue] Value is not 65535!\n");
         exit( -1 );
     }
 
-    int32_t t5 =  vscp2_readStringValue( "0o77" );
+    int32_t t5 =  vscp_readStringValue( "0o77" );
     if ( t5 != 63 ) {
-        printf("[vscp2_readStringValue] Value is not 63!\n");
+        printf("[vscp_readStringValue] Value is not 63!\n");
         exit( -1 );
     }
 
-    int32_t t6 =  vscp2_readStringValue( "0b1010" );
+    int32_t t6 =  vscp_readStringValue( "0b1010" );
     if ( t6 != 10 ) {
-        printf("[vscp2_readStringValue] Value is not 10!\n");
+        printf("[vscp_readStringValue] Value is not 10!\n");
         exit( -1 );
     }
 
-    int32_t t7 =  vscp2_readStringValue( "0b189" );
+    int32_t t7 =  vscp_readStringValue( "0b189" );
     if ( t7 != 1 ) {
-        printf("[vscp2_readStringValue] Value is not 1!\n");
+        printf("[vscp_readStringValue] Value is not 1!\n");
         exit( -1 );
     }
 
-    int32_t t8 =  vscp2_readStringValue( "4294967295" );
+    int32_t t8 =  vscp_readStringValue( "4294967295" );
     if ( t8 != ULONG_MAX ) {
-        printf("[vscp2_readStringValue] Value is not 4294967295 (ULONG_MAX)!\n");
+        printf("[vscp_readStringValue] Value is not 4294967295 (ULONG_MAX)!\n");
         exit( -1 );
     }
-    
+
     // ------------------------------------------------------------------------
     // Testing vscp_getGuidFromStringToArray
     // ------------------------------------------------------------------------
-    printf(" * Testing vscp2_getGuidFromStringToArray\n");
+    printf(" * Testing vscp_getGuidFromStringToArray\n");
 
     memset( guid, 0, sizeof(guid) );
-    
+
     std::string strGUID1 = "00:01:02:03:04:05:06:07:08:09:0A:0B:0C:0D:0E:0F";
-    if ( !vscp2_getGuidFromStringToArray( guid, strGUID1 ) ) {
-        printf("[vscp2_getGuidFromStringToArray] Could not read GUID from string!\n");
+    if ( !vscp_getGuidFromStringToArray( guid, strGUID1 ) ) {
+        printf("[vscp_getGuidFromStringToArray] Could not read GUID from string!\n");
         exit( -1 );
     }
 
@@ -85,26 +87,26 @@ main(void)
         sum += guid[i];
     }
     if ( 120 != sum ) {
-        printf("[vscp2_getGuidFromStringToArray] GUID read wrongly!\n");
+        printf("[vscp_getGuidFromStringToArray] GUID read wrongly!\n");
         exit( -1 );
     }
 
     // ------------------------------------------------------------------------
-    // Testing vscp2_readFilterFromString
+    // Testing vscp_readFilterFromString
     // ------------------------------------------------------------------------
-    printf(" * Testing vscp2_readFilterFromString\n");
+    printf(" * Testing vscp_readFilterFromString\n");
 
     vscpEventFilter filter;
     std::string strfilter = "3,0x0201,0x0006,ff:ff:ff:ff:ff:ff:fe:01:00:00:00:00:01:00:00:20";
-    if ( !vscp2_readFilterFromString( &filter, strfilter ) ) {
-        printf("[vscp2_readFilterFromString] Failed!\n");
-        exit( -1 );                                
+    if ( !vscp_readFilterFromString( &filter, strfilter ) ) {
+        printf("[vscp_readFilterFromString] Failed!\n");
+        exit( -1 );
     }
 
     if ( ( filter.filter_priority != 3 ) ||
          ( filter.filter_class != 513 ) ||
          ( filter.filter_type != 6 ) ) {
-        printf("[vscp2_readFilterFromString] Did not read in string data correctly!\n");
+        printf("[vscp_readFilterFromString] Did not read in string data correctly!\n");
         exit( -1 );
     }
 
@@ -124,25 +126,25 @@ main(void)
          ( filter.filter_GUID[13] != 0 ) ||
          ( filter.filter_GUID[14] != 0 ) ||
          ( filter.filter_GUID[15] != 32 ) ) {
-        printf("[vscp2_readFilterFromString] Did not read GUID correctly!\n");
+        printf("[vscp_readFilterFromString] Did not read GUID correctly!\n");
         exit( -1 );
     }
 
     // ------------------------------------------------------------------------
-    // Testing vscp2_readMaskFromString
+    // Testing vscp_readMaskFromString
     // ------------------------------------------------------------------------
-    printf(" * Testing vscp2_readMaskFromString\n");
+    printf(" * Testing vscp_readMaskFromString\n");
 
     std::string strmask = "7,0x0101,0x0076,ff:ff:ff:33:ff:ff:fe:01:00:00:00:00:01:00:00:20";
-    if ( !vscp2_readMaskFromString( &filter, strmask ) ) {
-        printf("[vscp2_readMaskFromString] Failed!\n");
-        exit( -1 );                                
+    if ( !vscp_readMaskFromString( &filter, strmask ) ) {
+        printf("[vscp_readMaskFromString] Failed!\n");
+        exit( -1 );
     }
 
     if ( ( filter.mask_priority != 7 ) ||
          ( filter.mask_class != 257 ) ||
          ( filter.mask_type != 118 ) ) {
-        printf("[vscp2_readMaskFromString] Did not read in string data correctly!\n");
+        printf("[vscp_readMaskFromString] Did not read in string data correctly!\n");
         exit( -1 );
     }
 
@@ -162,32 +164,32 @@ main(void)
          ( filter.mask_GUID[13] != 0 ) ||
          ( filter.mask_GUID[14] != 0 ) ||
          ( filter.mask_GUID[15] != 32 ) ) {
-        printf("[vscp2_readMaskFromString] Did not read GUID correctly!\n");
+        printf("[vscp_readMaskFromString] Did not read GUID correctly!\n");
         exit( -1 );
     }
 
     // ------------------------------------------------------------------------
-    // Testing vscp2_setVscpEventDataFromString
+    // Testing vscp_setVscpEventDataFromString
     // ------------------------------------------------------------------------
-    printf(" * Testing vscp2_setVscpEventDataFromString\n");
+    printf(" * Testing vscp_setVscpEventDataFromString\n");
 
     vscpEvent *pEvent = &e;
     pEvent->sizeData = 0;
     pEvent->pdata = NULL;
     std::string strData = "1,2,30,4,66";
-    if ( !vscp2_setVscpEventDataFromString( pEvent, strData ) ) {
-        printf("[vscp2_setVscpEventDataFromString] Failed!\n");
+    if ( !vscp_setVscpEventDataFromString( pEvent, strData ) ) {
+        printf("[vscp_setVscpEventDataFromString] Failed!\n");
         exit( -1 );
     }
 
     if ( ( pEvent->sizeData != 5 ) ||
-            ( pEvent->pdata == NULL ) || 
+            ( pEvent->pdata == NULL ) ||
             ( pEvent->pdata[0] != 1 ) ||
             ( pEvent->pdata[1] != 2 ) ||
             ( pEvent->pdata[2] != 30 ) ||
             ( pEvent->pdata[3] != 4 ) ||
             ( pEvent->pdata[4] != 66 ) ) {
-        printf("[vscp2_setVscpEventDataFromString] Did not read GUID correctly!\n");
+        printf("[vscp_setVscpEventDataFromString] Did not read GUID correctly!\n");
         exit( -1 );
     }
 
@@ -196,15 +198,15 @@ main(void)
     pEvent->pdata = NULL;
 
     // ------------------------------------------------------------------------
-    // Testing vscp2_setVscpEventExDataFromString
+    // Testing vscp_setVscpEventExDataFromString
     // ------------------------------------------------------------------------
-    printf(" * Testing vscp2_setVscpEventExDataFromString\n");
+    printf(" * Testing vscp_setVscpEventExDataFromString\n");
 
     ex.sizeData = 0;
-    
+
     strData = "1,2,30,4,66";
-    if ( !vscp2_setVscpEventExDataFromString( &ex, strData ) ) {
-        printf("[vscp2_setVscpEventExDataFromString] Failed!\n");
+    if ( !vscp_setVscpEventExDataFromString( &ex, strData ) ) {
+        printf("[vscp_setVscpEventExDataFromString] Failed!\n");
         exit( -1 );
     }
 
@@ -214,66 +216,66 @@ main(void)
             ( ex.data[2] != 30 ) ||
             ( ex.data[3] != 4 ) ||
             ( ex.data[4] != 66 ) ) {
-        printf("[vscp2_setVscpEventExDataFromString] Did not read GUID correctly!\n");
+        printf("[vscp_setVscpEventExDataFromString] Did not read GUID correctly!\n");
         exit( -1 );
     }
 
     ex.sizeData = 0;
 
     // ------------------------------------------------------------------------
-    // Testing vscp2_base64_decode
+    // Testing vscp_base64_std_decode
     // ------------------------------------------------------------------------
-    printf(" * Testing vscp2_base64_decode\n");
+    printf(" * Testing vscp_base64_std_decode\n");
     std::string base64val("VGhpcyBpcyBhIHNpbXBsZSB0ZXN0");
-    if ( !vscp2_base64_decode( base64val ) ) {
-        printf("[vscp2_base64_decode] Failed to decode!\n");
+    if ( !vscp_base64_std_decode( base64val ) ) {
+        printf("[vscp_base64_std_decode] Failed to decode!\n");
         exit( -1 );
     }
 
     if ( 0 != strcmp( "This is a simple test", base64val.c_str() ) ) {
-        printf("[vscp2_base64_decode] Decoding value not correct!\n");
+        printf("[vscp_base64_std_decode] Decoding value not correct!\n");
         exit( -1 );
     }
 
     // ------------------------------------------------------------------------
-    // Testing vscp2_base64_encode
+    // Testing vscp_base64_std_encode
     // ------------------------------------------------------------------------
-    printf(" * Testing vscp2_base64_encode\n");
+    printf(" * Testing vscp_base64_std_encode\n");
     std::string strBase64Encode = "This is a simple test";
-    if ( !vscp2_base64_encode( strBase64Encode ) ) {
-        printf("[vscp2_base64_encode] Failed to encode!\n");
+    if ( !vscp_base64_std_encode( strBase64Encode ) ) {
+        printf("[vscp_base64_std_encode] Failed to encode!\n");
         exit( -1 );
     }
 
     if ( 0 != strcmp( strBase64Encode.c_str(), "VGhpcyBpcyBhIHNpbXBsZSB0ZXN0" ) ) {
-        printf("[vscp2_base64_decode] Encoding value not correct!\n");
+        printf("[vscp_base64_std_decode] Encoding value not correct!\n");
         exit( -1 );
     }
 
     // ------------------------------------------------------------------------
-    // Testing vscp2_decodeBase64IfNeeded
+    // Testing vscp_decodeBase64IfNeeded
     // ------------------------------------------------------------------------
-    printf(" * Testing vscp2_decodeBase64IfNeeded\n");
+    printf(" * Testing vscp_decodeBase64IfNeeded\n");
     std::string strResult;
     base64val = "VGhpcyBpcyBhIHNpbXBsZSB0ZXN0";
-    if ( !vscp2_decodeBase64IfNeeded( base64val, strResult ) ) {
-        printf("[vscp2_decodeBase64IfNeeded] Failed!\n");
+    if ( !vscp_std_decodeBase64IfNeeded( base64val, strResult ) ) {
+        printf("[vscp_std_decodeBase64IfNeeded] Failed!\n");
         exit( -1 );
     }
 
     if ( 0 != strcmp( strResult.c_str(), "VGhpcyBpcyBhIHNpbXBsZSB0ZXN0" ) ) {
-        printf("[vscp2_decodeBase64IfNeeded] Encoding value not correct!\n");
+        printf("[vscp_std_decodeBase64IfNeeded] Encoding value not correct!\n");
         exit( -1 );
     }
 
     base64val = "BASE64:VGhpcyBpcyBhIHNpbXBsZSB0ZXN0";
-    if ( !vscp2_decodeBase64IfNeeded( base64val, strResult ) ) {
-        printf("[vscp2_decodeBase64IfNeeded] Failed!\n");
+    if ( !vscp_std_decodeBase64IfNeeded( base64val, strResult ) ) {
+        printf("[vscp_std_decodeBase64IfNeeded] Failed!\n");
         exit( -1 );
     }
 
     if ( 0 != strcmp( strResult.c_str(), "This is a simple test" ) ) {
-        printf("[vscp2_decodeBase64IfNeeded] Encoding value not correct!\n");
+        printf("[vscp_std_decodeBase64IfNeeded] Encoding value not correct!\n");
         exit( -1 );
     }
 
