@@ -36,7 +36,6 @@
 #include <devicelist.h>
 #include <dm.h>
 #include <interfacelist.h>
-#include <multicastsrv.h>
 #include <remotevariable.h>
 #include <tables.h>
 #include <tcpipsrv.h>
@@ -585,23 +584,23 @@ class CControlObject
     //                      MULTICAST
     /////////////////////////////////////////////////////////
 
-    bool m_bEnableMulticast; // Enable multicast interface
+    // bool m_bEnableMulticast; // Enable multicast interface
 
-    // ** CHANNEL **
+    // // ** CHANNEL **
 
-    // Multicast channel interface
-    MulticastObj m_multicastObj;
+    // // Multicast channel interface
+    // MulticastObj m_multicastObj;
 
-    // ** ANNOUNCE **
+    // // ** ANNOUNCE **
 
-    // Enable Multicast announce interface
-    bool m_bEnableMulticastAnnounce;
+    // // Enable Multicast announce interface
+    // bool m_bEnableMulticastAnnounce;
 
-    // Interface(s) used for multicast announce
-    std::string m_strMulticastAnnounceAddress;
+    // // Interface(s) used for multicast announce
+    // std::string m_strMulticastAnnounceAddress;
 
-    // ttl for multicast announce
-    uint8_t m_ttlMultiCastAnnounce;
+    // // ttl for multicast announce
+    // uint8_t m_ttlMultiCastAnnounce;
 
     //*****************************************************
     //               webserver interface

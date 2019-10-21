@@ -63,7 +63,6 @@ VSCPD_OBJECTS =  vscpd.o \
 	websrv.o \
 	websocketsrv.o \
 	udpsrv.o \
-	multicastsrv.o \
 	tables.o \
 	duktape_vscp_func.o \
 	duktape_vscp_wrkthread.o \
@@ -140,9 +139,6 @@ websocketsrv.o: ../../common/websocketsrv.cpp ../../common/websocket.h
 
 udpsrv.o: ../../common/udpsrv.cpp ../../common/udpsrv.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/udpsrv.cpp -o $@
-
-multicastsrv.o: ../../common/multicastsrv.cpp ../../common/multicastsrv.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/multicastsrv.cpp -o $@
 
 tables.o: ../../common/tables.cpp ../../common/tables.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/tables.cpp -o $@
