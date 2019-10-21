@@ -642,55 +642,6 @@ class tcpipClientObj
     */
     void handleVariable_Save(void);
 
-    /*!
-        Client DM command
-    */
-    void handleClientDm(void);
-
-    /*!
-        Enable DM row
-    */
-    void handleDM_Enable(void);
-
-    /*!
-        Disable DM row
-    */
-    void handleDM_Disable(void);
-
-    /*!
-        List DM
-    */
-    void handleDM_List(void);
-
-    /*!
-        Add DM row
-    */
-    void handleDM_Add(void);
-
-    /*!
-        Delete DM row
-    */
-    void handleDM_Delete(void);
-
-    /*!
-        Do action for row
-    */
-    void handleDM_Trigger(void);
-
-    /*!
-        Delete DM row trigger counter
-    */
-    void handleDM_ClearTriggerCount(void);
-
-    /*!
-        Delete DM row error counter
-    */
-    void handleDM_ClearErrorCount(void);
-
-    /*!
-        Reset DM
-    */
-    void handleDM_Reset(void);
 
     /*!
         Client LIST command

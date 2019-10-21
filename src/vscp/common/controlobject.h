@@ -31,10 +31,8 @@
 
 #include <sqlite3.h>
 
-#include <automation.h>
 #include <clientlist.h>
 #include <devicelist.h>
-#include <dm.h>
 #include <interfacelist.h>
 #include <remotevariable.h>
 #include <tables.h>
@@ -730,7 +728,7 @@ class CControlObject
     pthread_mutex_t m_deviceMutex;
 
     // Daemon Decision Matrix Object
-    CDM m_dm;
+    //CDM m_dm;
 
     // Automation Object
     //CVSCPAutomation m_automation;

@@ -74,7 +74,6 @@
 #include <crc.h>
 #include <devicelist.h>
 #include <devicethread.h>
-#include <dm.h>
 #include <httpd.h>
 #include <randpassword.h>
 #include <tables.h>
@@ -635,16 +634,16 @@ CControlObject::init(std::string &strcfgfile, std::string &rootFolder)
     m_userTableObjects.init();
 
     // Initialize DM storage
-    syslog(LOG_DEBUG, "Initializing DM.");
-    m_dm.init();
+    // syslog(LOG_DEBUG, "Initializing DM.");
+    // m_dm.init();
 
     // Load decision matrix from XML file if mechanism is enabled
-    syslog(LOG_DEBUG, "Loading DM from XML file.");
-    m_dm.loadFromXML();
+    // syslog(LOG_DEBUG, "Loading DM from XML file.");
+    // m_dm.loadFromXML();
 
     // Load decision matrix from db if mechanism is enabled
-    syslog(LOG_DEBUG, "Loading DM from database.");
-    m_dm.loadFromDatabase();
+    // syslog(LOG_DEBUG, "Loading DM from database.");
+    // m_dm.loadFromDatabase();
 
     // Initialize variable storage
     syslog(LOG_DEBUG, "Initialize variables.");
@@ -719,12 +718,12 @@ CControlObject::run(void)
     }
 
     // Save a pointer to the client item
-    m_dm.m_pClientItem = pClientItem;
+    // m_dm.m_pClientItem = pClientItem;
 
     // Set Filter/Mask for full DM table
-    memcpy(&pClientItem->m_filter,
-           &m_dm.m_DM_Table_filter,
-           sizeof(vscpEventFilter));
+    // memcpy(&pClientItem->m_filter,
+    //        &m_dm.m_DM_Table_filter,
+    //        sizeof(vscpEventFilter));
 
     // This is an active client
     pClientItem->m_bOpen         = true;
@@ -733,18 +732,18 @@ CControlObject::run(void)
     pClientItem->m_strDeviceName += vscpdatetime::Now().getISODateTime();
 
     // Add the client to the Client List
-    pthread_mutex_lock(&m_clientList.m_mutexItemList);
-    if (!addClient(pClientItem, CLIENT_ID_DM)) {
-        // Failed to add client
-        delete pClientItem;
-        m_dm.m_pClientItem = pClientItem = NULL;
-        syslog(LOG_ERR, "ControlObject: Failed to add internal client.");
-        pthread_mutex_unlock(&m_clientList.m_mutexItemList);
-    }
-    pthread_mutex_unlock(&m_clientList.m_mutexItemList);
+    // pthread_mutex_lock(&m_clientList.m_mutexItemList);
+    // if (!addClient(pClientItem, CLIENT_ID_DM)) {
+    //     // Failed to add client
+    //     delete pClientItem;
+    //     m_dm.m_pClientItem = pClientItem = NULL;
+    //     syslog(LOG_ERR, "ControlObject: Failed to add internal client.");
+    //     pthread_mutex_unlock(&m_clientList.m_mutexItemList);
+    // }
+    // pthread_mutex_unlock(&m_clientList.m_mutexItemList);
 
     // Feed startup event
-    m_dm.feed(&EventStartUp);
+    // m_dm.feed(&EventStartUp);
 
     //-------------------------------------------------------------------------
     //                            MAIN - LOOP
@@ -759,12 +758,12 @@ CControlObject::run(void)
         oldus = ticks = clock();
 
         // Feed possible periodic event
-        m_dm.feedPeriodicEvent();
+        // m_dm.feedPeriodicEvent();
 
         // Put the LOOP event on the queue
         // Garanties at least one lop event between every other
         // event feed to the queue
-        m_dm.feed(&EventLoop);
+        // m_dm.feed(&EventLoop);
 
         // Wait for event
         if ((-1 == vscp_sem_wait(&pClientItem->m_semClientInputQueue, 10)) &&
@@ -773,7 +772,7 @@ CControlObject::run(void)
             if (m_bQuit) continue; // Make quit request as fast as possible
 
             // Put the LOOP event on the queue
-            m_dm.feed(&EventLoop);
+            // m_dm.feed(&EventLoop);
             continue;
         }
 
@@ -793,10 +792,10 @@ CControlObject::run(void)
 
             if (NULL != pEvent) {
 
-                if (vscp_doLevel2Filter(pEvent, &m_dm.m_DM_Table_filter)) {
-                    // Feed event through matrix
-                    m_dm.feed(pEvent);
-                }
+                // if (vscp_doLevel2Filter(pEvent, &m_dm.m_DM_Table_filter)) {
+                //     // Feed event through matrix
+                //     m_dm.feed(pEvent);
+                // }
 
                 // Remove the event
                 vscp_deleteVSCPevent(pEvent);
@@ -811,7 +810,7 @@ CControlObject::run(void)
     } // while
 
     // Do shutdown event
-    m_dm.feed(&EventShutDown);
+    // m_dm.feed(&EventShutDown);
 
     // Remove messages in the client queues
     pthread_mutex_lock(&m_clientList.m_mutexItemList);
@@ -849,7 +848,7 @@ CControlObject::cleanup(void)
            "ControlObject: cleanup - Stopping client worker thread...");
     stopClientMsgWorkerThread();
 
-    m_dm.cleanup();
+    // m_dm.cleanup();
 
     syslog(LOG_DEBUG,
            "ControlObject: cleanup - Stopping Web Server worker thread...");
@@ -2407,29 +2406,29 @@ startFullConfigParser(void *data, const char *name, const char **attr)
     } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
                (0 == vscp_strcasecmp(name, "dm"))) {
 
-        for (int i = 0; attr[i]; i += 2) {
+        // for (int i = 0; attr[i]; i += 2) {
 
-            std::string attribute = attr[i + 1];
-            vscp_trim(attribute);
+        //     std::string attribute = attr[i + 1];
+        //     vscp_trim(attribute);
 
-            if (0 == vscp_strcasecmp(attr[i], "enable")) {
-                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
-                    pObj->m_dm.m_bEnable = true;
-                } else {
-                    pObj->m_dm.m_bEnable = false;
-                }
-            } else if (0 == vscp_strcasecmp(attr[i], "path")) { // Deprecated
-                if (attribute.length()) {
-                    pObj->m_dm.m_staticXMLPath = attribute;
-                }
-            } else if (0 == vscp_strcasecmp(attr[i], "pathxml")) {
-                if (attribute.length()) {
-                    pObj->m_dm.m_staticXMLPath = attribute;
-                }
-            } else if (0 == vscp_strcasecmp(attr[i], "loglevel")) {
-                pObj->m_debugFlags[0] |= VSCP_DEBUG1_DM;
-            }
-        }
+        //     if (0 == vscp_strcasecmp(attr[i], "enable")) {
+        //         if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+        //             pObj->m_dm.m_bEnable = true;
+        //         } else {
+        //             pObj->m_dm.m_bEnable = false;
+        //         }
+        //     } else if (0 == vscp_strcasecmp(attr[i], "path")) { // Deprecated
+        //         if (attribute.length()) {
+        //             pObj->m_dm.m_staticXMLPath = attribute;
+        //         }
+        //     } else if (0 == vscp_strcasecmp(attr[i], "pathxml")) {
+        //         if (attribute.length()) {
+        //             pObj->m_dm.m_staticXMLPath = attribute;
+        //         }
+        //     } else if (0 == vscp_strcasecmp(attr[i], "loglevel")) {
+        //         pObj->m_debugFlags[0] |= VSCP_DEBUG1_DM;
+        //     }
+        // }
 
     } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
                (0 == vscp_strcasecmp(name, "variables"))) {
@@ -4512,18 +4511,18 @@ CControlObject::readConfigurationDB(void)
         // }
 
         // Path to DM database file
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_DM_PATH_DB)) {
-            m_dm.m_path_db_vscp_dm = std::string((const char *)pValue);
-            continue;
-        }
+        // if (0 == vscp_strcasecmp((const char *)pName,
+        //                          VSCPDB_CONFIG_NAME_DM_PATH_DB)) {
+        //     m_dm.m_path_db_vscp_dm = std::string((const char *)pValue);
+        //     continue;
+        // }
 
         // Path to DM XML file
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_DM_PATH_XML)) {
-            m_dm.m_staticXMLPath = std::string((const char *)pValue);
-            continue;
-        }
+        // if (0 == vscp_strcasecmp((const char *)pName,
+        //                          VSCPDB_CONFIG_NAME_DM_PATH_XML)) {
+        //     m_dm.m_staticXMLPath = std::string((const char *)pValue);
+        //     continue;
+        // }
 
         // Path to variable database
         if (0 == vscp_strcasecmp((const char *)pName,

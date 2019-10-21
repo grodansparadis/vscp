@@ -54,7 +54,6 @@ VSCPD_OBJECTS =  vscpd.o \
 	clientlist.o \
 	controlobject.o \
 	tcpipsrv.o \
-	dm.o \
 	remotevariable.o \
 	stockvariable.o\
 	interfacelist.o \
@@ -64,10 +63,6 @@ VSCPD_OBJECTS =  vscpd.o \
 	websocketsrv.o \
 	udpsrv.o \
 	tables.o \
-	duktape_vscp_func.o \
-	duktape_vscp_wrkthread.o \
-	lua_vscp_wrkthread.o\
-	lua_vscp_func.o\
 	httpd.o \
 	vscphelper.o \
 	vscpremotetcpif.o \
@@ -113,9 +108,6 @@ controlobject.o: ../../common/controlobject.cpp ../../common/controlobject.h
 tcpipsrv.o: ../../common/tcpipsrv.cpp ../../common/tcpipsrv.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/tcpipsrv.cpp -o $@
 
-dm.o: ../../common/dm.cpp ../../common/dm.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/dm.cpp -o $@
-
 remotevariable.o: ../../common/remotevariable.cpp ../../common/remotevariable.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/remotevariable.cpp -o $@
 
@@ -142,18 +134,6 @@ udpsrv.o: ../../common/udpsrv.cpp ../../common/udpsrv.h
 
 tables.o: ../../common/tables.cpp ../../common/tables.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/tables.cpp -o $@
-
-duktape_vscp_func.o: ../../common/duktape_vscp_func.cpp ../../common/duktape_vscp_func.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/duktape_vscp_func.cpp -o $@
-
-duktape_vscp_wrkthread.o: ../../common/duktape_vscp_wrkthread.cpp ../../common/duktape_vscp_wrkthread.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/duktape_vscp_wrkthread.cpp -o $@
-
-lua_vscp_func.o: ../../common/lua_vscp_func.cpp ../../common/lua_vscp_func.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/lua_vscp_func.cpp -o $@
-
-lua_vscp_wrkthread.o: ../../common/lua_vscp_wrkthread.cpp ../../common/lua_vscp_wrkthread.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/lua_vscp_wrkthread.cpp -o $@
 
 vscphelper.o: ../../common/vscphelper.cpp ../../common/vscphelper.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/vscphelper.cpp -o $@
