@@ -733,7 +733,7 @@ class CControlObject
     CDM m_dm;
 
     // Automation Object
-    CVSCPAutomation m_automation;
+    //CVSCPAutomation m_automation;
 
     // Username for level II drivers
     std::string m_driverUsername;
@@ -798,8 +798,8 @@ class CControlObject
     /*!
         The server thread for the VSCP daemon
      */
-    //daemonWorkerObj *m_pdaemonWorkerObj;
-    //pthread_t m_pdaemonWorkerThread;
+    // daemonWorkerObj *m_pdaemonWorkerObj;
+    // pthread_t m_pdaemonWorkerThread;
 
 
 };

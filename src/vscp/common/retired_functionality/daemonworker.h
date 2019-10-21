@@ -98,7 +98,7 @@ class daemonWorkerObj
     bool sendMulticastInformationProxyEvent(int sock, cvscpnode *pNode);
 
     // This object must be allocated externally
-    CDiscoveryObj *m_pDiscoveryObj;
+    //CDiscoveryObj *m_pDiscoveryObj;
 
     /*!
         Termination control
@@ -108,7 +108,7 @@ class daemonWorkerObj
     CControlObject *m_pCtrlObject;
 
     // This list contains items (nodes) that are under discovery
-    std::deque<discoveredNodeInfo *> m_discoverList;
+    //std::deque<discoveredNodeInfo *> m_discoverList;
 };
 
 #endif

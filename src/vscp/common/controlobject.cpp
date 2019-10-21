@@ -148,7 +148,7 @@ CControlObject::CControlObject()
 
     m_nConfiguration = 1; // Default configuration record is read.
 
-    m_automation.setControlObject(this);
+    //m_automation.setControlObject(this);
     m_maxItemsInClientReceiveQueue = MAX_ITEMS_CLIENT_RECEIVE_QUEUE;
 
     // Nill the GUID
@@ -598,7 +598,7 @@ CControlObject::init(std::string &strcfgfile, std::string &rootFolder)
                        VSCP_ADD_USER_FLAG_LOCAL);
 
     // Calculate sunset etc
-    m_automation.calcSun();
+    //m_automation.calcSun();
 
     // Get GUID
     if (m_guid.isNULL()) {
@@ -841,9 +841,9 @@ CControlObject::cleanup(void)
            "ControlObject: cleanup - Stopping device worker thread...");
     stopDeviceWorkerThreads();
 
-    // syslog(LOG_DEBUG,
-    //        "ControlObject: cleanup - Stopping VSCP Server worker thread...");
-    // stopDaemonWorkerThread();
+    syslog(LOG_DEBUG,
+            "ControlObject: cleanup - Stopping VSCP Server worker thread...");
+    //stopDaemonWorkerThread();
 
     syslog(LOG_DEBUG,
            "ControlObject: cleanup - Stopping client worker thread...");
@@ -3193,92 +3193,92 @@ startFullConfigParser(void *data, const char *name, const char **attr)
             std::string attribute = attr[i + 1];
             vscp_trim(attribute);
 
-            if (0 == vscp_strcasecmp(attr[i], "enable")) {
-                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
-                    pObj->m_automation.enableAutomation();
-                } else {
-                    pObj->m_automation.disableAutomation();
-                }
-            } else if (0 == vscp_strcasecmp(attr[i], "zone")) {
-                uint8_t zone = vscp_readStringValue(attribute);
-                pObj->m_automation.setZone(zone);
-            } else if (0 == vscp_strcasecmp(attr[i], "subzone")) {
-                uint8_t subzone = vscp_readStringValue(attribute);
-                pObj->m_automation.setSubzone(subzone);
-            } else if (0 == vscp_strcasecmp(attr[i], "longitude")) {
-                // Decimal point should be '.'
-                std::string::size_type found;
-                while (std::string::npos !=
-                       (found = attribute.find_first_of(","))) {
-                    attribute[found] = '.';
-                }
-                double d = std::stod(attribute);
-                pObj->m_automation.setLongitude(d);
-            } else if (0 == vscp_strcasecmp(attr[i], "latitude")) {
-                // Decimal point should be '.'
-                std::string::size_type found;
-                while (std::string::npos !=
-                       (found = attribute.find_first_of(","))) {
-                    attribute[found] = '.';
-                }
-                double d = std::stod(attribute);
-                pObj->m_automation.setLatitude(d);
-            } else if (0 == vscp_strcasecmp(attr[i], "sunrise-event")) {
-                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
-                    pObj->m_automation.enableSunRiseEvent();
-                } else {
-                    pObj->m_automation.disableSunRiseEvent();
-                }
-            } else if (0 ==
-                       vscp_strcasecmp(attr[i], "sunrise-twilight-event")) {
-                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
-                    pObj->m_automation.enableSunRiseTwilightEvent();
-                } else {
-                    pObj->m_automation.disableSunRiseTwilightEvent();
-                }
-            } else if (0 == vscp_strcasecmp(attr[i], "sunset-event")) {
-                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
-                    pObj->m_automation.enableSunSetEvent();
-                } else {
-                    pObj->m_automation.disableSunSetEvent();
-                }
-            } else if (0 == vscp_strcasecmp(attr[i], "sunset-twilight-event")) {
-                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
-                    pObj->m_automation.enableSunSetTwilightEvent();
-                } else {
-                    pObj->m_automation.disableSunSetTwilightEvent();
-                }
-            } else if (0 ==
-                       vscp_strcasecmp(attr[i], "segment-controler-event")) {
-                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
-                    pObj->m_automation.enableSegmentControllerHeartbeat();
-                } else {
-                    pObj->m_automation.disableSegmentControllerHeartbeat();
-                }
-            } else if (0 ==
-                       vscp_strcasecmp(attr[i], "segment-controler-interval")) {
-                int interval = vscp_readStringValue(attribute);
-                pObj->m_automation.setSegmentControllerHeartbeatInterval(
-                  interval);
-            } else if (0 == vscp_strcasecmp(attr[i], "heartbeat-event")) {
-                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
-                    pObj->m_automation.enableHeartbeatEvent();
-                } else {
-                    pObj->m_automation.disableHeartbeatEvent();
-                }
-            } else if (0 == vscp_strcasecmp(attr[i], "heartbeat-interval")) {
-                int interval = vscp_readStringValue(attribute);
-                pObj->m_automation.setHeartbeatEventInterval(interval);
-            } else if (0 == vscp_strcasecmp(attr[i], "capability-event")) {
-                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
-                    pObj->m_automation.enableCapabilitiesEvent();
-                } else {
-                    pObj->m_automation.disableCapabilitiesEvent();
-                }
-            } else if (0 == vscp_strcasecmp(attr[i], "capability-interval")) {
-                int interval = vscp_readStringValue(attribute);
-                pObj->m_automation.setCapabilitiesEventInterval(interval);
-            }
+            // if (0 == vscp_strcasecmp(attr[i], "enable")) {
+            //     if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+            //         pObj->m_automation.enableAutomation();
+            //     } else {
+            //         pObj->m_automation.disableAutomation();
+            //     }
+            // } else if (0 == vscp_strcasecmp(attr[i], "zone")) {
+            //     uint8_t zone = vscp_readStringValue(attribute);
+            //     pObj->m_automation.setZone(zone);
+            // } else if (0 == vscp_strcasecmp(attr[i], "subzone")) {
+            //     uint8_t subzone = vscp_readStringValue(attribute);
+            //     pObj->m_automation.setSubzone(subzone);
+            // } else if (0 == vscp_strcasecmp(attr[i], "longitude")) {
+            //     // Decimal point should be '.'
+            //     std::string::size_type found;
+            //     while (std::string::npos !=
+            //            (found = attribute.find_first_of(","))) {
+            //         attribute[found] = '.';
+            //     }
+            //     double d = std::stod(attribute);
+            //     pObj->m_automation.setLongitude(d);
+            // } else if (0 == vscp_strcasecmp(attr[i], "latitude")) {
+            //     // Decimal point should be '.'
+            //     std::string::size_type found;
+            //     while (std::string::npos !=
+            //            (found = attribute.find_first_of(","))) {
+            //         attribute[found] = '.';
+            //     }
+            //     double d = std::stod(attribute);
+            //     pObj->m_automation.setLatitude(d);
+            // } else if (0 == vscp_strcasecmp(attr[i], "sunrise-event")) {
+            //     if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+            //         pObj->m_automation.enableSunRiseEvent();
+            //     } else {
+            //         pObj->m_automation.disableSunRiseEvent();
+            //     }
+            // } else if (0 ==
+            //            vscp_strcasecmp(attr[i], "sunrise-twilight-event")) {
+            //     if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+            //         pObj->m_automation.enableSunRiseTwilightEvent();
+            //     } else {
+            //         pObj->m_automation.disableSunRiseTwilightEvent();
+            //     }
+            // } else if (0 == vscp_strcasecmp(attr[i], "sunset-event")) {
+            //     if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+            //         pObj->m_automation.enableSunSetEvent();
+            //     } else {
+            //         pObj->m_automation.disableSunSetEvent();
+            //     }
+            // } else if (0 == vscp_strcasecmp(attr[i], "sunset-twilight-event")) {
+            //     if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+            //         pObj->m_automation.enableSunSetTwilightEvent();
+            //     } else {
+            //         pObj->m_automation.disableSunSetTwilightEvent();
+            //     }
+            // } else if (0 ==
+            //            vscp_strcasecmp(attr[i], "segment-controler-event")) {
+            //     if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+            //         pObj->m_automation.enableSegmentControllerHeartbeat();
+            //     } else {
+            //         pObj->m_automation.disableSegmentControllerHeartbeat();
+            //     }
+            // } else if (0 ==
+            //            vscp_strcasecmp(attr[i], "segment-controler-interval")) {
+            //     int interval = vscp_readStringValue(attribute);
+            //     pObj->m_automation.setSegmentControllerHeartbeatInterval(
+            //       interval);
+            // } else if (0 == vscp_strcasecmp(attr[i], "heartbeat-event")) {
+            //     if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+            //         pObj->m_automation.enableHeartbeatEvent();
+            //     } else {
+            //         pObj->m_automation.disableHeartbeatEvent();
+            //     }
+            // } else if (0 == vscp_strcasecmp(attr[i], "heartbeat-interval")) {
+            //     int interval = vscp_readStringValue(attribute);
+            //     pObj->m_automation.setHeartbeatEventInterval(interval);
+            // } else if (0 == vscp_strcasecmp(attr[i], "capability-event")) {
+            //     if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+            //         pObj->m_automation.enableCapabilitiesEvent();
+            //     } else {
+            //         pObj->m_automation.disableCapabilitiesEvent();
+            //     }
+            // } else if (0 == vscp_strcasecmp(attr[i], "capability-interval")) {
+            //     int interval = vscp_readStringValue(attribute);
+            //     pObj->m_automation.setCapabilitiesEventInterval(interval);
+            // }
         }
     }
 
@@ -5023,154 +5023,154 @@ CControlObject::readConfigurationDB(void)
 
         // * * * Automation * * *
 
-        // Enable automation
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_AUTOMATION_ENABLE)) {
+        // // Enable automation
+        // if (0 == vscp_strcasecmp((const char *)pName,
+        //                          VSCPDB_CONFIG_NAME_AUTOMATION_ENABLE)) {
 
-            if (atoi((const char *)pValue)) {
-                m_automation.enableAutomation();
-            } else {
-                m_automation.enableAutomation();
-            }
-            continue;
-        }
+        //     // if (atoi((const char *)pValue)) {
+        //     //     m_automation.enableAutomation();
+        //     // } else {
+        //     //     m_automation.enableAutomation();
+        //     // }
+        //     continue;
+        // }
 
-        // Automation zone
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_AUTOMATION_ZONE)) {
-            m_automation.setZone(atoi((const char *)pValue));
-            continue;
-        }
+        // // Automation zone
+        // if (0 == vscp_strcasecmp((const char *)pName,
+        //                          VSCPDB_CONFIG_NAME_AUTOMATION_ZONE)) {
+        //     m_automation.setZone(atoi((const char *)pValue));
+        //     continue;
+        // }
 
-        // Automation sub zone
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_AUTOMATION_SUBZONE)) {
-            m_automation.setSubzone(atoi((const char *)pValue));
-            continue;
-        }
+        // // Automation sub zone
+        // if (0 == vscp_strcasecmp((const char *)pName,
+        //                          VSCPDB_CONFIG_NAME_AUTOMATION_SUBZONE)) {
+        //     m_automation.setSubzone(atoi((const char *)pValue));
+        //     continue;
+        // }
 
-        // Automation longitude
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_AUTOMATION_LONGITUDE)) {
-            m_automation.setLongitude(atof((const char *)pValue));
-            continue;
-        }
+        // // Automation longitude
+        // if (0 == vscp_strcasecmp((const char *)pName,
+        //                          VSCPDB_CONFIG_NAME_AUTOMATION_LONGITUDE)) {
+        //     m_automation.setLongitude(atof((const char *)pValue));
+        //     continue;
+        // }
 
-        // Automation latitude
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_AUTOMATION_LATITUDE)) {
-            m_automation.setLatitude(atof((const char *)pValue));
-            continue;
-        }
+        // // Automation latitude
+        // if (0 == vscp_strcasecmp((const char *)pName,
+        //                          VSCPDB_CONFIG_NAME_AUTOMATION_LATITUDE)) {
+        //     m_automation.setLatitude(atof((const char *)pValue));
+        //     continue;
+        // }
 
-        // Automation enable sun rise event
-        if (0 ==
-            vscp_strcasecmp((const char *)pName,
-                            VSCPDB_CONFIG_NAME_AUTOMATION_SUNRISE_ENABLE)) {
-            if (atoi((const char *)pValue)) {
-                m_automation.enableSunRiseEvent();
-            } else {
-                m_automation.disableSunRiseEvent();
-            }
-            continue;
-        }
+        // // Automation enable sun rise event
+        // if (0 ==
+        //     vscp_strcasecmp((const char *)pName,
+        //                     VSCPDB_CONFIG_NAME_AUTOMATION_SUNRISE_ENABLE)) {
+        //     if (atoi((const char *)pValue)) {
+        //         m_automation.enableSunRiseEvent();
+        //     } else {
+        //         m_automation.disableSunRiseEvent();
+        //     }
+        //     continue;
+        // }
 
-        // Automation enable sun set event
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_AUTOMATION_SUNSET_ENABLE)) {
-            if (atoi((const char *)pValue)) {
-                m_automation.enableSunSetEvent();
-            } else {
-                m_automation.disableSunSetEvent();
-            }
-            continue;
-        }
+        // // Automation enable sun set event
+        // if (0 == vscp_strcasecmp((const char *)pName,
+        //                          VSCPDB_CONFIG_NAME_AUTOMATION_SUNSET_ENABLE)) {
+        //     if (atoi((const char *)pValue)) {
+        //         m_automation.enableSunSetEvent();
+        //     } else {
+        //         m_automation.disableSunSetEvent();
+        //     }
+        //     continue;
+        // }
 
-        // Automation enable sunset twilight event
-        if (0 == vscp_strcasecmp(
-                   (const char *)pName,
-                   VSCPDB_CONFIG_NAME_AUTOMATION_SUNSET_TWILIGHT_ENABLE)) {
-            if (atoi((const char *)pValue)) {
-                m_automation.enableSunSetTwilightEvent();
-            } else {
-                m_automation.disableSunSetTwilightEvent();
-            }
-            continue;
-        }
+        // // Automation enable sunset twilight event
+        // if (0 == vscp_strcasecmp(
+        //            (const char *)pName,
+        //            VSCPDB_CONFIG_NAME_AUTOMATION_SUNSET_TWILIGHT_ENABLE)) {
+        //     if (atoi((const char *)pValue)) {
+        //         m_automation.enableSunSetTwilightEvent();
+        //     } else {
+        //         m_automation.disableSunSetTwilightEvent();
+        //     }
+        //     continue;
+        // }
 
-        // Automation enable sunrise twilight event
-        if (0 == vscp_strcasecmp(
-                   (const char *)pName,
-                   VSCPDB_CONFIG_NAME_AUTOMATION_SUNRISE_TWILIGHT_ENABLE)) {
-            if (atoi((const char *)pValue)) {
-                m_automation.enableSunRiseTwilightEvent();
-            } else {
-                m_automation.disableSunRiseTwilightEvent();
-            }
-            continue;
-        }
+        // // Automation enable sunrise twilight event
+        // if (0 == vscp_strcasecmp(
+        //            (const char *)pName,
+        //            VSCPDB_CONFIG_NAME_AUTOMATION_SUNRISE_TWILIGHT_ENABLE)) {
+        //     if (atoi((const char *)pValue)) {
+        //         m_automation.enableSunRiseTwilightEvent();
+        //     } else {
+        //         m_automation.disableSunRiseTwilightEvent();
+        //     }
+        //     continue;
+        // }
 
-        // Automation segment controller event enable
-        if (0 == vscp_strcasecmp(
-                   (const char *)pName,
-                   VSCPDB_CONFIG_NAME_AUTOMATION_SEGMENT_CTRL_ENABLE)) {
-            if (atoi((const char *)pValue)) {
-                m_automation.enableSegmentControllerHeartbeat();
-            } else {
-                m_automation.disableSegmentControllerHeartbeat();
-            }
-            continue;
-        }
+        // // Automation segment controller event enable
+        // if (0 == vscp_strcasecmp(
+        //            (const char *)pName,
+        //            VSCPDB_CONFIG_NAME_AUTOMATION_SEGMENT_CTRL_ENABLE)) {
+        //     if (atoi((const char *)pValue)) {
+        //         m_automation.enableSegmentControllerHeartbeat();
+        //     } else {
+        //         m_automation.disableSegmentControllerHeartbeat();
+        //     }
+        //     continue;
+        // }
 
-        // Automation, segment controller heartbeat interval
-        if (0 == vscp_strcasecmp(
-                   (const char *)pName,
-                   VSCPDB_CONFIG_NAME_AUTOMATION_SEGMENT_CTRL_INTERVAL)) {
-            m_automation.setSegmentControllerHeartbeatInterval(
-              atol((const char *)pValue));
-            continue;
-        }
+        // // Automation, segment controller heartbeat interval
+        // if (0 == vscp_strcasecmp(
+        //            (const char *)pName,
+        //            VSCPDB_CONFIG_NAME_AUTOMATION_SEGMENT_CTRL_INTERVAL)) {
+        //     m_automation.setSegmentControllerHeartbeatInterval(
+        //       atol((const char *)pValue));
+        //     continue;
+        // }
 
-        // Automation heartbeat event enable
-        if (0 ==
-            vscp_strcasecmp((const char *)pName,
-                            VSCPDB_CONFIG_NAME_AUTOMATION_HEARTBEAT_ENABLE)) {
-            if (atoi((const char *)pValue)) {
-                m_automation.enableHeartbeatEvent();
-            } else {
-                m_automation.disableHeartbeatEvent();
-            }
-            continue;
-        }
+        // // Automation heartbeat event enable
+        // if (0 ==
+        //     vscp_strcasecmp((const char *)pName,
+        //                     VSCPDB_CONFIG_NAME_AUTOMATION_HEARTBEAT_ENABLE)) {
+        //     if (atoi((const char *)pValue)) {
+        //         m_automation.enableHeartbeatEvent();
+        //     } else {
+        //         m_automation.disableHeartbeatEvent();
+        //     }
+        //     continue;
+        // }
 
-        // Automation heartbeat interval
-        if (0 ==
-            vscp_strcasecmp((const char *)pName,
-                            VSCPDB_CONFIG_NAME_AUTOMATION_HEARTBEAT_INTERVAL)) {
-            m_automation.setHeartbeatEventInterval(atol((const char *)pValue));
-            continue;
-        }
+        // // Automation heartbeat interval
+        // if (0 ==
+        //     vscp_strcasecmp((const char *)pName,
+        //                     VSCPDB_CONFIG_NAME_AUTOMATION_HEARTBEAT_INTERVAL)) {
+        //     m_automation.setHeartbeatEventInterval(atol((const char *)pValue));
+        //     continue;
+        // }
 
-        // Automation capabilities event enable
-        if (0 == vscp_strcasecmp(
-                   (const char *)pName,
-                   VSCPDB_CONFIG_NAME_AUTOMATION_CAPABILITIES_ENABLE)) {
-            if (atoi((const char *)pValue)) {
-                m_automation.enableCapabilitiesEvent();
-            } else {
-                m_automation.disableCapabilitiesEvent();
-            }
-            continue;
-        }
+        // // Automation capabilities event enable
+        // if (0 == vscp_strcasecmp(
+        //            (const char *)pName,
+        //            VSCPDB_CONFIG_NAME_AUTOMATION_CAPABILITIES_ENABLE)) {
+        //     if (atoi((const char *)pValue)) {
+        //         m_automation.enableCapabilitiesEvent();
+        //     } else {
+        //         m_automation.disableCapabilitiesEvent();
+        //     }
+        //     continue;
+        // }
 
-        // Automation capabilities interval
-        if (0 == vscp_strcasecmp(
-                   (const char *)pName,
-                   VSCPDB_CONFIG_NAME_AUTOMATION_CAPABILITIES_INTERVAL)) {
-            m_automation.setCapabilitiesEventInterval(
-              atol((const char *)pValue));
-            continue;
-        }
+        // // Automation capabilities interval
+        // if (0 == vscp_strcasecmp(
+        //            (const char *)pName,
+        //            VSCPDB_CONFIG_NAME_AUTOMATION_CAPABILITIES_INTERVAL)) {
+        //     m_automation.setCapabilitiesEventInterval(
+        //       atol((const char *)pValue));
+        //     continue;
+        // }
     }
 
     sqlite3_finalize(ppStmt);

@@ -8952,226 +8952,226 @@ vscp_configure_list(struct web_connection *conn, void *cbdata)
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * ** * * * * * * * *
 
-    web_printf(conn, "<h4 id=\"header\" >&nbsp;Automation</h4> ");
-    // VSCP Internal automation intelligence
-    web_printf(conn,
-               "&nbsp;&nbsp;&nbsp;&nbsp;<b>VSCP internal event logic:</b> ");
-    web_printf(conn, "enabled.");
-    web_printf(conn, "<br>");
-    web_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Automation:</b> ");
-    if (gpobj->m_automation.isAutomationEnabled()) {
-        web_printf(conn, "enabled.<br>");
-    } else {
-        web_printf(conn, "disabled<br>");
-    }
+    // web_printf(conn, "<h4 id=\"header\" >&nbsp;Automation</h4> ");
+    // // VSCP Internal automation intelligence
+    // web_printf(conn,
+    //            "&nbsp;&nbsp;&nbsp;&nbsp;<b>VSCP internal event logic:</b> ");
+    // web_printf(conn, "enabled.");
+    // web_printf(conn, "<br>");
+    // web_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Automation:</b> ");
+    // if (gpobj->m_automation.isAutomationEnabled()) {
+    //     web_printf(conn, "enabled.<br>");
+    // } else {
+    //     web_printf(conn, "disabled<br>");
+    // }
 
-    if (gpobj->m_automation.isSendHeartbeat()) {
-        web_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;Heartbeat will be sent.<br>");
-    } else {
-        web_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;Heartbeat will be sent<br>");
-    }
+    // if (gpobj->m_automation.isSendHeartbeat()) {
+    //     web_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;Heartbeat will be sent.<br>");
+    // } else {
+    //     web_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;Heartbeat will be sent<br>");
+    // }
 
-    web_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Period for heartbeat</b>: ");
-    web_printf(
-      conn, "%ld seconds<br>", gpobj->m_automation.getIntervalHeartbeat());
+    // web_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Period for heartbeat</b>: ");
+    // web_printf(
+    //   conn, "%ld seconds<br>", gpobj->m_automation.getIntervalHeartbeat());
 
-    web_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Heartbeat last sent @</b>: ");
-    web_printf(conn,
-               "%s",
-               (const char *)gpobj->m_automation.getHeartbeatSent()
-                 .getISODateTime()
-                 .c_str());
-    web_write(conn, +"<br>", 4);
+    // web_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Heartbeat last sent @</b>: ");
+    // web_printf(conn,
+    //            "%s",
+    //            (const char *)gpobj->m_automation.getHeartbeatSent()
+    //              .getISODateTime()
+    //              .c_str());
+    // web_write(conn, +"<br>", 4);
 
-    if (gpobj->m_automation.isSendSegmentControllerHeartbeat()) {
-        web_printf(conn,
-                   "&nbsp;&nbsp;&nbsp;&nbsp;Segment controller heartbeat will "
-                   "be sent.<br>");
-    } else {
-        web_printf(conn,
-                   "&nbsp;&nbsp;&nbsp;&nbsp;Segment controller heartbeat will "
-                   "be sent<br>");
-    }
+    // if (gpobj->m_automation.isSendSegmentControllerHeartbeat()) {
+    //     web_printf(conn,
+    //                "&nbsp;&nbsp;&nbsp;&nbsp;Segment controller heartbeat will "
+    //                "be sent.<br>");
+    // } else {
+    //     web_printf(conn,
+    //                "&nbsp;&nbsp;&nbsp;&nbsp;Segment controller heartbeat will "
+    //                "be sent<br>");
+    // }
 
-    web_printf(conn,
-               "&nbsp;&nbsp;&nbsp;&nbsp;<b>Period for Segment controller "
-               "heartbeat</b>: ");
-    web_printf(conn,
-               "%ld seconds<br>",
-               gpobj->m_automation.getIntervalSegmentControllerHeartbeat());
+    // web_printf(conn,
+    //            "&nbsp;&nbsp;&nbsp;&nbsp;<b>Period for Segment controller "
+    //            "heartbeat</b>: ");
+    // web_printf(conn,
+    //            "%ld seconds<br>",
+    //            gpobj->m_automation.getIntervalSegmentControllerHeartbeat());
 
-    web_printf(conn,
-               "&nbsp;&nbsp;&nbsp;&nbsp;<b>Segment controller heartbeat last "
-               "sent @</b>: ");
-    web_printf(
-      conn,
-      "%s",
-      (const char *)gpobj->m_automation.getSegmentControllerHeartbeatSent()
-        .getISODateTime()
-        .c_str());
-    web_write(conn, "<br>", 4);
+    // web_printf(conn,
+    //            "&nbsp;&nbsp;&nbsp;&nbsp;<b>Segment controller heartbeat last "
+    //            "sent @</b>: ");
+    // web_printf(
+    //   conn,
+    //   "%s",
+    //   (const char *)gpobj->m_automation.getSegmentControllerHeartbeatSent()
+    //     .getISODateTime()
+    //     .c_str());
+    // web_write(conn, "<br>", 4);
 
-    web_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Longitude</b>: ");
-    web_printf(conn, "%f<br>", gpobj->m_automation.getLongitude());
+    // web_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Longitude</b>: ");
+    // web_printf(conn, "%f<br>", gpobj->m_automation.getLongitude());
 
-    web_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Latitude</b>: ");
-    web_printf(conn, "%f<br>", gpobj->m_automation.getLatitude());
+    // web_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Latitude</b>: ");
+    // web_printf(conn, "%f<br>", gpobj->m_automation.getLatitude());
 
     int hours, minutes;
-    gpobj->m_automation.convert2HourMinute(
-      gpobj->m_automation.getDayLength(), &hours, &minutes);
-    web_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Length of day</b>: ");
-    web_printf(conn, "%02d:%02d<br>", hours, minutes);
+    //gpobj->m_automation.convert2HourMinute(
+    //gpobj->m_automation.getDayLength(), &hours, &minutes);
+    // web_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Length of day</b>: ");
+    // web_printf(conn, "%02d:%02d<br>", hours, minutes);
 
-    web_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Declination</b>: ");
-    web_printf(conn, "%f<br>", gpobj->m_automation.getDeclination());
+    // web_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Declination</b>: ");
+    // web_printf(conn, "%f<br>", gpobj->m_automation.getDeclination());
 
-    web_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Sun max altitude</b>: ");
-    web_printf(conn, "%f<br>", gpobj->m_automation.getSunMaxAltitude());
+    // web_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Sun max altitude</b>: ");
+    // web_printf(conn, "%f<br>", gpobj->m_automation.getSunMaxAltitude());
 
-    web_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Last Calculation</b>: ");
-    web_printf(conn,
-               "%s",
-               (const char *)gpobj->m_automation.getLastCalculation()
-                 .getISODateTime()
-                 .c_str());
-    web_write(conn, "<br>", 4);
+    // web_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Last Calculation</b>: ");
+    // web_printf(conn,
+    //            "%s",
+    //            (const char *)gpobj->m_automation.getLastCalculation()
+    //              .getISODateTime()
+    //              .c_str());
+    // web_write(conn, "<br>", 4);
 
-    if (gpobj->m_automation.isSendSunriseTwilightEvent()) {
-        web_printf(
-          conn,
-          "&nbsp;&nbsp;&nbsp;&nbsp;Sunrise twilight event will be sent.<br>");
-    } else {
-        web_printf(conn,
-                   "&nbsp;&nbsp;&nbsp;&nbsp;Sunrise twilight event will not be "
-                   "sent.<br>");
-    }
+    // if (gpobj->m_automation.isSendSunriseTwilightEvent()) {
+    //     web_printf(
+    //       conn,
+    //       "&nbsp;&nbsp;&nbsp;&nbsp;Sunrise twilight event will be sent.<br>");
+    // } else {
+    //     web_printf(conn,
+    //                "&nbsp;&nbsp;&nbsp;&nbsp;Sunrise twilight event will not be "
+    //                "sent.<br>");
+    // }
 
-    web_printf(conn,
-               "&nbsp;&nbsp;&nbsp;&nbsp;<b>Civil Twilight Sunrise Time</b>: ");
-    web_printf(conn,
-               "%s",
-               (const char *)gpobj->m_automation.getCivilTwilightSunriseTime()
-                 .getISODateTime()
-                 .c_str());
-    web_write(conn, "<br>", 4);
+    // web_printf(conn,
+    //            "&nbsp;&nbsp;&nbsp;&nbsp;<b>Civil Twilight Sunrise Time</b>: ");
+    // web_printf(conn,
+    //            "%s",
+    //            (const char *)gpobj->m_automation.getCivilTwilightSunriseTime()
+    //              .getISODateTime()
+    //              .c_str());
+    // web_write(conn, "<br>", 4);
 
-    web_printf(
-      conn,
-      "&nbsp;&nbsp;&nbsp;&nbsp;<b>Civil Twilight Sunrise Time sent @</b>: ");
-    web_printf(
-      conn,
-      "%s",
-      (const char *)gpobj->m_automation.getCivilTwilightSunriseTimeSent()
-        .getISODateTime()
-        .c_str());
-    web_write(conn, "<br>", 4);
+    // web_printf(
+    //   conn,
+    //   "&nbsp;&nbsp;&nbsp;&nbsp;<b>Civil Twilight Sunrise Time sent @</b>: ");
+    // web_printf(
+    //   conn,
+    //   "%s",
+    //   (const char *)gpobj->m_automation.getCivilTwilightSunriseTimeSent()
+    //     .getISODateTime()
+    //     .c_str());
+    // web_write(conn, "<br>", 4);
 
-    if (gpobj->m_automation.isSendSunriseEvent()) {
-        web_printf(conn,
-                   "&nbsp;&nbsp;&nbsp;&nbsp;Sunrise event will be sent.<br>");
-    } else {
-        web_printf(
-          conn, "&nbsp;&nbsp;&nbsp;&nbsp;Sunrise event will not be sent.<br>");
-    }
+    // if (gpobj->m_automation.isSendSunriseEvent()) {
+    //     web_printf(conn,
+    //                "&nbsp;&nbsp;&nbsp;&nbsp;Sunrise event will be sent.<br>");
+    // } else {
+    //     web_printf(
+    //       conn, "&nbsp;&nbsp;&nbsp;&nbsp;Sunrise event will not be sent.<br>");
+    // }
 
-    web_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Civil Sunrise Time</b>: ");
-    web_printf(
-      conn,
-      "%s",
-      (const char *)gpobj->m_automation.getSunriseTime().getISOTime().c_str());
-    web_write(conn, "<br>", 4);
+    // web_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Civil Sunrise Time</b>: ");
+    // web_printf(
+    //   conn,
+    //   "%s",
+    //   (const char *)gpobj->m_automation.getSunriseTime().getISOTime().c_str());
+    // web_write(conn, "<br>", 4);
 
-    web_printf(conn,
-               "&nbsp;&nbsp;&nbsp;&nbsp;<b>Civil Sunrise Time sent @</b>: ");
-    web_printf(conn,
-               "%s",
-               (const char *)gpobj->m_automation.getSunriseTimeSent()
-                 .getISODateTime()
-                 .c_str());
-    web_write(conn, "<br>", 4);
+    // web_printf(conn,
+    //            "&nbsp;&nbsp;&nbsp;&nbsp;<b>Civil Sunrise Time sent @</b>: ");
+    // web_printf(conn,
+    //            "%s",
+    //            (const char *)gpobj->m_automation.getSunriseTimeSent()
+    //              .getISODateTime()
+    //              .c_str());
+    // web_write(conn, "<br>", 4);
 
-    if (gpobj->m_automation.isSendSunsetEvent()) {
-        web_printf(conn,
-                   "&nbsp;&nbsp;&nbsp;&nbsp;Sunset event will be sent.<br>");
-    } else {
-        web_printf(
-          conn, "&nbsp;&nbsp;&nbsp;&nbsp;Sunset event will not be sent.<br>");
-    }
+    // if (gpobj->m_automation.isSendSunsetEvent()) {
+    //     web_printf(conn,
+    //                "&nbsp;&nbsp;&nbsp;&nbsp;Sunset event will be sent.<br>");
+    // } else {
+    //     web_printf(
+    //       conn, "&nbsp;&nbsp;&nbsp;&nbsp;Sunset event will not be sent.<br>");
+    // }
 
-    web_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Civil Sunset Time</b>: ");
-    web_printf(
-      conn,
-      "%s",
-      (const char *)gpobj->m_automation.getSunsetTime().getISOTime().c_str());
-    web_write(conn, "<br>", 4);
+    // web_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Civil Sunset Time</b>: ");
+    // web_printf(
+    //   conn,
+    //   "%s",
+    //   (const char *)gpobj->m_automation.getSunsetTime().getISOTime().c_str());
+    // web_write(conn, "<br>", 4);
 
-    web_printf(conn,
-               "&nbsp;&nbsp;&nbsp;&nbsp;<b>Civil Sunset Time sent @</b>: ");
-    web_printf(conn,
-               "%s",
-               (const char *)gpobj->m_automation.getSunsetTimeSent()
-                 .getISODateTime()
-                 .c_str());
-    web_write(conn, "<br>", 4);
+    // web_printf(conn,
+    //            "&nbsp;&nbsp;&nbsp;&nbsp;<b>Civil Sunset Time sent @</b>: ");
+    // web_printf(conn,
+    //            "%s",
+    //            (const char *)gpobj->m_automation.getSunsetTimeSent()
+    //              .getISODateTime()
+    //              .c_str());
+    // web_write(conn, "<br>", 4);
 
-    if (gpobj->m_automation.isSendSunsetTwilightEvent()) {
-        web_printf(
-          conn,
-          "&nbsp;&nbsp;&nbsp;&nbsp;Twilight sunset event will be sent.<br>");
-    } else {
-        web_printf(
-          conn,
-          "&nbsp;&nbsp;&nbsp;&nbsp;Twilight sunset will not be sent.<br>");
-    }
+    // if (gpobj->m_automation.isSendSunsetTwilightEvent()) {
+    //     web_printf(
+    //       conn,
+    //       "&nbsp;&nbsp;&nbsp;&nbsp;Twilight sunset event will be sent.<br>");
+    // } else {
+    //     web_printf(
+    //       conn,
+    //       "&nbsp;&nbsp;&nbsp;&nbsp;Twilight sunset will not be sent.<br>");
+    // }
 
-    web_printf(conn,
-               "&nbsp;&nbsp;&nbsp;&nbsp;<b>Civil Twilight Sunset Time</b>: ");
-    web_printf(conn,
-               "%s",
-               (const char *)gpobj->m_automation.getCivilTwilightSunsetTime()
-                 .getISOTime()
-                 .c_str());
-    web_write(conn, "<br>", 4);
+    // web_printf(conn,
+    //            "&nbsp;&nbsp;&nbsp;&nbsp;<b>Civil Twilight Sunset Time</b>: ");
+    // web_printf(conn,
+    //            "%s",
+    //            (const char *)gpobj->m_automation.getCivilTwilightSunsetTime()
+    //              .getISOTime()
+    //              .c_str());
+    // web_write(conn, "<br>", 4);
 
-    web_printf(
-      conn,
-      "&nbsp;&nbsp;&nbsp;&nbsp;<b>Civil Twilight Sunset Time sent @</b>: ");
-    web_printf(
-      conn,
-      "%s",
-      (const char *)gpobj->m_automation.getCivilTwilightSunsetTimeSent()
-        .getISODateTime()
-        .c_str());
-    web_write(conn, "<br>", 4);
+    // web_printf(
+    //   conn,
+    //   "&nbsp;&nbsp;&nbsp;&nbsp;<b>Civil Twilight Sunset Time sent @</b>: ");
+    // web_printf(
+    //   conn,
+    //   "%s",
+    //   (const char *)gpobj->m_automation.getCivilTwilightSunsetTimeSent()
+    //     .getISODateTime()
+    //     .c_str());
+    // web_write(conn, "<br>", 4);
 
-    if (gpobj->m_automation.isSendCalculatedNoonEvent()) {
-        web_printf(
-          conn,
-          "&nbsp;&nbsp;&nbsp;&nbsp;Calculated noon event will be sent.<br>");
-    } else {
-        web_printf(
-          conn,
-          "&nbsp;&nbsp;&nbsp;&nbsp;Calculated noon will not be sent.<br>");
-    }
+    // if (gpobj->m_automation.isSendCalculatedNoonEvent()) {
+    //     web_printf(
+    //       conn,
+    //       "&nbsp;&nbsp;&nbsp;&nbsp;Calculated noon event will be sent.<br>");
+    // } else {
+    //     web_printf(
+    //       conn,
+    //       "&nbsp;&nbsp;&nbsp;&nbsp;Calculated noon will not be sent.<br>");
+    // }
 
-    web_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Calculated Noon Time</b>: ");
-    web_printf(
-      conn,
-      "%s",
-      (const char *)gpobj->m_automation.getNoonTime().getISOTime().c_str());
-    web_write(conn, "<br>", 4);
+    // web_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Calculated Noon Time</b>: ");
+    // web_printf(
+    //   conn,
+    //   "%s",
+    //   (const char *)gpobj->m_automation.getNoonTime().getISOTime().c_str());
+    // web_write(conn, "<br>", 4);
 
-    web_printf(conn,
-               "&nbsp;&nbsp;&nbsp;&nbsp;<b>Calculated Noon Time sent @</b>: ");
-    web_printf(conn,
-               "%s",
-               (const char *)gpobj->m_automation.getNoonTimeSent()
-                 .getISODateTime()
-                 .c_str());
-    web_write(conn, "<br>", 4);
+    // web_printf(conn,
+    //            "&nbsp;&nbsp;&nbsp;&nbsp;<b>Calculated Noon Time sent @</b>: ");
+    // web_printf(conn,
+    //            "%s",
+    //            (const char *)gpobj->m_automation.getNoonTimeSent()
+    //              .getISODateTime()
+    //              .c_str());
+    // web_write(conn, "<br>", 4);
 
-    web_printf(conn, "<hr>");
+    // web_printf(conn, "<hr>");
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * ** * * * * * * * *
 

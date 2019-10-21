@@ -5197,8 +5197,8 @@ tcpipClientObj::handleDM_Delete(void)
 void
 tcpipClientObj::handleDM_Reset(void)
 {
-    m_pObj->stopDaemonWorkerThread();
-    m_pObj->startDaemonWorkerThread();
+    //m_pObj->stopDaemonWorkerThread();
+    //m_pObj->startDaemonWorkerThread();
 
     write(MSG_OK, strlen(MSG_OK));
 }
