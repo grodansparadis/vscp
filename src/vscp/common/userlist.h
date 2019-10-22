@@ -299,9 +299,9 @@ class CUserItem
     };
     std::string getUserRightsAsString(void);
 
-    // -------------------------------- 
+    // --------------------------------
     // * * * Allowed events list * * *
-    // -------------------------------- 
+    // --------------------------------
 
     /*!
         Clear the allowed event list
@@ -465,10 +465,18 @@ class CUserItem
 
     /*!
      * Get user settings as string
-     * @param userSettings String that will get user settings
+     * @param strUser String that will get user settings
      * @return true on success, false on failure.
      */
-    bool getAsString(std::string &userSettings);
+    bool getAsString(std::string &strUser);
+
+    /*!
+     * Get user settings as map with key/value pairs
+     * @param mapUser map that will get user settings as
+     * key/value pairs
+     * @return true on success, false on failure.
+     */
+    bool getAsMap(std::map<std::string,std::string>& mapUser);
 
   protected:
     // System assigned ID for user (-1 -  for system users (not in DB), 0 for

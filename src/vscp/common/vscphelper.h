@@ -1160,52 +1160,52 @@ extern "C"
     /*!
      * Convert VSCP Event to JSON formated string
      */
-    bool vscp_convertEventToJSON(vscpEvent *pEvent, std::string &strJSON);
+    bool vscp_convertEventToJSON(std::string &strJSON,vscpEvent *pEvent);
 
     /*!
      * Convert VSCP EventEx to JSON formated string
      */
-    bool vscp_convertEventExToJSON(vscpEventEx *pEventEx, std::string &strJSON);
+    bool vscp_convertEventExToJSON(std::string &strJSON, vscpEventEx *pEventEx);
 
     /*!
      * Convert JSON string to event
      */
-    bool vscp_convertJSONToEvent(std::string &strJSON, vscpEvent *pEvent);
+    bool vscp_convertJSONToEvent(vscpEvent *pEvent,std::string &strJSON);
 
     /*!
      * Convert JSON string to eventex
      */
-    bool vscp_convertJSONToEventEx(std::string &strJSON, vscpEventEx *pEventEx);
+    bool vscp_convertJSONToEventEx(vscpEventEx *pEventE,std::string &strJSONx);
 
     /*!
      * Convert VSCP Event to XML formated string
      */
-    bool vscp_convertEventToXML(vscpEvent *pEvent, std::string &strXML);
+    bool vscp_convertEventToXML(std::string &strXML,vscpEvent *pEvent);
 
     /*!
      * Convert XML string to event
      */
-    bool vscp_convertXMLToEvent(std::string &strXML, vscpEvent *pEvent);
+    bool vscp_convertXMLToEvent(vscpEvent *pEvent, std::string& strXML);
 
     /*!
      * Convert VSCP EventEx to XML formated string
      */
-    bool vscp_convertEventExToXML(vscpEventEx *pEventEx, std::string &strXML);
+    bool vscp_convertEventExToXML(std::string &strXML,vscpEventEx *pEventEx);
 
     /*!
      * Convert XML string to EventEx
      */
-    bool vscp_convertXMLToEventEx(std::string &strXML, vscpEventEx *pEventEx);
+    bool vscp_convertXMLToEventEx(vscpEventEx *pEventEx,std::string &strXML);
 
     /*!
      * Convert VSCP Event to HTML formated string
      */
-    bool vscp_convertEventToHTML(vscpEvent *pEvent, std::string &strHTML);
+    bool vscp_convertEventToHTML(std::string &strHTML,vscpEvent *pEvent);
 
     /*!
      * Convert VSCP EventEx to HTML formated string
      */
-    bool vscp_convertEventExToHTML(vscpEventEx *pEventEx, std::string &strHTML);
+    bool vscp_convertEventExToHTML(std::string &strHTML, vscpEventEx *pEventEx);
 
     /*!
      * Set event datetime from DateTime
@@ -1503,7 +1503,7 @@ extern "C"
         @return true on success, false on failure.
     */
 
-    bool vscp_writeVscpEventToString(const vscpEvent *pEvent, std::string &str);
+    bool vscp_writeVscpEventToString(std::string &str, const vscpEvent *pEvent);
 
     /*!
         Write event to string.
@@ -1513,8 +1513,7 @@ extern "C"
         @return true on success, false on failure.
         */
 
-    bool vscp_writeVscpEventExToString(const vscpEventEx *pEvent,
-                                       std::string &str);
+    bool vscp_writeVscpEventExToString(std::string &str,const vscpEventEx *pEvent);
 
     /*!
         Get event data from string format

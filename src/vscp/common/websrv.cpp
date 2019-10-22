@@ -9409,13 +9409,22 @@ start_webserver(void)
     //mg_set_auth_handler(
     //  gpobj->m_web_ctx, "/vscp/rest", check_rest_authorization, NULL);
 
-    // WS site for the websocket connection
+    // WS1 path for the websocket connection
     mg_set_websocket_handler(gpobj->m_web_ctx,
                               "/ws1",
                               ws1_connectHandler,
                               ws1_readyHandler,
                               ws1_dataHandler,
                               ws1_closeHandler,
+                              0);
+
+    // WS2 path for the websocket connection
+    mg_set_websocket_handler(gpobj->m_web_ctx,
+                              "/ws2",
+                              ws2_connectHandler,
+                              ws2_readyHandler,
+                              ws2_dataHandler,
+                              ws2_closeHandler,
                               0);
 
     // Set page handlers

@@ -253,6 +253,49 @@ CUserItem::getAsString(std::string &strUser)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// getAsMap
+//
+// userid;name;password;fullname;filter;mask;rights;remotes;events;note
+//
+
+bool
+CUserItem::getAsMap(std::map<std::string,std::string>& mapUser)
+{
+    std::string str,wstr;
+
+    mapUser["userid"] = vscp_str_format("%ld;", getUserID());
+    mapUser["name"] = getUserName();
+
+    // Protect password
+    wstr = "";
+    str = getPassword();
+    for (int i = 0; i < str.length(); i++) {
+        wstr += "*";
+    }
+    mapUser["password"] = wstr;
+
+    mapUser["fullname"] = getFullname();
+
+    vscp_writeFilterToString( getUserFilter(), str);
+    mapUser["filter"] = str;
+
+    vscp_writeMaskToString( getUserFilter(), str);
+    mapUser["mask"] = str;
+
+    mapUser["rights"] = getUserRightsAsString();
+
+    mapUser["remotes"] = getAllowedRemotesAsString();
+
+    mapUser["events"] = getAllowedEventsAsString();
+
+    str = getNote();
+    vscp_base64_std_encode(str);
+    mapUser["note"] =  str;
+
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // setUserRightsFromString
 //
 

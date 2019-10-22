@@ -78,6 +78,22 @@ ws1_dataHandler(
 void
 ws1_closeHandler(const struct mg_connection *conn, void *cbdata);
 
+
+////////////////////////////////////////////////////////////////////////////////
+//                           ws2  Websocket handlers
+////////////////////////////////////////////////////////////////////////////////
+
+int
+ws2_connectHandler(const struct mg_connection *conn, void *cbdata);
+void
+ws2_readyHandler(struct mg_connection *conn, void *cbdata);
+int
+ws2_dataHandler(
+  struct mg_connection *conn, int bits, char *data, size_t len, void *cbdata);
+void
+ws2_closeHandler(const struct mg_connection *conn, void *cbdata);
+
+
 #define WEBSRV_MAX_SESSIONS 1000   // Max web server active sessions
 #define WEBSRV_NAL_USERNAMELEN 128 // Max length for userdname
 

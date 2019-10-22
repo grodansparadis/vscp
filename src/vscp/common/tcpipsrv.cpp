@@ -1546,7 +1546,7 @@ tcpipClientObj::sendOneEventFromQueue(bool bStatusMsg)
         }
         pthread_mutex_unlock(&m_pClientItem->m_mutexClientInputQueue);
 
-        vscp_writeVscpEventToString(pqueueEvent, strOut);
+        vscp_writeVscpEventToString(strOut,pqueueEvent);
         strOut += ("\r\n");
         write(strOut.c_str(), strlen(strOut.c_str()));
 

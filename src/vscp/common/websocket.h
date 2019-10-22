@@ -160,12 +160,18 @@ enum
 #define WEBSOCKET_SUBCODE_VARIABLE_CREATED "N"
 #define WEBSOCKET_SUBCODE_VARIABLE_DELETED "D"
 
+#define WS_TYPE_1   1
+#define WS_TYPE_2   2
+
 class websock_session
 {
 
   public:
     websock_session(void);
     ~websock_session(void);
+
+    // ws type 1/2
+    uint8_t m_wstypes;
 
     // Connection object
     struct mg_connection *m_conn;
@@ -202,6 +208,74 @@ class websock_session
 
     // Variable triggers
     bool bVariableTrigger; // True to activate event trigger functionality.
+};
+
+#define WS2_COMMAND                                                            \
+    "{"                                                                        \
+    " \"type\" : \"CMD\", "                                                    \
+    " \"command\" : \"%s\", "                                                  \
+    " \"args\" : %s"                                                           \
+    "}"
+
+#define WS2_EVENT                                                              \
+    "{"                                                                        \
+    " \"type\" : \"EVENT\", "                                                  \
+    " \"event\" : {"                                                           \
+    " %s "                                                                     \
+    " }"                                                                       \
+    "}"
+
+#define WS2_POSITIVE_RESPONSE                                                  \
+    "{"                                                                        \
+    " \"type\" : \"+\", "                                                      \
+    " \"command\" : \"%s\" "                                                   \
+    " \"args\" : %s"                                                           \
+    "}"
+
+#define WS2_NEGATIVE_RESPONSE                                                  \
+    "{"                                                                        \
+    " \"type\" : \"-\", "                                                      \
+    " \"command\" : \"%s\", "                                                  \
+    " \"error-code\" : %d, "                                                   \
+    " \"error-str\" : \"%s\", "                                                \
+    "}"
+
+#define WS2_VARIABLE                                                           \
+    "{"                                                                        \
+    " \"type\" : \"VARIABLE\", "                                               \
+    " \"variable\" : {"                                                        \
+    " %s "                                                                     \
+    " }"                                                                       \
+    "}"
+
+const int MSG_TYPE_COMMAND           = 0; // Built in command
+const int MSG_TYPE_XCOMMAND          = 1; // Add on command
+const int MSG_TYPE_EVENT             = 2; // Event
+const int MSG_TYPE_RESPONSE_POSITIVE = 3; // Positive reply
+const int MSG_TYPE_RESPONSE_NEGATIVE = 4; // Negative reply
+const int MSG_TYPE_VARIABLE          = 5; // Changed variable
+
+class w2msg
+{
+  public:
+
+    w2msg(void);
+    ~w2msg(void);
+
+    /*
+        Event (E)/Command (C)/Response (+)/Variable (V)
+    */
+    int m_type;
+
+    /*
+        Command/Response/Variable arguments
+    */
+    std::map<std::string,std::string> m_arguments;
+
+    /*
+        Holder for Event
+    */
+    vscpEventEx m_ex;
 };
 
 // Public functions

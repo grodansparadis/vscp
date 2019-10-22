@@ -531,7 +531,7 @@ VscpRemoteTcpIf::doCmdSend(const vscpEvent *pEvent)
     if (pEvent->sizeData > VSCP_MAX_DATA) return VSCP_ERROR_PARAMETER;
 
     // send head,class,type,obid,datetime,timestamp,GUID,data1,data2,data3....
-    if (!vscp_writeVscpEventToString(pEvent, strBuf)) {
+    if (!vscp_writeVscpEventToString(strBuf, pEvent)) {
         return VSCP_ERROR_PARAMETER;
     }
 
@@ -571,7 +571,7 @@ VscpRemoteTcpIf::doCmdSendEx(const vscpEventEx *pEventEx)
     // (int)pEventEx->vscp_class, (int)pEventEx->vscp_type ));
 
     // send head,class,type,obid,datetime,timestamp,GUID,data1,data2,data3....
-    if (!vscp_writeVscpEventExToString(pEventEx, strBuf)) {
+    if (!vscp_writeVscpEventExToString(strBuf,pEventEx)) {
         return VSCP_ERROR_PARAMETER;
     }
 
@@ -2294,7 +2294,7 @@ VscpRemoteTcpIf::setRemoteVariableEvent(const std::string &name,
     // Check pointer
     if (NULL == pEvent) return VSCP_ERROR_PARAMETER;
 
-    vscp_writeVscpEventToString(pEvent, strValue);
+    vscp_writeVscpEventToString(strValue,pEvent);
     return setRemoteVariableValue(name, strValue);
 }
 
@@ -2334,7 +2334,7 @@ VscpRemoteTcpIf::setRemoteVariableEventEx(const std::string &name,
     // Check pointer
     if (NULL == pEventEx) return VSCP_ERROR_PARAMETER;
 
-    vscp_writeVscpEventExToString(pEventEx, strValue);
+    vscp_writeVscpEventExToString(strValue,pEventEx );
     return setRemoteVariableValue(name, strValue);
 }
 

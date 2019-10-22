@@ -3114,7 +3114,7 @@ vscp_getDateStringFromEventEx(const vscpEventEx *pEventEx, std::string &dt)
 //
 
 bool
-vscp_convertEventToJSON(vscpEvent *pEvent, std::string &strJSON)
+vscp_convertEventToJSON(std::string &strJSON,vscpEvent *pEvent)
 {
     std::string strguid;
     std::string strdata;
@@ -3162,7 +3162,7 @@ vscp_convertEventToJSON(vscpEvent *pEvent, std::string &strJSON)
 // }
 
 bool
-vscp_convertJSONToEvent(std::string &strJSON, vscpEvent *pEvent)
+vscp_convertJSONToEvent( vscpEvent *pEvent,std::string &strJSON)
 {
     std::string strguid;
 
@@ -3248,7 +3248,7 @@ vscp_convertJSONToEvent(std::string &strJSON, vscpEvent *pEvent)
 //
 
 bool
-vscp_convertEventExToJSON(vscpEventEx *pEventEx, std::string &strJSON)
+vscp_convertEventExToJSON( std::string &strJSON,vscpEventEx *pEventEx)
 {
     std::string strguid;
     std::string strdata;
@@ -3296,7 +3296,7 @@ vscp_convertEventExToJSON(vscpEventEx *pEventEx, std::string &strJSON)
 // }
 
 bool
-vscp_convertJSONToEventEx(std::string &strJSON, vscpEventEx *pEventEx)
+vscp_convertJSONToEventEx( vscpEventEx *pEventEx,std::string &strJSON)
 {
     std::string strguid;
 
@@ -3380,7 +3380,7 @@ vscp_convertJSONToEventEx(std::string &strJSON, vscpEventEx *pEventEx)
 //
 
 bool
-vscp_convertEventToXML(vscpEvent *pEvent, std::string &strXML)
+vscp_convertEventToXML( std::string &strXML,vscpEvent *pEvent)
 {
     std::string strguid;
     std::string strdata;
@@ -3479,7 +3479,7 @@ endEventXMLParser(void *data, const char *name)
 }
 
 bool
-vscp_convertXMLToEvent(std::string &strXML, vscpEvent *pEvent)
+vscp_convertXMLToEvent(vscpEvent *pEvent, std::string& strXML )
 {
     // Check pointer
     if (NULL == pEvent) return false;
@@ -3511,7 +3511,7 @@ vscp_convertXMLToEvent(std::string &strXML, vscpEvent *pEvent)
 //
 
 bool
-vscp_convertEventExToXML(vscpEventEx *pEventEx, std::string &strXML)
+vscp_convertEventExToXML( std::string &strXML,vscpEventEx *pEventEx)
 {
     std::string strguid;
     std::string strdata;
@@ -3610,7 +3610,7 @@ endEventExXMLParser(void *data, const char *name)
 }
 
 bool
-vscp_convertXMLToEventEx(std::string &strXML, vscpEventEx *pEventEx)
+vscp_convertXMLToEventEx( vscpEventEx *pEventEx,std::string &strXML)
 {
     // Check pointer
     if (NULL == pEventEx) return false;
@@ -3643,7 +3643,7 @@ vscp_convertXMLToEventEx(std::string &strXML, vscpEventEx *pEventEx)
 //
 
 bool
-vscp_convertEventToHTML(vscpEvent *pEvent, std::string &strHTML)
+vscp_convertEventToHTML(std::string &strHTML,vscpEvent *pEvent)
 {
     std::string strguid;
     std::string strdata;
@@ -3683,7 +3683,7 @@ vscp_convertEventToHTML(vscpEvent *pEvent, std::string &strHTML)
 //
 
 bool
-vscp_convertEventExToHTML(vscpEventEx *pEventEx, std::string &strHTML)
+vscp_convertEventExToHTML(std::string &strHTML,vscpEventEx *pEventEx)
 {
     std::string strguid;
     std::string strdata;
@@ -4850,7 +4850,7 @@ vscp_setEventExDateTimeBlockToNow(vscpEventEx *pEventEx)
 //
 
 bool
-vscp_writeVscpEventToString(const vscpEvent *pEvent, std::string &str)
+vscp_writeVscpEventToString( std::string &str,const vscpEvent *pEvent)
 {
     // Check pointer
     if (NULL == pEvent) return false;
@@ -4888,7 +4888,7 @@ vscp_writeVscpEventToString(const vscpEvent *pEvent, std::string &str)
 //
 
 bool
-vscp_writeVscpEventExToString(const vscpEventEx *pEventEx, std::string &str)
+vscp_writeVscpEventExToString( std::string &str,const vscpEventEx *pEventEx)
 {
     vscpEvent event;
     event.pdata = NULL;
@@ -4897,7 +4897,7 @@ vscp_writeVscpEventExToString(const vscpEventEx *pEventEx, std::string &str)
     if (NULL == pEventEx) return false;
 
     vscp_convertVSCPfromEx(&event, pEventEx);
-    vscp_writeVscpEventToString(&event, str);
+    vscp_writeVscpEventToString(str,&event);
     if (NULL != event.pdata) delete event.pdata;
 
     return true;
