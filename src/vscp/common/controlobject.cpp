@@ -58,12 +58,13 @@
 #include <syslog.h>
 #include <unistd.h>
 
+#include <civetweb.h>
+
 #include "web_css.h"
 #include "web_js.h"
 #include "web_template.h"
 
 #include <expat.h>
-#include <sqlite3.h>
 
 #include <fastpbkdf2.h>
 #include <vscp_aes.h>
@@ -74,9 +75,7 @@
 #include <crc.h>
 #include <devicelist.h>
 #include <devicethread.h>
-#include <httpd.h>
 #include <randpassword.h>
-#include <tables.h>
 #include <variablecodes.h>
 #include <version.h>
 #include <vscp.h>
@@ -158,13 +157,6 @@ CControlObject::CControlObject()
 
     // Set Default Log Level
     m_logLevel = DAEMON_LOGMSG_NORMAL;
-
-    m_path_db_vscp_daemon = m_rootFolder + "vscpd.sqlite3";
-    m_path_db_vscp_data   = m_rootFolder + "vscp_data.sqlite3";
-
-    // No databases opened yet
-    m_db_vscp_daemon = NULL;
-    m_db_vscp_data   = NULL;
 
     // Control UDP Interface
     // m_udpSrvObj.setControlObjectPointer(this);
@@ -262,7 +254,7 @@ CControlObject::CControlObject()
 
     // Init. web server subsystem - All features enabled
     // ssl mt locks will we initiated here for openssl 1.0
-    if (0 == web_init(0xffff)) {
+    if (0 == mg_init_library( USE_IPV6 | USE_WEBSOCKET | NO_CGI | NO_FILES )) {
         syslog(LOG_ERR, "Failed to initialize webserver subsystem.");
     }
 
@@ -305,6 +297,9 @@ CControlObject::~CControlObject()
     // m_udpSrvObj.m_remotes.clear();
     // pthread_mutex_unlock(&m_udpSrvObj.m_mutexUDPInfo);
 
+    // Clean up clivetweb
+    mg_exit_library();
+
     syslog(LOG_INFO, "ControlObject: Gone!");
 }
 
@@ -328,8 +323,6 @@ CControlObject::init(std::string &strcfgfile, std::string &rootFolder)
         return false;
     }
 
-    m_path_db_vscp_daemon  = m_rootFolder + "vscpd.sqlite3";
-    m_path_db_vscp_data    = m_rootFolder + "vscp_data.sqlite3";
     std::string strRootwww = m_rootFolder + "www";
     m_web_document_root    = strRootwww;
 
@@ -370,172 +363,6 @@ CControlObject::init(std::string &strcfgfile, std::string &rootFolder)
         }
     }
 #endif
-
-    // Initialize the SQLite library
-    if (SQLITE_OK != sqlite3_initialize()) {
-        syslog(LOG_ERR, "Unable to initialize SQLite library!.");
-        return false;
-    }
-
-    // The root folder is the basis for the configuration file
-    m_path_db_vscp_daemon = m_rootFolder + "/vscpd.sqlite3";
-
-    // ======================================
-    // * * * Open/Create database files * * *
-    // ======================================
-
-    // * * * VSCP Daemon configuration database * * *
-
-    // Check filename
-    if (vscp_fileExists(m_path_db_vscp_daemon)) {
-
-        if (SQLITE_OK !=
-            sqlite3_open((const char *)m_path_db_vscp_daemon.c_str(),
-                         &m_db_vscp_daemon)) {
-
-            // Failed to open/create the database file
-            syslog(LOG_ERR,
-                   "VSCP Daemon configuration database could not be opened. - "
-                   "Will exit.");
-            vscp_str_format(str,
-                            "Path=%s error=%s",
-                            (const char *)m_path_db_vscp_daemon.c_str(),
-                            sqlite3_errmsg(m_db_vscp_daemon));
-            syslog(LOG_ERR, "%s", (const char *)str.c_str());
-            if (NULL != m_db_vscp_daemon) sqlite3_close(m_db_vscp_daemon);
-            m_db_vscp_daemon = NULL;
-            return false;
-        } else {
-
-            // Database is open.
-
-            // Update the configuration database if it has evolved
-            updateConfigDb();
-
-            // Add possible missing configuration values
-            addDefaultConfigValues();
-
-            // Read configuration data
-            readConfigurationDB();
-        }
-    } else {
-
-        if (1) {
-
-            // We need to create the database from scratch. This may not work if
-            // the database is in a read only location.
-            syslog(LOG_ERR,
-                   "VSCP Daemon configuration database does not exist - will "
-                   "be created. Path=%s",
-                   m_path_db_vscp_daemon.c_str());
-
-            if (SQLITE_OK ==
-                sqlite3_open((const char *)m_path_db_vscp_daemon.c_str(),
-                             &m_db_vscp_daemon)) {
-
-                // create the configuration database.
-                if (!doCreateConfigurationTable()) {
-                    syslog(LOG_ERR, "Failed to create configuration table.");
-                }
-
-                // Create the UDP node database
-                // if (!doCreateUdpNodeTable()) {
-                //     syslog(LOG_ERR, "Failed to create udpnode table.");
-                // }
-
-                // Create the multicast database
-                // if (!doCreateMulticastTable()) {
-                //     syslog(LOG_ERR, "Failed to create multicast table.");
-                // }
-
-                // Create user table
-                if (!doCreateUserTable()) {
-                    syslog(LOG_ERR, "Failed to create user table.");
-                }
-
-                // Create driver table
-                if (!doCreateDriverTable()) {
-                    syslog(LOG_ERR, "Failed to create driver table.");
-                }
-
-                // Create guid table
-                if (!doCreateGuidTable()) {
-                    syslog(LOG_ERR, "Failed to create GUID table.");
-                }
-
-                // Create location table
-                if (!doCreateLocationTable()) {
-                    syslog(LOG_ERR, "Failed to create location table.");
-                }
-
-                // Create mdf table
-                if (!doCreateMdfCacheTable()) {
-                    syslog(LOG_ERR, "Failed to create MDF cache table.");
-                }
-
-                // Create simpleui table
-                if (!doCreateSimpleUiTable()) {
-                    syslog(LOG_ERR, "Failed to create Simple UI table.");
-                }
-
-                // Create simpleui item table
-                if (!doCreateSimpleUiItemTable()) {
-                    syslog(LOG_ERR, "Failed to create Simple UI item table.");
-                }
-
-                // Create zone table
-                if (!doCreateZoneTable()) {
-                    syslog(LOG_ERR, "Failed to create zone table.");
-                }
-
-                // Create subzone table
-                if (!doCreateSubZoneTable()) {
-                    syslog(LOG_ERR, "Failed to create sub zone table.");
-                }
-
-                // Create userdef table
-                if (!doCreateUserdefTableTable()) {
-                    syslog(LOG_ERR, "Failed to create user defined table.");
-                }
-
-                // * * * All created * * *
-
-                // Database is open. Read configuration data from it
-                if (!readConfigurationDB()) {
-                    syslog(LOG_ERR,
-                           "Failed to read configuration from "
-                           "configuration database.");
-                }
-            }
-        } else {
-            syslog(LOG_ERR,
-                   "VSCP Server configuration database path invalid - will "
-                   "exit. Path=%s",
-                   m_path_db_vscp_daemon.c_str());
-            return false;
-        }
-    }
-
-    // Read UDP nodes
-    // readUdpNodes();
-
-    // Read multicast channels
-    // readMulticastChannels();
-
-    // * * * VSCP Server data database - NEVER created * * *
-
-    if (SQLITE_OK !=
-        sqlite3_open(m_path_db_vscp_data.c_str(), &m_db_vscp_data)) {
-
-        // Failed to open/create the database file
-        syslog(LOG_ERR,
-               "The VSCP data database could not be opened. - Will not be "
-               "used. Path=%s error=%s",
-               m_path_db_vscp_data.c_str(),
-               sqlite3_errmsg(m_db_vscp_data));
-        if (NULL != m_db_vscp_data) sqlite3_close(m_db_vscp_data);
-        m_db_vscp_data = NULL;
-    }
 
     ////////////////////////////////////////////////////////////////////////////
     //                      Read full XML configuration
@@ -627,11 +454,11 @@ CControlObject::init(std::string &strcfgfile, std::string &rootFolder)
     syslog(LOG_DEBUG, "Log Level=%d", m_logLevel);
 
     // Load tables from database
-    syslog(LOG_DEBUG, "Reading in user tables from DB.");
-    m_userTableObjects.loadTablesFromDB();
+    // syslog(LOG_DEBUG, "Reading in user tables from DB.");
+    // m_userTableObjects.loadTablesFromDB();
 
-    syslog(LOG_DEBUG, "Initializing user tables.");
-    m_userTableObjects.init();
+    // syslog(LOG_DEBUG, "Initializing user tables.");
+    // m_userTableObjects.init();
 
     // Initialize DM storage
     // syslog(LOG_DEBUG, "Initializing DM.");
@@ -645,14 +472,6 @@ CControlObject::init(std::string &strcfgfile, std::string &rootFolder)
     // syslog(LOG_DEBUG, "Loading DM from database.");
     // m_dm.loadFromDatabase();
 
-    // Initialize variable storage
-    syslog(LOG_DEBUG, "Initialize variables.");
-    m_variables.init();
-
-    // Load variables if mechanism is enabled
-    syslog(LOG_DEBUG,
-           "Loading persistent variables from XML variable default path.");
-    m_variables.loadFromXML();
 
     // Start daemon internal client worker thread
     startClientMsgWorkerThread();
@@ -864,19 +683,6 @@ CControlObject::cleanup(void)
     syslog(LOG_DEBUG,
            "ControlObject: cleanup - Stopping TCP/IP worker thread...");
     stopTcpipSrvThread();
-
-    syslog(LOG_DEBUG, "ControlObject: cleanup - Closing databases.");
-
-    // Close the vscpd database
-    if (NULL != m_db_vscp_daemon) sqlite3_close(m_db_vscp_daemon);
-    m_db_vscp_daemon = NULL;
-
-    // Close the VSCP data database
-    if (NULL != m_db_vscp_data) sqlite3_close(m_db_vscp_data);
-    m_db_vscp_data = NULL;
-
-    // Clean up SQLite lib allocations
-    sqlite3_shutdown();
 
     syslog(LOG_INFO, "Controlobject: ControlObject: Cleanup done.");
     return true;
@@ -1342,35 +1148,6 @@ CControlObject::getVscpCapabilities(uint8_t *pCapability)
     return true;
 }
 
-/////////////////////////////////////////////////////////////////////////////
-// getCountRecordsDB
-//
-
-long
-CControlObject::getCountRecordsDB(sqlite3 *db, std::string &table)
-{
-    long count = 0;
-    sqlite3_stmt *ppStmt;
-
-    // If not open no records
-    if (NULL == db) return 0;
-
-    std::string sql =
-      vscp_str_format("SELECT count(*)from %s", (const char *)table.c_str());
-
-    if (SQLITE_OK !=
-        sqlite3_prepare(db, (const char *)sql.c_str(), -1, &ppStmt, NULL)) {
-        syslog(LOG_ERR,
-               "Failed to prepare count for log database. SQL is %s",
-               VSCPDB_LOG_COUNT);
-        return 0;
-    }
-
-    if (SQLITE_ROW == sqlite3_step(ppStmt)) {
-        count = sqlite3_column_int(ppStmt, 0);
-    }
-    return count;
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 // sendEventToClient
@@ -2015,26 +1792,6 @@ startGeneralConfigParser(void *data, const char *name, const char **attr)
                     }
                 }
             }
-        } else if (bGeneralConfigFound &&
-                   (0 == vscp_strcasecmp(name, "database"))) {
-
-            for (int i = 0; attr[i]; i += 2) {
-
-                std::string attribute = attr[i + 1];
-                vscp_trim(attribute);
-
-                if (0 == strcasecmp(attr[i], "daemon")) {
-                    vscp_trim(attribute);
-                    if (attribute.length()) {
-                        pObj->m_path_db_vscp_daemon = attribute;
-                    }
-                } else if (0 == strcasecmp(attr[i], "data")) {
-                    vscp_trim(attribute);
-                    if (attribute.length()) {
-                        pObj->m_path_db_vscp_data = attribute;
-                    }
-                }
-            }
         }
     }
 
@@ -2430,29 +2187,8 @@ startFullConfigParser(void *data, const char *name, const char **attr)
         //     }
         // }
 
-    } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
-               (0 == vscp_strcasecmp(name, "variables"))) {
-
-        for (int i = 0; attr[i]; i += 2) {
-
-            std::string attribute = attr[i + 1];
-            vscp_trim(attribute);
-
-            if (0 == vscp_strcasecmp(attr[i], "path")) { // Deprecated
-                if (attribute.length()) {
-                    pObj->m_variables.m_dbFilename = attribute;
-                }
-            } else if (0 == vscp_strcasecmp(attr[i], "pathxml")) {
-                if (attribute.length()) {
-                    pObj->m_variables.m_xmlPath = attribute;
-                }
-            } else if (0 == vscp_strcasecmp(attr[i], "pathdb")) {
-                if (attribute.length()) {
-                    pObj->m_variables.m_dbFilename = attribute;
-                }
-            }
-        }
-    } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
+    }
+    else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
                (0 == vscp_strcasecmp(name, "webserver"))) {
 
         for (int i = 0; attr[i]; i += 2) {
@@ -3015,271 +2751,272 @@ startFullConfigParser(void *data, const char *name, const char **attr)
                    strPath.c_str());
         }
 
-    } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
-               ((0 == vscp_strcasecmp(name, "knownnodes")))) {
-        bKnownNodesConfigFound = TRUE;
-    } else if (bVscpConfigFound && bKnownNodesConfigFound &&
-               (2 == depth_full_config_parser) &&
-               (0 == vscp_strcasecmp(name, "node"))) {
+     }
+    //else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
+    //            ((0 == vscp_strcasecmp(name, "knownnodes")))) {
+    //     bKnownNodesConfigFound = TRUE;
+    // } else if (bVscpConfigFound && bKnownNodesConfigFound &&
+    //            (2 == depth_full_config_parser) &&
+    //            (0 == vscp_strcasecmp(name, "node"))) {
 
-        std::string strName;
-        cguid guidif;
-        cguid guid;
+    //     std::string strName;
+    //     cguid guidif;
+    //     cguid guid;
 
-        for (int i = 0; attr[i]; i += 2) {
+    //     for (int i = 0; attr[i]; i += 2) {
 
-            std::string attribute = attr[i + 1];
-            vscp_trim(attribute);
+    //         std::string attribute = attr[i + 1];
+    //         vscp_trim(attribute);
 
-            if (0 == vscp_strcasecmp(attr[i], "name")) {
-                strName = attribute;
-            } else if (0 == vscp_strcasecmp(attr[i], "guid")) {
-                guid.getFromString(attribute);
-            } else if (0 == vscp_strcasecmp(attr[i], "if")) {
-                guidif.getFromString(attribute);
-            }
-        }
+    //         if (0 == vscp_strcasecmp(attr[i], "name")) {
+    //             strName = attribute;
+    //         } else if (0 == vscp_strcasecmp(attr[i], "guid")) {
+    //             guid.getFromString(attribute);
+    //         } else if (0 == vscp_strcasecmp(attr[i], "if")) {
+    //             guidif.getFromString(attribute);
+    //         }
+    //     }
 
-        pObj->addKnownNode(guid, guidif, strName);
+    //     pObj->addKnownNode(guid, guidif, strName);
 
-    } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
-               ((0 == vscp_strcasecmp(name, "tables")))) {
-        bTablesConfigFound = TRUE;
-    } else if (bVscpConfigFound && bTablesConfigFound &&
-               (2 == depth_full_config_parser) &&
-               (0 == vscp_strcasecmp(name, "table"))) {
+    // } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
+    //            ((0 == vscp_strcasecmp(name, "tables")))) {
+    //     bTablesConfigFound = TRUE;
+    // } else if (bVscpConfigFound && bTablesConfigFound &&
+    //            (2 == depth_full_config_parser) &&
+    //            (0 == vscp_strcasecmp(name, "table"))) {
 
-        bool bEnabled = false;
-        std::string strName;
-        vscpTableType type = VSCP_TABLE_DYNAMIC;
-        int size           = 0;
-        bool bMemory       = false;
+    //     bool bEnabled = false;
+    //     std::string strName;
+    //     vscpTableType type = VSCP_TABLE_DYNAMIC;
+    //     int size           = 0;
+    //     bool bMemory       = false;
 
-        std::string owner = "admin";
-        uint16_t rights   = 0x700;
-        std::string title;
-        std::string xname;
-        std::string yname;
-        std::string note;
-        std::string sqlcreate;
-        std::string sqlinsert;
-        std::string sqldelete;
-        std::string description;
+    //     std::string owner = "admin";
+    //     uint16_t rights   = 0x700;
+    //     std::string title;
+    //     std::string xname;
+    //     std::string yname;
+    //     std::string note;
+    //     std::string sqlcreate;
+    //     std::string sqlinsert;
+    //     std::string sqldelete;
+    //     std::string description;
 
-        uint16_t vscp_class      = 0;
-        uint16_t vscp_type       = 0;
-        uint8_t vscp_sensorindex = 0;
-        uint8_t vscp_unit        = 0;
-        uint8_t vscp_zone        = 255;
-        uint8_t vscp_subzone     = 255;
+    //     uint16_t vscp_class      = 0;
+    //     uint16_t vscp_type       = 0;
+    //     uint8_t vscp_sensorindex = 0;
+    //     uint8_t vscp_unit        = 0;
+    //     uint8_t vscp_zone        = 255;
+    //     uint8_t vscp_subzone     = 255;
 
-        for (int i = 0; attr[i]; i += 2) {
+    //     for (int i = 0; attr[i]; i += 2) {
 
-            std::string attribute = attr[i + 1];
-            vscp_trim(attribute);
+    //         std::string attribute = attr[i + 1];
+    //         vscp_trim(attribute);
 
-            if (0 == vscp_strcasecmp(attr[i], "enable")) {
-                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
-                    bEnabled = true;
-                } else {
-                    bEnabled = false;
-                }
-            } else if (0 == vscp_strcasecmp(attr[i], "name")) {
-                strName = attribute;
-                // Replace spaces in name with underscore
-                std::string::size_type found;
-                while (std::string::npos !=
-                       (found = strName.find_first_of(" "))) {
-                    strName[found] = '_';
-                }
-            } else if (0 == vscp_strcasecmp(attr[i], "type")) {
-                if (0 == vscp_strcasecmp(attribute.c_str(), "static")) {
-                    type = VSCP_TABLE_STATIC;
-                }
-            } else if (0 == vscp_strcasecmp(attr[i], "size")) {
-                size = vscp_readStringValue(attribute);
-            } else if (0 == vscp_strcasecmp(attr[i], "bmemory")) {
-                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
-                    bMemory = true;
-                } else {
-                    bMemory = false;
-                }
+    //         if (0 == vscp_strcasecmp(attr[i], "enable")) {
+    //             if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+    //                 bEnabled = true;
+    //             } else {
+    //                 bEnabled = false;
+    //             }
+    //         } else if (0 == vscp_strcasecmp(attr[i], "name")) {
+    //             strName = attribute;
+    //             // Replace spaces in name with underscore
+    //             std::string::size_type found;
+    //             while (std::string::npos !=
+    //                    (found = strName.find_first_of(" "))) {
+    //                 strName[found] = '_';
+    //             }
+    //         } else if (0 == vscp_strcasecmp(attr[i], "type")) {
+    //             if (0 == vscp_strcasecmp(attribute.c_str(), "static")) {
+    //                 type = VSCP_TABLE_STATIC;
+    //             }
+    //         } else if (0 == vscp_strcasecmp(attr[i], "size")) {
+    //             size = vscp_readStringValue(attribute);
+    //         } else if (0 == vscp_strcasecmp(attr[i], "bmemory")) {
+    //             if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+    //                 bMemory = true;
+    //             } else {
+    //                 bMemory = false;
+    //             }
 
-            } else if (0 == vscp_strcasecmp(attr[i], "owner")) {
-                owner = attribute;
-            } else if (0 == vscp_strcasecmp(attr[i], "rights")) {
-                rights = vscp_readStringValue(attribute);
-            } else if (0 == vscp_strcasecmp(attr[i], "title")) {
-                title = attribute;
-            } else if (0 == vscp_strcasecmp(attr[i], "labelx")) {
-                xname = attribute;
-            } else if (0 == vscp_strcasecmp(attr[i], "lavely")) {
-                yname = attribute;
-            } else if (0 == vscp_strcasecmp(attr[i], "note")) {
-                note = attribute;
-            } else if (0 == vscp_strcasecmp(attr[i], "sqlcreate")) {
-                sqlcreate = attribute;
-            } else if (0 == vscp_strcasecmp(attr[i], "sqldelete")) {
-                sqldelete = attribute;
-            } else if (0 == vscp_strcasecmp(attr[i], "sqlinsert")) {
-                sqlinsert = attribute;
-            } else if (0 == vscp_strcasecmp(attr[i], "description")) {
-                description = attribute;
-            } else if (0 == vscp_strcasecmp(attr[i], "vscpclass")) {
-                vscp_class = vscp_readStringValue(attribute);
-                ;
-            } else if (0 == vscp_strcasecmp(attr[i], "vscptype")) {
-                vscp_type = vscp_readStringValue(attribute);
-                ;
-            } else if (0 == vscp_strcasecmp(attr[i], "vscpsensorindex")) {
-                vscp_sensorindex = vscp_readStringValue(attribute);
-                ;
-            } else if (0 == vscp_strcasecmp(attr[i], "vscpunit")) {
-                vscp_unit = vscp_readStringValue(attribute);
-                ;
-            } else if (0 == vscp_strcasecmp(attr[i], "vscpzone")) {
-                vscp_zone = vscp_readStringValue(attribute);
-                ;
-            } else if (0 == vscp_strcasecmp(attr[i], "vscpsubzone")) {
-                vscp_subzone = vscp_readStringValue(attribute);
-                ;
-            }
-        }
+    //         } else if (0 == vscp_strcasecmp(attr[i], "owner")) {
+    //             owner = attribute;
+    //         } else if (0 == vscp_strcasecmp(attr[i], "rights")) {
+    //             rights = vscp_readStringValue(attribute);
+    //         } else if (0 == vscp_strcasecmp(attr[i], "title")) {
+    //             title = attribute;
+    //         } else if (0 == vscp_strcasecmp(attr[i], "labelx")) {
+    //             xname = attribute;
+    //         } else if (0 == vscp_strcasecmp(attr[i], "lavely")) {
+    //             yname = attribute;
+    //         } else if (0 == vscp_strcasecmp(attr[i], "note")) {
+    //             note = attribute;
+    //         } else if (0 == vscp_strcasecmp(attr[i], "sqlcreate")) {
+    //             sqlcreate = attribute;
+    //         } else if (0 == vscp_strcasecmp(attr[i], "sqldelete")) {
+    //             sqldelete = attribute;
+    //         } else if (0 == vscp_strcasecmp(attr[i], "sqlinsert")) {
+    //             sqlinsert = attribute;
+    //         } else if (0 == vscp_strcasecmp(attr[i], "description")) {
+    //             description = attribute;
+    //         } else if (0 == vscp_strcasecmp(attr[i], "vscpclass")) {
+    //             vscp_class = vscp_readStringValue(attribute);
+    //             ;
+    //         } else if (0 == vscp_strcasecmp(attr[i], "vscptype")) {
+    //             vscp_type = vscp_readStringValue(attribute);
+    //             ;
+    //         } else if (0 == vscp_strcasecmp(attr[i], "vscpsensorindex")) {
+    //             vscp_sensorindex = vscp_readStringValue(attribute);
+    //             ;
+    //         } else if (0 == vscp_strcasecmp(attr[i], "vscpunit")) {
+    //             vscp_unit = vscp_readStringValue(attribute);
+    //             ;
+    //         } else if (0 == vscp_strcasecmp(attr[i], "vscpzone")) {
+    //             vscp_zone = vscp_readStringValue(attribute);
+    //             ;
+    //         } else if (0 == vscp_strcasecmp(attr[i], "vscpsubzone")) {
+    //             vscp_subzone = vscp_readStringValue(attribute);
+    //             ;
+    //         }
+    //     }
 
-        CVSCPTable *pTable = new CVSCPTable(
-          pObj->m_rootFolder + "table/", strName, true, bMemory, type, size);
-        if (NULL == pTable) {
-            syslog(LOG_ERR, "Unable to create table %s", strName.c_str());
-            return;
-        }
+    //     CVSCPTable *pTable = new CVSCPTable(
+    //       pObj->m_rootFolder + "table/", strName, true, bMemory, type, size);
+    //     if (NULL == pTable) {
+    //         syslog(LOG_ERR, "Unable to create table %s", strName.c_str());
+    //         return;
+    //     }
 
-        if (!pTable->setTableInfo(owner,
-                                  rights,
-                                  title,
-                                  xname,
-                                  yname,
-                                  note,
-                                  sqlcreate,
-                                  sqlinsert,
-                                  sqldelete,
-                                  description)) {
-            syslog(LOG_ERR,
-                   "Unable to set table info for table %s",
-                   strName.c_str());
-            delete pTable;
-            return;
-        }
+    //     if (!pTable->setTableInfo(owner,
+    //                               rights,
+    //                               title,
+    //                               xname,
+    //                               yname,
+    //                               note,
+    //                               sqlcreate,
+    //                               sqlinsert,
+    //                               sqldelete,
+    //                               description)) {
+    //         syslog(LOG_ERR,
+    //                "Unable to set table info for table %s",
+    //                strName.c_str());
+    //         delete pTable;
+    //         return;
+    //     }
 
-        pTable->setTableEventInfo(vscp_class,
-                                  vscp_type,
-                                  vscp_sensorindex,
-                                  vscp_unit,
-                                  vscp_zone,
-                                  vscp_subzone);
+    //     pTable->setTableEventInfo(vscp_class,
+    //                               vscp_type,
+    //                               vscp_sensorindex,
+    //                               vscp_unit,
+    //                               vscp_zone,
+    //                               vscp_subzone);
 
-        // Add the table
-        if (!pObj->m_userTableObjects.addTable(pTable)) {
-            delete pTable;
-            syslog(LOG_ERR,
-                   "Could not add new table (name conflict?)! nane=%s",
-                   strName.c_str());
-        };
+    //     // Add the table
+    //     // if (!pObj->m_userTableObjects.addTable(pTable)) {
+    //     //     delete pTable;
+    //     //     syslog(LOG_ERR,
+    //     //            "Could not add new table (name conflict?)! nane=%s",
+    //     //            strName.c_str());
+    //     // };
 
-    } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
-               ((0 == vscp_strcasecmp(name, "automation")))) {
-        for (int i = 0; attr[i]; i += 2) {
+    // } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
+    //            ((0 == vscp_strcasecmp(name, "automation")))) {
+    //     for (int i = 0; attr[i]; i += 2) {
 
-            std::string attribute = attr[i + 1];
-            vscp_trim(attribute);
+    //         std::string attribute = attr[i + 1];
+    //         vscp_trim(attribute);
 
-            // if (0 == vscp_strcasecmp(attr[i], "enable")) {
-            //     if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
-            //         pObj->m_automation.enableAutomation();
-            //     } else {
-            //         pObj->m_automation.disableAutomation();
-            //     }
-            // } else if (0 == vscp_strcasecmp(attr[i], "zone")) {
-            //     uint8_t zone = vscp_readStringValue(attribute);
-            //     pObj->m_automation.setZone(zone);
-            // } else if (0 == vscp_strcasecmp(attr[i], "subzone")) {
-            //     uint8_t subzone = vscp_readStringValue(attribute);
-            //     pObj->m_automation.setSubzone(subzone);
-            // } else if (0 == vscp_strcasecmp(attr[i], "longitude")) {
-            //     // Decimal point should be '.'
-            //     std::string::size_type found;
-            //     while (std::string::npos !=
-            //            (found = attribute.find_first_of(","))) {
-            //         attribute[found] = '.';
-            //     }
-            //     double d = std::stod(attribute);
-            //     pObj->m_automation.setLongitude(d);
-            // } else if (0 == vscp_strcasecmp(attr[i], "latitude")) {
-            //     // Decimal point should be '.'
-            //     std::string::size_type found;
-            //     while (std::string::npos !=
-            //            (found = attribute.find_first_of(","))) {
-            //         attribute[found] = '.';
-            //     }
-            //     double d = std::stod(attribute);
-            //     pObj->m_automation.setLatitude(d);
-            // } else if (0 == vscp_strcasecmp(attr[i], "sunrise-event")) {
-            //     if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
-            //         pObj->m_automation.enableSunRiseEvent();
-            //     } else {
-            //         pObj->m_automation.disableSunRiseEvent();
-            //     }
-            // } else if (0 ==
-            //            vscp_strcasecmp(attr[i], "sunrise-twilight-event")) {
-            //     if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
-            //         pObj->m_automation.enableSunRiseTwilightEvent();
-            //     } else {
-            //         pObj->m_automation.disableSunRiseTwilightEvent();
-            //     }
-            // } else if (0 == vscp_strcasecmp(attr[i], "sunset-event")) {
-            //     if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
-            //         pObj->m_automation.enableSunSetEvent();
-            //     } else {
-            //         pObj->m_automation.disableSunSetEvent();
-            //     }
-            // } else if (0 == vscp_strcasecmp(attr[i], "sunset-twilight-event")) {
-            //     if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
-            //         pObj->m_automation.enableSunSetTwilightEvent();
-            //     } else {
-            //         pObj->m_automation.disableSunSetTwilightEvent();
-            //     }
-            // } else if (0 ==
-            //            vscp_strcasecmp(attr[i], "segment-controler-event")) {
-            //     if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
-            //         pObj->m_automation.enableSegmentControllerHeartbeat();
-            //     } else {
-            //         pObj->m_automation.disableSegmentControllerHeartbeat();
-            //     }
-            // } else if (0 ==
-            //            vscp_strcasecmp(attr[i], "segment-controler-interval")) {
-            //     int interval = vscp_readStringValue(attribute);
-            //     pObj->m_automation.setSegmentControllerHeartbeatInterval(
-            //       interval);
-            // } else if (0 == vscp_strcasecmp(attr[i], "heartbeat-event")) {
-            //     if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
-            //         pObj->m_automation.enableHeartbeatEvent();
-            //     } else {
-            //         pObj->m_automation.disableHeartbeatEvent();
-            //     }
-            // } else if (0 == vscp_strcasecmp(attr[i], "heartbeat-interval")) {
-            //     int interval = vscp_readStringValue(attribute);
-            //     pObj->m_automation.setHeartbeatEventInterval(interval);
-            // } else if (0 == vscp_strcasecmp(attr[i], "capability-event")) {
-            //     if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
-            //         pObj->m_automation.enableCapabilitiesEvent();
-            //     } else {
-            //         pObj->m_automation.disableCapabilitiesEvent();
-            //     }
-            // } else if (0 == vscp_strcasecmp(attr[i], "capability-interval")) {
-            //     int interval = vscp_readStringValue(attribute);
-            //     pObj->m_automation.setCapabilitiesEventInterval(interval);
-            // }
-        }
-    }
+    //         // if (0 == vscp_strcasecmp(attr[i], "enable")) {
+    //         //     if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+    //         //         pObj->m_automation.enableAutomation();
+    //         //     } else {
+    //         //         pObj->m_automation.disableAutomation();
+    //         //     }
+    //         // } else if (0 == vscp_strcasecmp(attr[i], "zone")) {
+    //         //     uint8_t zone = vscp_readStringValue(attribute);
+    //         //     pObj->m_automation.setZone(zone);
+    //         // } else if (0 == vscp_strcasecmp(attr[i], "subzone")) {
+    //         //     uint8_t subzone = vscp_readStringValue(attribute);
+    //         //     pObj->m_automation.setSubzone(subzone);
+    //         // } else if (0 == vscp_strcasecmp(attr[i], "longitude")) {
+    //         //     // Decimal point should be '.'
+    //         //     std::string::size_type found;
+    //         //     while (std::string::npos !=
+    //         //            (found = attribute.find_first_of(","))) {
+    //         //         attribute[found] = '.';
+    //         //     }
+    //         //     double d = std::stod(attribute);
+    //         //     pObj->m_automation.setLongitude(d);
+    //         // } else if (0 == vscp_strcasecmp(attr[i], "latitude")) {
+    //         //     // Decimal point should be '.'
+    //         //     std::string::size_type found;
+    //         //     while (std::string::npos !=
+    //         //            (found = attribute.find_first_of(","))) {
+    //         //         attribute[found] = '.';
+    //         //     }
+    //         //     double d = std::stod(attribute);
+    //         //     pObj->m_automation.setLatitude(d);
+    //         // } else if (0 == vscp_strcasecmp(attr[i], "sunrise-event")) {
+    //         //     if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+    //         //         pObj->m_automation.enableSunRiseEvent();
+    //         //     } else {
+    //         //         pObj->m_automation.disableSunRiseEvent();
+    //         //     }
+    //         // } else if (0 ==
+    //         //            vscp_strcasecmp(attr[i], "sunrise-twilight-event")) {
+    //         //     if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+    //         //         pObj->m_automation.enableSunRiseTwilightEvent();
+    //         //     } else {
+    //         //         pObj->m_automation.disableSunRiseTwilightEvent();
+    //         //     }
+    //         // } else if (0 == vscp_strcasecmp(attr[i], "sunset-event")) {
+    //         //     if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+    //         //         pObj->m_automation.enableSunSetEvent();
+    //         //     } else {
+    //         //         pObj->m_automation.disableSunSetEvent();
+    //         //     }
+    //         // } else if (0 == vscp_strcasecmp(attr[i], "sunset-twilight-event")) {
+    //         //     if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+    //         //         pObj->m_automation.enableSunSetTwilightEvent();
+    //         //     } else {
+    //         //         pObj->m_automation.disableSunSetTwilightEvent();
+    //         //     }
+    //         // } else if (0 ==
+    //         //            vscp_strcasecmp(attr[i], "segment-controler-event")) {
+    //         //     if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+    //         //         pObj->m_automation.enableSegmentControllerHeartbeat();
+    //         //     } else {
+    //         //         pObj->m_automation.disableSegmentControllerHeartbeat();
+    //         //     }
+    //         // } else if (0 ==
+    //         //            vscp_strcasecmp(attr[i], "segment-controler-interval")) {
+    //         //     int interval = vscp_readStringValue(attribute);
+    //         //     pObj->m_automation.setSegmentControllerHeartbeatInterval(
+    //         //       interval);
+    //         // } else if (0 == vscp_strcasecmp(attr[i], "heartbeat-event")) {
+    //         //     if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+    //         //         pObj->m_automation.enableHeartbeatEvent();
+    //         //     } else {
+    //         //         pObj->m_automation.disableHeartbeatEvent();
+    //         //     }
+    //         // } else if (0 == vscp_strcasecmp(attr[i], "heartbeat-interval")) {
+    //         //     int interval = vscp_readStringValue(attribute);
+    //         //     pObj->m_automation.setHeartbeatEventInterval(interval);
+    //         // } else if (0 == vscp_strcasecmp(attr[i], "capability-event")) {
+    //         //     if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+    //         //         pObj->m_automation.enableCapabilitiesEvent();
+    //         //     } else {
+    //         //         pObj->m_automation.disableCapabilitiesEvent();
+    //         //     }
+    //         // } else if (0 == vscp_strcasecmp(attr[i], "capability-interval")) {
+    //         //     int interval = vscp_readStringValue(attribute);
+    //         //     pObj->m_automation.setCapabilitiesEventInterval(interval);
+    //         // }
+    //  }
+    //}
 
     depth_full_config_parser++;
 }
@@ -3409,2453 +3146,8 @@ CControlObject::readConfigurationXML(const std::string &strcfgfile)
     return true;
 } // XML config
 
-///////////////////////////////////////////////////////////////////////////////
-// isDbTableExist
-//
 
-bool
-CControlObject::isDbTableExist(sqlite3 *db, const std::string &strTblName)
-{
-    sqlite3_stmt *pSelectStatement = NULL;
-    int iResult                    = SQLITE_ERROR;
-    bool rv                        = false;
 
-    // Database file must be open
-    if (NULL == db) {
-        syslog(LOG_ERR, "isDbFieldExistent. Database file is not open.");
-        return false;
-    }
-
-    std::string sql =
-      "SELECT name FROM sqlite_master WHERE type='table' AND name='%s'";
-    sql = vscp_str_format(sql, (const char *)strTblName.c_str());
-
-    iResult = sqlite3_prepare16_v2(
-      db, (const char *)sql.c_str(), -1, &pSelectStatement, 0);
-
-    if ((iResult == SQLITE_OK) && (pSelectStatement != NULL)) {
-
-        iResult = sqlite3_step(pSelectStatement);
-
-        // was found?
-        if (iResult == SQLITE_ROW) {
-            rv = true;
-            sqlite3_clear_bindings(pSelectStatement);
-            sqlite3_reset(pSelectStatement);
-        }
-
-        iResult = sqlite3_finalize(pSelectStatement);
-    }
-
-    return rv;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// isDbFieldExist
-//
-
-bool
-CControlObject::isDbFieldExist(sqlite3 *db,
-                               const std::string &strTblName,
-                               const std::string &strFieldName)
-{
-    bool rv = false;
-    sqlite3_stmt *ppStmt;
-    char *pErrMsg = 0;
-
-    // Database file must be open
-    if (NULL == db) {
-        syslog(LOG_ERR, "isDbFieldExist. Database file is not open.");
-        return false;
-    }
-
-    std::string sql = "PRAGMA table_info(%s);";
-    sql             = vscp_str_format(sql, (const char *)strTblName.c_str());
-
-    if (SQLITE_OK !=
-        sqlite3_prepare(
-          m_db_vscp_daemon, (const char *)sql.c_str(), -1, &ppStmt, NULL)) {
-        syslog(LOG_ERR,
-               "isDbFieldExist: Failed to read VSCP settings database - "
-               "prepare query.");
-        return false;
-    }
-
-    while (SQLITE_ROW == sqlite3_step(ppStmt)) {
-
-        const unsigned char *p;
-
-        // Get column name
-        if (NULL == (p = sqlite3_column_text(ppStmt, 1))) {
-            continue;
-        }
-
-        // database version
-        if (0 == vscp_strcasecmp((const char *)p,
-                                 (const char *)strFieldName.c_str())) {
-            rv = true;
-            break;
-        }
-    }
-
-    sqlite3_finalize(ppStmt);
-
-    return rv;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// updateConfigurationRecordName
-//
-
-bool
-CControlObject::updateConfigurationRecordName(const std::string &strName,
-                                              const std::string &strNewName)
-{
-    char *pErrMsg;
-
-    // Database file must be open
-    if (NULL == m_db_vscp_daemon) {
-        syslog(LOG_ERR,
-               "Settings update: Update record. Database file is not open.");
-        return false;
-    }
-
-    pthread_mutex_lock(&m_db_vscp_configMutex);
-
-    char *sql = sqlite3_mprintf(VSCPDB_CONFIG_UPDATE_CONFIG_NAME,
-                                (const char *)strNewName.c_str(),
-                                (const char *)strName.c_str(),
-                                m_nConfiguration);
-    if (SQLITE_OK !=
-        sqlite3_exec(m_db_vscp_daemon, sql, NULL, NULL, &pErrMsg)) {
-        sqlite3_free(sql);
-        pthread_mutex_unlock(&m_db_vscp_configMutex);
-        syslog(LOG_ERR, "Failed to update setting with error %s.", pErrMsg);
-        return false;
-    }
-
-    sqlite3_free(sql);
-
-    pthread_mutex_unlock(&m_db_vscp_configMutex);
-
-    return true;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// updateConfigurationRecordItem
-//
-
-bool
-CControlObject::updateConfigurationRecordItem(const std::string &strName,
-                                              const std::string &strValue)
-{
-    char *pErrMsg;
-
-    // Database file must be open
-    if (NULL == m_db_vscp_daemon) {
-        syslog(LOG_ERR,
-               "Settings update: Update record. Database file is not open.");
-        return false;
-    }
-
-    pthread_mutex_lock(&m_db_vscp_configMutex);
-
-    char *sql = sqlite3_mprintf(VSCPDB_CONFIG_UPDATE_ITEM,
-                                (const char *)strValue.c_str(),
-                                (const char *)strName.c_str(),
-                                m_nConfiguration);
-    if (SQLITE_OK !=
-        sqlite3_exec(m_db_vscp_daemon, sql, NULL, NULL, &pErrMsg)) {
-        sqlite3_free(sql);
-        pthread_mutex_unlock(&m_db_vscp_configMutex);
-        syslog(LOG_ERR, "Failed to update setting with error %s.", pErrMsg);
-        return false;
-    }
-
-    sqlite3_free(sql);
-
-    pthread_mutex_unlock(&m_db_vscp_configMutex);
-
-    return true;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// getConfigurationValueFromDatabase
-//
-
-bool
-CControlObject::getConfigurationValueFromDatabase(const char *pName,
-                                                  char *pBuf,
-                                                  size_t len)
-{
-    sqlite3_stmt *ppStmt;
-    char *pErrMsg = 0;
-    char *psql;
-
-    // Check if database is open
-    if (NULL == m_db_vscp_daemon) return false;
-
-    pthread_mutex_lock(&m_db_vscp_configMutex);
-
-    // Check if the variable is defined already
-    //      if it is - just return true
-    psql = sqlite3_mprintf(VSCPDB_CONFIG_FIND_ITEM, pName);
-    if (SQLITE_OK !=
-        sqlite3_prepare(m_db_vscp_daemon, psql, -1, &ppStmt, NULL)) {
-        sqlite3_free(psql);
-        syslog(LOG_ERR, "Failed to find %s in configuration database", pName);
-        pthread_mutex_unlock(&m_db_vscp_configMutex);
-        return false;
-    }
-
-    sqlite3_free(psql);
-
-    if (SQLITE_ROW == sqlite3_step(ppStmt)) {
-
-        const unsigned char *p = NULL;
-
-        if (NULL ==
-            (p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_CONFIG_VALUE))) {
-            syslog(LOG_ERR,
-                   "getConfigurationValueFromDatabase: Failed to read 'value' "
-                   "for %s "
-                   "from settings record.",
-                   pName);
-            sqlite3_finalize(ppStmt);
-            pthread_mutex_unlock(&m_db_vscp_configMutex);
-            return false;
-        }
-
-        // Copy in data
-        strncpy(pBuf, (const char *)p, std::min(len, strlen((const char *)p)));
-
-        sqlite3_finalize(ppStmt);
-    }
-
-    pthread_mutex_unlock(&m_db_vscp_configMutex);
-
-    return true;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// addConfigurationValueToDatabase
-//
-
-bool
-CControlObject::addConfigurationValueToDatabase(const char *pName,
-                                                const char *pValue)
-{
-    sqlite3_stmt *ppStmt;
-    char *pErrMsg = 0;
-    char *psql;
-
-    // Check if database is open
-    if (NULL == m_db_vscp_daemon) return false;
-
-    // Check if the variable is defined already
-    //      if it is - just return true
-    psql = sqlite3_mprintf(VSCPDB_CONFIG_FIND_ITEM, pName);
-    if (SQLITE_OK !=
-        sqlite3_prepare(m_db_vscp_daemon, psql, -1, &ppStmt, NULL)) {
-        sqlite3_free(psql);
-        syslog(
-          LOG_ERR,
-          "Failed to check if %s = %s is already in configuration database",
-          pName,
-          pValue);
-        return false;
-    }
-
-    sqlite3_free(psql);
-
-    if (SQLITE_ROW == sqlite3_step(ppStmt)) {
-        return true; // Record is there already
-    }
-
-    pthread_mutex_lock(&m_db_vscp_configMutex);
-
-    syslog(LOG_DEBUG, "Add %s = %s to configuration database", pName, pValue);
-
-    // Create settings in db
-    psql = sqlite3_mprintf(VSCPDB_CONFIG_INSERT, pName, pValue);
-
-    if (SQLITE_OK !=
-        sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg)) {
-
-        sqlite3_free(psql);
-        pthread_mutex_unlock(&m_db_vscp_configMutex);
-
-        syslog(LOG_ERR,
-               "Inserting new entry into configuration database failed with "
-               "message %s",
-               pErrMsg);
-        return false;
-    }
-
-    sqlite3_free(psql);
-    pthread_mutex_unlock(&m_db_vscp_configMutex);
-    return true;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// addDefaultConfigValues
-//
-
-void
-CControlObject::addDefaultConfigValues(void)
-{
-    // Add default settings (set as defaults in SQL create expression))
-    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_DBVERSION,
-                                    VSCPDB_CONFIG_CURRENT_DBVERSION);
-    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_CLIENTBUFFERSIZE,
-                                    VSCPDB_CONFIG_DEFAULT_CLIENTBUFFERSIZE);
-    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_GUID,
-                                    VSCPDB_CONFIG_DEFAULT_GUID);
-    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_SERVERNAME,
-                                    VSCPDB_CONFIG_DEFAULT_SERVERNAME);
-    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_ANNOUNCE_ADDR,
-                                    VSCPDB_CONFIG_DEFAULT_ANNOUNCE_ADDR);
-    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_ANNOUNCE_TTL,
-                                    VSCPDB_CONFIG_DEFAULT_ANNOUNCE_TTL);
-    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_PATH_DB_EVENTS,
-                                    VSCPDB_CONFIG_DEFAULT_PATH_DB_EVENTS);
-
-    // UDP
-    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_UDP_ENABLE,
-                                    VSCPDB_CONFIG_DEFAULT_UDP_ENABLE);
-    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_UDP_ADDR,
-                                    VSCPDB_CONFIG_DEFAULT_UDP_ADDR);
-    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_UDP_USER,
-                                    VSCPDB_CONFIG_DEFAULT_UDP_USER);
-    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_UDP_PASSWORD,
-                                    VSCPDB_CONFIG_DEFAULT_UDP_PASSWORD);
-    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_UDP_UNSECURE_ENABLE,
-                                    VSCPDB_CONFIG_DEFAULT_UDP_UNSECURE_ENABLE);
-    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_UDP_FILTER,
-                                    VSCPDB_CONFIG_DEFAULT_UDP_FILTER);
-    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_UDP_MASK,
-                                    VSCPDB_CONFIG_DEFAULT_UDP_MASK);
-    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_UDP_GUID,
-                                    VSCPDB_CONFIG_DEFAULT_UDP_GUID);
-    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_UDP_ACK_ENABLE,
-                                    VSCPDB_CONFIG_DEFAULT_UDP_ACK_ENABLE);
-    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_MULTICAST_ENABLE,
-                                    VSCPDB_CONFIG_DEFAULT_MULTICAST_ENABLE);
-
-    // TCP/IP
-    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_TCPIP_ADDR,
-                                    VSCPDB_CONFIG_DEFAULT_TCPIP_ADDR);
-    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_TCPIP_ENCRYPTION,
-                                    VSCPDB_CONFIG_DEFAULT_TCPIP_ENCRYPTION);
-    addConfigurationValueToDatabase(
-      VSCPDB_CONFIG_NAME_TCPIP_SSL_CERTIFICATE,
-      VSCPDB_CONFIG_DEFAULT_TCPIP_SSL_CERTIFICATE);
-    addConfigurationValueToDatabase(
-      VSCPDB_CONFIG_NAME_TCPIP_SSL_CERTIFICAT_CHAIN,
-      VSCPDB_CONFIG_DEFAULT_TCPIP_SSL_CERTIFICAT_CHAIN);
-    addConfigurationValueToDatabase(
-      VSCPDB_CONFIG_NAME_TCPIP_SSL_VERIFY_PEER,
-      VSCPDB_CONFIG_DEFAULT_TCPIP_SSL_VERIFY_PEER);
-    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_TCPIP_SSL_CA_PATH,
-                                    VSCPDB_CONFIG_DEFAULT_TCPIP_SSL_CA_PATH);
-    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_TCPIP_SSL_CA_FILE,
-                                    VSCPDB_CONFIG_DEFAULT_TCPIP_SSL_CA_FILE);
-    addConfigurationValueToDatabase(
-      VSCPDB_CONFIG_NAME_TCPIP_SSL_VERIFY_DEPTH,
-      VSCPDB_CONFIG_DEFAULT_TCPIP_SSL_VERIFY_DEPTH);
-    addConfigurationValueToDatabase(
-      VSCPDB_CONFIG_NAME_TCPIP_SSL_DEFAULT_VERIFY_PATHS,
-      VSCPDB_CONFIG_DEFAULT_TCPIP_SSL_DEFAULT_VERIFY_PATHS);
-    addConfigurationValueToDatabase(
-      VSCPDB_CONFIG_NAME_TCPIP_SSL_CHIPHER_LIST,
-      VSCPDB_CONFIG_DEFAULT_TCPIP_SSL_CHIPHER_LIST);
-    addConfigurationValueToDatabase(
-      VSCPDB_CONFIG_NAME_TCPIP_SSL_PROTOCOL_VERSION,
-      VSCPDB_CONFIG_DEFAULT_TCPIP_SSL_PROTOCOL_VERSION);
-    addConfigurationValueToDatabase(
-      VSCPDB_CONFIG_NAME_TCPIP_SSL_SHORT_TRUST,
-      VSCPDB_CONFIG_DEFAULT_TCPIP_SSL_SHORT_TRUST);
-
-    // DM
-    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_DM_PATH_DB,
-                                    VSCPDB_CONFIG_DEFAULT_DM_PATH_DB);
-    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_DM_PATH_XML,
-                                    VSCPDB_CONFIG_DEFAULT_DM_PATH_XML);
-    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_DM_ALLOW_XML_SAVE,
-                                    VSCPDB_CONFIG_DEFAULT_DM_ALLOW_XML_SAVE);
-
-    // Variables
-    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_VARIABLES_PATH_DB,
-                                    VSCPDB_CONFIG_DEFAULT_VARIABLES_PATH_DB);
-    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_VARIABLES_PATH_XML,
-                                    VSCPDB_CONFIG_DEFAULT_VARIABLES_PATH_XML);
-
-    // WEB server
-    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_WEB_ENABLE,
-                                    VSCPDB_CONFIG_DEFAULT_WEB_ENABLE);
-    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_WEB_DOCUMENT_ROOT,
-                                    VSCPDB_CONFIG_DEFAULT_WEB_DOCUMENT_ROOT);
-    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_WEB_LISTENING_PORTS,
-                                    VSCPDB_CONFIG_DEFAULT_WEB_LISTENING_PORTS);
-    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_WEB_INDEX_FILES,
-                                    VSCPDB_CONFIG_DEFAULT_WEB_INDEX_FILES);
-    addConfigurationValueToDatabase(
-      VSCPDB_CONFIG_NAME_WEB_AUTHENTICATION_DOMAIN,
-      VSCPDB_CONFIG_DEFAULT_WEB_AUTHENTICATION_DOMAIN);
-    addConfigurationValueToDatabase(
-      VSCPDB_CONFIG_NAME_WEB_ENABLE_AUTH_DOMAIN_CHECK,
-      VSCPDB_CONFIG_DEFAULT_WEB_ENABLE_AUTH_DOMAIN_CHECK);
-    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_WEB_SSL_CERTIFICATE,
-                                    VSCPDB_CONFIG_DEFAULT_WEB_SSL_CERTIFICATE);
-    addConfigurationValueToDatabase(
-      VSCPDB_CONFIG_NAME_WEB_SSL_CERTIFICAT_CHAIN,
-      VSCPDB_CONFIG_DEFAULT_WEB_SSL_CERTIFICAT_CHAIN);
-    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_WEB_SSL_VERIFY_PEER,
-                                    VSCPDB_CONFIG_DEFAULT_WEB_SSL_VERIFY_PEER);
-    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_WEB_SSL_CA_PATH,
-                                    VSCPDB_CONFIG_DEFAULT_WEB_SSL_CA_PATH);
-    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_WEB_SSL_CA_FILE,
-                                    VSCPDB_CONFIG_DEFAULT_WEB_SSL_CA_FILE);
-    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_WEB_SSL_VERIFY_DEPTH,
-                                    VSCPDB_CONFIG_DEFAULT_WEB_SSL_VERIFY_DEPTH);
-    addConfigurationValueToDatabase(
-      VSCPDB_CONFIG_NAME_WEB_SSL_DEFAULT_VERIFY_PATHS,
-      VSCPDB_CONFIG_DEFAULT_WEB_SSL_DEFAULT_VERIFY_PATHS);
-    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_WEB_SSL_CHIPHER_LIST,
-                                    VSCPDB_CONFIG_DEFAULT_WEB_SSL_CHIPHER_LIST);
-    addConfigurationValueToDatabase(
-      VSCPDB_CONFIG_NAME_WEB_SSL_PROTOCOL_VERSION,
-      VSCPDB_CONFIG_DEFAULT_WEB_SSL_PROTOCOL_VERSION);
-    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_WEB_SSL_SHORT_TRUST,
-                                    VSCPDB_CONFIG_DEFAULT_WEB_SSL_SHORT_TRUST);
-    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_WEB_CGI_PATTERN,
-                                    VSCPDB_CONFIG_DEFAULT_WEB_CGI_PATTERN);
-    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_WEB_CGI_INTERPRETER,
-                                    VSCPDB_CONFIG_DEFAULT_WEB_CGI_INTERPRETER);
-    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_WEB_CGI_ENVIRONMENT,
-                                    VSCPDB_CONFIG_DEFAULT_WEB_CGI_ENVIRONMENT);
-    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_WEB_PROTECT_URI,
-                                    VSCPDB_CONFIG_DEFAULT_WEB_PROTECT_URI);
-    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_WEB_TROTTLE,
-                                    VSCPDB_CONFIG_DEFAULT_WEB_TROTTLE);
-    addConfigurationValueToDatabase(
-      VSCPDB_CONFIG_NAME_WEB_ENABLE_DIRECTORY_LISTING,
-      VSCPDB_CONFIG_DEFAULT_WEB_ENABLE_DIRECTORY_LISTING);
-    addConfigurationValueToDatabase(
-      VSCPDB_CONFIG_NAME_WEB_ENABLE_KEEP_ALIVE,
-      VSCPDB_CONFIG_DEFAULT_WEB_ENABLE_KEEP_ALIVE);
-    addConfigurationValueToDatabase(
-      VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_LIST,
-      VSCPDB_CONFIG_DEFAULT_WEB_ACCESS_CONTROL_LIST);
-    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_WEB_EXTRA_MIME_TYPES,
-                                    VSCPDB_CONFIG_DEFAULT_WEB_EXTRA_MIME_TYPES);
-    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_WEB_NUM_THREADS,
-                                    VSCPDB_CONFIG_DEFAULT_WEB_NUM_THREADS);
-    addConfigurationValueToDatabase(
-      VSCPDB_CONFIG_NAME_WEB_HIDE_FILE_PATTERNS,
-      VSCPDB_CONFIG_DEFAULT_WEB_HIDE_FILE_PATTERNS);
-    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_WEB_RUN_AS_USER,
-                                    VSCPDB_CONFIG_DEFAULT_WEB_RUN_AS_USER);
-    addConfigurationValueToDatabase(
-      VSCPDB_CONFIG_NAME_WEB_URL_REWRITE_PATTERNS,
-      VSCPDB_CONFIG_DEFAULT_WEB_URL_REWRITE_PATTERNS);
-    addConfigurationValueToDatabase(
-      VSCPDB_CONFIG_NAME_WEB_REQUEST_TIMEOUT_MS,
-      VSCPDB_CONFIG_DEFAULT_WEB_REQUEST_TIMEOUT_MS);
-    addConfigurationValueToDatabase(
-      VSCPDB_CONFIG_NAME_WEB_LINGER_TIMEOUT_MS,
-      VSCPDB_CONFIG_DEFAULT_WEB_LINGER_TIMEOUT_MS);
-    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_WEB_DECODE_URL,
-                                    VSCPDB_CONFIG_DEFAULT_WEB_DECODE_URL);
-    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_WEB_GLOBAL_AUTHFILE,
-                                    VSCPDB_CONFIG_DEFAULT_WEB_GLOBAL_AUTHFILE);
-    addConfigurationValueToDatabase(
-      VSCPDB_CONFIG_NAME_WEB_PER_DIRECTORY_AUTH_FILE,
-      VSCPDB_CONFIG_DEFAULT_WEB_PER_DIRECTORY_AUTH_FILE);
-    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_WEB_SSI_PATTERNS,
-                                    VSCPDB_CONFIG_DEFAULT_WEB_SSI_PATTERNS);
-    addConfigurationValueToDatabase(
-      VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_ALLOW_ORIGIN,
-      VSCPDB_CONFIG_DEFAULT_WEB_ACCESS_CONTROL_ALLOW_ORIGIN);
-    addConfigurationValueToDatabase(
-      VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_ALLOW_METHODS,
-      VSCPDB_CONFIG_DEFAULT_WEB_ACCESS_CONTROL_ALLOW_METHODS);
-    addConfigurationValueToDatabase(
-      VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_ALLOW_HEADERS,
-      VSCPDB_CONFIG_DEFAULT_WEB_ACCESS_CONTROL_ALLOW_HEADERS);
-    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_WEB_ERROR_PAGES,
-                                    VSCPDB_CONFIG_DEFAULT_WEB_ERROR_PAGES);
-    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_WEB_TCP_NO_DELAY,
-                                    VSCPDB_CONFIG_DEFAULT_WEB_TCP_NO_DELAY);
-    addConfigurationValueToDatabase(
-      VSCPDB_CONFIG_NAME_WEB_STATIC_FILE_MAX_AGE,
-      VSCPDB_CONFIG_DEFAULT_WEB_STATIC_FILE_MAX_AGE);
-    addConfigurationValueToDatabase(
-      VSCPDB_CONFIG_NAME_WEB_STRICT_TRANSPORT_SECURITY_MAX_AGE,
-      VSCPDB_CONFIG_DEFAULT_WEB_STRICT_TRANSPORT_SECURITY_MAX_AGE);
-    addConfigurationValueToDatabase(
-      VSCPDB_CONFIG_NAME_WEB_ALLOW_SENDFILE_CALL,
-      VSCPDB_CONFIG_DEFAULT_WEB_ALLOW_SENDFILE_CALL);
-    addConfigurationValueToDatabase(
-      VSCPDB_CONFIG_NAME_WEB_ADDITIONAL_HEADERS,
-      VSCPDB_CONFIG_DEFAULT_WEB_ADDITIONAL_HEADERS);
-    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_WEB_MAX_REQUEST_SIZE,
-                                    VSCPDB_CONFIG_DEFAULT_WEB_MAX_REQUEST_SIZE);
-    addConfigurationValueToDatabase(
-      VSCPDB_CONFIG_NAME_WEB_ALLOW_INDEX_SCRIPT_RESOURCE,
-      VSCPDB_CONFIG_DEFAULT_WEB_ALLOW_INDEX_SCRIPT_RESOURCE);
-    addConfigurationValueToDatabase(
-      VSCPDB_CONFIG_NAME_WEB_DUKTAPE_SCRIPT_PATTERN,
-      VSCPDB_CONFIG_DEFAULT_WEB_DUKTAPE_SCRIPT_PATTERN);
-    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_WEB_LUA_PRELOAD_FILE,
-                                    VSCPDB_CONFIG_DEFAULT_WEB_LUA_PRELOAD_FILE);
-    addConfigurationValueToDatabase(
-      VSCPDB_CONFIG_NAME_WEB_LUA_SCRIPT_PATTERN,
-      VSCPDB_CONFIG_DEFAULT_WEB_LUA_SCRIPT_PATTERN);
-    addConfigurationValueToDatabase(
-      VSCPDB_CONFIG_NAME_WEB_LUA_SERVER_PAGE_PATTERN,
-      VSCPDB_CONFIG_DEFAULT_WEB_LUA_SERVER_PAGE_PATTERN);
-    addConfigurationValueToDatabase(
-      VSCPDB_CONFIG_NAME_WEB_LUA_WEBSOCKET_PATTERN,
-      VSCPDB_CONFIG_DEFAULT_WEB_LUA_WEBSOCKET_PATTERN);
-    addConfigurationValueToDatabase(
-      VSCPDB_CONFIG_NAME_WEB_LUA_BACKGROUND_SCRIPT,
-      VSCPDB_CONFIG_DEFAULT_WEB_LUA_BACKGROUND_SCRIPT);
-    addConfigurationValueToDatabase(
-      VSCPDB_CONFIG_NAME_WEB_LUA_BACKGROUND_SCRIPT_PARAMS,
-      VSCPDB_CONFIG_DEFAULT_WEB_LUA_BACKGROUND_SCRIPT_PARAMS);
-
-    // Websockets
-    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_WEBSOCKET_ENABLE,
-                                    VSCPDB_CONFIG_DEFAULT_WEBSOCKET_ENABLE);
-    addConfigurationValueToDatabase(
-      VSCPDB_CONFIG_NAME_WEBSOCKET_DOCUMENT_ROOT,
-      VSCPDB_CONFIG_DEFAULT_WEBSOCKET_DOCUMENT_ROOT);
-    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_WEBSOCKET_TIMEOUT_MS,
-                                    VSCPDB_CONFIG_DEFAULT_WEBSOCKET_TIMEOUT_MS);
-
-    // Automation
-    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_AUTOMATION_ENABLE,
-                                    VSCPDB_CONFIG_DEFAULT_AUTOMATION_ENABLE);
-    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_AUTOMATION_ZONE,
-                                    VSCPDB_CONFIG_DEFAULT_AUTOMATION_ZONE);
-    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_AUTOMATION_SUBZONE,
-                                    VSCPDB_CONFIG_DEFAULT_AUTOMATION_SUBZONE);
-    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_AUTOMATION_LONGITUDE,
-                                    VSCPDB_CONFIG_DEFAULT_AUTOMATION_LONGITUDE);
-    addConfigurationValueToDatabase(VSCPDB_CONFIG_NAME_AUTOMATION_LATITUDE,
-                                    VSCPDB_CONFIG_DEFAULT_AUTOMATION_LATITUDE);
-    addConfigurationValueToDatabase(
-      VSCPDB_CONFIG_NAME_AUTOMATION_SUNRISE_ENABLE,
-      VSCPDB_CONFIG_DEFAULT_AUTOMATION_SUNRISE_ENABLE);
-    addConfigurationValueToDatabase(
-      VSCPDB_CONFIG_NAME_AUTOMATION_SUNSET_ENABLE,
-      VSCPDB_CONFIG_DEFAULT_AUTOMATION_SUNSET_ENABLE);
-    addConfigurationValueToDatabase(
-      VSCPDB_CONFIG_NAME_AUTOMATION_SUNSET_TWILIGHT_ENABLE,
-      VSCPDB_CONFIG_DEFAULT_AUTOMATION_SUNSET_TWILIGHT_ENABLE);
-    addConfigurationValueToDatabase(
-      VSCPDB_CONFIG_NAME_AUTOMATION_SUNRISE_TWILIGHT_ENABLE,
-      VSCPDB_CONFIG_DEFAULT_AUTOMATION_SUNRISE_TWILIGHT_ENABLE);
-    addConfigurationValueToDatabase(
-      VSCPDB_CONFIG_NAME_AUTOMATION_SEGMENT_CTRL_ENABLE,
-      VSCPDB_CONFIG_DEFAULT_AUTOMATION_SEGMENT_CTRL_ENABLE);
-    addConfigurationValueToDatabase(
-      VSCPDB_CONFIG_NAME_AUTOMATION_SEGMENT_CTRL_INTERVAL,
-      VSCPDB_CONFIG_DEFAULT_AUTOMATION_SEGMENT_CTRL_INTERVAL);
-    addConfigurationValueToDatabase(
-      VSCPDB_CONFIG_NAME_AUTOMATION_HEARTBEAT_ENABLE,
-      VSCPDB_CONFIG_DEFAULT_AUTOMATION_HEARTBEAT_ENABLE);
-    addConfigurationValueToDatabase(
-      VSCPDB_CONFIG_NAME_AUTOMATION_CAPABILITIES_ENABLE,
-      VSCPDB_CONFIG_DEFAULT_AUTOMATION_CAPABILITIES_ENABLE);
-    addConfigurationValueToDatabase(
-      VSCPDB_CONFIG_NAME_AUTOMATION_CAPABILITIES_INTERVAL,
-      VSCPDB_CONFIG_DEFAULT_AUTOMATION_CAPABILITIES_INTERVAL);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// updateConfigDb
-//
-
-bool
-CControlObject::updateConfigDb()
-{
-    char buf[10];
-
-    // Check if we have a version 1 database
-    getConfigurationValueFromDatabase(
-      VSCPDB_CONFIG_NAME_DBVERSION, buf, sizeof(buf));
-
-    int version = atoi(buf);
-    if (0 == version) return false;
-
-    if (1 == version) {
-
-        syslog(LOG_INFO,"Updating configuration database vscpd.slite3 from version 1 to version 2");
-
-        // Update field names that have changed
-        updateConfigurationRecordName("client_buffer_size",
-                                      "client-buffer-size");
-        updateConfigurationRecordName("announceinterface_address",
-                                      "announceinterface-address");
-        updateConfigurationRecordName("announceinterface_ttl",
-                                      "announceinterface-ttl");
-        updateConfigurationRecordName("tcpipinterface_address",
-                                      "tcpipinterface-address");
-        updateConfigurationRecordName("tcpip_encryption", "tcpip-encryption");
-        updateConfigurationRecordName("tcpip_ssl_certificate",
-                                      "tcpip-ssl-certificate");
-        updateConfigurationRecordName("tcpip_ssl_certificate_chain",
-                                      "tcpip-ssl-certificate-chain");
-        updateConfigurationRecordName("tcpip_ssl_verify_peer",
-                                      "tcpip-ssl-verify-peer");
-        updateConfigurationRecordName("tcpip_ssl_ca_path", "tcpip-ssl-ca-path");
-        updateConfigurationRecordName("tcpip_ssl_ca_file", "tcpip-ssl-ca-file");
-        updateConfigurationRecordName("tcpip_ssl_verify_depth",
-                                      "tcpip-ssl-verify-depth");
-        updateConfigurationRecordName("tcpip_ssl_default_verify_paths",
-                                      "tcpip-ssl-default-verify-paths");
-        updateConfigurationRecordName("tcpip_ssl_cipher_list",
-                                      "tcpip-ssl-cipher-list");
-        updateConfigurationRecordName("tcpip_ssl_protocol_version",
-                                      "tcpip-ssl-protocol-version");
-        updateConfigurationRecordName("tcpip_ssl_short_trust",
-                                      "tcpip-ssl-short-trust");
-        updateConfigurationRecordName("udp_enable", "udp-enable");
-        updateConfigurationRecordName("udp_address", "udp-address");
-        updateConfigurationRecordName("udp_user", "udp-user");
-        updateConfigurationRecordName("udp_password", "udp-password");
-        updateConfigurationRecordName("udp_unsecure_enable", "udp-unsecure-enable");
-        updateConfigurationRecordName("udp_filter", "udp-filter");
-        updateConfigurationRecordName("udp_mask", "udp-mask");
-        updateConfigurationRecordName("udp_guid", "udp-guid");
-        updateConfigurationRecordName("udp_ack_enable", "udp-ack-enable");
-        updateConfigurationRecordName("muticast_enable",
-                                      "muticast-enable");
-        updateConfigurationRecordName("dm_path_db", "dm-path-db");
-        updateConfigurationRecordName("dm_path_xml", "dm-path-xml");
-        updateConfigurationRecordName("dm_allow_xml_save", "dm-allow-xml-save");
-        updateConfigurationRecordName("variable_path_db", "variable-path-db");
-        updateConfigurationRecordName("variable_path_xml", "variable-path-xml");
-        updateConfigurationRecordName("path_db_data",
-                                      "path-db-event-data");
-        updateConfigurationRecordName("web_enable", "web-enable");
-        updateConfigurationRecordName("web_document_root", "web-document-root");
-        updateConfigurationRecordName("web_listening_ports",
-                                      "web-listening-ports");
-        updateConfigurationRecordName("web_index_files", "web-index-files");
-        updateConfigurationRecordName("web_authentication_domain",
-                                      "web-authentication-domain");
-        updateConfigurationRecordName("web_enable_auth_domain_check",
-                                      "web-enable-auth-domain-check");
-        updateConfigurationRecordName("web_ssl_certificate",
-                                      "web-ssl-certificate");
-        updateConfigurationRecordName("web_ssl_certificate_chain",
-                                      "web-ssl-certificate-chain");
-        updateConfigurationRecordName("web_ssl_verify_peer",
-                                      "web-ssl-verify-peer");
-        updateConfigurationRecordName("web_ssl_ca_path", "web-ssl-ca-path");
-        updateConfigurationRecordName("web_ssl_ca_file", "web-ssl-ca-file");
-        updateConfigurationRecordName("web_ssl_verify_depth",
-                                      "web-ssl-verify-depth");
-        updateConfigurationRecordName("web_ssl_default_verify_paths",
-                                      "web-ssl-default-verify-paths");
-        updateConfigurationRecordName("web_ssl_cipher_list",
-                                      "web-ssl-cipher-list");
-        updateConfigurationRecordName("web_ssl_protocol_version",
-                                      "web-ssl-protocol-version");
-        updateConfigurationRecordName("web_ssl_short_trust",
-                                      "web-ssl-short-trust");
-        updateConfigurationRecordName("web_cgi_interpreter",
-                                      "web-cgi-interpreter");
-        updateConfigurationRecordName("web_cgi_pattern", "web-cgi-pattern");
-        updateConfigurationRecordName("web_cgi_environment",
-                                      "web-cgi-environment");
-        updateConfigurationRecordName("web_protect_uri", "web-protect-uri");
-        updateConfigurationRecordName("web_trottle", "web-trottle");
-        updateConfigurationRecordName("web_enable_directory_listing",
-                                      "web-enable-directory-listing");
-        updateConfigurationRecordName("web_enable_keep_alive",
-                                      "web-enable-keep-alive");
-        updateConfigurationRecordName("web_keep_alive_timeout_ms",
-                                      "web-keep-alive-timeout-ms");
-        updateConfigurationRecordName("web_access_control_list",
-                                      "web-access-control-list");
-        updateConfigurationRecordName("web_extra_mime_types",
-                                      "web-extra-mime-types");
-        updateConfigurationRecordName("web_num_threads", "web-num-threads");
-        updateConfigurationRecordName("web_run_as_user", "web-run-as-user");
-        updateConfigurationRecordName("web_url_rewrite_patterns",
-                                      "web-url-rewrite-patterns");
-        updateConfigurationRecordName("web_hide_file_patterns",
-                                      "web-hide-file-patterns");
-        updateConfigurationRecordName("web_request_timeout_ms",
-                                      "web-request-timeout-ms");
-        updateConfigurationRecordName("web_linger_timeout_ms",
-                                      "web-linger-timeout-ms");
-        updateConfigurationRecordName("web_decode_url", "web-decode-url");
-        updateConfigurationRecordName("web_global_authfile",
-                                      "web-global-authfile");
-        updateConfigurationRecordName("web_per_directory_auth_file",
-                                      "web-per-directory-auth-file");
-        updateConfigurationRecordName("web_ssi_patterns", "web-ssi-patterns");
-        updateConfigurationRecordName("web_access_control_allow_origin",
-                                      "web-access-control-allow-origin");
-        updateConfigurationRecordName("web_access_control_allow_methods",
-                                      "web-access-control-allow-methods");
-        updateConfigurationRecordName("web_access_control_allow_headers",
-                                      "web-access-control-allow-headers");
-        updateConfigurationRecordName("web_error_pages", "web-error-pages");
-        updateConfigurationRecordName("web_tcp_nodelay", "web-tcp-nodelay");
-        updateConfigurationRecordName("web_static_file_max_age",
-                                      "web-static-file-max-age");
-        updateConfigurationRecordName("web_strict_transport_security_max_age",
-                                      "web-strict-transport-security-max-age");
-        updateConfigurationRecordName("web_allow_sendfile_call",
-                                      "web-allow-sendfile-call");
-        updateConfigurationRecordName("web_additional_headers",
-                                      "web-additional-headers");
-        updateConfigurationRecordName("web_max_request_size",
-                                      "web-max-request-size");
-        updateConfigurationRecordName("web_allow_index_script_resource",
-                                      "web-allow-index-script-resource");
-        updateConfigurationRecordName("web_duktape_script_pattern",
-                                      "web-duktape-script-pattern");
-        updateConfigurationRecordName("web_lua_preload_file",
-                                      "web-lua-preload-file");
-        updateConfigurationRecordName("web_lua_script_pattern",
-                                      "web-lua-script-pattern");
-        updateConfigurationRecordName("web_lua_server_page_pattern",
-                                      "web-lua-server-page-pattern");
-        updateConfigurationRecordName("web_lua_websocket_pattern",
-                                      "web-lua-websocket-pattern");
-        updateConfigurationRecordName("web_lua_background_script",
-                                      "web-lua-background-script");
-        updateConfigurationRecordName("web_lua_background_script_params",
-                                      "web-lua-background-script-params");
-        updateConfigurationRecordName("websocket_enable", "websocket-enable");
-        updateConfigurationRecordName("websocket_document_root",
-                                      "websocket-document-root");
-        updateConfigurationRecordName("websocket_timeout_ms",
-                                      "websocket-timeout-ms");
-        updateConfigurationRecordName("automation_enable", "automation-enable");
-        updateConfigurationRecordName("automation_zone", "automation-zone");
-        updateConfigurationRecordName("automation_subzone",
-                                      "automation-subzone");
-        updateConfigurationRecordName("automation_longitude",
-                                      "automation-longitude");
-        updateConfigurationRecordName("automation_latitude",
-                                      "automation-latitude");
-        updateConfigurationRecordName("automation_sunrise_enable",
-                                      "automation-sunrise-enable");
-        updateConfigurationRecordName("automation_sunset_enable",
-                                      "automation-sunset-enable");
-        updateConfigurationRecordName("automation_sunset_twilight_enable",
-                                      "automation-sunset-twilight-enable");
-        updateConfigurationRecordName("automation_sunrise_twilight_enable",
-                                      "automation-sunrise-twilight-enable");
-        updateConfigurationRecordName("automation_segment_ctrl_enable",
-                                      "automation-segment-ctrl-enable");
-        updateConfigurationRecordName("automation_segment_ctrl_interval",
-                                      "automation-segment-ctrl-interval");
-        updateConfigurationRecordName("automation_heartbeat_enable",
-                                      "automation-heartbeat-enable");
-        updateConfigurationRecordName("automation_heartbeat_interval",
-                                      "automation-heartbeat-interval");
-        updateConfigurationRecordName("automation_capabilities_enable",
-                                      "automation-capabilities-enable");
-        updateConfigurationRecordName("automation_capabilities_interval",
-                                      "automation-capabilities-interval");
-
-        // We are now at version 2
-        updateConfigurationRecordItem(VSCPDB_CONFIG_NAME_DBVERSION ,"2");
-    } // end 1 -> 2
-
-    return true;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// doCreateConfiguration
-//
-// Create configuration table.
-//
-//
-
-bool
-CControlObject::doCreateConfigurationTable(void)
-{
-    char *pErrMsg = 0;
-    const char *psql;
-
-    syslog(LOG_INFO, "Creating settings database.");
-
-    // Check if database is open
-    if (NULL == m_db_vscp_daemon) return false;
-
-    pthread_mutex_lock(&m_db_vscp_configMutex);
-
-    // Create settings db
-    psql = VSCPDB_CONFIG_CREATE;
-    if (SQLITE_OK !=
-        sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg)) {
-        syslog(LOG_ERR,
-               "Creation of the VSCP settings database failed with message %s",
-               pErrMsg);
-        return false;
-    }
-
-    // Create name index
-    psql = VSCPDB_CONFIG_CREATE_INDEX;
-    if (SQLITE_OK !=
-        sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg)) {
-        pthread_mutex_unlock(&m_db_vscp_configMutex);
-        syslog(LOG_ERR,
-               "Creation of the VSCP settings index failed with message %s",
-               pErrMsg);
-        return false;
-    }
-
-    syslog(LOG_INFO, "Writing default configuration database content.");
-    addDefaultConfigValues();
-
-    pthread_mutex_unlock(&m_db_vscp_configMutex);
-
-    return true;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// readConfigurationDB
-//
-// Read the configuration database record
-//
-//
-
-bool
-CControlObject::readConfigurationDB(void)
-{
-    char *pErrMsg    = 0;
-    const char *psql = VSCPDB_CONFIG_FIND_ALL;
-    sqlite3_stmt *ppStmt;
-    int dbVersion = 0;
-
-    pthread_mutex_lock(&m_db_vscp_configMutex);
-
-    // Check if database is open
-    if (NULL == m_db_vscp_daemon) {
-        syslog(LOG_ERR,
-               "dbReadConfiguration: Failed to read VSCP settings database "
-               "- Database is not open.");
-        pthread_mutex_unlock(&m_db_vscp_configMutex);
-        return false;
-    }
-
-    if (SQLITE_OK !=
-        sqlite3_prepare(m_db_vscp_daemon, psql, -1, &ppStmt, NULL)) {
-        syslog(LOG_ERR,
-               "dbReadConfiguration: Failed to read VSCP settings database "
-               "- prepare query.");
-        pthread_mutex_unlock(&m_db_vscp_configMutex);
-        return false;
-    }
-
-    while (SQLITE_ROW == sqlite3_step(ppStmt)) {
-
-        const unsigned char *pName  = NULL;
-        const unsigned char *pValue = NULL;
-
-        if (NULL ==
-            (pName = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_CONFIG_NAME))) {
-            syslog(LOG_ERR,
-                   "dbReadConfiguration: Failed to read 'name' "
-                   "from settings record.");
-            continue;
-        }
-
-        if (NULL == (pValue = sqlite3_column_text(
-                       ppStmt, VSCPDB_ORDINAL_CONFIG_VALUE))) {
-            syslog(LOG_ERR,
-                   "dbReadConfiguration: Failed to read 'value' "
-                   "from settings record.");
-            continue;
-        }
-
-        // database version
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_DBVERSION)) {
-            dbVersion = atoi((const char *)pValue);
-            continue;
-        }
-
-        // client buffer size
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_CLIENTBUFFERSIZE)) {
-            m_maxItemsInClientReceiveQueue = atol((const char *)pValue);
-            continue;
-        }
-
-        // Server GUID
-        if (0 ==
-            vscp_strcasecmp((const char *)pName, VSCPDB_CONFIG_NAME_GUID)) {
-            m_guid.getFromString((const char *)pValue);
-            continue;
-        }
-
-        // Server name
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_SERVERNAME)) {
-            m_strServerName = std::string((const char *)pValue);
-            continue;
-        }
-
-        // TCP/IP interface address
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_TCPIP_ADDR)) {
-            m_strTcpInterfaceAddress = std::string((const char *)pValue);
-            // Remove possible "tcp://"" prefix
-            vscp_startsWith(
-              m_strTcpInterfaceAddress, "tcp://", &m_strTcpInterfaceAddress);
-            if (vscp_startsWith(m_strTcpInterfaceAddress,
-                                "ssl://",
-                                &m_strTcpInterfaceAddress)) {
-                m_strTcpInterfaceAddress += "s";
-            }
-            vscp_trim(m_strTcpInterfaceAddress);
-            continue;
-        }
-
-        // TCP/IP encryption
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_TCPIP_ENCRYPTION)) {
-            m_encryptionTcpip = atoi((const char *)pValue);
-            continue;
-        }
-
-        // TCP/IP SSL certificat
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_TCPIP_SSL_CERTIFICATE)) {
-            m_tcpip_ssl_certificate = std::string((const char *)pValue);
-            continue;
-        }
-
-        // TCP/IP SSL certificat chain
-        if (0 ==
-            vscp_strcasecmp((const char *)pName,
-                            VSCPDB_CONFIG_NAME_TCPIP_SSL_CERTIFICAT_CHAIN)) {
-            m_tcpip_ssl_certificate_chain = std::string((const char *)pValue);
-            continue;
-        }
-
-        // TCP/IP SSL verify peer
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_TCPIP_SSL_VERIFY_PEER)) {
-            m_tcpip_ssl_verify_peer = atoi((const char *)pValue);
-            continue;
-        }
-
-        // TCP/IP SSL CA path
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_TCPIP_SSL_CA_PATH)) {
-            m_tcpip_ssl_ca_path = std::string((const char *)pValue);
-            continue;
-        }
-
-        // TCP/IP SSL CA file
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_TCPIP_SSL_CA_FILE)) {
-            m_tcpip_ssl_ca_file = std::string((const char *)pValue);
-            continue;
-        }
-
-        // TCP/IP SSL verify depth
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_TCPIP_SSL_VERIFY_DEPTH)) {
-            m_tcpip_ssl_verify_depth = atoi((const char *)pValue);
-            continue;
-        }
-
-        // TCP/IP SSL verify paths
-        if (0 == vscp_strcasecmp(
-                   (const char *)pName,
-                   VSCPDB_CONFIG_NAME_TCPIP_SSL_DEFAULT_VERIFY_PATHS)) {
-            m_tcpip_ssl_default_verify_paths =
-              atoi((const char *)pValue) ? true : false;
-            continue;
-        }
-
-        // TCP/IP SSL Chipher list
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_TCPIP_SSL_CHIPHER_LIST)) {
-            m_tcpip_ssl_cipher_list = std::string((const char *)pValue);
-            continue;
-        }
-
-        // TCP/IP SSL protocol version
-        if (0 ==
-            vscp_strcasecmp((const char *)pName,
-                            VSCPDB_CONFIG_NAME_TCPIP_SSL_PROTOCOL_VERSION)) {
-            m_tcpip_ssl_protocol_version = atoi((const char *)pValue);
-            continue;
-        }
-
-        // TCP/IP SSL short trust
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_TCPIP_SSL_SHORT_TRUST)) {
-            m_tcpip_ssl_short_trust = atoi((const char *)pValue) ? true : false;
-            continue;
-        }
-
-        // // Announce multicast interface address
-        // if (0 == vscp_strcasecmp((const char *)pName,
-        //                          VSCPDB_CONFIG_NAME_ANNOUNCE_ADDR)) {
-        //     m_strMulticastAnnounceAddress = std::string((const char *)pValue);
-        //     continue;
-        // }
-
-        // // TTL for the multicast i/f
-        // if (0 == vscp_strcasecmp((const char *)pName,
-        //                          VSCPDB_CONFIG_NAME_ANNOUNCE_TTL)) {
-        //     m_ttlMultiCastAnnounce = atoi((const char *)pValue);
-        //     continue;
-        // }
-
-        // Enable UDP interface
-        // if (0 == vscp_strcasecmp((const char *)pName,
-        //                          VSCPDB_CONFIG_NAME_UDP_ENABLE)) {
-        //     pthread_mutex_lock(&m_udpSrvObj.m_mutexUDPInfo);
-        //     m_udpSrvObj.m_bEnable = atoi((const char *)pValue) ? true : false;
-        //     pthread_mutex_unlock(&m_udpSrvObj.m_mutexUDPInfo);
-        //     continue;
-        // }
-
-        // // UDP interface address/port
-        // if (0 ==
-        //     vscp_strcasecmp((const char *)pName, VSCPDB_CONFIG_NAME_UDP_ADDR)) {
-        //     pthread_mutex_lock(&m_udpSrvObj.m_mutexUDPInfo);
-        //     m_udpSrvObj.m_interface = std::string((const char *)pValue);
-        //     pthread_mutex_unlock(&m_udpSrvObj.m_mutexUDPInfo);
-        //     continue;
-        // }
-
-        // // UDP User
-        // if (0 ==
-        //     vscp_strcasecmp((const char *)pName, VSCPDB_CONFIG_NAME_UDP_USER)) {
-        //     pthread_mutex_lock(&m_udpSrvObj.m_mutexUDPInfo);
-        //     m_udpSrvObj.m_user = std::string((const char *)pValue);
-        //     pthread_mutex_unlock(&m_udpSrvObj.m_mutexUDPInfo);
-        //     continue;
-        // }
-
-        // // UDP User Password
-        // if (0 == vscp_strcasecmp((const char *)pName,
-        //                          VSCPDB_CONFIG_NAME_UDP_PASSWORD)) {
-        //     pthread_mutex_lock(&m_udpSrvObj.m_mutexUDPInfo);
-        //     m_udpSrvObj.m_password = std::string((const char *)pValue);
-        //     pthread_mutex_unlock(&m_udpSrvObj.m_mutexUDPInfo);
-        //     continue;
-        // }
-
-        // // UDP un-secure enable
-        // if (0 == vscp_strcasecmp((const char *)pName,
-        //                          VSCPDB_CONFIG_NAME_UDP_UNSECURE_ENABLE)) {
-        //     pthread_mutex_lock(&m_udpSrvObj.m_mutexUDPInfo);
-        //     m_udpSrvObj.m_bAllowUnsecure =
-        //       atoi((const char *)pValue) ? true : false;
-        //     pthread_mutex_unlock(&m_udpSrvObj.m_mutexUDPInfo);
-        //     continue;
-        // }
-
-        // // UDP Filter
-        // if (0 == vscp_strcasecmp((const char *)pName,
-        //                          VSCPDB_CONFIG_NAME_UDP_FILTER)) {
-        //     pthread_mutex_lock(&m_udpSrvObj.m_mutexUDPInfo);
-        //     vscp_readFilterFromString(&m_udpSrvObj.m_filter,
-        //                               std::string((const char *)pValue));
-        //     pthread_mutex_unlock(&m_udpSrvObj.m_mutexUDPInfo);
-        //     continue;
-        // }
-
-        // // UDP Mask
-        // if (0 ==
-        //     vscp_strcasecmp((const char *)pName, VSCPDB_CONFIG_NAME_UDP_MASK)) {
-        //     pthread_mutex_lock(&m_udpSrvObj.m_mutexUDPInfo);
-        //     vscp_readMaskFromString(&m_udpSrvObj.m_filter,
-        //                             std::string((const char *)pValue));
-        //     pthread_mutex_unlock(&m_udpSrvObj.m_mutexUDPInfo);
-        //     continue;
-        // }
-
-        // // UDP GUID
-        // if (0 ==
-        //     vscp_strcasecmp((const char *)pName, VSCPDB_CONFIG_NAME_UDP_GUID)) {
-        //     pthread_mutex_lock(&m_udpSrvObj.m_mutexUDPInfo);
-        //     m_udpSrvObj.m_guid.getFromString((const char *)pValue);
-        //     pthread_mutex_unlock(&m_udpSrvObj.m_mutexUDPInfo);
-        //     continue;
-        // }
-
-        // // UDP Enable ACK
-        // if (0 == vscp_strcasecmp((const char *)pName,
-        //                          VSCPDB_CONFIG_NAME_UDP_ACK_ENABLE)) {
-        //     pthread_mutex_lock(&m_udpSrvObj.m_mutexUDPInfo);
-        //     m_udpSrvObj.m_bAck = atoi((const char *)pValue) ? true : false;
-        //     pthread_mutex_unlock(&m_udpSrvObj.m_mutexUDPInfo);
-        //     continue;
-        // }
-
-        // // Enable Multicast interface
-        // if (0 == vscp_strcasecmp((const char *)pName,
-        //                          VSCPDB_CONFIG_NAME_MULTICAST_ENABLE)) {
-        //     m_bEnableMulticast = atoi((const char *)pValue) ? true : false;
-        //     continue;
-        // }
-
-        // Path to DM database file
-        // if (0 == vscp_strcasecmp((const char *)pName,
-        //                          VSCPDB_CONFIG_NAME_DM_PATH_DB)) {
-        //     m_dm.m_path_db_vscp_dm = std::string((const char *)pValue);
-        //     continue;
-        // }
-
-        // Path to DM XML file
-        // if (0 == vscp_strcasecmp((const char *)pName,
-        //                          VSCPDB_CONFIG_NAME_DM_PATH_XML)) {
-        //     m_dm.m_staticXMLPath = std::string((const char *)pValue);
-        //     continue;
-        // }
-
-        // Path to variable database
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_VARIABLES_PATH_DB)) {
-            m_variables.m_dbFilename = std::string((const char *)pValue);
-            continue;
-        }
-
-        // Path to variable XML
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_VARIABLES_PATH_XML)) {
-            m_variables.m_xmlPath = std::string((const char *)pValue);
-            continue;
-        }
-
-        // VSCP data database path
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_PATH_DB_EVENTS)) {
-            m_path_db_vscp_data = std::string((const char *)pValue);
-            continue;
-        }
-
-        // * * * WEB server * * *
-
-        // Web server enable
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_WEB_ENABLE)) {
-            if (atoi((const char *)pValue)) {
-                m_web_bEnable = true;
-            } else {
-                m_web_bEnable = false;
-            }
-            continue;
-        }
-
-        // Web server document root
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_WEB_DOCUMENT_ROOT)) {
-            m_web_document_root = std::string((const char *)pValue);
-            continue;
-        }
-
-        // listening ports for web server
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_WEB_LISTENING_PORTS)) {
-            m_web_listening_ports = std::string((const char *)pValue);
-            continue;
-        }
-
-        // Index files
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_WEB_INDEX_FILES)) {
-            m_web_index_files = std::string((const char *)pValue);
-            continue;
-        }
-
-        // Authdomain
-        if (0 ==
-            vscp_strcasecmp((const char *)pName,
-                            VSCPDB_CONFIG_NAME_WEB_AUTHENTICATION_DOMAIN)) {
-            m_web_authentication_domain = std::string((const char *)pValue);
-            continue;
-        }
-
-        // Enable authdomain check
-        if (0 ==
-            vscp_strcasecmp((const char *)pName,
-                            VSCPDB_CONFIG_NAME_WEB_ENABLE_AUTH_DOMAIN_CHECK)) {
-            if (atoi((const char *)pValue)) {
-                m_enable_auth_domain_check = true;
-            } else {
-                m_enable_auth_domain_check = false;
-            }
-            continue;
-        }
-
-        // Path to cert file
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_WEB_SSL_CERTIFICATE)) {
-            m_web_ssl_certificate = std::string((const char *)pValue);
-            continue;
-        }
-
-        // SSL certificate chain
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_WEB_SSL_CERTIFICAT_CHAIN)) {
-            m_web_ssl_certificate_chain = std::string((const char *)pValue);
-            continue;
-        }
-
-        // SSL verify peer
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_WEB_SSL_VERIFY_PEER)) {
-            if (atoi((const char *)pValue)) {
-                m_web_ssl_verify_peer = true;
-            } else {
-                m_web_ssl_verify_peer = false;
-            }
-            continue;
-        }
-
-        // SSL CA path
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_WEB_SSL_CA_FILE)) {
-            m_web_ssl_ca_path = std::string((const char *)pValue);
-            continue;
-        }
-
-        // SSL CA file
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_WEB_SSL_CA_FILE)) {
-            m_web_ssl_ca_file = std::string((const char *)pValue);
-            continue;
-        }
-
-        // SSL verify depth
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_WEB_SSL_VERIFY_DEPTH)) {
-            m_web_ssl_verify_depth = atoi((const char *)pValue);
-            continue;
-        }
-
-        // SSL default verify path
-        if (0 ==
-            vscp_strcasecmp((const char *)pName,
-                            VSCPDB_CONFIG_NAME_WEB_SSL_DEFAULT_VERIFY_PATHS)) {
-            if (atoi((const char *)pValue)) {
-                m_web_ssl_default_verify_paths = true;
-            } else {
-                m_web_ssl_default_verify_paths = false;
-            }
-            continue;
-        }
-
-        // SSL chipher list
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_WEB_SSL_CHIPHER_LIST)) {
-            m_web_ssl_cipher_list = std::string((const char *)pValue);
-            continue;
-        }
-
-        // SSL protocol version
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_WEB_SSL_PROTOCOL_VERSION)) {
-            m_web_ssl_protocol_version = atoi((const char *)pValue);
-            continue;
-        }
-
-        // SSL short trust
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_WEB_SSL_SHORT_TRUST)) {
-            if (atoi((const char *)pValue)) {
-                m_web_ssl_short_trust = true;
-            } else {
-                m_web_ssl_short_trust = false;
-            }
-            continue;
-        }
-
-        // CGI interpreter
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_WEB_CGI_INTERPRETER)) {
-            m_web_cgi_interpreter = std::string((const char *)pValue);
-            continue;
-        }
-
-        // CGI pattern
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_WEB_CGI_PATTERN)) {
-            m_web_cgi_patterns = std::string((const char *)pValue);
-            continue;
-        }
-
-        // CGI environment
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_WEB_CGI_ENVIRONMENT)) {
-            m_web_cgi_environment = std::string((const char *)pValue);
-            continue;
-        }
-
-        // Protect URI
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_WEB_PROTECT_URI)) {
-            m_web_protect_uri = std::string((const char *)pValue);
-            continue;
-        }
-
-        // Web trottle
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_WEB_TROTTLE)) {
-            m_web_trottle = std::string((const char *)pValue);
-            continue;
-        }
-
-        // Enable directory listings
-        if (0 ==
-            vscp_strcasecmp((const char *)pName,
-                            VSCPDB_CONFIG_NAME_WEB_ENABLE_DIRECTORY_LISTING)) {
-            if (atoi((const char *)pValue)) {
-                m_web_enable_directory_listing = true;
-            } else {
-                m_web_enable_directory_listing = false;
-            }
-            continue;
-        }
-
-        // Enable keep alive
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_WEB_ENABLE_KEEP_ALIVE)) {
-            if (atoi((const char *)pValue)) {
-                m_web_enable_keep_alive = true;
-            } else {
-                m_web_enable_keep_alive = false;
-            }
-            continue;
-        }
-
-        // Keep alive timout ms
-        if (0 ==
-            vscp_strcasecmp((const char *)pName,
-                            VSCPDB_CONFIG_NAME_WEB_KEEP_ALIVE_TIMEOUT_MS)) {
-            m_web_keep_alive_timeout_ms = atol((const char *)pValue);
-            continue;
-        }
-
-        // IP ACL
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_LIST)) {
-            m_web_access_control_list = std::string((const char *)pValue);
-            continue;
-        }
-
-        // Extra mime types
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_WEB_EXTRA_MIME_TYPES)) {
-            m_web_extra_mime_types = std::string((const char *)pValue);
-            continue;
-        }
-
-        // Number of threads
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_WEB_NUM_THREADS)) {
-            m_web_num_threads = atoi((const char *)pValue);
-            continue;
-        }
-
-        // Hide file patterns
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_WEB_HIDE_FILE_PATTERNS)) {
-            m_web_hide_file_patterns = std::string((const char *)pValue);
-            continue;
-        }
-
-        // Run as user
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_WEB_RUN_AS_USER)) {
-            m_web_run_as_user = std::string((const char *)pValue);
-            continue;
-        }
-
-        // URL rewrites
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_WEB_URL_REWRITE_PATTERNS)) {
-            m_web_url_rewrite_patterns = std::string((const char *)pValue);
-            continue;
-        }
-
-        // Hide file patterns
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_WEB_HIDE_FILE_PATTERNS)) {
-            m_web_hide_file_patterns = std::string((const char *)pValue);
-            continue;
-        }
-
-        // web request timout
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_WEB_REQUEST_TIMEOUT_MS)) {
-            m_web_request_timeout_ms = atol((const char *)pValue);
-            continue;
-        }
-
-        // web linger timout
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_WEB_LINGER_TIMEOUT_MS)) {
-            m_web_linger_timeout_ms = atol((const char *)pValue);
-            continue;
-        }
-
-        // Decode URL
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_WEB_DECODE_URL)) {
-            if (atoi((const char *)pValue)) {
-                m_web_decode_url = true;
-            } else {
-                m_web_decode_url = false;
-            }
-            continue;
-        }
-
-        // Global auth. file
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_WEB_GLOBAL_AUTHFILE)) {
-            m_web_global_auth_file = std::string((const char *)pValue);
-            continue;
-        }
-
-        // Per directory auth. file
-        if (0 ==
-            vscp_strcasecmp((const char *)pName,
-                            VSCPDB_CONFIG_NAME_WEB_PER_DIRECTORY_AUTH_FILE)) {
-            m_web_per_directory_auth_file = std::string((const char *)pValue);
-            continue;
-        }
-
-        // SSI patterns
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_WEB_SSI_PATTERNS)) {
-            m_web_ssi_patterns = std::string((const char *)pValue);
-            continue;
-        }
-
-        // Access control allow origin
-        if (0 == vscp_strcasecmp(
-                   (const char *)pName,
-                   VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_ALLOW_ORIGIN)) {
-            m_web_access_control_allow_origin =
-              std::string((const char *)pValue);
-            continue;
-        }
-
-        // Access control allow methods
-        if (0 == vscp_strcasecmp(
-                   (const char *)pName,
-                   VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_ALLOW_METHODS)) {
-            m_web_access_control_allow_methods =
-              std::string((const char *)pValue);
-            continue;
-        }
-
-        // Access control alow heraders
-        if (0 == vscp_strcasecmp(
-                   (const char *)pName,
-                   VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_ALLOW_HEADERS)) {
-            m_web_access_control_allow_headers =
-              std::string((const char *)pValue);
-            continue;
-        }
-
-        // Error pages
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_WEB_ERROR_PAGES)) {
-            m_web_error_pages = std::string((const char *)pValue);
-            continue;
-        }
-
-        // TCP no delay
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_WEB_TCP_NO_DELAY)) {
-            m_web_tcp_nodelay = atol((const char *)pValue);
-            continue;
-        }
-
-        // File max age
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_WEB_STATIC_FILE_MAX_AGE)) {
-            m_web_static_file_max_age = atol((const char *)pValue);
-            continue;
-        }
-
-        // Transport security max age
-        if (0 == vscp_strcasecmp(
-                   (const char *)pName,
-                   VSCPDB_CONFIG_NAME_WEB_STRICT_TRANSPORT_SECURITY_MAX_AGE)) {
-            m_web_strict_transport_security_max_age =
-              atol((const char *)pValue);
-            continue;
-        }
-
-        // Enable sendfile call
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_WEB_ALLOW_SENDFILE_CALL)) {
-            if (atoi((const char *)pValue)) {
-                m_web_allow_sendfile_call = true;
-            } else {
-                m_web_allow_sendfile_call = false;
-            }
-            continue;
-        }
-
-        // Additional headers
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_WEB_ADDITIONAL_HEADERS)) {
-            m_web_additional_header = std::string((const char *)pValue);
-            continue;
-        }
-
-        // Max request size
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_WEB_MAX_REQUEST_SIZE)) {
-            m_web_max_request_size = atol((const char *)pValue);
-            continue;
-        }
-
-        // Allow index script resource
-        if (0 == vscp_strcasecmp(
-                   (const char *)pName,
-                   VSCPDB_CONFIG_NAME_WEB_ALLOW_INDEX_SCRIPT_RESOURCE)) {
-            if (atoi((const char *)pValue)) {
-                m_web_allow_index_script_resource = true;
-            } else {
-                m_web_allow_index_script_resource = false;
-            }
-            continue;
-        }
-
-        // Duktape script patterns
-        if (0 ==
-            vscp_strcasecmp((const char *)pName,
-                            VSCPDB_CONFIG_NAME_WEB_DUKTAPE_SCRIPT_PATTERN)) {
-            m_web_duktape_script_patterns = std::string((const char *)pValue);
-            continue;
-        }
-
-        // Lua preload file
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_WEB_LUA_PRELOAD_FILE)) {
-            m_web_lua_preload_file = std::string((const char *)pValue);
-            continue;
-        }
-
-        // Lua script patterns
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_WEB_LUA_SCRIPT_PATTERN)) {
-            m_web_lua_script_patterns = std::string((const char *)pValue);
-            continue;
-        }
-
-        // Lua server page patterns
-        if (0 ==
-            vscp_strcasecmp((const char *)pName,
-                            VSCPDB_CONFIG_NAME_WEB_LUA_SERVER_PAGE_PATTERN)) {
-            m_web_lua_server_page_patterns = std::string((const char *)pValue);
-            continue;
-        }
-
-        // Lua websocket patterns
-        if (0 ==
-            vscp_strcasecmp((const char *)pName,
-                            VSCPDB_CONFIG_NAME_WEB_LUA_WEBSOCKET_PATTERN)) {
-            m_web_lua_websocket_patterns = std::string((const char *)pValue);
-            continue;
-        }
-
-        // Lua background script
-        if (0 ==
-            vscp_strcasecmp((const char *)pName,
-                            VSCPDB_CONFIG_NAME_WEB_LUA_BACKGROUND_SCRIPT)) {
-            m_web_lua_background_script = std::string((const char *)pValue);
-            continue;
-        }
-
-        // Lua background script params
-        if (0 == vscp_strcasecmp(
-                   (const char *)pName,
-                   VSCPDB_CONFIG_NAME_WEB_LUA_BACKGROUND_SCRIPT_PARAMS)) {
-            m_web_lua_background_script_params =
-              std::string((const char *)pValue);
-            continue;
-        }
-
-        // * * * Websockets * * *
-
-        // Web server enable
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_WEBSOCKET_ENABLE)) {
-            if (atoi((const char *)pValue)) {
-                m_bWebsocketsEnable = true;
-            } else {
-                m_bWebsocketsEnable = false;
-            }
-            continue;
-        }
-
-        // Document root for websockets
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_WEBSOCKET_DOCUMENT_ROOT)) {
-            m_websocket_document_root = std::string((const char *)pValue);
-            continue;
-        }
-
-        // Websocket timeout
-        if (0 == vscp_strcasecmp((const char *)pName,
-                                 VSCPDB_CONFIG_NAME_WEBSOCKET_TIMEOUT_MS)) {
-            m_websocket_timeout_ms = atol((const char *)pValue);
-            continue;
-        }
-
-        // * * * Automation * * *
-
-        // // Enable automation
-        // if (0 == vscp_strcasecmp((const char *)pName,
-        //                          VSCPDB_CONFIG_NAME_AUTOMATION_ENABLE)) {
-
-        //     // if (atoi((const char *)pValue)) {
-        //     //     m_automation.enableAutomation();
-        //     // } else {
-        //     //     m_automation.enableAutomation();
-        //     // }
-        //     continue;
-        // }
-
-        // // Automation zone
-        // if (0 == vscp_strcasecmp((const char *)pName,
-        //                          VSCPDB_CONFIG_NAME_AUTOMATION_ZONE)) {
-        //     m_automation.setZone(atoi((const char *)pValue));
-        //     continue;
-        // }
-
-        // // Automation sub zone
-        // if (0 == vscp_strcasecmp((const char *)pName,
-        //                          VSCPDB_CONFIG_NAME_AUTOMATION_SUBZONE)) {
-        //     m_automation.setSubzone(atoi((const char *)pValue));
-        //     continue;
-        // }
-
-        // // Automation longitude
-        // if (0 == vscp_strcasecmp((const char *)pName,
-        //                          VSCPDB_CONFIG_NAME_AUTOMATION_LONGITUDE)) {
-        //     m_automation.setLongitude(atof((const char *)pValue));
-        //     continue;
-        // }
-
-        // // Automation latitude
-        // if (0 == vscp_strcasecmp((const char *)pName,
-        //                          VSCPDB_CONFIG_NAME_AUTOMATION_LATITUDE)) {
-        //     m_automation.setLatitude(atof((const char *)pValue));
-        //     continue;
-        // }
-
-        // // Automation enable sun rise event
-        // if (0 ==
-        //     vscp_strcasecmp((const char *)pName,
-        //                     VSCPDB_CONFIG_NAME_AUTOMATION_SUNRISE_ENABLE)) {
-        //     if (atoi((const char *)pValue)) {
-        //         m_automation.enableSunRiseEvent();
-        //     } else {
-        //         m_automation.disableSunRiseEvent();
-        //     }
-        //     continue;
-        // }
-
-        // // Automation enable sun set event
-        // if (0 == vscp_strcasecmp((const char *)pName,
-        //                          VSCPDB_CONFIG_NAME_AUTOMATION_SUNSET_ENABLE)) {
-        //     if (atoi((const char *)pValue)) {
-        //         m_automation.enableSunSetEvent();
-        //     } else {
-        //         m_automation.disableSunSetEvent();
-        //     }
-        //     continue;
-        // }
-
-        // // Automation enable sunset twilight event
-        // if (0 == vscp_strcasecmp(
-        //            (const char *)pName,
-        //            VSCPDB_CONFIG_NAME_AUTOMATION_SUNSET_TWILIGHT_ENABLE)) {
-        //     if (atoi((const char *)pValue)) {
-        //         m_automation.enableSunSetTwilightEvent();
-        //     } else {
-        //         m_automation.disableSunSetTwilightEvent();
-        //     }
-        //     continue;
-        // }
-
-        // // Automation enable sunrise twilight event
-        // if (0 == vscp_strcasecmp(
-        //            (const char *)pName,
-        //            VSCPDB_CONFIG_NAME_AUTOMATION_SUNRISE_TWILIGHT_ENABLE)) {
-        //     if (atoi((const char *)pValue)) {
-        //         m_automation.enableSunRiseTwilightEvent();
-        //     } else {
-        //         m_automation.disableSunRiseTwilightEvent();
-        //     }
-        //     continue;
-        // }
-
-        // // Automation segment controller event enable
-        // if (0 == vscp_strcasecmp(
-        //            (const char *)pName,
-        //            VSCPDB_CONFIG_NAME_AUTOMATION_SEGMENT_CTRL_ENABLE)) {
-        //     if (atoi((const char *)pValue)) {
-        //         m_automation.enableSegmentControllerHeartbeat();
-        //     } else {
-        //         m_automation.disableSegmentControllerHeartbeat();
-        //     }
-        //     continue;
-        // }
-
-        // // Automation, segment controller heartbeat interval
-        // if (0 == vscp_strcasecmp(
-        //            (const char *)pName,
-        //            VSCPDB_CONFIG_NAME_AUTOMATION_SEGMENT_CTRL_INTERVAL)) {
-        //     m_automation.setSegmentControllerHeartbeatInterval(
-        //       atol((const char *)pValue));
-        //     continue;
-        // }
-
-        // // Automation heartbeat event enable
-        // if (0 ==
-        //     vscp_strcasecmp((const char *)pName,
-        //                     VSCPDB_CONFIG_NAME_AUTOMATION_HEARTBEAT_ENABLE)) {
-        //     if (atoi((const char *)pValue)) {
-        //         m_automation.enableHeartbeatEvent();
-        //     } else {
-        //         m_automation.disableHeartbeatEvent();
-        //     }
-        //     continue;
-        // }
-
-        // // Automation heartbeat interval
-        // if (0 ==
-        //     vscp_strcasecmp((const char *)pName,
-        //                     VSCPDB_CONFIG_NAME_AUTOMATION_HEARTBEAT_INTERVAL)) {
-        //     m_automation.setHeartbeatEventInterval(atol((const char *)pValue));
-        //     continue;
-        // }
-
-        // // Automation capabilities event enable
-        // if (0 == vscp_strcasecmp(
-        //            (const char *)pName,
-        //            VSCPDB_CONFIG_NAME_AUTOMATION_CAPABILITIES_ENABLE)) {
-        //     if (atoi((const char *)pValue)) {
-        //         m_automation.enableCapabilitiesEvent();
-        //     } else {
-        //         m_automation.disableCapabilitiesEvent();
-        //     }
-        //     continue;
-        // }
-
-        // // Automation capabilities interval
-        // if (0 == vscp_strcasecmp(
-        //            (const char *)pName,
-        //            VSCPDB_CONFIG_NAME_AUTOMATION_CAPABILITIES_INTERVAL)) {
-        //     m_automation.setCapabilitiesEventInterval(
-        //       atol((const char *)pValue));
-        //     continue;
-        // }
-    }
-
-    sqlite3_finalize(ppStmt);
-
-    pthread_mutex_unlock(&m_db_vscp_configMutex);
-
-    return true;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// readUdpNodes
-//
-// Read in defined UDP nodes
-//
-//
-
-// bool
-// CControlObject::readUdpNodes(void)
-// {
-//     char *pErrMsg    = 0;
-//     const char *psql = "SELECT * FROM udpnode";
-//     sqlite3_stmt *ppStmt;
-
-//     // If UDP is disabled we are done
-//     if (!m_udpSrvObj.m_bEnable) return true;
-
-//     // Check if database is open
-//     if (NULL == m_db_vscp_daemon) {
-//         syslog(LOG_ERR, "readUdpNodes: Database is not open.");
-//         return false;
-//     }
-
-//     if (SQLITE_OK !=
-//         sqlite3_prepare(m_db_vscp_daemon, psql, -1, &ppStmt, NULL)) {
-//         syslog(LOG_ERR, "readUdpNodes: prepare query failed.");
-//         return false;
-//     }
-
-//     while (SQLITE_ROW == sqlite3_step(ppStmt)) {
-
-//         const unsigned char *p;
-
-//         // If not enabled move on
-//         if (!sqlite3_column_int(ppStmt, VSCPDB_ORDINAL_UDPNODE_ENABLE))
-//             continue;
-
-//         pthread_mutex_lock(&m_udpSrvObj.m_mutexUDPInfo);
-
-//         udpRemoteClientInfo *pudpClient = new udpRemoteClientInfo;
-//         if (NULL == pudpClient) {
-//             syslog(LOG_ERR,
-//                    "readUdpNodes: Failed to allocate storage for UDP node.");
-//             pthread_mutex_unlock(&m_udpSrvObj.m_mutexUDPInfo);
-//             continue;
-//         }
-
-//         // Broadcast
-//         pudpClient->m_bSetBroadcast = false;
-//         if (sqlite3_column_int(ppStmt, VSCPDB_ORDINAL_UDPNODE_SET_BROADCAST)) {
-//             pudpClient->m_bSetBroadcast = true;
-//         } // Interface
-//         p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_UDPNODE_INTERFACE);
-//         if (NULL != p) {
-//             pudpClient->m_remoteAddress = std::string((const char *)p);
-//         }
-
-//         //  Filter
-//         p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_UDPNODE_FILTER);
-//         if (NULL != p) {
-//             std::string wxstr = std::string((const char *)p);
-//             if (!vscp_readFilterFromString(&pudpClient->m_filter, wxstr)) {
-//                 syslog(LOG_ERR,
-//                        "readUdpNodes: Failed to set filter for UDP node.");
-//             }
-//         }
-
-//         // Mask
-//         p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_UDPNODE_MASK);
-//         if (NULL != p) {
-//             std::string wxstr = std::string((const char *)p);
-//             if (!vscp_readMaskFromString(&pudpClient->m_filter, wxstr)) {
-//                 syslog(LOG_ERR,
-//                        "readUdpNodes: Failed to set mask for UDP node.");
-//             }
-//         }
-
-//         // Encryption
-//         p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_UDPNODE_ENCRYPTION);
-//         if (NULL != p) {
-//             std::string wxstr         = std::string((const char *)p);
-//             pudpClient->m_nEncryption = vscp_getEncryptionCodeFromToken(wxstr);
-//         }
-
-//         // Add to list
-//         pudpClient->m_index = 0;
-//         m_udpSrvObj.m_remotes.push_back(pudpClient);
-
-//         pthread_mutex_unlock(&m_udpSrvObj.m_mutexUDPInfo);
-//     }
-
-//     sqlite3_finalize(ppStmt);
-
-//     return true;
-// }
-
-// ///////////////////////////////////////////////////////////////////////////////
-// // readMulticastChannels
-// //
-// // Read in defined multicast channels
-// //
-// //
-
-// bool
-// CControlObject::readMulticastChannels(void)
-// {
-//     // char *pErrMsg    = 0;
-//     // const char *psql = "SELECT * FROM multicast";
-//     // sqlite3_stmt *ppStmt;
-
-//     // // If multicast is disabled we are done
-//     // if (!m_bEnableMulticast) return true;
-
-//     // // Check if database is open
-//     // if (NULL == m_db_vscp_daemon) {
-//     //     syslog(LOG_ERR, "readMulticastChannels: Database is not open.");
-//     //     return false;
-//     // }
-
-//     // if (SQLITE_OK !=
-//     //     sqlite3_prepare(m_db_vscp_daemon, psql, -1, &ppStmt, NULL)) {
-//     //     syslog(LOG_ERR, "readMulticastChannels: prepare query failed.");
-//     //     return false;
-//     // }
-
-//     // while (SQLITE_ROW == sqlite3_step(ppStmt)) {
-
-//     //     // const unsigned char *p;
-
-//     //     // // If not enabled move on
-//     //     // if (!sqlite3_column_int(ppStmt, VSCPDB_ORDINAL_MULTICAST_ENABLE))
-//     //     //     continue;
-
-//     //     // multicastChannelItem *pChannel = new multicastChannelItem;
-//     //     // if (NULL == pChannel) {
-//     //     //     syslog(LOG_ERR,
-//     //     //            "readMulticastChannels: Failed to allocate storage for "
-//     //     //            "multicast node.");
-//     //     //     continue;
-//     //     // }
-
-//     //     // // Default is to let everything come through
-//     //     // vscp_clearVSCPFilter(&pChannel->m_txFilter);
-//     //     // vscp_clearVSCPFilter(&pChannel->m_rxFilter);
-
-//     //     // // public interface
-//     //     // p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_MULTICAST_PUBLIC);
-//     //     // if (NULL != p) {
-//     //     //     pChannel->m_public = std::string((const char *)p);
-//     //     // }
-
-//     //     // // Port
-//     //     // p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_MULTICAST_PORT);
-
-//     //     // // group
-//     //     // p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_MULTICAST_GROUP);
-//     //     // if (NULL != p) {
-//     //     //     pChannel->m_gropupAddress = std::string((const char *)p);
-//     //     // } // ttl
-//     //     // pChannel->m_ttl =
-//     //     //   sqlite3_column_int(ppStmt, VSCPDB_ORDINAL_MULTICAST_TTL);
-
-//     //     // // bAck
-//     //     // pChannel->m_bSendAck =
-//     //     //   sqlite3_column_int(ppStmt, VSCPDB_ORDINAL_MULTICAST_SENDACK) ? true
-//     //     //                                                                : false;
-
-//     //     // // Allow unsecure
-//     //     // pChannel->m_bAllowUnsecure =
-//     //     //   sqlite3_column_int(ppStmt, VSCPDB_ORDINAL_MULTICAST_ALLOW_UNSECURE)
-//     //     //     ? true
-//     //     //     : false;
-
-//     //     // // GUID
-//     //     // p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_MULTICAST_GUID);
-//     //     // if (NULL != p) {
-//     //     //     pChannel->m_guid.getFromString((const char *)p);
-//     //     // }
-
-//     //     // //  TX Filter
-//     //     // p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_MULTICAST_TXFILTER);
-//     //     // if (NULL != p) {
-//     //     //     std::string wxstr = std::string((const char *)p);
-//     //     //     if (!vscp_readFilterFromString(&pChannel->m_txFilter, wxstr)) {
-//     //     //         syslog(LOG_ERR,
-//     //     //                "readMulticastChannels: Failed to set TX "
-//     //     //                "filter for multicast channel.");
-//     //     //     }
-//     //     // }
-
-//     //     // // TX Mask
-//     //     // p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_MULTICAST_TXMASK);
-//     //     // if (NULL != p) {
-//     //     //     std::string wxstr = std::string((const char *)p);
-//     //     //     if (!vscp_readMaskFromString(&pChannel->m_txFilter, wxstr)) {
-//     //     //         syslog(LOG_ERR,
-//     //     //                "readMulticastChannels: Failed to set TX "
-//     //     //                "mask for multicast channel.");
-//     //     //     }
-//     //     // }
-
-//     //     // //  RX Filter
-//     //     // p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_MULTICAST_RXFILTER);
-//     //     // if (NULL != p) {
-//     //     //     std::string wxstr = std::string((const char *)p);
-//     //     //     if (!vscp_readFilterFromString(&pChannel->m_rxFilter, wxstr)) {
-//     //     //         syslog(LOG_ERR,
-//     //     //                "readMulticastChannels: Failed to set RX "
-//     //     //                "filter for multicast channel.");
-//     //     //     }
-//     //     // }
-
-//     //     // // RX Mask
-//     //     // p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_MULTICAST_RXMASK);
-//     //     // if (NULL != p) {
-//     //     //     std::string wxstr = std::string((const char *)p);
-//     //     //     if (!vscp_readMaskFromString(&pChannel->m_rxFilter, wxstr)) {
-//     //     //         syslog(LOG_ERR,
-//     //     //                "readMulticastChannels: Failed to set RX "
-//     //     //                "mask for multicast channel.");
-//     //     //     }
-//     //     // }
-
-//     //     // // Encryption
-//     //     // p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_UDPNODE_ENCRYPTION);
-//     //     // if (NULL != p) {
-//     //     //     std::string wxstr       = std::string((const char *)p);
-//     //     //     pChannel->m_nEncryption = vscp_getEncryptionCodeFromToken(wxstr);
-//     //     // }
-
-//     //     // // Add to list
-//     //     // pChannel->m_index = 0;
-//     //     // m_multicastObj.m_channels.push_back(pChannel);
-//     // }
-
-//     // sqlite3_finalize(ppStmt);
-
-//     return true;
-// }
-
-///////////////////////////////////////////////////////////////////////////////
-// doCreateUdpNodeTable
-//
-// Create the UDP node database
-//
-
-// bool
-// CControlObject::doCreateUdpNodeTable(void)
-// {
-//     char *pErrMsg    = 0;
-//     const char *psql = VSCPDB_UDPNODE_CREATE;
-
-//     syslog(LOG_INFO, "Creating udpnode table.");
-
-//     // Check if database is open
-//     if (NULL == m_db_vscp_daemon) {
-//         syslog(LOG_ERR,
-//                "Failed to create VSCP udpnode table - database closed.");
-//         return false;
-//     }
-
-//     pthread_mutex_lock(&m_db_vscp_configMutex);
-
-//     if (SQLITE_OK !=
-//         sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg)) {
-//         syslog(LOG_ERR,
-//                "Failed to create VSCP udpnode table with error %s.",
-//                pErrMsg);
-//         pthread_mutex_unlock(&m_db_vscp_configMutex);
-//         return false;
-//     }
-
-//     pthread_mutex_unlock(&m_db_vscp_configMutex);
-
-//     return true;
-// }
-
-///////////////////////////////////////////////////////////////////////////////
-// doCreateMulticastTable
-//
-// Create the multicast database
-//
-//
-
-// bool
-// CControlObject::doCreateMulticastTable(void)
-// {
-//     char *pErrMsg    = 0;
-//     const char *psql = VSCPDB_MULTICAST_CREATE;
-
-//     syslog(LOG_INFO, "Creating multicast table.");
-
-//     // Check if database is open
-//     if (NULL == m_db_vscp_daemon) {
-//         syslog(LOG_ERR,
-//                "Failed to create VSCP multicast table - database closed.");
-//         return false;
-//     }
-
-//     pthread_mutex_lock(&m_db_vscp_configMutex);
-
-//     if (SQLITE_OK !=
-//         sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg)) {
-//         syslog(LOG_ERR,
-//                "Failed to create VSCP multicast table with error %s.",
-//                pErrMsg);
-//         pthread_mutex_unlock(&m_db_vscp_configMutex);
-//         return false;
-//     }
-
-//     pthread_mutex_unlock(&m_db_vscp_configMutex);
-
-//     return true;
-// }
-
-///////////////////////////////////////////////////////////////////////////////
-// doCreateUserTable
-//
-// Create the user table
-//
-//
-
-bool
-CControlObject::doCreateUserTable(void)
-{
-    char *pErrMsg    = 0;
-    const char *psql = VSCPDB_USER_CREATE;
-
-    syslog(LOG_INFO, "Creating user table.");
-
-    // Check if database is open
-    if (NULL == m_db_vscp_daemon) {
-        syslog(LOG_ERR, "Failed to create VSCP user table - closed.");
-        return false;
-    }
-
-    if (SQLITE_OK !=
-        sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg)) {
-        syslog(
-          LOG_ERR, "Failed to create VSCP user table with error %s.", pErrMsg);
-        return false;
-    }
-
-    return true;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// doCreateDriverTable
-//
-// Create the driver table
-//
-//
-
-bool
-CControlObject::doCreateDriverTable(void)
-{
-    char *pErrMsg    = 0;
-    const char *psql = VSCPDB_DRIVER_CREATE;
-
-    syslog(LOG_INFO, "Creating driver table.");
-
-    // Check if database is open
-    if (NULL == m_db_vscp_daemon) {
-        syslog(LOG_ERR, "Failed to create VSCP driver table - closed.");
-        return false;
-    }
-
-    if (SQLITE_OK !=
-        sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg)) {
-        syslog(LOG_ERR,
-               "Failed to create VSCP driver table with error %s.",
-               pErrMsg);
-        return false;
-    }
-
-    return true;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// doCreateGuidTable
-//
-// Create the GUID table
-//
-//
-
-bool
-CControlObject::doCreateGuidTable(void)
-{
-    char *pErrMsg    = 0;
-    const char *psql = VSCPDB_GUID_CREATE;
-
-    syslog(LOG_INFO, "Creating GUID discovery table.");
-
-    // Check if database is open
-    if (NULL == m_db_vscp_daemon) {
-        syslog(LOG_ERR, "Failed to create VSCP GUID table - closed.");
-        return false;
-    }
-
-    if (SQLITE_OK !=
-        sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg)) {
-        syslog(
-          LOG_ERR, "Failed to create VSCP GUID table with error %s.", pErrMsg);
-        return false;
-    }
-
-    return true;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// doCreateLocationTable
-//
-// Create the Location table
-//
-//
-
-bool
-CControlObject::doCreateLocationTable(void)
-{
-    char *pErrMsg    = 0;
-    const char *psql = VSCPDB_LOCATION_CREATE;
-
-    syslog(LOG_INFO, "Creating location table.");
-
-    // Check if database is open
-    if (NULL == m_db_vscp_daemon) {
-        syslog(LOG_ERR, "Failed to create VSCP location table - closed.");
-        return false;
-    }
-
-    if (SQLITE_OK !=
-        sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg)) {
-        syslog(LOG_ERR,
-               "Failed to create VSCP location table with error %s.",
-               pErrMsg);
-        return false;
-    }
-
-    return true;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// doCreateMdfCacheTable
-//
-// Create the mdf cache table
-//
-//
-
-bool
-CControlObject::doCreateMdfCacheTable(void)
-{
-    char *pErrMsg    = 0;
-    const char *psql = VSCPDB_MDF_CREATE;
-
-    syslog(LOG_INFO, "Creating MDF table.");
-
-    // Check if database is open
-    if (NULL == m_db_vscp_daemon) {
-        syslog(LOG_ERR, "Failed to create VSCP mdf table - closed.");
-        return false;
-    }
-
-    if (SQLITE_OK !=
-        sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg)) {
-        syslog(
-          LOG_ERR, "Failed to create VSCP mdf table with error %s.", pErrMsg);
-        return false;
-    }
-
-    return true;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// doCreateSimpleUiTable
-//
-// Create the simple UI table
-//
-//
-
-bool
-CControlObject::doCreateSimpleUiTable(void)
-{
-    char *pErrMsg    = 0;
-    const char *psql = VSCPDB_SIMPLE_UI_CREATE;
-
-    syslog(LOG_INFO, "Creating simple ui table.");
-
-    // Check if database is open
-    if (NULL == m_db_vscp_daemon) {
-        syslog(LOG_ERR, "Failed to create VSCP simple ui table - closed.");
-        return false;
-    }
-
-    if (SQLITE_OK !=
-        sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg)) {
-        syslog(LOG_ERR,
-               "Failed to create VSCP simple ui table with error %s.",
-               pErrMsg);
-        return false;
-    }
-
-    return true;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// doCreateSimpleUiItemTable
-//
-// Create the simple UI item table
-//
-//
-
-bool
-CControlObject::doCreateSimpleUiItemTable(void)
-{
-    char *pErrMsg    = 0;
-    const char *psql = VSCPDB_SIMPLE_UI_ITEM_CREATE;
-
-    syslog(LOG_INFO, "Creating simple ui item table..");
-
-    // Check if database is open
-    if (NULL == m_db_vscp_daemon) {
-        syslog(LOG_ERR, "Failed to create VSCP simple UI item table - closed.");
-        return false;
-    }
-
-    if (SQLITE_OK !=
-        sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg)) {
-        syslog(LOG_ERR,
-               "Failed to create VSCP simple UI item table with error %s.",
-               pErrMsg);
-        return false;
-    }
-
-    return true;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// doCreateZoneTable
-//
-// Create the zone table
-//
-
-bool
-CControlObject::doCreateZoneTable(void)
-{
-    char *pErrMsg    = 0;
-    const char *psql = VSCPDB_ZONE_CREATE;
-
-    syslog(LOG_INFO, "Creating zone table..");
-
-    // Check if database is open
-    if (NULL == m_db_vscp_daemon) {
-        syslog(LOG_ERR, "Failed to create VSCP zone table - closed.");
-        return false;
-    }
-
-    if (SQLITE_OK !=
-        sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg)) {
-        syslog(
-          LOG_ERR, "Failed to create VSCP zone table with error %s.", pErrMsg);
-        return false;
-    }
-
-    // Fill with default info
-    std::string sql = "BEGIN;";
-    for (int i = 0; i < 256; i++) {
-        sql += vscp_str_format("INSERT INTO 'zone' (idx_zone, name) "
-                               "VALUES( %d, 'zone%d' );",
-                               i,
-                               i);
-    }
-
-    sql += vscp_str_format(VSCPDB_ZONE_UPDATE,
-                           "All zones",
-                           "Zone = 255 represents all zones.",
-                           255L);
-    sql += "COMMIT;";
-    if (SQLITE_OK !=
-        sqlite3_exec(
-          m_db_vscp_daemon, (const char *)sql.c_str(), NULL, NULL, &pErrMsg)) {
-        syslog(LOG_ERR,
-               "Failed to insert last VSCP default zone table entry %d. "
-               "Error %s",
-               255,
-               pErrMsg);
-    }
-
-    return true;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// doCreateSubZoneTable
-//
-// Create the subzone table
-//
-//
-
-bool
-CControlObject::doCreateSubZoneTable(void)
-{
-    char *pErrMsg    = 0;
-    const char *psql = VSCPDB_SUBZONE_CREATE;
-
-    syslog(LOG_INFO, "Creating sub-zone table.");
-
-    // Check if database is open
-    if (NULL == m_db_vscp_daemon) {
-        syslog(LOG_ERR, "Failed to create VSCP subzone table - closed.");
-        return false;
-    }
-
-    if (SQLITE_OK !=
-        sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg)) {
-        syslog(LOG_ERR,
-               "Failed to create VSCP subzone table with error %s.",
-               pErrMsg);
-        return false;
-    }
-
-    // Fill with default info
-    std::string sql = "BEGIN;";
-    for (int i = 0; i < 256; i++) {
-        sql += vscp_str_format("INSERT INTO 'subzone' (idx_subzone, name) "
-                               "VALUES( %d, 'subzone%d' );",
-                               i,
-                               i);
-    }
-
-    sql += vscp_str_format(VSCPDB_SUBZONE_UPDATE,
-                           "All subzones",
-                           "Subzone = 255 represents all subzones of a zone.",
-                           255L);
-    sql += "COMMIT;";
-    if (SQLITE_OK !=
-        sqlite3_exec(
-          m_db_vscp_daemon, (const char *)sql.c_str(), NULL, NULL, &pErrMsg)) {
-        syslog(LOG_ERR,
-               "Failed to insert last VSCP default subzone table entry %d. "
-               "Error %s",
-               255,
-               pErrMsg);
-    }
-
-    return true;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// doCreateUserdefTableTable
-//
-// Create the userdef table
-//
-//
-
-bool
-CControlObject::doCreateUserdefTableTable(void)
-{
-    char *pErrMsg    = 0;
-    const char *psql = VSCPDB_TABLE_CREATE;
-
-    syslog(LOG_INFO, "Creating userdef table.");
-
-    // Check if database is open
-    if (NULL == m_db_vscp_daemon) {
-        syslog(LOG_ERR, "Failed to create VSCP userdef table - closed.");
-        return false;
-    }
-
-    if (SQLITE_OK !=
-        sqlite3_exec(m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg)) {
-        syslog(LOG_ERR,
-               "Failed to create VSCP userdef table with error %s.",
-               pErrMsg);
-        return false;
-    }
-
-    return true;
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////

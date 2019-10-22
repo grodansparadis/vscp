@@ -21,13 +21,23 @@ MINOR_VERSION = `sed '36!d' ../../common/version.h  | cut -b 33-`
 RELEASE_VERSION = `sed '37!d' ../../common/version.h  | cut -b 33-`
 BUILD_VERSION = `sed '38!d' ../../common/version.h  | cut -b 33-
 
-WARNINGS_HARD = -Werror -Wall -Wextra -pedantic -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self -Wlogical-op -Wmissing-include-dirs -Wnoexcept -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-promo -Wstrict-null-sentinel -Wstrict-overflow=5 -Wundef -Wno-unused -Wno-variadic-macros -Wno-parentheses -fdiagnostics-show-option
+WARNINGS_HARD = -Werror -Wall -Wextra -pedantic -Wcast-align -Wcast-qual \
+  -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self \
+  -Wlogical-op -Wmissing-include-dirs -Wnoexcept -Wold-style-cast \
+  -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-promo \
+  -Wstrict-null-sentinel -Wstrict-overflow=5 -Wundef -Wno-unused \
+  -Wno-variadic-macros -Wno-parentheses -fdiagnostics-show-option
 WARNINGS_MEDIUM = -Wformat-security -Wformat=2
 
-MONGOOSE_CFLAGS = -DMG_ENABLE_THREADS -DMG_ENABLE_IPV6 -DMG_ENABLE_SSL -DMG_ENABLE_GETADDRINFO
-CFLAGS = -std=c99 @CFLAGS@ -DCBC -DLUA_USE_POSIX -I@top_srcdir@ -I../../common -I../../../common -I../../../common/lua -I../../../common/lua/src
+CIVETWEB_FLAGS =
+CFLAGS = -std=c99 @CFLAGS@ -DCBC -DLUA_USE_POSIX -I@top_srcdir@ \
+	-DNO_FILES=1 -DNO_CGI=4 -DUSE_IPV6=8 -DUSE_WEBSOCKET=16 -DMG_LEGACY_INTERFACE  \
+	-I../../common -I../../../common -I../../../common/lua -I../../../common/lua/src
 CXXFLAGS = -std=c++11 @CXXFLAGS@
-CPPFLAGS = @CPPFLAGS@ -fno-var-tracking-assignments -I@top_srcdir@ -I../../common -I../../../common -I../../../common/lua -I../../../common/lua/src -I../../../common/xml2json/include
+CPPFLAGS = @CPPFLAGS@ -fno-var-tracking-assignments -I@top_srcdir@ \
+	-DNO_FILES=1 -DNO_CGI=4 -DUSE_IPV6=8 -DUSE_WEBSOCKET=16 -DMG_LEGACY_INTERFACE \
+	-I../../common -I../../../common -I../../../common/lua \
+	-I../../../common/lua/src -I../../../common/xml2json/include
 CPPFLAGS += $(MONGOOSE_CFLAGS)
 
 LDFLAGS = @LDFLAGS@
@@ -54,15 +64,12 @@ VSCPD_OBJECTS =  vscpd.o \
 	clientlist.o \
 	controlobject.o \
 	tcpipsrv.o \
-	remotevariable.o \
-	stockvariable.o\
 	interfacelist.o \
 	userlist.o \
 	devicethread.o \
 	websrv.o \
 	websocketsrv.o \
-	tables.o \
-	httpd.o \
+	civetweb.o \
 	vscphelper.o \
 	vscpremotetcpif.o \
 	devicelist.o \
@@ -75,19 +82,10 @@ VSCPD_OBJECTS =  vscpd.o \
 	crc.o \
 	crc8.o \
 	randpassword.o \
-	duktape.o \
-	duk_v1_compat.o \
-	duk_module_node.o \
-	sqlite3.o \
-	sqlite3math.o \
 	vscp_aes.o \
 	fastpbkdf2.o \
 	vscpmd5.o \
 	vscpbase64.o \
-	lfs.o \
-	lsqlite3.o \
-	LuaXML_lib.o \
-	lua_all.o\
 	vscpdatetime.o
 
 ### Targets: ###
@@ -106,12 +104,6 @@ controlobject.o: ../../common/controlobject.cpp ../../common/controlobject.h
 tcpipsrv.o: ../../common/tcpipsrv.cpp ../../common/tcpipsrv.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/tcpipsrv.cpp -o $@
 
-remotevariable.o: ../../common/remotevariable.cpp ../../common/remotevariable.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/remotevariable.cpp -o $@
-
-stockvariable.o: ../../common/stockvariable.cpp ../../common/stockvariable.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/stockvariable.cpp -o $@
-
 interfacelist.o: ../../common/interfacelist.cpp ../../common/interfacelist.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/interfacelist.cpp -o $@
 
@@ -126,9 +118,6 @@ websrv.o: ../../common/websrv.cpp ../../common/websrv.h
 
 websocketsrv.o: ../../common/websocketsrv.cpp ../../common/websocket.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/websocketsrv.cpp -o $@
-
-tables.o: ../../common/tables.cpp ../../common/tables.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/tables.cpp -o $@
 
 vscphelper.o: ../../common/vscphelper.cpp ../../common/vscphelper.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/vscphelper.cpp -o $@
@@ -175,41 +164,14 @@ crc8.o: ../../../common/crc8.c ../../../common/crc8.h
 randpassword.o: ../../../common/randpassword.cpp ../../../common/randpassword.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../../common/randpassword.cpp -o $@
 
-duktape.o: ../../../common/duktape.c ../../../common/duktape.h
-	$(CC) $(CFLAGS) -c ../../../common/duktape.c -o $@
-
-duk_v1_compat.o: ../../../common/duk_v1_compat.c ../../../common/duk_v1_compat.h
-	$(CC) $(CFLAGS) -c ../../../common/duk_v1_compat.c -o $@
-
-duk_module_node.o: ../../../common/duk_module_node.c ../../../common/duk_module_node.h
-	$(CC) $(CFLAGS) -c ../../../common/duk_module_node.c -o $@
-
-sqlite3.o: ../../../common/sqlite3.c
-	$(CC) $(CFLAGS) $(CPPFLAGS) -c  ../../../common/sqlite3.c -o $@
-
-sqlite3math.o: ../../../common/sqlite3math.c
-	$(CC) $(CFLAGS) $(CPPFLAGS) -c  ../../../common/sqlite3math.c -o $@
-
 fastpbkdf2.o: ../../../common/fastpbkdf2.c ../../../common/fastpbkdf2.h
 	$(CC) $(CFLAGS) -c ../../../common/fastpbkdf2.c -o $@
 
 vscpmd5.o: ../../../common/vscpmd5.c ../../../common/vscpmd5.h
 	$(CC) $(CFLAGS) -c ../../../common/vscpmd5.c -o $@
 
-httpd.o: ../../../common/httpd.c ../../../common/httpd.h
-	$(CC) $(CFLAGS) -c ../../../common/httpd.c -o $@
-
-lsqlite3.o: ../../../common/lua/lsqlite3.c
-	$(CC) $(CFLAGS) -I../../../common/lua -c ../../../common/lua/lsqlite3.c -o $@
-
-lfs.o: ../../../common/lua/lfs.c
-	$(CC) $(CFLAGS) -I../../../common/lua -c ../../../common/lua/lfs.c -o $@
-
-LuaXML_lib.o: ../../../common/lua/LuaXML_lib.c
-	$(CC) $(CFLAGS) -I../../../common/lua -c ../../../common/lua/LuaXML_lib.c -o $@
-
-lua_all.o: ../../../common/lua_all.c
-	$(CC) $(CFLAGS) -I../../../common/lua -c ../../../common/lua_all.c -o $@
+civetweb.o: ../../../common/civetweb.c ../../../common/civetweb.h
+	$(CC) $(CFLAGS) $(CIVETWEB_FLAGS) -c ../../../common/civetweb.c -o $@
 
 vscpd: $(VSCPD_OBJECTS)
 	$(CXX) -o $@ $(VSCPD_OBJECTS) $(LDFLAGS) $(EXTRALIBS)

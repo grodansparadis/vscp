@@ -382,19 +382,19 @@ class tcpipClientObj
     /*!
         Client UDP command
     */
-    void handleClientUdp(void);
+    //void handleClientUdp(void);
 
     /*!
         Client FILE command
     */
-    void handleClientFile(void);
+    //void handleClientFile(void);
 
     /*!
         Client TABLE command
         @param conn Connection handler.
         @param pCtrlObject Pointer to control object
     */
-    void handleClientTable(void);
+    //void handleClientTable(void);
 
     /*!
         Client TABLE list command.
@@ -402,245 +402,123 @@ class tcpipClientObj
         list 'table-name' - List info about selected table.
         @param conn Connection handler.
     */
-    void handleClientTable_List(void);
+    //void handleClientTable_List(void);
 
     /*!
         Client TABLE get command
         get 'table-name' to from ["full"]
         @param conn Connection handler.
     */
-    void handleClientTable_Get(void);
+    //void handleClientTable_Get(void);
 
     /*!
         Client TABLE getraw command
         get 'table-name' to from
         @param conn Connection handler.
     */
-    void handleClientTable_GetRaw(void);
+    //void handleClientTable_GetRaw(void);
 
     /*!
         Client TABLE clear command
         @param conn Connection handler.
     */
-    void handleClientTable_Clear(void);
+    //void handleClientTable_Clear(void);
 
     /*!
         Client TABLE records command
         @param conn Connection handler.
     */
-    void handleClientTable_NumberOfRecords(void);
+    //void handleClientTable_NumberOfRecords(void);
 
     /*!
         Client TABLE firstdate command
         @param conn Connection handler.
     */
-    void handleClientTable_FirstDate(void);
+    //void handleClientTable_FirstDate(void);
 
     /*!
         Client TABLE lastdate command
         @param conn Connection handler.
     */
-    void handleClientTable_LastDate(void);
+    //void handleClientTable_LastDate(void);
 
     /*!
         Client TABLE sum command
         @param conn Connection handler.
     */
-    void handleClientTable_Sum(void);
+    //void handleClientTable_Sum(void);
 
     /*!
         Client TABLE min command
         @param conn Connection handler.
     */
-    void handleClientTable_Min(void);
+    //void handleClientTable_Min(void);
 
     /*!
         Client TABLE max command
         @param conn Connection handler.
     */
-    void handleClientTable_Max(void);
+   // void handleClientTable_Max(void);
 
     /*!
         Client TABLE average command
         @param conn Connection handler.
     */
-    void handleClientTable_Average(void);
+    //void handleClientTable_Average(void);
 
     /*!
         Client TABLE median command
         @param conn Connection handler.
     */
-    void handleClientTable_Median(void);
+    //void handleClientTable_Median(void);
 
     /*!
         Client TABLE stddev command
         @param conn Connection handler.
     */
-    void handleClientTable_StdDev(void);
+    //void handleClientTable_StdDev(void);
 
     /*!
         Client TABLE variance command
         @param conn Connection handler.
     */
-    void handleClientTable_Variance(void);
+    //void handleClientTable_Variance(void);
 
     /*!
         Client TABLE mode command
         @param conn Connection handler.
     */
-    void handleClientTable_Mode(void);
+    //void handleClientTable_Mode(void);
 
     /*!
         Client TABLE lowerq command
         @param conn Connection handler.
     */
-    void handleClientTable_LowerQ(void);
+    //void handleClientTable_LowerQ(void);
 
     /*!
         Client TABLE upperq command
         @param conn Connection handler.
     */
-    void handleClientTable_UpperQ(void);
+   // void handleClientTable_UpperQ(void);
 
     /*!
         Client TABLE log command
         @param conn Connection handler.
     */
-    void handleClientTable_Log(void);
+    //void handleClientTable_Log(void);
 
     /*!
         Client TABLE logSQL command
         @param conn Connection handler.
     */
-    void handleClientTable_LogSQL(void);
+    //void handleClientTable_LogSQL(void);
 
     /*!
         Client TABLE new command
         @param conn Connection handler.
     */
-    void handleClientTable_Create(void);
-
-    /*!
-        Client TABLE delete command
-        @param conn Connection handler.
-    */
-    void handleClientTable_Delete(void);
-
-    /*!
-        Client VARIABLE command
-        @param conn Connection handler.
-        @param pCtrlObject Pointer to control object
-    */
-    void handleClientVariable(void);
-
-    /*!
-        Variable List
-        @param conn Connection handler.
-        @param pCtrlObject Pointer to control object
-    */
-    void handleVariable_List(void);
-
-    /*!
-        Variable Write
-        Write Format:
-       variablename;variabletype;accessrights;persistance;value;note
-            variablename must be given.
-            variabletype can be symbolic ("string") or numeric ("1"). Can be
-       left out and then defaults to string. persistens can be 0/1 or
-       false/true. Can be left out and then default to false. accessrights must
-       be numeric but can be left out and then defaults to 0x744. User set to
-       logged in user if not given.
-        @param conn Connection handler.
-        @param pCtrlObject Pointer to control object
-    */
-    void handleVariable_Write(void);
-
-    /*!
-        Variable Write value
-        @param conn Connection handler.
-        @param pCtrlObject Pointer to control object
-    */
-    void handleVariable_WriteValue(void);
-
-    /*!
-        Variable Write note
-        @param conn Connection handler.
-        @param pCtrlObject Pointer to control object
-    */
-    void handleVariable_WriteNote(void);
-
-    /*!
-        Variable Read
-        @param conn Connection handler.
-        @param pCtrlObject Pointer to control object
-        @param bOKResponse OK response will be given if true (default).
-    */
-    void handleVariable_Read(bool bOKResponse = true);
-
-    /*!
-        Variable Read value
-        @param conn Connection handler.
-        @param pCtrlObject Pointer to control object
-        @param bOKResponse OK response will be given if true (default).
-    */
-    void handleVariable_ReadValue(bool bOKResponse = true);
-
-    /*!
-        Variable Read note
-        @param conn Connection handler.
-        @param pCtrlObject Pointer to control object
-        @param bOKResponse OK response will be given if true (default).
-    */
-    void handleVariable_ReadNote(bool bOKResponse = true);
-
-    /*!
-        Variable ReadReset
-        @param conn Connection handler.
-        @param pCtrlObject Pointer to control object
-    */
-    void handleVariable_ReadReset(void);
-
-    /*!
-        Variable Write
-        @param conn Connection handler.
-        @param pCtrlObject Pointer to control object
-    */
-    void handleVariable_Reset(void);
-
-    /*!
-        Variable Remove
-        @param conn Connection handler.
-        @param pCtrlObject Pointer to control object
-    */
-    void handleVariable_Remove(void);
-
-    /*!
-        Variable Read + remove
-        @param conn Connection handler.
-        @param pCtrlObject Pointer to control object
-    */
-    void handleVariable_ReadRemove(void);
-
-    /*!
-        Variable Length
-        @param conn Connection handler.
-        @param pCtrlObject Pointer to control object
-    */
-    void handleVariable_Length(void);
-
-    /*!
-        Variable Load
-        @param conn Connection handler.
-        @param pCtrlObject Pointer to control object
-    */
-    void handleVariable_Load(void);
-
-    /*!
-        Variable Save
-        @param conn Connection handler.
-        @param pCtrlObject Pointer to control object
-    */
-    void handleVariable_Save(void);
+    //void handleClientTable_Create(void);
 
 
     /*!

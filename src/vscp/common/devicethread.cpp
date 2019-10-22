@@ -46,7 +46,6 @@
 #include <canal_macro.h>
 #include <canal_win32_ipc.h>
 #include <controlobject.h>
-//#include <daemonworker.h>
 #include <dllist.h>
 #include <vscp.h>
 #include <vscp_debug.h>
@@ -752,53 +751,53 @@ deviceThread(void *pData)
         vscp_split(tokens, pDevItem->m_strParameter, ";");
         if (false == tokens.empty()) {
 
-            CVariable variable;
+            //CVariable variable;
 
             // Get prefix
             std::string prefix = tokens.front();
             tokens.pop_front();
 
             // Check if username is specified in the configuration file
-            CUserItem *pAdminUser =
-              pDevItem->m_pCtrlObject->m_userList.getUser(USER_ID_ADMIN);
-            if (pCtrlObj->m_variables.find(
-                  pDevItem->m_strName + "_username", pAdminUser, variable)) {
-                std::string str;
-                if (VSCP_DAEMON_VARIABLE_CODE_STRING == variable.getType()) {
-                    str                        = variable.getValue();
-                    pCtrlObj->m_driverUsername = str;
-                }
-            }
+            // CUserItem *pAdminUser =
+            //   pDevItem->m_pCtrlObject->m_userList.getUser(USER_ID_ADMIN);
+            // if (pCtrlObj->m_variables.find(
+            //       pDevItem->m_strName + "_username", pAdminUser, variable)) {
+            //     std::string str;
+            //     if (VSCP_DAEMON_VARIABLE_CODE_STRING == variable.getType()) {
+            //         str                        = variable.getValue();
+            //         pCtrlObj->m_driverUsername = str;
+            //     }
+            // }
 
             // Check if password is specified in the configuration file
-            if (pCtrlObj->m_variables.find(
-                  pDevItem->m_strName + "_password", pAdminUser, variable)) {
-                std::string str;
-                if (VSCP_DAEMON_VARIABLE_CODE_STRING == variable.getType()) {
-                    str                        = variable.getValue();
-                    pCtrlObj->m_driverPassword = str;
-                }
-            }
+            // if (pCtrlObj->m_variables.find(
+            //       pDevItem->m_strName + "_password", pAdminUser, variable)) {
+            //     std::string str;
+            //     if (VSCP_DAEMON_VARIABLE_CODE_STRING == variable.getType()) {
+            //         str                        = variable.getValue();
+            //         pCtrlObj->m_driverPassword = str;
+            //     }
+            // }
 
             // Check if host is specified in the configuration file
-            if (pCtrlObj->m_variables.find(
-                  pDevItem->m_strName + "_host", pAdminUser, variable)) {
-                std::string str;
-                if (VSCP_DAEMON_VARIABLE_CODE_STRING == variable.getType()) {
-                    str     = variable.getValue();
-                    strHost = str;
-                }
-            }
+            // if (pCtrlObj->m_variables.find(
+            //       pDevItem->m_strName + "_host", pAdminUser, variable)) {
+            //     std::string str;
+            //     if (VSCP_DAEMON_VARIABLE_CODE_STRING == variable.getType()) {
+            //         str     = variable.getValue();
+            //         strHost = str;
+            //     }
+            // }
 
             // Check if host is specified in the configuration file
-            if (pCtrlObj->m_variables.find(
-                  pDevItem->m_strName + "_port", pAdminUser, variable)) {
-                std::string str;
-                if (VSCP_DAEMON_VARIABLE_CODE_INTEGER == variable.getType()) {
-                    str  = variable.getValue();
-                    port = vscp_readStringValue(str);
-                }
-            }
+            // if (pCtrlObj->m_variables.find(
+            //       pDevItem->m_strName + "_port", pAdminUser, variable)) {
+            //     std::string str;
+            //     if (VSCP_DAEMON_VARIABLE_CODE_INTEGER == variable.getType()) {
+            //         str  = variable.getValue();
+            //         port = vscp_readStringValue(str);
+            //     }
+            // }
         }
 
         // Open up the driver

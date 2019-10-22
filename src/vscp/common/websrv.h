@@ -32,6 +32,9 @@
 #include "userlist.h"
 #include "websocket.h"
 
+#define WEB_ERROR   0   // Page was not served
+#define WEB_OK      1   // Page served 1-999
+
 /*!
  * Init the webserver sub system
  */
@@ -48,7 +51,7 @@ stop_webserver(void);
  * Send header
  */
 void
-websrv_sendheader(struct web_connection *conn,
+websrv_sendheader(struct mg_connection *conn,
                   int returncode,
                   const char *pcontent);
 
@@ -56,7 +59,7 @@ websrv_sendheader(struct web_connection *conn,
  * Send header set 'sessionid' cookie
  */
 void
-websrv_sendSetCookieHeader(struct web_connection *conn,
+websrv_sendSetCookieHeader(struct mg_connection *conn,
                            int returncode,
                            const char *pcontent,
                            const char *psid);
@@ -66,14 +69,14 @@ websrv_sendSetCookieHeader(struct web_connection *conn,
 ////////////////////////////////////////////////////////////////////////////////
 
 int
-ws1_connectHandler(const struct web_connection *conn, void *cbdata);
+ws1_connectHandler(const struct mg_connection *conn, void *cbdata);
 void
-ws1_readyHandler(struct web_connection *conn, void *cbdata);
+ws1_readyHandler(struct mg_connection *conn, void *cbdata);
 int
 ws1_dataHandler(
-  struct web_connection *conn, int bits, char *data, size_t len, void *cbdata);
+  struct mg_connection *conn, int bits, char *data, size_t len, void *cbdata);
 void
-ws1_closeHandler(const struct web_connection *conn, void *cbdata);
+ws1_closeHandler(const struct mg_connection *conn, void *cbdata);
 
 #define WEBSRV_MAX_SESSIONS 1000   // Max web server active sessions
 #define WEBSRV_NAL_USERNAMELEN 128 // Max length for userdname

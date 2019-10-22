@@ -168,7 +168,7 @@ class websock_session
     ~websock_session(void);
 
     // Connection object
-    struct web_connection *m_conn;
+    struct mg_connection *m_conn;
 
     // Connection state (see enums above)
     int m_conn_state;

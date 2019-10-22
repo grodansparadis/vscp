@@ -383,7 +383,7 @@ bool
 CUserItem::setAllowedEventsFromString(const std::string &strEvents, bool bClear)
 {
     std::string str;
-    
+
     // Privileges
     if (strEvents.length()) {
 
@@ -518,278 +518,7 @@ CUserItem::getUserRightsAsString(void)
 
 
 
-///////////////////////////////////////////////////////////////////////////////
-// isUserInDB
-//
 
-bool
-CUserItem::isUserInDB(const unsigned long userid)
-{
-    bool rv = false;
-    sqlite3_stmt *ppStmt;
-    char *pErrMsg = 0;
-    char psql[512];
-
-    sprintf(psql,
-            VSCPDB_USER_CHECK_USER_ID,
-            (unsigned long)(userid - VSCP_LOCAL_USER_OFFSET));
-
-    // Database must be open
-    if (NULL != gpobj->m_db_vscp_daemon) {
-        syslog(LOG_ERR, "isUserInDB: VSCP daemon database is not open.");
-        return false;
-    }
-
-    pthread_mutex_lock(&gpobj->m_db_vscp_configMutex);
-
-    if (SQLITE_OK !=
-        sqlite3_prepare(gpobj->m_db_vscp_daemon, psql, -1, &ppStmt, NULL)) {
-        pthread_mutex_unlock(&gpobj->m_db_vscp_configMutex);
-        return false;
-    }
-
-    // Get the result
-    if (SQLITE_ROW == sqlite3_step(ppStmt)) {
-        rv = true;
-    }
-
-    sqlite3_finalize(ppStmt);
-
-    pthread_mutex_unlock(&gpobj->m_db_vscp_configMutex);
-
-    return rv;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// isUserInDB
-//
-
-bool
-CUserItem::isUserInDB(const std::string &user, long *pid)
-{
-    bool rv       = false;
-    char *zErrMsg = 0;
-    sqlite3_stmt *ppStmt;
-
-    // Database must be open
-    if (NULL == gpobj->m_db_vscp_daemon) {
-        syslog(LOG_ERR, "isUserInDB: VSCP daemon database is not open.");
-        return false;
-    }
-
-    // Search username
-    char *sql =
-      sqlite3_mprintf(VSCPDB_USER_CHECK_USER, (const char *)user.c_str());
-
-    pthread_mutex_lock(&gpobj->m_db_vscp_configMutex);
-
-    if (SQLITE_OK !=
-        sqlite3_prepare(gpobj->m_db_vscp_daemon, sql, -1, &ppStmt, NULL)) {
-        syslog(LOG_ERR,
-               "isUserInDB: Failed to read user database - prepare query.");
-        sqlite3_free(sql);
-        pthread_mutex_unlock(&gpobj->m_db_vscp_configMutex);
-        return false;
-    }
-
-    while (SQLITE_ROW == sqlite3_step(ppStmt)) {
-        rv = true;
-        if (NULL != pid) {
-            *pid = sqlite3_column_int(ppStmt, VSCPDB_ORDINAL_USER_ID);
-        }
-    }
-
-    sqlite3_free(sql);
-    sqlite3_finalize(ppStmt);
-
-    pthread_mutex_unlock(&gpobj->m_db_vscp_configMutex);
-
-    return rv;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// saveToDatabase
-//
-
-bool
-CUserItem::saveToDatabase(void)
-{
-    char *zErrMsg = 0;
-
-    // Database must be open
-    if (NULL == gpobj->m_db_vscp_daemon) {
-        syslog(LOG_ERR, "Saving user db record. No databas is defined.");
-        return false;
-    }
-
-    // Internal records can't be saved to db
-    // driver users is an example on users that are only local
-    if (m_userID < 0) return false;
-
-    std::string strFilter, strMask, strBoth;
-    strBoth = strFilter + "," + strMask;
-    vscp_writeFilterToString(&m_filterVSCP, strFilter);
-    vscp_writeMaskToString(&m_filterVSCP, strMask);
-    strBoth = strFilter + "," + strMask;
-
-    if (0 == m_userID) {
-
-        // Add
-        char *sql =
-          sqlite3_mprintf(VSCPDB_USER_INSERT,
-                          (const char *)m_user.c_str(),
-                          (const char *)m_password.c_str(),
-                          (const char *)m_fullName.c_str(),
-                          (const char *)strBoth.c_str(),
-                          (const char *)getUserRightsAsString().c_str(),
-                          (const char *)getAllowedEventsAsString().c_str(),
-                          (const char *)getAllowedRemotesAsString().c_str(),
-                          (const char *)m_note.c_str());
-
-        pthread_mutex_lock(&gpobj->m_db_vscp_configMutex);
-
-        if (SQLITE_OK !=
-            sqlite3_exec(gpobj->m_db_vscp_daemon, sql, NULL, NULL, &zErrMsg)) {
-            syslog(LOG_ERR,
-                   "Saving user db record. Failed to add Err=%s SQL=%s.",
-                   zErrMsg,sql);
-            sqlite3_free(sql);
-            pthread_mutex_unlock(&gpobj->m_db_vscp_configMutex);
-            return false;
-        }
-
-        sqlite3_free(sql);
-
-        pthread_mutex_unlock(&gpobj->m_db_vscp_configMutex);
-
-        // The database item now have a id which we need to read back
-        return readBackIndexFromDatabase();
-
-    } else {
-
-        // Update
-        char *sql =
-          sqlite3_mprintf(VSCPDB_USER_UPDATE,
-                          (const char *)m_user.c_str(),
-                          (const char *)m_password.c_str(),
-                          (const char *)m_fullName.c_str(),
-                          (const char *)strBoth.c_str(),
-                          (const char *)getUserRightsAsString().c_str(),
-                          (const char *)getAllowedEventsAsString().c_str(),
-                          (const char *)getAllowedRemotesAsString().c_str(),
-                          (const char *)m_note.c_str(),
-                          m_userID);
-
-        pthread_mutex_lock(&gpobj->m_db_vscp_configMutex);
-
-        if (SQLITE_OK !=
-            sqlite3_exec(gpobj->m_db_vscp_daemon, sql, NULL, NULL, &zErrMsg)) {
-            syslog(LOG_ERR,
-                   "Saving user db record. Failed to update user database. "
-                   "Err=%s SQL=%s",
-                   zErrMsg,
-                   sql);
-            sqlite3_free(sql);
-            pthread_mutex_unlock(&gpobj->m_db_vscp_configMutex);
-            return false;
-        }
-
-        sqlite3_free(sql);
-
-        pthread_mutex_unlock(&gpobj->m_db_vscp_configMutex);
-    }
-
-    return true;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// readBackIndexFromDatabase
-//
-
-bool
-CUserItem::readBackIndexFromDatabase(void)
-{
-    char *zErrMsg = 0;
-    sqlite3_stmt *ppStmt;
-    char *sql =
-      sqlite3_mprintf(VSCPDB_USER_CHECK_USER, (const char *)m_user.c_str());
-
-    pthread_mutex_lock(&gpobj->m_db_vscp_configMutex);
-
-    if (SQLITE_OK !=
-        sqlite3_prepare(gpobj->m_db_vscp_daemon, sql, -1, &ppStmt, NULL)) {
-        syslog(LOG_ERR, "Failed to get index for user. SQL=%s", sql);
-        sqlite3_free(sql);
-        pthread_mutex_unlock(&gpobj->m_db_vscp_configMutex);
-        return false;
-    }
-
-    if (SQLITE_ROW != sqlite3_step(ppStmt)) {
-        syslog(LOG_ERR, "Failed to get index result  for user. SQL=%s", sql);
-        sqlite3_free(sql);
-        pthread_mutex_unlock(&gpobj->m_db_vscp_configMutex);
-    }
-
-    // Get index (offset to local user)
-    m_userID = sqlite3_column_int(ppStmt, VSCPDB_ORDINAL_USER_ID) +
-               VSCP_LOCAL_USER_OFFSET;
-
-    sqlite3_free(sql);
-    pthread_mutex_unlock(&gpobj->m_db_vscp_configMutex);
-
-    return true;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// isAllowedToConnect
-//
-
-/*bool CUserItem::isAllowedToConnect(const std::string& remote)
-{
-    unsigned int i;
-    std::string str;
-    xxIPV4address ipaddr;
-    if ( !ipaddr.Hostname( remote ) ) return false;
-
-    // If empty all host allowed, This is "*.*.*.*" or "*"
-    if ( m_listAllowedRemotes.IsEmpty() ) return true;
-
-    for (i = 0; i < m_listAllowedRemotes.GetCount(); i++) {
-        xxLogDebug(m_listAllowedRemotes[ i ]);
-        if (m_listAllowedRemotes[ i ].IsSameAs(remote)) return true;
-    }
-
-    std::deque<std::string> tokens;
-    vscp_split( tokens, attribute, "." );
-    std::string ip1 = tokens.front();
-    tokens.pop_front();
-    std::string ip2 = tokens.front();
-    tokens.pop_front();
-    std::string ip3 = tokens.front();
-    tokens.pop_front();
-    std::string ip4 = tokens.front();
-    tokens.pop_front();
-
-    // test wildcard a.b.c.*
-    str.Printf("%s.%s.%s.*", ip1.c_str(), ip2.c_str(), ip3.c_str());
-    for (i = 0; i < m_listAllowedRemotes.GetCount(); i++) {
-        if (m_listAllowedRemotes[ i ].IsSameAs(str)) return true;
-    }
-
-    // test wildcard a.b.*.*
-    str.Printf("%s.%s.*.*", ip1.c_str(), ip2.c_str());
-    for (i = 0; i < m_listAllowedRemotes.GetCount(); i++) {
-        if (m_listAllowedRemotes[ i ].IsSameAs(str)) return true;
-    }
-
-    // test wildcard a.*.*.*
-    str.Printf("%s.*.*.*", ip1.c_str());
-    for (i = 0; i < m_listAllowedRemotes.GetCount(); i++) {
-        if (m_listAllowedRemotes[ i ].IsSameAs(str)) return true;
-    }
-
-    return false;
-}*/
 
 ////////////////////////////////////////////////////////////////////////////////
 // check_acl
@@ -914,102 +643,102 @@ CUserList::~CUserList(void)
 bool
 CUserList::loadUsers(void)
 {
-    // Check if user is already in the database
-    char *pErrMsg = 0;
-    sqlite3_stmt *ppStmt;
-    const char *psql = VSCPDB_USER_ALL;
+    // // Check if user is already in the database
+    // char *pErrMsg = 0;
+    // sqlite3_stmt *ppStmt;
+    // const char *psql = VSCPDB_USER_ALL;
 
-    // Check if database is open
-    if (NULL == gpobj->m_db_vscp_daemon) {
-        syslog(LOG_ERR,
-               "loadUsers: Failed to read VSCP settings database - "
-               "database not open.");
-        return false;
-    }
+    // // Check if database is open
+    // if (NULL == gpobj->m_db_vscp_daemon) {
+    //     syslog(LOG_ERR,
+    //            "loadUsers: Failed to read VSCP settings database - "
+    //            "database not open.");
+    //     return false;
+    // }
 
-    pthread_mutex_lock(&gpobj->m_db_vscp_configMutex);
+    // pthread_mutex_lock(&gpobj->m_db_vscp_configMutex);
 
-    if (SQLITE_OK !=
-        sqlite3_prepare(gpobj->m_db_vscp_daemon, psql, -1, &ppStmt, NULL)) {
-        syslog(
-          LOG_ERR,
-          "loadUsers: Failed to read VSCP settings database - prepare query.");
-        pthread_mutex_unlock(&gpobj->m_db_vscp_configMutex);
-        return false;
-    }
+    // if (SQLITE_OK !=
+    //     sqlite3_prepare(gpobj->m_db_vscp_daemon, psql, -1, &ppStmt, NULL)) {
+    //     syslog(
+    //       LOG_ERR,
+    //       "loadUsers: Failed to read VSCP settings database - prepare query.");
+    //     pthread_mutex_unlock(&gpobj->m_db_vscp_configMutex);
+    //     return false;
+    // }
 
-    while (SQLITE_ROW == sqlite3_step(ppStmt)) {
+    // while (SQLITE_ROW == sqlite3_step(ppStmt)) {
 
-        // New user item
-        CUserItem *pItem = new CUserItem;
-        if (NULL != pItem) {
+    //     // New user item
+    //     CUserItem *pItem = new CUserItem;
+    //     if (NULL != pItem) {
 
-            const unsigned char *p;
+    //         const unsigned char *p;
 
-            // id (offset from local users)
-            pItem->setUserID(
-              sqlite3_column_int(ppStmt, VSCPDB_ORDINAL_USER_ID) +
-              VSCP_LOCAL_USER_OFFSET);
+    //         // id (offset from local users)
+    //         pItem->setUserID(
+    //           sqlite3_column_int(ppStmt, VSCPDB_ORDINAL_USER_ID) +
+    //           VSCP_LOCAL_USER_OFFSET);
 
-            // User
-            p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_USER_USERNAME);
-            if (NULL != p) {
-                pItem->setUserName(std::string((const char *)p));
-            }
+    //         // User
+    //         p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_USER_USERNAME);
+    //         if (NULL != p) {
+    //             pItem->setUserName(std::string((const char *)p));
+    //         }
 
-            // Password
-            p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_USER_PASSWORD);
-            if (NULL != p) {
-                pItem->setPassword(std::string((const char *)p));
-            }
+    //         // Password
+    //         p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_USER_PASSWORD);
+    //         if (NULL != p) {
+    //             pItem->setPassword(std::string((const char *)p));
+    //         }
 
-            // Fullname
-            p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_USER_FULLNAME);
-            if (NULL != p) {
-                pItem->setFullname(std::string((const char *)p));
-            }
+    //         // Fullname
+    //         p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_USER_FULLNAME);
+    //         if (NULL != p) {
+    //             pItem->setFullname(std::string((const char *)p));
+    //         }
 
-            // Event filter
-            p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_USER_FILTER);
-            if (NULL != p) {
-                std::string str((const char *)p);
-                pItem->setFilterFromString(str);
-            }
+    //         // Event filter
+    //         p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_USER_FILTER);
+    //         if (NULL != p) {
+    //             std::string str((const char *)p);
+    //             pItem->setFilterFromString(str);
+    //         }
 
-            // Rights
-            p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_USER_RIGHTS);
-            if (NULL != p) {
-                pItem->setUserRightsFromString((const char *)p);
-            }
+    //         // Rights
+    //         p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_USER_RIGHTS);
+    //         if (NULL != p) {
+    //             pItem->setUserRightsFromString((const char *)p);
+    //         }
 
-            // Allowed events
-            p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_USER_ALLOWED_EVENTS);
-            if (NULL != p) {
-                pItem->setAllowedEventsFromString((const char *)p);
-            }
+    //         // Allowed events
+    //         p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_USER_ALLOWED_EVENTS);
+    //         if (NULL != p) {
+    //             pItem->setAllowedEventsFromString((const char *)p);
+    //         }
 
-            // Allowed remotes
-            p =
-              sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_USER_ALLOWED_REMOTES);
-            if (NULL != p) {
-                pItem->setAllowedRemotesFromString((const char *)p);
-            }
+    //         // Allowed remotes
+    //         p =
+    //           sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_USER_ALLOWED_REMOTES);
+    //         if (NULL != p) {
+    //             pItem->setAllowedRemotesFromString((const char *)p);
+    //         }
 
-            // Note
-            p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_USER_NOTE);
-            if (NULL != p) {
-                pItem->setNote((const char *)p);
-            }
+    //         // Note
+    //         p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_USER_NOTE);
+    //         if (NULL != p) {
+    //             pItem->setNote((const char *)p);
+    //         }
 
-            m_userhashmap[pItem->getUserName()] = pItem;
+    //         m_userhashmap[pItem->getUserName()] = pItem;
 
-        } else {
-            syslog(LOG_ERR, "Unable to allocate memory for new user.");
-        }
-    }
+    //     } else {
+    //         syslog(LOG_ERR, "Unable to allocate memory for new user.");
+    //     }
+    // }
 
-    sqlite3_finalize(ppStmt);
-    pthread_mutex_unlock(&gpobj->m_db_vscp_configMutex);
+    // sqlite3_finalize(ppStmt);
+    // pthread_mutex_unlock(&gpobj->m_db_vscp_configMutex);
     return true;
 }
 
@@ -1081,77 +810,77 @@ CUserList::addUser(const std::string &user,
                    const std::string &allowedEvents,
                    uint32_t bFlags)
 {
-    char buf[512];
-    char *pErrMsg = 0;
+    // char buf[512];
+    // char *pErrMsg = 0;
 
-    // Cant add user with name that is already defined.
-    if (NULL != m_userhashmap[user]) {
-        return false;
-    }
+    // // Cant add user with name that is already defined.
+    // if (NULL != m_userhashmap[user]) {
+    //     return false;
+    // }
 
-    // Check if database is open
-    if (!(bFlags & VSCP_ADD_USER_FLAG_LOCAL) &&
-        (NULL == gpobj->m_db_vscp_daemon)) {
-        syslog(LOG_ERR,
-               "addUser: Failed to read VSCP settings database - "
-               "database not open.");
-        return false;
-    }
+    // // Check if database is open
+    // if (!(bFlags & VSCP_ADD_USER_FLAG_LOCAL) &&
+    //     (NULL == gpobj->m_db_vscp_daemon)) {
+    //     syslog(LOG_ERR,
+    //            "addUser: Failed to read VSCP settings database - "
+    //            "database not open.");
+    //     return false;
+    // }
 
-    // New user item
-    CUserItem *pItem = new CUserItem;
-    if (NULL == pItem) return false;
+    // // New user item
+    // CUserItem *pItem = new CUserItem;
+    // if (NULL == pItem) return false;
 
-    // Local user
-    if (VSCP_ADD_USER_FLAG_LOCAL & bFlags) {
-    }
+    // // Local user
+    // if (VSCP_ADD_USER_FLAG_LOCAL & bFlags) {
+    // }
 
-    pItem->setUserID(m_cntLocaluser);
-    m_cntLocaluser++; // Update local user id counter
+    // pItem->setUserID(m_cntLocaluser);
+    // m_cntLocaluser++; // Update local user id counter
 
-    // Check if user is defined already
-    if (!(bFlags & VSCP_ADD_USER_FLAG_LOCAL) && pItem->isUserInDB(user)) {
-        delete pItem;
-        return false;
-    }
+    // // Check if user is defined already
+    // if (!(bFlags & VSCP_ADD_USER_FLAG_LOCAL) && pItem->isUserInDB(user)) {
+    //     delete pItem;
+    //     return false;
+    // }
 
-    // MD5 Token
-    std::string driverhash = user;
-    driverhash += ":";
-    driverhash += gpobj->m_web_authentication_domain;
-    driverhash += ":";
-    driverhash += password;
+    // // MD5 Token
+    // std::string driverhash = user;
+    // driverhash += ":";
+    // driverhash += gpobj->m_web_authentication_domain;
+    // driverhash += ":";
+    // driverhash += password;
 
-    memset(buf, 0, sizeof(buf));
-    strncpy(buf, (const char *)driverhash.c_str(), driverhash.length());
+    // memset(buf, 0, sizeof(buf));
+    // strncpy(buf, (const char *)driverhash.c_str(), driverhash.length());
 
-    char digest[33];
-    vscp_md5(digest, (const unsigned char *)buf, strlen(buf));
+    // char digest[33];
+    // vscp_md5(digest, (const unsigned char *)buf, strlen(buf));
 
-    pItem->setPasswordDomain(std::string(digest));
+    // pItem->setPasswordDomain(std::string(digest));
 
-    pItem->setUserName(user);
-    pItem->fixName();
-    pItem->setPassword(password);
-    pItem->setFullname(fullname);
-    pItem->setNote(strNote);
-    pItem->setFilter(pFilter);
-    pItem->setUserRightsFromString(userRights);
-    pItem->setAllowedRemotesFromString(allowedRemotes);
-    pItem->setAllowedEventsFromString(allowedEvents);
+    // pItem->setUserName(user);
+    // pItem->fixName();
+    // pItem->setPassword(password);
+    // pItem->setFullname(fullname);
+    // pItem->setNote(strNote);
+    // pItem->setFilter(pFilter);
+    // pItem->setUserRightsFromString(userRights);
+    // pItem->setAllowedRemotesFromString(allowedRemotes);
+    // pItem->setAllowedEventsFromString(allowedEvents);
 
-    // Add to the map
-    m_userhashmap[user] = pItem;
+    // // Add to the map
+    // m_userhashmap[user] = pItem;
 
-    // Set filter filter
-    if (NULL != pFilter) {
-        pItem->setFilter(pFilter);
-    }
+    // // Set filter filter
+    // if (NULL != pFilter) {
+    //     pItem->setFilter(pFilter);
+    // }
 
-    // Save to database
-    if (!(VSCP_ADD_USER_FLAG_LOCAL & bFlags)) {
-        pItem->saveToDatabase();
-    }
+    // // Save to database
+    // if (!(VSCP_ADD_USER_FLAG_LOCAL & bFlags)) {
+    //     pItem->saveToDatabase();
+    // }
 
     return true;
 }
@@ -1256,42 +985,42 @@ CUserList::addUser(const std::string &strUser, bool bUnpackNote)
 bool
 CUserList::deleteUser(const std::string &user)
 {
-    char *zErrMsg    = 0;
-    CUserItem *pUser = getUser(user);
-    if (NULL == pUser) return false;
+    // char *zErrMsg    = 0;
+    // CUserItem *pUser = getUser(user);
+    // if (NULL == pUser) return false;
 
-    // Internal users can't be deleted
-    if (pUser->getUserID() < VSCP_LOCAL_USER_OFFSET) return false;
+    // // Internal users can't be deleted
+    // if (pUser->getUserID() < VSCP_LOCAL_USER_OFFSET) return false;
 
-    // Check if database is open
-    if (NULL == gpobj->m_db_vscp_daemon) {
-        syslog(LOG_ERR,
-               "deleteUser: Failed to read VSCP "
-               "settings database - database not open.");
-        return false;
-    }
+    // // Check if database is open
+    // if (NULL == gpobj->m_db_vscp_daemon) {
+    //     syslog(LOG_ERR,
+    //            "deleteUser: Failed to read VSCP "
+    //            "settings database - database not open.");
+    //     return false;
+    // }
 
-    pthread_mutex_lock(&gpobj->m_db_vscp_configMutex);
+    // pthread_mutex_lock(&gpobj->m_db_vscp_configMutex);
 
-    char *sql =
-      sqlite3_mprintf(VSCPDB_USER_DELETE_USERNAME, (const char *)user.c_str());
-    if (SQLITE_OK !=
-        sqlite3_exec(gpobj->m_db_vscp_daemon, sql, NULL, NULL, &zErrMsg)) {
-        sqlite3_free(sql);
-        syslog(LOG_ERR,
-               "Delete user: Unable to delete "
-               "user in db. [%s] Err=%s\n",
-               sql,
-               zErrMsg);
-        pthread_mutex_unlock(&gpobj->m_db_vscp_configMutex);
-        return false;
-    }
+    // char *sql =
+    //   sqlite3_mprintf(VSCPDB_USER_DELETE_USERNAME, (const char *)user.c_str());
+    // if (SQLITE_OK !=
+    //     sqlite3_exec(gpobj->m_db_vscp_daemon, sql, NULL, NULL, &zErrMsg)) {
+    //     sqlite3_free(sql);
+    //     syslog(LOG_ERR,
+    //            "Delete user: Unable to delete "
+    //            "user in db. [%s] Err=%s\n",
+    //            sql,
+    //            zErrMsg);
+    //     pthread_mutex_unlock(&gpobj->m_db_vscp_configMutex);
+    //     return false;
+    // }
 
-    pthread_mutex_unlock(&gpobj->m_db_vscp_configMutex);
-    sqlite3_free(sql);
+    // pthread_mutex_unlock(&gpobj->m_db_vscp_configMutex);
+    // sqlite3_free(sql);
 
-    // Remove also from internal table
-    m_userhashmap.erase(user);
+    // // Remove also from internal table
+    // m_userhashmap.erase(user);
 
     return true;
 }

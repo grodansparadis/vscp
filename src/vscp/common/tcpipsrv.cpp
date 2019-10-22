@@ -700,17 +700,6 @@ tcpipClientObj::CommandHandler(std::string &strCommand)
     }
 
 
-    //*********************************************************************
-    //                             Variable
-    //*********************************************************************
-
-    else if (m_pClientItem->CommandStartsWith(("variable")) ||
-             m_pClientItem->CommandStartsWith(("var"))) {
-        if (checkPrivilege(4)) {
-            handleClientVariable();
-        }
-    }
-
 
     //*********************************************************************
     //                         Client/interface
@@ -754,9 +743,9 @@ tcpipClientObj::CommandHandler(std::string &strCommand)
     //                                Table
     //*********************************************************************
 
-    else if (m_pClientItem->CommandStartsWith(("table"))) {
-        handleClientTable();
-    }
+    // else if (m_pClientItem->CommandStartsWith(("table"))) {
+    //     handleClientTable();
+    // }
 
     //*********************************************************************
     //                                What?
@@ -905,19 +894,19 @@ tcpipClientObj::handleClientMeasurement(void)
     // a variable (that must be numeric)
     if ('$' == str[0]) {
 
-        CVariable variable;
-        str = str.substr(str.length() - 1); // get variable name
-        vscp_makeUpper(str);
+        // CVariable variable;
+        // str = str.substr(str.length() - 1); // get variable name
+        // vscp_makeUpper(str);
 
-        if (m_pObj->m_variables.find(
-              str, m_pClientItem->m_pUserItem, variable)) {
-            write(MSG_VARIABLE_NOT_DEFINED, strlen(MSG_VARIABLE_NOT_DEFINED));
-            return;
-        }
+        // if (m_pObj->m_variables.find(
+        //       str, m_pClientItem->m_pUserItem, variable)) {
+        //     write(MSG_VARIABLE_NOT_DEFINED, strlen(MSG_VARIABLE_NOT_DEFINED));
+        //     return;
+        // }
 
-        // get the value
-        str   = variable.getValue();
-        value = std::stod(str);
+        // // get the value
+        // str   = variable.getValue();
+        // value = std::stod(str);
 
     } else {
         value = std::stod(str);
@@ -1292,29 +1281,29 @@ tcpipClientObj::handleClientSend(void)
             event.head = vscp_readStringValue(str);
         } else {
 
-            CVariable variable;
-            bVariable = true; // Yes this is a variable send
+            // CVariable variable;
+            // bVariable = true; // Yes this is a variable send
 
-            // Get the name of the variable
-            nameVariable = str.substr(str.length() - 1);
-            vscp_makeUpper(nameVariable);
+            // // Get the name of the variable
+            // nameVariable = str.substr(str.length() - 1);
+            // vscp_makeUpper(nameVariable);
 
-            if (m_pObj->m_variables.find(
-                  nameVariable, m_pClientItem->m_pUserItem, variable)) {
-                write(MSG_VARIABLE_NOT_DEFINED,
-                      strlen(MSG_VARIABLE_NOT_DEFINED));
-                return;
-            }
+            // if (m_pObj->m_variables.find(
+            //       nameVariable, m_pClientItem->m_pUserItem, variable)) {
+            //     write(MSG_VARIABLE_NOT_DEFINED,
+            //           strlen(MSG_VARIABLE_NOT_DEFINED));
+            //     return;
+            // }
 
-            // Must be event type
-            if (VSCP_DAEMON_VARIABLE_CODE_EVENT != variable.getType()) {
-                write(MSG_VARIABLE_MUST_BE_EVENT_TYPE,
-                      strlen(MSG_VARIABLE_MUST_BE_EVENT_TYPE));
-                return;
-            }
+            // // Must be event type
+            // if (VSCP_DAEMON_VARIABLE_CODE_EVENT != variable.getType()) {
+            //     write(MSG_VARIABLE_MUST_BE_EVENT_TYPE,
+            //           strlen(MSG_VARIABLE_MUST_BE_EVENT_TYPE));
+            //     return;
+            // }
 
-            // Get the event
-            variable.getValue(&event);
+            // // Get the event
+            // variable.getValue(&event);
         }
     } else {
         write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
@@ -2240,105 +2229,105 @@ tcpipClientObj::handleClientInterface_Close(void)
 // handleClientTable
 //
 
-void
-tcpipClientObj::handleClientTable(void)
-{
-    // Must be connected
-    if (STCP_CONN_STATE_CONNECTED != m_conn->conn_state) return;
+// void
+// tcpipClientObj::handleClientTable(void)
+// {
+//     // Must be connected
+//     if (STCP_CONN_STATE_CONNECTED != m_conn->conn_state) return;
 
-    vscp_trim(m_pClientItem->m_currentCommand);
+//     vscp_trim(m_pClientItem->m_currentCommand);
 
-    // List tables or table definition
-    if (m_pClientItem->CommandStartsWith(("list"))) {
-        handleClientTable_List();
-    }
-    // Get rawtable content
-    else if (m_pClientItem->CommandStartsWith(("getraw"))) {
-        handleClientTable_GetRaw();
-    }
-    // Get table content
-    else if (m_pClientItem->CommandStartsWith(("get"))) {
-        handleClientTable_Get();
-    }
-    // Delete table data
-    else if (m_pClientItem->CommandStartsWith(("clear"))) {
-        handleClientTable_Clear();
-    }
-    // New table (create)
-    else if (m_pClientItem->CommandStartsWith(("create"))) {
-        handleClientTable_Create();
-    }
-    // Delete table
-    else if (m_pClientItem->CommandStartsWith(("delete")) ||
-             m_pClientItem->CommandStartsWith(("del"))) {
-        handleClientTable_Delete();
-    }
-    // Log data use SQL
-    else if (m_pClientItem->CommandStartsWith(("logsql"))) {
-        handleClientTable_LogSQL();
-    }
-    // Log data
-    else if (m_pClientItem->CommandStartsWith(("log"))) {
-        handleClientTable_Log();
-    }
-    // Get number of records
-    else if (m_pClientItem->CommandStartsWith(("records"))) {
-        handleClientTable_NumberOfRecords();
-    }
-    // Get first date
-    else if (m_pClientItem->CommandStartsWith(("firstdate"))) {
-        handleClientTable_FirstDate();
-    }
-    // Get last date
-    else if (m_pClientItem->CommandStartsWith(("lastdate"))) {
-        handleClientTable_FirstDate();
-    }
-    // Get sum
-    else if (m_pClientItem->CommandStartsWith(("sum"))) {
-        handleClientTable_Sum();
-    }
-    // Get min
-    else if (m_pClientItem->CommandStartsWith(("min"))) {
-        handleClientTable_Min();
-    }
-    // Get max
-    else if (m_pClientItem->CommandStartsWith(("max"))) {
-        handleClientTable_Min();
-    }
-    // Get average
-    else if (m_pClientItem->CommandStartsWith(("average"))) {
-        handleClientTable_Average();
-    }
-    // Get median
-    else if (m_pClientItem->CommandStartsWith(("median"))) {
-        handleClientTable_Median();
-    }
-    // Get stddev
-    else if (m_pClientItem->CommandStartsWith(("stddev"))) {
-        handleClientTable_StdDev();
-    }
-    // Get variance
-    else if (m_pClientItem->CommandStartsWith(("variance"))) {
-        handleClientTable_Variance();
-    }
-    // Get mode
-    else if (m_pClientItem->CommandStartsWith(("mode"))) {
-        handleClientTable_Mode();
-    }
-    // Get lowerq
-    else if (m_pClientItem->CommandStartsWith(("lowerq"))) {
-        handleClientTable_LowerQ();
-    }
-    // Get upperq
-    else if (m_pClientItem->CommandStartsWith(("upperq"))) {
-        handleClientTable_UpperQ();
-    }
+//     // List tables or table definition
+//     if (m_pClientItem->CommandStartsWith(("list"))) {
+//         handleClientTable_List();
+//     }
+//     // Get rawtable content
+//     else if (m_pClientItem->CommandStartsWith(("getraw"))) {
+//         handleClientTable_GetRaw();
+//     }
+//     // Get table content
+//     else if (m_pClientItem->CommandStartsWith(("get"))) {
+//         handleClientTable_Get();
+//     }
+//     // Delete table data
+//     else if (m_pClientItem->CommandStartsWith(("clear"))) {
+//         handleClientTable_Clear();
+//     }
+//     // New table (create)
+//     else if (m_pClientItem->CommandStartsWith(("create"))) {
+//         handleClientTable_Create();
+//     }
+//     // Delete table
+//     else if (m_pClientItem->CommandStartsWith(("delete")) ||
+//              m_pClientItem->CommandStartsWith(("del"))) {
+//         handleClientTable_Delete();
+//     }
+//     // Log data use SQL
+//     else if (m_pClientItem->CommandStartsWith(("logsql"))) {
+//         handleClientTable_LogSQL();
+//     }
+//     // Log data
+//     else if (m_pClientItem->CommandStartsWith(("log"))) {
+//         handleClientTable_Log();
+//     }
+//     // Get number of records
+//     else if (m_pClientItem->CommandStartsWith(("records"))) {
+//         handleClientTable_NumberOfRecords();
+//     }
+//     // Get first date
+//     else if (m_pClientItem->CommandStartsWith(("firstdate"))) {
+//         handleClientTable_FirstDate();
+//     }
+//     // Get last date
+//     else if (m_pClientItem->CommandStartsWith(("lastdate"))) {
+//         handleClientTable_FirstDate();
+//     }
+//     // Get sum
+//     else if (m_pClientItem->CommandStartsWith(("sum"))) {
+//         handleClientTable_Sum();
+//     }
+//     // Get min
+//     else if (m_pClientItem->CommandStartsWith(("min"))) {
+//         handleClientTable_Min();
+//     }
+//     // Get max
+//     else if (m_pClientItem->CommandStartsWith(("max"))) {
+//         handleClientTable_Min();
+//     }
+//     // Get average
+//     else if (m_pClientItem->CommandStartsWith(("average"))) {
+//         handleClientTable_Average();
+//     }
+//     // Get median
+//     else if (m_pClientItem->CommandStartsWith(("median"))) {
+//         handleClientTable_Median();
+//     }
+//     // Get stddev
+//     else if (m_pClientItem->CommandStartsWith(("stddev"))) {
+//         handleClientTable_StdDev();
+//     }
+//     // Get variance
+//     else if (m_pClientItem->CommandStartsWith(("variance"))) {
+//         handleClientTable_Variance();
+//     }
+//     // Get mode
+//     else if (m_pClientItem->CommandStartsWith(("mode"))) {
+//         handleClientTable_Mode();
+//     }
+//     // Get lowerq
+//     else if (m_pClientItem->CommandStartsWith(("lowerq"))) {
+//         handleClientTable_LowerQ();
+//     }
+//     // Get upperq
+//     else if (m_pClientItem->CommandStartsWith(("upperq"))) {
+//         handleClientTable_UpperQ();
+//     }
 
-    // unrecognised
-    else {
-        write(MSG_UNKNOWN_COMMAND, strlen(MSG_UNKNOWN_COMMAND));
-    }
-}
+//     // unrecognised
+//     else {
+//         write(MSG_UNKNOWN_COMMAND, strlen(MSG_UNKNOWN_COMMAND));
+//     }
+// }
 
 ///////////////////////////////////////////////////////////////////////////////
 // handleClientTable_Create
@@ -2353,319 +2342,319 @@ tcpipClientObj::handleClientTable(void)
 // Table name must be unique
 //
 
-void
-tcpipClientObj::handleClientTable_Create(void)
-{
-    std::string str;
-    std::string strName;
-    bool bEnable       = true;
-    bool bInMemory     = false;
-    vscpTableType type = VSCP_TABLE_DYNAMIC;
-    uint32_t size      = 0;
-    std::string strOwner;
-    uint16_t rights;
-    std::string strTitle;
-    std::string strXname;
-    std::string strYname;
-    std::string strNote;
-    std::string strSqlCreate;
-    std::string strSqlInsert;
-    std::string strSqlDelete;
-    std::string strDescription;
-    uint8_t vscpclass;
-    uint8_t vscptype;
-    uint8_t sensorindex = 0;
-    uint8_t unit        = 0;
-    uint8_t zone        = 255;
-    uint8_t subzone     = 255;
+// void
+// tcpipClientObj::handleClientTable_Create(void)
+// {
+//     std::string str;
+//     std::string strName;
+//     bool bEnable       = true;
+//     bool bInMemory     = false;
+//     vscpTableType type = VSCP_TABLE_DYNAMIC;
+//     uint32_t size      = 0;
+//     std::string strOwner;
+//     uint16_t rights;
+//     std::string strTitle;
+//     std::string strXname;
+//     std::string strYname;
+//     std::string strNote;
+//     std::string strSqlCreate;
+//     std::string strSqlInsert;
+//     std::string strSqlDelete;
+//     std::string strDescription;
+//     uint8_t vscpclass;
+//     uint8_t vscptype;
+//     uint8_t sensorindex = 0;
+//     uint8_t unit        = 0;
+//     uint8_t zone        = 255;
+//     uint8_t subzone     = 255;
 
-    // Must be connected
-    if (STCP_CONN_STATE_CONNECTED != m_conn->conn_state) return;
+//     // Must be connected
+//     if (STCP_CONN_STATE_CONNECTED != m_conn->conn_state) return;
 
-    if (!m_pObj->m_userTableObjects.createTableFromXML(
-          m_pClientItem->m_currentCommand)) {
-        write(MSG_FAILED_TO_CREATE_TABLE, strlen(MSG_FAILED_TO_CREATE_TABLE));
-        return;
-    }
+//     if (!m_pObj->m_userTableObjects.createTableFromXML(
+//           m_pClientItem->m_currentCommand)) {
+//         write(MSG_FAILED_TO_CREATE_TABLE, strlen(MSG_FAILED_TO_CREATE_TABLE));
+//         return;
+//     }
 
-    // All went well
-    write(MSG_OK, strlen(MSG_OK));
-}
+//     // All went well
+//     write(MSG_OK, strlen(MSG_OK));
+// }
 
 ///////////////////////////////////////////////////////////////////////////////
 // handleClientTable_Delete
 //
 
-void
-tcpipClientObj::handleClientTable_Delete(void)
-{
-    std::string strTable;
-    bool bRemoveFile = false;
+// void
+// tcpipClientObj::handleClientTable_Delete(void)
+// {
+//     std::string strTable;
+//     bool bRemoveFile = false;
 
-    // Must be connected
-    if (STCP_CONN_STATE_CONNECTED != m_conn->conn_state) return;
+//     // Must be connected
+//     if (STCP_CONN_STATE_CONNECTED != m_conn->conn_state) return;
 
-    std::deque<std::string> tokens;
-    vscp_split(tokens, m_pClientItem->m_currentCommand, " ");
+//     std::deque<std::string> tokens;
+//     vscp_split(tokens, m_pClientItem->m_currentCommand, " ");
 
-    // Get table name
-    if (!tokens.empty()) {
-        strTable = tokens.front();
-        tokens.pop_front();
-        vscp_trim(strTable);
-    } else {
-        // Problems: A table name must be given
-        write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-        return;
-    }
+//     // Get table name
+//     if (!tokens.empty()) {
+//         strTable = tokens.front();
+//         tokens.pop_front();
+//         vscp_trim(strTable);
+//     } else {
+//         // Problems: A table name must be given
+//         write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
+//         return;
+//     }
 
-    // Should table db be removed
-    if (!tokens.empty()) {
-        std::string str = tokens.front();
-        tokens.pop_front();
-        if (0 == vscp_strcasecmp(str.c_str(), "true")) {
-            bRemoveFile = true;
-        }
-    }
+//     // Should table db be removed
+//     if (!tokens.empty()) {
+//         std::string str = tokens.front();
+//         tokens.pop_front();
+//         if (0 == vscp_strcasecmp(str.c_str(), "true")) {
+//             bRemoveFile = true;
+//         }
+//     }
 
-    // Remove the table from the internal system
-    if (!m_pObj->m_userTableObjects.removeTable(strTable), bRemoveFile) {
-        // Failed
-        write(MSG_FAILED_TO_REMOVE_TABLE, strlen(MSG_FAILED_TO_REMOVE_TABLE));
-    }
+//     // Remove the table from the internal system
+//     if (!m_pObj->m_userTableObjects.removeTable(strTable), bRemoveFile) {
+//         // Failed
+//         write(MSG_FAILED_TO_REMOVE_TABLE, strlen(MSG_FAILED_TO_REMOVE_TABLE));
+//     }
 
-    write(MSG_OK, strlen(MSG_OK));
-}
+//     write(MSG_OK, strlen(MSG_OK));
+// }
 
 ///////////////////////////////////////////////////////////////////////////////
 // handleClientTable_List
 //
 
-void
-tcpipClientObj::handleClientTable_List(void)
-{
-    // Must be connected
-    if (STCP_CONN_STATE_CONNECTED != m_conn->conn_state) return;
+// void
+// tcpipClientObj::handleClientTable_List(void)
+// {
+//     // Must be connected
+//     if (STCP_CONN_STATE_CONNECTED != m_conn->conn_state) return;
 
-    vscp_trim(m_pClientItem->m_currentCommand);
+//     vscp_trim(m_pClientItem->m_currentCommand);
 
-    if (0 == m_pClientItem->m_currentCommand.length()) {
+//     if (0 == m_pClientItem->m_currentCommand.length()) {
 
-        // list without argument - list all defined tables
-        std::deque<std::string> arrayTblNames;
-        pthread_mutex_lock(&m_pObj->m_mutexUserTables);
-        if (m_pObj->m_userTableObjects.getTableNames(arrayTblNames)) {
+//         // list without argument - list all defined tables
+//         std::deque<std::string> arrayTblNames;
+//         pthread_mutex_lock(&m_pObj->m_mutexUserTables);
+//         if (m_pObj->m_userTableObjects.getTableNames(arrayTblNames)) {
 
-            // OK
+//             // OK
 
-            std::string str =
-              vscp_str_format("%zu rows \r\n", arrayTblNames.size());
-            write((const char *)str.c_str(), strlen((const char *)str.c_str()));
+//             std::string str =
+//               vscp_str_format("%zu rows \r\n", arrayTblNames.size());
+//             write((const char *)str.c_str(), strlen((const char *)str.c_str()));
 
-            for (int i = 0; i < arrayTblNames.size(); i++) {
+//             for (int i = 0; i < arrayTblNames.size(); i++) {
 
-                CVSCPTable *pTable =
-                  m_pObj->m_userTableObjects.getTable(arrayTblNames[i]);
+//                 CVSCPTable *pTable =
+//                   m_pObj->m_userTableObjects.getTable(arrayTblNames[i]);
 
-                str = arrayTblNames[i];
-                str += (";");
-                if (NULL != pTable) {
+//                 str = arrayTblNames[i];
+//                 str += (";");
+//                 if (NULL != pTable) {
 
-                    switch (pTable->getType()) {
-                        case VSCP_TABLE_DYNAMIC:
-                            str += ("dynamic");
-                            break;
+//                     switch (pTable->getType()) {
+//                         case VSCP_TABLE_DYNAMIC:
+//                             str += ("dynamic");
+//                             break;
 
-                        case VSCP_TABLE_STATIC:
-                            str += ("static");
-                            break;
+//                         case VSCP_TABLE_STATIC:
+//                             str += ("static");
+//                             break;
 
-                        case VSCP_TABLE_MAX:
-                            str += ("max");
-                            break;
+//                         case VSCP_TABLE_MAX:
+//                             str += ("max");
+//                             break;
 
-                        default:
-                            str += ("Error: Invalid type");
-                            break;
-                    }
-                }
-                str += (";");
-                if (NULL != pTable) {
-                    str += pTable->getDescription();
-                }
-                str += ("\r\n");
-                write((const char *)str.c_str(),
-                      strlen((const char *)str.c_str()));
-            }
+//                         default:
+//                             str += ("Error: Invalid type");
+//                             break;
+//                     }
+//                 }
+//                 str += (";");
+//                 if (NULL != pTable) {
+//                     str += pTable->getDescription();
+//                 }
+//                 str += ("\r\n");
+//                 write((const char *)str.c_str(),
+//                       strlen((const char *)str.c_str()));
+//             }
 
-            write(MSG_OK, strlen(MSG_OK));
+//             write(MSG_OK, strlen(MSG_OK));
 
-        } else {
+//         } else {
 
-            // Failed
-            write(MSG_FAILED_GET_TABLE_NAMES,
-                  strlen(MSG_FAILED_GET_TABLE_NAMES));
-        }
-        pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
-    } else {
+//             // Failed
+//             write(MSG_FAILED_GET_TABLE_NAMES,
+//                   strlen(MSG_FAILED_GET_TABLE_NAMES));
+//         }
+//         pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
+//     } else {
 
-        // list with argument - list info about table given as argument
-        // if table name is followed by another argument 'xml' the table should
-        // be in XML format.
+//         // list with argument - list info about table given as argument
+//         // if table name is followed by another argument 'xml' the table should
+//         // be in XML format.
 
-        bool bXmlFormat = false;
-        std::deque<std::string> tokens;
-        vscp_split(tokens, m_pClientItem->m_currentCommand, " ");
+//         bool bXmlFormat = false;
+//         std::deque<std::string> tokens;
+//         vscp_split(tokens, m_pClientItem->m_currentCommand, " ");
 
-        if (tokens.empty()) {
-            write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-            return;
-        }
+//         if (tokens.empty()) {
+//             write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
+//             return;
+//         }
 
-        std::string tblName = tokens.front();
-        tokens.pop_front();
+//         std::string tblName = tokens.front();
+//         tokens.pop_front();
 
-        if (!tokens.empty()) {
-            std::string str = tokens.front();
-            tokens.pop_front();
-            if (0 == strcasecmp(str.c_str(), "XML")) {
-                bXmlFormat = true; // Output XML format
-            }
-        }
+//         if (!tokens.empty()) {
+//             std::string str = tokens.front();
+//             tokens.pop_front();
+//             if (0 == strcasecmp(str.c_str(), "XML")) {
+//                 bXmlFormat = true; // Output XML format
+//             }
+//         }
 
-        pthread_mutex_lock(&m_pObj->m_mutexUserTables);
+//         pthread_mutex_lock(&m_pObj->m_mutexUserTables);
 
-        CVSCPTable *pTable = m_pObj->m_userTableObjects.getTable(tblName);
-        if (NULL == pTable) {
-            // Failed
-            write(MSG_FAILED_UNKNOWN_TABLE, strlen(MSG_FAILED_UNKNOWN_TABLE));
-        } else {
+//         CVSCPTable *pTable = m_pObj->m_userTableObjects.getTable(tblName);
+//         if (NULL == pTable) {
+//             // Failed
+//             write(MSG_FAILED_UNKNOWN_TABLE, strlen(MSG_FAILED_UNKNOWN_TABLE));
+//         } else {
 
-            std::string str;
+//             std::string str;
 
-            if (bXmlFormat) {
-                str = "<table \r\n";
-            }
+//             if (bXmlFormat) {
+//                 str = "<table \r\n";
+//             }
 
-            str += "name=" + pTable->getTableName();
-            str += "\r\n";
+//             str += "name=" + pTable->getTableName();
+//             str += "\r\n";
 
-            str += "enabled=";
-            str += pTable->isEnabled() ? "true" : "false";
-            str += "\r\n";
+//             str += "enabled=";
+//             str += pTable->isEnabled() ? "true" : "false";
+//             str += "\r\n";
 
-            str += "type=";
-            switch (pTable->getType()) {
-                case VSCP_TABLE_DYNAMIC:
-                    str += "dynamic";
-                    break;
+//             str += "type=";
+//             switch (pTable->getType()) {
+//                 case VSCP_TABLE_DYNAMIC:
+//                     str += "dynamic";
+//                     break;
 
-                case VSCP_TABLE_STATIC:
-                    str += "static";
-                    break;
+//                 case VSCP_TABLE_STATIC:
+//                     str += "static";
+//                     break;
 
-                case VSCP_TABLE_MAX:
-                    str += "max";
-                    break;
+//                 case VSCP_TABLE_MAX:
+//                     str += "max";
+//                     break;
 
-                default:
-                    str += "Error: Invalid type";
-                    break;
-            }
-            str += "\r\n";
+//                 default:
+//                     str += "Error: Invalid type";
+//                     break;
+//             }
+//             str += "\r\n";
 
-            str += "bmemory=";
-            str += pTable->isInMemory() ? "true" : "false";
-            str += "\r\n";
+//             str += "bmemory=";
+//             str += pTable->isInMemory() ? "true" : "false";
+//             str += "\r\n";
 
-            str += "size=";
-            str += vscp_str_format("%lu ", (unsigned long)pTable->getSize());
-            str += "\r\n";
+//             str += "size=";
+//             str += vscp_str_format("%lu ", (unsigned long)pTable->getSize());
+//             str += "\r\n";
 
-            str += "owner=";
-            CUserItem *pUserItem = pTable->getUserItem();
-            if (NULL == pUserItem) {
-                str += "ERROR";
-            } else {
-                str += pUserItem->getUserName();
-            }
-            str += "\r\n";
+//             str += "owner=";
+//             CUserItem *pUserItem = pTable->getUserItem();
+//             if (NULL == pUserItem) {
+//                 str += "ERROR";
+//             } else {
+//                 str += pUserItem->getUserName();
+//             }
+//             str += "\r\n";
 
-            str += "permission=";
-            str += vscp_str_format("0x%0X ", (int)pTable->getRights());
-            str += "\r\n";
+//             str += "permission=";
+//             str += vscp_str_format("0x%0X ", (int)pTable->getRights());
+//             str += "\r\n";
 
-            str += "description=";
-            str += pTable->getDescription();
-            str += "\r\n";
+//             str += "description=";
+//             str += pTable->getDescription();
+//             str += "\r\n";
 
-            str += "xname=";
-            str += pTable->getLabelX();
-            str += "\r\n";
+//             str += "xname=";
+//             str += pTable->getLabelX();
+//             str += "\r\n";
 
-            str += "yname=";
-            str += pTable->getLabelY();
-            str += ("\r\n");
+//             str += "yname=";
+//             str += pTable->getLabelY();
+//             str += ("\r\n");
 
-            str += "title=";
-            str += pTable->getTitle();
-            str += "\r\n";
+//             str += "title=";
+//             str += pTable->getTitle();
+//             str += "\r\n";
 
-            str += "note=";
-            str += pTable->getNote();
-            str += "\r\n";
+//             str += "note=";
+//             str += pTable->getNote();
+//             str += "\r\n";
 
-            str += "vscp-class=";
-            str += vscp_str_format("%d", (int)pTable->getVSCPClass());
-            str += "\r\n";
+//             str += "vscp-class=";
+//             str += vscp_str_format("%d", (int)pTable->getVSCPClass());
+//             str += "\r\n";
 
-            str += "vscp-type=";
-            str += vscp_str_format("%d", (int)pTable->getVSCPType());
-            str += "\r\n";
+//             str += "vscp-type=";
+//             str += vscp_str_format("%d", (int)pTable->getVSCPType());
+//             str += "\r\n";
 
-            str += "vscp-sensor-index=";
-            str += vscp_str_format("%d", (int)pTable->getVSCPSensorIndex());
-            str += ("\r\n");
+//             str += "vscp-sensor-index=";
+//             str += vscp_str_format("%d", (int)pTable->getVSCPSensorIndex());
+//             str += ("\r\n");
 
-            str += "vscp-unit=";
-            str += vscp_str_format("%d", (int)pTable->getVSCPUnit());
-            str += "\r\n";
+//             str += "vscp-unit=";
+//             str += vscp_str_format("%d", (int)pTable->getVSCPUnit());
+//             str += "\r\n";
 
-            str += "vscp-zone=";
-            str += vscp_str_format("%d", (int)pTable->getVSCPZone());
-            str += "\r\n";
+//             str += "vscp-zone=";
+//             str += vscp_str_format("%d", (int)pTable->getVSCPZone());
+//             str += "\r\n";
 
-            str += "vscp-subzone=";
-            str += vscp_str_format("%d", (int)pTable->getVSCPSubZone());
-            str += "\r\n";
+//             str += "vscp-subzone=";
+//             str += vscp_str_format("%d", (int)pTable->getVSCPSubZone());
+//             str += "\r\n";
 
-            str += "vscp-create=";
-            str += pTable->getSQLCreate();
-            str += "\r\n";
+//             str += "vscp-create=";
+//             str += pTable->getSQLCreate();
+//             str += "\r\n";
 
-            str += "vscp-insert=";
-            str += pTable->getSQLInsert();
-            str += "\r\n";
+//             str += "vscp-insert=";
+//             str += pTable->getSQLInsert();
+//             str += "\r\n";
 
-            str += "vscp-delete=";
-            str += pTable->getSQLDelete();
-            str += "\r\n";
+//             str += "vscp-delete=";
+//             str += pTable->getSQLDelete();
+//             str += "\r\n";
 
-            if (bXmlFormat) {
-                str += "/> \r\n";
-                str = vscp_base64_std_encode(str);
-                str += "\r\n";
-            }
+//             if (bXmlFormat) {
+//                 str += "/> \r\n";
+//                 str = vscp_base64_std_encode(str);
+//                 str += "\r\n";
+//             }
 
-            // Send response
-            write((const char *)str.c_str(), strlen((const char *)str.c_str()));
+//             // Send response
+//             write((const char *)str.c_str(), strlen((const char *)str.c_str()));
 
-            // Tell user we are content with things.
-            write(MSG_OK, strlen(MSG_OK));
-        }
-        pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
-    }
-}
+//             // Tell user we are content with things.
+//             write(MSG_OK, strlen(MSG_OK));
+//         }
+//         pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
+//     }
+// }
 
 ///////////////////////////////////////////////////////////////////////////////
 // handleClientTable_Get
@@ -2673,133 +2662,133 @@ tcpipClientObj::handleClientTable_List(void)
 // get 'table-name' start end ["full"]
 //
 
-void
-tcpipClientObj::handleClientTable_Get(void)
-{
-    std::string strTable;
-    vscpdatetime start;
-    vscpdatetime end;
-    bool bAll = false;
+// void
+// tcpipClientObj::handleClientTable_Get(void)
+// {
+//     std::string strTable;
+//     vscpdatetime start;
+//     vscpdatetime end;
+//     bool bAll = false;
 
-    // Initialize date range to 'all'
-    start.set(("0000-01-01T00:00:00")); // The first date
-    end.set(("9999-12-31T23:59:59"));   // The last date
+//     // Initialize date range to 'all'
+//     start.set(("0000-01-01T00:00:00")); // The first date
+//     end.set(("9999-12-31T23:59:59"));   // The last date
 
-    // Must be connected
-    if (STCP_CONN_STATE_CONNECTED != m_conn->conn_state) return;
+//     // Must be connected
+//     if (STCP_CONN_STATE_CONNECTED != m_conn->conn_state) return;
 
-    vscp_trim(m_pClientItem->m_currentCommand);
+//     vscp_trim(m_pClientItem->m_currentCommand);
 
-    std::deque<std::string> tokens;
-    vscp_split(tokens, m_pClientItem->m_currentCommand, " ");
+//     std::deque<std::string> tokens;
+//     vscp_split(tokens, m_pClientItem->m_currentCommand, " ");
 
-    // Get table name
-    if (!tokens.empty()) {
-        strTable = tokens.front();
-        tokens.pop_front();
-        vscp_trim(strTable);
-    } else {
-        // Problems: A table name must be given
-        write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-        return;
-    }
+//     // Get table name
+//     if (!tokens.empty()) {
+//         strTable = tokens.front();
+//         tokens.pop_front();
+//         vscp_trim(strTable);
+//     } else {
+//         // Problems: A table name must be given
+//         write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
+//         return;
+//     }
 
-    // The start and end parameters must be present
+//     // The start and end parameters must be present
 
-    // start
-    if (!tokens.empty()) {
+//     // start
+//     if (!tokens.empty()) {
 
-        start.set(tokens.front());
-        tokens.pop_front();
+//         start.set(tokens.front());
+//         tokens.pop_front();
 
-        if (!start.isValid()) {
-            write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-            return;
-        }
+//         if (!start.isValid()) {
+//             write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
+//             return;
+//         }
 
-    } else {
-        // Problems: A start date must be given
-        write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-        return;
-    }
+//     } else {
+//         // Problems: A start date must be given
+//         write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
+//         return;
+//     }
 
-    // end
-    if (!tokens.empty()) {
+//     // end
+//     if (!tokens.empty()) {
 
-        end.set(tokens.front());
-        tokens.pop_front();
+//         end.set(tokens.front());
+//         tokens.pop_front();
 
-        if (!end.isValid()) {
-            write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-            return;
-        }
+//         if (!end.isValid()) {
+//             write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
+//             return;
+//         }
 
-    } else {
-        // Problems: An end date must be given
-        write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-        return;
-    }
+//     } else {
+//         // Problems: An end date must be given
+//         write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
+//         return;
+//     }
 
-    // "full" flag
-    if (!tokens.empty()) {
-        std::string str = tokens.front();
-        tokens.pop_front();
-        if (vscp_startsWith(vscp_upper(str), "FULL")) {
-            bAll = true;
-        }
-    }
+//     // "full" flag
+//     if (!tokens.empty()) {
+//         std::string str = tokens.front();
+//         tokens.pop_front();
+//         if (vscp_startsWith(vscp_upper(str), "FULL")) {
+//             bAll = true;
+//         }
+//     }
 
-    pthread_mutex_lock(&m_pObj->m_mutexUserTables);
+//     pthread_mutex_lock(&m_pObj->m_mutexUserTables);
 
-    CVSCPTable *pTable = m_pObj->m_userTableObjects.getTable(strTable);
-    if (NULL == pTable) {
-        // Failed
-        write(MSG_FAILED_UNKNOWN_TABLE, strlen(MSG_FAILED_UNKNOWN_TABLE));
+//     CVSCPTable *pTable = m_pObj->m_userTableObjects.getTable(strTable);
+//     if (NULL == pTable) {
+//         // Failed
+//         write(MSG_FAILED_UNKNOWN_TABLE, strlen(MSG_FAILED_UNKNOWN_TABLE));
 
-        pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
-        return;
-    }
+//         pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
+//         return;
+//     }
 
-    sqlite3_stmt *ppStmt;
-    if (!pTable->prepareRangeOfData(start, end, &ppStmt, bAll)) {
-        // Failed
-        write(MSG_FAILED_TO_PREPARE_TABLE, strlen(MSG_FAILED_TO_PREPARE_TABLE));
+//     sqlite3_stmt *ppStmt;
+//     if (!pTable->prepareRangeOfData(start, end, &ppStmt, bAll)) {
+//         // Failed
+//         write(MSG_FAILED_TO_PREPARE_TABLE, strlen(MSG_FAILED_TO_PREPARE_TABLE));
 
-        pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
-        return;
-    }
+//         pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
+//         return;
+//     }
 
-    std::string str;
-    std::deque<std::string> strArray;
-    while (pTable->getRowRangeOfData(ppStmt, str)) {
-        strArray.push_back(str);
-    }
+//     std::string str;
+//     std::deque<std::string> strArray;
+//     while (pTable->getRowRangeOfData(ppStmt, str)) {
+//         strArray.push_back(str);
+//     }
 
-    str = vscp_str_format(("%d rows.\r\n"), (int)strArray.size());
-    write((const char *)str.c_str(), strlen((const char *)str.c_str()));
+//     str = vscp_str_format(("%d rows.\r\n"), (int)strArray.size());
+//     write((const char *)str.c_str(), strlen((const char *)str.c_str()));
 
-    if (strArray.size()) {
-        for (int i = 0; i < strArray.size(); i++) {
-            str = strArray[i];
-            str += ("\r\n");
-            write((const char *)str.c_str(), strlen((const char *)str.c_str()));
-        }
-    }
+//     if (strArray.size()) {
+//         for (int i = 0; i < strArray.size(); i++) {
+//             str = strArray[i];
+//             str += ("\r\n");
+//             write((const char *)str.c_str(), strlen((const char *)str.c_str()));
+//         }
+//     }
 
-    if (!pTable->finalizeRangeOfData(ppStmt)) {
-        // Failed
-        write(MSG_FAILED_TO_FINALIZE_TABLE,
-              strlen(MSG_FAILED_TO_FINALIZE_TABLE));
+//     if (!pTable->finalizeRangeOfData(ppStmt)) {
+//         // Failed
+//         write(MSG_FAILED_TO_FINALIZE_TABLE,
+//               strlen(MSG_FAILED_TO_FINALIZE_TABLE));
 
-        pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
-        return;
-    }
+//         pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
+//         return;
+//     }
 
-    pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
+//     pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
 
-    // Everything is OK
-    write(MSG_OK, strlen(MSG_OK));
-}
+//     // Everything is OK
+//     write(MSG_OK, strlen(MSG_OK));
+// }
 
 ///////////////////////////////////////////////////////////////////////////////
 // handleClientTable_GetRaw
@@ -2807,123 +2796,123 @@ tcpipClientObj::handleClientTable_Get(void)
 // get 'table-name' start end ["full"]
 //
 
-void
-tcpipClientObj::handleClientTable_GetRaw(void)
-{
-    std::string strTable;
-    vscpdatetime start;
-    vscpdatetime end;
+// void
+// tcpipClientObj::handleClientTable_GetRaw(void)
+// {
+//     std::string strTable;
+//     vscpdatetime start;
+//     vscpdatetime end;
 
-    // Initialize date range to 'all'
-    start.set(("0000-01-01T00:00:00")); // The first date
-    end.set(("9999-12-31T23:59:59"));   // The last date
+//     // Initialize date range to 'all'
+//     start.set(("0000-01-01T00:00:00")); // The first date
+//     end.set(("9999-12-31T23:59:59"));   // The last date
 
-    // Must be connected
-    if (STCP_CONN_STATE_CONNECTED != m_conn->conn_state) return;
+//     // Must be connected
+//     if (STCP_CONN_STATE_CONNECTED != m_conn->conn_state) return;
 
-    vscp_trim(m_pClientItem->m_currentCommand);
+//     vscp_trim(m_pClientItem->m_currentCommand);
 
-    std::deque<std::string> tokens;
-    vscp_split(tokens, m_pClientItem->m_currentCommand, " ");
+//     std::deque<std::string> tokens;
+//     vscp_split(tokens, m_pClientItem->m_currentCommand, " ");
 
-    // Get table name
-    if (!tokens.empty()) {
-        strTable = tokens.front();
-        tokens.pop_front();
-        vscp_trim(strTable);
-    } else {
-        // Problems: A table name must be given
-        write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-        return;
-    }
+//     // Get table name
+//     if (!tokens.empty()) {
+//         strTable = tokens.front();
+//         tokens.pop_front();
+//         vscp_trim(strTable);
+//     } else {
+//         // Problems: A table name must be given
+//         write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
+//         return;
+//     }
 
-    // The start and end parameters must be present
+//     // The start and end parameters must be present
 
-    // start
-    if (!tokens.empty()) {
+//     // start
+//     if (!tokens.empty()) {
 
-        start.set(tokens.front());
-        tokens.pop_front();
+//         start.set(tokens.front());
+//         tokens.pop_front();
 
-        if (!start.isValid()) {
-            write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-            return;
-        }
+//         if (!start.isValid()) {
+//             write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
+//             return;
+//         }
 
-    } else {
-        // Problems: A start date must be given
-        write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-        return;
-    }
+//     } else {
+//         // Problems: A start date must be given
+//         write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
+//         return;
+//     }
 
-    // end
-    if (!tokens.empty()) {
+//     // end
+//     if (!tokens.empty()) {
 
-        end.set(tokens.front());
-        tokens.pop_front();
+//         end.set(tokens.front());
+//         tokens.pop_front();
 
-        if (!end.isValid()) {
-            write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-            return;
-        }
+//         if (!end.isValid()) {
+//             write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
+//             return;
+//         }
 
-    } else {
-        // Problems: An end date must be given
-        write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-        return;
-    }
+//     } else {
+//         // Problems: An end date must be given
+//         write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
+//         return;
+//     }
 
-    pthread_mutex_lock(&m_pObj->m_mutexUserTables);
+//     pthread_mutex_lock(&m_pObj->m_mutexUserTables);
 
-    CVSCPTable *pTable = m_pObj->m_userTableObjects.getTable(strTable);
-    if (NULL == pTable) {
-        // Failed
-        write(MSG_FAILED_UNKNOWN_TABLE, strlen(MSG_FAILED_UNKNOWN_TABLE));
+//     CVSCPTable *pTable = m_pObj->m_userTableObjects.getTable(strTable);
+//     if (NULL == pTable) {
+//         // Failed
+//         write(MSG_FAILED_UNKNOWN_TABLE, strlen(MSG_FAILED_UNKNOWN_TABLE));
 
-        pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
-        return;
-    }
+//         pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
+//         return;
+//     }
 
-    sqlite3_stmt *ppStmt;
-    if (!pTable->prepareRangeOfData(start, end, &ppStmt, true)) {
-        // Failed
-        write(MSG_FAILED_TO_PREPARE_TABLE, strlen(MSG_FAILED_TO_PREPARE_TABLE));
+//     sqlite3_stmt *ppStmt;
+//     if (!pTable->prepareRangeOfData(start, end, &ppStmt, true)) {
+//         // Failed
+//         write(MSG_FAILED_TO_PREPARE_TABLE, strlen(MSG_FAILED_TO_PREPARE_TABLE));
 
-        pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
-        return;
-    }
+//         pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
+//         return;
+//     }
 
-    std::string str;
-    std::deque<std::string> strArray;
-    while (pTable->getRowRangeOfDataRaw(ppStmt, str)) {
-        strArray.push_back(str);
-    }
+//     std::string str;
+//     std::deque<std::string> strArray;
+//     while (pTable->getRowRangeOfDataRaw(ppStmt, str)) {
+//         strArray.push_back(str);
+//     }
 
-    str = vscp_str_format(("%d rows.\r\n"), (int)strArray.size());
-    write((const char *)str.c_str(), strlen((const char *)str.c_str()));
+//     str = vscp_str_format(("%d rows.\r\n"), (int)strArray.size());
+//     write((const char *)str.c_str(), strlen((const char *)str.c_str()));
 
-    if (strArray.size()) {
-        for (int i = 0; i < strArray.size(); i++) {
-            str = strArray[i];
-            str += ("\r\n");
-            write((const char *)str.c_str(), strlen((const char *)str.c_str()));
-        }
-    }
+//     if (strArray.size()) {
+//         for (int i = 0; i < strArray.size(); i++) {
+//             str = strArray[i];
+//             str += ("\r\n");
+//             write((const char *)str.c_str(), strlen((const char *)str.c_str()));
+//         }
+//     }
 
-    if (!pTable->finalizeRangeOfData(ppStmt)) {
-        // Failed
-        write(MSG_FAILED_TO_FINALIZE_TABLE,
-              strlen(MSG_FAILED_TO_FINALIZE_TABLE));
+//     if (!pTable->finalizeRangeOfData(ppStmt)) {
+//         // Failed
+//         write(MSG_FAILED_TO_FINALIZE_TABLE,
+//               strlen(MSG_FAILED_TO_FINALIZE_TABLE));
 
-        pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
-        return;
-    }
+//         pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
+//         return;
+//     }
 
-    pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
+//     pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
 
-    // Everything is OK
-    write(MSG_OK, strlen(MSG_OK));
-}
+//     // Everything is OK
+//     write(MSG_OK, strlen(MSG_OK));
+// }
 
 ///////////////////////////////////////////////////////////////////////////////
 // handleClientTable_Clear
@@ -2931,88 +2920,88 @@ tcpipClientObj::handleClientTable_GetRaw(void)
 // clear 'table-name' [to,from]
 //
 
-void
-tcpipClientObj::handleClientTable_Clear(void)
-{
-    std::string strTable;
-    vscpdatetime start;
-    vscpdatetime end;
-    bool bClearAll = false;
+// void
+// tcpipClientObj::handleClientTable_Clear(void)
+// {
+//     std::string strTable;
+//     vscpdatetime start;
+//     vscpdatetime end;
+//     bool bClearAll = false;
 
-    // Initialize date range to 'all'
-    start.set(("0000-01-01T00:00:00")); // The first date
-    end.set(("9999-12-31T23:59:59"));   // The last date
+//     // Initialize date range to 'all'
+//     start.set(("0000-01-01T00:00:00")); // The first date
+//     end.set(("9999-12-31T23:59:59"));   // The last date
 
-    // Must be connected
-    if (STCP_CONN_STATE_CONNECTED != m_conn->conn_state) return;
+//     // Must be connected
+//     if (STCP_CONN_STATE_CONNECTED != m_conn->conn_state) return;
 
-    vscp_trim(m_pClientItem->m_currentCommand);
+//     vscp_trim(m_pClientItem->m_currentCommand);
 
-    std::deque<std::string> tokens;
-    vscp_split(tokens, m_pClientItem->m_currentCommand, " ");
+//     std::deque<std::string> tokens;
+//     vscp_split(tokens, m_pClientItem->m_currentCommand, " ");
 
-    // Get table name
-    if (!tokens.empty()) {
-        strTable = tokens.front();
-        tokens.pop_front();
-        vscp_trim(strTable);
-    } else {
-        // Problems: A table name must be given
-        write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-        return;
-    }
+//     // Get table name
+//     if (!tokens.empty()) {
+//         strTable = tokens.front();
+//         tokens.pop_front();
+//         vscp_trim(strTable);
+//     } else {
+//         // Problems: A table name must be given
+//         write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
+//         return;
+//     }
 
-    // get range if given
-    if (tokens.size() >= 2) {
+//     // get range if given
+//     if (tokens.size() >= 2) {
 
-        if (!tokens.empty() && !start.set(tokens.front())) {
-            write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-            return;
-        }
-        tokens.pop_front();
+//         if (!tokens.empty() && !start.set(tokens.front())) {
+//             write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
+//             return;
+//         }
+//         tokens.pop_front();
 
-        if (!tokens.empty() && !end.set(tokens.front())) {
-            write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-            return;
-        }
-        tokens.pop_front();
+//         if (!tokens.empty() && !end.set(tokens.front())) {
+//             write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
+//             return;
+//         }
+//         tokens.pop_front();
 
-    } else {
-        bClearAll = true;
-    }
+//     } else {
+//         bClearAll = true;
+//     }
 
-    pthread_mutex_lock(&m_pObj->m_mutexUserTables);
+//     pthread_mutex_lock(&m_pObj->m_mutexUserTables);
 
-    CVSCPTable *pTable = m_pObj->m_userTableObjects.getTable(strTable);
+//     CVSCPTable *pTable = m_pObj->m_userTableObjects.getTable(strTable);
 
-    if (NULL == pTable) {
-        // Failed
-        write(MSG_FAILED_UNKNOWN_TABLE, strlen(MSG_FAILED_UNKNOWN_TABLE));
+//     if (NULL == pTable) {
+//         // Failed
+//         write(MSG_FAILED_UNKNOWN_TABLE, strlen(MSG_FAILED_UNKNOWN_TABLE));
 
-        pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
-        return;
-    }
+//         pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
+//         return;
+//     }
 
-    if (bClearAll) {
-        if (!pTable->clearTable()) {
-            write(MSG_FAILED_TO_CLEAR_TABLE, strlen(MSG_FAILED_TO_CLEAR_TABLE));
-            pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
-            return;
-        }
-    } else {
-        if (!pTable->clearTableRange(start, end)) {
-            write(MSG_FAILED_TO_CLEAR_TABLE, strlen(MSG_FAILED_TO_CLEAR_TABLE));
-            pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
-            return;
-        }
-    }
+//     if (bClearAll) {
+//         if (!pTable->clearTable()) {
+//             write(MSG_FAILED_TO_CLEAR_TABLE, strlen(MSG_FAILED_TO_CLEAR_TABLE));
+//             pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
+//             return;
+//         }
+//     } else {
+//         if (!pTable->clearTableRange(start, end)) {
+//             write(MSG_FAILED_TO_CLEAR_TABLE, strlen(MSG_FAILED_TO_CLEAR_TABLE));
+//             pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
+//             return;
+//         }
+//     }
 
-    pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
+//     pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
 
-    write(MSG_OK, strlen(MSG_OK));
+//     write(MSG_OK, strlen(MSG_OK));
 
-    return;
-}
+//     return;
+// }
 
 ///////////////////////////////////////////////////////////////////////////////
 // handleClientTable_Log
@@ -3020,157 +3009,157 @@ tcpipClientObj::handleClientTable_Clear(void)
 // log table-name value [datetime]
 //
 
-void
-tcpipClientObj::handleClientTable_Log(void)
-{
-    std::string strTable;
-    double value;
-    vscpdatetime dt;
+// void
+// tcpipClientObj::handleClientTable_Log(void)
+// {
+//     std::string strTable;
+//     double value;
+//     vscpdatetime dt;
 
-    // Must be connected
-    if (STCP_CONN_STATE_CONNECTED != m_conn->conn_state) return;
+//     // Must be connected
+//     if (STCP_CONN_STATE_CONNECTED != m_conn->conn_state) return;
 
-    vscp_trim(m_pClientItem->m_currentCommand);
+//     vscp_trim(m_pClientItem->m_currentCommand);
 
-    std::deque<std::string> tokens;
-    vscp_split(tokens, m_pClientItem->m_currentCommand, " ");
+//     std::deque<std::string> tokens;
+//     vscp_split(tokens, m_pClientItem->m_currentCommand, " ");
 
-    // Get table name
-    if (!tokens.empty()) {
-        strTable = tokens.front();
-        tokens.pop_front();
-        vscp_trim(strTable);
-    } else {
-        // Problems: A table name must be given
-        write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-        return;
-    }
+//     // Get table name
+//     if (!tokens.empty()) {
+//         strTable = tokens.front();
+//         tokens.pop_front();
+//         vscp_trim(strTable);
+//     } else {
+//         // Problems: A table name must be given
+//         write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
+//         return;
+//     }
 
-    // Get the value
-    if (!tokens.empty()) {
-        std::string str = tokens.front();
-        tokens.pop_front();
-        value = std::stod(str);
-    } else {
-        // Problems: A value must be given
-        write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-        return;
-    }
+//     // Get the value
+//     if (!tokens.empty()) {
+//         std::string str = tokens.front();
+//         tokens.pop_front();
+//         value = std::stod(str);
+//     } else {
+//         // Problems: A value must be given
+//         write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
+//         return;
+//     }
 
-    // Get the datetime if its there
-    if (!tokens.empty()) {
+//     // Get the datetime if its there
+//     if (!tokens.empty()) {
 
-        uint32_t ms = 0;
+//         uint32_t ms = 0;
 
-        std::string str = tokens.front();
-        tokens.pop_front();
-        vscp_trim(str);
+//         std::string str = tokens.front();
+//         tokens.pop_front();
+//         vscp_trim(str);
 
-        if (!dt.set(str)) {
-            // Problems: The value is not in a valid format
-            write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-            return;
-        }
+//         if (!dt.set(str)) {
+//             // Problems: The value is not in a valid format
+//             write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
+//             return;
+//         }
 
-        // Get possible millisecond part
-        /*  TODO  Remove????
-        str = str.AfterFirst('.');
-        vscp_trim( str );
-        if ( str.length() ) {
-            ms = vscp_readStringValue( str );
-        }
+//         // Get possible millisecond part
+//         /*  TODO  Remove????
+//         str = str.AfterFirst('.');
+//         vscp_trim( str );
+//         if ( str.length() ) {
+//             ms = vscp_readStringValue( str );
+//         }
 
-        dt.SetMillisecond( ms );
-        */
-    } else {
-        // Set to now
-        dt = vscpdatetime::UTCNow();
-    }
+//         dt.SetMillisecond( ms );
+//         */
+//     } else {
+//         // Set to now
+//         dt = vscpdatetime::UTCNow();
+//     }
 
-    pthread_mutex_lock(&m_pObj->m_mutexUserTables);
+//     pthread_mutex_lock(&m_pObj->m_mutexUserTables);
 
-    CVSCPTable *pTable = m_pObj->m_userTableObjects.getTable(strTable);
+//     CVSCPTable *pTable = m_pObj->m_userTableObjects.getTable(strTable);
 
-    if (NULL == pTable) {
-        // Failed
-        write(MSG_FAILED_UNKNOWN_TABLE, strlen(MSG_FAILED_UNKNOWN_TABLE));
+//     if (NULL == pTable) {
+//         // Failed
+//         write(MSG_FAILED_UNKNOWN_TABLE, strlen(MSG_FAILED_UNKNOWN_TABLE));
 
-        pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
-        return;
-    }
+//         pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
+//         return;
+//     }
 
-    // Log data
-    if (!pTable->logData(dt, value)) {
-        pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
-        write(MSG_FAILED_TO_WRITE_TABLE, strlen(MSG_FAILED_TO_WRITE_TABLE));
-        return;
-    }
+//     // Log data
+//     if (!pTable->logData(dt, value)) {
+//         pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
+//         write(MSG_FAILED_TO_WRITE_TABLE, strlen(MSG_FAILED_TO_WRITE_TABLE));
+//         return;
+//     }
 
-    pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
+//     pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
 
-    write(MSG_OK, strlen(MSG_OK));
-}
+//     write(MSG_OK, strlen(MSG_OK));
+// }
 
 ///////////////////////////////////////////////////////////////////////////////
 // handleClientTable_LogSQL
 //
 
-void
-tcpipClientObj::handleClientTable_LogSQL(void)
-{
-    std::string strTable, strSQL;
+// void
+// tcpipClientObj::handleClientTable_LogSQL(void)
+// {
+//     std::string strTable, strSQL;
 
-    // Must be connected
-    if (STCP_CONN_STATE_CONNECTED != m_conn->conn_state) return;
+//     // Must be connected
+//     if (STCP_CONN_STATE_CONNECTED != m_conn->conn_state) return;
 
-    vscp_trim(m_pClientItem->m_currentCommand);
+//     vscp_trim(m_pClientItem->m_currentCommand);
 
-    std::deque<std::string> tokens;
-    vscp_split(tokens, m_pClientItem->m_currentCommand, " ");
+//     std::deque<std::string> tokens;
+//     vscp_split(tokens, m_pClientItem->m_currentCommand, " ");
 
-    // Get table name
-    if (!tokens.empty()) {
-        strTable = tokens.front();
-        tokens.pop_front();
-        vscp_trim(strTable);
-    } else {
-        // Problems: A table name must be given
-        write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-        return;
-    }
+//     // Get table name
+//     if (!tokens.empty()) {
+//         strTable = tokens.front();
+//         tokens.pop_front();
+//         vscp_trim(strTable);
+//     } else {
+//         // Problems: A table name must be given
+//         write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
+//         return;
+//     }
 
-    // Get SQL expression
-    if (!tokens.empty()) {
-        strSQL = tokens.front();
-        tokens.pop_front();
-        vscp_trim(strSQL);
-    } else {
-        // Problems: A SQL expression must be given
-        write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-        return;
-    }
+//     // Get SQL expression
+//     if (!tokens.empty()) {
+//         strSQL = tokens.front();
+//         tokens.pop_front();
+//         vscp_trim(strSQL);
+//     } else {
+//         // Problems: A SQL expression must be given
+//         write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
+//         return;
+//     }
 
-    pthread_mutex_lock(&m_pObj->m_mutexUserTables);
+//     pthread_mutex_lock(&m_pObj->m_mutexUserTables);
 
-    CVSCPTable *pTable = m_pObj->m_userTableObjects.getTable(strTable);
+//     CVSCPTable *pTable = m_pObj->m_userTableObjects.getTable(strTable);
 
-    if (NULL == pTable) {
-        // Failed
-        write(MSG_FAILED_UNKNOWN_TABLE, strlen(MSG_FAILED_UNKNOWN_TABLE));
+//     if (NULL == pTable) {
+//         // Failed
+//         write(MSG_FAILED_UNKNOWN_TABLE, strlen(MSG_FAILED_UNKNOWN_TABLE));
 
-        pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
-        return;
-    }
+//         pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
+//         return;
+//     }
 
-    // Log data
-    if (!pTable->logData(strSQL)) {
-        pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
-        write(MSG_FAILED_TO_WRITE_TABLE, strlen(MSG_FAILED_TO_WRITE_TABLE));
-        return;
-    }
+//     // Log data
+//     if (!pTable->logData(strSQL)) {
+//         pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
+//         write(MSG_FAILED_TO_WRITE_TABLE, strlen(MSG_FAILED_TO_WRITE_TABLE));
+//         return;
+//     }
 
-    pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
-}
+//     pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
+// }
 
 ///////////////////////////////////////////////////////////////////////////////
 // handleClientTable_NumberOfRecords
@@ -3178,81 +3167,81 @@ tcpipClientObj::handleClientTable_LogSQL(void)
 // records 'table-name' [to,from]
 //
 
-void
-tcpipClientObj::handleClientTable_NumberOfRecords(void)
-{
-    std::string strTable;
-    vscpdatetime start;
-    vscpdatetime end;
+// void
+// tcpipClientObj::handleClientTable_NumberOfRecords(void)
+// {
+//     std::string strTable;
+//     vscpdatetime start;
+//     vscpdatetime end;
 
-    // Initialize date range to 'all'
-    start.set(("0000-01-01T00:00:00")); // The first date
-    end.set(("9999-12-31T23:59:59"));   // The last date
+//     // Initialize date range to 'all'
+//     start.set(("0000-01-01T00:00:00")); // The first date
+//     end.set(("9999-12-31T23:59:59"));   // The last date
 
-    // Must be connected
-    if (STCP_CONN_STATE_CONNECTED != m_conn->conn_state) return;
+//     // Must be connected
+//     if (STCP_CONN_STATE_CONNECTED != m_conn->conn_state) return;
 
-    vscp_trim(m_pClientItem->m_currentCommand);
+//     vscp_trim(m_pClientItem->m_currentCommand);
 
-    std::deque<std::string> tokens;
-    vscp_split(tokens, m_pClientItem->m_currentCommand, " ");
+//     std::deque<std::string> tokens;
+//     vscp_split(tokens, m_pClientItem->m_currentCommand, " ");
 
-    // Get table name
-    if (!tokens.empty()) {
-        strTable = tokens.front();
-        tokens.pop_front();
-        vscp_trim(strTable);
-    } else {
-        // Problems: A table name must be given
-        write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-        return;
-    }
+//     // Get table name
+//     if (!tokens.empty()) {
+//         strTable = tokens.front();
+//         tokens.pop_front();
+//         vscp_trim(strTable);
+//     } else {
+//         // Problems: A table name must be given
+//         write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
+//         return;
+//     }
 
-    // get range if given
-    if (tokens.size() >= 2) {
+//     // get range if given
+//     if (tokens.size() >= 2) {
 
-        if (!tokens.empty() && !start.set(tokens.front())) {
-            write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-            return;
-        }
-        tokens.pop_front();
+//         if (!tokens.empty() && !start.set(tokens.front())) {
+//             write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
+//             return;
+//         }
+//         tokens.pop_front();
 
-        if (!tokens.empty() && !end.set(tokens.front())) {
-            write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-            return;
-        }
-        tokens.pop_front();
-    }
+//         if (!tokens.empty() && !end.set(tokens.front())) {
+//             write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
+//             return;
+//         }
+//         tokens.pop_front();
+//     }
 
-    pthread_mutex_lock(&m_pObj->m_mutexUserTables);
+//     pthread_mutex_lock(&m_pObj->m_mutexUserTables);
 
-    CVSCPTable *pTable = m_pObj->m_userTableObjects.getTable(strTable);
+//     CVSCPTable *pTable = m_pObj->m_userTableObjects.getTable(strTable);
 
-    if (NULL == pTable) {
-        // Failed
-        write(MSG_FAILED_UNKNOWN_TABLE, strlen(MSG_FAILED_UNKNOWN_TABLE));
+//     if (NULL == pTable) {
+//         // Failed
+//         write(MSG_FAILED_UNKNOWN_TABLE, strlen(MSG_FAILED_UNKNOWN_TABLE));
 
-        pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
-        return;
-    }
+//         pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
+//         return;
+//     }
 
-    double count;
-    if (!pTable->getNumberOfRecordsForRange(start, end, &count)) {
-        write(MSG_FAILED_TO_CLEAR_TABLE, strlen(MSG_FAILED_TO_CLEAR_TABLE));
-        pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
-        return;
-    }
+//     double count;
+//     if (!pTable->getNumberOfRecordsForRange(start, end, &count)) {
+//         write(MSG_FAILED_TO_CLEAR_TABLE, strlen(MSG_FAILED_TO_CLEAR_TABLE));
+//         pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
+//         return;
+//     }
 
-    pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
+//     pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
 
-    std::string strReply = vscp_str_format(("%f\r\n"), count);
-    write((const char *)strReply.c_str(),
-          strlen((const char *)strReply.c_str()));
+//     std::string strReply = vscp_str_format(("%f\r\n"), count);
+//     write((const char *)strReply.c_str(),
+//           strlen((const char *)strReply.c_str()));
 
-    write(MSG_OK, strlen(MSG_OK));
+//     write(MSG_OK, strlen(MSG_OK));
 
-    return;
-}
+//     return;
+// }
 
 ///////////////////////////////////////////////////////////////////////////////
 // handleClientTable_FirstDate
@@ -3260,60 +3249,60 @@ tcpipClientObj::handleClientTable_NumberOfRecords(void)
 // firstdate 'table-name' [to,from]
 //
 
-void
-tcpipClientObj::handleClientTable_FirstDate(void)
-{
-    std::string strTable;
+// void
+// tcpipClientObj::handleClientTable_FirstDate(void)
+// {
+//     std::string strTable;
 
-    // Must be connected
-    if (STCP_CONN_STATE_CONNECTED != m_conn->conn_state) return;
+//     // Must be connected
+//     if (STCP_CONN_STATE_CONNECTED != m_conn->conn_state) return;
 
-    vscp_trim(m_pClientItem->m_currentCommand);
+//     vscp_trim(m_pClientItem->m_currentCommand);
 
-    std::deque<std::string> tokens;
-    vscp_split(tokens, m_pClientItem->m_currentCommand, " ");
+//     std::deque<std::string> tokens;
+//     vscp_split(tokens, m_pClientItem->m_currentCommand, " ");
 
-    // Get table name
-    if (!tokens.empty()) {
-        strTable = tokens.front();
-        tokens.pop_front();
-        vscp_trim(strTable);
-    } else {
-        // Problems: A table name must be given
-        write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-        return;
-    }
+//     // Get table name
+//     if (!tokens.empty()) {
+//         strTable = tokens.front();
+//         tokens.pop_front();
+//         vscp_trim(strTable);
+//     } else {
+//         // Problems: A table name must be given
+//         write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
+//         return;
+//     }
 
-    pthread_mutex_lock(&m_pObj->m_mutexUserTables);
+//     pthread_mutex_lock(&m_pObj->m_mutexUserTables);
 
-    CVSCPTable *pTable = m_pObj->m_userTableObjects.getTable(strTable);
+//     CVSCPTable *pTable = m_pObj->m_userTableObjects.getTable(strTable);
 
-    if (NULL == pTable) {
-        // Failed
-        write(MSG_FAILED_UNKNOWN_TABLE, strlen(MSG_FAILED_UNKNOWN_TABLE));
+//     if (NULL == pTable) {
+//         // Failed
+//         write(MSG_FAILED_UNKNOWN_TABLE, strlen(MSG_FAILED_UNKNOWN_TABLE));
 
-        pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
-        return;
-    }
+//         pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
+//         return;
+//     }
 
-    vscpdatetime first;
-    if (!pTable->getFirstDate(first)) {
-        write(MSG_FAILED_TO_CLEAR_TABLE, strlen(MSG_FAILED_TO_CLEAR_TABLE));
-        pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
-        return;
-    }
+//     vscpdatetime first;
+//     if (!pTable->getFirstDate(first)) {
+//         write(MSG_FAILED_TO_CLEAR_TABLE, strlen(MSG_FAILED_TO_CLEAR_TABLE));
+//         pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
+//         return;
+//     }
 
-    pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
+//     pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
 
-    std::string strReply =
-      vscp_str_format("%s\r\n", (const char *)first.getISODateTime().c_str());
-    write((const char *)strReply.c_str(),
-          strlen((const char *)strReply.c_str()));
+//     std::string strReply =
+//       vscp_str_format("%s\r\n", (const char *)first.getISODateTime().c_str());
+//     write((const char *)strReply.c_str(),
+//           strlen((const char *)strReply.c_str()));
 
-    write(MSG_OK, strlen(MSG_OK));
+//     write(MSG_OK, strlen(MSG_OK));
 
-    return;
-}
+//     return;
+// }
 
 ///////////////////////////////////////////////////////////////////////////////
 // handleClientTable_LastDate
@@ -3321,60 +3310,60 @@ tcpipClientObj::handleClientTable_FirstDate(void)
 // lastdate 'table-name' [to,from]
 //
 
-void
-tcpipClientObj::handleClientTable_LastDate(void)
-{
-    std::string strTable;
+// void
+// tcpipClientObj::handleClientTable_LastDate(void)
+// {
+//     std::string strTable;
 
-    // Must be connected
-    if (STCP_CONN_STATE_CONNECTED != m_conn->conn_state) return;
+//     // Must be connected
+//     if (STCP_CONN_STATE_CONNECTED != m_conn->conn_state) return;
 
-    vscp_trim(m_pClientItem->m_currentCommand);
+//     vscp_trim(m_pClientItem->m_currentCommand);
 
-    std::deque<std::string> tokens;
-    vscp_split(tokens, m_pClientItem->m_currentCommand, " ");
+//     std::deque<std::string> tokens;
+//     vscp_split(tokens, m_pClientItem->m_currentCommand, " ");
 
-    // Get table name
-    if (!tokens.empty()) {
-        strTable = tokens.front();
-        tokens.pop_front();
-        vscp_trim(strTable);
-    } else {
-        // Problems: A table name must be given
-        write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-        return;
-    }
+//     // Get table name
+//     if (!tokens.empty()) {
+//         strTable = tokens.front();
+//         tokens.pop_front();
+//         vscp_trim(strTable);
+//     } else {
+//         // Problems: A table name must be given
+//         write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
+//         return;
+//     }
 
-    pthread_mutex_lock(&m_pObj->m_mutexUserTables);
+//     pthread_mutex_lock(&m_pObj->m_mutexUserTables);
 
-    CVSCPTable *pTable = m_pObj->m_userTableObjects.getTable(strTable);
+//     CVSCPTable *pTable = m_pObj->m_userTableObjects.getTable(strTable);
 
-    if (NULL == pTable) {
-        // Failed
-        write(MSG_FAILED_UNKNOWN_TABLE, strlen(MSG_FAILED_UNKNOWN_TABLE));
+//     if (NULL == pTable) {
+//         // Failed
+//         write(MSG_FAILED_UNKNOWN_TABLE, strlen(MSG_FAILED_UNKNOWN_TABLE));
 
-        pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
-        return;
-    }
+//         pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
+//         return;
+//     }
 
-    vscpdatetime last;
-    if (!pTable->getLastDate(last)) {
-        write(MSG_FAILED_TO_CLEAR_TABLE, strlen(MSG_FAILED_TO_CLEAR_TABLE));
-        pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
-        return;
-    }
+//     vscpdatetime last;
+//     if (!pTable->getLastDate(last)) {
+//         write(MSG_FAILED_TO_CLEAR_TABLE, strlen(MSG_FAILED_TO_CLEAR_TABLE));
+//         pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
+//         return;
+//     }
 
-    pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
+//     pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
 
-    std::string strReply =
-      vscp_str_format("%s\r\n", (const char *)last.getISODateTime().c_str());
-    write((const char *)strReply.c_str(),
-          strlen((const char *)strReply.c_str()));
+//     std::string strReply =
+//       vscp_str_format("%s\r\n", (const char *)last.getISODateTime().c_str());
+//     write((const char *)strReply.c_str(),
+//           strlen((const char *)strReply.c_str()));
 
-    write(MSG_OK, strlen(MSG_OK));
+//     write(MSG_OK, strlen(MSG_OK));
 
-    return;
-}
+//     return;
+// }
 
 ///////////////////////////////////////////////////////////////////////////////
 // handleClientTable_Sum
@@ -3382,81 +3371,81 @@ tcpipClientObj::handleClientTable_LastDate(void)
 // sum 'table-name' [to,from]
 //
 
-void
-tcpipClientObj::handleClientTable_Sum(void)
-{
-    std::string strTable;
-    vscpdatetime start;
-    vscpdatetime end;
+// void
+// tcpipClientObj::handleClientTable_Sum(void)
+// {
+//     std::string strTable;
+//     vscpdatetime start;
+//     vscpdatetime end;
 
-    // Initialize date range to 'all'
-    start.set(("0000-01-01T00:00:00")); // The first date
-    end.set(("9999-12-31T23:59:59"));   // The last date
+//     // Initialize date range to 'all'
+//     start.set(("0000-01-01T00:00:00")); // The first date
+//     end.set(("9999-12-31T23:59:59"));   // The last date
 
-    // Must be connected
-    if (STCP_CONN_STATE_CONNECTED != m_conn->conn_state) return;
+//     // Must be connected
+//     if (STCP_CONN_STATE_CONNECTED != m_conn->conn_state) return;
 
-    vscp_trim(m_pClientItem->m_currentCommand);
+//     vscp_trim(m_pClientItem->m_currentCommand);
 
-    std::deque<std::string> tokens;
-    vscp_split(tokens, m_pClientItem->m_currentCommand, " ");
+//     std::deque<std::string> tokens;
+//     vscp_split(tokens, m_pClientItem->m_currentCommand, " ");
 
-    // Get table name
-    if (!tokens.empty()) {
-        strTable = tokens.front();
-        tokens.pop_front();
-        vscp_trim(strTable);
-    } else {
-        // Problems: A table name must be given
-        write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-        return;
-    }
+//     // Get table name
+//     if (!tokens.empty()) {
+//         strTable = tokens.front();
+//         tokens.pop_front();
+//         vscp_trim(strTable);
+//     } else {
+//         // Problems: A table name must be given
+//         write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
+//         return;
+//     }
 
-    // get range if given
-    if (tokens.size() >= 2) {
+//     // get range if given
+//     if (tokens.size() >= 2) {
 
-        if (!tokens.empty() && !start.set(tokens.front())) {
-            write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-            return;
-        }
-        tokens.pop_front();
+//         if (!tokens.empty() && !start.set(tokens.front())) {
+//             write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
+//             return;
+//         }
+//         tokens.pop_front();
 
-        if (!tokens.empty() && !end.set(tokens.front())) {
-            write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-            return;
-        }
-        tokens.pop_front();
-    }
+//         if (!tokens.empty() && !end.set(tokens.front())) {
+//             write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
+//             return;
+//         }
+//         tokens.pop_front();
+//     }
 
-    pthread_mutex_lock(&m_pObj->m_mutexUserTables);
+//     pthread_mutex_lock(&m_pObj->m_mutexUserTables);
 
-    CVSCPTable *pTable = m_pObj->m_userTableObjects.getTable(strTable);
+//     CVSCPTable *pTable = m_pObj->m_userTableObjects.getTable(strTable);
 
-    if (NULL == pTable) {
-        // Failed
-        write(MSG_FAILED_UNKNOWN_TABLE, strlen(MSG_FAILED_UNKNOWN_TABLE));
+//     if (NULL == pTable) {
+//         // Failed
+//         write(MSG_FAILED_UNKNOWN_TABLE, strlen(MSG_FAILED_UNKNOWN_TABLE));
 
-        pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
-        return;
-    }
+//         pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
+//         return;
+//     }
 
-    double sum;
-    if (!pTable->getSumValue(start, end, &sum)) {
-        write(MSG_FAILED_TO_CLEAR_TABLE, strlen(MSG_FAILED_TO_CLEAR_TABLE));
-        pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
-        return;
-    }
+//     double sum;
+//     if (!pTable->getSumValue(start, end, &sum)) {
+//         write(MSG_FAILED_TO_CLEAR_TABLE, strlen(MSG_FAILED_TO_CLEAR_TABLE));
+//         pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
+//         return;
+//     }
 
-    pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
+//     pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
 
-    std::string strReply = vscp_str_format(("%f\r\n"), sum);
-    write((const char *)strReply.c_str(),
-          strlen((const char *)strReply.c_str()));
+//     std::string strReply = vscp_str_format(("%f\r\n"), sum);
+//     write((const char *)strReply.c_str(),
+//           strlen((const char *)strReply.c_str()));
 
-    write(MSG_OK, strlen(MSG_OK));
+//     write(MSG_OK, strlen(MSG_OK));
 
-    return;
-}
+//     return;
+// }
 
 ///////////////////////////////////////////////////////////////////////////////
 // handleClientTable_Min
@@ -3464,81 +3453,81 @@ tcpipClientObj::handleClientTable_Sum(void)
 // min 'table-name' [to,from]
 //
 
-void
-tcpipClientObj::handleClientTable_Min(void)
-{
-    std::string strTable;
-    vscpdatetime start;
-    vscpdatetime end;
+// void
+// tcpipClientObj::handleClientTable_Min(void)
+// {
+//     std::string strTable;
+//     vscpdatetime start;
+//     vscpdatetime end;
 
-    // Initialize date range to 'all'
-    start.set(("0000-01-01T00:00:00")); // The first date
-    end.set(("9999-12-31T23:59:59"));   // The last date
+//     // Initialize date range to 'all'
+//     start.set(("0000-01-01T00:00:00")); // The first date
+//     end.set(("9999-12-31T23:59:59"));   // The last date
 
-    // Must be connected
-    if (STCP_CONN_STATE_CONNECTED != m_conn->conn_state) return;
+//     // Must be connected
+//     if (STCP_CONN_STATE_CONNECTED != m_conn->conn_state) return;
 
-    vscp_trim(m_pClientItem->m_currentCommand);
+//     vscp_trim(m_pClientItem->m_currentCommand);
 
-    std::deque<std::string> tokens;
-    vscp_split(tokens, m_pClientItem->m_currentCommand, " ");
+//     std::deque<std::string> tokens;
+//     vscp_split(tokens, m_pClientItem->m_currentCommand, " ");
 
-    // Get table name
-    if (!tokens.empty()) {
-        strTable = tokens.front();
-        tokens.pop_front();
-        vscp_trim(strTable);
-    } else {
-        // Problems: A table name must be given
-        write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-        return;
-    }
+//     // Get table name
+//     if (!tokens.empty()) {
+//         strTable = tokens.front();
+//         tokens.pop_front();
+//         vscp_trim(strTable);
+//     } else {
+//         // Problems: A table name must be given
+//         write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
+//         return;
+//     }
 
-    // get range if given
-    if (tokens.size() >= 2) {
+//     // get range if given
+//     if (tokens.size() >= 2) {
 
-        if (!tokens.empty() && !start.set(tokens.front())) {
-            write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-            return;
-        }
-        tokens.pop_front();
+//         if (!tokens.empty() && !start.set(tokens.front())) {
+//             write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
+//             return;
+//         }
+//         tokens.pop_front();
 
-        if (!tokens.empty() && !end.set(tokens.front())) {
-            write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-            return;
-        }
-        tokens.pop_front();
-    }
+//         if (!tokens.empty() && !end.set(tokens.front())) {
+//             write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
+//             return;
+//         }
+//         tokens.pop_front();
+//     }
 
-    pthread_mutex_lock(&m_pObj->m_mutexUserTables);
+//     pthread_mutex_lock(&m_pObj->m_mutexUserTables);
 
-    CVSCPTable *pTable = m_pObj->m_userTableObjects.getTable(strTable);
+//     CVSCPTable *pTable = m_pObj->m_userTableObjects.getTable(strTable);
 
-    if (NULL == pTable) {
-        // Failed
-        write(MSG_FAILED_UNKNOWN_TABLE, strlen(MSG_FAILED_UNKNOWN_TABLE));
+//     if (NULL == pTable) {
+//         // Failed
+//         write(MSG_FAILED_UNKNOWN_TABLE, strlen(MSG_FAILED_UNKNOWN_TABLE));
 
-        pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
-        return;
-    }
+//         pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
+//         return;
+//     }
 
-    double min;
-    if (!pTable->getMinValue(start, end, &min)) {
-        write(MSG_FAILED_TO_CLEAR_TABLE, strlen(MSG_FAILED_TO_CLEAR_TABLE));
-        pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
-        return;
-    }
+//     double min;
+//     if (!pTable->getMinValue(start, end, &min)) {
+//         write(MSG_FAILED_TO_CLEAR_TABLE, strlen(MSG_FAILED_TO_CLEAR_TABLE));
+//         pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
+//         return;
+//     }
 
-    pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
+//     pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
 
-    std::string strReply = vscp_str_format(("%f\r\n"), min);
-    write((const char *)strReply.c_str(),
-          strlen((const char *)strReply.c_str()));
+//     std::string strReply = vscp_str_format(("%f\r\n"), min);
+//     write((const char *)strReply.c_str(),
+//           strlen((const char *)strReply.c_str()));
 
-    write(MSG_OK, strlen(MSG_OK));
+//     write(MSG_OK, strlen(MSG_OK));
 
-    return;
-}
+//     return;
+// }
 
 ///////////////////////////////////////////////////////////////////////////////
 // handleClientTable_Max
@@ -3546,81 +3535,81 @@ tcpipClientObj::handleClientTable_Min(void)
 // max 'table-name' [to,from]
 //
 
-void
-tcpipClientObj::handleClientTable_Max(void)
-{
-    std::string strTable;
-    vscpdatetime start;
-    vscpdatetime end;
+// void
+// tcpipClientObj::handleClientTable_Max(void)
+// {
+//     std::string strTable;
+//     vscpdatetime start;
+//     vscpdatetime end;
 
-    // Initialize date range to 'all'
-    start.set(("0000-01-01T00:00:00")); // The first date
-    end.set(("9999-12-31T23:59:59"));   // The last date
+//     // Initialize date range to 'all'
+//     start.set(("0000-01-01T00:00:00")); // The first date
+//     end.set(("9999-12-31T23:59:59"));   // The last date
 
-    // Must be connected
-    if (STCP_CONN_STATE_CONNECTED != m_conn->conn_state) return;
+//     // Must be connected
+//     if (STCP_CONN_STATE_CONNECTED != m_conn->conn_state) return;
 
-    vscp_trim(m_pClientItem->m_currentCommand);
+//     vscp_trim(m_pClientItem->m_currentCommand);
 
-    std::deque<std::string> tokens;
-    vscp_split(tokens, m_pClientItem->m_currentCommand, " ");
+//     std::deque<std::string> tokens;
+//     vscp_split(tokens, m_pClientItem->m_currentCommand, " ");
 
-    // Get table name
-    if (!tokens.empty()) {
-        strTable = tokens.front();
-        tokens.pop_front();
-        vscp_trim(strTable);
-    } else {
-        // Problems: A table name must be given
-        write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-        return;
-    }
+//     // Get table name
+//     if (!tokens.empty()) {
+//         strTable = tokens.front();
+//         tokens.pop_front();
+//         vscp_trim(strTable);
+//     } else {
+//         // Problems: A table name must be given
+//         write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
+//         return;
+//     }
 
-    // get range if given
-    if (tokens.size() >= 2) {
+//     // get range if given
+//     if (tokens.size() >= 2) {
 
-        if (!tokens.empty() && !start.set(tokens.front())) {
-            write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-            return;
-        }
-        tokens.pop_front();
+//         if (!tokens.empty() && !start.set(tokens.front())) {
+//             write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
+//             return;
+//         }
+//         tokens.pop_front();
 
-        if (!tokens.empty() && !end.set(tokens.front())) {
-            write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-            return;
-        }
-        tokens.pop_front();
-    }
+//         if (!tokens.empty() && !end.set(tokens.front())) {
+//             write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
+//             return;
+//         }
+//         tokens.pop_front();
+//     }
 
-    pthread_mutex_lock(&m_pObj->m_mutexUserTables);
+//     pthread_mutex_lock(&m_pObj->m_mutexUserTables);
 
-    CVSCPTable *pTable = m_pObj->m_userTableObjects.getTable(strTable);
+//     CVSCPTable *pTable = m_pObj->m_userTableObjects.getTable(strTable);
 
-    if (NULL == pTable) {
-        // Failed
-        write(MSG_FAILED_UNKNOWN_TABLE, strlen(MSG_FAILED_UNKNOWN_TABLE));
+//     if (NULL == pTable) {
+//         // Failed
+//         write(MSG_FAILED_UNKNOWN_TABLE, strlen(MSG_FAILED_UNKNOWN_TABLE));
 
-        pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
-        return;
-    }
+//         pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
+//         return;
+//     }
 
-    double max;
-    if (!pTable->getMaxValue(start, end, &max)) {
-        write(MSG_FAILED_TO_CLEAR_TABLE, strlen(MSG_FAILED_TO_CLEAR_TABLE));
-        pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
-        return;
-    }
+//     double max;
+//     if (!pTable->getMaxValue(start, end, &max)) {
+//         write(MSG_FAILED_TO_CLEAR_TABLE, strlen(MSG_FAILED_TO_CLEAR_TABLE));
+//         pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
+//         return;
+//     }
 
-    pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
+//     pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
 
-    std::string strReply = vscp_str_format(("%f\r\n"), max);
-    write((const char *)strReply.c_str(),
-          strlen((const char *)strReply.c_str()));
+//     std::string strReply = vscp_str_format(("%f\r\n"), max);
+//     write((const char *)strReply.c_str(),
+//           strlen((const char *)strReply.c_str()));
 
-    write(MSG_OK, strlen(MSG_OK));
+//     write(MSG_OK, strlen(MSG_OK));
 
-    return;
-}
+//     return;
+// }
 
 ///////////////////////////////////////////////////////////////////////////////
 // handleClientTable_Average
@@ -3628,81 +3617,81 @@ tcpipClientObj::handleClientTable_Max(void)
 // average 'table-name' [to,from]
 //
 
-void
-tcpipClientObj::handleClientTable_Average(void)
-{
-    std::string strTable;
-    vscpdatetime start;
-    vscpdatetime end;
+// void
+// tcpipClientObj::handleClientTable_Average(void)
+// {
+//     std::string strTable;
+//     vscpdatetime start;
+//     vscpdatetime end;
 
-    // Initialize date range to 'all'
-    start.set(("0000-01-01T00:00:00")); // The first date
-    end.set(("9999-12-31T23:59:59"));   // The last date
+//     // Initialize date range to 'all'
+//     start.set(("0000-01-01T00:00:00")); // The first date
+//     end.set(("9999-12-31T23:59:59"));   // The last date
 
-    // Must be connected
-    if (STCP_CONN_STATE_CONNECTED != m_conn->conn_state) return;
+//     // Must be connected
+//     if (STCP_CONN_STATE_CONNECTED != m_conn->conn_state) return;
 
-    vscp_trim(m_pClientItem->m_currentCommand);
+//     vscp_trim(m_pClientItem->m_currentCommand);
 
-    std::deque<std::string> tokens;
-    vscp_split(tokens, m_pClientItem->m_currentCommand, " ");
+//     std::deque<std::string> tokens;
+//     vscp_split(tokens, m_pClientItem->m_currentCommand, " ");
 
-    // Get table name
-    if (!tokens.empty()) {
-        strTable = tokens.front();
-        tokens.pop_front();
-        vscp_trim(strTable);
-    } else {
-        // Problems: A table name must be given
-        write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-        return;
-    }
+//     // Get table name
+//     if (!tokens.empty()) {
+//         strTable = tokens.front();
+//         tokens.pop_front();
+//         vscp_trim(strTable);
+//     } else {
+//         // Problems: A table name must be given
+//         write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
+//         return;
+//     }
 
-    // get range if given
-    if (tokens.size() >= 2) {
+//     // get range if given
+//     if (tokens.size() >= 2) {
 
-        if (!tokens.empty() && !start.set(tokens.front())) {
-            write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-            return;
-        }
-        tokens.pop_front();
+//         if (!tokens.empty() && !start.set(tokens.front())) {
+//             write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
+//             return;
+//         }
+//         tokens.pop_front();
 
-        if (!tokens.empty() && !end.set(tokens.front())) {
-            write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-            return;
-        }
-        tokens.pop_front();
-    }
+//         if (!tokens.empty() && !end.set(tokens.front())) {
+//             write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
+//             return;
+//         }
+//         tokens.pop_front();
+//     }
 
-    pthread_mutex_lock(&m_pObj->m_mutexUserTables);
+//     pthread_mutex_lock(&m_pObj->m_mutexUserTables);
 
-    CVSCPTable *pTable = m_pObj->m_userTableObjects.getTable(strTable);
+//     CVSCPTable *pTable = m_pObj->m_userTableObjects.getTable(strTable);
 
-    if (NULL == pTable) {
-        // Failed
-        write(MSG_FAILED_UNKNOWN_TABLE, strlen(MSG_FAILED_UNKNOWN_TABLE));
+//     if (NULL == pTable) {
+//         // Failed
+//         write(MSG_FAILED_UNKNOWN_TABLE, strlen(MSG_FAILED_UNKNOWN_TABLE));
 
-        pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
-        return;
-    }
+//         pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
+//         return;
+//     }
 
-    double average;
-    if (!pTable->getAverageValue(start, end, &average)) {
-        write(MSG_FAILED_TO_CLEAR_TABLE, strlen(MSG_FAILED_TO_CLEAR_TABLE));
-        pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
-        return;
-    }
+//     double average;
+//     if (!pTable->getAverageValue(start, end, &average)) {
+//         write(MSG_FAILED_TO_CLEAR_TABLE, strlen(MSG_FAILED_TO_CLEAR_TABLE));
+//         pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
+//         return;
+//     }
 
-    pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
+//     pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
 
-    std::string strReply = vscp_str_format(("%f\r\n"), average);
-    write((const char *)strReply.c_str(),
-          strlen((const char *)strReply.c_str()));
+//     std::string strReply = vscp_str_format(("%f\r\n"), average);
+//     write((const char *)strReply.c_str(),
+//           strlen((const char *)strReply.c_str()));
 
-    write(MSG_OK, strlen(MSG_OK));
+//     write(MSG_OK, strlen(MSG_OK));
 
-    return;
-}
+//     return;
+// }
 
 ///////////////////////////////////////////////////////////////////////////////
 // handleClientTable_Median
@@ -3710,81 +3699,81 @@ tcpipClientObj::handleClientTable_Average(void)
 // median 'table-name' [to,from]
 //
 
-void
-tcpipClientObj::handleClientTable_Median(void)
-{
-    std::string strTable;
-    vscpdatetime start;
-    vscpdatetime end;
+// void
+// tcpipClientObj::handleClientTable_Median(void)
+// {
+//     std::string strTable;
+//     vscpdatetime start;
+//     vscpdatetime end;
 
-    // Initialize date range to 'all'
-    start.set(("0000-01-01T00:00:00")); // The first date
-    end.set(("9999-12-31T23:59:59"));   // The last date
+//     // Initialize date range to 'all'
+//     start.set(("0000-01-01T00:00:00")); // The first date
+//     end.set(("9999-12-31T23:59:59"));   // The last date
 
-    // Must be connected
-    if (STCP_CONN_STATE_CONNECTED != m_conn->conn_state) return;
+//     // Must be connected
+//     if (STCP_CONN_STATE_CONNECTED != m_conn->conn_state) return;
 
-    vscp_trim(m_pClientItem->m_currentCommand);
+//     vscp_trim(m_pClientItem->m_currentCommand);
 
-    std::deque<std::string> tokens;
-    vscp_split(tokens, m_pClientItem->m_currentCommand, " ");
+//     std::deque<std::string> tokens;
+//     vscp_split(tokens, m_pClientItem->m_currentCommand, " ");
 
-    // Get table name
-    if (!tokens.empty()) {
-        strTable = tokens.front();
-        tokens.pop_front();
-        vscp_trim(strTable);
-    } else {
-        // Problems: A table name must be given
-        write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-        return;
-    }
+//     // Get table name
+//     if (!tokens.empty()) {
+//         strTable = tokens.front();
+//         tokens.pop_front();
+//         vscp_trim(strTable);
+//     } else {
+//         // Problems: A table name must be given
+//         write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
+//         return;
+//     }
 
-    // get range if given
-    if (tokens.size() >= 2) {
+//     // get range if given
+//     if (tokens.size() >= 2) {
 
-        if (!tokens.empty() && !start.set(tokens.front())) {
-            write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-            return;
-        }
-        tokens.pop_front();
+//         if (!tokens.empty() && !start.set(tokens.front())) {
+//             write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
+//             return;
+//         }
+//         tokens.pop_front();
 
-        if (!tokens.empty() && !end.set(tokens.front())) {
-            write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-            return;
-        }
-        tokens.pop_front();
-    }
+//         if (!tokens.empty() && !end.set(tokens.front())) {
+//             write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
+//             return;
+//         }
+//         tokens.pop_front();
+//     }
 
-    pthread_mutex_lock(&m_pObj->m_mutexUserTables);
+//     pthread_mutex_lock(&m_pObj->m_mutexUserTables);
 
-    CVSCPTable *pTable = m_pObj->m_userTableObjects.getTable(strTable);
+//     CVSCPTable *pTable = m_pObj->m_userTableObjects.getTable(strTable);
 
-    if (NULL == pTable) {
-        // Failed
-        write(MSG_FAILED_UNKNOWN_TABLE, strlen(MSG_FAILED_UNKNOWN_TABLE));
+//     if (NULL == pTable) {
+//         // Failed
+//         write(MSG_FAILED_UNKNOWN_TABLE, strlen(MSG_FAILED_UNKNOWN_TABLE));
 
-        pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
-        return;
-    }
+//         pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
+//         return;
+//     }
 
-    double median;
-    if (!pTable->getMedianValue(start, end, &median)) {
-        write(MSG_FAILED_TO_CLEAR_TABLE, strlen(MSG_FAILED_TO_CLEAR_TABLE));
-        pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
-        return;
-    }
+//     double median;
+//     if (!pTable->getMedianValue(start, end, &median)) {
+//         write(MSG_FAILED_TO_CLEAR_TABLE, strlen(MSG_FAILED_TO_CLEAR_TABLE));
+//         pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
+//         return;
+//     }
 
-    pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
+//     pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
 
-    std::string strReply = vscp_str_format(("%f\r\n"), median);
-    write((const char *)strReply.c_str(),
-          strlen((const char *)strReply.c_str()));
+//     std::string strReply = vscp_str_format(("%f\r\n"), median);
+//     write((const char *)strReply.c_str(),
+//           strlen((const char *)strReply.c_str()));
 
-    write(MSG_OK, strlen(MSG_OK));
+//     write(MSG_OK, strlen(MSG_OK));
 
-    return;
-}
+//     return;
+// }
 
 ///////////////////////////////////////////////////////////////////////////////
 // handleClientTable_StdDev
@@ -3792,81 +3781,81 @@ tcpipClientObj::handleClientTable_Median(void)
 // stddev 'table-name' [to,from]
 //
 
-void
-tcpipClientObj::handleClientTable_StdDev(void)
-{
-    std::string strTable;
-    vscpdatetime start;
-    vscpdatetime end;
+// void
+// tcpipClientObj::handleClientTable_StdDev(void)
+// {
+//     std::string strTable;
+//     vscpdatetime start;
+//     vscpdatetime end;
 
-    // Initialize date range to 'all'
-    start.set(("0000-01-01T00:00:00")); // The first date
-    end.set(("9999-12-31T23:59:59"));   // The last date
+//     // Initialize date range to 'all'
+//     start.set(("0000-01-01T00:00:00")); // The first date
+//     end.set(("9999-12-31T23:59:59"));   // The last date
 
-    // Must be connected
-    if (STCP_CONN_STATE_CONNECTED != m_conn->conn_state) return;
+//     // Must be connected
+//     if (STCP_CONN_STATE_CONNECTED != m_conn->conn_state) return;
 
-    vscp_trim(m_pClientItem->m_currentCommand);
+//     vscp_trim(m_pClientItem->m_currentCommand);
 
-    std::deque<std::string> tokens;
-    vscp_split(tokens, m_pClientItem->m_currentCommand, " ");
+//     std::deque<std::string> tokens;
+//     vscp_split(tokens, m_pClientItem->m_currentCommand, " ");
 
-    // Get table name
-    if (!tokens.empty()) {
-        strTable = tokens.front();
-        tokens.pop_front();
-        vscp_trim(strTable);
-    } else {
-        // Problems: A table name must be given
-        write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-        return;
-    }
+//     // Get table name
+//     if (!tokens.empty()) {
+//         strTable = tokens.front();
+//         tokens.pop_front();
+//         vscp_trim(strTable);
+//     } else {
+//         // Problems: A table name must be given
+//         write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
+//         return;
+//     }
 
-    // get range if given
-    if (tokens.size() >= 2) {
+//     // get range if given
+//     if (tokens.size() >= 2) {
 
-        if (!tokens.empty() && !start.set(tokens.front())) {
-            write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-            return;
-        }
-        tokens.pop_front();
+//         if (!tokens.empty() && !start.set(tokens.front())) {
+//             write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
+//             return;
+//         }
+//         tokens.pop_front();
 
-        if (!tokens.empty() && !end.set(tokens.front())) {
-            write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-            return;
-        }
-        tokens.pop_front();
-    }
+//         if (!tokens.empty() && !end.set(tokens.front())) {
+//             write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
+//             return;
+//         }
+//         tokens.pop_front();
+//     }
 
-    pthread_mutex_lock(&m_pObj->m_mutexUserTables);
+//     pthread_mutex_lock(&m_pObj->m_mutexUserTables);
 
-    CVSCPTable *pTable = m_pObj->m_userTableObjects.getTable(strTable);
+//     CVSCPTable *pTable = m_pObj->m_userTableObjects.getTable(strTable);
 
-    if (NULL == pTable) {
-        // Failed
-        write(MSG_FAILED_UNKNOWN_TABLE, strlen(MSG_FAILED_UNKNOWN_TABLE));
+//     if (NULL == pTable) {
+//         // Failed
+//         write(MSG_FAILED_UNKNOWN_TABLE, strlen(MSG_FAILED_UNKNOWN_TABLE));
 
-        pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
-        return;
-    }
+//         pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
+//         return;
+//     }
 
-    double stdev;
-    if (!pTable->getStdevValue(start, end, &stdev)) {
-        write(MSG_FAILED_TO_CLEAR_TABLE, strlen(MSG_FAILED_TO_CLEAR_TABLE));
-        pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
-        return;
-    }
+//     double stdev;
+//     if (!pTable->getStdevValue(start, end, &stdev)) {
+//         write(MSG_FAILED_TO_CLEAR_TABLE, strlen(MSG_FAILED_TO_CLEAR_TABLE));
+//         pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
+//         return;
+//     }
 
-    pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
+//     pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
 
-    std::string strReply = vscp_str_format(("%f\r\n"), stdev);
-    write((const char *)strReply.c_str(),
-          strlen((const char *)strReply.c_str()));
+//     std::string strReply = vscp_str_format(("%f\r\n"), stdev);
+//     write((const char *)strReply.c_str(),
+//           strlen((const char *)strReply.c_str()));
 
-    write(MSG_OK, strlen(MSG_OK));
+//     write(MSG_OK, strlen(MSG_OK));
 
-    return;
-}
+//     return;
+// }
 
 ///////////////////////////////////////////////////////////////////////////////
 // handleClientTable_Variance
@@ -3874,80 +3863,80 @@ tcpipClientObj::handleClientTable_StdDev(void)
 // variance 'table-name' [to,from]
 //
 
-void
-tcpipClientObj::handleClientTable_Variance(void)
-{
-    std::string strTable;
-    vscpdatetime start;
-    vscpdatetime end;
+// void
+// tcpipClientObj::handleClientTable_Variance(void)
+// {
+//     std::string strTable;
+//     vscpdatetime start;
+//     vscpdatetime end;
 
-    // Initialize date range to 'all'
-    start.set(("0000-01-01T00:00:00")); // The first date
-    end.set(("9999-12-31T23:59:59"));   // The last date
+//     // Initialize date range to 'all'
+//     start.set(("0000-01-01T00:00:00")); // The first date
+//     end.set(("9999-12-31T23:59:59"));   // The last date
 
-    // Must be connected
-    if (STCP_CONN_STATE_CONNECTED != m_conn->conn_state) return;
+//     // Must be connected
+//     if (STCP_CONN_STATE_CONNECTED != m_conn->conn_state) return;
 
-    vscp_trim(m_pClientItem->m_currentCommand);
+//     vscp_trim(m_pClientItem->m_currentCommand);
 
-    std::deque<std::string> tokens;
-    vscp_split(tokens, m_pClientItem->m_currentCommand, " ");
+//     std::deque<std::string> tokens;
+//     vscp_split(tokens, m_pClientItem->m_currentCommand, " ");
 
-    // Get table name
-    if (!tokens.empty()) {
-        strTable = tokens.front();
-        tokens.pop_front();
-        vscp_trim(strTable);
-    } else {
-        // Problems: A table name must be given
-        write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-        return;
-    }
+//     // Get table name
+//     if (!tokens.empty()) {
+//         strTable = tokens.front();
+//         tokens.pop_front();
+//         vscp_trim(strTable);
+//     } else {
+//         // Problems: A table name must be given
+//         write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
+//         return;
+//     }
 
-    // get range if given
-    if (tokens.size() >= 2) {
+//     // get range if given
+//     if (tokens.size() >= 2) {
 
-        if (!tokens.empty() && !start.set(tokens.front())) {
-            write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-            return;
-        }
-        tokens.pop_front();
+//         if (!tokens.empty() && !start.set(tokens.front())) {
+//             write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
+//             return;
+//         }
+//         tokens.pop_front();
 
-        if (!tokens.empty() && !end.set(tokens.front())) {
-            write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-            return;
-        }
-        tokens.pop_front();
-    }
+//         if (!tokens.empty() && !end.set(tokens.front())) {
+//             write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
+//             return;
+//         }
+//         tokens.pop_front();
+//     }
 
-    pthread_mutex_lock(&m_pObj->m_mutexUserTables);
+//     pthread_mutex_lock(&m_pObj->m_mutexUserTables);
 
-    CVSCPTable *pTable = m_pObj->m_userTableObjects.getTable(strTable);
+//     CVSCPTable *pTable = m_pObj->m_userTableObjects.getTable(strTable);
 
-    if (NULL == pTable) {
-        // Failed
-        write(MSG_FAILED_UNKNOWN_TABLE, strlen(MSG_FAILED_UNKNOWN_TABLE));
+//     if (NULL == pTable) {
+//         // Failed
+//         write(MSG_FAILED_UNKNOWN_TABLE, strlen(MSG_FAILED_UNKNOWN_TABLE));
 
-        pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
-        return;
-    }
+//         pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
+//         return;
+//     }
 
-    double variance;
-    if (!pTable->getVarianceValue(start, end, &variance)) {
-        write(MSG_FAILED_TO_CLEAR_TABLE, strlen(MSG_FAILED_TO_CLEAR_TABLE));
-        pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
-        return;
-    }
+//     double variance;
+//     if (!pTable->getVarianceValue(start, end, &variance)) {
+//         write(MSG_FAILED_TO_CLEAR_TABLE, strlen(MSG_FAILED_TO_CLEAR_TABLE));
+//         pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
+//         return;
+//     }
 
-    pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
+//     pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
 
-    std::string strReply = vscp_str_format("%f\r\n", variance);
-    write(strReply);
+//     std::string strReply = vscp_str_format("%f\r\n", variance);
+//     write(strReply);
 
-    write(MSG_OK, strlen(MSG_OK));
+//     write(MSG_OK, strlen(MSG_OK));
 
-    return;
-}
+//     return;
+// }
 
 ///////////////////////////////////////////////////////////////////////////////
 // handleClientTable_Mode
@@ -3955,81 +3944,81 @@ tcpipClientObj::handleClientTable_Variance(void)
 // mode 'table-name' [to,from]
 //
 
-void
-tcpipClientObj::handleClientTable_Mode(void)
-{
-    std::string strTable;
-    vscpdatetime start;
-    vscpdatetime end;
+// void
+// tcpipClientObj::handleClientTable_Mode(void)
+// {
+//     std::string strTable;
+//     vscpdatetime start;
+//     vscpdatetime end;
 
-    // Initialize date range to 'all'
-    start.set(("0000-01-01T00:00:00")); // The first date
-    end.set(("9999-12-31T23:59:59"));   // The last date
+//     // Initialize date range to 'all'
+//     start.set(("0000-01-01T00:00:00")); // The first date
+//     end.set(("9999-12-31T23:59:59"));   // The last date
 
-    // Must be connected
-    if (STCP_CONN_STATE_CONNECTED != m_conn->conn_state) return;
+//     // Must be connected
+//     if (STCP_CONN_STATE_CONNECTED != m_conn->conn_state) return;
 
-    vscp_trim(m_pClientItem->m_currentCommand);
+//     vscp_trim(m_pClientItem->m_currentCommand);
 
-    std::deque<std::string> tokens;
-    vscp_split(tokens, m_pClientItem->m_currentCommand, " ");
+//     std::deque<std::string> tokens;
+//     vscp_split(tokens, m_pClientItem->m_currentCommand, " ");
 
-    // Get table name
-    if (!tokens.empty()) {
-        strTable = tokens.front();
-        tokens.pop_front();
-        vscp_trim(strTable);
-    } else {
-        // Problems: A table name must be given
-        write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-        return;
-    }
+//     // Get table name
+//     if (!tokens.empty()) {
+//         strTable = tokens.front();
+//         tokens.pop_front();
+//         vscp_trim(strTable);
+//     } else {
+//         // Problems: A table name must be given
+//         write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
+//         return;
+//     }
 
-    // get range if given
-    if (tokens.size() >= 2) {
+//     // get range if given
+//     if (tokens.size() >= 2) {
 
-        if (!tokens.empty() && !start.set(tokens.front())) {
-            write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-            return;
-        }
-        tokens.pop_front();
+//         if (!tokens.empty() && !start.set(tokens.front())) {
+//             write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
+//             return;
+//         }
+//         tokens.pop_front();
 
-        if (!tokens.empty() && !end.set(tokens.front())) {
-            write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-            return;
-        }
-        tokens.pop_front();
-    }
+//         if (!tokens.empty() && !end.set(tokens.front())) {
+//             write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
+//             return;
+//         }
+//         tokens.pop_front();
+//     }
 
-    pthread_mutex_lock(&m_pObj->m_mutexUserTables);
+//     pthread_mutex_lock(&m_pObj->m_mutexUserTables);
 
-    CVSCPTable *pTable = m_pObj->m_userTableObjects.getTable(strTable);
+//     CVSCPTable *pTable = m_pObj->m_userTableObjects.getTable(strTable);
 
-    if (NULL == pTable) {
-        // Failed
-        write(MSG_FAILED_UNKNOWN_TABLE, strlen(MSG_FAILED_UNKNOWN_TABLE));
+//     if (NULL == pTable) {
+//         // Failed
+//         write(MSG_FAILED_UNKNOWN_TABLE, strlen(MSG_FAILED_UNKNOWN_TABLE));
 
-        pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
-        return;
-    }
+//         pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
+//         return;
+//     }
 
-    double mode;
-    if (!pTable->getModeValue(start, end, &mode)) {
-        write(MSG_FAILED_TO_CLEAR_TABLE, strlen(MSG_FAILED_TO_CLEAR_TABLE));
-        pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
-        return;
-    }
+//     double mode;
+//     if (!pTable->getModeValue(start, end, &mode)) {
+//         write(MSG_FAILED_TO_CLEAR_TABLE, strlen(MSG_FAILED_TO_CLEAR_TABLE));
+//         pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
+//         return;
+//     }
 
-    pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
+//     pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
 
-    std::string strReply = vscp_str_format(("%f\r\n"), mode);
-    write((const char *)strReply.c_str(),
-          strlen((const char *)strReply.c_str()));
+//     std::string strReply = vscp_str_format(("%f\r\n"), mode);
+//     write((const char *)strReply.c_str(),
+//           strlen((const char *)strReply.c_str()));
 
-    write(MSG_OK, strlen(MSG_OK));
+//     write(MSG_OK, strlen(MSG_OK));
 
-    return;
-}
+//     return;
+// }
 
 ///////////////////////////////////////////////////////////////////////////////
 // handleClientTable_LowerQ
@@ -4037,81 +4026,81 @@ tcpipClientObj::handleClientTable_Mode(void)
 // lowerq 'table-name' [to,from]
 //
 
-void
-tcpipClientObj::handleClientTable_LowerQ(void)
-{
-    std::string strTable;
-    vscpdatetime start;
-    vscpdatetime end;
+// void
+// tcpipClientObj::handleClientTable_LowerQ(void)
+// {
+//     std::string strTable;
+//     vscpdatetime start;
+//     vscpdatetime end;
 
-    // Initialize date range to 'all'
-    start.set(("0000-01-01T00:00:00")); // The first date
-    end.set(("9999-12-31T23:59:59"));   // The last date
+//     // Initialize date range to 'all'
+//     start.set(("0000-01-01T00:00:00")); // The first date
+//     end.set(("9999-12-31T23:59:59"));   // The last date
 
-    // Must be connected
-    if (STCP_CONN_STATE_CONNECTED != m_conn->conn_state) return;
+//     // Must be connected
+//     if (STCP_CONN_STATE_CONNECTED != m_conn->conn_state) return;
 
-    vscp_trim(m_pClientItem->m_currentCommand);
+//     vscp_trim(m_pClientItem->m_currentCommand);
 
-    std::deque<std::string> tokens;
-    vscp_split(tokens, m_pClientItem->m_currentCommand, " ");
+//     std::deque<std::string> tokens;
+//     vscp_split(tokens, m_pClientItem->m_currentCommand, " ");
 
-    // Get table name
-    if (!tokens.empty()) {
-        strTable = tokens.front();
-        tokens.pop_front();
-        vscp_trim(strTable);
-    } else {
-        // Problems: A table name must be given
-        write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-        return;
-    }
+//     // Get table name
+//     if (!tokens.empty()) {
+//         strTable = tokens.front();
+//         tokens.pop_front();
+//         vscp_trim(strTable);
+//     } else {
+//         // Problems: A table name must be given
+//         write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
+//         return;
+//     }
 
-    // get range if given
-    if (tokens.size() >= 2) {
+//     // get range if given
+//     if (tokens.size() >= 2) {
 
-        if (!tokens.empty() && !start.set(tokens.front())) {
-            write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-            return;
-        }
-        tokens.pop_front();
+//         if (!tokens.empty() && !start.set(tokens.front())) {
+//             write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
+//             return;
+//         }
+//         tokens.pop_front();
 
-        if (!tokens.empty() && !end.set(tokens.front())) {
-            write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-            return;
-        }
-        tokens.pop_front();
-    }
+//         if (!tokens.empty() && !end.set(tokens.front())) {
+//             write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
+//             return;
+//         }
+//         tokens.pop_front();
+//     }
 
-    pthread_mutex_lock(&m_pObj->m_mutexUserTables);
+//     pthread_mutex_lock(&m_pObj->m_mutexUserTables);
 
-    CVSCPTable *pTable = m_pObj->m_userTableObjects.getTable(strTable);
+//     CVSCPTable *pTable = m_pObj->m_userTableObjects.getTable(strTable);
 
-    if (NULL == pTable) {
-        // Failed
-        write(MSG_FAILED_UNKNOWN_TABLE, strlen(MSG_FAILED_UNKNOWN_TABLE));
+//     if (NULL == pTable) {
+//         // Failed
+//         write(MSG_FAILED_UNKNOWN_TABLE, strlen(MSG_FAILED_UNKNOWN_TABLE));
 
-        pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
-        return;
-    }
+//         pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
+//         return;
+//     }
 
-    double lq;
-    if (!pTable->getLowerQuartileValue(start, end, &lq)) {
-        write(MSG_FAILED_TO_CLEAR_TABLE, strlen(MSG_FAILED_TO_CLEAR_TABLE));
-        pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
-        return;
-    }
+//     double lq;
+//     if (!pTable->getLowerQuartileValue(start, end, &lq)) {
+//         write(MSG_FAILED_TO_CLEAR_TABLE, strlen(MSG_FAILED_TO_CLEAR_TABLE));
+//         pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
+//         return;
+//     }
 
-    pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
+//     pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
 
-    std::string strReply = vscp_str_format(("%f\r\n"), lq);
-    write((const char *)strReply.c_str(),
-          strlen((const char *)strReply.c_str()));
+//     std::string strReply = vscp_str_format(("%f\r\n"), lq);
+//     write((const char *)strReply.c_str(),
+//           strlen((const char *)strReply.c_str()));
 
-    write(MSG_OK, strlen(MSG_OK));
+//     write(MSG_OK, strlen(MSG_OK));
 
-    return;
-}
+//     return;
+// }
 
 ///////////////////////////////////////////////////////////////////////////////
 // handleClientTable_upperq
@@ -4119,688 +4108,91 @@ tcpipClientObj::handleClientTable_LowerQ(void)
 // upperq 'table-name' [to,from]
 //
 
-void
-tcpipClientObj::handleClientTable_UpperQ(void)
-{
-    std::string strTable;
-    vscpdatetime start;
-    vscpdatetime end;
+// void
+// tcpipClientObj::handleClientTable_UpperQ(void)
+// {
+//     std::string strTable;
+//     vscpdatetime start;
+//     vscpdatetime end;
 
-    // Initialize date range to 'all'
-    start.set(("0000-01-01T00:00:00")); // The first date
-    end.set(("9999-12-31T23:59:59"));   // The last date
+//     // Initialize date range to 'all'
+//     start.set(("0000-01-01T00:00:00")); // The first date
+//     end.set(("9999-12-31T23:59:59"));   // The last date
 
-    // Must be connected
-    if (STCP_CONN_STATE_CONNECTED != m_conn->conn_state) return;
+//     // Must be connected
+//     if (STCP_CONN_STATE_CONNECTED != m_conn->conn_state) return;
 
-    vscp_trim(m_pClientItem->m_currentCommand);
+//     vscp_trim(m_pClientItem->m_currentCommand);
 
-    std::deque<std::string> tokens;
-    vscp_split(tokens, m_pClientItem->m_currentCommand, " ");
+//     std::deque<std::string> tokens;
+//     vscp_split(tokens, m_pClientItem->m_currentCommand, " ");
 
-    // Get table name
-    if (!tokens.empty()) {
-        strTable = tokens.front();
-        tokens.pop_front();
-        vscp_trim(strTable);
-    } else {
-        // Problems: A table name must be given
-        write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-        return;
-    }
+//     // Get table name
+//     if (!tokens.empty()) {
+//         strTable = tokens.front();
+//         tokens.pop_front();
+//         vscp_trim(strTable);
+//     } else {
+//         // Problems: A table name must be given
+//         write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
+//         return;
+//     }
 
-    // get range if given
-    if (tokens.size() >= 2) {
+//     // get range if given
+//     if (tokens.size() >= 2) {
 
-        if (!tokens.empty() && !start.set(tokens.front())) {
-            write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-            return;
-        }
-        tokens.pop_front();
+//         if (!tokens.empty() && !start.set(tokens.front())) {
+//             write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
+//             return;
+//         }
+//         tokens.pop_front();
 
-        if (!tokens.empty() && !end.set(tokens.front())) {
-            write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-            return;
-        }
-        tokens.pop_front();
-    }
+//         if (!tokens.empty() && !end.set(tokens.front())) {
+//             write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
+//             return;
+//         }
+//         tokens.pop_front();
+//     }
 
-    pthread_mutex_lock(&m_pObj->m_mutexUserTables);
+//     pthread_mutex_lock(&m_pObj->m_mutexUserTables);
 
-    CVSCPTable *pTable = m_pObj->m_userTableObjects.getTable(strTable);
+//     CVSCPTable *pTable = m_pObj->m_userTableObjects.getTable(strTable);
 
-    if (NULL == pTable) {
-        // Failed
-        write(MSG_FAILED_UNKNOWN_TABLE, strlen(MSG_FAILED_UNKNOWN_TABLE));
+//     if (NULL == pTable) {
+//         // Failed
+//         write(MSG_FAILED_UNKNOWN_TABLE, strlen(MSG_FAILED_UNKNOWN_TABLE));
 
-        pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
-        return;
-    }
+//         pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
+//         return;
+//     }
 
-    double uq;
-    if (!pTable->getUppeQuartileValue(start, end, &uq)) {
-        write(MSG_FAILED_TO_CLEAR_TABLE, strlen(MSG_FAILED_TO_CLEAR_TABLE));
-        pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
-        return;
-    }
+//     double uq;
+//     if (!pTable->getUppeQuartileValue(start, end, &uq)) {
+//         write(MSG_FAILED_TO_CLEAR_TABLE, strlen(MSG_FAILED_TO_CLEAR_TABLE));
+//         pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
+//         return;
+//     }
 
-    pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
+//     pthread_mutex_unlock(&m_pObj->m_mutexUserTables);
 
-    std::string strReply = vscp_str_format(("%f\r\n"), uq);
-    write((const char *)strReply.c_str(),
-          strlen((const char *)strReply.c_str()));
+//     std::string strReply = vscp_str_format(("%f\r\n"), uq);
+//     write((const char *)strReply.c_str(),
+//           strlen((const char *)strReply.c_str()));
 
-    write(MSG_OK, strlen(MSG_OK));
+//     write(MSG_OK, strlen(MSG_OK));
 
-    return;
-}
-
-// -----------------------------------------------------------------------------
-//                            E N D   T A B L E
-// -----------------------------------------------------------------------------
+//     return;
+// }
 
 // -----------------------------------------------------------------------------
 //                            E N D   T A B L E
 // -----------------------------------------------------------------------------
 
-///////////////////////////////////////////////////////////////////////////////
-// handleClientVariable
-//
+// -----------------------------------------------------------------------------
+//                            E N D   T A B L E
+// -----------------------------------------------------------------------------
 
-void
-tcpipClientObj::handleClientVariable(void)
-{
-    // Must be connected
-    if (STCP_CONN_STATE_CONNECTED != m_conn->conn_state) return;
 
-    vscp_trim(m_pClientItem->m_currentCommand);
-
-    if (m_pClientItem->CommandStartsWith(("list"))) {
-        handleVariable_List();
-    } else if (m_pClientItem->CommandStartsWith(("writevalue"))) {
-        handleVariable_WriteValue();
-    } else if (m_pClientItem->CommandStartsWith(("writenote"))) {
-        handleVariable_WriteNote();
-    } else if (m_pClientItem->CommandStartsWith(("write"))) {
-        handleVariable_Write();
-    } else if (m_pClientItem->CommandStartsWith(("readvalue"))) {
-        handleVariable_ReadValue();
-    } else if (m_pClientItem->CommandStartsWith(("readnote"))) {
-        handleVariable_ReadNote();
-    } else if (m_pClientItem->CommandStartsWith(("readreset"))) {
-        handleVariable_ReadReset();
-    } else if (m_pClientItem->CommandStartsWith(("readremove"))) {
-        handleVariable_ReadRemove();
-    } else if (m_pClientItem->CommandStartsWith(("read"))) {
-        handleVariable_Read();
-    } else if (m_pClientItem->CommandStartsWith(("reset"))) {
-        handleVariable_Reset();
-    } else if (m_pClientItem->CommandStartsWith(("remove"))) {
-        handleVariable_Remove();
-    } else if (m_pClientItem->CommandStartsWith(("length"))) {
-        handleVariable_Length();
-    } else if (m_pClientItem->CommandStartsWith(("load"))) {
-        handleVariable_Load();
-    } else if (m_pClientItem->CommandStartsWith(("save"))) {
-        handleVariable_Save();
-    } else {
-        write(MSG_UNKNOWN_COMMAND, strlen(MSG_UNKNOWN_COMMAND));
-    }
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// handleVariable_List
-//
-// variable list - List all variables.
-// variable list test - List all variables with "test" in there name
-//
-
-void
-tcpipClientObj::handleVariable_List(void)
-{
-    CVariable variable;
-    std::string str;
-    std::string strWork;
-    std::string strSearch;
-    int type = 0; // All variables
-
-    // Must be connected
-    if (STCP_CONN_STATE_CONNECTED != m_conn->conn_state) return;
-
-    vscp_trim(m_pClientItem->m_currentCommand);
-
-    std::deque<std::string> tokens;
-    vscp_split(tokens, m_pClientItem->m_currentCommand, " ");
-
-    // Check for variable name
-    if (!tokens.empty()) {
-
-        std::string token = tokens.front();
-        tokens.pop_front();
-
-        vscp_trim(token);
-        if (!tokens.empty()) {
-            strSearch = token;
-        } else {
-            strSearch = ("(.*))"); // List all
-        }
-    } else {
-        strSearch = ("(.*)"); // List all
-    }
-
-    // Check for variable type
-    if (!tokens.empty()) {
-        std::string str = tokens.front();
-        tokens.pop_front();
-        vscp_trim(str);
-        type = vscp_readStringValue(str);
-    }
-
-    // Get all variable names
-    std::deque<std::string> arrayVars;
-    m_pObj->m_variables.getVarlistFromRegExp(arrayVars, strSearch);
-
-    if (arrayVars.size()) {
-
-        str = vscp_str_format(("%zu rows.\r\n"), arrayVars.size());
-        write(str.c_str(), str.length());
-
-        int cnt = 0;
-        for (int i = 0; i < arrayVars.size(); i++) {
-            if (0 != m_pObj->m_variables.find(
-                       arrayVars[i], m_pClientItem->m_pUserItem, variable)) {
-                if ((0 == type) || (variable.getType() == type)) {
-                    str = vscp_str_format("%d;", cnt);
-                    str += variable.getAsString();
-                    str += ("\r\n");
-                    write(str.c_str(), str.length());
-                    cnt++;
-                }
-            }
-        }
-
-    } else {
-        str = ("0 rows.\r\n");
-        write(str.c_str(), str.length());
-    }
-
-    write(MSG_OK, strlen(MSG_OK));
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// handleVariable_Write
-//
-// Format is: "variable
-// name";"type";"persistence";"owner";"rights";"value";"note"
-//
-// test31;string;true;0;0x777;dGhpcyBpcyBhIHRlc3Q=;VGhpcyBpcyBhIG5vdGUgZm9yIGEgdGVzdCB2YXJpYWJsZQ==
-//
-
-void
-tcpipClientObj::handleVariable_Write(void)
-{
-    CVariable variable;
-    std::string str;
-
-    bool bPersistence = false;
-
-    // Must be connected
-    if (STCP_CONN_STATE_CONNECTED != m_conn->conn_state) return;
-
-    vscp_trim(m_pClientItem->m_currentCommand);
-
-    if (!variable.setFromString(m_pClientItem->m_currentCommand,
-                                m_pClientItem->m_UserName)) {
-        // Failed to parse
-        write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-        return;
-    }
-
-    if (m_pObj->m_variables.exist(variable.getName())) {
-
-        // Update in database
-        if (!m_pObj->m_variables.update(variable, m_pClientItem->m_pUserItem)) {
-            write(MSG_VARIABLE_NO_SAVE, strlen(MSG_VARIABLE_NO_SAVE));
-            return;
-        }
-
-    } else {
-
-        // If the variable exist change value
-        // if not - add it.
-        if (!m_pObj->m_variables.add(variable)) {
-            write(MSG_VARIABLE_UNABLE_ADD, strlen(MSG_VARIABLE_UNABLE_ADD));
-            return;
-        }
-    }
-
-    write(MSG_OK, strlen(MSG_OK));
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// handleVariable_WriteValue
-//
-
-void
-tcpipClientObj::handleVariable_WriteValue(void)
-{
-    std::string name;
-    std::string value;
-
-    // Must be connected
-    if (STCP_CONN_STATE_CONNECTED != m_conn->conn_state) return;
-
-    vscp_trim(m_pClientItem->m_currentCommand);
-
-    std::deque<std::string> tokens;
-    vscp_split(tokens, m_pClientItem->m_currentCommand, "\n");
-
-    // Variable name
-    if (!tokens.empty()) {
-        name = tokens.front();
-        tokens.pop_front();
-    } else {
-        write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-        return;
-    }
-
-    // Variable value
-    if (!tokens.empty()) {
-
-        value = tokens.front();
-        tokens.pop_front();
-
-    } else {
-        write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-        return;
-    }
-
-    CVariable variable;
-    if (0 !=
-        m_pObj->m_variables.find(name, m_pClientItem->m_pUserItem, variable)) {
-
-        // Set value and encode as BASE64 when expected
-        variable.setValueFromString(variable.getType(), value, false);
-
-        // Update in database
-        if (!m_pObj->m_variables.update(variable, m_pClientItem->m_pUserItem)) {
-            write(MSG_VARIABLE_NO_SAVE, strlen(MSG_VARIABLE_NO_SAVE));
-            return;
-        }
-
-    } else {
-        write(MSG_VARIABLE_NOT_DEFINED, strlen(MSG_VARIABLE_NOT_DEFINED));
-    }
-
-    write(MSG_OK, strlen(MSG_OK));
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// handleVariable_WriteNote
-//
-
-void
-tcpipClientObj::handleVariable_WriteNote(void)
-{
-    std::string str;
-
-    // Must be connected
-    if (STCP_CONN_STATE_CONNECTED != m_conn->conn_state) return;
-
-    vscp_trim(m_pClientItem->m_currentCommand);
-
-    std::string name;
-    std::string note;
-
-    std::deque<std::string> tokens;
-    vscp_split(tokens, m_pClientItem->m_currentCommand, " ");
-
-    // Variable name
-    if (!tokens.empty()) {
-        name = tokens.front();
-        tokens.pop_front();
-    } else {
-        write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-        return;
-    }
-
-    // Variable value
-    if (!tokens.empty()) {
-
-        note = tokens.front();
-        tokens.pop_front();
-
-    } else {
-        write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-        return;
-    }
-
-    CVariable variable;
-    if (0 !=
-        m_pObj->m_variables.find(name, m_pClientItem->m_pUserItem, variable)) {
-
-        // Set value and encode as BASE64 when expected
-        variable.setNote(note, true);
-
-        // Update in database
-        if (!m_pObj->m_variables.update(variable, m_pClientItem->m_pUserItem)) {
-            write(MSG_VARIABLE_NO_SAVE, strlen(MSG_VARIABLE_NO_SAVE));
-            return;
-        }
-
-    } else {
-        write(MSG_VARIABLE_NOT_DEFINED, strlen(MSG_VARIABLE_NOT_DEFINED));
-    }
-
-    write(MSG_OK, strlen(MSG_OK));
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// handleVariable_Read
-//
-
-void
-tcpipClientObj::handleVariable_Read(bool bOKResponse)
-{
-    std::string str;
-
-    // Must be connected
-    if (STCP_CONN_STATE_CONNECTED != m_conn->conn_state) return;
-
-    vscp_trim(m_pClientItem->m_currentCommand);
-
-    CVariable variable;
-    if (0 != m_pObj->m_variables.find(m_pClientItem->m_currentCommand,
-                                      m_pClientItem->m_pUserItem,
-                                      variable)) {
-
-        str = variable.getAsString(false);
-        str += std::string("\r\n");
-        write(str);
-
-        write(MSG_OK, strlen(MSG_OK));
-
-    } else {
-        write(MSG_VARIABLE_NOT_DEFINED, strlen(MSG_VARIABLE_NOT_DEFINED));
-    }
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// handleVariable_ReadVal
-//
-
-void
-tcpipClientObj::handleVariable_ReadValue(bool bOKResponse)
-{
-    std::string str;
-
-    // Must be connected
-    if (STCP_CONN_STATE_CONNECTED != m_conn->conn_state) return;
-
-    vscp_trim(m_pClientItem->m_currentCommand);
-
-    CVariable variable;
-    if (0 != m_pObj->m_variables.find(m_pClientItem->m_currentCommand,
-                                      m_pClientItem->m_pUserItem,
-                                      variable)) {
-
-        variable.writeValueToString(str, true);
-        str += ("\r\n");
-        write(str.c_str(), strlen(str.c_str()));
-
-        write(MSG_OK, strlen(MSG_OK));
-
-    } else {
-        write(MSG_VARIABLE_NOT_DEFINED, strlen(MSG_VARIABLE_NOT_DEFINED));
-    }
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// handleVariable_ReadNote
-//
-
-void
-tcpipClientObj::handleVariable_ReadNote(bool bOKResponse)
-{
-    std::string str;
-
-    // Must be connected
-    if (STCP_CONN_STATE_CONNECTED != m_conn->conn_state) return;
-
-    vscp_trim(m_pClientItem->m_currentCommand);
-
-    CVariable variable;
-    if (0 != m_pObj->m_variables.find(m_pClientItem->m_currentCommand,
-                                      m_pClientItem->m_pUserItem,
-                                      variable)) {
-
-        variable.getNote(str, true);
-        str = ("+OK - ") + str + ("\r\n");
-        write(str.c_str(), strlen(str.c_str()));
-
-        write(MSG_OK, strlen(MSG_OK));
-
-    } else {
-        write(MSG_VARIABLE_NOT_DEFINED, strlen(MSG_VARIABLE_NOT_DEFINED));
-    }
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// handleVariable_Reset
-//
-
-void
-tcpipClientObj::handleVariable_Reset(void)
-{
-    std::string str;
-
-    // Must be connected
-    if (STCP_CONN_STATE_CONNECTED != m_conn->conn_state) return;
-
-    vscp_trim(m_pClientItem->m_currentCommand);
-
-    CVariable variable;
-
-    if (0 != m_pObj->m_variables.find(m_pClientItem->m_currentCommand,
-                                      m_pClientItem->m_pUserItem,
-                                      variable)) {
-
-        variable.reset();
-
-        // Update in database
-        if (!m_pObj->m_variables.update(variable, m_pClientItem->m_pUserItem)) {
-            write(MSG_VARIABLE_NO_SAVE, strlen(MSG_VARIABLE_NO_SAVE));
-            return;
-        }
-
-    } else {
-        write(MSG_VARIABLE_NOT_DEFINED, strlen(MSG_VARIABLE_NOT_DEFINED));
-    }
-
-    write(MSG_OK, strlen(MSG_OK));
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// handleVariable_ReadReset
-//
-
-void
-tcpipClientObj::handleVariable_ReadReset(void)
-{
-    std::string str;
-
-    // Must be connected
-    if (STCP_CONN_STATE_CONNECTED != m_conn->conn_state) return;
-
-    vscp_trim(m_pClientItem->m_currentCommand);
-
-    if (m_pClientItem->CommandStartsWith(("vscp."))) {
-        write(MSG_VARIABLE_NOT_STOCK, strlen(MSG_VARIABLE_NOT_STOCK));
-        return;
-    }
-
-    CVariable variable;
-
-    if (0 != m_pObj->m_variables.find(m_pClientItem->m_currentCommand,
-                                      m_pClientItem->m_pUserItem,
-                                      variable)) {
-
-        variable.writeValueToString(str);
-        str = ("+OK - ") + str + ("\r\n");
-        write(str.c_str(), strlen(str.c_str()));
-
-        variable.reset();
-
-        // Update in database
-        if (!m_pObj->m_variables.update(variable, m_pClientItem->m_pUserItem)) {
-            write(MSG_VARIABLE_NO_SAVE, strlen(MSG_VARIABLE_NO_SAVE));
-            return;
-        }
-
-    } else {
-        write(MSG_VARIABLE_NOT_DEFINED, strlen(MSG_VARIABLE_NOT_DEFINED));
-    }
-
-    write(MSG_OK, strlen(MSG_OK));
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// handleVariable_Remove
-//
-
-void
-tcpipClientObj::handleVariable_Remove(void)
-{
-    std::string str;
-
-    // Must be connected
-    if (STCP_CONN_STATE_CONNECTED != m_conn->conn_state) return;
-
-    vscp_trim(m_pClientItem->m_currentCommand);
-
-    if (m_pClientItem->CommandStartsWith(("vscp."))) {
-        write(MSG_VARIABLE_NOT_STOCK, strlen(MSG_VARIABLE_NOT_STOCK));
-        return;
-    }
-
-    if (!m_pObj->m_variables.remove(m_pClientItem->m_currentCommand,
-                                    m_pClientItem->m_pUserItem)) {
-        write(MSG_VARIABLE_NOT_DEFINED, strlen(MSG_VARIABLE_NOT_DEFINED));
-    }
-
-    write(MSG_OK, strlen(MSG_OK));
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// handleVariable_ReadRemove
-//
-
-void
-tcpipClientObj::handleVariable_ReadRemove(void)
-{
-    std::string str;
-
-    // Must be connected
-    if (STCP_CONN_STATE_CONNECTED != m_conn->conn_state) return;
-
-    vscp_trim(m_pClientItem->m_currentCommand);
-
-    if (m_pClientItem->CommandStartsWith(("vscp."))) {
-        write(MSG_VARIABLE_NOT_STOCK, strlen(MSG_VARIABLE_NOT_STOCK));
-        return;
-    }
-
-    CVariable variable;
-    if (0 != m_pObj->m_variables.find(m_pClientItem->m_currentCommand,
-                                      m_pClientItem->m_pUserItem,
-                                      variable)) {
-
-        variable.writeValueToString(str);
-        str = ("+OK - ") + str + ("\r\n");
-        write(str.c_str(), strlen(str.c_str()));
-
-        m_pObj->m_variables.remove(variable, m_pClientItem->m_pUserItem);
-
-    } else {
-        write(MSG_VARIABLE_NOT_DEFINED, strlen(MSG_VARIABLE_NOT_DEFINED));
-    }
-
-    write(MSG_OK, strlen(MSG_OK));
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// handleVariable_Length
-//
-
-void
-tcpipClientObj::handleVariable_Length(void)
-{
-    std::string str;
-
-    // Must be connected
-    if (STCP_CONN_STATE_CONNECTED != m_conn->conn_state) return;
-
-    vscp_trim(m_pClientItem->m_currentCommand);
-
-    CVariable variable;
-    if (0 != m_pObj->m_variables.find(m_pClientItem->m_currentCommand,
-                                      m_pClientItem->m_pUserItem,
-                                      variable)) {
-
-        str = vscp_str_format("%zu", variable.getLength());
-        str = str + "\r\n";
-        write(str.c_str(), strlen(str.c_str()));
-
-        m_pObj->m_variables.remove(variable, m_pClientItem->m_pUserItem);
-
-    } else {
-        write(MSG_VARIABLE_NOT_DEFINED, strlen(MSG_VARIABLE_NOT_DEFINED));
-    }
-
-    write(MSG_OK, strlen(MSG_OK));
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// handleVariable_Load
-//
-
-void
-tcpipClientObj::handleVariable_Load(void)
-{
-    std::string path;                      // Empty to load from default path
-    m_pObj->m_variables.loadFromXML(path); // TODO add path + type
-
-    write(MSG_OK, strlen(MSG_OK));
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// handleVariable_Save
-//
-
-void
-tcpipClientObj::handleVariable_Save(void)
-{
-    std::string path;
-
-    // Must be connected
-    if (STCP_CONN_STATE_CONNECTED != m_conn->conn_state) return;
-
-    vscp_trim(m_pClientItem->m_currentCommand);
-
-    // Construct path to save to (always relative to root)
-    // may not contain ".."
-    path = m_pObj->m_rootFolder;
-    path += m_pClientItem->m_currentCommand;
-
-    if (path.npos != path.find((".."))) {
-        write(MSG_INVALID_PATH, strlen(MSG_INVALID_PATH));
-        return;
-    }
-
-    m_pObj->m_variables.save(path);
-
-    write(MSG_OK, strlen(MSG_OK));
-}
 
 // ****************************************************************************
 

@@ -29,13 +29,9 @@
 #if !defined(CONTROLOBJECT_H__INCLUDED_)
 #define CONTROLOBJECT_H__INCLUDED_
 
-#include <sqlite3.h>
-
 #include <clientlist.h>
 #include <devicelist.h>
 #include <interfacelist.h>
-#include <remotevariable.h>
-#include <tables.h>
 #include <tcpipsrv.h>
 #include <userlist.h>
 #include <vscp.h>
@@ -282,7 +278,7 @@ class CControlObject
      * been read and will replace duplicate values, if any.
      * @return true on success
      */
-    bool readConfigurationDB(void);
+    // bool readConfigurationDB(void);
 
     /*!
      * Read configuration value from configuration database.
@@ -291,9 +287,9 @@ class CControlObject
      * @param len Size of value buffer
      * @return true on success
      */
-    bool getConfigurationValueFromDatabase(const char *pName,
-                                           char *pBuf,
-                                           size_t len);
+    // bool getConfigurationValueFromDatabase(const char *pName,
+    //                                        char *pBuf,
+    //                                        size_t len);
 
     /*!
      * Write configuration datapair to configuration database.
@@ -302,33 +298,33 @@ class CControlObject
      * @param pValue Pointer to value to write as new configuration value
      * @return true on success
      */
-    bool addConfigurationValueToDatabase(const char *pName, const char *pValue);
+    // bool addConfigurationValueToDatabase(const char *pName, const char *pValue);
 
     /*!
      * Adds default configuration values to the configuration table. If
      * a configuration value does not exist it is created to make it easy to
      * add new values to later software versions
      */
-    void addDefaultConfigValues(void);
+    // void addDefaultConfigValues(void);
 
     /*!
      * Create configuration table
      * @return true on success
      */
-    bool doCreateConfigurationTable(void);
+    //bool doCreateConfigurationTable(void);
 
     /*!
      * Check if db table exists
      */
-    bool isDbTableExist(sqlite3 *db, const std::string &strTblName);
+    //bool isDbTableExist(sqlite3 *db, const std::string &strTblName);
 
     /*!
      * Check if a field n the database exist.
      * Can be used to updated generations of tables
      */
-    bool isDbFieldExist(sqlite3 *db,
-                        const std::string &strTblName,
-                        const std::string &strFieldName);
+    // bool isDbFieldExist(sqlite3 *db,
+    //                     const std::string &strTblName,
+    //                     const std::string &strFieldName);
 
     /*
      * Update field name in settings table
@@ -336,8 +332,8 @@ class CControlObject
      * @param strNewName New fieldname to set
      * @Return true on success.
      */
-    bool updateConfigurationRecordName(const std::string &strName,
-                                       const std::string &strNewName);
+    // bool updateConfigurationRecordName(const std::string &strName,
+    //                                    const std::string &strNewName);
 
     /*
      * Update field in settings table
@@ -345,13 +341,13 @@ class CControlObject
      * @param strValue Value to write to field
      * @Return true on success.
      */
-    bool updateConfigurationRecordItem(const std::string &strName,
-                                       const std::string &strValue);
+    // bool updateConfigurationRecordItem(const std::string &strName,
+    //                                    const std::string &strValue);
 
     /*!
         Update configuration databas if it has evolved
     */
-    bool updateConfigDb(void);
+    // bool updateConfigDb(void);
 
     /*!
      * Read in UDP nodes from the database
@@ -378,57 +374,57 @@ class CControlObject
     /*!
      * Create user table
      */
-    bool doCreateUserTable(void);
+    // bool doCreateUserTable(void);
 
     /*!
      * Create driver table
      */
-    bool doCreateDriverTable(void);
+    // bool doCreateDriverTable(void);
 
     /*!
      * Create guid table
      */
-    bool doCreateGuidTable(void);
+    // bool doCreateGuidTable(void);
 
     /*!
      * Create location table
      */
-    bool doCreateLocationTable(void);
+    // bool doCreateLocationTable(void);
 
     /*!
      * Create mdf table
      */
-    bool doCreateMdfCacheTable(void);
+    // bool doCreateMdfCacheTable(void);
 
     /*!
      * Create simpleui table
      */
-    bool doCreateSimpleUiTable(void);
+    // bool doCreateSimpleUiTable(void);
 
     /*!
      * Create simpleui item table
      */
-    bool doCreateSimpleUiItemTable(void);
+    // bool doCreateSimpleUiItemTable(void);
 
     /*!
      * Create zone table
      */
-    bool doCreateZoneTable(void);
+    // bool doCreateZoneTable(void);
 
     /*!
      * Create subzone table
      */
-    bool doCreateSubZoneTable(void);
+    // bool doCreateSubZoneTable(void);
 
     /*!
      * Create userdef table
      */
-    bool doCreateUserdefTableTable(void);
+    // bool doCreateUserdefTableTable(void);
 
     /*!
      * Get number of records in a database table
      */
-    long getCountRecordsDB(sqlite3 *db, std::string &table);
+    // long getCountRecordsDB(sqlite3 *db, std::string &table);
 
     /*!
      * Get the system key
@@ -567,7 +563,7 @@ class CControlObject
     //*****************************************************
 
     // Context for web server
-    struct web_context *m_web_ctx;
+    struct mg_context *m_web_ctx;
 
     // Enable webserver
     bool m_web_bEnable;
@@ -661,10 +657,10 @@ class CControlObject
     //**************************************************************************
 
     // Hash table for variables
-    CVariableStorage m_variables;
+    // CVariableStorage m_variables;
 
     // Mutex to protect variables
-    pthread_mutex_t m_variableMutex;
+    // pthread_mutex_t m_variableMutex;
 
     //**************************************************************************
     //                                SQLite3
@@ -674,17 +670,17 @@ class CControlObject
     //                    Databases
     //*****************************************************
 
-    std::string m_path_db_vscp_daemon; // Path to the VSCP daemon database
-    sqlite3 *m_db_vscp_daemon;
+    // std::string m_path_db_vscp_daemon; // Path to the VSCP daemon database
+    // sqlite3 *m_db_vscp_daemon;
 
     // Mutex to protect variables
-    pthread_mutex_t m_db_vscp_configMutex; // Mutex for the configuration table
+    // pthread_mutex_t m_db_vscp_configMutex; // Mutex for the configuration table
 
-    std::string m_path_db_vscp_data; // Path to the VSCP data database
-    sqlite3 *m_db_vscp_data;
+    // std::string m_path_db_vscp_data; // Path to the VSCP data database
+    // sqlite3 *m_db_vscp_data;
 
     // Mutex for client queue
-    //pthread_mutex_t m_clientMutex;
+    pthread_mutex_t m_clientMutex;
 
     // Mutex for device queue
     pthread_mutex_t m_deviceMutex;
@@ -718,8 +714,8 @@ class CControlObject
     pthread_mutex_t m_mutexUserList;
 
     // This is a list with defined tables
-    CUserTableObjList m_userTableObjects; // deque
-    pthread_mutex_t m_mutexUserTables;
+    // CUserTableObjList m_userTableObjects; // deque
+    // pthread_mutex_t m_mutexUserTables;
 
 
     // *************************************************************************
