@@ -1288,26 +1288,26 @@ CControlObject::sendEvent(CClientItem *pClientItem, vscpEvent *peventToSend)
         destguid.setAt(0, 0); // Interface GUID's have LSB bytes nilled
         destguid.setAt(1, 0);
 
-        syslog(LOG_DEBUG,
-               "Level I event over Level II "
-               "dest = %d:%d:%d:%d:%d:%d:%d:%d:"
-               "%d:%d:%d:%d:%d:%d:%d:%d:",
-               destguid.getAt(15),
-               destguid.getAt(14),
-               destguid.getAt(13),
-               destguid.getAt(12),
-               destguid.getAt(11),
-               destguid.getAt(10),
-               destguid.getAt(9),
-               destguid.getAt(8),
-               destguid.getAt(7),
-               destguid.getAt(6),
-               destguid.getAt(5),
-               destguid.getAt(4),
-               destguid.getAt(3),
-               destguid.getAt(2),
-               destguid.getAt(1),
-               destguid.getAt(0));
+        // syslog(LOG_DEBUG,
+        //        "Level I event over Level II "
+        //        "dest = %d:%d:%d:%d:%d:%d:%d:%d:"
+        //        "%d:%d:%d:%d:%d:%d:%d:%d:",
+        //        destguid.getAt(0),
+        //        destguid.getAt(1),
+        //        destguid.getAt(2),
+        //        destguid.getAt(3),
+        //        destguid.getAt(4),
+        //        destguid.getAt(5),
+        //        destguid.getAt(6),
+        //        destguid.getAt(7),
+        //        destguid.getAt(8),
+        //        destguid.getAt(9),
+        //        destguid.getAt(10),
+        //        destguid.getAt(11),
+        //        destguid.getAt(12),
+        //        destguid.getAt(13),
+        //        destguid.getAt(14),
+        //        destguid.getAt(15));
 
         // Find client
         pthread_mutex_lock(&m_clientList.m_mutexItemList);
@@ -1319,26 +1319,26 @@ CControlObject::sendEvent(CClientItem *pClientItem, vscpEvent *peventToSend)
              ++it) {
 
             CClientItem *pItem = *it;
-            syslog(
-              LOG_DEBUG,
-              "Test if = %d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d: %s",
-              pItem->m_guid.getAt(15),
-              pItem->m_guid.getAt(14),
-              pItem->m_guid.getAt(13),
-              pItem->m_guid.getAt(12),
-              pItem->m_guid.getAt(11),
-              pItem->m_guid.getAt(10),
-              pItem->m_guid.getAt(9),
-              pItem->m_guid.getAt(8),
-              pItem->m_guid.getAt(7),
-              pItem->m_guid.getAt(6),
-              pItem->m_guid.getAt(5),
-              pItem->m_guid.getAt(4),
-              pItem->m_guid.getAt(3),
-              pItem->m_guid.getAt(2),
-              pItem->m_guid.getAt(1),
-              pItem->m_guid.getAt(0),
-              pItem->m_strDeviceName.c_str());
+            // syslog(
+            //   LOG_DEBUG,
+            //   "Test if = %d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d: %s",
+            //   pItem->m_guid.getAt(0),
+            //   pItem->m_guid.getAt(1),
+            //   pItem->m_guid.getAt(2),
+            //   pItem->m_guid.getAt(3),
+            //   pItem->m_guid.getAt(4),
+            //   pItem->m_guid.getAt(5),
+            //   pItem->m_guid.getAt(6),
+            //   pItem->m_guid.getAt(7),
+            //   pItem->m_guid.getAt(8),
+            //   pItem->m_guid.getAt(9),
+            //   pItem->m_guid.getAt(10),
+            //   pItem->m_guid.getAt(11),
+            //   pItem->m_guid.getAt(12),
+            //   pItem->m_guid.getAt(13),
+            //   pItem->m_guid.getAt(14),
+            //   pItem->m_guid.getAt(15),
+            //   pItem->m_strDeviceName.c_str());
 
             if (pItem->m_guid == destguid) {
                 // Found
