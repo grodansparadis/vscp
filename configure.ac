@@ -114,8 +114,7 @@ PROJ_SUBDIRS="src/vscp/drivers/level1/can232/linux\
  src/vscp/drivers/level2/rawethernet/linux\
  src/vscp/drivers/level2/sim/linux\
  src/vscp/daemon/linux\
- src/vscp/vscp-mkpasswd\
- src/vscp/vscpcmd "
+ src/vscp/vscp-mkpasswd
 
 AC_ARG_ENABLE(rpi,
 [  --enable-rpi         Build Raspberry Pi specific stuff (default disabled)],
@@ -172,7 +171,6 @@ dnl
 
 AC_CONFIG_FILES([Makefile
          m4/Makefile
-         src/vscp/vscpcmd/Makefile
          src/vscp/daemon/linux/Makefile
          src/vscp/vscp-mkpasswd/Makefile
          src/vscp/drivers/level1/can232/linux/Makefile
