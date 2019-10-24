@@ -1,5 +1,0 @@
-This is a driver for the candrv kernel driver which support a lot of CAN cards. The driver is based on the terrific work done by  Arnaud Westenberg.
-
-The driver itself is available here 
-http://www.sourceforge.net/projects/can
-
