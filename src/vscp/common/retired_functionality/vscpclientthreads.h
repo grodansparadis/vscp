@@ -58,7 +58,7 @@ DECLARE_EVENT_TYPE(wxVSCP_RCV_LOST_EVENT,
 // Structure for CANAL drivers
 typedef struct
 {
-    std::string m_strDescription; // Decription of driver
+    std::string m_strDescription; // Description of driver
     std::string m_strPath;        // Path to driver
     std::string m_strConfig;      // Driver configuration string
     unsigned long m_flags;        // Driver flags
