@@ -1,17 +1,16 @@
 dnl Autoconf settings for VSCP
 dnl $Id: configure.in,v 1.5 2017/10/13 11:22:06 akhe Exp $
 
-AC_INIT( [vscp], [14.0.0], [akhe@grodansparadis.com])
-AC_CONFIG_SRCDIR([src/vscp/common/canalsuperwrapper.cpp])
-#AM_INIT_AUTOMAKE
+dnl Get version
+m4_builtin([include], VERSION.m4)
 
-CONFIGURE_LINE="$0 $*"
-CODENAME="Ant"
+AC_INIT( [vscp], [package_version], [akhe@grodansparadis.com])
+
 
 AC_CONFIG_MACRO_DIR(m4)
 
 AC_PREREQ(2.57)
-AC_CONFIG_SRCDIR([src/vscp/common/canalsuperwrapper.cpp])
+AC_CONFIG_SRCDIR([src/vscp/common/vscphelper.cpp])
 AC_CONFIG_AUX_DIR(autotools)
 AC_CONFIG_HEADERS([config.h])
 
@@ -114,7 +113,7 @@ PROJ_SUBDIRS="src/vscp/drivers/level1/can232/linux\
  src/vscp/drivers/level2/rawethernet/linux\
  src/vscp/drivers/level2/sim/linux\
  src/vscp/daemon/linux\
- src/vscp/vscp-mkpasswd
+ src/vscp/vscp-mkpasswd "
 
 AC_ARG_ENABLE(rpi,
 [  --enable-rpi         Build Raspberry Pi specific stuff (default disabled)],
@@ -142,21 +141,6 @@ echo "openssl 1.0 libs will be used."
 CFLAGS+=" -DOPENSSL_API_1_0"
 fi
 
-
-dnl
-dnl  Static build if wxWidgets
-dnl
-
-dnl WX AC_ARG_ENABLE(static,
-dnl WX [  --enable-static         static build of wxWidgets (default shared)],
-dnl WX [vscp_static=yes],[vscp_static=no])
-dnl test "${vscp_static}" != "yes" && vscp_static="no"
-
-dnl
-dnl  wxWindows module
-dnl
-
-
 EXTRALIBS="${EXTRALIBS} ${LIBS}"
 
 if test "${vscp_static}" = yes ; then
@@ -164,6 +148,11 @@ STATIC="yes"
 else
 STATIC="no"
 fi
+
+MAJOR_VERSION=major_version
+MINOR_VERSION=minor_version
+RELEASE_VERSION=release_version
+BUILD_VERSION=build_version
 
 dnl
 dnl Construct Makefiles
@@ -191,6 +180,18 @@ fi
 dnl Generate makefiles
 AC_OUTPUT
 
+
+dnl Give user some feedback
+echo
+echo   "           VSCP configuration"
+echo   "--------------------------------------------"
+echo   "VSCP version          : ${PACKAGE_VERSION} (major_version.minor_version.release_version.build_versio
+n)"
+echo   "System                : `uname -a` "
+echo   "Architecture          : $(arch)"
+echo   "VSCP GUI Build        : ${vscp_gui}"
+echo   "VSCP install dir      : ${VSCPDIR}"
+
 dnl Output some debugging information
 echo   "LIBS          : ${LIBS}"
 dnl WX echo   "WXLIBS        : ${WXLIBS}"
@@ -199,16 +200,6 @@ echo   "EXTRACPPFLAGS : ${CPPFLAGS}"
 echo   "EXTRACXXFLAGS : ${CXXFLAGS}"
 echo   "EXTRACFLAGS   : ${CFLAGS}"
 echo   "PROJ_SUBDIRS  : ${PROJ_SUBDIRS}"
-
-dnl Give user some feedback
-echo
-echo   "           VSCP configuration"
-echo   "--------------------------------------------"
-echo   "VSCP version          : `sh echo-version` (${PACKAGE_VERSION})"
-echo   "System                : `uname -a` "
-echo   "Architecture          : $(arch)"
-echo   "VSCP GUI Build        : ${vscp_gui}"
-echo   "VSCP install dir      : ${VSCPDIR}"
 
 dnl echo   "${ax_enable_debug}"
 if test "${ax_enable_debug}" = "yes"
