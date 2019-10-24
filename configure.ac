@@ -106,8 +106,7 @@ dnl
 dnl Project Sub directories
 dnl
 
-PROJ_SUBDIRS="src/vscp/drivers/level1/can232/linux\
- src/vscp/drivers/level2/wire1/linux\
+PROJ_SUBDIRS="src/vscp/drivers/level2/wire1/linux\
  src/vscp/drivers/level2/lmsensors/linux\
  src/vscp/drivers/level2/tcpdrv/linux\
  src/vscp/drivers/level2/rawethernet/linux\
@@ -162,7 +161,6 @@ AC_CONFIG_FILES([Makefile
          m4/Makefile
          src/vscp/daemon/linux/Makefile
          src/vscp/vscp-mkpasswd/Makefile
-         src/vscp/drivers/level1/can232/linux/Makefile
          src/vscp/drivers/level2/lmsensors/linux/Makefile
          src/vscp/drivers/level2/tcpdrv/linux/Makefile
          src/vscp/drivers/level2/rawethernet/linux/Makefile
