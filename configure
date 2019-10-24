@@ -6538,8 +6538,7 @@ else
 fi
 
 
-PROJ_SUBDIRS="src/vscp/drivers/level1/can232/linux\
- src/vscp/drivers/level2/wire1/linux\
+PROJ_SUBDIRS="src/vscp/drivers/level2/wire1/linux\
  src/vscp/drivers/level2/lmsensors/linux\
  src/vscp/drivers/level2/tcpdrv/linux\
  src/vscp/drivers/level2/rawethernet/linux\
@@ -6632,7 +6631,7 @@ RELEASE_VERSION=0
 BUILD_VERSION=0
 
 
-ac_config_files="$ac_config_files Makefile m4/Makefile src/vscp/daemon/linux/Makefile src/vscp/vscp-mkpasswd/Makefile src/vscp/drivers/level1/can232/linux/Makefile src/vscp/drivers/level2/lmsensors/linux/Makefile src/vscp/drivers/level2/tcpdrv/linux/Makefile src/vscp/drivers/level2/rawethernet/linux/Makefile src/vscp/drivers/level2/wire1/linux/Makefile src/vscp/drivers/level2/sim/linux/Makefile"
+ac_config_files="$ac_config_files Makefile m4/Makefile src/vscp/daemon/linux/Makefile src/vscp/vscp-mkpasswd/Makefile src/vscp/drivers/level2/lmsensors/linux/Makefile src/vscp/drivers/level2/tcpdrv/linux/Makefile src/vscp/drivers/level2/rawethernet/linux/Makefile src/vscp/drivers/level2/wire1/linux/Makefile src/vscp/drivers/level2/sim/linux/Makefile"
 
 
 if test "${vscp_rpi}" = yes ; then
@@ -7337,7 +7336,6 @@ do
     "m4/Makefile") CONFIG_FILES="$CONFIG_FILES m4/Makefile" ;;
     "src/vscp/daemon/linux/Makefile") CONFIG_FILES="$CONFIG_FILES src/vscp/daemon/linux/Makefile" ;;
     "src/vscp/vscp-mkpasswd/Makefile") CONFIG_FILES="$CONFIG_FILES src/vscp/vscp-mkpasswd/Makefile" ;;
-    "src/vscp/drivers/level1/can232/linux/Makefile") CONFIG_FILES="$CONFIG_FILES src/vscp/drivers/level1/can232/linux/Makefile" ;;
     "src/vscp/drivers/level2/lmsensors/linux/Makefile") CONFIG_FILES="$CONFIG_FILES src/vscp/drivers/level2/lmsensors/linux/Makefile" ;;
     "src/vscp/drivers/level2/tcpdrv/linux/Makefile") CONFIG_FILES="$CONFIG_FILES src/vscp/drivers/level2/tcpdrv/linux/Makefile" ;;
     "src/vscp/drivers/level2/rawethernet/linux/Makefile") CONFIG_FILES="$CONFIG_FILES src/vscp/drivers/level2/rawethernet/linux/Makefile" ;;
