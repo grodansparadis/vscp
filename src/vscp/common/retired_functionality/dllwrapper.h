@@ -30,8 +30,7 @@
 #define DLLWRAPPER_H__66E4FA3F_1CA1_405D_AAF1_5F9B1272D75A__INCLUDED_
 
 #include "canaldlldef.h" // Holds the function declarations
-#include "wx/wx.h"
-#include <wx/dynlib.h>
+
 
 /*!
     \file dllwrapper.h
