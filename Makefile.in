@@ -24,7 +24,7 @@ install: install-folders install-startup-script install-config install-sample-da
 	@echo
 	@echo "Your VSCP & Friends system is now installed."
 	@echo "============================================"
-	@echo 
+	@echo
 	@echo "If this is the first install of VSCP & Friends on this system issue"
 	@echo "'make install-first' to install data files and configuration files or"
 	@echo "manually do the steps below."
@@ -34,7 +34,7 @@ install: install-folders install-startup-script install-config install-sample-da
 	@echo "2.) Use 'make install-config' to install default configuration files "
 	@echo
 	@echo "3.) Use 'make install-startup' install startup.script on Debian systems."
-	@echo 
+	@echo
 	@echo "4.) Use 'make install-manpages' to install on-line docs."
 	@echo
 	@echo "5.) Use 'make install-sample-data' to install on-line docs."
@@ -168,7 +168,7 @@ install-sample-certs:
 	@echo "- Installing tcp/ip client sample certificat."
 	@if [ ! -e $(DESTDIR)@VSCPDIR@/certs/tcpip_client.pem ]; then\
 	    $(INSTALL_PROGRAM) -b -m744 install_files/certs/tcpip_client.pem $(DESTDIR)@VSCPDIR@/certs/;\
-	fi	
+	fi
 
 install-manpages:
 	@echo "- Installing man-pages."
@@ -177,7 +177,6 @@ install-manpages:
 	$(INSTALL_PROGRAM) -d $(DESTDIR)/usr/share/man/man1
 	$(INSTALL_PROGRAM) -b -m644 man/vscpd.8 $(DESTDIR)/usr/share/man/man8/
 	$(INSTALL_PROGRAM) -b -m644 man/uvscpd.8 $(DESTDIR)/usr/share/man/man8/
-	$(INSTALL_PROGRAM) -b -m644 man/vscpworks.1 $(DESTDIR)/usr/share/man/man1/
 	$(INSTALL_PROGRAM) -b -m644 man/vscpcmd.1 $(DESTDIR)/usr/share/man/man1/
 	$(INSTALL_PROGRAM) -b -m644 man/vscp-mkpasswd.1 $(DESTDIR)/usr/share/man/man1/
 	$(INSTALL_PROGRAM) -b -m644 man/vscphelperlib.1 $(DESTDIR)/usr/share/man/man1/
@@ -215,4 +214,3 @@ distclean: clean
 deb:
 	@for d in $(PROJ_SUBDIRS); do (echo "====================================================" &&\
 	echo "Building deb in dir " $$d && echo "====================================================" && cd $$d && $(MAKE) deb ); done
-

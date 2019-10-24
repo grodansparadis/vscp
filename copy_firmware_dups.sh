@@ -1,5 +1,5 @@
 #!/bin/sh
-# This file is used to make duplicates of critical files for the 
+# This file is used to make duplicates of critical files for the
 # vscp_firmware repository
 
 cp src/vscp/common/canal.h ../vscp-firmware/common
@@ -19,5 +19,4 @@ cp src/vscp/common/vscp_serial.h ../vscp-install-windows/files/include
 
 cp src/vscp/common/canal_macro.h ../vscp-install-windows/files/include
 cp src/vscp/common/canaldlldef.h ../vscp-install-windows/files/include
-cp src/vscp/helperlib/vscphelperlib.h ../vscp-install-windows/files/include
-
+cp ~/development/VSCP/vscp-helper-lib/vscphelperlib.h ../vscp-install-windows/files/include

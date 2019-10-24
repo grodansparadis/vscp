@@ -82,7 +82,6 @@
 #include <vscp_debug.h>
 #include <vscpd_caps.h>
 #include <vscpdb.h>
-#include <vscpeventhelper.h>
 #include <vscphelper.h>
 #include <vscpmd5.h>
 #include <websocket.h>
