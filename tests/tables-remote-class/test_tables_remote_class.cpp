@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// test_tables_remote_class.c 
+// test_tables_remote_class.c
 //
 
 #include <stdio.h>
@@ -36,11 +36,6 @@ int main(int argc, char* argv[])
     char *pPassword = (char *)INTERFACE1_PASSWORD;
 
     VscpRemoteTcpIf m_vscpif;
-
-    if ( !::wxInitialize() ) {
-        fprintf(stderr, "Failed to initialize the wxWindows library, aborting.");
-        return -1;
-    }
 
     if ( argc > 1 ) {
 
@@ -97,7 +92,7 @@ int main(int argc, char* argv[])
 
     printf("\n\nHit ENTER to terminate Error Count= %d\n", error_cnt );
     (void)getchar();
-   
+
     return 0;
-    
+
 }

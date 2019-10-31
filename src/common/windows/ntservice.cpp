@@ -6,27 +6,13 @@
     //#pragma implementation
 #endif
 
-// For compilers that support precompilation, includes "wx.h".
-#include "wx/wxprec.h"
-
-#ifdef __BORLANDC__
-    #pragma hdrstop
-#endif
-
-#ifndef WX_PRECOMP
-#include "wx/wx.h"
-#endif
-
-#ifdef __WXMSW__
-    #include  "wx/ownerdrw.h"
-#endif
 
 #include <NTService.h>
 #include <version.h>  // A little ugly hack
 
-// 
+//
 // Global variables.
-// 
+//
 
 HANDLE  ghStopEvent;
 HANDLE  ghThreads[ MAX_THREADS ];
@@ -42,10 +28,10 @@ CNTService* CNTService::m_pThis = NULL;
 CNTService::CNTService( LPCTSTR szServiceName )
 {
     // copy the address of the current object so we can access it from
-    // the static member callback functions. 
-    // WARNING: This limits the application to only one CNTService object. 
+    // the static member callback functions.
+    // WARNING: This limits the application to only one CNTService object.
     m_pThis = this;
-    
+
     // Set the default service name and version
     wcscpy( m_szServiceName, szServiceName );
     m_iMajorVersion = VSCPD_MAJOR_VERSION;
@@ -58,7 +44,7 @@ CNTService::CNTService( LPCTSTR szServiceName )
         ghThreads[ i ] = NULL;
     }
 
-    // set up the initial service status 
+    // set up the initial service status
     m_hServiceStatus = NULL;
     m_Status.dwServiceType = SERVICE_WIN32_OWN_PROCESS;
     m_Status.dwCurrentState = SERVICE_STOPPED;
@@ -107,18 +93,18 @@ BOOL CNTService::ParseStandardArgs(int argc, char* argv[])
                IsInstalled() ? "currently" : "not");
         return true; // say we processed the argument
 
-    } 
+    }
     // * * * -i Install * * *
     else if (_stricmp(argv[1], "-i") == 0) {
         // Request to install.
         if ( IsInstalled() ) {
             printf("%s is already installed\n", m_szServiceName);
-        } 
+        }
         else  {
             // Try and install the copy that's running
             if ( Install() ) {
                 printf("%s installed\n", m_szServiceName);
-            } 
+            }
             else {
                 printf("%s failed to install. Error %d\n", m_szServiceName, GetLastError());
             }
@@ -126,14 +112,14 @@ BOOL CNTService::ParseStandardArgs(int argc, char* argv[])
 
         return true; // say we processed the argument
 
-    } 
+    }
     // * * * -u Uninstall * * *
     else if ( _stricmp(argv[1], "-u" ) == 0) {
 
         // Request to uninstall.
         if ( !IsInstalled() ) {
             printf("%s is not installed\n", m_szServiceName);
-        } 
+        }
         else {
             // Try and remove the copy that's installed
             if ( Uninstall() ) {
@@ -142,7 +128,7 @@ BOOL CNTService::ParseStandardArgs(int argc, char* argv[])
                 ::GetModuleFileName( NULL, szFilePath, sizeof(szFilePath));
                 printf("%s removed. (You must delete the file (%s) yourself.)\n",
                        m_szServiceName, szFilePath);
-            } 
+            }
             else {
                 printf("Could not remove %s. Error %d\n", m_szServiceName, GetLastError());
             }
@@ -157,10 +143,10 @@ BOOL CNTService::ParseStandardArgs(int argc, char* argv[])
     }
     // * * * -? Show available commands * * *
     else if ( _stricmp(argv[1], "-h") == 0 ) {
-        showHelp();	
+        showHelp();
         return true;
     }
-         
+
     // Don't recognise the args
     return false;
 }
@@ -192,7 +178,7 @@ void CNTService::showHelp( void )
 
 ///////////////////////////////////////////////////////////////////////////////
 // IsInstalled
-// 
+//
 
 BOOL CNTService::IsInstalled()
 {
@@ -214,7 +200,7 @@ BOOL CNTService::IsInstalled()
 
         ::CloseServiceHandle( hSCM );
     }
-    
+
     return bResult;
 }
 
@@ -273,9 +259,9 @@ BOOL CNTService::Install()
     ::RegSetValueEx( hKey,
                         _("EventMessageFile"),
                         0,
-                        REG_EXPAND_SZ, 
+                        REG_EXPAND_SZ,
                         (CONST BYTE*)szFilePath,
-                        wcslen(szFilePath) + 1 );     
+                        wcslen(szFilePath) + 1 );
 
     // Set the supported types flags.
     DWORD dwData = EVENTLOG_ERROR_TYPE | EVENTLOG_WARNING_TYPE | EVENTLOG_INFORMATION_TYPE;
@@ -317,13 +303,13 @@ BOOL CNTService::Uninstall()
         if ( ::DeleteService( hService ) ) {
             LogEvent(EVENTLOG_INFORMATION_TYPE, EVMSG_REMOVED, m_szServiceName);
             bResult = TRUE;
-        } 
+        }
         else {
             LogEvent(EVENTLOG_ERROR_TYPE, EVMSG_NOTREMOVED, m_szServiceName);
         }
         ::CloseServiceHandle(hService);
     }
-    
+
     ::CloseServiceHandle(hSCM);
     return bResult;
 }
@@ -354,7 +340,7 @@ void CNTService::LogEvent(WORD wType, DWORD dwID,
             iStr++;
         }
     }
-        
+
     // Check the event source has been registered and if
     // not then register it now
     if ( !m_hEventSource ) {
@@ -377,13 +363,13 @@ void CNTService::LogEvent(WORD wType, DWORD dwID,
 
 ///////////////////////////////////////////////////////////////////////////////
 // StartService
-// 
+//
 // Service startup and registration
 //
 
 BOOL CNTService::StartService()
 {
-    SERVICE_TABLE_ENTRY st[] = 
+    SERVICE_TABLE_ENTRY st[] =
     {
         { m_szServiceName, ServiceMain },
         { NULL, NULL }
@@ -392,7 +378,7 @@ BOOL CNTService::StartService()
     DebugMsg(_("Calling StartServiceCtrlDispatcher()"));
     BOOL b = ::StartServiceCtrlDispatcher( st );
     DebugMsg(_("Returned from StartServiceCtrlDispatcher()"));
-    
+
     return b;
 }
 
@@ -406,7 +392,7 @@ void CNTService::ServiceMain(DWORD dwArgc, LPTSTR* lpszArgv)
 {
     // Get a pointer to the C++ object
     CNTService* pService = m_pThis;
-    
+
     pService->DebugMsg(_("Entering CNTService::ServiceMain()"));
 
     // Register the control request handler
@@ -420,7 +406,7 @@ void CNTService::ServiceMain(DWORD dwArgc, LPTSTR* lpszArgv)
 
     // Start the initialisation
     if ( pService->Initialize() )  {
-        // Do the real work. 
+        // Do the real work.
         // When the Run function returns, the service has stopped.
         pService->m_bIsRunning = true;
         pService->m_Status.dwWin32ExitCode = 0;
@@ -441,13 +427,13 @@ void CNTService::ServiceMain(DWORD dwArgc, LPTSTR* lpszArgv)
         // We failed to kill the threads we have to
         // abort anyway but we tell the world that we do so....
         pService->DebugMsg(_("Failed to terminate all threads in CNTService::ServiceMain()"));
-    }    
+    }
 
     // close the event handle and the thread handle
     CloseHandle( ghStopEvent );
     for (int i=0; i<MAX_THREADS; i++ ) {
         if ( ghThreads[i] ) {
-            CloseHandle( ghThreads[i] );	 
+            CloseHandle( ghThreads[i] );
         }
     }
 
@@ -475,7 +461,7 @@ void CNTService::SetStatus(DWORD dwState)
 
 ///////////////////////////////////////////////////////////////////////////////
 // Initialize
-// 
+//
 // Service initialization
 //
 
@@ -485,10 +471,10 @@ BOOL CNTService::Initialize()
 
     // Start the initialization
     SetStatus(SERVICE_START_PENDING);
-    
+
     // Perform the actual initialization
-    BOOL bResult = OnInit(); 
-    
+    BOOL bResult = OnInit();
+
     // Set final state
     m_Status.dwWin32ExitCode = GetLastError();
     m_Status.dwCheckPoint = 0;
@@ -496,9 +482,9 @@ BOOL CNTService::Initialize()
     if ( !bResult ) {
         LogEvent(EVENTLOG_ERROR_TYPE, EVMSG_FAILEDINIT);
         SetStatus(SERVICE_STOPPED);
-        return FALSE;    
+        return FALSE;
     }
-    
+
     LogEvent(EVENTLOG_INFORMATION_TYPE, EVMSG_STARTED);
     SetStatus(SERVICE_RUNNING);
 
@@ -508,10 +494,10 @@ BOOL CNTService::Initialize()
 
 ///////////////////////////////////////////////////////////////////////////////
 // Run
-// 
+//
 // main function to do the real work of the service
 //
-// This function performs the main work of the service. 
+// This function performs the main work of the service.
 // When this function returns the service has stopped.
 //
 
@@ -530,7 +516,7 @@ void CNTService::Run()
 
 ///////////////////////////////////////////////////////////////////////////////
 // Handler
-// 
+//
 // Control request handlers
 //
 // static member function (callback) to handle commands from the
@@ -541,11 +527,11 @@ void CNTService::Handler( DWORD dwOpcode )
 {
     // Get a pointer to the object
     CNTService* pService = m_pThis;
-    
+
     pService->DebugMsg(_("CNTService::Handler(%lu)"), dwOpcode);
-    
+
     switch ( dwOpcode ) {
-    
+
     case SERVICE_CONTROL_STOP:			// 1
         pService->SetStatus(SERVICE_STOP_PENDING);
         pService->OnStop();
@@ -574,7 +560,7 @@ void CNTService::Handler( DWORD dwOpcode )
             if (!pService->OnUserControl( dwOpcode ) ) {
                 pService->LogEvent(EVENTLOG_ERROR_TYPE, EVMSG_BADREQUEST);
             }
-        } 
+        }
         else {
             pService->LogEvent(EVENTLOG_ERROR_TYPE, EVMSG_BADREQUEST);
         }
@@ -589,8 +575,8 @@ void CNTService::Handler( DWORD dwOpcode )
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// OnInit       
-// 
+// OnInit
+//
 
 BOOL CNTService::OnInit()
 {
@@ -600,7 +586,7 @@ BOOL CNTService::OnInit()
 
 ///////////////////////////////////////////////////////////////////////////////
 // OnStop
-// 
+//
 
 void CNTService::OnStop()
 {
@@ -678,4 +664,3 @@ void CNTService::DebugMsg(LPCTSTR pszFormat, ...)
     wcscat( buf, _("\n") );
     OutputDebugString( buf );
 }
-

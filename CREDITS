@@ -7,11 +7,6 @@ contributors.
 
 As with all work VSCP & Friends is built on work made by others.
 
-First of all the people that built the wxWidgets toolset must be credited.
-Without this excellent cross platform package this work has been impossible
-to complete. Special thanks to Julian Smart, Robert Roebling
-http://wxwidgets.org/
-
 The people at Cesanta that built the Mongoose package which is used for much
 of the communication code has made life a lot easier for a low resource
 developer. This is an excellent package. A special thanks to Sergey Lyubka.

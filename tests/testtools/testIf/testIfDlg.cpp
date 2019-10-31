@@ -5,26 +5,26 @@
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version
 // 2 of the License, or (at your option) any later version.
-// 
+//
 // This file is part is part of CANAL (CAN Abstraction Layer)
 //  (http://www.vscp.org)
 //
 // Copyright (C) 2000-2010 Ake Hedman, eurosource, <akhe@eurosource.se>
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with this program see the file COPYING.  If not, write to
 // the Free Software Foundation, 59 Temple Place - Suite 330,
 // Boston, MA 02111-1307, USA.
 //
-// $RCSfile: testIfDlg.cpp,v $                                       
-// $Date: 2005/01/05 12:16:21 $                                  
-// $Author: akhe $                                              
-// $Revision: 1.2 $ 
+// $RCSfile: testIfDlg.cpp,v $
+// $Date: 2005/01/05 12:16:21 $
+// $Author: akhe $
+// $Revision: 1.2 $
 
 
 
@@ -185,9 +185,9 @@ BOOL CTestPipeIfDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// Set small icon
 
 	loadRegistryData();
-	
+
 	m_ctrlComboMsgSelect.SetCurSel( COMBO_OPEN );
-	
+
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
 
@@ -213,7 +213,7 @@ void CTestPipeIfDlg::OnSysCommand(UINT nID, LPARAM lParam)
 //  to draw the icon.  For MFC applications using the document/view model,
 //  this is automatically done for you by the framework.
 
-void CTestPipeIfDlg::OnPaint() 
+void CTestPipeIfDlg::OnPaint()
 {
 	if (IsIconic()) {
 		CPaintDC dc(this); // device context for painting
@@ -253,9 +253,9 @@ HCURSOR CTestPipeIfDlg::OnQueryDragIcon()
 // OnCancel
 //
 
-void CTestPipeIfDlg::OnCancel() 
+void CTestPipeIfDlg::OnCancel()
 {
-	saveRegistryData();	
+	saveRegistryData();
 	CDialog::OnCancel();
 }
 
@@ -263,7 +263,7 @@ void CTestPipeIfDlg::OnCancel()
 // OnButtonOpen
 //
 
-void CTestPipeIfDlg::OnButtonOpen() 
+void CTestPipeIfDlg::OnButtonOpen()
 {
 	unsigned char *p;
 	unsigned char a,b,c,d;
@@ -274,7 +274,7 @@ void CTestPipeIfDlg::OnButtonOpen()
 	b = *(p+1);
 	c = *(p+2);
 	d = *(p+3);
-	
+
 	canalMsg Msg;
 	getDataValues( &Msg );
 }
@@ -296,7 +296,7 @@ unsigned long CTestPipeIfDlg::getDataValue( const char *szData )
 		val = strtoul( szData, &nstop, 10 );
 	}
 
-	return val;	
+	return val;
 }
 
 
@@ -331,50 +331,50 @@ bool CTestPipeIfDlg::getDataValues( canalMsg *pMsg )
 
 	// Is the ID valid?
 	if ( pMsg->id  > 0x1FFFFFFF ) return false;
-	
+
 	pMsg->data[ 7 ] = (unsigned char)getDataValue( m_Data7 );
 	if ( m_Data7.GetLength() > 0 ) nData = 8;
 
 	pMsg->data[ 6 ] = (unsigned char)getDataValue( m_Data6 );
 	if ( ( 0 == nData ) && ( m_Data6.GetLength() > 0  ) ) nData = 7;
-	
+
 	pMsg->data[ 5 ] = (unsigned char)getDataValue( m_Data5 );
 	if ( ( 0 == nData ) && ( m_Data5.GetLength() > 0  ) ) nData = 6;
-	
+
 	pMsg->data[ 4 ] = (unsigned char)getDataValue( m_Data4 );
 	if ( ( 0 == nData ) && ( m_Data4.GetLength() > 0  ) ) nData = 5;
-	
+
 	pMsg->data[ 3 ] = (unsigned char)getDataValue( m_Data3 );
 	if ( ( 0 == nData ) && ( m_Data3.GetLength() > 0  ) ) nData = 4;
-	
+
 	pMsg->data[ 2 ] = (unsigned char)getDataValue( m_Data2 );
 	if ( ( 0 == nData ) && ( m_Data2.GetLength() > 0  ) ) nData = 3;
-	
+
 	pMsg->data[ 1 ] = (unsigned char)getDataValue( m_Data1 );
 	if ( ( 0 == nData ) && ( m_Data1.GetLength() > 0  ) ) nData = 2;
-	
+
 	pMsg->data[ 0 ] = (unsigned char)getDataValue( m_Data0 );
 	if ( ( 0 == nData ) && ( m_Data0.GetLength() > 0  ) ) nData = 1;
-	
+
 	pMsg->sizeData = nData;
 
 	// Extended message
 	pMsg->flags = 0;
 
 	if ( m_ctrlExtended.GetCheck() ) {
-		pMsg->flags |= CANAL_IDFLAG_EXTENDED; 
+		pMsg->flags |= CANAL_IDFLAG_EXTENDED;
 	}
 
 	// Remote Frame
 	if ( m_ctrlCheckRTR.GetCheck() ) {
-		pMsg->flags |= CANAL_IDFLAG_RTR; 	
+		pMsg->flags |= CANAL_IDFLAG_RTR;
 	}
-	
+
 	// Write back data to dialog
 	writeDataToDialog( pMsg );
 
 	return rv;
-}	
+}
 
 //////////////////////////////////////////////////////////////////////////////
 // writeDataToDialog
@@ -382,26 +382,26 @@ bool CTestPipeIfDlg::getDataValues( canalMsg *pMsg )
 
 void CTestPipeIfDlg::writeDataToDialog( canalMsg *pMsg )
 {
-	
-	ultoa( pMsg->id, m_MsgId.GetBufferSetLength( 32 ), 16 );	
-	m_MsgId = "0x" + m_MsgId; 
 
-	
+	ultoa( pMsg->id, m_MsgId.GetBufferSetLength( 32 ), 16 );
+	m_MsgId = "0x" + m_MsgId;
+
+
 	// Extended flag
 	if ( pMsg->flags & CANAL_IDFLAG_EXTENDED ) {
-		m_ctrlExtended.SetCheck( 1 ); 
+		m_ctrlExtended.SetCheck( 1 );
 	}
 	else {
 		m_ctrlExtended.SetCheck( 0 );
 	}
 
 	if ( pMsg->id  > 0x7ff ) {
-		m_ctrlExtended.SetCheck( 1 ); 
+		m_ctrlExtended.SetCheck( 1 );
 	}
 
 	// RTR flag
 	if ( pMsg->flags & CANAL_IDFLAG_RTR ) {
-		m_ctrlCheckRTR.SetCheck( 1 ); 
+		m_ctrlCheckRTR.SetCheck( 1 );
 	}
 	else {
 		m_ctrlCheckRTR.SetCheck( 0 );
@@ -409,7 +409,7 @@ void CTestPipeIfDlg::writeDataToDialog( canalMsg *pMsg )
 
 	// Error flag
 	if ( pMsg->flags & CANAL_IDFLAG_ERROR ) {
-		m_ctrlCheckError.SetCheck( 1 ); 
+		m_ctrlCheckError.SetCheck( 1 );
 	}
 	else {
 		m_ctrlCheckError.SetCheck( 0 );
@@ -428,67 +428,67 @@ void CTestPipeIfDlg::writeDataToDialog( canalMsg *pMsg )
 
 	if ( pMsg->sizeData > 0 ) {
 		m_Data0 = "";
-		ultoa( pMsg->data[ 0 ], m_Data0.GetBufferSetLength( 32 ), 16 );	
-		m_Data0 = "0x" + m_Data0; 
+		ultoa( pMsg->data[ 0 ], m_Data0.GetBufferSetLength( 32 ), 16 );
+		m_Data0 = "0x" + m_Data0;
 	}
 
 	if ( pMsg->sizeData > 1 ) {
 		m_Data1 = "";
-		ultoa( pMsg->data[ 1 ], m_Data1.GetBufferSetLength( 32 ), 16 );	
+		ultoa( pMsg->data[ 1 ], m_Data1.GetBufferSetLength( 32 ), 16 );
 		m_Data1 = "0x" + m_Data1;
 	}
 
 	if ( pMsg->sizeData > 2 ) {
 		m_Data2 = "";
-		ultoa( pMsg->data[ 2 ], m_Data2.GetBufferSetLength( 32 ), 16 );	
+		ultoa( pMsg->data[ 2 ], m_Data2.GetBufferSetLength( 32 ), 16 );
 		m_Data2 = "0x" + m_Data2;
 	}
 
 	if ( pMsg->sizeData > 3 ) {
 		m_Data3 = "";
-		ultoa( pMsg->data[ 3 ], m_Data3.GetBufferSetLength( 32 ), 16 );	
+		ultoa( pMsg->data[ 3 ], m_Data3.GetBufferSetLength( 32 ), 16 );
 		m_Data3 = "0x" + m_Data3;
 	}
 
 	if ( pMsg->sizeData > 4 ) {
 		m_Data4 = "";
-		ultoa( pMsg->data[ 4 ], m_Data4.GetBufferSetLength( 32 ), 16 );	
+		ultoa( pMsg->data[ 4 ], m_Data4.GetBufferSetLength( 32 ), 16 );
 		m_Data4 = "0x" + m_Data4;
 	}
 
 	if ( pMsg->sizeData > 5 ) {
 		m_Data5 = "";
-		ultoa( pMsg->data[ 5 ], m_Data5.GetBufferSetLength( 32 ), 16 );	
+		ultoa( pMsg->data[ 5 ], m_Data5.GetBufferSetLength( 32 ), 16 );
 		m_Data5 = "0x" + m_Data5;
 	}
 
 	if ( pMsg->sizeData > 6 ) {
 		m_Data6 = "";
-		ultoa( pMsg->data[ 6 ], m_Data6.GetBufferSetLength( 32 ), 16 );	
+		ultoa( pMsg->data[ 6 ], m_Data6.GetBufferSetLength( 32 ), 16 );
 		m_Data6 = "0x" + m_Data6;
 	}
 
 	if ( pMsg->sizeData > 7 ) {
 		m_Data7 = "";
-		ultoa( pMsg->data[ 7 ], m_Data7.GetBufferSetLength( 32 ), 16 );	
+		ultoa( pMsg->data[ 7 ], m_Data7.GetBufferSetLength( 32 ), 16 );
 		m_Data7 = "0x" + m_Data7;
 	}
 
-	UpdateData( false );	
+	UpdateData( false );
 }
 
 //////////////////////////////////////////////////////////////////////////////
 // OnSelchangeComboMsgSelect
 //
 
-void CTestPipeIfDlg::OnSelchangeComboMsgSelect() 
+void CTestPipeIfDlg::OnSelchangeComboMsgSelect()
 {
 	switch ( m_ctrlComboMsgSelect.GetCurSel() ) {
 
 		case COMBO_NOOP:
-			m_ctrlEditOption.ShowWindow( SW_HIDE );	
+			m_ctrlEditOption.ShowWindow( SW_HIDE );
 			m_ctrlOption1Label.ShowWindow( SW_HIDE );
-			m_ctrlEditOption2.ShowWindow( SW_HIDE );	
+			m_ctrlEditOption2.ShowWindow( SW_HIDE );
 			m_ctrlOption2Label.ShowWindow( SW_HIDE );
 			break;
 
@@ -502,97 +502,97 @@ void CTestPipeIfDlg::OnSelchangeComboMsgSelect()
 			break;
 
 		case COMBO_CLOSE:
-			m_ctrlEditOption.ShowWindow( SW_HIDE );	
+			m_ctrlEditOption.ShowWindow( SW_HIDE );
 			m_ctrlOption1Label.ShowWindow( SW_HIDE );
-			m_ctrlEditOption2.ShowWindow( SW_HIDE );	
+			m_ctrlEditOption2.ShowWindow( SW_HIDE );
 			m_ctrlOption2Label.ShowWindow( SW_HIDE );
 			break;
 
 		case COMBO_SEND:
-			m_ctrlEditOption.ShowWindow( SW_HIDE );	
+			m_ctrlEditOption.ShowWindow( SW_HIDE );
 			m_ctrlOption1Label.ShowWindow( SW_HIDE );
-			m_ctrlEditOption2.ShowWindow( SW_HIDE );	
+			m_ctrlEditOption2.ShowWindow( SW_HIDE );
 			m_ctrlOption2Label.ShowWindow( SW_HIDE );
 			break;
 
 		case COMBO_RECEIVE:
 			m_ctrlOption1Label.SetWindowText("ID-Filter");
-			m_ctrlEditOption.ShowWindow( SW_SHOW );	
+			m_ctrlEditOption.ShowWindow( SW_SHOW );
 			m_ctrlOption1Label.ShowWindow( SW_SHOW );
-			m_ctrlEditOption2.ShowWindow( SW_HIDE );	
+			m_ctrlEditOption2.ShowWindow( SW_HIDE );
 			m_ctrlOption2Label.ShowWindow( SW_HIDE );
-			break;	
-			
+			break;
+
 		case COMBO_DATA_AVAILABLE:
-			m_ctrlEditOption.ShowWindow( SW_HIDE );	
+			m_ctrlEditOption.ShowWindow( SW_HIDE );
 			m_ctrlOption1Label.ShowWindow( SW_HIDE );
-			m_ctrlEditOption2.ShowWindow( SW_HIDE );	
+			m_ctrlEditOption2.ShowWindow( SW_HIDE );
 			m_ctrlOption2Label.ShowWindow( SW_HIDE );
 			break;
 
 		case COMBO_STATUS:
-			m_ctrlEditOption.ShowWindow( SW_HIDE );	
+			m_ctrlEditOption.ShowWindow( SW_HIDE );
 			m_ctrlOption1Label.ShowWindow( SW_HIDE );
-			m_ctrlEditOption2.ShowWindow( SW_HIDE );	
+			m_ctrlEditOption2.ShowWindow( SW_HIDE );
 			m_ctrlOption2Label.ShowWindow( SW_HIDE );
 			break;
 
 		case COMBO_STATISTICS:
-			m_ctrlEditOption.ShowWindow( SW_HIDE );	
+			m_ctrlEditOption.ShowWindow( SW_HIDE );
 			m_ctrlOption1Label.ShowWindow( SW_HIDE );
-			m_ctrlEditOption2.ShowWindow( SW_HIDE );	
+			m_ctrlEditOption2.ShowWindow( SW_HIDE );
 			m_ctrlOption2Label.ShowWindow( SW_HIDE );
 			break;
 
 		case COMBO_FILTER:
 			m_ctrlOption1Label.SetWindowText("Filter");
-			m_ctrlEditOption.ShowWindow( SW_SHOW );	
+			m_ctrlEditOption.ShowWindow( SW_SHOW );
 			m_ctrlOption1Label.ShowWindow( SW_SHOW );
-			m_ctrlEditOption2.ShowWindow( SW_HIDE );	
+			m_ctrlEditOption2.ShowWindow( SW_HIDE );
 			m_ctrlOption2Label.ShowWindow( SW_HIDE );
 			break;
 
 		case COMBO_MASK:
 			m_ctrlOption1Label.SetWindowText("Mask");
-			m_ctrlEditOption.ShowWindow( SW_SHOW );	
+			m_ctrlEditOption.ShowWindow( SW_SHOW );
 			m_ctrlOption1Label.ShowWindow( SW_SHOW );
-			m_ctrlEditOption2.ShowWindow( SW_HIDE );	
+			m_ctrlEditOption2.ShowWindow( SW_HIDE );
 			m_ctrlOption2Label.ShowWindow( SW_HIDE );
 			break;
 
 		case COMBO_BAUDRATE:
 			m_ctrlOption1Label.SetWindowText("Baudrate");
-			m_ctrlEditOption.ShowWindow( SW_SHOW );	
+			m_ctrlEditOption.ShowWindow( SW_SHOW );
 			m_ctrlOption1Label.ShowWindow( SW_SHOW );
-			m_ctrlEditOption2.ShowWindow( SW_HIDE );	
+			m_ctrlEditOption2.ShowWindow( SW_HIDE );
 			m_ctrlOption2Label.ShowWindow( SW_HIDE );
 			break;
 
 		case COMBO_VERSION:
-			m_ctrlEditOption.ShowWindow( SW_HIDE );	
+			m_ctrlEditOption.ShowWindow( SW_HIDE );
 			m_ctrlOption1Label.ShowWindow( SW_HIDE );
-			m_ctrlEditOption2.ShowWindow( SW_HIDE );	
+			m_ctrlEditOption2.ShowWindow( SW_HIDE );
 			m_ctrlOption2Label.ShowWindow( SW_HIDE );
 			break;
 
 		case COMBO_DLLVERSION:
-			m_ctrlEditOption.ShowWindow( SW_HIDE );	
+			m_ctrlEditOption.ShowWindow( SW_HIDE );
 			m_ctrlOption1Label.ShowWindow( SW_HIDE );
-			m_ctrlEditOption2.ShowWindow( SW_HIDE );	
+			m_ctrlEditOption2.ShowWindow( SW_HIDE );
 			m_ctrlOption2Label.ShowWindow( SW_HIDE );
 			break;
 
 		case COMBO_VENDORSTRING:
-			m_ctrlEditOption.ShowWindow( SW_HIDE );	
+			m_ctrlEditOption.ShowWindow( SW_HIDE );
 			m_ctrlOption1Label.ShowWindow( SW_HIDE );
-			m_ctrlEditOption2.ShowWindow( SW_HIDE );	
+			m_ctrlEditOption2.ShowWindow( SW_HIDE );
 			m_ctrlOption2Label.ShowWindow( SW_HIDE );
 			break;
 
 		case COMBO_LEVEL:
-			m_ctrlEditOption.ShowWindow( SW_HIDE );	
+			m_ctrlEditOption.ShowWindow( SW_HIDE );
 			m_ctrlOption1Label.ShowWindow( SW_HIDE );
-			m_ctrlEditOption2.ShowWindow( SW_HIDE );	
+			m_ctrlEditOption2.ShowWindow( SW_HIDE );
 			m_ctrlOption2Label.ShowWindow( SW_HIDE );
 			break;
 
@@ -600,7 +600,7 @@ void CTestPipeIfDlg::OnSelchangeComboMsgSelect()
 			m_ctrlComboMsgSelect.SetCurSel( COMBO_OPEN );
 			m_EditStatus = "Invalid item in comman combo\r\n" + m_EditStatus;
 			break;
-	}	
+	}
 
 	UpdateData( false );
 }
@@ -610,7 +610,7 @@ void CTestPipeIfDlg::OnSelchangeComboMsgSelect()
 // OnButtonSendMsg
 //
 
-void CTestPipeIfDlg::OnButtonSendMsg() 
+void CTestPipeIfDlg::OnButtonSendMsg()
 {
 	unsigned long filter, mask, baudrate, version, level;
 	canalMsg canmsg;
@@ -647,7 +647,7 @@ void CTestPipeIfDlg::OnButtonSendMsg()
 					opt2 = getDataValue( m_szOption2 );
 					if ( m_canalif.doCmdOpen( m_szOption1.GetBufferSetLength( m_szOption1.GetLength() ), 1 ) ) {
 						m_bOpen = true;
-						m_ctrlConnectionState.SetIcon( m_hIconOpen );	
+						m_ctrlConnectionState.SetIcon( m_hIconOpen );
 						m_EditStatus = "Interface is open.\r\n" + m_EditStatus;
 					}
 					else {
@@ -666,7 +666,7 @@ void CTestPipeIfDlg::OnButtonSendMsg()
 			if ( m_bOpen ) {
 				if ( m_canalif.doCmdClose() ) {
 					m_bOpen = false;
-					m_ctrlConnectionState.SetIcon( m_hIconClosed );	
+					m_ctrlConnectionState.SetIcon( m_hIconClosed );
 					m_EditStatus = "Interface is closed.\r\n" + m_EditStatus;
 				}
 				else {
@@ -700,7 +700,7 @@ void CTestPipeIfDlg::OnButtonSendMsg()
 			else {
 				m_EditStatus = "Receive command failed.\r\n" + m_EditStatus;
 			}
-			break;	
+			break;
 
 		/// * * * * *  D A T A  A V A I L A B L E  * * * * *
 
@@ -728,7 +728,7 @@ void CTestPipeIfDlg::OnButtonSendMsg()
 			}
 			break;
 
-		/// * * * * *  S T A T I S T I C S  * * * * * 
+		/// * * * * *  S T A T I S T I C S  * * * * *
 
 		case COMBO_STATISTICS:
 			if ( m_canalif.doCmdStatistics( &statistics ) ) {
@@ -795,8 +795,8 @@ void CTestPipeIfDlg::OnButtonSendMsg()
 			if ( m_canalif.doCmdVersion( &version ) ) {
 				m_EditStatus = "Version command executed successfully.\r\n" + m_EditStatus;
 				sprintf( buf, "CANAL Version = %i.%i.%i\r\n",
-								((version & 0xff000000) >> 24), 
-								((version & 0x00ff0000) >> 16), 
+								((version & 0xff000000) >> 24),
+								((version & 0x00ff0000) >> 16),
 								((version & 0x0000ff00) >> 8) );
 				m_EditStatus = buf + m_EditStatus;
 			}
@@ -811,8 +811,8 @@ void CTestPipeIfDlg::OnButtonSendMsg()
 			if ( m_canalif.doCmdDLLVersion( &version ) ) {
 				m_EditStatus = "DLL Version command executed successfully.\r\n" + m_EditStatus;
 				sprintf( buf, "CANAL DLL Version = %i.%i.%i\r\n",
-								((version & 0xff000000) >> 24), 
-								((version & 0x00ff0000) >> 16), 
+								((version & 0xff000000) >> 24),
+								((version & 0x00ff0000) >> 16),
 								((version & 0x0000ff00) >> 8) );
 				m_EditStatus = buf + m_EditStatus;
 			}
@@ -826,7 +826,7 @@ void CTestPipeIfDlg::OnButtonSendMsg()
 		case COMBO_VENDORSTRING:
       {
 			  *buf = 0;
-        //wxString str( buf, wxConvUTF8 );
+ 
 			  if ( m_canalif.doCmdVendorString( buf, sizeof( buf ) ) ) {
 				  sprintf( wrkbuf, "CANAL Vendor string = %s\r\n", buf );
 				  m_EditStatus = "\r\nVendor String command executed successfully.\r\n" + m_EditStatus;
@@ -854,7 +854,7 @@ void CTestPipeIfDlg::OnButtonSendMsg()
 		default:
 			m_EditStatus = "Invalid command\r\n" + m_EditStatus;
 			break;
-	}	
+	}
 
 	UpdateData( false );
 }
@@ -864,7 +864,7 @@ void CTestPipeIfDlg::OnButtonSendMsg()
 // loadRegistryData
 //
 
-void CTestPipeIfDlg::loadRegistryData()	
+void CTestPipeIfDlg::loadRegistryData()
 {
 	HKEY hk;
 	DWORD val;
@@ -872,13 +872,13 @@ void CTestPipeIfDlg::loadRegistryData()
 	DWORD type;
 	char nDataBytes = 0;
 	unsigned char buf[ 512 ];
-	
+
 	if ( ERROR_SUCCESS == RegOpenKeyEx(	HKEY_LOCAL_MACHINE,
 											"software\\canal\\testpipeif",
 											NULL,
 											KEY_READ,
 											&hk ) ) {
-				
+
 		// * * * canid * * *
 		lv = sizeof( DWORD );
 		if ( ERROR_SUCCESS == RegQueryValueEx(	hk,
@@ -887,7 +887,7 @@ void CTestPipeIfDlg::loadRegistryData()
 												&type,
 												(unsigned char *)&val,
 												&lv ) ) {
-			
+
 		}
 		else {
 			val = 0;
@@ -1051,7 +1051,7 @@ void CTestPipeIfDlg::loadRegistryData()
 												(unsigned char *)&val,
 												&lv ) ) {
 			if ( val )  m_ctrlExtended.SetCheck( 1 ) ;
-		}		 
+		}
 
 		// * * * RTR check box * * *
 		lv = sizeof( DWORD );
@@ -1085,7 +1085,7 @@ void CTestPipeIfDlg::loadRegistryData()
 												&lv ) ) {
 			m_szOption2 = buf;
 		}
-		
+
 		RegCloseKey( hk );
 
 	}
@@ -1109,7 +1109,7 @@ void CTestPipeIfDlg::saveRegistryData()
 
 	// Get screen data
 	getDataValues( &canmsg );
-	
+
 	if ( ERROR_SUCCESS == RegOpenKeyEx(	HKEY_LOCAL_MACHINE,
 											"software\\canal",
 											NULL,
@@ -1118,15 +1118,15 @@ void CTestPipeIfDlg::saveRegistryData()
 	{
 		HKEY hk_opt;
 		DWORD disp;
- 
-		RegCreateKeyEx( hk, "testpipeif", 0L, 
-			REG_OPTION_NON_VOLATILE, 
+
+		RegCreateKeyEx( hk, "testpipeif", 0L,
+			REG_OPTION_NON_VOLATILE,
 			NULL,
 			KEY_ALL_ACCESS,
 			NULL,
 			&hk_opt,
 			&disp );
-		
+
 		DWORD val;
 
 		// CAN id
@@ -1136,7 +1136,7 @@ void CTestPipeIfDlg::saveRegistryData()
 						NULL,
 						REG_DWORD,
 						(CONST BYTE *)&val,
-						sizeof( val )		
+						sizeof( val )
 						);
 
 		// CAN Data bytes
@@ -1148,8 +1148,8 @@ void CTestPipeIfDlg::saveRegistryData()
 						NULL,
 						REG_DWORD,
 						(CONST BYTE *)&val,
-						sizeof( val )		
-						);	
+						sizeof( val )
+						);
 		}
 
 		// # of data bytes
@@ -1198,7 +1198,7 @@ void CTestPipeIfDlg::saveRegistryData()
 										sizeof( val )	);
 
 		RegCloseKey( hk );
-		RegCloseKey( hk_opt ); 
+		RegCloseKey( hk_opt );
 	}
 }
 
@@ -1206,7 +1206,7 @@ void CTestPipeIfDlg::saveRegistryData()
 //////////////////////////////////////////////////////////////////////////////
 // OnButtonClearData
 
-void CTestPipeIfDlg::OnButtonClearData() 
+void CTestPipeIfDlg::OnButtonClearData()
 {
 	m_Data0 = "";
 	m_Data1 = "";

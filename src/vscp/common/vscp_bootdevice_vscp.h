@@ -91,13 +91,13 @@ class CBootDevice_vscp : public CBootDevice
         @param path Path to file
         @return true on success
     */
-    bool loadBinaryFile(const wxString &path, uint16_t typeHexfile);
+    bool loadBinaryFile(const std::string &path, uint16_t typeHexfile);
 
     /*!
         Show info for hex file
         @param Pointer to HTML window that will receive information.
     */
-    void showInfo(wxHtmlWindow *phtmlWnd);
+    void showInfo(std::string *phtmlWnd);
 
     /*!
         Set a device in bootmode

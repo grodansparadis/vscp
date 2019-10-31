@@ -192,7 +192,6 @@ echo   "VSCP install dir      : ${VSCPDIR}"
 
 dnl Output some debugging information
 echo   "LIBS          : ${LIBS}"
-dnl WX echo   "WXLIBS        : ${WXLIBS}"
 echo   "EXTRALIBS     : ${EXTRALIBS}"
 echo   "EXTRACPPFLAGS : ${CPPFLAGS}"
 echo   "EXTRACXXFLAGS : ${CXXFLAGS}"

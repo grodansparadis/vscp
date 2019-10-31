@@ -16,10 +16,6 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-#include "wx/wxprec.h"
-#include "wx/wx.h"
-#include "wx/defs.h"
-#include "wx/app.h"
 
 #ifdef WIN32
 #include <wincrypt.h>	// Cryptographic API Prototypes and Definitions
@@ -65,7 +61,7 @@ char *Cmd5::digest(unsigned char *pstr)
     HCRYPTPROV hCryptProv;
     HCRYPTHASH hHash;
     unsigned char bHash[0x7f];
-    DWORD dwHashLen = 16; // The MD5 algorithm always returns 16 bytes.  
+    DWORD dwHashLen = 16; // The MD5 algorithm always returns 16 bytes.
 
 
     if (CryptAcquireContext(&hCryptProv,
@@ -135,15 +131,15 @@ char *Cmd5::digest(unsigned char *pstr)
     /*
         MD5_CTX *pctx;
         if ( 0 == MD5_Init( pctx ) ) return NULL;
-        if ( 0 == MD5_Update( pctx, 
+        if ( 0 == MD5_Update( pctx,
                                                             pstr,
                                             strlen( (const char *)pstr ) ) ) return NULL;
         unsigned char buf[ 17 ];
-        if ( 0 == MD5_Final( buf, pctx ) ) return NULL;	
-        sprintf( m_szDigest, 
+        if ( 0 == MD5_Final( buf, pctx ) ) return NULL;
+        sprintf( m_szDigest,
             "%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x\0",
             buf[0],buf[1],buf[2],buf[3],buf[4],buf[5],buf[6],buf[7],
-            buf[8],buf[9],buf[10],buf[11],buf[12],buf[13],buf[14],buf[15] ); 
+            buf[8],buf[9],buf[10],buf[11],buf[12],buf[13],buf[14],buf[15] );
      */
 
 #endif
@@ -151,5 +147,3 @@ char *Cmd5::digest(unsigned char *pstr)
     return m_szDigest;
 
 }
-
-

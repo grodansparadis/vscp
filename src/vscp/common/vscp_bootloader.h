@@ -55,7 +55,7 @@
  * VSCPBootloader class declaration
  */
 
-class VSCPBootloader : public wxWizard
+class VSCPBootloader
 {
 
   public:

@@ -127,7 +127,6 @@ typedef struct
 {
     std::string m_strCmd;    // Command name
     uint8_t m_securityLevel; // Security level for command (0-15)
-    // wxProcess *m_pfnCommand;            // Function to execute
 } structCommand;
 
 /*!

@@ -103,30 +103,6 @@ cguid::operator!=(const cguid &guid)
     return !(*this == guid);
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// getFromString
-//
-
-/*void cguid::getFromString( const std::string& strGUID )
-{
-    unsigned long val;
-    std::string wxstr = strGUID;
-
-    // Check for default string (all nills)
-    wxstr.Trim();
-    if ( "-" == wxstr ) {
-        clear();
-        return;
-    }
-
-    std::stringTokenizer tkz( strGUID, wxT ( ":" ) );
-    for ( int i=0; i<16; i++ ) {
-        tkz.GetNextToken().ToULong( &val, 16 );
-        m_id[ i ] = ( uint8_t ) val;
-        // If no tokens left no meaning to continue
-        if ( !tkz.HasMoreTokens() ) break;
-    }
-}*/
 
 void
 cguid::getFromString(const std::string &strGUID)
