@@ -43,7 +43,7 @@ install: install-folders install-startup-script install-config install-sample-da
 	@echo
 	@echo "All of steps 1-6 can be done with 'make install-system' or 'make install-all'"
 	@echo
-	@echo "Use 'make intall-web-samples' to install sample web-pages."
+	@echo "Use 'make install-web-samples' to install sample web-pages."
 	@echo
 	@echo " - Start the VSCP daemon with 'sudo /etc/init.d/vscpd start'"
 	@echo "   or 'vscpd -s' to start the daemon in the  foreground."
@@ -77,28 +77,15 @@ install-system: install-folders install-startup-script install-config install-sa
 install-folders:
 	@echo "- Creating folders."
 	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@
-	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/logs
-	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/actions
-	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/scripts
-	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/scripts/javascript
-	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/scripts/lua
 	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/ux
 	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/web
 	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/web/js
-	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/web/service
 	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/certs
 	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/drivers
 	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/drivers/level1
 	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/drivers/level2
 	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/drivers/level2
-	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/upload
-	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/web/css
-	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/web/images
-	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/web/lib
-	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/web/testws
 	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/vscp
-	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/tables
-	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/mdf
 	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/tmp
 
 install-startup-script:

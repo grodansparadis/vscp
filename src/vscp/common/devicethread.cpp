@@ -46,9 +46,9 @@
 #include <canal_macro.h>
 #include <controlobject.h>
 #include <dllist.h>
+#include <level2drvdef.h>
 #include <vscp.h>
 #include <vscp_debug.h>
-#include <vscpdlldef.h>
 #include <vscphelper.h>
 
 #include "devicethread.h"
@@ -637,21 +637,19 @@ deviceThread(void *pData)
             return NULL;
         }
 
-        // * * * * VSCP BLOCKINGSEND * * * *
-        if (NULL ==
-            (pDevItem->m_proc_VSCPBlockingSend =
-               (LPFNDLL_VSCPBLOCKINGSEND)dlsym(hdll, "VSCPBlockingSend"))) {
+        // * * * * VSCPWRITE * * * *
+        if (NULL == (pDevItem->m_proc_VSCPWrite =
+                       (LPFNDLL_VSCPWRITE)dlsym(hdll, "VSCPWrite"))) {
             // Free the library
             syslog(LOG_ERR,
-                   "%s: Unable to get dl entry for VSCPBlockingSend.",
+                   "%s: Unable to get dl entry for VSCPWrite.",
                    pDevItem->m_strName.c_str());
             return NULL;
         }
 
-        // * * * * VSCP BLOCKINGRECEIVE * * * *
-        if (NULL == (pDevItem->m_proc_VSCPBlockingReceive =
-                       (LPFNDLL_VSCPBLOCKINGRECEIVE)dlsym(
-                         hdll, "VSCPBlockingReceive"))) {
+        // * * * * VSCPREAD * * * *
+        if (NULL == (pDevItem->m_proc_VSCPRead =
+                       (LPFNDLL_VSCPREAD)dlsym(hdll, "VSCPRead"))) {
             // Free the library
             syslog(LOG_ERR,
                    "%s: Unable to get dl entry for VSCPBlockingReceive.",
@@ -659,23 +657,12 @@ deviceThread(void *pData)
             return NULL;
         }
 
-        // * * * * VSCP GETLEVEL * * * *
-        if (NULL == (pDevItem->m_proc_VSCPGetLevel =
-                       (LPFNDLL_VSCPGETLEVEL)dlsym(hdll, "VSCPGetLevel"))) {
+        // * * * * VSCP GET VERSION * * * *
+        if (NULL == (pDevItem->m_proc_VSCPGetVersion =
+                       (LPFNDLL_VSCPGETVERSION)dlsym(hdll, "VSCPGetVersion"))) {
             // Free the library
             syslog(LOG_ERR,
-                   "%s: Unable to get dl entry for VSCPGetLevel.",
-                   pDevItem->m_strName.c_str());
-            return NULL;
-        }
-
-        // * * * * VSCP GET DLL VERSION * * * *
-        if (NULL ==
-            (pDevItem->m_proc_VSCPGetDllVersion =
-               (LPFNDLL_VSCPGETDLLVERSION)dlsym(hdll, "VSCPGetDllVersion"))) {
-            // Free the library
-            syslog(LOG_ERR,
-                   "%s: Unable to get dl entry for VSCPGetDllVersion.",
+                   "%s: Unable to get dl entry for VSCPGetVersion.",
                    pDevItem->m_strName.c_str());
             return NULL;
         }
@@ -702,35 +689,46 @@ deviceThread(void *pData)
             return NULL;
         }
 
-        // * * * * VSCP GET WEB PAGE TEMPLATE * * * *
-        if (NULL == (pDevItem->m_proc_VSCPGetWebPageTemplate =
-                       (LPFNDLL_VSCPGETWEBPAGETEMPLATE)dlsym(
-                         hdll, "VSCPGetWebPageTemplate"))) {
+        // * * * * VSCP GET CONFIG PAGE INFO * * * *
+        if (NULL == (pDevItem->m_proc_VSCPGetConfigPageInfo =
+                       (LPFNDLL_VSCPGETCONFIGPAGEINFO)dlsym(
+                         hdll, "VSCPGetConfigPageInfo"))) {
             // Free the library
             syslog(LOG_ERR,
-                   "%s: Unable to get dl entry for VSCPGetWebPageTemplate.",
+                   "%s: Unable to get dl entry for VSCPGetConfigPageInfo.",
                    pDevItem->m_strName.c_str());
             return NULL;
         }
 
-        // * * * * VSCP GET WEB PAGE INFO * * * *
-        if (NULL ==
-            (pDevItem->m_proc_VSCPGetWebPageInfo =
-               (LPFNDLL_VSCPGETWEBPAGEINFO)dlsym(hdll, "VSCPGetWebPageInfo"))) {
+        // * * * * VSCP CONFIG PAGE UPDATE * * * *
+        if (NULL == (pDevItem->m_proc_VSCPConfigPageUpdate =
+                       (LPFNDLL_VSCPCONFIGPAGEUPDATE)dlsym(
+                         hdll, "VSCPConfigPageUpdate"))) {
             // Free the library
             syslog(LOG_ERR,
-                   "%s: Unable to get dl entry for VSCPGetWebPageInfo.",
+                   "%s: Unable to get dl entry for VSCPConfigPageUpdate.",
                    pDevItem->m_strName.c_str());
             return NULL;
         }
 
-        // * * * * VSCP WEB PAGE UPDATE * * * *
+        // * * * * VSCP GET COMMAND INFO * * * *
         if (NULL ==
-            (pDevItem->m_proc_VSCPWebPageupdate =
-               (LPFNDLL_VSCPWEBPAGEUPDATE)dlsym(hdll, "VSCPWebPageupdate"))) {
+            (pDevItem->m_proc_VSCPGetCommandInfo =
+               (LPFNDLL_VSCPGETCOMMANDINFO)dlsym(hdll, "VSCPGetCommandInfo"))) {
             // Free the library
             syslog(LOG_ERR,
-                   "%s: Unable to get dl entry for VSCPWebPageupdate.",
+                   "%s: Unable to get dl entry for VSCPGetCommandInfo.",
+                   pDevItem->m_strName.c_str());
+            return NULL;
+        }
+
+        // * * * * VSCP GET COMMAND INFO * * * *
+        if (NULL ==
+            (pDevItem->m_proc_VSCPExecuteCommand =
+               (LPFNDLL_VSCPEXECUTECOMMAND)dlsym(hdll, "VSCPExecuteCommand"))) {
+            // Free the library
+            syslog(LOG_ERR,
+                   "%s: Unable to get dl entry for VSCPExecuteCommand.",
                    pDevItem->m_strName.c_str());
             return NULL;
         }
@@ -741,80 +739,17 @@ deviceThread(void *pData)
                    pDevItem->m_strName.c_str());
         }
 
-        // Username, password, host and port can be set in configuration file.
-        // Read in them here if they are.
-        std::string strHost("127.0.0.1");
-        short port = 9598;
-
-        std::deque<std::string> tokens;
-        vscp_split(tokens, pDevItem->m_strParameter, ";");
-        if (false == tokens.empty()) {
-
-            //CVariable variable;
-
-            // Get prefix
-            std::string prefix = tokens.front();
-            tokens.pop_front();
-
-            // Check if username is specified in the configuration file
-            // CUserItem *pAdminUser =
-            //   pDevItem->m_pCtrlObject->m_userList.getUser(USER_ID_ADMIN);
-            // if (pCtrlObj->m_variables.find(
-            //       pDevItem->m_strName + "_username", pAdminUser, variable)) {
-            //     std::string str;
-            //     if (VSCP_DAEMON_VARIABLE_CODE_STRING == variable.getType()) {
-            //         str                        = variable.getValue();
-            //         pCtrlObj->m_driverUsername = str;
-            //     }
-            // }
-
-            // Check if password is specified in the configuration file
-            // if (pCtrlObj->m_variables.find(
-            //       pDevItem->m_strName + "_password", pAdminUser, variable)) {
-            //     std::string str;
-            //     if (VSCP_DAEMON_VARIABLE_CODE_STRING == variable.getType()) {
-            //         str                        = variable.getValue();
-            //         pCtrlObj->m_driverPassword = str;
-            //     }
-            // }
-
-            // Check if host is specified in the configuration file
-            // if (pCtrlObj->m_variables.find(
-            //       pDevItem->m_strName + "_host", pAdminUser, variable)) {
-            //     std::string str;
-            //     if (VSCP_DAEMON_VARIABLE_CODE_STRING == variable.getType()) {
-            //         str     = variable.getValue();
-            //         strHost = str;
-            //     }
-            // }
-
-            // Check if host is specified in the configuration file
-            // if (pCtrlObj->m_variables.find(
-            //       pDevItem->m_strName + "_port", pAdminUser, variable)) {
-            //     std::string str;
-            //     if (VSCP_DAEMON_VARIABLE_CODE_INTEGER == variable.getType()) {
-            //         str  = variable.getValue();
-            //         port = vscp_readStringValue(str);
-            //     }
-            // }
-        }
-
         // Open up the driver
-        pDevItem->m_openHandle = pDevItem->m_proc_VSCPOpen(
-          pCtrlObj->m_driverUsername.c_str(),
-          (const char *)pCtrlObj->m_driverPassword.c_str(),
-          (const char *)strHost.c_str(),
-          port,
-          (const char *)pDevItem->m_strName.c_str(),
-          (const char *)pDevItem->m_strParameter.c_str());
+        pDevItem->m_openHandle =
+          pDevItem->m_proc_VSCPOpen(pDevItem->m_strParameter.c_str());
 
         if (0 == pDevItem->m_openHandle) {
             // Free the library
             syslog(LOG_ERR,
                    "%s: [Device tread] Unable to open VSCP "
-                   "driver (check username/password/path/"
-                   "rights). Possible additional info from driver "
-                   "in syslog.",
+                   " level II driver (path, config file access rights)."
+                   " There may be additional info from driver "
+                   "in syslog. If not enable debug flag in drivers config file",
                    pDevItem->m_strName.c_str());
             return NULL;
         }
@@ -1156,8 +1091,7 @@ deviceLevel2ReceiveThread(void *pData)
 
         pEvent = new vscpEvent;
         if (NULL == pEvent) continue;
-        rv = pDevItem->m_proc_VSCPBlockingReceive(
-          pDevItem->m_openHandle, pEvent, 500);
+        rv = pDevItem->m_proc_VSCPRead(pDevItem->m_openHandle, pEvent, 500);
 
         if ((CANAL_ERROR_SUCCESS != rv) || (NULL == pEvent)) {
             delete pEvent;
@@ -1260,7 +1194,7 @@ deviceLevel2WriteThread(void *pData)
               &pDevItem->m_pClientItem->m_mutexClientInputQueue);
 
             if (CANAL_ERROR_SUCCESS ==
-                pDevItem->m_proc_VSCPBlockingSend(
+                pDevItem->m_proc_VSCPWrite(
                   pDevItem->m_openHandle, pqueueEvent, 300)) {
 
                 // Remove the node

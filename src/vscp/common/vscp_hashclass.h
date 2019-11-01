@@ -2,22 +2,42 @@
             !!!!!!!!!!!!!!!!!!!!  W A R N I N G  !!!!!!!!!!!!!!!!!!!!
                            This file is auto-generated
                 see https://github.com/grodansparadis/vscp-classes
-                        Generated: 2019-10-18 09:04:07.078634
+                        Generated: 2019-11-01 15:02:11.594205
 */
  
 	m_hashClass[ 0 ] = _("CLASS1_PROTOCOL");
 	m_hashClass[ 1 ] = _("CLASS1_ALARM");
 	m_hashClass[ 2 ] = _("CLASS1_SECURITY");
 	m_hashClass[ 10 ] = _("CLASS1_MEASUREMENT");
+	m_hashClass[ 11 ] = _("CLASS1_MEASUREMENTX1");
+	m_hashClass[ 12 ] = _("CLASS1_MEASUREMENTX2");
+	m_hashClass[ 13 ] = _("CLASS1_MEASUREMENTX3");
+	m_hashClass[ 14 ] = _("CLASS1_MEASUREMENTX4");
 	m_hashClass[ 15 ] = _("CLASS1_DATA");
 	m_hashClass[ 20 ] = _("CLASS1_INFORMATION");
 	m_hashClass[ 30 ] = _("CLASS1_CONTROL");
 	m_hashClass[ 40 ] = _("CLASS1_MULTIMEDIA");
 	m_hashClass[ 50 ] = _("CLASS1_AOL");
 	m_hashClass[ 60 ] = _("CLASS1_MEASUREMENT64");
+	m_hashClass[ 61 ] = _("CLASS1_MEASUREMENT64X1");
+	m_hashClass[ 62 ] = _("CLASS1_MEASUREMENT64X2");
+	m_hashClass[ 63 ] = _("CLASS1_MEASUREMENT64X3");
+	m_hashClass[ 64 ] = _("CLASS1_MEASUREMENT64X4");
 	m_hashClass[ 65 ] = _("CLASS1_MEASUREZONE");
+	m_hashClass[ 66 ] = _("CLASS1_MEASUREZONEX1");
+	m_hashClass[ 67 ] = _("CLASS1_MEASUREZONEX2");
+	m_hashClass[ 68 ] = _("CLASS1_MEASUREZONEX3");
+	m_hashClass[ 69 ] = _("CLASS1_MEASUREZONEX4");
 	m_hashClass[ 70 ] = _("CLASS1_MEASUREMENT32");
+	m_hashClass[ 71 ] = _("CLASS1_MEASUREMENT32X1");
+	m_hashClass[ 72 ] = _("CLASS1_MEASUREMENT32X2");
+	m_hashClass[ 73 ] = _("CLASS1_MEASUREMENT32X3");
+	m_hashClass[ 74 ] = _("CLASS1_MEASUREMENT32X4");
 	m_hashClass[ 85 ] = _("CLASS1_SETVALUEZONE");
+	m_hashClass[ 86 ] = _("CLASS1_SETVALUEZONEX1");
+	m_hashClass[ 87 ] = _("CLASS1_SETVALUEZONEX2");
+	m_hashClass[ 88 ] = _("CLASS1_SETVALUEZONEX3");
+	m_hashClass[ 89 ] = _("CLASS1_SETVALUEZONEX4");
 	m_hashClass[ 90 ] = _("CLASS1_WEATHER");
 	m_hashClass[ 95 ] = _("CLASS1_WEATHER_FORECAST");
 	m_hashClass[ 100 ] = _("CLASS1_PHONE");

@@ -2,7 +2,7 @@
             !!!!!!!!!!!!!!!!!!!!  W A R N I N G  !!!!!!!!!!!!!!!!!!!!
                            This file is auto-generated
                 see https://github.com/grodansparadis/vscp-classes
-                        Generated: 2019-10-18 09:04:08.726820
+                        Generated: 2019-11-01 15:02:17.438816
 */
  
 
@@ -167,6 +167,18 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(10,58) ] = _("VSCP_TYPE_MEASUREMENT_SOUND_PRESSURE");
 	m_hashType[ MAKE_CLASSTYPE_LONG(10,59) ] = _("VSCP_TYPE_MEASUREMENT_SOUND_DENSITY");
 	m_hashType[ MAKE_CLASSTYPE_LONG(10,60) ] = _("VSCP_TYPE_MEASUREMENT_SOUND_LEVEL");
+
+	//  CLASS1.MEASUREMENTX1 = 11  -  Measurement
+	m_hashType[ MAKE_CLASSTYPE_LONG(11,0) ] = _("VSCP_TYPE_MEASUREMENTX1_GENERAL");
+
+	//  CLASS1.MEASUREMENTX2 = 12  -  Measurement
+	m_hashType[ MAKE_CLASSTYPE_LONG(12,0) ] = _("VSCP_TYPE_MEASUREMENTX2_GENERAL");
+
+	//  CLASS1.MEASUREMENTX3 = 13  -  Measurement
+	m_hashType[ MAKE_CLASSTYPE_LONG(13,0) ] = _("VSCP_TYPE_MEASUREMENTX3_GENERAL");
+
+	//  CLASS1.MEASUREMENTX4 = 14  -  Measurement
+	m_hashType[ MAKE_CLASSTYPE_LONG(14,0) ] = _("VSCP_TYPE_MEASUREMENTX4_GENERAL");
 
 	//  CLASS1.DATA = 15  -  Data
 	m_hashType[ MAKE_CLASSTYPE_LONG(15,0) ] = _("VSCP_TYPE_DATA_GENERAL");
@@ -439,6 +451,22 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(60,59) ] = _("VSCP_TYPE_MEASUREMENT_SOUND_DENSITY");
 	m_hashType[ MAKE_CLASSTYPE_LONG(60,60) ] = _("VSCP_TYPE_MEASUREMENT_SOUND_LEVEL");
 
+	//  CLASS1.MEASUREMENT64X1 = 61  -  Double precision floating point measurement
+	// 	Event types is the same as  CLASS1.MEASUREMENTX1 = 11  -  Measurement
+	m_hashType[ MAKE_CLASSTYPE_LONG(61,0) ] = _("VSCP_TYPE_MEASUREMENTX1_GENERAL");
+
+	//  CLASS1.MEASUREMENT64X2 = 62  -  Double precision floating point measurement
+	// 	Event types is the same as  CLASS1.MEASUREMENTX2 = 12  -  Measurement
+	m_hashType[ MAKE_CLASSTYPE_LONG(62,0) ] = _("VSCP_TYPE_MEASUREMENTX2_GENERAL");
+
+	//  CLASS1.MEASUREMENT64X3 = 63  -  Double precision floating point measurement
+	// 	Event types is the same as  CLASS1.MEASUREMENTX3 = 13  -  Measurement
+	m_hashType[ MAKE_CLASSTYPE_LONG(63,0) ] = _("VSCP_TYPE_MEASUREMENTX3_GENERAL");
+
+	//  CLASS1.MEASUREMENT64X4 = 64  -  Double precision floating point measurement
+	// 	Event types is the same as  CLASS1.MEASUREMENTX4 = 14  -  Measurement
+	m_hashType[ MAKE_CLASSTYPE_LONG(64,0) ] = _("VSCP_TYPE_MEASUREMENTX4_GENERAL");
+
 	//  CLASS1.MEASUREZONE = 65  -  Measurement with zone
 	// 	Event types is the same as  CLASS1.MEASUREMENT = 10  -  Measurement
 	m_hashType[ MAKE_CLASSTYPE_LONG(65,0) ] = _("VSCP_TYPE_MEASUREMENT_GENERAL");
@@ -502,6 +530,22 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(65,58) ] = _("VSCP_TYPE_MEASUREMENT_SOUND_PRESSURE");
 	m_hashType[ MAKE_CLASSTYPE_LONG(65,59) ] = _("VSCP_TYPE_MEASUREMENT_SOUND_DENSITY");
 	m_hashType[ MAKE_CLASSTYPE_LONG(65,60) ] = _("VSCP_TYPE_MEASUREMENT_SOUND_LEVEL");
+
+	//  CLASS1.MEASUREZONEX1 = 66  -  Measurement with zone
+	// 	Event types is the same as  CLASS1.MEASUREMENTX1 = 11  -  Measurement
+	m_hashType[ MAKE_CLASSTYPE_LONG(66,0) ] = _("VSCP_TYPE_MEASUREMENTX1_GENERAL");
+
+	//  CLASS1.MEASUREZONEX2 = 67  -  Measurement with zone
+	// 	Event types is the same as  CLASS1.MEASUREMENTX2 = 12  -  Measurement
+	m_hashType[ MAKE_CLASSTYPE_LONG(67,0) ] = _("VSCP_TYPE_MEASUREMENTX2_GENERAL");
+
+	//  CLASS1.MEASUREZONEX3 = 68  -  Measurement with zone
+	// 	Event types is the same as  CLASS1.MEASUREMENTX3 = 13  -  Measurement
+	m_hashType[ MAKE_CLASSTYPE_LONG(68,0) ] = _("VSCP_TYPE_MEASUREMENTX3_GENERAL");
+
+	//  CLASS1.MEASUREZONEX4 = 69  -  Measurement with zone
+	// 	Event types is the same as  CLASS1.MEASUREMENTX4 = 14  -  Measurement
+	m_hashType[ MAKE_CLASSTYPE_LONG(69,0) ] = _("VSCP_TYPE_MEASUREMENTX4_GENERAL");
 
 	//  CLASS1.MEASUREMENT32 = 70  -  Single precision floating point measurement
 	// 	Event types is the same as  CLASS1.MEASUREMENT = 10  -  Measurement
@@ -567,6 +611,22 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(70,59) ] = _("VSCP_TYPE_MEASUREMENT_SOUND_DENSITY");
 	m_hashType[ MAKE_CLASSTYPE_LONG(70,60) ] = _("VSCP_TYPE_MEASUREMENT_SOUND_LEVEL");
 
+	//  CLASS1.MEASUREMENT32X1 = 71  -  Single precision floating point measurement
+	// 	Event types is the same as  CLASS1.MEASUREMENTX1 = 11  -  Measurement
+	m_hashType[ MAKE_CLASSTYPE_LONG(71,0) ] = _("VSCP_TYPE_MEASUREMENTX1_GENERAL");
+
+	//  CLASS1.MEASUREMENT32X2 = 72  -  Single precision floating point measurement
+	// 	Event types is the same as  CLASS1.MEASUREMENTX2 = 12  -  Measurement
+	m_hashType[ MAKE_CLASSTYPE_LONG(72,0) ] = _("VSCP_TYPE_MEASUREMENTX2_GENERAL");
+
+	//  CLASS1.MEASUREMENT32X3 = 73  -  Single precision floating point measurement
+	// 	Event types is the same as  CLASS1.MEASUREMENTX3 = 13  -  Measurement
+	m_hashType[ MAKE_CLASSTYPE_LONG(73,0) ] = _("VSCP_TYPE_MEASUREMENTX3_GENERAL");
+
+	//  CLASS1.MEASUREMENT32X4 = 74  -  Single precision floating point measurement
+	// 	Event types is the same as  CLASS1.MEASUREMENTX4 = 14  -  Measurement
+	m_hashType[ MAKE_CLASSTYPE_LONG(74,0) ] = _("VSCP_TYPE_MEASUREMENTX4_GENERAL");
+
 	//  CLASS1.SETVALUEZONE = 85  -  Set value with zone
 	// 	Event types is the same as  CLASS1.MEASUREMENT = 10  -  Measurement
 	m_hashType[ MAKE_CLASSTYPE_LONG(85,0) ] = _("VSCP_TYPE_MEASUREMENT_GENERAL");
@@ -630,6 +690,22 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(85,58) ] = _("VSCP_TYPE_MEASUREMENT_SOUND_PRESSURE");
 	m_hashType[ MAKE_CLASSTYPE_LONG(85,59) ] = _("VSCP_TYPE_MEASUREMENT_SOUND_DENSITY");
 	m_hashType[ MAKE_CLASSTYPE_LONG(85,60) ] = _("VSCP_TYPE_MEASUREMENT_SOUND_LEVEL");
+
+	//  CLASS1.SETVALUEZONEX1 = 86  -  Set value with zone
+	// 	Event types is the same as  CLASS1.MEASUREMENTX1 = 11  -  Measurement
+	m_hashType[ MAKE_CLASSTYPE_LONG(86,0) ] = _("VSCP_TYPE_MEASUREMENTX1_GENERAL");
+
+	//  CLASS1.SETVALUEZONEX2 = 87  -  Set value with zone
+	// 	Event types is the same as  CLASS1.MEASUREMENTX2 = 12  -  Measurement
+	m_hashType[ MAKE_CLASSTYPE_LONG(87,0) ] = _("VSCP_TYPE_MEASUREMENTX2_GENERAL");
+
+	//  CLASS1.SETVALUEZONEX3 = 88  -  Set value with zone
+	// 	Event types is the same as  CLASS1.MEASUREMENTX3 = 13  -  Measurement
+	m_hashType[ MAKE_CLASSTYPE_LONG(88,0) ] = _("VSCP_TYPE_MEASUREMENTX3_GENERAL");
+
+	//  CLASS1.SETVALUEZONEX4 = 89  -  Set value with zone
+	// 	Event types is the same as  CLASS1.MEASUREMENTX4 = 14  -  Measurement
+	m_hashType[ MAKE_CLASSTYPE_LONG(89,0) ] = _("VSCP_TYPE_MEASUREMENTX4_GENERAL");
 
 	//  CLASS1.WEATHER = 90  -  Weather
 	m_hashType[ MAKE_CLASSTYPE_LONG(90,0) ] = _("VSCP_TYPE_WEATHER_GENERAL");
@@ -2034,4 +2110,10 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(65535,28) ] = _("VSCP2_TYPE_VSCPD_TIMER_STOPPED");
 	m_hashType[ MAKE_CLASSTYPE_LONG(65535,29) ] = _("VSCP2_TYPE_VSCPD_TIMER_ELLAPSED");
 	m_hashType[ MAKE_CLASSTYPE_LONG(65535,30) ] = _("VSCP2_TYPE_VSCPD_NEW_CALCULATION");
+	m_hashType[ MAKE_CLASSTYPE_LONG(65535,31) ] = _("VSCP2_TYPE_VSCPD_DRV3_START");
+	m_hashType[ MAKE_CLASSTYPE_LONG(65535,32) ] = _("VSCP2_TYPE_VSCPD_DRV3_STOP");
+	m_hashType[ MAKE_CLASSTYPE_LONG(65535,33) ] = _("VSCP2_TYPE_VSCPD_DRV3_PAUSE");
+	m_hashType[ MAKE_CLASSTYPE_LONG(65535,34) ] = _("VSCP2_TYPE_VSCPD_DRV3_RESUME");
+	m_hashType[ MAKE_CLASSTYPE_LONG(65535,35) ] = _("VSCP2_TYPE_VSCPD_DRV3_RESTART");
+	m_hashType[ MAKE_CLASSTYPE_LONG(65535,36) ] = _("VSCP2_TYPE_VSCPD_DRV3_CONFIG");
  

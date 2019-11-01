@@ -47,7 +47,7 @@
             !!!!!!!!!!!!!!!!!!!!  W A R N I N G  !!!!!!!!!!!!!!!!!!!!
                            This file is auto-generated
                 see https://github.com/grodansparadis/vscp-classes
-                        Generated: 2019-10-18 09:04:02.905473
+                        Generated: 2019-11-01 15:01:57.526061
 */
  
 #ifndef VSCP_CLASS_H
@@ -57,15 +57,35 @@
 #define VSCP_CLASS1_ALARM                    1         /* Alarm functionality */
 #define VSCP_CLASS1_SECURITY                 2         /* Security */
 #define VSCP_CLASS1_MEASUREMENT              10        /* Measurement */
+#define VSCP_CLASS1_MEASUREMENTX1            11        /* Measurement */
+#define VSCP_CLASS1_MEASUREMENTX2            12        /* Measurement */
+#define VSCP_CLASS1_MEASUREMENTX3            13        /* Measurement */
+#define VSCP_CLASS1_MEASUREMENTX4            14        /* Measurement */
 #define VSCP_CLASS1_DATA                     15        /* Data */
 #define VSCP_CLASS1_INFORMATION              20        /* Information */
 #define VSCP_CLASS1_CONTROL                  30        /* Control */
 #define VSCP_CLASS1_MULTIMEDIA               40        /* Multimedia */
 #define VSCP_CLASS1_AOL                      50        /* Alert On LAN */
 #define VSCP_CLASS1_MEASUREMENT64            60        /* Double precision floating point measurement */
+#define VSCP_CLASS1_MEASUREMENT64X1          61        /* Double precision floating point measurement */
+#define VSCP_CLASS1_MEASUREMENT64X2          62        /* Double precision floating point measurement */
+#define VSCP_CLASS1_MEASUREMENT64X3          63        /* Double precision floating point measurement */
+#define VSCP_CLASS1_MEASUREMENT64X4          64        /* Double precision floating point measurement */
 #define VSCP_CLASS1_MEASUREZONE              65        /* Measurement with zone */
+#define VSCP_CLASS1_MEASUREZONEX1            66        /* Measurement with zone */
+#define VSCP_CLASS1_MEASUREZONEX2            67        /* Measurement with zone */
+#define VSCP_CLASS1_MEASUREZONEX3            68        /* Measurement with zone */
+#define VSCP_CLASS1_MEASUREZONEX4            69        /* Measurement with zone */
 #define VSCP_CLASS1_MEASUREMENT32            70        /* Single precision floating point measurement */
+#define VSCP_CLASS1_MEASUREMENT32X1          71        /* Single precision floating point measurement */
+#define VSCP_CLASS1_MEASUREMENT32X2          72        /* Single precision floating point measurement */
+#define VSCP_CLASS1_MEASUREMENT32X3          73        /* Single precision floating point measurement */
+#define VSCP_CLASS1_MEASUREMENT32X4          74        /* Single precision floating point measurement */
 #define VSCP_CLASS1_SETVALUEZONE             85        /* Set value with zone */
+#define VSCP_CLASS1_SETVALUEZONEX1           86        /* Set value with zone */
+#define VSCP_CLASS1_SETVALUEZONEX2           87        /* Set value with zone */
+#define VSCP_CLASS1_SETVALUEZONEX3           88        /* Set value with zone */
+#define VSCP_CLASS1_SETVALUEZONEX4           89        /* Set value with zone */
 #define VSCP_CLASS1_WEATHER                  90        /* Weather */
 #define VSCP_CLASS1_WEATHER_FORECAST         95        /* Weather forecast */
 #define VSCP_CLASS1_PHONE                    100       /* Phone */

@@ -48,7 +48,7 @@
             !!!!!!!!!!!!!!!!!!!!  W A R N I N G  !!!!!!!!!!!!!!!!!!!!
                            This file is auto-generated
                 see https://github.com/grodansparadis/vscp-classes
-                        Generated: 2019-10-18 09:04:04.994689
+                        Generated: 2019-11-01 15:02:05.968562
 */
  
 #ifndef VSCP_TYPE_H
@@ -217,6 +217,18 @@
 #define VSCP_TYPE_MEASUREMENT_SOUND_PRESSURE        58  /* Sound pressure (acoustic pressure) */
 #define VSCP_TYPE_MEASUREMENT_SOUND_DENSITY         59  /* Sound energy density */
 #define VSCP_TYPE_MEASUREMENT_SOUND_LEVEL           60  /* Sound level */
+    
+/*  CLASS1.MEASUREMENTX1 = 11  -  Measurement */
+#define VSCP_TYPE_MEASUREMENTX1_GENERAL             0   /* General event */
+    
+/*  CLASS1.MEASUREMENTX2 = 12  -  Measurement */
+#define VSCP_TYPE_MEASUREMENTX2_GENERAL             0   /* General event */
+    
+/*  CLASS1.MEASUREMENTX3 = 13  -  Measurement */
+#define VSCP_TYPE_MEASUREMENTX3_GENERAL             0   /* General event */
+    
+/*  CLASS1.MEASUREMENTX4 = 14  -  Measurement */
+#define VSCP_TYPE_MEASUREMENTX4_GENERAL             0   /* General event */
     
 /*  CLASS1.DATA = 15  -  Data */
 #define VSCP_TYPE_DATA_GENERAL                      0   /* General event */
@@ -428,14 +440,62 @@
 /*  CLASS1.MEASUREMENT64 = 60  -  Double precision floating point measurement */
 /* 	Event types is the same as  CLASS1.MEASUREMENT = 10  -  Measurement */
     
+/*  CLASS1.MEASUREMENT64X1 = 61  -  Double precision floating point measurement */
+/* 	Event types is the same as  CLASS1.MEASUREMENTX1 = 11  -  Measurement */
+    
+/*  CLASS1.MEASUREMENT64X2 = 62  -  Double precision floating point measurement */
+/* 	Event types is the same as  CLASS1.MEASUREMENTX2 = 12  -  Measurement */
+    
+/*  CLASS1.MEASUREMENT64X3 = 63  -  Double precision floating point measurement */
+/* 	Event types is the same as  CLASS1.MEASUREMENTX3 = 13  -  Measurement */
+    
+/*  CLASS1.MEASUREMENT64X4 = 64  -  Double precision floating point measurement */
+/* 	Event types is the same as  CLASS1.MEASUREMENTX4 = 14  -  Measurement */
+    
 /*  CLASS1.MEASUREZONE = 65  -  Measurement with zone */
 /* 	Event types is the same as  CLASS1.MEASUREMENT = 10  -  Measurement */
+    
+/*  CLASS1.MEASUREZONEX1 = 66  -  Measurement with zone */
+/* 	Event types is the same as  CLASS1.MEASUREMENTX1 = 11  -  Measurement */
+    
+/*  CLASS1.MEASUREZONEX2 = 67  -  Measurement with zone */
+/* 	Event types is the same as  CLASS1.MEASUREMENTX2 = 12  -  Measurement */
+    
+/*  CLASS1.MEASUREZONEX3 = 68  -  Measurement with zone */
+/* 	Event types is the same as  CLASS1.MEASUREMENTX3 = 13  -  Measurement */
+    
+/*  CLASS1.MEASUREZONEX4 = 69  -  Measurement with zone */
+/* 	Event types is the same as  CLASS1.MEASUREMENTX4 = 14  -  Measurement */
     
 /*  CLASS1.MEASUREMENT32 = 70  -  Single precision floating point measurement */
 /* 	Event types is the same as  CLASS1.MEASUREMENT = 10  -  Measurement */
     
+/*  CLASS1.MEASUREMENT32X1 = 71  -  Single precision floating point measurement */
+/* 	Event types is the same as  CLASS1.MEASUREMENTX1 = 11  -  Measurement */
+    
+/*  CLASS1.MEASUREMENT32X2 = 72  -  Single precision floating point measurement */
+/* 	Event types is the same as  CLASS1.MEASUREMENTX2 = 12  -  Measurement */
+    
+/*  CLASS1.MEASUREMENT32X3 = 73  -  Single precision floating point measurement */
+/* 	Event types is the same as  CLASS1.MEASUREMENTX3 = 13  -  Measurement */
+    
+/*  CLASS1.MEASUREMENT32X4 = 74  -  Single precision floating point measurement */
+/* 	Event types is the same as  CLASS1.MEASUREMENTX4 = 14  -  Measurement */
+    
 /*  CLASS1.SETVALUEZONE = 85  -  Set value with zone */
 /* 	Event types is the same as  CLASS1.MEASUREMENT = 10  -  Measurement */
+    
+/*  CLASS1.SETVALUEZONEX1 = 86  -  Set value with zone */
+/* 	Event types is the same as  CLASS1.MEASUREMENTX1 = 11  -  Measurement */
+    
+/*  CLASS1.SETVALUEZONEX2 = 87  -  Set value with zone */
+/* 	Event types is the same as  CLASS1.MEASUREMENTX2 = 12  -  Measurement */
+    
+/*  CLASS1.SETVALUEZONEX3 = 88  -  Set value with zone */
+/* 	Event types is the same as  CLASS1.MEASUREMENTX3 = 13  -  Measurement */
+    
+/*  CLASS1.SETVALUEZONEX4 = 89  -  Set value with zone */
+/* 	Event types is the same as  CLASS1.MEASUREMENTX4 = 14  -  Measurement */
     
 /*  CLASS1.WEATHER = 90  -  Weather */
 #define VSCP_TYPE_WEATHER_GENERAL                   0   /* General event */
@@ -809,6 +869,12 @@
 #define VSCP2_TYPE_VSCPD_TIMER_STOPPED              28  /* Timer stopped */
 #define VSCP2_TYPE_VSCPD_TIMER_ELLAPSED             29  /* Timer Elapsed */
 #define VSCP2_TYPE_VSCPD_NEW_CALCULATION            30  /* New Calculations */
+#define VSCP2_TYPE_VSCPD_DRV3_START                 31  /* Start */
+#define VSCP2_TYPE_VSCPD_DRV3_STOP                  32  /* Stop */
+#define VSCP2_TYPE_VSCPD_DRV3_PAUSE                 33  /* Pause */
+#define VSCP2_TYPE_VSCPD_DRV3_RESUME                34  /* Resume */
+#define VSCP2_TYPE_VSCPD_DRV3_RESTART               35  /* Restart */
+#define VSCP2_TYPE_VSCPD_DRV3_CONFIG                36  /* Config */
  
 #endif
  

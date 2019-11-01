@@ -116,16 +116,16 @@ CDeviceItem::CDeviceItem()
     // VSCP Level II
     m_proc_VSCPOpen               = NULL;
     m_proc_VSCPClose              = NULL;
-    m_proc_VSCPBlockingSend       = NULL;
-    m_proc_VSCPBlockingReceive    = NULL;
-    m_proc_VSCPGetLevel           = NULL;
+    m_proc_VSCPWrite              = NULL;
+    m_proc_VSCPRead               = NULL;
     m_proc_VSCPGetVersion         = NULL;
-    m_proc_VSCPGetDllVersion      = NULL;
+    m_proc_VSCPGetVersion         = NULL;
     m_proc_VSCPGetVendorString    = NULL;
     m_proc_VSCPGetdriverInfo      = NULL;
-    m_proc_VSCPGetWebPageTemplate = NULL;
-    m_proc_VSCPGetWebPageInfo     = NULL;
-    m_proc_VSCPWebPageupdate      = NULL;
+    m_proc_VSCPGetConfigPageInfo  = NULL;
+    m_proc_VSCPConfigPageUpdate   = NULL;
+    m_proc_VSCPGetCommandInfo     = NULL;
+    m_proc_VSCPExecuteCommand     = NULL;
 
     // VSCP Level III
     m_pid = 0;

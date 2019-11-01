@@ -1,4 +1,4 @@
-// DeviceList.h: interface for the CDeviceList class.
+// deviceList.h: interface for the CDeviceList class.
 //
 // This file is part of the VSCP (http://www.vscp.org)
 //
@@ -39,7 +39,7 @@
 #include "clientlist.h"
 #include "devicethread.h"
 #include "guid.h"
-#include "vscpdlldef.h"
+#include "level2drvdef.h"
 
 #define NO_TRANSLATION 0 // No translation bit set
 
@@ -107,21 +107,21 @@ class CDeviceItem
         Pause driver
         @return true on success, false on failure
     */
-    bool pauseDriver(void); 
+    bool pauseDriver(void);
 
     /*!
         Resume driver
         @return true on success, false on failure
     */
-    bool resumeDriver(void); 
+    bool resumeDriver(void);
 
     /*!
         Stop driver
         @return true on success, false on failure
     */
-    bool stopDriver(void); 
+    bool stopDriver(void);
 
- public:   
+ public:
 
     // Name of device
     std::string m_strName;
@@ -223,16 +223,18 @@ class CDeviceItem
     // Level II driver methods
     LPFNDLL_VSCPOPEN m_proc_VSCPOpen;
     LPFNDLL_VSCPCLOSE m_proc_VSCPClose;
-    LPFNDLL_VSCPBLOCKINGSEND m_proc_VSCPBlockingSend;
-    LPFNDLL_VSCPBLOCKINGRECEIVE m_proc_VSCPBlockingReceive;
-    LPFNDLL_VSCPGETLEVEL m_proc_VSCPGetLevel;
+    LPFNDLL_VSCPWRITE m_proc_VSCPWrite;
+    LPFNDLL_VSCPREAD m_proc_VSCPRead;
     LPFNDLL_VSCPGETVERSION m_proc_VSCPGetVersion;
-    LPFNDLL_VSCPGETDLLVERSION m_proc_VSCPGetDllVersion;
     LPFNDLL_VSCPGETVENDORSTRING m_proc_VSCPGetVendorString;
     LPFNDLL_VSCPGETDRIVERINFO m_proc_VSCPGetdriverInfo;
-    LPFNDLL_VSCPGETWEBPAGETEMPLATE m_proc_VSCPGetWebPageTemplate;
-    LPFNDLL_VSCPGETWEBPAGEINFO m_proc_VSCPGetWebPageInfo;
-    LPFNDLL_VSCPWEBPAGEUPDATE m_proc_VSCPWebPageupdate;
+    LPFNDLL_VSCPGETCONFIGPAGEINFO m_proc_VSCPGetConfigPageInfo;
+    LPFNDLL_VSCPCONFIGPAGEUPDATE m_proc_VSCPConfigPageUpdate;
+    LPFNDLL_VSCPGETCOMMANDINFO m_proc_VSCPGetCommandInfo;
+    LPFNDLL_VSCPEXECUTECOMMAND m_proc_VSCPExecuteCommand;
+
+    // Level III
+    std::string m_pathExecutable;
 };
 
 class CDeviceList
