@@ -72,6 +72,7 @@ VSCPD_OBJECTS =  vscpd.o \
 	civetweb.o \
 	vscphelper.o \
 	vscpremotetcpif.o \
+	automation.o \
 	devicelist.o \
 	mdf.o \
 	sockettcp.o \
@@ -124,6 +125,9 @@ vscphelper.o: ../../common/vscphelper.cpp ../../common/vscphelper.h
 
 vscpremotetcpif.o: ../../common/vscpremotetcpif.cpp ../../common/vscpremotetcpif.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/vscpremotetcpif.cpp -o $@
+
+automation.o: ../../common/automation.cpp ../../common/automation.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/automation.cpp -o $@
 
 devicelist.o: ../../common/devicelist.cpp ../../common/devicelist.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/devicelist.cpp -o $@

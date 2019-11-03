@@ -34,9 +34,7 @@
 
 // Predefined client id's
 #define CLIENT_ID_DAEMON_WORKER 0xffff
-#define CLIENT_ID_DM 0xfffe
-#define CLIENT_ID_UDP_LISTNER 0xfffd
-#define CLIENT_ID_MULTICAST_SRV 0xfffc
+#define CLIENT_ID_INTERNAL 0xfffe
 
 //
 // defines for levels

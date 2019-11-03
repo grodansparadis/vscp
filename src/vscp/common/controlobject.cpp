@@ -32,6 +32,8 @@
 
 #include <deque>
 #include <list>
+#include <map>
+#include <set>
 #include <string>
 
 #include <arpa/inet.h>
@@ -70,6 +72,7 @@
 #include <vscp_aes.h>
 
 #include <actioncodes.h>
+#include <automation.h>
 #include <canal_macro.h>
 #include <configfile.h>
 #include <crc.h>
@@ -114,20 +117,19 @@ CControlObject::CControlObject()
 {
     int i;
 
+    // Open syslog
+    openlog("vscpd", LOG_CONS, LOG_DAEMON);
+
     m_bQuit = false; // true  for app termination
     m_bQuit_clientMsgWorkerThread =
       false; // true for clientWorkerThread termination
 
-    // Debug flags
-    // m_debugFlags[0] = VSCP_DEBUG1_ALL;
+    // Debug flags - loaded from config file
     m_debugFlags[0] = 0;
-    // m_debugFlags[0] |= VSCP_DEBUG1_DM;
-    // m_debugFlags[0] |= VSCP_DEBUG1_AUTOMATION;
-    // m_debugFlags[0] |= VSCP_DEBUG1_VARIABLE;
-    // m_debugFlags[0] |= VSCP_DEBUG1_MULTICAST;
-    // m_debugFlags[0] |= VSCP_DEBUG1_UDP;
-    // m_debugFlags[0] |= VSCP_DEBUG1_TCP;
-    // m_debugFlags[0] |= VSCP_DEBUG1_DRIVER
+
+    if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL) {
+        syslog(LOG_DEBUG, "Starting the vscpd daemon");
+    }
 
     m_rootFolder = "/srv/vscp/";
 
@@ -145,7 +147,7 @@ CControlObject::CControlObject()
 
     m_nConfiguration = 1; // Default configuration record is read.
 
-    //m_automation.setControlObject(this);
+    m_automation.setControlObject(this);
     m_maxItemsInClientReceiveQueue = MAX_ITEMS_CLIENT_RECEIVE_QUEUE;
 
     // Nill the GUID
@@ -156,15 +158,6 @@ CControlObject::CControlObject()
 
     // Set Default Log Level
     m_logLevel = DAEMON_LOGMSG_NORMAL;
-
-    // Control UDP Interface
-    // m_udpSrvObj.setControlObjectPointer(this);
-    // m_udpSrvObj.m_bEnable = false;
-    // m_udpSrvObj.m_interface.empty();
-    // m_udpSrvObj.m_guid.clear();
-    // vscp_clearVSCPFilter(&m_udpSrvObj.m_filter);
-    // m_udpSrvObj.m_bAllowUnsecure = false;
-    // m_udpSrvObj.m_bAck           = false;
 
     // Default TCP/IP interface settings
     m_enableTcpip            = true;
@@ -180,17 +173,6 @@ CControlObject::CControlObject()
     m_tcpip_ssl_cipher_list.clear();
     m_tcpip_ssl_protocol_version = 0;
     m_tcpip_ssl_short_trust      = false;
-
-    // // Default multicast announce port
-    // m_strMulticastAnnounceAddress =
-    //   vscp_str_format("udp://:%d", VSCP_ANNOUNCE_MULTICAST_PORT);
-
-    // // default multicast announce ttl
-    // m_ttlMultiCastAnnounce = IP_MULTICAST_DEFAULT_TTL;
-
-    // Default UDP interface
-    // m_udpSrvObj.m_interface =
-    //   vscp_str_format("udp://:%d", VSCP_DEFAULT_UDP_PORT);
 
     // Web server SSL settings
     m_web_ssl_certificate          = m_rootFolder + "certs/server.pem";
@@ -253,7 +235,7 @@ CControlObject::CControlObject()
 
     // Init. web server subsystem - All features enabled
     // ssl mt locks will we initiated here for openssl 1.0
-    if (0 == mg_init_library( USE_IPV6 | USE_WEBSOCKET | NO_CGI | NO_FILES )) {
+    if (0 == mg_init_library(USE_IPV6 | USE_WEBSOCKET | NO_CGI | NO_FILES)) {
         syslog(LOG_ERR, "Failed to initialize webserver subsystem.");
     }
 
@@ -267,7 +249,9 @@ CControlObject::CControlObject()
 
 CControlObject::~CControlObject()
 {
-    syslog(LOG_INFO, "ControlObject: Going away...");
+    if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL) {
+        syslog(LOG_DEBUG, "Cleaning up");
+    }
 
     // Remove objects in Client send queue
     std::list<vscpEvent *>::iterator iterVSCP;
@@ -283,23 +267,15 @@ CControlObject::~CControlObject()
     m_clientOutputQueue.clear();
     pthread_mutex_unlock(&m_mutexClientOutputQueue);
 
-    // pthread_mutex_lock(&m_udpSrvObj.m_mutexUDPInfo);
-    // std::deque<udpRemoteClientInfo *>::iterator iterUDP;
-    // for (iterUDP = m_udpSrvObj.m_remotes.begin();
-    //      iterUDP != m_udpSrvObj.m_remotes.end();
-    //      ++iterUDP) {
-    //     if (NULL != *iterUDP) {
-    //         delete *iterUDP;
-    //         *iterUDP = NULL;
-    //     }
-    // }
-    // m_udpSrvObj.m_remotes.clear();
-    // pthread_mutex_unlock(&m_udpSrvObj.m_mutexUDPInfo);
-
     // Clean up clivetweb
     mg_exit_library();
 
-    syslog(LOG_INFO, "ControlObject: Gone!");
+    if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL) {
+        syslog(LOG_DEBUG, "Terminating the vscpd daemon");
+    }
+
+    // Close syslog
+    closelog();
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -367,7 +343,9 @@ CControlObject::init(std::string &strcfgfile, std::string &rootFolder)
     //                      Read full XML configuration
     ////////////////////////////////////////////////////////////////////////////
 
-    syslog(LOG_DEBUG, "Using configuration file: %s", strcfgfile.c_str());
+    if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL) {
+        syslog(LOG_DEBUG, "Using configuration file: %s", strcfgfile.c_str());
+    }
 
     // Read XML configuration
     if (!readConfigurationXML(strcfgfile)) {
@@ -379,7 +357,9 @@ CControlObject::init(std::string &strcfgfile, std::string &rootFolder)
     }
 
     // Read users from database
-    syslog(LOG_DEBUG, "loading users from users db...");
+    if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL) {
+        syslog(LOG_DEBUG, "loading users from disk...");
+    }
     m_userList.loadUsers();
 
     //==========================================================================
@@ -398,13 +378,13 @@ CControlObject::init(std::string &strcfgfile, std::string &rootFolder)
     char buf[128];
     randPassword pw(4);
 
-    // Level II Driver Username
+    // Level III Driver Username
     memset(buf, 0, sizeof(buf));
     pw.generatePassword(32, buf);
     m_driverUsername = "drv_";
     m_driverUsername += std::string(buf);
 
-    // Level II Driver Password (can't contain ";" character)
+    // Level III Driver Password (can't contain ";" character)
     memset(buf, 0, sizeof(buf));
     pw.generatePassword(32, buf);
     m_driverPassword = buf;
@@ -421,9 +401,6 @@ CControlObject::init(std::string &strcfgfile, std::string &rootFolder)
                        "+127.0.0.0/24", // Only local
                        "*:*",           // All events
                        VSCP_ADD_USER_FLAG_LOCAL);
-
-    // Calculate sunset etc
-    //m_automation.calcSun();
 
     // Get GUID
     if (m_guid.isNULL()) {
@@ -450,27 +427,9 @@ CControlObject::init(std::string &strcfgfile, std::string &rootFolder)
     str += VSCPD_COPYRIGHT;
     syslog(LOG_INFO, "%s", str.c_str());
 
-    syslog(LOG_DEBUG, "Log Level=%d", m_logLevel);
-
-    // Load tables from database
-    // syslog(LOG_DEBUG, "Reading in user tables from DB.");
-    // m_userTableObjects.loadTablesFromDB();
-
-    // syslog(LOG_DEBUG, "Initializing user tables.");
-    // m_userTableObjects.init();
-
-    // Initialize DM storage
-    // syslog(LOG_DEBUG, "Initializing DM.");
-    // m_dm.init();
-
-    // Load decision matrix from XML file if mechanism is enabled
-    // syslog(LOG_DEBUG, "Loading DM from XML file.");
-    // m_dm.loadFromXML();
-
-    // Load decision matrix from db if mechanism is enabled
-    // syslog(LOG_DEBUG, "Loading DM from database.");
-    // m_dm.loadFromDatabase();
-
+    if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL) {
+        syslog(LOG_DEBUG, "Log Level=%d", m_logLevel);
+    }
 
     // Start daemon internal client worker thread
     startClientMsgWorkerThread();
@@ -484,17 +443,8 @@ CControlObject::init(std::string &strcfgfile, std::string &rootFolder)
     // Start TCP/IP interface
     startTcpipSrvThread();
 
-    // Start UDP interface
-    //startUDPSrvThread();
-
-    // Start Multicast interface
-    //startMulticastWorkerThreads();
-
     // Load drivers
     startDeviceWorkerThreads();
-
-    // Start daemon worker thread
-    //startDaemonWorkerThread();
 
     return true;
 }
@@ -535,39 +485,30 @@ CControlObject::run(void)
         return false;
     }
 
-    // Save a pointer to the client item
-    // m_dm.m_pClientItem = pClientItem;
-
-    // Set Filter/Mask for full DM table
-    // memcpy(&pClientItem->m_filter,
-    //        &m_dm.m_DM_Table_filter,
-    //        sizeof(vscpEventFilter));
-
     // This is an active client
     pClientItem->m_bOpen         = true;
     pClientItem->m_type          = CLIENT_ITEM_INTERFACE_TYPE_CLIENT_INTERNAL;
-    pClientItem->m_strDeviceName = "Internal Server DM Client.|Started at ";
+    pClientItem->m_strDeviceName = "Internal Server Client.|Started at ";
     pClientItem->m_strDeviceName += vscpdatetime::Now().getISODateTime();
 
     // Add the client to the Client List
-    // pthread_mutex_lock(&m_clientList.m_mutexItemList);
-    // if (!addClient(pClientItem, CLIENT_ID_DM)) {
-    //     // Failed to add client
-    //     delete pClientItem;
-    //     m_dm.m_pClientItem = pClientItem = NULL;
-    //     syslog(LOG_ERR, "ControlObject: Failed to add internal client.");
-    //     pthread_mutex_unlock(&m_clientList.m_mutexItemList);
-    // }
-    // pthread_mutex_unlock(&m_clientList.m_mutexItemList);
+    pthread_mutex_lock(&m_clientList.m_mutexItemList);
+    if (!addClient(pClientItem, CLIENT_ID_INTERNAL)) {
+        // Failed to add client
+        delete pClientItem;
+        syslog(LOG_ERR, "ControlObject: Failed to add internal client.");
+        pthread_mutex_unlock(&m_clientList.m_mutexItemList);
+    }
+    pthread_mutex_unlock(&m_clientList.m_mutexItemList);
 
-    // Feed startup event
-    // m_dm.feed(&EventStartUp);
+    if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL) {
+        syslog(LOG_DEBUG, "Mainloop starting");
+    }
 
     //-------------------------------------------------------------------------
     //                            MAIN - LOOP
     //-------------------------------------------------------------------------
 
-    // DM Loop
     int cnt = 0;
     while (!m_bQuit) {
 
@@ -575,22 +516,12 @@ CControlObject::run(void)
         clock_t ticks, oldus;
         oldus = ticks = clock();
 
-        // Feed possible periodic event
-        // m_dm.feedPeriodicEvent();
-
-        // Put the LOOP event on the queue
-        // Garanties at least one lop event between every other
-        // event feed to the queue
-        // m_dm.feed(&EventLoop);
-
         // Wait for event
         if ((-1 == vscp_sem_wait(&pClientItem->m_semClientInputQueue, 10)) &&
             errno == ETIMEDOUT) {
 
             if (m_bQuit) continue; // Make quit request as fast as possible
 
-            // Put the LOOP event on the queue
-            // m_dm.feed(&EventLoop);
             continue;
         }
 
@@ -609,35 +540,24 @@ CControlObject::run(void)
             pthread_mutex_unlock(&pClientItem->m_mutexClientInputQueue);
 
             if (NULL != pEvent) {
-
-                // if (vscp_doLevel2Filter(pEvent, &m_dm.m_DM_Table_filter)) {
-                //     // Feed event through matrix
-                //     m_dm.feed(pEvent);
-                // }
-
-                // Remove the event
-                vscp_deleteVSCPevent(pEvent);
-
-            } // Valid pEvent pointer
-
-            // Send events to websocket clients
-            websock_post_incomingEvents();
+                // Send events to websocket clients
+                websock_post_incomingEvents();
+            }
 
         } // Event in queue
 
     } // while
-
-    // Do shutdown event
-    // m_dm.feed(&EventShutDown);
 
     // Remove messages in the client queues
     pthread_mutex_lock(&m_clientList.m_mutexItemList);
     removeClient(pClientItem);
     pthread_mutex_unlock(&m_clientList.m_mutexItemList);
 
-    syslog(LOG_DEBUG, "ControlObject: Run - Done");
-
     cleanup();
+
+    if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL) {
+        syslog(LOG_DEBUG, "Mainloop ending");
+    }
 
     return true;
 }
@@ -648,42 +568,47 @@ CControlObject::run(void)
 bool
 CControlObject::cleanup(void)
 {
-
-    syslog(LOG_DEBUG,
-           "ControlObject: cleanup - Giving worker threads time to stop "
-           "operations...");
+    if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL) {
+        syslog(LOG_DEBUG,
+               "ControlObject: cleanup - Giving worker threads time to stop "
+               "operations...");
+    }
     sleep(2); // Give threads some time to end
 
-    syslog(LOG_DEBUG,
-           "ControlObject: cleanup - Stopping device worker thread...");
+    if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL) {
+        syslog(LOG_DEBUG,
+               "ControlObject: cleanup - Stopping device worker thread...");
+    }
     stopDeviceWorkerThreads();
 
-    syslog(LOG_DEBUG,
-            "ControlObject: cleanup - Stopping VSCP Server worker thread...");
-    //stopDaemonWorkerThread();
+    if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL) {
+        syslog(
+          LOG_DEBUG,
+          "ControlObject: cleanup - Stopping VSCP Server worker thread...");
+    }
+    // stopDaemonWorkerThread();
 
-    syslog(LOG_DEBUG,
-           "ControlObject: cleanup - Stopping client worker thread...");
+    if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL) {
+        syslog(LOG_DEBUG,
+               "ControlObject: cleanup - Stopping client worker thread...");
+    }
     stopClientMsgWorkerThread();
 
-    // m_dm.cleanup();
-
-    syslog(LOG_DEBUG,
-           "ControlObject: cleanup - Stopping Web Server worker thread...");
+    if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL) {
+        syslog(LOG_DEBUG,
+               "ControlObject: cleanup - Stopping Web Server worker thread...");
+    }
     stop_webserver();
 
-    //syslog(LOG_DEBUG, "ControlObject: cleanup - Stopping UDP worker thread...");
-    //stopUDPSrvThread();
-
-    syslog(LOG_DEBUG,
-           "ControlObject: cleanup - Stopping Multicast worker threads...");
-    //stopMulticastWorkerThreads();
-
-    syslog(LOG_DEBUG,
-           "ControlObject: cleanup - Stopping TCP/IP worker thread...");
+    if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL) {
+        syslog(LOG_DEBUG,
+               "ControlObject: cleanup - Stopping TCP/IP worker thread...");
+    }
     stopTcpipSrvThread();
 
-    syslog(LOG_INFO, "Controlobject: ControlObject: Cleanup done.");
+    if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL) {
+        syslog(LOG_DEBUG, "Controlobject: ControlObject: Cleanup done.");
+    }
     return true;
 }
 
@@ -694,7 +619,9 @@ CControlObject::cleanup(void)
 bool
 CControlObject::startClientMsgWorkerThread(void)
 {
-    syslog(LOG_INFO, "Controlobject: Starting client worker thread...");
+    if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL) {
+        syslog(LOG_DEBUG, "Controlobject: Starting client worker thread...");
+    }
 
     if (pthread_create(
           &m_clientMsgWorkerThread, NULL, clientMsgWorkerThread, this)) {
@@ -728,11 +655,15 @@ bool
 CControlObject::startTcpipSrvThread(void)
 {
     if (!m_enableTcpip) {
-        syslog(LOG_DEBUG, "Controlobject: TCP/IP interface disabled.");
+        if (m_debugFlags[0] | VSCP_DEBUG1_TCP) {
+            syslog(LOG_DEBUG, "Controlobject: TCP/IP interface disabled.");
+        }
         return true;
     }
 
-    syslog(LOG_DEBUG, "Controlobject: Starting TCP/IP interface...");
+    if (m_debugFlags[0] | VSCP_DEBUG1_TCP) {
+        syslog(LOG_DEBUG, "Controlobject: Starting TCP/IP interface...");
+    }
 
     // Create the tcp/ip server data object
     m_ptcpipSrvObject = (tcpipListenThreadObj *)new tcpipListenThreadObj(this);
@@ -766,178 +697,21 @@ CControlObject::stopTcpipSrvThread(void)
     // Tell the thread it's time to quit
     m_ptcpipSrvObject->m_nStopTcpIpSrv = VSCP_TCPIP_SRV_STOP;
 
-    syslog(LOG_DEBUG, "Controlobject: Terminating TCP thread.");
+    if (m_debugFlags[0] | VSCP_DEBUG1_TCP ) {
+        syslog(LOG_DEBUG, "Controlobject: Terminating TCP thread.");
+    }
 
     pthread_join(m_tcpipListenThread, NULL);
     delete m_ptcpipSrvObject;
     m_ptcpipSrvObject = NULL;
 
-    syslog(LOG_DEBUG, "Controlobject: Terminated TCP thread.");
+    if (m_debugFlags[0] | VSCP_DEBUG1_TCP ) {
+        syslog(LOG_DEBUG, "Controlobject: Terminated TCP thread.");
+    }
 
     return true;
 }
 
-/////////////////////////////////////////////////////////////////////////////
-// startUDPSrvThread
-//
-
-// bool
-// CControlObject::startUDPSrvThread(void)
-// {
-//     if (!m_enableUDP) {
-//         syslog(LOG_DEBUG, "UDP server disabled.");
-//         return false;
-//     }
-
-//     syslog(LOG_DEBUG, "Controlobject: Starting UDP simple server interface...");
-
-//     if (pthread_create(&m_UDPThread, NULL, UDPThread, &m_udpSrvObj)) {
-
-//         syslog(LOG_ERR,
-//                "Controlobject: Unable to start the udp simple server thread.");
-//         return false;
-//     }
-
-//     return true;
-// }
-
-/////////////////////////////////////////////////////////////////////////////
-// stopUDPSrvThread
-//
-
-// bool
-// CControlObject::stopUDPSrvThread(void)
-// {
-//     syslog(LOG_DEBUG, "Controlobject: Terminating UDP thread.");
-
-//     m_udpSrvObj.m_bQuit = true;
-//     pthread_join(m_UDPThread, NULL);
-
-//     syslog(LOG_DEBUG, "Controlobject: Terminated UDP thread.");
-
-//     return true;
-// }
-
-/////////////////////////////////////////////////////////////////////////////
-// startMulticastWorkerThreads
-//
-
-// bool
-// CControlObject::startMulticastWorkerThreads(void)
-// {
-//     if (!m_bEnableMulticast) {
-//         syslog(LOG_DEBUG, "Multicast interface is disabled.");
-//         return true;
-//     }
-
-//     if (m_multicastObj.m_channels.empty()) {
-//         syslog(LOG_DEBUG, "No multicast channels defined.");
-//         return true;
-//     }
-
-//     // Bring up all multicast channels
-//     std::list<multicastChannelItem *>::iterator it;
-//     for (it = m_multicastObj.m_channels.begin();
-//          it != m_multicastObj.m_channels.end();
-//          ++it) {
-
-//         multicastChannelItem *pChannel = *it;
-//         if (NULL == pChannel) {
-//             syslog(
-//               LOG_ERR,
-//               "Controlobject: Multicast start channel table invalid entry.");
-//             continue;
-//         }
-
-//         syslog(LOG_DEBUG, "Starting multicast channel interface thread...");
-//         if (pthread_create(&pChannel->m_workerThread,
-//                            NULL,
-//                            multicastClientThread,
-//                            pChannel)) {
-//             syslog(LOG_ERR,
-//                    "Unable to start the multicast channel interface thread.");
-//         }
-//     }
-
-//     return true;
-// }
-
-/////////////////////////////////////////////////////////////////////////////
-// stopMulticastWorkerThreads
-//
-
-// bool
-// CControlObject::stopMulticastWorkerThreads(void)
-// {
-//     std::list<multicastChannelItem *>::iterator it;
-
-//     for (it = m_multicastObj.m_channels.begin();
-//          it != m_multicastObj.m_channels.end();
-//          /* inline */) {
-
-//         multicastChannelItem *pChannel = *it;
-//         if (NULL == pChannel) {
-//             syslog(LOG_ERR,
-//                    "Controlobject: Multicast end channel table invalid entry.");
-//             continue;
-//         }
-
-//         pChannel->m_quit = true;
-//         pthread_join(pChannel->m_workerThread, NULL);
-//         delete pChannel;
-
-//         it = m_multicastObj.m_channels.erase(it);
-//     }
-
-//     return true;
-// }
-
-/////////////////////////////////////////////////////////////////////////////
-// startDaemonWorkerThread
-//
-
-// bool
-// CControlObject::startDaemonWorkerThread(void)
-// {
-//     syslog(LOG_DEBUG, "Controlobject: Starting daemon worker thread,,.");
-
-//     m_pdaemonWorkerObj = new daemonWorkerObj(this);
-//     if (NULL == m_pdaemonWorkerObj) {
-//         syslog(
-//           LOG_ERR,
-//           "Controlobject: Unable to allocate object for daemon worker thread.");
-//         return false;
-//     }
-
-//     m_pdaemonWorkerObj->m_pCtrlObject = this; // Give it a pointer to us
-
-//     if (pthread_create(&m_clientMsgWorkerThread,
-//                        NULL,
-//                        daemonWorkerThread,
-//                        m_pdaemonWorkerObj)) {
-
-//         syslog(LOG_ERR,
-//                "Controlobject: Unable to start the daemon worker thread.");
-//         return false;
-//     }
-
-//     return true;
-// }
-
-/////////////////////////////////////////////////////////////////////////////
-// stopDaemonWorkerThread
-//
-
-// bool
-// CControlObject::stopDaemonWorkerThread(void)
-// {
-//     syslog(LOG_DEBUG, "Controlobject: Stopping daemon worker thread...");
-//     m_pdaemonWorkerObj->m_bQuit = true;
-//     pthread_join(m_clientMsgWorkerThread, NULL);
-//     syslog(LOG_DEBUG, "Controlobject: Stoped daemon worker thread.");
-
-//     return true;
-// }
 
 ////////////////////////////////////////////////////////////////////////////////
 // startDeviceWorkerThreads
@@ -947,7 +721,9 @@ bool
 CControlObject::startDeviceWorkerThreads(void)
 {
     CDeviceItem *pDeviceItem;
+    if (m_debugFlags[0] | VSCP_DEBUG1_DRIVER ) {
     syslog(LOG_DEBUG, "[Controlobject][Driver] - Starting drivers...");
+    }
 
     std::deque<CDeviceItem *>::iterator it;
     for (it = m_deviceList.m_devItemList.begin();
@@ -957,16 +733,20 @@ CControlObject::startDeviceWorkerThreads(void)
         pDeviceItem = *it;
         if (NULL != pDeviceItem) {
 
+            if (m_debugFlags[0] | VSCP_DEBUG1_DRIVER ) {
             syslog(LOG_DEBUG,
                    "Controlobject: [Driver] - Preparing: %s ",
                    pDeviceItem->m_strName.c_str());
+            }
 
             // Just start if enabled
             if (!pDeviceItem->m_bEnable) continue;
 
+            if (m_debugFlags[0] | VSCP_DEBUG1_DRIVER ) {
             syslog(LOG_DEBUG,
                    "Controlobject: [Driver] - Starting: %s ",
                    pDeviceItem->m_strName.c_str());
+            }
 
             // *** Level 3 Driver * * *
             if (VSCP_DRIVER_LEVEL3 == pDeviceItem->m_driverLevel) {
@@ -1006,7 +786,9 @@ CControlObject::stopDeviceWorkerThreads(void)
 {
     CDeviceItem *pDeviceItem;
 
+   if (m_debugFlags[0] | VSCP_DEBUG1_DRIVER ) {
     syslog(LOG_DEBUG, "[Controlobject][Driver] - Stopping drivers...");
+   }
     std::deque<CDeviceItem *>::iterator iter;
     for (iter = m_deviceList.m_devItemList.begin();
          iter != m_deviceList.m_devItemList.end();
@@ -1014,9 +796,11 @@ CControlObject::stopDeviceWorkerThreads(void)
 
         pDeviceItem = *iter;
         if (NULL != pDeviceItem) {
+            if (m_debugFlags[0] | VSCP_DEBUG1_DRIVER ) {
             syslog(LOG_DEBUG,
                    "Controlobject: [Driver] - Stopping: %s ",
                    pDeviceItem->m_strName.c_str());
+            }
             pDeviceItem->stopDriver();
         }
     }
@@ -1146,7 +930,6 @@ CControlObject::getVscpCapabilities(uint8_t *pCapability)
 
     return true;
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // sendEventToClient
@@ -1287,26 +1070,28 @@ CControlObject::sendEvent(CClientItem *pClientItem, vscpEvent *peventToSend)
         destguid.setAt(0, 0); // Interface GUID's have LSB bytes nilled
         destguid.setAt(1, 0);
 
-        // syslog(LOG_DEBUG,
-        //        "Level I event over Level II "
-        //        "dest = %d:%d:%d:%d:%d:%d:%d:%d:"
-        //        "%d:%d:%d:%d:%d:%d:%d:%d:",
-        //        destguid.getAt(0),
-        //        destguid.getAt(1),
-        //        destguid.getAt(2),
-        //        destguid.getAt(3),
-        //        destguid.getAt(4),
-        //        destguid.getAt(5),
-        //        destguid.getAt(6),
-        //        destguid.getAt(7),
-        //        destguid.getAt(8),
-        //        destguid.getAt(9),
-        //        destguid.getAt(10),
-        //        destguid.getAt(11),
-        //        destguid.getAt(12),
-        //        destguid.getAt(13),
-        //        destguid.getAt(14),
-        //        destguid.getAt(15));
+        if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL ) {
+        syslog(LOG_DEBUG,
+               "Level I event over Level II "
+               "dest = %d:%d:%d:%d:%d:%d:%d:%d:"
+               "%d:%d:%d:%d:%d:%d:%d:%d:",
+               destguid.getAt(0),
+               destguid.getAt(1),
+               destguid.getAt(2),
+               destguid.getAt(3),
+               destguid.getAt(4),
+               destguid.getAt(5),
+               destguid.getAt(6),
+               destguid.getAt(7),
+               destguid.getAt(8),
+               destguid.getAt(9),
+               destguid.getAt(10),
+               destguid.getAt(11),
+               destguid.getAt(12),
+               destguid.getAt(13),
+               destguid.getAt(14),
+               destguid.getAt(15));
+        }
 
         // Find client
         pthread_mutex_lock(&m_clientList.m_mutexItemList);
@@ -1318,26 +1103,28 @@ CControlObject::sendEvent(CClientItem *pClientItem, vscpEvent *peventToSend)
              ++it) {
 
             CClientItem *pItem = *it;
-            // syslog(
-            //   LOG_DEBUG,
-            //   "Test if = %d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d: %s",
-            //   pItem->m_guid.getAt(0),
-            //   pItem->m_guid.getAt(1),
-            //   pItem->m_guid.getAt(2),
-            //   pItem->m_guid.getAt(3),
-            //   pItem->m_guid.getAt(4),
-            //   pItem->m_guid.getAt(5),
-            //   pItem->m_guid.getAt(6),
-            //   pItem->m_guid.getAt(7),
-            //   pItem->m_guid.getAt(8),
-            //   pItem->m_guid.getAt(9),
-            //   pItem->m_guid.getAt(10),
-            //   pItem->m_guid.getAt(11),
-            //   pItem->m_guid.getAt(12),
-            //   pItem->m_guid.getAt(13),
-            //   pItem->m_guid.getAt(14),
-            //   pItem->m_guid.getAt(15),
-            //   pItem->m_strDeviceName.c_str());
+            if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL ) {
+            syslog(
+              LOG_DEBUG,
+              "Test if = %d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%s",
+              pItem->m_guid.getAt(0),
+              pItem->m_guid.getAt(1),
+              pItem->m_guid.getAt(2),
+              pItem->m_guid.getAt(3),
+              pItem->m_guid.getAt(4),
+              pItem->m_guid.getAt(5),
+              pItem->m_guid.getAt(6),
+              pItem->m_guid.getAt(7),
+              pItem->m_guid.getAt(8),
+              pItem->m_guid.getAt(9),
+              pItem->m_guid.getAt(10),
+              pItem->m_guid.getAt(11),
+              pItem->m_guid.getAt(12),
+              pItem->m_guid.getAt(13),
+              pItem->m_guid.getAt(14),
+              pItem->m_guid.getAt(15),
+              pItem->m_strDeviceName.c_str());
+            }
 
             if (pItem->m_guid == destguid) {
                 // Found
@@ -1521,6 +1308,7 @@ CControlObject::getMacAddress(cguid &guid)
 
         unsigned char *ptr;
         ptr = (unsigned char *)&s.ifr_ifru.ifru_hwaddr.sa_data[0];
+        if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL ) {
         syslog(LOG_DEBUG,
                "Ethernet MAC address: %02X:%02X:%02X:%02X:%02X:%02X",
                (uint8_t)s.ifr_addr.sa_data[0],
@@ -1529,6 +1317,7 @@ CControlObject::getMacAddress(cguid &guid)
                (uint8_t)s.ifr_addr.sa_data[3],
                (uint8_t)s.ifr_addr.sa_data[4],
                (uint8_t)s.ifr_addr.sa_data[5]);
+        }
 
         guid.setAt(0, 0xff);
         guid.setAt(1, 0xff);
@@ -1822,9 +1611,11 @@ CControlObject::readXMLConfigurationGeneral(const std::string &strcfgfile)
 {
     FILE *fp;
 
+    if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL ) {
     syslog(LOG_DEBUG,
            "Reading general XML configuration from [%s]",
            (const char *)strcfgfile.c_str());
+    }
 
     fp = fopen(strcfgfile.c_str(), "r");
     if (NULL == fp) {
@@ -1942,253 +1733,10 @@ startFullConfigParser(void *data, const char *name, const char **attr)
                 }
             }
         }
-    } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
-               (0 == vscp_strcasecmp(name, "multicast-announce"))) {
-        for (int i = 0; attr[i]; i += 2) {
-
-            std::string attribute = attr[i + 1];
-            vscp_trim(attribute);
-
-            // if (0 == vscp_strcasecmp(attr[i], "enable")) {
-            //     if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
-            //         pObj->m_bEnableMulticastAnnounce = true;
-            //     } else {
-            //         pObj->m_bEnableMulticastAnnounce = false;
-            //     }
-            // } else if (0 == vscp_strcasecmp(attr[i], "interface")) {
-            //     pObj->m_strMulticastAnnounceAddress = attribute;
-            // }
-            // if (0 == vscp_strcasecmp(attr[i], "ttl")) {
-            //     pObj->m_ttlMultiCastAnnounce = vscp_readStringValue(attribute);
-            // }
-        }
-    } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
-               (0 == vscp_strcasecmp(name, "udp"))) {
-
-        bUDPConfigFound = TRUE;
-
-        for (int i = 0; attr[i]; i += 2) {
-
-            std::string attribute = attr[i + 1];
-            vscp_trim(attribute);
-
-            // if (0 == vscp_strcasecmp(attr[i], "enable")) {
-            //     if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
-            //         pObj->m_udpSrvObj.m_bEnable = true;
-            //     } else {
-            //         pObj->m_udpSrvObj.m_bEnable = false;
-            //     }
-            // } else if (0 == vscp_strcasecmp(attr[i], "bAllowUnsecure")) {
-            //     if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
-            //         pObj->m_udpSrvObj.m_bAllowUnsecure = true;
-            //     } else {
-            //         pObj->m_udpSrvObj.m_bAllowUnsecure = false;
-            //     }
-            // } else if (0 == vscp_strcasecmp(attr[i], "bSendAck")) {
-            //     if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
-            //         pObj->m_udpSrvObj.m_bAck = true;
-            //     } else {
-            //         pObj->m_udpSrvObj.m_bAck = false;
-            //     }
-            // } else if (0 == vscp_strcasecmp(attr[i], "user")) {
-            //     pObj->m_udpSrvObj.m_user = attribute;
-            // } else if (0 == vscp_strcasecmp(attr[i], "password")) {
-            //     pObj->m_udpSrvObj.m_password = attribute;
-            // } else if (0 == vscp_strcasecmp(attr[i], "interface")) {
-            //     pObj->m_udpSrvObj.m_interface = attribute;
-            // } else if (0 == vscp_strcasecmp(attr[i], "guid")) {
-            //     pObj->m_udpSrvObj.m_guid.getFromString(attribute);
-            // } else if (0 == vscp_strcasecmp(attr[i], "filter")) {
-            //     if (attribute.length()) {
-            //         vscp_readFilterFromString(&pObj->m_udpSrvObj.m_filter,
-            //                                   attribute);
-            //     }
-            // } else if (0 == vscp_strcasecmp(attr[i], "mask")) {
-            //     if (attribute.length()) {
-            //         vscp_readMaskFromString(&pObj->m_udpSrvObj.m_filter,
-            //                                 attribute);
-            //     }
-            // }
-        }
-    } else if (bVscpConfigFound && bUDPConfigFound &&
-               (2 == depth_full_config_parser) &&
-               (0 == vscp_strcasecmp(name, "rxnode"))) {
-
-        // for (int i = 0; attr[i]; i += 2) {
-
-        //     udpRemoteClientInfo *pudpClient = new udpRemoteClientInfo;
-        //     if (NULL == pudpClient) {
-        //         syslog(LOG_ERR, "Unable to allocate storage for UDP client");
-        //         return;
-        //     }
-
-        //     vscp_clearVSCPFilter(&pudpClient->m_filter);
-
-        //     std::string attribute = attr[i + 1];
-        //     vscp_trim(attribute);
-
-        //     if (0 == vscp_strcasecmp(attr[i], "enable")) {
-        //         if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
-        //             pudpClient->m_bEnable = true;
-        //         } else {
-        //             pudpClient->m_bEnable = false;
-        //         }
-        //     } else if (0 == vscp_strcasecmp(attr[i], "interface")) {
-        //         pudpClient->m_remoteAddress = attribute;
-        //     } else if (0 == vscp_strcasecmp(attr[i], "filter")) {
-        //         if (attribute.length()) {
-        //             vscp_readFilterFromString(&pudpClient->m_filter, attribute);
-        //         }
-        //     } else if (0 == vscp_strcasecmp(attr[i], "mask")) {
-        //         if (attribute.length()) {
-        //             vscp_readMaskFromString(&pudpClient->m_filter, attribute);
-        //         }
-        //     } else if (0 == vscp_strcasecmp(attr[i], "broadcast")) {
-        //         if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
-        //             pudpClient->m_bSetBroadcast = true;
-        //         } else {
-        //             pudpClient->m_bSetBroadcast = false;
-        //         }
-        //     } else if (0 == vscp_strcasecmp(attr[i], "encryption")) {
-        //         pudpClient->m_nEncryption =
-        //           vscp_getEncryptionCodeFromToken(attribute);
-        //     }
-
-        //     // add to udp client list
-        //     pudpClient->m_index = 0;
-        //     // pObj->m_udpSrvObj.m_remotes.push_back(pudpClient);
-        // }
-    } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
-               (0 == vscp_strcasecmp(name, "multicast"))) {
-
-        // bMulticastConfigFound = TRUE;
-
-        // for (int i = 0; attr[i]; i += 2) {
-
-        //     std::string attribute = attr[i + 1];
-        //     vscp_trim(attribute);
-
-        //     // if (0 == vscp_strcasecmp(attr[i], "enable")) {
-        //     //     if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
-        //     //         pObj->m_bEnableMulticast = true;
-        //     //     } else {
-        //     //         pObj->m_bEnableMulticast = false;
-        //     //     }
-        //     // }
-        // }
-
-    } else if (bVscpConfigFound && bMulticastConfigFound &&
-               (2 == depth_full_config_parser) &&
-               (0 == vscp_strcasecmp(name, "channel"))) {
-
-        // multicastChannelItem *pChannel = new multicastChannelItem;
-        // if (NULL == pChannel) {
-        //     syslog(LOG_ERR, "Unable to allocate storage for multicast client");
-        //     return;
-        // }
-
-        // pChannel->m_bEnable        = false;
-        // pChannel->m_bAllowUnsecure = false;
-        // pChannel->m_port           = 0;
-        // pChannel->m_ttl            = 1;
-        // pChannel->m_nEncryption    = 0;
-        // pChannel->m_bSendAck       = 0;
-        // pChannel->m_index          = 0;
-
-        // // Default is to let everything come through
-        // vscp_clearVSCPFilter(&pChannel->m_txFilter);
-        // vscp_clearVSCPFilter(&pChannel->m_rxFilter);
-
-        // for (int i = 0; attr[i]; i += 2) {
-
-        //     std::string attribute = attr[i + 1];
-        //     vscp_trim(attribute);
-
-        //     if (0 == vscp_strcasecmp(attr[i], "enable")) {
-        //         if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
-        //             pChannel->m_bEnable = true;
-        //         } else {
-        //             pChannel->m_bEnable = false;
-        //         }
-        //     } else if (0 == vscp_strcasecmp(attr[i], "bsendack")) {
-        //         if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
-        //             pChannel->m_bSendAck = true;
-        //         } else {
-        //             pChannel->m_bSendAck = false;
-        //         }
-        //     } else if (0 == vscp_strcasecmp(attr[i], "bAllowUndsecure")) {
-        //         if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
-        //             pChannel->m_bAllowUnsecure = true;
-        //         } else {
-        //             pChannel->m_bAllowUnsecure = false;
-        //         }
-        //     } else if (0 == vscp_strcasecmp(attr[i], "public")) {
-        //         pChannel->m_public = attribute;
-        //     } else if (0 == vscp_strcasecmp(attr[i], "port")) {
-        //         pChannel->m_port = vscp_readStringValue(attribute);
-        //     } else if (0 == vscp_strcasecmp(attr[i], "group")) {
-        //         pChannel->m_gropupAddress = attribute;
-        //     } else if (0 == vscp_strcasecmp(attr[i], "ttl")) {
-        //         pChannel->m_ttl = vscp_readStringValue(attribute);
-        //     } else if (0 == vscp_strcasecmp(attr[i], "guid")) {
-        //         pChannel->m_guid.getFromString(attribute);
-        //     } else if (0 == vscp_strcasecmp(attr[i], "txfilter")) {
-        //         if (attribute.length()) {
-        //             vscp_readFilterFromString(&pChannel->m_txFilter, attribute);
-        //         }
-        //     } else if (0 == vscp_strcasecmp(attr[i], "txmask")) {
-        //         if (attribute.length()) {
-        //             vscp_readMaskFromString(&pChannel->m_txFilter, attribute);
-        //         }
-        //     } else if (0 == vscp_strcasecmp(attr[i], "rxfilter")) {
-        //         if (attribute.length()) {
-        //             vscp_readFilterFromString(&pChannel->m_rxFilter, attribute);
-        //         }
-        //     } else if (0 == vscp_strcasecmp(attr[i], "rxmask")) {
-        //         if (attribute.length()) {
-        //             vscp_readMaskFromString(&pChannel->m_rxFilter, attribute);
-        //         }
-        //     } else if (0 == vscp_strcasecmp(attr[i], "encryption")) {
-        //         if (attribute.length()) {
-        //             pChannel->m_nEncryption =
-        //               vscp_getEncryptionCodeFromToken(attribute);
-        //         }
-        //     }
-        // }
-
-        // // add to multicast client list
-        // pChannel->m_index = 0;
-        // //pObj->m_multicastObj.m_channels.push_back(pChannel);
-    } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
-               (0 == vscp_strcasecmp(name, "dm"))) {
-
-        // for (int i = 0; attr[i]; i += 2) {
-
-        //     std::string attribute = attr[i + 1];
-        //     vscp_trim(attribute);
-
-        //     if (0 == vscp_strcasecmp(attr[i], "enable")) {
-        //         if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
-        //             pObj->m_dm.m_bEnable = true;
-        //         } else {
-        //             pObj->m_dm.m_bEnable = false;
-        //         }
-        //     } else if (0 == vscp_strcasecmp(attr[i], "path")) { // Deprecated
-        //         if (attribute.length()) {
-        //             pObj->m_dm.m_staticXMLPath = attribute;
-        //         }
-        //     } else if (0 == vscp_strcasecmp(attr[i], "pathxml")) {
-        //         if (attribute.length()) {
-        //             pObj->m_dm.m_staticXMLPath = attribute;
-        //         }
-        //     } else if (0 == vscp_strcasecmp(attr[i], "loglevel")) {
-        //         pObj->m_debugFlags[0] |= VSCP_DEBUG1_DM;
-        //     }
-        // }
-
     }
+
     else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
-               (0 == vscp_strcasecmp(name, "webserver"))) {
+             (0 == vscp_strcasecmp(name, "webserver"))) {
 
         for (int i = 0; attr[i]; i += 2) {
 
@@ -2616,10 +2164,12 @@ startFullConfigParser(void *data, const char *name, const char **attr)
                    strName.c_str(),
                    strPath.c_str());
         } else {
+            if (pObj->m_debugFlags[0] | VSCP_DEBUG1_DRIVER ) {
             syslog(LOG_DEBUG,
                    "Level I driver added. name = %s - [%s]",
                    strName.c_str(),
                    strPath.c_str());
+            }
         }
 
     } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
@@ -2673,17 +2223,20 @@ startFullConfigParser(void *data, const char *name, const char **attr)
                                         guid,
                                         VSCP_DRIVER_LEVEL2,
                                         bEnabled)) {
+            if (pObj->m_debugFlags[0] | VSCP_DEBUG1_DRIVER ) {
             syslog(LOG_ERR,
                    "Level II driver was not added. name = %s"
                    "Path does not exist. - [%s]",
                    strName.c_str(),
                    strPath.c_str());
-
+            }
         } else {
+            if (pObj->m_debugFlags[0] | VSCP_DEBUG1_DRIVER ) {
             syslog(LOG_DEBUG,
                    "Level II driver added. name = %s- [%s]",
                    strName.c_str(),
                    strPath.c_str());
+            }
         }
 
     } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
@@ -2744,278 +2297,37 @@ startFullConfigParser(void *data, const char *name, const char **attr)
                    strPath.c_str());
 
         } else {
+            if (pObj->m_debugFlags[0] | VSCP_DEBUG1_DRIVER ) {
             syslog(LOG_DEBUG,
                    "Level III driver added. name = %s- [%s]",
                    strName.c_str(),
                    strPath.c_str());
+            }
         }
+    }
 
-     }
-    //else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
-    //            ((0 == vscp_strcasecmp(name, "knownnodes")))) {
-    //     bKnownNodesConfigFound = TRUE;
-    // } else if (bVscpConfigFound && bKnownNodesConfigFound &&
-    //            (2 == depth_full_config_parser) &&
-    //            (0 == vscp_strcasecmp(name, "node"))) {
+    else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
+             ((0 == vscp_strcasecmp(name, "automation")))) {
+        for (int i = 0; attr[i]; i += 2) {
 
-    //     std::string strName;
-    //     cguid guidif;
-    //     cguid guid;
+            std::string attribute = attr[i + 1];
+            vscp_trim(attribute);
 
-    //     for (int i = 0; attr[i]; i += 2) {
-
-    //         std::string attribute = attr[i + 1];
-    //         vscp_trim(attribute);
-
-    //         if (0 == vscp_strcasecmp(attr[i], "name")) {
-    //             strName = attribute;
-    //         } else if (0 == vscp_strcasecmp(attr[i], "guid")) {
-    //             guid.getFromString(attribute);
-    //         } else if (0 == vscp_strcasecmp(attr[i], "if")) {
-    //             guidif.getFromString(attribute);
-    //         }
-    //     }
-
-    //     pObj->addKnownNode(guid, guidif, strName);
-
-    // } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
-    //            ((0 == vscp_strcasecmp(name, "tables")))) {
-    //     bTablesConfigFound = TRUE;
-    // } else if (bVscpConfigFound && bTablesConfigFound &&
-    //            (2 == depth_full_config_parser) &&
-    //            (0 == vscp_strcasecmp(name, "table"))) {
-
-    //     bool bEnabled = false;
-    //     std::string strName;
-    //     vscpTableType type = VSCP_TABLE_DYNAMIC;
-    //     int size           = 0;
-    //     bool bMemory       = false;
-
-    //     std::string owner = "admin";
-    //     uint16_t rights   = 0x700;
-    //     std::string title;
-    //     std::string xname;
-    //     std::string yname;
-    //     std::string note;
-    //     std::string sqlcreate;
-    //     std::string sqlinsert;
-    //     std::string sqldelete;
-    //     std::string description;
-
-    //     uint16_t vscp_class      = 0;
-    //     uint16_t vscp_type       = 0;
-    //     uint8_t vscp_sensorindex = 0;
-    //     uint8_t vscp_unit        = 0;
-    //     uint8_t vscp_zone        = 255;
-    //     uint8_t vscp_subzone     = 255;
-
-    //     for (int i = 0; attr[i]; i += 2) {
-
-    //         std::string attribute = attr[i + 1];
-    //         vscp_trim(attribute);
-
-    //         if (0 == vscp_strcasecmp(attr[i], "enable")) {
-    //             if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
-    //                 bEnabled = true;
-    //             } else {
-    //                 bEnabled = false;
-    //             }
-    //         } else if (0 == vscp_strcasecmp(attr[i], "name")) {
-    //             strName = attribute;
-    //             // Replace spaces in name with underscore
-    //             std::string::size_type found;
-    //             while (std::string::npos !=
-    //                    (found = strName.find_first_of(" "))) {
-    //                 strName[found] = '_';
-    //             }
-    //         } else if (0 == vscp_strcasecmp(attr[i], "type")) {
-    //             if (0 == vscp_strcasecmp(attribute.c_str(), "static")) {
-    //                 type = VSCP_TABLE_STATIC;
-    //             }
-    //         } else if (0 == vscp_strcasecmp(attr[i], "size")) {
-    //             size = vscp_readStringValue(attribute);
-    //         } else if (0 == vscp_strcasecmp(attr[i], "bmemory")) {
-    //             if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
-    //                 bMemory = true;
-    //             } else {
-    //                 bMemory = false;
-    //             }
-
-    //         } else if (0 == vscp_strcasecmp(attr[i], "owner")) {
-    //             owner = attribute;
-    //         } else if (0 == vscp_strcasecmp(attr[i], "rights")) {
-    //             rights = vscp_readStringValue(attribute);
-    //         } else if (0 == vscp_strcasecmp(attr[i], "title")) {
-    //             title = attribute;
-    //         } else if (0 == vscp_strcasecmp(attr[i], "labelx")) {
-    //             xname = attribute;
-    //         } else if (0 == vscp_strcasecmp(attr[i], "lavely")) {
-    //             yname = attribute;
-    //         } else if (0 == vscp_strcasecmp(attr[i], "note")) {
-    //             note = attribute;
-    //         } else if (0 == vscp_strcasecmp(attr[i], "sqlcreate")) {
-    //             sqlcreate = attribute;
-    //         } else if (0 == vscp_strcasecmp(attr[i], "sqldelete")) {
-    //             sqldelete = attribute;
-    //         } else if (0 == vscp_strcasecmp(attr[i], "sqlinsert")) {
-    //             sqlinsert = attribute;
-    //         } else if (0 == vscp_strcasecmp(attr[i], "description")) {
-    //             description = attribute;
-    //         } else if (0 == vscp_strcasecmp(attr[i], "vscpclass")) {
-    //             vscp_class = vscp_readStringValue(attribute);
-    //             ;
-    //         } else if (0 == vscp_strcasecmp(attr[i], "vscptype")) {
-    //             vscp_type = vscp_readStringValue(attribute);
-    //             ;
-    //         } else if (0 == vscp_strcasecmp(attr[i], "vscpsensorindex")) {
-    //             vscp_sensorindex = vscp_readStringValue(attribute);
-    //             ;
-    //         } else if (0 == vscp_strcasecmp(attr[i], "vscpunit")) {
-    //             vscp_unit = vscp_readStringValue(attribute);
-    //             ;
-    //         } else if (0 == vscp_strcasecmp(attr[i], "vscpzone")) {
-    //             vscp_zone = vscp_readStringValue(attribute);
-    //             ;
-    //         } else if (0 == vscp_strcasecmp(attr[i], "vscpsubzone")) {
-    //             vscp_subzone = vscp_readStringValue(attribute);
-    //             ;
-    //         }
-    //     }
-
-    //     CVSCPTable *pTable = new CVSCPTable(
-    //       pObj->m_rootFolder + "table/", strName, true, bMemory, type, size);
-    //     if (NULL == pTable) {
-    //         syslog(LOG_ERR, "Unable to create table %s", strName.c_str());
-    //         return;
-    //     }
-
-    //     if (!pTable->setTableInfo(owner,
-    //                               rights,
-    //                               title,
-    //                               xname,
-    //                               yname,
-    //                               note,
-    //                               sqlcreate,
-    //                               sqlinsert,
-    //                               sqldelete,
-    //                               description)) {
-    //         syslog(LOG_ERR,
-    //                "Unable to set table info for table %s",
-    //                strName.c_str());
-    //         delete pTable;
-    //         return;
-    //     }
-
-    //     pTable->setTableEventInfo(vscp_class,
-    //                               vscp_type,
-    //                               vscp_sensorindex,
-    //                               vscp_unit,
-    //                               vscp_zone,
-    //                               vscp_subzone);
-
-    //     // Add the table
-    //     // if (!pObj->m_userTableObjects.addTable(pTable)) {
-    //     //     delete pTable;
-    //     //     syslog(LOG_ERR,
-    //     //            "Could not add new table (name conflict?)! nane=%s",
-    //     //            strName.c_str());
-    //     // };
-
-    // } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
-    //            ((0 == vscp_strcasecmp(name, "automation")))) {
-    //     for (int i = 0; attr[i]; i += 2) {
-
-    //         std::string attribute = attr[i + 1];
-    //         vscp_trim(attribute);
-
-    //         // if (0 == vscp_strcasecmp(attr[i], "enable")) {
-    //         //     if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
-    //         //         pObj->m_automation.enableAutomation();
-    //         //     } else {
-    //         //         pObj->m_automation.disableAutomation();
-    //         //     }
-    //         // } else if (0 == vscp_strcasecmp(attr[i], "zone")) {
-    //         //     uint8_t zone = vscp_readStringValue(attribute);
-    //         //     pObj->m_automation.setZone(zone);
-    //         // } else if (0 == vscp_strcasecmp(attr[i], "subzone")) {
-    //         //     uint8_t subzone = vscp_readStringValue(attribute);
-    //         //     pObj->m_automation.setSubzone(subzone);
-    //         // } else if (0 == vscp_strcasecmp(attr[i], "longitude")) {
-    //         //     // Decimal point should be '.'
-    //         //     std::string::size_type found;
-    //         //     while (std::string::npos !=
-    //         //            (found = attribute.find_first_of(","))) {
-    //         //         attribute[found] = '.';
-    //         //     }
-    //         //     double d = std::stod(attribute);
-    //         //     pObj->m_automation.setLongitude(d);
-    //         // } else if (0 == vscp_strcasecmp(attr[i], "latitude")) {
-    //         //     // Decimal point should be '.'
-    //         //     std::string::size_type found;
-    //         //     while (std::string::npos !=
-    //         //            (found = attribute.find_first_of(","))) {
-    //         //         attribute[found] = '.';
-    //         //     }
-    //         //     double d = std::stod(attribute);
-    //         //     pObj->m_automation.setLatitude(d);
-    //         // } else if (0 == vscp_strcasecmp(attr[i], "sunrise-event")) {
-    //         //     if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
-    //         //         pObj->m_automation.enableSunRiseEvent();
-    //         //     } else {
-    //         //         pObj->m_automation.disableSunRiseEvent();
-    //         //     }
-    //         // } else if (0 ==
-    //         //            vscp_strcasecmp(attr[i], "sunrise-twilight-event")) {
-    //         //     if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
-    //         //         pObj->m_automation.enableSunRiseTwilightEvent();
-    //         //     } else {
-    //         //         pObj->m_automation.disableSunRiseTwilightEvent();
-    //         //     }
-    //         // } else if (0 == vscp_strcasecmp(attr[i], "sunset-event")) {
-    //         //     if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
-    //         //         pObj->m_automation.enableSunSetEvent();
-    //         //     } else {
-    //         //         pObj->m_automation.disableSunSetEvent();
-    //         //     }
-    //         // } else if (0 == vscp_strcasecmp(attr[i], "sunset-twilight-event")) {
-    //         //     if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
-    //         //         pObj->m_automation.enableSunSetTwilightEvent();
-    //         //     } else {
-    //         //         pObj->m_automation.disableSunSetTwilightEvent();
-    //         //     }
-    //         // } else if (0 ==
-    //         //            vscp_strcasecmp(attr[i], "segment-controler-event")) {
-    //         //     if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
-    //         //         pObj->m_automation.enableSegmentControllerHeartbeat();
-    //         //     } else {
-    //         //         pObj->m_automation.disableSegmentControllerHeartbeat();
-    //         //     }
-    //         // } else if (0 ==
-    //         //            vscp_strcasecmp(attr[i], "segment-controler-interval")) {
-    //         //     int interval = vscp_readStringValue(attribute);
-    //         //     pObj->m_automation.setSegmentControllerHeartbeatInterval(
-    //         //       interval);
-    //         // } else if (0 == vscp_strcasecmp(attr[i], "heartbeat-event")) {
-    //         //     if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
-    //         //         pObj->m_automation.enableHeartbeatEvent();
-    //         //     } else {
-    //         //         pObj->m_automation.disableHeartbeatEvent();
-    //         //     }
-    //         // } else if (0 == vscp_strcasecmp(attr[i], "heartbeat-interval")) {
-    //         //     int interval = vscp_readStringValue(attribute);
-    //         //     pObj->m_automation.setHeartbeatEventInterval(interval);
-    //         // } else if (0 == vscp_strcasecmp(attr[i], "capability-event")) {
-    //         //     if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
-    //         //         pObj->m_automation.enableCapabilitiesEvent();
-    //         //     } else {
-    //         //         pObj->m_automation.disableCapabilitiesEvent();
-    //         //     }
-    //         // } else if (0 == vscp_strcasecmp(attr[i], "capability-interval")) {
-    //         //     int interval = vscp_readStringValue(attribute);
-    //         //     pObj->m_automation.setCapabilitiesEventInterval(interval);
-    //         // }
-    //  }
-    //}
+            if (0 == vscp_strcasecmp(attr[i], "enable")) {
+                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+                    pObj->m_automation.enableAutomation();
+                } else {
+                    pObj->m_automation.disableAutomation();
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "zone")) {
+                uint8_t zone = vscp_readStringValue(attribute);
+                pObj->m_automation.setZone(zone);
+            } else if (0 == vscp_strcasecmp(attr[i], "subzone")) {
+                uint8_t subzone = vscp_readStringValue(attribute);
+                pObj->m_automation.setSubzone(subzone);
+            }
+        }
+    }
 
     depth_full_config_parser++;
 }
@@ -3100,9 +2412,11 @@ CControlObject::readConfigurationXML(const std::string &strcfgfile)
 {
     FILE *fp;
 
+    if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL ) {
     syslog(LOG_DEBUG,
            "Reading full XML configuration from [%s]",
            (const char *)strcfgfile.c_str());
+    }
 
     fp = fopen(strcfgfile.c_str(), "r");
     if (NULL == fp) {
@@ -3144,9 +2458,6 @@ CControlObject::readConfigurationXML(const std::string &strcfgfile)
 
     return true;
 } // XML config
-
-
-
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////

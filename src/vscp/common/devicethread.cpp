@@ -92,11 +92,8 @@ deviceThread(void *pData)
     }
 
     char datebuf[80];
-    time_t now = time(NULL);
-    vscp_getTimeString(datebuf, sizeof(datebuf), &now);
-    pClientItem->m_strDeviceName = pDevItem->m_strName;
-    pClientItem->m_strDeviceName += "|Started at ";
-    pClientItem->m_strDeviceName += datebuf;
+    pClientItem->m_dtutc.setUTCNow();
+    pClientItem->m_strDeviceName = "driver_" + pDevItem->m_strName;
 
     syslog(LOG_DEBUG,
            "Devicethread: Starting %s",

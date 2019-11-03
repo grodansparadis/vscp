@@ -193,7 +193,7 @@ clean:
 	rm -f config.log
 	rm -f config.startup
 	rm -f config.status
-	rm tests/vscphelper/*.o
+	rm -f tests/vscphelper/*.o
 
 distclean: clean
 	@sh clean_for_dist

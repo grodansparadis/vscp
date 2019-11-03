@@ -70,9 +70,6 @@
 /* Define to 1 if you have the `ssl' library (-lssl). */
 #undef HAVE_LIBSSL
 
-/* Define to 1 if you have the `wiringPi' library (-lwiringPi). */
-#undef HAVE_LIBWIRINGPI
-
 /* Define to 1 if you have the `z' library (-lz). */
 #undef HAVE_LIBZ
 

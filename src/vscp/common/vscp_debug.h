@@ -29,14 +29,10 @@
 #define VSCP_DEBUG1_ALL 0xFFFFFFFF
 
 // Debug flags 1
-#define VSCP_DEBUG1_AUTOMATION (1 << 0) // Automation debug info
-#define VSCP_DEBUG1_VARIABLE (1 << 1)   // Variable handling debug info
-#define VSCP_DEBUG1_MULTICAST (1 << 2)  // Multicast i/f debug info
-#define VSCP_DEBUG1_UDP (1 << 3)        // UDP i/f debug info
-#define VSCP_DEBUG1_TCP (1 << 4)        // TCP/IP client i/f debug info
-#define VSCP_DEBUG1_DM (1 << 5)         // General DM debug info
-#define VSCP_DEBUG1_DM_TIMERS (1 << 6)  // DM timer debug info
-#define VSCP_DEBUG1_DRIVER (1 << 7)     // Driver debug info
+#define VSCP_DEBUG1_GENERAL (1 << 0)    // Automation debug info
+#define VSCP_DEBUG1_AUTOMATION (1 << 1) // Automation debug info
+#define VSCP_DEBUG1_TCP (1 << 2)        // TCP/IP client i/f debug info
+#define VSCP_DEBUG1_DRIVER (1 << 3)     // Driver debug info
 // the rest of the 32-bits...
 
 #define VSCP_DEBUG2_ALL 0xFFFFFFFF

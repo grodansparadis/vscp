@@ -106,25 +106,13 @@ dnl
 dnl Project Sub directories
 dnl
 
-PROJ_SUBDIRS="src/vscp/drivers/level2/wire1/linux\
- src/vscp/drivers/level2/lmsensors/linux\
- src/vscp/drivers/level2/tcpdrv/linux\
- src/vscp/drivers/level2/rawethernet/linux\
- src/vscp/drivers/level2/sim/linux\
- src/vscp/daemon/linux\
+PROJ_SUBDIRS="src/vscp/daemon/linux\
  src/vscp/vscp-mkpasswd "
 
 AC_ARG_ENABLE(rpi,
 [  --enable-rpi         Build Raspberry Pi specific stuff (default disabled)],
 [vscp_rpi=yes],[vscp_rpi=no])
 
-test "${vscp_rpi}" == "yes"
-if test "${vscp_rpi}" = yes ; then
-    PROJ_SUBDIRS+=" src/vscp/drivers/level2/rpigpio/linux\
-    src/vscp/drivers/level2/rpilcd/linux\
-    src/vscp/drivers/level2/rpimax6675/linux"
-    AC_CHECK_LIB([wiringPi], [wiringPiSetup])
-fi
 
 AC_SUBST(PROJ_SUBDIRS)
 
@@ -161,19 +149,8 @@ AC_CONFIG_FILES([Makefile
          m4/Makefile
          src/vscp/daemon/linux/Makefile
          src/vscp/vscp-mkpasswd/Makefile
-         src/vscp/drivers/level2/lmsensors/linux/Makefile
-         src/vscp/drivers/level2/tcpdrv/linux/Makefile
-         src/vscp/drivers/level2/rawethernet/linux/Makefile
-         src/vscp/drivers/level2/wire1/linux/Makefile
-         src/vscp/drivers/level2/sim/linux/Makefile
 ])
 
-if test "${vscp_rpi}" = yes ; then
-AC_CONFIG_FILES([src/vscp/drivers/level2/rpigpio/linux/Makefile
-        src/vscp/drivers/level2/rpilcd/linux/Makefile
-        src/vscp/drivers/level2/rpimax6675/linux/Makefile
-])
-fi
 
 dnl Generate makefiles
 AC_OUTPUT

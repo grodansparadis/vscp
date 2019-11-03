@@ -126,7 +126,8 @@ class CDeviceItem
     // Name of device
     std::string m_strName;
 
-    // Device configuration string
+    // Device configuration string for Level I drivers.
+    // Oath to XML config file for level II drivers.
     std::string m_strParameter;
 
     // Driver DLL/DL path

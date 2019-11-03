@@ -29,6 +29,9 @@
 #if !defined(CONTROLOBJECT_H__INCLUDED_)
 #define CONTROLOBJECT_H__INCLUDED_
 
+#include <set>
+
+#include <automation.h>
 #include <clientlist.h>
 #include <devicelist.h>
 #include <interfacelist.h>
@@ -271,160 +274,15 @@ class CControlObject
      */
     bool sendEvent(CClientItem *pClientItem, vscpEvent *peventToSend);
 
-
     /*!
-     * Read configuration data from database.
-     * The configuration database record is read after the XML file has
-     * been read and will replace duplicate values, if any.
-     * @return true on success
-     */
-    // bool readConfigurationDB(void);
-
-    /*!
-     * Read configuration value from configuration database.
-     * @param pName Pointer to name of configuration value
-     * @param pValue Buffer that will get value after a successfull read
-     * @param len Size of value buffer
-     * @return true on success
-     */
-    // bool getConfigurationValueFromDatabase(const char *pName,
-    //                                        char *pBuf,
-    //                                        size_t len);
-
-    /*!
-     * Write configuration datapair to configuration database.
+     * Check if a driver name is free to us
      *
-     * @param pName Pointer to name of configuration value
-     * @param pValue Pointer to value to write as new configuration value
-     * @return true on success
+     * @param drvname Name of driver to check.
+     * @return true if 'drvname' is not used
      */
-    // bool addConfigurationValueToDatabase(const char *pName, const char *pValue);
-
-    /*!
-     * Adds default configuration values to the configuration table. If
-     * a configuration value does not exist it is created to make it easy to
-     * add new values to later software versions
-     */
-    // void addDefaultConfigValues(void);
-
-    /*!
-     * Create configuration table
-     * @return true on success
-     */
-    //bool doCreateConfigurationTable(void);
-
-    /*!
-     * Check if db table exists
-     */
-    //bool isDbTableExist(sqlite3 *db, const std::string &strTblName);
-
-    /*!
-     * Check if a field n the database exist.
-     * Can be used to updated generations of tables
-     */
-    // bool isDbFieldExist(sqlite3 *db,
-    //                     const std::string &strTblName,
-    //                     const std::string &strFieldName);
-
-    /*
-     * Update field name in settings table
-     * @param strName Name of field to write
-     * @param strNewName New fieldname to set
-     * @Return true on success.
-     */
-    // bool updateConfigurationRecordName(const std::string &strName,
-    //                                    const std::string &strNewName);
-
-    /*
-     * Update field in settings table
-     * @param strName Name of field to write
-     * @param strValue Value to write to field
-     * @Return true on success.
-     */
-    // bool updateConfigurationRecordItem(const std::string &strName,
-    //                                    const std::string &strValue);
-
-    /*!
-        Update configuration databas if it has evolved
-    */
-    // bool updateConfigDb(void);
-
-    /*!
-     * Read in UDP nodes from the database
-     */
-    // bool readUdpNodes(void);
-
-    /*!
-     * Read in multicast channels from the database
-     */
-    // bool readMulticastChannels(void);
-
-    /*!
-     * Create udpnode database
-     * @return true on success
-     */
-    // bool doCreateUdpNodeTable(void);
-
-    /*!
-     * Create multicast database
-     * @return true on success
-     */
-    // bool doCreateMulticastTable(void);
-
-    /*!
-     * Create user table
-     */
-    // bool doCreateUserTable(void);
-
-    /*!
-     * Create driver table
-     */
-    // bool doCreateDriverTable(void);
-
-    /*!
-     * Create guid table
-     */
-    // bool doCreateGuidTable(void);
-
-    /*!
-     * Create location table
-     */
-    // bool doCreateLocationTable(void);
-
-    /*!
-     * Create mdf table
-     */
-    // bool doCreateMdfCacheTable(void);
-
-    /*!
-     * Create simpleui table
-     */
-    // bool doCreateSimpleUiTable(void);
-
-    /*!
-     * Create simpleui item table
-     */
-    // bool doCreateSimpleUiItemTable(void);
-
-    /*!
-     * Create zone table
-     */
-    // bool doCreateZoneTable(void);
-
-    /*!
-     * Create subzone table
-     */
-    // bool doCreateSubZoneTable(void);
-
-    /*!
-     * Create userdef table
-     */
-    // bool doCreateUserdefTableTable(void);
-
-    /*!
-     * Get number of records in a database table
-     */
-    // long getCountRecordsDB(sqlite3 *db, std::string &table);
+    bool checkIfDriverNameFreeToUse(std::string& drvname ) {
+        return (m_driverNameSet.find("drvname") == m_driverNameSet.end());
+    }
 
     /*!
      * Get the system key
@@ -663,51 +521,43 @@ class CControlObject
     // pthread_mutex_t m_variableMutex;
 
     //**************************************************************************
-    //                                SQLite3
-    //**************************************************************************
-
-    //*****************************************************
-    //                    Databases
-    //*****************************************************
-
-    // std::string m_path_db_vscp_daemon; // Path to the VSCP daemon database
-    // sqlite3 *m_db_vscp_daemon;
-
-    // Mutex to protect variables
-    // pthread_mutex_t m_db_vscp_configMutex; // Mutex for the configuration table
-
-    // std::string m_path_db_vscp_data; // Path to the VSCP data database
-    // sqlite3 *m_db_vscp_data;
-
-    // Mutex for client queue
-    pthread_mutex_t m_clientMutex;
-
-    // Mutex for device queue
-    pthread_mutex_t m_deviceMutex;
-
-    // Daemon Decision Matrix Object
-    //CDM m_dm;
-
-    // Automation Object
-    //CVSCPAutomation m_automation;
-
-    // Username for level II drivers
-    std::string m_driverUsername;
-
-    // Password for Level II drivers
-    std::string m_driverPassword;
-
-    //**************************************************************************
-    //                                Lists
-    //**************************************************************************
+    //                                 DRIVERS
+    //*************************************************************************
 
     // The list with available devices.
     CDeviceList m_deviceList;
     pthread_mutex_t m_mutexDeviceList;
 
+    // This set holds driver names.
+    // Returns true for an active driver
+    // A driver can only be loaded if it have an unique name.
+
+    std::set<std::string> m_driverNameSet;
+
+    std::map<std::string,CDeviceItem> m_driverNameDeviceMap;
+
+    // Mutex for device queue
+    pthread_mutex_t m_deviceListMutex;
+
+    // Automation Object
+    CAutomation m_automation;
+
+    // Username for level III drivers
+    std::string m_driverUsername;   // TODO remove
+
+    // Password for Level III drivers
+    std::string m_driverPassword;   // TODO remove
+
+
+    //**************************************************************************
+    //                                CLIENTS
+    //**************************************************************************
+
     // The list with active clients. (protecting mutex in object)
     CClientList m_clientList;
 
+    // Mutex for client queue
+    pthread_mutex_t m_clientListMutex;
 
     // The list of users
     CUserList m_userList; // deque
