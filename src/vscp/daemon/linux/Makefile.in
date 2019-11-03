@@ -32,12 +32,11 @@ WARNINGS_MEDIUM = -Wformat-security -Wformat=2
 CIVETWEB_FLAGS =
 CFLAGS = -std=c99 @CFLAGS@ -DCBC -DLUA_USE_POSIX -I@top_srcdir@ \
 	-DNO_FILES=1 -DNO_CGI=4 -DUSE_IPV6=8 -DUSE_WEBSOCKET=16 -DMG_LEGACY_INTERFACE  \
-	-I../../common -I../../../common -I../../../common/lua -I../../../common/lua/src
+	-I../../common -I../../../common -I../../../common/nlohmann
 CXXFLAGS = -std=c++11 @CXXFLAGS@
 CPPFLAGS = @CPPFLAGS@ -fno-var-tracking-assignments -I@top_srcdir@ \
 	-DNO_FILES=1 -DNO_CGI=4 -DUSE_IPV6=8 -DUSE_WEBSOCKET=16 -DMG_LEGACY_INTERFACE \
-	-I../../common -I../../../common -I../../../common/lua \
-	-I../../../common/lua/src -I../../../common/xml2json/include
+	-I../../common -I../../../common -I../../../common/nlohmann
 CPPFLAGS += $(MONGOOSE_CFLAGS)
 
 LDFLAGS = @LDFLAGS@

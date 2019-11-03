@@ -22,8 +22,9 @@ RELEASE_VERSION = `sed '37!d' ../../common/version.h  | cut -b 33-`
 BUILD_VERSION = `sed '38!d' ../../common/version.h  | cut -b 33-
 
 CFLAGS = -std=c99 @CFLAGS@  -DCBC -I@top_srcdir@ -I../common -I../../common
-CXXFLAGS = -std=c++11 @CXXFLAGS@ 
-CPPFLAGS = @CPPFLAGS@  -fno-var-tracking-assignments -I@top_srcdir@ -I../common -I../../common
+CXXFLAGS = -std=c++11 @CXXFLAGS@
+CPPFLAGS = @CPPFLAGS@  -fno-var-tracking-assignments -I@top_srcdir@ \
+	-I../common -I../../common -I../../common/nlohmann
 
 
 LDFLAGS = @LDFLAGS@
