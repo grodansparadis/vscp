@@ -61,18 +61,17 @@
 
 #ifdef WIN32
 
-typedef long ( __stdcall * LPFNDLL_VSCPOPEN) ( const char *pPathConfig );
-typedef int ( __stdcall * LPFNDLL_VSCPCLOSE) ( long handle );
-typedef int ( __stdcall * LPFNDLL_VSCPWRITE ) ( long handle, vscpEvent *pEvent, unsigned long timeout );
+typedef long ( __stdcall * LPFNDLL_VSCPOPEN ) ( const char *pPathConfig );
+typedef int ( __stdcall * LPFNDLL_VSCPCLOSE ) ( long handle );
+typedef int ( __stdcall * LPFNDLL_VSCPWRITE ) ( long handle, const vscpEvent *pEvent, unsigned long timeout );
 typedef int ( __stdcall * LPFNDLL_VSCPREAD ) ( long handle, vscpEvent *pEvent, unsigned long timeout );
-typedef int ( *LPFNDLL_VSCPGETCONFIGPAGEINFO) ( long handle, const char *pReplyObj, uint32_t *pSize );
-typedef int ( *LPFNDLL_VSCPCONFIGPAGEUPDATE) ( long handle, const char *pUpdateObj, const char *pReplyObj, uint32_t *pSize );
-typedef int ( __stdcall *LPFNDLL_VSCPGETCOMMANDINFO) ( long handle, const char *pReplyObj, uint32_t *pSize );
-typedef int ( __stdcall *LPFNDLL_VSCPEXECUTECOMMAND) ( long handle, const char *pCmdObj, const char *pReplyObj, uint32_t *pSize );
-typedef unsigned long ( __stdcall * LPFNDLL_VSCPGETVERSION) ( void );
-typedef const char * ( __stdcall * LPFNDLL_VSCPGETVENDORSTRING) ( void );
-typedef const char * ( __stdcall * LPFNDLL_VSCPGETDRIVERINFO) ( void );
-
+typedef unsigned long ( __stdcall * LPFNDLL_VSCPGETVERSION ) (  void );
+typedef const char *( __stdcall * LPFNDLL_VSCPGETVENDORSTRING ) ( void );
+typedef const char *( __stdcall * LPFNDLL_VSCPGETDRIVERINFO ) (  void );
+typedef int ( __stdcall * LPFNDLL_VSCPGETCONFIGPAGEINFO) ( long handle, unsigned char ordinal, const char *pReplyObj, unsigned long *pSize );
+typedef int ( __stdcall * LPFNDLL_VSCPCONFIGPAGEUPDATE) ( long handle, const char *pUpdateObj, const char *pReplyObj, unsigned long *pSize );
+typedef int ( __stdcall * LPFNDLL_VSCPGETCOMMANDINFO) ( long handle, unsigned char ordinal, const char *pReplyObj, unsigned long *pSize );
+typedef int ( __stdcall * LPFNDLL_VSCPEXECUTECOMMAND) ( long handle, const unsigned char type, const char *pCmdObj, const char *pReplyObj, unsigned long *pSize );
 
 #else
 
@@ -83,10 +82,10 @@ typedef int ( *LPFNDLL_VSCPREAD ) ( long handle, vscpEvent *pEvent, unsigned lon
 typedef unsigned long ( *LPFNDLL_VSCPGETVERSION ) (  void );
 typedef const char *( *LPFNDLL_VSCPGETVENDORSTRING ) ( void );
 typedef const char *( *LPFNDLL_VSCPGETDRIVERINFO ) (  void );
-typedef int ( *LPFNDLL_VSCPGETCONFIGPAGEINFO) ( long handle, unsigned char ordinal, const char *pReplyObj, uint32_t *pSize );
-typedef int ( *LPFNDLL_VSCPCONFIGPAGEUPDATE) ( long handle, const char *pUpdateObj, const char *pReplyObj, uint32_t *pSize );
-typedef int ( *LPFNDLL_VSCPGETCOMMANDINFO) ( long handle, unsigned char ordinal, const char *pReplyObj, uint32_t *pSize );
-typedef int ( *LPFNDLL_VSCPEXECUTECOMMAND) ( long handle, const unsigned char type, const char *pCmdObj, const char *pReplyObj, uint32_t *pSize );
+typedef int ( *LPFNDLL_VSCPGETCONFIGPAGEINFO) ( long handle, unsigned char ordinal, const char *pReplyObj, unsigned long *pSize );
+typedef int ( *LPFNDLL_VSCPCONFIGPAGEUPDATE) ( long handle, const char *pUpdateObj, const char *pReplyObj, unsigned long *pSize );
+typedef int ( *LPFNDLL_VSCPGETCOMMANDINFO) ( long handle, unsigned char ordinal, const char *pReplyObj, unsigned long *pSize );
+typedef int ( *LPFNDLL_VSCPEXECUTECOMMAND) ( long handle, const unsigned char type, const char *pCmdObj, const char *pReplyObj, unsigned long *pSize );
 
 #endif
 
