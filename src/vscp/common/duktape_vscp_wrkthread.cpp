@@ -107,7 +107,7 @@ actionJavascriptThread(void *pData)
     duk_put_prop_string(ctx, -2, "resolve");
     duk_push_c_function(ctx, js_load_module, DUK_VARARGS);
     duk_put_prop_string(ctx, -2, "load");
-    duk_module_node_init(ctx);
+    //duk_module_node_init(ctx);  // TODO external module support
 
     // Add VSCP methods
     duk_push_c_function(ctx, js_vscp_log, DUK_VARARGS);

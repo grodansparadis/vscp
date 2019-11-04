@@ -716,7 +716,7 @@ bool
 CControlObject::startDeviceWorkerThreads(void)
 {
     CDeviceItem *pDeviceItem;
-    if (m_debugFlags[0] | VSCP_DEBUG1_DRIVER) {
+    if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL) {
         syslog(LOG_DEBUG, "[Controlobject][Driver] - Starting drivers...");
     }
 
@@ -728,7 +728,7 @@ CControlObject::startDeviceWorkerThreads(void)
         pDeviceItem = *it;
         if (NULL != pDeviceItem) {
 
-            if (m_debugFlags[0] | VSCP_DEBUG1_DRIVER) {
+            if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL) {
                 syslog(LOG_DEBUG,
                        "Controlobject: [Driver] - Preparing: %s ",
                        pDeviceItem->m_strName.c_str());
@@ -737,7 +737,7 @@ CControlObject::startDeviceWorkerThreads(void)
             // Just start if enabled
             if (!pDeviceItem->m_bEnable) continue;
 
-            if (m_debugFlags[0] | VSCP_DEBUG1_DRIVER) {
+            if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL) {
                 syslog(LOG_DEBUG,
                        "Controlobject: [Driver] - Starting: %s ",
                        pDeviceItem->m_strName.c_str());
@@ -781,7 +781,7 @@ CControlObject::stopDeviceWorkerThreads(void)
 {
     CDeviceItem *pDeviceItem;
 
-    if (m_debugFlags[0] | VSCP_DEBUG1_DRIVER) {
+    if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL) {
         syslog(LOG_DEBUG, "[Controlobject][Driver] - Stopping drivers...");
     }
     std::deque<CDeviceItem *>::iterator iter;
@@ -791,7 +791,7 @@ CControlObject::stopDeviceWorkerThreads(void)
 
         pDeviceItem = *iter;
         if (NULL != pDeviceItem) {
-            if (m_debugFlags[0] | VSCP_DEBUG1_DRIVER) {
+            if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL) {
                 syslog(LOG_DEBUG,
                        "Controlobject: [Driver] - Stopping: %s ",
                        pDeviceItem->m_strName.c_str());
@@ -2142,7 +2142,7 @@ startFullConfigParser(void *data, const char *name, const char **attr)
                    strName.c_str(),
                    strPath.c_str());
         } else {
-            if (pObj->m_debugFlags[0] | VSCP_DEBUG1_DRIVER) {
+            if (pObj->m_debugFlags[0] | VSCP_DEBUG1_DRIVER1) {
                 syslog(LOG_DEBUG,
                        "Level I driver added. name = %s - [%s]",
                        strName.c_str(),
@@ -2201,7 +2201,7 @@ startFullConfigParser(void *data, const char *name, const char **attr)
                                         guid,
                                         VSCP_DRIVER_LEVEL2,
                                         bEnabled)) {
-            if (pObj->m_debugFlags[0] | VSCP_DEBUG1_DRIVER) {
+            if (pObj->m_debugFlags[0] | VSCP_DEBUG1_DRIVER2) {
                 syslog(LOG_ERR,
                        "Level II driver was not added. name = %s"
                        "Path does not exist. - [%s]",
@@ -2209,7 +2209,7 @@ startFullConfigParser(void *data, const char *name, const char **attr)
                        strPath.c_str());
             }
         } else {
-            if (pObj->m_debugFlags[0] | VSCP_DEBUG1_DRIVER) {
+            if (pObj->m_debugFlags[0] | VSCP_DEBUG1_DRIVER2) {
                 syslog(LOG_DEBUG,
                        "Level II driver added. name = %s- [%s]",
                        strName.c_str(),
@@ -2275,7 +2275,7 @@ startFullConfigParser(void *data, const char *name, const char **attr)
                    strPath.c_str());
 
         } else {
-            if (pObj->m_debugFlags[0] | VSCP_DEBUG1_DRIVER) {
+            if (pObj->m_debugFlags[0] | VSCP_DEBUG1_DRIVER3) {
                 syslog(LOG_DEBUG,
                        "Level III driver added. name = %s- [%s]",
                        strName.c_str(),

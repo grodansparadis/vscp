@@ -182,7 +182,7 @@ class CDeviceItem
     // ------------------------------------------------------------------------
 
     // Control object that invoked thread
-    CControlObject *m_pCtrlObject;
+    CControlObject *m_pObj;
 
     // Holder for CANAL receive thread
     pthread_t m_level1ReceiveThread;
@@ -273,16 +273,22 @@ class CDeviceList
     bool removeItem(unsigned long id);
 
     /*!
+        Get device from it's name
+        @param name Name of device.
+        @return Pointer to a device item or NULL if not found.
+    */
+    CDeviceItem *getDeviceItemFromName(std::string& name);
+    /*!
         Get device item from GUID
         @param guid for device to look for
-        @return Pointer to device item or NULL if not found
+        @return Pointer to device item or NULL if not found.
     */
     CDeviceItem *getDeviceItemFromGUID(cguid &guid);
 
     /*!
         Get device item from the client id
         @param guid for device to look for
-        @return Pointer to device item or NULL if not found
+        @return Pointer to device item or NULL if not found.
     */
     CDeviceItem *getDeviceItemFromClientId(uint32_t id);
 

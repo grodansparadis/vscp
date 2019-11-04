@@ -32,7 +32,9 @@
 #define VSCP_DEBUG1_GENERAL (1 << 0)    // Automation debug info
 #define VSCP_DEBUG1_AUTOMATION (1 << 1) // Automation debug info
 #define VSCP_DEBUG1_TCP (1 << 2)        // TCP/IP client i/f debug info
-#define VSCP_DEBUG1_DRIVER (1 << 3)     // Driver debug info
+#define VSCP_DEBUG1_DRIVER1 (1 << 3)    // Driver debug info level I
+#define VSCP_DEBUG1_DRIVER2 (1 << 4)    // Driver debug info level II
+#define VSCP_DEBUG1_DRIVER3 (1 << 5)    // Driver debug info level III
 // the rest of the 32-bits...
 
 #define VSCP_DEBUG2_ALL 0xFFFFFFFF

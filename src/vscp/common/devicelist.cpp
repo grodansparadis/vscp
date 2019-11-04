@@ -186,7 +186,7 @@ CDeviceItem::startDriver(CControlObject *pCtrlObject)
     // *****************************************
 
     // Share control object
-    m_pCtrlObject = pCtrlObject;
+    m_pObj = pCtrlObject;
 
     if (pthread_create(&m_deviceThreadHandle, NULL, deviceThread, this)) {
         syslog(LOG_ERR,
@@ -320,6 +320,11 @@ CDeviceList::addItem(const std::string &strName,
             pDeviceItem->m_DeviceFlags = flags;
 
         } else {
+            syslog(LOG_ERR,
+                    "Driver '%s' is not available at this path %s. Dropped!",
+                    strName.c_str(),
+                    strPath.c_str() );
+
             // Driver does not exist at this path
             delete pDeviceItem;
             rv = false;
@@ -336,7 +341,6 @@ CDeviceList::addItem(const std::string &strName,
 bool
 CDeviceList::removeItem(unsigned long id)
 {
-
     return true;
 }
 
@@ -375,6 +379,28 @@ CDeviceList::getDeviceItemFromClientId(uint32_t id)
         CDeviceItem *pItem = *iter;
         if ((NULL != pItem->m_pClientItem) &&
             (pItem->m_pClientItem->m_clientID == id)) {
+            returnItem = pItem;
+            break;
+        }
+    }
+
+    return returnItem;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getDeviceItemFromName
+//
+
+CDeviceItem *
+CDeviceList::getDeviceItemFromName(std::string& name)
+{
+    CDeviceItem *returnItem = NULL;
+
+    std::deque<CDeviceItem *>::iterator iter;
+    for (iter = m_devItemList.begin(); iter != m_devItemList.end(); ++iter) {
+        CDeviceItem *pItem = *iter;
+        if ((NULL != pItem->m_pClientItem) &&
+            (pItem->m_strName == name)) {
             returnItem = pItem;
             break;
         }

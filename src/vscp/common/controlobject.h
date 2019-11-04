@@ -43,7 +43,6 @@
 
 // Forward declarations
 class TCPListenThread;
-class CVSCPAutomation;
 
 // Log level
 enum
