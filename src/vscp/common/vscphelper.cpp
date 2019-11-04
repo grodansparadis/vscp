@@ -57,6 +57,7 @@
 #include <expat.h>
 #include <json.hpp> // Needs C++11  -std=c++11
 
+#include <canal_macro.h>
 #include <crc.h>
 #include <crc8.h>
 #include <fastpbkdf2.h>
@@ -2556,8 +2557,8 @@ vscp_setEventGuidFromString(vscpEvent *pEvent, const std::string &strGUID)
         memset(pEvent->GUID, 0, 16);
     } else {
         std::deque<std::string> tokens;
-        vscp_split(tokens, strGUID, ",");
-        for (int i = 0; i < 16; i++) {
+        vscp_split(tokens, strGUID, ":");
+        for (int i = 0; i < MIN(16,tokens.size()); i++) {
             pEvent->GUID[i] =
               (uint8_t)stol(tokens.front().c_str(), nullptr, 16);
             tokens.pop_front();
@@ -2587,7 +2588,7 @@ vscp_setEventExGuidFromString(vscpEventEx *pEvent, const std::string &strGUID)
         return true;
     } else {
         std::deque<std::string> tokens;
-        vscp_split(tokens, strGUID, ",");
+        vscp_split(tokens, strGUID, ":");
         for (int i = 0; i < 16; i++) {
             pEvent->GUID[i] =
               (uint8_t)stol(tokens.front().c_str(), nullptr, 16);

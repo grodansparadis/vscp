@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2017 the Civetweb developers
+/* Copyright (c) 2013-2019 the Civetweb developers
  * Copyright (c) 2004-2013 Sergey Lyubka
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,9 +23,9 @@
 #ifndef CIVETWEB_HEADER_INCLUDED
 #define CIVETWEB_HEADER_INCLUDED
 
-#define CIVETWEB_VERSION "1.11"
+#define CIVETWEB_VERSION "1.12"
 #define CIVETWEB_VERSION_MAJOR (1)
-#define CIVETWEB_VERSION_MINOR (11)
+#define CIVETWEB_VERSION_MINOR (12)
 #define CIVETWEB_VERSION_PATCH (0)
 
 #ifndef CIVETWEB_API
@@ -348,20 +348,39 @@ struct mg_callbacks {
 	     ctx: context handle */
 	void (*init_context)(const struct mg_context *ctx);
 
-	/* Called when a new worker thread is initialized.
-	   Parameters:
-	     ctx: context handle
-	     thread_type:
-	       0 indicates the master thread
-	       1 indicates a worker thread handling client connections
-	       2 indicates an internal helper thread (timer thread)
-	       */
-	void (*init_thread)(const struct mg_context *ctx, int thread_type);
-
 	/* Called when civetweb context is deleted.
-	   Parameters:
-	     ctx: context handle */
+	Parameters:
+	ctx: context handle */
 	void (*exit_context)(const struct mg_context *ctx);
+
+	/* Called when a new worker thread is initialized.
+	 * Parameters:
+	 *   ctx: context handle
+	 *   thread_type:
+	 *     0 indicates the master thread
+	 *     1 indicates a worker thread handling client connections
+	 *     2 indicates an internal helper thread (timer thread)
+	 * Return value:
+	 *   This function returns a user supplied pointer. The pointer is assigned
+	 *   to the thread and can be obtained from the mg_connection object using
+	 *   mg_get_thread_pointer in all server callbacks. Note: A connection and
+	 *   a thread are not directly related. Threads will serve several different
+	 *   connections, and data from a single connection may call different
+	 *   callbacks using different threads. The thread pointer can be obtained
+	 *   in a callback handler, but should not be stored beyond the scope of
+	 *   one call to one callback.
+	 */
+	void *(*init_thread)(const struct mg_context *ctx, int thread_type);
+
+	/* Called when a worker exits.
+	 * The parameters "ctx" and "thread_type" correspond to the "init_thread"
+	 * call. The  "thread_pointer" parameter is the value returned by
+	 * "init_thread".
+	 */
+	void (*exit_thread)(const struct mg_context *ctx,
+	                    int thread_type,
+	                    void *thread_pointer);
+
 
 	/* Called when initializing a new connection object.
 	 * Can be used to initialize the connection specific user data
@@ -599,6 +618,14 @@ mg_get_context(const struct mg_connection *conn);
 CIVETWEB_API void *mg_get_user_data(const struct mg_context *ctx);
 
 
+/* Get user data passed to mg_start from connection. */
+CIVETWEB_API void *mg_get_user_context_data(const struct mg_connection *conn);
+
+
+/* Get user defined thread pointer for server threads (see init_thread). */
+CIVETWEB_API void *mg_get_thread_pointer(const struct mg_connection *conn);
+
+
 /* Set user data for the current connection. */
 /* Note: This function is deprecated. Use the init_connection callback
    instead to initialize the user connection data pointer. It is
@@ -681,7 +708,7 @@ enum {
 CIVETWEB_API const struct mg_option *mg_get_valid_options(void);
 
 
-struct mg_server_ports {
+struct mg_server_port {
 	int protocol;    /* 1 = IPv4, 2 = IPv6, 3 = both */
 	int port;        /* port number */
 	int is_ssl;      /* https port: 0 = no, 1 = yes */
@@ -692,15 +719,18 @@ struct mg_server_ports {
 	int _reserved4;
 };
 
+/* Legacy name */
+#define mg_server_ports mg_server_port
+
 
 /* Get the list of ports that civetweb is listening on.
    The parameter size is the size of the ports array in elements.
    The caller is responsibility to allocate the required memory.
-   This function returns the number of struct mg_server_ports elements
+   This function returns the number of struct mg_server_port elements
    filled in, or <0 in case of an error. */
 CIVETWEB_API int mg_get_server_ports(const struct mg_context *ctx,
                                      int size,
-                                     struct mg_server_ports *ports);
+                                     struct mg_server_port *ports);
 
 
 #if defined(MG_LEGACY_INTERFACE) /* 2017-04-02 */
@@ -1388,6 +1418,7 @@ struct mg_client_options {
 	int port;
 	const char *client_cert;
 	const char *server_cert;
+	const char *host_name;
 	/* TODO: add more data */
 };
 
@@ -1398,7 +1429,9 @@ mg_connect_client_secure(const struct mg_client_options *client_options,
                          size_t error_buffer_size);
 
 
+#if defined(MG_LEGACY_INTERFACE) /* 2019-11-02 */
 enum { TIMEOUT_INFINITE = -1 };
+#endif
 enum { MG_TIMEOUT_INFINITE = -1 };
 
 /* Wait for a response from the server
@@ -1437,13 +1470,17 @@ CIVETWEB_API int mg_get_response(struct mg_connection *conn,
         64  support server side JavaScript (USE_DUKTAPE is set)
        128  support caching (NO_CACHING not set)
        256  support server statistics (USE_SERVER_STATS is set)
+       512  support for on the fly compression (USE_ZLIB is set)
+
+       These values are defined as MG_FEATURES_*
+
        The result is undefined, if bits are set that do not represent a
-       defined feature (currently: feature >= 512).
+       defined feature (currently: feature >= 1024).
        The result is undefined, if no bit is set (feature == 0).
 
    Return:
-     If feature is available, the corresponding bit is set
-     If feature is not available, the bit is 0
+     If a feature is available, the corresponding bit is set
+     If a feature is not available, the bit is 0
 */
 CIVETWEB_API unsigned mg_check_feature(unsigned feature);
 

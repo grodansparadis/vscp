@@ -26,7 +26,6 @@ CXXFLAGS = -std=c++11 @CXXFLAGS@
 CPPFLAGS = @CPPFLAGS@  -fno-var-tracking-assignments -I@top_srcdir@ \
 	-I../common -I../../common -I../../common/nlohmann
 
-
 LDFLAGS = @LDFLAGS@
 EXTRALIBS = @EXTRALIBS@
 

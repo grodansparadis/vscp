@@ -29,15 +29,22 @@ WARNINGS_HARD = -Werror -Wall -Wextra -pedantic -Wcast-align -Wcast-qual \
   -Wno-variadic-macros -Wno-parentheses -fdiagnostics-show-option
 WARNINGS_MEDIUM = -Wformat-security -Wformat=2
 
-CIVETWEB_FLAGS =
-CFLAGS = -std=c99 @CFLAGS@ -DCBC -DLUA_USE_POSIX -I@top_srcdir@ \
-	-DNO_FILES=1 -DNO_CGI=4 -DUSE_IPV6=8 -DUSE_WEBSOCKET=16 -DMG_LEGACY_INTERFACE  \
-	-I../../common -I../../../common -I../../../common/nlohmann
+
+CIVETWEB_FLAGS = -DUSE_IPV6 -DUSE_WEBSOCKET \
+	-DUSE_LUA -DUSE_DUKTAPE -DUSE_ZLIB -DUSE_SERVER_STATS
+CFLAGS = -std=c99 @CFLAGS@ -DCBC -DLUA_USE_POSIX -D_POSIX_SOURCE -I@top_srcdir@ \
+	-I../../common -I../../../common -I../../../common/nlohmann \
+	-I../../../common/third_party -I../../../common/third_party/lua-5.3.5/src/ \
+	-I../../../common/third_party/duktape-2.4.0/src/ \
+	-I../../../common/third_party/sqlite3-3.30.1/
+CFLAGS += $(CIVETWEB_FLAGS)
 CXXFLAGS = -std=c++11 @CXXFLAGS@
 CPPFLAGS = @CPPFLAGS@ -fno-var-tracking-assignments -I@top_srcdir@ \
-	-DNO_FILES=1 -DNO_CGI=4 -DUSE_IPV6=8 -DUSE_WEBSOCKET=16 -DMG_LEGACY_INTERFACE \
-	-I../../common -I../../../common -I../../../common/nlohmann
-CPPFLAGS += $(MONGOOSE_CFLAGS)
+	-I../../common -I../../../common -I../../../common/nlohmann \
+	-I../../../common/third_party -I../../../common/third_party/lua-5.3.5/src/ \
+	-I../../../common/third_party/duktape-2.4.0/src/ \
+	-I../../../common/third_party/sqlite3-3.30.1/
+CPPFLAGS += $(CIVETWEB_FLAGS)
 
 LDFLAGS = @LDFLAGS@
 EXTRALIBS = @EXTRALIBS@
@@ -82,7 +89,16 @@ VSCPD_OBJECTS =  vscpd.o \
 	crc.o \
 	crc8.o \
 	randpassword.o \
+	duktape.o \
+	duktape_vscp_func.o \
+	duktape_vscp_wrkthread.o \
+	LuaXML_lib.o \
+	lua_all.o\
+	lua_vscp_wrkthread.o\
+	lua_vscp_func.o\
 	vscp_aes.o \
+	sqlite3.o \
+	sqlite3math.o \
 	fastpbkdf2.o \
 	vscpmd5.o \
 	vscpbase64.o \
@@ -175,6 +191,45 @@ vscpmd5.o: ../../../common/vscpmd5.c ../../../common/vscpmd5.h
 
 civetweb.o: ../../../common/civetweb.c ../../../common/civetweb.h
 	$(CC) $(CFLAGS) $(CIVETWEB_FLAGS) -c ../../../common/civetweb.c -o $@
+
+duktape.o: ../../../common/third_party/duktape-2.4.0/src/duktape.c ../../../common/third_party/duktape-1.8.0/src/duktape.h
+	$(CC) $(CFLAGS) -c ../../../common/third_party/duktape-2.4.0/src/duktape.c -o $@
+
+#duk_v1_compat.o: ../../../common/third_party/duk_v1_compat.c ../../../common/third_party/duk_v1_compat.h
+#	$(CC) $(CFLAGS) -c ../../../common/third_party/duk_v1_compat.c -o $@
+
+#duk_module_node.o: ../../../common/third_party/duk_module_node.c ../../../common/third_party/duk_module_node.h
+#	$(CC) $(CFLAGS) -c ../../../common/third_party/duk_module_node.c -o $@
+
+duktape_vscp_func.o: ../../common/duktape_vscp_func.cpp ../../common/duktape_vscp_func.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/duktape_vscp_func.cpp -o $@
+
+duktape_vscp_wrkthread.o: ../../common/duktape_vscp_wrkthread.cpp ../../common/duktape_vscp_wrkthread.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/duktape_vscp_wrkthread.cpp -o $@
+
+lsqlite3.o: ../../../common/third_party/lsqlite3.c
+	$(CC) $(CFLAGS)  -c ../../../common/third_party/lsqlite3.c -o $@
+
+lfs.o: ../../../common/third_party/lfs.c
+	$(CC) $(CFLAGS)  -c ../../../common/third_party/lfs.c -o $@
+
+LuaXML_lib.o: ../../../common/third_party/LuaXML_lib.c
+	$(CC) $(CFLAGS)  -c ../../../common/third_party/LuaXML_lib.c -o $@
+
+lua_all.o: ../../../common/third_party/lua_all.c
+	$(CC) $(CFLAGS)  -c ../../../common/third_party/lua_all.c -o $@
+
+lua_vscp_func.o: ../../common/lua_vscp_func.cpp ../../common/lua_vscp_func.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/lua_vscp_func.cpp -o $@
+
+lua_vscp_wrkthread.o: ../../common/lua_vscp_wrkthread.cpp ../../common/lua_vscp_wrkthread.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/lua_vscp_wrkthread.cpp -o $@
+
+sqlite3.o: ../../../common/third_party/sqlite3-3.30.1/sqlite3.c
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c  ../../../common/third_party/sqlite3-3.30.1/sqlite3.c -o $@
+
+sqlite3math.o: ../../../common/third_party/sqlite3math.c
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c  ../../../common/third_party/sqlite3math.c -o $@
 
 vscpd: $(VSCPD_OBJECTS)
 	$(CXX) -o $@ $(VSCPD_OBJECTS) $(LDFLAGS) $(EXTRALIBS)

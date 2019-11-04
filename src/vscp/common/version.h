@@ -37,7 +37,7 @@
 #define VSCPD_RELEASE_VERSION   0
 #define VSCPD_BUILD_VERSION     0
 
-#define VSCPD_DISPLAY_VERSION   "14.0.0.0 Aluminium"
+#define VSCPD_DISPLAY_VERSION   "14.0.0-0 Aluminium"
 
 #define VSCPD_COPYRIGHT                                                        \
     "Copyright (C) 2000-2019 Ake Hedman,, Grodans Paradis AB, "                \

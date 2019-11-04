@@ -156,9 +156,6 @@ CControlObject::CControlObject()
     // Local domain
     m_web_authentication_domain = "mydomain.com";
 
-    // Set Default Log Level
-    m_logLevel = DAEMON_LOGMSG_NORMAL;
-
     // Default TCP/IP interface settings
     m_enableTcpip            = true;
     m_strTcpInterfaceAddress = "9598";
@@ -235,7 +232,7 @@ CControlObject::CControlObject()
 
     // Init. web server subsystem - All features enabled
     // ssl mt locks will we initiated here for openssl 1.0
-    if (0 == mg_init_library(USE_IPV6 | USE_WEBSOCKET | NO_CGI | NO_FILES)) {
+    if (0 == mg_init_library(0) ) {
         syslog(LOG_ERR, "Failed to initialize webserver subsystem.");
     }
 
@@ -348,6 +345,9 @@ CControlObject::init(std::string &strcfgfile, std::string &rootFolder)
     }
 
     // Read XML configuration
+    if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL) {
+        syslog(LOG_DEBUG, "Reading configuration file");
+    }
     if (!readConfigurationXML(strcfgfile)) {
         syslog(
           LOG_ERR,
@@ -426,10 +426,6 @@ CControlObject::init(std::string &strcfgfile, std::string &rootFolder)
     str += " - ";
     str += VSCPD_COPYRIGHT;
     syslog(LOG_INFO, "%s", str.c_str());
-
-    if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL) {
-        syslog(LOG_DEBUG, "Log Level=%d", m_logLevel);
-    }
 
     // Start daemon internal client worker thread
     startClientMsgWorkerThread();
@@ -697,7 +693,7 @@ CControlObject::stopTcpipSrvThread(void)
     // Tell the thread it's time to quit
     m_ptcpipSrvObject->m_nStopTcpIpSrv = VSCP_TCPIP_SRV_STOP;
 
-    if (m_debugFlags[0] | VSCP_DEBUG1_TCP ) {
+    if (m_debugFlags[0] | VSCP_DEBUG1_TCP) {
         syslog(LOG_DEBUG, "Controlobject: Terminating TCP thread.");
     }
 
@@ -705,13 +701,12 @@ CControlObject::stopTcpipSrvThread(void)
     delete m_ptcpipSrvObject;
     m_ptcpipSrvObject = NULL;
 
-    if (m_debugFlags[0] | VSCP_DEBUG1_TCP ) {
+    if (m_debugFlags[0] | VSCP_DEBUG1_TCP) {
         syslog(LOG_DEBUG, "Controlobject: Terminated TCP thread.");
     }
 
     return true;
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // startDeviceWorkerThreads
@@ -721,8 +716,8 @@ bool
 CControlObject::startDeviceWorkerThreads(void)
 {
     CDeviceItem *pDeviceItem;
-    if (m_debugFlags[0] | VSCP_DEBUG1_DRIVER ) {
-    syslog(LOG_DEBUG, "[Controlobject][Driver] - Starting drivers...");
+    if (m_debugFlags[0] | VSCP_DEBUG1_DRIVER) {
+        syslog(LOG_DEBUG, "[Controlobject][Driver] - Starting drivers...");
     }
 
     std::deque<CDeviceItem *>::iterator it;
@@ -733,19 +728,19 @@ CControlObject::startDeviceWorkerThreads(void)
         pDeviceItem = *it;
         if (NULL != pDeviceItem) {
 
-            if (m_debugFlags[0] | VSCP_DEBUG1_DRIVER ) {
-            syslog(LOG_DEBUG,
-                   "Controlobject: [Driver] - Preparing: %s ",
-                   pDeviceItem->m_strName.c_str());
+            if (m_debugFlags[0] | VSCP_DEBUG1_DRIVER) {
+                syslog(LOG_DEBUG,
+                       "Controlobject: [Driver] - Preparing: %s ",
+                       pDeviceItem->m_strName.c_str());
             }
 
             // Just start if enabled
             if (!pDeviceItem->m_bEnable) continue;
 
-            if (m_debugFlags[0] | VSCP_DEBUG1_DRIVER ) {
-            syslog(LOG_DEBUG,
-                   "Controlobject: [Driver] - Starting: %s ",
-                   pDeviceItem->m_strName.c_str());
+            if (m_debugFlags[0] | VSCP_DEBUG1_DRIVER) {
+                syslog(LOG_DEBUG,
+                       "Controlobject: [Driver] - Starting: %s ",
+                       pDeviceItem->m_strName.c_str());
             }
 
             // *** Level 3 Driver * * *
@@ -786,9 +781,9 @@ CControlObject::stopDeviceWorkerThreads(void)
 {
     CDeviceItem *pDeviceItem;
 
-   if (m_debugFlags[0] | VSCP_DEBUG1_DRIVER ) {
-    syslog(LOG_DEBUG, "[Controlobject][Driver] - Stopping drivers...");
-   }
+    if (m_debugFlags[0] | VSCP_DEBUG1_DRIVER) {
+        syslog(LOG_DEBUG, "[Controlobject][Driver] - Stopping drivers...");
+    }
     std::deque<CDeviceItem *>::iterator iter;
     for (iter = m_deviceList.m_devItemList.begin();
          iter != m_deviceList.m_devItemList.end();
@@ -796,10 +791,10 @@ CControlObject::stopDeviceWorkerThreads(void)
 
         pDeviceItem = *iter;
         if (NULL != pDeviceItem) {
-            if (m_debugFlags[0] | VSCP_DEBUG1_DRIVER ) {
-            syslog(LOG_DEBUG,
-                   "Controlobject: [Driver] - Stopping: %s ",
-                   pDeviceItem->m_strName.c_str());
+            if (m_debugFlags[0] | VSCP_DEBUG1_DRIVER) {
+                syslog(LOG_DEBUG,
+                       "Controlobject: [Driver] - Stopping: %s ",
+                       pDeviceItem->m_strName.c_str());
             }
             pDeviceItem->stopDriver();
         }
@@ -1070,27 +1065,27 @@ CControlObject::sendEvent(CClientItem *pClientItem, vscpEvent *peventToSend)
         destguid.setAt(0, 0); // Interface GUID's have LSB bytes nilled
         destguid.setAt(1, 0);
 
-        if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL ) {
-        syslog(LOG_DEBUG,
-               "Level I event over Level II "
-               "dest = %d:%d:%d:%d:%d:%d:%d:%d:"
-               "%d:%d:%d:%d:%d:%d:%d:%d:",
-               destguid.getAt(0),
-               destguid.getAt(1),
-               destguid.getAt(2),
-               destguid.getAt(3),
-               destguid.getAt(4),
-               destguid.getAt(5),
-               destguid.getAt(6),
-               destguid.getAt(7),
-               destguid.getAt(8),
-               destguid.getAt(9),
-               destguid.getAt(10),
-               destguid.getAt(11),
-               destguid.getAt(12),
-               destguid.getAt(13),
-               destguid.getAt(14),
-               destguid.getAt(15));
+        if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL) {
+            syslog(LOG_DEBUG,
+                   "Level I event over Level II "
+                   "dest = %d:%d:%d:%d:%d:%d:%d:%d:"
+                   "%d:%d:%d:%d:%d:%d:%d:%d:",
+                   destguid.getAt(0),
+                   destguid.getAt(1),
+                   destguid.getAt(2),
+                   destguid.getAt(3),
+                   destguid.getAt(4),
+                   destguid.getAt(5),
+                   destguid.getAt(6),
+                   destguid.getAt(7),
+                   destguid.getAt(8),
+                   destguid.getAt(9),
+                   destguid.getAt(10),
+                   destguid.getAt(11),
+                   destguid.getAt(12),
+                   destguid.getAt(13),
+                   destguid.getAt(14),
+                   destguid.getAt(15));
         }
 
         // Find client
@@ -1103,27 +1098,27 @@ CControlObject::sendEvent(CClientItem *pClientItem, vscpEvent *peventToSend)
              ++it) {
 
             CClientItem *pItem = *it;
-            if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL ) {
-            syslog(
-              LOG_DEBUG,
-              "Test if = %d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%s",
-              pItem->m_guid.getAt(0),
-              pItem->m_guid.getAt(1),
-              pItem->m_guid.getAt(2),
-              pItem->m_guid.getAt(3),
-              pItem->m_guid.getAt(4),
-              pItem->m_guid.getAt(5),
-              pItem->m_guid.getAt(6),
-              pItem->m_guid.getAt(7),
-              pItem->m_guid.getAt(8),
-              pItem->m_guid.getAt(9),
-              pItem->m_guid.getAt(10),
-              pItem->m_guid.getAt(11),
-              pItem->m_guid.getAt(12),
-              pItem->m_guid.getAt(13),
-              pItem->m_guid.getAt(14),
-              pItem->m_guid.getAt(15),
-              pItem->m_strDeviceName.c_str());
+            if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL) {
+                syslog(LOG_DEBUG,
+                       "Test if = "
+                       "%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%s",
+                       pItem->m_guid.getAt(0),
+                       pItem->m_guid.getAt(1),
+                       pItem->m_guid.getAt(2),
+                       pItem->m_guid.getAt(3),
+                       pItem->m_guid.getAt(4),
+                       pItem->m_guid.getAt(5),
+                       pItem->m_guid.getAt(6),
+                       pItem->m_guid.getAt(7),
+                       pItem->m_guid.getAt(8),
+                       pItem->m_guid.getAt(9),
+                       pItem->m_guid.getAt(10),
+                       pItem->m_guid.getAt(11),
+                       pItem->m_guid.getAt(12),
+                       pItem->m_guid.getAt(13),
+                       pItem->m_guid.getAt(14),
+                       pItem->m_guid.getAt(15),
+                       pItem->m_strDeviceName.c_str());
             }
 
             if (pItem->m_guid == destguid) {
@@ -1308,15 +1303,15 @@ CControlObject::getMacAddress(cguid &guid)
 
         unsigned char *ptr;
         ptr = (unsigned char *)&s.ifr_ifru.ifru_hwaddr.sa_data[0];
-        if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL ) {
-        syslog(LOG_DEBUG,
-               "Ethernet MAC address: %02X:%02X:%02X:%02X:%02X:%02X",
-               (uint8_t)s.ifr_addr.sa_data[0],
-               (uint8_t)s.ifr_addr.sa_data[1],
-               (uint8_t)s.ifr_addr.sa_data[2],
-               (uint8_t)s.ifr_addr.sa_data[3],
-               (uint8_t)s.ifr_addr.sa_data[4],
-               (uint8_t)s.ifr_addr.sa_data[5]);
+        if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL) {
+            syslog(LOG_DEBUG,
+                   "Ethernet MAC address: %02X:%02X:%02X:%02X:%02X:%02X",
+                   (uint8_t)s.ifr_addr.sa_data[0],
+                   (uint8_t)s.ifr_addr.sa_data[1],
+                   (uint8_t)s.ifr_addr.sa_data[2],
+                   (uint8_t)s.ifr_addr.sa_data[3],
+                   (uint8_t)s.ifr_addr.sa_data[4],
+                   (uint8_t)s.ifr_addr.sa_data[5]);
         }
 
         guid.setAt(0, 0xff);
@@ -1436,9 +1431,7 @@ CControlObject::getSystemKeyMD5(std::string &strKey)
                 servername="sdfdsfsd"
                 clientbuffersize="100" >
 
-    <logging  loglevel="n"
-                logdays="n"
-                debugflags1="n"
+    <logging  debugflags1="n"
                 debugflags1="n"
                 debugflags2="n"
                 debugflags3="n"
@@ -1507,22 +1500,7 @@ startGeneralConfigParser(void *data, const char *name, const char **attr)
                 std::string attribute = attr[i + 1];
                 vscp_trim(attribute);
 
-                if (0 == vscp_strcasecmp(attr[i], "loglevel")) {
-                    if (0 == vscp_strcasecmp(attribute.c_str(), "none")) {
-                        pObj->m_logLevel = DAEMON_LOGMSG_NONE;
-                    } else if (0 ==
-                               vscp_strcasecmp(attribute.c_str(), "normal")) {
-                        pObj->m_logLevel = DAEMON_LOGMSG_NORMAL;
-                    } else if (0 ==
-                               vscp_strcasecmp(attribute.c_str(), "debug")) {
-                        pObj->m_logLevel = DAEMON_LOGMSG_DEBUG;
-                    } else {
-                        pObj->m_logLevel = vscp_readStringValue(attribute);
-                        if (pObj->m_logLevel > DAEMON_LOGMSG_DEBUG) {
-                            pObj->m_logLevel = DAEMON_LOGMSG_DEBUG;
-                        }
-                    }
-                } else if (0 == vscp_strcasecmp(attr[i], "debugflags1")) {
+                if (0 == vscp_strcasecmp(attr[i], "debugflags1")) {
                     if (attribute.length()) {
                         pObj->m_debugFlags[0] = vscp_readStringValue(attribute);
                     }
@@ -1611,10 +1589,10 @@ CControlObject::readXMLConfigurationGeneral(const std::string &strcfgfile)
 {
     FILE *fp;
 
-    if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL ) {
-    syslog(LOG_DEBUG,
-           "Reading general XML configuration from [%s]",
-           (const char *)strcfgfile.c_str());
+    if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL) {
+        syslog(LOG_DEBUG,
+               "Reading general XML configuration from [%s]",
+               (const char *)strcfgfile.c_str());
     }
 
     fp = fopen(strcfgfile.c_str(), "r");
@@ -2164,11 +2142,11 @@ startFullConfigParser(void *data, const char *name, const char **attr)
                    strName.c_str(),
                    strPath.c_str());
         } else {
-            if (pObj->m_debugFlags[0] | VSCP_DEBUG1_DRIVER ) {
-            syslog(LOG_DEBUG,
-                   "Level I driver added. name = %s - [%s]",
-                   strName.c_str(),
-                   strPath.c_str());
+            if (pObj->m_debugFlags[0] | VSCP_DEBUG1_DRIVER) {
+                syslog(LOG_DEBUG,
+                       "Level I driver added. name = %s - [%s]",
+                       strName.c_str(),
+                       strPath.c_str());
             }
         }
 
@@ -2223,19 +2201,19 @@ startFullConfigParser(void *data, const char *name, const char **attr)
                                         guid,
                                         VSCP_DRIVER_LEVEL2,
                                         bEnabled)) {
-            if (pObj->m_debugFlags[0] | VSCP_DEBUG1_DRIVER ) {
-            syslog(LOG_ERR,
-                   "Level II driver was not added. name = %s"
-                   "Path does not exist. - [%s]",
-                   strName.c_str(),
-                   strPath.c_str());
+            if (pObj->m_debugFlags[0] | VSCP_DEBUG1_DRIVER) {
+                syslog(LOG_ERR,
+                       "Level II driver was not added. name = %s"
+                       "Path does not exist. - [%s]",
+                       strName.c_str(),
+                       strPath.c_str());
             }
         } else {
-            if (pObj->m_debugFlags[0] | VSCP_DEBUG1_DRIVER ) {
-            syslog(LOG_DEBUG,
-                   "Level II driver added. name = %s- [%s]",
-                   strName.c_str(),
-                   strPath.c_str());
+            if (pObj->m_debugFlags[0] | VSCP_DEBUG1_DRIVER) {
+                syslog(LOG_DEBUG,
+                       "Level II driver added. name = %s- [%s]",
+                       strName.c_str(),
+                       strPath.c_str());
             }
         }
 
@@ -2297,11 +2275,11 @@ startFullConfigParser(void *data, const char *name, const char **attr)
                    strPath.c_str());
 
         } else {
-            if (pObj->m_debugFlags[0] | VSCP_DEBUG1_DRIVER ) {
-            syslog(LOG_DEBUG,
-                   "Level III driver added. name = %s- [%s]",
-                   strName.c_str(),
-                   strPath.c_str());
+            if (pObj->m_debugFlags[0] | VSCP_DEBUG1_DRIVER) {
+                syslog(LOG_DEBUG,
+                       "Level III driver added. name = %s- [%s]",
+                       strName.c_str(),
+                       strPath.c_str());
             }
         }
     }
@@ -2412,10 +2390,10 @@ CControlObject::readConfigurationXML(const std::string &strcfgfile)
 {
     FILE *fp;
 
-    if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL ) {
-    syslog(LOG_DEBUG,
-           "Reading full XML configuration from [%s]",
-           (const char *)strcfgfile.c_str());
+    if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL) {
+        syslog(LOG_DEBUG,
+               "Reading full XML configuration from [%s]",
+               (const char *)strcfgfile.c_str());
     }
 
     fp = fopen(strcfgfile.c_str(), "r");

@@ -112,7 +112,6 @@ int main( int argc, char **argv )
         switch (opt) {
 
         case 's':
-            fprintf( stderr, "Stay Hungry. Stay Foolish.\n" );
             fprintf( stderr, "I will ***NOT*** run as daemon! "
                              "(ctrl+c to terminate)\n\n");
             gbDontRunAsDaemon = true;

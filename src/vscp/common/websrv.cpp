@@ -146,15 +146,15 @@ websrv_sendheader(struct mg_connection *conn,
     if (NULL == pcontent) return;
 
     mg_printf(conn,
-               "HTTP/1.1 %d OK\r\n"
-               "Content-Type: %s\r\n"
-               "Date: %s\r"
-               "Cache-Control: no-cache\r\n"
-               "Cache-Control: no-store\r\n"
-               "Cache-Control: must-revalidate\r\n\r\n",
-               returncode,
-               pcontent,
-               date);
+              "HTTP/1.1 %d OK\r\n"
+              "Content-Type: %s\r\n"
+              "Date: %s\r"
+              "Cache-Control: no-cache\r\n"
+              "Cache-Control: no-store\r\n"
+              "Cache-Control: must-revalidate\r\n\r\n",
+              returncode,
+              pcontent,
+              date);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -178,67 +178,67 @@ websrv_sendSetCookieHeader(struct mg_connection *conn,
     // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie
     // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control
     mg_printf(conn,
-               "HTTP/1.1 %d OK\r\n"
-               "Content-Type: %s\r\n"
-               "Date: %s\r"
-               "Set-Cookie: sessionid=%s; http-only; path=/\r\n"
-               "Cache-Control: no-cache\r\n"
-               "Cache-Control: no-store\r\n"
-               "Cache-Control: must-revalidate\r\n\r\n",
-               returncode,
-               pcontent,
-               date,
-               psid);
+              "HTTP/1.1 %d OK\r\n"
+              "Content-Type: %s\r\n"
+              "Date: %s\r"
+              "Set-Cookie: sessionid=%s; http-only; path=/\r\n"
+              "Cache-Control: no-cache\r\n"
+              "Cache-Control: no-store\r\n"
+              "Cache-Control: must-revalidate\r\n\r\n",
+              returncode,
+              pcontent,
+              date,
+              psid);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // websrv_parseHeader
 //
 
- bool
- websrv_parseHeader(std::deque<std::string> &valarray, std::string &header)
- {
-//     char *name, *value, *s;
+bool
+websrv_parseHeader(std::deque<std::string> &valarray, std::string &header)
+{
+    //     char *name, *value, *s;
 
-//     // Make modifiable copy of the auth header
-//     char *pbuf = new char[header.length() + 1];
-//     if (NULL == pbuf) return false;
-//     (void)vscp_strlcpy(pbuf, (const char *)header.c_str() + 7, sizeof(pbuf));
-//     s = pbuf;
+    //     // Make modifiable copy of the auth header
+    //     char *pbuf = new char[header.length() + 1];
+    //     if (NULL == pbuf) return false;
+    //     (void)vscp_strlcpy(pbuf, (const char *)header.c_str() + 7,
+    //     sizeof(pbuf)); s = pbuf;
 
-//     // Parse authorization header
-//     for (;;) {
+    //     // Parse authorization header
+    //     for (;;) {
 
-//         // Gobble initial spaces
-//         while (isspace(*(unsigned char *)s)) {
-//             s++;
-//         }
+    //         // Gobble initial spaces
+    //         while (isspace(*(unsigned char *)s)) {
+    //             s++;
+    //         }
 
-//         name = skip_quoted(&s, "=", " ", 0);
+    //         name = skip_quoted(&s, "=", " ", 0);
 
-//         // Value is either quote-delimited, or ends at first comma or space.
-//         if (s[0] == '\"') {
-//             s++;
-//             value = skip_quoted(&s, "\"", " ", '\\');
-//             if (s[0] == ',') {
-//                 s++;
-//             }
-//         } else {
-//             value = skip_quoted(&s, ", ", " ", 0); // IE uses commas, FF
-//                                                        // uses spaces
-//         }
+    //         // Value is either quote-delimited, or ends at first comma or
+    //         space. if (s[0] == '\"') {
+    //             s++;
+    //             value = skip_quoted(&s, "\"", " ", '\\');
+    //             if (s[0] == ',') {
+    //                 s++;
+    //             }
+    //         } else {
+    //             value = skip_quoted(&s, ", ", " ", 0); // IE uses commas, FF
+    //                                                        // uses spaces
+    //         }
 
-//         if (*name == '\0') {
-//             break;
-//         }
+    //         if (*name == '\0') {
+    //             break;
+    //         }
 
-//         valarray.push_back(name);
-//         valarray.push_back(value);
-//     }
+    //         valarray.push_back(name);
+    //         valarray.push_back(value);
+    //     }
 
-//     delete[] pbuf;
+    //     delete[] pbuf;
 
-     return true;
+    return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -364,25 +364,24 @@ websrv_add_session(struct mg_connection *conn)
     memcpy(pSession->m_sid, hexiv, 32);
 
     mg_printf(conn,
-               "HTTP/1.1 301 Found\r\n"
-               "Set-Cookie: vscp-web-sid=%s; max-age=3600; http-only\r\n"
-               "Location: /\r\n"
-               "Content-Length: 0r\n\r\n",
-               pSession->m_sid);
+              "HTTP/1.1 301 Found\r\n"
+              "Set-Cookie: vscp-web-sid=%s; max-age=3600; http-only\r\n"
+              "Location: /\r\n"
+              "Content-Length: 0r\n\r\n",
+              pSession->m_sid);
 
     pSession->m_pUserItem    = gpobj->m_userList.getUser(std::string(user));
     pSession->lastActiveTime = time(NULL);
 
     pSession->m_pClientItem = new CClientItem(); // Create client
     if (NULL == pSession->m_pClientItem) {
-        syslog( LOG_ERR,
-          "[websrv] New session: Unable to create client object.");
+        syslog(LOG_ERR,
+               "[websrv] New session: Unable to create client object.");
         delete pSession;
         return NULL;
     }
     pSession->m_pClientItem->bAuthenticated = false; // Not authenticated in yet
-    vscp_clearVSCPFilter(
-      &pSession->m_pClientItem->m_filter); // Clear filter
+    vscp_clearVSCPFilter(&pSession->m_pClientItem->m_filter); // Clear filter
 
     // This is an active client
     pSession->m_pClientItem->m_bOpen = false;
@@ -577,9 +576,9 @@ vscp_mainpage(struct mg_connection *conn, void *cbdata)
     if (NULL == conn) return 0;
 
     mg_printf(conn,
-               "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n"
-               "Content-Type: text/html; charset=utf-8\r\n"
-               "Connection: close\r\n\r\n");
+              "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n"
+              "Content-Type: text/html; charset=utf-8\r\n"
+              "Connection: close\r\n\r\n");
 
     mg_printf(conn, WEB_COMMON_HEAD, "VSCP - Control");
     mg_printf(conn, WEB_STYLE_START);
@@ -649,13 +648,13 @@ send_basic_authorization_request(struct mg_connection *conn)
 // Only the admin user has access to /vscp/....
 //
 
- static int
+static int
 check_admin_authorization(struct mg_connection *conn, void *cbdata)
 {
     char *name, *value, *p;
     const char *auth_header;
     char buf[8192];
-    //struct mg_authorization_header ah;
+    // struct mg_authorization_header ah;
     CUserItem *pUserItem = NULL;
     bool bValidHost;
     struct mg_context *ctx;
@@ -741,8 +740,6 @@ check_admin_authorization(struct mg_connection *conn, void *cbdata)
     return WEB_OK;
 }
 
-
-
 ////////////////////////////////////////////////////////////////////////////////
 // todo
 //
@@ -751,8 +748,8 @@ static int
 todo(struct mg_connection *conn, void *cbdata)
 {
     mg_printf(conn,
-               "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
-               "close\r\n\r\n");
+              "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
+              "close\r\n\r\n");
     mg_printf(conn, "<html><body>");
 
     mg_printf(conn, "</body></html>\n");
@@ -849,8 +846,8 @@ todo(struct mg_connection *conn, void *cbdata)
 //               (const char *)strvalue.c_str());
 //         } else {
 //             mg_printf(conn,
-//                        "&nbsp;<span style=\"color: red;\"><b>Failed</b> when "
-//                        "updating configuration record. "
+//                        "&nbsp;<span style=\"color: red;\"><b>Failed</b> when
+//                        " "updating configuration record. "
 //                        "<b>%s</b>, value = '%s' </span><br><br>",
 //                        (const char *)strname.c_str(),
 //                        (const char *)strvalue.c_str());
@@ -874,7 +871,8 @@ todo(struct mg_connection *conn, void *cbdata)
 
 //     while (SQLITE_ROW == sqlite3_step(ppStmt)) {
 //         const char *pName =
-//           (const char *)sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_CONFIG_NAME);
+//           (const char *)sqlite3_column_text(ppStmt,
+//           VSCPDB_ORDINAL_CONFIG_NAME);
 //         mg_printf(conn,
 //                    "<tr><form action=\"/vscp/settings\" method=\"get\" "
 //                    "id=\"%s\"><td><b>",
@@ -920,9 +918,9 @@ vscp_password(struct mg_connection *conn, void *cbdata)
     if (NULL == conn) return 0;
 
     mg_printf(conn,
-               "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n"
-               "Content-Type: text/html; charset=utf-8\r\n"
-               "Connection: close\r\n\r\n");
+              "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n"
+              "Content-Type: text/html; charset=utf-8\r\n"
+              "Connection: close\r\n\r\n");
 
     mg_printf(conn, WEB_COMMON_HEAD, "Password key generation");
     mg_printf(conn, WEB_STYLE_START);
@@ -930,8 +928,7 @@ vscp_password(struct mg_connection *conn, void *cbdata)
     mg_printf(conn, WEB_STYLE_END);
     mg_write(
       conn, WEB_COMMON_JS, strlen(WEB_COMMON_JS)); // Common Javascript code
-    mg_printf(conn,
-               "<style>table, th, td { border: 0px solid black;}</style>");
+    mg_printf(conn, "<style>table, th, td { border: 0px solid black;}</style>");
 
     mg_printf(conn, WEB_COMMON_HEAD_END_BODY_START);
     mg_printf(conn, WEB_COMMON_MENU);
@@ -943,10 +940,10 @@ vscp_password(struct mg_connection *conn, void *cbdata)
     const char *password = "";
     if (NULL != reqinfo->query_string) {
         if (mg_get_var(reqinfo->query_string,
-                        strlen(reqinfo->query_string),
-                        "pw",
-                        buf,
-                        sizeof(buf)) > 0) {
+                       strlen(reqinfo->query_string),
+                       "pw",
+                       buf,
+                       sizeof(buf)) > 0) {
             password = buf;
         }
     }
@@ -958,9 +955,9 @@ vscp_password(struct mg_connection *conn, void *cbdata)
     if (0 == strlen(password)) {
         mg_printf(conn, "<form action=\"/vscp/password\"><table>");
         mg_printf(conn,
-                   "<tr><td width=\"10%%\"><b>Password</b></td><td><input "
-                   "type=\"password\" "
-                   "value=\"\" name=\"pw\"></td><tr>");
+                  "<tr><td width=\"10%%\"><b>Password</b></td><td><input "
+                  "type=\"password\" "
+                  "value=\"\" name=\"pw\"></td><tr>");
         mg_printf(
           conn,
           "<tr><td> <td><input type=\"submit\" value=\"Generate\"></td><tr>");
@@ -1016,9 +1013,9 @@ vscp_restart(struct mg_connection *conn, void *cbdata)
     if (NULL == conn) return 0;
 
     mg_printf(conn,
-               "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n"
-               "Content-Type: text/html; charset=utf-8\r\n"
-               "Connection: close\r\n\r\n");
+              "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n"
+              "Content-Type: text/html; charset=utf-8\r\n"
+              "Connection: close\r\n\r\n");
 
     mg_printf(conn, WEB_COMMON_HEAD, "VSCP Server restart");
     mg_printf(conn, WEB_STYLE_START);
@@ -1026,8 +1023,7 @@ vscp_restart(struct mg_connection *conn, void *cbdata)
     mg_printf(conn, WEB_STYLE_END);
     mg_write(
       conn, WEB_COMMON_JS, strlen(WEB_COMMON_JS)); // Common JavaScript code
-    mg_printf(conn,
-               "<style>table, th, td { border: 0px solid black;}</style>");
+    mg_printf(conn, "<style>table, th, td { border: 0px solid black;}</style>");
 
     mg_printf(conn, WEB_COMMON_HEAD_END_BODY_START);
     mg_printf(conn, WEB_COMMON_MENU);
@@ -1039,10 +1035,10 @@ vscp_restart(struct mg_connection *conn, void *cbdata)
     const char *password = NULL;
     if (NULL != reqinfo->query_string) {
         if (mg_get_var(reqinfo->query_string,
-                        strlen(reqinfo->query_string),
-                        "pw",
-                        buf,
-                        sizeof(buf)) > 0) {
+                       strlen(reqinfo->query_string),
+                       "pw",
+                       buf,
+                       sizeof(buf)) > 0) {
             password = buf;
         }
     }
@@ -1052,9 +1048,9 @@ vscp_restart(struct mg_connection *conn, void *cbdata)
     if (NULL == password) {
         mg_printf(conn, "<form action=\"/vscp/restart\"><table>");
         mg_printf(conn,
-                   "<tr><td width=\"10%%\"><b>vscptoken</b></td><td><input "
-                   "type=\"password\" "
-                   "value=\"\" name=\"pw\"></td><tr>");
+                  "<tr><td width=\"10%%\"><b>vscptoken</b></td><td><input "
+                  "type=\"password\" "
+                  "value=\"\" name=\"pw\"></td><tr>");
         mg_printf(
           conn,
           "<tr><td> <td><input type=\"submit\" value=\"RESTART\"></td><tr>");
@@ -1103,8 +1099,8 @@ vscp_listFile(struct mg_connection *conn,
               std::string &textHeader)
 {
     mg_printf(conn,
-               "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
-               "close\r\n\r\n");
+              "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
+              "close\r\n\r\n");
 
     /*bool bFirstRow = false;   TODO
     std::string strHeader = vscp_str_format(("VSCP - %s"), textHeader.c_str()
@@ -1185,9 +1181,9 @@ vscp_interface(struct mg_connection *conn, void *cbdata)
     if (NULL == conn) return 0;
 
     mg_printf(conn,
-               "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n"
-               "Content-Type: text/html; charset=utf-8\r\n"
-               "Connection: close\r\n\r\n");
+              "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n"
+              "Content-Type: text/html; charset=utf-8\r\n"
+              "Connection: close\r\n\r\n");
 
     mg_printf(conn, WEB_COMMON_HEAD, "VSCP - Control");
     mg_printf(conn, WEB_STYLE_START);
@@ -1274,29 +1270,29 @@ vscp_interface(struct mg_connection *conn, void *cbdata)
 
     mg_printf(conn, "<br><b>Interface Types</b><br>");
     mg_printf(conn,
-               "%d - Unknown (you should not see this).<br>",
-               (uint8_t)CLIENT_ITEM_INTERFACE_TYPE_NONE);
+              "%d - Unknown (you should not see this).<br>",
+              (uint8_t)CLIENT_ITEM_INTERFACE_TYPE_NONE);
     mg_printf(conn,
-               "%d - Internal daemon client.<br>",
-               (uint8_t)CLIENT_ITEM_INTERFACE_TYPE_CLIENT_INTERNAL);
+              "%d - Internal daemon client.<br>",
+              (uint8_t)CLIENT_ITEM_INTERFACE_TYPE_CLIENT_INTERNAL);
     mg_printf(conn,
-               "%d - Level I (CANAL) Driver.<br>",
-               (uint8_t)CLIENT_ITEM_INTERFACE_TYPE_DRIVER_LEVEL1);
+              "%d - Level I (CANAL) Driver.<br>",
+              (uint8_t)CLIENT_ITEM_INTERFACE_TYPE_DRIVER_LEVEL1);
     mg_printf(conn,
-               "%d - Level II Driver.<br>",
-               (uint8_t)CLIENT_ITEM_INTERFACE_TYPE_DRIVER_LEVEL2);
+              "%d - Level II Driver.<br>",
+              (uint8_t)CLIENT_ITEM_INTERFACE_TYPE_DRIVER_LEVEL2);
     mg_printf(conn,
-               "%d - TCP/IP Client.<br>",
-               (uint8_t)CLIENT_ITEM_INTERFACE_TYPE_CLIENT_TCPIP);
+              "%d - TCP/IP Client.<br>",
+              (uint8_t)CLIENT_ITEM_INTERFACE_TYPE_CLIENT_TCPIP);
     mg_printf(conn,
-               "%d - UDP Client.<br>",
-               (uint8_t)CLIENT_ITEM_INTERFACE_TYPE_CLIENT_UDP);
+              "%d - UDP Client.<br>",
+              (uint8_t)CLIENT_ITEM_INTERFACE_TYPE_CLIENT_UDP);
     mg_printf(conn,
-               "%d - Web Server Client.<br>",
-               (uint8_t)CLIENT_ITEM_INTERFACE_TYPE_CLIENT_WEB);
+              "%d - Web Server Client.<br>",
+              (uint8_t)CLIENT_ITEM_INTERFACE_TYPE_CLIENT_WEB);
     mg_printf(conn,
-               "%d - WebSocket Client.<br>",
-               (uint8_t)CLIENT_ITEM_INTERFACE_TYPE_CLIENT_WEBSOCKET);
+              "%d - WebSocket Client.<br>",
+              (uint8_t)CLIENT_ITEM_INTERFACE_TYPE_CLIENT_WEBSOCKET);
 
     mg_printf(conn, WEB_COMMON_END, VSCPD_COPYRIGHT_HTML); // Common end code
 
@@ -1314,9 +1310,9 @@ vscp_interface_info(struct mg_connection *conn, void *cbdata)
     if (NULL == conn) return 0;
 
     mg_printf(conn,
-               "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n"
-               "Content-Type: text/html; charset=utf-8\r\n"
-               "Connection: close\r\n\r\n");
+              "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n"
+              "Content-Type: text/html; charset=utf-8\r\n"
+              "Connection: close\r\n\r\n");
 
     mg_printf(conn, WEB_COMMON_HEAD, "VSCP - Interface information");
     mg_printf(conn, WEB_STYLE_START);
@@ -1330,13 +1326,12 @@ vscp_interface_info(struct mg_connection *conn, void *cbdata)
     mg_printf(conn, WEB_COMMON_MENU);
 
     mg_printf(conn,
-               "<h4>There is no extra information about this interface.</h4>");
+              "<h4>There is no extra information about this interface.</h4>");
 
     mg_printf(conn, WEB_COMMON_END, VSCPD_COPYRIGHT_HTML); // Common end code
 
     return WEB_OK;
 }
-
 
 //-----------------------------------------------------------------------------
 //                                    Variables
@@ -1481,7 +1476,8 @@ vscp_interface_info(struct mg_connection *conn, void *cbdata)
 
 //         CVariable variable;
 //         CUserItem *pAdminUser = gpobj->m_userList.getUser(USER_ID_ADMIN);
-//         if (0 == gpobj->m_variables.find(nameArray[nFrom + i], pAdminUser, variable)) {
+//         if (0 == gpobj->m_variables.find(nameArray[nFrom + i], pAdminUser,
+//         variable)) {
 //             mg_printf(conn,
 //                        "Internal error: Non existent variable entry. "
 //                        "name = %s idx= %ld<br>",
@@ -1498,14 +1494,16 @@ vscp_interface_info(struct mg_connection *conn, void *cbdata)
 //                                  (long)nFrom,
 //                                  (long)nCount);
 //             std::string str = vscp_str_format(
-//               (WEB_COMMON_TR_CLICKABLE_ROW), (const char *)url_dmedit.c_str());
+//               (WEB_COMMON_TR_CLICKABLE_ROW), (const char
+//               *)url_dmedit.c_str());
 //             mg_printf(conn, "%s", (const char *)str.c_str());
 //         }
 
 //         // variable id
 //         mg_printf(conn, WEB_IFLIST_TD_CENTERED);
 //         mg_printf(
-//           conn, "<div style=\"font-weight: bold;\">%ld</div>", nFrom + i + 1);
+//           conn, "<div style=\"font-weight: bold;\">%ld</div>", nFrom + i +
+//           1);
 //         mg_printf(conn, "</td>");
 
 //         // Type
@@ -1539,7 +1537,8 @@ vscp_interface_info(struct mg_connection *conn, void *cbdata)
 //             case VSCP_DAEMON_VARIABLE_CODE_LONG:
 //                 mg_printf(
 //                   conn,
-//                   "<div id=\"small\" style=\"font-weight: bold;\">Long</div>");
+//                   "<div id=\"small\" style=\"font-weight:
+//                   bold;\">Long</div>");
 //                 break;
 
 //             case VSCP_DAEMON_VARIABLE_CODE_DOUBLE:
@@ -1557,13 +1556,15 @@ vscp_interface_info(struct mg_connection *conn, void *cbdata)
 //             case VSCP_DAEMON_VARIABLE_CODE_EVENT:
 //                 mg_printf(
 //                   conn,
-//                   "<div id=\"small\" style=\"font-weight: bold;\">Event</div>");
+//                   "<div id=\"small\" style=\"font-weight:
+//                   bold;\">Event</div>");
 //                 break;
 
 //             case VSCP_DAEMON_VARIABLE_CODE_GUID:
 //                 mg_printf(
 //                   conn,
-//                   "<div id=\"small\" style=\"font-weight: bold;\">GUID</div>");
+//                   "<div id=\"small\" style=\"font-weight:
+//                   bold;\">GUID</div>");
 //                 break;
 
 //             case VSCP_DAEMON_VARIABLE_CODE_EVENT_DATA:
@@ -1599,19 +1600,22 @@ vscp_interface_info(struct mg_connection *conn, void *cbdata)
 //             case VSCP_DAEMON_VARIABLE_CODE_DATE:
 //                 mg_printf(
 //                   conn,
-//                   "<div id=\"small\" style=\"font-weight: bold;\">Date</div>");
+//                   "<div id=\"small\" style=\"font-weight:
+//                   bold;\">Date</div>");
 //                 break;
 
 //             case VSCP_DAEMON_VARIABLE_CODE_TIME:
 //                 mg_printf(
 //                   conn,
-//                   "<div id=\"small\" style=\"font-weight: bold;\">Time</div>");
+//                   "<div id=\"small\" style=\"font-weight:
+//                   bold;\">Time</div>");
 //                 break;
 
 //             case VSCP_DAEMON_VARIABLE_CODE_BLOB:
 //                 mg_printf(
 //                   conn,
-//                   "<div id=\"small\" style=\"font-weight: bold;\">Blob</div>");
+//                   "<div id=\"small\" style=\"font-weight:
+//                   bold;\">Blob</div>");
 //                 break;
 
 //             case VSCP_DAEMON_VARIABLE_CODE_MIME:
@@ -1623,7 +1627,8 @@ vscp_interface_info(struct mg_connection *conn, void *cbdata)
 //             case VSCP_DAEMON_VARIABLE_CODE_HTML:
 //                 mg_printf(
 //                   conn,
-//                   "<div id=\"small\" style=\"font-weight: bold;\">HTML</div>");
+//                   "<div id=\"small\" style=\"font-weight:
+//                   bold;\">HTML</div>");
 //                 break;
 
 //             case VSCP_DAEMON_VARIABLE_CODE_JAVASCRIPT:
@@ -1635,43 +1640,47 @@ vscp_interface_info(struct mg_connection *conn, void *cbdata)
 //             case VSCP_DAEMON_VARIABLE_CODE_JSON:
 //                 mg_printf(
 //                   conn,
-//                   "<div id=\"small\" style=\"font-weight: bold;\">JSON</div>");
+//                   "<div id=\"small\" style=\"font-weight:
+//                   bold;\">JSON</div>");
 //                 break;
 
 //             case VSCP_DAEMON_VARIABLE_CODE_XML:
 //                 mg_printf(
 //                   conn,
-//                   "<div id=\"small\" style=\"font-weight: bold;\">XML</div>");
+//                   "<div id=\"small\" style=\"font-weight:
+//                   bold;\">XML</div>");
 //                 break;
 
 //             case VSCP_DAEMON_VARIABLE_CODE_SQL:
 //                 mg_printf(
 //                   conn,
-//                   "<div id=\"small\" style=\"font-weight: bold;\">SQL</div>");
+//                   "<div id=\"small\" style=\"font-weight:
+//                   bold;\">SQL</div>");
 //                 break;
 
 //             case VSCP_DAEMON_VARIABLE_CODE_LUA:
 //                 mg_printf(
 //                   conn,
-//                   "<div id=\"small\" style=\"font-weight: bold;\">Lua</div>");
+//                   "<div id=\"small\" style=\"font-weight:
+//                   bold;\">Lua</div>");
 //                 break;
 
 //             case VSCP_DAEMON_VARIABLE_CODE_LUA_RESULT:
 //                 mg_printf(conn,
-//                            "<div id=\"small\" style=\"font-weight: bold;\">Lua "
-//                            "result</div>");
+//                            "<div id=\"small\" style=\"font-weight:
+//                            bold;\">Lua " "result</div>");
 //                 break;
 
 //             case VSCP_DAEMON_VARIABLE_CODE_UX_TYPE1:
 //                 mg_printf(conn,
-//                            "<div id=\"small\" style=\"font-weight: bold;\">UX "
-//                            "type 1</div>");
+//                            "<div id=\"small\" style=\"font-weight: bold;\">UX
+//                            " "type 1</div>");
 //                 break;
 
 //             case VSCP_DAEMON_VARIABLE_CODE_DM_ROW:
 //                 mg_printf(conn,
-//                            "<div id=\"small\" style=\"font-weight: bold;\">DM "
-//                            "row</div>");
+//                            "<div id=\"small\" style=\"font-weight: bold;\">DM
+//                            " "row</div>");
 //                 break;
 
 //             case VSCP_DAEMON_VARIABLE_CODE_DRIVER:
@@ -1683,7 +1692,8 @@ vscp_interface_info(struct mg_connection *conn, void *cbdata)
 //             case VSCP_DAEMON_VARIABLE_CODE_USER:
 //                 mg_printf(
 //                   conn,
-//                   "<div id=\"small\" style=\"font-weight: bold;\">User</div>");
+//                   "<div id=\"small\" style=\"font-weight:
+//                   bold;\">User</div>");
 //                 break;
 
 //             case VSCP_DAEMON_VARIABLE_CODE_FILTER:
@@ -1776,10 +1786,12 @@ vscp_interface_info(struct mg_connection *conn, void *cbdata)
 //             mg_printf(conn, "---");
 //         } else {
 //             mg_printf(conn,
-//                        "<form name=\"input\" action=\"/vscp/vardelete?id=%ld\" "
+//                        "<form name=\"input\"
+//                        action=\"/vscp/vardelete?id=%ld\" "
 //                        "method=\"get\"><input type=\"submit\" value=\"x\" >"
 //                        "<input type=\"hidden\" name=\"id\"value=\"%ld\" >"
-//                        "<input type=\"hidden\" name=\"var_name\"value=\"%s\" >"
+//                        "<input type=\"hidden\" name=\"var_name\"value=\"%s\"
+//                        >"
 //                        "</form>",
 //                        (long)(nFrom + i),
 //                        (long)(nFrom + i),
@@ -1917,7 +1929,8 @@ vscp_interface_info(struct mg_connection *conn, void *cbdata)
 //     if (!bNew) {
 
 //         CUserItem *pAdminUser = gpobj->m_userList.getUser(USER_ID_ADMIN);
-//         if (0 == gpobj->m_variables.find(nameArray[id], pAdminUser, variable)) {
+//         if (0 == gpobj->m_variables.find(nameArray[id], pAdminUser,
+//         variable)) {
 //             mg_printf(conn,
 //                        "Internal error: Non existent variable entry. "
 //                        "name = %s idx= %ld<br>",
@@ -1931,7 +1944,8 @@ vscp_interface_info(struct mg_connection *conn, void *cbdata)
 //     }
 
 //     if (bNew) {
-//         mg_printf(conn, "<br><span id=\"optiontext\">New record.</span><br>");
+//         mg_printf(conn, "<br><span id=\"optiontext\">New
+//         record.</span><br>");
 //     } else {
 //         mg_printf(
 //           conn, "<br><span id=\"optiontext\">Record = %ld.</span><br>", id);
@@ -1953,7 +1967,8 @@ vscp_interface_info(struct mg_connection *conn, void *cbdata)
 
 //     if (bNew) {
 //         // Hidden new
-//         mg_printf(conn, "<input name=\"new\" value=\"true\" type=\"hidden\">");
+//         mg_printf(conn, "<input name=\"new\" value=\"true\"
+//         type=\"hidden\">");
 //     } else {
 //         // Hidden new
 //         mg_printf(conn,
@@ -1965,7 +1980,8 @@ vscp_interface_info(struct mg_connection *conn, void *cbdata)
 //     mg_printf(conn, "%d", bNew ? nType : variable.getType());
 //     mg_printf(conn, "\" type=\"hidden\"></input>");
 
-//     mg_printf(conn, "<h4>Variable:</h4> <span id=\"optiontext\"></span><br>");
+//     mg_printf(conn, "<h4>Variable:</h4> <span
+//     id=\"optiontext\"></span><br>");
 
 //     mg_printf(conn,
 //                "<table class=\"invisable\"><tbody><tr class=\"invisable\">");
@@ -1985,7 +2001,8 @@ vscp_interface_info(struct mg_connection *conn, void *cbdata)
 //     } else {
 //         mg_printf(
 //           conn,
-//           "<textarea cols=\"50\" rows=\"1\" name=\"value_name\"></textarea>");
+//           "<textarea cols=\"50\" rows=\"1\"
+//           name=\"value_name\"></textarea>");
 //     }
 
 //     mg_printf(conn, "</td></tr><tr>");
@@ -2518,7 +2535,8 @@ vscp_interface_info(struct mg_connection *conn, void *cbdata)
 //         mg_printf(
 //           conn,
 //           "<div id=\"small\">VSCP Filter. Format: "
-//           "'filter-priority, filter-class, filter-type, filter-GUID'.</div>");
+//           "'filter-priority, filter-class, filter-type,
+//           filter-GUID'.</div>");
 //     } else {
 //         // Invalid type
 //         mg_printf(conn, "Invalid type - Something is very wrong!");
@@ -2526,20 +2544,22 @@ vscp_interface_info(struct mg_connection *conn, void *cbdata)
 
 //     // Persistence
 //     mg_printf(
-//       conn, "</tr><tr><td style=\"font-weight: bold;\">Persistence: </td><td>");
+//       conn, "</tr><tr><td style=\"font-weight: bold;\">Persistence:
+//       </td><td>");
 
 //     if (bNew) {
 
 //         mg_printf(conn,
-//                    "<input type=\"radio\" name=\"persistent\" value=\"true\" "
-//                    "checked>Persistent ");
+//                    "<input type=\"radio\" name=\"persistent\" value=\"true\"
+//                    " "checked>Persistent ");
 //         mg_printf(conn,
 //                    "<input type=\"radio\" name=\"persistent\" "
 //                    "value=\"false\">Non persistent ");
 //     } else {
 //         mg_printf(conn,
 //                    "%s",
-//                    variable.isPersistent() ? "Persistent " : "Non Persistent ");
+//                    variable.isPersistent() ? "Persistent " : "Non Persistent
+//                    ");
 //     }
 
 //     mg_printf(conn, "</td></tr>");
@@ -2567,7 +2587,8 @@ vscp_interface_info(struct mg_connection *conn, void *cbdata)
 
 //     mg_printf(conn, "</td></tr>");*/
 
-//     // -------------------------------------------------------------------------
+//     //
+//     -------------------------------------------------------------------------
 
 //     // Owner
 //     mg_printf(conn,
@@ -2602,14 +2623,16 @@ vscp_interface_info(struct mg_connection *conn, void *cbdata)
 //     mg_printf(conn, "</select>");
 //     mg_printf(conn, "</td></tr>");
 
-//     // -------------------------------------------------------------------------
+//     //
+//     -------------------------------------------------------------------------
 
 //     // Access rights
 //     mg_printf(conn,
-//                "</tr><tr><td style=\"font-weight: bold;\">Rights: </td><td>");
+//                "</tr><tr><td style=\"font-weight: bold;\">Rights:
+//                </td><td>");
 
-//     mg_printf(conn, "<textarea cols=\"20\" rows=\"1\" name=\"accessrights\">");
-//     if (bNew) {
+//     mg_printf(conn, "<textarea cols=\"20\" rows=\"1\"
+//     name=\"accessrights\">"); if (bNew) {
 //         mg_printf(conn, "0x744");
 //     } else {
 //         mg_printf(conn, "0x%03X", variable.getAccessRights());
@@ -2630,7 +2653,8 @@ vscp_interface_info(struct mg_connection *conn, void *cbdata)
 
 //     // Last change
 //     mg_printf(
-//       conn, "</tr><tr><td style=\"font-weight: bold;\">Last change: </td><td>");
+//       conn, "</tr><tr><td style=\"font-weight: bold;\">Last change:
+//       </td><td>");
 
 //     if (bNew) {
 //         mg_printf(
@@ -2925,7 +2949,8 @@ vscp_interface_info(struct mg_connection *conn, void *cbdata)
 //         if (bNew) {
 //             if (!(bOK = gpobj->m_variables.add(variable))) {
 //                 mg_printf(
-//                   conn, "<font color=\"red\">Failed to add variable!</font>");
+//                   conn, "<font color=\"red\">Failed to add
+//                   variable!</font>");
 //             }
 //         } else {
 //             // Update variables
@@ -3039,24 +3064,24 @@ vscp_interface_info(struct mg_connection *conn, void *cbdata)
 //     mg_printf(conn, "<option value=\"10\">VSCP event class</option>");
 //     mg_printf(conn, "<option value=\"11\">VSCP event type</option>");
 //     mg_printf(conn, "<option value=\"12\">VSCP event timestamp</option>");
-//     mg_printf(conn, "<option value=\"13\">Date + Time on ISO format</option>");
-//     mg_printf(conn, "<option value=\"14\">Date on ISO format</option>");
-//     mg_printf(conn, "<option value=\"15\">Time on ISO format</option>");
-//     mg_printf(conn, "<option value=\"16\">Blob value</option>");
-//     mg_printf(conn, "<option value=\"100\">Mime encoded value</option>");
-//     mg_printf(conn, "<option value=\"101\">HTML value</option>");
-//     mg_printf(conn, "<option value=\"102\">JavaScript value</option>");
-//     mg_printf(conn, "<option value=\"103\">JSON value</option>");
-//     mg_printf(conn, "<option value=\"104\">XML value</option>");
-//     mg_printf(conn, "<option value=\"105\">SQL value</option>");
-//     mg_printf(conn, "<option value=\"200\">Lua script value</option>");
-//     mg_printf(conn, "<option value=\"201\">Lua result value</option>");
-//     mg_printf(conn, "<option value=\"300\">UX type 1 value</option>");
-//     mg_printf(conn, "<option value=\"500\">Decision matrix row</option>");
-//     mg_printf(conn, "<option value=\"501\">Driver record</option>");
-//     mg_printf(conn, "<option value=\"502\">User record</option>");
-//     mg_printf(conn, "<option value=\"503\">Filter record</option>");
-//     mg_printf(conn, "</select>");
+//     mg_printf(conn, "<option value=\"13\">Date + Time on ISO
+//     format</option>"); mg_printf(conn, "<option value=\"14\">Date on ISO
+//     format</option>"); mg_printf(conn, "<option value=\"15\">Time on ISO
+//     format</option>"); mg_printf(conn, "<option value=\"16\">Blob
+//     value</option>"); mg_printf(conn, "<option value=\"100\">Mime encoded
+//     value</option>"); mg_printf(conn, "<option value=\"101\">HTML
+//     value</option>"); mg_printf(conn, "<option value=\"102\">JavaScript
+//     value</option>"); mg_printf(conn, "<option value=\"103\">JSON
+//     value</option>"); mg_printf(conn, "<option value=\"104\">XML
+//     value</option>"); mg_printf(conn, "<option value=\"105\">SQL
+//     value</option>"); mg_printf(conn, "<option value=\"200\">Lua script
+//     value</option>"); mg_printf(conn, "<option value=\"201\">Lua result
+//     value</option>"); mg_printf(conn, "<option value=\"300\">UX type 1
+//     value</option>"); mg_printf(conn, "<option value=\"500\">Decision matrix
+//     row</option>"); mg_printf(conn, "<option value=\"501\">Driver
+//     record</option>"); mg_printf(conn, "<option value=\"502\">User
+//     record</option>"); mg_printf(conn, "<option value=\"503\">Filter
+//     record</option>"); mg_printf(conn, "</select>");
 
 //     mg_printf(conn, "<br></div>");
 //     mg_printf(conn, WEB_VARNEW_SUBMIT);
@@ -3162,8 +3187,8 @@ vscp_interface_info(struct mg_connection *conn, void *cbdata)
 //     if (!gpobj->m_variables.find(strName, pAdminUser, variable)) {
 //         // Variable was not found
 //         mg_printf(conn,
-//                    "<br><br>Unknown variable!. Unable to delete record. id=%ld",
-//                    id);
+//                    "<br><br>Unknown variable!. Unable to delete record.
+//                    id=%ld", id);
 //         mg_printf(
 //           conn, WEB_COMMON_END, VSCPD_COPYRIGHT_HTML); // Common end code
 //         return 1;
@@ -3197,8 +3222,8 @@ vscp_discovery(struct mg_connection *conn, void *cbdata)
     if (NULL == conn) return 0;
 
     mg_printf(conn,
-               "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
-               "close\r\n\r\n");
+              "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
+              "close\r\n\r\n");
 
     mg_printf(conn, WEB_COMMON_HEAD, "VSCP - Device discovery");
     mg_printf(conn, WEB_STYLE_START);
@@ -3213,7 +3238,7 @@ vscp_discovery(struct mg_connection *conn, void *cbdata)
     // navigation menu
     mg_printf(conn, WEB_COMMON_MENU);
     mg_printf(conn,
-               "<b>Device discovery functionality is not yet implemented!</b>");
+              "<b>Device discovery functionality is not yet implemented!</b>");
 
     return WEB_OK;
 }
@@ -3492,8 +3517,8 @@ vscp_discovery(struct mg_connection *conn, void *cbdata)
 
 //     mg_printf(conn, WEB_ZONEEDIT_BODY_START);
 
-//     mg_printf(conn, "<br><form name=\"zoneedit\" id=\"ze1\" method=\"get\" ");
-//     mg_printf(conn, " action=\"/vscp/zonepost\" >");
+//     mg_printf(conn, "<br><form name=\"zoneedit\" id=\"ze1\" method=\"get\"
+//     "); mg_printf(conn, " action=\"/vscp/zonepost\" >");
 
 //     // Hidden from
 //     mg_printf(
@@ -3681,10 +3706,10 @@ vscp_discovery(struct mg_connection *conn, void *cbdata)
 //     mg_write(conn, WEB_COMMON_CSS, strlen(WEB_COMMON_CSS));
 //     mg_printf(conn, WEB_STYLE_END);
 //     mg_write(conn, WEB_COMMON_JS, strlen(WEB_COMMON_JS));
-//     mg_printf(conn, "<meta http-equiv=\"refresh\" content=\"1;url=/vscp/zone");
-//     mg_printf(conn, "?from=%ld&count=%ld", (long)nFrom, (long)nCount);
-//     mg_printf(conn, "\">");
-//     mg_printf(conn, WEB_COMMON_HEAD_END_BODY_START);
+//     mg_printf(conn, "<meta http-equiv=\"refresh\"
+//     content=\"1;url=/vscp/zone"); mg_printf(conn, "?from=%ld&count=%ld",
+//     (long)nFrom, (long)nCount); mg_printf(conn, "\">"); mg_printf(conn,
+//     WEB_COMMON_HEAD_END_BODY_START);
 
 //     // Navigation menu
 //     mg_printf(conn, WEB_COMMON_MENU);
@@ -3925,8 +3950,10 @@ vscp_discovery(struct mg_connection *conn, void *cbdata)
 //                WEB_COMMON_LIST_NAVIGATION,
 //                (const char *)strurl.c_str(),
 //                (unsigned long)(nFrom + 1),
-//                ((unsigned long)(nFrom + nCount) < cnt_subzones) ? nFrom + nCount
-//                                                                 : cnt_subzones,
+//                ((unsigned long)(nFrom + nCount) < cnt_subzones) ? nFrom +
+//                nCount
+//                                                                 :
+//                                                                 cnt_subzones,
 //                (unsigned long)cnt_subzones,
 //                (unsigned long)nCount,
 //                (unsigned long)nFrom,
@@ -4354,7 +4381,8 @@ vscp_discovery(struct mg_connection *conn, void *cbdata)
 //                    WEB_COMMON_LIST_NAVIGATION,
 //                    (const char *)strurl.c_str(),
 //                    (unsigned long)(nFrom + 1),
-//                    ((unsigned long)(nFrom + nCount) < cnt_guid) ? nFrom + nCount
+//                    ((unsigned long)(nFrom + nCount) < cnt_guid) ? nFrom +
+//                    nCount
 //                                                                 : cnt_guid,
 //                    (unsigned long)cnt_guid,
 //                    (unsigned long)nCount,
@@ -4417,7 +4445,8 @@ vscp_discovery(struct mg_connection *conn, void *cbdata)
 //         mg_printf(conn, WEB_DMLIST_TD_CENTERED);
 //         mg_printf(conn,
 //                    "<form name=\"input\" action=\"/vscp/guiddelete?id=%ld\" "
-//                    "method=\"get\"> <div style=\"font-weight: bold;\">%ld</div>"
+//                    "method=\"get\"> <div style=\"font-weight:
+//                    bold;\">%ld</div>"
 //                    "<input type=\"submit\" "
 //                    "value=\"x\"><input type=\"hidden\" "
 //                    "name=\"id\"value=\"%ld\"></form>",
@@ -4457,7 +4486,8 @@ vscp_discovery(struct mg_connection *conn, void *cbdata)
 //                 mg_printf(
 //                 conn, "<b>Type</b>: %s - %s<br>", p, pguid_types[atoi(p)]);
 //             } else {
-//                 mg_printf(conn, "<b>Type</b>: %s - Unknown GUID type<br>", p);
+//                 mg_printf(conn, "<b>Type</b>: %s - Unknown GUID type<br>",
+//                 p);
 //             }
 //         } else {
 //             mg_printf(conn, "<b>Type</b>: Parse error<br>");
@@ -4610,12 +4640,13 @@ vscp_discovery(struct mg_connection *conn, void *cbdata)
 
 //     mg_printf(conn, WEB_GUIDEDIT_BODY_START);
 
-//     mg_printf(conn, "<br><form name=\"guidedit\" id=\"ze1\" method=\"get\" ");
-//     mg_printf(conn, " action=\"/vscp/guidpost\" >");
+//     mg_printf(conn, "<br><form name=\"guidedit\" id=\"ze1\" method=\"get\"
+//     "); mg_printf(conn, " action=\"/vscp/guidpost\" >");
 
 //     if (bNew) {
 //         // Hidden new flag
-//         mg_printf(conn, "<input name=\"new\" value=\"true\" type=\"hidden\">");
+//         mg_printf(conn, "<input name=\"new\" value=\"true\"
+//         type=\"hidden\">");
 //     }
 
 //     // Hidden from
@@ -4630,11 +4661,12 @@ vscp_discovery(struct mg_connection *conn, void *cbdata)
 //     mg_printf(conn, "<input name=\"id\" value=\"%ld\" type=\"hidden\">", id);
 
 //     if (bNew) {
-//         mg_printf(conn, "<br><span id=\"optiontext\">New record.</span><br>");
+//         mg_printf(conn, "<br><span id=\"optiontext\">New
+//         record.</span><br>");
 //     } else {
 //         mg_printf(conn,
-//                    "<h3>GUID id: %ld</h3> <span id=\"optiontext\"></span><br>",
-//                    id);
+//                    "<h3>GUID id: %ld</h3> <span
+//                    id=\"optiontext\"></span><br>", id);
 //     }
 
 //     // Check if database is open
@@ -4699,7 +4731,8 @@ vscp_discovery(struct mg_connection *conn, void *cbdata)
 
 //     int linktomdf = 0;
 //     if (!bNew) {
-//         linktomdf = sqlite3_column_int(ppStmt, VSCPDB_ORDINAL_GUID_LINK_TO_MDF);
+//         linktomdf = sqlite3_column_int(ppStmt,
+//         VSCPDB_ORDINAL_GUID_LINK_TO_MDF);
 //     }
 
 //     std::string address;
@@ -5070,10 +5103,10 @@ vscp_discovery(struct mg_connection *conn, void *cbdata)
 //     mg_write(conn, WEB_COMMON_CSS, strlen(WEB_COMMON_CSS));
 //     mg_printf(conn, WEB_STYLE_END);
 //     mg_write(conn, WEB_COMMON_JS, strlen(WEB_COMMON_JS));
-//     mg_printf(conn, "<meta http-equiv=\"refresh\" content=\"1;url=/vscp/guid");
-//     mg_printf(conn, "?from=%ld&count=%ld", (long)nFrom, (long)nCount);
-//     mg_printf(conn, "\">");
-//     mg_printf(conn, WEB_COMMON_HEAD_END_BODY_START);
+//     mg_printf(conn, "<meta http-equiv=\"refresh\"
+//     content=\"1;url=/vscp/guid"); mg_printf(conn, "?from=%ld&count=%ld",
+//     (long)nFrom, (long)nCount); mg_printf(conn, "\">"); mg_printf(conn,
+//     WEB_COMMON_HEAD_END_BODY_START);
 
 //     // Navigation menu
 //     mg_printf(conn, WEB_COMMON_MENU);
@@ -5116,10 +5149,8 @@ vscp_discovery(struct mg_connection *conn, void *cbdata)
 //         }
 
 //         if (SQLITE_OK !=
-//             sqlite3_exec(gpobj->m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg)) {
-//             sqlite3_free(psql);
-//             bOK = false;
-//             mg_printf(conn,
+//             sqlite3_exec(gpobj->m_db_vscp_daemon, psql, NULL, NULL,
+//             &pErrMsg)) { sqlite3_free(psql); bOK = false; mg_printf(conn,
 //                        "<font color=\"red\">Failed to update/insert record! "
 //                        "Error=%s</font>",
 //                        sqlite3_errmsg(gpobj->m_db_vscp_daemon));
@@ -5204,10 +5235,10 @@ vscp_discovery(struct mg_connection *conn, void *cbdata)
 //     mg_printf(conn, WEB_STYLE_END);
 //     mg_write(
 //       conn, WEB_COMMON_JS, sizeof(WEB_COMMON_JS)); // Common Javascript code
-//     mg_printf(conn, "<meta http-equiv=\"refresh\" content=\"2;url=/vscp/guid");
-//     mg_printf(conn, "?from=%ld&count=%ld", nFrom, (long)nCount);
-//     mg_printf(conn, "\">");
-//     mg_printf(conn, WEB_COMMON_HEAD_END_BODY_START);
+//     mg_printf(conn, "<meta http-equiv=\"refresh\"
+//     content=\"2;url=/vscp/guid"); mg_printf(conn, "?from=%ld&count=%ld",
+//     nFrom, (long)nCount); mg_printf(conn, "\">"); mg_printf(conn,
+//     WEB_COMMON_HEAD_END_BODY_START);
 
 //     // Navigation menu
 //     mg_printf(conn, WEB_COMMON_MENU);
@@ -5228,7 +5259,8 @@ vscp_discovery(struct mg_connection *conn, void *cbdata)
 //                    id,
 //                    pErrMsg);
 //     } else {
-//         mg_printf(conn, "<font color=\"blue\">Record %ld deleted.</font>", id);
+//         mg_printf(conn, "<font color=\"blue\">Record %ld deleted.</font>",
+//         id);
 //     }
 
 //     mg_printf(conn, WEB_COMMON_END, VSCPD_COPYRIGHT_HTML); // Common end code
@@ -5356,10 +5388,8 @@ vscp_discovery(struct mg_connection *conn, void *cbdata)
 
 //     // Add new record
 //     mg_printf(conn,
-//                "<a href=\"/vscp/locationedit?new=true&count=%d&from=%d\">Add "
-//                "Location</a><br><br>",
-//                (int)nCount,
-//                (int)nFrom);
+//                "<a href=\"/vscp/locationedit?new=true&count=%d&from=%d\">Add
+//                " "Location</a><br><br>", (int)nCount, (int)nFrom);
 
 //     if (0 == cnt_locations) {
 //         mg_printf(conn, "<br><h4>Database is empty!</h4><br>");
@@ -5551,7 +5581,8 @@ vscp_discovery(struct mg_connection *conn, void *cbdata)
 
 //     if (bNew) {
 //         // Hidden new flag
-//         mg_printf(conn, "<input name=\"new\" value=\"true\" type=\"hidden\">");
+//         mg_printf(conn, "<input name=\"new\" value=\"true\"
+//         type=\"hidden\">");
 //     }
 
 //     // Hidden from
@@ -5566,7 +5597,8 @@ vscp_discovery(struct mg_connection *conn, void *cbdata)
 //     mg_printf(conn, "<input name=\"id\" value=\"%ld\" type=\"hidden\">", id);
 
 //     if (bNew) {
-//         mg_printf(conn, "<br><span id=\"optiontext\">New record.</span><br>");
+//         mg_printf(conn, "<br><span id=\"optiontext\">New
+//         record.</span><br>");
 //     } else {
 //         mg_printf(
 //           conn,
@@ -5629,7 +5661,8 @@ vscp_discovery(struct mg_connection *conn, void *cbdata)
 //     int link_to_subzone = -1;
 //     if (!bNew) {
 //         link_to_subzone =
-//           sqlite3_column_int(ppStmt, VSCPDB_ORDINAL_LOCATION_LINK_TO_SUBZONE);
+//           sqlite3_column_int(ppStmt,
+//           VSCPDB_ORDINAL_LOCATION_LINK_TO_SUBZONE);
 //     }
 
 //     std::string description;
@@ -5649,8 +5682,8 @@ vscp_discovery(struct mg_connection *conn, void *cbdata)
 //                "bold;\">Name:</td><td class=\"invisable\">");
 //     mg_printf(
 //       conn,
-//       "<input name=\"location_name\" size=\"50\" value=\"%s\" type=\"text\">",
-//       (const char *)name.c_str());
+//       "<input name=\"location_name\" size=\"50\" value=\"%s\"
+//       type=\"text\">", (const char *)name.c_str());
 
 //     mg_printf(conn, "</td></tr>");
 
@@ -5763,12 +5796,14 @@ vscp_discovery(struct mg_connection *conn, void *cbdata)
 //         const unsigned char *pName = NULL;
 //         subzone_id =
 //           sqlite3_column_int(ppStmtSubzone, VSCPDB_ORDINAL_SUBZONE_ID);
-//         pName = sqlite3_column_text(ppStmtSubzone, VSCPDB_ORDINAL_SUBZONE_NAME);
+//         pName = sqlite3_column_text(ppStmtSubzone,
+//         VSCPDB_ORDINAL_SUBZONE_NAME);
 
 //         mg_printf(conn, "<option ");
 //         if (subzone_id == link_to_subzone) mg_printf(conn, "selected ");
 //         mg_printf(
-//           conn, "value=\"%d\">%d - %s</option>", subzone_id, subzone_id, pName);
+//           conn, "value=\"%d\">%d - %s</option>", subzone_id, subzone_id,
+//           pName);
 //         mg_printf(conn, "<option ");
 //     }
 
@@ -5944,7 +5979,8 @@ vscp_discovery(struct mg_connection *conn, void *cbdata)
 //     mg_printf(conn, WEB_STYLE_END);
 //     mg_write(conn, WEB_COMMON_JS, strlen(WEB_COMMON_JS));
 //     mg_printf(conn,
-//                "<meta http-equiv=\"refresh\" content=\"1;url=/vscp/location");
+//                "<meta http-equiv=\"refresh\"
+//                content=\"1;url=/vscp/location");
 //     mg_printf(conn, "?from=%ld&count=%ld", (long)nFrom, (long)nCount);
 //     mg_printf(conn, "\">");
 //     mg_printf(conn, WEB_COMMON_HEAD_END_BODY_START);
@@ -5982,10 +6018,8 @@ vscp_discovery(struct mg_connection *conn, void *cbdata)
 //         }
 
 //         if (SQLITE_OK !=
-//             sqlite3_exec(gpobj->m_db_vscp_daemon, psql, NULL, NULL, &pErrMsg)) {
-//             sqlite3_free(psql);
-//             bOK = false;
-//             mg_printf(conn,
+//             sqlite3_exec(gpobj->m_db_vscp_daemon, psql, NULL, NULL,
+//             &pErrMsg)) { sqlite3_free(psql); bOK = false; mg_printf(conn,
 //                        "<font color=\"red\">Failed to update/insert record! "
 //                        "Error=%s</font>",
 //                        sqlite3_errmsg(gpobj->m_db_vscp_daemon));
@@ -6071,7 +6105,8 @@ vscp_discovery(struct mg_connection *conn, void *cbdata)
 //     mg_write(
 //       conn, WEB_COMMON_JS, sizeof(WEB_COMMON_JS)); // Common JavaScript code
 //     mg_printf(conn,
-//                "<meta http-equiv=\"refresh\" content=\"2;url=/vscp/location");
+//                "<meta http-equiv=\"refresh\"
+//                content=\"2;url=/vscp/location");
 //     mg_printf(conn, "?from=%ld&count=%ld", nFrom, (long)nCount);
 //     mg_printf(conn, "\">");
 //     mg_printf(conn, WEB_COMMON_HEAD_END_BODY_START);
@@ -6095,7 +6130,8 @@ vscp_discovery(struct mg_connection *conn, void *cbdata)
 //                    id,
 //                    pErrMsg);
 //     } else {
-//         mg_printf(conn, "<font color=\"blue\">Record %ld deleted.</font>", id);
+//         mg_printf(conn, "<font color=\"blue\">Record %ld deleted.</font>",
+//         id);
 //     }
 
 //     mg_printf(conn, WEB_COMMON_END, VSCPD_COPYRIGHT_HTML); // Common end code
@@ -6117,8 +6153,8 @@ vscp_client(struct mg_connection *conn, void *cbdata)
     if (NULL == conn) return 0;
 
     mg_printf(conn,
-               "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
-               "close\r\n\r\n");
+              "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
+              "close\r\n\r\n");
 
     mg_printf(conn, WEB_COMMON_HEAD, "VSCP - Session");
     mg_printf(conn, WEB_STYLE_START);
@@ -6170,7 +6206,8 @@ vscp_client(struct mg_connection *conn, void *cbdata)
 //     mg_printf(conn, "<h1 id=\"header\">VSCP - Current configuration</h1>");
 //     mg_printf(conn, "<br>");
 
-//     // * * * * * * * * * * * * * * * * * * * * * * * * * * * ** * * * * * * * *
+//     // * * * * * * * * * * * * * * * * * * * * * * * * * * * ** * * * * * * *
+//     *
 
 //     mg_printf(conn, "<h4 id=\"header\" >&nbsp;Server</h4> ");
 //     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>VSCP Server version:</b> ");
@@ -6203,8 +6240,8 @@ vscp_client(struct mg_connection *conn, void *cbdata)
 //     */
 
 //     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Hostname:</b> ");
-//     // TODO mg_printf( conn, "%s", (const char *)xxGetFullHostName().c_str() );
-//     mg_printf(conn, "<br>");
+//     // TODO mg_printf( conn, "%s", (const char *)xxGetFullHostName().c_str()
+//     ); mg_printf(conn, "<br>");
 
 //     // Debuglevel
 //     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Debuglevel:</b> ");
@@ -6238,16 +6275,19 @@ vscp_client(struct mg_connection *conn, void *cbdata)
 
 //     mg_printf(conn, "<hr>");
 
-//     // * * * * * * * * * * * * * * * * * * * * * * * * * * * ** * * * * * * * *
+//     // * * * * * * * * * * * * * * * * * * * * * * * * * * * ** * * * * * * *
+//     *
 
 //     CUserItem *pAdminUser = gpobj->m_userList.getUser(USER_ID_ADMIN);
-//     if (gpobj->m_variables.find(("vscp.openssl.version.str"), pAdminUser, variable)) {
+//     if (gpobj->m_variables.find(("vscp.openssl.version.str"), pAdminUser,
+//     variable)) {
 //         str = variable.getValue();
 //         vscp_base64_std_decode(str);
 //         mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Openssl version:</b> ");
 //         mg_printf(conn, "%s", (const char *)str.c_str());
 //         mg_printf(conn, " - ");
-//         if (gpobj->m_variables.find(("vscp.openssl.copyright"), pAdminUser, variable)) {
+//         if (gpobj->m_variables.find(("vscp.openssl.copyright"), pAdminUser,
+//         variable)) {
 //             str = variable.getValue();
 //             vscp_base64_std_decode(str);
 //             mg_printf(conn, "%s", (const char *)str.c_str());
@@ -6255,13 +6295,15 @@ vscp_client(struct mg_connection *conn, void *cbdata)
 //         mg_printf(conn, "<br>");
 //     }
 
-//     if (gpobj->m_variables.find(("vscp.duktape.version.str"), pAdminUser, variable)) {
+//     if (gpobj->m_variables.find(("vscp.duktape.version.str"), pAdminUser,
+//     variable)) {
 //         str = variable.getValue();
 //         vscp_base64_std_decode(str);
 //         mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Duktape version:</b> ");
 //         mg_printf(conn, "%s", (const char *)str.c_str());
 //         mg_printf(conn, " - ");
-//         if (gpobj->m_variables.find("vscp.duktape.copyright", pAdminUser, variable)) {
+//         if (gpobj->m_variables.find("vscp.duktape.copyright", pAdminUser,
+//         variable)) {
 //             str = variable.getValue();
 //             vscp_base64_std_decode(str);
 //             mg_printf(conn, "%s", (const char *)str.c_str());
@@ -6269,13 +6311,15 @@ vscp_client(struct mg_connection *conn, void *cbdata)
 //         mg_printf(conn, "<br>");
 //     }
 
-//     if (gpobj->m_variables.find(("vscp.lua.version.str"), pAdminUser, variable)) {
+//     if (gpobj->m_variables.find(("vscp.lua.version.str"), pAdminUser,
+//     variable)) {
 //         str = variable.getValue();
 //         vscp_base64_std_decode(str);
 //         mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Lua version:</b> ");
 //         mg_printf(conn, "%s", (const char *)str.c_str());
 //         mg_printf(conn, " - ");
-//         if (gpobj->m_variables.find(("vscp.lua.copyright"), pAdminUser, variable)) {
+//         if (gpobj->m_variables.find(("vscp.lua.copyright"), pAdminUser,
+//         variable)) {
 //             str = variable.getValue();
 //             vscp_base64_std_decode(str);
 //             mg_printf(conn, "%s", (const char *)str.c_str());
@@ -6283,13 +6327,15 @@ vscp_client(struct mg_connection *conn, void *cbdata)
 //         mg_printf(conn, "<br>");
 //     }
 
-//     if (gpobj->m_variables.find(("vscp.sqlite.version.str"), pAdminUser, variable)) {
+//     if (gpobj->m_variables.find(("vscp.sqlite.version.str"), pAdminUser,
+//     variable)) {
 //         str = variable.getValue();
 //         vscp_base64_std_decode(str);
 //         mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Sqlite3 version:</b> ");
 //         mg_printf(conn, "%s", (const char *)str.c_str());
 //         mg_printf(conn, " - ");
-//         if (gpobj->m_variables.find(("vscp.sqlite.copyright"), pAdminUser, variable)) {
+//         if (gpobj->m_variables.find(("vscp.sqlite.copyright"), pAdminUser,
+//         variable)) {
 //             str = variable.getValue();
 //             vscp_base64_std_decode(str);
 //             mg_printf(conn, "%s", (const char *)str.c_str());
@@ -6297,17 +6343,20 @@ vscp_client(struct mg_connection *conn, void *cbdata)
 //         mg_printf(conn, "<br>");
 //     }
 
-//     if (gpobj->m_variables.find(("vscp.civetweb.copyright"), pAdminUser, variable)) {
+//     if (gpobj->m_variables.find(("vscp.civetweb.copyright"), pAdminUser,
+//     variable)) {
 //         str = variable.getValue();
 //         vscp_base64_std_decode(str);
 //         mg_printf(
-//           conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Civetweb (Mod.) copyright:</b> ");
+//           conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Civetweb (Mod.) copyright:</b>
+//           ");
 //         mg_printf(conn, "%s", (const char *)str.c_str());
 //         mg_printf(conn, "<br>");
 //     }
 
 //     mg_printf(
-//       conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Civetweb (Orig.) contributors:</b> ");
+//       conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Civetweb (Orig.) contributors:</b>
+//       ");
 //     mg_printf(conn,
 //                "%s",
 //                "<a "
@@ -6317,8 +6366,8 @@ vscp_client(struct mg_connection *conn, void *cbdata)
 
 //     mg_printf(conn, "<hr>");
 
-//     // * * * * * * * * * * * * * * * * * * * * * * * * * * * ** * * * * * * * *
-//     mg_printf(conn, "<h4 id=\"header\" >&nbsp;TCP/IP</h4> ");
+//     // * * * * * * * * * * * * * * * * * * * * * * * * * * * ** * * * * * * *
+//     * mg_printf(conn, "<h4 id=\"header\" >&nbsp;TCP/IP</h4> ");
 
 //     // TCP/IP interface
 //     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>TCP/IP interface:</b> ");
@@ -6362,7 +6411,8 @@ vscp_client(struct mg_connection *conn, void *cbdata)
 //     mg_printf(
 //       conn,
 //       "%s",
-//       (const char *)std::string(gpobj->m_tcpip_ssl_certificate_chain).c_str());
+//       (const char
+//       *)std::string(gpobj->m_tcpip_ssl_certificate_chain).c_str());
 //     if (!gpobj->m_web_ssl_certificate_chain.length()) {
 //         mg_printf(conn, "%s", "Not defined (default).");
 //     }
@@ -6375,7 +6425,8 @@ vscp_client(struct mg_connection *conn, void *cbdata)
 //     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>SSL CA path:</b> ");
 //     mg_printf(conn,
 //                "%s",
-//                (const char *)std::string(gpobj->m_tcpip_ssl_ca_path).c_str());
+//                (const char
+//                *)std::string(gpobj->m_tcpip_ssl_ca_path).c_str());
 //     if (!gpobj->m_web_ssl_ca_path.length()) {
 //         mg_printf(conn, "%s", "Not defined (default).");
 //     }
@@ -6384,7 +6435,8 @@ vscp_client(struct mg_connection *conn, void *cbdata)
 //     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>SSL CA file:</b> ");
 //     mg_printf(conn,
 //                "%s",
-//                (const char *)std::string(gpobj->m_tcpip_ssl_ca_file).c_str());
+//                (const char
+//                *)std::string(gpobj->m_tcpip_ssl_ca_file).c_str());
 //     if (!gpobj->m_web_ssl_ca_file.length()) {
 //         mg_printf(conn, "%s", "Not defined (default).");
 //     }
@@ -6396,7 +6448,8 @@ vscp_client(struct mg_connection *conn, void *cbdata)
 
 //     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>SSL verify paths:</b> ");
 //     mg_printf(
-//       conn, "%s", gpobj->m_tcpip_ssl_default_verify_paths ? "true" : "false");
+//       conn, "%s", gpobj->m_tcpip_ssl_default_verify_paths ? "true" :
+//       "false");
 //     mg_printf(conn, "<br>");
 
 //     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>SSL cipher list:</b> ");
@@ -6419,7 +6472,8 @@ vscp_client(struct mg_connection *conn, void *cbdata)
 
 //     mg_printf(conn, "<hr>");
 
-//     // * * * * * * * * * * * * * * * * * * * * * * * * * * * ** * * * * * * * *
+//     // * * * * * * * * * * * * * * * * * * * * * * * * * * * ** * * * * * * *
+//     *
 
 //     // mg_printf(conn, "<h4 id=\"header\" >&nbsp;UDP</h4> ");
 
@@ -6428,7 +6482,8 @@ vscp_client(struct mg_connection *conn, void *cbdata)
 //     // if (gpobj->m_udpSrvObj.m_bEnable) {
 //     //     mg_printf(conn, "enabled on <b>interface:</b> '");
 //     //     mg_printf(
-//     //       conn, "%s", (const char *)gpobj->m_udpSrvObj.m_interface.c_str());
+//     //       conn, "%s", (const char
+//     *)gpobj->m_udpSrvObj.m_interface.c_str());
 //     //     mg_printf(conn, "'");
 //     // } else {
 //     //     mg_printf(conn, "disabled");
@@ -6437,12 +6492,14 @@ vscp_client(struct mg_connection *conn, void *cbdata)
 
 //     // mg_printf(conn, "<hr>");
 
-//     // * * * * * * * * * * * * * * * * * * * * * * * * * * * ** * * * * * * * *
+//     // * * * * * * * * * * * * * * * * * * * * * * * * * * * ** * * * * * * *
+//     *
 
 //     mg_printf(conn, "<h4 id=\"header\" >&nbsp;Web server</h4> ");
 
 //     mg_printf(conn,
-//                "&nbsp;&nbsp;&nbsp;&nbsp;<b>Web server functionality </b> is ");
+//                "&nbsp;&nbsp;&nbsp;&nbsp;<b>Web server functionality </b> is
+//                ");
 //     if (gpobj->m_web_bEnable) {
 //         mg_printf(conn, "enabled.<br>");
 //     } else {
@@ -6450,14 +6507,16 @@ vscp_client(struct mg_connection *conn, void *cbdata)
 //     }
 
 //     mg_printf(
-//       conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Listening port(s)/interface(s):</b> ");
-//     mg_printf(conn, "%s", (const char *)gpobj->m_web_listening_ports.c_str());
-//     mg_printf(conn, "<br>");
+//       conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Listening port(s)/interface(s):</b>
+//       ");
+//     mg_printf(conn, "%s", (const char
+//     *)gpobj->m_web_listening_ports.c_str()); mg_printf(conn, "<br>");
 
 //     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Rootfolder:</b> ");
 //     mg_printf(conn,
 //                "%s",
-//                (const char *)std::string(gpobj->m_web_document_root).c_str());
+//                (const char
+//                *)std::string(gpobj->m_web_document_root).c_str());
 //     mg_printf(conn, "<br>");
 
 //     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Authdomain:</b> ");
@@ -6474,13 +6533,15 @@ vscp_client(struct mg_connection *conn, void *cbdata)
 
 //     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Index files:</b> ");
 //     mg_printf(
-//       conn, "%s", (const char *)std::string(gpobj->m_web_index_files).c_str());
+//       conn, "%s", (const char
+//       *)std::string(gpobj->m_web_index_files).c_str());
 //     mg_printf(conn, "<br>");
 
 //     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>SSL certificat:</b> ");
 //     mg_printf(conn,
 //                "%s",
-//                (const char *)std::string(gpobj->m_web_ssl_certificate).c_str());
+//                (const char
+//                *)std::string(gpobj->m_web_ssl_certificate).c_str());
 //     if (!gpobj->m_web_ssl_certificate.length()) {
 //         mg_printf(conn, "%s", "Not defined (probably should be).");
 //     }
@@ -6502,7 +6563,8 @@ vscp_client(struct mg_connection *conn, void *cbdata)
 
 //     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>SSL CA path:</b> ");
 //     mg_printf(
-//       conn, "%s", (const char *)std::string(gpobj->m_web_ssl_ca_path).c_str());
+//       conn, "%s", (const char
+//       *)std::string(gpobj->m_web_ssl_ca_path).c_str());
 //     if (!gpobj->m_web_ssl_ca_path.length()) {
 //         mg_printf(conn, "%s", "Not defined (default).");
 //     }
@@ -6510,7 +6572,8 @@ vscp_client(struct mg_connection *conn, void *cbdata)
 
 //     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>SSL CA file:</b> ");
 //     mg_printf(
-//       conn, "%s", (const char *)std::string(gpobj->m_web_ssl_ca_file).c_str());
+//       conn, "%s", (const char
+//       *)std::string(gpobj->m_web_ssl_ca_file).c_str());
 //     if (!gpobj->m_web_ssl_ca_file.length()) {
 //         mg_printf(conn, "%s", "Not defined (default).");
 //     }
@@ -6528,7 +6591,8 @@ vscp_client(struct mg_connection *conn, void *cbdata)
 //     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>SSL cipher list:</b> ");
 //     mg_printf(conn,
 //                "%s",
-//                (const char *)std::string(gpobj->m_web_ssl_cipher_list).c_str());
+//                (const char
+//                *)std::string(gpobj->m_web_ssl_cipher_list).c_str());
 //     if (!gpobj->m_web_ssl_cipher_list.length()) {
 //         mg_printf(conn, "%s", "Not defined (default).");
 //     }
@@ -6545,7 +6609,8 @@ vscp_client(struct mg_connection *conn, void *cbdata)
 //     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>CGI interpreter:</b> ");
 //     mg_printf(conn,
 //                "%s",
-//                (const char *)std::string(gpobj->m_web_cgi_interpreter).c_str());
+//                (const char
+//                *)std::string(gpobj->m_web_cgi_interpreter).c_str());
 //     if (!gpobj->m_web_cgi_interpreter.length()) {
 //         mg_printf(conn, "%s", "Not defined (default).");
 //     }
@@ -6553,7 +6618,8 @@ vscp_client(struct mg_connection *conn, void *cbdata)
 
 //     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>CGI patterns:</b> ");
 //     mg_printf(
-//       conn, "%s", (const char *)std::string(gpobj->m_web_cgi_patterns).c_str());
+//       conn, "%s", (const char
+//       *)std::string(gpobj->m_web_cgi_patterns).c_str());
 //     if (!gpobj->m_web_cgi_patterns.length()) {
 //         mg_printf(conn, "%s", "Not defined (probably should be defined).");
 //     }
@@ -6562,7 +6628,8 @@ vscp_client(struct mg_connection *conn, void *cbdata)
 //     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>CGI environment:</b> ");
 //     mg_printf(conn,
 //                "%s",
-//                (const char *)std::string(gpobj->m_web_cgi_environment).c_str());
+//                (const char
+//                *)std::string(gpobj->m_web_cgi_environment).c_str());
 //     if (!gpobj->m_web_cgi_environment.length()) {
 //         mg_printf(conn, "%s", "Not defined (default).");
 //     }
@@ -6570,7 +6637,8 @@ vscp_client(struct mg_connection *conn, void *cbdata)
 
 //     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Protect URI:</b> ");
 //     mg_printf(
-//       conn, "%s", (const char *)std::string(gpobj->m_web_protect_uri).c_str());
+//       conn, "%s", (const char
+//       *)std::string(gpobj->m_web_protect_uri).c_str());
 //     if (!gpobj->m_web_protect_uri.length()) {
 //         mg_printf(conn, "%s", "Not defined (default).");
 //     }
@@ -6644,7 +6712,8 @@ vscp_client(struct mg_connection *conn, void *cbdata)
 
 //     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Run as user:</b> ");
 //     mg_printf(
-//       conn, "%s", (const char *)std::string(gpobj->m_web_run_as_user).c_str());
+//       conn, "%s", (const char
+//       *)std::string(gpobj->m_web_run_as_user).c_str());
 //     if (0 == gpobj->m_web_run_as_user.length()) {
 //         mg_printf(conn, "Using vscpd user.");
 //     }
@@ -6706,7 +6775,8 @@ vscp_client(struct mg_connection *conn, void *cbdata)
 //     mg_printf(
 //       conn,
 //       "%s",
-//       (const char *)std::string(gpobj->m_web_per_directory_auth_file).c_str());
+//       (const char
+//       *)std::string(gpobj->m_web_per_directory_auth_file).c_str());
 //     if (0 == gpobj->m_web_per_directory_auth_file.length()) {
 //         mg_printf(conn, "Set to default.");
 //     }
@@ -6714,14 +6784,16 @@ vscp_client(struct mg_connection *conn, void *cbdata)
 
 //     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>SSI patterns:</b> ");
 //     mg_printf(
-//       conn, "%s", (const char *)std::string(gpobj->m_web_ssi_patterns).c_str());
+//       conn, "%s", (const char
+//       *)std::string(gpobj->m_web_ssi_patterns).c_str());
 //     if (0 == gpobj->m_web_ssi_patterns.length()) {
 //         mg_printf(conn, "Set to default.");
 //     }
 //     mg_printf(conn, "<br>");
 
 //     mg_printf(conn,
-//                "&nbsp;&nbsp;&nbsp;&nbsp;<b>Access control allow origin:</b> ");
+//                "&nbsp;&nbsp;&nbsp;&nbsp;<b>Access control allow origin:</b>
+//                ");
 //     mg_printf(
 //       conn,
 //       "%s",
@@ -6733,7 +6805,8 @@ vscp_client(struct mg_connection *conn, void *cbdata)
 //     mg_printf(conn, "<br>");
 
 //     mg_printf(conn,
-//                "&nbsp;&nbsp;&nbsp;&nbsp;<b>Access control allow methods:</b> ");
+//                "&nbsp;&nbsp;&nbsp;&nbsp;<b>Access control allow methods:</b>
+//                ");
 //     mg_printf(
 //       conn,
 //       "%s",
@@ -6745,7 +6818,8 @@ vscp_client(struct mg_connection *conn, void *cbdata)
 //     mg_printf(conn, "<br>");
 
 //     mg_printf(conn,
-//                "&nbsp;&nbsp;&nbsp;&nbsp;<b>Access control allow headers:</b> ");
+//                "&nbsp;&nbsp;&nbsp;&nbsp;<b>Access control allow headers:</b>
+//                ");
 //     mg_printf(
 //       conn,
 //       "%s",
@@ -6758,7 +6832,8 @@ vscp_client(struct mg_connection *conn, void *cbdata)
 
 //     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Path to error pages:</b> ");
 //     mg_printf(
-//       conn, "%s", (const char *)std::string(gpobj->m_web_error_pages).c_str());
+//       conn, "%s", (const char
+//       *)std::string(gpobj->m_web_error_pages).c_str());
 //     if (0 == gpobj->m_web_error_pages.length()) {
 //         mg_printf(conn, "Set to default.");
 //     }
@@ -6775,7 +6850,8 @@ vscp_client(struct mg_connection *conn, void *cbdata)
 //     mg_printf(conn, "<br>");
 
 //     mg_printf(
-//       conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Static file max age (seconds):</b> ");
+//       conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Static file max age (seconds):</b>
+//       ");
 //     if (-1 == gpobj->m_web_static_file_max_age) {
 //         mg_printf(conn, "%ld", (long)gpobj->m_web_static_file_max_age);
 //     } else {
@@ -6784,7 +6860,8 @@ vscp_client(struct mg_connection *conn, void *cbdata)
 //     mg_printf(conn, "<br>");
 
 //     mg_printf(conn,
-//                "&nbsp;&nbsp;&nbsp;&nbsp;<b>Strict transport security max age "
+//                "&nbsp;&nbsp;&nbsp;&nbsp;<b>Strict transport security max age
+//                "
 //                "(seconds):</b> ");
 //     if (-1 == gpobj->m_web_strict_transport_security_max_age) {
 //         mg_printf(
@@ -6795,8 +6872,8 @@ vscp_client(struct mg_connection *conn, void *cbdata)
 //     mg_printf(conn, "<br>");
 
 //     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Allow sendfile call:</b> ");
-//     mg_printf(conn, "%s", gpobj->m_web_allow_sendfile_call ? "true" : "false");
-//     mg_printf(conn, "<br>");
+//     mg_printf(conn, "%s", gpobj->m_web_allow_sendfile_call ? "true" :
+//     "false"); mg_printf(conn, "<br>");
 
 //     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Additional headers:</b> ");
 //     mg_printf(
@@ -6817,16 +6894,19 @@ vscp_client(struct mg_connection *conn, void *cbdata)
 //     mg_printf(conn, "<br>");
 
 //     mg_printf(conn,
-//                "&nbsp;&nbsp;&nbsp;&nbsp;<b>Allow index script resource:</b> ");
+//                "&nbsp;&nbsp;&nbsp;&nbsp;<b>Allow index script resource:</b>
+//                ");
 //     mg_printf(
-//       conn, "%s", gpobj->m_web_allow_index_script_resource ? "true" : "false");
+//       conn, "%s", gpobj->m_web_allow_index_script_resource ? "true" :
+//       "false");
 //     mg_printf(conn, "<br>");
 
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Duktape script patters:</b> ");
-//     mg_printf(
+//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Duktape script patters:</b>
+//     "); mg_printf(
 //       conn,
 //       "%s",
-//       (const char *)std::string(gpobj->m_web_duktape_script_patterns).c_str());
+//       (const char
+//       *)std::string(gpobj->m_web_duktape_script_patterns).c_str());
 //     if (0 == gpobj->m_web_duktape_script_patterns.length()) {
 //         mg_printf(conn, "Not set.");
 //     }
@@ -6857,24 +6937,26 @@ vscp_client(struct mg_connection *conn, void *cbdata)
 //     mg_printf(
 //       conn,
 //       "%s",
-//       (const char *)std::string(gpobj->m_web_lua_server_page_patterns).c_str());
+//       (const char
+//       *)std::string(gpobj->m_web_lua_server_page_patterns).c_str());
 //     if (0 == gpobj->m_web_lua_server_page_patterns.length()) {
 //         mg_printf(conn, "Not set.");
 //     }
 //     mg_printf(conn, "<br>");
 
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Lua websocket patterns:</b> ");
-//     mg_printf(
+//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Lua websocket patterns:</b>
+//     "); mg_printf(
 //       conn,
 //       "%s",
-//       (const char *)std::string(gpobj->m_web_lua_websocket_patterns).c_str());
+//       (const char
+//       *)std::string(gpobj->m_web_lua_websocket_patterns).c_str());
 //     if (0 == gpobj->m_web_lua_websocket_patterns.length()) {
 //         mg_printf(conn, "Not set.");
 //     }
 //     mg_printf(conn, "<br>");
 
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Lua background script:</b> ");
-//     mg_printf(
+//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Lua background script:</b>
+//     "); mg_printf(
 //       conn,
 //       "%s",
 //       (const char *)std::string(gpobj->m_web_lua_background_script).c_str());
@@ -6898,12 +6980,14 @@ vscp_client(struct mg_connection *conn, void *cbdata)
 
 //     mg_printf(conn, "<hr>");
 
-//     // * * * * * * * * * * * * * * * * * * * * * * * * * * * ** * * * * * * * *
+//     // * * * * * * * * * * * * * * * * * * * * * * * * * * * ** * * * * * * *
+//     *
 
 //     mg_printf(conn, "<h4 id=\"header\" >&nbsp;Websockets</h4> ");
 
 //     mg_printf(conn,
-//                "&nbsp;&nbsp;&nbsp;&nbsp;<b>Web sockets functionality </b> is ");
+//                "&nbsp;&nbsp;&nbsp;&nbsp;<b>Web sockets functionality </b> is
+//                ");
 //     if (gpobj->m_web_bEnable && gpobj->m_bWebsocketsEnable) {
 //         mg_printf(conn, "enabled.<br>");
 //     } else {
@@ -6923,9 +7007,8 @@ vscp_client(struct mg_connection *conn, void *cbdata)
 
 //     mg_printf(conn, "<hr>");
 
-
-
-//     // * * * * * * * * * * * * * * * * * * * * * * * * * * * ** * * * * * * * *
+//     // * * * * * * * * * * * * * * * * * * * * * * * * * * * ** * * * * * * *
+//     *
 
 //     mg_printf(conn, "<h4 id=\"header\" >&nbsp;Remote variables</h4> ");
 
@@ -6933,17 +7016,19 @@ vscp_client(struct mg_connection *conn, void *cbdata)
 //     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Variable handling :</b> ");
 //     mg_printf(conn, "<br>");
 //     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Path to variables:</b> ");
-//     mg_printf(conn, "%s", (const char *)gpobj->m_variables.m_xmlPath.c_str());
+//     mg_printf(conn, "%s", (const char
+//     *)gpobj->m_variables.m_xmlPath.c_str());
 
 //     mg_printf(conn, "<hr>");
 
-//     // * * * * * * * * * * * * * * * * * * * * * * * * * * * ** * * * * * * * *
+//     // * * * * * * * * * * * * * * * * * * * * * * * * * * * ** * * * * * * *
+//     *
 
 //     mg_printf(conn, "<h4 id=\"header\" >&nbsp;Databases</h4> ");
 
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Path to VSCP server db:</b> ");
-//     mg_printf(conn, "%s", (const char *)gpobj->m_path_db_vscp_daemon.c_str());
-//     mg_printf(conn, "<br>");
+//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Path to VSCP server db:</b>
+//     "); mg_printf(conn, "%s", (const char
+//     *)gpobj->m_path_db_vscp_daemon.c_str()); mg_printf(conn, "<br>");
 
 //     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Path to VSCP data db:</b> ");
 //     mg_printf(conn, "%s", (const char *)gpobj->m_path_db_vscp_data.c_str());
@@ -6951,7 +7036,8 @@ vscp_client(struct mg_connection *conn, void *cbdata)
 
 //     mg_printf(conn, "<hr>");
 
-//     // * * * * * * * * * * * * * * * * * * * * * * * * * * * ** * * * * * * * *
+//     // * * * * * * * * * * * * * * * * * * * * * * * * * * * ** * * * * * * *
+//     *
 
 //     mg_printf(conn, "<h4 id=\"header\" >&nbsp;Level I drivers</h4> ");
 
@@ -6959,7 +7045,8 @@ vscp_client(struct mg_connection *conn, void *cbdata)
 
 //     mg_printf(conn, "enabled<br>");
 //     mg_printf(
-//       conn, "&nbsp;&nbsp;&nbsp;&nbsp;----------------------------------<br>");
+//       conn,
+//       "&nbsp;&nbsp;&nbsp;&nbsp;----------------------------------<br>");
 
 //     CDeviceItem *pDeviceItem;
 //     std::deque<CDeviceItem *>::iterator it;
@@ -6991,7 +7078,8 @@ vscp_client(struct mg_connection *conn, void *cbdata)
 
 //     mg_printf(conn, "<hr>");
 
-//     // * * * * * * * * * * * * * * * * * * * * * * * * * * * ** * * * * * * * *
+//     // * * * * * * * * * * * * * * * * * * * * * * * * * * * ** * * * * * * *
+//     *
 
 //     mg_printf(conn, "<h4 id=\"header\" >&nbsp;Level II drivers</h4> ");
 
@@ -6999,7 +7087,8 @@ vscp_client(struct mg_connection *conn, void *cbdata)
 //     mg_printf(conn, "enabled<br>");
 
 //     mg_printf(
-//       conn, "&nbsp;&nbsp;&nbsp;&nbsp;----------------------------------<br>");
+//       conn,
+//       "&nbsp;&nbsp;&nbsp;&nbsp;----------------------------------<br>");
 
 //     for (it = gpobj->m_deviceList.m_devItemList.begin();
 //          it != gpobj->m_deviceList.m_devItemList.end();
@@ -7045,8 +7134,8 @@ bootload(struct mg_connection *conn, void *cbdata)
     if (NULL == conn) return 0;
 
     mg_printf(conn,
-               "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
-               "close\r\n\r\n");
+              "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
+              "close\r\n\r\n");
 
     mg_printf(conn, WEB_COMMON_HEAD, "VSCP - Device discovery");
     mg_printf(conn, WEB_STYLE_START);
@@ -7203,10 +7292,10 @@ tablelist(struct mg_connection *conn, void *cbdata)
     long nFrom = 0;
     if (NULL != reqinfo->query_string) {
         if (mg_get_var(reqinfo->query_string,
-                        strlen(reqinfo->query_string),
-                        "from",
-                        buf,
-                        sizeof(buf)) > 0) {
+                       strlen(reqinfo->query_string),
+                       "from",
+                       buf,
+                       sizeof(buf)) > 0) {
             nFrom = atoi(buf);
         }
     }
@@ -7215,10 +7304,10 @@ tablelist(struct mg_connection *conn, void *cbdata)
     uint16_t nCount = 50;
     if (NULL != reqinfo->query_string) {
         if (mg_get_var(reqinfo->query_string,
-                        strlen(reqinfo->query_string),
-                        "count",
-                        buf,
-                        sizeof(buf)) > 0) {
+                       strlen(reqinfo->query_string),
+                       "count",
+                       buf,
+                       sizeof(buf)) > 0) {
             nCount = atoi(buf);
         }
     }
@@ -7226,10 +7315,10 @@ tablelist(struct mg_connection *conn, void *cbdata)
     std::string tblName;
     if (NULL != reqinfo->query_string) {
         if (mg_get_var(reqinfo->query_string,
-                        strlen(reqinfo->query_string),
-                        "tblname",
-                        buf,
-                        sizeof(buf)) > 0) {
+                       strlen(reqinfo->query_string),
+                       "tblname",
+                       buf,
+                       sizeof(buf)) > 0) {
             tblName = std::string(buf);
         }
     }
@@ -7289,8 +7378,8 @@ tablelist(struct mg_connection *conn, void *cbdata)
      }
     */
     mg_printf(conn,
-               "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
-               "close\r\n\r\n");
+              "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
+              "close\r\n\r\n");
 
     mg_printf(conn, WEB_COMMON_HEAD, "VSCP - Table List");
     mg_printf(conn, WEB_STYLE_START);
@@ -7382,8 +7471,8 @@ static int
 vscp_variable(struct mg_connection *conn, void *cbdata)
 {
     mg_printf(conn,
-               "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
-               "close\r\n\r\n");
+              "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
+              "close\r\n\r\n");
     mg_printf(conn, "<html><body>");
     mg_printf(conn, "<h2>Defined variables</h2>");
     mg_printf(
@@ -7406,13 +7495,13 @@ static int
 vscp_user_list(struct mg_connection *conn, void *cbdata)
 {
     mg_printf(conn,
-               "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
-               "close\r\n\r\n");
+              "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
+              "close\r\n\r\n");
     mg_printf(conn, "<html><body>");
     mg_printf(conn, "<h2>Defined users</h2>");
     mg_printf(conn,
-               "<p>To see a page from the A handler "
-               "<a href=\"A\">click A</a></p>");
+              "<p>To see a page from the A handler "
+              "<a href=\"A\">click A</a></p>");
     mg_printf(conn, "</body></html>\n");
 
     return WEB_OK;
@@ -7442,10 +7531,10 @@ vscp_log_pre(struct mg_connection *conn, void *cbdata)
     long nFrom = 0;
     if (NULL != reqinfo->query_string) {
         if (mg_get_var(reqinfo->query_string,
-                        strlen(reqinfo->query_string),
-                        "from",
-                        buf,
-                        sizeof(buf)) > 0) {
+                       strlen(reqinfo->query_string),
+                       "from",
+                       buf,
+                       sizeof(buf)) > 0) {
             nFrom = atoi(buf);
         }
     }
@@ -7454,17 +7543,17 @@ vscp_log_pre(struct mg_connection *conn, void *cbdata)
     uint16_t nCount = 50;
     if (NULL != reqinfo->query_string) {
         if (mg_get_var(reqinfo->query_string,
-                        strlen(reqinfo->query_string),
-                        "count",
-                        buf,
-                        sizeof(buf)) > 0) {
+                       strlen(reqinfo->query_string),
+                       "count",
+                       buf,
+                       sizeof(buf)) > 0) {
             nCount = atoi(buf);
         }
     }
 
     mg_printf(conn,
-               "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
-               "close\r\n\r\n");
+              "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
+              "close\r\n\r\n");
 
     mg_printf(conn, WEB_COMMON_HEAD, "Log");
     mg_printf(conn, WEB_STYLE_START);
@@ -7813,84 +7902,84 @@ vscp_log_list(struct mg_connection *conn, void *cbdata)
 static int
 vscp_log_delete(struct mg_connection *conn, void *cbdata)
 {
- /*   TODO Delete
-    std::string sql;
-    char *zErrMsg = NULL;
-    sqlite3_stmt *ppStmt;
+    /*   TODO Delete
+       std::string sql;
+       char *zErrMsg = NULL;
+       sqlite3_stmt *ppStmt;
 
-    // Check pointer
-    if (NULL == conn) return 0;
+       // Check pointer
+       if (NULL == conn) return 0;
 
-    // Log file must be open
-    if (NULL == gpobj->m_db_vscp_log) {
-        return 0;
-    }
+       // Log file must be open
+       if (NULL == gpobj->m_db_vscp_log) {
+           return 0;
+       }
 
-    const struct mg_request_info *reqinfo = mg_get_request_info(conn);
-    if (NULL == reqinfo) return 0;
+       const struct mg_request_info *reqinfo = mg_get_request_info(conn);
+       if (NULL == reqinfo) return 0;
 
-    mg_printf(conn,
-               "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
-               "close\r\n\r\n");
+       mg_printf(conn,
+                  "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
+                  "close\r\n\r\n");
 
-    mg_printf(conn, WEB_COMMON_HEAD, "VSCP Server- delete");
-    mg_printf(conn, WEB_STYLE_START);
-    mg_write(conn, WEB_COMMON_CSS, strlen(WEB_COMMON_CSS)); // CSS style Code
-    mg_printf(conn, WEB_STYLE_END);
-    mg_write(
-      conn, WEB_COMMON_JS, strlen(WEB_COMMON_JS)); // Common Javascript code
-    mg_printf(conn, WEB_COMMON_HEAD_END_BODY_START);
+       mg_printf(conn, WEB_COMMON_HEAD, "VSCP Server- delete");
+       mg_printf(conn, WEB_STYLE_START);
+       mg_write(conn, WEB_COMMON_CSS, strlen(WEB_COMMON_CSS)); // CSS style Code
+       mg_printf(conn, WEB_STYLE_END);
+       mg_write(
+         conn, WEB_COMMON_JS, strlen(WEB_COMMON_JS)); // Common Javascript code
+       mg_printf(conn, WEB_COMMON_HEAD_END_BODY_START);
 
-    // Navigation menu
-    mg_printf(conn, WEB_COMMON_MENU);
-    mg_printf(conn, WEB_LOG_BODY_START);
+       // Navigation menu
+       mg_printf(conn, WEB_COMMON_MENU);
+       mg_printf(conn, WEB_LOG_BODY_START);
 
-    mg_printf(conn, "<br><div style=\"text-align:center\">");
+       mg_printf(conn, "<br><div style=\"text-align:center\">");
 
-    mg_printf(conn, "<br><form method=\"get\" action=\"");
-    mg_printf(conn, "/vscp/logdodelete");
-    mg_printf(conn, "\" name=\"lognextstep1\">");
+       mg_printf(conn, "<br><form method=\"get\" action=\"");
+       mg_printf(conn, "/vscp/logdodelete");
+       mg_printf(conn, "\" name=\"lognextstep1\">");
 
-    mg_printf(conn, "<input name=\"list\" value=\"true\" type=\"hidden\">");
+       mg_printf(conn, "<input name=\"list\" value=\"true\" type=\"hidden\">");
 
-    mg_printf(conn, "<table>");
+       mg_printf(conn, "<table>");
 
-    mg_printf(conn, "<tr>");
-    mg_printf(conn, "%s", "<tr><td width=\"15%\">Log type:</td>");
-    mg_printf(conn, "%s", "<td width=\"85%\"><select name=\"type\">");
-    mg_printf(conn, "<option value=\"0\">All logs</option>");
-    mg_printf(conn, "<option value=\"1\">General log</option>");
-    mg_printf(conn, "<option value=\"2\">Security log</option>");
-    mg_printf(conn, "<option value=\"3\">Access log</option>");
-    mg_printf(conn, "<option value=\"4\">Decision Matrix log</option>");
-    mg_printf(conn, "</select></td></tr>");
+       mg_printf(conn, "<tr>");
+       mg_printf(conn, "%s", "<tr><td width=\"15%\">Log type:</td>");
+       mg_printf(conn, "%s", "<td width=\"85%\"><select name=\"type\">");
+       mg_printf(conn, "<option value=\"0\">All logs</option>");
+       mg_printf(conn, "<option value=\"1\">General log</option>");
+       mg_printf(conn, "<option value=\"2\">Security log</option>");
+       mg_printf(conn, "<option value=\"3\">Access log</option>");
+       mg_printf(conn, "<option value=\"4\">Decision Matrix log</option>");
+       mg_printf(conn, "</select></td></tr>");
 
-    mg_printf(conn, "%s", "<tr><td width=\"15%\">Log level:</td>");
-    mg_printf(conn, "%s", "<td width=\"85%\"><select name=\"level\">");
-    mg_printf(conn, "<option value=\"0\">All</option>");
-    mg_printf(conn, "<option value=\"1\">Normal</option>");
-    mg_printf(conn, "<option value=\"2\">Debug</option>");
-    mg_printf(conn, "</select></td></tr>");
+       mg_printf(conn, "%s", "<tr><td width=\"15%\">Log level:</td>");
+       mg_printf(conn, "%s", "<td width=\"85%\"><select name=\"level\">");
+       mg_printf(conn, "<option value=\"0\">All</option>");
+       mg_printf(conn, "<option value=\"1\">Normal</option>");
+       mg_printf(conn, "<option value=\"2\">Debug</option>");
+       mg_printf(conn, "</select></td></tr>");
 
-    mg_printf(conn, "%s", "<tr><td width=\"15%\">From date:</td>");
-    mg_printf(conn, "%s", "<td width=\"85%\">");
-    mg_printf(conn,
-               "<input type=\"text\" name=\"fromdate\"></> "
-               "Leave blank for ''beginning of time'</td></tr>");
+       mg_printf(conn, "%s", "<tr><td width=\"15%\">From date:</td>");
+       mg_printf(conn, "%s", "<td width=\"85%\">");
+       mg_printf(conn,
+                  "<input type=\"text\" name=\"fromdate\"></> "
+                  "Leave blank for ''beginning of time'</td></tr>");
 
-    mg_printf(conn, "%s", "<tr><td width=\"15%\">To date:</td>");
-    mg_printf(conn, "%s", "<td width=\"85%\">");
-    mg_printf(conn,
-               "<input type=\"text\" name=\"todate\"></> "
-               "Leave blank for 'end of time'</td></tr>");
+       mg_printf(conn, "%s", "<tr><td width=\"15%\">To date:</td>");
+       mg_printf(conn, "%s", "<td width=\"85%\">");
+       mg_printf(conn,
+                  "<input type=\"text\" name=\"todate\"></> "
+                  "Leave blank for 'end of time'</td></tr>");
 
-    mg_printf(conn, "</table>");
+       mg_printf(conn, "</table>");
 
-    mg_printf(conn, "<br></div>");
-    mg_printf(conn, WEB_LOG_SUBMIT);
+       mg_printf(conn, "<br></div>");
+       mg_printf(conn, WEB_LOG_SUBMIT);
 
-    mg_printf(conn, "</form>");
-*/
+       mg_printf(conn, "</form>");
+   */
     mg_printf(conn, WEB_COMMON_END, VSCPD_COPYRIGHT_HTML); // Common end code
     return WEB_OK;
 }
@@ -8068,52 +8157,52 @@ int
 ExampleHandler(struct mg_connection *conn, void *cbdata)
 {
     mg_printf(conn,
-               "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
-               "close\r\n\r\n");
+              "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
+              "close\r\n\r\n");
     mg_printf(conn, "<html><body>");
     mg_printf(conn, "<h2>This is an example text from a C handler</h2>");
     mg_printf(
       conn,
       "<p>To see a page from the A handler <a href=\"A\">click A</a></p>");
     mg_printf(conn,
-               "<p>To see a page from the A handler <a href=\"A/A\">click "
-               "A/A</a></p>");
+              "<p>To see a page from the A handler <a href=\"A/A\">click "
+              "A/A</a></p>");
     mg_printf(conn,
-               "<p>To see a page from the A/B handler <a "
-               "href=\"A/B\">click A/B</a></p>");
+              "<p>To see a page from the A/B handler <a "
+              "href=\"A/B\">click A/B</a></p>");
     mg_printf(conn,
-               "<p>To see a page from the B handler (0) <a "
-               "href=\"B\">click B</a></p>");
+              "<p>To see a page from the B handler (0) <a "
+              "href=\"B\">click B</a></p>");
     mg_printf(conn,
-               "<p>To see a page from the B handler (1) <a "
-               "href=\"B/A\">click B/A</a></p>");
+              "<p>To see a page from the B handler (1) <a "
+              "href=\"B/A\">click B/A</a></p>");
     mg_printf(conn,
-               "<p>To see a page from the B handler (2) <a "
-               "href=\"B/B\">click B/B</a></p>");
+              "<p>To see a page from the B handler (2) <a "
+              "href=\"B/B\">click B/B</a></p>");
     mg_printf(conn,
-               "<p>To see a page from the *.foo handler <a "
-               "href=\"xy.foo\">click xy.foo</a></p>");
+              "<p>To see a page from the *.foo handler <a "
+              "href=\"xy.foo\">click xy.foo</a></p>");
     mg_printf(conn,
-               "<p>To see a page from the close handler <a "
-               "href=\"close\">click close</a></p>");
+              "<p>To see a page from the close handler <a "
+              "href=\"close\">click close</a></p>");
     mg_printf(conn,
-               "<p>To see a page from the FileHandler handler <a "
-               "href=\"form\">click form</a> (the starting point of the "
-               "<b>form</b> test)</p>");
+              "<p>To see a page from the FileHandler handler <a "
+              "href=\"form\">click form</a> (the starting point of the "
+              "<b>form</b> test)</p>");
     mg_printf(conn,
-               "<p>To see a page from the CookieHandler handler <a "
-               "href=\"cookie\">click cookie</a></p>");
+              "<p>To see a page from the CookieHandler handler <a "
+              "href=\"cookie\">click cookie</a></p>");
     mg_printf(conn,
-               "<p>To see a page from the PostResponser handler <a "
-               "href=\"postresponse\">click post response</a></p>");
+              "<p>To see a page from the PostResponser handler <a "
+              "href=\"postresponse\">click post response</a></p>");
     mg_printf(conn,
-               "<p>To see an example for parsing files on the fly <a "
-               "href=\"on_the_fly_form\">click form</a> (form for "
-               "uploading files)</p>");
+              "<p>To see an example for parsing files on the fly <a "
+              "href=\"on_the_fly_form\">click form</a> (form for "
+              "uploading files)</p>");
 
     mg_printf(conn,
-               "<p>To test websocket handler <a href=\"/websocket\">click "
-               "websocket</a></p>");
+              "<p>To test websocket handler <a href=\"/websocket\">click "
+              "websocket</a></p>");
 
     mg_printf(conn, "<p>To exit <a href=\"%s\">click exit</a></p>", EXIT_URI);
     mg_printf(conn, "</body></html>\n");
@@ -8128,8 +8217,8 @@ int
 ExitHandler(struct mg_connection *conn, void *cbdata)
 {
     mg_printf(conn,
-               "HTTP/1.1 200 OK\r\nContent-Type: "
-               "text/plain\r\nConnection: close\r\n\r\n");
+              "HTTP/1.1 200 OK\r\nContent-Type: "
+              "text/plain\r\nConnection: close\r\n\r\n");
     mg_printf(conn, "Server will shut down.\n");
     mg_printf(conn, "Bye!\n");
 
@@ -8144,8 +8233,8 @@ int
 AHandler(struct mg_connection *conn, void *cbdata)
 {
     mg_printf(conn,
-               "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
-               "close\r\n\r\n");
+              "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
+              "close\r\n\r\n");
     mg_printf(conn, "<html><body>");
     mg_printf(conn, "<h2>This is the A handler!!!</h2>");
     mg_printf(conn, "</body></html>\n");
@@ -8161,8 +8250,8 @@ int
 ABHandler(struct mg_connection *conn, void *cbdata)
 {
     mg_printf(conn,
-               "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
-               "close\r\n\r\n");
+              "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
+              "close\r\n\r\n");
     mg_printf(conn, "<html><body>");
     mg_printf(conn, "<h2>This is the AB handler!!!</h2>");
     mg_printf(conn, "</body></html>\n");
@@ -8181,8 +8270,8 @@ BXHandler(struct mg_connection *conn, void *cbdata)
     const struct mg_request_info *req_info = mg_get_request_info(conn);
 
     mg_printf(conn,
-               "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
-               "close\r\n\r\n");
+              "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
+              "close\r\n\r\n");
     mg_printf(conn, "<html><body>");
     mg_printf(conn, "<h2>This is the BX handler %p!!!</h2>", cbdata);
     mg_printf(conn, "<p>The actual uri is %s</p>", req_info->local_uri);
@@ -8202,15 +8291,15 @@ FooHandler(struct mg_connection *conn, void *cbdata)
     const struct mg_request_info *req_info = mg_get_request_info(conn);
 
     mg_printf(conn,
-               "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
-               "close\r\n\r\n");
+              "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
+              "close\r\n\r\n");
     mg_printf(conn, "<html><body>");
     mg_printf(conn, "<h2>This is the Foo handler!!!</h2>");
     mg_printf(conn,
-               "<p>The request was:<br><pre>%s %s HTTP/%s</pre></p>",
-               req_info->request_method,
-               req_info->local_uri,
-               req_info->http_version);
+              "<p>The request was:<br><pre>%s %s HTTP/%s</pre></p>",
+              req_info->request_method,
+              req_info->local_uri,
+              req_info->http_version);
     mg_printf(conn, "</body></html>\n");
 
     return WEB_OK;
@@ -8227,11 +8316,11 @@ CloseHandler(struct mg_connection *conn, void *cbdata)
     const struct mg_request_info *req_info = mg_get_request_info(conn);
 
     mg_printf(conn,
-               "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
-               "close\r\n\r\n");
+              "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
+              "close\r\n\r\n");
     mg_printf(conn, "<html><body>");
     mg_printf(conn,
-               "<h2>This handler will close the connection in a second</h2>");
+              "<h2>This handler will close the connection in a second</h2>");
 #ifdef _WIN32
     Sleep(1000);
 #else
@@ -8298,7 +8387,8 @@ FileHandler(struct mg_connection *conn, void *cbdata)
 //
 
 // int
-// field_get(const char *key, const char *value, size_t valuelen, void *user_data)
+// field_get(const char *key, const char *value, size_t valuelen, void
+// *user_data)
 // {
 //     struct mg_connection *conn = (struct mg_connection *)user_data;
 
@@ -8321,7 +8411,8 @@ FileHandler(struct mg_connection *conn, void *cbdata)
 //     struct mg_connection *conn = (struct mg_connection *)user_data;
 
 //     mg_printf(
-//       conn, "stored as %s (%lu bytes)\r\n\r\n", path, (unsigned long)file_size);
+//       conn, "stored as %s (%lu bytes)\r\n\r\n", path, (unsigned
+//       long)file_size);
 
 //     return WEB_OK;
 // }
@@ -8483,7 +8574,8 @@ FileHandler(struct mg_connection *conn, void *cbdata)
 //         vscpmd5_finish(&(chksums.file[i].chksum), digest);
 //         /* Visual Studio 2010+ support llu */
 //         mg_printf(
-//           conn, "\r\n%s %llu ", chksums.file[i].name, chksums.file[i].length);
+//           conn, "\r\n%s %llu ", chksums.file[i].name,
+//           chksums.file[i].length);
 //         for (j = 0; j < 16; j++) {
 //             mg_printf(conn, "%02x", (unsigned int)digest[j]);
 //         }
@@ -8502,7 +8594,7 @@ CookieHandler(struct mg_connection *conn, void *cbdata)
 {
     // Handler may access the request info using mg_get_request_info
     const struct mg_request_info *req_info = mg_get_request_info(conn);
-    const char *cookie                      = mg_get_header(conn, "Cookie");
+    const char *cookie                     = mg_get_header(conn, "Cookie");
     char first_str[64], count_str[64];
     int count;
 
@@ -8514,13 +8606,13 @@ CookieHandler(struct mg_connection *conn, void *cbdata)
         time_t t       = time(0);
         struct tm *ptm = localtime(&t);
         mg_printf(conn,
-                   "Set-Cookie: first=%04i-%02i-%02iT%02i:%02i:%02i\r\n",
-                   ptm->tm_year + 1900,
-                   ptm->tm_mon + 1,
-                   ptm->tm_mday,
-                   ptm->tm_hour,
-                   ptm->tm_min,
-                   ptm->tm_sec);
+                  "Set-Cookie: first=%04i-%02i-%02iT%02i:%02i:%02i\r\n",
+                  ptm->tm_year + 1900,
+                  ptm->tm_mon + 1,
+                  ptm->tm_mday,
+                  ptm->tm_hour,
+                  ptm->tm_min,
+                  ptm->tm_sec);
     }
     count = (count_str[0] == 0) ? 0 : atoi(count_str);
     mg_printf(conn, "Set-Cookie: count=%i\r\n", count + 1);
@@ -8561,11 +8653,11 @@ PostResponser(struct mg_connection *conn, void *cbdata)
         int ret = mg_get_request_link(conn, buf, sizeof(buf));
 
         mg_printf(conn,
-                   "HTTP/1.1 405 Method Not Allowed\r\nConnection: close\r\n");
+                  "HTTP/1.1 405 Method Not Allowed\r\nConnection: close\r\n");
         mg_printf(conn, "Content-Type: text/plain\r\n\r\n");
         mg_printf(conn,
-                   "%s method not allowed in the POST handler\n",
-                   ri->request_method);
+                  "%s method not allowed in the POST handler\n",
+                  ri->request_method);
         if (ret >= 0) {
             mg_printf(
               conn, "use a web tool to send a POST request to %s\n", buf);
@@ -8581,8 +8673,8 @@ PostResponser(struct mg_connection *conn, void *cbdata)
     }
 
     mg_printf(conn,
-               "HTTP/1.1 200 OK\r\nConnection: "
-               "close\r\nTransfer-Encoding: chunked\r\n");
+              "HTTP/1.1 200 OK\r\nConnection: "
+              "close\r\nTransfer-Encoding: chunked\r\n");
     mg_printf(conn, "Content-Type: text/plain\r\n\r\n");
 
     r = mg_read(conn, buf, sizeof(buf));
@@ -8608,8 +8700,8 @@ int
 WebSocketStartHandler(struct mg_connection *conn, void *cbdata)
 {
     mg_printf(conn,
-               "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
-               "close\r\n\r\n");
+              "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
+              "close\r\n\r\n");
 
     mg_printf(conn, "<!DOCTYPE html>\n");
     mg_printf(conn, "<html>\n<head>\n");
@@ -8678,7 +8770,7 @@ int
 WebSocketConnectHandler(const struct mg_connection *conn, void *cbdata)
 {
     struct mg_context *ctx = mg_get_context(conn);
-    int reject              = 1;
+    int reject             = 1;
     int i;
 
     mg_lock_context(ctx);
@@ -8687,7 +8779,7 @@ WebSocketConnectHandler(const struct mg_connection *conn, void *cbdata)
             ws_clients[i].conn  = (struct mg_connection *)conn;
             ws_clients[i].state = 1;
             mg_set_user_connection_data(ws_clients[i].conn,
-                                         (void *)(ws_clients + i));
+                                        (void *)(ws_clients + i));
             reject = 0;
             break;
         }
@@ -8712,7 +8804,7 @@ WebSocketReadyHandler(struct mg_connection *conn, void *cbdata)
     struct t_ws_client *client =
       (struct t_ws_client *)mg_get_user_connection_data(conn);
 
-    mg_websocket_write(conn, WEBSOCKET_OPCODE_TEXT, text, strlen(text));
+    mg_websocket_write(conn, MG_WEBSOCKET_OPCODE_TEXT, text, strlen(text));
     fprintf(stdout, "Greeting message sent to websocket client\r\n\r\n");
     ASSERT(client->conn == conn);
     ASSERT(client->state == 1);
@@ -8735,22 +8827,22 @@ WebsocketDataHandler(
 
     fprintf(stdout, "Websocket got %lu bytes of ", (unsigned long)len);
     switch (((unsigned char)bits) & 0x0F) {
-        case WEBSOCKET_OPCODE_CONTINUATION:
+        case MG_WEBSOCKET_OPCODE_CONTINUATION:
             fprintf(stdout, "continuation");
             break;
-        case WEBSOCKET_OPCODE_TEXT:
+        case MG_WEBSOCKET_OPCODE_TEXT:
             fprintf(stdout, "text");
             break;
-        case WEBSOCKET_OPCODE_BINARY:
+        case MG_WEBSOCKET_OPCODE_BINARY:
             fprintf(stdout, "binary");
             break;
-        case WEBSOCKET_OPCODE_CONNECTION_CLOSE:
+        case MG_WEBSOCKET_OPCODE_CONNECTION_CLOSE:
             fprintf(stdout, "close");
             break;
-        case WEBSOCKET_OPCODE_PING:
+        case MG_WEBSOCKET_OPCODE_PING:
             fprintf(stdout, "ping");
             break;
-        case WEBSOCKET_OPCODE_PONG:
+        case MG_WEBSOCKET_OPCODE_PONG:
             fprintf(stdout, "pong");
             break;
         default:
@@ -8802,10 +8894,8 @@ informWebsockets(struct mg_context *ctx)
     mg_lock_context(ctx);
     for (i = 0; i < MAX_WS_CLIENTS; i++) {
         if (2 == ws_clients[i].state) {
-            mg_websocket_write(ws_clients[i].conn,
-                                WEBSOCKET_OPCODE_TEXT,
-                                text,
-                                strlen(text));
+            mg_websocket_write(
+              ws_clients[i].conn, MG_WEBSOCKET_OPCODE_TEXT, text, strlen(text));
         }
     }
     mg_unlock_context(ctx);
@@ -8945,7 +9035,7 @@ start_webserver(void)
     syslog(LOG_ERR, ("Starting web server...\n"));
 
     // This structure must be larger than the number of options to set
-    const char **web_options = new const char *[9 + 1];
+    const char **web_options = new const char *[120 + 2];
 
     struct mg_callbacks callbacks;
     struct mg_server_ports ports[32];
@@ -8959,7 +9049,8 @@ start_webserver(void)
     web_options[pos++] =
       vscp_strdup((const char *)gpobj->m_web_document_root.c_str());
 
-    web_options[pos++] = vscp_strdup(VSCPDB_CONFIG_NAME_WEB_LISTENING_PORTS + 4);
+    web_options[pos++] =
+      vscp_strdup(VSCPDB_CONFIG_NAME_WEB_LISTENING_PORTS + 4);
     web_options[pos++] =
       vscp_strdup((const char *)gpobj->m_web_listening_ports.c_str());
 
@@ -8979,7 +9070,8 @@ start_webserver(void)
         web_options[pos++] = vscp_strdup("no");
     }
 
-    web_options[pos++] = vscp_strdup(VSCPDB_CONFIG_NAME_WEB_SSL_CERTIFICATE + 4);
+    web_options[pos++] =
+      vscp_strdup(VSCPDB_CONFIG_NAME_WEB_SSL_CERTIFICATE + 4);
     web_options[pos++] =
       vscp_strdup((const char *)gpobj->m_web_ssl_certificate.c_str());
 
@@ -8996,13 +9088,15 @@ start_webserver(void)
     }
 
     if (gpobj->m_web_ssl_ca_path.length()) {
-        web_options[pos++] = vscp_strdup(VSCPDB_CONFIG_NAME_WEB_SSL_CA_PATH + 4);
+        web_options[pos++] =
+          vscp_strdup(VSCPDB_CONFIG_NAME_WEB_SSL_CA_PATH + 4);
         web_options[pos++] =
           vscp_strdup((const char *)gpobj->m_web_ssl_ca_path.c_str());
     }
 
     if (gpobj->m_web_ssl_ca_file.length()) {
-        web_options[pos++] = vscp_strdup(VSCPDB_CONFIG_NAME_WEB_SSL_CA_FILE + 4);
+        web_options[pos++] =
+          vscp_strdup(VSCPDB_CONFIG_NAME_WEB_SSL_CA_FILE + 4);
         web_options[pos++] =
           vscp_strdup((const char *)gpobj->m_web_ssl_ca_file.c_str());
     }
@@ -9050,7 +9144,8 @@ start_webserver(void)
     }
 
     if (gpobj->m_web_cgi_patterns.length()) {
-        web_options[pos++] = vscp_strdup(VSCPDB_CONFIG_NAME_WEB_CGI_PATTERN + 4);
+        web_options[pos++] =
+          vscp_strdup(VSCPDB_CONFIG_NAME_WEB_CGI_PATTERN + 4);
         web_options[pos++] =
           vscp_strdup((const char *)gpobj->m_web_cgi_patterns.c_str());
     }
@@ -9063,7 +9158,8 @@ start_webserver(void)
     }
 
     if (gpobj->m_web_protect_uri.length()) {
-        web_options[pos++] = vscp_strdup(VSCPDB_CONFIG_NAME_WEB_PROTECT_URI + 4);
+        web_options[pos++] =
+          vscp_strdup(VSCPDB_CONFIG_NAME_WEB_PROTECT_URI + 4);
         web_options[pos++] =
           vscp_strdup((const char *)gpobj->m_web_protect_uri.c_str());
     }
@@ -9119,7 +9215,8 @@ start_webserver(void)
     }
 
     if (gpobj->m_web_run_as_user.length()) {
-        web_options[pos++] = vscp_strdup(VSCPDB_CONFIG_NAME_WEB_RUN_AS_USER + 4);
+        web_options[pos++] =
+          vscp_strdup(VSCPDB_CONFIG_NAME_WEB_RUN_AS_USER + 4);
         web_options[pos++] =
           vscp_strdup((const char *)gpobj->m_web_run_as_user.c_str());
     }
@@ -9203,7 +9300,8 @@ start_webserver(void)
     }
 
     if (gpobj->m_web_error_pages.length()) {
-        web_options[pos++] = vscp_strdup(VSCPDB_CONFIG_NAME_WEB_ERROR_PAGES + 4);
+        web_options[pos++] =
+          vscp_strdup(VSCPDB_CONFIG_NAME_WEB_ERROR_PAGES + 4);
         web_options[pos++] =
           vscp_strdup((const char *)gpobj->m_web_error_pages.c_str());
     }
@@ -9292,8 +9390,8 @@ start_webserver(void)
     if (gpobj->m_web_lua_websocket_patterns.length()) {
         web_options[pos++] =
           vscp_strdup(VSCPDB_CONFIG_NAME_WEB_LUA_WEBSOCKET_PATTERN + 4);
-        web_options[pos++] =
-          vscp_strdup((const char *)gpobj->m_web_lua_websocket_patterns.c_str());
+        web_options[pos++] = vscp_strdup(
+          (const char *)gpobj->m_web_lua_websocket_patterns.c_str());
     }
 
     if (gpobj->m_web_lua_background_script.length()) {
@@ -9326,12 +9424,12 @@ start_webserver(void)
     // Delete allocated option data
     pos = 0;
     while (NULL != web_options[pos]) {
-        //mg_free((void *)web_options[pos]);
+        // mg_free((void *)web_options[pos]);
         web_options[pos] = NULL;
         pos++;
     }
 
-    delete [] web_options;
+    delete[] web_options;
 
     // Check return value:
     if (NULL == gpobj->m_web_ctx) {
@@ -9386,8 +9484,7 @@ start_webserver(void)
     mg_set_request_handler(gpobj->m_web_ctx, "/cookie", CookieHandler, 0);
 
     // Add handler for /postresponse example
-    mg_set_request_handler(
-      gpobj->m_web_ctx, "/postresponse", PostResponser, 0);
+    mg_set_request_handler(gpobj->m_web_ctx, "/postresponse", PostResponser, 0);
 
     // Add HTTP site to open a websocket connection
     mg_set_request_handler(
@@ -9395,37 +9492,37 @@ start_webserver(void)
 
     // WS site for the websocket connection
     mg_set_websocket_handler(gpobj->m_web_ctx,
-                              "/websocket",
-                              WebSocketConnectHandler,
-                              WebSocketReadyHandler,
-                              WebsocketDataHandler,
-                              WebSocketCloseHandler,
-                              0);
+                             "/websocket",
+                             WebSocketConnectHandler,
+                             WebSocketReadyHandler,
+                             WebsocketDataHandler,
+                             WebSocketCloseHandler,
+                             0);
 #endif // WEB_EXAMPLES
 
     // Set authorization handlers
     mg_set_auth_handler(
       gpobj->m_web_ctx, "/vscp", check_admin_authorization, NULL);
-    //mg_set_auth_handler(
+    // mg_set_auth_handler(
     //  gpobj->m_web_ctx, "/vscp/rest", check_rest_authorization, NULL);
 
     // WS1 path for the websocket connection
     mg_set_websocket_handler(gpobj->m_web_ctx,
-                              "/ws1",
-                              ws1_connectHandler,
-                              ws1_readyHandler,
-                              ws1_dataHandler,
-                              ws1_closeHandler,
-                              0);
+                             "/ws1",
+                             ws1_connectHandler,
+                             ws1_readyHandler,
+                             ws1_dataHandler,
+                             ws1_closeHandler,
+                             0);
 
     // WS2 path for the websocket connection
     mg_set_websocket_handler(gpobj->m_web_ctx,
-                              "/ws2",
-                              ws2_connectHandler,
-                              ws2_readyHandler,
-                              ws2_dataHandler,
-                              ws2_closeHandler,
-                              0);
+                             "/ws2",
+                             ws2_connectHandler,
+                             ws2_readyHandler,
+                             ws2_dataHandler,
+                             ws2_closeHandler,
+                             0);
 
     // Set page handlers
     mg_set_request_handler(gpobj->m_web_ctx, "/vscp", vscp_mainpage, 0);
@@ -9453,14 +9550,13 @@ start_webserver(void)
     //   gpobj->m_web_ctx, "/vscp/vardelete", vscp_variable_delete, 0);
     mg_set_request_handler(gpobj->m_web_ctx, "/vscp/users", vscp_user_list, 0);
     mg_set_request_handler(gpobj->m_web_ctx, "/vscp/log", vscp_log_pre, 0);
-    mg_set_request_handler(
-      gpobj->m_web_ctx, "/vscp/loglist", vscp_log_list, 0);
+    mg_set_request_handler(gpobj->m_web_ctx, "/vscp/loglist", vscp_log_list, 0);
     mg_set_request_handler(
       gpobj->m_web_ctx, "/vscp/logdelete", vscp_log_delete, 0);
     mg_set_request_handler(
       gpobj->m_web_ctx, "/vscp/logdodelete", vscp_log_do_delete, 0);
-    // mg_set_request_handler(gpobj->m_web_ctx, "/vscp/zone", vscp_zone_list, 0);
-    // mg_set_request_handler(
+    // mg_set_request_handler(gpobj->m_web_ctx, "/vscp/zone", vscp_zone_list,
+    // 0); mg_set_request_handler(
     //   gpobj->m_web_ctx, "/vscp/zoneedit", vscp_zone_edit, 0);
     // mg_set_request_handler(
     //   gpobj->m_web_ctx, "/vscp/zonepost", vscp_zone_post, 0);
@@ -9470,8 +9566,8 @@ start_webserver(void)
     //   gpobj->m_web_ctx, "/vscp/subzoneedit", vscp_subzone_edit, 0);
     // mg_set_request_handler(
     //   gpobj->m_web_ctx, "/vscp/subzonepost", vscp_subzone_post, 0);
-    // mg_set_request_handler(gpobj->m_web_ctx, "/vscp/guid", vscp_guid_list, 0);
-    // mg_set_request_handler(
+    // mg_set_request_handler(gpobj->m_web_ctx, "/vscp/guid", vscp_guid_list,
+    // 0); mg_set_request_handler(
     //   gpobj->m_web_ctx, "/vscp/guidedit", vscp_guid_edit, 0);
     // mg_set_request_handler(
     //   gpobj->m_web_ctx, "/vscp/guidpost", vscp_guid_post, 0);
@@ -9486,8 +9582,6 @@ start_webserver(void)
     // mg_set_request_handler(
     //   gpobj->m_web_ctx, "/vscp/locationdelete", vscp_location_delete, 0);
 
-    // REST
-    //mg_set_request_handler(gpobj->m_web_ctx, "/vscp/rest", websrv_restapi, 0);
 
     return 1;
 }
@@ -9503,7 +9597,7 @@ stop_webserver(void)
     mg_stop(gpobj->m_web_ctx);
 
     // Exit web-server interface
-    mg_exit_library( );
+    mg_exit_library();
 
     return 1;
 }

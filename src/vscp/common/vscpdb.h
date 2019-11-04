@@ -2,28 +2,28 @@
 //
 // This file is part of the VSCP (http://www.vscp.org)
 //
-// MIT License 
+// MIT License
 //
 // Copyright (C) 2000-2019 Ake Hedman,
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 //
-// Permission is hereby granted, free of charge, to any person 
-// obtaining a copy of this software and associated documentation 
-// files (the "Software"), to deal in the Software without restriction, 
-// including without limitation the rights to use, copy, modify, merge, 
-// publish, distribute, sublicense, and/or sell copies of the Software, 
-// and to permit persons to whom the Software is furnished to do so, 
+// Permission is hereby granted, free of charge, to any person
+// obtaining a copy of this software and associated documentation
+// files (the "Software"), to deal in the Software without restriction,
+// including without limitation the rights to use, copy, modify, merge,
+// publish, distribute, sublicense, and/or sell copies of the Software,
+// and to permit persons to whom the Software is furnished to do so,
 // subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included 
+// The above copyright notice and this permission notice shall be included
 // in all copies or substantial portions of the Software.
-// 
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL 
-// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 //
 
@@ -179,163 +179,163 @@
 #define VSCPDB_CONFIG_NAME_WEB_ENABLE                   "web-enable"
 #define VSCPDB_CONFIG_DEFAULT_WEB_ENABLE                "1"
 
-#define VSCPDB_CONFIG_NAME_WEB_DOCUMENT_ROOT            "web-document-root"
+#define VSCPDB_CONFIG_NAME_WEB_DOCUMENT_ROOT            "web-document_root"
 #define VSCPDB_CONFIG_DEFAULT_WEB_DOCUMENT_ROOT         "/srv/vscp/web"
 
-#define VSCPDB_CONFIG_NAME_WEB_LISTENING_PORTS          "web-listening-ports"
+#define VSCPDB_CONFIG_NAME_WEB_LISTENING_PORTS          "web-listening_ports"
 #define VSCPDB_CONFIG_DEFAULT_WEB_LISTENING_PORTS       "[::]:8888r,[::]:8843s,8884"
 
-#define VSCPDB_CONFIG_NAME_WEB_INDEX_FILES              "web-index-files"
+#define VSCPDB_CONFIG_NAME_WEB_INDEX_FILES              "web-index_files"
 #define VSCPDB_CONFIG_DEFAULT_WEB_INDEX_FILES           "index.xhtml,index.html,index.htm,index.lp,index.lsp,index.lua,index.cgi,index.shtml,index.php"
 
-#define VSCPDB_CONFIG_NAME_WEB_AUTHENTICATION_DOMAIN    "web-authentication-domain"
+#define VSCPDB_CONFIG_NAME_WEB_AUTHENTICATION_DOMAIN    "web-authentication_domain"
 #define VSCPDB_CONFIG_DEFAULT_WEB_AUTHENTICATION_DOMAIN "mydomain.com"
 
-#define VSCPDB_CONFIG_NAME_WEB_ENABLE_AUTH_DOMAIN_CHECK     "web-enable-auth-domain-check"
+#define VSCPDB_CONFIG_NAME_WEB_ENABLE_AUTH_DOMAIN_CHECK     "web-enable_auth_domain_check"
 #define VSCPDB_CONFIG_DEFAULT_WEB_ENABLE_AUTH_DOMAIN_CHECK  "1"
 
-#define VSCPDB_CONFIG_NAME_WEB_SSL_CERTIFICATE          "web-ssl-certificate"
+#define VSCPDB_CONFIG_NAME_WEB_SSL_CERTIFICATE          "web-ssl_certificate"
 #define VSCPDB_CONFIG_DEFAULT_WEB_SSL_CERTIFICATE       "/srv/vscp/certs/server.pem"
 
-#define VSCPDB_CONFIG_NAME_WEB_SSL_CERTIFICAT_CHAIN     "web-ssl-certificate-chain"
+#define VSCPDB_CONFIG_NAME_WEB_SSL_CERTIFICAT_CHAIN     "web-ssl_certificate_chain"
 #define VSCPDB_CONFIG_DEFAULT_WEB_SSL_CERTIFICAT_CHAIN  ""
 
-#define VSCPDB_CONFIG_NAME_WEB_SSL_VERIFY_PEER          "web-ssl-verify-peer"
+#define VSCPDB_CONFIG_NAME_WEB_SSL_VERIFY_PEER          "web-ssl_verify_peer"
 #define VSCPDB_CONFIG_DEFAULT_WEB_SSL_VERIFY_PEER       "0"
 
-#define VSCPDB_CONFIG_NAME_WEB_SSL_CA_PATH              "web-ssl-ca-path"
+#define VSCPDB_CONFIG_NAME_WEB_SSL_CA_PATH              "web-ssl_ca_path"
 #define VSCPDB_CONFIG_DEFAULT_WEB_SSL_CA_PATH           ""
 
-#define VSCPDB_CONFIG_NAME_WEB_SSL_CA_FILE              "web-ssl-ca-file"
+#define VSCPDB_CONFIG_NAME_WEB_SSL_CA_FILE              "web-ssl_ca_file"
 #define VSCPDB_CONFIG_DEFAULT_WEB_SSL_CA_FILE           ""
 
-#define VSCPDB_CONFIG_NAME_WEB_SSL_VERIFY_DEPTH         "web-ssl-verify-depth"
+#define VSCPDB_CONFIG_NAME_WEB_SSL_VERIFY_DEPTH         "web-ssl_verify_depth"
 #define VSCPDB_CONFIG_DEFAULT_WEB_SSL_VERIFY_DEPTH      "9"
 
-#define VSCPDB_CONFIG_NAME_WEB_SSL_DEFAULT_VERIFY_PATHS     "web-ssl-default-verify-paths"
+#define VSCPDB_CONFIG_NAME_WEB_SSL_DEFAULT_VERIFY_PATHS     "web-ssl_default_verify_paths"
 #define VSCPDB_CONFIG_DEFAULT_WEB_SSL_DEFAULT_VERIFY_PATHS  "1"
 
-#define VSCPDB_CONFIG_NAME_WEB_SSL_CHIPHER_LIST         "web-ssl-cipher-list"
+#define VSCPDB_CONFIG_NAME_WEB_SSL_CHIPHER_LIST         "web-ssl_cipher_list"
 #define VSCPDB_CONFIG_DEFAULT_WEB_SSL_CHIPHER_LIST      "DES-CBC3-SHA:AES128-SHA:AES128-GCM-SHA256"
 
-#define VSCPDB_CONFIG_NAME_WEB_SSL_PROTOCOL_VERSION     "web-ssl-protocol-version"
+#define VSCPDB_CONFIG_NAME_WEB_SSL_PROTOCOL_VERSION     "web-ssl_protocol_version"
 #define VSCPDB_CONFIG_DEFAULT_WEB_SSL_PROTOCOL_VERSION  "0"
 
-#define VSCPDB_CONFIG_NAME_WEB_SSL_SHORT_TRUST          "web-ssl-short-trust"
+#define VSCPDB_CONFIG_NAME_WEB_SSL_SHORT_TRUST          "web-ssl_short_trust"
 #define VSCPDB_CONFIG_DEFAULT_WEB_SSL_SHORT_TRUST       "0"
 
-#define VSCPDB_CONFIG_NAME_WEB_CGI_INTERPRETER          "web-cgi-interpreter"
+#define VSCPDB_CONFIG_NAME_WEB_CGI_INTERPRETER          "web-cgi_interpreter"
 #define VSCPDB_CONFIG_DEFAULT_WEB_CGI_INTERPRETER       ""
 
-#define VSCPDB_CONFIG_NAME_WEB_CGI_PATTERN              "web-cgi-pattern"
+#define VSCPDB_CONFIG_NAME_WEB_CGI_PATTERN              "web-cgi_pattern"
 #define VSCPDB_CONFIG_DEFAULT_WEB_CGI_PATTERN           "**.cgi$|**.pl$|**.php|**.py"
 
-#define VSCPDB_CONFIG_NAME_WEB_CGI_ENVIRONMENT          "web-cgi-environment"
+#define VSCPDB_CONFIG_NAME_WEB_CGI_ENVIRONMENT          "web-cgi_environment"
 #define VSCPDB_CONFIG_DEFAULT_WEB_CGI_ENVIRONMENT       ""
 
-#define VSCPDB_CONFIG_NAME_WEB_PROTECT_URI              "web-protect-uri"
+#define VSCPDB_CONFIG_NAME_WEB_PROTECT_URI              "web-protect_uri"
 #define VSCPDB_CONFIG_DEFAULT_WEB_PROTECT_URI           ""
 
 #define VSCPDB_CONFIG_NAME_WEB_TROTTLE                  "web-trottle"
 #define VSCPDB_CONFIG_DEFAULT_WEB_TROTTLE               ""
 
-#define VSCPDB_CONFIG_NAME_WEB_ENABLE_DIRECTORY_LISTING     "web-enable-directory-listing"
+#define VSCPDB_CONFIG_NAME_WEB_ENABLE_DIRECTORY_LISTING     "web-enable_directory_listing"
 #define VSCPDB_CONFIG_DEFAULT_WEB_ENABLE_DIRECTORY_LISTING  "1"
 
-#define VSCPDB_CONFIG_NAME_WEB_ENABLE_KEEP_ALIVE        "web-enable-keep-alive"
+#define VSCPDB_CONFIG_NAME_WEB_ENABLE_KEEP_ALIVE        "web-enable_keep_alive"
 #define VSCPDB_CONFIG_DEFAULT_WEB_ENABLE_KEEP_ALIVE     "0"
 
-#define VSCPDB_CONFIG_NAME_WEB_KEEP_ALIVE_TIMEOUT_MS    "web-keep-alive-timeout-ms"
+#define VSCPDB_CONFIG_NAME_WEB_KEEP_ALIVE_TIMEOUT_MS    "web-keep_alive_timeout_ms"
 #define VSCPDB_CONFIG_DEFAULT_WEB_KEEP_ALIVE_TIMEOUT_MS "500"
 
-#define VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_LIST      "web-access-control-list"
+#define VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_LIST      "web-access_control_list"
 #define VSCPDB_CONFIG_DEFAULT_WEB_ACCESS_CONTROL_LIST   ""
 
-#define VSCPDB_CONFIG_NAME_WEB_EXTRA_MIME_TYPES         "web-extra-mime-types"
+#define VSCPDB_CONFIG_NAME_WEB_EXTRA_MIME_TYPES         "web-extra_mime_types"
 #define VSCPDB_CONFIG_DEFAULT_WEB_EXTRA_MIME_TYPES      ""
 
-#define VSCPDB_CONFIG_NAME_WEB_NUM_THREADS              "web-num-threads"
+#define VSCPDB_CONFIG_NAME_WEB_NUM_THREADS              "web-num_threads"
 #define VSCPDB_CONFIG_DEFAULT_WEB_NUM_THREADS           "50"
 
-#define VSCPDB_CONFIG_NAME_WEB_RUN_AS_USER              "web-run-as-user"
+#define VSCPDB_CONFIG_NAME_WEB_RUN_AS_USER              "web-run_as_user"
 #define VSCPDB_CONFIG_DEFAULT_WEB_RUN_AS_USER           ""
 
-#define VSCPDB_CONFIG_NAME_WEB_URL_REWRITE_PATTERNS     "web-url-rewrite-patterns"
+#define VSCPDB_CONFIG_NAME_WEB_URL_REWRITE_PATTERNS     "web-url_rewrite_patterns"
 #define VSCPDB_CONFIG_DEFAULT_WEB_URL_REWRITE_PATTERNS  ""
 
-#define VSCPDB_CONFIG_NAME_WEB_HIDE_FILE_PATTERNS       "web-hide-file-patterns"
+#define VSCPDB_CONFIG_NAME_WEB_HIDE_FILE_PATTERNS       "web-hide_file_patterns"
 #define VSCPDB_CONFIG_DEFAULT_WEB_HIDE_FILE_PATTERNS    ""
 
-#define VSCPDB_CONFIG_NAME_WEB_REQUEST_TIMEOUT_MS       "web-request-timeout-ms"
+#define VSCPDB_CONFIG_NAME_WEB_REQUEST_TIMEOUT_MS       "web-request_timeout_ms"
 #define VSCPDB_CONFIG_DEFAULT_WEB_REQUEST_TIMEOUT_MS    "30000"
 
-#define VSCPDB_CONFIG_NAME_WEB_LINGER_TIMEOUT_MS        "web-linger-timeout-ms"
+#define VSCPDB_CONFIG_NAME_WEB_LINGER_TIMEOUT_MS        "web-linger_timeout_ms"
 #define VSCPDB_CONFIG_DEFAULT_WEB_LINGER_TIMEOUT_MS     "-1"
 
-#define VSCPDB_CONFIG_NAME_WEB_DECODE_URL               "web-decode-url"
+#define VSCPDB_CONFIG_NAME_WEB_DECODE_URL               "web-decode_url"
 #define VSCPDB_CONFIG_DEFAULT_WEB_DECODE_URL            "1"
 
-#define VSCPDB_CONFIG_NAME_WEB_GLOBAL_AUTHFILE          "web-global-authfile"
+#define VSCPDB_CONFIG_NAME_WEB_GLOBAL_AUTHFILE          "web-global_authfile"
 #define VSCPDB_CONFIG_DEFAULT_WEB_GLOBAL_AUTHFILE       ""
 
-#define VSCPDB_CONFIG_NAME_WEB_PER_DIRECTORY_AUTH_FILE          "web-per-directory-auth-file"
+#define VSCPDB_CONFIG_NAME_WEB_PER_DIRECTORY_AUTH_FILE          "web-per_directory_auth_file"
 #define VSCPDB_CONFIG_DEFAULT_WEB_PER_DIRECTORY_AUTH_FILE       ""
 
-#define VSCPDB_CONFIG_NAME_WEB_SSI_PATTERNS                     "web-ssi-patterns"
+#define VSCPDB_CONFIG_NAME_WEB_SSI_PATTERNS                     "web-ssi_patterns"
 #define VSCPDB_CONFIG_DEFAULT_WEB_SSI_PATTERNS                  ""
 
-#define VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_ALLOW_ORIGIN      "web-access-control-allow-origin"
+#define VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_ALLOW_ORIGIN      "web-access_control_allow_origin"
 #define VSCPDB_CONFIG_DEFAULT_WEB_ACCESS_CONTROL_ALLOW_ORIGIN   ""
 
-#define VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_ALLOW_METHODS     "web-access-control-allow-methods"
+#define VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_ALLOW_METHODS     "web-access_control_allow_methods"
 #define VSCPDB_CONFIG_DEFAULT_WEB_ACCESS_CONTROL_ALLOW_METHODS  ""
 
-#define VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_ALLOW_HEADERS     "web-access-control-allow-headers"
+#define VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_ALLOW_HEADERS     "web-access_control_allow_headers"
 #define VSCPDB_CONFIG_DEFAULT_WEB_ACCESS_CONTROL_ALLOW_HEADERS  ""
 
-#define VSCPDB_CONFIG_NAME_WEB_ERROR_PAGES                      "web-error-pages"
+#define VSCPDB_CONFIG_NAME_WEB_ERROR_PAGES                      "web-error_pages"
 #define VSCPDB_CONFIG_DEFAULT_WEB_ERROR_PAGES                   ""
 
-#define VSCPDB_CONFIG_NAME_WEB_TCP_NO_DELAY                     "web-tcp-nodelay"
+#define VSCPDB_CONFIG_NAME_WEB_TCP_NO_DELAY                     "web-tcp_nodelay"
 #define VSCPDB_CONFIG_DEFAULT_WEB_TCP_NO_DELAY                  "-1"
 
-#define VSCPDB_CONFIG_NAME_WEB_STATIC_FILE_MAX_AGE              "web-static-file-max-age"
+#define VSCPDB_CONFIG_NAME_WEB_STATIC_FILE_MAX_AGE              "web-static_file_max_age"
 #define VSCPDB_CONFIG_DEFAULT_WEB_STATIC_FILE_MAX_AGE           "3600"
 
-#define VSCPDB_CONFIG_NAME_WEB_STRICT_TRANSPORT_SECURITY_MAX_AGE    "web-strict-transport-security-max-age"
+#define VSCPDB_CONFIG_NAME_WEB_STRICT_TRANSPORT_SECURITY_MAX_AGE    "web-strict_transport_security_max_age"
 #define VSCPDB_CONFIG_DEFAULT_WEB_STRICT_TRANSPORT_SECURITY_MAX_AGE "-1"
 
-#define VSCPDB_CONFIG_NAME_WEB_ALLOW_SENDFILE_CALL              "web-allow-sendfile-call"
+#define VSCPDB_CONFIG_NAME_WEB_ALLOW_SENDFILE_CALL              "web-allow_sendfile_call"
 #define VSCPDB_CONFIG_DEFAULT_WEB_ALLOW_SENDFILE_CALL           "1"
 
-#define VSCPDB_CONFIG_NAME_WEB_ADDITIONAL_HEADERS               "web-additional-headers"
+#define VSCPDB_CONFIG_NAME_WEB_ADDITIONAL_HEADERS               "web-additional_headers"
 #define VSCPDB_CONFIG_DEFAULT_WEB_ADDITIONAL_HEADERS            ""
 
-#define VSCPDB_CONFIG_NAME_WEB_MAX_REQUEST_SIZE                 "web-max-request-size"
+#define VSCPDB_CONFIG_NAME_WEB_MAX_REQUEST_SIZE                 "web-max_request_size"
 #define VSCPDB_CONFIG_DEFAULT_WEB_MAX_REQUEST_SIZE              "16384"
 
-#define VSCPDB_CONFIG_NAME_WEB_ALLOW_INDEX_SCRIPT_RESOURCE      "web-allow-index-script-resource"
+#define VSCPDB_CONFIG_NAME_WEB_ALLOW_INDEX_SCRIPT_RESOURCE      "web-allow_index_script_resource"
 #define VSCPDB_CONFIG_DEFAULT_WEB_ALLOW_INDEX_SCRIPT_RESOURCE   "0"
 
-#define VSCPDB_CONFIG_NAME_WEB_DUKTAPE_SCRIPT_PATTERN           "web-duktape-script-pattern"
+#define VSCPDB_CONFIG_NAME_WEB_DUKTAPE_SCRIPT_PATTERN           "web-duktape_script_pattern"
 #define VSCPDB_CONFIG_DEFAULT_WEB_DUKTAPE_SCRIPT_PATTERN        "**.ssjs$"
 
-#define VSCPDB_CONFIG_NAME_WEB_LUA_PRELOAD_FILE                 "web-lua-preload-file"
+#define VSCPDB_CONFIG_NAME_WEB_LUA_PRELOAD_FILE                 "web-lua_preload_file"
 #define VSCPDB_CONFIG_DEFAULT_WEB_LUA_PRELOAD_FILE              ""
 
-#define VSCPDB_CONFIG_NAME_WEB_LUA_SCRIPT_PATTERN               "web-lua-script-pattern"
+#define VSCPDB_CONFIG_NAME_WEB_LUA_SCRIPT_PATTERN               "web-lua_script_pattern"
 #define VSCPDB_CONFIG_DEFAULT_WEB_LUA_SCRIPT_PATTERN            "**.lua$"
 
-#define VSCPDB_CONFIG_NAME_WEB_LUA_SERVER_PAGE_PATTERN          "web-lua-server-page-pattern"
+#define VSCPDB_CONFIG_NAME_WEB_LUA_SERVER_PAGE_PATTERN          "web-lua_server_page_pattern"
 #define VSCPDB_CONFIG_DEFAULT_WEB_LUA_SERVER_PAGE_PATTERN       "**.lp$|**.lsp$"
 
-#define VSCPDB_CONFIG_NAME_WEB_LUA_WEBSOCKET_PATTERN            "web-lua-websocket-pattern"
+#define VSCPDB_CONFIG_NAME_WEB_LUA_WEBSOCKET_PATTERN            "web-lua_websocket_pattern"
 #define VSCPDB_CONFIG_DEFAULT_WEB_LUA_WEBSOCKET_PATTERN         "**.lua$"
 
-#define VSCPDB_CONFIG_NAME_WEB_LUA_BACKGROUND_SCRIPT            "web-lua-background-script"
+#define VSCPDB_CONFIG_NAME_WEB_LUA_BACKGROUND_SCRIPT            "web-lua_background_script"
 #define VSCPDB_CONFIG_DEFAULT_WEB_LUA_BACKGROUND_SCRIPT         ""
 
-#define VSCPDB_CONFIG_NAME_WEB_LUA_BACKGROUND_SCRIPT_PARAMS     "web-lua-background-script-params"
+#define VSCPDB_CONFIG_NAME_WEB_LUA_BACKGROUND_SCRIPT_PARAMS     "web-lua_background_script_params"
 #define VSCPDB_CONFIG_DEFAULT_WEB_LUA_BACKGROUND_SCRIPT_PARAMS  ""
 
 // Websockets
@@ -549,11 +549,11 @@
 
 
 //*****************************************************************************
-//                              GUID (Discovery)    
+//                              GUID (Discovery)
 //*****************************************************************************
 
 /*
- * 
+ *
  * GUID table
  *
  * type - describes what this GUID is describing, for example an interface, a node etc.
@@ -573,17 +573,17 @@
  * date - date time when discovered in ISO format. YY-MM-DDTHH:MM:SS
  *
  * name - Max 64 byte Unicode (UTF8) name set by administrator
- * 
+ *
  * devicename - Name set on node in MDF
  *
  * link_to_mdf - For a hardware device.
  *
  * address - is IPv4/IPv6/BT-UID or other address for a Level II hardware type
  *
- * capabilities - see CLASS2.PROTOCOL, Type=20   A 8 byte comma separated list 
+ * capabilities - see CLASS2.PROTOCOL, Type=20   A 8 byte comma separated list
  *                with the bytes of the capability 64-bit code.
  *
- * nonstandard - is one or more nonstandard port info as described for 
+ * nonstandard - is one or more nonstandard port info as described for
  *               CLASS2.PROTOCOL, Type=20 in text form in groups of three
  *               service1,port1-msb,port1-lsb,service2,port2-msb,port2-lsb ...
  *
@@ -1286,4 +1286,3 @@
 
 
 #endif  // compile
-

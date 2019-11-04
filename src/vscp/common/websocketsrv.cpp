@@ -645,7 +645,7 @@ websock_post_incomingEvents(void)
                         if ( WS_TYPE_1 == pSession->m_wstypes ) {
                         str = ("E;") + str;
                         mg_websocket_write(pSession->m_conn,
-                                           WEBSOCKET_OPCODE_TEXT,
+                                           MG_WEBSOCKET_OPCODE_TEXT,
                                            (const char *)str.c_str(),
                                            str.length());
                         }
@@ -654,7 +654,7 @@ websock_post_incomingEvents(void)
                             vscp_convertEventToJSON(strEvent, pEvent );
                             std::string str = vscp_str_format (WS2_EVENT, strEvent.c_str() );
                             mg_websocket_write(pSession->m_conn,
-                                           WEBSOCKET_OPCODE_TEXT,
+                                           MG_WEBSOCKET_OPCODE_TEXT,
                                            (const char *)str.c_str(),
                                            str.length());
                         }
@@ -708,7 +708,7 @@ websock_post_incomingEvents(void)
 //             std::string outstr;
 //             outstr = "V;"; // Variable trigger
 //             mg_websocket_write(pSession->m_conn,
-//                                 WEBSOCKET_OPCODE_TEXT,
+//                                 MG_WEBSOCKET_OPCODE_TEXT,
 //                                 (const char *)outstr.c_str(),
 //                                 outstr.length());
 
@@ -806,7 +806,7 @@ ws1_readyHandler(struct mg_connection *conn, void *cbdata)
     // Start authentication
     std::string str = vscp_str_format(("+;AUTH0;%s"), pSession->m_sid);
     mg_websocket_write(
-      conn, WEBSOCKET_OPCODE_TEXT, (const char *)str.c_str(), str.length());
+      conn, MG_WEBSOCKET_OPCODE_TEXT, (const char *)str.c_str(), str.length());
 
     pSession->m_conn_state = WEBSOCK_CONN_STATE_DATA;
 }
@@ -834,7 +834,7 @@ ws1_dataHandler(
 
     switch (((unsigned char)bits) & 0x0F) {
 
-        case WEBSOCKET_OPCODE_CONTINUATION:
+        case MG_WEBSOCKET_OPCODE_CONTINUATION:
 
             // Save and concatenate mesage
             pSession->m_strConcatenated += std::string(data, len);
@@ -848,7 +848,7 @@ ws1_dataHandler(
             break;
 
         // https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API/Writing_WebSocket_servers
-        case WEBSOCKET_OPCODE_TEXT:
+        case MG_WEBSOCKET_OPCODE_TEXT:
             if (1 & bits) {
                 strWsPkt = std::string(data, len);
                 if (!ws1_message(conn, pSession, strWsPkt)) {
@@ -860,17 +860,17 @@ ws1_dataHandler(
             }
             break;
 
-        case WEBSOCKET_OPCODE_BINARY:
+        case MG_WEBSOCKET_OPCODE_BINARY:
             break;
 
-        case WEBSOCKET_OPCODE_CONNECTION_CLOSE:
+        case MG_WEBSOCKET_OPCODE_CONNECTION_CLOSE:
             break;
 
-        case WEBSOCKET_OPCODE_PING:
+        case MG_WEBSOCKET_OPCODE_PING:
             // fprintf( stdout, "Ping received" );
             break;
 
-        case WEBSOCKET_OPCODE_PONG:
+        case MG_WEBSOCKET_OPCODE_PONG:
             // fprintf( stdout, "Pong received" );
             break;
 
@@ -919,7 +919,7 @@ ws1_message(struct mg_connection *conn,
                                       (int)WEBSOCK_ERROR_NOT_AUTHORISED,
                                       WEBSOCK_STR_ERROR_NOT_AUTHORISED);
                 mg_websocket_write(conn,
-                                   WEBSOCKET_OPCODE_TEXT,
+                                   MG_WEBSOCKET_OPCODE_TEXT,
                                    (const char *)str.c_str(),
                                    str.length());
                 return true;
@@ -952,13 +952,13 @@ ws1_message(struct mg_connection *conn,
                 vscp_event.obid = pSession->m_pClientItem->m_clientID;
                 if (websock_sendevent(conn, pSession, &vscp_event)) {
                     mg_websocket_write(
-                      conn, WEBSOCKET_OPCODE_TEXT, "+;EVENT", 7);
+                      conn, MG_WEBSOCKET_OPCODE_TEXT, "+;EVENT", 7);
                 } else {
                     str = vscp_str_format(("-;%d;%s"),
                                           (int)WEBSOCK_ERROR_TX_BUFFER_FULL,
                                           WEBSOCK_STR_ERROR_TX_BUFFER_FULL);
                     mg_websocket_write(conn,
-                                       WEBSOCKET_OPCODE_TEXT,
+                                       MG_WEBSOCKET_OPCODE_TEXT,
                                        (const char *)str.c_str(),
                                        str.length());
                 }
@@ -1006,7 +1006,7 @@ ws1_command(struct mg_connection *conn,
                                           (int)WEBSOCK_ERROR_SYNTAX_ERROR,
                                           WEBSOCK_STR_ERROR_SYNTAX_ERROR);
         mg_websocket_write(
-          conn, WEBSOCKET_OPCODE_TEXT, (const char *)str.c_str(), str.length());
+          conn, MG_WEBSOCKET_OPCODE_TEXT, (const char *)str.c_str(), str.length());
         return;
     }
 
@@ -1016,7 +1016,7 @@ ws1_command(struct mg_connection *conn,
 
     if (vscp_startsWith(strTok, "NOOP")) {
 
-        mg_websocket_write(conn, WEBSOCKET_OPCODE_TEXT, "+;NOOP", 6);
+        mg_websocket_write(conn, MG_WEBSOCKET_OPCODE_TEXT, "+;NOOP", 6);
 
         // Send authentication challenge
         if ((NULL == pSession->m_pClientItem) ||
@@ -1039,7 +1039,7 @@ ws1_command(struct mg_connection *conn,
             // Start authentication
             str = vscp_str_format(("+;AUTH0;%s"), pSession->m_sid);
             mg_websocket_write(conn,
-                               WEBSOCKET_OPCODE_TEXT,
+                               MG_WEBSOCKET_OPCODE_TEXT,
                                (const char *)str.c_str(),
                                str.length());
         }
@@ -1065,7 +1065,7 @@ ws1_command(struct mg_connection *conn,
             str = vscp_str_format(("+;AUTH1;%s"),
                                   (const char *)userSettings.c_str());
             mg_websocket_write(conn,
-                               WEBSOCKET_OPCODE_TEXT,
+                               MG_WEBSOCKET_OPCODE_TEXT,
                                (const char *)str.c_str(),
                                str.length());
         } else {
@@ -1074,7 +1074,7 @@ ws1_command(struct mg_connection *conn,
                                   (int)WEBSOCK_ERROR_NOT_AUTHORISED,
                                   WEBSOCK_STR_ERROR_NOT_AUTHORISED);
             mg_websocket_write(conn,
-                               WEBSOCKET_OPCODE_TEXT,
+                               MG_WEBSOCKET_OPCODE_TEXT,
                                (const char *)str.c_str(),
                                str.length());
             pSession->m_pClientItem->bAuthenticated = false; // Authenticated
@@ -1096,7 +1096,7 @@ ws1_command(struct mg_connection *conn,
                                   WEBSOCK_STR_ERROR_NOT_AUTHORISED);
 
             mg_websocket_write(conn,
-                               WEBSOCKET_OPCODE_TEXT,
+                               MG_WEBSOCKET_OPCODE_TEXT,
                                (const char *)str.c_str(),
                                str.length());
 
@@ -1104,7 +1104,7 @@ ws1_command(struct mg_connection *conn,
         }
 
         pSession->m_pClientItem->m_bOpen = true;
-        mg_websocket_write(conn, WEBSOCKET_OPCODE_TEXT, "+;OPEN", 6);
+        mg_websocket_write(conn, MG_WEBSOCKET_OPCODE_TEXT, "+;OPEN", 6);
     }
 
     // ------------------------------------------------------------------------
@@ -1113,7 +1113,7 @@ ws1_command(struct mg_connection *conn,
 
     else if (vscp_startsWith(strTok, "CLOSE")) {
         pSession->m_pClientItem->m_bOpen = false;
-        mg_websocket_write(conn, WEBSOCKET_OPCODE_TEXT, "+;CLOSE", 7);
+        mg_websocket_write(conn, MG_WEBSOCKET_OPCODE_TEXT, "+;CLOSE", 7);
     }
 
     // ------------------------------------------------------------------------
@@ -1135,7 +1135,7 @@ ws1_command(struct mg_connection *conn,
                                   WEBSOCK_STR_ERROR_NOT_AUTHORISED);
 
             mg_websocket_write(conn,
-                               WEBSOCKET_OPCODE_TEXT,
+                               MG_WEBSOCKET_OPCODE_TEXT,
                                (const char *)str.c_str(),
                                str.length());
 
@@ -1154,7 +1154,7 @@ ws1_command(struct mg_connection *conn,
                                   WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT);
 
             mg_websocket_write(conn,
-                               WEBSOCKET_OPCODE_TEXT,
+                               MG_WEBSOCKET_OPCODE_TEXT,
                                (const char *)str.c_str(),
                                str.length());
 
@@ -1181,7 +1181,7 @@ ws1_command(struct mg_connection *conn,
                                       WEBSOCK_STR_ERROR_SYNTAX_ERROR);
 
                 mg_websocket_write(conn,
-                                   WEBSOCKET_OPCODE_TEXT,
+                                   MG_WEBSOCKET_OPCODE_TEXT,
                                    (const char *)str.c_str(),
                                    str.length());
 
@@ -1199,7 +1199,7 @@ ws1_command(struct mg_connection *conn,
                                   WEBSOCK_STR_ERROR_SYNTAX_ERROR);
 
             mg_websocket_write(conn,
-                               WEBSOCKET_OPCODE_TEXT,
+                               MG_WEBSOCKET_OPCODE_TEXT,
                                (const char *)str.c_str(),
                                str.length());
 
@@ -1222,7 +1222,7 @@ ws1_command(struct mg_connection *conn,
                                       WEBSOCK_STR_ERROR_SYNTAX_ERROR);
 
                 mg_websocket_write(conn,
-                                   WEBSOCKET_OPCODE_TEXT,
+                                   MG_WEBSOCKET_OPCODE_TEXT,
                                    (const char *)str.c_str(),
                                    str.length());
 
@@ -1240,14 +1240,14 @@ ws1_command(struct mg_connection *conn,
                                   WEBSOCK_STR_ERROR_SYNTAX_ERROR);
 
             mg_websocket_write(conn,
-                               WEBSOCKET_OPCODE_TEXT,
+                               MG_WEBSOCKET_OPCODE_TEXT,
                                (const char *)str.c_str(),
                                str.length());
             return;
         }
 
         // Positive response
-        mg_websocket_write(conn, WEBSOCKET_OPCODE_TEXT, "+;SF", 4);
+        mg_websocket_write(conn, MG_WEBSOCKET_OPCODE_TEXT, "+;SF", 4);
 
     }
 
@@ -1268,7 +1268,7 @@ ws1_command(struct mg_connection *conn,
                                   WEBSOCK_STR_ERROR_NOT_AUTHORISED);
 
             mg_websocket_write(conn,
-                               WEBSOCKET_OPCODE_TEXT,
+                               MG_WEBSOCKET_OPCODE_TEXT,
                                (const char *)str.c_str(),
                                str.length());
 
@@ -1287,7 +1287,7 @@ ws1_command(struct mg_connection *conn,
                                   WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT);
 
             mg_websocket_write(conn,
-                               WEBSOCKET_OPCODE_TEXT,
+                               MG_WEBSOCKET_OPCODE_TEXT,
                                (const char *)str.c_str(),
                                str.length());
 
@@ -1313,7 +1313,7 @@ ws1_command(struct mg_connection *conn,
         pSession->m_pClientItem->m_clientInputQueue.clear();
         pthread_mutex_unlock(&pSession->m_pClientItem->m_mutexClientInputQueue);
 
-        mg_websocket_write(conn, WEBSOCKET_OPCODE_TEXT, "+;CLRQ", 6);
+        mg_websocket_write(conn, MG_WEBSOCKET_OPCODE_TEXT, "+;CLRQ", 6);
 
     }
 
@@ -1344,7 +1344,7 @@ ws1_command(struct mg_connection *conn,
     //                                  WEBSOCK_STR_ERROR_NOT_AUTHORISED);
 
     //         mg_websocket_write(conn,
-    //                             WEBSOCKET_OPCODE_TEXT,
+    //                             MG_WEBSOCKET_OPCODE_TEXT,
     //                             (const char *)str.c_str(),
     //                             str.length());
 
@@ -1364,7 +1364,7 @@ ws1_command(struct mg_connection *conn,
     //                                  WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT);
 
     //         mg_websocket_write(conn,
-    //                             WEBSOCKET_OPCODE_TEXT,
+    //                             MG_WEBSOCKET_OPCODE_TEXT,
     //                             (const char *)str.c_str(),
     //                             str.length());
 
@@ -1388,7 +1388,7 @@ ws1_command(struct mg_connection *conn,
     //                                  WEBSOCK_STR_ERROR_SYNTAX_ERROR);
 
     //         mg_websocket_write(conn,
-    //                             WEBSOCKET_OPCODE_TEXT,
+    //                             MG_WEBSOCKET_OPCODE_TEXT,
     //                             (const char *)str.c_str(),
     //                             str.length());
 
@@ -1411,7 +1411,7 @@ ws1_command(struct mg_connection *conn,
     //                                  WEBSOCK_STR_ERROR_VARIABLE_NO_STOCK);
 
     //         mg_websocket_write(conn,
-    //                             WEBSOCKET_OPCODE_TEXT,
+    //                             MG_WEBSOCKET_OPCODE_TEXT,
     //                             (const char *)str.c_str(),
     //                             str.length());
 
@@ -1457,7 +1457,7 @@ ws1_command(struct mg_connection *conn,
     //                                      WEBSOCK_STR_ERROR_SYNTAX_ERROR);
 
     //             mg_websocket_write(conn,
-    //                                 WEBSOCKET_OPCODE_TEXT,
+    //                                 MG_WEBSOCKET_OPCODE_TEXT,
     //                                 (const char *)str.c_str(),
     //                                 str.length());
     //             return;
@@ -1499,7 +1499,7 @@ ws1_command(struct mg_connection *conn,
     //                                      WEBSOCK_STR_ERROR_SYNTAX_ERROR);
 
     //             mg_websocket_write(conn,
-    //                                 WEBSOCKET_OPCODE_TEXT,
+    //                                 MG_WEBSOCKET_OPCODE_TEXT,
     //                                 (const char *)str.c_str(),
     //                                 str.length());
     //             return;
@@ -1536,7 +1536,7 @@ ws1_command(struct mg_connection *conn,
     //                                      WEBSOCK_STR_ERROR_SYNTAX_ERROR);
 
     //             mg_websocket_write(conn,
-    //                                 WEBSOCKET_OPCODE_TEXT,
+    //                                 MG_WEBSOCKET_OPCODE_TEXT,
     //                                 (const char *)str.c_str(),
     //                                 str.length());
     //             return;
@@ -1547,7 +1547,7 @@ ws1_command(struct mg_connection *conn,
     //     strResult += name;
 
     //     mg_websocket_write(conn,
-    //                         WEBSOCKET_OPCODE_TEXT,
+    //                         MG_WEBSOCKET_OPCODE_TEXT,
     //                         (const char *)strResult.c_str(),
     //                         strResult.length());
 
@@ -1574,7 +1574,7 @@ ws1_command(struct mg_connection *conn,
     //                                  WEBSOCK_STR_ERROR_NOT_AUTHORISED);
 
     //         mg_websocket_write(conn,
-    //                             WEBSOCKET_OPCODE_TEXT,
+    //                             MG_WEBSOCKET_OPCODE_TEXT,
     //                             (const char *)str.c_str(),
     //                             str.length());
 
@@ -1594,7 +1594,7 @@ ws1_command(struct mg_connection *conn,
     //                                  WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT);
 
     //         mg_websocket_write(conn,
-    //                             WEBSOCKET_OPCODE_TEXT,
+    //                             MG_WEBSOCKET_OPCODE_TEXT,
     //                             (const char *)str.c_str(),
     //                             str.length());
 
@@ -1615,7 +1615,7 @@ ws1_command(struct mg_connection *conn,
     //                                  WEBSOCK_STR_ERROR_VARIABLE_UNKNOWN);
 
     //         mg_websocket_write(conn,
-    //                             WEBSOCKET_OPCODE_TEXT,
+    //                             MG_WEBSOCKET_OPCODE_TEXT,
     //                             (const char *)str.c_str(),
     //                             str.length());
     //         return;
@@ -1625,7 +1625,7 @@ ws1_command(struct mg_connection *conn,
     //     std::string strResult = ("+;RVAR;");
     //     strResult += variable.getAsString(false);
     //     mg_websocket_write(conn,
-    //                         WEBSOCKET_OPCODE_TEXT,
+    //                         MG_WEBSOCKET_OPCODE_TEXT,
     //                         (const char *)strResult.c_str(),
     //                         strResult.length());
     // }
@@ -1651,7 +1651,7 @@ ws1_command(struct mg_connection *conn,
     //                                  WEBSOCK_STR_ERROR_NOT_AUTHORISED);
 
     //         mg_websocket_write(conn,
-    //                             WEBSOCKET_OPCODE_TEXT,
+    //                             MG_WEBSOCKET_OPCODE_TEXT,
     //                             (const char *)str.c_str(),
     //                             str.length());
 
@@ -1671,7 +1671,7 @@ ws1_command(struct mg_connection *conn,
     //                                  WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT);
 
     //         mg_websocket_write(conn,
-    //                             WEBSOCKET_OPCODE_TEXT,
+    //                             MG_WEBSOCKET_OPCODE_TEXT,
     //                             (const char *)str.c_str(),
     //                             str.length());
 
@@ -1697,7 +1697,7 @@ ws1_command(struct mg_connection *conn,
     //                                      WEBSOCK_STR_ERROR_VARIABLE_UNKNOWN);
 
     //             mg_websocket_write(conn,
-    //                                 WEBSOCKET_OPCODE_TEXT,
+    //                                 MG_WEBSOCKET_OPCODE_TEXT,
     //                                 (const char *)str.c_str(),
     //                                 str.length());
 
@@ -1719,7 +1719,7 @@ ws1_command(struct mg_connection *conn,
     //                                          WEBSOCK_STR_ERROR_SYNTAX_ERROR);
 
     //                 mg_websocket_write(conn,
-    //                                     WEBSOCKET_OPCODE_TEXT,
+    //                                     MG_WEBSOCKET_OPCODE_TEXT,
     //                                     (const char *)str.c_str(),
     //                                     str.length());
     //                 return;
@@ -1735,7 +1735,7 @@ ws1_command(struct mg_connection *conn,
     //                                          WEBSOCK_STR_ERROR_VARIABLE_UPDATE);
 
     //                 mg_websocket_write(conn,
-    //                                     WEBSOCKET_OPCODE_TEXT,
+    //                                     MG_WEBSOCKET_OPCODE_TEXT,
     //                                     (const char *)str.c_str(),
     //                                     str.length());
     //                 return;
@@ -1746,7 +1746,7 @@ ws1_command(struct mg_connection *conn,
     //                                      WEBSOCK_STR_ERROR_SYNTAX_ERROR);
 
     //             mg_websocket_write(conn,
-    //                                 WEBSOCKET_OPCODE_TEXT,
+    //                                 MG_WEBSOCKET_OPCODE_TEXT,
     //                                 (const char *)str.c_str(),
     //                                 str.length());
     //             return;
@@ -1757,7 +1757,7 @@ ws1_command(struct mg_connection *conn,
     //                                  WEBSOCK_STR_ERROR_SYNTAX_ERROR);
 
     //         mg_websocket_write(conn,
-    //                             WEBSOCKET_OPCODE_TEXT,
+    //                             MG_WEBSOCKET_OPCODE_TEXT,
     //                             (const char *)str.c_str(),
     //                             str.length());
     //         return;
@@ -1768,7 +1768,7 @@ ws1_command(struct mg_connection *conn,
 
     //     // Positive reply
     //     mg_websocket_write(conn,
-    //                         WEBSOCKET_OPCODE_TEXT,
+    //                         MG_WEBSOCKET_OPCODE_TEXT,
     //                         (const char *)strResult.c_str(),
     //                         strResult.length());
 
@@ -1795,7 +1795,7 @@ ws1_command(struct mg_connection *conn,
     //                                  WEBSOCK_STR_ERROR_NOT_AUTHORISED);
 
     //         mg_websocket_write(conn,
-    //                             WEBSOCKET_OPCODE_TEXT,
+    //                             MG_WEBSOCKET_OPCODE_TEXT,
     //                             (const char *)str.c_str(),
     //                             str.length());
 
@@ -1811,7 +1811,7 @@ ws1_command(struct mg_connection *conn,
     //                                  WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT);
 
     //         mg_websocket_write(conn,
-    //                             WEBSOCKET_OPCODE_TEXT,
+    //                             MG_WEBSOCKET_OPCODE_TEXT,
     //                             (const char *)str.c_str(),
     //                             str.length());
 
@@ -1832,7 +1832,7 @@ ws1_command(struct mg_connection *conn,
     //                                  WEBSOCK_STR_ERROR_VARIABLE_UNKNOWN);
 
     //         mg_websocket_write(conn,
-    //                             WEBSOCKET_OPCODE_TEXT,
+    //                             MG_WEBSOCKET_OPCODE_TEXT,
     //                             (const char *)str.c_str(),
     //                             str.length());
 
@@ -1857,7 +1857,7 @@ ws1_command(struct mg_connection *conn,
 
     //     // Positive reply
     //     mg_websocket_write(conn,
-    //                         WEBSOCKET_OPCODE_TEXT,
+    //                         MG_WEBSOCKET_OPCODE_TEXT,
     //                         (const char *)strResult.c_str(),
     //                         strResult.length());
 
@@ -1883,7 +1883,7 @@ ws1_command(struct mg_connection *conn,
     //                                  WEBSOCK_STR_ERROR_NOT_AUTHORISED);
 
     //         mg_websocket_write(conn,
-    //                             WEBSOCKET_OPCODE_TEXT,
+    //                             MG_WEBSOCKET_OPCODE_TEXT,
     //                             (const char *)str.c_str(),
     //                             str.length());
 
@@ -1903,7 +1903,7 @@ ws1_command(struct mg_connection *conn,
     //                                  WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT);
 
     //         mg_websocket_write(conn,
-    //                             WEBSOCKET_OPCODE_TEXT,
+    //                             MG_WEBSOCKET_OPCODE_TEXT,
     //                             (const char *)str.c_str(),
     //                             str.length());
 
@@ -1924,7 +1924,7 @@ ws1_command(struct mg_connection *conn,
     //                                  WEBSOCK_STR_ERROR_VARIABLE_UNKNOWN);
 
     //         mg_websocket_write(conn,
-    //                             WEBSOCKET_OPCODE_TEXT,
+    //                             MG_WEBSOCKET_OPCODE_TEXT,
     //                             (const char *)str.c_str(),
     //                             str.length());
 
@@ -1940,7 +1940,7 @@ ws1_command(struct mg_connection *conn,
 
     //     // Positive reply
     //     mg_websocket_write(conn,
-    //                         WEBSOCKET_OPCODE_TEXT,
+    //                         MG_WEBSOCKET_OPCODE_TEXT,
     //                         (const char *)strResult.c_str(),
     //                         strResult.length());
 
@@ -1965,7 +1965,7 @@ ws1_command(struct mg_connection *conn,
     //                                  WEBSOCK_STR_ERROR_NOT_AUTHORISED);
 
     //         mg_websocket_write(conn,
-    //                             WEBSOCKET_OPCODE_TEXT,
+    //                             MG_WEBSOCKET_OPCODE_TEXT,
     //                             (const char *)str.c_str(),
     //                             str.length());
 
@@ -1985,7 +1985,7 @@ ws1_command(struct mg_connection *conn,
     //                                  WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT);
 
     //         mg_websocket_write(conn,
-    //                             WEBSOCKET_OPCODE_TEXT,
+    //                             MG_WEBSOCKET_OPCODE_TEXT,
     //                             (const char *)str.c_str(),
     //                             str.length());
 
@@ -2006,7 +2006,7 @@ ws1_command(struct mg_connection *conn,
     //                                  WEBSOCK_STR_ERROR_VARIABLE_UNKNOWN);
 
     //         mg_websocket_write(conn,
-    //                             WEBSOCKET_OPCODE_TEXT,
+    //                             MG_WEBSOCKET_OPCODE_TEXT,
     //                             (const char *)str.c_str(),
     //                             str.length());
     //         return;
@@ -2019,7 +2019,7 @@ ws1_command(struct mg_connection *conn,
 
     //     // Positive reply
     //     mg_websocket_write(conn,
-    //                         WEBSOCKET_OPCODE_TEXT,
+    //                         MG_WEBSOCKET_OPCODE_TEXT,
     //                         (const char *)strResult.c_str(),
     //                         strResult.length());
 
@@ -2045,7 +2045,7 @@ ws1_command(struct mg_connection *conn,
     //                                  WEBSOCK_STR_ERROR_NOT_AUTHORISED);
 
     //         mg_websocket_write(conn,
-    //                             WEBSOCKET_OPCODE_TEXT,
+    //                             MG_WEBSOCKET_OPCODE_TEXT,
     //                             (const char *)str.c_str(),
     //                             str.length());
 
@@ -2065,7 +2065,7 @@ ws1_command(struct mg_connection *conn,
     //                                  WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT);
 
     //         mg_websocket_write(conn,
-    //                             WEBSOCKET_OPCODE_TEXT,
+    //                             MG_WEBSOCKET_OPCODE_TEXT,
     //                             (const char *)str.c_str(),
     //                             str.length());
 
@@ -2086,7 +2086,7 @@ ws1_command(struct mg_connection *conn,
     //                                  WEBSOCK_STR_ERROR_VARIABLE_UNKNOWN);
 
     //         mg_websocket_write(conn,
-    //                             WEBSOCKET_OPCODE_TEXT,
+    //                             MG_WEBSOCKET_OPCODE_TEXT,
     //                             (const char *)str.c_str(),
     //                             str.length());
 
@@ -2102,7 +2102,7 @@ ws1_command(struct mg_connection *conn,
 
     //     // Positive reply
     //     mg_websocket_write(conn,
-    //                         WEBSOCKET_OPCODE_TEXT,
+    //                         MG_WEBSOCKET_OPCODE_TEXT,
     //                         (const char *)strResult.c_str(),
     //                         strResult.length());
 
@@ -2129,7 +2129,7 @@ ws1_command(struct mg_connection *conn,
     //                                  WEBSOCK_STR_ERROR_NOT_AUTHORISED);
 
     //         mg_websocket_write(conn,
-    //                             WEBSOCKET_OPCODE_TEXT,
+    //                             MG_WEBSOCKET_OPCODE_TEXT,
     //                             (const char *)str.c_str(),
     //                             str.length());
 
@@ -2149,7 +2149,7 @@ ws1_command(struct mg_connection *conn,
     //                                  WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT);
 
     //         mg_websocket_write(conn,
-    //                             WEBSOCKET_OPCODE_TEXT,
+    //                             MG_WEBSOCKET_OPCODE_TEXT,
     //                             (const char *)str.c_str(),
     //                             str.length());
 
@@ -2193,7 +2193,7 @@ ws1_command(struct mg_connection *conn,
     //                 str += variable.getAsString();
 
     //                 mg_websocket_write(conn,
-    //                                     WEBSOCKET_OPCODE_TEXT,
+    //                                     MG_WEBSOCKET_OPCODE_TEXT,
     //                                     (const char *)str.c_str(),
     //                                     str.length());
     //             }
@@ -2206,7 +2206,7 @@ ws1_command(struct mg_connection *conn,
     //                                  WEBSOCK_STR_ERROR_VARIABLE_UNKNOWN);
 
     //         mg_websocket_write(conn,
-    //                             WEBSOCKET_OPCODE_TEXT,
+    //                             MG_WEBSOCKET_OPCODE_TEXT,
     //                             (const char *)str.c_str(),
     //                             str.length());
     //     }
@@ -2272,7 +2272,7 @@ ws1_command(struct mg_connection *conn,
                                      VSCPD_BUILD_VERSION);
         // Positive reply
         mg_websocket_write(conn,
-                           WEBSOCKET_OPCODE_TEXT,
+                           MG_WEBSOCKET_OPCODE_TEXT,
                            (const char *)strResult.c_str(),
                            strResult.length());
 
@@ -2291,7 +2291,7 @@ ws1_command(struct mg_connection *conn,
 
         // Positive reply
         mg_websocket_write(conn,
-                           WEBSOCKET_OPCODE_TEXT,
+                           MG_WEBSOCKET_OPCODE_TEXT,
                            (const char *)strResult.c_str(),
                            strResult.length());
     }
@@ -2400,7 +2400,7 @@ ws2_readyHandler(struct mg_connection *conn, void *cbdata)
     */
     std::string str = vscp_str_format(WS2_AUTH0_TEMPLATE, pSession->m_sid);
     mg_websocket_write(
-      conn, WEBSOCKET_OPCODE_TEXT, (const char *)str.c_str(), str.length());
+      conn, MG_WEBSOCKET_OPCODE_TEXT, (const char *)str.c_str(), str.length());
 
     pSession->m_conn_state = WEBSOCK_CONN_STATE_DATA;
 }
@@ -2428,7 +2428,7 @@ ws2_dataHandler(
 
     switch (((unsigned char)bits) & 0x0F) {
 
-        case WEBSOCKET_OPCODE_CONTINUATION:
+        case MG_WEBSOCKET_OPCODE_CONTINUATION:
 
             // Save and concatenate mesage
             pSession->m_strConcatenated += std::string(data, len);
@@ -2442,7 +2442,7 @@ ws2_dataHandler(
             break;
 
         // https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API/Writing_WebSocket_servers
-        case WEBSOCKET_OPCODE_TEXT:
+        case MG_WEBSOCKET_OPCODE_TEXT:
             if (1 & bits) {
                 strWsPkt = std::string(data, len);
                 if (!ws1_message(conn, pSession, strWsPkt)) {
@@ -2454,17 +2454,17 @@ ws2_dataHandler(
             }
             break;
 
-        case WEBSOCKET_OPCODE_BINARY:
+        case MG_WEBSOCKET_OPCODE_BINARY:
             break;
 
-        case WEBSOCKET_OPCODE_CONNECTION_CLOSE:
+        case MG_WEBSOCKET_OPCODE_CONNECTION_CLOSE:
             break;
 
-        case WEBSOCKET_OPCODE_PING:
+        case MG_WEBSOCKET_OPCODE_PING:
             // fprintf( stdout, "Ping received" );
             break;
 
-        case WEBSOCKET_OPCODE_PONG:
+        case MG_WEBSOCKET_OPCODE_PONG:
             // fprintf( stdout, "Pong received" );
             break;
 
@@ -2547,7 +2547,7 @@ ws2_message(struct mg_connection *conn,
                                   (int)WEBSOCK_ERROR_NOT_AUTHORISED,
                                   WEBSOCK_STR_ERROR_NOT_AUTHORISED);
                                 mg_websocket_write(conn,
-                                                   WEBSOCKET_OPCODE_TEXT,
+                                                   MG_WEBSOCKET_OPCODE_TEXT,
                                                    (const char *)str.c_str(),
                                                    str.length());
                                 return false;
@@ -2582,7 +2582,7 @@ ws2_message(struct mg_connection *conn,
                                 ev.obid = pSession->m_pClientItem->m_clientID;
                                 if (websock_sendevent(conn, pSession, &ev)) {
                                     mg_websocket_write(conn,
-                                                       WEBSOCKET_OPCODE_TEXT,
+                                                       MG_WEBSOCKET_OPCODE_TEXT,
                                                        "+;EVENT",
                                                        7);
                                 } else {
@@ -2592,7 +2592,7 @@ ws2_message(struct mg_connection *conn,
                                       WEBSOCK_STR_ERROR_TX_BUFFER_FULL);
                                     mg_websocket_write(
                                       conn,
-                                      WEBSOCKET_OPCODE_TEXT,
+                                      MG_WEBSOCKET_OPCODE_TEXT,
                                       (const char *)str.c_str(),
                                       str.length());
                                     return false;
@@ -2715,7 +2715,7 @@ ws2_command(struct mg_connection *conn,
 
         std::string str = vscp_str_format(WS2_POSITIVE_RESPONSE, "NOOP","null");
         mg_websocket_write(
-          conn, WEBSOCKET_OPCODE_TEXT, str.c_str(), str.length());
+          conn, MG_WEBSOCKET_OPCODE_TEXT, str.c_str(), str.length());
 
     }
 
@@ -2735,7 +2735,7 @@ ws2_command(struct mg_connection *conn,
             std::string str =
               vscp_str_format(WS2_POSITIVE_RESPONSE, "AUTH0", strSessionId);
             mg_websocket_write(conn,
-                               WEBSOCKET_OPCODE_TEXT,
+                               MG_WEBSOCKET_OPCODE_TEXT,
                                (const char *)str.c_str(),
                                str.length());
         }
@@ -2767,7 +2767,7 @@ ws2_command(struct mg_connection *conn,
             str = vscp_str_format(
               WS2_POSITIVE_RESPONSE, "AUTH1", (const char *)strargs.c_str());
             mg_websocket_write(conn,
-                               WEBSOCKET_OPCODE_TEXT,
+                               MG_WEBSOCKET_OPCODE_TEXT,
                                (const char *)str.c_str(),
                                str.length());
         } else {
@@ -2777,7 +2777,7 @@ ws2_command(struct mg_connection *conn,
                                   (int)WEBSOCK_ERROR_NOT_AUTHORISED,
                                   WEBSOCK_STR_ERROR_NOT_AUTHORISED);
             mg_websocket_write(conn,
-                               WEBSOCKET_OPCODE_TEXT,
+                               MG_WEBSOCKET_OPCODE_TEXT,
                                (const char *)str.c_str(),
                                str.length());
             pSession->m_pClientItem->bAuthenticated = false; // Authenticated
@@ -2799,7 +2799,7 @@ ws2_command(struct mg_connection *conn,
                                               (int)WEBSOCK_ERROR_NOT_AUTHORISED,
                                               WEBSOCK_STR_ERROR_NOT_AUTHORISED);
             mg_websocket_write(conn,
-                               WEBSOCKET_OPCODE_TEXT,
+                               MG_WEBSOCKET_OPCODE_TEXT,
                                (const char *)str.c_str(),
                                str.length());
 
@@ -2810,7 +2810,7 @@ ws2_command(struct mg_connection *conn,
         std::string str =
           vscp_str_format(WS2_POSITIVE_RESPONSE, "OPEN","null");
         mg_websocket_write(
-          conn, WEBSOCKET_OPCODE_TEXT, (const char *)str.c_str(), str.length());
+          conn, MG_WEBSOCKET_OPCODE_TEXT, (const char *)str.c_str(), str.length());
     }
 
     // ------------------------------------------------------------------------
@@ -2822,7 +2822,7 @@ ws2_command(struct mg_connection *conn,
         std::string str =
           vscp_str_format(WS2_POSITIVE_RESPONSE, "CLOSE","null" );
         mg_websocket_write(
-          conn, WEBSOCKET_OPCODE_TEXT, (const char *)str.c_str(), str.length());
+          conn, MG_WEBSOCKET_OPCODE_TEXT, (const char *)str.c_str(), str.length());
     }
 
     // ------------------------------------------------------------------------
@@ -2843,7 +2843,7 @@ ws2_command(struct mg_connection *conn,
                                               (int)WEBSOCK_ERROR_NOT_AUTHORISED,
                                               WEBSOCK_STR_ERROR_NOT_AUTHORISED);
             mg_websocket_write(conn,
-                               WEBSOCKET_OPCODE_TEXT,
+                               MG_WEBSOCKET_OPCODE_TEXT,
                                (const char *)str.c_str(),
                                str.length());
 
@@ -2862,7 +2862,7 @@ ws2_command(struct mg_connection *conn,
                                               (int)WEBSOCK_ERROR_NOT_ALLOWED_TO_DO_THAT,
                                               WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT);
             mg_websocket_write(conn,
-                               WEBSOCKET_OPCODE_TEXT,
+                               MG_WEBSOCKET_OPCODE_TEXT,
                                (const char *)str.c_str(),
                                str.length());
 
@@ -2888,7 +2888,7 @@ ws2_command(struct mg_connection *conn,
                                               (int)WEBSOCK_ERROR_SYNTAX_ERROR,
                                               WEBSOCK_STR_ERROR_SYNTAX_ERROR);
             mg_websocket_write(conn,
-                               WEBSOCKET_OPCODE_TEXT,
+                               MG_WEBSOCKET_OPCODE_TEXT,
                                (const char *)str.c_str(),
                                str.length());
 
@@ -2906,7 +2906,7 @@ ws2_command(struct mg_connection *conn,
                                               (int)WEBSOCK_ERROR_SYNTAX_ERROR,
                                               WEBSOCK_STR_ERROR_SYNTAX_ERROR);
             mg_websocket_write(conn,
-                               WEBSOCKET_OPCODE_TEXT,
+                               MG_WEBSOCKET_OPCODE_TEXT,
                                (const char *)str.c_str(),
                                str.length());
 
@@ -2928,7 +2928,7 @@ ws2_command(struct mg_connection *conn,
                                               (int)WEBSOCK_ERROR_SYNTAX_ERROR,
                                               WEBSOCK_STR_ERROR_SYNTAX_ERROR);
             mg_websocket_write(conn,
-                               WEBSOCKET_OPCODE_TEXT,
+                               MG_WEBSOCKET_OPCODE_TEXT,
                                (const char *)str.c_str(),
                                str.length());
 
@@ -2946,7 +2946,7 @@ ws2_command(struct mg_connection *conn,
                                               (int)WEBSOCK_ERROR_SYNTAX_ERROR,
                                               WEBSOCK_STR_ERROR_SYNTAX_ERROR);
             mg_websocket_write(conn,
-                               WEBSOCKET_OPCODE_TEXT,
+                               MG_WEBSOCKET_OPCODE_TEXT,
                                (const char *)str.c_str(),
                                str.length());
             return false;
@@ -2956,7 +2956,7 @@ ws2_command(struct mg_connection *conn,
         std::string str = vscp_str_format(WS2_POSITIVE_RESPONSE,
                                                 "SF","null" );
         mg_websocket_write(conn,
-                               WEBSOCKET_OPCODE_TEXT,
+                               MG_WEBSOCKET_OPCODE_TEXT,
                                (const char *)str.c_str(),
                                str.length());
     }
@@ -2977,7 +2977,7 @@ ws2_command(struct mg_connection *conn,
                                               (int)WEBSOCK_ERROR_NOT_AUTHORISED,
                                               WEBSOCK_STR_ERROR_NOT_AUTHORISED);
             mg_websocket_write(conn,
-                               WEBSOCKET_OPCODE_TEXT,
+                               MG_WEBSOCKET_OPCODE_TEXT,
                                (const char *)str.c_str(),
                                str.length());
 
@@ -2996,7 +2996,7 @@ ws2_command(struct mg_connection *conn,
                                               (int)WEBSOCK_ERROR_NOT_ALLOWED_TO_DO_THAT,
                                               WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT);
             mg_websocket_write(conn,
-                               WEBSOCKET_OPCODE_TEXT,
+                               MG_WEBSOCKET_OPCODE_TEXT,
                                (const char *)str.c_str(),
                                str.length());
 
@@ -3025,7 +3025,7 @@ ws2_command(struct mg_connection *conn,
         std::string str = vscp_str_format(WS2_POSITIVE_RESPONSE,
                                                 "CLRQ", "null" );
         mg_websocket_write(conn,
-                               WEBSOCKET_OPCODE_TEXT,
+                               MG_WEBSOCKET_OPCODE_TEXT,
                                (const char *)str.c_str(),
                                str.length());
     }
@@ -3049,7 +3049,7 @@ ws2_command(struct mg_connection *conn,
                                                 "VERSION",
                                                 strResult.c_str() );
         mg_websocket_write(conn,
-                           WEBSOCKET_OPCODE_TEXT,
+                           MG_WEBSOCKET_OPCODE_TEXT,
                            (const char *)strResult.c_str(),
                            strResult.length());
     }
@@ -3071,7 +3071,7 @@ ws2_command(struct mg_connection *conn,
                                                 "COPYRIGHT",
                                                 strResult.c_str() );
         mg_websocket_write(conn,
-                           WEBSOCKET_OPCODE_TEXT,
+                           MG_WEBSOCKET_OPCODE_TEXT,
                            (const char *)strResult.c_str(),
                            strResult.length());
 
@@ -3118,7 +3118,7 @@ ws2_xcommand(struct mg_connection *conn,
                                           (int)WEBSOCK_ERROR_SYNTAX_ERROR,
                                           WEBSOCK_STR_ERROR_SYNTAX_ERROR);
         mg_websocket_write(
-          conn, WEBSOCKET_OPCODE_TEXT, (const char *)str.c_str(), str.length());
+          conn, MG_WEBSOCKET_OPCODE_TEXT, (const char *)str.c_str(), str.length());
         return;
     }
 
@@ -3128,7 +3128,7 @@ ws2_xcommand(struct mg_connection *conn,
 
     if (vscp_startsWith(strTok, "NOOP")) {
 
-        mg_websocket_write(conn, WEBSOCKET_OPCODE_TEXT, "+;NOOP", 6);
+        mg_websocket_write(conn, MG_WEBSOCKET_OPCODE_TEXT, "+;NOOP", 6);
 
         // Send authentication challenge
         if ((NULL == pSession->m_pClientItem) ||
