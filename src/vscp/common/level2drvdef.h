@@ -32,33 +32,6 @@
 #include "vscp.h"
 
 
-/*!
-    <webpages user="admin|standard">
-        <!-- One or several web pages -->
-        <page>BASE64 encoded web page</page>
-        <page>BASE64 encoded web page</page>
-        ....
-        <page>BASE64 encoded web page</page>
-    </webpages>
-*/
-
-/*!
-    <cmd-list>
-        <!-- One or several commands -->
-        <cmd name="command-name"
-                 user="admin|standard"
-                 tcpip="true|false
-                 websocket="true|false">
-            <arg idx="1" "name="name" type="x" />
-            <arg idx="2" "name="name" type="x" />
-            .....
-            <arg idx="n" "name="name" type="x" />
-        </cmd>
-    </commands>
-
-    <cmd-response response="" error-code="0" error="Error description" />
-*/
-
 #ifdef WIN32
 
 typedef long ( __stdcall * LPFNDLL_VSCPOPEN ) ( const char *pPathConfig );
