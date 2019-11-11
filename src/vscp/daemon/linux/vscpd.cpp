@@ -27,6 +27,7 @@
 //
 
 #include <string>
+#include <deque>
 
 #include <errno.h>
 #include <fcntl.h>
@@ -52,11 +53,14 @@
 #include <unistd.h>
 
 #include "vscpd.h"
+#include "canal_macro.h"
 #include <controlobject.h>
+#include <vscphelper.h>
 #include <crc.h>
 #include <version.h>
 
 //#define DEBUG
+uint32_t m_gdebugArray[8];
 
 // Globals for the daemon
 int gbStopDaemon;
@@ -94,8 +98,23 @@ _sighandlerRestart(int sig)
     fprintf(stderr, "vscpd: signal received, restart. %m\n");
     syslog(LOG_ERR, "vscpd: signal received, restart.: %m");
     gpobj->m_bQuit = true;
-    // gbStopDaemon   = false;
+    gbStopDaemon   = false;
     gbRestart      = true;
+}
+
+void
+getDebugValues(const char *optarg)
+{
+    std::string attribute = optarg;
+    std::deque<std::string> tokens;
+    vscp_split(tokens, attribute, ",");
+    for (int idx = 0; idx < MIN(8,tokens.size()); idx++) {
+        if (tokens.size()) {
+            uint32_t val = vscp_readStringValue(tokens.front());
+            m_gdebugArray[idx] = val;
+            tokens.pop_front();
+        }
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -108,6 +127,11 @@ main(int argc, char **argv)
     int opt = 0;
     std::string rootFolder; // Folder where VSCP files & folders will be located
     std::string strcfgfile; // Points to XML configuration file
+
+    // Clear debug settings
+    for ( int i; i<8; i++ ) {
+        m_gdebugArray[i] = 0;
+    }
 
     openlog("vscpd", LOG_PERROR | LOG_PID | LOG_CONS, LOG_DAEMON);
 
@@ -147,6 +171,8 @@ main(int argc, char **argv)
 
             case 'd':
                 gnDebugLevel = atoi(optarg);
+                printf("Debug=%s\n", optarg);
+                getDebugValues(optarg);
                 break;
 
             case 'g':
@@ -297,6 +323,14 @@ init(std::string &strcfgfile, std::string &rootFolder)
             return FALSE;
         }
 
+        // Tansfer read debug parameters if set
+        for ( int i=0; i<8; i++ ) {
+            if ( m_gdebugArray[i] ) {
+                gpobj->m_debugFlags[i] = m_gdebugArray[i];
+            }
+        }
+
+
         // *******************************
         //    Main loop is entered here
         // *******************************
@@ -312,9 +346,9 @@ init(std::string &strcfgfile, std::string &rootFolder)
 
         fprintf(stderr, "vscpd: cleanup.\n");
 
-        if ( !gpobj->cleanup() ) {
+        if (!gpobj->cleanup()) {
             fprintf(stderr, "Unable to clean up the vscpd application.\n");
-            syslog( LOG_ERR, "Unable to clean up the vscpd application.");
+            syslog(LOG_ERR, "Unable to clean up the vscpd application.");
             return FALSE;
         }
 
@@ -356,29 +390,40 @@ copyleft(void)
     fprintf(stderr, VSCPD_COPYRIGHT);
     fprintf(stderr, "\n");
     fprintf(stderr, "\n");
-    fprintf(stderr,
-            "The MIT License (MIT)"\
-            "\n"\
-            "Copyright (C) 2000-2019 Ake Hedman, Grodans Paradis AB\n"\
-            "<info@grodansparadis.com>\n"\
-            "\n"\
-            "Permission is hereby granted, free of charge, to any person obtaining a copy\n"\
-            "of this software and associated documentation files (the 'Software'), to deal\n"\
-            "in the Software without restriction, including without limitation the rights\n"\
-            "to use, copy, modify, merge, publish, distribute, sublicense, and/or sell\n"\
-            "copies of the Software, and to permit persons to whom the Software is\n"\
-            "furnished to do so, subject to the following conditions:\n"\
-            "\n"\
-            "The above copyright notice and this permission notice shall be included in\n"\
-            "all copies or substantial portions of the Software.\n"\
-            "\n"\
-            "THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\n"\
-            "IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\n"\
-            "FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\n"\
-            "AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\n"\
-            "LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\n"\
-            "OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\n"\
-            "SOFTWARE.\n");
+    fprintf(
+      stderr,
+      "The MIT License (MIT)"
+      "\n"
+      "Copyright (C) 2000-2019 Ake Hedman, Grodans Paradis AB\n"
+      "<info@grodansparadis.com>\n"
+      "\n"
+      "Permission is hereby granted, free of charge, to any person obtaining a "
+      "copy\n"
+      "of this software and associated documentation files (the 'Software'), "
+      "to deal\n"
+      "in the Software without restriction, including without limitation the "
+      "rights\n"
+      "to use, copy, modify, merge, publish, distribute, sublicense, and/or "
+      "sell\n"
+      "copies of the Software, and to permit persons to whom the Software is\n"
+      "furnished to do so, subject to the following conditions:\n"
+      "\n"
+      "The above copyright notice and this permission notice shall be included "
+      "in\n"
+      "all copies or substantial portions of the Software.\n"
+      "\n"
+      "THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS "
+      "OR\n"
+      "IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF "
+      "MERCHANTABILITY,\n"
+      "FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL "
+      "THE\n"
+      "AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\n"
+      "LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING "
+      "FROM,\n"
+      "OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS "
+      "IN THE\n"
+      "SOFTWARE.\n");
     fprintf(stderr, "\n");
 }
 
@@ -395,7 +440,7 @@ help(char *szPrgname)
     fprintf(stderr, "\t-r\tSpecify VSCP root folder. \n");
     fprintf(stderr, "\t-c\tSpecify a configuration file. \n");
     fprintf(stderr, "\t-k\t32 byte encryption key string in hex format. \n");
-    fprintf(stderr, "\t-d\tDebug level (64-bit hex value). 0=Default. ");
+    fprintf(stderr, "\t-d\tDebug flags as comma separated list (f0,f1,f2,f3,,,).");
     fprintf(stderr, "that should be used (default: /etc/vscpd.conf).\n");
     fprintf(stderr, "\t-g\tPrint MIT license info.\n");
 }

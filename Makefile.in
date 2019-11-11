@@ -103,11 +103,11 @@ install-config:
 	@echo "- Installing main configuration file."
 	$(INSTALL_PROGRAM) -d $(DESTDIR)/etc/
 	$(INSTALL_PROGRAM) -d $(DESTDIR)/etc/vscp
-#	$(INSTALL_PROGRAM) -b -m744 install_files/unix/vscpd.conf $(DESTDIR)/etc/vscp/vscpd.conf
-	@if [ ! -e $(DESTDIR)/etc/vscp/vscpd.conf ]; then\
-	    $(INSTALL_PROGRAM) -b -m744 install_files/unix/vscpd.conf $(DESTDIR)/etc/vscp/vscpd.conf;\
+#	$(INSTALL_PROGRAM) -b -m744 install_files/unix/vscpd.xml $(DESTDIR)/etc/vscp/vscpd.xml
+	@if [ ! -e $(DESTDIR)/etc/vscp/vscpd.xml ]; then\
+	    $(INSTALL_PROGRAM) -b -m744 install_files/unix/vscpd.xml $(DESTDIR)/etc/vscp/vscpd.xml;\
 	else\
-	    $(INSTALL_PROGRAM) -b -m744 install_files/unix/vscpd.conf $(DESTDIR)/etc/vscp/vscpd.conf.`date +'%Y%m%d'`;\
+	    $(INSTALL_PROGRAM) -b -m744 install_files/unix/vscpd.xml $(DESTDIR)/etc/vscp/vscpd.xml.`date +'%Y%m%d'`;\
 	fi
 
 install-sample-data:
@@ -163,10 +163,8 @@ install-manpages:
 	$(INSTALL_PROGRAM) -d $(DESTDIR)/usr/share/man/man7
 	$(INSTALL_PROGRAM) -d $(DESTDIR)/usr/share/man/man1
 	$(INSTALL_PROGRAM) -b -m644 man/vscpd.8 $(DESTDIR)/usr/share/man/man8/
-	$(INSTALL_PROGRAM) -b -m644 man/uvscpd.8 $(DESTDIR)/usr/share/man/man8/
 	$(INSTALL_PROGRAM) -b -m644 man/vscpcmd.1 $(DESTDIR)/usr/share/man/man1/
 	$(INSTALL_PROGRAM) -b -m644 man/vscp-mkpasswd.1 $(DESTDIR)/usr/share/man/man1/
-	$(INSTALL_PROGRAM) -b -m644 man/vscphelperlib.1 $(DESTDIR)/usr/share/man/man1/
 	$(INSTALL_PROGRAM) -b -m644 man/vscpdrivers.7 $(DESTDIR)/usr/share/man/man7/
 	mandb
 
