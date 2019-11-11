@@ -40,6 +40,8 @@
 #include <sys/socket.h>
 #include <syslog.h>
 #include <time.h>
+#include <sys/types.h>
+#include <signal.h>
 #include <unistd.h>
 
 #ifndef DWORD
@@ -166,11 +168,11 @@ tcpipListenThread(void *pData)
     // --------------------------------------------------------------------------------------
 
     // Init. SSL subsystem
-    /*if ( 0 == stcp_init_ssl( m_srvctx.ssl_ctx, &opts ) ) {
-         syslog(, LOG_ERR, "[TCP/IP srv thread] Failed to init. ssl.\n",
-                        DAEMON_LOGMSG_NORMAL );
-        return NULL;
-    }*/
+    // if ( 0 == stcp_init_ssl( m_srvctx.ssl_ctx, &opts ) ) {
+    //      syslog(LOG_ERR, "[TCP/IP srv thread] Failed to init. ssl.\n",
+    //                     DAEMON_LOGMSG_NORMAL );
+    //     return NULL;
+    // }
 
     // Bind to selected interface
     if (0 == stcp_listening(&pListenObj->m_srvctx,
@@ -278,11 +280,9 @@ tcpipListenThread(void *pData)
 
     } // While
 
-    stcp_close_all_listening_sockets(&pListenObj->m_srvctx);
-
     syslog(LOG_DEBUG, "[TCP/IP srv listen thread] Preparing Exit.");
 
-    // Wait for clients to close terminate
+    // Wait for clients to terminate
     int loopCnt = 0;
     while (true) {
 
@@ -291,43 +291,45 @@ tcpipListenThread(void *pData)
         pthread_mutex_unlock(&pListenObj->m_mutexTcpClientList);
 
         loopCnt++;
-        if (loopCnt > 5) {
-            syslog(LOG_ERR,
-                   "[TCP/IP srv listen thread] "
-                   "Clients did not end as expected. "
-                   "Terminate anyway.");
-            break;
-        }
+        // if (loopCnt > 5) {
+        //     syslog(LOG_ERR,
+        //            "[TCP/IP srv listen thread] "
+        //            "Clients did not end as expected. "
+        //            "Terminate anyway.");
+        //     break;
+        // }
 
         sleep(1); // Give them some time
     }
 
+    stcp_close_all_listening_sockets(&pListenObj->m_srvctx);
+
     // * * * Deallocate allocated security options * * *
 
-    if (NULL != opts.pem) {
-        delete opts.pem;
-        opts.pem = NULL;
-    }
+    // if (NULL != opts.pem) {
+    //     delete opts.pem;
+    //     opts.pem = NULL;
+    // }
 
-    if (NULL != opts.chain) {
-        delete opts.chain;
-        opts.chain = NULL;
-    }
+    // if (NULL != opts.chain) {
+    //     delete opts.chain;
+    //     opts.chain = NULL;
+    // }
 
-    if (NULL != opts.ca_path) {
-        delete opts.ca_path;
-        opts.ca_path = NULL;
-    }
+    // if (NULL != opts.ca_path) {
+    //     delete opts.ca_path;
+    //     opts.ca_path = NULL;
+    // }
 
-    if (NULL != opts.ca_file) {
-        delete opts.ca_file;
-        opts.ca_file = NULL;
-    }
+    // if (NULL != opts.ca_file) {
+    //     delete opts.ca_file;
+    //     opts.ca_file = NULL;
+    // }
 
-    if (NULL != opts.chipher_list) {
-        delete opts.chipher_list;
-        opts.chipher_list = NULL;
-    }
+    // if (NULL != opts.chipher_list) {
+    //     delete opts.chipher_list;
+    //     opts.chipher_list = NULL;
+    // }
 
     // stcp_uninit_ssl();
 
@@ -2073,6 +2075,10 @@ void
 tcpipClientObj::handleClientRestart(void)
 {
     write(MSG_OK, strlen(MSG_OK));
+
+    sleep(1);
+    kill(getpid(), SIGUSR2);
+
     return;
 }
 
@@ -2087,15 +2093,15 @@ tcpipClientObj::handleClientShutdown(void)
     if (STCP_CONN_STATE_CONNECTED != m_conn->conn_state) return;
 
     syslog(LOG_INFO, "tcp/ip client requested shutdown!!!");
-    m_pObj->m_bQuit = true;
 
     if (!m_pClientItem->bAuthenticated) {
         write(MSG_OK, strlen(MSG_OK));
     }
 
     write(MSG_GOODBY, strlen(MSG_GOODBY));
-    stcp_close_connection(m_conn);
-    m_conn == NULL;
+    sleep(1);
+
+    kill(getpid(), SIGUSR1);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

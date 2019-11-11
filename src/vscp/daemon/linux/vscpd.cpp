@@ -79,13 +79,23 @@ bool
 createFolderStuct(std::string &rootFolder);
 
 void
-_sighandler(int sig)
+_sighandlerStop(int sig)
 {
     fprintf(stderr, "vscpd: signal received, forced to stop.\n");
     syslog(LOG_ERR, "vscpd: signal received, forced to stop.: %m");
     gpobj->m_bQuit = true;
     gbStopDaemon   = true;
     gbRestart      = false;
+}
+
+void
+_sighandlerRestart(int sig)
+{
+    fprintf(stderr, "vscpd: signal received, restart. %m\n");
+    syslog(LOG_ERR, "vscpd: signal received, restart.: %m");
+    gpobj->m_bQuit = true;
+    // gbStopDaemon   = false;
+    gbRestart      = true;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -207,7 +217,9 @@ init(std::string &strcfgfile, std::string &rootFolder)
         dup2(0, 2);
     }
 
-    signal(SIGHUP, _sighandler);
+    signal(SIGHUP, _sighandlerStop);
+    signal(SIGUSR1, _sighandlerStop);
+    signal(SIGUSR2, _sighandlerRestart);
 
     // Write pid to file
     FILE *pFile;
@@ -242,27 +254,27 @@ init(std::string &strcfgfile, std::string &rootFolder)
     sigaction(SIGPIPE, &my_action, NULL);
 
     // Redirect SIGQUIT
-    my_action.sa_handler = _sighandler;
+    my_action.sa_handler = _sighandlerStop;
     my_action.sa_flags   = SA_RESTART;
     sigaction(SIGQUIT, &my_action, NULL);
 
     // Redirect SIGABRT
-    my_action.sa_handler = _sighandler;
+    my_action.sa_handler = _sighandlerStop;
     my_action.sa_flags   = SA_RESTART;
     sigaction(SIGABRT, &my_action, NULL);
 
     // Redirect SIGINT
-    my_action.sa_handler = _sighandler;
+    my_action.sa_handler = _sighandlerStop;
     my_action.sa_flags   = SA_RESTART;
     sigaction(SIGINT, &my_action, NULL);
 
     // Redirect SIGTERM
-    my_action.sa_handler = _sighandler;
+    my_action.sa_handler = _sighandlerStop;
     my_action.sa_flags   = SA_RESTART;
     sigaction(SIGTERM, &my_action, NULL);
 
     // Redirect SIGHUP
-    my_action.sa_handler = _sighandler;
+    my_action.sa_handler = _sighandlerStop;
     my_action.sa_flags   = SA_RESTART;
     sigaction(SIGHUP, &my_action, NULL);
 
@@ -299,7 +311,7 @@ init(std::string &strcfgfile, std::string &rootFolder)
         }
 
         fprintf(stderr, "vscpd: cleanup.\n");
-        gbRestart = 0;
+
         if ( !gpobj->cleanup() ) {
             fprintf(stderr, "Unable to clean up the vscpd application.\n");
             syslog( LOG_ERR, "Unable to clean up the vscpd application.");

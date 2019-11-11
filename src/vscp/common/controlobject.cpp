@@ -127,7 +127,7 @@ CControlObject::CControlObject()
     // Debug flags - loaded from config file
     m_debugFlags[0] = 0;
 
-    if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL) {
+    if (m_debugFlags[0] & VSCP_DEBUG1_GENERAL) {
         syslog(LOG_DEBUG, "Starting the vscpd daemon");
     }
 
@@ -247,7 +247,7 @@ CControlObject::CControlObject()
 
 CControlObject::~CControlObject()
 {
-    if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL) {
+    if (m_debugFlags[0] & VSCP_DEBUG1_GENERAL) {
         syslog(LOG_DEBUG, "Cleaning up");
     }
 
@@ -268,7 +268,7 @@ CControlObject::~CControlObject()
     // Clean up clivetweb
     mg_exit_library();
 
-    if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL) {
+    if (m_debugFlags[0] & VSCP_DEBUG1_GENERAL) {
         syslog(LOG_DEBUG, "Terminating the vscpd daemon");
     }
 
@@ -337,17 +337,17 @@ CControlObject::init(std::string &strcfgfile, std::string &rootFolder)
     }
 #endif
 
-    if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL) {
+    if (m_debugFlags[0] & VSCP_DEBUG1_GENERAL) {
         syslog(LOG_DEBUG, "Using configuration file: %s", strcfgfile.c_str());
     }
 
     // Read XML configuration
-    if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL) {
+    if (m_debugFlags[0] & VSCP_DEBUG1_GENERAL) {
         syslog(LOG_DEBUG, "Reading configuration file");
     }
 
     // Read users from database
-    if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL) {
+    if (m_debugFlags[0] & VSCP_DEBUG1_GENERAL) {
         syslog(LOG_DEBUG, "loading users from disk...");
     }
 
@@ -488,7 +488,7 @@ CControlObject::run(void)
     }
     pthread_mutex_unlock(&m_clientList.m_mutexItemList);
 
-    if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL) {
+    if (m_debugFlags[0] & VSCP_DEBUG1_GENERAL) {
         syslog(LOG_DEBUG, "Mainloop starting");
     }
 
@@ -537,9 +537,9 @@ CControlObject::run(void)
     removeClient(pClientItem);
     pthread_mutex_unlock(&m_clientList.m_mutexItemList);
 
-    cleanup();
+    // Clean up is called in main file
 
-    if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL) {
+    if (m_debugFlags[0] & VSCP_DEBUG1_GENERAL) {
         syslog(LOG_DEBUG, "Mainloop ending");
     }
 
@@ -552,49 +552,49 @@ CControlObject::run(void)
 bool
 CControlObject::cleanup(void)
 {
-    if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL) {
+    if (m_debugFlags[0] & VSCP_DEBUG1_GENERAL) {
         syslog(LOG_DEBUG,
                "ControlObject: cleanup - Giving worker threads time to stop "
                "operations...");
     }
 
-    if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL) {
+    if (m_debugFlags[0] & VSCP_DEBUG1_GENERAL) {
         syslog(LOG_DEBUG,
                "ControlObject: cleanup - Stopping device worker thread...");
     }
 
     stopDeviceWorkerThreads();
 
-    if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL) {
+    if (m_debugFlags[0] & VSCP_DEBUG1_GENERAL) {
         syslog(
           LOG_DEBUG,
           "ControlObject: cleanup - Stopping VSCP Server worker thread...");
     }
 
-    // stopDaemonWorkerThread(); *****
+    //stopDaemonWorkerThread(); *****
 
-    if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL) {
+    if (m_debugFlags[0] & VSCP_DEBUG1_GENERAL) {
         syslog(LOG_DEBUG,
                "ControlObject: cleanup - Stopping client worker thread...");
     }
 
     stopClientMsgWorkerThread();
 
-    if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL) {
+    if (m_debugFlags[0] & VSCP_DEBUG1_GENERAL) {
         syslog(LOG_DEBUG,
                "ControlObject: cleanup - Stopping Web Server worker thread...");
     }
 
-    // stop_webserver();
+    stop_webserver();
 
-    if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL) {
+    if (m_debugFlags[0] & VSCP_DEBUG1_GENERAL) {
         syslog(LOG_DEBUG,
                "ControlObject: cleanup - Stopping TCP/IP worker thread...");
     }
 
     stopTcpipSrvThread();
 
-    if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL) {
+    if (m_debugFlags[0] & VSCP_DEBUG1_GENERAL) {
         syslog(LOG_DEBUG, "Controlobject: ControlObject: Cleanup done.");
     }
     return true;
@@ -607,7 +607,7 @@ CControlObject::cleanup(void)
 bool
 CControlObject::startClientMsgWorkerThread(void)
 {
-    if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL) {
+    if (m_debugFlags[0] & VSCP_DEBUG1_GENERAL) {
         syslog(LOG_DEBUG, "Controlobject: Starting client worker thread...");
     }
 
@@ -643,13 +643,13 @@ bool
 CControlObject::startTcpipSrvThread(void)
 {
     if (!m_enableTcpip) {
-        if (m_debugFlags[0] | VSCP_DEBUG1_TCP) {
+        if (m_debugFlags[0] & VSCP_DEBUG1_TCP) {
             syslog(LOG_DEBUG, "Controlobject: TCP/IP interface disabled.");
         }
         return true;
     }
 
-    if (m_debugFlags[0] | VSCP_DEBUG1_TCP) {
+    if (m_debugFlags[0] & VSCP_DEBUG1_TCP) {
         syslog(LOG_DEBUG, "Controlobject: Starting TCP/IP interface...");
     }
 
@@ -685,7 +685,7 @@ CControlObject::stopTcpipSrvThread(void)
     // Tell the thread it's time to quit
     m_ptcpipSrvObject->m_nStopTcpIpSrv = VSCP_TCPIP_SRV_STOP;
 
-    if (m_debugFlags[0] | VSCP_DEBUG1_TCP) {
+    if (m_debugFlags[0] & VSCP_DEBUG1_TCP) {
         syslog(LOG_DEBUG, "Controlobject: Terminating TCP thread.");
     }
 
@@ -693,7 +693,7 @@ CControlObject::stopTcpipSrvThread(void)
     delete m_ptcpipSrvObject;
     m_ptcpipSrvObject = NULL;
 
-    if (m_debugFlags[0] | VSCP_DEBUG1_TCP) {
+    if (m_debugFlags[0] & VSCP_DEBUG1_TCP) {
         syslog(LOG_DEBUG, "Controlobject: Terminated TCP thread.");
     }
 
@@ -708,7 +708,7 @@ bool
 CControlObject::startDeviceWorkerThreads(void)
 {
     CDeviceItem *pDeviceItem;
-    if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL) {
+    if (m_debugFlags[0] & VSCP_DEBUG1_GENERAL) {
         syslog(LOG_DEBUG, "[Controlobject][Driver] - Starting drivers...");
     }
 
@@ -720,7 +720,7 @@ CControlObject::startDeviceWorkerThreads(void)
         pDeviceItem = *it;
         if (NULL != pDeviceItem) {
 
-            if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL) {
+            if (m_debugFlags[0] & VSCP_DEBUG1_GENERAL) {
                 syslog(LOG_DEBUG,
                        "Controlobject: [Driver] - Preparing: %s ",
                        pDeviceItem->m_strName.c_str());
@@ -729,7 +729,7 @@ CControlObject::startDeviceWorkerThreads(void)
             // Just start if enabled
             if (!pDeviceItem->m_bEnable) continue;
 
-            if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL) {
+            if (m_debugFlags[0] & VSCP_DEBUG1_GENERAL) {
                 syslog(LOG_DEBUG,
                        "Controlobject: [Driver] - Starting: %s ",
                        pDeviceItem->m_strName.c_str());
@@ -773,7 +773,7 @@ CControlObject::stopDeviceWorkerThreads(void)
 {
     CDeviceItem *pDeviceItem;
 
-    if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL) {
+    if (m_debugFlags[0] & VSCP_DEBUG1_GENERAL) {
         syslog(LOG_DEBUG, "[Controlobject][Driver] - Stopping drivers...");
     }
     std::deque<CDeviceItem *>::iterator iter;
@@ -783,7 +783,7 @@ CControlObject::stopDeviceWorkerThreads(void)
 
         pDeviceItem = *iter;
         if (NULL != pDeviceItem) {
-            if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL) {
+            if (m_debugFlags[0] & VSCP_DEBUG1_GENERAL) {
                 syslog(LOG_DEBUG,
                        "Controlobject: [Driver] - Stopping: %s ",
                        pDeviceItem->m_strName.c_str());
@@ -1057,7 +1057,7 @@ CControlObject::sendEvent(CClientItem *pClientItem, vscpEvent *peventToSend)
         destguid.setAt(0, 0); // Interface GUID's have LSB bytes nilled
         destguid.setAt(1, 0);
 
-        if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL) {
+        if (m_debugFlags[0] & VSCP_DEBUG1_GENERAL) {
             syslog(LOG_DEBUG,
                    "Level I event over Level II "
                    "dest = %d:%d:%d:%d:%d:%d:%d:%d:"
@@ -1090,7 +1090,7 @@ CControlObject::sendEvent(CClientItem *pClientItem, vscpEvent *peventToSend)
              ++it) {
 
             CClientItem *pItem = *it;
-            if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL) {
+            if (m_debugFlags[0] & VSCP_DEBUG1_GENERAL) {
                 syslog(LOG_DEBUG,
                        "Test if = "
                        "%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%s",
@@ -1295,7 +1295,7 @@ CControlObject::getMacAddress(cguid &guid)
 
         unsigned char *ptr;
         ptr = (unsigned char *)&s.ifr_ifru.ifru_hwaddr.sa_data[0];
-        if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL) {
+        if (m_debugFlags[0] & VSCP_DEBUG1_GENERAL) {
             syslog(LOG_DEBUG,
                    "Ethernet MAC address: %02X:%02X:%02X:%02X:%02X:%02X",
                    (uint8_t)s.ifr_addr.sa_data[0],
@@ -2006,7 +2006,7 @@ startFullConfigParser(void *data, const char *name, const char **attr)
                    strName.c_str(),
                    strPath.c_str());
         } else {
-            if (pObj->m_debugFlags[0] | VSCP_DEBUG1_DRIVER1) {
+            if (pObj->m_debugFlags[0] & VSCP_DEBUG1_DRIVER1) {
                 syslog(LOG_DEBUG,
                        "Level I driver added. name = %s - [%s]",
                        strName.c_str(),
@@ -2065,7 +2065,7 @@ startFullConfigParser(void *data, const char *name, const char **attr)
                                         guid,
                                         VSCP_DRIVER_LEVEL2,
                                         bEnabled)) {
-            if (pObj->m_debugFlags[0] | VSCP_DEBUG1_DRIVER2) {
+            if (pObj->m_debugFlags[0] & VSCP_DEBUG1_DRIVER2) {
                 syslog(LOG_ERR,
                        "Level II driver was not added. name = %s"
                        "Path does not exist. - [%s]",
@@ -2073,7 +2073,7 @@ startFullConfigParser(void *data, const char *name, const char **attr)
                        strPath.c_str());
             }
         } else {
-            if (pObj->m_debugFlags[0] | VSCP_DEBUG1_DRIVER2) {
+            if (pObj->m_debugFlags[0] & VSCP_DEBUG1_DRIVER2) {
                 syslog(LOG_DEBUG,
                        "Level II driver added. name = %s- [%s]",
                        strName.c_str(),
@@ -2139,7 +2139,7 @@ startFullConfigParser(void *data, const char *name, const char **attr)
                    strPath.c_str());
 
         } else {
-            if (pObj->m_debugFlags[0] | VSCP_DEBUG1_DRIVER3) {
+            if (pObj->m_debugFlags[0] & VSCP_DEBUG1_DRIVER3) {
                 syslog(LOG_DEBUG,
                        "Level III driver added. name = %s- [%s]",
                        strName.c_str(),
@@ -2254,7 +2254,7 @@ CControlObject::readConfiguration(const std::string &strcfgfile)
 {
     FILE *fp;
 
-    if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL) {
+    if (m_debugFlags[0] & VSCP_DEBUG1_GENERAL) {
         syslog(LOG_DEBUG,
                "Reading full XML configuration from [%s]",
                (const char *)strcfgfile.c_str());
