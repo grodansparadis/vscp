@@ -120,12 +120,6 @@ CDeviceItem::CDeviceItem()
     m_proc_VSCPRead               = NULL;
     m_proc_VSCPGetVersion         = NULL;
     m_proc_VSCPGetVersion         = NULL;
-    m_proc_VSCPGetVendorString    = NULL;
-    m_proc_VSCPGetdriverInfo      = NULL;
-    m_proc_VSCPGetConfigPageInfo  = NULL;
-    m_proc_VSCPConfigPageUpdate   = NULL;
-    m_proc_VSCPGetCommandInfo     = NULL;
-    m_proc_VSCPExecuteCommand     = NULL;
 
     // VSCP Level III
     m_pid = 0;

@@ -9214,11 +9214,11 @@ start_webserver(void)
         web_options[pos++] = vscp_strdup((const char *)str.c_str());
     }
 
-    if (gpobj->m_web_run_as_user.length()) {
+    if (gpobj->m_runAsUser.length()) {
         web_options[pos++] =
           vscp_strdup(VSCPDB_CONFIG_NAME_WEB_RUN_AS_USER + 4);
         web_options[pos++] =
-          vscp_strdup((const char *)gpobj->m_web_run_as_user.c_str());
+          vscp_strdup((const char *)gpobj->m_runAsUser.c_str());
     }
 
     if (gpobj->m_web_url_rewrite_patterns.length()) {

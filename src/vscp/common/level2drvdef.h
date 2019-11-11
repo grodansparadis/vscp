@@ -34,7 +34,7 @@
 
 #ifdef WIN32
 
-typedef long ( __stdcall * LPFNDLL_VSCPOPEN ) ( const char *pPathConfig );
+typedef long ( __stdcall * LPFNDLL_VSCPOPEN ) ( const char *pPathConfig, const unsigned char*pguid );
 typedef int ( __stdcall * LPFNDLL_VSCPCLOSE ) ( long handle );
 typedef int ( __stdcall * LPFNDLL_VSCPWRITE ) ( long handle, const vscpEvent *pEvent, unsigned long timeout );
 typedef int ( __stdcall * LPFNDLL_VSCPREAD ) ( long handle, vscpEvent *pEvent, unsigned long timeout );
@@ -43,12 +43,13 @@ typedef const char *( __stdcall * LPFNDLL_VSCPGETVENDORSTRING ) ( void );
 
 #else
 
-typedef long ( *LPFNDLL_VSCPOPEN ) ( const char *pPathConfig );
+typedef long ( *LPFNDLL_VSCPOPEN ) ( const char *pPathConfig, const unsigned char*pguid );
 typedef int ( *LPFNDLL_VSCPCLOSE ) ( long handle );
 typedef int ( *LPFNDLL_VSCPWRITE ) ( long handle, const vscpEvent *pEvent, unsigned long timeout );
 typedef int ( *LPFNDLL_VSCPREAD ) ( long handle, vscpEvent *pEvent, unsigned long timeout );
 typedef unsigned long ( *LPFNDLL_VSCPGETVERSION ) (  void );
 typedef const char *( *LPFNDLL_VSCPGETVENDORSTRING ) ( void );
+
 #endif
 
 

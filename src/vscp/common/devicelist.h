@@ -151,6 +151,11 @@ class CDeviceItem
     */
     cguid m_interface_guid;
 
+    /*!
+        All level II driver must have a GUID
+    */
+    cguid m_drvGuid;
+
     // Worker thread for device
     pthread_t m_deviceThreadHandle;
     pthread_mutex_t m_mutexdeviceThread;
@@ -227,12 +232,6 @@ class CDeviceItem
     LPFNDLL_VSCPWRITE m_proc_VSCPWrite;
     LPFNDLL_VSCPREAD m_proc_VSCPRead;
     LPFNDLL_VSCPGETVERSION m_proc_VSCPGetVersion;
-    LPFNDLL_VSCPGETVENDORSTRING m_proc_VSCPGetVendorString;
-    LPFNDLL_VSCPGETDRIVERINFO m_proc_VSCPGetdriverInfo;
-    LPFNDLL_VSCPGETCONFIGPAGEINFO m_proc_VSCPGetConfigPageInfo;
-    LPFNDLL_VSCPCONFIGPAGEUPDATE m_proc_VSCPConfigPageUpdate;
-    LPFNDLL_VSCPGETCOMMANDINFO m_proc_VSCPGetCommandInfo;
-    LPFNDLL_VSCPEXECUTECOMMAND m_proc_VSCPExecuteCommand;
 
     // Level III
     std::string m_pathExecutable;

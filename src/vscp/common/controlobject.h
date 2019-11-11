@@ -237,23 +237,12 @@ class CControlObject
     bool getIPAddress(cguid &guid);
 
     /*!
-        Read XML configuration GENEAL data
-        @param strcfgfile path to configuration file.
-        @return Returns true on success false on failure.
-     */
-    bool readXMLConfigurationGeneral(const std::string &strcfgfile);
-
-    /*!
         Read configuration data
         @param strcfgfile path to configuration file.
         @return Returns true on success false on failure.
      */
-    bool readConfigurationXML(const std::string &strcfgfile);
+    bool readConfiguration(const std::string &strcfgfile);
 
-    /*!
-         Save configuration data
-     */
-    bool saveConfiguration(void);
 
     /*!
         send level II message to all clients
@@ -446,7 +435,6 @@ class CControlObject
     std::string m_web_access_control_list;
     std::string m_web_extra_mime_types;
     int m_web_num_threads;
-    std::string m_web_run_as_user;
     std::string m_web_url_rewrite_patterns;
     std::string m_web_hide_file_patterns;
     long m_web_request_timeout_ms;

@@ -1,7 +1,7 @@
 <?xml version = "1.0" encoding = "UTF-8" ?>
 
 <!--
-  2019-11-03
+  2019-11-10
   Example configuration file Unix
   Ake Hedman, akhe@grodansparadis.com
   http://www.grodansparadis.com
@@ -46,7 +46,7 @@
                 debugflags7="0"
                 debugflags8="0" />
 
-        <!-- The user to run as on Unix -->
+        <!-- The user to run as  -->
         <runasuser></runasuser>
 
         <!--
@@ -61,13 +61,7 @@
         </guid>
 
         <!-- Set symbolic server name for daemon -->
-        <servername>Unix VSCP Server</servername>
-
-        <!--
-          Set to true to enable VSCP high end functionality
-          If disabled also automation will be disabled
-        -->
-        <vscp enable="true"/>
+        <servername>The VSCP Daemon</servername>
 
         <!--
           This is the default buffer size (number of events) for all
@@ -166,82 +160,62 @@
       Privilege is "admin" or "user" or comma seperated list
       Same information is used for accessing the daemon
       through the TCP/IP interface as through the web-interface
+      allowfrom is a comma separated list of allowed remotes,
     -->
     <remoteuser>
-        <user>
-            <name>user</name>
-            <password>D35967DEE4CFFB214124DFEEA7778BB0;582BCA078604C925852CDDEE0A8475556DEAA6DC6EFB004A353094900C97D3DE</password>
-            <privilege>user</privilege>
-            <!-- allowfrom is a comma separated list of allowed remotes, see admin above -->
-            <allowfrom></allowfrom>
-        </user>
+        <user
+            name="user"
+            password="D35967DEE4CFFB214124DFEEA7778BB0;582BCA078604C925852CDDEE0A8475556DEAA6DC6EFB004A353094900C97D3DE"
+            privilege="user"
+            allowfrom="" />
     </remoteuser>
 
-    <!--
-      Here are settings that affect the internal VSCP functionality
-      of the server.
-    -->
-    <automation enable="true">
-        <!-- zone/subzone server use    -->
-        <zone>1</zone>
-        <sub-zone>2</sub-zone>
-        <!-- High level events -->
-        <segmentcontrol-event enable="true" interval="60" />
-        <heartbeat-event enable="true" interval="60" />
-        <!-- Server capabilities events -->
-        <capability-event enable="true" interval="60" />
-    </automation>
 
     <!-- List level I/CANAL drivers here -->
     <level1driver enable="true" >
 
         <!-- The canallog driver -->
-        <driver enable="false">
-            <name>logger</name>
-            <config>/tmp/canallog.txt</config>
-            <path>/srv/vscp/drivers/level1/vscpl1drv-logger.so</path>
-            <flags>1</flags>
-            <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
-        </driver>
+        <driver enable="false"
+            name="logger"
+            config="/tmp/canallog.txt"
+            path="/usr/lib/vscpl1drv-logger.so"
+            guid="FF:FF:FF:FF:FF:FF:FF:FC:00:00:00:00:00:01:00:00"
+            flags="1" />
 
         <!-- The can4vscp driver -->
-        <driver enable="false" >
-            <name>can4vscp</name>
-            <config>/dev/ttyS0</config>
-            <path>/srv/vscp/drivers/level1/vscpl1drv-can4vscp.so</path>
-            <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
-            <flags>0</flags>
-        </driver>
+        <driver enable="false"
+            name="can4vscp"
+            config="/dev/ttyS0"
+            path="/usr/lib/vscpl1drv-can4vscp.so"
+            guid="FF:FF:FF:FF:FF:FF:FF:FC:00:00:00:00:00:02:00:00"
+            flags="0" />
 
         <!--
             The Level I socketcan driver (You may concider using the
             Level II version instead)
         -->
-        <driver enable="false" >
-            <name>socketcanl1</name>
-            <config>vcan0</config>
-            <path>/srv/vscp/drivers/level1/vscpl1drv-socketcan.so</path>
-            <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
-            <flags>0</flags>
-        </driver>
+        <driver enable="false"
+            name="socketcanl1"
+            config="vcan0"
+            path="/usr/lib/vscpl1drv-socketcan.so"
+            guid="FF:FF:FF:FF:FF:FF:FF:FC:00:00:00:00:00:03:00:00"
+            flags="0" />
 
         <!-- The can232 driver -->
-        <driver enable="false" >
-            <name>can232</name>
-            <config>/dev/ttyS0;19200;0;0;125</config>
-            <path>/srv/vscp/drivers/level1/vscpl1drv-can232.so</path>
-            <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
-            <flags>0</flags>
-        </driver>
+        <driver enable="false"
+            name="can232"
+            config="/dev/ttyS0;19200;0;0;125"
+            path="/usr/lib/vscpl1drv-can232.so"
+            guid="FF:FF:FF:FF:FF:FF:FF:FC:00:00:00:00:00:04:00:00"
+            flags="0" />
 
         <!-- The xap driver -->
-        <driver enable="false" >
-            <name>xap</name>
-            <config>9598;3639</config>
-            <path>/srv/vscp/drivers/level1/vscpl1drv-xap.so</path>
-            <flags>0</flags>
-            <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
-        </driver>
+        <driver enable="false"
+            name="xap"
+            config="9598;3639"
+            path="/usr/lib/vscpl1drv-xap.so"
+            guid="FF:FF:FF:FF:FF:FF:FF:FC:00:00:00:00:00:05:00:00"
+            flags="0" />
 
     </level1driver>
 
@@ -249,66 +223,60 @@
     <level2driver enable="true">
 
         <!-- Level II Logger -->
-        <driver enable="false" >
-            <name>VSCP Level II Logger Driver A</name>
-            <path>/srv/vscp/drivers/level2/vscpl2drv-logger.so</path>
-             <config>/tmp/vscp_level2.log</config>
-             <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
-        </driver>
+        <driver enable="false"
+            name="Level II Logger"
+            path-driver="/usr/lib/vscpl2drv-logger.so"
+             path-config="/var/lib/vscp/vscpl2drv-logger/config.xml"
+             guid="FF:FF:FF:FF:FF:FF:FF:FC:10:00:00:00:00:00:00:01" />
 
         <!-- Level II lmsensors -->
-        <driver enable="false" >
-            <name>VCCP Level II LM-sensors driver A</name>
-            <path>/srv/vscp/drivers/level2/vscpl2drv-lmsensors.so</path>
-            <config>2</config>
-            <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
-        </driver>
+        <driver enable="false"
+            name="LM-sensors"
+            path-driver="/usr/lib/vscpl2drv-lmsensors.so"
+            path-config="/var/lib/vscp/vscpl2drv-lmsensors/config.xml"
+            guid="FF:FF:FF:FF:FF:FF:FF:FC:10:00:00:00:00:00:00:02" />
 
         <!-- Level II socketcan  -->
-        <driver enable="false" >
-            <name>VSCP Level II SocketCAN Driver A</name>
-            <path>/srv/vscp/drivers/level2/vscpl2drv-socketcan.so</path>
-            <config>vcan0</config>
-            <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
-        </driver>
+        <driver enable="false"
+            name="SocketCAN"
+            path-driver="/usr/lib/vscpl2drv-socketcan.so"
+            path-config="/var/lib/vscp/vscpl2drv-socketcan/config.xml"
+            guid="FF:FF:FF:FF:FF:FF:FF:FC:10:00:00:00:00:00:00:03" />
 
         <!-- Level II mqtt -->
-        <driver enable="false" >
-            <name>VSCP Level II MQTT Driver A</name>
-            <path>/srv/vscp/drivers/level2/vscpl2drv-mqtt.so</path>
-            <config>mysession;subscribe;vscp;localhost;1883;;60</config>
-            <guid>08:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
-        </driver>
+        <driver enable="false"
+            name="MQTT"
+            path-driver="/usr/lib/vscpl2drv-mqtt.so"
+            path-config="/var/lib/vscp/vscpl2drv-mqtt/config.xml"
+            guid="FF:FF:FF:FF:FF:FF:FF:FC:10:00:00:00:00:00:00:04" />
 
         <!-- Level II tcp/ip link -->
-        <driver enable="false" >
-            <name>VSCP Level II tcpiplink Driver  A</name>
-            <path>/srv/vscp/drivers/level2/vscpl2drv-tcpiplink.so</path>
-            <config>192.168.1.2;9598;admin;secret</config>
-            <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
-        </driver>
+        <driver enable="false"
+            name="tcpiplink"
+            path-driver="/usr/lib/vscpl2drv-tcpiplink.so"
+            path-config="/var/lib/vscp/vscpl2drv-tcpiplink/config.xml"
+            guid="FF:FF:FF:FF:FF:FF:FF:FC:10:00:00:00:00:00:00:05" />
 
         <!-- Level II raw ethernet -->
-        <driver enable="false">
-            <name>VSCP Level II RawEthernet Driver A</name>
-            <config>eth0</config>
-            <path>/srv/vscp/drivers/level2/vscpl2drv-raweth.so</path>
-        </driver>
+        <driver enable="false"
+            name="RawEthernet"
+            path-driver="/usr/lib/vscpl2drv-raweth.so"
+            path-config="/var/lib/vscp/vscpl2drv-raweth/config.xml"
+            guid="FF:FF:FF:FF:FF:FF:FF:FC:10:00:00:00:00:00:00:06" />
 
        <!-- Level II simulation -->
-        <driver enable="true">
-            <name>VSCP Level II sim driver</name>  <!-- !!! Do not rename !!! will effect demos -->
-            <config>1</config>
-            <guid>FF:FF:FF:FF:FF:FF:FF:F7:03:00:00:00:00:00:00:00</guid>
-            <path>/srv/vscp/drivers/level2/vscpl2drv-sim.so</path>
-        </driver>
+        <driver enable="false"
+            name="sim"
+            path-driver="/usr/lib/vscpl2drv-sim.so"
+            path-config="/var/lib/vscp/vscpl2drv-sim/config.xml"
+            guid="FF:FF:FF:FF:FF:FF:FF:FC:10:00:00:00:00:00:00:07" />
 
         <!-- Level II 1-wire driver -->
-        <driver enable="false">
-            <name>VSCP Level II 1-wire Driver A</name>
-            <config>eth0</config>
-            <path>/srv/vscp/drivers/level2/vscpl2drv-wire1.so</path>
-        </driver>
+        <driver enable="false"
+            name="1-wire"
+            path-driver="/usr/lib/vscpl2drv-wire1.so"
+            path-config="/var/lib/vscp/vscpl2drv-wire1/config.xml"
+            guid="FF:FF:FF:FF:FF:FF:FF:FC:10:00:00:00:00:00:00:08" />
 
     </level2driver>
 

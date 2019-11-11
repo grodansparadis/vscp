@@ -96,9 +96,9 @@ deviceThread(void *pData)
     pClientItem->m_strDeviceName = "driver_" + pDevItem->m_strName;
 
     if (pCtrlObj->m_debugFlags[0] & VSCP_DEBUG1_GENERAL) {
-    syslog(LOG_DEBUG,
-           "Devicethread: Starting %s",
-           pClientItem->m_strDeviceName.c_str());
+        syslog(LOG_DEBUG,
+               "Devicethread: Starting %s",
+               pClientItem->m_strDeviceName.c_str());
     }
 
     // Add the client to the Client List
@@ -159,12 +159,12 @@ deviceThread(void *pData)
             // execvp( *argv, const_cast<char**>(argv) );
             // TODO TODO TODO TODO TODO TODO
             execlp("pDevItem->m_strName.c_str()",
-                    "path-to-config",
-                    "126.0.0.1",
-                    "9598",
-                    "admin",
-                    "secret",
-                    NULL );
+                   "path-to-config",
+                   "126.0.0.1",
+                   "9598",
+                   "admin",
+                   "secret",
+                   NULL);
 
             // Wait on child
             int status;
@@ -179,8 +179,9 @@ deviceThread(void *pData)
 
         // Now find methods in library
         if (pCtrlObj->m_debugFlags[0] & VSCP_DEBUG1_DRIVER1) {
-        syslog(
-          LOG_DEBUG, "Loading level I driver: %s", pDevItem->m_strName.c_str());
+            syslog(LOG_DEBUG,
+                   "Loading level I driver: %s",
+                   pDevItem->m_strName.c_str());
         }
 
         // * * * * CANAL OPEN * * * *
@@ -513,13 +514,12 @@ deviceThread(void *pData)
                             if (NULL != pev) {
 
                                 // Set driver GUID if set
-                                if ( pDevItem->m_interface_guid.isNULL() ) {
+                                if (pDevItem->m_interface_guid.isNULL()) {
                                     pDevItem->m_interface_guid.writeGUID(
-                                pev->GUID );
-                                }
-                                else {
+                                      pev->GUID);
+                                } else {
                                     // If no driver GUID set use interface GUID
-                                    pClientItem->m_guid.writeGUID( pev->GUID );
+                                    pClientItem->m_guid.writeGUID(pev->GUID);
                                 }
 
                                 // Convert CANAL message to VSCP event
@@ -530,8 +530,7 @@ deviceThread(void *pData)
 
                                 pthread_mutex_lock(
                                   &pCtrlObj->m_mutexClientOutputQueue);
-                                pCtrlObj->m_clientOutputQueue.push_back(
-                                  pev);
+                                pCtrlObj->m_clientOutputQueue.push_back(pev);
                                 sem_post(&pCtrlObj->m_semClientOutputQueue);
                                 pthread_mutex_unlock(
                                   &pCtrlObj->m_mutexClientOutputQueue);
@@ -551,8 +550,7 @@ deviceThread(void *pData)
 
                     std::deque<vscpEvent *>::iterator it;
                     pthread_mutex_lock(&pClientItem->m_mutexClientInputQueue);
-                    vscpEvent *pev =
-                      pClientItem->m_clientInputQueue.front();
+                    vscpEvent *pev = pClientItem->m_clientInputQueue.front();
                     pthread_mutex_lock(&pClientItem->m_mutexClientInputQueue);
 
                     // Trow away Level II event on Level I interface
@@ -581,7 +579,7 @@ deviceThread(void *pData)
                     } else {
                         // Another try
                         // pCtrlObj->m_semClientOutputQueue.Post();
-                        vscp_deleteVSCPevent(pev);  // TODO ????
+                        vscp_deleteVSCPevent(pev); // TODO ????
                     }
 
                 } // events
@@ -682,72 +680,6 @@ deviceThread(void *pData)
             return NULL;
         }
 
-        // * * * * VSCP GET VENDOR STRING * * * *
-        if (NULL == (pDevItem->m_proc_VSCPGetVendorString =
-                       (LPFNDLL_VSCPGETVENDORSTRING)dlsym(
-                         hdll, "VSCPGetVendorString"))) {
-            // Free the library
-            syslog(LOG_ERR,
-                   "%s: Unable to get dl entry for VSCPGetVendorString.",
-                   pDevItem->m_strName.c_str());
-            return NULL;
-        }
-
-        // * * * * VSCP GET DRIVER INFO * * * *
-        if (NULL ==
-            (pDevItem->m_proc_CanalGetdriverInfo =
-               (LPFNDLL_VSCPGETVENDORSTRING)dlsym(hdll, "VSCPGetDriverInfo"))) {
-            // Free the library
-            syslog(LOG_ERR,
-                   "%s: Unable to get dl entry for VSCPGetDriverInfo.",
-                   pDevItem->m_strName.c_str());
-            return NULL;
-        }
-
-        // * * * * VSCP GET CONFIG PAGE INFO * * * *
-        if (NULL == (pDevItem->m_proc_VSCPGetConfigPageInfo =
-                       (LPFNDLL_VSCPGETCONFIGPAGEINFO)dlsym(
-                         hdll, "VSCPGetConfigPageInfo"))) {
-            // Free the library
-            syslog(LOG_ERR,
-                   "%s: Unable to get dl entry for VSCPGetConfigPageInfo.",
-                   pDevItem->m_strName.c_str());
-            return NULL;
-        }
-
-        // * * * * VSCP CONFIG PAGE UPDATE * * * *
-        if (NULL == (pDevItem->m_proc_VSCPConfigPageUpdate =
-                       (LPFNDLL_VSCPCONFIGPAGEUPDATE)dlsym(
-                         hdll, "VSCPConfigPageUpdate"))) {
-            // Free the library
-            syslog(LOG_ERR,
-                   "%s: Unable to get dl entry for VSCPConfigPageUpdate.",
-                   pDevItem->m_strName.c_str());
-            return NULL;
-        }
-
-        // * * * * VSCP GET COMMAND INFO * * * *
-        if (NULL ==
-            (pDevItem->m_proc_VSCPGetCommandInfo =
-               (LPFNDLL_VSCPGETCOMMANDINFO)dlsym(hdll, "VSCPGetCommandInfo"))) {
-            // Free the library
-            syslog(LOG_ERR,
-                   "%s: Unable to get dl entry for VSCPGetCommandInfo.",
-                   pDevItem->m_strName.c_str());
-            return NULL;
-        }
-
-        // * * * * VSCP GET EXECUTE COMMAND * * * *
-        if (NULL ==
-            (pDevItem->m_proc_VSCPExecuteCommand =
-               (LPFNDLL_VSCPEXECUTECOMMAND)dlsym(hdll, "VSCPExecuteCommand"))) {
-            // Free the library
-            syslog(LOG_ERR,
-                   "%s: Unable to get dl entry for VSCPExecuteCommand.",
-                   pDevItem->m_strName.c_str());
-            return NULL;
-        }
-
         if (pCtrlObj->m_debugFlags[0] & VSCP_DEBUG1_DRIVER2) {
             syslog(LOG_DEBUG,
                    "%s: Discovered all methods\n",
@@ -755,8 +687,8 @@ deviceThread(void *pData)
         }
 
         // Open up the driver
-        pDevItem->m_openHandle =
-          pDevItem->m_proc_VSCPOpen(pDevItem->m_strParameter.c_str());
+        pDevItem->m_openHandle = pDevItem->m_proc_VSCPOpen(
+          pDevItem->m_strParameter.c_str(), pDevItem->m_drvGuid.getGUID());
 
         if (0 == pDevItem->m_openHandle) {
             // Free the library
@@ -1006,8 +938,7 @@ deviceLevel1ReceiveThread(void *pData)
 
                     pthread_mutex_lock(
                       &pDevItem->m_pObj->m_mutexClientOutputQueue);
-                    pDevItem->m_pObj->m_clientOutputQueue.push_back(
-                      pvscpEvent);
+                    pDevItem->m_pObj->m_clientOutputQueue.push_back(pvscpEvent);
                     sem_post(&pDevItem->m_pObj->m_semClientOutputQueue);
                     pthread_mutex_unlock(
                       &pDevItem->m_pObj->m_mutexClientOutputQueue);
@@ -1069,9 +1000,8 @@ deviceLevel1WriteThread(void *pData)
 
             canalMsg msg;
             vscp_convertEventToCanal(&msg, pev);
-            if (CANAL_ERROR_SUCCESS ==
-                pDevItem->m_proc_CanalBlockingSend(
-                  pDevItem->m_openHandle, &msg, 300)) {
+            if (CANAL_ERROR_SUCCESS == pDevItem->m_proc_CanalBlockingSend(
+                                         pDevItem->m_openHandle, &msg, 300)) {
                 vscp_deleteVSCPevent(pev);
             } else {
                 // Give it another try
@@ -1159,16 +1089,14 @@ deviceLevel2ReceiveThread(void *pData)
             pev->GUID[15] = nickname_lsb;
         }
 
-        // There must be room in the receive queue 
+        // There must be room in the receive queue
         if (pDevItem->m_pObj->m_maxItemsInClientReceiveQueue >
             pDevItem->m_pObj->m_clientOutputQueue.size()) {
 
-            pthread_mutex_lock(
-              &pDevItem->m_pObj->m_mutexClientOutputQueue);
+            pthread_mutex_lock(&pDevItem->m_pObj->m_mutexClientOutputQueue);
             pDevItem->m_pObj->m_clientOutputQueue.push_back(pev);
             sem_post(&pDevItem->m_pObj->m_semClientOutputQueue);
-            pthread_mutex_unlock(
-              &pDevItem->m_pObj->m_mutexClientOutputQueue);
+            pthread_mutex_unlock(&pDevItem->m_pObj->m_mutexClientOutputQueue);
 
         } else {
             if (NULL == pev) vscp_deleteVSCPevent_v2(&pev);
@@ -1215,8 +1143,7 @@ deviceLevel2WriteThread(void *pData)
               &pDevItem->m_pClientItem->m_mutexClientInputQueue);
 
             if (CANAL_ERROR_SUCCESS ==
-                pDevItem->m_proc_VSCPWrite(
-                  pDevItem->m_openHandle, pev, 300)) {
+                pDevItem->m_proc_VSCPWrite(pDevItem->m_openHandle, pev, 300)) {
 
                 // Remove the node
                 pthread_mutex_lock(

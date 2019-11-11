@@ -200,7 +200,6 @@ CControlObject::CControlObject()
     m_web_access_control_list               = "";
     m_web_extra_mime_types                  = "";
     m_web_num_threads                       = 50;
-    m_web_run_as_user                       = "";
     m_web_url_rewrite_patterns              = "";
     m_web_hide_file_patterns                = "";
     m_web_global_auth_file                  = "";
@@ -232,7 +231,7 @@ CControlObject::CControlObject()
 
     // Init. web server subsystem - All features enabled
     // ssl mt locks will we initiated here for openssl 1.0
-    if (0 == mg_init_library(0) ) {
+    if (0 == mg_init_library(0)) {
         syslog(LOG_ERR, "Failed to initialize webserver subsystem.");
     }
 
@@ -311,15 +310,15 @@ CControlObject::init(std::string &strcfgfile, std::string &rootFolder)
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    //                  Read XML configuration GENERAL section
+    //                         Read XML configuration
     ////////////////////////////////////////////////////////////////////////////
 
     // Read XML configuration
-    if (!readXMLConfigurationGeneral(strcfgfile)) {
-        syslog(LOG_ERR,
-               "General: Unable to open/parse configuration file [%s]. Can't "
-               "initialize!",
-               strcfgfile.c_str());
+    if (!readConfiguration(strcfgfile)) {
+        syslog(
+          LOG_ERR,
+          "Unable to open/parse configuration file. Can't initialize! Path =%s",
+          strcfgfile.c_str());
         return FALSE;
     }
 
@@ -336,10 +335,6 @@ CControlObject::init(std::string &strcfgfile, std::string &rootFolder)
     }
 #endif
 
-    ////////////////////////////////////////////////////////////////////////////
-    //                      Read full XML configuration
-    ////////////////////////////////////////////////////////////////////////////
-
     if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL) {
         syslog(LOG_DEBUG, "Using configuration file: %s", strcfgfile.c_str());
     }
@@ -348,18 +343,12 @@ CControlObject::init(std::string &strcfgfile, std::string &rootFolder)
     if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL) {
         syslog(LOG_DEBUG, "Reading configuration file");
     }
-    if (!readConfigurationXML(strcfgfile)) {
-        syslog(
-          LOG_ERR,
-          "Unable to open/parse configuration file. Can't initialize! Path =%s",
-          strcfgfile.c_str());
-        return FALSE;
-    }
 
     // Read users from database
     if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL) {
         syslog(LOG_DEBUG, "loading users from disk...");
     }
+
     m_userList.loadUsers();
 
     //==========================================================================
@@ -1421,55 +1410,36 @@ CControlObject::getSystemKeyMD5(std::string &strKey)
     strKey = digest;
 }
 
+
 // ----------------------------------------------------------------------------
-// General XML configuration callbacks
+// FULL XML configuration callbacks
 // ----------------------------------------------------------------------------
 
-/*
-<general runasuser="xxxx"
-                guid="..."
-                servername="sdfdsfsd"
-                clientbuffersize="100" >
-
-    <logging  debugflags1="n"
-                debugflags1="n"
-                debugflags2="n"
-                debugflags3="n"
-                debugflags4="n"
-                debugflags5="n"
-                debugflags6="n"
-                debugflags7="n"
-                debugflags8="n" />
-
-    <security admin="username"
-        password="450ADCE88F2FDBB20F3318B65E53CA4A;06D3311CC2195E80BE4F8EB12931BFEB5C630F6B154B2D644ABE29CEBDBFB545"
-        allowfrom="list of remotes"
-        vscptoken="Carpe diem quam minimum credula postero"
-        vscpkey="A4A86F7D7E119BA3F0CD06881E371B989B33B6D606A863B633EF529D64544F8E"
-        digest="" />
-
-    <database vscp-daemon="db-path"
-            vscp-data="db-path"
-            vscp-variable="db-path"
-            vscp-dm="db-path" />
-</general>
-*/
-static int depth_general_config_parser = 0;
-static int bvscpConfigFound            = 0;
-static int bGeneralConfigFound         = 0;
+static int depth_full_config_parser   = 0;
+static char *last_full_config_content = NULL;
+static int bVscpConfigFound           = 0;
+static int bGeneralConfigFound        = 0;
+static int bUDPConfigFound            = 0;
+static int bMulticastConfigFound      = 0;
+static int bRemoteUserConfigFound     = 0;
+static int bLevel1DriverConfigFound   = 0;
+static int bLevel2DriverConfigFound   = 0;
+static int bLevel3DriverConfigFound   = 0;
+static int bKnownNodesConfigFound     = 0;
+static int bTablesConfigFound         = 0;
 
 static void
-startGeneralConfigParser(void *data, const char *name, const char **attr)
+startFullConfigParser(void *data, const char *name, const char **attr)
 {
     CControlObject *pObj = (CControlObject *)data;
     if (NULL == data) return;
 
-    if ((0 == depth_general_config_parser) &&
+    if ((0 == depth_full_config_parser) &&
         (0 == vscp_strcasecmp(name, "vscpconfig"))) {
-        bvscpConfigFound = TRUE;
-    } else if (bvscpConfigFound && (1 == depth_general_config_parser) &&
+        bVscpConfigFound = TRUE;
+    } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
                (0 == vscp_strcasecmp(name, "general"))) {
-        bGeneralConfigFound = TRUE;
+        bVscpConfigFound = TRUE;
 
         for (int i = 0; attr[i]; i += 2) {
 
@@ -1482,18 +1452,15 @@ startGeneralConfigParser(void *data, const char *name, const char **attr)
             } else if (0 == vscp_strcasecmp(attr[i], "runasuser")) {
                 vscp_trim(attribute);
                 pObj->m_runAsUser = attribute;
-                // Also assign to web user
-                pObj->m_web_run_as_user = attribute;
             } else if (0 == vscp_strcasecmp(attr[i], "guid")) {
                 pObj->m_guid.getFromString(attribute);
             } else if (0 == vscp_strcasecmp(attr[i], "servername")) {
                 pObj->m_strServerName = attribute;
             }
         }
+    } else if (2 == depth_full_config_parser) {
 
-    } else if (2 == depth_general_config_parser) {
-
-        if (bGeneralConfigFound && (0 == vscp_strcasecmp(name, "logging"))) {
+        if (bVscpConfigFound && (0 == vscp_strcasecmp(name, "logging"))) {
 
             for (int i = 0; attr[i]; i += 2) {
 
@@ -1535,7 +1502,7 @@ startGeneralConfigParser(void *data, const char *name, const char **attr)
                 }
             }
 
-        } else if (bGeneralConfigFound &&
+        } else if (bVscpConfigFound &&
                    (0 == vscp_strcasecmp(name, "security"))) {
 
             for (int i = 0; attr[i]; i += 2) {
@@ -1559,107 +1526,6 @@ startGeneralConfigParser(void *data, const char *name, const char **attr)
                 }
             }
         }
-    }
-
-    depth_general_config_parser++;
-}
-
-static void
-endGeneralConfigParser(void *data, const char *name)
-{
-    if ((0 == depth_general_config_parser) &&
-        (0 == vscp_strcasecmp(name, "vscpconfig"))) {
-        bvscpConfigFound = FALSE;
-    } else if (bvscpConfigFound && (1 == depth_general_config_parser) &&
-               (0 == vscp_strcasecmp(name, "general"))) {
-        bGeneralConfigFound = FALSE;
-    }
-
-    depth_general_config_parser--;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// readXMLConfigurationGeneral
-//
-// Read the configuration XML file
-//
-
-bool
-CControlObject::readXMLConfigurationGeneral(const std::string &strcfgfile)
-{
-    FILE *fp;
-
-    if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL) {
-        syslog(LOG_DEBUG,
-               "Reading general XML configuration from [%s]",
-               (const char *)strcfgfile.c_str());
-    }
-
-    fp = fopen(strcfgfile.c_str(), "r");
-    if (NULL == fp) {
-        syslog(LOG_ERR,
-               "Failed to open configuration file [%s]",
-               strcfgfile.c_str());
-        return false;
-    }
-
-    XML_Parser xmlParser = XML_ParserCreate("UTF-8");
-    XML_SetUserData(xmlParser, this);
-    XML_SetElementHandler(
-      xmlParser, startGeneralConfigParser, endGeneralConfigParser);
-
-    int bytes_read;
-    void *buf = XML_GetBuffer(xmlParser, XML_BUFF_SIZE);
-    if (NULL == buf) {
-        XML_ParserFree(xmlParser);
-        fclose(fp);
-        syslog(LOG_ERR,
-               "Failed to allocate buffer for configuration file [%s]",
-               strcfgfile.c_str());
-        return false;
-    }
-
-    size_t file_size = 0;
-    file_size        = fread(buf, sizeof(char), XML_BUFF_SIZE, fp);
-
-    if (!XML_ParseBuffer(xmlParser, file_size, file_size == 0)) {
-        syslog(LOG_ERR, "Failed parse XML configuration file.");
-        fclose(fp);
-        XML_ParserFree(xmlParser);
-        return false;
-    }
-
-    fclose(fp);
-    XML_ParserFree(xmlParser);
-
-    return true;
-}
-
-// ----------------------------------------------------------------------------
-// FULL XML configuration callbacks
-// ----------------------------------------------------------------------------
-
-static int depth_full_config_parser   = 0;
-static char *last_full_config_content = NULL;
-static int bVscpConfigFound           = 0;
-static int bUDPConfigFound            = 0;
-static int bMulticastConfigFound      = 0;
-static int bRemoteUserConfigFound     = 0;
-static int bLevel1DriverConfigFound   = 0;
-static int bLevel2DriverConfigFound   = 0;
-static int bLevel3DriverConfigFound   = 0;
-static int bKnownNodesConfigFound     = 0;
-static int bTablesConfigFound         = 0;
-
-static void
-startFullConfigParser(void *data, const char *name, const char **attr)
-{
-    CControlObject *pObj = (CControlObject *)data;
-    if (NULL == data) return;
-
-    if ((0 == depth_full_config_parser) &&
-        (0 == vscp_strcasecmp(name, "vscpconfig"))) {
-        bVscpConfigFound = TRUE;
     } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
                (0 == vscp_strcasecmp(name, "tcpip"))) {
 
@@ -1852,10 +1718,6 @@ startFullConfigParser(void *data, const char *name, const char **attr)
             } else if (0 == vscp_strcasecmp(attr[i], "hide_file_pattern")) {
                 if (attribute.length()) {
                     pObj->m_web_hide_file_patterns = attribute;
-                }
-            } else if (0 == vscp_strcasecmp(attr[i], "run_as_user")) {
-                if (attribute.length()) {
-                    pObj->m_web_run_as_user = attribute;
                 }
             } else if (0 == vscp_strcasecmp(attr[i], "url_rewrite_patterns")) {
                 if (attribute.length()) {
@@ -2113,8 +1975,8 @@ startFullConfigParser(void *data, const char *name, const char **attr)
                 }
             } else if (0 == vscp_strcasecmp(attr[i], "config")) {
                 strConfig = attribute;
-            } else if (0 ==
-                       vscp_strcasecmp(attr[i], "parameter")) { // deprecated
+            } else if (0 == vscp_strcasecmp(attr[i],
+                                            "parameter")) { // deprecated
                 strConfig = attribute;
             } else if (0 == vscp_strcasecmp(attr[i], "path")) {
                 strPath = attribute;
@@ -2183,8 +2045,8 @@ startFullConfigParser(void *data, const char *name, const char **attr)
                 }
             } else if (0 == vscp_strcasecmp(attr[i], "config")) {
                 strConfig = attribute;
-            } else if (0 ==
-                       vscp_strcasecmp(attr[i], "parameter")) { // deprecated
+            } else if (0 == vscp_strcasecmp(attr[i],
+                                            "parameter")) { // deprecated
                 strConfig = attribute;
             } else if (0 == vscp_strcasecmp(attr[i], "path")) {
                 strPath = attribute;
@@ -2250,8 +2112,8 @@ startFullConfigParser(void *data, const char *name, const char **attr)
                 }
             } else if (0 == vscp_strcasecmp(attr[i], "config")) {
                 strConfig = attribute;
-            } else if (0 ==
-                       vscp_strcasecmp(attr[i], "parameter")) { // deprecated
+            } else if (0 == vscp_strcasecmp(attr[i],
+                                            "parameter")) { // deprecated
                 strConfig = attribute;
             } else if (0 == vscp_strcasecmp(attr[i], "path")) {
                 strPath = attribute;
@@ -2380,13 +2242,13 @@ endFullConfigParser(void *data, const char *name)
 // ----------------------------------------------------------------------------
 
 ///////////////////////////////////////////////////////////////////////////////
-// readConfigurationXML
+// readConfiguration
 //
 // Read the configuration XML file
 //
 
 bool
-CControlObject::readConfigurationXML(const std::string &strcfgfile)
+CControlObject::readConfiguration(const std::string &strcfgfile)
 {
     FILE *fp;
 
