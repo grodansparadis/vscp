@@ -231,7 +231,9 @@ CControlObject::CControlObject()
 
     // Init. web server subsystem - All features enabled
     // ssl mt locks will we initiated here for openssl 1.0
-    if (0 == mg_init_library(0)) {
+    if (0 == mg_init_library(MG_FEATURES_IPV6 | MG_FEATURES_WEBSOCKET |
+                             MG_FEATURES_LUA | MG_FEATURES_SSJS |
+                             MG_FEATURES_COMPRESSION)) {
         syslog(LOG_ERR, "Failed to initialize webserver subsystem.");
     }
 
@@ -504,9 +506,6 @@ CControlObject::run(void)
         // Wait for event
         if ((-1 == vscp_sem_wait(&pClientItem->m_semClientInputQueue, 10)) &&
             errno == ETIMEDOUT) {
-
-            if (m_bQuit) continue; // Make quit request as fast as possible
-
             continue;
         }
 
@@ -558,12 +557,12 @@ CControlObject::cleanup(void)
                "ControlObject: cleanup - Giving worker threads time to stop "
                "operations...");
     }
-    sleep(2); // Give threads some time to end
 
     if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL) {
         syslog(LOG_DEBUG,
                "ControlObject: cleanup - Stopping device worker thread...");
     }
+
     stopDeviceWorkerThreads();
 
     if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL) {
@@ -571,24 +570,28 @@ CControlObject::cleanup(void)
           LOG_DEBUG,
           "ControlObject: cleanup - Stopping VSCP Server worker thread...");
     }
-    // stopDaemonWorkerThread();
+
+    // stopDaemonWorkerThread(); *****
 
     if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL) {
         syslog(LOG_DEBUG,
                "ControlObject: cleanup - Stopping client worker thread...");
     }
+
     stopClientMsgWorkerThread();
 
     if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL) {
         syslog(LOG_DEBUG,
                "ControlObject: cleanup - Stopping Web Server worker thread...");
     }
-    stop_webserver();
+
+    // stop_webserver();
 
     if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL) {
         syslog(LOG_DEBUG,
                "ControlObject: cleanup - Stopping TCP/IP worker thread...");
     }
+
     stopTcpipSrvThread();
 
     if (m_debugFlags[0] | VSCP_DEBUG1_GENERAL) {
@@ -1409,7 +1412,6 @@ CControlObject::getSystemKeyMD5(std::string &strKey)
     vscp_md5(digest, m_systemKey, 32);
     strKey = digest;
 }
-
 
 // ----------------------------------------------------------------------------
 // FULL XML configuration callbacks

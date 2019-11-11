@@ -81,8 +81,8 @@ createFolderStuct(std::string &rootFolder);
 void
 _sighandler(int sig)
 {
-    fprintf(stderr, "VSCPD: signal received, forced to stop.\n");
-    syslog(LOG_ERR, "VSCPD: signal received, forced to stop.: %m");
+    fprintf(stderr, "vscpd: signal received, forced to stop.\n");
+    syslog(LOG_ERR, "vscpd: signal received, forced to stop.: %m");
     gpobj->m_bQuit = true;
     gbStopDaemon   = true;
     gbRestart      = false;
@@ -156,13 +156,13 @@ main(int argc, char **argv)
 
     if (!init(strcfgfile, rootFolder)) {
         syslog(LOG_ERR, "[vscpd] Failed to configure. Terminating.\n");
-        fprintf(stderr, "VSCPD: Failed to configure. Terminating.\n");
+        fprintf(stderr, "vscpd: Failed to configure. Terminating.\n");
         exit(-1);
     }
 
     closelog(); // Close syslog
 
-    fprintf(stderr, "VSCPD: Bye, bye.\n");
+    fprintf(stderr, "vscpd: Bye, bye.\n");
     exit(EXIT_SUCCESS);
 }
 
@@ -200,7 +200,7 @@ init(std::string &strcfgfile, std::string &rootFolder)
         close(STDERR_FILENO);
 
         if (open("/", 0)) {
-            syslog(LOG_ERR, "VSCPD: open / not 0: %m");
+            syslog(LOG_ERR, "vscpd: open / not 0: %m");
         }
 
         dup2(0, 1);
@@ -220,15 +220,15 @@ init(std::string &strcfgfile, std::string &rootFolder)
     }
 
     // Create folder structure
-    if ( !createFolderStuct(rootFolder) ) {
+    if (!createFolderStuct(rootFolder)) {
         unlink("/var/run/vscpd/vscpd.pid");
         return -1;
     }
 
     // Change working directory to root folder
     if (chdir((const char *)rootFolder.c_str())) {
-        syslog(LOG_ERR, "VSCPD: Failed to change dir to rootdir");
-        fprintf(stderr, "VSCPD: Failed to change dir to rootdir");
+        syslog(LOG_ERR, "vscpd: Failed to change dir to rootdir");
+        fprintf(stderr, "vscpd: Failed to change dir to rootdir");
         unlink("/var/run/vscpd/vscpd.pid");
         int n = chdir("/tmp"); // security measure
         return -1;
@@ -277,7 +277,7 @@ init(std::string &strcfgfile, std::string &rootFolder)
         vscp_hexStr2ByteArray(
           gpobj->m_systemKey, 32, (const char *)systemKey.c_str());
 
-        fprintf(stderr, "VSCPD: init.\n");
+        fprintf(stderr, "vscpd: init.\n");
         if (!gpobj->init(strcfgfile, rootFolder)) {
             fprintf(stderr, "Can't initialize daemon. Exiting.\n");
             syslog(LOG_ERR, "Can't initialize daemon. Exiting.");
@@ -289,34 +289,34 @@ init(std::string &strcfgfile, std::string &rootFolder)
         //    Main loop is entered here
         // *******************************
 
-        fprintf(stderr, "VSCPD: run.\n");
+        fprintf(stderr, "vscpd: run.\n");
         if (!gpobj->run()) {
             fprintf(stderr,
-                    "Unable to start the VSCPD application. Exiting.\n");
-            syslog(LOG_ERR, "Unable to start the VSCPD application. Exiting.");
+                    "Unable to start the vscpd application. Exiting.\n");
+            syslog(LOG_ERR, "Unable to start the vscpd application. Exiting.");
             unlink("/var/run/vscpd/vscpd.pid");
             return FALSE;
         }
 
-        fprintf(stderr, "VSCPD: cleanup.\n");
-        // gbRestart = 0;
-        /*if ( !gpobj->cleanup() ) {
-            fprintf(stderr, "Unable to clean up the VSCPD application.\n");
-            syslog( LOG_ERR, "Unable to clean up the VSCPD application.");
+        fprintf(stderr, "vscpd: cleanup.\n");
+        gbRestart = 0;
+        if ( !gpobj->cleanup() ) {
+            fprintf(stderr, "Unable to clean up the vscpd application.\n");
+            syslog( LOG_ERR, "Unable to clean up the vscpd application.");
             return FALSE;
-        }*/
-
-        fprintf(stderr, "VSCPD: cleanup done.\n");
-
-        if (gbRestart) {
-            syslog(LOG_ERR, "VSCPD: Will try to restart.\n");
-            fprintf(stderr, "VSCPD: Will try to restart.\n");
-        } else {
-            syslog(LOG_ERR, "VSCPD: Will end things.\n");
-            fprintf(stderr, "VSCPD: Will end things.\n");
         }
 
-        fprintf(stderr, "VSCPD: Deleting the control object.\n");
+        fprintf(stderr, "vscpd: cleanup done.\n");
+
+        if (gbRestart) {
+            syslog(LOG_ERR, "vscpd: Will try to restart.\n");
+            fprintf(stderr, "vscpd: Will try to restart.\n");
+        } else {
+            syslog(LOG_ERR, "vscpd: Will end things.\n");
+            fprintf(stderr, "vscpd: Will end things.\n");
+        }
+
+        fprintf(stderr, "vscpd: Deleting the control object.\n");
         delete gpobj;
 
     } while (gbRestart);
@@ -324,7 +324,7 @@ init(std::string &strcfgfile, std::string &rootFolder)
     // Remove the pid file
     unlink("/var/run/vscp/vscpd/vscpd.pid");
 
-    fprintf(stderr, "VSCPD: ending...\n");
+    fprintf(stderr, "vscpd: ending...\n");
 
     gpobj = NULL;
 
@@ -345,24 +345,28 @@ copyleft(void)
     fprintf(stderr, "\n");
     fprintf(stderr, "\n");
     fprintf(stderr,
-            "This program is free software; you can redistribute it and/or \n");
-    fprintf(
-      stderr,
-      "modify it under the terms of the GNU General Public License as \n");
-    fprintf(
-      stderr,
-      "published by the Free Software Foundation; either version 2 of \n");
-    fprintf(stderr, "the License, or ( at your option ) any later version.\n");
-    fprintf(stderr, "\n");
-    fprintf(
-      stderr,
-      "This program is distributed in the hope that it will be useful,\n");
-    fprintf(stderr,
-            "but WITHOUT ANY WARRANTY; without even the implied warranty of\n");
-    fprintf(stderr,
-            "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n");
-    fprintf(stderr, "\n");
-    fprintf(stderr, "Check the MIT license for more details.\n");
+            "The MIT License (MIT)"\
+            "\n"\
+            "Copyright (C) 2000-2019 Ake Hedman, Grodans Paradis AB\n"\
+            "<info@grodansparadis.com>\n"\
+            "\n"\
+            "Permission is hereby granted, free of charge, to any person obtaining a copy\n"\
+            "of this software and associated documentation files (the 'Software'), to deal\n"\
+            "in the Software without restriction, including without limitation the rights\n"\
+            "to use, copy, modify, merge, publish, distribute, sublicense, and/or sell\n"\
+            "copies of the Software, and to permit persons to whom the Software is\n"\
+            "furnished to do so, subject to the following conditions:\n"\
+            "\n"\
+            "The above copyright notice and this permission notice shall be included in\n"\
+            "all copies or substantial portions of the Software.\n"\
+            "\n"\
+            "THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\n"\
+            "IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\n"\
+            "FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\n"\
+            "AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\n"\
+            "LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\n"\
+            "OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\n"\
+            "SOFTWARE.\n");
     fprintf(stderr, "\n");
 }
 
@@ -379,7 +383,7 @@ help(char *szPrgname)
     fprintf(stderr, "\t-r\tSpecify VSCP root folder. \n");
     fprintf(stderr, "\t-c\tSpecify a configuration file. \n");
     fprintf(stderr, "\t-k\t32 byte encryption key string in hex format. \n");
-    fprintf(stderr, "\t-d\tDebug level (0-2). 0=Default. ");
+    fprintf(stderr, "\t-d\tDebug level (64-bit hex value). 0=Default. ");
     fprintf(stderr, "that should be used (default: /etc/vscpd.conf).\n");
     fprintf(stderr, "\t-g\tPrint MIT license info.\n");
 }
@@ -396,71 +400,64 @@ createFolderStuct(std::string &rootFolder)
     fprintf(stderr, "Building folder structure.\n");
 
     if (0 == vscp_dirExists(rootFolder.c_str())) {
-        if ( -1 == mkdir( rootFolder.c_str(),
-                S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH ) ) {
-            fprintf(
-              stderr, "Failed to create folder %s\n", rootFolder.c_str());
-            syslog( LOG_ERR, "Failed to create folder %s\n", rootFolder.c_str());
+        if (-1 ==
+            mkdir(rootFolder.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH)) {
+            fprintf(stderr, "Failed to create folder %s\n", rootFolder.c_str());
+            syslog(LOG_ERR, "Failed to create folder %s\n", rootFolder.c_str());
             return false;
         }
     }
 
     path = rootFolder + "/certs";
     if (0 == vscp_dirExists(path.c_str())) {
-        if ( -1 == mkdir(path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH)) {
-            fprintf(
-              stderr, "Failed to create folder %s\n", path.c_str());
-            syslog( LOG_ERR, "Failed to create folder %s\n", path.c_str());
+        if (-1 == mkdir(path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH)) {
+            fprintf(stderr, "Failed to create folder %s\n", path.c_str());
+            syslog(LOG_ERR, "Failed to create folder %s\n", path.c_str());
             return false;
         }
     }
 
     path = rootFolder + "/web";
     if (0 == vscp_dirExists(path.c_str())) {
-        if ( -1 == mkdir(path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH)) {
-            fprintf(
-              stderr, "Failed to create folder %s\n", path.c_str());
-            syslog( LOG_ERR, "Failed to create folder %s\n", path.c_str());
+        if (-1 == mkdir(path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH)) {
+            fprintf(stderr, "Failed to create folder %s\n", path.c_str());
+            syslog(LOG_ERR, "Failed to create folder %s\n", path.c_str());
             return false;
         }
     }
 
     path = rootFolder + "/web/images";
     if (0 == vscp_dirExists(path.c_str())) {
-        if ( -1 == mkdir(path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH)) {
-            fprintf(
-              stderr, "Failed to create folder %s\n", path.c_str());
-            syslog( LOG_ERR, "Failed to create folder %s\n", path.c_str());
+        if (-1 == mkdir(path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH)) {
+            fprintf(stderr, "Failed to create folder %s\n", path.c_str());
+            syslog(LOG_ERR, "Failed to create folder %s\n", path.c_str());
             return false;
         }
     }
 
     path = rootFolder + "/web/js";
     if (0 == vscp_dirExists(path.c_str())) {
-        if ( -1 == mkdir(path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH)) {
-            fprintf(
-              stderr, "Failed to create folder %s\n", path.c_str());
-            syslog( LOG_ERR, "Failed to create folder %s\n", path.c_str());
+        if (-1 == mkdir(path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH)) {
+            fprintf(stderr, "Failed to create folder %s\n", path.c_str());
+            syslog(LOG_ERR, "Failed to create folder %s\n", path.c_str());
             return false;
         }
     }
 
     path = rootFolder + "/web/lua";
     if (0 == vscp_dirExists(path.c_str())) {
-        if ( -1 == mkdir(path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH)) {
-            fprintf(
-              stderr, "Failed to create folder %s\n", path.c_str());
-            syslog( LOG_ERR, "Failed to create folder %s\n", path.c_str());
+        if (-1 == mkdir(path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH)) {
+            fprintf(stderr, "Failed to create folder %s\n", path.c_str());
+            syslog(LOG_ERR, "Failed to create folder %s\n", path.c_str());
             return false;
         }
     }
 
     path = rootFolder + "/mdf";
     if (0 == vscp_dirExists(path.c_str())) {
-        if ( -1 == mkdir(path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH)) {
-            fprintf(
-              stderr, "Failed to create folder %s\n", path.c_str());
-            syslog( LOG_ERR, "Failed to create folder %s\n", path.c_str());
+        if (-1 == mkdir(path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH)) {
+            fprintf(stderr, "Failed to create folder %s\n", path.c_str());
+            syslog(LOG_ERR, "Failed to create folder %s\n", path.c_str());
             return false;
         }
     }

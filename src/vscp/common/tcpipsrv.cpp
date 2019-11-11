@@ -195,7 +195,7 @@ tcpipListenThread(void *pData)
         int pollres;
         if ((pollres = stcp_poll(pfd,
                                  pListenObj->m_srvctx.num_listening_sockets,
-                                 200,
+                                 500,
                                  &(pListenObj->m_nStopTcpIpSrv))) > 0) {
 
             for (i = 0; i < pListenObj->m_srvctx.num_listening_sockets; i++) {
@@ -2085,6 +2085,9 @@ tcpipClientObj::handleClientShutdown(void)
 {
     // Must be connected
     if (STCP_CONN_STATE_CONNECTED != m_conn->conn_state) return;
+
+    syslog(LOG_INFO, "tcp/ip client requested shutdown!!!");
+    m_pObj->m_bQuit = true;
 
     if (!m_pClientItem->bAuthenticated) {
         write(MSG_OK, strlen(MSG_OK));

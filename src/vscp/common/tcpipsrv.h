@@ -154,8 +154,8 @@ class tcpipListenThreadObj
     /*!
         Getter/setter for control object
     */
-    void setControlObjectPointer(CControlObject *pobj) { m_pobj = pobj; };
-    CControlObject *getControlObject(void) { return m_pobj; };
+    void setControlObjectPointer(CControlObject *pobj) { m_pObj = pobj; };
+    CControlObject *getControlObject(void) { return m_pObj; };
 
     // This mutex protects the clientlist
     pthread_mutex_t m_mutexTcpClientList;
@@ -175,7 +175,7 @@ class tcpipListenThreadObj
     int m_nStopTcpIpSrv;
 
     // Pointer to the mother of all things
-    CControlObject *m_pobj;
+    CControlObject *m_pObj;
 };
 
 // ----------------------------------------------------------------------------
