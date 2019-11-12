@@ -123,7 +123,7 @@ CDeviceItem::CDeviceItem()
 
     // VSCP Level III
     m_pid = 0;
-    // m_pDriver3Process = NULL;
+
 }
 
 ///////////////////////////////////////////////////////////////////////////////

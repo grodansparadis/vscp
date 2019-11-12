@@ -571,7 +571,7 @@ CControlObject::cleanup(void)
           "ControlObject: cleanup - Stopping VSCP Server worker thread...");
     }
 
-    //stopDaemonWorkerThread(); *****
+    // stopDaemonWorkerThread(); *****
 
     if (m_debugFlags[0] & VSCP_DEBUG1_GENERAL) {
         syslog(LOG_DEBUG,
@@ -1441,7 +1441,7 @@ startFullConfigParser(void *data, const char *name, const char **attr)
         bVscpConfigFound = TRUE;
     } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
                (0 == vscp_strcasecmp(name, "general"))) {
-        bVscpConfigFound = TRUE;
+        bGeneralConfigFound = TRUE;
 
         for (int i = 0; attr[i]; i += 2) {
 
@@ -1460,71 +1460,71 @@ startFullConfigParser(void *data, const char *name, const char **attr)
                 pObj->m_strServerName = attribute;
             }
         }
-    } else if (2 == depth_full_config_parser) {
+    } else if (bVscpConfigFound && bGeneralConfigFound &&
+               (2 == depth_full_config_parser) &&
+               (0 == vscp_strcasecmp(name, "logging"))) {
 
-        if (bVscpConfigFound && (0 == vscp_strcasecmp(name, "logging"))) {
+        for (int i = 0; attr[i]; i += 2) {
 
-            for (int i = 0; attr[i]; i += 2) {
+            std::string attribute = attr[i + 1];
+            vscp_trim(attribute);
 
-                std::string attribute = attr[i + 1];
-                vscp_trim(attribute);
-
-                if (0 == vscp_strcasecmp(attr[i], "debugflags1")) {
-                    if (attribute.length()) {
-                        pObj->m_debugFlags[0] = vscp_readStringValue(attribute);
-                    }
-                } else if (0 == vscp_strcasecmp(attr[i], "debugflags2")) {
-                    if (attribute.length()) {
-                        pObj->m_debugFlags[1] = vscp_readStringValue(attribute);
-                    }
-                } else if (0 == vscp_strcasecmp(attr[i], "debugflags3")) {
-                    if (attribute.length()) {
-                        pObj->m_debugFlags[2] = vscp_readStringValue(attribute);
-                    }
-                } else if (0 == vscp_strcasecmp(attr[i], "debugflags4")) {
-                    if (attribute.length()) {
-                        pObj->m_debugFlags[3] = vscp_readStringValue(attribute);
-                    }
-                } else if (0 == vscp_strcasecmp(attr[i], "debugflags5")) {
-                    if (attribute.length()) {
-                        pObj->m_debugFlags[4] = vscp_readStringValue(attribute);
-                    }
-                } else if (0 == vscp_strcasecmp(attr[i], "debugflags6")) {
-                    if (attribute.length()) {
-                        pObj->m_debugFlags[5] = vscp_readStringValue(attribute);
-                    }
-                } else if (0 == vscp_strcasecmp(attr[i], "debugflags7")) {
-                    if (attribute.length()) {
-                        pObj->m_debugFlags[6] = vscp_readStringValue(attribute);
-                    }
-                } else if (0 == vscp_strcasecmp(attr[i], "debugflags8")) {
-                    if (attribute.length()) {
-                        pObj->m_debugFlags[7] = vscp_readStringValue(attribute);
-                    }
+            if (0 == vscp_strcasecmp(attr[i], "debugflags1")) {
+                if (attribute.length()) {
+                    pObj->m_debugFlags[0] = vscp_readStringValue(attribute);
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "debugflags2")) {
+                if (attribute.length()) {
+                    pObj->m_debugFlags[1] = vscp_readStringValue(attribute);
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "debugflags3")) {
+                if (attribute.length()) {
+                    pObj->m_debugFlags[2] = vscp_readStringValue(attribute);
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "debugflags4")) {
+                if (attribute.length()) {
+                    pObj->m_debugFlags[3] = vscp_readStringValue(attribute);
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "debugflags5")) {
+                if (attribute.length()) {
+                    pObj->m_debugFlags[4] = vscp_readStringValue(attribute);
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "debugflags6")) {
+                if (attribute.length()) {
+                    pObj->m_debugFlags[5] = vscp_readStringValue(attribute);
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "debugflags7")) {
+                if (attribute.length()) {
+                    pObj->m_debugFlags[6] = vscp_readStringValue(attribute);
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "debugflags8")) {
+                if (attribute.length()) {
+                    pObj->m_debugFlags[7] = vscp_readStringValue(attribute);
                 }
             }
+        }
 
-        } else if (bVscpConfigFound &&
-                   (0 == vscp_strcasecmp(name, "security"))) {
+    } else if (bVscpConfigFound && bGeneralConfigFound &&
+               (2 == depth_full_config_parser) &&
+               (0 == vscp_strcasecmp(name, "security"))) {
 
-            for (int i = 0; attr[i]; i += 2) {
+        for (int i = 0; attr[i]; i += 2) {
 
-                std::string attribute = attr[i + 1];
-                vscp_trim(attribute);
+            std::string attribute = attr[i + 1];
+            vscp_trim(attribute);
 
-                if (0 == vscp_strcasecmp(attr[i], "admin")) {
-                    pObj->m_admin_user = attribute;
-                } else if (0 == vscp_strcasecmp(attr[i], "password")) {
-                    pObj->m_admin_password = attribute;
-                } else if (0 == vscp_strcasecmp(attr[i], "allowfrom")) {
-                    pObj->m_admin_allowfrom = attribute;
-                } else if (0 == vscp_strcasecmp(attr[i], "vscptoken")) {
-                    pObj->m_vscptoken = attribute;
-                } else if (0 == vscp_strcasecmp(attr[i], "vscpkey")) {
-                    if (attribute.length()) {
-                        vscp_hexStr2ByteArray(
-                          pObj->m_systemKey, 32, attribute.c_str());
-                    }
+            if (0 == vscp_strcasecmp(attr[i], "admin")) {
+                pObj->m_admin_user = attribute;
+            } else if (0 == vscp_strcasecmp(attr[i], "password")) {
+                pObj->m_admin_password = attribute;
+            } else if (0 == vscp_strcasecmp(attr[i], "allowfrom")) {
+                pObj->m_admin_allowfrom = attribute;
+            } else if (0 == vscp_strcasecmp(attr[i], "vscptoken")) {
+                pObj->m_vscptoken = attribute;
+            } else if (0 == vscp_strcasecmp(attr[i], "vscpkey")) {
+                if (attribute.length()) {
+                    vscp_hexStr2ByteArray(
+                      pObj->m_systemKey, 32, attribute.c_str());
                 }
             }
         }
@@ -2013,13 +2013,13 @@ startFullConfigParser(void *data, const char *name, const char **attr)
                        strPath.c_str());
             }
         }
-
     } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
                ((0 == vscp_strcasecmp(name, "level2driver")))) {
         bLevel2DriverConfigFound = TRUE;
     } else if (bVscpConfigFound && bLevel2DriverConfigFound &&
                (2 == depth_full_config_parser) &&
                (0 == vscp_strcasecmp(name, "driver"))) {
+
         std::string strName;
         std::string strConfig;
         std::string strPath;
@@ -2045,12 +2045,12 @@ startFullConfigParser(void *data, const char *name, const char **attr)
                        (found = strName.find_first_of(" "))) {
                     strName[found] = '_';
                 }
-            } else if (0 == vscp_strcasecmp(attr[i], "config")) {
+            } else if (0 == vscp_strcasecmp(attr[i], "path-config")) {
                 strConfig = attribute;
             } else if (0 == vscp_strcasecmp(attr[i],
                                             "parameter")) { // deprecated
                 strConfig = attribute;
-            } else if (0 == vscp_strcasecmp(attr[i], "path")) {
+            } else if (0 == vscp_strcasecmp(attr[i], "path-driver")) {
                 strPath = attribute;
             } else if (0 == vscp_strcasecmp(attr[i], "guid")) {
                 guid.getFromString(attribute);
@@ -2080,7 +2080,6 @@ startFullConfigParser(void *data, const char *name, const char **attr)
                        strPath.c_str());
             }
         }
-
     } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
                ((0 == vscp_strcasecmp(name, "level3driver")))) {
         bLevel3DriverConfigFound = TRUE;
@@ -2144,29 +2143,6 @@ startFullConfigParser(void *data, const char *name, const char **attr)
                        "Level III driver added. name = %s- [%s]",
                        strName.c_str(),
                        strPath.c_str());
-            }
-        }
-    }
-
-    else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
-             ((0 == vscp_strcasecmp(name, "automation")))) {
-        for (int i = 0; attr[i]; i += 2) {
-
-            std::string attribute = attr[i + 1];
-            vscp_trim(attribute);
-
-            if (0 == vscp_strcasecmp(attr[i], "enable")) {
-                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
-                    pObj->m_automation.enableAutomation();
-                } else {
-                    pObj->m_automation.disableAutomation();
-                }
-            } else if (0 == vscp_strcasecmp(attr[i], "zone")) {
-                uint8_t zone = vscp_readStringValue(attribute);
-                pObj->m_automation.setZone(zone);
-            } else if (0 == vscp_strcasecmp(attr[i], "subzone")) {
-                uint8_t subzone = vscp_readStringValue(attribute);
-                pObj->m_automation.setSubzone(subzone);
             }
         }
     }

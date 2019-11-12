@@ -146,7 +146,7 @@ main(int argc, char **argv)
     strcfgfile   = "/etc/vscp/vscpd.xml";
     gbStopDaemon = false;
 
-    while ((opt = getopt(argc, argv, "d:c:f:k:hgs")) != -1) {
+    while ((opt = getopt(argc, argv, "d:c:r:k:hgs")) != -1) {
 
         switch (opt) {
 
@@ -159,10 +159,15 @@ main(int argc, char **argv)
 
             case 'c':
                 strcfgfile = optarg;
+                // This is printed in controlobject
+                //fprintf(stderr, "Will use configfile = %s", strcfgfile.c_str() );
+                //syslog(LOG_INFO, "Will use configfile = %s", strcfgfile );
                 break;
 
             case 'r':
                 rootFolder = optarg;
+                fprintf(stderr, "Will use rootfolder = %s", rootFolder.c_str() );
+                syslog(LOG_INFO, "Will use rootfolder = %s", rootFolder.c_str() );
                 break;
 
             case 'k':
@@ -171,7 +176,8 @@ main(int argc, char **argv)
 
             case 'd':
                 gnDebugLevel = atoi(optarg);
-                printf("Debug=%s\n", optarg);
+                fprintf(stderr,"Debug flags=%s\n", optarg);
+                syslog(LOG_INFO, "Debug flags=%s\n", optarg );
                 getDebugValues(optarg);
                 break;
 
@@ -434,13 +440,13 @@ void
 help(char *szPrgname)
 {
     fprintf(
-      stderr, "Usage: %s [-ahg] [-c command-file] [-c key] -dn\n", szPrgname);
+      stderr, "Usage: %s [-hg] [-r rootfolder] [-c config-file] [-k key] -dd0,d1,d2...\n", szPrgname);
     fprintf(stderr, "\t-h\tThis help message.\n");
     fprintf(stderr, "\t-s\tStandalone (don't run as daemon). \n");
     fprintf(stderr, "\t-r\tSpecify VSCP root folder. \n");
     fprintf(stderr, "\t-c\tSpecify a configuration file. \n");
     fprintf(stderr, "\t-k\t32 byte encryption key string in hex format. \n");
-    fprintf(stderr, "\t-d\tDebug flags as comma separated list (f0,f1,f2,f3,,,).");
+    fprintf(stderr, "\t-d\tDebug flags as comma separated list (d0,d1,d2,d3,,,).");
     fprintf(stderr, "that should be used (default: /etc/vscpd.conf).\n");
     fprintf(stderr, "\t-g\tPrint MIT license info.\n");
 }
