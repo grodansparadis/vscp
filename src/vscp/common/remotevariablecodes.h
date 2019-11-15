@@ -70,9 +70,10 @@
 #define VSCP_DAEMON_VARIABLE_CODE_USER (502)   // User item, comma separated
 #define VSCP_DAEMON_VARIABLE_CODE_FILTER (503) // Filter item, comma separated (filter + mask)
 
-// When adding new type
-// ====================
-// add to variables
-// Add to webserver admin i/f  variable: edit/list
+// Remote variable errors
+#define ERR_VARIABLE_OK             0   // No error
+#define ERR_VARIABLE_UNKNOWN        1   // No variable with that name
+#define ERR_VARIABLE_READ_ONLY      2   // Variable can't be written
+#define ERR_VARIABLE_WRONG_TYPE     3   // Expected otyher type
 
 #endif
