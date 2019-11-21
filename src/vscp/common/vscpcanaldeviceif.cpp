@@ -646,14 +646,14 @@ VscpCanalDeviceIf::constructCanalMsg( canalMsg *pmsg,
     }
     else if ( CANAL_FORMAT_VSCP_XML == nFormat ) {
 
-        if ( !vscp_convertXMLToEventEx(strObj, &ex) ) {
+        if ( !vscp_convertXMLToEventEx(&ex,strObj) ) {
             return false;
         }
 
     }
     else if ( CANAL_FORMAT_VSCP_JSON == nFormat ) {
 
-        if ( !vscp_convertJSONToEventEx(strObj, &ex) ) {
+        if ( !vscp_convertJSONToEventEx(&ex,strObj) ) {
             return false;
         }
 
@@ -771,7 +771,7 @@ bool VscpCanalDeviceIf::CanalToFormatedEvent( std::string& strObj,
             return false;
         }
 
-        if ( !vscp_convertEventExToXML( &ex, strObj) ) {
+        if ( !vscp_convertEventExToXML(strObj,&ex) ) {
             return false;
         }
 
@@ -786,7 +786,7 @@ bool VscpCanalDeviceIf::CanalToFormatedEvent( std::string& strObj,
             return false;
         }
 
-        if ( !vscp_convertEventExToJSON( &ex, strObj) ) {
+        if ( !vscp_convertEventExToJSON(strObj,&ex) ) {
             return false;
         }
     }
