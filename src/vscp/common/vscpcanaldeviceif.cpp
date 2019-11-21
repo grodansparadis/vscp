@@ -764,7 +764,7 @@ bool VscpCanalDeviceIf::CanalToFormatedEvent( std::string& strObj,
     else if ( CANAL_FORMAT_VSCP_XML == nFormat ) {
         vscpEventEx ex;
 
-        uint8_t guid[15];
+        uint8_t guid[16];
         memset( guid, 0, 16 );
 
         if ( !vscp_convertCanalToEventEx( &ex, pmsg, guid ) ) {
@@ -779,7 +779,7 @@ bool VscpCanalDeviceIf::CanalToFormatedEvent( std::string& strObj,
     else if ( CANAL_FORMAT_VSCP_JSON == nFormat ) {
         vscpEventEx ex;
 
-        uint8_t guid[15];
+        uint8_t guid[16];
         memset( guid, 0, 16 );
 
         if ( !vscp_convertCanalToEventEx( &ex, pmsg, guid ) ) {

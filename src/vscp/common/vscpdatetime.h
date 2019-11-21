@@ -159,7 +159,7 @@ class vscpdatetime
     /*!
         Initialize from julian date/time
     */
-    vscpdatetime(const double ljd) { setFromJulian((long)ljd); };
+    vscpdatetime(const double ljd) { setFromJulian(static_cast<long> (ljd)); };
 
     /*!
         Set from Unix date/time struct
