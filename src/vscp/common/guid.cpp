@@ -107,7 +107,6 @@ cguid::operator!=(const cguid &guid)
 void
 cguid::getFromString(const std::string &strGUID)
 {
-    unsigned long val;
     std::string str = strGUID;
 
     // Check for default string (all nills)
@@ -125,7 +124,7 @@ cguid::getFromString(const std::string &strGUID)
             try {
                 std::size_t pos;
                 m_id[i] = (uint8_t)std::stoul(tok, &pos, 16);
-            } catch (std::invalid_argument) {
+            } catch (std::invalid_argument&) {
                 m_id[i] = 0;
             }
             tokens.pop_front();

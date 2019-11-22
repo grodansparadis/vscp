@@ -78,6 +78,8 @@
 #include <unistd.h>
 #endif
 
+#define UNUSED(expr) do { (void)(expr); } while (0)
+
 #define vsnprintf_impl vsnprintf
 
 #define XML_BUFF_SIZE 0xffff
@@ -126,9 +128,9 @@ vscp_readStringValue(const std::string &strval)
         } else {
             val = std::stoul(str);
         }
-    } catch (std::invalid_argument) {
+    } catch (std::invalid_argument&) {
         val = 0;
-    } catch (std::out_of_range) {
+    } catch (std::out_of_range&) {
         val = 0;
     }
 
@@ -694,12 +696,12 @@ vscp_parseISOCombined(std::string &dt, struct tm *ptm)
 bool
 vscp_XML_Escape(const char *src, char *dst, size_t dst_len)
 {
-    const char escapeCharTbl[6]      = { '&', '\'', '\"', '>', '<', '\0' };
+    /*const char escapeCharTbl[6]      = { '&', '\'', '\"', '>', '<', '\0' };
     const char *const escapeSeqTbl[] = {
         "&amp;", "&apos;", "&quot;", "&gt;", "&lt;",
     };
 
-    /*
+    
     unsigned int i, j, k;
     unsigned int nRef = 0;
     unsigned int nEscapeChars = strlen( escapeCharTbl );
@@ -936,6 +938,7 @@ vscp_getDataCodingNormalizedInteger(const uint8_t *pCode, uint8_t length)
 
     memset(valarray, 0, sizeof(valarray));
     normbyte = *pCode;
+    UNUSED(normbyte);
     decibyte = *(pCode + 1);
 
     // Check if this is a negative number
@@ -1704,6 +1707,7 @@ vscp_convertFloatToNormalizedEventData(uint8_t *pdata,
 
     char buf[128];
     bool bNegative = (value > 0) ? false : true;
+    UNUSED(bNegative);
     int ndigits    = 0;
     uint64_t val64;
     double intpart;
@@ -1799,6 +1803,7 @@ vscp_convertFloatToFloatEventData(
     void *p    = (void *)&value;
     uint32_t n = VSCP_UINT32_SWAP_ON_LE(*((uint32_t *)p));
     float f    = *((float *)((uint8_t *)&n));
+    UNUSED(f);
     p          = (void *)&value;
 
     *psize   = 5;
@@ -2253,7 +2258,7 @@ vscp_convertLevel1MeasuremenToLevel2String(vscpEvent *pEvent)
 std::string &
 vscp_replaceBackslash(std::string &str)
 {
-    int pos;
+    size_t pos;
     while (str.npos != (pos = str.find('\\'))) {
         str[pos] = '/';
     }
@@ -2546,8 +2551,6 @@ vscp_calcCRC4GUIDString(const std::string &strguid)
 bool
 vscp_setEventGuidFromString(vscpEvent *pEvent, const std::string &strGUID)
 {
-    unsigned long val;
-
     // Check pointer
     if (NULL == pEvent) return false;
 
@@ -2558,7 +2561,7 @@ vscp_setEventGuidFromString(vscpEvent *pEvent, const std::string &strGUID)
     } else {
         std::deque<std::string> tokens;
         vscp_split(tokens, strGUID, ":");
-        for (int i = 0; i < MIN(16,tokens.size()); i++) {
+        for (int i = 0; i < (int)MIN(16,tokens.size()); i++) {
             pEvent->GUID[i] =
               (uint8_t)stol(tokens.front().c_str(), nullptr, 16);
             tokens.pop_front();
@@ -2577,8 +2580,6 @@ vscp_setEventGuidFromString(vscpEvent *pEvent, const std::string &strGUID)
 bool
 vscp_setEventExGuidFromString(vscpEventEx *pEvent, const std::string &strGUID)
 {
-    unsigned long val;
-
     // Check pointer
     if (NULL == pEvent) return false;
 
@@ -2608,7 +2609,6 @@ vscp_setEventExGuidFromString(vscpEventEx *pEvent, const std::string &strGUID)
 bool
 vscp_getGuidFromStringToArray(unsigned char *pGUID, const std::string &strGUID)
 {
-    unsigned long val;
     std::string str = vscp_trim_copy(strGUID);
 
     if (NULL == pGUID) {
@@ -4418,7 +4418,7 @@ vscp_convertCanalToEvent(vscpEvent *pvscpEvent,
     pvscpEvent->head = 0;
 
     if (pcanalMsg->sizeData > 8) {
-        pcanalMsg->sizeData;
+        return false;
     }
 
     if (pcanalMsg->sizeData > 0) {
@@ -6007,7 +6007,7 @@ vscp_hexStr2ByteArray(uint8_t *array, size_t size, const char *hexstr)
     int i = 0, j = 0;
 
     // The output array size is half the hex_str length (rounded up)
-    int nhexsize = (slen + 1) / 2;
+    size_t nhexsize = (slen + 1) / 2;
 
     if (size < nhexsize) {
         // Too big for the output array
@@ -6159,7 +6159,7 @@ vscp_getSaltHex(std::string &strSalt, size_t len)
         }
 
         strSalt.clear();
-        for (int i = 0; i < len; i++) {
+        for (size_t i = 0; i < len; i++) {
             strSalt += vscp_str_format("%02X", pbuf[i]);
         }
 

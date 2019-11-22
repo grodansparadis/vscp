@@ -87,7 +87,6 @@ VscpRemoteTcpIf::checkReturnValue(bool bClear)
 {
     bool rv = false;
     char buf[8192];
-    int nRead = -1;
 
     if (bClear) doClrInputQueue();
 
@@ -198,9 +197,9 @@ VscpRemoteTcpIf::doCommand(const std::string &cmd)
 
     int n;
     if (0 ==
-          (n = stcp_write(m_conn, (const char *)cmd.c_str(), cmd.length())) ||
-        n != cmd.length()) {
-        return VSCP_ERROR_ERROR;
+            (n = stcp_write(m_conn, (const char *)cmd.c_str(), cmd.length())) ||
+        n != (int)cmd.length()) {
+      return VSCP_ERROR_ERROR;
     }
 
     ret = checkReturnValue(true);
@@ -521,7 +520,6 @@ VscpRemoteTcpIf::doCmdSend(const vscpEvent *pEvent)
     if (m_bModeReceiveLoop) return VSCP_ERROR_PARAMETER;
 
     std::string strBuf, strWrk, strGUID;
-    unsigned char guidsum = 0;
 
     // Must be a valid data pointer if data
     if ((pEvent->sizeData > 0) && (NULL == pEvent->pdata))
@@ -551,7 +549,6 @@ int
 VscpRemoteTcpIf::doCmdSendEx(const vscpEventEx *pEventEx)
 {
     std::string strBuf, strWrk, strGUID;
-    unsigned char guidsum = 0;
 
     if (!isConnected()) return VSCP_ERROR_CONNECTION;
 
@@ -889,7 +886,6 @@ VscpRemoteTcpIf::doCmdBlockingReceive(vscpEventEx *pEventEx, uint32_t timeout)
     // Get event
     pEventEx->head       = e.head;
     pEventEx->vscp_class = e.vscp_class;
-    e;
     pEventEx->vscp_type = e.vscp_type;
     pEventEx->obid      = e.obid;
     pEventEx->timestamp = e.timestamp;
@@ -937,7 +933,6 @@ VscpRemoteTcpIf::doCmdDataAvailable(void)
 int
 VscpRemoteTcpIf::doCmdStatus(canalStatus *pStatus)
 {
-    long val;
     std::string strBuf;
     std::string strWrk;
     std::string strLine;
@@ -1002,7 +997,6 @@ VscpRemoteTcpIf::doCmdStatus(VSCPStatus *pStatus)
 int
 VscpRemoteTcpIf::doCmdStatistics(VSCPStatistics *pStatistics)
 {
-    long val;
     std::string strBuf;
     std::string strWrk;
     std::string strLine;
@@ -1223,7 +1217,6 @@ VscpRemoteTcpIf::doCmdVersion(uint8_t *pMajorVer,
                               uint8_t *pMinorVer,
                               uint8_t *pSubMinorVer)
 {
-    long val;
     std::string strLine;
 
     if (!isConnected()) return VSCP_ERROR_CONNECTION;
@@ -1337,7 +1330,6 @@ VscpRemoteTcpIf::doCmdGetDriverInfo(void)
 int
 VscpRemoteTcpIf::doCmdGetGUID(unsigned char *pGUID)
 {
-    long val;
     std::string strLine;
 
     if (!isConnected()) return VSCP_ERROR_CONNECTION;
@@ -1522,7 +1514,6 @@ VscpRemoteTcpIf::doCmdGetChannelID(uint32_t *pChannelID)
     if (getInputQueueCount() < 2) return VSCP_ERROR_ERROR;
     strLine = m_inputStrArray[m_inputStrArray.size() - 2];
 
-    unsigned long val;
     *pChannelID = stoul(strLine);
 
     return VSCP_ERROR_SUCCESS;
@@ -4443,7 +4434,7 @@ VscpRemoteTcpIf::fetchIterfaceGUID(const std::string &ifName, cguid &guid)
                         tokens.pop_front();
                     }
 
-                    int pos;
+                    size_t pos;
                     std::string strName;
                     if (std::string::npos != (pos = strDescription.find("|"))) {
                         strName = strDescription.substr(0, pos);

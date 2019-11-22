@@ -598,7 +598,6 @@ VscpCanalDeviceIf::constructCanalMsg( canalMsg *pmsg,
 
     } else if (CANAL_FORMAT_CAN_JSON == nFormat) {
         try {
-            bool bVSCP = false;
             auto j = json::parse(strObj.c_str());
 
             // !!!! DO NOT REMOVE !!!!

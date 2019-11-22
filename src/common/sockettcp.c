@@ -137,6 +137,9 @@
 
 #include "vscpmd5.h"
 
+//#define UNUSED(expr) (do { (void)(expr); } while (0))
+#define SUPPRESS_WARNING(a) (void)a
+
 /* Flags for SSL usage */
 #define NO_SSL          0
 #define USE_SSL         1
@@ -638,9 +641,9 @@ typedef int SOCKET;
 #define SHUTDOWN_BOTH (2)
 
 // stcp_init_library counter
-static int stcp_init_called = 0;
+__attribute__((unused)) static int stcp_init_called = 0;
 
-static int stcp_ssl_initialized = 0;
+__attribute__((unused)) static int stcp_ssl_initialized = 0;
 
 static pthread_key_t sTlsKey; // Thread local storage index
 
@@ -1209,12 +1212,12 @@ pthread_getspecific(pthread_key_t key)
 
 static struct pthread_mutex_undefined_struct *pthread_mutex_attr = NULL;
 #else
-static pthread_mutexattr_t pthread_mutex_attr;
+__attribute__((unused)) static pthread_mutexattr_t pthread_mutex_attr;
 #endif /* _WIN32 */
 
 
 /* mg_init_library counter */
-static int mg_init_library_called = 0;
+__attribute__((unused)) static int mg_init_library_called = 0;
 
 #if !defined(NO_SSL)
 static int mg_ssl_initialized = 0;
@@ -1272,6 +1275,7 @@ static int pthread_mutex_unlock(pthread_mutex_t *mutex);
 // stcp_global_lock
 //
 
+static void stcp_global_lock(void) __attribute__ ((unused));
 static void
 stcp_global_lock(void)
 {
@@ -1282,6 +1286,7 @@ stcp_global_lock(void)
 // stcp_global_unlock
 //
 
+static void stcp_global_unlock(void) __attribute__ ((unused));
 static void
 stcp_global_unlock(void)
 {
@@ -1353,6 +1358,7 @@ atomic_dec(volatile int *addr)
 // CRYPTO_set_id_callback
 //
 
+static unsigned long stcp_current_thread_id( void ) __attribute__((unused));
 static unsigned long
 stcp_current_thread_id( void )
 {
@@ -1440,6 +1446,7 @@ static void strlcpy( register char *dst, register const char *src, size_t n )
 // stcp_strndup
 //
 
+static char *stcp_strndup( const char *ptr, size_t len ) __attribute__ ((unused));
 static char *stcp_strndup( const char *ptr, size_t len )
 {
     char *p;
@@ -1455,6 +1462,7 @@ static char *stcp_strndup( const char *ptr, size_t len )
 // stcp_strdup
 //
 
+static char *stcp_strdup( const char *str ) __attribute__ ((unused));
 static char *stcp_strdup( const char *str )
 {
     return strndup( str, strlen( str ) );
@@ -2057,17 +2065,17 @@ ssl_info_callback(SSL *ssl, int what, int ret)
 int
 stcp_init_ssl( SSL_CTX *ssl_ctx, struct stcp_secure_options *secure_opts )
 {
-    int callback_ret;
+    __attribute__((unused))int callback_ret;
     int should_verify_peer;
     int peer_certificate_optional;
     int use_default_verify_paths;
-    int verify_depth;
+    __attribute__((unused))int verify_depth;
     time_t now_rt = time(NULL);
     struct timespec now_mt;
     md5_byte_t ssl_context_id[16];
     md5_state_t md5state;
-    int protocol_ver;
-
+    __attribute__((unused))int protocol_ver;
+    
     /* Must have secure options */
     if ( NULL == secure_opts ) {
         return 0;
