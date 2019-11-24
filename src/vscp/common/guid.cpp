@@ -60,6 +60,10 @@ cguid::cguid(const cguid &guid)
     memcpy(m_id, guid.m_id, sizeof(m_id));
 }
 
+cguid::cguid(const std::string &strGUID) {
+    getFromString(strGUID);
+}
+
 cguid::~cguid()
 {
     ;

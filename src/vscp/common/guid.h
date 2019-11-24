@@ -42,6 +42,7 @@ class cguid
   public:
     cguid();
     cguid(const cguid &guid);
+    cguid(const std::string &strGUID);
     virtual ~cguid();
 
   public:
