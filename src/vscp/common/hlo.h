@@ -38,7 +38,7 @@
     "<vscp-resp op=\"vscp-cmd\" "                                              \
     "name=\"%s\" "                                                             \
     "result=\"%s\" "                                                           \
-    "description=\"¤s\" "                                                      \
+    "description=\"%s\" "                                                      \
     " />"
 
 #define HLO_READ_VAR_REPLY_TEMPLATE                                            \
