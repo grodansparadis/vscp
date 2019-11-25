@@ -31,18 +31,35 @@
 
 #include <string>
 
-#define HLO_CMD_OK_REPLY_TEMPLATE                                              \
+// All XML commands return thsi HLO content
+//     RESULT="OK"  - for success. Description can be used at will.
+//     RESULT="ERR" - for failure with cause of failuire in description
+#define HLO_CMD_REPLY_TEMPLATE                                                 \
     "<vscp-resp op=\"vscp-cmd\" "                                              \
     "name=\"%s\" "                                                             \
-    "result=\"OK\" "                                                           \
-    " />"
-
-#define HLO_CMD_ERR_REPLY_TEMPLATE                                             \
-    "<vscp-resp op=\"vscp-cmd\" "                                              \
-    "name=\"%s\" "                                                             \
-    "result=\"ERR\" "                                                          \
+    "result=\"%s\" "                                                          \
     "description=\"¤s\" "                                                     \
     " />"
+
+#define HLO_CMD_REPLY_TEMPLATE                                                 \
+    "<vscp-resp op=\"%s\" "                                                    \
+    "name=\"%s\" "                                                             \
+    "result=\"%s\" "                                                           \
+    "description=\"%s\" />"
+
+#define HLO_READ_VAR_REPLY_TEMPLATE                                            \
+    "<vscp-resp op=\"vscp-readvar\" "                                          \
+    "name=\"%s\" "                                                             \
+    "result=\"%s\" "                                                           \
+    "type=%d "                                                                 \
+    "value=\"%s\" />"
+
+#define HLO_READ_VAR_ERR_REPLY_TEMPLATE                                        \
+    "<vscp-resp op=\"vscp-readvar\" "                                          \
+    "name=\"%s\" "                                                             \
+    "result=\"ERR\" "                                                          \
+    "error-code=%d "                                                           \
+    "description=\"%s\" />"
 
 // ****************************************************************************
 //                        HLO Remote variable operations

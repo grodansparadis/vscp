@@ -116,25 +116,7 @@
     "value=\"%s\" \n"                                                          \
     "note=\"%s\" />"
 
-#define HLO_CMD_REPLY_TEMPLATE                                                 \
-    "<vscp-resp op=\"%s\" "                                                    \
-    "name=\"%s\" "                                                             \
-    "result=\"%s\" "                                                           \
-    "description=\"%s\" />"
 
-#define HLO_READ_VAR_REPLY_TEMPLATE                                            \
-    "<vscp-resp op=\"vscp-readvar\" "                                          \
-    "name=\"%s\" "                                                             \
-    "result=\"%s\" "                                                           \
-    "type=%d "                                                                 \
-    "value=\"%s\" />"
-
-#define HLO_READ_VAR_ERR_REPLY_TEMPLATE                                        \
-    "<vscp-resp op=\"vscp-readvar\" "                                          \
-    "name=\"%s\" "                                                             \
-    "result=\"ERR\" "                                                          \
-    "error-code=%d "                                                           \
-    "description=\"%s\" />"
 
 // ****************************************************************************
 //                          Remote variable types
