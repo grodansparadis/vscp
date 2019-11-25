@@ -37,15 +37,9 @@
 #define HLO_CMD_REPLY_TEMPLATE                                                 \
     "<vscp-resp op=\"vscp-cmd\" "                                              \
     "name=\"%s\" "                                                             \
-    "result=\"%s\" "                                                          \
-    "description=\"¤s\" "                                                     \
-    " />"
-
-#define HLO_CMD_REPLY_TEMPLATE                                                 \
-    "<vscp-resp op=\"%s\" "                                                    \
-    "name=\"%s\" "                                                             \
     "result=\"%s\" "                                                           \
-    "description=\"%s\" />"
+    "description=\"¤s\" "                                                      \
+    " />"
 
 #define HLO_READ_VAR_REPLY_TEMPLATE                                            \
     "<vscp-resp op=\"vscp-readvar\" "                                          \
