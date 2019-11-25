@@ -71,7 +71,7 @@
 #include <controlobject.h>
 #include <devicelist.h>
 #include <mdf.h>
-#include <variablecodes.h>
+#include <remotevariablecodes.h>
 #include <version.h>
 #include <vscp.h>
 #include <vscp_aes.h>

@@ -79,7 +79,7 @@
 #include <devicelist.h>
 #include <devicethread.h>
 #include <randpassword.h>
-#include <variablecodes.h>
+#include <remotevariablecodes.h>
 #include <version.h>
 #include <vscp.h>
 #include <vscp_debug.h>

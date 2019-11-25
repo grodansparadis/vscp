@@ -71,7 +71,7 @@
 #include <devicelist.h>
 #include <fastpbkdf2.h>
 #include <mdf.h>
-#include <variablecodes.h>
+#include <remotevariablecodes.h>
 #include <version.h>
 #include <vscp.h>
 #include <vscp_aes.h>
