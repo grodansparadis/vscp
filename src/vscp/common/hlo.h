@@ -31,6 +31,31 @@
 
 #include <string>
 
+#define HLO_CMD_OK_REPLY_TEMPLATE                                              \
+    "<vscp-resp op=\"vscp-cmd\" "                                              \
+    "name=\"%s\" "                                                             \
+    "result=\"OK\" "                                                           \
+    " />"
+
+#define HLO_CMD_ERR_REPLY_TEMPLATE                                             \
+    "<vscp-resp op=\"vscp-cmd\" "                                              \
+    "name=\"%s\" "                                                             \
+    "result=\"ERR\" "                                                          \
+    "description=\"¤s\" "                                                     \
+    " />"
+
+// ****************************************************************************
+//                        HLO Remote variable operations
+// ****************************************************************************
+
+#define HLO_OP_NOOP 0           // No operation
+#define HLO_OP_READ_VAR 1       // Read variable
+#define HLO_OP_WRITE_VAR 2      // Write variable
+#define HLO_OP_SAVE 3           // Save configuration
+#define HLO_OP_LOAD 4           // Load configuration
+#define HLO_OP_USER_DEFINED 150 // From 150 - 254 user defined codes
+#define HLO_OP_UNKNOWN 255      // Unknow command
+
 ///////////////////////////////////////////////////////////////////////////////
 // VSCP automation HLO object
 //
@@ -50,13 +75,13 @@ class CHLO
     // HLO operation
     uint8_t m_op;
 
-    // HLO name
+    // HLO name (variable name/opt op. arg name)
     std::string m_name;
 
-    // Variable type
-    uint8_t m_varType;
+    // HLO type (Variable type/opt. op arg type
+    uint32_t m_varType;
 
-    // HLO value
+    // HLO value (Variable value/opt- op arg value)
     std::string m_value;
 
     // For VSCP remote variables full format

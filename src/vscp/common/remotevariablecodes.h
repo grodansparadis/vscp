@@ -192,16 +192,6 @@
 #define ERR_VARIABLE_PERMISSION 5 // RWX permission not right to do operation
 #define ERR_VARIABLE_SYNTAX 6     // Syntax or format is wrong
 
-// ****************************************************************************
-//                        HLO Remote variable operations
-// ****************************************************************************
 
-#define HLO_OP_NOOP 0      // No operation
-#define HLO_OP_READ_VAR 1  // Read variable
-#define HLO_OP_WRITE_VAR 2 // Write variable
-#define HLO_OP_SAVE 3      // Save configuration
-#define HLO_OP_LOAD 4      // Load configuration
-#define HLO_OP_CALCULATE 5 // Do astro. calculations
-#define HLO_OP_UNKNOWN 255 // Unknow command
 
 #endif
