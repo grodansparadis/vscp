@@ -522,6 +522,14 @@ extern "C"
                                        std::string &strResult);
 
     /*!
+        Convert std string to BASE64
+        @param str std string to convert
+        @preturn BASE64 encoed version of string
+    */
+    std::string vscp_convertToBASE64( std::string str) 
+        { return (vscp_base64_std_encode( str ) ? str : std::string("") ); }
+
+    /*!
         Get GMT time
         http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.3
     */
