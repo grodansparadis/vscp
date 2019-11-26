@@ -116,8 +116,6 @@
     "value=\"%s\" \n"                                                          \
     "note=\"%s\" />"
 
-
-
 // ****************************************************************************
 //                          Remote variable types
 // ****************************************************************************
@@ -139,6 +137,16 @@
 #define VSCP_REMOTE_VARIABLE_CODE_DATE (14)     // Date in iso format
 #define VSCP_REMOTE_VARIABLE_CODE_TIME (15)     // Time in iso format
 #define VSCP_REMOTE_VARIABLE_CODE_BLOB (16)     // Base64 binary encoded data
+
+#define VSCP_REMOTE_VARIABLE_CODE_UINT8 (17)
+#define VSCP_REMOTE_VARIABLE_CODE_UINT16 (19)
+#define VSCP_REMOTE_VARIABLE_CODE_UINT32 (19)
+#define VSCP_REMOTE_VARIABLE_CODE_UINT64 (20)
+
+#define VSCP_REMOTE_VARIABLE_CODE_INT8 (21)
+#define VSCP_REMOTE_VARIABLE_CODE_INT16 (22)
+#define VSCP_REMOTE_VARIABLE_CODE_INT32 (23)
+#define VSCP_REMOTE_VARIABLE_CODE_INT64 (24)
 
 #define VSCP_REMOTE_VARIABLE_CODE_MIME                                         \
     (100) // Mime type (mime-type;base64 encoded content)
@@ -173,7 +181,5 @@
 #define ERR_VARIABLE_USER 4       // User is not allowed to do this operation
 #define ERR_VARIABLE_PERMISSION 5 // RWX permission not right to do operation
 #define ERR_VARIABLE_SYNTAX 6     // Syntax or format is wrong
-
-
 
 #endif
