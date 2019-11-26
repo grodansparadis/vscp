@@ -28,6 +28,8 @@
 #if !defined(VSCPCANALDEVICEIF_H__INCLUDED_)
 #define VSCPCANALDEVICEIF_H__INCLUDED_
 
+#include <string>
+
 #include <canaldlldef.h>
 
 // Format code for object data
