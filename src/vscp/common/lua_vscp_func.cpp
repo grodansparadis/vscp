@@ -4,7 +4,8 @@
 //
 // The MIT License (MIT)
 //
-// Copyright (C) 2000-2019 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
+// Copyright (C) 2000-2019 Ake Hedman, Grodans Paradis AB
+// <info@grodansparadis.com>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -13,8 +14,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -27,32 +28,33 @@
 // wxJSON - http://wxcode.sourceforge.net/docs/wxjson/wxjson_tutorial.html
 //
 
-#include <string>
 #include <list>
+#include <string>
 
+#include <float.h>
 #include <stdlib.h>
 #include <string.h>
-#include <float.h>
 #include <syslog.h>
 
-#include <json.hpp>             // Needs C++11  -std=c++11
+#include <json.hpp> // Needs C++11  -std=c++11
 
+#include <actioncodes.h>
+#include <controlobject.h>
+#include <userlist.h>
+#include <version.h>
 #include <vscp.h>
 #include <vscpdb.h>
-#include <version.h>
 #include <vscphelper.h>
-#include <actioncodes.h>
-#include <userlist.h>
-#include <controlobject.h>
 #include <vscpremotetcpif.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif /* __cplusplus */
 
 #define LUA_LIB
-#include "lua.h"
 #include "lauxlib.h"
+#include "lua.h"
 #include "lualib.h"
 
 #ifdef __cplusplus
@@ -61,17 +63,14 @@ extern "C" {
 
 #include "lua_vscp_func.h"
 
-
 // https://github.com/nlohmann/json
 using json = nlohmann::json;
-
-
 
 ///////////////////////////////////////////////////
 //                   GLOBALS
 ///////////////////////////////////////////////////
 
-extern CControlObject *gpobj;
+extern CControlObject* gpobj;
 
 ///////////////////////////////////////////////////////////////////////////////
 // web_lsp_md5
@@ -80,7 +79,7 @@ extern CControlObject *gpobj;
 //
 
 int
-web_lsp_md5( lua_State *L )
+web_lsp_md5(lua_State* L)
 {
     // int num_args = lua_gettop(L);
     // const char *text;
@@ -114,19 +113,19 @@ web_lsp_md5( lua_State *L )
 //                  HELPERS
 ///////////////////////////////////////////////////
 
-
 ///////////////////////////////////////////////////////////////////////////////
 // lua_get_Event
 //
 // Make event from JSON data object on stack
 //
 
-int lua_get_Event( struct lua_State *L, vscpEventEx *pex )
+int
+lua_get_Event(struct lua_State* L, vscpEventEx* pex)
 {
-    char buf[ 1024 ];
+    char buf[1024];
     int len = 1;
 
-    lua_pushlstring( L, buf, len );
+    lua_pushlstring(L, buf, len);
 
     /*struct web_connection *conn =
             (struct web_connection *) lua_touserdata(L, lua_upvalueindex(1));
@@ -146,26 +145,27 @@ int lua_get_Event( struct lua_State *L, vscpEventEx *pex )
     return 1;
 }
 
-
 ///////////////////////////////////////////////////////////////////////////////
 // lua_vscp_print
 //
 
-int lua_vscp_print( struct lua_State *L )
+int
+lua_vscp_print(struct lua_State* L)
 {
     size_t len;
-    const char *pstr;
+    const char* pstr;
 
-    int nArgs = lua_gettop( L );
+    int nArgs = lua_gettop(L);
 
-    if ( 0 == nArgs) {
-        return luaL_error( L, "vscp.print: Wrong number of arguments: "
-                              "vscp.print(\"message\") ");
+    if (0 == nArgs) {
+        return luaL_error(L,
+                          "vscp.print: Wrong number of arguments: "
+                          "vscp.print(\"message\") ");
     }
 
-    for ( int i=1; i<nArgs+1; i++ ) {
-        pstr = lua_tolstring ( L, i, &len );
-        if ( NULL != pstr ) {
+    for (int i = 1; i < nArgs + 1; i++) {
+        pstr = lua_tolstring(L, i, &len);
+        if (NULL != pstr) {
             // xxPrintf( "%s\n", pstr );
         }
     }
@@ -173,58 +173,60 @@ int lua_vscp_print( struct lua_State *L )
     return 1;
 }
 
-
 ///////////////////////////////////////////////////////////////////////////////
 // lua_vscp_log
 //
 // vscp.log("message"[,log-level,log-type])
 
-int lua_vscp_log( struct lua_State *L )
+int
+lua_vscp_log(struct lua_State* L)
 {
     std::string msg;
     uint8_t type = LOG_ERR;
     uint8_t level = 0;
 
-    int nArgs = lua_gettop( L );
+    int nArgs = lua_gettop(L);
 
-    if ( 0 == nArgs) {
-        return luaL_error( L, "vscp.log: Wrong number of arguments: "
-                              "vscp.log(\"message\"[,log-level,log-type]) ");
+    if (0 == nArgs) {
+        return luaL_error(L,
+                          "vscp.log: Wrong number of arguments: "
+                          "vscp.log(\"message\"[,log-level,log-type]) ");
     }
 
-    if ( nArgs >= 1 ) {
-        if ( !lua_isstring( L, 1 ) ) {
-            return luaL_error( L, "vscp.log: Argument error, string expected: "
-                                  "vscp.log(\"message\"[,log-level,log-type]) ");
+    if (nArgs >= 1) {
+        if (!lua_isstring(L, 1)) {
+            return luaL_error(L,
+                              "vscp.log: Argument error, string expected: "
+                              "vscp.log(\"message\"[,log-level,log-type]) ");
         }
         size_t len;
-        const char *pstr = lua_tolstring ( L, 1, &len );
-        msg = std::string( pstr, len );
+        const char* pstr = lua_tolstring(L, 1, &len);
+        msg = std::string(pstr, len);
     }
 
-    if ( nArgs >=2 ) {
+    if (nArgs >= 2) {
 
-        if ( !lua_isnumber( L, 2 ) ) {
-            return luaL_error( L, "vscp.log: Argument error, integer expected: "
-                                  "vscp.log(\"message\"[,log-level,log-type]) ");
+        if (!lua_isnumber(L, 2)) {
+            return luaL_error(L,
+                              "vscp.log: Argument error, integer expected: "
+                              "vscp.log(\"message\"[,log-level,log-type]) ");
         }
 
-        level = lua_tointeger( L, 2 );
-
+        level = lua_tointeger(L, 2);
     }
 
-    if ( nArgs >= 3 ) {
+    if (nArgs >= 3) {
 
-        if ( !lua_isnumber( L, 3 ) ) {
-            return luaL_error( L, "vscp.log: Argument error, integer expected: "
-                                  "vscp.log(\"message\"[,log-level,log-type]) ");
+        if (!lua_isnumber(L, 3)) {
+            return luaL_error(L,
+                              "vscp.log: Argument error, integer expected: "
+                              "vscp.log(\"message\"[,log-level,log-type]) ");
         }
 
-        type = lua_tointeger( L, 3 );
-
+        type = lua_tointeger(L, 3);
     }
 
-    syslog(type, "%s", msg.c_str() );
+    syslog(type, "%s", msg.c_str());
 
     return 1;
 }
@@ -234,102 +236,105 @@ int lua_vscp_log( struct lua_State *L )
 //
 // vscp.sleep( milliseconds )
 
-int lua_vscp_sleep( struct lua_State *L )
+int
+lua_vscp_sleep(struct lua_State* L)
 {
     uint32_t sleep_ms;
-    int nArgs = lua_gettop( L );
+    int nArgs = lua_gettop(L);
 
-    if ( 0 == nArgs) {
-        return luaL_error( L, "vscp.sleep: Wrong number of arguments: "
+    if (0 == nArgs) {
+        return luaL_error(L,
+                          "vscp.sleep: Wrong number of arguments: "
+                          "vscp.sleep( milliseconds ) ");
+    } else {
+        if (!lua_isnumber(L, 1)) {
+            return luaL_error(L,
+                              "vscp.sleep: Argument error, integer expected: "
                               "vscp.sleep( milliseconds ) ");
-    }
-    else {
-        if ( !lua_isnumber( L, 1 ) ) {
-            return luaL_error( L, "vscp.sleep: Argument error, integer expected: "
-                                  "vscp.sleep( milliseconds ) ");
         }
 
-        sleep_ms = (uint32_t)lua_tonumber( L, 1 );
+        sleep_ms = (uint32_t)lua_tonumber(L, 1);
     }
 
-    usleep( sleep_ms*1000 );
+    usleep(sleep_ms * 1000);
 
-    lua_pushboolean( L, 1 );
+    lua_pushboolean(L, 1);
     return 1;
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // lua_vscp_base64_encode
 //
 // vscp.base64encode(string )
 
-int lua_vscp_base64_encode( struct lua_State *L )
+int
+lua_vscp_base64_encode(struct lua_State* L)
 {
     std::string str;
-    int nArgs = lua_gettop( L );
+    int nArgs = lua_gettop(L);
 
-    if ( 0 == nArgs) {
-        return luaL_error( L, "vscp.base64encode: Wrong number of arguments: "
-                              "vscp.base64encode( string_to_encode ) ");
+    if (0 == nArgs) {
+        return luaL_error(L,
+                          "vscp.base64encode: Wrong number of arguments: "
+                          "vscp.base64encode( string_to_encode ) ");
     }
 
     // variable name
-    if ( !lua_isstring( L, 1 ) ) {
-        return luaL_error( L, "vscp.base64encode: Argument error, string expected: "
-                              "vscp.base64encode( string_to_encode ) ");
+    if (!lua_isstring(L, 1)) {
+        return luaL_error(L,
+                          "vscp.base64encode: Argument error, string expected: "
+                          "vscp.base64encode( string_to_encode ) ");
     }
 
     size_t len;
-    const char *pstr = lua_tolstring ( L, 1, &len );
-    str = std::string( pstr, len );
+    const char* pstr = lua_tolstring(L, 1, &len);
+    str = std::string(pstr, len);
 
-    if ( !vscp_base64_std_encode( str ) ) {
-        return luaL_error( L, "vscp.base64encode: Failed to encode string!");
+    if (!vscp_base64_std_encode(str)) {
+        return luaL_error(L, "vscp.base64encode: Failed to encode string!");
     }
 
-    lua_pushlstring( L, (const char *)str.c_str(),
-                        str.length() );
+    lua_pushlstring(L, (const char*)str.c_str(), str.length());
 
     return 1;
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // lua_vscp_base64_decode
 //
 // vscp.base64decode(string )
 
-int lua_vscp_base64_decode( struct lua_State *L )
+int
+lua_vscp_base64_decode(struct lua_State* L)
 {
     std::string str;
-    int nArgs = lua_gettop( L );
+    int nArgs = lua_gettop(L);
 
-    if ( 0 == nArgs) {
-        return luaL_error( L, "vscp.base64decode: Wrong number of arguments: "
-                              "vscp.base64decode( string_to_encode ) ");
+    if (0 == nArgs) {
+        return luaL_error(L,
+                          "vscp.base64decode: Wrong number of arguments: "
+                          "vscp.base64decode( string_to_encode ) ");
     }
 
     // variable name
-    if ( !lua_isstring( L, 1 ) ) {
-        return luaL_error( L, "vscp.base64decode: Argument error, string expected: "
-                              "vscp.base64decode( string_to_encode ) ");
+    if (!lua_isstring(L, 1)) {
+        return luaL_error(L,
+                          "vscp.base64decode: Argument error, string expected: "
+                          "vscp.base64decode( string_to_encode ) ");
     }
 
     size_t len;
-    const char *pstr = lua_tolstring ( L, 1, &len );
-    str = std::string( pstr, len );
+    const char* pstr = lua_tolstring(L, 1, &len);
+    str = std::string(pstr, len);
 
-    if ( !vscp_base64_std_decode( str ) ) {
-        return luaL_error( L, "vscp.base64decode: Failed to decode string!");
+    if (!vscp_base64_std_decode(str)) {
+        return luaL_error(L, "vscp.base64decode: Failed to decode string!");
     }
 
-    lua_pushlstring( L, (const char *)str.c_str(),
-                        str.length() );
+    lua_pushlstring(L, (const char*)str.c_str(), str.length());
 
     return 1;
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // lua_vscp_escapexml
@@ -338,26 +343,29 @@ int lua_vscp_base64_decode( struct lua_State *L )
 //
 // TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
 
-int lua_vscp_escapexml( struct lua_State *L )
+int
+lua_vscp_escapexml(struct lua_State* L)
 {
-    int nArgs = lua_gettop( L );
+    int nArgs = lua_gettop(L);
 
-    if ( 0 == nArgs ) {
-        return luaL_error( L, "vscp.escapexml: Wrong number of arguments: "
-                              "vscp.escapexml( string-to-escape ) ");
+    if (0 == nArgs) {
+        return luaL_error(L,
+                          "vscp.escapexml: Wrong number of arguments: "
+                          "vscp.escapexml( string-to-escape ) ");
     }
 
     // String to escape
-    if ( !lua_isstring( L, 1 ) ) {
-        return luaL_error( L, "vscp.readvariable: Argument error, string expected: "
-                              "vscp.readvariable( \"name\"[,format] ) ");
+    if (!lua_isstring(L, 1)) {
+        return luaL_error(L,
+                          "vscp.readvariable: Argument error, string expected: "
+                          "vscp.readvariable( \"name\"[,format] ) ");
     }
 
     size_t len;
-    const char *pstr = lua_tolstring ( L, 1, &len );
+    const char* pstr = lua_tolstring(L, 1, &len);
 
-    if ( !len ) {
-        lua_pushnil( L );
+    if (!len) {
+        lua_pushnil(L);
         return 1;
     }
 
@@ -365,7 +373,6 @@ int lua_vscp_escapexml( struct lua_State *L )
 
     return 1;
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // lua_vscp_readVariable
@@ -378,7 +385,8 @@ int lua_vscp_escapexml( struct lua_State *L )
 //      format = 3 - Just value (can be base64 encoded)
 //      format = 4 - Just note (always base64 encoded)
 
-int lua_vscp_readVariable( struct lua_State *L )
+int
+lua_vscp_readVariable(struct lua_State* L)
 {
     // int format = 0;
     // std::string varName;
@@ -388,14 +396,16 @@ int lua_vscp_readVariable( struct lua_State *L )
     // int nArgs = lua_gettop( L );
 
     // if ( 0 == nArgs) {
-    //     return luaL_error( L, "vscp.readvariable: Wrong number of arguments: "
+    //     return luaL_error( L, "vscp.readvariable: Wrong number of arguments:
+    //     "
     //                           "vscp.readvariable( \"name\"[,format] ) ");
     // }
     // else if ( 1 == nArgs ) {
 
     //     // variable name
     //     if ( !lua_isstring( L, 1 ) ) {
-    //         return luaL_error( L, "vscp.readvariable: Argument error, string expected: "
+    //         return luaL_error( L, "vscp.readvariable: Argument error, string
+    //         expected: "
     //                               "vscp.readvariable( \"name\"[,format] ) ");
     //     }
 
@@ -408,7 +418,8 @@ int lua_vscp_readVariable( struct lua_State *L )
 
     //     // variable name
     //     if ( !lua_isstring( L, 1 ) ) {
-    //         return luaL_error( L, "vscp.readvariable: Argument error, string expected: "
+    //         return luaL_error( L, "vscp.readvariable: Argument error, string
+    //         expected: "
     //                               "vscp.readvariable( \"name\"[,format] ) ");
     //     }
 
@@ -418,7 +429,8 @@ int lua_vscp_readVariable( struct lua_State *L )
 
     //     // format
     //     if ( !lua_isnumber( L, 2 ) ) {
-    //         return luaL_error( L, "vscp.readvariable: Argument error, number expected: "
+    //         return luaL_error( L, "vscp.readvariable: Argument error, number
+    //         expected: "
     //                               "vscp.readvariable( \"name\"[,format] ) ");
     //     }
 
@@ -464,11 +476,13 @@ int lua_vscp_readVariable( struct lua_State *L )
     //             int val = atoi( strval.c_str() );
     //             lua_pushinteger( L, val );
     //         }
-    //         else if ( VSCP_DAEMON_VARIABLE_CODE_LONG == variable.getType() ) {
+    //         else if ( VSCP_DAEMON_VARIABLE_CODE_LONG == variable.getType() )
+    //         {
     //             long val = atol( strval.c_str() );
     //             lua_pushnumber( L, val );
     //         }
-    //         else if ( VSCP_DAEMON_VARIABLE_CODE_DOUBLE == variable.getType() ) {
+    //         else if ( VSCP_DAEMON_VARIABLE_CODE_DOUBLE == variable.getType()
+    //         ) {
     //             double val;
     //             val = std::stod(strval);
     //             lua_pushnumber( L, val );
@@ -500,7 +514,6 @@ int lua_vscp_readVariable( struct lua_State *L )
     return 1;
 }
 
-
 ///////////////////////////////////////////////////////////////////////////////
 // lua_vscp_writeVariable
 //
@@ -511,7 +524,8 @@ int lua_vscp_readVariable( struct lua_State *L )
 //      format = 2 - JSON
 //
 
-int lua_vscp_writeVariable( struct lua_State *L )
+int
+lua_vscp_writeVariable(struct lua_State* L)
 {
     // size_t len;
     // int format = 0;
@@ -522,7 +536,8 @@ int lua_vscp_writeVariable( struct lua_State *L )
     // int nArgs = lua_gettop( L );
 
     // if ( 0 == nArgs ) {
-    //     return luaL_error( L, "vscp.writeVariable: Wrong number of arguments: "
+    //     return luaL_error( L, "vscp.writeVariable: Wrong number of arguments:
+    //     "
     //                           "vscp.writeVariable( varname[,format] ) ");
     // }
 
@@ -530,7 +545,8 @@ int lua_vscp_writeVariable( struct lua_State *L )
 
     //     // variable value
     //     if ( !lua_isstring( L, 1 ) ) {
-    //         return luaL_error( L, "vscp.writeVariable: Argument error, string expected: "
+    //         return luaL_error( L, "vscp.writeVariable: Argument error, string
+    //         expected: "
     //                               "vscp.writeVariable( name[,format] ) ");
     //     }
 
@@ -543,7 +559,8 @@ int lua_vscp_writeVariable( struct lua_State *L )
 
     //     // format
     //     if ( !lua_isnumber( L, 2 ) ) {
-    //         return luaL_error( L, "vscp.writevariable: Argument error, number expected: "
+    //         return luaL_error( L, "vscp.writevariable: Argument error, number
+    //         expected: "
     //                               "vscp.writevariable( name[,format] ) ");
     //     }
 
@@ -553,21 +570,24 @@ int lua_vscp_writeVariable( struct lua_State *L )
     // if ( 0 == format ) {
     //     // Set variable from string
     //     if ( !variable.setFromString( varValue ) ) {
-    //         return luaL_error( L, "vscp.writevariable: Could not set variable"
+    //         return luaL_error( L, "vscp.writevariable: Could not set
+    //         variable"
     //                               " from string.");
     //     }
     // }
     // else if ( 1 == format ) {
     //     // Set variable from XML object
     //     if ( !variable.setFromXML( varValue ) ) {
-    //         return luaL_error( L, "vscp.writevariable: Could not set variable"
+    //         return luaL_error( L, "vscp.writevariable: Could not set
+    //         variable"
     //                               " from XML object.");
     //     }
     // }
     // else if ( 2 == format ) {
     //     // Set variable from JSON object
     //     if ( !variable.setFromJSON( varValue ) ) {
-    //         return luaL_error( L, "vscp.writevariable: Could not set variable"
+    //         return luaL_error( L, "vscp.writevariable: Could not set
+    //         variable"
     //                               " from JSON object.");
     //     }
     // }
@@ -578,12 +598,12 @@ int lua_vscp_writeVariable( struct lua_State *L )
 
     // // Update or add variable if not defined
     // if ( !gpobj->m_variables.add( variable ) ) {
-    //     return luaL_error( L, "vscp.writevariable: Failed to update/add variable!");
+    //     return luaL_error( L, "vscp.writevariable: Failed to update/add
+    //     variable!");
     // }
 
     return 1;
- }
-
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // lua_vscp_writeVariableValue
@@ -592,7 +612,8 @@ int lua_vscp_writeVariable( struct lua_State *L )
 //
 //
 
-int lua_vscp_writeVariableValue( struct lua_State *L )
+int
+lua_vscp_writeVariableValue(struct lua_State* L)
 {
     // size_t len;
     // const char *pstr;
@@ -604,14 +625,18 @@ int lua_vscp_writeVariableValue( struct lua_State *L )
     // int nArgs = lua_gettop( L );
 
     // if ( nArgs < 2 ) {
-    //     return luaL_error( L, "vscp.writeVariableValue: Wrong number of arguments: "
-    //                           "vscp.writeVariableValue( varname, varvalue[, bBase64] ) ");
+    //     return luaL_error( L, "vscp.writeVariableValue: Wrong number of
+    //     arguments: "
+    //                           "vscp.writeVariableValue( varname, varvalue[,
+    //                           bBase64] ) ");
     // }
 
     // // variable name
     // if ( !lua_isstring( L, 1 ) ) {
-    //     return luaL_error( L, "vscp.writeVariableValue: Argument error, string expected: "
-    //                           "vscp.writeVariableValue( varname, varvalue, bBase64 ) ");
+    //     return luaL_error( L, "vscp.writeVariableValue: Argument error,
+    //     string expected: "
+    //                           "vscp.writeVariableValue( varname, varvalue,
+    //                           bBase64 ) ");
     // }
 
     // pstr = lua_tolstring ( L, 1, &len );
@@ -619,7 +644,8 @@ int lua_vscp_writeVariableValue( struct lua_State *L )
 
     // CUserItem *pAdminUser = gpobj->m_userList.getUser(USER_ID_ADMIN);
     // if ( !gpobj->m_variables.find( varName, pAdminUser, variable ) ) {
-    //     return luaL_error( L, "vscp.writeVariableValue: No variable with that "
+    //     return luaL_error( L, "vscp.writeVariableValue: No variable with that
+    //     "
     //                           "name found!");
     // }
 
@@ -711,7 +737,8 @@ int lua_vscp_writeVariableValue( struct lua_State *L )
     // }
 
     // if ( !gpobj->m_variables.update( variable, pAdminUser ) ) {
-    //     return luaL_error( L, "vscp.writeVariableValue: Failed to update variable value!");
+    //     return luaL_error( L, "vscp.writeVariableValue: Failed to update
+    //     variable value!");
     // }
 
     return 1;
@@ -724,7 +751,8 @@ int lua_vscp_writeVariableValue( struct lua_State *L )
 //
 //
 
-int lua_vscp_writeVariableNote( struct lua_State *L )
+int
+lua_vscp_writeVariableNote(struct lua_State* L)
 {
     // std::string varName;
     // std::string varValue;
@@ -733,61 +761,69 @@ int lua_vscp_writeVariableNote( struct lua_State *L )
     // int nArgs = lua_gettop( L );
 
     // if ( nArgs < 3 ) {
-    //     return luaL_error( L, "vscp.writeVariableNote: Wrong number of arguments: "
-    //                           "vscp.writeVariableNote( varname, varvalue, bBase64 ) ");
+    //     return luaL_error( L, "vscp.writeVariableNote: Wrong number of
+    //     arguments: "
+    //                           "vscp.writeVariableNote( varname, varvalue,
+    //                           bBase64 ) ");
     // }
 
     // // variable name
     // if ( !lua_isstring( L, 1 ) ) {
-    //     return luaL_error( L, "vscp.writeVariableNote: Argument error, string expected: "
-    //                           "vscp.writeVariableNote( varname, varvalue, bBase64 ) ");
+    //     return luaL_error( L, "vscp.writeVariableNote: Argument error, string
+    //     expected: "
+    //                           "vscp.writeVariableNote( varname, varvalue,
+    //                           bBase64 ) ");
     // }
 
     // size_t len;
     // const char *pstr = lua_tolstring ( L, 1, &len );
     // varName = std::string( pstr, len );
 
-
     // // variable value
     // if ( !lua_isstring( L, 2 ) ) {
-    //     return luaL_error( L, "vscp.writeVariableNote: Argument error, string expected: "
-    //                           "vscp.writeVariableNote( varname, varvalue, bBase64 ) ");
+    //     return luaL_error( L, "vscp.writeVariableNote: Argument error, string
+    //     expected: "
+    //                           "vscp.writeVariableNote( varname, varvalue,
+    //                           bBase64 ) ");
     // }
 
     // pstr = lua_tolstring ( L, 2, &len );
     // varValue = std::string( pstr, len );
 
-
     // // variable base64 flag
     // bool bBase64 = false;
     // if ( !lua_isboolean( L, 3 ) ) {
-    //     return luaL_error( L, "vscp.writeVariableNote: Argument error, boolean expected: "
-    //                           "vscp.writeVariableNote( varname, varvalue, bBase64 ) ");
+    //     return luaL_error( L, "vscp.writeVariableNote: Argument error,
+    //     boolean expected: "
+    //                           "vscp.writeVariableNote( varname, varvalue,
+    //                           bBase64 ) ");
     // }
 
     // bBase64 = lua_toboolean ( L, 3 );
 
     // CUserItem *pAdminUser = gpobj->m_userList.getUser(USER_ID_ADMIN);
     // if ( !gpobj->m_variables.find( varName, pAdminUser, variable ) ) {
-    //     return luaL_error( L, "vscp.writeVariableNote: No variable with that "
+    //     return luaL_error( L, "vscp.writeVariableNote: No variable with that
+    //     "
     //                           "name found!");
     // }
 
     // variable.setNote( varValue, bBase64 );
 
     // if ( !gpobj->m_variables.update( variable, pAdminUser ) ) {
-    //     return luaL_error( L, "vscp.writeVariableNote: Failed to update variable note!");
+    //     return luaL_error( L, "vscp.writeVariableNote: Failed to update
+    //     variable note!");
     // }
 
     return 1;
 }
 
-
 ///////////////////////////////////////////////////////////////////////////////
 // lua_vscp_deleteVariable
 //
 
-int lua_vscp_deleteVariable( struct lua_State *L )
+int
+lua_vscp_deleteVariable(struct lua_State* L)
 {
     // std::string varName;
     // CVariable variable;
@@ -795,13 +831,15 @@ int lua_vscp_deleteVariable( struct lua_State *L )
     // int nArgs = lua_gettop( L );
 
     // if ( 0 == nArgs  ) {
-    //     return luaL_error( L, "vscp.deleteVariable: Wrong number of arguments: "
+    //     return luaL_error( L, "vscp.deleteVariable: Wrong number of
+    //     arguments: "
     //                           "vscp.deleteVariable( varname ) ");
     // }
 
     // // variable name
     // if ( !lua_isstring( L, 1 ) ) {
-    //     return luaL_error( L, "vscp.deleteVariable: Argument error, string expected: "
+    //     return luaL_error( L, "vscp.deleteVariable: Argument error, string
+    //     expected: "
     //                           "vscp.deleteVariable( varname  ) ");
     // }
 
@@ -811,12 +849,12 @@ int lua_vscp_deleteVariable( struct lua_State *L )
 
     // CUserItem *pAdminUser = gpobj->m_userList.getUser(USER_ID_ADMIN);
     // if ( !gpobj->m_variables.remove( varName, pAdminUser ) ) {
-    //     return luaL_error( L, "vscp.deleteVariable: Failed to delete variable!");
+    //     return luaL_error( L, "vscp.deleteVariable: Failed to delete
+    //     variable!");
     // }
 
     return 1;
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // lua_vscp_isVariableBase64Encoded
@@ -825,7 +863,8 @@ int lua_vscp_deleteVariable( struct lua_State *L )
 //
 //
 
-int lua_vscp_isVariableBase64Encoded( struct lua_State *L )
+int
+lua_vscp_isVariableBase64Encoded(struct lua_State* L)
 {
     // size_t len;
     // bool bBase64 = false;
@@ -835,7 +874,8 @@ int lua_vscp_isVariableBase64Encoded( struct lua_State *L )
     // int nArgs = lua_gettop( L );
 
     // if ( 0 == nArgs ) {
-    //     return luaL_error( L, "vscp.isVariableBase64: Wrong number of arguments: "
+    //     return luaL_error( L, "vscp.isVariableBase64: Wrong number of
+    //     arguments: "
     //                           "vscp.isVariableBase64( name ) ");
     // }
 
@@ -843,7 +883,8 @@ int lua_vscp_isVariableBase64Encoded( struct lua_State *L )
 
     //     // variable name
     //     if ( !lua_isstring( L, 1 ) ) {
-    //         return luaL_error( L, "vscp.isVariableBase64: Argument error, string expected: "
+    //         return luaL_error( L, "vscp.isVariableBase64: Argument error,
+    //         string expected: "
     //                               "vscp.isVariableBase64( name ) ");
     //     }
 
@@ -863,7 +904,6 @@ int lua_vscp_isVariableBase64Encoded( struct lua_State *L )
     return 1;
 }
 
-
 ///////////////////////////////////////////////////////////////////////////////
 // lua_vscp_isVariablePersistent
 //
@@ -871,7 +911,8 @@ int lua_vscp_isVariableBase64Encoded( struct lua_State *L )
 //
 //
 
-int lua_vscp_isVariablePersistent( struct lua_State *L )
+int
+lua_vscp_isVariablePersistent(struct lua_State* L)
 {
     // size_t len;
     // bool bBase64 = false;
@@ -881,7 +922,8 @@ int lua_vscp_isVariablePersistent( struct lua_State *L )
     // int nArgs = lua_gettop( L );
 
     // if ( 0 == nArgs ) {
-    //     return luaL_error( L, "vscp.isVariablePersistent: Wrong number of arguments: "
+    //     return luaL_error( L, "vscp.isVariablePersistent: Wrong number of
+    //     arguments: "
     //                           "vscp.isVariablePersistent( name ) ");
     // }
 
@@ -889,7 +931,8 @@ int lua_vscp_isVariablePersistent( struct lua_State *L )
 
     //     // variable name
     //     if ( !lua_isstring( L, 1 ) ) {
-    //         return luaL_error( L, "vscp.isVariablePersistent: Argument error, string expected: "
+    //         return luaL_error( L, "vscp.isVariablePersistent: Argument error,
+    //         string expected: "
     //                               "vscp.isVariablePersistent( name ) ");
     //     }
 
@@ -900,7 +943,8 @@ int lua_vscp_isVariablePersistent( struct lua_State *L )
 
     // CUserItem *pAdminUser = gpobj->m_userList.getUser(USER_ID_ADMIN);
     // if ( !gpobj->m_variables.find( varName, pAdminUser, variable ) ) {
-    //     return luaL_error( L, "vscp.isVariablePersistent: No variable with that "
+    //     return luaL_error( L, "vscp.isVariablePersistent: No variable with
+    //     that "
     //                           "name found!");
     // }
 
@@ -909,7 +953,6 @@ int lua_vscp_isVariablePersistent( struct lua_State *L )
     return 1;
 }
 
-
 ///////////////////////////////////////////////////////////////////////////////
 // lua_vscp_isVariableNumerical
 //
@@ -917,7 +960,8 @@ int lua_vscp_isVariablePersistent( struct lua_State *L )
 //
 //
 
-int lua_vscp_isVariableNumerical( struct lua_State *L )
+int
+lua_vscp_isVariableNumerical(struct lua_State* L)
 {
     // size_t len;
     // bool bBase64 = false;
@@ -927,7 +971,8 @@ int lua_vscp_isVariableNumerical( struct lua_State *L )
     // int nArgs = lua_gettop( L );
 
     // if ( 0 == nArgs ) {
-    //     return luaL_error( L, "vscp.isVariableNumerical: Wrong number of arguments: "
+    //     return luaL_error( L, "vscp.isVariableNumerical: Wrong number of
+    //     arguments: "
     //                           "vscp.isVariableNumerical( name ) ");
     // }
 
@@ -935,7 +980,8 @@ int lua_vscp_isVariableNumerical( struct lua_State *L )
 
     //     // variable name
     //     if ( !lua_isstring( L, 1 ) ) {
-    //         return luaL_error( L, "vscp.isVariableNumerical: Argument error, string expected: "
+    //         return luaL_error( L, "vscp.isVariableNumerical: Argument error,
+    //         string expected: "
     //                               "vscp.isVariableNumerical( name ) ");
     //     }
 
@@ -946,7 +992,8 @@ int lua_vscp_isVariableNumerical( struct lua_State *L )
 
     // CUserItem *pAdminUser = gpobj->m_userList.getUser(USER_ID_ADMIN);
     // if ( !gpobj->m_variables.find( varName, pAdminUser, variable ) ) {
-    //     return luaL_error( L, "vscp.isVariableNumerical: No variable with that "
+    //     return luaL_error( L, "vscp.isVariableNumerical: No variable with
+    //     that "
     //                           "name found!");
     // }
 
@@ -955,7 +1002,6 @@ int lua_vscp_isVariableNumerical( struct lua_State *L )
     return 1;
 }
 
-
 ///////////////////////////////////////////////////////////////////////////////
 // lua_vscp_isStockVariable
 //
@@ -963,7 +1009,8 @@ int lua_vscp_isVariableNumerical( struct lua_State *L )
 //
 //
 
-int lua_vscp_isStockVariable( struct lua_State *L )
+int
+lua_vscp_isStockVariable(struct lua_State* L)
 {
     // size_t len;
     // bool bBase64 = false;
@@ -973,7 +1020,8 @@ int lua_vscp_isStockVariable( struct lua_State *L )
     // int nArgs = lua_gettop( L );
 
     // if ( 0 == nArgs ) {
-    //     return luaL_error( L, "vscp.isStockVariable: Wrong number of arguments: "
+    //     return luaL_error( L, "vscp.isStockVariable: Wrong number of
+    //     arguments: "
     //                           "vscp.isStockVariable( name ) ");
     // }
 
@@ -981,7 +1029,8 @@ int lua_vscp_isStockVariable( struct lua_State *L )
 
     //     // variable name
     //     if ( !lua_isstring( L, 1 ) ) {
-    //         return luaL_error( L, "vscp.isStockVariable: Argument error, string expected: "
+    //         return luaL_error( L, "vscp.isStockVariable: Argument error,
+    //         string expected: "
     //                               "vscp.isStockVariable( name ) ");
     //     }
 
@@ -1011,95 +1060,103 @@ int lua_vscp_isStockVariable( struct lua_State *L )
 //      format = 2 - JSON format.
 //
 
-int lua_vscp_sendEvent( struct lua_State *L )
+int
+lua_vscp_sendEvent(struct lua_State* L)
 {
     int format = 0;
     vscpEventEx ex;
     std::string strEvent;
-    CClientItem *pClientItem = NULL;
+    CClientItem* pClientItem = NULL;
 
-    int nArgs = lua_gettop( L );
+    int nArgs = lua_gettop(L);
 
     // Get the client item
-    lua_pushlstring( L, "vscp_clientitem", 15 );
-    lua_gettable (L, LUA_REGISTRYINDEX );
-    pClientItem = (CClientItem *)lua_touserdata( L, -1 );
+    lua_pushlstring(L, "vscp_clientitem", 15);
+    lua_gettable(L, LUA_REGISTRYINDEX);
+    pClientItem = (CClientItem*)lua_touserdata(L, -1);
 
-    nArgs = lua_gettop( L );
+    nArgs = lua_gettop(L);
 
     // Remove client item from stack
-    lua_pop( L, 1 );
+    lua_pop(L, 1);
 
-    nArgs = lua_gettop( L );
+    nArgs = lua_gettop(L);
 
-    if ( NULL == pClientItem ) {
-        return luaL_error( L, "vscp.sendEvent: VSCP server client not found.");
+    if (NULL == pClientItem) {
+        return luaL_error(L, "vscp.sendEvent: VSCP server client not found.");
     }
 
-    if ( nArgs < 1  ) {
-        return luaL_error( L, "vscp.sendEvent: Wrong number of arguments: "
-                              "vscp.sendEvent( event[,format] ) ");
+    if (nArgs < 1) {
+        return luaL_error(L,
+                          "vscp.sendEvent: Wrong number of arguments: "
+                          "vscp.sendEvent( event[,format] ) ");
     }
 
     // Event
-    if ( !lua_isstring( L, 1 ) ) {
-        return luaL_error( L, "vscp.sendEvent: Argument error, string expected: "
-                              "vscp.sendEvent( event[,format] ) ");
+    if (!lua_isstring(L, 1)) {
+        return luaL_error(L,
+                          "vscp.sendEvent: Argument error, string expected: "
+                          "vscp.sendEvent( event[,format] ) ");
     }
 
     size_t len;
-    const char *pstr = lua_tolstring ( L, 1, &len );
-    strEvent = std::string( pstr, len );
+    const char* pstr = lua_tolstring(L, 1, &len);
+    strEvent = std::string(pstr, len);
 
-    if ( nArgs >= 2 ) {
+    if (nArgs >= 2) {
 
         // format
-        if ( !lua_isnumber( L, 2 ) ) {
-            return luaL_error( L, "vscp.sendEvent: Argument error, number expected: "
-                                  "vscp.sendEvent( event[,format] ) ");
+        if (!lua_isnumber(L, 2)) {
+            return luaL_error(
+              L,
+              "vscp.sendEvent: Argument error, number expected: "
+              "vscp.sendEvent( event[,format] ) ");
         }
 
-        format = (int)lua_tointeger( L, 2 );
+        format = (int)lua_tointeger(L, 2);
     }
 
     // String
-    if ( 0 == format ) {
-        if ( !vscp_setVscpEventExFromString( &ex, strEvent ) ) {
-            return luaL_error( L, "vscp.sendEvent: Failed to get VSCP event from string!");
+    if (0 == format) {
+        if (!vscp_setVscpEventExFromString(&ex, strEvent)) {
+            return luaL_error(
+              L, "vscp.sendEvent: Failed to get VSCP event from string!");
         }
     }
     // XML
-    else if ( 1 == format ) {
-        if ( !vscp_convertXMLToEventEx( &ex, strEvent ) ) {
-            return luaL_error( L, "vscp.sendEvent: Failed to get "
-                                  "VSCP event from XML!");
+    else if (1 == format) {
+        if (!vscp_convertXMLToEventEx(&ex, strEvent)) {
+            return luaL_error(L,
+                              "vscp.sendEvent: Failed to get "
+                              "VSCP event from XML!");
         }
     }
     // JSON
-    else if ( 2 == format ) {
-        if ( !vscp_convertJSONToEventEx( &ex, strEvent ) ) {
-            return luaL_error( L, "vscp.sendEvent: Failed to get "
-                                  "VSCP event from JSON!");
+    else if (2 == format) {
+        if (!vscp_convertJSONToEventEx(&ex, strEvent)) {
+            return luaL_error(L,
+                              "vscp.sendEvent: Failed to get "
+                              "VSCP event from JSON!");
         }
     }
 
-    vscpEvent *pEvent = new vscpEvent;
-    if ( NULL == pEvent ) {
-        return luaL_error( L, "vscp.sendEvent: Failed to  "
-                                  "allocate VSCP event!");
+    vscpEvent* pEvent = new vscpEvent;
+    if (NULL == pEvent) {
+        return luaL_error(L,
+                          "vscp.sendEvent: Failed to  "
+                          "allocate VSCP event!");
     }
     pEvent->pdata = NULL;
-    vscp_convertVSCPfromEx( pEvent, &ex );
+    vscp_convertVSCPfromEx(pEvent, &ex);
 
-    if ( !gpobj->sendEvent( pClientItem, pEvent ) ) {
+    if (!gpobj->sendEvent(pClientItem, pEvent)) {
         // Failed to send event
-        vscp_deleteVSCPevent_v2( &pEvent );
-        return luaL_error( L, "vscp.sendEvent: Failed to send event!");
+        vscp_deleteVSCPevent_v2(&pEvent);
+        return luaL_error(L, "vscp.sendEvent: Failed to send event!");
     }
 
     return 1;
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // lua_vscp_getEvent
@@ -1107,105 +1164,102 @@ int lua_vscp_sendEvent( struct lua_State *L )
 // receiveevent([format])
 //
 
-int lua_vscp_getEvent( struct lua_State *L )
+int
+lua_vscp_getEvent(struct lua_State* L)
 {
     int format = 0;
     vscpEventEx ex;
     std::string strEvent;
-    CClientItem *pClientItem = NULL;
+    CClientItem* pClientItem = NULL;
 
-    int nArgs = lua_gettop( L );
+    int nArgs = lua_gettop(L);
 
     // Get format - if given
-    if ( 0 != nArgs  ) {
+    if (0 != nArgs) {
 
-        if ( !lua_isnumber( L, 1 ) ) {
-            format = (int)lua_tointeger( L, 1 );
+        if (!lua_isnumber(L, 1)) {
+            format = (int)lua_tointeger(L, 1);
         }
     }
 
     // Get the client item
-    lua_pushlstring( L, "vscp_clientitem", 15 );
-    lua_gettable (L, LUA_REGISTRYINDEX );
-    pClientItem = (CClientItem *)lua_touserdata( L, -1 );
+    lua_pushlstring(L, "vscp_clientitem", 15);
+    lua_gettable(L, LUA_REGISTRYINDEX);
+    pClientItem = (CClientItem*)lua_touserdata(L, -1);
 
-    if ( NULL == pClientItem ) {
-        return luaL_error( L, "vscp.getEvent: VSCP server client not found.");
+    if (NULL == pClientItem) {
+        return luaL_error(L, "vscp.getEvent: VSCP server client not found.");
     }
-
-
 
 try_again:
 
     // Check the client queue
-    if ( pClientItem->m_bOpen && pClientItem->m_clientInputQueue.size() ) {
+    if (pClientItem->m_bOpen && pClientItem->m_clientInputQueue.size()) {
 
-        std::deque<vscpEvent *>::iterator it;
-        vscpEvent *pEvent;
+        std::deque<vscpEvent*>::iterator it;
+        vscpEvent* pEvent;
 
-        pthread_mutex_lock( &pClientItem->m_mutexClientInputQueue );
+        pthread_mutex_lock(&pClientItem->m_mutexClientInputQueue);
         pEvent = pClientItem->m_clientInputQueue.front();
         pClientItem->m_clientInputQueue.pop_front();
-        if ( NULL == pEvent )  {
-            return luaL_error( L, "vscp.getEvent: Failed to get event.");
+        if (NULL == pEvent) {
+            return luaL_error(L, "vscp.getEvent: Failed to get event.");
         }
-        pthread_mutex_unlock( &pClientItem->m_mutexClientInputQueue );
+        pthread_mutex_unlock(&pClientItem->m_mutexClientInputQueue);
 
-        if ( NULL == pEvent ) {
-            return luaL_error( L, "vscp.getEvent: Allocation error when "
-                                  "getting event from client!");
+        if (NULL == pEvent) {
+            return luaL_error(L,
+                              "vscp.getEvent: Allocation error when "
+                              "getting event from client!");
         }
 
-        if ( vscp_doLevel2Filter( pEvent, &pClientItem->m_filter ) ) {
+        if (vscp_doLevel2Filter(pEvent, &pClientItem->m_filter)) {
 
             // Write it out
             std::string strResult;
-            switch ( format ) {
-                case 0:  // String
-                    if ( !vscp_writeVscpEventToString( strResult, pEvent ) ) {
-                        return luaL_error( L,
-                                            "vscp.getEvent: Failed to "
-                                            "convert event to string form.");
+            switch (format) {
+                case 0: // String
+                    if (!vscp_writeVscpEventToString(strResult, pEvent)) {
+                        return luaL_error(L,
+                                          "vscp.getEvent: Failed to "
+                                          "convert event to string form.");
                     }
                     break;
 
-                case 1:  // XML
-                    if ( !vscp_convertEventToXML( strResult, pEvent ) ) {
-                        return luaL_error( L,
-                                            "vscp.getEvent: Failed to "
-                                            "convert event to XML form.");
+                case 1: // XML
+                    if (!vscp_convertEventToXML(strResult, pEvent)) {
+                        return luaL_error(L,
+                                          "vscp.getEvent: Failed to "
+                                          "convert event to XML form.");
                     }
                     break;
 
-                case 2:  // JSON
-                    if ( !vscp_convertEventToJSON( strResult, pEvent ) ) {
-                        return luaL_error( L,
-                                            "vscp.getEvent: Failed to "
-                                            "convert event to JSON form.");
+                case 2: // JSON
+                    if (!vscp_convertEventToJSON(strResult, pEvent)) {
+                        return luaL_error(L,
+                                          "vscp.getEvent: Failed to "
+                                          "convert event to JSON form.");
                     }
                     break;
             }
 
             // Event is not needed anymore
-            vscp_deleteVSCPevent( pEvent );
+            vscp_deleteVSCPevent(pEvent);
 
-            lua_pushlstring( L,
-                                (const char *)strResult.c_str(),
-                                strResult.length() );
+            lua_pushlstring(
+              L, (const char*)strResult.c_str(), strResult.length());
 
             // All OK return event
             return 1;
 
         } // Valid pEvent pointer
 
-
     } // events available
 
     // No events available
-    lua_pushnil( L );
+    lua_pushnil(L);
     return 1;
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // lua_vscp_getCountEvent
@@ -1213,32 +1267,32 @@ try_again:
 // cnt = vscp.countevents()
 //
 
-int lua_vscp_getCountEvent( struct lua_State *L )
+int
+lua_vscp_getCountEvent(struct lua_State* L)
 {
     int count = 0;
-    CClientItem *pClientItem = NULL;
+    CClientItem* pClientItem = NULL;
 
     // Get the client item
-    lua_pushlstring( L, "vscp_clientitem", 15 );
-    lua_gettable (L, LUA_REGISTRYINDEX );
-    pClientItem = (CClientItem *)lua_touserdata( L, -1 );
+    lua_pushlstring(L, "vscp_clientitem", 15);
+    lua_gettable(L, LUA_REGISTRYINDEX);
+    pClientItem = (CClientItem*)lua_touserdata(L, -1);
 
-    if ( NULL == pClientItem ) {
-        return luaL_error( L, "vscp.getCountEvent: VSCP server client not found.");
+    if (NULL == pClientItem) {
+        return luaL_error(L,
+                          "vscp.getCountEvent: VSCP server client not found.");
     }
 
-    if ( pClientItem->m_bOpen ) {
+    if (pClientItem->m_bOpen) {
         count = pClientItem->m_clientInputQueue.size();
-    }
-    else {
+    } else {
         count = 0;
     }
 
-    lua_pushinteger( L, count );    // return count
+    lua_pushinteger(L, count); // return count
 
     return 1;
- }
-
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // lua_vscp_setFilter
@@ -1259,78 +1313,81 @@ int lua_vscp_getCountEvent( struct lua_State *L )
 //     'filter_guid' 'string'
 // }
 
-int lua_vscp_setFilter( struct lua_State *L )
+int
+lua_vscp_setFilter(struct lua_State* L)
 {
     int format = 0;
     vscpEventFilter filter;
     std::string strFilter;
-    CClientItem *pClientItem = NULL;
+    CClientItem* pClientItem = NULL;
 
-    int nArgs = lua_gettop( L );
+    int nArgs = lua_gettop(L);
 
     // Get the client item
-    lua_pushlstring( L, "vscp_clientitem", 15 );
-    lua_gettable (L, LUA_REGISTRYINDEX );
-    pClientItem = (CClientItem *)lua_touserdata( L, -1 );
+    lua_pushlstring(L, "vscp_clientitem", 15);
+    lua_gettable(L, LUA_REGISTRYINDEX);
+    pClientItem = (CClientItem*)lua_touserdata(L, -1);
 
-    if ( NULL == pClientItem ) {
-        return luaL_error( L, "vscp.setFilter: VSCP server client not found.");
+    if (NULL == pClientItem) {
+        return luaL_error(L, "vscp.setFilter: VSCP server client not found.");
     }
 
-    if ( nArgs < 1  ) {
-        return luaL_error( L, "vscp.setFilter: Wrong number of arguments: "
-                              "vscp.setFilter( filter[,format] ) ");
+    if (nArgs < 1) {
+        return luaL_error(L,
+                          "vscp.setFilter: Wrong number of arguments: "
+                          "vscp.setFilter( filter[,format] ) ");
     }
 
     // Event
-    if ( !lua_isstring( L, 1 ) ) {
-        return luaL_error( L, "vscp.setFilter: Argument error, string expected: "
-                              "vscp.setFilter( filter[,format] ) ");
+    if (!lua_isstring(L, 1)) {
+        return luaL_error(L,
+                          "vscp.setFilter: Argument error, string expected: "
+                          "vscp.setFilter( filter[,format] ) ");
     }
 
     size_t len;
-    const char *pstr = lua_tolstring ( L, 1, &len );
-    strFilter = std::string( pstr, len );
+    const char* pstr = lua_tolstring(L, 1, &len);
+    strFilter = std::string(pstr, len);
 
-    if ( nArgs >= 2 ) {
+    if (nArgs >= 2) {
 
         // format
-        if ( !lua_isnumber( L, 2 ) ) {
-            return luaL_error( L, "vscp.setFilter: Argument error, number expected: "
-                                  "vscp.setFilter( filter[,format] ) ");
+        if (!lua_isnumber(L, 2)) {
+            return luaL_error(
+              L,
+              "vscp.setFilter: Argument error, number expected: "
+              "vscp.setFilter( filter[,format] ) ");
         }
 
-        format = (int)lua_tointeger( L, 2 );
+        format = (int)lua_tointeger(L, 2);
     }
 
-    switch ( format ) {
+    switch (format) {
 
         case 0:
-            if ( !vscp_readFilterMaskFromString( &filter, strFilter ) ) {
-                luaL_error( L, "vscp.setFilter: Failed to read filter!");
+            if (!vscp_readFilterMaskFromString(&filter, strFilter)) {
+                luaL_error(L, "vscp.setFilter: Failed to read filter!");
             }
             break;
 
         case 1:
-            if ( !vscp_readFilterMaskFromXML( &filter, strFilter ) ) {
-                luaL_error( L, "vscp.setFilter: Failed to read filter!");
+            if (!vscp_readFilterMaskFromXML(&filter, strFilter)) {
+                luaL_error(L, "vscp.setFilter: Failed to read filter!");
             }
             break;
 
         case 2:
-            if ( !vscp_readFilterMaskFromJSON( &filter, strFilter ) ) {
-                luaL_error( L, "vscp.setFilter: Failed to read filter!");
+            if (!vscp_readFilterMaskFromJSON(&filter, strFilter)) {
+                luaL_error(L, "vscp.setFilter: Failed to read filter!");
             }
             break;
-
     }
 
     // Set the filter
-    vscp_copyVSCPFilter( &pClientItem->m_filter, &filter );
+    vscp_copyVSCPFilter(&pClientItem->m_filter, &filter);
 
     return 1;
- }
-
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // lua_send_Measurement
@@ -1338,266 +1395,268 @@ int lua_vscp_setFilter( struct lua_State *L )
 //      level       integer     1 or 2
 //      string      boolean     true or false for string format event
 //      value       double
-//      guid        string      defaults to "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"
-//      vscptype    integer
+//      guid        string      defaults to
+//      "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" vscptype    integer
 //      unit        integer     default is 0    optional
 //      sensorindex integer     default is 0    optional
 //      zone        integer     default is 0    optional
 //      subzone     integer     default is 0    optional
 //
 
-int lua_send_Measurement( struct lua_State *L )
+int
+lua_send_Measurement(struct lua_State* L)
 {
-    CClientItem *pClientItem = NULL;
-    vscpEvent *pEvent;
-    double value;           // Measurement value
-    bool bLevel2 = true;    // True if level II
-    bool bString = false;   // If level II string or float
-    int type;               // VSCP type
+    CClientItem* pClientItem = NULL;
+    vscpEvent* pEvent;
+    double value;         // Measurement value
+    bool bLevel2 = true;  // True if level II
+    bool bString = false; // If level II string or float
+    int type;             // VSCP type
     int unit = 0;
     int sensoridx = 0;
     int zone = 0;
     int subzone = 0;
     uint8_t guid[16];
 
-    int nArgs = lua_gettop( L );
+    int nArgs = lua_gettop(L);
 
     // Get the client item
-    lua_pushlstring( L, "vscp_clientitem", 15 );
-    lua_gettable (L, LUA_REGISTRYINDEX );
-    pClientItem = (CClientItem *)lua_touserdata( L, -1 );
+    lua_pushlstring(L, "vscp_clientitem", 15);
+    lua_gettable(L, LUA_REGISTRYINDEX);
+    pClientItem = (CClientItem*)lua_touserdata(L, -1);
 
-    if ( NULL == pClientItem ) {
-        return luaL_error( L, "vscp.sendMeasurement: VSCP server client not found.");
+    if (NULL == pClientItem) {
+        return luaL_error(
+          L, "vscp.sendMeasurement: VSCP server client not found.");
     }
 
     // Must be at least four args
-    if ( nArgs < 5 ) {
-        return luaL_error( L, "vscp.sendMeasurement: Wrong number of arguments: "
-                              "vscp.sendMeasurement( level, bString, value, GUID, type"
-                              "[unit,index,zone,subzone] ) ");
+    if (nArgs < 5) {
+        return luaL_error(
+          L,
+          "vscp.sendMeasurement: Wrong number of arguments: "
+          "vscp.sendMeasurement( level, bString, value, GUID, type"
+          "[unit,index,zone,subzone] ) ");
     }
 
     // level
-    if ( !lua_isinteger( L, 1 ) ) {
-        return luaL_error( L, "vscp.sendMeasurement: Argument error, integer expected: "
-                              "vscp.sendMeasurement( level, bString, value, GUID, type"
-                              "[unit,index,zone,subzone] ) ");
+    if (!lua_isinteger(L, 1)) {
+        return luaL_error(
+          L,
+          "vscp.sendMeasurement: Argument error, integer expected: "
+          "vscp.sendMeasurement( level, bString, value, GUID, type"
+          "[unit,index,zone,subzone] ) ");
     }
 
-    int level = (int)lua_tointeger( L, 1 );
-    if ( 1 == level ) bLevel2 = false;
-
+    int level = (int)lua_tointeger(L, 1);
+    if (1 == level)
+        bLevel2 = false;
 
     // bString
-    if ( !lua_isboolean( L, 2 ) ) {
-        return luaL_error( L, "vscp.sendMeasurement: Argument error, boolean expected: "
-                              "vscp.sendMeasurement( level, bString, value, GUID, type"
-                              "[unit,index,zone,subzone] ) ");
+    if (!lua_isboolean(L, 2)) {
+        return luaL_error(
+          L,
+          "vscp.sendMeasurement: Argument error, boolean expected: "
+          "vscp.sendMeasurement( level, bString, value, GUID, type"
+          "[unit,index,zone,subzone] ) ");
     }
 
-    bString = lua_toboolean( L, 2 );
+    bString = lua_toboolean(L, 2);
 
     // value
-    if ( !lua_isnumber( L, 3 ) ) {
-        return luaL_error( L, "vscp.sendMeasurement: Argument error, number expected: "
-                              "vscp.sendMeasurement( level, bString, value, GUID, type"
-                              "[unit,index,zone,subzone] ) ");
+    if (!lua_isnumber(L, 3)) {
+        return luaL_error(
+          L,
+          "vscp.sendMeasurement: Argument error, number expected: "
+          "vscp.sendMeasurement( level, bString, value, GUID, type"
+          "[unit,index,zone,subzone] ) ");
     }
 
-    value = lua_tonumber( L, 3 );
-
+    value = lua_tonumber(L, 3);
 
     // GUID
-    if ( !lua_isstring( L, 4 ) ) {
-        return luaL_error( L, "vscp.sendMeasurement: Argument error, string expected: "
-                              "vscp.sendMeasurement( level, bString, value, GUID, type"
-                              "[unit,index,zone,subzone] ) ");
+    if (!lua_isstring(L, 4)) {
+        return luaL_error(
+          L,
+          "vscp.sendMeasurement: Argument error, string expected: "
+          "vscp.sendMeasurement( level, bString, value, GUID, type"
+          "[unit,index,zone,subzone] ) ");
     }
 
     size_t len;
-    const char *pstr = lua_tolstring ( L, 4, &len );
-    std::string strGUID = std::string( pstr, len );
-    if ( !vscp_getGuidFromStringToArray( guid, strGUID ) ) {
-        return luaL_error( L, "vscp.sendMeasurement: Invalid GUID!" );
+    const char* pstr = lua_tolstring(L, 4, &len);
+    std::string strGUID = std::string(pstr, len);
+    if (!vscp_getGuidFromStringToArray(guid, strGUID)) {
+        return luaL_error(L, "vscp.sendMeasurement: Invalid GUID!");
     }
 
     // vscp type
-    if ( !lua_isinteger( L, 5 ) ) {
-        return luaL_error( L, "vscp.sendMeasurement: Argument error, integer expected: "
-                              "vscp.sendMeasurement( level, bString, value, GUID, type"
-                              "[unit,index,zone,subzone] ) ");
+    if (!lua_isinteger(L, 5)) {
+        return luaL_error(
+          L,
+          "vscp.sendMeasurement: Argument error, integer expected: "
+          "vscp.sendMeasurement( level, bString, value, GUID, type"
+          "[unit,index,zone,subzone] ) ");
     }
 
-    type = (int)lua_tointeger( L, 5 );
+    type = (int)lua_tointeger(L, 5);
 
-    if ( nArgs >= 5 ) {
+    if (nArgs >= 5) {
 
         // unit
-        if ( !lua_isinteger( L, 6 ) ) {
-            return luaL_error( L, "vscp.sendMeasurement: Argument error, integer expected: "
-                                  "vscp.sendMeasurement( level, bString, value, GUID, type"
-                                  "[unit,index,zone,subzone] ) ");
+        if (!lua_isinteger(L, 6)) {
+            return luaL_error(
+              L,
+              "vscp.sendMeasurement: Argument error, integer expected: "
+              "vscp.sendMeasurement( level, bString, value, GUID, type"
+              "[unit,index,zone,subzone] ) ");
         }
 
-        unit = (int)lua_tointeger( L, 6 );
-
+        unit = (int)lua_tointeger(L, 6);
     }
 
-    if ( nArgs >= 7 ) {
+    if (nArgs >= 7) {
 
         // zone
-        if ( !lua_isinteger( L, 7 ) ) {
-            return luaL_error( L, "vscp.sendMeasurement: Argument error, integer expected: "
-                                  "vscp.sendMeasurement( level, bString, value, GUID, type"
-                                  "[unit,index,zone,subzone] ) ");
+        if (!lua_isinteger(L, 7)) {
+            return luaL_error(
+              L,
+              "vscp.sendMeasurement: Argument error, integer expected: "
+              "vscp.sendMeasurement( level, bString, value, GUID, type"
+              "[unit,index,zone,subzone] ) ");
         }
 
-        zone = (int)lua_tointeger( L, 7 );
-
+        zone = (int)lua_tointeger(L, 7);
     }
 
-
-    if ( nArgs >= 8 ) {
+    if (nArgs >= 8) {
 
         // subzone
-        if ( !lua_isinteger( L, 8 ) ) {
-            return luaL_error( L, "vscp.sendMeasurement: Argument error, integer expected: "
-                                  "vscp.sendMeasurement( level, bString, value, GUID, type"
-                                  "[unit,index,zone,subzone] ) ");
+        if (!lua_isinteger(L, 8)) {
+            return luaL_error(
+              L,
+              "vscp.sendMeasurement: Argument error, integer expected: "
+              "vscp.sendMeasurement( level, bString, value, GUID, type"
+              "[unit,index,zone,subzone] ) ");
         }
 
-        subzone = (int)lua_tointeger( L, 8 );
-
+        subzone = (int)lua_tointeger(L, 8);
     }
 
+    if (bLevel2) {
 
-    if ( bLevel2 ) {
-
-        if ( bString ) {
+        if (bString) {
 
             pEvent = new vscpEvent;
-            if ( NULL == pEvent ) {
-                return luaL_error( L, "vscp.sendMeasurement: "
-                                      "Event allocation error" );
+            if (NULL == pEvent) {
+                return luaL_error(L,
+                                  "vscp.sendMeasurement: "
+                                  "Event allocation error");
             }
             pEvent->pdata = NULL;
 
             // Set GUID
-            memcpy( pEvent->GUID, guid, 16 );
+            memcpy(pEvent->GUID, guid, 16);
 
-            if ( !vscp_makeLevel2StringMeasurementEvent( pEvent,
-                                                            type,
-                                                            value,
-                                                            unit,
-                                                            sensoridx,
-                                                            zone,
-                                                            subzone ) ) {
+            if (!vscp_makeLevel2StringMeasurementEvent(
+                  pEvent, type, value, unit, sensoridx, zone, subzone)) {
                 // Failed
-                return luaL_error( L, "vscp.sendMeasurement: Failed to send "
-                                      "measurement event!");
+                return luaL_error(L,
+                                  "vscp.sendMeasurement: Failed to send "
+                                  "measurement event!");
             }
 
-        }
-        else {
+        } else {
 
             pEvent = new vscpEvent;
-            if ( NULL == pEvent ) {
-                return luaL_error( L, "vscp.sendMeasurement: "
-                                      "Event allocation error" );
+            if (NULL == pEvent) {
+                return luaL_error(L,
+                                  "vscp.sendMeasurement: "
+                                  "Event allocation error");
             }
             pEvent->pdata = NULL;
 
             // Set GUID
-            memcpy( pEvent->GUID, guid, 16 );
+            memcpy(pEvent->GUID, guid, 16);
 
-            if ( !vscp_makeLevel2FloatMeasurementEvent( pEvent,
-                                                            type,
-                                                            value,
-                                                            unit,
-                                                            sensoridx,
-                                                            zone,
-                                                            subzone ) ) {
+            if (!vscp_makeLevel2FloatMeasurementEvent(
+                  pEvent, type, value, unit, sensoridx, zone, subzone)) {
                 // Failed
-                return luaL_error( L, "vscp.sendMeasurement: Failed to construct "
-                                      "float measurement event!");
+                return luaL_error(L,
+                                  "vscp.sendMeasurement: Failed to construct "
+                                  "float measurement event!");
             }
-
         }
 
-    }
-    else {
+    } else {
 
         // Level I
 
-        if ( bString ) {
+        if (bString) {
 
             pEvent = new vscpEvent;
-            if ( NULL == pEvent ) {
-                return luaL_error( L, "vscp.sendMeasurement: "
-                                      "Event allocation error!" );
+            if (NULL == pEvent) {
+                return luaL_error(L,
+                                  "vscp.sendMeasurement: "
+                                  "Event allocation error!");
             }
 
-            memcpy( pEvent->GUID, guid, 16 );
+            memcpy(pEvent->GUID, guid, 16);
             pEvent->vscp_type = type;
             pEvent->vscp_class = VSCP_CLASS1_MEASUREMENT;
             pEvent->obid = 0;
             pEvent->timestamp = 0;
             pEvent->pdata = NULL;
 
-            if ( !vscp_makeStringMeasurementEvent( pEvent,
-                                                        value,
-                                                        unit,
-                                                        sensoridx ) ) {
-                vscp_deleteVSCPevent( pEvent );
-                return luaL_error( L, "vscp.sendMeasurement: "
-                                      "String event conversion failed!" );
+            if (!vscp_makeStringMeasurementEvent(
+                  pEvent, value, unit, sensoridx)) {
+                vscp_deleteVSCPevent(pEvent);
+                return luaL_error(L,
+                                  "vscp.sendMeasurement: "
+                                  "String event conversion failed!");
             }
 
             //
 
-        }
-        else {
+        } else {
 
             pEvent = new vscpEvent;
-            if ( NULL == pEvent ) {
-                return luaL_error( L, "vscp.sendMeasurement: "
-                                      "Event allocation error!" );
+            if (NULL == pEvent) {
+                return luaL_error(L,
+                                  "vscp.sendMeasurement: "
+                                  "Event allocation error!");
             }
 
-            memcpy( pEvent->GUID, guid, 16 );
+            memcpy(pEvent->GUID, guid, 16);
             pEvent->vscp_type = type;
             pEvent->vscp_class = VSCP_CLASS1_MEASUREMENT;
             pEvent->obid = 0;
             pEvent->timestamp = 0;
             pEvent->pdata = NULL;
 
-            if ( !vscp_makeFloatMeasurementEvent( pEvent,
-                                                    value,
-                                                    unit,
-                                                    sensoridx ) ) {
-                vscp_deleteVSCPevent( pEvent );
-                return luaL_error( L, "vscp.sendMeasurement: Failed to send "
-                                      "measurement event!");
+            if (!vscp_makeFloatMeasurementEvent(
+                  pEvent, value, unit, sensoridx)) {
+                vscp_deleteVSCPevent(pEvent);
+                return luaL_error(L,
+                                  "vscp.sendMeasurement: Failed to send "
+                                  "measurement event!");
             }
-
         }
-
     }
 
     // Send the event
-    if ( !gpobj->sendEvent( pClientItem, pEvent ) ) {
+    if (!gpobj->sendEvent(pClientItem, pEvent)) {
         // Failed to send event
-        vscp_deleteVSCPevent( pEvent );
-        return luaL_error( L, "vscp.sendMeasurement: "
-                              "Failed to send event!" );
+        vscp_deleteVSCPevent(pEvent);
+        return luaL_error(L,
+                          "vscp.sendMeasurement: "
+                          "Failed to send event!");
     }
 
-    vscp_deleteVSCPevent( pEvent );
+    vscp_deleteVSCPevent(pEvent);
 
     return 1;
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // lua_is_Measurement
@@ -1609,423 +1668,443 @@ int lua_send_Measurement( struct lua_State *L )
 //      format = 2 - JSON format.
 //
 
-int lua_is_Measurement( struct lua_State *L )
+int
+lua_is_Measurement(struct lua_State* L)
 {
     vscpEventEx ex;
     int format = 0;
     std::string strEvent;
 
-    int nArgs = lua_gettop( L );
+    int nArgs = lua_gettop(L);
 
     // Event
-    if ( !lua_isstring( L, 1 ) ) {
-        return luaL_error( L, "vscp.isMeasurement: Argument error, "
-                              "string expected: "
-                              "vscp.isMeasurement( event[,format] ) ");
+    if (!lua_isstring(L, 1)) {
+        return luaL_error(L,
+                          "vscp.isMeasurement: Argument error, "
+                          "string expected: "
+                          "vscp.isMeasurement( event[,format] ) ");
     }
 
     size_t len;
-    const char *pstr = lua_tolstring ( L, 1, &len );
-    strEvent = std::string( pstr, len );
+    const char* pstr = lua_tolstring(L, 1, &len);
+    strEvent = std::string(pstr, len);
 
-    if ( nArgs >= 2 ) {
+    if (nArgs >= 2) {
 
         // format
-        if ( !lua_isnumber( L, 2 ) ) {
-            return luaL_error( L, "vscp.isMeasurement: Argument error, "
-                                  "number expected: "
-                                  "vscp.isMeasurement( event[,format] ) ");
+        if (!lua_isnumber(L, 2)) {
+            return luaL_error(L,
+                              "vscp.isMeasurement: Argument error, "
+                              "number expected: "
+                              "vscp.isMeasurement( event[,format] ) ");
         }
 
-        format = (int)lua_tointeger( L, 2 );
+        format = (int)lua_tointeger(L, 2);
     }
 
-    if ( 0 == format ) {
-        if ( !vscp_setVscpEventExFromString( &ex, strEvent ) ) {
-            return luaL_error( L, "vscp.isMeasurement: Failed to get VSCP "
-                                  "event from string!");
+    if (0 == format) {
+        if (!vscp_setVscpEventExFromString(&ex, strEvent)) {
+            return luaL_error(L,
+                              "vscp.isMeasurement: Failed to get VSCP "
+                              "event from string!");
         }
-    }
-    else if ( 1 == format ) {
-        if ( !vscp_convertXMLToEventEx( &ex, strEvent ) ) {
-            return luaL_error( L, "vscp.isMeasurement: Failed to get "
-                                  "VSCP event from XML!");
+    } else if (1 == format) {
+        if (!vscp_convertXMLToEventEx(&ex, strEvent)) {
+            return luaL_error(L,
+                              "vscp.isMeasurement: Failed to get "
+                              "VSCP event from XML!");
         }
-    }
-    else if ( 2 == format ) {
-        if ( !vscp_convertJSONToEventEx( &ex, strEvent ) ) {
-            return luaL_error( L, "vscp.isMeasurement: Failed to get "
-                                  "VSCP event from JSON!");
+    } else if (2 == format) {
+        if (!vscp_convertJSONToEventEx(&ex, strEvent)) {
+            return luaL_error(L,
+                              "vscp.isMeasurement: Failed to get "
+                              "VSCP event from JSON!");
         }
     }
 
-    vscpEvent *pEvent = new vscpEvent;
-    if ( NULL == pEvent ) {
-        return luaL_error( L, "vscp.isMeasurement: Allocation error!" );
+    vscpEvent* pEvent = new vscpEvent;
+    if (NULL == pEvent) {
+        return luaL_error(L, "vscp.isMeasurement: Allocation error!");
     }
 
     pEvent->pdata = NULL;
 
-    vscp_convertVSCPfromEx( pEvent, &ex );
-    bool bMeasurement = vscp_isVSCPMeasurement( pEvent );
-    vscp_deleteVSCPevent( pEvent );
+    vscp_convertVSCPfromEx(pEvent, &ex);
+    bool bMeasurement = vscp_isVSCPMeasurement(pEvent);
+    vscp_deleteVSCPevent(pEvent);
 
-    lua_pushboolean( L, bMeasurement ? 1 : 0 );
+    lua_pushboolean(L, bMeasurement ? 1 : 0);
     return 1;
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // lua_get_MeasurementValue
 //
 
-int lua_get_MeasurementValue( struct lua_State *L )
+int
+lua_get_MeasurementValue(struct lua_State* L)
 {
     double value;
     vscpEventEx ex;
     int format = 0;
     std::string strEvent;
 
-    int nArgs = lua_gettop( L );
+    int nArgs = lua_gettop(L);
 
     // Event
-    if ( !lua_isstring( L, 1 ) ) {
-        return luaL_error( L, "vscp.getMeasurementValue: Argument error, "
-                              "string expected: "
-                              "vscp.getMeasurementValue( event[,format] ) ");
+    if (!lua_isstring(L, 1)) {
+        return luaL_error(L,
+                          "vscp.getMeasurementValue: Argument error, "
+                          "string expected: "
+                          "vscp.getMeasurementValue( event[,format] ) ");
     }
 
     size_t len;
-    const char *pstr = lua_tolstring ( L, 1, &len );
-    strEvent = std::string( pstr, len );
+    const char* pstr = lua_tolstring(L, 1, &len);
+    strEvent = std::string(pstr, len);
 
-    if ( nArgs >= 2 ) {
+    if (nArgs >= 2) {
 
         // format
-        if ( !lua_isnumber( L, 2 ) ) {
-            return luaL_error( L, "vscp.getMeasurementValue: Argument error, "
-                                  "number expected: "
-                                  "vscp.getMeasurementValue( event[,format] ) ");
+        if (!lua_isnumber(L, 2)) {
+            return luaL_error(L,
+                              "vscp.getMeasurementValue: Argument error, "
+                              "number expected: "
+                              "vscp.getMeasurementValue( event[,format] ) ");
         }
 
-        format = (int)lua_tointeger( L, 2 );
+        format = (int)lua_tointeger(L, 2);
     }
 
-    if ( 0 == format ) {
-        if ( !vscp_setVscpEventExFromString( &ex, strEvent ) ) {
-            return luaL_error( L, "vscp.getMeasurementValue: Failed to get "
-                                  "VSCP event from string!");
+    if (0 == format) {
+        if (!vscp_setVscpEventExFromString(&ex, strEvent)) {
+            return luaL_error(L,
+                              "vscp.getMeasurementValue: Failed to get "
+                              "VSCP event from string!");
         }
-    }
-    else if ( 1 == format ) {
-        if ( !vscp_convertXMLToEventEx( &ex, strEvent ) ) {
-            return luaL_error( L, "vscp.getMeasurementValue: Failed to get "
-                                  "VSCP event from XML!");
+    } else if (1 == format) {
+        if (!vscp_convertXMLToEventEx(&ex, strEvent)) {
+            return luaL_error(L,
+                              "vscp.getMeasurementValue: Failed to get "
+                              "VSCP event from XML!");
         }
-    }
-    else if ( 2 == format ) {
-        if ( !vscp_convertJSONToEventEx( &ex, strEvent ) ) {
-            return luaL_error( L, "vscp.getMeasurementValue: Failed to get "
-                                  "VSCP event from JSON!");
+    } else if (2 == format) {
+        if (!vscp_convertJSONToEventEx(&ex, strEvent)) {
+            return luaL_error(L,
+                              "vscp.getMeasurementValue: Failed to get "
+                              "VSCP event from JSON!");
         }
     }
 
-    vscpEvent *pEvent = new vscpEvent;
-    if ( NULL == pEvent ) {
-        return luaL_error( L, "vscp.getMeasurementValue: Allocation error!");
+    vscpEvent* pEvent = new vscpEvent;
+    if (NULL == pEvent) {
+        return luaL_error(L, "vscp.getMeasurementValue: Allocation error!");
     }
 
     pEvent->pdata = NULL;
 
-    vscp_convertVSCPfromEx( pEvent, &ex );
-    vscp_getVSCPMeasurementAsDouble( pEvent, &value );
-    vscp_deleteVSCPevent( pEvent );
+    vscp_convertVSCPfromEx(pEvent, &ex);
+    vscp_getVSCPMeasurementAsDouble(&value, pEvent);
+    vscp_deleteVSCPevent(pEvent);
 
-    lua_pushnumber( L, value );
+    lua_pushnumber(L, value);
 
     return 1;
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // lua_get_MeasurementUnit
 //
 
-int lua_get_MeasurementUnit( struct lua_State *L )
+int
+lua_get_MeasurementUnit(struct lua_State* L)
 {
     vscpEventEx ex;
     int format = 0;
     std::string strEvent;
 
-    int nArgs = lua_gettop( L );
+    int nArgs = lua_gettop(L);
 
     // Event
-    if ( !lua_isstring( L, 1 ) ) {
-        return luaL_error( L, "vscp.getMeasurementUnit: Argument error, "
-                              "string expected: "
-                              "vscp.getMeasurementUnit( event[,format] ) ");
+    if (!lua_isstring(L, 1)) {
+        return luaL_error(L,
+                          "vscp.getMeasurementUnit: Argument error, "
+                          "string expected: "
+                          "vscp.getMeasurementUnit( event[,format] ) ");
     }
 
     size_t len;
-    const char *pstr = lua_tolstring ( L, 1, &len );
-    strEvent = std::string( pstr, len );
+    const char* pstr = lua_tolstring(L, 1, &len);
+    strEvent = std::string(pstr, len);
 
-    if ( nArgs >= 2 ) {
+    if (nArgs >= 2) {
 
         // format
-        if ( !lua_isnumber( L, 2 ) ) {
-            return luaL_error( L, "vscp.getMeasurementUnit: Argument error, "
-                                  "number expected: "
-                                  "vscp.getMeasurementUnit( event[,format] ) ");
+        if (!lua_isnumber(L, 2)) {
+            return luaL_error(L,
+                              "vscp.getMeasurementUnit: Argument error, "
+                              "number expected: "
+                              "vscp.getMeasurementUnit( event[,format] ) ");
         }
 
-        format = (int)lua_tointeger( L, 2 );
+        format = (int)lua_tointeger(L, 2);
     }
 
-    if ( 0 == format ) {
-        if ( !vscp_setVscpEventExFromString( &ex, strEvent ) ) {
-            return luaL_error( L, "vscp.getMeasurementUnit: Failed to get "
-                                  "VSCP event from string!");
+    if (0 == format) {
+        if (!vscp_setVscpEventExFromString(&ex, strEvent)) {
+            return luaL_error(L,
+                              "vscp.getMeasurementUnit: Failed to get "
+                              "VSCP event from string!");
         }
-    }
-    else if ( 1 == format ) {
-        if ( !vscp_convertXMLToEventEx( &ex, strEvent ) ) {
-            return luaL_error( L, "vscp.getMeasurementUnit: Failed to get "
-                                  "VSCP event from XML!");
+    } else if (1 == format) {
+        if (!vscp_convertXMLToEventEx(&ex, strEvent)) {
+            return luaL_error(L,
+                              "vscp.getMeasurementUnit: Failed to get "
+                              "VSCP event from XML!");
         }
-    }
-    else if ( 2 == format ) {
-        if ( !vscp_convertJSONToEventEx( &ex, strEvent ) ) {
-            return luaL_error( L, "vscp.getMeasurementUnit: Failed to get "
-                                  "VSCP event from JSON!");
+    } else if (2 == format) {
+        if (!vscp_convertJSONToEventEx(&ex, strEvent)) {
+            return luaL_error(L,
+                              "vscp.getMeasurementUnit: Failed to get "
+                              "VSCP event from JSON!");
         }
     }
 
-    vscpEvent *pEvent = new vscpEvent;
-    if ( NULL == pEvent ) {
-        return luaL_error( L, "vscp.getMeasurementUnit: Allocation error!");
+    vscpEvent* pEvent = new vscpEvent;
+    if (NULL == pEvent) {
+        return luaL_error(L, "vscp.getMeasurementUnit: Allocation error!");
     }
 
     pEvent->pdata = NULL;
 
-    vscp_convertVSCPfromEx( pEvent, &ex );
-    int unit = vscp_getVSCPMeasurementUnit( pEvent );
-    vscp_deleteVSCPevent( pEvent );
+    vscp_convertVSCPfromEx(pEvent, &ex);
+    int unit = vscp_getVSCPMeasurementUnit(pEvent);
+    vscp_deleteVSCPevent(pEvent);
 
-    lua_pushinteger( L, unit );
+    lua_pushinteger(L, unit);
 
     return 1;
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // lua_get_MeasurementSensorIndex
 //
 
-int lua_get_MeasurementSensorIndex( struct lua_State *L )
+int
+lua_get_MeasurementSensorIndex(struct lua_State* L)
 {
     vscpEventEx ex;
     int format = 0;
     std::string strEvent;
 
-    int nArgs = lua_gettop( L );
+    int nArgs = lua_gettop(L);
 
     // Event
-    if ( !lua_isstring( L, 1 ) ) {
-        return luaL_error( L, "vscp.getMeasuremenSensorIndex: Argument error, "
-                              "string expected: "
-                              "vscp.getMeasuremenSensorIndex( event[,format] ) ");
+    if (!lua_isstring(L, 1)) {
+        return luaL_error(L,
+                          "vscp.getMeasuremenSensorIndex: Argument error, "
+                          "string expected: "
+                          "vscp.getMeasuremenSensorIndex( event[,format] ) ");
     }
 
     size_t len;
-    const char *pstr = lua_tolstring ( L, 1, &len );
-    strEvent = std::string( pstr, len );
+    const char* pstr = lua_tolstring(L, 1, &len);
+    strEvent = std::string(pstr, len);
 
-    if ( nArgs >= 2 ) {
+    if (nArgs >= 2) {
 
         // format
-        if ( !lua_isnumber( L, 2 ) ) {
-            return luaL_error( L, "vscp.getMeasuremenSensorIndex: Argument "
-                                  "error, number expected: "
-                                  "vscp.getMeasuremenSensorIndex( event[,format] ) ");
+        if (!lua_isnumber(L, 2)) {
+            return luaL_error(
+              L,
+              "vscp.getMeasuremenSensorIndex: Argument "
+              "error, number expected: "
+              "vscp.getMeasuremenSensorIndex( event[,format] ) ");
         }
 
-        format = (int)lua_tointeger( L, 2 );
+        format = (int)lua_tointeger(L, 2);
     }
 
-    if ( 0 == format ) {
-        if ( !vscp_setVscpEventExFromString( &ex, strEvent ) ) {
-            return luaL_error( L, "vscp.getMeasuremenSensorIndex: Failed to "
-                                  "get VSCP event from string!");
+    if (0 == format) {
+        if (!vscp_setVscpEventExFromString(&ex, strEvent)) {
+            return luaL_error(L,
+                              "vscp.getMeasuremenSensorIndex: Failed to "
+                              "get VSCP event from string!");
         }
-    }
-    else if ( 1 == format ) {
-        if ( !vscp_convertXMLToEventEx( &ex, strEvent ) ) {
-            return luaL_error( L, "vscp.getMeasuremenSensorIndex: Failed to get "
-                                  "VSCP event from XML!");
+    } else if (1 == format) {
+        if (!vscp_convertXMLToEventEx(&ex, strEvent)) {
+            return luaL_error(L,
+                              "vscp.getMeasuremenSensorIndex: Failed to get "
+                              "VSCP event from XML!");
         }
-    }
-    else if ( 2 == format ) {
-        if ( !vscp_convertJSONToEventEx( &ex, strEvent ) ) {
-            return luaL_error( L, "vscp.getMeasuremenSensorIndex: Failed to get "
-                                  "VSCP event from JSON!");
+    } else if (2 == format) {
+        if (!vscp_convertJSONToEventEx(&ex, strEvent)) {
+            return luaL_error(L,
+                              "vscp.getMeasuremenSensorIndex: Failed to get "
+                              "VSCP event from JSON!");
         }
     }
 
-    vscpEvent *pEvent = new vscpEvent;
-    if ( NULL == pEvent ) {
-        return luaL_error( L, "vscp.getMeasurementUnit: Allocation error!");
+    vscpEvent* pEvent = new vscpEvent;
+    if (NULL == pEvent) {
+        return luaL_error(L, "vscp.getMeasurementUnit: Allocation error!");
     }
 
     pEvent->pdata = NULL;
 
-    vscp_convertVSCPfromEx( pEvent, &ex );
-    int sensorindex = vscp_getVSCPMeasurementSensorIndex( pEvent );
-    vscp_deleteVSCPevent( pEvent );
+    vscp_convertVSCPfromEx(pEvent, &ex);
+    int sensorindex = vscp_getVSCPMeasurementSensorIndex(pEvent);
+    vscp_deleteVSCPevent(pEvent);
 
-    lua_pushinteger( L, sensorindex );
+    lua_pushinteger(L, sensorindex);
 
     return 1;
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // lua_get_MeasurementZone
 //
 
-int lua_get_MeasurementZone( struct lua_State *L )
+int
+lua_get_MeasurementZone(struct lua_State* L)
 {
     vscpEventEx ex;
     int format = 0;
     std::string strEvent;
 
-    int nArgs = lua_gettop( L );
+    int nArgs = lua_gettop(L);
 
     // Event
-    if ( !lua_isstring( L, 1 ) ) {
-        return luaL_error( L, "vscp.getMeasurementZone: Argument error, "
-                              "string expected: "
-                              "vscp.getMeasurementZone( event[,format] ) ");
+    if (!lua_isstring(L, 1)) {
+        return luaL_error(L,
+                          "vscp.getMeasurementZone: Argument error, "
+                          "string expected: "
+                          "vscp.getMeasurementZone( event[,format] ) ");
     }
 
     size_t len;
-    const char *pstr = lua_tolstring ( L, 1, &len );
-    strEvent = std::string( pstr, len );
+    const char* pstr = lua_tolstring(L, 1, &len);
+    strEvent = std::string(pstr, len);
 
-    if ( nArgs >= 2 ) {
+    if (nArgs >= 2) {
 
         // format
-        if ( !lua_isnumber( L, 2 ) ) {
-            return luaL_error( L, "vscp.getMeasurementZone: Argument error, "
-                                  "number expected: "
-                                  "vscp.getMeasurementZone( event[,format] ) ");
+        if (!lua_isnumber(L, 2)) {
+            return luaL_error(L,
+                              "vscp.getMeasurementZone: Argument error, "
+                              "number expected: "
+                              "vscp.getMeasurementZone( event[,format] ) ");
         }
 
-        format = (int)lua_tointeger( L, 2 );
+        format = (int)lua_tointeger(L, 2);
     }
 
-    if ( 0 == format ) {
-        if ( !vscp_setVscpEventExFromString( &ex, strEvent ) ) {
-            return luaL_error( L, "vscp.getMeasurementZone: Failed to get "
-                                  "VSCP event from string!");
+    if (0 == format) {
+        if (!vscp_setVscpEventExFromString(&ex, strEvent)) {
+            return luaL_error(L,
+                              "vscp.getMeasurementZone: Failed to get "
+                              "VSCP event from string!");
         }
-    }
-    else if ( 1 == format ) {
-        if ( !vscp_convertXMLToEventEx( &ex, strEvent ) ) {
-            return luaL_error( L, "vscp.getMeasurementZone: Failed to get "
-                                  "VSCP event from XML!");
+    } else if (1 == format) {
+        if (!vscp_convertXMLToEventEx(&ex, strEvent)) {
+            return luaL_error(L,
+                              "vscp.getMeasurementZone: Failed to get "
+                              "VSCP event from XML!");
         }
-    }
-    else if ( 2 == format ) {
-        if ( !vscp_convertJSONToEventEx( &ex, strEvent ) ) {
-            return luaL_error( L, "vscp.getMeasurementZone: Failed to get "
-                                  "VSCP event from JSON!");
+    } else if (2 == format) {
+        if (!vscp_convertJSONToEventEx(&ex, strEvent)) {
+            return luaL_error(L,
+                              "vscp.getMeasurementZone: Failed to get "
+                              "VSCP event from JSON!");
         }
     }
 
-    vscpEvent *pEvent = new vscpEvent;
-    if ( NULL == pEvent ) {
-        return luaL_error( L, "vscp.getMeasurementZone: Allocation error!");
+    vscpEvent* pEvent = new vscpEvent;
+    if (NULL == pEvent) {
+        return luaL_error(L, "vscp.getMeasurementZone: Allocation error!");
     }
 
     pEvent->pdata = NULL;
 
-    vscp_convertVSCPfromEx( pEvent, &ex );
-    int zone = vscp_getVSCPMeasurementZone( pEvent );
-    vscp_deleteVSCPevent( pEvent );
+    vscp_convertVSCPfromEx(pEvent, &ex);
+    int zone = vscp_getVSCPMeasurementZone(pEvent);
+    vscp_deleteVSCPevent(pEvent);
 
-    lua_pushinteger( L, zone );
+    lua_pushinteger(L, zone);
 
     return 1;
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // lua_get_MeasurementSubZone
 //
 
-int lua_get_MeasurementSubZone( struct lua_State *L )
+int
+lua_get_MeasurementSubZone(struct lua_State* L)
 {
     vscpEventEx ex;
     int format = 0;
     std::string strEvent;
 
-    int nArgs = lua_gettop( L );
+    int nArgs = lua_gettop(L);
 
     // Event
-    if ( !lua_isstring( L, 1 ) ) {
-        return luaL_error( L, "vscp.getMeasurementSubZone: Argument error, "
-                              "string expected: "
-                              "vscp.getMeasurementSubZone( event[,format] ) ");
+    if (!lua_isstring(L, 1)) {
+        return luaL_error(L,
+                          "vscp.getMeasurementSubZone: Argument error, "
+                          "string expected: "
+                          "vscp.getMeasurementSubZone( event[,format] ) ");
     }
 
     size_t len;
-    const char *pstr = lua_tolstring ( L, 1, &len );
-    strEvent = std::string( pstr, len );
+    const char* pstr = lua_tolstring(L, 1, &len);
+    strEvent = std::string(pstr, len);
 
-    if ( nArgs >= 2 ) {
+    if (nArgs >= 2) {
 
         // format
-        if ( !lua_isnumber( L, 2 ) ) {
-            return luaL_error( L, "vscp.getMeasurementSubZone: Argument error,"
-                                  " number expected: "
-                                  "vscp.getMeasurementSubZone( event[,format] ) ");
+        if (!lua_isnumber(L, 2)) {
+            return luaL_error(L,
+                              "vscp.getMeasurementSubZone: Argument error,"
+                              " number expected: "
+                              "vscp.getMeasurementSubZone( event[,format] ) ");
         }
 
-        format = (int)lua_tointeger( L, 2 );
+        format = (int)lua_tointeger(L, 2);
     }
 
-    if ( 0 == format ) {
-        if ( !vscp_setVscpEventExFromString( &ex, strEvent ) ) {
-            return luaL_error( L, "vscp.getMeasurementSubZone: Failed to get "
-                                  "VSCP event from string!");
+    if (0 == format) {
+        if (!vscp_setVscpEventExFromString(&ex, strEvent)) {
+            return luaL_error(L,
+                              "vscp.getMeasurementSubZone: Failed to get "
+                              "VSCP event from string!");
         }
-    }
-    else if ( 1 == format ) {
-        if ( !vscp_convertXMLToEventEx( &ex, strEvent ) ) {
-            return luaL_error( L, "vscp.getMeasurementSubZone: Failed to get "
-                                  "VSCP event from XML!");
+    } else if (1 == format) {
+        if (!vscp_convertXMLToEventEx(&ex, strEvent)) {
+            return luaL_error(L,
+                              "vscp.getMeasurementSubZone: Failed to get "
+                              "VSCP event from XML!");
         }
-    }
-    else if ( 2 == format ) {
-        if ( !vscp_convertJSONToEventEx( &ex, strEvent ) ) {
-            return luaL_error( L, "vscp.getMeasurementSubZone: Failed to get "
-                                  "VSCP event from JSON!");
+    } else if (2 == format) {
+        if (!vscp_convertJSONToEventEx(&ex, strEvent)) {
+            return luaL_error(L,
+                              "vscp.getMeasurementSubZone: Failed to get "
+                              "VSCP event from JSON!");
         }
     }
 
-    vscpEvent *pEvent = new vscpEvent;
-    if ( NULL == pEvent ) {
-        return luaL_error( L, "vscp.getMeasurementSubZone: Allocation error!");
+    vscpEvent* pEvent = new vscpEvent;
+    if (NULL == pEvent) {
+        return luaL_error(L, "vscp.getMeasurementSubZone: Allocation error!");
     }
 
     pEvent->pdata = NULL;
 
-    vscp_convertVSCPfromEx( pEvent, &ex );
-    int subzone = vscp_getVSCPMeasurementSubZone( pEvent );
-    vscp_deleteVSCPevent( pEvent );
+    vscp_convertVSCPfromEx(pEvent, &ex);
+    int subzone = vscp_getVSCPMeasurementSubZone(pEvent);
+    vscp_deleteVSCPevent(pEvent);
 
-    lua_pushinteger( L, subzone );
+    lua_pushinteger(L, subzone);
 
     return 1;
 }
@@ -2036,7 +2115,8 @@ int lua_get_MeasurementSubZone( struct lua_State *L )
 // Connect to remote server
 //
 
-int lua_tcpip_connect( struct lua_State *L )
+int
+lua_tcpip_connect(struct lua_State* L)
 {
     // web_connect_client
     return 1;
@@ -2048,7 +2128,8 @@ int lua_tcpip_connect( struct lua_State *L )
 // Connect to remote server using SSL
 //
 
-int lua_tcpip_connect_ssl( struct lua_State *L )
+int
+lua_tcpip_connect_ssl(struct lua_State* L)
 {
     // web_connect_client_secure
     return 1;
@@ -2065,7 +2146,8 @@ int lua_tcpip_connect_ssl( struct lua_State *L )
 //      bSSL
 //
 
-int lua_tcpip_connect_info( struct lua_State *L )
+int
+lua_tcpip_connect_info(struct lua_State* L)
 {
     return 1;
 }
@@ -2076,7 +2158,8 @@ int lua_tcpip_connect_info( struct lua_State *L )
 // Close connection to remote server
 //
 
-int lua_tcpip_close( struct lua_State *L )
+int
+lua_tcpip_close(struct lua_State* L)
 {
     return 1;
 }
@@ -2087,7 +2170,8 @@ int lua_tcpip_close( struct lua_State *L )
 // Write data remote sever
 //
 
-int lua_tcpip_write( struct lua_State *L )
+int
+lua_tcpip_write(struct lua_State* L)
 {
     return 1;
 }
@@ -2098,7 +2182,8 @@ int lua_tcpip_write( struct lua_State *L )
 // Read data from remote sever
 //
 
-int lua_tcpip_read( struct lua_State *L )
+int
+lua_tcpip_read(struct lua_State* L)
 {
     return 1;
 }
@@ -2109,7 +2194,8 @@ int lua_tcpip_read( struct lua_State *L )
 // Wait for response from remote sever
 //
 
-int lua_tcpip_get_response( struct lua_State *L )
+int
+lua_tcpip_get_response(struct lua_State* L)
 {
     return 1;
 }
@@ -2120,7 +2206,8 @@ int lua_tcpip_get_response( struct lua_State *L )
 // Download data from remote web server
 //
 
-int lua_tcpip_download( struct lua_State *L )
+int
+lua_tcpip_download(struct lua_State* L)
 {
     return 1;
 }
@@ -2131,7 +2218,8 @@ int lua_tcpip_download( struct lua_State *L )
 // Get version for httpd code
 //
 
-int lua_get_httpd_version( struct lua_State *L )
+int
+lua_get_httpd_version(struct lua_State* L)
 {
     return 1;
 }
@@ -2142,7 +2230,8 @@ int lua_get_httpd_version( struct lua_State *L )
 // URL-decode input buffer into destination buffer.
 //
 
-int lua_url_decode( struct lua_State *L )
+int
+lua_url_decode(struct lua_State* L)
 {
     return 1;
 }
@@ -2153,7 +2242,8 @@ int lua_url_decode( struct lua_State *L )
 // URL-encode input buffer into destination buffer.
 //
 
-int lua_url_encode( struct lua_State *L )
+int
+lua_url_encode(struct lua_State* L)
 {
     return 1;
 }
@@ -2164,7 +2254,8 @@ int lua_url_encode( struct lua_State *L )
 // Connect to remote websocket client.
 //
 
-int lua_websocket_connect( struct lua_State *L )
+int
+lua_websocket_connect(struct lua_State* L)
 {
     return 1;
 }
@@ -2175,7 +2266,8 @@ int lua_websocket_connect( struct lua_State *L )
 // URL-encode input buffer into destination buffer.
 //
 
-int lua_websocket_write( struct lua_State *L )
+int
+lua_websocket_write(struct lua_State* L)
 {
     return 1;
 }
@@ -2186,7 +2278,8 @@ int lua_websocket_write( struct lua_State *L )
 // Read data from remote websocket host
 //
 
-int lua_websocket_read( struct lua_State *L )
+int
+lua_websocket_read(struct lua_State* L)
 {
     return 1;
 }
@@ -2197,7 +2290,8 @@ int lua_websocket_read( struct lua_State *L )
 // lock connection
 //
 
-int lua_websocket_lock( struct lua_State *L )
+int
+lua_websocket_lock(struct lua_State* L)
 {
     return 1;
 }
@@ -2208,7 +2302,8 @@ int lua_websocket_lock( struct lua_State *L )
 // unlock connection
 //
 
-int js_websocket_unlock( struct lua_State *L )
+int
+js_websocket_unlock(struct lua_State* L)
 {
     return 1;
 }
@@ -2219,7 +2314,8 @@ int js_websocket_unlock( struct lua_State *L )
 // Calculate md5 digest
 //
 
-int js_md5( struct lua_State *L )
+int
+js_md5(struct lua_State* L)
 {
     return 1;
 }

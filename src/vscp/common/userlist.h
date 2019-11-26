@@ -444,14 +444,14 @@ class CUserItem
     std::string getFilter(void)
     {
         std::string str;
-        vscp_writeFilterToString(&m_filterVSCP, str);
+        vscp_writeFilterToString(str,&m_filterVSCP);
         return str;
     };
 
     std::string getMask(void)
     {
         std::string str;
-        vscp_writeMaskToString(&m_filterVSCP, str);
+        vscp_writeMaskToString(str,&m_filterVSCP);
         return str;
     };
 

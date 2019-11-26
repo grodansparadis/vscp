@@ -65,7 +65,7 @@ using json = nlohmann::json;
 //                   GLOBALS
 ///////////////////////////////////////////////////
 
-extern CControlObject *gpobj;
+extern CControlObject* gpobj;
 
 ///////////////////////////////////////////////////
 //                  HELPERS
@@ -78,7 +78,7 @@ extern CControlObject *gpobj;
 //
 
 bool
-get_js_Event(duk_context *ctx, vscpEventEx *pex)
+get_js_Event(duk_context* ctx, vscpEventEx* pex)
 {
     //  Should be a JSON variable object
     if (!duk_is_object(ctx, -1)) {
@@ -142,7 +142,7 @@ get_js_Event(duk_context *ctx, vscpEventEx *pex)
     duk_push_string(ctx, "guid");
     duk_get_prop(ctx, -2);
     if (duk_is_string(ctx, -1)) {
-        const char *pGUID = duk_get_string_default(
+        const char* pGUID = duk_get_string_default(
           ctx, -1, "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00");
         vscp_setEventExGuidFromString(pex, pGUID);
     }
@@ -154,19 +154,19 @@ get_js_Event(duk_context *ctx, vscpEventEx *pex)
     duk_push_string(ctx, "time");
     duk_get_prop(ctx, -2);
     if (duk_is_string(ctx, -1)) {
-        const char *pTime = duk_get_string_default(ctx, -1, "");
+        const char* pTime = duk_get_string_default(ctx, -1, "");
         if (dt.set(pTime)) {
-            pex->year   = dt.getYear();
-            pex->month  = dt.getMonth() + 1;
-            pex->day    = dt.getDay();
-            pex->hour   = dt.getHour();
+            pex->year = dt.getYear();
+            pex->month = dt.getMonth() + 1;
+            pex->day = dt.getDay();
+            pex->hour = dt.getHour();
             pex->minute = dt.getMinute();
             pex->second = dt.getSecond();
         } else {
-            pex->year   = vscpdatetime::UTCNow().getYear();
-            pex->month  = vscpdatetime::UTCNow().getMonth() + 1;
-            pex->day    = vscpdatetime::UTCNow().getDay();
-            pex->hour   = vscpdatetime::UTCNow().getHour();
+            pex->year = vscpdatetime::UTCNow().getYear();
+            pex->month = vscpdatetime::UTCNow().getMonth() + 1;
+            pex->day = vscpdatetime::UTCNow().getDay();
+            pex->hour = vscpdatetime::UTCNow().getHour();
             pex->minute = vscpdatetime::UTCNow().getMinute();
             pex->second = vscpdatetime::UTCNow().getSecond();
         }
@@ -182,7 +182,8 @@ get_js_Event(duk_context *ctx, vscpEventEx *pex)
     if (duk_is_array(ctx, -1)) {
         int lengthArray = duk_get_length(ctx, -1);
         // Make sure size is valid
-        if (lengthArray > VSCP_MAX_DATA) lengthArray = VSCP_MAX_DATA;
+        if (lengthArray > VSCP_MAX_DATA)
+            lengthArray = VSCP_MAX_DATA;
         pex->sizeData = lengthArray;
         for (int i = 0; i < lengthArray; i++) {
             if (duk_get_prop_index(ctx, -1, i)) {
@@ -205,10 +206,10 @@ get_js_Event(duk_context *ctx, vscpEventEx *pex)
 //
 
 duk_ret_t
-js_resolve_module(duk_context *ctx)
+js_resolve_module(duk_context* ctx)
 {
-    const char *module_id;
-    const char *parent_id;
+    const char* module_id;
+    const char* parent_id;
 
     module_id = duk_require_string(ctx, 0);
     parent_id = duk_require_string(ctx, 1);
@@ -227,10 +228,10 @@ js_resolve_module(duk_context *ctx)
 //
 
 duk_ret_t
-js_load_module(duk_context *ctx)
+js_load_module(duk_context* ctx)
 {
-    const char *filename;
-    const char *module_id;
+    const char* filename;
+    const char* module_id;
 
     // TODO Modules can only be loaded from /srv/vscp/javascript or
     // configured other location
@@ -272,7 +273,7 @@ js_load_module(duk_context *ctx)
 // js_vscp_print
 //
 duk_ret_t
-js_vscp_print(duk_context *ctx)
+js_vscp_print(duk_context* ctx)
 {
     duk_push_string(ctx, " ");
     duk_insert(ctx, 0);
@@ -287,9 +288,9 @@ js_vscp_print(duk_context *ctx)
 // vscp_log("message"[,log-level,log-type])
 
 duk_ret_t
-js_vscp_log(duk_context *ctx)
+js_vscp_log(duk_context* ctx)
 {
-    int nArgs           = duk_get_top(ctx);
+    int nArgs = duk_get_top(ctx);
     std::string wxDebug = duk_get_string_default(ctx, -1, "---Log fail---");
     syslog(LOG_INFO, "%s", wxDebug.c_str());
 
@@ -305,7 +306,7 @@ js_vscp_log(duk_context *ctx)
 //
 
 duk_ret_t
-js_vscp_sleep(duk_context *ctx)
+js_vscp_sleep(duk_context* ctx)
 {
     uint32_t sleep_ms = 1000;
 
@@ -345,7 +346,7 @@ js_vscp_sleep(duk_context *ctx)
 //
 
 duk_ret_t
-js_vscp_readVariable(duk_context *ctx)
+js_vscp_readVariable(duk_context* ctx)
 {
     // CVariable variable;
     // std::string strResult;
@@ -386,7 +387,7 @@ js_vscp_readVariable(duk_context *ctx)
 //
 
 duk_ret_t
-js_vscp_writeVariable(duk_context *ctx)
+js_vscp_writeVariable(duk_context* ctx)
 {
     // std::string varName;
     // CVariable variable;
@@ -480,7 +481,8 @@ js_vscp_writeVariable(duk_context *ctx)
     //     duk_get_prop(ctx, -2);
     //     if (duk_is_number(ctx, -1)) {
     //         accessRights =
-    //           (uint32_t)duk_get_number_default(ctx, -1, PERMISSION_OWNER_ALL);
+    //           (uint32_t)duk_get_number_default(ctx, -1,
+    //           PERMISSION_OWNER_ALL);
     //     }
 
     //     duk_pop_n(ctx, 1);
@@ -560,7 +562,7 @@ js_vscp_writeVariable(duk_context *ctx)
 //
 
 duk_ret_t
-js_vscp_deleteVariable(duk_context *ctx)
+js_vscp_deleteVariable(duk_context* ctx)
 {
     // std::string varName;
     // CVariable variable;
@@ -601,7 +603,7 @@ js_vscp_deleteVariable(duk_context *ctx)
 //
 
 duk_ret_t
-js_vscp_sendEvent(duk_context *ctx)
+js_vscp_sendEvent(duk_context* ctx)
 {
     vscpEventEx ex;
 
@@ -620,7 +622,7 @@ js_vscp_sendEvent(duk_context *ctx)
     duk_pop_n(ctx, 1);
 
     // Send the event
-    vscpEvent *pEvent = new vscpEvent;
+    vscpEvent* pEvent = new vscpEvent;
     if (NULL == pEvent) {
         duk_push_boolean(ctx, 0); // return code false
         return JAVASCRIPT_OK;
@@ -633,7 +635,7 @@ js_vscp_sendEvent(duk_context *ctx)
     duk_push_string(
       ctx, "vscp_clientitem"); /* -> stack: [ global "vscp_clientItem" ] */
     duk_get_prop(ctx, -2);     /* -> stack: [ global vscp_clientItem ] */
-    CClientItem *pClientItem = (CClientItem *)duk_get_pointer(ctx, -1);
+    CClientItem* pClientItem = (CClientItem*)duk_get_pointer(ctx, -1);
     if (NULL == pClientItem) {
         duk_push_boolean(ctx, 0); // return code false
         return JAVASCRIPT_OK;
@@ -658,13 +660,13 @@ js_vscp_sendEvent(duk_context *ctx)
 //
 
 duk_ret_t
-js_vscp_getEvent(duk_context *ctx)
+js_vscp_getEvent(duk_context* ctx)
 {
     duk_push_global_object(ctx); /* -> stack: [ global ] */
     duk_push_string(
       ctx, "vscp_clientitem"); /* -> stack: [ global "vscp_clientItem" ] */
     duk_get_prop(ctx, -2);     /* -> stack: [ global vscp_clientItem ] */
-    CClientItem *pClientItem = (CClientItem *)duk_get_pointer(ctx, -1);
+    CClientItem* pClientItem = (CClientItem*)duk_get_pointer(ctx, -1);
     if (NULL == pClientItem) {
         duk_push_boolean(ctx, 0); // return code false
         return JAVASCRIPT_OK;
@@ -676,7 +678,7 @@ try_again:
     // Check the client queue
     if (pClientItem->m_bOpen && pClientItem->m_clientInputQueue.size()) {
 
-        vscpEvent *pEvent;
+        vscpEvent* pEvent;
 
         pthread_mutex_lock(&pClientItem->m_mutexClientInputQueue);
         pEvent = pClientItem->m_clientInputQueue.front();
@@ -701,7 +703,7 @@ try_again:
                 vscp_convertEventToJSON(strResult, pEvent);
                 // Event is not needed anymore
                 vscp_deleteVSCPevent(pEvent);
-                duk_push_string(ctx, (const char *)strResult.c_str());
+                duk_push_string(ctx, (const char*)strResult.c_str());
                 duk_json_decode(ctx, -1);
 
                 // All OK return event
@@ -739,7 +741,7 @@ try_again:
 //
 
 duk_ret_t
-js_vscp_getCountEvent(duk_context *ctx)
+js_vscp_getCountEvent(duk_context* ctx)
 {
     int count = 0;
 
@@ -747,7 +749,7 @@ js_vscp_getCountEvent(duk_context *ctx)
     duk_push_string(
       ctx, "vscp_clientitem"); /* -> stack: [ global "vscp_clientItem" ] */
     duk_get_prop(ctx, -2);     /* -> stack: [ global vscp_clientItem ] */
-    CClientItem *pClientItem = (CClientItem *)duk_get_pointer(ctx, -1);
+    CClientItem* pClientItem = (CClientItem*)duk_get_pointer(ctx, -1);
     if (NULL == pClientItem) {
         duk_push_boolean(ctx, 0); // return code false
         return JAVASCRIPT_OK;
@@ -779,7 +781,7 @@ js_vscp_getCountEvent(duk_context *ctx)
 // }
 
 duk_ret_t
-js_vscp_setFilter(duk_context *ctx)
+js_vscp_setFilter(duk_context* ctx)
 {
     vscpEventFilter filter;
 
@@ -787,7 +789,7 @@ js_vscp_setFilter(duk_context *ctx)
     duk_push_string(
       ctx, "vscp_clientitem"); /* -> stack: [ global "vscp_clientItem" ] */
     duk_get_prop(ctx, -2);     /* -> stack: [ global vscp_clientItem ] */
-    CClientItem *pClientItem = (CClientItem *)duk_get_pointer(ctx, -1);
+    CClientItem* pClientItem = (CClientItem*)duk_get_pointer(ctx, -1);
     if (NULL == pClientItem) {
         duk_push_boolean(ctx, 0); // return code false
         return JAVASCRIPT_OK;
@@ -829,7 +831,7 @@ js_vscp_setFilter(duk_context *ctx)
     duk_push_string(ctx, "mask_guid");
     duk_get_prop(ctx, -2);
     if (duk_is_string(ctx, -1)) {
-        const char *pGUID = duk_get_string_default(
+        const char* pGUID = duk_get_string_default(
           ctx, -1, "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00");
         vscp_getGuidFromStringToArray(filter.mask_GUID, pGUID);
     }
@@ -864,7 +866,7 @@ js_vscp_setFilter(duk_context *ctx)
     duk_push_string(ctx, "filter_guid");
     duk_get_prop(ctx, -2);
     if (duk_is_string(ctx, -1)) {
-        const char *pGUID = duk_get_string_default(
+        const char* pGUID = duk_get_string_default(
           ctx, -1, "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00");
         vscp_getGuidFromStringToArray(filter.filter_GUID, pGUID);
     }
@@ -892,23 +894,23 @@ js_vscp_setFilter(duk_context *ctx)
 //
 
 duk_ret_t
-js_send_Measurement(duk_context *ctx)
+js_send_Measurement(duk_context* ctx)
 {
-    vscpEvent *pEvent;
+    vscpEvent* pEvent;
     double value;         // Measurement value
     bool bLevel2 = true;  // True if level II
     bool bString = false; // If level II string or float
     int type;             // VSCP type
-    int unit      = 0;
+    int unit = 0;
     int sensoridx = 0;
-    int zone      = 0;
-    int subzone   = 0;
+    int zone = 0;
+    int subzone = 0;
 
     duk_push_global_object(ctx); /* -> stack: [ global ] */
     duk_push_string(
       ctx, "vscp_clientitem"); /* -> stack: [ global "vscp_clientItem" ] */
     duk_get_prop(ctx, -2);     /* -> stack: [ global vscp_clientItem ] */
-    CClientItem *pClientItem = (CClientItem *)duk_get_pointer(ctx, -1);
+    CClientItem* pClientItem = (CClientItem*)duk_get_pointer(ctx, -1);
     if (NULL == pClientItem) {
         duk_push_boolean(ctx, 0); // return code false
         return JAVASCRIPT_OK;
@@ -926,7 +928,8 @@ js_send_Measurement(duk_context *ctx)
     duk_get_prop(ctx, -2);
     if (duk_is_number(ctx, -1)) {
         int level = duk_get_int_default(ctx, -1, 0);
-        if (2 != level) bLevel2 = false;
+        if (2 != level)
+            bLevel2 = false;
     }
     duk_pop(ctx);
 
@@ -952,7 +955,7 @@ js_send_Measurement(duk_context *ctx)
     duk_push_string(ctx, "guid");
     duk_get_prop(ctx, -2);
     if (duk_is_string(ctx, -1)) {
-        const char *pGUID = duk_get_string_default(
+        const char* pGUID = duk_get_string_default(
           ctx, -1, "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00");
         vscp_getGuidFromStringToArray(guid, pGUID);
     }
@@ -1053,11 +1056,11 @@ js_send_Measurement(duk_context *ctx)
             }
 
             memcpy(pEvent->GUID, guid, 16);
-            pEvent->vscp_type  = type;
+            pEvent->vscp_type = type;
             pEvent->vscp_class = VSCP_CLASS1_MEASUREMENT;
-            pEvent->obid       = 0;
-            pEvent->timestamp  = 0;
-            pEvent->pdata      = NULL;
+            pEvent->obid = 0;
+            pEvent->timestamp = 0;
+            pEvent->pdata = NULL;
 
             if (!vscp_makeStringMeasurementEvent(
                   pEvent, value, unit, sensoridx)) {
@@ -1077,11 +1080,11 @@ js_send_Measurement(duk_context *ctx)
             }
 
             memcpy(pEvent->GUID, guid, 16);
-            pEvent->vscp_type  = type;
+            pEvent->vscp_type = type;
             pEvent->vscp_class = VSCP_CLASS1_MEASUREMENT;
-            pEvent->obid       = 0;
-            pEvent->timestamp  = 0;
-            pEvent->pdata      = NULL;
+            pEvent->obid = 0;
+            pEvent->timestamp = 0;
+            pEvent->pdata = NULL;
 
             if (!vscp_makeFloatMeasurementEvent(
                   pEvent, value, unit, sensoridx)) {
@@ -1111,7 +1114,7 @@ js_send_Measurement(duk_context *ctx)
 //
 
 duk_ret_t
-js_is_Measurement(duk_context *ctx)
+js_is_Measurement(duk_context* ctx)
 {
     vscpEventEx ex;
 
@@ -1127,7 +1130,7 @@ js_is_Measurement(duk_context *ctx)
         return JAVASCRIPT_OK;
     }
 
-    vscpEvent *pEvent = new vscpEvent;
+    vscpEvent* pEvent = new vscpEvent;
     if (NULL == pEvent) {
         duk_push_boolean(ctx, 0); // return code false
         return JAVASCRIPT_OK;
@@ -1148,7 +1151,7 @@ js_is_Measurement(duk_context *ctx)
 //
 
 duk_ret_t
-js_get_MeasurementValue(duk_context *ctx)
+js_get_MeasurementValue(duk_context* ctx)
 {
     double value;
     vscpEventEx ex;
@@ -1164,7 +1167,7 @@ js_get_MeasurementValue(duk_context *ctx)
         return JAVASCRIPT_OK;
     }
 
-    vscpEvent *pEvent = new vscpEvent;
+    vscpEvent* pEvent = new vscpEvent;
     if (NULL == pEvent) {
         duk_push_null(ctx); // return code false
         return JAVASCRIPT_OK;
@@ -1173,7 +1176,7 @@ js_get_MeasurementValue(duk_context *ctx)
     pEvent->pdata = NULL;
 
     vscp_convertVSCPfromEx(pEvent, &ex);
-    vscp_getVSCPMeasurementAsDouble(pEvent, &value);
+    vscp_getVSCPMeasurementAsDouble(&value, pEvent);
     vscp_deleteVSCPevent(pEvent);
 
     duk_push_number(ctx, value);
@@ -1185,7 +1188,7 @@ js_get_MeasurementValue(duk_context *ctx)
 //
 
 duk_ret_t
-js_get_MeasurementUnit(duk_context *ctx)
+js_get_MeasurementUnit(duk_context* ctx)
 {
     vscpEventEx ex;
 
@@ -1200,7 +1203,7 @@ js_get_MeasurementUnit(duk_context *ctx)
         return JAVASCRIPT_OK;
     }
 
-    vscpEvent *pEvent = new vscpEvent;
+    vscpEvent* pEvent = new vscpEvent;
     if (NULL == pEvent) {
         duk_push_null(ctx); // return code false
         return JAVASCRIPT_OK;
@@ -1221,7 +1224,7 @@ js_get_MeasurementUnit(duk_context *ctx)
 //
 
 duk_ret_t
-js_get_MeasurementSensorIndex(duk_context *ctx)
+js_get_MeasurementSensorIndex(duk_context* ctx)
 {
     vscpEventEx ex;
 
@@ -1236,7 +1239,7 @@ js_get_MeasurementSensorIndex(duk_context *ctx)
         return JAVASCRIPT_OK;
     }
 
-    vscpEvent *pEvent = new vscpEvent;
+    vscpEvent* pEvent = new vscpEvent;
     if (NULL == pEvent) {
         duk_push_null(ctx); // return code false
         return JAVASCRIPT_OK;
@@ -1257,7 +1260,7 @@ js_get_MeasurementSensorIndex(duk_context *ctx)
 //
 
 duk_ret_t
-js_get_MeasurementZone(duk_context *ctx)
+js_get_MeasurementZone(duk_context* ctx)
 {
     vscpEventEx ex;
 
@@ -1272,7 +1275,7 @@ js_get_MeasurementZone(duk_context *ctx)
         return JAVASCRIPT_OK;
     }
 
-    vscpEvent *pEvent = new vscpEvent;
+    vscpEvent* pEvent = new vscpEvent;
     if (NULL == pEvent) {
         duk_push_null(ctx); // return code false
         return JAVASCRIPT_OK;
@@ -1293,7 +1296,7 @@ js_get_MeasurementZone(duk_context *ctx)
 //
 
 duk_ret_t
-js_get_MeasurementSubZone(duk_context *ctx)
+js_get_MeasurementSubZone(duk_context* ctx)
 {
     vscpEventEx ex;
 
@@ -1308,7 +1311,7 @@ js_get_MeasurementSubZone(duk_context *ctx)
         return JAVASCRIPT_OK;
     }
 
-    vscpEvent *pEvent = new vscpEvent;
+    vscpEvent* pEvent = new vscpEvent;
     if (NULL == pEvent) {
         duk_push_null(ctx); // return code false
         return JAVASCRIPT_OK;
@@ -1331,7 +1334,7 @@ js_get_MeasurementSubZone(duk_context *ctx)
 //
 
 duk_ret_t
-js_tcpip_connect(duk_context *ctx)
+js_tcpip_connect(duk_context* ctx)
 {
     return JAVASCRIPT_OK;
 }
@@ -1343,7 +1346,7 @@ js_tcpip_connect(duk_context *ctx)
 //
 
 duk_ret_t
-js_tcpip_connect_ssl(duk_context *ctx)
+js_tcpip_connect_ssl(duk_context* ctx)
 {
     return JAVASCRIPT_OK;
 }
@@ -1360,7 +1363,7 @@ js_tcpip_connect_ssl(duk_context *ctx)
 //
 
 duk_ret_t
-js_tcpip_connect_info(duk_context *ctx)
+js_tcpip_connect_info(duk_context* ctx)
 {
     return JAVASCRIPT_OK;
 }
@@ -1372,7 +1375,7 @@ js_tcpip_connect_info(duk_context *ctx)
 //
 
 duk_ret_t
-js_tcpip_close(duk_context *ctx)
+js_tcpip_close(duk_context* ctx)
 {
     return JAVASCRIPT_OK;
 }
@@ -1384,7 +1387,7 @@ js_tcpip_close(duk_context *ctx)
 //
 
 duk_ret_t
-js_tcpip_write(duk_context *ctx)
+js_tcpip_write(duk_context* ctx)
 {
     return JAVASCRIPT_OK;
 }
@@ -1396,7 +1399,7 @@ js_tcpip_write(duk_context *ctx)
 //
 
 duk_ret_t
-js_tcpip_read(duk_context *ctx)
+js_tcpip_read(duk_context* ctx)
 {
     return JAVASCRIPT_OK;
 }
@@ -1408,7 +1411,7 @@ js_tcpip_read(duk_context *ctx)
 //
 
 duk_ret_t
-js_tcpip_get_response(duk_context *ctx)
+js_tcpip_get_response(duk_context* ctx)
 {
     return JAVASCRIPT_OK;
 }
@@ -1420,7 +1423,7 @@ js_tcpip_get_response(duk_context *ctx)
 //
 
 duk_ret_t
-js_tcpip_download(duk_context *ctx)
+js_tcpip_download(duk_context* ctx)
 {
     return JAVASCRIPT_OK;
 }
@@ -1432,7 +1435,7 @@ js_tcpip_download(duk_context *ctx)
 //
 
 duk_ret_t
-js_get_httpd_version(duk_context *ctx)
+js_get_httpd_version(duk_context* ctx)
 {
     return JAVASCRIPT_OK;
 }
@@ -1444,7 +1447,7 @@ js_get_httpd_version(duk_context *ctx)
 //
 
 duk_ret_t
-js_url_decode(duk_context *ctx)
+js_url_decode(duk_context* ctx)
 {
     return JAVASCRIPT_OK;
 }
@@ -1456,7 +1459,7 @@ js_url_decode(duk_context *ctx)
 //
 
 duk_ret_t
-js_url_encode(duk_context *ctx)
+js_url_encode(duk_context* ctx)
 {
     return JAVASCRIPT_OK;
 }
@@ -1468,7 +1471,7 @@ js_url_encode(duk_context *ctx)
 //
 
 duk_ret_t
-js_websocket_connect(duk_context *ctx)
+js_websocket_connect(duk_context* ctx)
 {
     return JAVASCRIPT_OK;
 }
@@ -1480,7 +1483,7 @@ js_websocket_connect(duk_context *ctx)
 //
 
 duk_ret_t
-js_websocket_write(duk_context *ctx)
+js_websocket_write(duk_context* ctx)
 {
     return JAVASCRIPT_OK;
 }
@@ -1492,7 +1495,7 @@ js_websocket_write(duk_context *ctx)
 //
 
 duk_ret_t
-js_websocket_read(duk_context *ctx)
+js_websocket_read(duk_context* ctx)
 {
     return JAVASCRIPT_OK;
 }
@@ -1504,7 +1507,7 @@ js_websocket_read(duk_context *ctx)
 //
 
 duk_ret_t
-js_websocket_lock(duk_context *ctx)
+js_websocket_lock(duk_context* ctx)
 {
     return JAVASCRIPT_OK;
 }
@@ -1516,7 +1519,7 @@ js_websocket_lock(duk_context *ctx)
 //
 
 duk_ret_t
-js_websocket_unlock(duk_context *ctx)
+js_websocket_unlock(duk_context* ctx)
 {
     return JAVASCRIPT_OK;
 }
@@ -1528,7 +1531,7 @@ js_websocket_unlock(duk_context *ctx)
 //
 
 duk_ret_t
-js_md5(duk_context *ctx)
+js_md5(duk_context* ctx)
 {
     return JAVASCRIPT_OK;
 }
