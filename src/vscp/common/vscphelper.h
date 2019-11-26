@@ -437,7 +437,11 @@ extern "C"
     }
 
     /*!
-
+        Return string part before char
+        @param str Str to work on
+        @param c Character to look for
+        @return Part of sting before character or empty string if character si
+       not found.
     */
     static inline std::string vscp_str_before(const std::string& str, char c)
     {
@@ -449,7 +453,11 @@ extern "C"
     }
 
     /*!
-
+        Return string part after char
+        @param str Str to work on
+        @param c Character to look for
+        @return Part of sting after character or empty string if character si
+       not found.
     */
     static inline std::string vscp_str_after(const std::string& str, char c)
     {
@@ -461,7 +469,9 @@ extern "C"
     }
 
     /*!
-
+        Check if a string is a number
+        @param strNumber String to check
+        @return True if string is a number, false otherwise
     */
     static inline bool vscp_isNumber(const std::string& strNumber)
     {
@@ -527,20 +537,29 @@ extern "C"
                                        std::string& strResult);
 
     /*!
-        Convert std string to BASE64
-        @param str std string to convert
-        @preturn BASE64 encoed version of string
+        Convert string to BASE64
+
+        @param str String to be encoded.
+        @return BASE64 coded string
     */
     std::string vscp_convertToBASE64(std::string str);
 
     /*!
         Get GMT time
         http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.3
+        @param buf Buffer that will get result
+        @param buf_len Size of buffer
+        @param t Unix time
+        @return True if all is OK; false otherwise.
     */
     bool vscp_getTimeString(char* buf, size_t buf_len, time_t* t);
 
     /*!
         Get ISO GMT datetime
+        @param buf Buffer that will get result
+        @param buf_len Size of buffer
+        @param t Unix time
+        @return True if all is OK; false otherwise.
     */
     bool vscp_getISOTimeString(char* buf, size_t buf_len, time_t* t);
 
@@ -549,17 +568,20 @@ extern "C"
 
         @param dt Datestring to parse.
         @param ptm Pointer to tm structure that will receive result.
-        @return True on success.
+        @return True on success, false on failure.
     */
-    bool vscp_parseISOCombined(std::string& dt, struct tm* ptm);
+    bool vscp_parseISOCombined(struct tm* ptm, std::string& dt);
 
     /*!
      *  Escape XML string
      *
-     *  @param Buffer holding input string. Buffer size must be large enough to
+     *  @param dst Resulting string. Buffer size must be large enough to
      *          hold expanded result.
+     *  @param fst_len Size of dst buffer.
+     *  @param src Pointer to string that should be converted.
+     *  @return True on success, false on failure.
      */
-    bool vscp_XML_Escape(const char* src, char* dst, size_t dst_len);
+    bool vscp_XML_Escape(char* dst, size_t dst_len, const char* src);
 
     /*!
      * Parse IPv4 address and return net part and mask part
@@ -613,15 +635,16 @@ extern "C"
 
     /*!
         Get the string from coded event data
-        @param pString Pointer to normalised integer.
-        @param length Number of bytes it consist of including
+        @param strResult Returned string result
+        @param pCode Pointer to normalised integer.
+        @param dataSize Number of bytes it consist of including
         the first normalise byte.
         @return Returns unicode UTF-8 string of event data
     */
 
-    bool vscp_getDataCodingString(const unsigned char* pCode,
-                                  unsigned char dataSize,
-                                  std::string& strResult);
+    bool vscp_getDataCodingString(std::string& strResult,
+                                  const unsigned char* pCode,
+                                  unsigned char dataSize);
 
     /*!
         Write data from event in the VSCP data coding format to a string.
@@ -635,13 +658,13 @@ extern "C"
         CLASS2_MEASUREMENT_FLOAT
         CLASS2_MEASUREMENT_STR
 
-        @param pEvent Pointer to VSCP event.
         @param str String that holds the result
+        @param pEvent Pointer to VSCP event.
         @return true on success, false on failure.
     */
 
-    bool vscp_getVSCPMeasurementAsString(const vscpEvent* pEvent,
-                                         std::string& str);
+    bool vscp_getVSCPMeasurementAsString(std::string& str,
+                                         const vscpEvent* pEvent);
 
     /*!
         Write data from event in the VSCP data coding format as a double.
@@ -659,8 +682,8 @@ extern "C"
         @param pvalue Pointer to double that holds the result
         @return true on success, false on failure.
     */
-    bool vscp_getVSCPMeasurementAsDouble(const vscpEvent* pEvent,
-                                         double* pvalue);
+    bool vscp_getVSCPMeasurementAsDouble(double* pvalue,
+                                         const vscpEvent* pEvent);
 
     /*!
      * Get measurement unit for any of the valid measurement events.
@@ -708,8 +731,8 @@ extern "C"
         @param str String that holds the result
         @return true on success, false on failure.
         */
-    bool vscp_getVSCPMeasurementFloat64AsString(const vscpEvent* pEvent,
-                                                std::string& str);
+    bool vscp_getVSCPMeasurementFloat64AsString(std::string& str,
+                                                const vscpEvent* pEvent);
 
     /*!
         Convert a floating point measurement value into VSCP data with the
@@ -1016,13 +1039,13 @@ extern "C"
     /*!
         Write out GUID to string
 
+        @param strGUID Reference to string that will get GUID on string form
         @param pGUID Pointer to VSCP GUID array.
-        @param strGUID Reference to string for written GUID
         @return True on success, false on failure.
     */
 
-    bool vscp_writeGuidArrayToString(const unsigned char* pGUID,
-                                     std::string& strGUID);
+    bool vscp_writeGuidArrayToString(std::string& strGUID,
+                                     const unsigned char* pGUID);
 
     /*!
         Write out GUID to string
@@ -1030,42 +1053,42 @@ extern "C"
         @param pEvent Pointer to VSCP event
         @param strGUID Reference to string for written GUID
         @return True on success, false on failure.
-        */
-
-    bool vscp_writeGuidToString(const vscpEvent* pEvent, std::string& strGUID);
-
-    /*!
-    Write out GUID to string
-
-    @param pEvent Pointer to VSCP event
-    @param strGUID Reference to string for written GUID
-    @return True on success, false on failure.
     */
 
-    bool vscp_writeGuidToStringEx(const vscpEventEx* pEvent,
-                                  std::string& strGUID);
+    bool vscp_writeGuidToString(std::string& strGUID, const vscpEvent* pEvent);
+
+    /*!
+        Write out GUID to string
+
+        @param strGUID Reference to string for written GUID
+        @param pEvent Pointer to VSCP event
+        @return True on success, false on failure.
+    */
+
+    bool vscp_writeGuidToStringEx(std::string& strGUID,
+                                  const vscpEventEx* pEvent);
 
     /*!
         Write out GUID to string as four rows
 
-        @param pEvent Pointer to VSCP event
         @param strGUID Reference to string for written GUID
+        @param pEvent Pointer to VSCP event
         @return True on success, false on failure.
-        */
+    */
 
-    bool vscp_writeGuidToString4Rows(const vscpEvent* pEvent,
-                                     std::string& strGUID);
+    bool vscp_writeGuidToString4Rows(std::string& strGUID,
+                                     const vscpEvent* pEvent);
 
     /*!
         Write out GUID to string as four rows
 
-        @param pEvent Pointer to VSCP event
         @param strGUID Reference to string for written GUID
+        @param pEvent Pointer to VSCP event
         @return True on success, false on failure.
     */
 
-    bool vscp_writeGuidToString4RowsEx(const vscpEventEx* pEvent,
-                                       std::string& strGUID);
+    bool vscp_writeGuidToString4RowsEx(std::string& strGUID,
+                                       const vscpEventEx* pEvent);
 
     /*!
         Check if GUID is all null
@@ -1154,20 +1177,22 @@ extern "C"
 
     /*!
         Get datestring from VSCP event
-        @param pEvent Event to get date/time info from
+
         @param dt Reference to String that will get ISO datetime string
+        @param pEvent Event to get date/time info from
         @return True on success.
-        */
-    bool vscp_getDateStringFromEvent(const vscpEvent* pEvent, std::string& dt);
+    */
+    bool vscp_getDateStringFromEvent(std::string& dt, const vscpEvent* pEvent);
 
     /*!
         Get datestring from VSCP Event ex
-        @param pEventEx EventEx to get date/time info from
+
         @param dt Reference to String that will get ISO datetime string
+        @param pEventEx EventEx to get date/time info from
         @return True on success.
-        */
-    bool vscp_getDateStringFromEventEx(const vscpEventEx* pEventEx,
-                                       std::string& dt);
+    */
+    bool vscp_getDateStringFromEventEx(std::string& dt,
+                                       const vscpEventEx* pEventEx);
 
     /*!
      * Convert VSCP Event to JSON formated string
@@ -1187,7 +1212,8 @@ extern "C"
     /*!
      * Convert JSON string to eventex
      */
-    bool vscp_convertJSONToEventEx(vscpEventEx* pEventE, std::string& strJSONx);
+    bool vscp_convertJSONToEventEx(vscpEventEx* pEventEx,
+                                   std::string& strJSONx);
 
     /*!
      * Convert VSCP Event to XML formated string
@@ -1308,8 +1334,8 @@ extern "C"
                 filter-priority, filter-class, filter-type, filter-GUID
         @return true on success, false on failure.
     */
-    bool vscp_writeFilterToString(const vscpEventFilter* pFilter,
-                                  std::string& strFilter);
+    bool vscp_writeFilterToString(std::string& strFilter,
+                                  const vscpEventFilter* pFilter);
 
     /*!
         Read a mask from a string
@@ -1335,8 +1361,8 @@ extern "C"
                 mask-priority, mask-class, mask-type, mask-GUID
         @return true on success, false on failure.
     */
-    bool vscp_writeMaskToString(const vscpEventFilter* pFilter,
-                                std::string& strFilter);
+    bool vscp_writeMaskToString(std::string& strFilter,
+                                const vscpEventFilter* pFilter);
 
     /*!
      * Read both filter and mask from string
@@ -1362,18 +1388,27 @@ extern "C"
      *      filter_type="number"
      *      filter_guid="GUID string"
      * />
+     *
+     * @param pFilter Pointer to filter structure that will get result.
+     * @param strFilter Filter on XML format.
+     * @return True on success, fals eon failure.
+     *
      */
     bool vscp_readFilterMaskFromXML(vscpEventFilter* pFilter,
                                     const std::string& strFilter);
 
     /*!
-     * Write filter to XML coed string
+     * Write filter to XML coded string
+     *
+     * @param strFilter String that will get XML coded filter
+     * @param pFilter Pointer to filter structure
+     * @return True on success, false on failure.
      */
-    bool vscp_writeFilterMaskToXML(vscpEventFilter* pFilter,
-                                   std::string& strFilter);
+    bool vscp_writeFilterMaskToXML(std::string& strFilter,
+                                   vscpEventFilter* pFilter);
 
     /*!
-     * Read filter from JSNOM coded string
+     * Read filter from JSON coded string
      *
      * {
      *      'mask_priority': number,
@@ -1386,15 +1421,24 @@ extern "C"
      *      'filter_guid' 'string'
      * }
      *
+     * @param pFilter Pointer to filter structure that will get result.
+     * @param strFilter Filter on JSON format.
+     * @return True on success, fals eon failure.
+     *
      */
     bool vscp_readFilterMaskFromJSON(vscpEventFilter* pFilter,
                                      const std::string& strFilter);
 
-    /*
+    /*!
      * Write filter to JSON coded string
+     *
+     * @param strFilter String that will get JSON coded filter
+     * @param pFilter Pointer to VSCP filter structure
+     * @return True on success, false on failure
+     *
      */
-    bool vscp_writeFilterMaskToJSON(vscpEventFilter* pFilter,
-                                    std::string& strFilter);
+    bool vscp_writeFilterMaskToJSON(std::string& strFilter,
+                                    vscpEventFilter* pFilter);
 
     /*!
         Convert an Event from a CANAL message
@@ -1406,7 +1450,7 @@ extern "C"
     /*!
         Convert an Event from a CANAL message
         */
-    bool vscp_convertCanalToEventEx(vscpEventEx* pvscpEvent,
+    bool vscp_convertCanalToEventEx(vscpEventEx* pvscpEventEx,
                                     const canalMsg* pcanalMsg,
                                     unsigned char* pGUID);
 
@@ -1442,14 +1486,15 @@ extern "C"
                               const vscpEventEx* pEventFrom);
 
     /*!
-        Write VSCP data to string    DEPRECATED: USE:
-       vscp_writeVscpDataWithSizeToString
+        Write VSCP data to string
+        DEPRECATED USE: vscp_writeVscpDataWithSizeToString
+
         @param pEvent Pointer to event where data is fetched from
         @param str String that receive result.
         @param bUseHtmlBreak Set to true to use <br> instead of \\n as
         line break
         @return True on success false on failure.
-        */
+    */
 
     bool vscp_writeVscpDataToString(const vscpEvent* pEvent,
                                     std::string& str,
@@ -1458,6 +1503,7 @@ extern "C"
 
     /*!
         Write VSCP data to string
+
         @param sizeData Number of data bytes.
         @param pData Pointer to data structure.
         @param str String that receive result.
@@ -1736,13 +1782,14 @@ extern "C"
     void vscp_md5(char* digest, const unsigned char* buf, size_t len);
 
     /*!
-    Stringify binary data.
-    @param to Pointer output buffer that holds the result.
-    Output buffer must be twice as big as input,
-    because each byte takes 2 bytes in string representation
-    @param p Pointer to digest.
-    @param len Digest len
-*/
+        Stringify binary data.
+
+        @param to Pointer output buffer that holds the result.
+        Output buffer must be twice as big as input,
+        because each byte takes 2 bytes in string representation
+        @param p Pointer to digest.
+        @param len Digest len
+    */
     void vscp_byteArray2HexStr(char* to, const unsigned char* p, size_t len);
 
     /*!

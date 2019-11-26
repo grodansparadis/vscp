@@ -655,7 +655,7 @@ vscp_getISOTimeString(char* buf, size_t buf_len, time_t* t)
 //
 
 bool
-vscp_parseISOCombined(std::string& dt, struct tm* ptm)
+vscp_parseISOCombined(struct tm* ptm, std::string& dt)
 {
     size_t pos;
     std::string isodt = dt.c_str();
@@ -707,7 +707,7 @@ vscp_parseISOCombined(std::string& dt, struct tm* ptm)
 //
 
 bool
-vscp_XML_Escape(const char* src, char* dst, size_t dst_len)
+vscp_XML_Escape(char* dst, size_t dst_len, const char* src)
 {
     /*const char escapeCharTbl[6]      = { '&', '\'', '\"', '>', '<', '\0' };
     const char *const escapeSeqTbl[] = {
@@ -1087,9 +1087,9 @@ vscp_getDataCodingString(const unsigned char* pCode, unsigned char length)
 //
 
 bool
-vscp_getDataCodingString(const unsigned char* pCode,
-                         unsigned char dataSize,
-                         std::string& strResult)
+vscp_getDataCodingString(std::string& strResult,
+                         const unsigned char* pCode,
+                         unsigned char dataSize)
 {
     char buf[20];
 
@@ -1136,7 +1136,7 @@ vscp_getMeasurementAsFloat(const unsigned char* pCode, unsigned char length)
 //
 
 bool
-vscp_getVSCPMeasurementAsString(const vscpEvent* pEvent, std::string& strValue)
+vscp_getVSCPMeasurementAsString(std::string& strValue, const vscpEvent* pEvent)
 {
     int i, j;
     int offset = 0;
@@ -1375,7 +1375,7 @@ vscp_getVSCPMeasurementAsString(const vscpEvent* pEvent, std::string& strValue)
 //
 
 bool
-vscp_getVSCPMeasurementAsDouble(const vscpEvent* pEvent, double* pvalue)
+vscp_getVSCPMeasurementAsDouble(double* pvalue, const vscpEvent* pEvent)
 {
     std::string str;
 
@@ -1391,13 +1391,13 @@ vscp_getVSCPMeasurementAsDouble(const vscpEvent* pEvent, double* pvalue)
         (VSCP_CLASS1_MEASUREZONE == pEvent->vscp_class) ||
         (VSCP_CLASS1_SETVALUEZONE == pEvent->vscp_class)) {
 
-        if (!vscp_getVSCPMeasurementAsString(pEvent, str))
+        if (!vscp_getVSCPMeasurementAsString(str, pEvent))
             return false;
         *pvalue = stod(str);
 
     } else if (VSCP_CLASS1_MEASUREMENT64 == pEvent->vscp_class) {
 
-        if (!vscp_getVSCPMeasurementFloat64AsString(pEvent, str))
+        if (!vscp_getVSCPMeasurementFloat64AsString(str, pEvent))
             return false;
         *pvalue = stod(str);
 
@@ -1432,8 +1432,8 @@ vscp_getVSCPMeasurementAsDouble(const vscpEvent* pEvent, double* pvalue)
 //
 
 bool
-vscp_getVSCPMeasurementFloat64AsString(const vscpEvent* pEvent,
-                                       std::string& strValue)
+vscp_getVSCPMeasurementFloat64AsString(std::string& strValue,
+                                       const vscpEvent* pEvent)
 {
     int offset = 0;
 
@@ -2104,7 +2104,7 @@ vscp_convertLevel1MeasuremenToLevel2Double(vscpEvent* pEvent)
     if (!vscp_isVSCPMeasurement(pEvent))
         return false;
 
-    if (vscp_getVSCPMeasurementAsDouble(pEvent, &val64)) {
+    if (vscp_getVSCPMeasurementAsDouble(&val64, pEvent)) {
 
         pEvent->vscp_class = VSCP_CLASS2_MEASUREMENT_FLOAT;
         uint8_t* p = new uint8_t[12];
@@ -2230,7 +2230,7 @@ vscp_convertLevel1MeasuremenToLevel2String(vscpEvent* pEvent)
     if (!vscp_isVSCPMeasurement(pEvent))
         return false;
 
-    if (vscp_getVSCPMeasurementAsString(pEvent, strval)) {
+    if (vscp_getVSCPMeasurementAsString(strval, pEvent)) {
 
         pEvent->vscp_class = VSCP_CLASS2_MEASUREMENT_STR;
 
@@ -2732,7 +2732,7 @@ vscp_getGuidFromStringToArray(unsigned char* pGUID, const std::string& strGUID)
 //
 
 bool
-vscp_writeGuidToString(const vscpEvent* pEvent, std::string& strGUID)
+vscp_writeGuidToString(std::string& strGUID, const vscpEvent* pEvent)
 {
     // Check pointer
     if (NULL == pEvent)
@@ -2765,7 +2765,7 @@ vscp_writeGuidToString(const vscpEvent* pEvent, std::string& strGUID)
 //
 
 bool
-vscp_writeGuidToStringEx(const vscpEventEx* pEvent, std::string& strGUID)
+vscp_writeGuidToStringEx(std::string& strGUID, const vscpEventEx* pEvent)
 {
     // Check pointer
     if (NULL == pEvent)
@@ -2798,7 +2798,7 @@ vscp_writeGuidToStringEx(const vscpEventEx* pEvent, std::string& strGUID)
 //
 
 bool
-vscp_writeGuidToString4Rows(const vscpEvent* pEvent, std::string& strGUID)
+vscp_writeGuidToString4Rows(std::string& strGUID, const vscpEvent* pEvent)
 {
     // Check pointer
     if (NULL == pEvent)
@@ -2831,7 +2831,7 @@ vscp_writeGuidToString4Rows(const vscpEvent* pEvent, std::string& strGUID)
 //
 
 bool
-vscp_writeGuidToString4RowsEx(const vscpEventEx* pEvent, std::string& strGUID)
+vscp_writeGuidToString4RowsEx(std::string& strGUID, const vscpEventEx* pEvent)
 {
     // Check pointer
     if (NULL == pEvent)
@@ -2864,7 +2864,7 @@ vscp_writeGuidToString4RowsEx(const vscpEventEx* pEvent, std::string& strGUID)
 //
 
 bool
-vscp_writeGuidArrayToString(const unsigned char* pGUID, std::string& strGUID)
+vscp_writeGuidArrayToString(std::string& strGUID, const unsigned char* pGUID)
 {
     // Check pointer
     if (NULL == pGUID)
@@ -3186,7 +3186,7 @@ vscp_deleteVSCPeventEx(vscpEventEx* pEventEx)
 //
 
 bool
-vscp_getDateStringFromEvent(const vscpEvent* pEvent, std::string& dt)
+vscp_getDateStringFromEvent(std::string& dt, const vscpEvent* pEvent)
 {
     // Check pointer
     if (NULL == pEvent)
@@ -3214,7 +3214,7 @@ vscp_getDateStringFromEvent(const vscpEvent* pEvent, std::string& dt)
 //
 
 bool
-vscp_getDateStringFromEventEx(const vscpEventEx* pEventEx, std::string& dt)
+vscp_getDateStringFromEventEx(std::string& dt, const vscpEventEx* pEventEx)
 {
     // Check pointer
     if (NULL == pEventEx)
@@ -3244,7 +3244,7 @@ vscp_convertEventToJSON(std::string& strJSON, vscpEvent* pEvent)
     if (NULL == pEvent)
         return false;
 
-    vscp_writeGuidArrayToString(pEvent->GUID, strguid); // GUID to string
+    vscp_writeGuidArrayToString(strguid, pEvent->GUID); // GUID to string
     vscp_writeVscpDataWithSizeToString(pEvent->sizeData,
                                        pEvent->pdata,
                                        strJSON,
@@ -3252,7 +3252,7 @@ vscp_convertEventToJSON(std::string& strJSON, vscpEvent* pEvent)
                                        false); // Event data to string
 
     std::string dt;
-    vscp_getDateStringFromEvent(pEvent, dt);
+    vscp_getDateStringFromEvent(dt, pEvent);
 
     // datetime,head,obid,datetime,timestamp,class,type,guid,data,note
     strJSON = vscp_str_format(VSCP_JSON_EVENT_TEMPLATE,
@@ -3316,7 +3316,7 @@ vscp_convertJSONToEvent(vscpEvent* pEvent, std::string& strJSON)
             std::string dtStr = j.at("datetime").get<std::string>();
             struct tm tm;
             memset(&tm, 0, sizeof(tm));
-            vscp_parseISOCombined(dtStr, &tm);
+            vscp_parseISOCombined(&tm, dtStr);
             vscp_setEventDateTime(pEvent, &tm);
         }
 
@@ -3382,7 +3382,7 @@ vscp_convertEventExToJSON(std::string& strJSON, vscpEventEx* pEventEx)
     if (NULL == pEventEx)
         return false;
 
-    vscp_writeGuidArrayToString(pEventEx->GUID, strguid); // GUID to string
+    vscp_writeGuidArrayToString(strguid, pEventEx->GUID); // GUID to string
     vscp_writeVscpDataWithSizeToString(pEventEx->sizeData,
                                        pEventEx->data,
                                        strJSON,
@@ -3390,7 +3390,7 @@ vscp_convertEventExToJSON(std::string& strJSON, vscpEventEx* pEventEx)
                                        false); // Event data to string
 
     std::string dt;
-    vscp_getDateStringFromEventEx(pEventEx, dt);
+    vscp_getDateStringFromEventEx(dt, pEventEx);
 
     // datetime,head,obid,datetime,timestamp,class,type,guid,data,note
     strJSON = vscp_str_format(VSCP_JSON_EVENT_TEMPLATE,
@@ -3454,7 +3454,7 @@ vscp_convertJSONToEventEx(vscpEventEx* pEventEx, std::string& strJSON)
             std::string dtStr = j.at("datetime").get<std::string>();
             struct tm tm;
             memset(&tm, 0, sizeof(tm));
-            vscp_parseISOCombined(dtStr, &tm);
+            vscp_parseISOCombined(&tm, dtStr);
             vscp_setEventExDateTime(pEventEx, &tm);
         }
 
@@ -3517,7 +3517,7 @@ vscp_convertEventToXML(std::string& strXML, vscpEvent* pEvent)
     if (NULL == pEvent)
         return false;
 
-    vscp_writeGuidArrayToString(pEvent->GUID, strguid); // GUID to string
+    vscp_writeGuidArrayToString(strguid, pEvent->GUID); // GUID to string
     vscp_writeVscpDataWithSizeToString(pEvent->sizeData,
                                        pEvent->pdata,
                                        strXML,
@@ -3525,7 +3525,7 @@ vscp_convertEventToXML(std::string& strXML, vscpEvent* pEvent)
                                        false); // Event data to string
 
     std::string dt;
-    vscp_getDateStringFromEvent(pEvent, dt);
+    vscp_getDateStringFromEvent(dt, pEvent);
 
     // datetime,head,obid,datetime,timestamp,class,type,guid,sizedata,data,note
     strXML = vscp_str_format(VSCP_XML_EVENT_TEMPLATE,
@@ -3580,7 +3580,7 @@ startEventXMLParser(void* data, const char* name, const char** attr)
                 struct tm tm;
                 memset(&tm, 0, sizeof(tm));
                 std::string dt = attribute;
-                if (vscp_parseISOCombined(dt, &tm)) {
+                if (vscp_parseISOCombined(&tm, dt)) {
                     vscp_setEventDateTime(pev, &tm);
                 }
             } else if (0 == strcmp(attr[i], "timestamp")) {
@@ -3652,7 +3652,7 @@ vscp_convertEventExToXML(std::string& strXML, vscpEventEx* pEventEx)
     if (NULL == pEventEx)
         return false;
 
-    vscp_writeGuidArrayToString(pEventEx->GUID, strguid); // GUID to string
+    vscp_writeGuidArrayToString(strguid, pEventEx->GUID); // GUID to string
     vscp_writeVscpDataWithSizeToString(pEventEx->sizeData,
                                        pEventEx->data,
                                        strXML,
@@ -3660,7 +3660,7 @@ vscp_convertEventExToXML(std::string& strXML, vscpEventEx* pEventEx)
                                        false); // Event data to string
 
     std::string dt;
-    vscp_getDateStringFromEventEx(pEventEx, dt);
+    vscp_getDateStringFromEventEx(dt, pEventEx);
 
     // datetime,head,obid,datetime,timestamp,class,type,guid,sizedata,data,note
     strXML = vscp_str_format(VSCP_XML_EVENT_TEMPLATE,
@@ -3715,7 +3715,7 @@ startEventExXMLParser(void* data, const char* name, const char** attr)
                 struct tm tm;
                 memset(&tm, 0, sizeof(tm));
                 std::string dt = attribute;
-                if (vscp_parseISOCombined(dt, &tm)) {
+                if (vscp_parseISOCombined(&tm, dt)) {
                     vscp_setEventExDateTime(pex, &tm);
                 }
             } else if (0 == strcmp(attr[i], "timestamp")) {
@@ -3788,7 +3788,7 @@ vscp_convertEventToHTML(std::string& strHTML, vscpEvent* pEvent)
     if (NULL == pEvent)
         return false;
 
-    vscp_writeGuidArrayToString(pEvent->GUID, strguid); // GUID to string
+    vscp_writeGuidArrayToString(strguid, pEvent->GUID); // GUID to string
     vscp_writeVscpDataWithSizeToString(pEvent->sizeData,
                                        pEvent->pdata,
                                        strHTML,
@@ -3796,7 +3796,7 @@ vscp_convertEventToHTML(std::string& strHTML, vscpEvent* pEvent)
                                        false); // Event data to string
 
     std::string dt;
-    vscp_getDateStringFromEvent(pEvent, dt);
+    vscp_getDateStringFromEvent(dt, pEvent);
 
     // datetime,class,type,data-count,data,guid,head,timestamp,obid,note
     strHTML = vscp_str_format(VSCP_HTML_EVENT_TEMPLATE,
@@ -3829,7 +3829,7 @@ vscp_convertEventExToHTML(std::string& strHTML, vscpEventEx* pEventEx)
     if (NULL == pEventEx)
         return false;
 
-    vscp_writeGuidArrayToString(pEventEx->GUID, strguid); // GUID to string
+    vscp_writeGuidArrayToString(strguid, pEventEx->GUID); // GUID to string
     vscp_writeVscpDataWithSizeToString(pEventEx->sizeData,
                                        pEventEx->data,
                                        strHTML,
@@ -3837,7 +3837,7 @@ vscp_convertEventExToHTML(std::string& strHTML, vscpEventEx* pEventEx)
                                        false); // Event data to string
 
     std::string dt;
-    vscp_getDateStringFromEventEx(pEventEx, dt);
+    vscp_getDateStringFromEventEx(dt, pEventEx);
 
     // datetime,class,type,data-count,data,guid,head,timestamp,obid,note
     strHTML = vscp_str_format(VSCP_HTML_EVENT_TEMPLATE,
@@ -4146,7 +4146,7 @@ vscp_readFilterFromString(vscpEventFilter* pFilter,
 //
 
 bool
-vscp_writeFilterToString(const vscpEventFilter* pFilter, std::string& strFilter)
+vscp_writeFilterToString(std::string& strFilter, const vscpEventFilter* pFilter)
 {
     cguid guid;
 
@@ -4223,7 +4223,7 @@ vscp_readMaskFromString(vscpEventFilter* pFilter, const std::string& strMask)
 //
 
 bool
-vscp_writeMaskToString(const vscpEventFilter* pFilter, std::string& strFilter)
+vscp_writeMaskToString(std::string& strFilter, const vscpEventFilter* pFilter)
 {
     cguid guid;
 
@@ -4432,7 +4432,7 @@ vscp_readFilterMaskFromXML(vscpEventFilter* pFilter,
 //
 
 bool
-vscp_writeFilterMaskToXML(vscpEventFilter* pFilter, std::string& strFilter)
+vscp_writeFilterMaskToXML(std::string& strFilter, vscpEventFilter* pFilter)
 {
     std::string strmaskguid;
     std::string strfilterguid;
@@ -4441,8 +4441,8 @@ vscp_writeFilterMaskToXML(vscpEventFilter* pFilter, std::string& strFilter)
     if (NULL == pFilter)
         return false;
 
-    vscp_writeGuidArrayToString(pFilter->mask_GUID, strmaskguid);
-    vscp_writeGuidArrayToString(pFilter->filter_GUID, strfilterguid);
+    vscp_writeGuidArrayToString(strmaskguid, pFilter->mask_GUID);
+    vscp_writeGuidArrayToString(strfilterguid, pFilter->filter_GUID);
 
     strFilter = vscp_str_format(VSCP_XML_FILTER_TEMPLATE,
                                 (int)pFilter->mask_priority,
@@ -4541,8 +4541,8 @@ vscp_writeFilterMaskToJSON(vscpEventFilter* pFilter, std::string& strFilter)
     if (NULL == pFilter)
         return false;
 
-    vscp_writeGuidArrayToString(pFilter->mask_GUID, strmaskguid);
-    vscp_writeGuidArrayToString(pFilter->filter_GUID, strfilterguid);
+    vscp_writeGuidArrayToString(strmaskguid, pFilter->mask_GUID);
+    vscp_writeGuidArrayToString(strfilterguid, pFilter->filter_GUID);
 
     strFilter = vscp_str_format(VSCP_JSON_FILTER_TEMPLATE,
                                 (int)pFilter->mask_priority,
@@ -5039,7 +5039,7 @@ vscp_writeVscpEventToString(std::string& str, const vscpEvent* pEvent)
         return false;
 
     std::string dt;
-    vscp_getDateStringFromEvent(pEvent, dt);
+    vscp_getDateStringFromEvent(dt, pEvent);
 
     // head,class,type,obid,datetime,timestamp
     str = vscp_str_format("%hu,%hu,%hu,%lu,%s,%lu,",
@@ -5051,7 +5051,7 @@ vscp_writeVscpEventToString(std::string& str, const vscpEvent* pEvent)
                           (unsigned long)pEvent->timestamp);
 
     std::string strGUID;
-    vscp_writeGuidToString(pEvent, strGUID);
+    vscp_writeGuidToString(strGUID, pEvent);
     str += strGUID;
     if (pEvent->sizeData) {
         str += ",";
@@ -5153,7 +5153,7 @@ vscp_setVscpEventFromString(vscpEvent* pEvent, const std::string& strEvent)
             // Parse and set time
             struct tm tm;
             memset(&tm, 0, sizeof(tm));
-            vscp_parseISOCombined(str, &tm);
+            vscp_parseISOCombined(&tm, str);
             pEvent->year = tm.tm_year + 1900;
             pEvent->month = tm.tm_mon;
             pEvent->day = tm.tm_mday;
@@ -5292,7 +5292,7 @@ vscp_getDeviceHtmlStatusInfo(const uint8_t* registers, CMDF* pmdf)
     strHTML += "<br>";
 
     strHTML += "GUID = ";
-    vscp_writeGuidArrayToString(registers + 0xd0, str);
+    vscp_writeGuidArrayToString(str, registers + 0xd0);
     strHTML += str;
     strHTML += "<br>";
 
