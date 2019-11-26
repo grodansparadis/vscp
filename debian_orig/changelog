@@ -1,0 +1,5 @@
+vscpl2drv-automation%MAJOR-VERSION (%MAJOR-VERSION.%MINOR-VERSION.%RELEASE-VERSION-%RELEASE-DEBIAN) stable; urgency=medium
+
+  * Initial release
+
+ -- Ake Hedman <akhe@grodansparadis.com>  Thu, 26 Sep 2019 16:00:01 +0200

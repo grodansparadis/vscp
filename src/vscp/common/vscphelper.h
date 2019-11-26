@@ -179,7 +179,7 @@ extern "C"
         return 0 is semaphore is signaled, -1 if error. errno
         is set accordingly. ETIMEDOUT is returned for timeout.
     */
-    int vscp_sem_wait(sem_t *sem, uint32_t waitms);
+    int vscp_sem_wait(sem_t* sem, uint32_t waitms);
 
     /*
      * Check two floats for equality
@@ -231,12 +231,12 @@ extern "C"
         @return Unsigned long containing value
         */
 
-    int32_t vscp_readStringValue(const std::string &strval);
+    int32_t vscp_readStringValue(const std::string& strval);
 
     /*!
         Convert string to lowercase
     */
-    int vscp_lowercase(const char *s);
+    int vscp_lowercase(const char* s);
 
     /*!
         String non case compare
@@ -244,7 +244,7 @@ extern "C"
         @param s2 String2 to compare
         @return 0 if strings are the same
     */
-    int vscp_strcasecmp(const char *s1, const char *s2);
+    int vscp_strcasecmp(const char* s1, const char* s2);
 
     /*!
         String non case compare with length
@@ -253,23 +253,23 @@ extern "C"
         @param len Number of byte to compare
         @return 0 if strings are the same
     */
-    int vscp_strncasecmp(const char *s1, const char *s2, size_t len);
+    int vscp_strncasecmp(const char* s1, const char* s2, size_t len);
 
-    void vscp_strlcpy(char *dst, const char *src, size_t n);
+    void vscp_strlcpy(char* dst, const char* src, size_t n);
 
-    char *vscp_strdup(const char *str);
+    char* vscp_strdup(const char* str);
 
-    char *vscp_strndup(const char *ptr, size_t len);
+    char* vscp_strndup(const char* ptr, size_t len);
 
-    const char *vscp_strcasestr(const char *big_str, const char *small_str);
+    const char* vscp_strcasestr(const char* big_str, const char* small_str);
 
-    char *vscp_stristr(char *str1, const char *str2);
+    char* vscp_stristr(char* str1, const char* str2);
 
-    char *vscp_trimWhiteSpace(char *str);
+    char* vscp_trimWhiteSpace(char* str);
 
-    char *vscp_reverse(const char *const s);
+    char* vscp_reverse(const char* const s);
 
-    char *vscp_rstrstr(const char *s1, const char *s2);
+    char* vscp_rstrstr(const char* s1, const char* s2);
 
     /*!
         vscp_str_format
@@ -279,7 +279,7 @@ extern "C"
         @param Variables part of resulting string
         @return formated string
     */
-    std::string vscp_str_format(const std::string &fmt_str, ...);
+    std::string vscp_str_format(const std::string& fmt_str, ...);
 
     /*!
         vscp_startsWith
@@ -293,12 +293,12 @@ extern "C"
        Original string is returned if token string is not found.
         @return True if start token is found.
     */
-    bool vscp_startsWith(const std::string &origstr,
-                         const std::string &searchstr,
-                         std::string *rest = NULL);
+    bool vscp_startsWith(const std::string& origstr,
+                         const std::string& searchstr,
+                         std::string* rest = NULL);
 
     // String to upper case (in place)
-    static inline void vscp_makeUpper(std::string &s)
+    static inline void vscp_makeUpper(std::string& s)
     {
         std::transform(
           s.begin(), s.end(), s.begin(), [](unsigned char c) -> unsigned char {
@@ -314,7 +314,7 @@ extern "C"
     }
 
     // String to upper case
-    static inline std::string vscp_upper(const std::string &s)
+    static inline std::string vscp_upper(const std::string& s)
     {
         std::string newstr = s;
         vscp_makeUpper(newstr);
@@ -322,7 +322,7 @@ extern "C"
     }
 
     // String to lower case (in place)
-    static inline void vscp_makeLower(std::string &s)
+    static inline void vscp_makeLower(std::string& s)
     {
         std::transform(s.begin(), s.end(), s.begin(), ::tolower);
     }
@@ -335,7 +335,7 @@ extern "C"
     }
 
     // String to lower case
-    static inline std::string vscp_lower(const std::string &s)
+    static inline std::string vscp_lower(const std::string& s)
     {
         std::string newstr = s;
         vscp_makeLower(newstr);
@@ -343,7 +343,7 @@ extern "C"
     }
 
     // trim from start (in place)
-    static inline void vscp_ltrim(std::string &s)
+    static inline void vscp_ltrim(std::string& s)
     {
         s.erase(s.begin(),
                 std::find_if(s.begin(),
@@ -352,7 +352,7 @@ extern "C"
     }
 
     // trim from end (in place)
-    static inline void vscp_rtrim(std::string &s)
+    static inline void vscp_rtrim(std::string& s)
     {
         s.erase(std::find_if(s.rbegin(),
                              s.rend(),
@@ -362,7 +362,7 @@ extern "C"
     }
 
     // trim from both ends (in place)
-    static inline void vscp_trim(std::string &s)
+    static inline void vscp_trim(std::string& s)
     {
         vscp_ltrim(s);
         vscp_rtrim(s);
@@ -391,9 +391,9 @@ extern "C"
 
     // split for tokenizer
     // https://stackoverflow.com/questions/53849/how-do-i-tokenize-a-string-in-c
-    static inline void vscp_split(std::deque<std::string> &theStringVector,
-                                  const std::string &theString,
-                                  const std::string &theDelimiter)
+    static inline void vscp_split(std::deque<std::string>& theStringVector,
+                                  const std::string& theString,
+                                  const std::string& theDelimiter)
     {
         size_t start = 0, end = 0;
 
@@ -415,31 +415,35 @@ extern "C"
     /*!
         Return left part of std string
     */
-    static inline std::string vscp_str_left(const std::string &str,
+    static inline std::string vscp_str_left(const std::string& str,
                                             size_t length)
     {
-        if ( 0 == length ) return std::string("");
+        if (0 == length)
+            return std::string("");
         return str.substr(0, length);
     }
 
     /*!
         Return right part of std string
     */
-    static inline std::string vscp_str_right(const std::string &str,
+    static inline std::string vscp_str_right(const std::string& str,
                                              size_t length)
     {
-        if ( 0 == length ) return std::string("");
-        if (length > str.length()) length = str.length();
+        if (0 == length)
+            return std::string("");
+        if (length > str.length())
+            length = str.length();
         return str.substr(str.length() - length);
     }
 
     /*!
 
     */
-    static inline std::string vscp_str_before(const std::string &str, char c)
+    static inline std::string vscp_str_before(const std::string& str, char c)
     {
         size_t pos = str.find(c);
-        if (str.npos == pos) return std::string();
+        if (str.npos == pos)
+            return std::string();
 
         return vscp_str_left(str, pos);
     }
@@ -447,10 +451,11 @@ extern "C"
     /*!
 
     */
-    static inline std::string vscp_str_after(const std::string &str, char c)
+    static inline std::string vscp_str_after(const std::string& str, char c)
     {
         size_t pos = str.find(c);
-        if (str.npos == pos) return std::string();
+        if (str.npos == pos)
+            return std::string();
 
         return vscp_str_right(str, pos);
     }
@@ -458,7 +463,7 @@ extern "C"
     /*!
 
     */
-    static inline bool vscp_isNumber(const std::string &strNumber)
+    static inline bool vscp_isNumber(const std::string& strNumber)
     {
         std::string str = strNumber;
         vscp_trim(str);
@@ -476,7 +481,7 @@ extern "C"
         @param path Path to file to check
         @return True if file exists, false otherwise.
     */
-    bool vscp_fileExists(const std::string &path);
+    bool vscp_fileExists(const std::string& path);
 
     /*!
         Checks to see if a directory exists. Note: This method only checks the
@@ -487,7 +492,7 @@ extern "C"
                   0 if dir does not exist OR exists but not a dir,
                  <0 if an error occurred (errno is also set)
     */
-    int vscp_dirExists(const char *const path);
+    int vscp_dirExists(const char* const path);
 
     /*!
      * BASE64 decode std string
@@ -497,7 +502,7 @@ extern "C"
      *
      */
 
-    bool vscp_base64_std_decode(std::string &str);
+    bool vscp_base64_std_decode(std::string& str);
 
     /*!
      * BASE64 encode std string
@@ -507,7 +512,7 @@ extern "C"
      *
      */
 
-    bool vscp_base64_std_encode(std::string &str);
+    bool vscp_base64_std_encode(std::string& str);
 
     /*!
      * Decode string from BASE64 is it have "BASE64:" in the front if not just
@@ -518,27 +523,26 @@ extern "C"
      * @return True if all is OK (decoded or not) and false if decode error.
      */
 
-    bool vscp_std_decodeBase64IfNeeded(const std::string &str,
-                                       std::string &strResult);
+    bool vscp_std_decodeBase64IfNeeded(const std::string& str,
+                                       std::string& strResult);
 
     /*!
         Convert std string to BASE64
         @param str std string to convert
         @preturn BASE64 encoed version of string
     */
-    std::string vscp_convertToBASE64( std::string str) 
-        { return (vscp_base64_std_encode( str ) ? str : std::string("") ); }
+    std::string vscp_convertToBASE64(std::string str);
 
     /*!
         Get GMT time
         http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.3
     */
-    bool vscp_getTimeString(char *buf, size_t buf_len, time_t *t);
+    bool vscp_getTimeString(char* buf, size_t buf_len, time_t* t);
 
     /*!
         Get ISO GMT datetime
     */
-    bool vscp_getISOTimeString(char *buf, size_t buf_len, time_t *t);
+    bool vscp_getISOTimeString(char* buf, size_t buf_len, time_t* t);
 
     /*!
         Parse ISO combined string (YYYY-MM-DDTHH:MM:SS)
@@ -547,7 +551,7 @@ extern "C"
         @param ptm Pointer to tm structure that will receive result.
         @return True on success.
     */
-    bool vscp_parseISOCombined(std::string &dt, struct tm *ptm);
+    bool vscp_parseISOCombined(std::string& dt, struct tm* ptm);
 
     /*!
      *  Escape XML string
@@ -555,7 +559,7 @@ extern "C"
      *  @param Buffer holding input string. Buffer size must be large enough to
      *          hold expanded result.
      */
-    bool vscp_XML_Escape(const char *src, char *dst, size_t dst_len);
+    bool vscp_XML_Escape(const char* src, char* dst, size_t dst_len);
 
     /*!
      * Parse IPv4 address and return net part and mask part
@@ -565,7 +569,7 @@ extern "C"
      * @param mask Mask part of address
      * return 0 on error,
      */
-    int vscp_parse_ipv4_addr(const char *addr, uint32_t *net, uint32_t *mask);
+    int vscp_parse_ipv4_addr(const char* addr, uint32_t* net, uint32_t* mask);
 
     // ***************************************************************************
     //                             Measurement Helpers
@@ -577,7 +581,7 @@ extern "C"
         @return Measurement data coding byte or zero if its not an
         event with a data coding.
     */
-    uint8_t vscp_getMeasurementDataCoding(const vscpEvent *pEvent);
+    uint8_t vscp_getMeasurementDataCoding(const vscpEvent* pEvent);
 
     /*!
         Get bit array from coded event data
@@ -586,7 +590,7 @@ extern "C"
         the first normalise byte.
         @return Bit array as a unsigned 64-bit integer.
     */
-    uint64_t vscp_getDataCodingBitArray(const uint8_t *pCode, uint8_t length);
+    uint64_t vscp_getDataCodingBitArray(const uint8_t* pCode, uint8_t length);
 
     /*!
         Get integer from coded event data
@@ -595,7 +599,7 @@ extern "C"
         the first normalise byte.
         @return returns value as a 64-bit integer.
         */
-    int64_t vscp_getDataCodingInteger(const uint8_t *pCode, uint8_t length);
+    int64_t vscp_getDataCodingInteger(const uint8_t* pCode, uint8_t length);
 
     /*!
         Get normalised integer from coded event data
@@ -604,7 +608,7 @@ extern "C"
         the first normalise byte.
         @return returns value as a double.
     */
-    double vscp_getDataCodingNormalizedInteger(const unsigned char *pCode,
+    double vscp_getDataCodingNormalizedInteger(const unsigned char* pCode,
                                                unsigned char length);
 
     /*!
@@ -615,9 +619,9 @@ extern "C"
         @return Returns unicode UTF-8 string of event data
     */
 
-    bool vscp_getDataCodingString(const unsigned char *pCode,
+    bool vscp_getDataCodingString(const unsigned char* pCode,
                                   unsigned char dataSize,
-                                  std::string &strResult);
+                                  std::string& strResult);
 
     /*!
         Write data from event in the VSCP data coding format to a string.
@@ -636,8 +640,8 @@ extern "C"
         @return true on success, false on failure.
     */
 
-    bool vscp_getVSCPMeasurementAsString(const vscpEvent *pEvent,
-                                         std::string &str);
+    bool vscp_getVSCPMeasurementAsString(const vscpEvent* pEvent,
+                                         std::string& str);
 
     /*!
         Write data from event in the VSCP data coding format as a double.
@@ -655,8 +659,8 @@ extern "C"
         @param pvalue Pointer to double that holds the result
         @return true on success, false on failure.
     */
-    bool vscp_getVSCPMeasurementAsDouble(const vscpEvent *pEvent,
-                                         double *pvalue);
+    bool vscp_getVSCPMeasurementAsDouble(const vscpEvent* pEvent,
+                                         double* pvalue);
 
     /*!
      * Get measurement unit for any of the valid measurement events.
@@ -664,7 +668,7 @@ extern "C"
      * @return Measurement unit or -1 for error (event that is not a
      * measurement).
      */
-    int vscp_getVSCPMeasurementUnit(const vscpEvent *pEvent);
+    int vscp_getVSCPMeasurementUnit(const vscpEvent* pEvent);
 
     /*!
      * Get measurement sensor index for any of the valid measurement events.
@@ -672,7 +676,7 @@ extern "C"
      * @return Measurement sensor index or -1 for error or for event that is not
      * a measurement or measurement event that does not have a sensor index.
      */
-    int vscp_getVSCPMeasurementSensorIndex(const vscpEvent *pEvent);
+    int vscp_getVSCPMeasurementSensorIndex(const vscpEvent* pEvent);
 
     /*!
      * Get measurement zone for any of the valid measurement events.
@@ -680,7 +684,7 @@ extern "C"
      * @return Measurement zone or 0 for error or event that is not a
      * measurement or measurement event that does not have a zone).
      */
-    int vscp_getVSCPMeasurementZone(const vscpEvent *pEvent);
+    int vscp_getVSCPMeasurementZone(const vscpEvent* pEvent);
 
     /*!
      * Get measurement subzone for any of the valid measurement events.
@@ -688,14 +692,14 @@ extern "C"
      * @return Measurement subzone or -1 for error or for event that is not a
      * measurement or measurement event that does not have a subzone.
      */
-    int vscp_getVSCPMeasurementSubZone(const vscpEvent *pEvent);
+    int vscp_getVSCPMeasurementSubZone(const vscpEvent* pEvent);
 
     /*!
      * Check if event is a measurement
      * @param pEvent Pointer to VSCP event.
      * @return Return true if the event is a measurement.
      */
-    bool vscp_isVSCPMeasurement(const vscpEvent *pEvent);
+    bool vscp_isVSCPMeasurement(const vscpEvent* pEvent);
 
     /*!
         Get data in the VSCP data coding format to a string. Works for
@@ -704,8 +708,8 @@ extern "C"
         @param str String that holds the result
         @return true on success, false on failure.
         */
-    bool vscp_getVSCPMeasurementFloat64AsString(const vscpEvent *pEvent,
-                                                std::string &str);
+    bool vscp_getVSCPMeasurementFloat64AsString(const vscpEvent* pEvent,
+                                                std::string& str);
 
     /*!
         Convert a floating point measurement value into VSCP data with the
@@ -718,8 +722,8 @@ extern "C"
         @param sensoridx Sensor index 0-7. Zero is default.
         @return true on success, false on failure.
     */
-    bool vscp_convertFloatToNormalizedEventData(uint8_t *pdata,
-                                                uint16_t *psize,
+    bool vscp_convertFloatToNormalizedEventData(uint8_t* pdata,
+                                                uint16_t* psize,
                                                 double value,
                                                 uint8_t unit,
                                                 uint8_t sensoridx);
@@ -735,8 +739,8 @@ extern "C"
         @param sensoridx Sensor index 0-7. Zero is default.
         @return true on success, false on failure.
     */
-    bool vscp_convertFloatToFloatEventData(uint8_t *pdata,
-                                           uint16_t *psize,
+    bool vscp_convertFloatToFloatEventData(uint8_t* pdata,
+                                           uint16_t* psize,
                                            float value,
                                            uint8_t unit,
                                            uint8_t sensoridx);
@@ -752,10 +756,10 @@ extern "C"
         @param sensoridx Sensor index 0-7. Zero is default.
         @return true on success, false on failure.
     */
-    bool vscp_convertIntegerToNormalizedEventData(uint8_t *pdata,
-                                                  uint16_t *psize,
+    bool vscp_convertIntegerToNormalizedEventData(uint8_t* pdata,
+                                                  uint16_t* psize,
                                                   uint64_t val64,
-                                                  uint8_t unit      = 0,
+                                                  uint8_t unit = 0,
                                                   uint8_t sensoridx = 0);
 
     /*!
@@ -770,7 +774,7 @@ extern "C"
         @param sensoridx Sensor index 0-7. Zero is default.
         @return true on success, false on failure.
     */
-    bool vscp_makeFloatMeasurementEvent(vscpEvent *pEvent,
+    bool vscp_makeFloatMeasurementEvent(vscpEvent* pEvent,
                                         float value,
                                         uint8_t unit,
                                         uint8_t sensoridx);
@@ -787,7 +791,7 @@ extern "C"
         @param sensoridx Sensor index 0-7. Zero is default.
         @return true on success, false on failure.
     */
-    bool vscp_makeStringMeasurementEvent(vscpEvent *pEvent,
+    bool vscp_makeStringMeasurementEvent(vscpEvent* pEvent,
                                          double value,
                                          uint8_t unit,
                                          uint8_t sensoridx);
@@ -805,7 +809,7 @@ extern "C"
      * @param Subzone Sub zone for this measurement. 0-255- Zero is default.
      * @return True is returned on success, false if an error occurred.
      */
-    bool vscp_makeLevel2FloatMeasurementEvent(vscpEvent *pEvent,
+    bool vscp_makeLevel2FloatMeasurementEvent(vscpEvent* pEvent,
                                               uint16_t type,
                                               double value,
                                               uint8_t unit,
@@ -826,7 +830,7 @@ extern "C"
      * @param Subzone Sub zone for this measurement. 0-255- Zero is default.
      * @return True is returned on success, false if an error occurred.
      */
-    bool vscp_makeLevel2StringMeasurementEvent(vscpEvent *pEvent,
+    bool vscp_makeLevel2StringMeasurementEvent(vscpEvent* pEvent,
                                                uint16_t type,
                                                double value,
                                                uint8_t unit,
@@ -840,7 +844,7 @@ extern "C"
         @param length Number of bytes it consist of including data coding byte
         @return value as float
         */
-    float vscp_getMeasurementAsFloat(const unsigned char *pNorm,
+    float vscp_getMeasurementAsFloat(const unsigned char* pNorm,
                                      const unsigned char length);
     /*!
      * Convert a Level I measurement event to a Level II double measurement
@@ -850,7 +854,7 @@ extern "C"
      * @param pEventÖevel2 Pointer to resulting level II measurement event.
      * @return true on success, false otherwise.
      */
-    bool vscp_convertLevel1MeasuremenToLevel2Double(vscpEvent *pEventLevel1);
+    bool vscp_convertLevel1MeasuremenToLevel2Double(vscpEvent* pEventLevel1);
 
     /*!
      * Convert a Level I measurement event to a Level II string measurement
@@ -860,7 +864,7 @@ extern "C"
      * @param pEventÖevel2 Pointer to resulting level II measurement event.
      * @return true on success, false otherwise.
      */
-    bool vscp_convertLevel1MeasuremenToLevel2String(vscpEvent *pEventLevel1);
+    bool vscp_convertLevel1MeasuremenToLevel2String(vscpEvent* pEventLevel1);
 
     // -------------------------------------------------------------------------
 
@@ -869,35 +873,35 @@ extern "C"
         @param strval String that should be handled.
         @return Fixed string.
         */
-    std::string &vscp_replaceBackslash(std::string &strval);
+    std::string& vscp_replaceBackslash(std::string& strval);
 
     /*!
         Get VSCP priority
         @param pEvent Pointer to VSCP event to set priority for.
         @return Priority (0-7) for event.
         */
-    unsigned char vscp_getVscpPriority(const vscpEvent *pEvent);
+    unsigned char vscp_getVscpPriority(const vscpEvent* pEvent);
 
     /*!
         Get VSCP priority
         @param pEvent Pointer to VSCP event to set priority for.
         @return Priority (0-7) for event.
         */
-    unsigned char vscp_getVscpPriorityEx(const vscpEventEx *pEvent);
+    unsigned char vscp_getVscpPriorityEx(const vscpEventEx* pEvent);
 
     /*!
         Set VSCP priority
         @param pEvent Pointer to VSCP event to set priority for.
         @param priority Priority (0-7) to set.
         */
-    void vscp_setVscpPriority(vscpEvent *pEvent, unsigned char priority);
+    void vscp_setVscpPriority(vscpEvent* pEvent, unsigned char priority);
 
     /*!
     Set VSCP priority Ex
     @param pEvent Pointer to VSCP event to set priority for.
     @param priority Priority (0-7) to set.
     */
-    void vscp_setVscpPriorityEx(vscpEventEx *pEvent, unsigned char priority);
+    void vscp_setVscpPriorityEx(vscpEventEx* pEvent, unsigned char priority);
 
     /*!
         Get VSCP head from CANAL id
@@ -943,24 +947,24 @@ extern "C"
         @param pEvent Pointer to VSCP event
         @return CAN id with nickname == 0
         */
-    uint32_t vscp_getCANALidFromVSCPevent(const vscpEvent *pEvent);
+    uint32_t vscp_getCANALidFromVSCPevent(const vscpEvent* pEvent);
 
     /*!
         Get CAN id from VSCP event
         @param pEvent Pointer to VSCP event
         @return CAN id with nickname == 0
         */
-    uint32_t vscp_getCANALidFromVSCPeventEx(const vscpEventEx *pEvent);
+    uint32_t vscp_getCANALidFromVSCPeventEx(const vscpEventEx* pEvent);
 
     /*!
         Calculate CRC for VSCP event
         */
-    unsigned short vscp_calc_crc_Event(vscpEvent *pEvent, short bSet);
+    unsigned short vscp_calc_crc_Event(vscpEvent* pEvent, short bSet);
 
     /*!
         Calculate CRC for VSCP event
         */
-    unsigned short vscp_calc_crc_EventEx(vscpEventEx *pEvent, short bSet);
+    unsigned short vscp_calc_crc_EventEx(vscpEventEx* pEvent, short bSet);
 
     // Helpers
 
@@ -970,7 +974,7 @@ extern "C"
         @param Pointer to GUID array (MSB-LSB order)
         \return crc for GUID.
     */
-    uint8_t vscp_calcCRC4GUIDArray(const uint8_t *pguid);
+    uint8_t vscp_calcCRC4GUIDArray(const uint8_t* pguid);
 
     /*!
         calcCRC4GUIDString
@@ -978,7 +982,7 @@ extern "C"
         @param Pointer to GUID array (MSB-LSB order)
         \return crc for GUID.
     */
-    uint8_t vscp_calcCRC4GUIDString(const std::string &strguid);
+    uint8_t vscp_calcCRC4GUIDString(const std::string& strguid);
 
     /*!
         Get GUID from string
@@ -988,8 +992,8 @@ extern "C"
         @return True on success, false on failure.
     */
 
-    bool vscp_setEventGuidFromString(vscpEvent *pEvent,
-                                     const std::string &strGUID);
+    bool vscp_setEventGuidFromString(vscpEvent* pEvent,
+                                     const std::string& strGUID);
 
     /*!
         Get GUID from string
@@ -999,15 +1003,15 @@ extern "C"
         @return True on success, false on failure.
     */
 
-    bool vscp_setEventExGuidFromString(vscpEventEx *pEventEx,
-                                       const std::string &strGUID);
+    bool vscp_setEventExGuidFromString(vscpEventEx* pEventEx,
+                                       const std::string& strGUID);
 
     /*!
         Fill event GUID from a string
     */
 
-    bool vscp_getGuidFromStringToArray(unsigned char *pGUID,
-                                       const std::string &strGUID);
+    bool vscp_getGuidFromStringToArray(unsigned char* pGUID,
+                                       const std::string& strGUID);
 
     /*!
         Write out GUID to string
@@ -1017,8 +1021,8 @@ extern "C"
         @return True on success, false on failure.
     */
 
-    bool vscp_writeGuidArrayToString(const unsigned char *pGUID,
-                                     std::string &strGUID);
+    bool vscp_writeGuidArrayToString(const unsigned char* pGUID,
+                                     std::string& strGUID);
 
     /*!
         Write out GUID to string
@@ -1028,7 +1032,7 @@ extern "C"
         @return True on success, false on failure.
         */
 
-    bool vscp_writeGuidToString(const vscpEvent *pEvent, std::string &strGUID);
+    bool vscp_writeGuidToString(const vscpEvent* pEvent, std::string& strGUID);
 
     /*!
     Write out GUID to string
@@ -1038,8 +1042,8 @@ extern "C"
     @return True on success, false on failure.
     */
 
-    bool vscp_writeGuidToStringEx(const vscpEventEx *pEvent,
-                                  std::string &strGUID);
+    bool vscp_writeGuidToStringEx(const vscpEventEx* pEvent,
+                                  std::string& strGUID);
 
     /*!
         Write out GUID to string as four rows
@@ -1049,8 +1053,8 @@ extern "C"
         @return True on success, false on failure.
         */
 
-    bool vscp_writeGuidToString4Rows(const vscpEvent *pEvent,
-                                     std::string &strGUID);
+    bool vscp_writeGuidToString4Rows(const vscpEvent* pEvent,
+                                     std::string& strGUID);
 
     /*!
         Write out GUID to string as four rows
@@ -1060,15 +1064,15 @@ extern "C"
         @return True on success, false on failure.
     */
 
-    bool vscp_writeGuidToString4RowsEx(const vscpEventEx *pEvent,
-                                       std::string &strGUID);
+    bool vscp_writeGuidToString4RowsEx(const vscpEventEx* pEvent,
+                                       std::string& strGUID);
 
     /*!
         Check if GUID is all null
         @param pGUID pointer to GUID to check
         @return true if empty, false if not.
         */
-    bool vscp_isGUIDEmpty(const unsigned char *pGUID);
+    bool vscp_isGUIDEmpty(const unsigned char* pGUID);
 
     /*!
         Compare two GUID's
@@ -1076,25 +1080,25 @@ extern "C"
         @param pGUID2 Second GUID to compare
         @return True if the two GUID's are equal. False otherwise.
         */
-    bool vscp_isSameGUID(const unsigned char *pGUID1,
-                         const unsigned char *pGUID2);
+    bool vscp_isSameGUID(const unsigned char* pGUID1,
+                         const unsigned char* pGUID2);
 
     /*!
         Reverse GUID
         @param pGUID Pointer to GUID to reverse.
         @return true if OK.
         */
-    bool vscp_reverseGUID(unsigned char *pGUID);
+    bool vscp_reverseGUID(unsigned char* pGUID);
 
     /*!
         Convert a standard VSCP event to the Ex version
         */
-    bool vscp_convertVSCPtoEx(vscpEventEx *pEventEx, const vscpEvent *pEvent);
+    bool vscp_convertVSCPtoEx(vscpEventEx* pEventEx, const vscpEvent* pEvent);
 
     /*!
         Convert an Ex event to a standard VSCP event
         */
-    bool vscp_convertVSCPfromEx(vscpEvent *pEvent, const vscpEventEx *pEventEx);
+    bool vscp_convertVSCPfromEx(vscpEvent* pEvent, const vscpEventEx* pEventEx);
 
     /*!
      * Create a standard VSCP event
@@ -1102,23 +1106,23 @@ extern "C"
      * @return True if the event was created successfully,
      *              false otherwise.
      */
-    bool vscp_newVSCPevent(vscpEvent **ppEvent);
+    bool vscp_newVSCPevent(vscpEvent** ppEvent);
 
     /*!
         Delete a standard VSCP event
         */
-    void vscp_deleteVSCPevent(vscpEvent *pEvent);
+    void vscp_deleteVSCPevent(vscpEvent* pEvent);
 
     /*!
      * Delete standard VSCP event and NULL
      * @param Pointer to pointer to standard VSCP event.
      */
-    void vscp_deleteVSCPevent_v2(vscpEvent **pEvent);
+    void vscp_deleteVSCPevent_v2(vscpEvent** pEvent);
 
     /*!
         Delete an Ex event
         */
-    void vscp_deleteVSCPeventEx(vscpEventEx *pEventEx);
+    void vscp_deleteVSCPeventEx(vscpEventEx* pEventEx);
 
     /*!
         Make a timestamp for events etc
@@ -1138,7 +1142,7 @@ extern "C"
         * @param pEvent Event to set date/time block in.
         * @return True on success.
         */
-    bool vscp_setEventDateTimeBlockToNow(vscpEvent *pEvent);
+    bool vscp_setEventDateTimeBlockToNow(vscpEvent* pEvent);
 
     /*!
         Set date & time in stamp block
@@ -1146,7 +1150,7 @@ extern "C"
         @param pEventEx EventEx to set date/time block in.
         @return True on success.
         */
-    bool vscp_setEventExDateTimeBlockToNow(vscpEventEx *pEventEx);
+    bool vscp_setEventExDateTimeBlockToNow(vscpEventEx* pEventEx);
 
     /*!
         Get datestring from VSCP event
@@ -1154,7 +1158,7 @@ extern "C"
         @param dt Reference to String that will get ISO datetime string
         @return True on success.
         */
-    bool vscp_getDateStringFromEvent(const vscpEvent *pEvent, std::string &dt);
+    bool vscp_getDateStringFromEvent(const vscpEvent* pEvent, std::string& dt);
 
     /*!
         Get datestring from VSCP Event ex
@@ -1162,68 +1166,68 @@ extern "C"
         @param dt Reference to String that will get ISO datetime string
         @return True on success.
         */
-    bool vscp_getDateStringFromEventEx(const vscpEventEx *pEventEx,
-                                       std::string &dt);
+    bool vscp_getDateStringFromEventEx(const vscpEventEx* pEventEx,
+                                       std::string& dt);
 
     /*!
      * Convert VSCP Event to JSON formated string
      */
-    bool vscp_convertEventToJSON(std::string &strJSON,vscpEvent *pEvent);
+    bool vscp_convertEventToJSON(std::string& strJSON, vscpEvent* pEvent);
 
     /*!
      * Convert VSCP EventEx to JSON formated string
      */
-    bool vscp_convertEventExToJSON(std::string &strJSON, vscpEventEx *pEventEx);
+    bool vscp_convertEventExToJSON(std::string& strJSON, vscpEventEx* pEventEx);
 
     /*!
      * Convert JSON string to event
      */
-    bool vscp_convertJSONToEvent(vscpEvent *pEvent,std::string &strJSON);
+    bool vscp_convertJSONToEvent(vscpEvent* pEvent, std::string& strJSON);
 
     /*!
      * Convert JSON string to eventex
      */
-    bool vscp_convertJSONToEventEx(vscpEventEx *pEventE,std::string &strJSONx);
+    bool vscp_convertJSONToEventEx(vscpEventEx* pEventE, std::string& strJSONx);
 
     /*!
      * Convert VSCP Event to XML formated string
      */
-    bool vscp_convertEventToXML(std::string &strXML,vscpEvent *pEvent);
+    bool vscp_convertEventToXML(std::string& strXML, vscpEvent* pEvent);
 
     /*!
      * Convert XML string to event
      */
-    bool vscp_convertXMLToEvent(vscpEvent *pEvent, std::string& strXML);
+    bool vscp_convertXMLToEvent(vscpEvent* pEvent, std::string& strXML);
 
     /*!
      * Convert VSCP EventEx to XML formated string
      */
-    bool vscp_convertEventExToXML(std::string &strXML,vscpEventEx *pEventEx);
+    bool vscp_convertEventExToXML(std::string& strXML, vscpEventEx* pEventEx);
 
     /*!
      * Convert XML string to EventEx
      */
-    bool vscp_convertXMLToEventEx(vscpEventEx *pEventEx,std::string &strXML);
+    bool vscp_convertXMLToEventEx(vscpEventEx* pEventEx, std::string& strXML);
 
     /*!
      * Convert VSCP Event to HTML formated string
      */
-    bool vscp_convertEventToHTML(std::string &strHTML,vscpEvent *pEvent);
+    bool vscp_convertEventToHTML(std::string& strHTML, vscpEvent* pEvent);
 
     /*!
      * Convert VSCP EventEx to HTML formated string
      */
-    bool vscp_convertEventExToHTML(std::string &strHTML, vscpEventEx *pEventEx);
+    bool vscp_convertEventExToHTML(std::string& strHTML, vscpEventEx* pEventEx);
 
     /*!
      * Set event datetime from DateTime
      */
-    bool vscp_setEventDateTime(vscpEvent *pEvent, struct tm *ptm);
+    bool vscp_setEventDateTime(vscpEvent* pEvent, struct tm* ptm);
 
     /*!
      * Set eventex datetime from DateTime
      */
-    bool vscp_setEventExDateTime(vscpEventEx *pEventEx, struct tm *ptm);
+    bool vscp_setEventExDateTime(vscpEventEx* pEventEx, struct tm* ptm);
 
     /*!
      * Set the event date to now
@@ -1231,7 +1235,7 @@ extern "C"
      * @param pEvent Pointer to event that will have date set to now
      * @return True on success, false on failure.
      */
-    bool vscp_setEventToNow(vscpEvent *pEvent);
+    bool vscp_setEventToNow(vscpEvent* pEvent);
 
     /*!
      * Set the event date to now
@@ -1239,21 +1243,21 @@ extern "C"
      * @param pEventEx Pointer to event that will have date set to now
      * @return True on success, false on failue.
      */
-    bool vscp_setEventExToNow(vscpEventEx *pEventEx);
+    bool vscp_setEventExToNow(vscpEventEx* pEventEx);
 
     /*!
         Clear VSCP filter so it will allow all events to go through
         @param pFilter Pointer to VSCP filter.
         */
-    void vscp_clearVSCPFilter(vscpEventFilter *pFilter);
+    void vscp_clearVSCPFilter(vscpEventFilter* pFilter);
 
     /*!
      * Copy filter from one filter to another
      * @param pToFilter Pointer to filter to copy data to
      * @param pFromFilter Pinter to filter to copy data from
      */
-    void vscp_copyVSCPFilter(vscpEventFilter *pToFilter,
-                             const vscpEventFilter *pFromFilter);
+    void vscp_copyVSCPFilter(vscpEventFilter* pToFilter,
+                             const vscpEventFilter* pFromFilter);
 
     /*!
         Check filter/mask to check if filter should be delivered
@@ -1277,11 +1281,11 @@ extern "C"
 
         @return true if message should be delivered false if not.
         */
-    bool vscp_doLevel2Filter(const vscpEvent *pEvent,
-                             const vscpEventFilter *pFilter);
+    bool vscp_doLevel2Filter(const vscpEvent* pEvent,
+                             const vscpEventFilter* pFilter);
 
-    bool vscp_doLevel2FilterEx(const vscpEventEx *pEventEx,
-                               const vscpEventFilter *pFilter);
+    bool vscp_doLevel2FilterEx(const vscpEventEx* pEventEx,
+                               const vscpEventFilter* pFilter);
 
     /*!
         Read a filter from a string
@@ -1294,8 +1298,8 @@ extern "C"
         @return true on success, false on failure.
         */
 
-    bool vscp_readFilterFromString(vscpEventFilter *pFilter,
-                                   const std::string &strFilter);
+    bool vscp_readFilterFromString(vscpEventFilter* pFilter,
+                                   const std::string& strFilter);
 
     /*!
         Write filter to string
@@ -1304,8 +1308,8 @@ extern "C"
                 filter-priority, filter-class, filter-type, filter-GUID
         @return true on success, false on failure.
     */
-    bool vscp_writeFilterToString(const vscpEventFilter *pFilter,
-                                  std::string &strFilter);
+    bool vscp_writeFilterToString(const vscpEventFilter* pFilter,
+                                  std::string& strFilter);
 
     /*!
         Read a mask from a string
@@ -1321,8 +1325,8 @@ extern "C"
         @return true on success, false on failure.
         */
 
-    bool vscp_readMaskFromString(vscpEventFilter *pFilter,
-                                 const std::string &strMask);
+    bool vscp_readMaskFromString(vscpEventFilter* pFilter,
+                                 const std::string& strMask);
 
     /*!
         Write mask to string
@@ -1331,8 +1335,8 @@ extern "C"
                 mask-priority, mask-class, mask-type, mask-GUID
         @return true on success, false on failure.
     */
-    bool vscp_writeMaskToString(const vscpEventFilter *pFilter,
-                                std::string &strFilter);
+    bool vscp_writeMaskToString(const vscpEventFilter* pFilter,
+                                std::string& strFilter);
 
     /*!
      * Read both filter and mask from string
@@ -1342,8 +1346,8 @@ extern "C"
      * @param strFilter Filter and mask in comma separated list
      * @return true on success, false on failure.
      */
-    bool vscp_readFilterMaskFromString(vscpEventFilter *pFilter,
-                                       const std::string &strFilterMask);
+    bool vscp_readFilterMaskFromString(vscpEventFilter* pFilter,
+                                       const std::string& strFilterMask);
 
     /*!
      * Read filter from XML coded string
@@ -1359,14 +1363,14 @@ extern "C"
      *      filter_guid="GUID string"
      * />
      */
-    bool vscp_readFilterMaskFromXML(vscpEventFilter *pFilter,
-                                    const std::string &strFilter);
+    bool vscp_readFilterMaskFromXML(vscpEventFilter* pFilter,
+                                    const std::string& strFilter);
 
     /*!
      * Write filter to XML coed string
      */
-    bool vscp_writeFilterMaskToXML(vscpEventFilter *pFilter,
-                                   std::string &strFilter);
+    bool vscp_writeFilterMaskToXML(vscpEventFilter* pFilter,
+                                   std::string& strFilter);
 
     /*!
      * Read filter from JSNOM coded string
@@ -1383,40 +1387,40 @@ extern "C"
      * }
      *
      */
-    bool vscp_readFilterMaskFromJSON(vscpEventFilter *pFilter,
-                                     const std::string &strFilter);
+    bool vscp_readFilterMaskFromJSON(vscpEventFilter* pFilter,
+                                     const std::string& strFilter);
 
     /*
      * Write filter to JSON coded string
      */
-    bool vscp_writeFilterMaskToJSON(vscpEventFilter *pFilter,
-                                    std::string &strFilter);
+    bool vscp_writeFilterMaskToJSON(vscpEventFilter* pFilter,
+                                    std::string& strFilter);
 
     /*!
         Convert an Event from a CANAL message
         */
-    bool vscp_convertCanalToEvent(vscpEvent *pvscpEvent,
-                                  const canalMsg *pcanalMsg,
-                                  unsigned char *pGUID);
+    bool vscp_convertCanalToEvent(vscpEvent* pvscpEvent,
+                                  const canalMsg* pcanalMsg,
+                                  unsigned char* pGUID);
 
     /*!
         Convert an Event from a CANAL message
         */
-    bool vscp_convertCanalToEventEx(vscpEventEx *pvscpEvent,
-                                    const canalMsg *pcanalMsg,
-                                    unsigned char *pGUID);
+    bool vscp_convertCanalToEventEx(vscpEventEx* pvscpEvent,
+                                    const canalMsg* pcanalMsg,
+                                    unsigned char* pGUID);
 
     /*!
         Covert VSCP event to CANAL message
         */
-    bool vscp_convertEventToCanal(canalMsg *pcanalMsg,
-                                  const vscpEvent *pvscpEvent);
+    bool vscp_convertEventToCanal(canalMsg* pcanalMsg,
+                                  const vscpEvent* pvscpEvent);
 
     /*!
         Covert VSCP event to CANAL message
     */
-    bool vscp_convertEventExToCanal(canalMsg *pcanalMsg,
-                                    const vscpEventEx *pvscpEvent);
+    bool vscp_convertEventExToCanal(canalMsg* pcanalMsg,
+                                    const vscpEventEx* pvscpEvent);
 
     /*!
         Copy one VSCP event to another
@@ -1425,7 +1429,7 @@ extern "C"
         @param pEventFrom Pointer to event to copy from.
         @return True on success.
     */
-    bool vscp_copyVSCPEvent(vscpEvent *pEventTo, const vscpEvent *pEventFrom);
+    bool vscp_copyVSCPEvent(vscpEvent* pEventTo, const vscpEvent* pEventFrom);
 
     /*!
     Copy one VSCP event ex to another
@@ -1434,8 +1438,8 @@ extern "C"
     @param pEventFrom Pointer to event to copy from.
     @return True on success.
 */
-    bool vscp_copyVSCPEventEx(vscpEventEx *pEventTo,
-                              const vscpEventEx *pEventFrom);
+    bool vscp_copyVSCPEventEx(vscpEventEx* pEventTo,
+                              const vscpEventEx* pEventFrom);
 
     /*!
         Write VSCP data to string    DEPRECATED: USE:
@@ -1447,10 +1451,10 @@ extern "C"
         @return True on success false on failure.
         */
 
-    bool vscp_writeVscpDataToString(const vscpEvent *pEvent,
-                                    std::string &str,
+    bool vscp_writeVscpDataToString(const vscpEvent* pEvent,
+                                    std::string& str,
                                     bool bUseHtmlBreak = false,
-                                    bool bBreak        = false);
+                                    bool bBreak = false);
 
     /*!
         Write VSCP data to string
@@ -1463,10 +1467,10 @@ extern "C"
     */
 
     bool vscp_writeVscpDataWithSizeToString(const uint16_t sizeData,
-                                            const unsigned char *pData,
-                                            std::string &str,
+                                            const unsigned char* pData,
+                                            std::string& str,
                                             bool bUseHtmlBreak = false,
-                                            bool bBreak        = true);
+                                            bool bBreak = true);
 
     /*!
         Set VSCP Event data from a string
@@ -1476,8 +1480,8 @@ extern "C"
         @return true on success, false on failure.
     */
 
-    bool vscp_setVscpEventDataFromString(vscpEvent *pEvent,
-                                         const std::string &str);
+    bool vscp_setVscpEventDataFromString(vscpEvent* pEvent,
+                                         const std::string& str);
 
     /*!
         Set VSCP EventEx data from a string
@@ -1487,8 +1491,8 @@ extern "C"
         @return true on success, false on failure.
     */
 
-    bool vscp_setVscpEventExDataFromString(vscpEventEx *pEventEx,
-                                           const std::string &str);
+    bool vscp_setVscpEventExDataFromString(vscpEventEx* pEventEx,
+                                           const std::string& str);
 
     /*!
         Set VSCP data from a string
@@ -1499,9 +1503,9 @@ extern "C"
         @return true on success, false on failure.
     */
 
-    bool vscp_setVscpDataArrayFromString(uint8_t *pData,
-                                         uint16_t *psizeData,
-                                         const std::string &str);
+    bool vscp_setVscpDataArrayFromString(uint8_t* pData,
+                                         uint16_t* psizeData,
+                                         const std::string& str);
 
     /*!
         Write event to string.
@@ -1511,7 +1515,7 @@ extern "C"
         @return true on success, false on failure.
     */
 
-    bool vscp_writeVscpEventToString(std::string &str, const vscpEvent *pEvent);
+    bool vscp_writeVscpEventToString(std::string& str, const vscpEvent* pEvent);
 
     /*!
         Write event to string.
@@ -1521,7 +1525,8 @@ extern "C"
         @return true on success, false on failure.
         */
 
-    bool vscp_writeVscpEventExToString(std::string &str,const vscpEventEx *pEvent);
+    bool vscp_writeVscpEventExToString(std::string& str,
+                                       const vscpEventEx* pEvent);
 
     /*!
         Get event data from string format
@@ -1531,7 +1536,7 @@ extern "C"
         @return true on success, false on failure.
         */
 
-    bool vscp_setVscpEventFromString(vscpEvent *pEvent, const std::string &str);
+    bool vscp_setVscpEventFromString(vscpEvent* pEvent, const std::string& str);
 
     /*!
         Get event data from string format
@@ -1541,9 +1546,8 @@ extern "C"
         @return true on success, false on failure.
         */
 
-    bool vscp_setVscpEventExFromString(vscpEventEx *pEventEx,
-                                       const std::string &str);
-
+    bool vscp_setVscpEventExFromString(vscpEventEx* pEventEx,
+                                       const std::string& str);
 
     /*!
         This function makes a HTML string from a standard string. LF is replaced
@@ -1551,7 +1555,7 @@ extern "C"
         @param str String that should be HTML coded.
         */
 
-    void vscp_makeHtml(std::string &str);
+    void vscp_makeHtml(std::string& str);
 
     /*
         Get device HTML status from device
@@ -1560,8 +1564,8 @@ extern "C"
         about the device if it is supplied.
     */
 
-    std::string &vscp_getDeviceHtmlStatusInfo(const uint8_t *registers,
-                                              CMDF *pmdf);
+    std::string& vscp_getDeviceHtmlStatusInfo(const uint8_t* registers,
+                                              CMDF* pmdf);
 
     ////////////////////////////////////////////////////////////////////////////
     // Encryption
@@ -1578,7 +1582,7 @@ extern "C"
      *
      */
 
-    uint8_t vscp_getEncryptionCodeFromToken(std::string &token);
+    uint8_t vscp_getEncryptionCodeFromToken(std::string& token);
 
     /*!
      * Fetch encryption token from code.
@@ -1589,7 +1593,7 @@ extern "C"
      *         returned. This is also true for invalid codes.
      */
 
-    void vscp_getEncryptionTokenFromCode(uint8_t code, std::string &token);
+    void vscp_getEncryptionTokenFromCode(uint8_t code, std::string& token);
 
     /*!
      * Get UDP frame size from event
@@ -1597,7 +1601,7 @@ extern "C"
      * @param pEvent Pointer to event.
      * @return Size of resulting UDP frame on success. Zero on failure.
      */
-    size_t vscp_getUDpFrameSizeFromEvent(vscpEvent *pEvent);
+    size_t vscp_getUDpFrameSizeFromEvent(vscpEvent* pEvent);
 
     /*!
      * Get UDP frame size from event
@@ -1605,7 +1609,7 @@ extern "C"
      * @param pEventEx Pointer to event ex.
      * @return Size of resulting UDP frame on success. Zero on failure.
      */
-    size_t vscp_getUDpFrameSizeFromEventEx(vscpEventEx *pEventEx);
+    size_t vscp_getUDpFrameSizeFromEventEx(vscpEventEx* pEventEx);
 
     /*!
      * Write event on UDP frame format
@@ -1617,10 +1621,10 @@ extern "C"
      * @param pEvent Pointer to event that should be handled.
      * @return True on success, false on failure.
      */
-    bool vscp_writeEventToUdpFrame(uint8_t *frame,
+    bool vscp_writeEventToUdpFrame(uint8_t* frame,
                                    size_t len,
                                    uint8_t pkttype,
-                                   const vscpEvent *pEvent);
+                                   const vscpEvent* pEvent);
 
     /*!
      * Write event ex on UDP frame format
@@ -1632,10 +1636,10 @@ extern "C"
      * @param pEventEx Pointer to event that should be handled.
      * @return True on success, false on failure.
      */
-    bool vscp_writeEventExToUdpFrame(uint8_t *frame,
+    bool vscp_writeEventExToUdpFrame(uint8_t* frame,
                                      size_t len,
                                      uint8_t pkttype,
-                                     const vscpEventEx *pEventEx);
+                                     const vscpEventEx* pEventEx);
 
     /*!
      * Get VSCP event from UDP frame
@@ -1645,8 +1649,8 @@ extern "C"
      * @param len Size of the buffer.
      * @return True on success, false on failure.
      */
-    bool vscp_getEventFromUdpFrame(vscpEvent *pEvent,
-                                   const uint8_t *buf,
+    bool vscp_getEventFromUdpFrame(vscpEvent* pEvent,
+                                   const uint8_t* buf,
                                    size_t len);
 
     /*!
@@ -1658,8 +1662,8 @@ extern "C"
      * @param len Size of the buffer.
      * @return True on success, false on failure.
      */
-    bool vscp_getEventExFromUdpFrame(vscpEventEx *pEventEx,
-                                     const uint8_t *buf,
+    bool vscp_getEventExFromUdpFrame(vscpEventEx* pEventEx,
+                                     const uint8_t* buf,
                                      size_t len);
 
     /*!
@@ -1682,11 +1686,11 @@ extern "C"
      * @return Packet length on success, zero on failure.
      *
      */
-    size_t vscp_encryptVscpUdpFrame(uint8_t *output,
-                                    uint8_t *input,
+    size_t vscp_encryptVscpUdpFrame(uint8_t* output,
+                                    uint8_t* input,
                                     size_t len,
-                                    const uint8_t *key,
-                                    const uint8_t *iv,
+                                    const uint8_t* key,
+                                    const uint8_t* iv,
                                     uint8_t nAlgorithm);
 
     /*!
@@ -1710,11 +1714,11 @@ extern "C"
      * recognised here.
      *
      */
-    bool vscp_decryptVscpUdpFrame(uint8_t *output,
-                                  uint8_t *input,
+    bool vscp_decryptVscpUdpFrame(uint8_t* output,
+                                  uint8_t* input,
                                   size_t len,
-                                  const uint8_t *key,
-                                  const uint8_t *iv,
+                                  const uint8_t* key,
+                                  const uint8_t* iv,
                                   uint8_t nAlgorithm);
 
     ///////////////////////////////////////////////////////////////////////////
@@ -1729,7 +1733,7 @@ extern "C"
      * @param buf Data to calculate md5 on.
      * @param len Len of input data.
      */
-    void vscp_md5(char *digest, const unsigned char *buf, size_t len);
+    void vscp_md5(char* digest, const unsigned char* buf, size_t len);
 
     /*!
     Stringify binary data.
@@ -1739,7 +1743,7 @@ extern "C"
     @param p Pointer to digest.
     @param len Digest len
 */
-    void vscp_byteArray2HexStr(char *to, const unsigned char *p, size_t len);
+    void vscp_byteArray2HexStr(char* to, const unsigned char* p, size_t len);
 
     /*!
      * Convert a hext string to a byte array
@@ -1751,9 +1755,9 @@ extern "C"
      *
      */
 
-    size_t vscp_hexStr2ByteArray(uint8_t *array,
+    size_t vscp_hexStr2ByteArray(uint8_t* array,
                                  size_t size,
-                                 const char *hexstr);
+                                 const char* hexstr);
 
     /*!
      * Get components form a hashed password
@@ -1767,9 +1771,9 @@ extern "C"
      * @return True on success, false on failure.
      *
      */
-    bool vscp_getHashPasswordComponents(uint8_t *pSalt,
-                                        uint8_t *pHash,
-                                        const std::string &stored_pw);
+    bool vscp_getHashPasswordComponents(uint8_t* pSalt,
+                                        uint8_t* pHash,
+                                        const std::string& stored_pw);
 
     /*!
      * Make password hash with prepended salt from clear text password.
@@ -1779,9 +1783,9 @@ extern "C"
      * @param password Clear text password to be hashed.
      * @return true on success, false otherwise.
      */
-    bool vscp_makePasswordHash(std::string &result,
-                               const std::string &password,
-                               uint8_t *pSalt = NULL);
+    bool vscp_makePasswordHash(std::string& result,
+                               const std::string& password,
+                               uint8_t* pSalt = NULL);
 
     /*!
      * Validate password
@@ -1791,8 +1795,8 @@ extern "C"
      * @return true on success, false otherwise.
      */
 
-    bool vscp_isPasswordValid(const std::string &stored_pw,
-                              const std::string &password);
+    bool vscp_isPasswordValid(const std::string& stored_pw,
+                              const std::string& password);
 
     /*!
      * Get salt
@@ -1802,7 +1806,7 @@ extern "C"
      * @return True on success.
      *
      */
-    bool vscp_getSalt(uint8_t *buf, size_t len);
+    bool vscp_getSalt(uint8_t* buf, size_t len);
 
     /*!
      * Get salt as hex string
@@ -1811,7 +1815,7 @@ extern "C"
      * @param len Number of bytes to generate.
      * @return True on success.
      */
-    bool vscp_getSaltHex(std::string &strSalt, size_t len);
+    bool vscp_getSaltHex(std::string& strSalt, size_t len);
 
 #ifdef __cplusplus
 }
