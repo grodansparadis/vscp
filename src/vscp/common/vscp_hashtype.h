@@ -2,7 +2,7 @@
             !!!!!!!!!!!!!!!!!!!!  W A R N I N G  !!!!!!!!!!!!!!!!!!!!
                            This file is auto-generated
                 see https://github.com/grodansparadis/vscp-classes
-                        Generated: 2019-11-14 21:39:12.340996
+                        Generated: 2019-11-28 23:05:20.883016
 */
  
 
@@ -271,6 +271,9 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(20,78) ] = _("VSCP_TYPE_INFORMATION_RISING");
 	m_hashType[ MAKE_CLASSTYPE_LONG(20,79) ] = _("VSCP_TYPE_INFORMATION_FALLING");
 	m_hashType[ MAKE_CLASSTYPE_LONG(20,80) ] = _("VSCP_TYPE_INFORMATION_UPDATED");
+	m_hashType[ MAKE_CLASSTYPE_LONG(20,81) ] = _("VSCP_TYPE_INFORMATION_CONNECT");
+	m_hashType[ MAKE_CLASSTYPE_LONG(20,82) ] = _("VSCP_TYPE_INFORMATION_DISCONNECT");
+	m_hashType[ MAKE_CLASSTYPE_LONG(20,83) ] = _("VSCP_TYPE_INFORMATION_RECONNECT");
 
 	//  CLASS1.CONTROL = 30  -  Control
 	m_hashType[ MAKE_CLASSTYPE_LONG(30,0) ] = _("VSCP_TYPE_CONTROL_GENERAL");
@@ -1252,6 +1255,9 @@
 	m_hashType[ MAKE_CLASSTYPE_LONG(532,78) ] = _("VSCP_TYPE_INFORMATION_RISING");
 	m_hashType[ MAKE_CLASSTYPE_LONG(532,79) ] = _("VSCP_TYPE_INFORMATION_FALLING");
 	m_hashType[ MAKE_CLASSTYPE_LONG(532,80) ] = _("VSCP_TYPE_INFORMATION_UPDATED");
+	m_hashType[ MAKE_CLASSTYPE_LONG(532,81) ] = _("VSCP_TYPE_INFORMATION_CONNECT");
+	m_hashType[ MAKE_CLASSTYPE_LONG(532,82) ] = _("VSCP_TYPE_INFORMATION_DISCONNECT");
+	m_hashType[ MAKE_CLASSTYPE_LONG(532,83) ] = _("VSCP_TYPE_INFORMATION_RECONNECT");
 
 	//  CLASS2.LEVEL1.CONTROL = 542  -  Class2 Level I Control
 	// 	Event types is the same as  CLASS1.CONTROL = 30  -  Control
