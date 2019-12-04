@@ -5065,6 +5065,18 @@ vscp_convertEventToString(std::string& str, const vscpEvent* pEvent)
     return true;
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+// vscp_getEventAsString
+//
+
+std::string vscp_getEventAsString(const vscpEvent* pEvent) {
+    std::string str;
+    vscp_convertEventToString(str, pEvent);
+    return str;
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // convertEventExToString
 //
@@ -5087,6 +5099,16 @@ vscp_convertEventExToString(std::string& str, const vscpEventEx* pEventEx)
         delete event.pdata;
 
     return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// vscp_getEventExAsString
+//
+
+std::string vscp_getEventExAsString(const vscpEventEx* pEventEx) {
+    std::string str;
+    vscp_convertEventExToString(str, pEventEx);
+    return str;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

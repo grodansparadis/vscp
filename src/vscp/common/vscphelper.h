@@ -882,7 +882,7 @@ extern "C"
      * event VSCP_CLASS2_MEASUREMENT_STRING
      *
      * @param pEventLevel1 Pointer to level I measurement event to be converted.
-     * @param pEventÖevel2 Pointer to resulting level II measurement event.
+     * @param pEventLevel2 Pointer to resulting level II measurement event.
      * @return true on success, false otherwise.
      */
     bool vscp_convertLevel1MeasuremenToLevel2String(vscpEvent* pEventLevel1);
@@ -1564,6 +1564,15 @@ extern "C"
     bool vscp_convertEventToString(std::string& str, const vscpEvent* pEvent);
 
     /*!
+        Get Event as string
+
+        @param pEvent Pointer to event
+
+        @return String representation of event.
+    */
+    std::string vscp_getEventAsString(const vscpEvent* pEvent);
+
+    /*!
         Write event to string.
         priority,class,type,guid,data
         @param str String that receive the result
@@ -1573,6 +1582,16 @@ extern "C"
 
     bool vscp_convertEventExToString(std::string& str,
                                      const vscpEventEx* pEvent);
+
+
+    /*!
+        Get EventEx as string
+
+        @param pEvent Pointer to EventEx
+
+        @return String representation of event.
+    */
+    std::string vscp_getEventExAsString(const vscpEventEx* pEventEx);
 
     /*!
         Get event data from string format
