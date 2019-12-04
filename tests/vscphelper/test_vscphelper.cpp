@@ -169,16 +169,16 @@ main(void)
     }
 
     // ------------------------------------------------------------------------
-    // Testing vscp_setVscpEventDataFromString
+    // Testing vscp_setEventDataFromString
     // ------------------------------------------------------------------------
-    printf(" * Testing vscp_setVscpEventDataFromString\n");
+    printf(" * Testing vscp_setEventDataFromString\n");
 
     vscpEvent *pEvent = &e;
     pEvent->sizeData = 0;
     pEvent->pdata = NULL;
     std::string strData = "1,2,30,4,66";
-    if ( !vscp_setVscpEventDataFromString( pEvent, strData ) ) {
-        printf("[vscp_setVscpEventDataFromString] Failed!\n");
+    if ( !vscp_setEventDataFromString( pEvent, strData ) ) {
+        printf("[vscp_setEventDataFromString] Failed!\n");
         exit( -1 );
     }
 
@@ -189,7 +189,7 @@ main(void)
             ( pEvent->pdata[2] != 30 ) ||
             ( pEvent->pdata[3] != 4 ) ||
             ( pEvent->pdata[4] != 66 ) ) {
-        printf("[vscp_setVscpEventDataFromString] Did not read GUID correctly!\n");
+        printf("[vscp_setEventDataFromString] Did not read GUID correctly!\n");
         exit( -1 );
     }
 
@@ -198,15 +198,15 @@ main(void)
     pEvent->pdata = NULL;
 
     // ------------------------------------------------------------------------
-    // Testing vscp_setVscpEventExDataFromString
+    // Testing vscp_setEventExDataFromString
     // ------------------------------------------------------------------------
-    printf(" * Testing vscp_setVscpEventExDataFromString\n");
+    printf(" * Testing vscp_setEventExDataFromString\n");
 
     ex.sizeData = 0;
 
     strData = "1,2,30,4,66";
-    if ( !vscp_setVscpEventExDataFromString( &ex, strData ) ) {
-        printf("[vscp_setVscpEventExDataFromString] Failed!\n");
+    if ( !vscp_setEventExDataFromString( &ex, strData ) ) {
+        printf("[vscp_setEventExDataFromString] Failed!\n");
         exit( -1 );
     }
 
@@ -216,7 +216,7 @@ main(void)
             ( ex.data[2] != 30 ) ||
             ( ex.data[3] != 4 ) ||
             ( ex.data[4] != 66 ) ) {
-        printf("[vscp_setVscpEventExDataFromString] Did not read GUID correctly!\n");
+        printf("[vscp_setEventExDataFromString] Did not read GUID correctly!\n");
         exit( -1 );
     }
 

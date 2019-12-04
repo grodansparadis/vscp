@@ -357,9 +357,9 @@ CCanalSuperWrapper::doCmdSend(const vscpEventEx *pEventEx)
 
     if (USE_DLL_INTERFACE == m_itemDevice.id) {
         vscpEvent *pevent = new vscpEvent;
-        vscp_convertVSCPfromEx(pevent, pEventEx);
+        vscp_convertEventExToEvent(pevent, pEventEx);
         rv = doCmdSend(pevent);
-        vscp_deleteVSCPevent(pevent);
+        vscp_deleteEvent(pevent);
         return rv;
     } else if (USE_TCPIP_INTERFACE == m_itemDevice.id) {
         return m_vscptcpif.doCmdSendEx(pEventEx);

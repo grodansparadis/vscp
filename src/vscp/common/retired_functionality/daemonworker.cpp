@@ -255,7 +255,7 @@ daemonWorkerThread(void *threadData)
                 if (NULL != pnewEvent) {
 
                     // Convert event to correct format
-                    vscp_convertVSCPfromEx(pnewEvent, &eventEx);
+                    vscp_convertEventExToEvent(pnewEvent, &eventEx);
 
                     // Statistics
                     pClientItem->m_statistics.cntTransmitData +=
@@ -450,7 +450,7 @@ daemonWorkerThread(void *threadData)
             }
 
             // Remove the event
-            vscp_deleteVSCPevent(pEvent);
+            vscp_deleteEvent(pEvent);
 
         } // event in queue
 
@@ -565,9 +565,9 @@ daemonWorkerObj::sendMulticastEventEx(int sock, vscpEventEx *pEventEx)
 
     if (NULL == pEvent) return false;
 
-    vscp_convertVSCPfromEx(pEvent, pEventEx);
+    vscp_convertEventExToEvent(pEvent, pEventEx);
     rv = sendMulticastEvent(sock, pEvent);
-    vscp_deleteVSCPevent(pEvent);
+    vscp_deleteEvent(pEvent);
     return rv;
 }
 

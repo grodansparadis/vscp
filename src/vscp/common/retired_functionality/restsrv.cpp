@@ -985,7 +985,7 @@ websrv_restapi(struct web_connection *conn, void *cbdata)
              (("SENDEVENT") == keypairs[("OP")])) {
         vscpEvent vscpevent;
         if (("") != keypairs[("VSCPEVENT")]) {
-            vscp_setVscpEventFromString(&vscpevent, keypairs[("VSCPEVENT")]);
+            vscp_convertStringToEvent(&vscpevent, keypairs[("VSCPEVENT")]);
             restsrv_doSendEvent(conn, pSession, format, &vscpevent);
         } else {
             // Parameter missing - No Event
@@ -1623,7 +1623,7 @@ restsrv_doSendEvent(struct web_connection *conn,
                         vscpEvent *pNewEvent = new (vscpEvent);
                         if (NULL != pNewEvent) {
 
-                            vscp_copyVSCPEvent(pNewEvent, pEvent);
+                            vscp_copyEvent(pNewEvent, pEvent);
 
                             // Add the new event to the input queue
                             pthread_mutex_lock(&pSession->m_pClientItem
@@ -1640,7 +1640,7 @@ restsrv_doSendEvent(struct web_connection *conn,
 
                     } else {
                         // Overrun - No room for event
-                        // vscp_deleteVSCPevent( pEvent );
+                        // vscp_deleteEvent( pEvent );
                         bSent = true;
                     }
 
@@ -1665,7 +1665,7 @@ restsrv_doSendEvent(struct web_connection *conn,
 
                     vscpEvent *pNewEvent = new (vscpEvent);
                     if (NULL != pNewEvent) {
-                        vscp_copyVSCPEvent(pNewEvent, pEvent);
+                        vscp_copyEvent(pNewEvent, pEvent);
 
                         pthread_mutex_lock(&gpobj->m_mutexClientOutputQueue);
                         gpobj->m_clientOutputQueue.push_back(pNewEvent);
@@ -1683,14 +1683,14 @@ restsrv_doSendEvent(struct web_connection *conn,
                 } else {
                     restsrv_error(
                       conn, pSession, format, REST_ERROR_CODE_NO_ROOM);
-                    vscp_deleteVSCPevent(pEvent);
+                    vscp_deleteEvent(pEvent);
                     bSent = false;
                 }
 
             } else {
                 restsrv_error(
                   conn, pSession, format, REST_ERROR_CODE_GENERAL_FAILURE);
-                vscp_deleteVSCPevent(pEvent);
+                vscp_deleteEvent(pEvent);
                 bSent = false;
             }
 
@@ -1770,7 +1770,7 @@ restsrv_doReceiveEvent(struct web_connection *conn,
                                   &pSession->m_pClientItem->m_filter)) {
 
                                 std::string str;
-                                if (vscp_writeVscpEventToString(pEvent, str)) {
+                                if (vscp_convertEventExToEvent(pEvent, str)) {
 
                                     // Write it out
                                     strcpy((char *)wrkbuf, (const char *)"- ");
@@ -1792,7 +1792,7 @@ restsrv_doReceiveEvent(struct web_connection *conn,
                             }
 
                             // Remove the event
-                            vscp_deleteVSCPevent(pEvent);
+                            vscp_deleteEvent(pEvent);
 
                         } // Valid pEvent pointer
                         else {
@@ -1860,7 +1860,7 @@ restsrv_doReceiveEvent(struct web_connection *conn,
                                   &pSession->m_pClientItem->m_filter)) {
 
                                 std::string str;
-                                if (vscp_writeVscpEventToString(pEvent, str)) {
+                                if (vscp_convertEventExToEvent(pEvent, str)) {
 
                                     // Write it out
                                     memset((char *)wrkbuf, 0, sizeof(wrkbuf));
@@ -1884,7 +1884,7 @@ restsrv_doReceiveEvent(struct web_connection *conn,
                             }
 
                             // Remove the event
-                            vscp_deleteVSCPevent(pEvent);
+                            vscp_deleteEvent(pEvent);
 
                         } // Valid pEvent pointer
                         else {
@@ -2029,12 +2029,12 @@ restsrv_doReceiveEvent(struct web_connection *conn,
 
                                 // data
                                 strcat((char *)wrkbuf, (const char *)"<data>");
-                                vscp_writeVscpDataToString(pEvent, str);
+                                vscp_writeDataToString(pEvent, str);
                                 strcat((char *)wrkbuf,
                                        (const char *)str.c_str());
                                 strcat((char *)wrkbuf, (const char *)"</data>");
 
-                                if (vscp_writeVscpEventToString(pEvent, str)) {
+                                if (vscp_convertEventExToEvent(pEvent, str)) {
                                     strcat((char *)wrkbuf,
                                            (const char *)"<raw>");
                                     strcat((char *)wrkbuf,
@@ -2051,7 +2051,7 @@ restsrv_doReceiveEvent(struct web_connection *conn,
                             }
 
                             // Remove the event
-                            vscp_deleteVSCPevent(pEvent);
+                            vscp_deleteEvent(pEvent);
 
                         } // Valid pEvent pointer
                         else {
@@ -2168,7 +2168,7 @@ restsrv_doReceiveEvent(struct web_connection *conn,
                             }
 
                             // Remove the event
-                            vscp_deleteVSCPevent(pEvent);
+                            vscp_deleteEvent(pEvent);
 
                         } // Valid pEvent pointer
                         else {
@@ -2266,7 +2266,7 @@ restsrv_doClearQueue(struct web_connection *conn,
              it != pSession->m_pClientItem->m_clientInputQueue.end();
              ++it) {
             vscpEvent *pEvent = *it;
-            vscp_deleteVSCPevent(pEvent);
+            vscp_deleteEvent(pEvent);
         }
 
         pSession->m_pClientItem->m_clientInputQueue.clear();

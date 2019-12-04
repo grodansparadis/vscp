@@ -1956,7 +1956,7 @@ dmElement::handleEscapes(vscpEvent *pEvent, std::string &str)
             else if (vscp_startsWith(str, "%event.data", &str)) {
                 if (pEvent->sizeData && (NULL != pEvent->pdata)) {
                     std::string str;
-                    vscp_writeVscpDataToString(pEvent, str, false);
+                    vscp_writeDataToString(pEvent, str, false);
                     strResult += str;
                 } else {
                     strResult += "empty"; // No data
@@ -2008,7 +2008,7 @@ dmElement::handleEscapes(vscpEvent *pEvent, std::string &str)
             // Check for event escape
             else if (vscp_startsWith(str, "%event", &str)) {
                 std::string strEvent;
-                vscp_writeVscpEventToString(pEvent, strEvent);
+                vscp_convertEventExToEvent(pEvent, strEvent);
                 strResult += strEvent;
             }
             // Check for isodate escape
@@ -2667,7 +2667,7 @@ dmElement::doAction(vscpEvent *pEvent)
                 //  new actionThread_JavaScript(strParam);
                 // if (NULL == pThread) return false;
 
-                // vscp_convertVSCPtoEx(&pThread->m_feedEvent,
+                // vscp_convertEventToEventEx(&pThread->m_feedEvent,
                 //                     pEvent); // Save feed event
 
                 /* TODO
@@ -2718,7 +2718,7 @@ dmElement::doAction(vscpEvent *pEvent)
                 // actionThread_Lua *pThread = new actionThread_Lua(strParam);
                 // if (NULL == pThread) return false;
 
-                // vscp_convertVSCPtoEx(&pThread->m_feedEvent,
+                // vscp_convertEventToEventEx(&pThread->m_feedEvent,
                 //                     pEvent); // Save feed event
 
                 /* TODO
@@ -2753,7 +2753,7 @@ dmElement::doAction(vscpEvent *pEvent)
 
     if (gpobj->m_debugFlags[0] & VSCP_DEBUG1_DM) {
         std::string strEvent;
-        vscp_writeVscpEventToString(pEvent, strEvent);
+        vscp_convertEventExToEvent(pEvent, strEvent);
         syslog(LOG_ERR,
                "[DM] %s - %s - "
                "%s - Event = %s",
@@ -3113,8 +3113,8 @@ dmElement::doActionSendEvent(vscpEvent *pDMEvent)
         if (NULL != pEvent) {
             pEvent->pdata = NULL;
 
-            if (!vscp_setVscpEventFromString(pEvent, strEvent)) {
-                vscp_deleteVSCPevent_v2(&pEvent);
+            if (!vscp_convertStringToEvent(pEvent, strEvent)) {
+                vscp_deleteEvent_v2(&pEvent);
 
                 // Event has wrong format
                 syslog(LOG_ERR,
@@ -3274,8 +3274,8 @@ dmElement::doActionSendEventConditional(vscpEvent *pDMEvent)
         std::string strEvent = tokens.front();
         tokens.pop_front();
 
-        if (!vscp_setVscpEventFromString(pEvent, strEvent)) {
-            vscp_deleteVSCPevent_v2(&pEvent);
+        if (!vscp_convertStringToEvent(pEvent, strEvent)) {
+            vscp_deleteEvent_v2(&pEvent);
 
             // Could not parse event string
             syslog(LOG_ERR,
@@ -3343,7 +3343,7 @@ dmElement::doActionSendEventConditional(vscpEvent *pDMEvent)
             }
         }
     } else {
-        vscp_deleteVSCPevent_v2(&pEvent);
+        vscp_deleteEvent_v2(&pEvent);
         m_pDM->m_pClientItem->m_statistics.cntOverruns++;
     }
 
@@ -3440,7 +3440,7 @@ dmElement::doActionSendEventsFromFile(vscpEvent *pDMEvent)
                     }
                     if (subchild->GetName() == ("data"))
                     {
-                        vscp_setVscpEventDataFromString(pEvent,
+                        vscp_setEventDataFromString(pEvent,
                                                         subchild->GetNodeContent());
                     }
 
@@ -3470,7 +3470,7 @@ dmElement::doActionSendEventsFromFile(vscpEvent *pDMEvent)
                 {
 
                     // Remove the event
-                    vscp_deleteVSCPevent_v2(&pEvent);
+                    vscp_deleteEvent_v2(&pEvent);
 
                     m_pDM->m_pClientItem->m_statistics.cntOverruns++;
                 }
@@ -3793,7 +3793,7 @@ dmElement::doActionStoreVariable(vscpEvent *pDMEvent)
 
         switch (var.getType()) {
             case VSCP_DAEMON_VARIABLE_CODE_STRING:
-                if (vscp_isVSCPMeasurement(pDMEvent)) {
+                if (vscp_isMeasurement(pDMEvent)) {
                     std::string strValue;
                     if (vscp_getVSCPMeasurementAsString(pDMEvent, strValue)) {
                         var.setValue(strValue);
@@ -3811,9 +3811,9 @@ dmElement::doActionStoreVariable(vscpEvent *pDMEvent)
                 break;
 
             case VSCP_DAEMON_VARIABLE_CODE_INTEGER:
-                if (vscp_isVSCPMeasurement(pDMEvent)) {
+                if (vscp_isMeasurement(pDMEvent)) {
                     double value;
-                    if (vscp_getVSCPMeasurementAsDouble(pDMEvent, &value)) {
+                    if (vscp_getMeasurementAsDouble(pDMEvent, &value)) {
                         var.setValue((int)value);
                     } else {
 
@@ -3829,9 +3829,9 @@ dmElement::doActionStoreVariable(vscpEvent *pDMEvent)
                 break;
 
             case VSCP_DAEMON_VARIABLE_CODE_LONG:
-                if (vscp_isVSCPMeasurement(pDMEvent)) {
+                if (vscp_isMeasurement(pDMEvent)) {
                     double value;
-                    if (vscp_getVSCPMeasurementAsDouble(pDMEvent, &value)) {
+                    if (vscp_getMeasurementAsDouble(pDMEvent, &value)) {
                         var.setValue((long)value);
                     } else {
 
@@ -3847,9 +3847,9 @@ dmElement::doActionStoreVariable(vscpEvent *pDMEvent)
                 break;
 
             case VSCP_DAEMON_VARIABLE_CODE_DOUBLE:
-                if (vscp_isVSCPMeasurement(pDMEvent)) {
+                if (vscp_isMeasurement(pDMEvent)) {
                     double value;
-                    if (vscp_getVSCPMeasurementAsDouble(pDMEvent, &value)) {
+                    if (vscp_getMeasurementAsDouble(pDMEvent, &value)) {
                         var.setValue(value);
                     } else {
 
@@ -3865,33 +3865,33 @@ dmElement::doActionStoreVariable(vscpEvent *pDMEvent)
                 break;
 
             case VSCP_DAEMON_VARIABLE_CODE_MEASUREMENT:
-                if (vscp_isVSCPMeasurement(pDMEvent)) {
+                if (vscp_isMeasurement(pDMEvent)) {
                     double value         = 0;
                     uint8_t unit         = 0;
                     uint8_t sensor_index = 0;
                     uint8_t zone         = 0;
                     uint8_t subzone      = 0;
 
-                    if (-1 == (unit = vscp_getVSCPMeasurementUnit(pDMEvent))) {
+                    if (-1 == (unit = vscp_getMeasurementUnit(pDMEvent))) {
                         unit = 0;
                     }
 
                     if (-1 ==
                         (sensor_index =
-                           vscp_getVSCPMeasurementSensorIndex(pDMEvent))) {
+                           vscp_getMeasurementSensorIndex(pDMEvent))) {
                         sensor_index = 0;
                     }
 
-                    if (-1 == (zone = vscp_getVSCPMeasurementZone(pDMEvent))) {
+                    if (-1 == (zone = vscp_getMeasurementZone(pDMEvent))) {
                         zone = 0;
                     }
 
                     if (-1 ==
-                        (subzone = vscp_getVSCPMeasurementSubZone(pDMEvent))) {
+                        (subzone = vscp_getMeasurementSubZone(pDMEvent))) {
                         subzone = 0;
                     }
 
-                    if (vscp_getVSCPMeasurementAsDouble(pDMEvent, &value)) {
+                    if (vscp_getMeasurementAsDouble(pDMEvent, &value)) {
                         // (MEASUREMENT|6;true|false;)value;unit;sensor-index;zone;subzone
                         std::string strValue =
                           vscp_str_format("%lf;%d;%d;%d;%d",
@@ -3916,7 +3916,7 @@ dmElement::doActionStoreVariable(vscpEvent *pDMEvent)
 
             case VSCP_DAEMON_VARIABLE_CODE_EVENT: {
                 std::string strEvent;
-                if (vscp_writeVscpEventToString(pDMEvent, strEvent)) {
+                if (vscp_convertEventExToEvent(pDMEvent, strEvent)) {
                     var.setValue(strEvent);
                 }
             } break;
@@ -3931,7 +3931,7 @@ dmElement::doActionStoreVariable(vscpEvent *pDMEvent)
 
             case VSCP_DAEMON_VARIABLE_CODE_EVENT_DATA: {
                 std::string strData;
-                if (vscp_writeVscpDataToString(pDMEvent, strData)) {
+                if (vscp_writeDataToString(pDMEvent, strData)) {
                     var.setValue(strData);
                 }
             } break;
@@ -3965,7 +3965,7 @@ dmElement::doActionStoreVariable(vscpEvent *pDMEvent)
 
             case VSCP_DAEMON_VARIABLE_CODE_HTML: {
                 std::string strData;
-                vscp_writeVscpDataToString(pDMEvent, strData);
+                vscp_writeDataToString(pDMEvent, strData);
 
                 std::string strGUID;
                 vscp_writeGuidToString(pDMEvent, strGUID);
@@ -3987,7 +3987,7 @@ dmElement::doActionStoreVariable(vscpEvent *pDMEvent)
 
             case VSCP_DAEMON_VARIABLE_CODE_JSON: {
                 std::string strData;
-                vscp_writeVscpDataToString(pDMEvent, strData);
+                vscp_writeDataToString(pDMEvent, strData);
 
                 std::string strGUID;
                 vscp_writeGuidToString(pDMEvent, strGUID);
@@ -4008,7 +4008,7 @@ dmElement::doActionStoreVariable(vscpEvent *pDMEvent)
 
             case VSCP_DAEMON_VARIABLE_CODE_XML: {
                 std::string strData;
-                vscp_writeVscpDataToString(pDMEvent, strData);
+                vscp_writeDataToString(pDMEvent, strData);
 
                 std::string strGUID;
                 vscp_writeGuidToString(pDMEvent, strGUID);
@@ -4637,7 +4637,7 @@ dmElement::doActionCheckMeasurement(vscpEvent *pDMEvent)
     handleEscapes(pDMEvent, escaped_param);
 
     // Make sure it is a measurement event
-    if (!vscp_isVSCPMeasurement(pDMEvent)) {
+    if (!vscp_isMeasurement(pDMEvent)) {
         syslog(LOG_ERR,
                "[DM] [Action] Must be measurement event. param = %s",
                escaped_param.c_str());
@@ -4645,7 +4645,7 @@ dmElement::doActionCheckMeasurement(vscpEvent *pDMEvent)
     }
 
     // Get value
-    if (!vscp_getVSCPMeasurementAsDouble(pDMEvent, &valueMeasurement)) {
+    if (!vscp_getMeasurementAsDouble(pDMEvent, &valueMeasurement)) {
         syslog(LOG_ERR,
                "[DM] [Action] Failed to get measurement value. param = %s",
                escaped_param.c_str());
@@ -4661,7 +4661,7 @@ dmElement::doActionCheckMeasurement(vscpEvent *pDMEvent)
         unit = vscp_readStringValue(tokens.front());
         tokens.pop_front();
 
-        if (unit != vscp_getVSCPMeasurementUnit(pDMEvent)) {
+        if (unit != vscp_getMeasurementUnit(pDMEvent)) {
             // It's another unit
             syslog(LOG_ERR,
                    "[DM] [Action] Different unit. param = %s",
@@ -4680,7 +4680,7 @@ dmElement::doActionCheckMeasurement(vscpEvent *pDMEvent)
         sensorIndex = vscp_readStringValue(tokens.front());
         tokens.pop_front();
 
-        if (sensorIndex != vscp_getVSCPMeasurementSensorIndex(pDMEvent)) {
+        if (sensorIndex != vscp_getMeasurementSensorIndex(pDMEvent)) {
             // It's another unit
             syslog(LOG_ERR,
                    "[DM] [Action] Different sensor index. param = %s",
@@ -4857,7 +4857,7 @@ dmElement::doActionStoreMin(vscpEvent *pDMEvent)
     handleEscapes(pDMEvent, params);
 
     // Event must be measurement
-    if (!vscp_isVSCPMeasurement(pDMEvent)) {
+    if (!vscp_isMeasurement(pDMEvent)) {
         syslog(LOG_ERR,
                "[DM] [Action] Event must be a "
                "measurement event. param = %s",
@@ -4866,7 +4866,7 @@ dmElement::doActionStoreMin(vscpEvent *pDMEvent)
     }
 
     // Get value from measurement event
-    vscp_getVSCPMeasurementAsDouble(pDMEvent, &value);
+    vscp_getMeasurementAsDouble(pDMEvent, &value);
 
     // variable;unit;index;zone;subzone
     std::deque<std::string> tokens;
@@ -4939,10 +4939,10 @@ dmElement::doActionStoreMin(vscpEvent *pDMEvent)
     }
 
     if ((currentValue > value) &&
-        (unit == vscp_getVSCPMeasurementUnit(pDMEvent)) &&
-        (sensorindex == vscp_getVSCPMeasurementSensorIndex(pDMEvent)) &&
-        (zone == vscp_getVSCPMeasurementZone(pDMEvent)) &&
-        (subzone == vscp_getVSCPMeasurementSubZone(pDMEvent))) {
+        (unit == vscp_getMeasurementUnit(pDMEvent)) &&
+        (sensorindex == vscp_getMeasurementSensorIndex(pDMEvent)) &&
+        (zone == vscp_getMeasurementZone(pDMEvent)) &&
+        (subzone == vscp_getMeasurementSubZone(pDMEvent))) {
         // Store new lowest value
         variable.setValue(value);
     }
@@ -4979,7 +4979,7 @@ dmElement::doActionStoreMax(vscpEvent *pDMEvent)
     handleEscapes(pDMEvent, params);
 
     // Event must be measurement
-    if (!vscp_isVSCPMeasurement(pDMEvent)) {
+    if (!vscp_isMeasurement(pDMEvent)) {
         syslog(LOG_ERR,
                "[DM] [Action] Event must be a measurement event. param =%s",
                +params.c_str());
@@ -4987,7 +4987,7 @@ dmElement::doActionStoreMax(vscpEvent *pDMEvent)
     }
 
     // Get value from measurement event
-    vscp_getVSCPMeasurementAsDouble(pDMEvent, &value);
+    vscp_getMeasurementAsDouble(pDMEvent, &value);
 
     // variable;unit;index;zone;subzone
     std::deque<std::string> tokens;
@@ -5060,10 +5060,10 @@ dmElement::doActionStoreMax(vscpEvent *pDMEvent)
     }
 
     if ((currentValue < value) &&
-        (unit == vscp_getVSCPMeasurementUnit(pDMEvent)) &&
-        (sensorindex == vscp_getVSCPMeasurementSensorIndex(pDMEvent)) &&
-        (zone == vscp_getVSCPMeasurementZone(pDMEvent)) &&
-        (subzone == vscp_getVSCPMeasurementSubZone(pDMEvent))) {
+        (unit == vscp_getMeasurementUnit(pDMEvent)) &&
+        (sensorindex == vscp_getMeasurementSensorIndex(pDMEvent)) &&
+        (zone == vscp_getMeasurementZone(pDMEvent)) &&
+        (subzone == vscp_getMeasurementSubZone(pDMEvent))) {
         // Store new highest value
         variable.setValue(value);
     }
@@ -7687,17 +7687,17 @@ CDM::feed(vscpEvent *pEvent)
             // Check if measurement value should be compared.
             if (pDMitem->isCompareMeasurementSet()) {
                 // Must be a measurement event
-                if (!vscp_isVSCPMeasurement(pEvent)) continue;
+                if (!vscp_isMeasurement(pEvent)) continue;
 
                 // Unit must be same
                 if (pDMitem->m_measurementUnit !=
-                    vscp_getVSCPMeasurementUnit(pEvent))
+                    vscp_getMeasurementUnit(pEvent))
                     continue;
 
                 double value;
-                if (!vscp_getVSCPMeasurementAsDouble(pEvent, &value)) {
+                if (!vscp_getMeasurementAsDouble(pEvent, &value)) {
                     std::string strEvent;
-                    vscp_writeVscpEventToString(pEvent, strEvent);
+                    vscp_convertEventExToEvent(pEvent, strEvent);
                     syslog(LOG_ERR,
                            "[DM] Conversion to double failed for "
                            "measurement. Event= %s",
@@ -8050,7 +8050,7 @@ actionThread_VSCPSrv::actionThread_VSCPSrv(CControlObject *pCtrlObject,
     m_port        = port;
     m_strUsername = strUsername;
     m_strPassword = strPassword;
-    vscp_setVscpEventExFromString(&m_eventEx, strEvent);
+    vscp_convertStringToEventEx(&m_eventEx, strEvent);
 }
 
 actionThread_VSCPSrv::~actionThread_VSCPSrv() {}
@@ -8157,7 +8157,7 @@ actionThread_Table::actionThread_Table(std::string &strParam, vscpEvent *pEvent)
     if (NULL != pEvent) {
         m_pFeedEvent = new vscpEvent;
         if (NULL != m_pFeedEvent) {
-            vscp_copyVSCPEvent(m_pFeedEvent, pEvent);
+            vscp_copyEvent(m_pFeedEvent, pEvent);
         }
     }
 }
@@ -8165,7 +8165,7 @@ actionThread_Table::actionThread_Table(std::string &strParam, vscpEvent *pEvent)
 actionThread_Table::~actionThread_Table()
 {
     if (NULL != m_pFeedEvent) {
-        vscp_deleteVSCPevent(m_pFeedEvent);
+        vscp_deleteEvent(m_pFeedEvent);
         m_pFeedEvent = NULL;
     }
 }

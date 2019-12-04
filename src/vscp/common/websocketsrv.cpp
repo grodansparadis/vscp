@@ -538,7 +538,7 @@ websock_sendevent(struct mg_connection *conn,
 
                     pnewEvent->pdata = NULL;
 
-                    vscp_copyVSCPEvent(pnewEvent, pEvent);
+                    vscp_copyEvent(pnewEvent, pEvent);
 
                     // Add the new event to the inputqueue
                     pthread_mutex_lock(
@@ -555,7 +555,7 @@ websock_sendevent(struct mg_connection *conn,
 
             } else {
                 // Overun - No room for event
-                // vscp_deleteVSCPevent(pEvent);
+                // vscp_deleteEvent(pEvent);
                 bSent = true;
                 rv    = false;
             }
@@ -578,7 +578,7 @@ websock_sendevent(struct mg_connection *conn,
 
                 pnewEvent->pdata = NULL;
 
-                vscp_copyVSCPEvent(pnewEvent, pEvent);
+                vscp_copyEvent(pnewEvent, pEvent);
 
                 pthread_mutex_lock(&gpobj->m_mutexClientOutputQueue);
                 gpobj->m_clientOutputQueue.push_back(pnewEvent);
@@ -639,7 +639,7 @@ websock_post_incomingEvents(void)
                                         &pSession->m_pClientItem->m_filter)) {
 
                     std::string str;
-                    if (vscp_writeVscpEventToString( str,pEvent)) {
+                    if (vscp_convertEventToString( str,pEvent)) {
 
                         // Write it out
                         if ( WS_TYPE_1 == pSession->m_wstypes ) {
@@ -662,7 +662,7 @@ websock_post_incomingEvents(void)
                 }
 
                 // Remove the event
-                vscp_deleteVSCPevent(pEvent);
+                vscp_deleteEvent(pEvent);
 
             } // Valid pEvent pointer
 
@@ -929,7 +929,7 @@ ws1_message(struct mg_connection *conn,
             strWsPkt = vscp_str_right(strWsPkt, strWsPkt.length() - 2);
             vscpEvent vscp_event;
 
-            if (vscp_setVscpEventFromString(&vscp_event, strWsPkt)) {
+            if (vscp_convertStringToEvent(&vscp_event, strWsPkt)) {
 
                 // If GUID is all null give it GUID of interface
                 if (vscp_isGUIDEmpty(vscp_event.GUID)) {
@@ -1307,7 +1307,7 @@ ws1_command(struct mg_connection *conn,
             vscpEvent *pEvent =
               pSession->m_pClientItem->m_clientInputQueue.front();
             pSession->m_pClientItem->m_clientInputQueue.pop_front();
-            vscp_deleteVSCPevent(pEvent);
+            vscp_deleteEvent(pEvent);
         }
 
         pSession->m_pClientItem->m_clientInputQueue.clear();
@@ -3016,7 +3016,7 @@ ws2_command(struct mg_connection *conn,
             vscpEvent *pEvent =
               pSession->m_pClientItem->m_clientInputQueue.front();
             pSession->m_pClientItem->m_clientInputQueue.pop_front();
-            vscp_deleteVSCPevent(pEvent);
+            vscp_deleteEvent(pEvent);
         }
 
         pSession->m_pClientItem->m_clientInputQueue.clear();

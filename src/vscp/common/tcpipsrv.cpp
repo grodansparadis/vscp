@@ -1548,11 +1548,11 @@ tcpipClientObj::sendOneEventFromQueue(bool bStatusMsg)
         }
         pthread_mutex_unlock(&m_pClientItem->m_mutexClientInputQueue);
 
-        vscp_writeVscpEventToString(strOut,pqueueEvent);
+        vscp_convertEventToString(strOut,pqueueEvent);
         strOut += ("\r\n");
         write(strOut.c_str(), strlen(strOut.c_str()));
 
-        vscp_deleteVSCPevent(pqueueEvent);
+        vscp_deleteEvent(pqueueEvent);
 
     } else {
         if (bStatusMsg) {

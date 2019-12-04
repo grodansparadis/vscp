@@ -216,7 +216,7 @@ UDPSrvObj::receiveFrame(struct mg_connection *nc,
         pEvent->pdata = NULL;
 
         if (!vscp_getEventFromUdpFrame(pEvent, buf, nc->recv_mbuf.len)) {
-            vscp_deleteVSCPevent_v2(&pEvent);
+            vscp_deleteEvent_v2(&pEvent);
             return false;
         }
 
@@ -238,10 +238,10 @@ UDPSrvObj::receiveFrame(struct mg_connection *nc,
                 pthread_mutex_lock(&m_pobj->m_mutexClientOutputQueue);
 
             } else {
-                vscp_deleteVSCPevent_v2(&pEvent);
+                vscp_deleteEvent_v2(&pEvent);
             }
         } else {
-            vscp_deleteVSCPevent_v2(&pEvent);
+            vscp_deleteEvent_v2(&pEvent);
         }
     */
     return true;
@@ -274,7 +274,7 @@ UDPSrvObj::sendFrame(struct mg_mgr *pmgr, CClientItem *pClientItem)
 
        // Check that size is valid
        if (pEvent->sizeData > VSCP_LEVEL2_MAXDATA) {
-           vscp_deleteVSCPevent_v2(&pEvent);
+           vscp_deleteEvent_v2(&pEvent);
            return false;
        }
 
@@ -308,7 +308,7 @@ UDPSrvObj::sendFrame(struct mg_mgr *pmgr, CClientItem *pClientItem)
                  sizeof(wrkbuf),
                  SET_VSCP_MULTICAST_TYPE(0, pRemoteUDPNode->m_nEncryption),
                  pEvent)) {
-               vscp_deleteVSCPevent_v2(&pEvent);
+               vscp_deleteEvent_v2(&pEvent);
                continue;
            }
 
@@ -327,7 +327,7 @@ UDPSrvObj::sendFrame(struct mg_mgr *pmgr, CClientItem *pClientItem)
                                                m_pobj->getSystemKey(NULL),
                                                iv,
                                                pRemoteUDPNode->m_nEncryption)))
-   { vscp_deleteVSCPevent_v2(&pEvent); continue;
+   { vscp_deleteEvent_v2(&pEvent); continue;
            }
    #if 0
                int i;

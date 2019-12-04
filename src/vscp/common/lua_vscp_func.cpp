@@ -1118,7 +1118,7 @@ lua_vscp_sendEvent(struct lua_State* L)
 
     // String
     if (0 == format) {
-        if (!vscp_setVscpEventExFromString(&ex, strEvent)) {
+        if (!vscp_convertStringToEventEx(&ex, strEvent)) {
             return luaL_error(
               L, "vscp.sendEvent: Failed to get VSCP event from string!");
         }
@@ -1147,11 +1147,11 @@ lua_vscp_sendEvent(struct lua_State* L)
                           "allocate VSCP event!");
     }
     pEvent->pdata = NULL;
-    vscp_convertVSCPfromEx(pEvent, &ex);
+    vscp_convertEventExToEvent(pEvent, &ex);
 
     if (!gpobj->sendEvent(pClientItem, pEvent)) {
         // Failed to send event
-        vscp_deleteVSCPevent_v2(&pEvent);
+        vscp_deleteEvent_v2(&pEvent);
         return luaL_error(L, "vscp.sendEvent: Failed to send event!");
     }
 
@@ -1219,7 +1219,7 @@ try_again:
             std::string strResult;
             switch (format) {
                 case 0: // String
-                    if (!vscp_writeVscpEventToString(strResult, pEvent)) {
+                    if (!vscp_convertEventToString(strResult, pEvent)) {
                         return luaL_error(L,
                                           "vscp.getEvent: Failed to "
                                           "convert event to string form.");
@@ -1244,7 +1244,7 @@ try_again:
             }
 
             // Event is not needed anymore
-            vscp_deleteVSCPevent(pEvent);
+            vscp_deleteEvent(pEvent);
 
             lua_pushlstring(
               L, (const char*)strResult.c_str(), strResult.length());
@@ -1610,7 +1610,7 @@ lua_send_Measurement(struct lua_State* L)
 
             if (!vscp_makeStringMeasurementEvent(
                   pEvent, value, unit, sensoridx)) {
-                vscp_deleteVSCPevent(pEvent);
+                vscp_deleteEvent(pEvent);
                 return luaL_error(L,
                                   "vscp.sendMeasurement: "
                                   "String event conversion failed!");
@@ -1636,7 +1636,7 @@ lua_send_Measurement(struct lua_State* L)
 
             if (!vscp_makeFloatMeasurementEvent(
                   pEvent, value, unit, sensoridx)) {
-                vscp_deleteVSCPevent(pEvent);
+                vscp_deleteEvent(pEvent);
                 return luaL_error(L,
                                   "vscp.sendMeasurement: Failed to send "
                                   "measurement event!");
@@ -1647,13 +1647,13 @@ lua_send_Measurement(struct lua_State* L)
     // Send the event
     if (!gpobj->sendEvent(pClientItem, pEvent)) {
         // Failed to send event
-        vscp_deleteVSCPevent(pEvent);
+        vscp_deleteEvent(pEvent);
         return luaL_error(L,
                           "vscp.sendMeasurement: "
                           "Failed to send event!");
     }
 
-    vscp_deleteVSCPevent(pEvent);
+    vscp_deleteEvent(pEvent);
 
     return 1;
 }
@@ -1703,7 +1703,7 @@ lua_is_Measurement(struct lua_State* L)
     }
 
     if (0 == format) {
-        if (!vscp_setVscpEventExFromString(&ex, strEvent)) {
+        if (!vscp_convertStringToEventEx(&ex, strEvent)) {
             return luaL_error(L,
                               "vscp.isMeasurement: Failed to get VSCP "
                               "event from string!");
@@ -1729,9 +1729,9 @@ lua_is_Measurement(struct lua_State* L)
 
     pEvent->pdata = NULL;
 
-    vscp_convertVSCPfromEx(pEvent, &ex);
-    bool bMeasurement = vscp_isVSCPMeasurement(pEvent);
-    vscp_deleteVSCPevent(pEvent);
+    vscp_convertEventExToEvent(pEvent, &ex);
+    bool bMeasurement = vscp_isMeasurement(pEvent);
+    vscp_deleteEvent(pEvent);
 
     lua_pushboolean(L, bMeasurement ? 1 : 0);
     return 1;
@@ -1777,7 +1777,7 @@ lua_get_MeasurementValue(struct lua_State* L)
     }
 
     if (0 == format) {
-        if (!vscp_setVscpEventExFromString(&ex, strEvent)) {
+        if (!vscp_convertStringToEventEx(&ex, strEvent)) {
             return luaL_error(L,
                               "vscp.getMeasurementValue: Failed to get "
                               "VSCP event from string!");
@@ -1803,9 +1803,9 @@ lua_get_MeasurementValue(struct lua_State* L)
 
     pEvent->pdata = NULL;
 
-    vscp_convertVSCPfromEx(pEvent, &ex);
-    vscp_getVSCPMeasurementAsDouble(&value, pEvent);
-    vscp_deleteVSCPevent(pEvent);
+    vscp_convertEventExToEvent(pEvent, &ex);
+    vscp_getMeasurementAsDouble(&value, pEvent);
+    vscp_deleteEvent(pEvent);
 
     lua_pushnumber(L, value);
 
@@ -1851,7 +1851,7 @@ lua_get_MeasurementUnit(struct lua_State* L)
     }
 
     if (0 == format) {
-        if (!vscp_setVscpEventExFromString(&ex, strEvent)) {
+        if (!vscp_convertStringToEventEx(&ex, strEvent)) {
             return luaL_error(L,
                               "vscp.getMeasurementUnit: Failed to get "
                               "VSCP event from string!");
@@ -1877,9 +1877,9 @@ lua_get_MeasurementUnit(struct lua_State* L)
 
     pEvent->pdata = NULL;
 
-    vscp_convertVSCPfromEx(pEvent, &ex);
-    int unit = vscp_getVSCPMeasurementUnit(pEvent);
-    vscp_deleteVSCPevent(pEvent);
+    vscp_convertEventExToEvent(pEvent, &ex);
+    int unit = vscp_getMeasurementUnit(pEvent);
+    vscp_deleteEvent(pEvent);
 
     lua_pushinteger(L, unit);
 
@@ -1926,7 +1926,7 @@ lua_get_MeasurementSensorIndex(struct lua_State* L)
     }
 
     if (0 == format) {
-        if (!vscp_setVscpEventExFromString(&ex, strEvent)) {
+        if (!vscp_convertStringToEventEx(&ex, strEvent)) {
             return luaL_error(L,
                               "vscp.getMeasuremenSensorIndex: Failed to "
                               "get VSCP event from string!");
@@ -1952,9 +1952,9 @@ lua_get_MeasurementSensorIndex(struct lua_State* L)
 
     pEvent->pdata = NULL;
 
-    vscp_convertVSCPfromEx(pEvent, &ex);
-    int sensorindex = vscp_getVSCPMeasurementSensorIndex(pEvent);
-    vscp_deleteVSCPevent(pEvent);
+    vscp_convertEventExToEvent(pEvent, &ex);
+    int sensorindex = vscp_getMeasurementSensorIndex(pEvent);
+    vscp_deleteEvent(pEvent);
 
     lua_pushinteger(L, sensorindex);
 
@@ -2000,7 +2000,7 @@ lua_get_MeasurementZone(struct lua_State* L)
     }
 
     if (0 == format) {
-        if (!vscp_setVscpEventExFromString(&ex, strEvent)) {
+        if (!vscp_convertStringToEventEx(&ex, strEvent)) {
             return luaL_error(L,
                               "vscp.getMeasurementZone: Failed to get "
                               "VSCP event from string!");
@@ -2026,9 +2026,9 @@ lua_get_MeasurementZone(struct lua_State* L)
 
     pEvent->pdata = NULL;
 
-    vscp_convertVSCPfromEx(pEvent, &ex);
-    int zone = vscp_getVSCPMeasurementZone(pEvent);
-    vscp_deleteVSCPevent(pEvent);
+    vscp_convertEventExToEvent(pEvent, &ex);
+    int zone = vscp_getMeasurementZone(pEvent);
+    vscp_deleteEvent(pEvent);
 
     lua_pushinteger(L, zone);
 
@@ -2074,7 +2074,7 @@ lua_get_MeasurementSubZone(struct lua_State* L)
     }
 
     if (0 == format) {
-        if (!vscp_setVscpEventExFromString(&ex, strEvent)) {
+        if (!vscp_convertStringToEventEx(&ex, strEvent)) {
             return luaL_error(L,
                               "vscp.getMeasurementSubZone: Failed to get "
                               "VSCP event from string!");
@@ -2100,9 +2100,9 @@ lua_get_MeasurementSubZone(struct lua_State* L)
 
     pEvent->pdata = NULL;
 
-    vscp_convertVSCPfromEx(pEvent, &ex);
-    int subzone = vscp_getVSCPMeasurementSubZone(pEvent);
-    vscp_deleteVSCPevent(pEvent);
+    vscp_convertEventExToEvent(pEvent, &ex);
+    int subzone = vscp_getMeasurementSubZone(pEvent);
+    vscp_deleteEvent(pEvent);
 
     lua_pushinteger(L, subzone);
 

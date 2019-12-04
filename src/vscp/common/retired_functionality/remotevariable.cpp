@@ -971,7 +971,7 @@ CVariable::setValue(cguid &guid)
 void
 CVariable::setValue(vscpEvent &event)
 {
-    vscp_writeVscpEventToString(&event, m_strValue);
+    vscp_convertEventExToEvent(&event, m_strValue);
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -981,7 +981,7 @@ void
 CVariable::getValue(vscpEvent *pEvent)
 {
     if (NULL != pEvent) return;
-    vscp_setVscpEventFromString(pEvent, m_strValue);
+    vscp_convertStringToEvent(pEvent, m_strValue);
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -990,7 +990,7 @@ CVariable::getValue(vscpEvent *pEvent)
 void
 CVariable::setValue(vscpEventEx &eventex)
 {
-    vscp_writeVscpEventExToString(&eventex, m_strValue);
+    vscp_convertEventToEventEx(&eventex, m_strValue);
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1000,7 +1000,7 @@ void
 CVariable::getValue(vscpEventEx *pEventEx)
 {
     if (NULL != pEventEx) return;
-    vscp_setVscpEventExFromString(pEventEx, m_strValue);
+    vscp_convertStringToEventEx(pEventEx, m_strValue);
 };
 
 ///////////////////////////////////////////////////////////////////////////////

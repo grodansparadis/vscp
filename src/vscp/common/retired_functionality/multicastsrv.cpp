@@ -195,7 +195,7 @@ MulticastObj::sendFrame(struct mg_mgr *pmgr, CClientItem *pClientItem)
 
      // Check that size is valid
      if ( pEvent->sizeData > VSCP_LEVEL2_MAXDATA ) {
-         vscp_deleteVSCPevent_v2( &pEvent );
+         vscp_deleteEvent_v2( &pEvent );
          return false;
      }
 
@@ -220,7 +220,7 @@ MulticastObj::sendFrame(struct mg_mgr *pmgr, CClientItem *pClientItem)
          if ( !vscp_writeEventToUdpFrame( wrkbuf,
                                              sizeof( wrkbuf),
                                              SET_VSCP_MULTICAST_TYPE( 0,
- m_pChannel->m_nEncryption ), pEvent ) ) { vscp_deleteVSCPevent_v2( &pEvent );
+ m_pChannel->m_nEncryption ), pEvent ) ) { vscp_deleteEvent_v2( &pEvent );
              return false;
          }
 
@@ -231,7 +231,7 @@ MulticastObj::sendFrame(struct mg_mgr *pmgr, CClientItem *pClientItem)
                                                  m_pObj->getSystemKey( NULL ),
                                                  iv,
                                                  m_pChannel->m_nEncryption ) ) )
- { vscp_deleteVSCPevent_v2( &pEvent ); return false;
+ { vscp_deleteEvent_v2( &pEvent ); return false;
          }
 
  #if 0
@@ -312,7 +312,7 @@ MulticastObj::receiveFrame(struct mg_connection *nc,
      pEvent->pdata = NULL;
 
      if ( !vscp_getEventFromUdpFrame( pEvent, buf, nc->recv_mbuf.len ) ) {
-         vscp_deleteVSCPevent_v2( &pEvent );
+         vscp_deleteEvent_v2( &pEvent );
          return false;
      }
 
@@ -333,11 +333,11 @@ MulticastObj::receiveFrame(struct mg_connection *nc,
 
          }
          else {
-             vscp_deleteVSCPevent_v2( &pEvent );
+             vscp_deleteEvent_v2( &pEvent );
          }
      }
      else {
-         vscp_deleteVSCPevent_v2( &pEvent );
+         vscp_deleteEvent_v2( &pEvent );
      }
     */
     return true;

@@ -538,7 +538,7 @@ VscpRemoteTcpIf::doCmdSend(const vscpEvent* pEvent)
         return VSCP_ERROR_PARAMETER;
 
     // send head,class,type,obid,datetime,timestamp,GUID,data1,data2,data3....
-    if (!vscp_writeVscpEventToString(strBuf, pEvent)) {
+    if (!vscp_convertEventToString(strBuf, pEvent)) {
         return VSCP_ERROR_PARAMETER;
     }
 
@@ -581,7 +581,7 @@ VscpRemoteTcpIf::doCmdSendEx(const vscpEventEx* pEventEx)
     // (int)pEventEx->vscp_class, (int)pEventEx->vscp_type ));
 
     // send head,class,type,obid,datetime,timestamp,GUID,data1,data2,data3....
-    if (!vscp_writeVscpEventExToString(strBuf, pEventEx)) {
+    if (!vscp_convertEventExToString(strBuf, pEventEx)) {
         return VSCP_ERROR_PARAMETER;
     }
 
@@ -642,7 +642,7 @@ VscpRemoteTcpIf::getEventFromLine(vscpEvent* pEvent, const std::string& strLine)
         return false;
 
     // Read event from string
-    if (!vscp_setVscpEventFromString(pEvent, strLine))
+    if (!vscp_convertStringToEvent(pEvent, strLine))
         return false;
 
     return true;
@@ -701,12 +701,12 @@ VscpRemoteTcpIf::doCmdReceiveEx(vscpEventEx* pEventEx)
     if (!getEventFromLine(pEvent, m_inputStrArray[0]))
         return VSCP_ERROR_PARAMETER;
 
-    if (!vscp_convertVSCPtoEx(pEventEx, pEvent)) {
-        vscp_deleteVSCPevent(pEvent);
+    if (vscp_convertEventToEventEx(pEventEx, pEvent)) {
+        vscp_deleteEvent(pEvent);
         return VSCP_ERROR_PARAMETER;
     }
 
-    vscp_deleteVSCPevent(pEvent);
+    vscp_deleteEvent(pEvent);
 
     return VSCP_ERROR_SUCCESS;
 }
@@ -2380,7 +2380,7 @@ VscpRemoteTcpIf::getRemoteVariableEvent(const std::string& name,
         return rv;
     }
 
-    vscp_setVscpEventFromString(pEvent, strValue);
+    vscp_convertStringToEvent(pEvent, strValue);
 
     return VSCP_ERROR_SUCCESS;
 }
@@ -2400,7 +2400,7 @@ VscpRemoteTcpIf::setRemoteVariableEvent(const std::string& name,
         return VSCP_ERROR_PARAMETER;
     }
 
-    vscp_writeVscpEventToString(strValue, pEvent);
+    vscp_convertEventToString(strValue, pEvent);
     return setRemoteVariableValue(name, strValue);
 }
 
@@ -2423,7 +2423,7 @@ VscpRemoteTcpIf::getRemoteVariableEventEx(const std::string& name,
         return rv;
     }
 
-    vscp_setVscpEventExFromString(pEventEx, strValue);
+    vscp_convertStringToEventEx(pEventEx, strValue);
 
     return VSCP_ERROR_SUCCESS;
 }
@@ -2442,7 +2442,7 @@ VscpRemoteTcpIf::setRemoteVariableEventEx(const std::string& name,
     if (NULL == pEventEx)
         return VSCP_ERROR_PARAMETER;
 
-    vscp_writeVscpEventExToString(strValue, pEventEx);
+    vscp_convertEventExToString(strValue, pEventEx);
     return setRemoteVariableValue(name, strValue);
 }
 
@@ -2499,7 +2499,7 @@ VscpRemoteTcpIf::getRemoteVariableVSCPdata(const std::string& name,
         return rv;
     }
 
-    vscp_setVscpDataArrayFromString(pData, psize, strValue);
+    vscp_setDataArrayFromString(pData, psize, strValue);
 
     return VSCP_ERROR_SUCCESS;
 }
@@ -2515,7 +2515,7 @@ VscpRemoteTcpIf::setRemoteVariableVSCPdata(const std::string& name,
 {
     std::string strValue;
 
-    vscp_writeVscpDataWithSizeToString(strValue, pData, size, false, false);
+    vscp_writeDataWithSizeToString(strValue, pData, size, false, false);
     return setRemoteVariableValue(name, strValue);
 }
 
@@ -4748,7 +4748,7 @@ m_pCtrlObject->m_pWnd, eventConnectionLost );
             ( rv = tcpifReceive.doCmdBlockingReceive( pEvent ) ) ) {
 
             if ( m_pCtrlObject->m_bFilterOwnTx && ( m_pCtrlObject->m_txChannelID
-== pEvent->obid ) )  { vscp_deleteVSCPevent( pEvent ); continue;
+== pEvent->obid ) )  { vscp_deleteEvent( pEvent ); continue;
             }
 
             if ( m_pCtrlObject->m_bUseRXTXEvents ) {

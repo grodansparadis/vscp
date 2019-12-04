@@ -150,7 +150,7 @@ actionLuaThread(void *pData)
     // reg_string(L, "version", VSCPD_DISPLAY_VERSION);
 
     // std::string strFeedEvent;
-    // if (vscp_writeVscpEventExToString(&pobj->m_feedEvent, strFeedEvent)) {
+    // if (vscp_convertEventToEventEx(&pobj->m_feedEvent, strFeedEvent)) {
     //     reg_string(L, "feedevent_str", (const char *)strFeedEvent.c_str());
     // } else {
     //     syslog(LOG_ERR, "Failed to convert Lua feed event to string.");

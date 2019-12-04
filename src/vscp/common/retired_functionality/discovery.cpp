@@ -218,7 +218,7 @@ CDiscoveryObj::readLevel1Register(uint8_t nodeid,
                 }
             }
 
-            vscp_deleteVSCPevent(pEvent);
+            vscp_deleteEvent(pEvent);
         }
 
     } // while

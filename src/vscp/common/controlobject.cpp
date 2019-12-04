@@ -259,7 +259,7 @@ CControlObject::~CControlObject()
          iterVSCP != m_clientOutputQueue.end();
          ++iterVSCP) {
         vscpEvent *pEvent = *iterVSCP;
-        vscp_deleteVSCPevent(pEvent);
+        vscp_deleteEvent(pEvent);
     }
 
     m_clientOutputQueue.clear();
@@ -1028,7 +1028,7 @@ CControlObject::sendEvent(CClientItem *pClientItem, vscpEvent *peventToSend)
     }
 
     // Copy event
-    vscp_copyVSCPEvent(pEvent, peventToSend);
+    vscp_copyEvent(pEvent, peventToSend);
 
     // We don't need the original event anymore
     if (NULL != peventToSend->pdata) {
@@ -1143,7 +1143,7 @@ CControlObject::sendEvent(CClientItem *pClientItem, vscpEvent *peventToSend)
 
             pClientItem->m_statistics.cntOverruns++;
 
-            vscp_deleteVSCPevent(pEvent);
+            vscp_deleteEvent(pEvent);
             return false;
         }
     }
@@ -2327,7 +2327,7 @@ clientMsgWorkerThread(void *userdata)
             } // Valid event
 
             // Delete the event
-            if (NULL != pvscpEvent) vscp_deleteVSCPevent(pvscpEvent);
+            if (NULL != pvscpEvent) vscp_deleteEvent(pvscpEvent);
             pvscpEvent = NULL;
 
         } // while

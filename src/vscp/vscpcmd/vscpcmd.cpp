@@ -227,7 +227,7 @@ main(int argc, char **argv)
                     // Flag event parameter
                     bEventParam     = true;
                     std::string str = optarg;
-                    vscp_setVscpEventExFromString(&event, str);
+                    vscp_convertStringToEventEx(&event, str);
                 } else {
                     fprintf(stderr,
                             "Argument -e/--event should have an argument.\n");

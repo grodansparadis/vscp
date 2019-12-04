@@ -564,7 +564,7 @@ deviceThread(void *pData)
                                "class=%d, type=%d",
                                pev->vscp_class,
                                pev->vscp_type);
-                        vscp_deleteVSCPevent(pev);
+                        vscp_deleteEvent(pev);
                         continue;
                     }
 
@@ -575,11 +575,11 @@ deviceThread(void *pData)
                                                    &canmsg)) {
                         // Remove the event and the node
                         pClientItem->m_clientInputQueue.pop_front();
-                        vscp_deleteVSCPevent(pev);
+                        vscp_deleteEvent(pev);
                     } else {
                         // Another try
                         // pCtrlObj->m_semClientOutputQueue.Post();
-                        vscp_deleteVSCPevent(pev); // TODO ????
+                        vscp_deleteEvent(pev); // TODO ????
                     }
 
                 } // events
@@ -994,7 +994,7 @@ deviceLevel1WriteThread(void *pData)
             if ((CLIENT_ITEM_INTERFACE_TYPE_DRIVER_LEVEL1 ==
                  pDevItem->m_pClientItem->m_type) &&
                 (pev->vscp_class > 512)) {
-                vscp_deleteVSCPevent(pev);
+                vscp_deleteEvent(pev);
                 continue;
             }
 
@@ -1002,7 +1002,7 @@ deviceLevel1WriteThread(void *pData)
             vscp_convertEventToCanal(&msg, pev);
             if (CANAL_ERROR_SUCCESS == pDevItem->m_proc_CanalBlockingSend(
                                          pDevItem->m_openHandle, &msg, 300)) {
-                vscp_deleteVSCPevent(pev);
+                vscp_deleteEvent(pev);
             } else {
                 // Give it another try
                 sem_post(&pDevItem->m_pObj->m_semClientOutputQueue);
@@ -1099,7 +1099,7 @@ deviceLevel2ReceiveThread(void *pData)
             pthread_mutex_unlock(&pDevItem->m_pObj->m_mutexClientOutputQueue);
 
         } else {
-            if (NULL == pev) vscp_deleteVSCPevent_v2(&pev);
+            if (NULL == pev) vscp_deleteEvent_v2(&pev);
         }
     }
 

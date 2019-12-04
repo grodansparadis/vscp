@@ -834,7 +834,7 @@ vscp_std_decodeBase64IfNeeded(const std::string& str, std::string& strResult)
 //
 
 std::string
-vscp_convertToBASE64(std::string str)
+vscp_convertToBase64(std::string str)
 {
     return (vscp_base64_std_encode(str) ? str : std::string(""));
 }
@@ -1131,12 +1131,12 @@ vscp_getMeasurementAsFloat(const unsigned char* pCode, unsigned char length)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// getVSCPMeasurementAsString
+// vscp_getMeasurementAsString
 //
 //
 
 bool
-vscp_getVSCPMeasurementAsString(std::string& strValue, const vscpEvent* pEvent)
+vscp_getMeasurementAsString(std::string& strValue, const vscpEvent* pEvent)
 {
     int i, j;
     int offset = 0;
@@ -1370,12 +1370,12 @@ vscp_getVSCPMeasurementAsString(std::string& strValue, const vscpEvent* pEvent)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// getVSCPMeasurementAsDouble
+// vscp_getMeasurementAsDouble
 //
 //
 
 bool
-vscp_getVSCPMeasurementAsDouble(double* pvalue, const vscpEvent* pEvent)
+vscp_getMeasurementAsDouble(double* pvalue, const vscpEvent* pEvent)
 {
     std::string str;
 
@@ -1391,13 +1391,13 @@ vscp_getVSCPMeasurementAsDouble(double* pvalue, const vscpEvent* pEvent)
         (VSCP_CLASS1_MEASUREZONE == pEvent->vscp_class) ||
         (VSCP_CLASS1_SETVALUEZONE == pEvent->vscp_class)) {
 
-        if (!vscp_getVSCPMeasurementAsString(str, pEvent))
+        if (!vscp_getMeasurementAsString(str, pEvent))
             return false;
         *pvalue = stod(str);
 
     } else if (VSCP_CLASS1_MEASUREMENT64 == pEvent->vscp_class) {
 
-        if (!vscp_getVSCPMeasurementFloat64AsString(str, pEvent))
+        if (!vscp_getMeasurementFloat64AsString(str, pEvent))
             return false;
         *pvalue = stod(str);
 
@@ -1427,12 +1427,12 @@ vscp_getVSCPMeasurementAsDouble(double* pvalue, const vscpEvent* pEvent)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// getVSCPMeasurementFloat64AsString
+// vscp_getMeasurementFloat64AsString
 //
 //
 
 bool
-vscp_getVSCPMeasurementFloat64AsString(std::string& strValue,
+vscp_getMeasurementFloat64AsString(std::string& strValue,
                                        const vscpEvent* pEvent)
 {
     int offset = 0;
@@ -1453,12 +1453,12 @@ vscp_getVSCPMeasurementFloat64AsString(std::string& strValue,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// getVSCPMeasurementWithZoneAsString
+// vscp_getMeasurementWithZoneAsString
 //
 //
 
 bool
-vscp_getVSCPMeasurementWithZoneAsString(const vscpEvent* pEvent,
+vscp_getMeasurementWithZoneAsString(const vscpEvent* pEvent,
                                         std::string& strValue)
 {
     int offset = 0;
@@ -1488,11 +1488,11 @@ vscp_getVSCPMeasurementWithZoneAsString(const vscpEvent* pEvent,
 }
 
 //////////////////////////////////////////////////////////////////////////////
-// vscp_getVSCPMeasurementUnit
+// vscp_getMeasurementUnit
 //
 
 int
-vscp_getVSCPMeasurementUnit(const vscpEvent* pEvent)
+vscp_getMeasurementUnit(const vscpEvent* pEvent)
 {
     int offset = 0;
 
@@ -1544,11 +1544,11 @@ vscp_getVSCPMeasurementUnit(const vscpEvent* pEvent)
 }
 
 //////////////////////////////////////////////////////////////////////////////
-// vscp_getVSCPMeasurementSensorIndex
+// vscp_getMeasurementSensorIndex
 //
 
 int
-vscp_getVSCPMeasurementSensorIndex(const vscpEvent* pEvent)
+vscp_getMeasurementSensorIndex(const vscpEvent* pEvent)
 {
     int offset = 0;
 
@@ -1601,11 +1601,11 @@ vscp_getVSCPMeasurementSensorIndex(const vscpEvent* pEvent)
 }
 
 //////////////////////////////////////////////////////////////////////////////
-// vscp_getVSCPMeasurementZone
+// vscp_getMeasurementZone
 //
 
 int
-vscp_getVSCPMeasurementZone(const vscpEvent* pEvent)
+vscp_getMeasurementZone(const vscpEvent* pEvent)
 {
     int offset = 0;
 
@@ -1658,11 +1658,11 @@ vscp_getVSCPMeasurementZone(const vscpEvent* pEvent)
 }
 
 //////////////////////////////////////////////////////////////////////////////
-// vscp_getVSCPMeasurementSubZone
+// vscp_getMeasurementSubZone
 //
 
 int
-vscp_getVSCPMeasurementSubZone(const vscpEvent* pEvent)
+vscp_getMeasurementSubZone(const vscpEvent* pEvent)
 {
     int offset = 0;
 
@@ -1713,11 +1713,11 @@ vscp_getVSCPMeasurementSubZone(const vscpEvent* pEvent)
 }
 
 //////////////////////////////////////////////////////////////////////////////
-// vscp_isVSCPMeasurement
+// vscp_isMeasurement
 //
 
 bool
-vscp_isVSCPMeasurement(const vscpEvent* pEvent)
+vscp_isMeasurement(const vscpEvent* pEvent)
 {
     if ((VSCP_CLASS1_MEASUREMENT == pEvent->vscp_class) ||
         (VSCP_CLASS1_DATA == pEvent->vscp_class) ||
@@ -2101,10 +2101,10 @@ vscp_convertLevel1MeasuremenToLevel2Double(vscpEvent* pEvent)
         return false;
 
     // Must be a measurement event
-    if (!vscp_isVSCPMeasurement(pEvent))
+    if (!vscp_isMeasurement(pEvent))
         return false;
 
-    if (vscp_getVSCPMeasurementAsDouble(&val64, pEvent)) {
+    if (vscp_getMeasurementAsDouble(&val64, pEvent)) {
 
         pEvent->vscp_class = VSCP_CLASS2_MEASUREMENT_FLOAT;
         uint8_t* p = new uint8_t[12];
@@ -2227,10 +2227,10 @@ vscp_convertLevel1MeasuremenToLevel2String(vscpEvent* pEvent)
         return false;
 
     // Must be a measurement event
-    if (!vscp_isVSCPMeasurement(pEvent))
+    if (!vscp_isMeasurement(pEvent))
         return false;
 
-    if (vscp_getVSCPMeasurementAsString(strval, pEvent)) {
+    if (vscp_getMeasurementAsString(strval, pEvent)) {
 
         pEvent->vscp_class = VSCP_CLASS2_MEASUREMENT_STR;
 
@@ -2346,10 +2346,10 @@ vscp_replaceBackslash(std::string& str)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// getVscpPriority
+// vscp_getEventPriority
 
 unsigned char
-vscp_getVscpPriority(const vscpEvent* pEvent)
+vscp_getEventPriority(const vscpEvent* pEvent)
 {
     // Must be a valid message pointer
     if (NULL == pEvent)
@@ -2359,10 +2359,10 @@ vscp_getVscpPriority(const vscpEvent* pEvent)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// getVscpPriorityEx
+// vscp_getEventPriorityEx
 
 unsigned char
-vscp_getVscpPriorityEx(const vscpEventEx* pEvent)
+vscp_getEventPriorityEx(const vscpEventEx* pEvent)
 {
     // Must be a valid message pointer
     if (NULL == pEvent)
@@ -2372,10 +2372,10 @@ vscp_getVscpPriorityEx(const vscpEventEx* pEvent)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// setVscpPriority
+// vscp_setEventPriority
 
 void
-vscp_setVscpPriority(vscpEvent* pEvent, unsigned char priority)
+vscp_setEventPriority(vscpEvent* pEvent, unsigned char priority)
 {
     // Must be a valid message pointer
     if (NULL == pEvent)
@@ -2386,10 +2386,10 @@ vscp_setVscpPriority(vscpEvent* pEvent, unsigned char priority)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// setVscpPriorityEx
+// vscp_setEventPriorityEx
 
 void
-vscp_setVscpPriorityEx(vscpEventEx* pEvent, unsigned char priority)
+vscp_setEventPriorityEx(vscpEventEx* pEvent, unsigned char priority)
 {
     // Must be a valid message pointer
     if (NULL == pEvent)
@@ -2400,11 +2400,11 @@ vscp_setVscpPriorityEx(vscpEventEx* pEvent, unsigned char priority)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// getVSCPheadFromCANALid
+// vscp_getHeadFromCANALid
 //
 
 unsigned char
-vscp_getVSCPheadFromCANALid(uint32_t id)
+vscp_getHeadFromCANALid(uint32_t id)
 {
     uint8_t hardcoded = 0;
     uint8_t priority = (0x07 & (id >> 26));
@@ -2414,41 +2414,41 @@ vscp_getVSCPheadFromCANALid(uint32_t id)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// getVSCPclassFromCANALid
+// vscp_getVscpClassFromCANALid
 //
 
 uint16_t
-vscp_getVSCPclassFromCANALid(uint32_t id)
+vscp_getVscpClassFromCANALid(uint32_t id)
 {
     return (uint16_t)(0x1ff & (id >> 16));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// getVSCPtypeFromCANALid
+// vscp_getVscpTypeFromCANALid
 //
 
 uint16_t
-vscp_getVSCPtypeFromCANALid(uint32_t id)
+vscp_getVscpTypeFromCANALid(uint32_t id)
 {
     return (uint16_t)(0xff & (id >> 8));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// getVSCPnicknameFromCANALid
+// getNicknameFromCANALid
 //
 
 uint8_t
-vscp_getVSCPnicknameFromCANALid(uint32_t id)
+vscp_getNicknameFromCANALid(uint32_t id)
 {
     return (id & 0xff);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// getCANALidFromVSCPdata
+// vscp_getCANALidFromData
 //
 
 uint32_t
-vscp_getCANALidFromVSCPdata(unsigned char priority,
+vscp_getCANALidFromData(unsigned char priority,
                             const uint16_t vscp_class,
                             const uint16_t vscp_type)
 {
@@ -2461,25 +2461,25 @@ vscp_getCANALidFromVSCPdata(unsigned char priority,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// getCANCANALidFromVSCPevent
+// vscp_getCANALidFromEvent
 //
 
 uint32_t
-vscp_getCANALidFromVSCPevent(const vscpEvent* pEvent)
+vscp_getCANALidFromEvent(const vscpEvent* pEvent)
 {
-    return (((unsigned long)vscp_getVscpPriority(pEvent) << 26) |
+    return (((unsigned long)vscp_getEventPriority(pEvent) << 26) |
             ((unsigned long)pEvent->vscp_class << 16) |
             ((unsigned long)pEvent->vscp_type << 8) | 0);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// getCANCANALidFromVSCPeventEx
+// vscp_getCANALidFromEventEx
 //
 
 uint32_t
-vscp_getCANALidFromVSCPeventEx(const vscpEventEx* pEvent)
+vscp_getCANALidFromEventEx(const vscpEventEx* pEvent)
 {
-    return (((unsigned long)vscp_getVscpPriorityEx(pEvent) << 26) |
+    return (((unsigned long)vscp_getEventPriorityEx(pEvent) << 26) |
             ((unsigned long)pEvent->vscp_class << 16) |
             ((unsigned long)pEvent->vscp_type << 8) | 0);
 }
@@ -2950,10 +2950,10 @@ vscp_reverseGUID(unsigned char* pGUID)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
-// convertVSCPtoEx
+// vscp_convertEventToEventEx
 
 bool
-vscp_convertVSCPtoEx(vscpEventEx* pEventEx, const vscpEvent* pEvent)
+vscp_convertEventToEventEx(vscpEventEx* pEventEx, const vscpEvent* pEvent)
 {
     // Check pointers
     if (NULL == pEvent)
@@ -2981,11 +2981,11 @@ vscp_convertVSCPtoEx(vscpEventEx* pEventEx, const vscpEvent* pEvent)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
-// convertVSCPfromEx
+// vscp_convertEventExToEvent
 //
 
 bool
-vscp_convertVSCPfromEx(vscpEvent* pEvent, const vscpEventEx* pEventEx)
+vscp_convertEventExToEvent(vscpEvent* pEvent, const vscpEventEx* pEventEx)
 {
     // Check pointers
     if (NULL == pEvent)
@@ -3027,10 +3027,10 @@ vscp_convertVSCPfromEx(vscpEvent* pEvent, const vscpEventEx* pEventEx)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
-// copyVSCPEvent
+// copyEvent
 
 bool
-vscp_copyVSCPEvent(vscpEvent* pEventTo, const vscpEvent* pEventFrom)
+vscp_copyEvent(vscpEvent* pEventTo, const vscpEvent* pEventFrom)
 {
     // Check pointers
     if (NULL == pEventTo)
@@ -3075,10 +3075,10 @@ vscp_copyVSCPEvent(vscpEvent* pEventTo, const vscpEvent* pEventFrom)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
-// copyVSCPEventEx
+// copyEventEx
 
 bool
-vscp_copyVSCPEventEx(vscpEventEx* pEventTo, const vscpEventEx* pEventFrom)
+vscp_copyEventEx(vscpEventEx* pEventTo, const vscpEventEx* pEventFrom)
 {
     // Check pointers
     if (NULL == pEventTo)
@@ -3116,11 +3116,11 @@ vscp_copyVSCPEventEx(vscpEventEx* pEventTo, const vscpEventEx* pEventFrom)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
-// vscp_newVSCPevent
+// vscp_newEvent
 //
 
 bool
-vscp_newVSCPevent(vscpEvent** ppEvent)
+vscp_newEvent(vscpEvent** ppEvent)
 {
     *ppEvent = new vscpEvent;
     if (NULL == *ppEvent)
@@ -3138,7 +3138,7 @@ vscp_newVSCPevent(vscpEvent** ppEvent)
 //
 
 void
-vscp_deleteVSCPevent(vscpEvent* pEvent)
+vscp_deleteEvent(vscpEvent* pEvent)
 {
     // Check pointer
     if (NULL == pEvent)
@@ -3155,7 +3155,7 @@ vscp_deleteVSCPevent(vscpEvent* pEvent)
 //
 
 void
-vscp_deleteVSCPevent_v2(vscpEvent** ppEvent)
+vscp_deleteEvent_v2(vscpEvent** ppEvent)
 {
     // Check pointer
     if (NULL == *ppEvent)
@@ -3176,7 +3176,7 @@ vscp_deleteVSCPevent_v2(vscpEvent** ppEvent)
 //
 
 void
-vscp_deleteVSCPeventEx(vscpEventEx* pEventEx)
+vscp_deleteEventEx(vscpEventEx* pEventEx)
 {
     delete pEventEx;
 }
@@ -3245,7 +3245,7 @@ vscp_convertEventToJSON(std::string& strJSON, vscpEvent* pEvent)
         return false;
 
     vscp_writeGuidArrayToString(strguid, pEvent->GUID); // GUID to string
-    vscp_writeVscpDataWithSizeToString(
+    vscp_writeDataWithSizeToString(
       strdata, pEvent->pdata, pEvent->sizeData, false);
 
     std::string dt;
@@ -3380,7 +3380,7 @@ vscp_convertEventExToJSON(std::string& strJSON, vscpEventEx* pEventEx)
         return false;
 
     vscp_writeGuidArrayToString(strguid, pEventEx->GUID); // GUID to string
-    vscp_writeVscpDataWithSizeToString(strdata,
+    vscp_writeDataWithSizeToString(strdata,
                                        pEventEx->data,
                                        pEventEx->sizeData,
                                        false,
@@ -3515,7 +3515,7 @@ vscp_convertEventToXML(std::string& strXML, vscpEvent* pEvent)
         return false;
 
     vscp_writeGuidArrayToString(strguid, pEvent->GUID); // GUID to string
-    vscp_writeVscpDataWithSizeToString(strdata,
+    vscp_writeDataWithSizeToString(strdata,
                                        pEvent->pdata,
                                        pEvent->sizeData,
                                        false,
@@ -3591,7 +3591,7 @@ startEventXMLParser(void* data, const char* name, const char** attr)
                 vscp_setEventGuidFromString(pev, strGUID);
             } else if (0 == strcmp(attr[i], "data")) {
                 std::string str = attribute;
-                vscp_setVscpEventDataFromString(pev, str);
+                vscp_setEventDataFromString(pev, str);
             }
         }
     }
@@ -3650,7 +3650,7 @@ vscp_convertEventExToXML(std::string& strXML, vscpEventEx* pEventEx)
         return false;
 
     vscp_writeGuidArrayToString(strguid, pEventEx->GUID); // GUID to string
-    vscp_writeVscpDataWithSizeToString(strdata,
+    vscp_writeDataWithSizeToString(strdata,
                                        pEventEx->data,
                                        pEventEx->sizeData,
                                        false,
@@ -3726,7 +3726,7 @@ startEventExXMLParser(void* data, const char* name, const char** attr)
                 vscp_setEventExGuidFromString(pex, strGUID);
             } else if (0 == strcmp(attr[i], "data")) {
                 std::string str = attribute;
-                vscp_setVscpEventExDataFromString(pex, str);
+                vscp_setEventExDataFromString(pex, str);
             }
         }
     }
@@ -3786,7 +3786,7 @@ vscp_convertEventToHTML(std::string& strHTML, vscpEvent* pEvent)
         return false;
 
     vscp_writeGuidArrayToString(strguid, pEvent->GUID); // GUID to string
-    vscp_writeVscpDataWithSizeToString(strdata,
+    vscp_writeDataWithSizeToString(strdata,
                                        pEvent->pdata,
                                        pEvent->sizeData,
                                        false,
@@ -3827,7 +3827,7 @@ vscp_convertEventExToHTML(std::string& strHTML, vscpEventEx* pEventEx)
         return false;
 
     vscp_writeGuidArrayToString(strguid, pEventEx->GUID); // GUID to string
-    vscp_writeVscpDataWithSizeToString(strdata,
+    vscp_writeDataWithSizeToString(strdata,
                                        pEventEx->data,
                                        pEventEx->sizeData,
                                        false,
@@ -3994,12 +3994,16 @@ vscp_doLevel2Filter(const vscpEvent* pEvent, const vscpEventFilter* pFilter)
 
     // Test priority
     if (0xff !=
-        (uint8_t)(~(pFilter->filter_priority ^ vscp_getVscpPriority(pEvent)) |
+        (uint8_t)(~(pFilter->filter_priority ^ vscp_getEventPriority(pEvent)) |
                   ~pFilter->mask_priority))
         return false;
 
     return true;
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// vscp_doLevel2FilterEx
+//
 
 bool
 vscp_doLevel2FilterEx(const vscpEventEx* pEventEx,
@@ -4032,7 +4036,7 @@ vscp_doLevel2FilterEx(const vscpEventEx* pEventEx,
 
     // Test priority
     if (0xff != (uint8_t)(~(pFilter->filter_priority ^
-                            vscp_getVscpPriorityEx(pEventEx)) |
+                            vscp_getEventPriorityEx(pEventEx)) |
                           ~pFilter->mask_priority))
         return false;
 
@@ -4598,11 +4602,11 @@ vscp_convertCanalToEvent(vscpEvent* pvscpEvent,
     }
 
     // Build ID
-    pvscpEvent->head = vscp_getVSCPheadFromCANALid(pcanalMsg->id);
+    pvscpEvent->head = vscp_getHeadFromCANALid(pcanalMsg->id);
     if (pcanalMsg->id & 0x02000000)
         pvscpEvent->head |= VSCP_HEADER_HARD_CODED;
-    pvscpEvent->vscp_class = vscp_getVSCPclassFromCANALid(pcanalMsg->id);
-    pvscpEvent->vscp_type = vscp_getVSCPtypeFromCANALid(pcanalMsg->id);
+    pvscpEvent->vscp_class = vscp_getVscpClassFromCANALid(pcanalMsg->id);
+    pvscpEvent->vscp_type = vscp_getVscpTypeFromCANALid(pcanalMsg->id);
 
     // Timestamp
     vscp_setEventDateTimeBlockToNow(pvscpEvent);
@@ -4630,8 +4634,8 @@ vscp_convertCanalToEventEx(vscpEventEx* pvscpEventEx,
     bool rv = vscp_convertCanalToEvent(pEvent, pcanalMsg, pGUID);
 
     if (rv) {
-        vscp_convertVSCPtoEx(pvscpEventEx, pEvent);
-        vscp_deleteVSCPevent(pEvent);
+        vscp_convertEventToEventEx(pvscpEventEx, pEvent);
+        vscp_deleteEvent(pEvent);
     }
 
     return rv;
@@ -4724,24 +4728,24 @@ vscp_convertEventExToCanal(canalMsg* pcanalMsg, const vscpEventEx* pvscpEventEx)
     if (NULL == pEvent)
         return false;
 
-    if (!vscp_convertVSCPfromEx(pEvent, pvscpEventEx)) {
-        vscp_deleteVSCPevent(pEvent);
+    if (!vscp_convertEventExToEvent(pEvent, pvscpEventEx)) {
+        vscp_deleteEvent(pEvent);
         return false;
     }
 
     rv = vscp_convertEventToCanal(pcanalMsg, pEvent);
 
-    vscp_deleteVSCPevent(pEvent);
+    vscp_deleteEvent(pEvent);
 
     return rv;
 }
 
 //////////////////////////////////////////////////////////////////////////////
-// writeVscpDataToString
+// writeDataToString
 //
 
 bool
-vscp_writeVscpDataToString(std::string& str,
+vscp_writeDataToString(std::string& str,
                            const vscpEvent* pEvent,
                            bool bUseHtmlBreak,
                            bool bBreak)
@@ -4779,11 +4783,11 @@ vscp_writeVscpDataToString(std::string& str,
 }
 
 //////////////////////////////////////g////////////////////////////////////////
-// writeVscpDataWithSizeToString
+// writeDataWithSizeToString
 //
 
 bool
-vscp_writeVscpDataWithSizeToString(std::string& str,
+vscp_writeDataWithSizeToString(std::string& str,
                                    const unsigned char* pData,
                                    const uint16_t sizeData,
                                    bool bUseHtmlBreak,
@@ -4822,11 +4826,11 @@ vscp_writeVscpDataWithSizeToString(std::string& str,
 }
 
 //////////////////////////////////////////////////////////////////////////////
-// setVscpEventDataFromString
+// setEventDataFromString
 //
 
 bool
-vscp_setVscpEventDataFromString(vscpEvent* pEvent, const std::string& str)
+vscp_setEventDataFromString(vscpEvent* pEvent, const std::string& str)
 {
     std::deque<std::string> tokens;
 
@@ -4860,11 +4864,11 @@ vscp_setVscpEventDataFromString(vscpEvent* pEvent, const std::string& str)
 }
 
 //////////////////////////////////////////////////////////////////////////////
-// vscp_setVscpEventExDataFromString
+// vscp_setEventExDataFromString
 //
 
 bool
-vscp_setVscpEventExDataFromString(vscpEventEx* pEventEx, const std::string& str)
+vscp_setEventExDataFromString(vscpEventEx* pEventEx, const std::string& str)
 {
     std::deque<std::string> tokens;
 
@@ -4888,11 +4892,11 @@ vscp_setVscpEventExDataFromString(vscpEventEx* pEventEx, const std::string& str)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// setVscpDataArrayFromString
+// setDataArrayFromString
 //
 
 bool
-vscp_setVscpDataArrayFromString(uint8_t* pData,
+vscp_setDataArrayFromString(uint8_t* pData,
                                 uint16_t* psizeData,
                                 const std::string& str)
 {
@@ -5023,13 +5027,13 @@ vscp_setEventExDateTimeBlockToNow(vscpEventEx* pEventEx)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// writeVscpEventToString
+// convertEventToString
 //
 // head,class,type,obid,datetime,timestamp,GUID,data1,data2,data3....
 //
 
 bool
-vscp_writeVscpEventToString(std::string& str, const vscpEvent* pEvent)
+vscp_convertEventToString(std::string& str, const vscpEvent* pEvent)
 {
     // Check pointer
     if (NULL == pEvent)
@@ -5054,7 +5058,7 @@ vscp_writeVscpEventToString(std::string& str, const vscpEvent* pEvent)
         str += ",";
 
         std::string strData;
-        vscp_writeVscpDataToString(strData, pEvent);
+        vscp_writeDataToString(strData, pEvent);
         str += strData;
     }
 
@@ -5062,13 +5066,13 @@ vscp_writeVscpEventToString(std::string& str, const vscpEvent* pEvent)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// writeVscpEventExToString
+// convertEventExToString
 //
 // head,class,type,obid,datetime,timestamp,GUID,data1,data2,data3....
 //
 
 bool
-vscp_writeVscpEventExToString(std::string& str, const vscpEventEx* pEventEx)
+vscp_convertEventExToString(std::string& str, const vscpEventEx* pEventEx)
 {
     vscpEvent event;
     event.pdata = NULL;
@@ -5077,8 +5081,8 @@ vscp_writeVscpEventExToString(std::string& str, const vscpEventEx* pEventEx)
     if (NULL == pEventEx)
         return false;
 
-    vscp_convertVSCPfromEx(&event, pEventEx);
-    vscp_writeVscpEventToString(str, &event);
+    vscp_convertEventExToEvent(&event, pEventEx);
+    vscp_convertEventToString(str, &event);
     if (NULL != event.pdata)
         delete event.pdata;
 
@@ -5086,14 +5090,14 @@ vscp_writeVscpEventExToString(std::string& str, const vscpEventEx* pEventEx)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// setVscpEventFromString
+// vscp_convertStringToEvent
 //
 // Format:
 //      head,class,type,obid,datetime,timestamp,GUID,data1,data2,data3....
 //
 
 bool
-vscp_setVscpEventFromString(vscpEvent* pEvent, const std::string& strEvent)
+vscp_convertStringToEvent(vscpEvent* pEvent, const std::string& strEvent)
 {
     // Check pointer
     if (NULL == pEvent) {
@@ -5213,22 +5217,22 @@ vscp_setVscpEventFromString(vscpEvent* pEvent, const std::string& strEvent)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// setVscpEventExFromString
+// vscp_convertStringToEventEx
 //
 // Format:
 //      head,class,type,obid,timestamp,GUID,data1,data2,data3....
 //
 
 bool
-vscp_setVscpEventExFromString(vscpEventEx* pEventEx,
+vscp_convertStringToEventEx(vscpEventEx* pEventEx,
                               const std::string& strEvent)
 {
     bool rv;
     vscpEvent event;
 
     // Parse the string data
-    rv = vscp_setVscpEventFromString(&event, strEvent);
-    vscp_convertVSCPtoEx(pEventEx, &event);
+    rv = vscp_convertStringToEvent(&event, strEvent);
+    vscp_convertEventToEventEx(pEventEx, &event);
 
     // Remove possible data
     if (event.sizeData)
@@ -5794,17 +5798,17 @@ vscp_writeEventExToUdpFrame(uint8_t* frame,
         return false;
     pEvent->pdata = NULL;
 
-    // Check pointer (rest is checked in vscp_convertVSCPfromEx)
+    // Check pointer (rest is checked in vscp_convertEventExToEvent)
     if (NULL == pEventEx)
         return false;
 
     // Convert eventEx to event
-    if (!vscp_convertVSCPfromEx(pEvent, pEventEx))
+    if (!vscp_convertEventExToEvent(pEvent, pEventEx))
         return false;
 
     if (!vscp_writeEventToUdpFrame(frame, len, pkttype, pEvent))
         return false;
-    vscp_deleteVSCPevent_v2(&pEvent);
+    vscp_deleteEvent_v2(&pEvent);
 
     return true;
 }
@@ -5989,18 +5993,18 @@ vscp_getEventExFromUdpFrame(vscpEventEx* pEventEx,
     }
 
     // Convert eventEx to event
-    if (!vscp_convertVSCPtoEx(pEventEx, pEvent))
+    if (vscp_convertEventToEventEx(pEventEx, pEvent))
         return false;
 
     return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// vscp_encryptVscpUdpFrame
+// vscp_encryptUdpFrame
 //
 
 size_t
-vscp_encryptVscpUdpFrame(uint8_t* output,
+vscp_encryptUdpFrame(uint8_t* output,
                          uint8_t* input,
                          size_t len,
                          const uint8_t* key,

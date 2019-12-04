@@ -542,7 +542,7 @@ extern "C"
         @param str String to be encoded.
         @return BASE64 coded string
     */
-    std::string vscp_convertToBASE64(std::string str);
+    std::string vscp_convertToBase64(std::string str);
 
     /*!
         Get GMT time
@@ -663,8 +663,7 @@ extern "C"
         @return true on success, false on failure.
     */
 
-    bool vscp_getVSCPMeasurementAsString(std::string& str,
-                                         const vscpEvent* pEvent);
+    bool vscp_getMeasurementAsString(std::string& str, const vscpEvent* pEvent);
 
     /*!
         Write data from event in the VSCP data coding format as a double.
@@ -682,8 +681,7 @@ extern "C"
         @param pvalue Pointer to double that holds the result
         @return true on success, false on failure.
     */
-    bool vscp_getVSCPMeasurementAsDouble(double* pvalue,
-                                         const vscpEvent* pEvent);
+    bool vscp_getMeasurementAsDouble(double* pvalue, const vscpEvent* pEvent);
 
     /*!
      * Get measurement unit for any of the valid measurement events.
@@ -691,7 +689,7 @@ extern "C"
      * @return Measurement unit or -1 for error (event that is not a
      * measurement).
      */
-    int vscp_getVSCPMeasurementUnit(const vscpEvent* pEvent);
+    int vscp_getMeasurementUnit(const vscpEvent* pEvent);
 
     /*!
      * Get measurement sensor index for any of the valid measurement events.
@@ -699,7 +697,7 @@ extern "C"
      * @return Measurement sensor index or -1 for error or for event that is not
      * a measurement or measurement event that does not have a sensor index.
      */
-    int vscp_getVSCPMeasurementSensorIndex(const vscpEvent* pEvent);
+    int vscp_getMeasurementSensorIndex(const vscpEvent* pEvent);
 
     /*!
      * Get measurement zone for any of the valid measurement events.
@@ -707,7 +705,7 @@ extern "C"
      * @return Measurement zone or 0 for error or event that is not a
      * measurement or measurement event that does not have a zone).
      */
-    int vscp_getVSCPMeasurementZone(const vscpEvent* pEvent);
+    int vscp_getMeasurementZone(const vscpEvent* pEvent);
 
     /*!
      * Get measurement subzone for any of the valid measurement events.
@@ -715,14 +713,14 @@ extern "C"
      * @return Measurement subzone or -1 for error or for event that is not a
      * measurement or measurement event that does not have a subzone.
      */
-    int vscp_getVSCPMeasurementSubZone(const vscpEvent* pEvent);
+    int vscp_getMeasurementSubZone(const vscpEvent* pEvent);
 
     /*!
      * Check if event is a measurement
      * @param pEvent Pointer to VSCP event.
      * @return Return true if the event is a measurement.
      */
-    bool vscp_isVSCPMeasurement(const vscpEvent* pEvent);
+    bool vscp_isMeasurement(const vscpEvent* pEvent);
 
     /*!
         Get data in the VSCP data coding format to a string. Works for
@@ -731,8 +729,8 @@ extern "C"
         @param str String that holds the result
         @return true on success, false on failure.
         */
-    bool vscp_getVSCPMeasurementFloat64AsString(std::string& str,
-                                                const vscpEvent* pEvent);
+    bool vscp_getMeasurementFloat64AsString(std::string& str,
+                                            const vscpEvent* pEvent);
 
     /*!
         Convert a floating point measurement value into VSCP data with the
@@ -903,14 +901,14 @@ extern "C"
         @param pEvent Pointer to VSCP event to set priority for.
         @return Priority (0-7) for event.
         */
-    unsigned char vscp_getVscpPriority(const vscpEvent* pEvent);
+    unsigned char vscp_getEventPriority(const vscpEvent* pEvent);
 
     /*!
         Get VSCP priority
         @param pEvent Pointer to VSCP event to set priority for.
         @return Priority (0-7) for event.
         */
-    unsigned char vscp_getVscpPriorityEx(const vscpEventEx* pEvent);
+    unsigned char vscp_getEventPriorityEx(const vscpEventEx* pEvent);
 
     /*!
         Set VSCP priority
@@ -924,35 +922,35 @@ extern "C"
     @param pEvent Pointer to VSCP event to set priority for.
     @param priority Priority (0-7) to set.
     */
-    void vscp_setVscpPriorityEx(vscpEventEx* pEvent, unsigned char priority);
+    void vscp_setEventPriorityEx(vscpEventEx* pEvent, unsigned char priority);
 
     /*!
         Get VSCP head from CANAL id
         @param id CAN id
         @return VSCP head
         */
-    unsigned char vscp_getVSCPheadFromCANALid(uint32_t id);
+    unsigned char vscp_getHeadFromCANALid(uint32_t id);
 
     /*!
         Get VSCP class from CANAL id
         @param id CAN id
         @return VSCP class
         */
-    uint16_t vscp_getVSCPclassFromCANALid(uint32_t id);
+    uint16_t vscp_getVscpClassFromCANALid(uint32_t id);
 
     /*!
         Get VSCP type from CANAL id
         @param id CAN id
         @return VSCP type
         */
-    uint16_t vscp_getVSCPtypeFromCANALid(uint32_t id);
+    uint16_t vscp_getVscpTypeFromCANALid(uint32_t id);
 
     /*!
         Get VSCP nide nickname from CANAL id
         @param id CAN id
         @return VSCP node nickname
         */
-    uint8_t vscp_getVSCPnicknameFromCANALid(uint32_t id);
+    uint8_t vscp_getNicknameFromCANALid(uint32_t id);
 
     /*!
         Get CANAL id from VSCP info
@@ -970,14 +968,14 @@ extern "C"
         @param pEvent Pointer to VSCP event
         @return CAN id with nickname == 0
         */
-    uint32_t vscp_getCANALidFromVSCPevent(const vscpEvent* pEvent);
+    uint32_t vscp_getCANALidFromEvent(const vscpEvent* pEvent);
 
     /*!
         Get CAN id from VSCP event
         @param pEvent Pointer to VSCP event
         @return CAN id with nickname == 0
         */
-    uint32_t vscp_getCANALidFromVSCPeventEx(const vscpEventEx* pEvent);
+    uint32_t vscp_getCANALidFromEventEx(const vscpEventEx* pEvent);
 
     /*!
         Calculate CRC for VSCP event
@@ -1116,12 +1114,13 @@ extern "C"
     /*!
         Convert a standard VSCP event to the Ex version
         */
-    bool vscp_convertVSCPtoEx(vscpEventEx* pEventEx, const vscpEvent* pEvent);
+    bool vscp_convertEventToEventEx(vscpEventEx* pEventEx, const vscpEvent* pEvent);
 
     /*!
         Convert an Ex event to a standard VSCP event
         */
-    bool vscp_convertVSCPfromEx(vscpEvent* pEvent, const vscpEventEx* pEventEx);
+    bool vscp_convertEventExToEvent(vscpEvent* pEvent,
+                                 const vscpEventEx* pEventEx);
 
     /*!
      * Create a standard VSCP event
@@ -1134,18 +1133,18 @@ extern "C"
     /*!
         Delete a standard VSCP event
         */
-    void vscp_deleteVSCPevent(vscpEvent* pEvent);
+    void vscp_deleteEvent(vscpEvent* pEvent);
 
     /*!
      * Delete standard VSCP event and NULL
      * @param Pointer to pointer to standard VSCP event.
      */
-    void vscp_deleteVSCPevent_v2(vscpEvent** pEvent);
+    void vscp_deleteEvent_v2(vscpEvent** pEvent);
 
     /*!
         Delete an Ex event
         */
-    void vscp_deleteVSCPeventEx(vscpEventEx* pEventEx);
+    void vscp_deleteEventEx(vscpEventEx* pEventEx);
 
     /*!
         Make a timestamp for events etc
@@ -1473,7 +1472,7 @@ extern "C"
         @param pEventFrom Pointer to event to copy from.
         @return True on success.
     */
-    bool vscp_copyVSCPEvent(vscpEvent* pEventTo, const vscpEvent* pEventFrom);
+    bool vscp_copyEvent(vscpEvent* pEventTo, const vscpEvent* pEventFrom);
 
     /*!
     Copy one VSCP event ex to another
@@ -1482,12 +1481,12 @@ extern "C"
     @param pEventFrom Pointer to event to copy from.
     @return True on success.
 */
-    bool vscp_copyVSCPEventEx(vscpEventEx* pEventTo,
+    bool vscp_copyEventEx(vscpEventEx* pEventTo,
                               const vscpEventEx* pEventFrom);
 
     /*!
         Write VSCP data to string
-        DEPRECATED USE: vscp_writeVscpDataWithSizeToString
+        DEPRECATED USE: vscp_writeDataWithSizeToString
 
         @param str String that receive result.
         @param pEvent Pointer to event where data is fetched from
@@ -1498,10 +1497,10 @@ extern "C"
         @return True on success false on failure.
     */
 
-    bool vscp_writeVscpDataToString(std::string& str,
-                                    const vscpEvent* pEvent,
-                                    bool bUseHtmlBreak = false,
-                                    bool bBreak = false);
+    bool vscp_writeDataToString(std::string& str,
+                                const vscpEvent* pEvent,
+                                bool bUseHtmlBreak = false,
+                                bool bBreak = false);
 
     /*!
         Write VSCP data to string
@@ -1514,11 +1513,11 @@ extern "C"
         @return True on success false on failure.
     */
 
-    bool vscp_writeVscpDataWithSizeToString(std::string& str,
-                                            const unsigned char* pData,
-                                            const uint16_t sizeData,
-                                            bool bUseHtmlBreak = false,
-                                            bool bBreak = true);
+    bool vscp_writeDataWithSizeToString(std::string& str,
+                                        const unsigned char* pData,
+                                        const uint16_t sizeData,
+                                        bool bUseHtmlBreak = false,
+                                        bool bBreak = true);
 
     /*!
         Set VSCP Event data from a string
@@ -1528,8 +1527,7 @@ extern "C"
         @return true on success, false on failure.
     */
 
-    bool vscp_setVscpEventDataFromString(vscpEvent* pEvent,
-                                         const std::string& str);
+    bool vscp_setEventDataFromString(vscpEvent* pEvent, const std::string& str);
 
     /*!
         Set VSCP EventEx data from a string
@@ -1539,8 +1537,8 @@ extern "C"
         @return true on success, false on failure.
     */
 
-    bool vscp_setVscpEventExDataFromString(vscpEventEx* pEventEx,
-                                           const std::string& str);
+    bool vscp_setEventExDataFromString(vscpEventEx* pEventEx,
+                                       const std::string& str);
 
     /*!
         Set VSCP data from a string
@@ -1551,30 +1549,30 @@ extern "C"
         @return true on success, false on failure.
     */
 
-    bool vscp_setVscpDataArrayFromString(uint8_t* pData,
-                                         uint16_t* psizeData,
-                                         const std::string& str);
+    bool vscp_setDataArrayFromString(uint8_t* pData,
+                                     uint16_t* psizeData,
+                                     const std::string& str);
 
     /*!
         Write event to string.
         priority,class,type,guid,data
-        @param pEvent Event that should be presented
         @param str String that receive the result
+        @param pEvent Event that should be presented
         @return true on success, false on failure.
     */
 
-    bool vscp_writeVscpEventToString(std::string& str, const vscpEvent* pEvent);
+    bool vscp_convertEventToString(std::string& str, const vscpEvent* pEvent);
 
     /*!
         Write event to string.
         priority,class,type,guid,data
-        @param pEvent Event that should be presented
         @param str String that receive the result
+        @param pEvent Event that should be presented
         @return true on success, false on failure.
         */
 
-    bool vscp_writeVscpEventExToString(std::string& str,
-                                       const vscpEventEx* pEvent);
+    bool vscp_convertEventExToString(std::string& str,
+                                     const vscpEventEx* pEvent);
 
     /*!
         Get event data from string format
@@ -1584,7 +1582,7 @@ extern "C"
         @return true on success, false on failure.
         */
 
-    bool vscp_setVscpEventFromString(vscpEvent* pEvent, const std::string& str);
+    bool vscp_convertStringToEvent(vscpEvent* pEvent, const std::string& str);
 
     /*!
         Get event data from string format
@@ -1594,8 +1592,8 @@ extern "C"
         @return true on success, false on failure.
         */
 
-    bool vscp_setVscpEventExFromString(vscpEventEx* pEventEx,
-                                       const std::string& str);
+    bool vscp_convertStringToEventEx(vscpEventEx* pEventEx,
+                                     const std::string& str);
 
     /*!
         This function makes a HTML string from a standard string. LF is replaced

@@ -326,8 +326,8 @@ CVSCPTable::isThisEventForMe(vscpEvent *pEvent)
         (VSCP_CLASS2_LEVEL1_MEASUREMENT == pEvent->vscp_class)) {
 
         if ((m_vscp_sensorindex ==
-             vscp_getVSCPMeasurementSensorIndex(pEvent)) &&
-            (m_vscp_unit == vscp_getVSCPMeasurementUnit(pEvent))) {
+             vscp_getMeasurementSensorIndex(pEvent)) &&
+            (m_vscp_unit == vscp_getMeasurementUnit(pEvent))) {
             return true;
         }
 
@@ -335,11 +335,11 @@ CVSCPTable::isThisEventForMe(vscpEvent *pEvent)
                (VSCP_CLASS2_LEVEL1_MEASUREZONE == pEvent->vscp_class)) {
 
         if ((m_vscp_sensorindex ==
-             vscp_getVSCPMeasurementSensorIndex(pEvent)) &&
-            (m_vscp_unit == vscp_getVSCPMeasurementUnit(pEvent))) {
+             vscp_getMeasurementSensorIndex(pEvent)) &&
+            (m_vscp_unit == vscp_getMeasurementUnit(pEvent))) {
 
-            uint8_t zone    = vscp_getVSCPMeasurementZone(pEvent);
-            uint8_t subzone = vscp_getVSCPMeasurementSubZone(pEvent);
+            uint8_t zone    = vscp_getMeasurementZone(pEvent);
+            uint8_t subzone = vscp_getMeasurementSubZone(pEvent);
             if (((m_vscp_zone == zone) || (255 == zone)) &&
                 ((m_vscp_subzone == subzone) || (255 == subzone))) {
                 return true;
@@ -350,11 +350,11 @@ CVSCPTable::isThisEventForMe(vscpEvent *pEvent)
                (VSCP_CLASS2_LEVEL1_SETVALUEZONE == pEvent->vscp_class)) {
 
         if ((m_vscp_sensorindex ==
-             vscp_getVSCPMeasurementSensorIndex(pEvent)) &&
-            (m_vscp_unit == vscp_getVSCPMeasurementUnit(pEvent))) {
+             vscp_getMeasurementSensorIndex(pEvent)) &&
+            (m_vscp_unit == vscp_getMeasurementUnit(pEvent))) {
 
-            uint8_t zone    = vscp_getVSCPMeasurementZone(pEvent);
-            uint8_t subzone = vscp_getVSCPMeasurementSubZone(pEvent);
+            uint8_t zone    = vscp_getMeasurementZone(pEvent);
+            uint8_t subzone = vscp_getMeasurementSubZone(pEvent);
             if (((m_vscp_zone == zone) || (255 == zone)) &&
                 ((m_vscp_subzone == subzone) || (255 == subzone))) {
                 return true;
@@ -365,8 +365,8 @@ CVSCPTable::isThisEventForMe(vscpEvent *pEvent)
                (VSCP_CLASS2_LEVEL1_MEASUREMENT32 == pEvent->vscp_class)) {
 
         if ((m_vscp_sensorindex ==
-             vscp_getVSCPMeasurementSensorIndex(pEvent)) &&
-            (m_vscp_unit == vscp_getVSCPMeasurementUnit(pEvent))) {
+             vscp_getMeasurementSensorIndex(pEvent)) &&
+            (m_vscp_unit == vscp_getMeasurementUnit(pEvent))) {
             return true;
         }
 
@@ -374,8 +374,8 @@ CVSCPTable::isThisEventForMe(vscpEvent *pEvent)
                (VSCP_CLASS2_LEVEL1_MEASUREMENT64 == pEvent->vscp_class)) {
 
         if ((m_vscp_sensorindex ==
-             vscp_getVSCPMeasurementSensorIndex(pEvent)) &&
-            (m_vscp_unit == vscp_getVSCPMeasurementUnit(pEvent))) {
+             vscp_getMeasurementSensorIndex(pEvent)) &&
+            (m_vscp_unit == vscp_getMeasurementUnit(pEvent))) {
             return true;
         }
 
@@ -383,11 +383,11 @@ CVSCPTable::isThisEventForMe(vscpEvent *pEvent)
                (VSCP_CLASS2_MEASUREMENT_FLOAT == pEvent->vscp_class)) {
 
         if ((m_vscp_sensorindex ==
-             vscp_getVSCPMeasurementSensorIndex(pEvent)) &&
-            (m_vscp_unit == vscp_getVSCPMeasurementUnit(pEvent))) {
+             vscp_getMeasurementSensorIndex(pEvent)) &&
+            (m_vscp_unit == vscp_getMeasurementUnit(pEvent))) {
 
-            uint8_t zone    = vscp_getVSCPMeasurementZone(pEvent);
-            uint8_t subzone = vscp_getVSCPMeasurementSubZone(pEvent);
+            uint8_t zone    = vscp_getMeasurementZone(pEvent);
+            uint8_t subzone = vscp_getMeasurementSubZone(pEvent);
             if (((m_vscp_zone == zone) || (255 == zone)) &&
                 ((m_vscp_subzone == subzone) || (255 == subzone))) {
                 return true;

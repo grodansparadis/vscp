@@ -629,7 +629,7 @@ js_vscp_sendEvent(duk_context* ctx)
     }
 
     pEvent->pdata = NULL;
-    vscp_convertVSCPfromEx(pEvent, &ex);
+    vscp_convertEventExToEvent(pEvent, &ex);
 
     duk_push_global_object(ctx); /* -> stack: [ global ] */
     duk_push_string(
@@ -644,12 +644,12 @@ js_vscp_sendEvent(duk_context* ctx)
 
     if (!gpobj->sendEvent(pClientItem, pEvent)) {
         // Failed to send event
-        vscp_deleteVSCPevent(pEvent);
+        vscp_deleteEvent(pEvent);
         duk_push_boolean(ctx, 0); // return code false
         return JAVASCRIPT_OK;
     }
 
-    vscp_deleteVSCPevent(pEvent);
+    vscp_deleteEvent(pEvent);
 
     duk_push_boolean(ctx, 1); // return code success
     return JAVASCRIPT_OK;
@@ -702,7 +702,7 @@ try_again:
                 std::string strResult;
                 vscp_convertEventToJSON(strResult, pEvent);
                 // Event is not needed anymore
-                vscp_deleteVSCPevent(pEvent);
+                vscp_deleteEvent(pEvent);
                 duk_push_string(ctx, (const char*)strResult.c_str());
                 duk_json_decode(ctx, -1);
 
@@ -712,12 +712,12 @@ try_again:
             } else {
 
                 // Filtered out
-                vscp_deleteVSCPevent(pEvent);
+                vscp_deleteEvent(pEvent);
                 goto try_again;
             }
 
             // Remove the event
-            vscp_deleteVSCPevent(pEvent);
+            vscp_deleteEvent(pEvent);
 
         } // Valid pEvent pointer
         else {
@@ -1064,7 +1064,7 @@ js_send_Measurement(duk_context* ctx)
 
             if (!vscp_makeStringMeasurementEvent(
                   pEvent, value, unit, sensoridx)) {
-                vscp_deleteVSCPevent(pEvent);
+                vscp_deleteEvent(pEvent);
                 duk_push_boolean(ctx, 0); // return code failure
                 return JAVASCRIPT_OK;
             }
@@ -1088,7 +1088,7 @@ js_send_Measurement(duk_context* ctx)
 
             if (!vscp_makeFloatMeasurementEvent(
                   pEvent, value, unit, sensoridx)) {
-                vscp_deleteVSCPevent(pEvent);
+                vscp_deleteEvent(pEvent);
                 duk_push_boolean(ctx, 0); // return code failure
                 return JAVASCRIPT_OK;
             }
@@ -1098,12 +1098,12 @@ js_send_Measurement(duk_context* ctx)
     // Send the event
     if (!gpobj->sendEvent(pClientItem, pEvent)) {
         // Failed to send event
-        vscp_deleteVSCPevent(pEvent);
+        vscp_deleteEvent(pEvent);
         duk_push_boolean(ctx, 0); // return code failure
         return JAVASCRIPT_OK;
     }
 
-    vscp_deleteVSCPevent(pEvent);
+    vscp_deleteEvent(pEvent);
 
     duk_push_boolean(ctx, 0); // return code success
     return JAVASCRIPT_OK;
@@ -1138,9 +1138,9 @@ js_is_Measurement(duk_context* ctx)
 
     pEvent->pdata = NULL;
 
-    vscp_convertVSCPfromEx(pEvent, &ex);
-    bool bMeasurement = vscp_isVSCPMeasurement(pEvent);
-    vscp_deleteVSCPevent(pEvent);
+    vscp_convertEventExToEvent(pEvent, &ex);
+    bool bMeasurement = vscp_isMeasurement(pEvent);
+    vscp_deleteEvent(pEvent);
 
     duk_push_boolean(ctx, bMeasurement ? 1 : 0); // return code false
     return JAVASCRIPT_OK;
@@ -1175,9 +1175,9 @@ js_get_MeasurementValue(duk_context* ctx)
 
     pEvent->pdata = NULL;
 
-    vscp_convertVSCPfromEx(pEvent, &ex);
-    vscp_getVSCPMeasurementAsDouble(&value, pEvent);
-    vscp_deleteVSCPevent(pEvent);
+    vscp_convertEventExToEvent(pEvent, &ex);
+    vscp_getMeasurementAsDouble(&value, pEvent);
+    vscp_deleteEvent(pEvent);
 
     duk_push_number(ctx, value);
     return JAVASCRIPT_OK;
@@ -1211,9 +1211,9 @@ js_get_MeasurementUnit(duk_context* ctx)
 
     pEvent->pdata = NULL;
 
-    vscp_convertVSCPfromEx(pEvent, &ex);
-    int unit = vscp_getVSCPMeasurementUnit(pEvent);
-    vscp_deleteVSCPevent(pEvent);
+    vscp_convertEventExToEvent(pEvent, &ex);
+    int unit = vscp_getMeasurementUnit(pEvent);
+    vscp_deleteEvent(pEvent);
 
     duk_push_number(ctx, unit);
     return JAVASCRIPT_OK;
@@ -1247,9 +1247,9 @@ js_get_MeasurementSensorIndex(duk_context* ctx)
 
     pEvent->pdata = NULL;
 
-    vscp_convertVSCPfromEx(pEvent, &ex);
-    int sensorindex = vscp_getVSCPMeasurementSensorIndex(pEvent);
-    vscp_deleteVSCPevent(pEvent);
+    vscp_convertEventExToEvent(pEvent, &ex);
+    int sensorindex = vscp_getMeasurementSensorIndex(pEvent);
+    vscp_deleteEvent(pEvent);
 
     duk_push_number(ctx, sensorindex);
     return JAVASCRIPT_OK;
@@ -1283,9 +1283,9 @@ js_get_MeasurementZone(duk_context* ctx)
 
     pEvent->pdata = NULL;
 
-    vscp_convertVSCPfromEx(pEvent, &ex);
-    int zone = vscp_getVSCPMeasurementZone(pEvent);
-    vscp_deleteVSCPevent(pEvent);
+    vscp_convertEventExToEvent(pEvent, &ex);
+    int zone = vscp_getMeasurementZone(pEvent);
+    vscp_deleteEvent(pEvent);
 
     duk_push_number(ctx, zone);
     return JAVASCRIPT_OK;
@@ -1319,9 +1319,9 @@ js_get_MeasurementSubZone(duk_context* ctx)
 
     pEvent->pdata = NULL;
 
-    vscp_convertVSCPfromEx(pEvent, &ex);
-    int subzone = vscp_getVSCPMeasurementSubZone(pEvent);
-    vscp_deleteVSCPevent(pEvent);
+    vscp_convertEventExToEvent(pEvent, &ex);
+    int subzone = vscp_getMeasurementSubZone(pEvent);
+    vscp_deleteEvent(pEvent);
 
     duk_push_number(ctx, subzone);
     return JAVASCRIPT_OK;

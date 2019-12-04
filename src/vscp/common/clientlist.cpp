@@ -115,7 +115,7 @@ CClientItem::~CClientItem()
     for (iter = m_clientInputQueue.begin(); iter != m_clientInputQueue.end();
          ++iter) {
         vscpEvent *pEvent = *iter;
-        vscp_deleteVSCPevent(pEvent);
+        vscp_deleteEvent(pEvent);
     }
 
     m_clientInputQueue.clear();
