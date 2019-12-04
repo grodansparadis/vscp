@@ -830,7 +830,7 @@ vscp_std_decodeBase64IfNeeded(const std::string& str, std::string& strResult)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// vscp_convertToBASE64
+// vscp_convertToBase64
 //
 
 std::string
