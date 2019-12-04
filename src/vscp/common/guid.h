@@ -41,7 +41,23 @@ class cguid
 {
   public:
     cguid();
+
+    /*!
+        Constructor from byte array
+        @param pguid A 16 byte GUID array
+    */
+    cguid(const uint8_t *pguid);
+
+    /*!
+        Constructor from othe rguid class
+        @param guid cguid class to make new class from
+    */
     cguid(const cguid &guid);
+
+    /*!
+        Constructor form GUID on string form
+        @param strGUID GUID on string form "FF:AA:11..."
+    */
     cguid(const std::string &strGUID);
     virtual ~cguid();
 

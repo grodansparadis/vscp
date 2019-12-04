@@ -55,6 +55,11 @@ cguid::cguid()
     clear();
 }
 
+cguid::cguid(const uint8_t *pguid)
+{
+    memcpy(m_id, pguid, sizeof(m_id));
+}
+
 cguid::cguid(const cguid &guid)
 {
     memcpy(m_id, guid.m_id, sizeof(m_id));
