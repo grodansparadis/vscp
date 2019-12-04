@@ -2214,19 +2214,19 @@ dmElement::handleEscapes(vscpEvent *pEvent, std::string &str)
             // Check for measurement.float escape
             else if (vscp_startsWith(str, "%measurement.float", &str)) {
                 std::string str;
-                vscp_getVSCPMeasurementAsString(pEvent, str);
+                vscp_getMeasurementAsString(pEvent, str);
                 strResult += str;
             }
             // Check for measurement.string escape
             else if (vscp_startsWith(str, "%measurement.string", &str)) {
                 std::string str;
-                vscp_getVSCPMeasurementAsString(pEvent, str);
+                vscp_getMeasurementAsString(pEvent, str);
                 strResult += str;
             }
             // Check for measurement.convert.data escape
             else if (vscp_startsWith(str, "%measurement.convert.data", &str)) {
                 std::string str;
-                if (vscp_getVSCPMeasurementAsString(pEvent, str)) {
+                if (vscp_getMeasurementAsString(pEvent, str)) {
                     for (unsigned int i = 0; i < str.length(); i++) {
                         if (0 != i) {
                             strResult += ','; // Not at find
@@ -3795,7 +3795,7 @@ dmElement::doActionStoreVariable(vscpEvent *pDMEvent)
             case VSCP_DAEMON_VARIABLE_CODE_STRING:
                 if (vscp_isMeasurement(pDMEvent)) {
                     std::string strValue;
-                    if (vscp_getVSCPMeasurementAsString(pDMEvent, strValue)) {
+                    if (vscp_getMeasurementAsString(pDMEvent, strValue)) {
                         var.setValue(strValue);
                     } else {
 

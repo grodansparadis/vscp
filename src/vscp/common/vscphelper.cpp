@@ -2479,7 +2479,7 @@ vscp_getCANALidFromEvent(const vscpEvent* pEvent)
 uint32_t
 vscp_getCANALidFromEventEx(const vscpEventEx* pEvent)
 {
-    return (((unsigned long)vscp_getEventPriorityEx(pEvent) << 26) |
+    return (((unsigned long)vscp_getEventExPriority(pEvent) << 26) |
             ((unsigned long)pEvent->vscp_class << 16) |
             ((unsigned long)pEvent->vscp_type << 8) | 0);
 }
@@ -4036,7 +4036,7 @@ vscp_doLevel2FilterEx(const vscpEventEx* pEventEx,
 
     // Test priority
     if (0xff != (uint8_t)(~(pFilter->filter_priority ^
-                            vscp_getEventPriorityEx(pEventEx)) |
+                            vscp_getEventExPriority(pEventEx)) |
                           ~pFilter->mask_priority))
         return false;
 

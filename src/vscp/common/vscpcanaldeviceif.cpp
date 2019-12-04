@@ -539,7 +539,7 @@ startCanalXMLParser(void *data, const char *name, const char **attr)
                 uint16_t sz;
                 uint8_t buf[VSCP_MAX_DATA];
                 memset(buf, 0, sizeof(buf));
-                vscp_setVscpDataArrayFromString(buf, &sz, str);
+                vscp_setDataArrayFromString(buf, &sz, str);
                 memcpy( pmsg->data, buf, pmsg->sizeData );
             }
         }
