@@ -908,21 +908,21 @@ extern "C"
         @param pEvent Pointer to VSCP event to set priority for.
         @return Priority (0-7) for event.
         */
-    unsigned char vscp_getEventPriorityEx(const vscpEventEx* pEvent);
+    unsigned char vscp_getEventExPriority(const vscpEventEx* pEvent);
 
     /*!
         Set VSCP priority
         @param pEvent Pointer to VSCP event to set priority for.
         @param priority Priority (0-7) to set.
         */
-    void vscp_setVscpPriority(vscpEvent* pEvent, unsigned char priority);
+    void vscp_setEventPriority(vscpEvent* pEvent, unsigned char priority);
 
     /*!
     Set VSCP priority Ex
     @param pEvent Pointer to VSCP event to set priority for.
     @param priority Priority (0-7) to set.
     */
-    void vscp_setEventPriorityEx(vscpEventEx* pEvent, unsigned char priority);
+    void vscp_setEventExPriority(vscpEventEx* pEvent, unsigned char priority);
 
     /*!
         Get VSCP head from CANAL id

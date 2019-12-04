@@ -2359,10 +2359,10 @@ vscp_getEventPriority(const vscpEvent* pEvent)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// vscp_getEventPriorityEx
+// vscp_getEventExPriority
 
 unsigned char
-vscp_getEventPriorityEx(const vscpEventEx* pEvent)
+vscp_getEventExPriority(const vscpEventEx* pEvent)
 {
     // Must be a valid message pointer
     if (NULL == pEvent)
@@ -2386,10 +2386,10 @@ vscp_setEventPriority(vscpEvent* pEvent, unsigned char priority)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// vscp_setEventPriorityEx
+// vscp_setEventExPriority
 
 void
-vscp_setEventPriorityEx(vscpEventEx* pEvent, unsigned char priority)
+vscp_setEventExPriority(vscpEventEx* pEvent, unsigned char priority)
 {
     // Must be a valid message pointer
     if (NULL == pEvent)
