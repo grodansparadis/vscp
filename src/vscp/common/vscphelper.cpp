@@ -3245,11 +3245,8 @@ vscp_convertEventToJSON(std::string& strJSON, vscpEvent* pEvent)
         return false;
 
     vscp_writeGuidArrayToString(strguid, pEvent->GUID); // GUID to string
-    vscp_writeVscpDataWithSizeToString(pEvent->sizeData,
-                                       pEvent->pdata,
-                                       strJSON,
-                                       false,
-                                       false); // Event data to string
+    vscp_writeVscpDataWithSizeToString(
+      strdata, pEvent->pdata, pEvent->sizeData, false);
 
     std::string dt;
     vscp_getDateStringFromEvent(dt, pEvent);
@@ -3383,9 +3380,9 @@ vscp_convertEventExToJSON(std::string& strJSON, vscpEventEx* pEventEx)
         return false;
 
     vscp_writeGuidArrayToString(strguid, pEventEx->GUID); // GUID to string
-    vscp_writeVscpDataWithSizeToString(pEventEx->sizeData,
+    vscp_writeVscpDataWithSizeToString(strdata,
                                        pEventEx->data,
-                                       strJSON,
+                                       pEventEx->sizeData,
                                        false,
                                        false); // Event data to string
 
@@ -3518,9 +3515,9 @@ vscp_convertEventToXML(std::string& strXML, vscpEvent* pEvent)
         return false;
 
     vscp_writeGuidArrayToString(strguid, pEvent->GUID); // GUID to string
-    vscp_writeVscpDataWithSizeToString(pEvent->sizeData,
+    vscp_writeVscpDataWithSizeToString(strdata,
                                        pEvent->pdata,
-                                       strXML,
+                                       pEvent->sizeData,
                                        false,
                                        false); // Event data to string
 
@@ -3653,9 +3650,9 @@ vscp_convertEventExToXML(std::string& strXML, vscpEventEx* pEventEx)
         return false;
 
     vscp_writeGuidArrayToString(strguid, pEventEx->GUID); // GUID to string
-    vscp_writeVscpDataWithSizeToString(pEventEx->sizeData,
+    vscp_writeVscpDataWithSizeToString(strdata,
                                        pEventEx->data,
-                                       strXML,
+                                       pEventEx->sizeData,
                                        false,
                                        false); // Event data to string
 
@@ -3789,9 +3786,9 @@ vscp_convertEventToHTML(std::string& strHTML, vscpEvent* pEvent)
         return false;
 
     vscp_writeGuidArrayToString(strguid, pEvent->GUID); // GUID to string
-    vscp_writeVscpDataWithSizeToString(pEvent->sizeData,
+    vscp_writeVscpDataWithSizeToString(strdata,
                                        pEvent->pdata,
-                                       strHTML,
+                                       pEvent->sizeData,
                                        false,
                                        false); // Event data to string
 
@@ -3830,9 +3827,9 @@ vscp_convertEventExToHTML(std::string& strHTML, vscpEventEx* pEventEx)
         return false;
 
     vscp_writeGuidArrayToString(strguid, pEventEx->GUID); // GUID to string
-    vscp_writeVscpDataWithSizeToString(pEventEx->sizeData,
+    vscp_writeVscpDataWithSizeToString(strdata,
                                        pEventEx->data,
-                                       strHTML,
+                                       pEventEx->sizeData,
                                        false,
                                        false); // Event data to string
 
@@ -4744,8 +4741,8 @@ vscp_convertEventExToCanal(canalMsg* pcanalMsg, const vscpEventEx* pvscpEventEx)
 //
 
 bool
-vscp_writeVscpDataToString(const vscpEvent* pEvent,
-                           std::string& str,
+vscp_writeVscpDataToString(std::string& str,
+                           const vscpEvent* pEvent,
                            bool bUseHtmlBreak,
                            bool bBreak)
 {
@@ -4781,14 +4778,14 @@ vscp_writeVscpDataToString(const vscpEvent* pEvent,
     return true;
 }
 
-//////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////g////////////////////////////////////////
 // writeVscpDataWithSizeToString
 //
 
 bool
-vscp_writeVscpDataWithSizeToString(const uint16_t sizeData,
+vscp_writeVscpDataWithSizeToString(std::string& str,
                                    const unsigned char* pData,
-                                   std::string& str,
+                                   const uint16_t sizeData,
                                    bool bUseHtmlBreak,
                                    bool bBreak)
 {
@@ -5057,7 +5054,7 @@ vscp_writeVscpEventToString(std::string& str, const vscpEvent* pEvent)
         str += ",";
 
         std::string strData;
-        vscp_writeVscpDataToString(pEvent, strData);
+        vscp_writeVscpDataToString(strData, pEvent);
         str += strData;
     }
 

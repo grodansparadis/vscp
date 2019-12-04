@@ -1489,32 +1489,34 @@ extern "C"
         Write VSCP data to string
         DEPRECATED USE: vscp_writeVscpDataWithSizeToString
 
-        @param pEvent Pointer to event where data is fetched from
         @param str String that receive result.
+        @param pEvent Pointer to event where data is fetched from
         @param bUseHtmlBreak Set to true to use <br> instead of \\n as
-        line break
+                line break
+        @param bBreak String gets formated in groups of eight bytes with
+                a break between the lines.
         @return True on success false on failure.
     */
 
-    bool vscp_writeVscpDataToString(const vscpEvent* pEvent,
-                                    std::string& str,
+    bool vscp_writeVscpDataToString(std::string& str,
+                                    const vscpEvent* pEvent,
                                     bool bUseHtmlBreak = false,
                                     bool bBreak = false);
 
     /*!
         Write VSCP data to string
 
-        @param sizeData Number of data bytes.
-        @param pData Pointer to data structure.
         @param str String that receive result.
+        @param pData Pointer to data structure.
+        @param sizeData Number of data bytes.
         @param bUseHtmlBreak Set to true to use <br> instead of \\n as
         line break
         @return True on success false on failure.
     */
 
-    bool vscp_writeVscpDataWithSizeToString(const uint16_t sizeData,
+    bool vscp_writeVscpDataWithSizeToString(std::string& str,
                                             const unsigned char* pData,
-                                            std::string& str,
+                                            const uint16_t sizeData,
                                             bool bUseHtmlBreak = false,
                                             bool bBreak = true);
 
