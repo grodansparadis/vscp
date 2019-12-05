@@ -53,6 +53,8 @@
 #include <float.h>
 #include <semaphore.h>
 
+#include <byteswap.h>
+
 #include <canal.h>
 #include <vscp.h>
 #include <vscp_class.h>
@@ -101,7 +103,7 @@
                (((uint64_t)(val) & (uint64_t)(0x00ff000000000000)) >> 40) |    \
                (((uint64_t)(val) & (uint64_t)(0xff00000000000000)) >> 56)))
 
-#ifdef WORDS_BIGENDIAN
+#ifdef __BIG_ENDIAN__
 #define VSCP_UINT16_SWAP_ON_BE(val) VSCP_UINT16_SWAP_ALWAYS(val)
 #define VSCP_INT16_SWAP_ON_BE(val) VSCP_INT16_SWAP_ALWAYS(val)
 #define VSCP_UINT16_SWAP_ON_LE(val) (val)

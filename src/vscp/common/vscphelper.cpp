@@ -966,12 +966,14 @@ vscp_getDataCodingNormalizedInteger(const uint8_t* pCode, uint8_t length)
     bool bNegative = false; // set for negative number
 
     // Check pointer
-    if (NULL == pCode)
+    if (NULL == pCode) {
         return 0;
+    }
 
     // Check character count
-    if ((length > 8) || (length < 2))
+    if ((length > 8) || (length < 2)) {
         return 0;
+    }
 
     memset(valarray, 0, sizeof(valarray));
     normbyte = *pCode;
@@ -992,7 +994,7 @@ vscp_getDataCodingNormalizedInteger(const uint8_t* pCode, uint8_t length)
 
         case 2: // 16-bit
             memcpy((char*)&valarray, (pCode + 2), (length - 2));
-            value = VSCP_INT16_SWAP_ON_LE(*((int16_t*)valarray));
+            value = VSCP_INT16_SWAP_ON_LE(*((uint16_t*)valarray));
             break;
 
         case 3: // 24-bit
@@ -1313,7 +1315,7 @@ vscp_getMeasurementAsString(std::string& strValue, const vscpEvent* pEvent)
                 strValue = vscp_str_format("%.0lf", value);
             } break;
 
-            case 4: // normalised integer
+            case 4: // normalized integer
             {
                 double value = vscp_getDataCodingNormalizedInteger(
                   pEvent->pdata + offset, pEvent->sizeData - offset);
@@ -1433,7 +1435,7 @@ vscp_getMeasurementAsDouble(double* pvalue, const vscpEvent* pEvent)
 
 bool
 vscp_getMeasurementFloat64AsString(std::string& strValue,
-                                       const vscpEvent* pEvent)
+                                   const vscpEvent* pEvent)
 {
     int offset = 0;
 
@@ -1459,7 +1461,7 @@ vscp_getMeasurementFloat64AsString(std::string& strValue,
 
 bool
 vscp_getMeasurementWithZoneAsString(const vscpEvent* pEvent,
-                                        std::string& strValue)
+                                    std::string& strValue)
 {
     int offset = 0;
 
@@ -2449,8 +2451,8 @@ vscp_getNicknameFromCANALid(uint32_t id)
 
 uint32_t
 vscp_getCANALidFromData(unsigned char priority,
-                            const uint16_t vscp_class,
-                            const uint16_t vscp_type)
+                        const uint16_t vscp_class,
+                        const uint16_t vscp_type)
 {
     // unsigned long t1 = (unsigned long)priority << 20;
     // unsigned long t2 = (unsigned long)pvscpMsg->vscp_class << 16;
@@ -3381,10 +3383,10 @@ vscp_convertEventExToJSON(std::string& strJSON, vscpEventEx* pEventEx)
 
     vscp_writeGuidArrayToString(strguid, pEventEx->GUID); // GUID to string
     vscp_writeDataWithSizeToString(strdata,
-                                       pEventEx->data,
-                                       pEventEx->sizeData,
-                                       false,
-                                       false); // Event data to string
+                                   pEventEx->data,
+                                   pEventEx->sizeData,
+                                   false,
+                                   false); // Event data to string
 
     std::string dt;
     vscp_getDateStringFromEventEx(dt, pEventEx);
@@ -3516,10 +3518,10 @@ vscp_convertEventToXML(std::string& strXML, vscpEvent* pEvent)
 
     vscp_writeGuidArrayToString(strguid, pEvent->GUID); // GUID to string
     vscp_writeDataWithSizeToString(strdata,
-                                       pEvent->pdata,
-                                       pEvent->sizeData,
-                                       false,
-                                       false); // Event data to string
+                                   pEvent->pdata,
+                                   pEvent->sizeData,
+                                   false,
+                                   false); // Event data to string
 
     std::string dt;
     vscp_getDateStringFromEvent(dt, pEvent);
@@ -3651,10 +3653,10 @@ vscp_convertEventExToXML(std::string& strXML, vscpEventEx* pEventEx)
 
     vscp_writeGuidArrayToString(strguid, pEventEx->GUID); // GUID to string
     vscp_writeDataWithSizeToString(strdata,
-                                       pEventEx->data,
-                                       pEventEx->sizeData,
-                                       false,
-                                       false); // Event data to string
+                                   pEventEx->data,
+                                   pEventEx->sizeData,
+                                   false,
+                                   false); // Event data to string
 
     std::string dt;
     vscp_getDateStringFromEventEx(dt, pEventEx);
@@ -3787,10 +3789,10 @@ vscp_convertEventToHTML(std::string& strHTML, vscpEvent* pEvent)
 
     vscp_writeGuidArrayToString(strguid, pEvent->GUID); // GUID to string
     vscp_writeDataWithSizeToString(strdata,
-                                       pEvent->pdata,
-                                       pEvent->sizeData,
-                                       false,
-                                       false); // Event data to string
+                                   pEvent->pdata,
+                                   pEvent->sizeData,
+                                   false,
+                                   false); // Event data to string
 
     std::string dt;
     vscp_getDateStringFromEvent(dt, pEvent);
@@ -3828,10 +3830,10 @@ vscp_convertEventExToHTML(std::string& strHTML, vscpEventEx* pEventEx)
 
     vscp_writeGuidArrayToString(strguid, pEventEx->GUID); // GUID to string
     vscp_writeDataWithSizeToString(strdata,
-                                       pEventEx->data,
-                                       pEventEx->sizeData,
-                                       false,
-                                       false); // Event data to string
+                                   pEventEx->data,
+                                   pEventEx->sizeData,
+                                   false,
+                                   false); // Event data to string
 
     std::string dt;
     vscp_getDateStringFromEventEx(dt, pEventEx);
@@ -4746,9 +4748,9 @@ vscp_convertEventExToCanal(canalMsg* pcanalMsg, const vscpEventEx* pvscpEventEx)
 
 bool
 vscp_writeDataToString(std::string& str,
-                           const vscpEvent* pEvent,
-                           bool bUseHtmlBreak,
-                           bool bBreak)
+                       const vscpEvent* pEvent,
+                       bool bUseHtmlBreak,
+                       bool bBreak)
 {
     std::string wrk, strBreak;
 
@@ -4788,10 +4790,10 @@ vscp_writeDataToString(std::string& str,
 
 bool
 vscp_writeDataWithSizeToString(std::string& str,
-                                   const unsigned char* pData,
-                                   const uint16_t sizeData,
-                                   bool bUseHtmlBreak,
-                                   bool bBreak)
+                               const unsigned char* pData,
+                               const uint16_t sizeData,
+                               bool bUseHtmlBreak,
+                               bool bBreak)
 {
     std::string wrk, strBreak;
 
@@ -4897,8 +4899,8 @@ vscp_setEventExDataFromString(vscpEventEx* pEventEx, const std::string& str)
 
 bool
 vscp_setDataArrayFromString(uint8_t* pData,
-                                uint16_t* psizeData,
-                                const std::string& str)
+                            uint16_t* psizeData,
+                            const std::string& str)
 {
     // Check pointers
     if (NULL == pData)
@@ -5065,17 +5067,17 @@ vscp_convertEventToString(std::string& str, const vscpEvent* pEvent)
     return true;
 }
 
-
 ///////////////////////////////////////////////////////////////////////////////
 // vscp_getEventAsString
 //
 
-std::string vscp_getEventAsString(const vscpEvent* pEvent) {
+std::string
+vscp_getEventAsString(const vscpEvent* pEvent)
+{
     std::string str;
     vscp_convertEventToString(str, pEvent);
     return str;
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // convertEventExToString
@@ -5105,7 +5107,9 @@ vscp_convertEventExToString(std::string& str, const vscpEventEx* pEventEx)
 // vscp_getEventExAsString
 //
 
-std::string vscp_getEventExAsString(const vscpEventEx* pEventEx) {
+std::string
+vscp_getEventExAsString(const vscpEventEx* pEventEx)
+{
     std::string str;
     vscp_convertEventExToString(str, pEventEx);
     return str;
@@ -5246,8 +5250,7 @@ vscp_convertStringToEvent(vscpEvent* pEvent, const std::string& strEvent)
 //
 
 bool
-vscp_convertStringToEventEx(vscpEventEx* pEventEx,
-                              const std::string& strEvent)
+vscp_convertStringToEventEx(vscpEventEx* pEventEx, const std::string& strEvent)
 {
     bool rv;
     vscpEvent event;
@@ -6027,11 +6030,11 @@ vscp_getEventExFromUdpFrame(vscpEventEx* pEventEx,
 
 size_t
 vscp_encryptUdpFrame(uint8_t* output,
-                         uint8_t* input,
-                         size_t len,
-                         const uint8_t* key,
-                         const uint8_t* iv,
-                         uint8_t nAlgorithm)
+                     uint8_t* input,
+                     size_t len,
+                     const uint8_t* key,
+                     const uint8_t* iv,
+                     uint8_t nAlgorithm)
 {
     uint8_t generated_iv[16];
 
