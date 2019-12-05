@@ -1791,8 +1791,6 @@ vscp_convertFloatToNormalizedEventData(uint8_t* pdata,
     (void)modf(value, &intpart);
     val64 = (uint64_t)(value * pow(10.0, ndigits));
 
-    // val64 = VSCP_UINT64_SWAP_ON_LE(val64);   Not needed
-
     if (val64 < ((double)0x80)) {
         *psize = 3;
         pdata[2] = val64 & 0xff;
