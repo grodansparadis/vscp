@@ -959,7 +959,7 @@ vscp_getDataCodingNormalizedInteger(const uint8_t* pCode, uint8_t length)
     uint8_t valarray[8];
     uint8_t normbyte;
     uint8_t decibyte;
-#ifdef __BIG_ENDIAN__
+#ifndef __BIG_ENDIAN__
     int64_t value64;
 #endif
     double value = 0;
