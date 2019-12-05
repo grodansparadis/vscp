@@ -1116,13 +1116,14 @@ extern "C"
     /*!
         Convert a standard VSCP event to the Ex version
         */
-    bool vscp_convertEventToEventEx(vscpEventEx* pEventEx, const vscpEvent* pEvent);
+    bool vscp_convertEventToEventEx(vscpEventEx* pEventEx,
+                                    const vscpEvent* pEvent);
 
     /*!
         Convert an Ex event to a standard VSCP event
         */
     bool vscp_convertEventExToEvent(vscpEvent* pEvent,
-                                 const vscpEventEx* pEventEx);
+                                    const vscpEventEx* pEventEx);
 
     /*!
      * Create a standard VSCP event
@@ -1483,8 +1484,7 @@ extern "C"
     @param pEventFrom Pointer to event to copy from.
     @return True on success.
 */
-    bool vscp_copyEventEx(vscpEventEx* pEventTo,
-                              const vscpEventEx* pEventFrom);
+    bool vscp_copyEventEx(vscpEventEx* pEventTo, const vscpEventEx* pEventFrom);
 
     /*!
         Write VSCP data to string
@@ -1511,7 +1511,9 @@ extern "C"
         @param pData Pointer to data structure.
         @param sizeData Number of data bytes.
         @param bUseHtmlBreak Set to true to use <br> instead of \\n as
-        line break
+               line break
+        @param bDecimal True if string should have decimal numbers instead of
+               hexadecimal numbers.
         @return True on success false on failure.
     */
 
@@ -1519,7 +1521,8 @@ extern "C"
                                         const unsigned char* pData,
                                         const uint16_t sizeData,
                                         bool bUseHtmlBreak = false,
-                                        bool bBreak = true);
+                                        bool bBreak = true,
+                                        bool bDecimal = false);
 
     /*!
         Set VSCP Event data from a string
@@ -1584,7 +1587,6 @@ extern "C"
 
     bool vscp_convertEventExToString(std::string& str,
                                      const vscpEventEx* pEvent);
-
 
     /*!
         Get EventEx as string

@@ -3248,7 +3248,7 @@ vscp_convertEventToJSON(std::string& strJSON, vscpEvent* pEvent)
 
     vscp_writeGuidArrayToString(strguid, pEvent->GUID); // GUID to string
     vscp_writeDataWithSizeToString(
-      strdata, pEvent->pdata, pEvent->sizeData, false);
+      strdata, pEvent->pdata, pEvent->sizeData, false,false,true);
 
     std::string dt;
     vscp_getDateStringFromEvent(dt, pEvent);
@@ -3386,7 +3386,8 @@ vscp_convertEventExToJSON(std::string& strJSON, vscpEventEx* pEventEx)
                                    pEventEx->data,
                                    pEventEx->sizeData,
                                    false,
-                                   false); // Event data to string
+                                   false,
+                                   true); 
 
     std::string dt;
     vscp_getDateStringFromEventEx(dt, pEventEx);
@@ -4793,7 +4794,8 @@ vscp_writeDataWithSizeToString(std::string& str,
                                const unsigned char* pData,
                                const uint16_t sizeData,
                                bool bUseHtmlBreak,
-                               bool bBreak)
+                               bool bBreak,
+                               bool bDecimal)
 {
     std::string wrk, strBreak;
 
@@ -4811,7 +4813,11 @@ vscp_writeDataWithSizeToString(std::string& str,
 
     for (int i = 0; i < sizeData; i++) {
 
-        wrk = vscp_str_format("0x%02X", pData[i]);
+        if (bDecimal) {
+            wrk = vscp_str_format("%d", pData[i]);
+        } else {
+            wrk = vscp_str_format("0x%02X", pData[i]);
+        }
 
         if (i < (sizeData - 1)) {
             wrk += ",";
