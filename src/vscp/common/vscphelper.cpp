@@ -959,7 +959,7 @@ vscp_getDataCodingNormalizedInteger(const uint8_t* pCode, uint8_t length)
     uint8_t valarray[8];
     uint8_t normbyte;
     uint8_t decibyte;
-#ifndef WORDS_BIGENDIAN
+#ifdef __BIG_ENDIAN__
     int64_t value64;
 #endif
     double value = 0;
@@ -1017,7 +1017,7 @@ vscp_getDataCodingNormalizedInteger(const uint8_t* pCode, uint8_t length)
                 *(valarray + 2) = 0xff;
             }
 
-#ifdef WORDS_BIGENDIAN
+#ifdef __BIG_ENDIAN__
             value = *((int64_t*)valarray);
 #else
             value64 = Swap8Bytes(*((int64_t*)valarray));
@@ -1032,7 +1032,7 @@ vscp_getDataCodingNormalizedInteger(const uint8_t* pCode, uint8_t length)
                 *(valarray + 1) = 0xff;
             }
 
-#ifdef WORDS_BIGENDIAN
+#ifdef __BIG_ENDIAN__
             value = *((int64_t*)valarray);
 #else
             value64 = Swap8Bytes(*((int64_t*)valarray));
