@@ -638,7 +638,7 @@ extern "C"
     /*!
         Get the string from coded event data
         @param strResult Returned string result
-        @param pCode Pointer to normalised integer.
+        @param pCode Pointer to normalized integer.
         @param dataSize Number of bytes it consist of including
         the first normalise byte.
         @return Returns unicode UTF-8 string of event data
