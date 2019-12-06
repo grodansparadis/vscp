@@ -961,9 +961,9 @@ extern "C"
         @param vscp_type VSCP type
         @return CAN id with nickname == 0
         */
-    uint32_t vscp_getCANALidFromVSCPdata(unsigned char priority,
-                                         const uint16_t vscp_class,
-                                         const uint16_t vscp_type);
+    uint32_t vscp_getCANALidFromData(unsigned char priority,
+                                     const uint16_t vscp_class,
+                                     const uint16_t vscp_type);
 
     /*!
         Get CANAL id from VSCP event
