@@ -622,7 +622,7 @@ extern "C"
         @param length Number of bytes it consist of including
         the first normalise byte.
         @return returns value as a 64-bit integer.
-        */
+    */
     int64_t vscp_getDataCodingInteger(const uint8_t* pCode, uint8_t length);
 
     /*!
@@ -808,7 +808,7 @@ extern "C"
         @param value Floating point value to convert.
         @param pEvent Pointer to event with pdata set to NULL. vscp_class and
         vscp_type must be set to CLASS1.MEASUREMENT or
-       CLASS2_LEVEL1.MEASUREMENT,
+        CLASS2_LEVEL1.MEASUREMENT,
         @param psize Pointer to size for returned data.
         @param unit Unit for the data. Zero is default.
         @param sensoridx Sensor index 0-7. Zero is default.
@@ -895,34 +895,34 @@ extern "C"
         Replace backslashes in a string with forward slashes
         @param strval String that should be handled.
         @return Fixed string.
-        */
+    */
     std::string& vscp_replaceBackslash(std::string& strval);
 
     /*!
         Get VSCP priority
         @param pEvent Pointer to VSCP event to set priority for.
         @return Priority (0-7) for event.
-        */
+    */
     unsigned char vscp_getEventPriority(const vscpEvent* pEvent);
 
     /*!
         Get VSCP priority
         @param pEvent Pointer to VSCP event to set priority for.
         @return Priority (0-7) for event.
-        */
+    */
     unsigned char vscp_getEventExPriority(const vscpEventEx* pEvent);
 
     /*!
         Set VSCP priority
         @param pEvent Pointer to VSCP event to set priority for.
         @param priority Priority (0-7) to set.
-        */
+    */
     void vscp_setEventPriority(vscpEvent* pEvent, unsigned char priority);
 
     /*!
-    Set VSCP priority Ex
-    @param pEvent Pointer to VSCP event to set priority for.
-    @param priority Priority (0-7) to set.
+        Set VSCP priority Ex
+        @param pEvent Pointer to VSCP event to set priority for.
+        @param priority Priority (0-7) to set.
     */
     void vscp_setEventExPriority(vscpEventEx* pEvent, unsigned char priority);
 
@@ -930,28 +930,28 @@ extern "C"
         Get VSCP head from CANAL id
         @param id CAN id
         @return VSCP head
-        */
+    */
     unsigned char vscp_getHeadFromCANALid(uint32_t id);
 
     /*!
         Get VSCP class from CANAL id
         @param id CAN id
         @return VSCP class
-        */
+    */
     uint16_t vscp_getVscpClassFromCANALid(uint32_t id);
 
     /*!
         Get VSCP type from CANAL id
         @param id CAN id
         @return VSCP type
-        */
+    */
     uint16_t vscp_getVscpTypeFromCANALid(uint32_t id);
 
     /*!
         Get VSCP nide nickname from CANAL id
         @param id CAN id
         @return VSCP node nickname
-        */
+    */
     uint8_t vscp_getNicknameFromCANALid(uint32_t id);
 
     /*!
@@ -960,7 +960,7 @@ extern "C"
         @param vscp_class VSCP class
         @param vscp_type VSCP type
         @return CAN id with nickname == 0
-        */
+    */
     uint32_t vscp_getCANALidFromData(unsigned char priority,
                                      const uint16_t vscp_class,
                                      const uint16_t vscp_type);
@@ -969,24 +969,24 @@ extern "C"
         Get CANAL id from VSCP event
         @param pEvent Pointer to VSCP event
         @return CAN id with nickname == 0
-        */
+    */
     uint32_t vscp_getCANALidFromEvent(const vscpEvent* pEvent);
 
     /*!
         Get CAN id from VSCP event
         @param pEvent Pointer to VSCP event
         @return CAN id with nickname == 0
-        */
+    */
     uint32_t vscp_getCANALidFromEventEx(const vscpEventEx* pEvent);
 
     /*!
         Calculate CRC for VSCP event
-        */
+    */
     unsigned short vscp_calc_crc_Event(vscpEvent* pEvent, short bSet);
 
     /*!
         Calculate CRC for VSCP event
-        */
+    */
     unsigned short vscp_calc_crc_EventEx(vscpEventEx* pEvent, short bSet);
 
     // Helpers
@@ -1014,7 +1014,6 @@ extern "C"
         @param strGUID String with GUID (xx:yy:zz....)
         @return True on success, false on failure.
     */
-
     bool vscp_setEventGuidFromString(vscpEvent* pEvent,
                                      const std::string& strGUID);
 
@@ -1025,14 +1024,12 @@ extern "C"
         @param strGUID String with GUID (xx:yy:zz....)
         @return True on success, false on failure.
     */
-
     bool vscp_setEventExGuidFromString(vscpEventEx* pEventEx,
                                        const std::string& strGUID);
 
     /*!
         Fill event GUID from a string
     */
-
     bool vscp_getGuidFromStringToArray(unsigned char* pGUID,
                                        const std::string& strGUID);
 
@@ -1043,7 +1040,6 @@ extern "C"
         @param pGUID Pointer to VSCP GUID array.
         @return True on success, false on failure.
     */
-
     bool vscp_writeGuidArrayToString(std::string& strGUID,
                                      const unsigned char* pGUID);
 

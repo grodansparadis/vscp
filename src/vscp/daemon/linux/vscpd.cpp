@@ -142,7 +142,7 @@ main(int argc, char **argv)
 
     crcInit();
 
-    rootFolder   = "/var/lib/vscp/";
+    rootFolder   = "/var/lib/vscpd/";
     strcfgfile   = "/etc/vscp/vscpd.xml";
     gbStopDaemon = false;
 

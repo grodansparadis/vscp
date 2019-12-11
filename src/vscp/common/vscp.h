@@ -86,18 +86,24 @@ extern "C"
 
         /* ----- CRC should be calculated from here to end + data block ----  */
 
-        uint16_t head; /* Bit 15   GUID is IP v.6 address. */
-        /* Bit 14   This is a dumb node. No MDF, register, nothing. */
-        /* Bit 8-13 = Reserved */
-        /* bit 765  priority, Priority 0-7 where 0 is highest. */
-        /* bit 4 = hard coded, true for a hard coded device. */
-        /* bit 3 = Don't calculate CRC, false for CRC usage. */
-        /*          Just checked when CRC is used.                */
-        /*          If set the CRC should be set to 0xAA55 for    */
-        /*          the event to be accepted without a CRC check. */
-        /* bit 2 = Rolling index. */
-        /* bit 1 = Rolling index. */
-        /* bit 0 = Rolling index. */
+        /*
+            Bit 15 - This is a dumb node. No MDF, register, nothing.
+            Bit 14 - GUID type 
+            Bit 13 - GUID type
+            Bit 12 - GUID type (GUID is IP v.6 address.)
+            Bit 8-11 = Reserved
+            Bit 765 =  priority, Priority 0-7 where 0 is highest.
+            Bit 4 = hard coded, true for a hard coded device.
+            Bit 3 = Don't calculate CRC, false for CRC usage.
+                  Just checked when CRC is used.
+                  If set the CRC should be set to 0xAA55 for
+                  the event to be accepted without a CRC check.
+            Bit 2 = Rolling index.
+            Bit 1 = Rolling index.
+            Bit 0 = Rolling index.
+        */
+        uint16_t head;
+
         uint16_t vscp_class; /* VSCP class */
         uint16_t vscp_type;  /* VSCP type */
         uint8_t GUID[16];    /* Node globally unique id MSB(0) -> LSB(15) */
@@ -136,17 +142,22 @@ extern "C"
 
         /* CRC should be calculated from here to end + data block */
         uint16_t head; /* Bit 15   GUID is IP v.6 address. */
-        /* Bit 14   This is a dumb node. No MDF, register, nothing. */
-        /* Bit 8-13 = Reserved */
-        /* bit 7,6,5 priority => Priority 0-7 where 0 is highest. */
-        /* bit 4 = hard coded, true for a hard coded device. */
-        /* bit 3 = Don't calculate CRC, Set to zero to use CRC. */
-        /*          Just checked when CRC is used. */
-        /*          If set the CRC should be set to 0xAA55 for */
-        /*          the event to be accepted without a CRC check. */
-        /* bit 2 = Rolling index. */
-        /* bit 1 = Rolling index. */
-        /* bit 0 = Rolling index. */
+        /*
+            Bit 15 - This is a dumb node. No MDF, register, nothing.
+            Bit 14 - GUID type 
+            Bit 13 - GUID type
+            Bit 12 - GUID type (GUID is IP v.6 address.)
+            Bit 8-11 = Reserved
+            Bit 765 =  priority, Priority 0-7 where 0 is highest.
+            Bit 4 = hard coded, true for a hard coded device.
+            Bit 3 = Don't calculate CRC, false for CRC usage.
+                  Just checked when CRC is used.
+                  If set the CRC should be set to 0xAA55 for
+                  the event to be accepted without a CRC check.
+            Bit 2 = Rolling index.
+            Bit 1 = Rolling index.
+            Bit 0 = Rolling index.
+        */
         uint16_t vscp_class; /* VSCP class   */
         uint16_t vscp_type;  /* VSCP type    */
         uint8_t GUID[16];    /* Node globally unique id MSB(0) -> LSB(15)    */
@@ -181,8 +192,15 @@ extern "C"
 
 #define VSCP_NO_CRC_CALC 0x08 /* If set no CRC is calculated */
 
-#define VSCP_HEADER16_IPV6_GUID 0x8000 /* GUID is IPv6 address */
-#define VSCP_HEADER16_DUMB 0x4000      /* This node is dumb */
+#define VSCP_HEADER16_IPV6_GUID 0x1000 /* GUID is IPv6 address */
+#define VSCP_HEADER16_DUMB 0x8000      /* This node is dumb */
+
+/* Bits 14/13/12 for GUID type */
+#define VSCP_HEADER16_GUID_TYPE_STANDARD  0x0000 /* VSCP standard GUID */
+#define VSCP_HEADER16_GUID_TYPE_IPV6  0x1000 /* GUID is IPv6 address */
+/* https://www.sohamkamani.com/blog/2016/10/05/uuid1-vs-uuid4/ */
+#define VSCP_HEADER16_GUID_TYPE_RFC4122V1  0x2000 /* GUID is RFC 4122 Version 1 */
+#define VSCP_HEADER16_GUID_TYPE_RFC4122V4  0x3000 /* GUID is RFC 4122 Version 4 */
 
 #define VSCP_MASK_PRIORITY 0xE0
 #define VSCP_MASK_HARDCODED 0x10
@@ -557,7 +575,6 @@ extern "C"
 #define VSCP_ERROR_WRITE_ERROR 46     /* Error when writing data */
 #define VSCP_ERROR_STOPPED 47         /* Operation stopped or aborted */
 #define VSCP_ERROR_INVALID_POINTER 48 /* Pointer with invalid value */
-
 
 /*
     Template for VSCP XML event data
