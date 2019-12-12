@@ -2,7 +2,7 @@
 
 # Use as a VSCP action to update meaurement values to open.sen.se
 # See http://www.vscp.org/wiki/doku.php/howto/how_to_xipythonvely?do=edit&rev=0
-# Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
+# Ake Hedman, Grodans Paradis AB, <akhe@vscp.org>
 # Copyright (C) Sebastien Lelong https://groups.google.com/forum/#!topic/sense-api/qXYtbLtpfMg
 
 import sys

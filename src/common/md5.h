@@ -1,6 +1,6 @@
 // md5.h: interface for the Cmd5 class.
 //
-// Copyright (C) 2000-2019 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
+// Copyright (C) 2000-2019 Ake Hedman, Grodans Paradis AB, <akhe@vscp.org>
 //
 // This software is placed into
 // the public domain and may be used for any purpose.  However, this

@@ -2,7 +2,7 @@
 
 # Use as a VSCP action to update meaurement values to Xively
 # See http://www.vscp.org/wiki/doku.php/howto/how_to_xively?do=edit&rev=0
-# Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
+# Ake Hedman, Grodans Paradis AB, <akhe@vscp.org>
 
 import sys
 import xively

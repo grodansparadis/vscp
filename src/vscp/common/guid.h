@@ -26,6 +26,13 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE./
 
+/*
+    RFC 4122 UUID generation
+    https://www.cryptosys.net/pki/uuid-rfc4122.html
+    libuuid-dev can be useful.
+    https://github.com/graeme-hill/crossguid
+*/
+
 #if !defined(_GUID_H__C2A773AD_8886_40F0_96C4_4DCA663402B2__INCLUDED_)
 #define _GUID_H__C2A773AD_8886_40F0_96C4_4DCA663402B2__INCLUDED_
 

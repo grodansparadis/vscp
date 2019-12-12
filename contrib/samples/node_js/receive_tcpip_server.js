@@ -12,7 +12,7 @@
 // which defaults to '127.0.0.1' '9598' 'admin' 'secret' '25'
 //
 // Part of VSCP & Friends - http://www.vscp.org
-// akhe@grodansparadis.com, Grodans Paradis AB, http://www.paradiseofthefrog.com
+// akhe@vscp.org, Grodans Paradis AB, http://www.paradiseofthefrog.com
 //
 var net = require('net');
 

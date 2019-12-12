@@ -1,10 +1,10 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: vscpl2drv-automation
-Upstream-Contact: Ake Hedman <akhe@grodansparadis.com>
+Upstream-Name: vscp
+Upstream-Contact: Ake Hedman <akhe@vscp.org>
 Source: https://github.com/grodansparadis/vscpl2drv-automation
 
 Files: *
-Copyright: 2000-2019 Ake Hedman <akhe@grodansparadis.com>
+Copyright: 2000-2019 Ake Hedman <akhe@vscp.org>
 License: MIT
 
 License: MIT

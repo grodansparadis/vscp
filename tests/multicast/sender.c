@@ -1,7 +1,7 @@
 /* sender.c
  *
  * Changed by Ake Hedman, for use with VSCP & Friends
- * Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
+ * Ake Hedman, Grodans Paradis AB, <akhe@vscp.org>
  *
  * Original header below
  * sender.c -- multicasts "hello, world!" to a multicast group once a second

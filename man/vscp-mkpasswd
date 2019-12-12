@@ -14,4 +14,4 @@ vscpd(8), uvscpd(8), vscpmkpasswd(8)
 .SH BUGS
 No known bugs.
 .SH AUTHOR
-Ake Hedman, Grodans Paradis AB (akhe@grodansparadis.com)
+Ake Hedman, Grodans Paradis AB (akhe@vscp.org)
