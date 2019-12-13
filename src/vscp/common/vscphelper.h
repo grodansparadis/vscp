@@ -1666,7 +1666,7 @@ extern "C"
      * @param pEvent Pointer to event.
      * @return Size of resulting UDP frame on success. Zero on failure.
      */
-    size_t vscp_getUDpFrameSizeFromEvent(vscpEvent* pEvent);
+    size_t vscp_getFrameSizeFromEvent(vscpEvent* pEvent);
 
     /*!
      * Get UDP frame size from event
@@ -1674,7 +1674,7 @@ extern "C"
      * @param pEventEx Pointer to event ex.
      * @return Size of resulting UDP frame on success. Zero on failure.
      */
-    size_t vscp_getUDpFrameSizeFromEventEx(vscpEventEx* pEventEx);
+    size_t vscp_getFrameSizeFromEventEx(vscpEventEx* pEventEx);
 
     /*!
      * Write event on UDP frame format
@@ -1686,7 +1686,7 @@ extern "C"
      * @param pEvent Pointer to event that should be handled.
      * @return True on success, false on failure.
      */
-    bool vscp_writeEventToUdpFrame(uint8_t* frame,
+    bool vscp_writeEventToFrame(uint8_t* frame,
                                    size_t len,
                                    uint8_t pkttype,
                                    const vscpEvent* pEvent);
@@ -1701,7 +1701,7 @@ extern "C"
      * @param pEventEx Pointer to event that should be handled.
      * @return True on success, false on failure.
      */
-    bool vscp_writeEventExToUdpFrame(uint8_t* frame,
+    bool vscp_writeEventExToFrame(uint8_t* frame,
                                      size_t len,
                                      uint8_t pkttype,
                                      const vscpEventEx* pEventEx);
@@ -1714,7 +1714,7 @@ extern "C"
      * @param len Size of the buffer.
      * @return True on success, false on failure.
      */
-    bool vscp_getEventFromUdpFrame(vscpEvent* pEvent,
+    bool vscp_getEventFromFrame(vscpEvent* pEvent,
                                    const uint8_t* buf,
                                    size_t len);
 
@@ -1727,7 +1727,7 @@ extern "C"
      * @param len Size of the buffer.
      * @return True on success, false on failure.
      */
-    bool vscp_getEventExFromUdpFrame(vscpEventEx* pEventEx,
+    bool vscp_getEventExFromFrame(vscpEventEx* pEventEx,
                                      const uint8_t* buf,
                                      size_t len);
 
@@ -1751,7 +1751,7 @@ extern "C"
      * @return Packet length on success, zero on failure.
      *
      */
-    size_t vscp_encryptVscpUdpFrame(uint8_t* output,
+    size_t vscp_encryptFrame(uint8_t* output,
                                     uint8_t* input,
                                     size_t len,
                                     const uint8_t* key,
@@ -1779,7 +1779,7 @@ extern "C"
      * recognised here.
      *
      */
-    bool vscp_decryptVscpUdpFrame(uint8_t* output,
+    bool vscp_decryptFrame(uint8_t* output,
                                   uint8_t* input,
                                   size_t len,
                                   const uint8_t* key,
