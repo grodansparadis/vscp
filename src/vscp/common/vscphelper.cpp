@@ -3246,7 +3246,7 @@ vscp_convertEventToJSON(std::string& strJSON, vscpEvent* pEvent)
 
     vscp_writeGuidArrayToString(strguid, pEvent->GUID); // GUID to string
     vscp_writeDataWithSizeToString(
-      strdata, pEvent->pdata, pEvent->sizeData, false,false,true);
+      strdata, pEvent->pdata, pEvent->sizeData, false, false, true);
 
     std::string dt;
     vscp_getDateStringFromEvent(dt, pEvent);
@@ -3380,12 +3380,8 @@ vscp_convertEventExToJSON(std::string& strJSON, vscpEventEx* pEventEx)
         return false;
 
     vscp_writeGuidArrayToString(strguid, pEventEx->GUID); // GUID to string
-    vscp_writeDataWithSizeToString(strdata,
-                                   pEventEx->data,
-                                   pEventEx->sizeData,
-                                   false,
-                                   false,
-                                   true); 
+    vscp_writeDataWithSizeToString(
+      strdata, pEventEx->data, pEventEx->sizeData, false, false, true);
 
     std::string dt;
     vscp_getDateStringFromEventEx(dt, pEventEx);
@@ -5723,7 +5719,8 @@ vscp_writeEventToUdpFrame(uint8_t* frame,
         return false;
 
     size_t calcSize = 1 + // Packet type
-                      VSCP_MULTICAST_PACKET0_HEADER_LENGTH + pEvent->sizeData +
+                      VSCP_MULTICAST_PACKET0_HEADER_LENGTH + 
+                      pEvent->sizeData +
                       2; // CRC
 
     if (len < calcSize)
