@@ -1743,11 +1743,12 @@ extern "C"
      * @param len This is the length of the UDP frame to be encrypted. This
      *          length includes the packet tye in the first byte.
      * @param key This is a pointer to the secret encryption key. This key
-     * should be 128 bits for AES128, 192 bits for AES192, 256 bits for AES256.
+     *          should be 128 bits for AES128, 192 bits for AES192, 256 bits
+     *          for AES256.
      * @param iv Pointer to the initialization vector. Should always point to a
-     * 128 bit content. If NULL the iv will be created from random system data.
-     * In both cases the end result will have the iv appended to the encrypted
-     * block.
+     *           128 bit content. If NULL the iv will be created from random
+     *            system data. In both cases the end result will have the iv
+     *            appended to the encrypted block.
      * @param nAlgorithm The VSCP defined algorithm to encrypt the frame with.
      * @return Packet length on success, zero on failure.
      *
@@ -1768,11 +1769,11 @@ extern "C"
      * @param input This is the UDP frame that should be decrypted.
      * @param len This is the length of the UDP frame to be decrypted.
      * @param key This is a pointer to the secret encryption key. This key
-     * should be 128 bytes for AES128, 192 bytes for AES192, 256 bytes for
-     * AES256.
+     *            should be 128 bytes for AES128, 192 bytes for AES192,
+     *            256 bytes for AES256.
      * @param iv Pointer to the initialization vector. Should always point to a
-     * 128 bit content. If NULL the iv is expected to be the last 16 bytes of
-     * the encrypted data.
+     *           128 bit content. If NULL the iv is expected to be the last
+     *           16 bytes of the encrypted data.
      * @param nAlgorithm The VSCP defined algorithm to decrypt the frame with.
      * @return True on success, false on failure.
      *
