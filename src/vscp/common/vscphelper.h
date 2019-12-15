@@ -105,30 +105,30 @@
 
 #ifdef __BIG_ENDIAN__
 #define VSCP_UINT16_SWAP_ON_BE(val) VSCP_UINT16_SWAP_ALWAYS(val)
-#define VSCP_INT16_SWAP_ON_BE(val) VSCP_INT16_SWAP_ALWAYS(val)
+#define VSCP_INT16_SWAP_ON_BE(val)  VSCP_INT16_SWAP_ALWAYS(val)
 #define VSCP_UINT16_SWAP_ON_LE(val) (val)
-#define VSCP_INT16_SWAP_ON_LE(val) (val)
+#define VSCP_INT16_SWAP_ON_LE(val)  (val)
 #define VSCP_UINT32_SWAP_ON_BE(val) VSCP_UINT32_SWAP_ALWAYS(val)
-#define VSCP_INT32_SWAP_ON_BE(val) VSCP_INT32_SWAP_ALWAYS(val)
+#define VSCP_INT32_SWAP_ON_BE(val)  VSCP_INT32_SWAP_ALWAYS(val)
 #define VSCP_UINT32_SWAP_ON_LE(val) (val)
-#define VSCP_INT32_SWAP_ON_LE(val) (val)
+#define VSCP_INT32_SWAP_ON_LE(val)  (val)
 #define VSCP_UINT64_SWAP_ON_BE(val) VSCP_UINT64_SWAP_ALWAYS(val)
 #define VSCP_UINT64_SWAP_ON_LE(val) (val)
-#define VSCP_INT64_SWAP_ON_BE(val) VSCP_INT64_SWAP_ALWAYS(val)
-#define VSCP_INT64_SWAP_ON_LE(val) (val)
+#define VSCP_INT64_SWAP_ON_BE(val)  VSCP_INT64_SWAP_ALWAYS(val)
+#define VSCP_INT64_SWAP_ON_LE(val)  (val)
 #else
 #define VSCP_UINT16_SWAP_ON_LE(val) VSCP_UINT16_SWAP_ALWAYS(val)
-#define VSCP_INT16_SWAP_ON_LE(val) VSCP_INT16_SWAP_ALWAYS(val)
+#define VSCP_INT16_SWAP_ON_LE(val)  VSCP_INT16_SWAP_ALWAYS(val)
 #define VSCP_UINT16_SWAP_ON_BE(val) (val)
-#define VSCP_INT16_SWAP_ON_BE(val) (val)
+#define VSCP_INT16_SWAP_ON_BE(val)  (val)
 #define VSCP_UINT32_SWAP_ON_LE(val) VSCP_UINT32_SWAP_ALWAYS(val)
-#define VSCP_INT32_SWAP_ON_LE(val) VSCP_INT32_SWAP_ALWAYS(val)
+#define VSCP_INT32_SWAP_ON_LE(val)  VSCP_INT32_SWAP_ALWAYS(val)
 #define VSCP_UINT32_SWAP_ON_BE(val) (val)
-#define VSCP_INT32_SWAP_ON_BE(val) (val)
+#define VSCP_INT32_SWAP_ON_BE(val)  (val)
 #define VSCP_UINT64_SWAP_ON_LE(val) VSCP_UINT64_SWAP_ALWAYS(val)
 #define VSCP_UINT64_SWAP_ON_BE(val) (val)
-#define VSCP_INT64_SWAP_ON_LE(val) VSCP_INT64_SWAP_ALWAYS(val)
-#define VSCP_INT64_SWAP_ON_BE(val) (val)
+#define VSCP_INT64_SWAP_ON_LE(val)  VSCP_INT64_SWAP_ALWAYS(val)
+#define VSCP_INT64_SWAP_ON_BE(val)  (val)
 #endif
 
 // Forward declaration
@@ -303,9 +303,10 @@ extern "C"
     static inline void vscp_makeUpper(std::string& s)
     {
         std::transform(
-          s.begin(), s.end(), s.begin(), [](unsigned char c) -> unsigned char {
-              return std::toupper(c);
-          });
+          s.begin(),
+          s.end(),
+          s.begin(),
+          [](unsigned char c) -> unsigned char { return std::toupper(c); });
     }
 
     // String to upper case (copying)
@@ -782,7 +783,7 @@ extern "C"
     bool vscp_convertIntegerToNormalizedEventData(uint8_t* pdata,
                                                   uint16_t* psize,
                                                   uint64_t val64,
-                                                  uint8_t unit = 0,
+                                                  uint8_t unit      = 0,
                                                   uint8_t sensoridx = 0);
 
     /*!
@@ -1440,21 +1441,21 @@ extern "C"
 
     /*!
         Convert an Event from a CANAL message
-        */
+    */
     bool vscp_convertCanalToEvent(vscpEvent* pvscpEvent,
                                   const canalMsg* pcanalMsg,
                                   unsigned char* pGUID);
 
     /*!
         Convert an Event from a CANAL message
-        */
+    */
     bool vscp_convertCanalToEventEx(vscpEventEx* pvscpEventEx,
                                     const canalMsg* pcanalMsg,
                                     unsigned char* pGUID);
 
     /*!
         Covert VSCP event to CANAL message
-        */
+    */
     bool vscp_convertEventToCanal(canalMsg* pcanalMsg,
                                   const vscpEvent* pvscpEvent);
 
@@ -1474,12 +1475,12 @@ extern "C"
     bool vscp_copyEvent(vscpEvent* pEventTo, const vscpEvent* pEventFrom);
 
     /*!
-    Copy one VSCP event ex to another
+        Copy one VSCP event ex to another
 
-    @param pEventTo Pointer to event to copy to.
-    @param pEventFrom Pointer to event to copy from.
-    @return True on success.
-*/
+        @param pEventTo Pointer to event to copy to.
+        @param pEventFrom Pointer to event to copy from.
+        @return True on success.
+    */
     bool vscp_copyEventEx(vscpEventEx* pEventTo, const vscpEventEx* pEventFrom);
 
     /*!
@@ -1498,7 +1499,7 @@ extern "C"
     bool vscp_writeDataToString(std::string& str,
                                 const vscpEvent* pEvent,
                                 bool bUseHtmlBreak = false,
-                                bool bBreak = false);
+                                bool bBreak        = false);
 
     /*!
         Write VSCP data to string
@@ -1517,8 +1518,8 @@ extern "C"
                                         const unsigned char* pData,
                                         const uint16_t sizeData,
                                         bool bUseHtmlBreak = false,
-                                        bool bBreak = true,
-                                        bool bDecimal = false);
+                                        bool bBreak        = true,
+                                        bool bDecimal      = false);
 
     /*!
         Set VSCP Event data from a string
@@ -1633,7 +1634,7 @@ extern "C"
                                               CMDF* pmdf);
 
     ////////////////////////////////////////////////////////////////////////////
-    // Encryption
+    //                           Encrypted frames
     ////////////////////////////////////////////////////////////////////////////
 
     /*!
@@ -1687,9 +1688,9 @@ extern "C"
      * @return True on success, false on failure.
      */
     bool vscp_writeEventToFrame(uint8_t* frame,
-                                   size_t len,
-                                   uint8_t pkttype,
-                                   const vscpEvent* pEvent);
+                                size_t len,
+                                uint8_t pkttype,
+                                const vscpEvent* pEvent);
 
     /*!
      * Write event ex on UDP frame format
@@ -1702,9 +1703,9 @@ extern "C"
      * @return True on success, false on failure.
      */
     bool vscp_writeEventExToFrame(uint8_t* frame,
-                                     size_t len,
-                                     uint8_t pkttype,
-                                     const vscpEventEx* pEventEx);
+                                  size_t len,
+                                  uint8_t pkttype,
+                                  const vscpEventEx* pEventEx);
 
     /*!
      * Get VSCP event from UDP frame
@@ -1715,8 +1716,8 @@ extern "C"
      * @return True on success, false on failure.
      */
     bool vscp_getEventFromFrame(vscpEvent* pEvent,
-                                   const uint8_t* buf,
-                                   size_t len);
+                                const uint8_t* buf,
+                                size_t len);
 
     /*!
      * Get VSCP event ex from UDP frame
@@ -1728,8 +1729,8 @@ extern "C"
      * @return True on success, false on failure.
      */
     bool vscp_getEventExFromFrame(vscpEventEx* pEventEx,
-                                     const uint8_t* buf,
-                                     size_t len);
+                                  const uint8_t* buf,
+                                  size_t len);
 
     /*!
      * Encrypt VSCP UDP frame using the selected encryption algorithm. The iv
@@ -1752,11 +1753,11 @@ extern "C"
      *
      */
     size_t vscp_encryptFrame(uint8_t* output,
-                                    uint8_t* input,
-                                    size_t len,
-                                    const uint8_t* key,
-                                    const uint8_t* iv,
-                                    uint8_t nAlgorithm);
+                             uint8_t* input,
+                             size_t len,
+                             const uint8_t* key,
+                             const uint8_t* iv,
+                             uint8_t nAlgorithm);
 
     /*!
      * Decrypt VSCP UDP frame using the selected encryption algorithm. The iv
@@ -1780,11 +1781,11 @@ extern "C"
      *
      */
     bool vscp_decryptFrame(uint8_t* output,
-                                  uint8_t* input,
-                                  size_t len,
-                                  const uint8_t* key,
-                                  const uint8_t* iv,
-                                  uint8_t nAlgorithm);
+                           uint8_t* input,
+                           size_t len,
+                           const uint8_t* key,
+                           const uint8_t* iv,
+                           uint8_t nAlgorithm);
 
     ///////////////////////////////////////////////////////////////////////////
     //                         Password/key handling
