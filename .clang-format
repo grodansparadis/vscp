@@ -3,7 +3,15 @@
 BasedOnStyle: Mozilla
 IndentWidth: 4
 
+# https://clang.llvm.org/docs/ClangFormatStyleOptions.html
 Language: Cpp
 # Force pointers to the type for C++.
+AlignAfterOpenBracket: Align
 DerivePointerAlignment: false
 PointerAlignment: Left
+AlignConsecutiveAssignments: true
+AlignConsecutiveMacros: true
+AlignEscapedNewlines: Right
+AlignTrailingComments: true
+AllowAllArgumentsOnNextLine: false
+AllowAllParametersOfDeclarationOnNextLine: false

@@ -105,30 +105,30 @@
 
 #ifdef __BIG_ENDIAN__
 #define VSCP_UINT16_SWAP_ON_BE(val) VSCP_UINT16_SWAP_ALWAYS(val)
-#define VSCP_INT16_SWAP_ON_BE(val) VSCP_INT16_SWAP_ALWAYS(val)
+#define VSCP_INT16_SWAP_ON_BE(val)  VSCP_INT16_SWAP_ALWAYS(val)
 #define VSCP_UINT16_SWAP_ON_LE(val) (val)
-#define VSCP_INT16_SWAP_ON_LE(val) (val)
+#define VSCP_INT16_SWAP_ON_LE(val)  (val)
 #define VSCP_UINT32_SWAP_ON_BE(val) VSCP_UINT32_SWAP_ALWAYS(val)
-#define VSCP_INT32_SWAP_ON_BE(val) VSCP_INT32_SWAP_ALWAYS(val)
+#define VSCP_INT32_SWAP_ON_BE(val)  VSCP_INT32_SWAP_ALWAYS(val)
 #define VSCP_UINT32_SWAP_ON_LE(val) (val)
-#define VSCP_INT32_SWAP_ON_LE(val) (val)
+#define VSCP_INT32_SWAP_ON_LE(val)  (val)
 #define VSCP_UINT64_SWAP_ON_BE(val) VSCP_UINT64_SWAP_ALWAYS(val)
 #define VSCP_UINT64_SWAP_ON_LE(val) (val)
-#define VSCP_INT64_SWAP_ON_BE(val) VSCP_INT64_SWAP_ALWAYS(val)
-#define VSCP_INT64_SWAP_ON_LE(val) (val)
+#define VSCP_INT64_SWAP_ON_BE(val)  VSCP_INT64_SWAP_ALWAYS(val)
+#define VSCP_INT64_SWAP_ON_LE(val)  (val)
 #else
 #define VSCP_UINT16_SWAP_ON_LE(val) VSCP_UINT16_SWAP_ALWAYS(val)
-#define VSCP_INT16_SWAP_ON_LE(val) VSCP_INT16_SWAP_ALWAYS(val)
+#define VSCP_INT16_SWAP_ON_LE(val)  VSCP_INT16_SWAP_ALWAYS(val)
 #define VSCP_UINT16_SWAP_ON_BE(val) (val)
-#define VSCP_INT16_SWAP_ON_BE(val) (val)
+#define VSCP_INT16_SWAP_ON_BE(val)  (val)
 #define VSCP_UINT32_SWAP_ON_LE(val) VSCP_UINT32_SWAP_ALWAYS(val)
-#define VSCP_INT32_SWAP_ON_LE(val) VSCP_INT32_SWAP_ALWAYS(val)
+#define VSCP_INT32_SWAP_ON_LE(val)  VSCP_INT32_SWAP_ALWAYS(val)
 #define VSCP_UINT32_SWAP_ON_BE(val) (val)
-#define VSCP_INT32_SWAP_ON_BE(val) (val)
+#define VSCP_INT32_SWAP_ON_BE(val)  (val)
 #define VSCP_UINT64_SWAP_ON_LE(val) VSCP_UINT64_SWAP_ALWAYS(val)
 #define VSCP_UINT64_SWAP_ON_BE(val) (val)
-#define VSCP_INT64_SWAP_ON_LE(val) VSCP_INT64_SWAP_ALWAYS(val)
-#define VSCP_INT64_SWAP_ON_BE(val) (val)
+#define VSCP_INT64_SWAP_ON_LE(val)  VSCP_INT64_SWAP_ALWAYS(val)
+#define VSCP_INT64_SWAP_ON_BE(val)  (val)
 #endif
 
 // Forward declaration
@@ -303,9 +303,10 @@ extern "C"
     static inline void vscp_makeUpper(std::string& s)
     {
         std::transform(
-          s.begin(), s.end(), s.begin(), [](unsigned char c) -> unsigned char {
-              return std::toupper(c);
-          });
+          s.begin(),
+          s.end(),
+          s.begin(),
+          [](unsigned char c) -> unsigned char { return std::toupper(c); });
     }
 
     // String to upper case (copying)
@@ -622,7 +623,7 @@ extern "C"
         @param length Number of bytes it consist of including
         the first normalise byte.
         @return returns value as a 64-bit integer.
-        */
+    */
     int64_t vscp_getDataCodingInteger(const uint8_t* pCode, uint8_t length);
 
     /*!
@@ -782,7 +783,7 @@ extern "C"
     bool vscp_convertIntegerToNormalizedEventData(uint8_t* pdata,
                                                   uint16_t* psize,
                                                   uint64_t val64,
-                                                  uint8_t unit = 0,
+                                                  uint8_t unit      = 0,
                                                   uint8_t sensoridx = 0);
 
     /*!
@@ -808,7 +809,7 @@ extern "C"
         @param value Floating point value to convert.
         @param pEvent Pointer to event with pdata set to NULL. vscp_class and
         vscp_type must be set to CLASS1.MEASUREMENT or
-       CLASS2_LEVEL1.MEASUREMENT,
+        CLASS2_LEVEL1.MEASUREMENT,
         @param psize Pointer to size for returned data.
         @param unit Unit for the data. Zero is default.
         @param sensoridx Sensor index 0-7. Zero is default.
@@ -895,34 +896,34 @@ extern "C"
         Replace backslashes in a string with forward slashes
         @param strval String that should be handled.
         @return Fixed string.
-        */
+    */
     std::string& vscp_replaceBackslash(std::string& strval);
 
     /*!
         Get VSCP priority
         @param pEvent Pointer to VSCP event to set priority for.
         @return Priority (0-7) for event.
-        */
+    */
     unsigned char vscp_getEventPriority(const vscpEvent* pEvent);
 
     /*!
         Get VSCP priority
         @param pEvent Pointer to VSCP event to set priority for.
         @return Priority (0-7) for event.
-        */
+    */
     unsigned char vscp_getEventExPriority(const vscpEventEx* pEvent);
 
     /*!
         Set VSCP priority
         @param pEvent Pointer to VSCP event to set priority for.
         @param priority Priority (0-7) to set.
-        */
+    */
     void vscp_setEventPriority(vscpEvent* pEvent, unsigned char priority);
 
     /*!
-    Set VSCP priority Ex
-    @param pEvent Pointer to VSCP event to set priority for.
-    @param priority Priority (0-7) to set.
+        Set VSCP priority Ex
+        @param pEvent Pointer to VSCP event to set priority for.
+        @param priority Priority (0-7) to set.
     */
     void vscp_setEventExPriority(vscpEventEx* pEvent, unsigned char priority);
 
@@ -930,28 +931,28 @@ extern "C"
         Get VSCP head from CANAL id
         @param id CAN id
         @return VSCP head
-        */
+    */
     unsigned char vscp_getHeadFromCANALid(uint32_t id);
 
     /*!
         Get VSCP class from CANAL id
         @param id CAN id
         @return VSCP class
-        */
+    */
     uint16_t vscp_getVscpClassFromCANALid(uint32_t id);
 
     /*!
         Get VSCP type from CANAL id
         @param id CAN id
         @return VSCP type
-        */
+    */
     uint16_t vscp_getVscpTypeFromCANALid(uint32_t id);
 
     /*!
         Get VSCP nide nickname from CANAL id
         @param id CAN id
         @return VSCP node nickname
-        */
+    */
     uint8_t vscp_getNicknameFromCANALid(uint32_t id);
 
     /*!
@@ -960,33 +961,33 @@ extern "C"
         @param vscp_class VSCP class
         @param vscp_type VSCP type
         @return CAN id with nickname == 0
-        */
-    uint32_t vscp_getCANALidFromVSCPdata(unsigned char priority,
-                                         const uint16_t vscp_class,
-                                         const uint16_t vscp_type);
+    */
+    uint32_t vscp_getCANALidFromData(unsigned char priority,
+                                     const uint16_t vscp_class,
+                                     const uint16_t vscp_type);
 
     /*!
         Get CANAL id from VSCP event
         @param pEvent Pointer to VSCP event
         @return CAN id with nickname == 0
-        */
+    */
     uint32_t vscp_getCANALidFromEvent(const vscpEvent* pEvent);
 
     /*!
         Get CAN id from VSCP event
         @param pEvent Pointer to VSCP event
         @return CAN id with nickname == 0
-        */
+    */
     uint32_t vscp_getCANALidFromEventEx(const vscpEventEx* pEvent);
 
     /*!
         Calculate CRC for VSCP event
-        */
+    */
     unsigned short vscp_calc_crc_Event(vscpEvent* pEvent, short bSet);
 
     /*!
         Calculate CRC for VSCP event
-        */
+    */
     unsigned short vscp_calc_crc_EventEx(vscpEventEx* pEvent, short bSet);
 
     // Helpers
@@ -1014,7 +1015,6 @@ extern "C"
         @param strGUID String with GUID (xx:yy:zz....)
         @return True on success, false on failure.
     */
-
     bool vscp_setEventGuidFromString(vscpEvent* pEvent,
                                      const std::string& strGUID);
 
@@ -1025,14 +1025,12 @@ extern "C"
         @param strGUID String with GUID (xx:yy:zz....)
         @return True on success, false on failure.
     */
-
     bool vscp_setEventExGuidFromString(vscpEventEx* pEventEx,
                                        const std::string& strGUID);
 
     /*!
         Fill event GUID from a string
     */
-
     bool vscp_getGuidFromStringToArray(unsigned char* pGUID,
                                        const std::string& strGUID);
 
@@ -1043,7 +1041,6 @@ extern "C"
         @param pGUID Pointer to VSCP GUID array.
         @return True on success, false on failure.
     */
-
     bool vscp_writeGuidArrayToString(std::string& strGUID,
                                      const unsigned char* pGUID);
 
@@ -1444,21 +1441,21 @@ extern "C"
 
     /*!
         Convert an Event from a CANAL message
-        */
+    */
     bool vscp_convertCanalToEvent(vscpEvent* pvscpEvent,
                                   const canalMsg* pcanalMsg,
                                   unsigned char* pGUID);
 
     /*!
         Convert an Event from a CANAL message
-        */
+    */
     bool vscp_convertCanalToEventEx(vscpEventEx* pvscpEventEx,
                                     const canalMsg* pcanalMsg,
                                     unsigned char* pGUID);
 
     /*!
         Covert VSCP event to CANAL message
-        */
+    */
     bool vscp_convertEventToCanal(canalMsg* pcanalMsg,
                                   const vscpEvent* pvscpEvent);
 
@@ -1478,12 +1475,12 @@ extern "C"
     bool vscp_copyEvent(vscpEvent* pEventTo, const vscpEvent* pEventFrom);
 
     /*!
-    Copy one VSCP event ex to another
+        Copy one VSCP event ex to another
 
-    @param pEventTo Pointer to event to copy to.
-    @param pEventFrom Pointer to event to copy from.
-    @return True on success.
-*/
+        @param pEventTo Pointer to event to copy to.
+        @param pEventFrom Pointer to event to copy from.
+        @return True on success.
+    */
     bool vscp_copyEventEx(vscpEventEx* pEventTo, const vscpEventEx* pEventFrom);
 
     /*!
@@ -1502,7 +1499,7 @@ extern "C"
     bool vscp_writeDataToString(std::string& str,
                                 const vscpEvent* pEvent,
                                 bool bUseHtmlBreak = false,
-                                bool bBreak = false);
+                                bool bBreak        = false);
 
     /*!
         Write VSCP data to string
@@ -1521,8 +1518,8 @@ extern "C"
                                         const unsigned char* pData,
                                         const uint16_t sizeData,
                                         bool bUseHtmlBreak = false,
-                                        bool bBreak = true,
-                                        bool bDecimal = false);
+                                        bool bBreak        = true,
+                                        bool bDecimal      = false);
 
     /*!
         Set VSCP Event data from a string
@@ -1637,7 +1634,7 @@ extern "C"
                                               CMDF* pmdf);
 
     ////////////////////////////////////////////////////////////////////////////
-    // Encryption
+    //                           Encrypted frames
     ////////////////////////////////////////////////////////////////////////////
 
     /*!
@@ -1670,7 +1667,7 @@ extern "C"
      * @param pEvent Pointer to event.
      * @return Size of resulting UDP frame on success. Zero on failure.
      */
-    size_t vscp_getUDpFrameSizeFromEvent(vscpEvent* pEvent);
+    size_t vscp_getFrameSizeFromEvent(vscpEvent* pEvent);
 
     /*!
      * Get UDP frame size from event
@@ -1678,7 +1675,7 @@ extern "C"
      * @param pEventEx Pointer to event ex.
      * @return Size of resulting UDP frame on success. Zero on failure.
      */
-    size_t vscp_getUDpFrameSizeFromEventEx(vscpEventEx* pEventEx);
+    size_t vscp_getFrameSizeFromEventEx(vscpEventEx* pEventEx);
 
     /*!
      * Write event on UDP frame format
@@ -1690,10 +1687,10 @@ extern "C"
      * @param pEvent Pointer to event that should be handled.
      * @return True on success, false on failure.
      */
-    bool vscp_writeEventToUdpFrame(uint8_t* frame,
-                                   size_t len,
-                                   uint8_t pkttype,
-                                   const vscpEvent* pEvent);
+    bool vscp_writeEventToFrame(uint8_t* frame,
+                                size_t len,
+                                uint8_t pkttype,
+                                const vscpEvent* pEvent);
 
     /*!
      * Write event ex on UDP frame format
@@ -1705,10 +1702,10 @@ extern "C"
      * @param pEventEx Pointer to event that should be handled.
      * @return True on success, false on failure.
      */
-    bool vscp_writeEventExToUdpFrame(uint8_t* frame,
-                                     size_t len,
-                                     uint8_t pkttype,
-                                     const vscpEventEx* pEventEx);
+    bool vscp_writeEventExToFrame(uint8_t* frame,
+                                  size_t len,
+                                  uint8_t pkttype,
+                                  const vscpEventEx* pEventEx);
 
     /*!
      * Get VSCP event from UDP frame
@@ -1718,9 +1715,9 @@ extern "C"
      * @param len Size of the buffer.
      * @return True on success, false on failure.
      */
-    bool vscp_getEventFromUdpFrame(vscpEvent* pEvent,
-                                   const uint8_t* buf,
-                                   size_t len);
+    bool vscp_getEventFromFrame(vscpEvent* pEvent,
+                                const uint8_t* buf,
+                                size_t len);
 
     /*!
      * Get VSCP event ex from UDP frame
@@ -1731,9 +1728,9 @@ extern "C"
      * @param len Size of the buffer.
      * @return True on success, false on failure.
      */
-    bool vscp_getEventExFromUdpFrame(vscpEventEx* pEventEx,
-                                     const uint8_t* buf,
-                                     size_t len);
+    bool vscp_getEventExFromFrame(vscpEventEx* pEventEx,
+                                  const uint8_t* buf,
+                                  size_t len);
 
     /*!
      * Encrypt VSCP UDP frame using the selected encryption algorithm. The iv
@@ -1755,12 +1752,12 @@ extern "C"
      * @return Packet length on success, zero on failure.
      *
      */
-    size_t vscp_encryptVscpUdpFrame(uint8_t* output,
-                                    uint8_t* input,
-                                    size_t len,
-                                    const uint8_t* key,
-                                    const uint8_t* iv,
-                                    uint8_t nAlgorithm);
+    size_t vscp_encryptFrame(uint8_t* output,
+                             uint8_t* input,
+                             size_t len,
+                             const uint8_t* key,
+                             const uint8_t* iv,
+                             uint8_t nAlgorithm);
 
     /*!
      * Decrypt VSCP UDP frame using the selected encryption algorithm. The iv
@@ -1783,12 +1780,12 @@ extern "C"
      * recognised here.
      *
      */
-    bool vscp_decryptVscpUdpFrame(uint8_t* output,
-                                  uint8_t* input,
-                                  size_t len,
-                                  const uint8_t* key,
-                                  const uint8_t* iv,
-                                  uint8_t nAlgorithm);
+    bool vscp_decryptFrame(uint8_t* output,
+                           uint8_t* input,
+                           size_t len,
+                           const uint8_t* key,
+                           const uint8_t* iv,
+                           uint8_t nAlgorithm);
 
     ///////////////////////////////////////////////////////////////////////////
     //                         Password/key handling

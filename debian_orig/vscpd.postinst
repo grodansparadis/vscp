@@ -1,0 +1,47 @@
+#!/bin/sh
+# postinst script for vscpd
+#
+# see: dh_installdeb(1)
+
+set -e
+
+setup_vscpd_user() {
+	if ! getent group vscpd >/dev/null; then
+		addgroup --quiet --system vscpd
+	fi
+
+	if ! getent passwd vscpd >/dev/null; then
+		adduser --quiet --system --no-create-home --ingroup vscpd --home /var/lib/vscpd --shell /usr/sbin/nologin vscpd
+	fi
+}
+
+fix_permissions() {
+	chown vscpd /var/lib/vscpd
+	test ! -e /var/log/vscpd || chown vscpd /var/log/vscpd
+	test ! -e /var/log/vscpd/vscpd.log || chown vscpd /var/log/vscpd/vscpd.log
+}
+
+case "$1" in
+	configure)
+		setup_vscpd_user
+		fix_permissions
+	;;
+
+	abort-upgrade|abort-remove|abort-deconfigure)
+	;;
+
+	*)
+		echo "postinst called with unknown argument \`$1'" >&2
+		exit 1
+	;;
+esac
+
+# Reload AppArmor profile
+APP_PROFILE="/etc/apparmor.d/usr.sbin.vscpd"
+if [ -f "$APP_PROFILE" ] && aa-status --enabled 2>/dev/null; then
+       apparmor_parser -r "$APP_PROFILE" || true
+fi
+
+#DEBHELPER#
+
+exit 0

@@ -1,0 +1,4 @@
+check process vscpd with pidfile /var/run/vscpd.pid
+	start = "/etc/init.d/vscpd start"
+	stop = "/etc/init.d/vscpd stop"
+

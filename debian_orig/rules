@@ -1,12 +1,33 @@
 #!/usr/bin/make -f
 
+export DEB_LDFLAGS_MAINT_APPEND = -Wl,--as-needed
+export prefix=/usr
+export libdir=/usr/lib/$(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
+
 %:
-	dh $@ --with autoreconf
+	# Don't process CMake rules, CMakeLists.txt is only included for Windows/Mac support.
+	dh $@ --buildsystem=makefile
 
-override_dh_shlibdeps:
-	dpkg-shlibdeps -Tdebian/vscpl2drv-automation.substvars $$(pwd)/debian/vscpl2drv-automation%MAJOR-VERSION/usr/lib/%SUBFOLDER/vscpl2drv-automation.so.%MAJOR-VERSION.%MINOR-VERSION.%RELEASE-VERSION
+override_dh_installchangelogs:
+	dh_installchangelogs ChangeLog.txt
 
+override_dh_auto_build:
+	dh_auto_build -- WITH_BUNDLED_DEPS=no WITH_ADNS=yes WITH_WRAP=yes WITH_WEBSOCKETS=yes WITH_STRIP=no WITH_SYSTEMD=yes
+
+override_dh_auto_test:
+
+override_dh_strip:
+	dh_strip -p vscpd --dbgsym-migration='vscpd-dbg (<< 1.5)' -Xlibvscpd
+	dh_strip --remaining-packages
 
 override_dh_auto_install:
-	strip linux/vscpl2drv-automation.so.%MAJOR-VERSION.%MINOR-VERSION.%RELEASE-VERSION
-
+	dh_auto_install
+	install -d debian/tmp/etc/vscpd/conf.d/
+	install -m 644 debian/README-conf-d debian/tmp/etc/vscpd/conf.d/README
+	install -d debian/tmp/etc/vscpd/ca_certificates/
+	install -m 644 debian/README-ca_certificates debian/tmp/etc/vscpd/ca_certificates/README
+	install -d debian/tmp/etc/vscpd/certs/
+	install -m 644 debian/README-certs debian/tmp/etc/vscpd/certs/README
+	install -m 644 debian/vscpd.conf debian/tmp/etc/vscpd/vscpd.conf
+	install -d debian/tmp/lib/systemd/system/
+	install -m 644  ./service/systemd/vscpd.service.notify debian/tmp/lib/systemd/system/vscpd.service

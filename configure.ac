@@ -4,7 +4,7 @@ dnl $Id: configure.in,v 1.5 2017/10/13 11:22:06 akhe Exp $
 dnl Get version
 m4_builtin([include], VERSION.m4)
 
-AC_INIT( [vscp], [package_version], [akhe@grodansparadis.com])
+AC_INIT( [vscp], [package_version], [akhe@vscp.org])
 
 
 AC_CONFIG_MACRO_DIR(m4)

@@ -3,7 +3,7 @@
  * Use to listen for announce frames on the VSCP announce multicast channel
  *
  * Changed by Ake Hedman, for use with VSCP & Friends
- * Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
+ * Ake Hedman, Grodans Paradis AB, <akhe@vscp.org>
  *
  * Original header below
  *

@@ -5670,7 +5670,7 @@ vscp_getEncryptionTokenFromCode(uint8_t code, std::string& token)
 //
 
 size_t
-vscp_getUDpFrameSizeFromEvent(vscpEvent* pEvent)
+vscp_getFrameSizeFromEvent(vscpEvent* pEvent)
 {
     // Check pointer
     if (NULL == pEvent)
@@ -5687,7 +5687,7 @@ vscp_getUDpFrameSizeFromEvent(vscpEvent* pEvent)
 //
 
 size_t
-vscp_getUDpFrameSizeFromEventEx(vscpEventEx* pEventEx)
+vscp_getFrameSizeFromEventEx(vscpEventEx* pEventEx)
 {
     // Check pointer
     if (NULL == pEventEx)
@@ -5700,11 +5700,11 @@ vscp_getUDpFrameSizeFromEventEx(vscpEventEx* pEventEx)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// vscp_writeEventToUdpFrame
+// vscp_writeEventToFrame
 //
 
 bool
-vscp_writeEventToUdpFrame(uint8_t* frame,
+vscp_writeEventToFrame(uint8_t* frame,
                           size_t len,
                           uint8_t pkttype,
                           const vscpEvent* pEvent)
@@ -5808,11 +5808,11 @@ vscp_writeEventToUdpFrame(uint8_t* frame,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// vscp_writeEventExToUdpFrame
+// vscp_writeEventExToFrame
 //
 
 bool
-vscp_writeEventExToUdpFrame(uint8_t* frame,
+vscp_writeEventExToFrame(uint8_t* frame,
                             size_t len,
                             uint8_t pkttype,
                             const vscpEventEx* pEventEx)
@@ -5832,7 +5832,7 @@ vscp_writeEventExToUdpFrame(uint8_t* frame,
     if (!vscp_convertEventExToEvent(pEvent, pEventEx))
         return false;
 
-    if (!vscp_writeEventToUdpFrame(frame, len, pkttype, pEvent))
+    if (!vscp_writeEventToFrame(frame, len, pkttype, pEvent))
         return false;
     vscp_deleteEvent_v2(&pEvent);
 
@@ -5840,11 +5840,11 @@ vscp_writeEventExToUdpFrame(uint8_t* frame,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// vscp_getEventFromUdpFrame
+// vscp_getEventFromFrame
 //
 
 bool
-vscp_getEventFromUdpFrame(vscpEvent* pEvent, const uint8_t* buf, size_t len)
+vscp_getEventFromFrame(vscpEvent* pEvent, const uint8_t* buf, size_t len)
 {
     // Check pointers
     if (NULL == pEvent)
@@ -5995,11 +5995,11 @@ vscp_getEventFromUdpFrame(vscpEvent* pEvent, const uint8_t* buf, size_t len)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// vscp_getEventExFromUdpFrame
+// vscp_getEventExFromFrame
 //
 
 bool
-vscp_getEventExFromUdpFrame(vscpEventEx* pEventEx,
+vscp_getEventExFromFrame(vscpEventEx* pEventEx,
                             const uint8_t* frame,
                             size_t len)
 {
@@ -6014,7 +6014,7 @@ vscp_getEventExFromUdpFrame(vscpEventEx* pEventEx,
     if (NULL == pEventEx)
         return false;
 
-    if (!vscp_getEventFromUdpFrame(pEvent, frame, len)) {
+    if (!vscp_getEventFromFrame(pEvent, frame, len)) {
         return false;
     }
 
@@ -6026,11 +6026,11 @@ vscp_getEventExFromUdpFrame(vscpEventEx* pEventEx,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// vscp_encryptUdpFrame
+// vscp_encryptFrame
 //
 
 size_t
-vscp_encryptUdpFrame(uint8_t* output,
+vscp_encryptFrame(uint8_t* output,
                      uint8_t* input,
                      size_t len,
                      const uint8_t* key,
@@ -6117,11 +6117,11 @@ vscp_encryptUdpFrame(uint8_t* output,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// vscp_encryptVscpUdpFrame
+// vscp_encryptFrame
 //
 
 bool
-vscp_decryptVscpUdpFrame(uint8_t* output,
+vscp_decryptFrame(uint8_t* output,
                          uint8_t* input,
                          size_t len,
                          const uint8_t* key,

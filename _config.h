@@ -264,7 +264,7 @@
 #define OSBIT 64
 
 /* Define to the address where bug reports for this package should be sent. */
-#define PACKAGE_BUGREPORT "akhe@grodansparadis.com"
+#define PACKAGE_BUGREPORT "akhe@vscp.org"
 
 /* Define to the full name of this package. */
 #define PACKAGE_NAME "vscp"

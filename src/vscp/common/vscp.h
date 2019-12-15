@@ -42,16 +42,16 @@
 #include <vscp_class.h>
 #include <vscp_type.h>
 
-#define VSCP_DEFAULT_UDP_PORT 33333
-#define VSCP_DEFAULT_TCP_PORT 9598
+#define VSCP_DEFAULT_UDP_PORT        33333
+#define VSCP_DEFAULT_TCP_PORT        9598
 #define VSCP_ANNOUNCE_MULTICAST_PORT 9598
-#define VSCP_DEFAULT_MULTICAST_PORT 44444
+#define VSCP_DEFAULT_MULTICAST_PORT  44444
 
 #define VSCP_ADDRESS_SEGMENT_CONTROLLER 0x00
-#define VSCP_ADDRESS_NEW_NODE 0xff
+#define VSCP_ADDRESS_NEW_NODE           0xff
 
-#define VSCP_MAX_DATA (512) /* was 487 */
-#define VSCP_SIZE_GUID (16) /* GUID array size */
+#define VSCP_MAX_DATA  (512) /* was 487 */
+#define VSCP_SIZE_GUID (16)  /* GUID array size */
 
 #define VSCP_LEVEL1 0 /* Changed 151104  Was 1/2 */
 #define VSCP_LEVEL2 1
@@ -86,18 +86,24 @@ extern "C"
 
         /* ----- CRC should be calculated from here to end + data block ----  */
 
-        uint16_t head; /* Bit 15   GUID is IP v.6 address. */
-        /* Bit 14   This is a dumb node. No MDF, register, nothing. */
-        /* Bit 8-13 = Reserved */
-        /* bit 765  priority, Priority 0-7 where 0 is highest. */
-        /* bit 4 = hard coded, true for a hard coded device. */
-        /* bit 3 = Don't calculate CRC, false for CRC usage. */
-        /*          Just checked when CRC is used.                */
-        /*          If set the CRC should be set to 0xAA55 for    */
-        /*          the event to be accepted without a CRC check. */
-        /* bit 2 = Rolling index. */
-        /* bit 1 = Rolling index. */
-        /* bit 0 = Rolling index. */
+        /*
+            Bit 15 - This is a dumb node. No MDF, register, nothing.
+            Bit 14 - GUID type
+            Bit 13 - GUID type
+            Bit 12 - GUID type (GUID is IP v.6 address.)
+            Bit 8-11 = Reserved
+            Bit 765 =  priority, Priority 0-7 where 0 is highest.
+            Bit 4 = hard coded, true for a hard coded device.
+            Bit 3 = Don't calculate CRC, false for CRC usage.
+                  Just checked when CRC is used.
+                  If set the CRC should be set to 0xAA55 for
+                  the event to be accepted without a CRC check.
+            Bit 2 = Rolling index.
+            Bit 1 = Rolling index.
+            Bit 0 = Rolling index.
+        */
+        uint16_t head;
+
         uint16_t vscp_class; /* VSCP class */
         uint16_t vscp_type;  /* VSCP type */
         uint8_t GUID[16];    /* Node globally unique id MSB(0) -> LSB(15) */
@@ -136,17 +142,22 @@ extern "C"
 
         /* CRC should be calculated from here to end + data block */
         uint16_t head; /* Bit 15   GUID is IP v.6 address. */
-        /* Bit 14   This is a dumb node. No MDF, register, nothing. */
-        /* Bit 8-13 = Reserved */
-        /* bit 7,6,5 priority => Priority 0-7 where 0 is highest. */
-        /* bit 4 = hard coded, true for a hard coded device. */
-        /* bit 3 = Don't calculate CRC, Set to zero to use CRC. */
-        /*          Just checked when CRC is used. */
-        /*          If set the CRC should be set to 0xAA55 for */
-        /*          the event to be accepted without a CRC check. */
-        /* bit 2 = Rolling index. */
-        /* bit 1 = Rolling index. */
-        /* bit 0 = Rolling index. */
+        /*
+            Bit 15 - This is a dumb node. No MDF, register, nothing.
+            Bit 14 - GUID type
+            Bit 13 - GUID type
+            Bit 12 - GUID type (GUID is IP v.6 address.)
+            Bit 8-11 = Reserved
+            Bit 765 =  priority, Priority 0-7 where 0 is highest.
+            Bit 4 = hard coded, true for a hard coded device.
+            Bit 3 = Don't calculate CRC, false for CRC usage.
+                  Just checked when CRC is used.
+                  If set the CRC should be set to 0xAA55 for
+                  the event to be accepted without a CRC check.
+            Bit 2 = Rolling index.
+            Bit 1 = Rolling index.
+            Bit 0 = Rolling index.
+        */
         uint16_t vscp_class; /* VSCP class   */
         uint16_t vscp_type;  /* VSCP type    */
         uint8_t GUID[16];    /* Node globally unique id MSB(0) -> LSB(15)    */
@@ -169,22 +180,32 @@ extern "C"
 #define VSCP_PRIORITY_6 0xC0
 #define VSCP_PRIORITY_7 0xE0
 
-#define VSCP_PRIORITY_HIGH 0x00
-#define VSCP_PRIORITY_LOW 0xE0
+#define VSCP_PRIORITY_HIGH   0x00
+#define VSCP_PRIORITY_LOW    0xE0
 #define VSCP_PRIORITY_MEDIUM 0xC0
 #define VSCP_PRIORITY_NORMAL 0x60
 
 #define VSCP_HEADER_PRIORITY_MASK 0xE0
 
 #define VSCP_HEADER_HARD_CODED 0x10 /* If set node nickname is hardcoded */
-#define VSCP_HEADER_NO_CRC 0x08     /* Don't calculate CRC */
+#define VSCP_HEADER_NO_CRC     0x08 /* Don't calculate CRC */
 
 #define VSCP_NO_CRC_CALC 0x08 /* If set no CRC is calculated */
 
-#define VSCP_HEADER16_IPV6_GUID 0x8000 /* GUID is IPv6 address */
-#define VSCP_HEADER16_DUMB 0x4000      /* This node is dumb */
+#define VSCP_HEADER16_DUMB      0x8000 /* This node is dumb */
+#define VSCP_HEADER16_IPV6_GUID 0x1000 /* GUID is IPv6 address */
 
-#define VSCP_MASK_PRIORITY 0xE0
+
+/* Bits 14/13/12 for GUID type */
+#define VSCP_HEADER16_GUID_TYPE_STANDARD 0x0000 /* VSCP standard GUID */
+#define VSCP_HEADER16_GUID_TYPE_IPV6     0x1000 /* GUID is IPv6 address */
+/* https://www.sohamkamani.com/blog/2016/10/05/uuid1-vs-uuid4/ */
+#define VSCP_HEADER16_GUID_TYPE_RFC4122V1                                      \
+    0x2000 /* GUID is RFC 4122 Version 1 */
+#define VSCP_HEADER16_GUID_TYPE_RFC4122V4                                      \
+    0x3000 /* GUID is RFC 4122 Version 4 */
+
+#define VSCP_MASK_PRIORITY  0xE0
 #define VSCP_MASK_HARDCODED 0x10
 #define VSCP_MASK_NOCRCCALC 0x08
 
@@ -285,7 +306,7 @@ extern "C"
     typedef VSCPChannelInfo* PVSCPCHANNELINFO;
 
 /* VSCP Encryption types */
-#define VSCP_ENCRYPTION_NONE 0
+#define VSCP_ENCRYPTION_NONE   0
 #define VSCP_ENCRYPTION_AES128 1
 #define VSCP_ENCRYPTION_AES192 2
 #define VSCP_ENCRYPTION_AES256 3
@@ -306,30 +327,30 @@ extern "C"
 #define VSCP_MULTICAST_PACKET0_HEADER_LENGTH 35
 
 /* Multicast packet ordinals */
-#define VSCP_MULTICAST_PACKET0_POS_PKTTYPE 0
-#define VSCP_MULTICAST_PACKET0_POS_HEAD 1
-#define VSCP_MULTICAST_PACKET0_POS_HEAD_MSB 1
-#define VSCP_MULTICAST_PACKET0_POS_HEAD_LSB 2
-#define VSCP_MULTICAST_PACKET0_POS_TIMESTAMP 3
-#define VSCP_MULTICAST_PACKET0_POS_YEAR 7
-#define VSCP_MULTICAST_PACKET0_POS_YEAR_MSB 7
-#define VSCP_MULTICAST_PACKET0_POS_YEAR_LSB 8
-#define VSCP_MULTICAST_PACKET0_POS_MONTH 9
-#define VSCP_MULTICAST_PACKET0_POS_DAY 10
-#define VSCP_MULTICAST_PACKET0_POS_HOUR 11
-#define VSCP_MULTICAST_PACKET0_POS_MINUTE 12
-#define VSCP_MULTICAST_PACKET0_POS_SECOND 13
-#define VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS 14
+#define VSCP_MULTICAST_PACKET0_POS_PKTTYPE        0
+#define VSCP_MULTICAST_PACKET0_POS_HEAD           1
+#define VSCP_MULTICAST_PACKET0_POS_HEAD_MSB       1
+#define VSCP_MULTICAST_PACKET0_POS_HEAD_LSB       2
+#define VSCP_MULTICAST_PACKET0_POS_TIMESTAMP      3
+#define VSCP_MULTICAST_PACKET0_POS_YEAR           7
+#define VSCP_MULTICAST_PACKET0_POS_YEAR_MSB       7
+#define VSCP_MULTICAST_PACKET0_POS_YEAR_LSB       8
+#define VSCP_MULTICAST_PACKET0_POS_MONTH          9
+#define VSCP_MULTICAST_PACKET0_POS_DAY            10
+#define VSCP_MULTICAST_PACKET0_POS_HOUR           11
+#define VSCP_MULTICAST_PACKET0_POS_MINUTE         12
+#define VSCP_MULTICAST_PACKET0_POS_SECOND         13
+#define VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS     14
 #define VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS_MSB 14
 #define VSCP_MULTICAST_PACKET0_POS_VSCP_CLASS_LSB 15
-#define VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE 16
-#define VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE_MSB 16
-#define VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE_LSB 17
-#define VSCP_MULTICAST_PACKET0_POS_VSCP_GUID 18
-#define VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE 34
-#define VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_MSB 34
-#define VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_LSB 35
-#define VSCP_MULTICAST_PACKET0_POS_VSCP_DATA 36
+#define VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE      16
+#define VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE_MSB  16
+#define VSCP_MULTICAST_PACKET0_POS_VSCP_TYPE_LSB  17
+#define VSCP_MULTICAST_PACKET0_POS_VSCP_GUID      18
+#define VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE      34
+#define VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_MSB  34
+#define VSCP_MULTICAST_PACKET0_POS_VSCP_SIZE_LSB  35
+#define VSCP_MULTICAST_PACKET0_POS_VSCP_DATA      36
 
 /* Two byte CRC follow here and if the frame is encrypted */
 /* the initialization vector follows. */
@@ -337,8 +358,8 @@ extern "C"
 /* VSCP multicast packet types */
 #define VSCP_MULTICAST_TYPE_EVENT 0
 
-#define SET_VSCP_MULTICAST_TYPE(type, encryption) ((type << 4) | encryption)
-#define GET_VSCP_MULTICAST_PACKET_TYPE(type) ((type >> 4) & 0x0f)
+#define SET_VSCP_MULTICAST_TYPE(type, encryption)  ((type << 4) | encryption)
+#define GET_VSCP_MULTICAST_PACKET_TYPE(type)       ((type >> 4) & 0x0f)
 #define GET_VSCP_MULTICAST_PACKET_ENCRYPTION(type) ((type)&0x0f)
 
 /* Multicast proxy CLASS=1026, TYPE=3  */
@@ -351,8 +372,8 @@ extern "C"
     32 /* GUID for interface node is on */
 #define VSCP_MULTICAST_PROXY_HEARTBEAT_POS_IFLEVEL                             \
     48 /* 0=Level I node, 1=Level II node */
-#define VSCP_MULTICAST_PROXY_HEARTBEAT_POS_NODENAME 64 /* Name of node */
-#define VSCP_MULTICAST_PROXY_HEARTBEAT_POS_IFNAME 128  /* Name of interface */
+#define VSCP_MULTICAST_PROXY_HEARTBEAT_POS_NODENAME 64  /* Name of node */
+#define VSCP_MULTICAST_PROXY_HEARTBEAT_POS_IFNAME   128 /* Name of interface */
 
 /* Default key for VSCP Server - !!!! should only be used on test systems !!!!
  */
@@ -362,32 +383,32 @@ extern "C"
     = 'A4A86F7D7E119BA3F0CD06881E371B989B33B6D606A863B633EF529D64544F8E'
 
 /* Bootloaders */
-#define VSCP_BOOTLOADER_VSCP 0x00      /* VSCP boot loader algorithm */
-#define VSCP_BOOTLOADER_PIC1 0x01      /* PIC algorithm 0 */
-#define VSCP_BOOTLOADER_AVR1 0x10      /* AVR algorithm 0 */
-#define VSCP_BOOTLOADER_LPC1 0x20      /* NXP/Philips/Freescale algorithm 0 */
-#define VSPP_BOORLOADER_NXP1 0x20      /* NXP/Philips/Freescale algorithm 0 */
-#define VSCP_BOOTLOADER_ST 0x30        /* ST STR algorithm 0 */
+#define VSCP_BOOTLOADER_VSCP      0x00 /* VSCP boot loader algorithm */
+#define VSCP_BOOTLOADER_PIC1      0x01 /* PIC algorithm 0 */
+#define VSCP_BOOTLOADER_AVR1      0x10 /* AVR algorithm 0 */
+#define VSCP_BOOTLOADER_LPC1      0x20 /* NXP/Philips/Freescale algorithm 0 */
+#define VSPP_BOORLOADER_NXP1      0x20 /* NXP/Philips/Freescale algorithm 0 */
+#define VSCP_BOOTLOADER_ST        0x30 /* ST STR algorithm 0 */
 #define VSCP_BOOTLOADER_FREESCALE 0x40 /* Freescale Kinetics algorithm 0 */
-#define VSCP_BOOTLOADER_NONE 0xff
+#define VSCP_BOOTLOADER_NONE      0xff
 
 /*          * * * Data Coding for VSCP packets * * *   */
 
 /* Data format masks */
-#define VSCP_MASK_DATACODING_TYPE 0xE0  /* Bits 5,6,7 */
-#define VSCP_MASK_DATACODING_UNIT 0x18  /* Bits 3,4   */
+#define VSCP_MASK_DATACODING_TYPE  0xE0 /* Bits 5,6,7 */
+#define VSCP_MASK_DATACODING_UNIT  0x18 /* Bits 3,4   */
 #define VSCP_MASK_DATACODING_INDEX 0x07 /* Bits 0,1,2 */
 
 /* These bits are coded in the three MSB bytes of the first data byte   */
 /* in a packet and tells the type of the data that follows.             */
-#define VSCP_DATACODING_BIT 0x00
-#define VSCP_DATACODING_BYTE 0x20
-#define VSCP_DATACODING_STRING 0x40
-#define VSCP_DATACODING_INTEGER 0x60
+#define VSCP_DATACODING_BIT        0x00
+#define VSCP_DATACODING_BYTE       0x20
+#define VSCP_DATACODING_STRING     0x40
+#define VSCP_DATACODING_INTEGER    0x60
 #define VSCP_DATACODING_NORMALIZED 0x80
-#define VSCP_DATACODING_SINGLE 0xA0 /* single precision float */
-#define VSCP_DATACODING_RESERVED1 0xC0
-#define VSCP_DATACODING_RESERVED2 0xE0
+#define VSCP_DATACODING_SINGLE     0xA0 /* single precision float */
+#define VSCP_DATACODING_RESERVED1  0xC0
+#define VSCP_DATACODING_RESERVED2  0xE0
 
 /*
  These bits are coded in the four least significant bits of the first data byte
@@ -409,15 +430,15 @@ extern "C"
 
 /* CRC8 Constants */
 #define VSCP_CRC8_POLYNOMIAL 0x18
-#define VSCP_CRC8_REMINDER 0x00
+#define VSCP_CRC8_REMINDER   0x00
 
 /* CRC16 Constants */
 #define VSCP_CRC16_POLYNOMIAL 0x1021
-#define VSCP_CRC16_REMINDER 0xFFFF
+#define VSCP_CRC16_REMINDER   0xFFFF
 
 /* CRC32 Constants */
 #define VSCP_CRC32_POLYNOMIAL 0x04C11DB7
-#define VSCP_CRC32_REMINDER 0xFFFFFFFF
+#define VSCP_CRC32_REMINDER   0xFFFFFFFF
 
     /* Node data - the required registers are fetched from this */
     /*	structure                                               */
@@ -434,7 +455,7 @@ extern "C"
 
 #define VSCP_STD_REGISTER_MAJOR_VERSION 0x81
 #define VSCP_STD_REGISTER_MINOR_VERSION 0x82
-#define VSCP_STD_REGISTER_SUB_VERSION 0x83
+#define VSCP_STD_REGISTER_SUB_VERSION   0x83
 
 /* 0x84 - 0x88  -   User id space           */
 #define VSCP_STD_REGISTER_USER_ID 0x84
@@ -453,8 +474,8 @@ extern "C"
 #define VSCP_STD_REGISTER_PAGE_SELECT_LSB 0x93
 
 /* Firmware version                         */
-#define VSCP_STD_REGISTER_FIRMWARE_MAJOR 0x94
-#define VSCP_STD_REGISTER_FIRMWARE_MINOR 0x95
+#define VSCP_STD_REGISTER_FIRMWARE_MAJOR    0x94
+#define VSCP_STD_REGISTER_FIRMWARE_MINOR    0x95
 #define VSCP_STD_REGISTER_FIRMWARE_SUBMINOR 0x96
 
 #define VSCP_STD_REGISTER_BOOT_LOADER 0x97
@@ -470,13 +491,13 @@ extern "C"
 /* Level I Decision Matrix                  */
 #define VSCP_LEVEL1_DM_ROW_SIZE 8
 
-#define VSCP_LEVEL1_DM_OFFSET_OADDR 0
-#define VSCP_LEVEL1_DM_OFFSET_FLAGS 1
-#define VSCP_LEVEL1_DM_OFFSET_CLASS_MASK 2
+#define VSCP_LEVEL1_DM_OFFSET_OADDR        0
+#define VSCP_LEVEL1_DM_OFFSET_FLAGS        1
+#define VSCP_LEVEL1_DM_OFFSET_CLASS_MASK   2
 #define VSCP_LEVEL1_DM_OFFSET_CLASS_FILTER 3
-#define VSCP_LEVEL1_DM_OFFSET_TYPE_MASK 4
-#define VSCP_LEVEL1_DM_OFFSET_TYPE_FILTER 5
-#define VSCP_LEVEL1_DM_OFFSET_ACTION 6
+#define VSCP_LEVEL1_DM_OFFSET_TYPE_MASK    4
+#define VSCP_LEVEL1_DM_OFFSET_TYPE_FILTER  5
+#define VSCP_LEVEL1_DM_OFFSET_ACTION       6
 #define VSCP_LEVEL1_DM_OFFSET_ACTION_PARAM 7
 
     /*
@@ -486,78 +507,77 @@ extern "C"
         CLASS2.PROTOCOL, HIGH END SERVER HEART BEAT
     */
 
-#define VSCP_SERVER_CAPABILITY_REMOTE_VARIABLE (1 << 63)    //
-#define VSCP_SERVER_CAPABILITY_DECISION_MATRIX (1 << 62)    //
-#define VSCP_SERVER_CAPABILITY_INTERFACE (1 << 61)          //
-#define VSCP_SERVER_CAPABILITY_TCPIP (1 << 15)              // 32768
-#define VSCP_SERVER_CAPABILITY_UDP (1 << 14)                // 16384
+#define VSCP_SERVER_CAPABILITY_REMOTE_VARIABLE    (1 << 63) //
+#define VSCP_SERVER_CAPABILITY_DECISION_MATRIX    (1 << 62) //
+#define VSCP_SERVER_CAPABILITY_INTERFACE          (1 << 61) //
+#define VSCP_SERVER_CAPABILITY_TCPIP              (1 << 15) // 32768
+#define VSCP_SERVER_CAPABILITY_UDP                (1 << 14) // 16384
 #define VSCP_SERVER_CAPABILITY_MULTICAST_ANNOUNCE (1 << 13) // 8192
-#define VSCP_SERVER_CAPABILITY_RAWETH (1 << 12)             // 4196
-#define VSCP_SERVER_CAPABILITY_WEB (1 << 11)                // 2048
-#define VSCP_SERVER_CAPABILITY_WEBSOCKET (1 << 10)          // 1024
-#define VSCP_SERVER_CAPABILITY_REST (1 << 9)                // 512
-#define VSCP_SERVER_CAPABILITY_MULTICAST_CHANNEL (1 << 8)   // 256
-#define VSCP_SERVER_CAPABILITY_RESERVED (1 << 7)            // 128
-#define VSCP_SERVER_CAPABILITY_IP6 (1 << 6)                 // 64
-#define VSCP_SERVER_CAPABILITY_IP4 (1 << 5)                 // 32
-#define VSCP_SERVER_CAPABILITY_SSL (1 << 4)                 // 16
-#define VSCP_SERVER_CAPABILITY_TWO_CONNECTIONS (1 << 3)     // 8
-#define VSCP_SERVER_CAPABILITY_AES256 (1 << 2)              // 4
-#define VSCP_SERVER_CAPABILITY_AES192 (1 << 1)              // 2
-#define VSCP_SERVER_CAPABILITY_AES128 1                     // 1
+#define VSCP_SERVER_CAPABILITY_RAWETH             (1 << 12) // 4196
+#define VSCP_SERVER_CAPABILITY_WEB                (1 << 11) // 2048
+#define VSCP_SERVER_CAPABILITY_WEBSOCKET          (1 << 10) // 1024
+#define VSCP_SERVER_CAPABILITY_REST               (1 << 9)  // 512
+#define VSCP_SERVER_CAPABILITY_MULTICAST_CHANNEL  (1 << 8)  // 256
+#define VSCP_SERVER_CAPABILITY_RESERVED           (1 << 7)  // 128
+#define VSCP_SERVER_CAPABILITY_IP6                (1 << 6)  // 64
+#define VSCP_SERVER_CAPABILITY_IP4                (1 << 5)  // 32
+#define VSCP_SERVER_CAPABILITY_SSL                (1 << 4)  // 16
+#define VSCP_SERVER_CAPABILITY_TWO_CONNECTIONS    (1 << 3)  // 8
+#define VSCP_SERVER_CAPABILITY_AES256             (1 << 2)  // 4
+#define VSCP_SERVER_CAPABILITY_AES192             (1 << 1)  // 2
+#define VSCP_SERVER_CAPABILITY_AES128             1         // 1
 
 /*
     Offsets into the data of the capabilities event
     VSCP_CLASS2_PROTOCOL, Type=20/VSCP2_TYPE_PROTOCOL_HIGH_END_SERVER_CAPS
 */
-#define VSCP_CAPABILITY_OFFSET_CAP_ARRAY 0
-#define VSCP_CAPABILITY_OFFSET_GUID 8
-#define VSCP_CAPABILITY_OFFSET_IP_ADDR 24
-#define VSCP_CAPABILITY_OFFSET_SRV_NAME 40
+#define VSCP_CAPABILITY_OFFSET_CAP_ARRAY     0
+#define VSCP_CAPABILITY_OFFSET_GUID          8
+#define VSCP_CAPABILITY_OFFSET_IP_ADDR       24
+#define VSCP_CAPABILITY_OFFSET_SRV_NAME      40
 #define VSCP_CAPABILITY_OFFSET_NON_STD_PORTS 104
 
 /* Error Codes */
-#define VSCP_ERROR_SUCCESS 0            /* All is OK */
-#define VSCP_ERROR_ERROR -1             /* Error */
-#define VSCP_ERROR_CHANNEL 7            /* Invalid channel */
-#define VSCP_ERROR_FIFO_EMPTY 8         /* FIFO is empty */
-#define VSCP_ERROR_FIFO_FULL 9          /* FIFI is full */
-#define VSCP_ERROR_FIFO_SIZE 10         /* FIFO size error */
-#define VSCP_ERROR_FIFO_WAIT 11         /* FIFO wait failed */
-#define VSCP_ERROR_GENERIC 12           /* Generic error */
-#define VSCP_ERROR_HARDWARE 13          /* Hardware error */
-#define VSCP_ERROR_INIT_FAIL 14         /* Initialization failed */
-#define VSCP_ERROR_INIT_MISSING 15      /* No init */
-#define VSCP_ERROR_INIT_READY 16        /* Failed init */
-#define VSCP_ERROR_NOT_SUPPORTED 17     /* Not supported */
-#define VSCP_ERROR_OVERRUN 18           /* Overrun */
-#define VSCP_ERROR_RCV_EMPTY 19         /* Receive buffer empty */
-#define VSCP_ERROR_REGISTER 20          /* Register value error */
-#define VSCP_ERROR_TRM_FULL 21          /* Transmit buffer full */
-#define VSCP_ERROR_LIBRARY 28           /* Unable to load library */
-#define VSCP_ERROR_PROCADDRESS 29       /* Unable get library proc. address */
+#define VSCP_ERROR_SUCCESS           0  /* All is OK */
+#define VSCP_ERROR_ERROR             -1 /* Error */
+#define VSCP_ERROR_CHANNEL           7  /* Invalid channel */
+#define VSCP_ERROR_FIFO_EMPTY        8  /* FIFO is empty */
+#define VSCP_ERROR_FIFO_FULL         9  /* FIFI is full */
+#define VSCP_ERROR_FIFO_SIZE         10 /* FIFO size error */
+#define VSCP_ERROR_FIFO_WAIT         11 /* FIFO wait failed */
+#define VSCP_ERROR_GENERIC           12 /* Generic error */
+#define VSCP_ERROR_HARDWARE          13 /* Hardware error */
+#define VSCP_ERROR_INIT_FAIL         14 /* Initialization failed */
+#define VSCP_ERROR_INIT_MISSING      15 /* No init */
+#define VSCP_ERROR_INIT_READY        16 /* Failed init */
+#define VSCP_ERROR_NOT_SUPPORTED     17 /* Not supported */
+#define VSCP_ERROR_OVERRUN           18 /* Overrun */
+#define VSCP_ERROR_RCV_EMPTY         19 /* Receive buffer empty */
+#define VSCP_ERROR_REGISTER          20 /* Register value error */
+#define VSCP_ERROR_TRM_FULL          21 /* Transmit buffer full */
+#define VSCP_ERROR_LIBRARY           28 /* Unable to load library */
+#define VSCP_ERROR_PROCADDRESS       29 /* Unable get library proc. address */
 #define VSCP_ERROR_ONLY_ONE_INSTANCE 30 /* Only one instance allowed */
-#define VSCP_ERROR_SUB_DRIVER 31        /* Problem with sub driver call */
-#define VSCP_ERROR_TIMEOUT 32           /* Time-out */
-#define VSCP_ERROR_NOT_OPEN 33          /* The device is not open. */
-#define VSCP_ERROR_PARAMETER 34         /* A parameter is invalid. */
-#define VSCP_ERROR_MEMORY 35            /* Memory exhausted. */
-#define VSCP_ERROR_INTERNAL 36         /* Some kind of internal program error */
-#define VSCP_ERROR_COMMUNICATION 37    /* Some kind of communication error */
-#define VSCP_ERROR_USER 38             /* Login error user name */
-#define VSCP_ERROR_PASSWORD 39         /* Login error password */
-#define VSCP_ERROR_CONNECTION 40       /* Could not connect */
-#define VSCP_ERROR_INVALID_HANDLE 41   /* The handle is not valid */
-#define VSCP_ERROR_OPERATION_FAILED 42 /* Operation failed for some reason */
+#define VSCP_ERROR_SUB_DRIVER        31 /* Problem with sub driver call */
+#define VSCP_ERROR_TIMEOUT           32 /* Time-out */
+#define VSCP_ERROR_NOT_OPEN          33 /* The device is not open. */
+#define VSCP_ERROR_PARAMETER         34 /* A parameter is invalid. */
+#define VSCP_ERROR_MEMORY            35 /* Memory exhausted. */
+#define VSCP_ERROR_INTERNAL          36 /* Some kind of internal program error */
+#define VSCP_ERROR_COMMUNICATION     37 /* Some kind of communication error */
+#define VSCP_ERROR_USER              38 /* Login error user name */
+#define VSCP_ERROR_PASSWORD          39 /* Login error password */
+#define VSCP_ERROR_CONNECTION        40 /* Could not connect */
+#define VSCP_ERROR_INVALID_HANDLE    41 /* The handle is not valid */
+#define VSCP_ERROR_OPERATION_FAILED  42 /* Operation failed for some reason */
 #define VSCP_ERROR_BUFFER_TO_SMALL                                             \
     43 /* Supplied buffer is to small to fit content */
 #define VSCP_ERROR_UNKNOWN_ITEM                                                \
     44 /* Requested item (remote variable) is unknown */
 #define VSCP_ERROR_ALREADY_DEFINED 45 /* The name is already in use. */
-#define VSCP_ERROR_WRITE_ERROR 46     /* Error when writing data */
-#define VSCP_ERROR_STOPPED 47         /* Operation stopped or aborted */
+#define VSCP_ERROR_WRITE_ERROR     46 /* Error when writing data */
+#define VSCP_ERROR_STOPPED         47 /* Operation stopped or aborted */
 #define VSCP_ERROR_INVALID_POINTER 48 /* Pointer with invalid value */
-
 
 /*
     Template for VSCP XML event data

@@ -1,0 +1,13 @@
+[Unit]
+Description=vscpd daemon
+Documentation=man:vscpd.conf(5) man:vscpd(8)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+ExecStart=/usr/sbin/vscpd -c /etc/vscpd/vscpd.conf
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

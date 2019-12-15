@@ -33,7 +33,7 @@
 \brief Wrapping class for VSCP interfaces.
 \details This class ecapsulates both the CANAL dll and the VSCP TCP/IP interface
 and makes it possible to use the same code to read/write both CANAL messages and
-VSCP events. \author Ake Hedman <akhe@grodansparadis.com>, Grodans Paradis AB,
+VSCP events. \author Ake Hedman <akhe@vscp.org>, Grodans Paradis AB,
 Sweden
 */
 

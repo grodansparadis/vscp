@@ -23,7 +23,7 @@ checkinstall --type="debian" \
 --addso=yes \
 --gzman=yes \
 --pkgsource="https://github.com/grodansparadis/vscp" \
---maintainer="akhe@grodansparadis.com" \
+--maintainer="akhe@vscp.org" \
 --backup=no \
 --requires="libc6, libwxbase3.0 \(\>=3~\) \| libwxgtk3.0 \(\>=3~\), libssl1.0.0 \| libssl1.0.1 \| libssl1.0.2" \
 make debinst
@@ -38,6 +38,6 @@ make debinst
 #--pkglicense="GPL2" \
 #--pkggroup="developer" \
 #--pkgsource="https://github.com/grodansparadis/vscp" \
-#--maintainer="akhe@grodansparadis.com" \
+#--maintainer="akhe@vscp.org" \
 #--requires="libwxbase3.0-0 \(\>=3\) \| libwxgtk3.0-0 \(\>=3\), libssl1.0.0 \| libssl1.0.2"
 #make debinst
