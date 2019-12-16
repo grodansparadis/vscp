@@ -617,7 +617,7 @@ datetime,head,obid,datetime,timestamp,class,type,guid,sizedata,data,note
 
 {
     "head": 2,
-    "obid"; 123,
+    "obid": 123,
     "datetime": "2017-01-13T10:16:02",
     "timestamp":50817,
     "class": 10,
