@@ -46,7 +46,7 @@ install: install-folders install-startup-script install-config install-sample-da
 	@echo "Use 'make install-web-samples' to install sample web-pages."
 	@echo
 	@echo " - Start the VSCP daemon with 'sudo /etc/init.d/vscpd start'"
-	@echo "   or 'vscpd -s' to start the daemon in the  foreground."
+	@echo "   or 'vscpd -s' to start the daemon in the foreground."
 	@echo
 	@echo " - Admin interface is at http://localhost:8884/vscp"
 	@echo "   Username: admin, Password: secret"
@@ -63,11 +63,11 @@ install: install-folders install-startup-script install-config install-sample-da
 	@echo
 	@echo " - The configuration file for the VSCP daemon is at '/etc/vscd/vscpd.conf' and"
 	@echo "   you can read about the different available options here "
-	@echo "   https://grodansparadis.gitbooks.io/the-vscp-daemon/configuring_the_vscp_daemon.html"
-	@echo "   Other configuration files is under @VSCPDIR@"
+	@echo "   https://docs.vscp.org/vscpd/14.0/#/configuring_the_vscp_daemon"
+	@echo "   Other configuration files is under /var/lib/vscp/vscpd"
 	@echo
-	@echo " - Documentation is at https://grodansparadis.gitbooks.io/the-vscp-daemon "
-	@echo "   and more general documentation can be found at http://www.vscp.org/docs"
+	@echo " - Documentation is at https://docs.vscp.org/vscpd/14.0 "
+	@echo "   and more general documentation can be found at https://docs.vscp.org"
 	@echo
 	@echo "   Have fun and remember to always be hungry and stay foolish or the other way"
 	@echo "   around be foolish - stay hungry! - There is always a choice."
@@ -76,16 +76,13 @@ install-system: install-folders install-startup-script install-config install-sa
 
 install-folders:
 	@echo "- Creating folders."
-	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@
-	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/ux
-	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/web
-	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/web/js
-	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/certs
-	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/drivers
-	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/drivers/level1
-	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/drivers/level2
-	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/drivers/level2
-	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/vscp
+	$(INSTALL_PROGRAM) -d $(DESTDIR)/var/web-vscp
+	$(INSTALL_PROGRAM) -d $(DESTDIR)/var/web-vscp/js
+	$(INSTALL_PROGRAM) -d $(DESTDIR)/etc/vscp/certs
+	$(INSTALL_PROGRAM) -d $(DESTDIR)/etc/vscp/ca-certificats
+	$(INSTALL_PROGRAM) -d $(DESTDIR)/usr/share/vscp
+	$(INSTALL_PROGRAM) -d $(DESTDIR)/usr/share/vscp/vscpd
+	$(INSTALL_PROGRAM) -d $(DESTDIR)/var/log/vscp
 	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/tmp
 
 install-startup-script:
@@ -94,7 +91,7 @@ install-startup-script:
 	@echo "- Installing startup script."
 	@if [ ! -e $(DESTDIR)/etc/init.d/vscpd ]; then\
  	    echo "- Copying startup script";\
-	    $(INSTALL_PROGRAM) -b -m755 install_files/unix/vscpd.startup_script_debian $(DESTDIR)/etc/init.d/vscpd;\
+	    $(INSTALL_PROGRAM) -b -m755 debian_orig/unix/vscpd.init $(DESTDIR)/etc/init.d/vscpd;\
 	    echo "- Installing startup script";\
 	    update-rc.d vscpd defaults;\
 	fi
@@ -104,56 +101,33 @@ install-config:
 	$(INSTALL_PROGRAM) -d $(DESTDIR)/etc/
 	$(INSTALL_PROGRAM) -d $(DESTDIR)/etc/vscp
 	@if [ ! -e $(DESTDIR)/etc/vscp/vscpd.conf ]; then\
-	    $(INSTALL_PROGRAM) -b -m744 install_files/unix/vscpd.conf $(DESTDIR)/etc/vscp/vscpd.conf;\
+	    $(INSTALL_PROGRAM) -b -m744 debian_orig/vscpd.conf $(DESTDIR)/etc/vscp/vscpd.conf;\
 	else\
-	    $(INSTALL_PROGRAM) -b -m744 install_files/unix/vscpd.conf $(DESTDIR)/etc/vscp/vscpd.conf.`date +'%Y%m%d'`;\
+	    $(INSTALL_PROGRAM) -b -m744 debian_orig/vscpd.conf $(DESTDIR)/etc/vscp/vscpd.conf.`date +'%Y%m%d'`;\
 	fi
 
 install-sample-data:
-	@echo "- Installing VSCP event database."
-	$(INSTALL_PROGRAM) -b -m744 database/vscp_events.sqlite3 $(DESTDIR)@VSCPDIR@/
-
-	@echo "- Installing example variables."
-	@if [ ! -e $(DESTDIR)@VSCPDIR@/variables.xml ]; then\
-	    $(INSTALL_PROGRAM) -b -m744 install_files/variables/variables.xml $(DESTDIR)@VSCPDIR@/variables.xml;\
-	else\
-	    $(INSTALL_PROGRAM) -b -m744 install_files/variables/variables.xml $(DESTDIR)@VSCPDIR@/variables.xml.`date +'%Y%m%d'`;\
-	fi
-
-	@echo "- Installing example DM."
-	@if [ ! -e $(DESTDIR)@VSCPDIR@/dm.xml ]; then\
-	    $(INSTALL_PROGRAM) -b -m744 install_files/DM/dm.xml $(DESTDIR)@VSCPDIR@/dm.xml;\
- 	else\
- 	    $(INSTALL_PROGRAM) -b -m744 install_files/DM/dm.xml $(DESTDIR)@VSCPDIR@/dm.xml.`date +'%Y%m%d'`;\
- 	fi
-
-	@echo "- Installing sample data for simulation."
-	@if [ ! -e $(DESTDIR)@VSCPDIR@/simtempdata.txt ]; then\
-	    $(INSTALL_PROGRAM) -b -m744 install_files/simulation/simtempdata.txt $(DESTDIR)@VSCPDIR@/simtempdata.txt;\
- 	else\
- 	    $(INSTALL_PROGRAM) -b -m744 install_files/simulation/simtempdata.txt $(DESTDIR)@VSCPDIR@/simtempdata.txt.`date +'%Y%m%d'`;\
-	fi
 
 install-sample-certs:
 	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/certs
 	@echo "- Installing web server sample certificate."
 	@if [ ! -e $(DESTDIR)@VSCPDIR@/certs/server.pem ]; then\
-	    $(INSTALL_PROGRAM) -b -m744 install_files/certs/server.pem $(DESTDIR)@VSCPDIR@/certs/;\
+	    $(INSTALL_PROGRAM) -b -m744 install_files/certs/server.pem /etc/certs/;\
 	fi
 
-	@echo "- Installing web client sample certificat."
+	@echo "- Installing web client sample certificate."
 	@if [ ! -e $(DESTDIR)@VSCPDIR@/certs/client.pem ]; then\
-	    $(INSTALL_PROGRAM) -b -m744 install_files/certs/client.pem $(DESTDIR)@VSCPDIR@/certs/;\
+	    $(INSTALL_PROGRAM) -b -m744 install_files/certs/client.pem /etc/certs/;\
 	fi
 
 	@echo "- Installing tcp/ip server sample certificate."
 	@if [ ! -e $(DESTDIR)@VSCPDIR@/certs/tcpip_server.pem ]; then\
-	    $(INSTALL_PROGRAM) -b -m744 install_files/certs/tcpip_server.pem $(DESTDIR)@VSCPDIR@/certs/;\
+	    $(INSTALL_PROGRAM) -b -m744 install_files/certs/tcpip_server.pem /etc/certs/;\
 	fi
 
-	@echo "- Installing tcp/ip client sample certificat."
+	@echo "- Installing tcp/ip client sample certificate."
 	@if [ ! -e $(DESTDIR)@VSCPDIR@/certs/tcpip_client.pem ]; then\
-	    $(INSTALL_PROGRAM) -b -m744 install_files/certs/tcpip_client.pem $(DESTDIR)@VSCPDIR@/certs/;\
+	    $(INSTALL_PROGRAM) -b -m744 install_files/certs/tcpip_client.pem /etc/certs/;\
 	fi
 
 install-manpages:

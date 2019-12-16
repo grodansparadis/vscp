@@ -234,19 +234,6 @@ sqlite3math.o: ../../../common/third_party/sqlite3math.c
 vscpd: $(VSCPD_OBJECTS)
 	$(CXX) -o $@ $(VSCPD_OBJECTS) $(LDFLAGS) $(EXTRALIBS)
 
-# Used by checkinstall
-debinst: all
-	$(STRIP) vscpd
-	$(INSTALL_PROGRAM) vscpd /usr/$(bindir)
-	@mkdir -p @VSCPDIR@
-	@mkdir -p @VSCPDIR@/tmp
-	@$(INSTALL_PROGRAM) -b ../../../../install_files/unix/vscpd.startup_script_debian_debinst @VSCPDIR@/tmp/vscpd.startup_script_debian_debinst
-	@$(INSTALL_PROGRAM) -b ../../../../install_files/unix/vscpd.conf @VSCPDIR@/tmp/vscpd.conf_unix_distro
-	@$(INSTALL_PROGRAM) -b ../../../../install_files/variables/variables.xml @VSCPDIR@/tmp/variables.xml_distro
-	@$(INSTALL_PROGRAM) -b ../../../../install_files/simulation/simtempdata.txt @VSCPDIR@/tmp/simtempdata.txt
-	@$(INSTALL_PROGRAM) -b ../../../../install_files/certs/server.pem @VSCPDIR@/tmp/server.pem
-	@$(INSTALL_PROGRAM) -b ../../../../install_files/certs/client.pem @VSCPDIR@/tmp/client.pem
-
 install-all: install install-folders install-startup-script install-config install-sample-data install-sample-cert
 
 install: all
@@ -258,35 +245,20 @@ install-system: install-folders install-startup-script install-config install-sa
 
 install-folders:
 	@echo "- Create folder structure."
-	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@
-	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/logs
-	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/actions
-	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/scripts
-	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/scripts/javascript
-	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/scripts/lua
-	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/ux
-	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/web
-	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/web/service
-	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/js
-	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/certs
-	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/drivers
-	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/drivers/level1
-	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/drivers/level2
-	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/drivers/level2
-	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/upload
-	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/web/css
-	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/web/images
-	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/web/lib
-	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/web/testws
-	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/vscp
-	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/tables
-	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/mdf
-	$(INSTALL_PROGRAM) -d $(DESTDIR)@VSCPDIR@/tmp
+	$(INSTALL_PROGRAM) -d $(DESTDIR)/var/logs/vscp
+	$(INSTALL_PROGRAM) -d $(DESTDIR)/var/web-vscp
+	$(INSTALL_PROGRAM) -d $(DESTDIR)/etc/vscp/certs
+	$(INSTALL_PROGRAM) -d $(DESTDIR)/etc/vscp/certificates
+	$(INSTALL_PROGRAM) -d $(DESTDIR)/var/web-vscp/css
+	$(INSTALL_PROGRAM) -d $(DESTDIR)/var/web-vscp/images
+	$(INSTALL_PROGRAM) -d $(DESTDIR)/var/web-vscp/lib
+	$(INSTALL_PROGRAM) -d $(DESTDIR)/var/web-vscp/testws
+	$(INSTALL_PROGRAM) -d $(DESTDIR)/var/lib/vscp
 
 install-startup-script:
 	@echo "- Installing startup script."
 	@if [ ! -e /etc/init.d/vscpd ]; then\
-	    $(INSTALL_PROGRAM) -b -m755 ../../../../install_files/unix/vscpd.startup_script_debian $(DESTDIR)/etc/init.d/vscpd;\
+	    $(INSTALL_PROGRAM) -b -m755 ../../../../debian_orig/vscpd.init $(DESTDIR)/etc/init.d/vscpd;\
 	    update-rc.d vscpd defaults;\
 	fi
 
@@ -294,36 +266,12 @@ install-config:
 	@echo "- Installing main configuration file."
 	@mkdir -p /etc/vscp
 	@if [ ! -e /etc/vscp/vscpd.conf ]; then\
-	    $(INSTALL_PROGRAM) -b -m744 ../../../../install_files/unix/vscpd.conf $(DESTDIR)/etc/vscp/vscpd.conf;\
+	    $(INSTALL_PROGRAM) -b -m744 ../../../../debian_orig/vscpd.conf $(DESTDIR)/etc/vscp/vscpd.conf;\
 	else\
-	    $(INSTALL_PROGRAM) -b -m744 ../../../../install_files/unix/vscpd.conf $(DESTDIR)/etc/vscp/vscpd.conf.`date +'%Y%m%d'`;\
+	    $(INSTALL_PROGRAM) -b -m744 ../../../../debian_orig/vscpd.conf $(DESTDIR)/etc/vscp/vscpd.conf.`date +'%Y%m%d'`;\
 	fi
 
 install-sample-data:
-
-	@echo "- Installing VSCP event database."
-	$(INSTALL_PROGRAM) -b -m744 ../../../../database/vscp_data.sqlite3 $(DESTDIR)@VSCPDIR@/
-
-	@echo "- Installing example variables."
-	@if [ ! -e @VSCPDIR@/variables.xml ]; then\
-	    $(INSTALL_PROGRAM) -b -m744 ../../../../install_files/variables/variables.xml $(DESTDIR)@VSCPDIR@/variables.xml;\
-	else\
-	    $(INSTALL_PROGRAM) -b -m744 ../../../../install_files/variables/variables.xml $(DESTDIR)@VSCPDIR@/variables.xml.`date +'%Y%m%d'`;\
-	fi
-
-	@echo "- Installing example DM."
-	@if [ ! -e @VSCPDIR@/dm.xml ]; then\
-	    $(INSTALL_PROGRAM) -b -m744 ../../../../install_files/DM/dm.xml $(DESTDIR)@VSCPDIR@/dm.xml;\
- 	else\
- 	    $(INSTALL_PROGRAM) -b -m744 ../../../../install_files/DM/dm.xml $(DESTDIR)@VSCPDIR@/dm.xml.`date +'%Y%m%d'`;\
- 	fi
-
-	@echo "Installing sample data for simulation."
-	@if [ ! -e @VSCPDIR@/simtempdata.txt ]; then\
-	    $(INSTALL_PROGRAM) -b -m744 ../../../../install_files/simulation/simtempdata.txt $(DESTDIR)@VSCPDIR@/simtempdata.txt;\
- 	else\
- 	    $(INSTALL_PROGRAM) -b -m744 ../../../../install_files/simulation/simtempdata.txt $(DESTDIR)@VSCPDIR@/simtempdata.txt.`date +'%Y%m%d'`;\
-	fi
 
 install-sample-cert:
 	@echo "- Installing server sample certificat."
