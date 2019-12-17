@@ -117,7 +117,7 @@ install-sample-certs:
 
 	@echo "- Installing web client sample certificate."
 	@if [ ! -e $(DESTDIR)@VSCPDIR@/certs/client.pem ]; then\
-	    $(INSTALL_PROGRAM) -b -m744 install_files/certs/client.pem /etc/certs/;\
+	    $(INSTALL_PROGRAM) -b -m744 install_files/certs/client.pem /etc/vscp/certs/;\
 	fi
 
 	@echo "- Installing tcp/ip server sample certificate."
