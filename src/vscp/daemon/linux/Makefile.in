@@ -234,14 +234,14 @@ sqlite3math.o: ../../../common/third_party/sqlite3math.c
 vscpd: $(VSCPD_OBJECTS)
 	$(CXX) -o $@ $(VSCPD_OBJECTS) $(LDFLAGS) $(EXTRALIBS)
 
-install-all: install install-folders install-startup-script install-config install-sample-data install-sample-cert
+install-all: install install-folders install-startup-script install-config install-sample-data install-sample-certs
 
 install: all
 	$(STRIP) vscpd
 	$(INSTALL_PROGRAM) -d $(DESTDIR)$(bindir)
 	$(INSTALL_PROGRAM) vscpd $(DESTDIR)$(bindir)
 
-install-system: install-folders install-startup-script install-config install-sample-data install-sample-cert
+install-system: install-folders install-startup-script install-config install-sample-data install-sample-certinstall-sample-certs
 
 install-folders:
 	@echo "- Create folder structure."
@@ -249,6 +249,10 @@ install-folders:
 	$(INSTALL_PROGRAM) -d $(DESTDIR)/var/web-vscp
 	$(INSTALL_PROGRAM) -d $(DESTDIR)/etc/vscp/certs
 	$(INSTALL_PROGRAM) -d $(DESTDIR)/etc/vscp/certificates
+	$(INSTALL_PROGRAM) -d $(DESTDIR)/etc/vscp/ca-certificats
+	$(INSTALL_PROGRAM) -d $(DESTDIR)/usr/share/vscp
+	$(INSTALL_PROGRAM) -d $(DESTDIR)/usr/share/vscp/vscpd
+	$(INSTALL_PROGRAM) -d $(DESTDIR)/var/log/vscp
 	$(INSTALL_PROGRAM) -d $(DESTDIR)/var/web-vscp/css
 	$(INSTALL_PROGRAM) -d $(DESTDIR)/var/web-vscp/images
 	$(INSTALL_PROGRAM) -d $(DESTDIR)/var/web-vscp/lib
@@ -273,15 +277,15 @@ install-config:
 
 install-sample-data:
 
-install-sample-cert:
+install-sample-certs:
 	@echo "- Installing server sample certificat."
 	@if [ ! -e @VSCPDIR@/certs/server.pem ]; then\
-	    $(INSTALL_PROGRAM) -b -m744 ../../../../install_files/certs/server.pem $(DESTDIR)@VSCPDIR@/certs;\
+	    $(INSTALL_PROGRAM) -b -m744 ../../../../install_files/certs/server.pem $(DESTDIR)/etc/vscp/certs;\
 	fi
 
 	@echo "- Installing client sample certificat."
 	@if [ ! -e @VSCPDIR@/certs/client.pem ]; then\
-	    $(INSTALL_PROGRAM) -b -m744 ../../../../install_files/certs/client.pem $(DESTDIR)@VSCPDIR@/certs;\
+	    $(INSTALL_PROGRAM) -b -m744 ../../../../install_files/certs/client.pem $(DESTDIR)/etc/vscp/certs;\
 		fi
 
 uninstall:
