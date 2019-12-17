@@ -122,12 +122,12 @@ install-sample-certs:
 
 	@echo "- Installing tcp/ip server sample certificate."
 	@if [ ! -e $(DESTDIR)@VSCPDIR@/certs/tcpip_server.pem ]; then\
-	    $(INSTALL_PROGRAM) -b -m744 install_files/certs/tcpip_server.pem /etc/certs/;\
+	    $(INSTALL_PROGRAM) -b -m744 install_files/certs/tcpip_server.pem /etc/vscp/certs/;\
 	fi
 
 	@echo "- Installing tcp/ip client sample certificate."
 	@if [ ! -e $(DESTDIR)@VSCPDIR@/certs/tcpip_client.pem ]; then\
-	    $(INSTALL_PROGRAM) -b -m744 install_files/certs/tcpip_client.pem /etc/certs/;\
+	    $(INSTALL_PROGRAM) -b -m744 install_files/certs/tcpip_client.pem /etc/vscp/certs/;\
 	fi
 
 install-manpages:
