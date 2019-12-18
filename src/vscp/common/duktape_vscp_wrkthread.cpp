@@ -185,7 +185,7 @@ actionJavascriptThread(void *pData)
     CClientItem *pItem = (CClientItem *)duk_get_pointer(ctx, -1);
     std::string user   = pItem->m_UserName;
 
-    duk_bool_t rc;
+    //duk_bool_t rc;
 
     // This is an active client
     pobj->m_pClientItem->m_bOpen = false;

@@ -425,7 +425,7 @@ content-type\" /><title>%s</title>"
                             <br></div>"
  
 // onclick=\"javascript:alert('hi');window.location='varlist';\"
-//  <button type=\"cancel\" onclick=\"javascript:window.location='%s';\">Cancel</button>\
+//  <button type=\"cancel\" onclick=\"javascript:window.location='%s';\">Cancel</button>
 
 // * * * Variable Post * * *
 #define WEB_VARPOST_BODY_START "<br><div id=\"content\"><div id=\"header\">\

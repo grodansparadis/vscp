@@ -22,12 +22,13 @@ override_dh_strip:
 
 override_dh_auto_install:
 	dh_auto_install
-	install -d debian/tmp/etc/vscpd/conf.d/
-	install -m 644 debian/README-conf-d debian/tmp/etc/vscpd/conf.d/README
-	install -d debian/tmp/etc/vscpd/ca_certificates/
-	install -m 644 debian/README-ca_certificates debian/tmp/etc/vscpd/ca_certificates/README
-	install -d debian/tmp/etc/vscpd/certs/
-	install -m 644 debian/README-certs debian/tmp/etc/vscpd/certs/README
-	install -m 644 debian/vscpd.conf debian/tmp/etc/vscpd/vscpd.conf
+	install -d debian/tmp/etc/vscp/conf.d/
+	install -m 644 debian/README-conf-d debian/tmp/etc/vscp/conf.d/README
+	install -d debian/tmp/etc/vscp/ca_certificates/
+	install -m 644 debian/README-ca_certificates debian/tmp/etc/vscp/ca_certificates/README
+	install -d debian/tmp/etc/vscp/certs/
+	install -m 644 debian/README-certs debian/tmp/etc/vscp/certs/README
+	install -m 644 debian/vscp.key debian/tmp/etc/vscp/certs/vscp.key
+	install -m 644 debian/vscpd.conf debian/tmp/etc/vscp/vscpd.conf
 	install -d debian/tmp/lib/systemd/system/
 	install -m 644  ./service/systemd/vscpd.service.notify debian/tmp/lib/systemd/system/vscpd.service

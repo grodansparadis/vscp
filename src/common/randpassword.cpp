@@ -31,6 +31,15 @@
 #define _CRT_SECURE_NO_WARNINGS
 #endif
 
+#ifdef UNUSED
+#elif defined(__GNUC__)
+# define UNUSED(x) UNUSED_ ## x __attribute__((unused))
+#elif defined(__LCLINT__)
+# define UNUSED(x) /*@unused@*/ x
+#else
+# define UNUSED(x) x
+#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 // Constructor
 //
@@ -57,7 +66,7 @@ randPassword::~randPassword()
 void randPassword::generatePassword( unsigned char length, char *pPassword )
 {
     static int seed = 8;
-    int len = strlen( m_pool );
+    int UNUSED(len) = strlen( m_pool );
     int cnt = 0;
     memset( pPassword, 0, length );
     srand( (unsigned)time( NULL ) + seed++ );

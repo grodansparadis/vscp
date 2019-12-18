@@ -86,8 +86,6 @@ CInterfaceList::~CInterfaceList( void )
 //
 bool CInterfaceList::addInterface( const std::string& ip, const std::string& mac, const std::string& guid )
 {
-    unsigned long var;
-
     CInterfaceItem *pItem = new CInterfaceItem;
     if ( NULL == pItem ) return false;
 
@@ -107,8 +105,6 @@ bool CInterfaceList::addInterface( const std::string& ip, const std::string& mac
 //
 bool CInterfaceList::addInterface( const std::string& ip, const std::string& mac, const cguid& guid )
 {
-    unsigned long var;
-
     CInterfaceItem *pItem = new CInterfaceItem;
     if ( NULL == pItem ) return false;
 

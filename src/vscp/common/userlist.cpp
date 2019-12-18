@@ -91,7 +91,7 @@ CUserItem::fixName(void)
 
     // Works only for ASCII names. Should be fixed so
     // UTF8 names can be used TODO
-    for (int i = 0; i < m_user.length(); i++) {
+    for (size_t i = 0; i < m_user.length(); i++) {
         switch ((const char)m_user[i]) {
             case ';':
             case '\'':
@@ -225,7 +225,7 @@ CUserItem::getAsString(std::string& strUser)
     strUser += ";";
     // Protect password
     str = getPassword();
-    for (int i = 0; i < str.length(); i++) {
+    for (size_t i = 0; i < str.length(); i++) {
         strUser += "*";
     }
     // strUser += getPassword();
@@ -269,7 +269,7 @@ CUserItem::getAsMap(std::map<std::string, std::string>& mapUser)
     // Protect password
     wstr = "";
     str = getPassword();
-    for (int i = 0; i < str.length(); i++) {
+    for (size_t i = 0; i < str.length(); i++) {
         wstr += "*";
     }
     mapUser["password"] = wstr;
@@ -308,7 +308,7 @@ CUserItem::setUserRightsFromString(const std::string& strRights)
         std::deque<std::string> tokens;
         vscp_split(tokens, strRights, "/");
 
-        int idx = 0;
+        size_t idx = 0;
         while (!tokens.empty()) {
 
             std::string str = tokens.front();
@@ -464,7 +464,7 @@ CUserItem::getAllowedEventsAsString(void)
 {
     std::string strAllowedEvents;
 
-    for (int i = 0; i < m_listAllowedEvents.size(); i++) {
+    for (size_t i = 0; i < m_listAllowedEvents.size(); i++) {
         strAllowedEvents += m_listAllowedEvents[i];
         if (i != (m_listAllowedEvents.size() - 1))
             strAllowedEvents += "/";
@@ -506,7 +506,7 @@ CUserItem::setAllowedRemotesFromString(const std::string& strConnect)
 std::string
 CUserItem::getAllowedRemotesAsString(void)
 {
-    int i;
+    size_t i;
     std::string strAllowedRemotes;
 
     for (i = 0; i < m_listAllowedRemotes.size(); i++) {
@@ -583,7 +583,7 @@ CUserItem::isAllowedToConnect(uint32_t remote_ip)
     // If the list is empty - allow all
     allowed = (0 == m_listAllowedRemotes.size()) ? '+' : '-';
 
-    for (int i = 0; i < m_listAllowedRemotes.size(); i++) {
+    for (size_t i = 0; i < m_listAllowedRemotes.size(); i++) {
 
         flag = m_listAllowedRemotes[i].at(0); // vec.ptr[0];
         if ((flag != '+' && flag != '-') ||
@@ -807,7 +807,6 @@ CUserList::addSuperUser(const std::string& user,
                         uint32_t bFlags)
 {
     char buf[512];
-    char* pErrMsg = 0;
 
     // Cant add user with name that is already defined.
     if (NULL != m_userhashmap[user]) {
@@ -1253,7 +1252,7 @@ CUserList::getAllUsers(std::deque<std::string>& arrayUsers)
     std::map<std::string, CUserItem*>::iterator it;
     for (it = m_userhashmap.begin(); it != m_userhashmap.end(); ++it) {
         std::string key = it->first;
-        CUserItem* pUserItem = it->second;
+        //CUserItem* pUserItem = it->second;
         arrayUsers.push_back(key);
     }
 

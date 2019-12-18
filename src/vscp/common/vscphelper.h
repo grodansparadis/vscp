@@ -1819,7 +1819,8 @@ extern "C"
      * @param array Byte array that will receive result.
      * @param size Size of byte array.
      * @param hextstr Hex string that should be converted.
-     * @return Number of bytes written to the byte array.
+     * @return Number of bytes written to the byte array or
+     *         zero on error.
      *
      */
 

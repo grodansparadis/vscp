@@ -208,7 +208,7 @@ websock_authentication(struct mg_connection *conn,
         return false;
     }
 
-    if (-1 == vscp_hexStr2ByteArray(iv, 16, (const char *)strIV.c_str())) {
+    if (0 == vscp_hexStr2ByteArray(iv, 16, (const char *)strIV.c_str())) {
         syslog(LOG_ERR,
                "[Websocket Client] Authentication: No room "
                "for iv block. ");
@@ -216,7 +216,7 @@ websock_authentication(struct mg_connection *conn,
     }
 
     size_t len;
-    if (-1 == (len = vscp_hexStr2ByteArray(secret,
+    if (0 == (len = vscp_hexStr2ByteArray(secret,
                                            strCrypto.length(),
                                            (const char *)strCrypto.c_str()))) {
         syslog(LOG_ERR,

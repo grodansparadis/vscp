@@ -108,7 +108,7 @@ getDebugValues(const char *optarg)
     std::string attribute = optarg;
     std::deque<std::string> tokens;
     vscp_split(tokens, attribute, ",");
-    for (int idx = 0; idx < MIN(8,tokens.size()); idx++) {
+    for (size_t idx = 0; idx < MIN(8,tokens.size()); idx++) {
         if (tokens.size()) {
             uint32_t val = vscp_readStringValue(tokens.front());
             m_gdebugArray[idx] = val;
@@ -274,7 +274,10 @@ init(std::string &strcfgfile, std::string &rootFolder)
         syslog(LOG_ERR, "vscpd: Failed to change dir to rootdir");
         fprintf(stderr, "vscpd: Failed to change dir to rootdir");
         unlink("/var/run/vscpd/vscpd.pid");
-        int n = chdir("/tmp"); // security measure
+        if ( -1 == chdir("/var/lib/vscp/vscpd") ) {
+            syslog(LOG_ERR, "Unable to chdir to home folder [/var/local/vscp/vscpd] errno=%d", errno);
+        }
+        
         return -1;
     }
 

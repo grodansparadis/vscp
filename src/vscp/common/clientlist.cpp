@@ -242,7 +242,6 @@ CClientList::~CClientList()
 bool
 CClientList::findFreeId(uint16_t *pid)
 {
-    uint16_t maxid = 0;
     std::list<uint16_t> sorterIdList;
     std::deque<CClientItem *>::iterator it;
 

@@ -1,7 +1,8 @@
-etc/vscpd/ca_certificates/README
-etc/vscpd/certs/README
-etc/vscpd/conf.d/README
-etc/vscpd/vscpd.conf
+etc/vscp/ca_certificates/README
+etc/vscp/certs/README
+etc/vscp/certs/vscp.key
+etc/vscp/conf.d/README
+etc/vscp/vscpd.conf
 lib/systemd/system/vscpd.service
 usr/bin/vscpd_passwd
 usr/sbin/vscpd

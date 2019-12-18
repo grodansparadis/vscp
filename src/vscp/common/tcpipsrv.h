@@ -569,7 +569,7 @@ class tcpipClientObj
     std::string m_strResponse;
 
     // Saved return value for last sockettcp operation
-    int m_rv;
+    size_t m_rv;
 
     // Flag for receive loop active
     bool m_bReceiveLoop;

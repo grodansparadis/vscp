@@ -290,7 +290,7 @@ js_vscp_print(duk_context* ctx)
 duk_ret_t
 js_vscp_log(duk_context* ctx)
 {
-    int nArgs = duk_get_top(ctx);
+    //int nArgs = duk_get_top(ctx);
     std::string wxDebug = duk_get_string_default(ctx, -1, "---Log fail---");
     syslog(LOG_INFO, "%s", wxDebug.c_str());
 
@@ -728,7 +728,7 @@ try_again:
 
     } // events available
 
-    int nArgs = duk_get_top(ctx);
+    //int nArgs = duk_get_top(ctx);
 
     // Fail
     duk_push_null(ctx); // return code failure

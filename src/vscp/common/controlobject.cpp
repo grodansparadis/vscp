@@ -59,6 +59,9 @@
 #include <sys/types.h>
 #include <syslog.h>
 #include <unistd.h>
+#ifdef WITH_SYSTEMD
+#  include <systemd/sd-daemon.h>
+#endif
 
 #include <civetweb.h>
 
@@ -92,6 +95,11 @@
 
 #include <controlobject.h>
 
+#define UNUSED(x) (void)(x)
+void foo(const int i) {
+    UNUSED(i);
+}
+
 #ifndef _CRT_SECURE_NO_WARNINGS
 #define _CRT_SECURE_NO_WARNINGS
 #endif
@@ -115,8 +123,6 @@ UDPThread(void *pData); // udpsrv.cpp
 
 CControlObject::CControlObject()
 {
-    int i;
-
     // Open syslog
     openlog("vscpd", LOG_CONS, LOG_DAEMON);
 
@@ -447,23 +453,23 @@ CControlObject::run(void)
 {
     std::deque<CClientItem *>::iterator nodeClient;
 
-    vscpEvent EventLoop;
-    EventLoop.vscp_class = VSCP_CLASS2_VSCPD;
-    EventLoop.vscp_type  = VSCP2_TYPE_VSCPD_LOOP;
-    EventLoop.sizeData   = 0;
-    EventLoop.pdata      = NULL;
+    // vscpEvent EventLoop;
+    // EventLoop.vscp_class = VSCP_CLASS2_VSCPD;
+    // EventLoop.vscp_type  = VSCP2_TYPE_VSCPD_LOOP;
+    // EventLoop.sizeData   = 0;
+    // EventLoop.pdata      = NULL;
 
-    vscpEvent EventStartUp;
-    EventStartUp.vscp_class = VSCP_CLASS2_VSCPD;
-    EventStartUp.vscp_type  = VSCP2_TYPE_VSCPD_STARTING_UP;
-    EventStartUp.sizeData   = 0;
-    EventStartUp.pdata      = NULL;
+    // vscpEvent EventStartUp;
+    // EventStartUp.vscp_class = VSCP_CLASS2_VSCPD;
+    // EventStartUp.vscp_type  = VSCP2_TYPE_VSCPD_STARTING_UP;
+    // EventStartUp.sizeData   = 0;
+    // EventStartUp.pdata      = NULL;
 
-    vscpEvent EventShutDown;
-    EventShutDown.vscp_class = VSCP_CLASS2_VSCPD;
-    EventShutDown.vscp_type  = VSCP2_TYPE_VSCPD_SHUTTING_DOWN;
-    EventShutDown.sizeData   = 0;
-    EventShutDown.pdata      = NULL;
+    // vscpEvent EventShutDown;
+    // EventShutDown.vscp_class = VSCP_CLASS2_VSCPD;
+    // EventShutDown.vscp_type  = VSCP2_TYPE_VSCPD_SHUTTING_DOWN;
+    // EventShutDown.sizeData   = 0;
+    // EventShutDown.pdata      = NULL;
 
     // We need to create a clientItem and add this object to the list
     CClientItem *pClientItem = new CClientItem;
@@ -492,16 +498,20 @@ CControlObject::run(void)
         syslog(LOG_DEBUG, "Mainloop starting");
     }
 
+#ifdef WITH_SYSTEMD
+	sd_notify(0, "READY=1");
+#endif
+
     //-------------------------------------------------------------------------
     //                            MAIN - LOOP
     //-------------------------------------------------------------------------
 
-    int cnt = 0;
     while (!m_bQuit) {
 
         // CLOCKS_PER_SEC
         clock_t ticks, oldus;
         oldus = ticks = clock();
+        UNUSED(oldus);
 
         // Wait for event
         if ((-1 == vscp_sem_wait(&pClientItem->m_semClientInputQueue, 10)) &&
@@ -751,7 +761,11 @@ CControlObject::startDeviceWorkerThreads(void)
                 strExecute += " ";
                 strExecute += pDeviceItem->m_strParameter;
 
+                // execute a shell command
                 int status = system(pDeviceItem->m_strPath.c_str());
+                if ( -1 == status ) {
+                    syslog(LOG_ERR, "Failed to start Level 3 driver. errno=%d", errno );
+                }
 
             } else {
                 // Start  the driver logic
@@ -1083,7 +1097,7 @@ CControlObject::sendEvent(CClientItem *pClientItem, vscpEvent *peventToSend)
         // Find client
         pthread_mutex_lock(&m_clientList.m_mutexItemList);
 
-        CClientItem *pDestClientItem = NULL;
+        //CClientItem *pDestClientItem = NULL;
         std::deque<CClientItem *>::iterator it;
         for (it = m_clientList.m_itemList.begin();
              it != m_clientList.m_itemList.end();
@@ -1115,9 +1129,8 @@ CControlObject::sendEvent(CClientItem *pClientItem, vscpEvent *peventToSend)
 
             if (pItem->m_guid == destguid) {
                 // Found
-                pDestClientItem = pItem;
+                //pDestClientItem = pItem;
                 bSent           = true;
-                syslog(LOG_DEBUG, "Match ");
                 sendEventToClient(pItem, pEvent);
                 break;
             }
@@ -1293,8 +1306,7 @@ CControlObject::getMacAddress(cguid &guid)
 
     if (0 == ioctl(fd, SIOCGIFHWADDR, &s)) {
 
-        unsigned char *ptr;
-        ptr = (unsigned char *)&s.ifr_ifru.ifru_hwaddr.sa_data[0];
+        //ptr = (unsigned char *)&s.ifr_ifru.ifru_hwaddr.sa_data[0];
         if (m_debugFlags[0] & VSCP_DEBUG1_GENERAL) {
             syslog(LOG_DEBUG,
                    "Ethernet MAC address: %02X:%02X:%02X:%02X:%02X:%02X",
@@ -1885,7 +1897,6 @@ startFullConfigParser(void *data, const char *name, const char **attr)
         std::string privilege;
         std::string allowfrom;
         std::string allowevent;
-        bool bUser = false;
 
         vscp_clearVSCPFilter(&VSCPFilter); // Allow all frames
 
@@ -2248,9 +2259,8 @@ CControlObject::readConfiguration(const std::string &strcfgfile)
     XML_SetUserData(xmlParser, this);
     XML_SetElementHandler(
       xmlParser, startFullConfigParser, endFullConfigParser);
-    // XML_SetCharacterDataHandler(xmlParser, handleFullConfigData);
+    XML_SetCharacterDataHandler(xmlParser, handleFullConfigData);
 
-    int bytes_read;
     void *buf = XML_GetBuffer(xmlParser, XML_BUFF_SIZE);
     if (NULL == buf) {
         XML_ParserFree(xmlParser);

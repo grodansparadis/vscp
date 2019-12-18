@@ -183,7 +183,7 @@ lua_vscp_log(struct lua_State* L)
 {
     std::string msg;
     uint8_t type = LOG_ERR;
-    uint8_t level = 0;
+    uint8_t __attribute__((unused)) level = 0;
 
     int nArgs = lua_gettop(L);
 
@@ -370,6 +370,7 @@ lua_vscp_escapexml(struct lua_State* L)
     }
 
     // TODO
+    pstr = pstr;
 
     return 1;
 }
@@ -1168,7 +1169,7 @@ int
 lua_vscp_getEvent(struct lua_State* L)
 {
     int format = 0;
-    vscpEventEx ex;
+    //vscpEventEx ex;
     std::string strEvent;
     CClientItem* pClientItem = NULL;
 
@@ -1191,7 +1192,7 @@ lua_vscp_getEvent(struct lua_State* L)
         return luaL_error(L, "vscp.getEvent: VSCP server client not found.");
     }
 
-try_again:
+//try_again:
 
     // Check the client queue
     if (pClientItem->m_bOpen && pClientItem->m_clientInputQueue.size()) {

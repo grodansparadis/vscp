@@ -70,6 +70,12 @@
 /* Define to 1 if you have the `ssl' library (-lssl). */
 #undef HAVE_LIBSSL
 
+/* Define to 1 if you have the `systemd' library (-lsystemd). */
+#undef HAVE_LIBSYSTEMD
+
+/* Define to 1 if you have the `wrap' library (-lwrap). */
+#undef HAVE_LIBWRAP
+
 /* Define to 1 if you have the `z' library (-lz). */
 #undef HAVE_LIBZ
 

@@ -305,8 +305,8 @@ bool CUserRegisters::abstractionValueFromRegsToString( CMDF_Abstraction *pAbstra
 {
     
     bool rv = false;
-    uint8_t *pReg;
-/*
+ /*   uint8_t *pReg;
+
     if ( NULL == pAbstraction ) return false;
 
     // Get register page
@@ -523,8 +523,8 @@ bool CUserRegisters::abstractionValueFromStringToRegs( CMDF_Abstraction *pAbstra
                                                         std::string &strValue )
 {   
     bool rv = false;
-    uint8_t *pReg;
-/*
+ /*   uint8_t *pReg;
+
     if ( NULL == pAbstraction ) return false;
 
     // Get register page

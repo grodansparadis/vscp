@@ -60,7 +60,7 @@
 void *
 deviceThread(void *pData)
 {
-    const char *dlsym_error;
+    //const char *dlsym_error;
 
     CDeviceItem *pDevItem = (CDeviceItem *)pData;
     if (NULL == pDevItem) {
@@ -91,7 +91,6 @@ deviceThread(void *pData)
         pClientItem->m_type = CLIENT_ITEM_INTERFACE_TYPE_DRIVER_LEVEL3;
     }
 
-    char datebuf[80];
     pClientItem->m_dtutc.setUTCNow();
     pClientItem->m_strDeviceName = "driver_" + pDevItem->m_strName;
 
@@ -609,8 +608,6 @@ deviceThread(void *pData)
                    pDevItem->m_strName.c_str());
         }
 
-    level1_driver_exit:
-
         pDevItem->m_bQuit = true;
         pthread_join(pDevItem->m_level1WriteThread, NULL);
         pthread_join(pDevItem->m_level1ReceiveThread, NULL);
@@ -771,8 +768,6 @@ deviceThread(void *pData)
                    "%s: [Device tread] Level II Closed.",
                    pDevItem->m_strName.c_str());
         }
-
-    level2_driver_exit:
 
         pDevItem->m_bQuit = true;
         pthread_join(pDevItem->m_level2WriteThread, NULL);

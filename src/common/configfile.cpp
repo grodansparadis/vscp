@@ -29,6 +29,7 @@
 
 #include "configfile.h"
 
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 
@@ -77,12 +78,14 @@ char *Config::ScanKey( char *key )
 {
     char *eq;
     
-    // Configuratin file must be open
+    // Configuration file must be open
     if ( NULL == m_fIn ) return NULL;
     
     rewind( m_fIn );
     while( !feof( m_fIn ) ) {
-        char *p = fgets( m_pBuffer, 255, m_fIn );
+        if ( NULL == fgets( m_pBuffer, 255, m_fIn ) ) {
+            return NULL;
+        }
         Clean();
         
         // Scan for the =

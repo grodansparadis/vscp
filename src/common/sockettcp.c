@@ -4161,3 +4161,28 @@ void stcp_init_client_connection( struct stcp_connection *conn,
     }
 
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// stcp_socket_get_address
+//
+
+int stcp_socket_get_address(struct stcp_connection *conn, char *buf, size_t len)
+{
+	struct sockaddr_storage addr;
+	socklen_t addrlen;
+
+	memset(&addr, 0, sizeof(struct sockaddr_storage));
+	addrlen = sizeof(addr);
+	if(!getpeername( conn->client.sock, (struct sockaddr *)&addr, &addrlen)){
+		if(addr.ss_family == AF_INET){
+			if(inet_ntop(AF_INET, &((struct sockaddr_in *)&addr)->sin_addr.s_addr, buf, len)){
+				return 0;
+			}
+		}else if(addr.ss_family == AF_INET6){
+			if(inet_ntop(AF_INET6, &((struct sockaddr_in6 *)&addr)->sin6_addr.s6_addr, buf, len)){
+				return 0;
+			}
+		}
+	}
+	return 1;
+}

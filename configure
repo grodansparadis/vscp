@@ -266,11 +266,11 @@ fi
     $as_echo "$0: In particular, zsh $ZSH_VERSION has bugs and should"
     $as_echo "$0: be upgraded to zsh 4.3.4 or later."
   else
-    $as_echo "$0: Please tell bug-autoconf@gnu.org and
-$0: akhe@vscp.org about your system, including
-$0: any error possibly output before this message. Then
-$0: install a modern shell, or manually run the script
-$0: under such a shell if you do have one."
+    $as_echo "$0: Please tell bug-autoconf@gnu.org and akhe@vscp.org
+$0: about your system, including any error possibly output
+$0: before this message. Then install a modern shell, or
+$0: manually run the script under such a shell if you do
+$0: have one."
   fi
   exit 1
 fi
@@ -698,6 +698,8 @@ ac_subst_files=''
 ac_user_opts='
 enable_option_checking
 enable_debug
+enable_systemd
+enable_wrap
 enable_rpi
 '
       ac_precious_vars='build_alias
@@ -1336,7 +1338,9 @@ Optional Features:
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --enable-debug[=no]     compile with debugging; one of yes/info/profile/no
-  --enable-rpi         Build Raspberry Pi specific stuff (default disabled)
+  --enable-systemd        Build systemd support (default enabled
+  --enable-wrap           Build wrap tcpd support (default enabled)
+  --enable-rpi            Build Raspberry Pi specific stuff (default disabled)
 
 Some influential environment variables:
   CXX         C++ compiler command
@@ -1708,9 +1712,9 @@ $as_echo "$as_me: WARNING: $2: see the Autoconf documentation" >&2;}
 $as_echo "$as_me: WARNING: $2:     section \"Present But Cannot Be Compiled\"" >&2;}
     { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: $2: proceeding with the compiler's result" >&5
 $as_echo "$as_me: WARNING: $2: proceeding with the compiler's result" >&2;}
-( $as_echo "## -------------------------------------- ##
+( $as_echo "## ---------------------------- ##
 ## Report this to akhe@vscp.org ##
-## -------------------------------------- ##"
+## ---------------------------- ##"
      ) | sed "s/^/$as_me: WARNING:     /" >&2
     ;;
 esac
@@ -4445,6 +4449,96 @@ _ACEOF
 
 fi
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for request_init in -lwrap" >&5
+$as_echo_n "checking for request_init in -lwrap... " >&6; }
+if ${ac_cv_lib_wrap_request_init+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lwrap  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char request_init ();
+int
+main ()
+{
+return request_init ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_wrap_request_init=yes
+else
+  ac_cv_lib_wrap_request_init=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_wrap_request_init" >&5
+$as_echo "$ac_cv_lib_wrap_request_init" >&6; }
+if test "x$ac_cv_lib_wrap_request_init" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBWRAP 1
+_ACEOF
+
+  LIBS="-lwrap $LIBS"
+
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for sd_notify in -lsystemd" >&5
+$as_echo_n "checking for sd_notify in -lsystemd... " >&6; }
+if ${ac_cv_lib_systemd_sd_notify+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lsystemd  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char sd_notify ();
+int
+main ()
+{
+return sd_notify ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_systemd_sd_notify=yes
+else
+  ac_cv_lib_systemd_sd_notify=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_systemd_sd_notify" >&5
+$as_echo "$ac_cv_lib_systemd_sd_notify" >&6; }
+if test "x$ac_cv_lib_systemd_sd_notify" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBSYSTEMD 1
+_ACEOF
+
+  LIBS="-lsystemd $LIBS"
+
+fi
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for SSL_free in -lssl" >&5
 $as_echo_n "checking for SSL_free in -lssl... " >&6; }
 if ${ac_cv_lib_ssl_SSL_free+:} false; then :
@@ -5374,7 +5468,6 @@ if test $ac_cv_c_volatile = no; then
 $as_echo "#define volatile /**/" >>confdefs.h
 
 fi
-
 
 
 # Checks for library functions.
@@ -6529,6 +6622,34 @@ fi
 
 
 
+# Check whether --enable-systemd was given.
+if test "${enable_systemd+set}" = set; then :
+  enableval=$enable_systemd;
+fi
+
+
+if test "x$enable_systemd" != "xno"; then :
+
+  CFLAGS+=" -DWITH_SYSTEMD"
+  CPPFLAGS+=" -DWITH_SYSTEMD"
+
+fi
+
+
+# Check whether --enable-wrap was given.
+if test "${enable_wrap+set}" = set; then :
+  enableval=$enable_wrap;
+fi
+
+
+if test "x$enable_wrap" != "xno"; then :
+
+  CFLAGS+=" -DWITH_WRAP"
+  CPPFLAGS+=" -DWITH_WRAP"
+
+fi
+
+
 
 if test "${VSCPDIR+set}" = set; then
   echo "variable \$VSCPDIR is set to: $VSCPDIR"
@@ -6543,12 +6664,16 @@ PROJ_SUBDIRS="src/vscp/daemon/linux\
 
 # Check whether --enable-rpi was given.
 if test "${enable_rpi+set}" = set; then :
-  enableval=$enable_rpi; vscp_rpi=yes
-else
-  vscp_rpi=no
+  enableval=$enable_rpi;
 fi
 
 
+vscp_rpi=no
+if test "x$enable_rpi" = "xyes"; then :
+
+  vscp_rpi=yes
+
+fi
 
 
 
@@ -7890,15 +8015,27 @@ fi
 
 if test "${vscp_static}" = "yes"
 then
-   echo "linking : static "
+   echo "linking               : static "
 else
-   echo "linking : shared "
+   echo "linking               : shared "
 fi
 
-if test "${vscp_rpi}" = yes ; then
-   echo   "Raspberry Pi build    : ${vscp_rpi}"
+if test "x$enable_systemd" = "xno"; then :
+  echo   "Systemd enabled       : no"
 else
-   echo   "Raspberry Pi build    : no"
+  echo   "Systemd enabled       : yes"
+fi
+
+if test "x$enable_wrap" = "xno"; then :
+  echo   "tcpd wrap enabled     : no"
+else
+  echo   "tcpd wrap enabled     : yes"
+fi
+
+if test "x$enable_rpi" = "xyes"; then :
+  echo   "Raspberry Pi build    : yes"
+else
+  echo   "Raspberry Pi build    : no"
 fi
 
 printf "
@@ -7908,6 +8045,9 @@ To build VSCP and friends, type \'make\' followed by \'make install\'
  use --enable-debug to build a debug version; release is default.
  use --enable-static to include a static version (currently diabled).
  use --enable-rpi to build Raspberry Pi specific drivers.
+ use --disable-systemd to not use systemd (default: eanbled).
+ use --disable-wrap to not use the tcpd wrapper (default: eanbled).
+
 
  \"make\" -- builds VSCP & Friends.
  \"make install\" -- builds VSCP & Friends and install system.
