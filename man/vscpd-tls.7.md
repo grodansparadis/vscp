@@ -1,4 +1,4 @@
-% VSCPD(8) VSCP Daemon
+% VSCPD-TLS(7) VSCPD-TLS
 % Åke Hedman, Grodans Paradis AB
 % December 18, 2019
 

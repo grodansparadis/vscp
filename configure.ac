@@ -45,7 +45,11 @@ AC_CHECK_LIB([expat], [XML_ParserCreate])
 AC_HEADER_DIRENT
 AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
-AC_CHECK_HEADERS([OS.h arpa/inet.h fcntl.h inttypes.h limits.h locale.h netdb.h netinet/in.h sgtty.h stddef.h stdint.h stdlib.h string.h strings.h sys/file.h sys/ioctl.h sys/socket.h sys/time.h sys/timeb.h syslog.h termios.h unistd.h openssl/md5.h])
+AC_CHECK_HEADERS([OS.h arpa/inet.h fcntl.h inttypes.h limits.h \
+                    locale.h netdb.h netinet/in.h sgtty.h stddef.h \
+                    stdint.h stdlib.h string.h strings.h sys/file.h \
+                    sys/ioctl.h sys/socket.h sys/time.h sys/timeb.h \
+                    syslog.h termios.h unistd.h openssl/md5.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_HEADER_STDBOOL
@@ -122,7 +126,7 @@ AC_ARG_VAR(VSCPDIR, Set base folder for installation (/srv/vscp) )
 if test "${VSCPDIR+set}" = set; then
   echo "variable \$VSCPDIR is set to: $VSCPDIR"
 else
-  VSCPDIR="/srv/vscp"
+  VSCPDIR="/var/lib/vscp"
   echo "variable \$VSCPDIR is set to: $VSCPDIR"
 fi
 
@@ -131,7 +135,8 @@ dnl Project Sub directories
 dnl
 
 PROJ_SUBDIRS="src/vscp/daemon/linux\
- src/vscp/vscp-mkpasswd "
+ src/vscp/vscp-mkpasswd\
+ src/vscp/vscpcmd "
 
 AC_ARG_ENABLE(rpi, 
    AS_HELP_STRING([--enable-rpi], [Build Raspberry Pi specific stuff (default disabled)]))
@@ -174,8 +179,9 @@ dnl
 
 AC_CONFIG_FILES([Makefile
          m4/Makefile
-         src/vscp/daemon/linux/Makefile
-         src/vscp/vscp-mkpasswd/Makefile
+         src/vscp/daemon/linux/Makefile 
+         src/vscp/vscp-mkpasswd/Makefile 
+         src/vscp/vscpcmd/Makefile 
 ])
 
 

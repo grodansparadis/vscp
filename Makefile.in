@@ -57,6 +57,7 @@ uninstall:
 
 install-manpages:
 	@echo "- Installing man-pages."
+	man/make_man_pages
 	$(INSTALL_PROGRAM) -d $(DESTDIR)/usr/share/man/man8
 	$(INSTALL_PROGRAM) -d $(DESTDIR)/usr/share/man/man7
 	$(INSTALL_PROGRAM) -d $(DESTDIR)/usr/share/man/man1

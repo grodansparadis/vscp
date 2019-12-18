@@ -1,6 +1,6 @@
 % UVSCPD(8) micro VSCP Daemon
 % Åke Hedman, Grodans Paradis AB
-% July 4, 2018
+% December 18, 2019
 
 # NAME
 

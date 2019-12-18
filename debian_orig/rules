@@ -2,33 +2,47 @@
 
 export DEB_LDFLAGS_MAINT_APPEND = -Wl,--as-needed
 export prefix=/usr
+export exec-prefix=/usr
 export libdir=/usr/lib/$(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
 
 %:
-	# Don't process CMake rules, CMakeLists.txt is only included for Windows/Mac support.
 	dh $@ --buildsystem=makefile
 
 override_dh_installchangelogs:
 	dh_installchangelogs ChangeLog.txt
 
 override_dh_auto_build:
-	dh_auto_build -- WITH_BUNDLED_DEPS=no WITH_ADNS=yes WITH_WRAP=yes WITH_WEBSOCKETS=yes WITH_STRIP=no WITH_SYSTEMD=yes
+	dh_auto_build -- WITH_TLS=yes
 
 override_dh_auto_test:
 
 override_dh_strip:
-	dh_strip -p vscpd --dbgsym-migration='vscpd-dbg (<< 1.5)' -Xlibvscpd
+	dh_strip -p vscpd 
 	dh_strip --remaining-packages
 
 override_dh_auto_install:
-	dh_auto_install
-	install -d debian/tmp/etc/vscp/conf.d/
-	install -m 644 debian/README-conf-d debian/tmp/etc/vscp/conf.d/README
-	install -d debian/tmp/etc/vscp/ca_certificates/
-	install -m 644 debian/README-ca_certificates debian/tmp/etc/vscp/ca_certificates/README
-	install -d debian/tmp/etc/vscp/certs/
-	install -m 644 debian/README-certs debian/tmp/etc/vscp/certs/README
-	install -m 644 debian/vscp.key debian/tmp/etc/vscp/certs/vscp.key
-	install -m 644 debian/vscpd.conf debian/tmp/etc/vscp/vscpd.conf
-	install -d debian/tmp/lib/systemd/system/
-	install -m 644  ./service/systemd/vscpd.service.notify debian/tmp/lib/systemd/system/vscpd.service
+	install -d debian/vscpd/usr/share/vscp/vscpd
+	install -d debian/vscpd/usr/sbin/
+	install -m 755 src/vscp/daemon/linux/vscpd debian/vscpd/usr/sbin/
+	install -d debian/vscpd/usr/bin/
+	install -m 755 src/vscp/vscp-mkpasswd/vscp-mkpasswd debian/vscpd/usr/bin/vscp-mkpasswd
+	install -m 755 src/vscp/vscpcmd/vscpcmd debian/vscpd/usr/bin/vscpcmd
+	install -d debian/vscpd/etc/vscp/ca_certificates/
+	install -m 644 debian/README-ca_certificates debian/vscpd/etc/vscp/ca_certificates/README
+	install -d debian/vscpd/etc/vscp/certs/
+	install -m 644 debian/README-certs debian/vscpd/etc/vscp/certs/README
+	install -m 644 install_files/vscp.key debian/vscpd/etc/vscp/certs/vscp.key
+	install -m 644 install_files/unix/vscpd.conf debian/vscpd/etc/vscp/vscpd.conf
+	install -d debian/vscpd/lib/systemd/system/
+	install -m 644  ./service/systemd/vscpd.service.notify debian/vscpd/lib/systemd/system/vscpd.service
+	install -d debian/vscpd/usr/share/man/man1/
+	install man/vscpcmd.1 debian/vscpd/usr/share/man/man1/vscpcmd.1
+	install man/vscp-mkpasswd.1 debian/vscpd/usr/share/man/man1/vscp-mkpasswd.1
+	install -d debian/vscpd/usr/share/man/man5/
+	install man/vscpd.conf.5 debian/vscpd/usr/share/man/man5/vscpd.conf.5
+	install -d debian/vscpd/usr/share/man/man7/
+	install man/vscpd-tls.7 debian/vscpd/usr/share/man/man7/vscpd-tls.7
+	install man/vscp.7 debian/vscpd/usr/share/man/man7/vscp.7
+	install -d debian/vscpd/usr/share/man/man8/
+	install man/vscpd.8 debian/vscpd/usr/share/man/man8/vscpd.8
+	install -d debian/vscpd/usr/share/man/man5/

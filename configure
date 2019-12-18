@@ -5090,7 +5090,11 @@ fi
 done
 
 
-for ac_header in OS.h arpa/inet.h fcntl.h inttypes.h limits.h locale.h netdb.h netinet/in.h sgtty.h stddef.h stdint.h stdlib.h string.h strings.h sys/file.h sys/ioctl.h sys/socket.h sys/time.h sys/timeb.h syslog.h termios.h unistd.h openssl/md5.h
+for ac_header in OS.h arpa/inet.h fcntl.h inttypes.h limits.h \
+                    locale.h netdb.h netinet/in.h sgtty.h stddef.h \
+                    stdint.h stdlib.h string.h strings.h sys/file.h \
+                    sys/ioctl.h sys/socket.h sys/time.h sys/timeb.h \
+                    syslog.h termios.h unistd.h openssl/md5.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
@@ -6654,13 +6658,14 @@ fi
 if test "${VSCPDIR+set}" = set; then
   echo "variable \$VSCPDIR is set to: $VSCPDIR"
 else
-  VSCPDIR="/srv/vscp"
+  VSCPDIR="/var/lib/vscp"
   echo "variable \$VSCPDIR is set to: $VSCPDIR"
 fi
 
 
 PROJ_SUBDIRS="src/vscp/daemon/linux\
- src/vscp/vscp-mkpasswd "
+ src/vscp/vscp-mkpasswd\
+ src/vscp/vscpcmd "
 
 # Check whether --enable-rpi was given.
 if test "${enable_rpi+set}" = set; then :
@@ -6700,7 +6705,7 @@ RELEASE_VERSION=0
 BUILD_VERSION=0
 
 
-ac_config_files="$ac_config_files Makefile m4/Makefile src/vscp/daemon/linux/Makefile src/vscp/vscp-mkpasswd/Makefile"
+ac_config_files="$ac_config_files Makefile m4/Makefile src/vscp/daemon/linux/Makefile src/vscp/vscp-mkpasswd/Makefile src/vscp/vscpcmd/Makefile"
 
 
 
@@ -7401,6 +7406,7 @@ do
     "m4/Makefile") CONFIG_FILES="$CONFIG_FILES m4/Makefile" ;;
     "src/vscp/daemon/linux/Makefile") CONFIG_FILES="$CONFIG_FILES src/vscp/daemon/linux/Makefile" ;;
     "src/vscp/vscp-mkpasswd/Makefile") CONFIG_FILES="$CONFIG_FILES src/vscp/vscp-mkpasswd/Makefile" ;;
+    "src/vscp/vscpcmd/Makefile") CONFIG_FILES="$CONFIG_FILES src/vscp/vscpcmd/Makefile" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac

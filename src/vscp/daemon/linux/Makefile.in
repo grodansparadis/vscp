@@ -53,7 +53,10 @@ CPPFLAGS += $(CIVETWEB_FLAGS)
 
 LDFLAGS = @LDFLAGS@
 EXTRALIBS = @EXTRALIBS@
+DESTDIR=@DESTDIR@
 
+prefix = @prefix@
+exec_prefix = @exec_prefix@
 STRIP = strip
 INSTALL_PROGRAM = ${INSTALL}
 INSTALL_DATA = ${INSTALL} -m 644
@@ -61,8 +64,8 @@ INSTALL_DIR = /usr/bin/install -c -d
 srcdir = .<
 top_srcdir = .
 top_builddir =
-bindir = ${exec_prefix}/sbin
-libdir = ${exec_prefix}/lib
+bindir = ${prefix}/sbin
+libdir = ${prefix}/lib
 datadir = ${prefix}/share
 includedir = ${prefix}/include
 DLLPREFIX = lib
@@ -262,12 +265,9 @@ install-folders:
 	$(INSTALL_PROGRAM) -d $(DESTDIR)/var/log/vscp
 	$(INSTALL_PROGRAM) -d $(DESTDIR)/var/lib/vscp
 	$(INSTALL_PROGRAM) -d $(DESTDIR)/var/lib/vscp/vscpd
-	$(INSTALL_PROGRAM) -d $(DESTDIR)/var/web-vscp
-	$(INSTALL_PROGRAM) -d $(DESTDIR)/var/web-vscp/html
-	$(INSTALL_PROGRAM) -d $(DESTDIR)/var/web-vscp/css
-	$(INSTALL_PROGRAM) -d $(DESTDIR)/var/web-vscp/images
-	$(INSTALL_PROGRAM) -d $(DESTDIR)/var/web-vscp/js
-	$(INSTALL_PROGRAM) -d $(DESTDIR)/var/web-vscp/testws
+	$(INSTALL_PROGRAM) -d $(DESTDIR)/var/lib/vscp/vscpd/www
+	$(INSTALL_PROGRAM) -d $(DESTDIR)/var/lib/vscp/vscpd/html
+	$(INSTALL_PROGRAM) -d $(DESTDIR)/var/lib/vscp/vscpd/testws
 	$(INSTALL_PROGRAM) -d $(DESTDIR)/usr/lib/systemd/system/
 
 install-startup-script:

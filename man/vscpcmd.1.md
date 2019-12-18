@@ -1,6 +1,6 @@
 % VSCPCMD(1) VSCP Command Tool
 % Åke Hedman, Grodans Paradis AB
-% July 4, 2018
+% December 18, 2019
 
 # NAME
 

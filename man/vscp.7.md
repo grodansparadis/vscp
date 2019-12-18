@@ -1,4 +1,4 @@
-% VSCPD(8) VSCP Daemon
+% VSCP(7) VSCP
 % Åke Hedman, Grodans Paradis AB
 % December 18, 2019
 

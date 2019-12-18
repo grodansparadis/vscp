@@ -2,6 +2,7 @@
 #! /bin/sh
 # postinst for vscpd
 
+
 set -e
 
 VSCPD_DEFAULT_FILE=/etc/default/vscpd
@@ -27,5 +28,7 @@ if [ "$1" = configure ]; then
                     rm /etc/vscp/vscpd.xml
                 fi
 fi
+
+#DEBHELPER#
 
 exit 0
