@@ -21,6 +21,9 @@ override_dh_strip:
 	dh_strip --remaining-packages
 
 override_dh_auto_install:
+	install -d debian/vscpd/var/lib/vscp/
+	install -d debian/vscpd/var/lib/vscp/vscpd/
+	install -d debian/vscpd/var/log/vscpd/
 	install -d debian/vscpd/usr/share/vscp/vscpd
 	install -d debian/vscpd/usr/sbin/
 	install -m 755 src/vscp/daemon/linux/vscpd debian/vscpd/usr/sbin/
