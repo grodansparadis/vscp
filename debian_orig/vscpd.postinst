@@ -17,7 +17,13 @@ setup_vscpd_user() {
 }
 
 fix_permissions() {
+	chown vscp /var/lib/vscp
+	chgrp vscp /var/lib/vscp
 	chown vscp /var/lib/vscp/vscpd
+	chgrp vscp /var/lib/vscp/vscpd
+	chown vscp /etc/vscp/certs
+	chgrp vscp /etc/vscp/certs
+	chmod 700 /etc/vscp/certs
 	test ! -e /var/log/vscpd || chown vscp /var/log/vscpd
 	test ! -e /var/log/vscpd/vscpd.log || chown vscp /var/log/vscpd/vscpd.log
 }

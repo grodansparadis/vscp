@@ -1448,6 +1448,8 @@ startFullConfigParser(void *data, const char *name, const char **attr)
     CControlObject *pObj = (CControlObject *)data;
     if (NULL == data) return;
 
+    fprintf(stderr, "%s\n", name );
+
     if ((0 == depth_full_config_parser) &&
         (0 == vscp_strcasecmp(name, "vscpconfig"))) {
         bVscpConfigFound = TRUE;

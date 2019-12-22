@@ -143,7 +143,7 @@ main(int argc, char **argv)
     crcInit();
 
     rootFolder   = "/var/lib/vscpd/";
-    strcfgfile   = "/etc/vscp/vscpd.xml";
+    strcfgfile   = "/etc/vscp/vscpd.conf";
     gbStopDaemon = false;
 
     while ((opt = getopt(argc, argv, "d:c:r:k:hgs")) != -1) {
@@ -275,7 +275,7 @@ init(std::string &strcfgfile, std::string &rootFolder)
         fprintf(stderr, "vscpd: Failed to change dir to rootdir");
         unlink("/var/run/vscpd/vscpd.pid");
         if ( -1 == chdir("/var/lib/vscp/vscpd") ) {
-            syslog(LOG_ERR, "Unable to chdir to home folder [/var/local/vscp/vscpd] errno=%d", errno);
+            syslog(LOG_ERR, "Unable to chdir to home folder [/var/lib/vscp/vscpd] errno=%d", errno);
         }
         
         return -1;
