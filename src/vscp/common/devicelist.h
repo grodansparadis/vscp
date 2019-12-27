@@ -44,9 +44,12 @@
 #define NO_TRANSLATION 0 // No translation bit set
 
 // Out - translation bit definitions
-#define VSCP_DRIVER_OUT_TR_M1M2F 0x01  // M1 -> M2 Float
-#define VSCP_DRIVER_OUT_TR_M1M2S 0x02  // M1 -> M2 String
-#define VSCP_DRIVER_OUT_TR_ALL512 0x04 // All to Level II events
+#define VSCP_DRIVER_OUT_TR_M1_M2F                                              \
+    0x01 // Level 1 measurement -> Level II measurement Float
+#define VSCP_DRIVER_OUT_TR_M1_M2S                                              \
+    0x02 // Level I measurement -> Level II measurement String
+#define VSCP_DRIVER_OUT_TR_ALL_L2                                              \
+    0x04 // All Level I events to Level I over level II events
 
 // In - translation bit definitions
 
@@ -61,11 +64,11 @@ class CClientItem;
 class cguid;
 class CControlObject;
 
-  ///////////////////////////////////////////////////////////////////////////////
-  // Driver3Process
-  //
+///////////////////////////////////////////////////////////////////////////////
+// Driver3Process
+//
 
-  class Driver3Process
+class Driver3Process
 {
 
   public:
@@ -101,7 +104,7 @@ class CDeviceItem
         @param Pointer to control object
         @return true on success, false on failure
     */
-    bool startDriver(CControlObject *pCtrlObject);
+    bool startDriver(CControlObject* pCtrlObject);
 
     /*!
         Pause driver
@@ -121,8 +124,7 @@ class CDeviceItem
     */
     bool stopDriver(void);
 
- public:
-
+  public:
     // Name of device
     std::string m_strName;
 
@@ -164,7 +166,7 @@ class CDeviceItem
     uint32_t m_DeviceFlags;
 
     // Client entry
-    CClientItem *m_pClientItem;
+    CClientItem* m_pClientItem;
 
     // Mutex handle that is used for sharing of the device.
     pthread_mutex_t m_deviceMutex;
@@ -187,7 +189,7 @@ class CDeviceItem
     // ------------------------------------------------------------------------
 
     // Control object that invoked thread
-    CControlObject *m_pObj;
+    CControlObject* m_pObj;
 
     // Holder for CANAL receive thread
     pthread_t m_level1ReceiveThread;
@@ -254,11 +256,11 @@ class CDeviceList
         @param translation Bits to set translations to be performed.
         @return True is returned if the driver was successfully added.
     */
-    bool addItem(const std::string &strName,
-                 const std::string &strParameters,
-                 const std::string &strPath,
+    bool addItem(const std::string& strName,
+                 const std::string& strParameters,
+                 const std::string& strPath,
                  uint32_t flags,
-                 const cguid &guid,
+                 const cguid& guid,
                  uint8_t level        = VSCP_DRIVER_LEVEL1,
                  bool bEnable         = true,
                  uint32_t translation = NO_TRANSLATION);
@@ -276,20 +278,20 @@ class CDeviceList
         @param name Name of device.
         @return Pointer to a device item or NULL if not found.
     */
-    CDeviceItem *getDeviceItemFromName(std::string& name);
+    CDeviceItem* getDeviceItemFromName(std::string& name);
     /*!
         Get device item from GUID
         @param guid for device to look for
         @return Pointer to device item or NULL if not found.
     */
-    CDeviceItem *getDeviceItemFromGUID(cguid &guid);
+    CDeviceItem* getDeviceItemFromGUID(cguid& guid);
 
     /*!
         Get device item from the client id
         @param guid for device to look for
         @return Pointer to device item or NULL if not found.
     */
-    CDeviceItem *getDeviceItemFromClientId(uint32_t id);
+    CDeviceItem* getDeviceItemFromClientId(uint32_t id);
 
     /*!
         Get all drivers as a string
@@ -310,7 +312,7 @@ class CDeviceList
     /*!
         List with devices
     */
-    std::deque<CDeviceItem *> m_devItemList;
+    std::deque<CDeviceItem*> m_devItemList;
 };
 
 #endif // !defined(_DEVICELIST_H__0ED35EA7_E9E1_41CD_8A98_5EB3369B3194__INCLUDED_)

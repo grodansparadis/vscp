@@ -1433,14 +1433,10 @@ static int depth_full_config_parser   = 0;
 static char *last_full_config_content = NULL;
 static int bVscpConfigFound           = 0;
 static int bGeneralConfigFound        = 0;
-static int bUDPConfigFound            = 0;
-static int bMulticastConfigFound      = 0;
 static int bRemoteUserConfigFound     = 0;
 static int bLevel1DriverConfigFound   = 0;
 static int bLevel2DriverConfigFound   = 0;
 static int bLevel3DriverConfigFound   = 0;
-static int bKnownNodesConfigFound     = 0;
-static int bTablesConfigFound         = 0;
 
 static void
 startFullConfigParser(void *data, const char *name, const char **attr)
@@ -2124,12 +2120,9 @@ startFullConfigParser(void *data, const char *name, const char **attr)
                        (found = strName.find_first_of(" "))) {
                     strName[found] = '_';
                 }
-            } else if (0 == vscp_strcasecmp(attr[i], "config")) {
+            } else if (0 == vscp_strcasecmp(attr[i], "path-config")) {
                 strConfig = attribute;
-            } else if (0 == vscp_strcasecmp(attr[i],
-                                            "parameter")) { // deprecated
-                strConfig = attribute;
-            } else if (0 == vscp_strcasecmp(attr[i], "path")) {
+            }  else if (0 == vscp_strcasecmp(attr[i], "path-driver")) {
                 strPath = attribute;
             } else if (0 == vscp_strcasecmp(attr[i], "guid")) {
                 guid.getFromString(attribute);
@@ -2166,25 +2159,25 @@ startFullConfigParser(void *data, const char *name, const char **attr)
 static void
 handleFullConfigData(void *data, const char *content, int length)
 {
-    int prevLength =
-      (NULL == last_full_config_content) ? 0 : strlen(last_full_config_content);
-    char *tmp = (char *)malloc(length + 1 + prevLength);
-    strncpy(tmp, content, length);
-    tmp[length] = '\0';
+    // int prevLength =
+    //   (NULL == last_full_config_content) ? 0 : strlen(last_full_config_content);
+    // char *tmp = (char *)malloc(length + 1 + prevLength);
+    // strncpy(tmp, content, length);
+    // tmp[length] = '\0';
 
-    if (NULL == last_full_config_content) {
-        tmp = (char *)malloc(length + 1);
-        strncpy(tmp, content, length);
-        tmp[length]              = '\0';
-        last_full_config_content = tmp;
-    } else {
-        // Concatenate
-        int newlen = length + 1 + strlen(last_full_config_content);
-        last_full_config_content =
-          (char *)realloc(last_full_config_content, newlen);
-        strncat(tmp, content, length);
-        last_full_config_content[newlen] = '\0';
-    }
+    // if (NULL == last_full_config_content) {
+    //     tmp = (char *)malloc(length + 1);
+    //     strncpy(tmp, content, length);
+    //     tmp[length]              = '\0';
+    //     last_full_config_content = tmp;
+    // } else {
+    //     // Concatenate
+    //     int newlen = length + 1 + strlen(last_full_config_content);
+    //     last_full_config_content =
+    //       (char *)realloc(last_full_config_content, newlen);
+    //     strncat(tmp, content, length);
+    //     last_full_config_content[newlen] = '\0';
+    // }
 }
 
 static void
@@ -2203,15 +2196,6 @@ endFullConfigParser(void *data, const char *name)
         bVscpConfigFound = FALSE;
     }
     if (bVscpConfigFound && (1 == depth_full_config_parser) &&
-        (0 == vscp_strcasecmp(name, "udp"))) {
-        bUDPConfigFound = FALSE;
-    } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
-               (0 == vscp_strcasecmp(name, "multicast"))) {
-        bMulticastConfigFound = FALSE;
-    } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
-               (0 == vscp_strcasecmp(name, "remoteuser"))) {
-        bRemoteUserConfigFound = FALSE;
-    } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
                ((0 == vscp_strcasecmp(name, "level1driver")) ||
                 (0 == vscp_strcasecmp(name, "canal1driver")))) {
         bLevel1DriverConfigFound = FALSE;
@@ -2221,13 +2205,7 @@ endFullConfigParser(void *data, const char *name)
     } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
                (0 == vscp_strcasecmp(name, "level3driver"))) {
         bLevel3DriverConfigFound = FALSE;
-    } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
-               ((0 == vscp_strcasecmp(name, "knownnodes")))) {
-        bKnownNodesConfigFound = FALSE;
-    } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
-               ((0 == vscp_strcasecmp(name, "tables")))) {
-        bTablesConfigFound = FALSE;
-    }
+    } 
 }
 
 // ----------------------------------------------------------------------------

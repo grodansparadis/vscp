@@ -908,17 +908,18 @@ deviceLevel1ReceiveThread(void *pData)
                     // =========================================================
 
                     // Level I measurement events to Level II measurement float
-                    if (pDevItem->m_translation & VSCP_DRIVER_OUT_TR_M1M2F) {
+                    if (pDevItem->m_translation & VSCP_DRIVER_OUT_TR_M1_M2F) {
                         vscp_convertLevel1MeasuremenToLevel2Double(pvscpEvent);
                     }
+
                     // Level I measurement events to Level II measurement string
-                    else if (pDevItem->m_translation &
-                             VSCP_DRIVER_OUT_TR_M1M2S) {
+                    if (pDevItem->m_translation &
+                             VSCP_DRIVER_OUT_TR_M1_M2S) {
                         vscp_convertLevel1MeasuremenToLevel2String(pvscpEvent);
                     }
 
                     // Level I events to Level I over Level II events
-                    if (pDevItem->m_translation & VSCP_DRIVER_OUT_TR_ALL512) {
+                    if (pDevItem->m_translation & VSCP_DRIVER_OUT_TR_ALL_L2) {
                         pvscpEvent->vscp_class += 512;
                         uint8_t *p = new uint8_t[16 + pvscpEvent->sizeData];
                         if (NULL != p) {
