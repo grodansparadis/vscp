@@ -4,7 +4,7 @@
 //
 // The MIT License (MIT)
 //
-// Copyright (C) 2000-2019 Ake Hedman, Grodans Paradis AB
+// Copyright (C) 2000-2020 Ake Hedman, Grodans Paradis AB
 // <info@grodansparadis.com>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -35,75 +35,66 @@
 #include <vscp.h>
 #include <vscphelper.h>
 
-// permission bits for an object (variables)
-// uuugggooo
-// uuu = user(owner) (rwx)
-// ggg = group       (rwx)  // Currently not used
-// ooo = other       (rwx)
-// First user rights is checked. If user have rights to do the operation it is
-// allowed. If not group rights are checked and if the user is member of a group
-// that is allowed to do the operation it is allowed. Last other rights are
-// checked and if the the other rights allow the user to do the operation it is
-// allowed.
-
 // User rights bit array
 // "admin" has all rights.
 // "user" standard user rights
 // "driver" can send and receive events and log in to tcp/ip through local host
 
-// Rights byte 7
-#define VSCP_USER_RIGHT_ALLOW_RESTART 0x80000000
+// Rights nibble 7
+#define VSCP_USER_RIGHT_ALLOW_SHUTDOWN  0x80000000
+#define VSCP_USER_RIGHT_ALLOW_RESTART   0x40000000
+#define VSCP_USER_RIGHT_ALLOW_INTERFACE 0x20000000
+#define VSCP_USER_RIGHT_ALLOW_TEST      0x10000000
 
-// Rights byte 6
-#define VSCP_USER_RIGHT_ALLOW_VARIABLE_SAVE 0x10000000
+// Rights nibble 6
+#define VSCP_USER_RIGHT_ALLOW_SETGUID   0x08000000
+#define VSCP_USER_RIGHT_ALLOW_SETFILTER 0x04000000
 
-// Rights byte 5
-#define VSCP_USER_RIGHT_ALLOW_DM_EDIT 0x08000000
-#define VSCP_USER_RIGHT_ALLOW_DM_LOAD 0x04000000
-#define VSCP_USER_RIGHT_ALLOW_DM_SAVE 0x02000000
-// Undefined
+// Rights nibble 5
 
-#define VSCP_USER_RIGHT_ALLOW_VSCP_DRV_LOAD 0x00800000
-#define VSCP_USER_RIGHT_ALLOW_VSCP_DRV_UNLOAD 0x00400000
+// Rights nibble 4
 
-// Rights byte 4
+// Rights nibble 3
+#define VSCP_USER_RIGHT_ALLOW_RCV_EVENT 0x00100000 // Allowed to receive events
 
-// Rights byte 3
+// Rights nibble 2
+#define VSCP_USER_RIGHT_ALLOW_SEND_EVENT 0x00010000 // Allowed to send events
+#define VSCP_USER_RIGHT_ALLOW_SEND_L1CTRL_EVENT                                \
+    0x00020000 // Allowed to send Level I protocol events
+#define VSCP_USER_RIGHT_ALLOW_SEND_L2CTRL_EVENT                                \
+    0x00040000 // Allowed to send Level 2 protocol events
+#define VSCP_USER_RIGHT_ALLOW_SEND_HLO_EVENT                                   \
+    0x00040000 // Allowed to send HLO event(s)
 
-// Rights byte 2
-#define VSCP_USER_RIGHT_ALLOW_SEND_EVENT 0x00010000
+// Rights nibble 1
 
-// Rights byte 1
-#define VSCP_USER_RIGHT_ALLOW_UDP 0x00000200
-#define VSCP_USER_RIGHT_ALLOW_COAP 0x00000100
-
-// Rights byte 0
-#define VSCP_USER_RIGHT_ALLOW_MQTT 0x00000080
-#define VSCP_USER_RIGHT_ALLOW_WEB 0x00000040
+// Rights nibble 0 - Low nibble is priority. Higher
+// value allow for more restricted use of commands/functionality
+#define VSCP_USER_RIGHT_ALLOW_TCPIP     0x00000010
 #define VSCP_USER_RIGHT_ALLOW_WEBSOCKET 0x00000020
-#define VSCP_USER_RIGHT_ALLOW_TCPIP 0x00000010
+#define VSCP_USER_RIGHT_ALLOW_WEB       0x00000040
 
-// Some interfaces has a privilege level for commands
-// Higher privileges is "better"
-#define VSCP_USER_RIGHT_PRIORITY3 0x00000008
-#define VSCP_USER_RIGHT_PRIORITY2 0x00000004
-#define VSCP_USER_RIGHT_PRIORITY1 0x00000002
-#define VSCP_USER_RIGHT_PRIORITY0 0x00000001
+// Default user privilege
+#define VSCP_ADMIN_DEFAULT_RIGHTS 0xFFFFFFFF
+
+#define VSCP_USER_DEFAULT_RIGHTS                                               \
+    VSCP_USER_RIGHT_ALLOW_TCPIP | VSCP_USER_RIGHT_ALLOW_WEBSOCKET |            \
+      VSCP_USER_RIGHT_ALLOW_WEB | VSCP_USER_RIGHT_ALLOW_SEND_EVENT |           \
+      VSCP_USER_RIGHT_ALLOW_RCV_EVENT |                                        \
+      VSCP_USER_RIGHT_ALLOW_SEND_L1CTRL_EVENT |                                \
+      VSCP_USER_RIGHT_ALLOW_SEND_L2CTRL_EVENT
+
+#define VSCP_DRIVER_DEFAULT_RIGHTS                                             \
+    VSCP_USER_RIGHT_ALLOW_TCPIP | VSCP_USER_RIGHT_ALLOW_WEBSOCKET |            \
+      VSCP_USER_RIGHT_ALLOW_WEB | VSCP_USER_RIGHT_ALLOW_SEND_EVENT |           \
+      VSCP_USER_RIGHT_ALLOW_RCV_EVENT |                                        \
+      VSCP_USER_RIGHT_ALLOW_SEND_L1CTRL_EVENT |                                \
+      VSCP_USER_RIGHT_ALLOW_SEND_L2CTRL_EVENT |                                \
+      VSCP_USER_RIGHT_ALLOW_SEND_HLO_EVENT
 
 #define VSCP_ADD_USER_UNINITIALISED -1
 
-// Local users have an id below this value
-#define VSCP_LOCAL_USER_OFFSET 0x10000
-
-// Add user flags
-#define VSCP_ADD_USER_FLAG_LOCAL 0x00000001 // local user
-
-// Users not in db is local
-//#define USER_IS_LOCAL                                -1           // Never
-// saved to db #define USER_IS_UNSAVED                               0 // Should
-// be saved to db
-
-#define USER_PRIVILEGE_MASK 0x0f
+#define USER_PRIVILEGE_MASK  0x0f
 #define USER_PRIVILEGE_BYTES 8
 
 #define USER_ID_ADMIN 0x00 // The one and only admin user
@@ -136,17 +127,6 @@ class CUserItem
      */
     void fixName(void);
 
-    /*!
-        Check if a remote client is allowed to connect.
-        First full ip address is checked against hash set (a.b.c.d)
-        Next LSB byte is replaced with a star and tested. (a.b.c.*)
-        Next the lsb-1 is also replaced with a star and tested. (a.b.*.*)
-        Last the lsb-2 is replaced with a star and tested.(a.*.*.*)
-        @param remote ip-address for remote machine.
-        @return true if the remote machine is allowed to connect.
-    */
-    // bool isAllowedToConnect( const std::string& remote);
-
     /*
         IP ACL. By default, empty or non defined, meaning all IPs are allowed to
         connect.
@@ -168,7 +148,7 @@ class CUserItem
 
         @param remote_ip Remote ip address on network order.
         @return -1 if ACL is malformed, 0 if address is disallowed, 1 if
-       allowed.
+                allowed.
 
      */
     int isAllowedToConnect(uint32_t remote_ip);
@@ -181,7 +161,7 @@ class CUserItem
         @param vscp_class VSCP class to test.
         @param vscp_type VSCP type to test.
         @return true if the client is allowed to send event.
-        */
+    */
     bool isUserAllowedToSendEvent(const uint32_t vscp_class,
                                   const uint32_t vscp_type);
 
@@ -195,14 +175,14 @@ class CUserItem
      * user     - user get standard user rights.
      * driver   - user get standard driver rights.
      */
-    bool setUserRightsFromString(const std::string &strRights);
+    bool setUserRightsFromString(const std::string& strRights);
 
     /*!
      * Set allowed remote addresses for string
      * Comma separated list if IP v4 or IP v6 addresses. Wildcards can be used
      * on any position ('*').
      */
-    bool setAllowedRemotesFromString(const std::string &strConnect);
+    bool setAllowedRemotesFromString(const std::string& strConnect);
 
     /*!
      * Save record to database
@@ -230,14 +210,14 @@ class CUserItem
      * if the user is found.
      * @return true on success
      */
-    static bool isUserInDB(const std::string &user, long *pid = NULL);
+    static bool isUserInDB(const std::string& user, long* pid = NULL);
 
     /*!
         Check password for user
         @param password Password to check
         @return true If password is correct
     */
-    bool checkPassword(const std::string &password)
+    bool checkPassword(const std::string& password)
     {
         return (getPassword() == password);
     };
@@ -247,7 +227,7 @@ class CUserItem
         @param passworddomain Password domain to check
         @return true If password domain is correct
     */
-    bool checkPasswordDomain(const std::string &md5password)
+    bool checkPasswordDomain(const std::string& md5password)
     {
         return (getPasswordDomain() == md5password);
     };
@@ -260,11 +240,11 @@ class CUserItem
 
     // Username
     std::string getUserName(void) { return m_user; };
-    void setUserName(const std::string &strUser) { m_user = strUser; };
+    void setUserName(const std::string& strUser) { m_user = strUser; };
 
     // Password
     std::string getPassword(void) { return m_password; };
-    void setPassword(const std::string &strPassword)
+    void setPassword(const std::string& strPassword)
     {
         m_password = strPassword;
     };
@@ -275,28 +255,23 @@ class CUserItem
         return vscp_lower(m_md5PasswordDomain);
     };
 
-    void setPasswordDomain(const std::string &strPassword)
+    void setPasswordDomain(const std::string& strPassword)
     {
         m_md5PasswordDomain = vscp_lower(strPassword);
     };
 
     // Full name
     std::string getFullname(void) { return m_fullName; };
-    void setFullname(const std::string &strUser) { m_fullName = strUser; };
+    void setFullname(const std::string& strUser) { m_fullName = strUser; };
 
     // Note
     std::string getNote(void) { return m_note; };
-    void setNote(const std::string &note) { m_note = note; };
+    void setNote(const std::string& note) { m_note = note; };
 
     // User rights
-    uint8_t getUserRights(const uint8_t pos)
-    {
-        return m_userRights[pos & 0x07];
-    };
-    void setUserRights(const uint8_t pos, const uint8_t right)
-    {
-        m_userRights[pos & 0x07] = right;
-    };
+    uint32_t getUserRights(void) { return m_userRights; };
+
+    void setUserRights(const uint32_t rights) { m_userRights = rights; };
     std::string getUserRightsAsString(void);
 
     // --------------------------------
@@ -313,7 +288,7 @@ class CUserItem
         @param strEvent Event to add on the form "class:type" where
         any of class/type can be a wildcard '*'
     */
-    bool addAllowedEvent(const std::string &strEvent);
+    bool addAllowedEvent(const std::string& strEvent);
 
     /*!
         Get allowed event
@@ -322,7 +297,7 @@ class CUserItem
         @param event [out] Allowed event
         @return True on success, false on failure
     */
-    bool getAllowedEvent(size_t n, std::string& event );
+    bool getAllowedEvent(size_t n, std::string& event);
 
     /*!
         Set allowed event
@@ -331,7 +306,7 @@ class CUserItem
         @param event Allowed event if success.
         @return True on success, false on failure
     */
-    bool setAllowedEvent(size_t n, std::string& event );
+    bool setAllowedEvent(size_t n, std::string& event);
 
     /*!
         Get all allowed events as a comma separated string
@@ -345,7 +320,7 @@ class CUserItem
      * @param bClear If true clear the list before adding new entries.
      * @return true on succes, false otherwise
      */
-    bool setAllowedEventsFromString(const std::string &strEvents,
+    bool setAllowedEventsFromString(const std::string& strEvents,
                                     bool bClear = true);
 
     /*!
@@ -373,16 +348,13 @@ class CUserItem
         Clear allowed hosts list. An empty list means
        all remote hosts can connect.
     */
-    void clearAllowedRemoteList(void)
-    {
-        m_listAllowedRemotes.clear();
-    };
+    void clearAllowedRemoteList(void) { m_listAllowedRemotes.clear(); };
 
     /*!
         Add allowed remote
         @param strRemote Address (ip.v4/ip.v6) for remote host to add
     */
-    void addAllowedRemote(const std::string &strRemote)
+    void addAllowedRemote(const std::string& strRemote)
     {
         m_listAllowedRemotes.push_back(strRemote);
     };
@@ -401,7 +373,7 @@ class CUserItem
         @param remote [out] Remote host on success
         @return true on success
     */
-    bool getAllowedRemote( size_t n, std::string& remote );
+    bool getAllowedRemote(size_t n, std::string& remote);
 
     /*!
         Set specific remote host item
@@ -409,17 +381,17 @@ class CUserItem
         @param remote Remote host to set
         @return true on success
     */
-    bool setAllowedRemote( size_t n, std::string& remote );
+    bool setAllowedRemote(size_t n, std::string& remote);
 
     /*!
         Get receive filter
     */
-    const vscpEventFilter *getUserFilter(void) { return &m_filterVSCP; };
+    const vscpEventFilter* getUserFilter(void) { return &m_filterVSCP; };
 
     /*!
         Set receive filter
     */
-    void setFilter(const vscpEventFilter *pFilter)
+    void setFilter(const vscpEventFilter* pFilter)
     {
         if (NULL != pFilter)
             memcpy(&m_filterVSCP, pFilter, sizeof(vscpEventFilter));
@@ -428,7 +400,7 @@ class CUserItem
     /*!
         Set receive filter from string
     */
-    bool setFilterFromString(const std::string &strFilter)
+    bool setFilterFromString(const std::string& strFilter)
     {
         return vscp_readFilterFromString(&m_filterVSCP, strFilter);
     };
@@ -436,7 +408,7 @@ class CUserItem
     /*!
         Set receive mask from string
     */
-    bool setMaskFromString(const std::string &strMask)
+    bool setMaskFromString(const std::string& strMask)
     {
         return vscp_readMaskFromString(&m_filterVSCP, strMask);
     };
@@ -444,14 +416,14 @@ class CUserItem
     std::string getFilter(void)
     {
         std::string str;
-        vscp_writeFilterToString(str,&m_filterVSCP);
+        vscp_writeFilterToString(str, &m_filterVSCP);
         return str;
     };
 
     std::string getMask(void)
     {
         std::string str;
-        vscp_writeMaskToString(str,&m_filterVSCP);
+        vscp_writeMaskToString(str, &m_filterVSCP);
         return str;
     };
 
@@ -461,14 +433,14 @@ class CUserItem
      * form. leave fields blank if they should not be updated.
      * @return true on success, false on failure.
      */
-    bool setFromString(const std::string &userSettings);
+    bool setFromString(const std::string& userSettings);
 
     /*!
      * Get user settings as string
      * @param strUser String that will get user settings
      * @return true on success, false on failure.
      */
-    bool getAsString(std::string &strUser);
+    bool getAsString(std::string& strUser);
 
     /*!
      * Get user settings as map with key/value pairs
@@ -476,7 +448,7 @@ class CUserItem
      * key/value pairs
      * @return true on success, false on failure.
      */
-    bool getAsMap(std::map<std::string,std::string>& mapUser);
+    bool getAsMap(std::map<std::string, std::string>& mapUser);
 
   protected:
     // System assigned ID for user (-1 -  for system users (not in DB), 0 for
@@ -502,7 +474,7 @@ class CUserItem
         Bit array (64-bits) with user rights i.e. tells what
         this user is allowed to do.
     */
-    uint8_t m_userRights[USER_PRIVILEGE_BYTES];
+    uint64_t m_userRights;
 
     /*!
         This list holds allowed events that user can send.
@@ -545,16 +517,17 @@ class CUserList
      * configuration file..
      * @param user Username for user.
      * @param password Password.
-     * @param List of allowed remote locations from which the
+     * @param strDomain Authentication domain
+     * @param allowedRemotes of allowed remote locations from which the
      *          super user is allowed to connect to this system. If empty
      *          the super user can connect form all remote locations.
-     * @param bSystemUser If true this user is a user that should not be saved
-     to the DB
+     * @param bFlags
        @return true on success. false on failure.
      */
-    bool addSuperUser(const std::string &user,
-                      const std::string &password,
-                      const std::string &allowedRemotes = "",
+    bool addSuperUser(const std::string& user,
+                      const std::string& password,
+                      const std::string& strDomain,
+                      const std::string& allowedRemotes = "",
                       uint32_t bFlags                   = 0);
 
     /*!
@@ -563,7 +536,8 @@ class CUserList
         @param user Username for user.
         @param password Password.
         @param fullname Fullname for user.
-        @param note An arbitrary note about the user
+        @param strNote An arbitrary note about the user
+        @param strDomain Authentication domain
         @param Pointer to a VSCP filter associated with this user.
         @param userRights list with user rights on the form
        right1,right2,right3.... admin - all rights user - standard user rights
@@ -576,23 +550,27 @@ class CUserList
        to the DB
         @return true on success. false on failure.
     */
-    bool addUser(const std::string &user,
-                 const std::string &password,
-                 const std::string &fullname,
-                 const std::string &strNote,
-                 const vscpEventFilter *pFilter    = NULL,
-                 const std::string &userRights     = "",
-                 const std::string &allowedRemotes = "",
-                 const std::string &allowedEvents  = "",
+    bool addUser(const std::string& user,
+                 const std::string& password,
+                 const std::string& fullname,
+                 const std::string& strNote,
+                 const std::string& strDomain,
+                 const vscpEventFilter* pFilter    = NULL,
+                 const std::string& userRights     = "",
+                 const std::string& allowedRemotes = "",
+                 const std::string& allowedEvents  = "",
                  uint32_t bFlags                   = 0);
 
     /*!
      * Add user from comma separated string data
      * @param strUser Comma separated list with user information.
      *      name;password;fullname;filtermask;rights;remotes;events;note
+     * @param strDomain Authentication domain
      * @return true on success. false on failure.
      */
-    bool addUser(const std::string &strUser, bool bUnpackNote = false);
+    bool addUser(const std::string& strUser,
+                 const std::string& strDomain,
+                 bool bUnpackNote = false);
 
     /*!
      * Delete a user given it's username.
@@ -600,7 +578,7 @@ class CUserList
      * @param user Username for user to delete
      * @param true on success. false on failure.
      */
-    bool deleteUser(const std::string &user);
+    bool deleteUser(const std::string& user);
 
     /*!
      * Delete a user given it's userid.
@@ -615,7 +593,7 @@ class CUserList
         @param user Username
         @return Pointer to user if available else NULL
     */
-    CUserItem *getUser(const std::string &user);
+    CUserItem* getUser(const std::string& user);
 
     /*!
         Get user
@@ -624,7 +602,7 @@ class CUserList
                 -1 == unknown user
         @return Pointer to user if available else NULL
     */
-    CUserItem *getUser(const long userid);
+    CUserItem* getUser(const long userid);
 
     /*!
         Validate a username/password pair
@@ -632,8 +610,8 @@ class CUserList
         @param password Password to test
         @return Pointer to useritem if valid, NULL if not.
     */
-    CUserItem *validateUser(const std::string &user,
-                            const std::string &password);
+    CUserItem* validateUser(const std::string& user,
+                            const std::string& password);
 
     /*!
         Validate a username using the user domain. (WEB/WEBSOCKETS)
@@ -641,8 +619,8 @@ class CUserList
         @param md5password MD5(user;domain;password)
         @return Pointer to useritem if valid, NULL if not.
     */
-    CUserItem *validateUserDomain(const std::string &user,
-                                  const std::string &md5password);
+    CUserItem* validateUserDomain(const std::string& user,
+                                  const std::string& md5password);
 
     /*!
      * Get number of users on the system
@@ -659,7 +637,7 @@ class CUserList
      * @param strUser String that will receive information
      * @return true on success.
      */
-    bool getUserAsString(CUserItem *pUserItem, std::string &strUser);
+    bool getUserAsString(CUserItem* pUserItem, std::string& strUser);
 
     /*!
      * Get user information on string form from user index
@@ -667,7 +645,7 @@ class CUserList
      * @param strUser String that will receive information
      * @return true on success.
      */
-    bool getUserAsString(uint32_t idx, std::string &strUser);
+    bool getUserAsString(uint32_t idx, std::string& strUser);
 
     /*!
      * Fetch all users in semicolon separated string form ready for transfer.
@@ -678,14 +656,14 @@ class CUserList
      *
      * @param  strAllUser String containing user records in string form.
      */
-    bool getAllUsers(std::string &strAllusers);
+    bool getAllUsers(std::string& strAllusers);
 
     /*!
      * Fetch all users into a string array
      * @param arrayUsers Am array with all usernames
      * @return true on success.
      */
-    bool getAllUsers(std::deque<std::string> &arrayUsers);
+    bool getAllUsers(std::deque<std::string>& arrayUsers);
 
     /*!
      * Get user item from ordinal in user array
@@ -693,18 +671,18 @@ class CUserList
      * @return A pointer to the useritem at that position or NULL if no item is
      *          at that position.
      */
-    CUserItem *getUserItemFromOrdinal(uint32_t idx);
+    CUserItem* getUserItemFromOrdinal(uint32_t idx);
 
   protected:
     /*!
         hash with user items
     */
-    std::map<std::string, CUserItem *> m_userhashmap;
+    std::map<std::string, CUserItem*> m_userhashmap;
 
     /*!
         hash with group items
     */
-    std::map<std::string, CGroupItem *> m_grouphashmap;
+    std::map<std::string, CGroupItem*> m_grouphashmap;
 
   private:
     unsigned short m_cntLocaluser; // Counter for local user id's

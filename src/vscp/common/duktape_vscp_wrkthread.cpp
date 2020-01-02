@@ -4,7 +4,7 @@
 //
 // The MIT License (MIT)
 //
-// Copyright (C) 2000-2019 Ake Hedman, Grodans Paradis AB
+// Copyright (C) 2000-2020 Ake Hedman, Grodans Paradis AB
 // <info@grodansparadis.com>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -185,7 +185,7 @@ actionJavascriptThread(void *pData)
     CClientItem *pItem = (CClientItem *)duk_get_pointer(ctx, -1);
     std::string user   = pItem->m_UserName;
 
-    duk_bool_t rc;
+    //duk_bool_t rc;
 
     // This is an active client
     pobj->m_pClientItem->m_bOpen = false;

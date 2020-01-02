@@ -4,7 +4,7 @@
 //
 // The MIT License (MIT)
 // 
-// Copyright (C) 2000-2019 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
+// Copyright (C) 2000-2020 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
 // 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -305,8 +305,8 @@ bool CUserRegisters::abstractionValueFromRegsToString( CMDF_Abstraction *pAbstra
 {
     
     bool rv = false;
-    uint8_t *pReg;
-/*
+ /*   uint8_t *pReg;
+
     if ( NULL == pAbstraction ) return false;
 
     // Get register page
@@ -523,8 +523,8 @@ bool CUserRegisters::abstractionValueFromStringToRegs( CMDF_Abstraction *pAbstra
                                                         std::string &strValue )
 {   
     bool rv = false;
-    uint8_t *pReg;
-/*
+ /*   uint8_t *pReg;
+
     if ( NULL == pAbstraction ) return false;
 
     // Get register page

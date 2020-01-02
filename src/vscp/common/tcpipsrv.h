@@ -4,7 +4,7 @@
 //
 // The MIT License (MIT)
 //
-// Copyright (C) 2000-2019 Ake Hedman, Grodans Paradis AB
+// Copyright (C) 2000-2020 Ake Hedman, Grodans Paradis AB
 // <info@grodansparadis.com>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -35,48 +35,48 @@
 #include "controlobject.h"
 #include "userlist.h"
 
-#define VSCP_TCPIP_SRV_RUN 0
+#define VSCP_TCPIP_SRV_RUN  0
 #define VSCP_TCPIP_SRV_STOP 1
 
 #define VSCP_TCPIP_COMMAND_LIST_MAX 200 // Max number of saved old commands
 
-#define VSCP_TCPIP_RV_OK 0
+#define VSCP_TCPIP_RV_OK    0
 #define VSCP_TCPIP_RV_ERROR -1
 #define VSCP_TCPIP_RV_CLOSE 99 // Connection should be closed.
 
 #define VSCP_TCP_MAX_CLIENTS 1024
 
-#define MSG_WELCOME "Welcome to the VSCP daemon.\r\n"
-#define MSG_OK "+OK - Success.\r\n"
-#define MSG_GOODBY "+OK - Connection closed by client.\r\n"
-#define MSG_GOODBY2 "+OK - Connection closed.\r\n"
-#define MSG_USENAME_OK "+OK - User name accepted, password please\r\n"
-#define MSG_PASSWORD_OK "+OK - Ready to work.\r\n"
+#define MSG_WELCOME       "Welcome to the VSCP daemon.\r\n"
+#define MSG_OK            "+OK - Success.\r\n"
+#define MSG_GOODBY        "+OK - Connection closed by client.\r\n"
+#define MSG_GOODBY2       "+OK - Connection closed.\r\n"
+#define MSG_USENAME_OK    "+OK - User name accepted, password please\r\n"
+#define MSG_PASSWORD_OK   "+OK - Ready to work.\r\n"
 #define MSG_QUEUE_CLEARED "+OK - All events cleared.\r\n"
 #define MSG_RECEIVE_LOOP                                                       \
     "+OK - Receive loop entered. QUITLOOP to terminate.\r\n"
 #define MSG_QUIT_LOOP "+OK - Quit receive loop.\r\n"
 
-#define MSG_ERROR "-OK - Error\r\n"
+#define MSG_ERROR           "-OK - Error\r\n"
 #define MSG_UNKNOWN_COMMAND "-OK - Unknown command\r\n"
 #define MSG_PARAMETER_ERROR "-OK - Invalid parameter or format\r\n"
-#define MSG_BUFFER_FULL "-OK - Buffer Full\r\n"
-#define MSG_NO_MSG "-OK - No event(s) available\r\n"
+#define MSG_BUFFER_FULL     "-OK - Buffer Full\r\n"
+#define MSG_NO_MSG          "-OK - No event(s) available\r\n"
 
 #define MSG_PASSWORD_ERROR "-OK - Invalid username or password.\r\n"
 #define MSG_NOT_ACCREDITED "-OK - Need to log in to perform this command.\r\n"
-#define MSG_INVALID_USER "-OK - Invalid user.\r\n"
+#define MSG_INVALID_USER   "-OK - Invalid user.\r\n"
 #define MSG_NEED_USERNAME                                                      \
     "-OK - Need a Username before a password can be entered.\r\n"
 
 #define MSG_MAX_NUMBER_OF_CLIENTS "-OK - Max number of clients connected.\r\n"
-#define MSG_INTERNAL_ERROR "-OK - Server Internal error.\r\n"
+#define MSG_INTERNAL_ERROR        "-OK - Server Internal error.\r\n"
 #define MSG_INTERNAL_MEMORY_ERROR "-OK - Internal Memory error.\r\n"
-#define MSG_INVALID_REMOTE_ERROR "-OK - Invalid or unknown peer.\r\n"
+#define MSG_INVALID_REMOTE_ERROR  "-OK - Invalid or unknown peer.\r\n"
 
 #define MSG_LOW_PRIVILEGE_ERROR                                                \
     "-OK - User need higher privilege level to perform this operation.\r\n"
-#define MSG_INTERFACE_NOT_FOUND "-OK - Interface not found.\r\n"
+#define MSG_INTERFACE_NOT_FOUND  "-OK - Interface not found.\r\n"
 #define MSG_UNABLE_TO_SEND_EVENT "-OK - Unable to send event.\r\n"
 
 #define MSG_VARIABLE_NOT_DEFINED "-OK - Variable is not defined.\r\n"
@@ -84,25 +84,28 @@
     "-OK - Variable must be of event type.\r\n"
 #define MSG_VARIABLE_NOT_STOCK                                                 \
     "-OK - Operation does not work with stock variables.\r\n"
-#define MSG_VARIABLE_NO_SAVE "-OK - Variable could not be saved.\r\n"
+#define MSG_VARIABLE_NO_SAVE     "-OK - Variable could not be saved.\r\n"
 #define MSG_VARIABLE_NOT_NUMERIC "-OK - Variable is not numeric.\r\n"
-#define MSG_VARIABLE_UNABLE_ADD "-OK - Unable to add variable.\r\n"
+#define MSG_VARIABLE_UNABLE_ADD  "-OK - Unable to add variable.\r\n"
 
-#define MSG_LOW_PRIVILEGE_ERROR                                                \
-    "-OK - User need higher privilege level to perform this operation.\r\n"
+#define MSG_NO_TCPIP_ERROR "-OK - User does not have rights to use tcp/ip interface.\r\n"
+
+#define MSG_NO_RIGHTS_ERROR                                                \
+    "-OK - User does not have rights to perform this operation.\r\n"
+
 #define MSG_INTERFACE_NOT_FOUND "-OK - Interface not found.\r\n"
 
 #define MSG_VARIABLE_NOT_DEFINED "-OK - Variable is not defined.\r\n"
 #define MSG_MOT_ALLOWED_TO_SEND_EVENT                                          \
     "-OK - Not allowed to sen this event (contact admin).\r\n"
-#define MSG_INVALID_PATH "-OK - Invalid path.\r\n"
+#define MSG_INVALID_PATH           "-OK - Invalid path.\r\n"
 #define MSG_FAILED_TO_GENERATE_SID "-OK - Failed to generate sid.\r\n"
 
 #define MSG_FAILED_TO_CREATE_TABLE                                             \
     "-OK - Failed to create (one or more) table(s).\r\n"
 #define MSG_FAILED_TO_ADD_TABLE_TO_DB                                          \
     "-OK - Failed to add table to database.\r\n"
-#define MSG_FAILED_TO_INIT_TABLE "-OK - Failed to initialize table.\r\n"
+#define MSG_FAILED_TO_INIT_TABLE   "-OK - Failed to initialize table.\r\n"
 #define MSG_FAILED_GET_TABLE_NAMES "-OK - Failed to get table names.\r\n"
 #define MSG_FAILED_UNKNOWN_TABLE                                               \
     "-OK - No table with that name can be found.\r\n"
@@ -111,11 +114,11 @@
 #define MSG_FAILED_TO_PREPARE_TABLE "-OK - Failed to prepare table search.\r\n"
 #define MSG_FAILED_TO_FINALIZE_TABLE                                           \
     "-OK - Failed to finalize table search.\r\n"
-#define MSG_FAILED_TO_CLEAR_TABLE "-OK - Failed to clear table.\r\n"
-#define MSG_FAILED_TO_WRITE_TABLE "-OK - Failed to write data to table.\r\n"
+#define MSG_FAILED_TO_CLEAR_TABLE  "-OK - Failed to clear table.\r\n"
+#define MSG_FAILED_TO_WRITE_TABLE  "-OK - Failed to write data to table.\r\n"
 #define MSG_FAILED_TO_REMOVE_TABLE "-OK - Failed to remove table.\r\n"
 
-typedef const char *(*COMMAND_METHOD)(void);
+typedef const char* (*COMMAND_METHOD)(void);
 
 // Forward declarations
 class tcpipClientObj;
@@ -139,7 +142,7 @@ class tcpipListenThreadObj
 
   public:
     /// Constructor
-    tcpipListenThreadObj(CControlObject *pobj = NULL);
+    tcpipListenThreadObj(CControlObject* pobj = NULL);
 
     /// Destructor
     ~tcpipListenThreadObj();
@@ -149,19 +152,19 @@ class tcpipListenThreadObj
         Examples for IPv4: 80, 443s, 127.0.0.1:3128, 192.0.2.3:8080s
         Examples for IPv6: [::]:80, [::1]:80
     */
-    void setListeningPort(const std::string &str) { m_strListeningPort = str; };
+    void setListeningPort(const std::string& str) { m_strListeningPort = str; };
 
     /*!
         Getter/setter for control object
     */
-    void setControlObjectPointer(CControlObject *pobj) { m_pObj = pobj; };
-    CControlObject *getControlObject(void) { return m_pObj; };
+    void setControlObjectPointer(CControlObject* pobj) { m_pObj = pobj; };
+    CControlObject* getControlObject(void) { return m_pObj; };
 
     // This mutex protects the clientlist
     pthread_mutex_t m_mutexTcpClientList;
 
     // List with active tcp/ip clients
-    std::list<tcpipClientObj *> m_tcpip_clientList;
+    std::list<tcpipClientObj*> m_tcpip_clientList;
 
     // Listening port
     std::string m_strListeningPort;
@@ -175,7 +178,7 @@ class tcpipListenThreadObj
     int m_nStopTcpIpSrv;
 
     // Pointer to the mother of all things
-    CControlObject *m_pObj;
+    CControlObject* m_pObj;
 };
 
 // ----------------------------------------------------------------------------
@@ -190,7 +193,7 @@ class tcpipClientObj
 
   public:
     /// Constructor
-    tcpipClientObj(tcpipListenThreadObj *pParent);
+    tcpipClientObj(tcpipListenThreadObj* pParent);
 
     /// Destructor
     ~tcpipClientObj();
@@ -203,7 +206,7 @@ class tcpipClientObj
      * @param bAddCRLF If true crlf will be added to string
      * @return True on success, false on failure
      */
-    bool write(std::string &str, bool bAddCRLF = false);
+    bool write(std::string& str, bool bAddCRLF = false);
 
     /*!
      * Write string to client
@@ -211,7 +214,7 @@ class tcpipClientObj
      * @param len Number of characters to write.
      * @return True on success, false on failure
      */
-    bool write(const char *buf, size_t len);
+    bool write(const char* buf, size_t len);
 
     /*!
      * read string (crlf terminated) from input queue
@@ -220,13 +223,13 @@ class tcpipClientObj
      * @param str String that will get read data
      * @return True on success (there is data to read), false on failure
      */
-    bool read(std::string &str);
+    bool read(std::string& str);
 
     /*!
         When a command is received on the TCP/IP interface the command handler
        is called.
     */
-    int CommandHandler(std::string &strCommand);
+    int CommandHandler(std::string& strCommand);
 
     /*!
         Check if a user has been verified
@@ -236,9 +239,10 @@ class tcpipClientObj
 
     /*!
         Check if a user has enough privilege
+        @param reqiredPrivilege Privileges required to do operation.
         @return true if yes, else false.
     */
-    bool checkPrivilege(unsigned char reqiredPrivilege);
+    bool checkPrivilege(unsigned long reqiredPrivilege);
 
     /*!
         Client send event
@@ -379,148 +383,6 @@ class tcpipClientObj
     void handleClientInterface_Close(void);
 
     /*!
-        Client UDP command
-    */
-    //void handleClientUdp(void);
-
-    /*!
-        Client FILE command
-    */
-    //void handleClientFile(void);
-
-    /*!
-        Client TABLE command
-        @param conn Connection handler.
-        @param pCtrlObject Pointer to control object
-    */
-    //void handleClientTable(void);
-
-    /*!
-        Client TABLE list command.
-        list - List all defined tables.
-        list 'table-name' - List info about selected table.
-        @param conn Connection handler.
-    */
-    //void handleClientTable_List(void);
-
-    /*!
-        Client TABLE get command
-        get 'table-name' to from ["full"]
-        @param conn Connection handler.
-    */
-    //void handleClientTable_Get(void);
-
-    /*!
-        Client TABLE getraw command
-        get 'table-name' to from
-        @param conn Connection handler.
-    */
-    //void handleClientTable_GetRaw(void);
-
-    /*!
-        Client TABLE clear command
-        @param conn Connection handler.
-    */
-    //void handleClientTable_Clear(void);
-
-    /*!
-        Client TABLE records command
-        @param conn Connection handler.
-    */
-    //void handleClientTable_NumberOfRecords(void);
-
-    /*!
-        Client TABLE firstdate command
-        @param conn Connection handler.
-    */
-    //void handleClientTable_FirstDate(void);
-
-    /*!
-        Client TABLE lastdate command
-        @param conn Connection handler.
-    */
-    //void handleClientTable_LastDate(void);
-
-    /*!
-        Client TABLE sum command
-        @param conn Connection handler.
-    */
-    //void handleClientTable_Sum(void);
-
-    /*!
-        Client TABLE min command
-        @param conn Connection handler.
-    */
-    //void handleClientTable_Min(void);
-
-    /*!
-        Client TABLE max command
-        @param conn Connection handler.
-    */
-   // void handleClientTable_Max(void);
-
-    /*!
-        Client TABLE average command
-        @param conn Connection handler.
-    */
-    //void handleClientTable_Average(void);
-
-    /*!
-        Client TABLE median command
-        @param conn Connection handler.
-    */
-    //void handleClientTable_Median(void);
-
-    /*!
-        Client TABLE stddev command
-        @param conn Connection handler.
-    */
-    //void handleClientTable_StdDev(void);
-
-    /*!
-        Client TABLE variance command
-        @param conn Connection handler.
-    */
-    //void handleClientTable_Variance(void);
-
-    /*!
-        Client TABLE mode command
-        @param conn Connection handler.
-    */
-    //void handleClientTable_Mode(void);
-
-    /*!
-        Client TABLE lowerq command
-        @param conn Connection handler.
-    */
-    //void handleClientTable_LowerQ(void);
-
-    /*!
-        Client TABLE upperq command
-        @param conn Connection handler.
-    */
-   // void handleClientTable_UpperQ(void);
-
-    /*!
-        Client TABLE log command
-        @param conn Connection handler.
-    */
-    //void handleClientTable_Log(void);
-
-    /*!
-        Client TABLE logSQL command
-        @param conn Connection handler.
-    */
-    //void handleClientTable_LogSQL(void);
-
-    /*!
-        Client TABLE new command
-        @param conn Connection handler.
-    */
-    //void handleClientTable_Create(void);
-
-
-    /*!
         Client LIST command
     */
     void handleClientList(void);
@@ -543,25 +405,25 @@ class tcpipClientObj
     /*!
         Getter/setter for control object
     */
-    void setControlObjectPointer(CControlObject *pobj) { m_pObj = pobj; };
-    CControlObject *getControlObject(void) { return m_pObj; };
+    void setControlObjectPointer(CControlObject* pobj) { m_pObj = pobj; };
+    CControlObject* getControlObject(void) { return m_pObj; };
 
     // --- Member variables ---
 
     // Client connection
-    struct stcp_connection *m_conn;
+    struct stcp_connection* m_conn;
 
     // TCP/IP client thread
     pthread_t m_tcpipClientThread;
 
     /// Parent object
-    tcpipListenThreadObj *m_pParent;
+    tcpipListenThreadObj* m_pParent;
 
     // Pointer to control object from listen parent
-    CControlObject *m_pObj;
+    CControlObject* m_pObj;
 
     // This is info about the logged in user
-    CClientItem *m_pClientItem;
+    CClientItem* m_pClientItem;
 
     // All input is added to the receive buf. as it is
     // received. Commands are then fetched from this buffer
@@ -569,7 +431,7 @@ class tcpipClientObj
     std::string m_strResponse;
 
     // Saved return value for last sockettcp operation
-    int m_rv;
+    size_t m_rv;
 
     // Flag for receive loop active
     bool m_bReceiveLoop;

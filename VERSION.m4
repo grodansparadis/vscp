@@ -1,3 +1,4 @@
+m4_define([release_debian],  [1])
 m4_define([major_version],   [14])
 m4_define([minor_version],   [0])
 m4_define([release_version], [0])

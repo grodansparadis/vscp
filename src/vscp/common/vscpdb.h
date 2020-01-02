@@ -4,7 +4,7 @@
 //
 // MIT License
 //
-// Copyright (C) 2000-2019 Ake Hedman,
+// Copyright (C) 2000-2020 Ake Hedman,
 // Ake Hedman, Grodans Paradis AB, <akhe@vscp.org>
 //
 // Permission is hereby granted, free of charge, to any person

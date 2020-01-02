@@ -4,7 +4,7 @@
 //
 // The MIT License (MIT)
 //
-// Copyright (C) 2000-2019 Ake Hedman, Grodans Paradis AB
+// Copyright (C) 2000-2020 Ake Hedman, Grodans Paradis AB
 // <info@grodansparadis.com>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -38,8 +38,6 @@
 #include <string.h>
 #include <syslog.h>
 
-#include <sqlite3.h>
-
 #include "userlist.h"
 #include <controlobject.h>
 #include <vscpdb.h>
@@ -53,8 +51,6 @@ vscp_md5(char* digest, const unsigned char* buf, size_t len);
 //                 GLOBALS
 ///////////////////////////////////////////////////
 
-extern CControlObject* gpobj;
-
 ///////////////////////////////////////////////////////////////////////////////
 // Constructor
 //
@@ -67,7 +63,7 @@ CUserItem::CUserItem(void)
     vscp_clearVSCPFilter(&m_filterVSCP);
 
     // No user rights
-    memset(m_userRights, 0, sizeof(m_userRights));
+    m_userRights = 0x00000000;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -91,7 +87,7 @@ CUserItem::fixName(void)
 
     // Works only for ASCII names. Should be fixed so
     // UTF8 names can be used TODO
-    for (int i = 0; i < m_user.length(); i++) {
+    for (size_t i = 0; i < m_user.length(); i++) {
         switch ((const char)m_user[i]) {
             case ';':
             case '\'':
@@ -225,7 +221,7 @@ CUserItem::getAsString(std::string& strUser)
     strUser += ";";
     // Protect password
     str = getPassword();
-    for (int i = 0; i < str.length(); i++) {
+    for (size_t i = 0; i < str.length(); i++) {
         strUser += "*";
     }
     // strUser += getPassword();
@@ -264,29 +260,25 @@ CUserItem::getAsMap(std::map<std::string, std::string>& mapUser)
     std::string str, wstr;
 
     mapUser["userid"] = vscp_str_format("%ld;", getUserID());
-    mapUser["name"] = getUserName();
+    mapUser["name"]   = getUserName();
 
     // Protect password
     wstr = "";
-    str = getPassword();
-    for (int i = 0; i < str.length(); i++) {
+    str  = getPassword();
+    for (size_t i = 0; i < str.length(); i++) {
         wstr += "*";
     }
     mapUser["password"] = wstr;
-
     mapUser["fullname"] = getFullname();
 
     vscp_writeFilterToString(str, getUserFilter());
     mapUser["filter"] = str;
 
     vscp_writeMaskToString(str, getUserFilter());
-    mapUser["mask"] = str;
-
-    mapUser["rights"] = getUserRightsAsString();
-
+    mapUser["mask"]    = str;
+    mapUser["rights"]  = getUserRightsAsString();
     mapUser["remotes"] = getAllowedRemotesAsString();
-
-    mapUser["events"] = getAllowedEventsAsString();
+    mapUser["events"]  = getAllowedEventsAsString();
 
     str = getNote();
     vscp_base64_std_encode(str);
@@ -305,10 +297,11 @@ CUserItem::setUserRightsFromString(const std::string& strRights)
     // Privileges
     if (strRights.length()) {
 
+        m_userRights = 0;
+
         std::deque<std::string> tokens;
         vscp_split(tokens, strRights, "/");
 
-        int idx = 0;
         while (!tokens.empty()) {
 
             std::string str = tokens.front();
@@ -316,25 +309,36 @@ CUserItem::setUserRightsFromString(const std::string& strRights)
 
             if (0 == strcasecmp(str.c_str(), "admin")) {
                 // All rights
-                // memset( m_userRights, 0xff, sizeof( m_userRights ) );
-                // All rights
-                for (int i = 0; i < USER_PRIVILEGE_BYTES; i++) {
-                    setUserRights(i, 0xff);
-                }
+                m_userRights |= VSCP_ADMIN_DEFAULT_RIGHTS;
             } else if (0 == strcasecmp(str.c_str(), "user")) {
                 // A standard user
-                setUserRights(0, 0x06);
+                m_userRights |= VSCP_USER_DEFAULT_RIGHTS;
             } else if (0 == strcasecmp(str.c_str(), "driver")) {
                 // A standard driver
-                setUserRights(0, 0x0f);
+                m_userRights |= VSCP_DRIVER_DEFAULT_RIGHTS;
+            } else if (0 == strcasecmp(str.c_str(), "send-events")) {
+                m_userRights |= VSCP_USER_RIGHT_ALLOW_SEND_EVENT;
+            } else if (0 == strcasecmp(str.c_str(), "receive-events")) {
+                m_userRights |= VSCP_USER_RIGHT_ALLOW_RCV_EVENT;
+            } else if (0 == strcasecmp(str.c_str(), "l1ctrl-events")) {
+                m_userRights |= VSCP_USER_RIGHT_ALLOW_SEND_L1CTRL_EVENT;
+            } else if (0 == strcasecmp(str.c_str(), "l2ctrl-events")) {
+                m_userRights |= VSCP_USER_RIGHT_ALLOW_SEND_L2CTRL_EVENT;
+            } else if (0 == strcasecmp(str.c_str(), "hlo-events")) {
+                m_userRights |= VSCP_USER_RIGHT_ALLOW_SEND_HLO_EVENT;
+            } else if (0 == strcasecmp(str.c_str(), "shutdown")) {
+                m_userRights |= VSCP_USER_RIGHT_ALLOW_SHUTDOWN;
+            } else if (0 == strcasecmp(str.c_str(), "restart")) {
+                m_userRights |= VSCP_USER_RIGHT_ALLOW_RESTART;
+            } else if (0 == strcasecmp(str.c_str(), "interface")) {
+                m_userRights |= VSCP_USER_RIGHT_ALLOW_INTERFACE;
+            } else if (0 == strcasecmp(str.c_str(), "test")) {
+                m_userRights |= VSCP_USER_RIGHT_ALLOW_TEST;
             } else {
                 // Numerical
-                unsigned long lval = stoul(str);
-                setUserRights(idx++, (uint8_t)lval);
+                uint32_t val = vscp_readStringValue(str);
+                m_userRights |= val;
             }
-
-            if (idx >= sizeof(m_userRights))
-                break;
         }
     }
 
@@ -348,10 +352,14 @@ CUserItem::setUserRightsFromString(const std::string& strRights)
 bool
 CUserItem::getAllowedEvent(size_t n, std::string& event)
 {
-    if (!m_listAllowedEvents.size())
+    if (!m_listAllowedEvents.size()) {
         return false;
-    if (n > (m_listAllowedEvents.size() - 1))
+    }
+
+    if (n > (m_listAllowedEvents.size() - 1)) {
         return false;
+    }
+
     event = m_listAllowedEvents[n];
     return true;
 }
@@ -363,10 +371,14 @@ CUserItem::getAllowedEvent(size_t n, std::string& event)
 bool
 CUserItem::setAllowedEvent(size_t n, std::string& event)
 {
-    if (!m_listAllowedEvents.size())
+    if (!m_listAllowedEvents.size()) {
         return false;
-    if (n > (m_listAllowedEvents.size() - 1))
+    }
+
+    if (n > (m_listAllowedEvents.size() - 1)) {
         return false;
+    }
+
     m_listAllowedEvents[n] = event;
     return true;
 }
@@ -378,9 +390,9 @@ CUserItem::setAllowedEvent(size_t n, std::string& event)
 bool
 CUserItem::addAllowedEvent(const std::string& strEvent)
 {
-    std::string str = strEvent;
+    std::string str     = strEvent;
     uint16_t vscp_class = 0;
-    uint16_t vscp_type = 0;
+    uint16_t vscp_type  = 0;
 
     vscp_trim(str);
 
@@ -393,18 +405,18 @@ CUserItem::addAllowedEvent(const std::string& strEvent)
 
     // Left wildcard
     if ('*' == strEvent[0]) {
-        str = vscp_str_right(str, str.length() - 2);
+        str       = vscp_str_right(str, str.length() - 2);
         vscp_type = vscp_readStringValue(str);
-        str = vscp_str_format("*:%04X", vscp_type);
+        str       = vscp_str_format("*:%04X", vscp_type);
         m_listAllowedEvents.push_back(str);
         return true;
     }
 
     // Right wildcard
     if ('*' == str[str.length() - 1]) {
-        str = vscp_str_left(str, str.length() - 2);
+        str        = vscp_str_left(str, str.length() - 2);
         vscp_class = vscp_readStringValue(str);
-        str = vscp_str_format("%04X:*", vscp_class);
+        str        = vscp_str_format("%04X:*", vscp_class);
         m_listAllowedEvents.push_back(str);
         return true;
     }
@@ -413,9 +425,9 @@ CUserItem::addAllowedEvent(const std::string& strEvent)
     vscp_class = vscp_readStringValue(str);
     size_t pos;
     if (std::string::npos != (pos = str.find(':'))) {
-        str = vscp_str_right(str, str.length() - pos - 1);
+        str       = vscp_str_right(str, str.length() - pos - 1);
         vscp_type = vscp_readStringValue(str);
-        str = vscp_str_format("%04X:%04X", vscp_class, vscp_type);
+        str       = vscp_str_format("%04X:%04X", vscp_class, vscp_type);
         m_listAllowedEvents.push_back(str);
         return true;
     }
@@ -443,7 +455,6 @@ CUserItem::setAllowedEventsFromString(const std::string& strEvents, bool bClear)
         vscp_split(tokens, strEvents, ",");
 
         while (!tokens.empty()) {
-
             str = tokens.front();
             tokens.pop_front();
             vscp_trim(str);
@@ -464,10 +475,13 @@ CUserItem::getAllowedEventsAsString(void)
 {
     std::string strAllowedEvents;
 
-    for (int i = 0; i < m_listAllowedEvents.size(); i++) {
+    for (size_t i = 0; i < m_listAllowedEvents.size(); i++) {
+
         strAllowedEvents += m_listAllowedEvents[i];
-        if (i != (m_listAllowedEvents.size() - 1))
+
+        if (i != (m_listAllowedEvents.size() - 1)) {
             strAllowedEvents += "/";
+        }
     }
 
     return strAllowedEvents;
@@ -506,13 +520,16 @@ CUserItem::setAllowedRemotesFromString(const std::string& strConnect)
 std::string
 CUserItem::getAllowedRemotesAsString(void)
 {
-    int i;
+    size_t i;
     std::string strAllowedRemotes;
 
     for (i = 0; i < m_listAllowedRemotes.size(); i++) {
+
         strAllowedRemotes += m_listAllowedRemotes[i];
-        if (i != (m_listAllowedRemotes.size() - 1))
+
+        if (i != (m_listAllowedRemotes.size() - 1)) {
             strAllowedRemotes += ",";
+        }
     }
 
     return strAllowedRemotes;
@@ -525,10 +542,14 @@ CUserItem::getAllowedRemotesAsString(void)
 bool
 CUserItem::getAllowedRemote(size_t n, std::string& remote)
 {
-    if (!m_listAllowedRemotes.size())
+    if (!m_listAllowedRemotes.size()) {
         return false;
-    if (n > (m_listAllowedRemotes.size() - 1))
+    }
+
+    if (n > (m_listAllowedRemotes.size() - 1)) {
         return false;
+    }
+
     remote = m_listAllowedRemotes[n];
     return true;
 }
@@ -540,11 +561,16 @@ CUserItem::getAllowedRemote(size_t n, std::string& remote)
 bool
 CUserItem::setAllowedRemote(size_t n, std::string& remote)
 {
-    if (!m_listAllowedRemotes.size())
+    if (!m_listAllowedRemotes.size()) {
         return false;
-    if (n > (m_listAllowedRemotes.size() - 1))
+    }
+
+    if (n > (m_listAllowedRemotes.size() - 1)) {
         return false;
+    }
+
     m_listAllowedRemotes[n] = remote;
+
     return true;
 }
 
@@ -557,38 +583,39 @@ CUserItem::getUserRightsAsString(void)
 {
     std::string strRights;
 
-    for (int i = 0; i < USER_PRIVILEGE_BYTES; i++) {
-        strRights += vscp_str_format("%d", m_userRights[i]);
-        if (i != (USER_PRIVILEGE_BYTES - 1)) {
-            strRights += "/";
-        }
+    for (int i = 0; i < 32; i++) {
+        strRights += vscp_str_format("%d", (m_userRights & (2^i)) ? 1 : 0);
     }
 
+    std::reverse(strRights.begin(), strRights.end());
     return strRights;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// check_acl
+// isAllowedToConnect
 //
 //
 
 int
 CUserItem::isAllowedToConnect(uint32_t remote_ip)
 {
-    int allowed, flag;
+    int allowed = '+';
+    int flag;
     uint32_t net, mask;
 
     remote_ip = htonl(remote_ip);
 
     // If the list is empty - allow all
-    allowed = (0 == m_listAllowedRemotes.size()) ? '+' : '-';
+    // if (0 == m_listAllowedRemotes.size()) return 1;
 
-    for (int i = 0; i < m_listAllowedRemotes.size(); i++) {
+    for (size_t i = 0; i < m_listAllowedRemotes.size(); i++) {
 
         flag = m_listAllowedRemotes[i].at(0); // vec.ptr[0];
         if ((flag != '+' && flag != '-') ||
-            (0 == vscp_parse_ipv4_addr(
-                    m_listAllowedRemotes[i].substr(1).c_str(), &net, &mask))) {
+            (0 ==
+             vscp_parse_ipv4_addr(m_listAllowedRemotes[i].substr(1).c_str(),
+                                  &net,
+                                  &mask))) {
             return -1;
         }
 
@@ -597,7 +624,7 @@ CUserItem::isAllowedToConnect(uint32_t remote_ip)
         }
     }
 
-    return (allowed == '+');
+    return ('+' == allowed) ? 1 : 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -635,6 +662,8 @@ CUserItem::isUserAllowedToSendEvent(const uint32_t vscp_class,
             return true;
     }
 
+    syslog(LOG_ERR, "isUserAllowedToSendEvent: Not allowed to send event - ");
+
     return false;
 }
 
@@ -667,8 +696,9 @@ CUserList::~CUserList(void)
              it != m_grouphashmap.end();
              ++it) {
             CGroupItem* pItem = it->second;
-            if (NULL != pItem)
+            if (NULL != pItem) {
                 delete pItem;
+            }
         }
     }
 
@@ -680,120 +710,13 @@ CUserList::~CUserList(void)
              it != m_userhashmap.end();
              ++it) {
             CUserItem* pItem = it->second;
-            if (NULL != pItem)
+            if (NULL != pItem) {
                 delete pItem;
+            }
         }
     }
 
     m_userhashmap.clear();
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// loadUsers
-//
-
-bool
-CUserList::loadUsers(void)
-{
-    // // Check if user is already in the database
-    // char *pErrMsg = 0;
-    // sqlite3_stmt *ppStmt;
-    // const char *psql = VSCPDB_USER_ALL;
-
-    // // Check if database is open
-    // if (NULL == gpobj->m_db_vscp_daemon) {
-    //     syslog(LOG_ERR,
-    //            "loadUsers: Failed to read VSCP settings database - "
-    //            "database not open.");
-    //     return false;
-    // }
-
-    // pthread_mutex_lock(&gpobj->m_db_vscp_configMutex);
-
-    // if (SQLITE_OK !=
-    //     sqlite3_prepare(gpobj->m_db_vscp_daemon, psql, -1, &ppStmt, NULL)) {
-    //     syslog(
-    //       LOG_ERR,
-    //       "loadUsers: Failed to read VSCP settings database - prepare
-    //       query.");
-    //     pthread_mutex_unlock(&gpobj->m_db_vscp_configMutex);
-    //     return false;
-    // }
-
-    // while (SQLITE_ROW == sqlite3_step(ppStmt)) {
-
-    //     // New user item
-    //     CUserItem *pItem = new CUserItem;
-    //     if (NULL != pItem) {
-
-    //         const unsigned char *p;
-
-    //         // id (offset from local users)
-    //         pItem->setUserID(
-    //           sqlite3_column_int(ppStmt, VSCPDB_ORDINAL_USER_ID) +
-    //           VSCP_LOCAL_USER_OFFSET);
-
-    //         // User
-    //         p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_USER_USERNAME);
-    //         if (NULL != p) {
-    //             pItem->setUserName(std::string((const char *)p));
-    //         }
-
-    //         // Password
-    //         p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_USER_PASSWORD);
-    //         if (NULL != p) {
-    //             pItem->setPassword(std::string((const char *)p));
-    //         }
-
-    //         // Fullname
-    //         p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_USER_FULLNAME);
-    //         if (NULL != p) {
-    //             pItem->setFullname(std::string((const char *)p));
-    //         }
-
-    //         // Event filter
-    //         p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_USER_FILTER);
-    //         if (NULL != p) {
-    //             std::string str((const char *)p);
-    //             pItem->setFilterFromString(str);
-    //         }
-
-    //         // Rights
-    //         p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_USER_RIGHTS);
-    //         if (NULL != p) {
-    //             pItem->setUserRightsFromString((const char *)p);
-    //         }
-
-    //         // Allowed events
-    //         p = sqlite3_column_text(ppStmt,
-    //         VSCPDB_ORDINAL_USER_ALLOWED_EVENTS); if (NULL != p) {
-    //             pItem->setAllowedEventsFromString((const char *)p);
-    //         }
-
-    //         // Allowed remotes
-    //         p =
-    //           sqlite3_column_text(ppStmt,
-    //           VSCPDB_ORDINAL_USER_ALLOWED_REMOTES);
-    //         if (NULL != p) {
-    //             pItem->setAllowedRemotesFromString((const char *)p);
-    //         }
-
-    //         // Note
-    //         p = sqlite3_column_text(ppStmt, VSCPDB_ORDINAL_USER_NOTE);
-    //         if (NULL != p) {
-    //             pItem->setNote((const char *)p);
-    //         }
-
-    //         m_userhashmap[pItem->getUserName()] = pItem;
-
-    //     } else {
-    //         syslog(LOG_ERR, "Unable to allocate memory for new user.");
-    //     }
-    // }
-
-    // sqlite3_finalize(ppStmt);
-    // pthread_mutex_unlock(&gpobj->m_db_vscp_configMutex);
-    return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -803,11 +726,11 @@ CUserList::loadUsers(void)
 bool
 CUserList::addSuperUser(const std::string& user,
                         const std::string& password,
+                        const std::string& strDomain,
                         const std::string& allowedRemotes,
                         uint32_t bFlags)
 {
     char buf[512];
-    char* pErrMsg = 0;
 
     // Cant add user with name that is already defined.
     if (NULL != m_userhashmap[user]) {
@@ -816,14 +739,18 @@ CUserList::addSuperUser(const std::string& user,
 
     // New user item
     CUserItem* pItem = new CUserItem;
-    if (NULL == pItem)
+    if (NULL == pItem) {
+        syslog(LOG_ERR,
+               "addSuperUser: Failed to delete user - "
+               "User is not defined.");
         return false;
+    }
 
     pItem->setUserID(0); // Super user is always at id = 0
 
     std::string driverhash = user;
     driverhash += ":";
-    driverhash += std::string(gpobj->m_web_authentication_domain);
+    driverhash += strDomain;
     driverhash += ":";
     driverhash += password;
 
@@ -859,83 +786,67 @@ CUserList::addUser(const std::string& user,
                    const std::string& password,
                    const std::string& fullname,
                    const std::string& strNote,
+                   const std::string& strDomain,
                    const vscpEventFilter* pFilter,
                    const std::string& userRights,
                    const std::string& allowedRemotes,
                    const std::string& allowedEvents,
                    uint32_t bFlags)
 {
-    // char buf[512];
-    // char *pErrMsg = 0;
+    char buf[512];
 
-    // // Cant add user with name that is already defined.
-    // if (NULL != m_userhashmap[user]) {
-    //     return false;
-    // }
-
-    // // Check if database is open
-    // if (!(bFlags & VSCP_ADD_USER_FLAG_LOCAL) &&
-    //     (NULL == gpobj->m_db_vscp_daemon)) {
-    //     syslog(LOG_ERR,
-    //            "addUser: Failed to read VSCP settings database - "
-    //            "database not open.");
-    //     return false;
-    // }
+    // Cant add user with name that is already defined.
+    if (NULL != m_userhashmap[user]) {
+        syslog(LOG_ERR,
+               "addUser: Failed to add use - "
+               "user is already defined.");
+        return false;
+    }
 
     // // New user item
-    // CUserItem *pItem = new CUserItem;
-    // if (NULL == pItem) return false;
+    CUserItem* pItem = new CUserItem;
+    if (NULL == pItem) {
+        syslog(LOG_ERR,
+               "addUser: Failed to add use - "
+               "Memory problem (CUserItem).");
+        return false;
+    }
 
-    // // Local user
-    // if (VSCP_ADD_USER_FLAG_LOCAL & bFlags) {
-    // }
+    pItem->setUserID(m_cntLocaluser);
+    m_cntLocaluser++; // Update local user id counter
 
-    // pItem->setUserID(m_cntLocaluser);
-    // m_cntLocaluser++; // Update local user id counter
+    // MD5 Token
+    std::string driverhash = user;
+    driverhash += ":";
+    driverhash += strDomain;
+    driverhash += ":";
+    driverhash += password;
 
-    // // Check if user is defined already
-    // if (!(bFlags & VSCP_ADD_USER_FLAG_LOCAL) && pItem->isUserInDB(user)) {
-    //     delete pItem;
-    //     return false;
-    // }
+    memset(buf, 0, sizeof(buf));
+    strncpy(buf, (const char*)driverhash.c_str(), driverhash.length());
 
-    // // MD5 Token
-    // std::string driverhash = user;
-    // driverhash += ":";
-    // driverhash += gpobj->m_web_authentication_domain;
-    // driverhash += ":";
-    // driverhash += password;
+    char digest[33];
+    vscp_md5(digest, (const unsigned char*)buf, strlen(buf));
 
-    // memset(buf, 0, sizeof(buf));
-    // strncpy(buf, (const char *)driverhash.c_str(), driverhash.length());
+    pItem->setPasswordDomain(std::string(digest));
 
-    // char digest[33];
-    // vscp_md5(digest, (const unsigned char *)buf, strlen(buf));
+    pItem->setUserName(user);
+    pItem->fixName();
+    pItem->setPassword(password);
+    pItem->setFullname(fullname);
+    pItem->setNote(strNote);
+    pItem->setFilter(pFilter);
+    pItem->setUserRightsFromString(userRights);
+    pItem->setAllowedRemotesFromString(allowedRemotes);
+    pItem->setAllowedEventsFromString(allowedEvents);
 
-    // pItem->setPasswordDomain(std::string(digest));
+    // Add to the map
+    m_userhashmap[user] = pItem;
 
-    // pItem->setUserName(user);
-    // pItem->fixName();
-    // pItem->setPassword(password);
-    // pItem->setFullname(fullname);
-    // pItem->setNote(strNote);
-    // pItem->setFilter(pFilter);
-    // pItem->setUserRightsFromString(userRights);
-    // pItem->setAllowedRemotesFromString(allowedRemotes);
-    // pItem->setAllowedEventsFromString(allowedEvents);
-
-    // // Add to the map
-    // m_userhashmap[user] = pItem;
-
-    // // Set filter filter
-    // if (NULL != pFilter) {
-    //     pItem->setFilter(pFilter);
-    // }
-
-    // // Save to database
-    // if (!(VSCP_ADD_USER_FLAG_LOCAL & bFlags)) {
-    //     pItem->saveToDatabase();
-    // }
+    // Set filter filter
+    if (NULL != pFilter) {
+        pItem->setFilter(pFilter);
+    }
 
     return true;
 }
@@ -947,7 +858,9 @@ CUserList::addUser(const std::string& user,
 //
 
 bool
-CUserList::addUser(const std::string& strUser, bool bUnpackNote)
+CUserList::addUser(const std::string& strUser,
+                   const std::string& strDomain,
+                   bool bUnpackNote)
 {
     std::string strToken;
     std::string user;
@@ -1012,7 +925,6 @@ CUserList::addUser(const std::string& strUser, bool bUnpackNote)
 
     // note
     if (!tokens.empty()) {
-
         if (bUnpackNote) {
             strNote = tokens.front();
             tokens.pop_front();
@@ -1027,6 +939,7 @@ CUserList::addUser(const std::string& strUser, bool bUnpackNote)
                    password,
                    fullname,
                    strNote,
+                   strDomain,
                    &filter,
                    userRights,
                    allowedRemotes,
@@ -1040,43 +953,16 @@ CUserList::addUser(const std::string& strUser, bool bUnpackNote)
 bool
 CUserList::deleteUser(const std::string& user)
 {
-    // char *zErrMsg    = 0;
-    // CUserItem *pUser = getUser(user);
-    // if (NULL == pUser) return false;
+    CUserItem* pUser = getUser(user);
+    if (NULL == pUser) {
+        syslog(LOG_ERR,
+               "deleteUser: Failed to delete user - "
+               "User is not defined.");
+        return false;
+    }
 
-    // // Internal users can't be deleted
-    // if (pUser->getUserID() < VSCP_LOCAL_USER_OFFSET) return false;
-
-    // // Check if database is open
-    // if (NULL == gpobj->m_db_vscp_daemon) {
-    //     syslog(LOG_ERR,
-    //            "deleteUser: Failed to read VSCP "
-    //            "settings database - database not open.");
-    //     return false;
-    // }
-
-    // pthread_mutex_lock(&gpobj->m_db_vscp_configMutex);
-
-    // char *sql =
-    //   sqlite3_mprintf(VSCPDB_USER_DELETE_USERNAME, (const char
-    //   *)user.c_str());
-    // if (SQLITE_OK !=
-    //     sqlite3_exec(gpobj->m_db_vscp_daemon, sql, NULL, NULL, &zErrMsg)) {
-    //     sqlite3_free(sql);
-    //     syslog(LOG_ERR,
-    //            "Delete user: Unable to delete "
-    //            "user in db. [%s] Err=%s\n",
-    //            sql,
-    //            zErrMsg);
-    //     pthread_mutex_unlock(&gpobj->m_db_vscp_configMutex);
-    //     return false;
-    // }
-
-    // pthread_mutex_unlock(&gpobj->m_db_vscp_configMutex);
-    // sqlite3_free(sql);
-
-    // // Remove also from internal table
-    // m_userhashmap.erase(user);
+    // Remove also from internal table
+    m_userhashmap.erase(user);
 
     return true;
 }
@@ -1089,8 +975,12 @@ bool
 CUserList::deleteUser(const long userid)
 {
     CUserItem* pUser = getUser(userid);
-    if (NULL == pUser)
+    if (NULL == pUser) {
+        syslog(LOG_ERR,
+               "deleteUser: Failed to delete user - "
+               "User is not defined.");
         return false;
+    }
 
     return deleteUser(pUser->getUserName());
 }
@@ -1114,12 +1004,16 @@ CUserList::getUser(const long userid)
 {
     std::map<std::string, CUserItem*>::iterator it;
     for (it = m_userhashmap.begin(); it != m_userhashmap.end(); ++it) {
-        std::string key = it->first;
+        std::string key      = it->first;
         CUserItem* pUserItem = it->second;
         if (userid == pUserItem->getUserID()) {
             return pUserItem;
         }
     }
+
+    syslog(LOG_ERR,
+           "getUser: Failed to get user - "
+           "User is not found.");
 
     return NULL;
 }
@@ -1134,10 +1028,17 @@ CUserList::validateUser(const std::string& user, const std::string& password)
     CUserItem* pUserItem;
 
     pUserItem = m_userhashmap[user];
-    if (NULL == pUserItem)
+    if (NULL == pUserItem) {
+        syslog(LOG_ERR,
+               "validateUser: Failed to validate user - "
+               "User is not defined.");
         return NULL;
+    }
 
     if (!vscp_isPasswordValid(pUserItem->getPassword(), password)) {
+        syslog(LOG_INFO,
+               "validateUser: Failed to validate user - "
+               "Check username/password.");
         return NULL;
     }
 
@@ -1155,12 +1056,20 @@ CUserList::validateUserDomain(const std::string& user,
     CUserItem* pUserItem;
 
     pUserItem = m_userhashmap[user];
-    if (NULL == pUserItem)
+    if (NULL == pUserItem) {
+        syslog(LOG_ERR,
+               "validateUserDomain: Failed to validate user - "
+               "User is not defined.");
         return NULL;
+    }
 
     // Check password
-    if (pUserItem->getPasswordDomain() != md5password)
+    if (pUserItem->getPasswordDomain() != md5password) {
+        syslog(LOG_INFO,
+               "validateUserDomain: Failed to validate user - "
+               "Check username/password.");
         return NULL;
+    }
 
     return pUserItem;
 }
@@ -1178,8 +1087,12 @@ CUserList::getUserAsString(CUserItem* pUserItem, std::string& strUser)
     strUser.clear();
 
     // Check pointer
-    if (NULL == pUserItem)
+    if (NULL == pUserItem) {
+        syslog(LOG_ERR,
+               "getUserAsString: Failed to get user - "
+               "IOnvalid user item.");
         return false;
+    }
 
     return pUserItem->getAsString(strUser);
 }
@@ -1200,7 +1113,7 @@ CUserList::getUserAsString(uint32_t idx, std::string& strUser)
     for (it = m_userhashmap.begin(); it != m_userhashmap.end(); ++it) {
 
         if (i == idx) {
-            std::string key = it->first;
+            std::string key      = it->first;
             CUserItem* pUserItem = it->second;
             if (getUserAsString(pUserItem, strUser)) {
                 return true;
@@ -1229,7 +1142,7 @@ CUserList::getAllUsers(std::string& strAllusers)
 
     std::map<std::string, CUserItem*>::iterator it;
     for (it = m_userhashmap.begin(); it != m_userhashmap.end(); ++it) {
-        std::string key = it->first;
+        std::string key      = it->first;
         CUserItem* pUserItem = it->second;
         if (getUserAsString(pUserItem, str)) {
             strAllusers += str;
@@ -1253,7 +1166,7 @@ CUserList::getAllUsers(std::deque<std::string>& arrayUsers)
     std::map<std::string, CUserItem*>::iterator it;
     for (it = m_userhashmap.begin(); it != m_userhashmap.end(); ++it) {
         std::string key = it->first;
-        CUserItem* pUserItem = it->second;
+        // CUserItem* pUserItem = it->second;
         arrayUsers.push_back(key);
     }
 
@@ -1275,7 +1188,7 @@ CUserList::getUserItemFromOrdinal(uint32_t idx)
     for (it = m_userhashmap.begin(); it != m_userhashmap.end(); ++it) {
 
         if (i == idx) {
-            std::string key = it->first;
+            std::string key      = it->first;
             CUserItem* pUserItem = it->second;
             return pUserItem;
         }

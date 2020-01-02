@@ -36,7 +36,8 @@ AC_CHECK_LIB([crypto], [MD5_Init])
 AC_CHECK_LIB([m],[sin])
 AC_CHECK_LIB([rt],[clock_gettime])
 AC_CHECK_LIB([z], [gzopen])
-dnl AC_CHECK_LIB([pcap], [pcap_open_live])
+AC_CHECK_LIB([wrap], [request_init])
+AC_CHECK_LIB([systemd], [sd_notify])
 AC_CHECK_LIB([ssl], [SSL_free])
 AC_CHECK_LIB([expat], [XML_ParserCreate])
 
@@ -44,7 +45,11 @@ AC_CHECK_LIB([expat], [XML_ParserCreate])
 AC_HEADER_DIRENT
 AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
-AC_CHECK_HEADERS([OS.h arpa/inet.h fcntl.h inttypes.h limits.h locale.h netdb.h netinet/in.h sgtty.h stddef.h stdint.h stdlib.h string.h strings.h sys/file.h sys/ioctl.h sys/socket.h sys/time.h sys/timeb.h syslog.h termios.h unistd.h openssl/md5.h])
+AC_CHECK_HEADERS([OS.h arpa/inet.h fcntl.h inttypes.h limits.h \
+                    locale.h netdb.h netinet/in.h sgtty.h stddef.h \
+                    stdint.h stdlib.h string.h strings.h sys/file.h \
+                    sys/ioctl.h sys/socket.h sys/time.h sys/timeb.h \
+                    syslog.h termios.h unistd.h openssl/md5.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_HEADER_STDBOOL
@@ -57,7 +62,6 @@ AC_TYPE_SIZE_T
 AC_HEADER_TIME
 AC_STRUCT_TM
 AC_C_VOLATILE
-
 
 # Checks for library functions.
 AC_FUNC_FORK
@@ -91,6 +95,30 @@ AC_SUBST(VSCPDIR)
 AC_SUBST(RPI)
 
 dnl
+dnl WITH_SYSTEMD 
+dnl 
+
+AC_ARG_ENABLE(systemd,
+   AS_HELP_STRING([--enable-systemd], [Build systemd support (default enabled]))
+
+AS_IF([test "x$enable_systemd" != "xno"], [
+  CFLAGS+=" -DWITH_SYSTEMD"
+  CPPFLAGS+=" -DWITH_SYSTEMD"
+])
+
+dnl
+dnl WITH_WRAP 
+dnl 
+
+AC_ARG_ENABLE(wrap,
+   AS_HELP_STRING([--enable-wrap], [Build wrap tcpd support (default enabled)]) )
+
+AS_IF([test "x$enable_wrap" != "xno"], [
+  CFLAGS+=" -DWITH_WRAP"
+  CPPFLAGS+=" -DWITH_WRAP"
+])
+
+dnl
 dnl Project base installation folder
 dnl
 
@@ -98,7 +126,7 @@ AC_ARG_VAR(VSCPDIR, Set base folder for installation (/srv/vscp) )
 if test "${VSCPDIR+set}" = set; then
   echo "variable \$VSCPDIR is set to: $VSCPDIR"
 else
-  VSCPDIR="/srv/vscp"
+  VSCPDIR="/var/lib/vscp"
   echo "variable \$VSCPDIR is set to: $VSCPDIR"
 fi
 
@@ -107,12 +135,16 @@ dnl Project Sub directories
 dnl
 
 PROJ_SUBDIRS="src/vscp/daemon/linux\
- src/vscp/vscp-mkpasswd "
+ src/vscp/vscp-mkpasswd\
+ src/vscp/vscpcmd "
 
-AC_ARG_ENABLE(rpi,
-[  --enable-rpi         Build Raspberry Pi specific stuff (default disabled)],
-[vscp_rpi=yes],[vscp_rpi=no])
+AC_ARG_ENABLE(rpi, 
+   AS_HELP_STRING([--enable-rpi], [Build Raspberry Pi specific stuff (default disabled)]))
 
+vscp_rpi=no
+AS_IF([test "x$enable_rpi" = "xyes"], [
+  vscp_rpi=yes
+])
 
 AC_SUBST(PROJ_SUBDIRS)
 
@@ -147,8 +179,9 @@ dnl
 
 AC_CONFIG_FILES([Makefile
          m4/Makefile
-         src/vscp/daemon/linux/Makefile
-         src/vscp/vscp-mkpasswd/Makefile
+         src/vscp/daemon/linux/Makefile 
+         src/vscp/vscp-mkpasswd/Makefile 
+         src/vscp/vscpcmd/Makefile 
 ])
 
 
@@ -185,16 +218,22 @@ fi
 
 if test "${vscp_static}" = "yes"
 then
-   echo "linking : static "
+   echo "linking               : static "
 else
-   echo "linking : shared "
+   echo "linking               : shared "
 fi
 
-if test "${vscp_rpi}" = yes ; then
-   echo   "Raspberry Pi build    : ${vscp_rpi}"
-else
-   echo   "Raspberry Pi build    : no"
-fi
+AS_IF([test "x$enable_systemd" = "xno"], 
+   [echo   "Systemd enabled       : no"],
+   [echo   "Systemd enabled       : yes" ])
+
+AS_IF([test "x$enable_wrap" = "xno"], 
+   [echo   "tcpd wrap enabled     : no"],
+   [echo   "tcpd wrap enabled     : yes" ])   
+
+AS_IF([test "x$enable_rpi" = "xyes"], 
+   [echo   "Raspberry Pi build    : yes"],
+   [echo   "Raspberry Pi build    : no" ])
 
 printf "
 You can tune the compiler flags in vscp-config.
@@ -203,6 +242,9 @@ To build VSCP and friends, type \'make\' followed by \'make install\'
  use --enable-debug to build a debug version; release is default.
  use --enable-static to include a static version (currently diabled).
  use --enable-rpi to build Raspberry Pi specific drivers.
+ use --disable-systemd to not use systemd (default: eanbled).
+ use --disable-wrap to not use the tcpd wrapper (default: eanbled).
+ 
 
  \"make\" -- builds VSCP & Friends.
  \"make install\" -- builds VSCP & Friends and install system.

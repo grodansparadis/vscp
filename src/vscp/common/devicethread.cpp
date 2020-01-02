@@ -4,7 +4,7 @@
 //
 // The MIT License (MIT)
 //
-// Copyright (C) 2000-2019 Ake Hedman, Grodans Paradis AB
+// Copyright (C) 2000-2020 Ake Hedman, Grodans Paradis AB
 // <info@grodansparadis.com>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -60,7 +60,7 @@
 void *
 deviceThread(void *pData)
 {
-    const char *dlsym_error;
+    //const char *dlsym_error;
 
     CDeviceItem *pDevItem = (CDeviceItem *)pData;
     if (NULL == pDevItem) {
@@ -91,7 +91,6 @@ deviceThread(void *pData)
         pClientItem->m_type = CLIENT_ITEM_INTERFACE_TYPE_DRIVER_LEVEL3;
     }
 
-    char datebuf[80];
     pClientItem->m_dtutc.setUTCNow();
     pClientItem->m_strDeviceName = "driver_" + pDevItem->m_strName;
 
@@ -609,8 +608,6 @@ deviceThread(void *pData)
                    pDevItem->m_strName.c_str());
         }
 
-    level1_driver_exit:
-
         pDevItem->m_bQuit = true;
         pthread_join(pDevItem->m_level1WriteThread, NULL);
         pthread_join(pDevItem->m_level1ReceiveThread, NULL);
@@ -772,8 +769,6 @@ deviceThread(void *pData)
                    pDevItem->m_strName.c_str());
         }
 
-    level2_driver_exit:
-
         pDevItem->m_bQuit = true;
         pthread_join(pDevItem->m_level2WriteThread, NULL);
         pthread_join(pDevItem->m_level2ReceiveThread, NULL);
@@ -913,17 +908,18 @@ deviceLevel1ReceiveThread(void *pData)
                     // =========================================================
 
                     // Level I measurement events to Level II measurement float
-                    if (pDevItem->m_translation & VSCP_DRIVER_OUT_TR_M1M2F) {
+                    if (pDevItem->m_translation & VSCP_DRIVER_OUT_TR_M1_M2F) {
                         vscp_convertLevel1MeasuremenToLevel2Double(pvscpEvent);
                     }
+
                     // Level I measurement events to Level II measurement string
-                    else if (pDevItem->m_translation &
-                             VSCP_DRIVER_OUT_TR_M1M2S) {
+                    if (pDevItem->m_translation &
+                             VSCP_DRIVER_OUT_TR_M1_M2S) {
                         vscp_convertLevel1MeasuremenToLevel2String(pvscpEvent);
                     }
 
                     // Level I events to Level I over Level II events
-                    if (pDevItem->m_translation & VSCP_DRIVER_OUT_TR_ALL512) {
+                    if (pDevItem->m_translation & VSCP_DRIVER_OUT_TR_ALL_L2) {
                         pvscpEvent->vscp_class += 512;
                         uint8_t *p = new uint8_t[16 + pvscpEvent->sizeData];
                         if (NULL != p) {

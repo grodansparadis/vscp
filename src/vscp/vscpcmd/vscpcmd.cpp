@@ -6,7 +6,7 @@
 // 2 of the License, or (at your option) any later version.
 //
 // This file is part of the VSCP (http://www.vscp.org)
-// Copyright (C) 2000-2019 Ake Hedman,
+// Copyright (C) 2000-2020 Ake Hedman,
 // Ake Hedman, Grodans Paradis AB,<akhe@vscp.org>
 //
 // This file is distributed in the hope that it will be useful,
@@ -138,11 +138,11 @@ main(int argc, char **argv)
     vscpEventEx event;
 
     int c;
-    int digit_optind = 0;
+    //int digit_optind = 0;
 
     while (1) {
 
-        int this_option_optind = optind ? optind : 1;
+        //int this_option_optind = optind ? optind : 1;
         int option_index       = 0;
 
         static struct option long_options[] = {

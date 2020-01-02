@@ -7,7 +7,7 @@
 //
 // This file is part of the VSCP (http://www.vscp.org)
 //
-// Copyright (C) 2000-2019 Ake Hedman,
+// Copyright (C) 2000-2020 Ake Hedman,
 // Grodans Paradis AB, <akhe@vscp.org>
 //
 // This file is distributed in the hope that it will be useful,
@@ -242,7 +242,6 @@ CClientList::~CClientList()
 bool
 CClientList::findFreeId(uint16_t *pid)
 {
-    uint16_t maxid = 0;
     std::list<uint16_t> sorterIdList;
     std::deque<CClientItem *>::iterator it;
 

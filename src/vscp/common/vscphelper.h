@@ -4,7 +4,7 @@
 //
 // The MIT License (MIT)
 //
-// Copyright (C) 2000-2019 Ake Hedman, Grodans Paradis AB
+// Copyright (C) 2000-2020 Ake Hedman, Grodans Paradis AB
 // <info@grodansparadis.com>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -1823,7 +1823,8 @@ extern "C"
      * @param array Byte array that will receive result.
      * @param size Size of byte array.
      * @param hextstr Hex string that should be converted.
-     * @return Number of bytes written to the byte array.
+     * @return Number of bytes written to the byte array or
+     *         zero on error.
      *
      */
 

@@ -2,7 +2,7 @@
 //
 // The MIT License (MIT)
 // 
-// Copyright (C) 2000-2019 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
+// Copyright (C) 2000-2020 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
 // 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +28,7 @@
 #endif
 
 #include "configfile.h"
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -77,12 +78,14 @@ char *Config::ScanKey( char *key )
 {
     char *eq;
     
-    // Configuratin file must be open
+    // Configuration file must be open
     if ( NULL == m_fIn ) return NULL;
     
     rewind( m_fIn );
     while( !feof( m_fIn ) ) {
-        char *p = fgets( m_pBuffer, 255, m_fIn );
+        if ( NULL == fgets( m_pBuffer, 255, m_fIn ) ) {
+            return NULL;
+        }
         Clean();
         
         // Scan for the =

@@ -4,7 +4,7 @@
 //
 // The MIT License (MIT)
 // 
-// Copyright (C) 2000-2019 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
+// Copyright (C) 2000-2020 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
 // 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -425,7 +425,7 @@ content-type\" /><title>%s</title>"
                             <br></div>"
  
 // onclick=\"javascript:alert('hi');window.location='varlist';\"
-//  <button type=\"cancel\" onclick=\"javascript:window.location='%s';\">Cancel</button>\
+//  <button type=\"cancel\" onclick=\"javascript:window.location='%s';\">Cancel</button>
 
 // * * * Variable Post * * *
 #define WEB_VARPOST_BODY_START "<br><div id=\"content\"><div id=\"header\">\

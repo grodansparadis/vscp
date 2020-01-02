@@ -16,7 +16,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2000-2019 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
+ * Copyright (c) 2000-2020 Ake Hedman, Grodans Paradis AB <info@grodansparadis.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -48,7 +48,7 @@
             !!!!!!!!!!!!!!!!!!!!  W A R N I N G  !!!!!!!!!!!!!!!!!!!!
                            This file is auto-generated
                 see https://github.com/grodansparadis/vscp-classes
-                        Generated: 2019-12-13 18:33:56.673494
+                        Generated: 2020-01-02 17:50:58.750163
 */
  
 #ifndef VSCP_TYPE_H
@@ -815,7 +815,6 @@
 #define VSCP2_TYPE_PROTOCOL_READ_WRITE_RESPONSE     3   /* Read Write Response */
 #define VSCP2_TYPE_PROTOCOL_HIGH_END_SERVER_CAPS    20  /* High end server/service capabilities */
 #define VSCP2_TYPE_PROTOCOL_WHO_IS_THERE_RESPONSE   32  /* Level II who is there response */
-#define VSCP2_TYPE_PROTOCOL_HIGH_LEVEL_OBJECT       42  /* High Level Object */
     
 /*  CLASS2.CONTROL = 1025  -  Level II Control */
 #define VSCP2_TYPE_CONTROL_GENERAL                  0   /* General event */

@@ -1,199 +1,32 @@
 Summary
 =======
 
-First of all. You don't need to build this package yourself. Everything here is 
-installed for you in the binary version (see https://sourceforge.net/projects/m2m/files/vscp/).
+First of all. You don't need to build this package yourself. Everything is 
+set up for you in the binary version 
+https://github.com/grodansparadis/vscp/releases.
 
-To build the VSCP Project for WIN32/WIN64 there are 2 project files which
-differ in the number of sub-projects included. They also require
-different sets of external resources to run successfully:
+If you want to build the VSCP Project for Windows you can find a project file for 
+Visual Studio (vscp_project.sln) in the src/vscp folder. 
 
-   1.) vscp_project.sln
-       Requires:
-                - Microsoft Visual Studio 2013 (Can be downloaded free).
-                - wxWidgets 3.0.0 or greater,
-                - wxExpat,
-                - various other libraries to compile drivers for specific hardware (info below).
+You can download Visual Studio community for free from here 
+https://visualstudio.microsoft.com/vs/
 
-       This project is described in the section "VSCP Project (complete)" below and is the
-       project used for distributing the project. 
-                   
-   2.) vscp_project_minimal.sln
-       Requires:
-                - Free version of Visual Studio (no MFC required),
-                - wxWidgets.
+You need to download and install the Expat library. 
+You can download it here https://github.com/libexpat/libexpat/releases
 
-       This project is described in the section "VSCP Project Minimal" below.
+You need to download and install the opensslv1.1.1d or later library.
+You can download it from here https://slproweb.com/products/Win32OpenSSL.html
 
-Both of these project files can be found in the directory $(VSCP_HOME)/src/vscp
+Have Fun!
+/Ake 
+<akhe@vscp.org>
 
 
 
-VSCP Project (complete)
-=======================
-
-This is the "original" project and includes all sub-projects.
-
-- to build the vectorxl CANAL driver the proprietary vectorxl libs/includes is needed.
-- to build the Peak CANAL driver the proprietary PEAK libs/includes is needed.
-- to build the CSS CANAL driver the proprietary CCS libs/includes is needed.
-- to build the IXXAT CANAL driver the proprietary IXXAT libs/includes is needed.
-
-1.) Define environment variable VSCP_HOME that points to the VSCP base folder (c:\development\vscp_software).
-    define environment variable VSCP_FIRMWARE that points to VSCP firmware base folder 
-    (c:\development\vscp_firmware). If you want to build install file structure an environment
-	variable called VSCP_INSTALL should be created (C:\Users\grodansparadis\development\vscp_install_win32). It
-	will contain all binaries after a release build (32-bit/64-bit). Just point it to a temporary folder or
-	something if no need for this.
-
-2.) Install and build wxWidgets 3.1.0 or higher but others will probably 
-    do to. You find the build files in the build folder of the wxWidgets project.
-    Available at http://www.wxwidgets.org	
-
-3.) Make an environment variable WXWIN that points to the wxWidgets installation directory.
-    (e.g. c:\wxWidgets-3.1.0).
-
-4.) Add the wxwin include directory to the list of include files under 
-    tools->options->directories ('projects and solutions->VC++ Directories' on 2003/2005/2008) 
-        $(WXWIN)\include 
-        (c:\wxWidgets-3.0.2\include).
-    This is not needed on Visual Studio 2010 and above
-
-5.) expat(http://expat.sourceforge.net/) is needed to build the daemon and other applications in the suit.
-    Download and install. Make a environment variable EXPAT32 that points to the 32-bit folder (
-	C:\Program Files (x86)\Expat 2.1.0) and EXPAT64 that points to the 64-bit folder
-	(C:\Users\grodansparadis\development\expat-2.1.0\win64). 
-
-6.) Install OpenSLL from http://slproweb.com/products/Win32OpenSSL.html  Set an environment variable to the 
-    location you install the file to with the name OPENSSL32 ((C:\OpenSSL-Win32\lib\VC)) for 32-bit version and OPENSSL64 
-	(C:\OpenSSL-Win64\lib\VC)for 64-bit version. 	
-
-6.) To build the APOX driver and the tellstick driver the dxx driver which is available from ftdi 
-    (http://www.ftdichip.com) is needed. Make an environment variable named "ftdi" that points on 
-	this installation folder.
-
-7.) To build ccsdrv include must point to directory which contains can.h and LIB must point 
-    to directory that contains can.lib and candbg.lib (tools->options->directories). Make sure that the 
-    can.dll driver from CC-Systems also is available in the path (system32).
-
-8.) To build ixxatvcidrv you need to add the ixxat include directory and also add the ixxat
-    lib directory to LIB( Xat11Reg.lib vci11un6.lib ) Add an environment variable IXXAT2 that
-	that points to the ixxat version 2 vsci folder (C:\Users\akhe\development\ixxat_v2). Make sure 
-	the IXXAT VCI driver version 2 is installed (http://www.ixxat.com/download_vci_en.html) 
-	(C:\Program Files\IXXAT\VCI 2.20).
-
-9.) To build the CANAL PEAK driver you need to install the PEAK driver and support libraries 
-    from here http://www.peak-system.com/Support.55.0.html?&L=1 You need the driver and the PCAN-Basic API.
-    Make an environment variable named PCANBASICAPI that points to the location where you unpack the
-    PCAN-BASIC API
-        
-10.) expat is needed you build the daemon. Create an environment variable EXPAT  that points to the
-    libexpat root folder. Expat is available here http://sourceforge.net/projects/expat/  
-	Expat is also needed for the level I lirc driver which interfaces http://winlirc.sourceforge.net/ 
-        
-11.) To build the vectorxl driver (vectorxldrv) an environment variable (VECTORDRV) vectorxl must be defined so it 
-	points to the dll folder of the installation (C:\Users\akhe\development\Vector_CANLIB\dll). The low level driver 
-	from vectorxl must be installed for the CANAL driver to work. Current the old driver is used which can be found here 
-	http://download.vectorxl.com/drivers/xl_lib90.zip
-
-12.) To build the rawethernet driver the wpcap library and include files need to be installed on the system. A
-	environment variable named "pcap" should point to folder of the project (where the include and lib folders are).
-	install the latest wpdpak from http://www.winpcap.org/archive/ and point the environment variable to it.
-	wincap (the driver) itself needs to be installed as well (http://www.winpcap.org.	
 
 
-VSCP Minimal Project
-====================
-
-The Visual C++ solution vscp_project_minimal.sln is a workspace that
-includes a subset of the projects in vscp_project.sln. It is intended
-to enable anyone to compile the most essential modules of the VSCP
-project. For this, only freely available resources are needed. These
-are Microsoft Visual C++ Express Edition 2008 and wxWidgets 2.8.10
-(2.8.9 are ok too). The difference of the Microsoft Visual C++ Express
-Edition to a full (pay) Visual C++ is that it doesn't include the
-Microsoft Foundation Class Library (MFC). MFC is needed to compile
-some sub projects of VSCP. Newer projects should not use MFC.
 
 
-Prerequisites
--------------
-    
-    * Visual C++ Express Edition 2008 
-    * wxWidgets 2.8.10 (most recent stable release as of May 2009), 
-      wxWidgets 2.8.9 works as well.
-    * If you would like to compile lircdrv and lirctest you will 
-      need expat.
-
-    * There is no need to setup your environment with "subst J:" as
-      shown above.
-
-    * Although not strictly necessary it is wise to set the
-      environment variable VSCP_HOME.
-
-
-Build wxWidgets
----------------
-
-We assume wxWidgets-2.8.12 will be installed in the directory
-C:\wxWidgets-2.8.12. When installed proceed with these steps:
-
-    * Open wx.dsw (in the directory C:\wxWidgets-2.8.10\build\msw).
-    * When asked to convert the project wx_xxxx.dsp into the current 
-      format confirm with "Yes, all".
-    * Go into "Build | Batch Rebuild", click onto the column header 
-      "Configuration" to sort all entries by configuration. Tick all 
-      configurations for
-          o Debug,
-          o Release,
-          o Unicode Debug,
-          o Unicode Release,
-    * And click "Rebuild". That will take a few minutes.
-    * Compilation should finish with 0 errors and 0 warnings.
-
-
-Build VSCP
-----------
-
-Make sure the environment variable WXWIN is set to
-C:\wxWidgets-2.8.12. You can do this in Control Panel | System |
-Advanced | Environment Variables.
-
-The supported configurations of the VSCP project are:
-    * Debug
-    * Debug Unicode
-    * Release
-    * Release Unicode
-
-Select one of these configurations in the drop down box in the toolbar
-of Visual C++ and build. Alternatively you can select the desired
-configurations and sub-projects in Build | Batch build.
-
-The build output is copied to the directory
-$VSCP_HOME\src\vscp\build\<configuration>.
-
-Please report problems to the VSCP mailing list: m2m-development@lists.sourceforge.net
-
-Note: To build lircdrv and lirctest the additional library expat
-(http://sourceforge.net/projects/expat/) is needed.
-
-Notes on making your own applications
--------------------------------------
-If you build GUI application that use the vscp helper dll the wxUSE_GUI=1 should be in your preprocessor directives. 
-If you build non-guid components define wxUSE_GUI=0
-
-Building libwebsockets on the windows platform
-----------------------------------------------
-Follow the instruction and use
-
- cmake -DWITH_SSL=0 -G "Visual Studio 10" ..  
- 
- to generate the makefiles.
-
-
----
-  The instructions for the VSCP Minimal project have been compiled by 
-  Tom <tschulz !at| iprimus.com.au>.
 
   
   

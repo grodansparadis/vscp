@@ -4,7 +4,7 @@
 //
 // The MIT License (MIT)
 //
-// Copyright (C) 2000-2019 Ake Hedman, Grodans Paradis AB
+// Copyright (C) 2000-2020 Ake Hedman, Grodans Paradis AB
 // <info@grodansparadis.com>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -6278,13 +6278,13 @@ vscp_hexStr2ByteArray(uint8_t* array, size_t size, const char* hexstr)
 
     if (size < nhexsize) {
         // Too big for the output array
-        return -1;
+        return 0;
     }
 
     if (slen % 2 == 1) {
         // hex_str is an odd length, so assume an implicit "0" prefix
         if (sscanf(&(hexstr[0]), "%1hhx", &(array[0])) != 1) {
-            return -1;
+            return 0;
         }
 
         i = j = 1;
@@ -6292,7 +6292,7 @@ vscp_hexStr2ByteArray(uint8_t* array, size_t size, const char* hexstr)
 
     for (; i < slen; i += 2, j++) {
         if (sscanf(&(hexstr[i]), "%2hhx", &(array[j])) != 1) {
-            return -1;
+            return 0;
         }
     }
 

@@ -1,0 +1,10 @@
+14.0.0 Silicon - 20191230
+=========================
+
+Work in progress. https://github.com/grodansparadis/vscp/releases/tag/untagged-a21a7eecc47499320e79
+
+
+13.1.1 Aluminium - 20180830
+===========================
+
+Prehistory -- See https://github.com/grodansparadis/vscp/releases/tag/v13.1.1

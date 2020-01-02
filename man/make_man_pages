@@ -12,10 +12,16 @@ sudo cp vscpcmd.1 /usr/share/man/man1/
 pandoc -s -t man vscp-mkpasswd.1.md -o vscp-mkpasswd.1
 sudo cp vscp-mkpasswd.1 /usr/share/man/man1/
 
-pandoc -s -t man vscphelperlib.1.md -o vscphelperlib.1
-sudo cp vscphelperlib.1 /usr/share/man/man1/
-
 pandoc -s -t man vscpdrivers.7.md -o vscpdrivers.7
 sudo cp vscpdrivers.7 /usr/share/man/man7/
+
+pandoc -s -t man vscpd-tls.7.md -o vscpd-tls.7
+sudo cp vscpd-tls.7 /usr/share/man/man7/
+
+pandoc -s -t man vscp.7.md -o vscp.7
+sudo cp vscp.7 /usr/share/man/man7/
+
+pandoc -s -t man vscpd.conf.5.md -o vscpd.conf.5
+sudo cp vscpd.conf.5 /usr/share/man/man5/
 
 mandb

@@ -402,9 +402,19 @@ stcp_close_all_listening_sockets( struct server_context *srv_ctx );
 /*!
     INit data for a connected client (after accept)
     @param conn Pointer to client connection object
+    TODO args docs
 */
 void stcp_init_client_connection( struct stcp_connection *conn,
                                     struct stcp_secure_options *secure_opts );
+
+/*!
+    Get address from connection (socket)
+
+    @param conn Pointer to client connection object
+    @param buf Character buffer that will receive address
+    @param len Size of address buffer
+*/
+int stcp_socket_get_address(struct stcp_connection *conn, char *buf, size_t len);
 
 #ifdef __cplusplus
 }
