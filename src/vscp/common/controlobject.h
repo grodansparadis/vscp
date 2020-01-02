@@ -4,7 +4,7 @@
 //
 // The MIT License (MIT)
 //
-// Copyright (C) 2000-2019 Ake Hedman, Grodans Paradis AB
+// Copyright (C) 2000-2020 Ake Hedman, Grodans Paradis AB
 // <info@grodansparadis.com>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -76,8 +76,8 @@ enum
     })
 #endif
 
-#define MAX_ITEMS_RECEIVE_QUEUE 1021
-#define MAX_ITEMS_SEND_QUEUE 1021
+#define MAX_ITEMS_RECEIVE_QUEUE        1021
+#define MAX_ITEMS_SEND_QUEUE           1021
 #define MAX_ITEMS_CLIENT_RECEIVE_QUEUE 8192
 
 // VSCP daemon defines from vscp.h
@@ -106,19 +106,19 @@ class CControlObject
         @param pKey Null terminated string key (max 255 characters)
         @param pSid Pointer to 33 byte sid that will receive sid
      */
-    bool generateSessionId(const char *pKey, char *pSid);
+    bool generateSessionId(const char* pKey, char* pSid);
 
     /*!
         Get server capabilities (64-bit array)
         @param pCapability Pointer to 64 bit capabilities array
         @return True on success.
      */
-    bool getVscpCapabilities(uint8_t *pCapability);
+    bool getVscpCapabilities(uint8_t* pCapability);
 
     /*!
         General initialisation
      */
-    bool init(std::string &strcfgfile, std::string &rootFolder);
+    bool init(std::string& strcfgfile, std::string& rootFolder);
 
     /*!
         Clean up used resources
@@ -169,12 +169,12 @@ class CControlObject
     /*!
         Start the UDP worker thread
     */
-    //bool startUDPSrvThread(void);
+    // bool startUDPSrvThread(void);
 
     /*!
         Stop the UDP Workerthread
     */
-    //bool stopUDPSrvThread(void);
+    // bool stopUDPSrvThread(void);
 
     /*!
         Start the Multicast worker threads
@@ -206,53 +206,52 @@ class CControlObject
         client id.
         @return True on success.
      */
-    bool addClient(CClientItem *pClientItem, uint32_t id = 0);
+    bool addClient(CClientItem* pClientItem, uint32_t id = 0);
 
     /*!
         Add a known node
         @param guid Real GUID for node
         @param name Symbolic name for node.
     */
-    void addKnownNode(cguid &guid, cguid &ifguid, std::string &name);
+    void addKnownNode(cguid& guid, cguid& ifguid, std::string& name);
 
     /*!
         Remove a new client from the client list
 
         @param pClientItem Pointer to client that should be added.
      */
-    void removeClient(CClientItem *pClientItem);
+    void removeClient(CClientItem* pClientItem);
 
     /*!
         Get device address for primary ehernet adapter
 
         @param guid class
      */
-    bool getMacAddress(cguid &guid);
+    bool getMacAddress(cguid& guid);
 
     /*!
         Get the first IP address computer is known under
 
         @param pGUID Pointer to GUID class
      */
-    bool getIPAddress(cguid &guid);
+    bool getIPAddress(cguid& guid);
 
     /*!
         Read configuration data
         @param strcfgfile path to configuration file.
         @return Returns true on success false on failure.
      */
-    bool readConfiguration(const std::string &strcfgfile);
-
+    bool readConfiguration(const std::string& strcfgfile);
 
     /*!
         send level II message to all clients
      */
-    void sendEventToClient(CClientItem *pClientItem, vscpEvent *pEvent);
+    void sendEventToClient(CClientItem* pClientItem, vscpEvent* pEvent);
 
     /*!
         Send Level II event to all clients with exception
      */
-    void sendEventAllClients(vscpEvent *pEvent, uint32_t excludeID = 0);
+    void sendEventAllClients(vscpEvent* pEvent, uint32_t excludeID = 0);
 
     /*!
      * Send event
@@ -260,7 +259,7 @@ class CControlObject
      * @param pEvent Event to send
      * @return True on success false on failure.
      */
-    bool sendEvent(CClientItem *pClientItem, vscpEvent *peventToSend);
+    bool sendEvent(CClientItem* pClientItem, vscpEvent* peventToSend);
 
     /*!
      * Check if a driver name is free to us
@@ -268,7 +267,8 @@ class CControlObject
      * @param drvname Name of driver to check.
      * @return true if 'drvname' is not used
      */
-    bool checkIfDriverNameFreeToUse(std::string& drvname ) {
+    bool checkIfDriverNameFreeToUse(std::string& drvname)
+    {
         return (m_driverNameSet.find("drvname") == m_driverNameSet.end());
     }
 
@@ -279,14 +279,14 @@ class CControlObject
      *              case the key is not copied to the param.
      * @return Pointer to the 32 byte key
      */
-    uint8_t *getSystemKey(uint8_t *pKey);
+    uint8_t* getSystemKey(uint8_t* pKey);
 
     /*!
      * Get MD5 of system key (vscptoken)
      *
      * @param Reference to string that will receive the MD5 of the key.
      */
-    void getSystemKeyMD5(std::string &strKey);
+    void getSystemKeyMD5(std::string& strKey);
 
     /*!
      * Create the folder structure that the VSCP daemon is expecting
@@ -295,10 +295,6 @@ class CControlObject
     bool createFolderStructure(void);
 
   public:
-    // In the configuration database configurations are stored in records.
-    // Normally record = 1 (default) is used )
-    uint16_t m_nConfiguration;
-
     // This is the root folder for the VSCP daemon, it will look for
     // the configuration database here
     std::string m_rootFolder;
@@ -325,7 +321,7 @@ class CControlObject
     // Default password salt;key
     // E2D453EF99FB3FCD19E67876554A8C27;A4A86F7D7E119BA3F0CD06881E371B989B33B6D606A863B633EF529D64544F8E
     std::string m_admin_allowfrom; // Remotes allowed to connect from as admin.
-                                   // Defaults to "*"
+                                   // Defaults to ""
     std::string m_vscptoken;
     // A4A86F7D7E119BA3F0CD06881E371B989B33B6D606A863B633EF529D64544F8E
     // {
@@ -378,7 +374,7 @@ class CControlObject
     std::string m_strTcpInterfaceAddress;
 
     // Data object for the tcp/ip Listen thread
-    tcpipListenThreadObj *m_ptcpipSrvObject;
+    tcpipListenThreadObj* m_ptcpipSrvObject;
 
     // Listen thread for tcp/ip connections
     pthread_t m_tcpipListenThread;
@@ -395,14 +391,12 @@ class CControlObject
     uint8_t m_tcpip_ssl_protocol_version;
     bool m_tcpip_ssl_short_trust;
 
-
-
     //*****************************************************
     //               webserver interface
     //*****************************************************
 
     // Context for web server
-    struct mg_context *m_web_ctx;
+    struct mg_context* m_web_ctx;
 
     // Enable webserver
     bool m_web_bEnable;
@@ -466,13 +460,13 @@ class CControlObject
     pthread_mutex_t m_websrvSessionMutex;
 
     // Linked list of all active sessions. (websrv.h)
-    std::list<struct websrv_session *> m_web_sessions;
+    std::list<struct websrv_session*> m_web_sessions;
 
     // Protects the REST session object
     pthread_mutex_t m_restSessionMutex;
 
     // Session structure for REST API
-    std::list<struct restsrv_session *> m_rest_sessions;
+    std::list<struct restsrv_session*> m_rest_sessions;
 
     //**************************************************************************
     //                              WEBSOCKETS
@@ -488,7 +482,7 @@ class CControlObject
     pthread_mutex_t m_websocketSessionMutex;
 
     // List of active websocket sessions
-    std::list<websock_session *> m_websocketSessions;
+    std::list<websock_session*> m_websocketSessions;
 
     //**************************************************************************
     //                             REMOTE VARIABLES
@@ -514,7 +508,7 @@ class CControlObject
 
     std::set<std::string> m_driverNameSet;
 
-    std::map<std::string,CDeviceItem> m_driverNameDeviceMap;
+    std::map<std::string, CDeviceItem> m_driverNameDeviceMap;
 
     // Mutex for device queue
     pthread_mutex_t m_deviceListMutex;
@@ -523,11 +517,10 @@ class CControlObject
     CAutomation m_automation;
 
     // Username for level III drivers
-    std::string m_driverUsername;   // TODO remove
+    std::string m_driverUsername; // TODO remove
 
     // Password for Level III drivers
-    std::string m_driverPassword;   // TODO remove
-
+    std::string m_driverPassword; // TODO remove
 
     //**************************************************************************
     //                                CLIENTS
@@ -547,7 +540,6 @@ class CControlObject
     // CUserTableObjList m_userTableObjects; // deque
     // pthread_mutex_t m_mutexUserTables;
 
-
     // *************************************************************************
 
     /*!
@@ -556,7 +548,7 @@ class CControlObject
         This is the send queue for all clients attached to the system. A client
         place events here and the system distribute it to all other clients.
      */
-    std::list<vscpEvent *> m_clientOutputQueue;
+    std::list<vscpEvent*> m_clientOutputQueue;
 
     /*!
         Event object to indicate that there is an event in the client output
@@ -586,8 +578,6 @@ class CControlObject
      */
     // daemonWorkerObj *m_pdaemonWorkerObj;
     // pthread_t m_pdaemonWorkerThread;
-
-
 };
 
 #endif // !defined(CONTROLOBJECT_H__7D80016B_5EFD_40D5_94E3_6FD9C324CC7B__INCLUDED_)

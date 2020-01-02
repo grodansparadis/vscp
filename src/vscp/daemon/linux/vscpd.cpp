@@ -4,7 +4,7 @@
 //
 // The MIT License (MIT)
 //
-// Copyright (C) 2000-2019 Ake Hedman, Grodans Paradis AB
+// Copyright (C) 2000-2020 Ake Hedman, Grodans Paradis AB
 // <info@grodansparadis.com>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,8 +26,8 @@
 // SOFTWARE.
 //
 
-#include <string>
 #include <deque>
+#include <string>
 
 #include <errno.h>
 #include <fcntl.h>
@@ -52,12 +52,12 @@
 #include <syslog.h>
 #include <unistd.h>
 
-#include "vscpd.h"
 #include "canal_macro.h"
+#include "vscpd.h"
 #include <controlobject.h>
-#include <vscphelper.h>
 #include <crc.h>
 #include <version.h>
+#include <vscphelper.h>
 
 //#define DEBUG
 uint32_t m_gdebugArray[8];
@@ -70,17 +70,17 @@ bool gbRestart         = false;
 std::string systemKey;
 
 // Control object
-CControlObject *gpobj;
+CControlObject* gpobj;
 
 // Forward declarations
 int
-init(std::string &strcfgfile, std::string &rootFolder);
+init(std::string& strcfgfile, std::string& rootFolder);
 void
 copyleft(void);
 void
-help(char *szPrgname);
+help(char* szPrgname);
 bool
-createFolderStuct(std::string &rootFolder);
+createFolderStuct(std::string& rootFolder);
 
 void
 _sighandlerStop(int sig)
@@ -103,14 +103,14 @@ _sighandlerRestart(int sig)
 }
 
 void
-getDebugValues(const char *optarg)
+getDebugValues(const char* optarg)
 {
     std::string attribute = optarg;
     std::deque<std::string> tokens;
     vscp_split(tokens, attribute, ",");
-    for (size_t idx = 0; idx < MIN(8,tokens.size()); idx++) {
+    for (size_t idx = 0; idx < MIN(8, tokens.size()); idx++) {
         if (tokens.size()) {
-            uint32_t val = vscp_readStringValue(tokens.front());
+            uint32_t val       = vscp_readStringValue(tokens.front());
             m_gdebugArray[idx] = val;
             tokens.pop_front();
         }
@@ -122,14 +122,14 @@ getDebugValues(const char *optarg)
 //
 
 int
-main(int argc, char **argv)
+main(int argc, char** argv)
 {
     int opt = 0;
     std::string rootFolder; // Folder where VSCP files & folders will be located
     std::string strcfgfile; // Points to XML configuration file
 
     // Clear debug settings
-    for ( int i; i<8; i++ ) {
+    for (int i; i < 8; i++) {
         m_gdebugArray[i] = 0;
     }
 
@@ -160,14 +160,17 @@ main(int argc, char **argv)
             case 'c':
                 strcfgfile = optarg;
                 // This is printed in controlobject
-                //fprintf(stderr, "Will use configfile = %s", strcfgfile.c_str() );
-                //syslog(LOG_INFO, "Will use configfile = %s", strcfgfile );
+                // fprintf(stderr, "Will use configfile = %s",
+                // strcfgfile.c_str() ); syslog(LOG_INFO, "Will use configfile =
+                // %s", strcfgfile );
                 break;
 
             case 'r':
                 rootFolder = optarg;
-                fprintf(stderr, "Will use rootfolder = %s", rootFolder.c_str() );
-                syslog(LOG_INFO, "Will use rootfolder = %s", rootFolder.c_str() );
+                fprintf(stderr, "Will use rootfolder = %s", rootFolder.c_str());
+                syslog(LOG_INFO,
+                       "Will use rootfolder = %s",
+                       rootFolder.c_str());
                 break;
 
             case 'k':
@@ -176,8 +179,8 @@ main(int argc, char **argv)
 
             case 'd':
                 gnDebugLevel = atoi(optarg);
-                fprintf(stderr,"Debug flags=%s\n", optarg);
-                syslog(LOG_INFO, "Debug flags=%s\n", optarg );
+                fprintf(stderr, "Debug flags=%s\n", optarg);
+                syslog(LOG_INFO, "Debug flags=%s\n", optarg);
                 getDebugValues(optarg);
                 break;
 
@@ -193,8 +196,9 @@ main(int argc, char **argv)
         }
     }
 
-    fprintf(
-      stderr, "[vscpd] Configfile = %s\n", (const char *)strcfgfile.c_str());
+    fprintf(stderr,
+            "[vscpd] Configfile = %s\n",
+            (const char*)strcfgfile.c_str());
 
     if (!init(strcfgfile, rootFolder)) {
         syslog(LOG_ERR, "[vscpd] Failed to configure. Terminating.\n");
@@ -212,7 +216,7 @@ main(int argc, char **argv)
 // initialisation
 
 int
-init(std::string &strcfgfile, std::string &rootFolder)
+init(std::string& strcfgfile, std::string& rootFolder)
 {
     pid_t pid, sid;
 
@@ -254,7 +258,7 @@ init(std::string &strcfgfile, std::string &rootFolder)
     signal(SIGUSR2, _sighandlerRestart);
 
     // Write pid to file
-    FILE *pFile;
+    FILE* pFile;
     pFile = fopen("/var/run/vscpd/vscpd.pid", "w");
     if (NULL != pFile) {
         syslog(LOG_ERR, "%d\n", sid);
@@ -270,14 +274,17 @@ init(std::string &strcfgfile, std::string &rootFolder)
     }
 
     // Change working directory to root folder
-    if (chdir((const char *)rootFolder.c_str())) {
+    if (chdir((const char*)rootFolder.c_str())) {
         syslog(LOG_ERR, "vscpd: Failed to change dir to rootdir");
         fprintf(stderr, "vscpd: Failed to change dir to rootdir");
         unlink("/var/run/vscpd/vscpd.pid");
-        if ( -1 == chdir("/var/lib/vscp/vscpd") ) {
-            syslog(LOG_ERR, "Unable to chdir to home folder [/var/lib/vscp/vscpd] errno=%d", errno);
+        if (-1 == chdir("/var/lib/vscp/vscpd")) {
+            syslog(
+              LOG_ERR,
+              "Unable to chdir to home folder [/var/lib/vscp/vscpd] errno=%d",
+              errno);
         }
-        
+
         return -1;
     }
 
@@ -321,8 +328,9 @@ init(std::string &strcfgfile, std::string &rootFolder)
         gpobj = new CControlObject();
 
         // Set system key
-        vscp_hexStr2ByteArray(
-          gpobj->m_systemKey, 32, (const char *)systemKey.c_str());
+        vscp_hexStr2ByteArray(gpobj->m_systemKey,
+                              32,
+                              (const char*)systemKey.c_str());
 
         fprintf(stderr, "vscpd: init.\n");
         if (!gpobj->init(strcfgfile, rootFolder)) {
@@ -333,12 +341,11 @@ init(std::string &strcfgfile, std::string &rootFolder)
         }
 
         // Tansfer read debug parameters if set
-        for ( int i=0; i<8; i++ ) {
-            if ( m_gdebugArray[i] ) {
+        for (int i = 0; i < 8; i++) {
+            if (m_gdebugArray[i]) {
                 gpobj->m_debugFlags[i] = m_gdebugArray[i];
             }
         }
-
 
         // *******************************
         //    Main loop is entered here
@@ -403,7 +410,7 @@ copyleft(void)
       stderr,
       "The MIT License (MIT)"
       "\n"
-      "Copyright (C) 2000-2019 Ake Hedman, Grodans Paradis AB\n"
+      "Copyright (C) 2000-2020 Ake Hedman, Grodans Paradis AB\n"
       "<info@grodansparadis.com>\n"
       "\n"
       "Permission is hereby granted, free of charge, to any person obtaining a "
@@ -440,16 +447,19 @@ copyleft(void)
 // help
 
 void
-help(char *szPrgname)
+help(char* szPrgname)
 {
-    fprintf(
-      stderr, "Usage: %s [-hg] [-r rootfolder] [-c config-file] [-k key] -dd0,d1,d2...\n", szPrgname);
+    fprintf(stderr,
+            "Usage: %s [-hg] [-r rootfolder] [-c config-file] [-k key] "
+            "-dd0,d1,d2...\n",
+            szPrgname);
     fprintf(stderr, "\t-h\tThis help message.\n");
     fprintf(stderr, "\t-s\tStandalone (don't run as daemon). \n");
     fprintf(stderr, "\t-r\tSpecify VSCP root folder. \n");
     fprintf(stderr, "\t-c\tSpecify a configuration file. \n");
     fprintf(stderr, "\t-k\t32 byte encryption key string in hex format. \n");
-    fprintf(stderr, "\t-d\tDebug flags as comma separated list (d0,d1,d2,d3,,,).");
+    fprintf(stderr,
+            "\t-d\tDebug flags as comma separated list (d0,d1,d2,d3,,,).");
     fprintf(stderr, "that should be used (default: /etc/vscpd.conf).\n");
     fprintf(stderr, "\t-g\tPrint MIT license info.\n");
 }
@@ -459,7 +469,7 @@ help(char *szPrgname)
 //
 
 bool
-createFolderStuct(std::string &rootFolder)
+createFolderStuct(std::string& rootFolder)
 {
     std::string path;
 

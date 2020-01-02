@@ -4,7 +4,7 @@
 //
 // The MIT License (MIT)
 //
-// Copyright (C) 2000-2019 Ake Hedman, Grodans Paradis AB
+// Copyright (C) 2000-2020 Ake Hedman, Grodans Paradis AB
 // <info@grodansparadis.com>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -245,7 +245,7 @@ tcpipListenThread(void* pData)
                                      0);
                         fromhost(&wrap_req);
                         if (!hosts_access(&wrap_req)) {
-                            // Access is denied 
+                            // Access is denied
                             if (!stcp_socket_get_address(conn, address, 1024)) {
                                 syslog(LOG_ERR,
                                        "Client connection from %s "
@@ -515,7 +515,7 @@ tcpipClientObj::CommandHandler(std::string& strCommand)
 
     else if (m_pClientItem->CommandStartsWith(("rcvloop")) ||
              m_pClientItem->CommandStartsWith(("receiveloop"))) {
-        if (checkPrivilege(2)) {
+        if (checkPrivilege(VSCP_USER_RIGHT_ALLOW_RCV_EVENT)) {
             m_pClientItem->m_timeRcvLoop = time(NULL);
             handleClientRcvLoop();
         }
@@ -582,7 +582,7 @@ tcpipClientObj::CommandHandler(std::string& strCommand)
     //                              Shutdown
     //*********************************************************************
     else if (m_pClientItem->CommandStartsWith(("shutdown"))) {
-        if (checkPrivilege(15)) {
+        if (checkPrivilege(VSCP_USER_RIGHT_ALLOW_SHUTDOWN)) {
             handleClientShutdown();
         }
     }
@@ -592,7 +592,7 @@ tcpipClientObj::CommandHandler(std::string& strCommand)
     //*********************************************************************
 
     else if (m_pClientItem->CommandStartsWith(("send"))) {
-        if (checkPrivilege(4)) {
+        if (checkPrivilege(VSCP_USER_RIGHT_ALLOW_SEND_EVENT)) {
             handleClientSend();
         }
     }
@@ -603,7 +603,7 @@ tcpipClientObj::CommandHandler(std::string& strCommand)
 
     else if (m_pClientItem->CommandStartsWith(("retr")) ||
              m_pClientItem->CommandStartsWith(("retrieve"))) {
-        if (checkPrivilege(2)) {
+        if (checkPrivilege(VSCP_USER_RIGHT_ALLOW_RCV_EVENT)) {
             handleClientReceive();
         }
     }
@@ -615,9 +615,7 @@ tcpipClientObj::CommandHandler(std::string& strCommand)
     else if (m_pClientItem->CommandStartsWith(("cdta")) ||
              m_pClientItem->CommandStartsWith(("chkdata")) ||
              m_pClientItem->CommandStartsWith(("checkdata"))) {
-        if (checkPrivilege(1)) {
-            handleClientDataAvailable();
-        }
+        handleClientDataAvailable();
     }
 
     //*********************************************************************
@@ -627,9 +625,7 @@ tcpipClientObj::CommandHandler(std::string& strCommand)
     else if (m_pClientItem->CommandStartsWith(("clra")) ||
              m_pClientItem->CommandStartsWith(("clearall")) ||
              m_pClientItem->CommandStartsWith(("clrall"))) {
-        if (checkPrivilege(1)) {
-            handleClientClearInputQueue();
-        }
+        handleClientClearInputQueue();
     }
 
     //*********************************************************************
@@ -637,9 +633,7 @@ tcpipClientObj::CommandHandler(std::string& strCommand)
     //*********************************************************************
 
     else if (m_pClientItem->CommandStartsWith(("stat"))) {
-        if (checkPrivilege(1)) {
-            handleClientGetStatistics();
-        }
+        handleClientGetStatistics();
     }
 
     //*********************************************************************
@@ -647,9 +641,7 @@ tcpipClientObj::CommandHandler(std::string& strCommand)
     //*********************************************************************
 
     else if (m_pClientItem->CommandStartsWith(("info"))) {
-        if (checkPrivilege(1)) {
-            handleClientGetStatus();
-        }
+        handleClientGetStatus();
     }
 
     //*********************************************************************
@@ -658,9 +650,7 @@ tcpipClientObj::CommandHandler(std::string& strCommand)
 
     else if (m_pClientItem->CommandStartsWith(("chid")) ||
              m_pClientItem->CommandStartsWith(("getchid"))) {
-        if (checkPrivilege(1)) {
-            handleClientGetChannelID();
-        }
+        handleClientGetChannelID();
     }
 
     //*********************************************************************
@@ -669,7 +659,7 @@ tcpipClientObj::CommandHandler(std::string& strCommand)
 
     else if (m_pClientItem->CommandStartsWith(("sgid")) ||
              m_pClientItem->CommandStartsWith(("setguid"))) {
-        if (checkPrivilege(6)) {
+        if (checkPrivilege(VSCP_USER_RIGHT_ALLOW_SETGUID)) {
             handleClientSetChannelGUID();
         }
     }
@@ -680,9 +670,7 @@ tcpipClientObj::CommandHandler(std::string& strCommand)
 
     else if (m_pClientItem->CommandStartsWith(("ggid")) ||
              m_pClientItem->CommandStartsWith(("getguid"))) {
-        if (checkPrivilege(1)) {
-            handleClientGetChannelGUID();
-        }
+        handleClientGetChannelGUID();
     }
 
     //*********************************************************************
@@ -700,7 +688,7 @@ tcpipClientObj::CommandHandler(std::string& strCommand)
 
     else if (m_pClientItem->CommandStartsWith(("sflt")) ||
              m_pClientItem->CommandStartsWith(("setfilter"))) {
-        if (checkPrivilege(6)) {
+        if (checkPrivilege(VSCP_USER_RIGHT_ALLOW_SETFILTER)) {
             handleClientSetFilter();
         }
     }
@@ -711,7 +699,7 @@ tcpipClientObj::CommandHandler(std::string& strCommand)
 
     else if (m_pClientItem->CommandStartsWith(("smsk")) ||
              m_pClientItem->CommandStartsWith(("setmask"))) {
-        if (checkPrivilege(6)) {
+        if (checkPrivilege(VSCP_USER_RIGHT_ALLOW_SETFILTER)) {
             handleClientSetMask();
         }
     }
@@ -729,7 +717,7 @@ tcpipClientObj::CommandHandler(std::string& strCommand)
     //*********************************************************************
 
     else if (m_pClientItem->CommandStartsWith(("restart"))) {
-        if (checkPrivilege(15)) {
+        if (checkPrivilege(VSCP_USER_RIGHT_ALLOW_RESTART)) {
             handleClientRestart();
         }
     }
@@ -740,7 +728,7 @@ tcpipClientObj::CommandHandler(std::string& strCommand)
 
     else if (m_pClientItem->CommandStartsWith(("client")) ||
              m_pClientItem->CommandStartsWith(("interface"))) {
-        if (checkPrivilege(15)) {
+        if (checkPrivilege(VSCP_USER_RIGHT_ALLOW_INTERFACE)) {
             handleClientInterface();
         }
     }
@@ -750,7 +738,7 @@ tcpipClientObj::CommandHandler(std::string& strCommand)
     //*********************************************************************
 
     else if (m_pClientItem->CommandStartsWith(("test"))) {
-        if (checkPrivilege(15)) {
+        if (checkPrivilege(VSCP_USER_RIGHT_ALLOW_TEST)) {
             handleClientTest();
         }
     }
@@ -1248,7 +1236,7 @@ tcpipClientObj::isVerified(void)
 //
 
 bool
-tcpipClientObj::checkPrivilege(unsigned char reqiredPrivilege)
+tcpipClientObj::checkPrivilege(unsigned long reqiredPrivilege)
 {
     // Check objects
     if (NULL == m_pObj) {
@@ -1265,14 +1253,15 @@ tcpipClientObj::checkPrivilege(unsigned char reqiredPrivilege)
         return false;
     }
 
+    // Must be accredited
     if (NULL == m_pClientItem->m_pUserItem) {
         write(MSG_NOT_ACCREDITED, strlen(MSG_NOT_ACCREDITED));
         return false;
     }
 
-    if ((m_pClientItem->m_pUserItem->getUserRights(0) & USER_PRIVILEGE_MASK) <
-        reqiredPrivilege) {
-        write(MSG_LOW_PRIVILEGE_ERROR, strlen(MSG_LOW_PRIVILEGE_ERROR));
+    // Check the privileges
+    if (!(m_pClientItem->m_pUserItem->getUserRights() & reqiredPrivilege)) {
+        write(MSG_NO_RIGHTS_ERROR, strlen(MSG_NO_RIGHTS_ERROR));
         return false;
     }
 

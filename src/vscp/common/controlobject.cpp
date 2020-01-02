@@ -5,7 +5,7 @@
 //
 // The MIT License (MIT)
 //
-// Copyright (C) 2000-2019 Ake Hedman, Grodans Paradis AB
+// Copyright (C) 2000-2020 Ake Hedman, Grodans Paradis AB
 // <info@grodansparadis.com>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -60,7 +60,7 @@
 #include <syslog.h>
 #include <unistd.h>
 #ifdef WITH_SYSTEMD
-#  include <systemd/sd-daemon.h>
+#include <systemd/sd-daemon.h>
 #endif
 
 #include <civetweb.h>
@@ -96,7 +96,9 @@
 #include <controlobject.h>
 
 #define UNUSED(x) (void)(x)
-void foo(const int i) {
+void
+foo(const int i)
+{
     UNUSED(i);
 }
 
@@ -108,14 +110,14 @@ void foo(const int i) {
 
 // Prototypes
 void
-createFolderStuct(std::string &rootFolder); // from vscpd.cpp
+createFolderStuct(std::string& rootFolder); // from vscpd.cpp
 
-void *
-clientMsgWorkerThread(void *userdata); // this
-void *
-tcpipListenThread(void *pData); // tcpipsev.cpp
-void *
-UDPThread(void *pData); // udpsrv.cpp
+void*
+clientMsgWorkerThread(void* userdata); // this
+void*
+tcpipListenThread(void* pData); // tcpipsev.cpp
+void*
+UDPThread(void* pData); // udpsrv.cpp
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -144,14 +146,12 @@ CControlObject::CControlObject()
     m_admin_password = "450ADCE88F2FDBB20F3318B65E53CA4A;"
                        "06D3311CC2195E80BE4F8EB12931BFEB5C"
                        "630F6B154B2D644ABE29CEBDBFB545";
-    m_admin_allowfrom = "*";
+    m_admin_allowfrom = ""; // All access
     m_vscptoken       = "Carpe diem quam minimum credula postero";
     vscp_hexStr2ByteArray(m_systemKey,
                           32,
                           "A4A86F7D7E119BA3F0CD06881E371B989B"
                           "33B6D606A863B633EF529D64544F8E");
-
-    m_nConfiguration = 1; // Default configuration record is read.
 
     m_automation.setControlObject(this);
     m_maxItemsInClientReceiveQueue = MAX_ITEMS_CLIENT_RECEIVE_QUEUE;
@@ -258,13 +258,13 @@ CControlObject::~CControlObject()
     }
 
     // Remove objects in Client send queue
-    std::list<vscpEvent *>::iterator iterVSCP;
+    std::list<vscpEvent*>::iterator iterVSCP;
 
     pthread_mutex_lock(&m_mutexClientOutputQueue);
     for (iterVSCP = m_clientOutputQueue.begin();
          iterVSCP != m_clientOutputQueue.end();
          ++iterVSCP) {
-        vscpEvent *pEvent = *iterVSCP;
+        vscpEvent* pEvent = *iterVSCP;
         vscp_deleteEvent(pEvent);
     }
 
@@ -287,7 +287,7 @@ CControlObject::~CControlObject()
 //
 
 bool
-CControlObject::init(std::string &strcfgfile, std::string &rootFolder)
+CControlObject::init(std::string& strcfgfile, std::string& rootFolder)
 {
     std::string str;
 
@@ -298,7 +298,7 @@ CControlObject::init(std::string &strcfgfile, std::string &rootFolder)
     if (!vscp_fileExists(m_rootFolder.c_str())) {
         syslog(LOG_ERR,
                "The specified rootfolder does not exist (%s).",
-               (const char *)m_rootFolder.c_str());
+               (const char*)m_rootFolder.c_str());
         return false;
     }
 
@@ -332,7 +332,7 @@ CControlObject::init(std::string &strcfgfile, std::string &rootFolder)
 
 #ifndef WIN32
     if (m_runAsUser.length()) {
-        struct passwd *pw;
+        struct passwd* pw;
         if (NULL == (pw = getpwnam(m_runAsUser.c_str()))) {
             syslog(LOG_ERR, "Unknown user.");
         } else if (setgid(pw->pw_gid) != 0) {
@@ -356,8 +356,6 @@ CControlObject::init(std::string &strcfgfile, std::string &rootFolder)
     if (m_debugFlags[0] & VSCP_DEBUG1_GENERAL) {
         syslog(LOG_DEBUG, "loading users from disk...");
     }
-
-    m_userList.loadUsers();
 
     //==========================================================================
     //                           Add admin user
@@ -393,11 +391,12 @@ CControlObject::init(std::string &strcfgfile, std::string &rootFolder)
                        drvhash,                     // salt;hash
                        "System added driver user.", // full name
                        "System added driver user.", // note
+                       m_web_authentication_domain,
                        NULL,
                        "driver",
                        "+127.0.0.0/24", // Only local
                        "*:*",           // All events
-                       VSCP_ADD_USER_FLAG_LOCAL);
+                       0);
 
     // Get GUID
     if (m_guid.isNULL()) {
@@ -451,7 +450,7 @@ CControlObject::init(std::string &strcfgfile, std::string &rootFolder)
 bool
 CControlObject::run(void)
 {
-    std::deque<CClientItem *>::iterator nodeClient;
+    std::deque<CClientItem*>::iterator nodeClient;
 
     // vscpEvent EventLoop;
     // EventLoop.vscp_class = VSCP_CLASS2_VSCPD;
@@ -472,7 +471,7 @@ CControlObject::run(void)
     // EventShutDown.pdata      = NULL;
 
     // We need to create a clientItem and add this object to the list
-    CClientItem *pClientItem = new CClientItem;
+    CClientItem* pClientItem = new CClientItem;
     if (NULL == pClientItem) {
         syslog(LOG_ERR, "Unable to allocate Client item, Ending.");
         return false;
@@ -499,7 +498,7 @@ CControlObject::run(void)
     }
 
 #ifdef WITH_SYSTEMD
-	sd_notify(0, "READY=1");
+    sd_notify(0, "READY=1");
 #endif
 
     //-------------------------------------------------------------------------
@@ -526,7 +525,7 @@ CControlObject::run(void)
 
         if (pClientItem->m_clientInputQueue.size()) {
 
-            vscpEvent *pEvent;
+            vscpEvent* pEvent;
 
             pthread_mutex_lock(&pClientItem->m_mutexClientInputQueue);
             pEvent = pClientItem->m_clientInputQueue.front();
@@ -621,8 +620,10 @@ CControlObject::startClientMsgWorkerThread(void)
         syslog(LOG_DEBUG, "Controlobject: Starting client worker thread...");
     }
 
-    if (pthread_create(
-          &m_clientMsgWorkerThread, NULL, clientMsgWorkerThread, this)) {
+    if (pthread_create(&m_clientMsgWorkerThread,
+                       NULL,
+                       clientMsgWorkerThread,
+                       this)) {
 
         syslog(LOG_ERR, "Controlobject: Unable to start client thread.");
         return false;
@@ -664,7 +665,7 @@ CControlObject::startTcpipSrvThread(void)
     }
 
     // Create the tcp/ip server data object
-    m_ptcpipSrvObject = (tcpipListenThreadObj *)new tcpipListenThreadObj(this);
+    m_ptcpipSrvObject = (tcpipListenThreadObj*)new tcpipListenThreadObj(this);
     if (NULL == m_ptcpipSrvObject) {
         syslog(LOG_ERR,
                "Controlobject: Failed to allocate storage for tcp/ip.");
@@ -673,8 +674,10 @@ CControlObject::startTcpipSrvThread(void)
     // Set the port to listen for connections on
     m_ptcpipSrvObject->setListeningPort(m_strTcpInterfaceAddress);
 
-    if (pthread_create(
-          &m_tcpipListenThread, NULL, tcpipListenThread, m_ptcpipSrvObject)) {
+    if (pthread_create(&m_tcpipListenThread,
+                       NULL,
+                       tcpipListenThread,
+                       m_ptcpipSrvObject)) {
         delete m_ptcpipSrvObject;
         m_ptcpipSrvObject = NULL;
         syslog(LOG_ERR,
@@ -717,12 +720,12 @@ CControlObject::stopTcpipSrvThread(void)
 bool
 CControlObject::startDeviceWorkerThreads(void)
 {
-    CDeviceItem *pDeviceItem;
+    CDeviceItem* pDeviceItem;
     if (m_debugFlags[0] & VSCP_DEBUG1_GENERAL) {
         syslog(LOG_DEBUG, "[Controlobject][Driver] - Starting drivers...");
     }
 
-    std::deque<CDeviceItem *>::iterator it;
+    std::deque<CDeviceItem*>::iterator it;
     for (it = m_deviceList.m_devItemList.begin();
          it != m_deviceList.m_devItemList.end();
          ++it) {
@@ -737,7 +740,8 @@ CControlObject::startDeviceWorkerThreads(void)
             }
 
             // Just start if enabled
-            if (!pDeviceItem->m_bEnable) continue;
+            if (!pDeviceItem->m_bEnable)
+                continue;
 
             if (m_debugFlags[0] & VSCP_DEBUG1_GENERAL) {
                 syslog(LOG_DEBUG,
@@ -763,8 +767,10 @@ CControlObject::startDeviceWorkerThreads(void)
 
                 // execute a shell command
                 int status = system(pDeviceItem->m_strPath.c_str());
-                if ( -1 == status ) {
-                    syslog(LOG_ERR, "Failed to start Level 3 driver. errno=%d", errno );
+                if (-1 == status) {
+                    syslog(LOG_ERR,
+                           "Failed to start Level 3 driver. errno=%d",
+                           errno);
                 }
 
             } else {
@@ -785,12 +791,12 @@ CControlObject::startDeviceWorkerThreads(void)
 bool
 CControlObject::stopDeviceWorkerThreads(void)
 {
-    CDeviceItem *pDeviceItem;
+    CDeviceItem* pDeviceItem;
 
     if (m_debugFlags[0] & VSCP_DEBUG1_GENERAL) {
         syslog(LOG_DEBUG, "[Controlobject][Driver] - Stopping drivers...");
     }
-    std::deque<CDeviceItem *>::iterator iter;
+    std::deque<CDeviceItem*>::iterator iter;
     for (iter = m_deviceList.m_devItemList.begin();
          iter != m_deviceList.m_devItemList.end();
          ++iter) {
@@ -814,15 +820,18 @@ CControlObject::stopDeviceWorkerThreads(void)
 //
 
 bool
-CControlObject::generateSessionId(const char *pKey, char *psid)
+CControlObject::generateSessionId(const char* pKey, char* psid)
 {
     char buf[8193];
 
     // Check pointers
-    if (NULL == pKey) return false;
-    if (NULL == psid) return false;
+    if (NULL == pKey)
+        return false;
+    if (NULL == psid)
+        return false;
 
-    if (strlen(pKey) > 256) return false;
+    if (strlen(pKey) > 256)
+        return false;
 
     // Generate a random session ID
     time_t t;
@@ -837,7 +846,7 @@ CControlObject::generateSessionId(const char *pKey, char *psid)
             (unsigned int)rand(),
             1337);
 
-    vscp_md5(psid, (const unsigned char *)buf, strlen(buf));
+    vscp_md5(psid, (const unsigned char*)buf, strlen(buf));
 
     return true;
 }
@@ -847,10 +856,11 @@ CControlObject::generateSessionId(const char *pKey, char *psid)
 //
 
 bool
-CControlObject::getVscpCapabilities(uint8_t *pCapability)
+CControlObject::getVscpCapabilities(uint8_t* pCapability)
 {
     // Check pointer
-    if (NULL == pCapability) return false;
+    if (NULL == pCapability)
+        return false;
 
     uint64_t caps = 0;
     memset(pCapability, 0, 8);
@@ -937,14 +947,17 @@ CControlObject::getVscpCapabilities(uint8_t *pCapability)
 //
 
 void
-CControlObject::sendEventToClient(CClientItem *pClientItem, vscpEvent *pEvent)
+CControlObject::sendEventToClient(CClientItem* pClientItem, vscpEvent* pEvent)
 {
     // Must be valid pointers
-    if (NULL == pClientItem) return;
-    if (NULL == pEvent) return;
+    if (NULL == pClientItem)
+        return;
+    if (NULL == pEvent)
+        return;
 
     // Check if filtered out - if so do nothing here
-    if (!vscp_doLevel2Filter(pEvent, &pClientItem->m_filter)) return;
+    if (!vscp_doLevel2Filter(pEvent, &pClientItem->m_filter))
+        return;
 
     // If the client queue is full for this client then the
     // client will not receive the message
@@ -956,7 +969,7 @@ CControlObject::sendEventToClient(CClientItem *pClientItem, vscpEvent *pEvent)
     }
 
     // Create an event
-    vscpEvent *pnewvscpEvent = new vscpEvent;
+    vscpEvent* pnewvscpEvent = new vscpEvent;
     if (NULL != pnewvscpEvent) {
 
         // Copy in the new event
@@ -987,12 +1000,13 @@ CControlObject::sendEventToClient(CClientItem *pClientItem, vscpEvent *pEvent)
 //
 
 void
-CControlObject::sendEventAllClients(vscpEvent *pEvent, uint32_t excludeID)
+CControlObject::sendEventAllClients(vscpEvent* pEvent, uint32_t excludeID)
 {
-    CClientItem *pClientItem;
-    std::deque<CClientItem *>::iterator it;
+    CClientItem* pClientItem;
+    std::deque<CClientItem*>::iterator it;
 
-    if (NULL == pEvent) return;
+    if (NULL == pEvent)
+        return;
 
     pthread_mutex_lock(&m_clientList.m_mutexItemList);
     for (it = m_clientList.m_itemList.begin();
@@ -1013,13 +1027,15 @@ CControlObject::sendEventAllClients(vscpEvent *pEvent, uint32_t excludeID)
 //
 
 bool
-CControlObject::sendEvent(CClientItem *pClientItem, vscpEvent *peventToSend)
+CControlObject::sendEvent(CClientItem* pClientItem, vscpEvent* peventToSend)
 {
     bool bSent = false;
 
     // Check pointers
-    if (NULL == pClientItem) return false;
-    if (NULL == peventToSend) return false;
+    if (NULL == pClientItem)
+        return false;
+    if (NULL == peventToSend)
+        return false;
 
     // If timestamp is nulled make one
     if (0 == peventToSend->timestamp) {
@@ -1036,7 +1052,7 @@ CControlObject::sendEvent(CClientItem *pClientItem, vscpEvent *peventToSend)
         memcpy(peventToSend->GUID, pClientItem->m_guid.getGUID(), 16);
     }
 
-    vscpEvent *pEvent = new vscpEvent; // Create new VSCP Event
+    vscpEvent* pEvent = new vscpEvent; // Create new VSCP Event
     if (NULL == pEvent) {
         return false;
     }
@@ -1097,13 +1113,13 @@ CControlObject::sendEvent(CClientItem *pClientItem, vscpEvent *peventToSend)
         // Find client
         pthread_mutex_lock(&m_clientList.m_mutexItemList);
 
-        //CClientItem *pDestClientItem = NULL;
-        std::deque<CClientItem *>::iterator it;
+        // CClientItem *pDestClientItem = NULL;
+        std::deque<CClientItem*>::iterator it;
         for (it = m_clientList.m_itemList.begin();
              it != m_clientList.m_itemList.end();
              ++it) {
 
-            CClientItem *pItem = *it;
+            CClientItem* pItem = *it;
             if (m_debugFlags[0] & VSCP_DEBUG1_GENERAL) {
                 syslog(LOG_DEBUG,
                        "Test if = "
@@ -1129,8 +1145,8 @@ CControlObject::sendEvent(CClientItem *pClientItem, vscpEvent *peventToSend)
 
             if (pItem->m_guid == destguid) {
                 // Found
-                //pDestClientItem = pItem;
-                bSent           = true;
+                // pDestClientItem = pItem;
+                bSent = true;
                 sendEventToClient(pItem, pEvent);
                 break;
             }
@@ -1169,7 +1185,7 @@ CControlObject::sendEvent(CClientItem *pClientItem, vscpEvent *peventToSend)
 //
 
 bool
-CControlObject::addClient(CClientItem *pClientItem, uint32_t id)
+CControlObject::addClient(CClientItem* pClientItem, uint32_t id)
 {
     // Add client to client list
     if (!m_clientList.addClient(pClientItem, id)) {
@@ -1191,10 +1207,11 @@ CControlObject::addClient(CClientItem *pClientItem, uint32_t id)
 //
 
 void
-CControlObject::removeClient(CClientItem *pClientItem)
+CControlObject::removeClient(CClientItem* pClientItem)
 {
     // Do not try to handle invalid clients
-    if (NULL == pClientItem) return;
+    if (NULL == pClientItem)
+        return;
 
     // Remove the client
     m_clientList.removeClient(pClientItem);
@@ -1205,7 +1222,7 @@ CControlObject::removeClient(CClientItem *pClientItem)
 //
 
 void
-CControlObject::addKnownNode(cguid &guid, cguid &ifguid, std::string &name)
+CControlObject::addKnownNode(cguid& guid, cguid& ifguid, std::string& name)
 {
     ; // TODO
 }
@@ -1215,7 +1232,7 @@ CControlObject::addKnownNode(cguid &guid, cguid &ifguid, std::string &name)
 //
 
 bool
-CControlObject::getMacAddress(cguid &guid)
+CControlObject::getMacAddress(cguid& guid)
 {
 #ifdef WIN32
 
@@ -1230,7 +1247,7 @@ CControlObject::getMacAddress(cguid &guid)
 
     memset(&Ncb, 0, sizeof(Ncb));
     Ncb.ncb_command = NCBENUM;
-    Ncb.ncb_buffer  = (UCHAR *)&lenum;
+    Ncb.ncb_buffer  = (UCHAR*)&lenum;
     Ncb.ncb_length  = sizeof(lenum);
     uRetCode        = Netbios(&Ncb);
     // printf( "The NCBENUM return code is: 0x%x ", uRetCode );
@@ -1246,8 +1263,8 @@ CControlObject::getMacAddress(cguid &guid)
         Ncb.ncb_command  = NCBASTAT;
         Ncb.ncb_lana_num = lenum.lana[i];
 
-        strcpy((char *)Ncb.ncb_callname, "*               ");
-        Ncb.ncb_buffer = (unsigned char *)&Adapter;
+        strcpy((char*)Ncb.ncb_callname, "*               ");
+        Ncb.ncb_buffer = (unsigned char*)&Adapter;
         Ncb.ncb_length = sizeof(Adapter);
 
         uRetCode = Netbios(&Ncb);
@@ -1299,14 +1316,15 @@ CControlObject::getMacAddress(cguid &guid)
     guid.clear();
 
     fd = socket(PF_INET, SOCK_DGRAM, IPPROTO_IP);
-    if (-1 == fd) return false;
+    if (-1 == fd)
+        return false;
 
     memset(&s, 0, sizeof(s));
     strcpy(s.ifr_name, "eth0");
 
     if (0 == ioctl(fd, SIOCGIFHWADDR, &s)) {
 
-        //ptr = (unsigned char *)&s.ifr_ifru.ifru_hwaddr.sa_data[0];
+        // ptr = (unsigned char *)&s.ifr_ifru.ifru_hwaddr.sa_data[0];
         if (m_debugFlags[0] & VSCP_DEBUG1_GENERAL) {
             syslog(LOG_DEBUG,
                    "Ethernet MAC address: %02X:%02X:%02X:%02X:%02X:%02X",
@@ -1349,7 +1367,7 @@ CControlObject::getMacAddress(cguid &guid)
 //
 
 bool
-CControlObject::getIPAddress(cguid &guid)
+CControlObject::getIPAddress(cguid& guid)
 {
     // Clear the GUID
     guid.clear();
@@ -1368,7 +1386,7 @@ CControlObject::getIPAddress(cguid &guid)
 #if defined(_WIN32)
     LPHOSTENT lpLocalHostEntry;
 #else
-    struct hostent *lpLocalHostEntry;
+    struct hostent* lpLocalHostEntry;
 #endif
     lpLocalHostEntry = gethostbyname(szName);
     if (NULL == lpLocalHostEntry) {
@@ -1377,13 +1395,14 @@ CControlObject::getIPAddress(cguid &guid)
 
     // Get all local addresses
     int idx = -1;
-    void *pAddr;
+    void* pAddr;
     unsigned long localaddr[16]; // max 16 local addresses
     do {
         idx++;
         localaddr[idx] = 0;
         pAddr          = lpLocalHostEntry->h_addr_list[idx];
-        if (NULL != pAddr) localaddr[idx] = *((unsigned long *)pAddr);
+        if (NULL != pAddr)
+            localaddr[idx] = *((unsigned long*)pAddr);
     } while ((NULL != pAddr) && (idx < 16));
 
     guid.setAt(8, (localaddr[0] >> 24) & 0xff);
@@ -1403,8 +1422,8 @@ CControlObject::getIPAddress(cguid &guid)
 // getSystemKey
 //
 
-uint8_t *
-CControlObject::getSystemKey(uint8_t *pKey)
+uint8_t*
+CControlObject::getSystemKey(uint8_t* pKey)
 {
     if (NULL != pKey) {
         memcpy(pKey, m_systemKey, 32);
@@ -1418,7 +1437,7 @@ CControlObject::getSystemKey(uint8_t *pKey)
 //
 
 void
-CControlObject::getSystemKeyMD5(std::string &strKey)
+CControlObject::getSystemKeyMD5(std::string& strKey)
 {
     char digest[33];
     vscp_md5(digest, m_systemKey, 32);
@@ -1429,22 +1448,22 @@ CControlObject::getSystemKeyMD5(std::string &strKey)
 // FULL XML configuration callbacks
 // ----------------------------------------------------------------------------
 
-static int depth_full_config_parser   = 0;
-static char *last_full_config_content = NULL;
-static int bVscpConfigFound           = 0;
-static int bGeneralConfigFound        = 0;
-static int bRemoteUserConfigFound     = 0;
-static int bLevel1DriverConfigFound   = 0;
-static int bLevel2DriverConfigFound   = 0;
-static int bLevel3DriverConfigFound   = 0;
+static int depth_full_config_parser = 0;
+static int bVscpConfigFound         = 0;
+static int bGeneralConfigFound      = 0;
+static int bRemoteUserConfigFound   = 0;
+static int bLevel1DriverConfigFound = 0;
+static int bLevel2DriverConfigFound = 0;
+static int bLevel3DriverConfigFound = 0;
 
 static void
-startFullConfigParser(void *data, const char *name, const char **attr)
+startFullConfigParser(void* data, const char* name, const char** attr)
 {
-    CControlObject *pObj = (CControlObject *)data;
-    if (NULL == data) return;
+    CControlObject* pObj = (CControlObject*)data;
+    if (NULL == data)
+        return;
 
-    fprintf(stderr, "%s\n", name );
+    fprintf(stderr, "%s\n", name);
 
     if ((0 == depth_full_config_parser) &&
         (0 == vscp_strcasecmp(name, "vscpconfig"))) {
@@ -1533,8 +1552,9 @@ startFullConfigParser(void *data, const char *name, const char **attr)
                 pObj->m_vscptoken = attribute;
             } else if (0 == vscp_strcasecmp(attr[i], "vscpkey")) {
                 if (attribute.length()) {
-                    vscp_hexStr2ByteArray(
-                      pObj->m_systemKey, 32, attribute.c_str());
+                    vscp_hexStr2ByteArray(pObj->m_systemKey,
+                                          32,
+                                          attribute.c_str());
                 }
             }
         }
@@ -1793,8 +1813,9 @@ startFullConfigParser(void *data, const char *name, const char **attr)
                     pObj->m_web_static_file_max_age =
                       vscp_readStringValue(attribute);
                 }
-            } else if (0 == vscp_strcasecmp(
-                              attr[i], "strict_transport_security_max_age")) {
+            } else if (0 ==
+                       vscp_strcasecmp(attr[i],
+                                       "strict_transport_security_max_age")) {
                 if (attribute.length()) {
                     pObj->m_web_strict_transport_security_max_age =
                       vscp_readStringValue(attribute);
@@ -1814,8 +1835,9 @@ startFullConfigParser(void *data, const char *name, const char **attr)
                     pObj->m_web_max_request_size =
                       vscp_readStringValue(attribute);
                 }
-            } else if (0 == vscp_strcasecmp(
-                              attr[i], "web_allow_index_script_resource")) {
+            } else if (0 ==
+                       vscp_strcasecmp(attr[i],
+                                       "web_allow_index_script_resource")) {
                 if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
                     pObj->m_web_allow_index_script_resource = true;
                 } else {
@@ -1895,6 +1917,8 @@ startFullConfigParser(void *data, const char *name, const char **attr)
         std::string privilege;
         std::string allowfrom;
         std::string allowevent;
+        std::string fullname;
+        std::string note;
 
         vscp_clearVSCPFilter(&VSCPFilter); // Allow all frames
 
@@ -1907,6 +1931,10 @@ startFullConfigParser(void *data, const char *name, const char **attr)
                 name = attribute;
             } else if (0 == vscp_strcasecmp(attr[i], "password")) {
                 md5 = attribute;
+            } else if (0 == vscp_strcasecmp(attr[i], "fullname")) {
+                fullname = attribute;
+            } else if (0 == vscp_strcasecmp(attr[i], "note")) {
+                note = attribute;
             } else if (0 == vscp_strcasecmp(attr[i], "privilege")) {
                 privilege = attribute;
             } else if (0 == vscp_strcasecmp(attr[i], "allowfrom")) {
@@ -1930,23 +1958,25 @@ startFullConfigParser(void *data, const char *name, const char **attr)
             if (bFilterPresent && bMaskPresent) {
                 pObj->m_userList.addUser(name,
                                          md5,
-                                         "",
-                                         "",
+                                         fullname,
+                                         note,
+                                         pObj->m_web_authentication_domain,
                                          &VSCPFilter,
                                          privilege,
                                          allowfrom,
                                          allowevent,
-                                         VSCP_ADD_USER_FLAG_LOCAL);
+                                         0);
             } else {
                 pObj->m_userList.addUser(name,
                                          md5,
-                                         "",
-                                         "",
+                                         fullname,
+                                         note,
+                                         pObj->m_web_authentication_domain,
                                          NULL,
                                          privilege,
                                          allowfrom,
                                          allowevent,
-                                         VSCP_ADD_USER_FLAG_LOCAL);
+                                         0);
             }
         }
     } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
@@ -2122,7 +2152,7 @@ startFullConfigParser(void *data, const char *name, const char **attr)
                 }
             } else if (0 == vscp_strcasecmp(attr[i], "path-config")) {
                 strConfig = attribute;
-            }  else if (0 == vscp_strcasecmp(attr[i], "path-driver")) {
+            } else if (0 == vscp_strcasecmp(attr[i], "path-driver")) {
                 strPath = attribute;
             } else if (0 == vscp_strcasecmp(attr[i], "guid")) {
                 guid.getFromString(attribute);
@@ -2157,38 +2187,12 @@ startFullConfigParser(void *data, const char *name, const char **attr)
 }
 
 static void
-handleFullConfigData(void *data, const char *content, int length)
-{
-    // int prevLength =
-    //   (NULL == last_full_config_content) ? 0 : strlen(last_full_config_content);
-    // char *tmp = (char *)malloc(length + 1 + prevLength);
-    // strncpy(tmp, content, length);
-    // tmp[length] = '\0';
-
-    // if (NULL == last_full_config_content) {
-    //     tmp = (char *)malloc(length + 1);
-    //     strncpy(tmp, content, length);
-    //     tmp[length]              = '\0';
-    //     last_full_config_content = tmp;
-    // } else {
-    //     // Concatenate
-    //     int newlen = length + 1 + strlen(last_full_config_content);
-    //     last_full_config_content =
-    //       (char *)realloc(last_full_config_content, newlen);
-    //     strncat(tmp, content, length);
-    //     last_full_config_content[newlen] = '\0';
-    // }
-}
+handleFullConfigData(void* data, const char* content, int length)
+{}
 
 static void
-endFullConfigParser(void *data, const char *name)
+endFullConfigParser(void* data, const char* name)
 {
-    /*if (NULL != last_full_config_content) {
-        // Free the allocated data
-        free(last_full_config_content);
-        last_full_config_content = NULL;
-    }*/
-
     depth_full_config_parser--;
 
     if (1 == depth_full_config_parser &&
@@ -2196,8 +2200,8 @@ endFullConfigParser(void *data, const char *name)
         bVscpConfigFound = FALSE;
     }
     if (bVscpConfigFound && (1 == depth_full_config_parser) &&
-               ((0 == vscp_strcasecmp(name, "level1driver")) ||
-                (0 == vscp_strcasecmp(name, "canal1driver")))) {
+        ((0 == vscp_strcasecmp(name, "level1driver")) ||
+         (0 == vscp_strcasecmp(name, "canal1driver")))) {
         bLevel1DriverConfigFound = FALSE;
     } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
                (0 == vscp_strcasecmp(name, "level2driver"))) {
@@ -2205,7 +2209,7 @@ endFullConfigParser(void *data, const char *name)
     } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
                (0 == vscp_strcasecmp(name, "level3driver"))) {
         bLevel3DriverConfigFound = FALSE;
-    } 
+    }
 }
 
 // ----------------------------------------------------------------------------
@@ -2217,14 +2221,14 @@ endFullConfigParser(void *data, const char *name)
 //
 
 bool
-CControlObject::readConfiguration(const std::string &strcfgfile)
+CControlObject::readConfiguration(const std::string& strcfgfile)
 {
-    FILE *fp;
+    FILE* fp;
 
     if (m_debugFlags[0] & VSCP_DEBUG1_GENERAL) {
         syslog(LOG_DEBUG,
                "Reading full XML configuration from [%s]",
-               (const char *)strcfgfile.c_str());
+               (const char*)strcfgfile.c_str());
     }
 
     fp = fopen(strcfgfile.c_str(), "r");
@@ -2237,11 +2241,12 @@ CControlObject::readConfiguration(const std::string &strcfgfile)
 
     XML_Parser xmlParser = XML_ParserCreate("UTF-8");
     XML_SetUserData(xmlParser, this);
-    XML_SetElementHandler(
-      xmlParser, startFullConfigParser, endFullConfigParser);
+    XML_SetElementHandler(xmlParser,
+                          startFullConfigParser,
+                          endFullConfigParser);
     XML_SetCharacterDataHandler(xmlParser, handleFullConfigData);
 
-    void *buf = XML_GetBuffer(xmlParser, XML_BUFF_SIZE);
+    void* buf = XML_GetBuffer(xmlParser, XML_BUFF_SIZE);
     if (NULL == buf) {
         XML_ParserFree(xmlParser);
         fclose(fp);
@@ -2277,15 +2282,16 @@ CControlObject::readConfiguration(const std::string &strcfgfile)
 // devices/clients except for itself.
 //
 
-void *
-clientMsgWorkerThread(void *userdata)
+void*
+clientMsgWorkerThread(void* userdata)
 {
-    std::list<vscpEvent *>::iterator it;
-    vscpEvent *pvscpEvent = NULL;
+    std::list<vscpEvent*>::iterator it;
+    vscpEvent* pvscpEvent = NULL;
 
     // Must be a valid control object pointer
-    CControlObject *pObj = (CControlObject *)userdata;
-    if (NULL == pObj) return NULL;
+    CControlObject* pObj = (CControlObject*)userdata;
+    if (NULL == pObj)
+        return NULL;
 
     while (!pObj->m_bQuit_clientMsgWorkerThread) {
 
@@ -2317,7 +2323,8 @@ clientMsgWorkerThread(void *userdata)
             } // Valid event
 
             // Delete the event
-            if (NULL != pvscpEvent) vscp_deleteEvent(pvscpEvent);
+            if (NULL != pvscpEvent)
+                vscp_deleteEvent(pvscpEvent);
             pvscpEvent = NULL;
 
         } // while

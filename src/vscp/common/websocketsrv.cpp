@@ -4,7 +4,7 @@
 //
 // The MIT License (MIT)
 //
-// Copyright (C) 2000-2019 Ake Hedman, Grodans Paradis AB
+// Copyright (C) 2000-2020 Ake Hedman, Grodans Paradis AB
 // <info@grodansparadis.com>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -1146,7 +1146,7 @@ ws1_command(struct mg_connection *conn,
         }
 
         // Check privilege
-        if ((pSession->m_pClientItem->m_pUserItem->getUserRights(0) & 0xf) <
+        if ((pSession->m_pClientItem->m_pUserItem->getUserRights() & 0xf) <
             6) {
 
             str = vscp_str_format(("-;SF;%d;%s"),
@@ -1279,7 +1279,7 @@ ws1_command(struct mg_connection *conn,
         }
 
         // Check privilege
-        if ((pSession->m_pClientItem->m_pUserItem->getUserRights(0) & 0xf) <
+        if ((pSession->m_pClientItem->m_pUserItem->getUserRights() & 0xf) <
             1) {
 
             str = vscp_str_format(("-;CLRQ;%d;%s"),
@@ -1356,7 +1356,7 @@ ws1_command(struct mg_connection *conn,
     //     }
 
     //     // Check privilege
-    //     if ((pSession->m_pClientItem->m_pUserItem->getUserRights(0) & 0xf) <
+    //     if ((pSession->m_pClientItem->m_pUserItem->getUserRights() & 0xf) <
     //         6) {
 
     //         str = vscp_str_format(("-;CVAR;%d;%s"),
@@ -1586,7 +1586,7 @@ ws1_command(struct mg_connection *conn,
     //     }
 
     //     // Check privilege
-    //     if ((pSession->m_pClientItem->m_pUserItem->getUserRights(0) & 0xf) <
+    //     if ((pSession->m_pClientItem->m_pUserItem->getUserRights() & 0xf) <
     //         4) {
 
     //         str = vscp_str_format(("-;RVAR;%d;%s"),
@@ -1663,7 +1663,7 @@ ws1_command(struct mg_connection *conn,
     //     }
 
     //     // Check privilege
-    //     if ((pSession->m_pClientItem->m_pUserItem->getUserRights(0) & 0xf) <
+    //     if ((pSession->m_pClientItem->m_pUserItem->getUserRights() & 0xf) <
     //         6) {
 
     //         str = vscp_str_format(("-;WVAR;%d;%s"),
@@ -1803,7 +1803,7 @@ ws1_command(struct mg_connection *conn,
     //     }
 
     //     // Check privilege
-    //     if ((pSession->m_pClientItem->m_pUserItem->getUserRights(0) & 0xf) <
+    //     if ((pSession->m_pClientItem->m_pUserItem->getUserRights() & 0xf) <
     //         6) {
 
     //         str = vscp_str_format(("-;RSTVAR;%d;%s"),
@@ -1895,7 +1895,7 @@ ws1_command(struct mg_connection *conn,
     //     }
 
     //     // Check privilege
-    //     if ((pSession->m_pClientItem->m_pUserItem->getUserRights(0) & 0xf) <
+    //     if ((pSession->m_pClientItem->m_pUserItem->getUserRights() & 0xf) <
     //         6) {
 
     //         str = vscp_str_format(("-;DELVAR;%d;%s"),
@@ -1977,7 +1977,7 @@ ws1_command(struct mg_connection *conn,
     //     }
 
     //     // Check privilege
-    //     if ((pSession->m_pClientItem->m_pUserItem->getUserRights(0) & 0xf) <
+    //     if ((pSession->m_pClientItem->m_pUserItem->getUserRights() & 0xf) <
     //         4) {
 
     //         str = vscp_str_format(("-;LENVAR;%d;%s"),
@@ -2057,7 +2057,7 @@ ws1_command(struct mg_connection *conn,
     //     }
 
     //     // Check privilege
-    //     if ((pSession->m_pClientItem->m_pUserItem->getUserRights(0) & 0xf) <
+    //     if ((pSession->m_pClientItem->m_pUserItem->getUserRights() & 0xf) <
     //         4) {
 
     //         str = vscp_str_format(("-;LCVAR;%d;%s"),
@@ -2141,7 +2141,7 @@ ws1_command(struct mg_connection *conn,
     //     }
 
     //     // Check privilege
-    //     if ((pSession->m_pClientItem->m_pUserItem->getUserRights(0) & 0xf) <
+    //     if ((pSession->m_pClientItem->m_pUserItem->getUserRights() & 0xf) <
     //         4) {
 
     //         str = vscp_str_format(("-;LSTVAR;%d;%s"),
@@ -2854,7 +2854,7 @@ ws2_command(struct mg_connection *conn,
         }
 
         // Check privilege
-        if ((pSession->m_pClientItem->m_pUserItem->getUserRights(0) & 0xf) <
+        if ((pSession->m_pClientItem->m_pUserItem->getUserRights() & 0xf) <
             6) {
 
             std::string str = vscp_str_format(WS2_NEGATIVE_RESPONSE,
@@ -2988,7 +2988,7 @@ ws2_command(struct mg_connection *conn,
         }
 
         // Check privilege
-        if ((pSession->m_pClientItem->m_pUserItem->getUserRights(0) & 0xf) <
+        if ((pSession->m_pClientItem->m_pUserItem->getUserRights() & 0xf) <
             1) {
 
             std::string str = vscp_str_format(WS2_NEGATIVE_RESPONSE,
