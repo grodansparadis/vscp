@@ -2,7 +2,7 @@
             !!!!!!!!!!!!!!!!!!!!  W A R N I N G  !!!!!!!!!!!!!!!!!!!!
                            This file is auto-generated
                 see https://github.com/grodansparadis/vscp-classes
-                        Generated: 2020-01-02 17:50:59.365062
+                        Generated: 2020-01-02 18:31:05.213908
 */
  
 	m_hashClass[ 0 ] = _("CLASS1_PROTOCOL");
@@ -79,6 +79,7 @@
 	m_hashClass[ 1025 ] = _("CLASS2_CONTROL");
 	m_hashClass[ 1026 ] = _("CLASS2_INFORMATION");
 	m_hashClass[ 1027 ] = _("CLASS2_TEXT2SPEECH");
+	m_hashClass[ 1028 ] = _("CLASS2_HLO");
 	m_hashClass[ 1029 ] = _("CLASS2_CUSTOM");
 	m_hashClass[ 1030 ] = _("CLASS2_DISPLAY");
 	m_hashClass[ 1040 ] = _("CLASS2_MEASUREMENT_STR");

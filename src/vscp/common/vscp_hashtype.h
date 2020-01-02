@@ -2,7 +2,7 @@
             !!!!!!!!!!!!!!!!!!!!  W A R N I N G  !!!!!!!!!!!!!!!!!!!!
                            This file is auto-generated
                 see https://github.com/grodansparadis/vscp-classes
-                        Generated: 2020-01-02 17:50:59.925698
+                        Generated: 2020-01-02 18:31:05.776316
 */
  
 
@@ -1951,6 +1951,11 @@
 	//  CLASS2.TEXT2SPEECH = 1027  -  Text to speech
 	m_hashType[ MAKE_CLASSTYPE_LONG(1027,0) ] = _("VSCP2_TYPE_TEXT2SPEECH_GENERAL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(1027,1) ] = _("VSCP2_TYPE_TEXT2SPEECH_TALK");
+
+	//  CLASS2.HLO = 1028  -  High Level Object
+	m_hashType[ MAKE_CLASSTYPE_LONG(1028,0) ] = _("VSCP2_TYPE_HLO_GENERAL");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1028,1) ] = _("VSCP2_TYPE_HLO_COMMAND");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1028,2) ] = _("VSCP2_TYPE_HLO_RESPONSE");
 
 	//  CLASS2.CUSTOM = 1029  -  Level II Custom
 	m_hashType[ MAKE_CLASSTYPE_LONG(1029,0) ] = _("VSCP2_TYPE_CUSTOM_GENERAL");

@@ -1275,9 +1275,7 @@ tcpipClientObj::checkPrivilege(unsigned long reqiredPrivilege)
 void
 tcpipClientObj::handleClientSend(void)
 {
-    bool bVariable = false;
     vscpEvent event;
-    std::string nameVariable;
 
     // Must be connected
     if (STCP_CONN_STATE_CONNECTED != m_conn->conn_state)
@@ -1310,186 +1308,250 @@ tcpipClientObj::handleClientSend(void)
     // a variable
 
     if (!tokens.empty()) {
-
+        // Get Head
         str = tokens.front();
         tokens.pop_front();
         vscp_trim(str);
+        event.head = vscp_readStringValue(str);
+    } else {
+        write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
+        return;
+    }
 
-        if (str[0] == '$') {
-            event.head = vscp_readStringValue(str);
+    // Get Class
+    if (!tokens.empty()) {
+        str = tokens.front();
+        tokens.pop_front();
+        event.vscp_class = vscp_readStringValue(str);
+    } else {
+        write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
+        return;
+    }
+
+    // Get Type
+    if (!tokens.empty()) {
+        str = tokens.front();
+        tokens.pop_front();
+        event.vscp_type = vscp_readStringValue(str);
+    } else {
+        write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
+        return;
+    }
+
+    // Get OBID  -  Kept here to be compatible with receive
+    if (!tokens.empty()) {
+        str = tokens.front();
+        tokens.pop_front();
+        event.obid = vscp_readStringValue(str);
+    } else {
+        write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
+        return;
+    }
+
+    // Get date/time - can be empty
+    if (!tokens.empty()) {
+        str = tokens.front();
+        tokens.pop_front();
+        vscp_trim(str);
+        if (str.length()) {
+            vscpdatetime dt;
+            if (dt.set(str)) {
+                event.year   = dt.getYear();
+                event.month  = dt.getMonth();
+                event.day    = dt.getDay();
+                event.hour   = dt.getHour();
+                event.minute = dt.getMinute();
+                event.second = dt.getSecond();
+            } else {
+                vscp_setEventDateTimeBlockToNow(&event);
+            }
         } else {
+            // set current time
+            vscp_setEventDateTimeBlockToNow(&event);
+        }
 
-            // CVariable variable;
-            // bVariable = true; // Yes this is a variable send
+    } else {
+        write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
+        return;
+    }
 
-            // // Get the name of the variable
-            // nameVariable = str.substr(str.length() - 1);
-            // vscp_makeUpper(nameVariable);
-
-            // if (m_pObj->m_variables.find(
-            //       nameVariable, m_pClientItem->m_pUserItem, variable)) {
-            //     write(MSG_VARIABLE_NOT_DEFINED,
-            //           strlen(MSG_VARIABLE_NOT_DEFINED));
-            //     return;
-            // }
-
-            // // Must be event type
-            // if (VSCP_DAEMON_VARIABLE_CODE_EVENT != variable.getType()) {
-            //     write(MSG_VARIABLE_MUST_BE_EVENT_TYPE,
-            //           strlen(MSG_VARIABLE_MUST_BE_EVENT_TYPE));
-            //     return;
-            // }
-
-            // // Get the event
-            // variable.getValue(&event);
+    // Get Timestamp - can be empty
+    if (!tokens.empty()) {
+        str = tokens.front();
+        tokens.pop_front();
+        vscp_trim(str);
+        if (str.length()) {
+            event.timestamp = vscp_readStringValue(str);
+        } else {
+            event.timestamp = vscp_makeTimeStamp();
         }
     } else {
         write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
         return;
     }
 
-    if (!bVariable) { // Not a variable
+    // Get GUID
+    std::string strGUID;
+    if (!tokens.empty()) {
+        strGUID = tokens.front();
+        tokens.pop_front();
 
-        // Get Class
-        if (!tokens.empty()) {
-            str = tokens.front();
-            tokens.pop_front();
-            event.vscp_class = vscp_readStringValue(str);
+        // Check if i/f GUID should be used
+        if ('-' == strGUID[0]) {
+            // Copy in the i/f GUID
+            m_pClientItem->m_guid.writeGUID(event.GUID);
         } else {
-            write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-            return;
-        }
-
-        // Get Type
-        if (!tokens.empty()) {
-            str = tokens.front();
-            tokens.pop_front();
-            event.vscp_type = vscp_readStringValue(str);
-        } else {
-            write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-            return;
-        }
-
-        // Get OBID  -  Kept here to be compatible with receive
-        if (!tokens.empty()) {
-            str = tokens.front();
-            tokens.pop_front();
-            event.obid = vscp_readStringValue(str);
-        } else {
-            write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-            return;
-        }
-
-        // Get date/time - can be empty
-        if (!tokens.empty()) {
-            str = tokens.front();
-            tokens.pop_front();
-            vscp_trim(str);
-            if (str.length()) {
-                vscpdatetime dt;
-                if (dt.set(str)) {
-                    event.year   = dt.getYear();
-                    event.month  = dt.getMonth();
-                    event.day    = dt.getDay();
-                    event.hour   = dt.getHour();
-                    event.minute = dt.getMinute();
-                    event.second = dt.getSecond();
-                } else {
-                    vscp_setEventDateTimeBlockToNow(&event);
-                }
-            } else {
-                // set current time
-                vscp_setEventDateTimeBlockToNow(&event);
-            }
-
-        } else {
-            write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-            return;
-        }
-
-        // Get Timestamp - can be empty
-        if (!tokens.empty()) {
-            str = tokens.front();
-            tokens.pop_front();
-            vscp_trim(str);
-            if (str.length()) {
-                event.timestamp = vscp_readStringValue(str);
-            } else {
-                event.timestamp = vscp_makeTimeStamp();
-            }
-        } else {
-            write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-            return;
-        }
-
-        // Get GUID
-        std::string strGUID;
-        if (!tokens.empty()) {
-            strGUID = tokens.front();
-            tokens.pop_front();
+            vscp_setEventGuidFromString(&event, strGUID);
 
             // Check if i/f GUID should be used
-            if ('-' == strGUID[0]) {
+            if (true == vscp_isGUIDEmpty(event.GUID)) {
                 // Copy in the i/f GUID
                 m_pClientItem->m_guid.writeGUID(event.GUID);
-            } else {
-                vscp_setEventGuidFromString(&event, strGUID);
-
-                // Check if i/f GUID should be used
-                if (true == vscp_isGUIDEmpty(event.GUID)) {
-                    // Copy in the i/f GUID
-                    m_pClientItem->m_guid.writeGUID(event.GUID);
-                }
             }
-        } else {
-            write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
+        }
+    } else {
+        write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
+        return;
+    }
+
+    // Handle data
+    if (512 < tokens.size()) {
+        write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
+        return;
+    }
+
+    event.sizeData = tokens.size();
+
+    if (event.sizeData > 0) {
+
+        unsigned int index = 0;
+
+        event.pdata = new uint8_t[event.sizeData];
+
+        if (NULL == event.pdata) {
+            write(MSG_INTERNAL_MEMORY_ERROR, strlen(MSG_INTERNAL_MEMORY_ERROR));
             return;
         }
 
-        // Handle data
-        if (512 < tokens.size()) {
-            write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-            return;
+        while (!tokens.empty() && (event.sizeData > index)) {
+            str = tokens.front();
+            tokens.pop_front();
+            event.pdata[index++] = vscp_readStringValue(str);
         }
 
-        event.sizeData = tokens.size();
+        if (!tokens.empty()) {
+            write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
 
-        if (event.sizeData > 0) {
+            delete[] event.pdata;
+            event.pdata = NULL;
+            return;
+        }
+    } else {
+        // No data
+        event.pdata = NULL;
+    }
 
-            unsigned int index = 0;
+    // Check if we are allowed top send CLASS1.PROTOCOL events
+    if ((VSCP_CLASS1_PROTOCOL == event.vscp_class) &&
+        !checkPrivilege(VSCP_USER_RIGHT_ALLOW_SEND_L1CTRL_EVENT)) {
 
-            event.pdata = new uint8_t[event.sizeData];
+        std::string strErr = vscp_str_format(
+          ("[TCP/IP srv] User [%s] not allowed to send event class=%d "
+           "type=%d.\n"),
+          (const char*)m_pClientItem->m_pUserItem->getUserName().c_str(),
+          event.vscp_class,
+          event.vscp_type);
 
-            if (NULL == event.pdata) {
-                write(MSG_INTERNAL_MEMORY_ERROR,
-                      strlen(MSG_INTERNAL_MEMORY_ERROR));
-                return;
-            }
+        syslog(LOG_ERR, "%s", strErr.c_str());
 
-            while (!tokens.empty() && (event.sizeData > index)) {
-                str = tokens.front();
-                tokens.pop_front();
-                event.pdata[index++] = vscp_readStringValue(str);
-            }
+        write(MSG_MOT_ALLOWED_TO_SEND_EVENT,
+              strlen(MSG_MOT_ALLOWED_TO_SEND_EVENT));
 
-            if (!tokens.empty()) {
-                write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
-
-                delete[] event.pdata;
-                event.pdata = NULL;
-                return;
-            }
-        } else {
-            // No data
+        if (NULL != event.pdata) {
+            delete[] event.pdata;
             event.pdata = NULL;
         }
 
-    } // not variable send
+        return;
+    }
+
+    // Check if we are allowed top send CLASS1.PROTOCOL events
+    if ((VSCP_CLASS1_PROTOCOL == event.vscp_class) &&
+        !checkPrivilege(VSCP_CLASS2_LEVEL1_PROTOCOL)) {
+
+        std::string strErr = vscp_str_format(
+          ("[TCP/IP srv] User [%s] not allowed to send event class=%d "
+           "type=%d.\n"),
+          (const char*)m_pClientItem->m_pUserItem->getUserName().c_str(),
+          event.vscp_class,
+          event.vscp_type);
+
+        syslog(LOG_ERR, "%s", strErr.c_str());
+
+        write(MSG_MOT_ALLOWED_TO_SEND_EVENT,
+              strlen(MSG_MOT_ALLOWED_TO_SEND_EVENT));
+
+        if (NULL != event.pdata) {
+            delete[] event.pdata;
+            event.pdata = NULL;
+        }
+
+        return;
+    }
+
+    // Check if we are allowed top send CLASS2.PROTOCOL events
+    if ((VSCP_CLASS2_PROTOCOL == event.vscp_class) &&
+        !checkPrivilege(VSCP_USER_RIGHT_ALLOW_SEND_L2CTRL_EVENT)) {
+
+        std::string strErr = vscp_str_format(
+          ("[TCP/IP srv] User [%s] not allowed to send event class=%d "
+           "type=%d.\n"),
+          (const char*)m_pClientItem->m_pUserItem->getUserName().c_str(),
+          event.vscp_class,
+          event.vscp_type);
+
+        syslog(LOG_ERR, "%s", strErr.c_str());
+
+        write(MSG_MOT_ALLOWED_TO_SEND_EVENT,
+              strlen(MSG_MOT_ALLOWED_TO_SEND_EVENT));
+
+        if (NULL != event.pdata) {
+            delete[] event.pdata;
+            event.pdata = NULL;
+        }
+
+        return;
+    }
+
+    // Check if we are allowed top send CLASS2.HLO events
+    if ((VSCP_CLASS2_HLO == event.vscp_class) &&
+        !checkPrivilege(VSCP_USER_RIGHT_ALLOW_SEND_HLO_EVENT)) {
+
+        std::string strErr = vscp_str_format(
+          ("[TCP/IP srv] User [%s] not allowed to send event class=%d "
+           "type=%d.\n"),
+          (const char*)m_pClientItem->m_pUserItem->getUserName().c_str(),
+          event.vscp_class,
+          event.vscp_type);
+
+        syslog(LOG_ERR, "%s", strErr.c_str());
+
+        write(MSG_MOT_ALLOWED_TO_SEND_EVENT,
+              strlen(MSG_MOT_ALLOWED_TO_SEND_EVENT));
+
+        if (NULL != event.pdata) {
+            delete[] event.pdata;
+            event.pdata = NULL;
+        }
+
+        return;
+    }
 
     // Check if this user is allowed to send this event
     if (!m_pClientItem->m_pUserItem->isUserAllowedToSendEvent(
           event.vscp_class,
           event.vscp_type)) {
+
         std::string strErr = vscp_str_format(
           ("[TCP/IP srv] User [%s] not allowed to send event class=%d "
            "type=%d.\n"),

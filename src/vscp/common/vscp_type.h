@@ -48,7 +48,7 @@
             !!!!!!!!!!!!!!!!!!!!  W A R N I N G  !!!!!!!!!!!!!!!!!!!!
                            This file is auto-generated
                 see https://github.com/grodansparadis/vscp-classes
-                        Generated: 2020-01-02 17:50:58.750163
+                        Generated: 2020-01-02 18:31:04.618768
 */
  
 #ifndef VSCP_TYPE_H
@@ -829,6 +829,11 @@
 /*  CLASS2.TEXT2SPEECH = 1027  -  Text to speech */
 #define VSCP2_TYPE_TEXT2SPEECH_GENERAL              0   /* General event */
 #define VSCP2_TYPE_TEXT2SPEECH_TALK                 1   /* Talk */
+    
+/*  CLASS2.HLO = 1028  -  High Level Object */
+#define VSCP2_TYPE_HLO_GENERAL                      0   /* General event */
+#define VSCP2_TYPE_HLO_COMMAND                      1   /* HLO Command */
+#define VSCP2_TYPE_HLO_RESPONSE                     2   /* HLO Response */
     
 /*  CLASS2.CUSTOM = 1029  -  Level II Custom */
 #define VSCP2_TYPE_CUSTOM_GENERAL                   0   /* General event */
