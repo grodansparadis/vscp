@@ -195,7 +195,6 @@ extern "C"
 #define VSCP_HEADER16_DUMB      0x8000 /* This node is dumb */
 #define VSCP_HEADER16_IPV6_GUID 0x1000 /* GUID is IPv6 address */
 
-
 /* Bits 14/13/12 for GUID type */
 #define VSCP_HEADER16_GUID_TYPE_STANDARD 0x0000 /* VSCP standard GUID */
 #define VSCP_HEADER16_GUID_TYPE_IPV6     0x1000 /* GUID is IPv6 address */
@@ -306,10 +305,11 @@ extern "C"
     typedef VSCPChannelInfo* PVSCPCHANNELINFO;
 
 /* VSCP Encryption types */
-#define VSCP_ENCRYPTION_NONE   0
-#define VSCP_ENCRYPTION_AES128 1
-#define VSCP_ENCRYPTION_AES192 2
-#define VSCP_ENCRYPTION_AES256 3
+#define VSCP_ENCRYPTION_NONE           0
+#define VSCP_ENCRYPTION_AES128         1
+#define VSCP_ENCRYPTION_AES192         2
+#define VSCP_ENCRYPTION_AES256         3
+#define VSCP_ENCRYPTION_FROM_TYPE_BYTE 255
 
 /* VSCP Encryption tokens */
 #define VSCP_ENCRYPTION_TOKEN_0 ""
