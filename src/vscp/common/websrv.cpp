@@ -3375,6 +3375,13 @@ start_webserver(void)
         web_options[pos++] = vscp_strdup((const char *)str.c_str());
     }
 
+    if (gpobj->m_web_static_file_cache_control.length()) {
+        web_options[pos++] =
+          vscp_strdup(VSCPDB_CONFIG_NAME_WEB_ERROR_PAGES + 4);
+        web_options[pos++] =
+          vscp_strdup((const char *)gpobj->m_web_static_file_cache_control.c_str());
+    }
+
     if (gpobj->m_web_static_file_max_age !=
         atol(VSCPDB_CONFIG_DEFAULT_WEB_STATIC_FILE_MAX_AGE)) {
         std::string str =

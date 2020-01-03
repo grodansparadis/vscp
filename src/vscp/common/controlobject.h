@@ -442,6 +442,7 @@ class CControlObject
     std::string m_web_access_control_allow_headers;
     std::string m_web_error_pages;
     long m_web_tcp_nodelay;
+    std::string m_web_static_file_cache_control;
     long m_web_static_file_max_age;
     long m_web_strict_transport_security_max_age;
     bool m_web_allow_sendfile_call;

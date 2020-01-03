@@ -383,16 +383,6 @@ class tcpipClientObj
     void handleClientInterface_Close(void);
 
     /*!
-        Client LIST command
-    */
-    void handleClientList(void);
-
-    /*!
-        Client DRIVER command
-    */
-    void handleClientDriver(void);
-
-    /*!
         Client WhatCanYouDo command
     */
     void handleClientCapabilityRequest(void);

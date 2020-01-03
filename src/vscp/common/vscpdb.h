@@ -299,6 +299,9 @@
 #define VSCPDB_CONFIG_NAME_WEB_TCP_NO_DELAY                     "web-tcp_nodelay"
 #define VSCPDB_CONFIG_DEFAULT_WEB_TCP_NO_DELAY                  "-1"
 
+#define VSCPDB_CONFIG_NAME_WEB_STATIC_FILE_CACHE_CONTROL        "web-static_file_cache_control"
+#define VSCPDB_CONFIG_DEFAULT_WEB_STATIC_FILE_CACHE_CONTROL     ""
+
 #define VSCPDB_CONFIG_NAME_WEB_STATIC_FILE_MAX_AGE              "web-static_file_max_age"
 #define VSCPDB_CONFIG_DEFAULT_WEB_STATIC_FILE_MAX_AGE           "3600"
 

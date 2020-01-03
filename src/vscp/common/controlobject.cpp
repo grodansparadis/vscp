@@ -221,6 +221,7 @@ CControlObject::CControlObject()
     m_web_access_control_allow_headers      = "*";
     m_web_error_pages                       = "";
     m_web_tcp_nodelay                       = 0;
+    m_web_static_file_cache_control         = "";
     m_web_static_file_max_age               = 3600;
     m_web_strict_transport_security_max_age = -1;
     m_web_allow_sendfile_call               = true;
@@ -1635,7 +1636,8 @@ startFullConfigParser(void* data, const char* name, const char** attr)
                 }
             } else if (0 == vscp_strcasecmp(attr[i], "index_files")) {
                 if (attribute.length()) {
-                    pObj->m_web_index_files = attribute;
+                    pObj->m_web_index_files = vscp_trim_copy(attribute);
+                    ;
                 }
             } else if (0 == vscp_strcasecmp(attr[i], "authentication_domain")) {
                 if (attribute.length()) {
@@ -1807,6 +1809,10 @@ startFullConfigParser(void* data, const char* name, const char** attr)
                 if (attribute.length()) {
                     pObj->m_web_linger_timeout_ms =
                       vscp_readStringValue(attribute);
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "static_file_cache_control")) {
+                if (attribute.length()) {
+                    pObj->m_web_static_file_cache_control = attribute;
                 }
             } else if (0 == vscp_strcasecmp(attr[i], "static_file_max_age")) {
                 if (attribute.length()) {
