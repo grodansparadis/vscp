@@ -38,7 +38,7 @@ VERSION_DEFS = -DMAJOR_VERSION=$(MAJOR_VERSION) -DMINOR_VERSION=$(MINOR_VERSION)
 CFLAGS = -std=c99 @CFLAGS@ ${WARNINGS} -DCBC -I@top_srcdir@ -I../common -I../../common
 CXXFLAGS = -std=c++11 @CXXFLAGS@ ${WARNINGS}
 CPPFLAGS = @CPPFLAGS@  ${WARNINGS} -fno-var-tracking-assignments -I@top_srcdir@ \
-	-I../common -I../../common -I../../common/nlohmann
+	-I../common -I../../common -I../../common/third_party/nlohmann
 
 # get version from the version file
 MAJOR_VERSION = `sed '35!d' ../../common/version.h  | cut -b 33-`
