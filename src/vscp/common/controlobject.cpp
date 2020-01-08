@@ -750,34 +750,8 @@ CControlObject::startDeviceWorkerThreads(void)
                        pDeviceItem->m_strName.c_str());
             }
 
-            // *** Level 3 Driver * * *
-            if (VSCP_DRIVER_LEVEL3 == pDeviceItem->m_driverLevel) {
-
-                // Startup Level III driver
-                //      username
-                //      password
-                //      driver parameter string
-                // The driver should return immediately after starting
-                std::string strExecute = pDeviceItem->m_strPath;
-                strExecute += " ";
-                strExecute += m_driverUsername;
-                strExecute += " ";
-                strExecute += m_driverPassword;
-                strExecute += " ";
-                strExecute += pDeviceItem->m_strParameter;
-
-                // execute a shell command
-                int status = system(pDeviceItem->m_strPath.c_str());
-                if (-1 == status) {
-                    syslog(LOG_ERR,
-                           "Failed to start Level 3 driver. errno=%d",
-                           errno);
-                }
-
-            } else {
-                // Start  the driver logic
-                pDeviceItem->startDriver(this);
-            }
+            // Start  the driver logic
+            pDeviceItem->startDriver(this);
 
         } // Valid device item
     }
@@ -1810,7 +1784,8 @@ startFullConfigParser(void* data, const char* name, const char** attr)
                     pObj->m_web_linger_timeout_ms =
                       vscp_readStringValue(attribute);
                 }
-            } else if (0 == vscp_strcasecmp(attr[i], "static_file_cache_control")) {
+            } else if (0 ==
+                       vscp_strcasecmp(attr[i], "static_file_cache_control")) {
                 if (attribute.length()) {
                     pObj->m_web_static_file_cache_control = attribute;
                 }
@@ -2125,69 +2100,7 @@ startFullConfigParser(void* data, const char* name, const char** attr)
                        strPath.c_str());
             }
         }
-    } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
-               ((0 == vscp_strcasecmp(name, "level3driver")))) {
-        bLevel3DriverConfigFound = TRUE;
-    } else if (bVscpConfigFound && bLevel3DriverConfigFound &&
-               (2 == depth_full_config_parser) &&
-               (0 == vscp_strcasecmp(name, "driver"))) {
-        std::string strName;
-        std::string strConfig;
-        std::string strPath;
-        cguid guid;
-        bool bEnabled = false;
-
-        for (int i = 0; attr[i]; i += 2) {
-
-            std::string attribute = attr[i + 1];
-            vscp_trim(attribute);
-
-            if (0 == vscp_strcasecmp(attr[i], "enable")) {
-                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
-                    bEnabled = true;
-                } else {
-                    bEnabled = false;
-                }
-            } else if (0 == vscp_strcasecmp(attr[i], "name")) {
-                strName = attribute;
-                // Replace spaces in name with underscore
-                std::string::size_type found;
-                while (std::string::npos !=
-                       (found = strName.find_first_of(" "))) {
-                    strName[found] = '_';
-                }
-            } else if (0 == vscp_strcasecmp(attr[i], "path-config")) {
-                strConfig = attribute;
-            } else if (0 == vscp_strcasecmp(attr[i], "path-driver")) {
-                strPath = attribute;
-            } else if (0 == vscp_strcasecmp(attr[i], "guid")) {
-                guid.getFromString(attribute);
-            }
-        }
-
-        // Add the level III device
-        if (!pObj->m_deviceList.addItem(strName,
-                                        strConfig,
-                                        strPath,
-                                        0,
-                                        guid,
-                                        VSCP_DRIVER_LEVEL3,
-                                        bEnabled)) {
-            syslog(LOG_ERR,
-                   "Level III driver was not added. name = %s"
-                   "Path does not exist. - [%s]",
-                   strName.c_str(),
-                   strPath.c_str());
-
-        } else {
-            if (pObj->m_debugFlags[0] & VSCP_DEBUG1_DRIVER3) {
-                syslog(LOG_DEBUG,
-                       "Level III driver added. name = %s- [%s]",
-                       strName.c_str(),
-                       strPath.c_str());
-            }
-        }
-    }
+    } 
 
     depth_full_config_parser++;
 }

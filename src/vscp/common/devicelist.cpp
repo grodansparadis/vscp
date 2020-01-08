@@ -450,10 +450,6 @@ CDeviceList::getCountDrivers(uint8_t type, bool bOnlyActive)
                         case VSCP_DRIVER_LEVEL2:
                             if (pItem->m_driverLevel) count++;
                             break;
-
-                        case VSCP_DRIVER_LEVEL3:
-                            if (pItem->m_driverLevel) count++;
-                            break;
                     }
                 }
             } else {
@@ -468,10 +464,6 @@ CDeviceList::getCountDrivers(uint8_t type, bool bOnlyActive)
                             break;
 
                         case VSCP_DRIVER_LEVEL2:
-                            if (pItem->m_driverLevel) count++;
-                            break;
-
-                        case VSCP_DRIVER_LEVEL3:
                             if (pItem->m_driverLevel) count++;
                             break;
                     }

@@ -7,7 +7,7 @@ Wants=network-online.target
 [Service]
 Type=notify
 NotifyAccess=main
-ExecStart=/usr/sbin/vscpd -c /etc/vscp/vscpd.conf
+ExecStart=/usr/sbin/vscpd -s -c /etc/vscp/vscpd.conf
 ExecReload=/bin/kill -HUP $MAINPID
 Restart=on-failure
 

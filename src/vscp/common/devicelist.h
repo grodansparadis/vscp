@@ -56,8 +56,7 @@
 enum _driver_levels
 {
     VSCP_DRIVER_LEVEL1 = 1,
-    VSCP_DRIVER_LEVEL2,
-    VSCP_DRIVER_LEVEL3
+    VSCP_DRIVER_LEVEL2
 };
 
 class CClientItem;
