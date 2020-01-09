@@ -3060,7 +3060,7 @@ start_webserver(void)
     const char *options[] =
     {
         "document_root",
-        "/srv/vscp/web",
+        "/var/lib/vscp/vscpd/web",
 
         "listening_ports",
         "[::]:8888r,[::]:8843s,8884",
@@ -3075,7 +3075,7 @@ start_webserver(void)
         "3600000",
 
         "ssl_certificate",
-        "/srv/vscp/certs/server.pem",
+        "/etc/vscp/certs/server.pem",
 
         "ssl_protocol_version",
         "3",
@@ -3273,13 +3273,6 @@ start_webserver(void)
         web_options[pos++] =
           vscp_strdup(VSCPDB_CONFIG_NAME_WEB_EXTRA_MIME_TYPES + 4);
         web_options[pos++] = vscp_strdup((const char *)str.c_str());
-    }
-
-    if (gpobj->m_runAsUser.length()) {
-        web_options[pos++] =
-          vscp_strdup(VSCPDB_CONFIG_NAME_WEB_RUN_AS_USER + 4);
-        web_options[pos++] =
-          vscp_strdup((const char *)gpobj->m_runAsUser.c_str());
     }
 
     if (gpobj->m_web_url_rewrite_patterns.length()) {

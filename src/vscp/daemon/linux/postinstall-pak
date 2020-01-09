@@ -21,33 +21,33 @@ else
 fi
 
 # Example variables
-if [ ! -e /srv/vscp/variables.xml ]; then
+if [ ! -e /etc/vscp/variables.xml ]; then
     $INSTALL_PROGRAM -b -m744 $VSCP_PROJ_BASE_DIR/tmp/variables.xml_distro $VSCP_PROJ_BASE_DIR/variables.xml
 else
     $INSTALL_PROGRAM -b -m744 $VSCP_PROJ_BASE_DIR/tmp/variables.xml_distro $VSCP_PROJ_BASE_DIR/variables.xml.`date +'%Y%m%d'`
 fi
 
 # Example DM
-if [ ! -e /srv/vscp/dm.xml ]; then
+if [ ! -e /etc/vscp/dm.xml ]; then
     $INSTALL_PROGRAM -b -m744 $VSCP_PROJ_BASE_DIR/tmp/dm.xml_distro $VSCP_PROJ_BASE_DIR/dm.xml
 else
     $INSTALL_PROGRAM -b -m744 $VSCP_PROJ_BASE_DIR/tmp/dm.xml_distro $VSCP_PROJ_BASE_DIR/dm.xml.`date +'%Y%m%d'`
 fi
 
 # Sample data for simulation
-if [ ! -e /srv/vscp/simtempdata.txt ]; then
+if [ ! -e /etc/vscp/simtempdata.txt ]; then
     $INSTALL_PROGRAM -b -m744 $VSCP_PROJ_BASE_DIR/tmp/simtempdata.txt $VSCP_PROJ_BASE_DIR/simtempdata.txt
 else
     $INSTALL_PROGRAM -b -m744 $VSCP_PROJ_BASE_DIR/tmp/simtempdata.txt $VSCP_PROJ_BASE_DIR/simtempdata.txt.`date +'%Y%m%d'`
 fi
 
 # Server sample certificat
-if [ ! -e /srv/vscp/certs/server.pem ]; then
+if [ ! -e /etc/vscp/certs/server.pem ]; then
     $INSTALL_PROGRAM -b -m744 $VSCP_PROJ_BASE_DIR/tmp/server.pem $VSCP_PROJ_BASE_DIR/certs
 fi
 
 # Client sample certificat
-if [ ! -e /srv/vscp/certs/client.pem ]; then
+if [ ! -e /etc/vscp/certs/client.pem ]; then
     $INSTALL_PROGRAM -b -m744 $VSCP_PROJ_BASE_DIR/tmp/client.pem $VSCP_PROJ_BASE_DIR/certs
 fi
 

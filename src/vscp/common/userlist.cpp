@@ -798,7 +798,7 @@ CUserList::addUser(const std::string& user,
     // Cant add user with name that is already defined.
     if (NULL != m_userhashmap[user]) {
         syslog(LOG_ERR,
-               "addUser: Failed to add use - "
+               "addUser: Failed to add user - "
                "user is already defined.");
         return false;
     }
@@ -807,7 +807,7 @@ CUserList::addUser(const std::string& user,
     CUserItem* pItem = new CUserItem;
     if (NULL == pItem) {
         syslog(LOG_ERR,
-               "addUser: Failed to add use - "
+               "addUser: Failed to add user - "
                "Memory problem (CUserItem).");
         return false;
     }

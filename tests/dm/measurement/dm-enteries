@@ -19,7 +19,7 @@ Write out all temperature events
 
     <action>0x10</action>
     <param>
-        /srv/vscp/test.sh %event.string
+        /var/lib/vscp/vscpd/test.sh %event.string
     </param>
 
     <allowed_from>0000-01-01 00:00:00</allowed_from>

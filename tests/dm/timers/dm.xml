@@ -44,7 +44,7 @@
 
 <action>0x70</action>
  <param>
-    /srv/vscp/timefile;1;%isoboth: Timer %event.data.int32[0] started value = %event.data.int32[4]  %lf
+    /var/lib/vscp/vscpd/timefile;1;%isoboth: Timer %event.data.int32[0] started value = %event.data.int32[4]  %lf
  </param>
 
 </row>
@@ -68,7 +68,7 @@
 
 <action>0x70</action>
  <param>
-    /srv/vscp/timefile;1;%isoboth: Timer %event.data.int32[0] stopped value = %event.data.int32[4] %lf
+    /var/lib/vscp/vscpd/timefile;1;%isoboth: Timer %event.data.int32[0] stopped value = %event.data.int32[4] %lf
  </param>
 
 </row>
@@ -92,7 +92,7 @@
 
 <action>0x70</action>
  <param>
-    /srv/vscp/timefile;1;%isoboth: Timer %event.data.int32[0] elapsed %lf
+    /var/lib/vscp/vscpd/timefile;1;%isoboth: Timer %event.data.int32[0] elapsed %lf
  </param>
 
 </row>
@@ -117,7 +117,7 @@
 
 <action>0x70</action>
  <param>
-    /srv/vscp/escapefile;1; %event.data.bit[0] %event.data.bit[31] %event.data.bool[0] %event.data.bool[3] %lf
+    /var/lib/vscp/vscpd/escapefile;1; %event.data.bit[0] %event.data.bit[31] %event.data.bool[0] %event.data.bool[3] %lf
  </param>
 
 </row>         

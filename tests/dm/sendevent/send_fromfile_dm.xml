@@ -21,7 +21,7 @@
 
 <action>0x42</action>
  <param>
- /srv/vscp/sendevents
+ /var/lib/vscp/vscpd/sendevents
  </param>
 
 </row>

@@ -2,7 +2,7 @@
 DESTDIR=$1
 
 echo "This script downloads the latest VSCP UX code and unpacks it into the"
-echo "/srv/vscp/web folder.  You need to have user rights to access this folder"
+echo "/var/lib/vscp/web/html folder.  You need to have user rights to access this folder"
 echo "which usually means you whould have root access. Also curl needs to be installed"
 echo "on your system.\n\n"
 echo "* * * WARNING * * * This is alpha code!!! - Larger than it need to be.\n\n"
@@ -19,12 +19,12 @@ echo "Unpacking archive"
 unzip /tmp/vscp_web.zip -d/tmp
 
 echo "Copying files"
-cp -r /tmp/vscp-ux-master/* $DESTDIR/web
+cp -r /tmp/vscp-ux-master/* $DESTDIR/web/html
 
 echo "Removing zip-file"
 rm /tmp/vscp_web.zip
 rm -rf /tmp/vscp-ux-master
-echo "Web samples installed to $DESTDIR/web"
+echo "Web samples installed to $DESTDIR/web/html"
 echo "Done! \n"
 
 echo "Test by going to http//localhost:8884 or https//localhost:8843"

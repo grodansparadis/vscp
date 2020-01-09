@@ -139,7 +139,7 @@ CControlObject::CControlObject()
         syslog(LOG_DEBUG, "Starting the vscpd daemon");
     }
 
-    m_rootFolder = "/srv/vscp/";
+    m_rootFolder = "/var/lib/vscp/vscpd/";
 
     // Default admin user credentials
     m_admin_user     = "admin";
@@ -178,7 +178,7 @@ CControlObject::CControlObject()
     m_tcpip_ssl_short_trust      = false;
 
     // Web server SSL settings
-    m_web_ssl_certificate          = m_rootFolder + "certs/server.pem";
+    m_web_ssl_certificate          = "/etc/vscp/certs/server.pem";
     m_web_ssl_certificate_chain    = "";
     m_web_ssl_verify_peer          = false;
     m_web_ssl_ca_path              = "";
@@ -197,7 +197,7 @@ CControlObject::CControlObject()
                         "index.lp,index.lsp,index.lua,index.cgi,"
                         "index.shtml,index.php";
 
-    m_web_document_root = m_rootFolder + "www";
+    m_web_document_root = m_rootFolder + "www/html";
 
     // Directory listings on by default
     m_web_enable_directory_listing          = true;
@@ -303,7 +303,7 @@ CControlObject::init(std::string& strcfgfile, std::string& rootFolder)
         return false;
     }
 
-    std::string strRootwww = m_rootFolder + "www";
+    std::string strRootwww = m_rootFolder + "www/html";
     m_web_document_root    = strRootwww;
 
     // Change locale to get the correct decimal point "."
@@ -323,6 +323,11 @@ CControlObject::init(std::string& strcfgfile, std::string& rootFolder)
     ////////////////////////////////////////////////////////////////////////////
 
     // Read XML configuration
+    if (m_debugFlags[0] & VSCP_DEBUG1_GENERAL) {
+        syslog(LOG_DEBUG, "Reading configuration file");
+    }
+
+    // Read XML configuration
     if (!readConfiguration(strcfgfile)) {
         syslog(
           LOG_ERR,
@@ -337,25 +342,15 @@ CControlObject::init(std::string& strcfgfile, std::string& rootFolder)
         if (NULL == (pw = getpwnam(m_runAsUser.c_str()))) {
             syslog(LOG_ERR, "Unknown user.");
         } else if (setgid(pw->pw_gid) != 0) {
-            syslog(LOG_ERR, "setgid() failed.");
+            syslog(LOG_ERR, "setgid() failed. [%s]", strerror(errno));
         } else if (setuid(pw->pw_uid) != 0) {
-            syslog(LOG_ERR, "setuid() failed.");
+            syslog(LOG_ERR, "setuid() failed. [%s]", strerror(errno));
         }
     }
 #endif
 
     if (m_debugFlags[0] & VSCP_DEBUG1_GENERAL) {
         syslog(LOG_DEBUG, "Using configuration file: %s", strcfgfile.c_str());
-    }
-
-    // Read XML configuration
-    if (m_debugFlags[0] & VSCP_DEBUG1_GENERAL) {
-        syslog(LOG_DEBUG, "Reading configuration file");
-    }
-
-    // Read users from database
-    if (m_debugFlags[0] & VSCP_DEBUG1_GENERAL) {
-        syslog(LOG_DEBUG, "loading users from disk...");
     }
 
     //==========================================================================
@@ -1438,7 +1433,7 @@ startFullConfigParser(void* data, const char* name, const char** attr)
     if (NULL == data)
         return;
 
-    fprintf(stderr, "%s\n", name);
+    // fprintf(stderr, "%s\n", name);
 
     if ((0 == depth_full_config_parser) &&
         (0 == vscp_strcasecmp(name, "vscpconfig"))) {
@@ -2011,26 +2006,28 @@ startFullConfigParser(void* data, const char* name, const char** attr)
             }
         } // for
 
-        // Add the level I device
-        if (!pObj->m_deviceList.addItem(strName,
-                                        strConfig,
-                                        strPath,
-                                        flags,
-                                        guid,
-                                        VSCP_DRIVER_LEVEL1,
-                                        bEnabled,
-                                        translation)) {
-            syslog(LOG_ERR,
-                   "Level I driver not added name=%s. "
-                   "Path does not exist. - [%s]",
-                   strName.c_str(),
-                   strPath.c_str());
-        } else {
-            if (pObj->m_debugFlags[0] & VSCP_DEBUG1_DRIVER1) {
-                syslog(LOG_DEBUG,
-                       "Level I driver added. name = %s - [%s]",
+        if (bEnabled) {
+            // Add the level I device
+            if (!pObj->m_deviceList.addItem(strName,
+                                            strConfig,
+                                            strPath,
+                                            flags,
+                                            guid,
+                                            VSCP_DRIVER_LEVEL1,
+                                            bEnabled,
+                                            translation)) {
+                syslog(LOG_ERR,
+                       "Level I driver not added name=%s. "
+                       "Path does not exist. - [%s]",
                        strName.c_str(),
                        strPath.c_str());
+            } else {
+                if (pObj->m_debugFlags[0] & VSCP_DEBUG1_DRIVER1) {
+                    syslog(LOG_DEBUG,
+                           "Level I driver added. name = %s - [%s]",
+                           strName.c_str(),
+                           strPath.c_str());
+                }
             }
         }
     } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
@@ -2078,29 +2075,31 @@ startFullConfigParser(void* data, const char* name, const char** attr)
         } // for
 
         // Add the level II device
-        if (!pObj->m_deviceList.addItem(strName,
-                                        strConfig,
-                                        strPath,
-                                        0,
-                                        guid,
-                                        VSCP_DRIVER_LEVEL2,
-                                        bEnabled)) {
-            if (pObj->m_debugFlags[0] & VSCP_DEBUG1_DRIVER2) {
-                syslog(LOG_ERR,
-                       "Level II driver was not added. name = %s"
-                       "Path does not exist. - [%s]",
-                       strName.c_str(),
-                       strPath.c_str());
-            }
-        } else {
-            if (pObj->m_debugFlags[0] & VSCP_DEBUG1_DRIVER2) {
-                syslog(LOG_DEBUG,
-                       "Level II driver added. name = %s- [%s]",
-                       strName.c_str(),
-                       strPath.c_str());
+        if (bEnabled) {
+            if (!pObj->m_deviceList.addItem(strName,
+                                            strConfig,
+                                            strPath,
+                                            0,
+                                            guid,
+                                            VSCP_DRIVER_LEVEL2,
+                                            bEnabled)) {
+                if (pObj->m_debugFlags[0] & VSCP_DEBUG1_DRIVER2) {
+                    syslog(LOG_ERR,
+                           "Level II driver was not added. name = %s"
+                           "Path does not exist. - [%s]",
+                           strName.c_str(),
+                           strPath.c_str());
+                }
+            } else {
+                if (pObj->m_debugFlags[0] & VSCP_DEBUG1_DRIVER2) {
+                    syslog(LOG_DEBUG,
+                           "Level II driver added. name = %s- [%s]",
+                           strName.c_str(),
+                           strPath.c_str());
+                }
             }
         }
-    } 
+    }
 
     depth_full_config_parser++;
 }

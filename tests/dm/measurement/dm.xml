@@ -20,7 +20,7 @@
 
     <action>0x10</action>
     <param>
-        /srv/vscp/test_measurement.sh "match" %measurement.string  %event
+        /var/lib/vscp/vscpd/test_measurement.sh "match" %measurement.string  %event
     </param>
 
     <index measurementindex="true">1</index>
@@ -50,7 +50,7 @@
 
     <action>0x10</action>
     <param>
-        /srv/vscp/test_measurement.sh "no match" %measurement.string  %event
+        /var/lib/vscp/vscpd/test_measurement.sh "no match" %measurement.string  %event
     </param>
 
     <index measurementindex="true">1</index>
@@ -80,7 +80,7 @@
 
     <action>0x10</action>
     <param>
-        /srv/vscp/test_measurement.sh "greater than" %measurement.string  %event
+        /var/lib/vscp/vscpd/test_measurement.sh "greater than" %measurement.string  %event
     </param>
 
     <index measurementindex="true">1</index>
@@ -110,7 +110,7 @@
 
     <action>0x10</action>
     <param>
-        /srv/vscp/test_measurement.sh "equal or greater than" %measurement.string  %event
+        /var/lib/vscp/vscpd/test_measurement.sh "equal or greater than" %measurement.string  %event
     </param>
 
     <index measurementindex="true">1</index>
@@ -140,7 +140,7 @@
 
     <action>0x10</action>
     <param>
-        /srv/vscp/test_measurement.sh "less than" %measurement.string %event
+        /var/lib/vscp/vscpd/test_measurement.sh "less than" %measurement.string %event
     </param>
 
     <index measurementindex="true">1</index>
@@ -171,7 +171,7 @@
 
     <action>0x10</action>
     <param>
-        /srv/vscp/test_measurement.sh "equal or less than" %measurement.string   %event
+        /var/lib/vscp/vscpd/test_measurement.sh "equal or less than" %measurement.string   %event
     </param>
 
     <index measurementindex="true">1</index>

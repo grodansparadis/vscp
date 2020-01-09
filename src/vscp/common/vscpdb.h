@@ -86,7 +86,7 @@
 #define VSCPDB_CONFIG_DEFAULT_TCPIP_ENCRYPTION            "0"
 
 #define VSCPDB_CONFIG_NAME_TCPIP_SSL_CERTIFICATE          "tcpip-ssl-certificate"
-#define VSCPDB_CONFIG_DEFAULT_TCPIP_SSL_CERTIFICATE       "/srv/vscp/certs/tcpip_server.pem"
+#define VSCPDB_CONFIG_DEFAULT_TCPIP_SSL_CERTIFICATE       "/etc/vscp/certs/tcpip_server.pem"
 
 #define VSCPDB_CONFIG_NAME_TCPIP_SSL_CERTIFICAT_CHAIN     "tcpip-ssl-certificate-chain"
 #define VSCPDB_CONFIG_DEFAULT_TCPIP_SSL_CERTIFICAT_CHAIN  ""
@@ -145,34 +145,6 @@
 #define VSCPDB_CONFIG_NAME_UDP_ACK_ENABLE               "udp-ack-enable"
 #define VSCPDB_CONFIG_DEFAULT_UDP_ACK_ENABLE            "0"
 
-// Multicast
-
-#define VSCPDB_CONFIG_NAME_MULTICAST_ENABLE             "muticast-enable"
-#define VSCPDB_CONFIG_DEFAULT_MULTICAST_ENABLE           "0"
-
-// DM
-
-#define VSCPDB_CONFIG_NAME_DM_PATH_DB                   "dm-path-db"
-#define VSCPDB_CONFIG_DEFAULT_DM_PATH_DB                "/srv/vscp/dm.sqlite3"
-
-#define VSCPDB_CONFIG_NAME_DM_PATH_XML                  "dm-path-xml"
-#define VSCPDB_CONFIG_DEFAULT_DM_PATH_XML               "/srv/vscp/dm.xml"
-
-#define VSCPDB_CONFIG_NAME_DM_ALLOW_XML_SAVE            "dm-allow-xml-save"
-#define VSCPDB_CONFIG_DEFAULT_DM_ALLOW_XML_SAVE         "0"
-
-// Variables
-
-#define VSCPDB_CONFIG_NAME_VARIABLES_PATH_DB            "variable-path-db"
-#define VSCPDB_CONFIG_DEFAULT_VARIABLES_PATH_DB         "/srv/vscp/variable.sqlite3"
-
-#define VSCPDB_CONFIG_NAME_VARIABLES_PATH_XML           "variable-path-xml"
-#define VSCPDB_CONFIG_DEFAULT_VARIABLES_PATH_XML        "/srv/vscp/variable.xml"
-
-// Data
-
-#define VSCPDB_CONFIG_NAME_PATH_DB_EVENTS               "path-db-event-data"
-#define VSCPDB_CONFIG_DEFAULT_PATH_DB_EVENTS            "/srv/vscp/vscp_events.sqlite3"
 
 // WEB server
 
@@ -180,7 +152,7 @@
 #define VSCPDB_CONFIG_DEFAULT_WEB_ENABLE                "1"
 
 #define VSCPDB_CONFIG_NAME_WEB_DOCUMENT_ROOT            "web-document_root"
-#define VSCPDB_CONFIG_DEFAULT_WEB_DOCUMENT_ROOT         "/srv/vscp/web"
+#define VSCPDB_CONFIG_DEFAULT_WEB_DOCUMENT_ROOT         "/var/lib/vscp/vscpd/web"
 
 #define VSCPDB_CONFIG_NAME_WEB_LISTENING_PORTS          "web-listening_ports"
 #define VSCPDB_CONFIG_DEFAULT_WEB_LISTENING_PORTS       "[::]:8888r,[::]:8843s,8884"
@@ -195,7 +167,7 @@
 #define VSCPDB_CONFIG_DEFAULT_WEB_ENABLE_AUTH_DOMAIN_CHECK  "1"
 
 #define VSCPDB_CONFIG_NAME_WEB_SSL_CERTIFICATE          "web-ssl_certificate"
-#define VSCPDB_CONFIG_DEFAULT_WEB_SSL_CERTIFICATE       "/srv/vscp/certs/server.pem"
+#define VSCPDB_CONFIG_DEFAULT_WEB_SSL_CERTIFICATE       "/etc/vscp/certs/server.pem"
 
 #define VSCPDB_CONFIG_NAME_WEB_SSL_CERTIFICAT_CHAIN     "web-ssl_certificate_chain"
 #define VSCPDB_CONFIG_DEFAULT_WEB_SSL_CERTIFICAT_CHAIN  ""
@@ -256,9 +228,6 @@
 
 #define VSCPDB_CONFIG_NAME_WEB_NUM_THREADS              "web-num_threads"
 #define VSCPDB_CONFIG_DEFAULT_WEB_NUM_THREADS           "50"
-
-#define VSCPDB_CONFIG_NAME_WEB_RUN_AS_USER              "web-run_as_user"
-#define VSCPDB_CONFIG_DEFAULT_WEB_RUN_AS_USER           ""
 
 #define VSCPDB_CONFIG_NAME_WEB_URL_REWRITE_PATTERNS     "web-url_rewrite_patterns"
 #define VSCPDB_CONFIG_DEFAULT_WEB_URL_REWRITE_PATTERNS  ""
@@ -347,7 +316,7 @@
 #define VSCPDB_CONFIG_DEFAULT_WEBSOCKET_ENABLE                  "1"
 
 #define VSCPDB_CONFIG_NAME_WEBSOCKET_DOCUMENT_ROOT              "websocket-document-root"
-#define VSCPDB_CONFIG_DEFAULT_WEBSOCKET_DOCUMENT_ROOT           "/srv/vscp/web"
+#define VSCPDB_CONFIG_DEFAULT_WEBSOCKET_DOCUMENT_ROOT           "/var/lib/vscp/vscpd/web"
 
 #define VSCPDB_CONFIG_NAME_WEBSOCKET_TIMEOUT_MS                 "websocket-timeout-ms"
 #define VSCPDB_CONFIG_DEFAULT_WEBSOCKET_TIMEOUT_MS              "30000"

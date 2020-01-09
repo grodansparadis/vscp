@@ -142,7 +142,7 @@ main(int argc, char** argv)
 
     crcInit();
 
-    rootFolder   = "/var/lib/vscpd/";
+    rootFolder   = "/var/lib/vscp/";
     strcfgfile   = "/etc/vscp/vscpd.conf";
     gbStopDaemon = false;
 
@@ -269,7 +269,9 @@ init(std::string& strcfgfile, std::string& rootFolder)
 
     // Create folder structure
     if (!createFolderStuct(rootFolder)) {
-        unlink("/var/run/vscpd/vscpd.pid");
+        syslog(LOG_ERR, "vscpd: Folder structure is not in place (You may need to run as root).");
+        fprintf(stderr, "vscpd: Folder structure is not in place (You may need to run as root).");
+        unlink("/var/run/vscpd.pid");
         return -1;
     }
 
@@ -336,7 +338,7 @@ init(std::string& strcfgfile, std::string& rootFolder)
         if (!gpobj->init(strcfgfile, rootFolder)) {
             fprintf(stderr, "Can't initialize daemon. Exiting.\n");
             syslog(LOG_ERR, "Can't initialize daemon. Exiting.");
-            unlink("/var/run/vscpd/vscpd.pid");
+            unlink("/var/run/vscpd.pid");
             return FALSE;
         }
 
@@ -465,6 +467,25 @@ help(char* szPrgname)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// createFolder
+//
+
+bool
+createFolder(const char *folder)
+{
+    if (0 == vscp_dirExists(folder)) {
+        if (-1 ==
+            mkdir(folder, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH)) {
+            fprintf(stderr, "Failed to create folder %s\n", folder );
+            syslog(LOG_ERR, "Failed to create folder %s\n", folder );
+            return false;
+        }
+    }
+
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // createFolderStuct
 //
 
@@ -473,69 +494,41 @@ createFolderStuct(std::string& rootFolder)
 {
     std::string path;
 
-    fprintf(stderr, "Building folder structure.\n");
-
-    if (0 == vscp_dirExists(rootFolder.c_str())) {
-        if (-1 ==
-            mkdir(rootFolder.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH)) {
-            fprintf(stderr, "Failed to create folder %s\n", rootFolder.c_str());
-            syslog(LOG_ERR, "Failed to create folder %s\n", rootFolder.c_str());
-            return false;
-        }
+    if ( !createFolder(rootFolder.c_str())) {
+        return false;
     }
 
-    path = rootFolder + "/certs";
-    if (0 == vscp_dirExists(path.c_str())) {
-        if (-1 == mkdir(path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH)) {
-            fprintf(stderr, "Failed to create folder %s\n", path.c_str());
-            syslog(LOG_ERR, "Failed to create folder %s\n", path.c_str());
-            return false;
-        }
+    if ( !createFolder("/etc/vscp/certs")) {
+        return false;
+    }
+
+    if ( !createFolder("/etc/vscp/ca_certificats")) {
+        return false;
     }
 
     path = rootFolder + "/web";
-    if (0 == vscp_dirExists(path.c_str())) {
-        if (-1 == mkdir(path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH)) {
-            fprintf(stderr, "Failed to create folder %s\n", path.c_str());
-            syslog(LOG_ERR, "Failed to create folder %s\n", path.c_str());
-            return false;
-        }
+    if ( !createFolder(path.c_str())) {
+        return false;
     }
 
-    path = rootFolder + "/web/images";
-    if (0 == vscp_dirExists(path.c_str())) {
-        if (-1 == mkdir(path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH)) {
-            fprintf(stderr, "Failed to create folder %s\n", path.c_str());
-            syslog(LOG_ERR, "Failed to create folder %s\n", path.c_str());
-            return false;
-        }
+    path = rootFolder + "/web/html";
+    if ( !createFolder(path.c_str())) {
+        return false;
     }
 
-    path = rootFolder + "/web/js";
-    if (0 == vscp_dirExists(path.c_str())) {
-        if (-1 == mkdir(path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH)) {
-            fprintf(stderr, "Failed to create folder %s\n", path.c_str());
-            syslog(LOG_ERR, "Failed to create folder %s\n", path.c_str());
-            return false;
-        }
+    path = rootFolder + "/web/html/images";
+    if ( !createFolder(path.c_str())) {
+        return false;
     }
 
-    path = rootFolder + "/web/lua";
-    if (0 == vscp_dirExists(path.c_str())) {
-        if (-1 == mkdir(path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH)) {
-            fprintf(stderr, "Failed to create folder %s\n", path.c_str());
-            syslog(LOG_ERR, "Failed to create folder %s\n", path.c_str());
-            return false;
-        }
+    path = rootFolder + "/web/html/js";
+    if ( !createFolder(path.c_str())) {
+        return false;
     }
 
-    path = rootFolder + "/mdf";
-    if (0 == vscp_dirExists(path.c_str())) {
-        if (-1 == mkdir(path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH)) {
-            fprintf(stderr, "Failed to create folder %s\n", path.c_str());
-            syslog(LOG_ERR, "Failed to create folder %s\n", path.c_str());
-            return false;
-        }
+    path = rootFolder + "/web/html/css";
+    if ( !createFolder(path.c_str())) {
+        return false;
     }
 
     return true;

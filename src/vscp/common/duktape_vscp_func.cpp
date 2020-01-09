@@ -233,7 +233,7 @@ js_load_module(duk_context* ctx)
     const char* filename;
     const char* module_id;
 
-    // TODO Modules can only be loaded from /srv/vscp/javascript or
+    // TODO Modules can only be loaded from /var/lib/vscp/javascript or
     // configured other location
 
     module_id = duk_require_string(ctx, 0);
