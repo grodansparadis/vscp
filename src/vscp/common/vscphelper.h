@@ -164,6 +164,16 @@ extern "C"
     // ***************************************************************************
 
     /*!
+        Return non-zero if platform is 64-bit
+    */
+    int vscp_is64Bit();
+
+    /*!
+        Return non-zero if platform is 32-bit
+    */
+    int vscp_is32Bit();
+
+    /*!
         Return non zero if endiness is little endian
     */
     int vscp_isLittleEndian(void);
@@ -172,6 +182,15 @@ extern "C"
         Return non zero if endiness is big endian
     */
     int vscp_isBigEndian(void);
+
+    /*!
+        Get program memory useage
+    */
+
+    #ifndef WIN32
+    void
+    vscp_mem_usage(double& vm_usage, double& resident_set);
+    #endif
 
     /*!
         Wait a number of milliseconds for semaphore

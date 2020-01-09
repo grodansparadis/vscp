@@ -56,8 +56,18 @@
 #include <sys/socket.h>
 #include <sys/time.h>
 #include <sys/types.h>
+#include <sys/utsname.h>
 #include <syslog.h>
 #include <unistd.h>
+
+// For version and copyright info
+#include <duktape.h>
+#include <expat.h>
+#include <json.hpp>
+#include <lua.h>
+#include <openssl/crypto.h>
+#include <openssl/opensslv.h>
+#include <sqlite3.h>
 
 #include "web_css.h"
 #include "web_js.h"
@@ -65,6 +75,7 @@
 
 #include <civetweb.h>
 
+#include "restsrv.h"
 #include <actioncodes.h>
 #include <canal_macro.h>
 #include <controlobject.h>
@@ -91,7 +102,7 @@
 // Uncomment to compile stock test pages
 #define WEB_EXAMPLES
 #define EXAMPLE_URI "/civetwebtest"
-#define EXIT_URI "/civetwebtest_exit"
+#define EXIT_URI    "/civetwebtest_exit"
 
 //#define USE_SSL_DH
 
@@ -102,7 +113,7 @@
 #define GUID_COUNT_TYPES 6 // Number of GUID types defined
 
 // List GUID types
-const char *pguid_types[] = { "Common GUID",
+const char* pguid_types[] = { "Common GUID",
                               "Interface",
                               "Level I hardware",
                               "Level II hardware",
@@ -114,7 +125,7 @@ const char *pguid_types[] = { "Common GUID",
 //                 GLOBALS
 ///////////////////////////////////////////////////
 
-extern CControlObject *gpobj;
+extern CControlObject* gpobj;
 extern bool gbRestart;   // Should be set true to restart the VSCP daemon
 extern int gbStopDaemon; // Should be set true to stop the daemon
 
@@ -133,16 +144,17 @@ extern int gbStopDaemon; // Should be set true to stop the daemon
 //
 
 void
-websrv_sendheader(struct mg_connection *conn,
+websrv_sendheader(struct mg_connection* conn,
                   int returncode,
-                  const char *pcontent)
+                  const char* pcontent)
 {
     char date[64];
     time_t curtime = time(NULL);
     vscp_getTimeString(date, sizeof(date), &curtime);
 
     // Check pointers
-    if (NULL == pcontent) return;
+    if (NULL == pcontent)
+        return;
 
     mg_printf(conn,
               "HTTP/1.1 %d OK\r\n"
@@ -161,17 +173,18 @@ websrv_sendheader(struct mg_connection *conn,
 //
 
 void
-websrv_sendSetCookieHeader(struct mg_connection *conn,
+websrv_sendSetCookieHeader(struct mg_connection* conn,
                            int returncode,
-                           const char *pcontent,
-                           const char *psid)
+                           const char* pcontent,
+                           const char* psid)
 {
     char date[64];
     time_t curtime = time(NULL);
     vscp_getTimeString(date, sizeof(date), &curtime);
 
     // Check pointers
-    if ((NULL == pcontent) || (NULL == psid)) return;
+    if ((NULL == pcontent) || (NULL == psid))
+        return;
 
     // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie
     // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control
@@ -194,7 +207,7 @@ websrv_sendSetCookieHeader(struct mg_connection *conn,
 //
 
 bool
-websrv_parseHeader(std::deque<std::string> &valarray, std::string &header)
+websrv_parseHeader(std::deque<std::string>& valarray, std::string& header)
 {
     //     char *name, *value, *s;
 
@@ -244,12 +257,13 @@ websrv_parseHeader(std::deque<std::string> &valarray, std::string &header)
 //
 
 bool
-websrv_getHeaderElement(std::deque<std::string> &valarray,
-                        const std::string &name,
-                        std::string &value)
+websrv_getHeaderElement(std::deque<std::string>& valarray,
+                        const std::string& name,
+                        std::string& value)
 {
     // Must be value/name pairs
-    if (valarray.size() % 2) return false;
+    if (valarray.size() % 2)
+        return false;
 
     for (size_t i = 0; i < valarray.size(); i += 2) {
         if (name == valarray[i]) {
@@ -269,12 +283,12 @@ websrv_getHeaderElement(std::deque<std::string> &valarray,
 // websrv_get_session
 //
 
-struct websrv_session *
-websrv_get_session(struct mg_connection *conn)
+struct websrv_session*
+websrv_get_session(struct mg_connection* conn)
 {
-    struct websrv_session *pSession = NULL;
-    struct mg_context *ctx;
-    const struct mg_request_info *reqinfo;
+    struct websrv_session* pSession = NULL;
+    struct mg_context* ctx;
+    const struct mg_request_info* reqinfo;
 
     // Check pointers
     if (!conn || !(ctx = mg_get_context(conn)) ||
@@ -283,8 +297,9 @@ websrv_get_session(struct mg_connection *conn)
     }
 
     // Get the session cookie
-    const char *pheader = mg_get_header(conn, "cookie");
-    if (NULL == pheader) return NULL;
+    const char* pheader = mg_get_header(conn, "cookie");
+    if (NULL == pheader)
+        return NULL;
 
     std::deque<std::string> valarray;
     std::string header = std::string(pheader);
@@ -298,7 +313,7 @@ websrv_get_session(struct mg_connection *conn)
 
     // find existing session
     pthread_mutex_lock(&gpobj->m_websrvSessionMutex);
-    std::list<struct websrv_session *>::iterator iter;
+    std::list<struct websrv_session*>::iterator iter;
     for (iter = gpobj->m_web_sessions.begin();
          iter != gpobj->m_web_sessions.end();
          ++iter) {
@@ -317,13 +332,13 @@ websrv_get_session(struct mg_connection *conn)
 // websrv_add_session
 //
 
-websrv_session *
-websrv_add_session(struct mg_connection *conn)
+websrv_session*
+websrv_add_session(struct mg_connection* conn)
 {
     std::string user;
-    struct websrv_session *pSession;
-    struct mg_context *ctx;
-    const struct mg_request_info *reqinfo;
+    struct websrv_session* pSession;
+    struct mg_context* ctx;
+    const struct mg_request_info* reqinfo;
 
     // Check pointers
     if (!conn || !(ctx = mg_get_context(conn)) ||
@@ -332,8 +347,9 @@ websrv_add_session(struct mg_connection *conn)
     }
 
     // Parse "Authorization:" header, fail fast on parse error
-    const char *pheader = mg_get_header(conn, "Authorization");
-    if (NULL == pheader) return NULL;
+    const char* pheader = mg_get_header(conn, "Authorization");
+    if (NULL == pheader)
+        return NULL;
 
     std::deque<std::string> valarray;
     std::string header = std::string(pheader);
@@ -415,12 +431,12 @@ websrv_add_session(struct mg_connection *conn)
 // websrv_GetCreateSession
 //
 
-struct websrv_session *
-websrv_getCreateSession(struct mg_connection *conn)
+struct websrv_session*
+websrv_getCreateSession(struct mg_connection* conn)
 {
-    struct websrv_session *pSession;
-    struct mg_context *ctx;
-    const struct mg_request_info *reqinfo;
+    struct websrv_session* pSession;
+    struct mg_context* ctx;
+    const struct mg_request_info* reqinfo;
 
     // Check pointers
     if (!conn || !(ctx = mg_get_context(conn)) ||
@@ -442,17 +458,17 @@ websrv_getCreateSession(struct mg_connection *conn)
 //
 
 void
-websrv_expire_sessions(struct mg_connection *conn)
+websrv_expire_sessions(struct mg_connection* conn)
 {
     time_t now;
 
     now = time(NULL);
 
     pthread_mutex_lock(&gpobj->m_websrvSessionMutex);
-    std::list<struct websrv_session *>::iterator it;
+    std::list<struct websrv_session*>::iterator it;
     for (it = gpobj->m_web_sessions.begin(); it != gpobj->m_web_sessions.end();
          /* inline */) {
-        struct websrv_session *pSession = *it;
+        struct websrv_session* pSession = *it;
         if ((now - pSession->lastActiveTime) > (60 * 60)) {
             it = gpobj->m_web_sessions.erase(it);
             delete pSession;
@@ -482,61 +498,61 @@ websrv_expire_sessions(struct mg_connection *conn)
 //         return 0;
 //     }
 
-    //char user[50], cnonce[50], response[40], uri[200], qop[20], nc[20],
-    //  nonce[50];
+// char user[50], cnonce[50], response[40], uri[200], qop[20], nc[20],
+//  nonce[50];
 
-    // Parse "Authorization:" header, fail fast on parse error
-    /*if ( NULL == ( hdr = mg_get_header( hm, "Authorization" ) ) ||
-        0 == mg_http_parse_header(hdr, "username", user, sizeof( user ) ) ||
-        0 == mg_http_parse_header(hdr, "cnonce", cnonce, sizeof( cnonce ) ) ||
-        0 == mg_http_parse_header(hdr, "response", response, sizeof( response )
-    ) || 0 == mg_http_parse_header(hdr, "uri", uri, sizeof( uri ) ) || 0 ==
-    mg_http_parse_header(hdr, "qop", qop, sizeof( qop ) ) || 0 ==
-    mg_http_parse_header(hdr, "nc", nc, sizeof( nc ) ) || 0 ==
-    mg_http_parse_header(hdr, "nonce", nonce, sizeof( nonce ) ) || 0 ==
-    vscp_check_nonce( nonce ) ) { return WEB_ERROR;
-    }
+// Parse "Authorization:" header, fail fast on parse error
+/*if ( NULL == ( hdr = mg_get_header( hm, "Authorization" ) ) ||
+    0 == mg_http_parse_header(hdr, "username", user, sizeof( user ) ) ||
+    0 == mg_http_parse_header(hdr, "cnonce", cnonce, sizeof( cnonce ) ) ||
+    0 == mg_http_parse_header(hdr, "response", response, sizeof( response )
+) || 0 == mg_http_parse_header(hdr, "uri", uri, sizeof( uri ) ) || 0 ==
+mg_http_parse_header(hdr, "qop", qop, sizeof( qop ) ) || 0 ==
+mg_http_parse_header(hdr, "nc", nc, sizeof( nc ) ) || 0 ==
+mg_http_parse_header(hdr, "nonce", nonce, sizeof( nonce ) ) || 0 ==
+vscp_check_nonce( nonce ) ) { return WEB_ERROR;
+}
 
-    // Check if user is valid
-    pUserItem = pObject->m_userList.getUser( std::string( user ) );
-    if ( NULL == pUserItem ) return FALSE;
+// Check if user is valid
+pUserItem = pObject->m_userList.getUser( std::string( user ) );
+if ( NULL == pUserItem ) return FALSE;
 
-    // Check if remote ip is valid
-    pthread_mutex_lock(&pObject->m_mutexUserList);
-    bValidHost =
-            pUserItem->isAllowedToConnect( std::string( reqinfo->remote_addr )
-    ); pthread_mutex_unlock(&pObject->m_mutexUserList); if ( !bValidHost ) {
-        // Host wrong
-        std::string strErr =
-                vscp_str_format( ( "[Webserver Client] Host [%s] NOT allowed
-    to connect. User [%s]\n" ), reqinfo->remote_addr, (const char
-    *)pUserItem->m_user.c_str() ); syslog( LOG_ERR, strErr,
-    DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY ); return WEB_ERROR;
-    }
+// Check if remote ip is valid
+pthread_mutex_lock(&pObject->m_mutexUserList);
+bValidHost =
+        pUserItem->isAllowedToConnect( std::string( reqinfo->remote_addr )
+); pthread_mutex_unlock(&pObject->m_mutexUserList); if ( !bValidHost ) {
+    // Host wrong
+    std::string strErr =
+            vscp_str_format( ( "[Webserver Client] Host [%s] NOT allowed
+to connect. User [%s]\n" ), reqinfo->remote_addr, (const char
+*)pUserItem->m_user.c_str() ); syslog( LOG_ERR, strErr,
+DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY ); return WEB_ERROR;
+}
 
-    char method[33];
-    memset( method, 0, sizeof( method ) );
-    strncpy( method, reqinfo->request_method, strlen( reqinfo->request_method )
-    );
+char method[33];
+memset( method, 0, sizeof( method ) );
+strncpy( method, reqinfo->request_method, strlen( reqinfo->request_method )
+);
 
-    // Check digest
-    if ( TRUE != websrv_check_password( method,
-                       ( const char * )pUserItem->m_md5Password.c_str(),
-                       uri,
-                       nonce,
-                       nc,
-                       cnonce,
-                       qop,
-                       response ) ) {
+// Check digest
+if ( TRUE != websrv_check_password( method,
+                   ( const char * )pUserItem->m_md5Password.c_str(),
+                   uri,
+                   nonce,
+                   nc,
+                   cnonce,
+                   qop,
+                   response ) ) {
 
-            // Username/password wrong
-        std::string strErr =
-                vscp_str_format( ( "[Webserver Client] Host [%s] User [%s]
-    NOT allowed to connect.\n" ), std::string( ( const char * )inet_ntoa(
-    conn->sa.sin.sin_addr ) ).xx_str(), (const char *)pUserItem->m_user.c_str()
-    ); syslog( LOG_ERR, strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY );
-        return 0;
-    }*/
+        // Username/password wrong
+    std::string strErr =
+            vscp_str_format( ( "[Webserver Client] Host [%s] User [%s]
+NOT allowed to connect.\n" ), std::string( ( const char * )inet_ntoa(
+conn->sa.sin.sin_addr ) ).xx_str(), (const char *)pUserItem->m_user.c_str()
+); syslog( LOG_ERR, strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY );
+    return 0;
+}*/
 
 //     return WEB_OK;
 // }
@@ -546,7 +562,7 @@ websrv_expire_sessions(struct mg_connection *conn)
 //
 
 static int
-log_message(const struct mg_connection *conn, const char *message)
+log_message(const struct mg_connection* conn, const char* message)
 {
     syslog(LOG_INFO, "[websrv] %s", message);
     return WEB_OK;
@@ -557,7 +573,7 @@ log_message(const struct mg_connection *conn, const char *message)
 //
 
 static int
-log_access(const struct mg_connection *conn, const char *message)
+log_access(const struct mg_connection* conn, const char* message)
 {
     // TODO
     return WEB_OK;
@@ -568,10 +584,11 @@ log_access(const struct mg_connection *conn, const char *message)
 //
 
 static int
-vscp_mainpage(struct mg_connection *conn, void *cbdata)
+vscp_mainpage(struct mg_connection* conn, void* cbdata)
 {
     // Check pointer
-    if (NULL == conn) return 0;
+    if (NULL == conn)
+        return 0;
 
     mg_printf(conn,
               "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n"
@@ -582,8 +599,9 @@ vscp_mainpage(struct mg_connection *conn, void *cbdata)
     mg_printf(conn, WEB_STYLE_START);
     mg_write(conn, WEB_COMMON_CSS, strlen(WEB_COMMON_CSS)); // CSS style Code
     mg_printf(conn, WEB_STYLE_END);
-    mg_write(
-      conn, WEB_COMMON_JS, strlen(WEB_COMMON_JS)); // Common Javascript code
+    mg_write(conn,
+             WEB_COMMON_JS,
+             strlen(WEB_COMMON_JS)); // Common Javascript code
 
     mg_printf(conn, WEB_COMMON_HEAD_END_BODY_START);
     // Insert server url into navigation menu
@@ -596,7 +614,8 @@ vscp_mainpage(struct mg_connection *conn, void *cbdata)
     mg_printf(conn, "</span>");
     mg_printf(conn, "<span style=\"text-indent:50px;\"><p>");
     mg_printf(
-      conn, "<img src=\"http://vscp.org/images/vscp_logo.png\" width=\"100\">");
+      conn,
+      "<img src=\"http://vscp.org/images/vscp_logo.png\" width=\"100\">");
     mg_printf(conn, "</p></span>");
     mg_printf(conn, "<span style=\"text-indent:50px;\"><p>");
     mg_printf(conn, " <b>Version:</b> ");
@@ -614,7 +633,7 @@ vscp_mainpage(struct mg_connection *conn, void *cbdata)
 //
 
 void
-send_basic_authorization_request(struct mg_connection *conn)
+send_basic_authorization_request(struct mg_connection* conn)
 {
     // char date[64];
     // time_t curtime = time(NULL);
@@ -647,16 +666,16 @@ send_basic_authorization_request(struct mg_connection *conn)
 //
 
 static int
-check_admin_authorization(struct mg_connection *conn, void *cbdata)
+check_admin_authorization(struct mg_connection* conn, void* cbdata)
 {
-    //char *name, *value, *p;
-    const char *auth_header;
+    // char *name, *value, *p;
+    const char* auth_header;
     char buf[8192];
     // struct mg_authorization_header ah;
-    CUserItem *pUserItem = NULL;
+    CUserItem* pUserItem = NULL;
     bool bValidHost;
-    struct mg_context *ctx;
-    const struct mg_request_info *reqinfo;
+    struct mg_context* ctx;
+    const struct mg_request_info* reqinfo;
 
     // Check pointers
     if (!conn || !(ctx = mg_get_context(conn)) ||
@@ -678,7 +697,7 @@ check_admin_authorization(struct mg_connection *conn, void *cbdata)
     char decoded[2048];
     size_t len;
     memset(decoded, 0, sizeof(decoded));
-    if (-1 == vscp_base64_decode((const unsigned char *)((const char *)buf),
+    if (-1 == vscp_base64_decode((const unsigned char*)((const char*)buf),
                                  strlen(buf) + 1,
                                  decoded,
                                  &len)) {
@@ -712,8 +731,8 @@ check_admin_authorization(struct mg_connection *conn, void *cbdata)
         syslog(LOG_ERR,
                "[Webserver Client] Use on host [%s] NOT "
                "allowed connect. User [%s]. Wrong user/password",
-               (const char *)reqinfo->remote_addr,
-               (const char *)pUserItem->getUserName().c_str());
+               (const char*)reqinfo->remote_addr,
+               (const char*)pUserItem->getUserName().c_str());
         send_basic_authorization_request(conn);
         return 401;
     }
@@ -729,8 +748,8 @@ check_admin_authorization(struct mg_connection *conn, void *cbdata)
         syslog(LOG_ERR,
                "[Webserver Client] Host [%s] "
                "NOT allowed to connect. User [%s]",
-               (const char *)reqinfo->remote_addr,
-               (const char *)pUserItem->getUserName().c_str());
+               (const char*)reqinfo->remote_addr,
+               (const char*)pUserItem->getUserName().c_str());
         send_basic_authorization_request(conn);
         return 401;
     }
@@ -738,141 +757,24 @@ check_admin_authorization(struct mg_connection *conn, void *cbdata)
     return WEB_OK;
 }
 
-
-////////////////////////////////////////////////////////////////////////////////
-// vscp_settings
+///////////////////////////////////////////////////////////////////////////////
+// check_admin_authorization
+//
+// Dummy for REST authentication
 //
 
-// static int
-// vscp_settings(struct mg_connection *conn, void *cbdata)
-// {
-//     char buf[32000];
-//     sqlite3_stmt *ppStmt;
-
-//     // Check pointer
-//     if (NULL == conn) return 0;
-
-//     // If not open no records
-//     if (NULL == gpobj->m_db_vscp_daemon) return 0;
-
-//     // Check pointer
-//     if (NULL == conn) return 0;
-
-//     const struct mg_request_info *reqinfo = mg_get_request_info(conn);
-//     if (NULL == reqinfo) return 0;
-
-//     // Configuration item name
-//     std::string strname;
-//     if (NULL != reqinfo->query_string) {
-//         if (mg_get_var(reqinfo->query_string,
-//                         strlen(reqinfo->query_string),
-//                         "varname",
-//                         buf,
-//                         sizeof(buf)) > 0) {
-//             strname = std::string(buf);
-//         }
-//     }
-
-//     // Configuration item value
-//     std::string strvalue;
-//     if (NULL != reqinfo->query_string) {
-//         if (mg_get_var(reqinfo->query_string,
-//                         strlen(reqinfo->query_string),
-//                         "varvalue",
-//                         buf,
-//                         sizeof(buf)) > 0) {
-//             strvalue = std::string(buf);
-//         }
-//     }
-
-//     mg_printf(conn,
-//                "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n"
-//                "Content-Type: text/html; charset=utf-8\r\n"
-//                "Connection: close\r\n\r\n");
-
-//     mg_printf(conn, WEB_COMMON_HEAD, "Settings");
-//     mg_printf(conn, WEB_STYLE_START);
-//     mg_write(conn, WEB_COMMON_CSS, strlen(WEB_COMMON_CSS)); // CSS style Code
-//     mg_printf(conn, WEB_STYLE_END);
-//     mg_write(
-//       conn, WEB_COMMON_JS, strlen(WEB_COMMON_JS)); // Common Javascript code
-
-//     mg_printf(conn, WEB_COMMON_HEAD_END_BODY_START);
-//     mg_printf(conn, WEB_COMMON_MENU);
-
-//     mg_printf(conn, "&nbsp;<h1 id=\"header\">Settings</h1><br>");
-
-//     // Update the configuration record
-//     if (strname.length()) {
-//         if (gpobj->updateConfigurationRecordItem(strname, strvalue)) {
-//             mg_printf(
-//               conn,
-//               "&nbsp;<span style=\"color: green;\">Updated configuration "
-//               "record: <b>%s</b> set to '%s' </span><br><br>",
-//               (const char *)strname.c_str(),
-//               (const char *)strvalue.c_str());
-//         } else {
-//             mg_printf(conn,
-//                        "&nbsp;<span style=\"color: red;\"><b>Failed</b> when
-//                        " "updating configuration record. "
-//                        "<b>%s</b>, value = '%s' </span><br><br>",
-//                        (const char *)strname.c_str(),
-//                        (const char *)strvalue.c_str());
-//         }
-//     }
-
-//     if (SQLITE_OK != sqlite3_prepare(gpobj->m_db_vscp_daemon,
-//                                      VSCPDB_CONFIG_FIND_ALL_SORT_NAME,
-//                                      -1,
-//                                      &ppStmt,
-//                                      NULL)) {
-//         mg_printf(conn,
-//                    "Failed to prepare configuration database. SQL is %s",
-//                    VSCPDB_CONFIG_FIND_ALL_SORT_NAME);
-//         return 0;
-//     }
-
-//     mg_printf(conn,
-//                "<table>"
-//                "<tr><th width=\"20%%\">Name</th><th>Value</th></tr>");
-
-//     while (SQLITE_ROW == sqlite3_step(ppStmt)) {
-//         const char *pName =
-//           (const char *)sqlite3_column_text(ppStmt,
-//           VSCPDB_ORDINAL_CONFIG_NAME);
-//         mg_printf(conn,
-//                    "<tr><form action=\"/vscp/settings\" method=\"get\" "
-//                    "id=\"%s\"><td><b>",
-//                    pName);
-//         mg_printf(conn, "%s", pName);
-//         mg_printf(conn,
-//                    "</b></td><td><input type=\"text\" name=\"varvalue\" "
-//                    "size=\"80\" value=\"");
-//         mg_printf(conn,
-//                    "%s",
-//                    (const char *)sqlite3_column_text(
-//                      ppStmt, VSCPDB_ORDINAL_CONFIG_VALUE));
-//         mg_printf(conn, "\" ");
-//         mg_printf(conn,
-//                    "\"> <input type=\"hidden\" name=\"varname\" value=\"");
-//         mg_printf(conn, "%s", pName);
-//         mg_printf(conn,
-//                    "\"><button type=\"submit\" form=\"%s\" "
-//                    "value=\"Save\">Save</button></form></td></tr>",
-//                    pName);
-//     }
-
-//     mg_printf(conn, "</table>");
-
-//     return WEB_OK;
-// }
+static int
+check_rest_authorization(struct mg_connection* conn, void* cbdata)
+{
+    return WEB_OK;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // vscp_password
 //
 
 static int
-vscp_password(struct mg_connection *conn, void *cbdata)
+vscp_password(struct mg_connection* conn, void* cbdata)
 {
     int i;
     uint8_t salt[16];
@@ -882,7 +784,8 @@ vscp_password(struct mg_connection *conn, void *cbdata)
     memset(buf, 0, sizeof(buf));
 
     // Check pointer
-    if (NULL == conn) return 0;
+    if (NULL == conn)
+        return 0;
 
     mg_printf(conn,
               "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n"
@@ -893,18 +796,20 @@ vscp_password(struct mg_connection *conn, void *cbdata)
     mg_printf(conn, WEB_STYLE_START);
     mg_write(conn, WEB_COMMON_CSS, strlen(WEB_COMMON_CSS)); // CSS style Code
     mg_printf(conn, WEB_STYLE_END);
-    mg_write(
-      conn, WEB_COMMON_JS, strlen(WEB_COMMON_JS)); // Common Javascript code
+    mg_write(conn,
+             WEB_COMMON_JS,
+             strlen(WEB_COMMON_JS)); // Common Javascript code
     mg_printf(conn, "<style>table, th, td { border: 0px solid black;}</style>");
 
     mg_printf(conn, WEB_COMMON_HEAD_END_BODY_START);
     mg_printf(conn, WEB_COMMON_MENU);
 
-    const struct mg_request_info *reqinfo = mg_get_request_info(conn);
-    if (NULL == reqinfo) return 0;
+    const struct mg_request_info* reqinfo = mg_get_request_info(conn);
+    if (NULL == reqinfo)
+        return 0;
 
     // password
-    const char *password = "";
+    const char* password = "";
     if (NULL != reqinfo->query_string) {
         if (mg_get_var(reqinfo->query_string,
                        strlen(reqinfo->query_string),
@@ -937,7 +842,7 @@ vscp_password(struct mg_connection *conn, void *cbdata)
             return -1;
         }
 
-        fastpbkdf2_hmac_sha256((const uint8_t *)password,
+        fastpbkdf2_hmac_sha256((const uint8_t*)password,
                                strlen(password),
                                salt,
                                16,
@@ -967,16 +872,17 @@ vscp_password(struct mg_connection *conn, void *cbdata)
 //
 
 static int
-vscp_restart(struct mg_connection *conn, void *cbdata)
+vscp_restart(struct mg_connection* conn, void* cbdata)
 {
-    //uint8_t salt[16];
+    // uint8_t salt[16];
     char buf[512];
-    //uint8_t resultbuf[512];
+    // uint8_t resultbuf[512];
 
     memset(buf, 0, sizeof(buf));
 
     // Check pointer
-    if (NULL == conn) return 0;
+    if (NULL == conn)
+        return 0;
 
     mg_printf(conn,
               "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n"
@@ -987,18 +893,20 @@ vscp_restart(struct mg_connection *conn, void *cbdata)
     mg_printf(conn, WEB_STYLE_START);
     mg_write(conn, WEB_COMMON_CSS, strlen(WEB_COMMON_CSS)); // CSS style Code
     mg_printf(conn, WEB_STYLE_END);
-    mg_write(
-      conn, WEB_COMMON_JS, strlen(WEB_COMMON_JS)); // Common JavaScript code
+    mg_write(conn,
+             WEB_COMMON_JS,
+             strlen(WEB_COMMON_JS)); // Common JavaScript code
     mg_printf(conn, "<style>table, th, td { border: 0px solid black;}</style>");
 
     mg_printf(conn, WEB_COMMON_HEAD_END_BODY_START);
     mg_printf(conn, WEB_COMMON_MENU);
 
-    const struct mg_request_info *reqinfo = mg_get_request_info(conn);
-    if (NULL == reqinfo) return 0;
+    const struct mg_request_info* reqinfo = mg_get_request_info(conn);
+    if (NULL == reqinfo)
+        return 0;
 
     // restart password
-    const char *password = NULL;
+    const char* password = NULL;
     if (NULL != reqinfo->query_string) {
         if (mg_get_var(reqinfo->query_string,
                        strlen(reqinfo->query_string),
@@ -1054,17 +962,16 @@ vscp_restart(struct mg_connection *conn, void *cbdata)
     return WEB_OK;
 }
 
-
-
 ///////////////////////////////////////////////////////////////////////////////
 // vscp_interface
 //
 
 static int
-vscp_interface(struct mg_connection *conn, void *cbdata)
+vscp_interface(struct mg_connection* conn, void* cbdata)
 {
     // Check pointer
-    if (NULL == conn) return 0;
+    if (NULL == conn)
+        return 0;
 
     mg_printf(conn,
               "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n"
@@ -1075,8 +982,9 @@ vscp_interface(struct mg_connection *conn, void *cbdata)
     mg_printf(conn, WEB_STYLE_START);
     mg_write(conn, WEB_COMMON_CSS, strlen(WEB_COMMON_CSS)); // CSS style Code
     mg_printf(conn, WEB_STYLE_END);
-    mg_write(
-      conn, WEB_COMMON_JS, strlen(WEB_COMMON_JS)); // Common Javascript code
+    mg_write(conn,
+             WEB_COMMON_JS,
+             strlen(WEB_COMMON_JS)); // Common Javascript code
 
     mg_printf(conn, WEB_COMMON_HEAD_END_BODY_START);
     // Insert server url into navigation menu
@@ -1090,12 +998,12 @@ vscp_interface(struct mg_connection *conn, void *cbdata)
 
     // Display Interface List
     pthread_mutex_lock(&gpobj->m_clientList.m_mutexItemList);
-    std::deque<CClientItem *>::iterator it;
+    std::deque<CClientItem*>::iterator it;
     for (it = gpobj->m_clientList.m_itemList.begin();
          it != gpobj->m_clientList.m_itemList.end();
          ++it) {
 
-        CClientItem *pItem = *it;
+        CClientItem* pItem = *it;
         pItem->m_guid.toString(strGUID);
 
         mg_printf(conn, WEB_IFLIST_TR);
@@ -1112,9 +1020,9 @@ vscp_interface(struct mg_connection *conn, void *cbdata)
 
         // GUID
         mg_printf(conn, WEB_IFLIST_TD_GUID);
-        mg_printf(conn, "%s", (const char *)strGUID.substr(0, 23).c_str());
+        mg_printf(conn, "%s", (const char*)strGUID.substr(0, 23).c_str());
         mg_printf(conn, "<br>");
-        mg_printf(conn, "%s", (const char *)strGUID.substr(23).c_str());
+        mg_printf(conn, "%s", (const char*)strGUID.substr(23).c_str());
         mg_printf(conn, "</td>");
 
         // Interface name
@@ -1127,7 +1035,7 @@ vscp_interface(struct mg_connection *conn, void *cbdata)
             vscp_trim(strDeviceName);
         }
 
-        mg_printf(conn, "%s", (const char *)strDeviceName.c_str());
+        mg_printf(conn, "%s", (const char*)strDeviceName.c_str());
         mg_printf(conn, "</td>");
 
         // Start date
@@ -1135,7 +1043,7 @@ vscp_interface(struct mg_connection *conn, void *cbdata)
         mg_printf(
           conn,
           "%s",
-          (const char *)vscp_str_right(pItem->m_strDeviceName, 19).c_str());
+          (const char*)vscp_str_right(pItem->m_strDeviceName, 19).c_str());
         mg_printf(conn, "</td>");
 
         mg_printf(conn, "</tr>");
@@ -1190,10 +1098,11 @@ vscp_interface(struct mg_connection *conn, void *cbdata)
 //
 
 static int
-vscp_interface_info(struct mg_connection *conn, void *cbdata)
+vscp_interface_info(struct mg_connection* conn, void* cbdata)
 {
     // Check pointer
-    if (NULL == conn) return 0;
+    if (NULL == conn)
+        return 0;
 
     mg_printf(conn,
               "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n"
@@ -1204,8 +1113,9 @@ vscp_interface_info(struct mg_connection *conn, void *cbdata)
     mg_printf(conn, WEB_STYLE_START);
     mg_write(conn, WEB_COMMON_CSS, strlen(WEB_COMMON_CSS)); // CSS style Code
     mg_printf(conn, WEB_STYLE_END);
-    mg_write(
-      conn, WEB_COMMON_JS, strlen(WEB_COMMON_JS)); // Common Javascript code
+    mg_write(conn,
+             WEB_COMMON_JS,
+             strlen(WEB_COMMON_JS)); // Common Javascript code
 
     mg_printf(conn, WEB_COMMON_HEAD_END_BODY_START);
     // Insert server url into navigation menu
@@ -1219,20 +1129,19 @@ vscp_interface_info(struct mg_connection *conn, void *cbdata)
     return WEB_OK;
 }
 
-
-
 ///////////////////////////////////////////////////////////////////////////////
 // vscp_client
 //
 
 static int
-vscp_client(struct mg_connection *conn, void *cbdata)
+vscp_client(struct mg_connection* conn, void* cbdata)
 {
     // char buf[80];
     std::string str;
 
     // Check pointer
-    if (NULL == conn) return 0;
+    if (NULL == conn)
+        return 0;
 
     mg_printf(conn,
               "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
@@ -1242,8 +1151,9 @@ vscp_client(struct mg_connection *conn, void *cbdata)
     mg_printf(conn, WEB_STYLE_START);
     mg_write(conn, WEB_COMMON_CSS, sizeof(WEB_COMMON_CSS)); // CSS style Code
     mg_printf(conn, WEB_STYLE_END);
-    mg_write(
-      conn, WEB_COMMON_JS, sizeof(WEB_COMMON_JS)); // Common JavaScript code
+    mg_write(conn,
+             WEB_COMMON_JS,
+             sizeof(WEB_COMMON_JS)); // Common JavaScript code
     mg_printf(conn, "<meta http-equiv=\"refresh\" content=\"5;url=/vscp");
     mg_printf(conn, "\">");
     mg_printf(conn, WEB_COMMON_HEAD_END_BODY_START);
@@ -1259,950 +1169,813 @@ vscp_client(struct mg_connection *conn, void *cbdata)
 // vscp_configure_list
 //
 
-// static int
-// vscp_configure_list(struct mg_connection *conn, void *cbdata)
-// {
-//     std::string str;
-//     CVariable variable;
-
-//     // Check pointer
-//     if (NULL == conn) return 0;
-
-//     mg_printf(conn,
-//                "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n"
-//                "Content-Type: text/html; charset=utf-8\r\n"
-//                "Connection: close\r\n\r\n");
-
-//     mg_printf(conn, WEB_COMMON_HEAD, "VSCP - Configuration");
-//     mg_printf(conn, WEB_STYLE_START);
-//     mg_write(conn, WEB_COMMON_CSS, sizeof(WEB_COMMON_CSS)); // CSS style Code
-//     mg_printf(conn, WEB_STYLE_END);
-//     mg_write(
-//       conn, WEB_COMMON_JS, sizeof(WEB_COMMON_JS)); // Common JavaScript code
-//     mg_printf(conn, WEB_COMMON_HEAD_END_BODY_START);
-
-//     // navigation menu
-//     mg_printf(conn, WEB_COMMON_MENU);
-
-//     mg_printf(conn, "<br><br><br>");
-//     mg_printf(conn, "<h1 id=\"header\">VSCP - Current configuration</h1>");
-//     mg_printf(conn, "<br>");
-
-//     // * * * * * * * * * * * * * * * * * * * * * * * * * * * ** * * * * * * *
-//     *
-
-//     mg_printf(conn, "<h4 id=\"header\" >&nbsp;Server</h4> ");
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>VSCP Server version:</b> ");
-//     mg_printf(conn, VSCPD_DISPLAY_VERSION);
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Operating system:</b> ");
-//     // TODO mg_printf( conn, "%s", (const char *)xxGetOsDescription().c_str()
-//     // );
-//     if (1 /* TODO xxIsPlatform64Bit()*/) {
-//         mg_printf(conn, " 64-bit ");
-//     } else {
-//         mg_printf(conn, " 32-bit ");
-//     }
-//     if (vscp_isLittleEndian()) {
-//         mg_printf(conn, " Little endian ");
-//     } else {
-//         mg_printf(conn, " Big endian ");
-//     }
-//     mg_printf(conn, "<br>");
-
-//     /* TODO
-//     xxMemorySize memsize;
-//     if ( -1 != ( memsize = xxGetFreeMemory() ) ) {
-//         mg_printf( conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Free memory:</b> ");
-//         mg_printf( conn, "%s (%.2fM)", (const char
-//     *)memsize.ToString().c_str(), memsize.ToDouble()/1000000 ); mg_printf(
-//     conn, " bytes<br>");
-//     }
-//     */
-
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Hostname:</b> ");
-//     // TODO mg_printf( conn, "%s", (const char *)xxGetFullHostName().c_str()
-//     ); mg_printf(conn, "<br>");
-
-//     // Debuglevel
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Debuglevel:</b> ");
-//     mg_printf(conn, "%d ", gpobj->m_logLevel);
-//     switch (gpobj->m_logLevel) {
-//         case DAEMON_LOGMSG_NONE:
-//             mg_printf(conn, "(none)");
-//             break;
-//         case DAEMON_LOGMSG_DEBUG:
-//             mg_printf(conn, "(debug)");
-//             break;
-//         case DAEMON_LOGMSG_NORMAL:
-//             mg_printf(conn, "(info)");
-//             break;
-//         default:
-//             mg_printf(conn, "(unkown)");
-//             break;
-//     }
-//     mg_printf(conn, "<br> ");
-
-//     // Server GUID
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Server GUID:</b> ");
-//     gpobj->m_guid.toString(str);
-//     mg_printf(conn, "%s", (const char *)str.c_str());
-//     mg_printf(conn, "<br> ");
-
-//     // Client buffer size
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Client buffer size:</b> ");
-//     mg_printf(conn, "%d", gpobj->m_maxItemsInClientReceiveQueue);
-//     mg_printf(conn, "<br> ");
-
-//     mg_printf(conn, "<hr>");
-
-//     // * * * * * * * * * * * * * * * * * * * * * * * * * * * ** * * * * * * *
-//     *
-
-//     CUserItem *pAdminUser = gpobj->m_userList.getUser(USER_ID_ADMIN);
-//     if (gpobj->m_variables.find(("vscp.openssl.version.str"), pAdminUser,
-//     variable)) {
-//         str = variable.getValue();
-//         vscp_base64_std_decode(str);
-//         mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Openssl version:</b> ");
-//         mg_printf(conn, "%s", (const char *)str.c_str());
-//         mg_printf(conn, " - ");
-//         if (gpobj->m_variables.find(("vscp.openssl.copyright"), pAdminUser,
-//         variable)) {
-//             str = variable.getValue();
-//             vscp_base64_std_decode(str);
-//             mg_printf(conn, "%s", (const char *)str.c_str());
-//         }
-//         mg_printf(conn, "<br>");
-//     }
-
-//     if (gpobj->m_variables.find(("vscp.duktape.version.str"), pAdminUser,
-//     variable)) {
-//         str = variable.getValue();
-//         vscp_base64_std_decode(str);
-//         mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Duktape version:</b> ");
-//         mg_printf(conn, "%s", (const char *)str.c_str());
-//         mg_printf(conn, " - ");
-//         if (gpobj->m_variables.find("vscp.duktape.copyright", pAdminUser,
-//         variable)) {
-//             str = variable.getValue();
-//             vscp_base64_std_decode(str);
-//             mg_printf(conn, "%s", (const char *)str.c_str());
-//         }
-//         mg_printf(conn, "<br>");
-//     }
-
-//     if (gpobj->m_variables.find(("vscp.lua.version.str"), pAdminUser,
-//     variable)) {
-//         str = variable.getValue();
-//         vscp_base64_std_decode(str);
-//         mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Lua version:</b> ");
-//         mg_printf(conn, "%s", (const char *)str.c_str());
-//         mg_printf(conn, " - ");
-//         if (gpobj->m_variables.find(("vscp.lua.copyright"), pAdminUser,
-//         variable)) {
-//             str = variable.getValue();
-//             vscp_base64_std_decode(str);
-//             mg_printf(conn, "%s", (const char *)str.c_str());
-//         }
-//         mg_printf(conn, "<br>");
-//     }
-
-//     if (gpobj->m_variables.find(("vscp.sqlite.version.str"), pAdminUser,
-//     variable)) {
-//         str = variable.getValue();
-//         vscp_base64_std_decode(str);
-//         mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Sqlite3 version:</b> ");
-//         mg_printf(conn, "%s", (const char *)str.c_str());
-//         mg_printf(conn, " - ");
-//         if (gpobj->m_variables.find(("vscp.sqlite.copyright"), pAdminUser,
-//         variable)) {
-//             str = variable.getValue();
-//             vscp_base64_std_decode(str);
-//             mg_printf(conn, "%s", (const char *)str.c_str());
-//         }
-//         mg_printf(conn, "<br>");
-//     }
-
-//     if (gpobj->m_variables.find(("vscp.civetweb.copyright"), pAdminUser,
-//     variable)) {
-//         str = variable.getValue();
-//         vscp_base64_std_decode(str);
-//         mg_printf(
-//           conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Civetweb (Mod.) copyright:</b>
-//           ");
-//         mg_printf(conn, "%s", (const char *)str.c_str());
-//         mg_printf(conn, "<br>");
-//     }
-
-//     mg_printf(
-//       conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Civetweb (Orig.) contributors:</b>
-//       ");
-//     mg_printf(conn,
-//                "%s",
-//                "<a "
-//                "href=\"https://github.com/civetweb/civetweb/blob/master/"
-//                "CREDITS.md\">link</a>");
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(conn, "<hr>");
-
-//     // * * * * * * * * * * * * * * * * * * * * * * * * * * * ** * * * * * * *
-//     * mg_printf(conn, "<h4 id=\"header\" >&nbsp;TCP/IP</h4> ");
-
-//     // TCP/IP interface
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>TCP/IP interface:</b> ");
-//     mg_printf(conn, "enabled on <b>interface:</b> '");
-//     mg_printf(
-//       conn, "%s", (const char *)gpobj->m_strTcpInterfaceAddress.c_str());
-//     mg_printf(conn, "'");
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Encryption:</b> ");
-//     switch (gpobj->m_encryptionTcpip) {
-//         case 1:
-//             mg_printf(conn, "AES-128");
-//             break;
-
-//         case 2:
-//             mg_printf(conn, "AES-192");
-//             break;
-
-//         case 3:
-//             mg_printf(conn, "AES-256");
-//             break;
-
-//         default:
-//             mg_printf(conn, "none");
-//             break;
-//     }
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>SSL certificat:</b> ");
-//     mg_printf(
-//       conn,
-//       "%s",
-//       (const char *)std::string(gpobj->m_tcpip_ssl_certificate).c_str());
-//     if (!gpobj->m_tcpip_ssl_certificate.length()) {
-//         mg_printf(conn, "%s", "Not defined (probably should be).");
-//     }
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>SSL certificat chain:</b> ");
-//     mg_printf(
-//       conn,
-//       "%s",
-//       (const char
-//       *)std::string(gpobj->m_tcpip_ssl_certificate_chain).c_str());
-//     if (!gpobj->m_web_ssl_certificate_chain.length()) {
-//         mg_printf(conn, "%s", "Not defined (default).");
-//     }
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>SSL verify peer:</b> ");
-//     mg_printf(conn, "%s", gpobj->m_tcpip_ssl_verify_peer ? "true" : "false");
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>SSL CA path:</b> ");
-//     mg_printf(conn,
-//                "%s",
-//                (const char
-//                *)std::string(gpobj->m_tcpip_ssl_ca_path).c_str());
-//     if (!gpobj->m_web_ssl_ca_path.length()) {
-//         mg_printf(conn, "%s", "Not defined (default).");
-//     }
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>SSL CA file:</b> ");
-//     mg_printf(conn,
-//                "%s",
-//                (const char
-//                *)std::string(gpobj->m_tcpip_ssl_ca_file).c_str());
-//     if (!gpobj->m_web_ssl_ca_file.length()) {
-//         mg_printf(conn, "%s", "Not defined (default).");
-//     }
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>SSL verify depth:</b> ");
-//     mg_printf(conn, "%d", (int)gpobj->m_tcpip_ssl_verify_depth);
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>SSL verify paths:</b> ");
-//     mg_printf(
-//       conn, "%s", gpobj->m_tcpip_ssl_default_verify_paths ? "true" :
-//       "false");
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>SSL cipher list:</b> ");
-//     mg_printf(
-//       conn,
-//       "%s",
-//       (const char *)std::string(gpobj->m_tcpip_ssl_cipher_list).c_str());
-//     if (!gpobj->m_tcpip_ssl_cipher_list.length()) {
-//         mg_printf(conn, "%s", "Not defined (default).");
-//     }
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>SSL protocol version:</b> ");
-//     mg_printf(conn, "%d", (int)gpobj->m_tcpip_ssl_protocol_version);
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>SSL short trust:</b> ");
-//     mg_printf(conn, "%s", gpobj->m_tcpip_ssl_short_trust ? "true" : "false");
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(conn, "<hr>");
-
-//     // * * * * * * * * * * * * * * * * * * * * * * * * * * * ** * * * * * * *
-//     *
-
-//     // mg_printf(conn, "<h4 id=\"header\" >&nbsp;UDP</h4> ");
-
-//     // // UDP interface
-//     // mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>UDP interface:</b> ");
-//     // if (gpobj->m_udpSrvObj.m_bEnable) {
-//     //     mg_printf(conn, "enabled on <b>interface:</b> '");
-//     //     mg_printf(
-//     //       conn, "%s", (const char
-//     *)gpobj->m_udpSrvObj.m_interface.c_str());
-//     //     mg_printf(conn, "'");
-//     // } else {
-//     //     mg_printf(conn, "disabled");
-//     // }
-//     // mg_printf(conn, "<br>");
-
-//     // mg_printf(conn, "<hr>");
-
-//     // * * * * * * * * * * * * * * * * * * * * * * * * * * * ** * * * * * * *
-//     *
-
-//     mg_printf(conn, "<h4 id=\"header\" >&nbsp;Web server</h4> ");
-
-//     mg_printf(conn,
-//                "&nbsp;&nbsp;&nbsp;&nbsp;<b>Web server functionality </b> is
-//                ");
-//     if (gpobj->m_web_bEnable) {
-//         mg_printf(conn, "enabled.<br>");
-//     } else {
-//         mg_printf(conn, "disabled.<br>");
-//     }
-
-//     mg_printf(
-//       conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Listening port(s)/interface(s):</b>
-//       ");
-//     mg_printf(conn, "%s", (const char
-//     *)gpobj->m_web_listening_ports.c_str()); mg_printf(conn, "<br>");
-
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Rootfolder:</b> ");
-//     mg_printf(conn,
-//                "%s",
-//                (const char
-//                *)std::string(gpobj->m_web_document_root).c_str());
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Authdomain:</b> ");
-//     mg_printf(
-//       conn,
-//       "%s",
-//       (const char *)std::string(gpobj->m_web_authentication_domain).c_str());
-//     if (gpobj->m_enable_auth_domain_check) {
-//         mg_printf(conn, " [will be checked].");
-//     } else {
-//         mg_printf(conn, " [will not be checked].");
-//     }
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Index files:</b> ");
-//     mg_printf(
-//       conn, "%s", (const char
-//       *)std::string(gpobj->m_web_index_files).c_str());
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>SSL certificat:</b> ");
-//     mg_printf(conn,
-//                "%s",
-//                (const char
-//                *)std::string(gpobj->m_web_ssl_certificate).c_str());
-//     if (!gpobj->m_web_ssl_certificate.length()) {
-//         mg_printf(conn, "%s", "Not defined (probably should be).");
-//     }
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>SSL certificat chain:</b> ");
-//     mg_printf(
-//       conn,
-//       "%s",
-//       (const char *)std::string(gpobj->m_web_ssl_certificate_chain).c_str());
-//     if (!gpobj->m_web_ssl_certificate_chain.length()) {
-//         mg_printf(conn, "%s", "Not defined (default).");
-//     }
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>SSL verify peer:</b> ");
-//     mg_printf(conn, "%s", gpobj->m_web_ssl_verify_peer ? "true" : "false");
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>SSL CA path:</b> ");
-//     mg_printf(
-//       conn, "%s", (const char
-//       *)std::string(gpobj->m_web_ssl_ca_path).c_str());
-//     if (!gpobj->m_web_ssl_ca_path.length()) {
-//         mg_printf(conn, "%s", "Not defined (default).");
-//     }
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>SSL CA file:</b> ");
-//     mg_printf(
-//       conn, "%s", (const char
-//       *)std::string(gpobj->m_web_ssl_ca_file).c_str());
-//     if (!gpobj->m_web_ssl_ca_file.length()) {
-//         mg_printf(conn, "%s", "Not defined (default).");
-//     }
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>SSL verify depth:</b> ");
-//     mg_printf(conn, "%d", (int)gpobj->m_web_ssl_verify_depth);
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>SSL verify paths:</b> ");
-//     mg_printf(
-//       conn, "%s", gpobj->m_web_ssl_default_verify_paths ? "true" : "false");
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>SSL cipher list:</b> ");
-//     mg_printf(conn,
-//                "%s",
-//                (const char
-//                *)std::string(gpobj->m_web_ssl_cipher_list).c_str());
-//     if (!gpobj->m_web_ssl_cipher_list.length()) {
-//         mg_printf(conn, "%s", "Not defined (default).");
-//     }
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>SSL protocol version:</b> ");
-//     mg_printf(conn, "%d", (int)gpobj->m_web_ssl_protocol_version);
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>SSL short trust:</b> ");
-//     mg_printf(conn, "%s", gpobj->m_web_ssl_short_trust ? "true" : "false");
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>CGI interpreter:</b> ");
-//     mg_printf(conn,
-//                "%s",
-//                (const char
-//                *)std::string(gpobj->m_web_cgi_interpreter).c_str());
-//     if (!gpobj->m_web_cgi_interpreter.length()) {
-//         mg_printf(conn, "%s", "Not defined (default).");
-//     }
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>CGI patterns:</b> ");
-//     mg_printf(
-//       conn, "%s", (const char
-//       *)std::string(gpobj->m_web_cgi_patterns).c_str());
-//     if (!gpobj->m_web_cgi_patterns.length()) {
-//         mg_printf(conn, "%s", "Not defined (probably should be defined).");
-//     }
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>CGI environment:</b> ");
-//     mg_printf(conn,
-//                "%s",
-//                (const char
-//                *)std::string(gpobj->m_web_cgi_environment).c_str());
-//     if (!gpobj->m_web_cgi_environment.length()) {
-//         mg_printf(conn, "%s", "Not defined (default).");
-//     }
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Protect URI:</b> ");
-//     mg_printf(
-//       conn, "%s", (const char
-//       *)std::string(gpobj->m_web_protect_uri).c_str());
-//     if (!gpobj->m_web_protect_uri.length()) {
-//         mg_printf(conn, "%s", "Not defined (default).");
-//     }
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Trottle:</b> ");
-//     mg_printf(
-//       conn, "%s", (const char *)std::string(gpobj->m_web_trottle).c_str());
-//     if (!gpobj->m_web_trottle.length()) {
-//         mg_printf(conn, "%s", "Not defined (default).");
-//     }
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(conn,
-//                "&nbsp;&nbsp;&nbsp;&nbsp;<b>Enable directory listings:</b> ");
-//     mg_printf(
-//       conn, "%s", gpobj->m_web_enable_directory_listing ? "true" : "false");
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Enable keep alive:</b> ");
-//     mg_printf(conn, "%s", gpobj->m_web_enable_keep_alive ? "true" : "false");
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(conn,
-//                "&nbsp;&nbsp;&nbsp;&nbsp;<b>Keep alive timeout in ms:</b> ");
-//     if (-1 == gpobj->m_web_keep_alive_timeout_ms) {
-//         mg_printf(conn, "%ld", (long)gpobj->m_web_keep_alive_timeout_ms);
-//     } else {
-//         mg_printf(conn, "%s", "Not defined (Default: 500) ).");
-//     }
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(conn,
-//                "&nbsp;&nbsp;&nbsp;&nbsp;<b>Access control list (ACL):</b> ");
-//     mg_printf(
-//       conn,
-//       "%s",
-//       (const char *)std::string(gpobj->m_web_access_control_list).c_str());
-//     if (!gpobj->m_web_access_control_list.length()) {
-//         mg_printf(conn, "%s", "Not defined (default).");
-//     }
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>ExtraMimeTypes:</b> ");
-//     mg_printf(
-//       conn,
-//       "%s",
-//       (const char *)std::string(gpobj->m_web_extra_mime_types).c_str());
-//     if (0 == gpobj->m_web_extra_mime_types.length()) {
-//         mg_printf(conn, "Set to default.");
-//     }
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Number of threads:</b> ");
-//     if (-1 == gpobj->m_web_num_threads) {
-//         mg_printf(conn, "%d", (int)gpobj->m_web_num_threads);
-//     } else {
-//         mg_printf(conn, "%s", "Not defined (Default: 50) ).");
-//     }
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>HiddenFilePatterns:</b> ");
-//     mg_printf(
-//       conn,
-//       "%s",
-//       (const char *)std::string(gpobj->m_web_hide_file_patterns).c_str());
-//     if (0 == gpobj->m_web_hide_file_patterns.length()) {
-//         mg_printf(conn, "Set to default.");
-//     }
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Run as user:</b> ");
-//     mg_printf(
-//       conn, "%s", (const char
-//       *)std::string(gpobj->m_web_run_as_user).c_str());
-//     if (0 == gpobj->m_web_run_as_user.length()) {
-//         mg_printf(conn, "Using vscpd user.");
-//     }
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>URL Rewrites:</b> ");
-//     mg_printf(
-//       conn,
-//       "%s",
-//       (const char *)std::string(gpobj->m_web_url_rewrite_patterns).c_str());
-//     if (0 == gpobj->m_web_url_rewrite_patterns.length()) {
-//         mg_printf(conn, "Set to default.");
-//     }
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Hide file patterns:</b> ");
-//     mg_printf(
-//       conn,
-//       "%s",
-//       (const char *)std::string(gpobj->m_web_hide_file_patterns).c_str());
-//     if (0 == gpobj->m_web_hide_file_patterns.length()) {
-//         mg_printf(conn, "Set to default.");
-//     }
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Request timeout:</b> ");
-//     if (-1 == gpobj->m_web_request_timeout_ms) {
-//         mg_printf(conn, "%ld", (long)gpobj->m_web_request_timeout_ms);
-//     } else {
-//         mg_printf(conn, "%s", "Not defined (Default: 30000) ).");
-//     }
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Linger timeout:</b> ");
-//     if (-1 == gpobj->m_web_linger_timeout_ms) {
-//         mg_printf(conn, "%ld", (long)gpobj->m_web_linger_timeout_ms);
-//     } else {
-//         mg_printf(conn, "%s", "Not set.");
-//     }
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Enable decode URL:</b> ");
-//     mg_printf(conn, "%s", gpobj->m_web_decode_url ? "true" : "false");
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(conn,
-//                "&nbsp;&nbsp;&nbsp;&nbsp;<b>Path to global auth file:</b> ");
-//     mg_printf(
-//       conn,
-//       "%s",
-//       (const char *)std::string(gpobj->m_web_global_auth_file).c_str());
-//     if (0 == gpobj->m_web_global_auth_file.length()) {
-//         mg_printf(conn, "Set to default.");
-//     }
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(conn,
-//                "&nbsp;&nbsp;&nbsp;&nbsp;<b>Per directory auth file:</b> ");
-//     mg_printf(
-//       conn,
-//       "%s",
-//       (const char
-//       *)std::string(gpobj->m_web_per_directory_auth_file).c_str());
-//     if (0 == gpobj->m_web_per_directory_auth_file.length()) {
-//         mg_printf(conn, "Set to default.");
-//     }
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>SSI patterns:</b> ");
-//     mg_printf(
-//       conn, "%s", (const char
-//       *)std::string(gpobj->m_web_ssi_patterns).c_str());
-//     if (0 == gpobj->m_web_ssi_patterns.length()) {
-//         mg_printf(conn, "Set to default.");
-//     }
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(conn,
-//                "&nbsp;&nbsp;&nbsp;&nbsp;<b>Access control allow origin:</b>
-//                ");
-//     mg_printf(
-//       conn,
-//       "%s",
-//       (const char *)std::string(gpobj->m_web_access_control_allow_origin)
-//         .c_str());
-//     if (0 == gpobj->m_web_access_control_allow_origin.length()) {
-//         mg_printf(conn, "Set to default.");
-//     }
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(conn,
-//                "&nbsp;&nbsp;&nbsp;&nbsp;<b>Access control allow methods:</b>
-//                ");
-//     mg_printf(
-//       conn,
-//       "%s",
-//       (const char *)std::string(gpobj->m_web_access_control_allow_methods)
-//         .c_str());
-//     if (0 == gpobj->m_web_access_control_allow_methods.length()) {
-//         mg_printf(conn, "Set to default.");
-//     }
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(conn,
-//                "&nbsp;&nbsp;&nbsp;&nbsp;<b>Access control allow headers:</b>
-//                ");
-//     mg_printf(
-//       conn,
-//       "%s",
-//       (const char *)std::string(gpobj->m_web_access_control_allow_headers)
-//         .c_str());
-//     if (0 == gpobj->m_web_access_control_allow_headers.length()) {
-//         mg_printf(conn, "Set to default.");
-//     }
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Path to error pages:</b> ");
-//     mg_printf(
-//       conn, "%s", (const char
-//       *)std::string(gpobj->m_web_error_pages).c_str());
-//     if (0 == gpobj->m_web_error_pages.length()) {
-//         mg_printf(conn, "Set to default.");
-//     }
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(
-//       conn,
-//       "&nbsp;&nbsp;&nbsp;&nbsp;<b>Enable TCP_NODELAY socket option:</b> ");
-//     if (-1 == gpobj->m_web_tcp_nodelay) {
-//         mg_printf(conn, "%ld", (long)gpobj->m_web_tcp_nodelay);
-//     } else {
-//         mg_printf(conn, "%s", "Not set.");
-//     }
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(
-//       conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Static file max age (seconds):</b>
-//       ");
-//     if (-1 == gpobj->m_web_static_file_max_age) {
-//         mg_printf(conn, "%ld", (long)gpobj->m_web_static_file_max_age);
-//     } else {
-//         mg_printf(conn, "%s", "Not set.");
-//     }
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(conn,
-//                "&nbsp;&nbsp;&nbsp;&nbsp;<b>Strict transport security max age
-//                "
-//                "(seconds):</b> ");
-//     if (-1 == gpobj->m_web_strict_transport_security_max_age) {
-//         mg_printf(
-//           conn, "%ld", (long)gpobj->m_web_strict_transport_security_max_age);
-//     } else {
-//         mg_printf(conn, "%s", "Not set.");
-//     }
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Allow sendfile call:</b> ");
-//     mg_printf(conn, "%s", gpobj->m_web_allow_sendfile_call ? "true" :
-//     "false"); mg_printf(conn, "<br>");
-
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Additional headers:</b> ");
-//     mg_printf(
-//       conn,
-//       "%s",
-//       (const char *)std::string(gpobj->m_web_additional_header).c_str());
-//     if (0 == gpobj->m_web_additional_header.length()) {
-//         mg_printf(conn, "Set to default.");
-//     }
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Max request size:</b> ");
-//     if (-1 == gpobj->m_web_max_request_size) {
-//         mg_printf(conn, "%ld", (long)gpobj->m_web_max_request_size);
-//     } else {
-//         mg_printf(conn, "%s", "Not set.");
-//     }
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(conn,
-//                "&nbsp;&nbsp;&nbsp;&nbsp;<b>Allow index script resource:</b>
-//                ");
-//     mg_printf(
-//       conn, "%s", gpobj->m_web_allow_index_script_resource ? "true" :
-//       "false");
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Duktape script patters:</b>
-//     "); mg_printf(
-//       conn,
-//       "%s",
-//       (const char
-//       *)std::string(gpobj->m_web_duktape_script_patterns).c_str());
-//     if (0 == gpobj->m_web_duktape_script_patterns.length()) {
-//         mg_printf(conn, "Not set.");
-//     }
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Lua preload file:</b> ");
-//     mg_printf(
-//       conn,
-//       "%s",
-//       (const char *)std::string(gpobj->m_web_lua_preload_file).c_str());
-//     if (0 == gpobj->m_web_lua_preload_file.length()) {
-//         mg_printf(conn, "Not set.");
-//     }
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Lua script patterns:</b> ");
-//     mg_printf(
-//       conn,
-//       "%s",
-//       (const char *)std::string(gpobj->m_web_lua_script_patterns).c_str());
-//     if (0 == gpobj->m_web_lua_script_patterns.length()) {
-//         mg_printf(conn, "Not set.");
-//     }
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(conn,
-//                "&nbsp;&nbsp;&nbsp;&nbsp;<b>Lua server page patterns:</b> ");
-//     mg_printf(
-//       conn,
-//       "%s",
-//       (const char
-//       *)std::string(gpobj->m_web_lua_server_page_patterns).c_str());
-//     if (0 == gpobj->m_web_lua_server_page_patterns.length()) {
-//         mg_printf(conn, "Not set.");
-//     }
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Lua websocket patterns:</b>
-//     "); mg_printf(
-//       conn,
-//       "%s",
-//       (const char
-//       *)std::string(gpobj->m_web_lua_websocket_patterns).c_str());
-//     if (0 == gpobj->m_web_lua_websocket_patterns.length()) {
-//         mg_printf(conn, "Not set.");
-//     }
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Lua background script:</b>
-//     "); mg_printf(
-//       conn,
-//       "%s",
-//       (const char *)std::string(gpobj->m_web_lua_background_script).c_str());
-//     if (0 == gpobj->m_web_lua_background_script.length()) {
-//         mg_printf(conn, "Not set.");
-//     }
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(
-//       conn,
-//       "&nbsp;&nbsp;&nbsp;&nbsp;<b>Lua background script parameters:</b> ");
-//     mg_printf(
-//       conn,
-//       "%s",
-//       (const char *)std::string(gpobj->m_web_lua_background_script_params)
-//         .c_str());
-//     if (0 == gpobj->m_web_lua_background_script_params.length()) {
-//         mg_printf(conn, "Not set.");
-//     }
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(conn, "<hr>");
-
-//     // * * * * * * * * * * * * * * * * * * * * * * * * * * * ** * * * * * * *
-//     *
-
-//     mg_printf(conn, "<h4 id=\"header\" >&nbsp;Websockets</h4> ");
-
-//     mg_printf(conn,
-//                "&nbsp;&nbsp;&nbsp;&nbsp;<b>Web sockets functionality </b> is
-//                ");
-//     if (gpobj->m_web_bEnable && gpobj->m_bWebsocketsEnable) {
-//         mg_printf(conn, "enabled.<br>");
-//     } else {
-//         mg_printf(conn, "disabled.<br>");
-//     }
-
-//     mg_printf(conn,
-//                "&nbsp;&nbsp;&nbsp;&nbsp;<b>Websocket document root:</b> ");
-//     mg_printf(
-//       conn,
-//       "%s",
-//       (const char *)std::string(gpobj->m_websocket_document_root).c_str());
-//     if (0 == gpobj->m_websocket_document_root.length()) {
-//         mg_printf(conn, "Not set.");
-//     }
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(conn, "<hr>");
-
-//     // * * * * * * * * * * * * * * * * * * * * * * * * * * * ** * * * * * * *
-//     *
-
-//     mg_printf(conn, "<h4 id=\"header\" >&nbsp;Remote variables</h4> ");
-
-//     // Variable handling
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Variable handling :</b> ");
-//     mg_printf(conn, "<br>");
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Path to variables:</b> ");
-//     mg_printf(conn, "%s", (const char
-//     *)gpobj->m_variables.m_xmlPath.c_str());
-
-//     mg_printf(conn, "<hr>");
-
-//     // * * * * * * * * * * * * * * * * * * * * * * * * * * * ** * * * * * * *
-//     *
-
-//     mg_printf(conn, "<h4 id=\"header\" >&nbsp;Databases</h4> ");
-
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Path to VSCP server db:</b>
-//     "); mg_printf(conn, "%s", (const char
-//     *)gpobj->m_path_db_vscp_daemon.c_str()); mg_printf(conn, "<br>");
-
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Path to VSCP data db:</b> ");
-//     mg_printf(conn, "%s", (const char *)gpobj->m_path_db_vscp_data.c_str());
-//     mg_printf(conn, "<br>");
-
-//     mg_printf(conn, "<hr>");
-
-//     // * * * * * * * * * * * * * * * * * * * * * * * * * * * ** * * * * * * *
-//     *
-
-//     mg_printf(conn, "<h4 id=\"header\" >&nbsp;Level I drivers</h4> ");
-
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Level I Drivers:</b> ");
-
-//     mg_printf(conn, "enabled<br>");
-//     mg_printf(
-//       conn,
-//       "&nbsp;&nbsp;&nbsp;&nbsp;----------------------------------<br>");
-
-//     CDeviceItem *pDeviceItem;
-//     std::deque<CDeviceItem *>::iterator it;
-//     for (it = gpobj->m_deviceList.m_devItemList.begin();
-//          it != gpobj->m_deviceList.m_devItemList.end();
-//          ++it) {
-
-//         pDeviceItem = *it;
-//         if ((NULL != pDeviceItem) &&
-//             (VSCP_DRIVER_LEVEL1 == pDeviceItem->m_driverLevel) &&
-//             pDeviceItem->m_bEnable) {
-//             mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Name:</b> ");
-//             mg_printf(
-//               conn, "%s", (const char *)pDeviceItem->m_strName.c_str());
-//             mg_printf(conn, "<br>");
-//             mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Config:</b> ");
-//             mg_printf(
-//               conn, "%s", (const char *)pDeviceItem->m_strParameter.c_str());
-//             mg_printf(conn, "<br>");
-//             mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Path:</b> ");
-//             mg_printf(
-//               conn, "%s", (const char *)pDeviceItem->m_strPath.c_str());
-//             mg_printf(conn, "<br>");
-//             mg_printf(
-//               conn,
-//               "&nbsp;&nbsp;&nbsp;&nbsp;----------------------------------<br>");
-//         }
-//     }
-
-//     mg_printf(conn, "<hr>");
-
-//     // * * * * * * * * * * * * * * * * * * * * * * * * * * * ** * * * * * * *
-//     *
-
-//     mg_printf(conn, "<h4 id=\"header\" >&nbsp;Level II drivers</h4> ");
-
-//     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Level II Drivers:</b> ");
-//     mg_printf(conn, "enabled<br>");
-
-//     mg_printf(
-//       conn,
-//       "&nbsp;&nbsp;&nbsp;&nbsp;----------------------------------<br>");
-
-//     for (it = gpobj->m_deviceList.m_devItemList.begin();
-//          it != gpobj->m_deviceList.m_devItemList.end();
-//          ++it) {
-
-//         pDeviceItem = *it;
-//         if ((NULL != pDeviceItem) &&
-//             (VSCP_DRIVER_LEVEL2 == pDeviceItem->m_driverLevel) &&
-//             pDeviceItem->m_bEnable) {
-//             mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Name:</b> ");
-//             mg_printf(
-//               conn, "%s", (const char *)pDeviceItem->m_strName.c_str());
-//             mg_printf(conn, "<br>");
-//             mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Config:</b> ");
-//             mg_printf(
-//               conn, "%s", (const char *)pDeviceItem->m_strParameter.c_str());
-//             mg_printf(conn, "<br>");
-//             mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Driver path:</b> ");
-//             mg_printf(
-//               conn, "%s", (const char *)pDeviceItem->m_strPath.c_str());
-//             mg_printf(conn, "<br>");
-//             mg_printf(
-//               conn,
-//               "&nbsp;&nbsp;&nbsp;&nbsp;----------------------------------<br>");
-//         }
-//     }
-
-//     mg_printf(conn, "<br>");
-
-//     return WEB_OK;
-// }
-
+static int
+vscp_configure_list(struct mg_connection* conn, void* cbdata)
+{
+    std::string str;
+
+    // Check pointer
+    if (NULL == conn)
+        return 0;
+
+    mg_printf(conn,
+              "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n"
+              "Content-Type: text/html; charset=utf-8\r\n"
+              "Connection: close\r\n\r\n");
+
+    mg_printf(conn, WEB_COMMON_HEAD, "vscpd - Configuration");
+    mg_printf(conn, WEB_STYLE_START);
+    mg_write(conn, WEB_COMMON_CSS, sizeof(WEB_COMMON_CSS)); // CSS style Code
+    mg_printf(conn, WEB_STYLE_END);
+    mg_write(conn,
+             WEB_COMMON_JS,
+             sizeof(WEB_COMMON_JS)); // Common JavaScript code
+    mg_printf(conn, WEB_COMMON_HEAD_END_BODY_START);
+
+    // navigation menu
+    mg_printf(conn, WEB_COMMON_MENU);
+
+    mg_printf(conn, "<br><br><br>");
+    mg_printf(conn, "<h1 id=\"header\">VSCP - Current configuration</h1>");
+    mg_printf(conn, "<br>");
+
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+    mg_printf(conn, "<h4 id=\"header\" >&nbsp;Server</h4> ");
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>VSCP Server version:</b> ");
+    mg_printf(conn, VSCPD_DISPLAY_VERSION);
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Operating system:</b> ");
+#ifdef _WIN32
+    mg_printf(conn, "%s", "Windows 32-bit");
+#elif _WIN64
+#elif __APPLE__ || __MACH__
+      mg_printf( conn, "%s", "Mac OSX";
+#elif __linux__
+    struct utsname uts;
+    uname(&uts);
+    mg_printf(conn, "%s - ", uts.sysname);
+    mg_printf(conn, "%s - ", uts.nodename);
+    mg_printf(conn, "%s - ", uts.release);
+    mg_printf(conn, "%s - ", uts.version);
+    mg_printf(conn, "%s <br>", uts.machine);
+#elif __FreeBSD__
+    mg_printf(conn, "%s", "FreeBSD");
+#elif __unix || __unix__
+    mg_printf(conn, "%s", "Unix");
+#else
+    mg_printf(conn, "%s", "Other");
+#endif
+
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Type:</b> ");
+    if (vscp_is64Bit()) {
+        mg_printf(conn, " 64-bit ");
+    } else {
+        mg_printf(conn, " 32-bit ");
+    }
+
+    if (vscp_isLittleEndian()) {
+        mg_printf(conn, " Little endian ");
+    } else {
+        mg_printf(conn, " Big endian ");
+    }
+    mg_printf(conn, "<br>");
+
+    double vm_usage, resident_set;
+    vscp_mem_usage(vm_usage, resident_set);
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Memory usage:</b> ");
+    mg_printf(conn,
+              "<b>VM</b>: %0.0f  <b>RSS</b>: %0.0f",
+              vm_usage,
+              resident_set);
+    mg_printf(conn, " <br>");
+
+    // Debuglevel
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Debug:</b> ");
+    for (int i = 0; i < 8; i++) {
+        mg_printf(conn, "%02X ", gpobj->m_debugFlags[i]);
+    }
+
+#ifdef NDEBUG
+    mg_printf(conn, "Build is release ");
+#else
+    mg_printf(conn, " - Build is debug ");
+#endif
+
+    mg_printf(conn, "<br> ");
+
+    // Server GUID
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Server GUID:</b> ");
+    gpobj->m_guid.toString(str);
+    mg_printf(conn, "%s", (const char*)str.c_str());
+    mg_printf(conn, "<br> ");
+
+    // Client buffer size
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Client buffer size:</b>");
+    mg_printf(conn, "%d", gpobj->m_maxItemsInClientReceiveQueue);
+    mg_printf(conn, "<br> ");
+
+    mg_printf(conn, "<hr>");
+
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+    mg_printf(conn,
+              "&nbsp;&nbsp;&nbsp;&nbsp;<b>OpenSSL version:</b> %s <br>",
+              SSLeay_version(SSLEAY_VERSION));
+    mg_printf(conn,
+              "&nbsp;&nbsp;&nbsp;&nbsp;<b>SQLite version:</b> %s <br>",
+              SQLITE_VERSION);
+    mg_printf(conn,
+              "&nbsp;&nbsp;&nbsp;&nbsp;<b>Duktape version:</b> %s <br>",
+              DUK_GIT_DESCRIBE);
+    mg_printf(conn,
+              "&nbsp;&nbsp;&nbsp;&nbsp;<b>Civetweb version:</b> %s <br>",
+              CIVETWEB_VERSION);
+    mg_printf(conn,
+              "&nbsp;&nbsp;&nbsp;&nbsp;<b>Lua version:</b> %s <br>",
+              LUA_COPYRIGHT);
+    mg_printf(
+      conn,
+      "&nbsp;&nbsp;&nbsp;&nbsp;<b>nlohmann-json version:</b> %d.%d.%d <br>",
+      NLOHMANN_JSON_VERSION_MAJOR,
+      NLOHMANN_JSON_VERSION_MINOR,
+      NLOHMANN_JSON_VERSION_PATCH);
+
+    mg_printf(conn, "<hr>");
+
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+    mg_printf(conn, "<h4 id=\"header\" >&nbsp;TCP/IP</h4> ");
+
+    // TCP/IP interface
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>TCP/IP interface:</b> ");
+    mg_printf(conn, "enabled on <b>interface:</b> '");
+    mg_printf(conn, "%s", (const char*)gpobj->m_strTcpInterfaceAddress.c_str());
+    mg_printf(conn, "'");
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Encryption:</b> ");
+    switch (gpobj->m_encryptionTcpip) {
+        case 1:
+            mg_printf(conn, "AES-128");
+            break;
+
+        case 2:
+            mg_printf(conn, "AES-192");
+            break;
+
+        case 3:
+            mg_printf(conn, "AES-256");
+            break;
+
+        default:
+            mg_printf(conn, "none");
+            break;
+    }
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>SSL certificat:</b> ");
+    mg_printf(conn,
+              "%s",
+              (const char*)std::string(gpobj->m_tcpip_ssl_certificate).c_str());
+    if (!gpobj->m_tcpip_ssl_certificate.length()) {
+        mg_printf(conn, "%s", "Not defined (probably should be).");
+    }
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>SSL certificat chain:</b>");
+    mg_printf(
+      conn,
+      "%s",
+      (const char*)std::string(gpobj->m_tcpip_ssl_certificate_chain).c_str());
+    if (!gpobj->m_web_ssl_certificate_chain.length()) {
+        mg_printf(conn, "%s", "Not defined (default).");
+    }
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>SSL verify peer:</b> ");
+    mg_printf(conn, "%s", gpobj->m_tcpip_ssl_verify_peer ? "true" : "false");
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>SSL CA path:</b> ");
+    mg_printf(conn,
+              "%s",
+              (const char*)std::string(gpobj->m_tcpip_ssl_ca_path).c_str());
+    if (!gpobj->m_web_ssl_ca_path.length()) {
+        mg_printf(conn, "%s", "Not defined (default).");
+    }
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>SSL CA file:</b> ");
+    mg_printf(conn,
+              "%s",
+              (const char*)std::string(gpobj->m_tcpip_ssl_ca_file).c_str());
+    if (!gpobj->m_web_ssl_ca_file.length()) {
+        mg_printf(conn, "%s", "Not defined (default).");
+    }
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>SSL verify depth:</b> ");
+    mg_printf(conn, "%d", (int)gpobj->m_tcpip_ssl_verify_depth);
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>SSL verify paths:</b> ");
+    mg_printf(conn,
+              "%s",
+              gpobj->m_tcpip_ssl_default_verify_paths ? "true" : "false");
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>SSL cipher list:</b> ");
+    mg_printf(conn,
+              "%s",
+              (const char*)std::string(gpobj->m_tcpip_ssl_cipher_list).c_str());
+    if (!gpobj->m_tcpip_ssl_cipher_list.length()) {
+        mg_printf(conn, "%s", "Not defined (default).");
+    }
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>SSL protocol version:</b>");
+    mg_printf(conn, "%d", (int)gpobj->m_tcpip_ssl_protocol_version);
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>SSL short trust:</b> ");
+    mg_printf(conn, "%s", gpobj->m_tcpip_ssl_short_trust ? "true" : "false");
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn, "<hr>");
+
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * ** * * * * *
+
+    mg_printf(conn, "<h4 id=\"header\" >&nbsp;Web server</h4> ");
+
+    mg_printf(conn,
+              "&nbsp;&nbsp;&nbsp;&nbsp;<b>Web server functionality </b>is ");
+    if (gpobj->m_web_bEnable) {
+        mg_printf(conn, "enabled.<br>");
+    } else {
+        mg_printf(conn, "disabled.<br>");
+    }
+
+    mg_printf(conn,
+              "&nbsp;&nbsp;&nbsp;&nbsp;<b>Listening port(s)/interface(s):</b>");
+    mg_printf(conn, "%s", (const char*)gpobj->m_web_listening_ports.c_str());
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Rootfolder:</b> ");
+    mg_printf(conn,
+              "%s",
+              (const char*)std::string(gpobj->m_web_document_root).c_str());
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Authdomain:</b> ");
+    mg_printf(
+      conn,
+      "%s",
+      (const char*)std::string(gpobj->m_web_authentication_domain).c_str());
+    if (gpobj->m_enable_auth_domain_check) {
+        mg_printf(conn, " [will be checked].");
+    } else {
+        mg_printf(conn, " [will not be checked].");
+    }
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Index files:</b> ");
+    mg_printf(conn,
+              "%s",
+              (const char*)std::string(gpobj->m_web_index_files).c_str());
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>SSL certificat:</b> ");
+    mg_printf(conn,
+              "%s",
+              (const char*)std::string(gpobj->m_web_ssl_certificate).c_str());
+    if (!gpobj->m_web_ssl_certificate.length()) {
+        mg_printf(conn, "%s", "Not defined (probably should be).");
+    }
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>SSL certificat chain:</b>");
+    mg_printf(
+      conn,
+      "%s",
+      (const char*)std::string(gpobj->m_web_ssl_certificate_chain).c_str());
+    if (!gpobj->m_web_ssl_certificate_chain.length()) {
+        mg_printf(conn, "%s", "Not defined (default).");
+    }
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>SSL verify peer:</b> ");
+    mg_printf(conn, "%s", gpobj->m_web_ssl_verify_peer ? "true" : "false");
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>SSL CA path:</b> ");
+    mg_printf(conn,
+              "%s",
+              (const char*)std::string(gpobj->m_web_ssl_ca_path).c_str());
+    if (!gpobj->m_web_ssl_ca_path.length()) {
+        mg_printf(conn, "%s", "Not defined (default).");
+    }
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>SSL CA file:</b> ");
+    mg_printf(conn,
+              "%s",
+              (const char*)std::string(gpobj->m_web_ssl_ca_file).c_str());
+    if (!gpobj->m_web_ssl_ca_file.length()) {
+        mg_printf(conn, "%s", "Not defined (default).");
+    }
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>SSL verify depth:</b> ");
+    mg_printf(conn, "%d", (int)gpobj->m_web_ssl_verify_depth);
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>SSL verify paths:</b> ");
+    mg_printf(conn,
+              "%s",
+              gpobj->m_web_ssl_default_verify_paths ? "true" : "false");
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>SSL cipher list:</b> ");
+    mg_printf(conn,
+              "%s",
+              (const char*)std::string(gpobj->m_web_ssl_cipher_list).c_str());
+    if (!gpobj->m_web_ssl_cipher_list.length()) {
+        mg_printf(conn, "%s", "Not defined (default).");
+    }
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>SSL protocol version:</b>");
+    mg_printf(conn, "%d", (int)gpobj->m_web_ssl_protocol_version);
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>SSL short trust:</b> ");
+    mg_printf(conn, "%s", gpobj->m_web_ssl_short_trust ? "true" : "false");
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>CGI interpreter:</b> ");
+    mg_printf(conn,
+              "%s",
+              (const char*)std::string(gpobj->m_web_cgi_interpreter).c_str());
+    if (!gpobj->m_web_cgi_interpreter.length()) {
+        mg_printf(conn, "%s", "Not defined (default).");
+    }
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>CGI patterns:</b> ");
+    mg_printf(conn,
+              "%s",
+              (const char*)std::string(gpobj->m_web_cgi_patterns).c_str());
+    if (!gpobj->m_web_cgi_patterns.length()) {
+        mg_printf(conn, "%s", "Not defined (probably should be defined).");
+    }
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>CGI environment:</b> ");
+    mg_printf(conn,
+              "%s",
+              (const char*)std::string(gpobj->m_web_cgi_environment).c_str());
+    if (!gpobj->m_web_cgi_environment.length()) {
+        mg_printf(conn, "%s", "Not defined (default).");
+    }
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Protect URI:</b> ");
+    mg_printf(conn,
+              "%s",
+              (const char*)std::string(gpobj->m_web_protect_uri).c_str());
+    if (!gpobj->m_web_protect_uri.length()) {
+        mg_printf(conn, "%s", "Not defined (default).");
+    }
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Trottle:</b> ");
+    mg_printf(conn,
+              "%s",
+              (const char*)std::string(gpobj->m_web_trottle).c_str());
+    if (!gpobj->m_web_trottle.length()) {
+        mg_printf(conn, "%s", "Not defined (default).");
+    }
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn,
+              "&nbsp;&nbsp;&nbsp;&nbsp;<b>Enable directory listings:</b>");
+    mg_printf(conn,
+              "%s",
+              gpobj->m_web_enable_directory_listing ? "true" : "false");
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Enable keep alive:</b>");
+    mg_printf(conn, "%s", gpobj->m_web_enable_keep_alive ? "true" : "false");
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Keep alive timeout in ms:</b>");
+    if (-1 == gpobj->m_web_keep_alive_timeout_ms) {
+        mg_printf(conn, "%ld", (long)gpobj->m_web_keep_alive_timeout_ms);
+    } else {
+        mg_printf(conn, "%s", "Not defined (Default: 500) ).");
+    }
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn,
+              "&nbsp;&nbsp;&nbsp;&nbsp;<b>Access control list (ACL):</b>");
+    mg_printf(
+      conn,
+      "%s",
+      (const char*)std::string(gpobj->m_web_access_control_list).c_str());
+    if (!gpobj->m_web_access_control_list.length()) {
+        mg_printf(conn, "%s", "Not defined (default).");
+    }
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>ExtraMimeTypes:</b> ");
+    mg_printf(conn,
+              "%s",
+              (const char*)std::string(gpobj->m_web_extra_mime_types).c_str());
+    if (0 == gpobj->m_web_extra_mime_types.length()) {
+        mg_printf(conn, "Set to default.");
+    }
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Number of threads:</b>");
+    if (-1 == gpobj->m_web_num_threads) {
+        mg_printf(conn, "%d", (int)gpobj->m_web_num_threads);
+    } else {
+        mg_printf(conn, "%s", "Not defined (Default: 50) ).");
+    }
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>HiddenFilePatterns:</b>");
+    mg_printf(
+      conn,
+      "%s",
+      (const char*)std::string(gpobj->m_web_hide_file_patterns).c_str());
+    if (0 == gpobj->m_web_hide_file_patterns.length()) {
+        mg_printf(conn, "Set to default.");
+    }
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Run as user:</b> ");
+    mg_printf(conn, "%s", (const char*)std::string(gpobj->m_runAsUser).c_str());
+    if (0 == gpobj->m_runAsUser.length()) {
+        mg_printf(conn, "Using vscpd user.");
+    }
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>URL Rewrites:</b> ");
+    mg_printf(
+      conn,
+      "%s",
+      (const char*)std::string(gpobj->m_web_url_rewrite_patterns).c_str());
+    if (0 == gpobj->m_web_url_rewrite_patterns.length()) {
+        mg_printf(conn, "Set to default.");
+    }
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Hide file patterns:</b>");
+    mg_printf(
+      conn,
+      "%s",
+      (const char*)std::string(gpobj->m_web_hide_file_patterns).c_str());
+    if (0 == gpobj->m_web_hide_file_patterns.length()) {
+        mg_printf(conn, "Set to default.");
+    }
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Request timeout:</b> ");
+    if (-1 == gpobj->m_web_request_timeout_ms) {
+        mg_printf(conn, "%ld", (long)gpobj->m_web_request_timeout_ms);
+    } else {
+        mg_printf(conn, "%s", "Not defined (Default: 30000) ).");
+    }
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Linger timeout:</b> ");
+    if (-1 == gpobj->m_web_linger_timeout_ms) {
+        mg_printf(conn, "%ld", (long)gpobj->m_web_linger_timeout_ms);
+    } else {
+        mg_printf(conn, "%s", "Not set.");
+    }
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Enable decode URL:</b>");
+    mg_printf(conn, " %s ", gpobj->m_web_decode_url ? " true " : "false");
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Path to global auth file:</b>");
+    mg_printf(conn,
+              "%s",
+              (const char*)std::string(gpobj->m_web_global_auth_file).c_str());
+    if (0 == gpobj->m_web_global_auth_file.length()) {
+        mg_printf(conn, "Set to default.");
+    }
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Per directory auth file:</b>");
+    mg_printf(
+      conn,
+      "%s",
+      (const char*)std::string(gpobj->m_web_per_directory_auth_file).c_str());
+    if (0 == gpobj->m_web_per_directory_auth_file.length()) {
+        mg_printf(conn, "Set to default.");
+    }
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>SSI patterns:</b> ");
+    mg_printf(conn,
+              "%s",
+              (const char*)std::string(gpobj->m_web_ssi_patterns).c_str());
+    if (0 == gpobj->m_web_ssi_patterns.length()) {
+        mg_printf(conn, "Set to default.");
+    }
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn,
+              "&nbsp;&nbsp;&nbsp;&nbsp;<b>Access control allow origin:</b>");
+    mg_printf(conn,
+              "%s",
+              (const char*)std::string(gpobj->m_web_access_control_allow_origin)
+                .c_str());
+    if (0 == gpobj->m_web_access_control_allow_origin.length()) {
+        mg_printf(conn, "Set to default.");
+    }
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn,
+              "&nbsp;&nbsp;&nbsp;&nbsp;<b>Access control allow methods:</b>");
+    mg_printf(
+      conn,
+      "%s",
+      (const char*)std::string(gpobj->m_web_access_control_allow_methods)
+        .c_str());
+    if (0 == gpobj->m_web_access_control_allow_methods.length()) {
+        mg_printf(conn, "Set to default.");
+    }
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn,
+              "&nbsp;&nbsp;&nbsp;&nbsp;<b>Access control allowheaders:</b>");
+    mg_printf(
+      conn,
+      "%s",
+      (const char*)std::string(gpobj->m_web_access_control_allow_headers)
+        .c_str());
+    if (0 == gpobj->m_web_access_control_allow_headers.length()) {
+        mg_printf(conn, "Set to default.");
+    }
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Path to error pages:</b>");
+    mg_printf(conn,
+              "%s",
+              (const char*)std::string(gpobj->m_web_error_pages).c_str());
+    if (0 == gpobj->m_web_error_pages.length()) {
+        mg_printf(conn, "Set to default.");
+    }
+    mg_printf(conn, "<br>");
+
+    mg_printf(
+      conn,
+      "&nbsp;&nbsp;&nbsp;&nbsp;<b>Enable TCP_NODELAY socket option:</b>");
+    if (-1 == gpobj->m_web_tcp_nodelay) {
+        mg_printf(conn, "%ld", (long)gpobj->m_web_tcp_nodelay);
+    } else {
+        mg_printf(conn, "%s", "Not set.");
+    }
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn,
+              "&nbsp;&nbsp;&nbsp;&nbsp;<b>Static file max age(seconds):</b>");
+    if (-1 == gpobj->m_web_static_file_max_age) {
+        mg_printf(conn, "%ld", (long)gpobj->m_web_static_file_max_age);
+    } else {
+        mg_printf(conn, "%s", "Not set.");
+    }
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn,
+              "&nbsp;&nbsp;&nbsp;&nbsp;<b>Strict transport security max age"
+              "(seconds):</b> ");
+    if (-1 == gpobj->m_web_strict_transport_security_max_age) {
+        mg_printf(conn,
+                  "%ld",
+                  (long)gpobj->m_web_strict_transport_security_max_age);
+    } else {
+        mg_printf(conn, "%s", "Not set.");
+    }
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Allow sendfile call:</b>");
+    mg_printf(conn, "%s", gpobj->m_web_allow_sendfile_call ? "true" : "false");
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Additional headers:</b>");
+    mg_printf(conn,
+              "%s",
+              (const char*)std::string(gpobj->m_web_additional_header).c_str());
+    if (0 == gpobj->m_web_additional_header.length()) {
+        mg_printf(conn, "Set to default.");
+    }
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Max request size:</b> ");
+    if (-1 == gpobj->m_web_max_request_size) {
+        mg_printf(conn, "%ld", (long)gpobj->m_web_max_request_size);
+    } else {
+        mg_printf(conn, "%s", "Not set.");
+    }
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn,
+              "&nbsp;&nbsp;&nbsp;&nbsp;<b>Allow index script resource:</b>");
+    mg_printf(conn,
+              "%s",
+              gpobj->m_web_allow_index_script_resource ? "true" : "false");
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Duktape script patters:</b>");
+    mg_printf(
+      conn,
+      "%s",
+      (const char*)std::string(gpobj->m_web_duktape_script_patterns).c_str());
+    if (0 == gpobj->m_web_duktape_script_patterns.length()) {
+        mg_printf(conn, "Not set.");
+    }
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Lua preload file:</b> ");
+    mg_printf(conn,
+              "%s",
+              (const char*)std::string(gpobj->m_web_lua_preload_file).c_str());
+    if (0 == gpobj->m_web_lua_preload_file.length()) {
+        mg_printf(conn, "Not set.");
+    }
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Lua script patterns:</b>");
+    mg_printf(
+      conn,
+      "%s",
+      (const char*)std::string(gpobj->m_web_lua_script_patterns).c_str());
+    if (0 == gpobj->m_web_lua_script_patterns.length()) {
+        mg_printf(conn, "Not set.");
+    }
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Lua server page patterns:</b>");
+    mg_printf(
+      conn,
+      "%s",
+      (const char*)std::string(gpobj->m_web_lua_server_page_patterns).c_str());
+    if (0 == gpobj->m_web_lua_server_page_patterns.length()) {
+        mg_printf(conn, "Not set.");
+    }
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Lua websocketpatterns:</b>");
+    mg_printf(
+      conn,
+      "%s",
+      (const char*)std::string(gpobj->m_web_lua_websocket_patterns).c_str());
+    if (0 == gpobj->m_web_lua_websocket_patterns.length()) {
+        mg_printf(conn, "Not set.");
+    }
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Lua background script:</b>");
+    mg_printf(
+      conn,
+      "%s",
+      (const char*)std::string(gpobj->m_web_lua_background_script).c_str());
+    if (0 == gpobj->m_web_lua_background_script.length()) {
+        mg_printf(conn, "Not set.");
+    }
+    mg_printf(conn, "<br>");
+
+    mg_printf(
+      conn,
+      "&nbsp;&nbsp;&nbsp;&nbsp;<b>Lua background script parameters:</b>");
+    mg_printf(
+      conn,
+      "%s",
+      (const char*)std::string(gpobj->m_web_lua_background_script_params)
+        .c_str());
+    if (0 == gpobj->m_web_lua_background_script_params.length()) {
+        mg_printf(conn, "Not set.");
+    }
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn, "<hr>");
+
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * ** * * * * *
+
+    mg_printf(conn, "<h4 id=\"header\" >&nbsp;Websockets</h4> ");
+
+        mg_printf(conn,
+                   "&nbsp;&nbsp;&nbsp;&nbsp;<b>Web sockets functionality </b> is ");
+        if (gpobj->m_web_bEnable && gpobj->m_bWebsocketsEnable) {
+        mg_printf(conn, "enabled.<br>");
+        } else {
+        mg_printf(conn, "disabled.<br>");
+        }
+
+        mg_printf(conn,
+                   "&nbsp;&nbsp;&nbsp;&nbsp;<b>Websocket document root:</b>");
+        mg_printf(
+          conn,
+          "%s",
+          (const char
+          *)std::string(gpobj->m_websocket_document_root).c_str());
+        if (0 == gpobj->m_websocket_document_root.length()) {
+        mg_printf(conn, "Not set.");
+        }
+        mg_printf(conn, "<br>");
+
+        mg_printf(conn, "<hr>");
+
+        // * * * * * * * * * * * * * * * * * * * * * * * * * * * ** * * * * *
+
+        mg_printf(conn, "<h4 id=\"header\" >&nbsp;Level I drivers</h4> ");
+
+        mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Level I Drivers:</b> ");
+
+        mg_printf(conn, "enabled<br>");
+        mg_printf(
+          conn,
+          "&nbsp;&nbsp;&nbsp;&nbsp;----------------------------------<br>");
+
+        CDeviceItem *pDeviceItem;
+        std::deque<CDeviceItem *>::iterator it;
+        for (it = gpobj->m_deviceList.m_devItemList.begin();
+             it != gpobj->m_deviceList.m_devItemList.end();
+             ++it) {
+        pDeviceItem = *it;
+        if ((NULL != pDeviceItem) &&
+            (VSCP_DRIVER_LEVEL1 == pDeviceItem->m_driverLevel) &&
+            pDeviceItem->m_bEnable) {
+            mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Name:</b> ");
+            mg_printf(conn, "%s", (const char*)pDeviceItem->m_strName.c_str());
+            mg_printf(conn, "<br>");
+            mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Config:</b> ");
+            mg_printf(conn,
+                      "%s",
+                      (const char*)pDeviceItem->m_strParameter.c_str());
+            mg_printf(conn, "<br>");
+            mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Path:</b> ");
+            mg_printf(conn, "%s", (const char*)pDeviceItem->m_strPath.c_str());
+            mg_printf(conn, "<br>");
+            mg_printf(
+              conn,
+              "&nbsp;&nbsp;&nbsp;&nbsp;----------------------------------<br>");
+        }
+        }
+
+        mg_printf(conn, "<hr>");
+
+        // * * * * * * * * * * * * * * * * * * * * * * * * * * * ** * * * * *
+
+        mg_printf(conn, "<h4 id=\"header\" >&nbsp;Level II drivers</h4> ");
+
+        mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Level II Drivers:</b> ");
+        mg_printf(conn, "enabled<br>");
+
+        mg_printf(
+          conn,
+          "&nbsp;&nbsp;&nbsp;&nbsp;----------------------------------<br>");
+
+        for (it = gpobj->m_deviceList.m_devItemList.begin();
+             it != gpobj->m_deviceList.m_devItemList.end();
+             ++it) {
+        pDeviceItem = *it;
+        if ((NULL != pDeviceItem) &&
+            (VSCP_DRIVER_LEVEL2 == pDeviceItem->m_driverLevel) &&
+            pDeviceItem->m_bEnable) {
+            mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Name:</b> ");
+            mg_printf(conn, "%s", (const char*)pDeviceItem->m_strName.c_str());
+            mg_printf(conn, "<br>");
+            mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Config:</b> ");
+            mg_printf(conn,
+                      "%s",
+                      (const char*)pDeviceItem->m_strParameter.c_str());
+            mg_printf(conn, "<br>");
+            mg_printf(conn,
+                      "&nbsp;&nbsp;&nbsp;&nbsp;<b>Driver path:</b> "); 
+                      mg_printf(
+                      conn,
+                      "%s",
+                      (const char*)pDeviceItem->m_strPath.c_str());
+            mg_printf(conn, "<br>");
+            mg_printf(
+              conn,
+              "&nbsp;&nbsp;&nbsp;&nbsp;----------------------------------<br>");
+        }
+        }
+
+    mg_printf(conn, "<br>");
+
+    return WEB_OK;
+}
 
 #ifdef WEB_EXAMPLES
 
@@ -2215,16 +1988,16 @@ vscp_client(struct mg_connection *conn, void *cbdata)
 //
 
 int
-ExampleHandler(struct mg_connection *conn, void *cbdata)
+ExampleHandler(struct mg_connection* conn, void* cbdata)
 {
     mg_printf(conn,
               "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
               "close\r\n\r\n");
     mg_printf(conn, "<html><body>");
     mg_printf(conn, "<h2>This is an example text from a C handler</h2>");
-    mg_printf(
-      conn,
-      "<p>To see a page from the A handler <a href=\"A\">click A</a></p>");
+    mg_printf(conn,
+              "<p>To see a page from the A handler <a href=\"A\">click "
+              "A</a></p>");
     mg_printf(conn,
               "<p>To see a page from the A handler <a href=\"A/A\">click "
               "A/A</a></p>");
@@ -2275,7 +2048,7 @@ ExampleHandler(struct mg_connection *conn, void *cbdata)
 //
 
 int
-ExitHandler(struct mg_connection *conn, void *cbdata)
+ExitHandler(struct mg_connection* conn, void* cbdata)
 {
     mg_printf(conn,
               "HTTP/1.1 200 OK\r\nContent-Type: "
@@ -2291,7 +2064,7 @@ ExitHandler(struct mg_connection *conn, void *cbdata)
 //
 
 int
-AHandler(struct mg_connection *conn, void *cbdata)
+AHandler(struct mg_connection* conn, void* cbdata)
 {
     mg_printf(conn,
               "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
@@ -2308,7 +2081,7 @@ AHandler(struct mg_connection *conn, void *cbdata)
 //
 
 int
-ABHandler(struct mg_connection *conn, void *cbdata)
+ABHandler(struct mg_connection* conn, void* cbdata)
 {
     mg_printf(conn,
               "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
@@ -2325,10 +2098,10 @@ ABHandler(struct mg_connection *conn, void *cbdata)
 //
 
 int
-BXHandler(struct mg_connection *conn, void *cbdata)
+BXHandler(struct mg_connection* conn, void* cbdata)
 {
     // Handler may access the request info using mg_get_request_info
-    const struct mg_request_info *req_info = mg_get_request_info(conn);
+    const struct mg_request_info* req_info = mg_get_request_info(conn);
 
     mg_printf(conn,
               "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
@@ -2346,10 +2119,10 @@ BXHandler(struct mg_connection *conn, void *cbdata)
 //
 
 int
-FooHandler(struct mg_connection *conn, void *cbdata)
+FooHandler(struct mg_connection* conn, void* cbdata)
 {
     // Handler may access the request info using mg_get_request_info
-    const struct mg_request_info *req_info = mg_get_request_info(conn);
+    const struct mg_request_info* req_info = mg_get_request_info(conn);
 
     mg_printf(conn,
               "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
@@ -2371,10 +2144,11 @@ FooHandler(struct mg_connection *conn, void *cbdata)
 //
 
 int
-CloseHandler(struct mg_connection *conn, void *cbdata)
+CloseHandler(struct mg_connection* conn, void* cbdata)
 {
     // Handler may access the request info using mg_get_request_info
-    //const struct mg_request_info *req_info = mg_get_request_info(conn);
+    // const struct mg_request_info *req_info =
+    // mg_get_request_info(conn);
 
     mg_printf(conn,
               "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
@@ -2406,10 +2180,11 @@ CloseHandler(struct mg_connection *conn, void *cbdata)
 //
 
 int
-FileHandler(struct mg_connection *conn, void *cbdata)
+FileHandler(struct mg_connection* conn, void* cbdata)
 {
-    // In this handler, we ignore the req_info and send the file "fileName".
-    const char *fileName = (const char *)cbdata;
+    // In this handler, we ignore the req_info and send the file
+    // "fileName".
+    const char* fileName = (const char*)cbdata;
 
     mg_send_file(conn, fileName);
 
@@ -2486,13 +2261,14 @@ FileHandler(struct mg_connection *conn, void *cbdata)
 // FormHandler(struct mg_connection *conn, void *cbdata)
 // {
 //     // Handler may access the request info using mg_get_request_info
-//     const struct mg_request_info *req_info = mg_get_request_info(conn);
-//     int ret;
-//     struct web_form_data_handler fdh = {
+//     const struct mg_request_info *req_info =
+//     mg_get_request_info(conn); int ret; struct web_form_data_handler
+//     fdh = {
 //         field_found, field_get, field_stored, 0
 //     };
 
-//     // It would be possible to check the request info here before calling
+//     // It would be possible to check the request info here before
+//     calling
 //     // web_handle_form_request.
 //     (void)req_info;
 
@@ -2517,8 +2293,8 @@ FileHandler(struct mg_connection *conn, void *cbdata)
 // FileUploadForm(struct mg_connection *conn, void *cbdata)
 // {
 //     mg_printf(conn,
-//                "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
-//                "close\r\n\r\n");
+//                "HTTP/1.1 200 OK\r\nContent-Type:
+//                text/html\r\nConnection: " "close\r\n\r\n");
 
 //     mg_printf(conn, "<!DOCTYPE html>\n");
 //     mg_printf(conn, "<html>\n<head>\n");
@@ -2529,9 +2305,10 @@ FileHandler(struct mg_connection *conn, void *cbdata)
 //                "<form action=\"%s\" method=\"POST\" "
 //                "enctype=\"multipart/form-data\">\n",
 //                (const char *)cbdata);
-//     mg_printf(conn, "<input type=\"file\" name=\"filesin\" multiple>\n");
-//     mg_printf(conn, "<input type=\"submit\" value=\"Submit\">\n");
-//     mg_printf(conn, "</form>\n</body>\n</html>\n");
+//     mg_printf(conn, "<input type=\"file\" name=\"filesin\"
+//     multiple>\n"); mg_printf(conn, "<input type=\"submit\"
+//     value=\"Submit\">\n"); mg_printf(conn,
+//     "</form>\n</body>\n</html>\n");
 
 //     return WEB_OK;
 // }
@@ -2562,7 +2339,8 @@ FileHandler(struct mg_connection *conn, void *cbdata)
 //                            size_t pathlen,
 //                            void *user_data)
 // {
-//     struct tfiles_checksums *context = (struct tfiles_checksums *)user_data;
+//     struct tfiles_checksums *context = (struct tfiles_checksums
+//     *)user_data;
 
 //     (void)key;
 //     (void)path;
@@ -2570,8 +2348,8 @@ FileHandler(struct mg_connection *conn, void *cbdata)
 
 //     if (context->index < MAX_FILES) {
 //         context->index++;
-//         strncpy(context->file[context->index - 1].name, filename, 128);
-//         context->file[context->index - 1].name[127] = 0;
+//         strncpy(context->file[context->index - 1].name, filename,
+//         128); context->file[context->index - 1].name[127] = 0;
 //         context->file[context->index - 1].length    = 0;
 //         vscpmd5_init(&(context->file[context->index - 1].chksum));
 //         return WEB_FORM_FIELD_STORAGE_GET;
@@ -2590,8 +2368,8 @@ FileHandler(struct mg_connection *conn, void *cbdata)
 //                    size_t valuelen,
 //                    void *user_data)
 // {
-//     struct tfiles_checksums *context = (struct tfiles_checksums *)user_data;
-//     (void)key;
+//     struct tfiles_checksums *context = (struct tfiles_checksums
+//     *)user_data; (void)key;
 
 //     context->file[context->index - 1].length += valuelen;
 //     vscpmd5_append(&(context->file[context->index - 1].chksum),
@@ -2609,15 +2387,16 @@ FileHandler(struct mg_connection *conn, void *cbdata)
 // CheckSumHandler(struct mg_connection *conn, void *cbdata)
 // {
 //     // Handler may access the request info using mg_get_request_info
-//     const struct mg_request_info *req_info = mg_get_request_info(conn);
-//     int i, j, ret;
-//     struct tfiles_checksums chksums;
-//     md5_byte_t digest[16];
-//     struct mg_form_data_handler fdh = {
-//         field_disp_read_on_the_fly, field_get_checksum, 0, (void *)&chksums
+//     const struct mg_request_info *req_info =
+//     mg_get_request_info(conn); int i, j, ret; struct tfiles_checksums
+//     chksums; md5_byte_t digest[16]; struct mg_form_data_handler fdh =
+//     {
+//         field_disp_read_on_the_fly, field_get_checksum, 0, (void
+//         *)&chksums
 //     };
 
-//     /* It would be possible to check the request info here before calling
+//     /* It would be possible to check the request info here before
+//     calling
 //      * mg_handle_form_request. */
 //     (void)req_info;
 
@@ -2651,11 +2430,11 @@ FileHandler(struct mg_connection *conn, void *cbdata)
 //
 
 int
-CookieHandler(struct mg_connection *conn, void *cbdata)
+CookieHandler(struct mg_connection* conn, void* cbdata)
 {
     // Handler may access the request info using mg_get_request_info
-    const struct mg_request_info *req_info = mg_get_request_info(conn);
-    const char *cookie                     = mg_get_header(conn, "Cookie");
+    const struct mg_request_info* req_info = mg_get_request_info(conn);
+    const char* cookie                     = mg_get_header(conn, "Cookie");
     char first_str[64], count_str[64];
     int count;
 
@@ -2665,7 +2444,7 @@ CookieHandler(struct mg_connection *conn, void *cbdata)
     mg_printf(conn, "HTTP/1.1 200 OK\r\nConnection: close\r\n");
     if (first_str[0] == 0) {
         time_t t       = time(0);
-        struct tm *ptm = localtime(&t);
+        struct tm* ptm = localtime(&t);
         mg_printf(conn,
                   "Set-Cookie: first=%04i-%02i-%02iT%02i:%02i:%02i\r\n",
                   ptm->tm_year + 1900,
@@ -2700,14 +2479,14 @@ CookieHandler(struct mg_connection *conn, void *cbdata)
 //
 
 int
-PostResponser(struct mg_connection *conn, void *cbdata)
+PostResponser(struct mg_connection* conn, void* cbdata)
 {
     long long r_total = 0;
     int r, s;
 
     char buf[2048];
 
-    const struct mg_request_info *ri = mg_get_request_info(conn);
+    const struct mg_request_info* ri = mg_get_request_info(conn);
 
     if (strcmp(ri->request_method, "POST")) {
         char buf[1024];
@@ -2720,8 +2499,9 @@ PostResponser(struct mg_connection *conn, void *cbdata)
                   "%s method not allowed in the POST handler\n",
                   ri->request_method);
         if (ret >= 0) {
-            mg_printf(
-              conn, "use a web tool to send a POST request to %s\n", buf);
+            mg_printf(conn,
+                      "use a web tool to send a POST request to %s\n",
+                      buf);
         }
         return 1;
     }
@@ -2758,7 +2538,7 @@ PostResponser(struct mg_connection *conn, void *cbdata)
 //
 
 int
-WebSocketStartHandler(struct mg_connection *conn, void *cbdata)
+WebSocketStartHandler(struct mg_connection* conn, void* cbdata)
 {
     mg_printf(conn,
               "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
@@ -2769,30 +2549,32 @@ WebSocketStartHandler(struct mg_connection *conn, void *cbdata)
     mg_printf(conn, "<meta charset=\"UTF-8\">\n");
     mg_printf(conn, "<title>Embedded websocket example</title>\n");
 
-    /* mg_printf(conn, "<script type=\"text/javascript\"><![CDATA[\n"); ...
-     * xhtml style */
+    /* mg_printf(conn, "<script type=\"text/javascript\"><![CDATA[\n");
+     * ... xhtml style */
     mg_printf(conn, "<script>\n");
-    mg_printf(
-      conn,
-      "function load() {\n"
-      "  var wsproto = (location.protocol === 'https:') ? 'wss:' : 'ws:';\n"
-      "  connection = new WebSocket(wsproto + '//' + window.location.host + "
-      "'/websocket');\n"
-      "  websock_text_field = "
-      "document.getElementById('websock_text_field');\n"
-      "  connection.onmessage = function (e) {\n"
-      "    websock_text_field.innerHTML=e.data;\n"
-      "  }\n"
-      "  connection.onerror = function (error) {\n"
-      "    alert('WebSocket error');\n"
-      "    connection.close();\n"
-      "  }\n"
-      "}\n");
+    mg_printf(conn,
+              "function load() {\n"
+              "  var wsproto = (location.protocol === 'https:') ? "
+              "'wss:' : 'ws:';\n"
+              "  connection = new WebSocket(wsproto + '//' + "
+              "window.location.host + "
+              "'/websocket');\n"
+              "  websock_text_field = "
+              "document.getElementById('websock_text_field');\n"
+              "  connection.onmessage = function (e) {\n"
+              "    websock_text_field.innerHTML=e.data;\n"
+              "  }\n"
+              "  connection.onerror = function (error) {\n"
+              "    alert('WebSocket error');\n"
+              "    connection.close();\n"
+              "  }\n"
+              "}\n");
     /* mg_printf(conn, "]]></script>\n"); ... xhtml style */
     mg_printf(conn, "</script>\n");
     mg_printf(conn, "</head>\n<body onload=\"load()\">\n");
-    mg_printf(
-      conn, "<div id='websock_text_field'>No websocket connection yet</div>\n");
+    mg_printf(conn,
+              "<div id='websock_text_field'>No websocket connection "
+              "yet</div>\n");
     mg_printf(conn, "</body>\n</html>\n");
 
     return WEB_OK;
@@ -2802,24 +2584,26 @@ WebSocketStartHandler(struct mg_connection *conn, void *cbdata)
 // t_ws_client
 //
 
-// MAX_WS_CLIENTS defines how many clients can connect to a websocket at the
-// same time. The value 5 is very small and used here only for demonstration;
-// it can be easily tested to connect more than MAX_WS_CLIENTS clients.
-// A real server should use a much higher number, or better use a dynamic list
-// of currently connected websocket clients.
+// MAX_WS_CLIENTS defines how many clients can connect to a websocket at
+// the same time. The value 5 is very small and used here only for
+// demonstration; it can be easily tested to connect more than
+// MAX_WS_CLIENTS clients. A real server should use a much higher
+// number, or better use a dynamic list of currently connected websocket
+// clients.
 #define MAX_WS_CLIENTS (512)
 
 struct t_ws_client
 {
-    struct mg_connection *conn;
+    struct mg_connection* conn;
     int state;
 } static ws_clients[MAX_WS_CLIENTS];
 
 #define ASSERT(x)                                                              \
     {                                                                          \
         if (!(x)) {                                                            \
-            fprintf(                                                           \
-              stderr, "Assertion failed in line %u\n", (unsigned)__LINE__);    \
+            fprintf(stderr,                                                    \
+                    "Assertion failed in line %u\n",                           \
+                    (unsigned)__LINE__);                                       \
         }                                                                      \
     }
 
@@ -2828,19 +2612,19 @@ struct t_ws_client
 //
 
 int
-WebSocketConnectHandler(const struct mg_connection *conn, void *cbdata)
+WebSocketConnectHandler(const struct mg_connection* conn, void* cbdata)
 {
-    struct mg_context *ctx = mg_get_context(conn);
+    struct mg_context* ctx = mg_get_context(conn);
     int reject             = 1;
     int i;
 
     mg_lock_context(ctx);
     for (i = 0; i < MAX_WS_CLIENTS; i++) {
         if (ws_clients[i].conn == NULL) {
-            ws_clients[i].conn  = (struct mg_connection *)conn;
+            ws_clients[i].conn  = (struct mg_connection*)conn;
             ws_clients[i].state = 1;
             mg_set_user_connection_data(ws_clients[i].conn,
-                                        (void *)(ws_clients + i));
+                                        (void*)(ws_clients + i));
             reject = 0;
             break;
         }
@@ -2859,11 +2643,11 @@ WebSocketConnectHandler(const struct mg_connection *conn, void *cbdata)
 //
 
 void
-WebSocketReadyHandler(struct mg_connection *conn, void *cbdata)
+WebSocketReadyHandler(struct mg_connection* conn, void* cbdata)
 {
-    const char *text = "Hello from the websocket ready handler";
-    struct t_ws_client *client =
-      (struct t_ws_client *)mg_get_user_connection_data(conn);
+    const char* text = "Hello from the websocket ready handler";
+    struct t_ws_client* client =
+      (struct t_ws_client*)mg_get_user_connection_data(conn);
 
     mg_websocket_write(conn, MG_WEBSOCKET_OPCODE_TEXT, text, strlen(text));
     fprintf(stdout, "Greeting message sent to websocket client\r\n\r\n");
@@ -2878,11 +2662,14 @@ WebSocketReadyHandler(struct mg_connection *conn, void *cbdata)
 //
 
 int
-WebsocketDataHandler(
-  struct mg_connection *conn, int bits, char *data, size_t len, void *cbdata)
+WebsocketDataHandler(struct mg_connection* conn,
+                     int bits,
+                     char* data,
+                     size_t len,
+                     void* cbdata)
 {
-    struct t_ws_client *client =
-      (struct t_ws_client *)mg_get_user_connection_data(conn);
+    struct t_ws_client* client =
+      (struct t_ws_client*)mg_get_user_connection_data(conn);
     ASSERT(client->conn == conn);
     ASSERT(client->state >= 1);
 
@@ -2922,11 +2709,11 @@ WebsocketDataHandler(
 //
 
 void
-WebSocketCloseHandler(const struct mg_connection *conn, void *cbdata)
+WebSocketCloseHandler(const struct mg_connection* conn, void* cbdata)
 {
-    struct mg_context *ctx = mg_get_context(conn);
-    struct t_ws_client *client =
-      (struct t_ws_client *)mg_get_user_connection_data(conn);
+    struct mg_context* ctx = mg_get_context(conn);
+    struct t_ws_client* client =
+      (struct t_ws_client*)mg_get_user_connection_data(conn);
     ASSERT(client->conn == conn);
     ASSERT(client->state >= 1);
 
@@ -2944,7 +2731,7 @@ WebSocketCloseHandler(const struct mg_connection *conn, void *cbdata)
 //
 
 void
-informWebsockets(struct mg_context *ctx)
+informWebsockets(struct mg_context* ctx)
 {
     static unsigned long cnt = 0;
     char text[32];
@@ -2955,8 +2742,10 @@ informWebsockets(struct mg_context *ctx)
     mg_lock_context(ctx);
     for (i = 0; i < MAX_WS_CLIENTS; i++) {
         if (2 == ws_clients[i].state) {
-            mg_websocket_write(
-              ws_clients[i].conn, MG_WEBSOCKET_OPCODE_TEXT, text, strlen(text));
+            mg_websocket_write(ws_clients[i].conn,
+                               MG_WEBSOCKET_OPCODE_TEXT,
+                               text,
+                               strlen(text));
         }
     }
     mg_unlock_context(ctx);
@@ -2972,7 +2761,7 @@ informWebsockets(struct mg_context *ctx)
 #include "openssl/evp.h"
 #include "openssl/ssl.h"
 
-DH *
+DH*
 get_dh2236()
 {
     static unsigned char dh2236_p[] = {
@@ -3004,9 +2793,10 @@ get_dh2236()
     static unsigned char dh2236_g[] = {
         0x02,
     };
-    DH *dh;
+    DH* dh;
 
-    if ((dh = DH_new()) == NULL) return (NULL);
+    if ((dh = DH_new()) == NULL)
+        return (NULL);
     dh->p = BN_bin2bn(dh2236_p, sizeof(dh2236_p), NULL);
     dh->g = BN_bin2bn(dh2236_g, sizeof(dh2236_g), NULL);
     if ((dh->p == NULL) || (dh->g == NULL)) {
@@ -3018,21 +2808,25 @@ get_dh2236()
 #endif
 
 int
-init_ssl(void *ssl_context, void *user_data)
+init_ssl(void* ssl_context, void* user_data)
 {
     /* Add application specific SSL initialization */
-    //struct ssl_ctx_st *ctx = (struct ssl_ctx_st *)ssl_context;
+    // struct ssl_ctx_st *ctx = (struct ssl_ctx_st *)ssl_context;
 
 #ifdef USE_SSL_DH
     /* example from https://github.com/civetweb/civetweb/issues/347 */
-    DH *dh = get_dh2236();
-    if (!dh) return -1;
-    if (1 != SSL_CTX_set_tmp_dh(ctx, dh)) return -1;
+    DH* dh = get_dh2236();
+    if (!dh)
+        return -1;
+    if (1 != SSL_CTX_set_tmp_dh(ctx, dh))
+        return -1;
     DH_free(dh);
 
-    EC_KEY *ecdh = EC_KEY_new_by_curve_name(NID_X9_62_prime256v1);
-    if (!ecdh) return -1;
-    if (1 != SSL_CTX_set_tmp_ecdh(ctx, ecdh)) return -1;
+    EC_KEY* ecdh = EC_KEY_new_by_curve_name(NID_X9_62_prime256v1);
+    if (!ecdh)
+        return -1;
+    if (1 != SSL_CTX_set_tmp_ecdh(ctx, ecdh))
+        return -1;
     EC_KEY_free(ecdh);
 
     printf("ECDH ciphers initialized\n");
@@ -3096,33 +2890,33 @@ start_webserver(void)
     syslog(LOG_ERR, ("Starting web server...\n"));
 
     // This structure must be larger than the number of options to set
-    const char **web_options = new const char *[120 + 2];
+    const char** web_options = new const char*[120 + 2];
 
     struct mg_callbacks callbacks;
-    //struct mg_server_ports ports[32];
-    //int port_cnt, n;
-   // int err = 0;
+    // struct mg_server_ports ports[32];
+    // int port_cnt, n;
+    // int err = 0;
 
     // Set setup options from configuration
     int pos = 0;
 
     web_options[pos++] = vscp_strdup(VSCPDB_CONFIG_NAME_WEB_DOCUMENT_ROOT + 4);
     web_options[pos++] =
-      vscp_strdup((const char *)gpobj->m_web_document_root.c_str());
+      vscp_strdup((const char*)gpobj->m_web_document_root.c_str());
 
     web_options[pos++] =
       vscp_strdup(VSCPDB_CONFIG_NAME_WEB_LISTENING_PORTS + 4);
     web_options[pos++] =
-      vscp_strdup((const char *)gpobj->m_web_listening_ports.c_str());
+      vscp_strdup((const char*)gpobj->m_web_listening_ports.c_str());
 
     web_options[pos++] = vscp_strdup(VSCPDB_CONFIG_NAME_WEB_INDEX_FILES + 4);
     web_options[pos++] =
-      vscp_strdup((const char *)gpobj->m_web_index_files.c_str());
+      vscp_strdup((const char*)gpobj->m_web_index_files.c_str());
 
     web_options[pos++] =
       vscp_strdup(VSCPDB_CONFIG_NAME_WEB_AUTHENTICATION_DOMAIN + 4);
     web_options[pos++] =
-      vscp_strdup((const char *)gpobj->m_web_authentication_domain.c_str());
+      vscp_strdup((const char*)gpobj->m_web_authentication_domain.c_str());
 
     // Set only if not default value
     if (!gpobj->m_enable_auth_domain_check) {
@@ -3134,12 +2928,12 @@ start_webserver(void)
     web_options[pos++] =
       vscp_strdup(VSCPDB_CONFIG_NAME_WEB_SSL_CERTIFICATE + 4);
     web_options[pos++] =
-      vscp_strdup((const char *)gpobj->m_web_ssl_certificate.c_str());
+      vscp_strdup((const char*)gpobj->m_web_ssl_certificate.c_str());
 
     web_options[pos++] =
       vscp_strdup(VSCPDB_CONFIG_NAME_WEB_SSL_CERTIFICAT_CHAIN + 4);
     web_options[pos++] =
-      vscp_strdup((const char *)gpobj->m_web_ssl_certificate_chain.c_str());
+      vscp_strdup((const char*)gpobj->m_web_ssl_certificate_chain.c_str());
 
     // Set only if not default value
     if (gpobj->m_web_ssl_verify_peer) {
@@ -3152,14 +2946,14 @@ start_webserver(void)
         web_options[pos++] =
           vscp_strdup(VSCPDB_CONFIG_NAME_WEB_SSL_CA_PATH + 4);
         web_options[pos++] =
-          vscp_strdup((const char *)gpobj->m_web_ssl_ca_path.c_str());
+          vscp_strdup((const char*)gpobj->m_web_ssl_ca_path.c_str());
     }
 
     if (gpobj->m_web_ssl_ca_file.length()) {
         web_options[pos++] =
           vscp_strdup(VSCPDB_CONFIG_NAME_WEB_SSL_CA_FILE + 4);
         web_options[pos++] =
-          vscp_strdup((const char *)gpobj->m_web_ssl_ca_file.c_str());
+          vscp_strdup((const char*)gpobj->m_web_ssl_ca_file.c_str());
     }
 
     if (gpobj->m_web_ssl_verify_depth !=
@@ -3168,7 +2962,7 @@ start_webserver(void)
           vscp_str_format(("%d"), (int)gpobj->m_web_ssl_verify_depth);
         web_options[pos++] =
           vscp_strdup(VSCPDB_CONFIG_NAME_WEB_SSL_VERIFY_DEPTH + 4);
-        web_options[pos++] = vscp_strdup((const char *)str.c_str());
+        web_options[pos++] = vscp_strdup((const char*)str.c_str());
     }
 
     if (!gpobj->m_web_ssl_default_verify_paths) {
@@ -3180,7 +2974,7 @@ start_webserver(void)
     web_options[pos++] =
       vscp_strdup(VSCPDB_CONFIG_NAME_WEB_SSL_CHIPHER_LIST + 4);
     web_options[pos++] =
-      vscp_strdup((const char *)gpobj->m_web_ssl_cipher_list.c_str());
+      vscp_strdup((const char*)gpobj->m_web_ssl_cipher_list.c_str());
 
     if (gpobj->m_web_ssl_protocol_version !=
         atoi(VSCPDB_CONFIG_DEFAULT_WEB_SSL_PROTOCOL_VERSION)) {
@@ -3188,7 +2982,7 @@ start_webserver(void)
           vscp_str_format(("%d"), (int)gpobj->m_web_ssl_protocol_version);
         web_options[pos++] =
           vscp_strdup(VSCPDB_CONFIG_NAME_WEB_SSL_PROTOCOL_VERSION + 4);
-        web_options[pos++] = vscp_strdup((const char *)str.c_str());
+        web_options[pos++] = vscp_strdup((const char*)str.c_str());
     }
 
     if (!gpobj->m_web_ssl_short_trust) {
@@ -3201,34 +2995,34 @@ start_webserver(void)
         web_options[pos++] =
           vscp_strdup(VSCPDB_CONFIG_NAME_WEB_CGI_INTERPRETER + 4);
         web_options[pos++] =
-          vscp_strdup((const char *)gpobj->m_web_cgi_interpreter.c_str());
+          vscp_strdup((const char*)gpobj->m_web_cgi_interpreter.c_str());
     }
 
     if (gpobj->m_web_cgi_patterns.length()) {
         web_options[pos++] =
           vscp_strdup(VSCPDB_CONFIG_NAME_WEB_CGI_PATTERN + 4);
         web_options[pos++] =
-          vscp_strdup((const char *)gpobj->m_web_cgi_patterns.c_str());
+          vscp_strdup((const char*)gpobj->m_web_cgi_patterns.c_str());
     }
 
     if (gpobj->m_web_cgi_environment.length()) {
         web_options[pos++] =
           vscp_strdup(VSCPDB_CONFIG_NAME_WEB_CGI_ENVIRONMENT + 4);
         web_options[pos++] =
-          vscp_strdup((const char *)gpobj->m_web_cgi_environment.c_str());
+          vscp_strdup((const char*)gpobj->m_web_cgi_environment.c_str());
     }
 
     if (gpobj->m_web_protect_uri.length()) {
         web_options[pos++] =
           vscp_strdup(VSCPDB_CONFIG_NAME_WEB_PROTECT_URI + 4);
         web_options[pos++] =
-          vscp_strdup((const char *)gpobj->m_web_protect_uri.c_str());
+          vscp_strdup((const char*)gpobj->m_web_protect_uri.c_str());
     }
 
     if (gpobj->m_web_trottle.length()) {
         web_options[pos++] = vscp_strdup(VSCPDB_CONFIG_NAME_WEB_TROTTLE + 4);
         web_options[pos++] =
-          vscp_strdup((const char *)gpobj->m_web_trottle.c_str());
+          vscp_strdup((const char*)gpobj->m_web_trottle.c_str());
     }
 
     if (!gpobj->m_web_enable_directory_listing) {
@@ -3249,21 +3043,21 @@ start_webserver(void)
           vscp_str_format(("%ld"), (long)gpobj->m_web_ssl_protocol_version);
         web_options[pos++] =
           vscp_strdup(VSCPDB_CONFIG_NAME_WEB_KEEP_ALIVE_TIMEOUT_MS + 4);
-        web_options[pos++] = vscp_strdup((const char *)str.c_str());
+        web_options[pos++] = vscp_strdup((const char*)str.c_str());
     }
 
     if (gpobj->m_web_access_control_list.length()) {
         web_options[pos++] =
           vscp_strdup(VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_LIST + 4);
         web_options[pos++] =
-          vscp_strdup((const char *)gpobj->m_web_access_control_list.c_str());
+          vscp_strdup((const char*)gpobj->m_web_access_control_list.c_str());
     }
 
     if (gpobj->m_web_extra_mime_types.length()) {
         web_options[pos++] =
           vscp_strdup(VSCPDB_CONFIG_NAME_WEB_EXTRA_MIME_TYPES + 4);
         web_options[pos++] =
-          vscp_strdup((const char *)gpobj->m_web_extra_mime_types.c_str());
+          vscp_strdup((const char*)gpobj->m_web_extra_mime_types.c_str());
     }
 
     if (gpobj->m_web_num_threads !=
@@ -3272,21 +3066,21 @@ start_webserver(void)
           vscp_str_format(("%d"), (int)gpobj->m_web_num_threads);
         web_options[pos++] =
           vscp_strdup(VSCPDB_CONFIG_NAME_WEB_EXTRA_MIME_TYPES + 4);
-        web_options[pos++] = vscp_strdup((const char *)str.c_str());
+        web_options[pos++] = vscp_strdup((const char*)str.c_str());
     }
 
     if (gpobj->m_web_url_rewrite_patterns.length()) {
         web_options[pos++] =
           vscp_strdup(VSCPDB_CONFIG_NAME_WEB_URL_REWRITE_PATTERNS + 4);
         web_options[pos++] =
-          vscp_strdup((const char *)gpobj->m_web_url_rewrite_patterns.c_str());
+          vscp_strdup((const char*)gpobj->m_web_url_rewrite_patterns.c_str());
     }
 
     if (gpobj->m_web_hide_file_patterns.length()) {
         web_options[pos++] =
           vscp_strdup(VSCPDB_CONFIG_NAME_WEB_URL_REWRITE_PATTERNS + 4);
         web_options[pos++] =
-          vscp_strdup((const char *)gpobj->m_web_hide_file_patterns.c_str());
+          vscp_strdup((const char*)gpobj->m_web_hide_file_patterns.c_str());
     }
 
     if (gpobj->m_web_request_timeout_ms !=
@@ -3295,7 +3089,7 @@ start_webserver(void)
           vscp_str_format(("%ld"), (long)gpobj->m_web_request_timeout_ms);
         web_options[pos++] =
           vscp_strdup(VSCPDB_CONFIG_NAME_WEB_REQUEST_TIMEOUT_MS + 4);
-        web_options[pos++] = vscp_strdup((const char *)str.c_str());
+        web_options[pos++] = vscp_strdup((const char*)str.c_str());
     }
 
     if (-1 != gpobj->m_web_linger_timeout_ms) {
@@ -3303,7 +3097,7 @@ start_webserver(void)
           vscp_str_format(("%ld"), (long)gpobj->m_web_linger_timeout_ms);
         web_options[pos++] =
           vscp_strdup(VSCPDB_CONFIG_NAME_WEB_LINGER_TIMEOUT_MS + 4);
-        web_options[pos++] = vscp_strdup((const char *)str.c_str());
+        web_options[pos++] = vscp_strdup((const char*)str.c_str());
     }
 
     if (!gpobj->m_web_decode_url) {
@@ -3315,49 +3109,49 @@ start_webserver(void)
         web_options[pos++] =
           vscp_strdup(VSCPDB_CONFIG_NAME_WEB_GLOBAL_AUTHFILE + 4);
         web_options[pos++] =
-          vscp_strdup((const char *)gpobj->m_web_global_auth_file.c_str());
+          vscp_strdup((const char*)gpobj->m_web_global_auth_file.c_str());
     }
 
     if (gpobj->m_web_per_directory_auth_file.length()) {
         web_options[pos++] =
           vscp_strdup(VSCPDB_CONFIG_NAME_WEB_PER_DIRECTORY_AUTH_FILE + 4);
         web_options[pos++] = vscp_strdup(
-          (const char *)gpobj->m_web_per_directory_auth_file.c_str());
+          (const char*)gpobj->m_web_per_directory_auth_file.c_str());
     }
 
     if (gpobj->m_web_ssi_patterns.length()) {
         web_options[pos++] =
           vscp_strdup(VSCPDB_CONFIG_NAME_WEB_SSI_PATTERNS + 4);
         web_options[pos++] =
-          vscp_strdup((const char *)gpobj->m_web_ssi_patterns.c_str());
+          vscp_strdup((const char*)gpobj->m_web_ssi_patterns.c_str());
     }
 
     if (gpobj->m_web_access_control_allow_origin.length()) {
         web_options[pos++] =
           vscp_strdup(VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_ALLOW_ORIGIN + 4);
         web_options[pos++] = vscp_strdup(
-          (const char *)gpobj->m_web_access_control_allow_origin.c_str());
+          (const char*)gpobj->m_web_access_control_allow_origin.c_str());
     }
 
     if (gpobj->m_web_access_control_allow_methods.length()) {
         web_options[pos++] =
           vscp_strdup(VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_ALLOW_METHODS + 4);
         web_options[pos++] = vscp_strdup(
-          (const char *)gpobj->m_web_access_control_allow_methods.c_str());
+          (const char*)gpobj->m_web_access_control_allow_methods.c_str());
     }
 
     if (gpobj->m_web_access_control_allow_headers.length()) {
         web_options[pos++] =
           vscp_strdup(VSCPDB_CONFIG_NAME_WEB_ACCESS_CONTROL_ALLOW_HEADERS + 4);
         web_options[pos++] = vscp_strdup(
-          (const char *)gpobj->m_web_access_control_allow_headers.c_str());
+          (const char*)gpobj->m_web_access_control_allow_headers.c_str());
     }
 
     if (gpobj->m_web_error_pages.length()) {
         web_options[pos++] =
           vscp_strdup(VSCPDB_CONFIG_NAME_WEB_ERROR_PAGES + 4);
         web_options[pos++] =
-          vscp_strdup((const char *)gpobj->m_web_error_pages.c_str());
+          vscp_strdup((const char*)gpobj->m_web_error_pages.c_str());
     }
 
     if (-1 != gpobj->m_web_tcp_nodelay) {
@@ -3365,14 +3159,14 @@ start_webserver(void)
           vscp_str_format(("%ld"), (long)gpobj->m_web_tcp_nodelay);
         web_options[pos++] =
           vscp_strdup(VSCPDB_CONFIG_NAME_WEB_TCP_NO_DELAY + 4);
-        web_options[pos++] = vscp_strdup((const char *)str.c_str());
+        web_options[pos++] = vscp_strdup((const char*)str.c_str());
     }
 
     if (gpobj->m_web_static_file_cache_control.length()) {
         web_options[pos++] =
           vscp_strdup(VSCPDB_CONFIG_NAME_WEB_ERROR_PAGES + 4);
-        web_options[pos++] =
-          vscp_strdup((const char *)gpobj->m_web_static_file_cache_control.c_str());
+        web_options[pos++] = vscp_strdup(
+          (const char*)gpobj->m_web_static_file_cache_control.c_str());
     }
 
     if (gpobj->m_web_static_file_max_age !=
@@ -3381,15 +3175,16 @@ start_webserver(void)
           vscp_str_format(("%ld"), (long)gpobj->m_web_static_file_max_age);
         web_options[pos++] =
           vscp_strdup(VSCPDB_CONFIG_NAME_WEB_STATIC_FILE_MAX_AGE + 4);
-        web_options[pos++] = vscp_strdup((const char *)str.c_str());
+        web_options[pos++] = vscp_strdup((const char*)str.c_str());
     }
 
     if (-1 != gpobj->m_web_strict_transport_security_max_age) {
-        std::string str = vscp_str_format(
-          ("%ld"), (long)gpobj->m_web_strict_transport_security_max_age);
+        std::string str =
+          vscp_str_format(("%ld"),
+                          (long)gpobj->m_web_strict_transport_security_max_age);
         web_options[pos++] = vscp_strdup(
           VSCPDB_CONFIG_NAME_WEB_STRICT_TRANSPORT_SECURITY_MAX_AGE + 4);
-        web_options[pos++] = vscp_strdup((const char *)str.c_str());
+        web_options[pos++] = vscp_strdup((const char*)str.c_str());
     }
 
     if (!gpobj->m_web_allow_sendfile_call) {
@@ -3402,7 +3197,7 @@ start_webserver(void)
         web_options[pos++] =
           vscp_strdup(VSCPDB_CONFIG_NAME_WEB_ADDITIONAL_HEADERS + 4);
         web_options[pos++] =
-          vscp_strdup((const char *)gpobj->m_web_additional_header.c_str());
+          vscp_strdup((const char*)gpobj->m_web_additional_header.c_str());
     }
 
     if (gpobj->m_web_max_request_size !=
@@ -3411,7 +3206,7 @@ start_webserver(void)
           vscp_str_format(("%ld"), (long)gpobj->m_web_max_request_size);
         web_options[pos++] =
           vscp_strdup(VSCPDB_CONFIG_NAME_WEB_MAX_REQUEST_SIZE + 4);
-        web_options[pos++] = vscp_strdup((const char *)str.c_str());
+        web_options[pos++] = vscp_strdup((const char*)str.c_str());
     }
 
     if (gpobj->m_web_allow_index_script_resource) {
@@ -3424,49 +3219,49 @@ start_webserver(void)
         web_options[pos++] =
           vscp_strdup(VSCPDB_CONFIG_NAME_WEB_DUKTAPE_SCRIPT_PATTERN + 4);
         web_options[pos++] = vscp_strdup(
-          (const char *)gpobj->m_web_duktape_script_patterns.c_str());
+          (const char*)gpobj->m_web_duktape_script_patterns.c_str());
     }
 
     if (gpobj->m_web_lua_preload_file.length()) {
         web_options[pos++] =
           vscp_strdup(VSCPDB_CONFIG_NAME_WEB_LUA_PRELOAD_FILE + 4);
         web_options[pos++] =
-          vscp_strdup((const char *)gpobj->m_web_lua_preload_file.c_str());
+          vscp_strdup((const char*)gpobj->m_web_lua_preload_file.c_str());
     }
 
     if (gpobj->m_web_lua_script_patterns.length()) {
         web_options[pos++] =
           vscp_strdup(VSCPDB_CONFIG_NAME_WEB_LUA_SCRIPT_PATTERN + 4);
         web_options[pos++] =
-          vscp_strdup((const char *)gpobj->m_web_lua_script_patterns.c_str());
+          vscp_strdup((const char*)gpobj->m_web_lua_script_patterns.c_str());
     }
 
     if (gpobj->m_web_lua_server_page_patterns.length()) {
         web_options[pos++] =
           vscp_strdup(VSCPDB_CONFIG_NAME_WEB_LUA_SERVER_PAGE_PATTERN + 4);
         web_options[pos++] = vscp_strdup(
-          (const char *)gpobj->m_web_lua_server_page_patterns.c_str());
+          (const char*)gpobj->m_web_lua_server_page_patterns.c_str());
     }
 
     if (gpobj->m_web_lua_websocket_patterns.length()) {
         web_options[pos++] =
           vscp_strdup(VSCPDB_CONFIG_NAME_WEB_LUA_WEBSOCKET_PATTERN + 4);
-        web_options[pos++] = vscp_strdup(
-          (const char *)gpobj->m_web_lua_websocket_patterns.c_str());
+        web_options[pos++] =
+          vscp_strdup((const char*)gpobj->m_web_lua_websocket_patterns.c_str());
     }
 
     if (gpobj->m_web_lua_background_script.length()) {
         web_options[pos++] =
           vscp_strdup(VSCPDB_CONFIG_NAME_WEB_LUA_BACKGROUND_SCRIPT + 4);
         web_options[pos++] =
-          vscp_strdup((const char *)gpobj->m_web_lua_background_script.c_str());
+          vscp_strdup((const char*)gpobj->m_web_lua_background_script.c_str());
     }
 
     if (gpobj->m_web_lua_background_script_params.length()) {
         web_options[pos++] =
           vscp_strdup(VSCPDB_CONFIG_NAME_WEB_LUA_BACKGROUND_SCRIPT_PARAMS + 4);
         web_options[pos++] = vscp_strdup(
-          (const char *)gpobj->m_web_lua_background_script_params.c_str());
+          (const char*)gpobj->m_web_lua_background_script_params.c_str());
     }
 
     // Mark end
@@ -3480,7 +3275,7 @@ start_webserver(void)
     callbacks.log_access  = log_access;
 
     // Start server
-    gpobj->m_web_ctx = mg_start(&callbacks, 0, (const char **)web_options);
+    gpobj->m_web_ctx = mg_start(&callbacks, 0, (const char**)web_options);
 
     // Delete allocated option data
     pos = 0;
@@ -3511,9 +3306,9 @@ start_webserver(void)
     mg_set_request_handler(gpobj->m_web_ctx, "/A/B", ABHandler, 0);
 
     // Add handler for /B, /B/A, /B/B but not for /B*
-    mg_set_request_handler(gpobj->m_web_ctx, "/B$", BXHandler, (void *)0);
-    mg_set_request_handler(gpobj->m_web_ctx, "/B/A$", BXHandler, (void *)1);
-    mg_set_request_handler(gpobj->m_web_ctx, "/B/B$", BXHandler, (void *)2);
+    mg_set_request_handler(gpobj->m_web_ctx, "/B$", BXHandler, (void*)0);
+    mg_set_request_handler(gpobj->m_web_ctx, "/B/A$", BXHandler, (void*)1);
+    mg_set_request_handler(gpobj->m_web_ctx, "/B/B$", BXHandler, (void*)2);
 
     // Add handler for all files with .foo extention
     mg_set_request_handler(gpobj->m_web_ctx, "**.foo$", FooHandler, 0);
@@ -3522,8 +3317,10 @@ start_webserver(void)
     mg_set_request_handler(gpobj->m_web_ctx, "/close", CloseHandler, 0);
 
     // Add handler for /form  (serve a file outside the document root)
-    mg_set_request_handler(
-      gpobj->m_web_ctx, "/form", FileHandler, (void *)"../../test/form.html");
+    mg_set_request_handler(gpobj->m_web_ctx,
+                           "/form",
+                           FileHandler,
+                           (void*)"../../test/form.html");
 
     // Add handler for form data
     // mg_set_request_handler(gpobj->m_web_ctx,
@@ -3548,8 +3345,10 @@ start_webserver(void)
     mg_set_request_handler(gpobj->m_web_ctx, "/postresponse", PostResponser, 0);
 
     // Add HTTP site to open a websocket connection
-    mg_set_request_handler(
-      gpobj->m_web_ctx, "/websocket", WebSocketStartHandler, 0);
+    mg_set_request_handler(gpobj->m_web_ctx,
+                           "/websocket",
+                           WebSocketStartHandler,
+                           0);
 
     // WS site for the websocket connection
     mg_set_websocket_handler(gpobj->m_web_ctx,
@@ -3562,10 +3361,14 @@ start_webserver(void)
 #endif // WEB_EXAMPLES
 
     // Set authorization handlers
-    mg_set_auth_handler(
-      gpobj->m_web_ctx, "/vscp", check_admin_authorization, NULL);
-    // mg_set_auth_handler(
-    //  gpobj->m_web_ctx, "/vscp/rest", check_rest_authorization, NULL);
+    mg_set_auth_handler(gpobj->m_web_ctx,
+                        "/vscp",
+                        check_admin_authorization,
+                        NULL);
+    mg_set_auth_handler(gpobj->m_web_ctx,
+                        "/vscp/rest",
+                        check_rest_authorization,
+                        NULL);
 
     // WS1 path for the websocket connection
     mg_set_websocket_handler(gpobj->m_web_ctx,
@@ -3588,16 +3391,24 @@ start_webserver(void)
     // Set page handlers
     mg_set_request_handler(gpobj->m_web_ctx, "/vscp", vscp_mainpage, 0);
     mg_set_request_handler(gpobj->m_web_ctx, "/vscp/session", vscp_client, 0);
-    // mg_set_request_handler(
-    //   gpobj->m_web_ctx, "/vscp/configure", vscp_configure_list, 0);
-    mg_set_request_handler(
-      gpobj->m_web_ctx, "/vscp/interfaces", vscp_interface, 0);
-    mg_set_request_handler(
-      gpobj->m_web_ctx, "/vscp/ifinfo", vscp_interface_info, 0);
+    mg_set_request_handler(gpobj->m_web_ctx,
+                           "/vscp/configure",
+                           vscp_configure_list,
+                           0);
+    mg_set_request_handler(gpobj->m_web_ctx,
+                           "/vscp/interfaces",
+                           vscp_interface,
+                           0);
+    mg_set_request_handler(gpobj->m_web_ctx,
+                           "/vscp/ifinfo",
+                           vscp_interface_info,
+                           0);
     // mg_set_request_handler(
     //   gpobj->m_web_ctx, "/vscp/settings", vscp_settings, 0);
-    mg_set_request_handler(
-      gpobj->m_web_ctx, "/vscp/password", vscp_password, 0);
+    mg_set_request_handler(gpobj->m_web_ctx,
+                           "/vscp/password",
+                           vscp_password,
+                           0);
     mg_set_request_handler(gpobj->m_web_ctx, "/vscp/restart", vscp_restart, 0);
     // mg_set_request_handler(
     //   gpobj->m_web_ctx, "/vscp/varlist", vscp_variable_list, 0);
@@ -3609,15 +3420,16 @@ start_webserver(void)
     //   gpobj->m_web_ctx, "/vscp/varnew", vscp_variable_new, 0);
     // mg_set_request_handler(
     //   gpobj->m_web_ctx, "/vscp/vardelete", vscp_variable_delete, 0);
-    // mg_set_request_handler(gpobj->m_web_ctx, "/vscp/users", vscp_user_list, 0);
-    // mg_set_request_handler(gpobj->m_web_ctx, "/vscp/log", vscp_log_pre, 0);
-    // mg_set_request_handler(gpobj->m_web_ctx, "/vscp/loglist", vscp_log_list, 0);
-    // mg_set_request_handler(
+    // mg_set_request_handler(gpobj->m_web_ctx, "/vscp/users",
+    // vscp_user_list, 0); mg_set_request_handler(gpobj->m_web_ctx,
+    // "/vscp/log", vscp_log_pre, 0);
+    // mg_set_request_handler(gpobj->m_web_ctx, "/vscp/loglist",
+    // vscp_log_list, 0); mg_set_request_handler(
     //   gpobj->m_web_ctx, "/vscp/logdelete", vscp_log_delete, 0);
     // mg_set_request_handler(
     //   gpobj->m_web_ctx, "/vscp/logdodelete", vscp_log_do_delete, 0);
-    // mg_set_request_handler(gpobj->m_web_ctx, "/vscp/zone", vscp_zone_list,
-    // 0); mg_set_request_handler(
+    // mg_set_request_handler(gpobj->m_web_ctx, "/vscp/zone",
+    // vscp_zone_list, 0); mg_set_request_handler(
     //   gpobj->m_web_ctx, "/vscp/zoneedit", vscp_zone_edit, 0);
     // mg_set_request_handler(
     //   gpobj->m_web_ctx, "/vscp/zonepost", vscp_zone_post, 0);
@@ -3627,8 +3439,8 @@ start_webserver(void)
     //   gpobj->m_web_ctx, "/vscp/subzoneedit", vscp_subzone_edit, 0);
     // mg_set_request_handler(
     //   gpobj->m_web_ctx, "/vscp/subzonepost", vscp_subzone_post, 0);
-    // mg_set_request_handler(gpobj->m_web_ctx, "/vscp/guid", vscp_guid_list,
-    // 0); mg_set_request_handler(
+    // mg_set_request_handler(gpobj->m_web_ctx, "/vscp/guid",
+    // vscp_guid_list, 0); mg_set_request_handler(
     //   gpobj->m_web_ctx, "/vscp/guidedit", vscp_guid_edit, 0);
     // mg_set_request_handler(
     //   gpobj->m_web_ctx, "/vscp/guidpost", vscp_guid_post, 0);
@@ -3641,8 +3453,8 @@ start_webserver(void)
     // mg_set_request_handler(
     //   gpobj->m_web_ctx, "/vscp/locationpost", vscp_location_post, 0);
     // mg_set_request_handler(
-    //   gpobj->m_web_ctx, "/vscp/locationdelete", vscp_location_delete, 0);
-
+    //   gpobj->m_web_ctx, "/vscp/locationdelete", vscp_location_delete,
+    //   0);
 
     return 1;
 }

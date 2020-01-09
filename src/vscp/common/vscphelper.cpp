@@ -47,7 +47,10 @@
 #include <algorithm>
 #include <cctype>
 #include <deque>
+#include <fstream>
 #include <functional>
+#include <ios>
+#include <iostream>
 #include <locale>
 #include <memory>
 #include <set>
@@ -70,12 +73,12 @@
 #include <vscp.h>
 #include <vscphelper.h>
 
-#ifndef WIN32
-#else
+#ifdef WIN32
 #include <dirent.h>
 #include <grp.h>
 #include <pwd.h>
 #include <unistd.h>
+#else
 #endif
 
 #define UNUSED(expr)                                                           \
@@ -101,6 +104,24 @@ using json = nlohmann::json;
      (((val) << 24) & 0x0000FF0000000000) |                                    \
      (((val) << 40) & 0x00FF000000000000) |                                    \
      (((val) << 56) & 0xFF00000000000000))
+
+// Check windows
+#if _WIN32 || _WIN64
+#if _WIN64
+#define ENVIRONMENT64
+#else
+#define ENVIRONMENT32
+#endif
+#endif
+
+// Check GCC
+#if __GNUC__
+#if __x86_64__ || __ppc64__
+#define ENVIRONMENT64
+#else
+#define ENVIRONMENT32
+#endif
+#endif
 
 // ***************************************************************************
 //                              General Helpers
@@ -141,6 +162,34 @@ vscp_readStringValue(const std::string& strval)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// vscp_is64Bit
+//
+
+int
+vscp_is64Bit()
+{
+#ifdef ENVIRONMENT64
+    return -1;
+#else
+    return 0;
+#endif
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// vscp_is32Bit
+//
+
+int
+vscp_is32Bit()
+{
+#ifdef ENVIRONMENT32
+    return -1;
+#else
+    return 0;
+#endif
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // vscp_isLittleEndian
 //
 
@@ -163,8 +212,40 @@ vscp_isBigEndian(void)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// vscp_sem_wait
+// vscp_mem_usage
 //
+// https://gist.github.com/thirdwing/da4621eb163a886a03c5
+
+#ifndef WIN32
+void
+vscp_mem_usage(double& vm_usage, double& resident_set)
+{
+    vm_usage     = 0.0;
+    resident_set = 0.0;
+
+    // the two fields we want
+    unsigned long vsize;
+    long rss;
+
+    {
+        std::string ignore;
+        std::ifstream ifs("/proc/self/stat",
+                          std::ios_base::in); // get info from proc directory
+        ifs >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore >>
+          ignore >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore >>
+          ignore >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore >>
+          ignore >> ignore >> vsize >> rss;
+        ifs.close();
+    }
+    long page_size_kb = sysconf(_SC_PAGE_SIZE) /
+                        1024; // in case x86-64 is configured to use 2MB pages
+    vm_usage     = vsize / 1024.0;
+    resident_set = rss * page_size_kb;
+}
+#endif
+
+///////////////////////////////////////////////////////////////////////////////
+// vscp_sem_wait
 //
 
 int
@@ -4983,7 +5064,7 @@ vscp_getMsTimeStamp(void)
 
     clock_gettime(CLOCK_REALTIME, &spec);
 
-    s = spec.tv_sec;
+    s  = spec.tv_sec;
     ms = round(s * 1000 + spec.tv_nsec / 1.0e6); // Convert to milliseconds
     return ms;
 #endif
@@ -5627,9 +5708,7 @@ vscp_getDeviceHtmlStatusInfo(const uint8_t* registers, CMDF* pmdf)
     return strHTML;
 }
 
-
 // -----------------------------------------------------------------------------
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // vscp_getEncryptionCodeFromToken
@@ -5638,7 +5717,7 @@ vscp_getDeviceHtmlStatusInfo(const uint8_t* registers, CMDF* pmdf)
 uint8_t
 vscp_getEncryptionCodeFromToken(std::string& token)
 {
-    uint8_t code = 0;
+    uint8_t code    = 0;
     std::string str = token;
     vscp_makeUpper(str);
     vscp_trim(str);
@@ -6082,7 +6161,7 @@ vscp_encryptFrame(uint8_t* output,
     output[0] = input[0];
 
     // Should decryption algorithm be set by package
-    if ( VSCP_ENCRYPTION_FROM_TYPE_BYTE == nAlgorithm ) {
+    if (VSCP_ENCRYPTION_FROM_TYPE_BYTE == nAlgorithm) {
         nAlgorithm = input[0] & 0x0f;
     }
 
@@ -6184,7 +6263,7 @@ vscp_decryptFrame(uint8_t* output,
     output[0] = input[0];
 
     // Should decryption algorithm be set by package
-    if ( VSCP_ENCRYPTION_FROM_TYPE_BYTE == nAlgorithm ) {
+    if (VSCP_ENCRYPTION_FROM_TYPE_BYTE == nAlgorithm) {
         nAlgorithm = input[0] & 0x0f;
     }
 

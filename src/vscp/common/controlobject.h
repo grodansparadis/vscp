@@ -44,14 +44,6 @@
 // Forward declarations
 class TCPListenThread;
 
-// Log level
-enum
-{
-    DAEMON_LOGMSG_NONE = 0,
-    DAEMON_LOGMSG_NORMAL,
-    DAEMON_LOGMSG_DEBUG,
-};
-
 // TTL     Scope
 // ----------------------------------------------------------------------
 // 0       Restricted to the same host.Won't be output by any interface.

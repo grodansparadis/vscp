@@ -70,15 +70,11 @@
 #include <controlobject.h>
 #include <devicelist.h>
 #include <devicethread.h>
-#include <dm.h>
 #include <httpd.h>
 #include <mdf.h>
-#include <tables.h>
-#include <variablecodes.h>
 #include <version.h>
 #include <vscp.h>
 #include <vscp_aes.h>
-#include <vscpeventhelper.h>
 #include <vscphelper.h>
 #include <websrv.h>
 
