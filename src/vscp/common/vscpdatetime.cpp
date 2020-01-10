@@ -202,7 +202,7 @@ bool
 vscpdatetime::setMonth(uint8_t month)
 {
     if (!month || (month > 12)) return false;
-    m_month = month;
+    m_month = month-1;
     return true;
 }
 
@@ -734,7 +734,7 @@ vscpdatetime::toSysTime(void) const
     time_t t;
 
     tmRep.tm_year  = m_year - 1900;
-    tmRep.tm_mon   = m_month - 1;
+    tmRep.tm_mon   = m_month;
     tmRep.tm_mday  = m_day;
     tmRep.tm_hour  = m_hour;
     tmRep.tm_min   = m_minute;

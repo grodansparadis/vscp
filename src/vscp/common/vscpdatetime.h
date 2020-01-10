@@ -115,21 +115,21 @@ class vscpdatetime
 
         @param dt Datetime to initialize the object with
     */
-    vscpdatetime(const std::string &dt);
+    vscpdatetime(const std::string& dt);
 
     /*!
         Constructor to set dattime object from VSCP event.
 
         @param ev VSCP event to set datetime from.
     */
-    vscpdatetime(vscpEvent &ev);
+    vscpdatetime(vscpEvent& ev);
 
     /*!
         Constructor to set dattime object from VSCP eventex.
 
         @param ex VSCP eventex to set datetime from.
     */
-    vscpdatetime(vscpEventEx &ex);
+    vscpdatetime(vscpEventEx& ex);
 
     /*!
         Constructor
@@ -159,12 +159,12 @@ class vscpdatetime
     /*!
         Initialize from julian date/time
     */
-    vscpdatetime(const double ljd) { setFromJulian(static_cast<long> (ljd)); };
+    vscpdatetime(const double ljd) { setFromJulian(static_cast<long>(ljd)); };
 
     /*!
         Set from Unix date/time struct
     */
-    vscpdatetime(const struct tm &tm) { set(tm); };
+    vscpdatetime(const struct tm& tm) { set(tm); };
 
     ~vscpdatetime();
 
@@ -184,9 +184,9 @@ class vscpdatetime
         @param strDate String with date on ISO format (YYYY-MM-DD).
         @return True on success.
     */
-    bool setISODate(const std::string &strDate);
+    bool setISODate(const std::string& strDate);
 
-    bool setISODate(const char *pDate)
+    bool setISODate(const char* pDate)
     {
         std::string str(pDate);
         return setISOTime(str);
@@ -210,9 +210,9 @@ class vscpdatetime
         @param strTime String with time on ISO format (HH:MM:SS).
         @return True on success.
     */
-    bool setISOTime(const std::string &strTime);
+    bool setISOTime(const std::string& strTime);
 
-    bool setISOTime(const char *pTime)
+    bool setISOTime(const char* pTime)
     {
         std::string str(pTime);
         return setISOTime(str);
@@ -244,19 +244,19 @@ class vscpdatetime
     /*!
         Set dattime from const char pointer to format YYYY:MM:DDTHH:MM:SS
     */
-    bool set(const char *pdt);
+    bool set(const char* pdt);
 
     /*!
         Set datetime object from VSCP event.
 
         @param ev VSCP event to set datetime from.
     */
-    bool set(vscpEvent &ev);
+    bool set(vscpEvent& ev);
 
     /*!
         Set date/time from Unix date/time struct
     */
-    bool set(const struct tm &tm);
+    bool set(const struct tm& tm);
 
     /*!
         Set date from Julian date
@@ -270,9 +270,9 @@ class vscpdatetime
 
         @param ex VSCP eventex to set datetime from.
     */
-    bool set(vscpEventEx &ex);
+    bool set(vscpEventEx& ex);
 
-    /*! 
+    /*!
         Set date/time to current local time
     */
     void setNow(void);
@@ -494,7 +494,8 @@ class vscpdatetime
         Get English weekday name for a given week day
     */
     static std::string getWeekDayName(
-      weekDay weekday, nameFlags flags = vscpdatetime::name_Full);
+      weekDay weekday,
+      nameFlags flags = vscpdatetime::name_Full);
 
     /*!
         Get English month name for a given month
@@ -505,7 +506,7 @@ class vscpdatetime
     /*!
         Check if a date/time is equal to another date/time
     */
-    inline bool isEqualTo(vscpdatetime &dt)
+    inline bool isEqualTo(vscpdatetime& dt)
     {
         return (toSysTime() == dt.toSysTime());
     }
@@ -513,7 +514,7 @@ class vscpdatetime
     /*!
         Check if a date/time is earlier than another date/time
     */
-    inline bool isEarlierThan(vscpdatetime &dt)
+    inline bool isEarlierThan(vscpdatetime& dt)
     {
         return (toSysTime() < dt.toSysTime());
     }
@@ -521,7 +522,7 @@ class vscpdatetime
     /*!
         Check if a date/time is later than another date/time
     */
-    inline bool isLaterThan(vscpdatetime &dt)
+    inline bool isLaterThan(vscpdatetime& dt)
     {
         return (toSysTime() > dt.toSysTime());
     }
@@ -529,7 +530,7 @@ class vscpdatetime
     /*!
         Check if a date/time is between two other date/time
     */
-    inline bool isBetween(vscpdatetime &t1, vscpdatetime &t2)
+    inline bool isBetween(vscpdatetime& t1, vscpdatetime& t2)
     {
         return (isEqualTo(t1) || isEqualTo(t2) || isStrictlyBetween(t1, t2));
     }
@@ -538,7 +539,7 @@ class vscpdatetime
         Check if a date/time is strictly (not equal to one of them) between two
        other date/time
     */
-    inline bool isStrictlyBetween(vscpdatetime &t1, vscpdatetime &t2)
+    inline bool isStrictlyBetween(vscpdatetime& t1, vscpdatetime& t2)
     {
         return (isLaterThan(t1) && isEarlierThan(t2));
     }
@@ -546,7 +547,7 @@ class vscpdatetime
     /*!
         Check if a date is the same as another date
     */
-    inline bool isSameDate(vscpdatetime &dt) const
+    inline bool isSameDate(vscpdatetime& dt) const
     {
         return ((dt.getYear() == m_year) && (dt.getMonth() == m_month) &&
                 (dt.getDay() == m_day));
@@ -555,13 +556,13 @@ class vscpdatetime
     /*!
         Check if a time is the same as another time
     */
-    inline bool isSameTime(vscpdatetime &dt) const
+    inline bool isSameTime(vscpdatetime& dt) const
     {
         return ((dt.getHour() == m_hour) && (dt.getMinute() == m_minute) &&
                 (dt.getSecond() == m_second));
     }
 
-    static double diffSeconds(vscpdatetime &t1, vscpdatetime &t2)
+    static double diffSeconds(vscpdatetime& t1, vscpdatetime& t2)
     {
         return difftime(t1.toSysTime(), t2.toSysTime());
     }
@@ -590,7 +591,7 @@ class vscpdatetime
     // between them in days.
     //
 
-    friend vscpdatetime operator+(const vscpdatetime &Left, const long Right)
+    friend vscpdatetime operator+(const vscpdatetime& Left, const long Right)
     {
         vscpdatetime temp = Left;
         long newval       = temp.getJulian() + Right;
@@ -598,7 +599,7 @@ class vscpdatetime
         return temp;
     }
 
-    friend vscpdatetime operator+(const long Left, const vscpdatetime &Right)
+    friend vscpdatetime operator+(const long Left, const vscpdatetime& Right)
     {
         vscpdatetime temp = Right;
         long newval       = temp.getJulian() + Left;
@@ -606,14 +607,14 @@ class vscpdatetime
         return temp;
     }
 
-    vscpdatetime &operator+=(const long Right)
+    vscpdatetime& operator+=(const long Right)
     {
         long newval = getJulian() + Right;
         setFromJulian(newval);
         return *this;
     }
 
-    friend vscpdatetime operator-(const vscpdatetime &Left, const long Right)
+    friend vscpdatetime operator-(const vscpdatetime& Left, const long Right)
     {
         vscpdatetime temp = Left;
         long newval       = temp.getJulian() - Right;
@@ -621,7 +622,7 @@ class vscpdatetime
         return temp;
     }
 
-    friend vscpdatetime operator-(const long Left, const vscpdatetime &Right)
+    friend vscpdatetime operator-(const long Left, const vscpdatetime& Right)
     {
         vscpdatetime temp = Right;
         long newval       = temp.getJulian() - Left;
@@ -629,14 +630,14 @@ class vscpdatetime
         return temp;
     }
 
-    vscpdatetime &operator-=(const long Right)
+    vscpdatetime& operator-=(const long Right)
     {
         long newval = getJulian() - Right;
         setFromJulian(newval);
         return *this;
     }
 
-    long operator-(vscpdatetime &Right)
+    long operator-(vscpdatetime& Right)
     {
         long newval = getJulian() - Right.getJulian();
         return newval;
@@ -653,7 +654,7 @@ class vscpdatetime
     //
     // Return values : New Date
     //
-    vscpdatetime &operator++()
+    vscpdatetime& operator++()
     {
         long newval = getJulian();
         newval++;
@@ -670,7 +671,7 @@ class vscpdatetime
         return Temp;
     }
 
-    vscpdatetime &operator--()
+    vscpdatetime& operator--()
     {
         long newval = getJulian();
         newval--;

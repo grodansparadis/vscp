@@ -46,10 +46,10 @@
     "top:1px "                                                                 \
     "solid silver}#body "                                                      \
     "a{color:#c00;background:#fff;text-decoration:none}#footer"                \
-    "{text-align:right;font-size:75%;color:silver;background:#fff;border-top:" \
+    "{text-align:right;font-size:75%;color:black;background:#fff;border-top:" \
     "1px "                                                                     \
     "solid silver}#footer "                                                    \
-    "a{color:silver;background:#fff;text-decoration:none}"                     \
+    "a{color:blue;background:#fff;text-decoration:none}"                     \
     "#links{float:left;width:150px;margin:5px}#links "                         \
     "a{color:#c00;background:#fff;"                                            \
     "text-decoration:none;font-size:120%}#links "                              \

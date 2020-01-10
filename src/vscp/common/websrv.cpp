@@ -1020,9 +1020,9 @@ vscp_interface(struct mg_connection* conn, void* cbdata)
 
         // GUID
         mg_printf(conn, WEB_IFLIST_TD_GUID);
-        mg_printf(conn, "%s", (const char*)strGUID.substr(0, 23).c_str());
+        mg_printf(conn, "%s", (const char*)strGUID.substr(0, 24).c_str());
         mg_printf(conn, "<br>");
-        mg_printf(conn, "%s", (const char*)strGUID.substr(23).c_str());
+        mg_printf(conn, "%s", (const char*)strGUID.substr(24).c_str());
         mg_printf(conn, "</td>");
 
         // Interface name
@@ -1043,7 +1043,8 @@ vscp_interface(struct mg_connection* conn, void* cbdata)
         mg_printf(
           conn,
           "%s",
-          (const char*)vscp_str_right(pItem->m_strDeviceName, 19).c_str());
+          pItem->m_dtutc.getISODateTime().c_str()
+          /*(const char*)vscp_str_right(pItem->m_strDeviceName, 20).c_str()*/);
         mg_printf(conn, "</td>");
 
         mg_printf(conn, "</tr>");
@@ -1087,6 +1088,30 @@ vscp_interface(struct mg_connection* conn, void* cbdata)
     mg_printf(conn,
               "%d - WebSocket Client.<br>",
               (uint8_t)CLIENT_ITEM_INTERFACE_TYPE_CLIENT_WEBSOCKET);
+    mg_printf(conn,
+              "%d - REST Client.<br>",
+              (uint8_t)CLIENT_ITEM_INTERFACE_TYPE_CLIENT_REST);
+    mg_printf(conn,
+              "%d - Multicast.<br>",
+              (uint8_t)CLIENT_ITEM_INTERFACE_TYPE_CLIENT_MULTICAST);
+    mg_printf(conn,
+              "%d - Multicast Client.<br>",
+              (uint8_t)CLIENT_ITEM_INTERFACE_TYPE_CLIENT_MULTICAST_CH);
+    mg_printf(conn,
+              "%d - MQTT Client.<br>",
+              (uint8_t)CLIENT_ITEM_INTERFACE_TYPE_CLIENT_MQTT);
+    mg_printf(conn,
+              "%d - COAP Client.<br>",
+              (uint8_t)CLIENT_ITEM_INTERFACE_TYPE_CLIENT_COAP);
+    mg_printf(conn,
+              "%d - Discovery.<br>",
+              (uint8_t)CLIENT_ITEM_INTERFACE_TYPE_CLIENT_DISCOVERY);
+    mg_printf(conn,
+              "%d - Javascript Client.<br>",
+              (uint8_t)CLIENT_ITEM_INTERFACE_TYPE_CLIENT_JAVASCRIPT);
+    mg_printf(conn,
+              "%d - Lua Client.<br>",
+              (uint8_t)CLIENT_ITEM_INTERFACE_TYPE_CLIENT_LUA);                                                                                                    
 
     mg_printf(conn, WEB_COMMON_END, VSCPD_COPYRIGHT_HTML); // Common end code
 
@@ -1872,44 +1897,41 @@ vscp_configure_list(struct mg_connection* conn, void* cbdata)
 
     mg_printf(conn, "<h4 id=\"header\" >&nbsp;Websockets</h4> ");
 
-        mg_printf(conn,
-                   "&nbsp;&nbsp;&nbsp;&nbsp;<b>Web sockets functionality </b> is ");
-        if (gpobj->m_web_bEnable && gpobj->m_bWebsocketsEnable) {
+    mg_printf(conn,
+              "&nbsp;&nbsp;&nbsp;&nbsp;<b>Web sockets functionality </b> is ");
+    if (gpobj->m_web_bEnable && gpobj->m_bWebsocketsEnable) {
         mg_printf(conn, "enabled.<br>");
-        } else {
+    } else {
         mg_printf(conn, "disabled.<br>");
-        }
+    }
 
-        mg_printf(conn,
-                   "&nbsp;&nbsp;&nbsp;&nbsp;<b>Websocket document root:</b>");
-        mg_printf(
-          conn,
-          "%s",
-          (const char
-          *)std::string(gpobj->m_websocket_document_root).c_str());
-        if (0 == gpobj->m_websocket_document_root.length()) {
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Websocket document root:</b>");
+    mg_printf(
+      conn,
+      "%s",
+      (const char*)std::string(gpobj->m_websocket_document_root).c_str());
+    if (0 == gpobj->m_websocket_document_root.length()) {
         mg_printf(conn, "Not set.");
-        }
-        mg_printf(conn, "<br>");
+    }
+    mg_printf(conn, "<br>");
 
-        mg_printf(conn, "<hr>");
+    mg_printf(conn, "<hr>");
 
-        // * * * * * * * * * * * * * * * * * * * * * * * * * * * ** * * * * *
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * ** * * * * *
 
-        mg_printf(conn, "<h4 id=\"header\" >&nbsp;Level I drivers</h4> ");
+    mg_printf(conn, "<h4 id=\"header\" >&nbsp;Level I drivers</h4> ");
 
-        mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Level I Drivers:</b> ");
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Level I Drivers:</b> ");
 
-        mg_printf(conn, "enabled<br>");
-        mg_printf(
-          conn,
-          "&nbsp;&nbsp;&nbsp;&nbsp;----------------------------------<br>");
+    mg_printf(conn, "enabled<br>");
+    mg_printf(conn,
+              "&nbsp;&nbsp;&nbsp;&nbsp;----------------------------------<br>");
 
-        CDeviceItem *pDeviceItem;
-        std::deque<CDeviceItem *>::iterator it;
-        for (it = gpobj->m_deviceList.m_devItemList.begin();
-             it != gpobj->m_deviceList.m_devItemList.end();
-             ++it) {
+    CDeviceItem* pDeviceItem;
+    std::deque<CDeviceItem*>::iterator it;
+    for (it = gpobj->m_deviceList.m_devItemList.begin();
+         it != gpobj->m_deviceList.m_devItemList.end();
+         ++it) {
         pDeviceItem = *it;
         if ((NULL != pDeviceItem) &&
             (VSCP_DRIVER_LEVEL1 == pDeviceItem->m_driverLevel) &&
@@ -1929,24 +1951,23 @@ vscp_configure_list(struct mg_connection* conn, void* cbdata)
               conn,
               "&nbsp;&nbsp;&nbsp;&nbsp;----------------------------------<br>");
         }
-        }
+    }
 
-        mg_printf(conn, "<hr>");
+    mg_printf(conn, "<hr>");
 
-        // * * * * * * * * * * * * * * * * * * * * * * * * * * * ** * * * * *
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * ** * * * * *
 
-        mg_printf(conn, "<h4 id=\"header\" >&nbsp;Level II drivers</h4> ");
+    mg_printf(conn, "<h4 id=\"header\" >&nbsp;Level II drivers</h4> ");
 
-        mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Level II Drivers:</b> ");
-        mg_printf(conn, "enabled<br>");
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Level II Drivers:</b> ");
+    mg_printf(conn, "enabled<br>");
 
-        mg_printf(
-          conn,
-          "&nbsp;&nbsp;&nbsp;&nbsp;----------------------------------<br>");
+    mg_printf(conn,
+              "&nbsp;&nbsp;&nbsp;&nbsp;----------------------------------<br>");
 
-        for (it = gpobj->m_deviceList.m_devItemList.begin();
-             it != gpobj->m_deviceList.m_devItemList.end();
-             ++it) {
+    for (it = gpobj->m_deviceList.m_devItemList.begin();
+         it != gpobj->m_deviceList.m_devItemList.end();
+         ++it) {
         pDeviceItem = *it;
         if ((NULL != pDeviceItem) &&
             (VSCP_DRIVER_LEVEL2 == pDeviceItem->m_driverLevel) &&
@@ -1959,20 +1980,17 @@ vscp_configure_list(struct mg_connection* conn, void* cbdata)
                       "%s",
                       (const char*)pDeviceItem->m_strParameter.c_str());
             mg_printf(conn, "<br>");
-            mg_printf(conn,
-                      "&nbsp;&nbsp;&nbsp;&nbsp;<b>Driver path:</b> "); 
-                      mg_printf(
-                      conn,
-                      "%s",
-                      (const char*)pDeviceItem->m_strPath.c_str());
+            mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Driver path:</b> ");
+            mg_printf(conn, "%s", (const char*)pDeviceItem->m_strPath.c_str());
             mg_printf(conn, "<br>");
             mg_printf(
               conn,
               "&nbsp;&nbsp;&nbsp;&nbsp;----------------------------------<br>");
         }
-        }
+    }
 
     mg_printf(conn, "<br>");
+    mg_printf(conn, WEB_COMMON_END, VSCPD_COPYRIGHT_HTML); // Common end code
 
     return WEB_OK;
 }

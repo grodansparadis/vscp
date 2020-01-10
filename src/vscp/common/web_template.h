@@ -41,27 +41,6 @@
                            "        <li>"\
                            "            <a href=\"/vscp/configure\">List configuration</a>"\
                            "        </li>"\
-                           "        <li>"\
-                           "            <a href=\"/vscp/settings\">Persistent settings</a>"\
-                           "        </li>"\
-                           "        <li>"\
-                           "            <a href=\"/vscp/varlist\">Variables</a>"\
-                           "        </li>"\
-                           "        <li>"\
-                           "            <a href=\"/vscp/dm\">Decision Matrix</a>"\
-                           "        </li>"\
-                           "        <li>"\
-                           "            <a href=\"/vscp/zone\">Zones</a>"\
-                           "        </li>"\
-                           "        <li>"\
-                           "            <a href=\"/vscp/subzone\">Subzones</a>"\
-                           "        </li>"\
-                           "        <li>"\
-                           "            <a href=\"/vscp/guid\">GUIDs</a>"\
-                           "        </li>"\
-                           "        <li>"\
-                           "            <a href=\"/vscp/location\">Locations</a>"\
-                           "        </li>"\
                            "    </ul>"\
                            " </li>"\
                            " <li>"\
@@ -88,16 +67,10 @@
                            "    <a href=\"#\">Devices</a>"\
                            "    <ul>"\
                            "        <li>"\
-                           "            <a href=\"/vscp/discovery\">Discovery</a>"\
-                           "        </li>"\
-                           "        <li>"\
                            "            <a href=\"/vscp/interfaces\">Interfaces</a>"\
                            "        </li>"\
                            "        <li>"\
                            "            <a href=\"/vscp/configure\">Configure</a>"\
-                           "        </li>"\
-                           "        <li>"\
-                           "            <a href=\"/vscp/table\">Tables</a>"\
                            "        </li>"\
                            "    </ul>"\
                            " </li>"\
@@ -107,25 +80,25 @@
                            "        <li>"\
                            "            <a href=\"/vscp/log\">View Log</a>"\
                            "        </li>"\
-                           "        <li>"\
-                           "            <a href=\"/vscp/logdelete\">Clear Log</a>"\
-                           "        </li>"\
                            "    </ul>"\
                            " </li>"\
                            " <li>"\
                            "     <a href=\"#\">Help</a>"\
                            "     <ul>"\
                            "         <li>"\
-                           "             <a href=\"http://www.vscp.org/docs/vscpd/doku.php\" target=\"moon\">VSCP Daemon</a>"\
+                           "             <a href=\"https://docs.vscp.org/#vscpd\" target=\"moon\">VSCP Daemon</a>"\
                            "         </li>"\
                            "         <li>"\
-                           "             <a href=\"http://www.vscp.org/docs/vscpworks/doku.php\" target=\"moon\">VSCP Works</a>"\
+                           "             <a href=\"https://docs.vscp.org/#vscpspec\" target=\"moon\">VSCP Specification</a>"\
                            "         </li>"\
                            "         <li>"\
-                           "             <a href=\"http://www.vscp.org/docs/vscphelper/doku.php\" target=\"moon\">VSCP Helper lib</a>"\
+                           "             <a href=\"https://docs.vscp.org/#vscpworks\" target=\"moon\">VSCP Works</a>"\
                            "         </li>"\
                            "         <li>"\
-                           "             <a href=\"http://www.vscp.org/wiki/doku.php\" target=\"moon\">VSCP wiki</a>"\
+                           "             <a href=\"https://docs.vscp.org/#vscphelper\" target=\"moon\">VSCP Helper lib</a>"\
+                           "         </li>"\
+                           "         <li>"\
+                           "             <a href=\"https://docs.vscp.org\" target=\"moon\">VSCP Docs Site</a>"\
                            "         </li>"\
                            "         <li>"\
                            "             <a href=\"http://www.vscp.org\" target=\"moon\">VSCP Site</a>"\
