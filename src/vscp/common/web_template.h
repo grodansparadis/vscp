@@ -50,15 +50,6 @@
                            "            <a href=\"/vscp/password\">Password generator</a>"\
                            "        </li>"\
                            "        <li>"\
-                           "            <a href=\"/vscp/bootload\">Update firmware</a>"\
-                           "        </li>"\
-                           "        <li>"\
-                           "            <a href=\"/vscp/sendevent\">VSCP Send event</a>"\
-                           "        </li>"\
-                           "        <li>"\
-                           "            <a href=\"/vscp/tests\">VSCP system tests</a>"\
-                           "        </li>"\
-                           "        <li>"\
                            "            <a href=\"/vscp/restart\">Restart</a>"\
                            "        </li>"\
                            "    </ul>"\
@@ -240,133 +231,21 @@ content-type\" /><title>%s</title>"
 #define WEB_VAREDIT_TABLE_END "</tbody></table>"
 
 
-// * * * Zone List * * *
+// * * * Logfile * * *
 
 // Place after menus
-#define WEB_ZONELIST_BODY_START "<br><div id=\"content\"><div id=\"header\">\
-                                <h1 id=\"header\">Zones</h1></div>\
-                                <table><tbody>"
-
-// * * * Zone Edit * * *
-
-// Place after menus
-#define WEB_ZONEEDIT_BODY_START "<br><div id=\"content\"><div id=\"header\">\
-                                    <h1 id=\"header\">VSCP - Zone Edit</h1>\
-                                    </div><table><tbody>"
-
-// Table head
-#define WEB_ZONELIST_TR_HEAD "<tr><th>Pos</th><th>Type</th><th>Zones</th>\
-                                <th></th></tr>"
-
-
-
-// * * * Zone Edit * * *
-
-// Place after menus
-#define WEB_ZONEEDIT_BODY_START "<br><div id=\"content\"><div id=\"header\">\
-                                    <h1 id=\"header\">VSCP - Zone Edit</h1>\
-                                    </div><table><tbody>"
-
-// Place before common end
-#define WEB_ZONEEDIT_TABLE_END "</tbody></table>"
-
-// * * * Post * * *
-#define WEB_ZONE_POST_BODY_START "<br><div id=\"content\"><div id=\"header\">\
-                                    <h1 id=\"header\">Zone Post</h1>\
-                                    </div>"
-
-// * * * Subzone List * * *
-
-// Place after menus
-#define WEB_SUBZONELIST_BODY_START "<br><div id=\"content\"><div id=\"header\">\
-                                <h1 id=\"header\">Subzones</h1></div>\
+#define WEB_LOGLIST_BODY_START "<br><div id=\"content\"><div id=\"header\">\
+                                <h1 id=\"header\">Log file</h1></div>\
                                 <table><tbody>"
 
 // Table head
-#define WEB_SUBZONELIST_TR_HEAD "<tr><th>Pos</th><th>Type</th><th>Subzones</th>\
-                                <th></th></tr>"
+#define WEB_LOGLIST_TR_HEAD "<tr><th>Line</th></tr>"
 
-
-// * * * Subzone Edit * * *
-
-// Place after menus
-#define WEB_SUBZONEEDIT_BODY_START "<br><div id=\"content\"><div id=\"header\">\
-                                    <h1 id=\"header\">VSCP - Subzone Edit</h1>\
-                                    </div><table><tbody>"
 
 // Place before common end
-#define WEB_SUBZONEEDIT_TABLE_END "</tbody></table>"
-
-// * * * Post * * *
-#define WEB_SUBZONE_POST_BODY_START "<br><div id=\"content\"><div id=\"header\">\
-                                    <h1 id=\"header\">Subzone Post</h1>\
-                                    </div>"
-
-// * * * GUID List * * *
-
-// Place after menus
-#define WEB_GUIDLIST_BODY_START "<br><div id=\"content\"><div id=\"header\">\
-                                <h1 id=\"header\">GUID</h1></div>\
-                                <table><tbody>"
-
-#define WEB_GUIDLIST_TD_CENTERED "<td id=\"tdcenter\">"
+#define WEB_LOGLIST_TABLE_END "</tbody></table>"
 
 
-
-
-
-
-// Table head
-#define WEB_GUIDLIST_TR_HEAD "<tr><th>Pos</th><th>Type</th><th>GUID's</th>\
-                                <th></th></tr>"
-
-
-
-// * * * GUID Edit * * *
-
-// Place after menus
-#define WEB_GUIDEDIT_BODY_START "<br><div id=\"content\"><div id=\"header\">\
-                                    <h1 id=\"header\">VSCP - GUID Edit</h1>\
-                                    </div><table><tbody>"
-
-// Place before common end
-#define WEB_GUIDEDIT_TABLE_END "</tbody></table>"
-
-// * * * Post * * *
-#define WEB_GUID_POST_BODY_START "<br><div id=\"content\"><div id=\"header\">\
-                                    <h1 id=\"header\">GUID Post</h1>\
-                                    </div>"
-
-
-
-// * * * Location List * * *
-
-// Place after menus
-#define WEB_LOCATIONLIST_BODY_START "<br><div id=\"content\"><div id=\"header\">\
-                                <h1 id=\"header\">Locations</h1></div>\
-                                <table><tbody>"
-
-// Table head
-#define WEB_LOCATIONLIST_TR_HEAD "<tr><th>Pos</th><th>Type</th><th>Locations</th>\
-                                <th></th></tr>"
-
-
-
-// * * * Location Edit * * *
-
-// Place after menus
-#define WEB_LOCATIONEDIT_BODY_START "<br><div id=\"content\"><div id=\"header\">\
-                                    <h1 id=\"header\">VSCP - Location Edit</h1>\
-                                    </div><table><tbody>"
-
-// Place before common end
-#define WEB_LOCATIONEDIT_TABLE_END "</tbody></table>"
-
-
-// * * * Post * * *
-#define WEB_LOCATION_POST_BODY_START "<br><div id=\"content\"><div id=\"header\">\
-                                    <h1 id=\"header\">GUID Post</h1>\
-                                    </div>"
 
 ///////////////////////////////////////////////////////////////////////////////
 //                              Variable

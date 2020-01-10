@@ -47,7 +47,7 @@ struct restsrv_session
     time_t m_lastActiveTime;
 
     // Client item for this session
-    CClientItem *m_pClientItem;
+    CClientItem* m_pClientItem;
 
     // Remote IP
     char m_remote_addr[48];
@@ -55,7 +55,7 @@ struct restsrv_session
 
 // Encapsulate a JSON block to make it JSONP
 #define REST_JSONP_START "typeof handler === 'function' && handler("
-#define REST_JSONP_END ");"
+#define REST_JSONP_END   ");"
 
 enum
 {
@@ -100,9 +100,9 @@ enum
 };
 
 #define REST_MIME_TYPE_PLAIN "text/plain"
-#define REST_MIME_TYPE_CSV "text/csv"
-#define REST_MIME_TYPE_XML "application/xml"
-#define REST_MIME_TYPE_JSON "application/json"
+#define REST_MIME_TYPE_CSV   "text/csv"
+#define REST_MIME_TYPE_XML   "application/xml"
+#define REST_MIME_TYPE_JSON  "application/json"
 #define REST_MIME_TYPE_JSONP "application/javascript"
 
 // Clear text Error messages
@@ -401,6 +401,6 @@ enum
     "handler(" REST_JSON_ERROR_VARIABLE_NOT_DELETE ");"
 
 int
-websrv_restapi(struct web_connection *conn, void *cbdata);
+websrv_restapi(struct mg_connection* conn, void* cbdata);
 
 #endif // REST_H__INCLUDED_

@@ -83,6 +83,7 @@ VSCPD_OBJECTS =  vscpd.o \
 	devicethread.o \
 	websrv.o \
 	websocketsrv.o \
+	restsrv.o\
 	civetweb.o \
 	vscphelper.o \
 	vscpremotetcpif.o \
@@ -142,6 +143,9 @@ websrv.o: ../../common/websrv.cpp ../../common/websrv.h
 
 websocketsrv.o: ../../common/websocketsrv.cpp ../../common/websocket.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/websocketsrv.cpp -o $@
+
+restsrv.o: ../../common/restsrv.cpp ../../common/restsrv.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/restsrv.cpp -o $@
 
 vscphelper.o: ../../common/vscphelper.cpp ../../common/vscphelper.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c ../../common/vscphelper.cpp -o $@

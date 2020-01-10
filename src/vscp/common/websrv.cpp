@@ -92,6 +92,7 @@
 #include <vscphelper.h>
 #include <vscpmd5.h>
 #include <websocket.h>
+#include <restsrv.h>
 
 #include "websrv.h"
 
@@ -1040,11 +1041,7 @@ vscp_interface(struct mg_connection* conn, void* cbdata)
 
         // Start date
         mg_printf(conn, "<td>");
-        mg_printf(
-          conn,
-          "%s",
-          pItem->m_dtutc.getISODateTime().c_str()
-          /*(const char*)vscp_str_right(pItem->m_strDeviceName, 20).c_str()*/);
+        mg_printf(conn, "%s", pItem->m_dtutc.getISODateTime().c_str());
         mg_printf(conn, "</td>");
 
         mg_printf(conn, "</tr>");
@@ -1111,7 +1108,7 @@ vscp_interface(struct mg_connection* conn, void* cbdata)
               (uint8_t)CLIENT_ITEM_INTERFACE_TYPE_CLIENT_JAVASCRIPT);
     mg_printf(conn,
               "%d - Lua Client.<br>",
-              (uint8_t)CLIENT_ITEM_INTERFACE_TYPE_CLIENT_LUA);                                                                                                    
+              (uint8_t)CLIENT_ITEM_INTERFACE_TYPE_CLIENT_LUA);
 
     mg_printf(conn, WEB_COMMON_END, VSCPD_COPYRIGHT_HTML); // Common end code
 
@@ -1149,6 +1146,51 @@ vscp_interface_info(struct mg_connection* conn, void* cbdata)
     mg_printf(conn,
               "<h4>There is no extra information about this interface.</h4>");
 
+    mg_printf(conn, WEB_COMMON_END, VSCPD_COPYRIGHT_HTML); // Common end code
+
+    return WEB_OK;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// vscp_log
+//
+
+static int
+vscp_log(struct mg_connection* conn, void* cbdata)
+{
+    // Check pointer
+    if (NULL == conn)
+        return 0;
+
+    mg_printf(conn,
+              "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n"
+              "Content-Type: text/html; charset=utf-8\r\n"
+              "Connection: close\r\n\r\n");
+
+    mg_printf(conn, WEB_COMMON_HEAD, "VSCP - Log");
+    mg_printf(conn, WEB_STYLE_START);
+    mg_write(conn, WEB_COMMON_CSS, strlen(WEB_COMMON_CSS)); // CSS style Code
+    mg_printf(conn, WEB_STYLE_END);
+    mg_write(conn,
+             WEB_COMMON_JS,
+             strlen(WEB_COMMON_JS)); // Common Javascript code
+
+    mg_printf(conn, WEB_COMMON_HEAD_END_BODY_START);
+    // Insert server url into navigation menu
+    mg_printf(conn, WEB_COMMON_MENU);
+
+    mg_printf(conn, WEB_LOGLIST_BODY_START);
+    mg_printf(conn, WEB_LOGLIST_TR_HEAD);
+
+    std::string line;
+    std::ifstream logFile("/var/log/syslog");
+    while (!logFile.fail() && !logFile.eof() && getline(logFile, line)) {
+        if (std::string::npos != line.find("vscpd:")) {
+            mg_printf(conn, "<tr><td>%s</td></tr>", line.c_str());
+        }
+    }
+
+    mg_printf(conn, WEB_LOGLIST_TABLE_END);
     mg_printf(conn, WEB_COMMON_END, VSCPD_COPYRIGHT_HTML); // Common end code
 
     return WEB_OK;
@@ -3421,58 +3463,15 @@ start_webserver(void)
                            "/vscp/ifinfo",
                            vscp_interface_info,
                            0);
-    // mg_set_request_handler(
-    //   gpobj->m_web_ctx, "/vscp/settings", vscp_settings, 0);
     mg_set_request_handler(gpobj->m_web_ctx,
                            "/vscp/password",
                            vscp_password,
                            0);
     mg_set_request_handler(gpobj->m_web_ctx, "/vscp/restart", vscp_restart, 0);
-    // mg_set_request_handler(
-    //   gpobj->m_web_ctx, "/vscp/varlist", vscp_variable_list, 0);
-    // mg_set_request_handler(
-    //   gpobj->m_web_ctx, "/vscp/varedit", vscp_variable_edit, 0);
-    // mg_set_request_handler(
-    //   gpobj->m_web_ctx, "/vscp/varpost", vscp_variable_post, 0);
-    // mg_set_request_handler(
-    //   gpobj->m_web_ctx, "/vscp/varnew", vscp_variable_new, 0);
-    // mg_set_request_handler(
-    //   gpobj->m_web_ctx, "/vscp/vardelete", vscp_variable_delete, 0);
-    // mg_set_request_handler(gpobj->m_web_ctx, "/vscp/users",
-    // vscp_user_list, 0); mg_set_request_handler(gpobj->m_web_ctx,
-    // "/vscp/log", vscp_log_pre, 0);
-    // mg_set_request_handler(gpobj->m_web_ctx, "/vscp/loglist",
-    // vscp_log_list, 0); mg_set_request_handler(
-    //   gpobj->m_web_ctx, "/vscp/logdelete", vscp_log_delete, 0);
-    // mg_set_request_handler(
-    //   gpobj->m_web_ctx, "/vscp/logdodelete", vscp_log_do_delete, 0);
-    // mg_set_request_handler(gpobj->m_web_ctx, "/vscp/zone",
-    // vscp_zone_list, 0); mg_set_request_handler(
-    //   gpobj->m_web_ctx, "/vscp/zoneedit", vscp_zone_edit, 0);
-    // mg_set_request_handler(
-    //   gpobj->m_web_ctx, "/vscp/zonepost", vscp_zone_post, 0);
-    // mg_set_request_handler(
-    //   gpobj->m_web_ctx, "/vscp/subzone", vscp_subzone_list, 0);
-    // mg_set_request_handler(
-    //   gpobj->m_web_ctx, "/vscp/subzoneedit", vscp_subzone_edit, 0);
-    // mg_set_request_handler(
-    //   gpobj->m_web_ctx, "/vscp/subzonepost", vscp_subzone_post, 0);
-    // mg_set_request_handler(gpobj->m_web_ctx, "/vscp/guid",
-    // vscp_guid_list, 0); mg_set_request_handler(
-    //   gpobj->m_web_ctx, "/vscp/guidedit", vscp_guid_edit, 0);
-    // mg_set_request_handler(
-    //   gpobj->m_web_ctx, "/vscp/guidpost", vscp_guid_post, 0);
-    // mg_set_request_handler(
-    //   gpobj->m_web_ctx, "/vscp/guiddelete", vscp_guid_delete, 0);
-    // mg_set_request_handler(
-    //   gpobj->m_web_ctx, "/vscp/location", vscp_location_list, 0);
-    // mg_set_request_handler(
-    //   gpobj->m_web_ctx, "/vscp/locationedit", vscp_location_edit, 0);
-    // mg_set_request_handler(
-    //   gpobj->m_web_ctx, "/vscp/locationpost", vscp_location_post, 0);
-    // mg_set_request_handler(
-    //   gpobj->m_web_ctx, "/vscp/locationdelete", vscp_location_delete,
-    //   0);
+    mg_set_request_handler(gpobj->m_web_ctx, "/vscp/log", vscp_log, 0);
+
+    // REST
+    mg_set_request_handler( gpobj->m_web_ctx, "/vscp/rest",       websrv_restapi, 0 );
 
     return 1;
 }
