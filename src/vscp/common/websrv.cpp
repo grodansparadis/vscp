@@ -83,6 +83,7 @@
 #include <fastpbkdf2.h>
 #include <mdf.h>
 #include <remotevariablecodes.h>
+#include <restsrv.h>
 #include <version.h>
 #include <vscp.h>
 #include <vscp_aes.h>
@@ -92,7 +93,6 @@
 #include <vscphelper.h>
 #include <vscpmd5.h>
 #include <websocket.h>
-#include <restsrv.h>
 
 #include "websrv.h"
 
@@ -1953,10 +1953,50 @@ vscp_configure_list(struct mg_connection* conn, void* cbdata)
       "%s",
       (const char*)std::string(gpobj->m_websocket_document_root).c_str());
     if (0 == gpobj->m_websocket_document_root.length()) {
-        mg_printf(conn, "Not set.");
+        mg_printf(conn, "Not set == Same as web root folder");
     }
     mg_printf(conn, "<br>");
 
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Websocket timeout (ms):</b>");
+    mg_printf(
+      conn,
+      "%ld",
+      gpobj->m_websocket_timeout_ms);
+    if (0 == gpobj->m_websocket_timeout_ms) {
+        mg_printf(conn, "Set to default: 30000");
+    }
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn,
+              "&nbsp;&nbsp;&nbsp;&nbsp;<b>Web sockets ping-pong functionality </b> is ");
+    if (gpobj->m_web_bEnable && gpobj->bEnable_websocket_ping_pong) {
+        mg_printf(conn, "enabled.<br>");
+    } else {
+        mg_printf(conn, "disabled.<br>");
+    }
+
+    mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Websocket lua pattern:</b>");
+    mg_printf(
+      conn,
+      "%s",
+      (const char*)std::string(gpobj->lua_websocket_pattern).c_str());
+    mg_printf(conn, "<br>");
+
+    mg_printf(conn, "<hr>");
+
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * ** * * * * *
+
+    mg_printf(conn, "<h4 id=\"header\" >&nbsp;REST API</h4> ");
+
+    mg_printf(conn,
+              "&nbsp;&nbsp;&nbsp;&nbsp;<b>REST API functionality </b> is ");
+    if (gpobj->m_web_bEnable && gpobj->m_bEnableRestApi) {
+        mg_printf(conn, "enabled.<br>");
+    } else {
+        mg_printf(conn, "disabled.<br>");
+    }
+
+    mg_printf(conn, "<br>");
     mg_printf(conn, "<hr>");
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * ** * * * * *
@@ -2907,55 +2947,20 @@ init_ssl(void* ssl_context, void* user_data)
 int
 start_webserver(void)
 {
-    /*
-
-    // * * * Keep for test !!!! * * *
-
-    const char *options[] =
-    {
-        "document_root",
-        "/var/lib/vscp/vscpd/web",
-
-        "listening_ports",
-        "[::]:8888r,[::]:8843s,8884",
-
-        "request_timeout_ms",
-        "10000",
-
-        "error_log_file",
-        "error.log",
-
-        "websocket_timeout_ms",
-        "3600000",
-
-        "ssl_certificate",
-        "/etc/vscp/certs/server.pem",
-
-        "ssl_protocol_version",
-        "3",
-
-        "ssl_cipher_list",
-#ifdef USE_SSL_DH
-        "ECDHE-RSA-AES256-GCM-SHA384:DES-CBC3-SHA:AES128-SHA:AES128-GCM-SHA256",
-#else
-        "DES-CBC3-SHA:AES128-SHA:AES128-GCM-SHA256",
-#endif
-
-        "enable_auth_domain_check",
-        "no",
-
-        0
-    };*/
-
     syslog(LOG_ERR, ("Starting web server...\n"));
+
+    if (gpobj->m_bWebsocketsEnable) {
+        syslog(LOG_ERR, ("Websockets enable...\n"));
+    }
+
+    if (gpobj->m_bEnableRestApi) {
+        syslog(LOG_ERR, ("REST API enable...\n"));
+    }
 
     // This structure must be larger than the number of options to set
     const char** web_options = new const char*[120 + 2];
 
     struct mg_callbacks callbacks;
-    // struct mg_server_ports ports[32];
-    // int port_cnt, n;
-    // int err = 0;
 
     // Set setup options from configuration
     int pos = 0;
@@ -3324,6 +3329,35 @@ start_webserver(void)
           (const char*)gpobj->m_web_lua_background_script_params.c_str());
     }
 
+    if (gpobj->m_websocket_document_root.length()) {
+        web_options[pos++] =
+          vscp_strdup(VSCPDB_CONFIG_NAME_WEBSOCKET_DOCUMENT_ROOT + 4);
+        web_options[pos++] = vscp_strdup(
+          (const char*)gpobj->m_websocket_document_root.c_str());
+    }
+
+    if (gpobj->m_websocket_timeout_ms != atol(VSCPDB_CONFIG_DEFAULT_WEBSOCKET_TIMEOUT_MS)) {
+        std::string str =
+          vscp_str_format(("%ld"), (long)gpobj->m_websocket_timeout_ms);
+        web_options[pos++] =
+          vscp_strdup(VSCPDB_CONFIG_NAME_WEBSOCKET_TIMEOUT_MS + 4);
+        web_options[pos++] = vscp_strdup(
+          (const char*)str.c_str());
+    }
+
+    if (gpobj->bEnable_websocket_ping_pong) {
+        web_options[pos++] =
+          vscp_strdup(VSCPDB_CONFIG_NAME_WEBSOCKET_PING_PONG_ENABLE + 4);
+        web_options[pos++] = vscp_strdup("yes");
+    }
+
+    if (gpobj->lua_websocket_pattern.length()) {
+        web_options[pos++] =
+          vscp_strdup(VSCPDB_CONFIG_NAME_WEB_LUA_WEBSOCKET_PATTERN + 4);
+        web_options[pos++] = vscp_strdup(
+          (const char*)gpobj->lua_websocket_pattern.c_str());
+    }
+
     // Mark end
     web_options[pos++] = NULL;
     web_options[pos++] = NULL;
@@ -3376,11 +3410,30 @@ start_webserver(void)
     // Add handler for /close extention
     mg_set_request_handler(gpobj->m_web_ctx, "/close", CloseHandler, 0);
 
-    // Add handler for /form  (serve a file outside the document root)
+    // Add handler for /cookie example
+    mg_set_request_handler(gpobj->m_web_ctx, "/cookie", CookieHandler, 0);
+
+    // Add handler for /postresponse example
+    mg_set_request_handler(gpobj->m_web_ctx, "/postresponse", PostResponser, 0);
+
+    // Add HTTP site to open a websocket connection
     mg_set_request_handler(gpobj->m_web_ctx,
-                           "/form",
-                           FileHandler,
-                           (void*)"../../test/form.html");
+                           "/websocket",
+                           WebSocketStartHandler,
+                           0);
+
+    if (!gpobj->m_bWebsocketsEnable) {
+        // WS site for the websocket connection
+        mg_set_websocket_handler(gpobj->m_web_ctx,
+                                 "/websocket",
+                                 WebSocketConnectHandler,
+                                 WebSocketReadyHandler,
+                                 WebsocketDataHandler,
+                                 WebSocketCloseHandler,
+                                 0);
+    }
+
+#endif // WEB_EXAMPLES
 
     // Add handler for form data
     // mg_set_request_handler(gpobj->m_web_ctx,
@@ -3398,27 +3451,11 @@ start_webserver(void)
     //                         CheckSumHandler,
     //                         (void *)0);
 
-    // Add handler for /cookie example
-    mg_set_request_handler(gpobj->m_web_ctx, "/cookie", CookieHandler, 0);
-
-    // Add handler for /postresponse example
-    mg_set_request_handler(gpobj->m_web_ctx, "/postresponse", PostResponser, 0);
-
-    // Add HTTP site to open a websocket connection
+    // Add handler for /form  (serve a file outside the document root)
     mg_set_request_handler(gpobj->m_web_ctx,
-                           "/websocket",
-                           WebSocketStartHandler,
-                           0);
-
-    // WS site for the websocket connection
-    mg_set_websocket_handler(gpobj->m_web_ctx,
-                             "/websocket",
-                             WebSocketConnectHandler,
-                             WebSocketReadyHandler,
-                             WebsocketDataHandler,
-                             WebSocketCloseHandler,
-                             0);
-#endif // WEB_EXAMPLES
+                           "/form",
+                           FileHandler,
+                           (void*)"../../test/form.html");
 
     // Set authorization handlers
     mg_set_auth_handler(gpobj->m_web_ctx,
@@ -3430,23 +3467,25 @@ start_webserver(void)
                         check_rest_authorization,
                         NULL);
 
-    // WS1 path for the websocket connection
-    mg_set_websocket_handler(gpobj->m_web_ctx,
-                             "/ws1",
-                             ws1_connectHandler,
-                             ws1_readyHandler,
-                             ws1_dataHandler,
-                             ws1_closeHandler,
-                             0);
+    if (gpobj->m_bWebsocketsEnable) {
+        // WS1 path for the websocket connection
+        mg_set_websocket_handler(gpobj->m_web_ctx,
+                                 "/ws1",
+                                 ws1_connectHandler,
+                                 ws1_readyHandler,
+                                 ws1_dataHandler,
+                                 ws1_closeHandler,
+                                 0);
 
-    // WS2 path for the websocket connection
-    mg_set_websocket_handler(gpobj->m_web_ctx,
-                             "/ws2",
-                             ws2_connectHandler,
-                             ws2_readyHandler,
-                             ws2_dataHandler,
-                             ws2_closeHandler,
-                             0);
+        // WS2 path for the websocket connection
+        mg_set_websocket_handler(gpobj->m_web_ctx,
+                                 "/ws2",
+                                 ws2_connectHandler,
+                                 ws2_readyHandler,
+                                 ws2_dataHandler,
+                                 ws2_closeHandler,
+                                 0);
+    }
 
     // Set page handlers
     mg_set_request_handler(gpobj->m_web_ctx, "/vscp", vscp_mainpage, 0);
@@ -3471,7 +3510,12 @@ start_webserver(void)
     mg_set_request_handler(gpobj->m_web_ctx, "/vscp/log", vscp_log, 0);
 
     // REST
-    mg_set_request_handler( gpobj->m_web_ctx, "/vscp/rest",       websrv_restapi, 0 );
+    if (gpobj->m_bEnableRestApi) {
+        mg_set_request_handler(gpobj->m_web_ctx,
+                               "/vscp/rest",
+                               websrv_restapi,
+                               0);
+    }
 
     return 1;
 }

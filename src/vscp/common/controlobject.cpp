@@ -236,6 +236,14 @@ CControlObject::CControlObject()
     m_web_lua_background_script             = "";
     m_web_lua_background_script_params      = "";
 
+    m_bWebsocketsEnable = true;
+    m_websocket_document_root = "";
+    m_websocket_timeout_ms = atoi(VSCPDB_CONFIG_DEFAULT_WEBSOCKET_TIMEOUT_MS);
+    bEnable_websocket_ping_pong = false;
+    lua_websocket_pattern = std::string(VSCPDB_CONFIG_DEFAULT_WEB_LUA_WEBSOCKET_PATTERN);
+
+    m_bEnableRestApi = true;
+    
     // Init. web server subsystem - All features enabled
     // ssl mt locks will we initiated here for openssl 1.0
     if (0 == mg_init_library(MG_FEATURES_IPV6 | MG_FEATURES_WEBSOCKET |
@@ -1854,6 +1862,22 @@ startFullConfigParser(void* data, const char* name, const char** attr)
             }
         }
     } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
+               (0 == vscp_strcasecmp(name, "restapi"))) {
+
+        for (int i = 0; attr[i]; i += 2) {
+
+            std::string attribute = attr[i + 1];
+            vscp_trim(attribute);
+
+            if (0 == vscp_strcasecmp(attr[i], "enable")) {
+                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+                    pObj->m_bEnableRestApi = true;
+                } else {
+                    pObj->m_bEnableRestApi = false;
+                }
+            } 
+        }
+    } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
                (0 == vscp_strcasecmp(name, "websockets"))) {
 
         for (int i = 0; attr[i]; i += 2) {
@@ -1875,6 +1899,16 @@ startFullConfigParser(void* data, const char* name, const char** attr)
                 if (attribute.length()) {
                     pObj->m_websocket_timeout_ms =
                       vscp_readStringValue(attribute);
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "enable_websocket_ping_pong")) {
+                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+                    pObj->bEnable_websocket_ping_pong = true;
+                } else {
+                    pObj->bEnable_websocket_ping_pong = false;
+                }
+            } else if (0 == vscp_strcasecmp(attr[i], "web-lua_websocket_pattern")) {
+                if (attribute.length()) {
+                    pObj->lua_websocket_pattern = attribute;
                 }
             }
         }

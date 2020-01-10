@@ -455,11 +455,18 @@ class CControlObject
     // Linked list of all active sessions. (websrv.h)
     std::list<struct websrv_session*> m_web_sessions;
 
+    //**************************************************************************
+    //                              REST
+    //**************************************************************************
+
     // Protects the REST session object
     pthread_mutex_t m_restSessionMutex;
 
     // Session structure for REST API
     std::list<struct restsrv_session*> m_rest_sessions;
+
+    // Enable REST API
+    bool m_bEnableRestApi;
 
     //**************************************************************************
     //                              WEBSOCKETS
@@ -468,6 +475,8 @@ class CControlObject
     bool m_bWebsocketsEnable; // Enable web socket functionality
     std::string m_websocket_document_root;
     long m_websocket_timeout_ms;
+    bool bEnable_websocket_ping_pong;
+    std::string lua_websocket_pattern;
 
     // * * Websockets * *
 

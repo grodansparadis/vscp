@@ -152,7 +152,7 @@
 #define VSCPDB_CONFIG_DEFAULT_WEB_ENABLE                "1"
 
 #define VSCPDB_CONFIG_NAME_WEB_DOCUMENT_ROOT            "web-document_root"
-#define VSCPDB_CONFIG_DEFAULT_WEB_DOCUMENT_ROOT         "/var/lib/vscp/vscpd/web"
+#define VSCPDB_CONFIG_DEFAULT_WEB_DOCUMENT_ROOT         "/var/lib/vscp/web/html"
 
 #define VSCPDB_CONFIG_NAME_WEB_LISTENING_PORTS          "web-listening_ports"
 #define VSCPDB_CONFIG_DEFAULT_WEB_LISTENING_PORTS       "[::]:8888r,[::]:8843s,8884"
@@ -301,9 +301,6 @@
 #define VSCPDB_CONFIG_NAME_WEB_LUA_SERVER_PAGE_PATTERN          "web-lua_server_page_pattern"
 #define VSCPDB_CONFIG_DEFAULT_WEB_LUA_SERVER_PAGE_PATTERN       "**.lp$|**.lsp$"
 
-#define VSCPDB_CONFIG_NAME_WEB_LUA_WEBSOCKET_PATTERN            "web-lua_websocket_pattern"
-#define VSCPDB_CONFIG_DEFAULT_WEB_LUA_WEBSOCKET_PATTERN         "**.lua$"
-
 #define VSCPDB_CONFIG_NAME_WEB_LUA_BACKGROUND_SCRIPT            "web-lua_background_script"
 #define VSCPDB_CONFIG_DEFAULT_WEB_LUA_BACKGROUND_SCRIPT         ""
 
@@ -316,10 +313,16 @@
 #define VSCPDB_CONFIG_DEFAULT_WEBSOCKET_ENABLE                  "1"
 
 #define VSCPDB_CONFIG_NAME_WEBSOCKET_DOCUMENT_ROOT              "websocket-document-root"
-#define VSCPDB_CONFIG_DEFAULT_WEBSOCKET_DOCUMENT_ROOT           "/var/lib/vscp/vscpd/web"
+#define VSCPDB_CONFIG_DEFAULT_WEBSOCKET_DOCUMENT_ROOT           "/var/lib/vscp/web/html"
 
 #define VSCPDB_CONFIG_NAME_WEBSOCKET_TIMEOUT_MS                 "websocket-timeout-ms"
 #define VSCPDB_CONFIG_DEFAULT_WEBSOCKET_TIMEOUT_MS              "30000"
+
+#define VSCPDB_CONFIG_NAME_WEBSOCKET_PING_PONG_ENABLE           "enable_websocket_ping_pong"
+#define VSCPDB_CONFIG_DEFAULT_WEBSOCKET_PING_PONG_ENABLE        "0"
+
+#define VSCPDB_CONFIG_NAME_WEB_LUA_WEBSOCKET_PATTERN            "web-lua_websocket_pattern"
+#define VSCPDB_CONFIG_DEFAULT_WEB_LUA_WEBSOCKET_PATTERN         "**.lua$"
 
 
 // Automation
@@ -332,24 +335,6 @@
 
 #define VSCPDB_CONFIG_NAME_AUTOMATION_SUBZONE                   "automation-subzone"
 #define VSCPDB_CONFIG_DEFAULT_AUTOMATION_SUBZONE                "22"
-
-#define VSCPDB_CONFIG_NAME_AUTOMATION_LONGITUDE                 "automation-longitude"
-#define VSCPDB_CONFIG_DEFAULT_AUTOMATION_LONGITUDE              "61.7441833"
-
-#define VSCPDB_CONFIG_NAME_AUTOMATION_LATITUDE                  "automation-latitude"
-#define VSCPDB_CONFIG_DEFAULT_AUTOMATION_LATITUDE               "15.1604167"
-
-#define VSCPDB_CONFIG_NAME_AUTOMATION_SUNRISE_ENABLE            "automation-sunrise-enable"
-#define VSCPDB_CONFIG_DEFAULT_AUTOMATION_SUNRISE_ENABLE         "1"
-
-#define VSCPDB_CONFIG_NAME_AUTOMATION_SUNSET_ENABLE             "automation-sunset-enable"
-#define VSCPDB_CONFIG_DEFAULT_AUTOMATION_SUNSET_ENABLE          "1"
-
-#define VSCPDB_CONFIG_NAME_AUTOMATION_SUNSET_TWILIGHT_ENABLE    "automation-sunset-twilight-enable"
-#define VSCPDB_CONFIG_DEFAULT_AUTOMATION_SUNSET_TWILIGHT_ENABLE "1"
-
-#define VSCPDB_CONFIG_NAME_AUTOMATION_SUNRISE_TWILIGHT_ENABLE    "automation-sunrise-twilight-enable"
-#define VSCPDB_CONFIG_DEFAULT_AUTOMATION_SUNRISE_TWILIGHT_ENABLE "1"
 
 #define VSCPDB_CONFIG_NAME_AUTOMATION_SEGMENT_CTRL_ENABLE       "automation-segment-ctrl-enable"
 #define VSCPDB_CONFIG_DEFAULT_AUTOMATION_SEGMENT_CTRL_ENABLE    "1"
