@@ -103,7 +103,7 @@ int Comm::comm_gets(char *Buffer, int max)
         (0 < max)) {
 
         do {
-            ssize_t rv = read(m_fd, &c, 1);
+            read(m_fd, &c, 1);
             Buffer[ x++ ] = c;
         }
         while (isCharReady() && (x < max));
@@ -205,7 +205,7 @@ int Comm::comm_puts(char *Buffer, int len, bool bDrain)
 unsigned char Comm::comm_getc(void)
 {
     unsigned char c = 0;
-    ssize_t rv = read(m_fd, &c, 1);
+    read(m_fd, &c, 1);
     return c;
 }
 
@@ -231,7 +231,7 @@ char Comm::readChar(int *cnt)
 
 void Comm::comm_putc(unsigned char c, bool bDrain)
 {
-    ssize_t rv = write(m_fd, &c, 1);
+    write(m_fd, &c, 1);
     //printf("Char=%2X\n", c );
 
     if (bDrain) {
@@ -653,10 +653,9 @@ void Comm::msDelay(int len)
 void Comm::drainInput(void)
 {
     int cnt;
-    char c;
 
     do {
-        c = readChar(&cnt);
+        readChar(&cnt);
     }
     while (cnt && (-1 != cnt));
 }
