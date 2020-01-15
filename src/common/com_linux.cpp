@@ -3,7 +3,7 @@
  *  \brief implementation file for the Linux comm class.
  *
  *
-// Copyright (C) 2000-2020 Ake Hedman, Grodans Paradis AB, <akhe@vscp.org>
+// Copyright © 2000-2020 Ake Hedman, Grodans Paradis AB, <akhe@vscp.org>
 //
 // This software is placed into
 // the public domain and may be used for any purpose.  However, this

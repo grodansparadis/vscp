@@ -23,6 +23,8 @@ many platforms that have a webserver/websocket/rest/driver and tcp/ip interface 
 Documentation in different formats <a href="http://vscp.org/docs.php">is available here</a>.
 </p>
 
+Copyright © 2000-2020 Ake Hedman, Grodans Paradis AB - MIT license.
+
 <p>
 Guides on how to setup and test the system on different platforms can be found
 <a href="http://www.vscp.org/wiki/doku.php/howto/start">here</a>.

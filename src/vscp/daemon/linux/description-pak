@@ -5,5 +5,5 @@ provide services to clients and users of a VSCP based system. The
 VSCP server is part of the VSCP & Friends package. VSCP stands for 
 Very Simple Control Protocol.
 
-Copyright (C) 2000-2020 Ake Hedman, Grodans Paradis AB, Sweden
+Copyright © 2000-2020 Ake Hedman, Grodans Paradis AB, Sweden
 http://www.vscp.org
