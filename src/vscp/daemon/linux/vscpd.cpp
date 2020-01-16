@@ -60,7 +60,7 @@
 #include <vscphelper.h>
 
 //#define DEBUG
-uint32_t m_gdebugArray[8];
+static uint32_t m_gdebugArray[8];
 
 // Globals for the daemon
 int gbStopDaemon;
@@ -129,13 +129,14 @@ main(int argc, char** argv)
     std::string strcfgfile; // Points to XML configuration file
 
     // Clear debug settings
-    for (int i; i < 8; i++) {
+    for (int i = 0; i < 8; i++) {
         m_gdebugArray[i] = 0;
     }
 
-    openlog("vscpd", LOG_PERROR | LOG_PID | LOG_CONS, LOG_DAEMON);
-
     fprintf(stderr, "Prepare to start vscpd...\n");
+
+    openlog("vscpd", LOG_PERROR | LOG_PID | LOG_CONS, LOG_DAEMON);
+    syslog(LOG_INFO, "Starting the VSCP daemon...");
 
     // Ignore return value from defunct processes d
     signal(SIGCHLD, SIG_IGN);
@@ -153,16 +154,12 @@ main(int argc, char** argv)
             case 's':
                 fprintf(stderr,
                         "I will ***NOT*** run as daemon! "
-                        "(ctrl+c to terminate)\n\n");
+                        "(ctrl+c to terminate)\n");
                 gbDontRunAsDaemon = true;
                 break;
 
             case 'c':
                 strcfgfile = optarg;
-                // This is printed in controlobject
-                // fprintf(stderr, "Will use configfile = %s",
-                // strcfgfile.c_str() ); syslog(LOG_INFO, "Will use configfile =
-                // %s", strcfgfile );
                 break;
 
             case 'r':
@@ -269,8 +266,12 @@ init(std::string& strcfgfile, std::string& rootFolder)
 
     // Create folder structure
     if (!createFolderStuct(rootFolder)) {
-        syslog(LOG_ERR, "vscpd: Folder structure is not in place (You may need to run as root).");
-        fprintf(stderr, "vscpd: Folder structure is not in place (You may need to run as root).");
+        syslog(LOG_ERR,
+               "vscpd: Folder structure is not in place (You may need to run "
+               "as root).");
+        fprintf(stderr,
+                "vscpd: Folder structure is not in place (You may need to run "
+                "as root).");
         unlink("/var/run/vscpd.pid");
         return -1;
     }
@@ -471,13 +472,12 @@ help(char* szPrgname)
 //
 
 bool
-createFolder(const char *folder)
+createFolder(const char* folder)
 {
     if (0 == vscp_dirExists(folder)) {
-        if (-1 ==
-            mkdir(folder, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH)) {
-            fprintf(stderr, "Failed to create folder %s\n", folder );
-            syslog(LOG_ERR, "Failed to create folder %s\n", folder );
+        if (-1 == mkdir(folder, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH)) {
+            fprintf(stderr, "Failed to create folder %s\n", folder);
+            syslog(LOG_ERR, "Failed to create folder %s\n", folder);
             return false;
         }
     }
@@ -494,40 +494,40 @@ createFolderStuct(std::string& rootFolder)
 {
     std::string path;
 
-    if ( !createFolder(rootFolder.c_str())) {
+    if (!createFolder(rootFolder.c_str())) {
         return false;
     }
 
-    if ( !createFolder("/etc/vscp/certs")) {
+    if (!createFolder("/etc/vscp/certs")) {
         return false;
     }
 
-    if ( !createFolder("/etc/vscp/ca_certificats")) {
+    if (!createFolder("/etc/vscp/ca_certificats")) {
         return false;
     }
 
     path = rootFolder + "/web";
-    if ( !createFolder(path.c_str())) {
+    if (!createFolder(path.c_str())) {
         return false;
     }
 
     path = rootFolder + "/web/html";
-    if ( !createFolder(path.c_str())) {
+    if (!createFolder(path.c_str())) {
         return false;
     }
 
     path = rootFolder + "/web/html/images";
-    if ( !createFolder(path.c_str())) {
+    if (!createFolder(path.c_str())) {
         return false;
     }
 
     path = rootFolder + "/web/html/js";
-    if ( !createFolder(path.c_str())) {
+    if (!createFolder(path.c_str())) {
         return false;
     }
 
     path = rootFolder + "/web/html/css";
-    if ( !createFolder(path.c_str())) {
+    if (!createFolder(path.c_str())) {
         return false;
     }
 

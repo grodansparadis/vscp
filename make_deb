@@ -1,2 +1,0 @@
-#!/bin/sh
-checkinstall --type=debian --install=yes --fstrans=yes --pkgname=VSCP & Friends --pkglicense=GPL --pkggroup=network --pkgsource=https://github.com/grodansparadis/vscp_software --pkgaltsource=https://sourceforge.net/projects/m2m/files/VSCP%20Software/ 

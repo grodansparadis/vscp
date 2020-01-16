@@ -22,9 +22,19 @@ override_dh_strip:
 
 override_dh_auto_install:
 	install -d debian/vscpd/var/lib/vscp/
+	install -d debian/vscpd/var/lib/vscp/drivers/
+	install -d debian/vscpd/var/lib/vscp/drivers/level1/
+	install -d debian/vscpd/var/lib/vscp/drivers/level2/
+	install -d debian/vscpd/var/lib/vscp/web/
+	install -d debian/vscpd/var/lib/vscp/web/html
+	install -d debian/vscpd/var/lib/vscp/web/html/css
+	install -d debian/vscpd/var/lib/vscp/web/html/images
+	install -d debian/vscpd/var/lib/vscp/web/html/js
 	install -d debian/vscpd/var/lib/vscp/vscpd/
-	install -d debian/vscpd/var/log/vscpd/
+	install -d debian/vscpd/var/log/vscp/
+	install -d debian/vscpd/usr/share/vscp
 	install -d debian/vscpd/usr/share/vscp/vscpd
+	install -d debian/vscpd/usr/share/vscp/vscpd/certs
 	install -d debian/vscpd/usr/sbin/
 	install -m 755 src/vscp/daemon/linux/vscpd debian/vscpd/usr/sbin/
 	install -d debian/vscpd/usr/bin/

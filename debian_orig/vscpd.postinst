@@ -19,6 +19,12 @@ setup_vscpd_user() {
 fix_permissions() {
 	chown vscp /var/lib/vscp
 	chgrp vscp /var/lib/vscp
+        chown vscp /var/lib/vscp/drivers
+	chgrp vscp /var/lib/vscp/drivers
+	chown vscp /var/lib/vscp/drivers/level1
+	chgrp vscp /var/lib/vscp/drivers/level1
+	chown vscp /var/lib/vscp/drivers/level2
+	chgrp vscp /var/lib/vscp/drivers/level2
 	chown vscp /var/lib/vscp/vscpd
 	chgrp vscp /var/lib/vscp/vscpd
 	chown vscp /etc/vscp/certs

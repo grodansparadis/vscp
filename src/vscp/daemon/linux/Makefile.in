@@ -244,28 +244,32 @@ install: all install-folders install-startup-script install-configfile install-s
 	$(STRIP) vscpd
 	$(INSTALL_PROGRAM) -d $(DESTDIR)$(bindir)
 	$(INSTALL_PROGRAM) vscpd $(DESTDIR)$(bindir)
-	$(INSTALL_PROGRAM) -m644 ../../../../debian_orig/vscp.key $(DESTDIR)etc/vscp/certs
-	$(INSTALL_PROGRAM) -m 644 debian/README-conf-d debian/tmp/etc/vscp/conf.d/README
-	$(INSTALL_PROGRAM) -m 644 debian/README-ca_certificates debian/tmp/etc/vscp/ca_certificates/README
-	$(INSTALL_PROGRAM) -m 644 debian/README-certs debian/tmp/etc/vscp/certs/README
-	$(INSTALL_PROGRAM) -m 644 debian/vscp.key debian/tmp/etc/vscp/certs/vscp.key
-	$(INSTALL_PROGRAM) -m 644 debian/vscpd.conf debian/tmp/etc/vscp/vscpd.conf
-	$(INSTALL_PROGRAM) -m 644 ./service/systemd/vscpd.service.notify $(DESTDIR)/usr/lib/lib/systemd/system/vscpd.service
+	$(INSTALL_PROGRAM) -m 600 ../../../../debian_orig/vscp.key $(DESTDIR)etc/vscp/certs
+	$(INSTALL_PROGRAM) -m 644 debian/README-ca_certificates $(DESTDIR)/etc/vscp/ca_certificates/README
+	$(INSTALL_PROGRAM) -m 600 debian/README-certs $(DESTDIR)/etc/vscp/certs/README
+	$(INSTALL_PROGRAM) -m 600 debian/vscp.key $(DESTDIR)/etc/vscp/certs/vscp.key
+	$(INSTALL_PROGRAM) -m 644 debian/vscpd.conf $(DESTDIR)/etc/vscp/vscpd.conf
+	$(INSTALL_PROGRAM) -m 644 ./service/systemd/vscpd.service.notify $(DESTDIR)/$(libdir)/systemd/system/vscpd.service
 
 install-folders:
 	@echo "- Create folder structure."
 	$(INSTALL_PROGRAM) -d $(DESTDIR)/var/logs/vscp
 	$(INSTALL_PROGRAM) -d $(DESTDIR)/etc/vscp/certs
-	$(INSTALL_PROGRAM) -d $(DESTDIR)/etc/vscp/ca-certificats
+	$(INSTALL_PROGRAM) -d $(DESTDIR)/etc/vscp/ca-certificates
 	$(INSTALL_PROGRAM) -d $(DESTDIR)/usr/share/vscp
 	$(INSTALL_PROGRAM) -d $(DESTDIR)/usr/share/vscp/vscpd
 	$(INSTALL_PROGRAM) -d $(DESTDIR)/usr/share/vscp/vscpd/certs
 	$(INSTALL_PROGRAM) -d $(DESTDIR)/var/log/vscp
 	$(INSTALL_PROGRAM) -d $(DESTDIR)/var/lib/vscp
 	$(INSTALL_PROGRAM) -d $(DESTDIR)/var/lib/vscp/vscpd
-	$(INSTALL_PROGRAM) -d $(DESTDIR)/var/lib/vscp/vscpd/www
-	$(INSTALL_PROGRAM) -d $(DESTDIR)/var/lib/vscp/vscpd/html
-	$(INSTALL_PROGRAM) -d $(DESTDIR)/var/lib/vscp/vscpd/testws
+	$(INSTALL_PROGRAM) -d $(DESTDIR)/var/lib/vscp/drivers
+	$(INSTALL_PROGRAM) -d $(DESTDIR)/var/lib/vscp/drivers/level1
+	$(INSTALL_PROGRAM) -d $(DESTDIR)/var/lib/vscp/drivers/level2
+	$(INSTALL_PROGRAM) -d $(DESTDIR)/var/lib/vscp/web
+	$(INSTALL_PROGRAM) -d $(DESTDIR)/var/lib/vscp/web/html
+	$(INSTALL_PROGRAM) -d $(DESTDIR)/var/lib/vscp/web/html/images
+	$(INSTALL_PROGRAM) -d $(DESTDIR)/var/lib/vscp/web/html/css
+	$(INSTALL_PROGRAM) -d $(DESTDIR)/var/lib/vscp/web/html/js
 	$(INSTALL_PROGRAM) -d $(DESTDIR)/usr/lib/systemd/system/
 
 install-startup-script:

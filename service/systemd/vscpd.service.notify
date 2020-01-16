@@ -1,6 +1,6 @@
 [Unit]
 Description=the vscp daemon
-Documentation=man:vscpd.conf(5) man:vscpd(8)
+Documentation=man:vscpd.conf(5) man:vscpd(8) https://docs.vscp.org/vscpd
 After=network-online.target
 Wants=network-online.target
 

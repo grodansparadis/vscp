@@ -56,7 +56,7 @@ install-folders:
 	$(INSTALL_PROGRAM) -d $(DESTDIR)/var/lib/vscp/drivers
 	$(INSTALL_PROGRAM) -d $(DESTDIR)/var/lib/vscp/drivers/level1
 	$(INSTALL_PROGRAM) -d $(DESTDIR)/var/lib/vscp/drivers/level2
-	$(INSTALL_PROGRAM) -d $(DESTDIR)/var/log/vscp/logs
+	$(INSTALL_PROGRAM) -d $(DESTDIR)/var/log/vscp/
 	$(INSTALL_PROGRAM) -d $(DESTDIR)/var/lib/vscp/web
 	$(INSTALL_PROGRAM) -d $(DESTDIR)/var/lib/vscp/web/html
 	$(INSTALL_PROGRAM) -d $(DESTDIR)/var/lib/vscp/web/html/images
@@ -80,6 +80,24 @@ install-config:
 	else\
 		mv $(DESTDIR)/etc/vscp/vscpd.conf $(DESTDIR)/etc/vscp/vscpd.conf.`date +'%Y%m%d'`;\
 		$(INSTALL_PROGRAM) -b -m744 install_files/unix/vscpd.conf $(DESTDIR)/etc/vscp/vscpd.conf;\
+	fi
+
+# Install systemd startup
+install-startup-systemd:
+    cp service/systemd/vscpd.service.notify /lib/systemd/system/vscpd.service
+	sysctrrl enable vscpd
+	sysctrl start vscpd
+
+# Install systemvinit startup
+install-startup-systemvinit:
+	@$(INSTALL_PROGRAM) -d $(DESTDIR)/etc
+	$(INSTALL_PROGRAM) -d $(DESTDIR)/etc/init.d
+	@echo "- Installing startup script."
+	@if [ ! -e $(DESTDIR)/etc/init.d/vscpd ]; then\
+		echo "- Copying startup script";\
+		$(INSTALL_PROGRAM) -b -m755 service/systemvinit/vscpd.init $(DESTDIR)/etc/init.d/vscpd;\
+		echo "- Installing startup script";\
+		update-rc.d vscpd defaults;\
 	fi
 
 install-sample-certs:

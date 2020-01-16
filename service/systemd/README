@@ -7,3 +7,13 @@ changed the default build settings.
 With WITH_SYSTEMD vscpd will notify a complete startup after
 initialization. This means that follow-up units can be started after full
 initialization of vscpd (i.e. sockets are opened).
+
+copy service file to /lib/systemd/system as vscpd.service
+
+Enable with
+
+sysctrl enable vscpd
+
+Start with
+
+sysctrl start vscpd

@@ -197,7 +197,6 @@ echo   "VSCP version          : ${PACKAGE_VERSION} (major_version.minor_version.
 n)"
 echo   "System                : `uname -a` "
 echo   "Architecture          : $(arch)"
-echo   "VSCP GUI Build        : ${vscp_gui}"
 echo   "VSCP install dir      : ${VSCPDIR}"
 
 dnl Output some debugging information
@@ -240,11 +239,9 @@ You can tune the compiler flags in vscp-config.
 To build VSCP and friends, type \'make\' followed by \'make install\'
 
  use --enable-debug to build a debug version; release is default.
- use --enable-static to include a static version (currently diabled).
  use --enable-rpi to build Raspberry Pi specific drivers.
  use --disable-systemd to not use systemd (default: eanbled).
  use --disable-wrap to not use the tcpd wrapper (default: eanbled).
- 
 
  \"make\" -- builds VSCP & Friends.
  \"make install\" -- builds VSCP & Friends and install system.
