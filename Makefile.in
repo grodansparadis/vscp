@@ -84,8 +84,8 @@ install-config:
 
 # Install systemd startup
 install-startup-systemd:
-    cp service/systemd/vscpd.service.notify /lib/systemd/system/vscpd.service
-	sysctrrl enable vscpd
+	cp service/systemd/vscpd.service.notify /lib/systemd/system/vscpd.service
+	sysctrl enable vscpd
 	sysctrl start vscpd
 
 # Install systemvinit startup
