@@ -10,6 +10,7 @@ RELEASE_DEBIAN=`head -n4  VERSION.m4 |  grep release_debian | awk '{print $2}' |
 NAME_PLUS_VER="vscpd_$MAJOR_VERSION.$MINOR_VERSION.$RELEASE_VERSION"
 #BUILD_FOLDER="dist/`date +vscp_build_%y%m%d_%H%M%S`"
 rm -rf ../dist/*
+DATENOW="`date -R`"
 BUILD_FOLDER="../dist"
 
 # Debian compability 10 on Raspberry
@@ -153,6 +154,7 @@ sed -i "s/%BUILD-VERSION/${BUILD_VERSION}/g" debian/*
 sed -i "s/%RELEASE-DEBIAN/${RELEASE_DEBIAN}/g" debian/*
 sed -i "s/%COMPAT/${COMPAT}/g" debian/*
 sed -i "s/%SUBFOLDER/${SUBFOLDER}/g" debian/*
+sed -i "s/%DATENOW/${DATENOW}/g" debian/*
 
 echo "***   ---Now do 'dpkg-buildpackage -us -uc' or 'dpkg-buildpackage -b'"
 
