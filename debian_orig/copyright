@@ -1,7 +1,7 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: vscp
 Upstream-Contact: Ake Hedman <akhe@vscp.org>
-Source: https://github.com/grodansparadis/vscpl2drv-automation
+Source: https://github.com/grodansparadis/vscpl2drv-mqtt
 
 Files: *
 Copyright: 2000-2020 Ake Hedman <akhe@vscp.org>
