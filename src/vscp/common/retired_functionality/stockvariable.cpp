@@ -416,7 +416,7 @@ CVariableStorage::handleStockVariable(std::string name,
                     var.setValue(
                       "Copyright (c) 2004-2013 Sergey Lyubka, Copyright (c) "
                       "2013-2018 the Civetweb developers, (modifications.) "
-                      "Copyright (c) 2017-2019 "
+                      "Copyright (c) 2017-2020 "
                       "Ake Hedman, Grodans Paradis AB");
                     var.setNote("Civitweb copyright.");
                     return addStockVariable(var);

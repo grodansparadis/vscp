@@ -1,6 +1,6 @@
 % VSCPD(8) VSCP Daemon
 % Åke Hedman, Grodans Paradis AB
-% December 18, 2019
+% January 20, 2020
 
 # NAME
 
@@ -57,4 +57,4 @@ The [manual](https://grodansparadis.gitbooks.io/the-vscp-daemon) for vscpd conta
 The vscpd source code may be downloaded from <https://github.com/grodansparadis/vscp>. Source code for other system components of VSCP & Friends are here <https://github.com/grodansparadis>
 
 # COPYRIGHT
-Copyright 2000-2019 Åke Hedman, Grodans Paradis AB - MIT license.
+Copyright © 2000-2020 Ake Hedman, Grodans Paradis AB - MIT license.
