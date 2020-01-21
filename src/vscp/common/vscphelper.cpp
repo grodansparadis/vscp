@@ -6161,7 +6161,7 @@ vscp_encryptFrame(uint8_t* output,
     output[0] = input[0];
 
     // Should decryption algorithm be set by package
-    if (VSCP_ENCRYPTION_FROM_TYPE_BYTE == nAlgorithm) {
+    if (VSCP_ENCRYPTION_FROM_TYPE_BYTE == (nAlgorithm & 0x0f )) {
         nAlgorithm = input[0] & 0x0f;
     }
 
@@ -6263,7 +6263,7 @@ vscp_decryptFrame(uint8_t* output,
     output[0] = input[0];
 
     // Should decryption algorithm be set by package
-    if (VSCP_ENCRYPTION_FROM_TYPE_BYTE == nAlgorithm) {
+    if (VSCP_ENCRYPTION_FROM_TYPE_BYTE == (nAlgorithm & 0x0f )) {
         nAlgorithm = input[0] & 0x0f;
     }
 

@@ -309,7 +309,7 @@ extern "C"
 #define VSCP_ENCRYPTION_AES128         1
 #define VSCP_ENCRYPTION_AES192         2
 #define VSCP_ENCRYPTION_AES256         3
-#define VSCP_ENCRYPTION_FROM_TYPE_BYTE 255
+#define VSCP_ENCRYPTION_FROM_TYPE_BYTE 15
 
 /* VSCP Encryption tokens */
 #define VSCP_ENCRYPTION_TOKEN_0 ""
