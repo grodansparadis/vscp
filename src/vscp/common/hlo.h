@@ -97,6 +97,9 @@ class CHLO
 
     // For VSCP remote variables full format
     bool m_bFull;
+
+    // Print debug info
+    bool m_bDebug;
 };
 
 #endif
