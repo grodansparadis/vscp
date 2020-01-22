@@ -123,7 +123,6 @@ mkdir -p $BUILD_FOLDER
 
 # Clean project
 make clean
-rm -rf dist/*
 vscp/clean_for_dist
 ./clean_for_dist
 
