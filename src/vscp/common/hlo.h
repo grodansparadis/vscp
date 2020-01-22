@@ -33,7 +33,7 @@
 
 // All XML commands return thsi HLO content
 //     RESULT="OK"  - for success. Description can be used at will.
-//     RESULT="ERR" - for failure with cause of failuire in description
+//     RESULT="ERR" - for failure with cause of failure in description
 #define HLO_CMD_REPLY_TEMPLATE                                                 \
     "<vscp-resp op=\"vscp-cmd\" "                                              \
     "name=\"%s\" "                                                             \
