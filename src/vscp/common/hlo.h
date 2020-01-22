@@ -59,13 +59,13 @@
 //                        HLO Remote variable operations
 // ****************************************************************************
 
-#define HLO_OP_NOOP 0           // No operation
-#define HLO_OP_READ_VAR 1       // Read variable
-#define HLO_OP_WRITE_VAR 2      // Write variable
-#define HLO_OP_SAVE 3           // Save configuration
-#define HLO_OP_LOAD 4           // Load configuration
+#define HLO_OP_NOOP         0   // No operation
+#define HLO_OP_READ_VAR     1   // Read variable
+#define HLO_OP_WRITE_VAR    2   // Write variable
+#define HLO_OP_SAVE         3   // Save configuration
+#define HLO_OP_LOAD         4   // Load configuration
 #define HLO_OP_USER_DEFINED 150 // From 150 - 254 user defined codes
-#define HLO_OP_UNKNOWN 255      // Unknow command
+#define HLO_OP_UNKNOWN      255 // Unknow command
 
 ///////////////////////////////////////////////////////////////////////////////
 // VSCP automation HLO object
