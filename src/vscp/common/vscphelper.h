@@ -187,10 +187,9 @@ extern "C"
         Get program memory useage
     */
 
-    #ifndef WIN32
-    void
-    vscp_mem_usage(double& vm_usage, double& resident_set);
-    #endif
+#ifndef WIN32
+    void vscp_mem_usage(double& vm_usage, double& resident_set);
+#endif
 
     /*!
         Wait a number of milliseconds for semaphore
@@ -1334,13 +1333,13 @@ extern "C"
     /*!
         Read a filter from a string
         If strFilter is an empty string all elements in filter will be set to
-       zero. Arguments is priority,class,type,GUID and all is optional but if
-       given must be given in order.
+        zero. Arguments is priority,class,type,GUID and all is optional but if
+        given must be given in order.
         @param pFilter Filter structure to write filter to.
         @param strFilter Filter in string form
                 filter-priority, filter-class, filter-type, filter-GUID
         @return true on success, false on failure.
-        */
+    */
 
     bool vscp_readFilterFromString(vscpEventFilter* pFilter,
                                    const std::string& strFilter);
@@ -1768,9 +1767,9 @@ extern "C"
      *           128 bit content. If NULL the iv will be created from random
      *            system data. In both cases the end result will have the iv
      *            appended to the encrypted block.
-     * @param nAlgorithm The VSCP defined algorithm (0-15) to encrypt the frame with.
-     *                   If set to 15 the algorithm will be set from the four 
-     *                   lower bits of the buffer to decrypt.
+     * @param nAlgorithm The VSCP defined algorithm (0-15) to encrypt the frame
+     * with. If set to 15 the algorithm will be set from the four lower bits of
+     * the buffer to decrypt.
      * @return Packet length on success, zero on failure.
      *
      */
@@ -1795,9 +1794,9 @@ extern "C"
      * @param iv Pointer to the initialization vector. Should always point to a
      *           128 bit content. If NULL the iv is expected to be the last
      *           16 bytes of the encrypted data.
-     * @param nAlgorithm The VSCP defined algorithm (0-15) to decrypt the frame with. (vscp.h)
-     *                   If set to 15 the algorithm will be set from the four lower bits
-     *                   of the buffer to decrypt.
+     * @param nAlgorithm The VSCP defined algorithm (0-15) to decrypt the frame
+     * with. (vscp.h) If set to 15 the algorithm will be set from the four lower
+     * bits of the buffer to decrypt.
      * @return True on success, false on failure.
      *
      * NOTE: Note that VSCP packet type (first byte in UDP frame) is not
