@@ -1950,9 +1950,9 @@ vscp_convertFloatToFloatEventData(uint8_t* pdata,
         return false;
 
     void* p    = (void*)&value;
-    uint32_t n = VSCP_UINT32_SWAP_ON_LE(*((uint32_t*)p));
-    float f    = *((float*)((uint8_t*)&n));
-    UNUSED(f);
+    // uint32_t n = VSCP_UINT32_SWAP_ON_LE(*((uint32_t*)p));
+    // float f    = *((float*)((uint8_t*)&n));
+    // UNUSED(f);
     p = (void*)&value;
 
     *psize   = 5;
