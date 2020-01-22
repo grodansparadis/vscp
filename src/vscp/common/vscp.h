@@ -578,6 +578,8 @@ extern "C"
 #define VSCP_ERROR_WRITE_ERROR     46 /* Error when writing data */
 #define VSCP_ERROR_STOPPED         47 /* Operation stopped or aborted */
 #define VSCP_ERROR_INVALID_POINTER 48 /* Pointer with invalid value */
+#define VSCP_ERROR_INVALID_PERMISSION 49 /* Not allowed to do that */
+#define VSCP_ERROR_INVALID_PATH    50 /* Invalid path (permissions) */
 
 /*
     Template for VSCP XML event data
