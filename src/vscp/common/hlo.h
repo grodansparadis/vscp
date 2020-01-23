@@ -31,11 +31,20 @@
 
 #include <string>
 
-// All XML commands return thsi HLO content
+#define HLO_CMD_COMMAND_TEMPLATE                                               \
+    "<vscp-cmd op=\"op\" "                                                     \
+    "name=\"%s\" "                                                             \
+    "op=\"%s\" "                                                               \
+    "type=\"%s\" "                                                             \
+    "value=\"%s\" "                                                            \
+    "full=\"%s\" "                                                             \
+    " />"
+
+// All XML commands return this HLO content
 //     RESULT="OK"  - for success. Description can be used at will.
 //     RESULT="ERR" - for failure with cause of failure in description
 #define HLO_CMD_REPLY_TEMPLATE                                                 \
-    "<vscp-resp op=\"vscp-cmd\" "                                              \
+    "<vscp-resp op=\"vscp-reply\" "                                            \
     "name=\"%s\" "                                                             \
     "result=\"%s\" "                                                           \
     "description=\"%s\" "                                                      \
