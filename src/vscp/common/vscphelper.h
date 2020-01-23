@@ -1768,8 +1768,8 @@ extern "C"
      *            system data. In both cases the end result will have the iv
      *            appended to the encrypted block.
      * @param nAlgorithm The VSCP defined algorithm (0-15) to encrypt the frame
-     * with. If set to 15 the algorithm will be set from the four lower bits of
-     * the buffer to decrypt.
+     * with. If set to 15 (VSCP_ENCRYPTION_FROM_TYPE_BYTE) the algorithm will be 
+     * set from the four lower bits of the buffer to decrypt.
      * @return Packet length on success, zero on failure.
      *
      */
@@ -1795,8 +1795,8 @@ extern "C"
      *           128 bit content. If NULL the iv is expected to be the last
      *           16 bytes of the encrypted data.
      * @param nAlgorithm The VSCP defined algorithm (0-15) to decrypt the frame
-     * with. (vscp.h) If set to 15 the algorithm will be set from the four lower
-     * bits of the buffer to decrypt.
+     * with. (vscp.h) If set to 15 (VSCP_ENCRYPTION_FROM_TYPE_BYTE) the algorithm 
+     * will be set from the four lower bits of the buffer to decrypt.
      * @return True on success, false on failure.
      *
      * NOTE: Note that VSCP packet type (first byte in UDP frame) is not

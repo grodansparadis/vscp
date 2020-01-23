@@ -32,9 +32,8 @@
 #include <string>
 
 #define HLO_CMD_COMMAND_TEMPLATE                                               \
-    "<vscp-cmd op=\"op\" "                                                     \
+    "<vscp-cmd op=\"%s\" "                                                     \
     "name=\"%s\" "                                                             \
-    "op=\"%s\" "                                                               \
     "type=\"%s\" "                                                             \
     "value=\"%s\" "                                                            \
     "full=\"%s\" "                                                             \
