@@ -48,7 +48,7 @@
             !!!!!!!!!!!!!!!!!!!!  W A R N I N G  !!!!!!!!!!!!!!!!!!!!
                            This file is auto-generated
                 see https://github.com/grodansparadis/vscp-classes
-                        Generated: 2020-01-02 18:31:04.618768
+                        Generated: 2020-01-23 10:19:54.182518
 */
  
 #ifndef VSCP_TYPE_H
@@ -852,37 +852,14 @@
 #define VSCP2_TYPE_VSCPD_LOOP                       1   /* Loop */
 #define VSCP2_TYPE_VSCPD_PAUSE                      3   /* Pause */
 #define VSCP2_TYPE_VSCPD_ACTIVATE                   4   /* Activate */
-#define VSCP2_TYPE_VSCPD_SECOND                     5   /* Second */
-#define VSCP2_TYPE_VSCPD_MINUTE                     6   /* Minute */
-#define VSCP2_TYPE_VSCPD_HOUR                       7   /* Hour */
-#define VSCP2_TYPE_VSCPD_NOON                       8   /* Noon */
-#define VSCP2_TYPE_VSCPD_MIDNIGHT                   9   /* Midnight */
-#define VSCP2_TYPE_VSCPD_WEEK                       11  /* Week */
-#define VSCP2_TYPE_VSCPD_MONTH                      12  /* Month */
-#define VSCP2_TYPE_VSCPD_QUARTER                    13  /* Quarter */
-#define VSCP2_TYPE_VSCPD_YEAR                       14  /* Year */
-#define VSCP2_TYPE_VSCPD_RANDOM_MINUTE              15  /* Random-minute */
-#define VSCP2_TYPE_VSCPD_RANDOM_HOUR                16  /* Random-hour */
-#define VSCP2_TYPE_VSCPD_RANDOM_DAY                 17  /* Random-day */
-#define VSCP2_TYPE_VSCPD_RANDOM_WEEK                18  /* Random-week */
-#define VSCP2_TYPE_VSCPD_RANDOM_MONTH               19  /* Random-month */
-#define VSCP2_TYPE_VSCPD_RANDOM_YEAR                20  /* Random-year */
-#define VSCP2_TYPE_VSCPD_DUSK                       21  /* Dusk */
-#define VSCP2_TYPE_VSCPD_DAWN                       22  /* Dawn */
-#define VSCP2_TYPE_VSCPD_STARTING_UP                23  /* Starting up */
-#define VSCP2_TYPE_VSCPD_SHUTTING_DOWN              24  /* Shutting down */
-#define VSCP2_TYPE_VSCPD_TIMER_STARTED              25  /* Timer started */
-#define VSCP2_TYPE_VSCPD_TIMER_PAUSED               26  /* Timer paused */
-#define VSCP2_TYPE_VSCPD_TIMER_RESUMED              27  /* Timer resumed */
-#define VSCP2_TYPE_VSCPD_TIMER_STOPPED              28  /* Timer stopped */
-#define VSCP2_TYPE_VSCPD_TIMER_ELLAPSED             29  /* Timer Elapsed */
-#define VSCP2_TYPE_VSCPD_NEW_CALCULATION            30  /* New Calculations */
-#define VSCP2_TYPE_VSCPD_DRV3_START                 31  /* Start */
-#define VSCP2_TYPE_VSCPD_DRV3_STOP                  32  /* Stop */
-#define VSCP2_TYPE_VSCPD_DRV3_PAUSE                 33  /* Pause */
-#define VSCP2_TYPE_VSCPD_DRV3_RESUME                34  /* Resume */
-#define VSCP2_TYPE_VSCPD_DRV3_RESTART               35  /* Restart */
-#define VSCP2_TYPE_VSCPD_DRV3_CONFIG                36  /* Config */
+#define VSCP2_TYPE_VSCPD_STARTING_UP                5   /* Starting up */
+#define VSCP2_TYPE_VSCPD_SHUTTING_DOWN              6   /* Shutting down */
+#define VSCP2_TYPE_VSCPD_DRV3_START                 7   /* Start */
+#define VSCP2_TYPE_VSCPD_DRV3_STOP                  8   /* Stop */
+#define VSCP2_TYPE_VSCPD_DRV3_PAUSE                 9   /* Pause */
+#define VSCP2_TYPE_VSCPD_DRV3_RESUME                10  /* Resume */
+#define VSCP2_TYPE_VSCPD_DRV3_RESTART               11  /* Restart */
+#define VSCP2_TYPE_VSCPD_DRV3_CONFIG                12  /* Config */
  
 #endif
  

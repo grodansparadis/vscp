@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="UTF-8">
+<title>Embedded VSCP ws1 interface websocket example</title>
+
+<script type="text/javascript">
+    function load() {
+        var wsproto = (location.protocol === 'https:') ? 'wss:' : 'ws:';
+        connection = new WebSocket( wsproto + '//localhost:8884/ws1' );
+        websock_text_field = 
+          document.getElementById('websock_text_field');
+        connection.onmessage = function( e ) {
+            websock_text_field.innerHTML = e.data;
+        }
+        connection.onerror = function( error ) {
+            alert('WebSocket error');
+            connection.close();
+        }
+    };
+</script>
+</head>
+<body onload="load()">
+
+<h1>VSCP websocket test</h1>
+
+<div id='websock_text_field'>No websocket connection yet</div>
+
+</body>
+</html>

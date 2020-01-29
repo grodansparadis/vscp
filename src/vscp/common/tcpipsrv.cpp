@@ -544,7 +544,7 @@ tcpipClientObj::CommandHandler(std::string& strCommand)
             return VSCP_TCPIP_RV_CLOSE; // Close connection
         }
 
-        if (m_pObj->m_debugFlags[0] & VSCP_DEBUG1_TCP) {
+        if (__VSCP_DEBUG_TCP) {
             syslog(LOG_DEBUG, "[TCP/IP srv] Command: Password. PASS");
         }
 
@@ -564,7 +564,7 @@ tcpipClientObj::CommandHandler(std::string& strCommand)
 
     else if (m_pClientItem->CommandStartsWith(("quit"))) {
         // long test = MG_F_CLOSE_IMMEDIATELY;
-        if (m_pObj->m_debugFlags[0] & VSCP_DEBUG1_TCP) {
+        if (__VSCP_DEBUG_TCP) {
             syslog(LOG_INFO, "[TCP/IP srv] Command: Close.");
         }
 

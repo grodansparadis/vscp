@@ -69,8 +69,8 @@ deviceThread(void* pData)
     }
 
     // Must have a valid pointer to the control object
-    CControlObject* pCtrlObj = pDevItem->m_pObj;
-    if (NULL == pCtrlObj) {
+    CControlObject* pObj = pDevItem->m_pObj;
+    if (NULL == pObj) {
         syslog(LOG_ERR, "No control object defined. Aborting device thread!");
         return NULL;
     }
@@ -92,26 +92,26 @@ deviceThread(void* pData)
     pClientItem->m_dtutc.setUTCNow();
     pClientItem->m_strDeviceName = "driver_" + pDevItem->m_strName;
 
-    if (pCtrlObj->m_debugFlags[0] & VSCP_DEBUG1_GENERAL) {
+    if (__VSCP_DEBUG_EXTRA) {
         syslog(LOG_DEBUG,
                "Devicethread: Starting %s",
                pClientItem->m_strDeviceName.c_str());
     }
 
     // Add the client to the Client List
-    pthread_mutex_lock(&pCtrlObj->m_clientList.m_mutexItemList);
-    if (!pCtrlObj->addClient(pClientItem,
+    pthread_mutex_lock(&pObj->m_clientList.m_mutexItemList);
+    if (!pObj->addClient(pClientItem,
                              pDevItem->m_interface_guid.getClientID())) {
         // Failed to add client
         delete pDevItem->m_pClientItem;
         pDevItem->m_pClientItem = NULL;
 
-        pthread_mutex_unlock(&pCtrlObj->m_clientList.m_mutexItemList);
+        pthread_mutex_unlock(&pObj->m_clientList.m_mutexItemList);
         syslog(LOG_ERR,
                "Devicethread: Failed to add client. Terminating thread.");
         return NULL;
     }
-    pthread_mutex_unlock(&pCtrlObj->m_clientList.m_mutexItemList);
+    pthread_mutex_unlock(&pObj->m_clientList.m_mutexItemList);
 
     // Client now have GUID set to server GUID + channel id
     // If device has a non NULL GUID replace the client GUID preserving
@@ -139,7 +139,7 @@ deviceThread(void* pData)
     if (VSCP_DRIVER_LEVEL1 == pDevItem->m_driverLevel) {
 
         // Now find methods in library
-        if (pCtrlObj->m_debugFlags[0] & VSCP_DEBUG1_DRIVER1) {
+        if (__VSCP_DEBUG_DRIVER1) {
             syslog(LOG_DEBUG,
                    "Loading level I driver: %s",
                    pDevItem->m_strName.c_str());
@@ -369,7 +369,7 @@ deviceThread(void* pData)
             return NULL;
         }
 
-        if (pCtrlObj->m_debugFlags[0] & VSCP_DEBUG1_DRIVER1) {
+        if (__VSCP_DEBUG_DRIVER1) {
             syslog(LOG_DEBUG,
                    "%s: [Device tread] Level I Driver open.",
                    pDevItem->m_strName.c_str());
@@ -386,7 +386,7 @@ deviceThread(void* pData)
 
             // * * * * Blocking version * * * *
 
-            if (pCtrlObj->m_debugFlags[0] & VSCP_DEBUG1_DRIVER1) {
+            if (__VSCP_DEBUG_DRIVER1) {
                 syslog(LOG_DEBUG,
                        "%s: [Device tread] Level I blocking version.",
                        pDevItem->m_strName.c_str());
@@ -431,7 +431,7 @@ deviceThread(void* pData)
             // Signal worker threads to quit
             pDevItem->m_bQuit = true;
 
-            if (pCtrlObj->m_debugFlags[0] & VSCP_DEBUG1_DRIVER1) {
+            if (__VSCP_DEBUG_DRIVER1) {
                 syslog(LOG_DEBUG,
                        "%s: [Device tread] Level I work loop ended.",
                        pDevItem->m_strName.c_str());
@@ -444,7 +444,7 @@ deviceThread(void* pData)
 
             // * * * * Non blocking version * * * *
 
-            if (pCtrlObj->m_debugFlags[0] & VSCP_DEBUG1_DRIVER1) {
+            if (__VSCP_DEBUG_DRIVER1) {
                 syslog(LOG_DEBUG,
                        "%s: [Device tread] Level I NON Blocking version.",
                        pDevItem->m_strName.c_str());
@@ -468,8 +468,8 @@ deviceThread(void* pData)
                         bActivity = true;
 
                         // There must be room in the receive queue
-                        if (pCtrlObj->m_maxItemsInClientReceiveQueue >
-                            pCtrlObj->m_clientOutputQueue.size()) {
+                        if (pObj->m_maxItemsInClientReceiveQueue >
+                            pObj->m_clientOutputQueue.size()) {
 
                             vscpEvent* pev = new vscpEvent;
                             if (NULL != pev) {
@@ -492,11 +492,11 @@ deviceThread(void* pData)
                                 pev->obid = pClientItem->m_clientID;
 
                                 pthread_mutex_lock(
-                                  &pCtrlObj->m_mutexClientOutputQueue);
-                                pCtrlObj->m_clientOutputQueue.push_back(pev);
-                                sem_post(&pCtrlObj->m_semClientOutputQueue);
+                                  &pObj->m_mutexClientOutputQueue);
+                                pObj->m_clientOutputQueue.push_back(pev);
+                                sem_post(&pObj->m_semClientOutputQueue);
                                 pthread_mutex_unlock(
-                                  &pCtrlObj->m_mutexClientOutputQueue);
+                                  &pObj->m_mutexClientOutputQueue);
                             }
                         }
                     }
@@ -541,7 +541,7 @@ deviceThread(void* pData)
                         vscp_deleteEvent(pev);
                     } else {
                         // Another try
-                        // pCtrlObj->m_semClientOutputQueue.Post();
+                        // pObj->m_semClientOutputQueue.Post();
                         vscp_deleteEvent(pev); // TODO ????
                     }
 
@@ -557,7 +557,7 @@ deviceThread(void* pData)
 
         } // if blocking/non blocking
 
-        if (pCtrlObj->m_debugFlags[0] & VSCP_DEBUG1_DRIVER1) {
+        if (__VSCP_DEBUG_DRIVER1) {
             syslog(LOG_DEBUG,
                    "%s: [Device tread] Level I Work loop ended.",
                    pDevItem->m_strName.c_str());
@@ -566,7 +566,7 @@ deviceThread(void* pData)
         // Close CANAL channel
         pDevItem->m_proc_CanalClose(pDevItem->m_openHandle);
 
-        if (pCtrlObj->m_debugFlags[0] & VSCP_DEBUG1_DRIVER1) {
+        if (__VSCP_DEBUG_DRIVER1) {
             syslog(LOG_DEBUG,
                    "%s: [Device tread] Level I Closed.",
                    pDevItem->m_strName.c_str());
@@ -641,7 +641,7 @@ deviceThread(void* pData)
             return NULL;
         }
 
-        if (pCtrlObj->m_debugFlags[0] & VSCP_DEBUG1_DRIVER2) {
+        if (__VSCP_DEBUG_DRIVER2) {
             syslog(LOG_DEBUG,
                    "%s: Discovered all methods\n",
                    pDevItem->m_strName.c_str());
@@ -663,7 +663,7 @@ deviceThread(void* pData)
             return NULL;
         }
 
-        if (pCtrlObj->m_debugFlags[0] & VSCP_DEBUG1_DRIVER2) {
+        if (__VSCP_DEBUG_DRIVER2) {
             syslog(LOG_DEBUG,
                    "%s: [Device tread] Level II Open.",
                    pDevItem->m_strName.c_str());
@@ -684,7 +684,7 @@ deviceThread(void* pData)
             return NULL; // TODO close dll
         }
 
-        if (pCtrlObj->m_debugFlags[0] & VSCP_DEBUG1_DRIVER2) {
+        if (__VSCP_DEBUG_DRIVER2) {
             syslog(LOG_DEBUG,
                    "%s: [Device tread] Level II Write thread created.",
                    pDevItem->m_strName.c_str());
@@ -708,7 +708,7 @@ deviceThread(void* pData)
             return NULL; // TODO close dll, kill other thread
         }
 
-        if (pCtrlObj->m_debugFlags[0] & VSCP_DEBUG1_DRIVER2) {
+        if (__VSCP_DEBUG_DRIVER2) {
             syslog(LOG_DEBUG,
                    "%s: [Device tread] Level II Write thread created.",
                    pDevItem->m_strName.c_str());
@@ -719,7 +719,7 @@ deviceThread(void* pData)
             sleep(1);
         }
 
-        if (pCtrlObj->m_debugFlags[0] & VSCP_DEBUG1_DRIVER2) {
+        if (__VSCP_DEBUG_DRIVER2) {
             syslog(LOG_DEBUG,
                    "%s: [Device tread] Level II Closing.",
                    pDevItem->m_strName.c_str());
@@ -728,7 +728,7 @@ deviceThread(void* pData)
         // Close channel
         pDevItem->m_proc_VSCPClose(pDevItem->m_openHandle);
 
-        if (pCtrlObj->m_debugFlags[0] & VSCP_DEBUG1_DRIVER2) {
+        if (__VSCP_DEBUG_DRIVER2) {
             syslog(LOG_DEBUG,
                    "%s: [Device tread] Level II Closed.",
                    pDevItem->m_strName.c_str());
@@ -741,7 +741,7 @@ deviceThread(void* pData)
         // Unload dll
         dlclose(hdll);
 
-        if (pCtrlObj->m_debugFlags[0] & VSCP_DEBUG1_DRIVER2) {
+        if (__VSCP_DEBUG_DRIVER2) {
             syslog(LOG_DEBUG,
                    "%s: [Device tread] Level II Done waiting for threads.",
                    pDevItem->m_strName.c_str());
@@ -750,9 +750,9 @@ deviceThread(void* pData)
     }
 
     // Remove messages in the client queues
-    pthread_mutex_lock(&pCtrlObj->m_clientList.m_mutexItemList);
-    pCtrlObj->removeClient(pClientItem);
-    pthread_mutex_unlock(&pCtrlObj->m_clientList.m_mutexItemList);
+    pthread_mutex_lock(&pObj->m_clientList.m_mutexItemList);
+    pObj->removeClient(pClientItem);
+    pthread_mutex_unlock(&pObj->m_clientList.m_mutexItemList);
 
     return NULL;
 }

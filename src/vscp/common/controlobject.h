@@ -300,8 +300,9 @@ class CControlObject
     /*!
      * Debug flags
      * See vscp_debug.h for possible flags.
+     * Set to point to m_gdebugArray in startup
      */
-    uint32_t m_debugFlags[8];
+    uint32_t *m_debugFlags;
 
     //**************************************************************************
     //                                 Security
@@ -485,16 +486,6 @@ class CControlObject
 
     // List of active websocket sessions
     std::list<websock_session*> m_websocketSessions;
-
-    //**************************************************************************
-    //                             REMOTE VARIABLES
-    //**************************************************************************
-
-    // Hash table for variables
-    // CVariableStorage m_variables;
-
-    // Mutex to protect variables
-    // pthread_mutex_t m_variableMutex;
 
     //**************************************************************************
     //                                 DRIVERS

@@ -37,8 +37,8 @@
 //******************************************************************************
 
 // websocket types
-#define WEBSOCKET_SUBYPE_STANDARD "vscp-std" // Original form
-#define WEBSOCKET_SUBTYPE_JSON "vscp-json"   // JSON format
+#define WEBSOCKET_SUBYPE_STANDARD "vscp-std"  // Original form
+#define WEBSOCKET_SUBTYPE_JSON    "vscp-json" // JSON format
 
 #define MAX_VSCPWS_MESSAGE_QUEUE (512)
 
@@ -56,112 +56,45 @@ enum
 
 enum
 {
-    WEBSOCK_ERROR_NO_ERROR,                  // Everything is OK.
-    WEBSOCK_ERROR_SYNTAX_ERROR,              // Syntax error.
-    WEBSOCK_ERROR_UNKNOWN_COMMAND,           // Unknown command.
-    WEBSOCK_ERROR_TX_BUFFER_FULL,            // Transmit buffer full.
-    WEBSOCK_ERROR_MEMORY_ALLOCATION,         // Problem allocating memory.
-    WEBSOCK_ERROR_VARIABLE_DEFINED,          // Variable is already defined.
-    WEBSOCK_ERROR_VARIABLE_UNKNOWN,          // Cant find variable
-    WEBSOCK_ERROR_VARIABLE_NO_STOCK,         // Cant add stock variable
-    WEBSOCK_ERROR_NOT_AUTHORISED,            // Not authorised
-    WEBSOCK_ERROR_NOT_ALLOWED_TO_SEND_EVENT, // Not authorized to send events
-    WEBSOCK_ERROR_NOT_ALLOWED_TO_DO_THAT,    // Not allowed to do that
-    WEBSOCK_ERROR_MUST_HAVE_TABLE_NAME,      // Must have a table name
-    WEBSOCK_ERROR_END_DATE_IS_WRONG,   // End date must be later than start date
-    WEBSOCK_ERROR_INVALID_DATE,        // Invalid date
-    WEBSOCK_ERROR_TABLE_NOT_FOUND,     // Table not found
-    WEBSOCK_ERROR_TABLE_NO_DATA,       // No data in table
-    WEBSOCK_ERROR_TABLE_ERROR_READING, // Error reading table
-    WEBSOCK_ERROR_TABLE_CREATE_FORMAT, // Table create formats was wrong
-    WEBSOCK_ERROR_TABLE_DELETE_FAILED, // Table delete failed
-    WEBSOCK_ERROR_TABLE_LIST_FAILED,   // Table list failed
-    WEBSOCK_ERROR_TABLE_FAILED_TO_GET, // Failed to get table
-    WEBSOCK_ERROR_TABLE_FAILED_GET_DATA,          // Failed to get table data
-    WEBSOCK_ERROR_TABLE_FAILED_CLEAR,             // Failed to clear table
-    WEBSOCK_ERROR_TABLE_LOG_MISSING_VALUE,        // Missing value
-    WEBSOCK_ERROR_TABLE_LOG_FAILED,               // Failed to log data
-    WEBSOCK_ERROR_TABLE_NEED_SQL,                 // Missing SQL expression
-    WEBSOCK_ERROR_TABLE_FAILED_COMMAND_RECORDS,   // Failed to get # records
-    WEBSOCK_ERROR_TABLE_FAILED_COMMAND_FIRSTDATE, // Failed to get first date
-    WEBSOCK_ERROR_TABLE_FAILED_COMMAND_LASTDATE,  // Failed to get last date
-    WEBSOCK_ERROR_TABLE_FAILED_COMMAND_SUM,       // Failed to get sum
-    WEBSOCK_ERROR_TABLE_FAILED_COMMAND_MIN,       // Failed to get min
-    WEBSOCK_ERROR_TABLE_FAILED_COMMAND_MAX,       // Failed to get max
-    WEBSOCK_ERROR_TABLE_FAILED_COMMAND_AVERAGE,   // Failed to get average
-    WEBSOCK_ERROR_TABLE_FAILED_COMMAND_MEDIAN,    // Failed to get median
-    WEBSOCK_ERROR_TABLE_FAILED_COMMAND_STDDEV,    // Failed to get stddev
-    WEBSOCK_ERROR_TABLE_FAILED_COMMAND_VARIANCE,  // Failed to get variance
-    WEBSOCK_ERROR_TABLE_FAILED_COMMAND_MODE,      // Failed to get mode
-    WEBSOCK_ERROR_TABLE_FAILED_COMMAND_UPPERQ,    // Failed to get upperq
-    WEBSOCK_ERROR_TABLE_FAILED_COMMAND_LOWERQ,    // Failed to get lowerq
-    WEBSOCK_ERROR_TABLE_FAILED_COMMAND_CLEAR      // Failed to clear entries
+    WEBSOCK_ERROR_NO_ERROR          = 0, // Everything is OK.
+    WEBSOCK_ERROR_SYNTAX_ERROR      = 1, // Syntax error.
+    WEBSOCK_ERROR_UNKNOWN_COMMAND   = 2, // Unknown command.
+    WEBSOCK_ERROR_TX_BUFFER_FULL    = 3, // Transmit buffer full.
+    WEBSOCK_ERROR_MEMORY_ALLOCATION = 4, // Problem allocating memory.
+    WEBSOCK_ERROR_NOT_AUTHORISED    = 5, // Not authorised-
+    WEBSOCK_ERROR_NOT_ALLOWED_TO_SEND_EVENT =
+      6,                                      // Not authorized to send events.
+    WEBSOCK_ERROR_NOT_ALLOWED_TO_DO_THAT = 7, // Not allowed to do that.
+    WEBSOCK_ERROR_PARSE_FORMAT            = 8, // Parse error, invalid format.
+    WEBSOCK_ERROR_UNKNOWN_TYPE = 9, // Unkown object type
 };
 
-#define WEBSOCK_STR_ERROR_NO_ERROR "Everything is OK"
-#define WEBSOCK_STR_ERROR_SYNTAX_ERROR "Syntax error"
-#define WEBSOCK_STR_ERROR_UNKNOWN_COMMAND "Unknown command"
-#define WEBSOCK_STR_ERROR_TX_BUFFER_FULL "Transmit buffer full"
-#define WEBSOCK_STR_ERROR_MEMORY_ALLOCATION "Having problems to allocate memory"
-#define WEBSOCK_STR_ERROR_VARIABLE_DEFINED "Variable is already defined"
-#define WEBSOCK_STR_ERROR_VARIABLE_UNKNOWN "Unable to find variable"
-#define WEBSOCK_STR_ERROR_VARIABLE_UPDATE "Unable to update variable"
-#define WEBSOCK_STR_ERROR_VARIABLE_NO_STOCK                                    \
-    "Stock variables can't be added/created"
-#define WEBSOCK_STR_ERROR_NOT_AUTHORISED "Not authorised"
-#define WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_SEND_EVENT "Not allowed to send event"
+#define WEBSOCK_STR_ERROR_NO_ERROR        "Everything is OK."
+#define WEBSOCK_STR_ERROR_SYNTAX_ERROR    "Syntax error."
+#define WEBSOCK_STR_ERROR_UNKNOWN_COMMAND "Unknown command."
+#define WEBSOCK_STR_ERROR_TX_BUFFER_FULL  "Transmit buffer full."
+#define WEBSOCK_STR_ERROR_MEMORY_ALLOCATION                                    \
+    "Having problems to allocate memory."
+#define WEBSOCK_STR_ERROR_NOT_AUTHORISED            "Not authorised."
+#define WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_SEND_EVENT "Not allowed to send event."
 #define WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT                               \
     "Not allowed to do that (check privileges)"
-#define WEBSOCK_STR_ERROR_MUST_HAVE_TABLE_NAME                                 \
-    "A table name must be given as parameter"
-#define WEBSOCK_STR_ERROR_END_DATE_IS_WRONG                                    \
-    "End date must be later than the start date"
-#define WEBSOCK_STR_ERROR_INVALID_DATE "Invalid date"
-#define WEBSOCK_STR_ERROR_TABLE_NOT_FOUND "Table not found"
-#define WEBSOCK_STR_ERROR_TABLE_NO_DATA "No data in table"
-#define WEBSOCK_STR_ERROR_TABLE_ERROR_READING "Error reading table"
-#define WEBSOCK_STR_ERROR_TABLE_CREATE_FORMAT "Table create format was wrong"
-#define WEBSOCK_STR_ERROR_TABLE_DELETE_FAILED "Table delete failed"
-#define WEBSOCK_STR_ERROR_TABLE_LIST_FAILED "Table list failed"
-#define WEBSOCK_STR_ERROR_TABLE_FAILED_TO_GET                                  \
-    "Failed to get table (is it available?)"
-#define WEBSOCK_STR_ERROR_TABLE_FAILED_GET_DATA "Failed to get table data"
-#define WEBSOCK_STR_ERROR_TABLE_FAILED_CLEAR "Failed to clear table"
-#define WEBSOCK_STR_ERROR_TABLE_LOG_MISSING_VALUE "A value is needed"
-#define WEBSOCK_STR_ERROR_TABLE_LOG_FAILED "Failed to log data"
-#define WEBSOCK_STR_ERROR_TABLE_NEED_SQL "Missing SQL expression"
-#define WEBSOCK_STR_ERROR_TABLE_FAILED_COMMAND_RECORDS                         \
-    "Failed to get number of records"
-#define WEBSOCK_STR_ERROR_TABLE_FAILED_COMMAND_FIRSTDATE                       \
-    "Failed to get first date"
-#define WEBSOCK_STR_ERROR_TABLE_FAILED_COMMAND_LASTDATE                        \
-    "Failed to get last date"
-#define WEBSOCK_STR_ERROR_TABLE_FAILED_COMMAND_SUM "Failed to get sum"
-#define WEBSOCK_STR_ERROR_TABLE_FAILED_COMMAND_MIN "Failed to get min"
-#define WEBSOCK_STR_ERROR_TABLE_FAILED_COMMAND_MAX "Failed to get max"
-#define WEBSOCK_STR_ERROR_TABLE_FAILED_COMMAND_AVERAGE "Failed to get average"
-#define WEBSOCK_STR_ERROR_TABLE_FAILED_COMMAND_MEDIAN "Failed to get median"
-#define WEBSOCK_STR_ERROR_TABLE_FAILED_COMMAND_STDDEV "Failed to get stddev"
-#define WEBSOCK_STR_ERROR_TABLE_FAILED_COMMAND_VARIANCE "Failed to get variance"
-#define WEBSOCK_STR_ERROR_TABLE_FAILED_COMMAND_MODE "Failed to get mode"
-#define WEBSOCK_STR_ERROR_TABLE_FAILED_COMMAND_UPPERQ "Failed to get upperq"
-#define WEBSOCK_STR_ERROR_TABLE_FAILED_COMMAND_LOWERQ "Failed to get lowerq"
-#define WEBSOCK_STR_ERROR_TABLE_FAILED_COMMAND_CLEAR                           \
-    "Failed to clear table enteries"
+#define WEBSOCK_STR_ERROR_PARSE_FORMAT "Parse error, invalid format."
+#define WEBSOCK_STR_ERROR_UNKNOWN_TYPE "Unknown type, only know 'COMMAND' and 'EVENT'."
 
 #define WEBSOCKET_MAINCODE_POSITIVE "+"
 #define WEBSOCKET_MAINCODE_NEGATIVE "-"
 
-#define WEBSOCKET_MAINCODE_COMMAND "C"
-#define WEBSOCKET_MAINCODE_EVENT "E"
+#define WEBSOCKET_MAINCODE_COMMAND  "C"
+#define WEBSOCKET_MAINCODE_EVENT    "E"
 #define WEBSOCKET_MAINCODE_VARIABLE "V"
 
 #define WEBSOCKET_SUBCODE_VARIABLE_CHANGED "C"
 #define WEBSOCKET_SUBCODE_VARIABLE_CREATED "N"
 #define WEBSOCKET_SUBCODE_VARIABLE_DELETED "D"
 
-#define WS_TYPE_1   1
-#define WS_TYPE_2   2
+#define WS_TYPE_1 1
+#define WS_TYPE_2 2
 
 class websock_session
 {
@@ -174,7 +107,7 @@ class websock_session
     uint8_t m_wstypes;
 
     // Connection object
-    struct mg_connection *m_conn;
+    struct mg_connection* m_conn;
 
     // Connection state (see enums above)
     int m_conn_state;
@@ -195,19 +128,7 @@ class websock_session
     std::string m_strConcatenated;
 
     // Client structure for websocket
-    CClientItem *m_pClientItem;
-
-    // Event triggers
-    //      Used for acknowledge automatisation
-    //      VSCP_TYPE_INFORMATION_ACTION_TRIGGER
-
-    bool bEventTrigger;      // True to activate event trigger functionality.
-    uint32_t triggerTimeout; // Time out before trig (or error) must occur.
-    std::list<vscpEventFilter *> listTriggerOK;  // List with positive triggers.
-    std::list<vscpEventFilter *> listTriggerERR; // List with negative triggers.
-
-    // Variable triggers
-    bool bVariableTrigger; // True to activate event trigger functionality.
+    CClientItem* m_pClientItem;
 };
 
 #define WS2_COMMAND                                                            \
@@ -220,15 +141,14 @@ class websock_session
 #define WS2_EVENT                                                              \
     "{"                                                                        \
     " \"type\" : \"EVENT\", "                                                  \
-    " \"event\" : {"                                                           \
+    " \"event\" : "                                                            \
     " %s "                                                                     \
-    " }"                                                                       \
     "}"
 
 #define WS2_POSITIVE_RESPONSE                                                  \
     "{"                                                                        \
     " \"type\" : \"+\", "                                                      \
-    " \"command\" : \"%s\" "                                                   \
+    " \"command\" : \"%s\", "                                                  \
     " \"args\" : %s"                                                           \
     "}"
 
@@ -236,16 +156,15 @@ class websock_session
     "{"                                                                        \
     " \"type\" : \"-\", "                                                      \
     " \"command\" : \"%s\", "                                                  \
-    " \"error-code\" : %d, "                                                   \
-    " \"error-str\" : \"%s\", "                                                \
+    " \"errcode\" : %d, "                                                   \
+    " \"errstr\" : \"%s\" "                                                 \
     "}"
 
 #define WS2_VARIABLE                                                           \
     "{"                                                                        \
     " \"type\" : \"VARIABLE\", "                                               \
-    " \"variable\" : {"                                                        \
+    " \"variable\" : "                                                         \
     " %s "                                                                     \
-    " }"                                                                       \
     "}"
 
 const int MSG_TYPE_COMMAND           = 0; // Built in command
@@ -258,7 +177,6 @@ const int MSG_TYPE_VARIABLE          = 5; // Changed variable
 class w2msg
 {
   public:
-
     w2msg(void);
     ~w2msg(void);
 
@@ -270,7 +188,7 @@ class w2msg
     /*
         Command/Response/Variable arguments
     */
-    std::map<std::string,std::string> m_arguments;
+    std::map<std::string, std::string> m_arguments;
 
     /*
         Holder for Event

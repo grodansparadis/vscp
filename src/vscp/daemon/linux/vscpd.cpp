@@ -60,7 +60,7 @@
 #include <vscphelper.h>
 
 //#define DEBUG
-static uint32_t m_gdebugArray[8];
+uint32_t m_gdebugArray[8];
 
 // Globals for the daemon
 int gbStopDaemon;
@@ -344,11 +344,8 @@ init(std::string& strcfgfile, std::string& rootFolder)
         }
 
         // Tansfer read debug parameters if set
-        for (int i = 0; i < 8; i++) {
-            if (m_gdebugArray[i]) {
-                gpobj->m_debugFlags[i] = m_gdebugArray[i];
-            }
-        }
+        gpobj->m_debugFlags = m_gdebugArray;
+
 
         // *******************************
         //    Main loop is entered here
