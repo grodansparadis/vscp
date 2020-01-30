@@ -38,7 +38,7 @@
 #include <unistd.h>
 
 #include "canal_macro.h"
-#include "canal_win32_ipc.h"
+//#include "canal_win32_ipc.h"
 #include "clientlist.h"
 //#include "daemonworker.h"
 #include "vscp.h"

@@ -5,6 +5,7 @@
 # Sample event to send
 #    send 0,20,3,,,0,-,15,14,13,12,11,10,9,8,7,6,5,4,3,2,0,0,1,35
 # Original sample from: https://websockets.readthedocs.io/en/stable/intro.html
+# Copyright 2020 Ake Hedman, Grodans Paradis AB - MIT license
 
 from signal import signal, SIGINT
 from sys import exit
@@ -129,7 +130,7 @@ async def connect():
         cmdFilter = {
             "type": "cmd",
             "command": "setfilter",
-            "args": {                                                                      \
+            "args": {
                 "mask_priority": 0,
                 "mask_class": 65535,
                 "mask_type": 65535,                                                     

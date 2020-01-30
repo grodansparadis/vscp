@@ -1157,6 +1157,7 @@ ws1_command(struct mg_connection* conn,
     // AUTH;iv;aes128
     else if (vscp_startsWith(strTok, "AUTH")) {
 
+        try {
         std::string str;
         std::string strUser;
         std::string strIV = tokens.front();
@@ -1182,6 +1183,16 @@ ws1_command(struct mg_connection* conn,
                                (const char*)str.c_str(),
                                str.length());
             pSession->m_pClientItem->bAuthenticated = false; // Authenticated
+        }
+        }
+        catch (...) {
+            str = vscp_str_format(("-;AUTH;%d;%s"),
+                                  (int)WEBSOCK_ERROR_SYNTAX_ERROR,
+                                  WEBSOCK_STR_ERROR_SYNTAX_ERROR);
+            mg_websocket_write(conn,
+                               MG_WEBSOCKET_OPCODE_TEXT,
+                               (const char*)str.c_str(),
+                               str.length());
         }
     }
 
