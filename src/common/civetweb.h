@@ -1519,6 +1519,15 @@ CIVETWEB_API int mg_get_system_info(char *buffer, int buflen);
 CIVETWEB_API int
 mg_get_context_info(const struct mg_context *ctx, char *buffer, int buflen);
 
+// VSCP 
+//-----------------------------------------------------------------------
+
+int
+mg_send_basic_access_authentication_request(struct mg_connection *conn,
+                                             const char *realm);                  
+
+// -----------------------------------------------------------------------
+// VSCP 
 
 #ifdef MG_EXPERIMENTAL_INTERFACES
 /* Get connection information. Useful for server diagnosis.

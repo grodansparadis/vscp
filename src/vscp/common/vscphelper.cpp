@@ -708,7 +708,23 @@ vscp_getTimeString(char* buf, size_t buf_len, time_t* t)
     if (NULL == t)
         return false;
 
-    strftime(buf, buf_len, "%a, %d %b %Y %H:%M:%S GMT", gmtime(t));
+#if !defined(REENTRANT_TIME)
+	struct tm *tm;
+
+	tm = ((t != NULL) ? gmtime(t) : NULL);
+	if (tm != NULL) {
+#else
+	struct tm _tm;
+	struct tm *tm = &_tm;
+
+	if (t != NULL) {
+		gmtime_r(t, tm);
+#endif
+		strftime(buf, buf_len, "%a, %d %b %Y %H:%M:%S GMT", tm);
+	} else {
+		vscp_strlcpy(buf, "Thu, 01 Jan 1970 00:00:00 GMT", buf_len);
+		buf[buf_len - 1] = '\0';
+	}
 
     return true;
 }

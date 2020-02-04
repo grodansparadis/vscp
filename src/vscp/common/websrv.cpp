@@ -134,12 +134,6 @@ extern int gbStopDaemon; // Should be set true to stop the daemon
 //                WEBSERVER
 ///////////////////////////////////////////////////
 
-// Options
-// static struct mg_serve_http_opts g_http_server_opts;
-
-// Webserver
-// struct mg_mgr gmgr;
-
 ///////////////////////////////////////////////////////////////////////////////
 // websrv_sendheader
 //
@@ -203,52 +197,198 @@ websrv_sendSetCookieHeader(struct mg_connection* conn,
               psid);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// web_skip_quoted
+//
+// Skip the characters until one of the delimiters characters found.
+// 0-terminate resulting word. Skip the delimiter and following whitespaces.
+// Advance pointer to buffer to the next word. Return found 0-terminated
+// word.
+// Delimiters can be quoted with quotechar.
+//
+
+char*
+web_skip_quoted(char** buf,
+                const char* delimiters,
+                const char* whitespace,
+                char quotechar)
+{
+    char *p, *begin_word, *end_word, *end_whitespace;
+
+    begin_word = *buf;
+    end_word   = begin_word + strcspn(begin_word, delimiters);
+
+    // Check for quotechar
+    if (end_word > begin_word) {
+        p = end_word - 1;
+        while (*p == quotechar) {
+            // While the delimiter is quoted, look for the next delimiter.
+
+            // This happens, e.g., in calls from parse_auth_header,
+            // if the user name contains a " character.
+
+            // If there is anything beyond end_word, copy it.
+            if (*end_word != '\0') {
+                size_t end_off = strcspn(end_word + 1, delimiters);
+                memmove(p, end_word, end_off + 1);
+                p += end_off; // p must correspond to end_word - 1
+                end_word += end_off + 1;
+            } else {
+                *p = '\0';
+                break;
+            }
+        }
+
+        for (p++; p < end_word; p++) {
+            *p = '\0';
+        }
+    }
+
+    if (*end_word == '\0') {
+        *buf = end_word;
+    } else {
+
+#if defined(__GNUC__) || defined(__MINGW32__)
+        // Disable spurious conversion warning for GCC
+#if GCC_VERSION >= 40500
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsign-conversion"
+#endif // GCC_VERSION >= 40500
+#endif // defined(__GNUC__) || defined(__MINGW32__)
+
+        end_whitespace = end_word + strspn(&end_word[1], whitespace) + 1;
+
+#if defined(__GNUC__) || defined(__MINGW32__)
+#if GCC_VERSION >= 40500
+#pragma GCC diagnostic pop
+#endif // GCC_VERSION >= 40500
+#endif // defined(__GNUC__) || defined(__MINGW32__)
+
+        for (p = end_word; p < end_whitespace; p++) {
+            *p = '\0';
+        }
+
+        *buf = end_whitespace;
+    }
+
+    return begin_word;
+}
+
+/* Skip the characters until one of the delimiters characters found.
+ * 0-terminate resulting word. Skip the delimiter and following whitespaces.
+ * Advance pointer to buffer to the next word. Return found 0-terminated
+ * word.
+ * Delimiters can be quoted with quotechar. */
+static char*
+skip_quoted(char** buf,
+            const char* delimiters,
+            const char* whitespace,
+            char quotechar)
+{
+    char *p, *begin_word, *end_word, *end_whitespace;
+
+    begin_word = *buf;
+    end_word   = begin_word + strcspn(begin_word, delimiters);
+
+    /* Check for quotechar */
+    if (end_word > begin_word) {
+        p = end_word - 1;
+        while (*p == quotechar) {
+            /* While the delimiter is quoted, look for the next delimiter.
+             */
+            /* This happens, e.g., in calls from parse_auth_header,
+             * if the user name contains a " character. */
+
+            /* If there is anything beyond end_word, copy it. */
+            if (*end_word != '\0') {
+                size_t end_off = strcspn(end_word + 1, delimiters);
+                memmove(p, end_word, end_off + 1);
+                p += end_off; /* p must correspond to end_word - 1 */
+                end_word += end_off + 1;
+            } else {
+                *p = '\0';
+                break;
+            }
+        }
+        for (p++; p < end_word; p++) {
+            *p = '\0';
+        }
+    }
+
+    if (*end_word == '\0') {
+        *buf = end_word;
+    } else {
+
+#if defined(GCC_DIAGNOSTIC)
+/* Disable spurious conversion warning for GCC */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsign-conversion"
+#endif /* defined(GCC_DIAGNOSTIC) */
+
+        end_whitespace = end_word + strspn(&end_word[1], whitespace) + 1;
+
+#if defined(GCC_DIAGNOSTIC)
+#pragma GCC diagnostic pop
+#endif /* defined(GCC_DIAGNOSTIC) */
+
+        for (p = end_word; p < end_whitespace; p++) {
+            *p = '\0';
+        }
+
+        *buf = end_whitespace;
+    }
+
+    return begin_word;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // websrv_parseHeader
 //
 
 bool
-websrv_parseHeader(std::deque<std::string>& valarray, std::string& header)
+websrv_parseHeader(std::map<std::string, std::string>& hdrarray,
+                   std::string& header)
 {
-    //     char *name, *value, *s;
+    char *name, *value, *s;
 
-    //     // Make modifiable copy of the auth header
-    //     char *pbuf = new char[header.length() + 1];
-    //     if (NULL == pbuf) return false;
-    //     (void)vscp_strlcpy(pbuf, (const char *)header.c_str() + 7,
-    //     sizeof(pbuf)); s = pbuf;
+    // Make modifiable copy of the auth header
+    char* pbuf = new char[header.length() + 1];
+    if (NULL == pbuf)
+        return false;
+    (void)vscp_strlcpy(pbuf, (const char*)header.c_str() + 7, sizeof(pbuf));
+    s = pbuf;
 
-    //     // Parse authorization header
-    //     for (;;) {
+    // Parse authorization header
+    for (;;) {
 
-    //         // Gobble initial spaces
-    //         while (isspace(*(unsigned char *)s)) {
-    //             s++;
-    //         }
+        // Gobble initial spaces
+        while (isspace(*(unsigned char*)s)) {
+            s++;
+        }
 
-    //         name = skip_quoted(&s, "=", " ", 0);
+        name = skip_quoted(&s, "=", " ", 0);
 
-    //         // Value is either quote-delimited, or ends at first comma or
-    //         space. if (s[0] == '\"') {
-    //             s++;
-    //             value = skip_quoted(&s, "\"", " ", '\\');
-    //             if (s[0] == ',') {
-    //                 s++;
-    //             }
-    //         } else {
-    //             value = skip_quoted(&s, ", ", " ", 0); // IE uses commas, FF
-    //                                                        // uses spaces
-    //         }
+        // Value is either quote-delimited, or ends at first comma or
+        if (s[0] == '\"') {
+            s++;
+            value = skip_quoted(&s, "\"", " ", '\\');
+            if (s[0] == ',') {
+                s++;
+            }
+        } else {
+            value = skip_quoted(&s, ", ", " ", 0); // IE uses commas, FF
+                                                   // uses spaces
+        }
 
-    //         if (*name == '\0') {
-    //             break;
-    //         }
+        if (*name == '\0') {
+            break;
+        }
 
-    //         valarray.push_back(name);
-    //         valarray.push_back(value);
-    //     }
+        // Add entry to map
+        hdrarray[std::string(name)] = std::string(value);
+    }
 
-    //     delete[] pbuf;
+    delete[] pbuf;
 
     return true;
 }
@@ -258,20 +398,21 @@ websrv_parseHeader(std::deque<std::string>& valarray, std::string& header)
 //
 
 bool
-websrv_getHeaderElement(std::deque<std::string>& valarray,
+websrv_getHeaderElement(std::map<std::string, std::string>& hdrarray,
                         const std::string& name,
                         std::string& value)
 {
     // Must be value/name pairs
-    if (valarray.size() % 2)
+    if (!hdrarray.size())
         return false;
 
-    for (size_t i = 0; i < valarray.size(); i += 2) {
-        if (name == valarray[i]) {
-            value = valarray[i + 1];
-            return true;
-        }
+    // Check if key is available
+    if (hdrarray.end() == hdrarray.find(name)) {
+        return false; // no
     }
+
+    // Get key value
+    value = hdrarray[name];
 
     return true;
 }
@@ -302,13 +443,13 @@ websrv_get_session(struct mg_connection* conn)
     if (NULL == pheader)
         return NULL;
 
-    std::deque<std::string> valarray;
+    std::map<std::string, std::string> hdrarray;
     std::string header = std::string(pheader);
-    websrv_parseHeader(valarray, header);
+    websrv_parseHeader(hdrarray, header);
 
     // Get session
     std::string value;
-    if (!websrv_getHeaderElement(valarray, "vscp-web-sid", value)) {
+    if (!websrv_getHeaderElement(hdrarray, "vscp-web-sid", value)) {
         return NULL;
     }
 
@@ -352,12 +493,12 @@ websrv_add_session(struct mg_connection* conn)
     if (NULL == pheader)
         return NULL;
 
-    std::deque<std::string> valarray;
+    std::map<std::string, std::string> hdrarray;
     std::string header = std::string(pheader);
-    websrv_parseHeader(valarray, header);
+    websrv_parseHeader(hdrarray, header);
 
     // Get username
-    if (!websrv_getHeaderElement(valarray, "username", user)) {
+    if (!websrv_getHeaderElement(hdrarray, "username", user)) {
         return NULL;
     }
 
@@ -481,82 +622,129 @@ websrv_expire_sessions(struct mg_connection* conn)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// websrv_check_if_authorized
+// check_admin_authorization
+//
+// Only the admin user has access to /vscp/....
 //
 
-// static int
-// websrv_check_if_authorized(const struct mg_connection *conn)
-// {
+static int
+check_admin_authorization(struct mg_connection* conn, void* cbdata)
+{
+    const char* auth_header;
+    char buf[8192];
+    CUserItem* pUserItem = NULL;
+    bool bValidHost;
+    struct mg_context* ctx;
+    const struct mg_request_info* reqinfo;
+    char decoded[2048];
+    size_t len;
 
-//     //CUserItem *pUserItem;
-//     //bool bValidHost;
-//     struct mg_context *ctx;
-//     const struct mg_request_info *reqinfo;
+    memset(buf, 0, sizeof(buf));
+    memset(decoded, 0, sizeof(decoded));
 
-//     // Check pointers
-//     if (!conn || !(ctx = mg_get_context(conn)) ||
-//         !(reqinfo = mg_get_request_info(conn))) {
-//         return 0;
-//     }
+    // Check pointers
+    if (!conn || !(ctx = mg_get_context(conn)) ||
+        !(reqinfo = mg_get_request_info(conn))) {
+        syslog(LOG_ERR,"[websrv] check_admin_authorization: Pointers are invalid.");
+        return WEB_ERROR;
+    }
 
-// char user[50], cnonce[50], response[40], uri[200], qop[20], nc[20],
-//  nonce[50];
+    // Get admin user
+    if ( NULL == ( pUserItem = gpobj->m_userList.getUser(gpobj->m_admin_user.c_str()) ) ) {
+        syslog(LOG_ERR,"[websrv] check_admin_authorization: Admin user [%s] i not available.", gpobj->m_admin_user.c_str());
+        mg_send_basic_access_authentication_request(conn, NULL);
+        return 401;
+    }
 
-// Parse "Authorization:" header, fail fast on parse error
-/*if ( NULL == ( hdr = mg_get_header( hm, "Authorization" ) ) ||
-    0 == mg_http_parse_header(hdr, "username", user, sizeof( user ) ) ||
-    0 == mg_http_parse_header(hdr, "cnonce", cnonce, sizeof( cnonce ) ) ||
-    0 == mg_http_parse_header(hdr, "response", response, sizeof( response )
-) || 0 == mg_http_parse_header(hdr, "uri", uri, sizeof( uri ) ) || 0 ==
-mg_http_parse_header(hdr, "qop", qop, sizeof( qop ) ) || 0 ==
-mg_http_parse_header(hdr, "nc", nc, sizeof( nc ) ) || 0 ==
-mg_http_parse_header(hdr, "nonce", nonce, sizeof( nonce ) ) || 0 ==
-vscp_check_nonce( nonce ) ) { return WEB_ERROR;
+    if ((NULL == (auth_header = mg_get_header(conn, "Authorization"))) ||
+        (vscp_strncasecmp(auth_header, "Basic ", 6) != 0)) {
+        syslog(LOG_ERR,"[websrv] check_admin_authorization: Authorization header or digest missing for admin log in.");    
+        mg_send_basic_access_authentication_request(conn, NULL);
+        return 401;
+    }
+
+    // Make modifiable copy of the auth header (after "Digest")
+    (void)vscp_strlcpy(buf, auth_header + 6, sizeof(buf));
+
+    const struct mg_request_info* pri = mg_get_request_info(conn);
+    if (NULL == pri) {
+        syslog(LOG_ERR,"[websrv] check_admin_authorization: Failed to to get request info.");
+        return WEB_ERROR;
+    }
+
+    if (-1 == vscp_base64_decode((const unsigned char*)((const char*)buf),
+                                 strlen(buf) + 1,
+                                 decoded,
+                                 &len)) {
+        mg_send_basic_access_authentication_request(conn, NULL);
+        return 401;
+    }
+
+    std::string str = std::string(decoded);
+
+    std::deque<std::string> tokens;
+    vscp_split(tokens, str, ":");
+
+    std::string strUser;
+    if (!tokens.empty()) {
+        strUser = tokens.front();
+        tokens.pop_front();
+    }
+
+    std::string strPassword;
+    if (!tokens.empty()) {
+        strPassword = tokens.front();
+        tokens.pop_front();
+    }
+
+    pthread_mutex_lock(&gpobj->m_mutexUserList);
+    pUserItem = gpobj->m_userList.validateUser(strUser, strPassword);
+    pthread_mutex_unlock(&gpobj->m_mutexUserList);
+
+    if (NULL == pUserItem) {
+        // Password is not correct
+        syslog(LOG_ERR,
+               "[Webserver Client] Use on host [%s] NOT "
+               "allowed connect. User [%s]. Wrong user/password",
+               (const char*)reqinfo->remote_addr,
+               (const char*)pUserItem->getUserName().c_str());
+        mg_send_basic_access_authentication_request(conn, NULL);
+        return 401;
+    }
+
+    // Check if remote ip is valid
+    pthread_mutex_lock(&gpobj->m_mutexUserList);
+    bValidHost =
+      (1 == pUserItem->isAllowedToConnect(inet_addr(reqinfo->remote_addr)));
+    pthread_mutex_unlock(&gpobj->m_mutexUserList);
+    if (!bValidHost) {
+        // Host is not allowed to connect
+        syslog(LOG_ERR,
+               "[Webserver Client] Host [%s] "
+               "NOT allowed to connect. User [%s]",
+               (const char*)reqinfo->remote_addr,
+               (const char*)pUserItem->getUserName().c_str());
+        mg_send_basic_access_authentication_request(conn, NULL);
+        return 401;
+    }
+
+    return WEB_OK;
 }
 
-// Check if user is valid
-pUserItem = pObject->m_userList.getUser( std::string( user ) );
-if ( NULL == pUserItem ) return FALSE;
+///////////////////////////////////////////////////////////////////////////////
+// check_rest_authorization
+//
+// Dummy for REST authentication
+//
 
-// Check if remote ip is valid
-pthread_mutex_lock(&pObject->m_mutexUserList);
-bValidHost =
-        pUserItem->isAllowedToConnect( std::string( reqinfo->remote_addr )
-); pthread_mutex_unlock(&pObject->m_mutexUserList); if ( !bValidHost ) {
-    // Host wrong
-    std::string strErr =
-            vscp_str_format( ( "[Webserver Client] Host [%s] NOT allowed
-to connect. User [%s]\n" ), reqinfo->remote_addr, (const char
-*)pUserItem->m_user.c_str() ); syslog( LOG_ERR, strErr,
-DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY ); return WEB_ERROR;
+static int
+check_rest_authorization(struct mg_connection* conn, void* cbdata)
+{
+    return WEB_OK;
 }
 
-char method[33];
-memset( method, 0, sizeof( method ) );
-strncpy( method, reqinfo->request_method, strlen( reqinfo->request_method )
-);
+// -----------------------------------------------------------------------------
 
-// Check digest
-if ( TRUE != websrv_check_password( method,
-                   ( const char * )pUserItem->m_md5Password.c_str(),
-                   uri,
-                   nonce,
-                   nc,
-                   cnonce,
-                   qop,
-                   response ) ) {
-
-        // Username/password wrong
-    std::string strErr =
-            vscp_str_format( ( "[Webserver Client] Host [%s] User [%s]
-NOT allowed to connect.\n" ), std::string( ( const char * )inet_ntoa(
-conn->sa.sin.sin_addr ) ).xx_str(), (const char *)pUserItem->m_user.c_str()
-); syslog( LOG_ERR, strErr, DAEMON_LOGMSG_NORMAL, DAEMON_LOGTYPE_SECURITY );
-    return 0;
-}*/
-
-//     return WEB_OK;
-// }
 
 ///////////////////////////////////////////////////////////////////////////////
 // Log a message
@@ -627,147 +815,6 @@ vscp_mainpage(struct mg_connection* conn, void* cbdata)
 
     mg_printf(conn, WEB_COMMON_END, VSCPD_COPYRIGHT_HTML); // Common end code
     return 1;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// send_basic_authorization_request
-//
-
-void
-send_basic_authorization_request(struct mg_connection* conn)
-{
-    // char date[64];
-    // time_t curtime = time(NULL);
-
-    // // conn->status_code = 401;
-    // mg_set_connection_code(conn, 401);
-    // // conn->must_close = 1;
-    // mg_set_must_close(conn);
-
-    // mg_gmt_time_string(date, sizeof(date), &curtime);
-
-    // mg_printf(conn, "HTTP/1.1 401 Unauthorized\r\n");
-    // mg_send_no_cache_header(conn);
-    // mg_send_additional_header(conn);
-    // mg_printf(conn,
-    //            "Date: %s\r\n"
-    //            "Connection: %s\r\n"
-    //            "Content-Length: 0\r\n"
-    //            "WWW-Authenticate: Basic realm=\"%s\", "
-    //            "\r\n\r\n",
-    //            date,
-    //            mg_suggest_connection_header(conn),
-    //            (const char *)gpobj->m_web_authentication_domain.c_str());
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// check_admin_authorization
-//
-// Only the admin user has access to /vscp/....
-//
-
-static int
-check_admin_authorization(struct mg_connection* conn, void* cbdata)
-{
-    // char *name, *value, *p;
-    const char* auth_header;
-    char buf[8192];
-    // struct mg_authorization_header ah;
-    CUserItem* pUserItem = NULL;
-    bool bValidHost;
-    struct mg_context* ctx;
-    const struct mg_request_info* reqinfo;
-
-    // Check pointers
-    if (!conn || !(ctx = mg_get_context(conn)) ||
-        !(reqinfo = mg_get_request_info(conn))) {
-        return WEB_ERROR;
-    }
-
-    memset(buf, 0, sizeof(buf));
-
-    if ((NULL == (auth_header = mg_get_header(conn, "Authorization"))) ||
-        vscp_strncasecmp(auth_header, "Basic ", 6) != 0) {
-        send_basic_authorization_request(conn);
-        return 401;
-    }
-
-    // Make modifiable copy of the auth header
-    (void)vscp_strlcpy(buf, auth_header + 6, sizeof(buf));
-
-    char decoded[2048];
-    size_t len;
-    memset(decoded, 0, sizeof(decoded));
-    if (-1 == vscp_base64_decode((const unsigned char*)((const char*)buf),
-                                 strlen(buf) + 1,
-                                 decoded,
-                                 &len)) {
-        send_basic_authorization_request(conn);
-        return 401;
-    }
-
-    std::string str = std::string(decoded);
-
-    std::deque<std::string> tokens;
-    vscp_split(tokens, str, ":");
-
-    std::string strUser;
-    if (!tokens.empty()) {
-        strUser = tokens.front();
-        tokens.pop_front();
-    }
-
-    std::string strPassword;
-    if (!tokens.empty()) {
-        strPassword = tokens.front();
-        tokens.pop_front();
-    }
-
-    pthread_mutex_lock(&gpobj->m_mutexUserList);
-    pUserItem = gpobj->m_userList.validateUser(strUser, strPassword);
-    pthread_mutex_unlock(&gpobj->m_mutexUserList);
-
-    if (NULL == pUserItem) {
-        // Password is not correct
-        syslog(LOG_ERR,
-               "[Webserver Client] Use on host [%s] NOT "
-               "allowed connect. User [%s]. Wrong user/password",
-               (const char*)reqinfo->remote_addr,
-               (const char*)pUserItem->getUserName().c_str());
-        send_basic_authorization_request(conn);
-        return 401;
-    }
-
-    // Check if remote ip is valid
-    pthread_mutex_lock(&gpobj->m_mutexUserList);
-    // bValidHost = pUserItem->isAllowedToConnect( reqinfo->remote_addr );
-    bValidHost =
-      (1 == pUserItem->isAllowedToConnect(inet_addr(reqinfo->remote_addr)));
-    pthread_mutex_unlock(&gpobj->m_mutexUserList);
-    if (!bValidHost) {
-        // Host is not allowed to connect
-        syslog(LOG_ERR,
-               "[Webserver Client] Host [%s] "
-               "NOT allowed to connect. User [%s]",
-               (const char*)reqinfo->remote_addr,
-               (const char*)pUserItem->getUserName().c_str());
-        send_basic_authorization_request(conn);
-        return 401;
-    }
-
-    return WEB_OK;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// check_admin_authorization
-//
-// Dummy for REST authentication
-//
-
-static int
-check_rest_authorization(struct mg_connection* conn, void* cbdata)
-{
-    return WEB_OK;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1958,17 +2005,15 @@ vscp_configure_list(struct mg_connection* conn, void* cbdata)
     mg_printf(conn, "<br>");
 
     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Websocket timeout (ms):</b>");
-    mg_printf(
-      conn,
-      "%ld",
-      gpobj->m_websocket_timeout_ms);
+    mg_printf(conn, "%ld", gpobj->m_websocket_timeout_ms);
     if (0 == gpobj->m_websocket_timeout_ms) {
         mg_printf(conn, "Set to default: 30000");
     }
     mg_printf(conn, "<br>");
 
     mg_printf(conn,
-              "&nbsp;&nbsp;&nbsp;&nbsp;<b>Web sockets ping-pong functionality </b> is ");
+              "&nbsp;&nbsp;&nbsp;&nbsp;<b>Web sockets ping-pong functionality "
+              "</b> is ");
     if (gpobj->m_web_bEnable && gpobj->bEnable_websocket_ping_pong) {
         mg_printf(conn, "enabled.<br>");
     } else {
@@ -1976,10 +2021,9 @@ vscp_configure_list(struct mg_connection* conn, void* cbdata)
     }
 
     mg_printf(conn, "&nbsp;&nbsp;&nbsp;&nbsp;<b>Websocket lua pattern:</b>");
-    mg_printf(
-      conn,
-      "%s",
-      (const char*)std::string(gpobj->lua_websocket_pattern).c_str());
+    mg_printf(conn,
+              "%s",
+              (const char*)std::string(gpobj->lua_websocket_pattern).c_str());
     mg_printf(conn, "<br>");
 
     mg_printf(conn, "<hr>");
@@ -3332,17 +3376,17 @@ start_webserver(void)
     if (gpobj->m_websocket_document_root.length()) {
         web_options[pos++] =
           vscp_strdup(VSCPDB_CONFIG_NAME_WEBSOCKET_DOCUMENT_ROOT + 4);
-        web_options[pos++] = vscp_strdup(
-          (const char*)gpobj->m_websocket_document_root.c_str());
+        web_options[pos++] =
+          vscp_strdup((const char*)gpobj->m_websocket_document_root.c_str());
     }
 
-    if (gpobj->m_websocket_timeout_ms != atol(VSCPDB_CONFIG_DEFAULT_WEBSOCKET_TIMEOUT_MS)) {
+    if (gpobj->m_websocket_timeout_ms !=
+        atol(VSCPDB_CONFIG_DEFAULT_WEBSOCKET_TIMEOUT_MS)) {
         std::string str =
           vscp_str_format(("%ld"), (long)gpobj->m_websocket_timeout_ms);
         web_options[pos++] =
           vscp_strdup(VSCPDB_CONFIG_NAME_WEBSOCKET_TIMEOUT_MS + 4);
-        web_options[pos++] = vscp_strdup(
-          (const char*)str.c_str());
+        web_options[pos++] = vscp_strdup((const char*)str.c_str());
     }
 
     if (gpobj->bEnable_websocket_ping_pong) {
@@ -3354,8 +3398,8 @@ start_webserver(void)
     if (gpobj->lua_websocket_pattern.length()) {
         web_options[pos++] =
           vscp_strdup(VSCPDB_CONFIG_NAME_WEB_LUA_WEBSOCKET_PATTERN + 4);
-        web_options[pos++] = vscp_strdup(
-          (const char*)gpobj->lua_websocket_pattern.c_str());
+        web_options[pos++] =
+          vscp_strdup((const char*)gpobj->lua_websocket_pattern.c_str());
     }
 
     // Mark end

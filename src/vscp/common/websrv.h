@@ -288,10 +288,10 @@ const char client_cert_pem[] =
 #define WEBSERVER_MAGIC_HEADER_SIZE (16 * 1024)
 
 bool
-websrv_parseHeader(std::deque<std::string> &valarray, std::string &header);
+websrv_parseHeader(std::map<std::string,std::string> &hdrarray, std::string &header);
 
 bool
-websrv_getHeaderElement(std::deque<std::string> &valarray,
+websrv_getHeaderElement(std::map<std::string,std::string> &hdrarray,
                         const std::string &name,
                         std::string &value);
 

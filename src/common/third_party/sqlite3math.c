@@ -625,7 +625,7 @@ static void signFunc(sqlite3_context *context, int argc, sqlite3_value **argv){
 */
 static void ceilFunc(sqlite3_context *context, int argc, sqlite3_value **argv){
   double rVal=0.0;
-  i64 iVal=0;
+  //i64 iVal=0;
   assert( argc==1 );
   switch( sqlite3_value_type(argv[0]) ){
     case SQLITE_INTEGER: {
@@ -650,7 +650,7 @@ static void ceilFunc(sqlite3_context *context, int argc, sqlite3_value **argv){
 */
 static void floorFunc(sqlite3_context *context, int argc, sqlite3_value **argv){
   double rVal=0.0;
-  i64 iVal=0;
+  //i64 iVal=0;
   assert( argc==1 );
   switch( sqlite3_value_type(argv[0]) ){
     case SQLITE_INTEGER: {

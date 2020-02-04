@@ -365,6 +365,7 @@ CControlObject::init(std::string& strcfgfile, std::string& rootFolder)
 
     m_userList.addSuperUser(m_admin_user,
                             m_admin_password,
+                            m_web_authentication_domain,
                             m_admin_allowfrom); // Remotes allows to connect
 
     //==========================================================================

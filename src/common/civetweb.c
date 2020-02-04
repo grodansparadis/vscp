@@ -8618,7 +8618,6 @@ send_authorization_request(struct mg_connection *conn, const char *realm)
 	          nonce);
 }
 
-
 /* Interface function. Parameters are provided by the user, so do
  * at least some basic checks.
  */
@@ -8633,6 +8632,49 @@ mg_send_digest_access_authentication_request(struct mg_connection *conn,
 	return -1;
 }
 
+// VSCP -----------------------------------------------------------------------
+
+/* VSCP */
+static void
+send_basic_authorization_request( struct mg_connection *conn, const char *realm )
+{
+    char date[64];
+    time_t curtime = time(NULL);
+
+	if (!realm) {
+		realm = conn->dom_ctx->config[AUTHENTICATION_DOMAIN];
+	}
+
+    conn->status_code = 401;
+    conn->must_close = 1;
+
+    gmt_time_string( date, sizeof (date), &curtime );
+
+    mg_printf(conn, "HTTP/1.1 401 Unauthorized\r\n");
+    send_no_cache_header( conn );
+    send_additional_header( conn );
+    mg_printf( conn,
+                    "Date: %s\r\n"
+                    "Connection: %s\r\n"
+                    "Content-Length: 0\r\n"
+                    "WWW-Authenticate: Basic realm=\"%s\", "
+                    "\r\n\r\n",
+                    date,
+                    suggest_connection_header( conn ),
+                    realm );
+}
+
+int
+mg_send_basic_access_authentication_request(struct mg_connection *conn,
+                                             const char *realm)
+{
+	if (conn && conn->dom_ctx) {
+		send_basic_authorization_request(conn, realm);
+		return 0;
+	}
+	return -1;
+}
+// VSCP -----------------------------------------------------------------------
 
 #if !defined(NO_FILES)
 static int

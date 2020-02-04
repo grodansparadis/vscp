@@ -38,10 +38,11 @@
 #include <string.h>
 #include <syslog.h>
 
-#include "userlist.h"
+#include <vscp_aes.h>
 #include <controlobject.h>
 #include <vscpdb.h>
 #include <vscphelper.h>
+#include "userlist.h"
 
 // Forward declarations
 void
@@ -50,6 +51,8 @@ vscp_md5(char* digest, const unsigned char* buf, size_t len);
 ///////////////////////////////////////////////////
 //                 GLOBALS
 ///////////////////////////////////////////////////
+
+extern CControlObject* gpobj;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Constructor
@@ -679,9 +682,6 @@ CUserList::CUserList(void)
 {
     // First local user except the super user has id 1
     m_cntLocaluser = 1;
-
-    // xxLogDebug( "Read Configuration: VSCPEnable=%s",
-    //              ( m_bVSCPEnable ? "true" : "false" )  );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -730,9 +730,9 @@ CUserList::addSuperUser(const std::string& user,
                         const std::string& allowedRemotes,
                         uint32_t bFlags)
 {
-    char buf[512];
+    //char buf[512];
 
-    // Cant add user with name that is already defined.
+    // Cant add user with username that is already defined.
     if (NULL != m_userhashmap[user]) {
         return false;
     }
@@ -745,6 +745,47 @@ CUserList::addSuperUser(const std::string& user,
                "User is not defined.");
         return false;
     }
+
+    // ----
+
+    char buf[2048], secret[2048];
+    uint8_t iv[16];
+    std::string strIV;
+    std::string strCrypto;
+
+    std::deque<std::string> tokens;
+    vscp_split(tokens, password, ";");
+    strIV = tokens.front();
+    tokens.pop_front();
+    strCrypto = tokens.front();
+
+    strIV = "5a475c082c80dcdf7f2dfbd976253b24";
+    strCrypto ="69b1180d2f4809d39be34e19c750107f";
+    if (0 == vscp_hexStr2ByteArray(iv, 16, (const char*)strIV.c_str())) {
+        syslog(LOG_ERR,
+               "[addSuperUser] Authentication: No room "
+               "for iv block. ");
+        return false; // Not enough room in buffer
+    }
+
+    size_t len;
+    if (0 == (len = vscp_hexStr2ByteArray((uint8_t *)secret,
+                                          strCrypto.length(),
+                                          (const char*)strCrypto.c_str()))) {
+        syslog(LOG_ERR,
+               "[addSuperUser] Authentication: No room "
+               "for crypto block. ");
+        return false; // Not enough room in buffer
+    }
+
+    memset(buf, 0, sizeof(buf));
+    AES_CBC_decrypt_buffer(AES128, (uint8_t *)buf, (uint8_t *)secret, len, gpobj->m_systemKey, iv);
+
+    // std::string str = std::string((const char*)buf);
+    // std::deque<std::string> tokens;
+    // vscp_split(tokens, str, ":");
+
+    // ----
 
     pItem->setUserID(0); // Super user is always at id = 0
 
