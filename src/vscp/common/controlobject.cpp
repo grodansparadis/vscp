@@ -1533,6 +1533,10 @@ startFullConfigParser(void* data, const char* name, const char** attr)
                                           32,
                                           attribute.c_str());
                 }
+            } else if (0 == vscp_strcasecmp(attr[i], "authentication_domain")) {
+                if (attribute.length()) {
+                    pObj->m_web_authentication_domain = attribute;
+                }
             }
         }
     } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
