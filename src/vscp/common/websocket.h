@@ -67,6 +67,7 @@ enum
     WEBSOCK_ERROR_NOT_ALLOWED_TO_DO_THAT = 7, // Not allowed to do that.
     WEBSOCK_ERROR_PARSE_FORMAT            = 8, // Parse error, invalid format.
     WEBSOCK_ERROR_UNKNOWN_TYPE = 9, // Unkown object type
+    WEBSOCK_ERROR_GENERAL = 10, // General errors and exceptions
 };
 
 #define WEBSOCK_STR_ERROR_NO_ERROR        "Everything is OK."
@@ -81,6 +82,7 @@ enum
     "Not allowed to do that (check privileges)"
 #define WEBSOCK_STR_ERROR_PARSE_FORMAT "Parse error, invalid format."
 #define WEBSOCK_STR_ERROR_UNKNOWN_TYPE "Unknown type, only know 'COMMAND' and 'EVENT'."
+#define WEBSOCK_STR_ERROR_GENERAL "Exception or other general error."
 
 #define WEBSOCKET_MAINCODE_POSITIVE "+"
 #define WEBSOCKET_MAINCODE_NEGATIVE "-"

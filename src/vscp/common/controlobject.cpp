@@ -337,11 +337,16 @@ CControlObject::init(std::string& strcfgfile, std::string& rootFolder)
     }
 
     // Read XML configuration
-    if (!readConfiguration(strcfgfile)) {
-        syslog(
-          LOG_ERR,
-          "Unable to open/parse configuration file. Can't initialize! Path =%s",
-          strcfgfile.c_str());
+    try {
+        if (!readConfiguration(strcfgfile)) {
+            syslog(LOG_ERR,
+                   "Unable to open/parse configuration file. Can't initialize! "
+                   "Path =%s",
+                   strcfgfile.c_str());
+            return FALSE;
+        }
+    } catch (...) {
+        syslog(LOG_ERR, "Exception when reading configuration file");
         return FALSE;
     }
 
@@ -430,19 +435,39 @@ CControlObject::init(std::string& strcfgfile, std::string& rootFolder)
     syslog(LOG_INFO, "%s", str.c_str());
 
     // Start daemon internal client worker thread
-    startClientMsgWorkerThread();
+    try {
+        startClientMsgWorkerThread();
+    } catch (...) {
+        syslog(LOG_ERR, "Exception when starting message worker thread");
+        return FALSE;
+    }
 
     // Start webserver and websockets
     // IMPORTANT!!!!!!!!
     // Must be started before the tcp/ip server as
     // ssl initializarion is done here
-    start_webserver();
+    try {
+        start_webserver();
+    } catch (...) {
+        syslog(LOG_ERR, "Exception when starting web server");
+        return FALSE;
+    }
 
     // Start TCP/IP interface
-    startTcpipSrvThread();
+    try {
+        startTcpipSrvThread();
+    } catch (...) {
+        syslog(LOG_ERR, "Exception when starting tcp/ip server");
+        return FALSE;
+    }
 
     // Load drivers
-    startDeviceWorkerThreads();
+    try {
+        startDeviceWorkerThreads();
+    } catch (...) {
+        syslog(LOG_ERR, "Exception when loading drivers");
+        return FALSE;
+    }
 
     return true;
 }
@@ -578,7 +603,11 @@ CControlObject::cleanup(void)
                "ControlObject: cleanup - Stopping device worker thread...");
     }
 
-    stopDeviceWorkerThreads();
+    try {
+        stopDeviceWorkerThreads();
+    } catch (...) {
+        syslog(LOG_ERR, "REST: Exception occurred when stoping device worker threads");
+    }
 
     if (__VSCP_DEBUG_EXTRA) {
         syslog(
@@ -593,25 +622,38 @@ CControlObject::cleanup(void)
                "ControlObject: cleanup - Stopping client worker thread...");
     }
 
-    stopClientMsgWorkerThread();
+    try {
+        stopClientMsgWorkerThread();
+    } catch (...) {
+        syslog(LOG_ERR, "REST: Exception occurred when stoping client worker thread");
+    }
 
     if (__VSCP_DEBUG_EXTRA) {
         syslog(LOG_DEBUG,
                "ControlObject: cleanup - Stopping Web Server worker thread...");
     }
 
-    stop_webserver();
+    try {
+        stop_webserver();
+    } catch (...) {
+        syslog(LOG_ERR, "REST: Exception occurred when stoping web server");
+    }
 
     if (__VSCP_DEBUG_EXTRA) {
         syslog(LOG_DEBUG,
                "ControlObject: cleanup - Stopping TCP/IP worker thread...");
     }
 
-    stopTcpipSrvThread();
+    try {
+        stopTcpipSrvThread();
+    } catch (...) {
+        syslog(LOG_ERR, "REST: Exception occurred when stoping tcp/ip server");
+    }
 
     if (__VSCP_DEBUG_EXTRA) {
         syslog(LOG_DEBUG, "Controlobject: ControlObject: Cleanup done.");
     }
+
     return true;
 }
 
@@ -1467,8 +1509,7 @@ startFullConfigParser(void* data, const char* name, const char** attr)
                 pObj->m_guid.getFromString(attribute);
             } else if (0 == vscp_strcasecmp(attr[i], "servername")) {
                 pObj->m_strServerName = attribute;
-            }
-            else if (0 == vscp_strcasecmp(attr[i], "webadminif")) {
+            } else if (0 == vscp_strcasecmp(attr[i], "webadminif")) {
                 if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
                     pObj->m_enableWebAdminIf = true;
                 } else {

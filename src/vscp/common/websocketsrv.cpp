@@ -787,8 +787,15 @@ ws1_dataHandler(struct mg_connection* conn,
 
             // if last process is
             if (1 & bits) {
-                if (!ws1_message(conn, pSession, pSession->m_strConcatenated)) {
-                    return WEB_ERROR;
+                try {
+                    if (!ws1_message(conn,
+                                     pSession,
+                                     pSession->m_strConcatenated)) {
+                        return WEB_ERROR;
+                    }
+                } catch (...) {
+                    syslog(LOG_ERR,
+                           "ws1: Exception occurred ws1_message concat");
                 }
             }
             break;
@@ -801,9 +808,13 @@ ws1_dataHandler(struct mg_connection* conn,
                        strWsPkt.c_str());
             }
             if (1 & bits) {
-                strWsPkt = std::string(data, len);
-                if (!ws1_message(conn, pSession, strWsPkt)) {
-                    return WEB_ERROR;
+                try {
+                    strWsPkt = std::string(data, len);
+                    if (!ws1_message(conn, pSession, strWsPkt)) {
+                        return WEB_ERROR;
+                    }
+                } catch (...) {
+                    syslog(LOG_ERR, "ws1: Exception occurred ws1_message");
                 }
             } else {
                 // Store first part
@@ -869,7 +880,18 @@ ws1_message(struct mg_connection* conn,
         case 'C':
             // Point beyond initial info "C;"
             strWsPkt = vscp_str_right(strWsPkt, strWsPkt.length() - 2);
-            ws1_command(conn, pSession, strWsPkt);
+            try {
+                ws1_command(conn, pSession, strWsPkt);
+            } catch (...) {
+                syslog(LOG_ERR, "ws1: Exception occurred ws1_command");
+                str = vscp_str_format(("-;C;%d;%s"),
+                                      (int)WEBSOCK_ERROR_GENERAL,
+                                      WEBSOCK_STR_ERROR_GENERAL);
+                mg_websocket_write(conn,
+                                   MG_WEBSOCKET_OPCODE_TEXT,
+                                   (const char*)str.c_str(),
+                                   str.length());
+            }
             break;
 
         // Event | 'E' ; head(byte) , vscp_class(unsigned short) ,
@@ -924,150 +946,174 @@ ws1_message(struct mg_connection* conn,
             strWsPkt = vscp_str_right(strWsPkt, strWsPkt.length() - 2);
             vscpEvent vscp_event;
 
-            if (vscp_convertStringToEvent(&vscp_event, strWsPkt)) {
+            try {
+                if (vscp_convertStringToEvent(&vscp_event, strWsPkt)) {
 
-                // If GUID is all null give it GUID of interface
-                if (vscp_isGUIDEmpty(vscp_event.GUID)) {
-                    pSession->m_pClientItem->m_guid.writeGUID(vscp_event.GUID);
-                }
-
-                // Is this user allowed to send events
-                if (!(pSession->m_pClientItem->m_pUserItem->getUserRights() &
-                      VSCP_USER_RIGHT_ALLOW_SEND_EVENT)) {
-
-                    str = vscp_str_format(
-                      ("-;%d;%s"),
-                      (int)WEBSOCK_ERROR_NOT_ALLOWED_TO_SEND_EVENT,
-                      WEBSOCK_ERROR_NOT_ALLOWED_TO_SEND_EVENT);
-
-                    mg_websocket_write(conn,
-                                       MG_WEBSOCKET_OPCODE_TEXT,
-                                       (const char*)str.c_str(),
-                                       str.length());
-
-                    syslog(LOG_ERR,
-                           "[Websocket ws1] User [%s] is not "
-                           "allowed to send events.\n",
-                           pSession->m_pClientItem->m_pUserItem->getUserName()
-                             .c_str());
-
-                    return true; // We still leave channel open
-                }
-
-                // Is user allowed to send CLASS1.PROTOCOL events
-                if ((VSCP_CLASS1_PROTOCOL == vscp_event.vscp_class) &&
-                    (VSCP_CLASS2_LEVEL1_PROTOCOL == vscp_event.vscp_class) &&
-                    !(pSession->m_pClientItem->m_pUserItem->getUserRights() &
-                      VSCP_USER_RIGHT_ALLOW_SEND_L1CTRL_EVENT)) {
-
-                    str = vscp_str_format(
-                      ("-;%d;%s"),
-                      (int)WEBSOCK_ERROR_NOT_ALLOWED_TO_SEND_EVENT,
-                      WEBSOCK_ERROR_NOT_ALLOWED_TO_SEND_EVENT);
-                    mg_websocket_write(conn,
-                                       MG_WEBSOCKET_OPCODE_TEXT,
-                                       (const char*)str.c_str(),
-                                       str.length());
-
-                    syslog(LOG_ERR,
-                           "[Websocket ws1] User [%s] is not "
-                           "authorised to send CLASS1.PROTOCOL events.\n",
-                           pSession->m_pClientItem->m_pUserItem->getUserName()
-                             .c_str());
-
-                    return true;
-                }
-
-                // Is user allowed to send CLASS2.PROTOCOL events
-                if ((VSCP_CLASS2_PROTOCOL == vscp_event.vscp_class) &&
-                    !(pSession->m_pClientItem->m_pUserItem->getUserRights() &
-                      VSCP_USER_RIGHT_ALLOW_SEND_L2CTRL_EVENT)) {
-
-                    str = vscp_str_format(
-                      ("-;%d;%s"),
-                      (int)WEBSOCK_ERROR_NOT_ALLOWED_TO_SEND_EVENT,
-                      WEBSOCK_ERROR_NOT_ALLOWED_TO_SEND_EVENT);
-                    mg_websocket_write(conn,
-                                       MG_WEBSOCKET_OPCODE_TEXT,
-                                       (const char*)str.c_str(),
-                                       str.length());
-
-                    syslog(LOG_ERR,
-                           "[Websocket ws1] User [%s] is not "
-                           "authorised to send CLASS2.PROTOCOL events.\n",
-                           pSession->m_pClientItem->m_pUserItem->getUserName()
-                             .c_str());
-
-                    return true;
-                }
-
-                // Is user allowed to send CLASS2.HLO events
-                if ((VSCP_CLASS2_HLO == vscp_event.vscp_class) &&
-                    !(pSession->m_pClientItem->m_pUserItem->getUserRights() &
-                      VSCP_USER_RIGHT_ALLOW_SEND_HLO_EVENT)) {
-
-                    str = vscp_str_format(
-                      ("-;%d;%s"),
-                      (int)WEBSOCK_ERROR_NOT_ALLOWED_TO_SEND_EVENT,
-                      WEBSOCK_ERROR_NOT_ALLOWED_TO_SEND_EVENT);
-                    mg_websocket_write(conn,
-                                       MG_WEBSOCKET_OPCODE_TEXT,
-                                       (const char*)str.c_str(),
-                                       str.length());
-
-                    syslog(LOG_ERR,
-                           "[Websocket ws1] User [%s] is not "
-                           "authorised to send CLASS2.HLO events.\n",
-                           pSession->m_pClientItem->m_pUserItem->getUserName()
-                             .c_str());
-
-                    return true;
-                }
-
-                // Check if this user is allowed to send this event
-                if (!pSession->m_pClientItem->m_pUserItem
-                       ->isUserAllowedToSendEvent(vscp_event.vscp_class,
-                                                  vscp_event.vscp_type)) {
-
-                    str = vscp_str_format(
-                      ("-;%d;%s"),
-                      (int)WEBSOCK_ERROR_NOT_ALLOWED_TO_SEND_EVENT,
-                      WEBSOCK_ERROR_NOT_ALLOWED_TO_SEND_EVENT);
-
-                    mg_websocket_write(conn,
-                                       MG_WEBSOCKET_OPCODE_TEXT,
-                                       (const char*)str.c_str(),
-                                       str.length());
-
-                    syslog(LOG_ERR,
-                           "[websocket ws1] User [%s] is not allowed to "
-                           "send event class=%d type=%d.",
-                           pSession->m_pClientItem->m_pUserItem->getUserName()
-                             .c_str(),
-                           vscp_event.vscp_class,
-                           vscp_event.vscp_type);
-
-                    return true; // Keep connection open
-                }
-
-                vscp_event.obid = pSession->m_pClientItem->m_clientID;
-                if (websock_sendevent(conn, pSession, &vscp_event)) {
-                    mg_websocket_write(conn,
-                                       MG_WEBSOCKET_OPCODE_TEXT,
-                                       "+;EVENT",
-                                       7);
-                    if (__VSCP_DEBUG_WEBSOCKET_TX) {
-                        syslog(LOG_ERR, "[websocket ws1] Sent ws1 event %s", strWsPkt.c_str());
+                    // If GUID is all null give it GUID of interface
+                    if (vscp_isGUIDEmpty(vscp_event.GUID)) {
+                        pSession->m_pClientItem->m_guid.writeGUID(
+                          vscp_event.GUID);
                     }
-                } else {
-                    str = vscp_str_format(("-;%d;%s"),
-                                          (int)WEBSOCK_ERROR_TX_BUFFER_FULL,
-                                          WEBSOCK_STR_ERROR_TX_BUFFER_FULL);
-                    mg_websocket_write(conn,
-                                       MG_WEBSOCKET_OPCODE_TEXT,
-                                       (const char*)str.c_str(),
-                                       str.length());
+
+                    // Is this user allowed to send events
+                    if (!(pSession->m_pClientItem->m_pUserItem
+                            ->getUserRights() &
+                          VSCP_USER_RIGHT_ALLOW_SEND_EVENT)) {
+
+                        str = vscp_str_format(
+                          ("-;%d;%s"),
+                          (int)WEBSOCK_ERROR_NOT_ALLOWED_TO_SEND_EVENT,
+                          WEBSOCK_ERROR_NOT_ALLOWED_TO_SEND_EVENT);
+
+                        mg_websocket_write(conn,
+                                           MG_WEBSOCKET_OPCODE_TEXT,
+                                           (const char*)str.c_str(),
+                                           str.length());
+
+                        syslog(
+                          LOG_ERR,
+                          "[Websocket ws1] User [%s] is not "
+                          "allowed to send events.\n",
+                          pSession->m_pClientItem->m_pUserItem->getUserName()
+                            .c_str());
+
+                        return true; // We still leave channel open
+                    }
+
+                    // Is user allowed to send CLASS1.PROTOCOL events
+                    if ((VSCP_CLASS1_PROTOCOL == vscp_event.vscp_class) &&
+                        (VSCP_CLASS2_LEVEL1_PROTOCOL ==
+                         vscp_event.vscp_class) &&
+                        !(pSession->m_pClientItem->m_pUserItem
+                            ->getUserRights() &
+                          VSCP_USER_RIGHT_ALLOW_SEND_L1CTRL_EVENT)) {
+
+                        str = vscp_str_format(
+                          ("-;%d;%s"),
+                          (int)WEBSOCK_ERROR_NOT_ALLOWED_TO_SEND_EVENT,
+                          WEBSOCK_ERROR_NOT_ALLOWED_TO_SEND_EVENT);
+                        mg_websocket_write(conn,
+                                           MG_WEBSOCKET_OPCODE_TEXT,
+                                           (const char*)str.c_str(),
+                                           str.length());
+
+                        syslog(
+                          LOG_ERR,
+                          "[Websocket ws1] User [%s] is not "
+                          "authorised to send CLASS1.PROTOCOL events.\n",
+                          pSession->m_pClientItem->m_pUserItem->getUserName()
+                            .c_str());
+
+                        return true;
+                    }
+
+                    // Is user allowed to send CLASS2.PROTOCOL events
+                    if ((VSCP_CLASS2_PROTOCOL == vscp_event.vscp_class) &&
+                        !(pSession->m_pClientItem->m_pUserItem
+                            ->getUserRights() &
+                          VSCP_USER_RIGHT_ALLOW_SEND_L2CTRL_EVENT)) {
+
+                        str = vscp_str_format(
+                          ("-;%d;%s"),
+                          (int)WEBSOCK_ERROR_NOT_ALLOWED_TO_SEND_EVENT,
+                          WEBSOCK_ERROR_NOT_ALLOWED_TO_SEND_EVENT);
+                        mg_websocket_write(conn,
+                                           MG_WEBSOCKET_OPCODE_TEXT,
+                                           (const char*)str.c_str(),
+                                           str.length());
+
+                        syslog(
+                          LOG_ERR,
+                          "[Websocket ws1] User [%s] is not "
+                          "authorised to send CLASS2.PROTOCOL events.\n",
+                          pSession->m_pClientItem->m_pUserItem->getUserName()
+                            .c_str());
+
+                        return true;
+                    }
+
+                    // Is user allowed to send CLASS2.HLO events
+                    if ((VSCP_CLASS2_HLO == vscp_event.vscp_class) &&
+                        !(pSession->m_pClientItem->m_pUserItem
+                            ->getUserRights() &
+                          VSCP_USER_RIGHT_ALLOW_SEND_HLO_EVENT)) {
+
+                        str = vscp_str_format(
+                          ("-;%d;%s"),
+                          (int)WEBSOCK_ERROR_NOT_ALLOWED_TO_SEND_EVENT,
+                          WEBSOCK_ERROR_NOT_ALLOWED_TO_SEND_EVENT);
+                        mg_websocket_write(conn,
+                                           MG_WEBSOCKET_OPCODE_TEXT,
+                                           (const char*)str.c_str(),
+                                           str.length());
+
+                        syslog(
+                          LOG_ERR,
+                          "[Websocket ws1] User [%s] is not "
+                          "authorised to send CLASS2.HLO events.\n",
+                          pSession->m_pClientItem->m_pUserItem->getUserName()
+                            .c_str());
+
+                        return true;
+                    }
+
+                    // Check if this user is allowed to send this event
+                    if (!pSession->m_pClientItem->m_pUserItem
+                           ->isUserAllowedToSendEvent(vscp_event.vscp_class,
+                                                      vscp_event.vscp_type)) {
+
+                        str = vscp_str_format(
+                          ("-;%d;%s"),
+                          (int)WEBSOCK_ERROR_NOT_ALLOWED_TO_SEND_EVENT,
+                          WEBSOCK_ERROR_NOT_ALLOWED_TO_SEND_EVENT);
+
+                        mg_websocket_write(conn,
+                                           MG_WEBSOCKET_OPCODE_TEXT,
+                                           (const char*)str.c_str(),
+                                           str.length());
+
+                        syslog(
+                          LOG_ERR,
+                          "[websocket ws1] User [%s] is not allowed to "
+                          "send event class=%d type=%d.",
+                          pSession->m_pClientItem->m_pUserItem->getUserName()
+                            .c_str(),
+                          vscp_event.vscp_class,
+                          vscp_event.vscp_type);
+
+                        return true; // Keep connection open
+                    }
+
+                    vscp_event.obid = pSession->m_pClientItem->m_clientID;
+                    if (websock_sendevent(conn, pSession, &vscp_event)) {
+                        mg_websocket_write(conn,
+                                           MG_WEBSOCKET_OPCODE_TEXT,
+                                           "+;EVENT",
+                                           7);
+                        if (__VSCP_DEBUG_WEBSOCKET_TX) {
+                            syslog(LOG_ERR,
+                                   "[websocket ws1] Sent ws1 event %s",
+                                   strWsPkt.c_str());
+                        }
+                    } else {
+                        str = vscp_str_format(("-;%d;%s"),
+                                              (int)WEBSOCK_ERROR_TX_BUFFER_FULL,
+                                              WEBSOCK_STR_ERROR_TX_BUFFER_FULL);
+                        mg_websocket_write(conn,
+                                           MG_WEBSOCKET_OPCODE_TEXT,
+                                           (const char*)str.c_str(),
+                                           str.length());
+                    }
                 }
+            } catch (...) {
+                syslog(LOG_ERR, "ws1: Exception occurred send event");
+                str = vscp_str_format(("-;E;%d;%s"),
+                                      (int)WEBSOCK_ERROR_GENERAL,
+                                      WEBSOCK_STR_ERROR_GENERAL);
+                mg_websocket_write(conn,
+                                   MG_WEBSOCKET_OPCODE_TEXT,
+                                   (const char*)str.c_str(),
+                                   str.length());
             }
 
         } break;
@@ -1158,34 +1204,35 @@ ws1_command(struct mg_connection* conn,
     else if (vscp_startsWith(strTok, "AUTH")) {
 
         try {
-        std::string str;
-        std::string strUser;
-        std::string strIV = tokens.front();
-        tokens.pop_front();
-        std::string strCrypto = tokens.front();
-        tokens.pop_front();
-        if (websock_authentication(conn, pSession, strIV, strCrypto)) {
-            std::string userSettings;
-            pSession->m_pClientItem->m_pUserItem->getAsString(userSettings);
-            str = vscp_str_format(("+;AUTH1;%s"),
-                                  (const char*)userSettings.c_str());
-            mg_websocket_write(conn,
-                               MG_WEBSOCKET_OPCODE_TEXT,
-                               (const char*)str.c_str(),
-                               str.length());
-        } else {
+            std::string str;
+            std::string strUser;
+            std::string strIV = tokens.front();
+            tokens.pop_front();
+            std::string strCrypto = tokens.front();
+            tokens.pop_front();
+            if (websock_authentication(conn, pSession, strIV, strCrypto)) {
+                std::string userSettings;
+                pSession->m_pClientItem->m_pUserItem->getAsString(userSettings);
+                str = vscp_str_format(("+;AUTH1;%s"),
+                                      (const char*)userSettings.c_str());
+                mg_websocket_write(conn,
+                                   MG_WEBSOCKET_OPCODE_TEXT,
+                                   (const char*)str.c_str(),
+                                   str.length());
+            } else {
 
-            str = vscp_str_format(("-;AUTH;%d;%s"),
-                                  (int)WEBSOCK_ERROR_NOT_AUTHORISED,
-                                  WEBSOCK_STR_ERROR_NOT_AUTHORISED);
-            mg_websocket_write(conn,
-                               MG_WEBSOCKET_OPCODE_TEXT,
-                               (const char*)str.c_str(),
-                               str.length());
-            pSession->m_pClientItem->bAuthenticated = false; // Authenticated
-        }
-        }
-        catch (...) {
+                str = vscp_str_format(("-;AUTH;%d;%s"),
+                                      (int)WEBSOCK_ERROR_NOT_AUTHORISED,
+                                      WEBSOCK_STR_ERROR_NOT_AUTHORISED);
+                mg_websocket_write(conn,
+                                   MG_WEBSOCKET_OPCODE_TEXT,
+                                   (const char*)str.c_str(),
+                                   str.length());
+                pSession->m_pClientItem->bAuthenticated =
+                  false; // Authenticated
+            }
+        } catch (...) {
+            syslog(LOG_ERR, "WS1: AUTH failed (syntax)");
             str = vscp_str_format(("-;AUTH;%d;%s"),
                                   (int)WEBSOCK_ERROR_SYNTAX_ERROR,
                                   WEBSOCK_STR_ERROR_SYNTAX_ERROR);
@@ -1387,8 +1434,9 @@ ws1_command(struct mg_connection* conn,
                                (const char*)str.c_str(),
                                str.length());
 
-            syslog(LOG_ERR,
-                   "[Websocket ws1] User/host not authorised to clear the queue.");
+            syslog(
+              LOG_ERR,
+              "[Websocket ws1] User/host not authorised to clear the queue.");
 
             return; // We still leave channel open
         }
@@ -1621,8 +1669,15 @@ ws2_dataHandler(struct mg_connection* conn,
 
             // if last process is
             if (1 & bits) {
-                if (!ws1_message(conn, pSession, pSession->m_strConcatenated)) {
-                    return WEB_ERROR;
+                try {
+                    if (!ws2_message(conn,
+                                     pSession,
+                                     pSession->m_strConcatenated)) {
+                        return WEB_ERROR;
+                    }
+                } catch (...) {
+                    syslog(LOG_ERR,
+                           "ws1: Exception occurred ws2_message concat");
                 }
             }
             break;
@@ -1637,9 +1692,13 @@ ws2_dataHandler(struct mg_connection* conn,
             }
 
             if (1 & bits) {
-                strWsPkt = std::string(data, len);
-                if (!ws2_message(conn, pSession, strWsPkt)) {
-                    return WEB_ERROR;
+                try {
+                    strWsPkt = std::string(data, len);
+                    if (!ws2_message(conn, pSession, strWsPkt)) {
+                        return WEB_ERROR;
+                    }
+                } catch (...) {
+                    syslog(LOG_ERR, "ws1: Exception occurred ws2_message");
                 }
             } else {
                 // Store first part
@@ -1758,7 +1817,6 @@ ws2_message(struct mg_connection* conn,
                     return false;
 
                 } catch (...) {
-
                     std::string str =
                       vscp_str_format(WS2_NEGATIVE_RESPONSE,
                                       strCmd.c_str(),
@@ -2000,7 +2058,6 @@ ws2_message(struct mg_connection* conn,
                         }
                     }
                 } catch (...) {
-
                     std::string str =
                       vscp_str_format(WS2_NEGATIVE_RESPONSE,
                                       "EVENT",
@@ -2031,7 +2088,6 @@ ws2_message(struct mg_connection* conn,
                         }
                     }
                 } catch (...) {
-
                     std::string str =
                       vscp_str_format(WS2_NEGATIVE_RESPONSE,
                                       "EVENT",
@@ -2061,7 +2117,6 @@ ws2_message(struct mg_connection* conn,
                         }
                     }
                 } catch (...) {
-
                     std::string str =
                       vscp_str_format(WS2_NEGATIVE_RESPONSE,
                                       "EVENT",
@@ -2091,7 +2146,6 @@ ws2_message(struct mg_connection* conn,
                         }
                     }
                 } catch (...) {
-
                     std::string str =
                       vscp_str_format(WS2_NEGATIVE_RESPONSE,
                                       "EVENT",
@@ -2128,7 +2182,6 @@ ws2_message(struct mg_connection* conn,
         }
 
     } catch (...) {
-
         std::string str = vscp_str_format(WS2_NEGATIVE_RESPONSE,
                                           "EVENT",
                                           WEBSOCK_ERROR_UNKNOWN_TYPE,
@@ -2173,23 +2226,25 @@ ws2_command(struct mg_connection* conn,
     std::map<std::string, std::string> argmap;
     try {
         for (auto it = jsonObj.begin(); it != jsonObj.end(); ++it) {
-            if ( it.value().is_string() ) {
+            if (it.value().is_string()) {
                 argmap[it.key()] = it.value();
             }
         }
     } catch (...) {
         std::string str = vscp_str_format(WS2_NEGATIVE_RESPONSE,
-                              "SETFILTER",
-                              (int)WEBSOCK_ERROR_PARSE_FORMAT,
-                              WEBSOCK_STR_ERROR_PARSE_FORMAT);
+                                          "SETFILTER",
+                                          (int)WEBSOCK_ERROR_PARSE_FORMAT,
+                                          WEBSOCK_STR_ERROR_PARSE_FORMAT);
         mg_websocket_write(conn,
                            MG_WEBSOCKET_OPCODE_TEXT,
                            (const char*)str.c_str(),
                            str.length());
-        
-        syslog(LOG_ERR, "[Websocket ws2] SETFILTER parse error = %s", jsonObj.dump().c_str());
 
-        return false;                           
+        syslog(LOG_ERR,
+               "[Websocket ws2] SETFILTER parse error = %s",
+               jsonObj.dump().c_str());
+
+        return false;
     }
 
     // ------------------------------------------------------------------------
@@ -2331,8 +2386,9 @@ ws2_command(struct mg_connection* conn,
                                (const char*)str.c_str(),
                                str.length());
 
-            syslog(LOG_ERR,
-                   "[Websocket w2] User/host is not authorised to set a filter.");
+            syslog(
+              LOG_ERR,
+              "[Websocket w2] User/host is not authorised to set a filter.");
 
             return false; // We still leave channel open
         }
@@ -2378,7 +2434,9 @@ ws2_command(struct mg_connection* conn,
                                    (const char*)str.c_str(),
                                    str.length());
 
-                syslog(LOG_ERR, "[Websocket w2] Set filter syntax error. [%s]", strFilter.c_str());
+                syslog(LOG_ERR,
+                       "[Websocket w2] Set filter syntax error. [%s]",
+                       strFilter.c_str());
 
                 pthread_mutex_unlock(
                   &pSession->m_pClientItem->m_mutexClientInputQueue);
@@ -2398,7 +2456,9 @@ ws2_command(struct mg_connection* conn,
                                (const char*)str.c_str(),
                                str.length());
 
-            syslog(LOG_ERR, "[Websocket w2] Set filter syntax error. [%s]", strFilter.c_str());                               
+            syslog(LOG_ERR,
+                   "[Websocket w2] Set filter syntax error. [%s]",
+                   strFilter.c_str());
 
             return false;
         }
@@ -2511,10 +2571,8 @@ ws2_command(struct mg_connection* conn,
                                           strCmd,
                                           (int)WEBSOCK_ERROR_UNKNOWN_COMMAND,
                                           WEBSOCK_STR_ERROR_UNKNOWN_COMMAND);
-        syslog(
-              LOG_ERR,
-              "[Websocket w2] Unknown command [%s].", strCmd.c_str());
-                                          
+        syslog(LOG_ERR, "[Websocket w2] Unknown command [%s].", strCmd.c_str());
+
         return false;
     }
 

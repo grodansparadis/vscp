@@ -511,8 +511,12 @@ tcpipClientObj::CommandHandler(std::string& strCommand)
     else if (m_pClientItem->CommandStartsWith(("rcvloop")) ||
              m_pClientItem->CommandStartsWith(("receiveloop"))) {
         if (checkPrivilege(VSCP_USER_RIGHT_ALLOW_RCV_EVENT)) {
-            m_pClientItem->m_timeRcvLoop = time(NULL);
-            handleClientRcvLoop();
+            try {
+                m_pClientItem->m_timeRcvLoop = time(NULL);
+                handleClientRcvLoop();
+            } catch (...) {
+                syslog(LOG_ERR, "TCPIP: Exception occurred handleClientRcvLoop");
+            }
         }
     }
 
@@ -530,7 +534,11 @@ tcpipClientObj::CommandHandler(std::string& strCommand)
     //*********************************************************************
 
     else if (m_pClientItem->CommandStartsWith(("user"))) {
-        handleClientUser();
+        try {
+            handleClientUser();
+        } catch (...) {
+            syslog(LOG_ERR, "TCPIP: Exception occurred handleClientUser");
+        }
     }
 
     //*********************************************************************
@@ -539,9 +547,14 @@ tcpipClientObj::CommandHandler(std::string& strCommand)
 
     else if (m_pClientItem->CommandStartsWith(("pass"))) {
 
-        if (!handleClientPassword()) {
-            syslog(LOG_ERR, "[TCP/IP srv] Command: Password. Not authorized.");
-            return VSCP_TCPIP_RV_CLOSE; // Close connection
+        try {
+            if (!handleClientPassword()) {
+                syslog(LOG_ERR,
+                       "[TCP/IP srv] Command: Password. Not authorized.");
+                return VSCP_TCPIP_RV_CLOSE; // Close connection
+            }
+        } catch (...) {
+                syslog(LOG_ERR, "TCPIP: Exception occurred handleClientPassword");
         }
 
         if (__VSCP_DEBUG_TCP) {
@@ -555,7 +568,11 @@ tcpipClientObj::CommandHandler(std::string& strCommand)
     //*********************************************************************
 
     else if (m_pClientItem->CommandStartsWith(("challenge"))) {
-        handleChallenge();
+        try {
+            handleChallenge();
+        } catch (...) {
+                syslog(LOG_ERR, "TCPIP: Exception occurred handleChallange");
+        }
     }
 
     // *********************************************************************
@@ -578,7 +595,11 @@ tcpipClientObj::CommandHandler(std::string& strCommand)
     //*********************************************************************
     else if (m_pClientItem->CommandStartsWith(("shutdown"))) {
         if (checkPrivilege(VSCP_USER_RIGHT_ALLOW_SHUTDOWN)) {
-            handleClientShutdown();
+            try {
+                handleClientShutdown();
+            } catch (...) {
+                syslog(LOG_ERR, "TCPIP: Exception occurred handleClientShutdown");
+            }
         }
     }
 
@@ -588,7 +609,11 @@ tcpipClientObj::CommandHandler(std::string& strCommand)
 
     else if (m_pClientItem->CommandStartsWith(("send"))) {
         if (checkPrivilege(VSCP_USER_RIGHT_ALLOW_SEND_EVENT)) {
-            handleClientSend();
+            try {
+                handleClientSend();
+            } catch (...) {
+                syslog(LOG_ERR, "TCPIP: Exception occurred handleClientSend");
+            }
         }
     }
 
@@ -599,7 +624,11 @@ tcpipClientObj::CommandHandler(std::string& strCommand)
     else if (m_pClientItem->CommandStartsWith(("retr")) ||
              m_pClientItem->CommandStartsWith(("retrieve"))) {
         if (checkPrivilege(VSCP_USER_RIGHT_ALLOW_RCV_EVENT)) {
-            handleClientReceive();
+            try {
+                handleClientReceive();
+            } catch (...) {
+                syslog(LOG_ERR, "TCPIP: Exception occurred handleClientReceive");
+            }
         }
     }
 
@@ -610,7 +639,11 @@ tcpipClientObj::CommandHandler(std::string& strCommand)
     else if (m_pClientItem->CommandStartsWith(("cdta")) ||
              m_pClientItem->CommandStartsWith(("chkdata")) ||
              m_pClientItem->CommandStartsWith(("checkdata"))) {
-        handleClientDataAvailable();
+        try {
+            handleClientDataAvailable();
+        } catch (...) {
+            syslog(LOG_ERR, "TCPIP: Exception occurred handleClientDataAvailable");
+        }
     }
 
     //*********************************************************************
@@ -620,7 +653,11 @@ tcpipClientObj::CommandHandler(std::string& strCommand)
     else if (m_pClientItem->CommandStartsWith(("clra")) ||
              m_pClientItem->CommandStartsWith(("clearall")) ||
              m_pClientItem->CommandStartsWith(("clrall"))) {
-        handleClientClearInputQueue();
+        try {         
+            handleClientClearInputQueue();
+        } catch (...) {
+            syslog(LOG_ERR, "TCPIP: Exception occurred handleClientClearInputQueue");
+        }
     }
 
     //*********************************************************************
@@ -628,7 +665,11 @@ tcpipClientObj::CommandHandler(std::string& strCommand)
     //*********************************************************************
 
     else if (m_pClientItem->CommandStartsWith(("stat"))) {
-        handleClientGetStatistics();
+        try {
+            handleClientGetStatistics();
+        } catch (...) {
+            syslog(LOG_ERR, "TCPIP: Exception occurred handleClientGetStatistics");
+        }
     }
 
     //*********************************************************************
@@ -636,7 +677,11 @@ tcpipClientObj::CommandHandler(std::string& strCommand)
     //*********************************************************************
 
     else if (m_pClientItem->CommandStartsWith(("info"))) {
-        handleClientGetStatus();
+        try {
+            handleClientGetStatus();
+        } catch (...) {
+            syslog(LOG_ERR, "TCPIP: Exception occurred handleClientGetStatus");
+        }
     }
 
     //*********************************************************************
@@ -645,7 +690,11 @@ tcpipClientObj::CommandHandler(std::string& strCommand)
 
     else if (m_pClientItem->CommandStartsWith(("chid")) ||
              m_pClientItem->CommandStartsWith(("getchid"))) {
-        handleClientGetChannelID();
+        try {         
+            handleClientGetChannelID();
+        } catch (...) {
+            syslog(LOG_ERR, "TCPIP: Exception occurred handleClientGetChannelID");
+        }
     }
 
     //*********************************************************************
@@ -655,7 +704,11 @@ tcpipClientObj::CommandHandler(std::string& strCommand)
     else if (m_pClientItem->CommandStartsWith(("sgid")) ||
              m_pClientItem->CommandStartsWith(("setguid"))) {
         if (checkPrivilege(VSCP_USER_RIGHT_ALLOW_SETGUID)) {
-            handleClientSetChannelGUID();
+            try {
+                handleClientSetChannelGUID();
+            } catch (...) {
+                syslog(LOG_ERR, "TCPIP: Exception occurred handleClientSetChannelGUID");
+            }
         }
     }
 
@@ -665,7 +718,11 @@ tcpipClientObj::CommandHandler(std::string& strCommand)
 
     else if (m_pClientItem->CommandStartsWith(("ggid")) ||
              m_pClientItem->CommandStartsWith(("getguid"))) {
-        handleClientGetChannelGUID();
+        try {         
+            handleClientGetChannelGUID();
+        } catch (...) {
+            syslog(LOG_ERR, "TCPIP: Exception occurred handleClientGetChannelGUID");
+        }
     }
 
     //*********************************************************************
@@ -674,7 +731,11 @@ tcpipClientObj::CommandHandler(std::string& strCommand)
 
     else if (m_pClientItem->CommandStartsWith(("version")) ||
              m_pClientItem->CommandStartsWith(("vers"))) {
-        handleClientGetVersion();
+        try {         
+            handleClientGetVersion();
+        } catch (...) {
+            syslog(LOG_ERR, "TCPIP: Exception occurred handleClientGetVersion");
+        }
     }
 
     //*********************************************************************
@@ -684,7 +745,11 @@ tcpipClientObj::CommandHandler(std::string& strCommand)
     else if (m_pClientItem->CommandStartsWith(("sflt")) ||
              m_pClientItem->CommandStartsWith(("setfilter"))) {
         if (checkPrivilege(VSCP_USER_RIGHT_ALLOW_SETFILTER)) {
-            handleClientSetFilter();
+            try {
+                handleClientSetFilter();
+            } catch (...) {
+                syslog(LOG_ERR, "TCPIP: Exception occurred handleClientSetFilter");
+            }
         }
     }
 
@@ -695,7 +760,11 @@ tcpipClientObj::CommandHandler(std::string& strCommand)
     else if (m_pClientItem->CommandStartsWith(("smsk")) ||
              m_pClientItem->CommandStartsWith(("setmask"))) {
         if (checkPrivilege(VSCP_USER_RIGHT_ALLOW_SETFILTER)) {
-            handleClientSetMask();
+            try {
+                handleClientSetMask();
+            } catch (...) {
+                syslog(LOG_ERR, "TCPIP: Exception occurred handleClientSetMask");
+            }
         }
     }
 
@@ -704,7 +773,11 @@ tcpipClientObj::CommandHandler(std::string& strCommand)
     //*********************************************************************
 
     else if (m_pClientItem->CommandStartsWith(("help"))) {
-        handleClientHelp();
+        try {
+            handleClientHelp();
+        } catch (...) {
+            syslog(LOG_ERR, "TCPIP: Exception occurred handleClientHelp");
+        }
     }
 
     //*********************************************************************
@@ -713,7 +786,11 @@ tcpipClientObj::CommandHandler(std::string& strCommand)
 
     else if (m_pClientItem->CommandStartsWith(("restart"))) {
         if (checkPrivilege(VSCP_USER_RIGHT_ALLOW_RESTART)) {
-            handleClientRestart();
+            try {
+                handleClientRestart();
+            } catch (...) {
+                syslog(LOG_ERR, "TCPIP: Exception occurred handleClientRestart");
+            }
         }
     }
 
@@ -724,7 +801,11 @@ tcpipClientObj::CommandHandler(std::string& strCommand)
     else if (m_pClientItem->CommandStartsWith(("client")) ||
              m_pClientItem->CommandStartsWith(("interface"))) {
         if (checkPrivilege(VSCP_USER_RIGHT_ALLOW_INTERFACE)) {
-            handleClientInterface();
+            try {
+                handleClientInterface();
+            } catch (...) {
+                syslog(LOG_ERR, "TCPIP: Exception occurred handleClientInterface");
+            }
         }
     }
 
@@ -734,7 +815,11 @@ tcpipClientObj::CommandHandler(std::string& strCommand)
 
     else if (m_pClientItem->CommandStartsWith(("test"))) {
         if (checkPrivilege(VSCP_USER_RIGHT_ALLOW_TEST)) {
-            handleClientTest();
+            try {
+                handleClientTest();
+            } catch (...) {
+                syslog(LOG_ERR, "TCPIP: Exception occurred handleClientTest");
+            }
         }
     }
 
@@ -744,7 +829,11 @@ tcpipClientObj::CommandHandler(std::string& strCommand)
 
     else if (m_pClientItem->CommandStartsWith(("wcyd")) ||
              m_pClientItem->CommandStartsWith(("whatcanyoudo"))) {
-        handleClientCapabilityRequest();
+        try {
+            handleClientCapabilityRequest();
+        } catch (...) {
+            syslog(LOG_ERR, "TCPIP: Exception occurred handleClientCapabilityRequest");
+        }
     }
 
     //*********************************************************************
@@ -752,7 +841,11 @@ tcpipClientObj::CommandHandler(std::string& strCommand)
     //*********************************************************************
 
     else if (m_pClientItem->CommandStartsWith(("measurement"))) {
-        handleClientMeasurement();
+        try {
+            handleClientMeasurement();
+        } catch (...) {
+            syslog(LOG_ERR, "TCPIP: Exception occurred handleClientMeasurement");
+        }
     }
 
     //*********************************************************************
@@ -768,7 +861,7 @@ tcpipClientObj::CommandHandler(std::string& strCommand)
 } // clientcommand
 
 ///////////////////////////////////////////////////////////////////////////////
-// handleClientMeasurment
+// handleClientMeasurement
 //
 // format,level,vscp-measurement-type,value,unit,guid,sensoridx,zone,subzone,dest-guid
 //

@@ -609,7 +609,9 @@ websrv_restapi(struct mg_connection* conn, void* cbdata)
     // Get method
     char method[33];
     memset(method, 0, sizeof(method));
-    strncpy(method, reqinfo->request_method, std::min((int)strlen(reqinfo->request_method),32));
+    strncpy(method,
+            reqinfo->request_method,
+            std::min((int)strlen(reqinfo->request_method), 32));
 
     // Make string with GMT time
     vscp_getTimeString(date, sizeof(date), &curtime);
@@ -681,8 +683,6 @@ websrv_restapi(struct mg_connection* conn, void* cbdata)
             pParams  = reqinfo->query_string; // Parameters is in query string
             lenParam = strlen(reqinfo->query_string);
         }
-
-        
     }
 
     // format
@@ -955,27 +955,40 @@ websrv_restapi(struct mg_connection* conn, void* cbdata)
       ("[REST Client] User [%s] Host [%s] allowed to connect. \n"),
       (const char*)keypairs[("VSCPUSER")].c_str(),
       std::string(reqinfo->remote_addr).c_str());
-    syslog(LOG_ERR, "%s", strErr.c_str());
+    syslog(LOG_DEBUG, "%s", strErr.c_str());
 
     //   *************************************************************
     //   * * * * * * * *  Status (hold session open)   * * * * * * * *
     //   *************************************************************
     if ((("0") == keypairs[("OP")]) || (("STATUS") == keypairs[("OP")])) {
-        restsrv_doStatus(conn, pSession, format);
+        try {
+            restsrv_doStatus(conn, pSession, format);
+        } catch (...) {
+            syslog(LOG_ERR, "REST: Exception occurred doing restsrv_doStatus");
+        }
     }
 
     //  ********************************************
     //  * * * * * * * * open session * * * * * * * *
     //  ********************************************
     else if ((("1") == keypairs[("OP")]) || (("OPEN") == keypairs[("OP")])) {
-        restsrv_doOpen(conn, pSession, format);
+        try {
+            restsrv_doOpen(conn, pSession, format);
+        } catch (...) {
+            syslog(LOG_ERR, "REST: Exception occurred doing restsrv_doOpen");
+        }
+
     }
 
     //   **********************************************
     //   * * * * * * * * close session  * * * * * * * *
     //   **********************************************
     else if ((("2") == keypairs[("OP")]) || (("CLOSE") == keypairs[("OP")])) {
-        restsrv_doClose(conn, pSession, format);
+        try {
+            restsrv_doClose(conn, pSession, format);
+        } catch (...) {
+            syslog(LOG_ERR, "REST: Exception occurred doing restsrv_doClose");
+        }
     }
 
     //  ********************************************
@@ -985,8 +998,12 @@ websrv_restapi(struct mg_connection* conn, void* cbdata)
              (("SENDEVENT") == keypairs[("OP")])) {
         vscpEvent vscpevent;
         if (("") != keypairs[("VSCPEVENT")]) {
-            vscp_convertStringToEvent(&vscpevent, keypairs[("VSCPEVENT")]);
-            restsrv_doSendEvent(conn, pSession, format, &vscpevent);
+            try {
+                vscp_convertStringToEvent(&vscpevent, keypairs[("VSCPEVENT")]);
+                restsrv_doSendEvent(conn, pSession, format, &vscpevent);
+            } catch (...) {
+                syslog(LOG_ERR, "REST: Exception occurred doing restsrv_doSendEvent");
+            }
         } else {
             // Parameter missing - No Event
             restsrv_error(conn, pSession, format, REST_ERROR_CODE_MISSING_DATA);
@@ -1002,7 +1019,11 @@ websrv_restapi(struct mg_connection* conn, void* cbdata)
         if (("") != keypairs[("COUNT")]) {
             count = std::stoul(keypairs["COUNT"]);
         }
-        restsrv_doReceiveEvent(conn, pSession, format, count);
+        try {
+            restsrv_doReceiveEvent(conn, pSession, format, count);
+        } catch (...) {
+                syslog(LOG_ERR, "REST: Exception occurred doing restsrv_doReceiveEvent");
+        }
     }
 
     //   **************************************************
@@ -1026,7 +1047,11 @@ websrv_restapi(struct mg_connection* conn, void* cbdata)
             restsrv_error(conn, pSession, format, REST_ERROR_CODE_MISSING_DATA);
         }
 
-        restsrv_doSetFilter(conn, pSession, format, vscpfilter);
+        try {
+            restsrv_doSetFilter(conn, pSession, format, vscpfilter);
+        } catch (...) {
+                syslog(LOG_ERR, "REST: Exception occurred doing restsrv_doSetFilter");
+        }
 
     }
 
@@ -1035,7 +1060,11 @@ websrv_restapi(struct mg_connection* conn, void* cbdata)
     //   ****************************************************
     else if ((("6") == keypairs[("OP")]) ||
              (("CLEARQUEUE") == keypairs[("OP")])) {
-        restsrv_doClearQueue(conn, pSession, format);
+        try {
+            restsrv_doClearQueue(conn, pSession, format);
+        } catch (...) {
+            syslog(LOG_ERR, "REST: Exception occurred doing restsrv_doClearQueue");
+        }
     }
 
     //   *************************************************
@@ -1048,19 +1077,23 @@ websrv_restapi(struct mg_connection* conn, void* cbdata)
 
         if ((("") != keypairs[("VALUE")]) && (("") != keypairs[("TYPE")])) {
 
-            restsrv_doWriteMeasurement(conn,
-                                       pSession,
-                                       format,
-                                       keypairs[("DATETIME")],
-                                       keypairs[("GUID")],
-                                       keypairs[("LEVEL")],
-                                       keypairs[("TYPE")],
-                                       keypairs[("VALUE")],
-                                       keypairs[("UNIT")],
-                                       keypairs[("SENSORIDX")],
-                                       keypairs[("ZONE")],
-                                       keypairs[("SUBZONE")],
-                                       keypairs[("SUBZONE")]);
+            try {
+                restsrv_doWriteMeasurement(conn,
+                                           pSession,
+                                           format,
+                                           keypairs[("DATETIME")],
+                                           keypairs[("GUID")],
+                                           keypairs[("LEVEL")],
+                                           keypairs[("TYPE")],
+                                           keypairs[("VALUE")],
+                                           keypairs[("UNIT")],
+                                           keypairs[("SENSORIDX")],
+                                           keypairs[("ZONE")],
+                                           keypairs[("SUBZONE")],
+                                           keypairs[("SUBZONE")]);
+            } catch (...) {
+                syslog(LOG_ERR, "REST: Exception occurred doing restsrv_doWriteMeasurement");
+            }
         } else {
             restsrv_error(conn, pSession, format, REST_ERROR_CODE_MISSING_DATA);
         }
@@ -1072,8 +1105,11 @@ websrv_restapi(struct mg_connection* conn, void* cbdata)
     else if ((("12") == keypairs[("OP")]) || (("MDF") == keypairs[("OP")])) {
 
         if (("") != keypairs[("URL")]) {
-
-            restsrv_doFetchMDF(conn, pSession, format, keypairs[("URL")]);
+            try {
+                restsrv_doFetchMDF(conn, pSession, format, keypairs[("URL")]);
+            } catch (...) {
+                syslog(LOG_ERR, "REST: Exception occurred doing restsrv_doFetchMDF");
+            }
         } else {
             restsrv_error(conn, pSession, format, REST_ERROR_CODE_MISSING_DATA);
         }
