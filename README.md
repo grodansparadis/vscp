@@ -5,9 +5,7 @@
 [![Release](https://img.shields.io/github/release/grodansparadis/vscp.svg)](https://github.com/grodansparadis/vscp/releases)
 [![Travis Build Status](https://api.travis-ci.org/grodansparadis/vscp.svg?branch=master)](https://travis-ci.org/grodansparadis/vscp)
 
-<img src="https://vscp.org/images/logo.png" width="300">
-
-**Currently a big change (removing dependency on wxWidgets) is on the way in this project. This means all/parts will not build clean (or at all) for som time. Please use release code**
+<img src="https://vscp.org/images/logo.png" width="100">
 
 <p>VSCP (Very Simple Control Protocol) is a framework for IoT/m2m tasks. The framework defines methods to
 have a common device discovery, a common configuration, a common way to interface with remote devices and a
@@ -15,22 +13,17 @@ common way to update firmware of devices built on different architectures. A ser
 many platforms that have a webserver/websocket/rest/driver and tcp/ip interface with ssl security.
 
 <p>A short introduction is available
-<a href="http://www.slideshare.net/keHedman/2014-01-33087344">here</a> and
-<a href="http://www.slideshare.net/keHedman/vscp-presentation-eindhoven">here</a>.</p>
+<a href="https://www.slideshare.net/keHedman/2014-01-33087344">here</a> and
+<a href="https://www.slideshare.net/keHedman/vscp-presentation-eindhoven">here</a>.</p>
 </p>
 
 <p>
-Documentation in different formats <a href="http://vscp.org/docs.php">is available here</a>.
-</p>
-
-Copyright © 2000-2020 Ake Hedman, Grodans Paradis AB - MIT license.
-
-<p>
-Guides on how to setup and test the system on different platforms can be found
-<a href="http://www.vscp.org/wiki/doku.php/howto/start">here</a>.
+Documentation in different formats <a href="https://docs.vscp.org/">is available here</a>.
 </p>
 
 <p>
 Also there is a <a href="https://github.com/grodansparadis/vscp_firmware"firmware repository</a> with many examples for different platforms and a
 <a href="https://github.com/grodansparadis/vscp_html5">HTML5 websocket UI repository</a>.
 </p>
+
+Copyright © 2000-2020 Ake Hedman, Grodans Paradis AB - MIT license.
