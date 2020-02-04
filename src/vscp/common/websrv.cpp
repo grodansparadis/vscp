@@ -645,20 +645,27 @@ check_admin_authorization(struct mg_connection* conn, void* cbdata)
     // Check pointers
     if (!conn || !(ctx = mg_get_context(conn)) ||
         !(reqinfo = mg_get_request_info(conn))) {
-        syslog(LOG_ERR,"[websrv] check_admin_authorization: Pointers are invalid.");
+        syslog(LOG_ERR,
+               "[websrv] check_admin_authorization: Pointers are invalid.");
         return WEB_ERROR;
     }
 
     // Get admin user
-    if ( NULL == ( pUserItem = gpobj->m_userList.getUser(gpobj->m_admin_user.c_str()) ) ) {
-        syslog(LOG_ERR,"[websrv] check_admin_authorization: Admin user [%s] i not available.", gpobj->m_admin_user.c_str());
+    if (NULL ==
+        (pUserItem = gpobj->m_userList.getUser(gpobj->m_admin_user.c_str()))) {
+        syslog(LOG_ERR,
+               "[websrv] check_admin_authorization: Admin user [%s] i not "
+               "available.",
+               gpobj->m_admin_user.c_str());
         mg_send_basic_access_authentication_request(conn, NULL);
         return 401;
     }
 
     if ((NULL == (auth_header = mg_get_header(conn, "Authorization"))) ||
         (vscp_strncasecmp(auth_header, "Basic ", 6) != 0)) {
-        syslog(LOG_ERR,"[websrv] check_admin_authorization: Authorization header or digest missing for admin log in.");    
+        syslog(LOG_ERR,
+               "[websrv] check_admin_authorization: Authorization header or "
+               "digest missing for admin log in.");
         mg_send_basic_access_authentication_request(conn, NULL);
         return 401;
     }
@@ -668,7 +675,9 @@ check_admin_authorization(struct mg_connection* conn, void* cbdata)
 
     const struct mg_request_info* pri = mg_get_request_info(conn);
     if (NULL == pri) {
-        syslog(LOG_ERR,"[websrv] check_admin_authorization: Failed to to get request info.");
+        syslog(
+          LOG_ERR,
+          "[websrv] check_admin_authorization: Failed to to get request info.");
         return WEB_ERROR;
     }
 
@@ -744,7 +753,6 @@ check_rest_authorization(struct mg_connection* conn, void* cbdata)
 }
 
 // -----------------------------------------------------------------------------
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // Log a message
@@ -3502,14 +3510,19 @@ start_webserver(void)
                            (void*)"../../test/form.html");
 
     // Set authorization handlers
-    mg_set_auth_handler(gpobj->m_web_ctx,
-                        "/vscp",
-                        check_admin_authorization,
-                        NULL);
-    mg_set_auth_handler(gpobj->m_web_ctx,
-                        "/vscp/rest",
-                        check_rest_authorization,
-                        NULL);
+    if (gpobj->m_enableWebAdminIf) {
+        mg_set_auth_handler(gpobj->m_web_ctx,
+                            "/vscp",
+                            check_admin_authorization,
+                            NULL);
+    }
+
+    if (gpobj->m_bEnableRestApi) {
+        mg_set_auth_handler(gpobj->m_web_ctx,
+                            "/vscp/rest",
+                            check_rest_authorization,
+                            NULL);
+    }
 
     if (gpobj->m_bWebsocketsEnable) {
         // WS1 path for the websocket connection
@@ -3531,27 +3544,35 @@ start_webserver(void)
                                  0);
     }
 
-    // Set page handlers
-    mg_set_request_handler(gpobj->m_web_ctx, "/vscp", vscp_mainpage, 0);
-    mg_set_request_handler(gpobj->m_web_ctx, "/vscp/session", vscp_client, 0);
-    mg_set_request_handler(gpobj->m_web_ctx,
-                           "/vscp/configure",
-                           vscp_configure_list,
-                           0);
-    mg_set_request_handler(gpobj->m_web_ctx,
-                           "/vscp/interfaces",
-                           vscp_interface,
-                           0);
-    mg_set_request_handler(gpobj->m_web_ctx,
-                           "/vscp/ifinfo",
-                           vscp_interface_info,
-                           0);
-    mg_set_request_handler(gpobj->m_web_ctx,
-                           "/vscp/password",
-                           vscp_password,
-                           0);
-    mg_set_request_handler(gpobj->m_web_ctx, "/vscp/restart", vscp_restart, 0);
-    mg_set_request_handler(gpobj->m_web_ctx, "/vscp/log", vscp_log, 0);
+    // Set page handlers for admin i/f
+    if (gpobj->m_enableWebAdminIf) {
+        mg_set_request_handler(gpobj->m_web_ctx, "/vscp", vscp_mainpage, 0);
+        mg_set_request_handler(gpobj->m_web_ctx,
+                               "/vscp/session",
+                               vscp_client,
+                               0);
+        mg_set_request_handler(gpobj->m_web_ctx,
+                               "/vscp/configure",
+                               vscp_configure_list,
+                               0);
+        mg_set_request_handler(gpobj->m_web_ctx,
+                               "/vscp/interfaces",
+                               vscp_interface,
+                               0);
+        mg_set_request_handler(gpobj->m_web_ctx,
+                               "/vscp/ifinfo",
+                               vscp_interface_info,
+                               0);
+        mg_set_request_handler(gpobj->m_web_ctx,
+                               "/vscp/password",
+                               vscp_password,
+                               0);
+        mg_set_request_handler(gpobj->m_web_ctx,
+                               "/vscp/restart",
+                               vscp_restart,
+                               0);
+        mg_set_request_handler(gpobj->m_web_ctx, "/vscp/log", vscp_log, 0);
+    }
 
     // REST
     if (gpobj->m_bEnableRestApi) {

@@ -156,6 +156,9 @@ CControlObject::CControlObject()
     // Nill the GUID
     m_guid.clear();
 
+    // web admin interface
+    m_enableWebAdminIf = true;
+
     // Local domain
     m_web_authentication_domain = "mydomain.com";
 
@@ -1464,6 +1467,13 @@ startFullConfigParser(void* data, const char* name, const char** attr)
                 pObj->m_guid.getFromString(attribute);
             } else if (0 == vscp_strcasecmp(attr[i], "servername")) {
                 pObj->m_strServerName = attribute;
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "webadminif")) {
+                if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
+                    pObj->m_enableWebAdminIf = true;
+                } else {
+                    pObj->m_enableWebAdminIf = false;
+                }
             }
         }
     } else if (bVscpConfigFound && bGeneralConfigFound &&

@@ -394,6 +394,9 @@ class CControlObject
     // Enable webserver
     bool m_web_bEnable;
 
+    // Enable web admin interface (general section in conf)
+    bool m_enableWebAdminIf;
+
     // See
     // http://www.vscp.org/docs/vscpd/doku.php?id=configuring_the_vscp_daemon#webserver
     std::string m_web_document_root;

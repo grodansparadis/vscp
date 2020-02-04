@@ -609,7 +609,7 @@ websrv_restapi(struct mg_connection* conn, void* cbdata)
     // Get method
     char method[33];
     memset(method, 0, sizeof(method));
-    strncpy(method, reqinfo->request_method, std::min((strlen(reqinfo->request_method),32));
+    strncpy(method, reqinfo->request_method, std::min((int)strlen(reqinfo->request_method),32));
 
     // Make string with GMT time
     vscp_getTimeString(date, sizeof(date), &curtime);
