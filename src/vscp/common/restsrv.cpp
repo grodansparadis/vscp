@@ -609,7 +609,7 @@ websrv_restapi(struct mg_connection* conn, void* cbdata)
     // Get method
     char method[33];
     memset(method, 0, sizeof(method));
-    strncpy(method, reqinfo->request_method, strlen(reqinfo->request_method));
+    strncpy(method, reqinfo->request_method, std::min((strlen(reqinfo->request_method),32));
 
     // Make string with GMT time
     vscp_getTimeString(date, sizeof(date), &curtime);
@@ -652,33 +652,37 @@ websrv_restapi(struct mg_connection* conn, void* cbdata)
     } else {
 
         // get parameters for get
+        if (NULL != reqinfo->query_string) {
 
-        if (0 < mg_get_var(reqinfo->query_string,
-                           strlen(reqinfo->query_string),
-                           "vscpuser",
-                           buf,
-                           sizeof(buf))) {
-            keypairs["VSCPUSER"] = std::string(buf);
+            if (0 < mg_get_var(reqinfo->query_string,
+                               strlen(reqinfo->query_string),
+                               "vscpuser",
+                               buf,
+                               sizeof(buf))) {
+                keypairs["VSCPUSER"] = std::string(buf);
+            }
+
+            if (0 < mg_get_var(reqinfo->query_string,
+                               strlen(reqinfo->query_string),
+                               "vscpsecret",
+                               buf,
+                               sizeof(buf))) {
+                keypairs["VSCPSECRET"] = std::string(buf);
+            }
+
+            if (0 < mg_get_var(reqinfo->query_string,
+                               strlen(reqinfo->query_string),
+                               "vscpsession",
+                               buf,
+                               sizeof(buf))) {
+                keypairs["VSCPSESSION"] = std::string(buf);
+            }
+
+            pParams  = reqinfo->query_string; // Parameters is in query string
+            lenParam = strlen(reqinfo->query_string);
         }
 
-        if (0 < mg_get_var(reqinfo->query_string,
-                           strlen(reqinfo->query_string),
-                           "vscpsecret",
-                           buf,
-                           sizeof(buf))) {
-            keypairs["VSCPSECRET"] = std::string(buf);
-        }
-
-        if (0 < mg_get_var(reqinfo->query_string,
-                           strlen(reqinfo->query_string),
-                           "vscpsession",
-                           buf,
-                           sizeof(buf))) {
-            keypairs["VSCPSESSION"] = std::string(buf);
-        }
-
-        pParams  = reqinfo->query_string; // Parameters is in query string
-        lenParam = strlen(reqinfo->query_string);
+        
     }
 
     // format
@@ -688,7 +692,7 @@ websrv_restapi(struct mg_connection* conn, void* cbdata)
 
     // op
     if (0 < mg_get_var(pParams, lenParam, "op", buf, sizeof(buf))) {
-        keypairs["OP"] = std::string(buf);
+        keypairs["OP"] = vscp_makeUpper_copy(std::string(buf));
     }
 
     // vscpevent
@@ -822,8 +826,6 @@ websrv_restapi(struct mg_connection* conn, void* cbdata)
         format = REST_FORMAT_JSON;
     } else if ("JSONP" == keypairs["FORMAT"]) {
         format = REST_FORMAT_JSONP;
-    } else if ("" != keypairs["FORMAT"]) {
-        format = std::stol(keypairs["FORMAT"]);
     } else {
         websrv_sendheader(conn, 400, "text/plain");
         mg_write(conn,
@@ -1035,7 +1037,6 @@ websrv_restapi(struct mg_connection* conn, void* cbdata)
              (("CLEARQUEUE") == keypairs[("OP")])) {
         restsrv_doClearQueue(conn, pSession, format);
     }
-
 
     //   *************************************************
     //   * * * * * * * * Send measurement  * * * * * * * *
