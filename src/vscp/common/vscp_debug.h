@@ -42,8 +42,7 @@ extern uint32_t m_gdebugArray[8];
 #define __VSCP_DEBUG_AUTOMATION                                                \
     (m_gdebugArray[DBG_GENERAL] | VSCP_DEBUG1_AUTOMATION)
 
-#define __VSCP_DEBUG_CONFIG                                                    \
-    (m_gdebugArray[DBG_GENERAL] | VSCP_DEBUG1_CONFIG)
+#define __VSCP_DEBUG_CONFIG (m_gdebugArray[DBG_GENERAL] | VSCP_DEBUG1_CONFIG)
 
 #define DEBUG_GENERAL_ALL m_gdebugArray[DBG_GENERAL] = 0xFFFFFFFF
 
@@ -68,8 +67,7 @@ extern uint32_t m_gdebugArray[8];
 #define VSCP_DEBUG3_REST          (1 << 2) // REST client i/f debug info
 #define VSCP_DEBUG3_WEBSRV_ACCESS (1 << 3) // Web server access
 
-#define __VSCP_DEBUG_WEBSRV                                                    \
-    (m_gdebugArray[DBG_WEBSRV] | VSCP_DEBUG3_WEBSRV)
+#define __VSCP_DEBUG_WEBSRV (m_gdebugArray[DBG_WEBSRV] | VSCP_DEBUG3_WEBSRV)
 
 #define __VSCP_DEBUG_REST (m_gdebugArray[DBG_WEBSRV] | VSCP_DEBUG3_REST)
 
@@ -77,11 +75,11 @@ extern uint32_t m_gdebugArray[8];
     (m_gdebugArray[DBG_WEBSRV] | VSCP_DEBUG3_WEBSRV_ACCESS)
 
 //  * * * Web sockets
-#define VSCP_DEBUG4_ALL          0xFFFFFFFF
-#define DBG_WEBSOCK              3
-#define VSCP_DEBUG4_WEBSOCKET    (1 << 1) // Websockets client i/f debug info
-#define VSCP_DEBUG4_WEBSOCKET_RX (1 << 2) // Websocket receive
-#define VSCP_DEBUG4_WEBSOCKET_TX (1 << 3) // Websocket send
+#define VSCP_DEBUG4_ALL            0xFFFFFFFF
+#define DBG_WEBSOCK                3
+#define VSCP_DEBUG4_WEBSOCKET      (1 << 1) // Websockets client i/f debug info
+#define VSCP_DEBUG4_WEBSOCKET_RX   (1 << 2) // Websocket receive
+#define VSCP_DEBUG4_WEBSOCKET_TX   (1 << 3) // Websocket send
 #define VSCP_DEBUG4_WEBSOCKET_PING (1 << 4) // Websocket ping/pong
 
 #define __VSCP_DEBUG_WEBSOCKET                                                 \
@@ -93,7 +91,7 @@ extern uint32_t m_gdebugArray[8];
 #define __VSCP_DEBUG_WEBSOCKET_TX                                              \
     (m_gdebugArray[DBG_WEBSOCK] | VSCP_DEBUG4_WEBSOCKET_TX)
 
-#define __VSCP_DEBUG_WEBSOCKET_PING                                              \
+#define __VSCP_DEBUG_WEBSOCKET_PING                                            \
     (m_gdebugArray[DBG_WEBSOCK] | VSCP_DEBUG4_WEBSOCKET_PING)
 
 // * * * Drivers

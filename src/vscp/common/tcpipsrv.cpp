@@ -330,27 +330,27 @@ tcpipListenThread(void* pData)
     // * * * Deallocate allocated security options * * *
 
     if (NULL != opts.pem) {
-        delete opts.pem;
+        free((void*)opts.pem);
         opts.pem = NULL;
     }
 
     if (NULL != opts.chain) {
-        delete opts.chain;
+        free((void*)opts.chain);
         opts.chain = NULL;
     }
 
     if (NULL != opts.ca_path) {
-        delete opts.ca_path;
+        free((void*)opts.ca_path);
         opts.ca_path = NULL;
     }
 
     if (NULL != opts.ca_file) {
-        delete opts.ca_file;
+        free((void*)opts.ca_file);
         opts.ca_file = NULL;
     }
 
     if (NULL != opts.chipher_list) {
-        delete opts.chipher_list;
+        free((void*)opts.chipher_list);
         opts.chipher_list = NULL;
     }
 
@@ -515,7 +515,8 @@ tcpipClientObj::CommandHandler(std::string& strCommand)
                 m_pClientItem->m_timeRcvLoop = time(NULL);
                 handleClientRcvLoop();
             } catch (...) {
-                syslog(LOG_ERR, "TCPIP: Exception occurred handleClientRcvLoop");
+                syslog(LOG_ERR,
+                       "TCPIP: Exception occurred handleClientRcvLoop");
             }
         }
     }
@@ -554,7 +555,7 @@ tcpipClientObj::CommandHandler(std::string& strCommand)
                 return VSCP_TCPIP_RV_CLOSE; // Close connection
             }
         } catch (...) {
-                syslog(LOG_ERR, "TCPIP: Exception occurred handleClientPassword");
+            syslog(LOG_ERR, "TCPIP: Exception occurred handleClientPassword");
         }
 
         if (__VSCP_DEBUG_TCP) {
@@ -571,7 +572,7 @@ tcpipClientObj::CommandHandler(std::string& strCommand)
         try {
             handleChallenge();
         } catch (...) {
-                syslog(LOG_ERR, "TCPIP: Exception occurred handleChallange");
+            syslog(LOG_ERR, "TCPIP: Exception occurred handleChallange");
         }
     }
 
@@ -598,7 +599,8 @@ tcpipClientObj::CommandHandler(std::string& strCommand)
             try {
                 handleClientShutdown();
             } catch (...) {
-                syslog(LOG_ERR, "TCPIP: Exception occurred handleClientShutdown");
+                syslog(LOG_ERR,
+                       "TCPIP: Exception occurred handleClientShutdown");
             }
         }
     }
@@ -627,7 +629,8 @@ tcpipClientObj::CommandHandler(std::string& strCommand)
             try {
                 handleClientReceive();
             } catch (...) {
-                syslog(LOG_ERR, "TCPIP: Exception occurred handleClientReceive");
+                syslog(LOG_ERR,
+                       "TCPIP: Exception occurred handleClientReceive");
             }
         }
     }
@@ -642,7 +645,8 @@ tcpipClientObj::CommandHandler(std::string& strCommand)
         try {
             handleClientDataAvailable();
         } catch (...) {
-            syslog(LOG_ERR, "TCPIP: Exception occurred handleClientDataAvailable");
+            syslog(LOG_ERR,
+                   "TCPIP: Exception occurred handleClientDataAvailable");
         }
     }
 
@@ -653,10 +657,11 @@ tcpipClientObj::CommandHandler(std::string& strCommand)
     else if (m_pClientItem->CommandStartsWith(("clra")) ||
              m_pClientItem->CommandStartsWith(("clearall")) ||
              m_pClientItem->CommandStartsWith(("clrall"))) {
-        try {         
+        try {
             handleClientClearInputQueue();
         } catch (...) {
-            syslog(LOG_ERR, "TCPIP: Exception occurred handleClientClearInputQueue");
+            syslog(LOG_ERR,
+                   "TCPIP: Exception occurred handleClientClearInputQueue");
         }
     }
 
@@ -668,7 +673,8 @@ tcpipClientObj::CommandHandler(std::string& strCommand)
         try {
             handleClientGetStatistics();
         } catch (...) {
-            syslog(LOG_ERR, "TCPIP: Exception occurred handleClientGetStatistics");
+            syslog(LOG_ERR,
+                   "TCPIP: Exception occurred handleClientGetStatistics");
         }
     }
 
@@ -690,10 +696,11 @@ tcpipClientObj::CommandHandler(std::string& strCommand)
 
     else if (m_pClientItem->CommandStartsWith(("chid")) ||
              m_pClientItem->CommandStartsWith(("getchid"))) {
-        try {         
+        try {
             handleClientGetChannelID();
         } catch (...) {
-            syslog(LOG_ERR, "TCPIP: Exception occurred handleClientGetChannelID");
+            syslog(LOG_ERR,
+                   "TCPIP: Exception occurred handleClientGetChannelID");
         }
     }
 
@@ -707,7 +714,8 @@ tcpipClientObj::CommandHandler(std::string& strCommand)
             try {
                 handleClientSetChannelGUID();
             } catch (...) {
-                syslog(LOG_ERR, "TCPIP: Exception occurred handleClientSetChannelGUID");
+                syslog(LOG_ERR,
+                       "TCPIP: Exception occurred handleClientSetChannelGUID");
             }
         }
     }
@@ -718,10 +726,11 @@ tcpipClientObj::CommandHandler(std::string& strCommand)
 
     else if (m_pClientItem->CommandStartsWith(("ggid")) ||
              m_pClientItem->CommandStartsWith(("getguid"))) {
-        try {         
+        try {
             handleClientGetChannelGUID();
         } catch (...) {
-            syslog(LOG_ERR, "TCPIP: Exception occurred handleClientGetChannelGUID");
+            syslog(LOG_ERR,
+                   "TCPIP: Exception occurred handleClientGetChannelGUID");
         }
     }
 
@@ -731,7 +740,7 @@ tcpipClientObj::CommandHandler(std::string& strCommand)
 
     else if (m_pClientItem->CommandStartsWith(("version")) ||
              m_pClientItem->CommandStartsWith(("vers"))) {
-        try {         
+        try {
             handleClientGetVersion();
         } catch (...) {
             syslog(LOG_ERR, "TCPIP: Exception occurred handleClientGetVersion");
@@ -748,7 +757,8 @@ tcpipClientObj::CommandHandler(std::string& strCommand)
             try {
                 handleClientSetFilter();
             } catch (...) {
-                syslog(LOG_ERR, "TCPIP: Exception occurred handleClientSetFilter");
+                syslog(LOG_ERR,
+                       "TCPIP: Exception occurred handleClientSetFilter");
             }
         }
     }
@@ -763,7 +773,8 @@ tcpipClientObj::CommandHandler(std::string& strCommand)
             try {
                 handleClientSetMask();
             } catch (...) {
-                syslog(LOG_ERR, "TCPIP: Exception occurred handleClientSetMask");
+                syslog(LOG_ERR,
+                       "TCPIP: Exception occurred handleClientSetMask");
             }
         }
     }
@@ -789,7 +800,8 @@ tcpipClientObj::CommandHandler(std::string& strCommand)
             try {
                 handleClientRestart();
             } catch (...) {
-                syslog(LOG_ERR, "TCPIP: Exception occurred handleClientRestart");
+                syslog(LOG_ERR,
+                       "TCPIP: Exception occurred handleClientRestart");
             }
         }
     }
@@ -804,7 +816,8 @@ tcpipClientObj::CommandHandler(std::string& strCommand)
             try {
                 handleClientInterface();
             } catch (...) {
-                syslog(LOG_ERR, "TCPIP: Exception occurred handleClientInterface");
+                syslog(LOG_ERR,
+                       "TCPIP: Exception occurred handleClientInterface");
             }
         }
     }
@@ -832,7 +845,8 @@ tcpipClientObj::CommandHandler(std::string& strCommand)
         try {
             handleClientCapabilityRequest();
         } catch (...) {
-            syslog(LOG_ERR, "TCPIP: Exception occurred handleClientCapabilityRequest");
+            syslog(LOG_ERR,
+                   "TCPIP: Exception occurred handleClientCapabilityRequest");
         }
     }
 
@@ -844,7 +858,8 @@ tcpipClientObj::CommandHandler(std::string& strCommand)
         try {
             handleClientMeasurement();
         } catch (...) {
-            syslog(LOG_ERR, "TCPIP: Exception occurred handleClientMeasurement");
+            syslog(LOG_ERR,
+                   "TCPIP: Exception occurred handleClientMeasurement");
         }
     }
 

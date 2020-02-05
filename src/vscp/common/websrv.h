@@ -287,11 +287,24 @@ const char client_cert_pem[] =
  */
 #define WEBSERVER_MAGIC_HEADER_SIZE (16 * 1024)
 
+/*!
+  Collect header elements from a a header
+  @param hdrmap Map that will get element pairs.
+  @param header Header line to parse
+  @return true on success
+*/
 bool
-websrv_parseHeader(std::map<std::string,std::string> &hdrarray, std::string &header);
+websrv_parseHeader(std::map<std::string,std::string> &hdrmap, std::string &header);
 
+/*!
+  Get a specific header element from a header map
+  @param hdrmap Map with header element pairs
+  @param name Name for header element to look for
+  @param value Returned header element value
+  @return True on success.
+*/
 bool
-websrv_getHeaderElement(std::map<std::string,std::string> &hdrarray,
+websrv_getHeaderElement(std::map<std::string,std::string> &hdrmap,
                         const std::string &name,
                         std::string &value);
 

@@ -346,7 +346,7 @@ skip_quoted(char** buf,
 //
 
 bool
-websrv_parseHeader(std::map<std::string, std::string>& hdrarray,
+websrv_parseHeader(std::map<std::string, std::string>& hdrmap,
                    std::string& header)
 {
     char *name, *value, *s;
@@ -385,7 +385,7 @@ websrv_parseHeader(std::map<std::string, std::string>& hdrarray,
         }
 
         // Add entry to map
-        hdrarray[std::string(name)] = std::string(value);
+        hdrmap[std::string(name)] = std::string(value);
     }
 
     delete[] pbuf;
@@ -398,21 +398,21 @@ websrv_parseHeader(std::map<std::string, std::string>& hdrarray,
 //
 
 bool
-websrv_getHeaderElement(std::map<std::string, std::string>& hdrarray,
+websrv_getHeaderElement(std::map<std::string, std::string>& hdrmap,
                         const std::string& name,
                         std::string& value)
 {
     // Must be value/name pairs
-    if (!hdrarray.size())
+    if (!hdrmap.size())
         return false;
 
     // Check if key is available
-    if (hdrarray.end() == hdrarray.find(name)) {
+    if (hdrmap.end() == hdrmap.find(name)) {
         return false; // no
     }
 
     // Get key value
-    value = hdrarray[name];
+    value = hdrmap[name];
 
     return true;
 }
@@ -3426,8 +3426,9 @@ start_webserver(void)
     // Delete allocated option data
     pos = 0;
     while (NULL != web_options[pos]) {
-        // mg_free((void *)web_options[pos]);
-        web_options[pos] = NULL;
+        free((void *)web_options[pos]);
+        pos++;
+        free((void *)web_options[pos]);
         pos++;
     }
 
