@@ -265,11 +265,11 @@ daemonWorkerThread(void *threadData)
                     // There must be room in the send queue
                     if (pctrlObj->m_maxItemsInClientReceiveQueue >
                         pctrlObj->m_clientOutputQueue.size()) {
-                        pthread_mutex_lock(&pctrlObj->m_mutexClientOutputQueue);
+                        pthread_mutex_lock(&pctrlObj->m_mutex_ClientOutputQueue);
                         pctrlObj->m_clientOutputQueue.push_back(pnewEvent);
                         sem_post(&pctrlObj->m_semClientOutputQueue);
                         pthread_mutex_unlock(
-                          &pctrlObj->m_mutexClientOutputQueue);
+                          &pctrlObj->m_mutex_ClientOutputQueue);
                     }
                 }
             }
@@ -347,11 +347,11 @@ daemonWorkerThread(void *threadData)
                         if (pctrlObj->m_maxItemsInClientReceiveQueue >
                             pctrlObj->m_clientOutputQueue.size()) {
                             pthread_mutex_lock(
-                              &pctrlObj->m_mutexClientOutputQueue);
+                              &pctrlObj->m_mutex_ClientOutputQueue);
                             pctrlObj->m_clientOutputQueue.push_back(pnewEvent);
                             sem_post(&pctrlObj->m_semClientOutputQueue);
                             pthread_mutex_unlock(
-                              &pctrlObj->m_mutexClientOutputQueue);
+                              &pctrlObj->m_mutex_ClientOutputQueue);
                         }
                     }
 

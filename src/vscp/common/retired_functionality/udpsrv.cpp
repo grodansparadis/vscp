@@ -95,13 +95,13 @@ UDPSrvObj::ev_handler(struct mg_connection *nc, int ev, void *p)
                       std::string(inet_ntoa(nc->sa.sin.sin_addr));
 
                     // Check if this user is allowed to connect from this
-       location pthread_mutex_lock(&pObj->m_pobj->m_mutexUserList); bool
+       location pthread_mutex_lock(&pObj->m_pobj->m_mutex_UserList); bool
        bValidHost =
                       // pObj->m_pClientItem->m_pUserItem->isAllowedToConnect(
                       //        remoteaddr );
                       (1 == pObj->m_pClientItem->m_pUserItem
                               ->isAllowedToConnect(nc->sa.sin.sin_addr.s_addr));
-                    pthread_mutex_lock(&pObj->m_pobj->m_mutexUserList);
+                    pthread_mutex_lock(&pObj->m_pobj->m_mutex_UserList);
 
                     if (!bValidHost) {
                         syslog( LOG_ERR, "[UDP Client] Host [%s] not "
@@ -232,10 +232,10 @@ UDPSrvObj::receiveFrame(struct mg_connection *nc,
             if (m_pobj->m_maxItemsInClientReceiveQueue >
                 m_pobj->m_clientOutputQueue.size()) {
 
-                pthread_mutex_lock(&m_pobj->m_mutexClientOutputQueue);
+                pthread_mutex_lock(&m_pobj->m_mutex_ClientOutputQueue);
                 m_pobj->m_clientOutputQueue.push_back(pEvent);
                 sem_post(&m_pobj->m_semClientOutputQueue);
-                pthread_mutex_lock(&m_pobj->m_mutexClientOutputQueue);
+                pthread_mutex_lock(&m_pobj->m_mutex_ClientOutputQueue);
 
             } else {
                 vscp_deleteEvent_v2(&pEvent);
@@ -498,7 +498,7 @@ UDPThread(void *pData)
             pthread_mutex_lock(&m_pobj->m_clientMutex);
             m_pClientItem->m_pUserItem = m_pobj->m_userList.validateUser(
               m_pobj->m_udpSrvObj.m_user, m_pobj->m_udpSrvObj.m_password);
-            pthread_mutex_lock(&m_pobj->m_mutexUserList);
+            pthread_mutex_lock(&m_pobj->m_mutex_UserList);
 
             if (NULL == m_pClientItem->m_pUserItem) {
 

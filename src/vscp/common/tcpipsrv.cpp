@@ -217,7 +217,8 @@ tcpipListenThread(void* pData)
                 // pfd[i].revents == POLLIN.
                 if (pfd[i].revents & POLLIN) {
 
-                    conn = new struct stcp_connection; // New connection
+                    conn = (struct stcp_connection*)malloc(
+                      sizeof(struct stcp_connection)); // New connection
                     if (NULL == conn) {
                         syslog(LOG_ERR,
                                "[TCP/IP srv] -- Memory problem when creating "
@@ -2140,11 +2141,11 @@ tcpipClientObj::handleClientPassword(void)
         return false;
     }
 
-    pthread_mutex_lock(&m_pObj->m_mutexUserList);
+    pthread_mutex_lock(&m_pObj->m_mutex_UserList);
 
     m_pClientItem->m_pUserItem =
       m_pObj->m_userList.validateUser(m_pClientItem->m_UserName, strPassword);
-    pthread_mutex_unlock(&m_pObj->m_mutexUserList);
+    pthread_mutex_unlock(&m_pObj->m_mutex_UserList);
 
     if (NULL == m_pClientItem->m_pUserItem) {
 
@@ -2168,10 +2169,10 @@ tcpipClientObj::handleClientPassword(void)
     std::string remoteaddr = std::string(inet_ntoa(cli_addr.sin_addr));
 
     // Check if this user is allowed to connect from this location
-    pthread_mutex_lock(&m_pObj->m_mutexUserList);
+    pthread_mutex_lock(&m_pObj->m_mutex_UserList);
     bool bValidHost = (1 == m_pClientItem->m_pUserItem->isAllowedToConnect(
                               cli_addr.sin_addr.s_addr));
-    pthread_mutex_unlock(&m_pObj->m_mutexUserList);
+    pthread_mutex_unlock(&m_pObj->m_mutex_UserList);
 
     if (!bValidHost) {
         std::string strErr =
@@ -2873,7 +2874,12 @@ tcpipClientThread(void* pData)
     ptcpipobj->m_pClientItem = NULL;
     ptcpipobj->m_pParent     = NULL;
 
-    syslog(LOG_INFO, "[TCP/IP srv client thread] Exit.");
+    // Delete the client object
+    delete ptcpipobj;
+
+    if (__VSCP_DEBUG_TCP) {
+        syslog(LOG_INFO, "[TCP/IP srv client thread] Exit.");
+    }
 
     return NULL;
 }

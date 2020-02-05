@@ -454,7 +454,7 @@ websrv_get_session(struct mg_connection* conn)
     }
 
     // find existing session
-    pthread_mutex_lock(&gpobj->m_websrvSessionMutex);
+    pthread_mutex_lock(&gpobj->m_mutex_websrvSession);
     std::list<struct websrv_session*>::iterator iter;
     for (iter = gpobj->m_web_sessions.begin();
          iter != gpobj->m_web_sessions.end();
@@ -465,7 +465,7 @@ websrv_get_session(struct mg_connection* conn)
             break;
         }
     }
-    pthread_mutex_unlock(&gpobj->m_websrvSessionMutex);
+    pthread_mutex_unlock(&gpobj->m_mutex_websrvSession);
 
     return pSession;
 }
@@ -562,9 +562,9 @@ websrv_add_session(struct mg_connection* conn)
     pthread_mutex_unlock(&gpobj->m_clientList.m_mutexItemList);
 
     // Add to linked list
-    pthread_mutex_lock(&gpobj->m_websrvSessionMutex);
+    pthread_mutex_lock(&gpobj->m_mutex_websrvSession);
     gpobj->m_web_sessions.push_back(pSession);
-    pthread_mutex_unlock(&gpobj->m_websrvSessionMutex);
+    pthread_mutex_unlock(&gpobj->m_mutex_websrvSession);
 
     return pSession;
 }
@@ -606,7 +606,7 @@ websrv_expire_sessions(struct mg_connection* conn)
 
     now = time(NULL);
 
-    pthread_mutex_lock(&gpobj->m_websrvSessionMutex);
+    pthread_mutex_lock(&gpobj->m_mutex_websrvSession);
     std::list<struct websrv_session*>::iterator it;
     for (it = gpobj->m_web_sessions.begin(); it != gpobj->m_web_sessions.end();
          /* inline */) {
@@ -618,7 +618,7 @@ websrv_expire_sessions(struct mg_connection* conn)
             ++it;
         }
     }
-    pthread_mutex_unlock(&gpobj->m_websrvSessionMutex);
+    pthread_mutex_unlock(&gpobj->m_mutex_websrvSession);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -706,9 +706,9 @@ check_admin_authorization(struct mg_connection* conn, void* cbdata)
         tokens.pop_front();
     }
 
-    pthread_mutex_lock(&gpobj->m_mutexUserList);
+    pthread_mutex_lock(&gpobj->m_mutex_UserList);
     pUserItem = gpobj->m_userList.validateUser(strUser, strPassword);
-    pthread_mutex_unlock(&gpobj->m_mutexUserList);
+    pthread_mutex_unlock(&gpobj->m_mutex_UserList);
 
     if (NULL == pUserItem) {
         // Password is not correct
@@ -722,10 +722,10 @@ check_admin_authorization(struct mg_connection* conn, void* cbdata)
     }
 
     // Check if remote ip is valid
-    pthread_mutex_lock(&gpobj->m_mutexUserList);
+    pthread_mutex_lock(&gpobj->m_mutex_UserList);
     bValidHost =
       (1 == pUserItem->isAllowedToConnect(inet_addr(reqinfo->remote_addr)));
-    pthread_mutex_unlock(&gpobj->m_mutexUserList);
+    pthread_mutex_unlock(&gpobj->m_mutex_UserList);
     if (!bValidHost) {
         // Host is not allowed to connect
         syslog(LOG_ERR,

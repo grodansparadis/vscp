@@ -294,16 +294,16 @@ CDiscoveryObj::addNodeIfNotKnown(vscpEvent *pEvent)
                 pthread_mutex_unlock( &m_pCtrlObject->m_mutexKnownNodes );
 
                 // Is there a device related to this node
-                pthread_mutex_lock( &m_pCtrlObject->m_mutexDeviceList );
+                pthread_mutex_lock( &m_pCtrlObject->m_mutex_DeviceList );
                 // TODO
                 CDeviceItem *pDeviceItem; // =
                 //    m_pCtrlObject->m_deviceList.getDeviceItemFromClientId(
-       pEvent->obid ); pthread_mutex_unlock( &m_pCtrlObject->m_mutexDeviceList
+       pEvent->obid ); pthread_mutex_unlock( &m_pCtrlObject->m_mutex_DeviceList
        );
 
                 if ( NULL != pDeviceItem ) {
 
-                    pthread_mutex_lock( &m_pCtrlObject->m_mutexDeviceList );
+                    pthread_mutex_lock( &m_pCtrlObject->m_mutex_DeviceList );
 
                     TODO
                     pNode->m_level = pDeviceItem->m_driverLevel;
@@ -336,7 +336,7 @@ CDiscoveryObj::addNodeIfNotKnown(vscpEvent *pEvent)
        + pEvent->GUID[ 15 ] );
                     }
 
-                    pthread_mutex_unlock( &m_pCtrlObject->m_mutexDeviceList );
+                    pthread_mutex_unlock( &m_pCtrlObject->m_mutex_DeviceList );
 
                     // Now let the discovery thread do the rest of the work
 
@@ -350,7 +350,7 @@ CDiscoveryObj::addNodeIfNotKnown(vscpEvent *pEvent)
                     // Save Client ID
                     pNode->m_clientID = pEvent->obid;
 
-                    pthread_mutex_lock( &m_pCtrlObject->m_mutexDeviceList );
+                    pthread_mutex_lock( &m_pCtrlObject->m_mutex_DeviceList );
                     // TODO
                     //CClientItem *pClientItem =
                     //    m_pCtrlObject->m_clientList.getClientFromId(
@@ -358,7 +358,7 @@ CDiscoveryObj::addNodeIfNotKnown(vscpEvent *pEvent)
                         // Save interface
                         pNode->m_interfaceguid = pClientItem->m_guid;
                     }
-                    pthread_mutex_unlock( &m_pCtrlObject->m_mutexDeviceList );
+                    pthread_mutex_unlock( &m_pCtrlObject->m_mutex_DeviceList );
 
                     // We set name from client id
                     // 'client_clientid_nickname'

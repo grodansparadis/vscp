@@ -3124,10 +3124,10 @@ dmElement::doActionSendEvent(vscpEvent *pDMEvent)
                 return false;
             }
 
-            pthread_mutex_lock(&gpobj->m_mutexClientOutputQueue);
+            pthread_mutex_lock(&gpobj->m_mutex_ClientOutputQueue);
             gpobj->m_clientOutputQueue.push_back(pEvent);
             sem_post(&gpobj->m_semClientOutputQueue);
-            pthread_mutex_unlock(&gpobj->m_mutexClientOutputQueue);
+            pthread_mutex_unlock(&gpobj->m_mutex_ClientOutputQueue);
 
             // TX Statistics
             m_pDM->m_pClientItem->m_statistics.cntTransmitData +=
@@ -3303,10 +3303,10 @@ dmElement::doActionSendEventConditional(vscpEvent *pDMEvent)
     // There must be room in the send queue
     if (gpobj->m_maxItemsInClientReceiveQueue >
         gpobj->m_clientOutputQueue.size()) {
-        pthread_mutex_lock(&gpobj->m_mutexClientOutputQueue);
+        pthread_mutex_lock(&gpobj->m_mutex_ClientOutputQueue);
         gpobj->m_clientOutputQueue.push_back(pEvent);
         sem_post(&gpobj->m_semClientOutputQueue);
-        pthread_mutex_unlock(&gpobj->m_mutexClientOutputQueue);
+        pthread_mutex_unlock(&gpobj->m_mutex_ClientOutputQueue);
 
         // TX Statistics
         m_pDM->m_pClientItem->m_statistics.cntTransmitData += pEvent->sizeData;
@@ -3456,10 +3456,10 @@ dmElement::doActionSendEventsFromFile(vscpEvent *pDMEvent)
                     gpobj->m_clientOutputQueue.size())
                 {
 
-                    pthread_mutex_lock( &gpobj->m_mutexClientOutputQueue ;
+                    pthread_mutex_lock( &gpobj->m_mutex_ClientOutputQueue ;
                     gpobj->m_clientOutputQueue.push_back(pEvent);
                     sem_post( gpobj->m_semClientOutputQueue ;
-                    pthread_mutex_unlock( &gpobj->m_mutexClientOutputQueue );
+                    pthread_mutex_unlock( &gpobj->m_mutex_ClientOutputQueue );
 
                     // TX Statistics
                     m_pDM->m_pClientItem->m_statistics.cntTransmitData +=

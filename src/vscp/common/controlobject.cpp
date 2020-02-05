@@ -128,12 +128,52 @@ CControlObject::CControlObject()
     // Open syslog
     openlog("vscpd", LOG_CONS, LOG_DAEMON);
 
+    if (__VSCP_DEBUG_EXTRA) {
+        syslog(LOG_DEBUG, "Starting the vscpd daemon");
+    }
+
     m_bQuit = false; // true  for app termination
     m_bQuit_clientMsgWorkerThread =
       false; // true for clientWorkerThread termination
 
-    if (__VSCP_DEBUG_EXTRA) {
-        syslog(LOG_DEBUG, "Starting the vscpd daemon");
+    if ( -1 == sem_init(&m_semClientOutputQueue,0, 0) ) {
+        syslog(LOG_ERR, "Unable to init m_semClientOutputQueue");
+        return;
+    }
+
+    if ( 0 != pthread_mutex_init(&m_mutex_ClientOutputQueue, NULL) ) {
+        syslog(LOG_ERR, "Unable to init m_mutex_ClientOutputQueue");
+        return;
+    }
+
+    if ( 0 != pthread_mutex_init(&m_mutex_websrvSession, NULL) ) {
+        syslog(LOG_ERR, "Unable to init m_mutex_websrvSession");
+        return;
+    }
+
+    if ( 0 != pthread_mutex_init(&m_mutex_restSession, NULL) ) {
+        syslog(LOG_ERR, "Unable to init m_mutex_restSession");
+        return;
+    }
+
+    if ( 0 != pthread_mutex_init(&m_mutex_websocketSession, NULL) ) {
+        syslog(LOG_ERR, "Unable to init m_mutex_websocketSession");
+        return;
+    }
+
+    if ( 0 != pthread_mutex_init(&m_mutex_DeviceList, NULL) ) {
+        syslog(LOG_ERR, "Unable to init m_mutex_DeviceList");
+        return;
+    }
+
+    if ( 0 != pthread_mutex_init(&m_mutex_clientList, NULL) ) {
+        syslog(LOG_ERR, "Unable to init m_mutex_clientList");
+        return;
+    }
+
+    if ( 0 != pthread_mutex_init(&m_mutex_UserList, NULL) ) {
+        syslog(LOG_ERR, "Unable to init m_mutex_UserList");
+        return;
     }
 
     m_rootFolder = "/var/lib/vscp/vscpd/";
@@ -270,7 +310,7 @@ CControlObject::~CControlObject()
     // Remove objects in Client send queue
     std::list<vscpEvent*>::iterator iterVSCP;
 
-    pthread_mutex_lock(&m_mutexClientOutputQueue);
+    pthread_mutex_lock(&m_mutex_ClientOutputQueue);
     for (iterVSCP = m_clientOutputQueue.begin();
          iterVSCP != m_clientOutputQueue.end();
          ++iterVSCP) {
@@ -279,10 +319,49 @@ CControlObject::~CControlObject()
     }
 
     m_clientOutputQueue.clear();
-    pthread_mutex_unlock(&m_mutexClientOutputQueue);
+    pthread_mutex_unlock(&m_mutex_ClientOutputQueue);
 
     // Clean up clivetweb
     mg_exit_library();
+
+    if ( 0 != sem_destroy(&m_semClientOutputQueue) ) {
+        syslog(LOG_ERR, "Unable to destroy m_semClientOutputQueue");
+    }
+
+    if ( 0 != pthread_mutex_destroy(&m_mutex_ClientOutputQueue) ) {
+        syslog(LOG_ERR, "Unable to destroy m_mutex_ClientOutputQueue");
+        return;
+    }
+
+    if ( 0 != pthread_mutex_destroy(&m_mutex_websrvSession) ) {
+        syslog(LOG_ERR, "Unable to destroy m_mutex_websrvSession");
+        return;
+    }
+
+    if ( 0 != pthread_mutex_destroy(&m_mutex_restSession) ) {
+        syslog(LOG_ERR, "Unable to destroy m_mutex_restSession");
+        return;
+    }
+
+    if ( 0 != pthread_mutex_destroy(&m_mutex_websocketSession) ) {
+        syslog(LOG_ERR, "Unable to destroy m_mutex_websocketSession");
+        return;
+    }
+
+    if ( 0 != pthread_mutex_destroy(&m_mutex_DeviceList) ) {
+        syslog(LOG_ERR, "Unable to destroy m_mutex_DeviceList");
+        return;
+    }
+
+    if ( 0 != pthread_mutex_destroy(&m_mutex_clientList) ) {
+        syslog(LOG_ERR, "Unable to destroy m_mutex_clientList");
+        return;
+    }
+
+    if ( 0 != pthread_mutex_destroy(&m_mutex_UserList) ) {
+        syslog(LOG_ERR, "Unable to destroy m_mutex_UserList");
+        return;
+    }
 
     if (__VSCP_DEBUG_EXTRA) {
         syslog(LOG_DEBUG, "Terminating the vscpd daemon");
@@ -1182,10 +1261,10 @@ CControlObject::sendEvent(CClientItem* pClientItem, vscpEvent* peventToSend)
         // There must be room in the send queue
         if (m_maxItemsInClientReceiveQueue > m_clientOutputQueue.size()) {
 
-            pthread_mutex_lock(&m_mutexClientOutputQueue);
+            pthread_mutex_lock(&m_mutex_ClientOutputQueue);
             m_clientOutputQueue.push_back(pEvent);
             sem_post(&m_semClientOutputQueue);
-            pthread_mutex_unlock(&m_mutexClientOutputQueue);
+            pthread_mutex_unlock(&m_mutex_ClientOutputQueue);
 
             // TX Statistics
             pClientItem->m_statistics.cntTransmitData += pEvent->sizeData;
@@ -2311,11 +2390,11 @@ clientMsgWorkerThread(void* userdata)
 
         if (pObj->m_clientOutputQueue.size()) {
 
-            pthread_mutex_lock(&pObj->m_mutexClientOutputQueue);
+            pthread_mutex_lock(&pObj->m_mutex_ClientOutputQueue);
             pvscpEvent = pObj->m_clientOutputQueue.front();
             pObj->m_clientOutputQueue.pop_front();
             // pvscpEvent = *it;
-            pthread_mutex_unlock(&pObj->m_mutexClientOutputQueue);
+            pthread_mutex_unlock(&pObj->m_mutex_ClientOutputQueue);
 
             if (NULL != pvscpEvent) {
 

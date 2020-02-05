@@ -100,9 +100,9 @@ connect
 ) {
 
                     // Check if this user is allowed to connect from this
-location pthread_mutex_lock(&m_pObj->m_mutexUserList); bool bValidHost =
+location pthread_mutex_lock(&m_pObj->m_mutex_UserList); bool bValidHost =
                             pMulticastClientThread->m_pClientItem->m_pUserItem->isAllowedToConnect(
-nc->sa.sin.sin_addr.s_addr ); pthread_mutex_unlock(&m_pObj->m_mutexUserList);
+nc->sa.sin.sin_addr.s_addr ); pthread_mutex_unlock(&m_pObj->m_mutex_UserList);
 
                     if ( !bValidHost ) {
                         std::string strErr = vscp_str_format(("[Multicast
@@ -326,10 +326,10 @@ MulticastObj::receiveFrame(struct mg_connection *nc,
  has been better) if ( m_pObj->m_maxItemsInClientReceiveQueue >
                      m_pObj->m_clientOutputQueue.GetCount() ) {
 
-             pthread_mutex_lock(&m_pObj->m_mutexClientOutputQueue);
+             pthread_mutex_lock(&m_pObj->m_mutex_ClientOutputQueue);
              m_pObj->m_clientOutputQueue.push_back(pEvent);
              sem_post(&m_pObj->m_semClientOutputQueue);
-             pthread_mutex_unlock(&m_pObj->m_mutexClientOutputQueue);
+             pthread_mutex_unlock(&m_pObj->m_mutex_ClientOutputQueue);
 
          }
          else {

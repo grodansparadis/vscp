@@ -454,7 +454,7 @@ class CControlObject
     std::string m_web_lua_background_script_params;
 
     // Protects the web session object
-    pthread_mutex_t m_websrvSessionMutex;
+    pthread_mutex_t m_mutex_websrvSession;
 
     // Linked list of all active sessions. (websrv.h)
     std::list<struct websrv_session*> m_web_sessions;
@@ -464,7 +464,7 @@ class CControlObject
     //**************************************************************************
 
     // Protects the REST session object
-    pthread_mutex_t m_restSessionMutex;
+    pthread_mutex_t m_mutex_restSession;
 
     // Session structure for REST API
     std::list<struct restsrv_session*> m_rest_sessions;
@@ -485,7 +485,7 @@ class CControlObject
     // * * Websockets * *
 
     // Protects the websocket session object
-    pthread_mutex_t m_websocketSessionMutex;
+    pthread_mutex_t m_mutex_websocketSession;
 
     // List of active websocket sessions
     std::list<websock_session*> m_websocketSessions;
@@ -496,7 +496,7 @@ class CControlObject
 
     // The list with available devices.
     CDeviceList m_deviceList;
-    pthread_mutex_t m_mutexDeviceList;
+    pthread_mutex_t m_mutex_DeviceList;
 
     // This set holds driver names.
     // Returns true for an active driver
@@ -507,7 +507,7 @@ class CControlObject
     std::map<std::string, CDeviceItem> m_driverNameDeviceMap;
 
     // Mutex for device queue
-    pthread_mutex_t m_deviceListMutex;
+    pthread_mutex_t m_mutex_deviceList;
 
     // Automation Object
     CAutomation m_automation;
@@ -526,15 +526,12 @@ class CControlObject
     CClientList m_clientList;
 
     // Mutex for client queue
-    pthread_mutex_t m_clientListMutex;
+    pthread_mutex_t m_mutex_clientList;
 
     // The list of users
     CUserList m_userList; // deque
-    pthread_mutex_t m_mutexUserList;
+    pthread_mutex_t m_mutex_UserList;
 
-    // This is a list with defined tables
-    // CUserTableObjList m_userTableObjects; // deque
-    // pthread_mutex_t m_mutexUserTables;
 
     // *************************************************************************
 
@@ -555,7 +552,7 @@ class CControlObject
     /*!
         Mutex for Level II message send queue
      */
-    pthread_mutex_t m_mutexClientOutputQueue;
+    pthread_mutex_t m_mutex_ClientOutputQueue;
 
     // *************************************************************************
 

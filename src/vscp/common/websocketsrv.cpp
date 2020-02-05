@@ -392,9 +392,9 @@ websock_new_session(const struct mg_connection* conn)
     }
     pthread_mutex_unlock(&gpobj->m_clientList.m_mutexItemList);
 
-    pthread_mutex_lock(&gpobj->m_websocketSessionMutex);
+    pthread_mutex_lock(&gpobj->m_mutex_websocketSession);
     gpobj->m_websocketSessions.push_back(pSession);
-    pthread_mutex_unlock(&gpobj->m_websocketSessionMutex);
+    pthread_mutex_unlock(&gpobj->m_mutex_websocketSession);
 
     // Use the session object as user data
     mg_set_user_connection_data(pSession->m_conn, (void*)pSession);
@@ -521,10 +521,10 @@ websock_sendevent(struct mg_connection* conn,
 
                 vscp_copyEvent(pnewEvent, pEvent);
 
-                pthread_mutex_lock(&gpobj->m_mutexClientOutputQueue);
+                pthread_mutex_lock(&gpobj->m_mutex_ClientOutputQueue);
                 gpobj->m_clientOutputQueue.push_back(pnewEvent);
                 sem_post(&gpobj->m_semClientOutputQueue);
-                pthread_mutex_unlock(&gpobj->m_mutexClientOutputQueue);
+                pthread_mutex_unlock(&gpobj->m_mutex_ClientOutputQueue);
 
                 if (__VSCP_DEBUG_WEBSOCKET_TX) {
                     std::string str;
@@ -549,7 +549,7 @@ websock_sendevent(struct mg_connection* conn,
 void
 websock_post_incomingEvents(void)
 {
-    pthread_mutex_lock(&gpobj->m_websocketSessionMutex);
+    pthread_mutex_lock(&gpobj->m_mutex_websocketSession);
 
     std::list<websock_session*>::iterator iter;
     for (iter = gpobj->m_websocketSessions.begin();
@@ -634,7 +634,7 @@ websock_post_incomingEvents(void)
 
     } // for
 
-    pthread_mutex_unlock(&gpobj->m_websocketSessionMutex);
+    pthread_mutex_unlock(&gpobj->m_mutex_websocketSession);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -704,11 +704,11 @@ ws1_closeHandler(const struct mg_connection* conn, void* cbdata)
     gpobj->m_clientList.removeClient(pSession->m_pClientItem);
     pSession->m_pClientItem = NULL;
 
-    pthread_mutex_lock(&gpobj->m_websocketSessionMutex);
+    pthread_mutex_lock(&gpobj->m_mutex_websocketSession);
     // Remove session
     gpobj->m_websocketSessions.remove(pSession);
     delete pSession;
-    pthread_mutex_unlock(&gpobj->m_websocketSessionMutex);
+    pthread_mutex_unlock(&gpobj->m_mutex_websocketSession);
 
     mg_unlock_context(ctx);
 }
@@ -1575,10 +1575,10 @@ ws2_closeHandler(const struct mg_connection* conn, void* cbdata)
     gpobj->m_clientList.removeClient(pSession->m_pClientItem);
     pSession->m_pClientItem = NULL;
 
-    pthread_mutex_lock(&gpobj->m_websocketSessionMutex);
+    pthread_mutex_lock(&gpobj->m_mutex_websocketSession);
     gpobj->m_websocketSessions.remove(pSession);
     delete pSession;
-    pthread_mutex_unlock(&gpobj->m_websocketSessionMutex);
+    pthread_mutex_unlock(&gpobj->m_mutex_websocketSession);
 
     mg_unlock_context(ctx);
 }

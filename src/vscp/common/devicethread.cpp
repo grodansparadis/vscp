@@ -492,11 +492,11 @@ deviceThread(void* pData)
                                 pev->obid = pClientItem->m_clientID;
 
                                 pthread_mutex_lock(
-                                  &pObj->m_mutexClientOutputQueue);
+                                  &pObj->m_mutex_ClientOutputQueue);
                                 pObj->m_clientOutputQueue.push_back(pev);
                                 sem_post(&pObj->m_semClientOutputQueue);
                                 pthread_mutex_unlock(
-                                  &pObj->m_mutexClientOutputQueue);
+                                  &pObj->m_mutex_ClientOutputQueue);
                             }
                         }
                     }
@@ -878,11 +878,11 @@ deviceLevel1ReceiveThread(void* pData)
                     }
 
                     pthread_mutex_lock(
-                      &pDevItem->m_pObj->m_mutexClientOutputQueue);
+                      &pDevItem->m_pObj->m_mutex_ClientOutputQueue);
                     pDevItem->m_pObj->m_clientOutputQueue.push_back(pvscpEvent);
                     sem_post(&pDevItem->m_pObj->m_semClientOutputQueue);
                     pthread_mutex_unlock(
-                      &pDevItem->m_pObj->m_mutexClientOutputQueue);
+                      &pDevItem->m_pObj->m_mutex_ClientOutputQueue);
                 }
             }
         }
@@ -1039,10 +1039,10 @@ deviceLevel2ReceiveThread(void* pData)
         if (pDevItem->m_pObj->m_maxItemsInClientReceiveQueue >
             pDevItem->m_pObj->m_clientOutputQueue.size()) {
 
-            pthread_mutex_lock(&pDevItem->m_pObj->m_mutexClientOutputQueue);
+            pthread_mutex_lock(&pDevItem->m_pObj->m_mutex_ClientOutputQueue);
             pDevItem->m_pObj->m_clientOutputQueue.push_back(pev);
             sem_post(&pDevItem->m_pObj->m_semClientOutputQueue);
-            pthread_mutex_unlock(&pDevItem->m_pObj->m_mutexClientOutputQueue);
+            pthread_mutex_unlock(&pDevItem->m_pObj->m_mutex_ClientOutputQueue);
 
         } else {
             if (NULL == pev)

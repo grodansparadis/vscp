@@ -450,7 +450,7 @@ restsrv_get_session(struct mg_connection* conn, std::string& sid)
     }
 
     // find existing session
-    pthread_mutex_lock(&gpobj->m_restSessionMutex);
+    pthread_mutex_lock(&gpobj->m_mutex_restSession);
     std::list<struct restsrv_session*>::iterator iter;
     for (iter = gpobj->m_rest_sessions.begin();
          iter != gpobj->m_rest_sessions.end();
@@ -458,14 +458,14 @@ restsrv_get_session(struct mg_connection* conn, std::string& sid)
         struct restsrv_session* pSession = *iter;
         if (0 == strcmp((const char*)sid.c_str(), pSession->m_sid)) {
             pSession->m_lastActiveTime = time(NULL);
-            pthread_mutex_unlock(&gpobj->m_restSessionMutex);
+            pthread_mutex_unlock(&gpobj->m_mutex_restSession);
             if (__VSCP_DEBUG_REST) {
                 syslog(LOG_DEBUG, "REST: get_session, Session found.");
             }
             return pSession;
         }
     }
-    pthread_mutex_unlock(&gpobj->m_restSessionMutex);
+    pthread_mutex_unlock(&gpobj->m_mutex_restSession);
 
     syslog(LOG_ERR, "REST: get_session, Session not found.");
     return NULL;
@@ -563,9 +563,9 @@ restsrv_add_session(struct mg_connection* conn, CUserItem* pUserItem)
     pthread_mutex_unlock(&gpobj->m_clientList.m_mutexItemList);
 
     // Add to linked list
-    pthread_mutex_lock(&gpobj->m_restSessionMutex);
+    pthread_mutex_lock(&gpobj->m_mutex_restSession);
     gpobj->m_rest_sessions.push_back(pSession);
-    pthread_mutex_unlock(&gpobj->m_restSessionMutex);
+    pthread_mutex_unlock(&gpobj->m_mutex_restSession);
 
     return pSession;
 }
@@ -581,7 +581,7 @@ restsrv_expire_sessions(struct mg_connection* conn)
 
     now = time(NULL);
 
-    pthread_mutex_lock(&gpobj->m_restSessionMutex);
+    pthread_mutex_lock(&gpobj->m_mutex_restSession);
 
     std::list<struct restsrv_session*>::iterator it;
 
@@ -604,7 +604,7 @@ restsrv_expire_sessions(struct mg_connection* conn)
         syslog(LOG_ERR, "Exception expire_session");
     }
 
-    pthread_mutex_unlock(&gpobj->m_restSessionMutex);
+    pthread_mutex_unlock(&gpobj->m_mutex_restSession);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -903,10 +903,10 @@ websrv_restapi(struct mg_connection* conn, void* cbdata)
         // Check if remote ip is valid
         bool bValidHost;
 
-        pthread_mutex_lock(&gpobj->m_mutexUserList);
+        pthread_mutex_lock(&gpobj->m_mutex_UserList);
         bValidHost =
           (1 == pUserItem->isAllowedToConnect(inet_addr(reqinfo->remote_addr)));
-        pthread_mutex_unlock(&gpobj->m_mutexUserList);
+        pthread_mutex_unlock(&gpobj->m_mutex_UserList);
         if (!bValidHost) {
 
             std::string strErr = vscp_str_format(
@@ -925,11 +925,11 @@ websrv_restapi(struct mg_connection* conn, void* cbdata)
         }
 
         // Is this an authorised user?
-        pthread_mutex_lock(&gpobj->m_mutexUserList);
+        pthread_mutex_lock(&gpobj->m_mutex_UserList);
         CUserItem* pValidUser =
           gpobj->m_userList.validateUser(keypairs["VSCPUSER"],
                                          keypairs["VSCPSECRET"]);
-        pthread_mutex_unlock(&gpobj->m_mutexUserList);
+        pthread_mutex_unlock(&gpobj->m_mutex_UserList);
 
         if (NULL == pValidUser) {
 
@@ -993,10 +993,10 @@ websrv_restapi(struct mg_connection* conn, void* cbdata)
 
     // Check if remote ip is valid
     bool bValidHost;
-    pthread_mutex_lock(&gpobj->m_mutexUserList);
+    pthread_mutex_lock(&gpobj->m_mutex_UserList);
     bValidHost = (1 == pSession->m_pClientItem->m_pUserItem->isAllowedToConnect(
                          inet_addr(reqinfo->remote_addr)));
-    pthread_mutex_unlock(&gpobj->m_mutexUserList);
+    pthread_mutex_unlock(&gpobj->m_mutex_UserList);
     if (!bValidHost) {
         
         std::string strErr = vscp_str_format(
@@ -1680,10 +1680,10 @@ restsrv_doSendEvent(struct mg_connection* conn,
                     if (NULL != pNewEvent) {
                         vscp_copyEvent(pNewEvent, pEvent);
 
-                        pthread_mutex_lock(&gpobj->m_mutexClientOutputQueue);
+                        pthread_mutex_lock(&gpobj->m_mutex_ClientOutputQueue);
                         gpobj->m_clientOutputQueue.push_back(pNewEvent);
                         sem_post(&gpobj->m_semClientOutputQueue);
-                        pthread_mutex_unlock(&gpobj->m_mutexClientOutputQueue);
+                        pthread_mutex_unlock(&gpobj->m_mutex_ClientOutputQueue);
 
                         bSent = true;
                     } else {
