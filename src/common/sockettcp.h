@@ -305,6 +305,11 @@ stcp_connect_remote_secure( const char *host,
                                 int timeout );
 
 /*!
+    Allocate connection storage for connection.
+*/
+struct stcp_connection *stcp_new_connection(void);
+
+/*!
  * Close connection
  */ 
 void

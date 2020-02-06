@@ -217,8 +217,7 @@ tcpipListenThread(void* pData)
                 // pfd[i].revents == POLLIN.
                 if (pfd[i].revents & POLLIN) {
 
-                    conn = (struct stcp_connection*)malloc(
-                      sizeof(struct stcp_connection)); // New connection
+                    conn = stcp_new_connection(); // Init connection
                     if (NULL == conn) {
                         syslog(LOG_ERR,
                                "[TCP/IP srv] -- Memory problem when creating "

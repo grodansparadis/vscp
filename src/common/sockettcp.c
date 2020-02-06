@@ -2375,6 +2375,14 @@ set_tcp_nodelay( int sock, int nodelay_on )
     return 0;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// stcp_new_connection
+//
+
+struct stcp_connection * stcp_new_connection(void) 
+{
+    return (struct stcp_connection *)calloc( 1, sizeof( struct stcp_connection ) );
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // stcp_connect_socket
