@@ -245,8 +245,16 @@ class CClientList
 
     /*!
         Remove a client from the list
+        @param pClientItem Pointer to client item
+        @return true on success
     */
     bool removeClient(CClientItem *pClientItem);
+
+    /*!
+        Remove all clinets
+        @return true on success
+    */
+    bool removeAllClients(void);
 
     /*!
         Get client form client id

@@ -3263,10 +3263,7 @@ vscp_deleteEvent_v2(vscpEvent** ppEvent)
     if (NULL == *ppEvent)
         return;
 
-    if (NULL != (*ppEvent)->pdata) {
-        delete[](*ppEvent)->pdata;
-        (*ppEvent)->pdata = NULL;
-    }
+    vscp_deleteEvent(*ppEvent);
 
     // Delete the event and mark it as unused.
     delete *ppEvent;

@@ -644,12 +644,12 @@ js_vscp_sendEvent(duk_context* ctx)
 
     if (!gpobj->sendEvent(pClientItem, pEvent)) {
         // Failed to send event
-        vscp_deleteEvent(pEvent);
+        vscp_deleteEvent_v2(&pEvent);
         duk_push_boolean(ctx, 0); // return code false
         return JAVASCRIPT_OK;
     }
 
-    vscp_deleteEvent(pEvent);
+    vscp_deleteEvent_v2(&pEvent);
 
     duk_push_boolean(ctx, 1); // return code success
     return JAVASCRIPT_OK;
@@ -1098,12 +1098,12 @@ js_send_Measurement(duk_context* ctx)
     // Send the event
     if (!gpobj->sendEvent(pClientItem, pEvent)) {
         // Failed to send event
-        vscp_deleteEvent(pEvent);
+        vscp_deleteEvent_v2(&pEvent);
         duk_push_boolean(ctx, 0); // return code failure
         return JAVASCRIPT_OK;
     }
 
-    vscp_deleteEvent(pEvent);
+    vscp_deleteEvent_v2(&pEvent);
 
     duk_push_boolean(ctx, 0); // return code success
     return JAVASCRIPT_OK;

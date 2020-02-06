@@ -136,42 +136,42 @@ CControlObject::CControlObject()
     m_bQuit_clientMsgWorkerThread =
       false; // true for clientWorkerThread termination
 
-    if ( -1 == sem_init(&m_semClientOutputQueue,0, 0) ) {
+    if (-1 == sem_init(&m_semClientOutputQueue, 0, 0)) {
         syslog(LOG_ERR, "Unable to init m_semClientOutputQueue");
         return;
     }
 
-    if ( 0 != pthread_mutex_init(&m_mutex_ClientOutputQueue, NULL) ) {
+    if (0 != pthread_mutex_init(&m_mutex_ClientOutputQueue, NULL)) {
         syslog(LOG_ERR, "Unable to init m_mutex_ClientOutputQueue");
         return;
     }
 
-    if ( 0 != pthread_mutex_init(&m_mutex_websrvSession, NULL) ) {
+    if (0 != pthread_mutex_init(&m_mutex_websrvSession, NULL)) {
         syslog(LOG_ERR, "Unable to init m_mutex_websrvSession");
         return;
     }
 
-    if ( 0 != pthread_mutex_init(&m_mutex_restSession, NULL) ) {
+    if (0 != pthread_mutex_init(&m_mutex_restSession, NULL)) {
         syslog(LOG_ERR, "Unable to init m_mutex_restSession");
         return;
     }
 
-    if ( 0 != pthread_mutex_init(&m_mutex_websocketSession, NULL) ) {
+    if (0 != pthread_mutex_init(&m_mutex_websocketSession, NULL)) {
         syslog(LOG_ERR, "Unable to init m_mutex_websocketSession");
         return;
     }
 
-    if ( 0 != pthread_mutex_init(&m_mutex_DeviceList, NULL) ) {
+    if (0 != pthread_mutex_init(&m_mutex_DeviceList, NULL)) {
         syslog(LOG_ERR, "Unable to init m_mutex_DeviceList");
         return;
     }
 
-    if ( 0 != pthread_mutex_init(&m_mutex_clientList, NULL) ) {
+    if (0 != pthread_mutex_init(&m_mutex_clientList, NULL)) {
         syslog(LOG_ERR, "Unable to init m_mutex_clientList");
         return;
     }
 
-    if ( 0 != pthread_mutex_init(&m_mutex_UserList, NULL) ) {
+    if (0 != pthread_mutex_init(&m_mutex_UserList, NULL)) {
         syslog(LOG_ERR, "Unable to init m_mutex_UserList");
         return;
     }
@@ -309,56 +309,57 @@ CControlObject::~CControlObject()
 
     // Remove objects in Client send queue
     std::list<vscpEvent*>::iterator iterVSCP;
-
     pthread_mutex_lock(&m_mutex_ClientOutputQueue);
     for (iterVSCP = m_clientOutputQueue.begin();
          iterVSCP != m_clientOutputQueue.end();
          ++iterVSCP) {
         vscpEvent* pEvent = *iterVSCP;
-        vscp_deleteEvent(pEvent);
+        vscp_deleteEvent_v2(&pEvent);
     }
-
     m_clientOutputQueue.clear();
     pthread_mutex_unlock(&m_mutex_ClientOutputQueue);
 
-    // Clean up clivetweb
+    // Remove all clients
+    m_clientList.removeAllClients();
+
+    // Clean up civetweb
     mg_exit_library();
 
-    if ( 0 != sem_destroy(&m_semClientOutputQueue) ) {
+    if (0 != sem_destroy(&m_semClientOutputQueue)) {
         syslog(LOG_ERR, "Unable to destroy m_semClientOutputQueue");
     }
 
-    if ( 0 != pthread_mutex_destroy(&m_mutex_ClientOutputQueue) ) {
+    if (0 != pthread_mutex_destroy(&m_mutex_ClientOutputQueue)) {
         syslog(LOG_ERR, "Unable to destroy m_mutex_ClientOutputQueue");
         return;
     }
 
-    if ( 0 != pthread_mutex_destroy(&m_mutex_websrvSession) ) {
+    if (0 != pthread_mutex_destroy(&m_mutex_websrvSession)) {
         syslog(LOG_ERR, "Unable to destroy m_mutex_websrvSession");
         return;
     }
 
-    if ( 0 != pthread_mutex_destroy(&m_mutex_restSession) ) {
+    if (0 != pthread_mutex_destroy(&m_mutex_restSession)) {
         syslog(LOG_ERR, "Unable to destroy m_mutex_restSession");
         return;
     }
 
-    if ( 0 != pthread_mutex_destroy(&m_mutex_websocketSession) ) {
+    if (0 != pthread_mutex_destroy(&m_mutex_websocketSession)) {
         syslog(LOG_ERR, "Unable to destroy m_mutex_websocketSession");
         return;
     }
 
-    if ( 0 != pthread_mutex_destroy(&m_mutex_DeviceList) ) {
+    if (0 != pthread_mutex_destroy(&m_mutex_DeviceList)) {
         syslog(LOG_ERR, "Unable to destroy m_mutex_DeviceList");
         return;
     }
 
-    if ( 0 != pthread_mutex_destroy(&m_mutex_clientList) ) {
+    if (0 != pthread_mutex_destroy(&m_mutex_clientList)) {
         syslog(LOG_ERR, "Unable to destroy m_mutex_clientList");
         return;
     }
 
-    if ( 0 != pthread_mutex_destroy(&m_mutex_UserList) ) {
+    if (0 != pthread_mutex_destroy(&m_mutex_UserList)) {
         syslog(LOG_ERR, "Unable to destroy m_mutex_UserList");
         return;
     }
@@ -647,6 +648,8 @@ CControlObject::run(void)
                 websock_post_incomingEvents();
             }
 
+            vscp_deleteEvent_v2(&pEvent);
+
         } // Event in queue
 
     } // while
@@ -685,7 +688,8 @@ CControlObject::cleanup(void)
     try {
         stopDeviceWorkerThreads();
     } catch (...) {
-        syslog(LOG_ERR, "REST: Exception occurred when stoping device worker threads");
+        syslog(LOG_ERR,
+               "REST: Exception occurred when stoping device worker threads");
     }
 
     if (__VSCP_DEBUG_EXTRA) {
@@ -704,7 +708,8 @@ CControlObject::cleanup(void)
     try {
         stopClientMsgWorkerThread();
     } catch (...) {
-        syslog(LOG_ERR, "REST: Exception occurred when stoping client worker thread");
+        syslog(LOG_ERR,
+               "REST: Exception occurred when stoping client worker thread");
     }
 
     if (__VSCP_DEBUG_EXTRA) {
@@ -1047,45 +1052,47 @@ CControlObject::getVscpCapabilities(uint8_t* pCapability)
 // sendEventToClient
 //
 
-void
+bool
 CControlObject::sendEventToClient(CClientItem* pClientItem, vscpEvent* pEvent)
 {
     // Must be valid pointers
-    if (NULL == pClientItem)
-        return;
-    if (NULL == pEvent)
-        return;
+    if (NULL == pClientItem) {
+        syslog(LOG_ERR, "sendEventToClient - Pointer to clientitem is null");
+        return false;
+    }
+    if (NULL == pEvent) {
+        syslog(LOG_ERR, "sendEventToClient - Pointer to event is null");
+        return false;
+    }
 
     // Check if filtered out - if so do nothing here
-    if (!vscp_doLevel2Filter(pEvent, &pClientItem->m_filter))
-        return;
+    if (!vscp_doLevel2Filter(pEvent, &pClientItem->m_filter)) {
+        if (__VSCP_DEBUG_EXTRA) {
+            syslog(LOG_DEBUG, "sendEventToClient - Filtered out");
+        }
+        return false;
+    }
 
     // If the client queue is full for this client then the
     // client will not receive the message
     if (pClientItem->m_clientInputQueue.size() >
         m_maxItemsInClientReceiveQueue) {
+        if (__VSCP_DEBUG_EXTRA) {
+            syslog(LOG_DEBUG, "sendEventToClient - overrun");
+        }
         // Overrun
         pClientItem->m_statistics.cntOverruns++;
-        return;
+        return false;
     }
 
-    // Create an event
+    // Create a new event
     vscpEvent* pnewvscpEvent = new vscpEvent;
     if (NULL != pnewvscpEvent) {
 
         // Copy in the new event
-        memcpy(pnewvscpEvent, pEvent, sizeof(vscpEvent));
-
-        // And data...
-        if ((NULL != pEvent->pdata) && (pEvent->sizeData > 0)) {
-            // Copy in data
-            pnewvscpEvent->pdata = new uint8_t[pEvent->sizeData];
-            if (NULL != pnewvscpEvent->pdata) {
-                memcpy(pnewvscpEvent->pdata, pEvent->pdata, pEvent->sizeData);
-            }
-        } else {
-            // No data
-            pnewvscpEvent->pdata = NULL;
+        if (!vscp_copyEvent(pnewvscpEvent, pEvent)) {
+            vscp_deleteEvent_v2(&pnewvscpEvent);
+            return false;
         }
 
         // Add the new event to the input queue
@@ -1094,20 +1101,24 @@ CControlObject::sendEventToClient(CClientItem* pClientItem, vscpEvent* pEvent)
         sem_post(&pClientItem->m_semClientInputQueue);
         pthread_mutex_unlock(&pClientItem->m_mutexClientInputQueue);
     }
+
+    return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // sendEventAllClients
 //
 
-void
+bool
 CControlObject::sendEventAllClients(vscpEvent* pEvent, uint32_t excludeID)
 {
     CClientItem* pClientItem;
     std::deque<CClientItem*>::iterator it;
 
-    if (NULL == pEvent)
-        return;
+    if (NULL == pEvent) {
+        syslog(LOG_ERR, "sendEventAllClients - null event");
+        return false;
+    }
 
     pthread_mutex_lock(&m_clientList.m_mutexItemList);
     for (it = m_clientList.m_itemList.begin();
@@ -1116,15 +1127,26 @@ CControlObject::sendEventAllClients(vscpEvent* pEvent, uint32_t excludeID)
         pClientItem = *it;
 
         if ((NULL != pClientItem) && (excludeID != pClientItem->m_clientID)) {
-            sendEventToClient(pClientItem, pEvent);
+            if (__VSCP_DEBUG_EXTRA) {
+                syslog(LOG_DEBUG,
+                       "Send event to client [%s]",
+                       pClientItem->m_strDeviceName.c_str());
+            }
+            if (!sendEventToClient(pClientItem, pEvent)) {
+                syslog(LOG_ERR, "sendEventAllClients - Failed to send event");
+            }
         }
     }
 
     pthread_mutex_unlock(&m_clientList.m_mutexItemList);
+
+    return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // sendEvent
+//
+// !!! pEventToSend must be deallocated by sender !!!
 //
 
 bool
@@ -1133,10 +1155,14 @@ CControlObject::sendEvent(CClientItem* pClientItem, vscpEvent* peventToSend)
     bool bSent = false;
 
     // Check pointers
-    if (NULL == pClientItem)
+    if (NULL == pClientItem) {
+        syslog(LOG_ERR, "sendEvent - null clientItem");
         return false;
-    if (NULL == peventToSend)
+    }
+    if (NULL == peventToSend) {
+        syslog(LOG_ERR, "sendEvent - null event");
         return false;
+    }
 
     // If timestamp is nulled make one
     if (0 == peventToSend->timestamp) {
@@ -1155,17 +1181,17 @@ CControlObject::sendEvent(CClientItem* pClientItem, vscpEvent* peventToSend)
 
     vscpEvent* pEvent = new vscpEvent; // Create new VSCP Event
     if (NULL == pEvent) {
+        syslog(LOG_ERR, "sendEvent - Allocation of event failed");
         return false;
     }
 
-    // Copy event
-    vscp_copyEvent(pEvent, peventToSend);
+    pEvent->pdata = NULL;
 
-    // We don't need the original event anymore
-    if (NULL != peventToSend->pdata) {
-        delete[] peventToSend->pdata;
-        peventToSend->pdata    = NULL;
-        peventToSend->sizeData = 0;
+    // Copy event
+    if (!vscp_copyEvent(pEvent, peventToSend)) {
+        vscp_deleteEvent_v2(&pEvent);
+        syslog(LOG_ERR, "sendEvent - Event copy failed");
+        return false;
     }
 
     // Save the originating clients id so
@@ -1214,7 +1240,6 @@ CControlObject::sendEvent(CClientItem* pClientItem, vscpEvent* peventToSend)
         // Find client
         pthread_mutex_lock(&m_clientList.m_mutexItemList);
 
-        // CClientItem *pDestClientItem = NULL;
         std::deque<CClientItem*>::iterator it;
         for (it = m_clientList.m_itemList.begin();
              it != m_clientList.m_itemList.end();
@@ -1248,7 +1273,9 @@ CControlObject::sendEvent(CClientItem* pClientItem, vscpEvent* peventToSend)
                 // Found
                 // pDestClientItem = pItem;
                 bSent = true;
-                sendEventToClient(pItem, pEvent);
+                if (!sendEventToClient(pItem, pEvent)) {
+                    ;
+                }
                 break;
             }
         }
@@ -1264,16 +1291,18 @@ CControlObject::sendEvent(CClientItem* pClientItem, vscpEvent* peventToSend)
             pthread_mutex_lock(&m_mutex_ClientOutputQueue);
             m_clientOutputQueue.push_back(pEvent);
             sem_post(&m_semClientOutputQueue);
-            pthread_mutex_unlock(&m_mutex_ClientOutputQueue);
 
             // TX Statistics
             pClientItem->m_statistics.cntTransmitData += pEvent->sizeData;
             pClientItem->m_statistics.cntTransmitFrames++;
+
+            pthread_mutex_unlock(&m_mutex_ClientOutputQueue);
         } else {
-
+            if (__VSCP_DEBUG_EXTRA) {
+                syslog(LOG_DEBUG, "sendEvent - overrun");
+            }
             pClientItem->m_statistics.cntOverruns++;
-
-            vscp_deleteEvent(pEvent);
+            vscp_deleteEvent_v2(&pEvent);
             return false;
         }
     }
@@ -2393,7 +2422,6 @@ clientMsgWorkerThread(void* userdata)
             pthread_mutex_lock(&pObj->m_mutex_ClientOutputQueue);
             pvscpEvent = pObj->m_clientOutputQueue.front();
             pObj->m_clientOutputQueue.pop_front();
-            // pvscpEvent = *it;
             pthread_mutex_unlock(&pObj->m_mutex_ClientOutputQueue);
 
             if (NULL != pvscpEvent) {
@@ -2409,12 +2437,10 @@ clientMsgWorkerThread(void* userdata)
 
             } // Valid event
 
-            // Delete the event
-            if (NULL != pvscpEvent)
-                vscp_deleteEvent(pvscpEvent);
-            pvscpEvent = NULL;
+            // Delete the event - we are done with it
+            vscp_deleteEvent_v2(&pvscpEvent);
 
-        } // while
+        } // Events in queue
 
     } // while
 

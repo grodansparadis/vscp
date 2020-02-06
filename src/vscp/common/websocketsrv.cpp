@@ -626,7 +626,7 @@ websock_post_incomingEvents(void)
                 }
 
                 // Remove the event
-                vscp_deleteEvent(pEvent);
+                vscp_deleteEvent_v2(&pEvent);
 
             } // Valid pEvent pointer
 
@@ -1450,7 +1450,7 @@ ws1_command(struct mg_connection* conn,
             vscpEvent* pEvent =
               pSession->m_pClientItem->m_clientInputQueue.front();
             pSession->m_pClientItem->m_clientInputQueue.pop_front();
-            vscp_deleteEvent(pEvent);
+            vscp_deleteEvent_v2(&pEvent);
         }
 
         pSession->m_pClientItem->m_clientInputQueue.clear();
@@ -2508,7 +2508,7 @@ ws2_command(struct mg_connection* conn,
             vscpEvent* pEvent =
               pSession->m_pClientItem->m_clientInputQueue.front();
             pSession->m_pClientItem->m_clientInputQueue.pop_front();
-            vscp_deleteEvent(pEvent);
+            vscp_deleteEvent_v2(&pEvent);
         }
 
         pSession->m_pClientItem->m_clientInputQueue.clear();

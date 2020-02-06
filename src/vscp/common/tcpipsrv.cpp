@@ -581,7 +581,8 @@ tcpipClientObj::CommandHandler(std::string& strCommand)
     //                                 QUIT
     // *********************************************************************
 
-    else if (m_pClientItem->CommandStartsWith(("quit"))) {
+    else if (m_pClientItem->CommandStartsWith("quit") ||
+             m_pClientItem->CommandStartsWith("exit")) {
         // long test = MG_F_CLOSE_IMMEDIATELY;
         if (__VSCP_DEBUG_TCP) {
             syslog(LOG_INFO, "[TCP/IP srv] Command: Close.");
@@ -1128,10 +1129,13 @@ tcpipClientObj::handleClientMeasurement(void)
 
                 // send the event
                 if (!m_pObj->sendEvent(m_pClientItem, pEvent)) {
+                    vscp_deleteEvent_v2(&pEvent);
                     write(MSG_UNABLE_TO_SEND_EVENT,
                           strlen(MSG_UNABLE_TO_SEND_EVENT));
                     return;
                 }
+
+                vscp_deleteEvent_v2(&pEvent);
 
             } else {
                 write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
@@ -1155,6 +1159,8 @@ tcpipClientObj::handleClientMeasurement(void)
                                                  sensoridx)) {
                 write(MSG_PARAMETER_ERROR, strlen(MSG_PARAMETER_ERROR));
             }
+
+            // TODO have to send also
         }
     } else { // Level II
 
@@ -1203,10 +1209,13 @@ tcpipClientObj::handleClientMeasurement(void)
 
             // send the event
             if (!m_pObj->sendEvent(m_pClientItem, pEvent)) {
+                vscp_deleteEvent_v2(&pEvent);
                 write(MSG_UNABLE_TO_SEND_EVENT,
                       strlen(MSG_UNABLE_TO_SEND_EVENT));
                 return;
             }
+
+            vscp_deleteEvent_v2(&pEvent);
 
         } else { // string & Level II
 
@@ -1245,10 +1254,13 @@ tcpipClientObj::handleClientMeasurement(void)
 
             // send the event
             if (!m_pObj->sendEvent(m_pClientItem, pEvent)) {
+                vscp_deleteEvent_v2(&pEvent);
                 write(MSG_UNABLE_TO_SEND_EVENT,
                       strlen(MSG_UNABLE_TO_SEND_EVENT));
                 return;
             }
+
+            vscp_deleteEvent_v2(&pEvent);
         }
     }
 
@@ -1647,9 +1659,12 @@ tcpipClientObj::handleClientSend(void)
 
     // send event
     if (!m_pObj->sendEvent(m_pClientItem, &event)) {
+        vscp_deleteEvent(&event); // Deallocate data
         write(MSG_BUFFER_FULL, strlen(MSG_BUFFER_FULL));
         return;
     }
+
+    vscp_deleteEvent(&event); // Deallocate data
 
     write(MSG_OK, strlen(MSG_OK));
 }
@@ -1728,7 +1743,7 @@ tcpipClientObj::sendOneEventFromQueue(bool bStatusMsg)
         strOut += ("\r\n");
         write(strOut.c_str(), strlen(strOut.c_str()));
 
-        vscp_deleteEvent(pqueueEvent);
+        vscp_deleteEvent_v2(&pqueueEvent);
 
     } else {
         if (bStatusMsg) {
@@ -1785,6 +1800,13 @@ tcpipClientObj::handleClientClearInputQueue(void)
     }
 
     pthread_mutex_lock(&m_pClientItem->m_mutexClientInputQueue);
+    std::deque<vscpEvent*>::iterator iter;
+    for (iter = m_pClientItem->m_clientInputQueue.begin();
+         iter != m_pClientItem->m_clientInputQueue.end();
+         ++iter) {
+        vscpEvent* pEvent = *iter;
+        vscp_deleteEvent_v2(&pEvent);
+    }
     m_pClientItem->m_clientInputQueue.clear();
     pthread_mutex_unlock(&m_pClientItem->m_mutexClientInputQueue);
 

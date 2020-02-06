@@ -6,7 +6,6 @@ m4_builtin([include], VERSION.m4)
 
 AC_INIT( [vscp], [package_version], [akhe@vscp.org])
 
-
 AC_CONFIG_MACRO_DIR(m4)
 
 AC_PREREQ(2.57)
@@ -113,9 +112,23 @@ dnl
 AC_ARG_ENABLE(wrap,
    AS_HELP_STRING([--enable-wrap], [Build wrap tcpd support (default enabled)]) )
 
+dnl
+dnl ASAN 
+dnl
+
 AS_IF([test "x$enable_wrap" != "xno"], [
   CFLAGS+=" -DWITH_WRAP"
   CPPFLAGS+=" -DWITH_WRAP"
+])
+
+AC_ARG_ENABLE(asan,
+   AS_HELP_STRING([--enable-asan], [--enable-asan to build with AddressSanitizer https://github.com/google/sanitizers/wiki/AddressSanitizer (default disabled]))
+
+AS_IF([test "x$enable_asan" == "xyes"], [
+  CFLAGS+=" -fsanitize=address"
+  CPPFLAGS+=" -fsanitize=address"
+  CXXFLAGS+=" -fsanitize=address"
+  LDFLAGS+=" -fsanitize=address"
 ])
 
 dnl
@@ -142,7 +155,7 @@ AC_ARG_ENABLE(rpi,
    AS_HELP_STRING([--enable-rpi], [Build Raspberry Pi specific stuff (default disabled)]))
 
 vscp_rpi=no
-AS_IF([test "x$enable_rpi" = "xyes"], [
+AS_IF([test "x$enable_rpi" == "xyes"], [
   vscp_rpi=yes
 ])
 
@@ -202,9 +215,10 @@ echo   "VSCP install dir      : ${VSCPDIR}"
 dnl Output some debugging information
 echo   "LIBS          : ${LIBS}"
 echo   "EXTRALIBS     : ${EXTRALIBS}"
-echo   "EXTRACPPFLAGS : ${CPPFLAGS}"
-echo   "EXTRACXXFLAGS : ${CXXFLAGS}"
-echo   "EXTRACFLAGS   : ${CFLAGS}"
+echo   "CPPFLAGS      : ${CPPFLAGS}"
+echo   "CXXFLAGS      : ${CXXFLAGS}"
+echo   "CFLAGS        : ${CFLAGS}"
+echo   "LDFLAGS       : ${LDFLAGS}"
 echo   "PROJ_SUBDIRS  : ${PROJ_SUBDIRS}"
 
 dnl echo   "${ax_enable_debug}"
@@ -230,6 +244,10 @@ AS_IF([test "x$enable_wrap" = "xno"],
    [echo   "tcpd wrap enabled     : no"],
    [echo   "tcpd wrap enabled     : yes" ])   
 
+AS_IF([test "x$enable_asan" = "xyes"], 
+   [echo   "asan enabled          : yes"],
+   [echo   "asan enabled          : no" ])
+
 AS_IF([test "x$enable_rpi" = "xyes"], 
    [echo   "Raspberry Pi build    : yes"],
    [echo   "Raspberry Pi build    : no" ])
@@ -239,6 +257,7 @@ You can tune the compiler flags in vscp-config.
 To build VSCP and friends, type \'make\' followed by \'make install\'
 
  use --enable-debug to build a debug version; release is default.
+ use --enable-asan to build with AddressSanitizer https://github.com/google/sanitizers/wiki/AddressSanitizer
  use --enable-rpi to build Raspberry Pi specific drivers.
  use --disable-systemd to not use systemd (default: eanbled).
  use --disable-wrap to not use the tcpd wrapper (default: eanbled).

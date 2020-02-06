@@ -3114,6 +3114,7 @@ dmElement::doActionSendEvent(vscpEvent *pDMEvent)
             pEvent->pdata = NULL;
 
             if (!vscp_convertStringToEvent(pEvent, strEvent)) {
+                
                 vscp_deleteEvent_v2(&pEvent);
 
                 // Event has wrong format

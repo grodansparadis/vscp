@@ -1156,6 +1156,8 @@ lua_vscp_sendEvent(struct lua_State* L)
         return luaL_error(L, "vscp.sendEvent: Failed to send event!");
     }
 
+    vscp_deleteEvent_v2(&pEvent);
+
     return 1;
 }
 
@@ -1648,13 +1650,13 @@ lua_send_Measurement(struct lua_State* L)
     // Send the event
     if (!gpobj->sendEvent(pClientItem, pEvent)) {
         // Failed to send event
-        vscp_deleteEvent(pEvent);
+        vscp_deleteEvent_v2(&pEvent);
         return luaL_error(L,
                           "vscp.sendMeasurement: "
                           "Failed to send event!");
     }
 
-    vscp_deleteEvent(pEvent);
+    vscp_deleteEvent_v2(&pEvent);
 
     return 1;
 }

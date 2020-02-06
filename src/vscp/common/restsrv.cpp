@@ -2279,14 +2279,12 @@ restsrv_doClearQueue(struct mg_connection* conn,
         std::deque<vscpEvent*>::iterator it;
 
         pthread_mutex_lock(&pSession->m_pClientItem->m_mutexClientInputQueue);
-
         for (it = pSession->m_pClientItem->m_clientInputQueue.begin();
              it != pSession->m_pClientItem->m_clientInputQueue.end();
              ++it) {
             vscpEvent* pEvent = *it;
-            vscp_deleteEvent(pEvent);
+            vscp_deleteEvent_v2(&pEvent);
         }
-
         pSession->m_pClientItem->m_clientInputQueue.clear();
         pthread_mutex_unlock(&pSession->m_pClientItem->m_mutexClientInputQueue);
 

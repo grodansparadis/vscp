@@ -40,7 +40,7 @@
 
 #include "clientlist.h"
 
-const char *interface_description[] = { "Unknown (you should not see this).",
+const char* interface_description[] = { "Unknown (you should not see this).",
                                         "Internal VSCP server client.",
                                         "Level I (CANAL) Driver.",
                                         "Level II Driver.",
@@ -110,14 +110,12 @@ CClientItem::CClientItem()
 
 CClientItem::~CClientItem()
 {
-    std::deque<vscpEvent *>::iterator iter;
-
+    std::deque<vscpEvent*>::iterator iter;
     for (iter = m_clientInputQueue.begin(); iter != m_clientInputQueue.end();
          ++iter) {
-        vscpEvent *pEvent = *iter;
-        vscp_deleteEvent(pEvent);
+        vscpEvent* pEvent = *iter;
+        vscp_deleteEvent_v2(&pEvent);
     }
-
     m_clientInputQueue.clear();
 
     sem_destroy(&m_hEventSend);
@@ -130,7 +128,7 @@ CClientItem::~CClientItem()
 //
 
 bool
-CClientItem::CommandStartsWith(const std::string &cmd, bool bFix)
+CClientItem::CommandStartsWith(const std::string& cmd, bool bFix)
 {
     if (!vscp_startsWith(vscp_upper(m_currentCommand), vscp_upper(cmd))) {
         return false;
@@ -139,8 +137,9 @@ CClientItem::CommandStartsWith(const std::string &cmd, bool bFix)
     // If asked to do so remove the command.
     if (bFix) {
         if (m_currentCommand.length() - cmd.length()) {
-            m_currentCommand = vscp_str_right(
-              m_currentCommand, m_currentCommand.length() - cmd.length() - 1);
+            m_currentCommand =
+              vscp_str_right(m_currentCommand,
+                             m_currentCommand.length() - cmd.length() - 1);
         } else {
             m_currentCommand.clear();
         }
@@ -155,7 +154,7 @@ CClientItem::CommandStartsWith(const std::string &cmd, bool bFix)
 //
 
 void
-CClientItem::setDeviceName(const std::string &name)
+CClientItem::setDeviceName(const std::string& name)
 {
     m_strDeviceName = name;
     m_strDeviceName += "|Started at ";
@@ -221,17 +220,7 @@ CClientList::CClientList()
 
 CClientList::~CClientList()
 {
-    pthread_mutex_lock(&m_mutexItemList);
-
-    // Empty the client list
-    std::deque<CClientItem *>::iterator it;
-    for (it = m_itemList.begin(); it != m_itemList.end(); ++it) {
-        delete *it;
-    }
-
-    m_itemList.clear();
-
-    pthread_mutex_unlock(&m_mutexItemList);
+    removeAllClients();
     pthread_mutex_destroy(&m_mutexItemList);
 }
 
@@ -240,17 +229,18 @@ CClientList::~CClientList()
 //
 
 bool
-CClientList::findFreeId(uint16_t *pid)
+CClientList::findFreeId(uint16_t* pid)
 {
     std::list<uint16_t> sorterIdList;
-    std::deque<CClientItem *>::iterator it;
+    std::deque<CClientItem*>::iterator it;
 
     // Check pointer
-    if (NULL == pid) return false;
+    if (NULL == pid)
+        return false;
 
     // Find next free id
     for (it = m_itemList.begin(); it != m_itemList.end(); ++it) {
-        CClientItem *pItem = *it;
+        CClientItem* pItem = *it;
         sorterIdList.push_back(pItem->m_clientID);
     }
 
@@ -279,12 +269,13 @@ CClientList::findFreeId(uint16_t *pid)
 //
 
 bool
-CClientList::addClient(CClientItem *pClientItem, uint32_t id)
+CClientList::addClient(CClientItem* pClientItem, uint32_t id)
 {
-    std::deque<CClientItem *>::iterator it;
+    std::deque<CClientItem*>::iterator it;
 
     // Check pointer
-    if (NULL == pClientItem) return false;
+    if (NULL == pClientItem)
+        return false;
 
     pClientItem->m_clientID = id ? id : 1;
 
@@ -297,7 +288,7 @@ CClientList::addClient(CClientItem *pClientItem, uint32_t id)
     // We try to assign requested id
     for (it = m_itemList.begin(); it != m_itemList.end(); ++it) {
 
-        CClientItem *pItem = *it;
+        CClientItem* pItem = *it;
 
         // If id is already in use fail
         if (pClientItem->m_clientID == pItem->m_clientID) {
@@ -316,16 +307,26 @@ CClientList::addClient(CClientItem *pClientItem, uint32_t id)
 //
 
 bool
-CClientList::removeClient(CClientItem *pClientItem)
+CClientList::removeClient(CClientItem* pClientItem)
 {
     // Must be a valid pointer
-    if (NULL == pClientItem) return false;
-
+    if (NULL == pClientItem) {
+        syslog(LOG_ERR,"removeClient in clientlist but clinet obj is NULL");
+        return false;
+    }
+     
+    std::deque<vscpEvent*>::iterator iter;
+    for (iter = pClientItem->m_clientInputQueue.begin();
+         iter != pClientItem->m_clientInputQueue.end();
+         ++iter) {
+            
+        vscpEvent* pEvent = *iter;
+        vscp_deleteEvent_v2(&pEvent);
+    }
     pClientItem->m_clientInputQueue.clear();
 
     // Take away the node
-    // m_itemList.remove(pClientItem);
-    for (std::deque<CClientItem *>::iterator it = m_itemList.begin();
+    for (std::deque<CClientItem*>::iterator it = m_itemList.begin();
          it != m_itemList.end();
          ++it) {
         if (*it == pClientItem) {
@@ -338,19 +339,35 @@ CClientList::removeClient(CClientItem *pClientItem)
     return false;
 }
 
+bool
+CClientList::removeAllClients()  
+{
+    pthread_mutex_lock(&m_mutexItemList);
+    // Empty the client list
+    std::deque<CClientItem*>::iterator it;
+    for (it = m_itemList.begin(); it != m_itemList.end(); ++it) {
+        removeClient(*it);
+        delete *it;
+    }
+    m_itemList.clear();
+    pthread_mutex_unlock(&m_mutexItemList);
+
+    return true;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // getClientFromId
 //
 
-CClientItem *
+CClientItem*
 CClientList::getClientFromId(uint16_t id)
 {
-    std::deque<CClientItem *>::iterator it;
-    CClientItem *returnItem = NULL;
+    std::deque<CClientItem*>::iterator it;
+    CClientItem* returnItem = NULL;
 
     for (it = m_itemList.begin(); it != m_itemList.end(); ++it) {
 
-        CClientItem *pItem = *it;
+        CClientItem* pItem = *it;
         if (pItem->m_clientID == id) {
             returnItem = pItem;
             break;
@@ -364,11 +381,13 @@ CClientList::getClientFromId(uint16_t id)
 // getClientFromOrdinal
 //
 
-CClientItem *
+CClientItem*
 CClientList::getClientFromOrdinal(uint16_t ordinal)
 {
-    if (!m_itemList.size()) return NULL;
-    if (ordinal > (m_itemList.size() - 1)) return NULL;
+    if (!m_itemList.size())
+        return NULL;
+    if (ordinal > (m_itemList.size() - 1))
+        return NULL;
 
     return m_itemList[ordinal];
 }
@@ -377,15 +396,15 @@ CClientList::getClientFromOrdinal(uint16_t ordinal)
 // getClientFromGUID
 //
 
-CClientItem *
-CClientList::getClientFromGUID(cguid &guid)
+CClientItem*
+CClientList::getClientFromGUID(cguid& guid)
 {
-    std::deque<CClientItem *>::iterator it;
-    CClientItem *returnItem = NULL;
+    std::deque<CClientItem*>::iterator it;
+    CClientItem* returnItem = NULL;
 
     for (it = m_itemList.begin(); it != m_itemList.end(); ++it) {
 
-        CClientItem *pItem = *it;
+        CClientItem* pItem = *it;
         if (pItem->m_guid == guid) {
             returnItem = pItem;
             break;
@@ -406,10 +425,10 @@ CClientList::getAllClientsAsString(void)
 
     pthread_mutex_lock(&m_mutexItemList);
 
-    std::deque<CClientItem *>::iterator it;
+    std::deque<CClientItem*>::iterator it;
     for (it = m_itemList.begin(); it != m_itemList.end(); ++it) {
 
-        CClientItem *pItem = *it;
+        CClientItem* pItem = *it;
         str += pItem->getAsString();
         str += "\r\n";
     }
@@ -424,13 +443,16 @@ CClientList::getAllClientsAsString(void)
 //
 
 bool
-CClientList::getClient(uint16_t n, std::string &client)
+CClientList::getClient(uint16_t n, std::string& client)
 {
-    if (!m_itemList.size()) return false;
-    if (n > (m_itemList.size() - 1)) return false;
+    if (!m_itemList.size())
+        return false;
+    if (n > (m_itemList.size() - 1))
+        return false;
 
-    CClientItem *pClient = m_itemList[n];
-    if (NULL == pClient) return false;
+    CClientItem* pClient = m_itemList[n];
+    if (NULL == pClient)
+        return false;
     client = pClient->getAsString();
 
     return true;

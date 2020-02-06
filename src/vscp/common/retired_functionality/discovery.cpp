@@ -185,6 +185,7 @@ CDiscoveryObj::readLevel1Register(uint8_t nodeid,
 
     // Send event
     sendEvent(pEvent, clientID);
+    vscp_deleteEvent_v2(&pEvent);
 
     uint32_t startTime = vscp_getMsTimeStamp();
 
@@ -218,7 +219,7 @@ CDiscoveryObj::readLevel1Register(uint8_t nodeid,
                 }
             }
 
-            vscp_deleteEvent(pEvent);
+            vscp_deleteEvent_v2(pEvent);
         }
 
     } // while

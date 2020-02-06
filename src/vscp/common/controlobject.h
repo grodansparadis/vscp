@@ -237,18 +237,28 @@ class CControlObject
 
     /*!
         send level II message to all clients
+        @param pClientItem Pointer to client object for client that should 
+                           receive the event
+        @param pEvent Pointer to event that should be sent to client. Caller
+                        must deallocate if needed.
+        @return true on success
      */
-    void sendEventToClient(CClientItem* pClientItem, vscpEvent* pEvent);
+    bool sendEventToClient(CClientItem* pClientItem, vscpEvent* pEvent);
 
     /*!
         Send Level II event to all clients with exception
+        @param pEvent Pointer to event that should be sent. Caller must
+                        must take care of deallocation.
+        @param excludeID Client with this obid should not receive event.                
+        @return True on success
      */
-    void sendEventAllClients(vscpEvent* pEvent, uint32_t excludeID = 0);
+    bool sendEventAllClients(vscpEvent* pEvent, uint32_t excludeID = 0);
 
     /*!
      * Send event
      * @param pClientItem Client that send the event.
-     * @param pEvent Event to send
+     * @param pEvent Event to send. !!! pEventToSend must be 
+     *               deallocated by sender !!!
      * @return True on success false on failure.
      */
     bool sendEvent(CClientItem* pClientItem, vscpEvent* peventToSend);
