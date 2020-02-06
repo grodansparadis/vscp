@@ -983,11 +983,11 @@ websrv_restapi(struct mg_connection* conn, void* cbdata)
         std::string strErr = vscp_str_format(
           "[REST Client] Unable to create new session for user [%s]",
           (const char*)keypairs[("VSCPUSER")].c_str());
-        
+
         syslog(LOG_ERR, "%s", strErr.c_str());
 
         restsrv_error(conn, pSession, format, REST_ERROR_CODE_INVALID_ORIGIN);
-        
+
         return WEB_ERROR;
     }
 
@@ -998,16 +998,16 @@ websrv_restapi(struct mg_connection* conn, void* cbdata)
                          inet_addr(reqinfo->remote_addr)));
     pthread_mutex_unlock(&gpobj->m_mutex_UserList);
     if (!bValidHost) {
-        
+
         std::string strErr = vscp_str_format(
           ("[REST Client] Host [%s] NOT allowed to connect. User [%s]\n"),
           std::string(reqinfo->remote_addr).c_str(),
           (const char*)keypairs[("VSCPUSER")].c_str());
-        
+
         syslog(LOG_ERR, "%s", strErr.c_str());
-        
+
         restsrv_error(conn, pSession, format, REST_ERROR_CODE_INVALID_ORIGIN);
-        
+
         return WEB_ERROR;
     }
 
@@ -1189,7 +1189,7 @@ websrv_restapi(struct mg_connection* conn, void* cbdata)
     // Unrecognised operation
 
     else {
-        syslog(LOG_ERR,"REST: restapi - Missing data.");
+        syslog(LOG_ERR, "REST: restapi - Missing data.");
         restsrv_error(conn, pSession, format, REST_ERROR_CODE_MISSING_DATA);
     }
 
@@ -1643,6 +1643,8 @@ restsrv_doSendEvent(struct mg_connection* conn,
                                                   ->m_mutexClientInputQueue);
                             pSession->m_pClientItem->m_clientInputQueue
                               .push_back(pNewEvent);
+                            pthread_mutex_unlock(&pSession->m_pClientItem
+                                                    ->m_mutexClientInputQueue);
                             sem_post(
                               &pSession->m_pClientItem->m_semClientInputQueue);
 
@@ -1682,8 +1684,8 @@ restsrv_doSendEvent(struct mg_connection* conn,
 
                         pthread_mutex_lock(&gpobj->m_mutex_ClientOutputQueue);
                         gpobj->m_clientOutputQueue.push_back(pNewEvent);
-                        sem_post(&gpobj->m_semClientOutputQueue);
                         pthread_mutex_unlock(&gpobj->m_mutex_ClientOutputQueue);
+                        sem_post(&gpobj->m_semClientOutputQueue);
 
                         bSent = true;
                     } else {

@@ -101,7 +101,7 @@ deviceThread(void* pData)
     // Add the client to the Client List
     pthread_mutex_lock(&pObj->m_clientList.m_mutexItemList);
     if (!pObj->addClient(pClientItem,
-                             pDevItem->m_interface_guid.getClientID())) {
+                         pDevItem->m_interface_guid.getClientID())) {
         // Failed to add client
         delete pDevItem->m_pClientItem;
         pDevItem->m_pClientItem = NULL;
@@ -494,9 +494,9 @@ deviceThread(void* pData)
                                 pthread_mutex_lock(
                                   &pObj->m_mutex_ClientOutputQueue);
                                 pObj->m_clientOutputQueue.push_back(pev);
-                                sem_post(&pObj->m_semClientOutputQueue);
                                 pthread_mutex_unlock(
                                   &pObj->m_mutex_ClientOutputQueue);
+                                sem_post(&pObj->m_semClientOutputQueue);
                             }
                         }
                     }
@@ -746,7 +746,6 @@ deviceThread(void* pData)
                    "%s: [Device tread] Level II Done waiting for threads.",
                    pDevItem->m_strName.c_str());
         }
-
     }
 
     // Remove messages in the client queues
@@ -880,9 +879,9 @@ deviceLevel1ReceiveThread(void* pData)
                     pthread_mutex_lock(
                       &pDevItem->m_pObj->m_mutex_ClientOutputQueue);
                     pDevItem->m_pObj->m_clientOutputQueue.push_back(pvscpEvent);
-                    sem_post(&pDevItem->m_pObj->m_semClientOutputQueue);
                     pthread_mutex_unlock(
                       &pDevItem->m_pObj->m_mutex_ClientOutputQueue);
+                    sem_post(&pDevItem->m_pObj->m_semClientOutputQueue);
                 }
             }
         }
@@ -1041,8 +1040,8 @@ deviceLevel2ReceiveThread(void* pData)
 
             pthread_mutex_lock(&pDevItem->m_pObj->m_mutex_ClientOutputQueue);
             pDevItem->m_pObj->m_clientOutputQueue.push_back(pev);
-            sem_post(&pDevItem->m_pObj->m_semClientOutputQueue);
             pthread_mutex_unlock(&pDevItem->m_pObj->m_mutex_ClientOutputQueue);
+            sem_post(&pDevItem->m_pObj->m_semClientOutputQueue);
 
         } else {
             if (NULL == pev)

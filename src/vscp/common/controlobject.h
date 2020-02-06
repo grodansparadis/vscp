@@ -554,7 +554,7 @@ class CControlObject
     std::list<vscpEvent*> m_clientOutputQueue;
 
     /*!
-        Event object to indicate that there is an event in the client output
+       Event object to indicate that there is an event in the client output
        queue.
      */
     sem_t m_semClientOutputQueue;
@@ -563,6 +563,12 @@ class CControlObject
         Mutex for Level II message send queue
      */
     pthread_mutex_t m_mutex_ClientOutputQueue;
+
+    /*! 
+        Semaphore that is signaled when workerthread
+        have send an incoming event to all clients
+    */
+    sem_t m_semSentToAllClients;
 
     // *************************************************************************
 

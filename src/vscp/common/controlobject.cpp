@@ -139,6 +139,11 @@ CControlObject::CControlObject()
     if (-1 == sem_init(&m_semClientOutputQueue, 0, 0)) {
         syslog(LOG_ERR, "Unable to init m_semClientOutputQueue");
         return;
+    } 
+
+    if (-1 == sem_init(&m_semSentToAllClients, 0, 0)) {
+        syslog(LOG_ERR, "Unable to init m_semSentToAllClients");
+        return;
     }
 
     if (0 != pthread_mutex_init(&m_mutex_ClientOutputQueue, NULL)) {
@@ -327,6 +332,10 @@ CControlObject::~CControlObject()
 
     if (0 != sem_destroy(&m_semClientOutputQueue)) {
         syslog(LOG_ERR, "Unable to destroy m_semClientOutputQueue");
+    } 
+
+    if (0 != sem_destroy(&m_semSentToAllClients)) {
+        syslog(LOG_ERR, "Unable to destroy m_semSentToAllClients");
     }
 
     if (0 != pthread_mutex_destroy(&m_mutex_ClientOutputQueue)) {
@@ -601,6 +610,8 @@ CControlObject::run(void)
         delete pClientItem;
         syslog(LOG_ERR, "ControlObject: Failed to add internal client.");
         pthread_mutex_unlock(&m_clientList.m_mutexItemList);
+        delete pClientItem;
+        return false;
     }
     pthread_mutex_unlock(&m_clientList.m_mutexItemList);
 
@@ -624,10 +635,18 @@ CControlObject::run(void)
         UNUSED(oldus);
 
         // Wait for event
-        if ((-1 == vscp_sem_wait(&pClientItem->m_semClientInputQueue, 10)) &&
+        if ((-1 == vscp_sem_wait(&m_semSentToAllClients, 10)) &&
             errno == ETIMEDOUT) {
             continue;
         }
+
+        // if ((-1 == vscp_sem_wait(&pClientItem->m_semClientInputQueue, 10)) &&
+        //     errno == ETIMEDOUT) {
+        //     continue;
+        // } 
+
+        // Send events to websocket clients
+        websock_post_incomingEvents();
 
         //----------------------------------------------------------------------
         //                         Event received here
@@ -644,8 +663,7 @@ CControlObject::run(void)
             pthread_mutex_unlock(&pClientItem->m_mutexClientInputQueue);
 
             if (NULL != pEvent) {
-                // Send events to websocket clients
-                websock_post_incomingEvents();
+      
             }
 
             vscp_deleteEvent_v2(&pEvent);
@@ -1098,8 +1116,8 @@ CControlObject::sendEventToClient(CClientItem* pClientItem, vscpEvent* pEvent)
         // Add the new event to the input queue
         pthread_mutex_lock(&pClientItem->m_mutexClientInputQueue);
         pClientItem->m_clientInputQueue.push_back(pnewvscpEvent);
-        sem_post(&pClientItem->m_semClientInputQueue);
         pthread_mutex_unlock(&pClientItem->m_mutexClientInputQueue);
+        sem_post(&pClientItem->m_semClientInputQueue);
     }
 
     return true;
@@ -1290,13 +1308,14 @@ CControlObject::sendEvent(CClientItem* pClientItem, vscpEvent* peventToSend)
 
             pthread_mutex_lock(&m_mutex_ClientOutputQueue);
             m_clientOutputQueue.push_back(pEvent);
-            sem_post(&m_semClientOutputQueue);
 
             // TX Statistics
             pClientItem->m_statistics.cntTransmitData += pEvent->sizeData;
             pClientItem->m_statistics.cntTransmitFrames++;
 
             pthread_mutex_unlock(&m_mutex_ClientOutputQueue);
+
+            sem_post(&m_semClientOutputQueue);
         } else {
             if (__VSCP_DEBUG_EXTRA) {
                 syslog(LOG_DEBUG, "sendEvent - overrun");
@@ -2412,7 +2431,7 @@ clientMsgWorkerThread(void* userdata)
     while (!pObj->m_bQuit_clientMsgWorkerThread) {
 
         // Wait for event
-        if ((-1 == vscp_sem_wait(&pObj->m_semClientOutputQueue, 500)) &&
+        if ((-1 == vscp_sem_wait(&pObj->m_semClientOutputQueue, 10)) &&
             errno == ETIMEDOUT) {
             continue;
         }
@@ -2434,6 +2453,8 @@ clientMsgWorkerThread(void* userdata)
                 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
                 pObj->sendEventAllClients(pvscpEvent, pvscpEvent->obid);
+                // Tell main thread that there are work to do
+                sem_post(&pObj->m_semSentToAllClients);
 
             } // Valid event
 

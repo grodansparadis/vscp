@@ -40,6 +40,8 @@ async def connect():
         greeting = await websocket.recv()
         print(f"Response from server: {greeting}")
 
+        print("Waiting for events")
+
         while True:
             greeting = await websocket.recv()
             print(f"Response from server: {greeting}")

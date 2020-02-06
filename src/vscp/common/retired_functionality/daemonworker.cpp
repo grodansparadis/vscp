@@ -63,7 +63,7 @@
 // to handle client requests
 //
 
-daemonWorkerObj::daemonWorkerObj(CControlObject *pObj)
+daemonWorkerObj::daemonWorkerObj(CControlObject* pObj)
 {
     m_bQuit       = false;
     m_pCtrlObject = pObj;
@@ -78,14 +78,14 @@ daemonWorkerObj::~daemonWorkerObj()
 // Daemon worker thread
 //
 
-void *
-daemonWorkerThread(void *threadData)
+void*
+daemonWorkerThread(void* threadData)
 {
     int sock_mc;                // socket descriptor for multicast socket
     struct sockaddr_in mc_addr; // socket address structure
     unsigned short mc_port = VSCP_ANNOUNCE_MULTICAST_PORT;
 
-    daemonWorkerObj *pWorkerObj = (daemonWorkerObj *)threadData;
+    daemonWorkerObj* pWorkerObj = (daemonWorkerObj*)threadData;
     if (NULL == pWorkerObj) {
         syslog(LOG_ERR,
                "daemonWorkerThread - No object supplied. Terminating.");
@@ -93,15 +93,17 @@ daemonWorkerThread(void *threadData)
     }
 
     // Must have a valid pointer to the control object
-    if (NULL == pWorkerObj->m_pCtrlObject) return NULL;
-    CControlObject *pctrlObj = pWorkerObj->m_pCtrlObject; // shortcut
+    if (NULL == pWorkerObj->m_pCtrlObject)
+        return NULL;
+    CControlObject* pctrlObj = pWorkerObj->m_pCtrlObject; // shortcut
 
     unsigned char mc_ttl =
       pctrlObj->m_ttlMultiCastAnnounce; // time to live (hop count)
     std::string ip;
 
-    if (!pWorkerObj->parseInterface(
-          pctrlObj->m_strMulticastAnnounceAddress, ip, &mc_port)) {
+    if (!pWorkerObj->parseInterface(pctrlObj->m_strMulticastAnnounceAddress,
+                                    ip,
+                                    &mc_port)) {
         syslog(LOG_ERR,
                "daemonWorkerThread - Announce address has wrong format.\n");
         return NULL;
@@ -117,7 +119,7 @@ daemonWorkerThread(void *threadData)
     if ((setsockopt(sock_mc,
                     IPPROTO_IP,
                     IP_MULTICAST_TTL,
-                    (void *)&mc_ttl,
+                    (void*)&mc_ttl,
                     sizeof(mc_ttl))) < 0) {
         syslog(LOG_ERR, "daemonWorkerThread - %s ", strerror(errno));
         close(sock_mc);
@@ -135,7 +137,7 @@ daemonWorkerThread(void *threadData)
 
     // We need to create a client item and add this object to the list
     // of clients
-    CClientItem *pClientItem = new CClientItem;
+    CClientItem* pClientItem = new CClientItem;
     if (NULL == pClientItem) {
         close(sock_mc);
         return NULL;
@@ -163,14 +165,13 @@ daemonWorkerThread(void *threadData)
     pthread_mutex_unlock(&pctrlObj->m_clientList.m_mutexItemList);
 
     // Clear the filter (Allow everything )
-    vscp_clearVSCPFilter(&pClientItem->m_filter
-    );
+    vscp_clearVSCPFilter(&pClientItem->m_filter);
 
     char szName[128];
 #ifdef WIN32
     LPHOSTENT lpLocalHostEntry;
 #else
-    struct hostent *lpLocalHostEntry;
+    struct hostent* lpLocalHostEntry;
 #endif
     gethostname(szName, sizeof(szName));
     lpLocalHostEntry = gethostbyname(szName);
@@ -181,13 +182,14 @@ daemonWorkerThread(void *threadData)
 
     // Get all local addresses for interface
     int cntAddr = -1;
-    void *pAddr;
+    void* pAddr;
     unsigned long localaddr[16]; // max 16 local addresses
     do {
         cntAddr++;
         localaddr[cntAddr] = 0;
         pAddr              = lpLocalHostEntry->h_addr_list[cntAddr];
-        if (NULL != pAddr) localaddr[cntAddr] = *((unsigned long *)pAddr);
+        if (NULL != pAddr)
+            localaddr[cntAddr] = *((unsigned long*)pAddr);
     } while ((NULL != pAddr) && (cntAddr < 16));
 
     ////////////////////////////////////////////////////////////////////////////
@@ -251,7 +253,7 @@ daemonWorkerThread(void *threadData)
                     pWorkerObj->sendMulticastEventEx(sock_mc, &eventEx);
                 }
 
-                vscpEvent *pnewEvent = new vscpEvent;
+                vscpEvent* pnewEvent = new vscpEvent;
                 if (NULL != pnewEvent) {
 
                     // Convert event to correct format
@@ -265,11 +267,12 @@ daemonWorkerThread(void *threadData)
                     // There must be room in the send queue
                     if (pctrlObj->m_maxItemsInClientReceiveQueue >
                         pctrlObj->m_clientOutputQueue.size()) {
-                        pthread_mutex_lock(&pctrlObj->m_mutex_ClientOutputQueue);
+                        pthread_mutex_lock(
+                          &pctrlObj->m_mutex_ClientOutputQueue);
                         pctrlObj->m_clientOutputQueue.push_back(pnewEvent);
-                        sem_post(&pctrlObj->m_semClientOutputQueue);
                         pthread_mutex_unlock(
                           &pctrlObj->m_mutex_ClientOutputQueue);
+                        sem_post(&pctrlObj->m_semClientOutputQueue);
                     }
                 }
             }
@@ -290,11 +293,12 @@ daemonWorkerThread(void *threadData)
         if (pClientItem->m_clientInputQueue.size()) {
 
             pthread_mutex_lock(&pClientItem->m_mutexClientInputQueue);
-            vscpEvent *pEvent = pClientItem->m_clientInputQueue.front();
+            vscpEvent* pEvent = pClientItem->m_clientInputQueue.front();
             pClientItem->m_clientInputQueue.pop_front();
             pthread_mutex_unlock(&pClientItem->m_mutexClientInputQueue);
 
-            if (NULL == pEvent) continue;
+            if (NULL == pEvent)
+                continue;
 
             //*****************************************
             // First check for HIGH END SERVER PROBE (27)
@@ -310,7 +314,7 @@ daemonWorkerThread(void *threadData)
 
                     // Yes this is a "HIGH END SERVER PROBE"
                     // We should send a "HIGH END SERVER RESPONSE"
-                    vscpEvent *pnewEvent = new vscpEvent;
+                    vscpEvent* pnewEvent = new vscpEvent;
                     if (NULL != pnewEvent) {
 
                         pnewEvent->timestamp = vscp_makeTimeStamp();
@@ -365,7 +369,7 @@ daemonWorkerThread(void *threadData)
                       pEvent->vscp_type)) {
 
                 // Add node to knows nodes or return info if known
-                cvscpnode *pNode =
+                cvscpnode* pNode =
                   pWorkerObj->m_pDiscoveryObj->addNodeIfNotKnown(pEvent);
 
                 if (NULL != pNode) {
@@ -382,7 +386,7 @@ daemonWorkerThread(void *threadData)
                       pEvent->vscp_type)) {
 
                 // Add node to knows nodes or return info if known
-                cvscpnode *pNode =
+                cvscpnode* pNode =
                   pWorkerObj->m_pDiscoveryObj->addNodeIfNotKnown(pEvent);
 
                 if (NULL != pNode) {
@@ -438,7 +442,7 @@ daemonWorkerThread(void *threadData)
                 pWorkerObj->sendMulticastEvent(sock_mc, pEvent);
 
                 // Add node to knows nodes or return info if known
-                cvscpnode *pNode =
+                cvscpnode* pNode =
                   pWorkerObj->m_pDiscoveryObj->addNodeIfNotKnown(pEvent);
 
                 if (NULL != pNode) {
@@ -472,12 +476,13 @@ daemonWorkerThread(void *threadData)
 //
 
 bool
-daemonWorkerObj::parseInterface(const std::string &ifaddr,
-                                std::string &ip,
-                                unsigned short *pPort)
+daemonWorkerObj::parseInterface(const std::string& ifaddr,
+                                std::string& ip,
+                                unsigned short* pPort)
 {
     // Check pointer
-    if (NULL == pPort) return false;
+    if (NULL == pPort)
+        return false;
 
     std::string strAddress = ifaddr;
     vscp_trim(strAddress);
@@ -521,13 +526,14 @@ daemonWorkerObj::parseInterface(const std::string &ifaddr,
 //
 
 bool
-daemonWorkerObj::sendMulticastEvent(int sock_mc, vscpEvent *pEvent)
+daemonWorkerObj::sendMulticastEvent(int sock_mc, vscpEvent* pEvent)
 {
     struct sockaddr_in mc_addr; // socket address structure
     uint8_t buf[1024];          // frame to send
 
     // Check pointer
-    if (NULL == pEvent) return false;
+    if (NULL == pEvent)
+        return false;
 
     // construct a multicast address structure
     memset(&mc_addr, 0, sizeof(mc_addr));
@@ -546,10 +552,10 @@ daemonWorkerObj::sendMulticastEvent(int sock_mc, vscpEvent *pEvent)
     return (
       (1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + pEvent->sizeData + 2) ==
       sendto(sock_mc,
-             (const char *)buf,
+             (const char*)buf,
              1 + VSCP_MULTICAST_PACKET0_HEADER_LENGTH + pEvent->sizeData + 2,
              0,
-             (struct sockaddr *)&mc_addr,
+             (struct sockaddr*)&mc_addr,
              sizeof(mc_addr)));
 }
 
@@ -558,12 +564,13 @@ daemonWorkerObj::sendMulticastEvent(int sock_mc, vscpEvent *pEvent)
 //
 
 bool
-daemonWorkerObj::sendMulticastEventEx(int sock, vscpEventEx *pEventEx)
+daemonWorkerObj::sendMulticastEventEx(int sock, vscpEventEx* pEventEx)
 {
     bool rv;
-    vscpEvent *pEvent = new vscpEvent;
+    vscpEvent* pEvent = new vscpEvent;
 
-    if (NULL == pEvent) return false;
+    if (NULL == pEvent)
+        return false;
 
     vscp_convertEventExToEvent(pEvent, pEventEx);
     rv = sendMulticastEvent(sock, pEvent);
@@ -576,14 +583,15 @@ daemonWorkerObj::sendMulticastEventEx(int sock, vscpEventEx *pEventEx)
 //
 
 bool
-daemonWorkerObj::sendMulticastInformationProxyEvent(int sock, cvscpnode *pNode)
+daemonWorkerObj::sendMulticastInformationProxyEvent(int sock, cvscpnode* pNode)
 {
     struct sockaddr_in mc_addr; // socket address structure
     uint8_t buf[1024];          // frame to send
     vscpEventEx ex;
 
     // Check pointer
-    if (NULL == pNode) return false;
+    if (NULL == pNode)
+        return false;
 
     // construct a multicast address structure
     memset(&mc_addr, 0, sizeof(mc_addr));
@@ -649,10 +657,10 @@ daemonWorkerObj::sendMulticastInformationProxyEvent(int sock, cvscpnode *pNode)
     return ((VSCP_MULTICAST_PACKET0_HEADER_LENGTH +
              VSCP_MULTICAST_PROXY_HEARTBEAT_DATA_SIZE + 2) ==
             sendto(sock,
-                   (const char *)buf,
+                   (const char*)buf,
                    VSCP_MULTICAST_PACKET0_HEADER_LENGTH +
                      VSCP_MULTICAST_PROXY_HEARTBEAT_DATA_SIZE + 2,
                    0,
-                   (struct sockaddr *)&mc_addr,
+                   (struct sockaddr*)&mc_addr,
                    sizeof(mc_addr)));
 }

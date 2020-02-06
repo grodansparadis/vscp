@@ -474,9 +474,9 @@ websock_sendevent(struct mg_connection* conn,
                     pthread_mutex_lock(
                       &pDestClientItem->m_mutexClientInputQueue);
                     pDestClientItem->m_clientInputQueue.push_back(pnewEvent);
-                    sem_post(&pDestClientItem->m_semClientInputQueue);
                     pthread_mutex_unlock(
                       &pDestClientItem->m_mutexClientInputQueue);
+                    sem_post(&pDestClientItem->m_semClientInputQueue);
 
                     bSent = true;
 
@@ -523,8 +523,8 @@ websock_sendevent(struct mg_connection* conn,
 
                 pthread_mutex_lock(&gpobj->m_mutex_ClientOutputQueue);
                 gpobj->m_clientOutputQueue.push_back(pnewEvent);
-                sem_post(&gpobj->m_semClientOutputQueue);
                 pthread_mutex_unlock(&gpobj->m_mutex_ClientOutputQueue);
+                sem_post(&gpobj->m_semClientOutputQueue);
 
                 if (__VSCP_DEBUG_WEBSOCKET_TX) {
                     std::string str;
@@ -550,39 +550,37 @@ void
 websock_post_incomingEvents(void)
 {
     pthread_mutex_lock(&gpobj->m_mutex_websocketSession);
-
+    
     std::list<websock_session*>::iterator iter;
     for (iter = gpobj->m_websocketSessions.begin();
          iter != gpobj->m_websocketSessions.end();
          ++iter) {
-
+             
         websock_session* pSession = *iter;
         if (NULL == pSession)
             continue;
-
+        
         // Should be a client item... hmm.... client disconnected
         if (NULL == pSession->m_pClientItem) {
             continue;
         }
-
+        
         if (pSession->m_conn_state < WEBSOCK_CONN_STATE_CONNECTED)
             continue;
-
+        
         if (NULL == pSession->m_conn)
             continue;
-
+ 
         if (pSession->m_pClientItem->m_bOpen &&
             pSession->m_pClientItem->m_clientInputQueue.size()) {
 
             vscpEvent* pEvent;
-
             pthread_mutex_lock(
               &pSession->m_pClientItem->m_mutexClientInputQueue);
             pEvent = pSession->m_pClientItem->m_clientInputQueue.front();
             pSession->m_pClientItem->m_clientInputQueue.pop_front();
             pthread_mutex_unlock(
               &pSession->m_pClientItem->m_mutexClientInputQueue);
-
             if (NULL != pEvent) {
 
                 // Run event through filter
