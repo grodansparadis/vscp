@@ -1662,7 +1662,6 @@ tcpipClientObj::handleClientSend(void)
         write(MSG_BUFFER_FULL, strlen(MSG_BUFFER_FULL));
         return;
     }
-
     vscp_deleteEvent(&event); // Deallocate data
 
     write(MSG_OK, strlen(MSG_OK));

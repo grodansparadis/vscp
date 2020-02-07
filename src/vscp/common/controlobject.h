@@ -80,8 +80,7 @@ class TCPListenThread;
     This is the class that does the main work in the daemon.
 */
 
-class CControlObject
-{
+class CControlObject {
   public:
     /*!
         Constructor
@@ -121,6 +120,14 @@ class CControlObject
         The main worker thread
      */
     bool run(void);
+
+    /*!
+        Send automation events
+        @param pClientItem Pointer to client item that want to send
+        automation events
+        @return true on success
+    */
+    bool automation(CClientItem* pClientItem);
 
     /*!
         Start worker threads for devices
@@ -237,7 +244,7 @@ class CControlObject
 
     /*!
         send level II message to all clients
-        @param pClientItem Pointer to client object for client that should 
+        @param pClientItem Pointer to client object for client that should
                            receive the event
         @param pEvent Pointer to event that should be sent to client. Caller
                         must deallocate if needed.
@@ -249,7 +256,7 @@ class CControlObject
         Send Level II event to all clients with exception
         @param pEvent Pointer to event that should be sent. Caller must
                         must take care of deallocation.
-        @param excludeID Client with this obid should not receive event.                
+        @param excludeID Client with this obid should not receive event.
         @return True on success
      */
     bool sendEventAllClients(vscpEvent* pEvent, uint32_t excludeID = 0);
@@ -257,7 +264,7 @@ class CControlObject
     /*!
      * Send event
      * @param pClientItem Client that send the event.
-     * @param pEvent Event to send. !!! pEventToSend must be 
+     * @param pEvent Event to send. !!! pEventToSend must be
      *               deallocated by sender !!!
      * @return True on success false on failure.
      */
@@ -266,7 +273,7 @@ class CControlObject
     /*!
      * Send event
      * @param pClientItem Client that send the event.
-     * @param pex Eventex to send. 
+     * @param pex Eventex to send.
      * @return True on success false on failure.
      */
     bool sendEvent(CClientItem* pClientItem, vscpEventEx* pex);
@@ -320,7 +327,7 @@ class CControlObject
      * See vscp_debug.h for possible flags.
      * Set to point to m_gdebugArray in startup
      */
-    uint32_t *m_debugFlags;
+    uint32_t* m_debugFlags;
 
     //**************************************************************************
     //                                 Security
@@ -550,7 +557,6 @@ class CControlObject
     CUserList m_userList; // deque
     pthread_mutex_t m_mutex_UserList;
 
-
     // *************************************************************************
 
     /*!
@@ -572,7 +578,7 @@ class CControlObject
      */
     pthread_mutex_t m_mutex_ClientOutputQueue;
 
-    /*! 
+    /*!
         Semaphore that is signaled when workerthread
         have send an incoming event to all clients
     */

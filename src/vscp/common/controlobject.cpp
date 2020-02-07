@@ -61,6 +61,7 @@
 
 #include <civetweb.h>
 
+#include <algorithm>
 #include <deque>
 #include <list>
 #include <map>
@@ -578,24 +579,6 @@ CControlObject::run(void)
 {
     std::deque<CClientItem*>::iterator nodeClient;
 
-    // vscpEvent EventLoop;
-    // EventLoop.vscp_class = VSCP_CLASS2_VSCPD;
-    // EventLoop.vscp_type  = VSCP2_TYPE_VSCPD_LOOP;
-    // EventLoop.sizeData   = 0;
-    // EventLoop.pdata      = NULL;
-
-    // vscpEvent EventStartUp;
-    // EventStartUp.vscp_class = VSCP_CLASS2_VSCPD;
-    // EventStartUp.vscp_type  = VSCP2_TYPE_VSCPD_STARTING_UP;
-    // EventStartUp.sizeData   = 0;
-    // EventStartUp.pdata      = NULL;
-
-    // vscpEvent EventShutDown;
-    // EventShutDown.vscp_class = VSCP_CLASS2_VSCPD;
-    // EventShutDown.vscp_type  = VSCP2_TYPE_VSCPD_SHUTTING_DOWN;
-    // EventShutDown.sizeData   = 0;
-    // EventShutDown.pdata      = NULL;
-
     // We need to create a clientItem and add this object to the list
     CClientItem* pClientItem = new CClientItem;
     if (NULL == pClientItem) {
@@ -633,23 +616,30 @@ CControlObject::run(void)
     //                            MAIN - LOOP
     //-------------------------------------------------------------------------
 
+    struct timespec now, old_now;
+    clock_gettime(CLOCK_REALTIME, &old_now);
+    old_now.tv_sec -= 60;  // Do firts send right away
+
     while (!m_bQuit) {
 
-        // CLOCKS_PER_SEC
-        clock_t ticks, oldus;
-        oldus = ticks = clock();
-        UNUSED(oldus);
+        clock_gettime(CLOCK_REALTIME, &now);
+
+        // We send heartbeat every minute
+        if ((now.tv_sec-old_now.tv_sec) > 60) {
+
+            // Save time
+            clock_gettime(CLOCK_REALTIME, &old_now);
+
+            if (automation(pClientItem)) {
+                syslog(LOG_ERR, "Failed to send automation events!");
+            }
+        }
 
         // Wait for event
         if ((-1 == vscp_sem_wait(&m_semSentToAllClients, 10)) &&
             errno == ETIMEDOUT) {
             continue;
         }
-
-        // if ((-1 == vscp_sem_wait(&pClientItem->m_semClientInputQueue, 10)) &&
-        //     errno == ETIMEDOUT) {
-        //     continue;
-        // }
 
         // Send events to websocket clients
         websock_post_incomingEvents();
@@ -686,6 +676,128 @@ CControlObject::run(void)
 
     if (__VSCP_DEBUG_EXTRA) {
         syslog(LOG_DEBUG, "Mainloop ending");
+    }
+
+    return true;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// automation
+
+bool
+CControlObject::automation(CClientItem* pClientItem)
+{
+    vscpEventEx ex;
+
+    // Send VSCP_CLASS1_INFORMATION,
+    // Type=9/VSCP_TYPE_INFORMATION_NODE_HEARTBEAT
+    ex.obid      = 0; // IMPORTANT Must be set by caller before event is sent
+    ex.head      = 0;
+    ex.timestamp = vscp_makeTimeStamp();
+    vscp_setEventExToNow(&ex); // Set time to current time
+    ex.vscp_class = VSCP_CLASS1_INFORMATION;
+    ex.vscp_type  = VSCP_TYPE_INFORMATION_NODE_HEARTBEAT;
+    ex.sizeData   = 3;
+
+    // GUID
+    memcpy(ex.data + VSCP_CAPABILITY_OFFSET_GUID, m_guid.getGUID(), 16);
+
+    ex.data[0] = 0; // index
+    ex.data[1] = 0; // zone
+    ex.data[2] = 0; // subzone
+
+    if (sendEvent(pClientItem, &ex)) {
+        syslog(LOG_ERR, "Failed to send Class1 heartbeat");
+    }
+
+    // Send VSCP_CLASS2_INFORMATION,
+    // Type=2/VSCP2_TYPE_INFORMATION_HEART_BEAT
+    ex.obid      = 0; // IMPORTANT Must be set by caller before event is sent
+    ex.head      = 0;
+    ex.timestamp = vscp_makeTimeStamp();
+    vscp_setEventExToNow(&ex); // Set time to current time
+    ex.vscp_class = VSCP_CLASS2_INFORMATION;
+    ex.vscp_type  = VSCP2_TYPE_INFORMATION_HEART_BEAT;
+    ex.sizeData   = 64;
+
+    // GUID
+    memcpy(ex.data + VSCP_CAPABILITY_OFFSET_GUID, m_guid.getGUID(), 16);
+
+    memset(ex.data, 0, sizeof(ex.data));
+    memcpy(ex.data,
+           m_strServerName.c_str(),
+           std::min((int)strlen(m_strServerName.c_str()), 64));
+
+    if (sendEvent(pClientItem, &ex)) {
+        syslog(LOG_ERR, "Failed to send Class2 heartbeat");
+    }
+
+    // Send VSCP_CLASS1_PROTOCOL,
+    // Type=1/VSCP_TYPE_PROTOCOL_SEGCTRL_HEARTBEAT
+    ex.obid      = 0; // IMPORTANT Must be set by caller before event is sent
+    ex.head      = 0;
+    ex.timestamp = vscp_makeTimeStamp();
+    vscp_setEventExToNow(&ex); // Set time to current time
+    ex.vscp_class = VSCP_CLASS1_PROTOCOL;
+    ex.vscp_type  = VSCP_TYPE_PROTOCOL_SEGCTRL_HEARTBEAT;
+    ex.sizeData   = 5;
+
+    // GUID
+    memcpy(ex.data + VSCP_CAPABILITY_OFFSET_GUID, m_guid.getGUID(), 16);
+
+    time_t tnow;
+    time(&tnow);
+    uint32_t time32 = (uint32_t)tnow;
+
+    ex.data[0] = 0; // 8 - bit crc for VSCP daemon GUID
+    ex.data[1] = (uint8_t)((time32 >> 24) & 0xff); // Time since epoch MSB
+    ex.data[2] = (uint8_t)((time32 >> 16) & 0xff);
+    ex.data[3] = (uint8_t)((time32 >> 8) & 0xff);
+    ex.data[4] = (uint8_t)((time32)&0xff); // Time since epoch LSB
+
+    if (sendEvent(pClientItem, &ex)) {
+        syslog(LOG_ERR, "Failed to send segment controller heartbeat");
+    }
+
+    // Send VSCP_CLASS2_PROTOCOL,
+    // Type=20/VSCP2_TYPE_PROTOCOL_HIGH_END_SERVER_CAPS
+    ex.obid      = 0; // IMPORTANT Must be set by caller before event is sent
+    ex.head      = 0;
+    ex.timestamp = vscp_makeTimeStamp();
+    vscp_setEventExToNow(&ex); // Set time to current time
+    ex.vscp_class = VSCP_CLASS2_PROTOCOL;
+    ex.vscp_type  = VSCP2_TYPE_PROTOCOL_HIGH_END_SERVER_CAPS;
+
+    // Fill in data
+    memset(ex.data, 0, sizeof(ex.data));
+
+    // GUID
+    memcpy(ex.data + VSCP_CAPABILITY_OFFSET_GUID, m_guid.getGUID(), 16);
+
+    // Server ip address
+    cguid guid;
+    if (getIPAddress(guid)) {
+        ex.data[VSCP_CAPABILITY_OFFSET_IP_ADDR]     = guid.getAt(8);
+        ex.data[VSCP_CAPABILITY_OFFSET_IP_ADDR + 1] = guid.getAt(9);
+        ex.data[VSCP_CAPABILITY_OFFSET_IP_ADDR + 2] = guid.getAt(10);
+        ex.data[VSCP_CAPABILITY_OFFSET_IP_ADDR + 3] = guid.getAt(11);
+    }
+
+    // Server name
+    memcpy(ex.data + VSCP_CAPABILITY_OFFSET_SRV_NAME,
+           (const char*)m_strServerName.c_str(),
+           std::min((int)strlen((const char*)m_strServerName.c_str()), 64));
+
+    // Capabilities array
+    getVscpCapabilities(ex.data);
+
+    // non-standard ports
+    // TODO
+
+    ex.sizeData = 104;
+
+    if (sendEvent(pClientItem, &ex)) {
+        syslog(LOG_ERR, "Failed to send high end server capabilities.");
     }
 
     return true;

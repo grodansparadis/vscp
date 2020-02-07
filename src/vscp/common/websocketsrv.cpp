@@ -413,9 +413,6 @@ websock_sendevent(struct mg_connection* conn,
                   websock_session* pSession,
                   vscpEventEx* pex)
 {
-    bool bSent = false;
-    bool rv    = true;
-
     // Check pointer
     if (NULL == conn) {
         syslog(LOG_ERR,"Internal error: websock_sendevent - conn == NULL");
