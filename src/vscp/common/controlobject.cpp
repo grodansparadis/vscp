@@ -30,11 +30,7 @@
 
 #define _POSIX
 
-#include <deque>
-#include <list>
-#include <map>
-#include <set>
-#include <string>
+#include <controlobject.h>
 
 #include <arpa/inet.h>
 #include <errno.h>
@@ -65,9 +61,15 @@
 
 #include <civetweb.h>
 
-#include "web_css.h"
-#include "web_js.h"
-#include "web_template.h"
+#include <deque>
+#include <list>
+#include <map>
+#include <set>
+#include <string>
+
+#include <web_css.h>
+#include <web_js.h>
+#include <web_template.h>
 
 #include <expat.h>
 
@@ -92,8 +94,6 @@
 #include <vscpmd5.h>
 #include <websocket.h>
 #include <websrv.h>
-
-#include <controlobject.h>
 
 #define UNUSED(x) (void)(x)
 void
@@ -139,7 +139,7 @@ CControlObject::CControlObject()
     if (-1 == sem_init(&m_semClientOutputQueue, 0, 0)) {
         syslog(LOG_ERR, "Unable to init m_semClientOutputQueue");
         return;
-    } 
+    }
 
     if (-1 == sem_init(&m_semSentToAllClients, 0, 0)) {
         syslog(LOG_ERR, "Unable to init m_semSentToAllClients");
@@ -332,7 +332,7 @@ CControlObject::~CControlObject()
 
     if (0 != sem_destroy(&m_semClientOutputQueue)) {
         syslog(LOG_ERR, "Unable to destroy m_semClientOutputQueue");
-    } 
+    }
 
     if (0 != sem_destroy(&m_semSentToAllClients)) {
         syslog(LOG_ERR, "Unable to destroy m_semSentToAllClients");
@@ -434,7 +434,8 @@ CControlObject::init(std::string& strcfgfile, std::string& rootFolder)
                    strcfgfile.c_str());
             return FALSE;
         }
-    } catch (...) {
+    }
+    catch (...) {
         syslog(LOG_ERR, "Exception when reading configuration file");
         return FALSE;
     }
@@ -444,9 +445,11 @@ CControlObject::init(std::string& strcfgfile, std::string& rootFolder)
         struct passwd* pw;
         if (NULL == (pw = getpwnam(m_runAsUser.c_str()))) {
             syslog(LOG_ERR, "Unknown user.");
-        } else if (setgid(pw->pw_gid) != 0) {
+        }
+        else if (setgid(pw->pw_gid) != 0) {
             syslog(LOG_ERR, "setgid() failed. [%s]", strerror(errno));
-        } else if (setuid(pw->pw_uid) != 0) {
+        }
+        else if (setuid(pw->pw_uid) != 0) {
             syslog(LOG_ERR, "setuid() failed. [%s]", strerror(errno));
         }
     }
@@ -510,7 +513,6 @@ CControlObject::init(std::string& strcfgfile, std::string& rootFolder)
     // If no server name set construct one
     if (0 == m_strServerName.length()) {
         m_strServerName = "VSCP Server @ ";
-        ;
         std::string strguid;
         m_guid.toString(strguid);
         m_strServerName += std::string(strguid);
@@ -526,7 +528,8 @@ CControlObject::init(std::string& strcfgfile, std::string& rootFolder)
     // Start daemon internal client worker thread
     try {
         startClientMsgWorkerThread();
-    } catch (...) {
+    }
+    catch (...) {
         syslog(LOG_ERR, "Exception when starting message worker thread");
         return FALSE;
     }
@@ -537,7 +540,8 @@ CControlObject::init(std::string& strcfgfile, std::string& rootFolder)
     // ssl initializarion is done here
     try {
         start_webserver();
-    } catch (...) {
+    }
+    catch (...) {
         syslog(LOG_ERR, "Exception when starting web server");
         return FALSE;
     }
@@ -545,7 +549,8 @@ CControlObject::init(std::string& strcfgfile, std::string& rootFolder)
     // Start TCP/IP interface
     try {
         startTcpipSrvThread();
-    } catch (...) {
+    }
+    catch (...) {
         syslog(LOG_ERR, "Exception when starting tcp/ip server");
         return FALSE;
     }
@@ -553,7 +558,8 @@ CControlObject::init(std::string& strcfgfile, std::string& rootFolder)
     // Load drivers
     try {
         startDeviceWorkerThreads();
-    } catch (...) {
+    }
+    catch (...) {
         syslog(LOG_ERR, "Exception when loading drivers");
         return FALSE;
     }
@@ -643,7 +649,7 @@ CControlObject::run(void)
         // if ((-1 == vscp_sem_wait(&pClientItem->m_semClientInputQueue, 10)) &&
         //     errno == ETIMEDOUT) {
         //     continue;
-        // } 
+        // }
 
         // Send events to websocket clients
         websock_post_incomingEvents();
@@ -663,7 +669,6 @@ CControlObject::run(void)
             pthread_mutex_unlock(&pClientItem->m_mutexClientInputQueue);
 
             if (NULL != pEvent) {
-      
             }
 
             vscp_deleteEvent_v2(&pEvent);
@@ -705,7 +710,8 @@ CControlObject::cleanup(void)
 
     try {
         stopDeviceWorkerThreads();
-    } catch (...) {
+    }
+    catch (...) {
         syslog(LOG_ERR,
                "REST: Exception occurred when stoping device worker threads");
     }
@@ -725,9 +731,9 @@ CControlObject::cleanup(void)
 
     try {
         stopClientMsgWorkerThread();
-    } catch (...) {
-        syslog(LOG_ERR,
-               "REST: Exception occurred when stoping client worker thread");
+    }
+    catch (...) {
+        syslog(LOG_ERR, "Exception occurred when stoping client worker thread");
     }
 
     if (__VSCP_DEBUG_EXTRA) {
@@ -737,7 +743,8 @@ CControlObject::cleanup(void)
 
     try {
         stop_webserver();
-    } catch (...) {
+    }
+    catch (...) {
         syslog(LOG_ERR, "REST: Exception occurred when stoping web server");
     }
 
@@ -748,7 +755,8 @@ CControlObject::cleanup(void)
 
     try {
         stopTcpipSrvThread();
-    } catch (...) {
+    }
+    catch (...) {
         syslog(LOG_ERR, "REST: Exception occurred when stoping tcp/ip server");
     }
 
@@ -1316,7 +1324,8 @@ CControlObject::sendEvent(CClientItem* pClientItem, vscpEvent* peventToSend)
             pthread_mutex_unlock(&m_mutex_ClientOutputQueue);
 
             sem_post(&m_semClientOutputQueue);
-        } else {
+        }
+        else {
             if (__VSCP_DEBUG_EXTRA) {
                 syslog(LOG_DEBUG, "sendEvent - overrun");
             }
@@ -1327,6 +1336,30 @@ CControlObject::sendEvent(CClientItem* pClientItem, vscpEvent* peventToSend)
     }
 
     return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// sendEvent
+//
+
+bool
+CControlObject::sendEvent(CClientItem* pClientItem, vscpEventEx* pex)
+{
+    bool rv;
+    vscpEvent ev;
+
+    if (!vscp_convertEventExToEvent(&ev, pex)) {
+        syslog(LOG_ERR, "sendEvent: Failed in vscp_convertEventExToEvent");
+        return false;
+    }
+
+    if (!(rv = sendEvent(pClientItem, &ev))) {
+        syslog(LOG_ERR, "sendEvent: Failed to send event");
+    }
+
+    vscp_deleteEvent(&ev);
+
+    return rv;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -1501,7 +1534,8 @@ CControlObject::getMacAddress(cguid& guid)
         guid.setAt(13, s.ifr_addr.sa_data[5]);
         guid.setAt(14, 0);
         guid.setAt(15, 0);
-    } else {
+    }
+    else {
         syslog(LOG_ERR, "Failed to get hardware address (must be root?).");
         rv = false;
     }
@@ -1617,8 +1651,9 @@ startFullConfigParser(void* data, const char* name, const char** attr)
     if ((0 == depth_full_config_parser) &&
         (0 == vscp_strcasecmp(name, "vscpconfig"))) {
         bVscpConfigFound = TRUE;
-    } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
-               (0 == vscp_strcasecmp(name, "general"))) {
+    }
+    else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
+             (0 == vscp_strcasecmp(name, "general"))) {
         bGeneralConfigFound = TRUE;
 
         for (int i = 0; attr[i]; i += 2) {
@@ -1629,24 +1664,30 @@ startFullConfigParser(void* data, const char* name, const char** attr)
             if (0 == vscp_strcasecmp(attr[i], "clientbuffersize")) {
                 pObj->m_maxItemsInClientReceiveQueue =
                   vscp_readStringValue(attribute);
-            } else if (0 == vscp_strcasecmp(attr[i], "runasuser")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "runasuser")) {
                 vscp_trim(attribute);
                 pObj->m_runAsUser = attribute;
-            } else if (0 == vscp_strcasecmp(attr[i], "guid")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "guid")) {
                 pObj->m_guid.getFromString(attribute);
-            } else if (0 == vscp_strcasecmp(attr[i], "servername")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "servername")) {
                 pObj->m_strServerName = attribute;
-            } else if (0 == vscp_strcasecmp(attr[i], "webadminif")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "webadminif")) {
                 if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
                     pObj->m_enableWebAdminIf = true;
-                } else {
+                }
+                else {
                     pObj->m_enableWebAdminIf = false;
                 }
             }
         }
-    } else if (bVscpConfigFound && bGeneralConfigFound &&
-               (2 == depth_full_config_parser) &&
-               (0 == vscp_strcasecmp(name, "debug"))) {
+    }
+    else if (bVscpConfigFound && bGeneralConfigFound &&
+             (2 == depth_full_config_parser) &&
+             (0 == vscp_strcasecmp(name, "debug"))) {
 
         for (int i = 0; attr[i]; i += 2) {
 
@@ -1657,40 +1698,47 @@ startFullConfigParser(void* data, const char* name, const char** attr)
                 if (attribute.length()) {
                     pObj->m_debugFlags[0] = vscp_readStringValue(attribute);
                 }
-            } else if (0 == vscp_strcasecmp(attr[i], "byte2")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "byte2")) {
                 if (attribute.length()) {
                     pObj->m_debugFlags[1] = vscp_readStringValue(attribute);
                 }
-            } else if (0 == vscp_strcasecmp(attr[i], "byte3")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "byte3")) {
                 if (attribute.length()) {
                     pObj->m_debugFlags[2] = vscp_readStringValue(attribute);
                 }
-            } else if (0 == vscp_strcasecmp(attr[i], "byte4")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "byte4")) {
                 if (attribute.length()) {
                     pObj->m_debugFlags[3] = vscp_readStringValue(attribute);
                 }
-            } else if (0 == vscp_strcasecmp(attr[i], "byte5")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "byte5")) {
                 if (attribute.length()) {
                     pObj->m_debugFlags[4] = vscp_readStringValue(attribute);
                 }
-            } else if (0 == vscp_strcasecmp(attr[i], "byte6")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "byte6")) {
                 if (attribute.length()) {
                     pObj->m_debugFlags[5] = vscp_readStringValue(attribute);
                 }
-            } else if (0 == vscp_strcasecmp(attr[i], "byte7")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "byte7")) {
                 if (attribute.length()) {
                     pObj->m_debugFlags[6] = vscp_readStringValue(attribute);
                 }
-            } else if (0 == vscp_strcasecmp(attr[i], "byte8")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "byte8")) {
                 if (attribute.length()) {
                     pObj->m_debugFlags[7] = vscp_readStringValue(attribute);
                 }
             }
         }
-
-    } else if (bVscpConfigFound && bGeneralConfigFound &&
-               (2 == depth_full_config_parser) &&
-               (0 == vscp_strcasecmp(name, "security"))) {
+    }
+    else if (bVscpConfigFound && bGeneralConfigFound &&
+             (2 == depth_full_config_parser) &&
+             (0 == vscp_strcasecmp(name, "security"))) {
 
         for (int i = 0; attr[i]; i += 2) {
 
@@ -1699,26 +1747,32 @@ startFullConfigParser(void* data, const char* name, const char** attr)
 
             if (0 == vscp_strcasecmp(attr[i], "admin")) {
                 pObj->m_admin_user = attribute;
-            } else if (0 == vscp_strcasecmp(attr[i], "password")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "password")) {
                 pObj->m_admin_password = attribute;
-            } else if (0 == vscp_strcasecmp(attr[i], "allowfrom")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "allowfrom")) {
                 pObj->m_admin_allowfrom = attribute;
-            } else if (0 == vscp_strcasecmp(attr[i], "vscptoken")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "vscptoken")) {
                 pObj->m_vscptoken = attribute;
-            } else if (0 == vscp_strcasecmp(attr[i], "vscpkey")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "vscpkey")) {
                 if (attribute.length()) {
                     vscp_hexStr2ByteArray(pObj->m_systemKey,
                                           32,
                                           attribute.c_str());
                 }
-            } else if (0 == vscp_strcasecmp(attr[i], "authentication_domain")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "authentication_domain")) {
                 if (attribute.length()) {
                     pObj->m_web_authentication_domain = attribute;
                 }
             }
         }
-    } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
-               (0 == vscp_strcasecmp(name, "tcpip"))) {
+    }
+    else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
+             (0 == vscp_strcasecmp(name, "tcpip"))) {
 
         for (int i = 0; attr[i]; i += 2) {
 
@@ -1728,42 +1782,56 @@ startFullConfigParser(void* data, const char* name, const char** attr)
             if (0 == vscp_strcasecmp(attr[i], "enable")) {
                 if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
                     pObj->m_enableTcpip = true;
-                } else {
+                }
+                else {
                     pObj->m_enableTcpip = false;
                 }
-            } else if (0 == vscp_strcasecmp(attr[i], "interface")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "interface")) {
                 vscp_startsWith(attribute, "tcp://", &attribute);
                 vscp_trim(attribute);
                 pObj->m_strTcpInterfaceAddress = attribute;
-            } else if (0 == vscp_strcasecmp(attr[i], "ssl_certificate")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "ssl_certificate")) {
                 pObj->m_tcpip_ssl_certificate = attribute;
-            } else if (0 == vscp_strcasecmp(attr[i], "ssl_verify_peer")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "ssl_verify_peer")) {
                 pObj->m_tcpip_ssl_verify_peer = vscp_readStringValue(attribute);
-            } else if (0 == vscp_strcasecmp(attr[i], "ssl_certificate_chain")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "ssl_certificate_chain")) {
                 pObj->m_tcpip_ssl_certificate_chain = attribute;
-            } else if (0 == vscp_strcasecmp(attr[i], "ssl_ca_path")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "ssl_ca_path")) {
                 pObj->m_tcpip_ssl_ca_path = attribute;
-            } else if (0 == vscp_strcasecmp(attr[i], "ssl_ca_file")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "ssl_ca_file")) {
                 pObj->m_tcpip_ssl_ca_file = attribute;
-            } else if (0 == vscp_strcasecmp(attr[i], "ssl_verify_depth")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "ssl_verify_depth")) {
                 pObj->m_tcpip_ssl_verify_depth =
                   vscp_readStringValue(attribute);
-            } else if (0 ==
-                       vscp_strcasecmp(attr[i], "ssl_default_verify_paths")) {
+            }
+            else if (0 ==
+                     vscp_strcasecmp(attr[i], "ssl_default_verify_paths")) {
                 if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
                     pObj->m_tcpip_ssl_default_verify_paths = true;
-                } else {
+                }
+                else {
                     pObj->m_tcpip_ssl_default_verify_paths = false;
                 }
-            } else if (0 == vscp_strcasecmp(attr[i], "ssl_cipher_list")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "ssl_cipher_list")) {
                 pObj->m_tcpip_ssl_cipher_list = attribute;
-            } else if (0 == vscp_strcasecmp(attr[i], "ssl_protocol_version")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "ssl_protocol_version")) {
                 pObj->m_tcpip_ssl_verify_depth =
                   vscp_readStringValue(attribute);
-            } else if (0 == vscp_strcasecmp(attr[i], "ssl_short_trust")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "ssl_short_trust")) {
                 if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
                     pObj->m_tcpip_ssl_short_trust = true;
-                } else {
+                }
+                else {
                     pObj->m_tcpip_ssl_short_trust = false;
                 }
             }
@@ -1781,269 +1849,330 @@ startFullConfigParser(void* data, const char* name, const char** attr)
             if (0 == vscp_strcasecmp(attr[i], "enable")) {
                 if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
                     pObj->m_web_bEnable = true;
-                } else {
+                }
+                else {
                     pObj->m_web_bEnable = false;
                 }
-            } else if (0 == vscp_strcasecmp(attr[i], "document_root")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "document_root")) {
                 if (attribute.length()) {
                     pObj->m_web_document_root = attribute;
                 }
-            } else if (0 == vscp_strcasecmp(attr[i], "listening_ports")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "listening_ports")) {
                 if (attribute.length()) {
                     pObj->m_web_listening_ports = attribute;
                 }
-            } else if (0 == vscp_strcasecmp(attr[i], "index_files")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "index_files")) {
                 if (attribute.length()) {
                     pObj->m_web_index_files = vscp_trim_copy(attribute);
                     ;
                 }
-            } else if (0 == vscp_strcasecmp(attr[i], "authentication_domain")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "authentication_domain")) {
                 if (attribute.length()) {
                     pObj->m_web_authentication_domain = attribute;
                 }
-            } else if (0 ==
-                       vscp_strcasecmp(attr[i], "enable_auth_domain_check")) {
+            }
+            else if (0 ==
+                     vscp_strcasecmp(attr[i], "enable_auth_domain_check")) {
                 if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
                     pObj->m_enable_auth_domain_check = true;
-                } else {
+                }
+                else {
                     pObj->m_enable_auth_domain_check = false;
                 }
-            } else if (0 == vscp_strcasecmp(attr[i], "ssl_certificat")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "ssl_certificat")) {
                 if (attribute.length()) {
                     pObj->m_web_ssl_certificate = attribute;
                 }
-            } else if (0 == vscp_strcasecmp(attr[i], "ssl_certificat_chain")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "ssl_certificat_chain")) {
                 if (attribute.length()) {
                     pObj->m_web_ssl_certificate_chain = attribute;
                 }
-            } else if (0 == vscp_strcasecmp(attr[i], "ssl_verify_peer")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "ssl_verify_peer")) {
                 if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
                     pObj->m_web_ssl_verify_peer = true;
-                } else {
+                }
+                else {
                     pObj->m_web_ssl_verify_peer = false;
                 }
-            } else if (0 == vscp_strcasecmp(attr[i], "ssl_ca_path")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "ssl_ca_path")) {
                 if (attribute.length()) {
                     pObj->m_web_ssl_ca_path = attribute;
                 }
-            } else if (0 == vscp_strcasecmp(attr[i], "ssl_ca_file")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "ssl_ca_file")) {
                 if (attribute.length()) {
                     pObj->m_web_ssl_ca_file = attribute;
                 }
-            } else if (0 == vscp_strcasecmp(attr[i], "ssl_verify_depth")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "ssl_verify_depth")) {
                 if (attribute.length()) {
                     pObj->m_web_ssl_verify_depth =
                       vscp_readStringValue(attribute);
                 }
-            } else if (0 ==
-                       vscp_strcasecmp(attr[i], "ssl_default_verify_paths")) {
+            }
+            else if (0 ==
+                     vscp_strcasecmp(attr[i], "ssl_default_verify_paths")) {
                 if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
                     pObj->m_web_ssl_default_verify_paths = true;
-                } else {
+                }
+                else {
                     pObj->m_web_ssl_default_verify_paths = false;
                 }
-            } else if (0 == vscp_strcasecmp(attr[i], "ssl_cipher_list")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "ssl_cipher_list")) {
                 if (attribute.length()) {
                     pObj->m_web_ssl_cipher_list = attribute;
                 }
-            } else if (0 == vscp_strcasecmp(attr[i], "ssl_protcol_version")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "ssl_protcol_version")) {
                 if (attribute.length()) {
                     pObj->m_web_ssl_protocol_version =
                       vscp_readStringValue(attribute);
                 }
-            } else if (0 == vscp_strcasecmp(attr[i], "ssl_short_trust")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "ssl_short_trust")) {
                 if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
                     pObj->m_web_ssl_short_trust = true;
-                } else {
+                }
+                else {
                     pObj->m_web_ssl_short_trust = false;
                 }
-            } else if (0 == vscp_strcasecmp(attr[i], "cgi_interpreter")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "cgi_interpreter")) {
                 if (attribute.length()) {
                     pObj->m_web_cgi_interpreter = attribute;
                 }
-            } else if (0 == vscp_strcasecmp(attr[i], "cgi_pattern")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "cgi_pattern")) {
                 if (attribute.length()) {
                     pObj->m_web_cgi_patterns = attribute;
                 }
-            } else if (0 == vscp_strcasecmp(attr[i], "cgi_environment")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "cgi_environment")) {
                 if (attribute.length()) {
                     pObj->m_web_cgi_environment = attribute;
                 }
-            } else if (0 == vscp_strcasecmp(attr[i], "protect_uri")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "protect_uri")) {
                 if (attribute.length()) {
                     pObj->m_web_protect_uri = attribute;
                 }
-            } else if (0 == vscp_strcasecmp(attr[i], "trottle")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "trottle")) {
                 if (attribute.length()) {
                     pObj->m_web_trottle = attribute;
                 }
-            } else if (0 ==
-                       vscp_strcasecmp(attr[i], "enable_directory_listing")) {
+            }
+            else if (0 ==
+                     vscp_strcasecmp(attr[i], "enable_directory_listing")) {
                 if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
                     pObj->m_web_enable_directory_listing = true;
-                } else {
+                }
+                else {
                     pObj->m_web_enable_directory_listing = false;
                 }
-            } else if (0 == vscp_strcasecmp(attr[i], "enable_keep_alive")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "enable_keep_alive")) {
                 if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
                     pObj->m_web_enable_keep_alive = true;
-                } else {
+                }
+                else {
                     pObj->m_web_enable_keep_alive = false;
                 }
-            } else if (0 == vscp_strcasecmp(attr[i], "keep_alive_timeout_ms")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "keep_alive_timeout_ms")) {
                 if (attribute.length()) {
                     pObj->m_web_keep_alive_timeout_ms =
                       vscp_readStringValue(attribute);
                 }
-            } else if (0 == vscp_strcasecmp(attr[i], "access_control_list")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "access_control_list")) {
                 if (attribute.length()) {
                     pObj->m_web_access_control_list = attribute;
                 }
-            } else if (0 == vscp_strcasecmp(attr[i], "extra_mime_types")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "extra_mime_types")) {
                 if (attribute.length()) {
                     pObj->m_web_extra_mime_types = attribute;
                 }
-            } else if (0 == vscp_strcasecmp(attr[i], "num_threads")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "num_threads")) {
                 if (attribute.length()) {
                     pObj->m_web_num_threads = vscp_readStringValue(attribute);
                 }
-            } else if (0 == vscp_strcasecmp(attr[i], "hide_file_pattern")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "hide_file_pattern")) {
                 if (attribute.length()) {
                     pObj->m_web_hide_file_patterns = attribute;
                 }
-            } else if (0 == vscp_strcasecmp(attr[i], "url_rewrite_patterns")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "url_rewrite_patterns")) {
                 if (attribute.length()) {
                     pObj->m_web_url_rewrite_patterns = attribute;
                 }
-            } else if (0 == vscp_strcasecmp(attr[i], "hide_file_patterns")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "hide_file_patterns")) {
                 if (attribute.length()) {
                     pObj->m_web_hide_file_patterns = attribute;
                 }
-            } else if (0 == vscp_strcasecmp(attr[i], "request_timeout_ms")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "request_timeout_ms")) {
                 if (attribute.length()) {
                     pObj->m_web_request_timeout_ms =
                       vscp_readStringValue(attribute);
                 }
-            } else if (0 == vscp_strcasecmp(attr[i], "linger_timeout_ms")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "linger_timeout_ms")) {
                 if (attribute.length()) {
                     pObj->m_web_linger_timeout_ms =
                       vscp_readStringValue(attribute);
                 }
-            } else if (0 == vscp_strcasecmp(attr[i], "decode_url")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "decode_url")) {
                 if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
                     pObj->m_web_decode_url = true;
-                } else {
+                }
+                else {
                     pObj->m_web_decode_url = false;
                 }
-            } else if (0 == vscp_strcasecmp(attr[i], "global_auth_file")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "global_auth_file")) {
                 if (attribute.length()) {
                     pObj->m_web_global_auth_file = attribute;
                 }
-            } else if (0 == vscp_strcasecmp(attr[i],
-                                            "web_per_directory_auth_file")) {
+            }
+            else if (0 ==
+                     vscp_strcasecmp(attr[i], "web_per_directory_auth_file")) {
                 if (attribute.length()) {
                     pObj->m_web_per_directory_auth_file = attribute;
                 }
-            } else if (0 == vscp_strcasecmp(attr[i],
-                                            "access_control_allow_origin")) {
+            }
+            else if (0 ==
+                     vscp_strcasecmp(attr[i], "access_control_allow_origin")) {
                 if (attribute.length()) {
                     pObj->m_web_access_control_allow_methods = attribute;
                 }
-            } else if (0 == vscp_strcasecmp(attr[i],
-                                            "access_control_allow_methods")) {
+            }
+            else if (0 ==
+                     vscp_strcasecmp(attr[i], "access_control_allow_methods")) {
                 if (attribute.length()) {
                     pObj->m_web_access_control_allow_methods = attribute;
                 }
-            } else if (0 == vscp_strcasecmp(attr[i],
-                                            "access_control_allow_headers")) {
+            }
+            else if (0 ==
+                     vscp_strcasecmp(attr[i], "access_control_allow_headers")) {
                 if (attribute.length()) {
                     pObj->m_web_access_control_allow_headers = attribute;
                 }
-            } else if (0 == vscp_strcasecmp(attr[i], "error_pages")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "error_pages")) {
                 if (attribute.length()) {
                     pObj->m_web_error_pages = attribute;
                 }
-            } else if (0 == vscp_strcasecmp(attr[i], "tcp_nodelay")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "tcp_nodelay")) {
                 if (attribute.length()) {
                     pObj->m_web_linger_timeout_ms =
                       vscp_readStringValue(attribute);
                 }
-            } else if (0 ==
-                       vscp_strcasecmp(attr[i], "static_file_cache_control")) {
+            }
+            else if (0 ==
+                     vscp_strcasecmp(attr[i], "static_file_cache_control")) {
                 if (attribute.length()) {
                     pObj->m_web_static_file_cache_control = attribute;
                 }
-            } else if (0 == vscp_strcasecmp(attr[i], "static_file_max_age")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "static_file_max_age")) {
                 if (attribute.length()) {
                     pObj->m_web_static_file_max_age =
                       vscp_readStringValue(attribute);
                 }
-            } else if (0 ==
-                       vscp_strcasecmp(attr[i],
-                                       "strict_transport_security_max_age")) {
+            }
+            else if (0 ==
+                     vscp_strcasecmp(attr[i],
+                                     "strict_transport_security_max_age")) {
                 if (attribute.length()) {
                     pObj->m_web_strict_transport_security_max_age =
                       vscp_readStringValue(attribute);
                 }
-            } else if (0 == vscp_strcasecmp(attr[i], "sendfile_call")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "sendfile_call")) {
                 if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
                     pObj->m_web_allow_sendfile_call = true;
-                } else {
+                }
+                else {
                     pObj->m_web_allow_sendfile_call = false;
                 }
-            } else if (0 == vscp_strcasecmp(attr[i], "additional_headers")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "additional_headers")) {
                 if (attribute.length()) {
                     pObj->m_web_additional_header = attribute;
                 }
-            } else if (0 == vscp_strcasecmp(attr[i], "max_request_size")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "max_request_size")) {
                 if (attribute.length()) {
                     pObj->m_web_max_request_size =
                       vscp_readStringValue(attribute);
                 }
-            } else if (0 ==
-                       vscp_strcasecmp(attr[i],
-                                       "web_allow_index_script_resource")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i],
+                                          "web_allow_index_script_resource")) {
                 if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
                     pObj->m_web_allow_index_script_resource = true;
-                } else {
+                }
+                else {
                     pObj->m_web_allow_index_script_resource = false;
                 }
-            } else if (0 ==
-                       vscp_strcasecmp(attr[i], "duktape_script_patterns")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "duktape_script_patterns")) {
                 if (attribute.length()) {
                     pObj->m_web_duktape_script_patterns = attribute;
                 }
-            } else if (0 == vscp_strcasecmp(attr[i], "lua_preload_file")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "lua_preload_file")) {
                 if (attribute.length()) {
                     pObj->m_web_lua_preload_file = attribute;
                 }
-            } else if (0 == vscp_strcasecmp(attr[i], "lua_script_patterns")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "lua_script_patterns")) {
                 if (attribute.length()) {
                     pObj->m_web_lua_script_patterns = attribute;
                 }
-            } else if (0 ==
-                       vscp_strcasecmp(attr[i], "lua_server_page_patterns")) {
+            }
+            else if (0 ==
+                     vscp_strcasecmp(attr[i], "lua_server_page_patterns")) {
                 if (attribute.length()) {
                     pObj->m_web_lua_server_page_patterns = attribute;
                 }
-            } else if (0 ==
-                       vscp_strcasecmp(attr[i], "lua_websockets_patterns")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "lua_websockets_patterns")) {
                 if (attribute.length()) {
                     pObj->m_web_lua_websocket_patterns = attribute;
                 }
-            } else if (0 == vscp_strcasecmp(attr[i], "lua_background_script")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "lua_background_script")) {
                 if (attribute.length()) {
                     pObj->m_web_lua_background_script = attribute;
                 }
-            } else if (0 == vscp_strcasecmp(attr[i],
-                                            "lua_background_script_params")) {
+            }
+            else if (0 ==
+                     vscp_strcasecmp(attr[i], "lua_background_script_params")) {
                 if (attribute.length()) {
                     pObj->m_web_lua_background_script_params = attribute;
                 }
             }
         }
-    } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
-               (0 == vscp_strcasecmp(name, "restapi"))) {
+    }
+    else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
+             (0 == vscp_strcasecmp(name, "restapi"))) {
 
         for (int i = 0; attr[i]; i += 2) {
 
@@ -2053,13 +2182,15 @@ startFullConfigParser(void* data, const char* name, const char** attr)
             if (0 == vscp_strcasecmp(attr[i], "enable")) {
                 if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
                     pObj->m_bEnableRestApi = true;
-                } else {
+                }
+                else {
                     pObj->m_bEnableRestApi = false;
                 }
             }
         }
-    } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
-               (0 == vscp_strcasecmp(name, "websockets"))) {
+    }
+    else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
+             (0 == vscp_strcasecmp(name, "websockets"))) {
 
         for (int i = 0; attr[i]; i += 2) {
 
@@ -2069,38 +2200,46 @@ startFullConfigParser(void* data, const char* name, const char** attr)
             if (0 == vscp_strcasecmp(attr[i], "enable")) {
                 if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
                     pObj->m_bWebsocketsEnable = true;
-                } else {
+                }
+                else {
                     pObj->m_bWebsocketsEnable = false;
                 }
-            } else if (0 == vscp_strcasecmp(attr[i], "document_root")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "document_root")) {
                 if (attribute.length()) {
                     pObj->m_websocket_document_root = attribute;
                 }
-            } else if (0 == vscp_strcasecmp(attr[i], "timeout_ms")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "timeout_ms")) {
                 if (attribute.length()) {
                     pObj->m_websocket_timeout_ms =
                       vscp_readStringValue(attribute);
                 }
-            } else if (0 ==
-                       vscp_strcasecmp(attr[i], "enable_websocket_ping_pong")) {
+            }
+            else if (0 ==
+                     vscp_strcasecmp(attr[i], "enable_websocket_ping_pong")) {
                 if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
                     pObj->bEnable_websocket_ping_pong = true;
-                } else {
+                }
+                else {
                     pObj->bEnable_websocket_ping_pong = false;
                 }
-            } else if (0 ==
-                       vscp_strcasecmp(attr[i], "web-lua_websocket_pattern")) {
+            }
+            else if (0 ==
+                     vscp_strcasecmp(attr[i], "web-lua_websocket_pattern")) {
                 if (attribute.length()) {
                     pObj->lua_websocket_pattern = attribute;
                 }
             }
         }
-    } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
-               (0 == vscp_strcasecmp(name, "remoteuser"))) {
+    }
+    else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
+             (0 == vscp_strcasecmp(name, "remoteuser"))) {
         bRemoteUserConfigFound = TRUE;
-    } else if (bVscpConfigFound && bRemoteUserConfigFound &&
-               (2 == depth_full_config_parser) &&
-               (0 == vscp_strcasecmp(name, "user"))) {
+    }
+    else if (bVscpConfigFound && bRemoteUserConfigFound &&
+             (2 == depth_full_config_parser) &&
+             (0 == vscp_strcasecmp(name, "user"))) {
 
         vscpEventFilter VSCPFilter;
         bool bFilterPresent = false;
@@ -2122,25 +2261,33 @@ startFullConfigParser(void* data, const char* name, const char** attr)
 
             if (0 == vscp_strcasecmp(attr[i], "name")) {
                 name = attribute;
-            } else if (0 == vscp_strcasecmp(attr[i], "password")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "password")) {
                 md5 = attribute;
-            } else if (0 == vscp_strcasecmp(attr[i], "fullname")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "fullname")) {
                 fullname = attribute;
-            } else if (0 == vscp_strcasecmp(attr[i], "note")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "note")) {
                 note = attribute;
-            } else if (0 == vscp_strcasecmp(attr[i], "privilege")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "privilege")) {
                 privilege = attribute;
-            } else if (0 == vscp_strcasecmp(attr[i], "allowfrom")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "allowfrom")) {
                 allowfrom = attribute;
-            } else if (0 == vscp_strcasecmp(attr[i], "allowevent")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "allowevent")) {
                 allowevent = attribute;
-            } else if (0 == vscp_strcasecmp(attr[i], "filter")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "filter")) {
                 if (attribute.length()) {
                     if (vscp_readFilterFromString(&VSCPFilter, attribute)) {
                         bFilterPresent = true;
                     }
                 }
-            } else if (0 == vscp_strcasecmp(attr[i], "mask")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "mask")) {
                 if (attribute.length()) {
                     if (vscp_readMaskFromString(&VSCPFilter, attribute)) {
                         bMaskPresent = true;
@@ -2159,7 +2306,8 @@ startFullConfigParser(void* data, const char* name, const char** attr)
                                          allowfrom,
                                          allowevent,
                                          0);
-            } else {
+            }
+            else {
                 pObj->m_userList.addUser(name,
                                          md5,
                                          fullname,
@@ -2172,13 +2320,15 @@ startFullConfigParser(void* data, const char* name, const char** attr)
                                          0);
             }
         }
-    } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
-               ((0 == vscp_strcasecmp(name, "level1driver")) ||
-                (0 == vscp_strcasecmp(name, "canal1driver")))) {
+    }
+    else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
+             ((0 == vscp_strcasecmp(name, "level1driver")) ||
+              (0 == vscp_strcasecmp(name, "canal1driver")))) {
         bLevel1DriverConfigFound = TRUE;
-    } else if (bVscpConfigFound && bLevel1DriverConfigFound &&
-               (2 == depth_full_config_parser) &&
-               (0 == vscp_strcasecmp(name, "driver"))) {
+    }
+    else if (bVscpConfigFound && bLevel1DriverConfigFound &&
+             (2 == depth_full_config_parser) &&
+             (0 == vscp_strcasecmp(name, "driver"))) {
 
         std::string strName;
         std::string strConfig;
@@ -2196,10 +2346,12 @@ startFullConfigParser(void* data, const char* name, const char** attr)
             if (0 == vscp_strcasecmp(attr[i], "enable")) {
                 if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
                     bEnabled = true;
-                } else {
+                }
+                else {
                     bEnabled = false;
                 }
-            } else if (0 == vscp_strcasecmp(attr[i], "name")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "name")) {
                 strName = attribute;
                 // Replace spaces in name with underscore
                 std::string::size_type found;
@@ -2207,18 +2359,24 @@ startFullConfigParser(void* data, const char* name, const char** attr)
                        (found = strName.find_first_of(" "))) {
                     strName[found] = '_';
                 }
-            } else if (0 == vscp_strcasecmp(attr[i], "config")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "config")) {
                 strConfig = attribute;
-            } else if (0 == vscp_strcasecmp(attr[i],
-                                            "parameter")) { // deprecated
+            }
+            else if (0 == vscp_strcasecmp(attr[i],
+                                          "parameter")) { // deprecated
                 strConfig = attribute;
-            } else if (0 == vscp_strcasecmp(attr[i], "path")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "path")) {
                 strPath = attribute;
-            } else if (0 == vscp_strcasecmp(attr[i], "flags")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "flags")) {
                 flags = vscp_readStringValue(attribute);
-            } else if (0 == vscp_strcasecmp(attr[i], "guid")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "guid")) {
                 guid.getFromString(attribute);
-            } else if (0 == vscp_strcasecmp(attr[i], "translation")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "translation")) {
                 translation = vscp_readStringValue(attribute);
             }
         } // for
@@ -2238,7 +2396,8 @@ startFullConfigParser(void* data, const char* name, const char** attr)
                        "Path does not exist. - [%s]",
                        strName.c_str(),
                        strPath.c_str());
-            } else {
+            }
+            else {
                 if (__VSCP_DEBUG_DRIVER1) {
                     syslog(LOG_DEBUG,
                            "Level I driver added. name = %s - [%s]",
@@ -2247,12 +2406,14 @@ startFullConfigParser(void* data, const char* name, const char** attr)
                 }
             }
         }
-    } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
-               ((0 == vscp_strcasecmp(name, "level2driver")))) {
+    }
+    else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
+             ((0 == vscp_strcasecmp(name, "level2driver")))) {
         bLevel2DriverConfigFound = TRUE;
-    } else if (bVscpConfigFound && bLevel2DriverConfigFound &&
-               (2 == depth_full_config_parser) &&
-               (0 == vscp_strcasecmp(name, "driver"))) {
+    }
+    else if (bVscpConfigFound && bLevel2DriverConfigFound &&
+             (2 == depth_full_config_parser) &&
+             (0 == vscp_strcasecmp(name, "driver"))) {
 
         std::string strName;
         std::string strConfig;
@@ -2268,10 +2429,12 @@ startFullConfigParser(void* data, const char* name, const char** attr)
             if (0 == vscp_strcasecmp(attr[i], "enable")) {
                 if (0 == vscp_strcasecmp(attribute.c_str(), "true")) {
                     bEnabled = true;
-                } else {
+                }
+                else {
                     bEnabled = false;
                 }
-            } else if (0 == vscp_strcasecmp(attr[i], "name")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "name")) {
                 strName = attribute;
                 // Replace spaces in name with underscore
                 std::string::size_type found;
@@ -2279,14 +2442,18 @@ startFullConfigParser(void* data, const char* name, const char** attr)
                        (found = strName.find_first_of(" "))) {
                     strName[found] = '_';
                 }
-            } else if (0 == vscp_strcasecmp(attr[i], "path-config")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "path-config")) {
                 strConfig = attribute;
-            } else if (0 == vscp_strcasecmp(attr[i],
-                                            "parameter")) { // deprecated
+            }
+            else if (0 == vscp_strcasecmp(attr[i],
+                                          "parameter")) { // deprecated
                 strConfig = attribute;
-            } else if (0 == vscp_strcasecmp(attr[i], "path-driver")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "path-driver")) {
                 strPath = attribute;
-            } else if (0 == vscp_strcasecmp(attr[i], "guid")) {
+            }
+            else if (0 == vscp_strcasecmp(attr[i], "guid")) {
                 guid.getFromString(attribute);
             }
         } // for
@@ -2307,7 +2474,8 @@ startFullConfigParser(void* data, const char* name, const char** attr)
                            strName.c_str(),
                            strPath.c_str());
                 }
-            } else {
+            }
+            else {
                 if (__VSCP_DEBUG_DRIVER2) {
                     syslog(LOG_DEBUG,
                            "Level II driver added. name = %s- [%s]",
@@ -2323,7 +2491,8 @@ startFullConfigParser(void* data, const char* name, const char** attr)
 
 static void
 handleFullConfigData(void* data, const char* content, int length)
-{}
+{
+}
 
 static void
 endFullConfigParser(void* data, const char* name)
@@ -2338,11 +2507,13 @@ endFullConfigParser(void* data, const char* name)
         ((0 == vscp_strcasecmp(name, "level1driver")) ||
          (0 == vscp_strcasecmp(name, "canal1driver")))) {
         bLevel1DriverConfigFound = FALSE;
-    } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
-               (0 == vscp_strcasecmp(name, "level2driver"))) {
+    }
+    else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
+             (0 == vscp_strcasecmp(name, "level2driver"))) {
         bLevel2DriverConfigFound = FALSE;
-    } else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
-               (0 == vscp_strcasecmp(name, "level3driver"))) {
+    }
+    else if (bVscpConfigFound && (1 == depth_full_config_parser) &&
+             (0 == vscp_strcasecmp(name, "level3driver"))) {
         bLevel3DriverConfigFound = FALSE;
     }
 }

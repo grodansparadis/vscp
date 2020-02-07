@@ -15,3 +15,6 @@ AlignEscapedNewlines: Right
 AlignTrailingComments: true
 AllowAllArgumentsOnNextLine: false
 AllowAllParametersOfDeclarationOnNextLine: false
+BreakBeforeBraces: Stroustrup
+
+# google-readability-braces-around-statements

@@ -264,6 +264,14 @@ class CControlObject
     bool sendEvent(CClientItem* pClientItem, vscpEvent* peventToSend);
 
     /*!
+     * Send event
+     * @param pClientItem Client that send the event.
+     * @param pex Eventex to send. 
+     * @return True on success false on failure.
+     */
+    bool sendEvent(CClientItem* pClientItem, vscpEventEx* pex);
+
+    /*!
      * Check if a driver name is free to us
      *
      * @param drvname Name of driver to check.

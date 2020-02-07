@@ -1495,8 +1495,8 @@ extern "C"
     /*!
         Copy one VSCP event ex to another
 
-        @param pEventTo Pointer to event to copy to.
-        @param pEventFrom Pointer to event to copy from.
+        @param pEventTo Pointer to eventex to copy to.
+        @param pEventFrom Pointer to eventex to copy from.
         @return True on success.
     */
     bool vscp_copyEventEx(vscpEventEx* pEventTo, const vscpEventEx* pEventFrom);

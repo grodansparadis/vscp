@@ -148,7 +148,7 @@ async def connect():
         wsrply = json.loads(response)
         print(f"Response from server: {json.dumps(wsrply, indent=2)}")
 
-        print("Waiting for events (Abort with ctrl+c)")
+        print("Waiting for class=30, Type=5 as events (Active FILTER) (Abort with ctrl+c)")
         while True:
             response = await websocket.recv()
             wsrply = json.loads(response)

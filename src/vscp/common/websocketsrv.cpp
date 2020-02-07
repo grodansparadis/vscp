@@ -411,135 +411,28 @@ websock_new_session(const struct mg_connection* conn)
 bool
 websock_sendevent(struct mg_connection* conn,
                   websock_session* pSession,
-                  vscpEvent* pEvent)
+                  vscpEventEx* pex)
 {
     bool bSent = false;
     bool rv    = true;
 
     // Check pointer
-    if (NULL == conn)
+    if (NULL == conn) {
+        syslog(LOG_ERR,"Internal error: websock_sendevent - conn == NULL");
         return false;
-    if (NULL == pSession)
+    }
+    
+    if (NULL == pSession) {
+        syslog(LOG_ERR,"Internal error: websock_sendevent - pSession == NULL");
         return false;
-
-    // Level II events between 512-1023 is recognized by the daemon and
-    // sent to the correct interface as Level I events if the interface
-    // is addressed by the client.
-    if ((pEvent->vscp_class <= 1023) && (pEvent->vscp_class >= 512) &&
-        (pEvent->sizeData >= 16)) {
-
-        // This event should be sent to the correct interface if it is
-        // available on this machine. If not it should be sent to
-        // the rest of the network as normal
-
-        cguid destguid;
-        destguid.getFromArray(pEvent->pdata);
-        destguid.setAt(0, 0);
-        destguid.setAt(1, 0);
-
-        pthread_mutex_lock(&gpobj->m_clientList.m_mutexItemList);
-
-        // Find client
-        CClientItem* pDestClientItem = NULL;
-        std::deque<CClientItem*>::iterator it;
-        for (it = gpobj->m_clientList.m_itemList.begin();
-             it != gpobj->m_clientList.m_itemList.end();
-             ++it) {
-
-            CClientItem* pItem = *it;
-            if (pItem->m_guid == destguid) {
-                // Found
-                pDestClientItem = pItem;
-                break;
-            }
-        }
-
-        if (NULL != pDestClientItem) {
-
-            // If the client queue is full for this client then the
-            // client will not receive the message
-            if (pDestClientItem->m_clientInputQueue.size() <=
-                gpobj->m_maxItemsInClientReceiveQueue) {
-
-                // Create copy of the event
-                vscpEvent* pnewEvent = new vscpEvent;
-
-                if (NULL != pnewEvent) {
-
-                    pnewEvent->pdata = NULL;
-
-                    vscp_copyEvent(pnewEvent, pEvent);
-
-                    // Add the new event to the inputqueue
-                    pthread_mutex_lock(
-                      &pDestClientItem->m_mutexClientInputQueue);
-                    pDestClientItem->m_clientInputQueue.push_back(pnewEvent);
-                    pthread_mutex_unlock(
-                      &pDestClientItem->m_mutexClientInputQueue);
-                    sem_post(&pDestClientItem->m_semClientInputQueue);
-
-                    bSent = true;
-
-                    if (__VSCP_DEBUG_WEBSOCKET_TX) {
-                        std::string str;
-                        vscp_convertEventToString(str, pEvent);
-                        syslog(LOG_DEBUG, "Sent ws event %s", str.c_str());
-                    }
-
-                } else {
-                    bSent = false;
-                    syslog(LOG_ERR,
-                           "ws event queue memory allocation problem.");
-                }
-
-            } else {
-                // Overrun - No room for event
-                // vscp_deleteEvent(pEvent);
-                bSent = true;
-                rv    = false;
-
-                syslog(LOG_ERR, "ws event queue overrun");
-            }
-
-        } // Client found
-
-        pthread_mutex_unlock(&gpobj->m_clientList.m_mutexItemList);
     }
 
-    if (!bSent) {
-
-        // There must be room in the send queue
-        if (gpobj->m_maxItemsInClientReceiveQueue >
-            gpobj->m_clientOutputQueue.size()) {
-
-            // Create copy of event
-            vscpEvent* pnewEvent = new vscpEvent;
-
-            if (NULL != pnewEvent) {
-
-                pnewEvent->pdata = NULL;
-
-                vscp_copyEvent(pnewEvent, pEvent);
-
-                pthread_mutex_lock(&gpobj->m_mutex_ClientOutputQueue);
-                gpobj->m_clientOutputQueue.push_back(pnewEvent);
-                pthread_mutex_unlock(&gpobj->m_mutex_ClientOutputQueue);
-                sem_post(&gpobj->m_semClientOutputQueue);
-
-                if (__VSCP_DEBUG_WEBSOCKET_TX) {
-                    std::string str;
-                    vscp_convertEventToString(str, pEvent);
-                    syslog(LOG_DEBUG, "Sent ws event %s", str.c_str());
-                }
-            }
-
-        } else {
-            syslog(LOG_ERR, "ws event queue overrun");
-            rv = false;
-        }
+    if (NULL == pex) {
+        syslog(LOG_ERR,"Internal error: websock_sendevent - pEvent == NULL");
+        return false;
     }
 
-    return rv;
+    return gpobj->sendEvent(pSession->m_pClientItem, pex );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -550,27 +443,28 @@ void
 websock_post_incomingEvents(void)
 {
     pthread_mutex_lock(&gpobj->m_mutex_websocketSession);
-    
+
     std::list<websock_session*>::iterator iter;
     for (iter = gpobj->m_websocketSessions.begin();
          iter != gpobj->m_websocketSessions.end();
          ++iter) {
-             
+
         websock_session* pSession = *iter;
-        if (NULL == pSession)
+        if (NULL == pSession) {
             continue;
-        
+        }
+
         // Should be a client item... hmm.... client disconnected
         if (NULL == pSession->m_pClientItem) {
             continue;
         }
-        
+
         if (pSession->m_conn_state < WEBSOCK_CONN_STATE_CONNECTED)
             continue;
-        
+
         if (NULL == pSession->m_conn)
             continue;
- 
+
         if (pSession->m_pClientItem->m_bOpen &&
             pSession->m_pClientItem->m_clientInputQueue.size()) {
 
@@ -610,7 +504,8 @@ websock_post_incomingEvents(void)
                                                MG_WEBSOCKET_OPCODE_TEXT,
                                                (const char*)str.c_str(),
                                                str.length());
-                        } else if (WS_TYPE_2 == pSession->m_wstypes) {
+                        }
+                        else if (WS_TYPE_2 == pSession->m_wstypes) {
                             std::string strEvent;
                             vscp_convertEventToJSON(strEvent, pEvent);
                             std::string str =
@@ -791,7 +686,8 @@ ws1_dataHandler(struct mg_connection* conn,
                                      pSession->m_strConcatenated)) {
                         return WEB_ERROR;
                     }
-                } catch (...) {
+                }
+                catch (...) {
                     syslog(LOG_ERR,
                            "ws1: Exception occurred ws1_message concat");
                 }
@@ -811,10 +707,12 @@ ws1_dataHandler(struct mg_connection* conn,
                     if (!ws1_message(conn, pSession, strWsPkt)) {
                         return WEB_ERROR;
                     }
-                } catch (...) {
+                }
+                catch (...) {
                     syslog(LOG_ERR, "ws1: Exception occurred ws1_message");
                 }
-            } else {
+            }
+            else {
                 // Store first part
                 pSession->m_strConcatenated = std::string(data, len);
             }
@@ -880,7 +778,8 @@ ws1_message(struct mg_connection* conn,
             strWsPkt = vscp_str_right(strWsPkt, strWsPkt.length() - 2);
             try {
                 ws1_command(conn, pSession, strWsPkt);
-            } catch (...) {
+            }
+            catch (...) {
                 syslog(LOG_ERR, "ws1: Exception occurred ws1_command");
                 str = vscp_str_format(("-;C;%d;%s"),
                                       (int)WEBSOCK_ERROR_GENERAL,
@@ -942,15 +841,15 @@ ws1_message(struct mg_connection* conn,
 
             // Point beyond initial info "E;"
             strWsPkt = vscp_str_right(strWsPkt, strWsPkt.length() - 2);
-            vscpEvent vscp_event;
+            vscpEventEx ex;
 
             try {
-                if (vscp_convertStringToEvent(&vscp_event, strWsPkt)) {
+                if (vscp_convertStringToEventEx(&ex, strWsPkt)) {
 
                     // If GUID is all null give it GUID of interface
-                    if (vscp_isGUIDEmpty(vscp_event.GUID)) {
+                    if (vscp_isGUIDEmpty(ex.GUID)) {
                         pSession->m_pClientItem->m_guid.writeGUID(
-                          vscp_event.GUID);
+                          ex.GUID);
                     }
 
                     // Is this user allowed to send events
@@ -979,9 +878,9 @@ ws1_message(struct mg_connection* conn,
                     }
 
                     // Is user allowed to send CLASS1.PROTOCOL events
-                    if ((VSCP_CLASS1_PROTOCOL == vscp_event.vscp_class) &&
+                    if ((VSCP_CLASS1_PROTOCOL == ex.vscp_class) &&
                         (VSCP_CLASS2_LEVEL1_PROTOCOL ==
-                         vscp_event.vscp_class) &&
+                         ex.vscp_class) &&
                         !(pSession->m_pClientItem->m_pUserItem
                             ->getUserRights() &
                           VSCP_USER_RIGHT_ALLOW_SEND_L1CTRL_EVENT)) {
@@ -1006,7 +905,7 @@ ws1_message(struct mg_connection* conn,
                     }
 
                     // Is user allowed to send CLASS2.PROTOCOL events
-                    if ((VSCP_CLASS2_PROTOCOL == vscp_event.vscp_class) &&
+                    if ((VSCP_CLASS2_PROTOCOL == ex.vscp_class) &&
                         !(pSession->m_pClientItem->m_pUserItem
                             ->getUserRights() &
                           VSCP_USER_RIGHT_ALLOW_SEND_L2CTRL_EVENT)) {
@@ -1031,7 +930,7 @@ ws1_message(struct mg_connection* conn,
                     }
 
                     // Is user allowed to send CLASS2.HLO events
-                    if ((VSCP_CLASS2_HLO == vscp_event.vscp_class) &&
+                    if ((VSCP_CLASS2_HLO == ex.vscp_class) &&
                         !(pSession->m_pClientItem->m_pUserItem
                             ->getUserRights() &
                           VSCP_USER_RIGHT_ALLOW_SEND_HLO_EVENT)) {
@@ -1057,8 +956,8 @@ ws1_message(struct mg_connection* conn,
 
                     // Check if this user is allowed to send this event
                     if (!pSession->m_pClientItem->m_pUserItem
-                           ->isUserAllowedToSendEvent(vscp_event.vscp_class,
-                                                      vscp_event.vscp_type)) {
+                           ->isUserAllowedToSendEvent(ex.vscp_class,
+                                                      ex.vscp_type)) {
 
                         str = vscp_str_format(
                           ("-;%d;%s"),
@@ -1076,14 +975,14 @@ ws1_message(struct mg_connection* conn,
                           "send event class=%d type=%d.",
                           pSession->m_pClientItem->m_pUserItem->getUserName()
                             .c_str(),
-                          vscp_event.vscp_class,
-                          vscp_event.vscp_type);
+                          ex.vscp_class,
+                          ex.vscp_type);
 
                         return true; // Keep connection open
                     }
 
-                    vscp_event.obid = pSession->m_pClientItem->m_clientID;
-                    if (websock_sendevent(conn, pSession, &vscp_event)) {
+                    ex.obid = pSession->m_pClientItem->m_clientID;
+                    if (websock_sendevent(conn, pSession, &ex)) {
                         mg_websocket_write(conn,
                                            MG_WEBSOCKET_OPCODE_TEXT,
                                            "+;EVENT",
@@ -1093,7 +992,8 @@ ws1_message(struct mg_connection* conn,
                                    "[websocket ws1] Sent ws1 event %s",
                                    strWsPkt.c_str());
                         }
-                    } else {
+                    }
+                    else {
                         str = vscp_str_format(("-;%d;%s"),
                                               (int)WEBSOCK_ERROR_TX_BUFFER_FULL,
                                               WEBSOCK_STR_ERROR_TX_BUFFER_FULL);
@@ -1103,7 +1003,8 @@ ws1_message(struct mg_connection* conn,
                                            str.length());
                     }
                 }
-            } catch (...) {
+            }
+            catch (...) {
                 syslog(LOG_ERR, "ws1: Exception occurred send event");
                 str = vscp_str_format(("-;E;%d;%s"),
                                       (int)WEBSOCK_ERROR_GENERAL,
@@ -1155,7 +1056,8 @@ ws1_command(struct mg_connection* conn,
         tokens.pop_front();
         vscp_trim(strTok);
         vscp_makeUpper(strTok);
-    } else {
+    }
+    else {
         std::string str = vscp_str_format(("-;%d;%s"),
                                           (int)WEBSOCK_ERROR_SYNTAX_ERROR,
                                           WEBSOCK_STR_ERROR_SYNTAX_ERROR);
@@ -1191,7 +1093,6 @@ ws1_command(struct mg_connection* conn,
                                (const char*)str.c_str(),
                                str.length());
         }
-
     }
 
     // ------------------------------------------------------------------------
@@ -1217,7 +1118,8 @@ ws1_command(struct mg_connection* conn,
                                    MG_WEBSOCKET_OPCODE_TEXT,
                                    (const char*)str.c_str(),
                                    str.length());
-            } else {
+            }
+            else {
 
                 str = vscp_str_format(("-;AUTH;%d;%s"),
                                       (int)WEBSOCK_ERROR_NOT_AUTHORISED,
@@ -1229,7 +1131,8 @@ ws1_command(struct mg_connection* conn,
                 pSession->m_pClientItem->bAuthenticated =
                   false; // Authenticated
             }
-        } catch (...) {
+        }
+        catch (...) {
             syslog(LOG_ERR, "WS1: AUTH failed (syntax)");
             str = vscp_str_format(("-;AUTH;%d;%s"),
                                   (int)WEBSOCK_ERROR_SYNTAX_ERROR,
@@ -1352,7 +1255,8 @@ ws1_command(struct mg_connection* conn,
 
             pthread_mutex_unlock(
               &pSession->m_pClientItem->m_mutexClientInputQueue);
-        } else {
+        }
+        else {
 
             str = vscp_str_format(("-;SF;%d;%s"),
                                   (int)WEBSOCK_ERROR_SYNTAX_ERROR,
@@ -1393,8 +1297,8 @@ ws1_command(struct mg_connection* conn,
 
             pthread_mutex_unlock(
               &pSession->m_pClientItem->m_mutexClientInputQueue);
-
-        } else {
+        }
+        else {
             str = vscp_str_format(("-;SF;%d;%s"),
                                   (int)WEBSOCK_ERROR_SYNTAX_ERROR,
                                   WEBSOCK_STR_ERROR_SYNTAX_ERROR);
@@ -1408,7 +1312,6 @@ ws1_command(struct mg_connection* conn,
 
         // Positive response
         mg_websocket_write(conn, MG_WEBSOCKET_OPCODE_TEXT, "+;SF", 4);
-
     }
 
     // ------------------------------------------------------------------------
@@ -1455,7 +1358,6 @@ ws1_command(struct mg_connection* conn,
         pthread_mutex_unlock(&pSession->m_pClientItem->m_mutexClientInputQueue);
 
         mg_websocket_write(conn, MG_WEBSOCKET_OPCODE_TEXT, "+;CLRQ", 6);
-
     }
 
     // ------------------------------------------------------------------------
@@ -1479,7 +1381,6 @@ ws1_command(struct mg_connection* conn,
                            MG_WEBSOCKET_OPCODE_TEXT,
                            (const char*)strResult.c_str(),
                            strResult.length());
-
     }
 
     // ------------------------------------------------------------------------
@@ -1658,7 +1559,7 @@ ws2_dataHandler(struct mg_connection* conn,
 
         case MG_WEBSOCKET_OPCODE_CONTINUATION:
 
-            if (__VSCP_DEBUG_WEBSOCKET_RX) {
+            if (__VSCP_DEBUG_WEBSOCKET) {
                 syslog(LOG_DEBUG, "Websocket WS2 - opcode = Continuation");
             }
 
@@ -1673,7 +1574,8 @@ ws2_dataHandler(struct mg_connection* conn,
                                      pSession->m_strConcatenated)) {
                         return WEB_ERROR;
                     }
-                } catch (...) {
+                }
+                catch (...) {
                     syslog(LOG_ERR,
                            "ws1: Exception occurred ws2_message concat");
                 }
@@ -1695,10 +1597,12 @@ ws2_dataHandler(struct mg_connection* conn,
                     if (!ws2_message(conn, pSession, strWsPkt)) {
                         return WEB_ERROR;
                     }
-                } catch (...) {
+                }
+                catch (...) {
                     syslog(LOG_ERR, "ws1: Exception occurred ws2_message");
                 }
-            } else {
+            }
+            else {
                 // Store first part
                 pSession->m_strConcatenated = std::string(data, len);
             }
@@ -1813,8 +1717,8 @@ ws2_message(struct mg_connection* conn,
                            "Failed to parse ws2 websocket command object %s",
                            strWsPkt.c_str());
                     return false;
-
-                } catch (...) {
+                }
+                catch (...) {
                     std::string str =
                       vscp_str_format(WS2_NEGATIVE_RESPONSE,
                                       strCmd.c_str(),
@@ -1867,13 +1771,13 @@ ws2_message(struct mg_connection* conn,
                                 return false; // 'false' - Drop connection
                             }
 
-                            vscpEvent ev;
-                            if (vscp_convertJSONToEvent(&ev, str)) {
+                            vscpEventEx ex;
+                            if (vscp_convertJSONToEventEx(&ex, str)) {
 
                                 // If GUID is all null give it GUID of interface
-                                if (vscp_isGUIDEmpty(ev.GUID)) {
+                                if (vscp_isGUIDEmpty(ex.GUID)) {
                                     pSession->m_pClientItem->m_guid.writeGUID(
-                                      ev.GUID);
+                                      ex.GUID);
                                 }
 
                                 // Is this user allowed to send events
@@ -1904,9 +1808,9 @@ ws2_message(struct mg_connection* conn,
                                 // Is user allowed to send CLASS1.PROTOCOL
                                 // events
                                 if (
-                                  (VSCP_CLASS1_PROTOCOL == ev.vscp_class) &&
+                                  (VSCP_CLASS1_PROTOCOL == ex.vscp_class) &&
                                   (VSCP_CLASS2_LEVEL1_PROTOCOL ==
-                                   ev.vscp_class) &&
+                                   ex.vscp_class) &&
                                   !(pSession->m_pClientItem->m_pUserItem
                                       ->getUserRights() &
                                     VSCP_USER_RIGHT_ALLOW_SEND_L1CTRL_EVENT)) {
@@ -1935,7 +1839,7 @@ ws2_message(struct mg_connection* conn,
                                 // Is user allowed to send CLASS2.PROTOCOL
                                 // events
                                 if (
-                                  (VSCP_CLASS2_PROTOCOL == ev.vscp_class) &&
+                                  (VSCP_CLASS2_PROTOCOL == ex.vscp_class) &&
                                   !(pSession->m_pClientItem->m_pUserItem
                                       ->getUserRights() &
                                     VSCP_USER_RIGHT_ALLOW_SEND_L2CTRL_EVENT)) {
@@ -1962,7 +1866,7 @@ ws2_message(struct mg_connection* conn,
                                 }
 
                                 // Is user allowed to send CLASS2.HLO events
-                                if ((VSCP_CLASS2_HLO == ev.vscp_class) &&
+                                if ((VSCP_CLASS2_HLO == ex.vscp_class) &&
                                     !(pSession->m_pClientItem->m_pUserItem
                                         ->getUserRights() &
                                       VSCP_USER_RIGHT_ALLOW_SEND_HLO_EVENT)) {
@@ -1992,8 +1896,8 @@ ws2_message(struct mg_connection* conn,
                                 // event
                                 if (!pSession->m_pClientItem->m_pUserItem
                                        ->isUserAllowedToSendEvent(
-                                         ev.vscp_class,
-                                         ev.vscp_type)) {
+                                         ex.vscp_class,
+                                         ex.vscp_type)) {
 
                                     std::string str = vscp_str_format(
                                       WS2_NEGATIVE_RESPONSE,
@@ -2012,14 +1916,14 @@ ws2_message(struct mg_connection* conn,
                                       pSession->m_pClientItem->m_pUserItem
                                         ->getUserName()
                                         .c_str(),
-                                      ev.vscp_class,
-                                      ev.vscp_type);
+                                      ex.vscp_class,
+                                      ex.vscp_type);
 
                                     return true; // 'true' leave connection open
                                 }
 
-                                ev.obid = pSession->m_pClientItem->m_clientID;
-                                if (websock_sendevent(conn, pSession, &ev)) {
+                                ex.obid = pSession->m_pClientItem->m_clientID;
+                                if (websock_sendevent(conn, pSession, &ex)) {
 
                                     str = vscp_str_format(WS2_POSITIVE_RESPONSE,
                                                           "EVENT",
@@ -2034,8 +1938,8 @@ ws2_message(struct mg_connection* conn,
                                                "Sent ws2 event %s",
                                                strWsPkt.c_str());
                                     }
-
-                                } else {
+                                }
+                                else {
 
                                     str = vscp_str_format(
                                       WS2_NEGATIVE_RESPONSE,
@@ -2055,7 +1959,8 @@ ws2_message(struct mg_connection* conn,
                             }
                         }
                     }
-                } catch (...) {
+                }
+                catch (...) {
                     std::string str =
                       vscp_str_format(WS2_NEGATIVE_RESPONSE,
                                       "EVENT",
@@ -2085,7 +1990,8 @@ ws2_message(struct mg_connection* conn,
                             break;
                         }
                     }
-                } catch (...) {
+                }
+                catch (...) {
                     std::string str =
                       vscp_str_format(WS2_NEGATIVE_RESPONSE,
                                       "EVENT",
@@ -2114,7 +2020,8 @@ ws2_message(struct mg_connection* conn,
                             break;
                         }
                     }
-                } catch (...) {
+                }
+                catch (...) {
                     std::string str =
                       vscp_str_format(WS2_NEGATIVE_RESPONSE,
                                       "EVENT",
@@ -2143,7 +2050,8 @@ ws2_message(struct mg_connection* conn,
                             break;
                         }
                     }
-                } catch (...) {
+                }
+                catch (...) {
                     std::string str =
                       vscp_str_format(WS2_NEGATIVE_RESPONSE,
                                       "EVENT",
@@ -2159,7 +2067,8 @@ ws2_message(struct mg_connection* conn,
                            strWsPkt.c_str());
                     return true; // 'true' leave connection open
                 }
-            } else {
+            }
+            else {
 
                 std::string str =
                   vscp_str_format(WS2_NEGATIVE_RESPONSE,
@@ -2178,8 +2087,8 @@ ws2_message(struct mg_connection* conn,
                 return true; // 'true' leave connection open
             }
         }
-
-    } catch (...) {
+    }
+    catch (...) {
         std::string str = vscp_str_format(WS2_NEGATIVE_RESPONSE,
                                           "EVENT",
                                           WEBSOCK_ERROR_UNKNOWN_TYPE,
@@ -2228,7 +2137,8 @@ ws2_command(struct mg_connection* conn,
                 argmap[it.key()] = it.value();
             }
         }
-    } catch (...) {
+    }
+    catch (...) {
         std::string str = vscp_str_format(WS2_NEGATIVE_RESPONSE,
                                           "SETFILTER",
                                           (int)WEBSOCK_ERROR_PARSE_FORMAT,
@@ -2257,7 +2167,6 @@ ws2_command(struct mg_connection* conn,
                            MG_WEBSOCKET_OPCODE_TEXT,
                            str.c_str(),
                            str.length());
-
     }
 
     // ------------------------------------------------------------------------
@@ -2280,7 +2189,6 @@ ws2_command(struct mg_connection* conn,
                                (const char*)str.c_str(),
                                str.length());
         }
-
     }
 
     // ------------------------------------------------------------------------
@@ -2302,7 +2210,8 @@ ws2_command(struct mg_connection* conn,
                                MG_WEBSOCKET_OPCODE_TEXT,
                                (const char*)str.c_str(),
                                str.length());
-        } else {
+        }
+        else {
 
             str = vscp_str_format(WS2_NEGATIVE_RESPONSE,
                                   "AUTH",
@@ -2443,7 +2352,8 @@ ws2_command(struct mg_connection* conn,
 
             pthread_mutex_unlock(
               &pSession->m_pClientItem->m_mutexClientInputQueue);
-        } else {
+        }
+        else {
 
             std::string str = vscp_str_format(WS2_NEGATIVE_RESPONSE,
                                               strCmd.c_str(),
@@ -2563,8 +2473,8 @@ ws2_command(struct mg_connection* conn,
                            MG_WEBSOCKET_OPCODE_TEXT,
                            (const char*)str.c_str(),
                            str.length());
-
-    } else {
+    }
+    else {
         std::string str = vscp_str_format(WS2_NEGATIVE_RESPONSE,
                                           strCmd,
                                           (int)WEBSOCK_ERROR_UNKNOWN_COMMAND,
@@ -2608,7 +2518,8 @@ ws2_xcommand(struct mg_connection* conn,
         tokens.pop_front();
         vscp_trim(strTok);
         vscp_makeUpper(strTok);
-    } else {
+    }
+    else {
         std::string str = vscp_str_format(("-;%d;%s"),
                                           (int)WEBSOCK_ERROR_SYNTAX_ERROR,
                                           WEBSOCK_STR_ERROR_SYNTAX_ERROR);
