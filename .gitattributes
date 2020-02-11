@@ -1,0 +1,9 @@
+*.c     eol=lf
+*.h     eol=lf
+*.cpp   eol=lf
+*.txt   eol=lf
+*.js    eol=lf
+*.jsx   eol=lf
+*.json  eol=lf
+*.html  eol=lf
+*.md    eol=lf
