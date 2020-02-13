@@ -341,7 +341,7 @@ void appFrame::OnQuit( wxCommandEvent& WXUNUSED( event ) )
 
 void appFrame::OnAbout( wxCommandEvent& WXUNUSED( event)  )
 {
-    wxMessageBox(wxT("VSCP Simple Button\n© Ake Hedman, eurosource 2004 - 2007\nhttp://www.vscp.org"),
+    wxMessageBox(wxT("VSCP Simple Button\nï¿½ Ake Hedman, eurosource 2004 - 2007https://www.vscp.orgrg"),
 						wxT("About pd"),
 						wxICON_INFORMATION, this );
 }

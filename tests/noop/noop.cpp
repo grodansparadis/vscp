@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // noop.cpp
 //
-// http://www.vscp.org   Grodans Paradis AB   info@grodansparadis.com
-//http://www.vscp.org/docs/vscphelper/doku.php?id=classes_vscpremotetcpipif_metods
+// https://www.vscp.org   Grodans Paradis AB   info@grodansparadis.com
+//https://www.vscp.org/docs/vscphelper/doku.php?id=classes_vscpremotetcpipif_metods
 
 #include <stdio.h>
 #include <stdlib.h>

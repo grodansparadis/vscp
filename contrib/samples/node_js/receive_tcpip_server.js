@@ -6,12 +6,12 @@
 // event polling command "retr" to read an event in the input queue and
 // the "chkdata" to check if there are events waiting to be read. You can
 // read about the commands in the VCSP TCP/IP interface here
-// http://www.vscp.org/docs/vscpd/doku.php?id=vscp_daemon_tcp_ip_protocol_description
+// https://www.vscp.org/docs/vscpd/doku.php?id=vscp_daemon_tcp_ip_protocol_description
 //
 // Arguments is 'host' 'port' 'user' 'password' 'temperature'
 // which defaults to '127.0.0.1' '9598' 'admin' 'secret' '25'
 //
-// Part of VSCP & Friends - http://www.vscp.org
+// Part of VSCP & Friends - https://www.vscp.org
 // akhe@vscp.org, Grodans Paradis AB, http://www.paradiseofthefrog.com
 //
 var net = require('net');

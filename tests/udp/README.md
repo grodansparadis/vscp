@@ -1,8 +1,8 @@
 This is some test programs to test the UDP connections of the VSCP Server and other Level II VSCP nodes.
 
-The format for VSCP over UDP is described <a href="http://www.vscp.org/docs/vscpspec/doku.php?id=physical_level_lower_level_protocols#vscp_over_udp">here</a>
+The format for VSCP over UDP is described <a href="https://www.vscp.org/docs/vscpspec/doku.php?id=physical_level_lower_level_protocols#vscp_over_udp">here</a>
 
-The VSCP UDP of the VSCP server is <a href="http://www.vscp.org/docs/vscpd/doku.php?id=daemon_udp_protocol_description_general">described here</a>
+The VSCP UDP of the VSCP server is <a href="https://www.vscp.org/docs/vscpd/doku.php?id=daemon_udp_protocol_description_general">described here</a>
 
 <h2>To build test programs</h2>
 Issue <b>make</b> to build. Will work on a Debian system at least.

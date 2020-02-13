@@ -14,7 +14,7 @@
 
 /* ******************************************************************************
  * VSCP  Very Simple Control Protocol
- * http://www.vscp.org
+ * https://www.vscp.org
  *
  * Copyright  (C)  1995-2018 Ake Hedman,
  * eurosource, <akhe@eurosource.se>
@@ -36,7 +36,7 @@
  * 3. This notice may not be removed or altered from any source distribution.
  *
  *    This file is part of VSCP - Very Simple Control Protocol
- *    http://www.vscp.org
+ *    https://www.vscp.org
  *
  * ******************************************************************************
 */

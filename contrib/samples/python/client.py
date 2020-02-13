@@ -16,7 +16,7 @@ A Python VSCP Client.
 // 2 of the License, or (at your option) any later version.
 // canald.cpp
 //
-// This file is part of the VSCP Project (http://www.vscp.org)
+// This file is part of the VSCP Project (https://www.vscp.org)
 //
 // Copyright (C) 2011 Thomas Schulz <tschulz3016@gmail.com>
 //

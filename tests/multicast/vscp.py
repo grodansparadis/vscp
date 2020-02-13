@@ -1,6 +1,6 @@
 # FILE: vscp.py
 #
-# This file is part of the VSCP (http://www.vscp.org) 
+# This file is part of the VSCP (https://www.vscp.org) 
 #
 # The MIT License (MIT)
 # 
@@ -200,7 +200,7 @@ VSCP_MULTICAST_PACKET0_POS_VSCP_DATA = 36
 # VSCP multicast packet types
 VSCP_MULTICAST_TYPE_EVENT = 0
 
-# Multicast proxy CLASS=1026, TYPE=3 http://www.vscp.org/docs/vscpspec/doku.php?id=class2.information#type_3_0x0003_level_ii_proxy_node_heartbeat
+# Multicast proxy CLASS=1026, TYPE=3 https://www.vscp.org/docs/vscpspec/doku.php?id=class2.information#type_3_0x0003_level_ii_proxy_node_heartbeat
 VSCP_MULTICAST_PROXY_HEARTBEAT_DATA_SIZE      =     192
 VSCP_MULTICAST_PROXY_HEARTBEAT_POS_REALGUID   =     0       # The real GUID for the node
 VSCP_MULTICAST_PROXY_HEARTBEAT_POS_IFGUID     =     32      # GUID for interface node is on

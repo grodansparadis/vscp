@@ -1,6 +1,6 @@
 // ControlObject.h: interface for the CControlObject class.
 //
-// This file is part of the VSCP (http://www.vscp.org)
+// This file is part of the VSCP (https://www.vscp.org)
 //
 // The MIT License (MIT)
 //
@@ -307,7 +307,7 @@ class CControlObject {
 
     /*!
      * Create the folder structure that the VSCP daemon is expecting
-     * http://www.vscp.org/docs/vscpd/doku.php?id=files_and_directory_structure
+     * https://www.vscp.org/docs/vscpd/doku.php?id=files_and_directory_structure
      */
     bool createFolderStructure(void);
 
@@ -423,7 +423,7 @@ class CControlObject {
     bool m_enableWebAdminIf;
 
     // See
-    // http://www.vscp.org/docs/vscpd/doku.php?id=configuring_the_vscp_daemon#webserver
+    // https://www.vscp.org/docs/vscpd/doku.php?id=configuring_the_vscp_daemon#webserver
     std::string m_web_document_root;
     std::string m_web_listening_ports;
     std::string m_web_index_files;

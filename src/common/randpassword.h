@@ -2,7 +2,7 @@
 // randPassword.h
 //
 // This file is part is part of VSCP (Very Simple Control Protocol)
-// http://www.vscp.org)
+// https://www.vscp.org)
 //
 // Copyright © 2000-2020 Ake Hedman, eurosource, <akhe@eurosource.se>
 //

@@ -1,6 +1,6 @@
 // web_template.h
 //
-// This file is part of the VSCP (http://www.vscp.org) 
+// This file is part of the VSCP (https://www.vscp.org) 
 //
 // The MIT License (MIT)
 // 
@@ -92,7 +92,7 @@
                            "             <a href=\"https://docs.vscp.org\" target=\"moon\">VSCP Docs Site</a>"\
                            "         </li>"\
                            "         <li>"\
-                           "             <a href=\"http://www.vscp.org\" target=\"moon\">VSCP Site</a>"\
+                           "             <a href=\"https://www.vscp.org\" target=\"moon\">VSCP Site</a>"\
                            "         </li>"\
                            "     </ul>"\
                            " </li>"\

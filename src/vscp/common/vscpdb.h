@@ -1,6 +1,6 @@
 // vscpdb.h
 //
-// This file is part of the VSCP (http://www.vscp.org)
+// This file is part of the VSCP (https://www.vscp.org)
 //
 // MIT License
 //

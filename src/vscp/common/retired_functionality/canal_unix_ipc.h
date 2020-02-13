@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // Canal_linux_ips.h: IPC common defines
 //
-// This file is part of the VSCP (http://www.vscp.org) 
+// This file is part of the VSCP (https://www.vscp.org) 
 //
 // The MIT License (MIT)
 // 

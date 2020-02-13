@@ -4,6 +4,6 @@
 
 <p>
 Subfolders under this point contains samles for interfacing the REST interface of the 
-<a href="http://www.vscp.org/docs/vscpd/doku.php?id=start">VSCP Daemon</a>.
+<a href="https://www.vscp.org/docs/vscpd/doku.php?id=start">VSCP Daemon</a>.
 </p>
 

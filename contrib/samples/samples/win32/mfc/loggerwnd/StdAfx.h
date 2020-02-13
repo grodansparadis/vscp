@@ -2,7 +2,7 @@
 // StdAfx.h
 //
 // This file is part is part of CANAL (CAN Abstraction Layer)
-// http://www.vscp.org)
+// https://www.vscp.org)
 //
 // Originally this file was part of M.U.M.I.N. Multi Unit Microcontroler 
 // Interface Network which you can download from 

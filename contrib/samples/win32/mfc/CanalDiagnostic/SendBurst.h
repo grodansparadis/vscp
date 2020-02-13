@@ -5,7 +5,7 @@
 // 2 of the License, or (at your option) any later version.
 // canald.cpp 
 //
-// This file is part of the CANAL (http://www.vscp.org) 
+// This file is part of the CANAL (https://www.vscp.org) 
 //
 // Copyright (C) 2000-2008 Ake Hedman, D of Scandinavia, <akhe@eurosource.se>
 // 

@@ -4,7 +4,7 @@
 
 <p>
 This is a sample that shows how to use curl to interface the REST interface of the 
-<a href="http://www.vscp.org/docs/vscpd/doku.php?id=start">VSCP Daemon</a> using curl 
+<a href="https://www.vscp.org/docs/vscpd/doku.php?id=start">VSCP Daemon</a> using curl 
 and POST on the Linux platform.
 </p>
 

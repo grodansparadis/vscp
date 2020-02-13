@@ -10,7 +10,7 @@ This module can be used to test the speed of the register update.
 // 2 of the License, or (at your option) any later version.
 // canald.cpp
 //
-// This file is part of the VSCP Project (http://www.vscp.org)
+// This file is part of the VSCP Project (https://www.vscp.org)
 //
 // Copyright (C) 2009 Thomas Schulz <tschulz@iprimus.com.au>
 //

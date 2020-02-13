@@ -1,7 +1,7 @@
 /*
  FILE: vscp.h
 
- This file is part of the VSCP (http://www.vscp.org)
+ This file is part of the VSCP (https://www.vscp.org)
 
  The MIT License (MIT)
 
@@ -363,7 +363,7 @@ extern "C"
 #define GET_VSCP_MULTICAST_PACKET_ENCRYPTION(type) ((type)&0x0f)
 
 /* Multicast proxy CLASS=1026, TYPE=3  */
-/* http://www.vscp.org/docs/vscpspec/doku.php?id=class2.information#type_3_0x0003_level_ii_proxy_node_heartbeat
+/* https://www.vscp.org/docs/vscpspec/doku.php?id=class2.information#type_3_0x0003_level_ii_proxy_node_heartbeat
  */
 #define VSCP_MULTICAST_PROXY_HEARTBEAT_DATA_SIZE 192
 #define VSCP_MULTICAST_PROXY_HEARTBEAT_POS_REALGUID                            \

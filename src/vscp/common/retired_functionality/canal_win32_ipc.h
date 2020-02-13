@@ -1,6 +1,6 @@
 // canal_win32_ipc.h
 //
-// This file is part of the VSCP (http://www.vscp.org) 
+// This file is part of the VSCP (https://www.vscp.org) 
 //
 // The MIT License (MIT)
 // 

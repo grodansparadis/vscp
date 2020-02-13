@@ -5,7 +5,7 @@
 // as published by the Free Software Foundation; either version
 // 2 of the License, or (at your option) any later version.
 //
-// This file is part of the VSCP (http://www.vscp.org)
+// This file is part of the VSCP (https://www.vscp.org)
 //
 // Copyright © 2000-2020 Ake Hedman, Grodans Paradis AB, <akhe@vscp.org>
 //
