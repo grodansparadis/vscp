@@ -12,7 +12,7 @@
 
 /* ******************************************************************************
  *  VSCP (Very Simple Control Protocol)
- *  https://www.vscp.org
+ *  http://www.vscp.org
  *
  * The MIT License (MIT)
  *
@@ -37,7 +37,7 @@
  * SOFTWARE.
  *
  *  This file is part of VSCP - Very Simple Control Protocol
- *  https://www.vscp.org
+ *  http://www.vscp.org
  *
  * ******************************************************************************
  */
@@ -48,7 +48,7 @@
             !!!!!!!!!!!!!!!!!!!!  W A R N I N G  !!!!!!!!!!!!!!!!!!!!
                            This file is auto-generated
                 see https://github.com/grodansparadis/vscp-classes
-                        Generated: 2020-01-23 10:19:54.182518
+                        Generated: 2020-02-19 17:52:50.376925
 */
  
 #ifndef VSCP_TYPE_H

@@ -3373,14 +3373,15 @@ vscp_convertEventToJSON(std::string& strJSON, vscpEvent* pEvent)
 // vscp_convertJSONToEvent
 //
 // {
-//    "head": 2,
-//    "obid"; 123,
-//    "datetime": "2017-01-13T10:16:02",
-//    "timestamp":50817,
-//    "class": 10,
-//    "type": 8,
-//    "guid": "00:00:00:00:00:00:00:00:00:00:00:00:00:01:00:02",
-//    "data": [1,2,3,4,5,6,7]
+//    "vscpHead": 2,
+//    "vscpObId": 123,
+//    "vscpDateTime": "2017-01-13T10:16:02Z",
+//    "vscpTimeStamp":50817,
+//    "vscpClass": 10,
+//    "vscpType": 8,
+//    "vscpGuid": "00:00:00:00:00:00:00:00:00:00:00:00:00:01:00:02",
+//    "vscpData": [1,2,3,4,5,6,7],
+//    "vscpNote": "This is some text"
 // }
 
 bool
@@ -3396,24 +3397,24 @@ vscp_convertJSONToEvent(vscpEvent* pEvent, std::string& strJSON)
 
         auto j = json::parse(strJSON);
 
-        // Head
-        if (j.find("head") != j.end()) {
-            pEvent->head = j.at("head").get<uint16_t>();
+        // vscpHead
+        if (j.find("vscpHead") != j.end()) {
+            pEvent->head = j.at("vscpHead").get<uint16_t>();
         }
 
-        // obid
-        if (j.find("obid") != j.end()) {
-            pEvent->obid = j.at("obid").get<uint32_t>();
+        // vscpObId
+        if (j.find("vscpObId") != j.end()) {
+            pEvent->obid = j.at("vscpObId").get<uint32_t>();
         }
 
-        // TimeStamp
-        if (j.find("timestamp") != j.end()) {
-            pEvent->timestamp = j.at("timestamp").get<uint32_t>();
+        // vscpTimeStamp
+        if (j.find("vscpTimeStamp") != j.end()) {
+            pEvent->timestamp = j.at("vscpTimeStamp").get<uint32_t>();
         }
 
-        // DateTime
-        if (j.find("datetime") != j.end()) {
-            std::string dtStr = j.at("datetime").get<std::string>();
+        // vscpDateTime
+        if (j.find("vscpDateTime") != j.end()) {
+            std::string dtStr = j.at("vscpDateTime").get<std::string>();
             struct tm tm;
             memset(&tm, 0, sizeof(tm));
             vscp_parseISOCombined(&tm, dtStr);
@@ -3421,27 +3422,27 @@ vscp_convertJSONToEvent(vscpEvent* pEvent, std::string& strJSON)
         }
 
         // VSCP class
-        if (j.find("class") != j.end()) {
-            pEvent->vscp_class = j.at("class").get<uint16_t>();
+        if (j.find("vscpClass") != j.end()) {
+            pEvent->vscp_class = j.at("vscpClass").get<uint16_t>();
         }
 
         // VSCP type
-        if (j.find("type") != j.end()) {
-            pEvent->vscp_type = j.at("type").get<uint16_t>();
+        if (j.find("vscpType") != j.end()) {
+            pEvent->vscp_type = j.at("vscpType").get<uint16_t>();
         }
 
         // GUID
-        if (j.find("guid") != j.end()) {
-            std::string guidStr = j.at("guid").get<std::string>();
+        if (j.find("vscpGuid") != j.end()) {
+            std::string guidStr = j.at("vscpGuid").get<std::string>();
             cguid guid;
             guid.getFromString(guidStr);
             guid.writeGUID(pEvent->GUID);
         }
 
         pEvent->sizeData = 0;
-        if (j.find("data") != j.end()) {
+        if (j.find("vscpData") != j.end()) {
 
-            std::vector<std::uint8_t> data_array = j.at("data");
+            std::vector<std::uint8_t> data_array = j.at("vscpData");
 
             // Check size
             if (data_array.size() > VSCP_MAX_DATA)
@@ -3512,14 +3513,14 @@ vscp_convertEventExToJSON(std::string& strJSON, vscpEventEx* pEventEx)
 // vscp_convertJSONToEvent
 //
 // {
-//    "head": 2,
-//    "obid"; 123,
-//    "datetime": "2017-01-13T10:16:02",
-//    "timestamp":50817,
-//    "class": 10,
-//    "type": 8,
-//    "guid": "00:00:00:00:00:00:00:00:00:00:00:00:00:01:00:02",
-//    "data": [1,2,3,4,5,6,7]
+//    "vscpHead": 2,
+//    "vscpObId"; 123,
+//    "vscpDateTime": "2017-01-13T10:16:02Z",
+//    "vscpTimeStamp":50817,
+//    "vscpClass": 10,
+//    "vscpType": 8,
+//    "vscpGuid": "00:00:00:00:00:00:00:00:00:00:00:00:00:01:00:02",
+//    "vscpData": [1,2,3,4,5,6,7]
 // }
 
 bool
@@ -3536,23 +3537,23 @@ vscp_convertJSONToEventEx(vscpEventEx* pEventEx, std::string& strJSON)
         auto j = json::parse(strJSON);
 
         // Head
-        if (j.find("head") != j.end()) {
-            pEventEx->head = j.at("head").get<uint16_t>();
+        if (j.find("vscpHead") != j.end()) {
+            pEventEx->head = j.at("vscpHead").get<uint16_t>();
         }
 
         // obid
-        if (j.find("obid") != j.end()) {
-            pEventEx->obid = j.at("obid").get<uint32_t>();
+        if (j.find("vscpObId") != j.end()) {
+            pEventEx->obid = j.at("vscpObId").get<uint32_t>();
         }
 
         // TimeStamp
-        if (j.find("timestamp") != j.end()) {
-            pEventEx->timestamp = j.at("timestamp").get<uint32_t>();
+        if (j.find("vscpTimeStamp") != j.end()) {
+            pEventEx->timestamp = j.at("vscpTimeStamp").get<uint32_t>();
         }
 
         // DateTime
-        if (j.find("datetime") != j.end()) {
-            std::string dtStr = j.at("datetime").get<std::string>();
+        if (j.find("vscpDateTime") != j.end()) {
+            std::string dtStr = j.at("vscpDateTime").get<std::string>();
             struct tm tm;
             memset(&tm, 0, sizeof(tm));
             vscp_parseISOCombined(&tm, dtStr);
@@ -3560,27 +3561,27 @@ vscp_convertJSONToEventEx(vscpEventEx* pEventEx, std::string& strJSON)
         }
 
         // VSCP class
-        if (j.find("class") != j.end()) {
-            pEventEx->vscp_class = j.at("class").get<uint16_t>();
+        if (j.find("vscpClass") != j.end()) {
+            pEventEx->vscp_class = j.at("vscpClass").get<uint16_t>();
         }
 
         // VSCP type
-        if (j.find("type") != j.end()) {
-            pEventEx->vscp_type = j.at("type").get<uint16_t>();
+        if (j.find("vscpType") != j.end()) {
+            pEventEx->vscp_type = j.at("vscpType").get<uint16_t>();
         }
 
         // GUID
-        if (j.find("guid") != j.end()) {
-            std::string guidStr = j.at("guid").get<std::string>();
+        if (j.find("vscpGuid") != j.end()) {
+            std::string guidStr = j.at("vscpGuid").get<std::string>();
             cguid guid;
             guid.getFromString(guidStr);
             guid.writeGUID(pEventEx->GUID);
         }
 
         pEventEx->sizeData = 0;
-        if (j.find("data") != j.end()) {
+        if (j.find("vscpData") != j.end()) {
 
-            std::vector<std::uint8_t> data_array = j.at("data");
+            std::vector<std::uint8_t> data_array = j.at("vscpData");
 
             // Check size
             if (data_array.size() > VSCP_MAX_DATA)
@@ -3647,14 +3648,14 @@ vscp_convertEventToXML(std::string& strXML, vscpEvent* pEvent)
 // vscp_convertXMLToEvent
 //
 // <event
-//     head = "2"
-//     obid = "123"
-//     datetime = "2017-01-13T10:16:02"
-//     timestamp = "50817"
-//     class = "10"
-//     type = "8"
-//     guid = "00:00:00:00:00:00:00:00:00:00:00:00:00:01:00:02"
-//     data = 1,2,3,4,5,6,7"
+//     vscpHead = "2"
+//     vscpObId = "123"
+//     vscpDateTime = "2017-01-13T10:16:02"
+//     vscpTimeStamp = "50817"
+//     vscpClass = "10"
+//     vscpType = "8"
+//     vscpGuid = "00:00:00:00:00:00:00:00:00:00:00:00:00:01:00:02"
+//     vscpData = 1,2,3,4,5,6,7"
 // />
 
 // ----------------------------------------------------------------------------
@@ -3673,27 +3674,27 @@ startEventXMLParser(void* data, const char* name, const char** attr)
         for (int i = 0; attr[i]; i += 2) {
 
             std::string attribute = attr[i + 1];
-            if (0 == strcmp(attr[i], "head")) {
+            if (0 == strcmp(attr[i], "vscpHead")) {
                 pev->head = vscp_readStringValue(attribute);
-            } else if (0 == strcmp(attr[i], "obid")) {
+            } else if (0 == strcmp(attr[i], "vscpObId")) {
                 pev->obid = vscp_readStringValue(attribute);
-            } else if (0 == strcmp(attr[i], "datetime")) {
+            } else if (0 == strcmp(attr[i], "vscpDateTime")) {
                 struct tm tm;
                 memset(&tm, 0, sizeof(tm));
                 std::string dt = attribute;
                 if (vscp_parseISOCombined(&tm, dt)) {
                     vscp_setEventDateTime(pev, &tm);
                 }
-            } else if (0 == strcmp(attr[i], "timestamp")) {
+            } else if (0 == strcmp(attr[i], "vscpTimeStamp")) {
                 pev->timestamp = vscp_readStringValue(attribute);
-            } else if (0 == strcmp(attr[i], "class")) {
+            } else if (0 == strcmp(attr[i], "vscpClass")) {
                 pev->vscp_class = vscp_readStringValue(attribute);
-            } else if (0 == strcmp(attr[i], "type")) {
+            } else if (0 == strcmp(attr[i], "vscpType")) {
                 pev->vscp_type = vscp_readStringValue(attribute);
-            } else if (0 == strcmp(attr[i], "guid")) {
+            } else if (0 == strcmp(attr[i], "vscpGuid")) {
                 std::string strGUID = attribute;
                 vscp_setEventGuidFromString(pev, strGUID);
-            } else if (0 == strcmp(attr[i], "data")) {
+            } else if (0 == strcmp(attr[i], "vscpData")) {
                 std::string str = attribute;
                 vscp_setEventDataFromString(pev, str);
             }
@@ -3782,14 +3783,14 @@ vscp_convertEventExToXML(std::string& strXML, vscpEventEx* pEventEx)
 // vscp_convertXMLToEventEx
 //
 // <event
-//     head = "2"
-//     obid = "123"
-//     datetime = "2017-01-13T10:16:02"
-//     timestamp = "50817"
-//     class = "10"
-//     type = "8"
-//     guid = "00:00:00:00:00:00:00:00:00:00:00:00:00:01:00:02"
-//     data = 1,2,3,4,5,6,7"
+//     vscpHead = "2"
+//     vscpObId = "123"
+//     vscpDateTime = "2017-01-13T10:16:02"
+//     vscpTimeStamp = "50817"
+//     vscpClass = "10"
+//     vscpType = "8"
+//     vscpGuid = "00:00:00:00:00:00:00:00:00:00:00:00:00:01:00:02"
+//     vscpData = 1,2,3,4,5,6,7"
 // />
 
 // ----------------------------------------------------------------------------
@@ -3808,27 +3809,27 @@ startEventExXMLParser(void* data, const char* name, const char** attr)
         for (int i = 0; attr[i]; i += 2) {
 
             std::string attribute = attr[i + 1];
-            if (0 == strcmp(attr[i], "head")) {
+            if (0 == strcmp(attr[i], "vscpHead")) {
                 pex->head = vscp_readStringValue(attribute);
-            } else if (0 == strcmp(attr[i], "obid")) {
+            } else if (0 == strcmp(attr[i], "vscpObId")) {
                 pex->obid = vscp_readStringValue(attribute);
-            } else if (0 == strcmp(attr[i], "datetime")) {
+            } else if (0 == strcmp(attr[i], "vscpDateTime")) {
                 struct tm tm;
                 memset(&tm, 0, sizeof(tm));
                 std::string dt = attribute;
                 if (vscp_parseISOCombined(&tm, dt)) {
                     vscp_setEventExDateTime(pex, &tm);
                 }
-            } else if (0 == strcmp(attr[i], "timestamp")) {
+            } else if (0 == strcmp(attr[i], "vscpTimeStamp")) {
                 pex->timestamp = vscp_readStringValue(attribute);
-            } else if (0 == strcmp(attr[i], "class")) {
+            } else if (0 == strcmp(attr[i], "vscpClass")) {
                 pex->vscp_class = vscp_readStringValue(attribute);
-            } else if (0 == strcmp(attr[i], "type")) {
+            } else if (0 == strcmp(attr[i], "vscpType")) {
                 pex->vscp_type = vscp_readStringValue(attribute);
-            } else if (0 == strcmp(attr[i], "guid")) {
+            } else if (0 == strcmp(attr[i], "vscpGuid")) {
                 std::string strGUID = attribute;
                 vscp_setEventExGuidFromString(pex, strGUID);
-            } else if (0 == strcmp(attr[i], "data")) {
+            } else if (0 == strcmp(attr[i], "vscpData")) {
                 std::string str = attribute;
                 vscp_setEventExDataFromString(pex, str);
             }

@@ -585,68 +585,66 @@ extern "C"
     Template for VSCP XML event data
 
     data:
-datetime,head,obid,datetime,timestamp,class,type,guid,sizedata,data,note
+datetime,vscpHead,vscpObId,vscpDateTime,vscpTimeStamp,vscpClass,vscpType,vscpGuid,vscpData,note
 
 <event
-     head="3"
-     obid="1234"
-     datetime="2017-01-13T10:16:02"
-     timestamp="50817"
-     class="10"
-     type="6"
-     guid="00:00:00:00:00:00:00:00:00:00:00:00:00:01:00:02"
-     sizedata="7"
-     data="0x48,0x34,0x35,0x2E,0x34,0x36,0x34" />
+     vscpHead="3"
+     vscpObId="1234"
+     vscpDateTime="2017-01-13T10:16:02"
+     vscpTimeStamp="50817"
+     vscpClass="10"
+     vscpType="6"
+     vscpGuid="00:00:00:00:00:00:00:00:00:00:00:00:00:01:00:02"
+     vscpData="0x48,0x34,0x35,0x2E,0x34,0x36,0x34" />
 
  */
 #define VSCP_XML_EVENT_TEMPLATE                                                \
     "<event "                                                                  \
-    "head=\"%d\" "                                                             \
-    "obid=\"%lu\" "                                                            \
-    "datetime=\"%s\" "                                                         \
-    "timestamp=\"%lu\" "                                                       \
-    "class=\"%d\" "                                                            \
-    "type=\"%d\" "                                                             \
-    "guid=\"%s\" "                                                             \
-    "sizedata=\"%d\" "                                                         \
-    "data=\"%s\" "                                                             \
+    "vscpHead=\"%d\" "                                                             \
+    "vscpObId=\"%lu\" "                                                            \
+    "vscpDateTime=\"%s\" "                                                         \
+    "vscpTimeStamp=\"%lu\" "                                                       \
+    "vscpClass=\"%d\" "                                                            \
+    "vscpType=\"%d\" "                                                             \
+    "vscpGuid=\"%s\" "                                                             \
+    "vscpData=\"%s\" "                                                             \
     "/>"
 
 /*
 
     Template for VSCP JSON event data
-    data: datetime,head,obid,datetime,timestamp,class,type,guid,data,note
+    data: datetime,vscpHead,vscpObId,datetime,timestamp,class,type,guid,data,note
 
 {
-    "head": 2,
-    "obid": 123,
-    "datetime": "2017-01-13T10:16:02",
-    "timestamp":50817,
-    "class": 10,
-    "type": 8,
-    "guid": "00:00:00:00:00:00:00:00:00:00:00:00:00:01:00:02",
-    "data": [1,2,3,4,5,6,7],
-    "note": "This is some text"
+    "vscpHead": 2,
+    "vscpObId": 123,
+    "vscpDateTime": "2017-01-13T10:16:02",
+    "vscpTimeStamp":50817,
+    "vscpClass": 10,
+    "vscpType": 8,
+    "vscpGuid": "00:00:00:00:00:00:00:00:00:00:00:00:00:01:00:02",
+    "vscpData": [1,2,3,4,5,6,7],
+    "vscpNote": "This is some text"
 }
 */
 #define VSCP_JSON_EVENT_TEMPLATE                                               \
     "{\n"                                                                      \
-    "\"head\": %d,\n"                                                          \
-    "\"obid\":  %lu,\n"                                                        \
-    "\"datetime\": \"%s\",\n"                                                  \
-    "\"timestamp\": %lu,\n"                                                    \
-    "\"class\": %d,\n"                                                         \
-    "\"type\": %d,\n"                                                          \
-    "\"guid\": \"%s\",\n"                                                      \
-    "\"data\": [%s],\n"                                                        \
-    "\"note\": \"%s\"\n"                                                       \
+    "\"vscpHead\": %d,\n"                                                          \
+    "\"vscpObId\":  %lu,\n"                                                        \
+    "\"vscpDateTime\": \"%s\",\n"                                                  \
+    "\"vscpTimeStamp\": %lu,\n"                                                    \
+    "\"vscpClass\": %d,\n"                                                         \
+    "\"vscpType\": %d,\n"                                                          \
+    "\"vscpGuid\": \"%s\",\n"                                                      \
+    "\"vscpData\": [%s],\n"                                                        \
+    "\"vscpNote\": \"%s\"\n"                                                       \
     "}"
 
 /*!
 
     Template for VSCP HTML event data
 
-    data: datetime,class,type,data-count,data,guid,head,timestamp,obid,note
+    data: vscpDateTime,vscpClass,type,data-count,data,guid,vscpHead,vscpTimeStamp,vscpObId,note
 
 <h2>VSCP Event</h2>
 <p>
@@ -664,10 +662,10 @@ Data: 1,2,3,4,5,6,7<br>
 From GUID: 00:00:00:00:00:00:00:00:00:00:00:00:00:01:00:02<br>
 </p>
 <p>
-Head: 6 <br>
+vscpHead: 6 <br>
 DateTime: 2013-11-02T12:34:22Z
 Timestamp: 1234 <br>
-obid: 1234 <br>
+ObId: 1234 <br>
 note: This is a note <br>
 </p>
 
@@ -686,12 +684,12 @@ note: This is a note <br>
     "From GUID: %s<br>"                                                        \
     "</p>"                                                                     \
     "<p>"                                                                      \
-    "Head: %d <br>"                                                            \
+    "vscpHead: %d <br>"                                                            \
     "<p>"                                                                      \
     "DateTime: %s <br>"                                                        \
     "</p>"                                                                     \
     "Timestamp: %lu <br>"                                                      \
-    "obid: %lu <br>"                                                           \
+    "ObId: %lu <br>"                                                           \
     "note: %s <br>"                                                            \
     "</p>"
 
