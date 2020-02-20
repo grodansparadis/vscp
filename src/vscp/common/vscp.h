@@ -618,7 +618,7 @@ datetime,vscpHead,vscpObId,vscpDateTime,vscpTimeStamp,vscpClass,vscpType,vscpGui
 {
     "vscpHead": 2,
     "vscpObId": 123,
-    "vscpDateTime": "2017-01-13T10:16:02",
+    "vscpDateTime": "2017-01-13T10:16:02Z",
     "vscpTimeStamp":50817,
     "vscpClass": 10,
     "vscpType": 8,
