@@ -205,6 +205,7 @@ extern "C"
     0x3000 /* GUID is RFC 4122 Version 4 */
 
 #define VSCP_MASK_PRIORITY  0xE0
+#define VSCP_MASK_GUID_TYPE 0x8000 
 #define VSCP_MASK_HARDCODED 0x10
 #define VSCP_MASK_NOCRCCALC 0x08
 
@@ -399,8 +400,8 @@ extern "C"
 #define VSCP_MASK_DATACODING_UNIT  0x18 /* Bits 3,4   */
 #define VSCP_MASK_DATACODING_INDEX 0x07 /* Bits 0,1,2 */
 
-/* These bits are coded in the three MSB bytes of the first data byte   */
-/* in a packet and tells the type of the data that follows.             */
+/* These bits are coded in the three MSB bits of the first data byte   */
+/* of measurement data and tells the type of the data that follows.    */
 #define VSCP_DATACODING_BIT        0x00
 #define VSCP_DATACODING_BYTE       0x20
 #define VSCP_DATACODING_STRING     0x40
